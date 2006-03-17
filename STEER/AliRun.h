@@ -141,7 +141,7 @@ public:
 
   // Method to introduce the detector misliagnment
   // It is called by AliSimulation
-  static Bool_t  ApplyDisplacements(TClonesArray* AlObjArray);
+  static Bool_t  ApplyAlignObjsToGeom(TClonesArray* AlObjArray);
 
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);

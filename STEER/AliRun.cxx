@@ -49,6 +49,7 @@
 #include <TRandom3.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
 // 
 #include "AliLog.h"
 #include "AliDetector.h"
@@ -959,7 +960,7 @@ void AliRun::AddModule(AliModule* mod)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRun::ApplyDisplacements(TClonesArray* AlObjArray)
+Bool_t AliRun::ApplyAlignObjsToGeom(TClonesArray* AlObjArray)
 {
   // Read collection of alignment objects (AliAlignObj derived) saved
   // in the TClonesArray ClArrayName and apply them to the geometry
@@ -973,6 +974,12 @@ Bool_t AliRun::ApplyDisplacements(TClonesArray* AlObjArray)
       if (alobj->ApplyToGeometry() == kFALSE)
 	return kFALSE;
     }
+
+  gGeoManager->CheckOverlaps(50);
+  TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
+  if(ovexlist->GetEntriesFast()){  
+    AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
+  }
 
   return kTRUE;
 

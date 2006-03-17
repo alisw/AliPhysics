@@ -56,11 +56,11 @@ public:
                    {fWriteRawData = detectors; fRawDataFileName = fileName;
 		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
 
-  static Bool_t  ApplyDisplacements(const char* fileName,
+  static Bool_t  ApplyAlignObjsToGeom(const char* fileName,
 				    const char* clArrayName);
-  static Bool_t  ApplyDisplacements(AliCDBParam* param,
+  static Bool_t  ApplyAlignObjsToGeom(AliCDBParam* param,
 				    AliCDBId& Id);
-  static Bool_t  ApplyDisplacements(const char* uri, const char* path,
+  static Bool_t  ApplyAlignObjsToGeom(const char* uri, const char* path,
 				    Int_t runnum, Int_t version,
 				    Int_t sversion);
   void           SetAlignObjArray(TClonesArray *array)

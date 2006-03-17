@@ -269,7 +269,7 @@ void AliSimulation::SetEventsPerFile(const char* detector, const char* type,
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::ApplyDisplacements(const char* fileName, const char* clArrayName)
+Bool_t AliSimulation::ApplyAlignObjsToGeom(const char* fileName, const char* clArrayName)
 {
   // read collection of alignment objects (AliAlignObj derived) saved
   // in the TClonesArray ClArrayName in the file fileName and apply
@@ -289,12 +289,12 @@ Bool_t AliSimulation::ApplyDisplacements(const char* fileName, const char* clArr
     return kFALSE;
   }
 
-  return gAlice->ApplyDisplacements(alObjArray);
+  return gAlice->ApplyAlignObjsToGeom(alObjArray);
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::ApplyDisplacements(AliCDBParam* param, AliCDBId& Id)
+Bool_t AliSimulation::ApplyAlignObjsToGeom(AliCDBParam* param, AliCDBId& Id)
 {
   // read collection of alignment objects (AliAlignObj derived) saved
   // in the TClonesArray ClArrayName in the AliCDBEntry identified by
@@ -306,12 +306,12 @@ Bool_t AliSimulation::ApplyDisplacements(AliCDBParam* param, AliCDBId& Id)
   AliCDBEntry* entry = storage->Get(Id);
   TClonesArray* AlObjArray = ((TClonesArray*) entry->GetObject());
 
-  return gAlice->ApplyDisplacements(AlObjArray);
+  return gAlice->ApplyAlignObjsToGeom(AlObjArray);
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::ApplyDisplacements(const char* uri, const char* path, Int_t runnum, Int_t version, Int_t sversion)
+Bool_t AliSimulation::ApplyAlignObjsToGeom(const char* uri, const char* path, Int_t runnum, Int_t version, Int_t sversion)
 {
   // read collection of alignment objects (AliAlignObj derived) saved
   // in the TClonesArray ClArrayName in the AliCDBEntry identified by
@@ -322,7 +322,7 @@ Bool_t AliSimulation::ApplyDisplacements(const char* uri, const char* path, Int_
   AliCDBParam* param = AliCDBManager::Instance()->CreateParameter(uri);
   AliCDBId id(path, runnum, runnum, version, sversion);
 
-  return ApplyDisplacements(param, id);
+  return ApplyAlignObjsToGeom(param, id);
 
 }
 
@@ -511,7 +511,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // to the present TGeo geometry
   if (fAlignObjArray) {
     if (gGeoManager && gGeoManager->IsClosed()) {
-      if (gAlice->ApplyDisplacements(fAlignObjArray) == kFALSE) {
+      if (gAlice->ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
 	AliError("The application of misalignment failed! Restart aliroot and try again. ");
 	return kFALSE;
       }
