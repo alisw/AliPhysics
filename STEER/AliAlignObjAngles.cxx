@@ -46,14 +46,22 @@ AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, Doubl
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj()
+AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) : AliAlignObj()
 {
   // standard constructor with 3 translation + 3 rotation parameters
-  //
+  // If the user explicitly sets the global variable to kFALSE then the
+  // parameters are interpreted as giving the local transformation.
+  // This requires to have a gGeoMenager active instance, otherwise the
+  // constructor will fail (no object created)
+  // 
   fVolPath=volpath;
   SetVolUID(detId,volId);
-  fTranslation[0]=x; fTranslation[1]=y; fTranslation[2]=z;
-  fRotation[0]=psi; fRotation[1]=theta; fRotation[2]=phi;
+  if(global){
+    fTranslation[0]=x; fTranslation[1]=y; fTranslation[2]=z;
+    fRotation[0]=psi; fRotation[1]=theta; fRotation[2]=phi;
+  }else{
+    if(!SetLocalPars(x,y,z,psi,theta,phi)) throw "Alignment object creation failed (TGeo instance needed)!\n";
+  }
 }
 
 //_____________________________________________________________________________
