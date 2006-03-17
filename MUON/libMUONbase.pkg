@@ -17,6 +17,9 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONChamberTrigger.cxx \
         AliMUONTriggerCircuit.cxx \
         AliMUONData.cxx \
+        AliMUONDataIterator.cxx \
+        AliMUONVDataIterator.cxx \
+        AliMUONDataDigitIterator.cxx \
         AliMUONPoints.cxx \
         AliMUONHit.cxx \
         AliMUONDigit.cxx \
@@ -34,7 +37,9 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONTriggerSegmentationV2.cxx \
         AliMUONSegFactory.cxx \
         AliMUONV2DStore.cxx \
+        AliMUONV1DStore.cxx \
         AliMUON2DMap.cxx \
+        AliMUON1DArray.cxx \
         AliMUONVCalibParam.cxx \
         AliMUONCalibParam1I.cxx \
         AliMUONCalibParam2F.cxx \
@@ -46,6 +51,7 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
        AliMUONScalerEventTrigger.cxx \
        AliMUONRawReader.cxx \
        AliMUONRawStream.cxx \
+       AliMUONCheck.cxx 
                 
 HDRS:= $(SRCS:.cxx=.h)
 

@@ -36,6 +36,7 @@
 // trigger
 
 #pragma link C++ class AliMUONTrigger+;
+#pragma link C++ class AliMUONTriggerEfficiencyCells+;
 #pragma link C++ class AliMUONLocalTriggerBoard+;
 #pragma link C++ class AliMUONRegionalTriggerBoard+;
 #pragma link C++ class AliMUONTriggerBoard+;

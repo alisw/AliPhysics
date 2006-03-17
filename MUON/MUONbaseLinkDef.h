@@ -34,6 +34,9 @@
 
 // containers
 #pragma link C++ class AliMUONData+; 
+#pragma link C++ class AliMUONDataIterator+; 
+#pragma link C++ class AliMUONVDataIterator+; 
+#pragma link C++ class AliMUONDataDigitIterator+; 
 #pragma link C++ class AliMUONPoints+; 
 #pragma link C++ class AliMUONHit+; 
 #pragma link C++ class AliMUONRawCluster+;
@@ -45,7 +48,9 @@
 
 // calibration
 #pragma link C++ class AliMUONV2DStore+;
+#pragma link C++ class AliMUONV1DStore+;
 #pragma link C++ class AliMUON2DMap+;
+#pragma link C++ class AliMUON1DArray+;
 #pragma link C++ class AliMUONVCalibParam+;
 #pragma link C++ class AliMUONCalibParam1I+;
 #pragma link C++ class AliMUONCalibParam2F+;
@@ -66,6 +71,10 @@
 #pragma link C++ class AliMUONDDLTracker+;
 #pragma link C++ class AliMUONSubEventTrigger+;
 #pragma link C++ class AliMUONScalerEventTrigger+;
+
+// debug
+#pragma link C++ class AliMUONCheck+;
+
 #endif
 
 
