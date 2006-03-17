@@ -9,15 +9,21 @@
 #include "Rtypes.h"
 
 class TList;
+class AliMUONV1DStore;
 class AliMUONV2DStore;
 
-void generateCalibrations(const char* cdbpath, Bool_t defaultValues = kTRUE);
+static const char* CDBPath = "local://$ALICE_ROOT/";
+
+void generateTrigger(const char* cdbpath=CDBPath);
+
+void generateCalibrations(const char* cdbpath=CDBPath, Bool_t defaultValues = kTRUE);
 
 TList* manuList(Bool_t reset=kFALSE);
 
 void plotCDB(const char* calibType="MUON/Calib/Pedestals");
 
-AliMUONV2DStore* readCDB(const char* calibType="MUON/Calib/Pedestals");
+AliMUONV2DStore* read2D(const char* calibType="MUON/Calib/Pedestals");
+AliMUONV1DStore* read1D(const char* calibType="MUON/Calib/LocalBoardMasks");
 
 void testMakeStores(Int_t readLoop=10);
 

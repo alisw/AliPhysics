@@ -18,19 +18,25 @@
 /// By Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
 #include "MUONCDB.h"
+
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliMUON1DArray.h"
 #include "AliMUON2DMap.h"
-#include "AliMUONV2DStore.h"
-#include "AliMUONVCalibParam.h"
 #include "AliMUONCalibParam1I.h"
 #include "AliMUONCalibParam2F.h"
+#include "AliMUONConstants.h"
+#include "AliMUONTriggerLut.h"
+#include "AliMUONV2DStore.h"
+#include "AliMUONVCalibParam.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpSegFactory.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
+#include "AliMUONTriggerEfficiencyCells.h"
 #include "Riostream.h"
 #include "TH1F.h"
 #include "TList.h"
@@ -39,8 +45,20 @@
 #include "TSystem.h"
 #endif
 
-//static const char* CDBPath = "local://$ALICE_ROOT/MUON/CDB/Random";
-static const char* CDBPath = "local://$ALICE_ROOT/MUON/CDB/Default";
+//_____________________________________________________________________________
+Int_t countChannels(AliMpVSegmentation& seg)
+{
+  Int_t n(0);
+  
+  for ( Int_t ix = 0; ix < seg.MaxPadIndexX(); ++ix )
+  {
+    for ( Int_t iy = 0; iy < seg.MaxPadIndexY(); ++iy )
+    {
+      if ( seg.HasPad(AliMpIntPair(ix,iy)) ) ++n;
+    }
+  }
+  return n;
+}
 
 //_____________________________________________________________________________
 AliMpSegFactory* segFactory()
@@ -50,7 +68,45 @@ AliMpSegFactory* segFactory()
 }
 
 //_____________________________________________________________________________
-AliMUONV2DStore* readCDB(const char* calibType)
+void countChannels()
+{
+  AliMpDEIterator it;
+  Int_t ntotal(0);
+  Int_t ntracker(0);
+  Int_t ntrigger(0);
+  
+  for ( Int_t station = 0; station < AliMUONConstants::NCh(); ++station )
+  {
+    Int_t n(0);
+    it.First(station);
+    while (!it.IsDone())
+    {
+      Int_t de = it.CurrentDE();
+      for ( Int_t cathode = 0; cathode < 2; ++cathode )
+      {
+        AliMpVSegmentation* seg = segFactory()->CreateMpSegmentation(de,cathode);
+        n += countChannels(*seg);
+      }
+      it.Next();
+    }
+    cout << "Station " << station << " has " << n << " channels" << endl;
+    if ( station < AliMUONConstants::NTrackingCh() )
+    {
+      ntracker += n;
+    }
+    else
+    {
+      ntrigger += n;
+    }
+    ntotal += n;
+  }
+  cout << "Tracker channels = " << ntracker << endl;
+  cout << "Trigger channels = " << ntrigger << endl;
+  cout << "Total channels =" << ntotal << endl;
+}
+
+//_____________________________________________________________________________
+AliMUONV2DStore* read2D(const char* calibType)
 {
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(CDBPath);
@@ -65,6 +121,21 @@ AliMUONV2DStore* readCDB(const char* calibType)
 }
 
 //_____________________________________________________________________________
+AliMUONV1DStore* read1D(const char* calibType)
+{
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage(CDBPath);
+  
+  AliCDBEntry* entry = man->Get(calibType,0);
+  
+  if (entry)
+  {
+    return (AliMUONV1DStore*)entry->GetObject();
+  }
+  return 0;
+}
+
+//_____________________________________________________________________________
 void checkCDB(const char* calibType)
 {
   TString c(calibType);
@@ -75,7 +146,7 @@ void checkCDB(const char* calibType)
     refValue=5;
   }
    
-  AliMUONV2DStore* store = readCDB(calibType);
+  AliMUONV2DStore* store = read2D(calibType);
   if (!store) return;
   
   TIter next(manuList());
@@ -141,7 +212,7 @@ void plotCDB(const char* calibType)
     return;
   }
   
-  AliMUONV2DStore* store = readCDB(calibType);
+  AliMUONV2DStore* store = read2D(calibType);
   if (!store) return;
 
   TIter next(manuList());
@@ -389,6 +460,101 @@ void testMakeStores(Int_t readLoop)
   delete pedestalStore;
   delete gainStore;
   delete deadStore;
+}
+
+//_____________________________________________________________________________
+void generateTrigger(const char* cdbpath)
+{
+  // 
+  // Generate trigger related conditions :
+  //
+  // - trigger masks for board (locals, regionals, global)
+  // - trigger lut
+  // - trigger efficiency
+  // - trigger switches (to be implemented FIXME)
+  //
+  const Int_t nlboards = 234;
+  AliMUONV1DStore* localBoardMasks = new AliMUON1DArray(nlboards+1);
+  
+  // Generate fake mask values for 234 localboards and put that into
+  // one single container (localBoardMasks)
+  for ( Int_t i = 1; i <= nlboards; ++i )
+  {
+    AliMUONVCalibParam* localBoard = new AliMUONCalibParam1I(8);
+    for ( Int_t x = 0; x < 2; ++x )
+    {
+      for ( Int_t y = 0; y < 4; ++y )
+      {
+        Int_t index = x*4+y;
+        localBoard->SetValueAsInt(index,0,0xFFFF);
+      }
+    }
+    localBoardMasks->Set(i,localBoard,kFALSE);
+  }
+  
+  // Generate values for regional boards
+  const Int_t nrboards = 16;
+  AliMUONV1DStore* regionalBoardMasks = new AliMUON1DArray(16);
+  
+  for ( Int_t i = 0; i < nrboards; ++i )
+  {
+    AliMUONVCalibParam* regionalBoard = new AliMUONCalibParam1I(16);
+    for ( Int_t j = 0; j < 16; ++j )
+    {
+      regionalBoard->SetValueAsInt(j,0,0x3F);
+    }
+    regionalBoardMasks->Set(i,regionalBoard,kFALSE);
+  }
+  
+  // Generate values for global board
+  AliMUONVCalibParam* globalBoardMasks = new AliMUONCalibParam1I(16);
+  
+  for ( Int_t j = 0; j < 16; ++j )
+  {
+    globalBoardMasks->SetValueAsInt(j,0,0xFFF);
+  }
+    
+  AliMUONTriggerLut lut;
+  lut.ReadFromFile("$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root");
+  
+  AliMUONTriggerEfficiencyCells cells("$ALICE_ROOT/MUON/data/efficiencyCells.dat");
+  
+  //--------------------------------------------
+  // Store the resulting containers into the CDB
+  Int_t ever = 99999999;
+  
+  AliCDBId id("MUON/Calib/LocalTriggerBoardMasks",0,ever);
+  
+  AliCDBMetaData md;
+  md.SetBeamPeriod(1);
+  md.SetAliRootVersion(gROOT->GetVersion());
+  md.SetComment("Test with default values");
+  md.SetResponsible("Rachid Guernane");
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage(cdbpath);
+  man->Put(localBoardMasks,id,&md);
+  
+  id.SetPath("MUON/Calib/RegionalTriggerBoardMasks");
+  
+  man->Put(regionalBoardMasks,id,(AliCDBMetaData*)md.Clone());
+  
+  id.SetPath("MUON/Calib/GlobalTriggerBoardMasks");
+  
+  man->Put(globalBoardMasks,id,(AliCDBMetaData*)md.Clone());
+
+  id.SetPath("MUON/Calib/TriggerLut");
+  
+  man->Put(&lut,id,(AliCDBMetaData*)md.Clone());
+  
+  id.SetPath("MUON/Calib/TriggerEfficiency");
+  md.SetResponsible("Diego Stocco");
+  
+  man->Put(&cells,id,(AliCDBMetaData*)md.Clone());
+  
+  delete localBoardMasks;
+  delete regionalBoardMasks;
+  delete globalBoardMasks;
 }
 
 //_____________________________________________________________________________
