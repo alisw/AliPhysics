@@ -17,22 +17,29 @@
 
 #include "AliMUONDigitCalibrator.h"
 
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliLog.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
 #include "AliMUONVCalibParam.h"
-#include "AliMpDEManager.h"
-#include "AliMpPad.h"
-#include "AliMpPlaneType.h"
-#include "AliMpStationType.h"
-#include "AliMpVSegmentation.h"
-#include "Riostream.h"
 #include "TClonesArray.h"
+
+///
+/// Class used to calibrate digits (either real or simulated ones).
+///
+/// The calibration consists of subtracting the pedestal
+/// and multiplying by a gain, so that
+/// Signal = (ADC-pedestal)*gain
+///
+/// Please note also that for the moment, if a digit lies on a dead channel
+/// we remove this digit from the list of digits.
+/// FIXME: this has to be revisited. By using the AliMUONDigit::fFlags we
+/// should in principle flag a digit as bad w/o removing it, but this 
+/// then requires some changes in the cluster finder to deal with this extra
+/// information correctly (e.g. to set a quality for the cluster if it contains
+/// bad digits).
+///
 
 ClassImp(AliMUONDigitCalibrator)
 
@@ -49,13 +56,19 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
     //
 }
 
-//______________________________________________________________________________
-AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONDigitCalibrator& right) 
-  : TTask(right) 
-{  
-/// Protected copy constructor (not implemented)
+//_____________________________________________________________________________
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONDigitCalibrator&)
+: TTask()
+{
+  AliFatal("Implement me if needed");
+}
 
-  AliFatal("Copy constructor not provided.");
+//_____________________________________________________________________________
+AliMUONDigitCalibrator& 
+AliMUONDigitCalibrator::operator=(const AliMUONDigitCalibrator&)
+{
+  AliFatal("Implement me if needed");
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -65,20 +78,6 @@ AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
   // empty dtor.
   //
 }
-
-//______________________________________________________________________________
-AliMUONDigitCalibrator& 
-AliMUONDigitCalibrator::operator=(const AliMUONDigitCalibrator& right)
-{
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //_____________________________________________________________________________
 void
@@ -104,10 +103,10 @@ AliMUONDigitCalibrator::Exec(Option_t*)
       // Very first check is whether this channel is known to be bad,
       // in which case we set the signal to zero.
       AliMUONVCalibParam* dead = static_cast<AliMUONVCalibParam*>
-        (fCalibrationData->DeadChannel(digit->DetElemId(),digit->ManuId()));
+        (fCalibrationData->DeadChannels(digit->DetElemId(),digit->ManuId()));
       if ( dead && dead->ValueAsInt(digit->ManuChannel()) )
       {
-        AliDebug(10,Form("Removing dead channel detElemId %d manuId %d "
+        AliWarning(Form("Removing dead channel detElemId %d manuId %d "
                         "manuChannel %d",digit->DetElemId(),digit->ManuId(),
                         digit->ManuChannel()));
         digit->SetSignal(0);
@@ -117,10 +116,10 @@ AliMUONDigitCalibrator::Exec(Option_t*)
       // If the channel is good, go on with the calibration itself.
       
       AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
-        (fCalibrationData->Pedestal(digit->DetElemId(),digit->ManuId()));
+        (fCalibrationData->Pedestals(digit->DetElemId(),digit->ManuId()));
       
       AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
-        (fCalibrationData->Gain(digit->DetElemId(),digit->ManuId()));
+        (fCalibrationData->Gains(digit->DetElemId(),digit->ManuId()));
       
       if (!pedestal)
       {
