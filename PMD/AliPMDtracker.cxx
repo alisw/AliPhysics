@@ -238,7 +238,6 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
 
       event->AddPmdTrack(esdpmdtr);
     }
-
 }
 //--------------------------------------------------------------------//
 void AliPMDtracker::SetVertex(Double_t vtx[3], Double_t evtx[3])

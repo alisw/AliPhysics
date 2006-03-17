@@ -433,7 +433,6 @@ void AliPMDDigitizer::Hits2SDigits(Int_t ievt)
     }
   fPMDLoader->WriteSDigits("OVERWRITE");
   ResetCellADC();
-
 }
 //____________________________________________________________________________
 
