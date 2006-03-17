@@ -15,16 +15,12 @@
 
 /* $Id$ */
 
-#include <TMath.h>
-#include <TFile.h>
-#include <TROOT.h>
-#include <TH3.h>
-
 #include "AliMUONTriggerLut.h"
-#include "AliMUONTriggerCircuit.h"
-#include "AliRun.h"
-#include "AliMUON.h"
+
 #include "AliLog.h"
+
+#include "TFile.h"
+#include "TH3.h"
 
 ClassImp(AliMUONTriggerLut)
 
@@ -38,8 +34,9 @@ AliMUONTriggerLut::AliMUONTriggerLut()
   fAptPlus = fAptMinu = fAptUnde = 0;
 }
 //----------------------------------------------------------------------
-AliMUONTriggerLut::~AliMUONTriggerLut() {
-// destructor
+AliMUONTriggerLut::~AliMUONTriggerLut() 
+{
+  // destructor
   delete fLptPlus;  
   delete fLptMinu;
   delete fLptUnde;
@@ -49,9 +46,6 @@ AliMUONTriggerLut::~AliMUONTriggerLut() {
   delete fAptPlus;  
   delete fAptMinu;
   delete fAptUnde;
-  fLptPlus = fLptMinu = fLptUnde = 0;
-  fHptPlus = fHptMinu = fHptUnde = 0;  
-  fAptPlus = fAptMinu = fAptUnde = 0;    
 }
 
 //----------------------------------------------------------------------
@@ -76,208 +70,108 @@ AliMUONTriggerLut::operator=(const AliMUONTriggerLut& rhs)
   return *this;  
 }
 
+void
+AliMUONTriggerLut::ReadFromFile(const char* filename)
+{
+  TFile f(filename);
+  
+  if ( f.IsZombie() )
+  {
+    AliFatal(Form("Could not open file %s",filename));
+  }
+  
+  fLptPlus = (TH3*)(f.Get("LptPlus")->Clone());  
+  fLptMinu = (TH3*)(f.Get("LptMinu")->Clone());
+  fLptUnde = (TH3*)(f.Get("LptUnde")->Clone());
+  fHptPlus = (TH3*)(f.Get("HptPlus")->Clone());  
+  fHptMinu = (TH3*)(f.Get("HptMinu")->Clone());
+  fHptUnde = (TH3*)(f.Get("HptUnde")->Clone());
+  fAptPlus = (TH3*)(f.Get("AptPlus")->Clone());  
+  fAptMinu = (TH3*)(f.Get("AptMinu")->Clone());
+  fAptUnde = (TH3*)(f.Get("AptUnde")->Clone());
+
+  // insure we "detach" those histograms from file f
+  fLptPlus->SetDirectory(0);
+  fLptMinu->SetDirectory(0);
+  fLptUnde->SetDirectory(0);
+  fHptPlus->SetDirectory(0);
+  fHptMinu->SetDirectory(0);
+  fHptUnde->SetDirectory(0);
+  fAptPlus->SetDirectory(0);
+  fAptMinu->SetDirectory(0);
+  fAptUnde->SetDirectory(0);
+}
+
 //----------------------------------------------------------------------
 void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
 				     Int_t ystrip, Int_t lutLpt[2], 
-				     Int_t lutHpt[2], Int_t lutApt[2]){
-// return output of LuT for corresponding TH3S  
+				     Int_t lutHpt[2], Int_t lutApt[2])
+{
+  // return output of LuT for corresponding TH3S  
 
-  static TFile *fileLut;
-  static Bool_t first=kTRUE;  
-  static TH3S *lptPlus;
-  static TH3S *lptMinu;
-  static TH3S *lptUnde;
-  static TH3S *hptPlus;
-  static TH3S *hptMinu;
-  static TH3S *hptUnde;
-  static TH3S *aptPlus;
-  static TH3S *aptMinu;
-  static TH3S *aptUnde;
-
-  if(first) {
-    first=kFALSE;
-    //    printf(" opening MUONTriggerLut.root \n");
-    fileLut = new TFile("$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root","READ");
-// get the pointers to the TH3S objects of the file
-    lptPlus = (TH3S*)gROOT->FindObject("LptPlus");  
-    lptMinu = (TH3S*)gROOT->FindObject("LptMinu");
-    lptUnde = (TH3S*)gROOT->FindObject("LptUnde");
-    hptPlus = (TH3S*)gROOT->FindObject("HptPlus");  
-    hptMinu = (TH3S*)gROOT->FindObject("HptMinu");
-    hptUnde = (TH3S*)gROOT->FindObject("HptUnde");
-    aptPlus = (TH3S*)gROOT->FindObject("AptPlus");  
-    aptMinu = (TH3S*)gROOT->FindObject("AptMinu");
-    aptUnde = (TH3S*)gROOT->FindObject("AptUnde");
-
-    lptPlus->SetDirectory(0);
-    lptMinu->SetDirectory(0);
-    lptUnde->SetDirectory(0);
-    hptPlus->SetDirectory(0);
-    hptMinu->SetDirectory(0);
-    hptUnde->SetDirectory(0);
-    aptPlus->SetDirectory(0);
-    aptMinu->SetDirectory(0);
-    aptUnde->SetDirectory(0);
-    delete fileLut;    
+  if ( !fLptPlus )
+  {
+    ReadFromFile("$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root");
   }
-
+  
   Int_t bin;
   Short_t binc; 
   Int_t mask = GetMask(ystrip);        // get ystrip mask
   
   // Low pt.............................................. 
-  bin    =          lptPlus->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)lptPlus->GetBinContent(bin);
+  bin    =          fLptPlus->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fLptPlus->GetBinContent(bin);
   if ((binc & mask)!=0) lutLpt[1]=1;
 
-  bin    =          lptMinu->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)lptMinu->GetBinContent(bin);
+  bin    =          fLptMinu->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fLptMinu->GetBinContent(bin);
   if ((binc & mask)!=0) lutLpt[0]=1;
   
-  bin    =          lptUnde->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)lptUnde->GetBinContent(bin);
+  bin    =          fLptUnde->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fLptUnde->GetBinContent(bin);
   if ((binc & mask)!=0) lutLpt[0]=lutLpt[1]=1;
 
   // High pt.............................................
-  bin    =          hptPlus->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)hptPlus->GetBinContent(bin);
+  bin    =          fHptPlus->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fHptPlus->GetBinContent(bin);
   if ((binc & mask)!=0) lutHpt[1]=1;
 
-  bin    =          hptMinu->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)hptMinu->GetBinContent(bin);
+  bin    =          fHptMinu->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fHptMinu->GetBinContent(bin);
   if ((binc & mask)!=0) lutHpt[0]=1;
 
-  bin    =          hptUnde->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)hptUnde->GetBinContent(bin);
+  bin    =          fHptUnde->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fHptUnde->GetBinContent(bin);
   if ((binc & mask)!=0) lutHpt[0]=lutHpt[1]=1;
 
   // All pts.............................................
-  bin    =          aptPlus->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)aptPlus->GetBinContent(bin);
+  bin    =          fAptPlus->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fAptPlus->GetBinContent(bin);
   if ((binc & mask)!=0) lutApt[1]=1;
 
-  bin    =          aptMinu->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)aptMinu->GetBinContent(bin);
+  bin    =          fAptMinu->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fAptMinu->GetBinContent(bin);
   if ((binc & mask)!=0) lutApt[0]=1;
 
-  bin    =          aptUnde->GetBin(circuit,xstrip,idev);
-  binc   = (Short_t)aptUnde->GetBinContent(bin);
+  bin    =          fAptUnde->GetBin(circuit,xstrip,idev);
+  binc   = (Short_t)fAptUnde->GetBinContent(bin);
   if ((binc & mask)!=0) lutApt[0]=lutApt[1]=1;
 
 }
 
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerLut::GetMask(Int_t ystrip){
-// returns the mask corresponding to ystrip
+Int_t AliMUONTriggerLut::GetMask(Int_t ystrip)
+{
+  // returns the mask corresponding to ystrip
   Int_t tabMask[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   Int_t mask=0;
   tabMask[ystrip]=1;
-  for (Int_t i=0; i<16; i++) {          
-    mask=mask+Int_t(tabMask[i]<<i); 
+  for (Int_t i=0; i<16; i++) 
+  {          
+    mask += tabMask[i]<<i; 
   }
   return mask;
 }
-
-//----------------------------------------------------------------------
-void AliMUONTriggerLut::LoadLut(){
-// !!!!!!! This is dummy version of the LoadLut method !!!!!!!
-// !!!!!!!         calibration to be done              !!!!!!!
-// 1) Loop on circuit/Xstrip1/deviation/Ystrip
-// 2) get corresponding ptCal from AliMUONTriggerCircuit
-// 3) fill histos with cuts on deviation, ptLow and ptHigh 
-// 4) store histos in a file
-
-  char fileName[60];
-  sprintf(fileName,"$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root");
-  printf(" file name is %s\n",fileName);
-
-// open output file containing histos  
-  TFile *hfile = new TFile(fileName,"RECREATE","Trigger Look Up Table");
-
-  //..........................................circuit/stripX/deviation
-  TH3S *fLptPlus=new TH3S("LptPlus","LptPlus",234,0,234,31,0,31,31,0,31);
-  TH3S *fLptMinu=new TH3S("LptMinu","LptMinu",234,0,234,31,0,31,31,0,31);
-  TH3S *fLptUnde=new TH3S("LptUnde","LptUnde",234,0,234,31,0,31,31,0,31);
-
-  TH3S *fHptPlus=new TH3S("HptPlus","HptPlus",234,0,234,31,0,31,31,0,31);
-  TH3S *fHptMinu=new TH3S("HptMinu","HptMinu",234,0,234,31,0,31,31,0,31);
-  TH3S *fHptUnde=new TH3S("HptUnde","HptUnde",234,0,234,31,0,31,31,0,31);
-
-  TH3S *fAptPlus=new TH3S("AptPlus","AptPlus",234,0,234,31,0,31,31,0,31);
-  TH3S *fAptMinu=new TH3S("AptMinu","AptMinu",234,0,234,31,0,31,31,0,31);
-  TH3S *fAptUnde=new TH3S("AptUnde","AptUnde",234,0,234,31,0,31,31,0,31);
-  
-  Float_t lptTreshold=0.75;
-  Float_t hptTreshold=1.75;
-  
-  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");  
-  AliMUONTriggerCircuit* triggerCircuit;
-
-  for (Int_t icirc=0; icirc<234; icirc++) {
-    printf(" Loading LuT for circuit %d \n",icirc);
-    triggerCircuit = &(pMUON->TriggerCircuit(icirc));  	      
-
-    for (Int_t istripX=0; istripX<31; istripX++) {
-      for (Int_t idev=0; idev<31; idev++) {
-	
-	Short_t iLptPlus, iLptMinu, iLptUnde;
-	Short_t iHptPlus, iHptMinu, iHptUnde;
-	Short_t iAptPlus, iAptMinu, iAptUnde;
-	iLptPlus = iLptMinu = iLptUnde = 0;
-	iHptPlus = iHptMinu = iHptUnde = 0;
-	iAptPlus = iAptMinu = iAptUnde = 0;
-	
-	for (Int_t istripY=0; istripY<16; istripY++) {
-	  Float_t pt=triggerCircuit->PtCal(istripX,idev,istripY);
-	  
-	  if (pt>lptTreshold) {
-	    if (idev<15)       iLptMinu=iLptMinu+Int_t(TMath::Power(2,istripY));
-	    else if (idev==15) iLptUnde=iLptUnde+Int_t(TMath::Power(2,istripY));
-	    else if (idev>15)  iLptPlus=iLptPlus+Int_t(TMath::Power(2,istripY));
-	  }
-	  if (pt>hptTreshold) {
-	    if (idev<15)       iHptMinu=iHptMinu+Int_t(TMath::Power(2,istripY));
-	    else if (idev==15) iHptUnde=iHptUnde+Int_t(TMath::Power(2,istripY));
-	    else if (idev>15)  iHptPlus=iHptPlus+Int_t(TMath::Power(2,istripY));
-	  }
-	  if (idev<15) 	     iAptMinu=iAptMinu+Int_t(TMath::Power(2,istripY));
-	  else if (idev==15) iAptUnde=iAptUnde+Int_t(TMath::Power(2,istripY));
-	  else if (idev>15)  iAptPlus=iAptPlus+Int_t(TMath::Power(2,istripY));
-
-	} // loop on istripY
-
-	Int_t bin; 
-	
-	bin = fLptMinu->GetBin(icirc,istripX,idev);
-	fLptMinu->SetBinContent(bin,iLptMinu);
-	bin = fLptUnde->GetBin(icirc,istripX,idev);
-	fLptUnde->SetBinContent(bin,iLptUnde);
-	bin = fLptPlus->GetBin(icirc,istripX,idev);
-	fLptPlus->SetBinContent(bin,iLptPlus);
-
-	bin = fHptMinu->GetBin(icirc,istripX,idev);
-	fHptMinu->SetBinContent(bin,iHptMinu);
-	bin = fHptUnde->GetBin(icirc,istripX,idev);
-	fHptUnde->SetBinContent(bin,iHptUnde);
-	bin = fHptPlus->GetBin(icirc,istripX,idev);
-	fHptPlus->SetBinContent(bin,iHptPlus);
-	
-	bin = fAptMinu->GetBin(icirc,istripX,idev);
-	fAptMinu->SetBinContent(bin,iAptMinu);
-	bin = fAptUnde->GetBin(icirc,istripX,idev);
-	fAptUnde->SetBinContent(bin,iAptUnde);
-	bin = fAptPlus->GetBin(icirc,istripX,idev);
-	fAptPlus->SetBinContent(bin,iAptPlus);
-	  
-      } // loop on idev
-    } // loop on istripX
-  } // loop on circuit
-
-  hfile->Write();
-  hfile->Close();
-}
-
-
 
 
 
