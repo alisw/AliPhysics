@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifType.cxx,v 1.8 2006/03/02 16:37:27 ivana Exp $
+// $MpId: AliMpMotifType.cxx,v 1.9 2006/03/17 11:38:06 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifType
@@ -383,9 +383,6 @@ Bool_t AliMpMotifType::HasPad(const AliMpIntPair& localIndices) const
 {
   /// Return true if the pad indexed by <localIndices> has a connection
   
-  //cout << "AliMpMotifType::HasPad: " << localIndices
-  //     << "Connections size: " << fConnections.size() << endl;
-
   if (!localIndices.IsValid()) return false;
 
 #ifdef WITH_STL

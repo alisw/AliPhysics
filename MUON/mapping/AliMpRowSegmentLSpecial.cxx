@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpRowSegmentLSpecial.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpRowSegmentLSpecial.cxx,v 1.6 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpRowSegmentLSpecial
@@ -23,8 +23,6 @@
 // pad rows.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
-
-#include <TError.h>
 
 #include "AliMpRowSegmentLSpecial.h"
 #include "AliMpRow.h"
@@ -35,6 +33,10 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpConstants.h"
+
+#include "AliLog.h"
+
+#include <Riostream.h>
 
 ClassImp(AliMpRowSegmentLSpecial)
 
@@ -106,13 +108,13 @@ TVector2 AliMpRowSegmentLSpecial::MotifCenterSlow(Int_t motifPositionId) const
   
   // Check if the motifPositionId is present 
   if (!downPadRowSegment || !rightPadRowSegment) {
-    Error("MotifCenter", "Outside row segment region");
+    AliErrorStream() << "Outside row segment region" << endl;
     return 0;
   }
 
   // Check if both pad row segments have the same motif 
   if (downPadRowSegment->GetMotif() != rightPadRowSegment->GetMotif()) {
-    Fatal("MotifCenter", "Outside row segment region");
+    AliFatal("Outside row segment region");
     return 0;
   }
 
@@ -195,7 +197,7 @@ Double_t  AliMpRowSegmentLSpecial::RightBorderX() const
   }  
 
   if (TMath::Abs(GetOffsetX() - rightBorder) > 1.e-04)  {
-    Error("RightBorderX", "WrongBorder");
+    AliErrorStream() << "WrongBorder" << endl;
     return sameBorder;
   }  
   

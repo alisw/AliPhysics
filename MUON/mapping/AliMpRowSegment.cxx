@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpRowSegment.cxx,v 1.8 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpRowSegment.cxx,v 1.9 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpRowSegment
@@ -24,9 +24,6 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <TError.h>
-#include <TMath.h>
-
 #include "AliMpRowSegment.h"
 #include "AliMpRow.h"
 #include "AliMpVMotif.h"
@@ -35,6 +32,9 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpConstants.h"
+
+#include <TMath.h>
+#include <Riostream.h>
 
 ClassImp(AliMpRowSegment)
 
@@ -134,7 +134,7 @@ Double_t AliMpRowSegment::MotifCenterX(Int_t motifPositionId) const
 
   // Check if x is in the row segment range
   if (! HasMotifPosition(motifPositionId)) {
-    Error("MotifCenterX", "Outside row segment region");
+    AliErrorStream() << "Outside row segment region" << endl;
     return 0;
   }
   
@@ -152,7 +152,7 @@ Double_t AliMpRowSegment::MotifCenterY(Int_t motifPositionId) const
 
   // Check if x is in the row segment range
   if (! HasMotifPosition(motifPositionId)) {
-    Error("MotifCenterY", "Outside row segment region");
+    AliErrorStream() << "Outside row segment region" << endl;
     return 0;
   }
   
@@ -170,7 +170,8 @@ Bool_t AliMpRowSegment::IsInside(const TVector2& position, Bool_t warn) const
   if ( position.X() < LeftBorderX() || position.X() > RightBorderX() ||
        position.Y() < minY || position.Y() > maxY ) {
 
-    if (warn) Error("MotifPositionId", "Outside row segment region");
+    if (warn)
+      AliWarningStream() << "Outside row segment region" << endl;
     return false;
   }
   else

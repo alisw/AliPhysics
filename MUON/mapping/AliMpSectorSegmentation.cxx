@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.cxx,v 1.13 2006/03/15 10:05:25 ivana Exp $
+// $MpId: AliMpSectorSegmentation.cxx,v 1.14 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorSegmentation
@@ -47,7 +47,6 @@
 
 #include <Riostream.h>
 #include <TMath.h>
-#include <TError.h>
 
 #ifdef WITH_ROOT
 const Double_t AliMpSectorSegmentation::fgkS1 = 100000.;
@@ -589,8 +588,8 @@ Int_t AliMpSectorSegmentation::Zone(const AliMpPad& pad, Bool_t warning) const
 #endif
 
   // Should never happen
-  AliError("Zone(AliMpPad pad) not found, where pad is :");
-  StderrToAliError(cerr << pad << endl;);
+  AliErrorStream() 
+    << "Zone(AliMpPad pad) not found, where pad is: " << pad << endl;
   return 0;
 }  
 

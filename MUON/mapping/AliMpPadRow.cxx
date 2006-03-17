@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPadRow.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPadRow.cxx,v 1.7 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpPadRow
@@ -23,11 +23,13 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <TError.h>
-
 #include "AliMpPadRow.h"
 #include "AliMpPadRowLSegment.h"
 #include "AliMpPadRowRSegment.h"
+
+#include "AliLog.h"
+
+#include <Riostream.h>
 
 ClassImp(AliMpPadRow)
 
@@ -181,7 +183,7 @@ AliMpVPadRowSegment* AliMpPadRow::GetPadRowSegment(Int_t i) const
 /// Return the pad row segment with the specified number.
 
   if (i<0 || i>=GetNofPadRowSegments()) {
-    Warning("GetRowSegment", "Index outside range");
+    AliWarningStream() << "Index outside range" << endl;
     return 0;
   }
   

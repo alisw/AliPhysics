@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: $
+// $MpId: AliMpStringObjMap.cxx,v 1.3 2006/03/17 11:34:46 ivana Exp $
 
 // ------------------------------------ 
 // Class AliMpStringObjMap
@@ -23,11 +23,12 @@
 // which ALICE does not allow to use 
 // Author: Ivana Hrivnacova, IPN Orsay
 
-#include <Riostream.h>
-#include <TObjString.h>
-
 #include "AliMpStringObjMap.h"
+
 #include "AliLog.h"
+
+#include <TObjString.h>
+#include <Riostream.h>
 
 ClassImp(AliMpStringObjMap)
 

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$ 
-// $MpId: AliMpDEIterator.cxx,v 1.4 2006/03/13 12:22:15 ivana Exp $
+// $MpId: AliMpDEIterator.cxx,v 1.5 2006/03/17 11:36:27 ivana Exp $
 // Category: management
 
 // ------------------------
@@ -191,7 +191,7 @@ void AliMpDEIterator::First(Int_t moduleId)
 
   if ( fModuleId < 0 ) {
     AliErrorStream() 
-      << "No DEs of Module Id " << moduleId << " found" << cout;
+      << "No DEs of Module Id " << moduleId << " found" << endl;
     return;
   }    
 

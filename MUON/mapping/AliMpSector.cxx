@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSector.cxx,v 1.12 2006/03/14 09:05:42 ivana Exp $
+// $MpId: AliMpSector.cxx,v 1.13 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpSector
@@ -22,9 +22,6 @@
 // Class describing the sector of the MUON chamber of station 1.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
-
-#include <TError.h>
-#include <Riostream.h>
 
 #include "AliMpSector.h"
 #include "AliMpSectorPadIterator.h"
@@ -35,6 +32,8 @@
 #include "AliMpMotifMap.h"
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
+
+#include <Riostream.h>
 
 ClassImp(AliMpSector)
 
@@ -396,7 +395,7 @@ TVector2  AliMpSector::FindPosition(Int_t motifPositionId) const
   AliMpVRowSegment* segment = FindRowSegment(motifPositionId);
 
   if (!segment) {
-    Warning("FindPosition", "Given motifPositionId not found.");
+    AliWarningStream() << "Given motifPositionId not found." << endl;
     return TVector2();
   }   
 
@@ -478,7 +477,7 @@ AliMpZone* AliMpSector::GetZone(Int_t zoneID) const
 /// Return zone with specified ID.
 
   if (zoneID < 1 || zoneID > GetNofZones()) {
-    Warning("GetZone", "Index outside range");
+    AliWarningStream() << "Index outside range" << endl;
     return 0;
   }
   
@@ -511,7 +510,7 @@ AliMpRow* AliMpSector::GetRow(Int_t rowID) const
 /// Return row with specified ID.
 
   if (rowID < 0 || rowID >= GetNofRows()) {
-    Warning("GetRow", "Index outside range");
+    AliWarningStream() << "Index outside range" << endl;
     return 0;
   }
   

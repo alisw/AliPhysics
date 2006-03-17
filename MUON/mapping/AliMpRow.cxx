@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpRow.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpRow.cxx,v 1.8 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpRow
@@ -22,10 +22,6 @@
 // Class describing a row composed of the row segments.
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
-
-#include <Riostream.h>
-#include <TError.h>
-#include <TMath.h>
 
 #include "AliMpRow.h"
 #include "AliMpVRowSegment.h"
@@ -36,6 +32,9 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifMap.h"
 #include "AliMpConstants.h"
+
+#include <TMath.h>
+#include <Riostream.h>
 
 ClassImp(AliMpRow)
 
@@ -442,8 +441,6 @@ Double_t AliMpRow::SetOffsetY(Double_t offsetY)
      Double_t sizeY = GetRowSegment(i)->HalfSizeY();
      
      if (TMath::Abs(sizeY - rowSizeY) >= AliMpConstants::LengthTolerance()) {
-       //cout << GetID() << "th row " << i << "th segment " 
-       //     << sizeY << "  " << rowSizeY  << endl;
        Fatal("SetOffsetY", "Motif with different Y size in one row");
        return 0.;
      }  
@@ -476,7 +473,7 @@ AliMpVRowSegment* AliMpRow::GetRowSegment(Int_t i) const
 /// Return i-th row segment.
 
   if (i<0 || i>=GetNofRowSegments()) {
-    Warning("GetRowSegment", "Index outside range");
+    AliWarningStream() << "Index outside range" << endl;
     return 0;
   }
   

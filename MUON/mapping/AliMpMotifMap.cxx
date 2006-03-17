@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifMap.cxx,v 1.13 2006/03/15 10:04:36 ivana Exp $
+// $MpId: AliMpMotifMap.cxx,v 1.14 2006/03/17 11:38:06 ivana Exp $
 // Category: motif
 // -------------------
 // Class AliMpMotifMap
@@ -24,16 +24,18 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <Riostream.h>
-#include <TVector2.h>
-
 #include "AliMpMotifMap.h"
 #include "AliMpVMotif.h"
 #include "AliMpMotif.h"
 #include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliMpMotifPosition.h"
-#include "TArrayI.h"
+
+#include "AliLog.h"
+
+#include <Riostream.h>
+#include <TVector2.h>
+#include <TArrayI.h>
 
 ClassImp(AliMpMotifMap)
 
@@ -373,9 +375,12 @@ Bool_t AliMpMotifMap::AddMotif(AliMpVMotif* motif, Bool_t warn)
   AliMpVMotif* found = FindMotif(motif->GetID());
   if (found) {    
     if (warn && found == motif) 
-      Warning("AddMotif", "The motif is already in map.");
-    if (warn && found != motif) 
-      Warning("AddMotif", "Another motif with the same ID is already in map.");      
+      AliWarningStream() << "The motif is already in map." << endl;
+
+    if (warn && found != motif) {
+      AliWarningStream() 
+        << "Another motif with the same ID is already in map." << endl; 
+    }	     
     return false;
   }  
 
@@ -399,10 +404,12 @@ Bool_t AliMpMotifMap::AddMotifType(AliMpMotifType* motifType, Bool_t warn)
   AliMpMotifType* found = FindMotifType(motifType->GetID());
   if (found) {    
     if (warn && found == motifType) 
-      Warning("AddMotifType", "The motif type is already in map.");
-    if (warn && found != motifType) 
-      Warning("AddMotifType", 
-              "Another motif type with the same ID is already in map.");      
+      AliWarningStream() << "The motif type is already in map." << endl;
+      
+    if (warn && found != motifType) { 
+      AliWarningStream() 
+        << "Another motif type with the same ID is already in map." << endl;
+    }	     
     return false;
   }  
 
@@ -426,18 +433,22 @@ Bool_t AliMpMotifMap::AddMotifPosition(AliMpMotifPosition* motifPosition, Bool_t
   AliMpMotifPosition* found = FindMotifPosition(motifPosition->GetID());
   if (found) { 
     if (warn && found == motifPosition) {
-      cerr << "ID: " << motifPosition->GetID() 
+      AliWarningStream()
+           << "ID: " << motifPosition->GetID() 
            << "  found: " << found 
-	   << "  new:   " << motifPosition << endl;   
-      Warning("AddMotifPosition", "This motif position is already in map.");
+	   << "  new:   " << motifPosition << endl
+	   << "This motif position is already in map." << endl;
     }  
+    
     if (warn && found != motifPosition) { 
-      cerr << "ID: " << motifPosition->GetID() 
+      AliWarningStream()
+           << "ID: " << motifPosition->GetID() 
            << "  found: " << found 
-	   << "  new:   " << motifPosition << endl;   
-      Warning("AddMotifposition", 
-              "Another motif position with the same ID is already in map.");
-    }	            
+	   << "  new:   " << motifPosition << endl
+	   << "Another motif position with the same ID is already in map."
+	   << endl;
+    }
+    	            
     return false;
   }  
 
@@ -459,7 +470,7 @@ void AliMpMotifMap::FillMotifPositionMap2()
 
 #ifdef WITH_STL
   if (fMotifPositions2.size() > 0 ) {
-    Warning("FillMotifPositionMap2", "Map has been already filled.");
+    AliWarningStream() << "Map has been already filled." << endl;
     return;
   }  
 
@@ -472,7 +483,7 @@ void AliMpMotifMap::FillMotifPositionMap2()
 
 #ifdef WITH_ROOT
   if (fMotifPositions2.GetSize() > 0 ) {
-    Warning("FillMotifPositionMap2", "Map has been already filled.");
+    AliWarningStream() <<"Map has been already filled." << endl;
     return;
   }  
 
@@ -560,7 +571,8 @@ void  AliMpMotifMap::UpdateGlobalIndices(const char* fileName)
     AliMpMotifPosition* motifPosition = FindMotifPosition(motifPositionId);
 	  
     if (motifPosition) {
-       cout << "Processing " 
+       AliDebugStream(1) 
+            << "Processing " 
             << motifPosition->GetID() << " " << offx << " " << offy << endl; 
 
        motifPosition->SetLowIndicesLimit(AliMpIntPair(offx, offy));
@@ -574,8 +586,8 @@ void  AliMpMotifMap::UpdateGlobalIndices(const char* fileName)
        motifPosition->SetHighIndicesLimit(AliMpIntPair(offx2, offy2));
     }
     else {   
-       cerr <<"Motif position " << motifPositionId << endl;
-       Warning("UpdateGlobalIndices", "Motif position not found !!!");
+       AliWarningStream()
+         << "Motif position " << motifPositionId << " not found" << endl;
     }
   }    
   while (!in.eof());

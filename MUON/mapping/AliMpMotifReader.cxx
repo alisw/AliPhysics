@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifReader.cxx,v 1.6 2005/09/26 16:11:20 ivana Exp $
+// $MpId: AliMpMotifReader.cxx,v 1.8 2006/03/17 11:38:06 ivana Exp $
 // Category: sector
 //
 // Class AliMpMotifReader
@@ -23,17 +23,6 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#if !defined(__HP_aCC) && !defined(__alpha)
-  #include <sstream>
-#endif
-
-#include <Riostream.h>
-#include <Rstrstream.h>
-#include <TSystem.h>
-#include <TError.h>
-#include <TMath.h>
-
-#include "AliLog.h"
 #include "AliMpFiles.h"
 #include "AliMpMotifReader.h"
 #include "AliMpMotifMap.h"
@@ -44,6 +33,17 @@
 #include "AliMpIntPair.h"
 #include "AliMpDirection.h"
 
+#include "AliLog.h"
+
+#include <TSystem.h>
+#include <TMath.h>
+#include <Riostream.h>
+#include <Rstrstream.h>
+
+#if !defined(__HP_aCC) && !defined(__alpha)
+  #include <sstream>
+#endif
+
 ClassImp(AliMpMotifReader)
 
 //_____________________________________________________________________________
@@ -51,8 +51,7 @@ AliMpMotifReader::AliMpMotifReader(AliMpStationType station,
                                    AliMpPlaneType plane) 
   : TObject(),
     fStationType(station),
-    fPlaneType(plane),
-    fVerboseLevel(0)
+    fPlaneType(plane)
 {
 /// Standard constructor
 }
@@ -61,8 +60,7 @@ AliMpMotifReader::AliMpMotifReader(AliMpStationType station,
 AliMpMotifReader::AliMpMotifReader() 
   : TObject(),
     fStationType(kStation1),
-    fPlaneType(kBendingPlane),
-    fVerboseLevel(0)
+    fPlaneType(kBendingPlane)
 {
 /// Default constructor
 }
@@ -121,7 +119,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   TString padPosFileName(AliMpFiles::PadPosFilePath(fStationType, 
                                                     fPlaneType, motifTypeId));
   ifstream padPos(padPosFileName);
-  if (fVerboseLevel>0) cout<<"Opening file "<<padPosFileName<<endl;
+  AliDebugStream(1) << "Opening file " << padPosFileName << endl;
 
   PadMapType positions;
 
@@ -157,8 +155,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 
   TString bergToGCFileName
     = AliMpFiles::BergToGCFilePath(fStationType);
-  if (fVerboseLevel>0) 
-    cout << "Opening file " << bergToGCFileName << endl;
+  AliDebugStream(1) << "Opening file " << bergToGCFileName << endl;
 
   ifstream bergToGCFile(bergToGCFileName);
   const Int_t knbergpins = 
@@ -183,7 +180,7 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
   TString motifTypeFileName(AliMpFiles::MotifFilePath(fStationType, 
                                                       fPlaneType, motifTypeId));
   ifstream motif(motifTypeFileName);
-  if (fVerboseLevel>0) cout<<"Opening file "<<motifTypeFileName<<endl;
+  AliDebugStream(1) << "Opening file " << motifTypeFileName << endl;
 
   Int_t nofPadsX=0;
   Int_t nofPadsY=0;
@@ -242,8 +239,10 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 #ifdef WITH_STL
     PadMapTypeIterator iter = positions.find(padName);
     if (iter==positions.end()) {
-      cerr<<"Problem: Pad number "<<padNum<<" found in the file "<<motifTypeFileName
-	  <<" but not in the file"<<padPosFileName<<endl;
+      AliWarningStream()
+        << "Problem: Pad number " << padNum
+	<< " found in the file " << motifTypeFileName
+	<< " but not in the file " << padPosFileName << endl;
       continue;
     }
 
@@ -254,8 +253,10 @@ AliMpMotifType* AliMpMotifReader::BuildMotifType(const TString& motifTypeId)
 #ifdef WITH_ROOT
     Long_t value = positions.GetValue(AliMpExMap::GetIndex(padName));
     if (!value) {
-      cerr<<"Problem: Pad number "<<padNum<<" found in the file "<<motifTypeFileName
-	  <<" but not in the file"<<padPosFileName<<endl;
+      AliWarningStream()
+        << "Problem: Pad number " << padNum
+	<< " found in the file " << motifTypeFileName
+	<< " but not in the file " << padPosFileName << endl;
       continue;
     }
 
@@ -294,7 +295,8 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
                                                                 fPlaneType, motifID));
   ifstream in(motifSpecialFileName);
   if (!in) {	
-     AliError(Form("File %s not found.\n",motifSpecialFileName.Data()));
+     AliErrorStream() 
+       << "File " << motifSpecialFileName.Data() << " not found." << endl;
      return 0;
   }
 
@@ -310,15 +312,5 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
   
   in.close();
   return res;
-}
-
-
-//_____________________________________________________________________________
-void AliMpMotifReader::SetVerboseLevel(Int_t verboseLevel)
-{
-// Sets verbose level.
-// ---
-
-  fVerboseLevel = verboseLevel;
 }
 

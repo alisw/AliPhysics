@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpGraphContext.cxx,v 1.9 2006/03/02 16:37:24 ivana Exp $
+// $MpId: AliMpGraphContext.cxx,v 1.10 2006/03/17 11:35:29 ivana Exp $
 // Category: graphics
 //
 // Class AliMpGraphContext
@@ -26,10 +26,9 @@
 
 #include "AliMpGraphContext.h"
 
-#include <TError.h>
-
 AliMpGraphContext *AliMpGraphContext::fgInstance = 0;
 AliMpGraphContext::GraphContextVector AliMpGraphContext::fgStack;
+
 #ifdef WITH_ROOT
 Int_t              AliMpGraphContext::fgStackSize = 0;
 #endif

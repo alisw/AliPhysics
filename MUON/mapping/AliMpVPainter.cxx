@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVPainter.cxx,v 1.8 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVPainter.cxx,v 1.9 2006/03/17 11:35:29 ivana Exp $
 // Category: graphics
 //
 // Class AliMpVPainter
@@ -23,12 +23,6 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
   
-#include <TROOT.h>
-#include <TList.h>
-#include <TVirtualX.h>
-#include <TPad.h>
-#include <TError.h>
-
 #include "AliMpVPainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpSector.h"
@@ -47,6 +41,10 @@
 #include "AliMpPCBPainter.h"
 #include "AliMpSlat.h"
 #include "AliMpSlatPainter.h"
+
+#include <TList.h>
+#include <TVirtualX.h>
+#include <TPad.h>
 
 ClassImp(AliMpVPainter)
 

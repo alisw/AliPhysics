@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVRowSegmentSpecial.cxx,v 1.7 2006/03/02 16:37:30 ivana Exp $
+// $MpId: AliMpVRowSegmentSpecial.cxx,v 1.8 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpVRowSegmentSpecial
@@ -34,7 +34,6 @@
 #include "AliMpMotifPosition.h"
 #include "AliMpConstants.h"
 
-#include <TError.h>
 #include <Riostream.h>
 
 #ifdef WITH_ROOT

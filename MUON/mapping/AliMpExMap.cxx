@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpExMap.cxx,v 1.2 2006/03/02 16:28:23 ivana Exp $
+// $MpId: AliMpExMap.cxx,v 1.4 2006/03/17 11:34:46 ivana Exp $
 // Category: basic
 // ------------------------
 // Class AliMpExMap
@@ -23,17 +23,15 @@
 // Author:Ivana Hrivnacova; IPN Orsay
 
 #include "AliMpExMap.h"
+#include "AliMpIntPair.h"
 
-#include <stdlib.h>
+#include "AliLog.h"
 
 #include <TClass.h>
-#include <Riostream.h>
 #include <TString.h>
-#include <TError.h>
+#include <Riostream.h>
 
-//#include "AliMpConstants.h"
-#include "AliMpIntPair.h"
-#include "AliLog.h"
+#include <stdlib.h>
 
 //
 // static members
@@ -60,9 +58,7 @@ Long_t  AliMpExMap::GetIndex(const AliMpIntPair& pair)
 /// Convert the pair of integers to integer.
 
   if (pair.GetFirst() >= fgkSeparator1 || pair.GetSecond() >= fgkSeparator1) {
-    // to do - use AliLog, is it possible for static function
-    // AliFatal("Index out of limit.");
-    cerr << "AliMpExMap::GetIndex(const AliMpIntPair&): Index out of limit." << endl;
+    AliFatalClass("Index out of limit.");
     exit(1); 
   }  
       
@@ -75,9 +71,7 @@ Long_t  AliMpExMap::GetIndex(const TString& s)
 /// Convert the TString to integer.
 
   if (s.Length() > 5) {
-    // to do - use AliLog, is it possible for static function
-    // AliFatal("String too long.");
-    cerr << "AliMpExMap::GetIndex(const TString&): String too long." << endl;
+    AliFatalClass("String too long.");
     return 0;
   }  
 
@@ -163,7 +157,7 @@ void AliMpExMap::AddKey(Long_t key)
   // Resize array if needed
   if (fObjects.GetEntriesFast() == fKeys.GetSize()) {
    fKeys.Set(2*fKeys.GetSize());
-   cout << "AliMpExMap::AddKey: resized Key array " << endl;
+   AliWarningStream() << "AliMpExMap::AddKey: resized Key array " << endl;
   } 
    
   fKeys.AddAt(key, fObjects.GetEntriesFast());      

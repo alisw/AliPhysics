@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifPainter.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifPainter.cxx,v 1.8 2006/03/17 11:35:29 ivana Exp $
 // Category: graphics
 //
 // Class AliMpMotifPainter
@@ -23,10 +23,6 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
 
-#include <TVirtualX.h>
-#include <TPad.h>
-#include <TError.h>
- 
 #include "AliMpMotifPainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpMotifPosition.h"
@@ -34,6 +30,9 @@
 #include "AliMpConnection.h"
 #include "AliMpIntPair.h"
 
+#include <TVirtualX.h>
+#include <TPad.h>
+ 
 ClassImp(AliMpMotifPainter)
 
 //_______________________________________________________________________

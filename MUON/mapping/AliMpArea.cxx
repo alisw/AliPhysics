@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpArea.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpArea.cxx,v 1.7 2006/03/17 11:34:46 ivana Exp $
 // Category: basic
 //
 // Class AliMpArea
@@ -23,9 +23,9 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <Riostream.h>
-
 #include "AliMpArea.h"
+
+#include <Riostream.h>
 
 ClassImp(AliMpArea)
 

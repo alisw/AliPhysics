@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpRowPainter.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpRowPainter.cxx,v 1.7 2006/03/17 11:35:29 ivana Exp $
 // Category: graphics
 //
 // Class AliMpRowPainter
@@ -23,15 +23,14 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
   
-#include <TVirtualX.h>
-#include <TPad.h>
-#include <TError.h>
- 
 #include "AliMpRowPainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpRow.h"
 #include "AliMpRowSegment.h"
 
+#include <TVirtualX.h>
+#include <TPad.h>
+ 
 ClassImp(AliMpRowPainter)
 
 //_______________________________________________________________________

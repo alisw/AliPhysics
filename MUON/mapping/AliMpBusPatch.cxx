@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpBusPatch.cxx,v 1.2 2006/03/13 12:22:15 ivana Exp $
+// $MpId: AliMpBusPatch.cxx,v 1.3 2006/03/17 11:51:34 ivana Exp $
 // Category: management
 
 // Class AliMpBusPatch
@@ -31,6 +31,7 @@
 
 #include "AliLog.h"
 
+#include <TArrayI.h>
 #include <Riostream.h>
 
 ClassImp(AliMpBusPatch)

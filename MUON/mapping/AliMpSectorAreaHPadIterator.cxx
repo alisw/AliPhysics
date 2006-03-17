@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorAreaHPadIterator.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSectorAreaHPadIterator.cxx,v 1.6 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorAreaHPadIterator
@@ -24,11 +24,11 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <Riostream.h>
-
 #include "AliMpSectorAreaHPadIterator.h"
 #include "AliMpSectorSegmentation.h"
 #include "AliMpConstants.h"
+
+#include <Riostream.h>
 
 ClassImp(AliMpSectorAreaHPadIterator)
 
@@ -118,8 +118,6 @@ void AliMpSectorAreaHPadIterator::MoveUp()
   while ( !fCurrentPad.IsValid() && 
           fCurrentRowPosition + step < fkArea.UpBorder())
   {
-    //cout << "#########  Move up ##########" << endl;
-  
     fCurrentRowPosition += step;
     TVector2 position = TVector2(fkArea.LeftBorder(), fCurrentRowPosition);
     

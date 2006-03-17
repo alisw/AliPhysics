@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifSpecial.cxx,v 1.9 2005/09/26 16:11:20 ivana Exp $
+// $MpId: AliMpMotifSpecial.cxx,v 1.10 2006/03/17 11:38:06 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifSpecial
@@ -24,12 +24,12 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <TString.h>
-
 #include "AliMpMotifSpecial.h"
 #include "AliMpMotifType.h"
 #include "AliMpIntPair.h"
 #include "AliMpConstants.h"
+
+#include <TString.h>
 
 ClassImp(AliMpMotifSpecial)
 

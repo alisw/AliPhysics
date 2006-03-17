@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifPosition.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifPosition.cxx,v 1.8 2006/03/17 11:38:06 ivana Exp $
 //
 // Class AliMpMotifPosition
 // ------------------------
@@ -22,12 +22,11 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <TError.h>
-
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifPositionPadIterator.h"
 #include "AliMpMotifType.h"
-#include <iostream>
+
+#include <Riostream.h>
 
 ClassImp(AliMpMotifPosition)
 
@@ -128,15 +127,15 @@ AliMpMotifPosition::Print(Option_t* option) const
 {
 /// Printing
 
-  std::cout << "MOTIFPOSITION " << GetID() << " MOTIF " 
-	    << GetMotif()->GetID()
-	    << " at (" << Position().X() << "," 
-	    << Position().Y() << ") "
-	    << " iMin=(" << GetLowIndicesLimit().GetFirst()
-	    << "," << GetLowIndicesLimit().GetSecond()
-	    << ") iMax=(" << GetHighIndicesLimit().GetFirst()
-	    << "," << GetHighIndicesLimit().GetSecond()
-	    << ")" << std::endl;
+  cout << "MOTIFPOSITION " << GetID() << " MOTIF " 
+       << GetMotif()->GetID()
+       << " at (" << Position().X() << "," 
+       << Position().Y() << ") "
+       << " iMin=(" << GetLowIndicesLimit().GetFirst()
+       << "," << GetLowIndicesLimit().GetSecond()
+       << ") iMax=(" << GetHighIndicesLimit().GetFirst()
+       << "," << GetHighIndicesLimit().GetSecond()
+       << ")" << std::endl;
 
   if ( option && option[0] == 'M' )
     {

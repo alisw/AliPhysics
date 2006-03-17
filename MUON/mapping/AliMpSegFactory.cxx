@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSegFactory.cxx,v 1.5 2006/03/13 12:22:15 ivana Exp $
+// $MpId: AliMpSegFactory.cxx,v 1.6 2006/03/17 11:36:27 ivana Exp $
 // Category: management
 
 // -----------------------
@@ -22,10 +22,10 @@
 // -----------------------
 // The factory for building mapping segmentations
 // Authors: Ivana Hrivnacova, IPN Orsay
+//          Laurent Aphecetche, SUBATECH
 
 #include "AliMpSegFactory.h"
 
-#include "AliLog.h"
 #include "AliMpDEManager.h"
 #include "AliMpExMap.h"
 #include "AliMpSector.h"
@@ -37,6 +37,9 @@
 #include "AliMpTrigger.h"
 #include "AliMpTriggerReader.h"
 #include "AliMpTriggerSegmentation.h"
+
+#include "AliLog.h"
+
 #include <Riostream.h>
 #include <TMap.h>
 #include <TObjString.h>

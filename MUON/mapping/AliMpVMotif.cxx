@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVMotif.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVMotif.cxx,v 1.8 2006/03/17 11:38:06 ivana Exp $
 // Category: motif
 ///
 // Class AliMpVMotif
@@ -24,15 +24,14 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
 
-#include <iomanip>
-
-#include <TError.h>
-#include <Riostream.h>
-
 #include "AliMpVMotif.h"
 #include "AliMpMotifType.h"
 #include "AliMpIntPair.h"
 #include "AliMpConnection.h"
+
+#include <Riostream.h>
+
+#include <iomanip>
 
 
 ClassImp(AliMpVMotif)

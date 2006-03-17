@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorReader.cxx,v 1.7 2006/03/02 16:36:18 ivana Exp $
+// $MpId: AliMpSectorReader.cxx,v 1.8 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorReader
@@ -44,10 +44,11 @@
 #include "AliMpDirection.h"
 #include "AliMpConstants.h"
 
+#include "AliLog.h"
+
 #include <Riostream.h>
 #include <Rstrstream.h>
 #include <TSystem.h>
-#include <TError.h>
 #include <TMath.h>
 
 #if !defined(__HP_aCC) && !defined(__alpha)
@@ -74,8 +75,7 @@ AliMpSectorReader::AliMpSectorReader(AliMpStationType station,
     fStationType(station),
     fPlaneType(plane),
     fSector(0),
-    fMotifReader(new AliMpMotifReader(station, plane)),
-    fVerboseLevel(0)
+    fMotifReader(new AliMpMotifReader(station, plane))
 {
 // Standard constructor
 }
@@ -86,8 +86,7 @@ AliMpSectorReader::AliMpSectorReader()
     fStationType(kStation1),
     fPlaneType(kBendingPlane),
     fSector(0),
-    fMotifReader(0),
-    fVerboseLevel(0)
+    fMotifReader(0)
 {
 // Default constructor
 }
@@ -139,8 +138,7 @@ void  AliMpSectorReader::ReadSectorData(ifstream& in)
   TString keyword;
   in >> keyword;
   
-  if (fVerboseLevel>0) 
-    cout << keyword << endl;
+  AliDebugStream(1) << keyword << endl;
 
   if (keyword != fgkSectorKeyword) {
      Fatal("ReadSectorData", "Wrong file format.");
@@ -158,8 +156,8 @@ void  AliMpSectorReader::ReadSectorData(ifstream& in)
   
   AliMpDirection direction;
   direction = (directionStr == "Y") ? kY  :  kX;
-  if (fVerboseLevel>0) 
-     cout << nofZones << " " <<  nofRows << endl;
+
+  AliDebugStream(1) << nofZones << " " <<  nofRows << endl;
 
   fSector = new AliMpSector("Not defined", nofZones, nofRows,direction,
                             TVector2(offsetX, offsetY));
@@ -186,9 +184,9 @@ void AliMpSectorReader::ReadZoneData(ifstream& in)
   in >> zoneID;    
   in >> sizex;
   in >> sizey;
-  if (fVerboseLevel>0) 
-     cout << fgkZoneKeyword << " " <<  zoneID << "  "        
-          << sizex << " " << sizey << endl;
+  AliDebugStream(1)
+     << fgkZoneKeyword << " " <<  zoneID << "  " 
+     << sizex << " " << sizey << endl;
   
   AliMpZone* zone =  fSector->GetZone(zoneID);
   zone->SetPadDimensions(TVector2(sizex/2.,sizey/2.)); 
@@ -210,8 +208,7 @@ void AliMpSectorReader::ReadSubZoneData(ifstream& in, AliMpZone* zone)
 /// Read subzone input data;
 /// create subzone and its to the specified zone.
 
-  if (fVerboseLevel>0) 
-    cout << fgkSubZoneKeyword << " ";
+  AliDebugStream(1) << fgkSubZoneKeyword << endl;
 
   AliMpVMotif* motif = ReadMotifData(in, zone);
   AliMpSubZone* subZone = new AliMpSubZone(motif); 
@@ -237,10 +234,8 @@ AliMpVMotif*  AliMpSectorReader::ReadMotifData(ifstream& in, AliMpZone* zone)
   TString  motifTypeID;
   in >> motifID;
   in >> motifTypeID;
-  if (fVerboseLevel>0) {
-    cout << motifID << " " 
-         << motifTypeID << endl;
-  }	 
+
+  AliDebugStream(1) << motifID << " " << motifTypeID << endl;
   
   AliMpMotifMap* motifMap = fSector->GetMotifMap();
 
@@ -290,11 +285,11 @@ void AliMpSectorReader::ReadRowSegmentsData(ifstream& in,
     
     firstMotifPositionId |= AliMpConstants::ManuMask(fPlaneType);
     
-    if (fVerboseLevel>0) 
-       cout << fgkRowKeyword << " " 
-            << offX << " " << offY << " " << inRow << " " << nofMotifs << " " 
-	    << firstMotifPositionId << " " << firstMotifPositionDId
-	    << endl;
+    AliDebugStream(1)
+      << fgkRowKeyword << " " 
+      << offX << " " << offY << " " << inRow << " " << nofMotifs << " " 
+      << firstMotifPositionId << " " << firstMotifPositionDId
+      << endl;
 
     in >> nextKeyword;
 
@@ -335,8 +330,8 @@ void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection dire
 
   TString keyword;
   in >> keyword;
-  if (fVerboseLevel>0) 
-    cout << keyword << endl;
+
+  AliDebugStream(1) << keyword << endl;
 
   if (keyword != fgkSectorSpecialKeyword) {
      Fatal("ReadSectorSpecialData", "Wrong file format.");
@@ -345,8 +340,8 @@ void AliMpSectorReader::ReadSectorSpecialData(ifstream& in, AliMpXDirection dire
 
   TString nextKeyword;
   in >> nextKeyword;
-  if (fVerboseLevel>0) 
-    cout << keyword << endl;
+
+  AliDebugStream(1) << keyword << endl;
     
   if (nextKeyword != fgkMotifKeyword) {
     Fatal("ReadSectorSpecialData", "Wrong file format.");
@@ -362,8 +357,7 @@ void AliMpSectorReader::ReadMotifsSpecialData(ifstream& in)
 {
 /// Read the special (irregular) motifs input data.
 
-  if (fVerboseLevel>0) 
-    cout << fgkMotifKeyword << " ";
+  AliDebugStream(1) << fgkMotifKeyword << endl;
 
   TString nextKeyword;
   do {
@@ -374,8 +368,8 @@ void AliMpSectorReader::ReadMotifsSpecialData(ifstream& in)
     fSector->GetZone(zone)->AddSubZone(subZone); 
   
     in >> nextKeyword;
-    if (fVerboseLevel>0) 
-      cout << nextKeyword << " ";      
+
+    AliDebugStream(1) << nextKeyword << endl;      
   }
   while (nextKeyword == fgkMotifKeyword);
     
@@ -393,8 +387,8 @@ void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMpXDirection directi
 
   Int_t id;
   in >> id;
-  if (fVerboseLevel>0) 
-      cout << id << endl;      
+
+  AliDebugStream(1) << id << endl;      
   
   // Get the row and its border
   AliMpRow* row = fSector->GetRow(id);
@@ -420,8 +414,8 @@ void AliMpSectorReader::ReadRowSpecialData(ifstream& in, AliMpXDirection directi
       
   TString nextKeyword;
   in >> nextKeyword;
-  if (fVerboseLevel>0) 
-    cout << nextKeyword << " ";
+  
+  AliDebugStream(1) << nextKeyword << endl;
     
   if (nextKeyword != fgkPadRowsKeyword) {
      Fatal("ReadRowSpecialData", "Wrong file format.");
@@ -456,13 +450,13 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in,
 
   Int_t nofPadRows;
   in >> nofPadRows;
-  if (fVerboseLevel>0) 
-    cout << nofPadRows << endl;
+  
+  AliDebugStream(1) << nofPadRows << endl;
   
   TString keyword;
   in >> keyword;
-  if (fVerboseLevel>0) 
-    cout << keyword << " ";
+
+  AliDebugStream(1) << keyword << endl;
     
   if (keyword != fgkPadRowSegmentKeyword) {
      Fatal("ReadRowSegmentSpecialData", "Wrong file format.");
@@ -502,12 +496,12 @@ void AliMpSectorReader::ReadRowSegmentSpecialData(ifstream& in,
   
     motifPositionId |= AliMpConstants::ManuMask(fPlaneType);
 
-    if (fVerboseLevel>0) 
-       cout << nofPadsInRow << " " << motifId << " " << motifPositionId << endl;
+    AliDebugStream(1)
+      << nofPadsInRow << " " << motifId << " " << motifPositionId << endl;
 
     in >> nextKeyword;
-    if (fVerboseLevel>0) 
-      cout << nextKeyword << " ";
+
+    AliDebugStream(1) << nextKeyword << endl;
 
     //
     // Process data
@@ -565,8 +559,9 @@ AliMpSector* AliMpSectorReader::BuildSector()
   // Open input file
   ifstream in(AliMpFiles::SectorFilePath(fStationType, fPlaneType).Data(), ios::in);
   if (!in) {
-     cerr << AliMpFiles::SectorFilePath(fStationType, fPlaneType) << endl;	
-     Error("BuildSector", "File not found.");
+     AliErrorStream()
+       << "File " << AliMpFiles::SectorFilePath(fStationType, fPlaneType) 
+       << " not found." << endl;
      return 0;
   }
   
@@ -579,8 +574,9 @@ AliMpSector* AliMpSectorReader::BuildSector()
   if (!gSystem->AccessPathName(sectorSpecialFileName.Data())) {
     ifstream in2(sectorSpecialFileName.Data(), ios::in);
     if (!in2) {	
-       cerr << AliMpFiles::SectorSpecialFilePath(fStationType, fPlaneType) << endl;	
-       Error("BuildSector", "File not found.");
+       AliErrorStream()
+         << "File " << AliMpFiles::SectorSpecialFilePath(fStationType, fPlaneType) 
+	 << " not found." << endl;
        return 0;
     }
     
@@ -593,8 +589,9 @@ AliMpSector* AliMpSectorReader::BuildSector()
   if (!gSystem->AccessPathName(sectorSpecialFileName2.Data())) {
     ifstream in3(sectorSpecialFileName2.Data(), ios::in);
     if (!in3) {	
-       cerr << AliMpFiles::SectorSpecialFilePath2(fStationType, fPlaneType) << endl;	
-       Error("Build", "File not found.");
+       AliErrorStream()
+         << "File " << AliMpFiles::SectorSpecialFilePath2(fStationType, fPlaneType) 
+	 << " not found."<< endl;	
        return 0;
     }
     
@@ -605,13 +602,4 @@ AliMpSector* AliMpSectorReader::BuildSector()
   
   return fSector;
 }  
-
-//_____________________________________________________________________________
-void AliMpSectorReader::SetVerboseLevel(Int_t verboseLevel)
-{
-/// Set verbose level.
-
-  fVerboseLevel = verboseLevel;
-  if (fMotifReader) fMotifReader->SetVerboseLevel(verboseLevel);
-}
 

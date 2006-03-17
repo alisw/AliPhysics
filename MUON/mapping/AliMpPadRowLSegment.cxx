@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPadRowLSegment.cxx,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPadRowLSegment.cxx,v 1.5 2006/03/17 11:38:43 ivana Exp $
 // Category: sector
 //
 // Class AliMpPadRowLSegment
@@ -26,8 +26,6 @@
 //
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, Ivana Hrivnacova; IPN Orsay
-
-#include <TError.h>
 
 #include "AliMpPadRowLSegment.h"
 #include "AliMpPadRow.h"

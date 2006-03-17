@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSubZonePainter.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSubZonePainter.cxx,v 1.7 2006/03/17 11:35:29 ivana Exp $
 // Category: graphics
 //
 // Class AliMpSubZonePainter
@@ -23,15 +23,14 @@
 // Included in AliRoot: 2003/05/02
 // Authors: David Guez, IPN Orsay
   
-#include <TVirtualX.h>
-#include <TPad.h>
-#include <TError.h>
-
 #include "AliMpSubZonePainter.h"
 #include "AliMpGraphContext.h"
 #include "AliMpSubZone.h"
 #include "AliMpVRowSegment.h"
 #include "AliMpVMotif.h"
+
+#include <TVirtualX.h>
+#include <TPad.h>
 
 ClassImp(AliMpSubZonePainter)
 

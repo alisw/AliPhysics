@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPad.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPad.cxx,v 1.8 2006/03/17 11:34:46 ivana Exp $
 // Category: basic
 //
 // Class AliMpPad
@@ -25,11 +25,11 @@
 // root [0] .x testSectorAreaIterator.C
 // Real time 0:00:56, CP time 36.270
 
-#include <Riostream.h>
-#include <TClonesArray.h>
-
 #include "AliMpPad.h"
 #include "AliLog.h"
+
+#include <TClonesArray.h>
+#include <Riostream.h>
 
 ClassImp(AliMpPad)
 
