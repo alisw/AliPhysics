@@ -48,7 +48,7 @@ class AliMUONData : public TNamed
 {
   public:
   
-  enum EChamberIteration { kAllChambers, kTrackingChambers, kTriggerChambers };
+  //  enum EChamberIteration { kAllChambers, kTrackingChambers, kTriggerChambers };
   
     AliMUONData();
     AliMUONData(AliLoader * loader, const char* name, const char* title);
@@ -136,7 +136,7 @@ class AliMUONData : public TNamed
     TTree*         TreeT() {return fLoader->TreeT(); }
     TTree*         TreeP() {return fLoader->TreeP(); }
 
-    TIterator* CreateDigitIterator(EChamberIteration type);
+    //    TIterator* CreateDigitIterator(AliMUONData::EChamberIteration type);
     
   protected: 
     AliMUONData(const AliMUONData& rhs);
