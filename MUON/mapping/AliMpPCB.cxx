@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPCB.cxx,v 1.5 2006/01/11 10:14:17 ivana Exp $
+// $MpId: AliMpPCB.cxx,v 1.6 2006/03/17 16:42:33 ivana Exp $
 
 #include "AliMpPCB.h"
 
@@ -37,7 +37,8 @@ AliMpPCB::AliMpPCB()
     fEnveloppeSizeX(0), fEnveloppeSizeY(0),
     fXoffset(0),
     fActiveXmin(0), fActiveXmax(0),
-    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0)
+    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0),
+    fNofPads(0)
 {
       //
       // Default ctor.
@@ -52,7 +53,8 @@ AliMpPCB::AliMpPCB(const char* id, Double_t padSizeX, Double_t padSizeY,
     fEnveloppeSizeX(enveloppeSizeX), fEnveloppeSizeY(enveloppeSizeY),
     fXoffset(0),
     fActiveXmin(0), fActiveXmax(0),
-    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0)
+    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0),
+    fNofPads(0)
 {
       //
       // Normal ctor. Must be fed with the PCB's name (id), the pad dimensions
@@ -67,7 +69,8 @@ AliMpPCB::AliMpPCB(const AliMpPCB& o)
     fEnveloppeSizeX(0), fEnveloppeSizeY(0),
     fXoffset(0),
     fActiveXmin(0), fActiveXmax(0),
-    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0)
+    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0),
+    fNofPads(0)
 {
   o.Copy(*this);
 }
@@ -102,6 +105,7 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
 #else
   fMotifs.push_back(mp);
 #endif
+  fNofPads = ms->GetMotifType()->GetNofPads();
 }
 
 //_____________________________________________________________________________
@@ -214,6 +218,7 @@ AliMpPCB::Add(AliMpMotifType* mt, Int_t ix, Int_t iy)
 
   fActiveXmin = fIxmin*PadSizeX();
   fActiveXmax = (fIxmax+1)*PadSizeX();
+  fNofPads += mt->GetNofPads();
 }
 
 //_____________________________________________________________________________
@@ -319,6 +324,8 @@ AliMpPCB::Copy(TObject& o) const
       pcb.fMotifs.push_back(pcbpos);
 #endif      
     }
+    
+    pcb.fNofPads = fNofPads;  
 }
 
 //_____________________________________________________________________________

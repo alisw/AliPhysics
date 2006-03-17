@@ -14,21 +14,28 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlat.cxx,v 1.4 2006/03/02 16:35:20 ivana Exp $
+// $MpId: AliMpSlat.cxx,v 1.5 2006/03/17 16:42:33 ivana Exp $
 
 #include "AliMpSlat.h"
 
 #include "AliLog.h"
-#include "AliMpConnection.h"
-#include "AliMpMotif.h"
 #include "AliMpMotifPosition.h"
-#include "AliMpMotifType.h"
 #include "AliMpPCB.h"
-#include "AliMpSlatPadIterator.h"
 
 #include "Riostream.h"
 
 #include "TArrayI.h"
+
+///
+/// Representation of a slat cathode (bending or non-bending).
+///
+/// A slat can be viewed as a "collection" of PCBs of various densities
+/// (the density is defined by the size of the pads composing the PCB).
+///
+/// All the PCBs have a least the same height, if not the same width. In most
+/// of the case, height=width=40 cm, at least for St345 (for trigger,
+/// width varies)
+///
 
 ClassImp(AliMpSlat)
 
@@ -41,7 +48,8 @@ AliMpSlat::AliMpSlat()
   fDY(0),
   fNofPadsX(0), 
   fMaxNofPadsY(0),
-  fManuMap()
+  fManuMap(),
+  fNofPads(0)
 {
     //
     // Empty ctor.
@@ -59,15 +67,32 @@ AliMpSlat::AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending)
   fNofPadsX(0), 
   fMaxNofPadsY(0),
 //#ifdef WITH_ROOT
-  fManuMap(kTRUE)
+  fManuMap(kTRUE),
 //#else  
-//  fManuMap()
+//  fManuMap(),
 //#endif  
+  fNofPads(0)
 {
     //
     // Normal ctor
     //
 	AliDebug(1,Form("this=%p id=%s",this,id));			
+}
+
+//_____________________________________________________________________________
+AliMpSlat::AliMpSlat(const AliMpSlat&) : TObject()
+{
+  //
+  AliFatal("Implement me if needed");
+}
+
+//_____________________________________________________________________________
+AliMpSlat&
+AliMpSlat::operator=(const AliMpSlat&)
+{
+  //
+  AliFatal("Implement me if needed");
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -129,6 +154,7 @@ AliMpSlat::Add(AliMpPCB* pcbType, const TArrayI& manuList)
 //#endif  
 	}
   fPosition.Set(DX(),DY());
+  fNofPads += pcb->NofPads();
 }
 
 //_____________________________________________________________________________
@@ -311,6 +337,9 @@ AliMpSlat::ForcePosition(const TVector2& pos)
 void
 AliMpSlat::GetAllMotifPositionsIDs(TArrayI& ecn) const
 {
+  //
+  // Return all the manuIds (=MotifPositionIDs) of this slat
+  //
   ecn.Set(GetNofElectronicCards());
 //#ifdef WITH_ROOT
   TExMapIter it(fManuMap.GetIterator());
@@ -351,6 +380,9 @@ AliMpSlat::GetMaxNofPadsY() const
 Int_t 
 AliMpSlat::GetMaxPadIndexX() const
 {
+  //
+  // Returns the max ix that is valid for this slat.
+  //
   AliMpPCB* last = GetPCB(GetSize()-1);
   if (last)
   {
@@ -363,6 +395,10 @@ AliMpSlat::GetMaxPadIndexX() const
 const char*
 AliMpSlat::GetName() const
 {
+  //
+  // Returns the name of this slat, which is composed of its ID with
+  // the plane type as a suffix.
+  //
   TString name(GetID());
   if ( fPlaneType == kBendingPlane )
   {
@@ -383,6 +419,9 @@ AliMpSlat::GetName() const
 Int_t
 AliMpSlat::GetNofElectronicCards() const
 {
+  //
+  // Returns the number of manus that compose the readout of this slat.
+  //
   return fManuMap.GetSize();
 }
 
@@ -424,20 +463,6 @@ AliMpSlat::GetSize() const
 #else
   return fPCBs.size();
 #endif  
-}
-
-//_____________________________________________________________________________
-AliMpPlaneType
-AliMpSlat::PlaneType() const
-{
-  return fPlaneType;
-}
-
-//_____________________________________________________________________________
-TVector2
-AliMpSlat::Position() const
-{
-  return fPosition;
 }
 
 //_____________________________________________________________________________

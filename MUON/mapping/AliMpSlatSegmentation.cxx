@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.cxx,v 1.9 2006/03/14 09:04:28 ivana Exp $
+// $MpId: AliMpSlatSegmentation.cxx,v 1.10 2006/03/17 16:42:33 ivana Exp $
 
 // Caution !!
 // Implementation note.
@@ -177,9 +177,7 @@ AliMpSlatSegmentation::NofPads() const
 {
 /// Return number of pads defined in the slat
   
-  AliError("Not yet implemented");
-
-  return 0;
+  return fkSlat->NofPads();
 }
 
 //_____________________________________________________________________________

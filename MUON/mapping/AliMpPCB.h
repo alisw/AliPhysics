@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpPCB.h,v 1.4 2005/09/19 19:01:09 ivana Exp $ 
+// $MpId: AliMpPCB.h,v 1.6 2006/03/17 16:42:28 ivana Exp $ 
 
 /// \ingroup slat
 /// \class AliMpPCB
@@ -137,6 +137,8 @@ class AliMpPCB : public TObject
   
   const char* GetID() const;
   
+  Int_t NofPads() const { return fNofPads; }
+  
  private:
   TString fId;
   Double_t fPadSizeX;
@@ -155,8 +157,9 @@ class AliMpPCB : public TObject
 #else  
   std::vector<AliMpMotifPosition*> fMotifs;
 #endif
-
-  ClassDef(AliMpPCB,1) // A PCB for Stations 3,4,5
+  Int_t fNofPads;
+  
+  ClassDef(AliMpPCB,2) // A PCB for Stations 3,4,5
 };
 
 #endif 

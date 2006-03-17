@@ -2,7 +2,7 @@
 * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpTriggerSegmentation.h,v 1.4 2006/03/14 09:04:32 ivana Exp $
+// $MpId: AliMpTriggerSegmentation.h,v 1.5 2006/03/17 16:42:36 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTriggerSegmentation
@@ -44,7 +44,7 @@ public:
   
   Int_t MaxPadIndexX() const;
   Int_t MaxPadIndexY() const;
-  Int_t NofPads() const;
+  Int_t NofPads() const { return fNofStrips; }
     
   virtual AliMpPad PadByLocation(const AliMpIntPair& location, 
                                  Bool_t warning) const;
@@ -69,8 +69,8 @@ protected:
      
 private:
     const AliMpTrigger* fkSlat; // Slat
-  
-  ClassDef(AliMpTriggerSegmentation,1) // Segmentation for slat trigger stations
+  Int_t fNofStrips; // Number of strips in this slat
+  ClassDef(AliMpTriggerSegmentation,2) // Segmentation for slat trigger stations
 };
 
 #endif

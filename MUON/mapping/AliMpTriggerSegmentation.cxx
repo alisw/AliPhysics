@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpTriggerSegmentation.cxx,v 1.4 2006/03/14 09:04:34 ivana Exp $
+// $MpId: AliMpTriggerSegmentation.cxx,v 1.5 2006/03/17 16:42:39 ivana Exp $
 
 #include "AliMpTriggerSegmentation.h"
 
@@ -33,7 +33,8 @@ ClassImp(AliMpTriggerSegmentation)
 //_____________________________________________________________________________
 AliMpTriggerSegmentation::AliMpTriggerSegmentation() 
 : AliMpVSegmentation(),
-fkSlat(0)
+fkSlat(0),
+fNofStrips(0)
 {
   //
   // Default ctor. Not to be used really.
@@ -50,6 +51,23 @@ fkSlat(slat)
   // Normal ctor.
   //
   AliDebug(1,Form("this=%p Normal ctor slat=%p",this,slat));
+  
+  // Compute the number of strips.
+  // We have to loop over all possible pads, in order to properly take
+  // into account the fact that a given strip might be part of several
+  // layer. Otherwise we would double count pads.
+
+  fNofStrips = 0;
+  for ( Int_t ix = 0; ix <= MaxPadIndexX(); ++ix )
+  {
+    for ( Int_t iy = 0; iy <= MaxPadIndexY(); ++iy )
+    {
+      if ( HasPad(AliMpIntPair(ix,iy)) )
+      {
+        ++fNofStrips;
+      }
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -154,17 +172,6 @@ AliMpTriggerSegmentation::MaxPadIndexY() const
   //
   
   return fkSlat->GetMaxNofPadsY()-1;
-}
-
-//_____________________________________________________________________________
-Int_t 
-AliMpTriggerSegmentation::NofPads() const
-{
-/// Return number of pads defined in the trigger chamber
-  
-  AliError("Not yet implemented");
-  
-  return 0;
 }
 
 //_____________________________________________________________________________
