@@ -53,6 +53,7 @@ public:
   Short_t  Count3()                const { return fCount3;   }
   UShort_t Counts()                const;
   void     Print(Option_t* opt="") const;
+  const char* GetTitle() const;
 protected:
   UShort_t fCount1;     // Digital signal 
   Short_t  fCount2;     // Digital signal (-1 if not used)

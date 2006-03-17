@@ -33,7 +33,6 @@
 #include <AliMC.h>		// ALIMC_H
 #include <AliLog.h>		// ALILOG_H
 #include "AliFMDv1.h"		// ALIFMDV1_H
-#ifndef USE_PRE_MOVE
 #include "AliFMDGeometryBuilder.h"
 #include "AliFMDGeometry.h"
 #include "AliFMDDetector.h"
@@ -41,13 +40,6 @@
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
 #include "AliFMDHit.h"
-#else
-#include "AliFMDSimulator.h"	// ALIFMDSIMULATOR_H
-#include "AliFMDG3Simulator.h"	// ALIFMDG3SIMULATOR_H
-#include "AliFMDGeoSimulator.h"	// ALIFMDGEOSIMULATOR_H
-#include "AliFMDG3OldSimulator.h"	// ALIFMDG3OLDSIMULATOR_H
-#include "AliFMDGeoOldSimulator.h"	// ALIFMDGEOOLDSIMULATOR_H
-#endif
 
 //____________________________________________________________________
 ClassImp(AliFMDv1)
@@ -56,7 +48,6 @@ ClassImp(AliFMDv1)
 #endif
 
 
-#ifndef USE_PRE_MOVE
 //____________________________________________________________________
 Bool_t
 AliFMDv1::VMC2FMD(TLorentzVector& v, UShort_t& detector,
@@ -117,6 +108,9 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   }
   else 
     sector = sectordiv;
+  AliDebug(30, Form("Getting ring volume with offset %d -> %s", 
+		    fmd->GetRingOff(), 
+		    mc->CurrentVolOffName(fmd->GetRingOff())));
   Int_t iring;     mc->CurrentVolOffID(fmd->GetRingOff(), iring); 
   ring = Char_t(iring);
   Int_t det;       mc->CurrentVolOffID(fmd->GetDetectorOff(), det); 
@@ -125,9 +119,13 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
   //Double_t  rz  = fmd->GetDetector(detector)->GetRingZ(ring);
   AliFMDDetector* gdet  = fmd->GetDetector(detector);
   AliFMDRing*     gring = gdet->GetRing(ring);
-  if (!gring)
-    AliFatal(Form("Ring %c not found (%s)", ring, mc->CurrentVolPath()));
-  Int_t           n     = gring->GetNSectors();
+  if (!gring) {
+    AliFatal(Form("Ring %c not found (volume was %s at offset %d in path %s)", 
+		  ring, fmd->GetRingOff(), 
+		  mc->CurrentVolOffName(fmd->GetRingOff()),
+		  mc->CurrentVolPath()));
+  }
+  Int_t n = gring->GetNSectors();
 #if 0
   if (rz < 0) {
     Int_t s = ((n - sector + n / 2) % n) + 1;
@@ -148,7 +146,58 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
 
   return kTRUE;
 }
-#endif
+
+
+//____________________________________________________________________
+Bool_t
+AliFMDv1::CheckHit(Int_t trackno, Int_t pdg, Float_t absQ, 
+		   const TLorentzVector& p, Float_t edep) const
+{
+  if (AliLog::GetDebugLevel("FMD", "AliFMD") < 5) return kFALSE;
+  TVirtualMC* mc   = TVirtualMC::GetMC();
+  Double_t mass    = mc->TrackMass();
+  Double_t poverm  = (mass == 0 ? 0 : p.P() / mass);
+    
+  // This `if' is to debug abnormal energy depositions.  We trigger on
+  // p/m approx larger than or equal to a MIP, and a large edep - more 
+  // than 1 keV - a MIP is 100 eV. 
+  if (!(edep > absQ * absQ && poverm > 1)) return kFALSE;
+  
+  TArrayI procs;
+  mc->StepProcesses(procs);
+  TString processes;
+  for (Int_t ip = 0; ip < procs.fN; ip++) {
+    if (ip != 0) processes.Append(",");
+    processes.Append(TMCProcessName[procs.fArray[ip]]);
+  }
+  TDatabasePDG* pdgDB        = TDatabasePDG::Instance();
+  TParticlePDG* particleType = pdgDB->GetParticle(pdg);
+  TString pname(particleType ? particleType->GetName() : "???");
+  TString what;
+  if (mc->IsTrackEntering())    what.Append("entering ");
+  if (mc->IsTrackExiting())     what.Append("exiting ");
+  if (mc->IsTrackInside())      what.Append("inside ");
+  if (mc->IsTrackDisappeared()) what.Append("disappeared ");
+  if (mc->IsTrackStop())        what.Append("stopped ");
+  if (mc->IsNewTrack())         what.Append("new ");
+  if (mc->IsTrackAlive())       what.Append("alive ");
+  if (mc->IsTrackOut())         what.Append("out ");
+      
+  Int_t mother = gAlice->GetMCApp()->GetPrimary(trackno);
+  AliDebug(15, Form("Track # %5d deposits a lot of energy\n" 
+		    "  Volume:    %s\n" 
+		    "  Momentum:  (%7.4f,%7.4f,%7.4f)\n"
+		    "  PDG:       %d (%s)\n" 
+		    "  Edep:      %-14.7f keV (mother %d)\n"
+		    "  p/m:       %-7.4f/%-7.4f = %-14.7f\n"
+		    "  Processes: %s\n"
+		    "  What:      %s\n",
+		    trackno, mc->CurrentVolPath(), p.X(), p.Y(), p.Z(),
+		    pdg, pname.Data(), edep, mother, p.P(), mass, 
+		    poverm, processes.Data(), what.Data()));
+  return kTRUE;
+}
+
 
 //____________________________________________________________________
 void 
@@ -184,7 +233,6 @@ AliFMDv1::StepManager()
   //   -   Create a hit 
   //   - ENDIF
   //     
-#ifndef USE_PRE_MOVE
   TVirtualMC* mc = TVirtualMC::GetMC();
   if (!mc->IsTrackAlive()) return;
   Double_t absQ = TMath::Abs(mc->TrackCharge());
@@ -212,49 +260,8 @@ AliFMDv1::StepManager()
   mc->TrackMomentum(p);
   Int_t    trackno = gAlice->GetMCApp()->GetCurrentTrackNumber();
   Int_t    pdg     = mc->TrackPid();
-  Double_t mass    = mc->TrackMass();
   Double_t edep    = mc->Edep() * 1000; // keV
-  Double_t poverm  = (mass == 0 ? 0 : p.P() / mass);
-  Bool_t   isBad   = kFALSE;
-  
-  // This `if' is to debug abnormal energy depositions.  We trigger on
-  // p/m approx larger than or equal to a MIP, and a large edep - more 
-  // than 1 keV - a MIP is 100 eV. 
-  if (edep > absQ * absQ && poverm > 1) {
-    isBad = kTRUE;
-    TArrayI procs;
-    mc->StepProcesses(procs);
-    TString processes;
-    for (Int_t ip = 0; ip < procs.fN; ip++) {
-      if (ip != 0) processes.Append(",");
-      processes.Append(TMCProcessName[procs.fArray[ip]]);
-    }
-    TDatabasePDG* pdgDB        = TDatabasePDG::Instance();
-    TParticlePDG* particleType = pdgDB->GetParticle(pdg);
-    TString pname(particleType ? particleType->GetName() : "???");
-    TString what;
-    if (mc->IsTrackEntering())    what.Append("entering ");
-    if (mc->IsTrackExiting())     what.Append("exiting ");
-    if (mc->IsTrackInside())      what.Append("inside ");
-    if (mc->IsTrackDisappeared()) what.Append("disappeared ");
-    if (mc->IsTrackStop())        what.Append("stopped ");
-    if (mc->IsNewTrack())         what.Append("new ");
-    if (mc->IsTrackAlive())       what.Append("alive ");
-    if (mc->IsTrackOut())         what.Append("out ");
-    
-    Int_t mother = gAlice->GetMCApp()->GetPrimary(trackno);
-    AliWarning(Form("Track # %5d deposits a lot of energy\n" 
-		    "  Volume:    %s\n" 
-		    "  Momentum:  (%7.4f,%7.4f,%7.4f)\n"
-		    "  PDG:       %d (%s)\n" 
-		    "  Edep:      %-14.7f keV (mother %d)\n"
-		    "  p/m:       %-7.4f/%-7.4f = %-14.7f\n"
-		    "  Processes: %s\n"
-		    "  What:      %s\n",
-		    trackno, mc->CurrentVolPath(), p.X(), p.Y(), p.Z(),
-		    pdg, pname.Data(), edep, mother, p.P(), mass, 
-		    poverm, processes.Data(), what.Data()));
-  }
+  Bool_t   isBad   = CheckHit(trackno, pdg, absQ, p, edep);
   
   // Check that the track is actually within the active area 
   Bool_t entering = mc->IsTrackEntering();
@@ -303,20 +310,16 @@ AliFMDv1::StepManager()
       if (isBad && fBad) { 
 	new ((*fBad)[fBad->GetEntries()]) AliFMDHit(*h);
       }
+      // Check the geometry that we can get back the coordinates. 
+#ifdef CHECK_TRANS
+      Double_t x, y, z;
+      fmd->Detector2XYZ(detector, ring, sector, strip, x, y ,z);
+      AliDebug(1, Form("Hit at (%f,%f,%f), geometry says (%f,%f,%f)", 
+		       fCurrentV.X(), fCurrentV.Y(), fCurrentV.Z(), x, y, z));
+#endif
     }
     fCurrentDeltaE = -1;
   }
-#else
-  // Called for every step in the Forward Multiplicity Detector
-  //
-  // The message is deligated to AliFMDSimulator::Exec 
-  // 
-  if (!fSimulator) {
-    AliFatal("No simulator object made");
-    return;
-  }
-  fSimulator->Exec("");
-#endif
 }
 //___________________________________________________________________
 //

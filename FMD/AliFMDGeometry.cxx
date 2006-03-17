@@ -68,14 +68,12 @@
 #include <TMatrix.h>            // ROOT_TMatrix
 #include <TParticle.h>          // ROOT_TParticle
 #include <Riostream.h>
-#ifndef USE_PRE_MOVE
 #include "AliFMDGeometryBuilder.h"
 #include <TArrayI.h>
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoNode.h>
 static Int_t FindNodeDepth(const char* name, const char* volname);
-#endif
 
 
 //====================================================================
@@ -106,20 +104,15 @@ AliFMDGeometry::AliFMDGeometry()
   fUseFMD1     = kTRUE;
   fUseFMD2     = kTRUE;
   fUseFMD3     = kTRUE;  
-#ifndef USE_PRE_MOVE
   fDetailed    = kTRUE;
   fUseAssembly = kTRUE;
-#endif
   fInner = new AliFMDRing('I');
   fOuter = new AliFMDRing('O');
   fFMD1  = new AliFMD1(fInner);
   fFMD2  = new AliFMD2(fInner, fOuter);
   fFMD3  = new AliFMD3(fInner, fOuter);
   fIsInitialized = kFALSE;
-  // fActive.Set(4);
-#ifndef USE_PRE_MOVE
   fActive.Reset(-1);
-#endif
 }
 
 //____________________________________________________________________
@@ -133,12 +126,10 @@ AliFMDGeometry::AliFMDGeometry(const AliFMDGeometry& other)
     fFMD3(other.fFMD3), 
     fUseFMD1(other.fUseFMD1), 
     fUseFMD2(other.fUseFMD2), 
-    fUseFMD3(other.fUseFMD3)
-#ifndef USE_PRE_MOVE
-    , fActive(other.fActive),
+    fUseFMD3(other.fUseFMD3), 
+    fActive(other.fActive),
     fDetailed(other.fDetailed),
     fUseAssembly(other.fUseAssembly)
-#endif
 {
   // PROTECTED
   // Copy constructor
@@ -177,7 +168,20 @@ AliFMDGeometry::Init()
   fFMD3->Init();
 }
 
-#ifndef USE_PRE_MOVE
+//____________________________________________________________________
+void
+AliFMDGeometry::InitTransformations()
+{
+  if (!gGeoManager) {
+    AliError("No TGeoManager defined");
+    return;
+  }
+  AliDebug(0, "Initialising transforms for FMD geometry");
+  if (fFMD1) fFMD1->InitTransformations();
+  if (fFMD2) fFMD2->InitTransformations();
+  if (fFMD3) fFMD3->InitTransformations();
+}
+
 //____________________________________________________________________
 void
 AliFMDGeometry::Build()
@@ -216,8 +220,6 @@ AliFMDGeometry::IsActive(Int_t vol) const
     if (fActive[i] == vol) return kTRUE;
   return kFALSE;
 }
-
-#endif
   
 //____________________________________________________________________
 AliFMDDetector*
@@ -287,7 +289,10 @@ AliFMDGeometry::Detector2XYZ(UShort_t  detector,
   // spatial coordinates (x, y, z) in the master reference frame of
   // ALICE. 
   AliFMDDetector* det = GetDetector(detector);
-  if (!det) return;
+  if (!det) { 
+    AliWarning(Form("Unknown detector %d", detector));
+    return;
+  }
   det->Detector2XYZ(ring, sector, strip, x, y, z);
 }
 
@@ -366,7 +371,6 @@ AliFMDGeometry::Impact(const TParticle* /* particle */) const
   return kFALSE; 
 }
 
-#ifndef USE_PRE_MOVE
 //____________________________________________________________________	
 void  
 AliFMDGeometry::ExtractGeomInfo()
@@ -484,7 +488,6 @@ FindNodeDepth(const char* name, const char* volname)
     if (CheckNodes(node, name, lvl) >= 0) return lvl;
   return -1;
 }
-#endif
 
 //____________________________________________________________________
 //

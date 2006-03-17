@@ -366,9 +366,9 @@ Config()
 #endif
 
   //__________________________________________________________________
-  // ************* STEERING parameters FOR ALICE SIMULATION **************
-  // --- Specify event type to be tracked through the ALICE setup
-  // --- All positions are in cm, angles in degrees, and P and E in GeV
+  // *********** STEERING parameters FOR ALICE SIMULATION ************
+  // - Specify event type to be tracked through the ALICE setup
+  // - All positions are in cm, angles in degrees, and P and E in GeV 
   gMC->SetProcess("DCAY",1);
   gMC->SetProcess("PAIR",1);
   gMC->SetProcess("COMP",1);
@@ -468,35 +468,35 @@ Config()
   Bool_t useVZERO = kFALSE;
 
   cout << "\t* Creating the detectors ..." << endl;
-  //=================== Alice BODY parameters =============================
+  // ================= Alice BODY parameters =========================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
   
   
   if (useMAG) {
-    //=================== MAG parameters ============================
+    // =================== MAG parameters ============================
     // Start with Magnet since detector layouts may be depending on
     // the selected Magnet dimensions 
     AliMAG *MAG = new AliMAG("MAG", "Magnet");
   }
 
   if (useABSO) {
-    //=================== ABSO parameters ============================
+    // =================== ABSO parameters ===========================
     AliABSO *ABSO = new AliABSOv0("ABSO", "Muon Absorber");
   }
 
   if (useDIPO) {
-    //=================== DIPO parameters ============================
+    // =================== DIPO parameters ===========================
     AliDIPO *DIPO = new AliDIPOv2("DIPO", "Dipole version 2");
   }
 
   if (useHALL) {
-    //=================== HALL parameters ============================
+    // =================== HALL parameters ===========================
     AliHALL *HALL = new AliHALL("HALL", "Alice Hall");
   }
 
 
   if (useFRAME) {
-    //=================== FRAME parameters ============================
+    // ================== FRAME parameters ===========================
     AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
     switch (geo) {
     case kHoles: FRAME->SetHoles(1); break;
@@ -505,18 +505,18 @@ Config()
   }
 
   if (useSHIL) {
-    //=================== SHIL parameters ============================
+    // ================== SHIL parameters ============================
     AliSHIL *SHIL = new AliSHILv2("SHIL", "Shielding Version 2");
   }
 
 
   if (usePIPE) {
-    //=================== PIPE parameters ============================
+    // ================== PIPE parameters ============================
     AliPIPE *PIPE = new AliPIPEv0("PIPE", "Beam Pipe");
   }
   
   if (useITS) {
-    //=================== ITS parameters ============================
+    // =================== ITS parameters ============================
     //
     // As the innermost detector in ALICE, the Inner Tracking System
     // "impacts" on almost all other detectors. This involves the fact
@@ -594,7 +594,7 @@ Config()
   }
 
   if (useTPC) {
-    //============================ TPC parameters ====================
+    // =================== TPC parameters ============================
     //
     // This allows the user to specify sectors for the SLOW (TPC
     // geometry 2) Simulator. SecAL (SecAU) <0 means that ALL lower
@@ -617,30 +617,26 @@ Config()
     //  gROOT->LoadMacro("SetTPCParam.C");
     //  AliTPCParam *param = SetTPCParam();
     AliTPC *TPC = new AliTPCv2("TPC", "Default");
-    
-    // All sectors included
-    TPC->SetSecAL(-1);
-    TPC->SetSecAU(-1);
   }
 
   if (useTOF) {
-    //=================== TOF parameters ============================
+    // ================== TOF parameters =============================
     AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
   }
 
   if (useRICH) {
-    //=================== RICH parameters ===========================
+    // ================== RICH parameters ============================
     AliRICH *RICH = new AliRICHv1("RICH", "normal RICH");
 
   }
 
   if (useZDC) {
-    //=================== ZDC parameters ============================
+    // ================== ZDC parameters =============================
     AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
   }
 
   if (useTRD) {
-    //=================== TRD parameters ============================
+    // ================== TRD parameters =============================
     AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
 
     // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
@@ -656,7 +652,7 @@ Config()
   }
 
   if (useFMD) {
-    //=================== FMD parameters ============================
+    // =================== FMD parameters ============================
     AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
     AliLog::SetModuleDebugLevel("FMD", 1);
     // FMD->UseDetailed(kFALSE);
@@ -665,41 +661,41 @@ Config()
   }
 
   if (useMUON) {
-    //=================== MUON parameters ===========================
+    // =================== MUON parameters ===========================
     AliMUON *MUON = new AliMUONv1("MUON", "default");
-    MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
-    MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
-    MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
-    MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
+    // MUON->AddGeometryBuilder(new AliMUONSt1GeometryBuilder(MUON));
+    // MUON->AddGeometryBuilder(new AliMUONSt2GeometryBuilder(MUON));
+    // MUON->AddGeometryBuilder(new AliMUONSlatGeometryBuilder(MUON));
+    // MUON->AddGeometryBuilder(new AliMUONTriggerGeometryBuilder(MUON));
   }
 
   if (usePHOS) {
-    //=================== PHOS parameters ===========================
+    // =================== PHOS parameters ===========================
     AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
   }
 
   if (usePMD) {
-    //=================== PMD parameters ============================
+    // =================== PMD parameters ============================
     AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
   }
 
   if (useSTART) {
-    //=================== START parameters ============================
+    // =================== START parameters ==========================
     AliSTART *START = new AliSTARTv1("START", "START Detector");
   }
 
   if (useEMCAL) {
-    //=================== EMCAL parameters ============================
+    // =================== EMCAL parameters ==========================
     AliEMCAL *EMCAL = new AliEMCALv1("EMCAL", "EMCAL_55_25");
   }
 
   if (useCRT) {
-    //=================== CRT parameters ============================
+    // =================== CRT parameters ============================
     AliCRT *CRT = new AliCRTv0("CRT", "normal ACORDE");
   }
 
   if (useVZERO) {
-    //=================== CRT parameters ============================
+    // =================== V0 parameters =============================
     AliVZERO *VZERO = new AliVZEROv3("VZERO", "normal VZERO");
   }
 }

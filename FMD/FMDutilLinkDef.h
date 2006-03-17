@@ -20,6 +20,7 @@
 #pragma link C++ class  AliFMDInputDigits;
 #pragma link C++ class  AliFMDInputSDigits;
 #pragma link C++ class  AliFMDInputRecPoints;
+#pragma link C++ class  AliFMDDisplay;
 
 #else
 # error Not for compilation 

@@ -34,14 +34,17 @@
 #include "AliFMD.h"             // ALIFMD_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDigit_H
-#include "AliFMDMultStrip.h"	// ALIFMDMultStrip_H
-#include "AliFMDMultRegion.h"	// ALIFMDMultRegion_H
+#include "AliFMDRecPoint.h"	// ALIFMDRECPOINT_H
+#include <AliESD.h>
+#include <AliESDFMD.h>
 #include <TTree.h>              // ROOT_TTree
+#include <TChain.h>             // ROOT_TChain
 #include <TParticle.h>          // ROOT_TParticle
 #include <TString.h>            // ROOT_TString
 #include <TDatabasePDG.h>       // ROOT_TDatabasePDG
 #include <TMath.h>              // ROOT_TMath
 #include <TGeoManager.h>        // ROOT_TGeoManager 
+#include <TSystemDirectory.h>   // ROOT_TSystemDirectory
 #include <Riostream.h>		// ROOT_Riostream
 
 //____________________________________________________________________
@@ -59,17 +62,19 @@ AliFMDInput::AliFMDInput()
     fStack(0),
     fFMDLoader(0), 
     fFMD(0),
+    fMainESD(0),
+    fESD(0),
     fTreeE(0),
     fTreeH(0),
     fTreeD(0),
     fTreeS(0),
     fTreeR(0), 
+    fChainE(0),
     fArrayE(0),
     fArrayH(0),
     fArrayD(0),
     fArrayS(0), 
-    fArrayN(0), 
-    fArrayP(0), 
+    fArrayR(0), 
     fTreeMask(0), 
     fIsInit(kFALSE)
 {
@@ -89,17 +94,19 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fStack(0),
     fFMDLoader(0), 
     fFMD(0),
+    fMainESD(0),
+    fESD(0),
     fTreeE(0),
     fTreeH(0),
     fTreeD(0),
     fTreeS(0),
     fTreeR(0), 
+    fChainE(0),
     fArrayE(0),
     fArrayH(0),
     fArrayD(0),
     fArrayS(0), 
-    fArrayN(0), 
-    fArrayP(0), 
+    fArrayR(0), 
     fTreeMask(0), 
     fIsInit(kFALSE)
 {
@@ -160,6 +167,21 @@ AliFMDInput::Init()
   }
   fTreeE = fLoader->TreeE();
 
+  // Optionally, get the ESD files
+  if (TESTBIT(fTreeMask, kESD)) {
+    fChainE = new TChain("esdTree");
+    TSystemDirectory dir;
+    TList*           files = dir.GetListOfFiles();
+    TSystemFile*     file;
+    files->Sort();
+    TIter            next(files);
+    while ((file = static_cast<TSystemFile*>(next()))) {
+      TString fname(file->GetName());
+      if (fname.Contains("AliESDs")) fChainE->AddFile(fname.Data());
+    }
+    fChainE->SetBranchAddress("ESD", &fMainESD);
+  }
+    
   // Optionally, get the geometry 
   if (TESTBIT(fTreeMask, kGeometry)) {
     TString fname(fRun->GetGeometryFileName());
@@ -174,6 +196,7 @@ AliFMDInput::Init()
       return kFALSE;
     }
   }
+
   
   fIsInit = kTRUE;
   return fIsInit;
@@ -229,10 +252,139 @@ AliFMDInput::Begin(Int_t event)
     AliInfo("Getting FMD reconstructed points");
     if (fFMDLoader->LoadRecPoints()) return kFALSE;
     fTreeR = fFMDLoader->TreeR();
-    if (!fArrayN) fArrayN = new TClonesArray("AliFMDMultStrip");
-    // if (!fArrayP) fArrayP = new TClonesArray("AliFMDMultRegion");
-    fTreeR->SetBranchAddress("FMD",  &fArrayN);
-    // fTreeR->SetBranchAddress("FMDPoisson", &fArrayP);
+    if (!fArrayR) fArrayR = new TClonesArray("AliFMDRecPoint");
+    fTreeR->SetBranchAddress("FMD",  &fArrayR);
+  }
+
+  // Possibly load FMD ESD information 
+  if (TESTBIT(fTreeMask, kESD)) {
+    AliInfo("Getting FMD event summary data");
+    Int_t read = fChainE->GetEntry(event);
+    if (read <= 0) return kFALSE;
+    fESD = fMainESD->GetFMDData();
+    if (!fESD) return kFALSE;
+  }
+  
+  return kTRUE;
+}
+
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::Event()
+{
+  // Process one event.  The default implementation one or more of 
+  //
+  //   -  ProcessHits       if the hits are loaded. 
+  //   -  ProcessDigits     if the digits are loaded. 
+  //   -  ProcessSDigits    if the sumbable digits are loaded. 
+  //   -  ProcessRecPoints  if the reconstructed points are loaded. 
+  //   -  ProcessESD        if the event summary data is loaded
+  // 
+  if (TESTBIT(fTreeMask, kHits)) 
+    if (!ProcessHits()) return kFALSE; 
+  if (TESTBIT(fTreeMask, kDigits)) 
+    if (!ProcessDigits()) return kFALSE;
+  if (TESTBIT(fTreeMask, kSDigits)) 
+    if (!ProcessSDigits()) return kFALSE;
+  if (TESTBIT(fTreeMask, kRecPoints)) 
+    if (!ProcessRecPoints()) return kFALSE;
+  if (TESTBIT(fTreeMask, kESD))
+    if (!ProcessESD(fESD)) return kFALSE;
+  
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessHits()
+{
+  if (!fTreeH) {
+    AliError("No hit tree defined");
+    return kFALSE;
+  }
+  Int_t nTracks = fTreeH->GetEntries();
+  for (Int_t i = 0; i < nTracks; i++) {
+    Int_t hitRead  = fTreeH->GetEntry(i);
+    if (hitRead <= 0) continue;
+    if (!fArrayH) {
+      AliError("No hit array defined");
+      return kFALSE;
+    }
+    Int_t nHit = fArrayH->GetEntries();
+    if (nHit <= 0) continue;
+    for (Int_t j = 0; j < nHit; j++) {
+      AliFMDHit* hit = static_cast<AliFMDHit*>(fArrayH->At(j));
+      if (!hit) continue;
+      TParticle* track = 0;
+      if (TESTBIT(fTreeMask, kKinematics) && fStack) {
+	Int_t trackno = hit->Track();
+	track = fStack->Particle(trackno);
+      }
+      if (!ProcessHit(hit, track)) return kFALSE;
+    }    
+  }
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessDigits()
+{
+  // Read the digit tree, and pass each digit to the member function
+  // ProcessDigit.
+  Int_t nEv = fTreeD->GetEntries();
+  for (Int_t i = 0; i < nEv; i++) {
+    Int_t digitRead  = fTreeD->GetEntry(i);
+    if (digitRead <= 0) continue;
+    Int_t nDigit = fArrayD->GetEntries();
+    if (nDigit <= 0) continue;
+    for (Int_t j = 0; j < nDigit; j++) {
+      AliFMDDigit* digit = static_cast<AliFMDDigit*>(fArrayD->At(j));
+      if (!digit) continue;
+      if (!ProcessDigit(digit)) return kFALSE;
+    }    
+  }
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessSDigits()
+{
+  // Read the summable digit tree, and pass each sumable digit to the
+  // member function ProcessSdigit.
+  Int_t nEv = fTreeD->GetEntries();
+  for (Int_t i = 0; i < nEv; i++) {
+    Int_t sdigitRead  = fTreeS->GetEntry(i);
+    if (sdigitRead <= 0) continue;
+    Int_t nSdigit = fArrayS->GetEntries();
+    if (nSdigit <= 0) continue;
+    for (Int_t j = 0; j < nSdigit; j++) {
+      AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(fArrayS->At(j));
+      if (!sdigit) continue;
+      if (!ProcessSDigit(sdigit)) return kFALSE;
+    }    
+  }
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessRecPoints()
+{
+  // Read the reconstrcted points tree, and pass each reconstruction
+  // object (AliFMDRecPoint) to either ProcessRecPoint.
+  Int_t nEv = fTreeR->GetEntries();
+  for (Int_t i = 0; i < nEv; i++) {
+    Int_t recRead  = fTreeR->GetEntry(i);
+    if (recRead <= 0) continue;
+    Int_t nRecPoint = fArrayR->GetEntries();
+    for (Int_t j = 0; j < nRecPoint; j++) {
+      AliFMDRecPoint* recPoint = static_cast<AliFMDRecPoint*>(fArrayR->At(j));
+      if (!recPoint) continue;
+      if (!ProcessRecPoint(recPoint)) return kFALSE;
+    }    
   }
   return kTRUE;
 }
@@ -307,40 +459,6 @@ ClassImp(AliFMDInputHits)
   ;
 #endif
 
-Bool_t
-AliFMDInputHits::Event()
-{
-  // Read the hit tree, and pass each hit to the member function
-  // ProcessHit.  Optionally, if the user said `AddLoad(kKinematics)'
-  // the track corresponding to the hit will also be passed to the
-  // ProcessHit member function of the derived class.
-  if (!fTreeH) {
-    AliError("No hit tree defined");
-    return kFALSE;
-  }
-  Int_t nTracks = fTreeH->GetEntries();
-  for (Int_t i = 0; i < nTracks; i++) {
-    Int_t hitRead  = fTreeH->GetEntry(i);
-    if (hitRead <= 0) continue;
-    if (!fArrayH) {
-      AliError("No hit array defined");
-      return kFALSE;
-    }
-    Int_t nHit = fArrayH->GetEntries();
-    if (nHit <= 0) continue;
-    for (Int_t j = 0; j < nHit; j++) {
-      AliFMDHit* hit = static_cast<AliFMDHit*>(fArrayH->At(j));
-      if (!hit) continue;
-      TParticle* track = 0;
-      if (TESTBIT(fTreeMask, kKinematics) && fStack) {
-	Int_t trackno = hit->Track();
-	track = fStack->Particle(trackno);
-      }
-      if (!ProcessHit(hit, track)) return kFALSE;
-    }    
-  }
-  return kTRUE;
-}
 
 //====================================================================
 ClassImp(AliFMDInputDigits)
@@ -348,85 +466,17 @@ ClassImp(AliFMDInputDigits)
   ;
 #endif
 
-Bool_t
-AliFMDInputDigits::Event()
-{
-  // Read the digit tree, and pass each digit to the member function
-  // ProcessDigit.
-  Int_t nEv = fTreeD->GetEntries();
-  for (Int_t i = 0; i < nEv; i++) {
-    Int_t digitRead  = fTreeD->GetEntry(i);
-    if (digitRead <= 0) continue;
-    Int_t nDigit = fArrayD->GetEntries();
-    if (nDigit <= 0) continue;
-    for (Int_t j = 0; j < nDigit; j++) {
-      AliFMDDigit* digit = static_cast<AliFMDDigit*>(fArrayD->At(j));
-      if (!digit) continue;
-      if (!ProcessDigit(digit)) return kFALSE;
-    }    
-  }
-  return kTRUE;
-}
-
 //====================================================================
 ClassImp(AliFMDInputSDigits)
 #if 0
   ;
 #endif
 
-Bool_t
-AliFMDInputSDigits::Event()
-{
-  // Read the summable digit tree, and pass each sumable digit to the
-  // member function ProcessSdigit.
-  Int_t nEv = fTreeD->GetEntries();
-  for (Int_t i = 0; i < nEv; i++) {
-    Int_t sdigitRead  = fTreeS->GetEntry(i);
-    if (sdigitRead <= 0) continue;
-    Int_t nSdigit = fArrayS->GetEntries();
-    if (nSdigit <= 0) continue;
-    for (Int_t j = 0; j < nSdigit; j++) {
-      AliFMDSDigit* sdigit = static_cast<AliFMDSDigit*>(fArrayS->At(j));
-      if (!sdigit) continue;
-      if (!ProcessSDigit(sdigit)) return kFALSE;
-    }    
-  }
-  return kTRUE;
-}
-
 //====================================================================
 ClassImp(AliFMDInputRecPoints)
 #if 0
   ;
 #endif
-
-Bool_t
-AliFMDInputRecPoints::Event()
-{
-  // Read the reconstrcted points tree, and pass each reconstruction
-  // object to either ProcessStrip (for AliFMDMultStrip objects), or 
-  // ProcessRegion (for AliFMDMultRegion objects).
-  Int_t nEv = fTreeR->GetEntries();
-  for (Int_t i = 0; i < nEv; i++) {
-    Int_t recRead  = fTreeR->GetEntry(i);
-    if (recRead <= 0) continue;
-    Int_t nRecStrip = fArrayN->GetEntries();
-    for (Int_t j = 0; j < nRecStrip; j++) {
-      AliFMDMultStrip* strip = static_cast<AliFMDMultStrip*>(fArrayN->At(j));
-      if (!strip) continue;
-      if (!ProcessStrip(strip)) return kFALSE;
-    }    
-    Int_t nRecRegion = fArrayP->GetEntries();
-    for (Int_t j = 0; j < nRecRegion; j++) {
-      AliFMDMultRegion* region =static_cast<AliFMDMultRegion*>(fArrayP->At(j));
-      if (!region) continue;
-      if (!ProcessRegion(region)) return kFALSE;
-    }    
-  }
-  return kTRUE;
-}
-
-    
 
 //____________________________________________________________________
 //

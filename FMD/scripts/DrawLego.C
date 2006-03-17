@@ -1,3 +1,4 @@
+//____________________________________________________________________
 //
 // Script to plot the lego information 
 // 
@@ -15,6 +16,7 @@
 using namespace std;
 #endif
 
+//____________________________________________________________________
 Float_t 
 deg2eta(Float_t ang) 
 {
@@ -26,6 +28,7 @@ deg2eta(Float_t ang)
 }
 
 
+//____________________________________________________________________
 TH1* 
 getHisto(const Char_t* which, const Char_t* what, TH1* back=0) 
 {
@@ -85,6 +88,7 @@ getHisto(const Char_t* which, const Char_t* what, TH1* back=0)
   return heta;
 }
 
+//____________________________________________________________________
 void
 drawLego(const char* what="abso") 
 {
@@ -225,6 +229,7 @@ drawLego(const char* what="abso")
 
   
   
+//____________________________________________________________________
 void 
 DrawLego() 
 {
@@ -232,5 +237,10 @@ DrawLego()
   drawLego("radl");
   drawLego("gcm2");
 }
+
+//____________________________________________________________________
+//
+// EOF
+//
 
   

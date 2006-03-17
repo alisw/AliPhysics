@@ -1,24 +1,23 @@
-#ifndef ALIFMDMULTSTRIP_H
-#define ALIFMDMULTSTRIP_H
+#ifndef ALIFMDRECPOINT_H
+#define ALIFMDRECPOINT_H
 
 // Reconstracted Particles Class: has number of reconstructed
 // particles in sectors from NumOfMinSector to NumberOfMaxSector()
-// rings from NumOfMinRing to NumOfMaxRing for each FMDvolume
+// rings from NumOfMinRing to NumOfMaxRing for each FMDvolume 
 //
-#ifndef ALIFMDMULT_H
-# include "AliFMDMult.h"
+#ifndef ROOT_TObject
+# include <TObject.h>
 #endif
 
-class AliFMDMultStrip: public AliFMDMult
+class AliFMDRecPoint: public TObject
 {
 public:
-  AliFMDMultStrip();
-  AliFMDMultStrip (UShort_t detector,  Char_t   ring, 
-		   UShort_t sector,    UShort_t strip, 
-		   Float_t  eta,       Float_t  phi,
-		   Float_t  edep,      Float_t  particles, 
-		   UShort_t method);
-  virtual ~AliFMDMultStrip(){};
+  AliFMDRecPoint();
+  AliFMDRecPoint(UShort_t detector,  Char_t   ring, 
+	     UShort_t sector,    UShort_t strip, 
+	     Float_t  eta,       Float_t  phi,
+	     Float_t  edep,      Float_t  particles);
+  virtual ~AliFMDRecPoint() {};
 
   UShort_t     Detector() const        { return fDetector; }
   Char_t       Ring() const            { return fRing; }
@@ -27,7 +26,10 @@ public:
   Float_t      Eta() const             { return fEta; }
   Float_t      Phi() const             { return fPhi; }
   Float_t      Edep() const            { return fEdep; }
+  Float_t      Particles() const       { return fParticles; }
   virtual void Print(Option_t* opt="D") const;
+  const char*  GetName()                const;
+  const char*  GetTitle()               const;
 protected:
   UShort_t fDetector;        // Detector #
   Char_t   fRing;            // Ring ID
@@ -36,8 +38,9 @@ protected:
   Float_t  fEta;             // Eta value 
   Float_t  fPhi;             // Phi value
   Float_t  fEdep;            // Energy deposited 
+  Float_t  fParticles;       // Quasi-number of particles 
 
-  ClassDef(AliFMDMultStrip,1) // Rec. Multiplicity in a strip
+  ClassDef(AliFMDRecPoint,1)     // Base class for multiplicity data
 };
 #endif
 //____________________________________________________________________

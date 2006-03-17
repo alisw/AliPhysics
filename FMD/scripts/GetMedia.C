@@ -1,3 +1,4 @@
+//____________________________________________________________________
 //
 // $Id$
 //
@@ -43,6 +44,7 @@ struct Media : public TNamed
 };
 
 
+//____________________________________________________________________
 class GetMedia : public AliFMDInputHits
 {
 private:
@@ -53,6 +55,7 @@ private:
   Int_t      fEv;
   TFile*     fOutput;
 public:
+  //__________________________________________________________________
   GetMedia(const char* modlist="FMD:ITS:BODY:ABSO:START:PIPE", 
 	   const char* output="media.root") 
   { 
@@ -62,6 +65,7 @@ public:
     fEv     = 0;
     AddLoad(kKinematics);
   }
+  //__________________________________________________________________
   Media* FindMedia(Int_t med) 
   {
     TIter next(&fMedia);
@@ -74,6 +78,7 @@ public:
     }
     return 0;
   }
+  //__________________________________________________________________
   Bool_t Init()
   {
     if (!gGeoManager) {
@@ -95,11 +100,13 @@ public:
     if (fMedia.GetEntries() <= 0) return kFALSE;
     return AliFMDInputHits::Init();
   }  
+  //__________________________________________________________________
   Bool_t Begin(Int_t ev) 
   {
     fEv = ev;
     return AliFMDInputHits::Begin(ev);
   }
+  //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle* track) 
   {
     if (!hit || !track) {
@@ -139,6 +146,7 @@ public:
 			 hit->Pdg());
     return kTRUE;
   }
+  //__________________________________________________________________
   Bool_t Finish()
   {
     fOutput->Write();

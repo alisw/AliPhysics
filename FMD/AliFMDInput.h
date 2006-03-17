@@ -23,12 +23,17 @@ class AliStack;
 class AliRun;
 class AliFMD;
 class AliFMDHit;
+class AliFMDDigit;
+class AliFMDSDigit;
+class AliFMDRecPoint;
+class AliESD;
+class AliESDFMD;
 class TString;
 class TClonesArray;
 class TTree;
 class TGeoManager;
 class TParticle;
-
+class TChain;
 
 //___________________________________________________________________
 class AliFMDInput : public TObject
@@ -41,6 +46,7 @@ public:
     kSDigits,         // Summable digits 
     kHeader,          // Header information 
     kRecPoints,       // Reconstructed points
+    kESD,             // Load ESD's
     kGeometry         // Not really a tree 
   };
   AliFMDInput();
@@ -53,10 +59,22 @@ public:
 
   virtual Bool_t Init();
   virtual Bool_t Begin(Int_t event);
-  virtual Bool_t Event() = 0;
+  virtual Bool_t Event();
   virtual Bool_t End();
   virtual Bool_t Finish() { return kTRUE; }
   virtual Bool_t Run();
+
+  virtual Bool_t ProcessHits();
+  virtual Bool_t ProcessDigits();
+  virtual Bool_t ProcessSDigits();
+  virtual Bool_t ProcessRecPoints();
+
+  virtual Bool_t ProcessHit(AliFMDHit*, TParticle*)  { return kTRUE; }
+  virtual Bool_t ProcessDigit(AliFMDDigit*)          { return kTRUE; }
+  virtual Bool_t ProcessSDigit(AliFMDSDigit*)        { return kTRUE; }
+  virtual Bool_t ProcessRecPoint(AliFMDRecPoint*)    { return kTRUE; }
+  virtual Bool_t ProcessESD(AliESDFMD*)              { return kTRUE; }
+  
 protected:
   TString       fGAliceFile; // File name of gAlice file
   AliRunLoader* fLoader;     // Loader of FMD data 
@@ -64,17 +82,19 @@ protected:
   AliStack*     fStack;      // Stack of particles 
   AliLoader*    fFMDLoader;  // Loader of FMD data 
   AliFMD*       fFMD;        // FMD object
+  AliESD*       fMainESD;    // ESD Object
+  AliESDFMD*    fESD;        // FMD ESD data  
   TTree*        fTreeE;      // Header tree 
   TTree*        fTreeH;      // Hits tree
   TTree*        fTreeD;      // Digit tree 
   TTree*        fTreeS;      // SDigit tree 
   TTree*        fTreeR;      // RecPoint tree
+  TChain*       fChainE;     // Chain of ESD's
   TClonesArray* fArrayE;     // Event info array
   TClonesArray* fArrayH;     // Hit info array
   TClonesArray* fArrayD;     // Digit info array
   TClonesArray* fArrayS;     // SDigit info array
-  TClonesArray* fArrayN;     // Mult (single) info array
-  TClonesArray* fArrayP;     // Mult (region) info array
+  TClonesArray* fArrayR;     // Mult (single) info array
   TGeoManager*  fGeoManager; // Geometry manager
   Int_t         fTreeMask;   // Which tree's to load
   Bool_t        fIsInit;
@@ -89,8 +109,6 @@ class AliFMDInputHits : public AliFMDInput
 public:
   AliFMDInputHits(const char* file="galice.root") 
     : AliFMDInput(file) { AddLoad(kHits); }
-  virtual Bool_t Event();
-  virtual Bool_t ProcessHit(AliFMDHit* hit, TParticle* track) = 0;
   ClassDef(AliFMDInputHits, 0);
 };
 
@@ -101,8 +119,6 @@ class AliFMDInputDigits : public AliFMDInput
 public:
   AliFMDInputDigits(const char* file="galice.root")
     : AliFMDInput(file) { AddLoad(kDigits); }
-  virtual Bool_t Event();
-  virtual Bool_t ProcessDigit(AliFMDDigit* digit) = 0;
   ClassDef(AliFMDInputDigits, 0);
 };
 
@@ -113,22 +129,16 @@ class AliFMDInputSDigits : public AliFMDInput
 public:
   AliFMDInputSDigits(const char* file="galice.root") 
     : AliFMDInput(file) { AddLoad(kSDigits); }
-  virtual Bool_t Event();
-  virtual Bool_t ProcessSDigit(AliFMDSDigit* sdigit) = 0;
   ClassDef(AliFMDInputSDigits, 0);
 };
 
 //____________________________________________________________________
-class AliFMDMultStrip;
-class AliFMDMultRegion;
+class AliFMDRecPoint;
 class AliFMDInputRecPoints : public AliFMDInput 
 {
 public:
   AliFMDInputRecPoints(const char* file="galice.root") 
     : AliFMDInput(file) { AddLoad(kRecPoints); }
-  virtual Bool_t Event();
-  virtual Bool_t ProcessStrip(AliFMDMultStrip* mult) = 0;
-  virtual Bool_t ProcessRegion(AliFMDMultRegion* mult) = 0;
   ClassDef(AliFMDInputRecPoints, 0);
 };
 

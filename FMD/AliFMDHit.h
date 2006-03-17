@@ -39,7 +39,7 @@ public:
 	    Float_t  l=0, 
 	    Bool_t   stop=kFALSE);
   virtual ~AliFMDHit() {}
-
+  
   UShort_t Detector()	const { return fDetector; }
   Char_t   Ring()	const { return fRing;     }
   UShort_t Sector()	const { return fSector;   }
@@ -55,7 +55,10 @@ public:
   Float_t  Time()       const { return fTime;     }
   Float_t  Length()     const { return fLength;   }
   Bool_t   IsStop()     const { return fStop;     }
-  void     Print(Option_t* opt="") const;
+
+  void        Print(Option_t* opt="") const;
+  const char* GetName()               const;
+  const char* GetTitle()              const;
 
   void     SetEdep(Float_t edep) { fEdep = edep; }
 protected:

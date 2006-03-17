@@ -103,7 +103,7 @@
 #include "AliFMDReconstructor.h"           // ALIFMDRECONSTRUCTOR_H
 #include "AliFMDRawStream.h"               // ALIFMDRAWSTREAM_H
 #include "AliFMDRawReader.h"               // ALIFMDRAWREADER_H
-#include "AliFMDMultStrip.h"	   	   // ALIFMDMULTNAIIVE_H
+#include "AliFMDRecPoint.h"	   	   // ALIFMDMULTNAIIVE_H
 #include "AliESD.h"			   // ALIESD_H
 #include <AliESDFMD.h>			   // ALIESDFMD_H
 #include <TFile.h>
@@ -159,10 +159,15 @@ AliFMDReconstructor::Init(AliRunLoader* runLoader)
 {
   // Initialize the reconstructor 
   AliDebug(1, Form("Init called with runloader 0x%x", runLoader));
+  // Initialize the geometry 
+  AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+  fmd->Init();
+  fmd->InitTransformations();
+  
   // Current vertex position
   fCurrentVertex = 0;
   // Create array of reconstructed strip multiplicities 
-  fMult = new TClonesArray("AliFMDMultStrip", 51200);
+  fMult = new TClonesArray("AliFMDRecPoint", 51200);
   // Create ESD output object 
   fESDObj = new AliESDFMD;
   
@@ -306,14 +311,13 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
 		      digit->Strip(), digit->Counts(), counts, edep, mult));
     
     // Create a `RecPoint' on the output branch. 
-    AliFMDMultStrip* m = 
-      new ((*fMult)[fNMult]) AliFMDMultStrip(digit->Detector(), 
-					     digit->Ring(), 
-					     digit->Sector(),
-					     digit->Strip(),
-					     eta, phi, 
-					     edep, mult,
-					     AliFMDMult::kNaiive);
+    AliFMDRecPoint* m = 
+      new ((*fMult)[fNMult]) AliFMDRecPoint(digit->Detector(), 
+					    digit->Ring(), 
+					    digit->Sector(),
+					    digit->Strip(),
+					    eta, phi, 
+					    edep, mult);
     (void)m; // Suppress warnings about unused variables. 
     fNMult++;
 
@@ -424,6 +428,7 @@ AliFMDReconstructor::PhysicalCoordinates(AliFMDDigit* digit,
   // 
   // Get geometry. 
   AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+#if 0
   AliFMDDetector* subDetector = fmd->GetDetector(digit->Detector());
   if (!subDetector) { 
     Warning("ProcessDigits", "Unknown detector: FMD%d" , digit->Detector());
@@ -439,16 +444,21 @@ AliFMDReconstructor::PhysicalCoordinates(AliFMDDigit* digit,
 	    digit->Ring());
     return;
   }
-    
-  // Correct for vertex offset. 
   Float_t  realZ    = fCurrentVertex + ringZ;
   Float_t  stripR   = ((ring->GetHighR() - ring->GetLowR()) 
 		       / ring->GetNStrips() * (digit->Strip() + .5) 
 		       + ring->GetLowR());
   Float_t  theta    = TMath::ATan2(stripR, realZ);
-  phi               = (2 * TMath::Pi() / ring->GetNSectors() 
-		       * (digit->Sector() + .5));
-  eta               = -TMath::Log(TMath::Tan(theta / 2));
+#endif    
+  Double_t x, y, z, r, theta;
+  fmd->Detector2XYZ(digit->Detector(), digit->Ring(), digit->Sector(), 
+		    digit->Strip(), x, y, z);
+  // Correct for vertex offset. 
+  z     += fCurrentVertex;
+  phi   =  TMath::ATan2(y, x);
+  r     =  TMath::Sqrt(y * y + x * x);
+  theta =  TMath::ATan2(r, z);
+  eta   = -TMath::Log(TMath::Tan(theta / 2));
 }
 
       

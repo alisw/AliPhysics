@@ -1,9 +1,33 @@
 	Things to do in the FMD offline code
 	------------------------------------
 
-* Split rings/cone into half rings/cones for alignment.
-* In AliFMDGeometry, get the global transformation matrices for each
-  sensitive volume (use TGeoIterator). 
-* Try implement alignment objects. 
-* Get calibration parameters (in AliFMDParameters) from CDB.
-* Implement Detector2XYZ and XYZ2Detector via TGeoMatrix. 
+
+
+* Split geometry
+   Split rings/cone into half rings/cones for alignment. All most
+   done.   
+- Need a bit of checking.
+- Perhaps we need to introduce detector volumes again to make sure
+   that the volume iterators find the right volume.
+
+* Transformations 
+   In AliFMDGeometry, get the global transformation matrices
+   for each sensitive volume (use TGeoIterator).   
+- Almost done.  
+- Need to use it in the code.
+
+* Alignment
+   Try implement alignment objects. 
+- Make a script that makes `dummy' alignments in a file. 
+- Read in the alignments, and apply them in simulation and
+   reconstruction. 
+
+* Calibration 
+   Get calibration parameters (in AliFMDParameters) from CDB.
+- Make a script that makes dummy calibrations. 
+- Read in dummy calibrations, and use them
+
+* Translations
+-  Implement Detector2XYZ via TGeoMatrix. 
+-  Implement XYZ2Detector via TGeoMatrix. 
+

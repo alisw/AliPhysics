@@ -2,7 +2,8 @@
 #
 # $Id$
 
-SRCS		=  AliFMDInput.cxx 				
+SRCS		=  AliFMDInput.cxx 		\
+		   AliFMDDisplay.cxx
 HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDutilLinkDef.h
 

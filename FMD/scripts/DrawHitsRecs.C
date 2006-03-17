@@ -1,3 +1,4 @@
+//____________________________________________________________________
 //
 // $Id$
 //
@@ -28,6 +29,7 @@
 #include <AliStack.h>
 #include <AliLog.h>
 
+//____________________________________________________________________
 class DrawHitsRecs : public AliFMDInputHits
 {
 private:
@@ -40,6 +42,7 @@ private:
   AliFMDFloatMap fMult;
   Bool_t fPrimary;
 public:
+  //__________________________________________________________________
   TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
   {
     TArrayF bins(n+1);
@@ -52,6 +55,7 @@ public:
     }
     return bins;
   }
+  //__________________________________________________________________
   DrawHitsRecs(Bool_t primary=kFALSE,
 	       Int_t n=900, Double_t emin=1e-3, Double_t emax=10, 
 	       Int_t m=21, Double_t mmin=-0.5, Double_t mmax=20.5) 
@@ -78,11 +82,13 @@ public:
     fHitsVsStrip->SetXTitle("# of Hits");
     fHitsVsStrip->SetYTitle("Strip Multiplicity");
   }
+  //__________________________________________________________________
   Bool_t Begin(Int_t ev) 
   {
     fMap.Reset();
     return AliFMDInputHits::Begin(ev);
   }
+  //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle*) 
   {
     // Cache the energy loss 
@@ -105,39 +111,27 @@ public:
     fMap(det, rng, sec, str).fN++;
     return kTRUE;
   }
-  Bool_t Event() 
+  //__________________________________________________________________
+  Bool_t ProcessRecPoint(AliFMDRecPoint* single) 
   {
-    if (!AliFMDInputHits::Event()) return kFALSE;
-    Int_t nEv = fTreeR->GetEntries();
-    for (Int_t i = 0; i < nEv; i++) {
-      Int_t singleRead  = fTreeR->GetEntry(i);
-      if (singleRead <= 0) continue;
-      Int_t nSingle = fArrayN->GetEntries();
-      if (nSingle <= 0) continue;
-      for (Int_t j = 0; j < nSingle; j++) {
-	AliFMDMultStrip* single = 
-	  static_cast<AliFMDMultStrip*>(fArrayN->At(j));
-	if (!single) continue;
-	UShort_t det = single->Detector();
-	Char_t   rng = single->Ring();
-	UShort_t sec = single->Sector();
-	UShort_t str = single->Strip();
-	if (str > 511) {
-	  AliWarning(Form("Bad strip number %d in single", str));
-	  continue;
-	}
-	if (fMap(det, rng, sec, str).fEdep > 0) 
-	  fElossVsMult->Fill(fMap(det, rng, sec, str).fEdep, 
-			     single->Particles());
-	if (fMap(det, rng, sec, str).fN > 0) 
-	  fHitsVsStrip->Fill(fMap(det, rng, sec, str).fN, 
-			     single->Particles());
-	fEta(det, rng, sec, str)  = single->Eta();
-	fPhi(det, rng, sec, str)  = single->Phi() * 180 / TMath::Pi();
-      }      
+    if (!single) continue;
+    UShort_t det = single->Detector();
+    Char_t   rng = single->Ring();
+    UShort_t sec = single->Sector();
+    UShort_t str = single->Strip();
+    if (str > 511) {
+      AliWarning(Form("Bad strip number %d in single", str));
+      continue;
     }
+    if (fMap(det, rng, sec, str).fEdep > 0) 
+      fElossVsMult->Fill(fMap(det, rng, sec, str).fEdep, 
+			 single->Particles());
+    if (fMap(det, rng, sec, str).fN > 0) 
+      fHitsVsStrip->Fill(fMap(det, rng, sec, str).fN, 
+			 single->Particles());
     return kTRUE;
   }
+  //__________________________________________________________________
   Bool_t Finish()
   {
     gStyle->SetPalette(1);

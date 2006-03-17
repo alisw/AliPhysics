@@ -23,6 +23,7 @@
 #include <TGeoMedium.h>
 #include <TGeant3.h>
 
+//____________________________________________________________________
 struct Mech 
 {
   char*    name;
@@ -33,6 +34,7 @@ struct Mech
 };
 
 
+//____________________________________________________________________
 void
 GetXsection(const char* medName, const char* pdgName,
 	    Int_t n=91, Float_t emin=1e-5, Float_t emax=1e4)

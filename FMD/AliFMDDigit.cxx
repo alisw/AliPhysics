@@ -113,7 +113,9 @@ AliFMDBaseDigit::Print(Option_t* /* option*/) const
 const char*
 AliFMDBaseDigit::GetName() const 
 { 
-  return Form("FMD%d%c[%2d,%3d]", fDetector, fRing, fSector, fStrip);
+  static TString n;
+  n = Form("FMD%d%c[%2d,%3d]", fDetector, fRing, fSector, fStrip);
+  return n.Data();
 }
 
 //====================================================================
@@ -151,6 +153,15 @@ AliFMDDigit::AliFMDDigit(UShort_t detector,
   //    count1    ADC count (a 10-bit word)
   //    count2    ADC count (a 10-bit word) -1 if not used
   //    count3    ADC count (a 10-bit word) -1 if not used
+}
+
+//____________________________________________________________________
+const char*
+AliFMDDigit::GetTitle() const 
+{ 
+  static TString t;
+  t = Form("ADC: %d", Counts());
+  return t.Data();
 }
 
 //____________________________________________________________________

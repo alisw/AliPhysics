@@ -24,13 +24,10 @@ class AliFMDDetector;
 class AliFMD1;
 class AliFMD2;
 class AliFMD3;
-#ifndef USE_PRE_MOVE
 #ifndef ROOT_TArrayI
 # include <TArrayI.h>
 #endif
 class AliFMDGeometryBuilder;
-class TArrayI;
-#endif
 
 
 //__________________________________________________________________
@@ -41,6 +38,7 @@ class AliFMDGeometry : public AliGeometry
 public:
   static AliFMDGeometry* Instance();
   virtual void Init();
+  virtual void InitTransformations();
   AliFMDRing*     GetInner() const { return fInner; }
   AliFMDRing*     GetOuter() const { return fOuter; }
   AliFMD1*        GetFMD1()  const { return (fUseFMD1 ? fFMD1 : 0); }
@@ -57,7 +55,6 @@ public:
   Bool_t          XYZ2Detector(Double_t x, Double_t y, Double_t z, 
 			       UShort_t& detector, Char_t& ring, 
 			       UShort_t& sector, UShort_t& strip) const;
-#ifndef USE_PRE_MOVE
   void   Build();
   Int_t  GetDetectorOff() const    { return fDetectorOff; }
   Int_t  GetModuleOff() const      { return fModuleOff;   }
@@ -75,7 +72,6 @@ public:
   void   SetDetailed(Bool_t det) { fDetailed = det; }
   Bool_t IsDetailed() const { return fDetailed; }
   void   UseAssembly(Bool_t ass)  { fUseAssembly = ass; }
-#endif  
 
   // AliGeometry member functions 
   virtual void GetGlobal(const AliRecPoint* p, TVector3& pos, 
@@ -98,7 +94,6 @@ protected:
   AliFMDGeometry& operator=(const AliFMDGeometry& other);
   virtual ~AliFMDGeometry() {}
   
-#ifndef USE_PRE_MOVE
   AliFMDGeometryBuilder* fBuilder;
   Int_t fDetectorOff;
   Int_t fModuleOff;  
@@ -107,7 +102,6 @@ protected:
   TArrayI fActive;
   Bool_t fDetailed;
   Bool_t fUseAssembly;
-#endif
 
   ClassDef(AliFMDGeometry,1); //
 };

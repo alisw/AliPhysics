@@ -119,6 +119,17 @@ AliFMDRing::GetVertex(Int_t i) const
 }
 
 //____________________________________________________________________
+Double_t
+AliFMDRing::GetStripRadius(UShort_t strip) const
+{
+  // Return the nominal strip radius 
+  Double_t rmax     = GetMaxR();
+  Double_t stripoff = GetMinR();
+  Double_t dstrip   = (rmax - stripoff) / GetNStrips();
+  return (strip + .5) * dstrip + stripoff; // fLowR
+}
+ 
+//____________________________________________________________________
 void
 AliFMDRing::Detector2XYZ(UShort_t sector,
 			 UShort_t strip, 

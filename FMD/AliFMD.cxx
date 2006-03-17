@@ -102,6 +102,9 @@
 #include <TBrowser.h>		// ROOT_TBrowser
 #include <TMath.h>		// ROOT_TMath
 #include <TVirtualMC.h>		// ROOT_TVirtualMC
+#include <TVector2.h>
+#include <TVector3.h>
+#include <TMarker3DBox.h>
 
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliLoader.h>		// ALILOADER_H
@@ -116,17 +119,56 @@
 #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
 #include "AliFMDRing.h"		// ALIFMDRING_H
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
-#ifdef USE_PRE_MOVE
-#include "AliFMDSimulator.h"	// ALIFMDSIMULATOR_H
-#include "AliFMDG3Simulator.h"	// ALIFMDG3SIMULATOR_H
-#include "AliFMDGeoSimulator.h"	// ALIFMDGEOSIMULATOR_H
-#include "AliFMDG3OldSimulator.h"	// ALIFMDG3OLDSIMULATOR_H
-#include "AliFMDGeoOldSimulator.h"	// ALIFMDGEOOLDSIMULATOR_H
-#else
-#include "AliFMDGeometryBuilderSimple.h"
-#endif
+#include "AliPoints.h"	        // ALIPOINTS_H
+#include "AliFMDGeometryBuilder.h"
 #include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
-#include <TVector2.h>
+
+
+class AliFMDPoints : public AliPoints 
+{
+public:
+  AliFMDPoints(AliFMDHit* hit, UInt_t color) 
+    : AliPoints(1), fMarker(0)
+  {
+    if (!hit) return;
+    Float_t  size  = TMath::Min(TMath::Max(hit->Edep() * .1, .1), 1.);
+    TVector3 p(hit->Px(), hit->Py(), hit->Pz());
+    fMarker = new TMarker3DBox(hit->X(), hit->Y(), hit->Z(), size, size, size,
+			       p.Theta(), p.Phi());
+    fMarker->SetLineColor(color);
+    fMarker->SetRefObject(this);
+    fP[0] = hit->X();
+    fP[1] = hit->Y();
+    fP[2] = hit->Z();
+  }
+  ~AliFMDPoints() 
+  {
+    // if (fMarker) delete  fMarker;
+  }
+  void SetXYZ(Double_t x, Double_t y, Double_t z)
+  {
+    if (fMarker) fMarker->SetPosition(x, y, z);
+  }
+  Int_t DistancetoPrimitive(Int_t px, Int_t py) 
+  {
+    return fMarker->DistancetoPrimitive(px, py);
+  }
+  void Draw(Option_t* option) 
+  {
+    if (fMarker) fMarker->Draw(option);
+  }
+  void Paint(Option_t* option)
+  {
+    if (fMarker) fMarker->Paint(option);
+  }
+  void SetMarkerColor(Color_t colour) 
+  {
+    if (fMarker) fMarker->SetLineColor(colour);
+  }
+private:
+  TMarker3DBox* fMarker;
+};
+
 
 //____________________________________________________________________
 ClassImp(AliFMD)
@@ -140,9 +182,6 @@ AliFMD::AliFMD()
     fSDigits(0), 
     fNsdigits(0),
     fDetailed(kTRUE),
-#ifdef USE_PRE_MOVE
-    fSimulator(0), 
-#endif
     fBad(0)
 {
   //
@@ -163,9 +202,6 @@ AliFMD::AliFMD(const AliFMD& other)
     fSDigits(other.fSDigits), 
     fNsdigits(other.fNsdigits),
     fDetailed(other.fDetailed),
-#ifdef USE_PRE_MOVE
-    fSimulator(other.fSimulator),
-#endif
     fBad(other.fBad)
 {
   // Copy constructor 
@@ -179,9 +215,6 @@ AliFMD::AliFMD(const char *name, const char *title)
     fSDigits(0),
     fNsdigits(0),
     fDetailed(kTRUE),
-#ifdef USE_PRE_MOVE
-    fSimulator(0), 
-#endif
     fBad(0)
 {
   //
@@ -241,9 +274,6 @@ AliFMD::operator=(const AliFMD& other)
   fSDigits		= other.fSDigits; 
   fNsdigits		= other.fNsdigits;
   fDetailed		= other.fDetailed;
-#ifdef USE_PRE_MOVE
-  fSimulator            = other.fSimulator;
-#endif
   fBad                  = other.fBad;
   return *this;
 }
@@ -281,19 +311,10 @@ AliFMD::CreateGeometry()
   //     AliFMDSubDetector::Geomtry();
   //   END FOR
   //
-#ifndef USE_PRE_MOVE
   AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
-  if (fUseOld) fmd->SetBuilder(new AliFMDGeometryBuilderSimple(fDetailed));
   fmd->SetDetailed(fDetailed);
   fmd->UseAssembly(fUseAssembly);
   fmd->Build();
-#else
-  if (!fSimulator) {
-    AliFatal("Simulator object not made yet!");
-    return;
-  }
-  fSimulator->DefineGeometry();
-#endif
 }    
 
 //____________________________________________________________________
@@ -326,7 +347,6 @@ void AliFMD::CreateMaterials()
     return;
   }
 #endif  
-#ifndef USE_PRE_MOVE     
   Int_t    id;
   Double_t a                = 0;
   Double_t z                = 0;
@@ -484,57 +504,29 @@ void AliFMD::CreateMaterials()
     AliMedium(kPlasticId, "Plastic$", id,0,fieldType,maxField,maxBending,
 	      maxStepSize,maxEnergyLoss,precision,minStepSize);
   }
-#else
-  AliDebug(10, "\tCreating materials");
-
-  if (fSimulator) {
-    AliFatal("Simulator object already instantised!");
-    return;
-  }
-  TVirtualMC* mc = TVirtualMC::GetMC();
-
-  Bool_t geo = mc->IsRootGeometrySupported();
-  if (geo) {
-    if (fUseOld) 
-      fSimulator = new AliFMDGeoOldSimulator(this, fDetailed);
-    else 
-      fSimulator = new AliFMDGeoSimulator(this, fDetailed);
-  }
-  else {
-    if (fUseOld) 
-      fSimulator = new AliFMDG3OldSimulator(this, fDetailed);
-    else    
-      fSimulator = new AliFMDG3Simulator(this, fDetailed);
-  }
-  AliDebug(1, Form("using a %s as simulation backend", 
-		   fSimulator->IsA()->GetName()));
-  fSimulator->SetDetailed(fDetailed);
-  fSimulator->UseAssembly(fUseAssembly);
-  fSimulator->DefineMaterials();
-#endif
 }
 
 //____________________________________________________________________
 void  
 AliFMD::Init()
-{}
+{
+  AliDebug(1, "Initialising FMD detector object");
+  AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
+  fmd->InitTransformations();
+}
 
 //____________________________________________________________________
 void
 AliFMD::FinishEvent()
 {
-#ifndef USE_PRE_MOVE
+  if (AliLog::GetDebugLevel("FMD", "AliFMD") < 10) return;
   if (fBad && fBad->GetEntries() > 0) {
     AliWarning((Form("EndEvent", "got %d 'bad' hits", fBad->GetEntries())));
     TIter next(fBad);
     AliFMDHit* hit;
-    while ((hit = static_cast<AliFMDHit*>(next()))) 
-      hit->Print("D");
+    while ((hit = static_cast<AliFMDHit*>(next()))) hit->Print("D");
     fBad->Clear();
   }
-#else
-  if (fSimulator) fSimulator->EndEvent();
-#endif
 }
 
 
@@ -666,6 +658,79 @@ AliFMD::BuildGeometry()
       } // for (Int_t k = 0 ; ...)
     } // for (Int_t j = 0 ; ...)
   } // for (Int_t i = 1 ; ...)
+}
+
+//____________________________________________________________________
+void 
+AliFMD::LoadPoints(Int_t /* track */) 
+{
+  //
+  // Store x, y, z of all hits in memory
+  //
+  if (!fHits) {
+    AliError(Form("fHits == 0. Name is %s",GetName()));
+    return;
+  }
+  Int_t nHits = fHits->GetEntriesFast();
+  if (nHits == 0) {
+    return;
+  }
+  Int_t tracks = gAlice->GetMCApp()->GetNtrack();
+  if (fPoints == 0) fPoints = new TObjArray(2 * tracks);
+
+  // Get geometry 
+  AliFMDGeometry* geom = AliFMDGeometry::Instance();
+  geom->Init();
+  geom->InitTransformations();
+
+  // Now make markers for each hit  
+  // AliInfo(Form("Drawing %d hits (have %d points) for track %d", 
+  //              nHits, fPoints->GetEntriesFast(), track));
+  for (Int_t ihit = 0; ihit < nHits; ihit++) {
+    AliFMDHit* hit = static_cast<AliFMDHit*>(fHits->At(ihit));
+    if (!hit) continue;
+    Double_t edep    = hit->Edep();
+    Double_t m       = hit->M();
+    Double_t poverm  = (m == 0 ? 0 : hit->P());
+    Double_t absQ    = TMath::Abs(hit->Q());
+    Bool_t   bad     = kFALSE;
+    // This `if' is to debug abnormal energy depositions.  We trigger on
+    // p/m approx larger than or equal to a MIP, and a large edep - more 
+    // than 1 keV - a MIP is 100 eV. 
+    if (edep > absQ * absQ && poverm > 1) bad = kTRUE;
+
+    AliFMDPoints* p1 = new AliFMDPoints(hit, GetMarkerColor());
+    // AliPoints* p1 = new AliPoints();
+    // p1->SetMarkerColor(GetMarkerColor());
+    // p1->SetMarkerSize(GetMarkerSize());
+    // p1->SetPoint(0, hit->X(), hit->Y(), hit->Z());
+    p1->SetDetector(this);
+    p1->SetParticle(hit->GetTrack());
+    fPoints->AddAt(p1, hit->GetTrack());
+    if (bad) {
+      p1->SetMarkerColor(4);
+      // p1->SetMarkerSize(2 * GetMarkerSize());
+    }
+    
+    Double_t x, y, z;
+    geom->Detector2XYZ(hit->Detector(), hit->Ring(), hit->Sector(), 
+		       hit->Strip(), x, y, z);
+    AliFMDPoints* p = new AliFMDPoints(hit, 3);
+    // AliPoints* p = new AliPoints();
+    // p->SetMarkerColor(3);
+    // p->SetMarkerSize(GetMarkerSize());
+    // p->SetPoint(0, x, y, z);
+    p->SetDetector(this);
+    p->SetParticle(hit->GetTrack());
+    p->SetXYZ(x, y, z);
+    p->SetMarkerColor(3);
+    fPoints->AddAt(p, tracks+hit->GetTrack());
+    if (bad) {
+      p->SetMarkerColor(5);
+      // p->SetMarkerSize(2 * GetMarkerSize());
+    }
+    // AliInfo(Form("Adding point at %d", tracks+hit->GetTrack()));
+  }
 }
 
 //____________________________________________________________________
@@ -1118,9 +1183,6 @@ AliFMD::Browse(TBrowser* b)
   //
   AliDebug(30, "\tBrowsing the FMD");
   AliDetector::Browse(b);
-#ifdef USE_PRE_MOVE
-  if (fSimulator) b->Add(fSimulator);
-#endif
   b->Add(AliFMDGeometry::Instance());
 }
 

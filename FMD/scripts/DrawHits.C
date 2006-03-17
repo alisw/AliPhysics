@@ -1,3 +1,4 @@
+//____________________________________________________________________
 //
 // $Id$
 //
@@ -24,6 +25,7 @@ private:
   TH2D* fElossVsPMQ; // Histogram 
   Int_t fPdg;
 public:
+  //__________________________________________________________________
   TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
   {
     TArrayF bins(n+1);
@@ -40,6 +42,7 @@ public:
     }
     return bins;
   }
+  //__________________________________________________________________
   DrawHits(Int_t m=1000, Double_t emin=1, Double_t emax=1000, 
 	   Int_t n=900, Double_t tmin=1e-2, Double_t tmax=1e3, 
 	   Int_t pdg=211) 
@@ -57,6 +60,7 @@ public:
     fElossVsPMQ->SetXTitle(Form("p%s", (fPdg == 0 ? "/(mq^{2})" : " [GeV]")));
     fElossVsPMQ->SetYTitle("#Delta E/#Delta x [MeV/cm]");
   }
+  //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle* p) 
   {
     if (!hit) {
@@ -84,6 +88,7 @@ public:
     fElossVsPMQ->Fill(x, y);
     return kTRUE;
   }
+  //__________________________________________________________________
   Bool_t Finish()
   {
     gStyle->SetPalette(1);

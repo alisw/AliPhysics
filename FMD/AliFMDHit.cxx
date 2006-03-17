@@ -120,6 +120,27 @@ AliFMDHit::AliFMDHit(Int_t    shunt,
 }
 
 //____________________________________________________________________
+const char*
+AliFMDHit::GetName() const 
+{ 
+  static TString n;
+  n = Form("FMD%d%c[%2d,%3d]", fDetector,fRing,fSector,fStrip);
+  return n.Data();
+}
+
+//____________________________________________________________________
+const char*
+AliFMDHit::GetTitle() const 
+{ 
+  static TString t;
+  TDatabasePDG* pdgDB = TDatabasePDG::Instance();
+  TParticlePDG* pdg   = pdgDB->GetParticle(fPdg);
+  t = Form("%s (%d): %f MeV / %f cm", (pdg ? pdg->GetName() : "?"), 
+	   fTrack, fEdep, fLength);
+  return t.Data();
+}
+
+//____________________________________________________________________
 Float_t
 AliFMDHit::P() const 
 {

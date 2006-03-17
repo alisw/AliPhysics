@@ -1,3 +1,4 @@
+//____________________________________________________________________
 //
 // $Id$
 //
@@ -25,6 +26,7 @@ private:
   TH2D* fElossVsAdc; // Histogram 
   AliFMDEdepMap fMap;
 public:
+  //__________________________________________________________________
   TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
   {
     TArrayF bins(n+1);
@@ -37,6 +39,7 @@ public:
     }
     return bins;
   }
+  //__________________________________________________________________
   DrawHitsDigits(Int_t n=900, Double_t emin=1e-3, Double_t emax=10, 
 		 Int_t m=1100, Double_t amin=-0.5, Double_t amax=1099.5) 
   { 
@@ -50,11 +53,13 @@ public:
     fElossVsAdc->SetXTitle("#Delta E/#Delta x [MeV/cm]");
     fElossVsAdc->SetYTitle("ADC value");
   }
+  //__________________________________________________________________
   Bool_t Begin(Int_t ev) 
   {
     fMap.Reset();
     return AliFMDInputHits::Begin(ev);
   }
+  //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle*) 
   {
     // Cache the energy loss 
@@ -71,31 +76,22 @@ public:
     fMap(det, rng, sec, str).fN++;
     return kTRUE;
   }
-  Bool_t Event() 
+  //__________________________________________________________________
+  Bool_t ProcessDigit(AliFMDDigit* digit)
   {
-    if (!AliFMDInputHits::Event()) return kFALSE;
-    Int_t nEv = fTreeD->GetEntries();
-    for (Int_t i = 0; i < nEv; i++) {
-      Int_t digitRead  = fTreeD->GetEntry(i);
-      if (digitRead <= 0) continue;
-      Int_t nDigit = fArrayD->GetEntries();
-      if (nDigit <= 0) continue;
-      for (Int_t j = 0; j < nDigit; j++) {
-	AliFMDDigit* digit = static_cast<AliFMDDigit*>(fArrayD->At(j));
-	if (!digit) continue;
-	UShort_t det = digit->Detector();
-	Char_t   rng = digit->Ring();
-	UShort_t sec = digit->Sector();
-	UShort_t str = digit->Strip();
-	if (str > 511) {
-	  AliWarning(Form("Bad strip number %d in digit", str));
-	  continue;
-	}
-	fElossVsAdc->Fill(fMap(det, rng, sec, str).fEdep, digit->Counts());
-      }    
+    if (!digit) continue;
+    UShort_t det = digit->Detector();
+    Char_t   rng = digit->Ring();
+    UShort_t sec = digit->Sector();
+    UShort_t str = digit->Strip();
+    if (str > 511) {
+      AliWarning(Form("Bad strip number %d in digit", str));
+      continue;
     }
+    fElossVsAdc->Fill(fMap(det, rng, sec, str).fEdep, digit->Counts());
     return kTRUE;
   }
+  //__________________________________________________________________
   Bool_t Finish()
   {
     gStyle->SetPalette(1);

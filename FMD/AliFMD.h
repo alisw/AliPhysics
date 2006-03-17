@@ -24,10 +24,8 @@
 class TBranch;
 class TClonesArray;
 class TBrowser;
+class TMarker3DBox;
 class AliDigitizer;
-#ifdef USE_PRE_MOVE
-class AliFMDSimulator;
-#endif
 class AliFMDHit;
 
 //____________________________________________________________________
@@ -55,7 +53,8 @@ public:
   virtual        void   BuildGeometry();
   virtual        void   DrawDetector();
   virtual        Int_t  DistanceToPrimitive(Int_t px, Int_t py);
-
+  virtual        void   LoadPoints(Int_t track);
+  
   // Hit and digit management 
   virtual void          MakeBranch(Option_t *opt=" ");
   virtual void          SetHitsAddressBranch(TBranch *b);
@@ -130,9 +129,6 @@ protected:
     kKaptonId              // ID index of Kapton Medium
   };  
 
-#ifdef USE_PRE_MOVE
-  AliFMDSimulator*   fSimulator;            // Simulator task
-#endif
   TObjArray*         fBad;                  //! debugging - bad hits 
   
   ClassDef(AliFMD,11)     // Base class FMD entry point

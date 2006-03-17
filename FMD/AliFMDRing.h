@@ -119,7 +119,9 @@ public:
   Double_t GetSpacing() const { return fSpacing; }
   /** @return The strip pitch */ 
   Double_t GetPitch() const { return (fMaxR - fMinR) / fNStrips; }
-     
+  /** @return Radius (in cm) correspondig to strip @a strip */
+  Double_t GetStripRadius(UShort_t strip) const;
+  
   /** @return List of verticies */
   const TObjArray& GetVerticies() const { return fVerticies; }
   /** @return Number of verticies */

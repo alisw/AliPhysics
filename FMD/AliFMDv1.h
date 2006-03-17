@@ -43,13 +43,13 @@ public:
   virtual Int_t  IsVersion() const {return 1;}
   virtual void   StepManager();
 protected:
-#ifndef USE_PRE_MOVE
   Bool_t VMC2FMD(TLorentzVector& v, UShort_t& detector,
 		 Char_t& ring, UShort_t& sector, UShort_t& strip) const;
   Bool_t VMC2FMD(Int_t copy, TLorentzVector& v,
 		 UShort_t& detector, Char_t& ring,
 		 UShort_t& sector, UShort_t& strip) const;
-#endif  
+  Bool_t CheckHit(Int_t trackno, Int_t pdg, Float_t absQ, 
+		  const TLorentzVector& p, Float_t edep) const;
 
   Double_t       fCurrentDeltaE;    // The current accumulated energy loss
   TLorentzVector fCurrentV;         // Current production vertex 

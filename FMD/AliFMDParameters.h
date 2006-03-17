@@ -81,6 +81,10 @@ public:
 			      UShort_t strip) const;
   UShort_t GetSampleRate(UShort_t ddl) const;
 
+  Bool_t   Hardware2Detector(UInt_t ddl, UInt_t addr, UShort_t& det,
+			     Char_t& ring, UShort_t& sec, UShort_t& str) const;
+  Bool_t   Detector2Hardware(UShort_t det, Char_t ring, UShort_t sec, 
+			     UShort_t str, UInt_t& ddl, UInt_t& addr) const;
   enum { 
     kBaseDDL = 0x1000 // DDL offset for the FMD
   };

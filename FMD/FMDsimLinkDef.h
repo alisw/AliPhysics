@@ -21,18 +21,10 @@
 #pragma link C++ class  AliFMDv0+;
 #pragma link C++ class  AliFMDv1+;
 #pragma link C++ class  AliFMDGeometryBuilder+;
-#pragma link C++ class  AliFMDGeometryBuilderSimple+;
-#pragma link C++ class  AliFMDSimulator+;
-#pragma link C++ class  AliFMDGeoSimulator+;
-#pragma link C++ class  AliFMDGeoOldSimulator+;
-#pragma link C++ class  AliFMDG3Simulator+;
-#pragma link C++ class  AliFMDG3OldSimulator+;
 #pragma link C++ class  AliFMDBaseDigitizer+;
 #pragma link C++ class  AliFMDDigitizer+;
 #pragma link C++ class  AliFMDSDigitizer+;
-#pragma link C++ class  AliFMDDigitizerAlla+;
 #pragma link C++ class  AliFMDRawWriter+;
-#pragma link C++ class  AliFMDAlla+;
 
 #else
 # error Not for compilation 

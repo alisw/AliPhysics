@@ -18,8 +18,6 @@ SRCS		=  AliFMDDigit.cxx		\
 
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDbaseLinkDef.h
-# Un comment to use old code with seperate simulator task
-# PACKCXXFLAGS	:= $(CXXFLAGS) -DUSE_PRE_MOVE
 
 #
 # EOF

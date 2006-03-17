@@ -14,12 +14,7 @@
 // #pragma link C++ class  AliFMDMap<UShort_t>;
 // #pragma link C++ typedef AliFMDAdcMap;
 #pragma link C++ class  AliFMDReconstructor+;
-// #pragma link C++ class  AliFMDMultAlgorithm+;
-// #pragma link C++ class  AliFMDMultNaiive+;
-// #pragma link C++ class  AliFMDMultPoisson+;
-#pragma link C++ class  AliFMDMult+;
-#pragma link C++ class  AliFMDMultRegion+;
-#pragma link C++ class  AliFMDMultStrip+;
+#pragma link C++ class  AliFMDRecPoint+;
 #pragma link C++ class  AliFMDRawStream+;
 #pragma link C++ class  AliFMDRawReader+;
 

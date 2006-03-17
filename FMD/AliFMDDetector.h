@@ -11,6 +11,7 @@
 # include <TNamed.h>
 #endif
 class AliFMDRing;
+class TGeoMatrix;
 
 
 //__________________________________________________________________
@@ -28,7 +29,10 @@ public:
   virtual ~AliFMDDetector() {}
   /** Initialize the geometry */
   virtual void Init();
-    
+  /** Find the transformations that correspond to modules of this
+      detector, and store them in the arrays. */
+  virtual void InitTransformations();
+  
   /** @param x Detector number */
   void SetId(Int_t x) { fId = x; }
   /** @param x Position of outer ring along z */
@@ -83,6 +87,8 @@ public:
   Bool_t XYZ2Detector(Double_t x, Double_t y, Double_t z, 
 		      Char_t& ring, UShort_t& sector, UShort_t& strip) const;
 protected:
+  Bool_t        HasAllTransforms(Char_t ring) const;
+  TGeoMatrix*   FindTransform(Char_t ring, UShort_t sector) const;
   Int_t		fId;			// Detector number
   Double_t	fInnerZ;		// Position of outer ring along z
   Double_t	fOuterZ;		// Position of outer ring along z
@@ -94,7 +100,9 @@ protected:
   Double_t	fOuterHoneyHighR;	// Outer radius of outer honeycomb
   AliFMDRing*	fInner;			// Pointer to inner ring information
   AliFMDRing*	fOuter;			// Pointer to outer ring information
-  
+  TObjArray*    fInnerTransforms;       // List of inner module <-> global
+  TObjArray*    fOuterTransforms;       // List of outer module <-> global
+
   ClassDef(AliFMDDetector, 1); // 
 };
 

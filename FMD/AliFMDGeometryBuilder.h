@@ -58,29 +58,40 @@ protected:
       @param outer Outer ring volume 
       @return  Detector volume */
   virtual TGeoVolume* DetectorGeometry(AliFMDDetector* d, 
-				       TGeoVolume* mother, 
-				       Double_t zmother, 
-				       TGeoVolume* inner, 
-				       TGeoVolume* outer=0);
+				       TGeoVolume* motherTop, 
+				       TGeoVolume* motherBot, 
+				       Double_t    zmother, 
+				       TGeoVolume* innerTop, 
+				       TGeoVolume* innerBot, 
+				       TGeoVolume* outerTop=0,
+				       TGeoVolume* outerBot=0);
   /** Make FMD1 volume 
       @param d Detector geometry 
       @param inner Inner ring volume 
       @return FMD1 volume  */
-  virtual TGeoVolume* FMD1Geometry(AliFMD1* d, TGeoVolume* inner);
+  virtual TGeoVolume* FMD1Geometry(AliFMD1* d, 
+				   TGeoVolume* innerTop,
+				   TGeoVolume* innerBot);
   /** Make FMD2 volume 
       @param d Detector geometry 
       @param inner Inner ring volume 
       @param outer Outer ring volume 
       @return FMD2 volume  */
-  virtual TGeoVolume* FMD2Geometry(AliFMD2* d, TGeoVolume* inner, 
-				   TGeoVolume* outer);
+  virtual TGeoVolume* FMD2Geometry(AliFMD2* d, 
+				   TGeoVolume* innerTop, 
+				   TGeoVolume* innerBot, 
+				   TGeoVolume* outerTop,
+				   TGeoVolume* outerBot);
   /** Make FMD3 volume 
       @param d Detector geometry 
       @param inner Inner ring volume 
       @param outer Outer ring volume 
       @return FMD3 volume  */
-  virtual TGeoVolume* FMD3Geometry(AliFMD3* d, TGeoVolume* inner, 
-				   TGeoVolume* outer);
+  virtual TGeoVolume* FMD3Geometry(AliFMD3* d, 
+				   TGeoVolume* innerTop, 
+				   TGeoVolume* innerBot, 
+				   TGeoVolume* outerTop,
+				   TGeoVolume* outerBot);
 
 
   TArrayI     fActiveId;      //! Active volume ID's
@@ -103,21 +114,23 @@ protected:
   static const Char_t* fgkActiveName;	// Name of Active volumes
   static const Char_t* fgkSectorName;	// Name of Sector volumes
   static const Char_t* fgkStripName;	// Name of Strip volumes
-  static const Char_t* fgkModuleName;	// Name of Module volumes
+  static const Char_t* fgkSensorName;	// Name of Sensor volumes
   static const Char_t* fgkPCBName;	// Name of PCB volumes
+  static const Char_t* fgkCuName;	// Name of copper volumes
+  static const Char_t* fgkChipName;	// Name of chip volumes
   static const Char_t* fgkLongLegName;	// Name of LongLeg volumes
   static const Char_t* fgkShortLegName;	// Name of ShortLeg volumes
   static const Char_t* fgkFrontVName;	// Name of Front volumes
   static const Char_t* fgkBackVName;	// Name of Back volumes
-  static const Char_t* fgkRingName;	// Name of Ring volumes
-  static const Char_t* fgkTopHCName;	// Name of TopHC volumes
-  static const Char_t* fgkBotHCName;	// Name of BotHC volumes
-  static const Char_t* fgkTopIHCName;	// Name of TopIHC volumes
-  static const Char_t* fgkBotIHCName;	// Name of BotIHC volumes
+  static const Char_t* fgkRingTopName;	// Name of Top ring volumes
+  static const Char_t* fgkRingBotName;	// Name of Bottom ring volumes
+  static const Char_t* fgkHCName;	// Name of Honeycomb volumes
+  static const Char_t* fgkIHCName;	// Name of Inner honeycomb volumes
   static const Char_t* fgkNoseName;	// Name of Nose volumes
   static const Char_t* fgkBackName;	// Name of Back volumes
   static const Char_t* fgkBeamName;	// Name of Beam volumes
   static const Char_t* fgkFlangeName;	// Name of Flange volumes
+  static const Char_t* fgkFMDName;	// Name of Half FMD volumes
 
   ClassDef(AliFMDGeometryBuilder,1)
 };

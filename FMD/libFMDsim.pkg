@@ -6,23 +6,14 @@ SRCS		=  AliFMD.cxx 				\
 		   AliFMDv0.cxx				\
 		   AliFMDv1.cxx				\
 		   AliFMDGeometryBuilder.cxx		\
-		   AliFMDGeometryBuilderSimple.cxx	\
-		   AliFMDSimulator.cxx			\
-		   AliFMDGeoSimulator.cxx		\
-		   AliFMDGeoOldSimulator.cxx		\
-		   AliFMDG3Simulator.cxx		\
-		   AliFMDG3OldSimulator.cxx		\
 		   AliFMDHit.cxx 			\
 		   AliFMDDigitizer.cxx			\
-		   AliFMDDigitizerAlla.cxx		\
 		   AliFMDEdepMap.cxx			\
 		   AliFMDRawWriter.cxx			\
-		   AliFMDAlla.cxx		
+
 HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDsimLinkDef.h
 EINCLUDE 	:= $(ALICE)/RAW
-# Un comment to use old code with seperate simulator task
-# PACKCXXFLAGS	:= $(CXXFLAGS) -DUSE_PRE_MOVE
 
 #
 # EOF
