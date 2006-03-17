@@ -65,6 +65,8 @@ AliMUONClusterInput::~AliMUONClusterInput()
 // Destructor
     delete fgMinuit;
     delete fgMathieson;
+    fgMinuit = 0;
+    fgMathieson = 0;
 }
 
 AliMUONClusterInput::AliMUONClusterInput(const AliMUONClusterInput& clusterInput):TObject(clusterInput)
@@ -84,6 +86,7 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     fNDigits[0] = dig1->GetEntriesFast();
     fNDigits[1] = dig2->GetEntriesFast();
     
+    delete fgMathieson;
     fgMathieson = new AliMUONMathieson();
 
     AliMUON *pMUON;
