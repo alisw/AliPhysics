@@ -437,8 +437,16 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
   }
   else if ( fDigitizerType == "digitizer:NewDigitizerOldTrigger" )
   {
-    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision);
+    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kFALSE, kFALSE);
   }
+  else if ( fDigitizerType == "digitizer:NewDigitizerEffTrigger" )
+  {
+    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kTRUE, kFALSE);
+  }  
+  else if ( fDigitizerType == "digitizer:NewDigitizerWithNoiseOldTrigger" )
+  {
+    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kFALSE, kTRUE);
+  }    
   else
   {
     AliFatal(Form("Unknown digitizer type : %s",fDigitizerType.Data()));

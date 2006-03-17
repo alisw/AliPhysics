@@ -46,7 +46,7 @@ class AliMUON : public  AliDetector
     AliMUON();
     AliMUON(const char* name, const char *title="FactoryV4",
             const char* sDigitizerType="sdigitizer:AliMUONSDigitizerV2",
-            const char* digitizerType="digitizer:NewDigitizerOldTrigger");
+            const char* digitizerType="digitizer:NewDigitizerWithNoiseOldTrigger");
     virtual ~AliMUON();
    
     // Geometry
