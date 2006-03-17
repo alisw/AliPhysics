@@ -17,6 +17,13 @@
 #ifndef ALIGEOMETRY_H
 # include <AliGeometry.h>
 #endif
+#ifndef ROOT_TArrayI
+# include <TArrayI.h>
+#endif
+#ifndef ROOT_TMatrixFfwd
+# include <TMatrixFfwd.h>
+#endif
+class TVector3;
 class TParticle;
 class AliRecPoint;
 class AliFMDRing;
@@ -24,9 +31,6 @@ class AliFMDDetector;
 class AliFMD1;
 class AliFMD2;
 class AliFMD3;
-#ifndef ROOT_TArrayI
-# include <TArrayI.h>
-#endif
 class AliFMDGeometryBuilder;
 
 

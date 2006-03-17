@@ -24,6 +24,7 @@
 #pragma link C++ class  AliFMDCalibPedestal+;
 #pragma link C++ class  AliFMDCalibGain+;
 #pragma link C++ class  AliFMDCalibSampleRate+;
+#pragma link C++ class  AliFMDAltroMapping+;
 
 #else
 # error Not for compilation 

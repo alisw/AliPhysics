@@ -31,11 +31,14 @@ typedef AliFMDBoolMap   AliFMDCalibDeadMap;
 class AliFMDCalibPedestal;
 class AliFMDCalibGain;
 class AliFMDCalibSampleRate;
+class AliFMDAltroMapping;
 
 class AliFMDParameters : public TNamed
 {
 public:
   static AliFMDParameters* Instance();
+
+  void Init();
   
   // Set various `Fixed' parameters 
   void SetVA1MipRange(UShort_t r=20)          { fVA1MipRange = r; }
@@ -85,14 +88,23 @@ public:
 			     Char_t& ring, UShort_t& sec, UShort_t& str) const;
   Bool_t   Detector2Hardware(UShort_t det, Char_t ring, UShort_t sec, 
 			     UShort_t str, UInt_t& ddl, UInt_t& addr) const;
+  AliFMDAltroMapping* GetAltroMap() const;
   enum { 
     kBaseDDL = 0x1000 // DDL offset for the FMD
   };
 protected:
   AliFMDParameters();
   virtual ~AliFMDParameters() {}
-  static AliFMDParameters* fgInstance; // Static singleton instance
-  
+  static AliFMDParameters* fgInstance;   // Static singleton instance
+  static const char* fgkPulseGain;	 // Path to PulseGain calib object
+  static const char* fgkPedestal;	 // Path to Pedestal calib object
+  static const char* fgkDead;	         // Path to Dead calib object
+  static const char* fgkSampleRate;	 // Path to SampleRate calib object
+  static const char* fgkAltroMap;	 // Path to AltroMap calib object
+  static const char* fgkZeroSuppression; // Path to ZeroSuppression cal object
+
+  Bool_t          fIsInit;               // Whether we've been initialised  
+
   const Float_t   fSiDeDxMip;            // MIP dE/dx in Silicon
   UShort_t        fVA1MipRange;          // # MIPs the pre-amp can do    
   UShort_t        fAltroChannelSize;     // Largest # to store in 1 ADC ch.
@@ -112,9 +124,9 @@ protected:
   AliFMDCalibPedestal*        fPedestal;        // Pedestals 
   AliFMDCalibGain*            fPulseGain;       // Pulser gain
   AliFMDCalibDeadMap*         fDeadMap;         // Pulser gain
+  AliFMDAltroMapping*         fAltroMap;        // Map of hardware
   
-  
-  ClassDef(AliFMDParameters,2)
+  ClassDef(AliFMDParameters,3)
 };
 
 #endif
