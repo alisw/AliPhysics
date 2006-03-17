@@ -412,7 +412,7 @@ void AliTPCv2::CreateGeometry()
   //
   // define reflection matrix 
   //
-  TGeoRotation *ref = new TGeoRotation("ref",90.,0.,90.,270.,180.,0.);
+  TGeoRotation *ref = new TGeoRotation("ref",90.,0.,90.,90.,180.,0.);
   //
   cd1v->AddNode(cd2v,1); cd2v->AddNode(cd3v,1); cflv->AddNode(cd1v,1);
   //
@@ -705,11 +705,10 @@ void AliTPCv2::CreateGeometry()
      wheel->AddNode(sect,i+1,r);
     
    }
-   // wheels in the drift volume!
-   v9->AddNode(wheel,1,new TGeoTranslation(0.,0.,-256.6));
+   // wheels in the drift volume!   
    TGeoCombiTrans *combi3 = new TGeoCombiTrans("combi3",0.,0.,256.6,ref);
-   v9->AddNode(wheel,2,combi3);
-   
+   v9->AddNode(wheel,1,combi3);
+   v9->AddNode(wheel,2,new TGeoTranslation(0.,0.,-256.6));
    //_____________________________________________________________
    // service support wheel
    //_____________________________________________________________
