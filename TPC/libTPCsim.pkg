@@ -3,7 +3,8 @@ SRCS:=  AliTPC.cxx \
         AliTPCLaser.cxx \
         AliTPCTrackHitsV2.cxx \
         AliTPCDigitizer.cxx \
-        AliTPCBuffer.cxx AliTPCDDLRawData.cxx
+        AliTPCBuffer.cxx AliTPCDDLRawData.cxx \
+	AliTPCAltroMapping.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h)
