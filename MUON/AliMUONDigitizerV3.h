@@ -16,10 +16,16 @@
 #include "AliDigitizer.h"
 #endif
 
+#ifndef ROOT_TStopwatch
+#  include "TStopwatch.h"
+#endif
+
 class AliMUONCalibrationData;
 class AliMUONData;
 class AliMUONDigit;
+class AliMUONTriggerEfficiencyCells;
 class TClonesArray;
+class TF1;
 class TString;
 
 class AliMUONDigitizerV3 : public AliDigitizer
@@ -32,27 +38,35 @@ public:
   };
   
   AliMUONDigitizerV3(AliRunDigitizer* manager=0, 
-                     ETriggerCodeVersion=kTriggerDecision);
+                     ETriggerCodeVersion=kTriggerDecision,
+                     Bool_t useTriggerEfficiency=kFALSE,
+                     Bool_t generateNoisyDigits=kTRUE);
   virtual ~AliMUONDigitizerV3();
 
   virtual void Exec(Option_t* opt="");
   
   virtual Bool_t Init();
 
-protected:
-  AliMUONDigitizerV3(const AliMUONDigitizerV3& right);
-  AliMUONDigitizerV3&  operator = (const AliMUONDigitizerV3& right);
-     
 private:
     
+  AliMUONDigitizerV3(const AliMUONDigitizerV3& other);
+  AliMUONDigitizerV3& operator=(const AliMUONDigitizerV3& other);
+  
   void AddOrUpdateDigit(TClonesArray& array, 
                         const AliMUONDigit& digit);
     
   void ApplyResponse();
 
-  void ApplyResponseToDigit(AliMUONDigit& digit);
+  void ApplyResponseToTrackerDigit(AliMUONDigit& digit, Bool_t addNoise);
+  void ApplyResponseToTriggerDigit(AliMUONDigit& digit, AliMUONData* data);
 
-  Int_t FindDigitIndex(TClonesArray& array, const AliMUONDigit& digit);
+private:  
+  AliMUONDigit* FindCorrespondingDigit(AliMUONDigit& digit,AliMUONData* data);
+  
+  Int_t FindDigitIndex(TClonesArray& array, const AliMUONDigit& digit) const;
+
+  void GenerateNoisyDigits();
+  void GenerateNoisyDigitsForOneCathode(Int_t detElemId, Int_t cathode);
 
   AliMUONData* GetDataAccess(const TString& folderName);
 
@@ -67,8 +81,17 @@ private:
   AliMUONCalibrationData* fCalibrationData; //! pointer to access calib parameters
   TTask* fTriggerProcessor; // pointer to the trigger part of the job
   ETriggerCodeVersion fTriggerCodeVersion; // which version of trigger job
-  
-  ClassDef(AliMUONDigitizerV3,2) // MUON Digitizer V3-2
+  Bool_t fUseTriggerEfficiency; // whether or not we should apply trigger efficiency
+  AliMUONTriggerEfficiencyCells* fTriggerEfficiency; // trigger efficiency map  
+  mutable TStopwatch fFindDigitIndexTimer; //! counting time spent in FindDigitIndex
+  TStopwatch fGenerateNoisyDigitsTimer; //! counting time spent in GenerateNoisyDigits()
+  TStopwatch fExecTimer; //! couting time spent in Exec()  
+  TF1* fNoiseFunction; //! function to randomly get signal above n*sigma_ped
+  Bool_t fGenerateNoisyDigits; //! whether or not we should generate noise-only digits for tracker
+  static const Double_t fgkNSigmas; // number of sigmas above ped to use 
+  // for noise-only digit generation and zero-suppression
+
+  ClassDef(AliMUONDigitizerV3,3) // MUON Digitizer V3-3
 };
 
 #endif

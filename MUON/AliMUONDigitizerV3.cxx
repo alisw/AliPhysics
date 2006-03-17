@@ -18,39 +18,86 @@
 #include "AliMUONDigitizerV3.h"
 
 #include "AliLog.h"
+#include "AliMUON.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONChamber.h"
 #include "AliMUONConstants.h"
 #include "AliMUONData.h"
+#include "AliMUONDataIterator.h"
 #include "AliMUONDigit.h"
+#include "AliMUONSegmentation.h"
 #include "AliMUONTriggerDecisionV1.h"
+#include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
+#include "AliMpIntPair.h"
+#include "AliMpPad.h"
 #include "AliMpStationType.h"
+#include "AliMpVSegmentation.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
 #include "Riostream.h"
+#include "TF1.h"
 #include "TRandom.h"
 #include "TString.h"
+
+///
+/// The digitizer is performing the transformation to go from SDigits (digits
+/// w/o any electronic noise) to Digits (w/ electronic noise, and decalibration)
+/// 
+/// The decalibration is performed by doing the reverse operation of the
+/// calibration, that is we do (Signal+pedestal)/gain -> ADC
+///
+/// Note also that the digitizer takes care of merging sdigits that belongs
+/// to the same pad, either because we're merging several input sdigit files
+/// or with a single file because the sdigitizer does not merge sdigits itself
+/// (for performance reason mainly, and because anyway we know we have to do it
+/// here, at the digitization level).
+///
+
+namespace
+{
+  AliMUON* muon()
+  {
+    return static_cast<AliMUON*>(gAlice->GetModule("MUON"));
+  }
+
+  AliMUONSegmentation* Segmentation()
+  {
+    static AliMUONSegmentation* segmentation = muon()->GetSegmentation();
+    return segmentation;
+  }
+}
+
+const Double_t AliMUONDigitizerV3::fgkNSigmas=3;
 
 ClassImp(AliMUONDigitizerV3)
 
 //_____________________________________________________________________________
 AliMUONDigitizerV3::AliMUONDigitizerV3(AliRunDigitizer* manager, 
-                                       ETriggerCodeVersion triggerCodeVersion)
+                                       ETriggerCodeVersion triggerCodeVersion,
+                                       Bool_t useTriggerEfficiency,
+                                       Bool_t generateNoisyDigits)
 : AliDigitizer(manager),
 fIsInitialized(kFALSE),
 fOutputData(0x0),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
-fTriggerCodeVersion(triggerCodeVersion)
+fTriggerCodeVersion(triggerCodeVersion),
+fUseTriggerEfficiency(useTriggerEfficiency),
+fTriggerEfficiency(0x0),
+fNoiseFunction(0x0),
+fGenerateNoisyDigits(generateNoisyDigits)
 {
   //
   // Ctor.
   //
   AliDebug(1,Form("AliRunDigitizer=%p",fManager));
+  fGenerateNoisyDigitsTimer.Start(kTRUE); fGenerateNoisyDigitsTimer.Stop();
+  fExecTimer.Start(kTRUE); fExecTimer.Stop();
+  fFindDigitIndexTimer.Start(kTRUE); fFindDigitIndexTimer.Stop();
 }
 
 //______________________________________________________________________________
@@ -69,9 +116,23 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
   // Dtor. Note we're the owner of some pointers.
   // 
   AliDebug(1,"dtor");
+
   delete fOutputData;
   delete fCalibrationData;
   delete fTriggerProcessor;
+  delete fNoiseFunction;
+  
+  AliInfo(Form("Execution time for FindDigitIndex() : R:%.2fs C:%.2fs",
+               fFindDigitIndexTimer.RealTime(),fFindDigitIndexTimer.CpuTime()));
+  if ( fGenerateNoisyDigits )
+  {
+    AliInfo(Form("Execution time for GenerateNoisyDigits() : R:%.2fs C:%.2fs",
+                 fGenerateNoisyDigitsTimer.RealTime(),
+                 fGenerateNoisyDigitsTimer.CpuTime()));
+  }
+  AliInfo(Form("Execution time for Exec() : R:%.2fs C:%.2fs",
+               fExecTimer.RealTime(),fExecTimer.CpuTime()));
+  
 }
 
 //______________________________________________________________________________
@@ -90,33 +151,26 @@ AliMUONDigitizerV3::operator=(const AliMUONDigitizerV3& right)
 
 //_____________________________________________________________________________
 void 
-AliMUONDigitizerV3::ApplyResponseToDigit(AliMUONDigit& digit)
+AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONDigit& digit, Bool_t addNoise)
 {
-  // For trigger digits, simply does nothing.
-  //
   // For tracking digits, starting from an ideal digit's charge, we :
   //
-  // - add some noise (thus leading to a realistic charge)
+  // - add some noise (thus leading to a realistic charge), if requested to do so
   // - divide by a gain (thus decalibrating the digit)
   // - add a pedestal (thus decalibrating the digit)
   // - sets the signal to zero if below 3*sigma of the noise
   //
   
-  static const Int_t MAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
+  static const Int_t kMaxADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
+  
+  Float_t signal = digit.Signal();
   
   Int_t detElemId = digit.DetElemId();
-  AliMpStationType stationType = AliMpDEManager::GetStationType(detElemId);
-  if ( stationType == kStationTrigger )
-  {
-    return;    
-  }
-  
-  // The following is for tracking digits only.
   
   Int_t manuId = digit.ManuId();
   Int_t manuChannel = digit.ManuChannel();
   
-  AliMUONVCalibParam* pedestal = fCalibrationData->Pedestal(detElemId,manuId);
+  AliMUONVCalibParam* pedestal = fCalibrationData->Pedestals(detElemId,manuId);
   if (!pedestal)
   {
     AliFatal(Form("Could not get pedestal for DE=%d manuId=%d",
@@ -124,20 +178,22 @@ AliMUONDigitizerV3::ApplyResponseToDigit(AliMUONDigit& digit)
   }
   Float_t pedestalMean = pedestal->ValueAsFloat(manuChannel,0);
   Float_t pedestalSigma = pedestal->ValueAsFloat(manuChannel,1);
-  
-  Float_t adc_noise = gRandom->Gaus(0.0,pedestalSigma);
-  
-  AliMUONVCalibParam* gain = fCalibrationData->Gain(detElemId,manuId);
+
+  AliMUONVCalibParam* gain = fCalibrationData->Gains(detElemId,manuId);
   if (!gain)
   {
     AliFatal(Form("Could not get gain for DE=%d manuId=%d",
                   detElemId,manuId));    
+  }    
+  Float_t gainMean = gain->ValueAsFloat(manuChannel,0);
+
+  if ( addNoise )
+  {
+    Float_t adcNoise = gRandom->Gaus(0.0,pedestalSigma);
+  
+    signal += adcNoise*gainMean;
   }
   
-  Float_t gainMean = gain->ValueAsFloat(manuChannel,0);
-  Float_t signal_noise = adc_noise*gainMean;
-  
-  Float_t signal = digit.Signal() + signal_noise;
   Int_t adc;
   
   if ( gainMean < 1E-6 )
@@ -151,19 +207,82 @@ AliMUONDigitizerV3::ApplyResponseToDigit(AliMUONDigit& digit)
   {
     adc = TMath::Nint( signal / gainMean + pedestalMean );
     
-    if ( adc <= pedestalMean + 3.0*pedestalSigma ) 
+    if ( adc <= pedestalMean + fgkNSigmas*pedestalSigma ) 
     {
       adc = 0;
     }
   }
   // be sure we stick to 12 bits.
-  if ( adc > MAXADC )
+  if ( adc > kMaxADC )
   {
-    adc = MAXADC;
+    adc = kMaxADC;
   }
   digit.SetPhysicsSignal(TMath::Nint(signal));
   digit.SetSignal(adc);
   digit.SetADC(adc);
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONDigitizerV3::ApplyResponseToTriggerDigit(AliMUONDigit& digit,
+                                                AliMUONData* data)
+{
+  if ( !fTriggerEfficiency ) return;
+
+  AliMUONDigit* correspondingDigit = FindCorrespondingDigit(digit,data);
+
+  Int_t detElemId = digit.DetElemId();
+  
+  const AliMpVSegmentation* segment[2] = 
+  {
+    Segmentation()->GetMpSegmentation(detElemId,digit.Cathode()), 
+    Segmentation()->GetMpSegmentation(detElemId,correspondingDigit->Cathode())
+  };
+
+  AliMpPad pad[2] = 
+  {
+    segment[0]->PadByIndices(AliMpIntPair(digit.PadX(),digit.PadY()),kTRUE), 
+    segment[1]->PadByIndices(AliMpIntPair(correspondingDigit->PadX(),correspondingDigit->PadY()),kTRUE)
+  };
+
+  Int_t ix(0);
+  Int_t iy(1);
+
+  if (digit.Cathode()==0)
+  {
+	  ix=1;
+	  iy=0;
+  }
+  
+  Float_t x = pad[ix].Position().X();
+  Float_t y = pad[iy].Position().Y();
+  if ( x==-1 && y==-1 )
+  {
+	  x=-9999.;
+	  y=-9999.;
+    AliError(Form("Got an unknown position for a digit in DE %d at (ix,iy)=(%d,%d)",
+             detElemId,pad[ix].GetIndices().GetFirst(),pad[iy].GetIndices().GetSecond()));
+  }
+  Float_t x0 = segment[0]->Dimensions().X();
+  Float_t y0 = segment[1]->Dimensions().Y();
+  TVector2 newCoord = fTriggerEfficiency->ChangeReferenceFrame(x, y, x0, y0);
+  
+  Bool_t isTrig[2];
+  fTriggerEfficiency->IsTriggered(detElemId, newCoord.Px(), newCoord.Py(), 
+                                  isTrig[0], isTrig[1]);
+  
+  if (!isTrig[digit.Cathode()])
+  {
+	  digit.SetSignal(0);
+  }
+  
+  if ( &digit != correspondingDigit )
+  {
+	  if (!isTrig[correspondingDigit->Cathode()])
+    {
+      correspondingDigit->SetSignal(0);
+	  }
+  }
 }
 
 //_____________________________________________________________________________
@@ -174,14 +293,24 @@ AliMUONDigitizerV3::ApplyResponse()
   // Loop over all chamber digits, and apply the response to them
   // Note that this method may remove digits.
   //
+  const Bool_t kAddNoise = kTRUE;
+  
   for ( Int_t ich = 0; ich < AliMUONConstants::NCh(); ++ich )
-	{
+  {
     TClonesArray* digits = fOutputData->Digits(ich);
     Int_t n = digits->GetEntriesFast();
+    Bool_t trackingChamber = ( ich < AliMUONConstants::NTrackingCh() );
     for ( Int_t i = 0; i < n; ++i )
     {
       AliMUONDigit* d = static_cast<AliMUONDigit*>(digits->UncheckedAt(i));
-      ApplyResponseToDigit(*d);
+      if ( trackingChamber )
+      {
+        ApplyResponseToTrackerDigit(*d,kAddNoise);
+      }
+      else
+      {
+        ApplyResponseToTriggerDigit(*d,fOutputData);
+      }
       if ( d->Signal() <= 0 )
       {
         digits->RemoveAt(i);
@@ -189,6 +318,37 @@ AliMUONDigitizerV3::ApplyResponse()
     }
     digits->Compress();
   }    
+  
+// The version below, using iterator, does not yet work (as the iterator
+// assumes it is reading digits from the tree, while in this case it's
+// writing...)
+//
+//  AliMUONDigit* digit(0x0);
+//
+//  // First loop on tracker digits
+//  AliMUONDataIterator tracker(fOutputData,"D",AliMUONDataIterator::kTrackingChambers);
+//  
+//  while ( ( digit = static_cast<AliMUONDigit*>(tracker.Next()) ) )
+//  {
+//    ApplyResponseToTrackerDigit(*digit);
+//    if ( digit->Signal() <= 0 )
+//    {
+//      tracker.Remove();
+//    }    
+//    
+//  }
+//
+//  // Then loop on trigger digits
+//  AliMUONDataIterator trigger(fOutputData,"D",AliMUONDataIterator::kTriggerChambers);
+//  
+//  while ( ( digit = static_cast<AliMUONDigit*>(trigger.Next()) ) )
+//  {
+//    ApplyResponseToTriggerDigit(*digit,fOutputData);
+//    if ( digit->Signal() <= 0 )
+//    {
+//      trigger.Remove();
+//    }    
+//  }
 }
 
 //_____________________________________________________________________________
@@ -226,9 +386,11 @@ AliMUONDigitizerV3::Exec(Option_t*)
   //
   // Main method.
   // We first loop over input files, and merge the sdigits we found there.
-  // We then digitize all the resulting sdigits
+  // Second, we digitize all the resulting sdigits
+  // Then we generate noise-only digits (for tracker only)
   // And we finally generate the trigger outputs.
   //
+    
   AliDebug(1, "Running digitizer.");
   
   if ( fManager->GetNinputs() == 0 )
@@ -243,6 +405,8 @@ AliMUONDigitizerV3::Exec(Option_t*)
     return;
   }
   
+  fExecTimer.Start(kFALSE);
+
   Int_t nInputFiles = fManager->GetNinputs();
   
   if ( fOutputData->TreeD() == 0x0 )
@@ -280,7 +444,13 @@ AliMUONDigitizerV3::Exec(Option_t*)
   // is here that we do the "digitization" work.
   
   ApplyResponse();
-
+  
+  if ( fGenerateNoisyDigits )
+  {
+    // Generate noise-only digits for tracker.
+    GenerateNoisyDigits();
+  }
+  
   // We generate the global and local trigger decisions.
   fTriggerProcessor->ExecuteTask();
   
@@ -297,11 +467,35 @@ AliMUONDigitizerV3::Exec(Option_t*)
   fOutputData->ResetDigits();
   fOutputData->ResetTrigger();
   fOutputData->GetLoader()->UnloadDigits();
+  
+  fExecTimer.Stop();
 }
 
 //_____________________________________________________________________________
+AliMUONDigit* 
+AliMUONDigitizerV3::FindCorrespondingDigit(AliMUONDigit& digit,
+                                           AliMUONData* data)
+{                                                
+  AliMUONDataIterator it(data,"D",AliMUONDataIterator::kAllChambers);
+  AliMUONDigit* cd;
+  
+  while ( ( cd = static_cast<AliMUONDigit*>(it.Next()) ) )
+  {
+    if ( cd->DetElemId() == digit.DetElemId() &&
+         cd->Hit() == digit.Hit() &&
+         cd->Cathode() != digit.Cathode() )
+    {
+      return cd;
+    }
+  }
+  return 0x0;
+}
+
+
+//_____________________________________________________________________________
 Int_t
-AliMUONDigitizerV3::FindDigitIndex(TClonesArray& array, const AliMUONDigit& digit)
+AliMUONDigitizerV3::FindDigitIndex(TClonesArray& array, 
+                                   const AliMUONDigit& digit) const
 {
   // 
   // Return the index of digit within array, if that digit is there, 
@@ -310,6 +504,9 @@ AliMUONDigitizerV3::FindDigitIndex(TClonesArray& array, const AliMUONDigit& digi
   // FIXME: this is of course not the best implementation you can think of.
   // Reconsider the use of hit/digit map... ? (but be sure it's needed!)
   //
+  
+  fFindDigitIndexTimer.Start(kFALSE);
+  
   Int_t n = array.GetEntriesFast();
   for ( Int_t i = 0; i < n; ++i )
   {
@@ -319,10 +516,130 @@ AliMUONDigitizerV3::FindDigitIndex(TClonesArray& array, const AliMUONDigit& digi
          d->PadY() == digit.PadY() && 
          d->Cathode() == digit.Cathode() )
     {
+      fFindDigitIndexTimer.Stop();
       return i;
     }
   }
+  fFindDigitIndexTimer.Stop();
   return -1;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONDigitizerV3::GenerateNoisyDigits()
+{
+  //
+  // According to a given probability, generate digits that
+  // have a signal above the noise cut (ped+n*sigma_ped), i.e. digits
+  // that are "only noise".
+  //
+  
+  if ( !fNoiseFunction )
+  {
+    fNoiseFunction = new TF1("AliMUONDigitizerV3::fNoiseFunction","gaus",
+                             fgkNSigmas,fgkNSigmas*10);
+    
+    fNoiseFunction->SetParameters(1,0,1);
+  }
+  
+  fGenerateNoisyDigitsTimer.Start(kFALSE);
+  
+  for ( Int_t i = 0; i < AliMUONConstants::NTrackingCh(); ++i )
+  {
+    AliMpDEIterator it;
+  
+    it.First(i);
+  
+    while ( !it.IsDone() )
+    {
+      for ( Int_t cathode = 0; cathode < 2; ++cathode )
+      {
+        GenerateNoisyDigitsForOneCathode(it.CurrentDE(),cathode);
+      }
+      it.Next();
+    }
+  }
+  
+  fGenerateNoisyDigitsTimer.Stop();
+}
+ 
+//_____________________________________________________________________________
+void
+AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(Int_t detElemId, Int_t cathode)
+{
+  //
+  // Generate noise-only digits for one cathode of one detection element.
+  // Called by GenerateNoisyDigits()
+  //
+  
+  TClonesArray* digits = fOutputData->Digits(detElemId/100-1);
+  
+  const AliMpVSegmentation* seg = Segmentation()->GetMpSegmentation(detElemId,cathode);
+  Int_t nofPads = seg->NofPads();
+  
+  Int_t maxIx = seg->MaxPadIndexX();
+  Int_t maxIy = seg->MaxPadIndexY();
+  
+  static const Double_t probToBeOutsideNsigmas = 1 - TMath::Erf(fgkNSigmas/TMath::Sqrt(2.0));
+  
+  Int_t nofNoisyPads = TMath::Nint(probToBeOutsideNsigmas*nofPads);
+  if ( !nofNoisyPads ) return;
+  
+  nofNoisyPads = 
+    TMath::Nint(gRandom->Gaus(nofNoisyPads,
+                              nofNoisyPads/TMath::Sqrt(nofNoisyPads)));
+  
+  AliDebug(3,Form("DE %d cath %d nofNoisyPads %d",detElemId,cathode,nofNoisyPads));
+  
+  for ( Int_t i = 0; i < nofNoisyPads; ++i )
+  {
+    Int_t ix(-1);
+    Int_t iy(-1);
+    do {
+      ix = gRandom->Integer(maxIx+1);
+      iy = gRandom->Integer(maxIy+1);
+    } while ( !seg->HasPad(AliMpIntPair(ix,iy)) );
+    AliMUONDigit d;
+    d.SetDetElemId(detElemId);
+    d.SetCathode(cathode);
+    d.SetPadX(ix);
+    d.SetPadY(iy);
+    if ( FindDigitIndex(*digits,d) >= 0 )
+    {
+      // this digit is already there, and not noise-only, we simply skip it
+      continue;
+    }
+    AliMpPad pad = seg->PadByIndices(AliMpIntPair(ix,iy));
+    Int_t manuId = pad.GetLocation().GetFirst();
+    Int_t manuChannel = pad.GetLocation().GetSecond();
+    
+    d.SetElectronics(manuId,manuChannel);
+    
+    AliMUONVCalibParam* pedestals = fCalibrationData->Pedestals(detElemId,manuId);
+    
+    Float_t pedestalMean = pedestals->ValueAsFloat(manuChannel,0);
+    Float_t pedestalSigma = pedestals->ValueAsFloat(manuChannel,1);
+    
+    Double_t ped = fNoiseFunction->GetRandom()*pedestalSigma;
+    
+    d.SetSignal(TMath::Nint(ped+pedestalMean+0.5));
+    d.NoiseOnly(kTRUE);
+    AliDebug(3,Form("Adding a pure noise digit :"));
+    StdoutToAliDebug(3,cout << "Before Response: " << endl; 
+                     d.Print(););
+    ApplyResponseToTrackerDigit(d,kFALSE);
+    if ( d.Signal() > 0 )
+    {
+      AddOrUpdateDigit(*digits,d);
+    }
+    else
+    {
+      AliError("Pure noise below threshold. This should not happen. Not adding "
+               "this digit.");
+    }
+    StdoutToAliDebug(3,cout << "After Response: " << endl; 
+                     d.Print(););
+  }
 }
 
 //_____________________________________________________________________________
@@ -394,7 +711,7 @@ AliMUONDigitizerV3::Init()
       fTriggerProcessor = new AliMUONTriggerDecisionV1(fOutputData);
       break;
     case kTriggerElectronics:
-      fTriggerProcessor = new AliMUONTriggerElectronics(fOutputData);
+      fTriggerProcessor = new AliMUONTriggerElectronics(fOutputData,fCalibrationData);
       break;
     default:
       AliFatal("Unknown trigger processor type");
@@ -402,6 +719,26 @@ AliMUONDigitizerV3::Init()
   }
   AliDebug(1,Form("Using the following trigger code %s - %s",
                   fTriggerProcessor->GetName(),fTriggerProcessor->GetTitle()));
+  
+  if ( fUseTriggerEfficiency )
+  {
+    fTriggerEfficiency = fCalibrationData->TriggerEfficiency();
+    if ( fTriggerEfficiency )
+    {
+      AliInfo("Will apply trigger efficiency");
+    }
+    else
+    {
+      AliError("I was requested to apply trigger efficiency, but I could "
+               "not get it !");
+    }
+  }
+  
+  if ( fGenerateNoisyDigits )
+  {
+    AliInfo("Will generate noise-only digits for tracker");
+  }
+  
   fIsInitialized = kTRUE;
   return kTRUE;
 }
