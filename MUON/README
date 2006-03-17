@@ -31,15 +31,10 @@ directory.
 You have to type :
 source $ALICE_ROOT/MUON/AlirootRun_MUONtest.sh 
 The results of this test are saved in test_out/ directory.
-Note that the first step of this script is to create a local Condition
-Database for MUON (containing fake values for pedestals, gains, and
- dead channels), which is written under $ALICE_ROOT/MUON/CDB (using the 
-MUONCDB.C compiled macro).
-That CDB is now always *required* to perform either simulation or 
-reconstruction.
-It's created only once, and reused by subsequent use of the script.
-But in case of upgrade of MUON code, please rm -rf this 
-directory in order to re-create it from scratch, just to be on the safe side. 
+Please note that the CDB (Condition DataBase) is now always *required* 
+to perform either simulation or reconstruction. For the moment, a version
+ of that CDB is stored in CVS, so you should have one already in MUON/Calib
+subdirectories.
 
 ==========================================================
  How to check that your aliroot is working VERY well
@@ -351,6 +346,13 @@ MuonRec.SetFillESD("MUON")
 MuonRec.Run()
 .q
 EOF
+
+==========================================================
+ How to play with the CDB
+==========================================================
+
+If you'd like to see how the CDB is created, please have a look at the 
+MUONCDB.C (work in progress, though).
 
 ===========================================================
  Still working ..............
