@@ -19,11 +19,22 @@
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliLog.h"
+#include "AliMUONTriggerEfficiencyCells.h"
+#include "AliMUONTriggerLut.h"
+#include "AliMUONV1DStore.h"
 #include "AliMUONV2DStore.h"
 #include "AliMUONVCalibParam.h"
 #include "Riostream.h"
+
+///
+/// This class is to be considered as a convenience class.
+/// Its aim is to ease retrieval of calibration data from the 
+/// condition database.
+///
+/// It acts as a "facade" to a bunch of underlying 
+/// containers/calibration classes.
+///
 
 ClassImp(AliMUONCalibrationData)
 
@@ -35,7 +46,12 @@ fIsValid(kTRUE),
 fRunNumber(runNumber), 
 fGains(0x0), 
 fPedestals(0x0),
-fDeadChannels(0x0)
+fDeadChannels(0x0),
+fLocalTriggerBoardMasks(0x0),
+fRegionalTriggerBoardMasks(0x0),
+fGlobalTriggerBoardMasks(0x0),
+fTriggerLut(0x0),
+fTriggerEfficiency(0x0)
 {
   //
   // Default ctor.
@@ -47,19 +63,30 @@ fDeadChannels(0x0)
   //
   if ( deferredInitialization == kFALSE )
   {
-    Gains();
-    Pedestals();
-    DeadChannels();
+    OnDemandGains();
+    OnDemandPedestals();
+    OnDemandDeadChannels();
+    OnDemandLocalTriggerBoardMasks();
+    OnDemandRegionalTriggerBoardMasks();
+    OnDemandGlobalTriggerBoardMasks();
+    OnDemandTriggerLut();
+    OnDemandTriggerEfficiency();
   }
 }
 
-//______________________________________________________________________________
-AliMUONCalibrationData::AliMUONCalibrationData(const AliMUONCalibrationData& right) 
-  : TObject(right) 
-{  
-/// Protected copy constructor (not implemented)
+//_____________________________________________________________________________
+AliMUONCalibrationData::AliMUONCalibrationData(const AliMUONCalibrationData&)
+: TObject()
+{
+  AliFatal("Implement me if needed");
+}
 
-  AliFatal("Copy constructor not provided.");
+//_____________________________________________________________________________
+AliMUONCalibrationData&
+AliMUONCalibrationData::operator=(const AliMUONCalibrationData&)
+{
+  AliFatal("Implement me if needed");
+  return *this;
 }
 
 //_____________________________________________________________________________
@@ -71,25 +98,16 @@ AliMUONCalibrationData::~AliMUONCalibrationData()
   delete fPedestals;
   delete fGains;
   delete fDeadChannels;
+  delete fLocalTriggerBoardMasks;
+  delete fRegionalTriggerBoardMasks;
+  delete fGlobalTriggerBoardMasks;
+  delete fTriggerLut;
+  delete fTriggerEfficiency;
 }
-
-//______________________________________________________________________________
-AliMUONCalibrationData& 
-AliMUONCalibrationData::operator=(const AliMUONCalibrationData& right)
-{
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //_____________________________________________________________________________
 AliMUONVCalibParam*
-AliMUONCalibrationData::DeadChannel(Int_t detElemId, Int_t manuId) const
+AliMUONCalibrationData::DeadChannels(Int_t detElemId, Int_t manuId) const
 {
   //
   // Return the calibration for a given (detElemId, manuId) pair
@@ -97,12 +115,12 @@ AliMUONCalibrationData::DeadChannel(Int_t detElemId, Int_t manuId) const
   // is perfect, we might simply forget it in the store).
   //
   return
-  static_cast<AliMUONVCalibParam*>(DeadChannels()->Get(detElemId,manuId));
+  static_cast<AliMUONVCalibParam*>(OnDemandDeadChannels()->Get(detElemId,manuId));
 }
 
 //_____________________________________________________________________________
 AliMUONV2DStore*
-AliMUONCalibrationData::DeadChannels() const
+AliMUONCalibrationData::OnDemandDeadChannels() const
 {
   //
   // Create (if needed) and return the internal store for DeadChannels.
@@ -134,25 +152,12 @@ AliMUONCalibrationData::GetEntry(const char* path) const
   // Access the CDB for a given path (e.g. MUON/Calib/Pedestals),
   // and return the corresponding CDBEntry.
   //
-  AliInfo(Form("Fetching %s from Condition DataBase for run %d",path,fRunNumber));
-  
-  AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet())
-  {
-    AliError("No default CDB storage set !");
-    fIsValid = kFALSE;
-    return 0;
-  }
-  
-  AliCDBStorage* storage = man->GetDefaultStorage();
-  
-  AliCDBEntry* entry = storage->Get(path,fRunNumber);
-  return entry;
+  return AliCDBManager::Instance()->Get(path,fRunNumber);
 }
 
 //_____________________________________________________________________________
 AliMUONVCalibParam*
-AliMUONCalibrationData::Gain(Int_t detElemId, Int_t manuId) const
+AliMUONCalibrationData::Gains(Int_t detElemId, Int_t manuId) const
 {
   //
   // Return the gains for a given (detElemId, manuId) pair
@@ -160,7 +165,7 @@ AliMUONCalibrationData::Gain(Int_t detElemId, Int_t manuId) const
   // error (meaning that we should get gains for all channels).
   //
   AliMUONVCalibParam* gain = 
-    static_cast<AliMUONVCalibParam*>(Gains()->Get(detElemId,manuId));
+    static_cast<AliMUONVCalibParam*>(OnDemandGains()->Get(detElemId,manuId));
   if (!gain)
   {
     AliError(Form("Could not get gain for detElemId=%d manuId=%d ",
@@ -171,7 +176,7 @@ AliMUONCalibrationData::Gain(Int_t detElemId, Int_t manuId) const
 
 //_____________________________________________________________________________
 AliMUONV2DStore*
-AliMUONCalibrationData::Gains() const
+AliMUONCalibrationData::OnDemandGains() const
 {
   //
   // Create (if needed) and return the internal store for gains.
@@ -196,8 +201,86 @@ AliMUONCalibrationData::Gains() const
 }
 
 //_____________________________________________________________________________
+AliMUONVCalibParam* 
+AliMUONCalibrationData::GlobalTriggerBoardMasks() const
+{
+  //
+  // Return the masks for the global trigger board.
+  //
+  return OnDemandGlobalTriggerBoardMasks();
+}
+
+//_____________________________________________________________________________
+AliMUONVCalibParam*
+AliMUONCalibrationData::OnDemandGlobalTriggerBoardMasks() const
+{
+  //
+  // Create (if needed) and return the internal store for GlobalTriggerBoardMasks.
+  //
+  if (!fGlobalTriggerBoardMasks)
+  {
+    AliCDBEntry* entry = GetEntry("MUON/Calib/GlobalTriggerBoardMasks");
+    if (entry)
+    {
+      fGlobalTriggerBoardMasks = dynamic_cast<AliMUONVCalibParam*>(entry->GetObject());
+      if (!fGlobalTriggerBoardMasks)
+      {
+        AliError("fGlobalTriggerBoardMasks not of the expected type !!!");
+      }
+    }
+    else
+    {
+      AliError("Could not get global trigger board masks !");
+    }
+  }
+  return fGlobalTriggerBoardMasks;
+}
+
+//_____________________________________________________________________________
+AliMUONVCalibParam* 
+AliMUONCalibrationData::LocalTriggerBoardMasks(Int_t localBoardNumber) const
+{
+  //
+  // Return the masks for a given trigger local board.
+  //
+  AliMUONVCalibParam* ltbm = 
+  static_cast<AliMUONVCalibParam*>(OnDemandLocalTriggerBoardMasks()->Get(localBoardNumber));
+  if (!ltbm)
+  {
+    AliError(Form("Could not get mask for localBoardNumber=%d",localBoardNumber));
+  }
+  return ltbm;  
+}
+
+//_____________________________________________________________________________
+AliMUONV1DStore*
+AliMUONCalibrationData::OnDemandLocalTriggerBoardMasks() const
+{
+  //
+  // Create (if needed) and return the internal store for LocalTriggerBoardMasks.
+  //
+  if (!fLocalTriggerBoardMasks)
+  {
+    AliCDBEntry* entry = GetEntry("MUON/Calib/LocalTriggerBoardMasks");
+    if (entry)
+    {
+      fLocalTriggerBoardMasks = dynamic_cast<AliMUONV1DStore*>(entry->GetObject());
+      if (!fLocalTriggerBoardMasks)
+      {
+        AliError("fLocalTriggerBoardMasks not of the expected type !!!");
+      }
+    }
+    else
+    {
+      AliError("Could not get local trigger board masks !");
+    }
+  }
+  return fLocalTriggerBoardMasks;
+}
+
+//_____________________________________________________________________________
 AliMUONV2DStore*
-AliMUONCalibrationData::Pedestals() const
+AliMUONCalibrationData::OnDemandPedestals() const
 {
   //
   // Create (if needed) and return the internal storage for pedestals.
@@ -229,16 +312,20 @@ AliMUONCalibrationData::Print(Option_t*) const
   // A very basic dump of our guts.
   //  
   cout << "RunNumber " << RunNumber()
-    << " fGains=" << fGains
-    << " fPedestals=" << fPedestals
-    << " fDeadChannels=" << fDeadChannels
+  << " fGains=" << fGains
+  << " fPedestals=" << fPedestals
+  << " fDeadChannels=" << fDeadChannels
+  << " fLocalTriggerBoardMasks=" << fLocalTriggerBoardMasks
+  << " fRegionalTriggerBoardMasks=" << fRegionalTriggerBoardMasks
+  << " fGlobalTriggerBoardMasks=" << fGlobalTriggerBoardMasks
+  << " fTriggerLut=" << fTriggerLut
   << endl;
 }
 
 
 //_____________________________________________________________________________
 AliMUONVCalibParam*
-AliMUONCalibrationData::Pedestal(Int_t detElemId, Int_t manuId) const
+AliMUONCalibrationData::Pedestals(Int_t detElemId, Int_t manuId) const
 {
   //
   // Return the pedestals for a given (detElemId, manuId) pair.
@@ -246,7 +333,7 @@ AliMUONCalibrationData::Pedestal(Int_t detElemId, Int_t manuId) const
   // pedestals for all channels.
   //
   AliMUONVCalibParam* ped = 
-    static_cast<AliMUONVCalibParam*>(Pedestals()->Get(detElemId,manuId));
+    static_cast<AliMUONVCalibParam*>(OnDemandPedestals()->Get(detElemId,manuId));
   if (!ped)
   {
     AliError(Form("Could not get pedestal for detElemId=%d manuId=%d ",
@@ -254,5 +341,120 @@ AliMUONCalibrationData::Pedestal(Int_t detElemId, Int_t manuId) const
   }
   return ped;
 }
+
+//_____________________________________________________________________________
+AliMUONVCalibParam* 
+AliMUONCalibrationData::RegionalTriggerBoardMasks(Int_t index) const
+{
+  //
+  // Return the masks for a given trigger regional board.
+  //
+  AliMUONVCalibParam* rtbm = 
+  static_cast<AliMUONVCalibParam*>(OnDemandRegionalTriggerBoardMasks()->Get(index));
+  if (!rtbm)
+  {
+    AliError(Form("Could not get mask for regionalBoard index=%d",index));
+  }
+  return rtbm;  
+}
+
+//_____________________________________________________________________________
+AliMUONV1DStore*
+AliMUONCalibrationData::OnDemandRegionalTriggerBoardMasks() const
+{
+  //
+  // Create (if needed) and return the internal store for RegionalTriggerBoardMasks.
+  //
+  if (!fRegionalTriggerBoardMasks)
+  {
+    AliCDBEntry* entry = GetEntry("MUON/Calib/RegionalTriggerBoardMasks");
+    if (entry)
+    {
+      fRegionalTriggerBoardMasks = dynamic_cast<AliMUONV1DStore*>(entry->GetObject());
+      if (!fRegionalTriggerBoardMasks)
+      {
+        AliError("fRegionalTriggerBoardMasks not of the expected type !!!");
+      }
+    }
+    else
+    {
+      AliError("Could not get regional trigger board masks !");
+    }
+  }
+  return fRegionalTriggerBoardMasks;
+}
+
+//_____________________________________________________________________________
+AliMUONTriggerEfficiencyCells*
+AliMUONCalibrationData::TriggerEfficiency() const
+{
+  //
+  // Return the trigger efficiency.
+  //
+  return OnDemandTriggerEfficiency();
+}
+
+//_____________________________________________________________________________
+AliMUONTriggerEfficiencyCells* 
+AliMUONCalibrationData::OnDemandTriggerEfficiency() const
+{
+  //
+  //
+  //
+  if (!fTriggerEfficiency)
+  {
+    AliCDBEntry* entry = GetEntry("MUON/Calib/TriggerEfficiency");
+    if (entry)
+    {
+      fTriggerEfficiency = dynamic_cast<AliMUONTriggerEfficiencyCells*>(entry->GetObject());
+      if (!fTriggerEfficiency)
+      {
+        AliError("fTriggerEfficiency not of the expected type !!!");
+      }
+    }
+    else
+    {
+      AliError("Could not get trigger efficiency !");
+    }
+  }
+  return fTriggerEfficiency;
+}
+
+//_____________________________________________________________________________
+AliMUONTriggerLut*
+AliMUONCalibrationData::TriggerLut() const
+{
+  //
+  // Return the trigger look up table.
+  //
+  return OnDemandTriggerLut();
+}
+
+//_____________________________________________________________________________
+AliMUONTriggerLut* 
+AliMUONCalibrationData::OnDemandTriggerLut() const
+{
+  //
+  //
+  //
+  if (!fTriggerLut)
+  {
+    AliCDBEntry* entry = GetEntry("MUON/Calib/TriggerLut");
+    if (entry)
+    {
+      fTriggerLut = dynamic_cast<AliMUONTriggerLut*>(entry->GetObject());
+      if (!fTriggerLut)
+      {
+        AliError("fTriggerLut not of the expected type !!!");
+      }
+    }
+    else
+    {
+      AliError("Could not get trigger lut !");
+    }
+  }
+  return fTriggerLut;
+}
+
 
 
