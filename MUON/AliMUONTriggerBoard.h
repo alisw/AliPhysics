@@ -29,6 +29,8 @@ class AliMUONTriggerBoard : public TNamed
 
       virtual UShort_t GetResponse() {return fResponse;}
 
+      virtual void Mask(Int_t index, UShort_t mask) = 0;
+      
    protected:
 
       Int_t fSlot; 

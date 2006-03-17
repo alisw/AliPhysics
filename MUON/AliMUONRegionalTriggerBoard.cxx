@@ -19,6 +19,8 @@
 
 #include "AliMUONRegionalTriggerBoard.h"
 
+#include "AliLog.h"
+
 #include "TBits.h"
 
 #include <Riostream.h>
@@ -42,7 +44,7 @@ void AliMUONRegionalTriggerBoard::Response()
 {
    Int_t t[16];
 
-   for (Int_t i=0;i<16;i++) t[i] = fLocalResponse[i];
+   for (Int_t i=0;i<16;i++) t[i] = fLocalResponse[i] & fMask[i];
 
    Int_t rank = 8;
 
@@ -173,5 +175,17 @@ void AliMUONRegionalTriggerBoard::Scan(Option_t*)
    
 }
 
+//___________________________________________
+void AliMUONRegionalTriggerBoard::Mask(Int_t index, UShort_t mask)
+{
+  if ( index>=0 && index < 16 ) 
+  {
+    fMask[index]=mask;
+  }
+  else
+  {
+    AliError(Form("Index %d out of bounds (max %d)",index,16));
+  }
+}
 
 ClassImp(AliMUONRegionalTriggerBoard)

@@ -15,7 +15,7 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 {
    public: 
       AliMUONLocalTriggerBoard();
-      AliMUONLocalTriggerBoard(const char *name, Int_t a);
+      AliMUONLocalTriggerBoard(const char *name, Int_t a, AliMUONTriggerLut* lut);
       virtual ~AliMUONLocalTriggerBoard() {;}
 
       virtual void     Setbit(Int_t strip, Int_t cathode, Int_t chamber);
@@ -57,11 +57,7 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     Response();
 
-//    inclusive masking
-      virtual void     Mask(UShort_t M[2][4]);
-
-//    exclusive masking
-      virtual void     Mask(char *in, UShort_t M);
+      virtual void     Mask(Int_t index, UShort_t value);
 
       virtual void     TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[32], Int_t ch4q[32], 
                              Int_t coinc44);
@@ -93,8 +89,6 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       
 		virtual void     SetCrate(TString crate) {fCrate = crate;}
 		virtual TString  GetCrate() {return fCrate;}
-
-		
 
    protected:
       AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right);
@@ -136,7 +130,7 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       Int_t    fMinDev[5];
       Int_t    fCoordY[5];
 
-      AliMUONTriggerLut *fLUT;
+      AliMUONTriggerLut *fLUT; //! Pointer to trigger LUT, that we do not own.
       
       ClassDef(AliMUONLocalTriggerBoard,1) 
 };

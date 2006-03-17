@@ -29,9 +29,12 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     Resp(Option_t*) {}
 
+      void Mask(Int_t index, UShort_t mask);
+      
    private:
 
       UShort_t fRegionalResponse[16];
+      UShort_t fMask[16];
 
    ClassDef(AliMUONGlobalTriggerBoard,1) 
 };

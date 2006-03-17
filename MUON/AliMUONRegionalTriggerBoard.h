@@ -28,12 +28,12 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
 
       virtual UShort_t Algo(UShort_t i, UShort_t j, char *thres, Int_t level);
 
-   protected:
-    
+      void Mask(Int_t index, UShort_t mask);
+      
    private:
-
       UShort_t fLocalResponse[16];
-
+      UShort_t fMask[16];
+      
       ClassDef(AliMUONRegionalTriggerBoard,1)
 };
 #endif

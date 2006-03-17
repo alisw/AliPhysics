@@ -33,7 +33,7 @@
 
 //___________________________________________
 AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
-  : AliMUONTriggerBoard()
+: AliMUONTriggerBoard()
 {
    fNumber = 0;
 
@@ -61,8 +61,9 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
 }
 
 //___________________________________________
-AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a) 
- : AliMUONTriggerBoard(name, a)
+AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
+                                                   AliMUONTriggerLut* lut) 
+: AliMUONTriggerBoard(name, a)
 {
    fNumber = 0;
    
@@ -78,7 +79,7 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a)
 
    fTC = kTRUE;
 
-   fLUT = new AliMUONTriggerLut();
+   fLUT = lut;
 
    for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
 
@@ -1087,11 +1088,18 @@ Int_t AliMUONLocalTriggerBoard::GetI()
 }
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Mask(UShort_t M[2][4])
+void AliMUONLocalTriggerBoard::Mask(Int_t index, UShort_t mask)
 {
-   for (Int_t i=0; i<2; i++)
-      for (Int_t j=0; j<4; j++)
-         fMask[i][j] = M[i][j];
+  if ( index >= 0 && index < 2*4 )
+  {
+    Int_t i = index/4;
+    Int_t j = index - i*4;
+    fMask[i][j]=mask;
+  }
+  else
+  {
+    AliError(Form("Index %d out of bounds (max %d)",index,8));
+  }
 }
 
 //___________________________________________
@@ -1165,22 +1173,6 @@ void AliMUONLocalTriggerBoard::Resp(Option_t *option)
 //    {
       
 //    }
-}
-
-//___________________________________________
-void AliMUONLocalTriggerBoard::Mask(char *chan, UShort_t M)
-{
-   char *cath[2] = {"X", "Y"};
-   
-   char *cham[4] = {"1", "2", "3", "4"};
-   
-   for (Int_t i=0; i<2; i++)
-      for (Int_t j=0; j<4; j++) 
-      {
-         strcat(cath[i],cham[j]);
-
-         if (!strcmp(cath[i],chan)) fMask[i][j] = M;
-      }
 }
 
 //___________________________________________
