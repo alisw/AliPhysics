@@ -20,20 +20,20 @@ class AliAltroMapping: public TObject {
   AliAltroMapping(const AliAltroMapping& mapping);
   AliAltroMapping& operator = (const AliAltroMapping& mapping);
 
-  Int_t GetHWAdress(Int_t padrow, Int_t pad) const;
-  Int_t GetPadRow(Int_t hwAdress) const;
-  Int_t GetPad(Int_t hwAdress) const;
+  virtual Int_t GetHWAdress(Int_t padrow, Int_t pad, Int_t sector) const = 0;
+  virtual Int_t GetPadRow(Int_t hwAdress) const = 0;
+  virtual Int_t GetPad(Int_t hwAdress) const = 0;
+  virtual Int_t GetSector(Int_t hwAdress) const = 0;
 
- private:
-  Bool_t ReadMapping(const char *mappingFile);
+ protected:
+  Bool_t OpenMappingFile(const char *mappingFile);
+  Bool_t CloseMappingFile();
+  virtual Bool_t ReadMapping() = 0;
+  virtual void   DeleteMappingArrays() = 0;
 
+  ifstream *fIn;               // External mapping file
   Int_t     fNumberOfChannels; // Number of ALTRO channels
   Int_t     fMaxHWAdress;      // Maximum HW adress
-  Int_t     fMinPadRow;        // Minimum Index of pad-row
-  Int_t     fMaxPadRow;        // Maximum Index of pad-row
-  Int_t     fMaxPad;           // Maximum Index of pad inside row
-  Short_t **fMapping;          // Array which connects hardware adresses to pad and pad-row indeces
-  Short_t **fInvMapping;       // Inverse of fMapping
 
   ClassDef(AliAltroMapping,0)  // Altro mapping handler class
 };

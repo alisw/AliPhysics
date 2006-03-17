@@ -49,6 +49,9 @@ class AliAltroBuffer: public TObject {
   Bool_t ReadTrailer(Int_t& wordsNumber, Int_t& padNumber, 
 		     Int_t& rowNumber, Int_t &secNumber);
   //this method is used to read the trailer when the file is read forward
+  Bool_t ReadDummyTrailer(Int_t& wordsNumber, Int_t& padNumber, 
+			  Int_t& rowNumber, Int_t &secNumber);
+  //this method is used to read the trailer when the file is read forward
   Bool_t ReadTrailerBackward(Int_t& wordsNumber, Int_t& padNumber, 
 			     Int_t& rowNumber, Int_t& secNumber);
   //this method is used to read the trailer when the file is read backward
@@ -69,6 +72,8 @@ class AliAltroBuffer: public TObject {
   void  Flush();
   //this method is used to fill the buffer with 2AA hexadecimal value and save it into the output file
   Int_t GetFillWordsNum() const {return fEndingFillWords;}
+
+  void  SetMapping(AliAltroMapping *mapping) { fMapping = mapping; }
 
  private:
   AliAltroBuffer(const AliAltroBuffer& source);

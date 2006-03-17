@@ -300,12 +300,12 @@ void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Int_t padNumber,
   temp = 0x2AA;
   FillBuffer(temp);
   temp = 0xA << 6;
-  temp |= (wordsNumber >> 4);
+  temp |= ((wordsNumber & 0x3FF) >> 4);
   FillBuffer(temp);
   temp = (wordsNumber << 6) & 0x3FF;
   temp |= (0xA << 2);
 
-  Short_t hwAdress = fMapping->GetHWAdress(rowNumber,padNumber);
+  Short_t hwAdress = fMapping->GetHWAdress(rowNumber,padNumber,secNumber);
   if (hwAdress == -1)
     AliFatal(Form("No hardware (ALTRO) adress found for these pad-row (%d) and pad (%d) indeces !",rowNumber,padNumber));
       
@@ -316,10 +316,10 @@ void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Int_t padNumber,
 }
 
 //_____________________________________________________________________________
-Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Int_t& padNumber,
-				   Int_t& rowNumber, Int_t& secNumber)
+Bool_t AliAltroBuffer::ReadDummyTrailer(Int_t& wordsNumber, Int_t& padNumber,
+					Int_t& rowNumber, Int_t& secNumber)
 {
-//Read a trailer of 40 bits in the forward reading mode
+//Read a dummy trailer of 40 bits in the forward reading mode
 
   wordsNumber = GetNext();
   if (wordsNumber == -1) return kFALSE;
@@ -329,6 +329,41 @@ Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Int_t& padNumber,
   if (rowNumber == -1) return kFALSE;
   secNumber = GetNext();
   if (secNumber == -1) return kFALSE;
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Int_t& padNumber,
+				   Int_t& rowNumber, Int_t& secNumber)
+{
+//Read a trailer of 40 bits in the forward reading mode
+  if (!fMapping) {
+    AliError("No ALTRO mapping information is loaded! Reading a dummy trailer!");
+    return ReadDummyTrailer(wordsNumber,padNumber,
+			    rowNumber,secNumber);
+  }
+
+  Int_t temp = GetNext();
+  if (temp != 0x2AA)
+    AliFatal(Form("Incorrect trailer found ! Expecting 0x2AA but found %x !",temp));
+
+  temp = GetNext();
+  if ((temp >> 6) != 0xA)
+    AliFatal(Form("Incorrect trailer found ! Expecting 0xA but found %x !",temp >> 6));
+  wordsNumber = (temp << 4) & 0x3FF;
+
+  temp = GetNext();
+  wordsNumber |= (temp >> 6);
+  if ((temp & 0xF) != 0xA)
+    AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",temp >> 6));
+  Int_t hwAdress = (temp & 0x3) << 10;
+
+  temp = GetNext();
+  hwAdress |= temp;
+
+  rowNumber = fMapping->GetPadRow(hwAdress);
+  padNumber = fMapping->GetPad(hwAdress);
+  secNumber = fMapping->GetSector(hwAdress);
   return kTRUE;
 }
 
