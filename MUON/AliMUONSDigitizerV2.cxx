@@ -28,6 +28,22 @@
 #include "AliRunLoader.h"
 #include "TObjArray.h"
 
+///
+/// The sdigitizer performs the transformation from hits (energy deposits by
+/// the transport code) to sdigits (equivalent of charges on pad).
+///
+/// It does so by converting the energy deposit into a charge and then spreading
+/// this charge over several pads, according to the response function (a 
+/// Mathieson distribution, basically).
+/// 
+/// See also AliMUONResponseV0, which is doing the real job (in DisIntegrate
+/// method), while this sdigitizer is just "steering" the process.
+///
+/// Please note that we do *not* merge sdigits after creation, which means
+/// that after sdigitization, a given pad can have several sdigits. This
+/// merging is taken care of later on by the digitizer(V3).
+///
+
 ClassImp(AliMUONSDigitizerV2)
 
 //_____________________________________________________________________________
@@ -71,7 +87,7 @@ AliMUONSDigitizerV2::Exec(Option_t*)
 
   AliMUON* muon = static_cast<AliMUON*>(gAlice->GetModule("MUON"));
     
-  const Int_t nofEvents(runLoader->GetNumberOfEvents());
+  Int_t nofEvents(runLoader->GetNumberOfEvents());
   for ( Int_t iEvent = 0; iEvent < nofEvents; ++iEvent ) 
   {    
     // Loop over events.
