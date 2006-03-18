@@ -26,7 +26,7 @@ class AliFMDAlignFaker : public TTask
 public:
   enum EWhat {
     kSensors =  1, 
-    kHalves,
+    kHalves
   };
   enum {
     kAll             = (1<<kHalves|1<<kSensors)
