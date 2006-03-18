@@ -37,8 +37,9 @@ public:
 				   UShort_t sec,
 				   UShort_t str) const;
 protected:
-  Bool_t* fData; // The Data
-  ClassDef(AliFMDBoolMap,1) // Map of Bool_t data per strip
+  size_t  fTotal; // Total number of entries 
+  Bool_t* fData;  // [fTotal] The Data
+  ClassDef(AliFMDBoolMap,2) // Map of Bool_t data per strip
 };
 
 #endif

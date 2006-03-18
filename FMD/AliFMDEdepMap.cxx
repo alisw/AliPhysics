@@ -34,10 +34,9 @@ AliFMDEdepMap::AliFMDEdepMap(const AliFMDEdepMap& other)
     fData(0)
 {
   // Copy constructor 
-  fData = new AliFMDEdepHitPair[fMaxDetectors * fMaxRings * 
-				fMaxSectors * fMaxStrips];
-  for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-       i++) fData[i] = other.fData[i];
+  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  fData  = new AliFMDEdepHitPair[fTotal];
+  for (size_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
 }
 
   
@@ -57,8 +56,8 @@ AliFMDEdepMap::AliFMDEdepMap(size_t maxDet,
   //     maxRinf      Maximum # of rings
   //     maxSec       Maximum # of sectors
   //     maxStr       Maximum # of strips
-  fData = new AliFMDEdepHitPair[fMaxDetectors * fMaxRings * 
-				fMaxSectors * fMaxStrips];
+  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  fData  = new AliFMDEdepHitPair[fTotal];
 }
 
 //____________________________________________________________________
@@ -71,10 +70,9 @@ AliFMDEdepMap::operator=(const AliFMDEdepMap& other)
   fMaxSectors   = other.fMaxSectors;
   fMaxStrips    = other.fMaxStrips;
   if (fData) delete [] fData;
-  fData = new AliFMDEdepHitPair[fMaxDetectors * fMaxRings * 
-				fMaxSectors * fMaxStrips];
-  for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-       i++) fData[i] = other.fData[i];
+  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  fData  = new AliFMDEdepHitPair[fTotal];
+  for (size_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   return *this;
 }
 
@@ -83,8 +81,10 @@ void
 AliFMDEdepMap::Reset() 
 {
   // Reset to zero
-  for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-       i++) { fData[i].fEdep = 0; fData[i].fN = 0; };
+  for (size_t i = 0; i < fTotal; i++) { 
+    fData[i].fEdep = 0; 
+    fData[i].fN = 0; 
+  };
 }
 
 //____________________________________________________________________
@@ -92,8 +92,10 @@ void
 AliFMDEdepMap::Reset(const AliFMDEdepHitPair& val) 
 {
   // Reset to val
-  for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-       i++) { fData[i].fEdep = val.fEdep; fData[i].fN = val.fN; };
+  for (size_t i = 0; i < fTotal; i++) { 
+    fData[i].fEdep = val.fEdep; 
+    fData[i].fN = val.fN; 
+  };
 }
 
 //____________________________________________________________________

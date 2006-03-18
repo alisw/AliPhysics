@@ -38,9 +38,9 @@ AliFMDUShortMap::AliFMDUShortMap(const AliFMDUShortMap& other)
     fData(0)
 {
   // CTOR
-  fData = new UShort_t[fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips];
-  for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-       i++) fData[i] = other.fData[i];
+  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  fData  = new UShort_t[fTotal];
+  for (size_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
 }
 
   
@@ -60,7 +60,8 @@ AliFMDUShortMap::AliFMDUShortMap(size_t maxDet,
   //     maxRinf      Maximum # of rings
   //     maxSec       Maximum # of sectors
   //     maxStr       Maximum # of strips
-  fData = new UShort_t[fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips];
+  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  fData  = new UShort_t[fTotal];
 }
 
 //____________________________________________________________________
@@ -73,9 +74,9 @@ AliFMDUShortMap::operator=(const AliFMDUShortMap& other)
   fMaxSectors   = other.fMaxSectors;
   fMaxStrips    = other.fMaxStrips;
   if (fData) delete [] fData;
-  fData = new UShort_t[fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips];
-  for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-       i++) fData[i] = other.fData[i];
+  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+  fData  = new UShort_t[fTotal];
+  for (size_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   return *this;
 }
 
@@ -84,8 +85,7 @@ void
 AliFMDUShortMap::Reset(const UShort_t& val) 
 {
   // Reset to val
-  for (size_t i = 0; i < fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-       i++) fData[i] = val;
+  for (size_t i = 0; i < fTotal; i++) fData[i] = val;
 }
 
 //____________________________________________________________________

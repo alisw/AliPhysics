@@ -49,8 +49,9 @@ public:
 					   UShort_t sector, 
 					   UShort_t strip) const;
 protected:
-  AliFMDEdepHitPair* fData;  // The data 
-  ClassDef(AliFMDEdepMap, 1) // Cache of edep,hit information per strip
+  size_t             fTotal; //  
+  AliFMDEdepHitPair* fData;  //[fTotal] The data 
+  ClassDef(AliFMDEdepMap, 2) // Cache of edep,hit information per strip
 };
 
 #endif 
