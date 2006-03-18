@@ -92,16 +92,16 @@ public:
   enum { 
     kBaseDDL = 0x1000 // DDL offset for the FMD
   };
-protected:
-  AliFMDParameters();
-  virtual ~AliFMDParameters() {}
-  static AliFMDParameters* fgInstance;   // Static singleton instance
   static const char* fgkPulseGain;	 // Path to PulseGain calib object
   static const char* fgkPedestal;	 // Path to Pedestal calib object
   static const char* fgkDead;	         // Path to Dead calib object
   static const char* fgkSampleRate;	 // Path to SampleRate calib object
   static const char* fgkAltroMap;	 // Path to AltroMap calib object
   static const char* fgkZeroSuppression; // Path to ZeroSuppression cal object
+protected:
+  AliFMDParameters();
+  virtual ~AliFMDParameters() {}
+  static AliFMDParameters* fgInstance;   // Static singleton instance
 
   Bool_t          fIsInit;               // Whether we've been initialised  
 
