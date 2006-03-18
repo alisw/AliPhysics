@@ -3,7 +3,9 @@
 # $Id$
 
 SRCS		=  AliFMDInput.cxx 		\
-		   AliFMDDisplay.cxx
+		   AliFMDDisplay.cxx		\
+		   AliFMDCalibFaker.cxx		\
+		   AliFMDAlignFaker.cxx		
 HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDutilLinkDef.h
 

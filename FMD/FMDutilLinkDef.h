@@ -21,6 +21,8 @@
 #pragma link C++ class  AliFMDInputSDigits;
 #pragma link C++ class  AliFMDInputRecPoints;
 #pragma link C++ class  AliFMDDisplay;
+#pragma link C++ class  AliFMDCalibFaker;
+#pragma link C++ class  AliFMDAlignFaker;
 
 #else
 # error Not for compilation 
