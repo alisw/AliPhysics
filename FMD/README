@@ -1,0 +1,203 @@
+    README file for ALICE Forward Multiplicity Detector Off-line Code
+    =================================================================
+
+Introduction:
+-------------
+
+This file contains a short overview of the FMD code.   It is by no
+means authoritative  - only the code is good for that.  However, I'll
+try to explain things a bit here. 
+
+Structure:
+----------
+
+There are 4 libraries build for the FMD.  These are 
+
+* libFMDbase:
+  This contains the basic stuff, like data classes and managers. 
+
+* libFMDsim: 
+  This contains code used by the simulation only.  That includes the
+  detector class AliFMD and it's derivatives.  It also contains the
+  code for building the geometry, as well as the digitisers and raw
+  data writer. 
+
+* libFMDrec:
+  Code needed for the reconstruction.  This include the reconstruction
+  code itself, as well as a raw data reader.
+
+* libFMDutil:
+  This is a special library that contains various utility classes for
+  the FMD expert/developer/tester.  It includes code to read all data
+  produced by the FMD, a simple event display, and code to make fake
+  calibration and alignment data.  This library is _not_ loaded by
+  aliroot automatically. The user has to load it herself:
+
+     gSystem->Load("libFMDutil.so");
+
+The content of these libraries is detailed more below. 
+
+libFMDbase:
+-----------
+
+This currently (18th or March 2006) contains the classes 
+
+  AliFMDBaseDigit
+  AliFMDDigit
+  AliFMDSDigit
+	Base class for digits, real digits, and summable digits.  The
+        are all data classes that holds the ADC value(s) for a single
+	strip. 
+  
+  AliFMDBoolMap:
+	A map of booleans, one for each strip.
+  
+  AliFMDUShortMap:
+	A map of unsigned short integers, one for each strip. 
+  
+  AliFMDDetector
+  AliFMD1
+  AliFMD2
+  AliFMD3:
+	3 classes that holds the parameters for each of the 3
+	FMD sub-detectors.  These derive from AliFMDDetector, and are
+	managed by AliFMDGeometry.  Each of these also contains the
+	translation from sensor reference frame to global reference
+	frame. 
+
+  AliFMDRing:
+	Parameters for the FMD rings (inner and outer type).  These are
+	managed by AliFMDGeometry. 
+  
+  AliFMDGeometry: 
+	Manager of FMD geometry data. All code queries this manager
+	for geometry parameters, so that the data is always consistent. 
+  
+  AliFMDParameters:
+	Manager of FMD parameters, like calibration parameters.  This
+	class fetches data from CDB if necessary.   All code queries
+	this manager for parameters, so that the data is always
+	consistent. 
+  
+  AliFMDCalibPedestal
+  AliFMDCalibGain
+  AliFMDCalibSampleRate
+  AliFMDAltroMapping:
+	Containers of calibration parameters.  These correspond to the
+	pedestal and its width, the gain of each strip, the
+	oversampling rate used in read-out, and the map from hardware
+	address to detector. 
+  
+
+libFMDsim:
+----------
+
+This currently (18th or March 2006) contains the classes 
+
+  AliFMDEdepMap  
+	Cache of energy deposited and total number of hits for each
+	strip.  The digitiser AliFMDDigitizer uses this to store
+	simulation data before making digits. 
+
+  AliFMDHit  
+	A hit in the FMD active elements, as described by the
+	simulation back-end during transport. 
+
+  AliFMD  
+  AliFMDv0  
+  AliFMDv1  
+	Simulation drivers for the FMD.  AliFMD is the base
+	class. AliFMDv0 corresponds to a simulation where no hits are
+	created, but the material distribution is right.   AliFMDv1 is
+	like AliFMDv0, except that hits are produced. 
+
+  AliFMDGeometryBuilder  
+	Build the FMD geometry in terms of TGeo objects.  The
+	information for building the geometry is retrieved from
+	AliFMDGeometry. 
+
+  AliFMDBaseDigitizer  
+  AliFMDDigitizer  
+  AliFMDSDigitizer 
+	Base class for the digitisers.  AliFMDDigitizer makes `real'
+	digits (AliFMDDigit) from hits, and AliFMDSDigitizer makes
+	summable digits from hits. 
+ 
+  AliFMDRawWriter  
+	Writes a pseudo raw data file from the digits created by the
+	digitisers.  It uses the AliFMDAltroMapping from
+	AliFMDParameters to make the mapping from detector coordinates
+	to hardware addresses. 
+
+libFMDrec:
+----------
+
+This currently (18th or March 2006) contains the classes 
+
+  AliFMDReconstructor  
+	Reconstruct (in a naiive way) the charged particle
+	multiplicity in the FMD strips.   This also writes an
+	AliESDFMD object to the ESD files (that class is in libESD). 
+
+  AliFMDRecPoint  
+	Reconstructed point in the FMD.  These objects are made
+	AliFMDReconstructor. 
+
+  AliFMDRawStream  
+  AliFMDRawReader  
+	Classes to read raw data files. 
+
+libFMDutil:
+-----------
+
+This currently (18th or March 2006) contains the classes 
+
+  AliFMDInput  
+  AliFMDInputHits  
+  AliFMDInputDigits  
+  AliFMDInputSDigits  
+  AliFMDInputRecPoints  
+	Base class, and concrete classes to read in FMD generated
+	data.  These provide a simple and unified way of getting the
+	data.  Hooks are defined to process hits, tracks, digits, and
+	reconstructed points, as well as geometry and ESD data.   See
+	for example the scripts `DrawHits.C', `DrawHitsDigits.C',
+	`DrawHitsRecs.C', `DrawDigitsRecs.C' in the `scripts'
+	sub-directory.
+
+  AliFMDDisplay  
+	Simple event display for FMD data, including hits, digits,
+	reconstructed points and ESD data. 
+
+  AliFMDCalibFaker  
+  AliFMDAlignFaker  
+	Classes to write fake (or dummy) calibration and alignment
+	data.  These derive from TTask.  The usage of these classes
+	is simple:
+
+		AliFMDCalibFaker f;
+		f.Set... // Set parameters if needed 
+		f.Exec();
+
+Authors:
+--------
+
+  Alla Maevskaya		<Alla.Maevskaia@cern.ch>	
+  Christian Holm Christensen 	<cholm@nbi.dk>
+
+----------------------------------------------------------------------
+Local Variables:
+	mode: text
+End:
+
+ LocalWords:  libFMDbase libFMDsim AliFMD libFMDutil aliroot gSystem naiive ESD
+ LocalWords:  CDB AliFMDGeometry AliFMDDetector AliFMDUShortMap AliFMDBoolMap
+ LocalWords:  AliFMDBaseDigit AliFMDDigit AliFMDSDigit AliFMDRing AliFMDEdepMap
+ LocalWords:  AliFMDParameters AliFMDCalibPedestal AliFMDCalibGain AliFMDHit
+ LocalWords:  AliFMDCalibSampleRate AliFMDAltroMapping AliFMDv AliFMDDigitizer
+ LocalWords:  AliFMDGeometryBuilder AliFMDBaseDigitizer AliFMDSDigitizer TGeo
+ LocalWords:  AliFMDRawWriter libFMDrec AliESDFMD AliFMDReconstructor libESD
+ LocalWords:  AliFMDRecPoint AliFMDRawStream AliFMDRawReader AliFMDInput TTask
+ LocalWords:  AliFMDInputHits AliFMDInputDigits AliFMDInputSDigits Maevskaya
+ LocalWords:  AliFMDInputRecPoints AliFMDDisplay AliFMDCalibFaker Holm booleans
+ LocalWords:  AliFMDAlignFaker
