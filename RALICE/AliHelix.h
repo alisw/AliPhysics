@@ -25,6 +25,7 @@ class AliHelix : public THelix
   Float_t GetTofmax() const;   // Provide the maximum time of flight
   void Display(AliTrack* t,Double_t* range=0,Int_t iaxis=3,Double_t scale=-1);// Show curve for this track
   void Display(AliEvent* e,Double_t* range=0,Int_t iaxis=3,Double_t scale=-1);// Show curves for this event
+  void Display(TObjArray* a,Double_t* range=0,Int_t iaxis=3,Double_t scale=-1);// Show curves for this track array
   void Refresh(Int_t mode=0);  // Refresh the view before drawing the next one
   AliPosition* Extrapolate(AliTrack* t,Double_t* pars=0,Double_t scale=-1); // Extrapolate this track
   void MakeCurve(AliTrack* t,Double_t* range=0,Int_t iaxis=3,Double_t scale=-1); // Helix curve for this track
@@ -42,6 +43,6 @@ class AliHelix : public THelix
   TObjArray* fCurves;  //! Temp. storage for the curves on the drawing
   AliPosition* fExt;   //! The extrapolation result
  
- ClassDef(AliHelix,2) // Representation and extrapolation of AliTracks in a magnetic field.
+ ClassDef(AliHelix,3) // Representation and extrapolation of AliTracks in a magnetic field.
 };
 #endif

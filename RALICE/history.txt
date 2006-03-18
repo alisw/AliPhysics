@@ -682,3 +682,5 @@
                 This allows observation of moving direction in event displays.
                 Also support for ignoring track endpoints introduced in AliHelix to 
                 allow correct display for very long tracks together with observed hits.
+18-mar-2006 NvE Support for display of selected track array introduced in AliHelix.
+                Also copy ctor of AliHelix made complete for new datamembers.

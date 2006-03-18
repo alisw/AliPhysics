@@ -183,6 +183,11 @@ AliHelix::AliHelix(const AliHelix& h) : THelix(h)
 // Copy constructor
  fB=h.fB;
  fRefresh=h.fRefresh;
+ fTofmax=h.fTofmax;
+ fMstyle=h.fMstyle;
+ fMsize=h.fMsize;
+ fMcol=h.fMcol;
+ fEnduse=h.fEnduse;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliHelix::SetB(Ali3Vector& b)
@@ -752,6 +757,41 @@ void AliHelix::Display(AliEvent* evt,Double_t* range,Int_t iaxis,Double_t scale)
  {
   AliTrack* tx=evt->GetTrack(jtk);
   if (tx) Display(tx,range,iaxis,scale);
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliHelix::Display(TObjArray* arr,Double_t* range,Int_t iaxis,Double_t scale)
+{
+// Display the helix curves of all tracks in the specified array.
+// A convenient way to obtain an array with selected tracks from e.g. an AliEvent
+// is to make use of its GetTracks() selection facility.
+// Various arrays can be displayed together or individually; please refer to
+// the memberfunction Refresh() for further details.
+// Please refer to the track display memberfunction for further details
+// on the input arguments.
+// 
+// The default values are range=0, iaxis=3 and scale=-1.
+//
+// Note :
+// ------
+// Before any display activity, a TCanvas and a TView have to be initiated
+// first by the user like for instance
+// 
+// TCanvas* c1=new TCanvas("c1","c1");
+// TView* view=new TView(1);
+// view->SetRange(-1000,-1000,-1000,1000,1000,1000);
+// view->ShowAxis();
+
+ if (!arr) return;
+
+ Int_t ntk=arr->GetEntries();
+ for (Int_t jtk=0; jtk<ntk; jtk++)
+ {
+  TObject* obj=arr->At(jtk);
+  if (!obj) continue;
+  if (!(obj->InheritsFrom("AliTrack"))) continue;
+  AliTrack* tx=(AliTrack*)obj;
+  Display(tx,range,iaxis,scale);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
