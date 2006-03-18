@@ -529,7 +529,7 @@ Bool_t AliEMCALDigitizer::Init()
   //to prevent cleaning of this object while GetEvent is called
   emcalLoader->GetDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
 
-  Print();
+  //PH  Print();
   
   return fInit ;    
 }
