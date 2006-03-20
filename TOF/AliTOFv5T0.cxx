@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/03/20 07:54:20  decaro
+Correction of some layer thickness
+
 Revision 1.4  2006/03/13 12:35:44  decaro
 Suppression of fractional Z warning
 
@@ -245,7 +248,8 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
   const Float_t kLengthExInModBorder  = 4.7;
   const Float_t kLengthInCeModBorder  = 7.0;
 
-  const Float_t khAlWall = 0.03
+  // Al layers over all internal module walls (cm)
+  const Float_t khAlWall = 0.03;
 
   // module wall thickness (cm)
   const Float_t kModuleWallThickness = 0.3;
@@ -329,26 +333,52 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
     gMC->Gspos ("FLTC", 0, "FTOC", xcoor, ycoor,-zcoor, 0, "ONLY");
   }
 
-  // Layer of Aluminum after detector
-  //par[0] = xFLT*0.5;
+  // Layer of Aluminum before detector (FALA, FALB and FALC)
+
+  par[0] = xFLT*0.5;
   par[1] = khAlWall*0.5;
-  par[2] = zFLTA *0.5;
+  par[2] = kInterCentrModBorder1 - (kModuleWallThickness + khAlWall);
+  gMC->Gsvolu("FALA", "BOX ", idtmed[505], par, 3); // Alluminium
+
   xcoor = 0.;
   ycoor = (-yFLT + khAlWall)*0.5;
   zcoor = 0.;
-  gMC->Gsvolu("FALA", "BOX ", idtmed[505], par, 3); // Alluminium
-  gMC->Gspos ("FALA", 0, "FLTA", xcoor, -ycoor, zcoor, 0, "ONLY");
+  gMC->Gspos ("FALA", 0, "FLTA", xcoor, ycoor, zcoor, 0, "ONLY");
+
+  par[0] = xFLT*0.5;
+  par[1] = khAlWall*0.5;
+  par[2] = (kExterInterModBorder2 - kInterCentrModBorder1 - 2.*(kModuleWallThickness + khAlWall))*0.5;
+  gMC->Gsvolu("FALB", "BOX ", idtmed[505], par, 3); // Alluminium
+
+  xcoor = 0.;
+  ycoor = (-yFLT + khAlWall)*0.5;
+  zcoor = (kExterInterModBorder2 + kInterCentrModBorder1)*0.5;
+  gMC->Gspos ("FALB", 1, "FLTA", xcoor, ycoor, zcoor, 0, "ONLY");
+  gMC->Gspos ("FALB", 2, "FLTA", xcoor, ycoor,-zcoor, 0, "ONLY");
+
+  par[0] = xFLT*0.5;
+  par[1] = khAlWall*0.5;
+  par[2] = (zlenA*0.5 - kExterInterModBorder2 - 2.*(kModuleWallThickness + khAlWall))*0.5;
+  gMC->Gsvolu("FALC", "BOX ", idtmed[505], par, 3); // Alluminium
+
+  xcoor = 0.;
+  ycoor = (-yFLT + khAlWall)*0.5;
+  zcoor = (kExterInterModBorder2+zlenA*0.5)*0.5;
+  gMC->Gspos ("FALC", 1, "FLTA", xcoor, ycoor, zcoor, 0, "ONLY");
+  gMC->Gspos ("FALC", 2, "FLTA", xcoor, ycoor,-zcoor, 0, "ONLY");
 
   if (fTOFHoles) {
-    //par[0] = xFLT*0.5;
-    //par[1] = khAlWall*0.5;
-    par[2] = (zlenA*0.5 - kInterCentrModBorder2-kModuleWallThickness)*0.5;
-    xcoor =0.;
+    xcoor = 0.;
     ycoor = (-yFLT + khAlWall)*0.5;
-    zcoor = (kInterCentrModBorder2-kInterCentrModBorder1)*0.5;
-    gMC->Gsvolu("FALB", "BOX ", idtmed[505], par, 3); // Alluminium
-    gMC->Gspos ("FALB", 1, "FLTB", xcoor,-ycoor,-zcoor, 0, "ONLY");
-    gMC->Gspos ("FALB", 2, "FLTC", xcoor,-ycoor, zcoor, 0, "ONLY");
+    zcoor = (zlenA*0.5 - kExterInterModBorder2)*0.5 - kModuleWallThickness*0.5;
+    gMC->Gspos ("FALB", 1, "FLTB", xcoor, ycoor, zcoor, 0, "ONLY");
+    gMC->Gspos ("FALB", 2, "FLTC", xcoor, ycoor,-zcoor, 0, "ONLY");
+
+    xcoor = 0.;
+    ycoor = (-yFLT + khAlWall)*0.5;
+    zcoor = (kExterInterModBorder2 - kInterCentrModBorder1)*0.5 + kModuleWallThickness*0.5;
+    gMC->Gspos ("FALC", 1, "FLTB", xcoor, ycoor,-zcoor, 0, "ONLY");
+    gMC->Gspos ("FALC", 2, "FLTC", xcoor, ycoor, zcoor, 0, "ONLY");
   }
 
   Float_t y0, alpha, tgal, beta, tgbe, trpa[11];
@@ -365,11 +395,11 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
   trpa[3]  = kModuleWallThickness;
   trpa[4]  = (kLengthInCeModBorder - kModuleWallThickness*tgbe)*0.5;
   trpa[5]  = (kLengthInCeModBorder + kModuleWallThickness*tgbe)*0.5;
-  trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg;
+  trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
   trpa[7]  = kModuleWallThickness;
   trpa[8]  = (kLengthInCeModBorder - kModuleWallThickness*tgbe)*0.5;
   trpa[9]  = (kLengthInCeModBorder + kModuleWallThickness*tgbe)*0.5;
-  trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg;
+  trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
   gMC->Gsvolu("FWZ1","TRAP", idtmed[503], trpa, 11);   // fibre glass
 
   AliMatrix (idrotm[1],90., 90.,180.,0.,90.,180.);
@@ -389,11 +419,11 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
     trpa[3]  = kModuleWallThickness*0.5;
     trpa[4]  = (y0 - kModuleWallThickness*0.5*tgbe)*0.5;
     trpa[5]  = (y0 + kModuleWallThickness*0.5*tgbe)*0.5;
-    trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg;
+    trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
     trpa[7]  = kModuleWallThickness*0.5;
     trpa[8]  = (y0 - kModuleWallThickness*0.5*tgbe)*0.5;
     trpa[9]  = (y0 + kModuleWallThickness*0.5*tgbe)*0.5;
-    trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg;
+    trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
     gMC->Gsvolu("FZ1B","TRAP", idtmed[503], trpa, 11);   // fibre glass
 
     xcoor = 0.;
@@ -420,11 +450,11 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
     trpa[3]  = kModuleWallThickness*0.5;
     trpa[4]  = (y0 - kModuleWallThickness*0.5*tgbe)*0.5;
     trpa[5]  = (y0 + kModuleWallThickness*0.5*tgbe)*0.5;
-    trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg;
+    trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
     trpa[7]  = kModuleWallThickness*0.5;
     trpa[8]  = (y0 - kModuleWallThickness*0.5*tgbe)*0.5;
     trpa[9]  = (y0 + kModuleWallThickness*0.5*tgbe)*0.5;
-    trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg;
+    trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
     gMC->Gsvolu("FZ1C","TRAP", idtmed[503], trpa, 11);   // fibre glass
 
     xcoor = 0.;
@@ -467,7 +497,8 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
     gMC->Gspos("FZ2B", 2,"FLTC", xcoor, ycoor,-zcoor,idrotm[3],"ONLY");
   }
 
-  // wall between intermediate and lateral modules
+  // Fibre glass walls between intermediate and lateral modules (FWZ3 and FWZ4)
+
   tgal = (yFLT*0.5 - 2.*kLengthExInModBorder)/(kExterInterModBorder2 - kExterInterModBorder1);
   alpha = TMath::ATan(tgal);
   beta = (kPi*0.5 - alpha)*0.5;
@@ -478,11 +509,11 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
   trpa[3]  = kModuleWallThickness;
   trpa[4]  = (kLengthExInModBorder - kModuleWallThickness*tgbe)*0.5;
   trpa[5]  = (kLengthExInModBorder + kModuleWallThickness*tgbe)*0.5;
-  trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg;
+  trpa[6]  = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
   trpa[7]  = kModuleWallThickness;
   trpa[8]  = (kLengthExInModBorder - kModuleWallThickness*tgbe)*0.5;
   trpa[9]  = (kLengthExInModBorder + kModuleWallThickness*tgbe)*0.5;
-  trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg;
+  trpa[10] = TMath::ATan(tgbe*0.5)*kRaddeg; //TMath::ATan((trpa[5] - trpa[4])/(2.*trpa[3]))*kRaddeg;
   gMC->Gsvolu("FWZ3","TRAP", idtmed[503], trpa, 11);    // fibre glass
 
   xcoor = 0.;
@@ -725,24 +756,24 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
 
   // frame of Air
   par[0] = xFLT*0.5;
-  par[1] = (yFLT*0.5 - kHoneycombLayerThickness - khAlWall)*0.5;
+  par[1] = (yFLT*0.5 - kHoneycombLayerThickness)*0.5;
   par[2] = zFLTA *0.5;
   gMC->Gsvolu("FAIA", "BOX ", idtmed[500], par, 3); // Air
 
   xcoor = 0.;
-  ycoor = kHoneycombLayerThickness + (yFLT*0.5 - kHoneycombLayerThickness-khAlWall)*0.5;
+  ycoor = kHoneycombLayerThickness + (yFLT*0.5 - kHoneycombLayerThickness)*0.5;
   zcoor = 0.;
   gMC->Gspos ("FAIA", 0, "FLTA", xcoor, ycoor, zcoor, 0, "ONLY");
 
   if (fTOFHoles) {
     par[0] = xFLT*0.5;
-    par[1] = (yFLT*0.5 - kHoneycombLayerThickness - khAlWall)*0.5;
+    par[1] = (yFLT*0.5 - kHoneycombLayerThickness)*0.5;
     par[2] = (zlenA*0.5 - kInterCentrModBorder2 - kModuleWallThickness)*0.5;
     gMC->Gsvolu("FAIB", "BOX ", idtmed[500], par, 3); // Air
     gMC->Gsvolu("FAIC", "BOX ", idtmed[500], par, 3); // Air
 
     xcoor = 0.;
-    ycoor = kHoneycombLayerThickness + (yFLT*0.5 - kHoneycombLayerThickness - khAlWall)*0.5;
+    ycoor = kHoneycombLayerThickness + (yFLT*0.5 - kHoneycombLayerThickness)*0.5;
     zcoor = (kInterCentrModBorder2-kInterCentrModBorder1)*0.5;
     gMC->Gspos ("FAIB", 0, "FLTB", xcoor, ycoor,-zcoor, 0, "ONLY");
     gMC->Gspos ("FAIC", 0, "FLTC", xcoor, ycoor, zcoor, 0, "ONLY");
