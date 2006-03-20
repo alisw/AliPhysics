@@ -21,6 +21,7 @@
 #pragma link C++ class  AliGenParam+;
 #pragma link C++ class  AliGenCocktail+;
 #pragma link C++ class  AliGenMUONCocktail+;
+#pragma link C++ class  AliGenMUONCocktailpp+;
 #pragma link C++ class  AliGenCocktailAfterBurner+;
 #pragma link C++ class  AliGenCocktailEntry+;
 #pragma link C++ class  AliGenExtFile+;
