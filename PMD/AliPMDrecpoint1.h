@@ -40,7 +40,7 @@ class AliPMDrecpoint1 : public TObject
 
   Int_t   fDet;          // Detector No (0:PRE, 1:CPV)
   Int_t   fSMN;          // Serial Module No.
-  Float_t fClusData[5];  // Array containing cluster information
+  Float_t fClusData[6];  // Array containing cluster information
   /*
     fDet         : Detector Number,  fSMN         : Serial Module Number
     fClusData[0] : Cluster x      ,  fClusData[1] : Cluster y
