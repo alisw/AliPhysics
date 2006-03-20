@@ -278,7 +278,7 @@ void ConfigCommon(Bool_t interactiveSetup)
     if (iTOF)
     {
         //=================== TOF parameters ============================
-	AliTOF *TOF = new AliTOFv4T0("TOF", "normal TOF");
+	AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
     }
 
     if (iRICH)
