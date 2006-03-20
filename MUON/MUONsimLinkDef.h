@@ -18,7 +18,6 @@
 
 
 #pragma link C++ class AliMUONTest+; 
-#pragma link C++ enum  AliMUONTests+;
 
 // response
 #pragma link C++ class AliMUONSt1Response+;
