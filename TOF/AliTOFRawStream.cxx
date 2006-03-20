@@ -41,6 +41,7 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliRawReader.h"
 
 #include "AliTOFGeometry.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFRawStream.h"
 
 ClassImp(AliTOFRawStream)
@@ -63,7 +64,7 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader)
   fErrorFlag = -1;
   //fCounter = -1; // v0.01
 
-  fTOFGeometry = new AliTOFGeometry();
+  fTOFGeometry = new AliTOFGeometryV5();
 
   fRawReader->Select(5);
 
@@ -87,7 +88,7 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fErrorFlag = -1;
   //fCounter = -1; // v0.01
 
-  fTOFGeometry = new AliTOFGeometry();
+  fTOFGeometry = new AliTOFGeometryV5();
 
 }
 
