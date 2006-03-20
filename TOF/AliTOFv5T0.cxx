@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/03/13 12:35:44  decaro
+Suppression of fractional Z warning
+
 Revision 1.3  2006/02/28 10:38:00  decaro
 AliTOFGeometry::fAngles, AliTOFGeometry::fHeights,
 AliTOFGeometry::fDistances arrays: dimension definition in the right
@@ -242,7 +245,7 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
   const Float_t kLengthExInModBorder  = 4.7;
   const Float_t kLengthInCeModBorder  = 7.0;
 
-  const Float_t khAlWall = 0.1;//0.03
+  const Float_t khAlWall = 0.03
 
   // module wall thickness (cm)
   const Float_t kModuleWallThickness = 0.3;
