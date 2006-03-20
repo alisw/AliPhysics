@@ -21,7 +21,7 @@ class AliTRDCalSuperModuleStatus : public TNamed {
     AliTRDCalSuperModuleStatus();
     AliTRDCalSuperModuleStatus(const Text_t* name, const Text_t* title);
 
-    const Char_t GetStatus(Int_t sm) const { return fStatus[sm]; };
+    Char_t GetStatus(Int_t sm) const { return fStatus[sm]; };
     void SetStatus(Int_t sm, Char_t status) { fStatus[sm] = status; };
 
     Bool_t IsInstalled(Int_t sm) const { return (GetStatus(sm) & kInstalled) ? kTRUE : kFALSE; }

@@ -21,7 +21,7 @@ class AliTRDCalChamberStatus : public TNamed {
     AliTRDCalChamberStatus();
     AliTRDCalChamberStatus(const Text_t* name, const Text_t* title);
 
-    const Char_t GetStatus(Int_t det) const { return fStatus[det]; };
+    Char_t GetStatus(Int_t det) const { return fStatus[det]; };
     void SetStatus(Int_t det, Char_t status) { fStatus[det] = status; };
 
     Bool_t IsInstalled(Int_t sm) const { return (GetStatus(sm) & kInstalled) ? kTRUE : kFALSE; }
