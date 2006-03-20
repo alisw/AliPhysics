@@ -28,9 +28,6 @@
 
 void MUONTest(const TString& option = "./Config.C")
 {
-  // Load tests library
-  gSystem->Load("libMUONtests");
-
   AliMUONTest test(option);
   
   // Print pads for all DEs
