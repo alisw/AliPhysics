@@ -486,7 +486,7 @@ void AliTRD::CreateMaterials()
   Float_t aco[2] = { 12.011 , 15.9994 };
   Float_t zco[2] = {  6.0   ,  8.0    };
   Float_t wco[2] = {  1.0   ,  2.0    };
-  Float_t dco    = 0.001977;
+  Float_t dco    = 0.00186;
 
   // For water
   Float_t awa[2] = {  1.0079, 15.9994 };
