@@ -19,24 +19,22 @@
 // Class AliMUONTest
 // -----------------
 // Class with functions for testing segmentations
-//
 // Author: Ivana Hrivnacova, IPN Orsay
 
 #include "AliMUONTest.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
-#include "AliMUONGeometryBuilder.h"
-#include "AliMUONSt1GeometryBuilderV2.h"
-#include "AliMUONSt2GeometryBuilderV2.h"
-#include "AliMUONSlatGeometryBuilder.h"
-#include "AliMUONTriggerGeometryBuilder.h"
 #include "AliMUONSegFactory.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMUONGeometryModule.h"
-#include "AliMUONGeometryStore.h"
-#include "AliMUONGeometryTransformer.h"
+#include "AliMUONGeometryModuleTransformer.h"
+#include "AliMUONGeometryDetElement.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONGeometrySegmentation.h"
+
+#include "AliMpDEIterator.h"
+#include "AliMpDEManager.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpPad.h"
 
 #include "AliRun.h"
 #include "AliLog.h"
@@ -57,8 +55,7 @@ ClassImp(AliMUONTest)
     fSegmentation(0),
     fCanvas(0)
 {
-// Standard Constructor
-//
+/// Standard Constructor
 
   if ( option != "default" && 
        option != "FactoryV2" &&
@@ -70,6 +67,11 @@ ClassImp(AliMUONTest)
   }
   else     
     BuildWithoutMUON(option);
+
+  // Create canvas
+  fCanvas = new TCanvas("c1","c1", 0, 0, 800, 800);
+  fCanvas->Range(-400,-400, 400, 400);
+  fCanvas->cd();
 }
 
 //_____________________________________________________________________________
@@ -79,15 +81,14 @@ AliMUONTest::AliMUONTest()
     fSegmentation(0),
     fCanvas(0)
 {
-// Default Constructor
-//
+/// Default Constructor
 }
 
 //_____________________________________________________________________________
 AliMUONTest::AliMUONTest(const AliMUONTest& rhs)
  : TObject(rhs)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -95,7 +96,7 @@ AliMUONTest::AliMUONTest(const AliMUONTest& rhs)
 //_____________________________________________________________________________
 AliMUONTest::~AliMUONTest()
 {
-// Destructor
+/// Destructor
 
   delete fCanvas;
 }
@@ -103,7 +104,7 @@ AliMUONTest::~AliMUONTest()
 //_____________________________________________________________________________
 AliMUONTest& AliMUONTest::operator = (const AliMUONTest& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -118,7 +119,7 @@ AliMUONTest& AliMUONTest::operator = (const AliMUONTest& rhs)
 //_____________________________________________________________________________
 void AliMUONTest::BuildWithMUON(const TString& configMacro)
 {
-// Build segmentation via AliMUON initialisation
+/// Build segmentation via AliMUON initialisation
 
   gAlice->Init(configMacro.Data());
   AliMUON* muon = (AliMUON*)gAlice->GetModule("MUON");
@@ -133,8 +134,8 @@ void AliMUONTest::BuildWithMUON(const TString& configMacro)
 //_____________________________________________________________________________
 void AliMUONTest::BuildWithoutMUON(const TString& option)
 {
-// Fill geometry from transform*.dat files and build segmentation via 
-// SegFactory
+/// Fill geometry from transform*.dat files and build segmentation via 
+/// SegFactory
 
   AliMUONSegFactory segFactory("volpaths.dat", "transform.dat");
   fSegmentation = segFactory.CreateSegmentation(option);
@@ -146,62 +147,9 @@ void AliMUONTest::BuildWithoutMUON(const TString& option)
 //
 
 //_____________________________________________________________________________
-AliMUONGeometrySegmentation* 
-AliMUONTest::GetSegmentation(Int_t chamberId, Int_t cath)
+void AliMUONTest::PrintPadsForAll() const
 {
-// Create geometry segmentation for the specified chamber and cathod
-
-  return fSegmentation->GetModuleSegmentation(chamberId, cath);
-}		
-
-#include "AliMUONGeometryDetElement.h"
-//_____________________________________________________________________________
-void  AliMUONTest::DetElemTransforms()
-{
-// 
-  // Loop over chambers
-  for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
-
-    const AliMUONGeometryModuleTransformer* kModuleTransformer 
-      = fkTransformer->GetModuleTransformer(i);
-      
-    AliMUONGeometryStore* detElements 
-      = kModuleTransformer->GetDetElementStore();
-    
-    // Loop over detection elements
-    for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
-       
-      //Int_t detElemId = kModuleTransformer->GetDetElemId(j);       
-      Int_t detElemId = detElements->GetEntry(j)->GetUniqueID();       
-      cout << "Detection element Id: " << detElemId << endl;
-	
-      Double_t x, y, z;
-      kModuleTransformer->Local2Global(detElemId, 0., 0., 0., x, y, z);
-      cout << "  Global DE position:            " 
-	   <<  x << ",  " << y << ",  " << z << endl; 
-
-      Double_t x2, y2, z2;
-      kModuleTransformer->Global2Local(detElemId, 0., 0., 0., x2, y2, z2);
-      cout << "  ALIC center in the local frame: " 
-	   <<  x2 << ",  " << y2 << ",  " << z2 << endl; 
-	     
-      Double_t x3, y3, z3;
-      kModuleTransformer->Global2Local(detElemId, x, y, z, x3, y3, z3);
-      cout << "  Back in the local frame: " 
-           <<  x3 << ",  " << y3 << ",  " << z3 << endl;        
-      cout << endl;	     
-
-      AliMUONGeometryDetElement* detElem =  
-        (AliMUONGeometryDetElement*)detElements->GetEntry(j);
-      detElem->PrintGlobalTransform();	
-    }
-  }
-}    	 
-
-//_____________________________________________________________________________
-void AliMUONTest::ForWhole(AliMUONTests testCase)
-{
-// Perform test for all chambers and first cathod
+/// Print pads for all chambers and first cathod
 
   TStopwatch timer;
   timer.Start();  
@@ -213,16 +161,11 @@ void AliMUONTest::ForWhole(AliMUONTests testCase)
     //for (Int_t cath=0; cath<2; cath++) {
     for (Int_t cath=0; cath<1; cath++) {
 
-      AliMUONGeometrySegmentation* segmentation 
-        = GetSegmentation(iChamber, cath);
-	
-      if (!segmentation) continue;
-      	
       cout << setw(6) << "Pads in chamber " << iChamber 
            << " cathod " << cath << endl;
       cout << "===================================" << endl;  
 
-      ForSegmentation(testCase, segmentation);
+      PrintPadsForSegmentation(iChamber, cath);
     }  
   }     
   timer.Stop();
@@ -230,111 +173,60 @@ void AliMUONTest::ForWhole(AliMUONTests testCase)
 }    
 
 //_____________________________________________________________________________
-void AliMUONTest::ForSegmentation(AliMUONTests testCase,
-                                  AliMUONGeometrySegmentation *segmentation)
+void AliMUONTest::PrintPadsForSegmentation(Int_t moduleId, Int_t cath) const
 {
-// Perform test for a given segmentation
+/// Print pads for the given segmentation
   
   TStopwatch timer;
   timer.Start();  
 
-  Before(testCase);
-
   // Loop over detection elements
   //
-  AliMUONGeometryStore* detElements 
-    = segmentation->GetTransformer()->GetDetElementStore();
-    
-  for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+  AliMpDEIterator it;
+  for ( it.First(moduleId); ! it.IsDone(); it.Next()) {
        
-    Int_t detElemId = detElements->GetEntry(j)->GetUniqueID();       
+    Int_t detElemId = it.CurrentDE();       
     cout << "Detection element id: " << detElemId << endl;
     
-    ForDetElement(testCase, detElemId, segmentation);
+    PrintPadsForDetElement(detElemId, cath);
   }  
-
-  After(testCase);
 
   timer.Stop();
   timer.Print();
 } 
    
 //_____________________________________________________________________________
-void AliMUONTest::ForDetElement(AliMUONTests testCase,
-                                Int_t detElemId,
-                                AliMUONGeometrySegmentation *segmentation)
+void AliMUONTest::PrintPadsForDetElement(Int_t detElemId, Int_t cath) const
 {
-// Prints global pad positions for given detection element
-// in a given geometry segmentation
+/// Print global pad positions for the given detection element
   
   
+  // Get geometry segmentation
+  //
+  AliMUONGeometrySegmentation* segmentation 
+    = fSegmentation->GetModuleSegmentationByDEId(detElemId, cath);
+  if (!segmentation) {
+    AliErrorStream()
+      << "Segmentation for detElemId = " << detElemId << ", cath = " << cath
+      << " not defined." << endl;
+    return;
+  }  
+      	
   Int_t counter = 0;
 
   // Loop over pads in a detection element
   //
-
-  for(Int_t ix=1; ix<=segmentation->Npx(detElemId); ix++)
-    for(Int_t iy=1; iy<=segmentation->Npy(detElemId); iy++) 
-    {
-       switch (testCase) {
-     
-         case kPrintPads:
-           PrintPad(counter, detElemId, ix, iy, segmentation);
-	   break;
-     
-         case kDrawPads:
-           DrawPad(counter, detElemId, ix, iy, segmentation);
-	   break;
-      }
-    }    
+  for(Int_t ix=0; ix<=segmentation->Npx(detElemId); ix++)
+    for(Int_t iy=0; iy<=segmentation->Npy(detElemId); iy++) 
+       PrintPad(counter, detElemId, ix, iy, segmentation);
 } 
    
 //_____________________________________________________________________________
-void AliMUONTest::Before(AliMUONTests testCase)
-{
-// Do some initialization if necessary
-
-  switch (testCase) {
-  
-    case kPrintPads:
-      break;
-
-    case kDrawPads:
-      if (!fCanvas) {
-        fCanvas = new TCanvas("c1","c1", 0, 0, 600, 600);
-        fCanvas->Range(-300,-300, 300, 300);
-	fCanvas->cd();
-      }  
-      break;
-  }        
-}
-
-//_____________________________________________________________________________
-void AliMUONTest::After(AliMUONTests testCase)
-{
-// Do some cleanup if necessary
-
-  switch (testCase) {
-  
-    case kPrintPads:
-      break;
-
-    case kDrawPads:
-      fCanvas->Update();
-      cout << "Print any key + enter to continue ..." << endl;
-      char c;
-      cin >> c;
-      fCanvas->Clear();
-      break;
-  }        
-}
-
-//_____________________________________________________________________________
 void AliMUONTest::PrintPad(Int_t& counter,
                            Int_t detElemId, Int_t ix, Int_t iy,
-                           AliMUONGeometrySegmentation* segmentation)
+                           AliMUONGeometrySegmentation* segmentation) const
 {
-// Prints global pad positions for the given pad
+/// Print global pad position for the given pad
   
   Float_t x, y, z;
   Bool_t success
@@ -357,11 +249,91 @@ void AliMUONTest::PrintPad(Int_t& counter,
 } 
    
 //_____________________________________________________________________________
+void AliMUONTest::DrawPadsForAll() const
+{
+/// Draw pad for all chambers and first cathod
+
+  TStopwatch timer;
+  timer.Start();  
+
+  // Loop over chambers
+  for (Int_t iChamber=0; iChamber<AliMUONConstants::NCh(); iChamber++) {
+
+    // Loop over cathods
+    //for (Int_t cath=0; cath<2; cath++) {
+    for (Int_t cath=0; cath<1; cath++) {
+
+      cout << setw(6) << "Pads in chamber " << iChamber 
+           << " cathod " << cath << endl;
+      cout << "===================================" << endl;  
+
+      DrawPadsForSegmentation(iChamber, cath);
+    }  
+  }     
+  timer.Stop();
+  timer.Print();
+}    
+
+//_____________________________________________________________________________
+void AliMUONTest::DrawPadsForSegmentation(Int_t moduleId, Int_t cath) const
+{
+/// Draw pads for the given segmentation
+  
+  TStopwatch timer;
+  timer.Start();  
+
+  // Loop over detection elements
+  //
+  AliMpDEIterator it;
+  for ( it.First(moduleId); ! it.IsDone(); it.Next()) {
+       
+    Int_t detElemId = it.CurrentDE();       
+    cout << "Detection element id: " << detElemId << endl;
+    
+    DrawPadsForDetElement(detElemId, cath);
+  }  
+
+  fCanvas->Update();
+  cout << "Print any key + enter to continue ..." << endl;
+  char c;
+  cin >> c;
+  fCanvas->Clear();
+
+  timer.Stop();
+  timer.Print();
+} 
+   
+//_____________________________________________________________________________
+void AliMUONTest::DrawPadsForDetElement(Int_t detElemId, Int_t cath) const
+{
+/// Draw pads for the given detection element
+  
+  // Get geometry segmentation
+  //
+  AliMUONGeometrySegmentation* segmentation 
+    = fSegmentation->GetModuleSegmentationByDEId(detElemId, cath);
+  if (!segmentation) {
+    AliErrorStream()
+      << "Segmentation for detElemId = " << detElemId << ", cath = " << cath
+      << " not defined." << endl;
+    return;
+  }  
+      	
+  Int_t counter = 0;
+
+  // Loop over pads in a detection element
+  //
+  for(Int_t ix=0; ix<=segmentation->Npx(detElemId); ix++)
+    for(Int_t iy=0; iy<=segmentation->Npy(detElemId); iy++) 
+      DrawPad(counter, detElemId, ix, iy, segmentation);
+} 
+   
+//_____________________________________________________________________________
 void AliMUONTest::DrawPad(Int_t& counter,
                           Int_t detElemId, Int_t ix, Int_t iy,
-                          AliMUONGeometrySegmentation* segmentation)
+                          AliMUONGeometrySegmentation* segmentation) const
 {
-// Prints global pad positions for the given pad
+/// Draw the given pad
   
   Float_t x, y, z;
   Bool_t success
@@ -380,63 +352,49 @@ void AliMUONTest::DrawPad(Int_t& counter,
   //printf(" ***** Pad position is ix: %d iy: %d x: %f y: %f sector: %d dpx: %f dpy: %f \n",
   //       ix, iy, x, y, sector, dpx, dpy);
 
-  if (!fCanvas) Before(kDrawPads);
-
   fCanvas->cd();
   TPave* pave = new TPave(x-dpx/2., y-dpy/2., x+dpx/2., y+dpy/2., 1);
   pave->Draw();
 } 
-   
-//_____________________________________________________________________________
-void AliMUONTest::DrawSegmentation(AliMUONGeometrySegmentation *seg)
-{
-// TBR
 
-  // Drawing slat504
-  Int_t ix, iy, deId;
-  Float_t x, y, z;
-  Float_t dpx, dpy;
-//   TH2F * frame = new TH2F(" "," ",10,-10.,245.,10, -5., 45.);
-//   TH2F * frame = new TH2F(" "," ",10,-300.,300.,10, -300., 300.);
-  TH2F * frame = new TH2F(" "," ",10,-350.,350.,10, -350., 350.);
-  frame->Draw();
-//   (new TPave(  0.,  0., 40., 40.,2))->Draw();
-//   (new TPave( 40.,  0., 80., 40.,2))->Draw();
-//   (new TPave( 80.,  0.,120., 40.,2))->Draw();
-//   (new TPave(120.,  0.,160., 40.,2))->Draw();
-//   (new TPave(160.,  0.,200., 40.,2))->Draw();
-//   (new TPave(200.,  0.,240., 40.,2))->Draw();
-  
-  // Loop over detection elements
-  //
-  AliMUONGeometryStore* detElements 
-    = seg->GetTransformer()->GetDetElementStore();
-    
-  for (Int_t iDE=0; iDE<detElements->GetNofEntries(); iDE++) {
-    
-    deId = detElements->GetEntry(iDE)->GetUniqueID();       
-	
-    cout << "Detection element id: " << deId << endl;
-    
-    
-    //   for ( seg->FirstPad(detElementId,  0., 0., 0., 100., 100.);
-    // 	seg->MorePads(detElementId); 
-    // 	seg->NextPad(detElementId) ) {
-    for(ix=1; ix<=seg->Npx(deId); ix++) {
-      for(iy=1; iy<=seg->Npy(deId); iy++) {
-	
-	seg->GetPadC(deId, ix, iy, x, y, z);
-	Int_t sector = seg->Sector(deId, ix, iy);
-	dpx = seg->Dpx(deId,sector);
-	dpy = seg->Dpy(deId,sector);
-	
-	//printf(" ***** Pad position is ix: %d iy: %d x: %f y: %f sector: %d dpx: %f dpy: %f \n",ix, iy, x, y, sector, dpx, dpy);
-	(new TPave(x-dpx/2., y-dpy/2., x+dpx/2., y+dpy/2., 1))->Draw();
-      }
+//_____________________________________________________________________________
+void  AliMUONTest::DetElemTransforms() const
+{
+/// Print detection elements transformations 
+
+  // Loop over chambers
+  for (Int_t i=0; i<AliMUONConstants::NCh(); i++) {
+
+    const AliMUONGeometryModuleTransformer* kModuleTransformer 
+      = fkTransformer->GetModuleTransformer(i);
       
+    // Loop over detection elements
+    AliMpDEIterator it;
+    for ( it.First(i); ! it.IsDone(); it.Next()) {
+       
+      Int_t detElemId = it.CurrentDE();       
+      cout << "Detection element id: " << detElemId << endl;
+	
+      Double_t x, y, z;
+      kModuleTransformer->Local2Global(detElemId, 0., 0., 0., x, y, z);
+      cout << "  Global DE position:            " 
+	   <<  x << ",  " << y << ",  " << z << endl; 
+
+      Double_t x2, y2, z2;
+      kModuleTransformer->Global2Local(detElemId, 0., 0., 0., x2, y2, z2);
+      cout << "  ALIC center in the local frame: " 
+	   <<  x2 << ",  " << y2 << ",  " << z2 << endl; 
+	     
+      Double_t x3, y3, z3;
+      kModuleTransformer->Global2Local(detElemId, x, y, z, x3, y3, z3);
+      cout << "  Back in the local frame: " 
+           <<  x3 << ",  " << y3 << ",  " << z3 << endl;        
+      cout << endl;	     
+
+      AliMUONGeometryDetElement* detElem =  
+        kModuleTransformer->GetDetElement(detElemId);
+      detElem->PrintGlobalTransform();	
     }
   }
-}
-
-
+}    	 
 

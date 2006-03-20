@@ -19,21 +19,36 @@
 // and segmentations
 // To be run from aliroot:
 // .L MUONTest.C
-// MUONTest(option, testNumber); > testN.out
+//  MUONTest(option); > test.out
 //     option     = "./Config.C", 
-//                  "default", "FactoryV2", "FactoryV3","FactoryV4", "FactoryNew"
-//     testNumber = 1, 2, 3
+//                  "default", "FactoryV2", "FactoryV3","FactoryV4"
+//
 //
 //  Author: I. Hrivnacova, IPN Orsay
 
-void MUONTest(const TString& option = "./Config.C", 
-              Int_t testNumber = 1)
+void MUONTest(const TString& option = "./Config.C")
 {
+  // Load tests library
+  gSystem->Load("libMUONtests");
+
   AliMUONTest test(option);
-  switch (testNumber) {
-    case 1: test.DetElemTransforms();  break;
-    case 2: test.ForWhole(kPrintPads); break; 
-    case 3: test.ForWhole(kDrawPads);  break; 
-    default: ;
-  }    
+  
+  // Print pads for all DEs
+  // test.PrintPadsForAll();
+  
+  // Print pads for first chamber, first cathod
+  // test.PrintPadsForSegmentation(0, 0);
+
+  // Print pads for detElem 100, first cathod
+  // test.PrintPadsForDetElement(100, 0);
+
+  
+  // Print pads for all DEs
+  test.DrawPadsForAll();
+  
+  // Draw pads for first chamber, first cathod
+  // test.DrawForSegmentation(0, 0);
+
+  // Draw pads for detElem 100, first cathod
+  // test.DrawForDetElement(100, 0);
 }  

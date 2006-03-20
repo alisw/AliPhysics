@@ -21,11 +21,6 @@ class AliMUONGeometrySegmentation;
 class TCanvas;
 class TString;
 
-enum AliMUONTests {
-  kPrintPads,
-  kDrawPads
-};  
-
 class AliMUONTest : public  TObject 
 {
   public:
@@ -33,40 +28,28 @@ class AliMUONTest : public  TObject
     AliMUONTest();
     virtual ~AliMUONTest();
    
-    // Get segmentation
-    AliMUONGeometrySegmentation* GetSegmentation(
-                                       Int_t chamberId, Int_t cath);
-                                                          
-    // other tests
-    //
-    void DetElemTransforms();
 
-    // selected tests
+    // methods for printing pads
     //							  
-    void ForWhole(AliMUONTests test);
-    void ForSegmentation(
-                  AliMUONTests test,
-                  AliMUONGeometrySegmentation* segmentation);
-    void ForDetElement(
-                  AliMUONTests test,
-                  Int_t detElemId,
-                  AliMUONGeometrySegmentation* segmentation);
-    void Before(AliMUONTests test);
-    void After(AliMUONTests test);
- 
-    // tests per pad
-    //
+    void PrintPadsForAll() const;
+    void PrintPadsForSegmentation(Int_t moduleId, Int_t cath) const;
+    void PrintPadsForDetElement(Int_t detElemId, Int_t cath) const;
     void PrintPad(Int_t& counter, 
                   Int_t detElemId, Int_t ix, Int_t iy,
-                  AliMUONGeometrySegmentation* segmentation);
-    void DrawPad(Int_t& counter, 
-                  Int_t detElemId, Int_t ix, Int_t iy,
-                  AliMUONGeometrySegmentation* segmentation);
- 
+                  AliMUONGeometrySegmentation* segmentation) const;
 
-    void DrawSegmentation(AliMUONGeometrySegmentation *seg);
-             // TBR			  
-			  
+    // methods for drawing pads
+    //							  
+    void DrawPadsForAll() const;
+    void DrawPadsForSegmentation(Int_t moduleId, Int_t cath) const;
+    void DrawPadsForDetElement(Int_t detElemId, Int_t cath) const;
+    void DrawPad(Int_t& counter, 
+                 Int_t detElemId, Int_t ix, Int_t iy,
+                 AliMUONGeometrySegmentation* segmentation) const;
+
+    // other tests
+    //
+    void DetElemTransforms() const;
 
   protected:
     AliMUONTest(const AliMUONTest& rhs);
@@ -77,6 +60,12 @@ class AliMUONTest : public  TObject
     void BuildWithMUON(const TString& configMacro);
     void BuildWithoutMUON(const TString& option);
 
+    void PrintPad(Int_t& counter, 
+                  Int_t detElemId, Int_t ix, Int_t iy,
+                  AliMUONGeometrySegmentation* segmentation);
+    void DrawPad(Int_t& counter, 
+                  Int_t detElemId, Int_t ix, Int_t iy,
+                  AliMUONGeometrySegmentation* segmentation);
     // data members
     const AliMUONGeometryTransformer* fkTransformer; // Geometry parametrisation
     AliMUONSegmentation*  fSegmentation;  // Segmentation
