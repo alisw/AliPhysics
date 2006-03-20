@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -191,12 +192,12 @@ void AliTRDsim::Init()
   if (fNFoils)   delete [] fNFoils;
   fNFoils      = new Int_t[fNFoilsDim];
   fNFoils[0]   = 170;
-  fNFoils[1]   = 250;
-  fNFoils[2]   = 310;
-  fNFoils[3]   = 380;
-  fNFoils[4]   = 430;
-  fNFoils[5]   = 490;
-  fNFoils[6]   = 550;
+  fNFoils[1]   = 225; //250;
+  fNFoils[2]   = 275; //310;
+  fNFoils[3]   = 305; //380;
+  fNFoils[4]   = 325; //430;
+  fNFoils[5]   = 340; //490;
+  fNFoils[6]   = 350; //550;
 
   if (fNFoilsUp) delete [] fNFoilsUp;
   fNFoilsUp    = new Double_t[fNFoilsDim];
@@ -287,9 +288,9 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
   //
 
   const Double_t kAlpha  = 0.0072973;
-  const Int_t    kSumMax = 10;
-
-  Double_t kappa = fGapThick / fFoilThick;
+  const Int_t    kSumMax = 30;
+	
+  Double_t tau = fGapThick / fFoilThick;
 
   // Calculate gamma
   Double_t gamma = TMath::Sqrt(p*p + mass*mass) / mass;
@@ -300,47 +301,42 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
   fSpectrum->Reset();
 
   // The TR spectrum
-  Double_t stemp = 0;
-  for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
+	Double_t csi1,csi2,rho1,rho2;
+	Double_t fSigma,Sum,Nequ,theta_n,aux;
+  Double_t energyeV, energykeV;
+	for (Int_t iBin = 1; iBin <= fSpNBins; iBin++) {
+    energykeV = fSpectrum->GetBinCenter(iBin);
+    energyeV = energykeV * 1.e3;
 
-    // keV -> eV
-    Double_t energyeV = (fSpBinWidth * iBin + 1.0) * 1e3;
+    fSigma       = Sigma(energykeV);
 
-    Double_t csFoil   = fFoilOmega / energyeV;
-    Double_t csGap    = fGapOmega  / energyeV;
+    csi1 = fFoilOmega / energyeV;
+    csi2 = fGapOmega  / energyeV;
 
-    Double_t rho1     = energyeV * fFoilThick * 1e4 * 2.5 
-                                 * (1.0 / (gamma*gamma) + csFoil*csFoil);
-    Double_t rho2     = energyeV * fFoilThick * 1e4 * 2.5 
-                                 * (1.0 / (gamma*gamma) + csGap *csGap);
+    rho1 = 2.5 * energyeV * fFoilThick * 1.E4 
+                                 * (1. / (gamma*gamma) + csi1*csi1);
+    rho2 = 2.5 * energyeV * fFoilThick * 1.E4 
+                                 * (1.0 / (gamma*gamma) + csi2 *csi2);
 
     // Calculate the sum
-    Double_t sum = 0;
-    for (Int_t iSum = 0; iSum < kSumMax; iSum++) {
-      Double_t tetan = (TMath::Pi() * 2.0 * (iSum+1) - (rho1 + kappa * rho2)) 
-                     / (kappa + 1.0);
-      if (tetan < 0.0) tetan = 0.0;
-      Double_t aux   = 1.0 / (rho1 + tetan) - 1.0 / (rho2 + tetan);
-               sum  += tetan * (aux*aux) * (1.0 - TMath::Cos(rho1 + tetan));
+    Sum = 0;
+    for (Int_t n = 1; n <= kSumMax; n++) {
+      theta_n = (TMath::Pi() * 2.0 * n - (rho1 + tau * rho2)) / (1.+ tau);
+      if (theta_n < 0.) theta_n = 0.0;
+      aux   = 1. / (rho1 + theta_n) - 1. / (rho2 + theta_n);
+      Sum  += theta_n * (aux*aux) * (1.0 - TMath::Cos(rho1 + theta_n));
     }
 
-    // Absorbtion
-    Double_t conv      = 1.0 - TMath::Exp(-foils * fSigma[iBin]);
+    // Equivalent number of foils
+    Nequ      = (1. - TMath::Exp(-foils * fSigma)) / (1.- TMath::Exp(-fSigma));
 
-    // eV -> keV
-    Float_t  energykeV = energyeV * 0.001;
 
     // dN / domega
-    Double_t wn        = kAlpha * 4.0 / (fSigma[iBin] * (kappa + 1.0)) 
-                                * conv * sum / energykeV;
-    fSpectrum->SetBinContent(iBin,wn);
-
-    stemp += wn;
-
+    fSpectrum->SetBinContent(iBin,4. * kAlpha * Nequ * Sum /  (energykeV * (1. + tau)));
   }
 
   // <nTR> (binsize corr.)
-  Float_t ntr = stemp * fSpBinWidth;
+  Float_t ntr = fSpBinWidth*fSpectrum->Integral();
   // Number of TR photons from Poisson distribution with mean <ntr>
   nPhoton = gRandom->Poisson(ntr);
   // Energy of the TR photons
