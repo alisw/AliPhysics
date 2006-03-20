@@ -9,8 +9,7 @@
 
 class TFile;
 class TTree;
-class TParticle;
-class TParticlePDG;
+class TParticle;class TParticlePDG;
 
 class AliTRDgeometry;
 class AliTRDtrack;
@@ -258,8 +257,8 @@ class AliTRDtracker : public AliTracker {
   AliTRDtrack *   RegisterSeed(AliTRDseed * seeds, Double_t *params);
   void  MakeSeedsMI(Int_t inner, Int_t outer, AliESD *esd=0);
 
-  Int_t         FollowProlongation(AliTRDtrack& t, Int_t rf);
   Int_t         FollowBackProlongation(AliTRDtrack& t);
+  Int_t         FollowProlongation(AliTRDtrack& t);
   void          CookdEdxTimBin(AliTRDtrack& t);  
 
   Int_t         PropagateToX(AliTRDtrack& t, Double_t xToGo, Double_t maxStep);
