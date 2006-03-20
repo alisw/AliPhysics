@@ -196,7 +196,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
   const Int_t   kPdgElectron = 11;
 
   // Ionization energy
-  const Float_t kWion        = 22.57;
+  const Float_t kWion        = 23.53;
 
   // Maximum number of TR photons per track
   const Int_t   kNTR         = 50;
@@ -498,7 +498,7 @@ void AliTRDv1::StepManagerGeant()
   const Int_t    kNdetsec     = kNplan * kNcham;
 
   const Double_t kBig         = 1.0E+12; // Infinitely big
-  const Float_t  kWion        = 22.57;   // Ionization energy
+  const Float_t  kWion        = 23.53;   // Ionization energy
   const Float_t  kPTotMaxEl   = 0.002;   // Maximum momentum for e+ e- g
 
   // Minimum energy for the step size adjustment
@@ -726,7 +726,7 @@ void AliTRDv1::StepManagerErmilova()
   const Int_t    kNdetsec     = kNplan * kNcham;
 
   const Double_t kBig         = 1.0E+12; // Infinitely big
-  const Float_t  kWion        = 22.57;   // Ionization energy
+  const Float_t  kWion        = 23.53;   // Ionization energy
   const Float_t  kPTotMaxEl   = 0.002;   // Maximum momentum for e+ e- g 
 
   // energy threshold for production of delta electrons
@@ -919,7 +919,7 @@ void AliTRDv1::StepManagerFixedStep()
 
   const Double_t kBig         = 1.0E+12;
 
-  const Float_t  kWion        = 22.57;   // Ionization energy
+  const Float_t  kWion        = 23.53;   // Ionization energy
   const Float_t  kEkinMinStep = 1.0e-5;  // Minimum energy for the step size adjustment
 
   // Set the maximum step size to a very large number for all 
