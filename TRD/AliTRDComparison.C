@@ -87,7 +87,7 @@ comptof->fTree =treetof;
 #include "AliITStrackMI.h"
 #include "AliESDV0MI.h"
 #include "AliESDkink.h"
-#include "AliTRDparameter.h"
+//#include "AliTRDparameter.h"
 #include "AliTRDgeometryFull.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtracker.h"
@@ -101,7 +101,7 @@ comptof->fTree =treetof;
 
 AliComparisonDraw comp;
 AliComparisonDraw comptr;
-AliTRDparameter   par("pica","vyjebana");
+//AliTRDparameter   par("pica","vyjebana");
 AliTRDgeometryFull    geom;
 AliRunLoader  *fLoader=0; //= AliRunLoader::Open(fnGalice);
 
