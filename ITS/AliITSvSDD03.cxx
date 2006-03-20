@@ -747,8 +747,8 @@ void AliITSvSDD03::InitAliITSgeom(){
     p[i] =p[i-1]+kpitch;
     n[i] =n[i-1]-kpitch;
   } // end for i
-  p[knp+1]=box[0];
-  n[knp+1]=-box[0];
+  p[knp]=box[0];
+  n[knp]=-box[0];
 
   for(i=0;i<20;i++) lnam[i] = lnum[i] = 0;
   for(i=0;i<kltypess;i++)for(j=0;j<kndeep;j++) 
