@@ -29,9 +29,10 @@ public:
   virtual void         FillESD(AliRawReader*, TTree*, AliESD*) const { };
   virtual void         FillESD(TTree*, TTree*, AliESD*) const { };
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-
+  static  Bool_t       SeedingOn(){ return fgkSeedingOn;}
+  static  void         SetSeedingOn(Bool_t seeding) { fgkSeedingOn = seeding;}
 private:
-
+  static Bool_t fgkSeedingOn;               // set flag for seeding during reconstruction
   ClassDef(AliTRDReconstructor, 0)   // class for the TRD reconstruction
 };
 

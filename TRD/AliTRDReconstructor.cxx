@@ -34,6 +34,8 @@
 ClassImp(AliTRDReconstructor)
 
 
+Bool_t  AliTRDReconstructor::fgkSeedingOn = kFALSE;
+
 //_____________________________________________________________________________
 void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
