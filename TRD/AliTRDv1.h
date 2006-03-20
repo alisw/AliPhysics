@@ -16,7 +16,8 @@ Double_t IntSpecGeant(Double_t *x, Double_t *par);
 #include "AliTRD.h"
 
 class TF1;
-
+class TTree;
+class TFile;
 class AliTRDsim;
 
 //_____________________________________________________________________________
@@ -75,13 +76,18 @@ class AliTRDv1 : public AliTRD {
 
  private:
 
-  virtual Double_t BetheBloch(Double_t bg);
+  Double_t 	BetheBloch(Double_t bg);
+  Double_t 	BetheBlochGeant(Double_t bg);
+	void 			Stepping();
+  
+	TF1         *fDeltaE;                 // Energy distribution of the delta-electrons (Ermilova)
 
-  TF1         *fDeltaE;                 // Energy distribution of the delta-electrons (Ermilova)
-  TF1         *fDeltaG;                 // for StepManagerGeant
-   
+  TF1         *fDeltaG;                 // Energy distribution of the
+	                                      // delta-electrons (GEANT) for StepManagerGeant
+	Float_t			fTrackLength0;         		// Save the track length at chamber entrance  
+	Int_t				fPrimaryTrackPid;         // Save the id of the primary track  
+
   ClassDef(AliTRDv1,3)                  // Transition Radiation Detector version 1 (slow simulator)
-
 };
 
 #endif

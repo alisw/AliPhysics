@@ -66,7 +66,7 @@ AliTRDv1::AliTRDv1():AliTRD()
   fTR                = NULL;
 
   fStepSize          = 0.1;
-  fTypeOfStepManager = 2;
+  fTypeOfStepManager = 1;
 
 }
 
@@ -88,7 +88,7 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   fDeltaG            = NULL;
   fTR                = NULL;
   fStepSize          = 0.1;
-  fTypeOfStepManager = 2;
+  fTypeOfStepManager = 1;
 
   SetBufferSize(128000);
 
@@ -133,6 +133,7 @@ AliTRDv1 &AliTRDv1::operator=(const AliTRDv1 &trd)
 //_____________________________________________________________________________
 void AliTRDv1::Copy(TObject &trd) const
 {
+	printf("void AliTRDv1::Copy(TObject &trd) const\n");
   //
   // Copy function
   //
@@ -195,7 +196,7 @@ void AliTRDv1::CreateTRhit(Int_t det)
   const Int_t   kPdgElectron = 11;
 
   // Ionization energy
-  const Float_t kWion        = 22.04;
+  const Float_t kWion        = 22.57;
 
   // Maximum number of TR photons per track
   const Int_t   kNTR         = 50;
@@ -263,14 +264,14 @@ void AliTRDv1::CreateTRhit(Int_t det)
       gMC->TrackPosition(pos);
       posHit[0] = pos[0] + mom[0] / pTot * absLength;
       posHit[1] = pos[1] + mom[1] / pTot * absLength;
-      posHit[2] = pos[2] + mom[2] / pTot * absLength;      
+      posHit[2] = pos[2] + mom[2] / pTot * absLength;
 
       // Create the charge 
       Int_t q = ((Int_t) (energyeV / kWion));
 
       // Add the hit to the array. TR photon hits are marked 
       // by negative charge
-      AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,posHit,-q,kTRUE); 
+     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,posHit,-q,kTRUE); 
 
     }
 
@@ -315,10 +316,10 @@ void AliTRDv1::Init()
   Float_t eEnd = TMath::Log(kEend);
 
   // Ermilova distribution for the delta-ray spectrum
-  fDeltaE = new TF1("deltae" ,Ermilova    ,poti,eEnd,0);
+  fDeltaE = new TF1("deltae" ,Ermilova ,poti,eEnd,0);
 
   // Geant3 distribution for the delta-ray spectrum
-  fDeltaG = new TF1("deltaeg",IntSpecGeant,poti,eEnd,0);
+  fDeltaG = new TF1("deltag",IntSpecGeant,2.421257,28.536469,0);
 
   AliDebug(1,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
@@ -424,7 +425,7 @@ void AliTRDv1::SetSensSector(Int_t isector, Int_t nsector)
 void AliTRDv1::StepManager()
 {
   //
-  // Slow simulator. Every charged track produces electron cluster as hits 
+  // Slow simulator. Every charged track produces electron cluster as hits
   // along its path across the drift volume. 
   //
 
@@ -447,10 +448,10 @@ void AliTRDv1::SelectStepManager(Int_t t)
   //   2 - Fixed step size
   //
 
-  if (t == 1) {
+/*  if (t == 1) {
     AliWarning("Sorry, Geant parametrization step manager is not implemented yet. Please ask K.Oyama for detail.");
   }
-
+*/
   fTypeOfStepManager = t;
   AliInfo(Form("Step Manager type %d was selected",fTypeOfStepManager));
 
@@ -460,14 +461,226 @@ void AliTRDv1::SelectStepManager(Int_t t)
 void AliTRDv1::StepManagerGeant()
 {
   //
-  // Slow simulator. Every charged track produces electron cluster as hits 
+  // Slow simulator. Every charged track produces electron cluster as hits
   // along its path across the drift volume. The step size is set acording
   // to Bethe-Bloch. The energy distribution of the delta electrons follows
   // a spectrum taken from Geant3.
   //
+  Int_t    pla = 0;
+  Int_t    cha = 0;
+  Int_t    sec = 0;
+  Int_t    det = 0;
+  Int_t    iPdg;
+  Int_t    qTot;
 
-  AliWarning("Not implemented yet.");
+  Float_t  hits[3];
+  Float_t  charge;
+  Float_t  aMass;
 
+  Double_t pTot = 0;
+  Double_t eDelta;
+  Double_t betaGamma, pp;
+  Double_t stepSize=0;
+
+  Bool_t   drRegion = kFALSE;
+  Bool_t   amRegion = kFALSE;
+
+  TString  cIdCurrent;
+  TString  cIdSensDr = "J";
+  TString  cIdSensAm = "K";
+  Char_t   cIdChamber[3];
+           cIdChamber[2] = 0;
+
+  TLorentzVector pos, mom;
+
+  const Int_t    kNplan       = AliTRDgeometry::Nplan();
+  const Int_t    kNcham       = AliTRDgeometry::Ncham();
+  const Int_t    kNdetsec     = kNplan * kNcham;
+
+  const Double_t kBig         = 1.0E+12; // Infinitely big
+  const Float_t  kWion        = 22.57;   // Ionization energy
+  const Float_t  kPTotMaxEl   = 0.002;   // Maximum momentum for e+ e- g
+
+  // Minimum energy for the step size adjustment
+  const Float_t  kEkinMinStep = 1.0e-5;
+  // energy threshold for production of delta electrons
+	const Float_t  kECut = 1.0e4;
+	// Parameters entering the parametrized range for delta electrons
+	const float ra=5.37E-4, rb=0.9815, rc=3.123E-3;
+	// Gas density -> To be made user adjustable !
+	const float rho=0.004945 ; //[0.85*0.00549+0.15*0.00186 (Xe-CO2 85-15)]
+
+  // Plateau value of the energy-loss for electron in xenon
+  // taken from: Allison + Comb, Ann. Rev. Nucl. Sci. (1980), 30, 253
+  //const Double_t kPlateau = 1.70;
+  // the averaged value (26/3/99)
+  const Float_t  kPlateau     = 1.55;
+
+  const Float_t  kPrim        = 19.34;  // dN1/dx|min for the gas mixture (90% Xe + 10% CO2)
+  // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)
+  const Float_t  kPoti        = 12.1;
+
+  const Int_t    kPdgElectron = 11;  // PDG code electron
+
+  // Set the maximum step size to a very large number for all
+  // neutral particles and those outside the driftvolume
+  gMC->SetMaxStep(kBig);
+
+  // Use only charged tracks
+  if (( gMC->TrackCharge()       ) &&
+      (!gMC->IsTrackStop()       ) &&
+      (!gMC->IsTrackDisappeared())) {
+
+    // Inside a sensitive volume?
+    drRegion = kFALSE;
+    amRegion = kFALSE;
+    cIdCurrent = gMC->CurrentVolName();
+    if (cIdSensDr == cIdCurrent[1]) {
+      drRegion = kTRUE;
+    }
+    if (cIdSensAm == cIdCurrent[1]) {
+      amRegion = kTRUE;
+    }
+    if (drRegion || amRegion) {
+
+      // The hit coordinates and charge
+      gMC->TrackPosition(pos);
+      hits[0] = pos[0];
+      hits[1] = pos[1];
+      hits[2] = pos[2];
+
+      // The sector number (0 - 17)
+      // The numbering goes clockwise and starts at y = 0
+      Float_t phi = kRaddeg*TMath::ATan2(pos[0],pos[1]);
+      if (phi < 90.)
+        phi = phi + 270.;
+      else
+        phi = phi -  90.;
+      sec = ((Int_t) (phi / 20));
+
+      // The plane and chamber number
+      cIdChamber[0] = cIdCurrent[2];
+      cIdChamber[1] = cIdCurrent[3];
+      Int_t idChamber = (atoi(cIdChamber) % kNdetsec);
+      cha = kNcham - ((Int_t) idChamber / kNplan) - 1;
+      pla = ((Int_t) idChamber % kNplan);
+
+      // Check on selected volumes
+      Int_t addthishit = 1;
+      if (fSensSelect) {
+        if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
+        if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
+        if (fSensSector  >= 0) {
+          Int_t sens1  = fSensSector;
+          Int_t sens2  = fSensSector + fSensSectorRange;
+                sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect()))
+                       * AliTRDgeometry::Nsect();
+          if (sens1 < sens2) {
+            if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
+	  			}
+          else {
+            if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
+	  			}
+				}
+      }
+
+      // Add this hit
+      if (addthishit) {
+
+	// The detector number
+        det = fGeometry->GetDetector(pla,cha,sec);
+
+	// Special hits only in the drift region
+        if (drRegion) {
+          // Create a track reference at the entrance and
+          // exit of each chamber that contain the
+	        // momentum components of the particle
+          if (gMC->IsTrackEntering() || gMC->IsTrackExiting()) {
+            gMC->TrackMomentum(mom);
+            AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+          }
+					
+					if (gMC->IsTrackEntering() && !gMC->IsNewTrack()) {
+						// determine if hit belong to primary track 
+						fPrimaryTrackPid=gAlice->GetMCApp()->GetCurrentTrackNumber();
+						//determine track length when entering the detector
+						fTrackLength0=gMC->TrackLength();
+					}
+					
+					// Create the hits from TR photons
+          if (fTR) CreateTRhit(det);
+				}
+
+				// Calculate the energy of the delta-electrons
+				// modified by Alex Bercuci (A.Bercuci@gsi.de) on 26.01.06
+				// take into account correlation with the underlying GEANT tracking
+				// mechanism. see
+        // http://www-linux.gsi.de/~abercuci/Contributions/TRD/index.html
+
+				// determine the most significant process (last on the processes list)
+				// which caused this hit
+        TArrayI processes;
+        gMC->StepProcesses(processes);
+        int nofprocesses=processes.GetSize(), pid;
+				if(!nofprocesses) pid=0;
+				else pid=	processes[nofprocesses-1];		
+				
+				// generate Edep according to GEANT parametrisation
+				eDelta =TMath::Exp(fDeltaG->GetRandom()) - kPoti;
+        eDelta=TMath::Max(eDelta,0.0);
+				float pr_range=0.;
+				float range=gMC->TrackLength()-fTrackLength0;
+				// merge GEANT tracker information with localy cooked one
+				if(gAlice->GetMCApp()->GetCurrentTrackNumber()==fPrimaryTrackPid) {
+//					printf("primary pid=%d eDelta=%f\n",pid,eDelta);
+					if(pid==27){ 
+						if(eDelta>=kECut){                
+							pr_range=ra*eDelta*.001*(1.-rb/(1.+rc*eDelta*0.001))/rho;
+        			if(pr_range>=(3.7-range)) eDelta*=.1;
+						}
+					} else if(pid==1){	
+						if(eDelta<kECut) eDelta*=.5;
+						else {                
+							pr_range=ra*eDelta*.001*(1.-rb/(1.+rc*eDelta*0.001))/rho;
+        			if(pr_range>=((AliTRDgeometry::DrThick()
+                       + AliTRDgeometry::AmThick())-range)) eDelta*=.05;
+							else eDelta*=.5;
+						}
+					} else eDelta=0.;	
+				} else eDelta=0.;
+
+        // Generate the electron cluster size
+        if(eDelta==0.) qTot=0;
+				else qTot = ((Int_t) (eDelta / kWion) + 1);
+				// Create a new dEdx hit
+        AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,hits,qTot, drRegion);
+				
+        // Calculate the maximum step size for the next tracking step
+	// Produce only one hit if Ekin is below cutoff
+        aMass = gMC->TrackMass();
+        if ((gMC->Etot() - aMass) > kEkinMinStep) {
+
+          // The energy loss according to Bethe Bloch
+          iPdg  = TMath::Abs(gMC->TrackPid());
+          if ( (iPdg != kPdgElectron) ||
+	      			((iPdg == kPdgElectron) && (pTot < kPTotMaxEl))) {
+            gMC->TrackMomentum(mom);
+            pTot      = mom.Rho();
+            betaGamma = pTot / aMass;
+            pp        = BetheBlochGeant(betaGamma);
+			// Take charge > 1 into account
+            charge = gMC->TrackCharge();
+            if (TMath::Abs(charge) > 1) pp = pp * charge*charge;
+          } else { // Electrons above 20 Mev/c are at the plateau
+						pp = kPrim * kPlateau;
+          }
+
+          stepSize = 1./gRandom->Poisson(pp);
+					gMC->SetMaxStep(stepSize);
+				}
+      }
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -513,8 +726,15 @@ void AliTRDv1::StepManagerErmilova()
   const Int_t    kNdetsec     = kNplan * kNcham;
 
   const Double_t kBig         = 1.0E+12; // Infinitely big
-  const Float_t  kWion        = 22.04;   // Ionization energy
+  const Float_t  kWion        = 22.57;   // Ionization energy
   const Float_t  kPTotMaxEl   = 0.002;   // Maximum momentum for e+ e- g 
+
+  // energy threshold for production of delta electrons
+  //const Float_t  kECut = 1.0e4;
+  // Parameters entering the parametrized range for delta electrons
+  //const float ra=5.37E-4, rb=0.9815, rc=3.123E-3;
+  // Gas density -> To be made user adjustable !
+  //const float rho=0.004945 ; //[0.85*0.00549+0.15*0.00186 (Xe-CO2 85-15)]
 
   // Minimum energy for the step size adjustment
   const Float_t  kEkinMinStep = 1.0e-5;
@@ -586,11 +806,11 @@ void AliTRDv1::StepManagerErmilova()
                        * AliTRDgeometry::Nsect();
           if (sens1 < sens2) {
             if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
-	  }
+	  			}
           else {
             if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
-	  }
-	}
+	  			}
+				}
       }
 
       // Add this hit
@@ -609,28 +829,27 @@ void AliTRDv1::StepManagerErmilova()
             gMC->TrackMomentum(mom);
             AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
           }
-
           // Create the hits from TR photons
           if (fTR) CreateTRhit(det);
+				}
 
-	}
 
         // Calculate the energy of the delta-electrons
         eDelta = TMath::Exp(fDeltaE->GetRandom()) - kPoti;
         eDelta = TMath::Max(eDelta,0.0);
+        // Generate the electron cluster size
+        if(eDelta==0.) qTot=0;
+				else qTot = ((Int_t) (eDelta / kWion) + 1);
 
-        // The number of secondary electrons created
-        qTot = ((Int_t) (eDelta / kWion) + 1);
-
-	// Create a new dEdx hit
+				// Create a new dEdx hit
         if (drRegion) {
           AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
-                ,det,hits,qTot,kTRUE);       
-	}
+                ,det,hits,qTot, kTRUE);
+				}
         else {
           AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
-                ,det,hits,qTot,kFALSE);      
-	}
+                ,det,hits,qTot,kFALSE);
+				}
 
         // Calculate the maximum step size for the next tracking step
 	// Produce only one hit if Ekin is below cutoff 
@@ -640,7 +859,7 @@ void AliTRDv1::StepManagerErmilova()
           // The energy loss according to Bethe Bloch
           iPdg  = TMath::Abs(gMC->TrackPid());
           if ( (iPdg != kPdgElectron) ||
-	      ((iPdg == kPdgElectron) && (pTot < kPTotMaxEl))) {
+	      			((iPdg == kPdgElectron) && (pTot < kPTotMaxEl))) {
             gMC->TrackMomentum(mom);
             pTot      = mom.Rho();
             betaGamma = pTot / aMass;
@@ -648,10 +867,8 @@ void AliTRDv1::StepManagerErmilova()
 	    // Take charge > 1 into account
             charge = gMC->TrackCharge();
             if (TMath::Abs(charge) > 1) pp = pp * charge*charge;
-          }
-          // Electrons above 20 Mev/c are at the plateau
-          else {
-            pp = kPrim * kPlateau;
+          } else { // Electrons above 20 Mev/c are at the plateau
+						pp = kPrim * kPlateau;
           }
       
           if (pp > 0) {
@@ -660,16 +877,11 @@ void AliTRDv1::StepManagerErmilova()
             while ((random[0] == 1.) || (random[0] == 0.));
             stepSize = - TMath::Log(random[0]) / pp; 
             gMC->SetMaxStep(stepSize);
-	  }
-
-	}
-
+	  			}
+				}
       }
-
     }
-
   }
-
 }
 
 //_____________________________________________________________________________
@@ -707,7 +919,7 @@ void AliTRDv1::StepManagerFixedStep()
 
   const Double_t kBig         = 1.0E+12;
 
-  const Float_t  kWion        = 22.04;   // Ionization energy
+  const Float_t  kWion        = 22.57;   // Ionization energy
   const Float_t  kEkinMinStep = 1.0e-5;  // Minimum energy for the step size adjustment
 
   // Set the maximum step size to a very large number for all 
@@ -797,7 +1009,8 @@ void AliTRDv1::StepManagerFixedStep()
   // Create a new dEdx hit
   eDep = TMath::Max(gMC->Edep(),0.0) * 1.0e+09;
   qTot = (Int_t) (eDep / kWion);
-  AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(),det,hits,qTot,drRegion);
+  AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber()
+        ,det,hits,qTot,drRegion);
 
   // Set Maximum Step Size
   // Produce only one hit if Ekin is below cutoff
@@ -851,7 +1064,7 @@ Double_t AliTRDv1::BetheBloch(Double_t bg)
 }
 
 //_____________________________________________________________________________
-Double_t BetheBlochGeant(Double_t bg)
+Double_t AliTRDv1::BetheBlochGeant(Double_t bg)
 {
   //
   // Return dN/dx (number of primary collisions per centimeter)
@@ -889,9 +1102,71 @@ Double_t BetheBlochGeant(Double_t bg)
   Double_t pp = ((arr_nc[i+1] - arr_nc[i]) / 
 		 (arr_g[i+1]-arr_g[i])) * (g-arr_g[i]) + arr_nc[i];
 
-  return pp;
+  return pp; //arr_nc[8];
 
 }
+
+//_____________________________________________________________________________
+void AliTRDv1::Stepping()
+{    
+// Stepping info
+// ---
+
+   cout << "X(cm)    "
+       << "Y(cm)    "
+       << "Z(cm)  "
+       << "KinE(MeV)   "
+       << "dE(MeV) "
+       << "Step(cm) "
+       << "TrackL(cm) "
+       << "Volume  "
+       << "Process "  
+       << endl;
+
+   // Position
+    //
+    Double_t x, y, z;
+    gMC->TrackPosition(x, y, z);
+    cout << setw(8) << setprecision(3) << x << " "
+         << setw(8) << setprecision(3) << y << " "
+         << setw(8) << setprecision(3) << z << "  ";
+
+    // Kinetic energy
+    //
+    Double_t px, py, pz, etot;
+    gMC->TrackMomentum(px, py, pz, etot);
+    Double_t ekin = etot - gMC->TrackMass();
+    cout << setw(9) << setprecision(4) << ekin*1e03 << " ";
+
+    // Energy deposit
+    //
+    cout << setw(9) << setprecision(4) << gMC->Edep()*1e03 << " ";
+
+    // Step length
+    //
+    cout << setw(8) << setprecision(3) << gMC->TrackStep() << " ";
+
+    // Track length
+    //
+    cout << setw(8) << setprecision(3) << gMC->TrackLength() << "     ";
+
+    // Volume
+    //
+    if (gMC->CurrentVolName() != 0)
+      cout << setw(4) << gMC->CurrentVolName() << "  ";
+    else
+      cout << setw(4) << "None"  << "  ";
+
+    // Process
+    //
+    TArrayI processes;
+    Int_t nofProcesses = gMC->StepProcesses(processes);
+    for(int ip=0;ip<nofProcesses; ip++)
+      cout << TMCProcessName[processes[ip]]<<" / ";
+
+    cout << endl;
+}
+
 
 //_____________________________________________________________________________
 Double_t Ermilova(Double_t *x, Double_t *)
@@ -1010,7 +1285,7 @@ Double_t IntSpecGeant(Double_t *x, Double_t *)
   if( i == 0 )
     AliErrorGeneral("AliTRDv1","Given energy value is too small or zero");
 
-  // Interpolate
+  // Differentiate
   dnde = (arr_dndx[i-1] - arr_dndx[i]) / (arr_e[i] - arr_e[i-1]);
 
   return dnde;
