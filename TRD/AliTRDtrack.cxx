@@ -581,6 +581,8 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   if((5940*beta2/(1-beta2+1e-10) - beta2) < 0) return 0;
 
   Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho;
+  Float_t budget = d* rho;
+  fBudget[0] +=budget;
   //
   // suspicious part - think about it ?
   Double_t kinE =  TMath::Sqrt(p2);
