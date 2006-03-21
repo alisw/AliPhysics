@@ -1,13 +1,6 @@
 # $Id$
 
 SRCS:= AliMUONResponseFactory.cxx \
-       AliMUONSt1Response.cxx \
-       AliMUONSt1ElectronicElement.cxx \
-       AliMUONSt1SpecialMotif.cxx \
-       AliMUONSt1ResponseParameter.cxx \
-       AliMUONSt1ResponseRule.cxx \
-       AliMUONSt1IniReader.cxx \
-       AliMUONSt1Decoder.cxx \
        AliMUONHitMapA1.cxx \
        AliMUONDigitizer.cxx \
        AliMUONDigitizerv2.cxx \
