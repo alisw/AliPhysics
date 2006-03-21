@@ -780,7 +780,7 @@ void AliTPC::Digits2Raw()
 // convert digits of the current event to raw data
 
   static const Int_t kThreshold = 0;
-  static const Bool_t kCompress = kTRUE;
+  static const Bool_t kCompress = kFALSE;
 
   fLoader->LoadDigits();
   TTree* digits = fLoader->TreeD();
