@@ -64,7 +64,8 @@ class AliITSDigitizer : public AliDigitizer{
     Int_t   fRoif;     //! Region of interest flag.
     Int_t   fRoiifile; //! The file number with which to determing the region
                        // of interest from.
+    Bool_t fFlagFirstEv; //! Flag to control calibration access
 
-    ClassDef(AliITSDigitizer,1) // Task to Digitize ITS from summable hits.
+    ClassDef(AliITSDigitizer,2) // Task to Digitize ITS from summable hits.
 };
 #endif

@@ -112,7 +112,6 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     // Return:
     //    Nothing.
   
-   
     if(fSimulation){
       fSimulation->Delete();
       delete fSimulation;
@@ -126,7 +125,7 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     }
     
     if(fCalibration){
-      AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSPD()))->GetResponse();    
+      AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSPD()))->GetResponse();
       AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSDD()))->GetResponse();
       AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSSD()))->GetResponse();
       if(rspd) delete rspd;
@@ -150,7 +149,9 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
       delete fPostProcess;
       fPostProcess = 0;
     }
-    
+
+    if(fNDigits) delete [] fNDigits;
+
     if (fLoader)
       {
 	fLoader->GetModulesFolder()->Remove(this);
@@ -335,12 +336,10 @@ void AliITSDetTypeSim::SetDefaults(){
 
   //Set defaults for segmentation and response
 
-
   if(fGeom==0){
     Warning("SetDefaults","fGeom is 0!");
     return;
   }
-
   if (fCalibration==0) CreateCalibrationArray();
 
   ResetCalibrationArray();
@@ -385,13 +384,11 @@ void AliITSDetTypeSim::SetDefaults(){
       }
     }
   }
- 
 }
 
 //______________________________________________________________________
 Bool_t AliITSDetTypeSim::GetCalibration() {
   // Get Default calibration if a storage is not defined.
-
 
   AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", fRunNumber);
   AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD", fRunNumber);
@@ -520,11 +517,6 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
       if(!sim){
 	sim = new AliITSsimulationSPD(this);
 	SetSimulationModel(idet,sim);
-      } else{
-	// loop over all SPD modules
-	sim->SetDetType(this);
-	sim->SetSegmentationModel(0,(AliITSsegmentationSPD*)GetSegmentationModel(idet));
-	sim->Init();
       }
     }
     //SDD
@@ -533,10 +525,6 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
       if(!sim){
 	sim = new AliITSsimulationSDD(this);
 	SetSimulationModel(idet,sim);
-      } else {
-	sim->SetDetType(this);
-	sim->SetSegmentationModel(1,(AliITSsegmentationSDD*)GetSegmentationModel(idet));
-	sim->Init();
       }
       
     }
@@ -546,14 +534,6 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
       if(!sim){
 	sim = new AliITSsimulationSSD(this);
 	SetSimulationModel(idet,sim);
-
-      } else{
-	
-	sim->SetDetType(this);
-	sim->SetSegmentationModel(2,(AliITSsegmentationSSD*)GetSegmentationModel(idet));
-
-    
-	sim->Init();
       }
 
     }

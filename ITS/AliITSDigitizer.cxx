@@ -56,6 +56,7 @@ AliITSDigitizer::AliITSDigitizer() : AliDigitizer(){
     fRoif     = -1;
     fRoiifile = 0;
     fInit     = kFALSE;
+    fFlagFirstEv =kTRUE;
 }
 //______________________________________________________________________
 AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
@@ -73,6 +74,7 @@ AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr){
     fRoif     = -1;
     fRoiifile = 0;
     fInit     = kFALSE;
+    fFlagFirstEv =kTRUE;
 }
 
 //______________________________________________________________________
@@ -99,7 +101,6 @@ AliITSDigitizer::~AliITSDigitizer(){
     //      none.
     // Return:
     //      none.
-
     fITS = 0; // don't delete fITS. Done else where.
     if(fModActive) delete[] fModActive;
 }
@@ -157,19 +158,22 @@ void AliITSDigitizer::Exec(Option_t* opt){
                           strstr(opt,"SSD")};
     if( !det[0] && !det[1] && !det[2] ) all = "All";
     else all = 0;
+    Int_t nfiles = GetManager()->GetNinputs();
+    Int_t event  = GetManager()->GetOutputEventNr();
     AliITSsimulation *sim      = 0;
-    fITS->SetDefaults();
-    fITS->SetDefaultSimulation();
+    if(fFlagFirstEv){
+      fITS->SetDefaults();    
+      fITS->SetDefaultSimulation();
+      fFlagFirstEv=kFALSE;
+    }
     if(!fInit){
-	Error("Exec","Init not succesfull, aborting.");
+	Error("Exec","Init not successful, aborting.");
 	return;
     } // end if
 
     sprintf(name,"%s",fITS->GetName());
 
-    Int_t nfiles = GetManager()->GetNinputs();
-    Int_t event  = GetManager()->GetOutputEventNr();
-     Int_t size   = fITS->GetITSgeom()->GetIndexMax();
+    Int_t size   = fITS->GetITSgeom()->GetIndexMax();
     Int_t module,id,ifiles,mask;
     Bool_t lmod;
     Int_t *fl = new Int_t[nfiles];
