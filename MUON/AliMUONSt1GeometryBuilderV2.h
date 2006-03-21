@@ -116,7 +116,8 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     static const char* fgkQuadrantNLayerName;// prefix for automatic volume naming
     static const char* fgkQuadrantFLayerName;// prefix for automatic volume naming
     static const char* fgkDaughterName;      // prefix for automatic volume naming
-    static const char  fgkFoamLayerSuffix;   // suffix for automatic volume naming
+    static const Int_t fgkFoamBoxNameOffset; // coefficient for automatic volume naming
+    static const Int_t fgkFR4BoxNameOffset;  // coefficient for automatic volume naming
     static const Int_t fgkDaughterCopyNoOffset; // copy number offset for daugher
                                                 // boards positions in non-bending plane
 
@@ -126,8 +127,8 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     void CreateDaughterBoard();
     void CreateInnerLayers();
     void CreateQuadrant(Int_t chamber);
-    void CreateFoamBox(const char* name,const TVector2& dimensions);
-    void CreatePlaneSegment(const char* name,const TVector2& dimensions,
+    void CreateFoamBox(Int_t segNumber, const TVector2& dimensions);
+    void CreatePlaneSegment(Int_t segNumber, const TVector2& dimensions,
                      Int_t nofHoles);
     void CreateFrame(Int_t chamber);
 
@@ -139,6 +140,9 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     TString QuadrantMLayerName(Int_t chamber) const;
     TString QuadrantNLayerName(Int_t chamber) const;
     TString QuadrantFLayerName(Int_t chamber) const;
+    TString PlaneSegmentName(Int_t segNumber) const;
+    TString FoamBoxName(Int_t segNumber) const;
+    TString FR4BoxName(Int_t segNumber) const;
     TString GasVolumeName(const TString& name, Int_t chamber) const;
 
     void   AddChamberGid(Int_t id,Int_t volName,Int_t idx);
@@ -178,5 +182,14 @@ inline TString AliMUONSt1GeometryBuilderV2::QuadrantNLayerName(Int_t chamber) co
 
 inline TString AliMUONSt1GeometryBuilderV2::QuadrantFLayerName(Int_t chamber) const
 { return Form("%s%d",fgkQuadrantFLayerName,chamber); }
+
+inline TString AliMUONSt1GeometryBuilderV2::PlaneSegmentName(Int_t segNumber) const
+{ return Form("S%.3d", segNumber); }
+
+inline TString AliMUONSt1GeometryBuilderV2::FoamBoxName(Int_t segNumber) const
+{ return Form("S%.3d", segNumber + fgkFoamBoxNameOffset); }
+
+inline TString AliMUONSt1GeometryBuilderV2::FR4BoxName(Int_t segNumber) const
+{ return Form("S%.3d", segNumber + fgkFR4BoxNameOffset); }
 
 #endif //ALI_MUON_ST1_GEOMETRY_BUILDER_V2_H

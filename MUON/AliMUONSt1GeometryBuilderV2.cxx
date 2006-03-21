@@ -114,13 +114,14 @@ const GReal_t AliMUONSt1GeometryBuilderV2::fgkFrameOffset=5.2;
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkPadXOffsetBP =  0.50 - 0.63/2; // = 0.185
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkPadYOffsetBP = -0.31 - 0.42/2; // =-0.52
 
-const char* AliMUONSt1GeometryBuilderV2::fgkHoleName="MCHL";      
-const char* AliMUONSt1GeometryBuilderV2::fgkDaughterName="MCDB";  
-const char  AliMUONSt1GeometryBuilderV2::fgkFoamLayerSuffix='F';  // prefix for automatic volume naming
+const char* AliMUONSt1GeometryBuilderV2::fgkHoleName="SCHL";      
+const char* AliMUONSt1GeometryBuilderV2::fgkDaughterName="SCDB";  
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantEnvelopeName="SE";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantMLayerName="SQM";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantNLayerName="SQN";
 const char* AliMUONSt1GeometryBuilderV2::fgkQuadrantFLayerName="SQF";
+const Int_t AliMUONSt1GeometryBuilderV2::fgkFoamBoxNameOffset=200; 
+const Int_t AliMUONSt1GeometryBuilderV2::fgkFR4BoxNameOffset=400; 
 const Int_t AliMUONSt1GeometryBuilderV2::fgkDaughterCopyNoOffset=1000;
 
 ClassImp(AliMUONSt1GeometryBuilderV2)
@@ -223,11 +224,11 @@ void AliMUONSt1GeometryBuilderV2::CreateHole()
   par[0] = fgkHxHole;
   par[1] = fgkHyBergPlastic;
   par[2] = fgkHzKapton;
-  gMC->Gsvolu("KAPT", "BOX", idCopper, par, 3);
+  gMC->Gsvolu("SKPT", "BOX", idCopper, par, 3);
   posX = 0.;
   posY = 0.;
   posZ = 0.;
-  gMC->Gspos("KAPT",1,fgkHoleName, posX, posY, posZ, 0,"ONLY");
+  gMC->Gspos("SKPT",1,fgkHoleName, posX, posY, posZ, 0,"ONLY");
 }
 
 //______________________________________________________________________________
@@ -253,29 +254,29 @@ void AliMUONSt1GeometryBuilderV2::CreateDaughterBoard()
   par[0]=fgkHxBergPlastic;
   par[1]=fgkHyBergPlastic;
   par[2]=fgkHzBergPlastic;
-  gMC->Gsvolu("BRGP","BOX",idPlastic,par,3);
+  gMC->Gsvolu("SBGP","BOX",idPlastic,par,3);
   posX=0.;
   posY=0.;
   posZ = -TotalHzDaughter() + fgkHzBergPlastic;
-  gMC->Gspos("BRGP",1,fgkDaughterName,posX,posY,posZ,0,"ONLY");
+  gMC->Gspos("SBGP",1,fgkDaughterName,posX,posY,posZ,0,"ONLY");
 
   par[0]=fgkHxBergCopper;
   par[1]=fgkHyBergCopper;
   par[2]=fgkHzBergCopper;
-  gMC->Gsvolu("BRGC","BOX",idCopper,par,3);
+  gMC->Gsvolu("SBGC","BOX",idCopper,par,3);
   posX=0.;
   posY=0.;
   posZ=0.;
-  gMC->Gspos("BRGC",1,"BRGP",posX,posY,posZ,0,"ONLY");
+  gMC->Gspos("SBGC",1,"SBGP",posX,posY,posZ,0,"ONLY");
 
   par[0]=fgkHxDaughter;
   par[1]=fgkHyDaughter;
   par[2]=fgkHzDaughter;
-  gMC->Gsvolu("DGHT","BOX",idCopper,par,3);
+  gMC->Gsvolu("SDGH","BOX",idCopper,par,3);
   posX=0.;
   posY=0.;
   posZ = -TotalHzDaughter() + 2.*fgkHzBergPlastic + fgkHzDaughter;
-  gMC->Gspos("DGHT",1,fgkDaughterName,posX,posY,posZ,0,"ONLY");
+  gMC->Gspos("SDGH",1,fgkDaughterName,posX,posY,posZ,0,"ONLY");
 }
 
 //______________________________________________________________________________
@@ -574,7 +575,9 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 }
 
 //______________________________________________________________________________
-void AliMUONSt1GeometryBuilderV2::CreateFoamBox(const char* name,const  TVector2& dimensions)
+void AliMUONSt1GeometryBuilderV2::CreateFoamBox(
+                                        Int_t segNumber,
+                                        const  TVector2& dimensions)
 {
 // create all the elements in the copper plane
 // --
@@ -591,55 +594,51 @@ void AliMUONSt1GeometryBuilderV2::CreateFoamBox(const char* name,const  TVector2
   par[0] = dimensions.X();
   par[1] = dimensions.Y();
   par[2] = TotalHzPlane();
-  gMC->Gsvolu(name,"BOX",idAir,par,3);
+  gMC->Gsvolu(PlaneSegmentName(segNumber).Data(),"BOX",idAir,par,3);
   
   // foam layer
-  GReal_t posX,posY,posZ;
-  char eName[5];
-  strcpy(eName,name);
-  eName[3]=fgkFoamLayerSuffix;
   par[0] = dimensions.X();
   par[1] = dimensions.Y();
   par[2] = fgkHzFoam;
-  gMC->Gsvolu(eName,"BOX",idFoam,par,3);
+  gMC->Gsvolu(FoamBoxName(segNumber).Data(),"BOX",idFoam,par,3);
+  GReal_t posX,posY,posZ;
   posX=0.;
   posY=0.;
   posZ = -TotalHzPlane() + fgkHzFoam;
-  gMC->Gspos(eName,1,name,posX,posY,posZ,0,"ONLY");
+  gMC->Gspos(FoamBoxName(segNumber).Data(),1, 
+             PlaneSegmentName(segNumber).Data(),posX,posY,posZ,0,"ONLY");
 
   // mechanical plane FR4 layer
-  eName[3]='R';
   par[0] = dimensions.X();
   par[1] = dimensions.Y();
   par[2] = fgkHzFR4;
-  gMC->Gsvolu(eName,"BOX",idFR4,par,3);
+  gMC->Gsvolu(FR4BoxName(segNumber).Data(),"BOX",idFR4,par,3);
   posX=0.;
   posY=0.;
   posZ = -TotalHzPlane()+ 2.*fgkHzFoam + fgkHzFR4;
-  gMC->Gspos(eName,1,name,posX,posY,posZ,0,"ONLY");
+  gMC->Gspos(FR4BoxName(segNumber).Data(),1,
+             PlaneSegmentName(segNumber).Data(),posX,posY,posZ,0,"ONLY");
 }
 
 //______________________________________________________________________________
-void AliMUONSt1GeometryBuilderV2::CreatePlaneSegment(const char* name,const  TVector2& dimensions,
-      	      	      	      	   Int_t nofHoles)
+void AliMUONSt1GeometryBuilderV2::CreatePlaneSegment(Int_t segNumber,
+                                    const  TVector2& dimensions,
+      	      	      	      	    Int_t nofHoles)
 {
 // Create a segment of a plane (this includes a foam layer, 
 // holes in the foam to feed the kaptons through, kapton connectors
 // and the mother board.)
 // --
   
-  CreateFoamBox(name,dimensions);
+  CreateFoamBox(segNumber,dimensions);
 
-  char eName[5];
-  strcpy(eName,name);
-  eName[3]=fgkFoamLayerSuffix;
-  
   for (Int_t holeNum=0;holeNum<nofHoles;holeNum++) {
     GReal_t posX = ((2.*holeNum+1.)/nofHoles-1.)*dimensions.X();
     GReal_t posY = 0.;
     GReal_t posZ = 0.;
   
-    gMC->Gspos(fgkHoleName,holeNum+1,eName,posX,posY,posZ,0,"ONLY");
+    gMC->Gspos(fgkHoleName,holeNum+1,
+               FoamBoxName(segNumber).Data(),posX,posY,posZ,0,"ONLY");
   }
 }
 
@@ -2201,7 +2200,6 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
 
     for (Int_t iseg=0;iseg<row->GetNofRowSegments();iseg++){ // for each row segment
       AliMpVRowSegment* seg = row->GetRowSegment(iseg);
-      char segName[5];
       
 #ifdef WITH_STL 
       SpecialMap::iterator iter 
@@ -2217,13 +2215,13 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
 #endif  
       
         // create the cathode part
-        sprintf(segName,"%.3dM", segNum);
-        CreatePlaneSegment(segName, seg->Dimensions(), seg->GetNofMotifs());
+        CreatePlaneSegment(segNum, seg->Dimensions(), seg->GetNofMotifs());
   
         posX = where.X() + seg->Position().X();
         posY = where.Y() + seg->Position().Y();
         posZ = where.Z() + sgn * (TotalHzPlane() + fgkHzGas + 2.*fgkHzPadPlane);
-        gMC->Gspos(segName, 1, QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
+        gMC->Gspos(PlaneSegmentName(segNum).Data(), 1, 
+	           QuadrantMLayerName(chamber), posX, posY, posZ, reflZ, "ONLY");
 
         // and place all the daughter boards of this segment
         for (Int_t motifNum=0;motifNum<seg->GetNofMotifs();motifNum++) {
