@@ -43,7 +43,7 @@ class AliAltroBuffer: public TObject {
   void  WriteTrailer(Int_t wordsNumber, Int_t padNumber, 
 		     Int_t rowNumber, Int_t secNumber);
   //this method is used to write the trailer
-  void  WriteTrailer(Int_t wordsNumber, Short_t hwAdress); 
+  void  WriteTrailer(Int_t wordsNumber, Short_t hwAddress); 
   //this method is used to write the trailer
   void  WriteDummyTrailer(Int_t wordsNumber, Int_t padNumber, 
 			  Int_t rowNumber, Int_t secNumber);
@@ -51,7 +51,7 @@ class AliAltroBuffer: public TObject {
   Bool_t ReadTrailer(Int_t& wordsNumber, Int_t& padNumber, 
 		     Int_t& rowNumber, Int_t &secNumber);
   //this method is used to read the trailer when the file is read forward
-  Bool_t ReadTrailer(Int_t& wordsNumber, Short_t& hwAdress); 
+  Bool_t ReadTrailer(Int_t& wordsNumber, Short_t& hwAddress); 
   //this method is used to read the trailer when the file is read forward
   Bool_t ReadDummyTrailer(Int_t& wordsNumber, Int_t& padNumber, 
 			  Int_t& rowNumber, Int_t &secNumber);
@@ -59,7 +59,7 @@ class AliAltroBuffer: public TObject {
   Bool_t ReadTrailerBackward(Int_t& wordsNumber, Int_t& padNumber, 
 			     Int_t& rowNumber, Int_t& secNumber);
   //this method is used to read the trailer when the file is read backward
-  Bool_t ReadTrailerBackward(Int_t& wordsNumber, Short_t& hwAdress); 
+  Bool_t ReadTrailerBackward(Int_t& wordsNumber, Short_t& hwAddress); 
   //this method is used to read the trailer when the file is read backward
   Bool_t ReadDummyTrailerBackward(Int_t& wordsNumber, Int_t& padNumber, 
 				  Int_t& rowNumber, Int_t& secNumber);
@@ -69,9 +69,22 @@ class AliAltroBuffer: public TObject {
 		     Int_t nTimeBins, const Int_t* adcValues, 
 		     Int_t threshold = 0);
   //this method is used to write all ADC values and the trailer of a channel
-  void  ReadChannel(Int_t padNumber, Int_t rowNumber,  Int_t secNumber,
-		    Int_t& nTimeBins, Int_t* adcValues);
+  void  WriteChannel(Short_t hwAddress,
+		     Int_t nTimeBins, const Int_t* adcValues, 
+		     Int_t threshold = 0);
+  //this method is used to write all ADC values and the trailer of a channel
+  Int_t WriteBunch(Int_t nTimeBins, const Int_t* adcValues,
+		   Int_t threshold = 0);
+  //this method is used to write all ADC values
+  void  ReadChannelBackward(Int_t& padNumber, Int_t& rowNumber,  Int_t& secNumber,
+			   Int_t& nTimeBins, Int_t* adcValues);
   //this method is used to read all ADC values and the trailer of a channel
+  void  ReadChannelBackward(Short_t& hwAddress,
+			   Int_t& nTimeBins, Int_t* adcValues);
+  //this method is used to read all ADC values and the trailer of a channel
+  void  ReadBunchBackward(Int_t wordsNumber,
+			  Int_t& nTimeBins, Int_t* adcValues);
+  //this method is used to read all ADC values
 
   void  WriteDataHeader(Bool_t dummy, Bool_t compressed);
   //this method is used to write the data header

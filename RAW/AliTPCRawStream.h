@@ -15,6 +15,7 @@
 #include "AliTPCCompression.h"
 
 class AliRawReader;
+class AliAltroMapping;
 
 
 class AliTPCRawStream: public TObject {
@@ -66,6 +67,8 @@ class AliTPCRawStream: public TObject {
     Int_t            fPrevPad;      // index of previous pad
     Int_t            fTime;         // index of current time bin
     Int_t            fSignal;       // signal in ADC counts
+
+    AliAltroMapping *fMapping[6];   // Pointers to ALTRO mapping
 
     ClassDef(AliTPCRawStream, 0)    // base class for reading TPC raw digits
 };

@@ -19,7 +19,6 @@
 // to read and write digits
 // To be used in Alice Data Challenges 
 // and in the compression of the RAW data
-// Author: D.Favretto
 
 #include "AliAltroBuffer.h"
 #include "AliAltroMapping.h"
@@ -292,14 +291,14 @@ void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Int_t padNumber,
 			     rowNumber,secNumber);
   }
 
-  Short_t hwAdress = fMapping->GetHWAdress(rowNumber,padNumber,secNumber);
-  if (hwAdress == -1)
+  Short_t hwAddress = fMapping->GetHWAddress(rowNumber,padNumber,secNumber);
+  if (hwAddress == -1)
     AliFatal(Form("No hardware (ALTRO) adress found for these pad-row (%d) and pad (%d) indeces !",rowNumber,padNumber));
-  WriteTrailer(wordsNumber,hwAdress);
+  WriteTrailer(wordsNumber,hwAddress);
 }
 
 //_____________________________________________________________________________
-void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Short_t hwAdress)
+void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Short_t hwAddress)
 {
 //Writes a trailer of 40 bits using
 //a given hardware adress
@@ -308,17 +307,19 @@ void AliAltroBuffer::WriteTrailer(Int_t wordsNumber, Short_t hwAdress)
     FillBuffer(0x2AA);
   }//end for
   Int_t temp;
-  temp = 0x2AA;
+  temp = hwAddress & 0x3FF;
   FillBuffer(temp);
+
+  temp = (wordsNumber << 6) & 0x3FF;
+  temp |= (0xA << 2);
+  temp |= ((hwAddress >> 10) & 0x3);
+  FillBuffer(temp);
+
   temp = 0xA << 6;
   temp |= ((wordsNumber & 0x3FF) >> 4);
   FillBuffer(temp);
-  temp = (wordsNumber << 6) & 0x3FF;
-  temp |= (0xA << 2);
 
-  temp |= (hwAdress >> 10) & 0x3;
-  FillBuffer(temp);
-  temp = hwAdress & 0x3FF;
+  temp = 0x2AA;
   FillBuffer(temp);
 }
 
@@ -350,37 +351,37 @@ Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Int_t& padNumber,
 			    rowNumber,secNumber);
   }
 
-  Short_t hwAdress;
-  if (!ReadTrailer(wordsNumber,hwAdress)) return kFALSE;
-  rowNumber = fMapping->GetPadRow(hwAdress);
-  padNumber = fMapping->GetPad(hwAdress);
-  secNumber = fMapping->GetSector(hwAdress);
+  Short_t hwAddress;
+  if (!ReadTrailer(wordsNumber,hwAddress)) return kFALSE;
+  rowNumber = fMapping->GetPadRow(hwAddress);
+  padNumber = fMapping->GetPad(hwAddress);
+  secNumber = fMapping->GetSector(hwAddress);
 
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Short_t& hwAdress)
+Bool_t AliAltroBuffer::ReadTrailer(Int_t& wordsNumber, Short_t& hwAddress)
 {
 //Read a trailer of 40 bits in the forward reading mode
 
   Int_t temp = GetNext();
-  if (temp != 0x2AA)
-    AliFatal(Form("Incorrect trailer found ! Expecting 0x2AA but found %x !",temp));
+  hwAddress = temp;
+
+  temp = GetNext();
+  wordsNumber = ((temp & 0x3FF) >> 6);
+  if (((temp >> 2) & 0xF) != 0xA)
+    AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",temp >> 6));
+  hwAddress |= (temp & 0x3) << 10;
 
   temp = GetNext();
   if ((temp >> 6) != 0xA)
     AliFatal(Form("Incorrect trailer found ! Expecting 0xA but found %x !",temp >> 6));
-  wordsNumber = (temp << 4) & 0x3FF;
+  wordsNumber |= (temp << 4) & 0x3FF;
 
   temp = GetNext();
-  wordsNumber |= (temp >> 6);
-  if (((temp >> 2) & 0xF) != 0xA)
-    AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",temp >> 6));
-  hwAdress = (temp & 0x3) << 10;
-
-  temp = GetNext();
-  hwAdress |= temp;
+  if (temp != 0x2AA)
+    AliFatal(Form("Incorrect trailer found ! Expecting 0x2AA but found %x !",temp));
 
   return kTRUE;
 }
@@ -420,45 +421,42 @@ Bool_t AliAltroBuffer::ReadTrailerBackward(Int_t& wordsNumber, Int_t& padNumber,
 				    rowNumber,secNumber);
   }
 
-  Short_t hwAdress;
-  if (!ReadTrailerBackward(wordsNumber,hwAdress)) return kFALSE;
-  rowNumber = fMapping->GetPadRow(hwAdress);
-  padNumber = fMapping->GetPad(hwAdress);
-  secNumber = fMapping->GetSector(hwAdress);
+  Short_t hwAddress;
+  if (!ReadTrailerBackward(wordsNumber,hwAddress)) return kFALSE;
+  rowNumber = fMapping->GetPadRow(hwAddress);
+  padNumber = fMapping->GetPad(hwAddress);
+  secNumber = fMapping->GetSector(hwAddress);
 
   return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t AliAltroBuffer::ReadTrailerBackward(Int_t& wordsNumber, Short_t& hwAdress)
+Bool_t AliAltroBuffer::ReadTrailerBackward(Int_t& wordsNumber, Short_t& hwAddress)
 {
 //Read a trailer of 40 bits in the backward reading mode
 
   Int_t temp;
   fEndingFillWords = 0;
-  do {
-    temp = GetNextBackWord();
+  while ((temp = GetNextBackWord()) == 0x2AA) {
     fEndingFillWords++;
     if (temp == -1) return kFALSE;
-  } while (temp == 0x2AA);  
+  };
+  if (fEndingFillWords == 0)
+    AliFatal("Incorrect trailer found ! Expected 0x2AA not found !");
   fEndingFillWords--;
 
-  hwAdress = temp;
-
-  temp = GetNextBackWord();
-  hwAdress |= (temp & 0x3) << 10;
-  if (((temp >> 2) & 0xF) != 0xA)
-    AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",temp >> 6));
-  wordsNumber = (temp >> 6);
-
-  temp = GetNextBackWord();
-  wordsNumber |= (temp << 4) & 0x3FF;
+  wordsNumber = (temp << 4) & 0x3FF;
   if ((temp >> 6) != 0xA)
     AliFatal(Form("Incorrect trailer found ! Expecting 0xA but found %x !",temp >> 6));
-  
+
   temp = GetNextBackWord();
-  if (temp != 0x2AA)
-    AliFatal(Form("Incorrect trailer found ! Expecting 0x2AA but found %x !",temp));
+  hwAddress = (temp & 0x3) << 10;
+  if (((temp >> 2) & 0xF) != 0xA)
+    AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",(temp >> 2) & 0xF));
+  wordsNumber |= ((temp & 0x3FF) >> 6);
+
+  temp = GetNextBackWord();
+  hwAddress |= temp;
 
   return kTRUE;
 } 
@@ -469,7 +467,29 @@ void AliAltroBuffer::WriteChannel(Int_t padNumber, Int_t rowNumber,
 				  Int_t nTimeBins, const Int_t* adcValues,
 				  Int_t threshold)
 {
-//Write all ADC values and the trailer of a channel
+  //Write all ADC values and the trailer of a channel
+  Int_t nWords = WriteBunch(nTimeBins,adcValues,threshold);
+  // write the trailer
+  WriteTrailer(nWords, padNumber, rowNumber, secNumber);
+}
+
+//_____________________________________________________________________________
+void AliAltroBuffer::WriteChannel(Short_t hwAddress,
+				  Int_t nTimeBins, const Int_t* adcValues,
+				  Int_t threshold)
+{
+  //Write all ADC values and the trailer of a channel
+  Int_t nWords = WriteBunch(nTimeBins,adcValues,threshold);
+  // write the trailer
+  WriteTrailer(nWords, hwAddress);
+}
+
+//_____________________________________________________________________________
+Int_t AliAltroBuffer::WriteBunch(Int_t nTimeBins, const Int_t* adcValues,
+				 Int_t threshold)
+{
+  //Write all ADC values
+  //Return number of words written
 
   Int_t nWords = 0;
   Int_t timeBin = -1;
@@ -498,21 +518,38 @@ void AliAltroBuffer::WriteChannel(Int_t padNumber, Int_t rowNumber,
     nWords += 2;
   }
 
-  // write the trailer
-  WriteTrailer(nWords, padNumber, rowNumber, secNumber);
+  return nWords;
 }
 
 //_____________________________________________________________________________
-void AliAltroBuffer::ReadChannel(Int_t padNumber, Int_t rowNumber, 
-				 Int_t secNumber,
-				 Int_t& nTimeBins, Int_t* adcValues)
+void AliAltroBuffer::ReadChannelBackward(Int_t& padNumber, Int_t& rowNumber, 
+					 Int_t& secNumber,
+					 Int_t& nTimeBins, Int_t* adcValues)
 {
-//Read all ADC values and the trailer of a channel
+//Read all ADC values and the trailer of a channel (in backward order)
 
   Int_t wordsNumber;
-  if (!ReadTrailer(wordsNumber,padNumber,
-		   rowNumber,secNumber)) return;
+  if (!ReadTrailerBackward(wordsNumber,padNumber,
+			   rowNumber,secNumber)) return;
+  return ReadBunchBackward(wordsNumber,nTimeBins,adcValues);
+}
 
+//_____________________________________________________________________________
+void AliAltroBuffer::ReadChannelBackward(Short_t& hwAddress,
+					 Int_t& nTimeBins, Int_t* adcValues)
+{
+//Read all ADC values and the trailer of a channel (in backward order)
+
+  Int_t wordsNumber;
+  if (!ReadTrailerBackward(wordsNumber,
+			   hwAddress)) return;
+  return ReadBunchBackward(wordsNumber,nTimeBins,adcValues);
+}
+
+//_____________________________________________________________________________
+void AliAltroBuffer::ReadBunchBackward(Int_t wordsNumber,
+				       Int_t& nTimeBins, Int_t* adcValues)
+{
   if (wordsNumber < 0) return;
   // Number of fill words 
   Int_t nFillWords;
@@ -522,7 +559,7 @@ void AliAltroBuffer::ReadChannel(Int_t padNumber, Int_t rowNumber,
     nFillWords = 4 - wordsNumber % 4;
   // Read the fill words 
   for (Int_t i = 0; i < nFillWords; i++) {
-    Int_t temp = GetNext();
+    Int_t temp = GetNextBackWord();
     if (temp != 0x2AA) 
       AliFatal(Form("Invalid fill word, expected 0x2AA, but got %X", temp));
   }
@@ -531,14 +568,14 @@ void AliAltroBuffer::ReadChannel(Int_t padNumber, Int_t rowNumber,
   Int_t lastWord =  wordsNumber;
   nTimeBins = -1;
   while (lastWord > 0) { 
-    Int_t l =  GetNext(); 
+    Int_t l =  GetNextBackWord(); 
     if (l < 0) AliFatal(Form("Bad bunch length (%d) !", l));
-    Int_t t =  GetNext(); 
+    Int_t t =  GetNextBackWord(); 
     if (t < 0) AliFatal(Form("Bad bunch time (%d) !", t));
     lastWord -= 2;
     if (nTimeBins == -1) nTimeBins = t + 1;
     for (Int_t i = 2; i < l; i++) {
-      Int_t amp = GetNext();
+      Int_t amp = GetNextBackWord();
       if (amp < 0) AliFatal(Form("Bad adc value (%X) !", amp));
       adcValues[t - (i-2)] = amp;
       lastWord--;

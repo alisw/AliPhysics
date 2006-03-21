@@ -26,9 +26,13 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TSystem.h>
+
 #include "AliTPCRawStream.h"
 #include "AliTPCHNode.h"
 #include "AliRawReader.h"
+#include "AliLog.h"
+#include "AliTPCAltroMapping.h"
 
 ClassImp(AliTPCRawStream)
 
@@ -57,6 +61,16 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader)
   }
 
   fSector = fPrevSector = fRow = fPrevRow = fPad = fPrevPad = fTime = fSignal = -1;
+
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/TPC/mapping/Patch";
+  TString path2;
+  for(Int_t i = 0; i < 6; i++) {
+    path2 = path;
+    path2 += i;
+    path2 += ".data";
+    fMapping[i] = new AliTPCAltroMapping(path2.Data());
+  }
 }
 
 AliTPCRawStream::AliTPCRawStream(const AliTPCRawStream& stream) :
@@ -77,6 +91,8 @@ AliTPCRawStream::~AliTPCRawStream()
 // clean up
 
   delete[] fData;
+
+  for(Int_t i = 0; i < 6; i++) delete fMapping[i];
 }
 
 void AliTPCRawStream::Reset()
@@ -119,12 +135,16 @@ Bool_t AliTPCRawStream::Next()
 	fDataSize = 0;
 	Int_t pos = (fRawReader->GetDataSize() * 8) / 10;
 	while (Get10BitWord(data, pos-1) == 0x2AA) pos--;
+	pos++;
 	while (pos > 0) {
 	  for (Int_t i = 0; i < 4; i++) {  // copy trailer
 	    fData[fDataSize++] = Get10BitWord(data, pos-4+i);
 	  }
 	  pos -= 4;
-	  Int_t count = fData[fDataSize-4];
+
+	  Int_t count = (fData[fDataSize-2] << 4) & 0x3FF;
+	  count |= ((fData[fDataSize-3] & 0x3FF) >> 6);
+	  //	  Int_t count = fData[fDataSize-4];
 	  pos -= (4 - (count % 4)) % 4;  // skip fill words
 
 	  while (count > 0) {
@@ -148,10 +168,38 @@ Bool_t AliTPCRawStream::Next()
       Error("Next", "could not read trailer");
       return kFALSE;
     }
-    fCount = fData[fPosition++];
-    fPad = fData[fPosition++];
-    fRow = fData[fPosition++];
-    fSector = fData[fPosition++];
+
+    Short_t temp = fData[fPosition++];
+    Short_t hwAdress = temp & 0x3FF;
+
+    temp = fData[fPosition++];
+    hwAdress |= (temp & 0x3) << 10;
+    if (((temp >> 2) & 0xF) != 0xA)
+      AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",(temp >> 2) & 0xF));
+    fCount = ((temp & 0x3FF) >> 6);
+
+    temp = fData[fPosition++];
+    fCount |= (temp << 4) & 0x3FF;
+    if ((temp >> 6) != 0xA)
+      AliFatal(Form("Incorrect trailer found ! Expecting 0xA but found %x !",temp >> 6));
+
+    temp = fData[fPosition++];
+    if (temp != 0x2AA)
+      AliFatal(Form("Incorrect trailer found ! Expecting 0x2AA but found %x !",temp));
+
+    Int_t ddlNumber = fRawReader->GetDDLID();
+    Int_t patchIndex;
+    if (ddlNumber < 72) {
+      fSector = ddlNumber / 2;
+      patchIndex = ddlNumber % 2;
+    }
+    else {
+      fSector = (ddlNumber - 72) / 4 + 36;
+      patchIndex = (ddlNumber - 72) % 4 + 2;
+    }
+    fPad = fMapping[patchIndex]->GetPad(hwAdress);
+    fRow = fMapping[patchIndex]->GetPadRow(hwAdress);
+    
     fBunchLength = 0;
   }
 

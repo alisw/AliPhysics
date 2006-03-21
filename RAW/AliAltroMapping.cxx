@@ -27,10 +27,19 @@
 ClassImp(AliAltroMapping)
 
 //_____________________________________________________________________________
+AliAltroMapping::AliAltroMapping():
+  fIn(NULL),
+  fNumberOfChannels(0),
+  fMaxHWAddress(0)
+{
+  // Default constructor
+}
+
+//_____________________________________________________________________________
 AliAltroMapping::AliAltroMapping(const char *mappingFile):
   fIn(NULL),
   fNumberOfChannels(0),
-  fMaxHWAdress(0)
+  fMaxHWAddress(0)
 {
   // Constructor
   // Reads the mapping from an external file
@@ -51,7 +60,7 @@ AliAltroMapping::AliAltroMapping(const AliAltroMapping& mapping):
   TObject(mapping),
   fIn(mapping.fIn),
   fNumberOfChannels(mapping.fNumberOfChannels),
-  fMaxHWAdress(mapping.fMaxHWAdress)
+  fMaxHWAddress(mapping.fMaxHWAddress)
 {
 // Copy Constructor
 
@@ -82,7 +91,7 @@ Bool_t AliAltroMapping::OpenMappingFile(const char *mappingFile)
     AliFatal(Form("Syntax of the mapping file is wrong (%s) !",mappingFile));
     return kFALSE;
   }
-  if (!(*fIn >> fMaxHWAdress)) {
+  if (!(*fIn >> fMaxHWAddress)) {
     AliFatal(Form("Syntax of the mapping file is wrong (%s) !",mappingFile));
     return kFALSE;
   }
