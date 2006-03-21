@@ -5,22 +5,25 @@
 
 /* $Id$ */
 
-/////////////////////////////////////////////////
-//
-//  ITS SPD Trigger Detector Class
-//
-//
-//
-/////////////////////////////////////////////////
-
 #include "AliTriggerDetector.h"
-
 #include "AliITSLoader.h"
 #include "AliITSgeom.h"
 #include "AliITSdigitSPD.h"
-
 #include "AliTriggerInput.h"
 
+////////////////////////////////////////////////////////////////////////
+//
+// Version 1
+// Modified by D. Elia, C. Jorgensen
+// March 2006
+//
+// Version 0
+// Written by J. Conrad, E. Lopez Torres
+// October 2005
+//
+// AliITSTrigger: implementation of the SPD Fast-OR based triggers.
+//
+////////////////////////////////////////////////////////////////////////
 
 class AliITSTrigger : public AliTriggerDetector
 {
@@ -32,11 +35,12 @@ class AliITSTrigger : public AliTriggerDetector
 
 private:
 
-   Int_t fFODigistThreshold;         // minimum number of digits to fire the FO trigger
-   Int_t fHighMultFODigistThreshold; // minimum number of digits to fire the FO high mult trigger
+   Int_t fGlobalFOThreshold;         // minimum number of FOs to fire Global FO trigger
+   Int_t fHighMultFOThreshold;       // minimum number of FOs to fire High Mult FO trigger
 
    void MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom);
-   void GeometryTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom);
+//   void GeometryTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom);
+   void GeometryTriggers();
 
   ClassDef( AliITSTrigger, 1 )  // ITS SPD Trigger Detector class
 };

@@ -13,19 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 /* $Id$ */
-
-
-//////////////////////////////////////////////////////////////////////
-//
-//  ITS SPD Trigger Detector Class
-//
-//  Several Fast-OR Algoritm are implemented
-//
-//  Ref: ALICE-INT-2005-025
-//  (J. Conrad, J. G. Contreras and C. E. Jorgensen)
-//
-//////////////////////////////////////////////////////////////////////
 
 
 #include "AliLog.h"
@@ -36,6 +25,19 @@
 
 //______________________________________________________________________
 ClassImp(AliITSTrigger)
+////////////////////////////////////////////////////////////////////////
+//
+// Version 1
+// Modified by D. Elia, C. Jorgensen
+// March 2006
+//
+// Version 0
+// Written by J. Conrad, E. Lopez Torres 
+// October 2005
+//
+// AliITSTrigger: implementation of the SPD Fast-OR based triggers.
+//
+////////////////////////////////////////////////////////////////////////
 
 //______________________________________________________________________
 AliITSTrigger::AliITSTrigger()
@@ -44,9 +46,9 @@ AliITSTrigger::AliITSTrigger()
    SetName("ITS");
    CreateInputs();
 
-   // FIX: should this be hardcoded?
-   fFODigistThreshold = 1;
-   fHighMultFODigistThreshold = 100; 
+   // set parameters to define trigger condition thresholds
+   fGlobalFOThreshold = 1;
+   fHighMultFOThreshold = 100; 
 }
 
 //______________________________________________________________________
@@ -58,7 +60,7 @@ void AliITSTrigger::CreateInputs()
    if( fInputs.GetEntriesFast() > 0 ) return;
    
    fInputs.AddLast( new AliTriggerInput( "ITS_SPD_GFO_L0",     "Global, Fast OR all detectors", 0x01 ) );
-   fInputs.AddLast( new AliTriggerInput( "ITS_SPD_HMULT_L0",   "High Multiplicity",             0x600 ) );
+   fInputs.AddLast( new AliTriggerInput( "ITS_SPD_HMULT_L0",   "High Multiplicity",             0x02 ) );
 
 }
 
@@ -87,10 +89,11 @@ void AliITSTrigger::Trigger()
   //  GeometryTriggers(digDet, treeD, geom);
 
   // Debug : FIX change to AliLog
-  cout << "=================================================" << endl;
-  cout << "  Pixel Trigger Mask ( " << hex << "0x" << GetMask() << " )" << endl << endl;
-  cout << " Global Fast OR        " << "0x" << GetInput( "ITS_SPD_GFO_L0"      )->GetValue() << endl;
-  cout << "=================================================" << endl << endl;
+//  cout << "=================================================" << endl;
+//  cout << "  Pixel Trigger Mask ( " << hex << "0x" << GetMask() << " )" << endl << endl;
+//  cout << " Global Fast OR        " << "0x" << GetInput( "ITS_SPD_GFO_L0"      )->GetValue() << endl;
+//  cout << " High Multiplicity     " << "0x" << GetInput( "ITS_SPD_HMULT_L0"      )->GetValue() << endl;
+//  cout << "=================================================" << endl << endl;
 
 }
 
@@ -99,29 +102,44 @@ void AliITSTrigger::MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITS
 {
   // simple FO triggers that only cares about the multiplicity
 
-  // first and last module?
   Int_t startSPD = geom->GetStartSPD();
   Int_t lastSPD  = geom->GetLastSPD();
 
-  Int_t totalNumberOfDigits = 0;
+  Int_t totalNumberOfFO = 0;
+  Int_t ndigitsInChip[5];
 
-  // loop over modules
+  // loop over modules (ladders)
   for (Int_t moduleIndex=startSPD; moduleIndex<lastSPD; moduleIndex++) {
     treeD->GetEvent(moduleIndex);
     TClonesArray* digits = (TClonesArray*) (digDet->At(0)); // SPD only.
     
     // get number of digits in this module
-    Int_t numberOfDigitsInModule = digits->GetEntriesFast();
-    
-    // sum of digits in all modules
-    totalNumberOfDigits = totalNumberOfDigits + numberOfDigitsInModule;
+    Int_t ndigitsInModule = digits->GetEntriesFast();
 
+    // get number of digits in each chip of the module
+    for( Int_t iChip=0; iChip<5; iChip++ ) {
+	ndigitsInChip[iChip]=0;
+    }	
+    for( Int_t iDig=0; iDig<ndigitsInModule; iDig++ ) {
+	AliITSdigitSPD* dp = (AliITSdigitSPD*) digits->At(iDig);
+	Int_t column = dp->GetCoord1();
+	Int_t isChip = Int_t(column/32.);
+	ndigitsInChip[isChip]++;
+    }
+    // get number of FOs in the module
+    for( Int_t ifChip=0; ifChip<5; ifChip++ ) {
+	if( ndigitsInChip[ifChip] >= 1 ) {
+    		totalNumberOfFO++;
+    	}	
+    }
+  // end of loop over modules
   }
 
-  if (totalNumberOfDigits>=fFODigistThreshold) 
+  // produce input trigger condition
+  if (totalNumberOfFO>=fGlobalFOThreshold) 
     SetInput( "ITS_SPD_GFO_L0" );
 
-  if (totalNumberOfDigits>=fHighMultFODigistThreshold) 
+  if (totalNumberOfFO>=fHighMultFOThreshold) 
     SetInput( "ITS_SPD_HMULT_L0" );
 
   return;
@@ -129,11 +147,10 @@ void AliITSTrigger::MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITS
 }
 
 //______________________________________________________________________
-void AliITSTrigger::GeometryTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom)
+// void AliITSTrigger::GeometryTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom* geom)
+void AliITSTrigger::GeometryTriggers()
 {
 
-
-  
 //   //   const Int_t nlay = 2;      // not used
 //   //   const Int_t nlad = 240;    // not used
 //   //   const Int_t nstave = 40;   // not used
@@ -230,7 +247,3 @@ void AliITSTrigger::GeometryTriggers(TObjArray* digDet, TTree* treeD, AliITSgeom
 
    // return bit1;
 }
-
-
-
-
