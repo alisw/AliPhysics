@@ -6,7 +6,8 @@
 #pragma link C++ class AliMUON+; 
 #pragma link C++ class AliMUONv1+; 
 
-// mapping & segmentation (change in progress)
+// segmentation (change in progress)
+#pragma link C++ class AliMUONSegFactory+;
 #pragma link C++ class AliMUONSt12QuadrantSegmentation+; 
 #pragma link C++ class AliMUONSt345SlatSegmentation+;
 #pragma link C++ class AliMUONSt345SlatSegmentationV2+;
@@ -16,6 +17,7 @@
 // geometry 
 #pragma link C++ class AliMUONMathieson+; 
 #pragma link C++ class AliMUONCommonGeometryBuilder+;
+#pragma link C++ class AliMUONSt1SpecialMotif+; 
 #pragma link C++ class AliMUONSt1GeometryBuilder+; 
 #pragma link C++ class AliMUONSt1GeometryBuilderV2+; 
 #pragma link C++ class AliMUONSt2GeometryBuilder+; 
@@ -59,9 +61,6 @@
 // display
 #pragma link C++ class AliMUONDisplay+; 
 #pragma link C++ class AliMUONRecoCheck+; 
-
-// segmentation
-#pragma link C++ class AliMUONSegFactory+;
 
 // raw data
 #pragma link C++ class AliMUONRawReader+;
