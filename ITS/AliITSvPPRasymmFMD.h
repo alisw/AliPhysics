@@ -38,21 +38,21 @@ class AliITSvPPRasymmFMD : public AliITS {
 	                               strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
     virtual void   SetEUCLIDFileName(const char *f){ // set write file
 	                     fEuclidGeometry=f; SetEUCLID();}
-    virtual void   SetMinorVersion(Int_t v=22){ // Choose between existing minor versions
+    virtual void   SetMinorVersion(Int_t v=2){ // Choose between existing minor versions
 	fMinorVersion = v;}
-    virtual void   SetThicknessDet1(Float_t v=300.){ 
+    virtual void   SetThicknessDet1(Float_t v=200.){ 
 	 // Set detector thickness in layer 1
 	 fDet1 = v;}
-    virtual void   SetThicknessDet2(Float_t v=300.){ 
+    virtual void   SetThicknessDet2(Float_t v=200.){ 
 	 // Set detector thickness in layer 2
 	 fDet2 = v;}
-    virtual void   SetThicknessChip1(Float_t v=300.){ 
+    virtual void   SetThicknessChip1(Float_t v=200.){ 
 	 // Set chip thickness in layer 1
 	 fChip1 = v;}	 	 
-    virtual void   SetThicknessChip2(Float_t v=300.){ 
+    virtual void   SetThicknessChip2(Float_t v=200.){ 
 	 // Set chip thickness in layer 2
 	 fChip2 = v;}
-    virtual void   SetRails(Int_t v=1){ 
+    virtual void   SetRails(Int_t v=0){ 
 	 // Set flag for rails
 	 fRails = v;}	 
     virtual void   SetCoolingFluid(Int_t v=1){
