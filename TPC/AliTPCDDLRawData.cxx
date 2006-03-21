@@ -22,11 +22,14 @@
 //to be provided.
 
 #include <TObjArray.h>
+#include <TString.h>
+#include <TSystem.h>
 #include <Riostream.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "AliTPCCompression.h"
 #include "AliAltroBuffer.h"
+#include "AliTPCAltroMapping.h"
 #include "AliTPCDDLRawData.h"
 #include "AliRawDataHeader.h"
 
@@ -85,6 +88,18 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
   Int_t nwords=0;
   UInt_t numPackets=0;
 
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/TPC/mapping/Patch";
+  TString path2;
+  AliTPCAltroMapping *mapping[6];
+  for(Int_t i = 0; i < 6; i++) {
+    path2 = path;
+    path2 += i;
+    path2 += ".data";
+    mapping[i] = new AliTPCAltroMapping(path2.Data());
+  }
+
+
   while (f.read((char*)(&data),sizeof(data))){
     if (pPadNumber==-1){
       pSecNumber=data.Sec;
@@ -98,7 +113,9 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
       else
 	ddlNumber=72+(data.Sec-36)*4+data.SubSec;
       sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
-      buffer=new AliAltroBuffer(filename,1);
+      Int_t patchIndex = data.SubSec;
+      if(data.Sec>=36) patchIndex += 2;
+      buffer=new AliAltroBuffer(filename,1,mapping[patchIndex]);
       //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
       buffer->WriteDataHeader(kTRUE,kFALSE);//Dummy;
       bunchLength=1;
@@ -134,7 +151,9 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
 	    else
 	      ddlNumber=72+(data.Sec-36)*4+data.SubSec;
 	    sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
-	    buffer=new AliAltroBuffer(filename,1);
+	    Int_t patchIndex = data.SubSec;
+	    if(data.Sec>=36) patchIndex += 2;
+	    buffer=new AliAltroBuffer(filename,1,mapping[patchIndex]);
 	    buffer->WriteDataHeader(kTRUE,kFALSE);//Dummy;
 	    pSubSector=data.SubSec;
 	  }//end if
@@ -161,6 +180,9 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
     //cout<<"Data header for D D L:"<<pSecNumber<<" Sub-sec:"<<pSubSector<<endl;
     delete buffer;
   }
+
+  for(Int_t i = 0; i < 6; i++) delete mapping[i];
+
   f.close();
   return;
 }
@@ -290,12 +312,24 @@ void AliTPCDDLRawData::RawDataAltro(const char* inputFileName, const char* outpu
   };
   DataPad data;
 
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/TPC/mapping/Patch";
+  TString path2;
+  AliTPCAltroMapping *mapping[6];
+  for(Int_t i = 0; i < 6; i++) {
+    path2 = path;
+    path2 += i;
+    path2 += ".data";
+    mapping[i] = new AliTPCAltroMapping(path2.Data());
+  }
+
   //AliAltroBuffer is used in write mode to generate AltroFormat.dat file
   Info("RawDataAltro", "Creating &s", outputFileName);
   AliAltroBuffer *buffer=new AliAltroBuffer(outputFileName,1);
 
   UInt_t count=0;
   Int_t pSecNumber=-1;  //Previous Sector number
+  Int_t pSubSec=-1;     //Previous sub Sector
   Int_t pRowNumber=-1;  //Previous Row number  
   Int_t pPadNumber=-1;  //Previous Pad number
   Int_t pTimeBin=-1;    //Previous Time-Bin
@@ -305,6 +339,7 @@ void AliTPCDDLRawData::RawDataAltro(const char* inputFileName, const char* outpu
   while (f.read((char*)(&data),sizeof(data))){
     count++;
     if (pPadNumber==-1){
+      pSubSec=data.SubSec;
       pSecNumber=data.Sec;
       pRowNumber=data.Row;
       pPadNumber=data.Pad;
@@ -326,6 +361,9 @@ void AliTPCDDLRawData::RawDataAltro(const char* inputFileName, const char* outpu
 	nwords+=2;
 	if ((pPadNumber!=data.Pad)||(pRowNumber!=data.Row)||(pSecNumber!=data.Sec)){
 	  //Trailer is formatted and inserted!!
+	  Int_t patchIndex = pSubSec;
+	  if(pSecNumber >= 36) patchIndex += 2;
+	  buffer->SetMapping(mapping[patchIndex]);
 	  buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
 	  numPackets++;
 	  nwords=0;
@@ -344,9 +382,15 @@ void AliTPCDDLRawData::RawDataAltro(const char* inputFileName, const char* outpu
   buffer->FillBuffer(pTimeBin);
   buffer->FillBuffer(bunchLength+2);
   nwords+=2;
+  Int_t patchIndex = pSubSec;
+  if(pSecNumber >= 36) patchIndex += 2;
+  buffer->SetMapping(mapping[patchIndex]);
   buffer->WriteTrailer(nwords,pPadNumber,pRowNumber,pSecNumber);
   delete buffer;
   Info("RawDataAltro", "Number of digits: %d", count);
+
+  for(Int_t i = 0; i < 6; i++) delete mapping[i];
+
   f.close(); 
   return;
 }
