@@ -95,57 +95,116 @@ AliFMDParameters::Init()
   // Initialize the parameters manager.  We need to get stuff from the
   // CDB here. 
   if (fIsInit) return;
+  InitPulseGain();
+  InitPedestal();
+  InitDeadMap();
+  InitSampleRate();
+  InitZeroSuppression();
+  InitAltroMap();
+  fIsInit = kTRUE;
   
+}
+//__________________________________________________________________
+void
+AliFMDParameters::InitPulseGain()
+{
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   gain     = cdb->Get(fgkPulseGain);
-  AliCDBEntry*   pedestal = cdb->Get(fgkPedestal);
-  AliCDBEntry*   deadMap  = cdb->Get(fgkDead);
-  AliCDBEntry*   zeroSup  = cdb->Get(fgkZeroSuppression);
-  AliCDBEntry*   sampRat  = cdb->Get(fgkSampleRate);
-  AliCDBEntry*   hwMap    = cdb->Get(fgkAltroMap);       
+  if (!gain) {
+    AliWarning(Form("No %s found in CDB, perhaps you need to "
+		    "use AliFMDCalibFaker?", fgkPulseGain));
+    return;
+  }
   
-  if (gain) {
-    AliDebug(1, Form("Got gain from CDB"));
-    fPulseGain = dynamic_cast<AliFMDCalibGain*>(gain->GetObject());
-    if (!fPulseGain) 
-      AliWarning("Invalid pulser gain object from CDB");
-  }
-  if (pedestal) {
-    AliDebug(1, Form("Got pedestal from CDB"));
-    fPedestal = dynamic_cast<AliFMDCalibPedestal*>(pedestal->GetObject());
-    if (!fPedestal) 
-      AliWarning("Invalid pedestal object from CDB");
-  }
-  if (deadMap) {
-    AliDebug(1, Form("Got dead map from CDB"));
-    fDeadMap = dynamic_cast<AliFMDCalibDeadMap*>(deadMap->GetObject());
-    if (!fDeadMap) 
-      AliWarning("Invalid dead map object from CDB");
-  }
-  if (zeroSup) {
-    AliDebug(1, Form("Got zero suppression from CDB"));
-    fZeroSuppression = 
-      dynamic_cast<AliFMDCalibZeroSuppression*>(zeroSup->GetObject());
-    if (!fZeroSuppression) 
-      AliWarning("Invalid zero suppression object from CDB");
-  }
-  if (sampRat) {
-    AliDebug(1, Form("Got zero suppression from CDB"));
-    fSampleRate = 
-      dynamic_cast<AliFMDCalibSampleRate*>(sampRat->GetObject());
-    if (!fSampleRate) 
-      AliWarning("Invalid zero suppression object from CDB");
-  }
-  if (hwMap) {
-    AliDebug(1, Form("Got ALTRO map from CDB"));
-    fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
-    if (!fAltroMap) 
-      AliWarning("Invalid ALTRO map object from CDB");
-  }
-  if (!fAltroMap) fAltroMap = new AliFMDAltroMapping;
-  
-  fIsInit = kTRUE;
+  AliDebug(1, Form("Got gain from CDB"));
+  fPulseGain = dynamic_cast<AliFMDCalibGain*>(gain->GetObject());
+  if (!fPulseGain) AliWarning("Invalid pulser gain object from CDB");
 }
+//__________________________________________________________________
+void
+AliFMDParameters::InitPedestal()
+{
+  AliCDBManager* cdb      = AliCDBManager::Instance();
+  AliCDBEntry*   pedestal = cdb->Get(fgkPedestal);
+  if (!pedestal) {
+    AliWarning(Form("No %s found in CDB, perhaps you need to "
+		    "use AliFMDCalibFaker?", fgkPedestal));
+    return;
+  }
+  AliDebug(1, Form("Got pedestal from CDB"));
+  fPedestal = dynamic_cast<AliFMDCalibPedestal*>(pedestal->GetObject());
+  if (!fPedestal) AliWarning("Invalid pedestal object from CDB");
+}
+
+//__________________________________________________________________
+void
+AliFMDParameters::InitDeadMap()
+{
+  AliCDBManager* cdb      = AliCDBManager::Instance();
+  AliCDBEntry*   deadMap  = cdb->Get(fgkDead);
+  if (!deadMap) {
+    AliWarning(Form("No %s found in CDB, perhaps you need to "
+		    "use AliFMDCalibFaker?", fgkDead));
+    return;
+  }
+  AliDebug(1, Form("Got dead map from CDB"));
+  fDeadMap = dynamic_cast<AliFMDCalibDeadMap*>(deadMap->GetObject());
+  if (!fDeadMap) AliWarning("Invalid dead map object from CDB");
+}
+
+//__________________________________________________________________
+void
+AliFMDParameters::InitZeroSuppression()
+{
+  AliCDBManager* cdb      = AliCDBManager::Instance();
+  AliCDBEntry*   zeroSup  = cdb->Get(fgkZeroSuppression);
+  if (!zeroSup) {
+    AliWarning(Form("No %s found in CDB, perhaps you need to "
+		    "use AliFMDCalibFaker?", fgkZeroSuppression));
+    return;
+  }
+  AliDebug(1, Form("Got zero suppression from CDB"));
+  fZeroSuppression = 
+    dynamic_cast<AliFMDCalibZeroSuppression*>(zeroSup->GetObject());
+  if (!fZeroSuppression)AliWarning("Invalid zero suppression object from CDB");
+}
+
+//__________________________________________________________________
+void
+AliFMDParameters::InitSampleRate()
+{
+  AliCDBManager* cdb      = AliCDBManager::Instance();
+  AliCDBEntry*   sampRat  = cdb->Get(fgkSampleRate);
+  if (!sampRat) {
+    AliWarning(Form("No %s found in CDB, perhaps you need to "
+		    "use AliFMDCalibFaker?", fgkSampleRate));
+    return;
+  }
+  AliDebug(1, Form("Got zero suppression from CDB"));
+  fSampleRate = dynamic_cast<AliFMDCalibSampleRate*>(sampRat->GetObject());
+  if (!fSampleRate) AliWarning("Invalid zero suppression object from CDB");
+}
+
+//__________________________________________________________________
+void
+AliFMDParameters::InitAltroMap()
+{
+  AliCDBManager* cdb      = AliCDBManager::Instance();
+  AliCDBEntry*   hwMap    = cdb->Get(fgkAltroMap);       
+  if (!hwMap) {
+    AliWarning(Form("No %s found in CDB, perhaps you need to "
+		    "use AliFMDCalibFaker?", fgkAltroMap));
+    fAltroMap = new AliFMDAltroMapping;
+    return;
+  }
+  AliDebug(1, Form("Got ALTRO map from CDB"));
+  fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
+  if (!fAltroMap) {
+    AliWarning("Invalid ALTRO map object from CDB");
+    fAltroMap = new AliFMDAltroMapping;
+  }
+}
+
 
 //__________________________________________________________________
 Float_t
@@ -174,6 +233,9 @@ AliFMDParameters::GetPulseGain(UShort_t detector, Char_t ring,
       fFixedPulseGain = fVA1MipRange * GetEdepMip() / fAltroChannelSize;
     return fFixedPulseGain;
   }  
+  AliDebug(50, Form("pulse gain for FMD%d%c[%2d,%3d]=%f",
+		    detector, ring, sector, strip,
+		    fPulseGain->Value(detector, ring, sector, strip)));
   return fPulseGain->Value(detector, ring, sector, strip);
 }
 
@@ -183,6 +245,10 @@ AliFMDParameters::IsDead(UShort_t detector, Char_t ring,
 			 UShort_t sector, UShort_t strip) const
 {
   if (!fDeadMap) return kFALSE;
+  AliDebug(50, Form("Dead for FMD%d%c[%2d,%3d]=%s",
+		    detector, ring, sector, strip,
+		    fDeadMap->operator()(detector, ring, sector, strip) ? 
+		    "no" : "yes"));
   return fDeadMap->operator()(detector, ring, sector, strip);
 }
 
@@ -193,6 +259,10 @@ AliFMDParameters::GetZeroSuppression(UShort_t detector, Char_t ring,
 {
   if (!fZeroSuppression) return fFixedZeroSuppression;
   // Need to map strip to ALTRO chip. 
+  AliDebug(50, Form("zero sup. for FMD%d%c[%2d,%3d]=%f",
+		    detector, ring, sector, strip,
+		    fZeroSuppression->operator()(detector, ring, 
+						 sector, strip)));
   return fZeroSuppression->operator()(detector, ring, sector, strip/128);
 }
 
@@ -202,6 +272,7 @@ AliFMDParameters::GetSampleRate(UShort_t ddl) const
 {
   if (!fSampleRate) return fFixedSampleRate;
   // Need to map sector to digitizier card. 
+  AliDebug(50, Form("Sample rate for %d=%d", ddl, fSampleRate->Rate(ddl)));
   return fSampleRate->Rate(ddl);
 }
 
@@ -211,6 +282,9 @@ AliFMDParameters::GetPedestal(UShort_t detector, Char_t ring,
 			      UShort_t sector, UShort_t strip) const
 {
   if (!fPedestal) return fFixedPedestal;
+  AliDebug(50, Form("pedestal for FMD%d%c[%2d,%3d]=%f",
+		    detector, ring, sector, strip,
+		    fPedestal->Value(detector, ring, sector, strip)));
   return fPedestal->Value(detector, ring, sector, strip);
 }
 
@@ -220,6 +294,9 @@ AliFMDParameters::GetPedestalWidth(UShort_t detector, Char_t ring,
 				   UShort_t sector, UShort_t strip) const
 {
   if (!fPedestal) return fFixedPedestalWidth;
+  AliDebug(50, Form("pedetal width for FMD%d%c[%2d,%3d]=%f",
+		    detector, ring, sector, strip,
+		    fPedestal->Width(detector, ring, sector, strip)));
   return fPedestal->Width(detector, ring, sector, strip);
 }
   

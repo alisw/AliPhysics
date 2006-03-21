@@ -29,7 +29,7 @@ public:
 			   UInt_t&   ddl, UInt_t&   hwaddr) const;
   Int_t  GetHWAdress(Int_t sector, Int_t str, Int_t ring) const
   {
-    return GetHWAdress(sector, str, ring);
+    return GetHWAddress(sector, str, ring);
   }
   Int_t  GetHWAddress(Int_t sector, Int_t str, Int_t ring) const;
   Int_t  GetPadRow(Int_t hwaddr) const;

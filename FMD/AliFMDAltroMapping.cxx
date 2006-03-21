@@ -31,7 +31,6 @@ ClassImp(AliFMDAltroMapping)
 
 //_____________________________________________________________________________
 AliFMDAltroMapping::AliFMDAltroMapping()
-  : AliAltroMapping(0)
 {}
 
 
@@ -239,16 +238,16 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring,
   UInt_t ncs   =  (ring == 'I' ? 8 : 4);   // Channels per sensor 
   UInt_t bbase =  (ring == 'I' ? 0 : 2);
   UInt_t board =  bbase + sec / nsen;
-  UInt_t lsen  =  (sec - (board - bbase) * nsen);
-  UInt_t altro =  (lsen < 2 * nsa ? 0 : (lsen < 3 * nsa ? 1 : 2));
-  UInt_t sbase =  (lsen < 2 * nsa ? 0 : (lsen < 3 * nsa ? 2*nsa : 3*nsa));
-  UInt_t chan  =  (sec % 2) + (lsen-sbase) / 2 * ncs + 2 * str / 128;
+  UInt_t lsec  =  (sec - (board - bbase) * nsen); // Local sec in half-ring
+  UInt_t altro =  (lsec < 2 * nsa ? 0 : (lsec < 3 * nsa ? 1       : 2));
+  UInt_t sbase =  (altro == 0     ? 0 : altro == 1      ? 2 * nsa : 3 * nsa);
+  UInt_t chan  =  (sec % 2) + (lsec-sbase) / 2 * ncs + 2 * (str / 128);
   AliDebug(40, Form("\n"
 		    "  chan = (%d %% 2) + (%d-%d) / %d * %d + 2 * %d / 128\n"
 		    "       = %d + %d + %d = %d", 
-		    sec, lsen, sbase, 2, ncs, str, 
-		    (sec % 2), (lsen - sbase) / 2 * ncs, 
-		    2 * str / 128, chan));
+		    sec, lsec, sbase, 2, ncs, str, 
+		    (sec % 2), (lsec - sbase) / 2 * ncs, 
+		    2 * (str / 128), chan));
   addr         =  chan + (altro << 4) + (board << 7);
   
   return kTRUE;

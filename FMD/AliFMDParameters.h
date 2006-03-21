@@ -102,6 +102,12 @@ protected:
   AliFMDParameters();
   virtual ~AliFMDParameters() {}
   static AliFMDParameters* fgInstance;   // Static singleton instance
+  void InitPulseGain();
+  void InitPedestal();
+  void InitDeadMap();
+  void InitSampleRate();
+  void InitZeroSuppression();
+  void InitAltroMap();
 
   Bool_t          fIsInit;               // Whether we've been initialised  
 

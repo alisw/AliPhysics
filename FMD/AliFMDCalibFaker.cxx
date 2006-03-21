@@ -37,6 +37,7 @@
 #include <Riostream.h>
 #include <TSystem.h>
 #include <TMath.h>
+#include <TROOT.h>
 #include <TRandom.h>
 
 //====================================================================

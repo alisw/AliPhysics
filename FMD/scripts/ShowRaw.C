@@ -8,7 +8,8 @@
 void 
 ShowRaw(Int_t det=2,  bool verbose=false, Int_t event=0) 
 {
-  TString file(Form("raw%d/FMD_%d.ddl", event, AliFMD::kBaseDDL + det - 1));
+  TString file(Form("raw%d/FMD_%d.ddl", event, 
+		    AliFMDParameters::kBaseDDL + det - 1));
 
   std::cout << "Reading raw data file " << file << std::endl;
   
@@ -26,9 +27,9 @@ ShowRaw(Int_t det=2,  bool verbose=false, Int_t event=0)
   Int_t numWords,padNum,rowNum,secNum=0;
   Int_t value = 0;
   Int_t zero  = 0;
-  // if (!buff.ReadDataHeader()) {
-  // std::cout<< file << " isn't a valid data file!" << std::endl;
-  // }
+  if (!buff.ReadDataHeader()) {
+    std::cout<< file << " isn't a valid data file!" << std::endl;
+  }
   
   while(buff.ReadTrailerBackward(numWords,padNum,rowNum,secNum)){
     if (verbose) 

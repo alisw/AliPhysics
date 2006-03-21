@@ -50,8 +50,8 @@ CheckTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str,
     Waring("TestHWMap", "Ring Id differ %c != %c", ring, oring);  
   if (sec != osec) 
     Warning("TestHWMap", "Sector # differ %d != %d", sec, osec);
-  if (str != ostr) 
-    Warning("TestHWMap", "Strip # differ %d != %d", str, ostr);
+  if ((str / 128) * 128 != ostr) 
+    Warning("TestHWMap", "Strip # differ %d != %d", (str / 128) * 128, ostr);
 }
 
 //____________________________________________________________________
@@ -59,14 +59,17 @@ void
 TestHWMap()
 {
   AliFMDParameters* param = AliFMDParameters::Instance();
+  param->Init();
+  AliLog::SetModuleDebugLevel("FMD", 1);
   
-  for (UShort_t det = 2; det <= 2; det++) {
+  UInt_t oldddl = 0, oldhwaddr = 0xFFFFFFFF;
+  for (UShort_t det = 1; det <= 3; det++) {
     for (UShort_t rng = 0; rng < 2; rng++) {
       Char_t ring = (rng == 0 ? 'I' : 'O');
       Int_t  nsec = (ring == 'I' ?  20 :  40);
       Int_t  nstr = (ring == 'I' ? 512 : 256);
       for (UShort_t sec = 0; sec < nsec; sec++) {
-	for (UShort_t str = 0; str < nstr; str += 128) {
+	for (UShort_t str = 0; str < nstr; str ++) {
 	  UInt_t ddl, hwaddr;
 	  if (!param->Detector2Hardware(det, ring, sec, str, ddl, hwaddr)) {
 	    Warning("TestHWMap", "detector to hardware failed on %s", 
@@ -80,7 +83,11 @@ TestHWMap()
 		    Addr2Str(ddl, hwaddr));
 	    continue;
 	  }
-	  PrintTrans(det,ring,sec,str,ddl,hwaddr,odet,oring,osec,ostr);
+	  if (oldddl != ddl || oldhwaddr != hwaddr) {
+	    PrintTrans(det,ring,sec,str,ddl,hwaddr,odet,oring,osec,ostr);
+	    oldddl    = ddl;
+	    oldhwaddr = hwaddr;
+	  }
 	  CheckTrans(det,ring,sec,str,odet,oring,osec,ostr);
 	}// Loop over strips
       } // Loop over sectors

@@ -261,6 +261,7 @@ Bool_t
 AliFMDBaseDigitizer::Init()
 {
   // Initialization
+  AliFMDParameters::Instance()->Init();
   return kTRUE;
 }
  

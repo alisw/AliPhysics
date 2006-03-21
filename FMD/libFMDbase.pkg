@@ -9,6 +9,7 @@ SRCS		=  AliFMDDigit.cxx		\
 		   AliFMDCalibGain.cxx		\
 		   AliFMDCalibSampleRate.cxx	\
 		   AliFMDAltroMapping.cxx	\
+		   AliFMDAltroIO.cxx		\
 		   AliFMDParameters.cxx		\
 		   AliFMDGeometry.cxx		\
 		   AliFMDRing.cxx		\

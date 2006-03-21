@@ -198,8 +198,6 @@ AliFMDReconstructor::Init(AliRunLoader* runLoader)
     Warning("Init", "No generator event header - "
 	    "perhaps we get the vertex from ESD?");
   }
-  // Get the ESD tree 
-  SetESD(new AliESD);
 }
 
 //____________________________________________________________________
@@ -224,7 +222,7 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   // FIXME: The vertex may not be known yet, so we may have to move
   // some of this to FillESD. 
   AliDebug(1, "Reconstructing from digits in a tree");
-#if 0
+#if 1
   if (fESD) {
     const AliESDVertex* vertex = fESD->GetVertex();
     if (vertex) {

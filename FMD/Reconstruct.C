@@ -20,13 +20,15 @@
 void 
 Reconstruct()
 {
-  AliLog::SetModuleDebugLevel("FMD", 1);
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage("local://cdb");
+  AliLog::SetModuleDebugLevel("FMD", 2);
   AliReconstruction rec;   
   rec.SetRunLocalReconstruction("FMD");
   rec.SetRunVertexFinder(kFALSE);
   rec.SetRunTracking(""); 
   rec.SetFillESD("FMD"); 
-  // rec.SetInput("./");
+  rec.SetInput("./");
   rec.Run(); 
 }
 

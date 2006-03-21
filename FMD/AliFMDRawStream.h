@@ -41,13 +41,22 @@ public:
   Short_t Count()       const { return fSignal; }
   Short_t SampleRate()  const { return fSampleRate; }
   
-  virtual Bool_t   Next();
+  virtual Bool_t Next();
+  virtual Bool_t ReadChannel(UInt_t& addr, UInt_t& len, UShort_t* data);
+  virtual Bool_t DumpData();
+protected:
+  virtual Int_t    ReadIntoBuffer();
+  virtual Int_t    ReadTrailer(UInt_t& head, UInt_t& len);
+  virtual Int_t    ReadFillWords(UInt_t len);
+  virtual Int_t    ReadBunch(UShort_t* data);
+  virtual UShort_t Get10BitWord();
   
-private:
-  UShort_t fSampleRate;         // # of ALTRO samples per VA1_ALICE clock
-  Int_t    fPrevTime;           // Last time bin
-  Bool_t   fExplicitSampleRate; // True if the sample rate was set externally
-  
+  UShort_t  fSampleRate;         // # of ALTRO samples per VA1_ALICE clock
+  Int_t     fPrevTime;           // Last time bin
+  Bool_t    fExplicitSampleRate; // True if the sample rate was set externally
+  Int_t     fPos;
+  Int_t     fCur;
+  UChar_t*  fRead;
   ClassDef(AliFMDRawStream, 0) // Read raw FMD Altro data 
 };
 

@@ -42,6 +42,7 @@
 #include <TGeoManager.h>
 #include <TGeoNode.h>
 #include <TGeoVolume.h>
+#include <TROOT.h>
 
 //====================================================================
 ClassImp(AliFMDAlignFaker)
@@ -141,24 +142,26 @@ AliFMDAlignFaker::Exec(Option_t*)
   // Loop over all entries in geometry to find our nodes. 
   while ((node = static_cast<TGeoNode*>(next()))) {
     const char* name =  node->GetName();
-    if (IS_NODE_HALF(name) && TESTBIT(fMask, kHalves) ||
-	IS_NODE_SENSOR(name) && TESTBIT(fMask, kSensors)) {
-      // Get the path 
-      TString path(Form("/%s", gGeoManager->GetNode(0)->GetName()));
-      Int_t nLevel = next.GetLevel();
-      for (Int_t lvl = 0; lvl <= nLevel; lvl++) {
-	TGeoNode* p = next.GetNode(lvl);
-	if (!p && lvl != 0) {
-	  AliWarning(Form("No node at level %d in path %s", lvl, path.Data()));
-	  continue;
-	}
-	if (!path.IsNull()) path.Append("/");
-	path.Append(p->GetName());
+    if (!(IS_NODE_HALF(name) && TESTBIT(fMask, kHalves)) &&
+	!(IS_NODE_SENSOR(name) && TESTBIT(fMask, kSensors))) 
+      continue;
+    
+    // Get the path 
+    TString path(Form("/%s", gGeoManager->GetNode(0)->GetName()));
+    Int_t nLevel = next.GetLevel();
+    for (Int_t lvl = 0; lvl <= nLevel; lvl++) {
+      TGeoNode* p = next.GetNode(lvl);
+      if (!p) {
+	if (lvl != 0)
+	  AliWarning(Form("No node at level %d in path %s",lvl,path.Data()));
+	continue;
       }
-      Int_t id = node->GetVolume()->GetNumber();
-      if (IS_NODE_HALF(name))   MakeAlignHalf(path, id);
-      if (IS_NODE_SENSOR(name)) MakeAlignSensor(path, id);
+      if (!path.IsNull()) path.Append("/");
+      path.Append(p->GetName());
     }
+    Int_t id = node->GetVolume()->GetNumber();
+    if (IS_NODE_HALF(name))   MakeAlignHalf(path, id);
+    if (IS_NODE_SENSOR(name)) MakeAlignSensor(path, id);
   }
 
   TString t(GetTitle());
@@ -174,7 +177,8 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
 			    Double_t transX, Double_t transY, Double_t transZ,
 			    Double_t rotX,   Double_t rotY, Double_t rotZ)
 {
-  AliDebug(1, Form("Make alignment for %s (volume %d)", path.Data(), id));
+  AliDebug(1, Form("Make alignment for %s (volume %d): (%f,%f,%f) (%f,%f,%f)", 
+		   path.Data(), id, transX, transY, transZ, rotX, rotY, rotZ));
   Int_t nAlign = fArray->GetEntries();
   AliAlignObjAngles* obj = 
     new ((*fArray)[nAlign]) AliAlignObjAngles(path.Data(), id,0,0,0,0,0,0);
@@ -193,7 +197,7 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
 Bool_t
 AliFMDAlignFaker::MakeAlignHalf(const TString& path, Int_t id)
 {
-  AliDebug(1, Form("Make alignment for half-ring/cone %s", path.Data()));
+  AliDebug(15, Form("Make alignment for half-ring/cone %s", path.Data()));
   Double_t transX = gRandom->Uniform(fHalfTransMin.X(), fHalfTransMax.X());
   Double_t transY = gRandom->Uniform(fHalfTransMin.Y(), fHalfTransMax.Y());
   Double_t transZ = gRandom->Uniform(fHalfTransMin.Z(), fHalfTransMax.Z());
@@ -208,7 +212,7 @@ AliFMDAlignFaker::MakeAlignHalf(const TString& path, Int_t id)
 Bool_t
 AliFMDAlignFaker::MakeAlignSensor(const TString& path, Int_t id)
 {
-  AliDebug(1, Form("Make alignment for sensor %s", path.Data()));
+  AliDebug(15, Form("Make alignment for sensor %s", path.Data()));
   Double_t transX = gRandom->Uniform(fSensorTransMin.X(), fSensorTransMax.X());
   Double_t transY = gRandom->Uniform(fSensorTransMin.Y(), fSensorTransMax.Y());
   Double_t transZ = gRandom->Uniform(fSensorTransMin.Z(), fSensorTransMax.Z());

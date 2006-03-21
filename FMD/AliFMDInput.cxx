@@ -37,6 +37,9 @@
 #include "AliFMDRecPoint.h"	// ALIFMDRECPOINT_H
 #include <AliESD.h>
 #include <AliESDFMD.h>
+#include <AliCDBManager.h>
+#include <AliCDBEntry.h>
+#include <AliAlignObjAngles.h>
 #include <TTree.h>              // ROOT_TTree
 #include <TChain.h>             // ROOT_TChain
 #include <TParticle.h>          // ROOT_TParticle
@@ -194,6 +197,25 @@ AliFMDInput::Init()
     if (!fGeoManager) {
       Fatal("Init", "No geometry manager found");
       return kFALSE;
+    }
+    AliCDBManager* cdb   = AliCDBManager::Instance();
+    AliCDBEntry*   align = cdb->Get("FMD/Align/Data");
+    if (align) {
+      AliInfo("Got alignment data from CDB");
+      TClonesArray* array = dynamic_cast<TClonesArray*>(align->GetObject());
+      if (!array) {
+	AliWarning("Invalid align data from CDB");
+      }
+      else {
+	Int_t nAlign = array->GetEntries();
+	for (Int_t i = 0; i < nAlign; i++) {
+	  AliAlignObjAngles* a = static_cast<AliAlignObjAngles*>(array->At(i));
+	  if (!a->ApplyToGeometry()) {
+	    AliWarning(Form("Failed to apply alignment to %s", 
+			    a->GetVolPath()));
+	  }
+	}
+      }
     }
   }
 

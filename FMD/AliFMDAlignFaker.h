@@ -36,7 +36,7 @@ public:
 		   const char* loc="local://cdb");
   virtual ~AliFMDAlignFaker() {}
   void AddAlign(EWhat w) { SETBIT(fMask, w); }
-  void RemoveAlign(EWhat w) { SETBIT(fMask, w); }
+  void RemoveAlign(EWhat w) { CLRBIT(fMask, w); }
   void SetAlign(Int_t mask) { fMask = mask; }
   void SetSensorDisplacement(Double_t x1=0,   Double_t y1=0,   Double_t z1=0,
 			     Double_t x2=.01, Double_t y2=.01, Double_t z2=0);

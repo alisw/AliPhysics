@@ -47,7 +47,7 @@ RawTest()
     return 0;
   }
   AliFMDRawStream input(reader, sampleRate);
-  reader->Select(AliFMD::kBaseDDL >> 8);
+  reader->Select(AliFMDParameters::kBaseDDL >> 8);
   
   Int_t    oldDDL      = -1;
   Int_t    count       = 0;

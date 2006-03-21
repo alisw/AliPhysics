@@ -22,7 +22,7 @@
 class AliFMD;
 class AliAltroBuffer;
 class TArrayI;
-
+class TClonesArray;
 
 //____________________________________________________________________
 class AliFMDRawWriter : public TTask 
@@ -33,6 +33,7 @@ public:
 
   virtual void Exec(Option_t* option="");
 protected:
+  virtual void WriteDigits(TClonesArray* digits);
   virtual void WriteChannel(AliAltroBuffer* altro, 
 			    UShort_t strip, UShort_t sector, Char_t ring, 
 			    const TArrayI& data);

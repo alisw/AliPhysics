@@ -48,9 +48,16 @@
 #include "AliFMDRawStream.h"	// ALIFMDRAWSTREAM_H 
 #include "AliRawReader.h"	// ALIRAWREADER_H 
 #include "AliFMDRawReader.h"	// ALIFMDRAWREADER_H 
+#include "AliFMDAltroIO.h"	// ALIFMDALTROIO_H 
 #include <TArrayI.h>		// ROOT_TArrayI
 #include <TTree.h>		// ROOT_TTree
 #include <TClonesArray.h>	// ROOT_TClonesArray
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#define PRETTY_HEX(N,X) \
+  "  0x" << std::setfill('0') << std::setw(N) << std::hex << X \
+         << std::setfill(' ') << std::dec
 
 //____________________________________________________________________
 ClassImp(AliFMDRawReader)
@@ -69,6 +76,82 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
 }
 
 
+//____________________________________________________________________
+void
+AliFMDRawReader::Exec(Option_t*) 
+{
+  // Read raw data into the digits array, using AliFMDAltroReader. 
+  if (!fReader->ReadHeader()) {
+    Error("ReadAdcs", "Couldn't read header");
+    return;
+  }
+
+  TClonesArray* array = new TClonesArray("AliFMDDigit");
+  fTree->Branch("FMD", &array);
+
+  // Get sample rate 
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+
+  // Select FMD DDL's 
+  fReader->Select(AliFMDParameters::kBaseDDL>>8);
+
+  UShort_t stripMin = 0;
+  UShort_t stripMax = 127;
+  UShort_t preSamp  = 0;
+  
+  do {
+    UChar_t* cdata;
+    if (!fReader->ReadNextData(cdata)) break;
+    size_t   nchar = fReader->GetDataSize();
+    UShort_t ddl   = AliFMDParameters::kBaseDDL + fReader->GetDDLID();
+    UShort_t rate  = pars->GetSampleRate(ddl);
+    AliDebug(1, Form("Reading %d bytes (%d 10bit words) from %d", 
+		     nchar, nchar * 8 / 10, ddl));
+    // Make a stream to read from 
+    std::string str((char*)(cdata), nchar);
+    std::istringstream s(str);
+    // Prep the reader class.
+    AliFMDAltroReader r(s);
+    // Data array is approx twice the size needed. 
+    UShort_t data[2048], hwaddr, last;
+    while (r.ReadChannel(hwaddr, last, data) > 0) {
+      AliDebug(5, Form("Read channel 0x%x of size %d", hwaddr, last));
+      UShort_t det, sec, str;
+      Char_t   ring;
+      if (!pars->Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) {
+	AliError(Form("Failed to detector id from DDL %d "
+		      "and hardware address 0x%x", ddl, hwaddr));
+	continue;
+      }
+      AliDebug(5, Form("DDL 0x%04x, address 0x%03x maps to FMD%d%c[%2d,%3d]", 
+		       ddl, hwaddr, det, ring, sec, str));
+
+      // Loop over the `timebins', and make the digits
+      for (size_t i = 0; i < last; i++) {
+	if (i < preSamp) continue;
+	Int_t n = array->GetEntries();
+	UShort_t curStr = str + stripMin + i / rate;
+	if ((curStr-str) > stripMax) {
+	  AliError(Form("Current strip is %d but DB says max is %d", 
+			curStr, stripMax));
+	}
+	AliDebug(5, Form("making digit for FMD%d%c[%2d,%3d] from sample %4d", 
+			 det, ring, sec, curStr, i));
+	new ((*array)[n]) AliFMDDigit(det, ring, sec, curStr, data[i], 
+				      (rate >= 2 ? data[i+1] : 0),
+				      (rate >= 3 ? data[i+2] : 0));
+	if (rate >= 2) i++;
+	if (rate >= 3) i++;
+	}
+	if (r.IsBof()) break;
+    }
+  } while (true);
+  AliDebug(1, Form("Got a grand total of %d digits", array->GetEntries()));
+}
+
+#if 0
+// This is the old method, for comparison.   It's really ugly, and far
+// too convoluted. 
 //____________________________________________________________________
 void
 AliFMDRawReader::Exec(Option_t*) 
@@ -109,6 +192,7 @@ AliFMDRawReader::Exec(Option_t*)
 
     count++; 
     Int_t ddl = fReader->GetDDLID();
+    AliDebug(10, Form("Current DDL is %d", ddl));
     if (ddl != oldDDL || input.IsNewStrip() || !next) {
       // Make a new digit, if we have some data (oldDetector == 0,
       // means that we haven't really read anything yet - that is,
@@ -144,16 +228,15 @@ AliFMDRawReader::Exec(Option_t*)
       // If we got a new DDL, it means we have a new detector. 
       if (ddl != oldDDL) {
 	if (detector != 0) 
-	  AliDebug(10, Form("Read %d channels for FMD%d", 
-			    count + 1, detector));
+	  AliDebug(10, Form("Read %d channels for FMD%d", count + 1, detector));
 	// Reset counts, and update the DDL cache 
 	count       = 0;
 	oldDDL      = ddl;
 	// Check that we're processing a FMD detector 
 	Int_t detId = fReader->GetDetectorID();
 	if (detId != (AliFMDParameters::kBaseDDL >> 8)) {
-	  Error("ReadAdcs", "Detector ID %d != %d",
-		detId, (AliFMDParameters::kBaseDDL >> 8));
+	  AliError(Form("Detector ID %d != %d",
+			detId, (AliFMDParameters::kBaseDDL >> 8)));
 	  break;
 	}
 	// Figure out what detector we're deling with 
@@ -163,7 +246,7 @@ AliFMDRawReader::Exec(Option_t*)
 	case 1: detector = 2; break;
 	case 2: detector = 3; break;
 	default:
-	  Error("ReadAdcs", "Unknown DDL 0x%x for FMD", ddl);
+	  AliError(Form("Unknown DDL 0x%x for FMD", ddl));
 	  return;
 	}
 	AliDebug(10, Form("Reading ADCs for 0x%x  - That is FMD%d",
@@ -183,6 +266,7 @@ AliFMDRawReader::Exec(Option_t*)
   return;
 
 }
+#endif
 
 //____________________________________________________________________
 // 

@@ -19,17 +19,24 @@
 void
 Simulate()
 {
- AliSimulation sim;
- sim.SetConfigFile("$(ALICE_ROOT)/FMD/Config.C");
- // sim.SetMakeSDigits("FMD");
- sim.SetMakeDigits("FMD");
- sim.SetWriteRawData("FMD");
- // sim.SetMakeDigitsFromHits("FMD");
- TStopwatch w;
- w.Start();
- sim.Run(1); 
- w.Stop();
- w.Print();
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetDefaultStorage("local://cdb");
+  AliSimulation sim;
+  AliCDBEntry* align = cdb->Get("FMD/Align/Data");
+  if (align) {
+    TClonesArray* array = dynamic_cast<TClonesArray*>(align->GetObject());
+    if (array) sim.SetAlignObjArray(array);
+  }
+  sim.SetConfigFile("$(ALICE_ROOT)/FMD/Config.C");
+  // sim.SetMakeSDigits("FMD");
+  sim.SetMakeDigits("FMD"); 
+  sim.SetWriteRawData("FMD"); 
+  // sim.SetMakeDigitsFromHits("FMD"); 
+  TStopwatch w; 
+  w.Start(); 
+  sim.Run(1);  
+  w.Stop(); 
+  w.Print(); 
 }
 
 //

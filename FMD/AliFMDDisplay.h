@@ -31,8 +31,8 @@ public:
   void  Zoom() { fZoomMode = kTRUE; }
   void  Pick() { fZoomMode = kFALSE; }
   void  ExecuteEvent(Int_t event, Int_t px, Int_t py);
-  Int_t DistanceToPrimitive(Int_t px, Int_t py);
-  
+  Int_t DistancetoPrimitive(Int_t px, Int_t py);
+  void  Paint(Option_t* option="") { (void)option; }
 
   virtual Bool_t Init();
   virtual Bool_t Begin(Int_t event);

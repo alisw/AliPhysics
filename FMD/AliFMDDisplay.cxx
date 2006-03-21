@@ -82,10 +82,10 @@ AliFMDDisplay::AliFMDDisplay(const char* gAliceFile)
 }
 
 //____________________________________________________________________
-void
+void           
 AliFMDDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py) 
 {
-  AliInfo(Form("Event %d, at (%d,%d)", px, py));
+  // AliInfo(Form("Event %d, at (%d,%d)", px, py));
   if (px == 0 && py == 0) return;
   if (!fZoomMode && fPad->GetView()) {
     fPad->GetView()->ExecuteRotateView(event, px, py);
@@ -125,10 +125,10 @@ AliFMDDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 }
 
 //____________________________________________________________________
-Int_t
-AliFMDDisplay::DistanceToPrimitive(Int_t px, Int_t py) 
+Int_t          
+AliFMDDisplay::DistancetoPrimitive(Int_t px, Int_t) 
 {
-  AliInfo(Form("@ (%d,%d)", px, py));
+  // AliInfo(Form("@ (%d,%d)", px, py));
   fPad->SetCursor(kCross);
   Float_t xmin = fPad->GetX1();
   Float_t xmax = fPad->GetX2();
@@ -200,12 +200,14 @@ AliFMDDisplay::End()
 {
   fPad->cd();
   fMarkers->Draw();
-  AppendPad();
-  fPad->Update();
   fPad->cd();
-  fCanvas->Modified(kTRUE);
-  fCanvas->Update();
-  fCanvas->cd();
+  AppendPad();
+  // fPad->Update();
+  fPad->cd();
+  // fCanvas->Modified(kTRUE);
+  //fCanvas->Update();
+  // fCanvas->cd();
+  // fPad->cd();
   fWait = kTRUE;
   while (fWait) {
     gApplication->StartIdleing();
