@@ -171,6 +171,7 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
 //        (pdg_code == 10020040)) {
 //
     if(pParticle->GetPdgCode()>=50000050||pParticle->GetPdgCode()==0||pParticle->GetPdgCode()>10000) {AliDebug(1,Form("A photon as track... Track skipped"));continue;}
+    if(!pParticle->GetPDG()) continue;
 //
 // to be updated for us!!
 //
