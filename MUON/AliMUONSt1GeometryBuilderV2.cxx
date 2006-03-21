@@ -30,6 +30,7 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
+#include "AliMpContainers.h"
 #include "AliMpConstants.h"
 #include "AliMpFiles.h"
 #include "AliMpSectorReader.h"
@@ -56,11 +57,11 @@
 #include <TGeoTube.h>
 #include <TGeoCompositeShape.h>
 
-#ifdef ST1_WITH_STL
+#ifdef WITH_STL
   #include <vector>
 #endif
 
-#ifdef ST1_WITH_ROOT
+#ifdef WITH_ROOT
   #include "TArrayI.h"
 #endif
 
@@ -504,14 +505,14 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 
   CreateFrame(chamber);
 
-#ifdef ST1_WITH_STL
+#ifdef WITH_STL
   SpecialMap specialMap;
   specialMap[76] = AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.);
   specialMap[75] = AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36));
   specialMap[47] = AliMUONSt1SpecialMotif(TVector2(1.01, 0.36));
 #endif
   
-#ifdef ST1_WITH_ROOT
+#ifdef WITH_ROOT
   SpecialMap specialMap;
   specialMap.Add(76, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.1, 0.84), 90.));
   specialMap.Add(75, (Long_t) new AliMUONSt1SpecialMotif(TVector2( 0.5, 0.36)));
@@ -528,7 +529,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
                             fgkDeltaQuadLHC + fgkPadYOffsetBP, 0.);
   PlaceSector(sector1, specialMap, where, reflectZ, chamber);
   
-#ifdef ST1_WITH_STL
+#ifdef WITH_STL
   specialMap.clear();
   specialMap[76] = AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.);
   specialMap[75] = AliMUONSt1SpecialMotif(TVector2(1.96, 0.17));
@@ -541,7 +542,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
       // Was: specialMap[47] = AliMUONSt1SpecialMotif(TVector2(1.61,-1.18));
 #endif
 
-#ifdef ST1_WITH_ROOT
+#ifdef WITH_ROOT
   Int_t nb = AliMpConstants::ManuMask(kNonBendingPlane);
   specialMap.Delete();
   specialMap.Add(76 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
@@ -567,7 +568,7 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
       // Fix (4) - was TVector3(where.X()+0.63/2, ... - now it is -0.63/2
   PlaceSector(sector2, specialMap, where, reflectZ, chamber);
 
-#ifdef ST1_WITH_ROOT
+#ifdef WITH_ROOT
   specialMap.Delete();
 #endif
 }
@@ -2185,11 +2186,11 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
   
   GReal_t posX,posY,posZ;
   
-#ifdef ST1_WITH_STL  
+#ifdef WITH_STL  
   vector<Int_t> alreadyDone;
 #endif
 
-#ifdef ST1_WITH_ROOT  
+#ifdef WITH_ROOT  
   TArrayI alreadyDone(20);
   Int_t nofAlreadyDone = 0;
 #endif  
@@ -2202,14 +2203,14 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
       AliMpVRowSegment* seg = row->GetRowSegment(iseg);
       char segName[5];
       
-#ifdef ST1_WITH_STL 
+#ifdef WITH_STL 
       SpecialMap::iterator iter 
         = specialMap.find(seg->GetMotifPositionId(0));
 
       if ( iter == specialMap.end()){ //if this is a normal segment (ie. not part of <specialMap>)
 #endif  
       
-#ifdef ST1_WITH_ROOT  
+#ifdef WITH_ROOT  
       Long_t value = specialMap.GetValue(seg->GetMotifPositionId(0));
 
       if ( value == 0 ){ //if this is a normal segment (ie. not part of <specialMap>)
@@ -2250,13 +2251,13 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
 
           Int_t motifPosId = seg->GetMotifPositionId(motifNum);
           
-#ifdef ST1_WITH_STL
+#ifdef WITH_STL
           if (find(alreadyDone.begin(),alreadyDone.end(),motifPosId)
               != alreadyDone.end()) continue; // don't treat the same motif twice
 
           AliMUONSt1SpecialMotif spMot = specialMap[motifPosId];
 #endif
-#ifdef ST1_WITH_ROOT
+#ifdef WITH_ROOT
           Bool_t isDone = false;
 	  Int_t i=0;
 	  while (i<nofAlreadyDone && !isDone) {
@@ -2290,10 +2291,10 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
 	  posZ = where.Z() + sgn * (fgkMotherThick1 - TotalHzDaughter()); 
           gMC->Gspos(fgkDaughterName, copyNo, QuadrantMLayerName(chamber), posX, posY, posZ, rot, "ONLY");
 
-#ifdef ST1_WITH_STL
+#ifdef WITH_STL
           alreadyDone.push_back(motifPosId);// mark this motif as done
 #endif
-#ifdef ST1_WITH_ROOT
+#ifdef WITH_ROOT
           if (nofAlreadyDone == alreadyDone.GetSize()) 
 	     alreadyDone.Set(2*nofAlreadyDone); 
           alreadyDone.AddAt(motifPosId, nofAlreadyDone++);       	  

@@ -13,8 +13,26 @@
 #ifndef ALI_MUON_ST1_GEOMETRY_BUILDER_V2_H
 #define ALI_MUON_ST1_GEOMETRY_BUILDER_V2_H
 
-#include "AliMUONSt1Types.h"
+
 #include "AliMUONVGeometryBuilder.h"
+
+#include "AliMpContainers.h"
+
+#ifdef WITH_ROOT
+  #include "TExMap.h"
+#endif
+
+#ifdef WITH_STL
+  #include <map>
+#endif
+
+#ifdef WITH_ROOT
+  typedef  TExMap  SpecialMap;
+#endif
+
+#ifdef WITH_STL
+  typedef map<Int_t , AliMUONSt1SpecialMotif> SpecialMap;
+#endif
 
 //typedef Float_t GReal_t; // for AliGeant3
 typedef Double_t GReal_t;  // for VirtualMC
