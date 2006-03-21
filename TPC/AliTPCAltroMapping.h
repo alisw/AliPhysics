@@ -21,10 +21,10 @@ class AliTPCAltroMapping: public AliAltroMapping {
   AliTPCAltroMapping(const AliTPCAltroMapping& mapping);
   AliTPCAltroMapping& operator = (const AliTPCAltroMapping& mapping);
 
-  virtual Int_t GetHWAdress(Int_t padrow, Int_t pad, Int_t sector) const;
-  virtual Int_t GetPadRow(Int_t hwAdress) const;
-  virtual Int_t GetPad(Int_t hwAdress) const;
-  virtual Int_t GetSector(Int_t hwAdress) const;
+  virtual Int_t GetHWAddress(Int_t padrow, Int_t pad, Int_t sector) const;
+  virtual Int_t GetPadRow(Int_t hwAddress) const;
+  virtual Int_t GetPad(Int_t hwAddress) const;
+  virtual Int_t GetSector(Int_t hwAddress) const;
 
  protected:
   virtual Bool_t ReadMapping();
@@ -36,7 +36,7 @@ class AliTPCAltroMapping: public AliAltroMapping {
   Short_t **fMapping;          // Array which connects hardware adresses to pad and pad-row indeces
   Short_t **fInvMapping;       // Inverse of fMapping
 
-  ClassDef(AliTPCAltroMapping,0)  // Altro mapping handler class
+  ClassDef(AliTPCAltroMapping,1)  // Altro mapping handler class
 };
 
 #endif

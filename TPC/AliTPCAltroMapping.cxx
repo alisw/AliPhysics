@@ -83,20 +83,20 @@ Bool_t AliTPCAltroMapping::ReadMapping()
   fMinPadRow = 0x7fffffff;
   fMaxPadRow = 0;
   fMaxPad = 0;
-  fMapping = new Short_t*[fMaxHWAdress+1];
-  for (Int_t i = 0; i <= fMaxHWAdress; i++) {
+  fMapping = new Short_t*[fMaxHWAddress+1];
+  for (Int_t i = 0; i <= fMaxHWAddress; i++) {
     fMapping[i] = new Short_t[2];
     fMapping[i][0] = fMapping[i][1] = -1;
   }
  
   for(Int_t i = 0; i < fNumberOfChannels ; i++) { //5504 is size of irorc mapping at ther moment only for irorc
-    Int_t hwAdress;
-    if (!(*fIn >> hwAdress)) {
+    Int_t hwAddress;
+    if (!(*fIn >> hwAddress)) {
       AliFatal("Syntax of the mapping file is wrong !");
       return kFALSE;
     }
-    if (hwAdress > fMaxHWAdress) {
-      AliFatal(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAdress,fMaxHWAdress));
+    if (hwAddress > fMaxHWAddress) {
+      AliFatal(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
       return kFALSE;
     }
     Int_t padrow,pad;
@@ -105,8 +105,8 @@ Bool_t AliTPCAltroMapping::ReadMapping()
       return kFALSE;
     }
  
-    fMapping[hwAdress][0] = padrow;
-    fMapping[hwAdress][1] = pad;
+    fMapping[hwAddress][0] = padrow;
+    fMapping[hwAddress][1] = pad;
 
     if (padrow > fMaxPadRow) fMaxPadRow = padrow;
     if (padrow < fMinPadRow) fMinPadRow = padrow;
@@ -119,7 +119,7 @@ Bool_t AliTPCAltroMapping::ReadMapping()
     for (Int_t j = 0; j <= fMaxPad; j++) fInvMapping[i][j] = -1;
   }
 
-  for(Int_t i = 0; i <= fMaxHWAdress; i++) {
+  for(Int_t i = 0; i <= fMaxHWAddress; i++) {
     Int_t padrow = fMapping[i][0];
     Int_t pad = fMapping[i][1];
     if(padrow != -1 && pad != -1)
@@ -130,7 +130,7 @@ Bool_t AliTPCAltroMapping::ReadMapping()
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCAltroMapping::GetHWAdress(Int_t padrow, Int_t pad, Int_t /* sector */) const
+Int_t AliTPCAltroMapping::GetHWAddress(Int_t padrow, Int_t pad, Int_t /* sector */) const
 {
   // Get the content of the mapping array
   // return -1 in case there is no hardware
@@ -147,51 +147,51 @@ Int_t AliTPCAltroMapping::GetHWAdress(Int_t padrow, Int_t pad, Int_t /* sector *
     AliWarning(Form("Index of pad (%d) outside the range (0 -> %d) !",pad,fMaxPad));
     return -1;
   }
-  Int_t hwAdress = fInvMapping[padrow-fMinPadRow][pad];
-  if (hwAdress == -1)
+  Int_t hwAddress = fInvMapping[padrow-fMinPadRow][pad];
+  if (hwAddress == -1)
     AliWarning(Form("Hardware (ALTRO) adress is not defined for these pad-row (%d) and pad (%d) !",padrow,pad));
 
-  return hwAdress;
+  return hwAddress;
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCAltroMapping::GetPadRow(Int_t hwAdress) const
+Int_t AliTPCAltroMapping::GetPadRow(Int_t hwAddress) const
 {
   if (!fMapping) {
     AliWarning("Mapping array was not initalized correctly !");
     return -1;
   }
-  if (hwAdress > fMaxHWAdress) {
-    AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAdress,fMaxHWAdress));
+  if (hwAddress > fMaxHWAddress) {
+    AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
     return -1;
   }
-  Int_t padrow = fMapping[hwAdress][0];
+  Int_t padrow = fMapping[hwAddress][0];
   if (padrow == -1)
-    AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAdress));
+    AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
   return padrow;
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCAltroMapping::GetPad(Int_t hwAdress) const
+Int_t AliTPCAltroMapping::GetPad(Int_t hwAddress) const
 {
   if (!fMapping) {
     AliWarning("Mapping array was not initalized correctly !");
     return -1;
   }
-  if (hwAdress > fMaxHWAdress) {
-    AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAdress,fMaxHWAdress));
+  if (hwAddress > fMaxHWAddress) {
+    AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
     return -1;
   }
-  Int_t pad = fMapping[hwAdress][1];
+  Int_t pad = fMapping[hwAddress][1];
   if (pad == -1)
-    AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAdress));
+    AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
   return pad;
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCAltroMapping::GetSector(Int_t /* hwAdress */) const
+Int_t AliTPCAltroMapping::GetSector(Int_t /* hwAddress */) const
 {
   AliWarning("Sector index is not contained in the TPC altro mapping !");
   return -1;
@@ -204,7 +204,7 @@ void AliTPCAltroMapping::DeleteMappingArrays()
   // allocated during the reading of the
   // mapping file
   if (fMapping) {
-    for (Int_t i = 0; i <= fMaxHWAdress; i++) delete [] fMapping[i];
+    for (Int_t i = 0; i <= fMaxHWAddress; i++) delete [] fMapping[i];
     delete [] fMapping;
   }
 
