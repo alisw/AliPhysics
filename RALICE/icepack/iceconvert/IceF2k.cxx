@@ -158,6 +158,7 @@ IceF2k::IceF2k(const char* name,const char* title) : AliJob(name,title)
  fTrigdefs=0;
  fToffset=0;
  fMctoffset=0;
+ fMctracks=3;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceF2k::~IceF2k()
@@ -230,6 +231,21 @@ void IceF2k::SetMcToffset(Float_t toffset)
 // A very frequently (but not always) used value is -19000.
 // See the introductory docs of this class for further details.
  fMctoffset=toffset;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceF2k::SelectMcTracks(Int_t mode)
+{
+// User selection of MC tracks to be stored in the event structure.
+//
+// mode = 0 : No MC tracks are stored
+//        1 : Only muon and muon-neutrino MC tracks are stored
+//        2 : All lepton MC tracks are stored
+//        3 : All MC tracks (incl. brems, pairprod etc...) are stored
+//
+// By default mode=3 is set in the constructor of this class.
+
+ if (mode<0 || mode >3) return;
+ fMctracks=mode;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceF2k::SetInputFile(TString name)
@@ -811,6 +827,8 @@ void IceF2k::PutMcTracks()
  // See the introductory docs of this IceF2k class for further details.
  fToffset=fMctoffset;
 
+ if (!fMctracks) return;
+
  // Loop over all the tracks and add them to the current event
  AliTrack t;
  Double_t vec[3];
@@ -866,6 +884,16 @@ void IceF2k::PutMcTracks()
    if (idf2k==204) idpdg=-12;
    if (idf2k==205) idpdg=-14;
    if (idf2k==206) idpdg=-16;
+  }
+
+  // Check for the user selected MC track storage
+  if (fMctracks==1) // Store only muon and muon-neutrino tracks
+  {
+   if (abs(idpdg)!=13 && abs(idpdg)!=14) continue;
+  }
+  else if (fMctracks==2) // Store all lepton tracks
+  {
+   if (abs(idpdg)<11 || abs(idpdg)>16) continue;
   }
 
   t.SetParticleCode(idpdg);

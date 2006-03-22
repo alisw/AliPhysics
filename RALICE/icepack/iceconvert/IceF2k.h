@@ -35,6 +35,7 @@ class IceF2k : public AliJob
   void SetOutputFile(TFile* ofile);                       // Set output file for the ROOT data structures       
   void SetOutputFile(TString name);                       // Create output file for the ROOT data structures
   void SetMcToffset(Float_t toffset);                     // Set user defined time offset for MC data
+  void SelectMcTracks(Int_t mode);                        // User selection of MC tracks to be stored
   TFile* GetOutputFile();                                 // Provide pointer to the ROOT output file
   TDatabasePDG* GetPDG();           // Provide pointer to the PDG database
   AliObjMatrix* GetOMdbase();       // Provide pointer to the OM geometry, calib. etc... database
@@ -56,6 +57,7 @@ class IceF2k : public AliJob
   AliDevice* fTrigdefs; // Trigger definitions as indicated in the header of the F2000 input file
   Float_t fToffset;     // Trigger time offset which might have been introduced during filtering
   Float_t fMctoffset;   // Trigger time offset which might have been introduced during MC generation
+  Int_t fMctracks;      // MC tracks selection flag
 
   void FillOMdbase();   // Fill geometry and calib. parameters of all devices
   void SetFitdefs();    // Set the fit definitions as used in the F2000 input file
@@ -69,6 +71,6 @@ class IceF2k : public AliJob
   array   fHeader; //! Structure holding the file header info
   mevt    fEvent;  //! Structure holding the actual event data (hits, tracks, etc...)
 
- ClassDef(IceF2k,6) // Job for conversion of F2K data into IceEvent physics event structures.
+ ClassDef(IceF2k,7) // Job for conversion of F2K data into IceEvent physics event structures.
 };
 #endif
