@@ -160,10 +160,16 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONDigit& digit, Bool_t addN
   // - add a pedestal (thus decalibrating the digit)
   // - sets the signal to zero if below 3*sigma of the noise
   //
-  
+
   static const Int_t kMaxADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
-  
+
   Float_t signal = digit.Signal();
+
+  if ( !addNoise )
+    {
+      digit.SetADC(TMath::Nint(signal));
+      return;
+    }
   
   Int_t detElemId = digit.DetElemId();
   
@@ -172,51 +178,48 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONDigit& digit, Bool_t addN
   
   AliMUONVCalibParam* pedestal = fCalibrationData->Pedestals(detElemId,manuId);
   if (!pedestal)
-  {
-    AliFatal(Form("Could not get pedestal for DE=%d manuId=%d",
-                  detElemId,manuId));    
-  }
+    {
+      AliFatal(Form("Could not get pedestal for DE=%d manuId=%d",
+		    detElemId,manuId));    
+    }
   Float_t pedestalMean = pedestal->ValueAsFloat(manuChannel,0);
   Float_t pedestalSigma = pedestal->ValueAsFloat(manuChannel,1);
-
+  
   AliMUONVCalibParam* gain = fCalibrationData->Gains(detElemId,manuId);
   if (!gain)
-  {
-    AliFatal(Form("Could not get gain for DE=%d manuId=%d",
-                  detElemId,manuId));    
-  }    
+    {
+      AliFatal(Form("Could not get gain for DE=%d manuId=%d",
+		    detElemId,manuId));    
+    }    
   Float_t gainMean = gain->ValueAsFloat(manuChannel,0);
 
-  if ( addNoise )
-  {
-    Float_t adcNoise = gRandom->Gaus(0.0,pedestalSigma);
-  
-    signal += adcNoise*gainMean;
-  }
-  
+  Float_t adcNoise = gRandom->Gaus(0.0,pedestalSigma);
+     
   Int_t adc;
-  
+
   if ( gainMean < 1E-6 )
-  {
-    AliError(Form("Got a too small gain %e for DE=%d manuId=%d manuChannel=%d. "
-                  "Setting signal to 0.",
-                  gainMean,detElemId,manuId,manuChannel));
-    adc = 0;
-  }
-  else
-  {
-    adc = TMath::Nint( signal / gainMean + pedestalMean );
-    
-    if ( adc <= pedestalMean + fgkNSigmas*pedestalSigma ) 
     {
+      AliError(Form("Got a too small gain %e for DE=%d manuId=%d manuChannel=%d. "
+		    "Setting signal to 0.",
+		    gainMean,detElemId,manuId,manuChannel));
       adc = 0;
     }
-  }
+  else
+    {
+      adc = TMath::Nint( signal / gainMean + pedestalMean + adcNoise);///
+      
+      if ( adc <= pedestalMean + fgkNSigmas*pedestalSigma ) 
+	{
+	  adc = 0;
+	}
+    }
+  
   // be sure we stick to 12 bits.
   if ( adc > kMaxADC )
-  {
-    adc = kMaxADC;
-  }
+    {
+      adc = kMaxADC;
+    }
+  
   digit.SetPhysicsSignal(TMath::Nint(signal));
   digit.SetSignal(adc);
   digit.SetADC(adc);
@@ -621,8 +624,9 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(Int_t detElemId, Int_t cath
     Float_t pedestalSigma = pedestals->ValueAsFloat(manuChannel,1);
     
     Double_t ped = fNoiseFunction->GetRandom()*pedestalSigma;
-    
+
     d.SetSignal(TMath::Nint(ped+pedestalMean+0.5));
+    d.SetPhysicsSignal(0);
     d.NoiseOnly(kTRUE);
     AliDebug(3,Form("Adding a pure noise digit :"));
     StdoutToAliDebug(3,cout << "Before Response: " << endl; 
