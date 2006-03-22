@@ -22,6 +22,12 @@
 // This class is meant to provide a means to display and extrapolate
 // AliTrack objects in the presence of a constant homogeneous magnetic field. 
 //
+// For track/event displays the line width, colour etc... can be set using the
+// standard facilities (see TAttLine).
+// By default the linewith is set to 2 and the colour set to -1 in the constructor.
+// The latter results in an automatic colour coding according to the track charge
+// with the convention positive=red neutral=green negative=blue.
+//
 // To indicate the track starting point, the memberfunction SetMarker()
 // may be used.
 // By default no marker will be displayed. 
@@ -161,6 +167,9 @@ AliHelix::AliHelix() : THelix()
  fMsize=0;
  fMcol=0;
  fEnduse=1;
+
+ fLineWidth=2;
+ fLineColor=-1;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliHelix::~AliHelix()
@@ -683,11 +692,18 @@ void AliHelix::Display(AliTrack* t,Double_t* range,Int_t iaxis,Double_t scale)
  Float_t* points=GetP();
  TPolyLine3D* curve=new TPolyLine3D(np,points);
 
- curve->SetLineWidth(2);
- Float_t q=t->GetCharge();
- curve->SetLineColor(kGreen);
- if (q>0) curve->SetLineColor(kRed);
- if (q<0) curve->SetLineColor(kBlue);
+ curve->SetLineWidth(fLineWidth);
+ if (fLineColor<0)
+ {
+  Float_t q=t->GetCharge();
+  curve->SetLineColor(kGreen);
+  if (q>0) curve->SetLineColor(kRed);
+  if (q<0) curve->SetLineColor(kBlue);
+ }
+ else
+ {
+  curve->SetLineColor(fLineColor);
+ }
  curve->Draw();
 
  if (!fCurves)

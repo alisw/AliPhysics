@@ -684,3 +684,4 @@
                 allow correct display for very long tracks together with observed hits.
 18-mar-2006 NvE Support for display of selected track array introduced in AliHelix.
                 Also copy ctor of AliHelix made complete for new datamembers.
+22-mar-2006 NvE Line attribute selections for displays extended in AliHelix.
