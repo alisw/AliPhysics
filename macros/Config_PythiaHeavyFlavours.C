@@ -8,7 +8,8 @@
 // For details and for the NORMALIZATION of the yields see:          //
 //   N.Carrer and A.Dainese,                                         //
 //   "Charm and beauty production at the LHC",                       //
-//   ALICE-INT-2003-019, [arXiv:hep-ph/0311225].                     //
+//   ALICE-INT-2003-019, [arXiv:hep-ph/0311225];                     //
+//   PPR Chapter 6.6, CERN/LHCC 2005-030 (2005).                     //
 //*******************************************************************//
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
@@ -48,10 +49,10 @@
 //--- Heavy Flavour Production ---
 enum ProcessHvFl_t 
 {
-  kCharmPbPb5500,  kCharmpPb8800,  kCharmpp14000,
+  kCharmPbPb5500,  kCharmpPb8800,  kCharmpp14000,  kCharmpp14000wmi,
   kD0PbPb5500,     kD0pPb8800,     kD0pp14000,
-  kDPlusPbPb5500,     kDPluspPb8800,     kDPluspp14000,
-  kBeautyPbPb5500, kBeautypPb8800, kBeautypp14000
+  kDPlusPbPb5500,  kDPluspPb8800,  kDPluspp14000,
+  kBeautyPbPb5500, kBeautypPb8800, kBeautypp14000, kBeautypp14000wmi
 };
 //--- Decay Mode ---
 enum DecayHvFl_t 
@@ -76,7 +77,7 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc);
 static ProcessHvFl_t procHvFl = kCharmPbPb5500;
 static DecayHvFl_t   decHvFl  = kNature; 
 static YCut_t        ycut     = kFull;
-static Mag_t         mag      = k4kG; 
+static Mag_t         mag      = k5kG; 
 // nEvts = -1  : you get 1 QQbar pair and all the fragmentation and 
 //               decay chain
 // nEvts = N>0 : you get N charm / beauty Hadrons 
@@ -84,6 +85,25 @@ Int_t nEvts = -1;
 // stars = kTRUE : all heavy resonances and their decay stored
 //       = kFALSE: only final heavy hadrons and their decays stored
 Bool_t stars = kTRUE;
+
+// To be used only with kCharmppMNRwmi and kBeautyppMNRwmi
+// To get a "reasonable" agreement with MNR results, events have to be 
+// generated with the minimum ptHard set to 2.76 GeV.
+// To get a "perfect" agreement with MNR results, events have to be 
+// generated in four ptHard bins with the following relative 
+// normalizations:
+//  CHARM
+// 2.76-3 GeV: 25%
+//    3-4 GeV: 40%
+//    4-8 GeV: 29%
+//     >8 GeV:  6%
+//  BEAUTY
+// 2.76-4 GeV:  5% 
+//    4-6 GeV: 31%
+//    6-8 GeV: 28%
+//     >8 GeV: 36%
+Float_t ptHardMin =  2.76;
+Float_t ptHardMax = -1.;
 
 
 // Comment line
@@ -533,6 +553,14 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc) {
     gener->SetPtHard(2.1,-1.0);
     gener->SetEnergyCMS(14000.);
     break;
+  case kCharmpp14000wmi:
+    comment = comment.Append(" Charm in pp at 14 TeV with mult. interactions");
+    gener = new AliGenPythia(-1);
+    gener->SetProcess(kPyCharmppMNRwmi);
+    gener->SetStrucFunc(kCTEQ5L);
+    gener->SetPtHard(ptHardMin,ptHardMax);
+    gener->SetEnergyCMS(14000.);
+    break;
   case kD0PbPb5500:
     comment = comment.Append(" D0 in Pb-Pb at 5.5 TeV");
     gener = new AliGenPythia(nEvts);
@@ -612,6 +640,14 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc) {
     gener->SetProcess(kPyBeautyppMNR);
     gener->SetStrucFunc(kCTEQ4L);
     gener->SetPtHard(2.75,-1.0);
+    gener->SetEnergyCMS(14000.);
+    break;
+  case kBeautypp14000wmi:
+    comment = comment.Append(" Beauty in pp at 14 TeV with mult. interactions");
+    gener = new AliGenPythia(-1);
+    gener->SetProcess(kPyBeautyppMNRwmi);
+    gener->SetStrucFunc(kCTEQ5L);
+    gener->SetPtHard(ptHardMin,ptHardMax);
     gener->SetEnergyCMS(14000.);
     break;
   }
