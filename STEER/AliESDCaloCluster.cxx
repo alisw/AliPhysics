@@ -36,6 +36,12 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fEnergy(-1),
   fDispersion(-1),
   fChi2(-1),
+  fPrimaryIndex(-1),
+  fM20(0),
+  fM02(0),
+  fM11(0),
+  fNExMax(0),
+  fEmcCpvDistance(9999),
   fNumberOfDigits(0),
   fDigitAmplitude(0),
   fDigitTime(0),
@@ -57,6 +63,12 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fEnergy(clus.fEnergy),
   fDispersion(clus.fDispersion),
   fChi2(clus.fChi2),
+  fPrimaryIndex(clus.fPrimaryIndex),
+  fM20(clus.fM20),
+  fM02(clus.fM02),
+  fM11(clus.fNExMax),
+  fNExMax(clus.fNExMax),
+  fEmcCpvDistance(clus.fEmcCpvDistance),
   fNumberOfDigits(clus.fNumberOfDigits)
 {
   //
