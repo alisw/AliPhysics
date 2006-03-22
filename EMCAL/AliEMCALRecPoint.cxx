@@ -205,7 +205,7 @@ Int_t AliEMCALRecPoint::Compare(const TObject * obj) const
   TVector3 locpos2;  
   clu->GetLocalPosition(locpos2);  
 
-  Int_t rowdif = (Int_t)TMath::Ceil(locpos1.X()/delta)-(Int_t)TMath::Ceil(locpos2.X()/delta) ;
+  Int_t rowdif = (Int_t)(TMath::Ceil(locpos1.X()/delta)-TMath::Ceil(locpos2.X()/delta)) ;
   if (rowdif> 0) 
     rv = 1 ;
   else if(rowdif < 0) 
