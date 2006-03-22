@@ -28,7 +28,7 @@
 ClassImp(AliDecayerPolarized)
 
 //____________________________________________________________
-AliDecayerPolarized::AliDecayerPolarized():AliDecayer()
+AliDecayerPolarized::AliDecayerPolarized():AliDecayerPythia()
 {
 // Default constructor
     fAlpha=0;
@@ -42,7 +42,7 @@ AliDecayerPolarized::AliDecayerPolarized():AliDecayer()
 }
 
 //____________________________________________________________
-AliDecayerPolarized::AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod):AliDecayer()
+AliDecayerPolarized::AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod):AliDecayerPythia()
 {
 // Another constructor
     fAlpha=alpha;
@@ -159,3 +159,12 @@ Int_t AliDecayerPolarized::ImportParticles(TClonesArray *part)
 
   return part->GetEntries();
 }
+
+void  AliDecayerPolarized::Copy(TObject &) const
+{
+    //
+    // Copy *this onto AliDecayerPolarized -- not implemented
+    //
+    Fatal("Copy","Not implemented!\n");
+}
+

@@ -9,16 +9,18 @@
 #include <TClonesArray.h>
 #include <TF1.h>
 
-#include "AliDecayer.h"
+#include "AliDecayerPythia.h"
 
 
-class AliDecayerPolarized : public AliDecayer
+class AliDecayerPolarized : public AliDecayerPythia
 {
  public:
     typedef enum { kNoPol = 0, kColSop = 1, kHelicity = 2} Polar_t;
     typedef enum { kElectron = 1, kMuon = 2} FinState_t;
   AliDecayerPolarized();
   AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod);
+  AliDecayerPolarized(const AliDecayerPolarized &decayer):AliDecayerPythia(decayer)
+      {decayer.Copy(*this);}
   virtual ~AliDecayerPolarized();
   void SetPolDec(Double_t alpha=0) {fAlpha=alpha;}
   void SetPolRefSys(Polar_t systref=kColSop) {fSystRef=systref;}
@@ -26,9 +28,9 @@ class AliDecayerPolarized : public AliDecayer
   virtual void Init(){;}
   virtual void Decay(Int_t ipart, TLorentzVector *p);
   virtual Int_t ImportParticles(TClonesArray *part);
-  AliDecayerPolarized(const AliDecayerPolarized &decayer):AliDecayer(decayer)
-      {decayer.Copy(*this);}
-  virtual AliDecayerPolarized &operator=(const AliDecayerPolarized &decayer) 
+  void  Copy(TObject &decayer) const;
+  
+  AliDecayerPolarized &operator=(const AliDecayerPolarized &decayer) 
       {decayer.Copy(*this);return(*this);}
     
  protected:
