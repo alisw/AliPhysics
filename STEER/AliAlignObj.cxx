@@ -161,6 +161,32 @@ void AliAlignObj::GetVolUID(ELayerID &layerId, Int_t &modId) const
 }
 
 //_____________________________________________________________________________
+Int_t AliAlignObj::GetLevel() const
+{
+  // Return the geometry level of
+  // the alignable volume to which
+  // the alignment object is associated
+  TString volpath = fVolPath;
+  return (volpath.CountChar('/')+1);
+}
+
+//_____________________________________________________________________________
+Int_t AliAlignObj::Compare(const TObject *obj) const
+{
+  // Compare the levels of two
+  // alignment objects
+  // Used in the sorting during
+  // the application of alignment
+  // objects to the geometry
+  Int_t level = GetLevel();
+  Int_t level2 = ((AliAlignObj *)obj)->GetLevel();
+  if (level == level2)
+    return 0;
+  else
+    return ((level > level2) ? 1 : -1);
+}
+
+//_____________________________________________________________________________
 void AliAlignObj::AnglesToMatrix(const Double_t *angles, Double_t *rot) const
 {
   // Calculates the rotation matrix using the 

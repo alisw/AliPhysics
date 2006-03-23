@@ -59,6 +59,9 @@ class AliAlignObj : public TObject {
   virtual void GetPars(Double_t transl[], Double_t rot[]) const=0;
   virtual void GetMatrix(TGeoHMatrix& m) const=0;
 
+  Int_t         GetLevel() const;
+  virtual Int_t Compare(const TObject* obj) const;
+
   virtual AliAlignObj& Inverse() const=0;
 
   void  Transform(AliTrackPoint &p) const;
