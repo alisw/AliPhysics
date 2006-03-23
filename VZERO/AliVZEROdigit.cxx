@@ -21,7 +21,7 @@ AliVZEROdigit::AliVZEROdigit()
 {
   fCellNumber = 0;
   fADC        = 0;
-  fToF        = 0;
+  fTime       = 0;
 }
 
 AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
@@ -36,11 +36,11 @@ AliVZEROdigit::AliVZEROdigit(Int_t* tracks, Int_t *digits):
   fEvent      =  digits[0];  
 }
 
-AliVZEROdigit::AliVZEROdigit(Int_t cellnumber, Int_t adc, Int_t tof)
+AliVZEROdigit::AliVZEROdigit(Int_t cellnumber, Int_t adc, Int_t time)
 {  
   fCellNumber = cellnumber;
   fADC        = adc;
-  fToF        = tof;
+  fTime       = time;
 }
 
 

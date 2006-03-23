@@ -13,11 +13,11 @@ class AliVZEROdigit: public AliDigit  {
  public:
     AliVZEROdigit();
     AliVZEROdigit(Int_t* tracks, Int_t* digits);
-    AliVZEROdigit(Int_t /* cellnumber */, Int_t /* adc */, Int_t /* tof */);
+    AliVZEROdigit(Int_t /* cellnumber */, Int_t /* adc */, Int_t /* Time */);
     virtual ~AliVZEROdigit() {};
     Int_t   CellNumber()  const {return fCellNumber;}    
-    Int_t   ADC() const {return fADC;}
-    Int_t   ToF() const {return fToF;}
+    Int_t   ADC()  const {return fADC;}
+    Int_t   Time() const {return fTime;}
      
   private:
     Int_t  fTrack;         // Track number
@@ -26,7 +26,7 @@ class AliVZEROdigit: public AliDigit  {
     Int_t  fEvent;         // Event number  
     Int_t  fCellNumber;    // Scintillator cell number
     Int_t  fADC;           // ADC response
-    Int_t  fToF;           // Time of Flight
+    Int_t  fTime;          // Time of Flight
     
     ClassDef(AliVZEROdigit,1)  //Digit (Header) object for set : VZERO
 };

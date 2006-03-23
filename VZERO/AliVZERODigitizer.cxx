@@ -189,13 +189,13 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::AddDigit(Int_t cellnumber, Int_t adc, Int_t tof) 
+void AliVZERODigitizer::AddDigit(Int_t cellnumber, Int_t adc, Int_t time) 
  { 
  
 // Adds Digit 
  
   TClonesArray &ldigits = *fDigits;  
-  new(ldigits[fNdigits++]) AliVZEROdigit(cellnumber,adc,tof);
+  new(ldigits[fNdigits++]) AliVZEROdigit(cellnumber,adc,time);
 }
 //____________________________________________________________________________
 void AliVZERODigitizer::ResetDigit()
