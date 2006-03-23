@@ -171,7 +171,6 @@ void  AliDecayerPolarized::Copy(TObject &) const
 void AliDecayerPolarized::SetForceDecay(Int_t)
 {
     // This method is dummy
-    AliWarning("Method not implemented for this class !\n");
 }
 
 void AliDecayerPolarized::ForceDecay()
@@ -183,8 +182,7 @@ void AliDecayerPolarized::ForceDecay()
 Float_t AliDecayerPolarized::GetPartialBranchingRatio(Int_t)
 {
     // This method is dummy
-    AliWarning("Method not implemented for this class !\n");
-    return -1.;
+    return  1.;
 }
 
 Float_t AliDecayerPolarized::GetLifetime(Int_t)
