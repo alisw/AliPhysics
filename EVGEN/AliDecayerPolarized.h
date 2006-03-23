@@ -9,27 +9,33 @@
 #include <TClonesArray.h>
 #include <TF1.h>
 
-#include "AliDecayerPythia.h"
+#include "AliDecayer.h"
 
 
-class AliDecayerPolarized : public AliDecayerPythia
+class AliDecayerPolarized : public AliDecayer
 {
  public:
     typedef enum { kNoPol = 0, kColSop = 1, kHelicity = 2} Polar_t;
     typedef enum { kElectron = 1, kMuon = 2} FinState_t;
   AliDecayerPolarized();
   AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod);
-  AliDecayerPolarized(const AliDecayerPolarized &decayer):AliDecayerPythia(decayer)
+  AliDecayerPolarized(const AliDecayerPolarized &decayer):AliDecayer(decayer)
       {decayer.Copy(*this);}
   virtual ~AliDecayerPolarized();
   void SetPolDec(Double_t alpha=0) {fAlpha=alpha;}
   void SetPolRefSys(Polar_t systref=kColSop) {fSystRef=systref;}
   void SetDecProd(FinState_t decprod=kMuon) {fDecProd=decprod;}
-  virtual void Init(){;}
-  virtual void Decay(Int_t ipart, TLorentzVector *p);
+  virtual void  Init(){;}
+  virtual void  Decay(Int_t ipart, TLorentzVector *p);
   virtual Int_t ImportParticles(TClonesArray *part);
+  // The following methods are dummy
+  virtual void    SetForceDecay(Int_t type);
+  virtual void    ForceDecay();
+  virtual Float_t GetPartialBranchingRatio(Int_t ipart);
+  virtual Float_t GetLifetime(Int_t kf);
+  virtual void    ReadDecayTable();
+ private:
   void  Copy(TObject &decayer) const;
-  
   AliDecayerPolarized &operator=(const AliDecayerPolarized &decayer) 
       {decayer.Copy(*this);return(*this);}
     

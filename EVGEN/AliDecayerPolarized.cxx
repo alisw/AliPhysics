@@ -28,7 +28,7 @@
 ClassImp(AliDecayerPolarized)
 
 //____________________________________________________________
-AliDecayerPolarized::AliDecayerPolarized():AliDecayerPythia()
+AliDecayerPolarized::AliDecayerPolarized()
 {
 // Default constructor
     fAlpha=0;
@@ -42,7 +42,7 @@ AliDecayerPolarized::AliDecayerPolarized():AliDecayerPythia()
 }
 
 //____________________________________________________________
-AliDecayerPolarized::AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod):AliDecayerPythia()
+AliDecayerPolarized::AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod)
 {
 // Another constructor
     fAlpha=alpha;
@@ -166,5 +166,37 @@ void  AliDecayerPolarized::Copy(TObject &) const
     // Copy *this onto AliDecayerPolarized -- not implemented
     //
     Fatal("Copy","Not implemented!\n");
+}
+
+void AliDecayerPolarized::SetForceDecay(Int_t)
+{
+    // This method is dummy
+    AliWarning("Method not implemented for this class !\n");
+}
+
+void AliDecayerPolarized::ForceDecay()
+{
+    // This method is dummy
+    AliWarning("Method not implemented for this class !\n");
+}
+
+Float_t AliDecayerPolarized::GetPartialBranchingRatio(Int_t)
+{
+    // This method is dummy
+    AliWarning("Method not implemented for this class !\n");
+    return -1.;
+}
+
+Float_t AliDecayerPolarized::GetLifetime(Int_t)
+{
+    // This method is dummy
+    AliWarning("Method not implemented for this class !\n");
+    return -1.;
+}
+
+void AliDecayerPolarized::ReadDecayTable()
+{
+    // This method is dummy
+    AliWarning("Method not implemented for this class !\n");
 }
 
