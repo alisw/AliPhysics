@@ -21,11 +21,7 @@
 #pragma link C++ class AliBitPacking+;
 #pragma link C++ class AliAltroBuffer+;
 #pragma link C++ class AliAltroMapping+;
-#pragma link C++ class AliTPCCompression+;
-#pragma link C++ class AliTPCHNode+;
-#pragma link C++ class AliTPCHTable+;
 #pragma link C++ class AliAltroRawStream+;
-#pragma link C++ class AliTPCRawStream+;
 #pragma link C++ class AliVMERawStream+;
 
 #endif

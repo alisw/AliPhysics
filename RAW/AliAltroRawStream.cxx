@@ -28,6 +28,7 @@
 
 #include "AliAltroRawStream.h"
 #include "AliRawReader.h"
+#include "AliLog.h"
 
 ClassImp(AliAltroRawStream)
 
@@ -40,10 +41,13 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fPrevRow(-1),
   fPad(-1),
   fPrevPad(-1),
+  fHWAddress(-1),
+  fPrevHWAddress(-1),
   fTime(-1),
   fSignal(-1),
   fRawReader(rawReader),
   fData(NULL),
+  fNoAltroMapping(kTRUE),
   fPosition(0),
   fCount(0),
   fBunchLength(0)
@@ -61,10 +65,13 @@ AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   fPrevRow(-1),
   fPad(-1),
   fPrevPad(-1),
+  fHWAddress(-1),
+  fPrevHWAddress(-1),
   fTime(-1),
   fSignal(-1),
   fRawReader(NULL),
   fData(NULL),
+  fNoAltroMapping(kTRUE),
   fPosition(0),
   fCount(0),
   fBunchLength(0)
@@ -87,6 +94,17 @@ AliAltroRawStream::~AliAltroRawStream()
 
 }
 
+//_____________________________________________________________________________
+void AliAltroRawStream::Reset()
+{
+// reset altro raw stream params
+
+  fPosition = fCount = fBunchLength = 0;
+
+  fSector = fPrevSector = fRow = fPrevRow = fPad = fPrevPad = fHWAddress = fPrevHWAddress = fTime = fSignal = -1;
+
+  if (fRawReader) fRawReader->Reset();
+}
 
 //_____________________________________________________________________________
 Bool_t AliAltroRawStream::Next()
@@ -97,6 +115,7 @@ Bool_t AliAltroRawStream::Next()
   fPrevSector = fSector;
   fPrevRow = fRow;
   fPrevPad = fPad;
+  fPrevHWAddress = fHWAddress;
 
   while (fCount == 0) {  // next trailer
     if (fPosition <= 0) {  // next payload
@@ -104,66 +123,34 @@ Bool_t AliAltroRawStream::Next()
 	if (!fRawReader->ReadNextData(fData)) return kFALSE;
       } while (fRawReader->GetDataSize() == 0);
 
-      fPosition = (fRawReader->GetDataSize() * 8) / 10;
-      while (Get10BitWord(fData, fPosition-1) == 0x2AA) fPosition--;
+      fPosition = GetPosition();
     }
 
-    if (fPosition > 0) {
-      // read the trailer
-      if (fPosition <= 4) {
-	Error("Next", "could not read trailer");
-	return kFALSE;
-      }
-      fSector = Get10BitWord(fData, --fPosition);
-      fRow    = Get10BitWord(fData, --fPosition);
-      fPad    = Get10BitWord(fData, --fPosition);
-      fCount  = Get10BitWord(fData, --fPosition);
+    if (!ReadTrailer())
+      AliFatal("Incorrect trailer information !");
 
-      fPosition -= (4 - (fCount % 4)) % 4;  // skip fill words
-      fBunchLength = 0;
-    }
+    fBunchLength = 0;
   }
 
-  if (fBunchLength == 0) {
-    if (fPosition <= 0) {
-      Error("Next", "could not read bunch length");
-      return kFALSE;
-    }
-    fBunchLength = Get10BitWord(fData, --fPosition) - 2;
-    fTimeBunch = fBunchLength;
-    fCount--;
+  if (fBunchLength == 0) ReadBunch();
+  else fTime--;
 
-    if (fPosition <= 0) {
-      Error("Next", "could not read time bin");
-      return kFALSE;
-    }
-    fTime = Get10BitWord(fData, --fPosition);
-    fCount--;
-  } else {
-    fTime--;
-  }
-
-  if (fPosition <= 0) {
-    Error("Next", "could not read sample amplitude");
-    return kFALSE;
-  }
-  fSignal = Get10BitWord(fData, --fPosition);
-  fCount--;
-  fBunchLength--;
+  ReadAmplitude();
 
   return kTRUE;
 }
 
-
 //_____________________________________________________________________________
-UShort_t AliAltroRawStream::Get10BitWord(UChar_t* buffer, Int_t position) const
+UShort_t AliAltroRawStream::GetNextWord()
 {
-// return a word in a 10 bit array as an UShort_t
+  // Read the next 10 bit word in backward direction
+  // The input stream access is given by fData and fPosition
 
-  Int_t iBit = position * 10;
+  fPosition--;
+
+  Int_t iBit = fPosition * 10;
   Int_t iByte = iBit / 8;
   Int_t shift = iBit % 8;
-//  return ((buffer[iByte+1] * 256 + buffer[iByte]) >> shift) & 0x03FF;
 
   // recalculate the byte numbers and the shift because
   // the raw data is written as integers where the high bits are filled first
@@ -172,5 +159,112 @@ UShort_t AliAltroRawStream::Get10BitWord(UChar_t* buffer, Int_t position) const
   iByte++;
   Int_t iByteLow  = 4 * (iByte / 4) + 3 - (iByte % 4);
   shift = 6 - shift;
-  return ((buffer[iByteHigh] * 256 + buffer[iByteLow]) >> shift) & 0x03FF;
+  return ((fData[iByteHigh] * 256 + fData[iByteLow]) >> shift) & 0x03FF;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroRawStream::ReadTrailer()
+{
+  //Read a trailer of 40 bits in the backward reading mode
+  //In case of no mapping is provided, read a dummy trailer
+  if (fNoAltroMapping) {
+    AliError("No ALTRO mapping information is loaded! Reading a dummy trailer!");
+    return ReadDummyTrailer();
+  }
+
+  //First reading filling words
+  UShort_t temp;
+  Int_t nFillWords = 0;
+  while ((temp = GetNextWord()) == 0x2AA) nFillWords++;
+  if (nFillWords == 0)
+    AliFatal("Incorrect trailer found ! Expected 0x2AA not found !");
+
+  //Then read the trailer
+  if (fPosition <= 4)
+    AliFatal(Form("Incorrect raw data size ! Expected at lest 4 words but found %d !",fPosition));
+
+  fCount = (temp << 4) & 0x3FF;
+  if ((temp >> 6) != 0xA)
+    AliFatal(Form("Incorrect trailer found ! Expecting 0xA but found %x !",temp >> 6));
+
+  temp = GetNextWord();
+  fHWAddress = (temp & 0x3) << 10;
+  if (((temp >> 2) & 0xF) != 0xA)
+    AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",(temp >> 2) & 0xF));
+  fCount |= ((temp & 0x3FF) >> 6);
+  if (fCount == 0) return kFALSE;
+
+  temp = GetNextWord();
+  fHWAddress |= temp;
+
+  fPosition -= (4 - (fCount % 4)) % 4;  // skip fill words
+
+  ApplyAltroMapping();
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroRawStream::ReadDummyTrailer()
+{
+  //Read a trailer of 40 bits in the backward reading mode
+  //In case of no mapping is provided, read a dummy trailer
+  UShort_t temp;
+  while ((temp = GetNextWord()) == 0x2AA);
+
+  fSector = temp;
+  fRow = GetNextWord();
+  fPad = GetNextWord();
+  fCount = GetNextWord();
+  if (fCount == 0) return kFALSE;
+  fHWAddress = -1;
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliAltroRawStream::ReadBunch()
+{
+  // Read altro payload in 
+  // backward direction
+  if (fPosition <= 0)
+    AliFatal("Could not read bunch length !");
+
+  fBunchLength = GetNextWord() - 2;
+  fTimeBunch = fBunchLength;
+  fCount--;
+
+  if (fPosition <= 0)
+    AliFatal("Could not read time bin !");
+
+  fTime = GetNextWord();
+  fCount--;
+
+  return;
+}
+
+//_____________________________________________________________________________
+void AliAltroRawStream::ReadAmplitude()
+{
+  // Read next time bin amplitude
+  if (fPosition <= 0)
+    AliFatal("Could not read sample amplitude !");
+
+  fSignal = GetNextWord();
+  fCount--;
+  fBunchLength--;
+
+  return;
+}
+
+//_____________________________________________________________________________
+Int_t AliAltroRawStream::GetPosition()
+{
+  // Sets the position in the
+  // input stream
+  Int_t position = (fRawReader->GetDataSize() * 8) / 10;
+  if (position <= 4)
+    AliFatal(Form("Incorrect raw data size ! Expected at lest 4 words but found %d !",position));
+
+  return position;
 }
