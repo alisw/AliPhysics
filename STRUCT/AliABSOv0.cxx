@@ -37,6 +37,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
+#include <TGeoVolume.h>
+#include <TGeoMatrix.h>
+#include <TGeoCompositeShape.h>
+#include <TGeoBBox.h>
+#include <TGeoXtru.h>
+#include <TGeoTube.h>
+#include <TGeoPgon.h>
+#include <TGeoArb8.h>
+#include <TGeoMedium.h>
 
 #include "AliABSOv0.h"
 #include "AliConst.h"
@@ -87,13 +97,12 @@ void AliABSOv0::CreateGeometry()
 
     enum {kC=1605, kAl=1608, kFe=1609, kCu=1610, kW=1611, kPb=1612,
 	  kNiCuW=1620, kVacuum=1615, kAir=1614, kConcrete=1616,
-	  kPolyCH2=1617, kSteel=1609, kInsulation=1613, kPolyCc=1619};	  
+	  kPolyCH2=1617, kSteel=1618, kInsulation=1613, kPolyCc=1619};	  
     
     Int_t *idtmed = fIdtmed->GetArray()-1599;
     
     Float_t par[24], cpar[5], cpar0[5], pcpar[12], tpar[3], tpar0[3]; 
     Float_t dz;
-    Int_t idrotm[1699];
 #include "ABSOSHILConst.h"
 #include "ABSOConst.h"
 //
@@ -198,7 +207,7 @@ void AliABSOv0::CreateGeometry()
   cpar[3] = kZAbsStart * TMath::Tan(kAccMax);
   cpar[4] = kZAbsStart * TMath::Tan(kTheta1) - kDSteel;
 
-  gMC->Gsvolu("ANOS", "CONE", idtmed[kW], cpar, 5);
+  gMC->Gsvolu("ANOS", "CONE", idtmed[kNiCuW], cpar, 5);
   //
   dz =  (kZRear - kZAbsStart) / 2. - cpar[0];
   gMC->Gspos("ANOS", 1, "ABSS", 0., 0., dz, 0, "ONLY");
@@ -422,54 +431,114 @@ void AliABSOv0::CreateGeometry()
   
   dz = - (kZRear - kZAbsStart) / 2. + cpar0[0] + kDRear;
   gMC->Gspos("AV21", 1, "ABSM", 0., 0., dz, 0, "ONLY"); 
+////////////////////////////////////////////////////
+//                                                // 
+//    Front Absorber Support Structure FASS       // 
+//                                                //
+//    Drawing ALIP2A__0035                        //
+//    Drawing ALIP2A__0089                        //
+//    Drawing ALIP2A__0090                        //
+//    Drawing ALIP2A__0109                        //
+////////////////////////////////////////////////////
+  TGeoTranslation* vec0 = new TGeoTranslation(0., 0., 0.);
+  
+  TGeoVolumeAssembly* voFass   = new TGeoVolumeAssembly("Fass");
+  const Float_t kDegRad        = TMath::Pi() / 180.;
+  const TGeoMedium* kMedSteel  = gGeoManager->GetMedium("ABSO_ST_C0");
+  const TGeoMedium* kMedAlu    = gGeoManager->GetMedium("ABSO_ALU_C0");
+  
+  const Float_t kFassUBFlangeH = 380.;
+  const Float_t kFassUBFlangeW =  77.;
+  
+  const Float_t kFassUMFlangeH = 380.;
+  const Float_t kFassUMFlangeB = 246.;
+  const Float_t kFassUMFlangeT =  10.;
+  const Float_t kFassUMFalpha  = - TMath::ATan((kFassUMFlangeB-kFassUMFlangeT)/ kFassUMFlangeH / 2.) / kDegRad;      
+// Upper back   flange
+// B1
+// 380 x 77
+  TGeoVolume* voFassUBFlange = new TGeoVolume("FassUBFlange", new TGeoBBox(kFassUBFlangeW/2., 
+									   kFassUBFlangeH/2., 3./2.), kMedSteel);
+  voFass->AddNode(voFassUBFlange, 1, new TGeoTranslation(+1.5 + kFassUBFlangeW/2., 
+							 180. + kFassUBFlangeH/2.,
+							 kFassUMFlangeB - 1.5));
+  voFass->AddNode(voFassUBFlange, 2, new TGeoTranslation(-1.5 - kFassUBFlangeW/2., 
+							 180. + kFassUBFlangeH/2.,
+							 kFassUMFlangeB - 1.5));
+  
+  
+// Lower back   flange
+// Upper median flange
+//    Drawing ALIP2A__0090                        //
+//    Drawing ALIP2A__0089                        //
+//    A2
+  
+  TGeoVolume* voFassUMFlange = new TGeoVolume("FassUMFlange", 
+					      new TGeoTrap(kFassUMFlangeH/2., kFassUMFalpha,  
+							   0., 1.5, 
+							   kFassUMFlangeB/2., kFassUMFlangeB/2.,
+							   0., 1.5, 
+							   kFassUMFlangeT/2., kFassUMFlangeT/2.,
+							   0.), kMedSteel);
+  
+  TGeoRotation* rotFass1 = new TGeoRotation("rotFass1", 180., 0., 90., 0., 90., 90.);
+  voFass->AddNode(voFassUMFlange,1 , 
+		  new TGeoCombiTrans(0., 180. + kFassUMFlangeH/2., -(kFassUMFlangeB+kFassUMFlangeT)/4. + kFassUMFlangeB, 
+				     rotFass1));
+  
+  
+// Lower median flange
+//    Drawing ALIP2A__0090                        //
+//    Drawing ALIP2A__0089                        //
+//    A1
+  const Float_t kFassLMFlangeH = 242.;
+  const Float_t kFassLMFlangeB = 246.;
+  const Float_t kFassLMFlangeT =  43.;
+  const Float_t kFassLMFalpha  = - TMath::ATan((kFassLMFlangeB-kFassLMFlangeT)/ kFassLMFlangeH / 2.) / kDegRad;
+  TGeoVolume* voFassLMFlange = new TGeoVolume("FassLMFlange", 
+					      new TGeoTrap(kFassLMFlangeH/2., kFassLMFalpha,  
+							   0., 1.5, 
+							   kFassLMFlangeB/2., kFassLMFlangeB/2.,
+							   0., 1.5, 
+							   kFassLMFlangeT/2., kFassLMFlangeT/2.,
+							   0.), kMedSteel);
+  TGeoRotation* rotFass2 = new TGeoRotation("rotFass2", 180., 0., 90., 0., 90., 270.);
+  voFass->AddNode(voFassLMFlange, 1, 
+		  new TGeoCombiTrans(0., -180. - kFassLMFlangeH/2., -(kFassLMFlangeB+kFassLMFlangeT)/4. + kFassLMFlangeB, 
+				     rotFass2));
+  
+// Stiffeners
+// Support Plate
 //
-// Support cone 
-
-  par[0]  =  22.5;
-  par[1]  = 360.0;
-  par[2]  =   8.0;
-  par[3]  =   4.0;
-    
-  par[13]  = - kZRear + 20.;
-  par[14]  = 100.;
-  par[15]  = 180.;
+// Central cone
+  TGeoPgon* shFassCone = new TGeoPgon(22.5, 360., 8, 4);
+  shFassCone->DefineSection(0,   0.,   0., 180.);
+  shFassCone->DefineSection(1,   3.,   0., 180.);
+  shFassCone->DefineSection(2,   3., 177., 180.);
+  shFassCone->DefineSection(3, 246., 177., 180.);
+  shFassCone->SetName("FassCone");
   
-  par[10]  = - kZRear;
-  par[11]  = 100.;
-  par[12]  = 180.;
-
-  par[7] = - kZRear;
-  par[8] = 178.;
-  par[9] = 180.;
-
-  par[4] = - 600.;
-  par[5] = 178.;
-  par[6] = 180.;
+  TGeoBBox* shFassWindow = new TGeoBBox( 190., 53., 28.);
+  shFassWindow->SetName("FassWindow");
+  TGeoTranslation* tFassWindow = new TGeoTranslation("tFassWindow", 0., 0., 78.);
+  tFassWindow->RegisterYourself();
   
-
-  gMC->Gsvolu("ASSS", "PGON", idtmed[kAl], par, 16);
-  gMC->Gspos("ASSS", 1, "ALIC", 0., 0., 0., 0, "ONLY");
-
-  Float_t trap[11];
-  trap[ 0] = (530. - 170.) / 2.;
-  trap[ 2] = 0.;
-  trap[ 3] = 2.; 
-  trap[ 4] = (600. - (kZRear + 2.)) / 2.;;
-  trap[ 5] = trap[4];
-  trap[ 6] = 0.;
-  trap[ 7] = 2.;
-  trap[ 8] = 5.;
-  trap[ 9] = 5.;
-  trap[10] = 0.;
-  trap[ 1] = -TMath::ATan((trap[4] - trap[8]) / 2. / trap[0]) * 180. / TMath::Pi();
-  AliMatrix(idrotm[1600], 180., 0., 90., 0., 90., 90.);
-  AliMatrix(idrotm[1601], 180., 0., 90., 0., 90., 270.);
-  gMC->Gsvolu("ASST", "TRAP", idtmed[kSteel], trap, 11);
-  //PH  dz = (600.+kZRear+2.)/2.+(trap[4]-trap[8])/2.;
-  //PH  Float_t dy =  170.+trap[0];
+  TGeoTube* shFassApperture = new TGeoTube(0., 104., 3.);
+  shFassApperture->SetName("FassApperture");
   
-//  gMC->Gspos("ASST", 1, "ALIC", 0.,  dy, - dz, idrotm[1600], "ONLY");
-//  gMC->Gspos("ASST", 2, "ALIC", 0., -dy, - dz, idrotm[1601], "ONLY");
+  TGeoCompositeShape* shFassCentral = 
+      new TGeoCompositeShape("shFassCentral", "FassCone-(FassWindow:tFassWindow+FassApperture)");
+  
+  TGeoVolume* voFassCentral = new TGeoVolume("FassCentral", shFassCentral, kMedSteel);
+  voFass->AddNode(voFassCentral, 1, vec0);
+  
+//
+// Aluminum ring
+//
+  TGeoVolume* voFassAlRing = new TGeoVolume("FassAlRing", new TGeoTube(100., 180., 10.), kMedAlu);
+  voFass->AddNode(voFassAlRing, 1, new TGeoTranslation(0., 0., -11.));
+  TGeoRotation* rotxz = new TGeoRotation("rotxz",  90., 0., 90., 90., 180., 0.);
+  gGeoManager->GetVolume("ALIC")->AddNode(voFass, 1, new TGeoCombiTrans(0., 0., -394. - 90., rotxz));
 }
 
 //_____________________________________________________________________________
