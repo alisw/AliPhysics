@@ -284,6 +284,13 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
 
 //____________________________________________________________________
 Bool_t 
+AliFMDDisplay::ProcessRaw(AliFMDDigit* digit)
+{
+  return ProcessDigit(digit);
+}
+
+//____________________________________________________________________
+Bool_t 
 AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
 {
   if (!recpoint) { AliError("No recpoint");   return kFALSE; }

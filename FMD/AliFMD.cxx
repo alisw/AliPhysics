@@ -511,8 +511,8 @@ void
 AliFMD::Init()
 {
   AliDebug(1, "Initialising FMD detector object");
-  AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
-  fmd->InitTransformations();
+  // AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
+  // fmd->InitTransformations();
 }
 
 //____________________________________________________________________

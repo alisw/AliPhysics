@@ -31,10 +31,12 @@
 #include "AliRunLoader.h"       // ALIRUNLOADER_H
 #include "AliRun.h"             // ALIRUN_H
 #include "AliStack.h"           // ALISTACK_H
+#include "AliRawReaderFile.h"   // ALIRAWREADERFILE_H
 #include "AliFMD.h"             // ALIFMD_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDigit_H
 #include "AliFMDRecPoint.h"	// ALIFMDRECPOINT_H
+#include "AliFMDRawReader.h"    // ALIFMDRAWREADER_H
 #include <AliESD.h>
 #include <AliESDFMD.h>
 #include <AliCDBManager.h>
@@ -64,6 +66,7 @@ AliFMDInput::AliFMDInput()
     fRun(0), 
     fStack(0),
     fFMDLoader(0), 
+    fReader(0),
     fFMD(0),
     fMainESD(0),
     fESD(0),
@@ -78,6 +81,7 @@ AliFMDInput::AliFMDInput()
     fArrayD(0),
     fArrayS(0), 
     fArrayR(0), 
+    fArrayA(0), 
     fTreeMask(0), 
     fIsInit(kFALSE)
 {
@@ -96,6 +100,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fRun(0), 
     fStack(0),
     fFMDLoader(0), 
+    fReader(0),
     fFMD(0),
     fMainESD(0),
     fESD(0),
@@ -110,6 +115,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fArrayD(0),
     fArrayS(0), 
     fArrayR(0), 
+    fArrayA(0), 
     fTreeMask(0), 
     fIsInit(kFALSE)
 {
@@ -185,6 +191,12 @@ AliFMDInput::Init()
     fChainE->SetBranchAddress("ESD", &fMainESD);
   }
     
+  if (TESTBIT(fTreeMask, kRaw)) {
+    AliInfo("Getting FMD raw data digits");
+    fArrayA = new TClonesArray("AliFMDDigit");
+    fReader = new AliRawReaderFile(-1);
+  }
+  
   // Optionally, get the geometry 
   if (TESTBIT(fTreeMask, kGeometry)) {
     TString fname(fRun->GetGeometryFileName());
@@ -276,15 +288,21 @@ AliFMDInput::Begin(Int_t event)
     fTreeR = fFMDLoader->TreeR();
     if (!fArrayR) fArrayR = new TClonesArray("AliFMDRecPoint");
     fTreeR->SetBranchAddress("FMD",  &fArrayR);
-  }
-
-  // Possibly load FMD ESD information 
+  }  // Possibly load FMD ESD information 
   if (TESTBIT(fTreeMask, kESD)) {
     AliInfo("Getting FMD event summary data");
     Int_t read = fChainE->GetEntry(event);
     if (read <= 0) return kFALSE;
     fESD = fMainESD->GetFMDData();
     if (!fESD) return kFALSE;
+  }
+  // Possibly load FMD Digit information 
+  if (TESTBIT(fTreeMask, kRaw)) {
+    AliInfo("Getting FMD raw data digits");
+    if (!fReader->NextEvent()) return kFALSE;
+    AliFMDRawReader r(fReader, 0);
+    fArrayA->Clear();
+    r.ReadAdcs(fArrayA);
   }
   
   return kTRUE;
@@ -309,6 +327,8 @@ AliFMDInput::Event()
     if (!ProcessDigits()) return kFALSE;
   if (TESTBIT(fTreeMask, kSDigits)) 
     if (!ProcessSDigits()) return kFALSE;
+  if (TESTBIT(fTreeMask, kRaw)) 
+    if (!ProcessRawDigits()) return kFALSE;
   if (TESTBIT(fTreeMask, kRecPoints)) 
     if (!ProcessRecPoints()) return kFALSE;
   if (TESTBIT(fTreeMask, kESD))
@@ -388,6 +408,22 @@ AliFMDInput::ProcessSDigits()
       if (!ProcessSDigit(sdigit)) return kFALSE;
     }    
   }
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDInput::ProcessRawDigits()
+{
+  // Read the digit tree, and pass each digit to the member function
+  // ProcessDigit.
+  Int_t nDigit = fArrayA->GetEntries();
+  if (nDigit <= 0) return kTRUE;
+  for (Int_t j = 0; j < nDigit; j++) {
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(fArrayA->At(j));
+    if (!digit) continue;
+    if (!ProcessRawDigit(digit)) return kFALSE;
+  }    
   return kTRUE;
 }
 

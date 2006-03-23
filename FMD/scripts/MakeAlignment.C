@@ -15,8 +15,8 @@ MakeAlignment()
   gSystem->Load("libFMDutil.so");
   AliFMDAlignFaker f;
   f.RemoveAlign(AliFMDAlignFaker::kHalves);
-  f.SetSensorDisplacement(0,0,0,0,0,0);
-  f.SetSensorRotation(0,0,0,0,0,0);
+  f.SetSensorDisplacement(0, 0, 0, 0, 0, 0);
+  f.SetSensorRotation(0, 0, 0, 3, 3, 3);
   f.Exec();
 }
 //____________________________________________________________________

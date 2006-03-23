@@ -21,6 +21,7 @@
 //____________________________________________________________________
 class AliRawReader;
 class TTree;
+class TClonesArray;
 
 
 //____________________________________________________________________
@@ -29,7 +30,8 @@ class AliFMDRawReader : public TTask
 public:
   AliFMDRawReader(AliRawReader* reader, TTree* array);
   virtual ~AliFMDRawReader() {}
-  virtual void Exec(Option_t* option="");
+  virtual void   Exec(Option_t* option="");
+  virtual Bool_t ReadAdcs(TClonesArray* array);
 protected:
   TTree*        fTree;       //! Pointer to tree to read into 
   AliRawReader* fReader;     //! Pointer to raw reader 

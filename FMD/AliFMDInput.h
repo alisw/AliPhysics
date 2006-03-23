@@ -21,6 +21,7 @@ class AliRunLoader;
 class AliLoader;
 class AliStack;
 class AliRun;
+class AliRawReader;
 class AliFMD;
 class AliFMDHit;
 class AliFMDDigit;
@@ -47,6 +48,7 @@ public:
     kHeader,          // Header information 
     kRecPoints,       // Reconstructed points
     kESD,             // Load ESD's
+    kRaw,             // Read raw data 
     kGeometry         // Not really a tree 
   };
   AliFMDInput();
@@ -67,11 +69,13 @@ public:
   virtual Bool_t ProcessHits();
   virtual Bool_t ProcessDigits();
   virtual Bool_t ProcessSDigits();
+  virtual Bool_t ProcessRawDigits();
   virtual Bool_t ProcessRecPoints();
 
   virtual Bool_t ProcessHit(AliFMDHit*, TParticle*)  { return kTRUE; }
   virtual Bool_t ProcessDigit(AliFMDDigit*)          { return kTRUE; }
   virtual Bool_t ProcessSDigit(AliFMDSDigit*)        { return kTRUE; }
+  virtual Bool_t ProcessRawDigit(AliFMDDigit*)       { return kTRUE; }
   virtual Bool_t ProcessRecPoint(AliFMDRecPoint*)    { return kTRUE; }
   virtual Bool_t ProcessESD(AliESDFMD*)              { return kTRUE; }
   
@@ -81,6 +85,7 @@ protected:
   AliRun*       fRun;        // Run information
   AliStack*     fStack;      // Stack of particles 
   AliLoader*    fFMDLoader;  // Loader of FMD data 
+  AliRawReader* fReader;     // Raw data reader 
   AliFMD*       fFMD;        // FMD object
   AliESD*       fMainESD;    // ESD Object
   AliESDFMD*    fESD;        // FMD ESD data  
@@ -89,12 +94,14 @@ protected:
   TTree*        fTreeD;      // Digit tree 
   TTree*        fTreeS;      // SDigit tree 
   TTree*        fTreeR;      // RecPoint tree
+  TTree*        fTreeA;      // Raw data tree
   TChain*       fChainE;     // Chain of ESD's
   TClonesArray* fArrayE;     // Event info array
   TClonesArray* fArrayH;     // Hit info array
   TClonesArray* fArrayD;     // Digit info array
   TClonesArray* fArrayS;     // SDigit info array
-  TClonesArray* fArrayR;     // Mult (single) info array
+  TClonesArray* fArrayR;     // Rec points info array
+  TClonesArray* fArrayA;     // Raw data (digits) info array
   TGeoManager*  fGeoManager; // Geometry manager
   Int_t         fTreeMask;   // Which tree's to load
   Bool_t        fIsInit;
@@ -130,6 +137,15 @@ public:
   AliFMDInputSDigits(const char* file="galice.root") 
     : AliFMDInput(file) { AddLoad(kSDigits); }
   ClassDef(AliFMDInputSDigits, 0);
+};
+
+//____________________________________________________________________
+class AliFMDInputRaw : public AliFMDInput 
+{
+public:
+  AliFMDInputRaw(const char* file="galice.root") 
+    : AliFMDInput(file) { AddLoad(kRaw); }
+  ClassDef(AliFMDInputRaw, 0);
 };
 
 //____________________________________________________________________

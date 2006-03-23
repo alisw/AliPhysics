@@ -39,6 +39,7 @@ public:
   virtual Bool_t End();
   virtual Bool_t ProcessHit(AliFMDHit* hit, TParticle* p);
   virtual Bool_t ProcessDigit(AliFMDDigit* digit);
+  virtual Bool_t ProcessRaw(AliFMDDigit* digit);
   virtual Bool_t ProcessRecPoint(AliFMDRecPoint* recpoint);
   virtual Int_t  LookupColor(Float_t x, Float_t max)  const;
 protected:

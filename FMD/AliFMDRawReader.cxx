@@ -75,20 +75,19 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
   // Default CTOR
 }
 
-
 //____________________________________________________________________
-void
-AliFMDRawReader::Exec(Option_t*) 
+Bool_t
+AliFMDRawReader::ReadAdcs(TClonesArray* array) 
 {
   // Read raw data into the digits array, using AliFMDAltroReader. 
-  if (!fReader->ReadHeader()) {
-    Error("ReadAdcs", "Couldn't read header");
-    return;
+  if (!array) {
+    AliError("No TClonesArray passed");
+    return kFALSE;
   }
-
-  TClonesArray* array = new TClonesArray("AliFMDDigit");
-  fTree->Branch("FMD", &array);
-
+  if (!fReader->ReadHeader()) {
+    AliError("Couldn't read header");
+    return kFALSE;
+  }
   // Get sample rate 
   AliFMDParameters* pars = AliFMDParameters::Instance();
 
@@ -129,7 +128,7 @@ AliFMDRawReader::Exec(Option_t*)
       // Loop over the `timebins', and make the digits
       for (size_t i = 0; i < last; i++) {
 	if (i < preSamp) continue;
-	Int_t n = array->GetEntries();
+	Int_t    n      = array->GetEntries();
 	UShort_t curStr = str + stripMin + i / rate;
 	if ((curStr-str) > stripMax) {
 	  AliError(Form("Current strip is %d but DB says max is %d", 
@@ -146,7 +145,25 @@ AliFMDRawReader::Exec(Option_t*)
 	if (r.IsBof()) break;
     }
   } while (true);
-  AliDebug(1, Form("Got a grand total of %d digits", array->GetEntries()));
+  return kTRUE;
+}
+
+  
+
+//____________________________________________________________________
+void
+AliFMDRawReader::Exec(Option_t*) 
+{
+  TClonesArray* array = new TClonesArray("AliFMDDigit");
+  if (!fTree) {
+    AliError("No tree");
+    return;
+  }
+  fTree->Branch("FMD", &array);
+  ReadAdcs(array);
+  Int_t nWrite = fTree->Fill();
+  AliDebug(1, Form("Got a grand total of %d digits, wrote %d bytes to tree", 
+		   array->GetEntries(), nWrite));
 }
 
 #if 0
