@@ -13,7 +13,7 @@ SRCS		=  AliFMD.cxx 				\
 
 HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDsimLinkDef.h
-EINCLUDE 	:= $(ALICE)/RAW
+EINCLUDE 	:= RAW
 
 #
 # EOF

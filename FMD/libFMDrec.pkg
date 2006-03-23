@@ -8,7 +8,7 @@ SRCS		=  AliFMDReconstructor.cxx 	\
 		   AliFMDRecPoint.cxx		
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDrecLinkDef.h
-EINCLUDE 	:= $(ALICE)/RAW
+EINCLUDE 	:= RAW
 
 #
 # EOF

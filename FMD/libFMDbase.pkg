@@ -21,6 +21,7 @@ SRCS		=  AliFMDDigit.cxx		\
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDbaseLinkDef.h
 
+EINCLUDE        :=  RAW
 #
 # EOF
 #
