@@ -1264,7 +1264,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
 	gener->SetMuonPtCut(0.8);
 	gener->SetMuonThetaCut(171.,178.);
 	gener->SetMuonMultiplicity(2);
-	gener->SetImpactParameterRange(12.,16.);  //Centrality class Cent1 for PDC04
+	gener->SetImpactParameterRange(0.,5.);  //Centrality class Cent1 for PDC04
 	gGener=gener;
       }
       break;
