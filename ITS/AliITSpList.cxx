@@ -183,6 +183,7 @@ void AliITSpList::AddSignal(Int_t i,Int_t j,Int_t trk,Int_t ht,Int_t mod,
     // Return:
     //    none.
     Int_t index = GetIndex(i,j);
+    if (index<0) return;
     TClonesArray &rfa = *fa;
     if(GetpListItem(index)==0){ // must create AliITSpListItem
       new(rfa[index])AliITSpListItem(trk,ht,mod,index,signal);
