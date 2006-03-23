@@ -24,7 +24,7 @@ public:
   virtual ~AliVZEROBuffer(); //destructor
   AliVZEROBuffer(const AliVZEROBuffer &source); // copy constructor
   AliVZEROBuffer& operator=(const AliVZEROBuffer &source); // ass. op.
-  void    WriteBinary(Int_t cell,Int_t ADC);
+  void    WriteBinary(Int_t cell,Int_t ADC, Int_t ToF);
   UInt_t  GetDigNumber()const{return fNumberOfDigits;}
   void    SetVerbose(Int_t val){fVerbose=val;}
   Int_t   GetVerbose() const{return  fVerbose;} 

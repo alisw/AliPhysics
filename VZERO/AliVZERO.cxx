@@ -282,13 +282,14 @@ void AliVZERO::Digits2Raw()
         AliVZEROdigit* fVZERODigit = (AliVZEROdigit*) VZEROdigits->At(k);			
 	Int_t ADC  = fVZERODigit->ADC();
 	Int_t cell = fVZERODigit->CellNumber();
+	Int_t ToF  = fVZERODigit->ToF();
         if(fVerbose == 1) { cout <<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tcell: "
-	                    <<cell<<"\tADC: "<< ADC << endl;} 
+	                    <<cell<<"\tADC: "<< ADC << "\tToF: "<< ToF << endl;} 
 	if(fVerbose == 2) {
 	    ftxt<<"DDL: "<<fileName<< "\tdigit number: "<< k<<"\tcell: "
 	                   <<cell<<"\tADC: "<< ADC << endl;	      
 	}
-        buffer->WriteBinary(cell, ADC);
+        buffer->WriteBinary(cell, ADC, ToF);
     }
   if(fVerbose==2) ftxt.close();
   }

@@ -30,7 +30,7 @@ public:
   virtual Bool_t Init();
   virtual void   Exec(Option_t* option=0);
 
-  void AddDigit(Int_t cellnumber, Int_t adc);
+  void AddDigit(Int_t cellnumber, Int_t adc, Int_t tof);
   void ResetDigit();
 
  private:

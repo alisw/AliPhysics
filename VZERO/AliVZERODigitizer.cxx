@@ -57,7 +57,7 @@ ClassImp(AliVZERODigitizer)
   // constructor
   
   fNdigits = 0;
-  fDigits = 0 ;
+  fDigits  = 0;
   
   fPhotoCathodeEfficiency =   0.18;
   fPMVoltage              =  768.0;
@@ -94,12 +94,11 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
   // Creates digits from hits
   //
   
-  fNdigits = 0;
-  Int_t map[96];
-  Float_t cPM = fPhotoCathodeEfficiency * fPMGain;
+  Int_t      adc[96]; 
+  Float_t   time[96];    
+  fNdigits      =    0;  
+  Float_t cPM   = fPhotoCathodeEfficiency * fPMGain;
              
-  for(Int_t i=0; i<96; i++) map[i] = 0; 
-          
   AliRunLoader* outRunLoader = 
     AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    
   if (!outRunLoader) {
@@ -141,6 +140,10 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
       Error("Exec", "Cannot get TreeH for input %d", iInput);
       continue; 
     }
+    
+    Float_t timeV0 = 1e12;      
+    for(Int_t i=0; i<96; i++) { adc[i]  = 0; time[i] = 0.0; }
+	      
     TClonesArray* hits = vzero->Hits();
              
 //  Now makes Digits from hits
@@ -154,24 +157,29 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	AliVZEROhit* hit = (AliVZEROhit *)hits->UncheckedAt(iHit);
 	Int_t nPhot = hit->Nphot();
 	Int_t cell  = hit->Cell();                                    
-	map[cell] += nPhot;
+	adc[cell] += nPhot;
+	Float_t dt_scintillator = gRandom->Gaus(0,1);
+	time[cell] = dt_scintillator + 1e9*hit->Tof();
+	if(time[cell] < timeV0) timeV0 = time[cell];
       }           // hit   loop
     }             // track loop
 
     loader->UnloadHits();
 
   }               // input loop
-            
-  for (Int_t i=0; i<96; i++) {
-    Float_t q1 = Float_t ( map[i] )* cPM * kQe;
-    Float_t noise = gRandom->Gaus(10.5,3.22);
-    Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
+         
+  for (Int_t i=0; i<96; i++) {    
+     Float_t q1 = Float_t ( adc[i] )* cPM * kQe;
+     Float_t noise = gRandom->Gaus(10.5,3.22);
+     Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
       + noise*1e-3;
-    map[i] = Int_t( pmResponse * 200.0);
-    if(map[i] > 3) {
-//    printf(" Event, cell, adc = %d %d %d\n", outRunLoader->GetEventNumber(),i, map[i]);
-      AddDigit(i, map[i]);
+     adc[i] = Int_t( pmResponse * 50.0);
+     if(adc[i] > 0) {
+//         printf(" Event, cell, adc, tof = %d %d %d %f\n", 
+//                  outRunLoader->GetEventNumber(),i, adc[i], time[i]*100.0);
+         AddDigit(i, adc[i], int(time[i]*100.0) );
     } 
+
   }
 
   treeD->Fill();
@@ -181,13 +189,13 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::AddDigit(Int_t cellnumber, Int_t adc) 
+void AliVZERODigitizer::AddDigit(Int_t cellnumber, Int_t adc, Int_t tof) 
  { 
  
 // Adds Digit 
  
   TClonesArray &ldigits = *fDigits;  
-  new(ldigits[fNdigits++]) AliVZEROdigit(cellnumber,adc);
+  new(ldigits[fNdigits++]) AliVZEROdigit(cellnumber,adc,tof);
 }
 //____________________________________________________________________________
 void AliVZERODigitizer::ResetDigit()

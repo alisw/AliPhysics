@@ -74,18 +74,20 @@ AliVZEROBuffer& AliVZEROBuffer::operator=(const AliVZEROBuffer &source){
 }
 
 //_____________________________________________________________________________
-void AliVZEROBuffer::WriteBinary(Int_t cell,Int_t ADC){
+void AliVZEROBuffer::WriteBinary(Int_t cell,Int_t ADC, Int_t ToF){
   // It writes VZERO digits as a raw data file. 
   // Being called by AliVZERODDL.C
 
   struct DataFile{
     Int_t cell;
     Int_t ADC;
+    Int_t ToF;
   };
   
   DataFile  data;
   data.cell = cell;
   data.ADC  = ADC;
+  data.ToF  = ToF;
 
   ofstream ftxt;
   ftxt.open("VZEROdigits.txt",ios::app);
