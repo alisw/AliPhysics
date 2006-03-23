@@ -40,6 +40,7 @@
 #include <TGeoVolume.h>
 #include <TGeoMatrix.h>
 #include <TGeoPgon.h>
+#include <TGeoXtru.h>
 #include <TGeoCompositeShape.h>
 #include <TGeoManager.h>
 
@@ -122,10 +123,12 @@ void AliMAG::CreateGeometry()
     const Float_t kLCrown2             = 620.00; // cm
     const Float_t kLCrown3             = 706.00; // cm
 // Door
-    const Float_t kRDoorInner          = 246.50; // cm
     const Float_t kRDoorOuter          = 560.00; // cm
+    const Float_t kRPlugInner          = 183.50; // cm
     const Float_t kLDoor1              = 615.50; // cm
     const Float_t kLDoor2              = 714.60; // cm
+//
+    const Float_t kDegRad              = TMath::Pi()/180.;
     
     
   //
@@ -135,8 +138,7 @@ void AliMAG::CreateGeometry()
   TGeoMedium* medAir    = gGeoManager->GetMedium("MAG_AIR_C1");
   TGeoMedium* medAlu    = gGeoManager->GetMedium("MAG_ALU_C1");  
   TGeoMedium* medAluI   = gGeoManager->GetMedium("MAG_ALU_C0");
-  TGeoMedium* medFe     = gGeoManager->GetMedium("MAG_FE_C1");
-  TGeoMedium* medFeI    = gGeoManager->GetMedium("MAG_FE_C0");
+  TGeoMedium* medSteel  = gGeoManager->GetMedium("MAG_ST_C1");
   TGeoMedium* medWater  = gGeoManager->GetMedium("MAG_WATER");
   //
   // Offset between LHC and LEP axis
@@ -236,7 +238,7 @@ void AliMAG::CreateGeometry()
   shYoke->DefineSection(0, -kLYoke, kRYokeInner, kRYokeOuter);
   shYoke->DefineSection(1, +kLYoke, kRYokeInner, kRYokeOuter);  
   // 
-  TGeoVolume* voYoke = new TGeoVolume("L3YO", shYoke, medFe);
+  TGeoVolume* voYoke = new TGeoVolume("L3YO", shYoke, medSteel);
   voBMother->AddNode(voYoke, 1, new TGeoTranslation(0., 0., 0.));
 
   //
@@ -248,41 +250,76 @@ void AliMAG::CreateGeometry()
   shCrown->DefineSection(2,  kLCrown2, kRCrownInner, kRCrownOuter);  
   shCrown->DefineSection(3,  kLCrown3, kRCrownInner, kRCrownOuter);  
   // 
-  TGeoVolume* voCrown = new TGeoVolume("L3CR", shCrown, medFe);
+  TGeoVolume* voCrown = new TGeoVolume("L3CR", shCrown, medSteel);
+
   //
-  // Define Door 
+  // Door including "Plug"
   //
-  // Original outer part
-  TGeoPgon* shDoorO = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 2);
-  shDoorO->DefineSection(0,  kLDoor1, kRDoorInner, kRDoorOuter);
-  shDoorO->DefineSection(1,  kLDoor2, kRDoorInner, kRDoorOuter);  
-  shDoorO->SetName("A");
+  Float_t slo = 2. * kRDoorOuter * TMath::Tan(22.5 * kDegRad);
+  Float_t sli = 2. * kRPlugInner * TMath::Tan(22.5 * kDegRad);
+  Double_t xpol1[12], xpol2[12], ypol1[12], ypol2[12];
+  
+  xpol1[ 0] = 2.         ;  ypol1[ 0] = kRDoorOuter;
+  xpol1[ 1] = slo/2.     ;  ypol1[ 1] = kRDoorOuter;
+  xpol1[ 2] = kRDoorOuter;  ypol1[ 2] = slo/2.;
+  xpol1[ 3] = kRDoorOuter;  ypol1[ 3] = -slo/2.;
+  xpol1[ 4] = slo/2.     ;  ypol1[ 4] = -kRDoorOuter;
+  xpol1[ 5] = 2.         ;  ypol1[ 5] = -kRDoorOuter;
+  xpol1[ 6] = 2.         ;  ypol1[ 6] = -kRPlugInner - os;
+  xpol1[ 7] = sli/2.     ;  ypol1[ 7] = -kRPlugInner - os;
+  xpol1[ 8] = kRPlugInner;  ypol1[ 8] = -sli/2.      - os;
+  xpol1[ 9] = kRPlugInner;  ypol1[ 9] =  sli/2.      - os;
+  xpol1[10] = sli/2.     ;  ypol1[10] = kRPlugInner  - os;
+  xpol1[11] = 2.         ;  ypol1[11] = kRPlugInner  - os;
+
+  TGeoXtru* shL3DoorR = new TGeoXtru(2);
+  shL3DoorR->DefinePolygon(12, xpol1, ypol1);
+  shL3DoorR->DefineSection(0, kLDoor1);
+  shL3DoorR->DefineSection(1, kLDoor2);  
+  TGeoVolume* voL3DoorR = new TGeoVolume("L3DoorR", shL3DoorR, medSteel);
+
+  for (Int_t i = 0; i < 12; i++) {
+      xpol2[i] = - xpol1[11 - i];
+      ypol2[i] =   ypol1[11 - i];
+  }
+   
+  TGeoXtru* shL3DoorL = new TGeoXtru(2);
+  shL3DoorL->DefinePolygon(12, xpol2, ypol2);
+  shL3DoorL->DefineSection(0, kLDoor1);
+  shL3DoorL->DefineSection(1, kLDoor2);  
+  TGeoVolume* voL3DoorL = new TGeoVolume("L3DoorL", shL3DoorL, medSteel);
   //
-  // Additional inner part ("Plug")
-  TGeoPgon* shDoorI = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 3);
-  shDoorI->DefineSection(0,  kLDoor1, 163.5, 280.);
-  shDoorI->DefineSection(1,  686.,    163.5, 280.);  
-  shDoorI->DefineSection(2,  kLDoor2, 213.5, 280.);
-  shDoorI->SetName("B"); 
-  //
-  // For transport: low thresholds close to chambers requires special medium
-  //
-  TGeoPgon* shDoorIe = new TGeoPgon(kStartAngle, kFullAngle, kNSides, 3);
-  shDoorIe->DefineSection(0,  kLDoor1, 163.5, 168.5);
-  shDoorIe->DefineSection(1,  686.,    163.5, 168.5);  
-  shDoorIe->DefineSection(2,  kLDoor2, 213.5, 218.5);
-  TGeoVolume* voDoorIe = new TGeoVolume("L3DE", shDoorIe, medFeI);
-  //
-  // Use composite shape here to account for the excentric door opening.
-  // This avoids the overlap with the beam shield and the muon tracking station 1
-  //
-  TGeoTranslation* offset = new TGeoTranslation("t1", 0., -os, 0.);
-  offset->RegisterYourself();
-    
-  TGeoCompositeShape* shDoor = new TGeoCompositeShape("L3Door", "A+B:t1");
-  //
-  TGeoVolume* voDoor = new TGeoVolume("L3DO", shDoor, medFe);
-  voDoor->AddNode(voDoorIe, 1, new TGeoTranslation(0., -os, 0.));
+  // Plug support plate
+  // 
+  Float_t ro = kRPlugInner + 50.;
+  slo = 2. * ro * TMath::Tan(22.5 * kDegRad);
+  
+  xpol1[ 0] = 2.         ;  ypol1[ 0] = ro     - os;
+  xpol1[ 1] = slo/2.     ;  ypol1[ 1] = ro     - os;
+  xpol1[ 2] = ro         ;  ypol1[ 2] = slo/2. - os;
+  xpol1[ 3] = ro         ;  ypol1[ 3] = -slo/2.- os;
+  xpol1[ 4] = slo/2.     ;  ypol1[ 4] = -ro    - os;
+  xpol1[ 5] = 2.         ;  ypol1[ 5] = -ro    - os;
+
+  for (Int_t i = 0; i < 12; i++) {
+      xpol2[i] = - xpol1[11 - i];
+      ypol2[i] =   ypol1[11 - i];
+  }
+
+
+  TGeoXtru* shL3PlugSPR = new TGeoXtru(2);
+  shL3PlugSPR->DefinePolygon(12, xpol1, ypol1);
+  shL3PlugSPR->DefineSection(0, kLDoor1-10.);
+  shL3PlugSPR->DefineSection(1, kLDoor1);  
+  TGeoVolume* voL3PlugSPR = new TGeoVolume("L3PlugSPR", shL3PlugSPR, medSteel);
+
+  TGeoXtru* shL3PlugSPL = new TGeoXtru(2);
+  shL3PlugSPL->DefinePolygon(12, xpol2, ypol2);
+  shL3PlugSPL->DefineSection(0, kLDoor1-10.);
+  shL3PlugSPL->DefineSection(1, kLDoor1);  
+  TGeoVolume* voL3PlugSPL = new TGeoVolume("L3PlugSPL", shL3PlugSPL, medSteel);
+  
+
   // Position crown and door
   TGeoRotation* rotxz = new TGeoRotation("rotxz",  90., 0., 90., 90., 180., 0.);
 
@@ -290,8 +327,14 @@ void AliMAG::CreateGeometry()
   voBMother->AddNode(voCrown, 1, new TGeoTranslation(0., 0., 0.));  
   voBMother->AddNode(voCrown, 2, new TGeoCombiTrans(0., 0., 0., rotxz));
   l3->AddNode(voBMother, 1, new TGeoTranslation(0.,0.,0.));
-  l3->AddNode(voDoor,  1, new TGeoTranslation(0., 0., 0.));  
-  l3->AddNode(voDoor,  2, new TGeoCombiTrans(0., 0., 0., rotxz));
+  l3->AddNode(voL3DoorR,  1, new TGeoTranslation(0., 0., 0.));  
+  l3->AddNode(voL3DoorR,  2, new TGeoCombiTrans(0., 0., 0., rotxz));
+  l3->AddNode(voL3DoorL,  1, new TGeoTranslation(0., 0., 0.));  
+  l3->AddNode(voL3DoorL,  2, new TGeoCombiTrans(0., 0., 0., rotxz));
+  l3->AddNode(voL3PlugSPR,  1, new TGeoTranslation(0., 0., 0.));  
+  l3->AddNode(voL3PlugSPR,  2, new TGeoCombiTrans(0., 0., 0., rotxz));
+  l3->AddNode(voL3PlugSPL,  1, new TGeoTranslation(0., 0., 0.));  
+  l3->AddNode(voL3PlugSPL,  2, new TGeoCombiTrans(0., 0., 0., rotxz));
   top->AddNode(l3, 1, new TGeoTranslation(0., os, 0.));
 }
 
@@ -308,7 +351,10 @@ void AliMAG::CreateMaterials()
 
 
   // --- Define the various materials for GEANT --- 
-  
+  // Steel  
+  Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
+  Float_t zsteel[4] = { 26.,24.,28.,14. };
+  Float_t wsteel[4] = { .715,.18,.1,.005 };  
   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
   Float_t zAir[4]={6.,7.,8.,18.};
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
@@ -322,6 +368,10 @@ void AliMAG::CreateMaterials()
   AliMaterial(9, "Al0$", 26.98, 13., 2.7, 8.9, 37.2);
   AliMaterial(29, "Al1$", 26.98, 13., 2.7, 8.9, 37.2);
   
+  //     Stainless Steel 
+  AliMixture(19, "STAINLESS STEEL1", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(39, "STAINLESS STEEL2", asteel, zsteel, 7.88, 4, wsteel);
+  AliMixture(59, "STAINLESS STEEL3", asteel, zsteel, 7.88, 4, wsteel);
   //     Iron 
   AliMaterial(10, "Fe0$", 55.85, 26., 7.87, 1.76, 17.1);
   AliMaterial(30, "Fe1$", 55.85, 26., 7.87, 1.76, 17.1);
@@ -358,7 +408,10 @@ void AliMAG::CreateMaterials()
   
   AliMedium(15, "AIR_C0            ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(35, "AIR_C1            ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-
+  //    Steel 
+  AliMedium(19, "ST_C0           ", 19, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(39, "ST_C1           ", 39, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(59, "ST_C3           ", 59, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //    WATER
   AliMedium(16, "WATER             ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
