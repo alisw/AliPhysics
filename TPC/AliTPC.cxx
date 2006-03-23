@@ -780,7 +780,6 @@ void AliTPC::Digits2Raw()
 // convert digits of the current event to raw data
 
   static const Int_t kThreshold = 0;
-  static const Bool_t kCompress = kFALSE;
 
   fLoader->LoadDigits();
   TTree* digits = fLoader->TreeD();
@@ -866,11 +865,6 @@ void AliTPC::Digits2Raw()
   rawWriter.RawData(fileName);
   gSystem->Unlink(fileName);
 
-  if (kCompress) {
-    AliInfo("Compressing raw data");
-    rawWriter.RawDataCompDecompress(kTRUE);
-    gSystem->Unlink("Statistics");
-  }
 }
 
 

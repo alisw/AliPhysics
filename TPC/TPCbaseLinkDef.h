@@ -29,5 +29,8 @@
 #pragma link C++ class AliDigitsArray+;
 #pragma link C++ class AliTPCDigitsArray+;
 
+#pragma link C++ class AliTPCAltroMapping+;
+#pragma link C++ class AliTPCRawStream+;
+
 #endif
 

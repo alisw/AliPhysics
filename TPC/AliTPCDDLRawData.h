@@ -17,14 +17,6 @@ class AliTPCDDLRawData:public TObject{
   AliTPCDDLRawData& operator=(const AliTPCDDLRawData &source); // ass. op.
   void  RawData(const char* inputFileName = "AliTPCDDL.dat");
   //This method is used to create the slides (sequence of files)
-  Int_t RawDataCompDecompress(Bool_t compress = kTRUE);
-  //This method is used to create the compressed slides starting from the uncompressed ones 
-  //or it can be used to decompress a sequence of compressed slices
-  void  RawDataAltro(const char* inputFileName = "AliTPCDDL.dat", const char* outputFileName = "AltroFormatDDL.dat")const;
-  //This method is used to create the Altro format file from "AliTPCDDL.dat"
-  void RawDataAltroDecode(const char* outputFileName);
-  //This method is used to construct an Altro format file starting from
-  //the slices compressed or uncompressed
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;}
  private:
   Int_t fVerbose;         //Verbose level 0:Silent, 1: cout msg, 2:txt files for debugging

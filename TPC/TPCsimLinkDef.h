@@ -28,7 +28,6 @@
 
 #pragma link C++ class AliTPCBuffer+;
 #pragma link C++ class AliTPCDDLRawData+;
-#pragma link C++ class AliTPCAltroMapping+;
 
 #endif
 

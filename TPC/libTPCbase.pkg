@@ -3,7 +3,8 @@ SRCS:=  AliSegmentID.cxx  AliSegmentArray.cxx AliDigits.cxx AliH2F.cxx \
         AliDetectorParam.cxx AliTPCParam.cxx \
         AliTPCParamSR.cxx AliTPCParamCR.cxx \
         AliTPCdigit.cxx \
-        AliSimDigits.cxx AliDigitsArray.cxx AliTPCDigitsArray.cxx 
+        AliSimDigits.cxx AliDigitsArray.cxx AliTPCDigitsArray.cxx \
+	AliTPCAltroMapping.cxx AliTPCRawStream.cxx
 
 
 	
