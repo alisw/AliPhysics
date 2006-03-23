@@ -51,8 +51,10 @@
  * - All the code necessary to create a BataBase has been included in     *
  *   class (see the macro AliTPCtrackingParamDB.C for the details).       *
  *                                                                        *
- *  Origin: Andrea Dainese, Padova - e-mail: andrea.dainese@pd.infn.it    *
+ * 2006/03/16: Adapted to ESD input/output                                *
  *                                                                        *
+ *  Origin: Andrea Dainese, Padova - e-mail: andrea.dainese@pd.infn.it    *
+ *       adapted to ESD output by Marcello Lunardon, Padova               *
  **************************************************************************/
 //  *
 // This is a dummy comment
@@ -69,6 +71,7 @@
 #include <TH2F.h>
 #include <TLegend.h>
 #include <TLine.h>
+#include <TMatrixD.h>
 #include <TParticle.h>
 #include <TStyle.h>
 #include <TSystem.h>
@@ -117,25 +120,21 @@ ClassImp(AliTPCtrackerParam)
 
 //-----------------------------------------------------------------------------
 AliTPCtrackerParam::AliTPCtrackerParam(Int_t kcoll, Double_t kBz,
-				       Int_t kn, const char* evfoldname):
+				       const char* evfoldname):
   fEvFolderName(evfoldname) {
 //-----------------------------------------------------------------------------
 // This is the class conctructor 
 //-----------------------------------------------------------------------------
 
-  fNevents = kn;         // events to be processed
   fBz = kBz;             // value of the z component of L3 field (Tesla)
   fColl = kcoll;         // collision code (0: PbPb6000; 1: pp)
   fSelAndSmear = kTRUE; // by default selection and smearing are done
 
-  if(fBz!=0.4) {
-    cerr<<"AliTPCtrackerParam::AliTPCtrackerParam:  Invalid field!\n";
-    cerr<<"      Available:  0.4"<<endl;
+  if(fBz!=0.4 && fBz!=0.5) {
+    Fatal("AliTPCtrackerParam","AliTPCtrackerParam::AliTPCtrackerParam:  Invalid field!\n      Available:  0.4 or 0.5");
   }
-  if(fColl!=0 && fColl!=1) { 
-    cerr<<"AliTPCtrackerParam::AliTPCtrackerParam:  Invalid collision!\n";
-    cerr<<"      Available:  0   ->   PbPb6000"<<endl;
-    cerr<<"                  1   ->   pp"<<endl; 
+  if(fColl!=0 && fColl!=1) {
+    Fatal("AliTPCtrackerParam","AliTPCtrackerParam::AliTPCtrackerParam:  Invalid collision!\n      Available:  0   ->   PbPb6000\n                  1   ->   pp"); 
   }
 
   fDBfileName = gSystem->Getenv("ALICE_ROOT");  
@@ -144,6 +143,8 @@ AliTPCtrackerParam::AliTPCtrackerParam(Int_t kcoll, Double_t kBz,
   if(fColl==0) fDBfileName.Append("PbPb6000");
   if(fColl==1) fDBfileName.Append("pp");
   if(fBz==0.4) fDBfileName.Append("_B0.4T.root");
+  // use same DB for 0.4 and 0.5 T; for 0.5 T, correction done in CookTrack()
+  if(fBz==0.5) fDBfileName.Append("_B0.4T.root");
 }
 //-----------------------------------------------------------------------------
 AliTPCtrackerParam::~AliTPCtrackerParam() {}
@@ -175,307 +176,244 @@ AliTPCtrackerParam::AliTPCseedGeant::AliTPCseedGeant(
       fAlpha *= TMath::Pi();
 }
 //-----------------------------------------------------------------------------
-Int_t AliTPCtrackerParam::BuildTPCtracks(const TFile *inp, TFile *out) {
+Int_t AliTPCtrackerParam::Init() {
 //-----------------------------------------------------------------------------
-// This function creates the TPC parameterized tracks
+// This function reads the DB from file
 //-----------------------------------------------------------------------------
-
-  Error("BuildTPCtracks","in and out parameters ignored. new io");
-  
-/********************************************/
-  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEvFolderName);
-  if (rl == 0x0)
-   {
-     Error("BuildTPCtracks","Can not get Run Loader from event folder named %s.",
-           fEvFolderName.Data());
-     return 2;
-   }
-  AliLoader* tpcloader = rl->GetLoader("TPCLoader");
-  if (tpcloader == 0x0)
-   {
-     Error("BuildTPCtracks","Can not get TPC Loader from Run Loader.");
-     return 3;
-   }
-  
-/********************************************/
-
-  TFile *fileDB=0;
-  TTree *covTreePi[50];
-  TTree *covTreeKa[50];
-  TTree *covTreePr[50];
-  TTree *covTreeEl[50];
-  TTree *covTreeMu[50];
 
   if(fSelAndSmear) {
-    cerr<<"+++\n+++ Reading DataBase from:\n+++ "<<
-      fDBfileName.Data()<<"\n+++\n"; 
+    printf("+++\n+++ Reading DataBase from:%s\n+++\n+++\n",fDBfileName.Data()); 
     // Read paramters from DB file
     if(!ReadAllData(fDBfileName.Data())) {
-      cerr<<"AliTPCtrackerParam::BuildTPCtracks: \
-             Could not read data from DB\n\n"; return 1; 
+      printf("AliTPCtrackerParam::BuildTPCtracks: \
+             Could not read data from DB\n\n"); return 1; 
     }
+    
+  } else printf("\n ! Creating ALL TRUE tracks at TPC inner radius !\n\n");
 
-    // Read the trees with regularized cov. matrices from DB
-    TString str;
-    fileDB = TFile::Open(fDBfileName.Data());
-    Int_t nBinsPi = fDBgridPi.GetTotBins();
-    for(Int_t l=0; l<nBinsPi; l++) {
-      str = "/CovMatrices/Pions/CovTreePi_bin";
-      str+=l;
-      covTreePi[l] = (TTree*)fileDB->Get(str.Data());
-    }
-    Int_t nBinsKa = fDBgridKa.GetTotBins();
-    for(Int_t l=0; l<nBinsKa; l++) {
-      str = "/CovMatrices/Kaons/CovTreeKa_bin";
-      str+=l;
-      covTreeKa[l] = (TTree*)fileDB->Get(str.Data());
-    }
-    Int_t nBinsPr = fDBgridPr.GetTotBins();
-    for(Int_t l=0; l<nBinsPr; l++) {
-      if(fColl==0) {      
-	str = "/CovMatrices/Pions/CovTreePi_bin";
-      } else {
-	str = "/CovMatrices/Protons/CovTreePr_bin";
-      }
-      str+=l;
-      covTreePr[l] = (TTree*)fileDB->Get(str.Data());
-    }
-    Int_t nBinsEl = fDBgridEl.GetTotBins();
-    for(Int_t l=0; l<nBinsEl; l++) {
-      str = "/CovMatrices/Electrons/CovTreeEl_bin";
-      str+=l;
-      covTreeEl[l] = (TTree*)fileDB->Get(str.Data());
-    }
-    Int_t nBinsMu = fDBgridMu.GetTotBins();
-    for(Int_t l=0; l<nBinsMu; l++) {
-      if(fColl==0) {      
-	str = "/CovMatrices/Pions/CovTreePi_bin";
-      } else {
-	str = "/CovMatrices/Muons/CovTreeMu_bin";
-      }
-      str+=l;
-      covTreeMu[l] = (TTree*)fileDB->Get(str.Data());
-    }
-
-  } else cerr<<"\n ! Creating ALL TRUE tracks at TPC 1st hit !\n\n";
-
-  TFile *infile=(TFile*)inp;
-  infile->cd();
-
-  // Get gAlice object from file
-  
-  rl->LoadgAlice();
-  rl->LoadHeader();
-  tpcloader->LoadHits("read");
-  
-  if(!(gAlice=rl->GetAliRun())) {
-    cerr<<"Can not get gAlice from Run Loader !\n";
-    return 1;
-  }
 
   // Check if value in the galice file is equal to selected one (fBz)
   AliMagF *fiel = (AliMagF*)gAlice->Field();
-  Double_t fieval=(Double_t)fiel->SolenoidField()/10.;
+  Double_t fieval=TMath::Abs((Double_t)fiel->SolenoidField()/10.);
   printf("Magnetic field is %6.2f Tesla\n",fieval);
   if(fBz!=fieval) {
-    cerr<<"AliTPCtrackerParam::BuildTPCtracks:  Invalid field!"<<endl;
-    cerr<<"Field selected is: "<<fBz<<" T\n";
-    cerr<<"Field found on file is: "<<fieval<<" T\n";
-    return 0;
+    printf("AliTPCtrackerParam::BuildTPCtracks:  Invalid field!");
+    printf("Field selected is: %f T\n",fBz);
+    printf("Field found on file is: %f T\n",fieval);
+    return 1;
+  }
+
+  // Set the conversion constant between curvature and Pt
+  AliTracker::SetFieldMap(fiel,kTRUE);
+
+  return 0;
+}
+//-----------------------------------------------------------------------------
+Int_t AliTPCtrackerParam::BuildTPCtracks(AliESD *event) {
+//-----------------------------------------------------------------------------
+// This function creates the TPC parameterized tracks and writes them
+// as AliESDtrack objects in the ESD event
+//-----------------------------------------------------------------------------
+
+
+  if(!event) return -1;
+
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEvFolderName);
+  if (rl == 0x0) {
+    Error("BuildTPCtracks","Can not get Run Loader from event folder named %s",
+	  fEvFolderName.Data());
+    return 2;
+  }
+  AliLoader* tpcloader = rl->GetLoader("TPCLoader");
+  if (tpcloader == 0x0) {
+    Error("BuildTPCtracks","Can not get TPC Loader from Run Loader.");
+    return 3;
+  }
+  
+  // Get gAlice object from file  
+  if(!gAlice) rl->LoadgAlice();
+  //rl->LoadHeader();
+  rl->LoadKinematics();
+  tpcloader->LoadHits("read");
+  
+  if(!(gAlice=rl->GetAliRun())) {
+    printf("Cannot get gAlice from Run Loader !\n");
+    return 1;
   }
 
   // Get TPC detector 
   AliTPC *tpc=(AliTPC*)gAlice->GetDetector("TPC");
-  Int_t ver = tpc->IsVersion(); 
-  cerr<<"+++ TPC version "<<ver<<" has been found !\n";
 
   rl->CdGAFile();
-  AliTPCParam *digp=(AliTPCParam*)infile->Get("75x40_100x60");
+  AliTPCParam *digp=(AliTPCParam*)gDirectory->Get("75x40_100x60");
   if(digp){
     delete digp;
     digp = new AliTPCParamSR();
   }
-  else digp=(AliTPCParam*)infile->Get("75x40_100x60_150x60");
+  else digp=(AliTPCParam*)gDirectory->Get("75x40_100x60_150x60");
   
   if(!digp) { cerr<<"TPC parameters have not been found !\n"; return 1; }
   tpc->SetParam(digp);
-
-  // Set the conversion constant between curvature and Pt
-  AliTracker::SetFieldMap(fiel,kTRUE);
 
   TParticle       *part=0;
   AliTPCseedGeant *seed=0;
   AliTPCtrack     *tpctrack=0;
   Double_t     sPt,sEta;
-  Int_t        cl=0,bin,label,pdg,charge;
+  Int_t        bin,label,pdg,charge;
   Int_t        tracks;
   Int_t        nParticles,nSeeds,arrentr;
-  Char_t       tname[100];
   //Int_t nSel=0,nAcc=0;
 
-
-  // loop over first n events in file
-  for(Int_t evt=0; evt<fNevents; evt++){
-    cerr<<"+++\n+++ Processing event "<<evt<<"\n+++\n";
-    tracks=0;
-
-    // tree for TPC tracks
-    sprintf(tname,"TreeT_TPC_%d",evt);
-    TTree *tracktree = new TTree(tname,"Tree with TPC tracks");
-    tracktree->Branch("tracks","AliTPCtrack",&tpctrack,20000,0);
-
-    // array for TPC tracks
-    TObjArray tArray(20000);
-
-    // array for TPC seeds with geant info
-    TObjArray sArray(20000);
-
-    // get the particles stack
-    nParticles = (Int_t)gAlice->GetEvent(evt);
-    
-    Bool_t   *done     = new Bool_t[nParticles];
-    Int_t    *pdgCodes = new Int_t[nParticles];
-    Double_t *ptkine   = new Double_t[nParticles];
-    Double_t *pzkine   = new Double_t[nParticles];
-
-    // loop on particles and store pdg codes
-    for(Int_t l=0; l<nParticles; l++) {
-      part        = (TParticle*)gAlice->GetMCApp()->Particle(l);
-      pdgCodes[l] = part->GetPdgCode();
-      ptkine[l]   = part->Pt();
-      pzkine[l]   = part->Pz();
-      done[l]     = kFALSE;
-    }
-    cerr<<"+++\n+++ Number of particles in event "<<evt<<":  "<<nParticles<<
-      "\n+++\n";
-
-    cerr<<"\n ********** MAKING SEEDS *****************"<<endl<<endl;
-
-
-    // Create the seeds for the TPC tracks at the inner radius of TPC
-    if(fColl==0) {
-      // Get TreeH with hits
-      TTree *th = tpcloader->TreeH(); 
-      MakeSeedsFromHits(tpc,th,sArray);
-    } else {
-      // Get TreeTR with track references
-      TTree *ttr = rl->TreeTR();
-      MakeSeedsFromRefs(ttr,sArray);
-    }
-
-
-    nSeeds = sArray.GetEntries();
-    cerr<<"\n\n+++\n+++ Number of seeds: "<<nSeeds<<"\n+++\n";
-
-
-    cerr<<"\n ********** BUILDING TRACKS **************"<<endl<<endl;
-
-    // loop over entries in sArray
-    for(Int_t l=0; l<nSeeds; l++) {
-      //if(l%1000==0) cerr<<"  --- Processing seed "
-      //		<<l<<" of "<<nSeeds<<" ---\r";
-
-      seed = (AliTPCseedGeant*)sArray.At(l);
-
-      // this is TEMPORARY: only for reconstruction of pp production for charm
-      if(fColl==1) cl = CheckLabel(seed,nParticles,ptkine,pzkine);
-      if(cl) continue;
-
-      // Get track label
-      label = seed->GetLabel();
-
-      // check if this track has already been processed
-      if(done[label]) continue;
-      // PDG code & electric charge
-      pdg = pdgCodes[label];
-      if(pdg>200 || pdg==-11 || pdg==-13) { charge=1; }
-      else if(pdg<-200 || pdg==11 || pdg==13) { charge=-1; }
-      else continue;
-      pdg = TMath::Abs(pdg);
-      if(pdg>3000) pdg=211;
- 
-      if(fSelAndSmear) SetParticle(pdg);
-
-
-      sPt  = seed->GetPt();
-      sEta = seed->GetEta();
-      
-      // Apply selection according to TPC efficiency
-      //if(TMath::Abs(pdg)==211) nAcc++;
-      if(fSelAndSmear && !SelectedTrack(sPt,sEta)) continue; 
-      //if(TMath::Abs(pdg)==211) nSel++;
-
-      // create AliTPCtrack object
-      BuildTrack(seed,charge);
-	
-      if(fSelAndSmear) {
-	bin = fDBgrid->GetBin(sPt,sEta);
-	switch (pdg) {
-	case 211:
-	  fCovTree = covTreePi[bin];
-	  break;
-	case 321:
-	  fCovTree = covTreeKa[bin];
-	  break;
-	case 2212:
-	  fCovTree = covTreePr[bin];
-	  break;
-	case 11:
-	  fCovTree = covTreeEl[bin];
-	  break;
-	case 13:
-	  fCovTree = covTreeMu[bin];
-	  break;
-	}
-	// deal with covariance matrix and smearing of parameters
-	CookTrack(sPt,sEta);
-
-	// assign the track a dE/dx and make a rough PID
-	CookdEdx(sPt,sEta);
-      }
-
-      // put track in array
-      AliTPCtrack *iotrack = new AliTPCtrack(fTrack);
-      iotrack->SetLabel(label);
-      tArray.AddLast(iotrack);
-      // Mark track as "done" and register the pdg code
-      done[label] = kTRUE; 
-      tracks++;
- 
-    } // loop over entries in sArray
-
-
-    // sort array with TPC tracks (decreasing pT)
-    tArray.Sort();
-
-    arrentr = tArray.GetEntriesFast();
-    for(Int_t l=0; l<arrentr; l++) {
-      tpctrack=(AliTPCtrack*)tArray.UncheckedAt(l);
-      tracktree->Fill();
-    }
-
-
-    // write the tree with tracks in the output file
-    out->cd();
-    tracktree->Write(); 
-    
-    delete tracktree;
-    delete [] done;
-    delete [] pdgCodes;
-    delete [] ptkine;
-    delete [] pzkine;    
-
-    printf("\n\n+++\n+++ Number of TPC tracks: %d\n+++\n",tracks);
-    //cerr<<"Average Eff: "<<(Float_t)nSel/nAcc<<endl;
-
-    sArray.Delete();
-    tArray.Delete();
+  Int_t evt=event->GetEventNumber();
   
-    infile->cd();
-  } // loop on events
+  tracks=0;
 
-  if(fileDB) fileDB->Close();
+  // array for TPC tracks
+  TObjArray tArray(20000);
+  
+  // array for TPC seeds with geant info
+  TObjArray sArray(20000);
+  
+  // get the particles stack
+  nParticles = (Int_t)gAlice->GetEvent(evt);
+    
+  Bool_t   *done     = new Bool_t[nParticles];
+  Int_t    *pdgCodes = new Int_t[nParticles];
+  
+  // loop on particles and store pdg codes
+  for(Int_t l=0; l<nParticles; l++) {
+    part        = (TParticle*)gAlice->GetMCApp()->Particle(l);
+    pdgCodes[l] = part->GetPdgCode();
+    done[l]     = kFALSE;
+  }
 
+  printf("+++ Number of particles:  %d\n",nParticles);
+
+  // Create the seeds for the TPC tracks at the inner radius of TPC
+  if(fColl==0) {
+    // Get TreeH with hits
+    TTree *th = tpcloader->TreeH(); 
+    MakeSeedsFromHits(tpc,th,sArray);
+  } else {
+    // Get TreeTR with track references
+    rl->LoadTrackRefs();
+    TTree *ttr = rl->TreeTR();
+    if (!ttr) return -3;
+    MakeSeedsFromRefs(ttr,sArray);
+  }
+
+  nSeeds = sArray.GetEntries();
+  printf("+++ Number of seeds: %d\n",nSeeds);
+    
+  // loop over entries in sArray
+  for(Int_t l=0; l<nSeeds; l++) {
+    //if(l%1==0) printf("  --- Processing seed %d of %d ---\n",l,nSeeds);
+    
+    seed = (AliTPCseedGeant*)sArray.At(l);
+    
+    // Get track label
+    label = seed->GetLabel();
+    
+    // check if this track has already been processed
+    if(done[label]) continue;
+
+    // PDG code & electric charge
+    pdg = pdgCodes[label];
+    if(pdg>200 || pdg==-11 || pdg==-13) { charge=1; }
+    else if(pdg<-200 || pdg==11 || pdg==13) { charge=-1; }
+    else continue;
+    pdg = TMath::Abs(pdg);
+    if(pdg>3000) pdg=211;
+    
+    if(fSelAndSmear) SetParticle(pdg);
+    
+    sPt  = seed->GetPt();
+    sEta = seed->GetEta();
+    
+    // Apply selection according to TPC efficiency
+    //if(TMath::Abs(pdg)==211) nAcc++;
+    if(fSelAndSmear && !SelectedTrack(sPt,sEta)) continue; 
+    //if(TMath::Abs(pdg)==211) nSel++;
+
+    // create AliTPCtrack object
+    BuildTrack(seed,charge);
+
+    if(fSelAndSmear) {
+      bin = fDBgrid->GetBin(sPt,sEta);
+      switch (pdg) {
+      case 211:
+	//fCovTree = &(fCovTreePi[bin]);
+	fCovTree = fCovTreePi[bin];
+	break;
+      case 321:
+	//fCovTree = &(fCovTreeKa[bin]);
+	fCovTree = fCovTreeKa[bin];
+	break;
+      case 2212:
+	//fCovTree = &(fCovTreePr[bin]);
+	fCovTree = fCovTreePr[bin];
+	break;
+      case 11:
+	//fCovTree = &(fCovTreeEl[bin]);
+	fCovTree = fCovTreeEl[bin];
+	break;
+      case 13:
+	//fCovTree = &(fCovTreeMu[bin]);
+	fCovTree = fCovTreeMu[bin];
+	break;
+      }
+      // deal with covariance matrix and smearing of parameters
+      CookTrack(sPt,sEta);
+
+      // assign the track a dE/dx and make a rough PID
+      CookdEdx(sPt,sEta);
+    }
+    
+    // put track in array
+    AliTPCtrack *iotrack = new AliTPCtrack(fTrack);
+    iotrack->SetLabel(label);
+    tArray.AddLast(iotrack);
+    // Mark track as "done" and register the pdg code
+    done[label] = kTRUE; 
+    tracks++;
+    
+  } // loop over entries in sArray
+  
+  // sort array with TPC tracks (decreasing pT)
+  tArray.Sort();
+  
+  // convert to AliESDtrack and write to AliESD
+  arrentr = tArray.GetEntriesFast(); 
+  Int_t idx;
+  Double_t wgts[5];
+  for(Int_t l=0; l<arrentr; l++) {
+    tpctrack=(AliTPCtrack*)tArray.UncheckedAt(l);
+    AliESDtrack ioESDtrack;
+    ioESDtrack.UpdateTrackParams(tpctrack,AliESDtrack::kTPCin);
+    // rough PID
+    wgts[0]=0.; wgts[1]=0.; wgts[2]=0.; wgts[3]=0.; wgts[4]=0.;
+    if(TMath::Abs(tpctrack->GetMass()-0.9)<0.1) {
+      idx = 4; // proton
+    } else if(TMath::Abs(tpctrack->GetMass()-0.5)<0.1) {
+      idx = 3; // kaon
+    } else {
+      idx = 2; // pion
+    }
+    wgts[idx] = 1.;
+    ioESDtrack.SetESDpid(wgts);
+    event->AddTrack(&ioESDtrack);
+  }
+  
+  
+  delete [] done;
+  delete [] pdgCodes;
+  
+  printf("+++ Number of TPC tracks: %d\n",tracks);
+  //cerr<<"Average Eff: "<<(Float_t)nSel/nAcc<<endl;
+  
+  sArray.Delete();
+  tArray.Delete();
+  
   return 0;
 }
 //-----------------------------------------------------------------------------
@@ -1029,11 +967,11 @@ void AliTPCtrackerParam::BuildTrack(AliTPCseedGeant *s,Int_t ch) {
   cc[1]=cc[3]=cc[4]=cc[6]=cc[7]=cc[8]=cc[10]=cc[11]=cc[12]=cc[13]=0.;
   
   // Magnetic field
-  TVector3 bfield(0.,0.,fBz);
+  TVector3 bfield(0.,0.,-fBz);
   
   
   // radius [cm] of track projection in (x,y) 
-  Double_t rho = s->GetPt()*100./0.299792458/bfield.Z();
+  Double_t rho = s->GetPt()*100./0.299792458/TMath::Abs(bfield.Z());
   // center of track projection in local reference frame
   TVector3 sMom,sPos;
 
@@ -1060,7 +998,7 @@ void AliTPCtrackerParam::BuildTrack(AliTPCseedGeant *s,Int_t ch) {
   xx[0] = s->GetYL();
   xx[1] = s->GetZL();
   xx[3] = s->GetPz()/s->GetPt();
-  xx[4] = -ch/rho;
+  xx[4] = ch/rho;
   xx[2] = xx[4]*x0;
 
   // create the object AliTPCtrack    
@@ -1070,40 +1008,8 @@ void AliTPCtrackerParam::BuildTrack(AliTPCseedGeant *s,Int_t ch) {
   return;
 }
 //-----------------------------------------------------------------------------
-Int_t AliTPCtrackerParam::CheckLabel(AliTPCseedGeant *s,Int_t nPart,
-				     Double_t *ptkine,Double_t *pzkine) const {
-//-----------------------------------------------------------------------------
-// This function checks if the label of the seed has been correctly 
-// assigned (to do only for pp charm production with AliRoot v3-08-02)
-//-----------------------------------------------------------------------------
-
-  Int_t sLabel = s->GetLabel();
-  Double_t sPt = s->GetPt();
-  Double_t sPz = s->GetPz();
-  
-  // check if the label is correct (comparing momentum)
-  if(sLabel<nPart && 
-     TMath::Abs(sPt-ptkine[sLabel])*
-     TMath::Abs(sPz-pzkine[sLabel])<0.001) return 0;
-
-  if((sLabel-30)>=nPart) return 1;  
-
-  Double_t diff=0,mindiff=1000.;
-  Int_t bestLabel=0;
-
-  for(Int_t i=sLabel-30; i<sLabel; i++) {
-    if(i<0 || i>=nPart) continue;
-    diff = TMath::Abs(sPt-ptkine[i])*TMath::Abs(sPz-pzkine[i]); 
-    if(diff<mindiff) { mindiff = diff; bestLabel = i; }
-  }
-
-  if(mindiff>0.001) return 1;
-  s->SetLabel(bestLabel);
-
-  return 0;
-}
-//-----------------------------------------------------------------------------
 void AliTPCtrackerParam::CompareTPCtracks(
+			   Int_t nEvents,
 			   const Char_t* galiceName,
 			   const Char_t* trkGeaName,
 			   const Char_t* trkKalName,
@@ -1168,7 +1074,7 @@ void AliTPCtrackerParam::CompareTPCtracks(
   Char_t tname[100];
 
   // loop on events in file
-  for(Int_t evt=0; evt<fNevents; evt++) {  
+  for(Int_t evt=0; evt<nEvents; evt++) {  
     cerr<<"\n  --- Reading tracks for event "<<evt<<" ---\n\n";
     sprintf(tname,"TreeT_TPC_%d",evt);
     
@@ -1426,24 +1332,28 @@ void AliTPCtrackerParam::CookdEdx(Double_t pt,Double_t eta) {
   //Very rough PID
   Double_t p = TMath::Sqrt(1.+t.GetTgl()*t.GetTgl())*pt;
 
+  Double_t massPi = (Double_t)TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  Double_t massKa = (Double_t)TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  Double_t massPr = (Double_t)TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+
   if (p<0.6) {
     if (dEdx < 39.+ 12./(p+0.25)/(p+0.25)) { 
-      t.AssignMass(AliPID::ParticleMass(AliPID::kPion)); new(&fTrack) AliTPCtrack(t); return;
+      t.AssignMass(massPi); new(&fTrack) AliTPCtrack(t); return;
     }
     if (dEdx < 39.+ 12./p/p) { 
-      t.AssignMass(AliPID::ParticleMass(AliPID::kKaon)); new(&fTrack) AliTPCtrack(t); return;
+      t.AssignMass(massKa); new(&fTrack) AliTPCtrack(t); return;
     }
-    t.AssignMass(AliPID::ParticleMass(AliPID::kProton)); new(&fTrack) AliTPCtrack(t); return;
+    t.AssignMass(massPr); new(&fTrack) AliTPCtrack(t); return;
   }
 
   if (p<1.2) {
     if (dEdx < 39.+ 12./(p+0.25)/(p+0.25)) { 
-      t.AssignMass(AliPID::ParticleMass(AliPID::kPion)); new(&fTrack) AliTPCtrack(t); return;
+      t.AssignMass(massPi); new(&fTrack) AliTPCtrack(t); return;
     }
-    t.AssignMass(AliPID::ParticleMass(AliPID::kProton)); new(&fTrack) AliTPCtrack(t); return;
+    t.AssignMass(massPr); new(&fTrack) AliTPCtrack(t); return;
   }
 
-  t.AssignMass(AliPID::ParticleMass(AliPID::kPion)); new(&fTrack) AliTPCtrack(t); return;
+  t.AssignMass(massPi); new(&fTrack) AliTPCtrack(t); return;
 }
 //-----------------------------------------------------------------------------
 void AliTPCtrackerParam::CookTrack(Double_t pt,Double_t eta) {
@@ -1493,10 +1403,10 @@ void AliTPCtrackerParam::CookTrack(Double_t pt,Double_t eta) {
   cc[12]= covmat.c42*RegFunc(trkKine,trkRegPar);
   cc[13]= covmat.c43;
   for(Int_t l=0;l<3;l++) trkRegPar[l] = (*fRegPar)(8,l);
-  cc[14]= covmat.c44*RegFunc(trkKine,trkRegPar);
-   
-  TMatrixD covMatSmear(5,5);
-    
+  cc[14]= covmat.c44*RegFunc(trkKine,trkRegPar);  
+
+
+  TMatrixD covMatSmear(5,5);    
   covMatSmear = GetSmearingMatrix(cc,pt,eta);
 
   // get track original parameters
@@ -1509,6 +1419,7 @@ void AliTPCtrackerParam::CookTrack(Double_t pt,Double_t eta) {
   xx[4]=fTrack.GetC();
     
   // use smearing matrix to smear the original parameters
+  xxsm[0]=xref;
   SmearTrack(xx,xxsm,covMatSmear);
     
   AliTPCtrack track(0,xxsm,cc,xref,alpha);
@@ -2093,8 +2004,8 @@ void AliTPCtrackerParam::MakeSeedsFromHits(AliTPC *tpc,TTree *th,
   Int_t label;
   Int_t nTracks=(Int_t)th->GetEntries();
 
-  cerr<<"+++\n+++ Number of \"primary tracks\"(entries in TreeH): "<<nTracks<<
-         "\n+++\n\n";
+  cout<<"+++ Number of \"primary tracks\"(entries in TreeH): "<<nTracks<<
+         "\n";
    
   AliTPChit *tpcHit=0;
 
@@ -2155,13 +2066,12 @@ void AliTPCtrackerParam::MakeSeedsFromRefs(TTree *ttr,
   if(!b) {cerr<<"TPC branch of TreeTR not found"<<endl; return; }
   b->SetAddress(&tkRefArray);
   Int_t nTkRef = (Int_t)b->GetEntries();
-  cerr<<"+++\n+++ Number of entries in TreeTR(TPC): "<<nTkRef<<
-         "\n+++\n\n";
+  cerr<<"+++ Number of entries in TreeTR(TPC): "<<nTkRef<<"\n";
 
   // loop on track references
   for(Int_t l=0; l<nTkRef; l++){
-    if(l%1000==0) cerr<<"  --- Processing primary track "
-		      <<l<<" of "<<nTkRef<<" ---\r";
+    //if(l%1000==0) cerr<<"  --- Processing primary track "
+    //	      <<l<<" of "<<nTkRef<<" ---\r";
     if(!b->GetEvent(l)) continue;
     nnn = tkRefArray->GetEntriesFast();
 
@@ -2185,7 +2095,8 @@ void AliTPCtrackerParam::MakeSeedsFromRefs(TTree *ttr,
       AliTPCseedGeant *ioseed = new AliTPCseedGeant(xg,yg,zg,px,py,pz,label);
 
       // reject if not at the inner part of TPC
-      if(TMath::Abs(ioseed->GetXL()-82.9701) > 0.1) { 
+      if(TMath::Abs(ioseed->GetXL()-83.8) > 0.2) { 
+	//cerr<<"not at TPC inner part: XL = "<<ioseed->GetXL()<<endl;
 	delete ioseed; continue; 
       }
 
@@ -2349,6 +2260,75 @@ Int_t AliTPCtrackerParam::ReadAllData(const Char_t* inName) {
   if(!ReaddEdx(inName,11)) return 0;
   if(!ReaddEdx(inName,13)) return 0;
   if(!ReadDBgrid(inName)) return 0;
+  if(!ReadCovTrees(inName)) return 0;
+
+  return 1;
+}
+//-----------------------------------------------------------------------------
+Int_t AliTPCtrackerParam::ReadCovTrees(const Char_t* inName) {
+//-----------------------------------------------------------------------------
+// This function reads the covariance matrix trees from the DB
+//-----------------------------------------------------------------------------
+
+  if(gSystem->AccessPathName(inName,kFileExists)) { 
+    cerr<<"AliTPCtrackerParam::ReaddEdx: "<<inName<<" not found\n"; 
+    return 0; }
+
+  TString str;
+
+  TFile *inFile = TFile::Open(inName);
+
+
+  Int_t nBinsPi = fDBgridPi.GetTotBins();
+  for(Int_t l=0; l<nBinsPi; l++) {
+    str = "/CovMatrices/Pions/CovTreePi_bin";
+    str+=l;
+    fCovTreePi[l] = (TTree*)inFile->Get(str.Data());
+    //fCovTree = (TTree*)inFile->Get(str.Data());
+    //fCovTreePi[l] = new TTree(*fCovTree);
+  }
+  Int_t nBinsKa = fDBgridKa.GetTotBins();
+  for(Int_t l=0; l<nBinsKa; l++) {
+    str = "/CovMatrices/Kaons/CovTreeKa_bin";
+    str+=l;
+    fCovTreeKa[l] = (TTree*)inFile->Get(str.Data());
+    //fCovTree = (TTree*)inFile->Get(str.Data());
+    //fCovTreeKa[l] = new TTree(*fCovTree);
+  }
+  Int_t nBinsPr = fDBgridPr.GetTotBins();
+  for(Int_t l=0; l<nBinsPr; l++) {
+    if(fColl==0) {      
+      str = "/CovMatrices/Pions/CovTreePi_bin";
+    } else {
+      str = "/CovMatrices/Protons/CovTreePr_bin";
+    }
+    str+=l;
+    fCovTreePr[l] = (TTree*)inFile->Get(str.Data());
+    //fCovTree = (TTree*)inFile->Get(str.Data());
+    //fCovTreePr[l] = new TTree(*fCovTree);
+  }
+  Int_t nBinsEl = fDBgridEl.GetTotBins();
+  for(Int_t l=0; l<nBinsEl; l++) {
+    str = "/CovMatrices/Electrons/CovTreeEl_bin";
+    str+=l;
+    fCovTreeEl[l] = (TTree*)inFile->Get(str.Data());
+    //fCovTree = (TTree*)inFile->Get(str.Data());
+    //fCovTreeEl[l] = new TTree(*fCovTree);
+  }
+  Int_t nBinsMu = fDBgridMu.GetTotBins();
+  for(Int_t l=0; l<nBinsMu; l++) {
+    if(fColl==0) {      
+      str = "/CovMatrices/Pions/CovTreePi_bin";
+    } else {
+      str = "/CovMatrices/Muons/CovTreeMu_bin";
+    }
+    str+=l;
+    fCovTreeMu[l] = (TTree*)inFile->Get(str.Data());
+    //fCovTree = (TTree*)inFile->Get(str.Data());
+    //fCovTreeMu[l] = new TTree(*fCovTree);
+  }
+
+  //inFile->Close();
 
   return 1;
 }
@@ -2548,16 +2528,83 @@ Int_t AliTPCtrackerParam::ReadRegParams(const Char_t* inName,Int_t pdg) {
   if(gSystem->AccessPathName(inName,kFileExists)) { 
     cerr<<"AliTPCtrackerParam::ReadRegParams: "<<inName<<" not found\n"; 
     return 0; }
+  // Introduced change to "reverse" the TMatrixD read from file.
+  // Needed because storage mode of TMatrixD changed from column-wise
+  // to rwo-wise in ROOT.
+  //
+  // A.Dainese 03/06/05 
+
+  TMatrixD dummyMatrix(9,3);
 
   TFile *inFile = TFile::Open(inName);
   switch (pdg) {
   case 211:
     fRegPar = (TMatrixD*)inFile->Get("/RegParams/Pions/RegPions");
     new(&fRegParPi) TMatrixD(*fRegPar);
+    //printf("before\n");
+    //for(Int_t jj=0;jj<9;jj++) printf("%13.10f   %13.10f  %13.10f\n",fRegParPi(jj,0),fRegParPi(jj,1),fRegParPi(jj,2));
+    dummyMatrix = fRegParPi;  
+    fRegParPi(0,0) = dummyMatrix(0,0);
+    fRegParPi(0,1) = dummyMatrix(0,1);
+    fRegParPi(0,2) = dummyMatrix(0,2);
+    fRegParPi(1,0) = dummyMatrix(3,0);
+    fRegParPi(1,1) = dummyMatrix(1,1);
+    fRegParPi(1,2) = dummyMatrix(1,2);
+    fRegParPi(2,0) = dummyMatrix(6,0);
+    fRegParPi(2,1) = dummyMatrix(3,2);
+    fRegParPi(2,2) = dummyMatrix(2,2);
+    fRegParPi(3,0) = dummyMatrix(1,0);
+    fRegParPi(3,1) = dummyMatrix(4,0);
+    fRegParPi(3,2) = dummyMatrix(7,0);
+    fRegParPi(4,0) = dummyMatrix(3,1);
+    fRegParPi(4,1) = dummyMatrix(4,1);
+    fRegParPi(4,2) = dummyMatrix(7,1);
+    fRegParPi(5,0) = dummyMatrix(6,1);
+    fRegParPi(5,1) = dummyMatrix(4,2);
+    fRegParPi(5,2) = dummyMatrix(7,2);
+    fRegParPi(6,0) = dummyMatrix(2,0);
+    fRegParPi(6,1) = dummyMatrix(5,0);
+    fRegParPi(6,2) = dummyMatrix(8,0);
+    fRegParPi(7,0) = dummyMatrix(2,1);
+    fRegParPi(7,1) = dummyMatrix(5,1);
+    fRegParPi(7,2) = dummyMatrix(8,1);
+    fRegParPi(8,0) = dummyMatrix(6,2);
+    fRegParPi(8,1) = dummyMatrix(5,2);
+    fRegParPi(8,2) = dummyMatrix(8,2);
+    //printf("after\n");
+    //for(Int_t jj=0;jj<9;jj++) printf("%13.10f   %13.10f  %13.10f\n",fRegParPi(jj,0),fRegParPi(jj,1),fRegParPi(jj,2));
     break;
   case 321:
     fRegPar = (TMatrixD*)inFile->Get("/RegParams/Kaons/RegKaons");
     new(&fRegParKa) TMatrixD(*fRegPar);
+    dummyMatrix = fRegParKa;  
+    fRegParKa(0,0) = dummyMatrix(0,0);
+    fRegParKa(0,1) = dummyMatrix(0,1);
+    fRegParKa(0,2) = dummyMatrix(0,2);
+    fRegParKa(1,0) = dummyMatrix(3,0);
+    fRegParKa(1,1) = dummyMatrix(1,1);
+    fRegParKa(1,2) = dummyMatrix(1,2);
+    fRegParKa(2,0) = dummyMatrix(6,0);
+    fRegParKa(2,1) = dummyMatrix(3,2);
+    fRegParKa(2,2) = dummyMatrix(2,2);
+    fRegParKa(3,0) = dummyMatrix(1,0);
+    fRegParKa(3,1) = dummyMatrix(4,0);
+    fRegParKa(3,2) = dummyMatrix(7,0);
+    fRegParKa(4,0) = dummyMatrix(3,1);
+    fRegParKa(4,1) = dummyMatrix(4,1);
+    fRegParKa(4,2) = dummyMatrix(7,1);
+    fRegParKa(5,0) = dummyMatrix(6,1);
+    fRegParKa(5,1) = dummyMatrix(4,2);
+    fRegParKa(5,2) = dummyMatrix(7,2);
+    fRegParKa(6,0) = dummyMatrix(2,0);
+    fRegParKa(6,1) = dummyMatrix(5,0);
+    fRegParKa(6,2) = dummyMatrix(8,0);
+    fRegParKa(7,0) = dummyMatrix(2,1);
+    fRegParKa(7,1) = dummyMatrix(5,1);
+    fRegParKa(7,2) = dummyMatrix(8,1);
+    fRegParKa(8,0) = dummyMatrix(6,2);
+    fRegParKa(8,1) = dummyMatrix(5,2);
+    fRegParKa(8,2) = dummyMatrix(8,2);
     break;
   case 2212:
     if(fColl==0) {
@@ -2566,10 +2613,66 @@ Int_t AliTPCtrackerParam::ReadRegParams(const Char_t* inName,Int_t pdg) {
       fRegPar = (TMatrixD*)inFile->Get("/RegParams/Protons/RegProtons");
     }
     new(&fRegParPr) TMatrixD(*fRegPar);
+    dummyMatrix = fRegParPr;  
+    fRegParPr(0,0) = dummyMatrix(0,0);
+    fRegParPr(0,1) = dummyMatrix(0,1);
+    fRegParPr(0,2) = dummyMatrix(0,2);
+    fRegParPr(1,0) = dummyMatrix(3,0);
+    fRegParPr(1,1) = dummyMatrix(1,1);
+    fRegParPr(1,2) = dummyMatrix(1,2);
+    fRegParPr(2,0) = dummyMatrix(6,0);
+    fRegParPr(2,1) = dummyMatrix(3,2);
+    fRegParPr(2,2) = dummyMatrix(2,2);
+    fRegParPr(3,0) = dummyMatrix(1,0);
+    fRegParPr(3,1) = dummyMatrix(4,0);
+    fRegParPr(3,2) = dummyMatrix(7,0);
+    fRegParPr(4,0) = dummyMatrix(3,1);
+    fRegParPr(4,1) = dummyMatrix(4,1);
+    fRegParPr(4,2) = dummyMatrix(7,1);
+    fRegParPr(5,0) = dummyMatrix(6,1);
+    fRegParPr(5,1) = dummyMatrix(4,2);
+    fRegParPr(5,2) = dummyMatrix(7,2);
+    fRegParPr(6,0) = dummyMatrix(2,0);
+    fRegParPr(6,1) = dummyMatrix(5,0);
+    fRegParPr(6,2) = dummyMatrix(8,0);
+    fRegParPr(7,0) = dummyMatrix(2,1);
+    fRegParPr(7,1) = dummyMatrix(5,1);
+    fRegParPr(7,2) = dummyMatrix(8,1);
+    fRegParPr(8,0) = dummyMatrix(6,2);
+    fRegParPr(8,1) = dummyMatrix(5,2);
+    fRegParPr(8,2) = dummyMatrix(8,2);
     break;
   case 11:
     fRegPar = (TMatrixD*)inFile->Get("/RegParams/Electrons/RegElectrons");
     new(&fRegParEl) TMatrixD(*fRegPar);
+    dummyMatrix = fRegParEl;  
+    fRegParEl(0,0) = dummyMatrix(0,0);
+    fRegParEl(0,1) = dummyMatrix(0,1);
+    fRegParEl(0,2) = dummyMatrix(0,2);
+    fRegParEl(1,0) = dummyMatrix(3,0);
+    fRegParEl(1,1) = dummyMatrix(1,1);
+    fRegParEl(1,2) = dummyMatrix(1,2);
+    fRegParEl(2,0) = dummyMatrix(6,0);
+    fRegParEl(2,1) = dummyMatrix(3,2);
+    fRegParEl(2,2) = dummyMatrix(2,2);
+    fRegParEl(3,0) = dummyMatrix(1,0);
+    fRegParEl(3,1) = dummyMatrix(4,0);
+    fRegParEl(3,2) = dummyMatrix(7,0);
+    fRegParEl(4,0) = dummyMatrix(3,1);
+    fRegParEl(4,1) = dummyMatrix(4,1);
+    fRegParEl(4,2) = dummyMatrix(7,1);
+    fRegParEl(5,0) = dummyMatrix(6,1);
+    fRegParEl(5,1) = dummyMatrix(4,2);
+    fRegParEl(5,2) = dummyMatrix(7,2);
+    fRegParEl(6,0) = dummyMatrix(2,0);
+    fRegParEl(6,1) = dummyMatrix(5,0);
+    fRegParEl(6,2) = dummyMatrix(8,0);
+    fRegParEl(7,0) = dummyMatrix(2,1);
+    fRegParEl(7,1) = dummyMatrix(5,1);
+    fRegParEl(7,2) = dummyMatrix(8,1);
+    fRegParEl(8,0) = dummyMatrix(6,2);
+    fRegParEl(8,1) = dummyMatrix(5,2);
+    fRegParEl(8,2) = dummyMatrix(8,2);
     break;
   case 13:
     if(fColl==0) {
@@ -2578,6 +2681,34 @@ Int_t AliTPCtrackerParam::ReadRegParams(const Char_t* inName,Int_t pdg) {
       fRegPar = (TMatrixD*)inFile->Get("/RegParams/Muons/RegMuons");
     }
     new(&fRegParMu) TMatrixD(*fRegPar);
+    dummyMatrix = fRegParMu;  
+    fRegParMu(0,0) = dummyMatrix(0,0);
+    fRegParMu(0,1) = dummyMatrix(0,1);
+    fRegParMu(0,2) = dummyMatrix(0,2);
+    fRegParMu(1,0) = dummyMatrix(3,0);
+    fRegParMu(1,1) = dummyMatrix(1,1);
+    fRegParMu(1,2) = dummyMatrix(1,2);
+    fRegParMu(2,0) = dummyMatrix(6,0);
+    fRegParMu(2,1) = dummyMatrix(3,2);
+    fRegParMu(2,2) = dummyMatrix(2,2);
+    fRegParMu(3,0) = dummyMatrix(1,0);
+    fRegParMu(3,1) = dummyMatrix(4,0);
+    fRegParMu(3,2) = dummyMatrix(7,0);
+    fRegParMu(4,0) = dummyMatrix(3,1);
+    fRegParMu(4,1) = dummyMatrix(4,1);
+    fRegParMu(4,2) = dummyMatrix(7,1);
+    fRegParMu(5,0) = dummyMatrix(6,1);
+    fRegParMu(5,1) = dummyMatrix(4,2);
+    fRegParMu(5,2) = dummyMatrix(7,2);
+    fRegParMu(6,0) = dummyMatrix(2,0);
+    fRegParMu(6,1) = dummyMatrix(5,0);
+    fRegParMu(6,2) = dummyMatrix(8,0);
+    fRegParMu(7,0) = dummyMatrix(2,1);
+    fRegParMu(7,1) = dummyMatrix(5,1);
+    fRegParMu(7,2) = dummyMatrix(8,1);
+    fRegParMu(8,0) = dummyMatrix(6,2);
+    fRegParMu(8,1) = dummyMatrix(5,2);
+    fRegParMu(8,2) = dummyMatrix(8,2);
     break;
   }
   inFile->Close();
@@ -3221,15 +3352,25 @@ void AliTPCtrackerParam::SmearTrack(Double_t *xx,Double_t *xxsm,TMatrixD cov)
 //-----------------------------------------------------------------------------
 // This function smears track parameters according to streched cov. matrix
 //-----------------------------------------------------------------------------
+  Double_t xref=xxsm[0]; xxsm[0]=0;
+
   AliGausCorr *corgen = new AliGausCorr(cov,5);
   TArrayD corr(5);
   corgen->GetGaussN(corr);
+  // check on fP2(ESD) = fX*fP4-fP2(TPC)
+  // with fX=xref (not smeared), fP4=xx[4]+corr[4] e fP2=xx[2]+corr[2];
+  // if fP2(ESD)^2 > 1 -> resmear...
+  Double_t fp2esd=xref*(xx[4]+corr[4])-(xx[2]+corr[2]);
+  while ( (fp2esd*fp2esd) > 1.0 ) {
+    Warning("SmearTrack()","Badly smeared track, retrying...");
+    corgen->GetGaussN(corr);
+    fp2esd=xref*(xx[4]+corr[4])-(xx[2]+corr[2]);
+  }
+
   delete corgen;
   corgen = 0;
 
-  for(Int_t l=0;l<5;l++) {
-    xxsm[l] = xx[l]+corr[l];
-  }
+  for(Int_t l=0;l<5;l++) xxsm[l] = xx[l]+corr[l];
 
   return;
 }

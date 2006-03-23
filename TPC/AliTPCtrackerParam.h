@@ -19,7 +19,7 @@
 //                                  
 //                                                                        
 //  Origin: Andrea Dainese, Padova - e-mail: andrea.dainese@pd.infn.it     
-//                                                                        
+//  adapted to ESD output by: Marcello Lunardon, Padova
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -30,6 +30,7 @@ class TTree;
 #include "AliConfig.h"
 #include "AliTPCkineGrid.h"
 #include "AliTPCtrack.h"
+#include "AliESD.h"
 //----------------------------
 
 class AliTPC;
@@ -39,7 +40,7 @@ class AliTPCtrackerParam:
 {
    
  public:
-  AliTPCtrackerParam(Int_t coll=0, Double_t Bz=0.4, Int_t n=1,
+  AliTPCtrackerParam(Int_t coll=0, Double_t Bz=0.4,
 		     const char* evfoldname = AliConfig::GetDefaultEventFolderName());
   virtual ~AliTPCtrackerParam();
 
@@ -47,14 +48,16 @@ class AliTPCtrackerParam:
   //
   AliTPCtrackerParam(const AliTPCtrackerParam& p);
   //
-  Int_t BuildTPCtracks(const TFile *inp, TFile *out);
+  Int_t Init();
+  Int_t BuildTPCtracks(AliESD* event);
   // these functions are used to create a DB of cov. matrices,
   // including regularization, efficiencies and dE/dx
   void  AllGeantTracks() { fSelAndSmear=kFALSE; return; }
   void  AnalyzedEdx(const Char_t *outName,Int_t pdg);
   void  AnalyzePulls(const Char_t *outName);
   void  AnalyzeResolutions(Int_t pdg);
-  void  CompareTPCtracks(const Char_t *galiceName="galice.root",
+  void  CompareTPCtracks(Int_t nEvents=1,
+			 const Char_t *galiceName="galice.root",
 			 const Char_t *trkGeaName="AliTPCtracksGeant.root",
 			 const Char_t *trkKalName="AliTPCtracksSorted.root",
 			 const Char_t *covmatName="CovMatrix.root",
@@ -87,6 +90,9 @@ class AliTPCtrackerParam:
 		    Int_t lab=0);
     Int_t    GetLabel() const { return fLabel; }
     Double_t GetAlpha() const { return fAlpha; }      
+    Double_t GetXG() const { return fXg; }
+    Double_t GetYG() const { return fYg; }
+    Double_t GetZG() const { return fZg; }
     Double_t GetXL() const 
       { return fXg*TMath::Cos(fAlpha)+fYg*TMath::Sin(fAlpha); }
     Double_t GetYL() const 
@@ -122,7 +128,6 @@ class AliTPCtrackerParam:
 
   TString fEvFolderName;//! name of data folder
 
-  Int_t           fNevents;     // number of events in the file to be processed
   Double_t        fBz;          // value of the z component of L3 field (Tesla)
   Int_t           fColl;        // collision code (0: PbPb6000; 1: pp)
   Bool_t          fSelAndSmear; // if kFALSE returns GEANT tracks 
@@ -133,6 +138,11 @@ class AliTPCtrackerParam:
 
   TTree          *fCovTree;  // tree with regularized cov matrices 
                              // for the current track
+  TTree           *fCovTreePi[30];
+  TTree           *fCovTreeKa[30];
+  TTree           *fCovTreePr[30];
+  TTree           *fCovTreeEl[30];
+  TTree           *fCovTreeMu[30];
 
   AliTPCkineGrid *fDBgrid;   // grid for the cov matrix look-up table  
   AliTPCkineGrid  fDBgridPi; //               "                  for pions  
@@ -178,8 +188,6 @@ class AliTPCtrackerParam:
 
 
   void     BuildTrack(AliTPCseedGeant *s,Int_t ch);
-  Int_t    CheckLabel(AliTPCseedGeant *s,Int_t nPart,
-		      Double_t *ptkine,Double_t *pzkine) const;
   void     CookdEdx(Double_t pt,Double_t eta);
   void     CookTrack(Double_t pt,Double_t eta);
   TMatrixD GetSmearingMatrix(Double_t *cc, Double_t pt,Double_t eta) const;
@@ -193,6 +201,7 @@ class AliTPCtrackerParam:
   Int_t    ReadEffs(const Char_t *inName);
   Int_t    ReadPulls(const Char_t *inName);
   Int_t    ReadRegParams(const Char_t *inName,Int_t pdg);
+  Int_t    ReadCovTrees(const Char_t* inName); 
   Bool_t   SelectedTrack(Double_t pt, Double_t eta) const;
   void     SetParticle(Int_t pdg);  
   void     SmearTrack(Double_t *xx,Double_t *xxsm,TMatrixD cov) const;

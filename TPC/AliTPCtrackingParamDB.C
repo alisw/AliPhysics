@@ -22,6 +22,7 @@
 #ifndef __CINT__
 #include "Riostream.h"
 #include <TFile.h>
+#include <TTree.h>
 #include <TStopwatch.h>
 #include <TObject.h>
 #include "alles.h"
@@ -41,88 +42,112 @@
 #include "AliITStrackerV2.h"
 #include "AliKalmanTrack.h"
 #include "AliTPCtrackerParam.h"
+#include "AliTracker.h"
+#include "AliESD.h"
+#include "AliRun.h"
+#include "AliRunLoader.h"
 #endif
 
-void TPCParamTracks(const Char_t *galice,const Char_t *outname,const Int_t coll,const Double_t Bfield,Int_t n);
-void CreateAllGeantTracks(const Char_t *galice, const Char_t *outname,const Int_t coll,const Double_t Bfield,Int_t n);
+Int_t TPCParamTracks(const Int_t coll=1,Int_t firstEvent=0,Int_t lastEvent=0);
+void CreateAllGeantTracks(const Int_t coll=1,Int_t nev=1);
 void TrackCompare(const Int_t coll,const Double_t Bfield,Int_t n);
 void BuildDataBase(const Int_t coll,const Double_t Bfield);
 
-void AliTPCtrackingParamDB(Int_t n=1) {
-
-  const Char_t *name=" AliTPCtrackingParamTest";
-  cerr<<'\n'<<name<<"...\n";
-  gBenchmark->Start(name);
-
-
-  const Char_t *TPCtrkName="AliTPCtracksParam.root";
-  const Char_t *TPCgeatrkName="AliTPCtracksGeant.root";
-  const Char_t *galiceName="galice.root";
-
-  // set here the code for the type of collision (needed for TPC tracking
-  // parameterization). available collisions:
-  //
-  // coll = 0 ->   PbPb6000 (HIJING with b<2fm) 
-  const Int_t    collcode = 0;  
-  // set here the value of the magnetic field
-  const Double_t BfieldValue = 0.4;
-
-  AliKalmanTrack::SetConvConst(100/0.299792458/BfieldValue);
-
-  // ********** Build TPC tracks with parameterization *********** // 
-  TPCParamTracks(galiceName,TPCtrkName,collcode,BfieldValue,n);
- 
-
-  // ********** Build All True TPC tracks *********** //
-  CreateAllGeantTracks(galiceName,TPCgeatrkName,collcode,BfieldValue,n);
-    
-  // ********** Compare Kalman tracks with tracks at 1st hit *********** //
-  TrackCompare(collcode,BfieldValue);
-  
-   
-  // ********** Merge files, compute pulls, and dEdx *********** //
-  BuildDataBase(collcode,BfieldValue);
-  
-
-
-
-  gBenchmark->Stop(name);
-  gBenchmark->Show(name);
-
-  return;
-}
-
 //_____________________________________________________________________________
-void TPCParamTracks(const Char_t *galice, const Char_t *outname,
-		    const Int_t coll,const Double_t Bfield,Int_t n) {
+Int_t TPCParamTracks(const Int_t coll,Int_t firstEvent,Int_t lastEvent) {
 //
 // Ordinary TPC tracking parameterization
 //
-  cerr<<"\n*******************************************************************\n";
 
-  const Char_t *name="TPCParamTracks";
-  cerr<<'\n'<<name<<"...\n";
-  gBenchmark->Start(name);
+   /**** Initialization of the NewIO *******/
 
-  TFile *outfile=TFile::Open(outname,"recreate");
-  TFile *infile =TFile::Open(galice);
+   if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice; 
+      gAlice=0;
+   }
 
-  AliTPCtrackerParam tracker(coll,Bfield,n);
-  tracker.BuildTPCtracks(infile,outfile);
+   AliRunLoader *rl = AliRunLoader::Open("galice.root");
+   if (rl == 0x0) {
+      cerr<<"Can not open session"<<endl;
+      return;
+   }
+   Int_t retval = rl->LoadgAlice();
+   if (retval) {
+      cerr<<"LoadgAlice returned error"<<endl;
+      delete rl;
+      return;
+   }
+   retval = rl->LoadHeader();
+   if (retval) {
+      cerr<<"LoadHeader returned error"<<endl;
+      delete rl;
+      return;
+   }
+   gAlice=rl->GetAliRun();
+       
 
-  delete gAlice; gAlice=0;
+   TDatabasePDG *DataBase = TDatabasePDG::Instance();
 
-  infile->Close();
-  outfile->Close();
+   // Get field from galice.root
+   AliMagF *fiel = (AliMagF*)gAlice->Field();
+   Double_t fieval=TMath::Abs((Double_t)fiel->SolenoidField()/10.);
+   // Set the conversion constant between curvature and Pt
+   AliTracker::SetFieldMap(fiel,kTRUE);
 
-  gBenchmark->Stop(name);
-  gBenchmark->Show(name);
+   /**** The TPC corner ********************/
 
-  return;
+   AliTPCtrackerParam tpcTrackerPar(coll,fieval);
+   tpcTrackerPar.Init();
+
+   /***** The TREE is born *****/
+   
+   TTree *esdTree=new TTree("esdTree","Tree with ESD objects");
+   AliESD *event=0;
+   esdTree->Branch("ESD","AliESD",&event);
+   
+   if(firstEvent>rl->GetNumberOfEvents()) firstEvent=rl->GetNumberOfEvents()-1;
+   if(lastEvent>rl->GetNumberOfEvents())  lastEvent=rl->GetNumberOfEvents()-1;
+   cout<<" Number of events: "<<1+lastEvent-firstEvent<<endl;
+   
+   //<----------------------------------The Loop over events begins
+   TStopwatch timer;
+   Int_t trc;
+   for(Int_t i=firstEvent; i<=lastEvent; i++) { 
+     
+     cerr<<" Processing event number : "<<i<<endl;
+     AliESD *event = new AliESD(); 
+     event->SetRunNumber(gAlice->GetRunNumber());
+     event->SetEventNumber(i);
+     event->SetMagneticField(gAlice->Field()->SolenoidField());
+     rl->GetEvent(i);
+
+     if ( (trc=tpcTrackerPar.BuildTPCtracks(event)) ) {
+       printf("exiting tracker with code %d in event %d\n",trc,i);
+       esdTree->Fill(); delete event;
+       continue;
+     }
+
+     esdTree->Fill();
+     delete event;
+
+   }//<-----------------------------------The Loop over events ends here
+   timer.Stop(); timer.Print();
+
+   //        The AliESDs.root is born
+   TFile *ef = TFile::Open("AliESDs.root","RECREATE"); 
+   if (!ef || !ef->IsOpen()) {cerr<<"Can't open AliESDs.root !\n"; return;}
+
+   esdTree->Write(); //Write the TREE and close everything
+   delete esdTree;
+   ef->Close();
+
+   delete rl;
+
+   return;
 }
 //_____________________________________________________________________________
-void CreateAllGeantTracks(const Char_t *galice, const Char_t *outname,
-			  const Int_t coll,const Double_t Bfield,Int_t n) {
+void CreateAllGeantTracks(const Int_t coll,Int_t nev) {
 //
 // Get all tracks at TPC 1st hit w/o selection and smearing
 //
