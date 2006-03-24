@@ -42,15 +42,8 @@ class AliFMDReconstructor: public AliReconstructor
 public:
   /** CTOR */
   AliFMDReconstructor();
-  /** Copy CTOR 
-      @param other Object to copy from. */
-  AliFMDReconstructor(const AliFMDReconstructor& other);
   /** DTOR */
   virtual ~AliFMDReconstructor();
-  /** Assignment operator 
-      @param other Object to assign from
-      @return reference to this object */
-  AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
 
   /** Initialize the reconstructor.  Here, we initialize the geometry
       manager, and finds the local to global transformations from the
@@ -95,6 +88,13 @@ public:
   virtual void   SetESD(AliESD* esd) { fESD = esd; }
      
 private:
+  /** Copy CTOR 
+      @param other Object to copy from. */
+  AliFMDReconstructor(const AliFMDReconstructor& other);
+  /** Assignment operator 
+      @param other Object to assign from
+      @return reference to this object */
+  AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
   /** Hide base classes unused function */
   void Reconstruct(AliRawReader*, TTree*) const;
   /** Hide base classes unused function */

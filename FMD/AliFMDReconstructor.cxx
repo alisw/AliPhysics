@@ -60,8 +60,12 @@ ClassImp(AliFMDReconstructor)
 //____________________________________________________________________
 AliFMDReconstructor::AliFMDReconstructor() 
   : AliReconstructor(),
-    fMult(0), 
-    fESDObj(0)
+    fMult(0x0), 
+    fNMult(0),
+    fTreeR(0x0),
+    fCurrentVertex(0),
+    fESDObj(0x0),
+    fESD(0x0)
 {
   // Make a new FMD reconstructor object - default CTOR.  
 }
@@ -71,7 +75,11 @@ AliFMDReconstructor::AliFMDReconstructor()
 AliFMDReconstructor::AliFMDReconstructor(const AliFMDReconstructor& other) 
   : AliReconstructor(), 
     fMult(other.fMult),
-    fESDObj(other.fESDObj)
+    fNMult(other.fNMult),
+    fTreeR(other.fTreeR),
+    fCurrentVertex(other.fCurrentVertex),
+    fESDObj(other.fESDObj),
+    fESD(other.fESD)
 {
   // Copy constructor 
 }
@@ -83,7 +91,11 @@ AliFMDReconstructor::operator=(const AliFMDReconstructor& other)
 {
   // Assignment operator
   fMult   = other.fMult;
+  fNMult = other.fNMult;
+  fTreeR = other.fTreeR;
+  fCurrentVertex = other.fCurrentVertex;
   fESDObj = other.fESDObj;
+  fESD = other.fESD;
   return *this;
 }
 
