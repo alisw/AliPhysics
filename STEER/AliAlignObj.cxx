@@ -45,7 +45,7 @@ Int_t AliAlignObj::fgLayerSize[kLastLayer - kFirstLayer] = {
   748, 950, // ITS SSD
   36, 36,   // TPC
   90, 90, 90, 90, 90, 90,  // TRD
-  1674,     // TOF
+  1638,     // TOF
   1, 1,     // PHOS ??
   7,        // RICH ??
   1         // MUON ??
@@ -737,10 +737,12 @@ void AliAlignObj::InitVolPaths()
   {
     Int_t nstrA=15;
     Int_t nstrB=19;
-    Int_t nstrC=20;
+    Int_t nstrC=19;
+    Int_t nsec=18;
     Int_t nStripSec=nstrA+2*nstrB+2*nstrC;
+    Int_t nStrip=nStripSec*nsec;
 
-    for (Int_t modnum=0; modnum < 1674; modnum++) {
+    for (Int_t modnum=0; modnum < nStrip; modnum++) {
 
       Int_t sector = modnum/nStripSec;
       Char_t  string1[100];
@@ -750,51 +752,25 @@ void AliAlignObj::InitVolPaths()
 
       if(sector<3){
 	icopy=sector+1;
-	sprintf(string1,"/ALIC_1/B077_1/B075_%i/BTO3_1",icopy);
+	sprintf(string1,"/ALIC_1/B077_1/B075_%i/BTO3_1/FTOA_0/FLTA_0",icopy);
       }
       else if(sector<11){
-	icopy=sector-2;
-	sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1",icopy);
+	icopy=sector+3;
+	sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1/FTOA_0/FLTA_0",icopy);
       }
       else if(sector==11 || sector==12){
 	icopy=sector-10;
-	sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1",icopy);
+	sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1/FTOA_0/FLTA_0",icopy);
       }
       else {
-	icopy=sector-4;
-	sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1",icopy);
+	icopy=sector-12;
+	sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1/FTOA_0/FLTA_0",icopy);
       }
-
+      
       Int_t strInSec=modnum%nStripSec;
-
-      if( strInSec < nstrC){
-	icopy= nstrC - (strInSec+1) + 1;
-	sprintf(string2,"FTOC_1/FLTC_0/FSTR_%i",icopy);
-      }
-      else if(strInSec< nstrC+nstrB){
- 
-	icopy= nstrB - (strInSec-nstrC+1) + 1;
-	sprintf(string2,"FTOB_1/FLTB_0/FSTR_%i",icopy);
-
-      }
-      else if(strInSec< nstrC+nstrB+nstrA){   
-
-	icopy= strInSec-(nstrC+nstrB)+1;
-   	sprintf(string2,"FTOA_0/FLTA_0/FSTR_%i",icopy); 
-      }
-      else if(strInSec< nstrC+2*nstrB+nstrA){ 
-
-	icopy= strInSec-(nstrC+nstrB+nstrA)+1;
- 	sprintf(string2,"FTOB_2/FLTB_0/FSTR_%i",icopy);
-
-      }
-      else  { 
-
-	icopy= strInSec-(nstrC+2*nstrB+nstrA)+1;
-	sprintf(string2,"FTOC_2/FLTC_0/FSTR_%i",icopy);
-
-      }
-  
+      icopy= strInSec;
+      icopy++;
+      sprintf(string2,"FSTR_%i",icopy);      
       Char_t  path[100];
       sprintf(path,"%s/%s",string1,string2); 
       //      printf("%d  %s\n",modnum,path);
