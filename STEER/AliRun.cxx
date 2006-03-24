@@ -960,7 +960,7 @@ void AliRun::AddModule(AliModule* mod)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRun::ApplyAlignObjsToGeom(TClonesArray* AlObjArray)
+Bool_t AliRun::ApplyAlignObjsToGeom(TObjArray* AlObjArray)
 {
   // Read collection of alignment objects (AliAlignObj derived) saved
   // in the TClonesArray ClArrayName and apply them to the geometry

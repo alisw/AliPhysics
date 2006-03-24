@@ -267,42 +267,45 @@ void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 }
 
 //_____________________________________________________________________________
-void AliCDBManager::SetSpecificStorage(const char* detName, const char* dbString) {
-// sets storage specific for detector (works with AliCDBManager::Get(...))
+void AliCDBManager::SetSpecificStorage(const char* calibType, const char* dbString) {
+// sets storage specific for detector or calibration type (works with AliCDBManager::Get(...))
 
 	AliCDBParam *aPar = CreateParameter(dbString);
 	if(!aPar) return;
-	SetSpecificStorage(detName, aPar);
+	SetSpecificStorage(calibType, aPar);
 	delete aPar;
 }
 
 //_____________________________________________________________________________
-void AliCDBManager::SetSpecificStorage(const char* detName, AliCDBParam* param) {
-// sets storage specific for detector (works with AliCDBManager::Get(...))
+void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param) {
+// sets storage specific for detector or calibration type (works with AliCDBManager::Get(...))
+// Default storage should be defined prior to any specific storages, e.g.:
+// AliCDBManager::instance()->SetDefaultStorage("alien://");
+// AliCDBManager::instance()->SetSpecificStorage("TPC","local://DB_TPC");
+// AliCDBManager::instance()->SetSpecificStorage("RICH/Align","local://DB_TPCAlign");
 
 	if(!fDefaultStorage) {
 		AliError("Please activate a default storage first!");	
 		return;
 	}
 	
-	TObjString *objDetName = new TObjString(detName);
-	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(objDetName);
-	if(checkPar){
-		AliWarning(Form("%s storage already activated! It will be replaced by the new one",objDetName->String().Data()));
-		fSpecificStorages.Remove(objDetName);	
-		delete checkPar;
+	TObjString *objCalibType = new TObjString(calibType);
+	if(fSpecificStorages.Contains(objCalibType)){
+		AliWarning(Form("%s storage already activated! It will be replaced by the new one",
+					calibType));
+		fSpecificStorages.Remove(objCalibType);	
 	}
 	GetStorage(param);
-	fSpecificStorages.Add(objDetName, param->CloneParam());
+	fSpecificStorages.Add(objCalibType, param->CloneParam());
 }
 
 //_____________________________________________________________________________
-AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* detName) {
-// get storage specific for detector 
+AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* calibType) {
+// get storage specific for detector or calibration type 
 
-	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(detName);
+	AliCDBParam *checkPar = (AliCDBParam*) fSpecificStorages.GetValue(calibType);
 	if(!checkPar){
-		AliError(Form("%s storage not found!",detName));
+		AliError(Form("%s storage not found!",calibType));
 		return NULL;
 	} else {
 		return GetStorage(checkPar);
@@ -311,9 +314,34 @@ AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* detName) {
 }
 
 //_____________________________________________________________________________
+AliCDBParam* AliCDBManager::SelectSpecificStorage(const TString& path) {
+// select storage valid for path from the list of specific storages 
+
+	TIter iter(&fSpecificStorages);
+	TObjString *aCalibType;
+	AliCDBParam* aPar=0;
+	while((aCalibType = (TObjString*) iter.Next())){
+		if(path.Contains(aCalibType->String(), TString::kIgnoreCase)) {
+		 	aPar = (AliCDBParam*) fSpecificStorages.GetValue(aCalibType);
+			break;
+		}
+	}
+	return aPar;
+}
+
+//_____________________________________________________________________________
 AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path, Int_t runNumber, 
 	Int_t version, Int_t subVersion) {
 // get an AliCDBEntry object from the database
+
+	if(runNumber < 0){
+		// RunNumber is not specified. Try with fRun
+  		if (fRun < 0){
+   	 		AliError("Run number neither specified in query nor set in AliCDBManager! Use AliCDBManager::SetRun.");
+    			return NULL;
+  		}
+		runNumber = fRun;
+	}
 
 	return Get(AliCDBId(path, runNumber, runNumber, version, subVersion));
 }
@@ -342,17 +370,33 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 		AliError(Form("Invalid query: %s", query.ToString().Data()));
 		return NULL;
 	}
-
-	// query is not specified if path contains wildcard or runrange = [-1,-1] 
-	if (!query.IsSpecified()) {
+	
+	// query is not specified if path contains wildcard or run range= [-1,-1]
+ 	if (!query.IsSpecified()) {
 		AliError(Form("Unspecified query: %s", 
 				query.ToString().Data()));
                 return NULL;
 	}
 
-	TObjString objStrLev0(query.GetLevel0());
-	AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
-	AliCDBStorage *aStorage;
+	if(fCache && query.GetFirstRun() != fRun) 
+		AliWarning("Run number explicitly set in query: CDB cache temporarily disabled!");
+
+	
+  	AliCDBEntry *entry=0;
+	
+  
+  	// first look into map of cached objects
+  	if(query.GetFirstRun() == fRun) 
+		entry = (AliCDBEntry*) fEntryCache.GetValue(query.GetPath());
+
+  	if(entry) {
+		AliInfo(Form("Object %s retrieved from cache !!",query.GetPath().Data()));		
+		return entry;
+	}
+  	
+	// Entry is not in cache -> retrieve it from CDB and cache it!!   
+	AliCDBStorage *aStorage=0;
+	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
 	
 	if(aPar) {
 		aStorage=GetStorage(aPar);
@@ -364,7 +408,16 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 		AliDebug(2,"Looking into default storage");	
 	}
 			
-	return aStorage->Get(query);
+	entry = aStorage->Get(query);
+  	if (!entry) return NULL;
+
+ 	if(fCache && (query.GetFirstRun() == fRun)){
+		AliInfo(Form("Caching entry %s !",query.GetPath().Data()));
+		CacheEntry(query.GetPath(), entry);
+	}
+  
+  	return entry;
+		
 }
 
 //_____________________________________________________________________________
@@ -387,6 +440,8 @@ TList* AliCDBManager::GetAll(const AliCDBPath& path,
 //_____________________________________________________________________________
 TList* AliCDBManager::GetAll(const AliCDBId& query) {
 // get multiple AliCDBEntry objects from the database
+// Warning: this method works correctly only for queries of the type "Detector/*"
+// 		and not for more specific queries e.g. "Detector/Calib/*" !
 
 	if(!fDefaultStorage) {
 		AliError("No storage set!");
@@ -411,8 +466,8 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
         
 	TObjString objStrLev0(query.GetLevel0());
 	AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
-	AliCDBStorage *aStorage;
-	
+
+	AliCDBStorage *aStorage;	
 	if(aPar) {
 		aStorage=GetStorage(aPar);
 		TString str = aPar->GetURI();
@@ -465,8 +520,8 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry){
 	}
 
 	AliCDBId id = entry->GetId();
-	TObjString objStrLev0(id.GetLevel0());
-	AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
+	AliCDBParam *aPar = SelectSpecificStorage(id.GetPath());
+
 	AliCDBStorage *aStorage;
 	
 	if(aPar) {
@@ -485,33 +540,6 @@ Bool_t AliCDBManager::Put(AliCDBEntry* entry){
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBManager::Get(const char* path)
-{
-// get an AliCDBEntry object from the database, using fRun as run number
-    
-  	if (fRun < 0)
-  	{
-   	 	AliError("Run number not set! Use AliCDBManager::SetRun.");
-    		return 0;
-  	}
-	
-  	AliCDBEntry *entry;
-  
-  	// first look into map of cached objects
-  	entry = (AliCDBEntry*) fEntryCache.GetValue(path);
-  	if(entry) return entry;
-
-  	// Entry is not in cache -> retrieve it from CDB and cache it!!
-  	entry = Get(path, fRun); 
-  	if (!entry) return 0;
-   
- 	if(fCache) CacheEntry(path, entry);
-  
-  	return entry;
-
-}
-
-//_____________________________________________________________________________
 void AliCDBManager::CacheEntry(const char* path, AliCDBEntry* entry)
 {
 // cache AliCDBEntry. Cache is valid until run number is changed.
@@ -525,10 +553,8 @@ void AliCDBManager::CacheEntry(const char* path, AliCDBEntry* entry)
 //_____________________________________________________________________________
 void AliCDBManager::SetRun(Long64_t run)
 {
-//
 // Sets current run number.  
 // When the run number changes the caching is cleared.
-//
   
 	if (fRun == run)
 		return;

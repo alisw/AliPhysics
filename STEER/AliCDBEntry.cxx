@@ -22,6 +22,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #include "AliCDBEntry.h"
+#include "AliLog.h"
 
 ClassImp(AliCDBEntry)
 
@@ -135,3 +136,9 @@ AliCDBEntry::~AliCDBEntry() {
 	}
 }
 
+//_____________________________________________________________________________
+void AliCDBEntry::PrintId() const {
+ 
+	AliInfo(Form("%s",fId.ToString().Data()));
+
+}

@@ -46,10 +46,10 @@ class AliCDBManager: public TObject {
 	AliCDBStorage* GetDefaultStorage() const {return fDefaultStorage;}
 	void UnsetDefaultStorage() {fDefaultStorage = 0x0;}
 	
-	void SetSpecificStorage(const char* detName, const char* dbString);
-	void SetSpecificStorage(const char* detName, AliCDBParam* param);
+	void SetSpecificStorage(const char* calibType, const char* dbString);
+	void SetSpecificStorage(const char* calibType, AliCDBParam* param);
 
-	AliCDBStorage* GetSpecificStorage(const char* detName);
+	AliCDBStorage* GetSpecificStorage(const char* calibType);
 
 	void SetDrain(const char* dbString);
 	void SetDrain(const AliCDBParam* param);
@@ -62,13 +62,13 @@ class AliCDBManager: public TObject {
 	void UnsetDrain(){fDrainStorage = 0x0;}
 
 	AliCDBEntry* Get(const AliCDBId& query);
-	AliCDBEntry* Get(const AliCDBPath& path, Int_t runNumber, 
+	AliCDBEntry* Get(const AliCDBPath& path, Int_t runNumber=-1, 
 				Int_t version = -1, Int_t subVersion = -1);
 	AliCDBEntry* Get(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1);
 
 	TList* GetAll(const AliCDBId& query);
-	TList* GetAll(const AliCDBPath& path, Int_t runNumber, 
+	TList* GetAll(const AliCDBPath& path, Int_t runNumber=-1, 
 				Int_t version = -1, Int_t subVersion = -1);
 	TList* GetAll(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1); 
@@ -82,7 +82,7 @@ class AliCDBManager: public TObject {
 	void SetRun(Long64_t run);
 	Long64_t GetRun() {return fRun;}
 
-	AliCDBEntry* Get(const char* path);
+	// AliCDBEntry* Get(const char* path);
 
 	void DestroyActiveStorages();
 	void DestroyActiveStorage(AliCDBStorage* storage);
@@ -102,6 +102,8 @@ class AliCDBManager: public TObject {
 	
   	void ClearCache();
   	void CacheEntry(const char* path, AliCDBEntry* entry);
+	
+	AliCDBParam* SelectSpecificStorage(const TString& path);
 	
 
 	void Init();

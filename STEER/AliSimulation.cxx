@@ -132,12 +132,14 @@ ClassImp(AliSimulation)
 
 
 //_____________________________________________________________________________
-AliSimulation::AliSimulation(const char* configFileName,
+AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
 			     const char* name, const char* title) :
   TNamed(name, title),
 
   fRunGeneration(kTRUE),
   fRunSimulation(kTRUE),
+  fLoadAlignFromCDB(kTRUE),
+  fLoadAlignData("ALL"),
   fMakeSDigits("ALL"),
   fMakeDigits("ALL"),
   fMakeTrigger(""),
@@ -154,7 +156,8 @@ AliSimulation::AliSimulation(const char* configFileName,
   fBkgrdFileNames(NULL),
   fAlignObjArray(NULL),
   fUseBkgrdVertex(kTRUE),
-  fRegionOfInterest(kFALSE)
+  fRegionOfInterest(kFALSE),
+  fCDBUri(cdbUri)
 {
 // create simulation object with default parameters
 
@@ -167,6 +170,8 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
 
   fRunGeneration(sim.fRunGeneration),
   fRunSimulation(sim.fRunSimulation),
+  fLoadAlignFromCDB(sim.fLoadAlignFromCDB),
+  fLoadAlignData(sim.fLoadAlignData),
   fMakeSDigits(sim.fMakeSDigits),
   fMakeDigits(sim.fMakeDigits),
   fMakeTrigger(sim.fMakeTrigger),
@@ -183,7 +188,8 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fBkgrdFileNames(NULL),
   fAlignObjArray(NULL),
   fUseBkgrdVertex(sim.fUseBkgrdVertex),
-  fRegionOfInterest(sim.fRegionOfInterest)
+  fRegionOfInterest(sim.fRegionOfInterest),
+  fCDBUri(sim.fCDBUri)
 {
 // copy constructor
 
@@ -215,6 +221,8 @@ AliSimulation::~AliSimulation()
 // clean up
 
   fEventsPerFile.Delete();
+//  if(fAlignObjArray) fAlignObjArray->Delete(); // fAlignObjArray->RemoveAll() ???
+//  delete fAlignObjArray; fAlignObjArray=0;
 
   if (fBkgrdFileNames) {
     fBkgrdFileNames->Delete();
@@ -229,6 +237,41 @@ void AliSimulation::SetNumberOfEvents(Int_t nEvents)
 // set the number of events for one run
 
   fNEvents = nEvents;
+}
+
+//_____________________________________________________________________________
+void AliSimulation::InitCDBStorage(const char* uri)
+{
+// activate a default CDB storage
+// First check if we have any CDB storage set, because it is used 
+// to retrieve the calibration and alignment constants
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet())
+  {
+    AliWarningClass("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarningClass("Default CDB storage not yet set");
+    AliWarningClass(Form("Using default storage declared in AliSimulation: %s",uri));
+    AliWarningClass("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    SetDefaultStorage(uri);
+  }  
+  
+}
+
+//_____________________________________________________________________________
+void AliSimulation::SetDefaultStorage(const char* uri) {
+// activate a default CDB storage 
+
+   AliCDBManager::Instance()->SetDefaultStorage(uri);
+
+}
+
+//_____________________________________________________________________________
+void AliSimulation::SetSpecificStorage(const char* detName, const char* uri) {
+// activate a detector-specific CDB storage 
+
+   AliCDBManager::Instance()->SetSpecificStorage(detName, uri);
+
 }
 
 //_____________________________________________________________________________
@@ -327,6 +370,109 @@ Bool_t AliSimulation::ApplyAlignObjsToGeom(const char* uri, const char* path, In
 }
 
 //_____________________________________________________________________________
+Bool_t AliSimulation::ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version, Int_t sversion)
+{
+  // read collection of alignment objects (AliAlignObj derived) saved
+  // in the TClonesArray ClArrayName in the AliCDBEntry identified by
+  // param (to get the AliCDBStorage) and Id; apply the alignment objects
+  // to the TGeo geometry passed as argument
+  //
+
+  InitCDBStorage("local://$ALICE_ROOT");
+  AliCDBPath path(detName,"Align","Data");
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get(path.GetPath(),runnum,version,sversion);
+
+  if(!entry) return kFALSE;
+  TClonesArray* AlObjArray = ((TClonesArray*) entry->GetObject());
+
+  return gAlice->ApplyAlignObjsToGeom(AlObjArray);
+}
+
+
+//_____________________________________________________________________________
+void AliSimulation::SetAlignObjArray(const char* detectors)
+{
+  // Fills array of detectors' alignable objects from CDB
+  // detectors can be "ALL" or "ITS TPC ..."
+  
+  AliRunLoader* runLoader = LoadRun();
+  if (!runLoader) return;
+
+  InitCDBStorage(fCDBUri);
+
+  if(!fAlignObjArray) fAlignObjArray = new TObjArray();
+  fAlignObjArray->SetOwner(0); // AliCDBEntry is owner of the align objects!
+  fAlignObjArray->Clear(); 
+
+  TString detStr = detectors;
+  TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+  TString dataNotLoaded="";
+  TString dataLoaded="";
+
+  for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
+    AliModule* det = (AliModule*) detArray->At(iDet);
+    if (!det || !det->IsActive()) continue;
+    if (IsSelected(det->GetName(), detStr)) {
+    
+    	if(!SetAlignObjArraySingleDet(det->GetName())){
+    		dataNotLoaded += det->GetName();
+  		dataNotLoaded += " ";
+  			} else {
+				dataLoaded += det->GetName();
+				dataLoaded += " ";
+			}
+    	}
+  } // end loop over all detectors
+
+  if ((detStr.CompareTo("ALL") == 0)) detStr = "";
+  dataNotLoaded += detStr;
+  AliInfo(Form("Alignment data loaded for: %s",
+  		dataLoaded.Data()));
+  AliInfo(Form("Didn't/couldn't load alignment data for: %s",
+  		dataNotLoaded.Data()));
+
+  AliDebug(2, Form("fAlignObjArray entries: %d",fAlignObjArray->GetEntries() ));
+  delete detArray;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::SetAlignObjArraySingleDet(const char* detName)
+{
+  // Fills array of single detector's alignable objects from CDB
+  
+  AliDebug(2, Form("Loading alignment data for detector: %s",detName));
+  
+  AliCDBEntry *entry;
+  	
+  AliCDBPath path(detName,"Align","Data");
+	
+  entry=AliCDBManager::Instance()->Get(path.GetPath());
+  if(!entry){ 
+  	AliDebug(2,Form("Couldn't load alignment data for detector %s",detName));
+	return kFALSE;
+  }
+  entry->SetOwner(1);
+  TClonesArray *alignArray = (TClonesArray*) entry->GetObject();	
+  alignArray->SetOwner(0);
+  AliDebug(2,Form("Found %d alignment objects for %s",
+			alignArray->GetEntries(),detName));
+
+  AliAlignObj *alignObj=0;
+  TIter iter(alignArray);
+	
+  // loop over align objects in detector
+  while( ( alignObj=(AliAlignObj *) iter.Next() ) ){
+  	fAlignObjArray->Add(alignObj);
+  }
+  // delete entry --- Don't delete, it is cached!
+	
+  AliDebug(2, Form("fAlignObjArray entries: %d",fAlignObjArray->GetEntries() ));
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
 void AliSimulation::MergeWith(const char* fileName, Int_t nSignalPerBkgrd)
 {
 // add a file with background events for merging
@@ -343,17 +489,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 {
 // run the generation, simulation and digitization
 
-  // First check if we have any CDB storage set, because it is used 
-  // to retrieve the calibration and alignment constants
-
-  AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet())
-  {
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning("No default CDB storage set, so I will use $ALICE_ROOT");
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    man->SetDefaultStorage("local://$ALICE_ROOT");
-  }  
+  InitCDBStorage(fCDBUri);
 
   if (nEvents > 0) fNEvents = nEvents;
 
@@ -506,6 +642,54 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     gAlice->Init(fConfigFileName.Data());
   ););
 
+  // Set run number in CDBManager (here????)
+  AliCDBManager::Instance()->SetRun(gAlice->GetRunNumber());
+  AliInfo(Form("Run number: %d",AliCDBManager::Instance()->GetRun()));
+
+  AliRunLoader* runLoader = gAlice->GetRunLoader();
+  if (!runLoader) {
+             AliError(Form("gAlice has no run loader object. "
+        		     "Check your config file: %s", fConfigFileName.Data()));
+             return kFALSE;
+  }
+  SetGAliceFile(runLoader->GetFileName());
+ 
+  // Load alignment data from CDB and fill fAlignObjArray 
+
+  if(fLoadAlignFromCDB){
+  	if(!fAlignObjArray) fAlignObjArray = new TObjArray();
+  	
+	//fAlignObjArray->RemoveAll(); 
+ 	fAlignObjArray->Clear();  	
+	fAlignObjArray->SetOwner(0);
+ 
+  	TString detStr = fLoadAlignData;
+  	TString dataNotLoaded="";
+  	TString dataLoaded="";
+  
+  	TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+  	for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
+  		AliModule* det = (AliModule*) detArray->At(iDet);
+  		if (!det || !det->IsActive()) continue;
+  		if (IsSelected(det->GetName(), detStr)) {
+  			if(!SetAlignObjArraySingleDet(det->GetName())){
+  				dataNotLoaded += det->GetName();
+  				dataNotLoaded += " ";
+  			} else {
+				dataLoaded += det->GetName();
+				dataLoaded += " ";
+			}
+  		}
+  	} // end loop over detectors
+  
+  	if ((detStr.CompareTo("ALL") == 0)) detStr = "";
+  	dataNotLoaded += detStr;
+  	AliInfo(Form("Alignment data loaded for: %s",
+  			  dataLoaded.Data()));
+  	AliInfo(Form("Didn't/couldn't load alignment data for: %s",
+  			  dataNotLoaded.Data()));
+  } // fLoadAlignFromCDB flag
+ 
   // Check if the array with alignment objects was
   // provided by the user. If yes, apply the objects
   // to the present TGeo geometry
@@ -525,13 +709,13 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // Export TGeo geometry
   if (gGeoManager) gGeoManager->Export("geometry.root");
 
-  AliRunLoader* runLoader = gAlice->GetRunLoader();
-  if (!runLoader) {
-    AliError(Form("gAlice has no run loader object. "
-                  "Check your config file: %s", fConfigFileName.Data()));
-    return kFALSE;
-  }
-  SetGAliceFile(runLoader->GetFileName());
+//   AliRunLoader* runLoader = gAlice->GetRunLoader();
+//   if (!runLoader) {
+//     AliError(Form("gAlice has no run loader object. "
+//                   "Check your config file: %s", fConfigFileName.Data()));
+//     return kFALSE;
+//   }
+//   SetGAliceFile(runLoader->GetFileName());
 
   if (!gAlice->Generator()) {
     AliError(Form("gAlice has no generator object. "

@@ -50,8 +50,13 @@ fSE(se)
 
 	// if the same Grid is alreay active, skip connection
 	if (!gGrid || fGridUrl != gGrid->GridUrl()  
-	     || fUser != gGrid->GetUser()) {
+	     || (( fUser != "" ) && ( fUser != gGrid->GetUser() )) ) {
    		// connection to the Grid
+		AliInfo("Connection to the Grid!!!!");
+		if(gGrid){
+			AliInfo(Form("gGrid = %x; fGridUrl = %s; gGrid->GridUrl() = %s",gGrid,fGridUrl.Data(), gGrid->GridUrl()));
+			AliInfo(Form("fUser = %s; gGrid->GetUser() = %s",fUser.Data(), gGrid->GetUser()));
+		}
 		TGrid::Connect(fGridUrl.Data(),fUser.Data());
 	}
 
@@ -225,8 +230,8 @@ Bool_t AliCDBGrid::GetId(const AliCDBId& query, AliCDBId& result) {
 	dirName += query.GetPath(); // dirName = fDBFolder/idPath
 
 	if (!gGrid->Cd(dirName,0)) {
-		AliError(Form("Directory <%s> not found", (query.GetPath()).Data()));
-		AliError(Form("in DB folder %s", fDBFolder.Data()));
+		AliDebug(2,Form("Directory <%s> not found", (query.GetPath()).Data()));
+		AliDebug(2,Form("in DB folder %s", fDBFolder.Data()));
 		return kFALSE;
 	}
  
@@ -247,7 +252,7 @@ Bool_t AliCDBGrid::GetId(const AliCDBId& query, AliCDBId& result) {
 		if (!query.HasVersion()){ // look for highest version
 			if(result.GetVersion() > aVersion) continue;
 			if(result.GetVersion() == aVersion) {
-				AliError(Form("More than one object valid for run %d, version %d!", 
+				AliDebug(2,Form("More than one object valid for run %d, version %d!", 
 					query.GetFirstRun(), aVersion));
 			return kFALSE; 
 			}
@@ -258,7 +263,7 @@ Bool_t AliCDBGrid::GetId(const AliCDBId& query, AliCDBId& result) {
 		} else { // look for specified version
 			if(query.GetVersion() != aVersion) continue;
 			if(result.GetVersion() == aVersion){
-				AliError(Form("More than one object valid for run %d, version %d!", 
+				AliDebug(2,Form("More than one object valid for run %d, version %d!", 
 					query.GetFirstRun(), aVersion));
 					return kFALSE; 
 			}
@@ -295,17 +300,17 @@ AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 
 	TString filename;
 	if (!IdToFilename(dataId.GetAliCDBRunRange(), dataId.GetVersion(),filename)) {
-		AliError("Bad data ID encountered! Subnormal error!");
+		AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
 		return NULL;
 	}
 
 	filename.Prepend("/alien" + fDBFolder + queryId.GetPath() + '/');
 	filename += "?se="; filename += fSE.Data(); 
 
-	AliInfo(Form("Opening file: %s",filename.Data()));
+	AliDebug(2,Form("Opening file: %s",filename.Data()));
 	TFile *file = TFile::Open(filename);
 	if (!file) {
-		AliError(Form("Can't open file <%s>!", filename.Data()));
+		AliDebug(2,Form("Can't open file <%s>!", filename.Data()));
 		return NULL;
 	}
 
@@ -315,12 +320,12 @@ AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 	TObject* anObject = file->Get("AliCDBEntry");
 
 	if (!anObject) {
-		AliError("Bad storage data: NULL entry object!");
+		AliDebug(2,Form("Bad storage data: NULL entry object!"));
  		return NULL;
 	}
 
 	if (AliCDBEntry::Class() != anObject->IsA()) {
-		AliError("Bad storage data: Invalid entry object!");
+		AliDebug(2,Form("Bad storage data: Invalid entry object!"));
 		return NULL;
 	}
 
@@ -352,7 +357,7 @@ void AliCDBGrid::GetEntriesForLevel0(const char* level0,
 	level0Dir += level0;
 
 	if (!gGrid->Cd(level0Dir,0)) {
-		AliError(Form("Level0 directory <%s> not found", level0Dir.Data()));
+		AliDebug(2,Form("Level0 directory <%s> not found", level0Dir.Data()));
 		return;
 	}
 
@@ -377,7 +382,7 @@ void AliCDBGrid::GetEntriesForLevel1(const char* level0, const char* level1,
 	level1Dir += level1;
 
 	if (!gGrid->Cd(level1Dir,0)) {
-		AliError(Form("Level1 directory <%s> not found", level1Dir.Data()));
+		AliDebug(2,Form("Level1 directory <%s> not found", level1Dir.Data()));
 		return;
 	}
 

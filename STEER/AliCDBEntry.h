@@ -49,6 +49,7 @@ public:
 	void 		SetId(const AliCDBId& id) {fId = id;};
 	AliCDBId& 	GetId() {return fId;};
 	const AliCDBId& GetId() const {return fId;};
+	void 		PrintId() const;
 	
 	void 		SetObject(TObject* object) {fObject = object;};
 	TObject* 	GetObject() {return fObject;};
@@ -57,6 +58,7 @@ public:
 	void 			SetMetaData(AliCDBMetaData* metaData) {fMetaData = metaData;};
 	AliCDBMetaData* 	GetMetaData() {return fMetaData;};
 	const AliCDBMetaData* 	GetMetaData() const {return fMetaData;};
+	void 			PrintMetaData() const {fMetaData->PrintMetaData();}
 
 	void 	SetOwner(Bool_t owner) {fIsOwner = owner;};
 	Bool_t 	IsOwner() const {return fIsOwner;};

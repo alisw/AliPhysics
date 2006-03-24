@@ -39,6 +39,7 @@ class AliEventTag;
 class AliReconstruction: public TNamed {
 public:
   AliReconstruction(const char* gAliceFilename = "galice.root",
+  		    const char* cdbUri = "local://$ALICE_ROOT",
 		    const char* name = "AliReconstruction", 
 		    const char* title = "reconstruction");
   AliReconstruction(const AliReconstruction& rec);
@@ -69,6 +70,11 @@ public:
     {fStopOnError = stopOnError;}
   void           SetCheckPointLevel(Int_t checkPointLevel)
     {fCheckPointLevel = checkPointLevel;}
+		   
+  // CDB storage activation
+  void InitCDBStorage();
+  void SetDefaultStorage(const char* uri);
+  void SetSpecificStorage(const char* detName, const char* uri);    
 
   virtual Bool_t Run(const char* input, 
 		     Int_t firstEvent, Int_t lastEvent = -1);
@@ -131,6 +137,8 @@ private:
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
 
   Bool_t         fWriteAlignmentData; // write track space-points flag
+
+  TString	 fCDBUri;	      // Uri of the default CDB storage
 
   ClassDef(AliReconstruction, 6)      // class for running the reconstruction
 };

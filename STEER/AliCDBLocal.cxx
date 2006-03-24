@@ -250,8 +250,8 @@ Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 
 	void* dirPtr = gSystem->OpenDirectory(dirName); 
 	if (!dirPtr) {
-   	 	AliError(Form("Directory <%s> not found", (query.GetPath()).Data()));
-   	 	AliError(Form("in DB folder %s", fBaseDirectory.Data()));
+   	 	AliDebug(2,Form("Directory <%s> not found", (query.GetPath()).Data()));
+   	 	AliDebug(2,Form("in DB folder %s", fBaseDirectory.Data()));
 		return kFALSE;
 	}
 
@@ -294,7 +294,7 @@ Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 					aRunRange.GetLastRun());
 			} else if (result.GetVersion() == aVersion
 				&& result.GetSubVersion() == aSubVersion){
-              			AliError(Form("More than one object valid for run %d, version %d_%d!", 
+              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 				gSystem->FreeDirectory(dirPtr);
 	      			return kFALSE; 
@@ -320,7 +320,7 @@ Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 			// aVersion is requested version!
 			
 	 		if(result.GetSubVersion() == aSubVersion){
-              			AliError(Form("More than one object valid for run %d, version %d_%d!", 
+              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 				gSystem->FreeDirectory(dirPtr);
 	     			return kFALSE; 
@@ -353,7 +353,7 @@ Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 			// aVersion and aSubVersion are requested version and subVersion!
 			
 			if(result.GetVersion() == aVersion && result.GetSubVersion() == aSubVersion){
-              			AliError(Form("More than one object valid for run %d, version %d_%d!", 
+              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 				gSystem->FreeDirectory(dirPtr);
 	     			return kFALSE; 
@@ -394,7 +394,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 	if (!IdToFilename(dataId.GetAliCDBRunRange(), dataId.GetVersion(),
 		 dataId.GetSubVersion(), filename)) {
 
-		AliError("Bad data ID encountered! Subnormal error!");
+		AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
                 return NULL;
 	}
 	
@@ -402,7 +402,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 
 	TFile file(filename, "READ"); // open file
 	if (!file.IsOpen()) {
-		AliError(Form("Can't open file <%s>!", filename.Data()));
+		AliDebug(2,Form("Can't open file <%s>!", filename.Data()));
                 return NULL;
 	}
 
@@ -411,12 +411,12 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 	
 	TObject* anObject = file.Get("AliCDBEntry");
 	if (!anObject) {
-		AliError("Bad storage data: NULL entry object!");
+		AliDebug(2,Form("Bad storage data: NULL entry object!"));
 		return NULL;
 	}
 
 	if (AliCDBEntry::Class() != anObject->IsA()) {
-		AliError("Bad storage data: Invalid entry object!");
+		AliDebug(2,Form("Bad storage data: Invalid entry object!"));
 		return NULL;
 	}
 	
@@ -451,7 +451,7 @@ void AliCDBLocal::GetEntriesForLevel0(const char* level0,
 	
 	void* level0DirPtr = gSystem->OpenDirectory(level0Dir);
 	if (!level0DirPtr) {
-		AliError(Form("Can't open level0 directory <%s>!", 
+		AliDebug(2,Form("Can't open level0 directory <%s>!", 
 			level0Dir.Data()));
                 return;
 	} 
@@ -486,7 +486,7 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
 
 	void* level1DirPtr = gSystem->OpenDirectory(level1Dir);
 	if (!level1DirPtr) {
-		AliError(Form("Can't open level1 directory <%s>!", 
+		AliDebug(2,Form("Can't open level1 directory <%s>!", 
 			level1Dir.Data()));
                 return;
 	}
@@ -521,7 +521,7 @@ TList* AliCDBLocal::GetEntries(const AliCDBId& queryId) {
 
 	void* storageDirPtr = gSystem->OpenDirectory(fBaseDirectory);
 	if (!storageDirPtr) {
-		AliError(Form("Can't open storage directory <%s>",
+		AliDebug(2,Form("Can't open storage directory <%s>",
 			fBaseDirectory.Data()));
 		return NULL;
 	}	
@@ -562,7 +562,7 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 	if (!IdToFilename(id.GetAliCDBRunRange(), id.GetVersion(),
 		id.GetSubVersion(), filename)) {
 
-		AliError("Bad ID encountered! Subnormal error!");
+		AliDebug(2,Form("Bad ID encountered! Subnormal error!"));
 		return kFALSE;
 	}
 	
@@ -580,7 +580,7 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 	
 	// write object (key name: "AliCDBEntry")
 	Bool_t result = file.WriteTObject(entry, "AliCDBEntry");
-	if (!result) AliError(Form("Can't write entry to file: %s", filename.Data()));
+	if (!result) AliDebug(2,Form("Can't write entry to file: %s", filename.Data()));
 
 	file.Close();
         if(result) AliInfo(Form("CDB object stored into file %s",filename.Data()));

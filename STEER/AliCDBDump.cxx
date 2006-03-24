@@ -291,7 +291,7 @@ Bool_t AliCDBDump::GetId(const AliCDBId& query, AliCDBId& result) {
 					aRunRange.GetLastRun());
 			} else if (result.GetVersion() == aVersion
 				&& result.GetSubVersion() == aSubVersion){
-              			AliError(Form("More than one object valid for run %d, version %d_%d!", 
+              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 	      			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
 	      			return kFALSE; 
@@ -314,7 +314,7 @@ Bool_t AliCDBDump::GetId(const AliCDBId& query, AliCDBId& result) {
 			// aVersion is requested version!
 			
 	 		if(result.GetSubVersion() == aSubVersion){
-              			AliError(Form("More than one object valid for run %d, version %d_%d!", 
+              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 	     			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
 	     			return kFALSE; 
@@ -344,7 +344,7 @@ Bool_t AliCDBDump::GetId(const AliCDBId& query, AliCDBId& result) {
 			// aVersion and aSubVersion are requested version and subVersion!
 
 			if(result.GetVersion() == aVersion && result.GetSubVersion() == aSubVersion){
-              			AliError(Form("More than one object valid for run %d, version %d_%d!", 
+              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 	     			result.SetRunRange(-1,-1); result.SetVersion(-1); result.SetSubVersion(-1);
 	     			return kFALSE; 
@@ -395,7 +395,7 @@ AliCDBEntry* AliCDBDump::GetEntry(const AliCDBId& queryId) {
 	TString keyname;
 	if (!IdToKeyName(dataId.GetAliCDBRunRange(), dataId.GetVersion(), 
 		dataId.GetSubVersion(), keyname)) {
-		AliError("Bad ID encountered! Subnormal error!");
+		AliDebug(2,Form("Bad ID encountered! Subnormal error!"));
 		return NULL;
 	}
 
@@ -405,12 +405,12 @@ AliCDBEntry* AliCDBDump::GetEntry(const AliCDBId& queryId) {
 
 	TObject* anObject = gDirectory->Get(keyname);
 	if (!anObject) {
-		AliError("Bad storage data: NULL entry object!");
+		AliDebug(2,Form("Bad storage data: NULL entry object!"));
 		return NULL;
 	} 
 
 	if (AliCDBEntry::Class() != anObject->IsA()) {
-		AliError("Bad storage data: Invalid entry object!");
+		AliDebug(2,Form("Bad storage data: Invalid entry object!"));
 		return NULL;
 	}
 

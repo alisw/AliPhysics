@@ -147,7 +147,7 @@ ClassImp(AliReconstruction)
 const char* AliReconstruction::fgkDetectorName[AliReconstruction::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "RICH", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "START", "VZERO", "CRT", "HLT"};
 
 //_____________________________________________________________________________
-AliReconstruction::AliReconstruction(const char* gAliceFilename,
+AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdbUri,
 				     const char* name, const char* title) :
   TNamed(name, title),
 
@@ -170,7 +170,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
 
   fVertexer(NULL),
 
-  fWriteAlignmentData(kFALSE)
+  fWriteAlignmentData(kFALSE),
+  fCDBUri(cdbUri)
 {
 // create reconstruction object with default parameters
   
@@ -209,7 +210,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fVertexer(NULL),
 
-  fWriteAlignmentData(rec.fWriteAlignmentData)
+  fWriteAlignmentData(rec.fWriteAlignmentData),
+  fCDBUri(rec.fCDBUri)
 {
 // copy constructor
 
@@ -242,6 +244,41 @@ AliReconstruction::~AliReconstruction()
   fOptions.Delete();
 }
 
+//_____________________________________________________________________________
+void AliReconstruction::InitCDBStorage()
+{
+// activate a default CDB storage
+// First check if we have any CDB storage set, because it is used 
+// to retrieve the calibration and alignment constants
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet())
+  {
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("Default CDB storage not yet set");
+    AliWarning(Form("Using default storage declared in AliSimulation: %s",fCDBUri.Data()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    SetDefaultStorage(fCDBUri);
+  }  
+  
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::SetDefaultStorage(const char* uri) {
+// activate a default CDB storage 
+
+   AliCDBManager::Instance()->SetDefaultStorage(uri);
+
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::SetSpecificStorage(const char* detName, const char* uri) {
+// activate a detector-specific CDB storage 
+
+   AliCDBManager::Instance()->SetSpecificStorage(detName, uri);
+
+}
+
 
 //_____________________________________________________________________________
 void AliReconstruction::SetGAliceFile(const char* fileName)
@@ -268,17 +305,7 @@ Bool_t AliReconstruction::Run(const char* input,
 {
 // run the reconstruction
 
-  // First check if we have any CDB storage set, because it is used 
-  // to retrieve the calibration and alignment constants
-
-  AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet())
-  {
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning("No default CDB storage set, so I will use $ALICE_ROOT");
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    man->SetDefaultStorage("local://$ALICE_ROOT");
-  }  
+  InitCDBStorage();
 
   // set the input
   if (!input) input = fInput.Data();

@@ -24,6 +24,7 @@ class AliRunLoader;
 class AliSimulation: public TNamed {
 public:
   AliSimulation(const char* configFileName = "Config.C",
+  		const char* cdbUri = "local://$ALICE_ROOT",
 		const char* name = "AliSimulation", 
 		const char* title = "generation, simulation and digitization");
   AliSimulation(const AliSimulation& sim);
@@ -38,6 +39,9 @@ public:
 
   void           SetRunGeneration(Bool_t run) {fRunGeneration = run;};
   void           SetRunSimulation(Bool_t run) {fRunSimulation = run;};
+  void           SetLoadAlignFromCDB(Bool_t load)  {fLoadAlignFromCDB = load;};
+  void           SetLoadAlignData(const char* detectors) 
+                   {fLoadAlignData = detectors;};
   void           SetMakeSDigits(const char* detectors) 
                    {fMakeSDigits = detectors;};
   void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 0);
@@ -63,8 +67,19 @@ public:
   static Bool_t  ApplyAlignObjsToGeom(const char* uri, const char* path,
 				    Int_t runnum, Int_t version,
 				    Int_t sversion);
-  void           SetAlignObjArray(TClonesArray *array)
-                   {fAlignObjArray = array;}
+  static Bool_t  ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version,
+				    Int_t sversion);
+  void           SetAlignObjArray(TObjArray *array)
+                   		    {fAlignObjArray = array;
+		    		     fLoadAlignFromCDB = kFALSE;}
+
+  void           SetAlignObjArray(const char* detectors="ALL"); 
+  Bool_t         SetAlignObjArraySingleDet(const char* detName); 		   
+		   
+  // CDB storage activation
+  static void InitCDBStorage(const char *uri);
+  static void SetDefaultStorage(const char* uri);
+  static void SetSpecificStorage(const char* detName, const char* uri);    
 
   virtual Bool_t Run(Int_t nEvents = 0);
 
@@ -89,6 +104,8 @@ private:
 
   Bool_t         fRunGeneration;      // generate prim. particles or not
   Bool_t         fRunSimulation;      // simulate detectors (hits) or not
+  Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
+  TString        fLoadAlignData;      // Load alignment data from CDB for these detectors
   TString        fMakeSDigits;        // create sdigits for these detectors
   TString        fMakeDigits;         // create digits for these detectors
   TString        fMakeTrigger;        // run trigger for these descriptors
@@ -104,9 +121,11 @@ private:
   TObjArray      fEventsPerFile;      // number of events per file for given detectors and data types
 
   TObjArray*     fBkgrdFileNames;     // names of background files for merging
-  TClonesArray*  fAlignObjArray;      // array with the alignment objects to be applied to the geometry
+  TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
   Bool_t         fUseBkgrdVertex;     // use vertex from background in case of merging
   Bool_t         fRegionOfInterest;   // digitization in region of interest
+
+  TString 	 fCDBUri;	      // Uri of the default CDB storage
 
   ClassDef(AliSimulation, 2)  // class for running generation, simulation and digitization
 };
