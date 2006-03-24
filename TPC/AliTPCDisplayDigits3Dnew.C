@@ -27,7 +27,7 @@ Int_t AliTPCDisplayDigits3Dnew(Int_t eventn=0, Int_t noiseth=15, Bool_t sdigits=
    AliRunLoader* rl = AliRunLoader::Open();
    rl->GetEvent(eventn);
 
-   AliLoader* tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+   AliLoader* tpcl = (AliLoader*)rl->GetLoader("TPCLoader");
    if (tpcl == 0x0)
     {
       cerr<<"Can not get TPC Loader"<<endl;

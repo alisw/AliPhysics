@@ -50,7 +50,7 @@ void AliTPCDisplayClusters::SetIO(Int_t event)
 {
   AliRunLoader* rl = AliRunLoader::Open();
   rl->GetEvent(event);  
-  AliLoader* tpcl = (AliTPCLoader*)rl->GetLoader("TPCLoader");
+  AliLoader* tpcl = (AliLoader*)rl->GetLoader("TPCLoader");
   if (tpcl == 0x0)
     {
       cerr<<"Can not get TPC Loader"<<endl;
