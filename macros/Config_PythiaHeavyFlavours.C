@@ -52,6 +52,7 @@ enum ProcessHvFl_t
   kCharmPbPb5500,  kCharmpPb8800,  kCharmpp14000,  kCharmpp14000wmi,
   kD0PbPb5500,     kD0pPb8800,     kD0pp14000,
   kDPlusPbPb5500,  kDPluspPb8800,  kDPluspp14000,
+  kDPlusStrangePbPb5500, kDPlusStrangepPb8800, kDPlusStrangepp14000,
   kBeautyPbPb5500, kBeautypPb8800, kBeautypp14000, kBeautypp14000wmi
 };
 //--- Decay Mode ---
@@ -611,6 +612,33 @@ AliGenPythia *PythiaHVQ(ProcessHvFl_t proc) {
     comment = comment.Append(" DPlus in pp at 14 TeV");
     gener = new AliGenPythia(nEvts);
     gener->SetProcess(kPyDPlusppMNR);
+    gener->SetStrucFunc(kCTEQ4L);
+    gener->SetPtHard(2.1,-1.0);
+    gener->SetEnergyCMS(14000.);
+    break;
+ case kDPlusStrangePbPb5500:
+    comment = comment.Append(" DPlusStrange in Pb-Pb at 5.5 TeV");
+    gener = new AliGenPythia(nEvts);
+    gener->SetProcess(kPyDPlusStrangePbPbMNR);
+    gener->SetStrucFunc(kCTEQ4L);
+    gener->SetPtHard(2.1,-1.0);
+    gener->SetEnergyCMS(5500.);
+    gener->SetNuclei(208,208);
+    break;
+  case kDPlusStrangepPb8800:
+    comment = comment.Append(" DPlusStrange in p-Pb at 8.8 TeV");
+    gener = new AliGenPythia(nEvts);
+    gener->SetProcess(kPyDPlusStrangepPbMNR);
+    gener->SetStrucFunc(kCTEQ4L);
+    gener->SetPtHard(2.1,-1.0);
+    gener->SetEnergyCMS(8800.);
+    gener->SetProjectile("P",1,1);
+    gener->SetTarget("Pb",208,82);
+    break;
+  case kDPlusStrangepp14000:
+    comment = comment.Append(" DPlusStrange in pp at 14 TeV");
+    gener = new AliGenPythia(nEvts);
+    gener->SetProcess(kPyDPlusStrangeppMNR);
     gener->SetStrucFunc(kCTEQ4L);
     gener->SetPtHard(2.1,-1.0);
     gener->SetEnergyCMS(14000.);
