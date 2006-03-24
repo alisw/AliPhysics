@@ -34,6 +34,8 @@
 #include "AliTPCParamSR.h"
 #include "AliTPCRF1D.h"
 #include "TH1.h"
+#include "AliTPCROC.h"
+#include "TGeoManager.h"
 
 ClassImp(AliTPCParamSR)
 static const  Int_t kMaxRows=600;
@@ -347,11 +349,12 @@ Bool_t AliTPCParamSR::Update()
      Float_t x = firstrow + fInnerPadPitchLength*(Float_t)i;  
      fPadRowLow[i]=x;
      // number of pads per row
-     Float_t y = (x-0.5*fInnerPadPitchLength)*tan(fInnerAngle/2.)-fInnerWireMount-
-       fInnerPadPitchWidth/2.;
+     //     Float_t y = (x-0.5*fInnerPadPitchLength)*tan(fInnerAngle/2.)-fInnerWireMount-
+     //  fInnerPadPitchWidth/2.;
      // 0 and fNRowLow+1 reserved for cross talk rows
      fYInner[i+1]  = x*tan(fInnerAngle/2.)-fInnerWireMount;
-     fNPadsLow[i] = 1+2*(Int_t)(y/fInnerPadPitchWidth) ;
+     //fNPadsLow[i] = 1+2*(Int_t)(y/fInnerPadPitchWidth) ;
+     fNPadsLow[i] = AliTPCROC::Instance()->GetNPads(0,i) ;     // ROC implement     
    }
  // cross talk rows
  fYInner[0]=(fPadRowLow[0]-fInnerPadPitchLength)*tan(fInnerAngle/2.)-fInnerWireMount;
@@ -362,10 +365,11 @@ Bool_t AliTPCParamSR::Update()
      if(i<fNRowUp1){
        Float_t x = firstrow + fOuter1PadPitchLength*(Float_t)i; 
        fPadRowUp[i]=x;
-    Float_t y =(x-0.5*fOuter1PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
-	  fOuterPadPitchWidth/2.;
+//     Float_t y =(x-0.5*fOuter1PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
+// 	  fOuterPadPitchWidth/2.;
      fYOuter[i+1]= x*tan(fOuterAngle/2.)-fOuterWireMount;
-     fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
+     //fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ;
+     fNPadsUp[i] =  AliTPCROC::Instance()->GetNPads(36,i) ;     // ROC implement      
      if(i==fNRowUp1-1) {
        fLastWireUp1=fPadRowUp[i] +0.625;
        firstrow = fPadRowUp[i] + 0.5*(fOuter1PadPitchLength+fOuter2PadPitchLength);
@@ -375,9 +379,10 @@ Bool_t AliTPCParamSR::Update()
        {
 	 Float_t x = firstrow + fOuter2PadPitchLength*(Float_t)(i-64);
          fPadRowUp[i]=x;
-Float_t y =(x-0.5*fOuter2PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
-	   fOuterPadPitchWidth/2.;
-         fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ; 
+	 //Float_t y =(x-0.5*fOuter2PadPitchLength)*tan(fOuterAngle/2.)-fOuterWireMount-
+	 //  fOuterPadPitchWidth/2.;
+	 //fNPadsUp[i] = 1+2*(Int_t)(y/fOuterPadPitchWidth) ; 
+	 fNPadsUp[i] =  AliTPCROC::Instance()->GetNPads(36,i) ;     // ROC implement
        }
      fYOuter[i+1]  = fPadRowUp[i]*tan(fOuterAngle/2.)-fOuterWireMount;
    }
@@ -407,6 +412,7 @@ void AliTPCParamSR::Streamer(TBuffer &R__b)
       AliTPCParam::Streamer(R__b);
       //      if (R__v < 2) return;
        Update();
+       if (gGeoManager) ReadGeoMatrices();
    } else {
       R__b.WriteVersion(AliTPCParamSR::IsA());
       //TObject::Streamer(R__b);  
@@ -441,6 +447,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   static Float_t prfinner[2*kpadrn][5*kpadn];  //pad divided by 50
   static Float_t prfouter1[2*kpadrn][5*kpadn];  //prfouter division
   static Float_t prfouter2[2*kpadrn][5*kpadn];
+  static Float_t kTanMax =0;  
 
   static Float_t rftime[5*ktimen];         //time division
   static Int_t blabla=0;
@@ -452,6 +459,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
   static TH1F * hdiff2=0;
   
   if (blabla==0) {  //calculate Response function - only at the begginning
+    kTanMax = TMath::ATan(10.*TMath::DegToRad());
     hdiff =new TH1F("prf_diff","prf_diff",10000,-1,1);
     hdiff1 =new TH1F("no_repsonse1","no_response1",10000,-1,1);
     hdiff2 =new TH1F("no_response2","no_response2",10000,-1,1);
@@ -503,8 +511,9 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
     fpadrow = (index[2]>1) ? -1 :0;
     lpadrow = (index[2]<GetNRow(index[1])-1) ? 1:0;
   }
+
   Int_t fpad =  (cpad > -npads/2+1) ? -2: -npads/2-cpad;
-  Int_t lpad =  (cpad < npads/2-1)  ?  2: npads/2-cpad;
+  Int_t lpad =  (cpad < npads/2-2)  ?  2: npads/2-1-cpad;
   Int_t ftime =  (ctime>1) ? -2: -ctime;
   Int_t ltime =  (ctime<maxt-2) ? 2: maxt-ctime-1;
 
@@ -522,22 +531,43 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
     dpadrow /= fOuter2PadPitchLength;
     
   }
+
   // "normal"
   Int_t apadrow = TMath::Nint((dpadrow-fpadrow)*kfpadrn+kfpadrn);
   for (Int_t ipadrow = fpadrow; ipadrow<=lpadrow;ipadrow++){
     if ( (apadrow<0) || (apadrow>=2*kpadrn)) 
       continue;
-    Int_t apad= TMath::Nint((dpad-fpad)*kfpadn+2.5*kfpadn);
+    // pad angular correction
+    Float_t angle = kTanMax*2.*(cpad+0.5)/Float_t(npads);
+    Float_t dpadangle =0;
+    if (index[1]<fNInnerSector){
+      dpadangle = angle*dpadrow*fInnerPadPitchLength/fInnerPadPitchWidth;
+    }
+    else{
+      if(row < fNRowUp1+1){
+        dpadangle    = angle*dpadrow*fOuter1PadPitchLength/fOuterPadPitchWidth;
+      }
+      else {
+	dpadangle    = angle*dpadrow*fOuter2PadPitchLength/fOuterPadPitchWidth;
+      }
+    }
+    if (ipadrow==0) dpadangle *=-1;
+    //
+    //    Int_t apad= TMath::Nint((dpad-fpad)*kfpadn+2.5*kfpadn);
+    Int_t apad= TMath::Nint((dpad+dpadangle-fpad)*kfpadn+2.5*kfpadn);
     for (Int_t ipad = fpad; ipad<=lpad;ipad++){
 	Float_t cweight;
-	if (index[1]<fNInnerSector)
+	if (index[1]<fNInnerSector){
 	  cweight=prfinner[apadrow][apad];
-	else{
-	  if(row < fNRowUp1+1)
-	    cweight=prfouter1[apadrow][apad];
-          else cweight=prfouter2[apadrow][apad];
 	}
-
+	else{
+	  if(row < fNRowUp1+1){
+	    cweight=prfouter1[apadrow][apad];
+	  }
+          else {
+	    cweight=prfouter2[apadrow][apad];
+	  }
+	}
 	//	if (cweight<fResponseThreshold) continue;
 	Int_t atime = TMath::Nint((dtime-ftime)*kftimen+2.5*kftimen);
 	for (Int_t itime = ftime;itime<=ltime;itime++){	
@@ -546,13 +576,7 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row)
 	    fResponseBin[cindex3++]=cpadrow+ipadrow;
 	    fResponseBin[cindex3++]=cpad+ipad;
 	    fResponseBin[cindex3++]=ctime+itime;
-	    fResponseWeight[cindex++]=cweight2;
-	    
-	    if (cweight2>100) 
-	      {
-		printf("Pici pici %d %f %d\n",ipad,dpad,apad);
-	      }
-	    
+	    fResponseWeight[cindex++]=cweight2;	  	    
 	  }
 	  atime-=ktimen;
 	}
