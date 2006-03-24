@@ -61,10 +61,13 @@ protected:
   virtual TGeoVolume* RingGeometry(AliFMDRing* r);
   /** Make a detector volume 
       @param d Detector geometry 
-      @param mother Mother volume (detector volume)
+      @param motherTop Mother volume (detector volume)
+      @param motherBot Mother volume (detector volume)
       @param zmother Z position of mother 
-      @param inner Inner ring volume 
-      @param outer Outer ring volume 
+      @param innerTop Inner ring volume 
+      @param innerBot Inner ring volume 
+      @param outerTop Outer ring volume 
+      @param outerBot Outer ring volume 
       @return  Detector volume */
   virtual TGeoVolume* DetectorGeometry(AliFMDDetector* d, 
 				       TGeoVolume* motherTop, 
@@ -76,15 +79,18 @@ protected:
 				       TGeoVolume* outerBot=0);
   /** Make FMD1 volume 
       @param d Detector geometry 
-      @param inner Inner ring volume 
+      @param innerTop Inner ring volume 
+      @param innerBot Inner ring volume 
       @return FMD1 volume  */
   virtual TGeoVolume* FMD1Geometry(AliFMD1* d, 
 				   TGeoVolume* innerTop,
 				   TGeoVolume* innerBot);
   /** Make FMD2 volume 
       @param d Detector geometry 
-      @param inner Inner ring volume 
-      @param outer Outer ring volume 
+      @param innerTop Inner ring volume 
+      @param innerBot Inner ring volume 
+      @param outerTop Outer ring volume 
+      @param outerBot Outer ring volume 
       @return FMD2 volume  */
   virtual TGeoVolume* FMD2Geometry(AliFMD2* d, 
 				   TGeoVolume* innerTop, 
@@ -93,8 +99,10 @@ protected:
 				   TGeoVolume* outerBot);
   /** Make FMD3 volume 
       @param d Detector geometry 
-      @param inner Inner ring volume 
-      @param outer Outer ring volume 
+      @param innerTop Inner ring volume 
+      @param innerBot Inner ring volume 
+      @param outerTop Outer ring volume 
+      @param outerBot Outer ring volume 
       @return FMD3 volume  */
   virtual TGeoVolume* FMD3Geometry(AliFMD3* d, 
 				   TGeoVolume* innerTop, 

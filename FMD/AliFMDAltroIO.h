@@ -88,7 +88,7 @@ class AliFMDAltroReader : public AliFMDAltroIO
 {
 public:
   /** Constructor 
-      @param filename File to read from 
+      @param stream Stream to read from
       @exception Int_t A negative error code in case of failure */
   AliFMDAltroReader(std::istream& stream);
   virtual ~AliFMDAltroReader() {}
@@ -179,7 +179,7 @@ class AliFMDAltroWriter : public AliFMDAltroIO
 {
 public:
   /** Constructor.
-      @param filename File to read from
+      @param stream File to read from
       @exception Int_t A negative error code in case of failure */
   AliFMDAltroWriter(std::ostream& stream);
   virtual ~AliFMDAltroWriter() {}

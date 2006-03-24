@@ -25,20 +25,22 @@ public:
   AliFMDHit();
   /** Normal FMD hit ctor
       @param shunt     ???
-      @param track	  Track #
+      @param track     Track #
       @param detector  Detector # (1, 2, or 3)                      
-      @param ring	  Ring ID ('I' or 'O')
-      @param sector	  Sector # (For inner/outer rings: 0-19/0-39)
-      @param strip	  Strip # (For inner/outer rings: 0-511/0-255)
-      @param x	  Track's X-coordinate at hit
-      @param y	  Track's Y-coordinate at hit
-      @param z	  Track's Z-coordinate at hit
-      @param px	  X-component of track's momentum 
-      @param py	  Y-component of track's momentum
-      @param pz	  Z-component of track's momentum
-      @param edep	  Energy deposited by track
-      @param pdg	  Track's particle Id #
-      @param t	  Time when the track hit */
+      @param ring      Ring ID ('I' or 'O')
+      @param sector    Sector # (For inner/outer rings: 0-19/0-39)
+      @param strip     Strip # (For inner/outer rings: 0-511/0-255)
+      @param x	       Track's X-coordinate at hit
+      @param y	       Track's Y-coordinate at hit
+      @param z	       Track's Z-coordinate at hit
+      @param px	       X-component of track's momentum 
+      @param py	       Y-component of track's momentum
+      @param pz	       Z-component of track's momentum
+      @param edep      Energy deposited by track
+      @param pdg       Track's particle Id #
+      @param t	       Time when the track hit 
+      @param l         Track lenght through medium 
+      @param stop      Whether track is stopped in medium */
   AliFMDHit(Int_t    shunt, 
 	    Int_t    track, 
 	    UShort_t detector, 

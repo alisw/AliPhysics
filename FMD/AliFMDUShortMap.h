@@ -35,23 +35,23 @@ public:
       @return reference to this object.  */
   AliFMDUShortMap& operator=(const AliFMDUShortMap& other);
   /** Reset to value 
-      @param v Value to reset from */
+      @param val Value to reset from */
   virtual void Reset(const UShort_t& val=UShort_t());
   /** Access operator 
-      @param det   Detector 
-      @param ring  Ring 
-      @param sec   Sector  
-      @param str   Strip
+      @param detector Detector 
+      @param ring     Ring 
+      @param sector   Sector  
+      @param strip    Strip
       @return  reference value stored for the strip */
   virtual UShort_t& operator()(UShort_t detector, 
 			       Char_t   ring, 
 			       UShort_t sector, 
 			       UShort_t strip);
   /** Access operator 
-      @param det   Detector 
-      @param ring  Ring 
-      @param sec   Sector  
-      @param str   Strip
+      @param detector Detector 
+      @param ring     Ring 
+      @param sector   Sector  
+      @param strip    Strip
       @return  value stored for the strip */
   virtual const UShort_t& operator()(UShort_t detector, 
 				     Char_t   ring, 

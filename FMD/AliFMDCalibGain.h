@@ -40,7 +40,6 @@ public:
       @param ring Ring 
       @param sec  Sector 
       @param str  Strip
-      @param val  Value of gain 
       @return Gain for strip */
   Float_t Value(UShort_t det, Char_t ring, UShort_t sec, UShort_t str);
   /** @return threshold */

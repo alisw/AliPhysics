@@ -113,7 +113,7 @@ public:
       like  
       @code 
       geom->XYZ2Detector(x,y,z-ipz,d,r,s,t);
-      @endverbatim
+      @endcode
       @param x       X coordinate
       @param y 	     Y coordinate
       @param z 	     Z coordinate

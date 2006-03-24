@@ -68,7 +68,7 @@ public:
       @param ring     Ring
       @param sector   Sector
       @param strip    Strip 
-      @param count1   ADC (first sample)
+      @param count    ADC (first sample)
       @param count2   ADC (second sample, or -1 if not used)
       @param count3   ADC (third sample, or -1 if not used) */
   AliFMDDigit(UShort_t detector, 
@@ -123,7 +123,8 @@ public:
       @param ring     Ring
       @param sector   Sector
       @param strip    Strip 
-      @param count1   ADC (first sample)
+      @param edep     Energy deposited 
+      @param count    ADC (first sample)
       @param count2   ADC (second sample, or -1 if not used)
       @param count3   ADC (third sample, or -1 if not used) */
   AliFMDSDigit(UShort_t detector, 

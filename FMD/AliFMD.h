@@ -8,7 +8,17 @@
  * See cxx source for full Copyright notice                               
  */
 /** @mainpage ALICE FMD Off-line code 
-
+    
+    @b Contents 
+    - @ref intro 
+    - @ref structure 
+      - @ref base  (see also @ref FMD_base)
+      - @ref sim   (see also @ref FMD_sim)
+      - @ref rec   (see also @ref FMD_rec)
+      - @ref util  (see also @ref FMD_util)
+    - @ref quick
+    - @ref authors
+    
     @section intro Introduction:
 
     This file contains a short overview of the FMD code.   It is by no 
@@ -37,7 +47,7 @@
       gSystem->Load("libFMDutil.so");
       @endcode
     The content of these libraries is detailed more below. 
-
+    
     @subsection base libFMDbase:
 
     This currently (18th or March 2006) contains the classes 
@@ -130,6 +140,50 @@
     - AliFMDCalibFaker, AliFMDAlignFaker: Classes to write fake (or
       dummy) calibration and alignment 	data.  These derive from
       TTask.  
+
+    @section quick Quick start 
+
+    First, install ROOT.  Then Install TGeant3: 
+    @verbatim 
+    > cd ~/
+    > mkdir alice
+    > cd alice
+    > cvs -d :pserver:cvs@root.cern.ch:/user/cvs login 
+    Password: cvs
+    > cvs -d :pserver:cvs@root.cern.ch:/user/cvs co geant3
+    > cd geant3
+    > make 
+    @endverbatim 
+
+    Now you can install AliRoot 
+    @verbatim 
+    > cd ../
+    > cvs -d :pserver:cvs@alisoft.cern.ch:/soft/cvsroot login
+    Password: <empty>
+    > cvs -d :pserver:cvs@alisoft.cern.ch:/soft/cvsroot co AliRoot
+    > cd AliRoot
+    > export ALICE_TARGET=`root-config --arch`
+    > export ALICE=${HOME}/alice
+    > export ALICE_ROOT=${ALICE}/AliRoot
+    > export ALICE_LEVEL=new
+    > export LD_LIBRARY_PATH=${ALICE_ROOT}/lib/tgt_${ALICE_TERGET}:${LD_LIBRARY_PATH}
+    > export PATH=${ALICE_ROOT}/bin/tgt_${ALICE_TERGET}:${PATH}
+    > export G3SYS=${ALICE}/geant3
+    > make 
+    @endverbatim 
+    
+    To simulate one event, do something like 
+
+    @verbatim 
+    > aliroot ${ALICE_ROOT}/FMD/Simulate.C
+    @endverbatim 
+
+    To reconstruct the generated event, do 
+    @verbatim 
+    > aliroot ${ALICE_ROOT}/FMD/Reconstruct.C
+    @endverbatim 
+
+    Now, open the file `AliESDs.root' in AliRoot, and browse through  that. 
 
     @section authors Authors:
 
@@ -312,7 +366,7 @@ public:
   virtual void          ResetSDigits();
   /** Add a hit to the hits tree 
       @param  track  Track #
-      @param  ivol Volume parameters, interpreted as 
+      @param  vol Volume parameters, interpreted as 
       - ivol[0]  [UShort_t ] Detector # 
       - ivol[1]	 [Char_t   ] Ring ID 
       - ivol[2]	 [UShort_t ] Sector #
@@ -343,8 +397,8 @@ public:
       @param edep      Energy deposited by track
       @param pdg       Track's particle Id #
       @param t	       Time when the track hit 
-      @param l         Track length through the material. 
-      @param stop      Whether track was stopped or disappeared */
+      @param len       Track length through the material. 
+      @param stopped   Whether track was stopped or disappeared */
   virtual AliFMDHit*    AddHitByFields(Int_t    track, 
 				       UShort_t detector, 
 				       Char_t   ring, 
@@ -399,11 +453,13 @@ public:
   virtual        void   AddSDigit(Int_t *digits);
   /** add a summable digit - as coming from data
       @param detector  Detector # (1, 2, or 3)                      
-      @param ring	  Ring ID ('I' or 'O')
-      @param sector	  Sector # (For inner/outer rings: 0-19/0-39)
-      @param strip	  Strip # (For inner/outer rings: 0-511/0-255)
+      @param ring      Ring ID ('I' or 'O')
+      @param sector    Sector # (For inner/outer rings: 0-19/0-39)
+      @param strip     Strip # (For inner/outer rings: 0-511/0-255)
+      @param edep      Energy deposited   
       @param count1    ADC count (a 10-bit word)
-      @param count2    ADC count (a 10-bit word), or -1 if not used */
+      @param count2    ADC count (a 10-bit word), or -1 if not used 
+      @param count3    ADC count (a 10-bit word), or -1 if not used */
   virtual        void   AddSDigitByFields(UShort_t detector=0, 
 					  Char_t   ring='\0', 
 					  UShort_t sector=0, 

@@ -40,7 +40,6 @@ public:
       @param ring Ring 
       @param sec  Sector 
       @param str  Strip
-      @param val  Value of gain 
       @return Pedestal for strip */  
   Float_t Value(UShort_t det, Char_t ring, UShort_t sec, UShort_t str);
   /** Get pedestal width for a strip. 
@@ -48,7 +47,6 @@ public:
       @param ring Ring 
       @param sec  Sector 
       @param str  Strip
-      @param val  Value of gain 
       @return Pedestal width for strip */  
   Float_t Width(UShort_t det, Char_t ring, UShort_t sec, UShort_t str);
 private:

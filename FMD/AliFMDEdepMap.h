@@ -62,28 +62,28 @@ public:
   /** Reset to default */
   virtual void Reset();
   /** Reset to value 
-      @param v Value to reset from */
+      @param val Value to reset from */
   virtual void Reset(const AliFMDEdepHitPair& val);
   /** Access operator 
-      @param det   Detector 
-      @param ring  Ring 
-      @param sec   Sector  
-      @param str   Strip
+      @param detector Detector 
+      @param ring     Ring 
+      @param sector   Sector  
+      @param strip    Strip
       @return  reference value stored for the strip */
   virtual AliFMDEdepHitPair& operator()(UShort_t detector, 
-				     Char_t   ring, 
-				     UShort_t sector, 
-				     UShort_t strip);
+					Char_t   ring, 
+					UShort_t sector, 
+					UShort_t strip);
   /** Access operator 
-      @param det   Detector 
-      @param ring  Ring 
-      @param sec   Sector  
-      @param str   Strip
+      @param detector Detector 
+      @param ring     Ring 
+      @param sector   Sector  
+      @param strip    Strip
       @return value stored for the strip */
   virtual const AliFMDEdepHitPair& operator()(UShort_t detector, 
-					   Char_t   ring, 
-					   UShort_t sector, 
-					   UShort_t strip) const;
+					      Char_t   ring, 
+					      UShort_t sector, 
+					      UShort_t strip) const;
 protected:
   size_t             fTotal; //  Total number of entries
   AliFMDEdepHitPair* fData;  //[fTotal] The data 
