@@ -1055,6 +1055,12 @@ void AliTPC::Hits2Digits()
   //
   // creates digits from hits
   //
+  if (!fTPCParam->IsGeoRead()){
+    //
+    // read transformation matrices for gGeoManager
+    //
+    fTPCParam->ReadGeoMatrices();
+  }
 
   fLoader->LoadHits("read");
   fLoader->LoadDigits("recreate");
@@ -1200,6 +1206,13 @@ void AliTPC::Hits2SDigits()
   //   summable digits - 16 bit "ADC", no noise, no saturation
   //-----------------------------------------------------------
 
+  if (!fTPCParam->IsGeoRead()){
+    //
+    // read transformation matrices for gGeoManager
+    //
+    fTPCParam->ReadGeoMatrices();
+  }
+  
   fLoader->LoadHits("read");
   fLoader->LoadSDigits("recreate");
   AliRunLoader* runLoader = fLoader->GetRunLoader(); 
@@ -1445,7 +1458,7 @@ Float_t AliTPC::GetSignal(TObjArray *p1, Int_t ntr,
   TVector &v = *tv;
   
   Float_t label = v(0);
-  Int_t centralPad = (fTPCParam->GetNPads(fCurrentIndex[1],fCurrentIndex[3]-1)-1)/2;
+  Int_t centralPad = (fTPCParam->GetNPads(fCurrentIndex[1],fCurrentIndex[3]-1))/2;
 
   Int_t nElectrons = (tv->GetNrows()-1)/5;
   indexRange[0]=9999; // min pad
