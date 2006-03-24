@@ -88,13 +88,6 @@ public:
   virtual void   SetESD(AliESD* esd) { fESD = esd; }
      
 private:
-  /** Copy CTOR 
-      @param other Object to copy from. */
-  AliFMDReconstructor(const AliFMDReconstructor& other);
-  /** Assignment operator 
-      @param other Object to assign from
-      @return reference to this object */
-  AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
   /** Hide base classes unused function */
   void Reconstruct(AliRawReader*, TTree*) const;
   /** Hide base classes unused function */
@@ -109,6 +102,13 @@ private:
   void FillESD(AliRunLoader*, AliRawReader*, AliESD*) const;
   
 protected:
+  /** Copy CTOR 
+      @param other Object to copy from. */
+  AliFMDReconstructor(const AliFMDReconstructor& other);
+  /** Assignment operator 
+      @param other Object to assign from
+      @return reference to this object */
+  AliFMDReconstructor& operator=(const AliFMDReconstructor& other);
   /** Process AliFMDDigit objects in @a digits.  For each digit, find
       the psuedo-rapidity @f$ \eta@f$, azimuthal angle @f$ \varphi@f$,
       energy deposited @f$ E@f$, and psuedo-inclusive multiplicity @f$
