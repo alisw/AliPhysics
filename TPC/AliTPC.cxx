@@ -1668,6 +1668,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	continue; 
       }
 
+      // Remove hits which arrive before the TPC opening gate signal
+      if(((fTPCParam->GetZLength()-TMath::Abs(tpcHit->Z()))
+	  /fTPCParam->GetDriftV()+tpcHit->Time())<fTPCParam->GetGateDelay()) {
+	tpcHit = (AliTPChit*) NextHit();
+	continue;
+      }
+
       currentTrack = tpcHit->Track(); // track number
 
       if(currentTrack != previousTrack){
