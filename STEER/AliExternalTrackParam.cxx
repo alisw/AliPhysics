@@ -182,6 +182,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   Double_t crv=kB2C*b*fP[4];
   Double_t dx=xk-fX;
   Double_t f1=fP[2], f2=f1 + crv*dx;
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
 
   Double_t &fP0=fP[0], &fP1=fP[1], &fP2=fP[2], &fP3=fP[3], &fP4=fP[4];
