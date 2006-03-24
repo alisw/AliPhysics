@@ -100,7 +100,7 @@ AliMUONDataIterator::~AliMUONDataIterator()
 TObject* 
 AliMUONDataIterator::Next() 
 { 
-  if (!fIterator) return fIterator->Next(); 
+  if (fIterator) return fIterator->Next(); 
   return 0x0;
 }
 
@@ -108,7 +108,7 @@ AliMUONDataIterator::Next()
 Bool_t 
 AliMUONDataIterator::Remove() 
 { 
-  if (!fIterator) return fIterator->Remove(); 
+  if (fIterator) return fIterator->Remove(); 
   return kFALSE;
 }
 
@@ -116,5 +116,5 @@ AliMUONDataIterator::Remove()
 void 
 AliMUONDataIterator::Reset() 
 { 
-  if (!fIterator) fIterator->Reset(); 
+  if (fIterator) fIterator->Reset(); 
 }

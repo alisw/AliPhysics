@@ -234,6 +234,8 @@ AliMUONDigitizerV3::ApplyResponseToTriggerDigit(AliMUONDigit& digit,
 
   AliMUONDigit* correspondingDigit = FindCorrespondingDigit(digit,data);
 
+  if(!correspondingDigit)return;//reject bad correspondences
+
   Int_t detElemId = digit.DetElemId();
   
   const AliMpVSegmentation* segment[2] = 
@@ -479,11 +481,26 @@ AliMUONDigit*
 AliMUONDigitizerV3::FindCorrespondingDigit(AliMUONDigit& digit,
                                            AliMUONData* data)
 {                                                
-  AliMUONDataIterator it(data,"D",AliMUONDataIterator::kAllChambers);
+  AliMUONDataIterator it(data,"D",AliMUONDataIterator::kTriggerChambers);
   AliMUONDigit* cd;
+
+  for(;;){
+      cd = static_cast<AliMUONDigit*>(it.Next());
+      if(!cd)continue;
+      if (cd->DetElemId() == digit.DetElemId() &&
+	  cd->PadX() == digit.PadX() &&
+	  cd->PadY() == digit.PadY() && 
+	  cd->Cathode() == digit.Cathode()){
+	  break;
+      }
+  }
+  //The corresponding digit is searched only forward in the AliMUONData.
+  //In this way when the first digit of the couple is given, the second digit is found and the efficiency is applied to both. 
+  //Afterwards, when the second digit of the couple is given the first one is not found and hence efficiency is not applied again
   
   while ( ( cd = static_cast<AliMUONDigit*>(it.Next()) ) )
   {
+    if(!cd)continue;//avoid problems when 1 digit is removed
     if ( cd->DetElemId() == digit.DetElemId() &&
          cd->Hit() == digit.Hit() &&
          cd->Cathode() != digit.Cathode() )
