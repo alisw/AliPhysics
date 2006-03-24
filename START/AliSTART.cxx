@@ -134,7 +134,7 @@ void AliSTART::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 //_____________________________________________________________________________
 
 void AliSTART::AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime, 
-			Int_t timediff, TArrayI *sumMult,
+			Int_t timediff, Int_t sumMult,
 			TArrayI *time, TArrayI *adc, TArrayI *timeAmp, TArrayI *adcAmp)
 {
   
@@ -148,7 +148,7 @@ void AliSTART::AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime,
   fDigits->SetTimeBestLeft(besttimeleft);
   fDigits-> SetMeanTime(meantime);
   fDigits-> SetDiffTime(timediff);
-  fDigits-> SetSumMult(*sumMult);
+  fDigits-> SetSumMult(sumMult);
   fDigits->SetTime(*time);
   fDigits->SetTimeAmp(*timeAmp);
   fDigits->SetADC(*adc);
@@ -246,6 +246,7 @@ void AliSTART::MakeBranch(Option_t* option)
       //     MakeBranchInTree(fLoader->TreeD(), branchname,
       //		       &fDigits, 405, 0);
       fLoader->TreeD()->Branch(branchname,"AliSTARTdigit",&fDigits,405,1);
+      //   fLoader->TreeD()->Print();
     } 
   if (cR && fLoader->TreeR())
     {

@@ -43,7 +43,6 @@ ClassImp(AliSTARTdigit)
   fADC  = new TArrayI(24);
   fTimeAmp = new TArrayI(24);
   fADCAmp  = new TArrayI(24);
-  fSumMult=new TArrayI(6);
 }
 
 //-----------------------------------
@@ -53,7 +52,6 @@ AliSTARTdigit::~AliSTARTdigit() {
   delete fADC;
   delete fTimeAmp;
   delete fADCAmp;
-  delete fSumMult;
 }
 //-----------------------------------
 void AliSTARTdigit::SetTime (TArrayI &o)
@@ -143,27 +141,5 @@ void AliSTARTdigit::SetADCAmp (TArrayI &o)
     {
       Int_t buf=(o.At(i));
       fADCAmp->AddAt(buf,i);
-    }
-}
-//--------------------------------------------
-void AliSTARTdigit::GetSumMult (TArrayI &o)
-{
-  //
-  Int_t i;
-  for (i=0; i<6; i++)
-    {
-      o[i]=fSumMult->At(i);
-    }
-}
-//--------------------------------------------
-void AliSTARTdigit::SetSumMult (TArrayI &o)
-{
-  //
-  fSumMult = new TArrayI(24);
-  Int_t i;
-  for (i=0; i<6; i++)
-    {
-      Int_t buf=(o.At(i));
-      fSumMult->AddAt(buf,i);
     }
 }

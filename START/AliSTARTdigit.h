@@ -18,17 +18,17 @@ class AliSTARTdigit: public TObject {
   Int_t BestTimeLeft() {return fBestTimeLeft;}
   Int_t MeanTime() {return fTimeAverage;}
   Int_t TimeDiff() {return fTimeDiff;}
+  Int_t SumMult() {return fSumMult;}
   void SetTimeBestRight( Int_t time) {fBestTimeRight = time;}
   void SetTimeBestLeft( Int_t time) {fBestTimeLeft = time;}
   void SetMeanTime(Int_t time) {fTimeAverage=time;}
   void SetDiffTime(Int_t time) {fTimeDiff=time;}
+  void SetSumMult(Int_t time) {fSumMult=time;}
   
   virtual void SetTime (TArrayI &o);
   virtual void GetTime (TArrayI &o);
   virtual void SetADC (TArrayI &o);
   virtual void GetADC (TArrayI &o);
-  virtual void SetSumMult( TArrayI &o);
-  virtual void GetSumMult( TArrayI &o);
   
   virtual void SetTimeAmp (TArrayI &o);
   virtual void GetTimeAmp (TArrayI &o);
@@ -45,7 +45,7 @@ class AliSTARTdigit: public TObject {
   TArrayI *fADC;    // array's ADC
   TArrayI *fTimeAmp;    // array's TDC
   TArrayI *fADCAmp;    // array's ADC
-  TArrayI *fSumMult;   //multiplisity
+  Int_t fSumMult;   //multiplisity
   
   ClassDef(AliSTARTdigit,4)  //Digit (Header) object for set:START
     };
