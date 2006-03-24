@@ -88,7 +88,7 @@ AliSTARTParameters::Init()
   
   AliCDBManager* cdb      = AliCDBManager::Instance();
   cout<<" AliSTARTParameters::Init() CDB "<<cdb<<endl;
-  AliCDBStorage *stor = cdb->GetStorage("local://DBLocal");
+  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT");
   fCalibentry  = stor->Get("START/Calib/Gain_TimeDelay_Slewing_Walk",1);
   if (fCalibentry){
    fgCalibData  = (AliSTARTCalibData*)fCalibentry->GetObject();
