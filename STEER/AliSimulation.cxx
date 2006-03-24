@@ -923,20 +923,38 @@ Bool_t AliSimulation::ConvertDateToRoot(const char* dateFileName,
   AliInfo(Form("converting DATE file %s to root file %s", 
                dateFileName, rootFileName));
 
-  gSystem->Exec("rm -rf /tmp/mdc1");
-  gSystem->Exec("rm -rf /tmp/mdc2");
+  const char* rawDBFS[2] = { "/tmp/mdc1", "/tmp/mdc2" };
+  const char* tagDBFS    = "/tmp/mdc1/tags";
+  const char* runDBFS    = "/tmp/mdc1/meta";
 
-  gSystem->Exec("mkdir /tmp/mdc1");
-  gSystem->Exec("mkdir /tmp/mdc2");
+  // User defined file system locations
+  if (gSystem->Getenv("ALIMDC_RAWDB1")) 
+    rawDBFS[0] = gSystem->Getenv("ALIMDC_RAWDB1");
+  if (gSystem->Getenv("ALIMDC_RAWDB2")) 
+    rawDBFS[1] = gSystem->Getenv("ALIMDC_RAWDB2");
+  if (gSystem->Getenv("ALIMDC_TAGDB")) 
+    tagDBFS = gSystem->Getenv("ALIMDC_TAGDB");
+  if (gSystem->Getenv("ALIMDC_RUNDB")) 
+    runDBFS = gSystem->Getenv("ALIMDC_RUNDB");
 
-  char command[256];
-  sprintf(command, "alimdc %d %d %d %d %s", 
-	  kDBSize, kTagDBSize, kFilter, kCompression, dateFileName);
-  Int_t result = gSystem->Exec(command);
-  sprintf(command, "mv /tmp/mdc1/*.root %s", rootFileName);
-  gSystem->Exec(command);
-  gSystem->Exec("rm -rf /tmp/mdc1");
-  gSystem->Exec("rm -rf /tmp/mdc2");
+  gSystem->Exec(Form("rm -rf %s",rawDBFS[0]));
+  gSystem->Exec(Form("rm -rf %s",rawDBFS[1]));
+  gSystem->Exec(Form("rm -rf %s",tagDBFS));
+  gSystem->Exec(Form("rm -rf %s",runDBFS));
+
+  gSystem->Exec(Form("mkdir %s",rawDBFS[0]));
+  gSystem->Exec(Form("mkdir %s",rawDBFS[1]));
+  gSystem->Exec(Form("mkdir %s",tagDBFS));
+  gSystem->Exec(Form("mkdir %s",runDBFS));
+
+  Int_t result = gSystem->Exec(Form("alimdc %d %d %d %d %s", 
+				    kDBSize, kTagDBSize, kFilter, kCompression, dateFileName));
+  gSystem->Exec(Form("mv %s/*.root %s", rawDBFS[0], rootFileName));
+
+  gSystem->Exec(Form("rm -rf %s",rawDBFS[0]));
+  gSystem->Exec(Form("rm -rf %s",rawDBFS[1]));
+  gSystem->Exec(Form("rm -rf %s",tagDBFS));
+  gSystem->Exec(Form("rm -rf %s",runDBFS));
 
   return (result == 0);
 }
