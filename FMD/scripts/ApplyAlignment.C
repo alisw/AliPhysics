@@ -5,6 +5,9 @@
 // Read in the geometry, and get alignment data from CDB, and  apply
 // that to the geometry. 
 //
+/** Apply alignment to a geometry 
+    @ingroup simple_script
+ */
 void
 ApplyAlignment()
 {

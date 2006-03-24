@@ -20,6 +20,16 @@
 #include <TStyle.h>
 #include <TArrayF.h>
 
+/** @class DrawHitsDigits
+    @brief Draw hit energy loss versus digit ADC
+    @code 
+    Root> .L Compile.C
+    Root> Compile("DrawHitsDigits.C")
+    Root> DrawHitsDigits c
+    Root> c.Run();
+    @endcode
+    @ingroup FMD_script
+ */
 class DrawHitsDigits : public AliFMDInputHits
 {
 private:
@@ -54,6 +64,9 @@ public:
     fElossVsAdc->SetYTitle("ADC value");
   }
   //__________________________________________________________________
+  /** Begining of event
+      @param ev Event number
+      @return @c false on error */
   Bool_t Begin(Int_t ev) 
   {
     fMap.Reset();

@@ -15,8 +15,13 @@
 # include <iostream>
 using namespace std;
 #endif
-
+/** @defgroup lego_script LEGO script
+    @ingroup FMD_script 
+*/
 //____________________________________________________________________
+/** @ingroup lego_script
+    @param ang 
+    @return  */
 Float_t 
 deg2eta(Float_t ang) 
 {
@@ -29,6 +34,11 @@ deg2eta(Float_t ang)
 
 
 //____________________________________________________________________
+/** @ingroup lego_script
+    @param which 
+    @param what 
+    @param back 
+    @return  */
 TH1* 
 getHisto(const Char_t* which, const Char_t* what, TH1* back=0) 
 {
@@ -89,6 +99,9 @@ getHisto(const Char_t* which, const Char_t* what, TH1* back=0)
 }
 
 //____________________________________________________________________
+/** @ingroup lego_script
+    @param what 
+*/
 void
 drawLego(const char* what="abso") 
 {
@@ -230,6 +243,8 @@ drawLego(const char* what="abso")
   
   
 //____________________________________________________________________
+/** @ingroup lego_script
+ */
 void 
 DrawLego() 
 {

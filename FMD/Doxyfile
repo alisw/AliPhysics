@@ -82,8 +82,10 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = /home/hehi/cholm/work/alice/aliroot/FMD
-FILE_PATTERNS          = *.h
+INPUT                  = /home/hehi/cholm/work/alice/aliroot/FMD \
+                         /home/hehi/cholm/work/alice/aliroot/FMD/scripts/
+FILE_PATTERNS          = *.h \
+                         *.C
 RECURSIVE              = NO
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
@@ -98,7 +100,7 @@ FILTER_SOURCE_FILES    = NO
 #---------------------------------------------------------------------------
 # configuration options related to source browsing
 #---------------------------------------------------------------------------
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = NO

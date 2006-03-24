@@ -4,6 +4,9 @@
 //
 // Make fake alignment data.
 //
+/** Make fake alignment data 
+    @ingroup simple_script
+ */
 void
 MakeAlignment()
 {

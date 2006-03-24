@@ -17,6 +17,16 @@
 #include <TArrayF.h>
 #include <TCanvas.h>
 
+/** @class CheckRaw
+    @brief Check raw I/O
+    @code 
+    Root> .L Compile.C
+    Root> Compile("CheckRaw.C")
+    Root> CheckRaw c
+    Root> c.Run();
+    @endcode
+    @ingroup FMD_script
+ */
 class CheckRaw : public AliFMDInput
 {
 public:

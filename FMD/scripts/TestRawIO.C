@@ -4,6 +4,8 @@
 //
 // Test of AliFMDAltro{Reader,Writer}
 //
+/** @ingroup simple_script
+ */
 void
 TestRawIO()
 {

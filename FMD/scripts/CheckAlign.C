@@ -23,6 +23,16 @@
 #include <TParticle.h>
 #include <TCanvas.h>
 
+/** @class CheckAlign
+    @brief Check alignment 
+    @code 
+    Root> .L Compile.C
+    Root> Compile("CheckAlign.C")
+    Root> CheckAlign c
+    Root> c.Run();
+    @endcode
+    @ingroup FMD_script
+ */
 class CheckAlign : public AliFMDInput
 {
 public:

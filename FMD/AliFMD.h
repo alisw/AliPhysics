@@ -16,6 +16,7 @@
       - @ref sim   (see also @ref FMD_sim)
       - @ref rec   (see also @ref FMD_rec)
       - @ref util  (see also @ref FMD_util)
+    - @ref script  (see also @ref FMD_script)
     - @ref quick
     - @ref authors
     
@@ -140,6 +141,11 @@
     - AliFMDCalibFaker, AliFMDAlignFaker: Classes to write fake (or
       dummy) calibration and alignment 	data.  These derive from
       TTask.  
+
+    @section script Scripts 
+    
+    Most scripts live in @c FMD/scripts.  The notiable exceptions are 
+    @ref Simulate.C, @ref Reconstruct.C, and @ref Config.C 
 
     @section quick Quick start 
 

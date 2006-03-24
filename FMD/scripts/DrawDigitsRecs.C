@@ -24,6 +24,16 @@
 #include <TArrayF.h>
 #include <TCanvas.h>
 
+/** @class DrawDigitsRecs
+    @brief Draw digit ADC versus Rec point mult
+    @code 
+    Root> .L Compile.C
+    Root> Compile("DrawDigitsRecs.C")
+    Root> DrawDigitsRecs c
+    Root> c.Run();
+    @endcode
+    @ingroup FMD_script
+ */
 class DrawDigitsRecs : public AliFMDInputDigits
 {
 private:
@@ -54,6 +64,9 @@ public:
     fAdcVsSingle->SetYTitle("Strip Multiplicity");
   }
   //__________________________________________________________________
+  /** Begining of event
+      @param ev Event number
+      @return @c false on error */
   Bool_t Begin(Int_t ev) 
   {
     fMap.Reset();

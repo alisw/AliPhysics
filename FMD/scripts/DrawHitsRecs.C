@@ -30,6 +30,16 @@
 #include <AliLog.h>
 
 //____________________________________________________________________
+/** @class DrawHitsRecs
+    @brief Draw hit energy loss versus rec point mult
+    @code 
+    Root> .L Compile.C
+    Root> Compile("DrawHitsRecs.C")
+    Root> DrawHitsRecs c
+    Root> c.Run();
+    @endcode
+    @ingroup FMD_script
+ */
 class DrawHitsRecs : public AliFMDInputHits
 {
 private:
@@ -83,6 +93,9 @@ public:
     fHitsVsStrip->SetYTitle("Strip Multiplicity");
   }
   //__________________________________________________________________
+  /** Begining of event
+      @param ev Event number
+      @return @c false on error */
   Bool_t Begin(Int_t ev) 
   {
     fMap.Reset();

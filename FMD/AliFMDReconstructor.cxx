@@ -115,9 +115,13 @@ AliFMDReconstructor::Init(AliRunLoader* runLoader)
   // Initialize the reconstructor 
   AliDebug(1, Form("Init called with runloader 0x%x", runLoader));
   // Initialize the geometry 
-  AliFMDGeometry* fmd = AliFMDGeometry::Instance();
-  fmd->Init();
-  fmd->InitTransformations();
+  AliFMDGeometry* geom = AliFMDGeometry::Instance();
+  geom->Init();
+  geom->InitTransformations();
+
+  // Initialize the parameters
+  AliFMDParameters* param = AliFMDParameters::Instance();
+  param->Init();
   
   // Current vertex position
   fCurrentVertex = 0;
@@ -366,9 +370,9 @@ AliFMDReconstructor::PhysicalCoordinates(AliFMDDigit* digit,
   // Get the eta and phi of a digit 
   // 
   // Get geometry. 
-  AliFMDGeometry* fmd = AliFMDGeometry::Instance();
+  AliFMDGeometry* geom = AliFMDGeometry::Instance();
   Double_t x, y, z, r, theta;
-  fmd->Detector2XYZ(digit->Detector(), digit->Ring(), digit->Sector(), 
+  geom->Detector2XYZ(digit->Detector(), digit->Ring(), digit->Sector(), 
 		    digit->Strip(), x, y, z);
   // Correct for vertex offset. 
   z     += fCurrentVertex;

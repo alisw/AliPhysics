@@ -7,6 +7,11 @@
 //
 // Christian 
 // 
+/** Calculate wafer parameters
+    @param c 
+    @return  
+    @ingroup simple_script
+*/
 TObjArray*
 WaferParameters(const char c)
 {      
@@ -64,6 +69,9 @@ WaferParameters(const char c)
   return verticies;
 }
 
+/** Draw wafers
+    @ingroup simple_script
+ */
 void
 Wafer()
 {

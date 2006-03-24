@@ -4,7 +4,12 @@
 //
 // Test I/O of ALiFMDMap
 //
+/** @defgroup MAPIO_TEST Map I/O test
+    @ingroup FMD_script 
+*/
 //____________________________________________________________________
+/** @ingroup MAPIO_test
+ */
 void 
 WriteTree()
 {
@@ -19,6 +24,8 @@ WriteTree()
 }
 
 //____________________________________________________________________
+/** @ingroup MAPIO_test
+ */
 void 
 ReadTree()
 {
@@ -36,6 +43,8 @@ ReadTree()
 
   
 //____________________________________________________________________
+/** @ingroup MAPIO_test
+ */
 void
 WriteMap() 
 {
@@ -47,6 +56,9 @@ WriteMap()
 }
 
 //____________________________________________________________________
+/** @ingroup MAPIO_test
+    @return  */
+void
 ReadMap() 
 {
   TFile* file = TFile::Open("map.root", "READ");
@@ -61,6 +73,8 @@ ReadMap()
 
 
 //____________________________________________________________________
+/** @ingroup MAPIO_test
+ */
 void
 TestMapIO()
 {

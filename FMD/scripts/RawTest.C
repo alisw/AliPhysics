@@ -3,6 +3,9 @@
 //
 // Small script to test consistency of writing and reading raw data.
 //
+/** Check raw data I/O
+    @ingroup simple_script
+ */
 void
 RawTest() 
 {

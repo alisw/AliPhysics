@@ -5,6 +5,13 @@
 // Script to try to fit the reponse function of the VA1 signals, based
 // on a finite number of ALTRO samples. 
 //
+/** Make Va1 response
+    @param n 
+    @param B 
+    @param dc 
+    @param errors 
+    @ingroup simple_script
+*/
 void 
 VA1Response(Int_t n=2, Float_t B=5, Float_t dc=.01, Bool_t errors=kFALSE) 
 {

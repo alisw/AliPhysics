@@ -4,6 +4,9 @@
 //
 // Draw hits in the specialised FMD event display 
 //
+/** Display hits 
+    @ingroup FMD_script
+ */
 void
 DisplayHits()
 {

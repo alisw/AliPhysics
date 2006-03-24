@@ -4,8 +4,14 @@
 //
 // Check integrety of Hardware2Detector and Detector2Hardware
 //
-
+/** @defgroup ALTRO_test ALTRO test
+    @ingroup FMD_script 
+*/
 //____________________________________________________________________
+/** @ingroup ALTRO_test
+    @param ddl 
+    @param hwaddr 
+    @return  */
 Char_t* 
 Addr2Str(UInt_t ddl, UInt_t hwaddr)
 {
@@ -18,6 +24,12 @@ Addr2Str(UInt_t ddl, UInt_t hwaddr)
 }
 
 //____________________________________________________________________
+/** @ingroup ALTRO_test
+    @param det 
+    @param ring 
+    @param sec 
+    @param str 
+    @return  */
 Char_t* 
 Det2Str(UShort_t det, Char_t ring, UShort_t sec, UShort_t str)
 {
@@ -27,6 +39,18 @@ Det2Str(UShort_t det, Char_t ring, UShort_t sec, UShort_t str)
 }
 
 //____________________________________________________________________
+/** @ingroup ALTRO_test
+    @param det 
+    @param ring 
+    @param sec 
+    @param str 
+    @param ddl 
+    @param hwaddr 
+    @param odet 
+    @param oring 
+    @param osec 
+    @param ostr 
+*/
 void 
 PrintTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str, 
 	   UInt_t ddl, UInt_t hwaddr,
@@ -40,6 +64,16 @@ PrintTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str,
 }
 
 //____________________________________________________________________
+/** @ingroup ALTRO_test
+    @param det 
+    @param ring 
+    @param sec 
+    @param str 
+    @param odet 
+    @param oring 
+    @param osec 
+    @param ostr 
+*/
 void
 CheckTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str, 
 	   UShort_t odet, Char_t oring, UShort_t osec, UShort_t ostr)
@@ -55,6 +89,8 @@ CheckTrans(UShort_t det, Char_t ring, UShort_t sec, UShort_t str,
 }
 
 //____________________________________________________________________
+/** @ingroup ALTRO_test
+ */
 void
 TestAltroMapping()
 {

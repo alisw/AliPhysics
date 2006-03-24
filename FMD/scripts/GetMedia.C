@@ -17,6 +17,10 @@
 #include <AliRun.h>
 #include <TNtuple.h>
 
+/** @class Media 
+    @brief Media description 
+    @ingroup FMD_script
+ */
 struct Media : public TNamed
 {
   TArrayI*        fMeds;
@@ -45,6 +49,16 @@ struct Media : public TNamed
 
 
 //____________________________________________________________________
+/** @class GetMedia
+    @brief Get media where a particle is produced
+    @code 
+    Root> .L Compile.C
+    Root> Compile("GetMedia.C")
+    Root> GetMedia c
+    Root> c.Run();
+    @endcode
+    @ingroup FMD_script
+ */
 class GetMedia : public AliFMDInputHits
 {
 private:
@@ -101,6 +115,9 @@ public:
     return AliFMDInputHits::Init();
   }  
   //__________________________________________________________________
+  /** Begining of event
+      @param ev Event number
+      @return @c false on error */
   Bool_t Begin(Int_t ev) 
   {
     fEv = ev;

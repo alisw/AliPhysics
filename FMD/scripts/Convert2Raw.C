@@ -5,6 +5,9 @@
 // Read in digits, and convert them to raw data files.  This is mainly
 // for testing. 
 //
+/** Convert digits to Raw data
+    @ingroup simple_script
+*/
 void
 Convert2Raw()
 {

@@ -22,8 +22,12 @@
 #include <TGeoManager.h>
 #include <TGeoMedium.h>
 #include <TGeant3.h>
-
+/** @defgroup xsec_script X-section script 
+    @ingroup FMD_script 
+*/
 //____________________________________________________________________
+/** @ingroup xsec_script
+ */
 struct Mech 
 {
   char*    name;
@@ -35,6 +39,13 @@ struct Mech
 
 
 //____________________________________________________________________
+/** @ingroup xsec_script
+    @param medName 
+    @param pdgName 
+    @param n 
+    @param emin 
+    @param emax 
+*/
 void
 GetXsection(const char* medName, const char* pdgName,
 	    Int_t n=91, Float_t emin=1e-5, Float_t emax=1e4)

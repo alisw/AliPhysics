@@ -18,6 +18,16 @@
 #include <TArrayF.h>
 #include <iostream>
 
+/** @class Poisson
+    @brief Make a poisson reconstruction
+    @code 
+    Root> .L Compile.C
+    Root> Compile("Poisson.C")
+    Root> Poisson c
+    Root> c.Run();
+    @endcode
+    @ingroup FMD_script
+ */
 class Poisson : public AliFMDInput
 {
 private:
@@ -58,6 +68,9 @@ public:
     if (!fFile) return kFALSE;
     return kTRUE;
   }
+  /** Begining of event
+      @param event Event number
+      @return @c false on error */
   Bool_t Begin(Int_t event) 
   {
     if (!AliFMDInput::Begin(event)) return kFALSE;
@@ -92,6 +105,14 @@ public:
       } // Loop over rings
     } // Loop over detectors
   }
+  /** For each bin, reconstruct the charge particle multiplicity as 
+      @f[
+      m = - N_{total} \log\left(\frac{N_{empty}}{N_{total}}\right)
+      @f]
+      where @f$ N_{total}@f$ is the total number of strips in the bin,
+      and @f$ N_{empty}@f$ is the number of strips in the bin that did
+      not fire. 
+      @return @c true  */
   Bool_t End() 
   {
     for (Int_t etaBin = 1; etaBin <= fEmpty->GetNbinsX(); etaBin++) {

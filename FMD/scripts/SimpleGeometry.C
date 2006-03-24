@@ -6,6 +6,18 @@
 // Script I used for rapid prototyping of the FMD3 geometry - in
 // particular the support cone 
 //
+/** @defgroup simple_geom Simple geometry
+    @ingroup FMD_script
+*/
+/** Calculate wafer parameters 
+    @param dl      Lower diameter
+    @param dh      Higer diameter
+    @param theta   Opening angle
+    @param r       Wafer radius
+    @param verbose Maybe be verbose
+    @return  Corners of shape
+    @ingroup simple_geom
+*/
 //____________________________________________________________________
 TObjArray*
 waferParameters(double dl, double dh, double theta, double r, 
@@ -46,6 +58,15 @@ waferParameters(double dl, double dh, double theta, double r,
   return verticies;
 }
 
+/** Create the sensor shape 
+    @param name 
+    @param rl 
+    @param rh 
+    @param th 
+    @param r 
+    @param dz 
+    @ingroup simple_geom
+    @return  */
 //____________________________________________________________________
 TShape* 
 createModuleShape(const Char_t* name, double rl, double rh, double th, 
@@ -72,6 +93,18 @@ createModuleShape(const Char_t* name, double rl, double rh, double th,
   return (TShape*)moduleShape;
 }
 
+/** 
+    @param name 
+    @param rl 
+    @param rh 
+    @param th 
+    @param siThick 
+    @param waferR 
+    @param staggering 
+    @param z 
+    @ingroup simple_geom
+    @return  
+*/
 //____________________________________________________________________
 TNode* 
 createRing(const char* name, double rl, double rh, double th, 
@@ -105,6 +138,21 @@ createRing(const char* name, double rl, double rh, double th,
 }
 
 //____________________________________________________________________
+/** 
+    @param noseRl 
+    @param noseRh 
+    @param noseDz 
+    @param noseZ 
+    @param backRl 
+    @param backRh 
+    @param backDz 
+    @param coneL 
+    @param beamW 
+    @param beamDz 
+    @param flangeR 
+    @return  
+    @ingroup simple_geom
+*/
 TNode*
 createSupport(double noseRl, double noseRh, double noseDz, double noseZ, 
 	      double backRl, double backRh, double backDz, double coneL, 
@@ -175,6 +223,9 @@ createSupport(double noseRl, double noseRh, double noseDz, double noseZ,
 
 
 //____________________________________________________________________
+/** 
+    @ingroup simple_geom
+ */
 void
 SimpleGeometry() 
 {

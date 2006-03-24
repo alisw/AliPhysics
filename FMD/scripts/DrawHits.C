@@ -19,6 +19,16 @@
 #include <TArrayF.h>
 #include <TParticle.h>
 
+/** @class DrawHits
+    @brief Draw hit energy loss
+    @code 
+    Root> .L Compile.C
+    Root> Compile("DrawHits.C")
+    Root> DrawHits c
+    Root> c.Run();
+    @endcode
+    @ingroup FMD_script
+ */
 class DrawHits : public AliFMDInputHits
 {
 private:

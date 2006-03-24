@@ -4,6 +4,9 @@
 //
 // Small script that shows a signal train from a VA1 pre-amp. 
 // 
+/** Make VA1 sample train
+    @ingroup simple_script
+ */
 void 
 VA1Train() 
 {
