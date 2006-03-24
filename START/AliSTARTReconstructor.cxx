@@ -59,8 +59,6 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
     //Q->T-> coefficients !!!! should be asked!!!
   //  Float_t ph2MIP=500;
   Float_t gain[24], timeDelayCFD[24], timeDelayLED[24];
-  Int_t threshold =50; //photoelectrons
-  //  Int_t mV2channel=200000/(25*25);  //5V -> 200ns
   Float_t zdetA,zdetC;
   TObjArray slewingLED;
     
@@ -68,8 +66,10 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
   TArrayI * fTimeCFD = new TArrayI(24); 
   TArrayI * fADCLED = new TArrayI(24); 
   TArrayI * fTimeLED = new TArrayI(24); 
+  cout<<" fTimeCFD "<<fTimeCFD<<endl;
 
   AliSTARTParameters* param = AliSTARTParameters::Instance();
+  param->Init();
   Int_t ph2MIP = param->GetPh2Mip();     
   Int_t channelWidth = param->GetChannelWidth() ;  
   
@@ -78,15 +78,13 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
       timeDelayLED[i] = param->GetTimeDelayLED(i);
       gain[i] = param->GetGain(i);
       slewingLED.AddAtAndExpand(param->GetSlew(i),i);
-    }
+     }
     zdetC = param->GetZposition(0);
     zdetA  = param->GetZposition(1);
   
   AliDebug(1,Form("Start DIGITS reconstruction "));
-   Int_t channelWigth=25; //ps
-
+ 
   TBranch *brDigits=digitsTree->GetBranch("START");
-  cout<<" TBranch *brDigits "<<brDigits<<endl;
   AliSTARTdigit *fDigits = new AliSTARTdigit();
   if (brDigits) {
     brDigits->SetAddress(&fDigits);
@@ -94,12 +92,8 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
     cerr<<"EXEC Branch START digits not found"<<endl;
     return;
   }
-  //  brDigits->Print();
   brDigits->GetEntry(0);
-  cout<<"  brDigits->GetEntry(0); "<<endl;
-  //  fDigits->Print();
   fDigits->GetTime(*fTimeCFD);
-  cout<<"  fDigits->GetTime(*fTimeCFD); "<<endl;
   fDigits->GetADC(*fADC);
   fDigits->GetTimeAmp(*fTimeLED);
   fDigits->GetADCAmp(*fADCLED);
@@ -108,27 +102,25 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
   for (Int_t ipmt=0; ipmt<24; ipmt++)
     {
       
-      if(fTimeCFD->At(ipmt)){
-	 time[ipmt] = channelWigth *( fTimeCFD->At(ipmt)) - 1000*timeDelayCFD[ipmt];
+         if(fTimeCFD->At(ipmt)>0 ){
+	 time[ipmt] = channelWidth *( fTimeCFD->At(ipmt)) - 1000*timeDelayCFD[ipmt];
 	 cout<<ipmt<<" "<<time[ipmt];
-	 Float_t adc_digmV = channelWigth * Float_t (fADC->At(ipmt)) ;
-	 cout<<"  adc_digmV "<< adc_digmV;
-	 //      adc[ipmt] = ( TMath::Exp (fADC->At(ipmt)) / gain[ipmt] /mV2channel );
-	 adc[ipmt] = TMath::Exp(adc_digmV);
-	 cout<<" adc"<<adc[ipmt]<<" inMIP "<<adc[ipmt]/50<< endl;
-      }
+	 Float_t adc_digPs = channelWidth * Float_t (fADC->At(ipmt)) ;
+	 //	 cout<<"  adc_digmV "<< adc_digPs<<endl;
+	 adc[ipmt] = TMath::Exp(adc_digPs/1000) /gain[ipmt];
+	 //	 cout<<" adc"<<adc[ipmt]<<" inMIP "<<adc[ipmt]/50<< endl;
+         }
     }
 
-  Int_t besttimeright=channelWigth * (fDigits->BestTimeRight());
-  Int_t besttimeleft=channelWigth * (fDigits->BestTimeLeft());
-
+  Int_t besttimeright=channelWidth * (fDigits->BestTimeRight());
+  Int_t besttimeleft=channelWidth * (fDigits->BestTimeLeft());
   //folding with experimental time distribution
   //  Float_t c = 29.9792; // cm/ns
   Float_t c = 0.0299792; // cm/ps
   Float_t lenr=TMath::Sqrt(zdetA*zdetA + 6.5*6.5);
   Float_t lenl=TMath::Sqrt(zdetC*zdetC + 6.5*6.5);
-  Float_t timeDiff=channelWigth * (fDigits->TimeDiff());
-  Int_t meanTime=channelWigth * (fDigits->MeanTime());
+  Float_t timeDiff=channelWidth * (fDigits->TimeDiff());
+  Int_t meanTime=channelWidth * (fDigits->MeanTime());
   Float_t ds=(c*(timeDiff)-(lenr-lenl))/2;
   AliDebug(2,Form(" timediff in ns %f  real point%f",timeDiff,ds));
   
