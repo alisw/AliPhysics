@@ -194,13 +194,6 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   TClonesArray* digits = new TClonesArray("AliFMDDigit");
   digitBranch->SetAddress(&digits);
 
-  // TIter next(&fAlgorithms);
-  // AliFMDMultAlgorithm* algorithm = 0;
-  // while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) {
-  //   AliDebug(10, Form("PreEvent called for algorithm %s", 
-  //                     algorithm->GetName()));    
-  //   algorithm->PreEvent(clusterTree, fCurrentVertex);
-  // }
   if (fMult)   fMult->Clear();
   if (fESDObj) fESDObj->Clear();
   
@@ -214,13 +207,6 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   AliDebug(5, "Processing digits");
   ProcessDigits(digits);
 
-  // next.Reset();
-  // algorithm = 0;
-  // while ((algorithm = static_cast<AliFMDMultAlgorithm*>(next()))) {
-  //   AliDebug(10, Form("PostEvent called for algorithm %s", 
-  //                     algorithm->GetName()));
-  // algorithm->PostEvent();
-  // }
   Int_t written = clusterTree->Fill();
   AliDebug(10, Form("Filled %d bytes into cluster tree", written));
   digits->Delete();
@@ -381,28 +367,6 @@ AliFMDReconstructor::PhysicalCoordinates(AliFMDDigit* digit,
   // 
   // Get geometry. 
   AliFMDGeometry* fmd = AliFMDGeometry::Instance();
-#if 0
-  AliFMDDetector* subDetector = fmd->GetDetector(digit->Detector());
-  if (!subDetector) { 
-    Warning("ProcessDigits", "Unknown detector: FMD%d" , digit->Detector());
-    return;
-  }
-    
-  // Get the ring - we should really use geometry->Detector2XYZ(...)
-  // here. 
-  AliFMDRing* ring  = subDetector->GetRing(digit->Ring());
-  Float_t     ringZ = subDetector->GetRingZ(digit->Ring());
-  if (!ring) {
-    Warning("ProcessDigits", "Unknown ring: FMD%d%c", digit->Detector(), 
-	    digit->Ring());
-    return;
-  }
-  Float_t  realZ    = fCurrentVertex + ringZ;
-  Float_t  stripR   = ((ring->GetHighR() - ring->GetLowR()) 
-		       / ring->GetNStrips() * (digit->Strip() + .5) 
-		       + ring->GetLowR());
-  Float_t  theta    = TMath::ATan2(stripR, realZ);
-#endif    
   Double_t x, y, z, r, theta;
   fmd->Detector2XYZ(digit->Detector(), digit->Ring(), digit->Sector(), 
 		    digit->Strip(), x, y, z);
@@ -431,79 +395,7 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   if (esd) { 
     AliDebug(1, Form("Writing FMD data to ESD tree"));
     esd->SetFMDData(fESDObj);
-    // Let's check the data in the ESD
-#if 0
-    AliESDFMD* fromEsd = esd->GetFMDData();
-    if (!fromEsd) {
-      AliWarning("No FMD object in ESD!");
-      return;
-    }
-    for (UShort_t det = 1; det <= fESDObj->MaxDetectors(); det++) {
-      for (UShort_t ir = 0; ir < fESDObj->MaxRings(); ir++) {
-	Char_t ring = (ir == 0 ? 'I' : 'O');
-	for (UShort_t sec = 0; sec < fESDObj->MaxSectors(); sec++) {
-	  for (UShort_t str = 0; str < fESDObj->MaxStrips(); str++) {
-	    if (fESDObj->Multiplicity(det, ring, sec, str) != 
-		fromEsd->Multiplicity(det, ring, sec, str))
-	      AliWarning(Form("Mult for FMD%d%c[%2d,%3d]",det,ring,sec,str));
-	    if (fESDObj->Eta(det, ring, sec, str) != 
-		fromEsd->Eta(det, ring, sec, str))
-	      AliWarning(Form("Eta for FMD%d%c[%2d,%3d]", det,ring,sec,str));
-	    if (fESDObj->Multiplicity(det, ring, sec, str) > 0 && 
-		fESDObj->Multiplicity(det, ring, sec, str) 
-		!= AliESDFMD::kInvalidMult) 
-	      AliInfo(Form("Mult in FMD%d%c[%2d,%3d] is %f", det,ring,sec,str,
-			   fESDObj->Multiplicity(det, ring, sec, str)));
-	  }
-	}
-      }
-    }
-#endif
   }
-
-#if 0  
-  static Int_t evNo = -1;
-  evNo++;
-  if (esd) evNo = esd->GetEventNumber();
-  TString fname(Form("FMD.ESD.%03d.root", evNo));
-  TFile* file = TFile::Open(fname.Data(), "RECREATE");
-  if (!file) {
-    AliError(Form("Failed to open file %s", fname.Data()));
-    return;
-  }
-  fESDObj->Write();
-  file->Close();
-#endif
-    
-#if 0
-  TClonesArray* multStrips  = 0;
-  TClonesArray* multRegions = 0;
-  TTree*        treeR  = fmdLoader->TreeR();
-  TBranch*      branchRegions = treeR->GetBranch("FMDPoisson");
-  TBranch*      branchStrips  = treeR->GetBranch("FMDNaiive");
-  branchRegions->SetAddress(&multRegions);
-  branchStrips->SetAddress(&multStrips);
-  
-  Int_t total = 0;
-  Int_t nEntries  = clusterTree->GetEntries();
-  for (Int_t entry = 0; entry < nEntries; entry++) {
-    AliDebug(5, Form("Entry # %d in cluster tree", entry));
-    treeR->GetEntry(entry);
-    
-    
-    Int_t nMults = multRegions->GetLast();
-    for (Int_t i = 0; i <= nMults; i++) {
-      AliFMDMultRegion* multR =
-	static_cast<AliFMDMultRegion*>(multRegions->UncheckedAt(i));
-      Int_t nParticles=multR->Particles();
-      if (i>=0 && i<=13)   hEtaPoissonI1->AddBinContent(i+1,nParticles);
-      if (i>=14 && i<=27 ) hEtaPoissonI2->AddBinContent(i-13,nParticles);
-      if (i>=28 && i<=33 );
-      if (i>=34 && i<=47 ) hEtaPoissonI3->AddBinContent(48-i,nParticles);
-      if (i>=48 && i<=53)  hEtaPoissonO3->AddBinContent(54-i,nParticles);
-    }
-  }
-#endif   
 }
 
 
