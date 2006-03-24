@@ -1,7 +1,8 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliSTARTdigit.cxx AliSTARTLoader.cxx 
+SRCS= AliSTARTdigit.cxx AliSTARTLoader.cxx AliSTARTTrigger.cxx \
+      AliSTARTAlignData.cxx AliSTARTCalibData.cxx AliSTARTParameters.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

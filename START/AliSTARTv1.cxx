@@ -41,9 +41,16 @@
 #include "AliLog.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+
 #include "AliSTARThit.h"
 #include "AliSTARTv1.h"
+#include "AliSTARTParameters.h"
+
 #include "AliMC.h"
+#include "AliCDBLocal.h"
+#include "AliCDBStorage.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 ClassImp(AliSTARTv1)
 
@@ -77,8 +84,12 @@ void AliSTARTv1::CreateGeometry()
   //
 
 
-
-  Int_t *idtmed = fIdtmed->GetArray();
+   Int_t *idtmed = fIdtmed->GetArray();
+  
+  AliSTARTParameters* param = AliSTARTParameters::Instance();
+  param->Init();
+  Float_t zdetC = param->GetZposition(0);
+  Float_t zdetA = param->GetZposition(1);
   
   Int_t is;
   Int_t idrotm[999];
@@ -91,33 +102,22 @@ void AliSTARTv1::CreateGeometry()
 		       -76.5+8.05+69.7, 5.1, 10.,
 		       -62.9+0.00+69.7, 5.1, 10.};
   
-  Float_t pstart[3]={4.3, 12.,6.8};
+  Float_t pstart[3]={4.29, 12.5,6.95};
   Float_t pinstart[3]={0.,1.6,6.5};
   Float_t ppmt[3]={0.,1.5,3.5};
   Float_t ptop[3]={0.,1.,1.5};
   Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
   Float_t ptopout[3]={1.,1.01,1.5}; 
-  //  Float_t pregafter[3]={0.,1.0,0.005}; 
-  Float_t pdivider[3]={0.,1.2,1.75};
-  Float_t pdiv2[3]={0.,1.2,1.25};
-  Float_t pdiv1[3]={0.6,1.2,0.5};
   Float_t pbot[3]={0.6,1.2,0.1};
   Float_t pglass[3]={1.2,1.3,2.};
-  Float_t pcer[3]={0.9,1.1,0.09};
-  Float_t psteel[3]={0.9,1.1,0.01};
-  Float_t ppins[3]={0.6,1.2,0.014};
-  Float_t phole[3]={0.6,1.2,0.015};
-  Float_t pknob[3]={0.5,0.6,0.4};
-  Float_t pknob_vac[3]={0.,0.5,0.4};
-  Float_t pknob_bot[3]={0.,0.6,0.05};
-  Float_t pribber[3] = {0.,1.2,2.413/2.};
-  Float_t presist[3] = {0.,1.2,0.087/2.};
+  Float_t pcer[3]={0.9,1.1,1.35};
+  Float_t psteel[3]={0.9,1.1,0.15};
   Float_t psupport1[3] = {4.51,4.6,4.0};//C kozhuh vnutri
   Float_t psupport2[3] = {9.4,9.5,4.0};// snaruzhi  C
   Float_t psupport3[3] = {4.51,9.5,0.05};//kryshki  C
   Float_t psupport5[3] = {1.44,1.5,6.5}; // stakanchik dlai feu  C
-  Float_t psupport6[3] = {0,1.5,0.05}; //kryshechka stakanchika  Al
-  Float_t psupport7[3] = {1.5,1.6,0.6}; //kolechko snaruzhu stakanchika Al
+  Float_t psupport6[3] = {0,1.4,0.04}; //kryshechka stakanchika  Al
+  Float_t psupport7[3] = {1.5,1.6,0.4}; //kolechko snaruzhu stakanchika Al
    
   // Mother Volume katushka dlia krepezha vokrug truby k Absorbru
     AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
@@ -150,7 +150,8 @@ void AliSTARTv1::CreateGeometry()
     ppcon[17] =   5.1;
     
 //  6
-    ppcon[18]  = ppcon[15]+7.05;
+//    ppcon[18]  = ppcon[15]+7.05;
+    ppcon[18]  = ppcon[15]+6.9;
     ppcon[19] =   4.9;
     ppcon[20] =   5.1;
     
@@ -194,12 +195,12 @@ void AliSTARTv1::CreateGeometry()
 //    ppcon[40] =   3.15;
 //    ppcon[41] =   7.6;
 
+
+
     gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
-    z=-69.7;//-14.1/2;
+    z=-zdetC;
     gMC->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
 
-
-   Float_t zdetRight=69.7,zdetLeft=350;
  //-------------------------------------------------------------------
  //  START volume 
  //-------------------------------------------------------------------
@@ -207,14 +208,13 @@ void AliSTARTv1::CreateGeometry()
     
     gMC->Gsvolu("0STR","PCON",idtmed[kAir],pstartR,18);
     gMC->Gsvolu("0STL","TUBE",idtmed[kAir],pstart,3);
-    gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetRight-pstart[2],idrotm[901],"ONLY");
-    gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetLeft+pstart[2],0,"ONLY");
+    gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetC-pstart[2],idrotm[901],"ONLY");
+    gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetA+pstart[2],0,"ONLY");
 
 //START interior
    gMC->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);
    gMC->Gsvolu("0PMT","TUBE",idtmed[kAir],ppmt,3);     
           
-    gMC->Gsvolu("0DIV","TUBE",idtmed[kVac],pdivider,3);     
     gMC->Gsvolu("0SU1","TUBE",idtmed[kC],psupport1,3);//C kozhuh vnutri
     gMC->Gsvolu("0SU2","TUBE",idtmed[kC],psupport2,3);// snaruzhi  C
     gMC->Gsvolu("0SU3","TUBE",idtmed[kC],psupport3,3);//kryshka perednaiai  C
@@ -225,7 +225,7 @@ void AliSTARTv1::CreateGeometry()
     gMC->Gsvolu("0SU8","TUBE",idtmed[kAl],psupport7,3);//kolechko snaruzhu stakanchika Al
              
 // first ring: 12 units of Scintillator+PMT+divider
-  Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetRight);
+  Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetC);
   AliInfo(Form("theta %f", theta));
   Float_t angle  = 2 * TMath::Pi() / 12;
   Float_t phi[3];
@@ -248,28 +248,18 @@ void AliSTARTv1::CreateGeometry()
 	z=-pstart[2]+pinstart[2]+0.2;
 	gMC->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
 	gMC->Gspos ("0INS", is + 13, "0STL", x, y, z, 0, "ONLY");
-	/*			
-	x = 9.1 * TMath::Sin(angle/2+is * angle);
-	y = 9.1 * TMath::Cos(angle/2+is * angle);
-
-	gMC->Gspos ("0INS", is + 25, "0STL", x, y, z, 0, "ONLY");
-	*/			
       }	
    
       
    x=0;
    y=0;
    // z=-pinstart[2]+ppmt[2]+2.*psupport6[2]+0.1;
-    z=-pinstart[2]+ppmt[2];
+    z=-pinstart[2]+ppmt[2]+psupport6[2]*2;
    gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
-   //   z=z+pdivider[2]+ppmt[2];
-   //  gMC->Gspos("0DIV",1,"0INS",x,y,z,0,"ONLY");
-   
    // PMT
    
    // Entry window (glass)
    gMC->Gsvolu("0TOP","TUBE",idtmed[kOpGlass],ptop,3); //glass
-   //   gMC->Gsvolu("0TOP","TUBE",idtmed[12],ptop,3); //lucite
    z=-ppmt[2]+ptop[2];
    gMC->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
    //metal volume to simulate reclection  
@@ -281,12 +271,7 @@ void AliSTARTv1::CreateGeometry()
    gMC->Gsvolu ("0REG", "TUBE", idtmed[kOpGlassCathode], preg, 3); 
    z = -ppmt[2] + 2 * ptop[2] + preg[2]; 
    gMC->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY"); 
-   //optical volume special to detect photons in cathode 
-   //   gMC->Gsvolu ("0RE1", "TUBE", idtmed[kOpAirNext], pregafter, 3);
-   // z = -ppmt[2] + 2 * ptop[2] + 2*preg[2] + pregafter[2]; 
-   // gMC->Gspos ("0RE1", 1, "0PMT", 0, 0, z, 0, "ONLY");
-       
-   // Bottom glass
+  // Bottom glass
    gMC->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
    z=ppmt[2]-pbot[2];
    AliDebugClass(1,Form("Z bottom %f\n",z));
@@ -298,58 +283,18 @@ void AliSTARTv1::CreateGeometry()
    //PMT electrodes support structure
    gMC->Gsvolu("0CER","TUBE",idtmed[kCer],pcer,3);
    gMC->Gsvolu("0STE","TUBE",idtmed[kSteel],psteel,3);
-   z=-ppmt[2]+2*ptop[2]+0.3;;
-   for (is=1; is<=15; is++)
-     {
-       z=z+psteel[2]+pcer[2];
-       gMC->Gspos("0CER",is,"0PMT",0,0,z,0,"ONLY");
-       z=z+psteel[2]+pcer[2];
-       gMC->Gspos("0STE",is,"0PMT",0,0,z,0,"ONLY");
-     }
-   
-   // Divider
-   // Knob at the bottom of PMT baloon
-   
-   gMC->Gsvolu("0NB","TUBE",idtmed[6],pknob,3);
-   z=-pdivider[2]+pknob[2];
-   gMC->Gspos("0NB",1,"0DIV",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0KB","TUBE",idtmed[kGlass],pknob_bot,3);
-   z=-pdivider[2]+2*pknob[2]+pknob_bot[2];
-   gMC->Gspos("0KB",1,"0DIV ",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0VAC","TUBE",idtmed[kVac],pknob_vac,3);
-   z=-pdivider[2]+pknob_vac[2];
-   gMC->Gspos("0VAC",1,"0DIV",0,0,z,0,"ONLY");
-   //Steel pins + pin holes
-   gMC->Gsvolu("0PIN","TUBE",idtmed[kSteel],ppins,3);
-   z=-pdivider[2]+ppins[2];
-   gMC->Gspos("0PIN",1,"0DIV",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0HOL","TUBE",idtmed[kBrass],phole,3);
-   z=-pdivider[2]+2*ppins[2]+phole[2];
-   gMC->Gspos("0HOL",1,"0DIV",0,0,z,0,"ONLY");
-   
-   //Socket
-   gMC->Gsvolu("0V1","TUBE",idtmed[kCer],pdiv1,3);
-   z=-pdivider[2]+pdiv1[2];
-   gMC->Gspos("0V1",1,"0DIV",0,0,z,0,"ONLY");
-   //Resistors
-   gMC->Gsvolu("0V2","TUBE",idtmed[kAir],pdiv2,3);
-   z=pdivider[2]-pdiv2[2];
-   gMC->Gspos("0V2",1,"0DIV",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0RS","TUBE",idtmed[kCer],presist,3);
-   z=-pdiv2[2]+presist[2];
-   gMC->Gspos("0RS",1,"0V2",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0RB","TUBE",idtmed[kRibber],pribber,3);
-   z=pdiv2[2]-pribber[2];
-   gMC->Gspos("0RB",1,"0V2",0,0,z,0,"ONLY");
-   
-   
+   z=-ppmt[2]+2*ptop[2]+0.3 + pcer[2];
+   gMC->Gspos("0CER",1,"0PMT",0,0,z,0,"ONLY");
+   z +=psteel[2]+pcer[2];
+   gMC->Gspos("0STE",1,"0PMT",0,0,z,0,"ONLY");
+    
    //Support  left side
    z=-pstart[2]+psupport1[2]+0.1;
    gMC->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
    gMC->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
    z=-pstart[2]+psupport3[2]+0.1;
    gMC->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
-   z=-pstart[2]+2.*psupport1[2]+0.1;
+   z=-pstart[2]+2.*psupport1[2]-0.05;//+0.1;
    gMC->Gspos("0SU4",1,"0STR",0,0,z,0,"MANY"); //zadnaiai kryshka
    gMC->Gspos("0SU6",1,"0INS",0,0,0,0,"ONLY");//C stakanchik dlia feu 
    z=-pinstart[2]+psupport6[2];

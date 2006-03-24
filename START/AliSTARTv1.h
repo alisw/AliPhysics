@@ -26,11 +26,11 @@ public:
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
   virtual void   StepManager();
-  
+
 protected:
-   Int_t fIdSens1; // Sensetive volume  in START
+  Int_t fIdSens1; // Sensetive volume  in START
  
-  ClassDef(AliSTARTv1,1)  //Class for START version 1
+  ClassDef(AliSTARTv1,2)  //Class for START version 1
 };
 
 #endif
