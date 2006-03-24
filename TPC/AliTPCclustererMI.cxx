@@ -77,7 +77,7 @@ void AliTPCclustererMI::SetOutput(TTree * tree)
 
 Float_t  AliTPCclustererMI::GetSigmaY2(Int_t iz){
   // sigma y2 = in digits  - we don't know the angle
-  Float_t z = iz*fParam->GetZWidth();
+  Float_t z = iz*fParam->GetZWidth()+fParam->GetNTBinsL1()*fParam->GetZWidth();
   Float_t sd2 = (z*fParam->GetDiffL()*fParam->GetDiffL())/
     (fPadWidth*fPadWidth);
   Float_t sres = 0.25;
@@ -88,7 +88,7 @@ Float_t  AliTPCclustererMI::GetSigmaY2(Int_t iz){
 
 Float_t  AliTPCclustererMI::GetSigmaZ2(Int_t iz){
   //sigma z2 = in digits - angle estimated supposing vertex constraint
-  Float_t z = iz*fZWidth;
+  Float_t z = iz*fZWidth+fParam->GetNTBinsL1()*fParam->GetZWidth();
   Float_t sd2 = (z*fParam->GetDiffL()*fParam->GetDiffL())/(fZWidth*fZWidth);
   Float_t angular = fPadLength*(fParam->GetZLength()-z)/(fRx*fZWidth);
   angular*=angular;
@@ -426,7 +426,7 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c){
   c.SetSigmaZ2(s2*w*w);
   c.SetY((meani - 2.5 - 0.5*fMaxPad)*fParam->GetPadPitchWidth(fSector));
   c.SetZ(fZWidth*(meanj-3)); 
-  c.SetZ(c.GetZ()   - 3.*fParam->GetZSigma()); // PASA delay 
+  c.SetZ(c.GetZ() - 3.*fParam->GetZSigma() + fParam->GetNTBinsL1()*fParam->GetZWidth()); // PASA delay + L1 delay
   c.SetZ(fSign*(fParam->GetZLength() - c.GetZ()));
   
   if (ki<=1 || ki>=fMaxPad-1 || kj==1 || kj==fMaxTime-2) {
@@ -708,7 +708,7 @@ void AliTPCclustererMI::FindClusters()
   //first loop - for "gold cluster" 
   fLoop=1;
   Int_t *b=&fBins[-1]+2*fMaxTime;
-  Int_t crtime = Int_t((fParam->GetZLength()-AliTPCReconstructor::GetCtgRange()*fRx)/fZWidth-5);
+  Int_t crtime = Int_t((fParam->GetZLength()-AliTPCReconstructor::GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);
 
   for (Int_t i=2*fMaxTime; i<fMaxBin-2*fMaxTime; i++) {
     b++;

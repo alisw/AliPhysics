@@ -49,7 +49,6 @@ AliTPCParam::AliTPCParam()
   fResponseBin = 0;
   fResponseWeight = 0;
   fRotAngle = 0;
-  //  fChamberPos = fChamberRot = 0;
   fTrackingMatrix = fClusterMatrix = fGlobalMatrix = 0;
   SetTitle("75x40_100x60_150x60");
   SetDefault();  
@@ -64,24 +63,25 @@ AliTPCParam::~AliTPCParam()
   if (fResponseBin!=0)    delete [] fResponseBin;
   if (fResponseWeight!=0) delete [] fResponseWeight;
   if (fRotAngle      !=0) delete [] fRotAngle;
-  //  if (fChamberPos    !=0) delete [] fChamberPos;
-  //  if (fChamberRot    !=0) delete [] fChamberRot;
 
-//   if (fTrackingMatrix!=0) {
-//     for(Int_t i=0;i<fNSector;i++)
-//       delete fTrackingMatrix[i];
-//     delete [] fTrackingMatrix;
-//   }
-//   if (fClusterMatrix!=0) {
-//     for(Int_t i=0;i<fNSector;i++)
-//       delete fClusterMatrix[i];
-//     delete [] fClusterMatrix;
-//   }
-//   if (fGlobalMatrix!=0) {
-//     for(Int_t i=0;i<fNSector;i++)
-//       delete fGlobalMatrix[i];
-//     delete [] fGlobalMatrix;
-//   }
+  if (fTrackingMatrix) {
+    for(Int_t i = 0; i < fNSector; i++)
+      delete fTrackingMatrix[i];
+    delete [] fTrackingMatrix;
+  }
+
+  if (fClusterMatrix) {
+    for(Int_t i = 0; i < fNSector; i++)
+      delete fClusterMatrix[i];
+    delete [] fClusterMatrix;
+  }
+
+  if (fGlobalMatrix) {
+    for(Int_t i = 0; i < fNSector; i++)
+      delete fGlobalMatrix[i];
+    delete [] fGlobalMatrix;
+  }
+
 }
 
 
@@ -351,9 +351,12 @@ void AliTPCParam::SetDefault()
   static const Int_t     kNResponseMax=100;
   static const Float_t   kResponseThreshold=0.01;     
   //L1 constants
-  static const Float_t   kGateDelay=6.1e-6; //In s
-  static const Float_t   kL1Delay=6.5e-6; //In s
-  static const UShort_t  kNTBinsBeforeL1=14;
+  //  static const Float_t   kGateDelay=6.1e-6; //In s
+  static const Float_t   kGateDelay=0.; //For the moment no gating
+  //  static const Float_t   kL1Delay=6.5e-6; //In s
+  static const Float_t   kL1Delay=0.; //For the moment no delay
+  //  static const UShort_t  kNTBinsBeforeL1=14;
+  static const UShort_t  kNTBinsBeforeL1=0; //For the moment no shift
   fbStatus = kFALSE;
   //
   //set sector parameters
@@ -535,10 +538,10 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
   }
   AliAlignObjAngles o;
   //
-  if (fTrackingMatrix) delete [] fTrackingMatrix;
-  fTrackingMatrix = new TGeoHMatrix*[fNSector];
-  if (fClusterMatrix) delete [] fClusterMatrix;
-  fClusterMatrix = new TGeoHMatrix*[fNSector];
+//   if (fTrackingMatrix) delete [] fTrackingMatrix;
+//   fTrackingMatrix = new TGeoHMatrix*[fNSector];
+//   if (fClusterMatrix) delete [] fClusterMatrix;
+//   fClusterMatrix = new TGeoHMatrix*[fNSector];
   if (fGlobalMatrix) delete [] fGlobalMatrix;
   fGlobalMatrix = new TGeoHMatrix*[fNSector];
   //

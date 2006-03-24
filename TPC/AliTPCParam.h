@@ -493,39 +493,6 @@ inline Float_t   AliTPCParam::GetAngle(Int_t isec) const
   return fRotAngle[isec*4+2];
 }
 
-//inline void AliTPCParam::GetChamberPos(Int_t isec, Float_t* xyz) const
-//{
-  //
-  //return displacement and rotation of the readout chamber
-  //with respect to the ideal geometry
-//  xyz[0] = fChamberPos[isec*3];
-//  xyz[1] = fChamberPos[isec*3+1];
-//  xyz[2] = fChamberPos[isec*3+2];
-//}
-
-//inline void AliTPCParam::GetChamberRot(Int_t isec, Float_t* angles) const
-//{
-  //
-  //return displacement and rotation of the readout chamber
-  //with respect to the ideal geometry
-//  angles[0] = fChamberRot[isec*3];
-//  angles[1] = fChamberRot[isec*3+1];
-//  angles[2] = fChamberRot[isec*3+2];
-//}
-
-/* inline void AliTPCParam::Transform1to2(Float_t *xyz, Int_t *index) const */
-/* { */
-/*   //transformation to rotated coordinates  */
-/*   //we must have information about sector! */
-/*   //rotate to given sector */
-/*   Double_t xyzmaster[3] = {xyz[0],xyz[1],xyz[2]}; */
-/*   Double_t xyzlocal[3];   */
-/*   fGlobalMatrix[index[1]]->MasterToLocal(xyzmaster,xyzlocal); */
-/*   xyz[0] = xyzlocal[0]; */
-/*   xyz[1] = xyzlocal[1]; */
-/*   xyz[2] = TMath::Abs(xyzlocal[2]); */
-/*   index[0]=2; */
-/* } */
 
 inline void AliTPCParam::Transform1to2(Float_t *xyz, Int_t *index) const
 {
