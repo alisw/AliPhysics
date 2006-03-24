@@ -12,6 +12,8 @@
 #include "AliDetectorParam.h"
 #include "TMath.h"
 
+#include <TGeoMatrix.h>
+
 class AliTPCParam : public AliDetectorParam {
   //////////////////////////////////////////////////////
   //////////////////////////////////////////////////////
@@ -95,6 +97,7 @@ public:
   //return number of valid response bin
   virtual void SetDefault();          //set defaut TPCparam 
   virtual Bool_t Update();            //recalculate and check geometric parameters 
+  virtual Bool_t ReadGeoMatrices();   //read geo matrixes        
   Bool_t GetStatus() const;         //get information about object consistency  
   Int_t GetIndex(Int_t sector, Int_t row) const;  //give index of the given sector and pad row 
   Int_t GetNSegmentsTotal() const {return fNtRows;} 
@@ -108,6 +111,8 @@ public:
   void  AdjustCosSin(Int_t isec, Float_t &cos, Float_t &sin) const;
   //set cosinus and sinus of rotation angles for sector isec 
   Float_t GetAngle(Int_t isec) const;
+  //  void GetChamberPos(Int_t isec, Float_t* xyz) const;
+  //  void GetChamberRot(Int_t isec, Float_t* angles) const;
   //
   //set sector parameters
   //
@@ -190,6 +195,10 @@ public:
   //
   void  SetNResponseMax(Int_t max) { fNResponseMax = max;} 
   void  SetResponseThreshold(Int_t threshold) {fResponseThreshold = threshold;}
+  //set L1 parameters
+  void  SetGateDelay(Float_t delay) {fGateDelay = delay;}
+  void  SetL1Delay(Float_t delay) {fL1Delay = delay;}
+  void  SetNTBinsBeforeL1(UShort_t nbins) {fNTBinsBeforeL1 = nbins;}
   //
   //get sector parameters
   //
@@ -268,6 +277,15 @@ public:
 
   Float_t GetYInner(Int_t irow) const; // wire length in low sec row
   Float_t GetYOuter(Int_t irow) const; // wire length in up sec row  
+  Int_t GetSectorIndex(Float_t angle, Int_t row, Float_t z) const; // get sector index
+  Float_t GetChamberCenter(Int_t isec) const; // get readout chamber positions
+  TGeoHMatrix *GetTrackingMatrix(Int_t isec) const {
+    return fTrackingMatrix[isec];}
+  TGeoHMatrix *GetClusterMatrix(Int_t isec) const {
+    return fClusterMatrix[isec];}
+  TGeoHMatrix *GetGlobalMatrix(Int_t isec) const {
+    return fGlobalMatrix[isec];}
+  Bool_t   IsGeoRead(){ return fGlobalMatrix!=0;}
   //
   //get GAS parameters 
   //
@@ -303,6 +321,12 @@ public:
   //return response bin i  - bin given by  padrow [0] pad[1] timebin[2] 
   Float_t & GetResWeight(Int_t i);
   //return  weight of response bin i
+
+  // get L1 data
+  Float_t  GetGateDelay() const {return fGateDelay;}
+  Float_t  GetL1Delay() const {return fL1Delay;}
+  UShort_t GetNTBinsBeforeL1() const {return fNTBinsBeforeL1;}
+  Float_t  GetNTBinsL1() const {return fNTBinsL1;}
 protected :
 
   Bool_t fbStatus;  //indicates consistency of the data
@@ -328,6 +352,18 @@ protected :
   Float_t *fRotAngle;         //[fNSector]  sin and cos of rotation angles for 
                               //  diferent sectors -calculated
   Int_t   fGeometryType;      //type of geometry -0 straight rows
+  //  Float_t *fChamberPos;       //[fNSector] displacements of the readout chambers 
+                              //with respect to the 'idead' geometry
+                              //in local corrdinate system
+  //  Float_t *fChamberRot;       //[fNSector] rotation angles of the readout chambers 
+                              //with respect to the 'idead' geometry
+                              //in local corrdinate system
+  TGeoHMatrix **fTrackingMatrix;   //![fNSector] transformation matrices of the tracking
+                              //coordinate system
+  TGeoHMatrix **fClusterMatrix;    //![fNSector] transformation matrices of the cluster
+                              //coordinate system
+  TGeoHMatrix **fGlobalMatrix;    //![fNSector] fTrackingMatrix * fClusterMatrix
+
   //1-cylindrical
   //---------------------------------------------------------------------
   //   ALICE TPC wires  geometry - for GEM we can consider that it is gating  
@@ -410,10 +446,18 @@ protected :
   Int_t   *fResponseBin;    //!array with bins                     -calulated
   Float_t *fResponseWeight; //!array with response                 -calulated
 
+  //---------------------------------------------------------------------
+  //   ALICE TPC L1 Parameters
+  //--------------------------------------------------------------------
+  Float_t fGateDelay;       //Delay of L1 arrival for the TPC gate signal
+  Float_t fL1Delay;         //Delay of L1 arrival for the TPC readout 
+  UShort_t fNTBinsBeforeL1; //Number of time bins before L1 arrival which are being read out 
+  Float_t fNTBinsL1;        //Overall L1 delay in time bins
+
 private:
   AliTPCParam(const AliTPCParam &);
   AliTPCParam & operator=(const AliTPCParam &);
-  ClassDef(AliTPCParam,3)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,4)  //parameter  object for set:TPC
 };
 
  
@@ -449,22 +493,59 @@ inline Float_t   AliTPCParam::GetAngle(Int_t isec) const
   return fRotAngle[isec*4+2];
 }
 
+//inline void AliTPCParam::GetChamberPos(Int_t isec, Float_t* xyz) const
+//{
+  //
+  //return displacement and rotation of the readout chamber
+  //with respect to the ideal geometry
+//  xyz[0] = fChamberPos[isec*3];
+//  xyz[1] = fChamberPos[isec*3+1];
+//  xyz[2] = fChamberPos[isec*3+2];
+//}
+
+//inline void AliTPCParam::GetChamberRot(Int_t isec, Float_t* angles) const
+//{
+  //
+  //return displacement and rotation of the readout chamber
+  //with respect to the ideal geometry
+//  angles[0] = fChamberRot[isec*3];
+//  angles[1] = fChamberRot[isec*3+1];
+//  angles[2] = fChamberRot[isec*3+2];
+//}
+
+/* inline void AliTPCParam::Transform1to2(Float_t *xyz, Int_t *index) const */
+/* { */
+/*   //transformation to rotated coordinates  */
+/*   //we must have information about sector! */
+/*   //rotate to given sector */
+/*   Double_t xyzmaster[3] = {xyz[0],xyz[1],xyz[2]}; */
+/*   Double_t xyzlocal[3];   */
+/*   fGlobalMatrix[index[1]]->MasterToLocal(xyzmaster,xyzlocal); */
+/*   xyz[0] = xyzlocal[0]; */
+/*   xyz[1] = xyzlocal[1]; */
+/*   xyz[2] = TMath::Abs(xyzlocal[2]); */
+/*   index[0]=2; */
+/* } */
 
 inline void AliTPCParam::Transform1to2(Float_t *xyz, Int_t *index) const
 {
-  //transformation to rotated coordinates 
+  //transformation to rotated coordinates
   //we must have information about sector!
 
   //rotate to given sector
   Float_t cos,sin;
-  AdjustCosSin(index[1],cos,sin);   
+  AdjustCosSin(index[1],cos,sin);
   Float_t x1=xyz[0]*cos + xyz[1]*sin;
-  Float_t y1=-xyz[0]*sin + xyz[1]*cos; 
+  Float_t y1=-xyz[0]*sin + xyz[1]*cos;
   xyz[0]=x1;
   xyz[1]=y1;
-  xyz[2]=fZLength-TMath::Abs(xyz[2]); 
+  xyz[2]=fZLength-TMath::Abs(xyz[2]);
   index[0]=2;
 }
+
+
+
+
 
 inline void AliTPCParam::Transform2to1(Float_t *xyz, Int_t *index) const
 {
@@ -481,7 +562,7 @@ inline void AliTPCParam::Transform2to1(Float_t *xyz, Int_t *index) const
   if (index[1]<fNInnerSector)
     if ( index[1]>=(fNInnerSector>>1))	xyz[2]*=-1.;
   else 
-    if ( (index[1]-fNInnerSector) > (fNOuterSector>>1) )    xyz[2]*=-1;      
+    if ( (index[1]-fNInnerSector) >= (fNOuterSector>>1) )    xyz[2]*=-1;      
   index[0]=1;
 }
 
@@ -611,6 +692,7 @@ inline void AliTPCParam::Transform4to8(Float_t *xyz, Int_t *index) const
     if (index[2]<fNRowUp1 ) xyz[0]/=fOuter1PadPitchLength;      
     else xyz[0]/=fOuter2PadPitchLength;     
   }
+  xyz[1]-=0.5;
   index[0]=8;
 }
 

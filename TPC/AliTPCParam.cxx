@@ -30,6 +30,12 @@
 
 #include <AliTPCParam.h>
 
+#include <TGeoManager.h>
+#include <TGeoPhysicalNode.h>
+#include "AliAlignObj.h"
+#include "AliAlignObjAngles.h"
+#include "AliLog.h"
+
 ClassImp(AliTPCParam)
 
 
@@ -43,6 +49,8 @@ AliTPCParam::AliTPCParam()
   fResponseBin = 0;
   fResponseWeight = 0;
   fRotAngle = 0;
+  //  fChamberPos = fChamberRot = 0;
+  fTrackingMatrix = fClusterMatrix = fGlobalMatrix = 0;
   SetTitle("75x40_100x60_150x60");
   SetDefault();  
 }
@@ -56,7 +64,24 @@ AliTPCParam::~AliTPCParam()
   if (fResponseBin!=0)    delete [] fResponseBin;
   if (fResponseWeight!=0) delete [] fResponseWeight;
   if (fRotAngle      !=0) delete [] fRotAngle;
+  //  if (fChamberPos    !=0) delete [] fChamberPos;
+  //  if (fChamberRot    !=0) delete [] fChamberRot;
 
+//   if (fTrackingMatrix!=0) {
+//     for(Int_t i=0;i<fNSector;i++)
+//       delete fTrackingMatrix[i];
+//     delete [] fTrackingMatrix;
+//   }
+//   if (fClusterMatrix!=0) {
+//     for(Int_t i=0;i<fNSector;i++)
+//       delete fClusterMatrix[i];
+//     delete [] fClusterMatrix;
+//   }
+//   if (fGlobalMatrix!=0) {
+//     for(Int_t i=0;i<fNSector;i++)
+//       delete fGlobalMatrix[i];
+//     delete [] fGlobalMatrix;
+//   }
 }
 
 
@@ -320,17 +345,15 @@ void AliTPCParam::SetDefault()
   static const  Int_t    kMaxTBin =445;  
   static const  Int_t    kADCSat  =1024;  
   static const  Float_t  kADCDynRange =2000.;  
-  //
-  //
-  //
-  static const  Float_t kBField =0.2; 
-  static const  Float_t kNPrimLoss =10.9;
-  static const  Float_t kNTotalLoss =39.9;
   // 
   //response constants
   //
   static const Int_t     kNResponseMax=100;
   static const Float_t   kResponseThreshold=0.01;     
+  //L1 constants
+  static const Float_t   kGateDelay=6.1e-6; //In s
+  static const Float_t   kL1Delay=6.5e-6; //In s
+  static const UShort_t  kNTBinsBeforeL1=14;
   fbStatus = kFALSE;
   //
   //set sector parameters
@@ -404,15 +427,19 @@ void AliTPCParam::SetDefault()
   SetMaxTBin(kMaxTBin);
   SetADCSat(kADCSat);
   SetADCDynRange(kADCDynRange);
-  //set magnetic field
-  SetBField(kBField);
-  SetNPrimLoss(kNPrimLoss);
-  SetNTotalLoss(kNTotalLoss);
+//   //set magnetic field
+//   SetBField(kBField);
+//   SetNPrimLoss(kNPrimLoss);
+//   SetNTotalLoss(kNTotalLoss);
   //
   //set response  parameters  
   //
   SetNResponseMax(kNResponseMax); 
   SetResponseThreshold(static_cast<int>(kResponseThreshold));
+  //L1 data
+  SetGateDelay(kGateDelay);
+  SetL1Delay(kL1Delay);
+  SetNTBinsBeforeL1(kNTBinsBeforeL1);
 }
 
           
@@ -462,6 +489,7 @@ Bool_t AliTPCParam::Update()
     fRotAngle[i+2] =angle;
     fRotAngle[j+2] =angle;    
   }
+
   fZWidth = fTSample*fDriftV;  
   fTotalNormFac = fPadCoupling*fChipNorm*kQel*1.e15*fChipGain*fADCSat/fADCDynRange;
   fNoiseNormFac = kQel*1.e15*fChipGain*fADCSat/fADCDynRange;
@@ -489,11 +517,61 @@ Bool_t AliTPCParam::Update()
   if (fResponseWeight==0) delete [] fResponseBin;
   fResponseBin    = new Int_t[3*fNResponseMax];
   fResponseWeight = new Float_t[fNResponseMax];
-  
+
+  //L1 data
+  fNTBinsL1 = fL1Delay/fTSample - (Float_t)fNTBinsBeforeL1;
   fbStatus = kTRUE;
   return kTRUE;
 }
 
+
+
+Bool_t AliTPCParam::ReadGeoMatrices(){
+  //
+  //read geo matrixes
+  //
+  if (!gGeoManager){
+    AliFatal("Geo manager not initialized\n");
+  }
+  AliAlignObjAngles o;
+  //
+  if (fTrackingMatrix) delete [] fTrackingMatrix;
+  fTrackingMatrix = new TGeoHMatrix*[fNSector];
+  if (fClusterMatrix) delete [] fClusterMatrix;
+  fClusterMatrix = new TGeoHMatrix*[fNSector];
+  if (fGlobalMatrix) delete [] fGlobalMatrix;
+  fGlobalMatrix = new TGeoHMatrix*[fNSector];
+  //
+  for (Int_t isec=0; isec<fNSector; isec++) {
+    fGlobalMatrix[isec] = 0;
+    AliAlignObj::ELayerID iLayer;
+    Int_t iModule;
+
+    if(isec<fNInnerSector) {
+      iLayer = AliAlignObj::kTPC1;
+      iModule = isec;
+    }
+    else {
+      iLayer = AliAlignObj::kTPC2;
+      iModule = isec - fNInnerSector;
+    }
+
+    UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
+    const char *path = AliAlignObj::GetVolPath(volid);
+    gGeoManager->cd(path);
+    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
+    //
+    TGeoRotation mchange; 
+    mchange.RotateY(90); mchange.RotateX(90);
+    Float_t x0 = GetChamberCenter(isec);
+    TGeoTranslation center("center",-x0,0,0);
+    // Convert to global coordinate system
+    //m->Multiply(&center);
+    fGlobalMatrix[isec] = new TGeoHMatrix(*m);
+    fGlobalMatrix[isec]->Multiply(&(mchange.Inverse()));
+  }
+  return kTRUE;
+}
 
 
 Bool_t AliTPCParam::GetStatus() const
@@ -569,10 +647,37 @@ Float_t AliTPCParam::GetYOuter(Int_t irow) const
   return fYOuter[irow];
 }
 
+Int_t AliTPCParam::GetSectorIndex(Float_t angle, Int_t row, Float_t z) const
+{
+  // returns the sector index
+  // takes as input the angle, index of the pad row and z position
+  if(row<0) return -1;
 
+  if (angle > 2.*TMath::Pi()) angle -= 2.*TMath::Pi();
+  if (angle < 0.            ) angle += 2.*TMath::Pi();
+ 
+  Int_t sector;
+  if(row<fNRowLow) {
+    sector=Int_t(TMath::Nint((angle-fInnerAngleShift)/fInnerAngle));
+    if (z<0) sector += (fNInnerSector>>1);
+  }
+  else {
+    sector=Int_t(TMath::Nint((angle-fOuterAngleShift)/fOuterAngle))+fNInnerSector;      
+    if (z<0) sector += (fNOuterSector>>1);
+  }    
+  
+  return sector;
+}
 
-
-
+Float_t AliTPCParam::GetChamberCenter(Int_t isec) const
+{
+  // returns the default radial position
+  // of the readout chambers
+  if (isec<fNInnerSector)
+    return (fInnerRadiusLow+fInnerRadiusUp)/2.;
+  else
+    return (fOuterRadiusLow+fOuterRadiusUp)/2.;
+}
 
 
 
