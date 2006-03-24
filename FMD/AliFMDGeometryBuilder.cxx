@@ -22,55 +22,6 @@
 // Detector consists of 3 sub-detectors FMD1, FMD2, and FMD3, each of
 // which has 1 or 2 rings of silicon sensors. 
 //                                                       
-// This is the base class for all FMD manager classes. 
-//                    
-// The actual code is done by various separate classes.   Below is
-// diagram showing the relationship between the various FMD classes
-// that handles the simulation
-//
-//      +--------+ 1     +-----------------+ 
-//      | AliFMD |<>-----| AliFMDGeometryBuilder |
-//      +--------+	 +-----------------+
-//                               ^              
-//                               |
-//                 +-------------+-------------+
-//                 |                           |	      
-//        +--------------------+   +-------------------+
-//        | AliFMDGeometryBuilder |   | AliFMDG3Simulator | 
-//        +--------------------+   +---------+---------+
-//                                           ^
-//                                           |
-//                                +--------------------+
-//				  | AliFMDOldSimulator |
-//				  +--------------------+
-//      
-// *  AliFMD 
-//    This defines the interface for the various parts of AliROOT that
-//    uses the FMD, like AliFMDGeometryBuilder, AliFMDDigitizer, 
-//    AliFMDReconstructor, and so on. 
-//
-// *  AliFMDGeometryBuilder
-//    This is the base class for the FMD simulation tasks.   The
-//    simulator tasks are responsible to implment the geoemtry, and
-//    process hits. 
-//                                                                          
-// *  AliFMDGeometryBuilder
-//    This is a concrete implementation of the AliFMDGeometryBuilder that
-//    uses the TGeo classes directly only.  This defines the active
-//    volume as an ONLY XTRU shape with a divided MANY TUBS shape
-//    inside to implement the particular shape of the silicon
-//    sensors. 
-//
-// *  AliFMDG3Simulator
-//    This is a concrete implementation of the AliFMDGeometryBuilder that
-//    uses the TVirtualMC interface with GEANT 3.21-like messages.
-//    This implements the active volume as a divided TUBS shape.  Hits
-//    in the corners should be cut away at run time (but currently
-//    isn't). 
-//
-// *  AliFMDOldSimulator
-//    This is a concrete implementation of AliFMDGeometryBuilder.   It
-//    approximates the of the rings as segmented disks. 
 // 
 #include "AliFMDGeometryBuilder.h"	// ALIFMDGEOSIMULATOR_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H

@@ -23,11 +23,20 @@ class AliFMD2;
 class AliFMD3;
 
 //____________________________________________________________________
+/** @class AliFMDGeometryBuilder 
+    @brief Builder of FMD geometry. 
+    This class takes care of actually building the geometry using the
+    @b TGeo classes.  Various parameters are fecthed from the
+    AliFMDGeometry manager. 
+    @ingroup FMD_sim
+ */
 class AliFMDGeometryBuilder : public TTask
 {
 public:
-  AliFMDGeometryBuilder();
   /** CTOR */
+  AliFMDGeometryBuilder();
+  /** CTOR 
+      @param detailed Whether to make a detailed geometry. */
   AliFMDGeometryBuilder(Bool_t detailed);
   virtual ~AliFMDGeometryBuilder() {}
   /** Register */

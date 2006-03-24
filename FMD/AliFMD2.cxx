@@ -37,6 +37,7 @@ ClassImp(AliFMD2)
 AliFMD2::AliFMD2(AliFMDRing* inner, AliFMDRing* outer) 
   : AliFMDDetector(2, inner, outer)
 {
+  // Constructor 
   SetInnerZ(83.4);
   SetOuterZ(75.2);
 }
@@ -46,6 +47,7 @@ AliFMD2::AliFMD2(AliFMDRing* inner, AliFMDRing* outer)
 void
 AliFMD2::Init() 
 {
+  // Initialize 
   AliFMDDetector::Init();
   SetInnerHoneyHighR(GetOuterHoneyHighR());
 }

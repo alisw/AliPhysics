@@ -20,27 +20,74 @@ class TPad;
 class TButton;
 
 //___________________________________________________________________
+/** @class AliFMDDisplay 
+    @brief Utility class to visualize FMD data in geometry. 
+    @ingroup FMD_util
+ */
 class AliFMDDisplay : public AliFMDInput
 {
 public:
+  /** Constructor
+      @param gAliceFile galice file*/
   AliFMDDisplay(const char* gAliceFile="galice.root");
+  /** DTOR */
   virtual ~AliFMDDisplay() {}
+  /** Singleton access function
+      @return Singleton object. */
   static AliFMDDisplay* Instance();
 
+  /** Continue to next event */
   void  Continue() { fWait = kFALSE; }
+  /** Zoom mode */
   void  Zoom() { fZoomMode = kTRUE; }
+  /** Pick mode */
   void  Pick() { fZoomMode = kFALSE; }
+  /** Called when a mouse or similar event happens in the display. 
+      @param event Event type
+      @param px    where the event happened in pixels along X
+      @param py    where the event happened in pixels along Y */
   void  ExecuteEvent(Int_t event, Int_t px, Int_t py);
+  /** Calculate distance from point @f$ (p_x,p_y)@f$ to this object. 
+      @param px Pixel X coordinate 
+      @param py Pixel Y coordinate 
+      @return distance. */
   Int_t DistancetoPrimitive(Int_t px, Int_t py);
+  /** Paint into canvas 
+      @param option Not used */
   void  Paint(Option_t* option="") { (void)option; }
 
+  /** Initialize
+      @return  @c false on error */
   virtual Bool_t Init();
+  /** Called at beginning of an event 
+      @param event Event number
+      @return @c false on error  */
   virtual Bool_t Begin(Int_t event);
+  /** Called at end of an event 
+      @return @c false on error  */
   virtual Bool_t End();
+  /** Visualize a hit
+      @param hit Hit
+      @param p   Track
+      @return @c false on error  */
   virtual Bool_t ProcessHit(AliFMDHit* hit, TParticle* p);
+  /** Visualize a digit
+      @param digit Digit to draw
+      @return @c false on error  */
   virtual Bool_t ProcessDigit(AliFMDDigit* digit);
+  /** Visualize a raw digit
+      @param digit Raw digit.
+      @return @c false on error  */
   virtual Bool_t ProcessRaw(AliFMDDigit* digit);
+  /** Visualize a reconstructed point.
+      @param recpoint Reconstructed point
+      @return @c false on error  */
   virtual Bool_t ProcessRecPoint(AliFMDRecPoint* recpoint);
+  /** Look up a color index, based on the value @a x and the maximum
+      value of @a x
+      @param x   Value 
+      @param max Maximum (for example 1023 for digits)
+      @return @c false on error  */
   virtual Int_t  LookupColor(Float_t x, Float_t max)  const;
 protected:
   static AliFMDDisplay* fgInstance; // Static instance 

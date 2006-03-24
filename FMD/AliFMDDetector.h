@@ -13,18 +13,29 @@
 class AliFMDRing;
 class TGeoMatrix;
 
-
+/** @defgroup FMD_base Basic classes */
 //__________________________________________________________________
 /** Base class for the geometry description and parameters of the FMD
     sub detectors FMD1, FMD2, and FMD3.
 
     This class hold common parameters of the specific FMD detectors.
+    @ingroup FMD_base
 */
 class AliFMDDetector : public TNamed 
 {
 public:
+  /** Constructor
+      @param id    Detector number
+      @param inner Pointer to inner ring geometry
+      @param outer Pointer to inner outer geometry
+      @return  */
   AliFMDDetector(Int_t id, AliFMDRing* inner, AliFMDRing* outer);
+  /** Copy CTOR 
+      @param other Object to copy from. */
   AliFMDDetector(const AliFMDDetector& other);
+  /** Assignment operator 
+      @param other Object to assign from
+      @return reference to this object  */
   AliFMDDetector& operator=(const AliFMDDetector& other);
   virtual ~AliFMDDetector() {}
   /** Initialize the geometry */
@@ -82,12 +93,46 @@ public:
       @return Z position of ring or 0 on failure */
   Double_t GetRingZ(Char_t id) const;
   
+  /** Translate detector coordinates (detector, ring, sector, strip)
+      to spatial coordinates (x, y, z) in the master reference frame
+      of ALICE.  The member function uses the transformations
+      previously obtained from the TGeoManager.
+      @param ring   Ring id
+      @param sector Sector number
+      @param strip  Strip number
+      @param x      On return, X coordinate 
+      @param y      On return, Y coordinate 
+      @param z      On return, Z coordinate  */
   void Detector2XYZ(Char_t ring, UShort_t sector, UShort_t strip, 
 		    Double_t& x, Double_t& y, Double_t& z) const;
+  /** Translate spatial coordinates (x,y,z) in the master reference
+      frame of ALICE to the detector coordinates (detector, ring,
+      sector, strip).  Note, that if this method is to be used in
+      reconstruction or the like, then the input z-coordinate should
+      be corrected for the events interactions points z-coordinate,
+      like  
+      @code 
+      geom->XYZ2Detector(x,y,z-ipz,d,r,s,t);
+      @endverbatim
+      @param x       X coordinate
+      @param y 	     Y coordinate
+      @param z 	     Z coordinate
+      @param ring    On return, Ring id		   
+      @param sector  On return, Sector number	   
+      @param strip   On return, Strip number	   
+      @return @c  false of (@a x, @a y, @a z) is not within this
+      detector.  */
   Bool_t XYZ2Detector(Double_t x, Double_t y, Double_t z, 
 		      Char_t& ring, UShort_t& sector, UShort_t& strip) const;
 protected:
+  /** Check if we have all transformations for a ring 
+      @param ring Ring to check for 
+      @return @c true if we got all transforms  */
   Bool_t        HasAllTransforms(Char_t ring) const;
+  /** Get transformation matrix for a sector in a ring 
+      @param ring   Ring id
+      @param sector Sector numberr 
+      @return Matrix on success, 0 otherwise */
   TGeoMatrix*   FindTransform(Char_t ring, UShort_t sector) const;
   Int_t		fId;			// Detector number
   Double_t	fInnerZ;		// Position of outer ring along z
@@ -100,8 +145,8 @@ protected:
   Double_t	fOuterHoneyHighR;	// Outer radius of outer honeycomb
   AliFMDRing*	fInner;			// Pointer to inner ring information
   AliFMDRing*	fOuter;			// Pointer to outer ring information
-  TObjArray*    fInnerTransforms;       // List of inner module <-> global
-  TObjArray*    fOuterTransforms;       // List of outer module <-> global
+  TObjArray*    fInnerTransforms;       // List of inner module global
+  TObjArray*    fOuterTransforms;       // List of outer module global
 
   ClassDef(AliFMDDetector, 1); // 
 };

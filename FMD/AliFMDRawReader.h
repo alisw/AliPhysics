@@ -25,12 +25,31 @@ class TClonesArray;
 
 
 //____________________________________________________________________
+/** @brief Class to read ALTRO formated raw data from an AliRawReader
+    object. 
+    @code 
+    AliRawReader*    reader    = new AliRawReaderFile(0);
+    AliFMDRawReader* fmdReader = new AliFMDRawReader(reader);
+    TClonesArray*    array     = new TClonesArray("AliFMDDigit");
+    fmdReader->ReadAdcs(array);
+    @endcode 
+    @ingroup FMD_rec
+*/
 class AliFMDRawReader : public TTask 
 {
 public:
+  /** CTOR 
+      @param reader Raw reader
+      @param array  Output tree */
   AliFMDRawReader(AliRawReader* reader, TTree* array);
+  /** DTOR */
   virtual ~AliFMDRawReader() {}
+  /** Read in, and store in output tree 
+      @param option Not used */
   virtual void   Exec(Option_t* option="");
+  /** Read ADC's into a TClonesArray of AliFMDDigit objects. 
+      @param array Array to read into 
+      @return @c true on success */
   virtual Bool_t ReadAdcs(TClonesArray* array);
 protected:
   TTree*        fTree;       //! Pointer to tree to read into 

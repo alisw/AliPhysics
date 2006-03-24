@@ -17,21 +17,50 @@
 # include <AliFMDMap.h>
 #endif
 
+/** @class AliFMDBoolMap 
+    @brief MAp of per strip boolean values. 
+    @ingroup FMD_base
+ */
 class AliFMDBoolMap : public AliFMDMap
 {
 public:
+  /** Copy constructor 
+      @param other Object to copy from. */
   AliFMDBoolMap(const AliFMDBoolMap& other);
+  /** Constructor 
+      @param maxDet  Number of detectors (3)
+      @param maxRing Number of rings (2)
+      @param maxSec  Number of sectors (40)
+      @param maxStr  Number of strips (20) */
   AliFMDBoolMap(size_t maxDet  = kMaxDetectors,
 		size_t maxRing = kMaxRings,
 		size_t maxSec  = kMaxSectors,
 		size_t maxStr  = kMaxStrips);
+  /** Destructor */
   virtual ~AliFMDBoolMap() { delete [] fData; }
+  /** Assignment operator 
+      @param other Object to assign from 
+      @return reference to this object.  */
   AliFMDBoolMap& operator=(const AliFMDBoolMap& other);
+  /** Reset to value 
+      @param v Value to reset from */
   virtual void Reset(const Bool_t& v=Bool_t());
+  /** Access operator 
+      @param det   Detector 
+      @param ring  Ring 
+      @param sec   Sector  
+      @param str   Strip
+      @return  reference value stored for the strip */
   virtual Bool_t& operator()(UShort_t det,
 			     Char_t   ring,
 			     UShort_t sec,
 			     UShort_t str);
+  /** Access operator 
+      @param det   Detector 
+      @param ring  Ring 
+      @param sec   Sector  
+      @param str   Strip
+      @return  value stored for the strip */
   virtual const Bool_t& operator()(UShort_t det,
 				   Char_t   ring,
 				   UShort_t sec,

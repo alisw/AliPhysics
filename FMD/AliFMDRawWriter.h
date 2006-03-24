@@ -25,18 +25,36 @@ class TArrayI;
 class TClonesArray;
 
 //____________________________________________________________________
+/** @class AliFMDRawWriter
+    @brief Class to write ALTRO formated raw data from an array of
+    AliFMDDigit objects.
+    @code 
+    AliFMDRawWriter* fmdWriter = new AliFMDRawWriter(0);
+    TClonesArray*    array     = fmd->DigitArray();
+    fmdWriter->WriteDigits(array);
+    @endcode 
+    @ingroup FMD_sim
+*/
 class AliFMDRawWriter : public TTask 
 {
 public:
+  /** Constructor 
+      @param fmd Pointer to detector object. */
   AliFMDRawWriter(AliFMD* fmd);
+  /** Destructor */
   virtual ~AliFMDRawWriter() {}
 
+  /** Write the output from AliFMD object. 
+      @param option Not used */
   virtual void Exec(Option_t* option="");
-protected:
+  /** Write an array of AliFMDDigit objects as raw ALTRO data. 
+      @param digits Array of AliFMDDigit objects to convert to raw
+      ALTRO data. */
   virtual void WriteDigits(TClonesArray* digits);
-  virtual void WriteChannel(AliAltroBuffer* altro, 
-			    UShort_t strip, UShort_t sector, Char_t ring, 
-			    const TArrayI& data);
+protected:
+  /* Write a single channel.  This member function is obsolete. */
+  // virtual void WriteChannel(AliAltroBuffer* altro, UShort_t strip, 
+  //                           UShort_t sector, Char_t ring, const TArrayI& d);
   AliFMD*       fFMD;              //! Pointer to detector description 
   UShort_t      fSampleRate;       // The sample rate (0 -> inferred from data)
   UShort_t      fChannelsPerAltro; // Number of pre-amp. channels/adc channel 

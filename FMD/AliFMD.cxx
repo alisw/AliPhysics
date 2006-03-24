@@ -18,9 +18,10 @@
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. This class
-// contains the base procedures for the Forward Multiplicity detector
-// Detector consists of 3 sub-detectors FMD1, FMD2, and FMD3, each of
-// which has 1 or 2 rings of silicon sensors. 
+// is the driver for especially simulation. 
+//
+// The Forward Multiplicity Detector consists of 3 sub-detectors FMD1,
+// FMD2, and FMD3, each of which has 1 or 2 rings of silicon sensors. 
 //                                                       
 // This is the base class for all FMD manager classes. 
 //                    
@@ -41,22 +42,9 @@
 //  +--------+<>--+                            |  +------------------+
 //  | AliFMD |                                 +--| AliFMDSDigitizer |    
 //  +--------+<>--+                               +------------------+       
-//	       1  |  +-----------------+ 
-//	          +--| AliFMDSimulator |
-//	  	     +-----------------+
-//                            ^              
-//                            |
-//              +-------------+-------------+
-//              |                           |	      
-//     +--------------------+   +-------------------+
-//     | AliFMDGeoSimulator |   | AliFMDG3Simulator | 
-//     +--------------------+   +-------------------+
-//               ^	                   ^
-//               |	                   |
-//  +-----------------------+   +----------------------+
-//  | AliFMDGeoOldSimulator |   | AliFMDG3OldSimulator |
-//  +-----------------------+   +----------------------+
-//      
+//	       1  |  +---------------------+
+//	          +--| AliFMDReconstructor |
+//	  	     +---------------------+
 //
 // *  AliFMD 
 //    This defines the interface for the various parts of AliROOT that
@@ -79,13 +67,15 @@
 //    simulator tasks are responsible to implment the geoemtry, and
 //    process hits. 
 //                                                                          
-// *  AliFMDGeoSimulator
-//    This is a concrete implementation of the AliFMDSimulator that
-//    uses the TGeo classes directly only. 
+// *  AliFMDReconstructor
+//    This is a concrete implementation of the AliReconstructor that
+//    reconstructs pseudo-inclusive-multiplicities from digits (raw or
+//    from simulation)
 //
-// *  AliFMDG3Simulator
-//    This is a concrete implementation of the AliFMDSimulator that
-//    uses the TVirtualMC interface with GEANT 3.21-like messages.
+// Calibration and geometry parameters are managed by separate
+// singleton managers.  These are AliFMDGeometry and
+// AliFMDParameters.  Please refer to these classes for more
+// information on these.
 //
 
 // These files are not in the same directory, so there's no reason to
@@ -127,6 +117,9 @@
 class AliFMDPoints : public AliPoints 
 {
 public:
+  /** Constructor 
+      @param hit   Hit to draw
+      @param color Color of hit */
   AliFMDPoints(AliFMDHit* hit, UInt_t color) 
     : AliPoints(1), fMarker(0)
   {
@@ -141,6 +134,7 @@ public:
     fP[1] = hit->Y();
     fP[2] = hit->Z();
   }
+  /** Destructor  */
   ~AliFMDPoints() 
   {
     // if (fMarker) delete  fMarker;
@@ -288,28 +282,9 @@ AliFMD::CreateGeometry()
 {
   //
   // Create the geometry of Forward Multiplicity Detector.  The actual
-  // construction of the geometry is delegated to the class AliFMDRing
-  // and AliFMDSubDetector and the relevant derived classes. 
-  //
-  // The flow of this member function is:
-  //
-  //   FOR rings fInner and fOuter DO  
-  //     AliFMDRing::Init();
-  //   END FOR
-  // 
-  //   Set up hybrud card support (leg) volume shapes  
-  // 
-  //   FOR rings fInner and fOuter DO  
-  //     AliFMDRing::SetupGeometry();
-  //   END FOR
-  // 
-  //   FOR subdetectors fFMD1, fFMD2, and fFMD3 DO 
-  //     AliFMDSubDetector::SetupGeomtry();
-  //   END FOR
-  // 
-  //   FOR subdetectors fFMD1, fFMD2, and fFMD3 DO 
-  //     AliFMDSubDetector::Geomtry();
-  //   END FOR
+  // construction of the geometry is delegated to the class
+  // AliFMDGeometryBuilder, invoked by the singleton manager
+  // AliFMDGeometry. 
   //
   AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
   fmd->SetDetailed(fDetailed);
@@ -333,9 +308,13 @@ void AliFMD::CreateMaterials()
   //	FMD Air$	Air (Air in the FMD)
   //	FMD Plastic$	Plastic (Support legs for the hybrid cards)
   //
-  // Pointers to TGeoMedium objects are retrived from the TGeoManager
-  // singleton.  These pointers are later used when setting up the
-  // geometry 
+  // The geometry builder should really be the one that creates the
+  // materials, but the architecture of AliROOT makes that design
+  // akward.  What should happen, was that the AliFMDGeometryBuilder
+  // made the mediums, and that this class retrives pointers from the
+  // TGeoManager, and registers the mediums here.  Alas, it's not
+  // really that easy. 
+  //
   AliDebug(10, "\tCreating materials");
   // Get pointer to geometry singleton object. 
   AliFMDGeometry* geometry = AliFMDGeometry::Instance();
@@ -510,6 +489,8 @@ void AliFMD::CreateMaterials()
 void  
 AliFMD::Init()
 {
+  // Initialize the detector 
+  // 
   AliDebug(1, "Initialising FMD detector object");
   // AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
   // fmd->InitTransformations();
@@ -519,6 +500,9 @@ AliFMD::Init()
 void
 AliFMD::FinishEvent()
 {
+  // Called at the end of the an event in simulations.  If the debug
+  // level is high enough, then the `bad' hits are printed.
+  // 
   if (AliLog::GetDebugLevel("FMD", "AliFMD") < 10) return;
   if (fBad && fBad->GetEntries() > 0) {
     AliWarning((Form("EndEvent", "got %d 'bad' hits", fBad->GetEntries())));
@@ -539,12 +523,8 @@ void
 AliFMD::BuildGeometry()
 {
   //
-  // Build simple ROOT TNode geometry for event display
-  //
-  // Build a simplified geometry of the FMD used for event display  
-  // 
-  // The actual building of the TNodes is done by
-  // AliFMDSubDetector::SimpleGeometry. 
+  // Build simple ROOT TNode geometry for event display. With the new
+  // geometry modeller, TGeoManager, this seems rather redundant. 
   AliDebug(10, "\tCreating a simplified geometry");
 
   AliFMDGeometry* fmd = AliFMDGeometry::Instance();
@@ -664,8 +644,12 @@ AliFMD::BuildGeometry()
 void 
 AliFMD::LoadPoints(Int_t /* track */) 
 {
-  //
-  // Store x, y, z of all hits in memory
+  // Store x, y, z of all hits in memory for display. 
+  // 
+  // Normally, the hits are drawn using TPolyMarker3D - however, that
+  // is not very useful for the FMD.  Therefor, this member function
+  // is overloaded to make TMarker3D, via the class AliFMDPoints.
+  // AliFMDPoints is a local class. 
   //
   if (!fHits) {
     AliError(Form("fHits == 0. Name is %s",GetName()));
@@ -737,36 +721,17 @@ AliFMD::LoadPoints(Int_t /* track */)
 void 
 AliFMD::DrawDetector()
 {
-  //
-  // Draw a shaded view of the Forward multiplicity detector
-  //
-  // DebugGuard guard("AliFMD::DrawDetector");
+  // Draw a shaded view of the Forward multiplicity detector.  This
+  // isn't really useful anymore. 
   AliDebug(10, "\tDraw detector");
-  
-#if 0
-  //Set ALIC mother transparent
-  gMC->Gsatt("ALIC","SEEN",0);
-  //
-  gMC->Gdopt("hide", "on");
-  gMC->Gdopt("shad", "on");
-  gMC->Gsatt("*", "fill", 7);
-  gMC->SetClipBox(".");
-  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
-  gMC->DefaultRange();
-  gMC->Gdraw("alic", 40, 30, 0, 12, 12, .055, .055);
-  gMC->Gdhead(1111, "Forward Multiplicity Detector");
-  gMC->Gdman(16, 10, "MAN");
-  gMC->Gdopt("hide", "off");
-#endif
 }
 
 //____________________________________________________________________
 Int_t 
 AliFMD::DistanceToPrimitive(Int_t, Int_t)
 {
-  //
   // Calculate the distance from the mouse to the FMD on the screen
-  // Dummy routine
+  // Dummy routine.
   //
   return 9999;
 }
@@ -829,8 +794,6 @@ AliFMD::SetTreeAddress()
     if (branch) branch->SetAddress(&fSDigits);
   }
 }
-
-
 
 //____________________________________________________________________
 void 
@@ -900,7 +863,6 @@ AliFMD::AddHitByFields(Int_t    track,
 		       Float_t  l, 
 		       Bool_t   stop)
 {
-  //
   // Add a hit to the list
   //
   // Parameters:
@@ -1066,8 +1028,7 @@ AliFMD::AddSDigitByFields(UShort_t detector,
 void 
 AliFMD::ResetSDigits()
 {
-  //
-  // Reset number of digits and the digits array for this detector
+  // Reset number of digits and the digits array for this detector. 
   //
   fNsdigits   = 0;
   if (fSDigits) fSDigits->Clear();

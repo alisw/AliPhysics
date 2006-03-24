@@ -370,7 +370,6 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     delete altro;
   }
 }
-#endif
 
 //____________________________________________________________________
 void
@@ -387,6 +386,7 @@ AliFMDRawWriter::WriteChannel(AliAltroBuffer* altro,
 		      Int_t((ring == 'I' ? 0 : 1)), 
 		      data.fN, data.fArray, fThreshold);
 }
+#endif
 
   
 

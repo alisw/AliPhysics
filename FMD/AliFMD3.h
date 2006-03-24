@@ -8,14 +8,20 @@
 # include "AliFMDDetector.h"
 #endif
 
-// Geometry description and parameters of the FMD3 detector.
-// FMD3 has a fairly complicated support structure. 
-// The cone also supports the beam-pipe.
-//
+/** @class AliFMD3 AliFMD3.h <FMD/AliFMD3.h> 
+    Geometry parameters of the FMD3 detector. FMD3 has a fairly
+    complicated support structure.  The cone also supports the
+    beam-pipe. 
+    @ingroup FMD_base
+*/
 class AliFMD3 : public AliFMDDetector 
 {
 public: 
+  /** Constructor 
+      @param inner Pointer to inner ring description 
+      @param outer Pointer to outer ring description */
   AliFMD3(AliFMDRing* inner, AliFMDRing* outer);
+  /** Destructor */
   virtual ~AliFMD3(){}
 
   /** Initialize the geometry */

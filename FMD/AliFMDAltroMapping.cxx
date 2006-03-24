@@ -31,20 +31,25 @@ ClassImp(AliFMDAltroMapping)
 
 //_____________________________________________________________________________
 AliFMDAltroMapping::AliFMDAltroMapping()
-{}
+{
+  // Constructor 
+}
 
 
 //_____________________________________________________________________________
 Bool_t
 AliFMDAltroMapping::ReadMapping()
 {
+  // Read map from file - not used
   return kTRUE;
 }
 
 //_____________________________________________________________________________
 void
 AliFMDAltroMapping::DeleteMappingArrays()
-{}
+{
+  // Clear map in memory 
+}
 
 //____________________________________________________________________
 Bool_t 

@@ -19,10 +19,10 @@
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 
 //
-// This task creates fake alignrations. Which alignration, depends on
+// This task creates fake alignment. Which alignment, depends on
 // the bit mask passed to the constructor, or added by `AddAlign'.
 //
-// The default is to write all alignration parameters to a local
+// The default is to write all alignment parameters to a local
 // storage `local://cdb' which is a directory in the current
 // directory. 
 //                                                       

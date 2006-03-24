@@ -24,63 +24,6 @@
 // a DDL file (or similar), and stores the read ADC counts in an
 // internal cache (fAdcs). 
 //
-// From the cached values it then calculates the number of particles
-// that hit a region of the FMDs, as specified by the user. 
-//
-// The reconstruction can be done in two ways: Either via counting the
-// number of empty strips (Poisson method), or by converting the ADC
-// signal to an energy deposition, and then dividing by the typical
-// energy loss of a particle.
-// 
-//      +---------------------+       +---------------------+
-//      | AliFMDReconstructor |<>-----| AliFMDMultAlgorithm |
-//      +---------------------+       +---------------------+
-//                                               ^
-//                                               |
-//                                   +-----------+---------+
-//                                   |                     |
-//                         +-------------------+   +------------------+
-//                         | AliFMDMultPoisson |   | AliFMDMultNaiive |
-//                         +-------------------+   +------------------+
-//
-// AliFMDReconstructor acts as a manager class.  It contains a list of
-// AliFMDMultAlgorithm objects.  The call graph looks something like 
-//
-//
-//       +----------------------+            +----------------------+
-//       | :AliFMDReconstructor |            | :AliFMDMultAlgorithm |
-//       +----------------------+            +----------------------+
-//                  |                                  |
-//    Reconstruct  +-+                                 |
-//    ------------>| |                         PreRun +-+
-//                 | |------------------------------->| |   
-//                 | |                                +-+
-//                 | |-----+ (for each event)          |
-//                 | |     | *ProcessEvent             |
-//                 |+-+    |                           |
-//                 || |<---+                 PreEvent +-+
-//                 || |------------------------------>| |      
-//                 || |                               +-+
-//                 || |-----+                          |
-//                 || |     | ProcessDigits            |
-//                 ||+-+    |                          |
-//                 ||| |<---+                          |
-//                 ||| |         *ProcessDigit(digit) +-+
-//                 ||| |----------------------------->| |
-//                 ||| |                              +-+
-//                 ||+-+                               |
-//                 || |                     PostEvent +-+
-//                 || |------------------------------>| |
-//                 || |                               +-+
-//                 |+-+                                |
-//                 | |                        PostRun +-+
-//                 | |------------------------------->| |
-//                 | |                                +-+
-//                 +-+                                 |
-//                  |                                  |
-//
-//
-// 
 //-- Authors: Evgeny Karpechev(INR) and Alla Maevsksia
 //  Latest changes by Christian Holm Christensen <cholm@nbi.dk>
 //

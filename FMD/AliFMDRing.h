@@ -31,11 +31,15 @@ class TVector2;
     Outer (@c 'O') the two objects of this class is owned by the
     Geometry::FMD singleton object.  The 3 Geometry::FMDDetector
     objects shares these two instances as needed. 
+    @ingroup FMD_base
 */
 class AliFMDRing : public TNamed
 {
 public:
+  /** CTOR
+      @param fId Ring ID  */
   AliFMDRing(Char_t fId);
+  /** DTOR  */
   virtual ~AliFMDRing() {}
   /** Initialize the ring geometry */
   virtual void Init();
@@ -130,8 +134,10 @@ public:
       @return the ith vertex */
   TVector2* GetVertex(Int_t i) const;
      
+  /** Not used */
   void Detector2XYZ(UShort_t sector, UShort_t strip, 
 		    Double_t& x, Double_t& y, Double_t& z) const;
+  /** Not used */
   Bool_t XYZ2Detector(Double_t x, Double_t y, Double_t z, 
 		      UShort_t& sector, UShort_t& strip) const;
 private: 

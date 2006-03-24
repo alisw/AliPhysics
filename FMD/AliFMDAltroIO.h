@@ -11,9 +11,13 @@
 #include <TObject.h>
 
 //____________________________________________________________________
+/** @class AliFMDAltroIO AliFMDAltroIO.h <FMD/AliFMDAltroIO.h>
+    @brief Base class for ALTRO Input/Output classes.
+    @ingroup FMD_base
+ */
 class AliFMDAltroIO  : public TObject
 {
- public:
+public:
   /** Type of 40 bit words (signed) */
   typedef long long W40_t;
   /** Type of 10 bit words (signed) */
@@ -70,6 +74,16 @@ protected:
 };
 
 //____________________________________________________________________
+/** @class AliFMDAltroReader AliFMDAltroIO.h <FMD/AliFMDAltroIO.h>
+    @brief Class to read ALTRO formated raw data from an AliRawReader
+    object. 
+    @code 
+    AliRawReader*    reader    = new AliRawReaderFile(0);
+    AliFMDRawReader* fmdReader = new AliFMDRawReader(reader);
+    TClonesArray*    array     = new TClonesArray("AliFMDDigit");
+    fmdReader->ReadAdcs(array);
+    @endcode 
+*/
 class AliFMDAltroReader : public AliFMDAltroIO
 {
 public:
@@ -152,6 +166,15 @@ protected:
 };
 
 //____________________________________________________________________
+/** @class AliFMDAltroWriter AliFMDAltroIO.h <FMD/AliFMDAltroIO.h>
+    @brief Class to write ALTRO formated raw data from an array of
+    AliFMDDigit objects.
+    @code 
+    AliFMDRawWriter* fmdWriter = new AliFMDRawWriter(0);
+    TClonesArray*    array     = fmd->DigitArray();
+    fmdWriter->WriteDigits(array);
+    @endcode 
+ */
 class AliFMDAltroWriter : public AliFMDAltroIO
 {
 public:
