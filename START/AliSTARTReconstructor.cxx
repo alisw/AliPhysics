@@ -21,16 +21,28 @@
 
 #include "AliRunLoader.h"
 #include "AliRun.h"
-#include "AliSTARTLoader.h"
-#include "AliSTARTdigit.h"
-#include "AliSTARTReconstructor.h"
 #include <AliESD.h>
+#include "AliLog.h"
 #include <TClonesArray.h>
 #include "AliSTARTRecPoint.h"
 #include "AliRawReader.h"
 #include "AliSTARTRawReader.h"
-#include "AliLog.h"
+#include "AliSTARTLoader.h"
+#include "AliSTARTdigit.h"
+#include "AliSTARTReconstructor.h"
+#include "AliSTARTParameters.h"
+#include "AliSTARTAlignData.h"
+#include "AliSTARTCalibData.h"
+#include "AliCDBLocal.h"
+#include "AliCDBStorage.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+
+#include <TArrayI.h>
+
 ClassImp(AliSTARTReconstructor)
+AliSTARTAlignData* AliSTARTReconstructor::fgAlignData = 0;
+AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
 
   void  AliSTARTReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 {
@@ -44,13 +56,37 @@ ClassImp(AliSTARTReconstructor)
 // START digits reconstruction
 // STARTRecPoint writing 
 
+    //Q->T-> coefficients !!!! should be asked!!!
+  //  Float_t ph2MIP=500;
+  Float_t gain[24], timeDelayCFD[24], timeDelayLED[24];
+  Int_t threshold =50; //photoelectrons
+  //  Int_t mV2channel=200000/(25*25);  //5V -> 200ns
+  Float_t zdetA,zdetC;
+  TObjArray slewingLED;
+    
+  TArrayI * fADC = new TArrayI(24); 
+  TArrayI * fTimeCFD = new TArrayI(24); 
+  TArrayI * fADCLED = new TArrayI(24); 
+  TArrayI * fTimeLED = new TArrayI(24); 
+
+  AliSTARTParameters* param = AliSTARTParameters::Instance();
+  Int_t ph2MIP = param->GetPh2Mip();     
+  Int_t channelWidth = param->GetChannelWidth() ;  
+  
+    for (Int_t i=0; i<24; i++){
+      timeDelayCFD[i] = param->GetTimeDelayCFD(i);
+      timeDelayLED[i] = param->GetTimeDelayLED(i);
+      gain[i] = param->GetGain(i);
+      slewingLED.AddAtAndExpand(param->GetSlew(i),i);
+    }
+    zdetC = param->GetZposition(0);
+    zdetA  = param->GetZposition(1);
+  
   AliDebug(1,Form("Start DIGITS reconstruction "));
    Int_t channelWigth=25; //ps
-  TArrayI* fSumMult = new TArrayI(6);
-  Float_t ph2mV = 150./500.;
-  Float_t mV2channel=200000/(25*25);  //5V -> 200ns
 
   TBranch *brDigits=digitsTree->GetBranch("START");
+  cout<<" TBranch *brDigits "<<brDigits<<endl;
   AliSTARTdigit *fDigits = new AliSTARTdigit();
   if (brDigits) {
     brDigits->SetAddress(&fDigits);
@@ -58,30 +94,57 @@ ClassImp(AliSTARTReconstructor)
     cerr<<"EXEC Branch START digits not found"<<endl;
     return;
   }
+  //  brDigits->Print();
   brDigits->GetEntry(0);
+  cout<<"  brDigits->GetEntry(0); "<<endl;
+  //  fDigits->Print();
+  fDigits->GetTime(*fTimeCFD);
+  cout<<"  fDigits->GetTime(*fTimeCFD); "<<endl;
+  fDigits->GetADC(*fADC);
+  fDigits->GetTimeAmp(*fTimeLED);
+  fDigits->GetADCAmp(*fADCLED);
+
+  Float_t time[24], adc[24];
+  for (Int_t ipmt=0; ipmt<24; ipmt++)
+    {
+      
+      if(fTimeCFD->At(ipmt)){
+	 time[ipmt] = channelWigth *( fTimeCFD->At(ipmt)) - 1000*timeDelayCFD[ipmt];
+	 cout<<ipmt<<" "<<time[ipmt];
+	 Float_t adc_digmV = channelWigth * Float_t (fADC->At(ipmt)) ;
+	 cout<<"  adc_digmV "<< adc_digmV;
+	 //      adc[ipmt] = ( TMath::Exp (fADC->At(ipmt)) / gain[ipmt] /mV2channel );
+	 adc[ipmt] = TMath::Exp(adc_digmV);
+	 cout<<" adc"<<adc[ipmt]<<" inMIP "<<adc[ipmt]/50<< endl;
+      }
+    }
+
   Int_t besttimeright=channelWigth * (fDigits->BestTimeRight());
   Int_t besttimeleft=channelWigth * (fDigits->BestTimeLeft());
 
   //folding with experimental time distribution
   //  Float_t c = 29.9792; // cm/ns
   Float_t c = 0.0299792; // cm/ps
-  Float_t lenr=TMath::Sqrt(350*350 + 6.5*6.5);
-  Float_t lenl=TMath::Sqrt(69.7*69.7 + 6.5*6.5);
+  Float_t lenr=TMath::Sqrt(zdetA*zdetA + 6.5*6.5);
+  Float_t lenl=TMath::Sqrt(zdetC*zdetC + 6.5*6.5);
   Float_t timeDiff=channelWigth * (fDigits->TimeDiff());
   Int_t meanTime=channelWigth * (fDigits->MeanTime());
   Float_t ds=(c*(timeDiff)-(lenr-lenl))/2;
   AliDebug(2,Form(" timediff in ns %f  real point%f",timeDiff,ds));
   
-
+  /*
   fDigits->GetSumMult(*fSumMult);
-  Int_t multipl[6]; 
- for (Int_t i=0; i<6; i++)
+  Int_t multipl[4]; 
+ 
+ for (Int_t i=0; i<4; i++)
     {
       Float_t  mult=Float_t (fSumMult->At(i));
       Float_t   realMultmV=TMath::Exp(mult/mV2channel);
       multipl[i]=Int_t ((realMultmV/ph2mV)/500+0.5);
     }
-  AliDebug(2,Form(" multiplicity Abs side %i  multiplicity non-Abs side %i",multipl[1],multipl[2]));
+  */
+
+  //  AliDebug(2,Form(" multiplicity Abs side %i  multiplicity non-Abs side %i",multipl[1],multipl[2]));
 
   AliSTARTRecPoint* frecpoints= new AliSTARTRecPoint ();
   clustersTree->Branch( "START", "AliSTARTRecPoint" ,&frecpoints, 405,1);
@@ -89,10 +152,11 @@ ClassImp(AliSTARTReconstructor)
   frecpoints->SetTimeBestLeft(besttimeleft);
   frecpoints->SetVertex(ds);
   frecpoints->SetMeanTime(meanTime);
+  /*
   frecpoints->SetMult(multipl[0]);
   frecpoints->SetMultA(multipl[2]);
   frecpoints->SetMultC(multipl[1]);
-
+  */
   clustersTree->Fill();
 }
 

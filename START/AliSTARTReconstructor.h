@@ -8,6 +8,8 @@
 #include "AliReconstructor.h"
 #include "AliSTARTdigit.h"
 class AliRunLoader;
+class AliSTARTAlignData;
+class AliSTARTCalibData;
 
 class AliSTARTReconstructor: public AliReconstructor {
 public:
@@ -31,6 +33,8 @@ public:
  
   AliSTARTdigit *fdigits   ; // digits
   Float_t fZposition; // vertex position
+ static AliSTARTAlignData * fgAlignData; // singleton for Alignment data
+ static AliSTARTCalibData * fgCalibData; // singleton for Calibration data
 
   ClassDef(AliSTARTReconstructor, 0)   // class for the START reconstruction
 

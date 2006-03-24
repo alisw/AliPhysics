@@ -20,27 +20,28 @@ class AliSTARTDigitizer : public AliDigitizer {
   virtual ~AliSTARTDigitizer();
   virtual Bool_t Init();
   TClonesArray *Hits() const {return fHits;}
-  TArrayI *timeTDC() {return ftimeTDC;}
+  TArrayI *timeCFD() {return ftimeCFD;}
+  TArrayI *timeLED() {return ftimeLED;}
   TArrayI * ADC() {return fADC;} 
-  TArrayI *timeTDCAmp() {return ftimeTDCAmp;}
-  TArrayI * ADCAmp() {return fADCAmp;} 
-  TArrayI *SumMult() {return fSumMult;}
+   TArrayI * ADC0() {return fADC0;} 
+
   // Do the main work
   void Exec (Option_t* /*option=0*/) ;
-  Bool_t RegisterPhotoE(Double_t energy);
+  Bool_t RegisterPhotoE(Int_t impt, Double_t energy);
   enum {kBgTag = -1};
-
+ 
 private:
 
   AliSTART *fSTART;          //!
   TClonesArray *fHits      ; //! List of hits
   AliSTARTdigit *fdigits   ; //! digits
-  TArrayI *ftimeTDC    ; //! array of TDC signal from right side
-  TArrayI *fADC     ;//! array of ADC signal from left sida
-  TArrayI *ftimeTDCAmp    ; //! array of TDC amplified signal from right side
-  TArrayI *fADCAmp     ;//! array of ADC amplified signal from left sida
-  TArrayI *fSumMult; // multiplicity
-  TH1*     fEff;    //! efficiency histogram
+  TArrayI *ftimeCFD    ; //! array of CFD signal 
+  TArrayI *ftimeLED    ; //! array of (LED-GFD) time (amplitude)
+  TArrayI *fADC     ;//! array of QTC signals (main amplitude)
+  TArrayI *fADC0     ;//! array of QTC signals (main amplitude)
+  Int_t fSumMult; // multiplicity
+  TObjArray fEffPMT; //pmt registration effeicincy
+
   
     ClassDef(AliSTARTDigitizer,1)
 };    
