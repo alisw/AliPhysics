@@ -23,10 +23,12 @@ class TF1;
 class AliRawReader;
 #include "AliDetector.h"
 #include "AliEMCALGeometry.h" 
+#include "AliEMCALTrigger.h"
+
 class AliEMCAL : public AliDetector {
 
  public:
-
+  
   AliEMCAL(); 
   AliEMCAL(const char* name, const char* title="");
   AliEMCAL(const AliEMCAL& emcal) : AliDetector(emcal) {
@@ -45,15 +47,19 @@ class AliEMCAL : public AliDetector {
   virtual void  CreateMaterials() ;   
   //  virtual void  
   virtual void  Digits2Raw();
-
+  
   using AliDetector::Raw2Digits;
   virtual void  Raw2Digits(AliRawReader *reader);
-
+  
   virtual void  FinishRun() {}                  
   virtual AliEMCALGeometry * GetGeometry() const 
-  {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
+    {return AliEMCALGeometry::GetInstance(GetTitle(),"") ;  }   
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;   
+  
+  virtual AliTriggerDetector* CreateTriggerDetector() const 
+    { return new AliEMCALTrigger(); }
+  
   // Raw Read Out
   Double_t GetRawFormatCapa() const { return fgCapa ; }   
   Double_t GetRawFormatHighCharge() const { return fHighCharge ; }  

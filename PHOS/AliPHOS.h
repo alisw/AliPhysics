@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.65  2006/03/07 18:56:25  kharlov
+ * CDB is passed via environment variable
+ *
  * Revision 1.64  2005/11/03 13:09:19  hristov
  * Removing meaningless const declarations (linuxicc)
  *
@@ -39,6 +42,7 @@ class TRandom ;
 #include "AliDetector.h" 
 #include "AliLog.h"
 #include "AliPHOSGeometry.h" 
+#include "AliPHOSTrigger.h"
 class AliPHOSAlignData;
 
 class AliPHOS : public AliDetector {
@@ -68,8 +72,13 @@ public:
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
   virtual AliPHOSGeometry * GetGeometry(AliPHOSAlignData *alignda) const 
   {return AliPHOSGeometry::GetInstance(GetTitle(),"",alignda) ;  }
+
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;  
+
+  virtual AliTriggerDetector* CreateTriggerDetector() const 
+    { return new AliPHOSTrigger(); }
+
   // Raw Read Out
   Double_t GetRawFormatCapa() const { return fgCapa ; }   
   Double_t GetRawFormatHighCharge() const { return fHighCharge ; }  
