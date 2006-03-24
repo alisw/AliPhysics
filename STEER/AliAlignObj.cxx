@@ -99,6 +99,23 @@ AliAlignObj::AliAlignObj():
 }
 
 //_____________________________________________________________________________
+AliAlignObj::AliAlignObj(const char* volpath, UShort_t voluid) : TObject()
+{
+  // standard constructor
+  //
+  fVolPath=volpath;
+  fVolUID=voluid;
+}
+
+AliAlignObj::AliAlignObj(const char* volpath, ELayerID detId, Int_t volId) : TObject()
+{
+  // standard constructor
+  // 
+  fVolPath=volpath;
+  SetVolUID(detId,volId); 
+}
+
+//_____________________________________________________________________________
 AliAlignObj::AliAlignObj(const AliAlignObj& theAlignObj) :
   TObject(theAlignObj)
 {

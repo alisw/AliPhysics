@@ -33,18 +33,16 @@ AliAlignObjMatrix::AliAlignObjMatrix() : AliAlignObj()
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj()
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj(volpath, voluid)
 {
   // standard constructor with 3 translation + 3 rotation parameters
   //
-  fVolPath=volpath;
-  fVolUID=voluid;
   SetTranslation(x, y, z);
   SetRotation(psi, theta, phi);
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) : AliAlignObj()
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID layerId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) : AliAlignObj(volpath,layerId,volId)
 {
   // standard constructor with 3 translation + 3 rotation parameters
   // If the user explicitly sets the global variable to kFALSE then the
@@ -52,8 +50,6 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID detId, Int_t 
   // This requires to have a gGeoMenager active instance, otherwise the
   // constructor will fail (no object created)
   // 
-  fVolPath=volpath;
-  SetVolUID(detId,volId);
   if(global){
     SetTranslation(x, y, z);
     SetRotation(psi, theta, phi);
@@ -64,12 +60,19 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID detId, Int_t 
 
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, TGeoMatrix& m) : AliAlignObj()
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t volUID, TGeoMatrix& m) : AliAlignObj(volpath,volUID)
 {
   // standard constructor with TGeoMatrix
   //
-  fVolPath=volpath;
-  fVolUID=voluid;
+  SetTranslation(m);
+  SetRotation(m);
+}
+
+//_____________________________________________________________________________
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID layerId, Int_t volId, TGeoMatrix& m) : AliAlignObj(volpath,layerId,volId)
+{
+  // standard constructor with TGeoMatrix
+  //
   SetTranslation(m);
   SetRotation(m);
 }

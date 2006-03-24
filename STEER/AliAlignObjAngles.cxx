@@ -35,18 +35,16 @@ AliAlignObjAngles::AliAlignObjAngles() : AliAlignObj()
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj()
+AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t volUID, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) : AliAlignObj(volpath,volUID)
 {
   // standard constructor with 3 translation + 3 rotation parameters
   //
-  fVolPath=volpath;
-  fVolUID=voluid;
   fTranslation[0]=x; fTranslation[1]=y; fTranslation[2]=z;
   fRotation[0]=psi; fRotation[1]=theta; fRotation[2]=phi;
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) : AliAlignObj()
+AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID layerId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) : AliAlignObj(volpath,layerId,volId)
 {
   // standard constructor with 3 translation + 3 rotation parameters
   // If the user explicitly sets the global variable to kFALSE then the
@@ -54,8 +52,6 @@ AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t 
   // This requires to have a gGeoMenager active instance, otherwise the
   // constructor will fail (no object created)
   // 
-  fVolPath=volpath;
-  SetVolUID(detId,volId);
   if(global){
     fTranslation[0]=x; fTranslation[1]=y; fTranslation[2]=z;
     fRotation[0]=psi; fRotation[1]=theta; fRotation[2]=phi;
@@ -71,6 +67,15 @@ AliAlignObjAngles::AliAlignObjAngles(const char* volpath, UShort_t voluid, TGeoM
   //
   fVolPath=volpath;
   fVolUID=voluid;
+  SetTranslation(m);
+  SetRotation(m);
+}
+
+//_____________________________________________________________________________
+AliAlignObjAngles::AliAlignObjAngles(const char* volpath, ELayerID layerId, Int_t volId, TGeoMatrix& m) : AliAlignObj(volpath,layerId,volId)
+{
+  // standard constructor with TGeoMatrix
+  //
   SetTranslation(m);
   SetRotation(m);
 }

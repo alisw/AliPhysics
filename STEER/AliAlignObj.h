@@ -18,11 +18,6 @@ class AliAlignObj : public TObject {
 
  public:
 
-  AliAlignObj();
-  AliAlignObj(const AliAlignObj& theAlignObj);
-  AliAlignObj& operator= (const AliAlignObj& theAlignObj);
-  AliAlignObj& operator*=(const AliAlignObj& theAlignObj);
-  virtual ~AliAlignObj();
   enum ELayerID{kInvalidLayer=0,
 		kFirstLayer=1,
 		kSPD1=1, kSPD2=2,
@@ -35,6 +30,13 @@ class AliAlignObj : public TObject {
 		kRICH=18,
 		kMUON=19,
 		kLastLayer=20};
+  AliAlignObj();
+  AliAlignObj(const char* volpath, UShort_t voluid);
+  AliAlignObj(const char* volpath, ELayerID detId, Int_t modId);
+  AliAlignObj(const AliAlignObj& theAlignObj);
+  AliAlignObj& operator= (const AliAlignObj& theAlignObj);
+  AliAlignObj& operator*=(const AliAlignObj& theAlignObj);
+  virtual ~AliAlignObj();
 
   //Setters
   virtual void SetTranslation(Double_t x, Double_t y, Double_t z) = 0;
@@ -59,6 +61,7 @@ class AliAlignObj : public TObject {
   virtual void GetPars(Double_t transl[], Double_t rot[]) const=0;
   virtual void GetMatrix(TGeoHMatrix& m) const=0;
 
+  Bool_t   IsSortable() const {return kTRUE;}
   Int_t         GetLevel() const;
   virtual Int_t Compare(const TObject* obj) const;
 
