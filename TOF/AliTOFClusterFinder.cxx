@@ -84,8 +84,8 @@ AliTOFClusterFinder::AliTOFClusterFinder():
 // Constructor
 //
 
-  fTOFGeometry = new AliTOFGeometry();
-
+  fTOFGeometry = new AliTOFGeometryV5();
+  AliInfo("V5 TOF Geometry is taken as the default");
 }
 //______________________________________________________________________________
 
