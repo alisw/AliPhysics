@@ -158,7 +158,7 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 	Int_t nPhot = hit->Nphot();
 	Int_t cell  = hit->Cell();                                    
 	adc[cell] += nPhot;
-	Float_t dt_scintillator = gRandom->Gaus(0,1);
+	Float_t dt_scintillator = gRandom->Gaus(0,0.3);
 	time[cell] = dt_scintillator + 1e9*hit->Tof();
 	if(time[cell] < timeV0) timeV0 = time[cell];
       }           // hit   loop
@@ -177,7 +177,8 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
      if(adc[i] > 0) {
 //         printf(" Event, cell, adc, tof = %d %d %d %f\n", 
 //                  outRunLoader->GetEventNumber(),i, adc[i], time[i]*100.0);
-         AddDigit(i, adc[i], int(time[i]*100.0) );
+//   multiply by 20 to have 50 ps per channel :
+         AddDigit(i, adc[i], Int_t(time[i]*20.0) );
     } 
 
   }
