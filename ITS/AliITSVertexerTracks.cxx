@@ -185,48 +185,58 @@ void AliITSVertexerTracks::FindVerticesESD() {
 // Vertices for all events from fFirstEvent to fLastEvent
 //
 
-  // Check if the conv. const. has been set
-  if(!CheckField()) return;
+ // Check if the conv. const. has been set
+ if(!CheckField()) return;
 
-  TDirectory *curdir = 0;
+ TDirectory *curdir = 0;
 
-  fInFile->cd();
-  TKey *key=0;
-  TIter next(fInFile->GetListOfKeys());
-  // loop on events in file
-  while ((key=(TKey*)next())!=0) {
-    AliESD *esdEvent=(AliESD*)key->ReadObj();
-    if(!esdEvent) { 
-      printf("AliITSVertexerTracks::FindVerticesESD(): not an ESD!\n"); 
-      return; 
-    }
-    Int_t ev = (Int_t)esdEvent->GetEventNumber();
-    if(ev<fFirstEvent || ev>fLastEvent) { delete esdEvent; continue; }
-    if(ev % 100 == 0 || fDebug) 
-      printf("--- Processing event %d of %d ---\n",ev,fLastEvent-fFirstEvent);
+ fInFile->cd();
+ TTree *esdTree = (TTree*)fInFile->Get("esdTree");
+ if(!esdTree) {
+     printf("AliITSVertexerTracks::FindVerticesESD(): no tree in file!\n");
+   return;
+ }
+ Int_t nev = (Int_t)esdTree->GetEntries();
+ Int_t ev;
+ // loop on events in tree
+ for(Int_t i=0; i<nev; i++) {
+   AliESD *esdEvent = new AliESD;
+   esdTree->SetBranchAddress("ESD",&esdEvent);
+   if(!esdTree->GetEvent(i)) {
+     printf("AliITSVertexerTracks::FindVerticesESD(): not an ESD!\n");
+     delete esdEvent;
+     return;
+   }
+   ev = (Int_t)esdEvent->GetEventNumber();
+   if(ev<fFirstEvent || ev>fLastEvent) { delete esdEvent; continue; }
+   if(ev % 100 == 0 || fDebug)
+     printf("--- Processing event %d of %d ---\n",ev,fLastEvent-fFirstEvent);
 
-    FindPrimaryVertexForCurrentEvent(esdEvent);
+   FindPrimaryVertexForCurrentEvent(esdEvent);
 
-    if(!fCurrentVertex) {
-      printf("AliITSVertexerTracks::FindVertixesESD():\n no vertex for event %d\n",ev);
-      continue;
-    }
+   if(!fCurrentVertex) {
+     printf("AliITSVertexerTracks::FindVertixesESD():\n no vertex for event %d\n",ev);
+     continue;
+   }
 
+   if(fDebug) fCurrentVertex->PrintStatus();
 
-    if(fDebug) fCurrentVertex->PrintStatus();
+   // write vertex to file
+   TString vtxName = "Vertex_";
+   vtxName += ev;
+   fCurrentVertex->SetName(vtxName.Data());
+   fCurrentVertex->SetTitle("VertexerTracks");
+   //WriteCurrentVertex();
+   curdir = gDirectory;
+   fOutFile->cd();
+   fCurrentVertex->Write();
+   curdir->cd();
+   fCurrentVertex = 0;
+   esdEvent = 0;
+   delete esdEvent;
+ } // end loop over events
 
-    // write the ESD to file
-    curdir = gDirectory;
-    Char_t ename[100];
-    sprintf(ename,"%d",ev);
-    fOutFile->cd();
-    esdEvent->Dump();
-    esdEvent->Write(ename,TObject::kOverwrite);
-    curdir->cd();
-    fCurrentVertex = 0;
-  } // loop over events
-
-  return;
+ return;
 }
 //----------------------------------------------------------------------------
 Int_t AliITSVertexerTracks::PrepareTracks(TTree &trkTree) {
