@@ -75,7 +75,7 @@ void AliCDBManager::Destroy() {
 AliCDBManager::AliCDBManager():
 	fDefaultStorage(NULL),
 	fDrainStorage(NULL),
-	fCache(kTRUE),
+	fCache(kFALSE),
 	fRun(0)
 {
 // default constuctor
