@@ -10,7 +10,8 @@ AliVZEROv5.cxx \
 AliVZEROv6.cxx \
 AliVZEROhit.cxx \
 AliVZERODigitizer.cxx \
-AliVZEROBuffer.cxx
+AliVZEROBuffer.cxx \
+AliVZEROTrigger.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

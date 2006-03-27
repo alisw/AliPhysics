@@ -15,5 +15,6 @@
 #pragma link C++ class  AliVZEROhit+;
 #pragma link C++ class  AliVZERODigitizer+;
 #pragma link C++ class  AliVZEROBuffer+;
+#pragma link C++ class  AliVZEROTrigger+;
 
 #endif
