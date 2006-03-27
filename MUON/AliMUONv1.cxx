@@ -510,6 +510,8 @@ void AliMUONv1::StepManager2()
     Float_t theta = fTrackMomentum.Theta();
     Float_t phi   = fTrackMomentum.Phi();
     
+    Int_t merge = 0;
+    Double_t xyz0[3]={0}, xyz1[3]={0}, tmp[3]={0};
     if (gMC->IsTrackExiting() && iEnter != 0) {
       // AZ - this code is to avoid artificial hit splitting at the
       // "fake" boundary inside the same chamber. It will still produce 
@@ -518,12 +520,17 @@ void AliMUONv1::StepManager2()
 
       // Only for a track going from the entrance to the exit from the volume
       // Get local coordinates
-      Double_t xyz0[3], xyz1[3], tmp[3];
       gMC->Gmtod(xyzEnter, xyz0, 1); // local coord. at the entrance
 
       fTrackPosition.Vect().GetXYZ(tmp);
       gMC->Gmtod(tmp, xyz1, 1); // local coord. at the exit
+      Float_t dx = xyz0[0] - xyz1[0];
+      Float_t dy = xyz0[1] - xyz1[1];
+      Float_t thLoc = TMath::ATan2 (TMath::Sqrt(dx*dx+dy*dy), TMath::Abs(xyz0[2]-xyz1[2]));
+      if (thLoc * TMath::RadToDeg() < 15) merge = 1; 
+    }
 
+    if (merge) {
       Double_t dz = -0.5;
       if (xyz1[2] != xyz0[2]) dz = xyz0[2] / (xyz1[2] - xyz0[2]);
       tmp[0] = xyz0[0] - (xyz1[0] - xyz0[0]) * dz; // local coord. at the wire
