@@ -82,12 +82,12 @@ void AliSTARTTrigger::Trigger()
   Int_t sumMult=   fDigits->SumMult();
   cout<<besttimeright<<" "<<besttimeleft<<" "<< timeDiff<<" "<<meanTime<<endl;
 
-  Int_t trigg[4];
-  if (besttimeright<1000) trigg[0]=1;
-  if (besttimeleft<1000)  trigg[1]=1;
-  if (timeDiff<5)      trigg[2]=1;
-  if (sumMult>2300)    trigg[3]=1;
-  if (sumMult>1800)    trigg[4]=1;
+  Bool_t trigg[5];
+  if (besttimeright<1000) trigg[0]=kTRUE;
+  if (besttimeleft<1000)  trigg[1]=kTRUE;
+  if (timeDiff<5)      trigg[2]=kTRUE;
+  if (sumMult>2300)    trigg[3]=kTRUE;
+  if (sumMult>1800)    trigg[4]=kTRUE;
 
 
    if( trigg[0] )  SetInput("START_T0A_L0");
