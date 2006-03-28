@@ -5,7 +5,17 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFGeometryV4.cxx  \
 	AliTOFGeometryV5.cxx  \
         AliTOFdigit.cxx  \
-        AliTOFRawStream.cxx
+        AliTOFRawStream.cxx\
+	AliTOFChannel.cxx  \
+	AliTOFChSim.cxx  \
+	AliTOFcalibESD.cxx AliTOFcalib.cxx \
+	AliTOFCalPadZ.cxx \
+        AliTOFCalStrip.cxx  AliTOFCalPlateA.cxx \
+	AliTOFCalPlateB.cxx AliTOFCalPlateC.cxx \
+	AliTOFCalSector.cxx \
+	AliTOFCal.cxx \
+	AliTOFAlignment.cxx 
+
 
 HDRS:= $(SRCS:.cxx=.h)
 
