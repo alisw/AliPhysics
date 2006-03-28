@@ -792,39 +792,37 @@ void AliAlignObj::InitVolPaths()
 
   /*********************      TRD layers 0-6   *******************/
   {
-  TString strSM[18]={"ALIC_1/B077_1/B075_1/BTR3_1/UTR3_3/UTS3_3/UTI3_3/UT",
-                     "ALIC_1/B077_1/B075_2/BTR3_1/UTR3_3/UTS3_3/UTI3_3/UT",
-		     "ALIC_1/B077_1/B075_3/BTR3_1/UTR3_3/UTS3_3/UTI3_3/UT",
-		     "ALIC_1/B077_1/B071_6/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_7/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_8/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_9/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_10/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_11/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_12/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_13/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B074_1/BTR2_1/UTR2_2/UTS2_2/UTI2_2/UT",
-		     "ALIC_1/B077_1/B074_2/BTR2_1/UTR2_2/UTS2_2/UTI2_2/UT",
-		     "ALIC_1/B077_1/B071_1/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_2/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_3/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_4/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		     "ALIC_1/B077_1/B071_5/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT"};
-    Int_t start[18] = {60,60,60,0,0,0,0,0,0,0,0,30,30,0,0,0,0,0};
+    TString strSM[18]={"ALIC_1/B077_1/B075_1/BTR3_1/UTR1_3/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B075_2/BTR3_1/UTR1_3/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B075_3/BTR3_1/UTR1_3/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_6/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_7/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_8/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_9/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_10/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_11/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_12/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_13/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B074_1/BTR2_1/UTR1_2/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B074_2/BTR2_1/UTR1_2/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_1/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_2/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_3/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_4/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/B071_5/BTR1_1/UTR1_1/UTS1_1/UTI1_1/UT"};
     TString strPost = "_1";
-    TString ZeroStr = "0";
-
-    Int_t layer, sm, stacknum, chnum, modnum;
+    TString zeroStr = "0";
     TString volpath;
+
     Int_t TRDlayId[6] = {kTRD1, kTRD2, kTRD3, kTRD4, kTRD5, kTRD6};
 
-    for(layer=0; layer<6; layer++){
-      modnum=0;
-      for(sm = 0; sm<18; sm++){
-	for(stacknum = 0; stacknum<5; stacknum++){
-	  chnum = start[sm] + layer + stacknum*6;
+    for(Int_t layer=0; layer<6; layer++){
+      Int_t modnum=0;
+      for(Int_t sm = 0; sm < 18; sm++){
+	for(Int_t stacknum = 0; stacknum < 5; stacknum++){
+	  Int_t chnum = layer + stacknum*6;
 	  volpath = strSM[sm];
-	  if(chnum<10) volpath += ZeroStr;
+	  if(chnum<10) volpath += zeroStr;
 	  volpath += chnum;
 	  volpath += strPost;
 	  fgVolPath[TRDlayId[layer]-kFirstLayer][modnum] = volpath.Data();
