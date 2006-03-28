@@ -2,13 +2,22 @@
 // Configuration for the Physics Data Challenge 2006
 //
 
+// One can use the configuration macro in compiled mode by
+// root [0] gSystem->Load("libgeant321");
+// root [0] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
+//                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
+// root [0] .x grun.C(1,"Config_PDC06.C++")
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TRandom.h>
 #include <TDatime.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
-#include <TGeant3.h>
+#include <TGeant3TGeo.h>
+#include "EVGEN/AliGenCocktail.h"
+#include "EVGEN/AliGenParam.h"
+#include "EVGEN/AliGenMUONlib.h"
 #include "STEER/AliRunLoader.h"
 #include "STEER/AliRun.h"
 #include "STEER/AliConfig.h"
@@ -23,18 +32,21 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv2.h"
 #include "STRUCT/AliPIPEv0.h"
+#include "ITS/AliITSgeom.h"
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
-#include "TOF/AliTOFv4T0.h"
+#include "TOF/AliTOFv5T0.h"
 #include "RICH/AliRICHv1.h"
-#include "ZDC/AliZDCv1.h"
+#include "ZDC/AliZDCv2.h"
 #include "TRD/AliTRDv1.h"
-#include "FMD/AliFMDv0.h"
+#include "FMD/AliFMDv1.h"
 #include "MUON/AliMUONv1.h"
 #include "PHOS/AliPHOSv1.h"
 #include "PMD/AliPMDv1.h"
 #include "START/AliSTARTv1.h"
-#include "CRT/AliCRTv1.h"
+#include "EMCAL/AliEMCALv2.h"
+#include "CRT/AliCRTv0.h"
+#include "VZERO/AliVZEROv6.h"
 #endif
 
 
@@ -46,7 +58,15 @@ enum PDC06Proc_t
   kDPlusPbPb5500,  kDPluspPb8800,  kDPluspp14000,
   kBeautyPbPb5500, kBeautypPb8800, kBeautypp14000, kBeautypp14000wmi, 
 // -- Pythia Mb
-  kPyMbNoHvq, kPyOmegaPlus, kPyOmegaMinus
+  kPyMbNoHvq, kPyOmegaPlus, kPyOmegaMinus, kRunMax
+};
+
+const char * pprRunName[] = {
+  "kCharmPbPb5500",  "kCharmpPb8800",  "kCharmpp14000",  "kCharmpp14000wmi",
+  "kD0PbPb5500",     "kD0pPb8800",     "kD0pp14000",
+  "kDPlusPbPb5500",  "kDPluspPb8800",  "kDPluspp14000",
+  "kBeautyPbPb5500", "kBeautypPb8800", "kBeautypp14000", "kBeautypp14000wmi", 
+  "kPyMbNoHvq", "kPyOmegaPlus", "kPyOmegaMinus"
 };
 
 
@@ -69,12 +89,19 @@ enum Mag_t
 AliGenPythia *PythiaHVQ(PDC06Proc_t proc);
 AliGenerator *MbCocktail();
 AliGenerator *PyMbTriggered(Int_t pdg);
+void ProcessEnvironmentVars();
 
 // This part for configuration
 static PDC06Proc_t   proc     = kPyMbNoHvq;
 static DecayHvFl_t   decHvFl  = kNature; 
 static YCut_t        ycut     = kFull;
 static Mag_t         mag      = k5kG; 
+//========================//
+// Set Random Number seed //
+//========================//
+TDatime dt;
+static UInt_t seed    = dt.Get();
+
 // nEvts = -1  : you get 1 QQbar pair and all the fragmentation and 
 //               decay chain
 // nEvts = N>0 : you get N charm / beauty Hadrons 
@@ -109,18 +136,12 @@ static TString comment;
 void Config()
 {
  
-  //========================//
-  // Set Random Number seed //
-  //========================//
-  TDatime dt;
-  UInt_t curtime = dt.Get();
-  UInt_t procid  = gSystem->GetPid();
-  UInt_t seed    = curtime-procid;
 
-  //  gRandom->SetSeed(seed);
-  //  cerr<<"Seed for random number generation= "<<seed<<endl; 
-  gRandom->SetSeed(12345);
-  
+  // Get settings from environment variables
+  ProcessEnvironmentVars();
+
+  gRandom->SetSeed(seed);
+  cerr<<"Seed for random number generation= "<<seed<<endl; 
 
   // libraries required by geant321
 #if defined(__CINT__)
@@ -213,7 +234,7 @@ void Config()
   //=========================//
   // Generator Configuration //
   //=========================//
-  AliGenerator* gener;
+  AliGenerator* gener = 0x0;
   
   if (proc <=   kBeautypp14000wmi) {
       AliGenPythia *pythia = PythiaHVQ(proc);
@@ -536,7 +557,7 @@ void Config()
      if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv5("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv6("VZERO", "normal VZERO");
     }
 }
 //
@@ -691,7 +712,7 @@ AliGenPythia *PythiaHVQ(PDC06Proc_t proc) {
 AliGenerator* MbCocktail()
 {
       comment = comment.Append(" pp at 14 TeV: Pythia low-pt, no heavy quarks + J/Psi from parameterisation");
-      gener = new AliGenCocktail();
+      AliGenCocktail * gener = new AliGenCocktail();
       gener->UsePerEventRates();
  
 //
@@ -734,6 +755,23 @@ AliGenerator* PyMbTriggered(Int_t pdg)
     return pythia;
 }
 
+void ProcessEnvironmentVars()
+{
+    // Run type
+    if (gSystem->Getenv("CONFIG_RUN_TYPE")) {
+      for (Int_t iRun = 0; iRun < kRunMax; iRun++) {
+	if (strcmp(gSystem->Getenv("CONFIG_RUN_TYPE"), pprRunName[iRun])==0) {
+	  proc = (PDC06Proc_t)iRun;
+	  cout<<"Run type set to "<<pprRunName[iRun]<<endl;
+	}
+      }
+    }
+
+    // Random Number seed
+    if (gSystem->Getenv("CONFIG_SEED")) {
+      seed = atoi(gSystem->Getenv("CONFIG_SEED"));
+    }
+}
 
 
 
