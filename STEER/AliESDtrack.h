@@ -158,6 +158,8 @@ public:
 
   void SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
   Float_t GetTOFsignal() const {return fTOFsignal;}
+  void SetTOFsignalToT(Double_t ToT) {fTOFsignalToT=ToT;}
+  Float_t GetTOFsignalToT() const {return fTOFsignalToT;}
   Float_t GetTOFchi2() const {return fTOFchi2;}
   void    SetTOFpid(const Double_t *p);
   void    SetTOFLabel(const Int_t *p);
@@ -165,8 +167,10 @@ public:
   void    GetTOFLabel(Int_t *p) const;
   void    GetTOFInfo(Float_t *info) const;
   void    SetTOFInfo(Float_t *info);
+  Int_t   GetTOFCalChannel() const {return fTOFCalChannel;}
   UInt_t  GetTOFcluster() const {return fTOFindex;}
   void  SetTOFcluster(UInt_t index) {fTOFindex=index;}
+  void  SetTOFCalChannel(Int_t index) {fTOFCalChannel=index;}
   
   void    SetRICHsignal(Double_t beta) {fRICHsignal=beta;}
   Float_t GetRICHsignal() const {return fRICHsignal;}
@@ -297,7 +301,9 @@ protected:
   // TOF related track information
   Float_t fTOFchi2;        // chi2 in the TOF
   UInt_t  fTOFindex;       // index of the assigned TOF cluster
+  Int_t   fTOFCalChannel; // Channel Index of the TOF Signal 
   Float_t fTOFsignal;      // detector's PID signal
+  Float_t fTOFsignalToT;   // detector's ToT signal
   Float_t fTOFr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTOFLabel[3];       // TOF label 
   Float_t fTOFInfo[10];       //! TOF informations
@@ -320,7 +326,7 @@ protected:
 
   AliTrackPointArray *fPoints; // Array which contains the track space points in the global frame
 
-  ClassDef(AliESDtrack,23)  //ESDtrack 
+  ClassDef(AliESDtrack,24)  //ESDtrack 
 };
 
 #endif 

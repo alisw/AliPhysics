@@ -95,7 +95,9 @@ AliESDtrack::AliESDtrack() :
   fTRDtrack(0),
   fTOFchi2(0),
   fTOFindex(0),
+  fTOFCalChannel(-1),
   fTOFsignal(-1),
+  fTOFsignalToT(0),
   //  fPHOSsignal(-1),
   fRICHchi2(1e10),
   fRICHncls(0),
@@ -183,7 +185,9 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDtrack(0),
   fTOFchi2(track.fTOFchi2),
   fTOFindex(track.fTOFindex),
+  fTOFCalChannel(track.fTOFCalChannel),
   fTOFsignal(track.fTOFsignal),
+  fTOFsignalToT(track.fTOFsignalToT),
   //fPHOSsignal(track.fPHOSsignal),
   fRICHchi2(track.fRICHchi2),
   fRICHncls(track.fRICHncls),
@@ -323,6 +327,8 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTOFchi2 = 0;        
   fTOFindex = 0;       
   fTOFsignal = 0;      
+  fTOFCalChannel = -1;
+  fTOFsignalToT = 0;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i] = 0;
   for (Int_t i=0;i<3;i++) fTOFLabel[i] = 0;
   for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;
