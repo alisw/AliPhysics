@@ -33,6 +33,8 @@ class AliTOFcluster : public TObject {
   Double_t GetQuality() const {return fQuality;}
   void     SetQuality(Double_t quality) {fQuality = quality;}
   void     SetToT(Float_t ToT) {fToT = ToT;}
+  void     SetTDC(Float_t Tdc) {fTDC = Tdc;}
+  void     SetTDCND(Float_t Tdc) {fTdcND = Tdc;}
  private:
 
   Int_t fLab[3];      // track labels
