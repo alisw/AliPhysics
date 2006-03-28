@@ -10,6 +10,7 @@
 #include <TDirectory.h>
 #include <TClonesArray.h>
 #include <TStopwatch.h>
+#include <Riostream.h>
 #endif
 
 #ifdef use_newio
