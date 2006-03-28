@@ -177,8 +177,8 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
      if(adc[i] > 0) {
 //         printf(" Event, cell, adc, tof = %d %d %d %f\n", 
 //                  outRunLoader->GetEventNumber(),i, adc[i], time[i]*100.0);
-//   multiply by 20 to have 50 ps per channel :
-         AddDigit(i, adc[i], Int_t(time[i]*20.0) );
+//   multiply by 10 to have 100 ps per channel :
+     AddDigit(i, adc[i], Int_t(time[i]*10.0) );
     } 
 
   }
