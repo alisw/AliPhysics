@@ -13,18 +13,20 @@
 
 class AliRunLoader;
 class AliTPCClustersArray;
+class AliTPCParam;
 
 
 class AliTPCFast : public TObject {
 
 public:
   void Hits2Clusters(AliRunLoader* runLoader) const;
+  void Hits2ExactClusters(AliRunLoader* runLoader) const;
   void Hits2ExactClustersSector(AliRunLoader* runLoader,
 				AliTPCClustersArray* clustersArray,
 				Int_t isec) const;
-  void FindTrackHitsIntersection(AliRunLoader* runLoader,
-				 AliTPCClustersArray* clustersArray) const;
 
+ protected:
+  AliTPCParam * fParam;   //!pointer to parameters - NOT OWNER
   ClassDef(AliTPCFast,0)  // fast TPC cluster simulation
 };
 
