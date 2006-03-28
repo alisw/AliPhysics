@@ -23,15 +23,19 @@
 // -- Author :  F. Pierella (Bologna University) pierella@bo.infn.it
 //////////////////////////////////////////////////////////////////////////////
 
+
 #include <stdlib.h>
 #include <Riostream.h>
-
 #include <TTree.h> 
 #include <TVector.h>
 #include <TObjArray.h>
 #include <TFile.h>
 #include <TDirectory.h>
 #include <TRandom.h>
+#include "TF1.h"
+#include "TH1F.h"
+#include "TList.h"
+#include "TRandom.h"
 
 #include "AliLog.h"
 #include "AliRun.h"
@@ -41,14 +45,16 @@
 #include "AliRunDigitizer.h"
 #include "AliPDG.h"
 
-#include "AliTOFDigitizer.h"
 #include "AliTOF.h"
+#include "AliTOFDigitizer.h"
 #include "AliTOFSDigitizer.h"
 #include "AliTOFhit.h"
 #include "AliTOFdigit.h"
 #include "AliTOFSDigit.h"
 #include "AliTOFHitMap.h"
-#include "AliTOFcalib.h"
+#include "AliTOFChannel.h"
+#include "AliTOFCal.h"
+#include "AliTOFGeometryV5.h"
 
 ClassImp(AliTOFDigitizer)
 
@@ -59,6 +65,7 @@ ClassImp(AliTOFDigitizer)
   fDigits=0;
   fSDigitsArray=0;
   fhitMap=0;
+  fGeom=0x0; 
 }
 
 //___________________________________________
@@ -68,6 +75,7 @@ AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager)
   fDigits=0;
   fSDigitsArray=0;
   fhitMap=0;
+  fGeom=0x0; 
 }
 
 //------------------------------------------------------------------------
@@ -113,14 +121,13 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   TFile *in=(TFile*)gFile;
   TDirectory *savedir=gDirectory;
 
-  AliTOFGeometry *tofGeometry;
   if (!in->IsOpen()) {
     AliWarning("Geometry file is not open default  TOF geometry will be used");
-    tofGeometry = new AliTOFGeometry();
+    fGeom = new AliTOFGeometryV5();
   }
   else {
     in->cd();
-    tofGeometry = (AliTOFGeometry*)in->Get("TOFgeometry");
+    fGeom = (AliTOFGeometry*)in->Get("TOFgeometry");
   }
 
   savedir->cd();
@@ -145,7 +152,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   fSDigitsArray=new TClonesArray("AliTOFSDigit",1000);
   
   // create hit map (to be created in Init())
-  fhitMap = new AliTOFHitMap(fSDigitsArray, tofGeometry);
+  fhitMap = new AliTOFHitMap(fSDigitsArray, fGeom);
   
   // Loop over files to digitize
 
@@ -173,7 +180,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
 
 //---------------------------------------------------------------------
 
-void AliTOFDigitizer::CreateDigits(Option_t *option)
+void AliTOFDigitizer::CreateDigits()
 {
   // loop on sdigits container to fill the AliTOFdigit TClonesArray
   // start digitizing all the collected sdigits 
@@ -246,11 +253,13 @@ void AliTOFDigitizer::CreateDigits(Option_t *option)
     }
     
   } // end loop on sdigits - end digitizing all collected sdigits
-  if(strstr(option,"DECALIB")){
-    AliTOFcalib * cal = new AliTOFcalib();
-    cal->Init();
-    cal->DecalibrateDigits(fDigits);
-  }    
+
+  //Insert Decalibration 
+
+  AliTOFcalib * calib = new AliTOFcalib(fGeom);
+  InitDecalibration(calib);
+  DecalibrateTOFSignal(calib);
+  delete calib;
 }
 
 //---------------------------------------------------------------------
@@ -365,3 +374,106 @@ void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
   // put it into tmp array
   new (aSDigitsArray[last]) AliTOFSDigit(*sdigit);
 }
+
+//_____________________________________________________________________________
+void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib){
+  calib->ReadSimParFromCDB("TOF/CDB", 1);
+}
+//---------------------------------------------------------------------
+void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
+
+  // Read Calibration parameters from the CDB
+
+  AliTOFCal * cal= calib->GetTOFCalSimArray();
+
+  AliInfo(Form("Size of AliTOFCal = %i",cal->NPads()));
+  for (Int_t ipad = 0 ; ipad<cal->NPads(); ipad++){
+    AliTOFChannel *CalChannel = cal->GetChannel(ipad);
+    Float_t par[6];
+    for (Int_t j = 0; j<6; j++){
+      par[j]=CalChannel->GetSlewPar(j);
+    }
+  }
+
+  // Initialize Quantities to Simulate ToT Spectra
+
+
+  TH1F * hToT= calib->GetTOFSimToT();
+  Int_t nbins = hToT->GetNbinsX();
+  Float_t Delta = hToT->GetBinWidth(1);
+  Float_t maxch = hToT->GetBinLowEdge(nbins)+Delta;
+  Float_t minch = hToT->GetBinLowEdge(1);
+  Float_t max=0,min=0; //maximum and minimum value of the distribution
+  Int_t maxbin=0,minbin=0; //maximum and minimum bin of the distribution
+  for (Int_t ii=nbins; ii>0; ii--){
+    if (hToT->GetBinContent(ii)!= 0) {
+      max = maxch - (nbins-ii-1)*Delta;
+      maxbin = ii; 
+      break;}
+  }
+  for (Int_t j=1; j<nbins; j++){
+    if (hToT->GetBinContent(j)!= 0) {
+      min = minch + (j-1)*Delta;
+      minbin = j; 
+      break;}
+  }
+  Float_t MaxToT=max;
+  Float_t MinToT=min;
+  Float_t MaxToTDistr=hToT->GetMaximum();
+  
+
+  // Loop on TOF Digits
+
+  Bool_t dbEntry=kFALSE;
+  Int_t ndigits = fDigits->GetEntriesFast();    
+  for (Int_t i=0;i<ndigits;i++){
+    AliTOFdigit * dig = (AliTOFdigit*)fDigits->At(i);
+    Int_t detId[5];
+    detId[0] = dig->GetSector();
+    detId[1] = dig->GetPlate();
+    detId[2] = dig->GetStrip();
+    detId[3] = dig->GetPadz();
+    detId[4] = dig->GetPadx();
+    // For Data with no Miscalibration, set ToT signal == Adc
+    dig->SetToT(dig->GetAdc());
+    if(hToT->GetEntries()>0){  
+      Float_t trix = 0;
+      Float_t triy = 0;
+      Float_t SimToT = 0;
+      while (SimToT <= triy){
+	trix = gRandom->Rndm(i);
+	triy = gRandom->Rndm(i);
+	trix = (MaxToT-MinToT)*trix + MinToT; 
+	triy = MaxToTDistr*triy;
+	Int_t binx=hToT->FindBin(trix);
+	SimToT=hToT->GetBinContent(binx);
+      }
+    // Setting realistic ToT signal (only for Miscalibrated Data)   
+      dig->SetToT(trix);
+    }
+    Int_t index = calib->GetIndex(detId);     
+    AliTOFChannel *CalChannel = cal->GetChannel(index);
+    Float_t par[6];
+    for (Int_t j = 0; j<6; j++){
+      par[j]=CalChannel->GetSlewPar(j);
+      if(par[j]!=0)dbEntry=kTRUE;
+    }
+
+    Float_t ToT= dig->GetToT();
+    dig->SetTdcND(dig->GetTdc());
+    Float_t tdc = ((dig->GetTdc())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3; //tof signal in ns
+    Float_t timeoffset=par[0] + ToT*par[1] +ToT*ToT*par[2] +ToT*ToT*ToT*par[3] +ToT*ToT*ToT*ToT*par[4] +ToT*ToT*ToT*ToT*ToT*par[5]; 
+    Float_t timeSlewed = tdc + timeoffset;
+    // Setting Decalibrated Time signal    
+    dig->SetTdc((timeSlewed*1E3-32)/AliTOFGeometry::TdcBinWidth());   
+  }
+
+  if(hToT->GetEntries()<=0 || !dbEntry){
+    AliInfo("Standard Production, no miscalibrated digits");   
+  }else{
+    AliInfo("Miscalibrated digits");   
+  }
+
+  return;
+}
+

@@ -11,7 +11,12 @@
 //                  
 //*-- Author: Fabrizio Pierella (Bologna University)
 
+#include "TH1F.h"
+#include "TList.h"
 #include "AliDigitizer.h"
+#include "AliTOFcalib.h"
+#include "AliTOFCal.h"
+#include "AliTOFGeometry.h"
 
 class AliRunDigitizer;
 class AliTOFHitMap;
@@ -28,14 +33,17 @@ class AliTOFDigitizer : public AliDigitizer {
   void Exec(Option_t* option=0) ;
   TClonesArray* SDigits() const {return fSDigitsArray;}
   void ReadSDigit(Int_t);
-  void CreateDigits(Option_t *option="");
+  void CreateDigits();
+  void InitDecalibration(AliTOFcalib *calib);
+  void DecalibrateTOFSignal(AliTOFcalib *calib);
   
  private:
   void CollectSDigit(AliTOFSDigit * sdigit) ;
   Int_t PutNoise(Int_t /*charge*/){return 0;}; // not yet implemented
                                            // due to the low noise expected level
+  AliTOFGeometry *fGeom;    // AliTOFgeometry pointer
   TClonesArray *fDigits;             //! array with digits
-  TClonesArray *fSDigitsArray      ; //! List of summable digits; used as a container for all sdigits to be merged
+  TClonesArray *fSDigitsArray; //! List of summable digits; used as a container for all sdigits to be merged
   AliTOFHitMap *fhitMap ;            //! hit map used to perform the merging
   
   ClassDef(AliTOFDigitizer,0)  // TOF/Merging/Digitization
