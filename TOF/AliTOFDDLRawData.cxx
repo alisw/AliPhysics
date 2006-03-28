@@ -133,7 +133,8 @@ void AliTOFDDLRawData::GetDigits(TClonesArray *TOFdigits,Int_t nDDL,UInt_t *buf)
     padx   = digs->GetPadx();   // Pad Number in x direction (0-47)
     padz   = digs->GetPadz();   // Pad Number in z direction (0-1)
     eureka = digs->GetTotPad(fTOFgeometry); // Global Pad Number inside a Sector
-    totCharge = (Int_t)digs->GetAdc();
+    //   totCharge = (Int_t)digs->GetAdc(); //Use realistic ToT, for Standard  production with no miscalibration/Slewing it == fAdC in digit (see AliTOFDigitizer)
+    totCharge = (Int_t)digs->GetToT();
     timeOfFlight = (Int_t)digs->GetTdc();
 
     if (sector!=iSector || (Int_t)((Float_t)eureka/AliTOFGeometry::NPadXTRM()/AliTOFGeometry::NTRM())!=iDDL) continue;
