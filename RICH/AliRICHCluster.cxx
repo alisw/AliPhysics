@@ -160,11 +160,11 @@ void AliRICHCluster::Test(Double_t x,Double_t y,Double_t e,Bool_t isTryUnfold)
   for(pad[1]=area[1];pad[1]<=area[3];pad[1]++){//affected pads loop first y
     for(pad[0]=area[0];pad[0]<=area[2];pad[0]++){//then x               
       Double_t dQpad=iQtot*AliRICHParam::FracQdc(hitX2,pad);//charge fraction from Mathieson centered at x to pad
-      clu.DigAdd(new AliRICHDigit(3,(Int_t)pad[0],(Int_t)pad[1],dQpad));
+      clu.DigAdd(new AliRICHDigit(pad,dQpad));
     }//affected pads loop 
   }
-     Printf("Initial hit    :  (%.2f,%.2f) Qtot=%i E=%.2f eV",hitX2.X(),hitX2.Y(),iQtot,e*1e9);
-  clu.Print("Initial cluster:");
+                 Printf("Initial hit    :  (%.2f,%.2f) Qtot=%i E=%.2f eV",x,y,iQtot,e*1e9);
+  clu.CoG();  clu.Print("Initial cluster:");
   TClonesArray *pCluLst=new TClonesArray("AliRICHCluster",1);
   clu.Solve(pCluLst,isTryUnfold);  
   ((AliRICHCluster *)pCluLst->At(0))->Print("Solved cluster:");

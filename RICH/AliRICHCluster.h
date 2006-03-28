@@ -11,7 +11,7 @@ public:
   enum EClusterStatus {kFormed,kCoG,kUnfolded,kEmpty=-1}; 
                        AliRICHCluster(                                     ):TObject(),fQdc(-1),fCham(-1),fX(-1),fY(-1),fStatus(kEmpty   ),fDigs(0) {}
                        AliRICHCluster(Int_t c,Double_t x,Double_t y,Int_t q):TObject(),fQdc(q ),fCham(c) ,fX(x ),fY(y ),fStatus(kUnfolded),fDigs(0) {}
-  virtual             ~AliRICHCluster(                                     )                                                                        {if(fDigs) fDigs->Delete();}
+  virtual             ~AliRICHCluster(                                     )                                                                        {DigDel();}
 //framework part                   
          void          Print  (Option_t *opt=""                                  )const;                  //overloaded TObject::Print() to print cluster info
   static void          FitFunc(Int_t &, Double_t *, Double_t &, Double_t *, Int_t);                       //fit function to be used by MINUIT
@@ -19,7 +19,7 @@ public:
          void          CoG      (                                         );                                                      //calculates center of gravity
          Int_t         C        (                                         )const{return fCham;                                  } //chamber number
   inline void          DigAdd   (AliRICHDigit *pDig                       );                                                      //add new digit ot the cluster
-         void          DigDel   (                                         )     {if(fDigs) {delete fDigs;} fDigs=0;             } //deletes the list of digits  
+         void          DigDel   (                                         )     {if(fDigs) {fDigs->Delete(); delete fDigs; fDigs=0;}} //deletes the list of digits  
          void          DistXY   (const TVector2 &p,Double_t &x,Double_t &y)const{ x=p.X()-fX; y=p.Y()-fY;                       } //distance in x to given point 
          AliRICHDigit* Dig      (Int_t i                                  )const{return (AliRICHDigit*)fDigs->At(i);            } //pointer to i-th digit
          TObjArray*    Digits   (                                         )const{return fDigs;                                  } //list of digits  
