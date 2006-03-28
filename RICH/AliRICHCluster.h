@@ -11,7 +11,7 @@ public:
   enum EClusterStatus {kFormed,kCoG,kUnfolded,kEmpty=-1}; 
                        AliRICHCluster(                                     ):TObject(),fQdc(-1),fCham(-1),fX(-1),fY(-1),fStatus(kEmpty   ),fDigs(0) {}
                        AliRICHCluster(Int_t c,Double_t x,Double_t y,Int_t q):TObject(),fQdc(q ),fCham(c) ,fX(x ),fY(y ),fStatus(kUnfolded),fDigs(0) {}
-  virtual             ~AliRICHCluster(                                     )                                                                        {if(fDigs) delete fDigs;}
+  virtual             ~AliRICHCluster(                                     )                                                                        {if(fDigs) fDigs->Delete();}
 //framework part                   
          void          Print  (Option_t *opt=""                                  )const;                  //overloaded TObject::Print() to print cluster info
   static void          FitFunc(Int_t &, Double_t *, Double_t &, Double_t *, Int_t);                       //fit function to be used by MINUIT
