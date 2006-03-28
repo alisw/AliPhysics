@@ -19,7 +19,7 @@ public:
          void          CoG      (                                         );                                                      //calculates center of gravity
          Int_t         C        (                                         )const{return fCham;                                  } //chamber number
   inline void          DigAdd   (AliRICHDigit *pDig                       );                                                      //add new digit ot the cluster
-         void          DigDel   (                                         )     {if(fDigs) {fDigs->Delete(); delete fDigs; fDigs=0;}} //deletes the list of digits  
+         void          DigDel   (                                         )     {if(fDigs) {fDigs->Delete();fDigs=0;}           } //deletes the list of digits  
          void          DistXY   (const TVector2 &p,Double_t &x,Double_t &y)const{ x=p.X()-fX; y=p.Y()-fY;                       } //distance in x to given point 
          AliRICHDigit* Dig      (Int_t i                                  )const{return (AliRICHDigit*)fDigs->At(i);            } //pointer to i-th digit
          TObjArray*    Digits   (                                         )const{return fDigs;                                  } //list of digits  
