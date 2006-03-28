@@ -62,6 +62,7 @@
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliLog.h"
 
 #include "AliTRD.h"
 #include "AliTRDhit.h"
@@ -629,7 +630,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   AliTRDpadPlane   *padPlane = 0;
 
-  TGeoManager::Import("geometry.root");
+  if (!gGeoManager) AliFatal("No geometry!");
 
 
   AliTRDSimParam* simParam = AliTRDSimParam::Instance();
