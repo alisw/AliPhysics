@@ -13,16 +13,30 @@
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
 
-#include "AliRICHHit.h"
-#include <AliLog.h>
+#include "AliRICHHit.h" //class header
+#include <TPDGCode.h>   //Print() 
  
 ClassImp(AliRICHHit)
 //__________________________________________________________________________________________________
 void AliRICHHit::Print(Option_t*)const
 {
 //Print hit
-  AliInfo(Form("Ch=%1i,TID=%6i,Elos=%9.3f eV,IN(%6.2f,%6.2f,%6.2f)-OUT(%6.2f,%6.2f,%6.2f)=%9.4f"
-      ,fChamber,fTrack,fEloss*1e9,fInX3.X() ,fInX3.Y() ,fInX3.Z(),
-                                  fOutX3.X(),fOutX3.Y(),fOutX3.Z(),Length()));
+  char *sPart=Form("pid=%i",fPid);
+  switch(fPid){
+    case kProton:      sPart="p+  ";break;
+    case kProtonBar:   sPart="a-  ";break;
+    case kKPlus:       sPart="K+  ";break;
+    case kKMinus:      sPart="K-  ";break;
+    case kPiPlus:      sPart="pi+ ";break;
+    case kPiMinus:     sPart="pi- ";break;
+    case kMuonPlus:    sPart="mu+ ";break;
+    case kMuonMinus:   sPart="mu- ";break;
+    case kElectron:    sPart="e-  ";break;
+    case kPositron:    sPart="e+  ";break;
+    case 50000050:     sPart="ckov";break;
+    case 50000051:     sPart="feed";break;
+  }
+
+  Printf("%s TID=%6i,Ch=(%2i),E=%9.3f eV, pos=(%7.2f,%7.2f,%7.2f)cm",sPart,Track(),C(),fE*1e9,fX,fY,fZ);
 }
 //__________________________________________________________________________________________________

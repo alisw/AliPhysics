@@ -8,7 +8,7 @@ public:
          ~RichConfig()                    {Info("ctor","");Cleanup();}
          
   enum EVersOpts  {kNo=101,kVer0,kVer1,kVer2,kTest, kDeclust=301,kSagita,kFeedback,kSecRad,kQe0=400,kQeNorm,kOptics};
-  enum EGenTypes  {kGunZ=1,kGun1,kGun7,kBox1,kBox7,kHijing,kHijingPara,kPythia,kRichLib,kNotUsed=999};
+  enum EGenTypes  {kGunZ=1,kGun1,kGun7,kBox,kHijing,kHijingPara,kPythia,kRichLib,kNotUsed=999};
   
   enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kCRT,kHALL,kPHOS,kSTART,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
@@ -183,8 +183,7 @@ void RichConfig::GuiGen(TGCompositeFrame *pMainF)
     new TGCheckButton(fGenBG,"gun along z"           ,kGunZ);
     new TGCheckButton(fGenBG,"gun to 1 chamber"      ,kGun1);
     new TGCheckButton(fGenBG,"gun to 7 chambers"     ,kGun7);
-    new TGCheckButton(fGenBG,"box to 1 chamber"      ,kBox1);  
-    new TGCheckButton(fGenBG,"box to 7 chambers"     ,kBox7);
+    new TGCheckButton(fGenBG,"box RICH phase space"  ,kBox );  
     new TGCheckButton(fGenBG,"HIJING"                ,kHijing);
     new TGCheckButton(fGenBG,"HIJING para"           ,kHijingPara);
     new TGCheckButton(fGenBG,"Pythia"                ,kPythia);
@@ -195,7 +194,10 @@ void RichConfig::GuiGen(TGCompositeFrame *pMainF)
   fGenNprimCO->AddEntry("N prim=1"    ,1);
   fGenNprimCO->AddEntry("N prim=2"    ,2);
   fGenNprimCO->AddEntry("N prim=5"    ,5);
+  fGenNprimCO->AddEntry("N prim=100"  ,100);
   fGenNprimCO->AddEntry("N prim=500"  ,500);
+  fGenNprimCO->AddEntry("N prim=1000" ,1000);
+  fGenNprimCO->AddEntry("N prim=10000",10000);
   fGenNprimCO->AddEntry("N prim=80000",80000);  fGenNprimCO->Resize(160,20);   fGenNprimCO->Select(kNotUsed);
 //PID    
   fGenF->AddFrame(fGenPidCO=new TGComboBox(fGenF,100)); //add pid combo to generator vertical frame
@@ -230,32 +232,23 @@ void RichConfig::GenAddSlot(Int_t id)
   if(id==kGunZ){
     fGenBG->GetButton(kGun1)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenNprimCO);
     fGenBG->GetButton(kGun7)->SetEnabled(kFALSE);                                fGenPidCO->Select(kProton);
-    fGenBG->GetButton(kBox1)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenPmaxCO); fGenPminCO->Select(25);
-    fGenBG->GetButton(kBox7)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenChamCO); 
+    fGenBG->GetButton(kBox )->SetEnabled(kFALSE);  fGenF->HideFrame(fGenPmaxCO); fGenPminCO->Select(25);
   } 
   if(id==kGun1){
     fGenBG->GetButton(kGunZ)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenNprimCO);
     fGenBG->GetButton(kGun7)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenPmaxCO); 
-    fGenBG->GetButton(kBox1)->SetEnabled(kFALSE);  
-    fGenBG->GetButton(kBox7)->SetEnabled(kFALSE);  fGenPidCO->Select(kProton); fGenPminCO->Select(25); fGenChamCO->Select(4);
+    fGenBG->GetButton(kBox )->SetEnabled(kFALSE);  
   }
   if(id==kGun7){
     fGenBG->GetButton(kGunZ)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenNprimCO);
     fGenBG->GetButton(kGun1)->SetEnabled(kFALSE);                                fGenPidCO->Select(kProton); 
-    fGenBG->GetButton(kBox1)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenPmaxCO); fGenPminCO->Select(25);
-    fGenBG->GetButton(kBox7)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenChamCO); 
+    fGenBG->GetButton(kBox )->SetEnabled(kFALSE);  fGenF->HideFrame(fGenPmaxCO); fGenPminCO->Select(25);
+                                                   fGenF->HideFrame(fGenChamCO); 
   } 
-  if(id==kBox1){
-    fGenBG->GetButton(kGunZ)->SetEnabled(kFALSE);                                fGenNprimCO->Select(1);
+  if(id==kBox){
+    fGenBG->GetButton(kGunZ)->SetEnabled(kFALSE);                                fGenNprimCO->Select(500);
     fGenBG->GetButton(kGun1)->SetEnabled(kFALSE);                                fGenPidCO  ->Select(kProton);
-    fGenBG->GetButton(kGun7)->SetEnabled(kFALSE);                                fGenPminCO ->Select(5);        fGenPmaxCO->Select(25); 
-    fGenBG->GetButton(kBox7)->SetEnabled(kFALSE);                                fGenChamCO ->Select(4);
-  }
-  if(id==kBox7){
-    fGenBG->GetButton(kGunZ)->SetEnabled(kFALSE);                                fGenNprimCO->Select(1);
-    fGenBG->GetButton(kGun1)->SetEnabled(kFALSE);                                fGenPidCO  ->Select(kProton); 
-    fGenBG->GetButton(kGun1)->SetEnabled(kFALSE);                                fGenPminCO ->Select(5);        fGenPmaxCO->Select(25);   
-    fGenBG->GetButton(kBox1)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenChamCO);  
+    fGenBG->GetButton(kGun7)->SetEnabled(kFALSE);                                fGenPminCO ->Select(15);       fGenPmaxCO->Select(15); 
   }
   if(id==kHijing){
     fGenBG->GetButton(kHijing)->ChangeBackground(0xff0000);
@@ -277,32 +270,24 @@ void RichConfig::GenRemSlot(Int_t id)
   if(id==kGunZ){
     fGenBG->GetButton(kGun1)->SetEnabled();  fGenF->ShowFrame(fGenNprimCO);                                                                  
     fGenBG->GetButton(kGun7)->SetEnabled();                                     fGenPidCO  ->Select(kNotUsed);
-    fGenBG->GetButton(kBox1)->SetEnabled();  fGenF->ShowFrame(fGenPmaxCO);      fGenPminCO ->Select(kNotUsed);
-    fGenBG->GetButton(kBox7)->SetEnabled();  fGenF->ShowFrame(fGenChamCO); 
+    fGenBG->GetButton(kBox )->SetEnabled();  fGenF->ShowFrame(fGenPmaxCO);      fGenPminCO ->Select(kNotUsed);
   } 
   if(id==kGun1){
     fGenBG->GetButton(kGunZ)->SetEnabled();  fGenF->ShowFrame(fGenNprimCO);
     fGenBG->GetButton(kGun7)->SetEnabled();                                     fGenPidCO  ->Select(kNotUsed);
-    fGenBG->GetButton(kBox1)->SetEnabled();  fGenF->ShowFrame(fGenPmaxCO);      fGenPminCO ->Select(kNotUsed);  
-    fGenBG->GetButton(kBox7)->SetEnabled();                                     fGenChamCO ->Select(kNotUsed);
+    fGenBG->GetButton(kBox )->SetEnabled();  fGenF->ShowFrame(fGenPmaxCO);      fGenPminCO ->Select(kNotUsed);  
   }
   if(id==kGun7){
     fGenBG->GetButton(kGunZ)->SetEnabled();  fGenF->ShowFrame(fGenNprimCO);
     fGenBG->GetButton(kGun1)->SetEnabled();                                     fGenPidCO  ->Select(kNotUsed);
-    fGenBG->GetButton(kBox1)->SetEnabled();  fGenF->ShowFrame(fGenPmaxCO);      fGenPminCO ->Select(kNotUsed); 
-    fGenBG->GetButton(kBox7)->SetEnabled();  fGenF->ShowFrame(fGenChamCO); 
+    fGenBG->GetButton(kBox )->SetEnabled();  fGenF->ShowFrame(fGenPmaxCO);      fGenPminCO ->Select(kNotUsed); 
+                                             fGenF->ShowFrame(fGenChamCO); 
   } 
-  if(id==kBox1){
+  if(id==kBox){
     fGenBG->GetButton(kGunZ)->SetEnabled();                                     fGenNprimCO->Select(kNotUsed);
     fGenBG->GetButton(kGun1)->SetEnabled();                                     fGenPidCO  ->Select(kNotUsed);
     fGenBG->GetButton(kGun7)->SetEnabled();                                     fGenPminCO ->Select(kNotUsed);   fGenPmaxCO->Select(kNotUsed);
-    fGenBG->GetButton(kBox7)->SetEnabled();                                     fGenChamCO ->Select(kNotUsed);
-  }
-  if(id==kBox7){
-    fGenBG->GetButton(kGunZ)->SetEnabled();                                     fGenNprimCO->Select(kNotUsed);
-    fGenBG->GetButton(kGun1)->SetEnabled();                                     fGenPidCO  ->Select(kNotUsed);                                   
-    fGenBG->GetButton(kGun1)->SetEnabled();                                     fGenPminCO ->Select(kNotUsed);   fGenPmaxCO->Select(kNotUsed);
-    fGenBG->GetButton(kBox1)->SetEnabled(); fGenF->ShowFrame(fGenChamCO);       
+                                                                                fGenChamCO ->Select(kNotUsed);
   }
   if(id==kHijing){
     fGenBG->GetButton(kHijing)->ChangeBackground(0xbebebe);
@@ -321,61 +306,78 @@ void RichConfig::GenRemSlot(Int_t id)
 //__________________________________________________________________________________________________    
 void RichConfig::WriteGen(FILE *pF)
 {
-  fprintf(pF,"  AliGenCocktail *pCocktail=new AliGenCocktail();\n\n");
-  if(fGenBG->GetButton(kGunZ)->GetState()==kButtonDown){//1 particle along Z axis 
-    fprintf(pF,"  AliGenFixed *pGunZ=new AliGenFixed(1);\n");
-    fprintf(pF,"  pGunZ->SetPart(%i); pGunZ->SetMomentum(%.1f); pGunZ->SetOrigin(0,0,-200);\n",fGenPidCO->GetSelected(),float(fGenPminCO->GetSelected())/10);
-    fprintf(pF,"  pCocktail->AddGenerator(pGunZ,\"gunZ\",1);\n\n");
-  }
+  Int_t pid=fGenPidCO->GetSelected();
+  Float_t pmin=0.1*fGenPminCO->GetSelected(); //particle momentum, GeV
+  Float_t pmax=0.1*fGenPmaxCO->GetSelected(); //particle momentum, GeV
+  
+  fprintf(pF,"  AliGenCocktail *pG=new AliGenCocktail();\n\n");
+  
+  if(fGenBG->GetButton(kGunZ)->GetState()==kButtonDown)//1 particle along Z axis 
+    fprintf(pF,"  AliGenFixed *pGz=new AliGenFixed(1); pGz->SetPart(%i); pGz->SetMomentum(%.1f); pGz->SetOrigin(0,0,-200); pG->AddGenerator(pGz,\"Gz\",1);\n",pid,p);
+  
   if(fGenBG->GetButton(kGun1)->GetState()==kButtonDown){//1 gun towards 1 RICH chamber
-    fprintf(pF,"  AliGenFixed *pGun1=new AliGenFixed(1);\n");
-    fprintf(pF,"  pGun1->SetPart(%i); pGun1->SetMomentum(%.1f);\n",fGenPidCO->GetSelected(),float(fGenPminCO->GetSelected())/10);
-    fprintf(pF,"  pGun1->SetTheta(AliRICHParam::Norm(%i).Theta()*TMath::RadToDeg()-2);\n",fGenChamCO->GetSelected());
-    fprintf(pF,"  pGun1->SetPhi(AliRICHParam::Norm(%i).Phi()*TMath::RadToDeg()-2);\n"    ,fGenChamCO->GetSelected());
-    fprintf(pF,"  pCocktail->AddGenerator(pGun1,\"gun1\",1);\n\n");
+    switch(fGenChamCO->GetSelected()){
+     case 1: fprintf(pF,"  AliGenFixed *pG1=new AliGenFixed(1); pG1->SetPart(%i); pG1->SetMomentum(%.1f);\n",pid,pmin); 
+             fprintf(pF,"               pG1->SetTheta(109.5);   pG1->SetPhi(10);  pG->AddGenerator(pG1,\"g1\",1);\n"); break;
+     case 2: fprintf(pF,"  AliGenFixed *pG2=new AliGenFixed(1); pG2->SetPart(%i); pG2->SetMomentum(%.1f);\n",pid,pmin);
+	     fprintf(pF,"               pG2->SetTheta( 90.0);   pG2->SetPhi(10);  pG->AddGenerator(pG2,\"g2\",1);\n"); break;
+     case 3: fprintf(pF,"  AliGenFixed *pG3=new AliGenFixed(1); pG3->SetPart(%i); pG3->SetMomentum(%.1f);\n",pid,pmin);
+	     fprintf(pF,"               pG3->SetTheta(109.5);   pG3->SetPhi(30);  pG->AddGenerator(pG3,\"g3\",1);\n"); break;
+     case 4: fprintf(pF,"  AliGenFixed *pG4=new AliGenFixed(1); pG4->SetPart(%i); pG4->SetMomentum(%.1f);\n",pid,pmin);
+             fprintf(pF,"               pG4->SetTheta( 90.0);   pG4->SetPhi(30);  pG->AddGenerator(pG4,\"g4\",1);\n"); break;
+     case 5: fprintf(pF,"  AliGenFixed *pG5=new AliGenFixed(1); pG5->SetPart(%i); pG5->SetMomentum(%.1f);\n",pid,pmin);
+             fprintf(pF,"               pG5->SetTheta( 70.5);   pG5->SetPhi(30);  pG->AddGenerator(pG5,\"g5\",1);\n"); break;
+     case 6: fprintf(pF,"  AliGenFixed *pG6=new AliGenFixed(1); pG6->SetPart(%i); pG6->SetMomentum(%.1f);\n",pid,pmin);
+             fprintf(pF,"               pG6->SetTheta( 90.0);   pG6->SetPhi(50);  pG->AddGenerator(pG6,\"g6\",1);\n"); break;
+     case 7: fprintf(pF,"  AliGenFixed *pG7=new AliGenFixed(1); pG7->SetPart(%i); pG7->SetMomentum(%.1f);\n",pid,pmin);
+             fprintf(pF,"               pG7->SetTheta( 70.5);   pG7->SetPhi(50);  pG->AddGenerator(pG7,\"g7\",1);\n"); break;
+    }    
   }
+  
   if(fGenBG->GetButton(kGun7)->GetState()==kButtonDown){//7 guns towards 7 RICH chambers
-    fprintf(pF,"  for(int i=1;i<=7;i++){\n");
-    fprintf(pF,"    AliGenFixed *pGun7=new AliGenFixed(1);\n");
-    fprintf(pF,"    pGun7->SetPart(%i); pGun7->SetMomentum(1.0+i*0.5);\n",fGenPidCO->GetSelected());
-    fprintf(pF,"    pGun7->SetTheta(AliRICHParam::Norm(i).Theta()*TMath::RadToDeg()); pGun7->SetPhi(AliRICHParam::Norm(i).Phi()*TMath::RadToDeg()); \n"); 
-    fprintf(pF,"    pCocktail->AddGenerator(pGun7,Form(\"gun7-%%i\",i),1);\n  }\n\n");  
-  }    
-  if(fGenBG->GetButton(kBox1)->GetState()==kButtonDown){//1 box towards 1 RICH chamber  
-    fprintf(pF,"  AliGenBox *pBox1=new AliGenBox(1);\n");  
-    fprintf(pF,"  pBox1->SetPart(%i); pBox1->SetMomentumRange(%.1f,%.1f);\n",fGenPidCO->GetSelected(),float(fGenPminCO->GetSelected())/10,float(fGenPmaxCO->GetSelected())/10);
-    fprintf(pF,"  pBox1->SetThetaRange(pRICH->C(%i)->ThetaD()-3,pRICH->C(%i)->ThetaD()-1); \n",fGenChamCO->GetSelected(),fGenChamCO->GetSelected());
-    fprintf(pF,"  pBox1->SetPhiRange(pRICH->C(%i)->PhiD()-1,pRICH->C(%i)->PhiD()+1); \n",fGenChamCO->GetSelected(),fGenChamCO->GetSelected());    
-    fprintf(pF,"  pCocktail->AddGenerator(pBox1,\"box1\",1);\n\n");
+    fprintf(pF,"  AliGenFixed *pG1=new AliGenFixed(1); pG1->SetPart(%i); pG1->SetMomentum(1.5);pG1->SetTheta(109.5-3); pG1->SetPhi(10);\n",pid); 
+    fprintf(pF,"               pG->AddGenerator(pG1,\"g1\",1);\n");
+    fprintf(pF,"  AliGenFixed *pG2=new AliGenFixed(1); pG2->SetPart(%i); pG2->SetMomentum(1.5);pG2->SetTheta( 90.0-3); pG2->SetPhi(10);\n",pid); 
+    fprintf(pF,"               pG->AddGenerator(pG2,\"g2\",1);\n");
+    fprintf(pF,"  AliGenFixed *pG3=new AliGenFixed(1); pG3->SetPart(%i); pG3->SetMomentum(1.5);pG3->SetTheta(109.5-3); pG3->SetPhi(30);\n",pid); 
+    fprintf(pF,"               pG->AddGenerator(pG3,\"g3\",1);\n");
+    fprintf(pF,"  AliGenFixed *pG4=new AliGenFixed(1); pG4->SetPart(%i); pG4->SetMomentum(1.5);pG4->SetTheta( 90.0-3); pG4->SetPhi(30);\n",pid); 
+    fprintf(pF,"               pG->AddGenerator(pG4,\"g4\",1);\n");
+    fprintf(pF,"  AliGenFixed *pG5=new AliGenFixed(1); pG5->SetPart(%i); pG5->SetMomentum(1.5);pG5->SetTheta( 70.0-3); pG5->SetPhi(30);\n",pid); 
+    fprintf(pF,"               pG->AddGenerator(pG5,\"g5\",1);\n");
+    fprintf(pF,"  AliGenFixed *pG6=new AliGenFixed(1); pG6->SetPart(%i); pG6->SetMomentum(1.5);pG6->SetTheta( 90.0-3); pG6->SetPhi(50);\n",pid); 
+    fprintf(pF,"               pG->AddGenerator(pG6,\"g6\",1);\n");
+    fprintf(pF,"  AliGenFixed *pG7=new AliGenFixed(1); pG7->SetPart(%i); pG7->SetMomentum(1.5);pG7->SetTheta( 70.0-3); pG7->SetPhi(50);\n",pid); 
+    fprintf(pF,"               pG->AddGenerator(pG7,\"g7\",1);\n");
+  }  
+    
+  if(fGenBG->GetButton(kBox)->GetState()==kButtonDown){// box towards RICH phase space
+    fprintf(pF,"  AliGenBox *pB=new AliGenBox(%i);      pB->SetPart(%i);       pB->SetMomentumRange(%.1f,%.1f);\n",(int)fGenNprimCO->GetSelected(),pid,pmin,pmax); 
+    fprintf(pF,"             pB->SetThetaRange(65,115); pB->SetPhiRange(5,55); pG->AddGenerator(pB,\"b\",1);\n");
   }     
-  if(fGenBG->GetButton(kBox7)->GetState()==kButtonDown){//7 boxes towards 7 RICH chambers
-    fprintf(pF,"  for(int i=1;i<=7;i++){\n");
-    fprintf(pF,"    AliGenBox *pBox7=new AliGenBox(1);\n");
-    fprintf(pF,"    pBox7->SetPart(%i); pBox7->SetMomentumRange(%.1f,%.1f); \n",fGenPidCO->GetSelected(),float(fGenPminCO->GetSelected())/10,float(fGenPmaxCO->GetSelected())/10);
-    fprintf(pF,"    pBox7->SetThetaRange(AliRICHParam::Norm(i)-3,AliRICHParam::Norm(i)+3); pBox7->SetPhiRange(pRICH->C(i)->PhiD()-1,pRICH->C(i)->PhiD()+1); \n");    
-    fprintf(pF,"    pCocktail->AddGenerator(pBox7,Form(\"Box %i\",i),1);\n  }\n\n");  
-  }
+  
   if(fGenBG->GetButton(kHijing)->GetState()==kButtonDown){//normal HIJING
-    fprintf(pF,"  AliGenHijing *pHij=new AliGenHijing(-1); pHij->SetEnergyCMS(5500); pHij->SetReferenceFrame(\"CMS\");\n");
-    fprintf(pF,"  pHij->SetProjectile(\"A\", 208, 82); pHij->SetTarget(\"A\", 208, 82);\n");      
-    fprintf(pF,"  pHij->SetJetQuenching(0); pHij->SetShadowing(0);\n");
-    fprintf(pF,"  pHij->KeepFullEvent(); pHij->SetSelectAll(0); \n");
-    fprintf(pF,"  pHij->SetImpactParameterRange(0, 5); //fermi\n");
-    fprintf(pF,"  pCocktail->AddGenerator(pHij,\"hijing\",1);\n\n");
+    fprintf(pF,"  AliGenHijing *pH=new AliGenHijing(-1);           pH->SetEnergyCMS(5500);        pH->SetReferenceFrame(\"CMS\");\n");
+    fprintf(pF,"                pH->SetProjectile(\"A\", 208, 82); pH->SetTarget(\"A\", 208, 82); pH->SetJetQuenching(0);\n");      
+    fprintf(pF,"                pH->SetShadowing(0);               pH->KeepFullEvent();           pH->SetSelectAll(0);\n");
+    fprintf(pF,"                pH->SetImpactParameterRange(0, 5); //fermi\n");
+    fprintf(pF,"  pG->AddGenerator(pH,\"h\",1);\n\n");
   }
+  
   if(fGenBG->GetButton(kHijingPara)->GetState()==kButtonDown){//parametrized HIJING 
-    fprintf(pF,"  AliGenHIJINGpara *pHijPara=new AliGenHIJINGpara(%i);\n",(int)fGenNprimCO->GetSelected());
-    fprintf(pF,"  pHijPara->SetMomentumRange(0,999); pHijPara->SetThetaRange(%f,%f); pHijPara->SetPhiRange(0,360);\n",Eta2Theta(8),Eta2Theta(-8));
-    fprintf(pF,"  pCocktail->AddGenerator(pHijPara,\"hijing para\",1);\n\n");
-  }    
-  if(fGenBG->GetButton(kPythia)->GetState()==kButtonDown){//Pythia + 7 guns towards 7 RICH chambers   
-    fprintf(pF,"  AliGenPythia *pPythia = new AliGenPythia(-1);\n");
-    fprintf(pF,"  pPythia->SetMomentumRange(0,999); pPythia->SetPhiRange(20,80); pPythia->SetThetaRange(75,115);\n");
-    fprintf(pF,"  pPythia->SetYRange(-12,12);  pPythia->SetPtRange(0,1000);  pPythia->SetStrucFunc(kCTEQ4L);\n");
-    fprintf(pF,"  pPythia->SetProcess(kPyMb);  pPythia->SetEnergyCMS(14000);\n");      
-    fprintf(pF,"  pCocktail->AddGenerator(pPythia,\"Pythia\",1);\n\n");  
+    fprintf(pF,"  AliGenHIJINGpara *pHP=new AliGenHIJINGpara(%i);\n",(int)fGenNprimCO->GetSelected());
+    fprintf(pF,"  pHP->SetMomentumRange(0,999); pHP->SetThetaRange(%f,%f); pHP->SetPhiRange(0,360);\n",Eta2Theta(8),Eta2Theta(-8));
+    fprintf(pF,"  pG->AddGenerator(pHP,\"hp\",1);\n\n");
   }
-  fprintf(pF,"  pCocktail->Init();\n\n");
+      
+  if(fGenBG->GetButton(kPythia)->GetState()==kButtonDown){//Pythia
+    fprintf(pF,"  AliGenPythia *pP=new AliGenPythia(-1);\n");
+    fprintf(pF,"  pP->SetMomentumRange(0,999); pP->SetPhiRange(20,80); pP->SetThetaRange(75,115);\n");
+    fprintf(pF,"  pP->SetYRange(-12,12);  pP->SetPtRange(0,1000);      pP->SetStrucFunc(kCTEQ4L);\n");
+    fprintf(pF,"  pP->SetProcess(kPyMb);  pP->SetEnergyCMS(14000);\n");      
+    fprintf(pF,"  pG->AddGenerator(pP,\"p\",1);\n\n");  
+  }
+  fprintf(pF,"  pG->Init();\n\n");
 }//WriteGenerator()
 //__________________________________________________________________________________________________
 void RichConfig::GuiDet(TGHorizontalFrame *pMainHF)
@@ -510,6 +512,10 @@ void RichConfig::WriteBatch()
   else if(fRawBG->GetButton(kRawRoot)->GetState())     fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\",\".root\");//raw data in ROOT format for ALL\n");
   
                                                        fprintf(fp,"  pSim->Run(iNevents);\n  delete pSim;\n\n");
+                                                       fprintf(fp,"  delete AliRICHParam::Instance();\n\n");
+
+
+
 //reconstraction section  
   if(!fClusBG->GetButton(kNo)->GetState()){
                                                        fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");

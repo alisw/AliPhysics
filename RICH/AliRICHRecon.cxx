@@ -18,113 +18,74 @@
 // AliRICHRecon                                                         //
 //                                                                      //
 // RICH class to perfom pattern recognition based on Hough transfrom    //
-//                                                                      //
+// for single chamber                                                   //
 //////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
+#include "AliRICHRecon.h"  //class header
 #include <TMath.h>
 #include <TRotation.h>
 #include <TVector3.h>
 #include <TH1F.h>
-#include <TROOT.h>
 
-#include "AliRICH.h"
+#include "AliRICHCluster.h" //ThetaCerenkov()
 #include "AliRICHParam.h"
-#include "AliRICHRecon.h"
-#include "AliRICHHelix.h"
+#include "AliRICHHelix.h"   //ThetaCerenkov()
 #include <AliLog.h>
 
 #define NPointsOfRing 201
 
 //__________________________________________________________________________________________________
-AliRICHRecon::AliRICHRecon(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t iMipId)
-             :TTask("RichRec","RichPat")
+AliRICHRecon::AliRICHRecon()
+             :TTask       ("RichRec","RichPat")
 {
 // main ctor
-  SetFreonScaleFactor(1);
-  fIsWEIGHT = kFALSE;
-  if(pClusters->GetEntries()>200) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
-//  fIsWEIGHT = kTRUE;
   fThetaMin = 0.0; fThetaMax = 0.75; 
   fDTheta       = 0.001;   fWindowWidth  = 0.045;
   fMinNumPhots = 3;
-  fRadiatorWidth = AliRICHParam::Zfreon();
-  fQuartzWidth   = AliRICHParam::Zwin();
-  fGapWidth      = AliRICHParam::Freon2Pc() - fRadiatorWidth - fQuartzWidth;
-  fXmin         = 0.;
-  fXmax         =  AliRICHParam::PcSizeX();
-  fYmin         = 0.;
-  fYmax         =  AliRICHParam::PcSizeY(); 
-  SetTrackTheta(pHelix->Ploc().Theta());
-  SetTrackPhi(pHelix->Ploc().Phi());
-  SetMipIndex(iMipId);
-  SetShiftX(pHelix->PosRad().X());
-  SetShiftY(pHelix->PosRad().Y());
-  fpClusters = pClusters;
+  fParam=AliRICHParam::Instance(); //get the pointer to AliRICHParam
 }
 //__________________________________________________________________________________________________
-Double_t AliRICHRecon::ThetaCerenkov()
+Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t &iMipId)
 {
 // Pattern recognition method based on Hough transform
 // Return theta Cerenkov for a given track and list of clusters which are set in ctor  
+// Remeber that list of clusters must contain more then 1 cluster. This considiration implies that normally we have 1 mip cluster and few photon clusters per track.  
+// Argume
+//   Returns: Track theta ckov in rad, nPhot contains number of photon candidates accepted for reconstruction track theta ckov   
+  SetTrackTheta(pHelix->Ploc().Theta());  SetTrackPhi(pHelix->Ploc().Phi());
+  SetShiftX(pHelix->PosRad().X());        SetShiftY(pHelix->PosRad().Y());
+  fClusters = pClusters;
+  if(pClusters->GetEntries()>200) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
+  else                            fIsWEIGHT = kFALSE;
 
-  if(fpClusters->GetEntries()==0) return -10;//no clusters at all for a given track
-  Bool_t kPatRec = kFALSE;  
-    
-  AliDebug(1,Form("---Track Parameters--- Theta: %f , Phi: %f ",GetTrackTheta()*TMath::RadToDeg(),GetTrackPhi()*TMath::RadToDeg()));
 
-  Int_t candidatePhotons = 0;
 
-  SetThetaCerenkov(-1);
-  SetHoughPhotons(0);
-  SetHoughPhotonsNorm(0);
+  SetThetaCerenkov(-1);   
 
-  for (Int_t j=0; j < fpClusters->GetEntries(); j++){//clusters loop
-    SetPhotonIndex(j);
+  for (Int_t iClu=0; iClu<fClusters->GetEntriesFast();iClu++){//clusters loop
+    if(iClu == iMipId) continue; // do not consider MIP cluster as a photon candidate
+    SetPhotonIndex(iClu);
     SetPhotonFlag(0);
     SetPhotonEta(-999.);
     SetPhotonWeight(0.);
-    if (j == GetMipIndex()) continue; // do not consider MIP cluster as a candidate photon
-//    if(((AliRICHCluster*)fpClusters->UncheckedAt(j))->Q()>AliRICHParam::QthMIP()) continue; // avoid MIP clusters from bkg
-    Float_t xtoentr = ((AliRICHCluster*)fpClusters->UncheckedAt(j))->X() - GetShiftX();
-    Float_t ytoentr = ((AliRICHCluster*)fpClusters->UncheckedAt(j))->Y() - GetShiftY();
-    SetEntranceX(xtoentr);
-    SetEntranceY(ytoentr);
+    AliRICHCluster *pClu=(AliRICHCluster*)fClusters->UncheckedAt(iClu);                      //get pointer to current cluster
+//    if(pClu->Q()>AliRICHParam::QthMIP()) continue;                                         //avoid MIP clusters from bkg
+    SetEntranceX(pClu->X() - GetShiftX());    SetEntranceY(pClu->Y() - GetShiftY());         //cluster position with respect to track intersection
     FindPhiPoint();
-//      Int_t photonStatus = PhotonInBand();
-//      if(photonStatus == 0) continue;
+//      if(PhotonInBand()==0) continue;  ????????????
     SetPhotonFlag(1);
     FindThetaPhotonCerenkov();
     Float_t thetaPhotonCerenkov = GetThetaPhotonCerenkov();
-    AliDebug(1,Form("THETA CERENKOV ---> %f",thetaPhotonCerenkov));
+    AliDebug(1,Form("Track Theta=%5.2f deg, Phi=%5.2f deg Photon clus=%2i ThetaCkov=%5.2f rad",GetTrackTheta()*TMath::RadToDeg(),GetTrackPhi()*TMath::RadToDeg()
+                                                                                              ,iClu,thetaPhotonCerenkov ));
     SetPhotonEta(thetaPhotonCerenkov);
-    candidatePhotons++;
   }//clusters loop
 
-  if(candidatePhotons >= 1) kPatRec = kTRUE;
+  SetPhotonsNumber(fClusters->GetEntries());
 
-  if(!kPatRec) return -1;
+  if((iMipId=FlagPhotons(HoughResponse()))<1) return -11; //flag photons according to individual theta ckov with respect to most probable track theta ckov
 
-  SetPhotonsNumber(fpClusters->GetEntries());
 
-  HoughResponse();
-  
-  fNrings++;
-
-  FlagPhotons();
-  Int_t nPhotonHough = GetHoughPhotons();
- 
-  if(nPhotonHough < 1) 
-    {
-      SetThetaCerenkov(-1);
-      SetHoughPhotonsNorm(0);
-      return -1;
-    }
-
-  FindThetaCerenkov();
-
-  AliDebug(1,Form("Number of clusters accepted --->  %i",nPhotonHough));
-  
 //  Float_t thetaCerenkov = GetThetaCerenkov();  
 //  SetThetaOfRing(thetaCerenkov);
 //  FindAreaAndPortionOfRing();
@@ -148,35 +109,14 @@ Double_t AliRICHRecon::ThetaCerenkov()
 
   SetHoughArea(houghArea);
 */
+  FindThetaCerenkov();
   return GetThetaCerenkov();
-
 }//ThetaCerenkov()
-//__________________________________________________________________________________________________
-void AliRICHRecon::FindEmissionPoint()
-{
-  //estimate the emission point in radiator
-
-// Find emission point
-
-  Float_t absorbtionLenght=7.83*fRadiatorWidth; //absorption length in the freon (cm)
-  // 7.83 = -1/ln(T0) where 
-  // T0->Trasmission freon at 180nm = 0.88 (Eph=6.85eV)
-  Float_t photonLenght, photonLenghtMin, photonLenghtMax;
-
-  photonLenght=exp(-fRadiatorWidth/(absorbtionLenght*cos(fCerenkovAnglePad)));
-  photonLenghtMin=fRadiatorWidth*photonLenght/(1.-photonLenght);
-  photonLenghtMax=absorbtionLenght*cos(fCerenkovAnglePad);
-  Float_t emissionPoint = fRadiatorWidth + photonLenghtMin - photonLenghtMax;
-
-  SetEmissionPoint(emissionPoint);
-  SetEmissionPoint(fRadiatorWidth/2); // tune the emission point
-}
 //__________________________________________________________________________________________________
 Int_t AliRICHRecon::PhotonInBand()
 {
-  //search band fro photon candidates
+// Define valid band for photon candidates. For that photons with ThetaMin and ThetaMax are traced up to photcathode
 
-  //  Float_t massOfParticle;
   Float_t nfreon;
 
   Float_t thetacer;
@@ -191,19 +131,16 @@ Int_t AliRICHRecon::PhotonInBand()
 
 
   // inner radius //
-  SetPhotonEnergy(5.6);
-  SetEmissionPoint(fRadiatorWidth -0.0001);
-  SetFreonRefractiveIndex();
+  SetEmissionPoint(AliRICHParam::RadThick() -0.0001);
 
-  nfreon = GetFreonRefractiveIndex();
+  nfreon = fParam->IdxC6F14(fParam->EckovMin());
   thetacer = 0.;
 
   AliDebug(1,Form("thetacer in photoninband min %f",thetacer));
 
   FindThetaAtQuartz(thetacer);
 
-  if(thetacer == 999. || GetThetaAtQuartz() == 999.)
-    {
+  if(thetacer == 999. || GetThetaAtQuartz() == 999.) {
       innerRadius = -999.;
       SetXInnerRing(-999.);
       SetYInnerRing(-999.);
@@ -223,12 +160,10 @@ Int_t AliRICHRecon::PhotonInBand()
     }
   
   // outer radius //
-  SetPhotonEnergy(7.7);
   SetEmissionPoint(0.);
 //  SetMassHypotesis(0.139567);
-  SetFreonRefractiveIndex();
 
-  nfreon = GetFreonRefractiveIndex();
+  nfreon = fParam->IdxC6F14(fParam->EckovMax());
 
   thetacer = Cerenkovangle(nfreon,1);
 
@@ -263,24 +198,19 @@ Int_t AliRICHRecon::PhotonInBand()
 
   if(padradius>=innerRadius && padradius<=outerRadius) return 1;
   return 0;
-}
+}//PhotonInBand()
 //__________________________________________________________________________________________________
 void AliRICHRecon::FindThetaAtQuartz(Float_t thetaCerenkov)
 {
-  //find the theta at the quartz plate
+// find the theta at the quartz plate
 
-  if(thetaCerenkov == 999.) 
-    {
-      SetThetaAtQuartz(999.);
-      return;
-    }
+  if(thetaCerenkov == 999.) { SetThetaAtQuartz(999.); return; }
 
   Float_t thetaAtQuartz = 999.;
 
   Float_t trackTheta = GetTrackTheta();
 
   if(trackTheta == 0) {
-
     thetaAtQuartz = thetaCerenkov;
     SetThetaAtQuartz(thetaAtQuartz);
     return;
@@ -289,12 +219,8 @@ void AliRICHRecon::FindThetaAtQuartz(Float_t thetaCerenkov)
   Float_t trackPhi   = GetTrackPhi();
   Float_t phiPoint = GetPhiPoint();
 
-  Double_t den = TMath::Sin((Double_t)trackTheta)
-    *TMath::Cos((Double_t)trackPhi)
-    *TMath::Cos((Double_t)phiPoint) +
-    TMath::Sin((Double_t)trackTheta)
-    *TMath::Sin((Double_t)trackPhi)
-    *TMath::Sin((Double_t)phiPoint); 
+  Double_t den = TMath::Sin((Double_t)trackTheta)*TMath::Cos((Double_t)trackPhi)*TMath::Cos((Double_t)phiPoint) +
+    TMath::Sin((Double_t)trackTheta)*TMath::Sin((Double_t)trackPhi)*TMath::Sin((Double_t)phiPoint); 
   Double_t b = TMath::Cos((Double_t)trackTheta)/den;
   Double_t c = -TMath::Cos((Double_t)thetaCerenkov)/den;
 
@@ -335,8 +261,7 @@ void AliRICHRecon::FindThetaPhotonCerenkov()
 
   Float_t phiPoint = GetPhiPoint();
 
-  SetPhotonEnergy(AliRICHParam::MeanCkovEnergy());
-  SetEmissionPoint(fRadiatorWidth/2);
+  SetEmissionPoint(AliRICHParam::RadThick()/2);
 
   Float_t xPoint = GetEntranceX();
   Float_t yPoint = GetEntranceY();
@@ -449,10 +374,8 @@ void AliRICHRecon::FindAreaAndPortionOfRing()
   Float_t y0 = yemiss + shiftY;
 
 
-  SetPhotonEnergy(AliRICHParam::MeanCkovEnergy());
-  SetFreonRefractiveIndex();
 
-  SetEmissionPoint(fRadiatorWidth/2.);
+  SetEmissionPoint(AliRICHParam::RadThick()/2.);
 
   Float_t theta = GetThetaOfRing();
   
@@ -460,9 +383,7 @@ void AliRICHRecon::FindAreaAndPortionOfRing()
   Int_t nPsiAccepted = 0;
   Int_t nPsiTotal = 0;
 
-  for(Int_t i=0;i<NPointsOfRing-1;i++)
-    {
-
+  for(Int_t i=0;i<NPointsOfRing-1;i++){
       Float_t psi = 2*TMath::Pi()*i/NPointsOfRing;
       
       SetThetaPhotonInTRS(theta);
@@ -484,25 +405,17 @@ void AliRICHRecon::FindAreaAndPortionOfRing()
 
        AliDebug(1,Form("acceptance to detector zone -> %d",zone));	    
 
-      if (zone != 0) 
-	{
-	  FindIntersectionWithDetector();
-	  xPoint[nPoints] = GetIntersectionX();
-	  yPoint[nPoints] = GetIntersectionY();
-	}
-      else
-	{
-	  xPoint[nPoints] = xPointRing;
-	  yPoint[nPoints] = yPointRing;
-	  nPsiAccepted++;
-	}
-
+      if (zone != 0){
+	      FindIntersectionWithDetector();
+	      xPoint[nPoints] = GetIntersectionX();	  yPoint[nPoints] = GetIntersectionY();
+    	}else{
+	      xPoint[nPoints] = xPointRing;	      yPoint[nPoints] = yPointRing;
+	      nPsiAccepted++;
+	    }
       nPoints++;
+  }
 
-    }
-
-  xPoint[nPoints] = xPoint[0];
-  yPoint[nPoints] = yPoint[0];
+  xPoint[nPoints] = xPoint[0];  yPoint[nPoints] = yPoint[0];
   
   // find area...
 
@@ -522,7 +435,7 @@ void AliRICHRecon::FindAreaAndPortionOfRing()
 
   SetAreaOfRing(area);
   SetPortionOfRing(portionOfRing);
-}
+}//FindAreaAndPortionOfRing()
 //__________________________________________________________________________________________________
 void AliRICHRecon::FindIntersectionWithDetector()
 {
@@ -567,45 +480,43 @@ void AliRICHRecon::FindIntersectionWithDetector()
       y1 = yPoint;
     }
   //
-  xIntersect = fXmax;
+  xIntersect = AliRICHParam::PcSizeX();
   yIntersect = m*(xIntersect - x0) + y0;
-  if (yIntersect >= fYmin && yIntersect <= fYmax && xIntersect >= x1 && xIntersect <= x2)
+  if (yIntersect >= 0 && yIntersect <= AliRICHParam::PcSizeY() && xIntersect >= x1 && xIntersect <= x2)
     {
       SetIntersectionX(xIntersect);
       SetIntersectionY(yIntersect);
       return;
     }
   //
-  xIntersect = fXmin;
+  xIntersect = 0;
   yIntersect = m*(xIntersect - x0) + y0;
-  if (yIntersect >= fYmin && yIntersect <= fYmax && xIntersect >= x1 && xIntersect <= x2)
+  if (yIntersect >= 0 && yIntersect <= AliRICHParam::PcSizeY() && xIntersect >= x1 && xIntersect <= x2)
     {
       SetIntersectionX(xIntersect);
       SetIntersectionY(yIntersect);
       return;
     }
   //
-  yIntersect = fYmax;
+  yIntersect = AliRICHParam::PcSizeY();
   xIntersect = (yIntersect - y0)/m + x0;
-  if (xIntersect >= fXmin && xIntersect <= fXmax && yIntersect >= y1 && yIntersect <= y2)
+  if (xIntersect >= 0 && xIntersect <= AliRICHParam::PcSizeX() && yIntersect >= y1 && yIntersect <= y2)
     {
       SetIntersectionX(xIntersect);
       SetIntersectionY(yIntersect);
       return;
     }
   //
-  yIntersect = fYmin;
+  yIntersect = 0;
   xIntersect = (yIntersect - y0)/m + x0;
-  if (xIntersect >= fXmin && xIntersect <= fXmax && yIntersect >= y1 && yIntersect <= y2)
+  if (xIntersect >= 0 && xIntersect <= AliRICHParam::PcSizeX() && yIntersect >= y1 && yIntersect <= y2)
     {
       SetIntersectionX(xIntersect);
       SetIntersectionY(yIntersect);
       return;
     }
-  
-  cout << " sono fuori!!!!!!" << endl;
-  
 }
+
 //__________________________________________________________________________________________________
 Int_t AliRICHRecon::CheckDetectorAcceptance() const
 {
@@ -617,23 +528,23 @@ Int_t AliRICHRecon::CheckDetectorAcceptance() const
   Float_t xcoord = GetDetectorWhereX();
   Float_t ycoord = GetDetectorWhereY();
 
-  if(xcoord > fXmax)
+  if(xcoord > AliRICHParam::PcSizeX())
     {
-      if(ycoord > fYmax) return 2;
-      if(ycoord > fYmin && ycoord < fYmax) return 3;
-      if(ycoord < fYmin) return 4;
+      if(ycoord > AliRICHParam::PcSizeY()) return 2;
+      if(ycoord > 0 && ycoord < AliRICHParam::PcSizeY()) return 3;
+      if(ycoord < 0) return 4;
     }
-  if(xcoord < fXmin)
+  if(xcoord < 0)
     {
-      if(ycoord > fYmax) return 8;
-      if(ycoord > fYmin && ycoord < fYmax) return 7;
-      if(ycoord < fYmin) return 6;
+      if(ycoord > AliRICHParam::PcSizeY()) return 8;
+      if(ycoord > 0 && ycoord < AliRICHParam::PcSizeY()) return 7;
+      if(ycoord < 0) return 6;
     }
-  if(xcoord > fXmin && xcoord < fXmax)
+  if(xcoord > 0 && xcoord < AliRICHParam::PcSizeX())
     {
-      if(ycoord > fYmax) return 1;
-      if(ycoord > fYmin && ycoord < fYmax) return 0;
-      if(ycoord < fYmin) return 5;
+      if(ycoord > AliRICHParam::PcSizeY()) return 1;
+      if(ycoord > 0 && ycoord < AliRICHParam::PcSizeY()) return 0;
+      if(ycoord < 0) return 5;
     }
   return 999;
 }
@@ -673,17 +584,16 @@ void AliRICHRecon::FindPhotonAnglesInDRS()
 //__________________________________________________________________________________________________
 Float_t AliRICHRecon::FromEmissionToCathode()
 {
-  // trace from emission point to cathode
+// Trace current photon from emission point somewhere in radiator to photocathode
+// Arguments: none
+//   Returns:    
 
   Float_t nfreon, nquartz, ngas; 
 
-  SetFreonRefractiveIndex();
-  SetQuartzRefractiveIndex();
-  SetGasRefractiveIndex();
 
-  nfreon  = GetFreonRefractiveIndex();
-  nquartz = GetQuartzRefractiveIndex();
-  ngas    = GetGasRefractiveIndex();
+  nfreon  = fParam->IdxC6F14(fParam->EckovMean());
+  nquartz = fParam->IdxSiO2(fParam->EckovMean());
+  ngas    = fParam->IdxCH4(fParam->EckovMean());
 
   Float_t trackTheta = GetTrackTheta();
   Float_t trackPhi = GetTrackPhi();
@@ -691,8 +601,6 @@ Float_t AliRICHRecon::FromEmissionToCathode()
 
   Float_t theta = GetThetaPhotonInDRS();
   Float_t phi   = GetPhiPhotonInDRS();
-
-//   cout << " Theta " << Theta << " Phi " << Phi << endl;
 
   Float_t xemiss = lengthOfEmissionPoint*tan(trackTheta)*cos(trackPhi);
   Float_t yemiss = lengthOfEmissionPoint*tan(trackTheta)*sin(trackPhi);
@@ -718,12 +626,12 @@ Float_t AliRICHRecon::FromEmissionToCathode()
       return thetagap;
     }
 
-  Float_t xw = (fRadiatorWidth - lengthOfEmissionPoint)*cos(phi)*tan(theta);
-  Float_t xq = fQuartzWidth*cos(phi)*tan(thetaquar);
-  Float_t xg = fGapWidth*cos(phi)*tan(thetagap);
-  Float_t yw = (fRadiatorWidth - lengthOfEmissionPoint)*sin(phi)*tan(theta);
-  Float_t yq = fQuartzWidth*sin(phi)*tan(thetaquar);
-  Float_t yg = fGapWidth*sin(phi)*tan(thetagap);
+  Float_t xw = (AliRICHParam::RadThick() - lengthOfEmissionPoint)*cos(phi)*tan(theta);
+  Float_t xq = AliRICHParam::WinThick()*cos(phi)*tan(thetaquar);
+  Float_t xg = AliRICHParam::Pc2Win()*cos(phi)*tan(thetagap);
+  Float_t yw = (AliRICHParam::RadThick() - lengthOfEmissionPoint)*sin(phi)*tan(theta);
+  Float_t yq = AliRICHParam::WinThick()*sin(phi)*tan(thetaquar);
+  Float_t yg = AliRICHParam::Pc2Win()*sin(phi)*tan(thetagap);
 
 
   Float_t xtot = xemiss + xw + xq + xg;
@@ -733,8 +641,7 @@ Float_t AliRICHRecon::FromEmissionToCathode()
   SetYPointOnCathode(ytot);
 
 
-  Float_t distanceFromEntrance = sqrt(TMath::Power(fPhotonLimitX,2)
-				    +TMath::Power(fPhotonLimitY,2)); 
+  Float_t distanceFromEntrance = TMath::Sqrt(TMath::Power(fPhotonLimitX,2)+TMath::Power(fPhotonLimitY,2)); 
 
   return distanceFromEntrance;
 
@@ -799,17 +706,19 @@ Float_t AliRICHRecon::SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
   return refractangle;
 }
 //__________________________________________________________________________________________________
-void AliRICHRecon::HoughResponse()
+Double_t AliRICHRecon::HoughResponse()
 {
+//
+//
+//       
   Int_t nChannels = (Int_t)(fThetaMax/fDTheta+0.5);
-  TH1F *phots = new TH1F("phots","phots",nChannels,0.,fThetaMax);
-  TH1F *photsw = new TH1F("photsw","photsw",nChannels,0.,fThetaMax);
-  TH1F *resultw = new TH1F("resultw","resultw",nChannels,0.,fThetaMax);
-  Int_t nPhotons = GetPhotonsNumber();
+  TH1F *phots   = new TH1F("phots"  ,"phots"  ,nChannels,0,fThetaMax);
+  TH1F *photsw  = new TH1F("photsw" ,"photsw" ,nChannels,0,fThetaMax);
+  TH1F *resultw = new TH1F("resultw","resultw",nChannels,0,fThetaMax);
   Int_t nBin = (Int_t)(fThetaMax/fDTheta);
   Int_t nCorrBand = (Int_t)(fWindowWidth/(2*fDTheta));
   AliDebug(1,Form("Ring reconstruction for track with theta %f",GetTrackTheta()*TMath::RadToDeg()));	      
-  for (Int_t kPhot=0; kPhot< nPhotons; kPhot++){
+  for (Int_t kPhot=0; kPhot< GetPhotonsNumber(); kPhot++){
     SetPhotonIndex(kPhot);
     Double_t angle = GetPhotonEta();
     if(angle<0||angle>fThetaMax) continue;
@@ -842,14 +751,13 @@ void AliRICHRecon::HoughResponse()
     if(sumPhots<fMinNumPhots) continue; // cut on minimum n. of photons per ring
     Double_t sumPhotsw=photsw->Integral(bin1,bin2);
     resultw->Fill((Float_t)((i+0.5)*fDTheta),sumPhotsw);
-} 
-// evaluate the "BEST" thetacerenkov....
+  } 
+// evaluate the "BEST" theta ckov as the maximum value of histogramm
   Float_t *pVec = resultw->GetArray();
   Int_t locMax = TMath::LocMax(nBin,pVec);
-  SetThetaCerenkov((Double_t)(locMax*fDTheta+0.5*fDTheta));
-   
-// Reset and delete objects
-  phots->Delete();photsw->Delete();resultw->Delete(); 
+  phots->Delete();photsw->Delete();resultw->Delete(); // Reset and delete objects
+  
+  return (Double_t)(locMax*fDTheta+0.5*fDTheta); //final most probable track theta ckov   
 }//HoughResponse
 //__________________________________________________________________________________________________
 void AliRICHRecon::FindThetaCerenkov()
@@ -859,22 +767,18 @@ void AliRICHRecon::FindThetaCerenkov()
   Float_t wei = 0.;
   Float_t weightThetaCerenkov = 0.;
 
-  Int_t nPhotons = GetPhotonsNumber();
   Double_t etaMin=9999.,etaMax=0.;
-  for(Int_t i=0;i<nPhotons;i++)
-    {
-      SetPhotonIndex(i);
-
-      if(GetPhotonFlag() == 2)
-	{
-	  Float_t photonEta = GetPhotonEta();
-          if(photonEta<etaMin) etaMin=photonEta;
-          if(photonEta>etaMax) etaMax=photonEta;
-	  Float_t photonWeight = GetPhotonWeight();
-	  weightThetaCerenkov += photonEta*photonWeight;
-	  wei += photonWeight;
-	}
-    }
+  for(Int_t i=0;i<GetPhotonsNumber();i++){
+    SetPhotonIndex(i);
+    if(GetPhotonFlag() == 2){
+  	  Float_t photonEta = GetPhotonEta();
+      if(photonEta<etaMin) etaMin=photonEta;
+      if(photonEta>etaMax) etaMax=photonEta;
+	    Float_t photonWeight = GetPhotonWeight();
+	    weightThetaCerenkov += photonEta*photonWeight;
+	    wei += photonWeight;
+	  }
+  }
 
   if(wei != 0.) weightThetaCerenkov /= wei; else weightThetaCerenkov = 0.;  
   SetThetaCerenkov(weightThetaCerenkov);
@@ -884,57 +788,33 @@ void AliRICHRecon::FindThetaCerenkov()
   SetThetaOfRing(etaMax); FindAreaAndPortionOfRing(); Double_t externalArea = GetAreaOfRing();
 
   Double_t effArea = (AliRICHParam::PcSizeX()-AliRICHParam::DeadZone())*(AliRICHParam::PcSizeY()-2*AliRICHParam::DeadZone());
-  Double_t nPhotBKG = (externalArea-internalArea)/effArea*fpClusters->GetEntries();
+  Double_t nPhotBKG = (externalArea-internalArea)/effArea*fClusters->GetEntries();
   if(nPhotBKG<0) nPhotBKG=0; //just protection from funny angles...
   SetPhotBKG(nPhotBKG);
   //
   
   AliDebug(1,Form(" thetac weighted -> %f",weightThetaCerenkov));
 }
-//__________________________________________________________________________________________________
-void AliRICHRecon::FlagPhotons()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t AliRICHRecon::FlagPhotons(Double_t thetaCkovHough)
 {
-  // flag photons
+// flag photon candidates if their individual theta ckov inside the window  around theta ckov of Hough transform 
+// Arguments: thetaCkovHough- value of most probable theta ckov for track as returned by HoughResponse()
+//   Returns: number of photon candidates happened to be inside the window
 
-  Int_t nPhotonHough = 0;
-
-  Float_t thetaCerenkov = GetThetaCerenkov();
-  AliDebug(1,Form(" fThetaCerenkov %f ",thetaCerenkov));
-
-  Float_t thetaDist= thetaCerenkov - fThetaMin;
-  Int_t steps = (Int_t)(thetaDist / fDTheta);
+  Int_t steps = (Int_t)((thetaCkovHough - fThetaMin)/ fDTheta); //how many times we need to have fDTheta to fill the distance betwee fThetaMin and thetaCkovHough
 
   Float_t tmin = fThetaMin + (Float_t)(steps - 1)*fDTheta;
   Float_t tmax = fThetaMin + (Float_t)(steps)*fDTheta;
   Float_t tavg = 0.5*(tmin+tmax);
 
-  tmin = tavg - 0.5*fWindowWidth;
-  tmax = tavg + 0.5*fWindowWidth;
+  tmin = tavg - 0.5*fWindowWidth;  tmax = tavg + 0.5*fWindowWidth;
 
-  //  Int_t candidatePhotonsNumber = GetCandidatePhotonsNumber();
-
-  Int_t nPhotons = GetPhotonsNumber();
-
-  //  for(Int_t i=0;i<candidatePhotonsNumber;i++)
-
-//  TH1F* h1_phots = (TH1F*)gROOT->FindObjectAny("h1_phots");
-  
-//  cout << "h1_phots " << h1_phots << endl;
-  
-  for(Int_t i=0;i<nPhotons;i++)
-    {
-      SetPhotonIndex(i);
-
-      Float_t photonEta = GetPhotonEta();
-
-      if(photonEta == -999.) continue;
-
-      if(photonEta >= tmin && photonEta <= tmax)
-	{
-	  SetPhotonFlag(2);
-	  nPhotonHough++;
-//          if(h1_phots)h1_phots->Fill(photonEta);
-	}
-    }
-  SetHoughPhotons(nPhotonHough);
-}
+  Int_t iInsideCnt = 0; //count photons which theta inside prdefined window
+  for(Int_t i=0;i<GetPhotonsNumber();i++){//photon candidates loop
+    SetPhotonIndex(i);  Float_t photonEta = GetPhotonEta();
+    if(photonEta == -999.) continue;
+    if(photonEta >= tmin && photonEta <= tmax)	{ SetPhotonFlag(2);	  iInsideCnt++;}
+  }
+  return iInsideCnt;
+}//FlagPhotons

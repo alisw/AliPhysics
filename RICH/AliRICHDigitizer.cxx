@@ -42,12 +42,12 @@ void AliRICHDigitizer::Exec(Option_t*)
     if (!pInRunLoader->GetAliRun()) pInRunLoader->LoadgAlice();
     AliRICH* pInRich=(AliRICH*)pInRunLoader->GetAliRun()->GetDetector("RICH");                  //take RICH from current input
     pInRichLoader->LoadSDigits(); pInRichLoader->TreeS()->GetEntry(0);                          //take list of RICH sdigits from current input 
-    AliDebug(1,Form("input %i has %i sdigits",inFileN,pInRich->SDigits()->GetEntries()));
-    for(Int_t i=0;i<pInRich->SDigits()->GetEntries();i++){//collect sdigits from current input to tmpCA
-      new(tmpCA[total++]) AliRICHDigit(*(AliRICHDigit*)pInRich->SDigits()->At(i)); 
+    AliDebug(1,Form("input %i has %i sdigits",inFileN,pInRich->SDigs()->GetEntries()));
+    for(Int_t i=0;i<pInRich->SDigs()->GetEntries();i++){//collect sdigits from current input to tmpCA
+      new(tmpCA[total++]) AliRICHDigit(*(AliRICHDigit*)pInRich->SDigs()->At(i)); 
       ((AliRICHDigit*)tmpCA[total-1])->AddTidOffset(fManager->GetMask(inFileN));//apply TID shift since all inputs count tracks independently starting from 0
     }
-    pInRichLoader->UnloadSDigits();   pInRich->SDigitsReset(); //close current input and reset 
+    pInRichLoader->UnloadSDigits();   pInRich->SDigReset(); //close current input and reset 
   }//files loop
   
   tmpCA.Sort();                     //at this point we have a list of all sdigits from all inputs, now sort them according to fPad field
@@ -65,18 +65,18 @@ void AliRICHDigitizer::Exec(Option_t*)
       iNdigsPerPad++;         dQdc+=pSdig->Qdc();      iCfm+=pSdig->Cfm();//sum up charge and cfm
       if(pSdig->Cfm()==1) aTids[0] = pSdig->GetTrack(0); // force the first tid to be mip's tid if it exists in the current pad
       if(iNdigsPerPad<=3)        aTids[iNdigsPerPad-1]=pSdig->GetTrack(0);
-      else                         AliDebug(1,Form("More then 3 sdigits in (%d,%d,%f,%f) with Q= %f",pSdig->Chamber(),pSdig->Sector(),pSdig->Pad()(0),pSdig->Pad()(1),pSdig->Qdc()));
+      else                         AliDebug(1,Form("More then 3 sdigits in (%d,%d,%f,%f) with Q= %f",pSdig->Chamber(),-1,pSdig->Pad()(0),pSdig->Pad()(1),pSdig->Qdc()));
     }else{//new pad, add the pevious one
-        if(iId!=-1 && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigitAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids); //add newly created dig
+        if(iId!=-1 && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids); //add newly created dig
         iChamber=pSdig->Chamber(); pad=pSdig->Pad(); iCfm=pSdig->Cfm(); dQdc=pSdig->Qdc();  iId=pSdig->PadAbs();                    //init all values by current sdig
         iNdigsPerPad=1; aTids[0]=pSdig->GetTrack(0); aTids[1]=aTids[2]=-1;
       }
   }//sdigits loop (sorted)
-  if(tmpCA.GetEntries() && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigitAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids);//add the last dig
+  if(tmpCA.GetEntries() && AliRICHParam::IsOverTh(iChamber,pad,dQdc)) pOutRich->DigAdd(iChamber,pad,(Int_t)dQdc,iCfm,aTids);//add the last dig
   
   pOutRichLoader->TreeD()->Fill();              //fill the output tree with the list of digits
   pOutRichLoader->WriteDigits("OVERWRITE");     //serialize them to file
   
   tmpCA.Clear();                      //remove all tmp sdigits
-  pOutRichLoader->UnloadDigits();   pOutRich->DigitsReset();
+  pOutRichLoader->UnloadDigits();   pOutRich->DigReset();
 }//Exec()

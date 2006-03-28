@@ -13,25 +13,25 @@
 //////////////////////////////////////////////////////////////////////////
 
 
-#include <TTask.h>
+#include <TTask.h> //base class
 
 class AliRICHHelix;
-
+class AliRICHParam;
+class TClonesArray;
 class AliRICHRecon : public TTask 
 {
 public : 
-    AliRICHRecon(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t iMipId);
-    virtual ~AliRICHRecon(){;}
+             AliRICHRecon();
+    virtual ~AliRICHRecon()                                                          {}
 
-  Double_t ThetaCerenkov();                   // it returns reconstructed Theta Cerenkov
+  Double_t ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluLst,Int_t &iMipId);                  // it returns reconstructed Theta Cerenkov
   void FindThetaPhotonCerenkov();             //
   void FindAreaAndPortionOfRing();            //
-  void FindEmissionPoint();                   //
   void FindPhotonAnglesInDRS();               //
   void FindPhiPoint();                        //
   void FindThetaAtQuartz(Float_t ThetaCer);   //
-  void HoughResponse();                       //
-  void FlagPhotons();                         //
+  Double_t HoughResponse (              );                   //most probable track theta ckov out of all photon candidate thetas 
+  Int_t    FlagPhotons   (Double_t theta);                   //n. of photon candidates which thetas are inside a window around most probable track theta ckov
   void FindThetaCerenkov();                   //
   void FindIntersectionWithDetector();        //
   Float_t Cerenkovangle(Float_t n, Float_t b);//
@@ -39,17 +39,9 @@ public :
   Int_t   CheckDetectorAcceptance() const;    //
   Int_t   GetFittedHoughPhotons()                   const{ return fFittedHoughPhotons;}             //
   Int_t   GetPhotonFlag()                           const{ return fPhotonFlag[fPhotonIndex];}       //
-  Int_t   GetTrackCharge()                          const{ return fTrackCharge;}                    //
   Int_t   GetPhotonsNumber()                        const{ return fPhotonsNumber;}                  //
   Int_t   GetPhotonIndex()                          const{ return fPhotonIndex;}                    //
-  Int_t   GetMipIndex()                             const{ return fMipIndex;}                       //
-  Int_t   GetTrackIndex()                           const{ return fTrackIndex;}                     //
-  Int_t   GetCandidatePhotonsNumber()               const{ return fCandidatePhotonsNumber;}         //
-  Int_t   GetHoughPhotons()                         const{ return fHoughPhotons;}                   //
-  Float_t GetPhotonEnergy()                         const{ return fPhotonEnergy;}                   //
-  Float_t GetFreonRefractiveIndex()                 const{ return fFreonRefractiveIndex;}           //
-  Float_t GetQuartzRefractiveIndex()                const{ return fQuartzRefractiveIndex;}          //
-  Float_t GetGasRefractiveIndex()                   const{ return fGasRefractiveIndex;}             //
+  Float_t GetPhotonEnergy()                         const{ return fEphot;}                          //
   Float_t GetEmissionPoint()                        const{ return fLengthEmissionPoint;}            //
   Float_t GetMassHypotesis()                        const{ return fMassHypotesis;}                  //
   Float_t GetBetaOfParticle()                       const{ return fTrackBeta;}                      //
@@ -92,11 +84,7 @@ public :
   Float_t GetFittedTrackTheta()                     const{ return fFittedTrackTheta;}               //
   Float_t GetFittedTrackPhi()                       const{ return fFittedTrackPhi;}                 //
   Float_t GetFittedThetaCerenkov()                  const{ return fFittedThetaCerenkov;}            //
-  void SetPhotonEnergy(Float_t PhotonEnergy) { fPhotonEnergy = PhotonEnergy;}                       //
-  void SetFreonRefractiveIndex() {fFreonRefractiveIndex = fFreonScaleFactor*(1.177+0.0172*fPhotonEnergy);}//
-  void SetQuartzRefractiveIndex() {fQuartzRefractiveIndex = sqrt(1+(46.411/(113.763556-TMath::Power(fPhotonEnergy,2)))+(228.71/(328.51563-TMath::Power(fPhotonEnergy,2))));}//
-  void SetGasRefractiveIndex() { fGasRefractiveIndex = 1.;}                                         //
-  void SetFreonScaleFactor(Float_t FreonScaleFactor) {fFreonScaleFactor = FreonScaleFactor;}        //
+  void    SetPhotonEnergy(Float_t e)                     { fEphot = e;}                       //
   void SetEmissionPoint(Float_t LengthEmissionPoint) { fLengthEmissionPoint = LengthEmissionPoint;} //
   void SetEntranceX(Float_t Xtoentr) { fXtoentr = Xtoentr;}                                         //
   void SetEntranceY(Float_t Ytoentr) { fYtoentr = Ytoentr;}                                         //
@@ -120,7 +108,6 @@ public :
   void SetThetaPhotonCerenkov(Float_t ThetaPhotCer) {fThetaPhotonCerenkov = ThetaPhotCer;}          //
   void SetTrackTheta(Float_t TrackTheta) { fTrackTheta = TrackTheta;}                               //
   void SetTrackPhi(Float_t TrackPhi) { fTrackPhi = TrackPhi;}                                       //
-  void SetTrackCharge(Int_t TrackCharge) { fTrackCharge = TrackCharge;}                             //
   void SetShiftX(Float_t ShiftX) { fShiftX = ShiftX;}                                               //
   void SetShiftY(Float_t ShiftY) { fShiftY = ShiftY;}                                               //
   void SetDetectorWhereX(Float_t Xcoord) { fXcoord = Xcoord;}                                       //
@@ -138,28 +125,19 @@ public :
   void SetPhotonWeight(Float_t PhotonWeight) { fPhotonWeight[fPhotonIndex] = PhotonWeight;}         //
   void SetPhotBKG(Double_t nPhotBKG) {fnPhotBKG=nPhotBKG;}                                          //
   void SetHoughRMS(Float_t HoughRMS) { fHoughRMS = HoughRMS;}                                       //
-  void SetMipIndex(Int_t MipIndex) { fMipIndex = MipIndex;}                                         //
-  void SetTrackIndex(Int_t TrackIndex) { fTrackIndex = TrackIndex;}                                 //
-  void SetHoughPhotons(Int_t HoughPhotons) { fHoughPhotons = HoughPhotons;}                         //
-  void SetHoughPhotonsNorm(Float_t HoughPhotonsNorm) { fHoughPhotonsNorm = HoughPhotonsNorm;}       //
   void SetFittedTrackTheta(Float_t FittedTrackTheta)    { fFittedTrackTheta = FittedTrackTheta;}    //
   void SetFittedTrackPhi(Float_t FittedTrackPhi)    { fFittedTrackPhi = FittedTrackPhi;}            //
   void SetFittedThetaCerenkov(Float_t FittedThetaCerenkov) { fFittedThetaCerenkov = FittedThetaCerenkov;}//
   void SetFittedHoughPhotons(Int_t FittedHoughPhotons) { fFittedHoughPhotons = FittedHoughPhotons;} //
-  void FindBetaFromTheta(Float_t ThetaCerenkov) {fTrackBeta = 1/(fFreonRefractiveIndex*cos(ThetaCerenkov));}//
   Float_t SnellAngle(Float_t n1, Float_t n2, Float_t theta1);                                       //
   Float_t FromEmissionToCathode();                                                                  //
 
 protected:
-  TClonesArray *fpClusters;                   // poiter to clusters
-  Int_t   fTrackCharge;                       // charge track
-  Int_t fMipIndex;                            // index for Mip
-  Int_t fTrackIndex;                          // index for track
+  TClonesArray *fClusters;                    //tmp pointer to list of clusters
+  AliRICHParam *fParam;                       //tmp pointer to AliRICHParam instance containing all the parameters needed for proccessing
   Int_t fPhotonsNumber;                       // Number of photons candidate
   Int_t fPhotonIndex;                         // index of photons
   Int_t fPhotonFlag[3000];                    // flag for photons
-  Int_t fCandidatePhotonsNumber;              // number of candidate photons
-  Int_t fHoughPhotons;                        // n. photons after Hough
   Int_t   fFittedHoughPhotons;                // n. photons after Hough and after minimization
   Int_t fMinNumPhots;                         // minimum number of photons for a given ring
 
@@ -183,11 +161,7 @@ protected:
   Float_t fYOuter;                            // Y outer ring
   Float_t fInnerRadius;                       // inner radius
   Float_t fOuterRadius;                       // outer radius
-  Float_t fPhotonEnergy;                      // photon energy
-  Float_t fFreonRefractiveIndex;              // n freon
-  Float_t fQuartzRefractiveIndex;             // n quartz
-  Float_t fGasRefractiveIndex;                // n gas
-  Float_t fFreonScaleFactor;                  // scale factor for n freon
+  Float_t fEphot;                             // photon energy
   Float_t fLengthEmissionPoint;               // lenght of emmission point
   Float_t fPhotonLimitX;                      // X phys limit for photon
   Float_t fPhotonLimitY;                      // Y phys limit for photon 
@@ -210,18 +184,12 @@ protected:
   Float_t fHoughRMS;                          // rms Hough
   Float_t* fCandidatePhotonX;                 // x photon candidates
   Float_t* fCandidatePhotonY;                 // y photon candidates
-  Float_t fHoughPhotonsNorm;                  // n. photons norm.
   Float_t fFittedTrackTheta;                  // theta track after minim.
   Float_t fFittedTrackPhi;                    // phi track after minim.
   Float_t fFittedThetaCerenkov;               // thetacerenkov after minim.
   Float_t fThetaMin,fThetaMax;                // min max
-  Float_t fXmin,fXmax,fYmin,fYmax;            // xy min max
-  Int_t   fNrings;                            //current number of reconstructed rings
   Bool_t  fIsWEIGHT;                          // flag to consider weight procedure
   Bool_t  fIsBACKGROUND;                      // flag to simulate bkg
-  Float_t fRadiatorWidth;                     // radiator width
-  Float_t fQuartzWidth;                       // quartz width
-  Float_t fGapWidth;                          // gap width
   Float_t fDTheta;                            // Step for sliding window
   Float_t fWindowWidth;                       // Hough width of sliding window
   
@@ -233,7 +201,6 @@ protected:
   Float_t fThetaCerenkov;                     // Theta angle for Hough
   Float_t fWeightThetaCerenkov;               // Theta Cerenkov angle weighted
   Float_t fThetaPeakPos;                      // Peak position
-
 
   ClassDef(AliRICHRecon,0)
 };

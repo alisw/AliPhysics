@@ -12,10 +12,9 @@
 //  * about the suitability of this software for any purpose. It is          *
 //  * provided "as is" without express or implied warranty.                  *
 //  **************************************************************************
-#include "AliRICHParam.h"
+#include "AliRICHParam.h" //class header
 #include "AliESD.h"
-#include "AliRICHChamber.h"
-#include <TCanvas.h>
+#include <TCanvas.h>      //TestXXX() 
 #include <TLatex.h>
 #include <THStack.h>
 #include <TLegend.h>
@@ -27,15 +26,20 @@
 #include <TVector2.h>
 #include <TVector3.h>
 #include <TRotation.h>
-
+#include <AliCDBManager.h> //CdbRead()
+#include <AliCDBStorage.h> //CdbRead()
+#include <AliCDBEntry.h>   //CdbRead()
+#include <AliRunLoader.h>  //Stack()
+#include <AliStack.h>      //Stack()
+#include <TParticle.h>     //Stack()    
+#include "AliRICHHelix.h"  //TestTrans()
 
 ClassImp(AliRICHParam)
-Bool_t   AliRICHParam::fgIsWireSag            =kTRUE;   //take ware sagita into account?
-Bool_t   AliRICHParam::fgIsResolveClusters    =kTRUE;   //do cluster resolving?
-Bool_t   AliRICHParam::fgIsFeedback           =kTRUE;   //generate feedback photons?
-Bool_t   AliRICHParam::fgIsRadioSrc           =kFALSE;  //put radioactive source instead of radiators?
-Bool_t   AliRICHParam::fgIsAerogel            =kFALSE;  //special aerogel configuration
-Bool_t   AliRICHParam::fgIsTestBeam           =kFALSE;  //special test beam configuration
+AliRICHParam * AliRICHParam::fgInstance             =0x0;     //singleton pointer               
+Bool_t         AliRICHParam::fgIsWireSag            =kTRUE;   //take ware sagita into account?
+Bool_t         AliRICHParam::fgIsResolveClusters    =kTRUE;   //do cluster resolving?
+Bool_t         AliRICHParam::fgIsFeedback           =kTRUE;   //generate feedback photons?
+Bool_t         AliRICHParam::fgIsTestBeam           =kFALSE;  //special test beam configuration
 
 Int_t    AliRICHParam::fgHV[kNsectors]        ={2050,2050,2050,2050,2050,2050};
 Int_t    AliRICHParam::fgNsigmaTh             =4;
@@ -46,33 +50,45 @@ Double_t AliRICHParam::fgErrGeom[4][330];                        //
 Double_t AliRICHParam::fgErrLoc[4][330];                         //Chromatic, Geometric and Localization array to parametrize SigmaCerenkov
 Double_t AliRICHParam::fgMass[5]              ={0.00051,0.10566,0.13957,0.49360,0.93828};  
 
-//__________________________________________________________________________________________________
-void AliRICHParam::Print(Option_t*) const
+
+Double_t AliRICHParam::fEckovMin=5.5e-9; //GeV
+Double_t AliRICHParam::fEckovMax=8.5e-9; //GeV
+TF1 AliRICHParam::fgAbsC6F14("RabsC4F14","6512.39*(x<=7.75e-9)+(x>7.75e-9)*0.039/(-0.166+0.063e9*x-8.01e7*x^2+3.39e5*x^3)" ,fEckovMin,fEckovMin); 
+TF1 AliRICHParam::fgAbsSiO2 ("RabsSiO2" ,"333"                                                                             ,fEckovMin,fEckovMin); 
+TF1 AliRICHParam::fgAbsCH4  ("RabsCH4"  ,"6512.39*(x<=7.75e-9)+(x>7.75e-9)*0.039/(-0.166+0.063e9*x-8.01e7*x^2+3.39e5*x^3)" ,fEckovMin,fEckovMin);
+TF1 AliRICHParam::fgAbsAir  ("RabsAir"  ,"500"                                                                             ,fEckovMin,fEckovMin);  //len ???
+TF1 AliRICHParam::fgAbsCF4  ("RabsCF4"  ,"6512.39*(x<=7.75e-9)+(x>7.75e-9)*0.039/(-0.166+0.063e9*x-8.01e7*x^2+3.39e5*x^3)" ,fEckovMin,fEckovMin);
+TF1 AliRICHParam::fgAbsC4F10("RabsC4F10","1+0.25324e-6/(1.84e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMin);  //Olav preprint
+TF1 AliRICHParam::fgAbsGel  ("RabsGel"  ,"400"                                                                             ,fEckovMin,fEckovMin);  //len ???
+
+TF1 AliRICHParam::fgIdxAir  ("RidxAir"  ,"1+1e-8*(8342.13 + 2406030/(130-(1.23984e-9/x)^2)+15597/(38.9-(1.23984e-9/x)^2))" ,fEckovMin,fEckovMin);  //???
+TF1 AliRICHParam::fgIdxSiO2 ("RidxSiO2" ,"sqrt(1+46.411/(10.666*10.666-x*x*1e18)+228.71/(18.125*18.125-x*x*1e18))"         ,fEckovMin,fEckovMin);  //TDR p.35
+TF1 AliRICHParam::fgIdxCH4  ("RidxCH4"  ,"1+0.12489e-6/(2.62e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMin);  //Olav preprint
+TF1 AliRICHParam::fgIdxG30  ("RidxGel30","1.030"                                                                           ,fEckovMin,fEckovMin);  //???
+TF1 AliRICHParam::fgIdxG28  ("RidxGel28","1.028"                                                                           ,fEckovMin,fEckovMin);  //???
+TF1 AliRICHParam::fgIdxG26  ("RidxGel26","1.026"                                                                           ,fEckovMin,fEckovMin);  //???
+TF1 AliRICHParam::fgIdxG24  ("RidxGel24","1.024"                                                                           ,fEckovMin,fEckovMin);  //???
+TF1 AliRICHParam::fgIdxC4F10("RidxC4F10","1+0.25324e-6/(1.84e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMin);  //Olav preprint
+TF1 AliRICHParam::fgIdxCF4  ("RidxCF4"  ,"1+0.12489e-6/(2.62e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMin);  //Olav preprint
+
+TF1 AliRICHParam::fgQeApd("QeApd"    ,"0+(x>6e-9)*0.27*(1-exp(-(1e9*x-6)/0.3))"                                            ,fEckovMin,fEckovMin);  //???
+TF1 AliRICHParam::fgQeCsI("AbsApd"   ,"0.03"                                                                               ,fEckovMin,fEckovMin);  //prob
+
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliRICHParam::AliRICHParam():TNamed("RichParam","default version") 
 {
-//print some usefull (hopefully) info on some internal guts of RICH parametrisation 
-  AliInfo(Form("Pads in chamber (%3i,%3i) in sector (%2i,%2i) pad size (%4.2f,%4.2f)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec(),PadSizeX(),PadSizeY()));
-  AliInfo(Form("Resolve clusters %i sagita %i Radio source %i Aerogel %i TestBeam %i",
-                IsResolveClusters(),IsWireSag(),IsRadioSrc(),IsAerogel(),IsTestBeam())); 
-  fpChambers->Print();
-}//Print()
-//__________________________________________________________________________________________________
-void AliRICHParam::CreateChambers()
-{
-//Create all RICH Chambers on each call. Previous chambers deleted.
-  if(fpChambers) delete fpChambers;
-  if(fgIsTestBeam){ 
-    fpChambers=new TObjArray(1);//test beam configuration 1 chamber
-    fpChambers->AddAt(new AliRICHChamber(0),0);  
-  }else{ 
-    fpChambers=new TObjArray(kNchambers);//normal configuration 7 chambers
-    for(int iChamberN=0;iChamberN<kNchambers;iChamberN++)  fpChambers->AddAt(new AliRICHChamber(iChamberN+1),iChamberN);  
-  }
-  fpChambers->SetOwner();
-}//CreateChambers()
-//__________________________________________________________________________________________________
+// Here all the intitializition is taken place when AliRICHParam::Instance() is invoked for the first time.
+// In particulare, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    
+// Note that TGeoManager should be already initialized from geometry.root file  
+  for(Int_t iCh=0;iCh<kNchambers;iCh++) fMatrix[iCh]=(TGeoHMatrix*)gGeoManager->GetVolume("ALIC")->GetNode(Form("RICH_%i",iCh+1))->GetMatrix();
+  CdbRead(0,0);
+  fgInstance=this; 
+}//ctor
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Float_t AliRICHParam::AbsCH4(Float_t eV)
 {
-//Evaluate the absorbtion lenght of CH4 for a photon of energy eV in electron-volts
+// Evaluate the absorbtion lenght of CH4 for a photon of energy eV in electron-volts
   const Float_t kLoschmidt=2.686763e19;                                      // LOSCHMIDT NUMBER IN CM-3
   const Float_t kPressure=750.0;          //mm of Hg
   const Float_t kTemperature=283.0;       //K (10 grad C)                               
@@ -92,16 +108,44 @@ Float_t AliRICHParam::AbsCH4(Float_t eV)
     Float_t density=kLoschmidt*kPn/kTn; //CH4 molecular concentration (cm^-3)
     return 1.0/(density*crossSection);
 }//AbsoCH4()
-//__________________________________________________________________________________________________
+//__________________________________________________________________________________________________sss
+void AliRICHParam::CdbRead(Int_t run,Int_t version)
+{
+// This methode read all the calibration information and initialise corresponding fields for requested run number
+// Arguments: run - run number for which to retrieve calibration
+//            version- version number   
+//   Returns: none      
+
+  AliCDBEntry *pEntry=AliCDBManager::Instance()->Get("RICH/RICHConfig/RefIdxC6F14",run,0,version); //try to get from common local storage  
+  if(pEntry){
+    fIdxC6F14=(TF2*)pEntry->GetObject(); delete pEntry;
+  }else{
+    AliWarning("No valid calibarion, the hardcoded will be used!");
+    fIdxC6F14=new TF2("RidxC4F14","sqrt(1+0.554*(1239.84e-9/x)^2/((1239.84e-9/x)^2-5796)-0.0005*(y-20))",5.5e-9,8.5e-9,0,50); //DiMauro mail
+    fIdxC6F14->SetUniqueID(20);//T=20 deg C
+  }
+}//CdbRead()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHParam::Print(Option_t* opt) const
+{
+// print some usefull (hopefully) info on some internal guts of RICH parametrisation 
+  Printf("Pads in chamber (%3i,%3i) in sector (%2i,%2i) pad size (%4.2f,%4.2f)",NpadsX(),NpadsY(),NpadsXsec(),NpadsYsec(),PadSizeX(),PadSizeY());
+  Printf("Resolve clusters %i sagita %i",IsResolveClusters(),IsWireSag()); 
+  
+  for(Int_t i=0;i<kNchambers;i++) fMatrix[i]->Print(opt);
+}//Print()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHParam::TestSeg()
 {
-//Provides a set of pictures to test segementation currently in use.    
+// Provides a set of pictures to test segementation currently in use.    
+// Arguments: none
+//   Returns: none    
   new TCanvas("pads","PC segmentation - pads display",700,600);
   gPad->Range(-5,-5,PcSizeX()+5,PcSizeY()+15);
   TVector p(2);   TVector2 c;    TVector2 b;   //current: pad, pad center, pad boundary
 // list of corners:
-  Double_t x0=0,x1=SectorSizeX(),x2=SectorSizeX()+DeadZone(),                                                                 x3=PcSizeX();  
-  Double_t y0=0,y1=SectorSizeY(),y2=SectorSizeY()+DeadZone(),y3=2*SectorSizeY()+DeadZone(),y4=PcSizeY()-SectorSizeY(),y5=PcSizeY();  
+  Double_t x0=0,x1=SecSizeX(),x2=SecSizeX()+DeadZone()                                                      ,x3=PcSizeX();  
+  Double_t y0=0,y1=SecSizeY(),y2=SecSizeY()+DeadZone(),y3=2*SecSizeY()+DeadZone(),y4=PcSizeY()-SecSizeY(),y5=PcSizeY();  
   DrawSectors();
 //header 
   TLatex t;
@@ -109,7 +153,7 @@ void AliRICHParam::TestSeg()
   t.DrawLatex(0,PcSizeY()+10,Form("IP in front of this page. pad size %.2fx%.2fcm   dead zone %.2fcm",PadSizeX(),PadSizeY(),DeadZone()));
   t.DrawLatex(0,PcSizeY()+ 5,Form("Pc  %.2fx%.2f cm %ix%i pads               Sec %.2fx%.2f cm %ix%i pads",
                                          PcSizeX()     , PcSizeY()     , NpadsX()    , NpadsY()                                 ,
-                                         SectorSizeX() , SectorSizeY() , NpadsXsec() , NpadsYsec()                              ));
+                                         SecSizeX() , SecSizeY() , NpadsXsec() , NpadsYsec()                              ));
 //sectors  
   t.SetTextSize(0.015); t.SetTextColor(kRed); t.SetTextAlign(22);
   c=Pad2Loc( 40, 24); t.DrawText(c.X(),c.Y(),Form("sec 1 (%.2f,%.2f)",c.X(),c.Y()  ));  
@@ -152,7 +196,9 @@ void AliRICHParam::TestSeg()
 //__________________________________________________________________________________________________
 void AliRICHParam::TestResp()
 {
-//Provides a set of plot to check the response parametrisation currently in use.  
+// Provides a set of plot to check the response parametrisation currently in use.  
+// Arguments: none
+//   Returns: none    
   TCanvas *pC=new TCanvas("c","Amplification test",900,800);
   pC->Divide(1,2);
   
@@ -165,13 +211,13 @@ void AliRICHParam::TestResp()
   TH1F *apHmip[kNpoints];
   
   Double_t starty=0;
-  Double_t deltay=AliRICHParam::SectorSizeY()/kNpoints;
+  Double_t deltay=AliRICHParam::SecSizeY()/kNpoints;
   
   for(int i=0;i<kNpoints;i++){
     apHphot[i]=new TH1F(Form("hphot%i",i),"Qdc for Photon;QDC;Counts",500,0,500); apHphot[i]->SetLineColor(i);pStackPhot->Add(apHphot[i]);                 
     apHmip[i] =new TH1F(Form("hmip%i",i),"Qdc for Mip;QDC;Counts",4000,0,4000);   apHmip[i]->SetLineColor(i);pStackMip->Add(apHmip[i]);                 
     
-    pLeg->AddEntry(apHphot[i],Form("@(10,%5.2f->%5.2f)",starty+i*deltay,starty+i*deltay-SectorSizeY()/2));
+    pLeg->AddEntry(apHphot[i],Form("@(10,%5.2f->%5.2f)",starty+i*deltay,starty+i*deltay-SecSizeY()/2));
   }
         
   
@@ -190,34 +236,41 @@ void AliRICHParam::TestResp()
 //__________________________________________________________________________________________________
 void AliRICHParam::TestTrans()
 {
-//Provides a set of plots to test transformation methods
-  new TCanvas("trasform","Test LRS-MRS transform");
-  TLatex t; t.SetTextSize(0.02);
+// Tests transformation methods
+// Arguments: none
+//   Returns: none    
   
-  TView *pView=new TView(1);
-  pView->SetRange(-600,-600,-600,600,600,600);
-  DrawAxis();  
-//Draw PC for all chambers by trasfering Pc plane using Pc2Mrs methode  
+  AliRICHParam *pParam=AliRICHParam::Instance();
   Int_t iNpointsX=50,iNpointsY=50;  
-  for(Int_t iChamberN=1;iChamberN<=7;iChamberN++){//chamber loop
+  new TCanvas("trasform","Test LORS-MARS transform"); TLatex t; t.SetTextSize(0.02);
+  
+  TView *pView=new TView(1);  pView->SetRange(-400,-400,-400,400,400,400);
+  DrawAxis();  
+  for(Int_t iCham=1;iCham<=7;iCham++){//chamber loop
+    AliRICHHelix helix(2.5,Norm(iCham).Theta()*TMath::RadToDeg(),Norm(iCham).Phi()*TMath::RadToDeg());
+    helix.RichIntersect(AliRICHParam::Instance());
     TPolyMarker3D *pChamber=new TPolyMarker3D(iNpointsX*iNpointsY);
     Int_t i=0;
     for(Double_t x=0;x<PcSizeX();x+=PcSizeX()/iNpointsX)
       for(Double_t y=0;y<PcSizeY();y+=PcSizeY()/iNpointsY){//step loop
-        TVector3 v3=C(iChamberN)->Pc2Mrs(TVector2(x,y));//from regular grid of local PC points to MRS presentation
-        pChamber->SetPoint(i++,v3.X(),v3.Y(),v3.Z());//Pc plane poing in MRS
+        TVector3 v3=pParam->Lors2Mars(iCham,x,y,kPc); TVector2 v2=pParam->Mars2Lors(iCham,v3,kPc);//LORS->MARS->LORS
+        Double_t dx=v2.X()-x , dy=v2.Y()-y; 
+        if(dx>0.000001 || dy>0.000001) Printf("Problem in MARS<->LORS transformations dx=%f dy=%f!!!",dx,dy);
+        pChamber->SetPoint(i++,v3.X(),v3.Y(),v3.Z());//Pc plane point in MARS
       }//step loop
     pChamber->SetMarkerSize(1);
-    pChamber->SetMarkerColor(iChamberN);
+    pChamber->SetMarkerColor(iCham);
     pChamber->Draw();  
-    t.SetNDC();t.SetTextColor(iChamberN); t.DrawText(0.1,iChamberN*0.1,Form("Chamber %i",iChamberN));    
-  }//chamber loop   
-//  gPad->GetView()->RotateView(94,45);
+    helix.Draw();
+    t.SetNDC();t.SetTextColor(iCham); t.DrawText(0.1,iCham*0.1,Form("Chamber %i",iCham));    
+  }//chambers loop   
 }//TestTrans()
 //__________________________________________________________________________________________________
 void AliRICHParam::DrawAxis()
 {
-//Utility: draws axis on geometry scene  
+// This utility methode draws axis on geometry scene  
+// Arguments: none
+//   Returns: none    
   Double_t x[6]={0,0,0,300,0,0};  Double_t y[6]={0,0,0,0,300,0};  Double_t z[6]={0,0,0,0,0,300};  
   TPolyLine3D *pXaxis=new TPolyLine3D(2,x);pXaxis->SetLineColor(kRed);   pXaxis->Draw();
   TPolyLine3D *pYaxis=new TPolyLine3D(2,y);pYaxis->SetLineColor(kGreen); pYaxis->Draw();
@@ -226,14 +279,16 @@ void AliRICHParam::DrawAxis()
 //__________________________________________________________________________________________________
 void AliRICHParam::DrawSectors() 
 { 
-//Utility: draws RICH chamber sectors on event display.
-  Double_t xLeft[5]  = {0,0,SectorSizeX(),SectorSizeX(),0};
-  Double_t xRight[5] = {SectorSizeX()+DeadZone(),SectorSizeX()+DeadZone(),PcSizeX(),PcSizeX(),SectorSizeX()+DeadZone()};
+// Utility methode draws RICH chamber sectors on event display.
+// Arguments: none
+//   Returns: none      
+  Double_t xLeft[5]  = {0,0,SecSizeX(),SecSizeX(),0};
+  Double_t xRight[5] = {SecSizeX()+DeadZone(),SecSizeX()+DeadZone(),PcSizeX(),PcSizeX(),SecSizeX()+DeadZone()};
   
-  Double_t yDown[5]   = {0,SectorSizeY(),SectorSizeY(),0,0};
-  Double_t yCenter[5] = {  SectorSizeY()+DeadZone(),2*SectorSizeY()+DeadZone(),2*SectorSizeY()+DeadZone(),
-                           SectorSizeY()+DeadZone(),SectorSizeY()+DeadZone()};  
-  Double_t yUp[5]     = {2*SectorSizeY()+2*DeadZone(),PcSizeY(),PcSizeY(),2*SectorSizeY()+2*DeadZone(),2*SectorSizeY()+2*DeadZone()};
+  Double_t yDown[5]   = {0,SecSizeY(),SecSizeY(),0,0};
+  Double_t yCenter[5] = {  SecSizeY()+DeadZone(),2*SecSizeY()+DeadZone(),2*SecSizeY()+DeadZone(),
+                           SecSizeY()+DeadZone(),SecSizeY()+DeadZone()};  
+  Double_t yUp[5]     = {2*SecSizeY()+2*DeadZone(),PcSizeY(),PcSizeY(),2*SecSizeY()+2*DeadZone(),2*SecSizeY()+2*DeadZone()};
   
   TPolyLine *sec1 = new TPolyLine(5,xLeft ,yDown);    sec1->SetLineColor(21);  sec1->Draw();
   TPolyLine *sec2 = new TPolyLine(5,xRight,yDown);    sec2->SetLineColor(21);  sec2->Draw();
@@ -245,8 +300,9 @@ void AliRICHParam::DrawSectors()
 //__________________________________________________________________________________________________
 void AliRICHParam::ReadErrFiles()
 {
-// Read the three files corresponding to Chrom,Geom and Loc
-// They are parameters of a polynomial of 6th order...
+// Read the three files corresponding to Chrom,Geom and Loc They are parameters of a polynomial of 6th order...  ????????? go to CDB?
+// Arguments: none
+//   Returns: none    
   
   static Bool_t count = kFALSE;
   
@@ -301,7 +357,7 @@ TVector3 AliRICHParam::SigmaSinglePhoton(Int_t partID, Double_t mom, Double_t th
   Double_t massRef = fgMass[4]; // all the files are calculated for protons...so mass ref is proton mass
   pmom = mom*massRef/mass; // normalized momentum respect to proton...
   if(pmom>PmodMax()) pmom = PmodMax();
-  Double_t oneOverRefIndex = 1/RefIdxC6F14(MeanCkovEnergy());
+  Double_t oneOverRefIndex = 1/IdxC6F14(EckovMean());
   Double_t pmin = mass*oneOverRefIndex/TMath::Sqrt(1-oneOverRefIndex*oneOverRefIndex);
   if(pmom<pmin) return v;
   Double_t Theta = theta*TMath::RadToDeg();
@@ -326,7 +382,7 @@ TVector3 AliRICHParam::SigmaSinglePhoton(Double_t thetaCer, Double_t theta, Doub
 
   ReadErrFiles();
   Double_t massRef = fgMass[4]; // all the files are calculated for protons...so mass ref is proton mass
-  Double_t beta=1./(RefIdxC6F14(MeanCkovEnergy())*TMath::Cos(thetaCer));
+  Double_t beta=1./(IdxC6F14(EckovMean())*TMath::Cos(thetaCer));
   if(beta>=1) {
     pmom=6.5; // above physical limi the error is calculated at the saturation...
   } else {
@@ -334,7 +390,7 @@ TVector3 AliRICHParam::SigmaSinglePhoton(Double_t thetaCer, Double_t theta, Doub
     pmom = beta*gamma*massRef; // normalized momentum respect to proton...
   }
   if(pmom>PmodMax()) pmom = PmodMax();
-  Double_t oneOverRefIndex = 1/RefIdxC6F14(MeanCkovEnergy());
+  Double_t oneOverRefIndex = 1/IdxC6F14(EckovMean());
   Double_t pmin = massRef*oneOverRefIndex/TMath::Sqrt(1-oneOverRefIndex*oneOverRefIndex);
   if(pmom<pmin) return v;
   Double_t Theta = theta*TMath::RadToDeg();
@@ -380,37 +436,32 @@ Double_t AliRICHParam::Interpolate(Double_t par[4][330], Double_t x, Double_t y,
 //__________________________________________________________________________________________________
 TVector3 AliRICHParam::ForwardTracing(TVector3 entranceTrackPoint, TVector3 vectorTrack, Double_t thetaC, Double_t phiC)
 {
-//
+// Trace a single Ckov photon from a given emission point up to photocathode taking into account ref indexes of materials it travereses
   TVector3 vBad(-999,-999,-999);
   TVector3 nPlane(0,0,1);
-  Double_t planeZposition = 0.5*Zfreon();
-  TVector3 planePoint(0,0,planeZposition);
+  Double_t planeZposition = 0.5*RadThick();
+  TVector3 planePoint(0,0,0.5*RadThick()); //this is plane parallel to window which contains emission point 
   TVector3 emissionPoint = PlaneIntersect(vectorTrack,entranceTrackPoint,nPlane,planePoint);
-//  emissionPoint.Dump();
   Double_t thetaout,phiout;
   AnglesInDRS(vectorTrack.Theta(),vectorTrack.Phi(),thetaC,phiC,thetaout,phiout);
-//  cout << "thetaout "<<thetaout << " phiout " << phiout << endl;
   TVector3 vectorPhotonInC6F14;  
   vectorPhotonInC6F14.SetMagThetaPhi(1,thetaout,phiout);
-//  vectorPhotonInC6F14.Dump();
-//  planeZposition=AliRICHParam::C6F14Thickness();
-  planeZposition=Zfreon();
+  planeZposition=RadThick();
   planePoint.SetXYZ(0,0,planeZposition);
   TVector3 entranceToSiO2Point = PlaneIntersect(vectorPhotonInC6F14,emissionPoint,nPlane,planePoint);
-//  entranceToSiO2Point.Dump();
 
-  Double_t photonEn = MeanCkovEnergy();
-  Double_t angleInSiO2 = SnellAngle(RefIdxC6F14(photonEn),RefIdxSiO2(photonEn),vectorPhotonInC6F14.Theta());if(angleInSiO2<0) return vBad;
+  Double_t photonEn = EckovMean();
+  Double_t angleInSiO2 = SnellAngle(IdxC6F14(EckovMean()),IdxSiO2(EckovMean()),vectorPhotonInC6F14.Theta());if(angleInSiO2<0) return vBad;
   TVector3 vectorPhotonInSiO2;
   vectorPhotonInSiO2.SetMagThetaPhi(1,angleInSiO2,phiout);
 //  planeZposition+=AliRICHParam::SiO2Thickness();
-  planeZposition+=Zwin();
+  planeZposition+=WinThick();
   planePoint.SetXYZ(0,0,planeZposition);
   TVector3 entranceToCH4 = PlaneIntersect(vectorPhotonInSiO2,entranceToSiO2Point,nPlane,planePoint);
 //  entranceToCH4.Dump();
 
   //  Double_t angleInCH4 = SnellAngle(AliRICHParam::IndOfRefSiO2(6.755),AliRICHParam::IndOfRefCH4,angleInSiO2);
-  Double_t angleInCH4 = SnellAngle(RefIdxSiO2(photonEn),RefIdxCH4(photonEn),vectorPhotonInSiO2.Theta());if(angleInCH4<0) return vBad;
+  Double_t angleInCH4 = SnellAngle(IdxSiO2(photonEn),IdxCH4(photonEn),vectorPhotonInSiO2.Theta());if(angleInCH4<0) return vBad;
   TVector3 vectorPhotonInCH4;
   vectorPhotonInCH4.SetMagThetaPhi(1,angleInCH4,phiout);
 //  planeZposition+=AliRICHParam::GapProx();
@@ -421,39 +472,28 @@ TVector3 AliRICHParam::ForwardTracing(TVector3 entranceTrackPoint, TVector3 vect
   return impactToPC;
 }//FowardTracing
 //__________________________________________________________________________________________________
-TVector3 AliRICHParam::PlaneIntersect(TVector3 vstart,TVector3 p0,TVector3 n,TVector3 v0)
+TVector3 AliRICHParam::PlaneIntersect(const TVector3 &lineDir,const TVector3 &linePoint,const TVector3 &planeNorm,const TVector3 &planePoint)
 {
-//
-  TVector3 parallel(-999,-999,-999);
-  // vstart = given vector
-  // p0 = origin of the given vector
-  // n = normal to a given plane
-  // v0 = point of the given plane
-//  cout << " n*vstart = " << n*vstart << endl;
-  if(n*vstart==0) return parallel;
-  TVector3 diff=v0-p0;
-  Double_t sint=(n*diff)/(n*vstart);
-  return p0+sint*vstart;
+// Finds an intersection point between a line and plane.
+// Arguments:  lineDir,linePoint    - vector along the line and any point of the line
+//             planeNorm,planePoint - vector normal to the plane and any point of the plane
+//   Returns:  point of intersection if any
+  if(planeNorm*lineDir==0) return   TVector3(-999,-999,-999);
+  TVector3 diff=planePoint-linePoint;
+  Double_t sint=(planeNorm*diff)/(planeNorm*lineDir);
+  return linePoint+sint*lineDir;
 }//PlaneIntersect
 //__________________________________________________________________________________________________ 
 Double_t AliRICHParam::SnellAngle(Float_t n1, Float_t n2, Float_t theta1)
 {
-// Snell law
-// Compute the Snell angle
-
-  Double_t sinrefractangle;
-  Double_t refractangle;
-
-  sinrefractangle = (n1/n2)*sin(theta1);
-
-  if(sinrefractangle>1.) {
-    //    cout << " PROBLEMS IN SNELL ANGLE !!!!! " << endl;
-    refractangle = -999.;
-    return refractangle;
-  }
-
-  refractangle = asin(sinrefractangle);
-  return refractangle;
+// Compute the angle of refraction out of Snell law
+// Arguments: n1 - ref idx of first substance  
+//            n2 - ref idx of second substance  
+//            n1 - photon impact angle in the first substance i.e. angle between the photon direction and vector normal to the surface (radians)
+//   Returns: photon refraction angle, i.e. angle in the second substance (radians)
+  Double_t sinref=(n1/n2)*TMath::Sin(theta1);
+  if(sinref>1.)    return -999;  
+  else             return TMath::ASin(sinref);
 }//SnellAngle
 //__________________________________________________________________________________________________
 void AliRICHParam::AnglesInDRS(Double_t trackTheta,Double_t trackPhi,Double_t thetaCerenkov,Double_t phiCerenkov,Double_t &tout,Double_t &pout)
@@ -479,10 +519,6 @@ void AliRICHParam::AnglesInDRS(Double_t trackTheta,Double_t trackPhi,Double_t th
   tout=photonInRadiator.Theta();
   pout=photonInRadiator.Phi();
 }//AnglesInDRS
-//__________________________________________________________________________________________________
-
-//__________________________________________________________________________________________________
-//__________________________________________________________________________________________________
 /*
 void DrawRing()
 {
@@ -532,3 +568,73 @@ void DrawRing()
 }
 //__________________________________________________________________________________________________
 */
+void AliRICHParam::TestHit2SDigs(Double_t x,Double_t y,Double_t e,Bool_t isNew)
+{
+//Test  hit->sdigits procedures
+//Arguments: isNew - if true use new (abs pad) procedure else use old one (TVector)
+//  Returns: none
+  TClonesArray *pSDigLst=new TClonesArray("AliRICHDigit");
+  Int_t iQtot=-1;
+  if(isNew){
+    iQtot=Hit2SDigs(10101,e,pSDigLst);        //new technique
+  }else{
+    iQtot=Hit2SDigs(TVector2(x,y),e,pSDigLst);//old technique
+  }
+  pSDigLst->Print();
+  Double_t dQsum=0;
+  for(Int_t i=0;i<pSDigLst->GetEntriesFast();i++)
+    dQsum+=((AliRICHDigit*)pSDigLst->At(i))->Qdc();
+  Printf("Qtot=%i Qsum=%.2f ",iQtot,dQsum);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t AliRICHParam::Stack(Int_t evt,Int_t tid)
+{
+// Prints some usefull info from stack
+// Arguments: evt - event number. if not -1 print info only for that event
+//            tid - track id. if not -1 then print it and all it's mothers if any   
+//   Returns: mother tid of the given tid if any
+  AliRunLoader *pAL=AliRunLoader::Open(); 
+  if(pAL->LoadHeader()) return -1;
+  if(pAL->LoadKinematics()) return -1;
+  
+  Int_t mtid=-1;
+  Int_t iNevt=pAL->GetNumberOfEvents();     Printf("This session contains %i event(s)",iNevt);
+  
+  for(Int_t iEvt=0;iEvt<iNevt;iEvt++){//events loop
+    if(evt!=-1 && evt!=iEvt) continue; //in case one needs to print the requested event, ignore all others
+    pAL->GetEvent(iEvt);    
+    AliStack *pStack=pAL->Stack();  
+    if(tid==-1){                        //print all tids for this event
+      for(Int_t i=0;i<pStack->GetNtrack();i++) pStack->Particle(i)->Print();
+      Printf("totally %i tracks including %i primaries for event %i out of %i event(s)",pStack->GetNtrack(),pStack->GetNprimary(),iEvt,iNevt);
+    }else{                              //print only this tid and it;s mothers
+      if(tid<0 || tid>pStack->GetNtrack()) {Printf("Wrong tid, valid tid range for event %i is 0-%i",iEvt,pStack->GetNtrack());break;}
+      TParticle *pTrack=pStack->Particle(tid); mtid=pTrack->GetFirstMother();
+      TString str=pTrack->GetName();
+      while((tid=pTrack->GetFirstMother()) >= 0){
+        pTrack=pStack->Particle(tid);
+        str+=" from ";str+=pTrack->GetName();
+      } 
+      Printf("%s",str.Data());       
+    }//if(tid==-1)      
+  }//events loop
+  pAL->UnloadHeader();  pAL->UnloadKinematics();
+  return mtid;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t AliRICHParam::StackCount(Int_t pid,Int_t evt)
+{
+// Counts total number of particles of given sort (including secondary) for a given event
+  AliRunLoader *pAL=AliRunLoader::Open(); 
+  pAL->GetEvent(evt);    
+  if(pAL->LoadHeader()) return 0;
+  if(pAL->LoadKinematics()) return 0;
+  AliStack *pStack=pAL->Stack();
+  
+  Int_t iCnt=0;
+  for(Int_t i=0;i<pStack->GetNtrack();i++) if(pStack->Particle(i)->GetPdgCode()==pid) iCnt++;
+  
+  pAL->UnloadHeader();  pAL->UnloadKinematics();
+  return iCnt;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
