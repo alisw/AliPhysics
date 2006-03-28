@@ -6,10 +6,8 @@
 /* $Id$ */
 
 #include "AliTriggerDetector.h"
-#include "AliITSLoader.h"
-#include "AliITSgeom.h"
-#include "AliITSdigitSPD.h"
-#include "AliTriggerInput.h"
+
+class AliITSgeom;
 
 ////////////////////////////////////////////////////////////////////////
 //

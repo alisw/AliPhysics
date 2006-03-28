@@ -20,8 +20,12 @@
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliTriggerInput.h"
 
 #include "AliITSTrigger.h"
+#include "AliITSdigitSPD.h"
+#include "AliITSgeom.h"
+#include "AliITSLoader.h"
 
 //______________________________________________________________________
 ClassImp(AliITSTrigger)
