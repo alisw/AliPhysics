@@ -15,8 +15,8 @@ $Id$
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
-#include <AliITSCalibration.h>
-#include <AliITSgeom.h>
+#include "AliITSCalibration.h"
+#include "AliITSgeom.h"
 
 class TTree;
 class AliCDBMetaData;

@@ -9,7 +9,7 @@
 
 #include <TObject.h>
 #include <TString.h>
-#include <AliITSresponse.h>
+#include "AliITSresponse.h"
 
 class AliITSsegmentation;
 class TF1;
