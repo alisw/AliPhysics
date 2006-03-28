@@ -38,6 +38,7 @@
 
 #include "AliTrackPointArray.h"
 #include "AliAlignObj.h"
+#include "AliTOFcalib.h"
 
 ClassImp(AliTOFtracker)
 
@@ -147,8 +148,10 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
     if(seed->GetTOFsignal()>0){
       t->SetTOFsignal(seed->GetTOFsignal());
       t->SetTOFcluster(seed->GetTOFcluster());
+      t->SetTOFsignalToT(seed->GetTOFsignalToT());
+      t->SetTOFCalChannel(seed->GetTOFCalChannel());
       AliTOFtrack *track = new AliTOFtrack(*seed); 
-      t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
+      t->UpdateTrackParams(track,AliESDtrack::kTOFout);   
       delete track;
     }
   }
@@ -220,8 +223,10 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
   //Match ESD tracks to clusters in TOF
 
+
   Int_t nSteps=(Int_t)(fTOFHeigth/0.1);
 
+  AliTOFcalib *calib = new AliTOFcalib(fGeom);
   //PH Arrays (moved outside of the loop)
   Float_t * trackPos[4];
   for (Int_t ii=0; ii<4; ii++) trackPos[ii] = new Float_t[nSteps];
@@ -440,6 +445,18 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
     delete trackTOFin;
 
+    //  Store quantities to be used in the TOF Calibration
+    Float_t ToT=c->GetToT(); // in ps
+    t->SetTOFsignalToT(ToT);
+    Int_t ind[5];
+    ind[0]=c->GetDetInd(0);
+    ind[1]=c->GetDetInd(1);
+    ind[2]=c->GetDetInd(2);
+    ind[3]=c->GetDetInd(3);
+    ind[4]=c->GetDetInd(4);
+    Int_t calindex = calib->GetIndex(ind);
+    t->SetTOFCalChannel(calindex);
+    
     Double_t tof=AliTOFGeometry::TdcBinWidth()*c->GetTDC()+32; // in ps
     t->SetTOFsignal(tof);
     //t->SetTOFcluster(c->GetIndex()); // pointing to the digits tree
@@ -461,6 +478,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   }
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
   for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
+  delete calib;
 }
 //_________________________________________________________________________
 Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
@@ -484,7 +502,6 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
   for (Int_t i=0; i<nc; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
     fClusters[i]=new AliTOFcluster(*c); fN++;
-
     //AliInfo(Form("%4i %4i  %f %f %f  %f %f   %2i %1i %2i %1i %2i",i, fClusters[i]->GetIndex(),fClusters[i]->GetZ(),fClusters[i]->GetR(),fClusters[i]->GetPhi(), fClusters[i]->GetTDC(),fClusters[i]->GetADC(),fClusters[i]->GetDetInd(0),fClusters[i]->GetDetInd(1),fClusters[i]->GetDetInd(2),fClusters[i]->GetDetInd(3),fClusters[i]->GetDetInd(4)));
     //AliInfo(Form("%i %f",i, fClusters[i]->GetZ()));
   }

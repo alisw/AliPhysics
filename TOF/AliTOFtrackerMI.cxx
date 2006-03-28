@@ -30,6 +30,7 @@
 #include "AliModule.h"
 #include "TTreeStream.h"
 #include "AliTOFcluster.h"
+#include "AliTOFcalib.h"
 
 ClassImp(AliTOFtrackerMI)
 
@@ -176,6 +177,8 @@ Int_t AliTOFtrackerMI::PropagateBack(AliESD* event) {
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
       t->SetIntegratedLength(seed->GetIntegratedLength());
       t->SetIntegratedTimes(times);
+      t->SetTOFsignalToT(seed->GetTOFsignalToT());
+      t->SetTOFCalChannel(seed->GetTOFCalChannel());
       //
       t->SetTOFInfo(info);
       delete track;
@@ -278,6 +281,8 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   };
   
   Int_t nSteps=(Int_t)(fTOFHeigth/0.1);
+
+  AliTOFcalib *calib = new AliTOFcalib(fGeom);
 
   //PH Arrays (moved outside of the loop)
   Float_t * trackPos[4];
@@ -512,6 +517,18 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       //      info[7] = mintimedist[index[inonfake]];
     }
     //
+    //  Store quantities to be used for TOF Calibration
+    Float_t ToT=cgold->GetToT(); // in ps
+    t->SetTOFsignalToT(ToT);
+    Int_t ind[5];
+    ind[0]=cgold->GetDetInd(0);
+    ind[1]=cgold->GetDetInd(1);
+    ind[2]=cgold->GetDetInd(2);
+    ind[3]=cgold->GetDetInd(3);
+    ind[4]=cgold->GetDetInd(4);
+    Int_t calindex = calib->GetIndex(ind);
+    t->SetTOFCalChannel(calindex);
+
     t->SetTOFInfo(info);
     t->SetTOFsignal(tof2);
     t->SetTOFcluster(cgold->GetIndex());  
@@ -531,6 +548,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   //
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
   for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
+  delete calib;
 }
 
 
