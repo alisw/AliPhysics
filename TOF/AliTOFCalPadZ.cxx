@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/13 17:22:26  arcelli
+just Fixing Log info
+
 Revision 1.1  2006/02/13 16:10:48  arcelli
 Add classes for TOF Calibration (C.Zampolli)
 
@@ -31,7 +34,8 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TROOT.h"
 #include "TBrowser.h"
 #include "TClass.h"
-#include "AliTOFGeometryV4.h"
+#include "AliLog.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFChannel.h"
 #include "AliTOFCalPadZ.h"
 
@@ -41,30 +45,29 @@ ClassImp(AliTOFCalPadZ)
 
 AliTOFCalPadZ::AliTOFCalPadZ(){
   fCh = 0;
-  fNSector = AliTOFGeometryV4::NSectors();
-  fNPlate = AliTOFGeometryV4::NPlates();
-  fNStripA = AliTOFGeometryV4::NStripA();
-  fNStripB = AliTOFGeometryV4::NStripB();
-  fNStripC = 20;
-  //  fNStripC = AliTOFGeometryV4::NStripC();
-  fNpadZ = AliTOFGeometryV4::NpadZ();
-  fNpadX = AliTOFGeometryV4::NpadX();
-
+  fNpadX=0;
 }
 //________________________________________________________________
 
 AliTOFCalPadZ::AliTOFCalPadZ(AliTOFChannel *ch):
   fCh(ch)
 {  
-  fNSector = AliTOFGeometryV4::NSectors();
-  fNPlate = AliTOFGeometryV4::NPlates();
-  fNStripA = AliTOFGeometryV4::NStripA();
-  fNStripB = AliTOFGeometryV4::NStripB();
-  //  fNStripC = AliTOFGeometryV4::NStripC();
-  fNStripC = 20;
-  fNpadZ = AliTOFGeometryV4::NpadZ();
-  fNpadX = AliTOFGeometryV4::NpadX();
+  fNpadX = 0;
+}
+//________________________________________________________________
 
+AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom){
+  fCh = 0;
+  fGeom = geom;
+  fNpadX = fGeom->NpadX();
+}
+//________________________________________________________________
+
+AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom,AliTOFChannel *ch):
+  fCh(ch)
+{  
+  fGeom = geom;
+  fNpadX = fGeom->NpadX();
 }
 //________________________________________________________________
 
@@ -76,6 +79,12 @@ AliTOFCalPadZ::~AliTOFCalPadZ()
 
 void AliTOFCalPadZ::Browse(TBrowser *b)
 {
+  if(fGeom==0x0){
+    AliInfo("V5 TOF Geometry is taken as the default");
+    AliTOFGeometry *geom = new AliTOFGeometryV5();
+    fNpadX = geom->NpadX();
+    delete geom;
+  }
   char name[10];
   for(Int_t i=0; i<fNpadX; ++i) {
     snprintf(name,sizeof(name),"PadX %2.2d",i);

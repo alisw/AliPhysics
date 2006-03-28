@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/13 17:22:26  arcelli
+just Fixing Log info
+
 Revision 1.1  2006/02/13 16:10:48  arcelli
 Add classes for TOF Calibration (C.Zampolli)
 
@@ -31,7 +34,8 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TROOT.h"
 #include "TBrowser.h"
 #include "TClass.h"
-#include "AliTOFGeometryV4.h"
+#include "AliLog.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFCalStrip.h"
 #include "AliTOFCalPlateB.h"
 #include "AliTOFChannel.h"
@@ -42,30 +46,39 @@ ClassImp(AliTOFCalPlateB)
 
 AliTOFCalPlateB::AliTOFCalPlateB(){
   fCh = 0;
-  fNSector = AliTOFGeometryV4::NSectors();
-  fNPlate = AliTOFGeometryV4::NPlates();
-  fNStripA = AliTOFGeometryV4::NStripA();
-  fNStripB = AliTOFGeometryV4::NStripB();
-  fNStripC = 20;
-  //  fNStripC = AliTOFGeometryV4::NStripC();
-  fNpadZ = AliTOFGeometryV4::NpadZ();
-  fNpadX = AliTOFGeometryV4::NpadX();
-
+  fGeom= 0x0; 
+  fNStripB = 0;
+  fNpadZ = 0;
+  fNpadX = 0;
 }
 //________________________________________________________________
 
-AliTOFCalPlateB::AliTOFCalPlateB(AliTOFChannel *ch):
-  fCh(ch)
+AliTOFCalPlateB::AliTOFCalPlateB(AliTOFChannel *ch) : fCh(ch)
 {
-  fNSector = AliTOFGeometryV4::NSectors();
-  fNPlate = AliTOFGeometryV4::NPlates();
-  fNStripA = AliTOFGeometryV4::NStripA();
-  fNStripB = AliTOFGeometryV4::NStripB();
-  fNStripC = 20;
-  //  fNStripC = AliTOFGeometryV4::NStripC();
-  fNpadZ = AliTOFGeometryV4::NpadZ();
-  fNpadX = AliTOFGeometryV4::NpadX();
+  fGeom= 0x0; 
+  fNStripB = 0;
+  fNpadZ = 0;
+  fNpadX = 0;
 }
+//________________________________________________________________
+
+AliTOFCalPlateB::AliTOFCalPlateB(AliTOFGeometry *geom){
+  fCh = 0;
+  fGeom = geom;  
+  fNStripB = fGeom->NStripB();
+  fNpadZ = fGeom->NpadZ();
+  fNpadX = fGeom->NpadX();
+}
+//________________________________________________________________
+
+AliTOFCalPlateB::AliTOFCalPlateB(AliTOFGeometry *geom, AliTOFChannel *ch): fCh(ch)
+{
+  fGeom = geom;  
+  fNStripB = fGeom->NStripB();
+  fNpadZ = fGeom->NpadZ();
+  fNpadX = fGeom->NpadX();
+}
+
 //________________________________________________________________
 
 AliTOFCalPlateB::~AliTOFCalPlateB()
@@ -79,21 +92,24 @@ AliTOFCalPlateB::AliTOFCalPlateB(const AliTOFCalPlateB& pl):
   TObject(pl)
   {
     fCh = pl.fCh;
-    fCh = pl.fCh;
-    fCh = pl.fCh;
-    fNSector = pl.fNSector;
-    fNPlate = pl.fNPlate;
-    fNStripA = pl.fNStripA;
     fNStripB = pl.fNStripB;
-    fNStripC = pl.fNStripC;
     fNpadZ = pl.fNpadZ;
     fNpadX = pl.fNpadX;
+    fGeom = pl.fGeom;
 
   }
 //________________________________________________________________
 
 void AliTOFCalPlateB::Browse(TBrowser *b){
 
+  if(fGeom==0x0){
+    AliTOFGeometry *geom = new AliTOFGeometryV5(); 
+    AliInfo("V5 TOF Geometry is taken as the default");
+    fNStripB = geom->NStripB();
+    fNpadZ = geom->NpadZ();
+    fNpadX = geom->NpadX();
+    delete geom;
+  }
   char name[10];
   for(Int_t i=0; i<fNStripB; ++i) {
     snprintf(name,sizeof(name),"Strip %2.2d",i);

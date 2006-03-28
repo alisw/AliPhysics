@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/13 17:22:26  arcelli
+just Fixing Log info
+
 Revision 1.1  2006/02/13 16:10:48  arcelli
 Add classes for TOF Calibration (C.Zampolli)
 
@@ -28,23 +31,17 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTOFcalibESD.h"
-#include <Riostream.h>
-#include <stdlib.h>
 
 
 ClassImp(AliTOFcalibESD)
 
 //________________________________________________________________
 AliTOFcalibESD::AliTOFcalibESD():
+  fTOFCalChannel(-1),
   fToT(0),
   fIntLen(0),
   fTOFtime(0),
   fP(0),
-  fSector(-1),
-  fPlate(-1),
-  fStrip(-1),
-  fPadz(-1),
-  fPadx(-1),
   fTOFsignalND(0)
 {
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] = 0;
@@ -53,16 +50,12 @@ AliTOFcalibESD::AliTOFcalibESD():
 
 AliTOFcalibESD::AliTOFcalibESD(const AliTOFcalibESD& UnCalib):
   AliESDtrack(UnCalib),
+  fCombID(UnCalib.fCombID),
+  fTOFCalChannel(UnCalib.fTOFCalChannel),
   fToT(UnCalib.fToT),
   fIntLen(UnCalib.fIntLen),
   fTOFtime(UnCalib.fTOFtime),
   fP(UnCalib.fP),
-  fCombID(UnCalib.fCombID),
-  fSector(UnCalib.fSector),
-  fPlate(UnCalib.fPlate),
-  fStrip(UnCalib.fStrip),
-  fPadz(UnCalib.fPadz),
-  fPadx(UnCalib.fPadx),
   fTOFsignalND(UnCalib.fTOFsignalND)
 {
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] = UnCalib.fTrackTime[i];
@@ -84,6 +77,8 @@ void AliTOFcalibESD::CopyFromAliESD(const AliESDtrack* track)
 {
   fP = track->GetP();
   fTOFtime = track->GetTOFsignal();
+  fToT = track->GetTOFsignalToT();
+  fTOFCalChannel = track->GetTOFCalChannel();
   fIntLen = track->GetIntegratedLength();
   Double_t exptime[10]; 
   track->GetIntegratedTimes(exptime);

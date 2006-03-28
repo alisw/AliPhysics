@@ -14,35 +14,31 @@
 #include "TROOT.h"
 #include "TBrowser.h"
 #include "TClass.h"
-#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFChannel.h"
+
 
 class AliTOFCalPlateC: public TObject 
 {
  public:
   AliTOFCalPlateC();
+  AliTOFCalPlateC(AliTOFGeometry *geom);
   AliTOFCalPlateC(AliTOFChannel *ch);
+  AliTOFCalPlateC(AliTOFGeometry *geom,AliTOFChannel *ch);
   AliTOFCalPlateC(const AliTOFCalPlateC& pl);
   virtual ~AliTOFCalPlateC();
-  Int_t NSector()const {return fNSector;}
-  Int_t NPlate()const {return fNPlate;}
-  Int_t NStripA()const {return fNStripA;}
-  Int_t NStripB()const {return fNStripB;}
   Int_t NStripC()const {return fNStripC;}
   Int_t NpadZ()const {return fNpadZ;}
   Int_t NpadX()const {return fNpadX;}
   void Browse(TBrowser *b);
   Bool_t IsFolder() const{return kTRUE;}
 private:
-  Int_t fNSector;  // number of TOF sectors
-  Int_t fNPlate;   // number of TOF plates
-  Int_t fNStripA;  // number of TOF strips A
-  Int_t fNStripB;  // number of TOF strips B
   Int_t fNStripC;  // number of TOF strips C
   Int_t fNpadZ;    // number of TOF pads Z
   Int_t fNpadX;    // number of TOF pads X
 
-  AliTOFChannel *fCh; //array of AliTOFChannel storing calib parameters
+  AliTOFGeometry *fGeom;    // AliTOFgeometry pointer
+  AliTOFChannel *fCh;  //array of AliTOFChannel storing calib parameters
   ClassDef(AliTOFCalPlateC,1)
 };
 

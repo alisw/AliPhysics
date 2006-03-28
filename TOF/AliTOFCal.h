@@ -14,7 +14,7 @@
 #include "TROOT.h"
 #include "TBrowser.h"
 #include "TClass.h"
-#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFChannel.h"
 
 
@@ -22,6 +22,7 @@ class AliTOFCal: public TObject
 {
  public:
   AliTOFCal();
+  AliTOFCal(AliTOFGeometry *geom);
   AliTOFCal(const AliTOFCal& cal);
   virtual ~AliTOFCal();
   void Browse(TBrowser *b);
@@ -49,6 +50,7 @@ private:
   Int_t fNpadX;    // number of TOF pads X
   Int_t fnpad;     // number of TOF channels
 
+  AliTOFGeometry *fGeom;    // AliTOFgeometry pointer
   AliTOFChannel* fPads;  //[fnpad]  
                          // array of AliTOFChannels storing the calib parameters
   ClassDef(AliTOFCal,1)

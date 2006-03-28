@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/13 17:22:26  arcelli
+just Fixing Log info
+
 Revision 1.1  2006/02/13 16:10:48  arcelli
 Add classes for TOF Calibration (C.Zampolli)
 
@@ -31,7 +34,8 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TROOT.h"
 #include "TBrowser.h"
 #include "TClass.h"
-#include "AliTOFGeometryV4.h"
+#include "AliLog.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFCalSector.h"
 #include "AliTOFCal.h"
 #include "AliTOFChannel.h"
@@ -43,16 +47,30 @@ ClassImp(AliTOFCal)
 //________________________________________________________________
 
 AliTOFCal::AliTOFCal():TObject(){
-  // fCalp = 0;
-  fNSector = AliTOFGeometryV4::NSectors();
-  fNPlate = AliTOFGeometryV4::NPlates();
-  fNStripA = AliTOFGeometryV4::NStripA();
-  fNStripB = AliTOFGeometryV4::NStripB();
-  //  fNStripC = AliTOFGeometryV4::NStripC();
-  fNStripC = 20;
-  fNpadZ = AliTOFGeometryV4::NpadZ();
-  fNpadX = AliTOFGeometryV4::NpadX();
+  fGeom = 0x0;
+  fNSector = 0;
+  fNPlate  = 0;
+  fNStripA = 0;
+  fNStripB = 0;
+  fNStripC = 0;
+  fNpadZ = 0;
+  fNpadX = 0;
   fnpad = 0;
+  fPads = 0x0;
+  gROOT->GetListOfBrowsables()->Add(this);
+ }
+//________________________________________________________________
+
+AliTOFCal::AliTOFCal(AliTOFGeometry *geom):TObject(){
+  fGeom = geom;
+  fNSector = fGeom->NSectors();
+  fNPlate  = fGeom->NPlates();
+  fNStripA = fGeom->NStripA();
+  fNStripB = fGeom->NStripB();
+  fNStripC = fGeom->NStripC();
+  fNpadZ = fGeom->NpadZ();
+  fNpadX = fGeom->NpadX();
+  fnpad = fNSector*(2*(fNStripC+fNStripB)+fNStripA)*fNpadZ*fNpadX;
   fPads = 0x0;
   gROOT->GetListOfBrowsables()->Add(this);
 }
@@ -77,6 +95,7 @@ AliTOFCal::AliTOFCal(const AliTOFCal& cal):
 //____________________________________________________________________________ 
 AliTOFCal::~AliTOFCal()
 {
+  gROOT->GetListOfBrowsables()->Remove(this);
   delete [] fPads;
 }
 //________________________________________________________________
@@ -92,6 +111,18 @@ void AliTOFCal::Browse(TBrowser *b)
 //________________________________________________________________
 
 void AliTOFCal::CreateArray(){
-  fnpad = AliTOFGeometryV4::NSectors()*(2*(20+AliTOFGeometryV4::NStripB())+AliTOFGeometryV4::NStripA())*AliTOFGeometryV4::NpadZ()*AliTOFGeometryV4::NpadX();
+  if(fGeom==0x0){
+    AliInfo("V5 TOF Geometry is taken as a default");
+    AliTOFGeometry *geom= new AliTOFGeometryV5();
+    fNSector = geom->NSectors();
+    fNPlate  = geom->NPlates();
+    fNStripA = geom->NStripA();
+    fNStripB = geom->NStripB();
+    fNStripC = geom->NStripC();
+    fNpadZ = geom->NpadZ();
+    fNpadX = geom->NpadX();
+    fnpad = fNSector*(2*(fNStripC+fNStripB)+fNStripA)*fNpadZ*fNpadX;
+    delete geom;
+  }
   fPads= new AliTOFChannel[fnpad];
 }

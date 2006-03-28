@@ -26,9 +26,10 @@ class AliTOFCalSector: public TObject
 public:
   AliTOFCalSector();
   AliTOFCalSector(AliTOFChannel *ch);
+  AliTOFCalSector(AliTOFGeometry *geom);
+  AliTOFCalSector(AliTOFGeometry *geom, AliTOFChannel *ch);
   AliTOFCalSector(const AliTOFCalSector& sec);
   virtual ~AliTOFCalSector();
-  Int_t NSector()const {return fNSector;}
   Int_t NPlate()const {return fNPlate;}
   Int_t NStripA()const {return fNStripA;}
   Int_t NStripB()const {return fNStripB;}
@@ -38,7 +39,6 @@ public:
   void Browse(TBrowser *b);
   Bool_t IsFolder() const{return kTRUE;}
 private:
-  Int_t fNSector;  // number of TOF sectors
   Int_t fNPlate;   // number of TOF plates
   Int_t fNStripA;  // number of TOF strips A
   Int_t fNStripB;  // number of TOF strips B
@@ -46,6 +46,7 @@ private:
   Int_t fNpadZ;    // number of TOF pads Z
   Int_t fNpadX;    // number of TOF pads X
 
+  AliTOFGeometry *fGeom;    // AliTOFgeometry pointer
   AliTOFChannel *fCh; //array of AliTOFChannel storing calib parameters
   ClassDef(AliTOFCalSector,1)
 };
