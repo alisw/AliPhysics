@@ -5,6 +5,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDDigitizer.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:38:26 2006
+    @brief   FMD Digitizers declaration
+*/
 #ifndef ALIDIGITIZER_H
 # include <AliDigitizer.h>
 #endif

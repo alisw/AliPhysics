@@ -7,6 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDAltroIO.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:27:31 2006
+    @brief   ALTRO Input/output
+*/
 #include <iosfwd>
 #include <TObject.h>
 

@@ -1,16 +1,20 @@
 #ifndef ALIFMDRECPOINT_H
 #define ALIFMDRECPOINT_H
-
 // Reconstracted Particles Class: has number of reconstructed
 // particles in sectors from NumOfMinSector to NumberOfMaxSector()
 // rings from NumOfMinRing to NumOfMaxRing for each FMDvolume 
 //
+/** @file    AliFMDRecPoint.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:46:26 2006
+    @brief   Pseudo reconstructed charged particle multiplicity 
+*/
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
 
-/** Reconstructed FMD points.  It contains the pseudo-inclusive
-    multiplicity 
+/** @brief Reconstructed FMD points.  
+    It contains the pseudo-inclusive  multiplicity 
     @ingroup FMD_rec
  */
 class AliFMDRecPoint: public TObject

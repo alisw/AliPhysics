@@ -8,6 +8,11 @@
 //                   -I$ALICE_ROOT -I$ALICE/geant3/TGeant3");
 // root [0] .x grun.C(1,"ConfigPPR.C++")
 //
+/** @file    Config.C
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:50:29 2006
+    @brief   Simulation configuration script
+*/
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TRandom.h>

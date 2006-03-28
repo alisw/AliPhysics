@@ -7,6 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMD.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 17:59:37 2006
+    @brief   Declaration of AliFMD detector driver 
+*/
 /** @mainpage ALICE FMD Off-line code 
     
     @b Contents 

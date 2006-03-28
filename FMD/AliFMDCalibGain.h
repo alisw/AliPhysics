@@ -5,11 +5,16 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDCalibGain.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:30:16 2006
+    @brief   Per strip gain calibration 
+*/
 #ifndef ALIFMDFLOATMAP_H
 # include <AliFMDFloatMap.h>
 #endif
 //____________________________________________________________________
-/** Gain value and width for each strip in the FMD 
+/** @brief Gain value and width for each strip in the FMD 
     @ingroup FMD_base
 */
 class AliFMDCalibGain : public TObject 

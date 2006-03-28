@@ -5,6 +5,12 @@
  * See cxx source for full Copyright notice
  */
 /* $Id$ */
+/** @file    FMDrecLinkDef.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 14:19:08 2006
+    @brief   Link specifications for reconstruction library
+    
+*/
 #ifdef __CINT__
 
 #pragma link off all globals;

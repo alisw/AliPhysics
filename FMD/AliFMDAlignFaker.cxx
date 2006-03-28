@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDAlignFaker.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 17:57:55 2006
+    @brief   Implementation of AliFMDAlignFaker 
+*/
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 
@@ -165,7 +168,7 @@ AliFMDAlignFaker::Exec(Option_t*)
   }
 
   TString t(GetTitle());
-  if (t.Contains("local://") || t.Contains("alien://")) 
+  if (t.IsNull() || t.Contains("local://") || t.Contains("alien://")) 
     WriteToCDB();
   else 
     WriteToFile();
@@ -228,7 +231,8 @@ AliFMDAlignFaker::WriteToCDB()
 {
   // Make the objects. 
   AliCDBManager*     cdb      = AliCDBManager::Instance();
-  if (GetTitle())    cdb->SetDefaultStorage(GetTitle());
+  if (GetTitle() && GetTitle()[0] != '\0')    
+    cdb->SetDefaultStorage(GetTitle());
     
   AliCDBMetaData* meta = new AliCDBMetaData; 
   meta->SetResponsible(gSystem->GetUserInfo()->fRealName.Data()); 

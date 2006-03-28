@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDInput.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:42:40 2006
+    @brief   FMD utility classes for reading FMD data
+*/
 //___________________________________________________________________
 //
 // The classes defined here, are utility classes for reading in data
@@ -179,9 +182,13 @@ AliFMDInput::Init()
   // Optionally, get the ESD files
   if (TESTBIT(fTreeMask, kESD)) {
     fChainE = new TChain("esdTree");
-    TSystemDirectory dir;
+    TSystemDirectory dir(".",".");
     TList*           files = dir.GetListOfFiles();
-    TSystemFile*     file;
+    TSystemFile*     file = 0;
+    if (!files) {
+      AliError("No files");
+      return kFALSE;
+    }
     files->Sort();
     TIter            next(files);
     while ((file = static_cast<TSystemFile*>(next()))) {

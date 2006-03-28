@@ -7,56 +7,54 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDRawStream.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Tue Mar 28 12:53:26 2006
+    @brief   Class to read ALTRO formated data from an AliRawReader. 
+*/
 #ifndef ALIALTRORAWSTREAM_H
 # include <AliAltroRawStream.h>
 #endif 
 
 
-// TPC to FMD translations 
-// 
-//    TPC                FMD
-//    ----------+-----------
-//    pad+time  |      strip
-//    row       |     sector
-//    sector    |       ring
-// 
+/** @class AliFMDRawStream 
+    @brief Class to read ALTRO formated data from an AliRawReader.  
+    This class is mostly here to set
+    AliAltroRawStream::fNoAltroMapping to false.   Furthermore, it
+    defines the utility function ReadChannel to read in a full ALTRO
+    channel.  The data is unpacked into the passed array. 
+ */
 class AliFMDRawStream : public AliAltroRawStream 
 {
 public:
-  AliFMDRawStream(AliRawReader* reader, UShort_t sampleRate=0);
+  /** Constructor 
+      @param reader Raw reader to use */
+  AliFMDRawStream(AliRawReader* reader);
+  /** Destructor  */
   virtual ~AliFMDRawStream() {}
 
-  Short_t Sector()      const { return fRow; }
-  Char_t  Ring()        const { return (fSector == 0 ? 'I' : 'O'); }
-  Short_t Strip()       const { return fPad + fTime / fSampleRate; }
-  Short_t Sample()      const { return fTime % fSampleRate; }
-  Short_t PrevSector()  const { return fPrevRow; }
-  Char_t  PrevRing()    const { return (fPrevSector == 0 ? 'I' : 'O'); }
-  Short_t PrevStrip()   const { return fPrevPad + fPrevTime/fSampleRate; }
-    
-  Bool_t  IsNewRing()   const { return (fSector != fPrevSector); }
-  Bool_t  IsNewSector() const { return (fRow != fPrevRow) || IsNewRing(); }
-  Bool_t  IsNewStrip()  const { return(Strip() != PrevStrip())||IsNewSector();}
-    
-  Short_t Count()       const { return fSignal; }
-  Short_t SampleRate()  const { return fSampleRate; }
-  
-  virtual Bool_t Next();
-  virtual Bool_t ReadChannel(UInt_t& addr, UInt_t& len, UShort_t* data);
-  virtual Bool_t DumpData();
+  /** Read one ALTRO channel from the raw reader
+      @param ddl  On return, the DDL
+      @param addr On return, the hardware address
+      @param len  On return, the number of entries filled in @a data
+      @param data On return, the read ADC channels.
+      @return @c true on success */
+  virtual Bool_t ReadChannel(UInt_t& ddl, UInt_t& addr, 
+			     UInt_t& len, UShort_t* data);
 protected:
-  virtual Int_t    ReadIntoBuffer();
-  virtual Int_t    ReadTrailer(UInt_t& head, UInt_t& len);
-  virtual Int_t    ReadFillWords(UInt_t len);
-  virtual Int_t    ReadBunch(UShort_t* data);
-  virtual UShort_t Get10BitWord();
+  /** @{ */
+  /** @name Hide base classes `stupid' member functions */
+  Int_t  GetSector()     const { return -1; }
+  Int_t  GetPrevSector() const { return -1; }
+  Bool_t IsNewSector()   const { return kFALSE; }
+  Int_t  GetRow()        const { return -1; }
+  Int_t  GetPrevRow()    const { return -1; }
+  Bool_t IsNewRow()      const { return kFALSE; }
+  Int_t  GetPad()        const { return -1; }
+  Int_t  GetPrevPad()    const { return -1; }
+  Bool_t IsNewPad()      const { return kFALSE; }
+  /** @} */
   
-  UShort_t  fSampleRate;         // # of ALTRO samples per VA1_ALICE clock
-  Int_t     fPrevTime;           // Last time bin
-  Bool_t    fExplicitSampleRate; // True if the sample rate was set externally
-  Int_t     fPos;
-  Int_t     fCur;
-  UChar_t*  fRead;
   ClassDef(AliFMDRawStream, 0) // Read raw FMD Altro data 
 };
 

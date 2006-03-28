@@ -5,6 +5,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDUShortMap.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:48:18 2006
+    @brief   Per strip of unisgned shorts (16 bit) data 
+*/
 #ifndef ALIFMDMAP_H
 # include "AliFMDMap.h"
 #endif 

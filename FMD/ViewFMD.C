@@ -1,3 +1,9 @@
+/** @file    ViewFMD.C
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 14:20:48 2006
+    @brief   Script to setup FMD volumes for viewing - obsolete
+*/
+/** Setup FMD volumes for viewing - obsolete */
 void ViewFMD()
 {
   gMC->Gsatt("FMD1","seen",0);

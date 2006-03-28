@@ -12,8 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
+/** @file    AliFMDDetector.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:36:27 2006
+    @brief   Sub-detector base class implementation
+*/
 
 //____________________________________________________________________
 //

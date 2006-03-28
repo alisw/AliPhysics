@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDCalibFaker.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:29:21 2006
+    @brief   Make fake calibration data 
+*/
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 
@@ -32,6 +35,7 @@
 #include "AliFMDCalibPedestal.h"   // ALIFMDCALIBPEDESTAL_H
 #include "AliFMDCalibSampleRate.h" // ALIFMDCALIBPEDESTAL_H
 #include "AliFMDAltroMapping.h"    // ALIFMDALTROMAPPING_H
+#include "AliFMDCalibStripRange.h" // ALIFMDCALIBSTRIPRANGE_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
 #include <Riostream.h>
@@ -59,7 +63,9 @@ AliFMDCalibFaker::AliFMDCalibFaker(Int_t mask, const char* loc)
     fRate(1),
     fZeroThreshold(0),
     fRunMin(0),
-    fRunMax(10)
+    fRunMax(10),
+    fStripMin(0),
+    fStripMax(127)
 {
   // Default constructor 
 }
@@ -84,7 +90,11 @@ AliFMDCalibFaker::Exec(Option_t*)
   Float_t            maxADC   = param->GetAltroChannelSize();
   TObjArray          cleanup;
 
-  if (GetTitle()) cdb->SetDefaultStorage(GetTitle());
+  if (GetTitle() && GetTitle()[0] != '\0') { 
+    AliInfo(Form("Setting default storage to '%s'", GetTitle()));
+    cdb->SetDefaultStorage(GetTitle());
+  }
+  
     
   AliCDBMetaData* meta = 0;
   if (TESTBIT(fMask, kPulseGain)) {
@@ -139,6 +149,16 @@ AliFMDCalibFaker::Exec(Option_t*)
     meta->SetProperty("key1", rate);
     cdb->Put(rate, id, meta);
     cleanup.Add(rate);
+    cleanup.Add(meta);
+  }
+  if (TESTBIT(fMask, kStripRange)) {
+    fRate = TMath::Max(TMath::Min(fRate, UShort_t(8)), UShort_t(1));
+    AliFMDCalibStripRange* range = MakeStripRange();
+    AliCDBId               id(AliFMDParameters::fgkStripRange,fRunMin,fRunMax);
+    MAKE_META(meta);
+    meta->SetProperty("key1", range);
+    cdb->Put(range, id, meta);
+    cleanup.Add(range);
     cleanup.Add(meta);
   }
   if (TESTBIT(fMask, kAltroMap)) {
@@ -249,9 +269,33 @@ AliFMDCalibSampleRate*
 AliFMDCalibFaker::MakeSampleRate()
 {
   AliFMDCalibSampleRate*  sampleRate  = new AliFMDCalibSampleRate;
-  for (int i = 0; i < 3; i++)
-    sampleRate->Set(AliFMDParameters::kBaseDDL+i, fRate);
+  for (UShort_t det = 1; det <= 3; det++) {
+    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
+    for (Char_t* ring = rings; *ring != '\0'; ring++) {
+      UShort_t nSec = ( *ring == 'I' ? 20  :  40 );
+      for (UShort_t sec = 0; sec < nSec; sec++) {
+	sampleRate->Set(det, *ring, sec, 0, fRate);
+      }
+    }
+  }
   return sampleRate;
+}
+
+//__________________________________________________________________
+AliFMDCalibStripRange*
+AliFMDCalibFaker::MakeStripRange()
+{
+  AliFMDCalibStripRange*  striprange  = new AliFMDCalibStripRange;
+  for (UShort_t det = 1; det <= 3; det++) {
+    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
+    for (Char_t* ring = rings; *ring != '\0'; ring++) {
+      UShort_t nSec = ( *ring == 'I' ? 20  :  40 );
+      for (UShort_t sec = 0; sec < nSec; sec++) {
+	striprange->Set(det, *ring, sec, 0, fStripMin, fStripMax);
+      }
+    }
+  }
+  return striprange;
 }
 
 //__________________________________________________________________

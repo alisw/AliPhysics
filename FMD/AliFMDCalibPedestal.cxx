@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDCalibPedestal.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:30:36 2006
+    @brief   Per strip pedestal calibration 
+*/
 //____________________________________________________________________
 //                                                                          
 //
@@ -70,7 +73,7 @@ Float_t
 AliFMDCalibPedestal::Width(UShort_t det, Char_t ring, UShort_t sec, 
 			   UShort_t str)
 {
-  return fValue(det, ring, sec, str);
+  return fWidth(det, ring, sec, str);
 }
 
 //____________________________________________________________________

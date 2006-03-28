@@ -12,9 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDv0.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:48:51 2006
+    @brief   Concrete implementation of FMD detector driver - coarse
+    version 
+*/
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. This class

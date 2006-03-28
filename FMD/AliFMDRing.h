@@ -7,6 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDRing.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:47:43 2006
+    @brief   FMD ring geometry parameters 
+*/
 //__________________________________________________________________
 //
 // Parameters of the FMD rings. 
@@ -24,7 +29,7 @@
 class TBrowser;
 class TVector2;
 
-/** Geometry description and parameters of a ring in the FMD
+/** @brief Geometry description and parameters of a ring in the FMD 
     detector. 
     
     As there are only 2 kinds of rings @e Inner (@c 'I') and @e

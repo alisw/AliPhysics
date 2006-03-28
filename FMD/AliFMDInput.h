@@ -5,6 +5,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDInput.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:42:40 2006
+    @brief   FMD utility classes for reading FMD data
+*/
 //___________________________________________________________________
 /** @defgroup FMD_util Utility classes. 
 
@@ -215,9 +220,13 @@ protected:
 
 //____________________________________________________________________
 class AliFMDHit;
+/** @brief Class to read FMD hits
+ */
 class AliFMDInputHits : public AliFMDInput 
 {
 public:
+  /** Constructor
+      @param file Name of @c gAlice file */
   AliFMDInputHits(const char* file="galice.root") 
     : AliFMDInput(file) { AddLoad(kHits); }
   ClassDef(AliFMDInputHits, 0);
@@ -225,9 +234,13 @@ public:
 
 //____________________________________________________________________
 class AliFMDDigit;
+/** @brief Class to read FMD digits
+ */
 class AliFMDInputDigits : public AliFMDInput 
 {
 public:
+  /** Constructor
+      @param file Name of @c gAlice file */
   AliFMDInputDigits(const char* file="galice.root")
     : AliFMDInput(file) { AddLoad(kDigits); }
   ClassDef(AliFMDInputDigits, 0);
@@ -235,18 +248,26 @@ public:
 
 //____________________________________________________________________
 class AliFMDSDigit;
+/** @brief Class to read FMD summable digits
+ */
 class AliFMDInputSDigits : public AliFMDInput 
 {
 public:
+  /** Constructor
+      @param file Name of @c gAlice file */
   AliFMDInputSDigits(const char* file="galice.root") 
     : AliFMDInput(file) { AddLoad(kSDigits); }
   ClassDef(AliFMDInputSDigits, 0);
 };
 
 //____________________________________________________________________
+/** @brief Class to read FMD raw data
+ */
 class AliFMDInputRaw : public AliFMDInput 
 {
 public:
+  /** Constructor
+      @param file Name of @c gAlice file */
   AliFMDInputRaw(const char* file="galice.root") 
     : AliFMDInput(file) { AddLoad(kRaw); }
   ClassDef(AliFMDInputRaw, 0);
@@ -254,9 +275,13 @@ public:
 
 //____________________________________________________________________
 class AliFMDRecPoint;
+/** @brief Class to read FMD reconstructed data
+ */
 class AliFMDInputRecPoints : public AliFMDInput 
 {
 public:
+  /** Constructor
+      @param file Name of @c gAlice file */
   AliFMDInputRecPoints(const char* file="galice.root") 
     : AliFMDInput(file) { AddLoad(kRecPoints); }
   ClassDef(AliFMDInputRecPoints, 0);

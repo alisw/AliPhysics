@@ -3,15 +3,20 @@
 //
 #ifndef ALIFMD3_H
 #define ALIFMD3_H
-
+/** @file    AliFMD3.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:23:48 2006
+    @brief   Geometry parameters of the FMD3 detector. 
+*/
 #ifndef ALIFMDDETECTOR_H
 # include "AliFMDDetector.h"
 #endif
 
 /** @class AliFMD3 AliFMD3.h <FMD/AliFMD3.h> 
-    Geometry parameters of the FMD3 detector. FMD3 has a fairly
-    complicated support structure.  The cone also supports the
-    beam-pipe. 
+    @brief Geometry parameters of the FMD3 detector. 
+    FMD3 has a fairly complicated support structure.  The cone also
+    supports the beam-pipe.
+    @image html FMD3.png 
     @ingroup FMD_base
 */
 class AliFMD3 : public AliFMDDetector 

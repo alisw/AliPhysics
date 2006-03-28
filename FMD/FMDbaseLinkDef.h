@@ -4,7 +4,11 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
+/** @file    FMDbaseLinkDef.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 14:18:46 2006
+    @brief   Link specifications for base library 
+*/
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
@@ -24,10 +28,11 @@
 #pragma link C++ class  AliFMDCalibPedestal+;
 #pragma link C++ class  AliFMDCalibGain+;
 #pragma link C++ class  AliFMDCalibSampleRate+;
+#pragma link C++ class  AliFMDCalibStripRange+;
 #pragma link C++ class  AliFMDAltroMapping+;
-#pragma link C++ class  AliFMDAltroIO+;
-#pragma link C++ class  AliFMDAltroReader+;
-#pragma link C++ class  AliFMDAltroWriter+;
+// #pragma link C++ class  AliFMDAltroIO+;
+// #pragma link C++ class  AliFMDAltroReader+;
+// #pragma link C++ class  AliFMDAltroWriter+;
 
 #else
 # error Not for compilation 

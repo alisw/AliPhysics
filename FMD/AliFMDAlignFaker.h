@@ -7,7 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
-
+/** @file    AliFMDAlignFaker.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:26:39 2006
+    @brief   Make fake alignment 
+*/
 //____________________________________________________________________
 //
 //  Class to make fake alignration parameters 
@@ -22,8 +26,9 @@ class TClonesArray;
 class TString;
 
 /** @class AliFMDAlignFaker 
-    This task creates fake alignment. Which alignment, depends on the
-    bit mask passed to the constructor, or added by `AddAlign'.
+    @brief This task creates fake alignment. 
+    Which alignment, depends on the bit mask passed to the
+    constructor, or added by `AddAlign'.
 
     The default is to write all alignment parameters to a local
     storage @c local://cdb which is a directory in the current

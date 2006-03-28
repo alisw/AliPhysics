@@ -7,7 +7,12 @@
  *
  * See cxx source for full Copyright notice                               
  */
-
+/** @file    AliFMDv0.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:48:51 2006
+    @brief   Concrete implementation of FMD detector driver - coarse
+    version 
+*/
 //____________________________________________________________________
 //
 //  Manager class for the FMD - Coarse version. 
@@ -17,10 +22,11 @@
 #endif
 
 //____________________________________________________________________
-/** Forward Multiplicity Detector based on Silicon wafers. This class 
-    contains the base procedures for the Forward Multiplicity detector
-    Detector consists of 3 sub-detectors FMD1, FMD2, and FMD3, each of 
-    which has 1 or 2 rings of silicon sensors.  
+/** @brief Forward Multiplicity Detector based on Silicon wafers. 
+
+    This class contains the base procedures for the Forward
+    Multiplicity detector Detector consists of 3 sub-detectors FMD1,
+    FMD2, and FMD3, each of which has 1 or 2 rings of silicon sensors.
                                                            
     This contains the coarse version of the FMD - that is, the
     simulation produces no hits in the FMD volumes, and the sensors

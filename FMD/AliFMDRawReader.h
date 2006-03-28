@@ -8,6 +8,11 @@
  * See cxx source for full Copyright notice                               
  */
 /* $Id$ */
+/** @file    AliFMDRawReader.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:45:23 2006
+    @brief   Class to read raw data 
+*/
 //____________________________________________________________________
 // 
 // Class to read ADC values from a AliRawReader object. 

@@ -7,6 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDGeometryBuilder.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:41:17 2006
+    @brief   Class to build the FMD geometry 
+*/
 #ifndef ROOT_TTask
 # include <TTask.h>
 #endif

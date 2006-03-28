@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDGeometry.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:40:37 2006
+    @brief   Geometry mananger for the FMD
+*/
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 

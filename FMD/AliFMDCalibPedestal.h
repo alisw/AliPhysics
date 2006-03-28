@@ -5,11 +5,16 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDCalibPedestal.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:30:51 2006
+    @brief   Per strip pedestal calibration 
+*/
 #ifndef ALIFMDFLOATMAP_H
 # include <AliFMDFloatMap.h>
 #endif
 //____________________________________________________________________
-/** Pedestal value and width for each strip in the FMD 
+/** @brief Pedestal value and width for each strip in the FMD 
     @ingroup FMD_base
 */
 class AliFMDCalibPedestal : public TObject 

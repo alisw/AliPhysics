@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDRing.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:47:43 2006
+    @brief   FMD ring geometry parameters 
+*/
 //__________________________________________________________________
 //
 // Utility class to help implement collection of FMD modules into

@@ -14,14 +14,19 @@
  **************************************************************************/
 
 /* $Id$ */
-
+/** @file    Reconstruct.C
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 14:19:56 2006
+    @brief   Script to do reconstruction 
+*/
 // Script to do test the FMD digitization class. 
 
+/** Do reconstruction */
 void 
 Reconstruct()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://cdb");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT");
   AliLog::SetModuleDebugLevel("FMD", 2);
   AliReconstruction rec;   
   rec.SetRunLocalReconstruction("FMD");

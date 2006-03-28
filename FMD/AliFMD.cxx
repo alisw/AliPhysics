@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMD.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 17:59:18 2006
+    @brief   Implementation of AliFMD base class 
+*/
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. This class

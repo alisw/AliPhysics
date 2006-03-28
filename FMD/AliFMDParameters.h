@@ -7,7 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
-
+/** @file    AliFMDParameters.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:44:43 2006
+    @brief   Manager of FMD parameters
+*/
 //____________________________________________________________________
 //
 //  Singleton class to handle various parameters (not geometry) of the
@@ -31,12 +35,14 @@ typedef AliFMDBoolMap   AliFMDCalibDeadMap;
 class AliFMDCalibPedestal;
 class AliFMDCalibGain;
 class AliFMDCalibSampleRate;
+class AliFMDCalibStripRange;
 class AliFMDAltroMapping;
 
-/** This class is a singleton that handles various parameters of the
-    FMD detectors.  This class reads from the Conditions DB to get the
-    various parameters, which code can then request from here. In that
-    way, all code uses the same data, and the interface is consistent.
+/** @brief This class is a singleton that handles various parameters
+    of the FMD detectors.  
+    This class reads from the Conditions DB to get the various
+    parameters, which code can then request from here. In that way,
+    all code uses the same data, and the interface is consistent.
      
     Some of the parameter managed are 
     - @c fPedestal, @c fPedestalWidth
@@ -71,62 +77,165 @@ public:
       CDB.  If that fails, the class uses the hard-coded parameters. 
    */
   void Init();
+  /** Print all parameters. 
+      @param option Option string */
+  void Print(Option_t* option="A") const;
   
   /** @{ */
   /** @name Set various `Fixed' parameters */
+  /** @param r How many MIP signals we can fit in the VA1
+      pre-amps. (default and design is 20) */
   void SetVA1MipRange(UShort_t r=20)          { fVA1MipRange = r; }
+  /** @param s Maximum number of the ADC (ALTRO).  This is a 10 bit
+      ADC so, the maximum number is 1024 */
   void SetAltroChannelSize(UShort_t s=1024)   { fAltroChannelSize = s;}
+  /** @param size The number of strips multiplexed into one ALTRO
+      channel. That is, how many strips is connected to one VA1
+      pre-amp. */
   void SetChannelsPerAltro(UShort_t size=128) { fChannelsPerAltro = size; }
+  /** @param f Factor to use for accepting a signal. */
   void SetPedestalFactor(Float_t f=3)         { fPedestalFactor = f; }
   /** @} */
 
   /** @{ */
   /** @name Set various variable parameter defaults */
+  /** @param s Zero suppression threshold in ADC counts */
   void SetZeroSuppression(UShort_t s=0)       { fFixedZeroSuppression = s; }
+  /** @param r How many times we oversample each strip. */
   void SetSampleRate(UShort_t r=1)            { fFixedSampleRate = (r>2?2:r);}
+  /** @param p Pedestal value in ADC counts */
   void SetPedestal(Float_t p=10)              { fFixedPedestal = p; }
+  /** @param w Pedestal width in ADC counts */
   void SetPedestalWidth(Float_t w=1)          { fFixedPedestalWidth = w; }
+  /** @param t Threshold used for 1 MIP acceptance. */
   void SetThreshold(Float_t t=0)              { fFixedThreshold = t; }
+  /** Range of strips read out 
+      @param min Minimum strip number (0-127). 
+      @param max Maximum strip number (0-127). */
+  void SetStripRange(UShort_t min=0, UShort_t max=127);
   /** @} */
 
   /** @{ */
   /** @name Get `Fixed' various parameters */
+  /** @return Number of MIP signals that fit inside a VA1 channel  */
   UShort_t GetVA1MipRange()          const { return fVA1MipRange; }
+  /** @return The maximum count in the ADC */
   UShort_t GetAltroChannelSize()     const { return fAltroChannelSize; }
+  /** @return Number of strips muliplexed into one ADC channel */
   UShort_t GetChannelsPerAltro()     const { return fChannelsPerAltro; }
+  /** @return The average energy deposited by one MIP */
   Float_t  GetEdepMip()              const;
+  /** @return The factor used of signal acceptance */
   Float_t  GetPedestalFactor()	     const { return fPedestalFactor; }
   /** @} */
 
   /** @{ */
   /** @name Get variable parameters */
+  /** Whether the strip is considered dead
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return @c true if the strip is considered dead, @c false if
+      it's OK. */
   Bool_t   IsDead(UShort_t detector, 
 		  Char_t ring, 
 		  UShort_t sector, 
 		  UShort_t strip) const;
   Float_t  GetThreshold() const;
+  /** Gain of pre-amp. 
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return Gain of pre-amp.  */
   Float_t  GetPulseGain(UShort_t detector, 
 			Char_t ring, 
 			UShort_t sector, 
 			UShort_t strip) const;
+  /** Get mean of pedestal
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return Mean of pedestal */
   Float_t  GetPedestal(UShort_t detector, 
 		       Char_t ring, 
 		       UShort_t sector, 
 		       UShort_t strip) const;
+  /** Width of pedestal
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return Width of pedestal */
   Float_t  GetPedestalWidth(UShort_t detector, 
 			    Char_t ring, 
 			    UShort_t sector, 
 			    UShort_t strip) const;
+  /** zero suppression threshold (in ADC counts)
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return zero suppression threshold (in ADC counts) */
   UShort_t GetZeroSuppression(UShort_t detector, 
 			      Char_t ring, 
 			      UShort_t sector, 
 			      UShort_t strip) const;
-  UShort_t GetSampleRate(UShort_t ddl) const;
-
+  /** Get the sampling rate
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return The sampling rate */
+  UShort_t GetSampleRate(UShort_t detector, 
+			 Char_t ring, 
+			 UShort_t sector, 
+			 UShort_t strip) const;
+  /** Get the minimum strip in the read-out range
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return Minimum strip */
+  UShort_t GetMinStrip(UShort_t detector, 
+		       Char_t ring, 
+		       UShort_t sector, 
+		       UShort_t strip) const;
+  /** Get the maximum strip in the read-out range
+      @param detector Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sector   Sector number (0-39)
+      @param strip    Strip number (0-511)
+      @return Maximum strip */
+  UShort_t GetMaxStrip(UShort_t detector, 
+		       Char_t ring, 
+		       UShort_t sector, 
+		       UShort_t strip) const;
+  /** Translate hardware address to detector coordinates 
+      @param ddl      DDL number 
+      @param addr     Hardware address
+      @param det      On return, Detector # (1-3)
+      @param ring     On return, Ring ID ('I' or 'O')
+      @param sec      On return, Sector number (0-39)
+      @param str      On return, Strip number (0-511)
+      @return @c true on success. */
   Bool_t   Hardware2Detector(UInt_t ddl, UInt_t addr, UShort_t& det,
 			     Char_t& ring, UShort_t& sec, UShort_t& str) const;
+  /** Translate detector coordinates to hardware address 
+      @param det      Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sec      Sector number (0-39)
+      @param str      Strip number (0-511)
+      @param ddl      On return, DDL number 
+      @param addr     On return, Hardware address
+      @return @c true on success. */
   Bool_t   Detector2Hardware(UShort_t det, Char_t ring, UShort_t sec, 
 			     UShort_t str, UInt_t& ddl, UInt_t& addr) const;
+  /** Get the map that translates hardware to detector coordinates 
+      @return Get the map that translates hardware to detector
+      coordinates */ 
   AliFMDAltroMapping* GetAltroMap() const;
   /** @} */
 
@@ -139,6 +248,7 @@ public:
   static const char* fgkSampleRate;	 // Path to SampleRate calib object
   static const char* fgkAltroMap;	 // Path to AltroMap calib object
   static const char* fgkZeroSuppression; // Path to ZeroSuppression cal object
+  static const char* fgkStripRange;      // Path to strip range cal object
 protected:
   /** CTOR  */
   AliFMDParameters();
@@ -158,6 +268,8 @@ protected:
   void InitZeroSuppression();
   /** Initialize hardware map.  Try to get it from CDB */
   void InitAltroMap();
+  /** Initialize strip range.  Try to get it from CDB */
+  void InitStripRange();
 
   Bool_t          fIsInit;               // Whether we've been initialised  
 
@@ -172,6 +284,8 @@ protected:
   UShort_t        fFixedZeroSuppression; // Threshold for zero-suppression
   UShort_t        fFixedSampleRate;      // Times the ALTRO samples pre-amp.
   Float_t         fFixedThreshold;       //
+  UShort_t        fFixedMinStrip;
+  UShort_t        fFixedMaxStrip;
   mutable Float_t fFixedPulseGain;       //! Gain (cached)
   mutable Float_t fEdepMip;              //! Cache of energy loss for a MIP
   
@@ -181,8 +295,9 @@ protected:
   AliFMDCalibGain*            fPulseGain;       // Pulser gain
   AliFMDCalibDeadMap*         fDeadMap;         // Pulser gain
   AliFMDAltroMapping*         fAltroMap;        // Map of hardware
+  AliFMDCalibStripRange*      fStripRange;      // Strip range
   
-  ClassDef(AliFMDParameters,3)
+  ClassDef(AliFMDParameters,4)
 };
 
 #endif

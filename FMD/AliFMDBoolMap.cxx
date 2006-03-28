@@ -15,6 +15,11 @@
  * is provided "as is" without express or implied warranty.   *
  **************************************************************/
 /* $Id$ */
+/** @file    AliFMDBoolMap.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:28:42 2006
+    @brief   Per strip Boolean map
+*/
 //__________________________________________________________
 // 
 // Map of Bool_t for each FMD strip

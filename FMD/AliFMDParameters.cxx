@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDParameters.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:44:26 2006
+    @brief   Manager of FMD parameters     
+*/
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 
@@ -30,7 +33,8 @@
 #include "AliFMDRing.h"	           // ALIFMDRING_H
 #include "AliFMDCalibGain.h"       // ALIFMDCALIBGAIN_H
 #include "AliFMDCalibPedestal.h"   // ALIFMDCALIBPEDESTAL_H
-#include "AliFMDCalibSampleRate.h" // ALIFMDCALIBPEDESTAL_H
+#include "AliFMDCalibSampleRate.h" // ALIFMDCALIBSAMPLERATE_H
+#include "AliFMDCalibStripRange.h" // ALIFMDCALIBSTRIPRANGE_H
 #include "AliFMDAltroMapping.h"    // ALIFMDALTROMAPPING_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
@@ -52,6 +56,7 @@ const char* AliFMDParameters::fgkDead	         = "FMD/Calib/Dead";
 const char* AliFMDParameters::fgkSampleRate	 = "FMD/Calib/SampleRate";
 const char* AliFMDParameters::fgkAltroMap	 = "FMD/Calib/AltroMap";
 const char* AliFMDParameters::fgkZeroSuppression = "FMD/Calib/ZeroSuppression";
+const char* AliFMDParameters::fgkStripRange	 = "FMD/Calib/StripRange";
 
 
 //____________________________________________________________________
@@ -74,7 +79,8 @@ AliFMDParameters::AliFMDParameters()
     fPedestal(0), 
     fPulseGain(0), 
     fDeadMap(0), 
-    fAltroMap(0)
+    fAltroMap(0), 
+    fStripRange(0)
 {
   // Default constructor 
   SetVA1MipRange();
@@ -86,6 +92,7 @@ AliFMDParameters::AliFMDParameters()
   SetPedestalWidth();
   SetPedestalFactor();
   SetThreshold();
+  SetStripRange();
 }
 
 //__________________________________________________________________
@@ -104,6 +111,65 @@ AliFMDParameters::Init()
   fIsInit = kTRUE;
   
 }
+
+//__________________________________________________________________
+void
+AliFMDParameters::Print(Option_t* option) const
+{
+  TString opt(option);
+  Bool_t showStrips = opt.Contains("a", TString::kIgnoreCase);
+  for (UShort_t det=1 ; det <= 3; det++) {
+    std::cout << "FMD" << det << std::endl;
+    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
+    for (Char_t* ring = rings; *ring != '\0'; ring++) {
+      std::cout << " Ring " << *ring << std::endl;
+      UShort_t nSec = ( *ring == 'I' ? 20  :  40 );
+      UShort_t nStr = ( *ring == 'I' ? 512 : 256 );
+      for (UShort_t sec = 0; sec < nSec; sec++) {
+	UShort_t min  = GetMinStrip(det, *ring, sec, 0);
+	UShort_t max  = GetMaxStrip(det, *ring, sec, 0);
+	UShort_t rate = GetSampleRate(det, *ring, sec, 0);
+	std::cout << "  Sector " << std::setw(2) << sec 
+		  << "  Strip range: " << std::setw(3) << min << "," 
+		  << std::setw(3) << max << "  Rate: " << std::setw(2) 
+		  << rate << std::endl;
+	if (!showStrips) continue;
+	std::cout 
+	  << "  Strip |     Pedestal      |   Gain   | ZS thr. | Address\n" 
+	  << "--------+-------------------+----------+---------+---------" 
+	  << std::endl;
+        for (UShort_t str = 0; str < nStr; str++) {
+	  std::cout << "    " << std::setw(3) << str << " | ";
+	  if (IsDead(det, *ring, sec, str)) {
+	    std::cout << "dead" << std::endl;
+	    continue;
+	  }
+	  UInt_t ddl, addr;
+	  Detector2Hardware(det, *ring, sec, str, ddl, addr);
+	  std::cout << std::setw(7) << GetPedestal(det, *ring, sec, str) 
+		    << "+/-" << std::setw(7) 
+		    << GetPedestalWidth(det, *ring, sec, str) 
+		    << " | " << std::setw(8) 
+		    << GetPulseGain(det, *ring, sec, str) 
+		    << " | " << std::setw(5) 
+		    << GetZeroSuppression(det, *ring, sec, str) 
+		    << " | 0x" << std::hex << std::setw(4) 
+		    << std::setfill('0') << ddl << ",0x" << std::setw(3) 
+		    << addr << std::dec << std::setfill(' ') << std::endl;
+        }
+      }
+    }
+  }
+}
+
+//__________________________________________________________________
+void
+AliFMDParameters::SetStripRange(UShort_t min, UShort_t max) 
+{
+  fFixedMinStrip = min;
+  fFixedMaxStrip = max;
+}
+
 //__________________________________________________________________
 void
 AliFMDParameters::InitPulseGain()
@@ -205,6 +271,22 @@ AliFMDParameters::InitAltroMap()
   }
 }
 
+//__________________________________________________________________
+void
+AliFMDParameters::InitStripRange()
+{
+  AliCDBManager* cdb      = AliCDBManager::Instance();
+  AliCDBEntry*   range    = cdb->Get(fgkStripRange);
+  if (!range) {
+    AliWarning(Form("No %s found in CDB, perhaps you need to "
+		    "use AliFMDCalibFaker?", fgkStripRange));
+    return;
+  }
+  AliDebug(1, Form("Got strip range from CDB"));
+  fStripRange = dynamic_cast<AliFMDCalibStripRange*>(range->GetObject());
+  if (!fStripRange) AliWarning("Invalid strip range object from CDB");
+}
+
 
 //__________________________________________________________________
 Float_t
@@ -268,12 +350,41 @@ AliFMDParameters::GetZeroSuppression(UShort_t detector, Char_t ring,
 
 //__________________________________________________________________
 UShort_t
-AliFMDParameters::GetSampleRate(UShort_t ddl) const
+AliFMDParameters::GetSampleRate(UShort_t det, Char_t ring, UShort_t sector, 
+				UShort_t str) const
 {
   if (!fSampleRate) return fFixedSampleRate;
   // Need to map sector to digitizier card. 
-  AliDebug(50, Form("Sample rate for %d=%d", ddl, fSampleRate->Rate(ddl)));
-  return fSampleRate->Rate(ddl);
+  UInt_t ret = fSampleRate->Rate(det, ring, sector, str);
+  AliDebug(50, Form("Sample rate for FMD%d%c[%2d,%3d]=%d", 
+		    det, ring, sector, str, ret));
+  return ret;
+}
+
+//__________________________________________________________________
+UShort_t
+AliFMDParameters::GetMinStrip(UShort_t det, Char_t ring, UShort_t sector, 
+			      UShort_t str) const
+{
+  if (!fStripRange) return fFixedMinStrip;
+  // Need to map sector to digitizier card. 
+  UInt_t ret = fStripRange->Min(det, ring, sector, str);
+  AliDebug(50, Form("Min strip # for FMD%d%c[%2d,%3d]=%d", 
+		    det, ring, sector, str, ret));
+  return ret;
+}
+
+//__________________________________________________________________
+UShort_t
+AliFMDParameters::GetMaxStrip(UShort_t det, Char_t ring, UShort_t sector, 
+			      UShort_t str) const
+{
+  if (!fStripRange) return fFixedMaxStrip;
+  // Need to map sector to digitizier card. 
+  UInt_t ret = fStripRange->Max(det, ring, sector, str);
+  AliDebug(50, Form("Max strip # for FMD%d%c[%2d,%3d]=%d", 
+		    det, ring, sector, str, ret));
+  return ret;
 }
 
 //__________________________________________________________________

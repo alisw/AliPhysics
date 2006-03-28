@@ -16,6 +16,10 @@
 #include <TH2D.h>
 #include <TStyle.h>
 #include <TArrayF.h>
+#include <TCanvas.h>
+#include <TStyle.h>
+#include <TROOT.h>
+#include <TFile.h>
 #include <iostream>
 
 /** @class Poisson
@@ -30,17 +34,26 @@
  */
 class Poisson : public AliFMDInput
 {
-private:
+protected:
   TH2D*  fEmpty; // Histogram 
   TH2D*  fTotal; // Histogram 
   TH2D*  fMult;  // Histogram 
   TFile* fFile;  // File 
   Int_t  fEv;    // Event number
+  Double_t fThreshold;
 public:
+  /** Constructor 
+      @param threshold Threshold
+      @param nEta      # of @f$ \eta@f$ bins
+      @param minEta    minimum @f$ \eta@f$
+      @param maxEta    maximum @f$ \eta@f$
+      @param nPhi      # of @f$ \eta@f$ bins
+      @param minPhi    minimum @f$ \varphi@f$  
+      @param maxPhi    maximum @f$ \varphi@f$ */
   Poisson(Double_t threshold=.3,
 	  Int_t nEta=120, Float_t minEta=-6, Float_t maxEta=6, 
 	  Int_t nPhi=4,   Float_t minPhi=0,  Float_t maxPhi=2*TMath::Pi())
-    : fFile(0), fEv(0)
+    : fFile(0), fEv(0), fThreshold(threshold)
   { 
     AddLoad(kESD);
 
@@ -61,17 +74,19 @@ public:
     fMult->SetZTitle("<M_{ch}>");
 
   }
-  Bool_t Init() 
+  /** Initialize the analyser. Opens the output file. 
+      @return @c true on success. */
+  virtual Bool_t Init() 
   {
-    if (!AliFMDInput::Begin(event)) return kFALSE;
-    fFile = TFile::Open("poisson.root");
+    if (!AliFMDInput::Init()) return kFALSE;
+    fFile = TFile::Open("poisson.root", "RECREATE");
     if (!fFile) return kFALSE;
     return kTRUE;
   }
   /** Begining of event
       @param event Event number
       @return @c false on error */
-  Bool_t Begin(Int_t event) 
+  virtual Bool_t Begin(Int_t event) 
   {
     if (!AliFMDInput::Begin(event)) return kFALSE;
     fEv = event;
@@ -80,30 +95,36 @@ public:
     fMult->Clear();
     return kTRUE;
   }
-  Bool_t ProcessESD(AliESDFMDHit* esd)
+  /** Process ESD data.  For each strip, check if the
+      psuedo-multiplicity is less than the threshold.  If it is, then
+      count the strip as empty. 
+      @param esd ESD data 
+      @return @c true on success. */
+  virtual Bool_t ProcessESD(AliESDFMD* esd)
   {
-    for (UShort_t det = 1; det <= esd->MaxDetector(); det++) {
-      for (UShort_t rng = 0; rng < esd->MaxRing(); rng++) {
+    for (UShort_t det = 1; det <= 3; det++) {
+      for (UShort_t rng = 0; rng < 2; rng++) {
 	Char_t ring = (rng == 0 ? 'I' : 'O');
 	// Not covered channels 
-	for (UShort_t sec = 0; sec < esd->MaxSector(); sec++) {
-	  for (UShort_t str = 0; str < esd->MaxStrip(); str++) {
+	for (UShort_t sec = 0; sec < 40; sec++) {
+	  for (UShort_t str = 0; str < 512; str++) {
 	    Float_t mult = esd->Multiplicity(det, ring, sec, str);
 	    Float_t eta  = esd->Eta(det, ring, sec, str);
 	    // Dead channels, or not covered. 
 	    if (mult >= AliESDFMD::kInvalidMult) continue;
-	    if (esd  >= AliESDFMD::kInvalidEta) continue;
+	    if (eta  >= AliESDFMD::kInvalidEta) continue;
 	    Float_t phi;
 	    switch (ring) { 
 	    case 'I':  phi = (sec + .5) * 2 * TMath::Pi() / 20; break;
 	    case 'O':  phi = (sec + .5) * 2 * TMath::Pi() / 40; break;
 	    }
 	    fTotal->Fill(eta, phi);
-	    if (mult < threshold) fEmpty->Fill(eta, phi);
+	    if (mult < fThreshold) fEmpty->Fill(eta, phi);
 	  } // Loop over strips
 	} // Loop over sectors
       } // Loop over rings
     } // Loop over detectors
+    return kTRUE;
   }
   /** For each bin, reconstruct the charge particle multiplicity as 
       @f[
@@ -113,23 +134,31 @@ public:
       and @f$ N_{empty}@f$ is the number of strips in the bin that did
       not fire. 
       @return @c true  */
-  Bool_t End() 
+  virtual Bool_t End() 
   {
     for (Int_t etaBin = 1; etaBin <= fEmpty->GetNbinsX(); etaBin++) {
       for (Int_t phiBin = 1; phiBin <= fEmpty->GetNbinsY(); phiBin++) {
 	Double_t empty  = fEmpty->GetBinContent(etaBin, phiBin);
 	Double_t total  = fTotal->GetBinContent(etaBin, phiBin);
-	Double_t lambda = (empty > 0 ? - TMath::Log(empty / nTotal) : 1);
-	Double_t mult   = lambda * nTotal;
+	Double_t lambda = (empty > 0 ? - TMath::Log(empty / total) : 1);
+	Double_t mult   = lambda * total;
 	fMult->SetBinContent(etaBin, phiBin, mult);
       }
     }
     fFile->cd();
     fMult->Write(Form("mult%03d", fEv));
+    if (!gROOT->IsBatch()) { 
+      gStyle->SetPalette(1);
+      TCanvas* c = new TCanvas("poisson", "Poisson multiplicity");
+      c->SetFillColor(0);
+      fMult->Draw("colz");
+    }
     return AliFMDInput::End();
   }
   
-  Bool_t Finish()
+  /** At end of run.  Write and close output file @c poisson.root 
+      @return @c true on success */
+  virtual Bool_t Finish()
   {
     fFile->Write();
     fFile->Close();

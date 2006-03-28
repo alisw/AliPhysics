@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDEdepMap.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:39:50 2006
+    @brief   Per strip map of energy deposited and number of hits 
+*/
 //____________________________________________________________________
 //                                                                          
 //

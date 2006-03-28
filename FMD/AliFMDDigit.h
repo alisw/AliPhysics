@@ -1,5 +1,10 @@
 #ifndef ALIFMDDIGIT_H
 #define ALIFMDDIGIT_H
+/** @file    AliFMDDigit.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:37:41 2006
+    @brief   Digits for the FMD 
+*/
 //___________________________________________________________________
 //
 //  Digits classes for the FMD
@@ -80,6 +85,9 @@ public:
 	      Short_t  count3=-1);
   /** DTOR */
   virtual ~AliFMDDigit() {}
+  /** @param i # of sample to get 
+      @return sample # @a i */
+  Int_t Count(size_t i=0) const;
   /** @return ADC count (first sample) */
   UShort_t Count1()                const { return fCount1;   }
   /** @return ADC count (second sample, or -1 if not used) */
@@ -106,6 +114,17 @@ AliFMDDigit::Counts() const
   return fCount1 
     + (fCount2 >= 0 ? fCount2 : 0)
     + (fCount3 >= 0 ? fCount3 : 0);
+}
+
+inline Int_t
+AliFMDDigit::Count(size_t i) const 
+{
+  switch (i) {
+  case 0: return fCount1;
+  case 1: return fCount2;
+  case 2: return fCount3;
+  }
+  return -1;
 }
 
 //____________________________________________________________________

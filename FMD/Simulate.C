@@ -12,15 +12,19 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
-// Script to do test the FMD digitization class. 
+/** @file    Simulate.C
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 14:20:24 2006
+    @brief   Script to do simulation 
+*/
+/** Script to do test the FMD digitization class.  
+ */
 void
 Simulate()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://cdb");
+  cdb->SetDefaultStorage("local://$ALICE_ROOT");
   AliSimulation sim;
   AliCDBEntry* align = cdb->Get("FMD/Align/Data");
   if (align) {

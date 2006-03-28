@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDUShortMap.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:48:18 2006
+    @brief   Per strip of unisgned shorts (16 bit) data 
+*/
 //____________________________________________________________________
 //                                                                          
 // A map of per strip UShort_t information (for example ADC values,

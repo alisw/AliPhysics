@@ -8,6 +8,11 @@
  * See cxx source for full Copyright notice                               
  */
 /* $Id$ */
+/** @file    AliFMDRawWriter.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:45:56 2006
+    @brief   Class to write raw data 
+*/
 //____________________________________________________________________
 // 
 // Class to writer ADC values to a Raw File
@@ -52,9 +57,6 @@ public:
       ALTRO data. */
   virtual void WriteDigits(TClonesArray* digits);
 protected:
-  /* Write a single channel.  This member function is obsolete. */
-  // virtual void WriteChannel(AliAltroBuffer* altro, UShort_t strip, 
-  //                           UShort_t sector, Char_t ring, const TArrayI& d);
   AliFMD*       fFMD;              //! Pointer to detector description 
   UShort_t      fSampleRate;       // The sample rate (0 -> inferred from data)
   UShort_t      fChannelsPerAltro; // Number of pre-amp. channels/adc channel 

@@ -7,6 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDDetector.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:36:27 2006
+    @brief   Sub-detector base class declaration
+*/
 #ifndef ROOT_TNamed
 # include <TNamed.h>
 #endif
@@ -15,8 +20,8 @@ class TGeoMatrix;
 
 /** @defgroup FMD_base Basic classes */
 //__________________________________________________________________
-/** Base class for the geometry description and parameters of the FMD
-    sub detectors FMD1, FMD2, and FMD3.
+/** @brief Base class for the geometry description and parameters of
+    the FMD sub detectors FMD1, FMD2, and FMD3.
 
     This class hold common parameters of the specific FMD detectors.
     @ingroup FMD_base

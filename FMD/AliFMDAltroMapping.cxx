@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDAltroMapping.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:27:56 2006
+    @brief   Map HW to detector 
+*/
 //____________________________________________________________________
 //                                                                          
 // Mapping of ALTRO hardware channel to detector coordinates 

@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDReconstructor.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:47:09 2006
+    @brief   FMD reconstruction 
+*/
 //____________________________________________________________________
 //
 // This is a class that constructs AliFMDMult (reconstructed

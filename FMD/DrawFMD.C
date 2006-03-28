@@ -1,3 +1,8 @@
+/** @file    DrawFMD.C
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 14:18:21 2006
+    @brief   Script to draw the FMD3 - obsolete
+*/
 void DrawFMD()
 {
   // gSystem->Load("/usr/lib/libshift");

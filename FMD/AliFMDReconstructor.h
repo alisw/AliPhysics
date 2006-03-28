@@ -12,6 +12,11 @@
 //-- Authors: Evgeny Karpechev (INR) and Alla Maevskaia (INR)
 //   Latest changes by Christian Holm Christensen <cholm@nbi.dk>
 /* $Id$ */
+/** @file    AliFMDReconstructor.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:47:09 2006
+    @brief   FMD reconstruction 
+*/
 
 //____________________________________________________________________
 // Header guards in the header files speeds up the compilation
@@ -31,10 +36,12 @@ class AliESDFMD;
 
 /** @defgroup FMD_rec Reconstruction */
 //____________________________________________________________________
-/** This is a class that reconstructs AliFMDRecPoint objects from of
-    Digits.  This class reads either digits from a TClonesArray or raw
-    data from a DDL file (or similar), and applies calibrations to get
+/** @brief This is a class that reconstructs AliFMDRecPoint objects from of
+    Digits.  
+    This class reads either digits from a TClonesArray or raw data
+    from a DDL file (or similar), and applies calibrations to get
     psuedo-inclusive multiplicities per strip.
+
     @ingroup FMD_rec
  */
 class AliFMDReconstructor: public AliReconstructor 

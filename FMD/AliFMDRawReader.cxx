@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDRawReader.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:45:23 2006
+    @brief   Class to read raw data 
+*/
 //____________________________________________________________________
 //
 // Class to read ADC values from a AliRawReader object. 
@@ -48,7 +51,7 @@
 #include "AliFMDRawStream.h"	// ALIFMDRAWSTREAM_H 
 #include "AliRawReader.h"	// ALIRAWREADER_H 
 #include "AliFMDRawReader.h"	// ALIFMDRAWREADER_H 
-#include "AliFMDAltroIO.h"	// ALIFMDALTROIO_H 
+// #include "AliFMDAltroIO.h"	// ALIFMDALTROIO_H 
 #include <TArrayI.h>		// ROOT_TArrayI
 #include <TTree.h>		// ROOT_TTree
 #include <TClonesArray.h>	// ROOT_TClonesArray
@@ -75,6 +78,89 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
   // Default CTOR
 }
 
+//____________________________________________________________________
+void
+AliFMDRawReader::Exec(Option_t*) 
+{
+  TClonesArray* array = new TClonesArray("AliFMDDigit");
+  if (!fTree) {
+    AliError("No tree");
+    return;
+  }
+  fTree->Branch("FMD", &array);
+  ReadAdcs(array);
+  Int_t nWrite = fTree->Fill();
+  AliDebug(1, Form("Got a grand total of %d digits, wrote %d bytes to tree", 
+		   array->GetEntries(), nWrite));
+}
+
+
+#if 1
+//____________________________________________________________________
+Bool_t
+AliFMDRawReader::ReadAdcs(TClonesArray* array) 
+{
+  // Read raw data into the digits array, using AliFMDAltroReader. 
+  if (!array) {
+    AliError("No TClonesArray passed");
+    return kFALSE;
+  }
+  if (!fReader->ReadHeader()) {
+    AliError("Couldn't read header");
+    return kFALSE;
+  }
+  // Get sample rate 
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+  AliFMDRawStream input(fReader);
+  // Select FMD DDL's 
+  fReader->Select(AliFMDParameters::kBaseDDL>>8);
+
+  UShort_t stripMin = 0;
+  UShort_t stripMax = 127;
+  UShort_t preSamp  = 0;
+  
+  UInt_t ddl    = 0;
+  UInt_t rate   = 0;
+  UInt_t last   = 0;
+  UInt_t hwaddr = 0;
+  // Data array is approx twice the size needed. 
+  UShort_t data[2048];
+  while (input.ReadChannel(ddl, hwaddr, last, data)) {
+    AliDebug(5, Form("Read channel 0x%x of size %d", hwaddr, last));
+    UShort_t det, sec, str;
+    Char_t   ring;
+    if (!pars->Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) {
+      AliError(Form("Failed to get detector id from DDL %d "
+		    "and hardware address 0x%x", ddl, hwaddr));
+      continue;
+    }
+    rate     = pars->GetSampleRate(det, ring, sec, str);
+    stripMin = pars->GetMinStrip(det, ring, sec, str);
+    stripMax = pars->GetMaxStrip(det, ring, sec, str);
+    AliDebug(5, Form("DDL 0x%04x, address 0x%03x maps to FMD%d%c[%2d,%3d]", 
+		       ddl, hwaddr, det, ring, sec, str));
+    
+    // Loop over the `timebins', and make the digits
+    for (size_t i = 0; i < last; i++) {
+      if (i < preSamp) continue;
+      Int_t    n      = array->GetEntries();
+      UShort_t curStr = str + stripMin + i / rate;
+      if ((curStr-str) > stripMax) {
+	AliError(Form("Current strip is %d but DB says max is %d", 
+		      curStr, stripMax));
+      }
+      AliDebug(5, Form("making digit for FMD%d%c[%2d,%3d] from sample %4d", 
+		       det, ring, sec, curStr, i));
+      new ((*array)[n]) AliFMDDigit(det, ring, sec, curStr, data[i], 
+				    (rate >= 2 ? data[i+1] : 0),
+				    (rate >= 3 ? data[i+2] : 0));
+      if (rate >= 2) i++;
+      if (rate >= 3) i++;
+    }
+  }
+  return kTRUE;
+}
+#else
 //____________________________________________________________________
 Bool_t
 AliFMDRawReader::ReadAdcs(TClonesArray* array) 
@@ -103,7 +189,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     if (!fReader->ReadNextData(cdata)) break;
     size_t   nchar = fReader->GetDataSize();
     UShort_t ddl   = AliFMDParameters::kBaseDDL + fReader->GetDDLID();
-    UShort_t rate  = pars->GetSampleRate(ddl);
+    UShort_t rate  = 0;
     AliDebug(1, Form("Reading %d bytes (%d 10bit words) from %d", 
 		     nchar, nchar * 8 / 10, ddl));
     // Make a stream to read from 
@@ -122,6 +208,9 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		      "and hardware address 0x%x", ddl, hwaddr));
 	continue;
       }
+      rate     = pars->GetSampleRate(det, ring, sec, str);
+      stripMin = pars->GetMinStrip(det, ring, sec, str);
+      stripMax = pars->GetMaxStrip(det, ring, sec, str);
       AliDebug(5, Form("DDL 0x%04x, address 0x%03x maps to FMD%d%c[%2d,%3d]", 
 		       ddl, hwaddr, det, ring, sec, str));
 
@@ -150,23 +239,6 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 
   
 
-//____________________________________________________________________
-void
-AliFMDRawReader::Exec(Option_t*) 
-{
-  TClonesArray* array = new TClonesArray("AliFMDDigit");
-  if (!fTree) {
-    AliError("No tree");
-    return;
-  }
-  fTree->Branch("FMD", &array);
-  ReadAdcs(array);
-  Int_t nWrite = fTree->Fill();
-  AliDebug(1, Form("Got a grand total of %d digits, wrote %d bytes to tree", 
-		   array->GetEntries(), nWrite));
-}
-
-#if 0
 // This is the old method, for comparison.   It's really ugly, and far
 // too convoluted. 
 //____________________________________________________________________

@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDDisplay.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:39:09 2006
+    @brief   FMD Event display 
+*/
 //___________________________________________________________________
 //
 // The classes defined here, are utility classes for reading in data

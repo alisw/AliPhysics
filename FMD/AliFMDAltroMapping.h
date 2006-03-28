@@ -7,6 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDAltroMapping.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:28:11 2006
+    @brief   Map HW address to detector coordinates and back again. 
+*/
 #ifndef ALIALTROMAPPING_H
 # include <AliAltroMapping.h>
 #endif

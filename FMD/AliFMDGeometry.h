@@ -7,6 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDGeometry.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:40:37 2006
+    @brief   Geometry mananger for the FMD
+*/
 //____________________________________________________________________ 
 //  
 // Forward Multiplicity Detector based on Silicon wafers. 
@@ -35,7 +40,7 @@ class AliFMDGeometryBuilder;
 
 
 //__________________________________________________________________
-/** Singleton object of FMD geometry descriptions and parameters.
+/** @brief Singleton object of FMD geometry descriptions and parameters.
     This class is a singleton that handles the geometry parameters of
     the FMD detectors.  
                                                           

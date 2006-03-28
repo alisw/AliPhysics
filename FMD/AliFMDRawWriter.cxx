@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDRawWriter.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:45:56 2006
+    @brief   Class to write raw data 
+*/
 //____________________________________________________________________
 //
 // Class to write ADC values to a raw data file
@@ -41,7 +44,7 @@
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDRawWriter.h"	// ALIFMDRAWREADER_H 
 #include "AliFMDAltroMapping.h" // ALIFMDALTROMAPPING_H
-#include "AliFMDAltroIO.h"      // ALIFMDALTROWRITER_H
+// #include "AliFMDAltroIO.h"   // ALIFMDALTROWRITER_H
 #include <TArrayI.h>		// ROOT_TArrayI
 #include <TClonesArray.h>	// ROOT_TClonesArray
 #include <fstream>
@@ -56,11 +59,7 @@ ClassImp(AliFMDRawWriter)
 AliFMDRawWriter::AliFMDRawWriter(AliFMD* fmd) 
   : TTask("FMDRawWriter", "Writer of Raw ADC values from the FMD"),
     fFMD(fmd)
-{
-  AliFMDParameters* pars = AliFMDParameters::Instance();
-  fSampleRate            = pars->GetSampleRate(AliFMDParameters::kBaseDDL);
-  fChannelsPerAltro      = pars->GetChannelsPerAltro();
-}
+{}
 
 
 //____________________________________________________________________
@@ -105,9 +104,9 @@ AliFMDRawWriter::Exec(Option_t*)
   // 10-bit word, and the samples are grouped into 40-bit blocks 
   //
   //          +------------------------------------+
-  //          |  S(n)   | S(n-1) | S(n-2) | S(n-3) |
+  //          |  S(1)   | S(2)   | S(3)   | S(4)   |
   //          |  ...    | ...    | ...    | ...    |
-  //          |  S(2)   | S(1)   | AA     | AA     |
+  //          |  S(n)   | T(n)   | n+2    | 2AA    |
   //          +------------------------------------+
   //          Counts + possible filler 
   //
@@ -116,7 +115,7 @@ AliFMDRawWriter::Exec(Option_t*)
   // words,  packed into 40-bits. 
   // 
   //          +------------------------------------+
-  //          | # words | start  | sector | ring   |
+  //          |   2AAA   |  Len   |  A |  Address  |
   //          +------------------------------------+
   //          Trailer
   // 
@@ -150,6 +149,111 @@ AliFMDRawWriter::Exec(Option_t*)
   loader->UnloadDigits();
 }
 
+#if 1
+//____________________________________________________________________
+void
+AliFMDRawWriter::WriteDigits(TClonesArray* digits)
+{
+  Int_t nDigits = digits->GetEntries();
+  if (nDigits < 1) return;
+
+  AliFMDParameters* pars = AliFMDParameters::Instance();
+  UShort_t threshold    = 0;
+  UInt_t   prevddl      = 0;
+  UInt_t   prevaddr     = 0xFFF;
+  // UShort_t prevStrip    = 0;
+  
+  // Which channel number in the ALTRO channel we're at 
+  UShort_t nWords       = 0;
+  UShort_t preSamples   = 0;
+  
+  // How many times the ALTRO Samples one VA1_ALICE channel 
+  Int_t sampleRate      = 1;
+  
+  // A buffer to hold 1 ALTRO channel - Normally, one ALTRO channel
+  // holds 128 VA1_ALICE channels, sampled at a rate of `sampleRate' 
+  TArrayI data(pars->GetChannelsPerAltro() * 8);
+
+  // The Altro buffer 
+  AliAltroBuffer* altro = 0;
+    
+  // Loop over the digits in the event.  Note, that we assume the
+  // the digits are in order in the branch.   If they were not, we'd
+  // have to cache all channels before we could write the data to
+  // the ALTRO buffer, or we'd have to set up a map of the digits. 
+  for (Int_t i = 0; i < nDigits; i++) {
+    // Get the digit
+    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
+
+    UShort_t det    = digit->Detector();
+    Char_t   ring   = digit->Ring();
+    UShort_t sector = digit->Sector();
+    UShort_t strip  = digit->Strip();
+    UInt_t   ddl;
+    UInt_t   addr;  
+    threshold       = pars->GetZeroSuppression(det, ring, sector, strip);
+    if (!pars->Detector2Hardware(det, ring, sector, strip, ddl, addr)) {
+      AliError(Form("Failed to get hardware address for FMD%d%c[%2d,%3d]", 
+		    det, ring, sector, strip));
+      continue;
+    }
+    if (addr != prevaddr) {
+      // Flush a channel to output 
+      AliDebug(15, Form("Now hardware address 0x%x from FMD%d%c[%2d,%3d] "
+			"(board 0x%x, chip 0x%x, channel 0x%x), flushing old "
+			"channel at 0x%x with %d words", 
+			addr, det, ring, sector, strip, 
+			(addr >> 7), (addr >> 4) & 0x7, addr & 0xf, 
+			prevaddr, nWords));
+      if (altro) altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
+      nWords   = preSamples;
+      prevaddr = addr;
+      for (size_t i = 0; i < nWords; i++) data[i] = digit->Count(0);
+    }
+    if (ddl != prevddl) {
+      AliDebug(15, Form("FMD: New DDL, was %d, now %d", prevddl, ddl));
+      // If an altro exists, delete the object, flushing the data to
+      // disk, and closing the file. 
+      if (altro) { 
+	// When the first argument is false, we write the real
+	// header. 
+	AliDebug(15, Form("Closing output"));
+	altro->Flush();
+	altro->WriteDataHeader(kFALSE, kFALSE);
+	delete altro;
+	altro = 0;
+      }
+      prevddl = ddl;
+      // Need to open a new DDL! 
+      TString filename(Form("%s_%d.ddl", fFMD->GetName(),  ddl));
+      AliDebug(15, Form("New altro buffer with DDL file %s", filename.Data()));
+      // Create a new altro buffer - a `1' as the second argument
+      // means `write mode' 
+      altro = new AliAltroBuffer(filename.Data(), 1);
+      altro->SetMapping(pars->GetAltroMap());      
+      // Write a dummy (first argument is true) header to the DDL
+      // file - later on, when we close the file, we write the real
+      // header
+      altro->WriteDataHeader(kTRUE, kFALSE);
+    }
+    
+    // Store the counts of the ADC in the channel buffer 
+    sampleRate = pars->GetSampleRate(det, ring, sector, strip);
+    for (int s = 0; s < sampleRate; s++) {
+      data[nWords] = digit->Count(s);
+      nWords++;
+    }
+  }
+  // Finally, we need to close the final ALTRO buffer if it wasn't
+  // already 
+  if (altro) {
+    if (nWords > 0) altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
+    altro->Flush();
+    altro->WriteDataHeader(kFALSE, kFALSE);
+    delete altro;
+  }
+}
+#else
 //____________________________________________________________________
 void
 AliFMDRawWriter::WriteDigits(TClonesArray* digits)
@@ -216,9 +320,9 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
       }
       writer  = new AliFMDAltroWriter(*file);
       writer->SetThreshold(pars->GetZeroSuppression(det, ring, sector, strip));
-      sampleRate = pars->GetSampleRate(ddl);
     }
     // Write out our signal
+    sampleRate =  pars->GetSampleRate(det,ring,sector,strip);
     writer->AddSignal(digit->Count1());
     if (sampleRate >= 2) writer->AddSignal(digit->Count2());
     if (sampleRate >= 3) writer->AddSignal(digit->Count3());
@@ -231,162 +335,8 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     delete file;
   }
 }
-
-      
-    
-#if 0
-//____________________________________________________________________
-void
-AliFMDRawWriter::WriteDigits(TClonesArray* digits)
-{
-  Int_t nDigits = digits->GetEntries();
-  if (nDigits < 1) return;
-
-  AliFMDParameters* pars = AliFMDParameters::Instance();
-  UShort_t prevDetector = 0;
-  Char_t   prevRing     = '\0';
-  UShort_t prevSector   = 0;
-  // UShort_t prevStrip    = 0;
-  
-  // The first seen strip number for a channel 
-  UShort_t startStrip   = 0;
-  
-  // Which channel number in the ALTRO channel we're at 
-  UShort_t offset       = 0;
-  
-  // How many times the ALTRO Samples one VA1_ALICE channel 
-  Int_t sampleRate = 1;
-  
-  // A buffer to hold 1 ALTRO channel - Normally, one ALTRO channel
-  // holds 128 VA1_ALICE channels, sampled at a rate of `sampleRate' 
-  TArrayI channel(fChannelsPerAltro * sampleRate);
-
-  // The Altro buffer 
-  AliAltroBuffer* altro = 0;
-    
-  // Loop over the digits in the event.  Note, that we assume the
-  // the digits are in order in the branch.   If they were not, we'd
-  // have to cache all channels before we could write the data to
-  // the ALTRO buffer, or we'd have to set up a map of the digits. 
-  for (Int_t i = 0; i < nDigits; i++) {
-    // Get the digit
-    AliFMDDigit* digit = static_cast<AliFMDDigit*>(digits->At(i));
-
-    UShort_t det    = digit->Detector();
-    Char_t   ring   = digit->Ring();
-    UShort_t sector = digit->Sector();
-    UShort_t strip  = digit->Strip();
-    fThreshold      = pars->GetZeroSuppression(det, ring, sector, strip);
-    if (det != prevDetector) {
-      AliDebug(15, Form("FMD: New DDL, was %d, now %d",
-			AliFMDParameters::kBaseDDL + prevDetector - 1,
-			AliFMDParameters::kBaseDDL + det - 1));
-      // If an altro exists, delete the object, flushing the data to
-      // disk, and closing the file. 
-      if (altro) { 
-	// When the first argument is false, we write the real
-	// header. 
-	AliDebug(15, Form("New altro: Write channel at %d Strip: %d "
-			  "Sector: %d  Ring: %d", 
-			  i, startStrip, prevSector, prevRing));
-	// TPC to FMD translations 
-	// 
-	//    TPC                FMD
-	//    ----------+-----------
-	//    pad       |      strip
-	//    row       |     sector
-	//    sector    |       ring
-	// 
-	WriteChannel(altro, startStrip, prevSector, prevRing, channel);
-	altro->Flush();
-	altro->WriteDataHeader(kFALSE, kFALSE);
-	delete altro;
-	altro = 0;
-      }
-      prevDetector = det;
-      // Need to open a new DDL! 
-      Int_t ddlId = AliFMDParameters::kBaseDDL + det - 1;
-      TString filename(Form("%s_%d.ddl", fFMD->GetName(),  ddlId));
-      
-      AliDebug(15, Form("New altro buffer with DDL file %s", 
-			filename.Data()));
-      AliDebug(15, Form("New altro at %d", i));
-      // Create a new altro buffer - a `1' as the second argument
-      // means `write mode' 
-      altro = new AliAltroBuffer(filename.Data(), 1);
-      altro->SetMapping(pars->GetAltroMap());
-      
-      // Write a dummy (first argument is true) header to the DDL
-      // file - later on, when we close the file, we write the real
-      // header
-      altro->WriteDataHeader(kTRUE, kFALSE);
-      
-      // Figure out the sample rate 
-      if (fSampleRate > 0) sampleRate = fSampleRate;
-      else {
-	if (digit->Count2() >= 0) sampleRate = 2;
-	if (digit->Count3() >= 0) sampleRate = 3;
-      }
-
-      channel.Set(fChannelsPerAltro * sampleRate);
-      offset     = 0;
-      prevRing   = ring;
-      prevSector = sector;
-      startStrip = strip;
-    }
-    else if (offset == fChannelsPerAltro
-	     || digit->Ring() != prevRing 
-	     || digit->Sector() != prevSector) {
-      // Force a new Altro channel
-      AliDebug(15, Form("Flushing channel to disk because %s",
-			(offset == fChannelsPerAltro ? "channel is full" :
-			 (ring != prevRing ? "new ring up" :
-			  "new sector up"))));
-      AliDebug(15, Form("New Channel: Write channel at %d Strip: %d "
-			"Sector: %d  Ring: %d", 
-			i, startStrip, prevSector, prevRing));
-      WriteChannel(altro, startStrip, prevSector, prevRing, channel);
-      // Reset and update channel variables 
-      channel.Reset(0);
-      offset     = 0; 
-      startStrip = strip;
-      prevRing   = ring;
-      prevSector = sector;
-    }
-    
-    // Store the counts of the ADC in the channel buffer 
-    channel[offset * sampleRate] = digit->Count1();
-    if (sampleRate > 1) 
-      channel[offset * sampleRate + 1] = digit->Count2();
-    if (sampleRate > 2) 
-      channel[offset * sampleRate + 2] = digit->Count3();
-    offset++;
-  }
-  // Finally, we need to close the final ALTRO buffer if it wasn't
-  // already 
-  if (altro) {
-    altro->Flush();
-    altro->WriteDataHeader(kFALSE, kFALSE);
-    delete altro;
-  }
-}
-
-//____________________________________________________________________
-void
-AliFMDRawWriter::WriteChannel(AliAltroBuffer* altro, 
-			      UShort_t strip, UShort_t sector, Char_t ring, 
-			      const TArrayI& data) 
-{
-  // Write out one ALTRO channel to the data file. 
-  // Derived classes can overload this method to use a per-ALTRO
-  // threshold.   This implementation uses the common threshold set by
-  // SetThreshold. 
-  altro->WriteChannel(Int_t(strip), 
-		      Int_t(sector), 
-		      Int_t((ring == 'I' ? 0 : 1)), 
-		      data.fN, data.fArray, fThreshold);
-}
 #endif
+
 
   
 

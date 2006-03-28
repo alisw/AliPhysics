@@ -8,8 +8,8 @@ SRCS		=  AliFMDDigit.cxx		\
 		   AliFMDCalibPedestal.cxx	\
 		   AliFMDCalibGain.cxx		\
 		   AliFMDCalibSampleRate.cxx	\
+		   AliFMDCalibStripRange.cxx	\
 		   AliFMDAltroMapping.cxx	\
-		   AliFMDAltroIO.cxx		\
 		   AliFMDParameters.cxx		\
 		   AliFMDGeometry.cxx		\
 		   AliFMDRing.cxx		\
@@ -17,6 +17,8 @@ SRCS		=  AliFMDDigit.cxx		\
 		   AliFMD1.cxx			\
 		   AliFMD2.cxx			\
 		   AliFMD3.cxx			
+
+#		   AliFMDAltroIO.cxx		
 
 HDRS		=  $(SRCS:.cxx=.h)
 DHDR		:= FMDbaseLinkDef.h

@@ -4,7 +4,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
-
+/** @file    FMDsimLinkDef.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 14:19:24 2006
+    @brief   Link specifications fo simulation library
+*/
 /* $Id$ */
 #ifdef __CINT__
 

@@ -5,11 +5,16 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDEdepMap.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:39:50 2006
+    @brief   Per strip map of energy deposited and number of hits 
+*/
 #ifndef ALIFMDMAP_H
 # include "AliFMDMap.h"
 #endif 
 //____________________________________________________________________
-/** Cache of Energy deposited, hit information per strip.
+/** @brief Cache of Energy deposited, hit information per strip.
     Contains a pair of energy deposited @c fEdep and 
     number of hits @c fN, @c fEdep is the summed energy deposition,
     and @c fN is the number of hits 
@@ -36,7 +41,7 @@ public:
 };
 
 //____________________________________________________________________
-/** Map of Energy deposited, hit information per strip.
+/** @brief Map of Energy deposited, hit information per strip.
     Contains a pair of energy deposited @c fEdep and 
     number of hits @c fN, @c fEdep is the summed energy deposition,
     and @c fN is the number of hits */

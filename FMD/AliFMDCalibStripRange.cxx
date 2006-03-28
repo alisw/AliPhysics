@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/** @file    AliFMDCalibSampleRate.cxx
+/** @file    AliFMDCalibStripRange.cxx
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Sun Mar 26 18:31:09 2006
     @brief   Per digitizer card pulser calibration 
@@ -22,18 +22,17 @@
 //                                                                          
 //
 //
-#include "AliFMDCalibSampleRate.h"	// ALIFMDCALIBGAIN_H
+#include "AliFMDCalibStripRange.h"	// ALIFMDCALIBGAIN_H
 #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
-#include <AliLog.h>
 
 //____________________________________________________________________
-ClassImp(AliFMDCalibSampleRate)
+ClassImp(AliFMDCalibStripRange)
 #if 0
   ; // This is here to keep Emacs for indenting the next line
 #endif
 
 //____________________________________________________________________
-AliFMDCalibSampleRate::AliFMDCalibSampleRate()
+AliFMDCalibStripRange::AliFMDCalibStripRange()
   : fRates(AliFMDMap::kMaxDetectors, AliFMDMap::kMaxRings, 2, 1)
   // fRates(3)
 {
@@ -41,13 +40,13 @@ AliFMDCalibSampleRate::AliFMDCalibSampleRate()
 }
 
 //____________________________________________________________________
-AliFMDCalibSampleRate::AliFMDCalibSampleRate(const AliFMDCalibSampleRate& o)
+AliFMDCalibStripRange::AliFMDCalibStripRange(const AliFMDCalibStripRange& o)
   : TObject(o), fRates(o.fRates)
 {}
 
 //____________________________________________________________________
-AliFMDCalibSampleRate&
-AliFMDCalibSampleRate::operator=(const AliFMDCalibSampleRate& o)
+AliFMDCalibStripRange&
+AliFMDCalibStripRange::operator=(const AliFMDCalibStripRange& o)
 {
   fRates     = o.fRates;
   return (*this);
@@ -55,24 +54,33 @@ AliFMDCalibSampleRate::operator=(const AliFMDCalibSampleRate& o)
 
 //____________________________________________________________________
 void
-AliFMDCalibSampleRate::Set(UShort_t det, Char_t ring, 
-			   UShort_t sector, UShort_t, UShort_t rate)
+AliFMDCalibStripRange::Set(UShort_t det, Char_t ring, 
+			   UShort_t sector, UShort_t, UShort_t min, 
+			   UShort_t max)
 {
   UInt_t nSec  = (ring == 'I' ? 20 : 40);
   UInt_t board = sector / nSec;
-  fRates(det, ring, board, 0) = rate;
+  fRates(det, ring, board, 0) = ((max & 0x7f) << 8) + (min & 0x7f);
 }
 
 //____________________________________________________________________
 UShort_t
-AliFMDCalibSampleRate::Rate(UShort_t det, Char_t ring, 
-			    UShort_t sec, UShort_t) const
+AliFMDCalibStripRange::Min(UShort_t det, Char_t ring, 
+			   UShort_t sec, UShort_t) const
 {
   UInt_t nSec  = (ring == 'I' ? 20 : 40);
   UInt_t board = sec / nSec;
-  AliDebug(10, Form("Getting sample rate for FMD%d%c[%2d,0] (board %d)", 
-		    det, ring, sec, board));
-  return fRates(det, ring, board, 0);
+  return (fRates(det, ring, board, 0) & 0x7f);
+}
+
+//____________________________________________________________________
+UShort_t
+AliFMDCalibStripRange::Max(UShort_t det, Char_t ring, 
+			   UShort_t sec, UShort_t) const
+{
+  UInt_t nSec  = (ring == 'I' ? 20 : 40);
+  UInt_t board = sec / nSec;
+  return ((fRates(det, ring, board, 0) >> 8) & 0x7f);
 }
 
 //____________________________________________________________________

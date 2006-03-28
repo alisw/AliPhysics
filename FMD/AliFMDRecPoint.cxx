@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMDRecPoint.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:46:26 2006
+    @brief   Pseudo reconstructed charged particle multiplicity 
+*/
 //____________________________________________________________________
 //
 // Base class for reconstructed charged particle multiplicty in the

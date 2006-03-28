@@ -12,9 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
 /* $Id$ */
-
+/** @file    AliFMD1.cxx
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:00:23 2006
+    @brief   Implementation of FMD1 parameters 
+*/
 //____________________________________________________________________
 //                                                                          
 // Concrete implementation of AliFMDDetector 

@@ -7,6 +7,11 @@
  * Created Mon Nov  8 12:51:51 2004 by Christian Holm Christensen
  */
 /* $Id$ */
+/** @file    AliFMDBoolMap.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:28:59 2006
+    @brief   Per strip boolean map
+*/
 //__________________________________________________________
 // 
 // Map of Bool_t for each FMD strip

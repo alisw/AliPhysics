@@ -5,6 +5,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDHit.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:41:58 2006
+    @brief   Hit in the FMD
+*/
 //___________________________________________________________________
 //
 #ifndef ALIHIT_H
@@ -12,10 +17,10 @@
 #endif
 
 //___________________________________________________________________
-/** AliFMDhit is the hit class for the FMD. Hits are the information
-    that comes from a Monte Carlo at each step as a particle mass
-    through sensitive detector elements as particles are transported
-    through a detector. 
+/** @brief AliFMDhit is the hit class for the FMD. 
+    Hits are the information that comes from a Monte Carlo at each
+    step as a particle mass through sensitive detector elements as
+    particles are transported through a detector. 
     @ingroup FMD_sim
 */
 class AliFMDHit : public AliHit 

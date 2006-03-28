@@ -4,7 +4,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
-
+/** @file    FMDutilLinkDef.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 14:19:41 2006
+    @brief   Link specification for utility libary
+*/
 /* $Id$ */
 #ifdef __CINT__
 

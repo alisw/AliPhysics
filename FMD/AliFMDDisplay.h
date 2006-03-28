@@ -5,6 +5,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
+/** @file    AliFMDDisplay.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:39:09 2006
+    @brief   FMD Event display 
+*/
 //___________________________________________________________________
 //
 // The classes defined here, are utility classes for reading in data

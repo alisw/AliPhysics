@@ -7,7 +7,11 @@
  *
  * See cxx source for full Copyright notice                               
  */
-
+/** @file    AliFMDCalibFaker.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Sun Mar 26 18:29:36 2006
+    @brief   Make fake calibration data 
+*/
 //____________________________________________________________________
 //
 //  Class to make fake calibration parameters 
@@ -43,12 +47,14 @@ public:
     /** Dead map */
     kDeadMap,
     /** Hardware map */
-    kAltroMap
+    kAltroMap, 
+    /** Strip range */
+    kStripRange
   };
   enum {
     /** All parameters */
     kAll             = (1<<kZeroSuppression|1<<kSampleRate|1<<kPedestal|
-			1<<kPulseGain|1<<kDeadMap|1<<kAltroMap)
+			1<<kPulseGain|1<<kDeadMap|1<<kAltroMap|1<<kStripRange)
   };
   /** Constructor 
       @param mask Bit mask of what to make 
@@ -99,6 +105,14 @@ public:
   /** Set the zero suppression threshold 
       @param t Threshold (in ADC counts) */
   void SetZeroThreshold(UShort_t t) { fZeroThreshold = t; }
+  /** Set strip validty range 
+      @param min Minimum strip number
+      @param max Maximum strip number */
+  void SetStripRange(UShort_t min, UShort_t max) 
+  {
+    fStripMin = min;
+    fStripMax = (max < min ? min : max);
+  }
   /** Set the default output storage.  It must be a CDB URL. 
       @param url CDB URL. */
   void SetDefaultStorage(const char* url) { SetTitle(url); }
@@ -124,6 +138,9 @@ protected:
   /** Make a hardware map
       @return hardware map */
   virtual AliFMDAltroMapping*         MakeAltroMap();
+  /** Make a strip range
+      @return strip range map */
+  virtual AliFMDCalibStripRange*      MakeStripRange();
 
   Long_t   fMask;            // What to write 
   Float_t  fGain;            // Gain
@@ -136,6 +153,8 @@ protected:
   UShort_t fZeroThreshold;   // Zero suppression threshold
   Int_t    fRunMin;
   Int_t    fRunMax;
+  UShort_t fStripMin;
+  UShort_t fStripMax;
   
   ClassDef(AliFMDCalibFaker,0)
 };
