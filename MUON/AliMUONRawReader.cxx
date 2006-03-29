@@ -217,7 +217,7 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
       blankDDLSize   += 2*iBusPerDSP[i]*kBusPatchHeaderSize;
       blankBlockSize +=   iBusPerDSP[i]*kBusPatchHeaderSize;
     }
-
+    rawReader->Reset();
     rawReader->Select(0X9, iDDL, iDDL);  //Select the DDL file to be read  
 
     rawReader->ReadHeader();
@@ -228,7 +228,7 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
 
       Int_t totalDataWord = rawReader->GetDataSize(); // in bytes
       UInt_t *buffer = new UInt_t[totalDataWord/4];
-  
+
       rawReader->ReadNext((UChar_t*)buffer, totalDataWord); 
 
       // elex info
@@ -419,6 +419,7 @@ Int_t AliMUONRawReader::ReadTriggerDDL(AliRawReader* rawReader)
   // loop over the two ddl's
   for(Int_t iDDL = 0; iDDL < 2; iDDL++) { //DDL loop
 
+    rawReader->Reset();
     rawReader->Select(0XA,iDDL,iDDL);  //Select the DDL file to be read  
 
     rawReader->ReadHeader();
