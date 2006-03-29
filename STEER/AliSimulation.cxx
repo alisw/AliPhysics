@@ -654,8 +654,10 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   }
   SetGAliceFile(runLoader->GetFileName());
  
-  // Load alignment data from CDB and fill fAlignObjArray 
+  // Export ideal geometry 
+  if (gGeoManager) gGeoManager->Export("geometry.root");
 
+  // Load alignment data from CDB and fill fAlignObjArray 
   if(fLoadAlignFromCDB){
   	if(!fAlignObjArray) fAlignObjArray = new TObjArray();
   	
@@ -706,8 +708,8 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
     }
   }
 
-  // Export TGeo geometry
-  if (gGeoManager) gGeoManager->Export("geometry.root");
+  // Export (mis)aligned geometry 
+  if (gGeoManager) gGeoManager->Export("misaligned_geometry.root");
 
 //   AliRunLoader* runLoader = gAlice->GetRunLoader();
 //   if (!runLoader) {
