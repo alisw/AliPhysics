@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include <Riostream.h>
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -44,57 +45,47 @@ void AliSTARTTrigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast( new AliTriggerInput( "START_A_L0", "Signal on T0-A",  0x01 ) );
-   fInputs.AddLast( new AliTriggerInput( "START_C_L0", "Signal on T0-C", 0x02 ) );
-   fInputs.AddLast( new AliTriggerInput( "START_Vertex_L0", " Vertex T0-C&T0-A ", 0x04 ) );
-   fInputs.AddLast( new AliTriggerInput( "START_Centr_L0", "Centrality central",  0x08 ) );
-   fInputs.AddLast( new AliTriggerInput( "START_SemiCentral_L0", "Centrality semicentral",  0x08 ) );
+   fInputs.AddLast( new AliTriggerInput( "START_A_L0", "Signal on T0-A",  0x0100 ) );
+   fInputs.AddLast( new AliTriggerInput( "START_C_L0", "Signal on T0-C", 0x0200 ) );
+   fInputs.AddLast( new AliTriggerInput( "START_Vertex_L0", " Vertex T0-C&T0-A ", 0x0400 ) );
+   fInputs.AddLast( new AliTriggerInput( "START_Centr_L0", "Centrality central",  0x0800 ) );
+   fInputs.AddLast( new AliTriggerInput( "START_SemiCentral_L0", "Centrality semicentral",  0x1000 ) );
 }
 
 //----------------------------------------------------------------------
 void AliSTARTTrigger::Trigger()
 {
-
    AliRunLoader* runLoader = gAlice->GetRunLoader();
    AliLoader * fSTARTLoader = runLoader->GetLoader("STARTLoader");
    //   AliSTARTdigit *fDigits; 
    fSTARTLoader->LoadDigits("READ");
    // Creating START data container
-   Int_t idebug = 1;
+
    TTree* treeD = fSTARTLoader->TreeD();
   if (!treeD) {
     AliError("no digits tree");
     return;
   }
+  AliSTARTdigit *fDigits = new AliSTARTdigit();
 
   TBranch *brDigits = treeD->GetBranch("START");
   if (brDigits) {
     brDigits->SetAddress(&fDigits);
   }else{
     AliError("Branch START DIGIT not found");
-    exit(111);
+    return;
   } 
   brDigits->GetEntry(0);
   Int_t   besttimeright = fDigits->BestTimeRight();
   Int_t   besttimeleft = fDigits->BestTimeLeft();
   Int_t   timeDiff = besttimeright-besttimeleft;
-  Int_t   meanTime = (besttimeright+besttimeleft)/2;
-  Int_t sumMult=   fDigits->SumMult();
-  cout<<besttimeright<<" "<<besttimeleft<<" "<< timeDiff<<" "<<meanTime<<endl;
+  Int_t    sumMult=   fDigits->SumMult();
 
-  Bool_t trigg[5];
-  if (besttimeright<1000) trigg[0]=kTRUE;
-  if (besttimeleft<1000)  trigg[1]=kTRUE;
-  if (timeDiff<5)      trigg[2]=kTRUE;
-  if (sumMult>2300)    trigg[3]=kTRUE;
-  if (sumMult>1800)    trigg[4]=kTRUE;
+  if (besttimeright>0 && besttimeright<10000)  SetInput("START_A_L0");
+  if (besttimeleft>0  && besttimeleft<10000)   SetInput("START_C_L0"); 
+  if (TMath::Abs(timeDiff) < 5)                SetInput("START_Vertex_L0");
+  if (sumMult>2300)                            SetInput("START_Centr_L0");
+  if (sumMult>1800)                            SetInput("START_SemiCentral_L0");;
 
-
-   if( trigg[0] )  SetInput("START_T0A_L0");
-   if( trigg[1] )  SetInput("START_T0C_L0");
-   if( trigg[2] )  SetInput("START_T0vertex_L0");
-   if( trigg[3] )  SetInput("START_T0Centr_L0");
-   if( trigg[4] )  SetInput("START_T0SemiCentral_L0");
-   cout<<" Trigger "<<trigg[0]<<" "<<trigg[1]<<endl;
    
 }

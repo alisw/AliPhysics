@@ -12,6 +12,7 @@
 #include <TClonesArray.h>
 #include "AliSTARTRecPoint.h"
 #include "AliSTARTdigit.h"
+#include "AliSTARTTrigger.h"
 
 class TDirectory;
 class TFile;
@@ -51,6 +52,9 @@ public:
    // virtual AliLoader* MakeLoader(const char* topfoldername);
    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
    void  Digits2Raw ();
+   virtual AliTriggerDetector* CreateTriggerDetector() const 
+     { return new  AliSTARTTrigger(); }
+
 
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov photocathode

@@ -15,19 +15,19 @@ class AliSTART;
 class AliSTARTTrigger : public AliTriggerDetector
 {
  public:
-   AliSTARTTrigger();  // constructor
+  AliSTARTTrigger();  // constructor
   virtual ~AliSTARTTrigger(){}  // destructor
   virtual void    CreateInputs();
   virtual void    Trigger();
-
+  
  private:
-
+  
   AliSTART *fSTART;          //!
   AliSTARTdigit *fDigits   ; //! digits
 
-
+  
   ClassDef(AliSTARTTrigger,1)  // START Trigger Detector class
-};
+    };
 #endif
 
 
