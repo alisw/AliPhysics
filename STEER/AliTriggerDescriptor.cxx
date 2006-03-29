@@ -16,19 +16,19 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
-//                                                                           
+//
 // This class for running and define a Trigger Descriptor 
-// 
+//
 // A Trigger Descriptor define a trigger setup for specific runnign
 // condition (Pb-Pb, p-p, p-A, Calibration, etc).
 // It keep:
 //    - cluster detector (List of detectors involved)
-//    - List of conditions                              
+//    - List of conditions
 //
 // Descriptors could be create in advance and store in a file.
 //
 //   Example how to create a Trigger Descriptor:
-//                                                                       
+//
 //   AliTriggerDescriptor descrip( "TEST", "Test Descriptor" );
 //
 //   // Define a Cluster Detector
@@ -44,7 +44,7 @@
 //                         "VO2_M3_ZDC1",
 //                         "Dummy",
 //                          0x0200 );
-//   
+//
 //   descrip.AddCondition( "VZERO_TEST3_L0 | MUON_Unlike_LPt_L0 | ZDC_TEST3_L0",
 //                         "VO3_M1_ZDC3",
 //                         "Dummy",
@@ -54,8 +54,8 @@
 //
 //   // save the descriptor to file 
 //   // (default file name $ALICE_ROOT/data/triggerDescriptor.root)
-//   AliTriggerDescriptor::WriteDescriptor( &descrip );
-//                                                                           
+//   descrip.WriteDescriptor(); or descrip.WriteDescriptor( filename );
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TString.h>
@@ -100,6 +100,27 @@ AliTriggerDescriptor::AliTriggerDescriptor( const AliTriggerDescriptor& des ):
 TNamed( des ), fDetectorCluster( des.fDetectorCluster )
 {
    // Copy constructor
+   Int_t ncond = des.fConditions.GetEntriesFast();
+   for( Int_t j=0; j<ncond; j++ ) {
+      AddCondition( new AliTriggerCondition( *(AliTriggerCondition*)(des.fConditions.At( j )) ) );
+   }
+}
+
+//______________________________________________________________________________
+AliTriggerDescriptor& AliTriggerDescriptor::operator=(const AliTriggerDescriptor& des)
+{
+   // AliTriggerDescriptor assignment operator.
+
+   if (this != &des) {
+      TNamed::operator=(des);
+      fDetectorCluster = des.fDetectorCluster;
+      fConditions.Delete();
+      Int_t ncond = des.fConditions.GetEntriesFast();
+      for( Int_t j=0; j<ncond; j++ ) {
+         AddCondition( new AliTriggerCondition( *(AliTriggerCondition*)(des.fConditions.At( j )) ) );
+      }
+   }
+   return *this;
 }
 
 //_____________________________________________________________________________
@@ -170,7 +191,7 @@ AliTriggerDescriptor* AliTriggerDescriptor::LoadDescriptor( TString & descriptor
 TObjArray* AliTriggerDescriptor::GetAvailableDescriptors( const char* filename )
 {
    // Return an array of descriptor in the file
-   
+
    TString path;
    if( !filename[0] ) {
       path += gSystem->Getenv( "ALICE_ROOT" );
@@ -185,13 +206,13 @@ TObjArray* AliTriggerDescriptor::GetAvailableDescriptors( const char* filename )
    }
 
    TObjArray* desArray = new TObjArray();
-   
+
    TFile file( path.Data(), "READ" );
    if( file.IsZombie() ) {
       AliErrorGeneral( "AliTriggerDescriptor", Form( "Error opening file (%s)", path.Data() ) );
       return NULL;
    }
-   
+
    file.ReadAll();
 
    TKey* key;
@@ -229,16 +250,13 @@ void AliTriggerDescriptor::WriteDescriptor( const char* filename )
                         Form( "Can't open file (%s)", path.Data() ) );
       return;
    }
-   
+
    Bool_t result = (Write( GetName(), TObject::kOverwrite ) != 0);
    if( !result )
       AliErrorGeneral( "AliTriggerDescriptor",
                         Form( "Can't write entry to file <%s>!", path.Data() ) );
    file.Close();
 }
-
-
-
 
 //_____________________________________________________________________________
 Bool_t AliTriggerDescriptor::CheckInputsConditions( TString& configfile )

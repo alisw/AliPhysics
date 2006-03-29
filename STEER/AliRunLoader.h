@@ -44,7 +44,7 @@ class AliHeader;
 class AliStack;
 class AliRunDigitizer;
 class AliCDBEntry;
-
+class AliCentralTrigger;
 
 class AliRunLoader: public TNamed
 {
@@ -76,14 +76,17 @@ class AliRunLoader: public TNamed
 
     void        MakeTree(Option_t *option);
     void        MakeHeader();
+    void        MakeTrigger();
     void        MakeStack();
     
     Int_t       LoadgAlice();
     Int_t       LoadHeader();
     Int_t       LoadKinematics(Option_t* option = "READ");
+    Int_t       LoadTrigger(Option_t* option = "READ");
     Int_t       LoadTrackRefs(Option_t* option = "READ");
     
     void        UnloadHeader();
+    void        UnloadTrigger();
     void        UnloadKinematics();
     void        UnloadgAlice();
     void        UnloadTrackRefs();
@@ -92,7 +95,9 @@ class AliRunLoader: public TNamed
     void        SetTrackRefsFileName(const TString& fname){fTrackRefsDataLoader->SetFileName(fname);}
     
     TTree*      TreeE() const; //returns the tree from folder; shortcut method
+    TTree*      TreeCT() const; //returns the tree from folder; shortcut method
     AliHeader*  GetHeader() const;
+    AliCentralTrigger*  GetTrigger() const;
     
     AliStack*   Stack() const {return fStack;}
     
@@ -103,6 +108,7 @@ class AliRunLoader: public TNamed
         
     Int_t       WriteGeometry(Option_t* opt="");
     Int_t       WriteHeader(Option_t* opt="");
+    Int_t       WriteTrigger(Option_t* opt="");
     Int_t       WriteAliRun(Option_t* opt="");
     Int_t       WriteKinematics(Option_t* opt="");
     Int_t       WriteTrackRefs(Option_t* opt="");
@@ -192,10 +198,13 @@ class AliRunLoader: public TNamed
 
     static TString GetRunLoaderName () {return fgkRunLoaderName;}
     static TString GetHeaderContainerName () {return fgkHeaderContainerName;}
+    static TString GetTriggerContainerName () {return fgkTriggerContainerName;}
     static TString GetKineContainerName () {return fgkKineContainerName;}
     static TString GetTrackRefsContainerName () {return fgkTrackRefsContainerName;}
     static TString GetHeaderBranchName () {return fgkHeaderBranchName;}
+    static TString GetTriggerBranchName () {return fgkTriggerBranchName;}
     static TString GetKineBranchName () {return fgkKineBranchName;}
+    static TString GetTriggerFileName() { return fgkDefaultTriggerFileName; }
     static TString GetGAliceName () {return fgkGAliceName;}
      
 protected:
@@ -209,9 +218,10 @@ protected:
     
     Int_t          fCurrentEvent;//!Number of current event
     
-    TFile         *fGAFile;//!  pointer to main file with AliRun and Run Loader -> galice.root 
-    AliHeader     *fHeader;//!  pointer to header
-    AliStack      *fStack; //!  pointer to stack
+    TFile             *fGAFile;//!  pointer to main file with AliRun and Run Loader -> galice.root 
+    AliHeader         *fHeader;//!  pointer to header
+    AliStack          *fStack; //!  pointer to stack
+    AliCentralTrigger *fCTrigger; //! pointer to CEntral Trigger Processor
     
     AliDataLoader *fKineDataLoader;// kinematics data loader
     AliDataLoader *fTrackRefsDataLoader;//track reference data loader
@@ -220,6 +230,7 @@ protected:
     TString        fUnixDirName;    //! name of unix path to directory that contains event
     static const TString   fgkDefaultKineFileName;//default file name with kinamatics
     static const TString   fgkDefaultTrackRefsFileName;//default file name with kinamatics
+    static const TString   fgkDefaultTriggerFileName;//default file name with trigger
 
 
     /*********************************************/
@@ -240,6 +251,7 @@ protected:
     void  GetListOfDetectors(const char * namelist,TObjArray& pointerarray) const;
 
     void  CleanHeader(){Clean(fgkHeaderContainerName);}
+    void  CleanTrigger(){Clean(fgkTriggerContainerName);}
     void  Clean(const TString& name);
     
     Int_t SetEvent();
@@ -251,13 +263,15 @@ private:
 
     static const TString   fgkRunLoaderName;          //default name of the run loader
     static const TString   fgkHeaderContainerName;    //default name of the kinematics container (TREE) name - TreeE
+    static const TString   fgkTriggerContainerName;   //default name of the trigger container (TREE) name - TreeCT
     static const TString   fgkKineContainerName;      //default name of the kinematics container (TREE) name - TreeK
     static const TString   fgkTrackRefsContainerName; //default name of the track references container (TREE) name - TreeTR
     static const TString   fgkHeaderBranchName;       //default name of the branch containing the header
+    static const TString   fgkTriggerBranchName;      //default name of the branch containing the trigger
     static const TString   fgkKineBranchName;         //default name of the branch with kinematics
     static const TString   fgkGAliceName;             //default name for gAlice file    
     
-    ClassDef(AliRunLoader,1)
+    ClassDef(AliRunLoader,2)
 };
 
 #endif

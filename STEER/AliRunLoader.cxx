@@ -64,21 +64,24 @@ class TTask;
 #include "AliDetector.h"
 #include "AliCDBManager.h"
 #include "AliCDBLocal.h"
+#include "AliCentralTrigger.h"
 
 ClassImp(AliRunLoader)
 
 AliRunLoader* AliRunLoader::fgRunLoader = 0x0;
 
 const TString AliRunLoader::fgkRunLoaderName("RunLoader");
-
 const TString AliRunLoader::fgkHeaderBranchName("Header");
+const TString AliRunLoader::fgkTriggerBranchName("ClassMask");
 const TString AliRunLoader::fgkHeaderContainerName("TE");
+const TString AliRunLoader::fgkTriggerContainerName("TreeCT");
 const TString AliRunLoader::fgkKineContainerName("TreeK");
 const TString AliRunLoader::fgkTrackRefsContainerName("TreeTR");
 const TString AliRunLoader::fgkKineBranchName("Particles");
 const TString AliRunLoader::fgkDefaultKineFileName("Kinematics.root");
 const TString AliRunLoader::fgkDefaultTrackRefsFileName("TrackRefs.root");
 const TString AliRunLoader::fgkGAliceName("gAlice");
+const TString AliRunLoader::fgkDefaultTriggerFileName("Trigger.root");
 /**************************************************************************/
 
 AliRunLoader::AliRunLoader():
@@ -88,6 +91,7 @@ AliRunLoader::AliRunLoader():
  fGAFile(0x0),
  fHeader(0x0),
  fStack(0x0),
+ fCTrigger(0x0),
  fKineDataLoader(0x0),
  fTrackRefsDataLoader(0x0),
  fNEventsPerFile(1),
@@ -106,6 +110,7 @@ AliRunLoader::AliRunLoader(const char* eventfoldername):
  fGAFile(0x0),
  fHeader(0x0),
  fStack(0x0),
+ fCTrigger(0x0),
  fKineDataLoader(new AliDataLoader(fgkDefaultKineFileName,fgkKineContainerName,"Kinematics")),
  fTrackRefsDataLoader(new AliDataLoader(fgkDefaultTrackRefsFileName,fgkTrackRefsContainerName,"Track References")),
  fNEventsPerFile(1),
@@ -125,6 +130,7 @@ AliRunLoader::AliRunLoader(const AliRunLoader &rl):
  fGAFile(0x0),
  fHeader(0x0),
  fStack(0x0),
+ fCTrigger(0x0),
  fKineDataLoader(0x0),
  fTrackRefsDataLoader(0x0),
  fNEventsPerFile(0),
@@ -157,6 +163,7 @@ AliRunLoader::~AliRunLoader()
   RemoveEventFolder();
   
   //fEventFolder is deleted by the way of removing - TopAliceFolder owns it
+  if( fCTrigger ) delete  fCTrigger;
   delete fHeader;
   delete fStack;
   delete fGAFile;
@@ -171,6 +178,7 @@ AliRunLoader::AliRunLoader(TFolder* topfolder):
  fGAFile(0x0),
  fHeader(0x0),
  fStack(0x0),
+ fCTrigger(0x0),
  fKineDataLoader(new AliDataLoader(fgkDefaultKineFileName,fgkKineContainerName,"Kinematics")),
  fTrackRefsDataLoader(new AliDataLoader(fgkDefaultTrackRefsFileName,fgkTrackRefsContainerName,"Track References")),
  fNEventsPerFile(1),
@@ -260,6 +268,14 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
   else
    {
      AliWarning("Stack not found in header");
+   }
+
+   if( GetTrigger() && TreeCT() ) {
+      retval = TreeCT()->GetEvent(fCurrentEvent);
+      if ( retval )      {
+         AliError(Form("Error occured while GetEvent for Trigger. Event %d",evno));
+         return 2;
+      }
    }
   
   retval = SetEvent();
@@ -423,6 +439,7 @@ AliRunLoader* AliRunLoader::Open
      }
      
     AliWarningClass("Session is already opened and mounted in demanded folder");	
+    if (!fgRunLoader) fgRunLoader = result; //PH get access from any place
     return result;
   } //end of checking in case of existance of object named identically that folder session is being opened
  
@@ -566,14 +583,32 @@ void AliRunLoader::MakeStack()
      fStack->SetEventFolderName(fEventFolder->GetName());
    }
 }
+/**************************************************************************/
 
+void AliRunLoader::MakeTrigger()
+{
+ // Makes trigger object and connects it to trigger tree (if it exists)
+   AliDebug( 1, "" );
+   if( fCTrigger == 0x0 ) {
+      AliDebug( 1, "Creating new Trigger Object" );
+      fCTrigger = new AliCentralTrigger();
+   }
+   TTree* tree = TreeCT();
+   if( tree ) {
+      fCTrigger->MakeBranch( fgkTriggerBranchName, tree );
+      tree->GetEvent( fCurrentEvent );
+   }
+
+   AliDebug( 1, "Exiting MakeTrigger method" );
+}
 /**************************************************************************/
 
 void AliRunLoader::MakeTree(Option_t *option)
 {
 //Creates trees
-  const char *oK = strstr(option,"K"); //Kine  
-  const char *oE = strstr(option,"E"); //Header
+  const char *oK  = strstr(option,"K");  //Kine
+  const char *oE  = strstr(option,"E");  //Header
+  const char *oCT = strstr(option,"CT"); //Central Trigger
 
   if(oK && !TreeK())
    { 
@@ -599,6 +634,21 @@ void AliRunLoader::MakeTree(Option_t *option)
      WriteHeader("OVERWRITE");
    }
   
+   if(oCT && !TreeCT())
+   {
+      // create the CTP Trigger output file and tree
+      TFile* file = gROOT->GetFile( fgkDefaultTriggerFileName );
+      if( !file ) {
+         file = TFile::Open( gSystem->ConcatFileName( fUnixDirName.Data(), fgkDefaultTriggerFileName.Data() ), "RECREATE" ) ;
+      }
+
+      file->cd();
+      TTree* tree = new TTree( fgkTriggerContainerName, "Tree with Central Trigger Mask" );
+      GetEventFolder()->Add(tree);
+      MakeTrigger();
+  //    WriteHeader("OVERWRITE");
+   }
+
   TIter next(fLoaders);
   AliLoader *loader;
   while((loader = (AliLoader*)next()))
@@ -681,6 +731,50 @@ Int_t AliRunLoader::LoadHeader()
  return 0; 
 
 }
+/**************************************************************************/
+
+Int_t AliRunLoader::LoadTrigger(Option_t* option)
+{
+   //Load treeCT
+
+   if( TreeCT() ) {
+      AliWarning("Trigger is already loaded. Nothing done");
+      return 0;
+   }
+ 
+   if( GetEventFolder() == 0x0 ) {
+      AliError("Event folder not specified yet");
+      return 1;
+   }
+   // get the CTP Trigger output file and tree
+   TString trgfile = gSystem->ConcatFileName( fUnixDirName.Data(),
+                                              fgkDefaultTriggerFileName.Data() );
+   TFile* file = gROOT->GetFile( trgfile );
+   if( !file ) {
+      file = TFile::Open( trgfile, option ) ;
+      if (!file || file->IsOpen() == kFALSE ) {
+         AliError( Form( "Can not open trigger file %s", trgfile.Data() ) );
+         return 2;
+      }
+   }
+   file->cd();
+
+   TTree* tree = dynamic_cast<TTree*>(file->Get( fgkTriggerContainerName ));
+   if( !tree ) {
+      AliError( Form( "Can not find trigger tree named %s in file %s",
+                      fgkTriggerContainerName.Data(), file->GetName() ) );
+      return 2;
+   }
+
+   CleanTrigger();
+
+   fCTrigger = dynamic_cast<AliCentralTrigger*>(file->Get( "AliCentralTrigger" ));
+   GetEventFolder()->Add( tree );
+   MakeTrigger();
+
+   return 0;
+}
+
 /**************************************************************************/
 
 Int_t AliRunLoader::LoadKinematics(Option_t* option)
@@ -767,11 +861,28 @@ TTree* AliRunLoader::TreeE() const
 }
 /**************************************************************************/
 
+TTree* AliRunLoader::TreeCT() const
+{
+ //returns the tree from folder; shortcut method
+   if (AliDebugLevel() > 10) fEventFolder->ls();
+   TObject *obj = fEventFolder->FindObject(fgkTriggerContainerName);
+   return (obj)?dynamic_cast<TTree*>(obj):0x0;
+}
+/**************************************************************************/
+
 AliHeader* AliRunLoader::GetHeader() const
 {
 //returns pointer header object
  return fHeader;
 }
+/**************************************************************************/
+
+AliCentralTrigger* AliRunLoader::GetTrigger() const
+{
+//returns pointer trigger object
+   return fCTrigger;
+}
+
 /**************************************************************************/
  
 TTree* AliRunLoader::TreeK() const
@@ -848,6 +959,44 @@ Int_t AliRunLoader::WriteHeader(Option_t* opt)
   AliDebug(1, "WRITTEN\n\n");
   
   return 0;
+}
+
+/**************************************************************************/
+
+Int_t AliRunLoader::WriteTrigger(Option_t* opt)
+{
+   //writes TreeCT
+   AliDebug( 1, "WRITING TRIGGER" );
+  
+   TTree* tree = TreeCT();
+   if ( tree == 0x0) {
+      AliWarning("Can not find Trigger Tree in Folder");
+      return 0;
+   }
+
+   TFile* file = gROOT->GetFile( gSystem->ConcatFileName( fUnixDirName.Data(), fgkDefaultTriggerFileName.Data() ) ) ;
+   if( !file || !file->IsOpen() ) {
+      AliError( "can't write Trigger, file is not open" );
+      return kFALSE;
+   }
+
+   TObject* obj = file->Get( fgkTriggerContainerName );
+   if( obj ) { //if they exist, see if option OVERWRITE is used
+      TString tmp(opt);
+      if( tmp.Contains( "OVERWRITE", TString::kIgnoreCase ) == 0) {
+         //if it is not used -  give an error message and return an error code
+         AliError( "Tree already exisists. Use option \"OVERWRITE\" to overwrite previous data" );
+         return 3;
+      }
+   }
+   file->cd();
+   fCTrigger->Write( 0, TObject::kOverwrite );
+   tree->Write( 0, TObject::kOverwrite );
+   file->Flush();
+
+   AliDebug(1, "WRITTEN\n\n");
+  
+   return 0;
 }
 /**************************************************************************/
 
@@ -1110,6 +1259,7 @@ void AliRunLoader::CleanFolders()
   CleanDetectors();
   CleanHeader();
   CleanKinematics();
+  CleanTrigger();
 }
 /**************************************************************************/
 
@@ -1740,6 +1890,7 @@ void AliRunLoader::Clean(const TString& name)
      AliDebug(1, Form("name=%s, cleaning %s.",GetName(),name.Data()));
      GetEventFolder()->Remove(obj);
      delete obj;
+     obj = 0x0;
    }
 }
 
@@ -1844,6 +1995,17 @@ void AliRunLoader::UnloadHeader()
  delete fHeader;
  fHeader = 0x0;
 }
+/**************************************************************************/
+
+void AliRunLoader::UnloadTrigger()
+{
+ //removes TreeCT from folder and deletes it
+ // as well as fHeader object
+   CleanTrigger();
+   delete fCTrigger;
+   fCTrigger = 0x0;
+}
+
 /**************************************************************************/
 
 void AliRunLoader::UnloadKinematics()
@@ -1981,6 +2143,9 @@ void AliRunLoader::Synchronize()
   
   fKineDataLoader->Synchronize();
   fTrackRefsDataLoader->Synchronize();
+
+  TFile* file = gROOT->GetFile( gSystem->ConcatFileName( fUnixDirName.Data(), fgkDefaultTriggerFileName.Data() ) ) ;
+  if( file ) file->Flush();
   
   if (fGAFile) fGAFile->Flush();
 }

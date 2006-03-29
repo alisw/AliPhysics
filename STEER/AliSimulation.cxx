@@ -546,75 +546,32 @@ Bool_t AliSimulation::RunTrigger(const char* descriptors)
 {
   // run the trigger
 
-  TStopwatch stopwatch;
-  stopwatch.Start();
+   TStopwatch stopwatch;
+   stopwatch.Start();
 
-  AliRunLoader* runLoader = LoadRun("READ");
-  if (!runLoader) return kFALSE;
-  TString des = descriptors;
+   AliRunLoader* runLoader = LoadRun("READ");
+   if (!runLoader) return kFALSE;
+   TString des = descriptors;
+
+   runLoader->MakeTree( "CT" );
+   AliCentralTrigger* aCTP = runLoader->GetTrigger();
   // Load Descriptors
-  AliCentralTrigger* aCTP = new AliCentralTrigger( des );
+   aCTP->LoadDescriptor( des );
 
   // digits -> trigger
-  if( !aCTP->RunTrigger( runLoader ) ) {
-    if (fStopOnError) {
-      delete aCTP;
-      return kFALSE;
-    }
-  }
-
-/*
-  // Process each event
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    AliInfo(Form("processing event %d", iEvent));
-    runLoader->GetEvent(iEvent);
-
-    TObjArray* detArray = runLoader->GetAliRun()->Detectors();
-    for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
-      AliModule* det = (AliModule*) detArray->At(iDet);
-      if (!det || !det->IsActive()) continue;
-      if (IsSelected(det->GetName(), detStr)) {
-        AliInfo(Form("triggering from digits for %s", det->GetName()));
-
-     //   AliLoader* loader = fLoader[iDet];
-     //   loader->LoadDigits("read");
-     //   TTree* digitsTree = loader->TreeD();
-     //   det->Trigger( digitsTree );
-     // or
-        AliTriggerDetector* tdet = det->CreateTriggerDetector();
-        TObjArray* detInp = dtrg->GetTriggerInputs();
-        for( Int_t i=0; i<detInp->GetEntriesFast(); i++ )
-               fInputs.AddLast( detInp->At(i) );
-
-        AliInfo(Form("Execution time for %s: R:%.2fs C:%.2fs",
-                det->GetName(),stopwatchDet.RealTime(),stopwatchDet.CpuTime()));
-      }
-    }
-
-    if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-      AliError(Form("the following detectors were not found: %s",
-                    detStr.Data()));
+   if( !aCTP->RunTrigger( runLoader ) ) {
       if (fStopOnError) {
-         delete centralTP;
+    //  delete aCTP;
          return kFALSE;
       }
-    }
+   }
 
-    // Check trigger conditions
-    centralTP->TriggerConditions();
+   AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
+           stopwatch.RealTime(),stopwatch.CpuTime()));
 
-    // Write trigger ????
-    centralTP->Write();
+   delete runLoader;
 
-  } */
-
-  AliInfo(Form("Execution time: R:%.2fs C:%.2fs",
-               stopwatch.RealTime(),stopwatch.CpuTime()));
-
-  delete aCTP;
-  delete runLoader;
-
-  return kTRUE;
+   return kTRUE;
 }
 
 

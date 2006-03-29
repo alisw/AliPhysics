@@ -81,7 +81,7 @@ AliTriggerCondition& AliTriggerCondition::operator=(const AliTriggerCondition& r
    // AliTriggerCondition assignment operator.
 
    if (this != &rhs) {
-      TObject::operator=(rhs);
+      TNamed::operator=(rhs);
       fClassMask  = rhs.fClassMask;
       fCondition = rhs.fCondition;
    }

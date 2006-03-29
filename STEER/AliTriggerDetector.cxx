@@ -25,6 +25,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
 #include <TNamed.h>
 #include <TString.h>
 #include <TObjArray.h>
@@ -133,3 +134,15 @@ void AliTriggerDetector::SetInput( Int_t mask )
    }
 }
 
+//_____________________________________________________________________________
+void AliTriggerDetector::Print( const Option_t* opt ) const
+{
+   // Print
+   cout << "Trigger Detector : " << GetName() << endl;
+   cout << "  Trigger Class Mask: 0x" << hex << GetMask() << dec << endl;
+   Int_t nInputs = fInputs.GetEntriesFast();
+   for( Int_t j=0; j<nInputs; j++ ) {
+      AliTriggerInput* in = (AliTriggerInput*)fInputs.At( j );
+      in->Print( opt );
+   }
+}

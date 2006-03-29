@@ -38,6 +38,10 @@ public:
                                            : TNamed( name.Data(), description.Data() ),
                                              fMask( mask ),
                                              fValue( 0 ) {}
+                          AliTriggerInput( AliTriggerInput & inp )
+                                           : TNamed( inp ),
+                                             fMask( inp.fMask ),
+                                             fValue( inp.fValue ) {}
                virtual   ~AliTriggerInput() {}
 
   //  Setters

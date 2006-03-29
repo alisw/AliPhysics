@@ -25,6 +25,7 @@
 #include <TObject.h>
 #include <TObjArray.h>
 
+class TTree;
 class AliRunLoader;
 
 class AliCentralTrigger : public TObject {
@@ -32,11 +33,15 @@ class AliCentralTrigger : public TObject {
 public:
                           AliCentralTrigger();
                           AliCentralTrigger( TString & descriptor );
+                          AliCentralTrigger( const AliCentralTrigger& ctp );
                virtual   ~AliCentralTrigger();
 
                 Bool_t    LoadDescriptor( TString & descriptor );
                 Bool_t    RunTrigger( AliRunLoader * runloader );
                 Long_t    CheckConditions();
+                  void    Reset();
+                  void    DeleteDescriptors();
+                  void    MakeBranch( TString name, TTree * tree );
   //  Getters
                TString    GetDetectors();
                 Long_t    GetClassMask() const { return fClassMask; }
@@ -45,7 +50,7 @@ public:
                   void    Print( const Option_t* opt ="" ) const;
 protected:
        //        TString    fRunCondition;     // Running modes Ej. Pb-Pb, p-p, p-A
-                Long_t    fClassMask;          // UID ( bitwise OR of conditions mask )
+             ULong64_t    fClassMask;          // UID ( bitwise OR of conditions mask )
              TObjArray    fDescriptors;        // Array of Trigger Descriptors (AliTriggerDescriptor)
              TObjArray    fInputs;             //! Array of Trigger Inputs
 

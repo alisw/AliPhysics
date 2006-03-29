@@ -48,5 +48,5 @@ void AliTriggerInput::Print( const Option_t* ) const
    cout << "Trigger Input:" << endl; 
    cout << "  Name:        " << GetName() << endl;
    cout << "  Description: " << GetTitle() << endl;
-   cout << "  Value:       " << hex << fValue << dec << endl;
+   cout << "  Value:       " << hex << "Ox" << fValue << dec << endl;
 }

@@ -13,7 +13,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObjArray.h>
-class TNamed;
+#include <TNamed.h>
 class TString;
 class AliTriggerInput;
 
@@ -41,6 +41,8 @@ public:
        AliTriggerInput*   GetInput( const char *  name ) {
                              return ((AliTriggerInput*)fInputs.FindObject( name ));
                           }
+          virtual void    Print( const Option_t* opt ="" ) const;
+
 protected:
                 Long_t    fMask;      // Trigger Mask ( bitwise OR of trigger inputs )
              TObjArray    fInputs;    // Array of Triggers Inputs (AliTriggerInput class)

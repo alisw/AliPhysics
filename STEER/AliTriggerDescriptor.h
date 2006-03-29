@@ -33,7 +33,9 @@ public:
                           AliTriggerDescriptor( TString & name, TString & description );
                           AliTriggerDescriptor( const AliTriggerDescriptor& des );
                virtual   ~AliTriggerDescriptor() { fConditions.SetOwner(); fConditions.Delete(); }
-  //  Setters
+  AliTriggerDescriptor&   operator=(const AliTriggerDescriptor& des);
+
+   //  Setters
                 Bool_t    AddDetectorCluster( TString & cluster );
                   void    AddCondition( TString & cond,  TString & name,
                                         TString & description, Long_t mask  );
