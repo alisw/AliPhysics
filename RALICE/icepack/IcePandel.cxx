@@ -33,6 +33,14 @@
 // can be selected via the memberfunction SetPrintLevel.
 // By default all printout is suppressed (i.e. level=-2).
 //
+// In case of bad parameter values as input for the minimiser, the
+// value of the Pandel sometimes cannot be evaluated.
+// In such a case a penalty value will be added.
+// By default this penalty value amounts to 3 dB, but the user can
+// modify this penalty value via the memberfunction SetPenalty.
+// This allows investigation/tuning of the sensitivity to hits with
+// bad time residuals.
+// 
 // An example of how to invoke this processor after Xtalk, hit cleaning
 // and a direct walk first guess estimate can be found in the ROOT example
 // macro icepandel.cc which resides in the /macros subdirectory.
@@ -131,6 +139,7 @@ IcePandel::IcePandel(const char* name,const char* title) : TTask(name,title)
  fFitter=0;
  fTrackname="IcePandel";
  fCharge=0;
+ fPenalty=3;
 
  // Set the global pointer to this instance
  gIcePandel=this;
@@ -192,6 +201,7 @@ void IcePandel::Exec(Option_t* opt)
    cout << " Maximally " << ntkmax << " track(s) per event for procedure : " << str.Data() << endl;
   }
   cout << " *IcePandel* Hit selection mode : " << fSelhits << endl;
+  cout << " *IcePandel* Penalty value for minimiser : " << fPenalty << " dB." << endl;
   cout << endl;
   fFirst=0;
  }
@@ -478,6 +488,15 @@ void IcePandel::SetCharge(Float_t charge)
  fCharge=charge;
 }
 ///////////////////////////////////////////////////////////////////////////
+void IcePandel::SetPenalty(Float_t val)
+{
+// Set user defined penalty value in dB for the minimiser outside the range.
+// This allows investigation/tuning of the sensitivity to hits with bad
+// time residuals.
+// By default the penalty val=3 dB is set in the constructor of this class.
+ fPenalty=val;
+}
+///////////////////////////////////////////////////////////////////////////
 void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)
 {
 // The Pandel function used for the minimisation process.
@@ -490,6 +509,7 @@ void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)
  const Float_t cice=c/nice;          // Light speed in ice in meters per ns
  const Float_t tau=557;
  const Double_t rho=((1./tau)+(cice/labs));
+ const Double_t e=exp(1.);
 
  f=0;
 
@@ -535,20 +555,19 @@ void IcePandel::FitFCN(Int_t&,Double_t*,Double_t& f,Double_t* x,Int_t)
   thit=sx->GetSignal("LE",7);
   tres=thit-tgeo;
 
-  // The Pandel function evaluation
+  // LLH optimisation based on a decibel scaled Pandel function
   // Avoid minimiser problem for infinite derivative on Pandel surface
   // This problem will be absent when using a smooth convoluted Pandel
-  if (tres>0 && zeta>=1)
+  // Use -10*log10(p) expression to obtain intuitive decibel scale for return value "f"
+  if (tres>=0.001 && tres<=10000 && zeta>=0.001 && zeta<=10000)
   {
-   pandel=pow(rho,zeta)*pow(tres,(zeta-1.))*exp(-rho*tres)/TMath::Gamma(zeta);
+   pandel=-10.*((zeta*log10(rho))+((zeta-1.)*log10(tres))-(rho*tres*log10(e))-log10(TMath::Gamma(zeta)));
+   f+=pandel;
   }
   else
   {
-   pandel=1.e-6;
+   f+=fPenalty; // Penalty in case tres and/or zeta outside range
   }
-
-  // Use 10*log10 expression to obtain intuitive decibel scale
-  f-=10.*log10(pandel);
  }
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -60,3 +60,6 @@
                 be processed introduced in IceDwalk. 
                 New class IceLinefit introduced.  
 14-mar-2006 NvE User defined track charge setting introduced in IceDwalk, IceLinefit and IcePandel.
+29-mar-2006 NvE Modified numerical evaluation of pandel value in IcePandel to extend validity
+                range (by George and Dipo).
+                Also new memberfunction SetPenalty() introduced in IcePandel.

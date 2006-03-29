@@ -27,6 +27,7 @@ class IcePandel : public TTask
   void SelectHits(Int_t mode=1);                       // Specify which hits to be used
   void SetTrackName(TString s);  // Set (alternative) name for the produced tracks
   void SetCharge(Float_t charge);// Set user defined charge for the produced tracks
+  void SetPenalty(Float_t val);  // Set penalty value in dB for the minimiser outside the allowed range
   void FitFCN(Int_t&,Double_t*,Double_t&,Double_t*,Int_t); // The minimisation FCN
 
  protected :
@@ -41,7 +42,8 @@ class IcePandel : public TTask
   TFitter* fFitter;     // Pointer to the minimisation processor
   TString fTrackname;   // The name identifier for the produced tracks
   Float_t fCharge;      // User defined charge of the produced tracks
+  Float_t fPenalty;     // User defined penalty value in dB for the minimiser outside the allowed range
 
- ClassDef(IcePandel,3) // TTask derived class to perform Pandel fitting
+ ClassDef(IcePandel,4) // TTask derived class to perform Pandel fitting
 };
 #endif
