@@ -23,7 +23,7 @@ class TF1;
 class AliRawReader;
 #include "AliDetector.h"
 #include "AliEMCALGeometry.h" 
-#include "AliEMCALTrigger.h"
+#include "AliEMCALTrigger.h" 
 
 class AliEMCAL : public AliDetector {
 
