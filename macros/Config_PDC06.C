@@ -92,7 +92,7 @@ AliGenerator *PyMbTriggered(Int_t pdg);
 void ProcessEnvironmentVars();
 
 // This part for configuration
-static PDC06Proc_t   proc     = kPyMbNoHvq;
+static PDC06Proc_t   proc     = kPyOmegaPlus;
 static DecayHvFl_t   decHvFl  = kNature; 
 static YCut_t        ycut     = kFull;
 static Mag_t         mag      = k5kG; 
@@ -308,11 +308,6 @@ void Config()
   gener->SetSigma(sigmaxy, sigmaxy, sigmaz);      // Sigma in (X,Y,Z) (cm) on IP position
   gener->SetCutVertexZ(1.);        // Truncate at 1 sigma
   gener->SetVertexSmear(kPerEvent);
-
-  gener->SetTrackingFlag(0);
-  // Specify GEANT tracking limits (Rmax, Zmax)
-  //gAlice->GetMCApp()->TrackingLimits(90.,1.0e10);
-
 
   gener->Init();
 
