@@ -266,7 +266,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
         q=TMath::Nint(q);
         if (q > zerosup)
          { 
-          if(q > param->GetADCSat()) q = (Short_t)(param->GetADCSat());
+          if(q >= param->GetADCSat()) q = (Short_t)(param->GetADCSat() - 1);
           //digrow->SetDigitFast((Short_t)q,rows,col);  
           *pdig1 =Short_t(q);
           for (Int_t tr=0;tr<3;tr++)
@@ -439,7 +439,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
         q=TMath::Nint(q);
         if (q > zerosup){ 
          
-         if(q > param->GetADCSat()) q = (Short_t)(param->GetADCSat());
+         if(q >= param->GetADCSat()) q = (Short_t)(param->GetADCSat() - 1);
          digrow->SetDigitFast((Short_t)q,rows,col);  
          // *pdig1 =Short_t(q);
          for (Int_t tr=0;tr<3;tr++){

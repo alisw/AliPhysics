@@ -948,7 +948,7 @@ void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)
     Short_t * pamp1 = digrow->GetDigits();
     Int_t   * ptracks1 = digrow->GetTracks();
     Int_t  nelems =nrows*ncols;
-    Int_t saturation = fTPCParam->GetADCSat();
+    Int_t saturation = fTPCParam->GetADCSat() - 1;
     //use internal structure of the AliDigits - for speed reason
     //if you cahnge implementation
     //of the Alidigits - it must be rewriten -
@@ -1385,7 +1385,7 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
 	q+=GetNoise();
         if(q <=fzerosup) continue; // do not fill zeros
         q = TMath::Nint(q);
-        if(q > fTPCParam->GetADCSat()) q = fTPCParam->GetADCSat();  // saturation
+        if(q >= fTPCParam->GetADCSat()) q = fTPCParam->GetADCSat() - 1;  // saturation
 
       }
 
