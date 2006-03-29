@@ -36,13 +36,12 @@
 #include <TMath.h>
 #include <TVector3.h>
 #include <TArrayD.h>
-#include <TRegexp.h>
 #include <TObjArray.h>
-#include <TObjString.h>
 #include <TGeoManager.h>
 #include <TGeoNode.h>
 #include <TGeoMatrix.h>
 #include <TMatrixD.h>
+#include <TObjString.h>
 #include <TClonesArray.h>
 
 // -- ALICE Headers.
@@ -54,11 +53,16 @@
 //#include "AliRecPoint.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALDigit.h"
+#include "AliEMCALHistoUtilities.h"
+#include "AliEMCALAlignData.h"
 
 ClassImp(AliEMCALGeometry)
 
-AliEMCALGeometry *AliEMCALGeometry::fgGeom = 0;
-Bool_t            AliEMCALGeometry::fgInit = kFALSE;
+// these initialisations are needed for a singleton
+AliEMCALGeometry  *AliEMCALGeometry::fgGeom      = 0;
+Bool_t             AliEMCALGeometry::fgInit      = kFALSE;
+AliEMCALAlignData *AliEMCALGeometry::fgAlignData = 0;
+
 TString name; // contains name of geometry
 
 char *additionalOpts[]={"nl=",   // number of sampling layers
@@ -236,6 +240,11 @@ void AliEMCALGeometry::Init(void){
   fEnvelop[1]     = fIPDistance + fShellThickness; // mother volume outer r.
   fEnvelop[2]     = 1.00001*fZLength; // add some padding for mother volume. 
   
+  if(fgAlignData != NULL) {
+    // Number of modules is read from Alignment DB if exists
+    fNumberOfSuperModules = fgAlignData->GetNSuperModules();
+  }
+ 
   fgInit = kTRUE; 
   
   if (kTRUE) {
@@ -294,7 +303,7 @@ void AliEMCALGeometry::Init(void){
 void AliEMCALGeometry::CheckAditionalOptions()
 { // Feb 06,2006
   fArrayOpts = new TObjArray;
-  Int_t nopt = ParseString(name, *fArrayOpts);
+  Int_t nopt = AliEMCALHistoUtilities::ParseString(name, *fArrayOpts);
   if(nopt==1) { // no aditional option(s)
     fArrayOpts->Delete();
     delete fArrayOpts;
@@ -990,20 +999,3 @@ void AliEMCALGeometry::GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const
   GetGlobal(vloc, vglob, nSupMod);
 }
 
-// Service routine 
-int  AliEMCALGeometry::ParseString(const TString &topt, TObjArray &Opt)
-{ // Feb 06, 2006
-  Ssiz_t begin, index, end, end2;
-  begin = index = end = end2 = 0;
-  TRegexp separator("[^ ;,\\t\\s/]+");
-  while ( (begin < topt.Length()) && (index != kNPOS) ) {
-    // loop over given options
-    index = topt.Index(separator,&end,begin);
-    if (index >= 0 && end >= 1) {
-      TString substring(topt(index,end));
-      Opt.Add(new TObjString(substring.Data()));
-    }
-    begin += end+1;
-  }
-  return Opt.GetEntries();
-}

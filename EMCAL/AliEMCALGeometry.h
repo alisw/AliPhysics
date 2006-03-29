@@ -27,6 +27,7 @@ class TClonesArray ;
 
 // --- AliRoot header files ---
 #include "AliGeometry.h"
+#include "AliEMCALAlignData.h"
 
 class AliEMCALGeometry : public AliGeometry {
 public:
@@ -34,14 +35,15 @@ public:
     // cpy ctor requested by Coding Convention but not yet needed
     Fatal("Cpy ctor", "Not implemented");
   };
-  virtual ~AliEMCALGeometry(void) ; 
+  virtual ~AliEMCALGeometry(void); 
+
   static AliEMCALGeometry * GetInstance(const Text_t* name,
 					const Text_t* title="") ; 
   static AliEMCALGeometry * GetInstance() ;
   AliEMCALGeometry & operator = (const AliEMCALGeometry  & /*rvalue*/) const {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented");
-    return *(GetInstance()) ; 
+    return *(GetInstance()); 
   };
 
   // Have to call GetTransformationForSM() before calculation global charachteristics 
@@ -180,23 +182,36 @@ public:
   Int_t GetNCellsInSupMod() const {return fNCellsInSupMod;}
   Int_t GetNCellsInTower() const {return fNCellsInTower; }
 
+  AliEMCALGeometry() :
+    AliGeometry() {// ctor only for internal usage (singleton)
+   // default ctor 
+   // must be kept public for root persistency purposes, but should never be called 
+   // by the outside world    
+     CreateListOfTrd1Modules();
+  };
+
 protected:
-  AliEMCALGeometry(const Text_t* name, const Text_t* title="") :
+  AliEMCALGeometry(const Text_t* name, const Text_t* title) :
     AliGeometry(name, title) {// ctor only for internal usage (singleton)
     Init();
     CreateListOfTrd1Modules();
   };
-  AliEMCALGeometry() :
-    AliGeometry() {// ctor only for internal usage (singleton)
+
+  AliEMCALGeometry(const Text_t* name, const Text_t* title, AliEMCALAlignData* alignData) :
+    AliGeometry(name, title) {// Align data in action
+    fgAlignData = alignData;
+    Init();
     CreateListOfTrd1Modules();
-    //Init();
   };
+
   void Init(void);     			// initializes the parameters of EMCAL
-  void CheckAditionalOptions();              //
+  void CheckAditionalOptions();         //
   
 private:
   static AliEMCALGeometry * fgGeom;	// pointer to the unique instance of the singleton
   static Bool_t fgInit;			// Tells if geometry has been succesfully set up.
+  static AliEMCALAlignData *fgAlignData;// 
+
   TObjArray *fArrayOpts;                //! array of geometry options
 
   Float_t fAlFrontThick;		// Thickness of the front Al face of the support box  
@@ -262,10 +277,8 @@ private:
   // Local coordinates of SM for TRD1
   Float_t     fParSM[3];       // SM sizes as in GEANT (TRD1)
   TGeoMatrix* fMatrixOfSM[12]; //![fNumberOfSuperModules]; get from gGeoManager;
-  // Service routine 
-  static int ParseString(const TString &topt, TObjArray &Opt);
 
-  ClassDef(AliEMCALGeometry,10) // EMCAL geometry class 
+  ClassDef(AliEMCALGeometry, 10) // EMCAL geometry class 
   };
 
 #endif // AliEMCALGEOMETRY_H

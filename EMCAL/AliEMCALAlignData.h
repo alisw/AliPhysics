@@ -6,12 +6,14 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  class for EMCAL alignment parameters       //
-////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+//  Class for EMCAL alignment parameters - go to standard tools      //
+//  Apply allignment to super modules only                           //
+///////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "AliEMCAL.h"
+
+class AliAlignObjMatrix;
 
 class AliEMCALAlignData: public TNamed {
 
@@ -21,28 +23,28 @@ class AliEMCALAlignData: public TNamed {
   AliEMCALAlignData(const AliEMCALAlignData &alignda);
   AliEMCALAlignData& operator= (const AliEMCALAlignData &alignda);
   virtual ~AliEMCALAlignData();
+
   void Reset();
-  virtual void Print(Option_t *option = "") const; 
+  virtual void Print(Option_t *option = "") const; // *MENU*
 
   // Getters
   Int_t   GetNSuperModules() const {return fNSuperModules;}
-  Float_t GetSuperModuleCenter(Int_t module, Int_t axis) const {
-    return fSuperModuleCenter[module][axis];}
-  Float_t GetSuperModuleAngle(Int_t module, Int_t axis, Int_t angle) const {
-    return fSuperModuleAngle[module][axis][angle];}
+  AliAlignObjMatrix *GetSuperModuleMatrix(Int_t module) const
+  {
+    if(module>=0&&module<fNSuperModules) return fSuperModuleMatrix[module];
+    else                                 return 0;
+  }
 
   // Setters
   void SetNSuperModules(Int_t nSuperModules) {fNSuperModules = nSuperModules;}
-  void SetSuperModuleCenter(Int_t module, Int_t axis, Float_t coord) {
-    fSuperModuleCenter[module][axis] = coord;}
-  void SetSuperModuleAngle(Int_t module, Int_t axis, Int_t angle, Float_t value) {
-    fSuperModuleAngle[module][axis][angle] = value;}
+  void SetSuperModuleMatrix(Int_t module, AliAlignObjMatrix *matrix) 
+  {
+    if(module>=0&&module<fNSuperModules) fSuperModuleMatrix[module] = matrix;
+  }
 
  protected:
-  Int_t   fNSuperModules;             // number of EMCAL supermodules (max=12)
-  Float_t fSuperModuleCenter[12][3];  // xyz-position of the supermodule center
-  Float_t fSuperModuleAngle[12][3][2];// polar and azymuth angles for 3 axes 
-                                      // of supermodules
+  Int_t   fNSuperModules;                    // number of EMCAL supermodules (max=12)
+  AliAlignObjMatrix *fSuperModuleMatrix[12]; 
 
   ClassDef(AliEMCALAlignData,1)    // EMCAL Alignment data
 };

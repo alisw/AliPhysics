@@ -440,7 +440,7 @@ void AliEMCALv0::CreateShishKebabGeometry()
       parTRAP[9] = parTRAP[8];    // TL2
       parTRAP[10]= 0.0;           // ALP2
       printf(" ** TRAP ** \n");
-      for(int i=0; i<11; i++) printf(" par[%2.2i] %9.4f\n", i, parTRAP[i]);
+      for(int i=0; i<11; i++) AliDebug(3, Form(" par[%2.2i] %9.4f\n", i, parTRAP[i]));
 
       gMC->Gsvolu("SCMX", "TRAP", idtmed[idSC], parTRAP, 11);
       xpos = +(parSCM0[1]+parSCM0[0])/4.;
@@ -458,7 +458,7 @@ void AliEMCALv0::CreateShishKebabGeometry()
       par[2] = g->GetECPbRadThick()/2.; // z
 
       int nr=0;
-      ypos = 0.0;
+      ypos = 0.0; 
       zpos = -sampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
       double xCenterSCMX =  (parTRAP[4] +  parTRAP[8])/2.;
       if(!gn.Contains("NOPB")) { // for testing - 11-jul-05
@@ -467,7 +467,7 @@ void AliEMCALv0::CreateShishKebabGeometry()
           par[0] = (parSCM0[0] + mod->GetTanBetta()*sampleWidth*iz)/2.;
           xpos   = par[0] - xCenterSCMX;
           gMC->Gsposp("PBTI", ++nr, "SCMX", xpos, ypos, zpos, 0, "ONLY", par, 3) ;
-          printf(" %i xpos %f zpos %f par[0] %f \n", iz+1, xpos, zpos, par[0]);
+          AliDebug(3,Form(" %i xpos %f zpos %f par[0] %f \n", iz+1, xpos, zpos, par[0]));
           zpos += sampleWidth;
         } 
         printf(" Number of Pb tiles in SCMX %i \n", nr);
@@ -643,8 +643,8 @@ void AliEMCALv0::CreateSmod(const char* mother)
       
       // 1th module in z-direction;
       gMC->Gspos(smName.Data(), ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
-      printf(" %s : %2i idrotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f : i %i \n", 
-      smName.Data(), nr, idrotm, phi, phiRad, xpos, ypos, zpos, i);
+      AliDebug(3, Form(" %s : %2i idrotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f : i %i \n", 
+		       smName.Data(), nr, idrotm, phi, phiRad, xpos, ypos, zpos, i));
       // 2th module in z-direction;
       if(gn.Contains("TWIST") || gn.Contains("TRD")) {
       // turn arround X axis; 0<phi<360
@@ -653,8 +653,8 @@ void AliEMCALv0::CreateSmod(const char* mother)
  
         AliMatrix(idrotm, 90.0, phi, 90.0, phiy, 180.0, 0.0);
         gMC->Gspos(smName.Data(), ++nr, mother, xpos, ypos, -zpos, idrotm, "ONLY");
-        printf(" %s : %2i idrotm %3i phiy %6.1f  xpos %7.2f ypos %7.2f zpos %7.2f \n", 
-        smName.Data(), nr, idrotm, phiy, xpos, ypos, -zpos);
+        AliDebug(3, Form(" %s : %2i idrotm %3i phiy %6.1f  xpos %7.2f ypos %7.2f zpos %7.2f \n", 
+			 smName.Data(), nr, idrotm, phiy, xpos, ypos, -zpos));
       } else {
         gMC->Gspos("SMOD", ++nr, mother, xpos, ypos, -zpos, idrotm, "ONLY");
       }
@@ -756,7 +756,7 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
             ypos = g->GetPhiModuleSize()*(2*iy+1 - iyMax)/2.;
             gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
         //printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f idrotm %i\n", nr, xpos, ypos, zpos, idrotm);
-            printf("%3.3i(%2.2i,%2.2i) ", nr,iy+1,iz+1);
+            AliDebug(3,Form("%3.3i(%2.2i,%2.2i) ", nr,iy+1,iz+1));
           }
           printf("\n");
 	} else {

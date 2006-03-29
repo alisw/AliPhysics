@@ -20,6 +20,7 @@
 ////////////////////////////////////////////////
 
 #include "AliEMCALAlignData.h"
+#include "AliAlignObjMatrix.h"
 
 ClassImp(AliEMCALAlignData)
 
@@ -51,14 +52,7 @@ AliEMCALAlignData::AliEMCALAlignData(const AliEMCALAlignData& alignda) :
   Reset();
   fNSuperModules = alignda.GetNSuperModules();
   for(Int_t module=0; module<fNSuperModules; module++) {
-    for (Int_t axis=0; axis<3; axis++) {
-      fSuperModuleCenter[module][axis] = 
-	alignda.GetSuperModuleCenter(module,axis);
-      for (Int_t angle=0; angle<2; angle++) {
-	fSuperModuleAngle[module][axis][angle] = 
-	  alignda.GetSuperModuleAngle(module,axis,angle);
-      }
-    }
+    fSuperModuleMatrix[module] = alignda.fSuperModuleMatrix[module];
   }
 }
 
@@ -71,14 +65,7 @@ AliEMCALAlignData &AliEMCALAlignData::operator =(const AliEMCALAlignData& alignd
   Reset();
   fNSuperModules = alignda.GetNSuperModules();
   for(Int_t module=0; module<fNSuperModules; module++) {
-    for (Int_t axis=0; axis<3; axis++) {
-      fSuperModuleCenter[module][axis] = 
-	alignda.GetSuperModuleCenter(module,axis);
-      for (Int_t angle=0; angle<2; angle++) {
-	fSuperModuleAngle[module][axis][angle] = 
-	  alignda.GetSuperModuleAngle(module,axis,angle);
-      }
-    }
+    fSuperModuleMatrix[module] = new AliAlignObjMatrix(*alignda.fSuperModuleMatrix[module]);
   }
   return *this;
 }
@@ -87,6 +74,9 @@ AliEMCALAlignData &AliEMCALAlignData::operator =(const AliEMCALAlignData& alignd
 AliEMCALAlignData::~AliEMCALAlignData()
 {
   // Destructor
+  for(Int_t module=0; module<fNSuperModules; module++) {
+    if(fSuperModuleMatrix[module]) delete fSuperModuleMatrix[module];
+  }
 }
 
 //________________________________________________________________
@@ -94,8 +84,8 @@ void AliEMCALAlignData::Reset()
 {
   // Set all to default values
   fNSuperModules = 12;
-  memset(fSuperModuleCenter,0,12*3*sizeof(Float_t));
-  memset(fSuperModuleAngle ,0,12*3*2*sizeof(Float_t));
+  memset(fSuperModuleMatrix,0,12*sizeof(AliAlignObjMatrix*));
+  for(Int_t module=0; module<fNSuperModules; module++) fSuperModuleMatrix[module] = 0;
 }
 
 //________________________________________________________________
@@ -106,5 +96,4 @@ void  AliEMCALAlignData::Print(Option_t */*option =""*/) const
   printf("EMCAL alignment object\n");
   printf("     Number of modules: %d\n",fNSuperModules);
 }
-
 //________________________________________________________________

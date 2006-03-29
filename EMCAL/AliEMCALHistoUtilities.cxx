@@ -15,53 +15,41 @@
 
 /*
 $Log$
+Revision 1.2  2006/03/01 23:36:50  jklay
+suppress compiler warnings by correcting some hidden virtual methods
+
 Revision 1.1  2006/02/28 21:55:11  jklay
 add histogram utilities class, correct package definitions
 
 */
 
+//_________________________________________________________________________
+// This is just set of static methods for common using
+//
 //*-- Authors: J.L. Klay (LLNL) & Aleksei Pavlinov (WSU) 
 
-//*
+#include "AliEMCALHistoUtilities.h"
 
-#include <TBrowser.h>
 #include <TFile.h>
 #include <TList.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TROOT.h>
 #include <TString.h>
-
-#include "AliEMCALHistoUtilities.h"
+#include <TObjString.h>
+#include <TRegexp.h>
 
 ClassImp(AliEMCALHistoUtilities)
 
 AliEMCALHistoUtilities::AliEMCALHistoUtilities(const char *name, const char *tit) : TNamed(name,tit)
 {
-	//constructor
-  fDebug = 0;
-  gROOT->cd();
-  fListHist = MoveHistsToList("Hist For AliEMCALHistoUtilities", kFALSE); 
+  // constructor
 }
 
 AliEMCALHistoUtilities::~AliEMCALHistoUtilities()
 {
 	//destructor
 }  
-
-void AliEMCALHistoUtilities::Browse(TBrowser* b)
-{
-  // Browse
-   if(fListHist)  b->Add((TObject*)fListHist);
-   //   TObject::Browse(b);
-}
-
-Bool_t  AliEMCALHistoUtilities::IsFolder() const
-{
-  // Is folder
-  if(fListHist) return kTRUE;
-  else                   return kFALSE;
-}
 
 TList* AliEMCALHistoUtilities::MoveHistsToList(const char* name, Bool_t putToBrowser)
 {
@@ -134,4 +122,22 @@ int AliEMCALHistoUtilities::SaveListOfHists(TList *mylist,const char* name,Bool_
     printf("AliEMCALHistoUtilities::SaveListOfHists : N O  S A V I N G \n");
   }
   return save;
+}
+
+// Moved from AliEMCALGeometry
+int AliEMCALHistoUtilities::ParseString(const TString &topt, TObjArray &Opt)
+{ // Feb 06, 2006
+  Ssiz_t begin, index, end, end2;
+  begin = index = end = end2 = 0;
+  TRegexp separator("[^ ;,\\t\\s/]+");
+  while ( (begin < topt.Length()) && (index != kNPOS) ) {
+    // loop over given options
+    index = topt.Index(separator,&end,begin);
+    if (index >= 0 && end >= 1) {
+      TString substring(topt(index,end));
+      Opt.Add(new TObjString(substring.Data()));
+    }
+    begin += end+1;
+  }
+  return Opt.GetEntries();
 }
