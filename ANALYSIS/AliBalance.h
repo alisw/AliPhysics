@@ -17,6 +17,7 @@
 #define MAXIMUM_NUMBER_OF_STEPS	1024
 
 class TLorentzVector;
+class TGraphErrors;
 
 class AliBalance : public TObject
 {
@@ -43,6 +44,7 @@ class AliBalance : public TObject
   Double_t GetBalance(Int_t p2);
   Double_t GetError(Int_t p2);
 
+  TGraphErrors *DrawBalance();
   void PrintResults();
 
  private:

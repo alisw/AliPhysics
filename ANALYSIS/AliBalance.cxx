@@ -24,6 +24,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <TLorentzVector.h>
+#include <TGraphErrors.h>
 
 #include "AliBalance.h"
 
@@ -420,3 +421,69 @@ void AliBalance::PrintResults()
   cout<<"=================================================="<<endl;
 }
   
+//----------------------------------------//
+TGraphErrors *AliBalance::DrawBalance()
+{
+  // Draws the BF
+  Double_t x[MAXIMUM_NUMBER_OF_STEPS];
+  Double_t xer[MAXIMUM_NUMBER_OF_STEPS];
+  Double_t b[MAXIMUM_NUMBER_OF_STEPS];
+  Double_t ber[MAXIMUM_NUMBER_OF_STEPS];
+
+  if((fNp == 0)||(fNn == 0))
+    {
+      cout<<"Couldn't find any particles in the analyzed interval!!!"<<endl;
+      cout<<"Aborting....."<<endl;
+      abort();
+    }
+
+  for(Int_t i = 0; i < fNumberOfBins; i++)
+    {
+      b[i] = GetBalance(i);
+      ber[i] = GetError(i);
+      x[i] = fP2Start + fP2Step*i + fP2Step/2 ;
+      xer[i] = 0.0;
+    }
+
+  TGraphErrors *gr = new TGraphErrors(fNumberOfBins,x,b,xer,ber) ;
+  gr->SetMarkerStyle(25) ;
+  gr->GetXaxis()->SetTitleColor(1);
+  if(fAnalysisType==0)
+    {
+      gr->GetXaxis()->SetTitle("#Delta y");
+      gr->GetYaxis()->SetTitle("B(#Delta y)");
+    }
+  if(fAnalysisType==1)
+    {
+      gr->GetXaxis()->SetTitle("#Delta #eta");
+      gr->GetYaxis()->SetTitle("B(#Delta #eta)");
+    }
+  if(fAnalysisType==2)
+    {
+      gr->GetXaxis()->SetTitle("Q_{long} [GeV]");
+      gr->GetYaxis()->SetTitle("B(Q_{long})");
+    }
+  if(fAnalysisType==3)
+    {
+      gr->GetXaxis()->SetTitle("Q_{out} [GeV]");
+      gr->GetYaxis()->SetTitle("B(Q_{out})");
+    }
+  if(fAnalysisType==4)
+    {
+      gr->GetXaxis()->SetTitle("Q_{side} [GeV]");
+      gr->GetYaxis()->SetTitle("B(Q_{side})");
+    }
+  if(fAnalysisType==5)
+    {
+      gr->GetXaxis()->SetTitle("Q_{inv} [GeV]");
+      gr->GetYaxis()->SetTitle("B(Q_{inv})");
+    }
+  if(fAnalysisType==6)
+    {
+      gr->GetXaxis()->SetTitle("#Delta #phi");
+      gr->GetYaxis()->SetTitle("B(#Delta #phi)");
+    }
+  gr->Draw("AP") ;
+
+  return gr;
+}
