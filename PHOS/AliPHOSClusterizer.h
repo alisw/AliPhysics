@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.38  2005/07/25 15:53:09  kharlov
+ * Set raw data reader
+ *
  * Revision 1.37  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -69,7 +72,7 @@ protected:
   TString fEventFolderName ;  // event folder name
   Int_t   fFirstEvent;        // first event to process
   Int_t   fLastEvent;         // last  event to process
-  AliRawReader *fRawReader;   // reader of raw data
+  AliRawReader *fRawReader;   //! reader of raw data
 
   ClassDef(AliPHOSClusterizer,4)  // Clusterization algorithm class 
 
