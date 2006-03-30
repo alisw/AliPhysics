@@ -37,11 +37,17 @@ ClassImp(AliTPCRawStream)
 
 //_____________________________________________________________________________
 AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader) :
-  AliAltroRawStream(rawReader)
+  AliAltroRawStream(rawReader),
+  fSector(-1),
+  fPrevSector(-1),
+  fRow(-1),
+  fPrevRow(-1),
+  fPad(-1),
+  fPrevPad(-1)
 {
   // create an object to read TPC raw digits
 
-  fRawReader->Select(0);
+  SelectRawData(0);
 
   TString path = gSystem->Getenv("ALICE_ROOT");
   path += "/TPC/mapping/Patch";
@@ -58,7 +64,13 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader) :
 
 //_____________________________________________________________________________
 AliTPCRawStream::AliTPCRawStream(const AliTPCRawStream& stream) :
-  AliAltroRawStream(stream)
+  AliAltroRawStream(stream),
+  fSector(-1),
+  fPrevSector(-1),
+  fRow(-1),
+  fPrevRow(-1),
+  fPad(-1),
+  fPrevPad(-1)
 {
   Fatal("AliTPCRawStream", "copy constructor not implemented");
 }
@@ -84,15 +96,34 @@ void AliTPCRawStream::Reset()
 {
   // reset tpc raw stream params
   AliAltroRawStream::Reset();
+  fSector = fPrevSector = fRow = fPrevRow = fPad = fPrevPad = -1;
+}
+
+//_____________________________________________________________________________
+Bool_t AliTPCRawStream::Next()
+{
+  // Read next TPC signal
+  // Apply the TPC altro mapping to get
+  // the sector,pad-row and pad indeces
+  fPrevSector = fSector;
+  fPrevRow = fRow;
+  fPrevPad = fPad;
+  if (AliAltroRawStream::Next()) {
+    if (IsNewHWAddress())
+      ApplyAltroMapping();
+    return kTRUE;
+  }
+  else
+    return kFALSE;
 }
 
 //_____________________________________________________________________________
 void AliTPCRawStream::ApplyAltroMapping()
 {
-  // Reads the DDL index, loads
+  // Take the DDL index, load
   // the corresponding altro mapping
-  // object and fills the sector,row and pad indeces
-  Int_t ddlNumber = fRawReader->GetDDLID();
+  // object and fill the sector,row and pad indeces
+  Int_t ddlNumber = GetDDLNumber();
   Int_t patchIndex;
   if (ddlNumber < 72) {
     fSector = ddlNumber / 2;
@@ -103,7 +134,8 @@ void AliTPCRawStream::ApplyAltroMapping()
     patchIndex = (ddlNumber - 72) % 4 + 2;
   }
 
-  fRow = fMapping[patchIndex]->GetPadRow(fHWAddress);
-  fPad = fMapping[patchIndex]->GetPad(fHWAddress);
+  Short_t hwAddress = GetHWAddress();
+  fRow = fMapping[patchIndex]->GetPadRow(hwAddress);
+  fPad = fMapping[patchIndex]->GetPad(hwAddress);
 
 }
