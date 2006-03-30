@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ////////////////////////////////////
 //
 // MUON Raw Data generaton in ALICE-MUON
