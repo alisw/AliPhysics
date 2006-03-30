@@ -23,14 +23,29 @@ class AliEMCALRawStream: public AliAltroRawStream {
 public :
   
   AliEMCALRawStream(AliRawReader* rawReader);
+  virtual ~AliEMCALRawStream();
   
-  Int_t            GetId() const {return fPad;};
-  Int_t            GetModule() const {return fSector;}
-  Int_t            GetPrevId() const {return fPrevPad;};
-  Int_t            GetSignal() const {return fSignal;};
-  Int_t            GetTime() const {return fTime;};
-  Bool_t           IsNewId() const {return (GetId() != GetPrevId());};
+  virtual void             Reset();
+  virtual Bool_t           Next();
+
+  Int_t            GetId() const {return fId;};
+  Int_t            GetPrevId() const {return fPrevId;};
+  Int_t            GetModule() const {return fModule;}
+  Int_t            GetPrevModule() const {return fPrevModule;}
+  Bool_t           IsNewId() const {return (fId != fPrevId);};
+  Bool_t           IsNewModule() const {return (fModule != fPrevModule) || (fId != fPrevId);};
   
+protected:
+  AliEMCALRawStream(const AliEMCALRawStream& stream);
+  AliEMCALRawStream& operator = (const AliEMCALRawStream& stream);
+
+  virtual void ApplyAltroMapping();
+
+  Int_t            fId;
+  Int_t            fPrevId;
+  Int_t            fModule;
+  Int_t            fPrevModule;
+
   ClassDef(AliEMCALRawStream, 0)   // class for reading EMCAL raw digits
     };
 

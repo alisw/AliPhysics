@@ -38,9 +38,75 @@ ClassImp(AliEMCALRawStream)
 
 //_____________________________________________________________________________
 AliEMCALRawStream::AliEMCALRawStream(AliRawReader* rawReader) :
-  AliAltroRawStream(rawReader)
+  AliAltroRawStream(rawReader),
+  fId(-1),
+  fPrevId(-1),
+  fModule(-1),
+  fPrevModule(-1)
 {
 // create an object to read EMCAL raw digits
 
-  fRawReader->Select(8);
+  SelectRawData(8);
+
+  fNoAltroMapping = kTRUE;
+}
+
+//_____________________________________________________________________________
+AliEMCALRawStream::AliEMCALRawStream(const AliEMCALRawStream& stream) :
+  AliAltroRawStream(stream),
+  fId(-1),
+  fPrevId(-1),
+  fModule(-1),
+  fPrevModule(-1)
+{
+  Fatal("AliEMCALRawStream", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliEMCALRawStream& AliEMCALRawStream::operator = (const AliEMCALRawStream& 
+					      /* stream */)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
+
+//_____________________________________________________________________________
+AliEMCALRawStream::~AliEMCALRawStream()
+{
+// destructor
+}
+
+//_____________________________________________________________________________
+void AliEMCALRawStream::Reset()
+{
+  // reset emcal raw stream params
+  AliAltroRawStream::Reset();
+  fId = fPrevId = fModule = fPrevModule = -1;
+}
+
+//_____________________________________________________________________________
+Bool_t AliEMCALRawStream::Next()
+{
+  // Read next EMCAL signal
+  // Apply the EMCAL altro mapping to get
+  // the module and id indeces
+  fPrevModule = fModule;
+  fPrevId = fId;
+  if (AliAltroRawStream::Next()) {
+    //    if (IsNewHWAddress())
+    ApplyAltroMapping();
+    return kTRUE;
+  }
+  else
+    return kFALSE;
+}
+
+//_____________________________________________________________________________
+void AliEMCALRawStream::ApplyAltroMapping()
+{
+  // Take the DDL index, load
+  // the corresponding altro mapping
+  // object and fill the module and id indeces
+  fModule = fSegmentation[0];
+  fId = fSegmentation[2];
 }
