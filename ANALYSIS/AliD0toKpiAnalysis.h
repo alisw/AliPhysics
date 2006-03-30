@@ -13,9 +13,7 @@
 #include <TString.h>
 #include <TNamed.h>
 #include "AliESD.h"
-#include "AliMagF.h"
 #include "AliTracker.h"
-#include "AliITStrackV2.h"
 
 //-----------------------------------------------------------------------------
 class AliD0toKpiAnalysis : public TNamed {
@@ -26,8 +24,8 @@ class AliD0toKpiAnalysis : public TNamed {
 
   void ApplySelection(const Char_t *inName="AliD0toKpi.root",
 		      const Char_t *outName="AliD0toKpi_sele.root") const;
-  void FindCandidates(Int_t evFirst=0,Int_t evLast=0,
-		      const Char_t *outName="AliD0toKpi.root");
+  //  void FindCandidates(Int_t evFirst=0,Int_t evLast=0,
+  //		      const Char_t *outName="AliD0toKpi.root");
   void FindCandidatesESD(Int_t evFirst=0,Int_t evLast=0,
   			 const Char_t *outName="AliD0toKpi.root");
   void PrintStatus() const;
@@ -73,12 +71,12 @@ class AliD0toKpiAnalysis : public TNamed {
 
   //
   Double_t CalculateTOFmass(Double_t mom,Double_t length,Double_t time) const;
-  void     MakeTracksRefFile(Int_t evFirst=0,Int_t evLast=0) const;
+  //void     MakeTracksRefFile(Int_t evFirst=0,Int_t evLast=0) const;
   void     MakeTracksRefFileESD() const;
   Bool_t   SelectInvMass(const Double_t p[6]) const;
-  void     SelectTracks(TTree &trkTree,
-			TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
-			TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const;
+  //void     SelectTracks(TTree &trkTree,
+  //			TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
+  //			TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const;
   void     SelectTracksESD(AliESD &event,
 			   TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
 			   TObjArray &trksN,Int_t *trkEntryN,Int_t &nTrksN) const;
@@ -88,7 +86,7 @@ class AliD0toKpiAnalysis : public TNamed {
   void     SetVertex1(Double_t x=0.,Double_t y=0.,Double_t z=0.) 
     { fV1[0]=x;fV1[1]=y;fV1[2]=z; }
   void     SimulationInfo(TTree *treeD0in,TTree *treeD0out) const;
-  Bool_t   SingleTrkCuts(const AliITStrackV2& trk) const;
+  Bool_t   SingleTrkCuts(const AliESDtrack& trk, Double_t b) const;
   //
   ClassDef(AliD0toKpiAnalysis,2)  // Reconstruction of D0 candidates class
 };

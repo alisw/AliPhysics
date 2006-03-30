@@ -39,12 +39,15 @@ class AliExternalTrackParam: public TObject {
 
   const Double_t *GetParameter() const {return fP;}
   const Double_t *GetCovariance() const {return fC;}
-  virtual Double_t GetX() const {return fX;}
-  virtual Double_t GetAlpha() const {return fAlpha;}
+  Double_t GetSigmaY2() const {return fC[0];}
+  Double_t GetSigmaZ2() const {return fC[2];}
+  Double_t GetX() const {return fX;}
+  Double_t GetAlpha() const {return fAlpha;}
   Double_t GetSign() const {return (fP[4]>0) ? 1 : -1;}
   Double_t GetP() const;
-  Double_t GetD(Double_t b, Double_t xv, Double_t yv) const; 
+  Double_t GetD(Double_t xv, Double_t yv, Double_t b) const; 
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
+  Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass);
   Double_t GetPredictedChi2(Double_t p[2],Double_t cov[3]) const;
   Bool_t Update(Double_t p[2],Double_t cov[3]);
   Bool_t Rotate(Double_t alpha);
@@ -54,6 +57,11 @@ class AliExternalTrackParam: public TObject {
       if (PropagateTo(x,b)) return kTRUE;
     return kFALSE;
   }
+
+  void GetHelixParameters(Double_t h[6], Double_t b) const;
+  Double_t GetDCA(const AliExternalTrackParam *p, Double_t b,
+    Double_t &xthis,Double_t &xp) const;
+  Double_t PropagateToDCA(AliExternalTrackParam *p, Double_t b);
 
   Bool_t GetPxPyPz(Double_t *p) const;
   Bool_t GetXYZ(Double_t *p) const;

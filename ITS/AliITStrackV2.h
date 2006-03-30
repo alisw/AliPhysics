@@ -42,6 +42,7 @@ public:
   Int_t Propagate(Double_t alpha, Double_t xr);
   virtual Int_t CorrectForMaterial(Double_t d, Double_t x0=21.82);
   Int_t PropagateTo(Double_t xr, Double_t d, Double_t x0=21.82);
+  Double_t PropagateToDCA(AliKalmanTrack *p, Double_t d=0., Double_t x0=0.); 
   Int_t Update(const AliCluster* cl,Double_t chi2,UInt_t i);
   Int_t Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}

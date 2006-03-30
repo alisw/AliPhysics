@@ -13,8 +13,8 @@
 
 class AliESD;
 class TTree;
-class AliITStrackV2;
-class AliV0vertex;
+class AliESDv0;
+class AliExternalTrackParam;
 
 //_____________________________________________________________________________
 class AliCascadeVertexer : public TObject {
@@ -25,8 +25,7 @@ public:
   void SetVertex(Double_t *vtx) { fX=vtx[0]; fY=vtx[1]; fZ=vtx[2]; }
 
   Int_t V0sTracks2CascadeVertices(AliESD *event);
-  Int_t V0sTracks2CascadeVertices(TTree *v, TTree *t, TTree *x);
-  Double_t PropagateToDCA(AliV0vertex *vtx, AliITStrackV2 *trk);
+  Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
 
   void GetCuts(Double_t cuts[8]) const;
   void GetVertex(Double_t *vtx) const { vtx[0]=fX; vtx[1]=fY; vtx[2]=fZ; }

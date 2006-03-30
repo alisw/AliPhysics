@@ -39,10 +39,6 @@
 #pragma link C++ class AliITStrackMI+;
 #pragma link C++ class AliITStrackerMI+;
 //#pragma link C++ class AliITSRecV0Info+;
-#pragma link C++ class  AliV0vertex+;
-#pragma link C++ class  AliV0vertexer+;
-#pragma link C++ class  AliCascadeVertex+;
-#pragma link C++ class  AliCascadeVertexer+;
 
 #pragma link C++ class  AliITSVertexer+;
 #pragma link C++ class  AliITSVertexerIons+;

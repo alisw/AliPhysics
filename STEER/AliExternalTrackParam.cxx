@@ -94,7 +94,7 @@ Double_t AliExternalTrackParam::GetP() const {
 }
 
 //_______________________________________________________________________
-Double_t AliExternalTrackParam::GetD(Double_t b,Double_t x,Double_t y) const {
+Double_t AliExternalTrackParam::GetD(Double_t x,Double_t y,Double_t b) const {
   //------------------------------------------------------------------
   // This function calculates the transverse impact parameter
   // with respect to a point with global coordinates (x,y)
@@ -129,6 +129,50 @@ Double_t AliExternalTrackParam::GetLinearD(Double_t xv,Double_t yv) const {
   Double_t d = (fX-x)*fP[2] - (fP[0]-y)*TMath::Sqrt(1.- fP[2]*fP[2]);
 
   return d;
+}
+
+Bool_t AliExternalTrackParam::
+CorrectForMaterial(Double_t d,  Double_t x0, Double_t mass) {
+  //------------------------------------------------------------------
+  // This function corrects the track parameters for the crossed material
+  // "d"    - the thickness (fraction of the radiation length)
+  // "x0"   - the radiation length (g/cm^2) 
+  // "mass" - the mass of this particle (GeV/c^2)
+  //------------------------------------------------------------------
+  Double_t &fP2=fP[2];
+  Double_t &fP3=fP[3];
+  Double_t &fP4=fP[4];
+
+  Double_t &fC22=fC[5];
+  Double_t &fC33=fC[9];
+  Double_t &fC43=fC[13];
+  Double_t &fC44=fC[14];
+
+  Double_t p2=(1.+ fP3*fP3)/(fP4*fP4);
+  Double_t beta2=p2/(p2 + mass*mass);
+  d*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
+
+  //Multiple scattering******************
+  if (d!=0) {
+     Double_t theta2=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(d);
+     //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*TMath::Abs(d)*9.36*2.33;
+     fC22 += theta2*(1.- fP2*fP2)*(1. + fP3*fP3);
+     fC33 += theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
+     fC43 += theta2*fP3*fP4*(1. + fP3*fP3);
+     fC44 += theta2*fP3*fP4*fP3*fP4;
+  }
+
+  //Energy losses************************
+  if (x0!=0.) {
+     d*=x0;
+     Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d;
+     if (beta2/(1-beta2)>3.5*3.5)
+       dE=0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2)*d;
+
+     fP4*=(1.- TMath::Sqrt(p2 + mass*mass)/p2*dE);
+  }
+
+  return kTRUE;
 }
 
 Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
@@ -320,6 +364,168 @@ Bool_t AliExternalTrackParam::Update(Double_t p[2], Double_t cov[3]) {
 
   return kTRUE;
 }
+
+void 
+AliExternalTrackParam::GetHelixParameters(Double_t hlx[6], Double_t b) const {
+  //--------------------------------------------------------------------
+  // External track parameters -> helix parameters 
+  // "b" - magnetic field (kG)
+  //--------------------------------------------------------------------
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  
+  hlx[0]=fP[0]; hlx[1]=fP[1]; hlx[2]=fP[2]; hlx[3]=fP[3]; hlx[4]=fP[4];
+
+  hlx[5]=fX*cs - hlx[0]*sn;               // x0
+  hlx[0]=fX*sn + hlx[0]*cs;               // y0
+//hlx[1]=                                 // z0
+  hlx[2]=TMath::ASin(hlx[2]) + fAlpha;    // phi0
+//hlx[3]=                                 // tgl
+  hlx[4]=hlx[4]*kB2C*b;                   // C
+}
+
+
+static void Evaluate(const Double_t *h, Double_t t,
+                     Double_t r[3],  //radius vector
+                     Double_t g[3],  //first defivatives
+                     Double_t gg[3]) //second derivatives
+{
+  //--------------------------------------------------------------------
+  // Calculate position of a point on a track and some derivatives
+  //--------------------------------------------------------------------
+  Double_t phase=h[4]*t+h[2];
+  Double_t sn=TMath::Sin(phase), cs=TMath::Cos(phase);
+
+  r[0] = h[5] + (sn - h[6])/h[4];
+  r[1] = h[0] - (cs - h[7])/h[4];  
+  r[2] = h[1] + h[3]*t;
+
+  g[0] = cs; g[1]=sn; g[2]=h[3];
+  
+  gg[0]=-h[4]*sn; gg[1]=h[4]*cs; gg[2]=0.;
+}
+
+Double_t AliExternalTrackParam::GetDCA(const AliExternalTrackParam *p, 
+Double_t b, Double_t &xthis, Double_t &xp) const {
+  //------------------------------------------------------------
+  // Returns the (weighed !) distance of closest approach between 
+  // this track and the track "p".
+  // Other returned values:
+  //   xthis, xt - coordinates of tracks' reference planes at the DCA 
+  //-----------------------------------------------------------
+  Double_t dy2=GetSigmaY2() + p->GetSigmaY2();
+  Double_t dz2=GetSigmaZ2() + p->GetSigmaZ2();
+  Double_t dx2=dy2; 
+
+  //dx2=dy2=dz2=1.;
+
+  Double_t p1[8]; GetHelixParameters(p1,b);
+  p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
+  Double_t p2[8]; p->GetHelixParameters(p2,b);
+  p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
+
+
+  Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
+  Evaluate(p1,t1,r1,g1,gg1);
+  Double_t r2[3],g2[3],gg2[3]; Double_t t2=0.;
+  Evaluate(p2,t2,r2,g2,gg2);
+
+  Double_t dx=r2[0]-r1[0], dy=r2[1]-r1[1], dz=r2[2]-r1[2];
+  Double_t dm=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+
+  Int_t max=27;
+  while (max--) {
+     Double_t gt1=-(dx*g1[0]/dx2 + dy*g1[1]/dy2 + dz*g1[2]/dz2);
+     Double_t gt2=+(dx*g2[0]/dx2 + dy*g2[1]/dy2 + dz*g2[2]/dz2);
+     Double_t h11=(g1[0]*g1[0] - dx*gg1[0])/dx2 + 
+                  (g1[1]*g1[1] - dy*gg1[1])/dy2 +
+                  (g1[2]*g1[2] - dz*gg1[2])/dz2;
+     Double_t h22=(g2[0]*g2[0] + dx*gg2[0])/dx2 + 
+                  (g2[1]*g2[1] + dy*gg2[1])/dy2 +
+                  (g2[2]*g2[2] + dz*gg2[2])/dz2;
+     Double_t h12=-(g1[0]*g2[0]/dx2 + g1[1]*g2[1]/dy2 + g1[2]*g2[2]/dz2);
+
+     Double_t det=h11*h22-h12*h12;
+
+     Double_t dt1,dt2;
+     if (TMath::Abs(det)<1.e-33) {
+        //(quasi)singular Hessian
+        dt1=-gt1; dt2=-gt2;
+     } else {
+        dt1=-(gt1*h22 - gt2*h12)/det; 
+        dt2=-(h11*gt2 - h12*gt1)/det;
+     }
+
+     if ((dt1*gt1+dt2*gt2)>0) {dt1=-dt1; dt2=-dt2;}
+
+     //check delta(phase1) ?
+     //check delta(phase2) ?
+
+     if (TMath::Abs(dt1)/(TMath::Abs(t1)+1.e-3) < 1.e-4)
+     if (TMath::Abs(dt2)/(TMath::Abs(t2)+1.e-3) < 1.e-4) {
+        if ((gt1*gt1+gt2*gt2) > 1.e-4/dy2/dy2) 
+	  AliWarning(" stopped at not a stationary point !");
+        Double_t lmb=h11+h22; lmb=lmb-TMath::Sqrt(lmb*lmb-4*det);
+        if (lmb < 0.) 
+	  AliWarning(" stopped at not a minimum !");
+        break;
+     }
+
+     Double_t dd=dm;
+     for (Int_t div=1 ; ; div*=2) {
+        Evaluate(p1,t1+dt1,r1,g1,gg1);
+        Evaluate(p2,t2+dt2,r2,g2,gg2);
+        dx=r2[0]-r1[0]; dy=r2[1]-r1[1]; dz=r2[2]-r1[2];
+        dd=dx*dx/dx2 + dy*dy/dy2 + dz*dz/dz2;
+	if (dd<dm) break;
+        dt1*=0.5; dt2*=0.5;
+        if (div>512) {
+           AliWarning(" overshoot !"); break;
+        }   
+     }
+     dm=dd;
+
+     t1+=dt1;
+     t2+=dt2;
+
+  }
+
+  if (max<=0) AliWarning(" too many iterations !");
+
+  Double_t cs=TMath::Cos(GetAlpha());
+  Double_t sn=TMath::Sin(GetAlpha());
+  xthis=r1[0]*cs + r1[1]*sn;
+
+  cs=TMath::Cos(p->GetAlpha());
+  sn=TMath::Sin(p->GetAlpha());
+  xp=r2[0]*cs + r2[1]*sn;
+
+  return TMath::Sqrt(dm*TMath::Sqrt(dy2*dz2));
+}
+ 
+Double_t AliExternalTrackParam::
+PropagateToDCA(AliExternalTrackParam *p, Double_t b) {
+  //--------------------------------------------------------------
+  // Propagates this track and the argument track to the position of the
+  // distance of closest approach.
+  // Returns the (weighed !) distance of closest approach.
+  //--------------------------------------------------------------
+  Double_t xthis,xp;
+  Double_t dca=GetDCA(p,b,xthis,xp);
+
+  if (!PropagateTo(xthis,b)) {
+    //AliWarning(" propagation failed !");
+    return 1e+33;
+  }
+
+  if (!p->PropagateTo(xp,b)) {
+    //AliWarning(" propagation failed !";
+    return 1e+33;
+  }
+
+  return dca;
+}
+
+
 
 Bool_t Local2GlobalMomentum(Double_t p[3],Double_t alpha) {
   //----------------------------------------------------------------

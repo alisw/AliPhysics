@@ -734,3 +734,30 @@ void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
 
   SetdEdx(dedx);
 }
+
+Double_t AliITStrackV2::
+PropagateToDCA(AliKalmanTrack *p, Double_t d, Double_t x0) {
+  //--------------------------------------------------------------
+  // Propagates this track and the argument track to the position of the
+  // distance of closest approach. 
+  // Returns the (weighed !) distance of closest approach.
+  //--------------------------------------------------------------
+  Double_t xthis, xp, dca;
+  {
+  //Temporary solution
+  Double_t b=1./GetLocalConvConst()/kB2C;
+  AliExternalTrackParam dummy1(*this), dummy2(*p); 
+  dca=dummy1.GetDCA(&dummy2,b,xthis,xp);
+  }
+  if (!PropagateTo(xthis,d,x0)) {
+    //AliWarning(" propagation failed !");
+    return 1e+33;
+  }  
+
+  if (!p->PropagateTo(xp,d,x0)) {
+    //AliWarning(" propagation failed !";
+    return 1e+33;
+  }  
+
+  return dca;
+} 

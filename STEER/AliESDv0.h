@@ -15,11 +15,13 @@
 #include <TObject.h>
 #include <TPDGCode.h>
 
-class AliESDtrack;
+class AliExternalTrackParam;
 
 class AliESDv0 : public TObject {
 public:
   AliESDv0();
+  AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
+           const AliExternalTrackParam &t2, Int_t i2);
 
   Double_t ChangeMassHypothesis(Int_t code=kK0Short); 
 

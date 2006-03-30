@@ -16,13 +16,11 @@ class TTreeSRedirector;
 class AliESD;
 class AliHelix;
 class AliITSgeom;
-class AliV0vertex;
 
 #include <TObjArray.h>
 #include "AliITSRecPoint.h"
 #include "AliITStrackMI.h"
 #include "AliTracker.h"
-#include "AliV0vertex.h"
 
 //-------------------------------------------------------------------------
 class AliITStrackerMI : public AliTracker {

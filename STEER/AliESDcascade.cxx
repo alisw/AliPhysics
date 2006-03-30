@@ -27,6 +27,8 @@
 #include <TMath.h>
 
 #include "AliLog.h"
+#include "AliExternalTrackParam.h"
+#include "AliESDv0.h"
 #include "AliESDcascade.h"
 
 ClassImp(AliESDcascade)
@@ -43,6 +45,63 @@ AliESDcascade::AliESDcascade() :
   //--------------------------------------------------------------------
   fPos[0]=fPos[1]=fPos[2]=0.;
   fPosCov[0]=fPosCov[1]=fPosCov[2]=fPosCov[3]=fPosCov[4]=fPosCov[5]=0.;
+}
+
+AliESDcascade::AliESDcascade(const AliESDv0 &v,
+			     const AliExternalTrackParam &t, Int_t i) : 
+  TObject(),
+  fPdgCode(kXiMinus),
+  fEffMass(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
+  fChi2(1.e+33),
+  fBachIdx(i)
+{
+  //--------------------------------------------------------------------
+  // Main constructor  (Xi-)
+  //--------------------------------------------------------------------
+
+  fV0idx[0]=v.GetNindex(); fV0idx[1]=v.GetPindex();
+
+  Double_t r[3]; t.GetXYZ(r);
+  Double_t x1=r[0], y1=r[1], z1=r[2]; // position of the bachelor
+  Double_t p[3]; t.GetPxPyPz(p);
+  Double_t px1=p[0], py1=p[1], pz1=p[2];// momentum of the bachelor track
+
+  Double_t x2,y2,z2;          // position of the V0 
+  v.GetXYZ(x2,y2,z2);    
+  Double_t px2,py2,pz2;       // momentum of V0
+  v.GetPxPyPz(px2,py2,pz2);
+
+  Double_t a2=((x1-x2)*px2+(y1-y2)*py2+(z1-z2)*pz2)/(px2*px2+py2*py2+pz2*pz2);
+
+  Double_t xm=x2+a2*px2;
+  Double_t ym=y2+a2*py2;
+  Double_t zm=z2+a2*pz2;
+
+  // position of the cascade decay
+  
+  fPos[0]=0.5*(x1+xm); fPos[1]=0.5*(y1+ym); fPos[2]=0.5*(z1+zm);
+    
+
+  // invariant mass of the cascade (default is Ximinus)
+  
+  Double_t e1=TMath::Sqrt(0.13957*0.13957 + px1*px1 + py1*py1 + pz1*pz1);
+  Double_t e2=TMath::Sqrt(1.11568*1.11568 + px2*px2 + py2*py2 + pz2*pz2);
+  
+  fEffMass=TMath::Sqrt((e1+e2)*(e1+e2)-
+    (px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
+
+
+  // momenta of the bachelor and the V0
+  
+  fBachMom[0]=px1; fBachMom[1]=py1; fBachMom[2]=pz1; 
+  v.GetNPxPyPz(px2,py2,pz2);
+  fV0mom[0][0]=px2; fV0mom[0][1]=py2; fV0mom[0][2]=pz2;
+  v.GetPPxPyPz(px2,py2,pz2);
+  fV0mom[1][0]=px2; fV0mom[1][1]=py2; fV0mom[1][2]=pz2;
+
+
+  fChi2=7.;   
+
 }
 
 Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {

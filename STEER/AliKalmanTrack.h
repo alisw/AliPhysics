@@ -42,9 +42,6 @@ public:
     return 0.;
   }
 
-  virtual Double_t GetDCA(const AliKalmanTrack *p,Double_t &xthis,Double_t &xp) const; 
-  virtual 
-  Double_t PropagateToDCA(AliKalmanTrack *p, Double_t d=0., Double_t x0=0.); 
   virtual Double_t GetAlpha() const {
     AliWarning("Method must be overloaded !\n");
     return 0.;
@@ -65,10 +62,9 @@ public:
 
   virtual Double_t GetPredictedChi2(const AliCluster *) const = 0;
   virtual Int_t PropagateTo(Double_t/*xr*/,Double_t/*x0*/,Double_t/*rho*/) = 0;
-  //virtual Int_t PropagateToVertex(Double_t /*d*/=0., Double_t /*x0*/=0.) = 0; 
+
   virtual Int_t Update(const AliCluster*, Double_t /*chi2*/, UInt_t) = 0;
 
-  //static Double_t GetConvConst();
   static Double_t MeanMaterialBudget(Double_t *start, Double_t *end, Double_t *mparam);
  
   // Time integration (S.Radomski@gsi.de)

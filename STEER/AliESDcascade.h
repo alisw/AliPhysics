@@ -15,7 +15,7 @@
 #include <TObject.h>
 #include <TPDGCode.h>
 
-class AliESDtrack;
+class AliExternalTrackParam;
 class AliESDv0;
 
 #define kXiMinus       3312
@@ -26,6 +26,8 @@ class AliESDv0;
 class AliESDcascade : public TObject {
 public:
   AliESDcascade();
+  AliESDcascade(const AliESDv0 &v0, 
+                const AliExternalTrackParam &t, Int_t i);
 
   Double_t ChangeMassHypothesis(Double_t &v0q, Int_t code=kXiMinus); 
 

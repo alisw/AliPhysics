@@ -29,11 +29,9 @@
 #include "AliESD.h"
 #include "AliStack.h"
 #include "AliRunLoader.h"
-#include "AliITStrackV2.h"
 #include "AliITSVertexerTracks.h"
 #include "AliESDVertex.h"
-#include "AliV0vertexer.h"
-#include "AliV0vertex.h"
+#include "AliESDv0.h"
 #include "AliD0toKpi.h"
 #include "AliD0toKpiAnalysis.h"
 #include "AliLog.h"
@@ -135,6 +133,7 @@ Double_t AliD0toKpiAnalysis::CalculateTOFmass(Double_t mom,Double_t length,
 
   return mom*a;
 }
+/*
 //----------------------------------------------------------------------------
 void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 					const Char_t *outName) {
@@ -365,6 +364,7 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 
   return;
 }
+*/
 //----------------------------------------------------------------------------
 void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 					   const Char_t *outName) {
@@ -387,14 +387,14 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
   Int_t    nTotEv=0,nD0rec=0,nD0rec1ev=0;
   Double_t dca;
   Double_t v2[3],mom[6],d0[2];
-  Double_t alphaP,alphaN,ptP,ptN,phiP,phiN;
+  //Double_t alphaP,alphaN,ptP,ptN,phiP,phiN;
   Int_t    iTrkP,iTrkN,trkEntries;
   Int_t    nTrksP=0,nTrksN=0;
   Int_t    trkNum[2];
   Double_t tofmass[2];
   Int_t    okD0=0,okD0bar=0;
-  AliITStrackV2 *postrack = 0;
-  AliITStrackV2 *negtrack = 0;
+  AliESDtrack *postrack = 0;
+  AliESDtrack *negtrack = 0;
 
   // create the AliITSVertexerTracks object
   // (it will be used only if fVertexOnTheFly=kTrue)
@@ -403,7 +403,7 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
   Int_t  skipped[2];
   Bool_t goodVtx1;
   
-
+  /*
   // define the cuts for vertexing
   Double_t vtxcuts[]={50., // max. allowed chi2
 		      0.0, // min. allowed negative daughter's impact param 
@@ -415,6 +415,7 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
   
   // create the AliV0vertexer object
   AliV0vertexer *vertexer2 = new AliV0vertexer(vtxcuts);
+  */
 
   // create tree for reconstructed D0s
   AliD0toKpi *ioD0toKpi=0;
@@ -475,39 +476,47 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
       if(iTrkP%10==0) AliDebugClass(1,Form("  Processing positive track number %d of %d",iTrkP,nTrksP));
 	  
       // get track from track array
-      postrack = (AliITStrackV2*)trksP.UncheckedAt(iTrkP);
+      postrack = (AliESDtrack*)trksP.UncheckedAt(iTrkP);
       trkNum[0] = trkEntryP[iTrkP];      
 
       // loop on negative tracks 
       for(iTrkN=0; iTrkN<nTrksN; iTrkN++) {
 
 	// get track from tracks array
-	negtrack = (AliITStrackV2*)trksN.UncheckedAt(iTrkN);
+	negtrack = (AliESDtrack*)trksN.UncheckedAt(iTrkN);
 	trkNum[1] = trkEntryN[iTrkN];      
 
-	AliITStrackV2 nt(*negtrack), pt(*postrack), *pnt=&nt, *ppt=&pt;
-
+        {
 	//
 	// ----------- DCA MINIMIZATION ------------------
 	//
-	// find the DCA and propagate the tracks to the DCA 
-	dca = vertexer2->PropagateToDCA(pnt,ppt);
+	// find the DCA and propagate the tracks to the DCA
+	Double_t b=event->GetMagneticField(); 
+	AliESDtrack nt(*negtrack), pt(*postrack);
+	dca = nt.PropagateToDCA(&pt,b);
 
-	// define the AliV0vertex object
-	AliV0vertex *vertex2 = new AliV0vertex(*pnt,*ppt);
+	// define the AliESDv0 object
+	AliESDv0 vertex2(nt,trkNum[0],pt,trkNum[1]);
 	  
 	// get position of the secondary vertex
-	vertex2->GetXYZ(v2[0],v2[1],v2[2]);
-	
-	delete vertex2;
-  
+	vertex2.GetXYZ(v2[0],v2[1],v2[2]);
+        vertex2.GetPPxPyPz(mom[0],mom[1],mom[2]);
+        vertex2.GetNPxPyPz(mom[3],mom[4],mom[5]);
+	// impact parameters of the tracks w.r.t. the primary vertex
+
+	d0[0] =  10000.*pt.GetD(fV1[0],fV1[1],b);
+	d0[1] = -10000.*nt.GetD(fV1[0],fV1[1],b);
+	}
+        /*
 	// momenta of the tracks at the vertex
-	ptP = 1./TMath::Abs(ppt->Get1Pt());
-	alphaP = ppt->GetAlpha();
-	phiP = alphaP+TMath::ASin(ppt->GetSnp());
+        //Double_t x,par[5]; postrack->GetExternalParameters(x,par); 
+	//ptP = 1./TMath::Abs(par[4]);
+	//alphaP = postrack->GetAlpha();
+	//phiP = alphaP+TMath::ASin(par[2]);
+	  postrack->GetPxPyPz();
 	mom[0] = ptP*TMath::Cos(phiP); 
 	mom[1] = ptP*TMath::Sin(phiP);
-	mom[2] = ptP*ppt->GetTgl();
+	mom[2] = ptP*par[3];
 	  
 	ptN = 1./TMath::Abs(pnt->Get1Pt());
 	alphaN = pnt->GetAlpha();
@@ -515,7 +524,7 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 	mom[3] = ptN*TMath::Cos(phiN); 
 	mom[4] = ptN*TMath::Sin(phiN);
 	mom[5] = ptN*pnt->GetTgl();
-	  
+	*/
 	goodVtx1 = kTRUE;
 	// no vertexing if DeltaMass > fMassCut 
 	if(fVertexOnTheFly) {
@@ -534,10 +543,6 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 	    delete vertex1onfly;	
 	  }
 	}	  
-
-	// impact parameters of the tracks w.r.t. the primary vertex
-	d0[0] =  10000.*ppt->GetD(fV1[0],fV1[1]);
-	d0[1] = -10000.*pnt->GetD(fV1[0],fV1[1]);
 
 	// create the object AliD0toKpi
 	AliD0toKpi theD0(ev,trkNum,fV1,v2,dca,mom,d0);
@@ -598,7 +603,7 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
   printf("\n+++\n+++ Total number of D0 candidates: %d\n+++\n",nD0rec);
 
   delete vertexer1;
-  delete vertexer2;
+  //delete vertexer2;
 
   esdFile->Close();
 
@@ -694,6 +699,7 @@ Bool_t AliD0toKpiAnalysis::SelectInvMass(const Double_t p[6]) const {
   if(TMath::Abs(minvD0bar-mD0) < fMassCut) return kTRUE;
   return kFALSE;
 }
+/*
 //-----------------------------------------------------------------------------
 void AliD0toKpiAnalysis::SelectTracks(TTree &trkTree,
 		  TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
@@ -730,6 +736,7 @@ void AliD0toKpiAnalysis::SelectTracks(TTree &trkTree,
 
   return;
 }
+*/
 //-----------------------------------------------------------------------------
 void AliD0toKpiAnalysis::SelectTracksESD(AliESD &event,
         TObjArray &trksP,Int_t *trkEntryP,Int_t &nTrksP,
@@ -744,23 +751,20 @@ void AliD0toKpiAnalysis::SelectTracksESD(AliESD &event,
   // transfer ITS tracks from ESD to arrays and to a tree
   for(Int_t i=0; i<entr; i++) {
 
-    AliESDtrack *esdtrack = (AliESDtrack*)event.GetTrack(i);
+    AliESDtrack *esdtrack = event.GetTrack(i);
     UInt_t status = esdtrack->GetStatus();
 
     if(!(status&AliESDtrack::kITSrefit)) continue;
 
-    AliITStrackV2 *itstrack = new AliITStrackV2(*esdtrack); 
-
     // single track selection
-    if(!SingleTrkCuts(*itstrack)) 
-      { delete itstrack; continue; }
+    if(!SingleTrkCuts(*esdtrack,event.GetMagneticField())) continue;
 
-    if(itstrack->Get1Pt()>0.) { // negative track
-      trksN.AddLast(itstrack);
+    if(esdtrack->GetSign()<0) { // negative track
+      trksN.AddLast(esdtrack);
       trkEntryN[nTrksN] = i;
       nTrksN++;
     } else {                 // positive track
-      trksP.AddLast(itstrack);
+      trksP.AddLast(esdtrack);
       trkEntryP[nTrksP] = i;
       nTrksP++;
     }
@@ -780,42 +784,40 @@ void AliD0toKpiAnalysis::SelectTracksESDvtx(AliESD &event,TTree *trkTree,
 
   Int_t entr = event.GetNumberOfTracks();
  
-  AliITStrackV2 *itstrackfortree = 0;
-  trkTree->Branch("tracks","AliITStrackV2",&itstrackfortree,entr,0);
+  AliESDtrack *esdtrackfortree = 0;
+  trkTree->Branch("tracks","AliESDtrack",&esdtrackfortree,entr,0);
 
 
-  // transfer ITS tracks from ESD to arrays and to a tree
+  // transfer the tracks from ESD to arrays and to a tree
   for(Int_t i=0; i<entr; i++) {
 
-    AliESDtrack *esdtrack = (AliESDtrack*)event.GetTrack(i);
+    AliESDtrack *esdtrack = event.GetTrack(i);
     UInt_t status = esdtrack->GetStatus();
 
     if(!(status&AliESDtrack::kITSrefit)) continue;
 
-    AliITStrackV2 *itstrack = new AliITStrackV2(*esdtrack);
-
     // store track in the tree to be used for primary vertex finding
-    itstrackfortree = new AliITStrackV2(*esdtrack);
+    esdtrackfortree = new AliESDtrack(*esdtrack);
     trkTree->Fill();
-    itstrackfortree = 0;
+    //itstrackfortree = 0;
+    delete esdtrackfortree;
 
     // single track selection
-    if(!SingleTrkCuts(*itstrack)) 
-      { delete itstrack; continue; }
+    if(!SingleTrkCuts(*esdtrack,event.GetMagneticField())) continue;
 
-    if(itstrack->Get1Pt()>0.) { // negative track
-      trksN.AddLast(itstrack);
+    if(esdtrack->GetSign()<0) { // negative track
+      trksN.AddLast(esdtrack);
       trkEntryN[nTrksN] = i;
       nTrksN++;
     } else {                 // positive track
-      trksP.AddLast(itstrack);
+      trksP.AddLast(esdtrack);
       trkEntryP[nTrksP] = i;
       nTrksP++;
     }
 
   } // loop on esd tracks
 
-  delete itstrackfortree;
+  //delete itstrackfortree;
 
   return;
 }
@@ -846,16 +848,19 @@ void AliD0toKpiAnalysis::SetD0Cuts(const Double_t cuts[9]) {
   return;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliD0toKpiAnalysis::SingleTrkCuts(const AliITStrackV2& trk) const {
+Bool_t 
+AliD0toKpiAnalysis::SingleTrkCuts(const AliESDtrack& trk, Double_t b) const {
   // Check if track passes some kinematical cuts  
+  // Magnetic field "b" (kG)
 
-  if(TMath::Abs(1./trk.Get1Pt()) < fPtCut) 
+  if(TMath::Abs(1./trk.GetParameter()[4]) < fPtCut) 
     return kFALSE;
-  if(TMath::Abs(10000.*trk.GetD(fV1[0],fV1[1])) < fd0Cut) 
+  if(TMath::Abs(10000.*trk.GetD(fV1[0],fV1[1],b)) < fd0Cut) 
     return kFALSE;
 
   return kTRUE;
 }
+/*
 //----------------------------------------------------------------------------
 void AliD0toKpiAnalysis::MakeTracksRefFile(Int_t evFirst,Int_t evLast) 
   const {
@@ -933,6 +938,7 @@ void AliD0toKpiAnalysis::MakeTracksRefFile(Int_t evFirst,Int_t evLast)
 
   return;
 }
+*/
 //----------------------------------------------------------------------------
 void AliD0toKpiAnalysis::MakeTracksRefFileESD() const {
   // Create a file with simulation info for the reconstructed tracks
