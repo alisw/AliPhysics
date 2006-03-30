@@ -29,6 +29,20 @@ Reconstruct()
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
   AliLog::SetModuleDebugLevel("FMD", 2);
   AliReconstruction rec;   
+  AliCDBEntry* align = cdb->Get("FMD/Align/Data");
+  if (align) {
+    TClonesArray* array = dynamic_cast<TClonesArray*>(align->GetObject());
+    if (array) {
+      Int_t nAlign = array->GetEntries();
+      for (Int_t i = 0; i < nAlign; i++) {
+	AliAlignObjAngles* a = static_cast<AliAlignObjAngles*>(array->At(i));
+	if (!a->ApplyToGeometry()) {
+	  Warning("ApplyAlignement", "Failed to apply alignment to %s", 
+		  a->GetVolPath());
+	}
+      }
+    }
+  }
   rec.SetRunLocalReconstruction("FMD");
   rec.SetRunVertexFinder(kFALSE);
   rec.SetRunTracking(""); 

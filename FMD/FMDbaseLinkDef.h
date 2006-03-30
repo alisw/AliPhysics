@@ -13,6 +13,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
+#pragma link C++ class  AliFMDIndex+;
+#pragma link C++ class  AliFMDObjIndex+;
 #pragma link C++ class  AliFMDBaseDigit+;
 #pragma link C++ class  AliFMDDigit+;
 #pragma link C++ class  AliFMDSDigit+;

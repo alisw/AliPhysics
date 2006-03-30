@@ -43,6 +43,8 @@ AliFMDRawStream::AliFMDRawStream(AliRawReader* reader)
   : AliAltroRawStream(reader)
 {
   fNoAltroMapping = kFALSE;
+  // Select FMD DDL's 
+  SelectRawData(AliFMDParameters::kBaseDDL>>8);
 }
 
 //_____________________________________________________________________________
@@ -50,7 +52,6 @@ Bool_t
 AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr, 
 			     UInt_t& len, UShort_t* data)
 {
-  UInt_t       prevddl   = 0;
   Int_t        l         = 0;
   static Int_t last      = 0xFFFF; // 0xFFFF means signal is used
   Bool_t       next      = kTRUE;
@@ -65,13 +66,12 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
 	AliDebug(15, Form("New hardware address, was 0x%x, now 0x%x", 
 			  GetPrevHWAddress(), GetHWAddress()));
 	addr = GetPrevHWAddress();
-	ddl  = AliFMDParameters::kBaseDDL + prevddl;
-	len  = l+1;
+	ddl  = AliFMDParameters::kBaseDDL + GetPrevDDLNumber();
+	len  = l+1; // Need to add one - l points to last valid index
 	last = signal;
 	break;
       }
     }
-    prevddl  = GetPrevDDLNumber();
     Int_t t  = GetTime();
     l        = TMath::Max(l, t);
     data[t]  = signal;

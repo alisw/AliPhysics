@@ -2,7 +2,8 @@
 #
 # $Id$
 
-SRCS		=  AliFMDDigit.cxx		\
+SRCS		=  AliFMDIndex.cxx		\
+		   AliFMDDigit.cxx		\
 		   AliFMDBoolMap.cxx		\
 		   AliFMDUShortMap.cxx 		\
 		   AliFMDCalibPedestal.cxx	\

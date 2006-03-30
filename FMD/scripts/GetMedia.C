@@ -16,34 +16,75 @@
 #include <TArrayI.h>
 #include <AliRun.h>
 #include <TNtuple.h>
-
+#include <AliDetector.h>
+#include <TFile.h>
+#include <TGeoManager.h>
+#include <TGeoVolume.h>
+#include <TGeoMedium.h>
+#include <TParticle.h>
+#include <THStack.h>
 /** @class Media 
     @brief Media description 
     @ingroup FMD_script
  */
 struct Media : public TNamed
 {
-  TArrayI*        fMeds;
+  TArrayI         fMeds;
   TNtuple*        fCount;
+  TH1D*           fHist;
   Media(const char* name, const char* title) 
     : TNamed(name, title), fMeds(0) 
   {
-    fCount = new TNtuple(GetName(), "E/I:DET:RNG:SEC:STR:X/F:Y:Z:EDEP:PDG/I");
+    fHist  = new TH1D(Form("h%s",name), title, 120, -6, 6);
+    // fHist->SetFillStyle(3001);
+    fCount = new TNtuple(GetName(), GetTitle(), 
+			 "E:DET:RNG:SEC:STR:X:Y:Z:EDEP:PDG");
   }
-  Media(const char* name) 
-    : TNamed(name, "Media information"), fMeds(0), fCount(0)
+  Media(const char* name, TArrayI* a) 
+    : TNamed(name, "Media information"), fMeds(a->fN, a->fArray)
   {
-    AliDetector* det = gAlice->GetDetector(name);
-    if (!det) {
-      Warning("Media", "Detector %s not found in gAlice", name);
-      return;
+    fHist  = new TH1D(Form("h%s",name), GetTitle(), 120, -6, 6);
+    fHist->SetFillStyle(3001);
+    fHist->SetFillColor(fMeds.fN > 0 ? fMeds[0] : 0);
+    fCount = new TNtuple(GetName(), GetTitle(), 
+			 "E:DET:RNG:SEC:STR:X:Y:Z:EDEP:PDG");
+    std::cout << "Media list " << name << ":" << std::endl;
+    for (Int_t i = 0; i < fMeds.fN; i++) {
+      std::cout << " " << fMeds[i] << std::flush;
+      if (fMeds[i] == 0 && i > 0) break;
     }
-    fMeds = det->GetIdtmed();
-    if (!fMeds) {
-      Warning("Media", "No mediums for detector %s found", name);
-      return;
+    std::cout << std::endl;
+  }
+  Bool_t HasMedia(Int_t id) 
+  {
+    if (fMeds.fN <= 0) return kFALSE;
+    for (Int_t i = 0; i < fMeds.fN; i++) {
+      if (fMeds[i] == id) return kTRUE;
+      if (fMeds[i] == 0 && i > 0) break;
     }
-    fCount = new TNtuple(GetName(), "E/I:DET:RNG:SEC:STR:X/F:Y:Z:EDEP:PDG/I");
+    return kFALSE;
+  }
+  void Fill(Int_t ev, AliFMDHit* hit) 
+  {
+    Float_t x[10];
+    x[0] = ev;
+    x[1] = hit->Detector();
+    x[2] = Int_t(hit->Ring());
+    x[3] = hit->Sector();
+    x[4] = hit->Strip();
+    x[5] = hit->X();
+    x[6] = hit->Y();
+    x[7] = hit->Z();
+    x[8] = hit->Edep();
+    x[9] = hit->Pdg();
+    // return;
+    fCount->Fill(x);    
+    // r = TMath::Sqrt(hit->X() * hit->X() + hit->Y() * hit->Y());
+    // if(r!=0) Float_t wgt=1./(2. * 3.1415*r);
+    Double_t r = TMath::Sqrt(hit->X()*hit->X()+hit->Y()*hit->Y());
+    Double_t t = TMath::ATan2(r, hit->Z());
+    Double_t e = -TMath::Log(TMath::Tan(t/2));
+    fHist->Fill(e);
   }
 };
 
@@ -52,6 +93,12 @@ struct Media : public TNamed
 /** @class GetMedia
     @brief Get media where a particle is produced
     @code 
+    aliroot
+    Root> gAlice->Init("$ALICE_ROOT/FMD/Config.C");
+    Root> .x $ALICE_ROOT/FMD/scriptsWriteMedArrays.C
+    Root> gAlice->Run();
+    Root> .q
+    aliroot
     Root> .L Compile.C
     Root> Compile("GetMedia.C")
     Root> GetMedia c
@@ -66,53 +113,99 @@ private:
   TObjArray  fMedia;
   Media*     fOther;
   Media*     fAll;
+  Media*     fPrim;
   Int_t      fEv;
+  THStack*   fStack;
   TFile*     fOutput;
 public:
   //__________________________________________________________________
   GetMedia(const char* modlist="FMD:ITS:BODY:ABSO:START:PIPE", 
 	   const char* output="media.root") 
+    :  fModList(modlist)
   { 
-    fOutput = TFile::Open(output, "RECREATE");
-    fOther  = new Media("other", "Unknown media"),
-    fAll    = new Media("All", "All media")
-    fEv     = 0;
+    AddLoad(kGeometry);
     AddLoad(kKinematics);
+
+    fOutput = TFile::Open(output, "RECREATE");
+    fStack  = new THStack("summed", "Summed hits");
+    fOther  = AddMedia("other", "Unknown media");
+    fAll    = AddMedia("All", "All media");
+    fPrim   = AddMedia("Primary", "Primary particles");
+    fEv     = 0;
+
+    
+    fAll->fHist->SetFillColor(0);
+    fAll->fHist->SetFillStyle(3004);
+    fPrim->fHist->SetFillColor(1);
+    fPrim->fHist->SetFillStyle(3001);
+    fStack->Add(fPrim->fHist);
+  }
+  //__________________________________________________________________
+  Media* AddMedia(const char* name, const char* title, TArrayI* a=0)
+  {
+    Media* media = 0;
+    if (!a) media = new Media(name, title);
+    else    media = new Media(name, a);
+    if (a)  {
+      fMedia.Add(media);
+      fStack->Add(media->fHist);
+    }
+    return media;
   }
   //__________________________________________________________________
   Media* FindMedia(Int_t med) 
   {
-    TIter next(&fMedia);
-    Media* media = 0;
-    while ((media == static_cast<Media*>(next()))) {
-      if (!media->fMeds) continue;
-      TArrayI& ids = *(media->fMeds);
-      for (Int_t i = 0; i < ids.fN; i++) 
-	if (med == ids[i]) return media;
+    for (Int_t i = 0; i < fMedia.GetEntries(); i++) {
+      Media* media = static_cast<Media*>(fMedia.At(i));
+      if (!media) continue;
+      if (media->HasMedia(med)) return media;
     }
     return 0;
   }
   //__________________________________________________________________
   Bool_t Init()
   {
+    Bool_t ret = AliFMDInputHits::Init();
     if (!gGeoManager) {
-      Error("GetMedia", "No geometry defined - make sure you have that");
+      Error("Init", "No geometry defined - make sure you have that");
       return kFALSE;
     }
-    if (!gAlice) {
-      Error("GetMedia", "gAlice not defined");
+    if (!fRun) {
+      Error("Init", "gAlice not defined");
       return kFALSE;
     }
     Int_t now = 0;
     Int_t colon;
-    while ((colon = fModList.Index(":", now)) >= 0) {
-      fMedia.Add(new Media(fModList(now, colon-now)));
-      now = colon+1;
+    TFile* file = TFile::Open("medid.root", "READ");
+    if (!file) {
+      Error("Init", "couldn't open medid.root");
+      return kFALSE;
     }
-    if (now < fModList.Length()) 
-      fMedia.Add(new Media(now, fModList.Length()-now));
+    fOutput->cd();
+    while ((colon = fModList.Index(":", now)) >= 0) {
+      TString d(fModList(now, colon-now));
+      now = colon+1;
+      TArrayI* a = 0;
+      file->GetObject(d.Data(), a);
+      if (!a) {
+	Warning("Init", "No medium array for %s", d.Data());
+	continue;
+      }
+      AddMedia(d.Data(),0, a);
+    }
+    if (now < fModList.Length()) {
+      colon = fModList.Length();
+      TString d(fModList(now, colon-now));
+      TArrayI* a = 0;
+      file->GetObject(d.Data(), a);
+      if (!a) 
+	Warning("Init", "No medium array for %s", d.Data());
+      else 
+	AddMedia(d.Data(),0, a);
+    }
+    file->Close();
     if (fMedia.GetEntries() <= 0) return kFALSE;
-    return AliFMDInputHits::Init();
+    return ret;
   }  
   //__________________________________________________________________
   /** Begining of event
@@ -131,43 +224,62 @@ public:
 		<< track << ")" << std::endl;
       return kFALSE;
     }
+    fAll->Fill(fEv, hit);
+    if (track->IsPrimary()) { 
+      fPrim->Fill(fEv, hit);
+      return kTRUE;
+    }
+      
     // Get production vertex 
     Double_t vx = track->Vx();
     Double_t vy = track->Vy();
     Double_t vz = track->Vz();
-    
-    fAll->fCounts->Fill(fEv, hit->Detector(),Int_t(hit->Ring()),
-			hit->Sector(), hit->Strip(), 
-			hit->X(), hit->Y(), hit->Z(), hit->Edep(), 
-			hit->Pdg());
     // Get node 
     TGeoNode* prodNode = gGeoManager->FindNode(vx,vy,vz);
-    if (!prodNode) return kTRUE;
-    
+    if (!prodNode) { 
+      Warning("ProcessHit", "didn't find a node for production vertex");
+      return kTRUE;
+    }
+    //Info("ProcessHit", "Production vertex in node %s", prodNode->GetName());
+
     // Get volume 
     TGeoVolume* prodVol = prodNode->GetVolume();
-    if (!prodVol) return kTRUE;
+    if (!prodVol) { 
+      Warning("ProcessHit", "didn't find a volume for production vertex");
+      return kTRUE;
+    }
+    //Info("ProcessHit", "Production vertex in volume %s",prodVol->GetName());
     
     // Med medium 
     TGeoMedium* prodMed = prodVol->GetMedium();
-    if (!prodMed) return kTRUE;
+    if (!prodMed) { 
+      Warning("ProcessHit", "didn't find a medium for production vertex");
+      return kTRUE;
+    }
+    // Info("ProcessHit", "Production vertex in medium %s %d", 
+    //      prodMed->GetName(), prodMed->GetId());
     
-    Media* media = FindMedia(prodMed->GetUniqueID());
-    if (media) media = fOther; 
     
-    // r = TMath::Sqrt(hit->X() * hit->X() + hit->Y() * hit->Y());
-    // if(r!=0) Float_t wgt=1./(2. * 3.1415*r);
-    media->fCounts->Fill(fEv, hit->Detector(),Int_t(hit->Ring()),
-			 hit->Sector(), hit->Strip(), 
-			 hit->X(), hit->Y(), hit->Z(), hit->Edep(), 
-			 hit->Pdg());
+    Media* media = FindMedia(prodMed->GetId());
+    if (!media) { 
+      Warning("ProcessHit", "Media not found %s (%d)", 
+	      prodMed->GetName(), prodMed->GetId());
+      media = fOther; 
+    }
+    // Info("ProcessHit", "Adding to %s", media->GetName());
+    media->Fill(fEv, hit);
     return kTRUE;
   }
   //__________________________________________________________________
   Bool_t Finish()
   {
+    fOutput->cd();
+    fStack->Write();
+    fStack->Draw();
     fOutput->Write();
     fOutput->Close();
+    fOutput = 0;
+    fMedia.Delete();
     return kTRUE;
   }
 };

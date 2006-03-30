@@ -112,8 +112,6 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   // Get sample rate 
   AliFMDParameters* pars = AliFMDParameters::Instance();
   AliFMDRawStream input(fReader);
-  // Select FMD DDL's 
-  fReader->Select(AliFMDParameters::kBaseDDL>>8);
 
   UShort_t stripMin = 0;
   UShort_t stripMax = 127;
