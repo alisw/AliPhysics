@@ -37,9 +37,81 @@ ClassImp(AliPHOSRawStream)
 
 //_____________________________________________________________________________
 AliPHOSRawStream::AliPHOSRawStream(AliRawReader* rawReader) :
-  AliAltroRawStream(rawReader)
+  AliAltroRawStream(rawReader),
+  fModule(-1),
+  fPrevModule(-1),
+  fRow(-1),
+  fPrevRow(-1),
+  fColumn(-1),
+  fPrevColumn(-1)
 {
 // create an object to read PHOS raw digits
 
-  fRawReader->Select(6);
+  SelectRawData(6);
+
+  fNoAltroMapping = kTRUE;
+}
+
+//_____________________________________________________________________________
+AliPHOSRawStream::AliPHOSRawStream(const AliPHOSRawStream& stream) :
+  AliAltroRawStream(stream),
+  fModule(-1),
+  fPrevModule(-1),
+  fRow(-1),
+  fPrevRow(-1),
+  fColumn(-1),
+  fPrevColumn(-1)
+{  
+  Fatal("AliPHOSRawStream", "copy constructor not implemented");
+}
+
+//_____________________________________________________________________________
+AliPHOSRawStream& AliPHOSRawStream::operator = (const AliPHOSRawStream& 
+					      /* stream */)
+{
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
+
+//_____________________________________________________________________________
+AliPHOSRawStream::~AliPHOSRawStream()
+{
+// destructor
+}
+
+//_____________________________________________________________________________
+void AliPHOSRawStream::Reset()
+{
+  // reset phos raw stream params
+  AliAltroRawStream::Reset();
+  fModule = fPrevModule = fRow = fPrevRow = fColumn = fPrevColumn = -1;
+}
+
+//_____________________________________________________________________________
+Bool_t AliPHOSRawStream::Next()
+{
+  // Read next PHOS signal
+  // Apply the PHOS altro mapping to get
+  // the module,row and column indeces
+  fPrevModule = fModule;
+  fPrevRow = fRow;
+  fPrevColumn = fColumn;
+  if (AliAltroRawStream::Next()) {
+    //    if (IsNewHWAddress())
+    ApplyAltroMapping();
+    return kTRUE;
+  }
+  else
+    return kFALSE;
+}
+
+//_____________________________________________________________________________
+void AliPHOSRawStream::ApplyAltroMapping()
+{
+  // Take the DDL index, load
+  // the corresponding altro mapping
+  // object and fill the sector,row and pad indeces
+  fModule = fSegmentation[0];
+  fRow = fSegmentation[1];
+  fColumn = fSegmentation[2];
 }
