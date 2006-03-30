@@ -237,7 +237,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
   static const Int_t MAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
   // resets
   TClonesArray* muonDigits = 0;
-  fSubEventArray->Clear();
+  fSubEventArray->Delete();
 
   //
   TArrayI nbInBus(5000);
