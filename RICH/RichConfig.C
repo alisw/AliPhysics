@@ -587,12 +587,12 @@ void RichConfig::WriteConfig()
   
 //Field
        if(fMagBG->GetButton(kFld0)->GetState())     fprintf(pF,"  gAlice->SetField(0);        //no field\n\n");
-  else if(fMagBG->GetButton(kFld2)->GetState())     fprintf(pF,"  gAlice->SetField(2,1,1);    //2kG constant field (2kG scaled by 1)\n\n");
-  else if(fMagBG->GetButton(kFld4)->GetState())     fprintf(pF,"  gAlice->SetField(2,1,2);    //4kG constant field (2kG scaled by 2)\n\n");
-  else if(fMagBG->GetButton(kFld5)->GetState())     fprintf(pF,"  gAlice->SetField(2,1,2.5);  //5kG constant field (2kG scaled by 2.5)\n\n");
-  else if(fMagBG->GetButton(kFld_2)->GetState())    fprintf(pF,"  gAlice->SetField(2,1,-1);   //-2kG constant field (2kG scaled by -1)\n\n");
-  else if(fMagBG->GetButton(kFld_4)->GetState())    fprintf(pF,"  gAlice->SetField(2,1,-2);   //-4kG constant field (2kG scaled by -2)\n\n");
-  else if(fMagBG->GetButton(kFld_5)->GetState())    fprintf(pF,"  gAlice->SetField(2,1,-2.5); //-5kG constant field (2kG scaled by -2.5)\n\n");
+  else if(fMagBG->GetButton(kFld2)->GetState())     fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,0));//0.2 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld4)->GetState())     fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,1));//0.4 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld5)->GetState())     fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,1,10,2));//0.5 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld_2)->GetState())    fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,0));//-0.2 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld_4)->GetState())    fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,1));//-0.4 Tesla field\n\n");
+  else if(fMagBG->GetButton(kFld_5)->GetState())    fprintf(pF,"  gAlice->SetField(new AliMagFMaps(\"Maps\",\"Maps\",2,-1,10,2));//-0.5 Tesla field\n\n");
   
   fprintf(pF,"  pAL->CdGAFile();\n\n");                                 //????       
 //Generator 
