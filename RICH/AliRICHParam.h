@@ -107,21 +107,12 @@ public:
   static        Float_t    EckovMax      (                               ){return fEckovMax;}                         //min photon energy [GeV] defined in optical curves
   
   static        Float_t    AbsCH4        (Float_t gev                    );                                           //AbsLen [cm]=f(Eckov) [GeV] for CH4 used as amp gas
-  static        Float_t    AbsGel        (Float_t gev                    ){return fgAbsGel.Eval(gev);}                //AbsLen [cm]=f(Eckov) [GeV] for aerogel
   static        Float_t    AbsAir        (Float_t gev                    ){return fgAbsAir.Eval(gev);}                //AbsLen [cm]=f(Eckov) [GeV] for air
   
                 Float_t    IdxC6F14      (Float_t gev                    ){return fIdxC6F14->Eval(gev,fIdxC6F14->GetUniqueID());}  //n=f(Eckov) [GeV] for C6H14 used as radiator
   static        Float_t    IdxSiO2       (Float_t gev                    ){return fgIdxSiO2 .Eval(gev);}              //n=f(Eckov) [GeV] for SiO2 used as window TDR p.35
   static        Float_t    IdxCH4        (Float_t gev                    ){return fgIdxCH4  .Eval(gev);}              //n=f(Eckov) [GeV] for CF4 
-  static        Float_t    IdxG24        (Float_t gev                    ){return fgIdxG24  .Eval(gev);}              //n=f(Eckov) [GeV] for aerogel @1.024
-  static        Float_t    IdxG26        (Float_t gev                    ){return fgIdxG26  .Eval(gev);}              //n=f(Eckov) [GeV] for aerogel @1.026
-  static        Float_t    IdxG28        (Float_t gev                    ){return fgIdxG28  .Eval(gev);}              //n=f(Eckov) [GeV] for aerogel @1.028
-  static        Float_t    IdxG30        (Float_t gev                    ){return fgIdxG30  .Eval(gev);}              //n=f(Eckov) [GeV] for aerogel @1.030
   static        Float_t    IdxAir        (Float_t gev                    ){return fgIdxAir  .Eval(gev);}              //n=f(Eckov) [GeV] for air
-  static        Float_t    IdxCF4        (Float_t gev                    ){return fgIdxCF4  .Eval(gev);}              //n=f(Eckov) [GeV] for CF4 
-  
-  static        Float_t    QeApd         (Float_t gev                    ){return fgQeApd  .Eval(gev);}               //Q.E.=f(Eckov) [GeV] for APD
-  static        Float_t    QeCsI         (Float_t gev                    ){return fgQeCsI  .Eval(gev);}               //Q.E.=f(Eckov) [GeV] for CsI
   
                 void       CdbRead   (Int_t run,Int_t version           );                                           //read all calibration information for requested run
   
@@ -193,23 +184,11 @@ protected:
   static TF1   fgIdxSiO2;            //n=f(Ephot) [GeV] for window   quartz  SiO2 
   static TF1   fgIdxCH4;             //n=f(Ephot) [GeV] for MWPC     amp gas CF4  
   static TF1   fgIdxAir;             //n=f(Ephot) [GeV] for          air
-  static TF1   fgIdxC4F10;           //n=f(Ephot) [GeV] for radiator C4F10   
-  static TF1   fgIdxCF4;             //n=f(Ephot) [GeV] for radiator CF4 
-  static TF1   fgIdxG30;             //n=f(Ephot) [GeV] for radiator aerogel @1.030
-  static TF1   fgIdxG28;             //n=f(Ephot) [GeV] for radiator aerogel @1.028
-  static TF1   fgIdxG26;             //n=f(Ephot) [GeV] for radiator aerogel @1.026
-  static TF1   fgIdxG24;             //n=f(Ephot) [GeV] for radiator aerogel @1.024
   
   static TF1   fgAbsC6F14;           //abs len curve for radiator freon   C6F14, cm   versus GeV
   static TF1   fgAbsSiO2;            //abs len curve for window   quartz  SiO2 , cm   versus GeV  
   static TF1   fgAbsCH4;             //abs len curve for MWPC     methane CF4  , cm   versus GeV
   static TF1   fgAbsAir;             //abs len curve for air, cm versus GeV
-  static TF1   fgAbsC4F10;           //abs len curve for radiator C4F10    
-  static TF1   fgAbsCF4;             //abs len curve for radiator CF4 
-  static TF1   fgAbsGel;             //abs len curve for gel, cm versus GeV
-  
-  static TF1   fgQeCsI;              //QE=f(Ephot) [GeV] for MWPC PC CsI
-  static TF1   fgQeApd;              //QE=f(Ephot) [GeV] for APD
   
   static Bool_t     fgIsWireSag;            //wire sagitta ON/OFF flag
   static Bool_t     fgIsResolveClusters;    //declustering ON/OFF flag

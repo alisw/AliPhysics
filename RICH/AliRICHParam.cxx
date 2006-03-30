@@ -53,28 +53,14 @@ Double_t AliRICHParam::fgMass[5]              ={0.00051,0.10566,0.13957,0.49360,
 
 Double_t AliRICHParam::fEckovMin=5.5e-9; //GeV
 Double_t AliRICHParam::fEckovMax=8.5e-9; //GeV
-TF1 AliRICHParam::fgAbsC6F14("RabsC4F14","6512.39*(x<=7.75e-9)+(x>7.75e-9)*0.039/(-0.166+0.063e9*x-8.01e7*x^2+3.39e5*x^3)" ,fEckovMin,fEckovMin); 
-TF1 AliRICHParam::fgAbsSiO2 ("RabsSiO2" ,"333"                                                                             ,fEckovMin,fEckovMin); 
-TF1 AliRICHParam::fgAbsCH4  ("RabsCH4"  ,"6512.39*(x<=7.75e-9)+(x>7.75e-9)*0.039/(-0.166+0.063e9*x-8.01e7*x^2+3.39e5*x^3)" ,fEckovMin,fEckovMin);
-TF1 AliRICHParam::fgAbsAir  ("RabsAir"  ,"500"                                                                             ,fEckovMin,fEckovMin);  //len ???
-TF1 AliRICHParam::fgAbsCF4  ("RabsCF4"  ,"6512.39*(x<=7.75e-9)+(x>7.75e-9)*0.039/(-0.166+0.063e9*x-8.01e7*x^2+3.39e5*x^3)" ,fEckovMin,fEckovMin);
-TF1 AliRICHParam::fgAbsC4F10("RabsC4F10","1+0.25324e-6/(1.84e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMin);  //Olav preprint
-TF1 AliRICHParam::fgAbsGel  ("RabsGel"  ,"400"                                                                             ,fEckovMin,fEckovMin);  //len ???
+TF1 AliRICHParam::fgAbsC6F14("RabsC4F14","6512.39*(x<=7.75e-9)+(x>7.75e-9)*0.039/(-0.166+0.063e9*x-8.01e7*x^2+3.39e5*x^3)" ,fEckovMin,fEckovMax); 
+TF1 AliRICHParam::fgAbsSiO2 ("RabsSiO2" ,"333"                                                                             ,fEckovMin,fEckovMax); 
+TF1 AliRICHParam::fgAbsCH4  ("RabsCH4"  ,"6512.39*(x<=7.75e-9)+(x>7.75e-9)*0.039/(-0.166+0.063e9*x-8.01e7*x^2+3.39e5*x^3)" ,fEckovMin,fEckovMax);
+TF1 AliRICHParam::fgAbsAir  ("RabsAir"  ,"500"                                                                             ,fEckovMin,fEckovMax);  //len ???
 
-TF1 AliRICHParam::fgIdxAir  ("RidxAir"  ,"1+1e-8*(8342.13 + 2406030/(130-(1.23984e-9/x)^2)+15597/(38.9-(1.23984e-9/x)^2))" ,fEckovMin,fEckovMin);  //???
-TF1 AliRICHParam::fgIdxSiO2 ("RidxSiO2" ,"sqrt(1+46.411/(10.666*10.666-x*x*1e18)+228.71/(18.125*18.125-x*x*1e18))"         ,fEckovMin,fEckovMin);  //TDR p.35
-TF1 AliRICHParam::fgIdxCH4  ("RidxCH4"  ,"1+0.12489e-6/(2.62e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMin);  //Olav preprint
-TF1 AliRICHParam::fgIdxG30  ("RidxGel30","1.030"                                                                           ,fEckovMin,fEckovMin);  //???
-TF1 AliRICHParam::fgIdxG28  ("RidxGel28","1.028"                                                                           ,fEckovMin,fEckovMin);  //???
-TF1 AliRICHParam::fgIdxG26  ("RidxGel26","1.026"                                                                           ,fEckovMin,fEckovMin);  //???
-TF1 AliRICHParam::fgIdxG24  ("RidxGel24","1.024"                                                                           ,fEckovMin,fEckovMin);  //???
-TF1 AliRICHParam::fgIdxC4F10("RidxC4F10","1+0.25324e-6/(1.84e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMin);  //Olav preprint
-TF1 AliRICHParam::fgIdxCF4  ("RidxCF4"  ,"1+0.12489e-6/(2.62e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMin);  //Olav preprint
-
-TF1 AliRICHParam::fgQeApd("QeApd"    ,"0+(x>6e-9)*0.27*(1-exp(-(1e9*x-6)/0.3))"                                            ,fEckovMin,fEckovMin);  //???
-TF1 AliRICHParam::fgQeCsI("AbsApd"   ,"0.03"                                                                               ,fEckovMin,fEckovMin);  //prob
-
-
+TF1 AliRICHParam::fgIdxAir  ("RidxAir"  ,"1+1e-8*(8342.13 + 2406030/(130-(1.23984e-9/x)^2)+15597/(38.9-(1.23984e-9/x)^2))" ,fEckovMin,fEckovMax);  //???
+TF1 AliRICHParam::fgIdxSiO2 ("RidxSiO2" ,"sqrt(1+46.411/(10.666*10.666-x*x*1e18)+228.71/(18.125*18.125-x*x*1e18))"         ,fEckovMin,fEckovMax);  //TDR p.35
+TF1 AliRICHParam::fgIdxCH4  ("RidxCH4"  ,"1+0.12489e-6/(2.62e-4 - (1239.84e-9/x)^-2)"                                      ,fEckovMin,fEckovMax);  //Olav preprint
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliRICHParam::AliRICHParam():TNamed("RichParam","default version") 
 {
