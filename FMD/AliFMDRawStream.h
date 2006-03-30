@@ -42,18 +42,6 @@ public:
   virtual Bool_t ReadChannel(UInt_t& ddl, UInt_t& addr, 
 			     UInt_t& len, UShort_t* data);
 protected:
-  /** @{ */
-  /** @name Hide base classes `stupid' member functions */
-  Int_t  GetSector()     const { return -1; }
-  Int_t  GetPrevSector() const { return -1; }
-  Bool_t IsNewSector()   const { return kFALSE; }
-  Int_t  GetRow()        const { return -1; }
-  Int_t  GetPrevRow()    const { return -1; }
-  Bool_t IsNewRow()      const { return kFALSE; }
-  Int_t  GetPad()        const { return -1; }
-  Int_t  GetPrevPad()    const { return -1; }
-  Bool_t IsNewPad()      const { return kFALSE; }
-  /** @} */
   
   ClassDef(AliFMDRawStream, 0) // Read raw FMD Altro data 
 };

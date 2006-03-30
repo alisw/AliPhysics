@@ -71,7 +71,7 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
 	break;
       }
     }
-    prevddl  = fRawReader->GetDDLID();
+    prevddl  = GetPrevDDLNumber();
     Int_t t  = GetTime();
     l        = TMath::Max(l, t);
     data[t]  = signal;
