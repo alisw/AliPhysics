@@ -88,7 +88,7 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
   // Fills the bending and non bending coordinates.
   fNonBendingCoor = theRawCluster->GetX(0);
   fBendingCoor = theRawCluster->GetY(0);
-  fDetElemId=0;
+  fDetElemId = theRawCluster->GetDetElemId();
   // other fields will be updated in
   // AliMUONEventReconstructor::AddHitsForRecFromRawClusters,
   // except the following ones
