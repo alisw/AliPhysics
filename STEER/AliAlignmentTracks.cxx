@@ -289,9 +289,9 @@ void AliAlignmentTracks::InitIndex()
   fLastIndex = new Int_t*[nLayers];
   fArrayIndex = new TArrayI**[nLayers];
   for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    fLastIndex[iLayer] = new Int_t[AliAlignObj::LayerSize(iLayer)];
-    fArrayIndex[iLayer] = new TArrayI*[AliAlignObj::LayerSize(iLayer)];
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+    fLastIndex[iLayer] = new Int_t[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
+    fArrayIndex[iLayer] = new TArrayI*[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
       fLastIndex[iLayer][iModule] = 0;
       fArrayIndex[iLayer][iModule] = 0;
     }
@@ -307,7 +307,7 @@ void AliAlignmentTracks::ResetIndex()
   fIsIndexBuilt = kFALSE;
   
   for (Int_t iLayer = 0; iLayer < AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
       fLastIndex[iLayer][iModule] = 0;
     }
   }
@@ -319,7 +319,7 @@ void AliAlignmentTracks::DeleteIndex()
   // Delete the index arrays
   // Called by the destructor
   for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
       if (fArrayIndex[iLayer][iModule]) {
 	delete fArrayIndex[iLayer][iModule];
 	fArrayIndex[iLayer][iModule] = 0;
@@ -349,8 +349,8 @@ void AliAlignmentTracks::InitAlignObjs()
   Int_t nLayers = AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer;
   fAlignObjs = new AliAlignObj**[nLayers];
   for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    fAlignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer)];
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+    fAlignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer+ AliAlignObj::kFirstLayer,iModule);
       fAlignObjs[iLayer][iModule] = new AliAlignObjAngles("",volid,0,0,0,0,0,0);
     }
@@ -362,7 +362,7 @@ void AliAlignmentTracks::ResetAlignObjs()
 {
   // Reset the alignment objects array
   for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++)
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++)
       fAlignObjs[iLayer][iModule]->SetPars(0,0,0,0,0,0);
   }
 }
@@ -372,7 +372,7 @@ void AliAlignmentTracks::DeleteAlignObjs()
 {
   // Delete the alignment objects array
   for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++)
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++)
       if (fAlignObjs[iLayer][iModule])
 	delete fAlignObjs[iLayer][iModule];
     delete [] fAlignObjs[iLayer];
@@ -394,12 +394,12 @@ void AliAlignmentTracks::AlignDetector(AliAlignObj::ELayerID firstLayer,
   // the range defined by the user.
   Int_t nModules = 0;
   for (Int_t iLayer = firstLayer; iLayer < lastLayer; iLayer++)
-    nModules += AliAlignObj::LayerSize(iLayer - AliAlignObj::kFirstLayer);
+    nModules += AliAlignObj::LayerSize(iLayer);
   TArrayI volIds(nModules);
 
   Int_t modnum = 0;
   for (Int_t iLayer = firstLayer; iLayer < lastLayer; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer - AliAlignObj::kFirstLayer); iModule++) {
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
       UShort_t volId = AliAlignObj::LayerToVolUID(iLayer,iModule);
       volIds.AddAt(volId,modnum);
       modnum++;
@@ -422,7 +422,7 @@ void AliAlignmentTracks::AlignLayer(AliAlignObj::ELayerID layer,
   // a given layer.
   // Tracks are fitted only within
   // the range defined by the user.
-  Int_t nModules = AliAlignObj::LayerSize(layer - AliAlignObj::kFirstLayer);
+  Int_t nModules = AliAlignObj::LayerSize(layer);
   TArrayI volIds(nModules);
   for (Int_t iModule = 0; iModule < nModules; iModule++) {
     UShort_t volId = AliAlignObj::LayerToVolUID(layer,iModule);
@@ -668,8 +668,8 @@ Bool_t AliAlignmentTracks::Misalign(const char *misalignObjFileName, const char*
   Int_t nLayers = AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer;
   fMisalignObjs = new AliAlignObj**[nLayers];
   for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    fMisalignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer)];
-    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++)
+    fMisalignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++)
       fMisalignObjs[iLayer][iModule] = 0x0;
   }
 

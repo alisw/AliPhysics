@@ -143,8 +143,7 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
       else {
 	if (iVolId < AliAlignObj::LayerToVolUID(layerRangeMin,0) ||
 	    iVolId > AliAlignObj::LayerToVolUID(layerRangeMax,
-						AliAlignObj::LayerSize(layerRangeMax-
-								       AliAlignObj::kFirstLayer))) continue;
+						AliAlignObj::LayerSize(layerRangeMax))) continue;
       }
       if (!isAlphaCalc) {
 	fAlpha = p.GetAngle();
@@ -220,8 +219,7 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
 //       }
 //       else {
 // 	if (iVolId < AliAlignObj::LayerToVolUID(layerRangeMin,0) ||
-// 	    iVolId > AliAlignObj::LayerToVolUID(layerRangeMax,AliAlignObj::LayerSize(layerRangeMax-
-// 										     AliAlignObj::kFirstLayer))) continue;
+// 	    iVolId > AliAlignObj::LayerToVolUID(layerRangeMax,AliAlignObj::LayerSize(layerRangeMax))) continue;
 //       }
 //       plocal = p.Rotate(fAlpha);
 //       Float_t delta = (fParams[0]*(plocal.GetX()*plocal.GetX()+plocal.GetY()*plocal.GetY())+

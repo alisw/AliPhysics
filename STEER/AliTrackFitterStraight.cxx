@@ -135,8 +135,7 @@ Bool_t AliTrackFitterStraight::Fit(const TArrayI *volIds,const TArrayI *volIdsFi
       else {
 	if (iVolId < AliAlignObj::LayerToVolUID(layerRangeMin,0) ||
 	    iVolId > AliAlignObj::LayerToVolUID(layerRangeMax,
-						AliAlignObj::LayerSize(layerRangeMax-
-								       AliAlignObj::kFirstLayer))) continue;
+						AliAlignObj::LayerSize(layerRangeMax))) continue;
       }
       if (!isAlphaCalc) {
 	fAlpha = p.GetAngle();

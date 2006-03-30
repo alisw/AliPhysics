@@ -291,15 +291,46 @@ void AliAlignObj::Print(Option_t *) const
   TGeoHMatrix m;
   GetMatrix(m);
   const Double_t *rot = m.GetRotationMatrix();
-//   printf("Volume=%s ID=%u\n", GetVolPath(),GetVolUID());
-  ELayerID layerId;
-  Int_t modId;
-  GetVolUID(layerId,modId);
-  printf("Volume=%s LayerID=%d ModuleID=%d\n", GetVolPath(),layerId,modId);
-  printf("%12.6f%12.6f%12.6f    Tx = %12.6f    Psi   = %12.6f\n", rot[0], rot[1], rot[2], tr[0], angles[0]);
-  printf("%12.6f%12.6f%12.6f    Ty = %12.6f    Theta = %12.6f\n", rot[3], rot[4], rot[5], tr[1], angles[1]);
-  printf("%12.6f%12.6f%12.6f    Tz = %12.6f    Phi   = %12.6f\n", rot[6], rot[7], rot[8], tr[2], angles[2]);
 
+  printf("Volume=%s\n",GetVolPath());
+  if (GetVolUID() != 0) {
+    ELayerID layerId;
+    Int_t modId;
+    GetVolUID(layerId,modId);
+    printf("VolumeID=%d LayerID=%d ( %s ) ModuleID=%d\n", GetVolUID(),layerId,LayerName(layerId),modId);
+  }
+  printf("%12.8f%12.8f%12.8f    Tx = %12.8f    Psi   = %12.8f\n", rot[0], rot[1], rot[2], tr[0], angles[0]);
+  printf("%12.8f%12.8f%12.8f    Ty = %12.8f    Theta = %12.8f\n", rot[3], rot[4], rot[5], tr[1], angles[1]);
+  printf("%12.8f%12.8f%12.8f    Tz = %12.8f    Phi   = %12.8f\n", rot[6], rot[7], rot[8], tr[2], angles[2]);
+
+}
+
+//_____________________________________________________________________________
+Int_t AliAlignObj::LayerSize(Int_t layerId)
+{
+  // Get the corresponding layer size.
+  // Implemented only for ITS,TPC,TRD,TOF and RICH
+  if (layerId < kFirstLayer || layerId >= kLastLayer) {
+    AliErrorClass(Form("Invalid layer index %d ! Layer range is (%d -> %d) !",layerId,kFirstLayer,kLastLayer));
+    return 0;
+  }
+  else {
+    return fgLayerSize[layerId - kFirstLayer];
+ }
+}
+
+//_____________________________________________________________________________
+const char* AliAlignObj::LayerName(Int_t layerId)
+{
+  // Get the corresponding layer name.
+  // Implemented only for ITS,TPC,TRD,TOF and RICH
+  if (layerId < kFirstLayer || layerId >= kLastLayer) {
+    AliErrorClass(Form("Invalid layer index %d ! Layer range is (%d -> %d) !",layerId,kFirstLayer,kLastLayer));
+    return "Invalid Layer!";
+  }
+  else {
+    return fgLayerName[layerId - kFirstLayer];
+ }
 }
 
 //_____________________________________________________________________________
@@ -493,13 +524,13 @@ void  AliAlignObj::InitAlignObjFromGeometry()
   
   InitVolPaths();
 
-  for (Int_t iLayer = 0; iLayer < (AliAlignObj::kLastLayer - AliAlignObj::kFirstLayer); iLayer++) {
-    fgAlignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer)];
+  for (Int_t iLayer = kFirstLayer; iLayer < AliAlignObj::kLastLayer; iLayer++) {
+    fgAlignObjs[iLayer-kFirstLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer)];
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
-      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer+ AliAlignObj::kFirstLayer,iModule);
-      fgAlignObjs[iLayer][iModule] = new AliAlignObjAngles("",volid,0,0,0,0,0,0);
+      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
+      fgAlignObjs[iLayer-kFirstLayer][iModule] = new AliAlignObjAngles("",volid,0,0,0,0,0,0);
       const char *path = GetVolPath(volid);
-      if (!GetFromGeometry(path, *fgAlignObjs[iLayer][iModule]))
+      if (!GetFromGeometry(path, *fgAlignObjs[iLayer-kFirstLayer][iModule]))
 	AliErrorClass(Form("Failed to extract the alignment object for the volume (ID=%d and path=%s) !",volid,path));
     }
   }
