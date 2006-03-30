@@ -335,19 +335,19 @@ void RichConfig::WriteGen(FILE *pF)
   }
   
   if(fGenBG->GetButton(kGun7)->GetState()==kButtonDown){//7 guns towards 7 RICH chambers
-    fprintf(pF,"  AliGenFixed *pG1=new AliGenFixed(1); pG1->SetPart(%i); pG1->SetMomentum(1.5);pG1->SetTheta(109.5-3); pG1->SetPhi(10);\n",pid); 
+    fprintf(pF,"  AliGenFixed *pG1=new AliGenFixed(1); pG1->SetPart(%i); pG1->SetMomentum(%.1f);pG1->SetTheta(109.5-3); pG1->SetPhi(10);\n",pid,pmin); 
     fprintf(pF,"               pG->AddGenerator(pG1,\"g1\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG2=new AliGenFixed(1); pG2->SetPart(%i); pG2->SetMomentum(1.5);pG2->SetTheta( 90.0-3); pG2->SetPhi(10);\n",pid); 
+    fprintf(pF,"  AliGenFixed *pG2=new AliGenFixed(1); pG2->SetPart(%i); pG2->SetMomentum(%.1f);pG2->SetTheta( 90.0-3); pG2->SetPhi(10);\n",pid,pmin); 
     fprintf(pF,"               pG->AddGenerator(pG2,\"g2\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG3=new AliGenFixed(1); pG3->SetPart(%i); pG3->SetMomentum(1.5);pG3->SetTheta(109.5-3); pG3->SetPhi(30);\n",pid); 
+    fprintf(pF,"  AliGenFixed *pG3=new AliGenFixed(1); pG3->SetPart(%i); pG3->SetMomentum(%.1f);pG3->SetTheta(109.5-3); pG3->SetPhi(30);\n",pid,pmin); 
     fprintf(pF,"               pG->AddGenerator(pG3,\"g3\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG4=new AliGenFixed(1); pG4->SetPart(%i); pG4->SetMomentum(1.5);pG4->SetTheta( 90.0-3); pG4->SetPhi(30);\n",pid); 
+    fprintf(pF,"  AliGenFixed *pG4=new AliGenFixed(1); pG4->SetPart(%i); pG4->SetMomentum(%.1f);pG4->SetTheta( 90.0-3); pG4->SetPhi(30);\n",pid,pmin); 
     fprintf(pF,"               pG->AddGenerator(pG4,\"g4\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG5=new AliGenFixed(1); pG5->SetPart(%i); pG5->SetMomentum(1.5);pG5->SetTheta( 70.0-3); pG5->SetPhi(30);\n",pid); 
+    fprintf(pF,"  AliGenFixed *pG5=new AliGenFixed(1); pG5->SetPart(%i); pG5->SetMomentum(%.1f);pG5->SetTheta( 70.0-3); pG5->SetPhi(30);\n",pid,pmin); 
     fprintf(pF,"               pG->AddGenerator(pG5,\"g5\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG6=new AliGenFixed(1); pG6->SetPart(%i); pG6->SetMomentum(1.5);pG6->SetTheta( 90.0-3); pG6->SetPhi(50);\n",pid); 
+    fprintf(pF,"  AliGenFixed *pG6=new AliGenFixed(1); pG6->SetPart(%i); pG6->SetMomentum(%.1f);pG6->SetTheta( 90.0-3); pG6->SetPhi(50);\n",pid,pmin); 
     fprintf(pF,"               pG->AddGenerator(pG6,\"g6\",1);\n");
-    fprintf(pF,"  AliGenFixed *pG7=new AliGenFixed(1); pG7->SetPart(%i); pG7->SetMomentum(1.5);pG7->SetTheta( 70.0-3); pG7->SetPhi(50);\n",pid); 
+    fprintf(pF,"  AliGenFixed *pG7=new AliGenFixed(1); pG7->SetPart(%i); pG7->SetMomentum(%.1f);pG7->SetTheta( 70.0-3); pG7->SetPhi(50);\n",pid,pmin); 
     fprintf(pF,"               pG->AddGenerator(pG7,\"g7\",1);\n");
   }  
     
