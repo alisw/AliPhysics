@@ -17,6 +17,7 @@
 #include <Riostream.h>
 #include <TRandom.h>
 #include "AliITSCalibrationSDD.h"
+#include "AliLog.h"
 
 //////////////////////////////////////////////////////
 //  Calibration class for set:ITS                   //
@@ -28,52 +29,53 @@
 
 const Double_t AliITSCalibrationSDD::fgkTemperatureDefault = 296.;
 const Double_t AliITSCalibrationSDD::fgkNoiseDefault = 10.;
+const Double_t AliITSCalibrationSDD::fgkGainDefault = 1.;
 const Double_t AliITSCalibrationSDD::fgkBaselineDefault = 20.;
 const Double_t AliITSCalibrationSDD::fgkMinValDefault  = 4;
 //______________________________________________________________________
 ClassImp(AliITSCalibrationSDD)
 
-  AliITSCalibrationSDD::AliITSCalibrationSDD(){
+AliITSCalibrationSDD::AliITSCalibrationSDD(){
   // default constructor
 
   SetDeadChannels();
-  fBaseline=0;
-  fNoise=0;
-
-  SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
-  SetNoiseAfterElectronics();
+  fBadChannels.Set(fDeadChannels);
+  for(Int_t ian=0;ian<fgkWings*fgkChannels*fgkChips;ian++){
+    fBaseline[ian]=fgkBaselineDefault;
+    fNoise[ian]=fgkNoiseDefault;
+    SetNoiseAfterElectronics(ian);
+  }
+  for(Int_t iw=0;iw<fgkWings;iw++){
+    for(Int_t icp=0;icp<fgkChips;icp++){
+      for(Int_t ich=0;ich<fgkChannels;ich++)
+	fGain[iw][icp][ich]=1.;
+    }
+  }
   SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
   SetDataType();
-  fCPar[1]=(Int_t) fBaseline;
-  fCPar[2]=(Int_t)(2.*fNoiseAfterEl + 0.5);
-  fCPar[3]=(Int_t)(2.*fNoiseAfterEl + 0.5);
-  fCPar[4]=0;
-  fCPar[5]=0;
-  fCPar[6]=0;
-  fCPar[7]=0;
  }
 //______________________________________________________________________
 AliITSCalibrationSDD::AliITSCalibrationSDD(const char *dataType){
   // constructor
 
   SetDeadChannels();
-  fBaseline=0;
-  fNoise=0;
+  fBadChannels.Set(fDeadChannels);
+  for(Int_t ian=0;ian<fgkWings*fgkChannels*fgkChips;ian++){
+    fBaseline[ian]=fgkBaselineDefault;
+      fNoise[ian]=fgkNoiseDefault;
+      SetNoiseAfterElectronics(ian);
+  }  
+  for(Int_t iw=0;iw<fgkWings;iw++){
+    for(Int_t icp=0;icp<fgkChips;icp++){
+      for(Int_t ich=0;ich<fgkChannels;ich++)
+	fGain[iw][icp][ich]=1.;
+    }
+  }
 
-  SetNoiseParam(fgkNoiseDefault,fgkBaselineDefault);
-  SetNoiseAfterElectronics();
   SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
   SetDataType(dataType);
-  fCPar[0]=(Int_t) fBaseline;
-  fCPar[1]=(Int_t) fBaseline;
-  fCPar[2]=(Int_t)(2.*fNoiseAfterEl + 0.5);
-  fCPar[3]=(Int_t)(2.*fNoiseAfterEl + 0.5);
-  fCPar[4]=0;
-  fCPar[5]=0;
-  fCPar[6]=0;
-  fCPar[7]=0;
  }
 //______________________________________________________________________
 AliITSCalibrationSDD::AliITSCalibrationSDD(const AliITSCalibrationSDD &ob) : AliITSCalibration(ob) {
@@ -91,25 +93,46 @@ AliITSCalibrationSDD& AliITSCalibrationSDD::operator=(const AliITSCalibrationSDD
 }
 
 //______________________________________________________________________
-void AliITSCalibrationSDD::SetCompressParam(Int_t  cp[8]){
-  // set compression param
-
-  Int_t i;
-  for (i=0; i<8; i++) {
-    fCPar[i]=cp[i];
-    //printf("\n CompressPar %d %d \n",i,fCPar[i]);    
-  } // end for i
-}
-//______________________________________________________________________
-void AliITSCalibrationSDD::GiveCompressParam(Int_t  cp[8]) const {
+void AliITSCalibrationSDD::GiveCompressParam(Int_t  cp[8],Int_t ian) const {
   // give compression param
 
-  Int_t i;
-  for (i=0; i<8; i++) {
-    cp[i]=fCPar[i];
-  } // end for i
+  cp[0]=(Int_t) fBaseline[ian];
+  cp[1]=(Int_t) fBaseline[ian];
+  cp[2]=(Int_t)(2.*fNoiseAfterEl[ian] + 0.5);
+  cp[3]=(Int_t)(2.*fNoiseAfterEl[ian] + 0.5);
+  cp[4]=0;
+  cp[5]=0;
+  cp[6]=0;
+  cp[7]=0;
 }
+//_____________________________________________________________________
+void AliITSCalibrationSDD::SetBadChannel(Int_t i,Int_t anode){
+  //Set bad anode (set gain=0 for these channels);
 
+  if(anode<0 || anode >fgkChannels*fgkChips*fgkWings-1)AliError("Wrong anode number");
+  Int_t wing=0;
+  Int_t chip,channel;
+  chip=anode/fgkChannels;
+  channel=anode-(chip*fgkChannels);
+  if(anode>=fgkChips*fgkChannels) wing=1;
+  if(wing==1)chip-=fgkChips;
+  fBadChannels[i]=anode;
+  fGain[wing][chip][channel]=0;
+}
+//_____________________________________________________________________
+Bool_t AliITSCalibrationSDD::IsBadChannel(Int_t anode){
+  //returns kTRUE if the anode i (0-512) has fGain=0
+  if(anode<0 || anode >fgkChannels*fgkChips*fgkWings-1)AliError("Wrong anode number");
+  Int_t wing=0;
+  Int_t chip,channel;
+  chip=anode/fgkChannels;
+  channel=anode-(chip*fgkChannels);
+  if(anode>=fgkChips*fgkChannels) wing=1;
+  if(wing==1)chip-=fgkChips;
+  if(fGain[wing][chip][channel]==0) return kTRUE;
+  else return kFALSE;
+} 
+/*
 //______________________________________________________________________
 void AliITSCalibrationSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
   // Set fGain to zero to simulate a random distribution of 
@@ -123,7 +146,7 @@ void AliITSCalibrationSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
   //fDeadModules  = nmod;  
   fDeadChips    = nchip;  
   fDeadChannels = nchan; 
-    
+  fBadChannels.Set(fDeadChannels);  
   // nothing to do
   //if( nmod == 0 && nchip == 0 && nchan == 0 ) return;
 
@@ -148,19 +171,6 @@ void AliITSCalibrationSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
     }
   
   TRandom *gran = new TRandom();
-  /*
-  //  cout << "modules" << endl;
-  Int_t * mod = new Int_t [nmod];
-  Int_t i; //loop variable
-  for( i=0; i<nmod; i++ ) 
-    {
-      mod[i] = (Int_t) (1.+fgkModules*gran->Uniform());
-      cout << i+1 << ": Dead module nr: " << mod[i] << endl;
-      for(Int_t n=0; n<fResponseSDD->Chips(); n++)
-	for(Int_t p=0; p<fResponseSDD->Channels(); p++)
-	  fGain[mod[i]-1][n][p] = 0.;
-    }
-  */
   //  cout << "chips" << endl;
   Int_t * chip     = new Int_t[nchip];
   Int_t i = 0;
@@ -204,6 +214,7 @@ void AliITSCalibrationSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
   delete [] channel;
   delete [] channelChip;
 }
+*/
 //______________________________________________________________________
 void AliITSCalibrationSDD::PrintGains() const{
   //
@@ -235,10 +246,9 @@ void AliITSCalibrationSDD::Print(){
   cout << "   Silicon Drift Detector Response Parameters    " << endl;
   cout << "**************************************************" << endl;
   cout << "Hardware compression parameters: " << endl; 
-  for(Int_t i=0; i<8; i++) cout << "fCPar[" << i << "] = " << fCPar[i] <<endl;
-  cout << "Noise before electronics (arbitrary units): " << fNoise << endl;
-  cout << "Baseline (ADC units): " << fBaseline << endl;
-  cout << "Noise after electronics (ADC units): " << fNoiseAfterEl << endl;
+  cout << "Noise before electronics (arbitrary units): " << fNoise[0] << endl;
+  cout << "Baseline (ADC units): " << fBaseline[0] << endl;
+  cout << "Noise after electronics (ADC units): " << fNoiseAfterEl[0] << endl;
   cout << "Temperature: " << Temperature() << " K " << endl;
   cout << "Min. Value: " << fMinVal << endl;
   PrintGains();

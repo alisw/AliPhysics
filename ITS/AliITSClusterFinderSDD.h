@@ -11,7 +11,7 @@
 #include "AliITSClusterFinder.h"
 #include "AliITSDetTypeRec.h"
 
-class AliITSMapA2;
+// class AliITSMapA2;
 class AliITSCalibration;
 class AliITSCalibrationSDD;
 class AliITSsegmentation;
@@ -27,8 +27,8 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     virtual ~AliITSClusterFinderSDD(){};
     
     virtual void  SetCutAmplitude(Int_t mod,Double_t nsigma=4);
-    virtual Int_t CutAmplitude() const {// get cut amplitude
-        return fCutAmplitude;}
+    virtual Int_t CutAmplitude(Int_t anode) const {// get cut amplitude
+        return fCutAmplitude[anode];}
     virtual void SetDAnode(Double_t danode=4.2) {// setDAnode
         fDAnode=danode;}
     virtual Double_t DAnode() const {// get DAnode
@@ -87,16 +87,16 @@ class AliITSClusterFinderSDD : public AliITSClusterFinder{
     AliITSClusterFinderSDD& operator=(const AliITSClusterFinderSDD &source);
   private:
     Int_t               fNclusters;     //! num of clusters
-    Double_t             fDAnode;        //! fDanode
-    Double_t             fDTime;         //! fDtime
-    Double_t             fTimeCorr;      //! Correction factor along time coord
-    Int_t               fCutAmplitude;  //! cut amplitude
+    Double_t            fDAnode;        //! fDanode
+    Double_t            fDTime;         //! fDtime
+    Double_t            fTimeCorr;      //! Correction factor along time coord
+    TArrayI             fCutAmplitude;  //! cut amplitude
     Int_t               fMinPeak;       //! min peak
     Int_t               fMinCharge;     //! min charge
     Int_t               fMinNCells;     //! min num of cells
     Int_t               fMaxNCells;     //! max num of cells
 
-    ClassDef(AliITSClusterFinderSDD,2) // SDD clustering - Piergiorgio C. algo
+    ClassDef(AliITSClusterFinderSDD,3) // SDD clustering - Piergiorgio C. algo
     };
 
 #endif

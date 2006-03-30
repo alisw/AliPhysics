@@ -3,6 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
+#include "TArrayI.h"
 #include "TClonesArray.h"
 #include "AliITSMap.h"
 #include "AliITSpListItem.h"
@@ -110,8 +111,10 @@ class AliITSpList: public AliITSMap {
 
     // Fill pList from digits. Not functional yet
     virtual void FillMap(){NotImplemented("FillMap");}
+    virtual void FillMap2() {NotImplemented("FillMap2");}
     // Sets threshold for significance. Not of relavance in this case.
     virtual void SetThreshold(Int_t /* i */){NotImplemented("SetThreshold");}
+    virtual void SetThresholdArr(TArrayI /*thr*/) {NotImplemented("SetThresholdArr");}    
     // Sets a single hit. Not of relavance in this case.
     virtual void SetHit(Int_t /* i */,Int_t /* j */,Int_t /* k */){NotImplemented("SetHit");}
     // Flags a hit. Not of relavence in this case.

@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////
 
 #include <TObject.h>
-
+#include <TArrayI.h>
 typedef enum {kEmpty, kUsed, kUnused} FlagType;
 
 //___________________________________________________________________________
@@ -19,12 +19,14 @@ class AliITSMap : public TObject {
     virtual ~AliITSMap() {}
     // Fill hits from list of digits into hit map
     virtual  void  FillMap()                                       =0;
+    virtual  void  FillMap2()                                      =0;
     // Clear the map
     virtual  void  ClearMap()                                      =0;
     // Set a single hit
     virtual  void  SetHit(Int_t iz, Int_t ix, Int_t idigit)        =0;
     // Set threshold for the signal
     virtual  void  SetThreshold(Int_t)                             =0;
+    virtual  void  SetThresholdArr(TArrayI)                        =0;
     // Delete a single hit
     virtual  void  DeleteHit(Int_t iz, Int_t ix)                   =0;
     // Flag a hit as used

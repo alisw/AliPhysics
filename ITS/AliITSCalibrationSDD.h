@@ -7,6 +7,7 @@
 
 #include "AliITSCalibration.h"
 #include "AliITSresponseSDD.h"
+#include "TArrayI.h"
 
 class AliITSresponseSDD;
 ///////////////////////////////////////////////////////
@@ -21,32 +22,40 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD();
     AliITSCalibrationSDD(const char *dataType);
     virtual ~AliITSCalibrationSDD() {;}
-    virtual void  SetNoiseParam(Double_t n, Double_t b){
-      fNoise=n; fBaseline=b;}
+    virtual void  SetNoiseParam(Double_t /*n*/, Double_t /*b*/){
+      NotImplemented("SetNoiseParam");}
  
-    virtual void  GetNoiseParam(Double_t &n, Double_t &b) const {
-      n=fNoise; b=fBaseline;}
+    virtual void  GetNoiseParam(Double_t &/*n*/, Double_t &/*b*/) const {
+      NotImplemented("GetNoiseParam");}
+
+    virtual Double_t GetBaseline(Int_t anode) const {return fBaseline[anode];}
+    virtual void SetBaseline(Int_t anode,Double_t bas) {fBaseline[anode]=bas;}
+    virtual Double_t GetNoise(Int_t anode) const {return fNoise[anode];}
+    virtual void SetNoise(Int_t anode, Double_t noise) {fNoise[anode]=noise;}
 
     virtual void   SetThresholds(Double_t  mv, Double_t /* b */){
        // Min value used in 2D - could be used as a threshold setting
 	fMinVal = mv;}
     virtual void   Thresholds(Double_t &  mv, Double_t & /* b */) const 
       {mv = fMinVal;}
-    virtual void  GiveCompressParam(Int_t *x) const;
+    virtual void  GiveCompressParam(Int_t *x,Int_t ian) const;
 
-    void  SetNoiseAfterElectronics(Double_t n=2.38){
+    void  SetNoiseAfterElectronics(Int_t anode,Double_t n=2.38){
 	// Noise after electronics (ADC units)
 	// 2.36 for ALICE from beam test measurements 2001
-	fNoiseAfterEl=n;}
-    Double_t  GetNoiseAfterElectronics() const {
+	fNoiseAfterEl[anode]=n;}
+    Double_t  GetNoiseAfterElectronics(Int_t anode) const {
 	// Noise after electronics (ADC units)
-	return fNoiseAfterEl;}
-    void  SetCompressParam(Int_t cp[8]); 
-    void SetDeadChannels(Int_t nchips=0, Int_t nchannels=0);
+	return fNoiseAfterEl[anode];} 
+    //void SetDeadChannels(Int_t nchips=0, Int_t nchannels=0);
+    void SetDeadChannels(Int_t ndead=0){fDeadChannels=ndead; fBadChannels.Set(ndead);}
     Int_t GetDeadChips() const { return fDeadChips; }
     Int_t GetDeadChannels() const { return fDeadChannels; }
     Double_t Gain(Int_t wing,Int_t chip,Int_t ch)const 
         {return fGain[wing][chip][ch]; }
+    virtual void SetGain(Double_t g,Int_t wing,Int_t chip, Int_t ch) 
+      {fGain[wing][chip][ch]=g;}
+    
     void    PrintGains() const;
     void    Print();
     virtual void Print(ostream *os) const {AliITSCalibrationSDD::Print(os);}
@@ -70,7 +79,10 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     Int_t Wings()const{return fgkWings;}//Total number of SDD wings
     Int_t Chips() const{return fgkChips;} // Number of chips/module
     Int_t Channels() const{ return fgkChannels;}//Number of channels/chip
-
+    
+    virtual void SetBadChannel(Int_t i,Int_t anode);
+    Int_t GetBadChannel(Int_t i) const {return fBadChannels[i];}
+    Bool_t IsBadChannel(Int_t anode); 
 
     virtual void SetElectronics(Int_t p1=1) {((AliITSresponseSDD*)fResponse)->SetElectronics(p1);}
     virtual Int_t GetElectronics() const {return ((AliITSresponseSDD*)fResponse)->Electronics();}
@@ -105,24 +117,23 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     static const Double_t fgkNoiseDefault; // default for fNoise
     static const Double_t fgkBaselineDefault; // default for fBaseline
     static const Double_t fgkMinValDefault; // default for fMinVal
-
+    static const Double_t fgkGainDefault; //default for gain
     Int_t fDeadChips;                     // Number of dead chips
     Int_t fDeadChannels;                  // Number of dead channels
     Double_t fGain[fgkWings][fgkChips][fgkChannels];//Array for channel gains
-    Int_t     fCPar[8];        // Hardware compression parameters
-    Double_t  fNoise;          // Noise
-    Double_t  fBaseline;       // Baseline
-    Double_t  fNoiseAfterEl;   // Noise after electronics
-    Double_t  fMinVal;        // Min value used in 2D zero-suppression algo
+    Double_t fNoise[fgkWings*fgkChips*fgkChannels];          // Noise array
+    Double_t fBaseline[fgkWings*fgkChips*fgkChannels];       // Baseline array
+    Double_t fNoiseAfterEl[fgkWings*fgkChips*fgkChannels];   // Noise after electronics
+    Double_t fMinVal;        // Min value used in 2D zero-suppression algo
 
-    Bool_t     fIsDead;  // module is dead or alive ?
- 
+    Bool_t   fIsDead;  // module is dead or alive ?
+    TArrayI  fBadChannels; //Array with bad anodes number (0-512) 
  private:
     AliITSCalibrationSDD(const AliITSCalibrationSDD &ob); // copy constructor
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,1) // SDD response 
+    ClassDef(AliITSCalibrationSDD,3) // SDD response 
     
     };
 #endif

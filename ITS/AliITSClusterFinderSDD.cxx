@@ -69,9 +69,7 @@ fMaxNCells(0){
     SetCutAmplitude(fDetTypeRec->GetITSgeom()->GetStartSDD());
     SetDAnode();
     SetDTime();
-    SetMinPeak((Int_t)(((AliITSCalibrationSDD*)GetResp(fDetTypeRec->GetITSgeom()->GetStartSDD()))->
-                       GetNoiseAfterElectronics()*5));
-    //    SetMinPeak();
+    SetMinPeak((Int_t)((AliITSCalibrationSDD*)GetResp(fDetTypeRec->GetITSgeom()->GetStartSDD()))->GetNoiseAfterElectronics(0)*5);
     SetMinNCells();
     SetMaxNCells();
     SetTimeCorr();
@@ -81,11 +79,16 @@ fMaxNCells(0){
 //______________________________________________________________________
 void AliITSClusterFinderSDD::SetCutAmplitude(Int_t mod,Double_t nsigma){
     // set the signal threshold for cluster finder
-    Double_t baseline,noise,noiseAfterEl;
+    Double_t baseline,noiseAfterEl;
 
-    GetResp(mod)->GetNoiseParam(noise,baseline);
-    noiseAfterEl = ((AliITSCalibrationSDD*)GetResp(mod))->GetNoiseAfterElectronics();
-    fCutAmplitude = (Int_t)((baseline + nsigma*noiseAfterEl));
+    
+    Int_t nanodes = GetResp(mod)->Wings()*GetResp(mod)->Channels()*GetResp(mod)->Chips();
+    fCutAmplitude.Set(nanodes);
+    for(Int_t ian=0;ian<nanodes;ian++){
+      baseline=GetResp(mod)->GetBaseline(ian);
+      noiseAfterEl = ((AliITSCalibrationSDD*)GetResp(mod))->GetNoiseAfterElectronics(ian);
+      fCutAmplitude[ian] = (Int_t)((baseline + nsigma*noiseAfterEl));
+    }
 }
 //______________________________________________________________________
 void AliITSClusterFinderSDD::Find1DClusters(){
@@ -103,12 +106,8 @@ void AliITSClusterFinderSDD::Find1DClusters(){
 
     // map the signal
     Map()->ClearMap();
-    Map()->SetThreshold(fCutAmplitude);
-    Map()->FillMap();
-  
-    Double_t noise;
-    Double_t baseline;
-    GetResp(fModule)->GetNoiseParam(noise,baseline);
+    Map()->SetThresholdArr(fCutAmplitude);
+    Map()->FillMap2();
   
     Int_t nofFoundClusters = 0;
     Int_t i;
@@ -151,7 +150,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
                     if(id>=fMaxNofSamples) break;
                     fadc=(float)Map()->GetSignal(idx,id);
                     if(fadc > fadcmax) { fadcmax = fadc; imax = id;}
-                    if(fadc > (float)fCutAmplitude)lthrt++; 
+                    if(fadc > (float)fCutAmplitude[idx])lthrt++; 
                     if(dfadc[k][id] > dfadcmax) {
                         dfadcmax = dfadc[k][id];
                         imaxd    = id;
@@ -173,7 +172,7 @@ void AliITSClusterFinderSDD::Find1DClusters(){
                         if(tstart+ij > 255) { tstop = 255; break; }
                         fadc=(float)Map()->GetSignal(idx,tstart+ij);
                         if((dfadc[k][tstart+ij] < dfadcmin) && 
-                           (fadc > fCutAmplitude)) {
+                           (fadc > fCutAmplitude[idx])) {
                             tstop = tstart+ij+5;
                             if(tstop > 255) tstop = 255;
                             dfadcmin = dfadc[k][it+ij];
@@ -186,9 +185,10 @@ void AliITSClusterFinderSDD::Find1DClusters(){
                     Int_t   clusterMult   = 0;
                     Double_t clusterPeakAmplitude = 0.;
                     Int_t its,peakpos     = -1;
-                    Double_t n, baseline;
-                    GetResp(fModule)->GetNoiseParam(n,baseline);
-                    for(its=tstart; its<=tstop; its++) {
+                    //Double_t n, baseline;
+                    //GetResp(fModule)->GetNoiseParam(n,baseline);
+		    Double_t baseline=GetResp(fModule)->GetBaseline(idx);
+		    for(its=tstart; its<=tstop; its++) {
                         fadc=(float)Map()->GetSignal(idx,its);
                         if(fadc>baseline) fadc -= baseline;
                         else fadc = 0.;
@@ -253,18 +253,17 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
     Double_t fSddLength = GetSeg()->Dx();
     Double_t fDriftSpeed = GetResp(fModule)->GetDriftSpeed();
     Double_t anodePitch = GetSeg()->Dpz( dummy );
-    Double_t n, baseline;
-    GetResp(fModule)->GetNoiseParam( n, baseline );
-    // map the signal
+
     Map()->ClearMap();
-    Map()->SetThreshold( fCutAmplitude );
-    Map()->FillMap();
+    Map()->SetThresholdArr( fCutAmplitude );
+    Map()->FillMap2();
 
     Int_t nClu = 0;
     //        cout << "Search  cluster... "<< endl;
     for( Int_t j=0; j<2; j++ ){
         for( Int_t k=0; k<fNofAnodes; k++ ){
             Int_t idx = j*fNofAnodes+k;
+	    Double_t baseline=GetResp(fModule)->GetBaseline(idx);
             Bool_t on = kFALSE;
             Int_t start = 0;
             Int_t nTsteps = 0;
@@ -696,8 +695,8 @@ void AliITSClusterFinderSDD::ResolveClusters(){
     Double_t fSddLength = GetSeg()->Dx();
     Double_t fDriftSpeed = GetResp(fModule)->GetDriftSpeed();
     Double_t anodePitch = GetSeg()->Dpz( dummy );
-    Double_t n, baseline;
-    GetResp(fModule)->GetNoiseParam( n, baseline );
+    //Double_t n, baseline;
+    //GetResp(fModule)->GetNoiseParam( n, baseline );
     Int_t electronics =GetResp(fModule)->GetElectronics(); // 1 = PASCAL, 2 = OLA
 
     for( Int_t j=0; j<nofClusters; j++ ){ 
@@ -725,6 +724,7 @@ void AliITSClusterFinderSDD::ResolveClusters(){
         for( Int_t ianode=astart; ianode<=astop; ianode++ ){
             for( Int_t itime=tstart; itime<=tstop; itime++ ){
                 Double_t fadc = Map()->GetSignal( ianode, itime );
+		Double_t baseline=GetResp(fModule)->GetBaseline(ianode);
                 if( fadc > baseline ) fadc -= (Double_t)baseline;
                 else fadc = 0.;
                 Int_t index = (itime-tstart+1)*zdim+(ianode-astart+1);
@@ -972,6 +972,13 @@ void AliITSClusterFinderSDD::FindRawClusters(Int_t mod){
     // find raw clusters
     
     SetModule(mod);
+    SetCutAmplitude(mod);
+    Int_t nanodes=GetSeg()->Npz();
+    Int_t noise=0;
+    for(Int_t i=0;i<nanodes;i++){
+      noise+=(Int_t)(((AliITSCalibrationSDD*)GetResp(mod))->GetNoiseAfterElectronics(i));
+    }    
+    SetMinPeak((noise/nanodes)*5);
     Find1DClustersE();
     GroupClusters();
     SelectClusters();
@@ -989,7 +996,7 @@ void AliITSClusterFinderSDD::PrintStatus() const{
     cout << "Anode Tolerance: " << fDAnode << endl;
     cout << "Time  Tolerance: " << fDTime << endl;
     cout << "Time  correction (electronics): " << fTimeCorr << endl;
-    cout << "Cut Amplitude (threshold): " << fCutAmplitude << endl;
+    cout << "Cut Amplitude (threshold): " << fCutAmplitude[0] << endl;
     cout << "Minimum Amplitude: " << fMinPeak << endl;
     cout << "Minimum Charge: " << fMinCharge << endl;
     cout << "Minimum number of cells/clusters: " << fMinNCells << endl;

@@ -38,6 +38,7 @@ AliITSMapA1::AliITSMapA1(){
     fObjects      = 0;
     fNobjects     = 0;
     fMapThreshold = 0;
+    fMapThresholdArr = 0;
 }
 //______________________________________________________________________
 AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg){
@@ -51,6 +52,7 @@ AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg){
     fObjects      = 0;
     fNobjects     = 0;
     fMapThreshold = 0;
+    fMapThresholdArr = 0;
     ClearMap();
 }
 //______________________________________________________________________
@@ -66,6 +68,7 @@ AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj){
     fObjects      =  obj;
     if(fObjects) fNobjects = fObjects->GetEntriesFast();
     fMapThreshold = 0;
+    fMapThresholdArr = 0;
     ClearMap();
 }
 //______________________________________________________________________
@@ -83,6 +86,23 @@ AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj, Int_t thr){
     fMapThreshold = thr;
     ClearMap();
 }
+//______________________________________________________________________
+AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj, TArrayI thr){
+    //constructor
+
+    fNobjects     = 0;
+    fSegmentation = seg;
+    fNpz          = fSegmentation->Npz();
+    fNpx          = fSegmentation->Npx();
+    fMaxIndex     = fNpz*fNpx+fNpx;             // 2 halves of detector
+    fHitMap       = new Int_t[fMaxIndex];
+    fObjects      =  obj;
+    if(fObjects) fNobjects = fObjects->GetEntriesFast();
+    fMapThreshold = 0;
+    fMapThresholdArr = thr;
+    ClearMap();
+}
+
 //______________________________________________________________________
 AliITSMapA1::~AliITSMapA1(){
     //destructor
@@ -102,6 +122,7 @@ AliITSMapA1& AliITSMapA1::operator=(const AliITSMapA1 &source) {
     this->fMaxIndex     = source.fMaxIndex;
     this->fHitMap       = source.fHitMap;
     this->fMapThreshold = source.fMapThreshold;
+    this->fMapThresholdArr = source.fMapThresholdArr;
     return *this;
 }
 //______________________________________________________________________
@@ -153,6 +174,22 @@ void  AliITSMapA1::FillMap(){
 	} // end if fSignal > fMapthreshold
     } // end for ndig
 }
+//______________________________________________________________________
+void  AliITSMapA1::FillMap2(){
+    // fill array with digits indices
+
+    Int_t ndigits = fObjects->GetEntriesFast();
+    if (!ndigits) return;
+
+    AliITSdigit *dig;
+    for (Int_t ndig=0; ndig<ndigits; ndig++) {
+	dig = (AliITSdigit*)fObjects->UncheckedAt(ndig);
+	if(dig->GetSignal() > fMapThresholdArr[dig->GetCoord1()]) {
+	    SetHit(dig->GetCoord1(),dig->GetCoord2(),ndig);
+	} // end if fSignal > fMapthreshold
+    } // end for ndig
+}
+
 //______________________________________________________________________
 void  AliITSMapA1::SetHit(Int_t iz, Int_t ix, Int_t idigit){
     // set the digit index at a certain position in array

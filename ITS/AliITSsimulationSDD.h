@@ -11,8 +11,6 @@
 ////////////////////////////////////////////////////////////
 
 #include <TNtuple.h>
-#include <TArrayF.h>
-
 #include "AliITSsimulation.h"
 
 class TH1F;
@@ -35,10 +33,10 @@ class AliITSsimulationSDD : public AliITSsimulation {
     AliITSsimulationSDD(); // default constructor
     //Standard Constructor
     AliITSsimulationSDD(AliITSDetTypeSim* dettyp);
-    // Copy opporator
+    // Copy operator
     AliITSsimulationSDD(AliITSsimulationSDD &source);
     virtual ~AliITSsimulationSDD(); // Destructor
-    // = opporator
+    // = operator
     AliITSsimulationSDD& operator=(const AliITSsimulationSDD &source);
     virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     // Initilize variables for this simulation
@@ -60,12 +58,10 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual void SetCrosstalkFlag(Bool_t flag=kFALSE) {fCrosstalkFlag=flag;}
     // return crosstalk flag
     Bool_t CrosstalkFlag() const {return fCrosstalkFlag;}
-    // set compression parameters for 2D or 1D via response functions
-    void SetCompressParam();
     // retrieve compression parameters for 2D or 1D
-    void CompressionParam(Int_t i, Int_t &db, Int_t &tl, Int_t &th);
+    void CompressionParam(Int_t i, Int_t &db, Int_t &tl, Int_t &th) const;
     // retrieve compression parameters for 2D or 1D
-    void CompressionParam(Int_t i, Int_t &db, Int_t &tl);
+    void CompressionParam(Int_t i, Int_t &db, Int_t &tl) const;
 
     virtual Int_t Convert10to8(Int_t signal) const;//10 to 8 bit SDD compresion
     virtual void ZeroSuppression(const char *opt); // Apply zero suppresion
@@ -74,9 +70,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual void Init1D();   // initilizes 1D compresion algorithm
     virtual void Compress1D(); // Applies 1D compresion algorithm
     virtual void StoreAllDigits(); // if No compresion run this.
-    virtual void ReadBaseline();  // read baseline values from a file
     // returns baseline and noise for a given anode i.
-    virtual void GetAnodeBaseline(Int_t i,Double_t &baseline,Double_t &noise) const;
+    //virtual void GetAnodeBaseline(Int_t i,Double_t &baseline,Double_t &noise) const;
     // local implementation of ITS->AddDigit. Specific for SDD
     virtual void AddDigit(Int_t i, Int_t j, Int_t signal);
     // Finds clulsters of signals. Use with regards to Compresion algorithms
@@ -153,6 +148,9 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual void PrintStatus() const;
 
   private:
+    // virtual void GetBaseline(Int_t mod);  // read baseline values from a file
+   // set compression parameters for 2D or 1D via response functions
+    void SetCompressParam();
     // Variables and pointers for local use only. Not Streamed out.
     AliITS         *fITS;          //! local pointer to ITS
     AliITSMapA2    *fHitMap2;      //! local pointer to map of signals
@@ -175,8 +173,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     TArrayI    fT1;           // low thresholds
     TArrayI    fT2;           // high thresholds(2D) or disable (1D) 
     TArrayI    fTol;          // tolerance
-    TArrayF    fBaseline;     // Baseline
-    TArrayF    fNoise;        // Noise value
+    // TArrayF    fBaseline;     // Baseline
+    //TArrayF    fNoise;        // Noise value
     TNtuple   *fTreeB;        // Background info tree for 2D
     TString    fParam;        // Compresion algorithm options
     TString    fFileName;     // File name for possible options above
@@ -188,7 +186,7 @@ class AliITSsimulationSDD : public AliITSsimulation {
     Int_t      fMaxNofSamples;// Number of time samples
     Int_t      fScaleSize;    // scale size factor for the samples in FFT
 
-    ClassDef(AliITSsimulationSDD,1)  // Simulation of SDD clusters
+    ClassDef(AliITSsimulationSDD,2)  // Simulation of SDD clusters
 
 };
 #endif
