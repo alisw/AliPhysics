@@ -35,43 +35,39 @@ ClassImp(AliAltroRawStream)
 
 //_____________________________________________________________________________
 AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
-  fSector(-1),
-  fPrevSector(-1),
-  fRow(-1),
-  fPrevRow(-1),
-  fPad(-1),
-  fPrevPad(-1),
+  fNoAltroMapping(kTRUE),
+  fDDLNumber(-1),
+  fPrevDDLNumber(-1),
   fHWAddress(-1),
   fPrevHWAddress(-1),
   fTime(-1),
+  fPrevTime(-1),
   fSignal(-1),
+  fTimeBunch(-1),
   fRawReader(rawReader),
   fData(NULL),
-  fNoAltroMapping(kTRUE),
   fPosition(0),
   fCount(0),
   fBunchLength(0)
 {
 // create an object to read Altro raw digits
-
+  fSegmentation[0] = fSegmentation[1] = fSegmentation[2] = -1;
 }
 
 //_____________________________________________________________________________
 AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   TObject(stream),
-  fSector(-1),
-  fPrevSector(-1),
-  fRow(-1),
-  fPrevRow(-1),
-  fPad(-1),
-  fPrevPad(-1),
+  fNoAltroMapping(kTRUE),
+  fDDLNumber(-1),
+  fPrevDDLNumber(-1),
   fHWAddress(-1),
   fPrevHWAddress(-1),
   fTime(-1),
+  fPrevTime(-1),
   fSignal(-1),
+  fTimeBunch(-1),
   fRawReader(NULL),
   fData(NULL),
-  fNoAltroMapping(kTRUE),
   fPosition(0),
   fCount(0),
   fBunchLength(0)
@@ -101,9 +97,11 @@ void AliAltroRawStream::Reset()
 
   fPosition = fCount = fBunchLength = 0;
 
-  fSector = fPrevSector = fRow = fPrevRow = fPad = fPrevPad = fHWAddress = fPrevHWAddress = fTime = fSignal = -1;
+  fDDLNumber = fPrevDDLNumber = fHWAddress = fPrevHWAddress = fTime = fPrevTime = fSignal = fTimeBunch = -1;
 
   if (fRawReader) fRawReader->Reset();
+
+  fSegmentation[0] = fSegmentation[1] = fSegmentation[2] = -1;
 }
 
 //_____________________________________________________________________________
@@ -112,16 +110,17 @@ Bool_t AliAltroRawStream::Next()
 // read the next raw digit
 // returns kFALSE if there is no digit left
 
-  fPrevSector = fSector;
-  fPrevRow = fRow;
-  fPrevPad = fPad;
+  fPrevDDLNumber = fDDLNumber;
   fPrevHWAddress = fHWAddress;
+  fPrevTime = fTime;
 
   while (fCount == 0) {  // next trailer
     if (fPosition <= 0) {  // next payload
       do {
 	if (!fRawReader->ReadNextData(fData)) return kFALSE;
       } while (fRawReader->GetDataSize() == 0);
+
+      fDDLNumber = fRawReader->GetDDLID();
 
       fPosition = GetPosition();
     }
@@ -138,6 +137,15 @@ Bool_t AliAltroRawStream::Next()
   ReadAmplitude();
 
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliAltroRawStream::SelectRawData(Int_t detId)
+{
+  // Select the raw data for specific
+  // detector id
+  AliDebug(1,Form("Selecting raw data for detector %d",detId));
+  fRawReader->Select(detId);
 }
 
 //_____________________________________________________________________________
@@ -199,8 +207,6 @@ Bool_t AliAltroRawStream::ReadTrailer()
 
   fPosition -= (4 - (fCount % 4)) % 4;  // skip fill words
 
-  ApplyAltroMapping();
-
   return kTRUE;
 }
 
@@ -212,12 +218,14 @@ Bool_t AliAltroRawStream::ReadDummyTrailer()
   UShort_t temp;
   while ((temp = GetNextWord()) == 0x2AA);
 
-  fSector = temp;
-  fRow = GetNextWord();
-  fPad = GetNextWord();
+  fSegmentation[0] = temp;
+  fSegmentation[1] = GetNextWord();
+  fSegmentation[2] = GetNextWord();
   fCount = GetNextWord();
   if (fCount == 0) return kFALSE;
   fHWAddress = -1;
+
+  fPosition -= (4 - (fCount % 4)) % 4;  // skip fill words
 
   return kTRUE;
 }
@@ -262,9 +270,7 @@ Int_t AliAltroRawStream::GetPosition()
 {
   // Sets the position in the
   // input stream
-  Int_t position = (fRawReader->GetDataSize() * 8) / 10;
-  if (position <= 4)
-    AliFatal(Form("Incorrect raw data size ! Expected at lest 4 words but found %d !",position));
-
-  return position;
+  if (((fRawReader->GetDataSize() * 8) % 10) != 0)
+    AliFatal(Form("Incorrect raw data size ! %d words are found !",fRawReader->GetDataSize()));
+  return (fRawReader->GetDataSize() * 8) / 10;
 }
