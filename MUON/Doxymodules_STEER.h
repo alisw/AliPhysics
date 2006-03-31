@@ -32,8 +32,6 @@
     class AliRecPoint {};
     class AliSegmentation {};
     class AliHitMap {};
-    class AliCluster {};
-    class AliTracker {};
     class AliRndm {};
     class AliMCQA {};
     class AliDebugVolume {};
@@ -64,6 +62,8 @@
     class AliReconstruction {};
     class AliVertexGenFile {};
     class AliVertexer {};
+    class AliV0vertexer {};
+    class AliCascadeVertexer {};
 
     class AliCDBPath {};
     class AliCDBRunRange {};
@@ -84,26 +84,26 @@
     class AliCDBGridFactory {};
     class AliCDBGridParam {}; 
 
+    class AliExpression {};
+    class AliVariableExpression {};
+    class AliTriggerInput {};
+    class AliTriggerDetector {};
+    class AliTriggerCondition {};
+    class AliTriggerDescriptor {};
+    class AliCentralTrigger {};
+
     class AliDetectorEventHeader {};
-
-    class AliRunTag {};
-    class AliLHCTag {};
-    class AliDetectorTag {};
-    class AliEventTag {};
-
-    class AliTagCreator {};
-    class AliTagAnalysis {};
-    class AliEventTagCuts {};
 
     class AliAlignObj {};
     class AliAlignObjAngles {};
     class AliAlignObjMatrix {};
-    class AliTrackPointArray {};
-    class AliTrackPoint {};
+
     class AliTrackFitter {};
     class AliTrackFitterRieman {};
+    class AliTrackFitterStraight {};
     class AliTrackResiduals {};
     class AliTrackResidualsChi2 {};
+    class AliTrackResidualsFast {};
     class AliAlignmentTracks {};
 
     class TTreeDataElement {};
@@ -111,12 +111,22 @@
     class TTreeSRedirector {};
 
     class AliRieman {};
+
+    class AliExpression {};
+    class AliVariableExpression {};
+    class AliTriggerInput {};
+    class AliTriggerDetector {};
+    class AliTriggerCondition {};
+    class AliTriggerDescriptor {};
+    class AliCentralTrigger {};
+
 /** @} */
 
 /** @defgroup STEER_ESD STEER_ESD
  *  Category of AliRoot event sumary data classes
  *  @{
  */
+
     class  AliESD {};
     class  AliESDtrack {};
     class  AliESDMuonTrack {};
@@ -129,11 +139,32 @@
     class  AliESDkink {};
     class  AliESDV0MI {};
     class  AliESDV0MIParams {};
+    class  AliESDCaloCluster {};
 
     class  AliKalmanTrack {};
     class  AliHelix {};
     class  AliExternalTrackParam {};
-    class  AliTrackParam {};
     class  AliLog {};
     class  AliPID {};
+    class  AliTrackPointArray {};
+    class  AliTrackPoint {};
+
+    class  AliRunTag {};
+    class  AliLHCTag {};
+    class  AliDetectorTag {};
+    class  AliEventTag {};
+
+    class  AliTagCreator {};
+    class  AliTagAnalysis {};
+    class  AliEventTagCuts {};
+
+    class  AliTrackPointArray {};
+    class  AliTrackPoint {};
+    class  AliCluster {};
+    class  AliTracker {};
+
+    class  AliESDFMD {};
+    class  AliFMDMap {};
+    class  AliFMDFloatMap {};
+
 /** @} */
