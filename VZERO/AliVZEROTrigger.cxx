@@ -33,10 +33,10 @@ void AliVZEROTrigger::CreateInputs()
 
    fInputs.AddLast( new AliTriggerInput( "VZERO_LEFT", "At least one hit in the left VZERO", 0x01 ) );
    fInputs.AddLast( new AliTriggerInput( "VZERO_RIGHT","At least one hit in the right VZERO", 0x02 ) );
-   fInputs.AddLast( new AliTriggerInput( "VZERO_AND",  "At least one hit in the each (left and right) VZERO", 0x02 ) );
-   fInputs.AddLast( new AliTriggerInput( "VZERO_OR",   "At least one hit in the one (left one right) VZERO", 0x02 ) );
+   fInputs.AddLast( new AliTriggerInput( "VZERO_AND",  "At least one hit in the each (left and right) VZERO", 0x04 ) );
+   fInputs.AddLast( new AliTriggerInput( "VZERO_OR",   "At least one hit in the one (left one right) VZERO", 0x08 ) );
 
-   fInputs.AddLast( new AliTriggerInput( "VZERO_BEAMGAS", "Beam gas VZERO trigger ", 0x01 ) );
+   fInputs.AddLast( new AliTriggerInput( "VZERO_BEAMGAS", "Beam gas VZERO trigger ", 0x010 ) );
 }
 
 //______________________________________________________________________
