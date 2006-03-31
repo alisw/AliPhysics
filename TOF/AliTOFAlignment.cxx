@@ -12,6 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
 $Log$
+Revision 1.2  2006/03/31 11:26:30  arcelli
+ changing CDB Ids according to standard convention
+
 Revision 1.1  2006/03/28 14:54:48  arcelli
 class for TOF alignment
 
@@ -199,7 +202,6 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot){
   }
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
   AliInfo(Form("Number of Alignable Volumes: %d",fNTOFAlignObj));
-  AliInfo("Sono nel cesso");
 }
 //_____________________________________________________________________________
 void AliTOFAlignment::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
