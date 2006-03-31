@@ -376,7 +376,8 @@ void AliVZEROv6::CreateGeometry()
      
   ncellsL = (nsecL - 1) * 4;    // 4 cells per sector
   AliInfo(Form("Number of cells on Left  side  - V0A =   %d\n",  ncellsL));
- 
+
+  gGeoManager->SetTopVolume(top); 
   gGeoManager->CloseGeometry();  
 //  gGeoManager-> SetVisLevel(4);
   geoManager->Export("VZEROGeometry.root"); 
