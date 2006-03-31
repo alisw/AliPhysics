@@ -34,15 +34,14 @@ ClassImp(AliESDVertex)
 
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex() :
-  TNamed(),
+  AliVertex(),
   fCovXX(0.005*0.005),
   fCovXY(0),
   fCovYY(0.005*0.005),
   fCovXZ(0),
   fCovYZ(0),
   fCovZZ(5.3*5.3),
-  fChi2(0),
-  fNContributors(0)
+  fChi2(0)
 {
   //
   // Default Constructor, set everything to 0
@@ -53,15 +52,14 @@ AliESDVertex::AliESDVertex() :
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
 			   Int_t nContributors,const Char_t *vtxName) :
-  TNamed(vtxName,""),
+  AliVertex(),
   fCovXX(0.005*0.005),
   fCovXY(0),
   fCovYY(0.005*0.005),
   fCovXZ(0),
   fCovYZ(0),
   fCovZZ(sigmaZ*sigmaZ),
-  fChi2(0),
-  fNContributors(nContributors)
+  fChi2(0)
 {
   //
   // Constructor for vertex Z from pixels
@@ -70,6 +68,8 @@ AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
   SetToZero();
 
   fPosition[2]   = positionZ;
+  SetName(vtxName);
+  SetNContributors(nContributors);
 
 }
 
@@ -77,70 +77,61 @@ AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t covmatrix[6],
 			   Double_t chi2,Int_t nContributors,
 			   const Char_t *vtxName) :
-  TNamed(vtxName,""),
+  AliVertex(position,0.,nContributors),
   fCovXX(covmatrix[0]),
   fCovXY(covmatrix[1]),
   fCovYY(covmatrix[2]),
   fCovXZ(covmatrix[3]),
   fCovYZ(covmatrix[4]),
   fCovZZ(covmatrix[5]),
-  fChi2(chi2),
-  fNContributors(nContributors)
+  fChi2(chi2)
 {
   //
   // Constructor for vertex in 3D from tracks
   //
 
   SetToZero();
-  fPosition[0]   = position[0];
-  fPosition[1]   = position[1];
-  fPosition[2]   = position[2];
+  SetName(vtxName);
 
 }
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
 			   const Char_t *vtxName) :
-  TNamed(vtxName,""),
+  AliVertex(position,0.,0),
   fCovXX(sigma[0]*sigma[0]),
   fCovXY(0),
   fCovYY(sigma[1]*sigma[1]),
   fCovXZ(0),
   fCovYZ(0),
   fCovZZ(sigma[2]*sigma[2]),
-  fChi2(0),
-  fNContributors(0)
+  fChi2(0)
 {
   //
   // Constructor for smearing of true position
   //
 
   SetToZero();
-  fPosition[0]   = position[0];
-  fPosition[1]   = position[1];
-  fPosition[2]   = position[2];
+  SetName(vtxName);
 
 }
 //--------------------------------------------------------------------------
 AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
 			   Double_t snr[3], const Char_t *vtxName) :
-  TNamed(vtxName,""),
+  AliVertex(position,0.,0),
   fCovXX(sigma[0]*sigma[0]),
   fCovXY(0),
   fCovYY(sigma[1]*sigma[1]),
   fCovXZ(0),
   fCovYZ(0),
   fCovZZ(sigma[2]*sigma[2]),
-  fChi2(0),
-  fNContributors(0)
+  fChi2(0)
 {
   //
   // Constructor for Pb-Pb
   //
 
   SetToZero();
-  fPosition[0]   = position[0];
-  fPosition[1]   = position[1];
-  fPosition[2]   = position[2];
+  SetName(vtxName);
 
   fSNR[0]        = snr[0];
   fSNR[1]        = snr[1];
@@ -154,28 +145,9 @@ void AliESDVertex::SetToZero() {
   // Set the content of arrays to 0. Used by constructors
   //
   for(Int_t i=0; i<3; i++){
-    fPosition[i] = 0.;
     fTruePos[i] = 0;
     fSNR[i] = 0.;
   }
-}
-//--------------------------------------------------------------------------
-AliESDVertex::~AliESDVertex() {
-//  
-// Destructor
-//
-
-}
-//--------------------------------------------------------------------------
-void AliESDVertex::GetXYZ(Double_t position[3]) const {
-//
-// Return position of the vertex in global frame
-//
-  position[0] = fPosition[0];
-  position[1] = fPosition[1];
-  position[2] = fPosition[2];
-
-  return;
 }
 //--------------------------------------------------------------------------
 void AliESDVertex::GetSigmaXYZ(Double_t sigma[3]) const {
@@ -202,48 +174,7 @@ void AliESDVertex::GetCovMatrix(Double_t covmatrix[6]) const {
 
   return;
 }
-//--------------------------------------------------------------------------
-Double_t AliESDVertex::GetXv() const {
-//
-// Return global x
-//
-  return fPosition[0];
-}
-//--------------------------------------------------------------------------
-Double_t AliESDVertex::GetYv() const {
-//
-// Return global y
-//
-  return fPosition[1];
-}
-//--------------------------------------------------------------------------
-Double_t AliESDVertex::GetZv() const {
-//
-// Return global z
-//
-  return fPosition[2];
-}
-//--------------------------------------------------------------------------
-Double_t AliESDVertex::GetXRes() const {
-//
-// Return error on global x
-//
-  return TMath::Sqrt(fCovXX);
-}
-//--------------------------------------------------------------------------
-Double_t AliESDVertex::GetYRes() const {
-//
-// Return error on global y
-//
-  return TMath::Sqrt(fCovYY);
-}
-//--------------------------------------------------------------------------
-Double_t AliESDVertex::GetZRes() const {
-//
-// Return error on global z
-//
-  return TMath::Sqrt(fCovZZ);
-}
+
 //--------------------------------------------------------------------------
 void AliESDVertex::GetSNR(Double_t snr[3]) const {
 //

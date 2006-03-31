@@ -17,6 +17,7 @@
 #pragma link C++ class  AliESDHLTtrack+;
 #pragma link C++ class  AliESDv0+;
 #pragma link C++ class  AliESDcascade+;
+#pragma link C++ class  AliVertex+;
 #pragma link C++ class  AliESDVertex+;
 #pragma link C++ class  AliESDpid+;
 #pragma link C++ class  AliESDkink+;

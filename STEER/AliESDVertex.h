@@ -26,10 +26,10 @@
  *                                                                           *
  *****************************************************************************/
 
-//---- Root headers -----
-#include <TNamed.h>
 
-class AliESDVertex : public TNamed {
+#include <AliVertex.h>
+
+class AliESDVertex : public AliVertex {
  
  public:
  
@@ -44,20 +44,16 @@ class AliESDVertex : public TNamed {
   AliESDVertex(Double_t position[3],Double_t sigma[3],Double_t snr[3],
 	       const Char_t *vtxName="Vertex");
 
-  virtual ~AliESDVertex();
+  virtual ~AliESDVertex(){;}
 
 
-  void     GetXYZ(Double_t position[3]) const;
   void     GetSigmaXYZ(Double_t sigma[3]) const;
   void     GetCovMatrix(Double_t covmatrix[6]) const;
   void     GetSNR(Double_t snr[3]) const;
 
-  Double_t GetXv() const;
-  Double_t GetYv() const;
-  Double_t GetZv() const;
-  Double_t GetXRes() const;
-  Double_t GetYRes() const;
-  Double_t GetZRes() const;
+  Double_t GetXRes() const {return TMath::Sqrt(fCovXX);}
+  Double_t GetYRes() const {return TMath::Sqrt(fCovYY);}
+  Double_t GetZRes() const {return TMath::Sqrt(fCovZZ);}
   Double_t GetXSNR() const { return fSNR[0]; }
   Double_t GetYSNR() const { return fSNR[1]; }
   Double_t GetZSNR() const { return fSNR[2]; }
@@ -65,7 +61,6 @@ class AliESDVertex : public TNamed {
   Double_t GetChi2() const { return fChi2; }
   Double_t GetChi2toNDF() const 
     { return fChi2/(2.*(Double_t)fNContributors-3.); }
-  Int_t    GetNContributors() const { return fNContributors; }
 
   void     Print(Option_t* option = "") const;
   void     PrintStatus() const {Print();}
@@ -77,18 +72,16 @@ class AliESDVertex : public TNamed {
 
  protected:
 
-  Double_t fPosition[3];  // vertex position
   Double_t fCovXX,fCovXY,fCovYY,fCovXZ,fCovYZ,fCovZZ;  // vertex covariance matrix
   Double_t fSNR[3];  // S/N ratio
   Double_t fChi2;  // chi2 of vertex fit
-  Int_t    fNContributors;  // # of tracklets/tracks used for the estimate 
   Double_t fTruePos[3];   //true vertex position (for comparison purposes)
 
  private:
 
   void SetToZero();
 
-  ClassDef(AliESDVertex,4)  // Class for Primary Vertex
+  ClassDef(AliESDVertex,5)  // Class for Primary Vertex
 };
 
 #endif

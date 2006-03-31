@@ -31,7 +31,6 @@ class AliVertexer : public TObject {
     virtual void SetDebug(Int_t debug = 0);
     virtual void SetFirstEvent(Int_t ev){fFirstEvent = ev;}
     virtual void SetLastEvent(Int_t ev){fLastEvent = ev;}
-    virtual void SetUseV2Clusters(Bool_t choice) = 0;
     virtual void WriteCurrentVertex() = 0;
 
  
