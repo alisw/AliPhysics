@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/28 14:57:02  arcelli
+updates to handle new V5 geometry & some re-arrangements
+
 Revision 1.2  2006/02/13 17:22:26  arcelli
 just Fixing Log info
 
@@ -619,7 +622,7 @@ void AliTOFcalib::CorrectESDTime(AliESD *event){
 void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
-  Char_t *sel1 = "CalibPar" ;
+  Char_t *sel1 = "Par" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id(out,minrun,maxrun);
@@ -632,7 +635,7 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
 void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFCal *cal){
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
-  Char_t *sel1 = "CalibPar" ;
+  Char_t *sel1 = "Par" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id(out,minrun,maxrun);
@@ -645,7 +648,7 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFC
 void AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun){
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
-  Char_t *sel1 = "CalibPar" ;
+  Char_t *sel1 = "Par" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
@@ -686,12 +689,12 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
-  Char_t *sel1 = "CalibSimPar" ;
+  Char_t *sel1 = "SimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id1(out,minrun,maxrun);
   man->Put(fTOFSimCal,id1,md);
-  Char_t *sel2 = "CalibSimHisto" ;
+  Char_t *sel2 = "SimHisto" ;
   sprintf(out,"%s/%s",sel,sel2); 
   AliCDBId id2(out,minrun,maxrun);
   man->Put(fTOFSimToT,id2,md);
@@ -707,12 +710,12 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliT
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
-  Char_t *sel1 = "CalibSimPar" ;
+  Char_t *sel1 = "SimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id1(out,minrun,maxrun);
   man->Put(fTOFSimCal,id1,md);
-  Char_t *sel2 = "CalibSimHisto" ;
+  Char_t *sel2 = "SimHisto" ;
   sprintf(out,"%s/%s",sel,sel2); 
   AliCDBId id2(out,minrun,maxrun);
   man->Put(fTOFSimToT,id2,md);
@@ -723,13 +726,13 @@ void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun){
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
-  Char_t *sel1 = "CalibSimPar" ;
+  Char_t *sel1 = "SimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry1 = man->Get(out,nrun);
   AliTOFCal *cal =(AliTOFCal*)entry1->GetObject();
   fTOFSimCal=cal;
-  Char_t *sel2 = "CalibSimHisto" ;
+  Char_t *sel2 = "SimHisto" ;
   sprintf(out,"%s/%s",sel,sel2); 
   AliCDBEntry *entry2 = man->Get(out,nrun);
   TH1F *histo =(TH1F*)entry2->GetObject();

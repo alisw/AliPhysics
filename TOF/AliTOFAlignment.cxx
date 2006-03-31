@@ -12,6 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
 $Log$
+Revision 1.1  2006/03/28 14:54:48  arcelli
+class for TOF alignment
+
 author: Silvia Arcelli, arcelli@bo.infn.it
 */  
 
@@ -67,8 +70,10 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot){
 
 
   Int_t nSM71 = 13, nSM74=2, nSM75=3;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
-  Int_t iIndex=1; //dummy volume index
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  UShort_t iIndex=0; //dummy volume index
+  //  AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
+  //  Int_t iIndex=1; //dummy volume index
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
   Int_t i;
   for (i = 1; i<=nSM71 ; i++) {
@@ -139,8 +144,10 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot){
 
 
   Int_t nSM71 = 13, nSM74=2, nSM75=3;
-  AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
-  Int_t iIndex=1; //dummy volume index
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  UShort_t iIndex=0; //dummy volume index
+  //  AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
+  //  Int_t iIndex=1; //dummy volume index
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
   Int_t i;
   for (i = 1; i<=nSM71 ; i++) {
@@ -192,6 +199,7 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot){
   }
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
   AliInfo(Form("Number of Alignable Volumes: %d",fNTOFAlignObj));
+  AliInfo("Sono nel cesso");
 }
 //_____________________________________________________________________________
 void AliTOFAlignment::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
@@ -240,6 +248,27 @@ void AliTOFAlignment::ReadSimParFromCDB(Char_t *sel, Int_t nrun){
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
+  fTOFAlignObjArray=(TObjArray*)entry->GetObject();
+  fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
+  AliInfo(Form("Number of Alignable Volumes from CDB: %d",fNTOFAlignObj));
+
+}
+//_____________________________________________________________________________
+void AliTOFAlignment::WriteOnCDBforDC(){
+  AliCDBManager *man = AliCDBManager::Instance();
+  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBId idTOFAlign("TOF/Align/Data",0,0);
+  AliCDBMetaData *mdTOFAlign = new AliCDBMetaData();
+  mdTOFAlign->SetComment("Alignment objects for ideal geometry, i.e. applying them to TGeo has to leave geometry unchanged");
+  mdTOFAlign->SetResponsible("TOF");
+  AliInfo(Form("Number of Alignable Volumes: %d",fNTOFAlignObj));
+  man->Put(fTOFAlignObjArray,idTOFAlign,mdTOFAlign);
+}
+//_____________________________________________________________________________
+void AliTOFAlignment::ReadFromCDBforDC(){
+  AliCDBManager *man = AliCDBManager::Instance();
+  if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBEntry *entry = man->Get("TOF/Align/Data",0);
   fTOFAlignObjArray=(TObjArray*)entry->GetObject();
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
   AliInfo(Form("Number of Alignable Volumes from CDB: %d",fNTOFAlignObj));

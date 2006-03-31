@@ -547,7 +547,7 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   Float_t TdcCorr;
   AliInfo(" Calibrating TOF Clusters: ")
   AliTOFcalib *calib = new AliTOFcalib(fTOFGeometry);
-  calib->ReadParFromCDB("TOF/CDB",1);
+  calib->ReadParFromCDB("TOF/Calib",0);
   AliTOFCal *TOFCalArray = calib->GetTOFCalArray();  
 
   for (ii=0; ii<fNumberOfTofClusters; ii++) {

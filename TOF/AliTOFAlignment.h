@@ -26,6 +26,9 @@ public:
   virtual void ReadSimParFromCDB(Char_t *sel, Int_t nrun);
   virtual void Smear(Float_t *tr=0, Float_t *rot=0); // create a set of AlignObj for TOF
   virtual void Align(Float_t *tr=0, Float_t *rot=0); // create a set of AlignObj for TOF
+  virtual void WriteOnCDBforDC();
+  virtual void ReadFromCDBforDC();
+  TObjArray * GetTOFAlignArray() const {return fTOFAlignObjArray;}
 
 private:
 
