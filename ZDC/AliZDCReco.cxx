@@ -28,18 +28,25 @@
 ClassImp(AliZDCReco)
   
 //_____________________________________________________________________________
-AliZDCReco::AliZDCReco(Float_t ezn, Float_t ezp, Float_t ezdc, Float_t ezem,
-     Int_t detspn, Int_t detspp, Int_t trspn, Int_t trspp, Int_t trsp, Int_t part, Float_t b)
+AliZDCReco::AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezdc1, Float_t ezem,
+	Float_t ezn2, Float_t ezp2, Float_t ezdc2,
+     	Int_t detspnLeft, Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight,
+	Int_t trspn, Int_t trspp, Int_t trsp, Int_t part, Float_t b)
 { 
   //
   // Standard constructor
   //
-  fZNenergy  = ezn;
-  fZPenergy  = ezp;
-  fZDCenergy = ezdc;
+  fZN1energy  = ezn1;
+  fZP1energy  = ezp1;
+  fZDC1energy = ezdc1;
+  fZN2energy  = ezn2;
+  fZP2energy  = ezp2;
+  fZDC2energy = ezdc2;
   fZEMenergy = ezem;
-  fNDetSpecN = detspn;
-  fNDetSpecP = detspp;
+  fNDetSpecNLeft = detspnLeft;
+  fNDetSpecPLeft = detsppLeft;
+  fNDetSpecNRight = detspnRight;
+  fNDetSpecPRight = detsppRight;
   fNTrueSpecN = trspn;
   fNTrueSpecP = trspp;
   fNTrueSpec = trsp;
@@ -56,6 +63,6 @@ void AliZDCReco::Print(Option_t *) const {
   printf("	---   Reconstruction -> EZN = %f TeV, EZP = %f TeV, EZDC = %f TeV,"
 	 " EZEM = %f GeV \n 		NDetSpecN = %d, NDetSpecP = %d, Nspecn = %d,"
 	 " Nspecp = %d, Npart = %d, b = %f fm.\n ", 
-	 fZNenergy,fZPenergy,fZDCenergy,fZEMenergy,fNDetSpecN,fNDetSpecP,
-	 fNTrueSpecN,fNTrueSpecP,fNPart,fImpPar);
+	 fZN1energy,fZP1energy,fZDC1energy,fZEMenergy,fNDetSpecNLeft,
+	 fNDetSpecPLeft,fNTrueSpecN,fNTrueSpecP,fNPart,fImpPar);
 }

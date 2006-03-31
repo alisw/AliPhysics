@@ -148,29 +148,35 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader) const
     treeD->SetBranchAddress("ZDC", &pdigit);
 
     // loop over digits
-    Float_t zncorr=0, zpcorr=0, zemcorr=0;
+    Float_t zn1corr=0, zp1corr=0, zn2corr=0, zp2corr=0, zemcorr=0;
     for (Int_t iDigit = 0; iDigit < treeD->GetEntries(); iDigit++) {
       treeD->GetEntry(iDigit);
       if (!pdigit) continue;
 
       if(digit.GetSector(0) == 1)
-       	 zncorr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)]);     // ped 4 high gain ZN ADCs
+       	 zn1corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)]);     // high gain ZN1 ADCs
       else if(digit.GetSector(0) == 2)
-	 zpcorr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+10]);  // ped 4 high gain ZP ADCs
+	 zp1corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+10]);  // high gain ZP1 ADCs
       else if(digit.GetSector(0) == 3){
 	 if(digit.GetSector(1)==1)      
-	   zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+20]); // ped 4 high gain ZEM1 ADCs
+	   zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+20]); // high gain ZEM1 ADCs
 	 else if(digit.GetSector(1)==2) 
-	   zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+22]); // ped 4 high gain ZEM2 ADCs
+	   zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+22]); // high gain ZEM2 ADCs
       }
+      else if(digit.GetSector(0) == 4)
+       	 zn2corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+24]);  // high gain ZN2 ADCs
+      else if(digit.GetSector(0) == 5)
+	 zp2corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+34]);  // high gain ZP2 ADCs
     }
-    if(zncorr<0)  zncorr=0;
-    if(zpcorr<0)  zpcorr=0;
-    if(zemcorr<0) zemcorr=0;
+    if(zn1corr<0)  zn1corr=0;
+    if(zp1corr<0)  zp1corr=0;
+    if(zn2corr<0)  zn2corr=0;
+    if(zp2corr<0)  zp2corr=0;
+    if(zemcorr<0)  zemcorr=0;
 
     // reconstruct the event
     //printf("\n \t ZDCReco from digits-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
-    ReconstructEvent(loader, zncorr, zpcorr, zemcorr);
+    ReconstructEvent(loader, zn1corr, zp1corr, zemcorr, zn2corr, zp2corr);
   }
 
   loader->UnloadDigits();
@@ -195,42 +201,56 @@ void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader,
     runLoader->GetEvent(iEvent++);
 
     // loop over raw data digits
-    Float_t zncorr=0, zpcorr=0, zemcorr=0;
+    Float_t zn1corr=0, zp1corr=0,  zn2corr=0, zp2corr=0,zemcorr=0;
     AliZDCRawStream digit(rawReader);
     while (digit.Next()) {
       if(digit.IsADCDataWord()){
         if(digit.GetADCGain() == 0){
-          if(digit.GetSector(0) == 1)	   zncorr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)]); // pedestals for high gain ZN ADCs;
-          else if(digit.GetSector(0) == 2) zpcorr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+10]); // pedestals for high gain ZP ADCs;
-          else if(digit.GetSector(0) == 3) zemcorr += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+20]); // pedestals for high gain ZEM ADCs;
+          if(digit.GetSector(0) == 1)	   
+	    zn1corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)]); // high gain ZN1 ADCs;
+          else if(digit.GetSector(0) == 2) 
+	    zp1corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+10]); // high gain ZP1 ADCs;
+          else if(digit.GetSector(0) == 3) 
+	    if(digit.GetSector(1)==1)      
+	      zemcorr += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+20]); // high gain ZEM1 ADCs
+	    else if(digit.GetSector(1)==2) 
+	      zemcorr += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+22]); // high gain ZEM2 ADCs
+          else if(digit.GetSector(0) == 4)	   
+	    zn2corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+24]); // high gain ZN2 ADCs;
+          else if(digit.GetSector(0) == 5) 
+	    zp2corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+34]); // high gain ZP2 ADCs;
 	}
       }
     }
-    if(zncorr<0)  zncorr=0;
-    if(zpcorr<0)  zpcorr=0;
+    if(zn1corr<0) zn1corr=0;
+    if(zp1corr<0) zp1corr=0;
+    if(zn2corr<0) zn2corr=0;
+    if(zp2corr<0) zp2corr=0;
     if(zemcorr<0) zemcorr=0;
     
     // reconstruct the event
     //printf("\n\t ZDCReco from raw-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
-    ReconstructEvent(loader, zncorr, zpcorr, zemcorr);
+    ReconstructEvent(loader, zn1corr, zp1corr, zemcorr, zn2corr, zp2corr);
   }
 
   loader->UnloadRecPoints();
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
-	Float_t zpcorr, Float_t zemcorr) const
+void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zn1corr, 
+	Float_t zp1corr, Float_t zemcorr, Float_t zn2corr, Float_t zp2corr) const
 {
   // ***** Reconstruct one event
   
   //  ---      ADCchannel -> photoelectrons
   // NB-> PM gain = 10^(5), ADC resolution = 6.4*10^(-7)
   // Move to V965 (E.S.,15/09/04) NB-> PM gain = 10^(5), ADC resolution = 8*10^(-7)
-  Float_t znphe, zpphe, zemphe, convFactor = 0.08;
-  znphe  = zncorr/convFactor;
-  zpphe  = zpcorr/convFactor;
+  Float_t zn1phe, zp1phe, zemphe, zn2phe, zp2phe, convFactor = 0.08;
+  zn1phe  = zn1corr/convFactor;
+  zp1phe  = zp1corr/convFactor;
   zemphe = zemcorr/convFactor;
+  zn2phe  = zn2corr/convFactor;
+  zp2phe  = zp2corr/convFactor;
   //if AliDebug(1,Form("\n    znphe = %f, zpphe = %f, zemphe = %f\n",znphe, zpphe, zemphe);
   
   //  ---      Energy calibration
@@ -241,11 +261,14 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
   // spectators have all the same energy, ZEM energy is obtained through a
   // fit over the whole range of incident particle energies 
   // (obtained with full HIJING simulations) 
-  Float_t znenergy, zpenergy, zemenergy, zdcenergy;
-  Float_t znphexTeV=329., zpphexTeV=369.;
-  znenergy  = znphe/znphexTeV;
-  zpenergy  = zpphe/zpphexTeV;
-  zdcenergy = znenergy+zpenergy;
+  Float_t zn1energy, zp1energy, zemenergy, zdc1energy, zn2energy, zp2energy, zdc2energy;
+  Float_t zn1phexTeV=329., zp1phexTeV=369., zn2phexTeV=329., zp2phexTeV=369.;
+  zn1energy  = zn1phe/zn1phexTeV;
+  zp1energy  = zp1phe/zp1phexTeV;
+  zdc1energy = zn1energy+zp1energy;
+  zn2energy  = zn2phe/zn2phexTeV;
+  zp2energy  = zp2phe/zp2phexTeV;
+  zdc2energy = zn2energy+zp2energy;
   zemenergy = -4.81+0.3238*zemphe;
   if(zemenergy<0) zemenergy=0;
   //  if AliDebug(1,Form("    znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
@@ -255,30 +278,34 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
   //    if AliDebug(1,Form("\n\n	###	ATTENZIONE!!! -> ev# %d: znenergy = %f TeV, zpenergy = %f TeV, zdcenergy = %f GeV, "
   //			     " zemenergy = %f TeV\n\n", fMerger->EvNum(), znenergy, zpenergy, zdcenergy, zemenergy); 
 
-  //  ---      Number of incident spectator nucleons
-  Int_t nDetSpecN, nDetSpecP;
-  nDetSpecN = (Int_t) (znenergy/2.760);
-  nDetSpecP = (Int_t) (zpenergy/2.760);
-//  if AliDebug(1,Form("\n    nDetSpecN = %d, nDetSpecP = %d\n",nDetSpecN, nDetSpecP);
+  //  ---      Number of detected spectator nucleons
+  //  *** N.B. -> It works only in Pb-Pb
+  Int_t nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight;
+  nDetSpecNLeft = (Int_t) (zn1energy/2.760);
+  nDetSpecPLeft = (Int_t) (zp1energy/2.760);
+  nDetSpecNRight = (Int_t) (zn2energy/2.760);
+  nDetSpecPRight = (Int_t) (zp2energy/2.760);
 
-  Int_t nGenSpecN=0, nGenSpecP=0, nGenSpec=0;
+  //  ---      Number of generated spectator nucleons (from HIJING parameterization)
+   //  *** N.B. -> Only one side!!!
+ Int_t nGenSpecN=0, nGenSpecP=0, nGenSpec=0;
   Double_t impPar=0;
   // Cut value for Ezem (GeV)
-  // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
+  // ### Results from production  -> 0<b<18 fm (Apr 2002)
   Float_t eZEMCut = 420.;
   Float_t deltaEZEMSup = 690.; 
   Float_t deltaEZEMInf = 270.; 
   if(zemenergy > (eZEMCut+deltaEZEMSup)){
-    nGenSpecN = (Int_t) (fZNCen->Eval(znenergy));
-    nGenSpecP = (Int_t) (fZPCen->Eval(zpenergy));
-    nGenSpec  = (Int_t) (fZDCCen->Eval(zdcenergy));
-    impPar    = fbCen->Eval(zdcenergy);
+    nGenSpecN = (Int_t) (fZNCen->Eval(zn1energy));
+    nGenSpecP = (Int_t) (fZPCen->Eval(zp1energy));
+    nGenSpec  = (Int_t) (fZDCCen->Eval(zdc1energy));
+    impPar    = fbCen->Eval(zdc1energy);
   }
   else if(zemenergy < (eZEMCut-deltaEZEMInf)){
-    nGenSpecN = (Int_t) (fZNPer->Eval(znenergy)); 
-    nGenSpecP = (Int_t) (fZPPer->Eval(zpenergy));
-    nGenSpec  = (Int_t) (fZDCPer->Eval(zdcenergy));
-    impPar    = fbPer->Eval(zdcenergy);
+    nGenSpecN = (Int_t) (fZNPer->Eval(zn1energy)); 
+    nGenSpecP = (Int_t) (fZPPer->Eval(zp1energy));
+    nGenSpec  = (Int_t) (fZDCPer->Eval(zdc1energy));
+    impPar    = fbPer->Eval(zdc1energy);
   }
   else if(zemenergy >= (eZEMCut-deltaEZEMInf) && zemenergy <= (eZEMCut+deltaEZEMSup)){
     nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
@@ -286,11 +313,11 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
     nGenSpec  = (Int_t)(fZEMsp->Eval(zemenergy));
     impPar    =  fZEMb->Eval(zemenergy);
   }
-  // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
-  if(znenergy>162.)  nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
-  if(zpenergy>59.75)  nGenSpecP = (Int_t) (fZEMp->Eval(zemenergy));
-  if(zdcenergy>221.5) nGenSpec  = (Int_t)(fZEMsp->Eval(zemenergy));
-  if(zdcenergy>220.)  impPar    =  fZEMb->Eval(zemenergy);
+  // ### Results from production  -> 0<b<18 fm (Apr 2002)
+  if(zn1energy>162.)  nGenSpecN = (Int_t) (fZEMn->Eval(zemenergy));
+  if(zp1energy>59.75)  nGenSpecP = (Int_t) (fZEMp->Eval(zemenergy));
+  if(zdc1energy>221.5) nGenSpec  = (Int_t)(fZEMsp->Eval(zemenergy));
+  if(zdc1energy>220.)  impPar    =  fZEMb->Eval(zemenergy);
   
   if(nGenSpecN>125)    nGenSpecN=125;
   else if(nGenSpecN<0) nGenSpecN=0;
@@ -299,7 +326,7 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
   if(nGenSpec>207)     nGenSpec=207;
   else if(nGenSpec<0)  nGenSpec=0;
   
-  //  ---      Number of participants
+  //  ---      Number of generated participants (from HIJING parameterization)
   Int_t nPart, nPartTot;
   nPart = 207-nGenSpecN-nGenSpecP;
   nPartTot = 207-nGenSpec;
@@ -309,9 +336,10 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zncorr,
   // create the output tree
   loader->MakeTree("R");
   TTree* treeR = loader->TreeR();
-  AliZDCReco reco(znenergy, zpenergy, zdcenergy, zemenergy,
-                  nDetSpecN, nDetSpecP, nGenSpecN, nGenSpecP, nGenSpec,
-                  nPartTot, impPar);
+  AliZDCReco reco(zn1energy, zp1energy, zdc1energy, zemenergy,
+  		  zn2energy, zp2energy, zdc2energy, 
+                  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight,
+		  nGenSpecN, nGenSpecP, nGenSpec,nPartTot, impPar);
   AliZDCReco* preco = &reco;
   const Int_t kBufferSize = 4000;
   treeR->Branch("ZDC", "AliZDCReco", &preco, kBufferSize);
@@ -338,8 +366,8 @@ void AliZDCReconstructor::FillESD(AliRunLoader* runLoader,
   treeR->SetBranchAddress("ZDC", &preco);
 
   treeR->GetEntry(0);
-  esd->SetZDC(reco.GetZNenergy(), reco.GetZPenergy(), reco.GetZEMenergy(),
-	      reco.GetNPart());
+  esd->SetZDC(reco.GetZN1energy(), reco.GetZP1energy(), reco.GetZEMenergy(),
+	      reco.GetZN2energy(), reco.GetZP2energy(), reco.GetNPart());
 
   loader->UnloadRecPoints();
 }

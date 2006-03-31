@@ -47,7 +47,8 @@ private:
   AliZDCReconstructor(const AliZDCReconstructor& reconstructor);
   AliZDCReconstructor& operator = (const AliZDCReconstructor& reconstructor);
 
-  void   ReconstructEvent(AliLoader* loader, Float_t zncorr, Float_t zpcorr, Float_t zemcorr) const;
+  void   ReconstructEvent(AliLoader* loader, Float_t zn1corr, Float_t zp1corr, Float_t zemcorr,
+  		Float_t zn2corr, Float_t zp2corr) const;
 
   TF1*   fZNCen;     //! Nspectator n true vs. EZN
   TF1*   fZNPer;     //! Nspectator n true vs. EZN
