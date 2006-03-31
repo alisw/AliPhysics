@@ -1145,18 +1145,21 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
             for (iTime = 0; iTime < nTimeTotal; iTime++) {         
               Float_t signalAmp = signals->GetDataUnchecked(iRow,iCol,iTime);
+
               // Pad and time coupling
               signalAmp *= coupling;
-	      Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
+
+              Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
               if (padgain<=0) {
                 TString error;
                 error.Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow);
                 AliError(error);
               }
 	      signalAmp *= padgain;
+
               // Add the noise, starting from minus ADC baseline in electrons
               Double_t baselineEl = simParam->GetADCbaseline() * (simParam->GetADCinRange()
-                                                           / simParam->GetADCoutRange()) 
+                                                           / simParam->GetADCoutRange())
                                                            / convert;
               signalAmp  = TMath::Max((Double_t) gRandom->Gaus(signalAmp,simParam->GetNoise())
                                      ,-baselineEl);
@@ -1165,16 +1168,17 @@ Bool_t AliTRDdigitizer::MakeDigits()
               // Add ADC baseline in mV
               signalAmp += simParam->GetADCbaseline() * (simParam->GetADCinRange()
                                                    / simParam->GetADCoutRange());
- 	      // Convert to ADC counts. Set the overflow-bit fADCoutRange if the 
+ 	      // Convert to ADC counts. Set the overflow-bit fADCoutRange if the
 	      // signal is larger than fADCinRange
               Int_t adc  = 0;
               if (signalAmp >= simParam->GetADCinRange()) {
                 adc = ((Int_t) simParam->GetADCoutRange());
 	      }
               else {
-                adc = ((Int_t) (signalAmp * (simParam->GetADCoutRange() 
-                                           / simParam->GetADCinRange())));
+                adc = TMath::Nint(signalAmp * (simParam->GetADCoutRange()
+                                           / simParam->GetADCinRange()));
 	      }
+
               inADC[iTime]  = adc;
               outADC[iTime] = adc;
 	    }
@@ -1358,7 +1362,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
     for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
       for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
 
-        for (iTime = 0; iTime < nTimeTotal; iTime++) {         
+        for (iTime = 0; iTime < nTimeTotal; iTime++) {
           Double_t signal = (Double_t) digitsIn->GetDataUnchecked(iRow,iCol,iTime);
           signal *= sDigitsScale;
           Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
@@ -1367,6 +1371,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
                   error.Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow);
                   AliError(error);
           }
+
           signal *= padgain;
           // Pad and time coupling
           signal *= coupling;
@@ -1377,20 +1382,20 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
           signal *= convert;
           // add ADC baseline in mV
           signal += adcBaseline * (adcInRange / adcOutRange);
-	  // Convert to ADC counts. Set the overflow-bit adcOutRange if the 
+	  // Convert to ADC counts. Set the overflow-bit adcOutRange if the
 	  // signal is larger than adcInRange
           Int_t adc  = 0;
           if (signal >= adcInRange) {
             adc = ((Int_t) adcOutRange);
 	  }
           else {
-            adc = ((Int_t) (signal * (adcOutRange / adcInRange)));
+            adc = TMath::Nint(signal * (adcOutRange / adcInRange));
 	  }
           inADC[iTime]  = adc;
           outADC[iTime] = adc;
 	}
 
-        for (iTime = 0; iTime < nTimeTotal; iTime++) {   
+        for (iTime = 0; iTime < nTimeTotal; iTime++) {
           // Store the amplitude of the digit if above threshold
           if (outADC[iTime] > adcThreshold) {
             digitsOut->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));

@@ -155,8 +155,8 @@ void AliTRDRecParam::Init()
   //
   
   // The default parameter for the clustering
-  fClusMaxThresh = 3;
-  fClusSigThresh = 1;
+  fClusMaxThresh = 3.5;
+  fClusSigThresh = 1.5;
 
   // Use the LUT
   fLUTOn         = kTRUE;
@@ -166,7 +166,7 @@ void AliTRDRecParam::Init()
 
   // The tail cancelation
   fTCOn           = kTRUE;
-  
+
   // The number of exponentials
   fTCnexp         = 1;
 

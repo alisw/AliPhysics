@@ -26,15 +26,15 @@ class AliTRDRecParam : public TObject
     virtual void Copy(TObject &p) const;
   
     virtual void     SetLUT(Int_t lutOn = 1)                        { fLUTOn          = lutOn;    };
-    virtual void     SetClusMaxThresh(Int_t thresh)                 { fClusMaxThresh  = thresh;   };
-    virtual void     SetClusSigThresh(Int_t thresh)                 { fClusSigThresh  = thresh;   };
+    virtual void     SetClusMaxThresh(Float_t thresh)                 { fClusMaxThresh  = thresh;   };
+    virtual void     SetClusSigThresh(Float_t thresh)                 { fClusSigThresh  = thresh;   };
     
             void SetTailCancelation(Int_t tcOn = 1)                 { fTCOn           = tcOn;     };
             void SetNexponential(Int_t nexp)                        { fTCnexp         = nexp;     };
   
     Bool_t   LUTOn()                                          const { return fLUTOn;         };
-    virtual Int_t    GetClusMaxThresh()                       const { return fClusMaxThresh; };
-    virtual Int_t    GetClusSigThresh()                       const { return fClusSigThresh; };
+    virtual Float_t    GetClusMaxThresh()                       const { return fClusMaxThresh; };
+    virtual Float_t    GetClusSigThresh()                       const { return fClusSigThresh; };
     
     virtual Double_t  LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const;
   
@@ -48,8 +48,8 @@ class AliTRDRecParam : public TObject
     void Init();
   
     // Clusterization parameter
-    Int_t                fClusMaxThresh;                      //  Threshold value for cluster maximum
-    Int_t                fClusSigThresh;                      //  Threshold value for cluster signal
+    Float_t              fClusMaxThresh;                      //  Threshold value for cluster maximum
+    Float_t              fClusSigThresh;                      //  Threshold value for cluster signal
     
     Int_t                fLUTOn;                              //  Switch for the lookup table method
     Int_t                fLUTbin;                             //  Number of bins of the LUT
@@ -64,7 +64,7 @@ class AliTRDRecParam : public TObject
     AliTRDRecParam();
     ~AliTRDRecParam();
   
-    ClassDef(AliTRDRecParam, 0)
+    ClassDef(AliTRDRecParam, 1)
 };
 
 #endif
