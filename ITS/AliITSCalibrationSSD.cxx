@@ -37,7 +37,7 @@ AliITSCalibrationSSD::AliITSCalibrationSSD(){
 
     fDetPar = 0;
     fNPar   = 0;
-    fNoiseP = 0;
+       fNoiseP = 0;
     fNoiseN = 0;
     fSigmaP = 0;
     fSigmaN = 0;

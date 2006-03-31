@@ -26,6 +26,12 @@
 const Float_t AliITSresponseSSD::fgkDiffCoeffDefault = 0.;
 const TString AliITSresponseSSD::fgkOption1Default = "";
 const TString AliITSresponseSSD::fgkOption2Default = "";
+const Double_t AliITSresponseSSD::fgkfCouplingPR = 0.01;
+const Double_t AliITSresponseSSD::fgkfCouplingPL = 0.01;
+const Double_t AliITSresponseSSD::fgkfCouplingNR = 0.01;
+const Double_t AliITSresponseSSD::fgkfCouplingNL = 0.01;
+const Int_t AliITSresponseSSD::fgkZSThreshold = 3;
+
 
 ClassImp(AliITSresponseSSD)
 
@@ -36,4 +42,23 @@ AliITSresponseSSD::AliITSresponseSSD():AliITSresponse(){
   SetDiffCoeff(fgkDiffCoeffDefault,0.);
   SetParamOptions(fgkOption1Default.Data(),fgkOption2Default.Data());
   SetADCpereV();
+  SetCouplings(fgkfCouplingPR,fgkfCouplingPL,fgkfCouplingNR,fgkfCouplingNL);
+  SetZSThreshold(fgkZSThreshold);
 }
+
+//______________________________________________________________________
+AliITSresponseSSD::AliITSresponseSSD(const AliITSresponseSSD &ob) : AliITSresponse(ob) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSresponseSSD","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSresponseSSD& AliITSresponseSSD::operator=(const AliITSresponseSSD& /* ob */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
+
+

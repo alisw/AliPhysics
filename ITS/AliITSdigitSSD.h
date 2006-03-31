@@ -23,7 +23,7 @@ class AliITSdigitSSD: public AliITSdigit {
     Int_t  GetSignal() const {/* returns signal*/return fSignal;}
     Int_t  GetStripNumber() const {/* returns strip number*/return fCoord2;}
     //returns 1  when side P and 0 when side N
-    Int_t  IsSideP() const {return fCoord1;}
+    Int_t  IsSideP() const {if(fCoord1==0) return 1; else return 0; }
     // returns pointer to the array of tracks which make this digit
     virtual Int_t *GetTracks() {return &fTracks[0];}
     // returns the pointer to the array of hits which made this digit

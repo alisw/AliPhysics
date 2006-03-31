@@ -15,7 +15,7 @@
 class AliITSMapA2;
 class AliITSpList;
 class AliITSTableSSD;
-class AliITSdcsSSD;
+//class AliITSdcsSSD;
 class AliITSsegmentationSSD;
 class AliITSCalibrationSSD;
 
@@ -80,7 +80,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
     // Data members
  protected:
 
-    AliITSdcsSSD *fDCS;   // Class containing detector controle paramters
+    //    AliITSdcsSSD *fDCS;   // Class containing detector controle paramters
 
  private:
     // Return the Response class
@@ -111,6 +111,8 @@ class AliITSsimulationSSD: public AliITSsimulation {
     void    ApplyNoise(AliITSpList *pList,Int_t mod);
      // Applies posible signal coupling between strips
     void    ApplyCoupling(AliITSpList *pList,Int_t mod);
+    // Kill dead channels
+    void ApplyDeadChannels(Int_t mod);
     // Computes the integral of a gaussian using Error Function
     Float_t F(Float_t av, Float_t x, Float_t s);
     // returns, from the segmentation, the number of stips

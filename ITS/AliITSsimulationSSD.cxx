@@ -24,28 +24,28 @@
 #include "AliITSpList.h"
 #include "AliITSCalibrationSSD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSdcsSSD.h"
+//#include "AliITSdcsSSD.h"
 #include "AliITS.h"
 #include "AliITShit.h"
 #include "AliITSdigitSSD.h"
 #include "AliRun.h"
-#include "AliITSgeom.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSTableSSD.h"
-#include "AliITSresponseSSD.h"
+//#include "AliITSresponseSSD.h"
 
 ClassImp(AliITSsimulationSSD)
 ////////////////////////////////////////////////////////////////////////
-// Version: 0                                                         //
-// Written by Enrico Fragiacomo                                       //
-// July 2000                                                          // 
 //                                                                    //
-// AliITSsimulationSSD is the simulation of SSDs.                     //
+// Author: Enrico Fragiacomo                                          //
+//         enrico.fragiacomo@ts.infn.it                               //
+// Last revised: march 2006                                           // 
+//                                                                    //
+// AliITSsimulationSSD is the simulation of SSD.                     //
 ////////////////////////////////////////////////////////////////////////
 
 //----------------------------------------------------------------------
 AliITSsimulationSSD::AliITSsimulationSSD():AliITSsimulation(),
-fDCS(0),
+					   //fDCS(0),
 fMapA2(0),
 fIonE(0.0),
 fDifConst(),
@@ -61,15 +61,14 @@ fDriftVel(){
 //----------------------------------------------------------------------
 AliITSsimulationSSD::AliITSsimulationSSD(AliITSDetTypeSim* dettyp):
 AliITSsimulation(dettyp),
-fDCS(0),
+//fDCS(0),
 fMapA2(0),
 fIonE(0.0),
 fDifConst(),
 fDriftVel(){
     // Constructor 
     // Input:
-    //   AliITSsegmentationSSD *seg  Pointer to the SSD segmentation to be used
-    //   AliITSCalibrationSSD   *resp Pointer to the SSD responce class to be used
+    //   AliITSDetTypeSim    Pointer to the SSD dettype to be used
     // Outputs:
     //   none.
     // Return
@@ -79,25 +78,21 @@ fDriftVel(){
 }
 //----------------------------------------------------------------------
 void AliITSsimulationSSD::Init(){
-    // Inilizer, Inilizes all of the variable as needed in a standard place.
-    // Input:
-    //   AliITSsegmentationSSD *seg  Pointer to the SSD segmentation to be used
-    //   AliITSCalibrationSSD   *resp Pointer to the SSD responce class to be used
-    // Outputs:
-    //   none.
-    // Return
-    //   none.
-  AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(fDetType->GetITSgeom()->GetStartSSD());
+  // Inilizer, Inilizes all of the variable as needed in a standard place.
+  // Input:
+  //   AliITSsegmentationSSD *seg  Pointer to the SSD segmentation to be used
+  //   AliITSCalibrationSSD   *resp Pointer to the SSD responce class to be used
+  // Outputs:
+  //   none.
+  // Return
+  //   none.
   AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
-    Double_t noise[2] = {0.,0.};
-    res->GetNoiseParam(noise[0],noise[1]); // retrieves noise parameters
-    fDCS = new AliITSdcsSSD(seg,res); 
-
-    SetDriftVelocity(); // use default values in .h file
-    SetIonizeE();       // use default values in .h file
-    SetDiffConst();     // use default values in .h file
-    fpList           = new AliITSpList(2,GetNStrips());
-    fMapA2           = new AliITSMapA2(seg);
+  
+  SetDriftVelocity(); // use default values in .h file
+  SetIonizeE();       // use default values in .h file
+  SetDiffConst();     // use default values in .h file
+  fpList           = new AliITSpList(2,GetNStrips());
+  fMapA2           = new AliITSMapA2(seg);
 }
 //______________________________________________________________________
 AliITSsimulationSSD& AliITSsimulationSSD::operator=(
@@ -106,7 +101,7 @@ AliITSsimulationSSD& AliITSsimulationSSD::operator=(
 
   if(this==&s) return *this;
 
-  this->fDCS         = new AliITSdcsSSD(*(s.fDCS));
+  //  this->fDCS         = new AliITSdcsSSD(*(s.fDCS));
   this->fMapA2       = s.fMapA2;
   this->fIonE        = s.fIonE;
   this->fDifConst[0] = s.fDifConst[0];
@@ -137,7 +132,7 @@ AliITSsimulationSSD::AliITSsimulationSSD(const AliITSsimulationSSD &source):
 AliITSsimulationSSD::~AliITSsimulationSSD() {
   // destructor
   delete fMapA2;
-  delete fDCS;
+  //delete fDCS;
 }
 //______________________________________________________________________
 void AliITSsimulationSSD::InitSimulationModule(Int_t module,Int_t event){
@@ -165,19 +160,19 @@ void AliITSsimulationSSD::FinishSDigitiseModule(){
     // Return:
     //   none.
 
-    FillMapFrompList(fpList);  // need to check if needed here or not????
-    SDigitToDigit(fModule,fpList);
-    fpList->ClearMap();
-    fMapA2->ClearMap();
+  FillMapFrompList(fpList);  // need to check if needed here or not????
+  SDigitToDigit(fModule,fpList);
+  fpList->ClearMap();
+  fMapA2->ClearMap();
 }
 //______________________________________________________________________
 void AliITSsimulationSSD::DigitiseModule(AliITSmodule *mod,Int_t,Int_t) {
   // Digitizes hits for one SSD module
   SetModuleNumber(mod->GetIndex());
-
+  
   HitsToAnalogDigits(mod,fpList);
   SDigitToDigit(GetModuleNumber(),fpList);
-
+  
   fpList->ClearMap();
   fMapA2->ClearMap();
 }
@@ -188,17 +183,18 @@ void AliITSsimulationSSD::SDigitiseModule(AliITSmodule *mod,Int_t,Int_t) {
     HitsToAnalogDigits(mod,fpList);
 
     WriteSDigits(fpList);
-
+    
     fpList->ClearMap();
     fMapA2->ClearMap();
 }
 //______________________________________________________________________
 void AliITSsimulationSSD::SDigitToDigit(Int_t module,AliITSpList *pList){
   // Takes the pList and finishes the digitization.
-
+  
   ApplyNoise(pList,module);
   ApplyCoupling(pList,module);
-
+  ApplyDeadChannels(module);
+  
   ChargeToSignal(module,pList);
 }
 //______________________________________________________________________
@@ -206,15 +202,15 @@ void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
                                              AliITSpList *pList){
     // Loops over all hits to produce Analog/floating point digits. This
     // is also the first task in producing standard digits.
-    Int_t lasttrack     = -2;
-    Int_t idtrack       = -2;
-    Double_t x0=0.0, y0=0.0, z0=0.0;
-    Double_t x1=0.0, y1=0.0, z1=0.0;
-    Double_t de=0.0;
-    Int_t module = mod->GetIndex();
-
-    AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
-
+  Int_t lasttrack     = -2;
+  Int_t idtrack       = -2;
+  Double_t x0=0.0, y0=0.0, z0=0.0;
+  Double_t x1=0.0, y1=0.0, z1=0.0;
+  Double_t de=0.0;
+  Int_t module = mod->GetIndex();
+  
+  AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
+  
     TObjArray *hits = mod->GetHits();
     Int_t nhits     = hits->GetEntriesFast();
     if (nhits<=0) return;
@@ -223,22 +219,22 @@ void AliITSsimulationSSD::HitsToAnalogDigits(AliITSmodule *mod,
     if ( mod->GetLayer() == 6 ) seg->SetLayer(6);
     if ( mod->GetLayer() == 5 ) seg->SetLayer(5);
     for(Int_t i=0; i<nhits; i++) {    
-        // LineSegmentL returns 0 if the hit is entering
-        // If hits is exiting returns positions of entering and exiting hits
-        // Returns also energy loss
-        if(GetDebug(4)){
-            cout << i << " ";
-            cout << mod->GetHit(i)->GetXL() << " "<<mod->GetHit(i)->GetYL();
-            cout << " " << mod->GetHit(i)->GetZL();
-            cout << endl;
-        } // end if
-        if (mod->LineSegmentL(i, x0, x1, y0, y1, z0, z1, de, idtrack)) {
-            HitToDigit(module, x0, y0, z0, x1, y1, z1, de,tav);
-            if (lasttrack != idtrack || i==(nhits-1)) {
-                GetList(idtrack,i,module,pList,tav);
-            } // end if
-            lasttrack=idtrack;
-        } // end if
+      // LineSegmentL returns 0 if the hit is entering
+      // If hits is exiting returns positions of entering and exiting hits
+      // Returns also energy loss
+      if(GetDebug(4)){
+	cout << i << " ";
+	cout << mod->GetHit(i)->GetXL() << " "<<mod->GetHit(i)->GetYL();
+	cout << " " << mod->GetHit(i)->GetZL();
+	cout << endl;
+      } // end if
+      if (mod->LineSegmentL(i, x0, x1, y0, y1, z0, z1, de, idtrack)) {
+	HitToDigit(module, x0, y0, z0, x1, y1, z1, de,tav);
+	if (lasttrack != idtrack || i==(nhits-1)) {
+	  GetList(idtrack,i,module,pList,tav);
+	} // end if
+	lasttrack=idtrack;
+      } // end if
     }  // end loop over hits
     delete tav; tav=0;
     return;
@@ -248,143 +244,189 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
                                      Double_t z0, Double_t x1, Double_t y1, 
                                      Double_t z1, Double_t de,
                                      AliITSTableSSD *tav) {
-
+  
   // hit to digit conversion
-
+  
   AliITSsegmentationSSD* seg = (AliITSsegmentationSSD*)GetSegmentationModel(2);
-    // Turns hits in SSD module into one or more digits.
-    Float_t tang[2] = {0.0,0.0};
-    seg->Angles(tang[0], tang[1]);//stereo<<->tan(stereo)~=stereo
-    Double_t x, y, z;
-    Double_t dex=0.0, dey=0.0, dez=0.0; 
-    Double_t pairs; // pair generation energy per step.
-    Double_t sigma[2] = {0.,0.};// standard deviation of the diffusion gaussian
-    Double_t tdrift[2] = {0.,0.}; // time of drift
-    Double_t w;
-    Double_t inf[2], sup[2], par0[2];                 
-
-    // Steps in the module are determined "manually" (i.e. No Geant)
-    // NumOfSteps divide path between entering and exiting hits in steps 
-    Int_t numOfSteps = NumOfSteps(x1, y1, z1, dex, dey, dez);
-    // Enery loss is equally distributed among steps
-    de    = de/numOfSteps;
-    pairs = de/GetIonizeE(); // e-h pairs generated
-    for(Int_t j=0; j<numOfSteps; j++) {     // stepping
-        x = x0 + (j+0.5)*dex;
-        y = y0 + (j+0.5)*dey;
-        if ( y > (seg->Dy()/2+10)*1.0E-4 ) {
-            // check if particle is within the detector
-            Warning("HitToDigit",
-                    "hit out of detector y0=%e,y=%e,dey=%e,j =%e module=%d",
-                    y0,y,dey,j,module);
-            return;
-        } // end if
-        z = z0 + (j+0.5)*dez;
-        if(GetDebug(4)) cout <<"HitToDigit "<<x<<" "<<y<<" "<<z<< " "
-                            <<dex<<" "<<dey<<" "<<dez<<endl;
-        // calculate drift time
-        // y is the minimum path
-        tdrift[0] = (y+(seg->Dy()*1.0E-4)/2)/GetDriftVelocity(0);
-        tdrift[1] = ((seg->Dy()*1.0E-4)/2-y)/GetDriftVelocity(1);
-
-        for(Int_t k=0; k<2; k++) {   // both sides    remember: 0=Pside 1=Nside
-
-            tang[k]=TMath::Tan(tang[k]);
-
-            // w is the coord. perpendicular to the strips
-            /*
-              if(k==0) {
-              w = (x+(GetSegmentation()->Dx()*1.0E-4)/2) -
-		    (z+(GetSegmentation()->Dz()*1.0E-4)/2)*tang[k]; 
-              }else{
-              w = (x+(GetSegmentation()->Dx()*1.0E-4)/2) + 
-		    (z-(GetSegmentation()->Dz()*1.0E-4)/2)*tang[k];
-              } // end if
-              w /= (GetStripPitch()*1.0E-4); //w is converted in units of pitch
-            */
-            { // replacement block for the above.
-                Float_t xp=x*1.e+4,zp=z*1.e+4; // microns
-                seg->GetPadTxz(xp,zp);
-                if(k==0) w = xp; // P side strip number
-                else w = zp; // N side strip number
-            } // end test block
-
-            if((w<(-0.5)) || (w>(GetNStrips()-0.5))) {
-                // this check rejects hits in regions not covered by strips
-                // 0.5 takes into account boundaries 
-                if(GetDebug(4)) cout << "x,z="<<x<<","<<z<<" w="<<w
-                                    <<" Nstrips="<<GetNStrips()<<endl;
-                return; // There are dead region on the SSD sensitive volume.
-            } // end if
-
-            // sigma is the standard deviation of the diffusion gaussian
-            if(tdrift[k]<0) return;
-            sigma[k] = TMath::Sqrt(2*GetDiffConst(k)*tdrift[k]);
-            sigma[k] /= (GetStripPitch()*1.0E-4);  //units of Pitch
-            if(sigma[k]==0.0) { 	
-                Error("HitToDigit"," sigma[%d]=0",k);
-                exit(0);
-            } // end if
-
-            par0[k] = pairs;
-            // we integrate the diffusion gaussian from -3sigma to 3sigma 
-            inf[k] = w - 3*sigma[k]; // 3 sigma from the gaussian average  
-            sup[k] = w + 3*sigma[k]; // 3 sigma from the gaussian average
-            // IntegrateGaussian does the actual
-            // integration of diffusion gaussian
-            IntegrateGaussian(k, par0[k], w, sigma[k], inf[k], sup[k],tav);
-        }  // end for loop over side (0=Pside, 1=Nside)      
-    } // end stepping
+  // Turns hits in SSD module into one or more digits.
+  Float_t tang[2] = {0.0,0.0};
+  seg->Angles(tang[0], tang[1]);//stereo<<->tan(stereo)~=stereo
+  Double_t x, y, z;
+  Double_t dex=0.0, dey=0.0, dez=0.0; 
+  Double_t pairs; // pair generation energy per step.
+  Double_t sigma[2] = {0.,0.};// standard deviation of the diffusion gaussian
+  Double_t tdrift[2] = {0.,0.}; // time of drift
+  Double_t w;
+  Double_t inf[2], sup[2], par0[2];                 
+  
+  // Steps in the module are determined "manually" (i.e. No Geant)
+  // NumOfSteps divide path between entering and exiting hits in steps 
+  Int_t numOfSteps = NumOfSteps(x1, y1, z1, dex, dey, dez);
+  // Enery loss is equally distributed among steps
+  de    = de/numOfSteps;
+  pairs = de/GetIonizeE(); // e-h pairs generated
+  for(Int_t j=0; j<numOfSteps; j++) {     // stepping
+    x = x0 + (j+0.5)*dex;
+    y = y0 + (j+0.5)*dey;
+    if ( y > (seg->Dy()/2+10)*1.0E-4 ) {
+      // check if particle is within the detector
+      Warning("HitToDigit",
+	      "hit out of detector y0=%e,y=%e,dey=%e,j =%e module=%d",
+	      y0,y,dey,j,module);
+      return;
+    } // end if
+    z = z0 + (j+0.5)*dez;
+    if(GetDebug(4)) cout <<"HitToDigit "<<x<<" "<<y<<" "<<z<< " "
+			 <<dex<<" "<<dey<<" "<<dez<<endl;
+    // calculate drift time
+    // y is the minimum path
+    tdrift[0] = (y+(seg->Dy()*1.0E-4)/2)/GetDriftVelocity(0);
+    tdrift[1] = ((seg->Dy()*1.0E-4)/2-y)/GetDriftVelocity(1);
+    
+    for(Int_t k=0; k<2; k++) {   // both sides    remember: 0=Pside 1=Nside
+      
+      tang[k]=TMath::Tan(tang[k]);
+      
+      // w is the coord. perpendicular to the strips
+      Float_t xp=x*1.e+4,zp=z*1.e+4; // microns
+      seg->GetPadTxz(xp,zp);
+      if(k==0) w = xp; // P side strip number
+      else w = zp; // N side strip number
+      
+      if((w<(-0.5)) || (w>(GetNStrips()-0.5))) {
+	// this check rejects hits in regions not covered by strips
+	// 0.5 takes into account boundaries 
+	if(GetDebug(4)) cout << "x,z="<<x<<","<<z<<" w="<<w
+			     <<" Nstrips="<<GetNStrips()<<endl;
+	return; // There are dead region on the SSD sensitive volume.
+      } // end if
+      
+      // sigma is the standard deviation of the diffusion gaussian
+      if(tdrift[k]<0) return;
+      sigma[k] = TMath::Sqrt(2*GetDiffConst(k)*tdrift[k]);
+      sigma[k] /= (GetStripPitch()*1.0E-4);  //units of Pitch
+      if(sigma[k]==0.0) { 	
+	Error("HitToDigit"," sigma[%d]=0",k);
+	exit(0);
+      } // end if
+      
+      par0[k] = pairs;
+      // we integrate the diffusion gaussian from -3sigma to 3sigma 
+      inf[k] = w - 3*sigma[k]; // 3 sigma from the gaussian average  
+      sup[k] = w + 3*sigma[k]; // 3 sigma from the gaussian average
+      // IntegrateGaussian does the actual
+      // integration of diffusion gaussian
+      IntegrateGaussian(k, par0[k], w, sigma[k], inf[k], sup[k],tav);
+    }  // end for loop over side (0=Pside, 1=Nside)      
+  } // end stepping
 }
+
 //______________________________________________________________________
 void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
-    // Apply Noise.
-    Int_t    k,ix;
-    Double_t signal,noise;
-    Double_t noiseP[2] = {0.,0.};
-    Double_t a,b;
-    AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
-    res->GetNoiseParam(a,b); // retrieves noise parameters
-    noiseP[0] = a; noiseP[1] = b;
-    for(k=0;k<2;k++){                    // both sides (0=Pside, 1=Nside)
-        for(ix=0;ix<GetNStrips();ix++){      // loop over strips
-            noise  = gRandom->Gaus(0,noiseP[k]);// get noise to signal
-            signal = noise + fMapA2->GetSignal(k,ix);//get signal from map
-            if(signal<0.) signal=0.0;           // in case noise is negative...
-            fMapA2->SetHit(k,ix,signal); // give back signal to map
-            if(signal>0.0) pList->AddNoise(k,ix,module,noise);
-        } // loop over strip 
-    } // loop over k (P or N side)
+  // Apply Noise.
+  Int_t ix;
+  Double_t signal,noise;
+  AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
+  
+  // Pside
+  for(ix=0;ix<GetNStrips();ix++){      // loop over strips
+    
+    // noise is gaussian
+    noise  = gRandom->Gaus(0,res->GetNoiseP().At(ix));
+    
+    // need to calibrate noise 
+    // NOTE. noise from the calibration database comes uncalibrated, 
+    // it needs to be calibrated in order to be added
+    // to the signal. It will be decalibrated later on together with the noise    
+    noise *= res->GetGainP(ix); 
+    
+    // noise comes in ADC channels from the calibration database
+    // It needs to be converted back to electronVolts
+    noise /= res->GetDEvToADC(1.);
+    
+    // Finally, noise is added to the signal
+    signal = noise + fMapA2->GetSignal(0,ix);//get signal from map
+    fMapA2->SetHit(0,ix,signal); // give back signal to map
+    if(signal>0.0) pList->AddNoise(0,ix,module,noise);
+  } // loop over strip 
+  
+    // Nside
+  for(ix=0;ix<GetNStrips();ix++){      // loop over strips
+    noise  = gRandom->Gaus(0,res->GetNoiseN().At(ix));// give noise to signal
+    noise *= res->GetGainN(ix); 
+    noise /= res->GetDEvToADC(1.);
+    signal = noise + fMapA2->GetSignal(1,ix);//get signal from map
+    fMapA2->SetHit(1,ix,signal); // give back signal to map
+    if(signal>0.0) pList->AddNoise(1,ix,module,noise);
+  } // loop over strip 
+  
 }
 //______________________________________________________________________
 void AliITSsimulationSSD::ApplyCoupling(AliITSpList *pList,Int_t module) {
-    // Apply the effect of electronic coupling between channels
-    Int_t ix;
-    Double_t signalLeft=0, signalRight=0,signal=0;
+  // Apply the effect of electronic coupling between channels
+  Int_t ix;
+  Double_t signal=0;
+  AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
+  
+  Double_t *contrLeft  = new Double_t[GetNStrips()];
+  Double_t *contrRight = new Double_t[GetNStrips()];
+  
+  // P side coupling
+  for(ix=0;ix<GetNStrips();ix++){
+    if(ix>0) contrLeft[ix] = fMapA2->GetSignal(0,ix-1)*res->GetCouplingPL();
+    else contrLeft[ix] = 0.0;
+    if(ix<(GetNStrips()-1)) contrRight[ix] = fMapA2->GetSignal(0,ix+1)*res->GetCouplingPR();
+    else contrRight[ix] = 0.0;
+  } // loop over strips 
+  
+  for(ix=0;ix<GetNStrips();ix++){
+    signal = contrLeft[ix] + contrRight[ix] - res->GetCouplingPL() * fMapA2->GetSignal(0,ix)
+      - res->GetCouplingPR() * fMapA2->GetSignal(0,ix);
+    fMapA2->AddSignal(0,ix,signal);
+    if(signal>0.0) pList->AddNoise(0,ix,module,signal);
+  } // loop over strips 
+  
+  // N side coupling
+  for(ix=0;ix<GetNStrips();ix++){
+    if(ix>0) contrLeft[ix] = fMapA2->GetSignal(1,ix-1)*res->GetCouplingNL();
+    else contrLeft[ix] = 0.0;
+    if(ix<(GetNStrips()-1)) contrRight[ix] = fMapA2->GetSignal(1,ix+1)*res->GetCouplingNR();
+    else contrRight[ix] = 0.0;
+  } // loop over strips 
+  
+  for(ix=0;ix<GetNStrips();ix++){
+    signal = contrLeft[ix] + contrRight[ix] - res->GetCouplingNL() * fMapA2->GetSignal(0,ix)
+      - res->GetCouplingNR() * fMapA2->GetSignal(0,ix);
+    fMapA2->AddSignal(1,ix,signal);
+    if(signal>0.0) pList->AddNoise(1,ix,module,signal);
+  } // loop over strips 
+  
 
-    for(ix=0;ix<GetNStrips();ix++){
-        // P side coupling
-        if(ix>0.)signalLeft = fMapA2->GetSignal(0,ix-1)*fDCS->GetCouplingPL();
-        else signalLeft = 0.0;
-        if(ix<(GetNStrips()-1)) signalRight = fMapA2->GetSignal(0,ix+1)*
-                                    fDCS->GetCouplingPR();
-        else signalRight = 0.0;
-        signal = signalLeft + signalRight;
-        fMapA2->AddSignal(0,ix,signal);
-        if(signal>0.0) pList->AddNoise(0,ix,module,signal);
-
-        signalLeft = signalRight = signal = 0.0;
-        // N side coupling
-        if(ix>0.) signalLeft = fMapA2->GetSignal(1,ix-1)*fDCS->GetCouplingNL();
-        else signalLeft = 0.0;
-        if(ix<(GetNStrips()-1)) signalRight = fMapA2->GetSignal(1,ix+1)*
-                                    fDCS->GetCouplingNR();
-        else signalRight = 0.0;
-        signal = signalLeft + signalRight;
-        fMapA2->AddSignal(1,ix,signal);
-        if(signal>0.0) pList->AddNoise(1,ix,module,signal);
-    } // loop over strips 
+  delete [] contrLeft;
+  delete [] contrRight; 
 }
+
+//______________________________________________________________________
+void AliITSsimulationSSD::ApplyDeadChannels(Int_t module) {
+  // Kill dead channels setting gain to zero
+
+  Int_t deadentries;
+
+  AliITSCalibrationSSD* res = (AliITSCalibrationSSD*)GetCalibrationModel(module);
+
+  deadentries = res->GetDeadPChannelsList().GetSize();
+  //cout<<module<<" "<<deadentries<<endl;
+  for(Int_t i=0; i<deadentries; i++) {
+    res->AddGainP(res->GetDeadPChannelsList().At(i),0.0);
+  }
+
+  deadentries = res->GetDeadNChannelsList().GetSize();
+  for(Int_t i=0; i<deadentries; i++) {
+    res->AddGainN(res->GetDeadNChannelsList().At(i),0.0);
+  }
+
+}
+
 //______________________________________________________________________
 Float_t AliITSsimulationSSD::F(Float_t av, Float_t x, Float_t s) {
     // Computes the integral of a gaussian using Error Function
@@ -485,6 +527,7 @@ Int_t AliITSsimulationSSD::NumOfSteps(Double_t x, Double_t y, Double_t z,
     Int_t numOfSteps = (Int_t) (TMath::Sqrt(x*x+y*y+z*z)/step); 
 
     if (numOfSteps < 1) numOfSteps = 1;       // one step, at least
+    //numOfSteps=1;
 
     // we could condition the stepping depending on the incident angle
     // of the track
@@ -532,37 +575,46 @@ void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
     Int_t j1;
     Float_t charges[3] = {0.0,0.0,0.0};
     Float_t signal;
-    Double_t noise[2] = {0.,0.};
     AliITSCalibrationSSD* res =(AliITSCalibrationSSD*)GetCalibrationModel(module);
-    res->GetNoiseParam(noise[0],noise[1]);
 
     for(Int_t k=0;k<2;k++){         // both sides (0=Pside, 1=Nside)
-        // Threshold for zero-suppression
-        // It can be defined in AliITSCalibrationSSD
-        //             threshold = (Float_t)GetResp()->MinVal(k);
-        // I prefer to think adjusting the threshold "manually", looking
-        // at the scope, and considering noise standard deviation
-        threshold = 4.0*noise[k]; // 4 times noise is a choice
-        for(Int_t ix=0;ix<GetNStrips();ix++){     // loop over strips
-            if(fMapA2->GetSignal(k,ix) <= threshold)continue;
-            // convert to ADC signal
-            signal = res->GetDEvToADC(
-                fMapA2->GetSignal(k,ix));
-            if(signal>1024.) signal = 1024.;//if exceeding, accumulate last one
-            digits[0] = k;
-            digits[1] = ix;
-            digits[2] = (Int_t) signal;
-            for(j1=0;j1<size;j1++)if(j1<pList->GetNEntries()){
-                // only three in digit.
-                tracks[j1]  = pList->GetTrack(k,ix,j1);
-                hits[j1]    = pList->GetHit(k,ix,j1);
-            }else{
-                tracks[j1]  = -3;
-                hits[j1]    = -1;
-            } // end for j1
-            // finally add digit
-            aliITS->AddSimDigit(2,0,digits,tracks,hits,charges);
-        } // end for ix
+      for(Int_t ix=0;ix<GetNStrips();ix++){     // loop over strips
+
+	// if strip is dead -> gain=0
+	if( ((k==0)&&(res->GetGainP(ix)==0)) || ((k==1)&&(res->GetGainN(ix)==0))) continue;
+	
+	// signal has to be uncalibrated
+	// In real life, gains are supposed to be calculated from calibration runs,
+	// stored in the calibration DB and used in the reconstruction
+	// (see AliITSClusterFinderSSD.cxx)
+	if(k==0) signal /= res->GetGainP(ix);
+	else signal /= res->GetGainN(ix);
+
+	// signal is converted in unit of ADC
+	signal = res->GetDEvToADC(fMapA2->GetSignal(k,ix));
+	if(signal>4096.) signal = 4096.;//if exceeding, accumulate last one
+
+	// threshold for zero suppression is set on the basis of the noise
+	// A good value is 3*sigma_noise
+	if(k==0) threshold = res->GetNoiseP().At(ix);
+	else threshold = res->GetNoiseN().At(ix);
+	threshold *= res->GetZSThreshold(); // threshold at 3 sigma noise
+	if(signal < threshold) continue;
+
+	digits[0] = k;
+	digits[1] = ix;
+	digits[2] = TMath::Nint(signal);
+	for(j1=0;j1<size;j1++)if(j1<pList->GetNEntries()){
+	  // only three in digit.
+	  tracks[j1]  = pList->GetTrack(k,ix,j1);
+	  hits[j1]    = pList->GetHit(k,ix,j1);
+	}else{
+	  tracks[j1]  = -3;
+	  hits[j1]    = -1;
+	} // end for j1
+	// finally add digit
+	aliITS->AddSimDigit(2,0,digits,tracks,hits,charges);
+      } // end for ix
     } // end for k
     delete [] digits;
     delete [] tracks;
