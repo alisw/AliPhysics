@@ -33,13 +33,17 @@ AliZDCTrigger::AliZDCTrigger() : AliTriggerDetector()
    CreateInputs();
    //
    SetZNMinCut(0);
-   SetZDCMinCut(0);
+   SetZDCLeftMinCut(0);
+   SetZDCRightMinCut(0);
    SetZEMMinCut(0);
    SetZDCLeftEMDCuts(0,0);
    SetZDCRightEMDCuts(0,0);
-   SetZDCMBCut(0);
-   SetZDCCentrCut(0);
-   SetZDCSemiCentrCut(0);
+   SetZDCLeftMBCut(0);
+   SetZDCRightMBCut(0);
+   SetZDCLeftCentrCut(0);
+   SetZDCRightCentrCut(0);
+   SetZDCLeftSemiCentrCut(0);
+   SetZDCRightSemiCentrCut(0);
    SetZEMCentrCut(0);
 
 }
@@ -73,40 +77,59 @@ void AliZDCTrigger::Trigger()
    if (!TD) cerr<<"AliZDCTrigger: digits tree not found\n";
    TD->SetBranchAddress("ZDC", &pdigit);
    //
-   Float_t ZNSignal[2], ZPSignal[2], ZDCSumSignal[2], ZEMSumSignal[2];
+   Float_t ZNLeftSignal[2], ZPLeftSignal[2], ZDCLeftSumSignal[2];
+   Float_t ZNRightSignal[2], ZPRightSignal[2], ZDCRightSumSignal[2];
+   Float_t ZEMSumSignal[2];
    for(Int_t iDigit=0; iDigit<TD->GetEntries(); iDigit++){
       TD->GetEntry(iDigit);
       //
+      // *** ZDC LEFT
       if(digit.GetSector(0)==1)
-         for(Int_t i=0; i<2; i++){
-	    ZNSignal[i] += digit.GetADCValue(i);
-	    ZDCSumSignal[i] += digit.GetADCValue(i);
+         for(Int_t i=0; i<2; i++){ //0=high range; 1=low range
+	    ZNLeftSignal[i] += digit.GetADCValue(i);
+	    ZDCLeftSumSignal[i] += digit.GetADCValue(i);
 	  }
       else if(digit.GetSector(0)==2)
          for(Int_t i=0; i<2; i++){
-	    ZPSignal[i] += digit.GetADCValue(i);
-	    ZDCSumSignal[i] += digit.GetADCValue(i);
+	    ZPLeftSignal[i] += digit.GetADCValue(i);
+	    ZDCLeftSumSignal[i] += digit.GetADCValue(i);
 	  }
       else if(digit.GetSector(0)==3)
          for(Int_t i=0; i<2; i++) ZEMSumSignal[i] += digit.GetADCValue(i);
+      // *** ZDC RIGHT
+      else if(digit.GetSector(0)==4)
+         for(Int_t i=0; i<2; i++){ //0=high range; 1=low range
+	    ZNRightSignal[i] += digit.GetADCValue(i);
+	    ZDCRightSumSignal[i] += digit.GetADCValue(i);
+	  }
+      else if(digit.GetSector(0)==5)
+         for(Int_t i=0; i<2; i++){
+	    ZPRightSignal[i] += digit.GetADCValue(i);
+	    ZDCRightSumSignal[i] += digit.GetADCValue(i);
+	  }
    }
    // *******************************************************************
-   if(ZNSignal[1]>fZDCLeftEMDCuts[0] && ZNSignal[1]<fZDCLeftEMDCuts[1] && 
-   	ZEMSumSignal[1]<fZEMMinCut){ // *** n EMD event
-       SetInput("ZDC_EMD_L1");
+   if(ZNLeftSignal[0]>fZDCLeftEMDCuts[0] && ZNLeftSignal[0]<fZDCLeftEMDCuts[1] && 
+      ZNRightSignal[0]>fZDCRightEMDCuts[0] && ZNRightSignal[0]<fZDCRightEMDCuts[1] &&
+      ZEMSumSignal[1]<fZEMMinCut){ // *** 1n EMD trigger
+        SetInput("ZDC_EMD_L1");
    }
    // *******************************************************************
-   if(ZDCSumSignal[0]>fZDCMBCut) // *** ZDC minimum bias
-     SetInput("ZDC_1_L1");
+   if(ZDCLeftSumSignal[1]>fZDCLeftMBCut && ZDCRightSumSignal[1]>fZDCRightMBCut) 
+       // *** ZDC minimum bias trigger
+       SetInput("ZDC_1_L1");
    // *******************************************************************
-   if(ZDCSumSignal[0]>fZDCMinCut && ZDCSumSignal[0]<fZDCMBCut) 
-     // *** ZDC central (0-10%)
-     SetInput("ZDC_2_L1");
+   if(ZDCLeftSumSignal[1]>fZDCLeftMinCut && ZDCLeftSumSignal[1]<fZDCLeftCentrCut &&
+      ZDCRightSumSignal[1]>fZDCRightMinCut && ZDCRightSumSignal[1]<fZDCRightCentrCut &&
+      ZEMSumSignal[1]>fZEMCentrCut) 
+       // *** ZDC central (0-10%)
+       SetInput("ZDC_2_L1");
    // *******************************************************************
-   if(ZDCSumSignal[0]>fZDCCentrCut && ZDCSumSignal[0]<fZDCSemiCentrCut
-   	   && ZEMSumSignal[0]>fZEMCentrCut) 
-     // *** ZDC semi-central (10-40%)
-     SetInput("ZDC_3_L1");
+   if(ZDCLeftSumSignal[1]>fZDCLeftCentrCut && ZDCLeftSumSignal[1]<fZDCLeftSemiCentrCut &&
+      ZDCRightSumSignal[1]>fZDCRightCentrCut && ZDCRightSumSignal[1]<fZDCRightSemiCentrCut
+      && ZEMSumSignal[1]>fZEMCentrCut) 
+       // *** ZDC semi-central (10-40%)
+       SetInput("ZDC_3_L1");
    
 }
 
@@ -118,10 +141,16 @@ void AliZDCTrigger::SetZNMinCut(Float_t ZNMinCut)
 }
 
 //________________________________________________________________
-void AliZDCTrigger::SetZDCMinCut(Float_t ZDCMinCut) 
+void AliZDCTrigger::SetZDCLeftMinCut(Float_t ZDCLeftMinCut) 
 {
-  if(ZDCMinCut)  fZDCMinCut = ZDCMinCut;
-  else  fZDCMinCut = 800.;
+  if(ZDCLeftMinCut)  fZDCLeftMinCut = ZDCLeftMinCut;
+  else  fZDCLeftMinCut = 800.;
+}
+//________________________________________________________________
+void AliZDCTrigger::SetZDCRightMinCut(Float_t ZDCRightMinCut) 
+{
+  if(ZDCRightMinCut)  fZDCRightMinCut = ZDCRightMinCut;
+  else  fZDCRightMinCut = 800.;
 }
 
 //________________________________________________________________
@@ -175,22 +204,40 @@ void AliZDCTrigger::SetZDCRightEMDCuts(Float_t ZDCRightEMDCutInf,
   }
 }
 //________________________________________________________________
-void AliZDCTrigger::SetZDCMBCut(Float_t ZDCMBCut) 
+void AliZDCTrigger::SetZDCLeftMBCut(Float_t ZDCLeftMBCut) 
 {
-  if(ZDCMBCut) fZDCMBCut = ZDCMBCut;
-  else fZDCMBCut = 800.;
+  if(ZDCLeftMBCut) fZDCLeftMBCut = ZDCLeftMBCut;
+  else fZDCLeftMBCut = 800.;
 }
 //________________________________________________________________
-void AliZDCTrigger::SetZDCCentrCut(Float_t ZDCCentrCut) 
+void AliZDCTrigger::SetZDCRightMBCut(Float_t ZDCRightMBCut) 
 {
-  if(ZDCCentrCut) fZDCCentrCut = ZDCCentrCut;
-  else fZDCCentrCut = 10000.;
+  if(ZDCRightMBCut) fZDCRightMBCut = ZDCRightMBCut;
+  else fZDCRightMBCut = 800.;
 }
 //________________________________________________________________
-void AliZDCTrigger::SetZDCSemiCentrCut(Float_t ZDCSemiCentrCut) 
+void AliZDCTrigger::SetZDCLeftCentrCut(Float_t ZDCLeftCentrCut) 
 {
-  if(ZDCSemiCentrCut) fZDCSemiCentrCut = ZDCSemiCentrCut;
-  else fZDCSemiCentrCut = 18500.;
+  if(ZDCLeftCentrCut) fZDCLeftCentrCut = ZDCLeftCentrCut;
+  else fZDCLeftCentrCut = 10000.;
+}
+//________________________________________________________________
+void AliZDCTrigger::SetZDCRightCentrCut(Float_t ZDCRightCentrCut) 
+{
+  if(ZDCRightCentrCut) fZDCRightCentrCut = ZDCRightCentrCut;
+  else fZDCRightCentrCut = 10000.;
+}
+//________________________________________________________________
+void AliZDCTrigger::SetZDCLeftSemiCentrCut(Float_t ZDCLeftSemiCentrCut) 
+{
+  if(ZDCLeftSemiCentrCut) fZDCLeftSemiCentrCut = ZDCLeftSemiCentrCut;
+  else fZDCLeftSemiCentrCut = 18500.;
+}
+//________________________________________________________________
+void AliZDCTrigger::SetZDCRightSemiCentrCut(Float_t ZDCRightSemiCentrCut) 
+{
+  if(ZDCRightSemiCentrCut) fZDCRightSemiCentrCut = ZDCRightSemiCentrCut;
+  else fZDCRightSemiCentrCut = 18500.;
 }
 //________________________________________________________________
 void AliZDCTrigger::SetZEMCentrCut(Float_t ZEMCentrCut) 

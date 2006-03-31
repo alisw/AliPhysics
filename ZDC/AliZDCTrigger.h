@@ -23,7 +23,7 @@ class AliZDCTrigger : public AliTriggerDetector
    virtual void    Trigger();
 
    // Print method
-   virtual void Print(Option_t *) const {
+/*   virtual void Print(Option_t *) const {
      printf("\t AliZDCTrigger: fZNMinCut = %1.0f, fZDCMinCut = %1.0f, fZEMMinCut= %1.0f \n"
      "fZDCLeftEMDCuts = [%1.0f, %1.0f], fZDCRightEMDCuts = [%1.0f, %1.0f], fZDCMBCut = %1.0f\n"
      "fZDCCentrCut = %1.0f, fZDCSemiCentrCut = %1.0f, fZEMCentrCut = %1.0f\n\n",
@@ -31,31 +31,40 @@ class AliZDCTrigger : public AliTriggerDetector
      fZDCRightEMDCuts[0],fZDCRightEMDCuts[1],fZDCMBCut,fZDCCentrCut,fZDCSemiCentrCut,
      fZEMCentrCut);
    }
+*/
  
  protected:
    
    // Setters   
    void SetZNMinCut(Float_t ZNMinCut);
-   void SetZDCMinCut(Float_t ZDCMinCut);
+   void SetZDCLeftMinCut(Float_t ZDCLeftMinCut);
+   void SetZDCRightMinCut(Float_t ZDCRightMinCut);
    void SetZEMMinCut(Float_t ZEMMinCut);
    void SetZDCLeftEMDCuts(Float_t *ZDCLeftEMDCuts);
    void SetZDCLeftEMDCuts(Float_t ZDCLeftEMDCutInf, Float_t ZDCLeftEMDCutSup);
    void SetZDCRightEMDCuts(Float_t *ZDCRightEMDCuts);
    void SetZDCRightEMDCuts(Float_t ZDCRightEMDCutInf, Float_t  ZDCRightEMDCutSup);
-   void SetZDCMBCut(Float_t ZDCMBCut);
-   void SetZDCCentrCut(Float_t ZDCCentrCuts);
-   void SetZDCSemiCentrCut(Float_t ZDCSemiCentrCut);
+   void SetZDCLeftMBCut(Float_t ZDCLeftMBCut);
+   void SetZDCRightMBCut(Float_t ZDCRightMBCut);
+   void SetZDCLeftCentrCut(Float_t ZDCLeftCentrCuts);
+   void SetZDCRightCentrCut(Float_t ZDCRightCentrCuts);
+   void SetZDCLeftSemiCentrCut(Float_t ZDCLeftSemiCentrCut);
+   void SetZDCRightSemiCentrCut(Float_t ZDCRightSemiCentrCut);
    void SetZEMCentrCut(Float_t ZEMCentrCut);
 
    // Data member
    Float_t fZNMinCut;   
-   Float_t fZDCMinCut;   
+   Float_t fZDCLeftMinCut;   
+   Float_t fZDCRightMinCut;   
    Float_t fZEMMinCut;   
    Float_t fZDCLeftEMDCuts[2];
    Float_t fZDCRightEMDCuts[2];
-   Float_t fZDCMBCut;
-   Float_t fZDCCentrCut;
-   Float_t fZDCSemiCentrCut;
+   Float_t fZDCLeftMBCut;
+   Float_t fZDCRightMBCut;
+   Float_t fZDCLeftCentrCut;
+   Float_t fZDCRightCentrCut;
+   Float_t fZDCLeftSemiCentrCut;
+   Float_t fZDCRightSemiCentrCut;
    Float_t fZEMCentrCut;   
     
   ClassDef(AliZDCTrigger,1)  // ZDC Trigger Detector class
