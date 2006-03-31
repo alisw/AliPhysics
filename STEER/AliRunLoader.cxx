@@ -272,7 +272,7 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
 
    if( GetTrigger() && TreeCT() ) {
       retval = TreeCT()->GetEvent(fCurrentEvent);
-      if ( retval )      {
+      if ( retval < 0 )      {
          AliError(Form("Error occured while GetEvent for Trigger. Event %d",evno));
          return 2;
       }
