@@ -668,6 +668,21 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   // Export (mis)aligned geometry 
   if (gGeoManager) gGeoManager->Export("misaligned_geometry.root");
 
+  // Temporary fix by A.Gheata
+  // Could be removed with the next Root version (>5.11)
+  if (gGeoManager) {
+    TIter next(gGeoManager->GetListOfVolumes());
+    TGeoVolume *vol;
+    while ((vol = (TGeoVolume *)next())) {
+      if (vol->GetVoxels()) {
+	if (vol->GetVoxels()->NeedRebuild()) {
+	  vol->GetVoxels()->Voxelize();
+	  vol->FindOverlaps();
+	}
+      }
+    }
+  }
+
 //   AliRunLoader* runLoader = gAlice->GetRunLoader();
 //   if (!runLoader) {
 //     AliError(Form("gAlice has no run loader object. "
