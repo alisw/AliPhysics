@@ -28,6 +28,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"
 #include "AliTracker.h"
+#include "AliStrLine.h"
 
 
 ClassImp(AliExternalTrackParam)
@@ -677,6 +678,24 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
 }
 
 
+//_____________________________________________________________________________
+void AliExternalTrackParam::ApproximateHelixWithLine(Double_t xk, Double_t b, AliStrLine *line)
+{
+  //------------------------------------------------------------
+  // Approximate the track (helix) with a straight line tangent to the
+  // helix in the point defined by r (F. Prino, prino@to.infn.it)
+  //------------------------------------------------------------
+  Double_t mom[3];
+  Double_t azim = TMath::ASin(fP[2])+fAlpha;
+  Double_t theta = TMath::Pi()/2. - TMath::ATan(fP[3]);
+  mom[0] = TMath::Sin(theta)*TMath::Cos(azim);
+  mom[1] = TMath::Sin(theta)*TMath::Sin(azim);
+  mom[2] = TMath::Cos(theta);
+  Double_t pos[3];
+  GetXYZAt(xk,b,pos);
+  line->SetP0(pos);
+  line->SetCd(mom);
+}
 //_____________________________________________________________________________
 void AliExternalTrackParam::Print(Option_t* /*option*/) const
 {

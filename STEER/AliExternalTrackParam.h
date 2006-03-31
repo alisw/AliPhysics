@@ -26,6 +26,7 @@ const Double_t kAlmost0=1e-33;
 const Double_t kVeryBig=1./kAlmost0;
 
 class AliKalmanTrack;
+class AliStrLine;
 
 class AliExternalTrackParam: public TObject {
  public:
@@ -68,6 +69,7 @@ class AliExternalTrackParam: public TObject {
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
   Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t r[3]) const;
+  void ApproximateHelixWithLine(Double_t xk, Double_t b, AliStrLine *line);
   void Print(Option_t* option = "") const;
   // MI
   virtual Bool_t   CorrectForMaterial(Double_t d, Double_t x0, Double_t rho, Double_t mass);
