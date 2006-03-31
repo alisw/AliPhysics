@@ -18,6 +18,7 @@
 #include <TTree.h>
 */
 #include "AliDetector.h"
+#include "AliVZEROTrigger.h"
 
 class TNamed;
 class TTree;
@@ -48,6 +49,10 @@ public:
   virtual void   MakeBranch(Option_t *option) =0;
   virtual void   DrawModule() const {};
   virtual void   StepManager() {};
+// Trigger 
+  virtual AliTriggerDetector* CreateTriggerDetector() const 
+  { return new AliVZEROTrigger(); }
+  
   virtual void   SetThickness(Float_t thick)  {fThickness = thick;};
   virtual void   SetThickness1(Float_t thick) {fThickness1 = thick;};
 // Set Stepping Parameters
