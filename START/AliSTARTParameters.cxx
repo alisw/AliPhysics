@@ -67,6 +67,7 @@ AliSTARTParameters::AliSTARTParameters()
       SetVariableDelayLine(ipmt);
       SetSlewingLED(ipmt);
       SetPh2Mip();      
+      SetmV2Mip();      
       SetChannelWidth();
       SetmV2channel();
       SetGain();
@@ -87,7 +88,6 @@ AliSTARTParameters::Init()
   //  if (fIsInit) return;
   
   AliCDBManager* cdb      = AliCDBManager::Instance();
-  cout<<" AliSTARTParameters::Init() CDB "<<cdb<<endl;
   AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT");
   fCalibentry  = stor->Get("START/Calib/Gain_TimeDelay_Slewing_Walk",1);
   if (fCalibentry){
@@ -99,7 +99,6 @@ AliSTARTParameters::Init()
    fgAlignData  = (AliSTARTAlignData*) fAlignentry->GetObject();
    cout<<" got align data "<<endl;
   }
-  cout<<" in INT :: calib "<<fCalibentry<<" align "<<fAlignentry<<endl;
 
   fIsInit = kTRUE;
 }

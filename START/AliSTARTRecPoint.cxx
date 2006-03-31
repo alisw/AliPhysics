@@ -34,7 +34,7 @@
 ClassImp(AliSTARTRecPoint)
 
 //------------------------------------
- AliSTARTRecPoint::AliSTARTRecPoint() : TObject()
+  AliSTARTRecPoint::AliSTARTRecPoint() : TObject()
 {
   //ctor
   fTimeAverage=99999;
@@ -43,5 +43,5 @@ ClassImp(AliSTARTRecPoint)
   fVertexPosition=99999;
   fMultA=0;
   fMultC=0;
-  fMult=0;
+  for (Int_t i=0; i<24; i++) { fTime[i]=0; fADC[i]=0; fADCLED[i]=0;}
 }

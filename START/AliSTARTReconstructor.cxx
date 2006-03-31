@@ -39,6 +39,7 @@
 #include "AliCDBEntry.h"
 
 #include <TArrayI.h>
+#include <TGraph.h>
 
 ClassImp(AliSTARTReconstructor)
 AliSTARTAlignData* AliSTARTReconstructor::fgAlignData = 0;
@@ -49,7 +50,9 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
   //START raw data-> digits conversion
  // reconstruct time information from raw data
   AliSTARTRawReader myrawreader(rawReader,digitsTree);
-  myrawreader.NextThing();
+  // myrawreader.NextThing();
+   myrawreader.Next();
+   cout<<" AliSTARTReconstructor::ConvertDigits "<< myrawreader.Next()<<endl;
 }
   void AliSTARTReconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 {
@@ -66,22 +69,22 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
   TArrayI * fTimeCFD = new TArrayI(24); 
   TArrayI * fADCLED = new TArrayI(24); 
   TArrayI * fTimeLED = new TArrayI(24); 
-  cout<<" fTimeCFD "<<fTimeCFD<<endl;
 
   AliSTARTParameters* param = AliSTARTParameters::Instance();
   param->Init();
-  Int_t ph2MIP = param->GetPh2Mip();     
+
+  Int_t mV2Mip = param->GetmV2Mip();     
   Int_t channelWidth = param->GetChannelWidth() ;  
   
-    for (Int_t i=0; i<24; i++){
-      timeDelayCFD[i] = param->GetTimeDelayCFD(i);
-      timeDelayLED[i] = param->GetTimeDelayLED(i);
-      gain[i] = param->GetGain(i);
-      slewingLED.AddAtAndExpand(param->GetSlew(i),i);
-     }
-    zdetC = param->GetZposition(0);
-    zdetA  = param->GetZposition(1);
-  
+  for (Int_t i=0; i<24; i++){
+    timeDelayCFD[i] = param->GetTimeDelayCFD(i);
+    timeDelayLED[i] = param->GetTimeDelayLED(i);
+    gain[i] = param->GetGain(i);
+    slewingLED.AddAtAndExpand(param->GetSlew(i),i);
+  }
+  zdetC = param->GetZposition(0);
+  zdetA  = param->GetZposition(1);
+    
   AliDebug(1,Form("Start DIGITS reconstruction "));
  
   TBranch *brDigits=digitsTree->GetBranch("START");
@@ -98,57 +101,58 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
   fDigits->GetTimeAmp(*fTimeLED);
   fDigits->GetADCAmp(*fADCLED);
 
+  Float_t besttimeright=999999;
+  Float_t besttimeleft=999999;
+  Int_t pmtBestRight=99999;
+  Int_t pmtBestLeft=99999;
+  Float_t timeDiff=999999, meanTime=0;
+  
+  AliSTARTRecPoint* frecpoints= new AliSTARTRecPoint ();
+  clustersTree->Branch( "START", "AliSTARTRecPoint" ,&frecpoints, 405,1);
+
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++)
     {
       
          if(fTimeCFD->At(ipmt)>0 ){
 	 time[ipmt] = channelWidth *( fTimeCFD->At(ipmt)) - 1000*timeDelayCFD[ipmt];
-	 cout<<ipmt<<" "<<time[ipmt];
 	 Float_t adc_digPs = channelWidth * Float_t (fADC->At(ipmt)) ;
-	 //	 cout<<"  adc_digmV "<< adc_digPs<<endl;
 	 adc[ipmt] = TMath::Exp(adc_digPs/1000) /gain[ipmt];
-	 //	 cout<<" adc"<<adc[ipmt]<<" inMIP "<<adc[ipmt]/50<< endl;
-         }
+	 AliDebug(1,Form(" time %f ps,  adc %f mv in MIP %i\n ",
+			 time[ipmt], adc[ipmt], Int_t (adc[ipmt]/mV2Mip +0.5)));
+	 frecpoints->SetTime(ipmt,time[ipmt]);
+	 frecpoints->SetAmp(ipmt,adc[ipmt]);
+        }
     }
-
-  Int_t besttimeright=channelWidth * (fDigits->BestTimeRight());
-  Int_t besttimeleft=channelWidth * (fDigits->BestTimeLeft());
-  //folding with experimental time distribution
-  //  Float_t c = 29.9792; // cm/ns
-  Float_t c = 0.0299792; // cm/ps
-  Float_t lenr=TMath::Sqrt(zdetA*zdetA + 6.5*6.5);
-  Float_t lenl=TMath::Sqrt(zdetC*zdetC + 6.5*6.5);
-  Float_t timeDiff=channelWidth * (fDigits->TimeDiff());
-  Int_t meanTime=channelWidth * (fDigits->MeanTime());
-  Float_t ds=(c*(timeDiff)-(lenr-lenl))/2;
-  AliDebug(2,Form(" timediff in ns %f  real point%f",timeDiff,ds));
-  
-  /*
-  fDigits->GetSumMult(*fSumMult);
-  Int_t multipl[4]; 
- 
- for (Int_t i=0; i<4; i++)
-    {
-      Float_t  mult=Float_t (fSumMult->At(i));
-      Float_t   realMultmV=TMath::Exp(mult/mV2channel);
-      multipl[i]=Int_t ((realMultmV/ph2mV)/500+0.5);
+    for (Int_t ipmt=0; ipmt<12; ipmt++){
+      if(time[ipmt] > 1 ) {
+	if(time[ipmt]<besttimeleft){
+	  besttimeleft=time[ipmt]; //timeleft
+	  pmtBestLeft=ipmt;
+	}
+      }
     }
-  */
-
-  //  AliDebug(2,Form(" multiplicity Abs side %i  multiplicity non-Abs side %i",multipl[1],multipl[2]));
-
-  AliSTARTRecPoint* frecpoints= new AliSTARTRecPoint ();
-  clustersTree->Branch( "START", "AliSTARTRecPoint" ,&frecpoints, 405,1);
-  frecpoints->SetTimeBestRight(besttimeright);
-  frecpoints->SetTimeBestLeft(besttimeleft);
-  frecpoints->SetVertex(ds);
-  frecpoints->SetMeanTime(meanTime);
-  /*
-  frecpoints->SetMult(multipl[0]);
-  frecpoints->SetMultA(multipl[2]);
-  frecpoints->SetMultC(multipl[1]);
-  */
+     for ( Int_t ipmt=12; ipmt<24; ipmt++){
+      if(time[ipmt] > 1) {
+	if(time[ipmt]<besttimeright) {
+	  besttimeright=time[ipmt]; //timeright
+        pmtBestRight=ipmt;}
+      }
+    }
+    if(besttimeright !=999999)  frecpoints->SetTimeBestRight(Int_t(besttimeright));
+    if( besttimeleft != 999999 ) frecpoints->SetTimeBestLeft(Int_t(besttimeleft));
+    AliDebug(1,Form(" besttimeright %f ps,  besttimeleft %f ps",besttimeright, besttimeleft));
+    Float_t c = 0.0299792; // cm/ps
+    Float_t vertex = 0;
+    if(besttimeright !=999999 && besttimeleft != 999999 ){
+      timeDiff = besttimeright - besttimeleft;
+      meanTime = (besttimeright + besttimeleft)/2.;
+      vertex = c*(timeDiff); //-(lenr-lenl))/2;
+      AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
+      frecpoints->SetVertex(vertex);
+      frecpoints->SetMeanTime(Int_t(meanTime));
+      
+  }
   clustersTree->Fill();
 }
 
@@ -160,8 +164,6 @@ void AliSTARTReconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
   Resonstruct digits to vertex position
   ****************************************************/
   
-  //  Float_t c = 0.3;  //speed of light mm/ps
-  // Float_t Zposition=0;
   
   if (!runLoader) {
     AliError("Reconstruct >> No run loader");
@@ -173,8 +175,8 @@ void AliSTARTReconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
   AliSTARTLoader* pStartLoader = (AliSTARTLoader*) runLoader->GetLoader("STARTLoader");
  
   pStartLoader->LoadRecPoints("READ");
-  
-    TTree *treeR = pStartLoader->TreeR();
+
+  TTree *treeR = pStartLoader->TreeR();
   
    AliSTARTRecPoint* frecpoints= new AliSTARTRecPoint ();
     if (!frecpoints) {
@@ -183,20 +185,21 @@ void AliSTARTReconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
   }
   
   AliDebug(1,Form("Start FillESD START"));
-   TBranch *brRec = treeR->GetBranch("START");
-    if (brRec) {
-      brRec->SetAddress(&frecpoints);
-    }else{
-      cerr<<"EXEC Branch START rec not found"<<endl;
-      exit(111);
-    } 
- 
+  TBranch *brRec = treeR->GetBranch("START");
+  if (brRec) {
+    brRec->SetAddress(&frecpoints);
+  }else{
+    cerr<<"EXEC Branch START rec not found"<<endl;
+    // exit(111);
+    return;
+  } 
+    
     brRec->GetEntry(0);
     Float_t Zposition=frecpoints->GetVertex();
-    
     pESD->SetT0zVertex(Zposition);
+    pESD->Dump();
     pStartLoader->UnloadRecPoints();
-    
+   
 } // vertex in 3 sigma
 
 

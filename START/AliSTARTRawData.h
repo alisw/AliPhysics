@@ -33,7 +33,7 @@ class AliSTARTRawData : public TObject {
   void  GetDigits(AliSTARTdigit *fDigits, UInt_t *buf);
   //This method formats and stores in buf all the digits of a TOF module
 
-  // void  PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit);
+   void  PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit);
   //This method stores the value of the variable Word of StopBit-StartBit+1 bits 
   //in BaseWord, starting from the bit StartBit
 

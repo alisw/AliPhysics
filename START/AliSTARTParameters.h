@@ -30,6 +30,7 @@ public:
   void Init();  
   // Set various `Fixed' parameters 
   void SetPh2Mip(Int_t r=500)          { fPh2Mip = r; }
+  void SetmV2Mip(Int_t r=50)          { fmV2Mip = r; }
   void SetChannelWidth(Int_t s=25)   { fChannelWidth = s;}
   void SetmV2channel(Int_t size=320) { fmV2Channel = size; }
   void SetQTmin(Int_t qt=13) {fQTmin = qt;}
@@ -57,6 +58,7 @@ public:
 
   // Get `Fixed' various parameters
   Int_t GetPh2Mip()          const { return fPh2Mip; }
+  Int_t GetmV2Mip()          const { return fmV2Mip; }
   Int_t GetChannelWidth()     const { return fChannelWidth; }
   Int_t GetmV2channel()     const { return fmV2Channel; }
   Int_t GetQTmin() const {return fQTmin;}
@@ -96,6 +98,7 @@ protected:
   Bool_t fIsInit;               
   Float_t  fSTARTzPosition[2] ;  // z-position of the two STARTs
   Int_t   fPh2Mip;            // # photoelectrons per MIP in radiator
+  Int_t   fmV2Mip;            // # mV per MIP in radiator
   Int_t        fChannelWidth;          // channel width in ns   
   Int_t        fmV2Channel;     // ADC mv  2  channel # (200000ps/(25*25).
   Int_t fQTmin;                 //min  time for QTC

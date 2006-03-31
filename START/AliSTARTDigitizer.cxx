@@ -129,13 +129,12 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   Int_t countE[24];
   Int_t volume, pmt, trCFD, trLED; 
   Float_t sl, qt;
-  Int_t  bestRightTDC, bestLeftTDC;
+  Int_t  bestRightTDC, bestLeftTDC, qtCh;
   Float_t time[24], besttime[24], timeGaus[24] ;
   //  Float_t channelWidth=25.; //ps
     //Q->T-> coefficients !!!! should be asked!!!
   Float_t gain[24],timeDelayCFD[24], timeDelayLED[24];
   Int_t threshold =50; //photoelectrons
-  Int_t qtThreshold=13, qtCh;
   Float_t zdetA, zdetC;
   TObjArray slewingLED;
   AliSTARTParameters* param = AliSTARTParameters::Instance();
@@ -176,7 +175,6 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     fADC -> Reset();
     fADC0 -> Reset();
     ftimeLED ->Reset();
-    cout<<" before reading event "<<endl;
     for (Int_t i0=0; i0<24; i0++)
       {
 	time[i0]=besttime[i0]=timeGaus[i0]=99999; countE[i0]=0;
@@ -226,12 +224,11 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  } //photoelectron accept 
 	} //hits loop
     } //track loop
-    cout<<" hits was read "<<endl;
     
     //spread time right&left by 25ps   && besttime
-     Float_t c = 0.0299792; // cm/ps
-
-   Float_t koef=(zdetA-zdetC)/c; //correction position difference by cable
+    Float_t c = 0.0299792; // cm/ps
+    
+    Float_t koef=(zdetA-zdetC)/c; //correction position difference by cable
     for (Int_t ipmt=0; ipmt<12; ipmt++){
       if(countE[ipmt] > threshold) {
 	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],25)+koef;
@@ -240,7 +237,6 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  pmtBestLeft=ipmt;}
       }
     }
-    cout<<"left "<<besttimeleft<<" "<<pmtBestLeft<<" koef "<<koef<<endl;
     for ( Int_t ipmt=12; ipmt<24; ipmt++){
       if(countE[ipmt] > threshold) {
 	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],25); 
@@ -249,28 +245,21 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  pmtBestRight=ipmt;}
       }	
     }
-    cout<<"right"<<besttimeright<<" "<<pmtBestRight<<endl;
   
    //folding with alignmentz position distribution  
 
-    //    Float_t koef=(zdetA-zdetC)/c;
-    //  Float_t  besttimeleftR= besttimeleft;
-    // besttimeleft=koef+besttimeleft;
-    cout<<"  besttimeleft "<< besttimeleft<<" delay "<< timeDelayCFD[pmtBestLeft]<<" channelWidth "<<channelWidth<<endl;
     bestLeftTDC=Int_t ((besttimeleft+1000*timeDelayCFD[pmtBestLeft])
 		       /channelWidth);
-    cout<<" bestLeftTDC "<<bestLeftTDC<<" delay "<<timeDelayCFD[pmtBestLeft]<<endl;
+ 
     bestRightTDC=Int_t ((besttimeright+1000*timeDelayCFD[pmtBestLeft])
 			/channelWidth);
-    timeDiff=Int_t (((besttimeleft+1000*timeDelayCFD[pmtBestLeft])-
-		    (besttimeright+1000*timeDelayCFD[pmtBestLeft])
-		    )/channelWidth);
+    timeDiff=Int_t (((besttimeleft-besttimeright)+1000*timeDelayCFD[pmtBestRight])
+		    /channelWidth);
     meanTime=Int_t (((besttimeright+1000*timeDelayCFD[pmtBestLeft]+
 		      besttimeleft+1000*timeDelayCFD[pmtBestLeft])/2.)
 		    /channelWidth);
-    cout<<"bestLeftTDC"<<bestLeftTDC<<" bestRightTDC "<< bestRightTDC<<
-      " timeDiff "<<timeDiff<<" meanTime= "<<meanTime<<endl;   
-    AliDebug(2,Form(" time in ns %f ", besttimeleft));
+ 
+     AliDebug(2,Form(" time in ns %f %f  ",besttimeleft,besttimeright ));
     for (Int_t i=0; i<24; i++)
       {
        	Float_t  al = countE[i]; 
@@ -292,8 +281,6 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
 	  ftimeLED->AddAt(trLED,i); 
 	  sumMult += Int_t ((al*gain[i]/ph2Mip)*50) ;
-	  cout<<al<<" "<<qt<<" trCFD "<<trCFD<<" sl "<<sl<<" trLED "<<trLED<<
-	    " qtThreshold "<<qtThreshold<<"  qtCh "<< qtCh<<endl;
 	}
       } //pmt loop
 
@@ -316,13 +303,10 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     fSTART  = (AliSTART*)outRL ->GetAliRun()->GetDetector("START");
     // Make a branch in the tree 
     fSTART->MakeBranch("D");
-    //     treeD->Print();
      treeD->Fill();
-     cout<<"   treeD->Fill(); "<<endl;
   
      pOutStartLoader->WriteDigits("OVERWRITE");
      
-     cout<<"  pOutStartLoader->WriteDigits "<<endl;
      fSTART->ResetDigits();
      pOutStartLoader->UnloadDigits();
      

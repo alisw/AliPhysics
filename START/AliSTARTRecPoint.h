@@ -5,7 +5,7 @@
 
 /* $Id$ */
 #include <TObject.h>
-class TArrayI;
+
 
 //___________________________________________
 class AliSTARTRecPoint: public TObject  {
@@ -18,8 +18,8 @@ class AliSTARTRecPoint: public TObject  {
     Int_t  GetBestTimeLeft() {return fTimeBestLeft ;}
     Int_t GetMultC() {return fMultC;}
     Int_t GetMultA() {return fMultA;}
-    Int_t GetMult() {return fMult;}
     Float_t  GetVertex() {return fVertexPosition;}
+
 
     void SetMeanTime(Int_t time) {fTimeAverage=time;}
     void SetTimeBestRight( Int_t time) {fTimeBestRight = time;}
@@ -27,7 +27,13 @@ class AliSTARTRecPoint: public TObject  {
     void SetVertex( Float_t vertex) {fVertexPosition= vertex;}
     void SetMultC(Int_t mult) {fMultC = mult;}
     void SetMultA(Int_t mult) {fMultA = mult;}
-    void SetMult(Int_t mult) {fMult = mult;}
+
+    void SetTime (Int_t ipmt, Float_t time) { fTime[ipmt] = time;}
+    Float_t GetTime (Int_t ipmt) { return fTime[ipmt];}
+   void SetAmp (Int_t ipmt, Float_t adc) { fADC[ipmt] = adc;}
+    Float_t GetAmp (Int_t ipmt) { return fADC[ipmt];}
+   void SetAmpLED (Int_t ipmt, Float_t adc) { fADCLED[ipmt] = adc;}
+    Float_t AmpLED (Int_t ipmt) { return fADCLED[ipmt];}
 
   private: 
     //    Float_t fProcessKoef;  // for pp fProcessKoef=1 ; for Pb-Pb - 0.001
@@ -37,9 +43,13 @@ class AliSTARTRecPoint: public TObject  {
     Int_t fTimeBestLeft;    //TOF first particle on the left
     Int_t fMultC; // multiplicity on the 
     Int_t fMultA; // multiplicity on the 
-    Int_t fMult; // multiplicity A && C 
  
-    ClassDef(AliSTARTRecPoint,2)  //Digit (Header) object for set:START
+    Float_t fTime[24];    // array's TDC
+    Float_t fADC[24];    // array's ADC
+    Float_t fADCLED[24];    // array's ADC
+
+
+    ClassDef(AliSTARTRecPoint,3)  //Digit (Header) object for set:START
 };
 
 
