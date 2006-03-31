@@ -41,7 +41,7 @@
 #include "AliITSv11GeometrySDD.h"
 #include "AliITSv11GeomCableFlat.h"
 #include "AliITSv11GeomCableRound.h"
-
+#include "TList.h"
 
 const char*    AliITSv11GeometrySDD::fgSDDsensitiveVolName = "ITSsddSensitiv";
 const Double_t AliITSv11GeometrySDD::fgkSegmentLength     = 37.2*2*fgkmm;
@@ -146,7 +146,8 @@ const Double_t AliITSv11GeometrySDD::fgkHybFLUpperWidth   = 15.012*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperLength  = 59.878*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperAlDZ    = 11.183*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperAldx    =  2.307*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkmu = 1*fgkmicron; // can be increase for checking thin objects
+
+const Double_t AliITSv11GeometrySDD::fgkmu = 1*fgkmicron; // 1*fgkmicron; // can be increase for checking thin objects
 const Double_t AliITSv11GeometrySDD::fgkHybridThBridgeThick =  0.25*fgkmm;               // ???
 const Double_t AliITSv11GeometrySDD::fgkHybAlThick         =  30*fgkmu;
 const Double_t AliITSv11GeometrySDD::fgkHybUpThick         =  20*fgkmu;
@@ -192,7 +193,7 @@ const Double_t AliITSv11GeometrySDD::fgkWaHVcableAlThick   = 30*2./10.*fgkmu;  /
 const Double_t AliITSv11GeometrySDD::fgkWaHVcablePolyThick = 175*fgkmu;        // will probably change
 const Double_t AliITSv11GeometrySDD::fgkWaHVcableLength    = 67.08*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkWaHVcableWitdh     = 17.4 *fgkmm;              //  check !!!
-const Double_t AliITSv11GeometrySDD::fgkWaHVcableDW        =  5.24*fgkmm;             //  check !!!
+const Double_t AliITSv11GeometrySDD::fgkWaHVcableDW        =  13.*fgkmm; //5.24*fgkmm;             //  check !!!
 
 const Double_t AliITSv11GeometrySDD::fgkSensorGlassLX      =   5.  *fgkmm; 
 const Double_t AliITSv11GeometrySDD::fgkSensorGlassLZ      =   5.  *fgkmm; 
@@ -235,7 +236,7 @@ ClassImp(AliITSv11GeometrySDD)
   fDigitCableLay4A = 0;
   fDigitCableLay4B = 0;
   SetParameters();
-};
+}
 
 //________________________________________________________________________
 AliITSv11GeometrySDD::AliITSv11GeometrySDD(Int_t debug) :
@@ -253,7 +254,7 @@ AliITSv11GeometrySDD::AliITSv11GeometrySDD(Int_t debug) :
   fDigitCableLay4A = 0;
   fDigitCableLay4B = 0;
   SetParameters();
-};
+}
 
 //________________________________________________________________________
 AliITSv11GeometrySDD::AliITSv11GeometrySDD(const AliITSv11GeometrySDD &s) :
@@ -300,7 +301,7 @@ AliITSv11GeometrySDD::~AliITSv11GeometrySDD() {
   if (fDigitCableLay3B) delete [] fDigitCableLay3B;
   if (fDigitCableLay4A) delete [] fDigitCableLay4A;
   if (fDigitCableLay4B) delete [] fDigitCableLay4B;
-};
+}
 
 //________________________________________________________________________
 void AliITSv11GeometrySDD::SetParameters() {
@@ -359,7 +360,8 @@ void AliITSv11GeometrySDD::SetParameters() {
   fLay4sensorZPos[5] = ( -35.6-74.8           )*fgkmm;
   fLay4sensorZPos[6] = ( -35.6-74.8-72.4      )*fgkmm;
   fLay4sensorZPos[7] = ( -35.6-74.8-72.4-76.  )*fgkmm;
-};
+}
+
 
 //________________________________________________________________________
 TGeoMedium* AliITSv11GeometrySDD::GetMedium(const char* mediumName) {
@@ -368,11 +370,14 @@ TGeoMedium* AliITSv11GeometrySDD::GetMedium(const char* mediumName) {
   // If not, prints an error and returns 0
   //
 
-  TGeoMedium* medium =  gGeoManager->GetMedium(mediumName);
+  char ch[30];
+  sprintf(ch, "ITS_%s",mediumName);
+  TGeoMedium* medium =  gGeoManager->GetMedium(ch);
   if (! medium)
     printf("Error(AliITSv11GeometrySDD)::medium %s not found !\n", mediumName);
   return medium;
-};
+}
+
 
 //________________________________________________________________________
 Int_t AliITSv11GeometrySDD::GetLay3NLadders() const{
@@ -385,6 +390,7 @@ Int_t AliITSv11GeometrySDD::GetLay3NLadders() const{
   else return (fAddOnlyLadder3max-fAddOnlyLadder3min+1);
 }
 
+
 //________________________________________________________________________
 Int_t AliITSv11GeometrySDD::GetLay4NLadders() const{
   // Get the actual number of ladder in layer 4
@@ -396,12 +402,14 @@ Int_t AliITSv11GeometrySDD::GetLay4NLadders() const{
   else return (fAddOnlyLadder4max-fAddOnlyLadder4min+1);
 }
 
+
 //________________________________________________________________________
 void AliITSv11GeometrySDD::CreateBasicObjects() {
   //
   // Create basics objets which will be assembled together
   // in Layer3 and Layer4 functions
   //
+
 
   fDigitCableLay3A = new AliITSv11GeomCableFlat[fgkLay3Ndet];
   fDigitCableLay3B = new AliITSv11GeomCableFlat[fgkLay3Ndet];
@@ -414,6 +422,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   fSDDsensor = CreateSDDsensor();
   fBaseThermalBridge = CreateBaseThermalBridge();
   fHybrid = CreateHybrid(0);
+
 
   TGeoMedium *carbonFiberLadderStruct = GetMedium("ITSsddCarbonM55J");
   TGeoMedium *polyhamideSDD = GetMedium("ITSsddKAPTON_POLYCH2");
@@ -478,41 +487,41 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   sideBeam->SetLineColor(fColorCarbonFiber);
 
   //Euler rotation : about Z, then new X, then new Z
-  TGeoRotation beamRot1("", 90-2.*beta*TMath::RadToDeg(),
-			-beamPhiPrime*TMath::RadToDeg(),-90);
-  TGeoRotation beamRot2("", 90-2.*beta*TMath::RadToDeg(),
-			beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation beamRot3("", 90+2.*beta*TMath::RadToDeg(),
-			beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation beamRot4("", 90+2.*beta*TMath::RadToDeg(),
-			-beamPhiPrime*TMath::RadToDeg(),-90);
+  TGeoRotation *beamRot1 = new TGeoRotation("", 90-2.*beta*TMath::RadToDeg(),
+					    -beamPhiPrime*TMath::RadToDeg(),-90);
+  TGeoRotation *beamRot2 = new TGeoRotation("", 90-2.*beta*TMath::RadToDeg(),
+					    beamPhiPrime*TMath::RadToDeg(), -90);
+  TGeoRotation *beamRot3 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),
+					    beamPhiPrime*TMath::RadToDeg(), -90);
+  TGeoRotation *beamRot4 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),
+					    -beamPhiPrime*TMath::RadToDeg(),-90);
 
   TGeoCombiTrans *beamTransf[8];
   beamTransf[0] = new TGeoCombiTrans( 0.5*triangleHeight*
 				      TMath::Tan(halfTheta),
 				      fgkLadderBeamRadius/2. - dy,
-				      -3*fgkSegmentLength/8, &beamRot1);
+				      -3*fgkSegmentLength/8, beamRot1);
   beamTransf[1] = new TGeoCombiTrans(*beamTransf[0]);
   AddTranslationToCombiTrans(beamTransf[1], 0, 0, fgkSegmentLength/2);
 
   beamTransf[2] = new TGeoCombiTrans(0.5*triangleHeight*
 				     TMath::Tan(halfTheta),
 				     fgkLadderBeamRadius/2. - dy,
-				     -fgkSegmentLength/8, &beamRot2);
+				     -fgkSegmentLength/8, beamRot2);
   beamTransf[3] = new TGeoCombiTrans(*beamTransf[2]);
   AddTranslationToCombiTrans(beamTransf[3], 0, 0, fgkSegmentLength/2);
 
   beamTransf[4] = new TGeoCombiTrans(-0.5*triangleHeight*
 				     TMath::Tan(halfTheta),
 				     fgkLadderBeamRadius/2. - dy,
-				     -3*fgkSegmentLength/8, &beamRot3);
+				     -3*fgkSegmentLength/8, beamRot3);
   beamTransf[5] = new TGeoCombiTrans(*beamTransf[4]);
   AddTranslationToCombiTrans(beamTransf[5], 0, 0, fgkSegmentLength/2);
 
   beamTransf[6] = new TGeoCombiTrans(-0.5*triangleHeight*
-  TMath::Tan(halfTheta),fgkLadderBeamRadius/2.-dy, -fgkSegmentLength/8,&beamRot4);
+  TMath::Tan(halfTheta),fgkLadderBeamRadius/2.-dy, -fgkSegmentLength/8,beamRot4);
   beamTransf[7] = new TGeoCombiTrans(-0.5*triangleHeight*
-  TMath::Tan(halfTheta),fgkLadderBeamRadius/2.-dy,3*fgkSegmentLength/8,&beamRot4);
+  TMath::Tan(halfTheta),fgkLadderBeamRadius/2.-dy,3*fgkSegmentLength/8,beamRot4);
 
   //--- Beams of the bottom
   TGeoTubeSeg *bottomBeam1 = new TGeoTubeSeg(0, fgkLadderBeamRadius,
@@ -532,25 +541,25 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
 				   bottomBeam3, carbonFiberLadderStruct);
   bottomBeam3Vol->SetLineColor(fColorCarbonFiber);
   //bottomBeam3Vol->SetLineColor(2);
+  TGeoRotation *bottomBeamRot1 = new TGeoRotation("", 90, 90,  90);
+  TGeoRotation *bottomBeamRot2 = new TGeoRotation("",-90, 90, -90);
 
-  TGeoRotation bottomBeamRot1("", 90, 90,  90);
-  TGeoRotation bottomBeamRot2("",-90, 90, -90);
   TGeoCombiTrans *bottomBeamTransf1 = new TGeoCombiTrans
-    (0,-(fgkLadderHeight/2-fgkLadderBeamRadius)-dy,0, &bottomBeamRot1);
+    (0,-(fgkLadderHeight/2-fgkLadderBeamRadius)-dy,0, bottomBeamRot1);
   TGeoCombiTrans *bottomBeamTransf2 = new TGeoCombiTrans(0,
 				      -(fgkLadderHeight/2-fgkLadderBeamRadius)-dy,
-				      -fgkSegmentLength/2, &bottomBeamRot1);
+				      -fgkSegmentLength/2, bottomBeamRot1);
   TGeoCombiTrans *bottomBeamTransf3 = new TGeoCombiTrans(0,
                                       -(fgkLadderHeight/2 - fgkLadderBeamRadius)
-				      - dy, fgkSegmentLength/2, &bottomBeamRot2);
+				      - dy, fgkSegmentLength/2, bottomBeamRot2);
   // be careful for beams #3: when "reading" from -z to +z and 
   // from the bottom of the ladder, it should draw a Lambda, and not a V
-  TGeoRotation bottomBeamRot4("", -90, fgkBottomBeamAngle, -90);
-  TGeoRotation bottomBeamRot5("" ,-90,-fgkBottomBeamAngle, -90);
+  TGeoRotation *bottomBeamRot4 = new TGeoRotation("", -90, fgkBottomBeamAngle, -90);
+  TGeoRotation *bottomBeamRot5 = new TGeoRotation("" ,-90,-fgkBottomBeamAngle, -90);
   TGeoCombiTrans *bottomBeamTransf4 = new TGeoCombiTrans
-    (0,-(fgkLadderHeight/2-fgkLadderBeamRadius)-dy,-fgkSegmentLength/4,&bottomBeamRot4);
+    (0,-(fgkLadderHeight/2-fgkLadderBeamRadius)-dy,-fgkSegmentLength/4,bottomBeamRot4);
   TGeoCombiTrans *bottomBeamTransf5 = new TGeoCombiTrans
-    (0,-(fgkLadderHeight/2-fgkLadderBeamRadius)-dy,fgkSegmentLength/4, &bottomBeamRot5);
+    (0,-(fgkLadderHeight/2-fgkLadderBeamRadius)-dy,fgkSegmentLength/4, bottomBeamRot5);
 
   fLaddSegCommonVol[0] = cfLaddTopVol1;  fLaddSegCommonTr[0] = trTop1;
   fLaddSegCommonVol[1] = cfLaddTopVol2;  fLaddSegCommonTr[1] = trTop1;
@@ -619,8 +628,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
                                         // coding efforts ... !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                         // The only thing to do is to change the names and put the correct total
                                         // thicknesses
-
-};
+}
 
 
 //________________________________________________________________________
@@ -630,7 +638,7 @@ void AliITSv11GeometrySDD::CheckOverlaps(Double_t precision){
   //
   if (fSDDsensor)         fSDDsensor->CheckOverlaps(precision);
   if (fHybrid)            fHybrid->CheckOverlaps(precision);
-};
+}
 
 
 //________________________________________________________________________
@@ -648,7 +656,7 @@ CreateCombiTrans(const char *name, Double_t dy, Double_t dz, Double_t dphi) {
     combiTrans1->SetTranslation(t1);
     combiTrans1->SetRotation(r1);
     return combiTrans1;
-};
+}
 
 
 //________________________________________________________________________
@@ -660,26 +668,33 @@ void AliITSv11GeometrySDD::AddTranslationToCombiTrans(TGeoCombiTrans* ct,
   const Double_t *vect = ct->GetTranslation();
   Double_t newVect[3] = {vect[0]+dx, vect[1]+dy, vect[2]+dz};
   ct->SetTranslation(newVect);
-};
+}
 
 
 //________________________________________________________________________
 void AliITSv11GeometrySDD::ShowOnePiece(TGeoVolume *moth) {
 // for code developpment and debugging purposes
 
-   if (! fSDDsensor) CreateBasicObjects();
+  if (! fSDDsensor) CreateBasicObjects();
 
-//   moth->AddNode(fPinSupport, 1, 0);
-//   moth->AddNode(fCoolPipeSupportL, 1, 0);
-//   moth->AddNode(fBaseThermalBridge, 1, 0);
-//   moth->AddNode(fHybrid,100,0);
-   moth->AddNode(fSDDsensor, 1, 0);
+  //  moth->AddNode(fPinSupport, 1, 0);
+  //  moth->AddNode(fCoolPipeSupportL, 1, 0);
+    moth->AddNode(fSDDsensor, 1, 0);
+  //  moth->AddNode(fBaseThermalBridge, 1, 0);
+  //  moth->AddNode(fHybrid,100,0);
 
 
-//   TGeoVolume* seg = CreateLadderSegment( 3, 0);
-//   moth->AddNode(seg, 1, 0);
+//    TGeoVolume* seg = CreateLadderSegment( 3, 0);
+//    moth->AddNode(seg, 1, 0);
 
-};
+
+//   TGeoVolume *lay3Ladder = CreateLadder(3);
+//   moth->AddNode(lay3Ladder, 1, 0);
+
+//   TGeoVolume *lay3Detectors = CreateDetectors(3);
+//   moth->AddNode(lay3Detectors, 1, 0);
+
+}
 
 
 //________________________________________________________________________
@@ -742,7 +757,7 @@ void AliITSv11GeometrySDD::Layer3(TGeoVolume *moth) {
   if(GetDebug(1)) virtualLayer3->CheckOverlaps(0.01);
   virtualLayer3->SetVisibility(kFALSE);
   moth->AddNode(virtualLayer3, 1, 0);
-};
+}
 
 
 //________________________________________________________________________
@@ -801,7 +816,7 @@ void AliITSv11GeometrySDD::Layer4(TGeoVolume *moth) {
   if(GetDebug(1)) virtualLayer4->CheckOverlaps(0.01);
   virtualLayer4->SetVisibility(kFALSE);
   moth->AddNode(virtualLayer4,1,0);
-};
+}
 
 
 //________________________________________________________________________
@@ -970,7 +985,7 @@ TGeoVolume *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
   if(GetDebug(1)) virtualLadder->CheckOverlaps(0.01);
   virtualLadder->SetVisibility(kFALSE);
   return virtualLadder;
-};
+}
 
 
 //________________________________________________________________________
@@ -990,7 +1005,7 @@ TGeoArb8 *AliITSv11GeometrySDD::CreateLadderSide(Double_t dz, Double_t angle,
 			   -L*TMath::Cos(angle)-l*TMath::Sin(angle));
     cfLaddSide->SetVertex(7, xSign*L*TMath::Sin(angle), -L*TMath::Cos(angle));
     return cfLaddSide;
-};
+}
 
 
 //________________________________________________________________________
@@ -1071,16 +1086,18 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   TGeoTranslation hybHolePos2Tr(roundHoleX, 
    -volumeThick/2+fgkHybridThBridgeThick+(screenTotalThick+lowFLTotalThick)/2,
 				fgkHybridLength/2-fgkHybRndHoleZ);
-  TGeoRotation rotHole("", 0, 90, 0);
-  TGeoCombiTrans *hybHolePos1 = new TGeoCombiTrans(hybHolePos1Tr, rotHole);
+
+  TGeoRotation *rotHole = new TGeoRotation("", 0, 90, 0);
+  TGeoCombiTrans *hybHolePos1 = new TGeoCombiTrans(hybHolePos1Tr, *rotHole);
   hybHolePos1->SetName("hybHolePos1");
-  TGeoCombiTrans *hybHolePos2 = new TGeoCombiTrans(hybHolePos2Tr, rotHole);
+  TGeoCombiTrans *hybHolePos2 = new TGeoCombiTrans(hybHolePos2Tr, *rotHole);
   hybHolePos2->SetName("hybHolePos2");
 
   upGlueScreenTr->RegisterYourself();
   alScreenTr->RegisterYourself();
   hybHolePos1->RegisterYourself();
   hybHolePos2->RegisterYourself();
+  delete rotHole;
 
   TGeoCompositeShape *sScreenAl = new TGeoCompositeShape(
 		      "sAlScreenLayer:AlScreenTr-(sRoundHole:hybHolePos1"
@@ -1359,12 +1376,14 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   // Al at ~50%
 
   vAluStrip->SetLineColor(fColorAl);
-  TGeoRotation rotAluStrip("rotAluStrip",0, -90, 90);
+  //TGeoRotation rotAluStrip("rotAluStrip",0, -90, 90);
+  TGeoRotation *rotAluStrip = new TGeoRotation("rotAluStrip",0, -90, 90);
+
   Double_t yRotAluStrip = lowLayerYmin+lowFLTotalThick
                           +flUpThick+fgkHybAlThick/2;
   TGeoCombiTrans *aluStripTr1 = new TGeoCombiTrans(
 				    fgkHybridWidth/2,yRotAluStrip,
-		    fgkHybridLength/2-fgkHybFLlowChipZ1+1*fgkmm, &rotAluStrip);
+		    fgkHybridLength/2-fgkHybFLlowChipZ1+1*fgkmm, rotAluStrip);
   TGeoCombiTrans *aluStripTr2 = new TGeoCombiTrans(*aluStripTr1);
   AddTranslationToCombiTrans(aluStripTr2,0,0,
 			     fgkHybFLlowChipZ1-fgkHybFLlowChipZ2);
@@ -1379,7 +1398,6 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   hybrid->AddNode(vAluStrip, 2, aluStripTr2); 
   hybrid->AddNode(vAluStrip, 3, aluStripTr3); 
   hybrid->AddNode(vAluStrip, 4, aluStripTr4); 
-
   //**************************************************** SMD:
   TGeoBBox *hybSMD = new TGeoBBox("ITSsddSMDshape",
 				  fgkHybSMDmiddleL/2+fgkHybSMDendL,
@@ -1419,7 +1437,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
   if(GetDebug(1)) hybrid->CheckOverlaps(0.01);
   hybrid->SetVisibility(kFALSE);
   return hybrid;
-};
+}
 
 
 //________________________________________________________________________
@@ -1514,12 +1532,13 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   //**********************************
   // Pine support of the sensors :
   //**********************************
-  TGeoRotation rotPS1("",0,-90,90);
-  TGeoRotation rotPS2("",0,-90,-90);
+  TGeoRotation *rotPS1 = new TGeoRotation("",0,-90,90);
+  TGeoRotation *rotPS2 = new TGeoRotation("",0,-90,-90);
+
   TGeoCombiTrans *transPS1 = new TGeoCombiTrans( fgkPinDYOnSensor,
 				- fgkLadderHeight/2.-tDY
 			        + fgkPinSuppHeight/2.,
-				sensorCenterZPos+fgkPinDXminOnSensor,&rotPS1);
+				sensorCenterZPos+fgkPinDXminOnSensor,rotPS1);
   TGeoCombiTrans *transPS2 = new TGeoCombiTrans(*transPS1);
   AddTranslationToCombiTrans(transPS2, 0, 0, fgkPinPinDDXOnSensor);
   TGeoCombiTrans *transPS3 = new TGeoCombiTrans(*transPS1);
@@ -1530,7 +1549,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   TGeoCombiTrans *transPS5 = new TGeoCombiTrans( -fgkPinDYOnSensor,
 		       	         - fgkLadderHeight/2. - tDY
 			         + fgkPinSuppHeight/2.,
-			         sensorCenterZPos+fgkPinDXminOnSensor,&rotPS2);
+			         sensorCenterZPos+fgkPinDXminOnSensor,rotPS2);
   TGeoCombiTrans *transPS6 = new TGeoCombiTrans(*transPS5);
   AddTranslationToCombiTrans(transPS6, 0, 0, fgkPinPinDDXOnSensor);
   TGeoCombiTrans *transPS7 = new TGeoCombiTrans(*transPS5);
@@ -1559,19 +1578,19 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
                            (triangleHeight+triangleCPaxeDist/
 			    TMath::Sin(halfTheta)-coolPipeSuppH);
   if (fAddCoolingSyst) {
-  TGeoRotation rotCPS2("", -halfTheta*TMath::RadToDeg(), -90,  90);
-  TGeoRotation rotCPS1("",  halfTheta*TMath::RadToDeg(), -90, -90);
+  TGeoRotation *rotCPS2 = new TGeoRotation("", -halfTheta*TMath::RadToDeg(), -90,  90);
+  TGeoRotation *rotCPS1 = new TGeoRotation("",  halfTheta*TMath::RadToDeg(), -90, -90);
   TGeoCombiTrans *transCPS1 = new TGeoCombiTrans(coolPipeSuppL,
 				  -fgkLadderHeight/2. - tDY
 				  +coolPipeSuppH+fgkLadderBeamRadius,
-			          -segmentLength/2., &rotCPS1);
+			          -segmentLength/2., rotCPS1);
   TGeoCombiTrans *transCPS3 = new TGeoCombiTrans(*transCPS1);
   AddTranslationToCombiTrans(transCPS3, 0, 0, segmentLength);
   
   TGeoCombiTrans *transCPS2 = new TGeoCombiTrans(-coolPipeSuppL,
 				  -fgkLadderHeight/2.- tDY
 				  +coolPipeSuppH+fgkLadderBeamRadius,
-			          segmentLength/2., &rotCPS2);
+			          segmentLength/2., rotCPS2);
   TGeoCombiTrans *transCPS4 = new TGeoCombiTrans(*transCPS2);
   AddTranslationToCombiTrans(transCPS4, 0, 0, -segmentLength);
   
@@ -1619,10 +1638,10 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   Double_t shiftHyb = 1.05; // shift between thermal Bridge base and thermal bridge
                            // approx !!! not clear on 0752/14-A
   if (fAddCoolingSyst) {
-  TGeoRotation rotHybrid1("", 0,   0, -90 - fgkHybridAngle);
-  TGeoRotation rotHybrid2("", 0 ,180,  90 - fgkHybridAngle);
-  TGeoCombiTrans *baseTr1 = new TGeoCombiTrans(*pipeTr2, rotHybrid1);
-  TGeoCombiTrans *baseTr2 = new TGeoCombiTrans(*pipeTr1, rotHybrid2);
+  TGeoRotation *rotHybrid1 = new TGeoRotation("", 0,   0, -90 - fgkHybridAngle);
+  TGeoRotation *rotHybrid2 = new TGeoRotation("", 0 ,180,  90 - fgkHybridAngle);
+  TGeoCombiTrans *baseTr1 = new TGeoCombiTrans(*pipeTr2, *rotHybrid1);
+  TGeoCombiTrans *baseTr2 = new TGeoCombiTrans(*pipeTr1, *rotHybrid2);
   
   virtualSeg->AddNode(fBaseThermalBridge, 1, baseTr1);
   virtualSeg->AddNode(fBaseThermalBridge, 2, baseTr2);
@@ -1707,7 +1726,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   if(GetDebug(1)) virtualSeg->CheckOverlaps(0.01);
   virtualSeg->SetVisibility(kFALSE);
   return virtualSeg;
-};
+}
 
 
 //________________________________________________________________________
@@ -1743,7 +1762,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreatePinSupport() {
     pinSupport->SetLineColor(fColorRyton);
     return pinSupport;
     // include the pin itself                           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-};
+}
 
 
 //________________________________________________________________________
@@ -1805,11 +1824,12 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportL() {
 
   TGeoTube *axe = new TGeoTube("ITSsddCPSaxe",0,fgkCoolPipeSuppHoleDiam/2.,
 			       fgkCoolPipeSuppTongW/4.);
-  TGeoRotation axeRot("ITSsddCPSaxeRot",90,90,0);
 
+  TGeoRotation *axeRot = new TGeoRotation("ITSsddCPSaxeRot",90,90,0);
   TGeoCombiTrans *axeTrans = new TGeoCombiTrans("ITSsddCPSaxeTr",
-				 fgkCoolPipeSuppTongW/4.,0,0,&axeRot);
+				 fgkCoolPipeSuppTongW/4.,0,0,axeRot);
   axeTrans->RegisterYourself();
+  //delete axeRot; // make the code crash, no idea of why !!!
 
   if(GetDebug(3)){
     middle->InspectShape();
@@ -1829,8 +1849,10 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportL() {
 					     coolPipeSuppShape, rytonSDD);
 
   coolPipeSupp->SetLineColor(fColorRyton);
+
   return coolPipeSupp;
-};
+}
+
 
 //________________________________________________________________________
 TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportR() {
@@ -1894,10 +1916,12 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportR() {
 
   TGeoTube *axe = new TGeoTube("ITSsddCPSaxeR",0,fgkCoolPipeSuppHoleDiam/2.,
 			       fgkCoolPipeSuppTongW/4.);
-  TGeoRotation axeRot("ITSsddCPSaxeRotR",90,90,0);
+
+  TGeoRotation *axeRot = new TGeoRotation("ITSsddCPSaxeRotR",90,90,0);
   TGeoCombiTrans *axeTrans = new TGeoCombiTrans("ITSsddCPSaxeTrR",
-				 -fgkCoolPipeSuppTongW/4.,0,0,&axeRot);
+						-fgkCoolPipeSuppTongW/4.,0,0,axeRot);
   axeTrans->RegisterYourself();
+  //delete axeRot;
 
   if(GetDebug(3)){
     middle->InspectShape();
@@ -1918,7 +1942,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateCoolPipeSupportR() {
   coolPipeSupp->SetLineColor(fColorRyton);
 
   return coolPipeSupp;
-};
+}
 
 //________________________________________________________________________
 TGeoVolume* AliITSv11GeometrySDD::CreateBaseThermalBridge() {
@@ -2015,7 +2039,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateBaseThermalBridge() {
 
   vBaseThermalBridge->SetLineColor(fColorCarbonFiber);
   return vBaseThermalBridge;
-};
+}
 
 
 //________________________________________________________________________
@@ -2111,30 +2135,30 @@ TGeoVolume* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
 		  TMath::Sin(2*beta)/(TanD(fgkBeamSidePhi)*TanD(fgkBeamSidePhi))) ));
 
   //Euler rotation : about Z, then new X, then new Z
-  TGeoRotation beamRot1("", 90-2.*beta*TMath::RadToDeg(),
+  TGeoRotation *beamRot1 = new TGeoRotation("", 90-2.*beta*TMath::RadToDeg(),
 			-beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation beamRot2("", 90-2.*beta*TMath::RadToDeg(),
+  TGeoRotation *beamRot2 = new TGeoRotation("", 90-2.*beta*TMath::RadToDeg(),
 			beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation beamRot3("", 90+2.*beta*TMath::RadToDeg(),
+  TGeoRotation *beamRot3 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),
 			beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation beamRot4("", 90+2.*beta*TMath::RadToDeg(),
+  TGeoRotation *beamRot4 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),
 			-beamPhiPrime*TMath::RadToDeg(), -90);
   TGeoCombiTrans *beamTransf1 = new TGeoCombiTrans(0.5*triangleHeight*
 						   TMath::Tan(halfTheta),
 					      fgkLadderBeamRadius/2. + tDY,
-			         -length/2 + segmentLength/8, &beamRot1);
+			         -length/2 + segmentLength/8, beamRot1);
   TGeoCombiTrans *beamTransf3 = new TGeoCombiTrans( 0.5*triangleHeight*
 						    TMath::Tan(halfTheta),
 						 fgkLadderBeamRadius/2.+tDY,
-				-length/2 + 3*segmentLength/8, &beamRot2);
+				-length/2 + 3*segmentLength/8, beamRot2);
   TGeoCombiTrans *beamTransf5 = new TGeoCombiTrans(-0.5*triangleHeight*
 						   TMath::Tan(halfTheta),
 						fgkLadderBeamRadius/2.+tDY,
-			         -length/2 + segmentLength/8, &beamRot3);
+			         -length/2 + segmentLength/8, beamRot3);
   TGeoCombiTrans *beamTransf7 = new TGeoCombiTrans(-0.5*triangleHeight*
 						   TMath::Tan(halfTheta),
 					      fgkLadderBeamRadius/2. + tDY,
-			         -length/2+3*segmentLength/8, &beamRot4);
+			         -length/2+3*segmentLength/8, beamRot4);
 
   virtualEnd->AddNode(fLaddSegCommonVol[6], 1, beamTransf1);
   virtualEnd->AddNode(fLaddSegCommonVol[6], 2, beamTransf3);
@@ -2148,10 +2172,10 @@ TGeoVolume* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
 			           bottomBeam1, carbonFiberLadderStruct);
   bottomBeam1Vol->SetLineColor(fColorCarbonFiber);
 
-  TGeoRotation bottomBeamRot1("",90, 90, 90);
+  TGeoRotation *bottomBeamRot1 = new TGeoRotation("",90, 90, 90);
   TGeoCombiTrans *bottomBeamTransf1 = new TGeoCombiTrans(0,
                             -(fgkLadderHeight/2-fgkLadderBeamRadius)+tDY,
-			    -length/2+fgkSegmentLength/2, &bottomBeamRot1);
+			    -length/2+fgkSegmentLength/2, bottomBeamRot1);
   virtualEnd->AddNode(bottomBeam1Vol, 1, bottomBeamTransf1);
   TGeoTubeSeg *bottomBeam2 = new TGeoTubeSeg(0, fgkLadderBeamRadius,
 			         fgkLadderWidth/2.-fgkLadderLb/3, 0, 90);
@@ -2159,7 +2183,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
 				   bottomBeam2, carbonFiberLadderStruct);
   bottomBeam2Vol->SetLineColor(fColorCarbonFiber);
   TGeoCombiTrans *bottomBeamTransf2 = new TGeoCombiTrans(0,
-     -(fgkLadderHeight/2-fgkLadderBeamRadius)+tDY,-length/2,&bottomBeamRot1);
+     -(fgkLadderHeight/2-fgkLadderBeamRadius)+tDY,-length/2,bottomBeamRot1);
   virtualEnd->AddNode(bottomBeam2Vol, 1, bottomBeamTransf2);
 
   //**********************************
@@ -2172,16 +2196,16 @@ TGeoVolume* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
 			    TMath::Sin(halfTheta)-coolPipeSuppH);
   
   if (fAddCoolingSyst) {
-  TGeoRotation rotCPS2("",-halfTheta*TMath::RadToDeg(),-90, 90);
-  TGeoRotation rotCPS1("", halfTheta*TMath::RadToDeg(),-90,-90);
+  TGeoRotation *rotCPS2 = new TGeoRotation("",-halfTheta*TMath::RadToDeg(),-90, 90);
+  TGeoRotation *rotCPS1 = new TGeoRotation("", halfTheta*TMath::RadToDeg(),-90,-90);
   TGeoCombiTrans *transCPS1 = new TGeoCombiTrans(coolPipeSuppL,
 				  -fgkLadderHeight/2.+ tDY +
 				  coolPipeSuppH+fgkLadderBeamRadius,
-				  -length/2., &rotCPS1);
+				  -length/2., rotCPS1);
   TGeoCombiTrans *transCPS4 = new TGeoCombiTrans(-coolPipeSuppL,
 				  -fgkLadderHeight/2.+ tDY +
 				  coolPipeSuppH+fgkLadderBeamRadius,
-				  -length/2., &rotCPS2);
+				  -length/2., rotCPS2);
 
   virtualEnd->AddNode(fCoolPipeSupportL, 1, transCPS1);
   virtualEnd->AddNode(fCoolPipeSupportR, 1, transCPS4);
@@ -2191,7 +2215,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
   if(GetDebug(1)) virtualEnd->CheckOverlaps(0.01);
   virtualEnd->SetVisibility(kFALSE);
   return virtualEnd;
-};
+}
 
 
 //________________________________________________________________________
@@ -2360,10 +2384,15 @@ TGeoVolume* AliITSv11GeometrySDD::CreateSDDsensor() {
   vHeadAlComp->SetLineColor(fColorAl);
 
 
-  TGeoRotation rotHead("",0,90,0);
+//   TGeoRotation rotHead("",0,90,0);
+//   TGeoCombiTrans *rotHeadTr = new TGeoCombiTrans(0,fgkWaferThickness/2,
+// 		  -headRadius+fgkTransitHVHeadLZ+fgkTransitHVBondingLZ/2,
+// 						 &rotHead);
+  TGeoRotation *rotHead = new TGeoRotation("",0,90,0);
   TGeoCombiTrans *rotHeadTr = new TGeoCombiTrans(0,fgkWaferThickness/2,
 		  -headRadius+fgkTransitHVHeadLZ+fgkTransitHVBondingLZ/2,
-						 &rotHead);
+						 rotHead);
+
   virtualSensor->AddNode(vHeadPolyComp,1,rotHeadTr);
   virtualSensor->AddNode(vHeadAlComp,1,rotHeadTr);
 
@@ -2435,16 +2464,27 @@ TGeoVolume* AliITSv11GeometrySDD::CreateSDDsensor() {
   sideRight->SetVertex(6, -fgkTransitHVHeadLX/2, fgkTransitHVsideRightZ);
   sideRight->SetVertex(7, -fgkTransitHVHeadLX/2, 0);
 
-  TGeoRotation rotSide("",0,-90,0);
+//   TGeoRotation rotSide("",0,-90,0);
+//   TGeoCombiTrans *sideRightTr = new TGeoCombiTrans(0,
+// 				(fgkWaferThickness+fgkTransitHVPolyThick)/2,
+// 			        -fgkTransitHVBondingLZ/2,&rotSide);
+//   TGeoCombiTrans *sideLeftTr = new TGeoCombiTrans(0,
+// 			       (fgkWaferThickness+fgkTransitHVPolyThick)/2,
+// 			       -fgkTransitHVBondingLZ/2, &rotSide);
+//   TGeoCombiTrans *sideLeftAlTr = new TGeoCombiTrans(0,
+// 		  fgkTransitHVPolyThick+(fgkWaferThickness+fgkTransitHVAlThick)/2,
+// 	       	  -fgkTransitHVBondingLZ/2, &rotSide);
+  TGeoRotation *rotSide = new TGeoRotation("",0,-90,0);
   TGeoCombiTrans *sideRightTr = new TGeoCombiTrans(0,
 				(fgkWaferThickness+fgkTransitHVPolyThick)/2,
-			        -fgkTransitHVBondingLZ/2,&rotSide);
+			        -fgkTransitHVBondingLZ/2,rotSide);
   TGeoCombiTrans *sideLeftTr = new TGeoCombiTrans(0,
 			       (fgkWaferThickness+fgkTransitHVPolyThick)/2,
-			       -fgkTransitHVBondingLZ/2, &rotSide);
+			       -fgkTransitHVBondingLZ/2, rotSide);
   TGeoCombiTrans *sideLeftAlTr = new TGeoCombiTrans(0,
 		  fgkTransitHVPolyThick+(fgkWaferThickness+fgkTransitHVAlThick)/2,
-	       	  -fgkTransitHVBondingLZ/2, &rotSide);
+	       	  -fgkTransitHVBondingLZ/2, rotSide);
+
 
   TGeoVolume *vSideLeft = new TGeoVolume("ITSsddHVtransitSideLeft",
 					 sideLeft,polyhamideSDD);
@@ -2465,7 +2505,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateSDDsensor() {
   if(GetDebug(1)) virtualSensor->CheckOverlaps(0.01);
   virtualSensor->SetVisibility(kFALSE);
   return virtualSensor;
-};
+}
 
 
 //________________________________________________________________________
@@ -2511,9 +2551,9 @@ TGeoVolume *AliITSv11GeometrySDD::CreateDetectors(Int_t iLay) {
 	  virtualDet->AddNode(fSDDsensor, i, sensorPos);
 	}
 	else {
-	  TGeoRotation rotSensor("",0, 180, 180);
+	  TGeoRotation *rotSensor = new TGeoRotation("",0, 180, 180);
 	  TGeoCombiTrans *sensorPos = new TGeoCombiTrans(0,localY,
-				      		 localZ,&rotSensor);
+				      		 localZ, rotSensor);
 	  sensorPos->SetName(name);
 	  virtualDet->AddNode(fSDDsensor, i, sensorPos);
 	};
@@ -2522,8 +2562,7 @@ TGeoVolume *AliITSv11GeometrySDD::CreateDetectors(Int_t iLay) {
     if(GetDebug(1)) virtualDet->CheckOverlaps(0.01);
     virtualDet->SetVisibility(kFALSE);
     return virtualDet;
-};
-
+}
 
 
 //________________________________________________________________________
@@ -2641,7 +2680,7 @@ Int_t AliITSv11GeometrySDD::ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD
   };
 
   return (startMod-firstSDDmod);
-};
+}
 
 
 //________________________________________________________________________
@@ -2670,4 +2709,4 @@ GetCurrentLayLaddDet(Int_t &lay, Int_t &ladd, Int_t&det) const {
   else lay = 4;
 
   return kTRUE;
-};
+}

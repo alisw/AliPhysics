@@ -362,7 +362,7 @@ Int_t AliITSv11GeomCableFlat::CreateAndInsertCableSegment(Int_t p2,
   };
 
 //   #include <TGeoSphere.h>
-//   TGeoMedium *airSDD = gGeoManager->GetMedium("ITSsddAir");
+//   TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSsddAir");
 //   TGeoSphere *sphere = new TGeoSphere(0, 0.05);
 //   TGeoVolume *vSphere = new TGeoVolume("", sphere, airSDD);
 //   TGeoTranslation *trC = new TGeoTranslation("", cx, cy, cz);
@@ -422,15 +422,15 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
   // Create the segment
   TGeoArb8 *cableSeg = new TGeoArb8(fThick/2);
   cableSeg->SetVertex( 0, -fWidth/2, -length/2 - dL1 + dl1);
-  cableSeg->SetVertex( 1,  fWidth/2, -length/2 + dL1 + dl1);
+  cableSeg->SetVertex( 1, -fWidth/2,  length/2 + dL2 - dl2);
   cableSeg->SetVertex( 2,  fWidth/2,  length/2 - dL2 - dl2);
-  cableSeg->SetVertex( 3, -fWidth/2,  length/2 + dL2 - dl2);
+  cableSeg->SetVertex( 3,  fWidth/2, -length/2 + dL1 + dl1);
   cableSeg->SetVertex( 4, -fWidth/2, -length/2 - dL1 - dl1);
-  cableSeg->SetVertex( 5,  fWidth/2, -length/2 + dL1 - dl1);
+  cableSeg->SetVertex( 5, -fWidth/2,  length/2 + dL2 + dl2);
   cableSeg->SetVertex( 6,  fWidth/2,  length/2 - dL2 + dl2);
-  cableSeg->SetVertex( 7, -fWidth/2,  length/2 + dL2 + dl2);
+  cableSeg->SetVertex( 7,  fWidth/2, -length/2 + dL1 - dl1);
 
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITSair");
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
 
   // add all cable layers
@@ -448,13 +448,13 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
 
     TGeoArb8 *lay = new TGeoArb8(fLayThickness[iLay]/2);
     lay->SetVertex( 0, -fWidth/2, -length/2 - dL1 + dl1Lay - dl1LayS);
-    lay->SetVertex( 1,  fWidth/2, -length/2 + dL1 + dl1Lay - dl1LayS);
+    lay->SetVertex( 1, -fWidth/2,  length/2 + dL2 - dl2Lay + dl2LayS);
     lay->SetVertex( 2,  fWidth/2,  length/2 - dL2 - dl2Lay + dl2LayS);
-    lay->SetVertex( 3, -fWidth/2,  length/2 + dL2 - dl2Lay + dl2LayS);
+    lay->SetVertex( 3,  fWidth/2, -length/2 + dL1 + dl1Lay - dl1LayS);
     lay->SetVertex( 4, -fWidth/2, -length/2 - dL1 - dl1Lay - dl1LayS);
-    lay->SetVertex( 5,  fWidth/2, -length/2 + dL1 - dl1Lay - dl1LayS);
+    lay->SetVertex( 5, -fWidth/2,  length/2 + dL2 + dl2Lay + dl2LayS);
     lay->SetVertex( 6,  fWidth/2,  length/2 - dL2 + dl2Lay + dl2LayS);
-    lay->SetVertex( 7, -fWidth/2,  length/2 + dL2 + dl2Lay + dl2LayS);
+    lay->SetVertex( 7,  fWidth/2, -length/2 + dL1 - dl1Lay - dl1LayS);
     TGeoVolume *vLay = new TGeoVolume("vCableSegLay", lay, fLayMedia[iLay]);
     vLay->SetLineColor(fLayColor[iLay]);
     
@@ -463,7 +463,7 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
     vCableSeg->AddNode(vLay, iLay+1, fTranslation[iLay]);
   };
 
-  vCableSeg->SetVisibility(kFALSE);
+  //vCableSeg->SetVisibility(kFALSE);
   return vCableSeg;
 }
 

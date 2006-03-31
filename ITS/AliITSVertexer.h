@@ -21,9 +21,7 @@ class AliITSVertexer : public AliVertexer {
     // standard constructor     
     AliITSVertexer(TString filename); 
     virtual ~AliITSVertexer(){;}
-    virtual void SetUseV2Clusters(Bool_t v2c){fUseV2Clusters = v2c;}
     virtual void WriteCurrentVertex();
-    //virtual void Clusters2RecPoints(const TClonesArray *clusters, Int_t idx, TClonesArray *points);
  
 
  
@@ -33,9 +31,8 @@ class AliITSVertexer : public AliVertexer {
     AliITSVertexer(const AliITSVertexer& vtxr);
     // assignment operator (NO assignment allowed)
     AliITSVertexer& operator=(const AliITSVertexer& /* vtxr */);
-    Bool_t fUseV2Clusters;   // true if V2 clusters are used
 
-  ClassDef(AliITSVertexer,2);
+  ClassDef(AliITSVertexer,3);
 };
 
 #endif

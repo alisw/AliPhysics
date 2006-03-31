@@ -124,15 +124,8 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
   itsRec = detTypeRec.RecPoints();
-  // TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
   TBranch *branch;
-  //if(fUseV2Clusters){
-  //  branch = tR->GetBranch("ITSRecPoints");
-  //  branch->SetAddress(&clusters);
-  //}
-  //else {
   branch = tR->GetBranch("ITSRecPoints");
-    //}
 
   Int_t nbinfine = static_cast<Int_t>((fHighLim-fLowLim)/fStepFine);
   Int_t nbincoarse = static_cast<Int_t>((fHighLim-fLowLim)/fStepCoarse);
@@ -145,20 +138,12 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   Int_t nrpL2 = 0;
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     if(module%4==0 || module%4==3)continue;
-    //   cout<<"Procesing module "<<module<<" ";
     branch->GetEvent(module);
-    //    cout<<"Number of clusters "<<clusters->GetEntries()<<endl;
-    //if(fUseV2Clusters){
-    //  Clusters2RecPoints(clusters,module,itsRec);
-    // }
     nrpL1+= itsRec->GetEntries();
     detTypeRec.ResetRecPoints();
   }
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
     branch->GetEvent(module);
-    //if(fUseV2Clusters){
-    //  Clusters2RecPoints(clusters,module,itsRec);
-    //}
     nrpL2+= itsRec->GetEntries();
     detTypeRec.ResetRecPoints();
   }
@@ -178,9 +163,6 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     if(module%4==0 || module%4==3)continue;
     branch->GetEvent(module);
-    //if(fUseV2Clusters){
-    //  Clusters2RecPoints(clusters,module,itsRec);
-    //}
     Int_t nrecp1 = itsRec->GetEntries();
     for(Int_t j=0;j<nrecp1;j++){
       AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);
@@ -201,9 +183,6 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   ind = 0;
   for(Int_t module= fFirstL2; module<=fLastL2;module++){
     branch->GetEvent(module);
-    //if(fUseV2Clusters){
-    //  Clusters2RecPoints(clusters,module,itsRec);
-    //}
     Int_t nrecp2 = itsRec->GetEntries();
     for(Int_t j=0;j<nrecp2;j++){
       AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);

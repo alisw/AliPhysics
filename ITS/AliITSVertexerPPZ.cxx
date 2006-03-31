@@ -208,11 +208,6 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   // missing
   // TClonesArray dummy("AliITSRecPoint",10000), *clusters=&dummy;
   TBranch *branch;
-  //if(fUseV2Clusters){
-  //  branch = tR->GetBranch("ITSRecPoints");
-  //  branch->SetAddress(&clusters);
-  //}
-  //else {
   branch = tR->GetBranch("ITSRecPoints");
   if(!branch){ 
     branch = tR->GetBranch("ITSRecPointsF");
@@ -228,9 +223,6 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   Int_t firipixe=0;
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     branch->GetEvent(module);
-    //if(fUseV2Clusters){
-    //  Clusters2RecPoints(clusters,module,itsRec);
-    //}
     Int_t nrecp1 = itsRec->GetEntries();
     for(Int_t i=0; i<nrecp1;i++){
       AliITSRecPoint *current = (AliITSRecPoint*)itsRec->At(i);
@@ -270,13 +262,9 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
   for(Int_t module= fFirstL1; module<=fLastL1;module++){
     if(fDebug>0)cout<<"processing module   "<<module<<"                  \r";
     branch->GetEvent(module);
-    //if(fUseV2Clusters){
-    //  Clusters2RecPoints(clusters,module,itsRec);
-    //}
     Int_t nrecp1 = itsRec->GetEntries();
     TObjArray *poiL1 = new TObjArray(nrecp1);
     for(Int_t i=0; i<nrecp1;i++)poiL1->AddAt(itsRec->At(i),i);
-    //fITS->ResetRecPoints();
     detTypeRec.ResetRecPoints();
     for(Int_t i=0; i<nrecp1;i++){
       AliITSRecPoint *current = (AliITSRecPoint*)poiL1->At(i);
@@ -291,9 +279,6 @@ AliESDVertex* AliITSVertexerPPZ::FindVertexForCurrentEvent(Int_t evnumber){
       if(fDebug>1)cout<<"module "<<module<<" "<<gc[0]<<" "<<gc[1]<<" "<<gc[2]<<" "<<phi1<<"     \n";
       for(Int_t modul2=fFirstL2; modul2<=fLastL2; modul2++){
 	branch->GetEvent(modul2);
-	//if(fUseV2Clusters){
-	//  Clusters2RecPoints(clusters,modul2,itsRec);
-	//}
 	Int_t nrecp2 = itsRec->GetEntries();
 	for(Int_t j=0; j<nrecp2;j++){
 	  AliITSRecPoint *recp = (AliITSRecPoint*)itsRec->At(j);

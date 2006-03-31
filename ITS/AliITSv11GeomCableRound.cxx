@@ -41,9 +41,9 @@
 // ************************************************************************
 
   // Getting some media 
-  TGeoMedium *air   = gGeoManager->GetMedium("ITSair");
-  TGeoMedium *water = gGeoManager->GetMedium("WATER");
-  TGeoMedium *alu   = gGeoManager->GetMedium("ITSal"); 
+  TGeoMedium *air   = gGeoManager->GetMedium("ITS_ITSair");
+  TGeoMedium *water = gGeoManager->GetMedium("ITS_WATER");
+  TGeoMedium *alu   = gGeoManager->GetMedium("ITS_ITSal"); 
 
   // Creating a small box inside a bigger one (containers)
   TGeoBBox *box1      = new TGeoBBox("box1", 6,10,10);
@@ -410,7 +410,7 @@ Int_t AliITSv11GeomCableRound::CreateAndInsertCableSegment(Int_t p2)
     printf("%f, %f, %f\n",coord2[0], coord2[1], coord2[2]);
   };
 //   #include <TGeoSphere.h>
-//   TGeoMedium *airSDD = gGeoManager->GetMedium("ITSsddAir");
+//   TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSsddAir");
 //   TGeoSphere *sphere = new TGeoSphere(0, 0.15);
 //   TGeoVolume *vSphere = new TGeoVolume("", sphere, airSDD);
 //   TGeoTranslation *trC = new TGeoTranslation("", cx, cy, cz);
@@ -622,7 +622,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 				    localVect1[0],localVect1[1],localVect1[2],
 				    localVect2[0],localVect2[1],localVect2[2]);
 
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITSair");
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
 
   // add all cable layers
@@ -659,7 +659,7 @@ TGeoVolume *AliITSv11GeomCableRound::CreateTorus( Double_t &phi,
   //=================================================
   // Create the segment
   TGeoTorus *cableSeg = new TGeoTorus(torusR, 0,fRadius,torusPhi1,torusDPhi);
-  TGeoMedium *airSDD = gGeoManager->GetMedium("ITSair");
+  TGeoMedium *airSDD = gGeoManager->GetMedium("ITS_ITSair");
   TGeoVolume *vCableSeg = new TGeoVolume(GetName(), cableSeg, airSDD);
 
   // add all cable layers

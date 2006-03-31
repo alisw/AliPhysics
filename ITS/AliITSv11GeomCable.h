@@ -68,19 +68,19 @@ class AliITSv11GeomCable : public TNamed {
 };
 
 inline Int_t AliITSv11GeomCable::GetNCheckPoints() const{
-  return fVolumeArray.GetEntriesFast(); };
+  return fVolumeArray.GetEntriesFast(); }
 
 inline void AliITSv11GeomCable::ResetCheckDaughter() {
-  for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) fNodeInd[i] = -1; };
+  for (Int_t i=0; i<fgkCableMaxNodeLevel; i++) fNodeInd[i] = -1; }
 
 inline void AliITSv11GeomCable::CopyFrom(Double_t *c, const Double_t *o)
-const { *(c++)=*(o++); *(c++)=*(o++); *c=*o; };
+const { *(c++)=*(o++); *(c++)=*(o++); *c=*o; }
 
 inline Double_t AliITSv11GeomCable::ScalProd(const Double_t *a,
 						const Double_t *b) const {
   Double_t s = *(a++)*(*(b++)); s+=*(a++)*(*(b++)); s+=*a*(*b);
   return s;
-};
+}
 
 
 
