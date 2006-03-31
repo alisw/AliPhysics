@@ -30,7 +30,7 @@
 #include "AliITSrecoV2.h"
 
 class AliESDtrack;
-class AliITSStrLine;
+class AliStrLine;
 
 //_____________________________________________________________________________
 class AliITStrackV2 : public AliKalmanTrack {
@@ -78,7 +78,7 @@ public:
   void GetExternalCovariance(Double_t cov[15]) const ;
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
   Int_t GetGlobalXYZat(Double_t r,Double_t &x,Double_t &y,Double_t &z) const;
-  void ApproximateHelixWithLine(Double_t xk, AliITSStrLine *line);
+  void ApproximateHelixWithLine(Double_t xk, AliStrLine *line);
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
    Int_t Invariant() const;
  

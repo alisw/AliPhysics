@@ -13,7 +13,6 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSpackageSSD.cxx \
 		AliITSIOTrack.cxx \
 		AliITSRad.cxx \
-		AliITSStrLine.cxx \
 		AliITStrackV2.cxx \
 		AliITStrackerV2.cxx \
 		AliITStrackMI.cxx \
@@ -21,7 +20,6 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSVertexer.cxx \
 		AliITSVertexerIons.cxx \
 		AliITSVertexerPPZ.cxx \
-		AliITSSimpleVertex.cxx \
 		AliITSVertexerTracks.cxx \
 		AliITSVertexerZ.cxx \
 		AliITSVertexerFast.cxx \

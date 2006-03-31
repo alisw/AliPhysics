@@ -31,7 +31,7 @@
 #include <TTree.h>
 #include <TMatrixD.h>
 //---- AliRoot headers -----
-#include "AliITSStrLine.h"
+#include "AliStrLine.h"
 #include "AliITStrackV2.h"
 #include "AliESDVertex.h"
 #include "AliITSVertexerTracks.h"
@@ -447,7 +447,7 @@ AliESDVertex* AliITSVertexerTracks::FindPrimaryVertexForCurrentEvent(AliESD *esd
   return fCurrentVertex;
 }
 //----------------------------------------------------------------------------
-AliITSSimpleVertex* AliITSVertexerTracks::VertexForSelectedTracks(AliESD *esdEvent,Int_t nofCand, Int_t *trkPos,  Int_t opt){
+AliVertex* AliITSVertexerTracks::VertexForSelectedTracks(AliESD *esdEvent,Int_t nofCand, Int_t *trkPos,  Int_t opt){
 
   //
   // Computes the vertex for selected tracks 
@@ -521,7 +521,7 @@ void AliITSVertexerTracks::VertexFinder(Int_t OptUseWeights) {
     track1 = (AliITStrackV2*)fTrkArray.At(i);
     alpha=track1->GetAlpha();
     mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
-    AliITSStrLine *line1 = new AliITSStrLine();
+    AliStrLine *line1 = new AliStrLine();
     track1->ApproximateHelixWithLine(mindist,line1);
    
     if(fDebug>5){
@@ -536,7 +536,7 @@ void AliITSVertexerTracks::VertexFinder(Int_t OptUseWeights) {
       track2 = (AliITStrackV2*)fTrkArray.At(j);
       alpha=track2->GetAlpha();
       mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
-      AliITSStrLine *line2 = new AliITSStrLine();
+      AliStrLine *line2 = new AliStrLine();
       track2->ApproximateHelixWithLine(mindist,line2);
       Double_t distCA=line2->GetDCA(line1);
       if(fDCAcut<=0 || (fDCAcut>0&&distCA<fDCAcut)){
@@ -715,7 +715,7 @@ void AliITSVertexerTracks::StrLinVertexFinderMinDist(Int_t OptUseWeights){
     track1 = (AliITStrackV2*)fTrkArray.At(i);
     Double_t alpha=track1->GetAlpha();
     Double_t mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
-    AliITSStrLine *line1 = new AliITSStrLine();
+    AliStrLine *line1 = new AliStrLine();
     track1->ApproximateHelixWithLine(mindist,line1);
 
     Double_t p0[3],cd[3];

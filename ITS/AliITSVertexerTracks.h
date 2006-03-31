@@ -25,13 +25,13 @@
  *                                                                           *
  *****************************************************************************/
 #include "AliITSVertexer.h"
-#include "AliITSSimpleVertex.h"
+#include "AliVertex.h"
 
 #include <TObjArray.h>
 
 class TTree; 
 class AliESDVertex; 
-class AliITSSimpleVertex; 
+class AliVertex; 
 class AliESD;
 class AliITStrackV2;
 
@@ -69,7 +69,7 @@ class AliITSVertexerTracks : public AliITSVertexer {
 
   // computes the vertex for selected tracks 
   // (TrkPos=vector with track positions in ESD)
-  AliITSSimpleVertex* VertexForSelectedTracks(AliESD *esdEvent,Int_t nofCand, Int_t *trkPos, Int_t opt=1); 
+  AliVertex* VertexForSelectedTracks(AliESD *esdEvent,Int_t nofCand, Int_t *trkPos, Int_t opt=1); 
   // opt=1 (default) finds minimum-distance point among all the selected tracks
   //       approximated as straight lines 
   //       and uses errors on track parameters as weights
@@ -100,7 +100,7 @@ class AliITSVertexerTracks : public AliITSVertexer {
     AliITSVertexerTracks& operator=(const AliITSVertexerTracks& /* vtxr */);
   TFile    *fInFile;          // input file (with tracks)
   TFile    *fOutFile;         // output file for vertices
-  AliITSSimpleVertex  fSimpVert; // vertex after vertex finder
+  AliVertex  fSimpVert; // vertex after vertex finder
   Double_t  fNominalPos[2];   // initial knowledge on vertex position
   Int_t     fMinTracks;       // minimum number of tracks
   Double_t  fDCAcut;          // maximum DCA between 2 tracks used for vertex

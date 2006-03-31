@@ -24,7 +24,7 @@
 #include "AliCluster.h"
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
-#include "AliITSStrLine.h"
+#include "AliStrLine.h"
 
 ClassImp(AliITStrackV2)
 
@@ -212,7 +212,7 @@ GetGlobalXYZat(Double_t xk, Double_t &x, Double_t &y, Double_t &z) const {
 }
 
 //_____________________________________________________________________________
-void AliITStrackV2::ApproximateHelixWithLine(Double_t xk, AliITSStrLine *line)
+void AliITStrackV2::ApproximateHelixWithLine(Double_t xk, AliStrLine *line)
 {
   //------------------------------------------------------------
   // Approximate the track (helix) with a straight line tangent to the
