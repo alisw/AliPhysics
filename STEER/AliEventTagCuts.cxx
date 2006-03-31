@@ -51,8 +51,10 @@ void AliEventTagCuts::Reset()
   fParticipantsFlag = kFALSE;
   fImpactParamFlag = kFALSE;
   fPVFlag = kFALSE;
-  fZDCNeutronEnergyFlag = kFALSE;
-  fZDCProtonEnergyFlag = kFALSE;
+  fZDCNeutron1EnergyFlag = kFALSE;
+  fZDCProton1EnergyFlag = kFALSE;
+  fZDCNeutron2EnergyFlag = kFALSE;
+  fZDCProton2EnergyFlag = kFALSE;
   fZDCEMEnergyFlag = kFALSE;
   fT0VertexZFlag = kFALSE;
   fMultFlag = kFALSE;
@@ -109,10 +111,14 @@ void AliEventTagCuts::Reset()
   fImpactParamMax = 1000.0;
   fPrimaryVertexFlag = 1;
  
-  fZDCNeutronEnergyMin = -1.0;
-  fZDCNeutronEnergyMax = 100000.0;
-  fZDCProtonEnergyMin = -1.0;
-  fZDCProtonEnergyMax = 100000.0;
+  fZDCNeutron1EnergyMin = -1.0;
+  fZDCNeutron1EnergyMax = 100000.0;
+  fZDCProton1EnergyMin = -1.0;
+  fZDCProton1EnergyMax = 100000.0;
+  fZDCNeutron2EnergyMin = -1.0;
+  fZDCNeutron2EnergyMax = 100000.0;
+  fZDCProton2EnergyMin = -1.0;
+  fZDCProton2EnergyMax = 100000.0;
   fZDCEMEnergyMin = -1.0;
   fZDCEMEnergyMax = 100000.0;
   fT0VertexZMin = -10000.0;
@@ -264,22 +270,40 @@ void AliEventTagCuts::SetPrimaryVertexFlag(Int_t i)
 }
 
 //----------------------------------------//
-void AliEventTagCuts::SetZDCNeutrRange(Float_t r1, Float_t r2)
+void AliEventTagCuts::SetZDCNeutr1Range(Float_t r1, Float_t r2)
 {
   //Sets the ZDC's neutron energy range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fZDCNeutronEnergyMin = r1;
-  fZDCNeutronEnergyMax = r2;
-  fZDCNeutronEnergyFlag = kTRUE;
+  fZDCNeutron1EnergyMin = r1;
+  fZDCNeutron1EnergyMax = r2;
+  fZDCNeutron1EnergyFlag = kTRUE;
 }
 //----------------------------------------//
-void AliEventTagCuts::SetZDCProtRange(Float_t r1, Float_t r2)
+void AliEventTagCuts::SetZDCProt1Range(Float_t r1, Float_t r2)
 {
   //Sets the ZDC's proton energy range 
   //and the corresponding flag to kTRUE if the cut is used.
-  fZDCProtonEnergyMin = r1;
-  fZDCProtonEnergyMax = r2;
-  fZDCProtonEnergyFlag = kTRUE;
+  fZDCProton1EnergyMin = r1;
+  fZDCProton1EnergyMax = r2;
+  fZDCProton1EnergyFlag = kTRUE;
+}
+//----------------------------------------//
+void AliEventTagCuts::SetZDCNeutr2Range(Float_t r1, Float_t r2)
+{
+  //Sets the ZDC's neutron energy range 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fZDCNeutron2EnergyMin = r1;
+  fZDCNeutron2EnergyMax = r2;
+  fZDCNeutron2EnergyFlag = kTRUE;
+}
+//----------------------------------------//
+void AliEventTagCuts::SetZDCProt2Range(Float_t r1, Float_t r2)
+{
+  //Sets the ZDC's proton energy range 
+  //and the corresponding flag to kTRUE if the cut is used.
+  fZDCProton2EnergyMin = r1;
+  fZDCProton2EnergyMax = r2;
+  fZDCProton2EnergyFlag = kTRUE;
 }
 //----------------------------------------//
 void AliEventTagCuts::SetZDCEMRange(Float_t r1, Float_t r2)
@@ -687,12 +711,20 @@ Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const
     if((EvTag->GetVertexFlag() != fPrimaryVertexFlag))
       return kFALSE; 
   
-  if(fZDCNeutronEnergyFlag)
-    if((EvTag->GetZDCNeutronEnergy() < fZDCNeutronEnergyMin) || (EvTag->GetZDCNeutronEnergy() > fZDCNeutronEnergyMax))
+  if(fZDCNeutron1EnergyFlag)
+    if((EvTag->GetZDCNeutron1Energy() < fZDCNeutron1EnergyMin) || (EvTag->GetZDCNeutron1Energy() > fZDCNeutron1EnergyMax))
       return kFALSE; 
   
-  if(fZDCProtonEnergyFlag)
-    if((EvTag->GetZDCProtonEnergy() < fZDCProtonEnergyMin) || (EvTag->GetZDCProtonEnergy() > fZDCProtonEnergyMax))
+  if(fZDCProton1EnergyFlag)
+    if((EvTag->GetZDCProton1Energy() < fZDCProton1EnergyMin) || (EvTag->GetZDCProton1Energy() > fZDCProton1EnergyMax))
+      return kFALSE; 
+  
+  if(fZDCNeutron2EnergyFlag)
+    if((EvTag->GetZDCNeutron2Energy() < fZDCNeutron2EnergyMin) || (EvTag->GetZDCNeutron2Energy() > fZDCNeutron2EnergyMax))
+      return kFALSE; 
+  
+  if(fZDCProton2EnergyFlag)
+    if((EvTag->GetZDCProton2Energy() < fZDCProton2EnergyMin) || (EvTag->GetZDCProton2Energy() > fZDCProton2EnergyMax))
       return kFALSE; 
   
   if(fZDCEMEnergyFlag)

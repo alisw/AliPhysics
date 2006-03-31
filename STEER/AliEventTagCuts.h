@@ -34,9 +34,11 @@ class AliEventTagCuts : public TObject
 
   void SetPrimaryVertexFlag(Int_t i);
 
-  void SetZDCNeutrRange(Float_t r1, Float_t r2);
-  void SetZDCProtRange(Float_t r1, Float_t r2);
+  void SetZDCNeutr1Range(Float_t r1, Float_t r2);
+  void SetZDCProt1Range(Float_t r1, Float_t r2);
   void SetZDCEMRange(Float_t r1, Float_t r2);
+  void SetZDCNeutr2Range(Float_t r1, Float_t r2);
+  void SetZDCProt2Range(Float_t r1, Float_t r2);
   void SetT0VertexZRange(Float_t r1, Float_t r2);
 
   void SetMultiplicityRange(Int_t n1, Int_t n2);
@@ -97,10 +99,14 @@ class AliEventTagCuts : public TObject
   Int_t fPrimaryVertexFlag; //Primary vertex flag: 0->not found, 1->found
   Bool_t fPVFlag;          //Shows whether this cut is used or not
   
-  Float_t fZDCNeutronEnergyMin, fZDCNeutronEnergyMax; //ZDC min,max - neutron
-  Bool_t fZDCNeutronEnergyFlag;//Shows whether this cut is used or not
-  Float_t fZDCProtonEnergyMin, fZDCProtonEnergyMax; //ZDC min,max - proton
-  Bool_t fZDCProtonEnergyFlag;//Shows whether this cut is used or not
+  Float_t fZDCNeutron1EnergyMin, fZDCNeutron1EnergyMax; //ZDC min,max - neutron
+  Bool_t fZDCNeutron1EnergyFlag;//Shows whether this cut is used or not
+  Float_t fZDCProton1EnergyMin, fZDCProton1EnergyMax; //ZDC min,max - proton
+  Bool_t fZDCProton1EnergyFlag;//Shows whether this cut is used or not
+  Float_t fZDCNeutron2EnergyMin, fZDCNeutron2EnergyMax; //ZDC min,max - neutron
+  Bool_t fZDCNeutron2EnergyFlag;//Shows whether this cut is used or not
+  Float_t fZDCProton2EnergyMin, fZDCProton2EnergyMax; //ZDC min,max - proton
+  Bool_t fZDCProton2EnergyFlag;//Shows whether this cut is used or not
   Float_t fZDCEMEnergyMin, fZDCEMEnergyMax; //ZDC min,max - em
   Bool_t fZDCEMEnergyFlag;//Shows whether this cut is used or not
   Float_t fT0VertexZMin, fT0VertexZMax; //T0 min, max

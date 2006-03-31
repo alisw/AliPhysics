@@ -1446,8 +1446,10 @@ void AliReconstruction::CreateTag(TFile* file)
     
     evTag->SetTrigger(esd->GetTrigger());
     
-    evTag->SetZDCNeutronEnergy(esd->GetZDCNEnergy());
-    evTag->SetZDCProtonEnergy(esd->GetZDCPEnergy());
+    evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
+    evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
+    evTag->SetZDCNeutron2Energy(esd->GetZDCN2Energy());
+    evTag->SetZDCProton2Energy(esd->GetZDCP2Energy());
     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy());
     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
     

@@ -33,9 +33,11 @@ AliESD::AliESD():
   fTrigger(0),
   fRecoVersion(0),
   fMagneticField(0),
-  fZDCNEnergy(0),
-  fZDCPEnergy(0),
+  fZDCN1Energy(0),
+  fZDCP1Energy(0),
   fZDCEMEnergy(0),
+  fZDCN2Energy(0),
+  fZDCP2Energy(0),
   fZDCParticipants(0),
   fT0zVertex(0),
   fPrimaryVertex(),
@@ -105,9 +107,11 @@ void AliESD::Reset()
   fTrigger=0;
   fRecoVersion=0;
   fMagneticField=0;
-  fZDCNEnergy=0;
-  fZDCPEnergy=0;
+  fZDCN1Energy=0;
+  fZDCP1Energy=0;
   fZDCEMEnergy=0;
+  fZDCN2Energy=0;
+  fZDCP2Energy=0;
   fZDCParticipants=0;
   fT0zVertex=0;
   fPrimaryVertex.Reset();

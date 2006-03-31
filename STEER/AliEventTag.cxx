@@ -41,9 +41,11 @@ ClassImp(AliEventTag)
     fPrimaryVertexZ(-100.0),
     fPrimaryVertexZError(-100.0),
     fTriggerInfo(-10),
-    fZDCNeutronEnergy(-10.0),
-    fZDCProtonEnergy(-10.0),
+    fZDCNeutron1Energy(-10.0),
+    fZDCProton1Energy(-10.0),
     fZDCEMEnergy(-10.0),
+    fZDCNeutron2Energy(-10.0),
+    fZDCProton2Energy(-10.0),
     fT0VertexZ(-10.0),
     fNumberOfTracks(-10),
     fNumberOfPositiveTracks(-10),
@@ -115,9 +117,11 @@ AliEventTag::AliEventTag(const AliEventTag & EvTag) : TObject(EvTag)
 
   SetTrigger(EvTag.GetTrigger());
   
-  SetZDCNeutronEnergy(EvTag.GetZDCNeutronEnergy());
-  SetZDCProtonEnergy(EvTag.GetZDCProtonEnergy());
+  SetZDCNeutron1Energy(EvTag.GetZDCNeutron1Energy());
+  SetZDCProton1Energy(EvTag.GetZDCProton1Energy());
   SetZDCEMEnergy(EvTag.GetZDCEMEnergy());
+  SetZDCNeutron2Energy(EvTag.GetZDCNeutron2Energy());
+  SetZDCProton2Energy(EvTag.GetZDCProton2Energy());
   
   SetT0VertexZ(EvTag.GetT0VertexZ());
   
@@ -202,8 +206,10 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &EvTag)
     
     SetTrigger(EvTag.GetTrigger());
     
-    SetZDCNeutronEnergy(EvTag.GetZDCNeutronEnergy());
-    SetZDCProtonEnergy(EvTag.GetZDCProtonEnergy());
+    SetZDCNeutron1Energy(EvTag.GetZDCNeutron1Energy());
+    SetZDCProton1Energy(EvTag.GetZDCProton1Energy());
+    SetZDCNeutron2Energy(EvTag.GetZDCNeutron2Energy());
+    SetZDCProton2Energy(EvTag.GetZDCProton2Energy());
     SetZDCEMEnergy(EvTag.GetZDCEMEnergy());
     
     SetT0VertexZ(EvTag.GetT0VertexZ());

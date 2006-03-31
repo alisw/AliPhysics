@@ -150,14 +150,16 @@ public:
   Float_t GetT0zVertex() const {return fT0zVertex;}
   void SetT0zVertex(Float_t z) {fT0zVertex=z;}
 
-  Float_t GetZDCNEnergy() const {return fZDCNEnergy;}
-  Float_t GetZDCPEnergy() const {return fZDCPEnergy;}
+  Float_t GetZDCN1Energy() const {return fZDCN1Energy;}
+  Float_t GetZDCP1Energy() const {return fZDCP1Energy;}
+  Float_t GetZDCN2Energy() const {return fZDCN2Energy;}
+  Float_t GetZDCP2Energy() const {return fZDCP2Energy;}
   Float_t GetZDCEMEnergy() const {return fZDCEMEnergy;}
   Int_t   GetZDCParticipants() const {return fZDCParticipants;}
-  void    SetZDC(Float_t nEnergy, Float_t pEnergy, Float_t emEnergy,
-                 Int_t participants) 
-   {fZDCNEnergy=nEnergy; fZDCPEnergy=pEnergy; fZDCEMEnergy=emEnergy;
-    fZDCParticipants=participants;}
+  void    SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t emEnergy,
+                 Float_t n2Energy, Float_t p2Energy, Int_t participants) 
+   {fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; fZDCEMEnergy=emEnergy;
+    fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; fZDCParticipants=participants;}
 
   void ResetV0s() { fV0s.Clear(); }
   void ResetCascades() { fCascades.Clear(); }
@@ -180,8 +182,10 @@ protected:
   Int_t        fRecoVersion;     // Version of reconstruction 
   Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
 
-  Float_t      fZDCNEnergy;      // reconstructed energy in the neutron ZDC
-  Float_t      fZDCPEnergy;      // reconstructed energy in the proton ZDC
+  Float_t      fZDCN1Energy;      // reconstructed energy in the neutron ZDC
+  Float_t      fZDCP1Energy;      // reconstructed energy in the proton ZDC
+  Float_t      fZDCN2Energy;      // reconstructed energy in the neutron ZDC
+  Float_t      fZDCP2Energy;      // reconstructed energy in the proton ZDC
   Float_t      fZDCEMEnergy;     // reconstructed energy in the electromagnetic ZDC
   Int_t        fZDCParticipants; // number of participants estimated by the ZDC
 

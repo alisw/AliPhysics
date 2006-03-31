@@ -404,9 +404,11 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
     
     evTag->SetTrigger(esd->GetTrigger());
     
-    evTag->SetZDCNeutronEnergy(esd->GetZDCNEnergy());
-    evTag->SetZDCProtonEnergy(esd->GetZDCPEnergy());
+    evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
+    evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
     evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy());
+    evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
+    evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
     
     

@@ -45,8 +45,10 @@ class AliEventTag : public TObject
 
   void   SetTrigger(Int_t Ptr) {fTriggerInfo = Ptr;}
 
-  void   SetZDCNeutronEnergy(Float_t Pen) {fZDCNeutronEnergy = Pen;}
-  void   SetZDCProtonEnergy(Float_t Pen) {fZDCProtonEnergy = Pen;}
+  void   SetZDCNeutron1Energy(Float_t Pen) {fZDCNeutron1Energy = Pen;}
+  void   SetZDCProton1Energy(Float_t Pen) {fZDCProton1Energy = Pen;}
+  void   SetZDCNeutron2Energy(Float_t Pen) {fZDCNeutron2Energy = Pen;}
+  void   SetZDCProton2Energy(Float_t Pen) {fZDCProton2Energy = Pen;}
   void   SetZDCEMEnergy(Float_t Pen) {fZDCEMEnergy = Pen;}
 
   void   SetT0VertexZ(Float_t Pvz) {fT0VertexZ = Pvz;}
@@ -126,8 +128,10 @@ class AliEventTag : public TObject
 
   Int_t   GetTrigger() const {return fTriggerInfo;}
 
-  Float_t GetZDCNeutronEnergy() const {return fZDCNeutronEnergy;}
-  Float_t GetZDCProtonEnergy() const {return fZDCProtonEnergy;}
+  Float_t GetZDCNeutron1Energy() const {return fZDCNeutron1Energy;}
+  Float_t GetZDCProton1Energy() const {return fZDCProton1Energy;}
+  Float_t GetZDCNeutron2Energy() const {return fZDCNeutron2Energy;}
+  Float_t GetZDCProton2Energy() const {return fZDCProton2Energy;}
   Float_t GetZDCEMEnergy() const {return fZDCEMEnergy;}
 
   Float_t GetT0VertexZ() const {return fT0VertexZ;}
@@ -206,8 +210,10 @@ class AliEventTag : public TObject
   Float_t  fPrimaryVertexZError;	       //Primary vertex - Z coordinate - error
 
   Int_t    fTriggerInfo;		       //Information from trigger
-  Float_t  fZDCNeutronEnergy;		       //ZDC info - neutron
-  Float_t  fZDCProtonEnergy;		       //ZDC info - proton
+  Float_t  fZDCNeutron1Energy;		       //ZDC info - neutron
+  Float_t  fZDCProton1Energy;		       //ZDC info - proton
+  Float_t  fZDCNeutron2Energy;		       //ZDC info - neutron
+  Float_t  fZDCProton2Energy;		       //ZDC info - proton
   Float_t  fZDCEMEnergy;		       //ZDC info - em
   Float_t  fT0VertexZ;			       //T0 info
   Int_t    fNumberOfTracks;		       //Multiplicity
