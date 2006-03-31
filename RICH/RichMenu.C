@@ -58,6 +58,7 @@ void RichMenu()
     pMenu->AddButton("Clusters print"                  ,"c();"      ,"To print clusters: c()");  
     pMenu->AddButton("Clusters QA"                     ,"cqa();"    ,"Clusters QA: cqa() or AliRICHReconstructor::CluQA(al)");  
     pMenu->AddButton("Print ESD"                       ,"e();"      ,"To print ESD status");  
+    pMenu->AddButton("Print Matrix"                    ,"m();"      ,"To print probability matrix");  
     pMenu->AddButton("Print occupancy"                 ,"r->OccupancyPrint(-1);" ,"To print occupancy");  
     pMenu->AddButton("Print event summary  "           ,"r->SummaryOfEvent();"   ,"To print a summary of the event");  
   }else{//it's aliroot, simulate
@@ -100,6 +101,7 @@ void ct  (            )   {AliRICHReconstructor::Test      (   );}   //test clus
 void t   (Int_t evt=0          )   {AliRICHParam::Stack(evt);}    
 void tid (Int_t tid,Int_t evt=0)   {AliRICHParam::Stack(evt,tid);} 
 void e   (                     )   {AliRICHTracker::EsdPrint();}                   
+void m   (Double_t probCut=0.7 )   {AliRICHTracker::MatrixPrint(probCut);}                   
 
 Int_t nem (Int_t evt=0) {AliRICHParam::StackCount(kElectron  ,evt);} //utility number of electrons
 Int_t nep (Int_t evt=0) {AliRICHParam::StackCount(kPositron  ,evt);} //utility number of positrons

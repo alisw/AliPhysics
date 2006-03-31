@@ -63,8 +63,8 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
    
   for(Int_t iTrk=0;iTrk<iNtracks;iTrk++){//ESD tracks loop
     AliESDtrack *pTrack = pESD->GetTrack(iTrk);// get next reconstructed track    
-    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),(Int_t)pTrack->GetSign(),GetBz()/10); //construct helix out of track running parameters  
-    helix.Print("Track");
+    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),(Int_t)pTrack->GetSign(),-GetBz()/10); //construct helix out of track running parameters  
+     //Printf(" magnetic field %f charged %f\n",GetBz(),pTrack->GetSign()); helix.Print("Track");
     Int_t iChamber=helix.RichIntersect(AliRICHParam::Instance());    
     if(!iChamber) continue;                                         //no intersection with chambers, ignore this track go after the next one
   
@@ -246,22 +246,61 @@ void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPI
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHTracker::EsdPrint()
 {
-  TFile *pFile=TFile::Open("AliESDs.root","read"); if(!pFile) {Printf("ERROR: No AliESDs.root in current directory!");return;}
-  TTree *pEsdTr = (TTree*)pFile->Get("esdTree");   if(!pEsdTr){Printf("ERROR: Bad AliESDs.root, no ESD tree inside!");return;} 
-  AliESD *pESD=new AliESD;  pEsdTr->SetBranchAddress("ESD", &pESD);
+// Reads a set of ESD files and print out some information
+// Arguments: probCut - cut on probability 
+//   Returns: none
+    
+  TFile *pFile=TFile::Open("AliESDs.root","read");              if(!pFile) {Printf("ERROR: AliESDs.root does not exist!");return;} 
+  TTree *pTr=(TTree*)pFile->Get("esdTree");                     if(!pTr)   {Printf("ERROR: AliESDs.root, no ESD tree inside!");return;} 
+  AliESD *pEsd=new AliESD;  pTr->SetBranchAddress("ESD", &pEsd); 
   
-  Int_t iNevt=pEsdTr->GetEntries();  Printf("This ESD contains %i events",iNevt);
+  Int_t iNevt=pTr->GetEntries();  Printf("This ESD contains %i events",iNevt);
   for(Int_t iEvt=0;iEvt<iNevt;iEvt++){//ESD events loop
-    pEsdTr->GetEvent(iEvt);
-    Int_t iNtracks=pESD->GetNumberOfTracks(); Printf("ESD contains %i tracks created in Bz=%.2f Tesla",iNtracks,pESD->GetMagneticField()/10.);
+    pTr->GetEvent(iEvt);
+    Int_t iNtracks=pEsd->GetNumberOfTracks(); Printf("ESD contains %i tracks created in Bz=%.2f Tesla",iNtracks,pEsd->GetMagneticField()/10.);
     for(Int_t iTrk=0;iTrk<iNtracks;iTrk++){//ESD tracks loop
-      AliESDtrack *pTrack = pESD->GetTrack(iTrk);// get next reconstructed track
+      AliESDtrack *pTrack = pEsd->GetTrack(iTrk);// get next reconstructed track
       Double_t dx,dy;         pTrack->GetRICHdxdy(dx,dy);
       Double_t theta,phi;     pTrack->GetRICHthetaPhi(theta,phi);
       Printf("Track %2i Q=%4.1f P=%.3f GeV RICH: ChamberCluster %7i Track-Mip=(%7.2f,%7.2f)=%5.2f cm ThetaCer %7.1f rad",iTrk,pTrack->GetSign(),pTrack->GetP(),
                    pTrack->GetRICHcluster(),dx,dy,TMath::Sqrt(dx*dx+dy*dy),pTrack->GetRICHsignal());
     }//ESD tracks loop
   }//ESD events loop
-  delete pESD;  pFile->Close();//close AliESDs.root
+  delete pEsd;  pFile->Close();//close AliESDs.root
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHTracker::MatrixPrint(Double_t probCut)
+{
+// Reads a set of 3  ESD files from current directory and prints out the matrix of probabilities to pion kaon or proton completely blindly withou nay assumption on the contents of files.
+// Normally it implies that those 3 ESDs contain only particles of the same sort namly pions, kaons and protons in that order.  
+// Arguments: probCut - cut on probability 
+//   Returns: none
+  for(Int_t iFile=0;iFile<3;iFile++){
+    TFile *pFile=TFile::Open(Form("Esd%1i.root",iFile+1),"read"); if(!pFile) {Printf("ERROR: Esd%1i.root does not exist!",iFile+1);return;} 
+    TTree *pTr=(TTree*)pFile->Get("esdTree");                     if(!pTr)   {Printf("ERROR: Esd%1i.root, no ESD tree inside!",iFile+1);return;} 
+    AliESD *pEsd=new AliESD;  pTr->SetBranchAddress("ESD", &pEsd); 
+    Int_t iProtCnt=0,iKaonCnt=0,iPionCnt=0,iUnreconCnt=0,iTrkCnt=0; //counters
+    
+    for(Int_t iEvt=0;iEvt<pTr->GetEntries();iEvt++){//ESD events loop
+      pTr->GetEvent(iEvt);
+      iTrkCnt+=pEsd->GetNumberOfTracks();
+      for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//ESD tracks loop
+        AliESDtrack *pTrack = pEsd->GetTrack(iTrk);// get next reconstructed track
+        Double_t dx,dy;         pTrack->GetRICHdxdy(dx,dy);
+        Double_t theta,phi;     pTrack->GetRICHthetaPhi(theta,phi);
+        Double_t prob[5];       pTrack->GetRICHpid(prob);
+        if(pTrack->GetRICHsignal()>0){
+          if(prob[4]>probCut)                         iProtCnt++; 
+          if(prob[3]>probCut)                         iKaonCnt++;
+          if((prob[0]+prob[1]+prob[2])>probCut)       iPionCnt++;
+        } else
+          iUnreconCnt++;       
+      }//ESD tracks loop
+      
+    }//ESD events loop
+    Printf("Bz=%5.2f Events=%i Total tracks=%i No recognized tracks=%i Pion=%i Kaon=%i Proton=%i ProbCut=%.2f",
+        0.1*pEsd->GetMagneticField(),pTr->GetEntries(),iTrkCnt,iUnreconCnt,iPionCnt,iKaonCnt,iProtCnt,probCut);
+    delete pEsd;  pFile->Close();//close AliESDs.root
+  }//files loop
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

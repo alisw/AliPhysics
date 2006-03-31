@@ -163,10 +163,10 @@ void AliRICHCluster::Test(Double_t x,Double_t y,Double_t e,Bool_t isTryUnfold)
       clu.DigAdd(new AliRICHDigit(pad,dQpad));
     }//affected pads loop 
   }
-                 Printf("Initial hit    :  (%.2f,%.2f) Qtot=%i E=%.2f eV",x,y,iQtot,e*1e9);
   clu.CoG();  clu.Print("Initial cluster:");
   TClonesArray *pCluLst=new TClonesArray("AliRICHCluster",1);
   clu.Solve(pCluLst,isTryUnfold);  
+  Printf("Initial hit    :  (%.2f,%.2f) Qtot=%i E=%.2f eV",x,y,iQtot,e*1e9);
   ((AliRICHCluster *)pCluLst->At(0))->Print("Solved cluster:");
   
   delete pCluLst; clu.Reset();

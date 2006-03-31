@@ -431,6 +431,7 @@ void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
   
   Double_t b = pESD->GetMagneticField()/10.;
   
+  Printf("b=%f",b);
   Int_t iNtracks=pESD->GetNumberOfTracks();    
   
   for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
