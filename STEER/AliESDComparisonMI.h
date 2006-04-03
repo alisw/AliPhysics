@@ -15,7 +15,7 @@ public:
   AliESDRecInfo(){}
   ~AliESDRecInfo(){}
   void UpdatePoints(AliESDtrack* track);
-  void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed);
+  void Update(AliMCInfo* info,AliTPCParam * par, Bool_t reconstructed, AliESD *event);
   void Reset();
   Float_t  fTPCPoints[10]; //start , biggest end points,max density .. density at the last 30 pad-rows
   Double_t fTPCinR0[5];   //generated position of the track at inner tpc - radius [3] and fi [4]

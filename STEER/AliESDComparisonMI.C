@@ -31,7 +31,6 @@ Usage:
 .L $ALICE_ROOT/STEER/AliGenInfo.C+
 //be sure you created genTracks file before
 .L $ALICE_ROOT/STEER/AliESDComparisonMI.C+
-
 //
 ESDCmpTr *t2 = new ESDCmpTr("genTracks.root","cmpESDTracks.root","galice.root",-1,0,0);
 t2->Exec();
@@ -308,7 +307,7 @@ void  AliESDRecInfo::UpdatePoints(AliESDtrack*track)
 
 //
 //
-void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconstructed)
+void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconstructed, AliESD *event)
 {
   //
   //
@@ -379,7 +378,8 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
       fStatus[1] =2;
     }
     else{
-      fStatus[1]=1;
+      if ((fESDTrack.GetStatus()&AliESDtrack::kTPCin)>0)
+	fStatus[1]=1;
     }      
   }
   //
@@ -469,7 +469,7 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
     fTPCDelta[4] = (fTPCinP0[3]-fTPCinP1[3]);
     Double_t sign = (param[4]>0)? 1.:-1; 
     fSign =sign;
-    fTPCPools[4] = sign*(1./fTPCinP0[3]-1./fTPCinP1[3])/TMath::Sqrt(TMath::Abs(cov[14]));    
+    fTPCPools[4] = sign*(1./fTPCinP0[3]-1./fTPCinP1[3])/TMath::Sqrt(TMath::Abs(cov[14]));
   }
   if (fITSOn){
     // ITS 
@@ -1246,12 +1246,12 @@ Int_t ESDCmpTr::TreeGenLoop(Int_t eventNr)
   timer.Start();
   Int_t entry = fNextTreeGenEntryToRead;
   Double_t nParticlesTR = fTreeGenTracks->GetEntriesFast();
-  AliESDtrack dummytrack;
   cerr<<"fNParticles, nParticlesTR, fNextTreeGenEntryToRead: "<<fNParticles<<" "
       <<nParticlesTR<<" "<<fNextTreeGenEntryToRead<<endl;
   TBranch * branch = fTreeCmp->GetBranch("RC");
   branch->SetAddress(&fRecInfo); // set all pointers
   fRecArray = new TObjArray(fNParticles);
+  AliESDtrack dummytrack;  //
 
   while (entry < nParticlesTR) {
     fTreeGenTracks->GetEntry(entry);
@@ -1322,8 +1322,12 @@ Int_t ESDCmpTr::TreeGenLoop(Int_t eventNr)
 	}
       }	
       //
-      if (!track) track = &dummytrack;
-      fRecInfo->fESDTrack =*track;       
+      if (track) {
+	fRecInfo->fESDTrack =*track;
+      }else{
+	fRecInfo->fESDTrack = dummytrack;
+      }
+      
       if (track->GetITStrack())
 	fRecInfo->fITStrack = *((AliITStrackMI*)track->GetITStrack());
       else{
@@ -1339,10 +1343,11 @@ Int_t ESDCmpTr::TreeGenLoop(Int_t eventNr)
       fRecInfo->fFake     = fFakeRecTracks[fMCInfo->fLabel];
       fRecInfo->fMultiple = fMultiRecTracks[fMCInfo->fLabel];
       //
-      fRecInfo->Update(fMCInfo,fParamTPC,kTRUE);          
+      fRecInfo->Update(fMCInfo,fParamTPC,kTRUE, fEvent);          
     }
     else{
-      fRecInfo->Update(fMCInfo,fParamTPC,kFALSE);
+      fRecInfo->fESDTrack = dummytrack;
+      fRecInfo->Update(fMCInfo,fParamTPC,kFALSE, fEvent);
     }
     fRecArray->AddAt(new AliESDRecInfo(*fRecInfo),fMCInfo->fLabel);
     fTreeCmp->Fill();
