@@ -27,6 +27,7 @@ const Double_t kVeryBig=1./kAlmost0;
 
 class AliKalmanTrack;
 class AliStrLine;
+class AliESDVertex;
 
 class AliExternalTrackParam: public TObject {
  public:
@@ -63,6 +64,7 @@ class AliExternalTrackParam: public TObject {
   Double_t GetDCA(const AliExternalTrackParam *p, Double_t b,
     Double_t &xthis,Double_t &xp) const;
   Double_t PropagateToDCA(AliExternalTrackParam *p, Double_t b);
+  Bool_t PropagateToDCA(const AliESDVertex *vtx, Double_t b, Double_t maxd);
 
   Bool_t GetPxPyPz(Double_t *p) const;
   Bool_t GetXYZ(Double_t *p) const;

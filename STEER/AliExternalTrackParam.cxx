@@ -29,6 +29,7 @@
 #include "AliKalmanTrack.h"
 #include "AliTracker.h"
 #include "AliStrLine.h"
+#include "AliESDVertex.h"
 
 
 ClassImp(AliExternalTrackParam)
@@ -525,6 +526,44 @@ PropagateToDCA(AliExternalTrackParam *p, Double_t b) {
 
   return dca;
 }
+
+
+
+
+Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, Double_t b, Double_t maxd){
+  //
+  // Try to relate this track to the vertex "vtx", 
+  // if the (rough) transverse impact parameter is not bigger then "maxd". 
+  //            Magnetic field is "b" (kG).
+  //
+  // a) The track gets extapolated to the DCA to the vertex.
+  // b) The impact parameters and their covariance matrix are calculated.
+  //
+  //    In the case of success, the returned value is kTRUE
+  //    (otherwise, it's kFALSE)
+  //  
+  Double_t alpha=GetAlpha();
+  Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
+  Double_t x=GetX(), y=GetParameter()[0], snp=GetParameter()[2];
+  Double_t xv= vtx->GetXv()*cs + vtx->GetYv()*sn;
+  Double_t yv=-vtx->GetXv()*sn + vtx->GetYv()*cs, zv=vtx->GetZv();
+  x-=xv; y-=yv;
+
+  //Estimate the impact parameter neglecting the track curvature
+  Double_t d=TMath::Abs(x*snp - y*TMath::Sqrt(1.- snp*snp));
+  if (d > maxd) return kFALSE; 
+
+  //Propagate to the DCA
+  Double_t crv=0.299792458e-3*b*GetParameter()[4];
+  Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
+  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt(1.- sn*sn);
+
+  x = xv*cs + yv*sn;
+  yv=-xv*sn + yv*cs; xv=x;
+
+  if (!Propagate(alpha+TMath::ASin(sn),xv,b)) return kFALSE;
+}
+
 
 
 
