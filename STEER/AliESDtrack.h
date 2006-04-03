@@ -81,6 +81,7 @@ public:
     if (!fIp) return kFALSE;
     return fIp->GetPxPyPz(p);
   }
+  const AliExternalTrackParam * GetInnerParam() const { return fIp;}
   Bool_t GetInnerXYZ(Double_t *r) const {
     if (!fIp) return kFALSE;
     return fIp->GetXYZ(r);
@@ -89,7 +90,7 @@ public:
         (Double_t &alpha, Double_t &x, Double_t p[5]) const;
   Bool_t GetInnerExternalCovariance(Double_t cov[15]) const;
  
-
+  const AliExternalTrackParam * GetOuterParam() const { return fOp;}
   Bool_t GetOuterPxPyPz(Double_t *p) const {
     if (!fOp) return kFALSE;
     return fOp->GetPxPyPz(p);
