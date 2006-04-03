@@ -33,6 +33,10 @@
 #include "AliSimDigits.h"
 #include "AliLog.h"
 
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCCalROC.h"
+
 ClassImp(AliTPCDigitizer)
 
 //___________________________________________
@@ -177,6 +181,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   param->SetZeroSup(2);
 
   Int_t zerosup = param->GetZeroSup(); 
+  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor(); 
   //
   //Loop over segments of the TPC
     
@@ -188,7 +193,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
       cerr<<"AliTPC warning: invalid segment ID ! "<<segmentID<<endl;
       continue;
      }
-
+    AliTPCCalROC * gainROC = gainTPC->GetCalROC(sec);  // pad gains per given sector
     digrow->SetID(segmentID);
 
     Int_t nrows = 0;
@@ -260,6 +265,11 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
            ptr[i]++;
          }
         q/=16.;  //conversion factor
+	Float_t gain = gainROC->GetValue(row,elem/nrows);  // get gain for given - pad-row pad
+	if (gain<0.5){
+	  printf("problem\n");
+	}
+	q*= gain;
         //       Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
         Float_t noise  = pTPC->GetNoise();
         q+=noise;
@@ -371,6 +381,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   Int_t zerosup = param->GetZeroSup();
   //Loop over segments of the TPC
     
+  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   for (Int_t n=0; n<nentries; n++) {
     rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
     gime = rl->GetLoader("TPCLoader");
@@ -378,7 +389,8 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
 
     digarr[0]->ExpandBuffer();
     digarr[0]->ExpandTrackBuffer();
-           
+
+
     for (Int_t i=1;i<nInputs; i++){ 
 //      fManager->GetInputTreeTPCS(i)->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());      
       rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i));
@@ -397,6 +409,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
       continue;
     }
 
+    AliTPCCalROC * gainROC = gainTPC->GetCalROC(sec);  // pad gains per given sector
     digrow->SetID(digarr[0]->GetID());
 
     Int_t nrows = digarr[0]->GetNRows();
@@ -434,6 +447,8 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
         }
        q/=16.;  //conversion factor
        //       Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
+       Float_t gain = gainROC->GetValue(row,col);
+       q*= gain;
        Float_t noise  = pTPC->GetNoise();
        q+=noise;
         q=TMath::Nint(q);

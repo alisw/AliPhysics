@@ -39,6 +39,11 @@
 #include "Riostream.h"
 #include <TTree.h>
 
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCCalROC.h"
+
+
 ClassImp(AliTPCclustererMI)
 
 
@@ -99,7 +104,7 @@ Float_t  AliTPCclustererMI::GetSigmaZ2(Int_t iz){
   return res;
 }
 
-void AliTPCclustererMI::MakeCluster(Int_t k,Int_t max,Int_t *bins, UInt_t /*m*/,
+void AliTPCclustererMI::MakeCluster(Int_t k,Int_t max,Float_t *bins, UInt_t /*m*/,
 AliTPCclusterMI &c) 
 {
   Int_t i0=k/max;  //central pad
@@ -107,8 +112,8 @@ AliTPCclusterMI &c)
 
   // set pointers to data
   //Int_t dummy[5] ={0,0,0,0,0};
-  Int_t * matrix[5]; //5x5 matrix with digits  - indexing i = 0 ..4  j = -2..2
-  Int_t * resmatrix[5];
+  Float_t * matrix[5]; //5x5 matrix with digits  - indexing i = 0 ..4  j = -2..2
+  Float_t * resmatrix[5];
   for (Int_t di=-2;di<=2;di++){
     matrix[di+2]  =  &bins[k+di*max];
     resmatrix[di+2]  =  &fResBins[k+di*max];
@@ -205,7 +210,7 @@ AliTPCclusterMI &c)
     //remove cluster data from data
     for (Int_t di=-2;di<=2;di++)
       for (Int_t dj=-2;dj<=2;dj++){
-	resmatrix[di+2][dj] -= Int_t(vmatrix[di+2][dj+2]);
+	resmatrix[di+2][dj] -= vmatrix[di+2][dj+2];
 	if (resmatrix[di+2][dj]<0) resmatrix[di+2][dj]=0;
       }
     resmatrix[2][0] =0;
@@ -215,8 +220,8 @@ AliTPCclusterMI &c)
   //unfolding when neccessary  
   //
   
-  Int_t * matrix2[7]; //7x7 matrix with digits  - indexing i = 0 ..6  j = -3..3
-  Int_t dummy[7]={0,0,0,0,0,0};
+  Float_t * matrix2[7]; //7x7 matrix with digits  - indexing i = 0 ..6  j = -3..3
+  Float_t dummy[7]={0,0,0,0,0,0};
   for (Int_t di=-3;di<=3;di++){
     matrix2[di+3] =  &bins[k+di*max];
     if ((k+di*max)<3)  matrix2[di+3] = &dummy[3];
@@ -248,7 +253,7 @@ AliTPCclusterMI &c)
 
 
 
-void AliTPCclustererMI::UnfoldCluster(Int_t * matrix2[7], Float_t recmatrix[5][5], Float_t & meani, Float_t & meanj, 
+void AliTPCclustererMI::UnfoldCluster(Float_t * matrix2[7], Float_t recmatrix[5][5], Float_t & meani, Float_t & meanj, 
 				      Float_t & sumu, Float_t & overlap )
 {
   //
@@ -461,6 +466,8 @@ void AliTPCclustererMI::Digits2Clusters()
     return;
   }
 
+  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
+
   AliSimDigits digarr, *dummy=&digarr;
   fRowDig = dummy;
   fInput->GetBranch("Segment")->SetAddress(&dummy);
@@ -469,7 +476,7 @@ void AliTPCclustererMI::Digits2Clusters()
   fMaxTime=fParam->GetMaxTBin()+6; // add 3 virtual time bins before and 3   after
     
   Int_t nclusters  = 0;
-  
+
   for (Int_t n=0; n<nentries; n++) {
     fInput->GetEvent(n);
     Int_t row;
@@ -477,7 +484,9 @@ void AliTPCclustererMI::Digits2Clusters()
       cerr<<"AliTPC warning: invalid segment ID ! "<<digarr.GetID()<<endl;
       continue;
     }
-        
+    AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
+    
+    //
     AliTPCClustersRow *clrow= new AliTPCClustersRow();
     fRowCl = clrow;
     clrow->SetClass("AliTPCclusterMI");
@@ -504,16 +513,18 @@ void AliTPCclustererMI::Digits2Clusters()
     
     
     fMaxBin=fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
-    fBins    =new Int_t[fMaxBin];
-    fResBins =new Int_t[fMaxBin];  //fBins with residuals after 1 finder loop 
-    memset(fBins,0,sizeof(Int_t)*fMaxBin);
+    fBins    =new Float_t[fMaxBin];
+    fResBins =new Float_t[fMaxBin];  //fBins with residuals after 1 finder loop 
+    memset(fBins,0,sizeof(Float_t)*fMaxBin);
+    memset(fResBins,0,sizeof(Float_t)*fMaxBin);
     
     if (digarr.First()) //MI change
       do {
-	Short_t dig=digarr.CurrentDigit();
+	Float_t dig=digarr.CurrentDigit();
 	if (dig<=fParam->GetZeroSup()) continue;
 	Int_t j=digarr.CurrentRow()+3, i=digarr.CurrentColumn()+3;
-	fBins[i*fMaxTime+j]=dig;
+	Float_t gain = gainROC->GetValue(row,digarr.CurrentRow()/fParam->GetMaxTBin());
+	fBins[i*fMaxTime+j]=dig/gain;
       } while (digarr.Next());
     digarr.ExpandTrackBuffer();
 
@@ -555,8 +566,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   Int_t zeroSup = fParam->GetZeroSup();
 
   fBins = NULL;
-  Int_t** splitRows = new Int_t* [kNS*2];
-  Int_t** splitRowsRes = new Int_t* [kNS*2];
+  Float_t** splitRows = new Float_t* [kNS*2];
+  Float_t** splitRowsRes = new Float_t* [kNS*2];
   for (Int_t iSector = 0; iSector < kNS*2; iSector++)
     splitRows[iSector] = NULL;
   Int_t iSplitRow = -1;
@@ -615,9 +626,10 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     
       fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
       if ((iSplitRow < 0) || !splitRows[fSector + kNS*iSplitRow]) {
-	fBins    = new Int_t[fMaxBin];
-	fResBins = new Int_t[fMaxBin];  //fBins with residuals after 1 finder loop 
-	memset(fBins, 0, sizeof(Int_t)*fMaxBin);
+	fBins    = new Float_t[fMaxBin];
+	fResBins = new Float_t[fMaxBin];  //fBins with residuals after 1 finder loop 
+	memset(fBins, 0, sizeof(Float_t)*fMaxBin);
+	memset(fResBins, 0, sizeof(Float_t)*fMaxBin);
       } else {
 	fBins    = splitRows[fSector + kNS*iSplitRow];
 	fResBins = splitRowsRes[fSector + kNS*iSplitRow];
@@ -688,7 +700,7 @@ void AliTPCclustererMI::FindClusters()
       amp0 = (amp1*amp1/amp2)*TMath::Exp(-1./sigma2);	
       if (gDebug>4) printf("\n%f\n",amp0);
     }  
-    fBins[i+2*fMaxTime] = Int_t(amp0);    
+    fBins[i+2*fMaxTime] = amp0;    
     amp0 = 0;
     amp1 = fBins[(fMaxPad+2)*fMaxTime+i];
     if (amp1>0){
@@ -698,7 +710,7 @@ void AliTPCclustererMI::FindClusters()
       amp0 = (amp1*amp1/amp2)*TMath::Exp(-1./sigma2);		
       if (gDebug>4) printf("\n%f\n",amp0);
     }        
-    fBins[(fMaxPad+3)*fMaxTime+i] = Int_t(amp0);           
+    fBins[(fMaxPad+3)*fMaxTime+i] = amp0;           
   }
 
 //  memcpy(fResBins,fBins, fMaxBin*2);
@@ -707,7 +719,7 @@ void AliTPCclustererMI::FindClusters()
   fNcluster=0;
   //first loop - for "gold cluster" 
   fLoop=1;
-  Int_t *b=&fBins[-1]+2*fMaxTime;
+  Float_t *b=&fBins[-1]+2*fMaxTime;
   Int_t crtime = Int_t((fParam->GetZLength()-AliTPCReconstructor::GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);
 
   for (Int_t i=2*fMaxTime; i<fMaxBin-2*fMaxTime; i++) {
