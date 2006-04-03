@@ -41,7 +41,7 @@ AliPHOSSupportGeometry::AliPHOSSupportGeometry()
   fRailPart1[2] = fRailLength;
 
   fRailPart2[0] =    1.5;
-  fRailPart2[1] =   54.0;
+  fRailPart2[1] =   34.0;
   fRailPart2[2] = fRailLength;
 
   fRailPart3[0] =    6.0;
@@ -53,7 +53,7 @@ AliPHOSSupportGeometry::AliPHOSSupportGeometry()
   fRailOuterSize[2] = fRailLength;
 
   fDistanceBetwRails = 420.0;
-  fRailsDistanceFromIP = 610.;
+  fRailsDistanceFromIP = 590.;
 
   fRailRoadSize[0] = fDistanceBetwRails + fRailOuterSize[0];
   fRailRoadSize[1] = fRailOuterSize[1];
