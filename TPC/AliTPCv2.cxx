@@ -864,15 +864,15 @@ void AliTPCv2::CreateGeometry()
     }
     else{
      gGeoManager->Node("TPC_Rod",i+1,"TPC_Drift",x,y,z,0,kTRUE,upar,3);//shaft
-     gGeoManager->Node("TPC_Rod",i+18,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);//muon
+     gGeoManager->Node("TPC_Rod",i+19,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);//muon
     }
     r=254.25;
     x=r * TMath::Cos(angle);
     y=r * TMath::Sin(angle);
     upar[2]=126.54; //upper
     z=127.06;
-    gGeoManager->Node("TPC_Rod",i+36,"TPC_Drift",x,y,z,0,kTRUE,upar,3);
-    gGeoManager->Node("TPC_Rod",i+54,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
+    gGeoManager->Node("TPC_Rod",i+37,"TPC_Drift",x,y,z,0,kTRUE,upar,3);
+    gGeoManager->Node("TPC_Rod",i+55,"TPC_Drift",x,y,-z,0,kTRUE,upar,3);
   }
 
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
