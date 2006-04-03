@@ -19,6 +19,7 @@
 
 #include "AliESDMuonTrack.h"
 #include "AliESDPmdTrack.h"
+#include "AliESDTrdTrack.h"
 #include "AliESDVertex.h"
 #include "AliESDcascade.h"
 #include "AliESDkink.h"
@@ -55,6 +56,9 @@ public:
   AliESDPmdTrack *GetPmdTrack(Int_t i) const {
     return (AliESDPmdTrack *)fPmdTracks.UncheckedAt(i);
   }
+  AliESDTrdTrack *GetTrdTrack(Int_t i) const {
+    return (AliESDTrdTrack *)fTrdTracks.UncheckedAt(i);
+  }
 
   Int_t  AddTrack(const AliESDtrack *t) {
     AliESDtrack * track = new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
@@ -73,6 +77,9 @@ public:
   }
   void AddPmdTrack(const AliESDPmdTrack *t) {
     new(fPmdTracks[fPmdTracks.GetEntriesFast()]) AliESDPmdTrack(*t);
+  }
+  void AddTrdTrack(const AliESDTrdTrack *t) {
+    new(fTrdTracks[fTrdTracks.GetEntriesFast()]) AliESDTrdTrack(*t);
   }
 
   AliESDv0 *GetV0(Int_t i) const {
@@ -131,6 +138,7 @@ public:
   Int_t GetNumberOfHLTHoughTracks()     const {return fHLTHoughTracks.GetEntriesFast();}
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks.GetEntriesFast();}
   Int_t GetNumberOfPmdTracks() const {return fPmdTracks.GetEntriesFast();}
+  Int_t GetNumberOfTrdTracks() const {return fTrdTracks.GetEntriesFast();}
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
   Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
   Int_t GetNumberOfKinks() const {return fKinks.GetEntriesFast();}
@@ -197,6 +205,7 @@ protected:
   TClonesArray fHLTHoughTracks;  // HLT ESD tracks from Hough Transform method
   TClonesArray fMuonTracks;      // MUON ESD tracks
   TClonesArray fPmdTracks;       // PMD ESD tracks
+  TClonesArray fTrdTracks;       // TRD ESD tracks (triggered)
   TClonesArray fV0s;             // V0 vertices
   TClonesArray fCascades;        // Cascade vertices
   TClonesArray fKinks;           // Kinks

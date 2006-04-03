@@ -35,9 +35,9 @@ AliESD::AliESD():
   fMagneticField(0),
   fZDCN1Energy(0),
   fZDCP1Energy(0),
-  fZDCEMEnergy(0),
   fZDCN2Energy(0),
   fZDCP2Energy(0),
+  fZDCEMEnergy(0),
   fZDCParticipants(0),
   fT0zVertex(0),
   fPrimaryVertex(),
@@ -46,6 +46,7 @@ AliESD::AliESD():
   fHLTHoughTracks("AliESDHLTtrack",15000),
   fMuonTracks("AliESDMuonTrack",30),
   fPmdTracks("AliESDPmdTrack",3000),
+  fTrdTracks("AliESDTrdTrack",300),
   fV0s("AliESDv0",200),  
   fCascades("AliESDcascade",20),
   fKinks("AliESDkink",4000),
@@ -71,6 +72,7 @@ AliESD::~AliESD()
   fHLTHoughTracks.Delete();
   fMuonTracks.Delete();
   fPmdTracks.Delete();
+  fTrdTracks.Delete();
   fV0s.Delete();
   fCascades.Delete();
   fKinks.Delete();
@@ -109,9 +111,9 @@ void AliESD::Reset()
   fMagneticField=0;
   fZDCN1Energy=0;
   fZDCP1Energy=0;
-  fZDCEMEnergy=0;
   fZDCN2Energy=0;
   fZDCP2Energy=0;
+  fZDCEMEnergy=0;
   fZDCParticipants=0;
   fT0zVertex=0;
   fPrimaryVertex.Reset();
@@ -120,6 +122,7 @@ void AliESD::Reset()
   fHLTHoughTracks.Clear();
   fMuonTracks.Clear();
   fPmdTracks.Clear();
+  fTrdTracks.Clear();
   fV0s.Clear();
   fCascades.Clear();
   fCaloClusters.Clear();
@@ -155,6 +158,7 @@ void AliESD::Print(Option_t *) const
   printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
   printf("                 pmd       %d\n", GetNumberOfPmdTracks());
+  printf("                 trd       %d\n", GetNumberOfTrdTracks());
   printf("                 v0        %d\n", GetNumberOfV0s());
   printf("                 cascades  %d\n)", GetNumberOfCascades());
   printf("                 kinks     %d\n)", GetNumberOfKinks());

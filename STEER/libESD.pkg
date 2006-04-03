@@ -1,6 +1,6 @@
 SRCS = AliESD.cxx \
        AliESDtrack.cxx \
-       AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDHLTtrack.cxx \
+       AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDTrdTrack.cxx AliESDHLTtrack.cxx \
        AliESDv0.cxx AliESDcascade.cxx AliVertex.cxx AliESDVertex.cxx \
        AliESDpid.cxx AliESDkink.cxx AliESDV0MI.cxx \
        AliESDCaloCluster.cxx \

@@ -30,6 +30,11 @@
 #include <TFile.h>
 #include "AliRawReader.h"
 #include "AliLog.h"
+#include "AliTRDtrigger.h"
+#include "AliTRDtrigParam.h"
+#include "AliRun.h"
+#include "AliESDTrdTrack.h"
+#include "AliESD.h"
 
 ClassImp(AliTRDReconstructor)
 
@@ -56,6 +61,34 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
   }
 
   loader->UnloadRecPoints();
+
+  // Trigger (tracklets, LTU)
+
+  AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
+
+  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
+
+  if (runLoader->GetAliRun() == 0x0) runLoader->LoadgAlice();
+  gAlice = runLoader->GetAliRun();
+  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t b[3];
+  gAlice->Field(x,b);  // b[] is in kilo Gauss
+  Float_t field = b[2] * 0.1; // Tesla
+  Info("Reconstruct","Trigger set for magnetic field = %f Tesla \n",field);
+
+  trigp->SetField(field);
+  trigp->Init();
+  trdTrigger.SetParameter(trigp);
+
+  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+    trdTrigger.Open(runLoader->GetFileName(), iEvent);
+    trdTrigger.ReadDigits();
+    trdTrigger.MakeTracklets();
+    trdTrigger.WriteTracklets(-1);
+  }
+
+  loader->UnloadTracks();
+
 }
 
 //_____________________________________________________________________________
@@ -82,6 +115,34 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
   }
 
   loader->UnloadRecPoints();
+
+  // Trigger (tracklets, LTU)
+
+  AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
+
+  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
+
+  if (runLoader->GetAliRun() == 0x0) runLoader->LoadgAlice();
+  gAlice = runLoader->GetAliRun();
+  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t b[3];
+  gAlice->Field(x,b);  // b[] is in kilo Gauss
+  Float_t field = b[2] * 0.1; // Tesla
+  Info("Reconstruct","Trigger set for magnetic field = %f Tesla \n",field);
+
+  trigp->SetField(field);
+  trigp->Init();
+  trdTrigger.SetParameter(trigp);
+
+  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+    trdTrigger.Open(runLoader->GetFileName(), iEvent);
+    trdTrigger.ReadDigits(rawReader);
+    trdTrigger.MakeTracklets();
+    trdTrigger.WriteTracklets(-1);
+  }
+
+  loader->UnloadTracks();
+
 }
 
 //_____________________________________________________________________________
@@ -94,7 +155,7 @@ AliTracker* AliTRDReconstructor::CreateTracker(AliRunLoader* runLoader) const
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
+void AliTRDReconstructor::FillESD(AliRunLoader* runLoader, 
 				  AliESD* esd) const
 {
 // make PID
@@ -106,6 +167,57 @@ void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/,
   };
   AliTRDpidESD trdPID(parTRD);
   trdPID.MakePID(esd);
+
+  // Trigger (tracks, GTU)
+
+  AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
+
+  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
+
+  if (runLoader->GetAliRun() == 0x0) runLoader->LoadgAlice();
+  gAlice = runLoader->GetAliRun();
+  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t b[3];
+  gAlice->Field(x,b);  // b[] is in kilo Gauss
+  Float_t field = b[2] * 0.1; // Tesla
+  Info("FillESD","Trigger set for magnetic field = %f Tesla \n",field);
+
+  trigp->SetField(field);
+  trigp->Init();
+
+  trdTrigger.SetParameter(trigp);
+  trdTrigger.SetRunLoader(runLoader);
+  trdTrigger.Init();
+
+  Int_t iEvent = runLoader->GetEventNumber(); 
+  runLoader->GetEvent(iEvent);
+  trdTrigger.ReadTracklets(runLoader);
+
+  AliESDTrdTrack *TrdTrack = new AliESDTrdTrack();
+  AliTRDgtuTrack *GtuTrack;
+
+  Int_t nTracks = trdTrigger.GetNumberOfTracks();
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+
+    GtuTrack = trdTrigger.GetTrack(iTrack);
+
+    TrdTrack->SetYproj(GtuTrack->GetYproj());
+    TrdTrack->SetZproj(GtuTrack->GetZproj());
+    TrdTrack->SetSlope(GtuTrack->GetSlope());
+    TrdTrack->SetDetector(GtuTrack->GetDetector());
+    TrdTrack->SetTracklets(GtuTrack->GetTracklets());
+    TrdTrack->SetPlanes(GtuTrack->GetPlanes());
+    TrdTrack->SetClusters(GtuTrack->GetClusters());
+    TrdTrack->SetPt(GtuTrack->GetPt());
+    TrdTrack->SetPhi(GtuTrack->GetPhi());
+    TrdTrack->SetEta(GtuTrack->GetEta());
+    TrdTrack->SetLabel(GtuTrack->GetLabel());
+    TrdTrack->SetPID(GtuTrack->GetPID());
+
+    esd->AddTrdTrack(TrdTrack);
+
+  }
+
 }
 
 
