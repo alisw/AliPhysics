@@ -15,8 +15,6 @@ class AliSTARTRawReader : public TTask {
   virtual  ~AliSTARTRawReader();
 
 
-  UInt_t UnpackWord(UInt_t PackedWord, Int_t StartBit, Int_t StopBit); // unpack packed words
-  // void NextThing(); //read next raw digit
   Bool_t  Next(); //read next raw digit
   
   protected :
