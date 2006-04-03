@@ -47,12 +47,17 @@ public:
   static void SetMaxSnpTrack(Double_t maxSnp) {fgMaxSnpTrack = maxSnp;}
   static Double_t GetMaxSnpTrack(){ return fgMaxSnpTrack;}
 
+  static Int_t StreamLevel()               { return fgStreamLevel;}
+  static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
+
 private:
   AliTPCParam*         GetTPCParam(AliRunLoader* runLoader) const;
 
   static Double_t fgCtgRange; //! +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
   static Double_t fgMaxSnpTracker;   // max sin of local angle  - for TPC tracker
-  static Double_t fgMaxSnpTrack;   // max sin of local angle  - for track 
+  static Double_t fgMaxSnpTrack;     // max sin of local angle  - for track 
+  static Int_t    fgStreamLevel;     // flag for streaming      - for TPC reconstruction
+
   ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
 };
 

@@ -19,12 +19,7 @@
 //
 //   Origin: Marian Ivanov   Marian.Ivanov@cern.ch
 // 
-//  AliTPC parallel tracker - 
-//  How to use?  - 
-//  run AliTPCFindClusters.C macro - clusters neccessary for tracker are founded
-//  run AliTPCFindTracksMI.C macro - to find tracks
-//  tracks are written to AliTPCtracks.root file
-//  for comparison also seeds are written to the same file - to special branch
+//  AliTPC parallel tracker
 //-------------------------------------------------------
 
 
@@ -2552,7 +2547,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
     seed->CookdEdx(0.02,0.6);
     CookLabel(seed,0.1); //For comparison only
     //
-    if (0 && seed!=0&&esd!=0) {
+    if (AliTPCReconstructor::StreamLevel()>0 && seed!=0&&esd!=0) {
       TTreeSRedirector &cstream = *fDebugStreamer;
       cstream<<"Crefit"<<
 	"Esd.="<<esd<<
@@ -4135,8 +4130,8 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
 	    track0->fCircular += 2;
 	  }
 	}		
-	if (sign&&0){	  
-	  //debug stream
+	if (sign&&AliTPCReconstructor::StreamLevel()>1){	  
+	  //debug stream	  
 	  cstream<<"Curling"<<
 	    "lab0="<<track0->fLab<<
 	    "lab1="<<track1->fLab<<   
@@ -4750,18 +4745,20 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
     if (sign[i]==0) continue;
     AliTPCseed * track0 = (AliTPCseed*)array->At(i);
     if (!track0) continue;
-    cstream<<"Tracks"<<
-      "Tr0.="<<track0<<
-      "dca="<<dca[i]<<
-      "z0="<<z0[i]<<
-      "zvertex="<<zvertex<<
-      "sdcar0="<<sdcar[i]<<
-      "cdcar0="<<cdcar[i]<<
-      "pulldcar0="<<pulldcar[i]<<
-      "pulldcaz0="<<pulldcaz[i]<<
-      "pulldca0="<<pulldca[i]<<
-      "isPrim="<<isPrim[i]<<
-      "\n";
+    if (AliTPCReconstructor::StreamLevel()>0){
+      cstream<<"Tracks"<<
+	"Tr0.="<<track0<<
+	"dca="<<dca[i]<<
+	"z0="<<z0[i]<<
+	"zvertex="<<zvertex<<
+	"sdcar0="<<sdcar[i]<<
+	"cdcar0="<<cdcar[i]<<
+	"pulldcar0="<<pulldcar[i]<<
+	"pulldcaz0="<<pulldcaz[i]<<
+	"pulldca0="<<pulldca[i]<<
+	"isPrim="<<isPrim[i]<<
+	"\n";
+    }
     //
     if (track0->fP4<0) continue;
     if (track0->GetKinkIndex(0)>0||isPrim[i]) continue;   //daughter kink
@@ -4853,7 +4850,8 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
 	Int_t eventNr = esd->GetEventNumber();
 	Double_t radiusm= (delta[0]<delta[1])? TMath::Sqrt(radius[0]):TMath::Sqrt(radius[1]);  
 	Double_t deltam= (delta[0]<delta[1])? TMath::Sqrt(delta[0]):TMath::Sqrt(delta[1]);  
-	cstream<<"V0"<<
+	if (AliTPCReconstructor::StreamLevel()>0)
+	  cstream<<"V0"<<
 	  "Event="<<eventNr<<
 	  "vertex.="<<&vertex<<
 	  "Tr0.="<<track0<<
@@ -4954,7 +4952,8 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
     }
     {
       Int_t eventNr = esd->GetEventNumber();
-      cstream<<"V02"<<
+      if (AliTPCReconstructor::StreamLevel()>0)
+	cstream<<"V02"<<
 	"Event="<<eventNr<<
 	"vertex.="<<v0<<	
 	"vertex2.="<<v02<<

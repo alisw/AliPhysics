@@ -64,7 +64,7 @@ public:
    Int_t ReadSeeds(const TFile *in);
    TObjArray * GetSeeds(){return fSeeds;}
    //   
-   AliCluster * GetCluster (int) const {return 0;}
+   AliCluster * GetCluster(Int_t index) const {return (AliCluster*)GetClusterMI(index);}
    AliTPCclusterMI *GetClusterMI(Int_t index) const;
    Int_t Clusters2Tracks();
    virtual void  CookLabel(AliKalmanTrack *tk,Float_t wrong) const; 
