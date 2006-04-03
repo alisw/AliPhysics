@@ -523,7 +523,7 @@ void AliABSOv0::CreateGeometry()
   TGeoTranslation* tFassWindow = new TGeoTranslation("tFassWindow", 0., 0., 78.);
   tFassWindow->RegisterYourself();
   
-  TGeoTube* shFassApperture = new TGeoTube(0., 104., 3.);
+  TGeoTube* shFassApperture = new TGeoTube(0., 104., 3.01);
   shFassApperture->SetName("FassApperture");
   
   TGeoCompositeShape* shFassCentral = 
