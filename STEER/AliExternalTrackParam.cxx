@@ -546,7 +546,7 @@ Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, Double_t b
   Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
   Double_t x=GetX(), y=GetParameter()[0], snp=GetParameter()[2];
   Double_t xv= vtx->GetXv()*cs + vtx->GetYv()*sn;
-  Double_t yv=-vtx->GetXv()*sn + vtx->GetYv()*cs, zv=vtx->GetZv();
+  Double_t yv=-vtx->GetXv()*sn + vtx->GetYv()*cs;
   x-=xv; y-=yv;
 
   //Estimate the impact parameter neglecting the track curvature
@@ -562,6 +562,7 @@ Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, Double_t b
   yv=-xv*sn + yv*cs; xv=x;
 
   if (!Propagate(alpha+TMath::ASin(sn),xv,b)) return kFALSE;
+  return kTRUE;
 }
 
 
