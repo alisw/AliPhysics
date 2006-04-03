@@ -17,11 +17,8 @@ class AliTPCCalROC;
 class AliTPCCalDet;
 
 class AliTPCCalPad : public TNamed {
-
  public:
- 
   enum { kNsec = 72 };
-
   AliTPCCalPad();
   AliTPCCalPad(const Text_t* name, const Text_t* title);
   AliTPCCalPad(const AliTPCCalPad &c);   
@@ -32,7 +29,6 @@ class AliTPCCalPad : public TNamed {
  protected:
   AliTPCCalROC *fROC[kNsec];                    //  Array of ROC objects which contain the values per pad
   ClassDef(AliTPCCalPad,1)                      //  TPC calibration class for parameters which are saved per pad
-
 };
 
 #endif

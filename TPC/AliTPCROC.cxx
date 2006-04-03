@@ -61,19 +61,19 @@ void AliTPCROC::Init(){
   fNRows[1]= 96;
   //
   // number of pads in padrow
-  fNPads[0] = new Int_t[fNRows[0]];
-  fNPads[1] = new Int_t[fNRows[1]];  
+  fNPads[0] = new UInt_t[fNRows[0]];
+  fNPads[1] = new UInt_t[fNRows[1]];  
   //
   // padrow index in array
   //
-  fRowPosIndex[0] = new Int_t[fNRows[0]];
-  fRowPosIndex[1] = new Int_t[fNRows[1]];
+  fRowPosIndex[0] = new UInt_t[fNRows[0]];
+  fRowPosIndex[1] = new UInt_t[fNRows[1]];
   //
   // inner sectors
   //
-  Int_t index =0;
-  for (Int_t irow=0; irow<fNRows[0];irow++){
-    Int_t npads = (irow==0) ? 68 : 2 *Int_t(Double_t(irow)/3. +33.67);
+  UInt_t index =0;
+  for (UInt_t irow=0; irow<fNRows[0];irow++){
+    UInt_t npads = (irow==0) ? 68 : 2 *Int_t(Double_t(irow)/3. +33.67);
     fNPads[0][irow] = npads;
     fRowPosIndex[0][irow] = index;
     index+=npads;
@@ -83,8 +83,8 @@ void AliTPCROC::Init(){
   index =0;
   Double_t k1 = 10.*TMath::Tan(10*TMath::DegToRad())/6.;
   Double_t k2 = 15.*TMath::Tan(10*TMath::DegToRad())/6.;
-  for (Int_t irow=0; irow<fNRows[1];irow++){    
-    Int_t npads = (irow<64) ? 
+  for (UInt_t irow=0; irow<fNRows[1];irow++){    
+    UInt_t npads = (irow<64) ? 
       2*Int_t(k1*Double_t(irow)+37.75):
       2*Int_t(k2*Double_t(irow-64)+56.66);
     fNPads[1][irow] = npads;
@@ -112,10 +112,10 @@ void AliTPCROC::SetGeometry()
   const  Float_t kInnerWireMount = 1.2;
   const  Float_t kOuterWireMount = 1.4;
   const  Float_t kZLength =250.;
-  const  Int_t   kNRowLow = 63;
-  const  Int_t   kNRowUp1 = 64;
-  const  Int_t   kNRowUp2 = 32;
-  const  Int_t   kNRowUp  = 96;
+  const  UInt_t   kNRowLow = 63;
+  const  UInt_t   kNRowUp1 = 64;
+  const  UInt_t   kNRowUp2 = 32;
+  const  UInt_t   kNRowUp  = 96;
   const  Float_t kInnerAngle = 20; // 20 degrees
   const  Float_t kOuterAngle = 20; // 20 degrees
   //
@@ -135,18 +135,18 @@ void AliTPCROC::SetGeometry()
   //
   //wires default parameters
   //
-//   const Int_t    kNInnerWiresPerPad = 3;
-//   const Int_t    kInnerDummyWire = 2;
+//   const UInt_t    kNInnerWiresPerPad = 3;
+//   const UInt_t    kInnerDummyWire = 2;
 //   const Float_t  kInnerWWPitch = 0.25;
 //   const Float_t  kRInnerFirstWire = 84.475;
 //   const Float_t  kRInnerLastWire = 132.475;
 //   const Float_t  kInnerOffWire = 0.5;
-//   const Int_t    kNOuter1WiresPerPad = 4;
-//   const Int_t    kNOuter2WiresPerPad = 6;
+//   const UInt_t    kNOuter1WiresPerPad = 4;
+//   const UInt_t    kNOuter2WiresPerPad = 6;
 //   const Float_t  kOuterWWPitch = 0.25;  
 //   const Float_t  kROuterFirstWire = 134.225;
 //   const Float_t  kROuterLastWire = 246.975;
-//   const Int_t    kOuterDummyWire = 2;
+//   const UInt_t    kOuterDummyWire = 2;
 //   const Float_t  kOuterOffWire = 0.5;
   //
   //set sector parameters
@@ -207,7 +207,7 @@ AliTPCROC::AliTPCROC():TObject(), fNSectorsAll(0)
 {
   //
   // Default constructor
-  for (Int_t i=0;i<2;i++){
+  for (UInt_t i=0;i<2;i++){
     fNSectors[i]  = 0;
     fNRows[i]     = 0;
     fNChannels[i] = 0;
@@ -232,19 +232,19 @@ AliTPCROC::AliTPCROC(const AliTPCROC &roc):TObject(roc)
   fNChannels[1]= roc.fNChannels[1];
   //
   // number of pads in padrow
-  fNPads[0] = new Int_t[fNRows[0]];
-  fNPads[1] = new Int_t[fNRows[1]];  
+  fNPads[0] = new UInt_t[fNRows[0]];
+  fNPads[1] = new UInt_t[fNRows[1]];  
   //
   // padrow index in array
   //
-  fRowPosIndex[0] = new Int_t[fNRows[0]];
-  fRowPosIndex[1] = new Int_t[fNRows[1]];
+  fRowPosIndex[0] = new UInt_t[fNRows[0]];
+  fRowPosIndex[1] = new UInt_t[fNRows[1]];
   //
-  for (Int_t irow =0; irow<fNRows[0];irow++){
+  for (UInt_t irow =0; irow<fNRows[0];irow++){
     fNPads[0][irow]       = roc.fNPads[0][irow];
     fRowPosIndex[0][irow] = roc.fRowPosIndex[0][irow];
   }
-  for (Int_t irow =0; irow<fNRows[1];irow++){
+  for (UInt_t irow =0; irow<fNRows[1];irow++){
     fNPads[1][irow]       = roc.fNPads[1][irow];
     fRowPosIndex[1][irow] = roc.fRowPosIndex[1][irow];
   }

@@ -12,6 +12,7 @@
 //////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <AliTPCROC.h>
 
 //_____________________________________________________________________________
 class AliTPCCalROC : public TObject {
@@ -19,27 +20,23 @@ class AliTPCCalROC : public TObject {
  public:
   
   AliTPCCalROC();
-  AliTPCCalROC(Int_t sector);
+  AliTPCCalROC(UInt_t sector);
   AliTPCCalROC(const AliTPCCalROC &c);
   virtual           ~AliTPCCalROC();  
-  Int_t        GetNrows() const                  { return fgNRows[fIndex]; };
-  Int_t        GetNchannels()       const       { return fgNChannels[fIndex];   };
-  Float_t      GetValue(Int_t row, Int_t pad)  { return fData[fgRowPosIndex[fIndex][row]+pad]; };
-  void         SetValue(Int_t row, Int_t pad, Float_t vd)
-                                                {  fData[fgRowPosIndex[fIndex][row]+pad]= vd; };
-  static void Init(); 
- public:
-  Int_t     fSector;          // sector number
-  Int_t     fIndex;           // 0- if inner 1- outer
-  Float_t  *fData;            //[fNchannels] Data
-  //
-  static Int_t  fgNSectorsAll;     // number of sectors
-  static Int_t  fgNSectors[2];     // number of sectors - inner outer
-  static Int_t  fgNRows[2];        // number of row     - inner outer
-  static Int_t  fgNChannels[2];    // total number of pads   - inner sector - outer sector
-  static Int_t *fgNPads[2];        // number of pads in row  - inner - outer      
-  static Int_t *fgRowPosIndex[2];  // index array            - inner - outer
-  // 
+  UInt_t        GetNrows() const               { return fNRows;};
+  UInt_t        GetNchannels()       const     { return fNChannels;};
+  UInt_t        GetNPads(UInt_t row)  const     { return (row<fNRows)? AliTPCROC::Instance()->GetNPads(fSector,row):0;};
+  Float_t      GetValue(UInt_t row, UInt_t pad) const { return ( (row<fNRows) && (fIndexes[row]+pad)<fNChannels)? fData[fIndexes[row]+pad]: 0; };
+  Float_t      GetValue(UInt_t channel) const { return  fData[channel]; };
+  void         SetValue(UInt_t row, UInt_t pad, Float_t vd) { if ( row<fNRows && (fIndexes[row]+pad)<fNChannels)fData[fIndexes[row]+pad]= vd; };
+  void         SetValue(UInt_t channel, Float_t vd) {fData[channel]= vd; };
+  static void Test();
+ protected:
+  UInt_t     fSector;          // sector number
+  UInt_t     fNChannels;       // number of channels
+  UInt_t     fNRows;           // number of rows
+  const UInt_t* fIndexes;      //!indexes
+  Float_t  *fData;            //[fNChannels] Data
   ClassDef(AliTPCCalROC,1)    //  TPC ROC calibration class
 
 };

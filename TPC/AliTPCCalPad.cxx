@@ -23,7 +23,6 @@
 
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
-//#include "AliTPCCalDet.h"
 
 ClassImp(AliTPCCalPad)
 

@@ -18,65 +18,16 @@
 //                                                                           //
 //  Calibration base class for a single ROC                                  //
 //  Contains one float value per pad                                         //
+//     mapping of the pads taken form AliTPCROC                              //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCCalROC.h"
 #include "TMath.h"
+#include "TClass.h"
+#include "TFile.h"
 
 ClassImp(AliTPCCalROC)
-  Int_t  AliTPCCalROC::fgNSectorsAll =0;
-Int_t  AliTPCCalROC::fgNSectors[2]={0,0};
-Int_t  AliTPCCalROC::fgNRows[2]={0,0};
-Int_t *AliTPCCalROC::fgNPads[2]={0,0};
-Int_t *AliTPCCalROC::fgRowPosIndex[2] ={0,0}; 
-Int_t  AliTPCCalROC::fgNChannels[2]={0,0};
-
-void AliTPCCalROC::Init(){
-  //
-  // initialize static variables
-  //
-  if (AliTPCCalROC::fgNSectorsAll>0) return;
-  fgNSectorsAll =72;
-  fgNSectors[0] =36;
-  fgNSectors[1] =36;
-  //
-  fgNRows[0]= 63;
-  fgNRows[1]= 96;
-  //
-  // number of pads in padrow
-  fgNPads[0] = new Int_t[fgNRows[0]];
-  fgNPads[1] = new Int_t[fgNRows[1]];  
-  //
-  // padrow index in array
-  //
-  fgRowPosIndex[0] = new Int_t[fgNRows[0]];
-  fgRowPosIndex[1] = new Int_t[fgNRows[1]];
-  //
-  // inner sectors
-  //
-  Int_t index =0;
-  for (Int_t irow=0; irow<fgNRows[0];irow++){
-    Int_t npads = (irow==0) ? 68 : 2 *Int_t(Double_t(irow)/3. +33.67);
-    fgNPads[0][irow] = npads;
-    fgRowPosIndex[0][irow] = index;
-    index+=npads;
-  }
-  fgNChannels[0] = index;
-  //
-  index =0;
-  Double_t k1 = 10.*TMath::Tan(10*TMath::DegToRad())/6.;
-  Double_t k2 = 15.*TMath::Tan(10*TMath::DegToRad())/6.;
-  for (Int_t irow=0; irow<fgNRows[1];irow++){    
-    Int_t npads = (irow<64) ? 
-      2*Int_t(k1*Double_t(irow)+37.75):
-      2*Int_t(k2*Double_t(irow-64)+56.66);
-    fgNPads[1][irow] = npads;
-    fgRowPosIndex[1][irow] = index;
-    index+=npads;
-  }
-  fgNChannels[1] = index;
-}
 
 
 //_____________________________________________________________________________
@@ -85,21 +36,24 @@ AliTPCCalROC::AliTPCCalROC():TObject()
   //
   // Default constructor
   //
-  fSector       = -1;
-  fIndex        = 0;
-  fData         = 0;
+  fSector       =  0;
+  fNChannels    =  0;
+  fNRows        =  0;
+  fData         =  0;
 }
 
 //_____________________________________________________________________________
-AliTPCCalROC::AliTPCCalROC(Int_t sector):TObject()
+AliTPCCalROC::AliTPCCalROC(UInt_t  sector):TObject()
 {
   //
   // Constructor that initializes a given sector
   //
-  Init();
   fSector = sector;
-  fIndex  = (sector<fgNSectors[0]) ? 0:1;      
-  fData = new Float_t[fgNChannels[fIndex]];
+  fNChannels    =  AliTPCROC::Instance()->GetNChannels(fSector);
+  fNRows        =  AliTPCROC::Instance()->GetNRows(fSector);
+  fIndexes      =  AliTPCROC::Instance()->GetRowIndexes(fSector);
+  fData = new Float_t[fNChannels];
+  for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = 0.;
 }
 
 //_____________________________________________________________________________
@@ -109,10 +63,12 @@ AliTPCCalROC::AliTPCCalROC(const AliTPCCalROC &c):TObject(c)
   // AliTPCCalROC copy constructor
   //
   fSector = c.fSector;
-  fIndex  = c.fIndex;
-  Int_t nchannels =  fgNChannels[fIndex];
-  fData   = new Float_t[nchannels];
-  for (Int_t idata = 0; idata< nchannels; idata++) fData[idata] = c.fData[idata];
+  fNChannels    =  AliTPCROC::Instance()->GetNChannels(fSector);
+  fNRows        =  AliTPCROC::Instance()->GetNRows(fSector);
+  fIndexes      =  AliTPCROC::Instance()->GetRowIndexes(fSector);
+  //
+  fData   = new Float_t[fNChannels];
+  for (UInt_t  idata = 0; idata< fNChannels; idata++) fData[idata] = c.fData[idata];
 }
 
 //_____________________________________________________________________________
@@ -121,10 +77,62 @@ AliTPCCalROC::~AliTPCCalROC()
   //
   // AliTPCCalROC destructor
   //
-
   if (fData) {
     delete [] fData;
     fData = 0;
   }
+}
+
+
+
+void AliTPCCalROC::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliTPCCalROC.
+   if (R__b.IsReading()) {
+      AliTPCCalROC::Class()->ReadBuffer(R__b, this);
+      fIndexes =  AliTPCROC::Instance()->GetRowIndexes(fSector);
+   } else {
+      AliTPCCalROC::Class()->WriteBuffer(R__b,this);
+   }
+}
+
+
+
+void AliTPCCalROC::Test(){
+  //
+  // example function to show functionality and tes AliTPCCalROC
+  //
+  AliTPCCalROC  roc0(0);  
+  for (UInt_t irow = 0; irow <roc0.GetNrows(); irow++){
+    for (UInt_t ipad = 0; ipad <roc0.GetNPads(irow); ipad++){
+      Float_t value  = irow+ipad/1000.;
+      roc0.SetValue(irow,ipad,value);
+    }
+  }
+  //
+  AliTPCCalROC roc1(roc0);
+  for (UInt_t irow = 0; irow <roc1.GetNrows(); irow++){
+    for (UInt_t ipad = 0; ipad <roc1.GetNPads(irow); ipad++){
+      Float_t value  = irow+ipad/1000.;
+      if (roc1.GetValue(irow,ipad)!=value){
+	printf("Read/Write error\trow=%d\tpad=%d\n",irow,ipad);
+      }
+    }
+  }  
+  TFile f("calcTest.root","recreate");
+  roc0.Write("Roc0");
+  AliTPCCalROC * roc2 = (AliTPCCalROC*)f.Get("Roc0");
+  f.Close();
+  //
+  for (UInt_t irow = 0; irow <roc0.GetNrows(); irow++){
+    if (roc0.GetNPads(irow)!=roc2->GetNPads(irow))
+      printf("NPads - Read/Write error\trow=%d\n",irow);
+    for (UInt_t ipad = 0; ipad <roc1.GetNPads(irow); ipad++){
+      Float_t value  = irow+ipad/1000.;
+      if (roc2->GetValue(irow,ipad)!=value){
+	printf("Read/Write error\trow=%d\tpad=%d\n",irow,ipad);
+      }
+    }
+  }   
 }
 

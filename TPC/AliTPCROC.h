@@ -24,11 +24,11 @@ class AliTPCROC : public TObject {
 
   //
   //    numbering
-  Int_t GetNSectors() const          { return fNSectorsAll;}
-  Int_t GetNRows(Int_t sector) const { return (sector<fNSectors[1]) ? fNRows[0]:fNRows[1];}
-  Int_t GetNChannels(Int_t sector) const { return (sector<fNSectors[1]) ? fNChannels[0]:fNChannels[1];}
-  Int_t GetNPads(Int_t sector,Int_t row) const { return (sector<fNSectors[1]) ? fNPads[0][row]:fNPads[1][row];}
-  const Int_t * GetRowIndexes(Int_t sector) const {return (sector<fNSectors[1]) ? fRowPosIndex[0]:fRowPosIndex[1];}  
+  UInt_t GetNSectors() const          { return fNSectorsAll;}
+  UInt_t GetNRows(UInt_t sector) const { return (sector<fNSectors[1]) ? fNRows[0]:fNRows[1];}
+  UInt_t GetNChannels(UInt_t sector) const { return (sector<fNSectors[1]) ? fNChannels[0]:fNChannels[1];}
+  UInt_t GetNPads(UInt_t sector,UInt_t row) const { return (sector<fNSectors[1]) ? fNPads[0][row]:fNPads[1][row];}
+  const UInt_t * GetRowIndexes(UInt_t sector) const {return (sector<fNSectors[1]) ? fRowPosIndex[0]:fRowPosIndex[1];}  
   //
   //get sector parameters
   //
@@ -42,9 +42,9 @@ class AliTPCROC : public TObject {
   Float_t  GetOuterWireMount() const {return fOuterWireMount;}
   Float_t  GetInnerAngle() const {return fInnerAngle;}
   Float_t  GetOuterAngle() const {return fOuterAngle;}
-  Int_t    GetNInnerSector() const {return fNSectors[0];}
-  Int_t    GetNOuterSector() const {return fNSectors[1];}
-  Int_t    GetNSector() const {return fNSectorsAll;}
+  UInt_t    GetNInnerSector() const {return fNSectors[0];}
+  UInt_t    GetNOuterSector() const {return fNSectors[1];}
+  UInt_t    GetNSector() const {return fNSectorsAll;}
   Float_t  GetZLength() const {return fZLength;}
   //
 
@@ -53,12 +53,12 @@ class AliTPCROC : public TObject {
   //     number of pads
   //
   void   SetGeometry();    // set geometry parameters
-  Int_t  fNSectorsAll;     // number of sectors
-  Int_t  fNSectors[2];     // number of sectors - inner outer
-  Int_t  fNRows[2];        // number of row     - inner outer
-  Int_t  fNChannels[2];    // total number of pads   - inner sector - outer sector
-  Int_t *fNPads[2];        // number of pads in row  - inner - outer      
-  Int_t *fRowPosIndex[2];  // index array            - inner - outer
+  UInt_t  fNSectorsAll;     // number of sectors
+  UInt_t  fNSectors[2];     // number of sectors - inner outer
+  UInt_t  fNRows[2];        // number of row     - inner outer
+  UInt_t  fNChannels[2];    // total number of pads   - inner sector - outer sector
+  UInt_t *fNPads[2];        // number of pads in row  - inner - outer      
+  UInt_t *fRowPosIndex[2];  // index array            - inner - outer
   //
   //
   //---------------------------------------------------------------------
@@ -79,17 +79,17 @@ class AliTPCROC : public TObject {
   //---------------------------------------------------------------------
   //   ALICE TPC wires  geometry - for GEM we can consider that it is gating  
   //--------------------------------------------------------------------
-  Int_t   fNInnerWiresPerPad; //Number of wires per pad
+  UInt_t   fNInnerWiresPerPad; //Number of wires per pad
   Float_t fInnerWWPitch;      //pitch between wires  in inner sector     - calculated
-  Int_t   fInnerDummyWire;    //number of wires without pad readout
+  UInt_t   fInnerDummyWire;    //number of wires without pad readout
   Float_t fInnerOffWire;      //oofset of first wire to the begining of the sector
   Float_t fRInnerFirstWire;   //position of the first wire                -calculated
   Float_t fRInnerLastWire;    //position of the last wire                 -calculated
   Float_t fLastWireUp1;     //position of the last wire in outer1 sector
-  Int_t   fNOuter1WiresPerPad; //Number of wires per pad
-  Int_t   fNOuter2WiresPerPad; // Number of wires per pad
+  UInt_t   fNOuter1WiresPerPad; //Number of wires per pad
+  UInt_t   fNOuter2WiresPerPad; // Number of wires per pad
   Float_t fOuterWWPitch;      //pitch between wires in outer sector      -calculated
-  Int_t   fOuterDummyWire;    //number of wires without pad readout
+  UInt_t   fOuterDummyWire;    //number of wires without pad readout
   Float_t fOuterOffWire;      //oofset of first wire to the begining of the sector
   Float_t fROuterFirstWire;   //position of the first wire                -calulated
   Float_t fROuterLastWire;    //position of the last wire                 -calculated 
@@ -107,15 +107,15 @@ class AliTPCROC : public TObject {
   Float_t   fOuter2PadLength;         //Outer pad length
   Float_t   fOuterPadWidth;          //Outer pad  width
   // 
-  Int_t     fNRowLow;           //number of pad rows per low sector        -set
-  Int_t     fNRowUp1;            //number of short pad rows per sector up  -set
-  Int_t     fNRowUp2;            //number of long pad rows per sector up   -set
-  Int_t     fNRowUp;            //number of pad rows per sector up     -calculated
-  Int_t     fNtRows;            //total number of rows in TPC          -calculated
+  UInt_t     fNRowLow;           //number of pad rows per low sector        -set
+  UInt_t     fNRowUp1;            //number of short pad rows per sector up  -set
+  UInt_t     fNRowUp2;            //number of long pad rows per sector up   -set
+  UInt_t     fNRowUp;            //number of pad rows per sector up     -calculated
+  UInt_t     fNtRows;            //total number of rows in TPC          -calculated
   Float_t   fPadRowLow[600]; //Lower sector, pad row radii          -calculated
   Float_t   fPadRowUp[600];  //Upper sector, pad row radii          -calculated 
-  Int_t     fNPadsLow[600];  //Lower sector, number of pads per row -calculated
-  Int_t     fNPadsUp[600];   //Upper sector, number of pads per row -calculated
+  UInt_t     fNPadsLow[600];  //Lower sector, number of pads per row -calculated
+  UInt_t     fNPadsUp[600];   //Upper sector, number of pads per row -calculated
   Float_t   fYInner[600];     //Inner sector, wire-length
   Float_t   fYOuter[600];     //Outer sector, wire-length   
  protected:
