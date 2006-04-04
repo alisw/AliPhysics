@@ -128,66 +128,69 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
  
   for (Int_t det = 0; det < 24; det++) {
     Int_t timeLED=fTimeLED->At(det);
-
-     // DDL 1 0-5 -#PMT, 6-31 - empty
-    //LED
-     word=det;;
-     PackWord(baseWord,word, 0, 8); 
-     fIndex++;
-     buf[fIndex]=baseWord;
-
-     word=0;
-     baseWord=0;
-     word=error;
-     PackWord(baseWord,word,0, 7); // Error flag
-     word=timeLED;
-     PackWord(baseWord,word,8,31); // time-of-flight
-     fIndex++;
-     buf[fIndex]=baseWord;
-     word=0;
-     baseWord=0;
+    //   if( timeLED > 0){
+      // DDL 1 0-5 -#PMT, 6-31 - empty
+      //LED
+      word=det;;
+      PackWord(baseWord,word, 0, 8); 
+      fIndex++;
+      buf[fIndex]=baseWord;
+      
+      word=0;
+      baseWord=0;
+      word=error;
+      PackWord(baseWord,word,0, 7); // Error flag
+      word=timeLED;
+      PackWord(baseWord,word,8,31); // time-of-flight
+      fIndex++;
+      buf[fIndex]=baseWord;
+      word=0;
+      baseWord=0;
+      //  }
   }
-  cout<<endl;
    for (Int_t det = 0; det < 24; det++) {
     //CDF
-    Int_t timeCFD=fTimeCFD->At(det);
-    // DDL2 2 0-5 -#PMT, 6-31 - empty
-     word=0;
-     baseWord=0;
-     word=det+24;
-     PackWord(baseWord,word, 0, 8); // number of PMT on the right side
-     fIndex++;
-     buf[fIndex]=baseWord;
-     word=0;
-     baseWord=0;
-     word=error;
-     PackWord(baseWord,word,0, 7); // Error flag
-     word=timeCFD;
-     PackWord(baseWord,word,8,31); // time-of-flight
-     fIndex++;
-     buf[fIndex]=baseWord;
-     word=0;
-     baseWord=0;
+     Int_t timeCFD=fTimeCFD->At(det);
+     //   if ( timeCFD >0 ) {
+       // DDL2 2 0-5 -#PMT, 6-31 - empty
+       word=0;
+       baseWord=0;
+       word=det+24;
+       PackWord(baseWord,word, 0, 8); // number of PMT on the right side
+       fIndex++;
+       buf[fIndex]=baseWord;
+       word=0;
+       baseWord=0;
+       word=error;
+       PackWord(baseWord,word,0, 7); // Error flag
+       word=timeCFD;
+       PackWord(baseWord,word,8,31); // time-of-flight
+       fIndex++;
+       buf[fIndex]=baseWord;
+        word=0;
+       baseWord=0;
+       //  }
    }
-   cout<<endl;
   for (Int_t det = 0; det < 24; det++) {
     //conver ADC to time (preliminary algorithm)
     Int_t qtc=fADC->At(det);
-    word=det+48;
-     PackWord(baseWord,word, 0, 8); // number of PMT on the right side
-    fIndex++;
-    buf[fIndex]=baseWord;
-    baseWord=0;
-    word=error;
-    PackWord(baseWord,word,0, 7); // Error flag
-    word=qtc;
-    PackWord(baseWord,word,8,31); // Q->Time
-    fIndex++;
-    buf[fIndex]=baseWord;
-    word=0;
-    baseWord=0;
+    //    if ( qtc > 0 )
+    //  {
+	word=det+48;
+	PackWord(baseWord,word, 0, 8); // number of PMT on the right side
+	fIndex++;
+	buf[fIndex]=baseWord;
+	baseWord=0;
+	word=error;
+	PackWord(baseWord,word,0, 7); // Error flag
+	word=qtc;
+	PackWord(baseWord,word,8,31); // Q->Time
+	fIndex++;
+	buf[fIndex]=baseWord;
+ 	word=0;
+	baseWord=0;
+	//     }
   }
-  cout<<endl;
   
   for (Int_t det = 0; det < 24; det++) {
     Int_t qtcAmp=fADC0->At(det);
@@ -224,6 +227,7 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   PackWord(baseWord,word,0, 7); // Error flag
   word=fDigits->MeanTime();
   PackWord(baseWord,word,8,31); // MEANER
+ 
   fIndex++;
   buf[fIndex]=baseWord;
 
@@ -249,20 +253,16 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   buf[fIndex]=baseWord;
 
   baseWord=0;
-
   word=error;
   PackWord(baseWord,word,0, 7); // Error flag
   word=fDigits->BestTimeLeft();
   PackWord(baseWord,word,8,31); // time-of-flight T0-C 
   fIndex++;
   buf[fIndex]=baseWord;
-
  
   // time difference
   word=100;
   PackWord(baseWord,word, 0, 8); // TVDS sign
-  word=fDigits->TimeDiff();
-  //  PackWord(baseWord,word, 6, 31); // T0 vertex 
   fIndex++;
   buf[fIndex]=baseWord;
 
@@ -275,13 +275,12 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   fIndex++;
   buf[fIndex]=baseWord;
 
+
   // multiplicity 
   
   Int_t mult=fDigits->SumMult();
-  word=100;
+  word=101;
   PackWord(baseWord,word, 0, 8); 
-  word=mult;
-  PackWord(baseWord,word, 6, 31); // sum amplitude
   fIndex++;
   buf[fIndex]=baseWord;
   
@@ -293,11 +292,11 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   fIndex++;
   buf[fIndex]=baseWord;
   
-  cout<<endl;
+
 
   // trigger channels
    // besttime right & left
-  word=101;
+  word=102;
   PackWord(baseWord,word, 0, 8); // T0-A sign
   fIndex++;
   buf[fIndex]=baseWord;
@@ -310,7 +309,7 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   fIndex++;
   buf[fIndex]=baseWord;
  
-  word=102;
+  word=103;
   PackWord(baseWord,word, 0, 8); // T0-C sign
   fIndex++;
   buf[fIndex]=baseWord;
@@ -325,7 +324,7 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   buf[fIndex]=baseWord;
 
   // time difference
-  word=103;
+  word=104;
   PackWord(baseWord,word, 0, 8); // TVDS sign
   word=fDigits->TimeDiff();
    PackWord(baseWord,word, 6, 31); // T0 vertex 
@@ -344,7 +343,7 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   // multiplicity 
   
   mult=fDigits->SumMult();
-  word=104;
+  word=105;
   PackWord(baseWord,word, 0, 8); 
   word=mult;
   PackWord(baseWord,word, 6, 31); // sum amplitude
@@ -362,10 +361,8 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   // multiplicity 
   
    mult=fDigits->SumMult();
-  word=105;
+  word=106;
   PackWord(baseWord,word, 0, 8); 
-  word=mult;
-  PackWord(baseWord,word, 6, 31); // sum amplitude
   fIndex++;
   buf[fIndex]=baseWord;
   
