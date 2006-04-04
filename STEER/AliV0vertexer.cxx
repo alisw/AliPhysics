@@ -37,6 +37,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
    Int_t nentr=event->GetNumberOfTracks();
    Double_t b=event->GetMagneticField();
 
+   if (nentr<2) return 0; 
+
    TArrayI neg(nentr/2);
    TArrayI pos(nentr/2);
 
@@ -123,7 +125,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
 
    Info("Tracks2V0vertices","Number of reconstructed V0 vertices: %d",nvtx);
 
-   return 0;
+   return nvtx;
 }
 
 
