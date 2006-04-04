@@ -128,7 +128,6 @@ void AliVZEROv6::CreateGeometry()
   
   AliDebug(2,"VZERO ConstructGeometry");
   
-  TGeoManager *geoManager = gGeoManager;
 //  TGeoMedium  *medAir = gGeoManager->GetMedium("VZERO_Air"); 
   TGeoMedium  *medAlu = gGeoManager->GetMedium("VZERO_Aluminum");
   TGeoMedium  *medCar = gGeoManager->GetMedium("VZERO_Carbon");
@@ -380,7 +379,6 @@ void AliVZEROv6::CreateGeometry()
   gGeoManager->SetTopVolume(top); 
   gGeoManager->CloseGeometry();  
 //  gGeoManager-> SetVisLevel(4);
-  geoManager->Export("VZEROGeometry.root"); 
 }  
     
 //_____________________________________________________________________________
