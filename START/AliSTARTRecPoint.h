@@ -36,7 +36,6 @@ class AliSTARTRecPoint: public TObject  {
     Float_t AmpLED (Int_t ipmt) { return fADCLED[ipmt];}
 
   private: 
-    //    Float_t fProcessKoef;  // for pp fProcessKoef=1 ; for Pb-Pb - 0.001
     Int_t fTimeAverage;     // Average time
     Float_t fVertexPosition;     // Diffrence time between left and right
     Int_t fTimeBestRight;   //TOF first particle on the right
@@ -45,8 +44,8 @@ class AliSTARTRecPoint: public TObject  {
     Int_t fMultA; // multiplicity on the 
  
     Float_t fTime[24];    // array's TDC
-    Float_t fADC[24];    // array's ADC
-    Float_t fADCLED[24];    // array's ADC
+    Float_t fADC[24];    // array's amplitude
+    Float_t fADCLED[24];    // array's LED amplitude
 
 
     ClassDef(AliSTARTRecPoint,3)  //Digit (Header) object for set:START
