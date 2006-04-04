@@ -84,6 +84,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 TH2F *hInvMassAll_vs_Pt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",480,0.,12.,80,0.,20.);
 TH2F *hInvMassBgk_vs_Pt = new TH2F("hInvMassBgk_vs_Pt","hInvMassBgk_vs_Pt",480,0.,12.,80,0.,20.);
 TH1F *hInvMassRes;
+  TH1F *hPrimaryVertex = new TH1F("hPrimaryVertex","SPD reconstructed Z vertex",120,-12,12);
 
   if (ResType == 553) {
     hInvMassRes = new TH1F("hInvMassRes", "Mu+Mu- invariant mass (GeV/c2) around Upsilon", 60, 8., 11.);
@@ -115,6 +116,7 @@ TH1F *hInvMassRes;
 
   Int_t ntrackhits, nevents;
   Double_t fitfmin;
+  Double_t fZVertex;
 
  
   TLorentzVector fV1, fV2, fVtot;
@@ -150,6 +152,9 @@ TH1F *hInvMassRes;
     return kFALSE;
   }
   tree->SetBranchAddress("ESD", &esd);
+  
+  
+  AliESDVertex* Vertex = (AliESDVertex*) esd->AliESD::GetVertex();
 
   runLoader->LoadHeader();
   nevents = runLoader->GetNumberOfEvents();
@@ -166,6 +171,10 @@ TH1F *hInvMassRes;
       Error("CheckESD", "no ESD object found for event %d", iEvent);
       return kFALSE;
     }
+
+    // get the SPD reconstructed vertex (vertexer) and fill the histogram
+    fZVertex = Vertex->GetZv();
+    hPrimaryVertex->Fill(fZVertex);
 
     Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ; 
 
