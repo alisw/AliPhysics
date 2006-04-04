@@ -675,9 +675,11 @@ void AliTRDv1::StepManagerGeant()
 						pp = kPrim * kPlateau;
           }
 
-          stepSize = 1./gRandom->Poisson(pp);
-					gMC->SetMaxStep(stepSize);
-				}
+	  Int_t nsteps = 0;
+	  do {nsteps = gRandom->Poisson(pp);} while(!nsteps);
+          stepSize = 1./nsteps;
+	  gMC->SetMaxStep(stepSize);
+	}
       }
     }
   }
