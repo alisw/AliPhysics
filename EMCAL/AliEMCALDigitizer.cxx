@@ -222,13 +222,19 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for(i = 1 ; i < fInput ; i++){
     TString tempo(fEventNames[i]) ; 
     tempo += i ;
-    rl = AliRunLoader::Open(fInputFileNames[i], tempo) ; 
+
+    AliRunLoader *  rl2 = AliRunLoader::GetRunLoader(tempo) ; 
+
+    if (rl2==0) 
+      rl2 = AliRunLoader::Open(fInputFileNames[i], tempo) ; 
+
     if (fManager) 
       ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
     Info("Digitize", "Adding event %d from input stream %d %s %s", ReadEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
-    rl->LoadSDigits();
-    rl->GetEvent(ReadEvent);
-    sdigArray->AddAt(emcalLoader->SDigits(), i) ;
+    rl2->LoadSDigits();
+    rl2->GetEvent(ReadEvent);
+    AliEMCALLoader *emcalLoader2 = dynamic_cast<AliEMCALLoader*>(rl2->GetDetectorLoader("EMCAL"));
+    sdigArray->AddAt(emcalLoader2->SDigits(), i) ;
   }
   
   //Find the first tower with signal
