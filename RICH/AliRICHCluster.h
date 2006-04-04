@@ -9,8 +9,51 @@ class AliRICHCluster :public TObject
 {
 public:
   enum EClusterStatus {kFormed,kCoG,kUnfolded,kEmpty=-1}; 
-                       AliRICHCluster(                                     ):TObject(),fQdc(-1),fCham(-1),fX(-1),fY(-1),fStatus(kEmpty   ),fDigs(0) {}
-                       AliRICHCluster(Int_t c,Double_t x,Double_t y,Int_t q):TObject(),fQdc(q ),fCham(c) ,fX(x ),fY(y ),fStatus(kUnfolded),fDigs(0) {}
+  AliRICHCluster():
+    TObject(),
+    fQdc(-1),
+    fCham(-1),
+    fX(-1),
+    fY(-1),
+    fStatus(kEmpty),
+    fDigs(0) {
+    // Default constructor
+  }
+  AliRICHCluster(Int_t c,Double_t x,Double_t y,Int_t q):
+    TObject(),
+    fQdc(q ),
+    fCham(c) ,
+    fX(x),
+    fY(y),
+    fStatus(kUnfolded),
+    fDigs(0x0) {
+    // Constructor
+  }
+  AliRICHCluster(const AliRICHCluster & src) :
+    TObject(src),
+    fQdc(src.fQdc),
+    fCham(src.fCham),
+    fX(src.fX),
+    fY(src.fY),
+    fStatus(src.fStatus),
+    fDigs(src.fDigs ? new TObjArray(*src.fDigs) : 0x0) {
+    // Copy constructor
+  }
+  AliRICHCluster & operator=(const AliRICHCluster & src) {
+    // Assigment operator  
+    if ( this == &src ) return *this;
+
+    // Base class assignment
+    TObject::operator=(src);
+
+    fQdc    = src.fQdc;
+    fCham   = src.fCham;
+    fX      = src.fX;
+    fY      = src.fY;
+    fStatus = src.fStatus;
+    fDigs = src.fDigs ? new TObjArray(*src.fDigs) : 0x0;
+    return *this;
+  }
   virtual             ~AliRICHCluster(                                     )                                                                        {DigDel();}
 //framework part                   
          void          Print  (Option_t *opt=""                                  )const;                  //overloaded TObject::Print() to print cluster info
