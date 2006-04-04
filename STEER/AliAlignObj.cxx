@@ -267,7 +267,7 @@ void AliAlignObj::Transform(AliTrackPoint &p) const
   
 }
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliAlignObj::Transform(AliTrackPointArray &array) const
 {
   AliTrackPoint p;
@@ -455,7 +455,7 @@ Bool_t AliAlignObj::ApplyToGeometry()
   AliAlignObj::ELayerID layerId; // unique identity for volume in the alobj
   Int_t modId; // unique identity for volume in the alobj
   GetVolUID(layerId, modId);
-  AliInfo(Form("Aligning volume %s of detector layer %d with local ID %d",volpath,layerId,modId));
+  AliDebug(2,Form("Aligning volume %s of detector layer %d with local ID %d",volpath,layerId,modId));
   node->Align(ginv);
 
   return kTRUE;
@@ -514,6 +514,7 @@ Bool_t AliAlignObj::GetFromGeometry(const char *path, AliAlignObj &alobj)
   return kTRUE;
 }
 
+//_____________________________________________________________________________
 void  AliAlignObj::InitAlignObjFromGeometry()
 {
   // Loop over all alignable volumes and extract
