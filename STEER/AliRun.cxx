@@ -966,6 +966,7 @@ Bool_t AliRun::ApplyAlignObjsToGeom(TObjArray* AlObjArray)
   // in the TClonesArray ClArrayName and apply them to the geometry
   // manager singleton.
   //
+  AlObjArray->Sort();
   Int_t nvols = AlObjArray->GetEntriesFast();
 
   for(Int_t j=0; j<nvols; j++)
@@ -975,7 +976,7 @@ Bool_t AliRun::ApplyAlignObjsToGeom(TObjArray* AlObjArray)
 	return kFALSE;
     }
 
-  gGeoManager->CheckOverlaps(50);
+  gGeoManager->CheckOverlaps(20);
   TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
   if(ovexlist->GetEntriesFast()){  
     AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
