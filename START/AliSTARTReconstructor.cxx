@@ -31,8 +31,6 @@
 #include "AliSTARTdigit.h"
 #include "AliSTARTReconstructor.h"
 #include "AliSTARTParameters.h"
-#include "AliSTARTAlignData.h"
-#include "AliSTARTCalibData.h"
 #include "AliCDBLocal.h"
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
@@ -42,8 +40,6 @@
 #include <TGraph.h>
 
 ClassImp(AliSTARTReconstructor)
-AliSTARTAlignData* AliSTARTReconstructor::fgAlignData = 0;
-AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
 
   void  AliSTARTReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 {
@@ -74,6 +70,7 @@ AliSTARTCalibData* AliSTARTReconstructor::fgCalibData = 0;
   param->Init();
 
   Int_t mV2Mip = param->GetmV2Mip();     
+  //mV2Mip = param->GetmV2Mip();     
   Int_t channelWidth = param->GetChannelWidth() ;  
   
   for (Int_t i=0; i<24; i++){
@@ -195,9 +192,21 @@ void AliSTARTReconstructor::FillESD(AliRunLoader* runLoader, AliESD *pESD) const
   } 
     
     brRec->GetEntry(0);
-    Float_t Zposition=frecpoints->GetVertex();
-    pESD->SetT0zVertex(Zposition);
-    pESD->Dump();
+    Float_t timeStart, Zposition, amp[24], time[24];
+    Int_t i;
+    Zposition = frecpoints -> GetVertex();
+    timeStart = frecpoints -> GetMeanTime();
+    for ( i=0; i<24; i++) {
+       time[i] = Float_t (frecpoints -> GetTime(i)) / 1000.; // ps to ns
+      amp[i] = frecpoints -> GetAmp(i);
+    }
+    pESD->SetT0zVertex(Zposition); //vertex Z position 
+    /*    
+    pESD->SetT0(timeStart);        // interaction time 
+    pESD->SetT0time(*time);        // best TOF on each PMT 
+    pESD->SetT0amplitude(*amp);    // number of particles(MIPs) on each PMT
+    */    
+    //    pESD->Dump();
     pStartLoader->UnloadRecPoints();
    
 } // vertex in 3 sigma

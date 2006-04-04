@@ -8,8 +8,6 @@
 #include "AliReconstructor.h"
 #include "AliSTARTdigit.h"
 class AliRunLoader;
-class AliSTARTAlignData;
-class AliSTARTCalibData;
 
 class AliSTARTReconstructor: public AliReconstructor {
 public:
@@ -27,14 +25,12 @@ public:
   virtual void         FillESD(AliRunLoader* , AliRawReader*, AliESD* ) const  {};
   virtual void         FillESD(  AliRawReader*,  TTree*, AliESD* ) const  {};
   virtual void         FillESD( TTree*,  TTree*, AliESD* ) const  {};
- virtual Bool_t       HasLocalReconstruction() const {return kTRUE;};
+  virtual Bool_t       HasLocalReconstruction() const {return kTRUE;};
   virtual Bool_t       HasDigitConversion() const {return kTRUE;};
  public:
  
   AliSTARTdigit *fdigits   ; // digits
   Float_t fZposition; // vertex position
- static AliSTARTAlignData * fgAlignData; // singleton for Alignment data
- static AliSTARTCalibData * fgCalibData; // singleton for Calibration data
 
   ClassDef(AliSTARTReconstructor, 0)   // class for the START reconstruction
 
