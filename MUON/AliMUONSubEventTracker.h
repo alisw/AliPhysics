@@ -8,6 +8,15 @@
 /// \ingroup rec
 /// \class AliMUONSubEventTracker
 /// \brief MUON subevent tracker
+///
+/// Bus patch structure for tracker raw data
+/// each Dsp contains at most 5 bus patch structure
+/// Beside the total length and length of the below data
+/// the header of the block contains the bus patch id, trigger words 
+/// and data structure itself (11bits for manu id, 6 bits for channel id and
+/// 12 bits for charge)
+///
+/// \author Christian Finck
 
 #include <TObject.h>
 
@@ -23,19 +32,16 @@ public:
    Int_t   GetLength()      const {return fLength;}
    Int_t   GetBusPatchId()  const {return fBusPatchId;}
    Int_t   GetTriggerWord() const {return fTriggerWord;}
-   UInt_t  GetData(Int_t n) const {return fData[n];}
+   UInt_t  GetData(Int_t n) const;
    UInt_t* GetData()        const {return fData;}
 
-   Char_t   GetParity(Int_t n)    {return (Char_t)(fData[n] >> 29) &  0x7;}
-   UShort_t GetManuId(Int_t n)    {return (UShort_t)(fData[n] >> 18) &  0x7FF;}
-   Char_t   GetChannelId(Int_t n) {return (Char_t)(fData[n] >> 12) & 0x3F;}
-   UShort_t GetCharge(Int_t n)    {return (UShort_t)(fData[n] & 0xFFF);}
+   Char_t   GetParity(Int_t n) const;
+   UShort_t GetManuId(Int_t n) const;
+   Char_t   GetChannelId(Int_t n) const;
+   UShort_t GetCharge(Int_t n) const;
 
-   void    SetTotalLength(Int_t l) {fTotalLength = l;}
-   void    SetLength(Int_t l)      {fLength = l;}
    void    SetBusPatchId(Int_t b)  {fBusPatchId = b;}  
    void    SetTriggerWord(Int_t w) {fTriggerWord = w;}
-   void    SetData(UInt_t d, Int_t n)  {fData[n] = d;}
 
    void    AddData(UInt_t d);
    void    SetAlloc(Int_t size);
