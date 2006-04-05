@@ -101,16 +101,16 @@ Bool_t AliZDCRawStream::Next()
     fADCValue = (fRawADC & 0xfff);   
     fIsADCDataWord = kTRUE;
 
-    Int_t ADCChannel = (fRawADC & 0x1e0000) >> 17;
-    if (ADCChannel >= 0 && ADCChannel <= 4) { 
+    Int_t vADCChannel = (fRawADC & 0x1e0000) >> 17;
+    if (vADCChannel >= 0 && vADCChannel <= 4) { 
       fSector[0] = 1;
-      fSector[1] = ADCChannel;
-    } else if (ADCChannel >= 8 && ADCChannel <= 12) {
+      fSector[1] = vADCChannel;
+    } else if (vADCChannel >= 8 && vADCChannel <= 12) {
       fSector[0] = 2;
-      fSector[1] = ADCChannel-8;
-    } else if (ADCChannel == 5 || ADCChannel == 13){
+      fSector[1] = vADCChannel-8;
+    } else if (vADCChannel == 5 || vADCChannel == 13){
       fSector[0] = 3;
-      fSector[1] = (ADCChannel-5)/8;
+      fSector[1] = (vADCChannel-5)/8;
     }
   }
   return kTRUE;

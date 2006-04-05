@@ -3,12 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//_________________________________________________________________________
+//**********************************************************************
 //
+//   		Class for ZDC digit 
+//   	      ADC Channels for each PM 
+//   	   5 for hadronic ZDCs 1 for EM ZDCs
 //
-//   ZDC digit = ADC Channels for each PM 
-//
-//_________________________________________________________________________
+//**********************************************************************
 
 #include<TObject.h>
 
@@ -22,22 +23,20 @@ class AliZDCDigit : public TObject {
   virtual ~AliZDCDigit() {}
 
   // Getters 
-  virtual Int_t   GetSector(Int_t i)        {return fSector[i];}
-  virtual Int_t   GetADCValue(Int_t i)      {return fADCValue[i];}
+  const Int_t   GetSector(Int_t i)	  {return fSector[i];}
+  const Int_t   GetADCValue(Int_t i)      {return fADCValue[i];}
 
   // Operators
-  Int_t operator == (AliZDCDigit &digit) {
-    // Two digits are equal if they refers to the detector
-    // in the same sub-volume (same procedure as for hits)
+  // Two digits are equal if they refers to the detector
+  // in the same sub-volume (same procedure as for hits)
+  const Int_t operator == (AliZDCDigit &digit) {
     Int_t i;
     for(i=0; i<2; i++) if(fSector[i]!=digit.GetSector(i)) return 0;
     return 1;
   }
+  // Adds the amplitude of digits 
   virtual AliZDCDigit& operator + (AliZDCDigit &digit) {
-    // Adds the amplitude of digits 
-    for(Int_t i = 0; i < 2; i++){
-      fADCValue[i] += digit.fADCValue[i] ;
-    } 
+    for(Int_t i = 0; i < 2; i++) fADCValue[i] += digit.fADCValue[i];
     return *this ;
   }
   

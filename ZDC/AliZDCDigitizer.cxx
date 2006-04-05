@@ -37,13 +37,14 @@
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliZDCSDigit.h"
 #include "AliZDCDigit.h"
 #include "AliZDCFragment.h"
 #include "AliZDCDigitizer.h"
-#include "AliZDCCalibData.h"
+
+class AliCDBStorage;
+class AliZDCCalibData;
 
 ClassImp(AliZDCDigitizer)
 
@@ -182,6 +183,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     printf("\t AliZDCDigitizer ---- Adding signal for %d free spectator p\n\n",freeSpecP);
     SpectatorSignal(2, freeSpecP, pm);
   }
+
 
   // get the output run loader and loader
   AliRunLoader* runLoader = 
@@ -346,16 +348,17 @@ Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light,
                                  Int_t Res) const
 {
   // Evaluation of the ADC channel corresponding to the light yield Light
-  Int_t ADCch = (Int_t) (Light * fPMGain[Det-1][Quad] * fADCRes[Res]);
+  Int_t vADCch = (Int_t) (Light * fPMGain[Det-1][Quad] * fADCRes[Res]);
   //printf("\t Phe2ADCch -> det %d quad %d - phe %.0f  ADC %d\n", Det,Quad,Light,ADCch);
 
-  return ADCch;
+  return vADCch;
 }
 
 //_____________________________________________________________________________
 Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 {
-  
+  // Returns a pedestal for detector det, PM quad, channel with res.
+  //
   Float_t meanPed;
   if(Det != 3) meanPed = fCalibData->GetMeanPed(10*(Det-1)+Quad+5*Res);
   else         meanPed = fCalibData->GetMeanPed(10*(Det-1)+Quad+1*Res);
@@ -399,7 +402,8 @@ AliCDBStorage* AliZDCDigitizer::SetStorage(const char *uri)
 //_____________________________________________________________________________
 AliZDCCalibData* AliZDCDigitizer::GetCalibData() const
 {
-
+  // returns pointer to AliZDCCalibData object
+  //
   AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",0);  
   AliZDCCalibData *calibdata = (AliZDCCalibData*) entry->GetObject();
     

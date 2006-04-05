@@ -51,7 +51,7 @@
  
 ClassImp(AliZDC)
 
-AliZDC *gZDC;
+AliZDC *gAliZDC;
  
 //_____________________________________________________________________________
 AliZDC::AliZDC()
@@ -98,7 +98,7 @@ AliZDC::AliZDC(const char *name, const char *title)
   
   fCalibData  = 0;
 
-  gZDC=this;
+  gAliZDC=this;
 
 }
 //____________________________________________________________________________ 
@@ -109,7 +109,7 @@ AliZDC::~AliZDC()
   //
 
   fIshunt   = 0;
-  gZDC=0;
+  gAliZDC=0;
 
   delete fCalibData;
 
@@ -340,12 +340,12 @@ void AliZDC::Digits2Raw()
 
   // preliminary format: 12 interger values (ZNC, ZNQ1-4, ZPC, ZPQ1-4, ZEM1,2)
   // For the CAEN module V965 we have an header, the Data Words and an End Of Block
-  const int NADCData1=24, NADCData2=20;
+  const int knADCData1=24, knADCData2=20;
   UInt_t lADCHeader1; 
-  UInt_t lADCData1[NADCData1];
+  UInt_t lADCData1[knADCData1];
   //
   UInt_t lADCHeader2; 
-  UInt_t lADCData2[NADCData2];
+  UInt_t lADCData2[knADCData2];
   //
   UInt_t lADCEndBlock;
 
@@ -361,8 +361,8 @@ void AliZDC::Digits2Raw()
   // ADC header
   UInt_t lADCHeaderGEO = 0;
   UInt_t lADCHeaderCRATE = 0;
-  UInt_t lADCHeaderCNT1 = NADCData1;
-  UInt_t lADCHeaderCNT2 = NADCData2;
+  UInt_t lADCHeaderCNT1 = knADCData1;
+  UInt_t lADCHeaderCNT2 = knADCData2;
     
   lADCHeader1 = lADCHeaderGEO << 27 | 0x1 << 25 | lADCHeaderCRATE << 16 |
                lADCHeaderCNT1 << 8 ;
@@ -374,15 +374,15 @@ void AliZDC::Digits2Raw()
       
   // ADC data word
   UInt_t lADCDataGEO = lADCHeaderGEO;
-  UInt_t lADCDataValue1[NADCData1];
-  UInt_t lADCDataValue2[NADCData2];
-  UInt_t lADCDataOvFlw1[NADCData1];
-  UInt_t lADCDataOvFlw2[NADCData2];
-  for(Int_t i = 0; i<NADCData1 ; i++){
+  UInt_t lADCDataValue1[knADCData1];
+  UInt_t lADCDataValue2[knADCData2];
+  UInt_t lADCDataOvFlw1[knADCData1];
+  UInt_t lADCDataOvFlw2[knADCData2];
+  for(Int_t i = 0; i<knADCData1 ; i++){
     lADCDataValue1[i] = 0;
     lADCDataOvFlw1[i] = 0;
   }
-  for(Int_t i = 0; i<NADCData2 ; i++){
+  for(Int_t i = 0; i<knADCData2 ; i++){
     lADCDataValue2[i] = 0;
     lADCDataOvFlw2[i] = 0;
   }

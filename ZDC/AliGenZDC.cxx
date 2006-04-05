@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+//////////////////////////////////////////////////////////////////////
+//                                                                  //         //
+//      Generator of spectator nucleons (either protons or neutrons)//
+//        computes beam crossing and divergence and Fermi momentum  //
+//                                                                  //
+/////////////////////////////////////////////////////////////////////
+
 #include <assert.h>
 
 #include <TDatabasePDG.h>
@@ -74,6 +81,8 @@ AliGenZDC::AliGenZDC(Int_t npart)
 //_____________________________________________________________________________
 void AliGenZDC::Init()
 {
+  //Initialize Fermi momentum distributions for Pb-Pb
+  //
   printf("\n\n		AliGenZDC initialization:\n");
   printf("   Particle: %d, Track cosines: x = %f, y = %f, z = %f \n", 
   	 fIpart,fCosx,fCosy,fCosz);
@@ -81,7 +90,6 @@ void AliGenZDC::Init()
          "= %f, Crossing plane = %d\n\n", fFermiflag, fBeamDiv, fBeamCrossAngle,
 	 fBeamCrossPlane);
 
-  //Initialize Fermi momentum distributions for Pb-Pb
   FermiTwoGaussian(207.,fPp,fProbintp,fProbintn);
 }  
   
@@ -93,7 +101,7 @@ void AliGenZDC::Generate()
   //
   Int_t i;
 
-  Double_t Mass, pLab[3], fP0, fP[3], fBoostP[3], ddp[3], dddp0, dddp[3]; 
+  Double_t mass, pLab[3], fP0, fP[3], fBoostP[3], ddp[3], dddp0, dddp[3]; 
   Float_t  fPTrack[3], ptot = fPMin;
   Int_t nt;
   
@@ -128,10 +136,10 @@ void AliGenZDC::Generate()
   if(fFermiflag==1){
     if((fIpart==kProton) || (fIpart==kNeutron))
       ExtractFermi(fIpart,fPp,fProbintp,fProbintn,ddp);
-    Mass=gAlice->PDGDB()->GetParticle(fIpart)->Mass();
-    fP0 = TMath::Sqrt(fP[0]*fP[0]+fP[1]*fP[1]+fP[2]*fP[2]+Mass*Mass);
+    mass=gAlice->PDGDB()->GetParticle(fIpart)->Mass();
+    fP0 = TMath::Sqrt(fP[0]*fP[0]+fP[1]*fP[1]+fP[2]*fP[2]+mass*mass);
     for(i=0; i<=2; i++) dddp[i] = ddp[i];
-    dddp0 = TMath::Sqrt(dddp[0]*dddp[0]+dddp[1]*dddp[1]+dddp[2]*dddp[2]+Mass*Mass);
+    dddp0 = TMath::Sqrt(dddp[0]*dddp[0]+dddp[1]*dddp[1]+dddp[2]*dddp[2]+mass*mass);
     
     TVector3 b(fP[0]/fP0, fP[1]/fP0, fP[2]/fP0);
     TLorentzVector pFermi(dddp[0], dddp[1], dddp[2], dddp0);
@@ -239,6 +247,8 @@ void AliGenZDC::ExtractFermi(Int_t id, Double_t *fPp, Double_t *fProbintp,
 void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossAngle, 
                 Int_t fBeamCrossPlane, Double_t *pLab)
 {
+  // Applying beam divergence and crossing angle
+  //
   Double_t tetpart, fipart, tetdiv=0, fidiv=0, angleSum[2], tetsum, fisum;
   Double_t rvec;
 
@@ -293,7 +303,8 @@ void AliGenZDC::BeamDivCross(Int_t icross, Float_t fBeamDiv, Float_t fBeamCrossA
 //_____________________________________________________________________________
 void  AliGenZDC::AddAngle(Double_t theta1, Double_t phi1, Double_t theta2,
   	       Double_t phi2, Double_t *angleSum)
-{
+{ 
+  // Calculating the sum of 2 angles
   Double_t temp, conv, cx, cy, cz, ct1, st1, ct2, st2, cp1, sp1, cp2, sp2;
   Double_t rtetsum, tetsum, fisum;
   

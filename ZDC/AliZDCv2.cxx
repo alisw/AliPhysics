@@ -39,14 +39,14 @@
 
 // --- AliRoot classes
 #include "AliConst.h"
-#include "AliDetector.h"
 #include "AliMagF.h"
-#include "AliPDG.h"
 #include "AliRun.h"
-#include "AliZDCHit.h"
 #include "AliZDCv2.h"
 #include "AliMC.h"
  
+class  AliZDCHit;
+class  AliPDG;
+class  AliDetector;
  
 ClassImp(AliZDCv2)
 

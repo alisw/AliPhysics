@@ -36,7 +36,6 @@ class AliZDCTrigger : public AliTriggerDetector
  protected:
    
    // Setters   
-   void SetZNMinCut(Float_t ZNMinCut);
    void SetZDCLeftMinCut(Float_t ZDCLeftMinCut);
    void SetZDCRightMinCut(Float_t ZDCRightMinCut);
    void SetZEMMinCut(Float_t ZEMMinCut);
@@ -53,19 +52,18 @@ class AliZDCTrigger : public AliTriggerDetector
    void SetZEMCentrCut(Float_t ZEMCentrCut);
 
    // Data member
-   Float_t fZNMinCut;   
-   Float_t fZDCLeftMinCut;   
-   Float_t fZDCRightMinCut;   
-   Float_t fZEMMinCut;   
-   Float_t fZDCLeftEMDCuts[2];
-   Float_t fZDCRightEMDCuts[2];
-   Float_t fZDCLeftMBCut;
-   Float_t fZDCRightMBCut;
-   Float_t fZDCLeftCentrCut;
-   Float_t fZDCRightCentrCut;
-   Float_t fZDCLeftSemiCentrCut;
-   Float_t fZDCRightSemiCentrCut;
-   Float_t fZEMCentrCut;   
+   Float_t fZDCLeftMinCut;	// ZDC left minimum bias   
+   Float_t fZDCRightMinCut;   	// ZDC right minimum bias
+   Float_t fZEMMinCut;   	// ZEM minimum bias
+   Float_t fZDCLeftEMDCuts[2];	// ZDC left windows for EMD signal
+   Float_t fZDCRightEMDCuts[2]; // ZDC right windows for EMD signal
+   Float_t fZDCLeftMBCut;	// ZDC left minimum bias trigger
+   Float_t fZDCRightMBCut;	// ZDC right minimum bias trigger
+   Float_t fZDCLeftCentrCut;	// ZDC left central trigger
+   Float_t fZDCRightCentrCut;	// ZDC right  central trigger
+   Float_t fZDCLeftSemiCentrCut;//  ZDC left semi-central trigger
+   Float_t fZDCRightSemiCentrCut;// ZDC right semi- central trigger
+   Float_t fZEMCentrCut;    	// ZEM cut values
     
   ClassDef(AliZDCTrigger,1)  // ZDC Trigger Detector class
 };

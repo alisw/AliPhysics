@@ -13,12 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
+//**********************************************************************
 //
+//   		Class for ZDC digit 
+//   	      ADC Channels for each PM 
+//   	   5 for hadronic ZDCs 1 for EM ZDCs
 //
-//   ZDC digit = ADC Channels for each PM 
-//
-//_________________________________________________________________________
+//**********************************************************************
 
 #include "AliZDCDigit.h"
 
@@ -61,3 +62,4 @@ AliZDCDigit::AliZDCDigit(const AliZDCDigit & digit):TObject(digit)
   fADCValue[1] = digit.fADCValue[1];             
 
 }
+

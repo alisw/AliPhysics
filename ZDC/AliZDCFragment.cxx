@@ -13,6 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
+// ******************************************************************
+//
+//  	Class for nuclear fragments formation
+//
+// ******************************************************************
+
 // --- Standard libraries
 #include <stdlib.h>
 
@@ -349,10 +356,12 @@ void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &
 }
 
 //_____________________________________________________________________________
-Float_t AliZDCFragment::DeuteronFraction()
+const Float_t AliZDCFragment::DeuteronFraction()
 {
-    Float_t DeuteronProdPar[2] = {1.068,0.0385};
-    Float_t DeutFrac = DeuteronProdPar[0]-DeuteronProdPar[1]*fB;
-    if(DeutFrac>1.) DeutFrac=1.;
-    return DeutFrac;
+    // Calculates the fraction of deuterum nucleus produced
+    //
+    Float_t deuteronProdPar[2] = {1.068,0.0385};
+    Float_t deutFrac = deuteronProdPar[0]-deuteronProdPar[1]*fB;
+    if(deutFrac>1.) deutFrac=1.;
+    return deutFrac;
 }

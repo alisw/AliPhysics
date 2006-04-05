@@ -35,6 +35,7 @@ AliZDCCalibData::AliZDCCalibData()
 //________________________________________________________________
 AliZDCCalibData::AliZDCCalibData(const char* name)
 {
+  // Constructor
   TString namst = "Calib_";
   namst += name;
   SetName(namst.Data());
@@ -96,6 +97,7 @@ AliZDCCalibData::~AliZDCCalibData()
 //________________________________________________________________
 void AliZDCCalibData::Reset()
 {
+  // Reset
   memset(fMeanPedestal,0,47*sizeof(Float_t));
   memset(fMeanPedWidth,0,47*sizeof(Float_t));
   memset(fOOTPedestal,0,44*sizeof(Float_t));
@@ -125,6 +127,7 @@ void AliZDCCalibData::PrepHistos()
 //________________________________________________________________
 void  AliZDCCalibData::Print(Option_t *) const
 {
+   // Printing of calibration object
    printf("\n	#######	Mean pedestal values	####### \n");
    for(int t=0; t<47; t++){
      if(t==0 || t==24) printf("\n\t -------- ZN HighRes -------- \n");
@@ -191,6 +194,7 @@ void AliZDCCalibData::SetOOTPedWidth(Float_t* OOTPedWidth)
 void AliZDCCalibData:: SetPedCorrCoeff(Float_t* PedCorrCoeff0, 
 	Float_t* PedCorrCoeff1)
 {
+  // Set coefficients for pedestal correlations
   if(PedCorrCoeff0 && PedCorrCoeff1) for(int t=0; t<44; t++){
     fPedCorrCoeff[0][t] = PedCorrCoeff0[t];
     fPedCorrCoeff[1][t] = PedCorrCoeff1[t];

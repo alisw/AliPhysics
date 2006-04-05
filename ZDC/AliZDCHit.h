@@ -36,7 +36,7 @@ public:
   virtual void SetYImpact(Float_t value)  {fYImpact=value;}
 
   // Operators
-  Int_t operator == (AliZDCHit &quad) {
+  const Int_t operator == (AliZDCHit &quad) {
      Int_t i;
      if(fTrack!=quad.GetTrack()) return 0;
      for(i=0; i<2; i++) if(fVolume[i]!=quad.GetVolume(i)) return 0;
@@ -51,13 +51,7 @@ public:
   }
 
   // Print method
-  virtual void Print(Option_t *) const {
-     printf(" -> HIT: vol[0] =  %d vol[1] =  %d Track: %d \n" 
-            "  Primary E = %f, Ximpact = %f, Yimpact = %f, SFlag = %f\n"
-	    "  PMQLight = %f, PMCLight = %f,  Deposited E = %f\n ", 
-	    fVolume[0],fVolume[1],fTrack,fPrimKinEn,fXImpact,fYImpact,
-	    fSFlag,fLightPMQ,fLightPMC,fEnergy);
-  }
+  void Print(Option_t *) const;
 
 protected:
   // Data members

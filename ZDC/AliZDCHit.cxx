@@ -15,11 +15,11 @@
 
 /* $Id$ */
 
+// **************************************************************
 //
-////////////////////////////////////////////////
-//  Hits classes for set ZDC                  //
-////////////////////////////////////////////////
+//  		Hits classes for ZDC                  
 //
+// **************************************************************
 
 #include "AliZDCHit.h"
 
@@ -47,4 +47,15 @@ AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
   fLightPMC 	= hits[8];
   fEnergy 	= hits[9]; 
   
+}
+  
+//_____________________________________________________________________________
+void AliZDCHit::Print(Option_t *) const 
+{
+   // Print method
+   printf(" -> HIT: vol[0] =  %d vol[1] =  %d Track: %d \n" 
+	  "  Primary E = %f, Ximpact = %f, Yimpact = %f, SFlag = %f\n"
+          "  PMQLight = %f, PMCLight = %f,  Deposited E = %f\n ", 
+          fVolume[0],fVolume[1],fTrack,fPrimKinEn,fXImpact,fYImpact,
+          fSFlag,fLightPMQ,fLightPMC,fEnergy);
 }

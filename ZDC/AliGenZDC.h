@@ -49,8 +49,8 @@ public:
   void SetDebug(Int_t idebu) {fDebugOpt = idebu;};
   
   // Getters 
-  Double_t GetFermi2p(Int_t key) {return fProbintp[key];}
-  Double_t GetFermi2n(Int_t key) {return fProbintn[key];}
+  const Double_t GetFermi2p(Int_t key) {return fProbintp[key];}
+  const Double_t GetFermi2n(Int_t key) {return fProbintn[key];}
 
 protected:
   Int_t    fIpart;              // Particle to be generated
@@ -66,7 +66,7 @@ protected:
                                 // (=1 -> horizontal, =2 -> vertical plane)
   Double_t fProbintp[201];      // Protons momentum distribution due to Fermi 
   Double_t fProbintn[201];      // Neutrons momentum distribution due to Fermi 
-  Double_t fPp[201];            // 
+  Double_t fPp[201];            // Spectator momenta
   Int_t    fDebugOpt;		// Option for debugging [0->No debug, 1->Screen
   				//  prints, 2->ASCII data file]
   
