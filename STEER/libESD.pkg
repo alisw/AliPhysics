@@ -10,7 +10,8 @@ SRCS = AliESD.cxx \
        AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx \
        AliTagCreator.cxx AliTagAnalysis.cxx AliEventTagCuts.cxx \
        AliTrackPointArray.cxx AliTracker.cxx AliCluster.cxx \
-       AliESDFMD.cxx AliFMDMap.cxx AliFMDFloatMap.cxx
+       AliESDFMD.cxx AliFMDMap.cxx AliFMDFloatMap.cxx \
+       AliESDMultITS.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 
