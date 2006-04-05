@@ -61,4 +61,3 @@ AliITSresponseSSD& AliITSresponseSSD::operator=(const AliITSresponseSSD& /* ob *
   return *this;
 }
 
-

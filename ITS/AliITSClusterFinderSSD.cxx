@@ -18,12 +18,6 @@
 //  * period of March - June 2001                                            *
 // **************************************************************************/
 //
-
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-// Cluster finder class for SSD                                            // 
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
 //#include <Riostream.h>
 #include <TArrayI.h>
 
@@ -40,7 +34,7 @@
 #include "AliITSsegmentationSSD.h"
 //#include "AliITSgeom.h"
 #include "AliITSCalibrationSSD.h"
-//#include "AliLog.h"
+#include "AliLog.h"
 
 const Bool_t AliITSClusterFinderSSD::fgkSIDEP=kTRUE;
 const Bool_t AliITSClusterFinderSSD::fgkSIDEN=kFALSE;
@@ -145,21 +139,6 @@ fSFB(0){
     fNDigitsN     = 0;
     fPitch        = GetSeg()->Dpx(0);
     fPNsignalRatio= 7./8.;    // warning: hard-wired number
-}
-//______________________________________________________________________
-AliITSClusterFinderSSD::AliITSClusterFinderSSD(const AliITSClusterFinderSSD &source):AliITSClusterFinder(source){
-    // Copy constructor to satify Coding roules only.
-
-    Error("AliITSsimulationSSD","Not allowed to make a copy of "
-          "AliITSsimulationSSD");
-}
-//______________________________________________________________________
-AliITSClusterFinderSSD& AliITSClusterFinderSSD::operator=(const AliITSClusterFinderSSD &/*source*/){
-    // Assignment operator to satify Coding roules only.
-
-    Error("AliITSClusterFinderSSD","Not allowed to make a = with "
-          "AliITSClusterFinderSSD");
-    return *this;
 }
 
 //______________________________________________________________________
@@ -278,7 +257,7 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(Int_t module){
 	for(j=0;j<dnumber;j++) {
 	  
 	  if( (((AliITSdigitSSD*)lDigits[dbuffer[j]])->GetSignal())
-	      > fgkNoiseThreshold*((AliITSCalibrationSSD*)GetResp(module))->
+	      > fgkNoiseThreshold* ((AliITSCalibrationSSD*)GetResp(module))->
 	      GetNoiseP( ((AliITSdigitSSD*)lDigits[dbuffer[j]])->GetStripNumber()) ) 
 	    flag+=1; 
 	  

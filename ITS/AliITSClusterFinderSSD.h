@@ -3,10 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-///////////////////////////////////////////////////////////////////
-// Cluster finder class for SSD                                  //
-///////////////////////////////////////////////////////////////////
-
 //#include <TMath.h>
 #include "AliITSClusterFinder.h"
 //#include "AliITSsegmentationSSD.h"
@@ -61,9 +57,6 @@ class AliITSClusterFinderSSD: public AliITSClusterFinder{
   void   GetCrossingError(Float_t& dp, Float_t& dn);//x, y of strips crossing err.
   virtual AliITSCalibrationSSD* GetResp(Int_t mod)const{
     return (AliITSCalibrationSSD*) fDetTypeRec->GetCalibrationModel(mod);}//Return Response
-  AliITSClusterFinderSSD(const AliITSClusterFinderSSD &source); // copy ctor
-  AliITSClusterFinderSSD& operator=(const AliITSClusterFinderSSD &source);
-
   
   // Data memebers
   //  AliITS          *fITS;           //!Pointer to AliITS object

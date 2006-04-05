@@ -3,15 +3,13 @@
  
 #include "AliITSCalibration.h"
 #include "AliITSresponseSSD.h"
-#include "TArrayD.h"
+#include "TArrayF.h"
 #include "TArrayI.h"
 
 //////////////////////////////////////////////
 // Response class for SSD                   //
 //                                          //
 //////////////////////////////////////////////
-
-
 class AliITSCalibrationSSD : public AliITSCalibration {
 
  public:
@@ -31,22 +29,22 @@ class AliITSCalibrationSSD : public AliITSCalibration {
 
     // EF
     void SetNNoiseP(Int_t n) { fNoisP.Set(n); }
-    void AddNoiseP(Int_t c, Double_t n) { fNoisP.AddAt(n,c);}       
-    TArrayD GetNoiseP() const {return fNoisP; }
-    Double_t GetNoiseP(Int_t n) {return fNoisP.At(n); }
+    void AddNoiseP(Int_t c, Float_t n) { fNoisP.AddAt(n,c);}       
+    TArrayF GetNoiseP() const {return fNoisP; }
+    Float_t GetNoiseP(Int_t n) {return fNoisP.At(n); }
     void SetNNoiseN(Int_t n) { fNoisN.Set(n); }
-    void AddNoiseN(Int_t c, Double_t n) { fNoisN.AddAt(n,c);}
-    TArrayD GetNoiseN() const {return fNoisN; }
-    Double_t GetNoiseN(Int_t n) {return fNoisN.At(n); }
+    void AddNoiseN(Int_t c, Float_t n) { fNoisN.AddAt(n,c);}
+    TArrayF GetNoiseN() const {return fNoisN; }
+    Float_t GetNoiseN(Int_t n) {return fNoisN.At(n); }
 
     void SetNGainP(Int_t n) { fGainP.Set(n); }
-    void AddGainP(Int_t c, Double_t n) { fGainP.AddAt(n,c);}       
-    TArrayD GetGainP() const {return fGainP; }
-    Double_t GetGainP(Int_t n) {return fGainP.At(n); }
+    void AddGainP(Int_t c, Float_t n) { fGainP.AddAt(n,c);}       
+    TArrayF GetGainP() const {return fGainP; }
+    Float_t GetGainP(Int_t n) {return fGainP.At(n); }
     void SetNGainN(Int_t n) { fGainN.Set(n); }
-    void AddGainN(Int_t c, Double_t n) { fGainN.AddAt(n,c);}
-    TArrayD GetGainN() const {return fGainN; }
-    Double_t GetGainN(Int_t n) {return fGainN.At(n); }
+    void AddGainN(Int_t c, Float_t n) { fGainN.AddAt(n,c);}
+    TArrayF GetGainN() const {return fGainN; }
+    Float_t GetGainN(Int_t n) {return fGainN.At(n); }
 
     void SetNoisePThreshold(Int_t threshold) { fNoisePThreshold = threshold;}
     void AddNoisyPChannel(Int_t c, Int_t n) { fNoisyPChannelsList.AddAt(n,c);}
@@ -125,15 +123,15 @@ protected:
     Double_t fSigmaP;          // Sigma charge spread on Pside
     Double_t fSigmaN;          // Sigma charge spread on Nside
     
-    TArrayD fGainP;           // Gain for P side channels
-    TArrayD fGainN;           // Gain for N side channels
+    TArrayF fGainP;           // Gain for P side channels
+    TArrayF fGainN;           // Gain for N side channels
 
-    TArrayD fNoisP;           // Noise for P side channels
-    TArrayD fNoisN;           // Noise for N side channels
+    TArrayF fNoisP;           // Noise for P side channels
+    TArrayF fNoisN;           // Noise for N side channels
 
-    Double_t fNoisePThreshold;     // need to decide if channel is noisy  
+    Float_t fNoisePThreshold;     // need to decide if channel is noisy  
     TArrayI  fNoisyPChannelsList; // list of P side noisy channels
-    Double_t fNoiseNThreshold;     // need to decide if channel is noisy  
+    Float_t fNoiseNThreshold;     // need to decide if channel is noisy  
     TArrayI  fNoisyNChannelsList; // list of N side noisy channels
 
     TArrayI  fDeadNChannelsList;  // list of P side dead channels

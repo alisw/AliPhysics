@@ -74,4 +74,3 @@ protected:
     ClassDef(AliITSresponseSSD,4) //Response class for SSD
 };
 #endif
-

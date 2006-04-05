@@ -29,6 +29,7 @@
 #include "AliITShit.h"
 #include "AliITSdigitSSD.h"
 #include "AliRun.h"
+#include "AliITSgeom.h"
 #include "AliITSsimulationSSD.h"
 #include "AliITSTableSSD.h"
 //#include "AliITSresponseSSD.h"
@@ -332,13 +333,13 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
   for(ix=0;ix<GetNStrips();ix++){      // loop over strips
     
     // noise is gaussian
-    noise  = gRandom->Gaus(0,res->GetNoiseP().At(ix));
+    noise  = (Double_t) gRandom->Gaus(0,res->GetNoiseP().At(ix));
     
     // need to calibrate noise 
     // NOTE. noise from the calibration database comes uncalibrated, 
     // it needs to be calibrated in order to be added
     // to the signal. It will be decalibrated later on together with the noise    
-    noise *= res->GetGainP(ix); 
+    noise *= (Double_t) res->GetGainP(ix); 
     
     // noise comes in ADC channels from the calibration database
     // It needs to be converted back to electronVolts
@@ -352,8 +353,8 @@ void AliITSsimulationSSD::ApplyNoise(AliITSpList *pList,Int_t module){
   
     // Nside
   for(ix=0;ix<GetNStrips();ix++){      // loop over strips
-    noise  = gRandom->Gaus(0,res->GetNoiseN().At(ix));// give noise to signal
-    noise *= res->GetGainN(ix); 
+    noise  = (Double_t) gRandom->Gaus(0,res->GetNoiseN().At(ix));// give noise to signal
+    noise *= (Double_t) res->GetGainN(ix); 
     noise /= res->GetDEvToADC(1.);
     signal = noise + fMapA2->GetSignal(1,ix);//get signal from map
     fMapA2->SetHit(1,ix,signal); // give back signal to map
