@@ -81,6 +81,7 @@
 #pragma link C++ class AliITSBeamTestDigSDD+;
 #pragma link C++ class AliITSBeamTestDigSSD+;
 #pragma link C++ class AliITSBeamTestDigitizer+;
-
+//multiplicity
+#pragma link C++ class AliITSMultReconstructor+;
 
 #endif
