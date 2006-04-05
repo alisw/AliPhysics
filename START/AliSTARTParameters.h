@@ -29,7 +29,7 @@ public:
 
   void Init();  
   // Set various `Fixed' parameters 
-  void SetPh2Mip(Int_t r=500)          { fPh2Mip = r; }
+  void SetPh2Mip(Int_t r=300)          { fPh2Mip = r; }
   void SetmV2Mip(Int_t r=50)          { fmV2Mip = r; }
   void SetChannelWidth(Int_t s=25)   { fChannelWidth = s;}
   void SetmV2channel(Int_t size=320) { fmV2Channel = size; }
