@@ -5,7 +5,13 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
+/// \ingroup sim 
+/// \class AliMUONTriggerElectronics
+/// \brief Manager class for muon trigger electronics
+///
+/// Client of trigger board classes
+///
+/// \author Rachid Guernane (LPCCFd)
 
 #ifndef ROOT_TTask
 #  include "TTask.h"
@@ -28,7 +34,8 @@ class TClonesArray;
 class AliMUONTriggerElectronics : public TTask
 {
    public:
-      AliMUONTriggerElectronics(AliMUONData* Data = 0, AliMUONCalibrationData* =0);
+      AliMUONTriggerElectronics(AliMUONData* data = 0, 
+                                AliMUONCalibrationData* calibData=0);
       virtual ~AliMUONTriggerElectronics();
 
       virtual void Exec(Option_t*);
@@ -37,8 +44,8 @@ class AliMUONTriggerElectronics : public TTask
       virtual void SetDataSource(TString SourceFile = "$ALICE_ROOT/MUON/data/CRATE.TXT") 
       {fSourceFileName = SourceFile;}
 
-      virtual void Factory(AliMUONCalibrationData*);
-      void LoadMasks(AliMUONCalibrationData*);
+      virtual void Factory(AliMUONCalibrationData* calibData);
+      void LoadMasks(AliMUONCalibrationData* calibData);
       virtual void AddCrate(char *name);
 
       virtual AliMUONTriggerCrate* Crate(char *name);
@@ -66,25 +73,23 @@ class AliMUONTriggerElectronics : public TTask
       virtual void ClearDigitNumbers();
       virtual void DigitFiredCircuit(Int_t circuit, Int_t cathode, Int_t chamber, Int_t digit);
 
-//      virtual AliMUONData* GetMUONData() {return fMUONData;}
-
    protected:
       AliMUONTriggerElectronics(const AliMUONTriggerElectronics& right);
       AliMUONTriggerElectronics&  operator = (const AliMUONTriggerElectronics& right);
      
    private:
-      TString                    fSourceFileName;
-      TClonesArray              *fCrates;
-      AliMUONGlobalTriggerBoard *fGlobalTriggerBoard;
-      Int_t                      fNCrates;
-      static const Int_t         fgkNCrates;
-      UShort_t                   fLocal[16][16];     // 16 crates of 16 LB
-      UShort_t                   fRegional[16];
-      UShort_t                   fGlobal;
-      AliMUONData               *fMUONData;          //! Data container for MUON subsystem 
-      TArrayI                    fDigitNumbers[234]; //! The digit number that fired a circuit.
-      char                     **fCrateMap;
-      Int_t                      fBoardMap[234];
+      TString                    fSourceFileName;     // Source file
+      TClonesArray              *fCrates;             // Crate array
+      AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; // Global trigger board
+      Int_t                      fNCrates;            // Number of trigger crates
+      static const Int_t         fgkNCrates;          // Number of trigger crates (const)
+      UShort_t                   fLocal[16][16];      // 16 crates of 16 LB
+      UShort_t                   fRegional[16];       // 16 RB
+      UShort_t                   fGlobal;             // 1 GB
+      AliMUONData               *fMUONData;           //! Data container for MUON subsystem 
+      TArrayI                    fDigitNumbers[234];  //! The digit number that fired a circuit.
+      char                     **fCrateMap;           // Map crate name <-> crate number
+      Int_t                      fBoardMap[234];      // Map board number <-> slot number
 
    ClassDef(AliMUONTriggerElectronics,1)
 };
