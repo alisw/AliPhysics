@@ -23,22 +23,22 @@ class AliTOFGeometry: public TObject{
 
   static  Int_t NStripA()     { return kNStripA;};
   static  Int_t NStripB()     { return kNStripB;};
-  virtual Int_t NStripC()     { return kNStripC;};
+  virtual Int_t NStripC() const { return kNStripC;};
   static  Int_t NMaxNstrip()  { return kMaxNstrip;};
   static  Int_t NpadX()       { return kNpadX;};
   static  Int_t NpadZ()       { return kNpadZ;};
   static  Int_t NpadXStrip()  { return kNpadX*kNpadZ;};
   static  Int_t NSectors()    { return kNSectors;};
   static  Int_t NPlates()     { return kNPlates;};
-  virtual Int_t NPadXSector() { return (kNStripA + 2*kNStripB +
+  virtual Int_t NPadXSector() const { return (kNStripA + 2*kNStripB +
 					2*kNStripC)*kNpadX*kNpadZ;};
 
-  virtual Float_t RinTOF()    { return fgkxTOF;};
-  virtual Float_t Rmin()      { return fgkRmin;};
-  virtual Float_t Rmax()      { return fgkRmax;};
+  virtual Float_t RinTOF() const   { return fgkxTOF;};
+  virtual Float_t Rmin() const     { return fgkRmin;};
+  virtual Float_t Rmax() const     { return fgkRmax;};
 
-  static  Float_t XPad()      { return fgkXPad;};
-  static  Float_t ZPad()      { return fgkZPad;};
+  static  Float_t XPad()     { return fgkXPad;};
+  static  Float_t ZPad()     { return fgkZPad;};
 
   static  Float_t StripLength() { return fgkStripLength;};
 
@@ -51,10 +51,10 @@ class AliTOFGeometry: public TObject{
   static  Int_t NCh()         { return kNCh;};
   static  Int_t NPadXTRM()    { return kNCh*kNTdc;};
 
-  virtual  Float_t ZlenA()       { return kZlenA;};
-  virtual  Float_t ZlenB()       { return kZlenB;};
-  virtual  Float_t ZlenC()       { return kZlenC;};
-  virtual  Float_t MaxhZtof()    { return kMaxhZtof;};
+  virtual  Float_t ZlenA() const      { return kZlenA;};
+  virtual  Float_t ZlenB() const      { return kZlenB;};
+  virtual  Float_t ZlenC() const      { return kZlenC;};
+  virtual  Float_t MaxhZtof() const   { return kMaxhZtof;};
 
   static  Float_t SigmaForTail1() { return fgkSigmaForTail1;};
   static  Float_t SigmaForTail2() { return fgkSigmaForTail2;};

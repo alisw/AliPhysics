@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/28 14:57:30  arcelli
+updates to handle new V5 geometry & some re-arrangements
+
 Revision 1.2  2006/02/13 17:22:26  arcelli
 just Fixing Log info
 
@@ -57,6 +60,7 @@ AliTOFCalPadZ::AliTOFCalPadZ(AliTOFChannel *ch):
 //________________________________________________________________
 
 AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom){
+  //ctor with TOF geometry
   fCh = 0;
   fGeom = geom;
   fNpadX = fGeom->NpadX();
@@ -66,6 +70,7 @@ AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom){
 AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom,AliTOFChannel *ch):
   fCh(ch)
 {  
+  //ctor with TOF geometry and cal channel
   fGeom = geom;
   fNpadX = fGeom->NpadX();
 }
@@ -79,6 +84,7 @@ AliTOFCalPadZ::~AliTOFCalPadZ()
 
 void AliTOFCalPadZ::Browse(TBrowser *b)
 {
+  //Add cal object to browsable list
   if(fGeom==0x0){
     AliInfo("V5 TOF Geometry is taken as the default");
     AliTOFGeometry *geom = new AliTOFGeometryV5();

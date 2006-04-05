@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/28 14:58:16  arcelli
+updates to handle new V5 geometry & some re-arrangements
+
 Revision 1.2  2006/02/13 16:53:00  decaro
 just Fixing Log info
 
@@ -49,6 +52,7 @@ ClassImp(AliTOFCalSector)
 //________________________________________________________________
 
 AliTOFCalSector::AliTOFCalSector(){
+  //main ctor
   fCh = 0;
   fGeom=0x0;
   fNPlate=0;
@@ -65,6 +69,7 @@ AliTOFCalSector::AliTOFCalSector(){
 AliTOFCalSector::AliTOFCalSector(AliTOFChannel *ch):
   fCh(ch)
 {
+  //ctor with channel
   fGeom=0x0;
   fNPlate=0;
   fNStripA=0;
@@ -77,6 +82,7 @@ AliTOFCalSector::AliTOFCalSector(AliTOFChannel *ch):
 //________________________________________________________________
 
 AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom){
+  //ctor with geom
   fCh = 0;
   fGeom= geom; 
   fNPlate  = fGeom->NPlates();
@@ -93,6 +99,7 @@ AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom){
 AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom,AliTOFChannel *ch):
   fCh(ch)
 {
+  // ctor with channel and geom
   fGeom= geom; 
   fNPlate  = fGeom->NPlates();
   fNStripA = fGeom->NStripA();
@@ -107,6 +114,7 @@ AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom,AliTOFChannel *ch):
 AliTOFCalSector::AliTOFCalSector(const AliTOFCalSector& sec):
   TObject(sec)
   {
+    //copy ctor
     fCh = sec.fCh;
     fNPlate = sec.fNPlate;
     fNStripA = sec.fNStripA;
@@ -120,6 +128,7 @@ AliTOFCalSector::AliTOFCalSector(const AliTOFCalSector& sec):
 
 AliTOFCalSector::~AliTOFCalSector()
 {
+  //dtor
   gROOT->GetListOfBrowsables()->Remove(this);
   delete[] fCh;
 }
@@ -127,7 +136,7 @@ AliTOFCalSector::~AliTOFCalSector()
 //________________________________________________________________
 
 void AliTOFCalSector::Browse(TBrowser *b){
-
+  //add cal obj to list of browsables
   if(fGeom==0x0){
     AliTOFGeometry *geom= new AliTOFGeometryV5(); 
     AliInfo("V5 TOF Geometry is taken as the default");

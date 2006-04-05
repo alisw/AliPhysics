@@ -39,18 +39,18 @@ class AliTOFGeometryV5: public AliTOFGeometry {
   Float_t GetPadDy(Float_t *pos);
   Float_t GetPadDz(Float_t *pos);
 
-  Float_t NStirpC()     { return kNStripC;};
-  Int_t   NPadXSector() { return (AliTOFGeometry::kNStripA + 2*AliTOFGeometry::kNStripB +
+  Int_t   NStripC()  const   { return kNStripC;};
+  Int_t   NPadXSector() const { return (AliTOFGeometry::kNStripA + 2*AliTOFGeometry::kNStripB +
 				  2*kNStripC)*AliTOFGeometry::kNpadX*AliTOFGeometry::kNpadZ;};
 
-  Float_t RinTOF()      { return fgkxTOF;};
-  Float_t Rmin()        { return fgkRmin;};
-  Float_t Rmax()        { return fgkRmax;};
+  Float_t RinTOF()  const    { return fgkxTOF;};
+  Float_t Rmin()   const     { return fgkRmin;};
+  Float_t Rmax()   const     { return fgkRmax;};
 
-  Float_t ZlenA()       { return fgkZlenA;};
-  Float_t ZlenB()       { return fgkZlenB;};
-  Float_t ZlenC()       { return fgkZlenC;};
-  Float_t MaxhZtof()    { return fgkMaxhZtof;};
+  Float_t ZlenA() const      { return fgkZlenA;};
+  Float_t ZlenB() const      { return fgkZlenB;};
+  Float_t ZlenC() const      { return fgkZlenC;};
+  Float_t MaxhZtof() const   { return fgkMaxhZtof;};
 
   void Translation(Float_t *xyz, Float_t translationVector[3]);
   void Rotation(Float_t *xyz, Double_t rotationAngles[6]);

@@ -61,17 +61,10 @@ public:
     } 
     Int_t GetSize() const {return fSize;}
     void AddArray(Int_t pos, TArrayF * parr) {
-      if (pos>-1 && pos < fSize)
-	fArray[pos] = parr;
-      //else
-      //AliError("Index  out of range");  
-    }
-    TArrayF * GetArray(Int_t pos) {
-      TArrayF * parr = 0x0;
-      if  (pos>-1 && pos < fSize)
-	parr = fArray[pos];
-      //else
-        //AliError("Index out of range");  
+      if (pos>-1 && pos < fSize)fArray[pos] = parr;}
+    TArrayF *  GetArray(Int_t pos) const {
+      TArrayF * parr = 0x0; 
+      if  (pos>-1 && pos < fSize)parr = fArray[pos];
       return parr;
     }
     virtual ~AliTOFArray() {

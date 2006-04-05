@@ -181,8 +181,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   Int_t dig[5];
   Float_t g[3];
   Double_t h[5];
-  Float_t ToT;
-  Double_t TdcND;
+  Float_t tToT;
+  Double_t tTdcND;
   for (ii=0; ii<nDigits; ii++) {
     AliTOFdigit *d = (AliTOFdigit*)digits->UncheckedAt(ii);
     dig[0]=d->GetSector();
@@ -199,10 +199,10 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     h[2] = g[2];
     h[3] = d->GetTdc();
     h[4] = d->GetAdc();
-    ToT = d->GetToT();
-    TdcND = d->GetTdcND();
+    tToT = d->GetToT();
+    tTdcND = d->GetTdcND();
 
-    AliTOFcluster *tofCluster = new AliTOFcluster(h,d->GetTracks(),dig,ii,ToT, TdcND);
+    AliTOFcluster *tofCluster = new AliTOFcluster(h,d->GetTracks(),dig,ii,tToT, tTdcND);
     InsertCluster(tofCluster);
 
   }
@@ -241,8 +241,8 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   Int_t detectorIndex[5];
   Float_t position[3];
   Double_t cylindricalPosition[5];
-  Float_t ToT;
-  Double_t TdcND;
+  Float_t tToT;
+  Double_t tTdcND;
 
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
@@ -267,11 +267,11 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       cylindricalPosition[2] = position[2];
       cylindricalPosition[3] = tofInput.GetTofBin();
       cylindricalPosition[4] = tofInput.GetADCbin();
-      ToT = tofInput.GetADCbin();
-      TdcND = -1.;
+      tToT = tofInput.GetADCbin();
+      tTdcND = -1.;
       AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
-      tofCluster->SetToT(ToT);
-      tofCluster->SetTDCND(TdcND);
+      tofCluster->SetToT(tToT);
+      tofCluster->SetTDCND(tTdcND);
       InsertCluster(tofCluster);
 
     } // while loop
@@ -318,8 +318,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   Int_t detectorIndex[5];
   Float_t position[3];
   Double_t cylindricalPosition[5];
-  Float_t ToT;
-  Double_t TdcND;
+  Float_t tToT;
+  Double_t tTdcND;
 
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
@@ -344,12 +344,12 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
       cylindricalPosition[2] = (Double_t)position[2];
       cylindricalPosition[3] = (Double_t)tofInput.GetTofBin();
       cylindricalPosition[4] = (Double_t)tofInput.GetADCbin();
-      ToT = tofInput.GetADCbin();
-      TdcND = -1.;
+      tToT = tofInput.GetADCbin();
+      tTdcND = -1.;
     
       AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
-      tofCluster->SetToT(ToT);
-      tofCluster->SetTDCND(TdcND);
+      tofCluster->SetToT(tToT);
+      tofCluster->SetTDCND(tTdcND);
       InsertCluster(tofCluster);
 
     } // while loop
@@ -504,8 +504,8 @@ void AliTOFClusterFinder::FillRecPoint()
   Double_t cylindricalPosition[5];
   Int_t trackLabels[3];
   Int_t digitIndex = -1;
-  Float_t ToT;
-  Double_t TdcND;
+  Float_t tToT;
+  Double_t tTdcND;
 
   TClonesArray &lRecPoints = *fRecPoints;
   
@@ -519,10 +519,10 @@ void AliTOFClusterFinder::FillRecPoint()
     cylindricalPosition[2] = fTofClusters[ii]->GetZ();
     cylindricalPosition[3] = fTofClusters[ii]->GetTDC();
     cylindricalPosition[4] = fTofClusters[ii]->GetADC();
-    ToT = fTofClusters[ii]->GetToT();
-    TdcND = fTofClusters[ii]->GetTDCND();
+    tToT = fTofClusters[ii]->GetToT();
+    tTdcND = fTofClusters[ii]->GetTDCND();
 
-    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex, ToT, TdcND);
+    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex, tToT, tTdcND);
 
     //AliInfo(Form("%3i  %3i  %f %f %f %f %f  %2i %2i %2i %1i %2i",ii,digitIndex, cylindricalPosition[2],cylindricalPosition[0],cylindricalPosition[1],cylindricalPosition[3],cylindricalPosition[4],detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
 
@@ -543,12 +543,12 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 
   Int_t detectorIndex[5];
   Int_t digitIndex = -1;
-  Float_t ToT;
-  Float_t TdcCorr;
+  Float_t tToT;
+  Float_t tdcCorr;
   AliInfo(" Calibrating TOF Clusters: ")
   AliTOFcalib *calib = new AliTOFcalib(fTOFGeometry);
   calib->ReadParFromCDB("TOF/Calib",0);
-  AliTOFCal *TOFCalArray = calib->GetTOFCalArray();  
+  AliTOFCal *calTOFArray = calib->GetTOFCalArray();  
 
   for (ii=0; ii<fNumberOfTofClusters; ii++) {
     digitIndex = fTofClusters[ii]->GetIndex();
@@ -556,16 +556,16 @@ void AliTOFClusterFinder::CalibrateRecPoint()
 
     Int_t index = calib->GetIndex(detectorIndex);
      
-    AliTOFChannel * CalChannel = TOFCalArray->GetChannel(index);
+    AliTOFChannel * calChannel = calTOFArray->GetChannel(index);
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
-      par[j]=CalChannel->GetSlewPar(j);
+      par[j]=calChannel->GetSlewPar(j);
     }
-    ToT = fTofClusters[ii]->GetToT();
-    Float_t TimeCorr=par[0]+par[1]*ToT+par[2]*ToT*ToT+par[3]*ToT*ToT*ToT+par[4]*ToT*ToT*ToT*ToT+par[5]*ToT*ToT*ToT*ToT*ToT;
-    TdcCorr=(fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()+32)*1.E-3-TimeCorr;
-    TdcCorr=(TdcCorr*1E3-32)/AliTOFGeometry::TdcBinWidth();
-    fTofClusters[ii]->SetTDC(TdcCorr);
+    tToT = fTofClusters[ii]->GetToT();
+    Float_t timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT;
+    tdcCorr=(fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()+32)*1.E-3-timeCorr;
+    tdcCorr=(tdcCorr*1E3-32)/AliTOFGeometry::TdcBinWidth();
+    fTofClusters[ii]->SetTDC(tdcCorr);
 
   } // loop on clusters
 

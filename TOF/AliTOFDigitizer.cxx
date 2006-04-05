@@ -72,6 +72,7 @@ ClassImp(AliTOFDigitizer)
 AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager) 
     :AliDigitizer(manager) 
 {
+  //ctor with RunDigitizer
   fDigits=0;
   fSDigitsArray=0;
   fhitMap=0;
@@ -376,7 +377,7 @@ void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
 }
 
 //_____________________________________________________________________________
-void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib){
+void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib) const {
   calib->ReadSimParFromCDB("TOF/Calib", 0);
 }
 //---------------------------------------------------------------------
@@ -388,10 +389,10 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 
   AliInfo(Form("Size of AliTOFCal = %i",cal->NPads()));
   for (Int_t ipad = 0 ; ipad<cal->NPads(); ipad++){
-    AliTOFChannel *CalChannel = cal->GetChannel(ipad);
+    AliTOFChannel *calChannel = cal->GetChannel(ipad);
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
-      par[j]=CalChannel->GetSlewPar(j);
+      par[j]=calChannel->GetSlewPar(j);
     }
   }
 
@@ -400,26 +401,26 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 
   TH1F * hToT= calib->GetTOFSimToT();
   Int_t nbins = hToT->GetNbinsX();
-  Float_t Delta = hToT->GetBinWidth(1);
-  Float_t maxch = hToT->GetBinLowEdge(nbins)+Delta;
+  Float_t delta = hToT->GetBinWidth(1);
+  Float_t maxch = hToT->GetBinLowEdge(nbins)+delta;
   Float_t minch = hToT->GetBinLowEdge(1);
   Float_t max=0,min=0; //maximum and minimum value of the distribution
   Int_t maxbin=0,minbin=0; //maximum and minimum bin of the distribution
   for (Int_t ii=nbins; ii>0; ii--){
     if (hToT->GetBinContent(ii)!= 0) {
-      max = maxch - (nbins-ii-1)*Delta;
+      max = maxch - (nbins-ii-1)*delta;
       maxbin = ii; 
       break;}
   }
   for (Int_t j=1; j<nbins; j++){
     if (hToT->GetBinContent(j)!= 0) {
-      min = minch + (j-1)*Delta;
+      min = minch + (j-1)*delta;
       minbin = j; 
       break;}
   }
-  Float_t MaxToT=max;
-  Float_t MinToT=min;
-  Float_t MaxToTDistr=hToT->GetMaximum();
+  Float_t maxToT=max;
+  Float_t minToT=min;
+  Float_t maxToTDistr=hToT->GetMaximum();
   
 
   // Loop on TOF Digits
@@ -439,30 +440,30 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
     if(hToT->GetEntries()>0){  
       Float_t trix = 0;
       Float_t triy = 0;
-      Float_t SimToT = 0;
-      while (SimToT <= triy){
+      Float_t simToT = 0;
+      while (simToT <= triy){
 	trix = gRandom->Rndm(i);
 	triy = gRandom->Rndm(i);
-	trix = (MaxToT-MinToT)*trix + MinToT; 
-	triy = MaxToTDistr*triy;
+	trix = (maxToT-minToT)*trix + minToT; 
+	triy = maxToTDistr*triy;
 	Int_t binx=hToT->FindBin(trix);
-	SimToT=hToT->GetBinContent(binx);
+	simToT=hToT->GetBinContent(binx);
       }
     // Setting realistic ToT signal (only for Miscalibrated Data)   
       dig->SetToT(trix);
     }
     Int_t index = calib->GetIndex(detId);     
-    AliTOFChannel *CalChannel = cal->GetChannel(index);
+    AliTOFChannel *calChannel = cal->GetChannel(index);
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
-      par[j]=CalChannel->GetSlewPar(j);
+      par[j]=calChannel->GetSlewPar(j);
       if(par[j]!=0)dbEntry=kTRUE;
     }
 
-    Float_t ToT= dig->GetToT();
+    Float_t tToT= dig->GetToT();
     dig->SetTdcND(dig->GetTdc());
     Float_t tdc = ((dig->GetTdc())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3; //tof signal in ns
-    Float_t timeoffset=par[0] + ToT*par[1] +ToT*ToT*par[2] +ToT*ToT*ToT*par[3] +ToT*ToT*ToT*ToT*par[4] +ToT*ToT*ToT*ToT*ToT*par[5]; 
+    Float_t timeoffset=par[0] + tToT*par[1] +tToT*tToT*par[2] +tToT*tToT*tToT*par[3] +tToT*tToT*tToT*tToT*par[4] +tToT*tToT*tToT*tToT*tToT*par[5]; 
     Float_t timeSlewed = tdc + timeoffset;
     // Setting Decalibrated Time signal    
     dig->SetTdc((timeSlewed*1E3-32)/AliTOFGeometry::TdcBinWidth());   

@@ -12,6 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
 $Log$
+Revision 1.3  2006/03/31 13:49:07  arcelli
+Removing some junk printout
+
 Revision 1.2  2006/03/31 11:26:30  arcelli
  changing CDB Ids according to standard convention
 
@@ -56,19 +59,20 @@ AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):TTask("AliTOFAlignmen
 }
 
 //_____________________________________________________________________________
-void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot){
-
+void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)
+{
+  //Introduce Random Offset/Tilts
   fTOFAlignObjArray = new TObjArray(kMaxAlignObj);
   Float_t dx, dy, dz;  // shifts
   Float_t dpsi, dtheta, dphi; // angular displacements
   TRandom *rnd   = new TRandom(1567);
 
   TString path;
-  const char *SM71="/ALIC_1/B077_1/B071_"; //1-13
+  const char *sSM71="/ALIC_1/B077_1/B071_"; //1-13
   const char *sm71="/BTO1_1";
-  const char *SM74="/ALIC_1/B077_1/B074_"; //1-2
+  const char *sSM74="/ALIC_1/B077_1/B074_"; //1-2
   const char *sm74="/BTO2_1";
-  const char *SM75="/ALIC_1/B077_1/B075_"; //1-3
+  const char *sSM75="/ALIC_1/B077_1/B075_"; //1-3
   const char *sm75="/BTO3_1";
 
 
@@ -88,7 +92,7 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot){
     dtheta = rot[1]/nSM71;
     dphi   = rot[2]/nSM71;
     
-    path = SM71;
+    path = sSM71;
     path += i;
     path += sm71;
     AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
@@ -104,7 +108,7 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot){
     dtheta = rot[1]/nSM74;
     dphi   = rot[2]/nSM74;
     
-    path = SM74;
+    path = sSM74;
     path += i;
     path += sm74;
     AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
@@ -120,7 +124,7 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot){
     dtheta = rot[1]/nSM75;
     dphi   = rot[2]/nSM75;
     
-    path = SM75;
+    path = sSM75;
     path += i;
     path += sm75;
     AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
@@ -132,17 +136,19 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot){
 }
 
 //_____________________________________________________________________________
-void AliTOFAlignment::Align( Float_t *tr, Float_t *rot){
+void AliTOFAlignment::Align( Float_t *tr, Float_t *rot)
+{
+  //Introduce Offset/Tilts
 
   fTOFAlignObjArray = new TObjArray(kMaxAlignObj);
   Float_t dx, dy, dz;  // shifts
   Float_t dpsi, dtheta, dphi; // angular displacements
   TString path;
-  const char *SM71="/ALIC_1/B077_1/B071_"; //1-13
+  const char *sSM71="/ALIC_1/B077_1/B071_"; //1-13
   const char *sm71="/BTO1_1";
-  const char *SM74="/ALIC_1/B077_1/B074_"; //1-2
+  const char *sSM74="/ALIC_1/B077_1/B074_"; //1-2
   const char *sm74="/BTO2_1";
-  const char *SM75="/ALIC_1/B077_1/B075_"; //1-3
+  const char *sSM75="/ALIC_1/B077_1/B075_"; //1-3
   const char *sm75="/BTO3_1";
 
 
@@ -162,7 +168,7 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot){
     dtheta = rot[1]/nSM71;
     dphi   = rot[2]/nSM71;
     
-    path = SM71;
+    path = sSM71;
     path += i;
     path += sm71;
     AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
@@ -178,7 +184,7 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot){
     dtheta = rot[1]/nSM74;
     dphi   = rot[2]/nSM74;
     
-    path = SM74;
+    path = sSM74;
     path += i;
     path += sm74;
     AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
@@ -194,7 +200,7 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot){
     dtheta = rot[1]/nSM75;
     dphi   = rot[2]/nSM75;
     
-    path = SM75;
+    path = sSM75;
     path += i;
     path += sm75;
     AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
@@ -204,7 +210,9 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot){
   AliInfo(Form("Number of Alignable Volumes: %d",fNTOFAlignObj));
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
+void AliTOFAlignment::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write Align Par on CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "AlignPar" ;
@@ -217,7 +225,9 @@ void AliTOFAlignment::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
   man->Put(fTOFAlignObjArray,idTOFAlign,mdTOFAlign);
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::ReadParFromCDB(Char_t *sel, Int_t nrun){
+void AliTOFAlignment::ReadParFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read Align Par from CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "AlignPar" ;
@@ -230,7 +240,9 @@ void AliTOFAlignment::ReadParFromCDB(Char_t *sel, Int_t nrun){
 
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
+void AliTOFAlignment::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write Sim Align Par on CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "AlignSimPar" ;
@@ -244,6 +256,7 @@ void AliTOFAlignment::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
 }
 //_____________________________________________________________________________
 void AliTOFAlignment::ReadSimParFromCDB(Char_t *sel, Int_t nrun){
+  //Read Sim Align Par from CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "AlignSimPar" ;
@@ -256,7 +269,9 @@ void AliTOFAlignment::ReadSimParFromCDB(Char_t *sel, Int_t nrun){
 
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::WriteOnCDBforDC(){
+void AliTOFAlignment::WriteOnCDBforDC()
+{
+  //Write Align Par on CDB for DC06
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBId idTOFAlign("TOF/Align/Data",0,0);
@@ -267,7 +282,9 @@ void AliTOFAlignment::WriteOnCDBforDC(){
   man->Put(fTOFAlignObjArray,idTOFAlign,mdTOFAlign);
 }
 //_____________________________________________________________________________
-void AliTOFAlignment::ReadFromCDBforDC(){
+void AliTOFAlignment::ReadFromCDBforDC()
+{
+  //Read Sim Align Par from CDB for DC06
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBEntry *entry = man->Get("TOF/Align/Data",0);

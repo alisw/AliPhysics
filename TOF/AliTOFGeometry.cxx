@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2006/03/12 14:37:54  arcelli
+ Changes for TOF Reconstruction using TGeo
+
 Revision 1.12  2006/02/28 10:38:00  decaro
 AliTOFGeometry::fAngles, AliTOFGeometry::fHeights, AliTOFGeometry::fDistances arrays: dimension definition in the right location
 
@@ -104,7 +107,7 @@ AliTOFGeometry::AliTOFGeometry()
   // AliTOFGeometry default constructor
   //
 
-  kNStripC     = 20;  // number of strips in C type module 
+  kNStripC     = 19;  // number of strips in C type module 
   kZlenA    = 106.0;  // length (cm) of the A module
   kZlenB    = 141.0;  // length (cm) of the B module
   kZlenC    = 177.5;  // length (cm) of the C module

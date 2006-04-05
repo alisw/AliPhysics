@@ -2,6 +2,9 @@
 #define ALITOFCLUSTERFINDER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+// AliTOFClusterFinder Class
+// Task: Transform digits/raw data to TOF Clusters, to fill TOF RecPoints
+// and feed TOF tracking 
 
 #include "AliRawReader.h"
 

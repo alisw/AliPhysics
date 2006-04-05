@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/28 14:57:13  arcelli
+updates to handle new V5 geometry & some re-arrangements
+
 Revision 1.2  2006/02/13 17:22:26  arcelli
 just Fixing Log info
 
@@ -37,28 +40,28 @@ ClassImp(AliTOFcalibESD)
 
 //________________________________________________________________
 AliTOFcalibESD::AliTOFcalibESD():
-  fTOFCalChannel(-1),
+  fTOFCalCh(-1),
   fToT(0),
   fIntLen(0),
   fTOFtime(0),
-  fP(0),
+  fMo(0),
   fTOFsignalND(0)
 {
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] = 0;
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrTime[i] = 0;
 }
 //________________________________________________________________
 
 AliTOFcalibESD::AliTOFcalibESD(const AliTOFcalibESD& UnCalib):
   AliESDtrack(UnCalib),
   fCombID(UnCalib.fCombID),
-  fTOFCalChannel(UnCalib.fTOFCalChannel),
+  fTOFCalCh(UnCalib.fTOFCalCh),
   fToT(UnCalib.fToT),
   fIntLen(UnCalib.fIntLen),
   fTOFtime(UnCalib.fTOFtime),
-  fP(UnCalib.fP),
+  fMo(UnCalib.fMo),
   fTOFsignalND(UnCalib.fTOFsignalND)
 {
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] = UnCalib.fTrackTime[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrTime[i] = UnCalib.fTrTime[i];
   for (Int_t i = 0;i<15;i++) fExtCov[i] = UnCalib.fExtCov[i];
 }
 //________________________________________________________________
@@ -69,21 +72,21 @@ AliTOFcalibESD::~AliTOFcalibESD()
 //________________________________________________________________
 
 void AliTOFcalibESD::SetIntegratedTime(const Double_t *tracktime){
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] = tracktime[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrTime[i] = tracktime[i];
 }
 //________________________________________________________________
 
-void AliTOFcalibESD::CopyFromAliESD(const AliESDtrack* track)
-{
-  fP = track->GetP();
+void AliTOFcalibESD::CopyFromAliESD(const AliESDtrack* track){
+  //copy ESD track info 
+  fMo = track->GetP();
   fTOFtime = track->GetTOFsignal();
   fToT = track->GetTOFsignalToT();
-  fTOFCalChannel = track->GetTOFCalChannel();
+  fTOFCalCh = track->GetTOFCalChannel();
   fIntLen = track->GetIntegratedLength();
   Double_t exptime[10]; 
   track->GetIntegratedTimes(exptime);
   for (Int_t i=0;i<AliPID::kSPECIES;i++) {
-    fTrackTime[i] = exptime[i];
+    fTrTime[i] = exptime[i];
   }
   Double_t c[15];
   track->GetExternalCovariance(c);
@@ -99,11 +102,12 @@ void AliTOFcalibESD::GetExternalCovariance(Double_t cov[15]) const {
 //______________________________________________________________________
 
 void AliTOFcalibESD::GetIntegratedTimes(Double_t exp[AliPID::kSPECIES]) const {
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) exp[i]=fTrackTime[i];
+  for (Int_t i=0; i<AliPID::kSPECIES; i++) exp[i]=fTrTime[i];
 }
 //______________________________________________________________________
 
 Int_t AliTOFcalibESD::Compare(const TObject* uncobj) const{
+  //To order in momentum
   Double_t c1[15]; 
   this->GetExternalCovariance(c1);
   Double_t c2[15]; 

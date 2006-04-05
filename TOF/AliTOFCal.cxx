@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/28 14:56:48  arcelli
+updates to handle new V5 geometry & some re-arrangements
+
 Revision 1.2  2006/02/13 17:22:26  arcelli
 just Fixing Log info
 
@@ -47,6 +50,7 @@ ClassImp(AliTOFCal)
 //________________________________________________________________
 
 AliTOFCal::AliTOFCal():TObject(){
+  //main ctor
   fGeom = 0x0;
   fNSector = 0;
   fNPlate  = 0;
@@ -62,6 +66,7 @@ AliTOFCal::AliTOFCal():TObject(){
 //________________________________________________________________
 
 AliTOFCal::AliTOFCal(AliTOFGeometry *geom):TObject(){
+  //ctor with geom
   fGeom = geom;
   fNSector = fGeom->NSectors();
   fNPlate  = fGeom->NPlates();
@@ -79,6 +84,7 @@ AliTOFCal::AliTOFCal(AliTOFGeometry *geom):TObject(){
 AliTOFCal::AliTOFCal(const AliTOFCal& cal):
   TObject(cal)
   {
+    //copy ctor 
     fNSector = cal.fNSector;
     fNPlate = cal.fNPlate;
     fNStripA = cal.fNStripA;
@@ -95,6 +101,7 @@ AliTOFCal::AliTOFCal(const AliTOFCal& cal):
 //____________________________________________________________________________ 
 AliTOFCal::~AliTOFCal()
 {
+  //dtor
   gROOT->GetListOfBrowsables()->Remove(this);
   delete [] fPads;
 }
@@ -102,6 +109,7 @@ AliTOFCal::~AliTOFCal()
 
 void AliTOFCal::Browse(TBrowser *b)
 {
+  //add cal obj to list of browsables
   char name[10];
   for(Int_t i=0; i<fNSector; ++i) {
     snprintf(name,sizeof(name),"Sector %2.2d",i);
@@ -111,6 +119,7 @@ void AliTOFCal::Browse(TBrowser *b)
 //________________________________________________________________
 
 void AliTOFCal::CreateArray(){
+  //create cal channel array
   if(fGeom==0x0){
     AliInfo("V5 TOF Geometry is taken as a default");
     AliTOFGeometry *geom= new AliTOFGeometryV5();

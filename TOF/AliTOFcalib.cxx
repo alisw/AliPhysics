@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/03/31 11:26:46  arcelli
+ changing CDB Ids according to standard convention
+
 Revision 1.3  2006/03/28 14:57:02  arcelli
 updates to handle new V5 geometry & some re-arrangements
 
@@ -69,7 +72,7 @@ ClassImp(AliTOFcalib)
 const Int_t AliTOFcalib::fgkchannel = 5000;
 //_______________________________________________________________________
 AliTOFcalib::AliTOFcalib():TTask("AliTOFcalib",""){ 
-
+  //TOF Calibration Class ctor
   fArrayToT = 0x0;
   fArrayTime = 0x0;
   fESDsel = 0x0;
@@ -87,10 +90,12 @@ AliTOFcalib::AliTOFcalib():TTask("AliTOFcalib",""){
   fTOFSimCal = new AliTOFCal(geom);
   fTOFCal->CreateArray();
   fTOFSimCal->CreateArray();
+  fTOFSimToT=0x0;
   delete geom;
 }
 //_______________________________________________________________________
 AliTOFcalib::AliTOFcalib(AliTOFGeometry *geom):TTask("AliTOFcalib",""){ 
+  //TOF Calibration Class ctor, taking the TOF geometry as input
   fArrayToT = 0x0;
   fArrayTime = 0x0;
   fESDsel = 0x0;
@@ -106,11 +111,13 @@ AliTOFcalib::AliTOFcalib(AliTOFGeometry *geom):TTask("AliTOFcalib",""){
   fTOFSimCal = new AliTOFCal(geom);
   fTOFCal->CreateArray();
   fTOFSimCal->CreateArray();
+  fTOFSimToT=0x0;
 }
 //____________________________________________________________________________ 
 
 AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):TTask("AliTOFcalib","")
 {
+  //TOF Calibration Class copy ctor
   fNSector = calib.fNSector;
   fNPlate = calib.fNPlate;
   fNStripA = calib.fNStripA;
@@ -123,12 +130,14 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):TTask("AliTOFcalib","")
   fArrayTime = calib.fArrayTime;
   fTOFCal=calib.fTOFCal;
   fTOFSimCal = calib.fTOFSimCal;
+  fTOFSimToT=calib.fTOFSimToT;
 }
 
 //____________________________________________________________________________ 
 
 AliTOFcalib::~AliTOFcalib()
 {
+  //TOF Calibration Class dtor
   delete fArrayToT;
   delete fArrayTime;
   delete fTOFCal;
@@ -137,11 +146,13 @@ AliTOFcalib::~AliTOFcalib()
 }
 //__________________________________________________________________________
 
-TF1* AliTOFcalib::SetFitFunctions(TH1F *histo){
+TF1* AliTOFcalib::SetFitFunctions(TH1F *histo)
+{
+  //Define Fit Functions for Slewing Correction
   TF1 * fpol[3];
-  const Int_t nbins = histo->GetNbinsX();
-  Float_t Delta = histo->GetBinWidth(1);  //all the bins have the same width
-  Double_t max = histo->GetBinLowEdge(nbins)+Delta;
+  const Int_t knbins = histo->GetNbinsX();
+  Float_t delta = histo->GetBinWidth(1);  //all the bins have the same width
+  Double_t max = histo->GetBinLowEdge(knbins)+delta;
   max = 15;
   fpol[0]=new TF1("poly3","pol3",5,max);
   fpol[1]=new TF1("poly4","pol4",5,max);
@@ -149,12 +160,12 @@ TF1* AliTOFcalib::SetFitFunctions(TH1F *histo){
   char npoly[10];
   Double_t chi[3]={1E6,1E6,1E6};
   Int_t ndf[3]={-1,-1,-1};
-  Double_t Nchi[3]={1E6,1E6,1E6};
+  Double_t nchi[3]={1E6,1E6,1E6};
   Double_t bestchi=1E6;
   TF1 * fGold=0x0;
   Int_t nonzero =0;
   Int_t numberOfpar =0;
-  for (Int_t j=0; j<nbins; j++){
+  for (Int_t j=0; j<knbins; j++){
     if (histo->GetBinContent(j)!=0) {
       nonzero++;
     }
@@ -181,9 +192,9 @@ TF1* AliTOFcalib::SetFitFunctions(TH1F *histo){
     histo->Fit(npoly, "ERN", " ", 5.,14.);
     chi[ifun] = fpol[ifun]->GetChisquare();
     ndf[ifun] = fpol[ifun]->GetNDF();
-    Nchi[ifun] = (Double_t)chi[ifun]/ndf[ifun];
-    if (Nchi[ifun]<bestchi) {
-      bestchi=Nchi[ifun];
+    nchi[ifun] = (Double_t)chi[ifun]/ndf[ifun];
+    if (nchi[ifun]<bestchi) {
+      bestchi=nchi[ifun];
       fGold = fpol[ifun];
       numberOfpar = fGold->GetNpar();
     }
@@ -196,14 +207,15 @@ TF1* AliTOFcalib::SetFitFunctions(TH1F *histo){
 
 void AliTOFcalib::SelectESD(AliESD *event) 
 {
-  Float_t LowerMomBound=0.8; // [GeV/c] default value Pb-Pb
-  Float_t UpperMomBound=1.8 ; // [GeV/c] default value Pb-Pb
+  //track selection for Calibration
+  Float_t lowerMomBound=0.8; // [GeV/c] default value Pb-Pb
+  Float_t upperMomBound=1.8 ; // [GeV/c] default value Pb-Pb
   Int_t ntrk =0;
   Int_t ngoodtrkfinalToT = 0;
   ntrk=event->GetNumberOfTracks();
   fESDsel = new TObjArray(ntrk);
   fESDsel->SetOwner();
-  TObjArray  UCdatatemp(ntrk);
+  TObjArray  uCdatatemp(ntrk);
   Int_t ngoodtrk = 0;
   Int_t ngoodtrkfinal = 0;
   Float_t mintime =1E6;
@@ -221,20 +233,20 @@ void AliTOFcalib::SelectESD(AliESD *event)
     time*=1.E-3; // tof given in nanoseconds
     if(time <= mintime)mintime=time;
     Double_t mom=t->GetP();
-    if (!(mom<=UpperMomBound && mom>=LowerMomBound))continue;
-    UInt_t AssignedTOFcluster=t->GetTOFcluster();//index of the assigned TOF cluster, >0 ?
-    if(AssignedTOFcluster==0){ // not matched
+    if (!(mom<=upperMomBound && mom>=lowerMomBound))continue;
+    UInt_t assignedTOFcluster=t->GetTOFcluster();//index of the assigned TOF cluster, >0 ?
+    if(assignedTOFcluster==0){ // not matched
       continue;
     }
     AliTOFcalibESD *unc = new AliTOFcalibESD;
     unc->CopyFromAliESD(t);
     Double_t c1[15]; 
     unc->GetExternalCovariance(c1);
-    UCdatatemp.Add(unc);
+    uCdatatemp.Add(unc);
     ngoodtrk++;
   }
   for (Int_t i = 0; i < ngoodtrk ; i ++){
-    AliTOFcalibESD *unc = (AliTOFcalibESD*)UCdatatemp.At(i);
+    AliTOFcalibESD *unc = (AliTOFcalibESD*)uCdatatemp.At(i);
     if((unc->GetTOFsignal()-mintime*1.E3)<5.E3){
       fESDsel->Add(unc);
       ngoodtrkfinal++;
@@ -245,7 +257,9 @@ void AliTOFcalib::SelectESD(AliESD *event)
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::CombESDId(){
+void AliTOFcalib::CombESDId()
+{
+  //track PID for calibration
   Float_t t0offset=0;
   Float_t loffset=0;
   Int_t   ntracksinset=6;
@@ -259,8 +273,8 @@ void AliTOFcalib::CombESDId(){
   Float_t sqMomError[6]={0.,0.,0.,0.,0.,0.};
   Float_t sqTrackError[6]={0.,0.,0.,0.,0.,0.};
   Float_t tracktoflen[6]={0.,0.,0.,0.,0.,0.};
-  Float_t TimeResolution   = 0.90e-10; // 90 ps by default	
-  Float_t timeresolutioninns=TimeResolution*(1.e+9); // convert in [ns]
+  Float_t timeResolution   = 0.90e-10; // 90 ps by default	
+  Float_t timeresolutioninns=timeResolution*(1.e+9); // convert in [ns]
   Float_t timezero[6]={0.,0.,0.,0.,0.,0.};
   Float_t weightedtimezero[6]={0.,0.,0.,0.,0.,0.};
   Float_t besttimezero[6]={0.,0.,0.,0.,0.,0.};
@@ -294,7 +308,7 @@ void AliTOFcalib::CombESDId(){
       momentum[j]=mom;
     }
     Float_t t0best=999.;
-    Float_t Et0best=999.;
+    Float_t et0best=999.;
     Float_t chisquarebest=999.;
     for (Int_t i1=0; i1<3;i1++) {
       beta[0]=momentum[0]/sqrt(massarray[i1]*massarray[i1]+momentum[0]*momentum[0]);
@@ -318,7 +332,7 @@ void AliTOFcalib::CombESDId(){
 	
 		Float_t sumAllweights=0.;
 		Float_t meantzero=0.;
-		Float_t Emeantzero=0.;
+		Float_t emeantzero=0.;
 		
 		for (Int_t itz=0; itz<ntracksinset;itz++) {
 		  sqMomError[itz]=
@@ -341,7 +355,7 @@ void AliTOFcalib::CombESDId(){
 		} // end loop for (Int_t itz=0; itz<15;itz++)
 		
 		meantzero=meantzero/sumAllweights; // it is given in [ns]
-		Emeantzero=sqrt(1./sumAllweights); // it is given in [ns]
+		emeantzero=sqrt(1./sumAllweights); // it is given in [ns]
 		
 		// calculate chisquare
 		
@@ -378,7 +392,7 @@ void AliTOFcalib::CombESDId(){
 		  
 		  chisquarebest=chisquare;
      		  t0best=meantzero;
-		  Et0best=Emeantzero;
+		  et0best=emeantzero;
 		} // close if(dummychisquare<=chisquare)
 	      } // end loop on i6
 	    } // end loop on i5
@@ -408,6 +422,7 @@ void AliTOFcalib::CombESDId(){
 //_____________________________________________________________________________
 
 void AliTOFcalib::CalibrateESD(){
+  //Calibrate selected ESD times
   Int_t nelements = fESDsel->GetEntries();
   Int_t *number=new Int_t[fNChannels];
   fArrayToT = new AliTOFArray(fNChannels);
@@ -462,62 +477,64 @@ void AliTOFcalib::CalibrateESD(){
     for (Int_t kk = 0; kk< nfpar; kk++){
       par[kk]=fGold->GetParameter(kk);
     }
-    AliTOFChannel * CalChannel = fTOFCal->GetChannel(i);
-    CalChannel->SetSlewPar(par);
+    AliTOFChannel * calChannel = fTOFCal->GetChannel(i);
+    calChannel->SetSlewPar(par);
   }
   delete[] number;
 }
 
 //___________________________________________________________________________
 
-TH1F* AliTOFcalib::Profile(Int_t ich){
-  const Int_t nbinToT = 650;
+TH1F* AliTOFcalib::Profile(Int_t ich)
+{
+  //Prepare histograms for Slewing Correction
+  const Int_t knbinToT = 650;
   Int_t nbinTime = 400;
   Float_t minTime = -10.5; //ns
   Float_t maxTime = 10.5; //ns
   Float_t minToT = 7.5; //ns
   Float_t maxToT = 40.; //ns
-  Float_t DeltaToT = (maxToT-minToT)/nbinToT;
-  Double_t mTime[nbinToT+1],mToT[nbinToT+1],meanTime[nbinToT+1], meanTime2[nbinToT+1],ToT[nbinToT+1], ToT2[nbinToT+1],meanToT[nbinToT+1],meanToT2[nbinToT+1],Time[nbinToT+1],Time2[nbinToT+1],xlow[nbinToT+1],sigmaTime[nbinToT+1];
-  Int_t n[nbinToT+1], nentrx[nbinToT+1];
-  Double_t sigmaToT[nbinToT+1];
-  for (Int_t i = 0; i < nbinToT+1 ; i++){
+  Float_t deltaToT = (maxToT-minToT)/knbinToT;
+  Double_t mTime[knbinToT+1],mToT[knbinToT+1],meanTime[knbinToT+1], meanTime2[knbinToT+1],vToT[knbinToT+1], vToT2[knbinToT+1],meanToT[knbinToT+1],meanToT2[knbinToT+1],vTime[knbinToT+1],vTime2[knbinToT+1],xlow[knbinToT+1],sigmaTime[knbinToT+1];
+  Int_t n[knbinToT+1], nentrx[knbinToT+1];
+  Double_t sigmaToT[knbinToT+1];
+  for (Int_t i = 0; i < knbinToT+1 ; i++){
     mTime[i]=0;
     mToT[i]=0;
     n[i]=0;
     meanTime[i]=0;
     meanTime2[i]=0;
-    ToT[i]=0;
-    ToT2[i]=0;
+    vToT[i]=0;
+    vToT2[i]=0;
     meanToT[i]=0;
     meanToT2[i]=0;
-    Time[i]=0;
-    Time2[i]=0;
+    vTime[i]=0;
+    vTime2[i]=0;
     xlow[i]=0;
     sigmaTime[i]=0;
     sigmaToT[i]=0;
     n[i]=0;
     nentrx[i]=0;
   }
-  TH2F* hSlewing = new TH2F("hSlewing", "hSlewing", nbinToT, minToT, maxToT, nbinTime, minTime, maxTime);
+  TH2F* hSlewing = new TH2F("hSlewing", "hSlewing", knbinToT, minToT, maxToT, nbinTime, minTime, maxTime);
   TArrayF * parrToT = fArrayToT->GetArray(ich);
   TArrayF & refaToT = * parrToT;
   TArrayF * parrTime = fArrayTime->GetArray(ich);
   TArrayF & refaTime = * parrTime;
   for (Int_t j = 0; j < AliTOFcalib::fgkchannel; j++){
     if (refaToT[j] == 0) continue; 
-    Int_t nx = (Int_t)((refaToT[j]-minToT)/DeltaToT)+1;
+    Int_t nx = (Int_t)((refaToT[j]-minToT)/deltaToT)+1;
     if ((refaToT[j] != 0) && (refaTime[j] != 0)){
-      Time[nx]+=refaTime[j];
-      Time2[nx]+=(refaTime[j])*(refaTime[j]);
-      ToT[nx]+=refaToT[j];
-      ToT2[nx]+=refaToT[j]*refaToT[j];
+      vTime[nx]+=refaTime[j];
+      vTime2[nx]+=(refaTime[j])*(refaTime[j]);
+      vToT[nx]+=refaToT[j];
+      vToT2[nx]+=refaToT[j]*refaToT[j];
       nentrx[nx]++;
       hSlewing->Fill(refaToT[j],refaTime[j]);
     }
   }
   Int_t nbinsToT=hSlewing->GetNbinsX();
-  if (nbinsToT != nbinToT) {
+  if (nbinsToT != knbinToT) {
     AliError("Profile :: incompatible numbers of bins");
     return 0x0;
   }
@@ -530,10 +547,10 @@ TH1F* AliTOFcalib::Profile(Int_t ich){
     if (n[usefulBins]==0 && i == nbinsToT) {
       break;
     }
-    meanTime[usefulBins]+=Time[i];
-    meanTime2[usefulBins]+=Time2[i];
-    meanToT[usefulBins]+=ToT[i];
-    meanToT2[usefulBins]+=ToT2[i];
+    meanTime[usefulBins]+=vTime[i];
+    meanTime2[usefulBins]+=vTime2[i];
+    meanToT[usefulBins]+=vToT[i];
+    meanToT2[usefulBins]+=vToT2[i];
     if (n[usefulBins]<20 && i!=nbinsToT) continue; 
     mTime[usefulBins]=meanTime[usefulBins]/n[usefulBins];
     mToT[usefulBins]=meanToT[usefulBins]/n[usefulBins];
@@ -555,7 +572,7 @@ TH1F* AliTOFcalib::Profile(Int_t ich){
     }
   }
   for (Int_t i=0;i<usefulBins;i++){
-    Int_t binN = (Int_t)((mToT[i]-minToT)/DeltaToT)+1;
+    Int_t binN = (Int_t)((mToT[i]-minToT)/deltaToT)+1;
     histo->Fill(mToT[i],mTime[i]);
     histo->SetBinError(binN,sigmaTime[i]);
   } 
@@ -563,12 +580,14 @@ TH1F* AliTOFcalib::Profile(Int_t ich){
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::CorrectESDTime(){
+void AliTOFcalib::CorrectESDTime()
+{
+  //Calculate the corrected TOF time
   Int_t nelements = fESDsel->GetEntries();
   for (Int_t i=0; i< nelements; i++) {
     AliTOFcalibESD *element=(AliTOFcalibESD*)fESDsel->At(i);
     Int_t index = element->GetTOFCalChannel();
-    Float_t ToT = element->GetToT();
+    Float_t tToT = element->GetToT();
     //select the correspondent channel with its simulated ToT spectrum
     //summing up everything, index = 0 for all channels:
     Int_t ipid = element->GetCombID();
@@ -579,17 +598,18 @@ void AliTOFcalib::CorrectESDTime(){
     else if (ipid == 1) etime = expTime[3]*1E-3; //ns
     else if (ipid == 2) etime = expTime[4]*1E-3; //ns
     Float_t par[6];
-    AliTOFChannel * CalChannel = fTOFCal->GetChannel(index);
+    AliTOFChannel * calChannel = fTOFCal->GetChannel(index);
     for (Int_t j = 0; j<6; j++){
-      par[j]=CalChannel->GetSlewPar(j);
+      par[j]=calChannel->GetSlewPar(j);
     }
-    Float_t TimeCorr=0;
-    TimeCorr= par[0]+par[1]*ToT+par[2]*ToT*ToT+par[3]*ToT*ToT*ToT+par[4]*ToT*ToT*ToT*ToT+par[5]*ToT*ToT*ToT*ToT*ToT;
+    Float_t timeCorr=0;
+    timeCorr= par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT;
   }
 }
 //_____________________________________________________________________________
 
 void AliTOFcalib::CorrectESDTime(AliESD *event){
+  //Calculate the corrected TOF time
 
   Int_t ntrk =0;
   ntrk=event->GetNumberOfTracks();
@@ -602,24 +622,26 @@ void AliTOFcalib::CorrectESDTime(AliESD *event){
     if ((t->GetStatus()&AliESDtrack::kTIME)==0) {
       continue;
     }
-    UInt_t AssignedTOFcluster=t->GetTOFcluster();//index of the assigned TOF cluster, >0 ?
-    if(AssignedTOFcluster==0){ // not matched
+    UInt_t assignedTOFcluster=t->GetTOFcluster();//index of the assigned TOF cluster, >0 ?
+    if(assignedTOFcluster==0){ // not matched
       continue;
     }
     Int_t index = t->GetTOFCalChannel();
-    AliTOFChannel * CalChannel = fTOFCal->GetChannel(index);
+    AliTOFChannel * calChannel = fTOFCal->GetChannel(index);
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
-      par[j]=CalChannel->GetSlewPar(j);
+      par[j]=calChannel->GetSlewPar(j);
     }
-    Float_t ToT = t->GetTOFsignalToT();
-    Float_t TimeCorr =0; 
-    TimeCorr=par[0]+par[1]*ToT+par[2]*ToT*ToT+par[3]*ToT*ToT*ToT+par[4]*ToT*ToT*ToT*ToT+par[5]*ToT*ToT*ToT*ToT*ToT;
+    Float_t tToT = t->GetTOFsignalToT();
+    Float_t timeCorr =0; 
+    timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT;
   }
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
+void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write calibration parameters to the CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "Par" ;
@@ -633,6 +655,7 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
 //_____________________________________________________________________________
 
 void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFCal *cal){
+  //Write calibration parameters to the CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "Par" ;
@@ -645,7 +668,9 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFC
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun){
+void AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read calibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   Char_t *sel1 = "Par" ;
@@ -656,7 +681,9 @@ void AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun){
   fTOFCal = cal;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
+void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+{
+  //Write Sim miscalibration parameters to the CDB
 
 
   //for the time being, only one spectrum is used
@@ -679,8 +706,8 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
   }
 
   for(Int_t iTOFch=0; iTOFch<fTOFSimCal->NPads();iTOFch++){
-    AliTOFChannel * CalChannel = fTOFSimCal->GetChannel(iTOFch);
-    CalChannel->SetSlewPar(par);
+    AliTOFChannel * calChannel = fTOFSimCal->GetChannel(iTOFch);
+    calChannel->SetSlewPar(par);
   }
 
   // Store them in the CDB
@@ -702,8 +729,8 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun){
 
 //_____________________________________________________________________________
 void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFCal *cal, TH1F * histo){
+  //Write Sim miscalibration parameters to the CDB
 
-  // Retrieve ToT Spectrum
   fTOFSimToT=histo;
   fTOFSimCal=cal;  
   AliCDBManager *man = AliCDBManager::Instance();
@@ -721,7 +748,9 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliT
   man->Put(fTOFSimToT,id2,md);
 }
 //_____________________________________________________________________________
-void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun){
+void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read miscalibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBMetaData *md = new AliCDBMetaData();
@@ -740,7 +769,9 @@ void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun){
 }
 //_____________________________________________________________________________
 
-Int_t AliTOFcalib::GetIndex(Int_t *detId){
+Int_t AliTOFcalib::GetIndex(Int_t *detId)
+{
+  //Retrieve calibration channel index 
   Int_t isector = detId[0];
   if (isector >= fNSector)
     AliError(Form("Wrong sector number in TOF (%d) !",isector));

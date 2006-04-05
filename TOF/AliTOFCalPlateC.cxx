@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/28 14:57:56  arcelli
+updates to handle new V5 geometry & some re-arrangements
+
 Revision 1.2  2006/02/13 17:22:26  arcelli
 just Fixing Log info
 
@@ -45,6 +48,7 @@ ClassImp(AliTOFCalPlateC)
 //________________________________________________________________
 
 AliTOFCalPlateC::AliTOFCalPlateC(){
+  //main ctor
   fCh = 0;
   fGeom= 0x0; 
   fNStripC = 0;
@@ -55,6 +59,7 @@ AliTOFCalPlateC::AliTOFCalPlateC(){
 
 AliTOFCalPlateC::AliTOFCalPlateC(AliTOFChannel *ch) : fCh(ch)
 {
+  //ctor with channel
   fGeom= 0x0; 
   fNStripC = 0;
   fNpadZ = 0;
@@ -63,6 +68,7 @@ AliTOFCalPlateC::AliTOFCalPlateC(AliTOFChannel *ch) : fCh(ch)
 //________________________________________________________________
 
 AliTOFCalPlateC::AliTOFCalPlateC(AliTOFGeometry *geom){
+  //ctor with geom
   fCh = 0;
   fGeom = geom;  
   fNStripC = fGeom->NStripC();
@@ -73,6 +79,7 @@ AliTOFCalPlateC::AliTOFCalPlateC(AliTOFGeometry *geom){
 
 AliTOFCalPlateC::AliTOFCalPlateC(AliTOFGeometry *geom, AliTOFChannel *ch): fCh(ch)
 {
+  //ctor with channel and geom
   fGeom = geom;  
   fNStripC = fGeom->NStripC();
   fNpadZ = fGeom->NpadZ();
@@ -83,6 +90,7 @@ AliTOFCalPlateC::AliTOFCalPlateC(AliTOFGeometry *geom, AliTOFChannel *ch): fCh(c
 
 AliTOFCalPlateC::~AliTOFCalPlateC()
 {
+  //dtor
   delete[] fCh;
 }
 
@@ -91,6 +99,7 @@ AliTOFCalPlateC::~AliTOFCalPlateC()
 AliTOFCalPlateC::AliTOFCalPlateC(const AliTOFCalPlateC& pl):
   TObject(pl)
   {
+  //copy ctor 
     fCh = pl.fCh;
     fNStripC = pl.fNStripC;
     fNpadZ = pl.fNpadZ;
@@ -101,6 +110,7 @@ AliTOFCalPlateC::AliTOFCalPlateC(const AliTOFCalPlateC& pl):
 //________________________________________________________________
 
 void AliTOFCalPlateC::Browse(TBrowser *b){
+  //add cal obj to list of browsables
 
   if(fGeom==0x0){
     AliTOFGeometry *geom = new AliTOFGeometryV5(); 

@@ -26,7 +26,7 @@ class AliTOFGeometryV4: public AliTOFGeometry {
   Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos); 
   Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0);
   void    GetVolumePath(Int_t *ind, Char_t *path );
-  Int_t   GetPlate(Float_t *pos);
+  Int_t   GetPlate(Float_t *pos) ;
   Int_t   GetStrip(Float_t *pos);
   Int_t   GetSector(Float_t *pos);
   Int_t   GetPadX(Float_t *pos);
@@ -41,18 +41,18 @@ class AliTOFGeometryV4: public AliTOFGeometry {
   Float_t GetMaxStripTheta(Int_t iPlate, Int_t iStrip);
   Float_t GetStripTheta(Int_t iPlate, Int_t iStrip);
 
-  Float_t NStirpC()     { return kNStripC;};
-  Int_t   NPadXSector() { return (AliTOFGeometry::kNStripA + 2*AliTOFGeometry::kNStripB +
+  Int_t NStripC() const    { return kNStripC;};
+  Int_t   NPadXSector() const { return (AliTOFGeometry::kNStripA + 2*AliTOFGeometry::kNStripB +
 				  2*kNStripC)*AliTOFGeometry::kNpadX*AliTOFGeometry::kNpadZ;};
 
-  Float_t RinTOF()      { return fgkxTOF;};
-  Float_t Rmin()        { return fgkRmin;};
-  Float_t Rmax()        { return fgkRmax;};
+  Float_t RinTOF() const     { return fgkxTOF;};
+  Float_t Rmin()  const      { return fgkRmin;};
+  Float_t Rmax()  const      { return fgkRmax;};
 
-  Float_t ZlenA()       { return fgkZlenA;};
-  Float_t ZlenB()       { return fgkZlenB;};
-  Float_t ZlenC()       { return fgkZlenC;};
-  Float_t MaxhZtof()    { return fgkMaxhZtof;};
+  Float_t ZlenA()  const     { return fgkZlenA;};
+  Float_t ZlenB()  const     { return fgkZlenB;};
+  Float_t ZlenC()  const     { return fgkZlenC;};
+  Float_t MaxhZtof() const   { return fgkMaxhZtof;};
 
   static  Float_t DeadBndX()    { return fgkDeadBndX;};
   static  Float_t DeadBndZ()    { return fgkDeadBndZ;};

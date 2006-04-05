@@ -77,6 +77,7 @@ ClassImp(AliTOFSDigitizer)
 //____________________________________________________________________________ 
 AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("TOFSDigitizer","")
 {
+  //ctor, reading from input file 
   ftail    = 0;
   fSelectedSector=-1; // by default we sdigitize all sectors
   fSelectedPlate =-1; // by default we sdigitize all plates in all sectors
@@ -215,7 +216,7 @@ Double_t TimeWithTail(Double_t* x, Double_t* par)
 
 //____________________________________________________________________________
 void AliTOFSDigitizer::Exec(Option_t *verboseOption) { 
-
+  //execute TOF sdigitization
   if (strstr(verboseOption,"tim") || strstr(verboseOption,"all"))
     gBenchmark->Start("TOFSDigitizer");
 
@@ -490,6 +491,7 @@ void AliTOFSDigitizer::Print(Option_t* /*opt*/)const
 //__________________________________________________________________
 void AliTOFSDigitizer::SelectSectorAndPlate(Int_t sector, Int_t plate)
 {
+  //Select sector and plate
   Bool_t isaWrongSelection=(sector < 0) || (sector >= AliTOFGeometry::NSectors()) || (plate < 0) || (plate >= AliTOFGeometry::NPlates());
   if(isaWrongSelection){
     AliError("You have selected an invalid value for sector or plate ");
