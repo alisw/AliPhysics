@@ -132,9 +132,15 @@ Int_t AliRICHCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
     Double_t fitX,fitY,fitQ,d1,d2,d3; TString sName;                                //vars to get results from TMinuit
     for(Int_t i=0;i<iLocMaxCnt;i++){//local maxima loop
       pMinuit->mnpout(3*i   ,sName,  fitX, d1 , d2, d3, iErrFlg);
-      pMinuit->mnpout(3*i+1 ,sName,  fitY, d1 , d2, d3, iErrFlg);
-      pMinuit->mnpout(3*i+2 ,sName,  fitQ, d1 , d2, d3, iErrFlg);
-      new ((*pCluLst)[iCluCnt++]) AliRICHCluster(C(),fitX,fitY,(Int_t)fitQ);        //add new unfolded clusters
+      if (pMinuit->GetStatus()) {
+	pMinuit->mnpout(3*i+1 ,sName,  fitY, d1 , d2, d3, iErrFlg);
+	if (pMinuit->GetStatus()) {
+	  pMinuit->mnpout(3*i+2 ,sName,  fitQ, d1 , d2, d3, iErrFlg);
+	  if (pMinuit->GetStatus())
+	    new ((*pCluLst)[iCluCnt++]) AliRICHCluster(C(),fitX,fitY,(Int_t)fitQ);
+	  //add new unfolded clusters
+	}
+      }
     }//local maxima loop
   }else{//do not unfold since number of loc max is unresonably high or user's baned unfolding 
     CoG();
