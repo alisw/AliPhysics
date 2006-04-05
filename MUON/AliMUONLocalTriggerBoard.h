@@ -5,7 +5,14 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
+/// \ingroup sim 
+/// \class AliMUONLocalTriggerBoard
+/// \brief Implementation of local trigger board objects
+///
+/// A local trigger board has as input a bit pattern and returns 
+/// the local trigger response after comparison w/ a LUT
+///
+/// \author Rachid Guernane (LPCCFd)
 
 #include "AliMUONTriggerBoard.h"
 
@@ -27,29 +34,29 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     SetSwitch(Int_t i, Int_t value) {fSwitch[i] = value;}
 
-      virtual UShort_t GetSwitch(Int_t i) {return fSwitch[i];}
+      virtual UShort_t GetSwitch(Int_t i) const {return fSwitch[i];}
 
       virtual void     SetTC(Bool_t con) {fTC = con;}
 
-      virtual Bool_t   GetTC() {return fTC;}
+      virtual Bool_t   GetTC() const {return fTC;}
 
 		virtual void     SetNumber(Int_t nb) {fNumber = nb;}
 
-		virtual Int_t    GetNumber() {return fNumber;}
+		virtual Int_t    GetNumber() const {return fNumber;}
 
       virtual void     Module(char *mod);
 
-      virtual void     GetX34(UShort_t *X) {for (Int_t i=0;i<2;i++) X[i] = fXY[0][i+2];}
+      virtual void     GetX34(UShort_t *X) const {for (Int_t i=0;i<2;i++) X[i] = fXY[0][i+2];}
 
       virtual void     SetX34(UShort_t *X) {for (Int_t i=0;i<2;i++) fXY[0][i+2] = X[i];}
 
-      virtual void     GetY(UShort_t *Y) {for (Int_t i=0;i<4;i++) Y[i] = fXY[1][i];}
+      virtual void     GetY(UShort_t *Y) const {for (Int_t i=0;i<4;i++) Y[i] = fXY[1][i];}
 
       virtual void     SetY(UShort_t *Y) {for (Int_t i=0;i<4;i++) fXY[1][i] = Y[i];}
 
-      virtual void     GetXY(UShort_t XY[2][4]) {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) XY[i][j] = fXY[i][j];}
+      virtual void     GetXY(UShort_t XY[2][4]) const {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) XY[i][j] = fXY[i][j];}
 
-      virtual UShort_t GetXY(Int_t i, Int_t j) {return fXY[i][j];} 
+      virtual UShort_t GetXY(Int_t i, Int_t j) const {return fXY[i][j];} 
 
       virtual void     SetXY(UShort_t XY[2][4]) {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) fXY[i][j] = XY[i][j];}
 
@@ -79,16 +86,17 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     LocalTrigger();
 
-      virtual Int_t    Triggered() {return fOutput;}
+      virtual Int_t    Triggered() const {return fOutput;}
 
-      virtual Int_t    GetStripX11() {return fStripX11;}
+      virtual Int_t    GetStripX11() const {return fStripX11;}
 
-      virtual Int_t    GetStripY11() {return fStripY11;}
+      virtual Int_t    GetStripY11() const {return fStripY11;}
 
-      virtual Int_t    GetDev() {return fDev;}
+      virtual Int_t    GetDev() const {return fDev;}
       
 		virtual void     SetCrate(TString crate) {fCrate = crate;}
-		virtual TString  GetCrate() {return fCrate;}
+
+		virtual TString  GetCrate() const {return fCrate;}
 
    protected:
       AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right);
@@ -101,36 +109,35 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
    private:
 
-      Int_t    fNumber;
+      Int_t    fNumber;           // Board number
 
-		TString  fCrate;
+		TString  fCrate;            // Crate name
 
-      UShort_t fSwitch[10], fXY[2][4], fXYU[2][4], fXYD[2][4], fMask[2][4];
+      UShort_t fSwitch[10];       // Switch
+      UShort_t fXY[2][4];         // Bit pattern
+      UShort_t fXYU[2][4];        // Bit pattern UP
+      UShort_t fXYD[2][4];        // Bit pattern DOWN
+      UShort_t fMask[2][4];       // Mask
 
-//    Transverse connector
-      Bool_t   fTC;
+      Bool_t   fTC;               // Transverse connector
 
-//    MT1 X position of the valid road 
-      Int_t    fStripX11;
+      Int_t    fStripX11;         // MT1 X position of the valid road 
 
-//    MT1 Y position of the valid road
-      Int_t    fStripY11;
+      Int_t    fStripY11;         // MT1 Y position of the valid road
 
-//    Deviation in [0;+30]
-      Int_t    fDev;
+      Int_t    fDev;              // Deviation in [0;+30]
 
-//    Pt cuts estimated from LUT
-      Int_t    fLutLpt[2];        
-      Int_t    fLutHpt[2];
-      Int_t    fLutApt[2];
+      Int_t    fLutLpt[2];        // Low Pt cuts estimated from LUT
+      Int_t    fLutHpt[2];        // High Pt cuts estimated from LUT
+      Int_t    fLutApt[2];        // All Pt cuts estimated from LUT
 
 //    Outputs of the local logic
-      Int_t    fOutput;
-      Int_t    fMinDevStrip[5];
-      Int_t    fMinDev[5];
-      Int_t    fCoordY[5];
+      Int_t    fOutput;           // Board has triggered
+      Int_t    fMinDevStrip[5];   // X (from algo)
+      Int_t    fMinDev[5];        // Dev (from algo)
+      Int_t    fCoordY[5];        // Y (from algo)
 
-      AliMUONTriggerLut *fLUT; //! Pointer to trigger LUT, that we do not own.
+      AliMUONTriggerLut *fLUT;    //! Pointer to trigger LUT, that we do not own.
       
       ClassDef(AliMUONLocalTriggerBoard,1) 
 };

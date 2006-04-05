@@ -16,6 +16,10 @@
 /* $Id$ */
 
 //*-- Author: Rachid Guernane (LPCCFd)
+//*   Manager class for muon trigger electronics
+//*   Client of trigger board classes
+//*
+//*
 
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONTriggerCrate.h"
@@ -25,22 +29,22 @@
 #include "AliMUONGlobalTriggerBoard.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliLoader.h"
-#include "AliRun.h"
 #include "AliMUON.h" 
 #include "AliMUONData.h" 
 #include "AliMUONDigit.h"
-#include "AliLog.h"
-#include "AliLoader.h"
 #include "AliMUONTriggerConstants.h"
-#include "AliMpTriggerSegmentation.h"
 #include "AliMUONSegmentation.h"
-#include "AliMpVSegmentation.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONVCalibParam.h"
-#include "TBits.h"
 
-#include "Riostream.h"
+#include "AliMpVSegmentation.h"
+
+#include "AliLog.h"
+#include "AliLoader.h"
+#include "AliRun.h"
+
+//#include "Riostream.h"
+#include "TBits.h"
 #include "TSystem.h"
 
 ClassImp(AliMUONTriggerElectronics)
@@ -56,6 +60,8 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data, AliMUONC
   fNCrates(0),
   fMUONData(Data)
 {
+//* CONSTRUCTOR
+//*
   if (!fMUONData)
   {  
     AliFatal("NO MUON TRIGGER DATA");
@@ -92,6 +98,8 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(const AliMUONTriggerElectro
 //___________________________________________
 AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 {
+//* DESTRUCTOR
+//*
   delete fGlobalTriggerBoard;
   delete fCrates;
 
@@ -115,6 +123,8 @@ AliMUONTriggerElectronics::operator=(const AliMUONTriggerElectronics& right)
 //___________________________________________
 void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
 {  
+//* BUILD ALL ELECTRONICS
+//*
    ifstream myInputFile(gSystem->ExpandPathName(fSourceFileName.Data()), ios::in);
 
    string sLine, sValue;
@@ -130,7 +140,7 @@ void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
          if (sLine.empty()) continue; // Ignore empty lines
          else
          {
-            const Int_t maxfields = 15; char **fields = new char*[maxfields];
+            const Int_t kMaxfields = 15; char **fields = new char*[kMaxfields];
             
             char s[100]; 
          
@@ -216,14 +226,16 @@ void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
 //___________________________________________
 void AliMUONTriggerElectronics::Feed()
 {
+//* FILL INPUTS
+//*
 	for (Int_t ichamber=10; ichamber<14; ichamber++) 
 	{
-      TClonesArray *MuonDigits = fMUONData->Digits(ichamber);
-      Int_t ndigits = MuonDigits->GetEntriesFast();
+      TClonesArray *muonDigits = fMUONData->Digits(ichamber);
+      Int_t ndigits = muonDigits->GetEntriesFast();
 
       for (Int_t digit=0; digit<ndigits; digit++)
 		{
-			AliMUONDigit *mdig = static_cast<AliMUONDigit*>(MuonDigits->UncheckedAt(digit));
+			AliMUONDigit *mdig = static_cast<AliMUONDigit*>(muonDigits->UncheckedAt(digit));
 
 			Int_t ix = mdig->PadX(), iy = mdig->PadY();
 
@@ -259,7 +271,7 @@ void AliMUONTriggerElectronics::Feed()
 						{	
 							if (b->GetSwitch(6)) iy += 8;
 
-							char M1[20]; b->Module(M1);
+							char mM1[20]; b->Module(mM1);
 
 							for (Int_t j=0;j<fgkNCrates;j++)
 							{            
@@ -273,9 +285,9 @@ void AliMUONTriggerElectronics::Feed()
 
 									if (h)
 									{
-										char M2[20]; h->Module(M2);
+										char mM2[20]; h->Module(mM2);
 										
-										if (!strcmp(M1,M2)) h->Setbit(iy,cathode,ichamber-10);
+										if (!strcmp(mM1,mM2)) h->Setbit(iy,cathode,ichamber-10);
 									}
 								}
 							}
@@ -364,14 +376,16 @@ void AliMUONTriggerElectronics::Feed()
 //___________________________________________
 void AliMUONTriggerElectronics::FeedM()
 {
+//* FILL INPUTS
+//*
 	for (Int_t ichamber=10; ichamber<14; ichamber++) 
 	{
-      TClonesArray *MuonDigits = fMUONData->Digits(ichamber);
-      Int_t ndigits = MuonDigits->GetEntriesFast();
+      TClonesArray *muonDigits = fMUONData->Digits(ichamber);
+      Int_t ndigits = muonDigits->GetEntriesFast();
 
       for (Int_t digit=0; digit<ndigits; digit++)
 		{
-			AliMUONDigit *mdig = static_cast<AliMUONDigit*>(MuonDigits->UncheckedAt(digit));
+			AliMUONDigit *mdig = static_cast<AliMUONDigit*>(muonDigits->UncheckedAt(digit));
 
 //       CHECKME ! The TrackCharge is not ok with new digitizerV3 !
 //			for (Int_t ichg=0; ichg<10; ichg++) schg += mdig->TrackCharge(ichg);
@@ -503,6 +517,8 @@ void AliMUONTriggerElectronics::FeedM()
 //___________________________________________
 void AliMUONTriggerElectronics::Feed(UShort_t pattern[2][4])
 {
+//* FILL INPUTS
+//*
    for (Int_t i=0; i<fgkNCrates; i++)
    {            
       AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
@@ -525,6 +541,8 @@ void AliMUONTriggerElectronics::Feed(UShort_t pattern[2][4])
 //___________________________________________
 void AliMUONTriggerElectronics::DumpOS()
 {
+//* DUMP IN THE OLD WAY
+//*
    for (Int_t i=0;i<234;i++)
    {
       char name[20];
@@ -546,6 +564,8 @@ void AliMUONTriggerElectronics::DumpOS()
 //___________________________________________
 void AliMUONTriggerElectronics::Scan(Option_t *option)
 {
+//* SCAN
+//*
    for (Int_t i=0; i<fgkNCrates; i++)
    {            
       AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
@@ -576,6 +596,8 @@ void AliMUONTriggerElectronics::Scan(Option_t *option)
 //___________________________________________
 void AliMUONTriggerElectronics::Reset()
 {
+//* RESET
+//*
    for (Int_t i=0; i<fgkNCrates; i++)
    {            
       AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
@@ -729,6 +751,8 @@ void AliMUONTriggerElectronics::LocalResponse()
 //___________________________________________
 void AliMUONTriggerElectronics::RegionalResponse()
 {
+//*
+//*
    for (Int_t i=0; i<fgkNCrates; i++)
    {            
       AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
@@ -749,6 +773,8 @@ void AliMUONTriggerElectronics::RegionalResponse()
 //___________________________________________
 void AliMUONTriggerElectronics::GlobalResponse()
 {
+//*
+//*
    fGlobalTriggerBoard->SetRegionalResponse(fRegional);
 
    fGlobalTriggerBoard->Response();
@@ -759,6 +785,8 @@ void AliMUONTriggerElectronics::GlobalResponse()
 //___________________________________________
 void AliMUONTriggerElectronics::BoardName(Int_t ix, Int_t iy, char *name)
 {
+//* BOARD NAME FROM PAD INFO (OLD MAPPING)
+//*
    TString s = (ix>0) ? "R" : "L"; 
 
    Int_t board = iy / 16, bid[4] = {12,34,56,78}; 
@@ -778,6 +806,8 @@ void AliMUONTriggerElectronics::BoardName(Int_t ix, Int_t iy, char *name)
 //___________________________________________
 void AliMUONTriggerElectronics::AddCrate(char *name)
 {
+//*
+//*
    TClonesArray &lcrates = *fCrates;
    new(lcrates[fNCrates++]) AliMUONTriggerCrate(name,17);
 }
@@ -785,13 +815,17 @@ void AliMUONTriggerElectronics::AddCrate(char *name)
 //___________________________________________
 AliMUONTriggerCrate* AliMUONTriggerElectronics::Crate(char *name)
 {
+//*
+//*
    return (AliMUONTriggerCrate*)fCrates->FindObject(name);
 }
 
 //___________________________________________
 void AliMUONTriggerElectronics::BuildName(Int_t icirc, char name[20])
 {
-   const Int_t CircuitId[234] = 
+//* GET BOARD NAME FROM OLD NUMBERING
+//*
+   const Int_t kCircuitId[234] = 
       {
           111,  121,  131,  141,  151,  161,  171,
           211,  212,  221,  222,  231,  232,  241,  242,  251,  252,  261,  262,  271,
@@ -815,74 +849,47 @@ void AliMUONTriggerElectronics::BuildName(Int_t icirc, char name[20])
 
    Int_t b[4] = {12, 34, 56, 78};
 
-   Int_t code = TMath::Abs(CircuitId[icirc]);
+   Int_t code = TMath::Abs(kCircuitId[icirc]);
 
-   Int_t L = code / 100;
+   Int_t lL = code / 100;
 
-   Int_t C = ( code - 100 * L ) / 10;
+   Int_t cC = ( code - 100 * lL ) / 10;
    
-   Int_t B = code - 100 * L - 10 * C;
+   Int_t bB = code - 100 * lL - 10 * cC;
    
-   const char *Side = (CircuitId[icirc]>0) ? "R" : "L";
+   const char *side = (kCircuitId[icirc]>0) ? "R" : "L";
 
-// L=1 AT TOP
-   L -= 9; L = abs(L); L++;
+// lL=1 AT TOP
+   lL -= 9; lL = abs(lL); lL++;
 
-   sprintf(name,"%sC%dL%dB%d",Side,C,L,b[B-1]);
+   sprintf(name,"%sC%dL%dB%d",side,cC,lL,b[bB-1]);
 }
 
 //_______________________________________________________________________
 void 
 AliMUONTriggerElectronics::Exec(Option_t*)
 {
+//*
+//*
   Digits2Trigger();
 }
 
 //_______________________________________________________________________
 void AliMUONTriggerElectronics::Trigger()
 {
+//*
+//*
    FeedM();
    LocalResponse();
    RegionalResponse();      
    GlobalResponse();
 }
-/*
-//_______________________________________________________________________
-void AliMUONTriggerElectronics::DisableCrate(Int_t icrate)
-{
-   fRegional[icrate] = 0;
-}
 
-//_______________________________________________________________________
-void AliMUONTriggerElectronics::DisableCrate(char *Name)
-{
-   Int_t icrate;
-   
-   for (Int_t i=0; i<fgkNCrates; i++)
-   {
-      AliMUONTriggerCrate *cr = (AliMUONTriggerCrate*)fCrates->UncheckedAt(i);
-      if (strcmp(cr->GetName(),Name) )
-         continue;
-      else
-      {
-         icrate = i;
-         break;
-      }
-   }
-
-   fRegional[icrate] = 0;
-}
-
-//_______________________________________________________________________
-void AliMUONTriggerElectronics::DisableBoardInCrate(Int_t icrate, Int_t islot)
-{
-// BEWARE, REGIONAL BOARD IS IN SLOT 0
-   fLocal[icrate][islot] = 0;
-}
-*/
 //_______________________________________________________________________
 void AliMUONTriggerElectronics::Digits2Trigger()
 {
+//*
+//*
    ClearDigitNumbers();
 
    fMUONData->ResetTrigger();
@@ -950,32 +957,32 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 // GLOBAL TRIGGER INFORMATION: [0] -> LOW PT 
 //                             [1] -> HIGH PT
 //                             [2] -> ALL PT 
-   Int_t GlobalSinglePlus[3], GlobalSingleMinus[3], GlobalSingleUndef[3]; 
-   Int_t GlobalPairUnlike[3], GlobalPairLike[3];   
+   Int_t globalSinglePlus[3], globalSingleMinus[3], globalSingleUndef[3]; 
+   Int_t globalPairUnlike[3], globalPairLike[3];   
 
-   GlobalPairUnlike[0] = (fGlobal &  16) >> 4;
-   GlobalPairUnlike[1] = (fGlobal & 256) >> 8;
-   GlobalPairUnlike[2] = (fGlobal &   1);
+   globalPairUnlike[0] = (fGlobal &  16) >> 4;
+   globalPairUnlike[1] = (fGlobal & 256) >> 8;
+   globalPairUnlike[2] = (fGlobal &   1);
    
-   GlobalPairLike[0] = (fGlobal &  32) >> 5;
-   GlobalPairLike[1] = (fGlobal & 512) >> 9;
-   GlobalPairLike[2] = (fGlobal &   2) >> 1;
+   globalPairLike[0] = (fGlobal &  32) >> 5;
+   globalPairLike[1] = (fGlobal & 512) >> 9;
+   globalPairLike[2] = (fGlobal &   2) >> 1;
    
-   GlobalSinglePlus[0] = ((fGlobal &  192) >>  6) == 2;
-   GlobalSinglePlus[1] = ((fGlobal & 3072) >> 10) == 2;
-   GlobalSinglePlus[2] = ((fGlobal &   12) >>  2) == 2;
+   globalSinglePlus[0] = ((fGlobal &  192) >>  6) == 2;
+   globalSinglePlus[1] = ((fGlobal & 3072) >> 10) == 2;
+   globalSinglePlus[2] = ((fGlobal &   12) >>  2) == 2;
 
-   GlobalSingleMinus[0] = ((fGlobal &  192) >>  6) == 1;
-   GlobalSingleMinus[1] = ((fGlobal & 3072) >> 10) == 1;
-   GlobalSingleMinus[2] = ((fGlobal &   12) >>  2) == 1;
+   globalSingleMinus[0] = ((fGlobal &  192) >>  6) == 1;
+   globalSingleMinus[1] = ((fGlobal & 3072) >> 10) == 1;
+   globalSingleMinus[2] = ((fGlobal &   12) >>  2) == 1;
    
-   GlobalSingleUndef[0] = ((fGlobal &  192) >>  6) == 3;
-   GlobalSingleUndef[1] = ((fGlobal & 3072) >> 10) == 3;
-   GlobalSingleUndef[2] = ((fGlobal &   12) >>  2) == 3;
+   globalSingleUndef[0] = ((fGlobal &  192) >>  6) == 3;
+   globalSingleUndef[1] = ((fGlobal & 3072) >> 10) == 3;
+   globalSingleUndef[2] = ((fGlobal &   12) >>  2) == 3;
 
-   AliMUONGlobalTrigger *pGloTrig = new AliMUONGlobalTrigger(GlobalSinglePlus, GlobalSingleMinus,
-                                                             GlobalSingleUndef, GlobalPairUnlike, 
-                                                             GlobalPairLike);
+   AliMUONGlobalTrigger *pGloTrig = new AliMUONGlobalTrigger(globalSinglePlus, globalSingleMinus,
+                                                             globalSingleUndef, globalPairUnlike, 
+                                                             globalPairLike);
 
 // ADD A LOCAL TRIGGER IN THE LIST 
    fMUONData->AddGlobalTrigger(*pGloTrig);

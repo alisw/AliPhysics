@@ -19,22 +19,25 @@
 // Implementation of local trigger board objects
 // A local trigger board has as input a bit pattern and returns 
 // the local trigger response after comparison w/ a LUT
-//
 //*-- Author: Rachid Guernane (LPCCFd)
+//*
+//*
 
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONTriggerLut.h"
 #include "AliMUONTriggerConstants.h"
+
 #include "AliLog.h"
 
 #include <TBits.h>
-
 #include <Riostream.h>
 
 //___________________________________________
 AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
 : AliMUONTriggerBoard()
 {
+//* constructor
+//*
    fNumber = 0;
 
    for (Int_t i=0; i<2; i++) 
@@ -65,6 +68,8 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
                                                    AliMUONTriggerLut* lut) 
 : AliMUONTriggerBoard(name, a)
 {
+//* constructor
+//*
    fNumber = 0;
    
    for (Int_t i=0; i<2; i++) 
@@ -116,6 +121,8 @@ AliMUONLocalTriggerBoard::operator=(const AliMUONLocalTriggerBoard& right)
 //___________________________________________
 void AliMUONLocalTriggerBoard::Reset()
 {
+//* reset board
+//*
    for (Int_t i=0; i<2; i++) 
       for (Int_t j=0; j<4; j++) 
          fXY[i][j] = fXYU[i][j] = fXYD[i][j] = 0;
@@ -166,8 +173,6 @@ void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber
    w.Set(16,&xy);
    m.Set(16,&mask);
 
-//    Int_t s = strip - int(strip / 16) * 16;
-
    w.SetBitNumber(strip);
    
    w &= m;
@@ -182,6 +187,8 @@ void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber
 //___________________________________________
 void AliMUONLocalTriggerBoard::Pattern(Option_t *option)
 {
+//* print bit pattern
+//*
    TString op = option;
    
    if (op.Contains("X")) BP("X");
@@ -352,6 +359,8 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option)
 //___________________________________________
 void AliMUONLocalTriggerBoard::Conf()
 {
+//* board switches
+//*
    cout << "Switch(" << GetName() << ")" 
         << " x2d = "           << fSwitch[0] 
         << " x2m = "           << fSwitch[1] 
@@ -371,7 +380,9 @@ void AliMUONLocalTriggerBoard::Conf()
 //___________________________________________
 void AliMUONLocalTriggerBoard::Module(char *mod)
 {
-   const Int_t maxfields = 2; char **fields = new char*[maxfields];
+//* get module from name
+//*
+   const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
    char s[100]; strcpy(s, GetName());
 
@@ -997,6 +1008,8 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
 //___________________________________________
 void AliMUONLocalTriggerBoard::LocalTrigger()
 {
+//* L0 trigger after LUT
+//*
    Int_t deviation=0, iStripY=0;
 
    for (Int_t i=0; i<4; i++) deviation += static_cast<int>( fMinDev[i] << i );
@@ -1047,7 +1060,9 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
 //___________________________________________
 Int_t AliMUONLocalTriggerBoard::GetI()
 {
-   const Int_t maxfields = 2; char **fields = new char*[maxfields];
+//* old numbering
+//*
+   const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
    char s[100]; strcpy(s, GetName());
 
@@ -1065,7 +1080,7 @@ Int_t AliMUONLocalTriggerBoard::GetI()
 
    char copy = l[0];
 
-   Int_t L = atoi(&l[4]), C = atoi(&l[2]), S = (copy=='R') ? +1 : -1;
+   Int_t lL = atoi(&l[4]), cC = atoi(&l[2]), sS = (copy=='R') ? +1 : -1;
 
    char *b[4] = {"12", "34", "56", "78"};
 
@@ -1073,12 +1088,12 @@ Int_t AliMUONLocalTriggerBoard::GetI()
 
    for (Int_t i=0; i<4; i++) if (!strcmp(fields[1],b[i])) {ib = i; break;} ib++;
 
-// L=1 ON TOP
-   L -= 9; L = abs(L); L++;
+// lL=1 ON TOP
+   lL -= 9; lL = abs(lL); lL++;
 
-   Int_t code = 100 * L + 10 * C + ib;
+   Int_t code = 100 * lL + 10 * cC + ib;
 
-   code *= S;
+   code *= sS;
 
    Int_t ic = 0;
 
@@ -1090,6 +1105,8 @@ Int_t AliMUONLocalTriggerBoard::GetI()
 //___________________________________________
 void AliMUONLocalTriggerBoard::Mask(Int_t index, UShort_t mask)
 {
+//* set mask
+//*
   if ( index >= 0 && index < 2*4 )
   {
     Int_t i = index/4;
@@ -1105,6 +1122,8 @@ void AliMUONLocalTriggerBoard::Mask(Int_t index, UShort_t mask)
 //___________________________________________
 void AliMUONLocalTriggerBoard::Scan(Option_t *option)
 {
+//* full dump
+//*
    TString op = option;
 
    if (op.Contains("CONF")) Conf();
@@ -1127,6 +1146,8 @@ void AliMUONLocalTriggerBoard::Scan(Option_t *option)
 //___________________________________________
 void AliMUONLocalTriggerBoard::Resp(Option_t *option)
 {
+//* board I/O
+//*
    TString op = option;
 
    if (op.Contains("I"))
@@ -1169,16 +1190,14 @@ void AliMUONLocalTriggerBoard::Resp(Option_t *option)
       printf("\n");
       printf("-------------------------------------------\n");
    }      
-//    else
-//    {
-      
-//    }
 }
 
 //___________________________________________
 void AliMUONLocalTriggerBoard::Response()
 {
-   Int_t X1[16], X2[16], XX3[32], XX4[32];
+//* algo
+//*
+   Int_t xX1[16], xX2[16], xXX3[32], xXX4[32];
 
    TBits x1(16), x2(16), x3(16), x4(16);
 
@@ -1199,29 +1218,29 @@ void AliMUONLocalTriggerBoard::Response()
 
    for (Int_t i=0;i<16;i++)
    {
-      X1[i] = x1[i];
-      X2[i] = x2[i];
+      xX1[i] = x1[i];
+      xX2[i] = x2[i];
       
-      XX3[i+8] = x3[i];
-      XX4[i+8] = x4[i];  
+      xXX3[i+8] = x3[i];
+      xXX4[i+8] = x4[i];  
    }
 
    for (Int_t i=0;i<8;i++)
    {
-      XX3[i] = x3d[i+8];
-      XX4[i] = x4d[i+8];
+      xXX3[i] = x3d[i+8];
+      xXX4[i] = x4d[i+8];
 
-      XX3[i+24] = x3u[i];
-      XX4[i+24] = x4u[i];
+      xXX3[i+24] = x3u[i];
+      xXX4[i+24] = x4u[i];
    }
    
    Int_t coinc44 = 0;
    
-   TrigX(X1, X2, XX3, XX4, coinc44);   
+   TrigX(xX1, xX2, xXX3, xXX4, coinc44);   
 
-   Int_t Y1[16], Y2[16], Y3[16], Y4[16];
+   Int_t yY1[16], yY2[16], yY3[16], yY4[16];
    
-   Int_t Y3U[16], Y3D[16], Y4U[16], Y4D[16];
+   Int_t yY3U[16], yY3D[16], yY4U[16], yY4D[16];
 
    TBits y1(16), y2(16), y3(16), y4(16);
 
@@ -1239,19 +1258,19 @@ void AliMUONLocalTriggerBoard::Response()
 
    for (Int_t i=0;i<16;i++)
    {
-      Y1[i] = y1[i];
-      Y2[i] = y2[i];
-      Y3[i] = y3[i];
-      Y4[i] = y4[i];
+      yY1[i] = y1[i];
+      yY2[i] = y2[i];
+      yY3[i] = y3[i];
+      yY4[i] = y4[i];
       
-      Y3U[i] = y3u[i];
-      Y3D[i] = y3d[i];
+      yY3U[i] = y3u[i];
+      yY3D[i] = y3d[i];
       
-      Y4U[i] = y4u[i];
-      Y4D[i] = y4d[i];
+      yY4U[i] = y4u[i];
+      yY4D[i] = y4d[i];
    }
 
-   TrigY(Y1, Y2, Y3, Y4, Y3U, Y3D, Y4U, Y4D, coinc44);
+   TrigY(yY1, yY2, yY3, yY4, yY3U, yY3D, yY4U, yY4D, coinc44);
    
 // ASIGN fLutLpt, fLutHpt, fLutApt
    LocalTrigger(); 
