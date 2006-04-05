@@ -326,8 +326,6 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   // time difference
   word=104;
   PackWord(baseWord,word, 0, 8); // TVDS sign
-  word=fDigits->TimeDiff();
-   PackWord(baseWord,word, 6, 31); // T0 vertex 
   fIndex++;
   buf[fIndex]=baseWord;
 
@@ -345,22 +343,20 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   mult=fDigits->SumMult();
   word=105;
   PackWord(baseWord,word, 0, 8); 
-  word=mult;
-  PackWord(baseWord,word, 6, 31); // sum amplitude
   fIndex++;
   buf[fIndex]=baseWord;
   
   baseWord=0;
   word=error;
- PackWord(baseWord,word,0, 7); // Error flag
+  PackWord(baseWord,word,0, 7); // Error flag
   word=mult;
- PackWord(baseWord,word,8,31); // time amplitude
+  PackWord(baseWord,word,8,31); // time amplitude
   fIndex++;
   buf[fIndex]=baseWord;
   
   // multiplicity 
   
-   mult=fDigits->SumMult();
+  mult=fDigits->SumMult();
   word=106;
   PackWord(baseWord,word, 0, 8); 
   fIndex++;
@@ -427,7 +423,6 @@ Int_t AliSTARTRawData::RawDataSTART(AliSTARTdigit *fDigits)
   char fileName[15];
   ofstream outfile;         // logical name of the output file 
   AliRawDataHeader header;
-  AliBitPacking *pack ;
   //loop over TOF DDL files
   sprintf(fileName,"START_%d.ddl", 0xd00);
   //   sprintf(fileName,"START_0xd00.ddl"); //The name of the output file
@@ -442,7 +437,7 @@ Int_t AliSTARTRawData::RawDataSTART(AliSTARTdigit *fDigits)
 
     baseWord=0;
     word=0;
-    pack-> PackWord(baseWord,word,0, 31); // Number of DDL file
+    PackWord(baseWord,word,0, 31); // Number of DDL file
 
     fIndex++;
     buf[fIndex]=baseWord;
