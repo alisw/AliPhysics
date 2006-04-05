@@ -976,10 +976,12 @@ Bool_t AliRun::ApplyAlignObjsToGeom(TObjArray* AlObjArray)
 	return kFALSE;
     }
 
-  gGeoManager->CheckOverlaps(20);
-  TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
-  if(ovexlist->GetEntriesFast()){  
-    AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
+  if (AliDebugLevelClass() >= 1) {
+    gGeoManager->CheckOverlaps(20);
+    TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
+    if(ovexlist->GetEntriesFast()){  
+      AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
+   }
   }
 
   return kTRUE;
