@@ -23,8 +23,15 @@ test
 
 */
 
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//                                                                           //
+//  Multi Chip Module exponential filter and tracklet finder                 //
+//                                                                           //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include <TMath.h>
-#include <TH2F.h>
 
 #include "AliTRDmcm.h"
 #include "AliTRDtrigParam.h"
@@ -34,7 +41,6 @@ ClassImp(AliTRDmcm)
 //_____________________________________________________________________________
 AliTRDmcm::AliTRDmcm() 
 {
-
   //
   // AliTRDmcm default constructor
   //
@@ -125,10 +131,63 @@ AliTRDmcm::AliTRDmcm(AliTRDtrigParam *trigp, const Int_t id)
 //_____________________________________________________________________________
 AliTRDmcm::~AliTRDmcm() 
 {
-
   //
   // AliTRDmcm destructor
   //
+
+}
+
+//_____________________________________________________________________________
+AliTRDmcm &AliTRDmcm::operator=(const AliTRDmcm &m)
+{
+  //
+  // assignment operator
+  //
+
+  if (this != &m) ((AliTRDmcm &) m).Copy(*this); 
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmcm::Copy(TObject &m) const
+{
+  //
+  // copy function
+  //
+
+  ((AliTRDmcm &) m).fTrigParam  = NULL;
+  ((AliTRDmcm &) m).fNtrk       = fNtrk;
+  ((AliTRDmcm &) m).fRobId      = fRobId;
+  ((AliTRDmcm &) m).fChaId      = fChaId;
+  ((AliTRDmcm &) m).fRow        = fRow;
+  ((AliTRDmcm &) m).fColFirst   = fColFirst;
+  ((AliTRDmcm &) m).fColLast    = fColLast;
+  ((AliTRDmcm &) m).fTime1      = fTime1;
+  ((AliTRDmcm &) m).fTime2      = fTime2;
+  ((AliTRDmcm &) m).fClusThr    = fClusThr;
+  ((AliTRDmcm &) m).fPadThr     = fPadThr;
+  ((AliTRDmcm &) m).fNtrkSeeds  = fNtrkSeeds;
+  ((AliTRDmcm &) m).fR1         = fR1;
+  ((AliTRDmcm &) m).fR2         = fR2;
+  ((AliTRDmcm &) m).fC1         = fC1;
+  ((AliTRDmcm &) m).fC2         = fC2;
+  ((AliTRDmcm &) m).fPedestal   = fPedestal;
+  ((AliTRDmcm &) m).fId         = fId;
+
+  for (Int_t i = 0; i < kMaxTrackletsPerMCM; i++) {
+    ((AliTRDmcm &) m).fTrkIndex[i] = 0;
+  }
+  for (Int_t i = 0; i < kMcmCol; i++) {
+    ((AliTRDmcm &) m).fPadHits[i] = 0;
+    for (Int_t j = 0; j < kMcmTBmax; j++) {
+      ((AliTRDmcm &) m).fADC[i][j] = 0.0;
+      ((AliTRDmcm &) m).fIsClus[i][j] = kFALSE;
+    }
+  }
+  for (Int_t i = 0; i < kMaxTrackletsPerMCM; i++) {
+    ((AliTRDmcm &) m).fSeedCol[i] = -1;
+  }
 
 }
 
@@ -175,25 +234,25 @@ Bool_t AliTRDmcm::Run()
 
   if ( fTrigParam->GetDebugLevel() > 1 ) printf("AliTRDmcm::Run MCM %d\n",Id());
 
-  Float_t Amp[3] = {0.0, 0.0, 0.0};
+  Float_t amp[3] = {0.0, 0.0, 0.0};
   Int_t   nClus;
-  Int_t   ClusCol[kMcmCol/2];
-  Float_t ClusAmp[kMcmCol/2];
-  Float_t VeryLarge;
-  Int_t   ClusMin = -1;
+  Int_t   clusCol[kMcmCol/2];
+  Float_t clusAmp[kMcmCol/2];
+  Float_t veryLarge;
+  Int_t   clusMin = -1;
   
   for (Int_t iTime = fTime1; iTime <= fTime2; iTime++) {  // main TB loop
 
     // find clusters...
     nClus = 0;
     for (Int_t iCol = 1; iCol < (kMcmCol-1); iCol++) {
-      Amp[0] = fADC[iCol-1][iTime];
-      Amp[1] = fADC[iCol  ][iTime];
-      Amp[2] = fADC[iCol+1][iTime];
-      if (IsCluster(Amp)) {
+      amp[0] = fADC[iCol-1][iTime];
+      amp[1] = fADC[iCol  ][iTime];
+      amp[2] = fADC[iCol+1][iTime];
+      if (IsCluster(amp)) {
 	fIsClus[iCol][iTime] = kTRUE;
-	ClusCol[nClus] = iCol;
-	ClusAmp[nClus] = Amp[0]+Amp[1]+Amp[2];
+	clusCol[nClus] = iCol;
+	clusAmp[nClus] = amp[0]+amp[1]+amp[2];
 	nClus++;
 	if (nClus == kMcmCol/2) {
 	  printf("Too many clusters in time bin %2d MCM %d...\n",iTime,Id());
@@ -206,7 +265,7 @@ Bool_t AliTRDmcm::Run()
     // ...but no more than six...
     if (nClus > (Int_t)kSelClus) {
       for (Int_t j = kSelClus/2; j < nClus-kSelClus/2; j++) {
-	fIsClus[ClusCol[j]][iTime] = kFALSE;
+	fIsClus[clusCol[j]][iTime] = kFALSE;
       } 
     }
 
@@ -214,16 +273,16 @@ Bool_t AliTRDmcm::Run()
 
     Int_t nClusPlus = nClus - kMaxClus;
     for (Int_t iPlus = 0; iPlus < nClusPlus; iPlus++ ) {
-      VeryLarge = 1.E+10;
+      veryLarge = 1.E+10;
       for (Int_t i = 0; i < nClus; i++) {
-	if (fIsClus[ClusCol[i]][iTime]) {
-	  if (ClusAmp[i] <= VeryLarge) {
-	    VeryLarge = ClusAmp[i];
-	    ClusMin = i;
+	if (fIsClus[clusCol[i]][iTime]) {
+	  if (clusAmp[i] <= veryLarge) {
+	    veryLarge = clusAmp[i];
+	    clusMin = i;
 	  }
 	}
       }
-      fIsClus[ClusCol[ClusMin]][iTime] = kFALSE;
+      fIsClus[clusCol[clusMin]][iTime] = kFALSE;
     }
 
     AddTimeBin(iTime);
@@ -279,26 +338,26 @@ Int_t AliTRDmcm::CreateSeeds()
     }
   }
 
-  Int_t Sum10 = fTrigParam->GetSum10();
-  Int_t Sum12 = fTrigParam->GetSum12();
+  Int_t sum10 = fTrigParam->GetSum10();
+  Int_t sum12 = fTrigParam->GetSum12();
 
   // build the 2padSum
-  Int_t Nsum2seed = 0;
+  Int_t nsum2seed = 0;
   for( Int_t i = 0; i < kMcmCol; i++ ) {
     if( i < (kMcmCol-1) ) {
-      if( (fPadHits[i] >= Sum10) && ((fPadHits[i] + fPadHits[i+1]) >= Sum12) ) {
+      if( (fPadHits[i] >= sum10) && ((fPadHits[i] + fPadHits[i+1]) >= sum12) ) {
 	fHit2padSum[1][i] = fPadHits[i] + fPadHits[i+1]; 
       } else {
 	fHit2padSum[1][i] = -1;
       }
     } else {
-      if ( fPadHits[i] >= Sum12 ) {
+      if ( fPadHits[i] >= sum12 ) {
 	fHit2padSum[1][i] = fPadHits[i]; 
       } else {
 	fHit2padSum[1][i] = -1;
       }
     }
-    if (fHit2padSum[1][i] > 0) Nsum2seed++;
+    if (fHit2padSum[1][i] > 0) nsum2seed++;
   }
 
   if (fTrigParam->GetDebugLevel() > 1) {
@@ -331,7 +390,7 @@ Int_t AliTRDmcm::CreateSeeds()
   }
 
   // arrange (maximum number of) candidates in increasing order of the column number
-  nSeeds = TMath::Min(Nsum2seed,kMaxTrackletsPerMCM);
+  nSeeds = TMath::Min(nsum2seed,kMaxTrackletsPerMCM);
   Sort(nSeeds,&fHit2padSum[1][0],&fHit2padSum[0][0],0);
 
   for (Int_t i = 0; i < nSeeds; i++) {
@@ -386,10 +445,11 @@ Int_t AliTRDmcm::CreateSeeds()
 //_____________________________________________________________________________
 void AliTRDmcm::Sort(Int_t nel, Int_t *x1, Int_t *x2, Int_t dir)
 {
-
+  //
   // Sort two parallel vectors (x1[nel], x2[nel]) after the second one (x2)
   // in the direction: dir = 0 ascending order
   //                   dir = 1 descending order
+  //
 
   Bool_t sort;
   Int_t tmp1, tmp2;
@@ -448,7 +508,7 @@ void AliTRDmcm::AddTimeBin(const Int_t iTime)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDmcm::IsCluster(Float_t amp[3])
+Bool_t AliTRDmcm::IsCluster(Float_t amp[3]) const
 {
   //
   // Find if the amplitudes amp[0], amp[1], amp[2] are a cluster
@@ -475,8 +535,8 @@ void AliTRDmcm::Filter(Int_t nexp, Int_t ftype)
   //
 
   Double_t sour[kMcmTBmax];
-  Double_t Dtarg[kMcmTBmax];
-  Int_t    Itarg[kMcmTBmax];
+  Double_t dtarg[kMcmTBmax];
+  Int_t    itarg[kMcmTBmax];
 
   switch(ftype) {
 
@@ -486,10 +546,10 @@ void AliTRDmcm::Filter(Int_t nexp, Int_t ftype)
       for (Int_t iTime = 0; iTime < kMcmTBmax; iTime++) {
 	sour[iTime] = fADC[iCol][iTime];
       }
-      DeConvExpA(sour,Dtarg,kMcmTBmax,nexp);
+      DeConvExpA(sour,dtarg,kMcmTBmax,nexp);
       for (Int_t iTime = 0; iTime < kMcmTBmax; iTime++) {
-	//fADC[iCol][iTime] = (Int_t)TMath::Max(0.0,Dtarg[iTime]);
-	fADC[iCol][iTime] = TMath::Max(0.0,Dtarg[iTime]);
+	//fADC[iCol][iTime] = (Int_t)TMath::Max(0.0,dtarg[iTime]);
+	fADC[iCol][iTime] = TMath::Max(0.0,dtarg[iTime]);
       }
     }
     break;
@@ -500,9 +560,9 @@ void AliTRDmcm::Filter(Int_t nexp, Int_t ftype)
       for (Int_t iTime = 0; iTime < kMcmTBmax; iTime++) {
 	sour[iTime] = fADC[iCol][iTime];
       }
-      DeConvExpD(sour,Itarg,kMcmTBmax,nexp);
+      DeConvExpD(sour,itarg,kMcmTBmax,nexp);
       for (Int_t iTime = 0; iTime < kMcmTBmax; iTime++) {
-	fADC[iCol][iTime] = Itarg[iTime];
+	fADC[iCol][iTime] = itarg[iTime];
       }
     }
     break;
@@ -513,10 +573,10 @@ void AliTRDmcm::Filter(Int_t nexp, Int_t ftype)
       for (Int_t iTime = 0; iTime < kMcmTBmax; iTime++) {
 	sour[iTime] = fADC[iCol][iTime];
       }
-      DeConvExpMI(sour,Dtarg,kMcmTBmax);
+      DeConvExpMI(sour,dtarg,kMcmTBmax);
       for (Int_t iTime = 0; iTime < kMcmTBmax; iTime++) {
-	//fADC[iCol][iTime] = (Int_t)TMath::Max(0.0,Dtarg[iTime]);
-	fADC[iCol][iTime] = TMath::Max(0.0,Dtarg[iTime]);
+	//fADC[iCol][iTime] = (Int_t)TMath::Max(0.0,dtarg[iTime]);
+	fADC[iCol][iTime] = TMath::Max(0.0,dtarg[iTime]);
       }
     }
     break;
@@ -533,6 +593,9 @@ void AliTRDmcm::Filter(Int_t nexp, Int_t ftype)
 //_____________________________________________________________________________
 void AliTRDmcm::DeConvExpA(Double_t *source, Double_t *target, Int_t n, Int_t nexp) 
 {
+  //
+  // Exponential filter "analog"
+  //
 
   Double_t rates[2];
   Double_t coefficients[2];
@@ -540,18 +603,18 @@ void AliTRDmcm::DeConvExpA(Double_t *source, Double_t *target, Int_t n, Int_t ne
   // initialize (coefficient = alpha, rates = lambda)
   
   // FilterOpt.C (aliroot@pel:/homel/aliroot/root/work/beamt/CERN02)
-  Double_t R1, R2, C1, C2;
-  R1 = (Double_t)fR1;
-  R2 = (Double_t)fR2;
-  C1 = (Double_t)fC1;
-  C2 = (Double_t)fC2;
+  Double_t r1, r2, c1, c2;
+  r1 = (Double_t)fR1;
+  r2 = (Double_t)fR2;
+  c1 = (Double_t)fC1;
+  c2 = (Double_t)fC2;
   
-  coefficients[0] = C1;
-  coefficients[1] = C2;
+  coefficients[0] = c1;
+  coefficients[1] = c2;
 
-  Double_t Dt = 0.100;
-  rates[0] = TMath::Exp(-Dt/(R1));
-  rates[1] = TMath::Exp(-Dt/(R2));
+  Double_t dt = 0.100;
+  rates[0] = TMath::Exp(-dt/(r1));
+  rates[1] = TMath::Exp(-dt/(r2));
   
   Int_t i, k;
   Double_t reminder[2];
@@ -574,45 +637,49 @@ void AliTRDmcm::DeConvExpA(Double_t *source, Double_t *target, Int_t n, Int_t ne
 }
 
 //_____________________________________________________________________________
-void AliTRDmcm::DeConvExpD(Double_t *source, Int_t *target, Int_t n, Int_t nexp) {
+void AliTRDmcm::DeConvExpD(Double_t *source, Int_t *target, Int_t n, Int_t nexp) 
+{
+  //
+  // Exponential filter "digital"
+  //
 
-  Int_t fAlpha_l, fAlpha_s, fLambda_l, fLambda_s, fTailPed;
-  Int_t iAlpha_l, iAlpha_s, iLambda_l, iLambda_s;
+  Int_t fAlphaL, fAlphaS, fLambdaL, fLambdaS, fTailPed;
+  Int_t iAlphaL, iAlphaS, iLambdaL, iLambdaS;
 
   // FilterOpt.C (aliroot@pel:/homel/aliroot/root/work/beamt/CERN02)
   // initialize (coefficient = alpha, rates = lambda)
 
-  fLambda_l = 0; fAlpha_l = 0; fLambda_s = 0; fAlpha_s = 0;
-  iLambda_l = 0; iAlpha_l = 0; iLambda_s = 0; iAlpha_s = 0;
+  fLambdaL = 0; fAlphaL = 0; fLambdaS = 0; fAlphaS = 0;
+  iLambdaL = 0; iAlphaL = 0; iLambdaS = 0; iAlphaS = 0;
 
-  Double_t Dt = 0.100;
+  Double_t dt = 0.100;
 
-  Double_t R1, R2, C1, C2;
-  R1 = (Double_t)fR1;
-  R2 = (Double_t)fR2;
-  C1 = (Double_t)fC1;
-  C2 = (Double_t)fC2;
+  Double_t r1, r2, c1, c2;
+  r1 = (Double_t)fR1;
+  r2 = (Double_t)fR2;
+  c1 = (Double_t)fC1;
+  c2 = (Double_t)fC2;
 
-  fLambda_l = (Int_t)((TMath::Exp(-Dt/R1)-0.75)*2048.0);
-  fLambda_s = (Int_t)((TMath::Exp(-Dt/R2)-0.25)*2048.0);
-  iLambda_l = fLambda_l & 0x01FF; iLambda_l |= 0x0600; 	//  9 bit paramter + fixed bits
-  iLambda_s = fLambda_s & 0x01FF; iLambda_s |= 0x0200; 	//  9 bit paramter + fixed bits
+  fLambdaL = (Int_t)((TMath::Exp(-dt/r1)-0.75)*2048.0);
+  fLambdaS = (Int_t)((TMath::Exp(-dt/r2)-0.25)*2048.0);
+  iLambdaL = fLambdaL & 0x01FF; iLambdaL |= 0x0600; 	//  9 bit paramter + fixed bits
+  iLambdaS = fLambdaS & 0x01FF; iLambdaS |= 0x0200; 	//  9 bit paramter + fixed bits
 
   if (nexp == 1) {
-    fAlpha_l = (Int_t)(C1*2048.0);
-    iAlpha_l = fAlpha_l & 0x03FF;				// 10 bit paramter
+    fAlphaL = (Int_t)(c1*2048.0);
+    iAlphaL = fAlphaL & 0x03FF;				// 10 bit paramter
   }
   if (nexp == 2) {
-    fAlpha_l = (Int_t)(C1*2048.0);
-    fAlpha_s = (Int_t)((C2-0.5)*2048.0);
-    iAlpha_l = fAlpha_l & 0x03FF;				// 10 bit paramter
-    iAlpha_s = fAlpha_s & 0x03FF; iAlpha_s |= 0x0400;	        // 10 bit paramter + fixed bits
+    fAlphaL = (Int_t)(c1*2048.0);
+    fAlphaS = (Int_t)((c2-0.5)*2048.0);
+    iAlphaL = fAlphaL & 0x03FF;				// 10 bit paramter
+    iAlphaS = fAlphaS & 0x03FF; iAlphaS |= 0x0400;	        // 10 bit paramter + fixed bits
   }
   
-  Double_t iAl = iAlpha_l / 2048.0;	       // alpha L: correspondence to floating point numbers
-  Double_t iAs = iAlpha_s / 2048.0;	       // alpha S: correspondence to floating point numbers
-  Double_t iLl = iLambda_l / 2048.0;	       // lambda L: correspondence to floating point numbers
-  Double_t iLs = iLambda_s / 2048.0;	       // lambda S: correspondence to floating point numbers
+  Double_t iAl = iAlphaL / 2048.0;	       // alpha L: correspondence to floating point numbers
+  Double_t iAs = iAlphaS / 2048.0;	       // alpha S: correspondence to floating point numbers
+  Double_t iLl = iLambdaL / 2048.0;	       // lambda L: correspondence to floating point numbers
+  Double_t iLs = iLambdaS / 2048.0;	       // lambda S: correspondence to floating point numbers
 
   Int_t h1,h2;
   Int_t rem1, rem2;
@@ -641,22 +708,22 @@ void AliTRDmcm::DeConvExpD(Double_t *source, Int_t *target, Int_t n, Int_t nexp)
 
     target[i] = result;
                                                         
-    h1 = ( rem1 + ((iAlpha_l * result) >> 11) );
+    h1 = ( rem1 + ((iAlphaL * result) >> 11) );
     if ( h1 > 0x0FFF ) {
       h1 = 0x0FFF;
     } else {
       h1 &= 0x0FFF;
     }
 
-    h2 = ( rem2 + ((iAlpha_s * result) >> 11));
+    h2 = ( rem2 + ((iAlphaS * result) >> 11));
     if ( h2 > 0x0FFF ) {
       h2 = 0x0FFF;
     } else {
       h2 &= 0x0FFF;
     }
   
-    rem1 = (iLambda_l * h1 ) >> 11;
-    rem2 = (iLambda_s * h2 ) >> 11;
+    rem1 = (iLambdaL * h1 ) >> 11;
+    rem2 = (iLambdaS * h2 ) >> 11;
     
     if ( (rem1 + rem2) > 0x0FFF ) {
       correction = 0x0FFF;
@@ -668,28 +735,36 @@ void AliTRDmcm::DeConvExpD(Double_t *source, Int_t *target, Int_t n, Int_t nexp)
 }
 
 //_____________________________________________________________________________
-void AliTRDmcm::DeConvExpMI(Double_t *source, Double_t *target, Int_t n) {
+void AliTRDmcm::DeConvExpMI(Double_t *source, Double_t *target, Int_t n) 
+{
+  //
+  // Exponential filter (M. Ivanov)
+  //
 
-   Double_t Sig1[100], Sig2[100], Sig3[100];//, Sig4[100];
-   for (Int_t i = 0; i < n; i++) Sig1[i] = source[i];
+   Double_t sig1[100], sig2[100], sig3[100];//, sig4[100];
+   for (Int_t i = 0; i < n; i++) sig1[i] = source[i];
 
-   Float_t Dt = 0.100;
+   Float_t dt = 0.100;
 
-   //Float_t lambda0 = 9.8016*Dt;  // short
-   //Float_t lambda1 = 1.0778*Dt;  // long
+   //Float_t lambda0 = 9.8016*dt;  // short
+   //Float_t lambda1 = 1.0778*dt;  // long
 
-   Float_t lambda0 = (1.0/fR2)*Dt;
-   Float_t lambda1 = (1.0/fR1)*Dt;
+   Float_t lambda0 = (1.0/fR2)*dt;
+   Float_t lambda1 = (1.0/fR1)*dt;
 
-   TailMakerSpline(Sig1,Sig2,lambda0,n);
-   TailCancelationMI(Sig2,Sig3,0.7,lambda1,n);
+   TailMakerSpline(sig1,sig2,lambda0,n);
+   TailCancelationMI(sig2,sig3,0.7,lambda1,n);
 
-   for (Int_t i = 0; i < n; i++) target[i] = Sig3[i];
+   for (Int_t i = 0; i < n; i++) target[i] = sig3[i];
 
 }
 
 //______________________________________________________________________________
-void AliTRDmcm::TailMakerSpline(Double_t *ampin, Double_t *ampout, Double_t lambda, Int_t n) {
+void AliTRDmcm::TailMakerSpline(Double_t *ampin, Double_t *ampout, Double_t lambda, Int_t n) 
+{
+  //
+  // Special filter (M. Ivanov)
+  //
 
    Double_t l = TMath::Exp(-lambda*0.5);
    //
@@ -750,10 +825,14 @@ void AliTRDmcm::TailMakerSpline(Double_t *ampin, Double_t *ampout, Double_t lamb
 }
 
 //______________________________________________________________________________
-void AliTRDmcm::TailCancelationMI(Double_t *ampin, Double_t *ampout, Double_t norm, Double_t lambda, Int_t n) {
+void AliTRDmcm::TailCancelationMI(Double_t *ampin, Double_t *ampout, Double_t norm, Double_t lambda, Int_t n) 
+{
+  //
+  // Special filter (M. Ivanov)
+  //
 
-   Double_t L = TMath::Exp(-lambda*0.5);
-   Double_t K = L*(1.-norm*lambda*0.5);
+   Double_t l = TMath::Exp(-lambda*0.5);
+   Double_t k = l*(1.-norm*lambda*0.5);
    //
    //
    Double_t in[1000];
@@ -787,8 +866,8 @@ void AliTRDmcm::TailCancelationMI(Double_t *ampin, Double_t *ampout, Double_t no
    out[0]     = in[0];
    temp       = in[0];
    for (int i=1; i<=2*n; i++){
-     out[i]      = in[i]   + (K-L)*temp;
-     temp        = in[i]   +  K*temp;
+     out[i]      = in[i]   + (k-l)*temp;
+     temp        = in[i]   +  k*temp;
    }
    //
    //

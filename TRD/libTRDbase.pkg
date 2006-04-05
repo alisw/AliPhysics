@@ -28,7 +28,15 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalChamberStatus.cxx \
       Cal/AliTRDCalMCMStatus.cxx \
       Cal/AliTRDCalPadStatus.cxx \
-      Cal/AliTRDCalSingleChamberStatus.cxx
+      Cal/AliTRDCalSingleChamberStatus.cxx \
+      AliTRDTriggerL1.cxx \
+      AliTRDmcmTracklet.cxx \
+      AliTRDmcm.cxx \
+      AliTRDtrigParam.cxx \
+      AliTRDtrigger.cxx \
+      AliTRDltuTracklet.cxx \
+      AliTRDgtuTrack.cxx \
+      AliTRDmodule.cxx 
 
 HDRS= $(SRCS:.cxx=.h)
 

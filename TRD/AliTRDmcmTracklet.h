@@ -4,14 +4,12 @@
  * See cxx source for full Copyright notice                               */
 
 ///////////////////////////////////////////////////////
-//  Tracklet object (MCM/TRIGGER)                    //
+//                                                   //
+//  Tracklet object (MCM/LTU)                        //
+//                                                   //
 ///////////////////////////////////////////////////////
 
 #include <TObject.h>
-
-const Int_t kNclsPads  =  3;
-const Int_t kNtimeBins = 30;
-const Int_t kNdict     =  3;
 
 class TGraph;
 
@@ -21,52 +19,37 @@ class AliTRDmcmTracklet : public TObject {
 
  public:
 
+  enum { kNclsPads = 3, kNtimeBins = 30, kNdict = 3 };
+
   AliTRDmcmTracklet();
   AliTRDmcmTracklet(Int_t det, Int_t row, Int_t n);
   virtual ~AliTRDmcmTracklet();
+  AliTRDmcmTracklet &operator=(const AliTRDmcmTracklet &t);
+  virtual void Copy(TObject &t) const;
 
-  void AddCluster(Int_t icol, Int_t itb, Float_t *adc, Int_t *track) { 
-    if (fNclusters >= kNtimeBins) return;
-    for (Int_t icl = 0; icl < kNclsPads; icl++) {
-      //fADC[fNclusters][icl] = (Int_t)adc[icl]; 
-      fADC[fNclusters][icl] = adc[icl]; 
-    }
-    fTrack[fNclusters][0] = track[0];
-    fTrack[fNclusters][1] = track[1];
-    fTrack[fNclusters][2] = track[2];
-    fTime[fNclusters] = itb;
-    fCol[fNclusters] = icol;
-    fNclusters++;
-  };
+  void AddCluster(Int_t icol, Int_t itb, Float_t *adc, Int_t *track);
+  void MakeTrackletGraph(AliTRDgeometry *geo = 0, Float_t field = 0);
+  void MakeClusAmpGraph();
+  void CookLabel(Float_t frac);
 
-  Float_t  *GetClusterADC(Int_t icl)      { return fADC[icl];  };
-  Int_t     GetClusterTime(Int_t icl)     { return fTime[icl]; };
-  Int_t     GetClusterCol(Int_t icl)      { return fCol[icl];  };
-
-  TGraph   *GetTrackletGraph() { return fGPos; };
-  TGraph   *GetClusAmpGraph()  { return fGAmp; };
-
-  virtual void MakeTrackletGraph(AliTRDgeometry *geo = 0, Float_t field = 0);
-  virtual void MakeClusAmpGraph();
-
-  Float_t   GetClusY(Float_t *adc, Int_t pla);
-
-  Int_t     GetNumber() { return fN; };
-
-  void      CookLabel(Float_t frac);
-  Int_t     GetLabel() { return fTrackLabel; };
-
-  Int_t     GetNclusters()    { return fNclusters; };
-  Int_t     GetDetector()     { return fDetector; };
-  Int_t     GetRow()          { return fRow; };
-  Float_t   GetOffset() { return fOffset; };
-  Float_t   GetSlope()  { return fSlope; };
-  Float_t   GetTime0()  { return fTime0; };
-  Float_t   GetRowz()   { return fRowz; };
-  Float_t   GetPt()     { return fPt; };
-  Float_t   GetdQdl()   { return fdQdl; };
-
-  Float_t   GetOmegaTau(Float_t vdrift, Float_t field);
+  Int_t     GetNclusters() const { return fNclusters; };
+  Int_t     GetDetector()  const { return fDetector; };
+  Int_t     GetRow()       const { return fRow; };
+  Float_t   GetOffset()    const { return fOffset; };
+  Float_t   GetSlope()     const { return fSlope; };
+  Float_t   GetTime0()     const { return fTime0; };
+  Float_t   GetRowz()      const { return fRowz; };
+  Float_t   GetPt()        const { return fPt; };
+  Float_t   GetdQdl()      const { return fdQdl; };
+  Int_t     GetLabel()     const { return fTrackLabel; };
+  Int_t     GetNumber()    const { return fN; };
+  Float_t   GetOmegaTau(Float_t vdrift, Float_t field) const;
+  Float_t   GetClusY(Float_t *adc, Int_t pla) const;
+  TGraph   *GetTrackletGraph() const { return fGPos; };
+  TGraph   *GetClusAmpGraph()  const { return fGAmp; };
+  Float_t  *GetClusterADC(Int_t icl)        { return fADC[icl];  };
+  Int_t     GetClusterTime(Int_t icl) const { return fTime[icl]; };
+  Int_t     GetClusterCol(Int_t icl)  const { return fCol[icl];  };
 
  protected:
 
@@ -91,7 +74,7 @@ class AliTRDmcmTracklet : public TObject {
   Float_t fPt;                           // Transverse momentum
   Float_t fdQdl;                         // Charge per unit length
 
-  ClassDef(AliTRDmcmTracklet,1)          // Track segment for the TRD (Tracklet)
+  ClassDef(AliTRDmcmTracklet,2)          // Track segment for the TRD (Tracklet)
 
 };
 

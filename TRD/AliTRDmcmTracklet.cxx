@@ -13,6 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+///////////////////////////////////////////////////////
+//                                                   //
+//                                                   //
+//  Tracklet object created in the local tracking    //
+//                                                   //
+//                                                   //
+///////////////////////////////////////////////////////
+
 #include <TGraph.h>
 #include <TMath.h>
 #include <TF1.h>
@@ -111,6 +119,77 @@ AliTRDmcmTracklet::~AliTRDmcmTracklet()
   //
   // AliTRDmcmTracklet destructor
   //
+  delete fGPos;
+  delete fGAmp;
+}
+
+//_____________________________________________________________________________
+AliTRDmcmTracklet &AliTRDmcmTracklet::operator=(const AliTRDmcmTracklet &t)
+{
+  //
+  // assignment operator
+  //
+
+  if (this != &t) ((AliTRDmcmTracklet &) t).Copy(*this); 
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmcmTracklet::Copy(TObject &t) const
+{
+  //
+  // copy function
+  //
+
+  ((AliTRDmcmTracklet &) t).fDetector    = fDetector;
+  ((AliTRDmcmTracklet &) t).fRow         = fRow;
+  ((AliTRDmcmTracklet &) t).fTrackLabel  = fTrackLabel;
+  ((AliTRDmcmTracklet &) t).fNclusters   = fNclusters;
+  ((AliTRDmcmTracklet &) t).fN           = fN;
+  ((AliTRDmcmTracklet &) t).fGPos        = NULL;
+  ((AliTRDmcmTracklet &) t).fGAmp        = NULL;
+  ((AliTRDmcmTracklet &) t).fTime0       = fTime0;
+  ((AliTRDmcmTracklet &) t).fRowz        = fRowz;
+  ((AliTRDmcmTracklet &) t).fSlope       = fSlope;
+  ((AliTRDmcmTracklet &) t).fOffset      = fOffset;
+  ((AliTRDmcmTracklet &) t).fPt          = fPt;
+  ((AliTRDmcmTracklet &) t).fdQdl        = fdQdl;
+
+  for (Int_t time = 0; time < kNtimeBins; time++) {
+    for (Int_t icl = 0; icl < kNclsPads; icl++) {
+      ((AliTRDmcmTracklet &) t).fADC[time][icl] = 0;
+    }
+    for (Int_t it = 0; it < kNdict; it++) {
+      ((AliTRDmcmTracklet &) t).fTrack[time][it] = -1;
+    }
+    ((AliTRDmcmTracklet &) t).fTime[time]   = 0;
+    ((AliTRDmcmTracklet &) t).fCol[time]    = 0;
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmcmTracklet::AddCluster(Int_t icol, Int_t itb, Float_t *adc, Int_t *track) 
+{
+  //
+  //
+  //
+ 
+  if (fNclusters >= kNtimeBins) return;
+
+  for (Int_t icl = 0; icl < kNclsPads; icl++) {
+    //fADC[fNclusters][icl] = (Int_t)adc[icl]; 
+    fADC[fNclusters][icl] = adc[icl]; 
+  }
+
+  fTrack[fNclusters][0] = track[0];
+  fTrack[fNclusters][1] = track[1];
+  fTrack[fNclusters][2] = track[2];
+  fTime[fNclusters] = itb;
+  fCol[fNclusters] = icol;
+
+  fNclusters++;
 
 }
 
@@ -148,13 +227,13 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
 
   AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
 
-  Float_t SamplFreq = calibration->GetSamplingFrequency();
+  Float_t samplFreq = calibration->GetSamplingFrequency();
 
   Int_t time, col;
   Float_t amp[3];
-  Float_t Xpos, Ypos, Xzero, ColSize, TimeBinSize;
-  Float_t vDrift, OmegaTau, LorentzAngle, ThetaSlope;
-  Float_t TiltingAngle;
+  Float_t xpos, ypos, xzero, colSize, timeBinSize;
+  Float_t vDrift, omegaTau, lorentzAngle, thetaSlope;
+  Float_t tiltingAngle;
   Int_t npg = 0;
 
   for (Int_t icl = 0; icl < fNclusters; icl++) {
@@ -169,32 +248,32 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
 
     if (amp[0] < 0.0 || amp[1] < 0.0 || amp[2] < 0.0) continue;
 
-    Ypos = GetClusY(amp,iplan);
+    ypos = GetClusY(amp,iplan);
 
-    ColSize = padPlane->GetColSize(col);
+    colSize = padPlane->GetColSize(col);
     vDrift = calibration->GetVdrift(fDetector,col,fRow);
-    TimeBinSize = vDrift/SamplFreq;
+    timeBinSize = vDrift/samplFreq;
     
     // From v4-03-Release to HEAD28Mar06 the sign has changed from "-" to "+" 
     // due to a change in the digitizer
-    OmegaTau = +TMath::Sign(1.0,(Double_t)field)*GetOmegaTau(vDrift,TMath::Abs(field));
-    LorentzAngle = TMath::ATan(OmegaTau)*180.0/TMath::Pi();
+    omegaTau = +TMath::Sign(1.0,(Double_t)field)*GetOmegaTau(vDrift,TMath::Abs(field));
+    lorentzAngle = TMath::ATan(omegaTau)*180.0/TMath::Pi();
     
-    Xpos = (time+0.5) * TimeBinSize;
-    Xpos = geo->GetTime0(iplan) - Xpos;
+    xpos = (time+0.5) * timeBinSize;
+    xpos = geo->GetTime0(iplan) - xpos;
 
-    Ypos = padPlane->GetColPos(col) - (Ypos + 0.5) * ColSize;
+    ypos = padPlane->GetColPos(col) - (ypos + 0.5) * colSize;
 
     // ExB correction
-    Xzero = geo->GetTime0(iplan);
-    Ypos = Ypos + (Xpos-Xzero) * OmegaTau;
+    xzero = geo->GetTime0(iplan);
+    ypos = ypos + (xpos-xzero) * omegaTau;
 
     // tilted pads correction
-    ThetaSlope = - padPlane->GetRowPos(fRow)/geo->GetTime0(iplan);
-    TiltingAngle = padPlane->GetTiltingAngle()/180.0*TMath::Pi();
-    Ypos = Ypos - (Xpos-Xzero) * ThetaSlope * TMath::Sin(TiltingAngle);
+    thetaSlope = - padPlane->GetRowPos(fRow)/geo->GetTime0(iplan);
+    tiltingAngle = padPlane->GetTiltingAngle()/180.0*TMath::Pi();
+    ypos = ypos - (xpos-xzero) * thetaSlope * TMath::Sin(tiltingAngle);
 
-    fGPos->SetPoint(npg,(Double_t)Xpos,(Double_t)Ypos);
+    fGPos->SetPoint(npg,(Double_t)xpos,(Double_t)ypos);
     npg++;
 
   }
@@ -216,14 +295,14 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
 
   line->Delete();
   
-  Float_t fX = fTime0;
-  Float_t fY = fOffset;
+  Float_t fx = fTime0;
+  Float_t fy = fOffset;
   
-  Float_t infSlope = TMath::ATan(fY/fX)/TMath::Pi()*180.0;    
+  Float_t infSlope = TMath::ATan(fy/fx)/TMath::Pi()*180.0;    
   Float_t alpha = fSlope - infSlope;
-  Float_t R = TMath::Sqrt(fX*fX + fY*fY)/(2.0*TMath::Sin(alpha/180.0*TMath::Pi()));
+  Float_t r = TMath::Sqrt(fx*fx + fy*fy)/(2.0*TMath::Sin(alpha/180.0*TMath::Pi()));
 
-  fPt = 0.3 * field * 0.01 * R;
+  fPt = 0.3 * field * 0.01 * r;
   
   return;
 
@@ -271,62 +350,62 @@ void AliTRDmcmTracklet::MakeClusAmpGraph()
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDmcmTracklet::GetClusY(Float_t *adc, Int_t pla) 
+Float_t AliTRDmcmTracklet::GetClusY(Float_t *adc, Int_t pla) const
 {
   //
   // Cluster position in the phi direction in pad units (relative to the pad border)
   //
 
-  Float_t Ypos = 0.0;
+  Float_t ypos = 0.0;
 
-  Float_t A0 = adc[0];
-  Float_t A1 = adc[1];
-  Float_t A2 = adc[2];
+  Float_t a0 = adc[0];
+  Float_t a1 = adc[1];
+  Float_t a2 = adc[2];
 
-  Float_t T1, T2, W1 ,W2;
+  Float_t t1, t2, w1 ,w2;
 
-  Float_t W = 1.0;  // pad units
+  Float_t w = 1.0;  // pad units
 
-  Float_t Sigma = 0.0;
+  Float_t sigma = 0.0;
 
   switch(pla) {
   case 0:
-    Sigma = 0.515; break;
+    sigma = 0.515; break;
   case 1:
-    Sigma = 0.501; break;
+    sigma = 0.501; break;
   case 2:
-    Sigma = 0.491; break;
+    sigma = 0.491; break;
   case 3:
-    Sigma = 0.481; break;
+    sigma = 0.481; break;
   case 4:
-    Sigma = 0.471; break;
+    sigma = 0.471; break;
   case 5:
-    Sigma = 0.463; break;
+    sigma = 0.463; break;
   default:
     Error("GetClusY","Wrong plane number.");
     return 0.0;
   }
 
-  Sigma *= W;
+  sigma *= w;
 
-  T1 = 0.0;
-  W1 = 0.0;
-  if( A0 > 0 ) {
-    W1 = A0*A0;
-    //W1 = A0;
-    T1 = W1*((Sigma*Sigma)/W*TMath::Log(A1/A0)-0.5*W);
+  t1 = 0.0;
+  w1 = 0.0;
+  if( a0 > 0 ) {
+    w1 = a0*a0;
+    //w1 = a0;
+    t1 = w1*((sigma*sigma)/w*TMath::Log(a1/a0)-0.5*w);
   }
-  T2 = 0.0;
-  W2 = 0.0;
-  if( A2 > 0 ) {
-    W2 = A2*A2;
-    //W2 = A2;
-    T2 = W2*((Sigma*Sigma)/W*TMath::Log(A2/A1)+0.5*W);
+  t2 = 0.0;
+  w2 = 0.0;
+  if( a2 > 0 ) {
+    w2 = a2*a2;
+    //w2 = a2;
+    t2 = w2*((sigma*sigma)/w*TMath::Log(a2/a1)+0.5*w);
   }
 
-  Ypos = W*(T1+T2)/(W1+W2);  // range: -0.5*W ... +0.5*W
+  ypos = w*(t1+t2)/(w1+w2);  // range: -0.5*w ... +0.5*w
 
-  return Ypos;
+  return ypos;
 
 }
 
@@ -388,7 +467,7 @@ void AliTRDmcmTracklet::CookLabel(Float_t frac)
 }
 
 //_____________________________________________________________________________
-Float_t AliTRDmcmTracklet::GetOmegaTau(Float_t vdrift, Float_t field)
+Float_t AliTRDmcmTracklet::GetOmegaTau(Float_t vdrift, Float_t field) const
 {
   //
   // Returns omega*tau (tan(Lorentz-angle)) for a given drift velocity <vd> 

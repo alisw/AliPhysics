@@ -21,23 +21,23 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TFile.h>
 
 #include "AliTRDReconstructor.h"
 #include "AliRunLoader.h"
 #include "AliTRDclusterizerV1.h"
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
-#include <TFile.h>
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliTRDtrigger.h"
 #include "AliTRDtrigParam.h"
+#include "AliTRDgtuTrack.h"
 #include "AliRun.h"
 #include "AliESDTrdTrack.h"
 #include "AliESD.h"
 
 ClassImp(AliTRDReconstructor)
-
 
 Bool_t  AliTRDReconstructor::fgkSeedingOn = kFALSE;
 
@@ -63,6 +63,13 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
   loader->UnloadRecPoints();
 
   // Trigger (tracklets, LTU)
+
+  loader->LoadTracks();
+  if (loader->TreeT()) {
+    Info("Reconstruct","Tracklets already exist");
+    return;
+  }
+  Info("Reconstruct","Trigger tracklets will be produced");
 
   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 
@@ -117,6 +124,13 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
   loader->UnloadRecPoints();
 
   // Trigger (tracklets, LTU)
+
+  loader->LoadTracks();
+  if (loader->TreeT()) {
+    Info("Reconstruct","Tracklets already exist");
+    return;
+  }
+  Info("Reconstruct","Trigger tracklets will be produced");
 
   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 

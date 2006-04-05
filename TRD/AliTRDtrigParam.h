@@ -20,9 +20,9 @@ class AliTRDtrigParam : public TNamed {
   AliTRDtrigParam(const AliTRDtrigParam &p);   
   virtual ~AliTRDtrigParam();
   AliTRDtrigParam &operator=(const AliTRDtrigParam &p); 
-
   virtual void     Copy(TObject &p) const;
-  virtual void     Init();
+
+  void    Init();
 
   void    SetTimeRange(const Int_t time1, const Int_t time2) { fTime1 = time1; fTime2 = time2; };
   Int_t   GetTime1()                                   const { return fTime1; };
@@ -45,31 +45,32 @@ class AliTRDtrigParam : public TNamed {
   Int_t   GetTailCancelation()                       const { return fTCOn; };
   Int_t   GetNexponential()                          const { return fTCnexp; };
   Int_t   GetFilterType()                            const { return fFilterType; };
-  void    GetFilterParam(Float_t &r1, Float_t &r2, Float_t &c1, Float_t &c2, Float_t &ped) const { 
-    r1 = fR1; r2 = fR2; c1 = fC1; c2 = fC2; ped = fPedestal; 
-  };
+  void    GetFilterParam(Float_t &r1, Float_t &r2, Float_t &c1, Float_t &c2, Float_t &ped) const { r1 = fR1; r2 = fR2; c1 = fC1; c2 = fC2; ped = fPedestal; };
 
   void    SetADCnoise(const Float_t adcn)                  { fADCnoise = adcn; };
-  Float_t GetADCnoise()                                    { return fADCnoise; };
+  Float_t GetADCnoise()                              const { return fADCnoise; };
 
   void    SetDebugLevel(const Int_t deb) { fDebug = deb;  };
-  Int_t   GetDebugLevel()                { return fDebug; };
+  Int_t   GetDebugLevel()          const { return fDebug; };
 
   void    SetDeltaY(Float_t dy) { fDeltaY = dy; };
-  Float_t GetDeltaY()           { return fDeltaY; };
+  Float_t GetDeltaY()     const { return fDeltaY; };
   void    SetDeltaS(Float_t ds) { fDeltaS = ds; };
-  Float_t GetDeltaS()           { return fDeltaS; };
+  Float_t GetDeltaS()     const { return fDeltaS; };
 
-  Float_t GetXprojPlane() { return fXprojPlane; };
+  Float_t GetXprojPlane() const { return fXprojPlane; };
 
   void    SetField(Float_t b) { fField = b; };
-  Float_t GetField() { return fField; };
+  Float_t GetField() const { return fField; };
 
   void    SetLtuPtCut(Float_t ptcut) { fLtuPtCut = ptcut; };
-  Float_t GetLtuPtCut() { return fLtuPtCut; };
+  Float_t GetLtuPtCut() const { return fLtuPtCut; };
 
   void    SetGtuPtCut(Float_t ptcut) { fGtuPtCut = ptcut; };
-  Float_t GetGtuPtCut() { return fGtuPtCut; };
+  Float_t GetGtuPtCut() const { return fGtuPtCut; };
+
+  void    SetHighPt(Float_t hpt) { fHighPt = hpt; };
+  Float_t GetHighPt() const { return fHighPt; };
 
  protected:
 
@@ -84,11 +85,13 @@ class AliTRDtrigParam : public TNamed {
   Int_t    fTCOn;                          // tail cancelation flag
   Int_t    fTCnexp;                        // number of exp in filter
   Int_t    fFilterType;                    // filter type (0=A - analog, 1=D - digital)
-  Float_t  fR1;                            // filter parameters (1 = long, 2 = short component)
-  Float_t  fR2;                            //
-  Float_t  fC1;                            //
-  Float_t  fC2;                            //
-  Float_t  fPedestal;                      //
+
+  // filter parameters (1 = long, 2 = short component)
+  Float_t  fR1;                            // time constant [microseconds]
+  Float_t  fR2;                            // time constant [microseconds]
+  Float_t  fC1;                            // weight
+  Float_t  fC2;                            // weight
+  Float_t  fPedestal;                      // ADC baseline
   Float_t  fADCnoise;                      // ADC noise (not contained in the digitizer)
 
   Float_t  fDeltaY;                        // Y (offset) matching window in the GTU
@@ -101,7 +104,9 @@ class AliTRDtrigParam : public TNamed {
 
   Float_t  fField;                         // Magnetic field
 
-  ClassDef(AliTRDtrigParam,1)                  // TRD trigger parameter class
+  Float_t  fHighPt;                        // High pt selection
+
+  ClassDef(AliTRDtrigParam,2)              // TRD trigger parameter class
 
 };
 

@@ -13,6 +13,8 @@
 #include "AliDetector.h"
 #include <TVirtualMC.h>
 
+#include "AliTRDTriggerL1.h"
+
 class TFile;
 class TLorentzVector;
 
@@ -85,6 +87,8 @@ class AliTRD : public AliDetector {
 
   virtual AliTRDsim *CreateTR()     = 0;
   virtual AliTRDsim *GetTR() const  = 0;
+
+  virtual AliTRDTriggerL1 *CreateTriggerDetector() const { return new AliTRDTriggerL1(); };
 
  protected:
 

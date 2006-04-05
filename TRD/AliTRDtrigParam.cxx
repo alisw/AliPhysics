@@ -15,7 +15,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD trigger parameters class                                                      //
+//                                                                           //
+//  TRD trigger parameters class                                             //
+//                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +55,7 @@ AliTRDtrigParam::AliTRDtrigParam():TNamed()
   fField      = 0.0;
   fLtuPtCut   = 0.0;
   fGtuPtCut   = 0.0;
+  fHighPt     = 0.0;
 
 }
 
@@ -85,6 +88,7 @@ AliTRDtrigParam::AliTRDtrigParam(const Text_t *name, const Text_t *title)
   fField      =  0.0;
   fLtuPtCut   =  2.3;
   fGtuPtCut   =  3.0;
+  fHighPt     = 10.0;
 
   // PASA.v.4
 
@@ -157,12 +161,14 @@ void AliTRDtrigParam::Copy(TObject &p) const
   ((AliTRDtrigParam &) p).fC1         = fC1;
   ((AliTRDtrigParam &) p).fC2         = fC2;
   ((AliTRDtrigParam &) p).fPedestal   = fPedestal;
+  ((AliTRDtrigParam &) p).fADCnoise   = fADCnoise;
   ((AliTRDtrigParam &) p).fDeltaY     = fDeltaY;
   ((AliTRDtrigParam &) p).fDeltaS     = fDeltaS;
   ((AliTRDtrigParam &) p).fXprojPlane = fXprojPlane;
   ((AliTRDtrigParam &) p).fField      = fField;
   ((AliTRDtrigParam &) p).fLtuPtCut   = fLtuPtCut;
   ((AliTRDtrigParam &) p).fGtuPtCut   = fGtuPtCut;
+  ((AliTRDtrigParam &) p).fHighPt     = fHighPt;
 
 }
 
