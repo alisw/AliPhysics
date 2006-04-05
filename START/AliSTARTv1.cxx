@@ -105,7 +105,7 @@ void AliSTARTv1::CreateGeometry()
   Float_t pstart[3]={4.29, 12.5,6.95};
   Float_t pinstart[3]={0.,1.6,6.5};
   Float_t ppmt[3]={0.,1.5,3.5};
-  Float_t ptop[3]={0.,1.,1.5};
+  Float_t ptop[3]={0.,1.,1.0};
   Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
   Float_t ptopout[3]={1.,1.01,1.5}; 
   Float_t pbot[3]={0.6,1.2,0.1};
