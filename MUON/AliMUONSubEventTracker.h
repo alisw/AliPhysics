@@ -30,6 +30,7 @@ public:
 
    Int_t   GetTotalLength() const {return fTotalLength;}
    Int_t   GetLength()      const {return fLength;}
+   Int_t   GetBufSize()     const {return fBufSize;}
    Int_t   GetBusPatchId()  const {return fBusPatchId;}
    Int_t   GetTriggerWord() const {return fTriggerWord;}
    UInt_t  GetData(Int_t n) const;
