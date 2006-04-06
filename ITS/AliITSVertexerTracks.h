@@ -25,7 +25,6 @@
  *                                                                           *
  *****************************************************************************/
 #include "AliITSVertexer.h"
-#include "AliVertex.h"
 
 #include <TObjArray.h>
 
@@ -50,6 +49,7 @@ class AliITSVertexerTracks : public AliITSVertexer {
   virtual ~AliITSVertexerTracks();
   // return vertex from the set of tracks in the tree
   AliESDVertex* VertexOnTheFly(TTree &trkTree);
+  AliVertex* VertexForSelectedTracks(AliESD *esdEvent,Int_t nofCand, Int_t *trkPos, Int_t opt);
   // computes the vertex for the current event
   virtual AliESDVertex* FindPrimaryVertexForCurrentEvent(Int_t evnumb);
   virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb){
@@ -66,22 +66,6 @@ class AliITSVertexerTracks : public AliITSVertexer {
   virtual void  FindVertices();
   // computes the vertex for each event and stores it in the ESD
   void FindVerticesESD();
-
-  // computes the vertex for selected tracks 
-  // (TrkPos=vector with track positions in ESD)
-  AliVertex* VertexForSelectedTracks(AliESD *esdEvent,Int_t nofCand, Int_t *trkPos, Int_t opt=1); 
-  // opt=1 (default) finds minimum-distance point among all the selected tracks
-  //       approximated as straight lines 
-  //       and uses errors on track parameters as weights
-  // opt=2 finds minimum-distance point among all the selected tracks
-  //       approximated as straight lines 
-  // opt=3 finds the average point among DCA points of all pairs of tracks
-  //       treated as helices
-  // opt=4 finds the average point among DCA points of all pairs of tracks
-  //       approximated as straight lines 
-  //       and uses errors on track parameters as weights
-  // opt=5 finds the average point among DCA points of all pairs of tracks
-  //       approximated as straight lines 
 
 
   virtual void  PrintStatus() const;
@@ -100,7 +84,6 @@ class AliITSVertexerTracks : public AliITSVertexer {
     AliITSVertexerTracks& operator=(const AliITSVertexerTracks& /* vtxr */);
   TFile    *fInFile;          // input file (with tracks)
   TFile    *fOutFile;         // output file for vertices
-  AliVertex  fSimpVert; // vertex after vertex finder
   Double_t  fNominalPos[2];   // initial knowledge on vertex position
   Int_t     fMinTracks;       // minimum number of tracks
   Double_t  fDCAcut;          // maximum DCA between 2 tracks used for vertex
@@ -115,17 +98,10 @@ class AliITSVertexerTracks : public AliITSVertexer {
   Int_t    PrepareTracks(AliESD* esdEvent,Int_t NofCand, Int_t *TrkPos);
   Double_t Prepare(AliITStrackV2* itstrack);
   void     TooFewTracks();
-  void     VertexFinder(Int_t OptUseWeights=0);
-  void     HelixVertexFinder();
-  void     StrLinVertexFinderMinDist(Int_t OptUseWeights=0);
-  static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t m[][3],Double_t *d);
-  static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t m[][3],Double_t *d);
-  static Double_t GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t *x0);
-  static Double_t GetDeterminant3X3(Double_t matr[][3]);
- 
+  //  void     VertexFinder(Int_t OptUseWeights=0);
   void     VertexFitter();
 
-  ClassDef(AliITSVertexerTracks,1) // 3D Vertexing with ITS tracks 
+  ClassDef(AliITSVertexerTracks,2) // 3D Vertexing with ITS tracks 
 };
 
 #endif

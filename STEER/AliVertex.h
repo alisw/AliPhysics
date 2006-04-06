@@ -20,6 +20,8 @@ class AliVertex : public TNamed {
   AliVertex();
   AliVertex(Double_t position[3],Double_t dispersion,
 		Int_t nContributors);
+  AliVertex(const AliVertex &source);
+  AliVertex &operator=(const AliVertex &source);
   virtual ~AliVertex();
 
 

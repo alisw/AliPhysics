@@ -44,6 +44,8 @@ class AliExternalTrackParam: public TObject {
   Double_t GetSigmaY2() const {return fC[0];}
   Double_t GetSigmaZ2() const {return fC[2];}
   Double_t GetX() const {return fX;}
+  Double_t GetY()    const {return fP[0];}
+  Double_t GetZ()    const {return fP[1];}
   Double_t GetAlpha() const {return fAlpha;}
   Double_t GetSign() const {return (fP[4]>0) ? 1 : -1;}
   Double_t GetP() const;

@@ -50,6 +50,30 @@ AliVertex::AliVertex(Double_t position[3],Double_t dispersion,
 
 }
 
+//--------------------------------------------------------------------------
+AliVertex::AliVertex(const AliVertex &source): TNamed(source) {
+  //
+  // Copy constructor
+  //
+  for(Int_t i=0;i<3;i++)fPosition[i] = source.fPosition[i];
+  fSigma = source.GetDispersion();
+  fNContributors = source.GetNContributors();
+}
+
+//--------------------------------------------------------------------------
+AliVertex &AliVertex::operator=(const AliVertex &source){
+  //
+  // assignment operator
+  //
+  if(&source == this) return *this;
+  this->SetName(source.GetName());
+  this->SetTitle(source.GetTitle());
+  for(Int_t i=0;i<3;i++)fPosition[i] = source.fPosition[i];
+  fSigma = source.GetDispersion();
+  fNContributors = source.GetNContributors();
+  return *this;
+}
+
 
 //--------------------------------------------------------------------------
 AliVertex::~AliVertex() {

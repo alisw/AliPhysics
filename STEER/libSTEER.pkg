@@ -16,7 +16,8 @@ AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx \
 AliGausCorr.cxx AliTrackReference.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx AliCollisionGeometry.cxx \
 AliMemoryWatcher.cxx \
-AliVertexer.cxx  AliV0vertexer.cxx AliCascadeVertexer.cxx\
+AliVertexer.cxx  AliVertexerTracks.cxx \
+AliV0vertexer.cxx AliCascadeVertexer.cxx\
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
 AliCDBEntry.cxx AliCDBId.cxx AliCDBMetaData.cxx \
 AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx\
