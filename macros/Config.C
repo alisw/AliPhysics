@@ -42,11 +42,6 @@
 #endif
 
 Float_t EtaToTheta(Float_t arg);
-enum PprGeo_t 
-{
-    kHoles, kNoHoles
-};
-static PprGeo_t geo = kHoles;
 
 void Config()
 {
@@ -221,11 +216,6 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-	if (geo == kHoles) {
-	    FRAME->SetHoles(1);
-	} else {
-	    FRAME->SetHoles(0);
-	}
     }
 
     if (iSHIL)
@@ -334,14 +324,8 @@ void Config()
 
         // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
         TRD->SetGasMix(1);
-	if (geo == kHoles) {
-	    // With hole in front of PHOS
-	    TRD->SetPHOShole();
-	    // With hole in front of RICH
-	    TRD->SetRICHhole();
-	}
-	    // Switch on TR
-	    AliTRDsim *TRDsim = TRD->CreateTR();
+	// Switch on TR
+	AliTRDsim *TRDsim = TRD->CreateTR();
     }
 
     if (iFMD)

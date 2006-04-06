@@ -100,11 +100,6 @@ const char* pprRunName[] = {
     "kFlow_2_2000", "kFlow_10_2000", "kFlow_6_2000", "kFlow_6_5000", "kHIJINGplus"
 };
 
-enum PprGeo_t 
-{
-    kHoles, kNoHoles
-};
-
 enum PprRad_t
 {
     kGluonRadiation, kNoGluonRadiation
@@ -119,7 +114,6 @@ enum PprMag_t
 // This part for configuration    
 //static PprRun_t srun = test50;
 static PprRun_t srun = kHIJINGplus;
-static PprGeo_t sgeo = kNoHoles;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
 static Int_t    sseed = 12345; //Set 0 to use the current time
@@ -260,14 +254,6 @@ void Config()
 	comment = comment.Append(" | Gluon Radiation Off");
     }
 
-    if (sgeo == kHoles)
-    {
-	comment = comment.Append(" | Holes for PHOS/RICH");
-	
-    } else {
-	comment = comment.Append(" | No holes for PHOS/RICH");
-    }
-
     printf("\n \n Comment: %s \n \n", comment.Data());
     
     
@@ -338,11 +324,6 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
-	if (sgeo == kHoles) {
-	    FRAME->SetHoles(1);
-	} else {
-	    FRAME->SetHoles(0);
-	}
     }
 
     if (iSHIL)
@@ -452,14 +433,8 @@ void Config()
 
         // Select the gas mixture (0: 97% Xe + 3% isobutane, 1: 90% Xe + 10% CO2)
         TRD->SetGasMix(1);
-	if (sgeo == kHoles) {
-	    // With hole in front of PHOS
-	    TRD->SetPHOShole();
-	    // With hole in front of RICH
-	    TRD->SetRICHhole();
-	}
-	    // Switch on TR
-	    AliTRDsim *TRDsim = TRD->CreateTR();
+	// Switch on TR
+	AliTRDsim *TRDsim = TRD->CreateTR();
     }
 
     if (iFMD)
