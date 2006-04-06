@@ -103,13 +103,8 @@ class AliMUONTriggerSegmentationV2 : public AliMUONVGeometryDESegmentation
   virtual TF1* CorrFunc(Int_t) const;
   virtual Int_t Sector(Float_t /*x*/, Float_t /*y*/);
 
- protected:
-
-    AliMUONTriggerSegmentationV2(const AliMUONTriggerSegmentationV2& rhs);
-    AliMUONTriggerSegmentationV2& operator=(const AliMUONTriggerSegmentationV2& rhs);
-
 public:
-    
+
     void GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc, Int_t& ixGlo, Int_t& iyGlo) const;
     void GetPadGlo2Loc(Int_t ixLoc, Int_t iyLoc, Int_t& ixGlo, Int_t& iyGlo) const;
     
@@ -121,16 +116,21 @@ public:
     
     Int_t ModuleColNum(Int_t ixGlo) const;
     
+protected:
+
+    AliMUONTriggerSegmentationV2(const AliMUONTriggerSegmentationV2& rhs);
+    AliMUONTriggerSegmentationV2& operator=(const AliMUONTriggerSegmentationV2& rhs);
+
 private:
-    Int_t fDetElemId;
-    AliMpPlaneType fPlaneType;
-    const AliMpTrigger* fSlat;
-    AliMpTriggerSegmentation* fSlatSegmentation;
+    Int_t fDetElemId;          // det elem Id
+    AliMpPlaneType fPlaneType; // plane type
+    const AliMpTrigger* fSlat; // slat
+    AliMpTriggerSegmentation* fSlatSegmentation; // mapping segmentation
 //    AliMpVPadIterator* fPadIterator; //!
     AliMpPad fCurrentPad; //!FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
-    Float_t fXhit; //!
-    Float_t fYhit; //!
-    Int_t fLineNumber; // Line number of that detection element (from 1 to 9)
+    Float_t fXhit;        //! x-position of hit
+    Float_t fYhit;        //! y-position of hit
+    Int_t fLineNumber;    // Line number of that detection element (from 1 to 9)
     
     ClassDef(AliMUONTriggerSegmentationV2,1) 
 };

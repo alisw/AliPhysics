@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// -------------------------------------
+// Class AliMUONTriggerSegmentation
+// -------------------------------------
+// Segmentation for MUON trigger stations using 
+// the mapping package
+
 #include "AliMUONTriggerSegmentationV2.h"
 
 #include "AliMpPCB.h"
@@ -105,14 +111,15 @@ fLineNumber(-1)
 //_____________________________________________________________________________
 AliMUONTriggerSegmentationV2::AliMUONTriggerSegmentationV2(const AliMUONTriggerSegmentationV2& rhs) : AliMUONVGeometryDESegmentation(rhs)
 {
+// Copy constructor
   AliFatal("Not implemented.");
 }
 
 //_____________________________________________________________________________
 AliMUONTriggerSegmentationV2::~AliMUONTriggerSegmentationV2() 
 { 
-  AliDebug(1,Form("this=%p",this));			
   // Destructor
+  AliDebug(1,Form("this=%p",this));			
 }
 
 //_____________________________________________________________________________
@@ -128,6 +135,8 @@ AliMUONTriggerSegmentationV2& AliMUONTriggerSegmentationV2::operator=(const AliM
 TF1*
 AliMUONTriggerSegmentationV2::CorrFunc(Int_t) const
 {
+// Not implemented
+
   AliFatal("Not implemented");
   return 0x0;
 }
@@ -137,6 +146,8 @@ Float_t
 AliMUONTriggerSegmentationV2::Distance2AndOffset(Int_t, Int_t, 
                                                  Float_t, Float_t, Int_t*)
 {
+// Not implemented
+
   AliFatal("Not implemented");
   return 0;
 }
@@ -145,6 +156,8 @@ AliMUONTriggerSegmentationV2::Distance2AndOffset(Int_t, Int_t,
 void
 AliMUONTriggerSegmentationV2::Draw(Option_t*)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
@@ -152,6 +165,8 @@ AliMUONTriggerSegmentationV2::Draw(Option_t*)
 Float_t
 AliMUONTriggerSegmentationV2::Dpx() const
 {
+// Not implemented
+
   AliFatal("Not Implemented");
   return 0.0;
 }
@@ -160,6 +175,8 @@ AliMUONTriggerSegmentationV2::Dpx() const
 Float_t
 AliMUONTriggerSegmentationV2::Dpy() const
 {
+// Not implemented
+
   AliFatal("Not Implemented");
   return 0.0;
 }
@@ -168,7 +185,9 @@ AliMUONTriggerSegmentationV2::Dpy() const
 Float_t
 AliMUONTriggerSegmentationV2::Dpx(int sectorCode) const
 {
-  Int_t ixLA, iyLA;
+// Get pad size in x
+
+ Int_t ixLA, iyLA;
   Decode(sectorCode,ixLA,iyLA);
   AliMpPad pad = fSlatSegmentation->PadByIndices(AliMpIntPair(ixLA,iyLA),kFALSE);
   if ( !pad.IsValid() ) return 0.0;
@@ -179,6 +198,8 @@ AliMUONTriggerSegmentationV2::Dpx(int sectorCode) const
 Float_t
 AliMUONTriggerSegmentationV2::Dpy(int sectorCode) const
 {
+// Get pad size in y
+
   Int_t ixLA, iyLA;
   Decode(sectorCode,ixLA,iyLA);
   AliMpPad pad = fSlatSegmentation->PadByIndices(AliMpIntPair(ixLA,iyLA),kFALSE);
@@ -188,10 +209,11 @@ AliMUONTriggerSegmentationV2::Dpy(int sectorCode) const
 
 //_____________________________________________________________________________
 void
-AliMUONTriggerSegmentationV2::FirstPad(Float_t /*xhit*/, Float_t /*yhit*/, 
-																				 Float_t /*zhit*/, 
-																				 Float_t /*dx*/, Float_t /*dy*/)
+AliMUONTriggerSegmentationV2::FirstPad(Float_t /*xhit*/, Float_t /*yhit*/, Float_t /*zhit*/,
+                                       Float_t /*dx*/, Float_t /*dy*/)
 {
+// Not implemented
+
   AliFatal("Not implemented");
 }
 
@@ -199,6 +221,8 @@ AliMUONTriggerSegmentationV2::FirstPad(Float_t /*xhit*/, Float_t /*yhit*/,
 Float_t
 AliMUONTriggerSegmentationV2::GetAnod(Float_t) const
 {
+// Not implemented
+
   AliFatal("Not implemented");
   return 0.0;
 }
@@ -207,6 +231,8 @@ AliMUONTriggerSegmentationV2::GetAnod(Float_t) const
 AliMUONGeometryDirection
 AliMUONTriggerSegmentationV2::GetDirection()
 {
+// Not implemented
+
   //AliWarning("Not Implemented");
   return kDirUndefined;
 }
@@ -225,6 +251,8 @@ AliMUONTriggerSegmentationV2::GetMpSegmentation() const
 void 
 AliMUONTriggerSegmentationV2::GetNParallelAndOffset(Int_t,Int_t,Int_t*,Int_t*)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
@@ -233,6 +261,8 @@ void
 AliMUONTriggerSegmentationV2::GetPadC(Int_t ix, Int_t iy, 
                                       Float_t& x, Float_t& y, Float_t& z)
 {
+// Transform from pad to real coordinates
+
   z = 0;
   GetPadC(ix,iy,x,y);
 }
@@ -242,6 +272,8 @@ void
 AliMUONTriggerSegmentationV2::GetPadC(Int_t ixGlo, Int_t iyGlo, 
                                       Float_t& x, Float_t& y)
 {
+// Transform from pad to real coordinates
+
   Int_t ixLA,iyLA;
   IGlo2ILoc(ixGlo,iyGlo,ixLA,iyLA);
   AliMpPad pad = fSlatSegmentation->PadByIndices(AliMpIntPair(ixLA,iyLA),kTRUE);
@@ -254,6 +286,8 @@ void
 AliMUONTriggerSegmentationV2::GetPadI(Float_t x, Float_t y, Float_t,
                                       Int_t& ix, Int_t& iy)
 {
+//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
+
   GetPadI(x,y,ix,iy);
 }
 
@@ -262,6 +296,8 @@ void
 AliMUONTriggerSegmentationV2::GetPadI(Float_t x, Float_t y,
                                       Int_t& ixGlo, Int_t& iyGlo)
 {
+//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
+
   AliDebug(2,Form("%s x=%e y=%e ixGlo,iyGlo=%d,%d\n",
                   fSlatSegmentation->GetName(),
                   x,y,ixGlo,iyGlo));
@@ -351,13 +387,17 @@ AliMUONTriggerSegmentationV2::GetPadGlo2Loc(Int_t ixGlo, Int_t iyGlo,
 void 
 AliMUONTriggerSegmentationV2::GiveTestPoints(Int_t&,Float_t*,Float_t*) const
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONTriggerSegmentationV2::HasPad(Float_t x, Float_t y, Float_t)
+AliMUONTriggerSegmentationV2::HasPad(Float_t x, Float_t y, Float_t /*z*/)
 {
+// Returns true if a pad exists in the given position
+
   //
   // Well, 2 implementations are possible here
   // Either reuse HasPad(int,int), or get it from scratch using
@@ -382,6 +422,8 @@ AliMUONTriggerSegmentationV2::HasPad(Float_t x, Float_t y, Float_t)
 Bool_t
 AliMUONTriggerSegmentationV2::HasPad(Int_t ixGlo, Int_t iyGlo)
 {
+// Returns true if a pad with given indices exists
+
   Int_t ixLA, iyLA;
   IGlo2ILoc(ixGlo,iyGlo,ixLA,iyLA);
   return fSlatSegmentation->HasPad(AliMpIntPair(ixLA,iyLA));
@@ -392,6 +434,8 @@ void
 AliMUONTriggerSegmentationV2::IGlo2ILoc(Int_t ixGlo, Int_t iyGlo,
                                         Int_t& ixLA, Int_t& iyLA) const
 {
+// FIXME: add comment
+
   Int_t ixPC, iyPC;
   GetPadGlo2Loc(ixGlo,iyGlo,ixPC,iyPC);
   PC2LA(ixPC,iyPC,ixLA,iyLA);
@@ -402,6 +446,8 @@ void
 AliMUONTriggerSegmentationV2::ILoc2IGlo(Int_t ixLA, Int_t iyLA,
                                         Int_t& ixGlo, Int_t& iyGlo) const
 {
+// FIXME: add comment
+
   Int_t ixPC, iyPC;
   LA2PC(ixLA,iyLA,ixPC,iyPC);
   GetPadLoc2Glo(ixPC,iyPC,ixGlo,iyGlo);
@@ -475,6 +521,9 @@ void AliMUONTriggerSegmentationV2::IntegrationLimits(Float_t& x1,
 Int_t 
 AliMUONTriggerSegmentationV2::Ix()
 {
+// Current pad cursor during disintegration
+// x, y-coordinate
+
   if ( fCurrentPad.IsValid() )
   {
     Int_t ixGlo,iyGlo;
@@ -489,6 +538,9 @@ AliMUONTriggerSegmentationV2::Ix()
 Int_t 
 AliMUONTriggerSegmentationV2::Iy()
 {
+// Current pad cursor during disintegration
+// x, y-coordinate
+
   if ( fCurrentPad.IsValid() )
   {
     Int_t ixGlo,iyGlo;
@@ -535,7 +587,9 @@ AliMUONTriggerSegmentationV2::LA2PC(Int_t ixLA, Int_t iyLA,
 Int_t
 AliMUONTriggerSegmentationV2::LineNumber() const
 {
-  return 10-fLineNumber;
+// FIXME: add comment
+
+ return 10-fLineNumber;
 }
 
 //_____________________________________________________________________________
@@ -551,6 +605,8 @@ AliMUONTriggerSegmentationV2::ModuleColNum(Int_t ixGlo) const
 Int_t
 AliMUONTriggerSegmentationV2::MorePads()
 {
+// Not implemented
+
   AliFatal("Not implemented");
   return 0;
 }
@@ -587,6 +643,8 @@ void AliMUONTriggerSegmentationV2::Neighbours(Int_t /*iX*/, Int_t /*iY*/,
 void
 AliMUONTriggerSegmentationV2::NextPad()
 {
+// Not implemented
+
   AliFatal("Not implemented");
 }
 
@@ -594,6 +652,9 @@ AliMUONTriggerSegmentationV2::NextPad()
 Int_t
 AliMUONTriggerSegmentationV2::Npx() const
 {
+// Maximum number of Pads in x
+// hard coded for the time being
+
   return 124;// FIXME: this should not have to be done, if only we'd stick 
   // to a local (ix,iy) convention !!! 
   // return fSlatSegmentation->MaxPadIndexX()+1;
@@ -603,6 +664,9 @@ AliMUONTriggerSegmentationV2::Npx() const
 Int_t
 AliMUONTriggerSegmentationV2::Npy() const
 {
+// Maximum number of Pads in y
+// hard coded for the time being
+
   return 64;
 //  return fSlatSegmentation->MaxPadIndexY()+1;
 }
@@ -641,6 +705,8 @@ AliMUONTriggerSegmentationV2::PC2LA(Int_t ixPC, Int_t iyPC,
 void
 AliMUONTriggerSegmentationV2::Print(Option_t* opt) const
 {
+// Printing
+
   TString sopt(opt);
   
   cout << "DetElemId=" << fDetElemId << " PlaneType=" 
@@ -659,6 +725,8 @@ AliMUONTriggerSegmentationV2::Print(Option_t* opt) const
 Int_t
 AliMUONTriggerSegmentationV2::Sector(Int_t ix, Int_t iy)
 {
+// Calculate sector from pad coordinates
+
   Int_t ixLA, iyLA;
   IGlo2ILoc(ix,iy,ixLA,iyLA);
   AliMpPad pad = fSlatSegmentation->PadByIndices(AliMpIntPair(ixLA,iyLA),kFALSE);
@@ -684,6 +752,8 @@ AliMUONTriggerSegmentationV2::Sector(Int_t ix, Int_t iy)
 Int_t
 AliMUONTriggerSegmentationV2::Sector(Float_t, Float_t)
 {
+// Not implemented
+
   AliFatal("Not implemented");
   return 0;
 }
@@ -692,6 +762,8 @@ AliMUONTriggerSegmentationV2::Sector(Float_t, Float_t)
 void
 AliMUONTriggerSegmentationV2::SetCorrFunc(Int_t,TF1*)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
@@ -699,6 +771,8 @@ AliMUONTriggerSegmentationV2::SetCorrFunc(Int_t,TF1*)
 void
 AliMUONTriggerSegmentationV2::SetDAnod(float)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
@@ -706,6 +780,10 @@ AliMUONTriggerSegmentationV2::SetDAnod(float)
 void
 AliMUONTriggerSegmentationV2::SetHit(Float_t x, Float_t y)
 {
+// Set hit position
+// Sets virtual hit position, needed for evaluating pad response 
+// outside the tracking program 
+
   fXhit = x;
   fYhit = y;
 	
@@ -729,6 +807,10 @@ AliMUONTriggerSegmentationV2::SetHit(Float_t x, Float_t y)
 void
 AliMUONTriggerSegmentationV2::SetHit(Float_t x, Float_t y, Float_t)
 {
+// Set hit position
+// Sets virtual hit position, needed for evaluating pad response 
+// outside the tracking program 
+
   SetHit(x,y);
 }
 
@@ -736,6 +818,10 @@ AliMUONTriggerSegmentationV2::SetHit(Float_t x, Float_t y, Float_t)
 void
 AliMUONTriggerSegmentationV2::SetPad(Int_t ix, Int_t iy)
 {
+// Set pad position.
+// Sets virtual pad coordinates, needed for evaluating pad response 
+// outside the tracking program.
+
   Int_t ixLA, iyLA;
   IGlo2ILoc(ix,iy,ixLA,iyLA);
   fCurrentPad = fSlatSegmentation->PadByIndices(AliMpIntPair(ixLA,iyLA),kTRUE);
@@ -749,6 +835,8 @@ AliMUONTriggerSegmentationV2::SetPad(Int_t ix, Int_t iy)
 void
 AliMUONTriggerSegmentationV2::SetPadSize(float,float)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
@@ -756,6 +844,8 @@ AliMUONTriggerSegmentationV2::SetPadSize(float,float)
 Int_t 
 AliMUONTriggerSegmentationV2::SigGenCond(Float_t,Float_t,Float_t)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
   return 0;
 }
@@ -764,6 +854,8 @@ AliMUONTriggerSegmentationV2::SigGenCond(Float_t,Float_t,Float_t)
 void 
 AliMUONTriggerSegmentationV2::SigGenInit(Float_t,Float_t,Float_t)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
