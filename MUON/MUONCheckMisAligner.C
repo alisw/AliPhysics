@@ -48,7 +48,7 @@
 
 */
 
-void MUONCheckMisAligner(Double_t cartmisalig = 1.0, Double_t angmisalig = 10.)
+void MUONCheckMisAligner(Double_t cartmisalig = 0.1, Double_t angmisalig = 1.)
 {
   
   AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
@@ -63,7 +63,7 @@ void MUONCheckMisAligner(Double_t cartmisalig = 1.0, Double_t angmisalig = 10.)
 
   // Apply misAlignment via AliRoot framework
   TGeoManager::Import("geometry.root");
-  AliRun::ApplyDisplacements(
+  AliRun::ApplyAlignObjsToGeom(
      const_cast<TClonesArray*>(newTransform->GetMisAlignmentData()));
   // Save new geometry file
   gGeoManager->Export("geometry2.root");
