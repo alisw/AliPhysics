@@ -154,8 +154,8 @@ Int_t AliESDComparison(const Char_t *dir=".") {
          UInt_t status=AliESDtrack::kESDpid;
          status|=AliESDtrack::kITSpid; 
          status|=AliESDtrack::kTPCpid; 
-         //status|=AliESDtrack::kTRDpid; 
-         //status|=AliESDtrack::kTOFpid; 
+         status|=AliESDtrack::kTRDpid; 
+         status|=AliESDtrack::kTOFpid; 
 
         if ((t->GetStatus()&status) == status) {
            nsel++;
