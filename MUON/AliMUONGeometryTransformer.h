@@ -40,6 +40,8 @@ class AliMUONGeometryTransformer : public TObject
     void  AddModuleTransformer(AliMUONGeometryModuleTransformer* transformer);
     void  AddMisAlignModule(Int_t moduleId, const TGeoHMatrix& matrix);
     void  AddMisAlignDetElement(Int_t detElemId, const TGeoHMatrix& matrix);
+    
+    TClonesArray* CreateZeroAlignmentData() const;			       
 
     // IO
     //

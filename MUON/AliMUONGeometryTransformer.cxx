@@ -865,6 +865,61 @@ void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId,
 }
 
 //_____________________________________________________________________________
+TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
+{
+/// Create array with zero alignment data
+			       
+  // Create array for zero-alignment objects
+  TClonesArray* array = new TClonesArray("AliAlignObjMatrix", 200);
+  TClonesArray& refArray =*array;
+  array->SetOwner(true);
+
+  // Identity matrix
+  TGeoHMatrix matrix;
+
+  // Modules 
+  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
+    AliMUONGeometryModuleTransformer* module 
+      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
+
+    TString path = module->GetVolumePath(); 
+    Int_t moduleId = module->GetModuleId();
+  
+    // Align object ID
+    Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, moduleId); 
+
+    // Create mis align matrix
+    Int_t pos = array->GetEntriesFast();
+    new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, matrix);
+  }     
+
+  // Detection elements
+  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
+    AliMUONGeometryModuleTransformer* moduleTransformer 
+      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
+    AliMUONGeometryStore* detElements 
+      = moduleTransformer->GetDetElementStore();    
+
+    for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+      AliMUONGeometryDetElement* detElement
+        = (AliMUONGeometryDetElement*)detElements->GetEntry(j);
+	
+      TString path = detElement->GetVolumePath(); 
+      Int_t detElemId = detElement->GetId();
+  
+      // Align object ID
+      Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, detElemId); 
+
+      // Create mis align matrix
+      Int_t pos = array->GetEntriesFast();
+      new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, matrix);
+    }
+  }
+  
+  return array;
+}       
+
+//_____________________________________________________________________________
 void AliMUONGeometryTransformer::Global2Local(Int_t detElemId,
                  Float_t xg, Float_t yg, Float_t zg, 
                  Float_t& xl, Float_t& yl, Float_t& zl) const
