@@ -16,7 +16,8 @@
 // $Id$
 //
 // Macro for generating the geometry data files:
-// (volpaths.dat, transform.dat, svmap.dat).
+// (volpath.dat, transform.dat, svmap.dat)
+// and local CDB storage with zero-misalignment
 // To be run from aliroot:
 // .x MUONGenerateGeometryData.C
 //
@@ -27,7 +28,8 @@
 
 void MUONGenerateGeometryData(Bool_t volpaths = true,
                               Bool_t transforms = true, 
-                              Bool_t svmaps = true)
+                              Bool_t svmaps = true,
+			      Bool_t zeroAlign = true)
 {
   // Initialize
   gAlice->Init("$ALICE_ROOT/MUON/Config.C");
@@ -56,5 +58,25 @@ void MUONGenerateGeometryData(Bool_t volpaths = true,
   if (svmaps) {
     cout << "Generating svmaps file ..." << endl;
     builder->WriteSVMaps();
+  }  
+
+  if (zeroAlign) {
+    cout << "Generating CDB storage with zero misalignment data ..." << endl;
+   
+    // Create zero alignment data
+    TClonesArray* array 
+      = builder->GetTransformer()->CreateZeroAlignmentData();
+   
+    // CDB manager
+    AliCDBManager* cdbManager = AliCDBManager::Instance();
+    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  
+    AliCDBMetaData* cdbData = new AliCDBMetaData();
+    cdbData->SetResponsible("Dimuon Offline project");
+    cdbData->SetComment("MUON alignment objects for ideal geometry");
+    AliCDBId id("MUON/Align/Data", 0, 0); 
+    cdbManager->Put(array, id, cdbData);
+    
+    delete array;
   }  
 }  
