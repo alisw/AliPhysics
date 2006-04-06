@@ -36,7 +36,7 @@
 #include "AliLog.h"
 
 //____________________________________________________________________
-ClassImp(AliITSMultReconstructor);
+ClassImp(AliITSMultReconstructor)
 
 //____________________________________________________________________
 AliITSMultReconstructor::AliITSMultReconstructor() {
