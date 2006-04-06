@@ -128,6 +128,9 @@ Int_t AliESDComparison(const Char_t *dir=".") {
 
    //****** Tentative particle type "concentrations"
    Double_t c[5]={0.01, 0.01, 0.85, 0.10, 0.05};
+   //Double_t c[5]={0.2, 0.2, 0.2, 0.2, 0.2};
+   AliPID::SetPriors(c);
+
 
    //******* The loop over events
    Int_t e=0;
@@ -151,8 +154,8 @@ Int_t AliESDComparison(const Char_t *dir=".") {
          UInt_t status=AliESDtrack::kESDpid;
          status|=AliESDtrack::kITSpid; 
          status|=AliESDtrack::kTPCpid; 
-         status|=AliESDtrack::kTRDpid; 
-         status|=AliESDtrack::kTOFpid; 
+         //status|=AliESDtrack::kTRDpid; 
+         //status|=AliESDtrack::kTOFpid; 
 
         if ((t->GetStatus()&status) == status) {
            nsel++;
@@ -167,15 +170,17 @@ Int_t AliESDComparison(const Char_t *dir=".") {
 
            Double_t r[10]; t->GetESDpid(r);
            //t->GetTRDpid(r);
+           //t->GetTPCpid(r);
 
-           Double_t rcc=0.;
-           Int_t i;
-           for (i=0; i<AliESDtrack::kSPECIES; i++) rcc+=(c[i]*r[i]);
-           if (rcc==0.) continue;
+           AliPID pid(r);
 
-	   //Here we apply Bayes' formula
            Double_t w[10];
-           for (i=0; i<AliESDtrack::kSPECIES; i++) w[i]=c[i]*r[i]/rcc;
+           w[0]=pid.GetProbability(AliPID::kElectron);
+           w[1]=pid.GetProbability(AliPID::kMuon);
+           w[2]=pid.GetProbability(AliPID::kPion);
+           w[3]=pid.GetProbability(AliPID::kKaon);
+           w[4]=pid.GetProbability(AliPID::kProton);
+
 
            if (TMath::Abs(code)==2212) prR->Fill(p);
            if (w[4]>w[3] && w[4]>w[2] && w[4]>w[1] && w[4]>w[0]) {//proton
@@ -192,7 +197,7 @@ Int_t AliESDComparison(const Char_t *dir=".") {
            }
 
 	   if (TMath::Abs(code)==211) piR->Fill(p);
-	   if (w[2]>w[3] && w[2]>w[4] && w[2]>w[1] && w[2]>w[0]) {//pion
+	   if (w[2]>w[4] && w[2]>w[3] && w[2]>w[0] && w[2]>w[1]) {//pion
 	      pisel++;
 	      piG->Fill(p);
 	      if (TMath::Abs(code)!=211) piF->Fill(p);
