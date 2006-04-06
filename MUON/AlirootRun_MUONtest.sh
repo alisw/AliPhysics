@@ -19,7 +19,7 @@ aliroot -b  >& testSim.out << EOF
 gRandom->SetSeed($SEED);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetWriteRawData("MUON");
-MuonSim.Run($NEVENTS)
+MuonSim.Run($NEVENTS);
 .q
 EOF
 
@@ -27,19 +27,19 @@ echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF
 gRandom->SetSeed($SEED);
-AliReconstruction MuonRec("galice.root")
+AliReconstruction MuonRec("galice.root");
 MuonRec.SetInput("$FULLPATH/");
-MuonRec.SetRunTracking("")
-MuonRec.SetRunVertexFinder(kFALSE)
-MuonRec.SetRunLocalReconstruction("MUON")
-MuonRec.SetFillESD("MUON")
+MuonRec.SetRunTracking("");
+MuonRec.SetRunVertexFinder(kFALSE);
+MuonRec.SetRunLocalReconstruction("MUON");
+MuonRec.SetFillESD("MUON");
 MuonRec.Run();
 .q
 EOF
 
 echo "Running Trigger efficiency  ..."
 aliroot -b >& testTriggerResults.out << EOF
-.L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C++
+.L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
 MUONTriggerEfficiency();
 .q
 EOF
@@ -47,22 +47,23 @@ EOF
 echo "Running efficiency  ..."
 
 aliroot -b >& testResults.out << EOF
-.L $ALICE_ROOT/MUON/MUONefficiency.C++
+.L $ALICE_ROOT/MUON/MUONefficiency.C+
 // no argument assumes Upsilon but MUONefficiency(443) works on Jpsi
 MUONefficiency();
 .q
 EOF
 
-echo "Running dumps ..."
-
 if [ "$NEVENTS" -le 20 ]; then
 
+echo "Running dumps ..."
+
 aliroot -b << EOF
-.L $ALICE_ROOT/MUON/MUONCheck.C++
+.L $ALICE_ROOT/MUON/MUONCheck.C+
 MUONdigits(); > check.digits
 MUONrecpoints(); > check.recpoints
 MUONrectracks(); > check.rectracks
 MUONrectrigger(); > check.rectrigger
+.q
 EOF
 
 fi

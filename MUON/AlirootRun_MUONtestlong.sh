@@ -23,7 +23,7 @@ if [ ! -d $CDBDIRECTORY"/MUON" ]; then
 echo "Generating Condition Database in directory $CDBDIRECTORY. This may take a while, so please be patient..."
 
 aliroot -b >& testGenerateCalibrations.out << EOF
-.L $ALICE_ROOT/MUON/MUONCDB.C++
+.L $ALICE_ROOT/MUON/MUONCDB.C+
 gRandom->SetSeed($SEED);
 generateCalibrations("$CDB",true);
 .q
@@ -41,7 +41,7 @@ aliroot -b >& testSim.out << EOF
 gRandom->SetSeed($SEED);
 AliCDBManager::Instance()->SetDefaultStorage("$CDB");
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
-MuonSim.Run($NEVENTS) 
+MuonSim.Run($NEVENTS); 
 .q
 EOF
 
@@ -50,19 +50,19 @@ echo "Running reconstruction  ..."
 aliroot -b >& testReco.out << EOF 
 gRandom->SetSeed($SEED);
 AliCDBManager::Instance()->SetDefaultStorage("$CDB");
-AliReconstruction MuonRec("galice.root") 
-MuonRec.SetRunTracking("")
-MuonRec.SetRunVertexFinder(kFALSE)
-MuonRec.SetRunLocalReconstruction("MUON")
-MuonRec.SetFillESD("MUON")
-MuonRec.Run() 
+AliReconstruction MuonRec("galice.root"); 
+MuonRec.SetRunTracking("");
+MuonRec.SetRunVertexFinder(kFALSE);
+MuonRec.SetRunLocalReconstruction("MUON");
+MuonRec.SetFillESD("MUON");
+MuonRec.Run(); 
 .q
 EOF
 
 echo "Running Trigger efficiency  ..."
 
 aliroot -b >& testTriggerResults.out << EOF
-.L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C++
+.L $ALICE_ROOT/MUON/MUONTriggerEfficiency.C+
 MUONTriggerEfficiency();
 .q
 EOF
@@ -70,7 +70,7 @@ EOF
 echo "Running efficiency  ..."
 
 aliroot -b >& testEfficiency.out << EOF 
-.L $ALICE_ROOT/MUON/MUONefficiency.C++
+.L $ALICE_ROOT/MUON/MUONefficiency.C+
 // no argument assumes Upsilon but MUONefficiency(443) handles Jpsi
 MUONefficiency();
 .q
