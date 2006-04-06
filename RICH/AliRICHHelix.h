@@ -82,23 +82,24 @@ Int_t AliRICHHelix::RichIntersect(AliRICHParam *pParam)
 // Searchs for intersection of this helix with all RICH chambers, returns chamber number or 0 if no intersection
 // On exit fPosRad contain position of intersection in radiator LORS (cm)    
 //         fPosPc  contains the same for photocathode  
-  for(Int_t iChamN=1;iChamN<=AliRICHParam::kNch;iChamN++){//chamber loop
-    if(Intersection(pParam->Center(iChamN,AliRICHParam::kRad),pParam->Norm(iChamN))){//there is intersection with radiator plane
-      fPosRad=pParam->Mars2Lors(iChamN,fX,AliRICHParam::kRad);//position on radiator plane
+  for(Int_t iCh=1;iCh<=AliRICHParam::kNch;iCh++){//chambers loop
+    TVector3 norm =pParam->Lors2MarsVec(iCh,TVector3(0,0,1));
+    if(Intersection(pParam->Lors2Mars(iCh,0,0,AliRICHParam::kRad),norm)){//there is intersection with radiator plane
+      fPosRad=pParam->Mars2Lors(iCh,fX,AliRICHParam::kRad);//position on radiator plane
       if(pParam->IsAccepted(fPosRad)){//intersection within radiator (even if in dead zone)
         
-        if(Intersection(pParam->Center(iChamN,AliRICHParam::kPc),pParam->Norm(iChamN))){//there is intersection with photocathode
-          fPosPc=pParam->Mars2Lors(iChamN,fX,AliRICHParam::kPc);//position on radiator plane
+        if(Intersection(pParam->Lors2Mars(iCh,0,0,AliRICHParam::kPc),norm)){//there is intersection with photocathode
+          fPosPc=pParam->Mars2Lors(iCh,fX,AliRICHParam::kPc);//position on radiator plane
           if(pParam->IsAccepted(fPosPc)){//intersection within pc (even if in dead zone)
             
-            fPloc=pParam->Mars2LorsVec(iChamN,fP);//trasform p to local system
-            return iChamN;
+            fPloc=pParam->Mars2LorsVec(iCh,fP);//trasform p to local system
+            return iCh;
           }//if inside PC
         }//if intersects PC
         
       }//if inside radiator
     }//if for radiator       
-  }//chamber loop
+  }//chambers loop
   return 0;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

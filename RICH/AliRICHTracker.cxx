@@ -60,6 +60,7 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
   AliDebug(1,Form("Start with %i tracks",iNtracks));
   AliRICH *pRich=((AliRICH*)gAlice->GetDetector("RICH"));  
   AliRICHRecon recon;
+  AliPID pid; // needed to retrive all the PID info
    
   for(Int_t iTrk=0;iTrk<iNtracks;iTrk++){//ESD tracks loop
     AliESDtrack *pTrack = pESD->GetTrack(iTrk);// get next reconstructed track    
@@ -95,31 +96,33 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
 //here comes PID calculations    
     if(pTrack->GetRICHsignal()>0) {
       AliDebug(1,Form("Start to assign the probabilities"));
-      Double_t sigmaPID[AliPID::kSPECIES];
-      Double_t richPID[AliPID::kSPECIES];
-      for (Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) {
-        sigmaPID[iPart] = 0;
-        fErrPar[iPart] = 0;
-        for(Int_t iphot=0;iphot<pRich->Clus(iChamber)->GetEntries();iphot++) {
-          recon.SetPhotonIndex(iphot);
+      Double_t sigmaPID[AliPID::kSPECIES];  Double_t richPID[AliPID::kSPECIES];
+      for (Int_t iPid=0;iPid<AliPID::kSPECIES;iPid++){//PID loop
+        sigmaPID[iPid] = 0; fErrPar[iPid] = 0;
+        for(Int_t iCkov=0;iCkov<pRich->Clus(iChamber)->GetEntries();iCkov++){//Ckov candidates loop ????????????? somehting fomr AliRICHRecon must be
+          recon.SetPhotonIndex(iCkov);
           if(recon.GetPhotonFlag() == 2) {
-            Double_t theta_g=recon.GetTrackTheta();
-            Double_t phi_g=(recon.GetPhiPoint()-recon.GetTrackPhi());
-            Double_t sigma2 = AliRICHParam::Instance()->SigmaSinglePhoton(iPart,pTrack->GetP(),theta_g,phi_g).Mag2(); 
-            if(sigma2>0) sigmaPID[iPart] += 1/sigma2;
+            Double_t thetaCkov=0.6; //??????????????????
+            Double_t   phiCkov=0.6; //??????????????????
+            Double_t  thetaTrk=recon.GetTrackTheta();
+            Double_t    phiTrk=(recon.GetPhiPoint()-recon.GetTrackPhi());
+            Double_t     beta =pTrack->GetP()/TMath::Sqrt((pTrack->GetP()*pTrack->GetP()+pid.ParticleMass(iPid)*pid.ParticleMass(iPid)));
+            Double_t   sigma2 = AliRICHParam::SigmaSinglePhotonFormula(thetaCkov,phiCkov,thetaTrk,phiTrk,beta);
+            if(sigma2>0) sigmaPID[iPid] += 1/sigma2;
           }
-        }
-        if (sigmaPID[iPart]>0)
-          sigmaPID[iPart] *= (Double_t)(iMipId-recon.GetPhotBKG())/(Double_t)(iMipId); // n total phots, m are background...the sigma are scaled..
-          if(sigmaPID[iPart]>0) sigmaPID[iPart] = 1/TMath::Sqrt(sigmaPID[iPart])*0.001; // sigma from parametrization are in mrad...
-          else                  sigmaPID[iPart] = 0;
-          fErrPar[iPart]=sigmaPID[iPart];
-        AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPart),sigmaPID[iPart]));
+        }//Ckov candidates loop
+        
+        if (sigmaPID[iPid]>0)
+          sigmaPID[iPid] *= (Double_t)(iMipId-recon.GetPhotBKG())/(Double_t)(iMipId); // n total phots, m are background...the sigma are scaled..
+          if(sigmaPID[iPid]>0) sigmaPID[iPid] = 1/TMath::Sqrt(sigmaPID[iPid])*0.001; // sigma from parametrization are in mrad...
+          else                  sigmaPID[iPid] = 0;
+          fErrPar[iPid]=sigmaPID[iPid];
+        AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPid),sigmaPID[iPid]));
       }
       CalcProb(pTrack->GetRICHsignal(),pTrack->GetP(),sigmaPID,richPID);
       pTrack->SetRICHpid(richPID);         
       AliDebug(1,Form("PROBABILITIES ---> %f - %f - %f - %f - %f",richPID[0],richPID[1],richPID[2],richPID[3],richPID[4]));
-    }    
+    }//if(pTrack->GetRICHsignal())    
   }//ESD tracks loop
   AliDebug(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;

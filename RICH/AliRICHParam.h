@@ -39,16 +39,12 @@ public:
   static void     DrawSectors();
 //flags staff         
   static inline AliRICHParam* Instance();                                //pointer to AliRICHParam singleton
-  static                void     SetWireSag(Bool_t a)               {fgIsWireSag=a;}
-  static                Bool_t   IsWireSag()                        {return fgIsWireSag;}
-  static                   void     SetResolveClusters(Bool_t a)    {fgIsResolveClusters=a;}
-  static                   Bool_t   IsResolveClusters()             {return fgIsResolveClusters;}
   static        Int_t      Stack(Int_t evt=-1,Int_t tid=-1);              //Print stack info for event and tid
   static        Int_t      StackCount(Int_t pid,Int_t evt);               //Counts stack particles of given sort in given event  
   static inline Double_t   ErrLoc                  (Double_t thetaC,Double_t phiC,Double_t thetaT,Double_t phiT,Double_t beta);
   static inline Double_t   ErrGeom                 (Double_t thetaC,Double_t phiC,Double_t thetaT,Double_t phiT,Double_t beta);
   static inline Double_t   ErrCrom                 (Double_t thetaC,Double_t phiC,Double_t thetaT,Double_t phiT,Double_t beta);
-  static inline TVector3   SigmaSinglePhotonFormula(Double_t thetaC,Double_t phiC,Double_t thetaT,Double_t phiT,Double_t beta);
+  static inline Double_t   SigmaSinglePhotonFormula(Double_t thetaC,Double_t phiC,Double_t thetaT,Double_t phiT,Double_t beta);
 //Geometrical properties  
   static        Int_t      NpadsX      ()   {return kNpadsX;}                           //number of pads along X in chamber
   static        Int_t      NpadsY      ()   {return kNpadsY;}                           //number of pads along Y in chamber
@@ -76,11 +72,12 @@ public:
   
 //trasformation methodes
          inline TVector3   Lors2Mars     (Int_t c,Double_t x,Double_t y,Int_t p=kPc); //LORS->MARS transform of point [cm] for chamber c and plane p
+         inline TVector3   Lors2MarsVec  (Int_t c,const TVector3 &p                ); //LORS->MARS transform of vector for chamber c
          inline TVector2   Mars2Lors     (Int_t c,const TVector3 &x    ,Int_t p=kPc); //MARS->LORS transform of point [cm] for chamber c and plane p    
+         inline TVector3   Mars2LorsVec  (Int_t c,const TVector3 &p                ); //MARS->LORS transform of vector for chamber c
   
   static inline TVector3   Lors2MarsOld  (Int_t c,Double_t x,Double_t y,Int_t p); //LORS->MARS transform of position (cm) for chamber c and plane p
   static inline TVector2   Mars2LorsOld  (Int_t c,const TVector3 &x,Int_t p    ); //MARS->LORS transform of position (cm) for chamber c and plane p    
-  static inline TVector3   Mars2LorsVec  (Int_t c,const TVector3 &p            ); //MARS->LORS transform of vector for chamber c
   static inline TVector3   Center        (Int_t c,Int_t p                      ); //Center of plane p of chamber c in MARS (cm)
   static inline TVector3   Norm          (Int_t c                              ); //Norm vector to the chamber c in MARS (cm)
   static inline TGeoMatrix*Matrix        (Int_t iCh, Int_t iPlane              ); //TGeoMatrix for the given chamber plain
@@ -103,16 +100,13 @@ public:
   static        Bool_t     IsAccepted    (const TVector2 &x2             ){return ( x2.X()>=0 && x2.X()<=PcSizeX() && x2.Y()>=0 && x2.Y()<=PcSizeY() ) ? kTRUE:kFALSE;}
 //optical properties methodes  
   static        Float_t    EckovMean     (                               ){return 6.766e-9;}                          //mean Ckov energy according to the total trasmission curve
-  static        Float_t    EckovMin      (                               ){return fEckovMin;}                         //min photon energy [GeV] defined in optical curves
-  static        Float_t    EckovMax      (                               ){return fEckovMax;}                         //min photon energy [GeV] defined in optical curves
-  
-  static        Float_t    AbsCH4        (Float_t gev                    );                                           //AbsLen [cm]=f(Eckov) [GeV] for CH4 used as amp gas
-  static        Float_t    AbsAir        (Float_t gev                    ){return fgAbsAir.Eval(gev);}                //AbsLen [cm]=f(Eckov) [GeV] for air
+  static        Float_t    EckovMin      (                               ){return 5.5e-9;}                            //min photon energy [GeV] defined in optical curves
+  static        Float_t    EckovMax      (                               ){return 8.5e-9;}                            //min photon energy [GeV] defined in optical curves
   
                 Float_t    IdxC6F14      (Float_t gev                    ){return fIdxC6F14->Eval(gev,fIdxC6F14->GetUniqueID());}  //n=f(Eckov) [GeV] for C6H14 used as radiator
-  static        Float_t    IdxSiO2       (Float_t gev                    ){return fgIdxSiO2 .Eval(gev);}              //n=f(Eckov) [GeV] for SiO2 used as window TDR p.35
-  static        Float_t    IdxCH4        (Float_t gev                    ){return fgIdxCH4  .Eval(gev);}              //n=f(Eckov) [GeV] for CF4 
-  static        Float_t    IdxAir        (Float_t gev                    ){return fgIdxAir  .Eval(gev);}              //n=f(Eckov) [GeV] for air
+  static        Float_t    IdxSiO2       (Float_t gev                    ){return TMath::Sqrt(1+46.411/(10.666*10.666-gev*gev*1e18)+228.71/(18.125*18.125-gev*gev*1e18));} //n=f(Eckov) [GeV] for SiO2 used as window TDR p.35
+  static        Float_t    IdxCH4        (Float_t gev                    ){return 1+0.12489e-6/(2.62e-4 - TMath::Power(1239.84e-9/gev,-2));}              //n=f(Eckov) [GeV] for CF4 
+  static        Float_t    AbsCH4        (Float_t gev                    );                                                                          //abs len=f(Eckov) [GeV] for CF4 
   
                 void       CdbRead   (Int_t run,Int_t version           );                                           //read all calibration information for requested run
   
@@ -124,15 +118,14 @@ public:
   static Int_t    QthMIP()                   {return 100;}
   static Double_t DmatchMIP()                {return 1.;}
   static Double_t PmodMax()                  {return 6.5;}
-  static Int_t    HV(Int_t sector)           {if (sector>=1 && sector <=6) return fgHV[sector-1];  else return -1;} //high voltage for this sector
-  static void     SetHV(Int_t sector,Int_t hv){fgHV[sector-1]=hv;}  
+  static Int_t    HV(Int_t sector)           {if (sector>=1 && sector <=6) return 2050;  else return -1;} //high voltage for this sector
 //charge response methodes  
   inline static Double_t Mathieson(Double_t x1,Double_t x2,Double_t y1,Double_t y2);               //Mathienson integral over given limits
   
   inline static Double_t GainSag(Double_t x,Int_t sector);                                         //gain variations in %
-         static Double_t Gain(const TVector2 &x2){//gives chamber gain in terms of QDC channels for given point in local ref system
-                          if(fgIsWireSag) return QdcSlope(Loc2Sec(x2))*(1+GainSag(x2.X(),Loc2Sec(x2))/100);
-                          else            return QdcSlope(Loc2Sec(x2));}
+         static Double_t Gain(const TVector2 &x2,Bool_t isSag=kTRUE){//gives chamber gain in terms of QDC channels for given point in local ref system
+                          if(isSag) return QdcSlope(Loc2Sec(x2))*(1+GainSag(x2.X(),Loc2Sec(x2))/100);
+                          else      return QdcSlope(Loc2Sec(x2));}
   inline static Double_t FracQdc(const TVector2 &x2,const TVector &pad);                           //charge fraction to pad from hit
   inline static Int_t    TotQdc(TVector2 x2,Double_t e    );                                       //total charge for Eloss (GeV) 0 for photons
          static Double_t QdcSlope(Int_t sec){switch(sec){case -1: return 0;  default:   return 33;}} //weight of electon in QDC channels
@@ -141,23 +134,19 @@ public:
   static        Double_t IonPot        (                                              ){return 26.0e-9;}                            //for CH4 in GeV taken from ????
   static inline Int_t    QdcTot        (Int_t iPad,Double_t e                         );                                            //total QDC generated by Eloss or Etot [GeV]
   static inline Double_t QdcSag        (Int_t iPad                                    );                                            //mean QDC variation due to sagita [0,1]
-  static        Double_t QdcEle        (Int_t iPad                                    ){return fgIsWireSag?33*(1+QdcSag(iPad)):33;} //mean QDC per electron
+  static        Double_t QdcEle        (Int_t iPad,Bool_t isSag=kTRUE                 ){return isSag?33*(1+QdcSag(iPad)):33;}       //mean QDC per electron
   static inline Int_t    Hit2SDigs     (Int_t iPad,  Double_t e,TClonesArray* pSDigLst);                                            //hit->sdigits, returns Qtot
   static inline Int_t    Hit2SDigs     (TVector2 hit,Double_t e,TClonesArray* pSDigLst);                                            //hit->sdigits, returns Qtot, old style
   static        void     TestHit2SDigs (Double_t x,Double_t y,Double_t e,Bool_t isNew=kFALSE);                                      //test hit->sdigits
   
   inline static Bool_t   IsOverTh(Int_t c,TVector pad,Double_t q);                                 //is QDC of the pad registered by FEE  
-           static Int_t    NsigmaTh()                    {return fgNsigmaTh;}                        //
-         static Float_t  SigmaThMean()                 {return fgSigmaThMean;}                     //QDC electronic noise mean
-         static Float_t  SigmaThSpread()               {return fgSigmaThSpread;}                   //QDC electronic noise width
+         static Int_t    NsigmaTh()                    {return 4;}                        //
+         static Float_t  SigmaThMean()                 {return 1.132;}                    //QDC electronic noise mean
+         static Float_t  SigmaThSpread()               {return 0.035;}                    //QDC electronic noise width
                 
          static Double_t CogCorr(Double_t x) {return 3.31267e-2*TMath::Sin(2*TMath::Pi()/PadSizeX()*x) //correction of cluster CoG due to sinoidal
                                                     -2.66575e-3*TMath::Sin(4*TMath::Pi()/PadSizeX()*x)
                                                     +2.80553e-3*TMath::Sin(6*TMath::Pi()/PadSizeX()*x)+0.0070;}
-         static void     ReadErrFiles();                                                                  //Read Err file parameters
-         TVector3 SigmaSinglePhoton(Int_t Npart, Double_t mom, Double_t theta, Double_t phi);      //Find Sigma for single photon from momentum and particle id
-         TVector3 SigmaSinglePhoton(Double_t thetaCer, Double_t theta, Double_t phi);              //Fing sigma for single photon from thetacer
-  static Double_t Interpolate(Double_t par[4][330],Double_t x, Double_t y, Double_t phi);          //Find the error value from interpolation
        
          TVector3 ForwardTracing(TVector3 entranceTrackPoint,TVector3 vectorTrack, Double_t thetaC, Double_t phiC); //it traces foward a photon from Emission Point to PC
   static TVector3 PlaneIntersect(const TVector3 &lineDir,const TVector3 &linePoint,const TVector3 &planeNorm,const TVector3 &planePoint); //intersection between line and plane
@@ -171,39 +160,13 @@ public:
   static void     TestTrans();                                                           //test the transform group of methodes
 
   static Double_t fgMass[5];                                // mass array
-  static Bool_t     fgIsTestBeam;                           //test beam geometry instead of normal RICH flag
   enum EPlaneId {kCenter,kPc,kRad,kAnod,kNch=7};            //4 planes in chamber and total number of chambers
 protected:
          AliRICHParam();             //default ctor is protected to enforce it to be singleton
   static AliRICHParam *fgInstance;   //static pointer  to instance of AliRICHParam singleton
-//optical curves
-  static Double_t fEckovMin;         //min Eckov
-  static Double_t fEckovMax;         //max Eckov
-      
-         TF2*  fIdxC6F14;            //n=f(Ephot,T) [GeV] for radiator freon   C6F14
-  static TF1   fgIdxSiO2;            //n=f(Ephot) [GeV] for window   quartz  SiO2 
-  static TF1   fgIdxCH4;             //n=f(Ephot) [GeV] for MWPC     amp gas CF4  
-  static TF1   fgIdxAir;             //n=f(Ephot) [GeV] for          air
-  
-  static TF1   fgAbsC6F14;           //abs len curve for radiator freon   C6F14, cm   versus GeV
-  static TF1   fgAbsSiO2;            //abs len curve for window   quartz  SiO2 , cm   versus GeV  
-  static TF1   fgAbsCH4;             //abs len curve for MWPC     methane CF4  , cm   versus GeV
-  static TF1   fgAbsAir;             //abs len curve for air, cm versus GeV
-  
-  static Bool_t     fgIsWireSag;            //wire sagitta ON/OFF flag
-  static Bool_t     fgIsResolveClusters;    //declustering ON/OFF flag
-  static Bool_t     fgIsFeedback;           //generate feedback photon?
-
-  static Int_t      fgHV[6];                //HV applied to anod wires
-  static Int_t      fgNsigmaTh;             //n. of sigmas to cut for zero suppression
-  static Float_t    fgSigmaThMean;          //sigma threshold value
-  static Float_t    fgSigmaThSpread;        //spread of sigma
-
-  static Double_t     fgErrChrom[4][330];                       //
-  static Double_t     fgErrGeom[4][330];                        //
-  static Double_t     fgErrLoc[4][330];                         //Chromatic, Geometric and Localization array to parametrize SigmaCerenkov
-         TGeoHMatrix *fMatrix[kNchambers];                      //poiners to matrices defining RICH chambers rotations-translations
-  ClassDef(AliRICHParam,0)                                      //RICH main parameters class
+  TF2         *fIdxC6F14;            //n=f(Ephot,T) [GeV] for radiator freon   C6F14
+  TGeoHMatrix *fMatrix[kNchambers];  //poiners to matrices defining RICH chambers rotations-translations
+  ClassDef(AliRICHParam,0)           //RICH main parameters class
 };
 
 AliRICHParam* AliRICHParam::Instance()
@@ -519,6 +482,13 @@ TVector3  AliRICHParam::Lors2Mars(Int_t iChId,Double_t x,Double_t y,Int_t iPlnId
   return TVector3(mars);
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TVector3  AliRICHParam::Lors2MarsVec(Int_t iCh,const TVector3 &p)
+{
+  Double_t mars[3], lors[3]; p.GetXYZ(lors);  
+  fMatrix[iCh-1]->LocalToMasterVect(lors,mars);
+  return TVector3(mars);
+}    
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TVector2  AliRICHParam::Mars2Lors(Int_t iChId,const TVector3 &x,Int_t iPlnId)
 {
 // Trasform from MARS to LORS
@@ -538,6 +508,13 @@ TVector2  AliRICHParam::Mars2Lors(Int_t iChId,const TVector3 &x,Int_t iPlnId)
   return TVector2(lors[0]+0.5*PcSizeX(),lors[1]+0.5*PcSizeY());
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TVector3  AliRICHParam::Mars2LorsVec(Int_t iCh,const TVector3 &p)
+{
+  Double_t mars[3], lors[3]; p.GetXYZ(mars);  
+  fMatrix[iCh-1]->MasterToLocalVect(mars,lors);
+  return TVector3(lors);
+}    
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TVector3  AliRICHParam::Lors2MarsOld(Int_t iChId,Double_t x,Double_t y,Int_t iPlnId)
 {
 // Trasform from LORS to MARS
@@ -554,13 +531,6 @@ TVector2  AliRICHParam::Mars2LorsOld(Int_t iChamN,const TVector3 &x,Int_t iPlane
   TGeoMatrix *pMatrix=Matrix(iChamN,iPlaneN);
   Double_t mars[3]={x.X(),x.Y(),x.Z()}  , lors[3];  pMatrix->MasterToLocal(mars,lors);  delete pMatrix;
   return TVector2(lors[0]+0.5*PcSizeX(),lors[1]+0.5*PcSizeY());
-}    
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-TVector3  AliRICHParam::Mars2LorsVec(Int_t iChamN,const TVector3 &x)
-{
-  TGeoMatrix *pMatrix=Matrix(iChamN,kPc);
-  Double_t mars[3]={x.X(),x.Y(),x.Z()}  , lors[3];  pMatrix->MasterToLocalVect(mars,lors);  delete pMatrix;
-  return TVector3(lors);
 }    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TVector3  AliRICHParam::Center(Int_t iChamN,Int_t iPlaneN)
@@ -634,15 +604,15 @@ Int_t AliRICHParam::Hit2SDigs(TVector2 hitX2,Double_t e,TClonesArray *pSDigLst)
   return iQtot;
 }//Hit2SDigs() for TVector2
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-TVector3 AliRICHParam::SigmaSinglePhotonFormula(Double_t thetaCer, Double_t phiCer, Double_t theta, Double_t phi, Double_t beta)
+Double_t AliRICHParam::SigmaSinglePhotonFormula(Double_t thetaCer, Double_t phiCer, Double_t theta, Double_t phi, Double_t beta)
 {
   TVector3 v(-999,-999,-999);
 
-  v.SetX(AliRICHParam::ErrLoc(thetaCer,phiCer,theta,phi,beta));
-  v.SetY(AliRICHParam::ErrGeom(thetaCer,phiCer,theta,phi,beta));
-  v.SetZ(AliRICHParam::ErrCrom(thetaCer,phiCer,theta,phi,beta));
+  v.SetX(ErrLoc(thetaCer,phiCer,theta,phi,beta));
+  v.SetY(ErrGeom(thetaCer,phiCer,theta,phi,beta));
+  v.SetZ(ErrCrom(thetaCer,phiCer,theta,phi,beta));
 
-  return v;
+  return v.Mag2();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliRICHParam::ErrLoc(Double_t thetaC, Double_t phiC, Double_t Ptheta, Double_t Pphi, Double_t beta)
@@ -670,7 +640,7 @@ Double_t RefC6F14m = 1.29337;
 
   return  TMath::Sqrt(0.2*0.2*dtdxc*dtdxc + 0.25*0.25*dtdyc*dtdyc);
 }
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliRICHParam::ErrCrom(Double_t thetaC, Double_t phiC, Double_t Ptheta, Double_t Pphi, Double_t beta)
 {
   Double_t dphi = phiC - Pphi;
