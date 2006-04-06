@@ -273,8 +273,10 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
 
 		  index   += kBusPatchHeaderSize;
 		  dataSize = subEventTracker->GetLength();
+		  Int_t bufSize = subEventTracker->GetBufSize();
 
 		  if(dataSize>0) { // check data present
+                    if (dataSize > bufSize) subEventTracker->SetAlloc(dataSize);
 
 		    //copy buffer into data structure
 		    memcpy(subEventTracker->GetData(), &buffer[index], dataSize*4); 
@@ -287,6 +289,7 @@ Int_t AliMUONRawReader::ReadTrackerDDL(AliRawReader* rawReader)
 		      manuId    = subEventTracker->GetManuId(iData);
 		      channelId = subEventTracker->GetChannelId(iData);
 		      charge    = subEventTracker->GetCharge(iData);
+		      
 		      // set charge
 		      digit->SetSignal(charge);
           digit->SetPhysicsSignal(charge);
