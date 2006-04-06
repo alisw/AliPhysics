@@ -2238,7 +2238,7 @@ void AliTPCtrackerMI::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t fac
     Float_t sharedfactor = Float_t(shared+1)/Float_t(found+1);
     Bool_t itsgold =kFALSE;
     if (pt->fEsd){
-      UInt_t dummy[12];
+      Int_t dummy[12];
       if (pt->fEsd->GetITSclusters(dummy)>4) itsgold= kTRUE;
     }
     if (!itsgold){

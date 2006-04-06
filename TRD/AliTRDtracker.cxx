@@ -305,7 +305,7 @@ AliTRDcluster * AliTRDtracker::GetCluster(AliTRDtrack * track, Int_t plane, Int_
   //try to find cluster in the backup list
   //
   AliTRDcluster * cl =0;
-  UInt_t *indexes = track->GetBackupIndexes();
+  Int_t *indexes = track->GetBackupIndexes();
   for (UInt_t i=0;i<kMaxTimeBinIndex;i++){
     if (indexes[i]==0) break;  
     AliTRDcluster * cli = (AliTRDcluster*)fClusters->UncheckedAt(indexes[i]);
@@ -326,7 +326,7 @@ Int_t  AliTRDtracker::GetLastPlane(AliTRDtrack * track){
   //
   //return last updated plane
   Int_t lastplane=0;
-  UInt_t *indexes = track->GetBackupIndexes();
+  Int_t *indexes = track->GetBackupIndexes();
   for (UInt_t i=0;i<kMaxTimeBinIndex;i++){
     AliTRDcluster * cli = (AliTRDcluster*)fClusters->UncheckedAt(indexes[i]);
     if (!cli) break;
@@ -621,13 +621,13 @@ Int_t AliTRDtracker::RefitInward(AliESD* event)
 //     }
 
     AliTRDtrack *pt = new AliTRDtrack(seed2,seed2.GetAlpha());
-    UInt_t * indexes2 = seed2.GetIndexes();
+    Int_t * indexes2 = seed2.GetIndexes();
     for (Int_t i=0;i<kNPlane;i++) {
       pt->SetPIDsignals(seed2.GetPIDsignals(i),i);
       pt->SetPIDTimBin(seed2.GetPIDTimBin(i),i);
     }
 
-    UInt_t * indexes3 = pt->GetBackupIndexes();
+    Int_t * indexes3 = pt->GetBackupIndexes();
     for (Int_t i=0;i<200;i++) {
       if (indexes2[i]==0) break;
       indexes3[i] = indexes2[i];

@@ -105,7 +105,7 @@ public:
 
 
   Int_t GetNcls(Int_t idet) const;
-  Int_t GetClusters(Int_t idet, UInt_t *idx) const;
+  Int_t GetClusters(Int_t idet, Int_t *idx) const;
  
   void SetITSpid(const Double_t *p);
   void SetITSChi2MIP(const Float_t *chi2mip);
@@ -113,7 +113,7 @@ public:
   void GetITSpid(Double_t *p) const;
   Float_t GetITSsignal() const {return fITSsignal;}
   Float_t GetITSchi2() const {return fITSchi2;}
-  Int_t GetITSclusters(UInt_t *idx) const;
+  Int_t GetITSclusters(Int_t *idx) const;
   Int_t GetITSLabel() const {return fITSLabel;}
   Float_t GetITSFakeRatio() const {return fITSFakeRatio;}
   AliKalmanTrack * GetITStrack(){return fITStrack;}
@@ -148,7 +148,7 @@ public:
   Float_t GetTRDsignals(Int_t i) const {return fTRDsignals[i];}
   Int_t GetTRDTimBin(Int_t i) const {return fTRDTimBin[i];}
   Float_t GetTRDchi2() const {return fTRDchi2;}
-  Int_t GetTRDclusters(UInt_t *idx) const;
+  Int_t GetTRDclusters(Int_t *idx) const;
   Int_t GetTRDncls() const {return fTRDncls;}
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
@@ -169,8 +169,8 @@ public:
   void    GetTOFInfo(Float_t *info) const;
   void    SetTOFInfo(Float_t *info);
   Int_t   GetTOFCalChannel() const {return fTOFCalChannel;}
-  UInt_t  GetTOFcluster() const {return fTOFindex;}
-  void  SetTOFcluster(UInt_t index) {fTOFindex=index;}
+  Int_t  GetTOFcluster() const {return fTOFindex;}
+  void  SetTOFcluster(Int_t index) {fTOFindex=index;}
   void  SetTOFCalChannel(Int_t index) {fTOFCalChannel=index;}
   
   void    SetRICHsignal(Double_t beta) {fRICHsignal=beta;}
@@ -179,8 +179,8 @@ public:
   void    GetRICHpid(Double_t *p) const;
   void    SetRICHchi2(Double_t chi2) {fRICHchi2=chi2;}
   Float_t GetRICHchi2() const {return fRICHchi2;}
-  void    SetRICHcluster(UInt_t index) {fRICHindex=index;}
-  UInt_t  GetRICHcluster() const {return fRICHindex;}
+  void    SetRICHcluster(Int_t index) {fRICHindex=index;}
+  Int_t  GetRICHcluster() const {return fRICHindex;}
   void    SetRICHnclusters(Int_t n) {fRICHncls=n;}
   Int_t   GetRICHnclusters() const {return fRICHncls;}
   void    SetRICHthetaPhi(Double_t theta, Double_t phi) {
@@ -196,17 +196,6 @@ public:
     dx=fRICHdx; dy=fRICHdy;
   }
   
- /*  void SetPHOSposition(const Double_t *pos)  { */
-/*     fPHOSpos[0] = pos[0]; fPHOSpos[1]=pos[1]; fPHOSpos[2]=pos[2]; */
-/*   } */
-/*   void SetPHOSsignal(Double_t ene) {fPHOSsignal = ene; } */
-/*   void SetPHOSpid(const Double_t *p); */
-/*   void GetPHOSposition(Double_t *pos) const { */
-/*     pos[0]=fPHOSpos[0]; pos[1]=fPHOSpos[1]; pos[2]=fPHOSpos[2]; */
-/*   } */
-/*   Float_t GetPHOSsignal() const {return fPHOSsignal;} */
-/*   void GetPHOSpid(Double_t *p) const;   */
-
   Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
   Bool_t IsRICH()  const {return fFlags&kRICHpid;}
   Bool_t IsPHOS()  const {return fFlags&kPHOSpid;}
@@ -263,7 +252,7 @@ protected:
   Float_t fITSchi2;        // chi2 in the ITS
   Float_t fITSchi2MIP[12];     // chi2s in the ITS
   Int_t   fITSncls;        // number of clusters assigned in the ITS
-  UInt_t  fITSindex[6];    //! indices of the assigned ITS clusters
+  Int_t   fITSindex[12];   //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fITSLabel;       // label according TPC
@@ -289,10 +278,10 @@ protected:
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
   Int_t   fTRDncls0;       // number of clusters assigned in the TRD before first material cross
-  UInt_t  fTRDindex[180];   //! indices of the assigned TRD clusters
+  Int_t  fTRDindex[180];   //! indices of the assigned TRD clusters
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDsignals[kNPlane];  // TRD signals from all six planes
-  Int_t fTRDTimBin[kNPlane];     // Time bin of Max cluster from all six planes
+  Int_t   fTRDTimBin[kNPlane];   // Time bin of Max cluster from all six planes
   Float_t fTRDr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTRDLabel;       // label according TRD
   Float_t fTRDQuality;     //trd quality factor for TOF
@@ -301,7 +290,7 @@ protected:
 
   // TOF related track information
   Float_t fTOFchi2;        // chi2 in the TOF
-  UInt_t  fTOFindex;       // index of the assigned TOF cluster
+  Int_t   fTOFindex;       // index of the assigned TOF cluster
   Int_t   fTOFCalChannel; // Channel Index of the TOF Signal 
   Float_t fTOFsignal;      // detector's PID signal
   Float_t fTOFsignalToT;   // detector's ToT signal
@@ -309,15 +298,10 @@ protected:
   Int_t   fTOFLabel[3];       // TOF label 
   Float_t fTOFInfo[10];       //! TOF informations
 
-  // PHOS related track information 
-  //  Float_t fPHOSpos[3]; // position localised by PHOS in global coordinate system
-  // Float_t fPHOSsignal; // energy measured by PHOS
-  //Float_t fPHOSr[AliPID::kSPECIESN]; // PID information from PHOS
-
   // HMPID related track information
   Float_t fRICHchi2;       // chi2 in the RICH
   Int_t   fRICHncls;       // number of photon clusters
-  UInt_t  fRICHindex;      // index of the assigned MIP cluster
+  Int_t   fRICHindex;      // index of the assigned MIP cluster
   Float_t fRICHsignal;     // RICH PID signal
   Float_t fRICHr[AliPID::kSPECIES];// "detector response probabilities" (for the PID)
   Float_t fRICHtheta;      // theta of the track extrapolated to the RICH
@@ -327,7 +311,7 @@ protected:
 
   AliTrackPointArray *fPoints; // Array which contains the track space points in the global frame
 
-  ClassDef(AliESDtrack,24)  //ESDtrack 
+  ClassDef(AliESDtrack,25)  //ESDtrack 
 };
 
 #endif 

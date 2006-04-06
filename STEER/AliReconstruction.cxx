@@ -1533,7 +1533,7 @@ void AliReconstruction::WriteAlignmentData(AliESD* esd)
     {
       AliESDtrack *track = esd->GetTrack(itrack);
       Int_t nsp = 0;
-      UInt_t idx[200];
+      Int_t idx[200];
       for (Int_t iDet = 3; iDet >= 0; iDet--)
 	nsp += track->GetNcls(iDet);
       if (nsp) {

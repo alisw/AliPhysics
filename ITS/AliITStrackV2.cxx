@@ -57,7 +57,7 @@ AliITStrackV2::AliITStrackV2():AliKalmanTrack(),
   fC44(0),
   fESDtrack(0)
 {
-    for(Int_t i=0; i<kMaxLayer; i++) fIndex[i]=0;
+    for(Int_t i=0; i<2*kMaxLayer; i++) fIndex[i]=-1;
     for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
 
@@ -133,11 +133,10 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) : AliKalmanTrack(t) {
   fC30=t.fC30;  fC31=t.fC31;  fC32=t.fC32;  fC33=t.fC33;
   fC40=t.fC40;  fC41=t.fC41;  fC42=t.fC42;  fC43=t.fC43;  fC44=t.fC44;
 
-  Int_t n=GetNumberOfClusters();
-  for (Int_t i=0; i<n; i++) {
-    fIndex[i]=t.fIndex[i];
-    if (i<4) fdEdxSample[i]=t.fdEdxSample[i];
-  }
+  Int_t i;
+  for (i=0; i<2*kMaxLayer; i++) fIndex[i]=t.fIndex[i];
+  for (i=0; i<4; i++) fdEdxSample[i]=t.fdEdxSample[i];
+
   fESDtrack=t.fESDtrack;
 }
 

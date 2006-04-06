@@ -477,7 +477,7 @@ Int_t AliITStrackerMI::RefitInward(AliESD *event) {
       fTrackToFollow.ResetCovariance();
 
     //Refitting...
-    if (RefitAt(3.7, &fTrackToFollow, t)) {
+    if (RefitAt(3.7, &fTrackToFollow, t,kTRUE)) {
        fTrackToFollow.SetLabel(t->GetLabel());
        //       fTrackToFollow.CookdEdx();
        CookdEdx(&fTrackToFollow);
@@ -1466,11 +1466,13 @@ Int_t AliITStrackerMI::AliITSlayer::InRoad() const {
   return ncl;
 }
 
-Bool_t 
-AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const AliITStrackMI *c) {
+Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
+				const AliITStrackMI *c, Bool_t extra) {
   //--------------------------------------------------------------------
   // This function refits the track "t" at the position "x" using
   // the clusters from "c"
+  // If "extra"==kTRUE, 
+  //    the clusters from overlapped modules get attached to "t" 
   //--------------------------------------------------------------------
   Int_t index[kMaxLayer];
   Int_t k;
@@ -1555,25 +1557,7 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const AliITStrackMI *c) {
 	  }
 	}
      }
-     /*
-     if (cl==0)
-     if (t->GetNumberOfClusters()>2) {
-        Double_t dz=4*TMath::Sqrt(t->GetSigmaZ2()+kSigmaZ2[i]);
-        Double_t dy=4*TMath::Sqrt(t->GetSigmaY2()+kSigmaY2[i]);
-        Double_t zmin=t->GetZ() - dz;
-        Double_t zmax=t->GetZ() + dz;
-        Double_t ymin=t->GetY() + phi*r - dy;
-        Double_t ymax=t->GetY() + phi*r + dy;
-        layer.SelectClusters(zmin,zmax,ymin,ymax);
 
-        const AliITSRecPoint *c=0; Int_t ci=-1;
-        while ((c=layer.GetNextCluster(ci))!=0) {
-           if (idet != c->GetDetectorIndex()) continue;
-           Double_t chi2=t->GetPredictedChi2(c);
-           if (chi2<maxchi2) { cl=c; maxchi2=chi2; idx=ci; }
-        }
-     }
-     */
      if (cl) {
        //if (!t->Update(cl,maxchi2,idx)) {
        if (!UpdateMI(t,cl,maxchi2,idx)) {
@@ -1588,6 +1572,36 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const AliITStrackMI *c) {
      t->CorrectForMaterial(-step*d,x0);
      }
                  
+     if (extra) { //search for extra clusters
+        AliITStrackV2 tmp(*t);
+        Double_t dz=4*TMath::Sqrt(tmp.GetSigmaZ2()+kSigmaZ2[i]);
+        if (dz < 0.5*TMath::Abs(tmp.GetTgl())) dz=0.5*TMath::Abs(tmp.GetTgl());
+        Double_t dy=4*TMath::Sqrt(t->GetSigmaY2()+kSigmaY2[i]);
+        if (dy < 0.5*TMath::Abs(tmp.GetSnp())) dy=0.5*TMath::Abs(tmp.GetSnp());
+        Double_t zmin=t->GetZ() - dz;
+        Double_t zmax=t->GetZ() + dz;
+        Double_t ymin=t->GetY() + phi*r - dy;
+        Double_t ymax=t->GetY() + phi*r + dy;
+        layer.SelectClusters(zmin,zmax,ymin,ymax);
+
+        const AliITSRecPoint *c=0; Int_t ci=-1,cci=-1;
+        Double_t maxchi2=1000.*kMaxChi2, tolerance=0.1;
+        while ((c=layer.GetNextCluster(ci))!=0) {
+           if (idet == c->GetDetectorIndex()) continue;
+
+	   const AliITSdetector &det=layer.GetDetector(c->GetDetectorIndex());
+
+	   if (!tmp.Propagate(det.GetPhi(),det.GetR())) continue;
+           
+	   if (TMath::Abs(tmp.GetZ() - c->GetZ()) > tolerance) continue;
+           if (TMath::Abs(tmp.GetY() - c->GetY()) > tolerance) continue;
+
+           Double_t chi2=tmp.GetPredictedChi2(c);
+           if (chi2<maxchi2) { maxchi2=chi2; cci=ci; }
+        }
+        if (cci>=0) t->SetExtraCluster(i,(i<<28)+cci);
+     }
+
      // track time update [SR, GSI 17.02.2003]
      if (t->IsStartedTimeIntegral() && step==1) {
         Double_t newX, newY, newZ;
@@ -1603,7 +1617,6 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const AliITStrackMI *c) {
   if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
   return kTRUE;
 }
-
 
 Bool_t 
 AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
@@ -1741,8 +1754,6 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
   if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
   return kTRUE;
 }
-
-
 
 Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
 {

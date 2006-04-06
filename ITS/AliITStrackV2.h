@@ -80,7 +80,10 @@ public:
   Int_t GetGlobalXYZat(Double_t r,Double_t &x,Double_t &y,Double_t &z) const;
   void ApproximateHelixWithLine(Double_t xk, AliStrLine *line);
   Double_t GetPredictedChi2(const AliCluster *cluster) const;
-   Int_t Invariant() const;
+  Int_t Invariant() const;
+
+  void  SetExtraCluster(Int_t i, Int_t idx) {fIndex[kMaxLayer+i]=idx;}
+  Int_t GetExtraCluster(Int_t i) const {return fIndex[kMaxLayer+i];}
  
 protected:
   void GetXYZ(Float_t r[3]) const;
@@ -102,11 +105,11 @@ protected:
   Double_t fC30, fC31, fC32, fC33;       // track
   Double_t fC40, fC41, fC42, fC43, fC44; // parameters 
 
-  UInt_t fIndex[kMaxLayer]; // indices of associated clusters 
-  Float_t fdEdxSample[4];   // array of dE/dx samples b.b.
+  Int_t fIndex[2*kMaxLayer]; // indices of associated clusters 
+  Float_t fdEdxSample[4];    // array of dE/dx samples b.b.
 
-  AliESDtrack *fESDtrack;   //! pointer to the connected ESD track
-  ClassDef(AliITStrackV2,4)   //ITS reconstructed track
+  AliESDtrack *fESDtrack;    //! pointer to the connected ESD track
+  ClassDef(AliITStrackV2,5)  //ITS reconstructed track
 };
 
 inline 

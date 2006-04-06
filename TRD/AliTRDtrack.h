@@ -125,8 +125,8 @@ public:
    Double_t GetX()    const {return fX;}
    Double_t GetY()    const {return fY;}
    Double_t GetZ()    const {return fZ;}
-   UInt_t * GetBackupIndexes()  {return fIndexBackup;}
-   UInt_t * GetIndexes()  {return fIndex;}
+   Int_t * GetBackupIndexes()  {return fIndexBackup;}
+   Int_t * GetIndexes()  {return fIndex;}
    Double_t GetYat(Double_t xk) const {     
 //-----------------------------------------------------------------
 // This function calculates the Y-coordinate of a track at the plane x=xk.
@@ -217,8 +217,8 @@ protected:
    Double_t fCty, fCtz, fCte, fCtt;       // track
    Double_t fCcy, fCcz, fCce, fCct, fCcc; // parameters   
    
-   UInt_t  fIndex[kMAX_CLUSTERS_PER_TRACK];  // global indexes of clusters  
-   UInt_t  fIndexBackup[kMAX_CLUSTERS_PER_TRACK]; //backup indexes of clusters - used in iterations
+   Int_t  fIndex[kMAX_CLUSTERS_PER_TRACK];  // global indexes of clusters  
+   Int_t  fIndexBackup[kMAX_CLUSTERS_PER_TRACK]; //backup indexes of clusters - used in iterations
    Float_t fdQdl[kMAX_CLUSTERS_PER_TRACK];   // cluster amplitudes corrected 
                                              // for track angles    
                            
@@ -234,7 +234,7 @@ protected:
    AliTRDtracklet fTracklets[6]; //tracklets
    Float_t     fBudget[3];       // integrated material budget
    AliTRDtrack * fBackupTrack; //! backup track
-   ClassDef(AliTRDtrack,3) // TRD reconstructed tracks
+   ClassDef(AliTRDtrack,4) // TRD reconstructed tracks
 };                     
 
 inline void AliTRDtrack::GetXYZ(Float_t r[3]) const {

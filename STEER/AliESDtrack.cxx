@@ -128,11 +128,11 @@ AliESDtrack::AliESDtrack() :
   //  fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
 
   Int_t i;
-  for (i=0;i<12;i++) fITSchi2MIP[i] =1e10;
-  for (i=0; i<6; i++)  { fITSindex[i]=0; }
-  for (i=0; i<180; i++){ fTPCindex[i]=0; }
-  for (i=0; i<3;i++)   { fKinkIndexes[i]=0;}
-  for (i=0; i<3;i++)   { fV0Indexes[i]=-1;}
+  for (i=0; i<12; i++)  fITSchi2MIP[i]=1e10;
+  for (i=0; i<12; i++)  { fITSindex[i]=-1; }
+  for (i=0; i<180; i++) { fTPCindex[i]=0; }
+  for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
+  for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
   for (i=0; i<180; i++) { fTRDindex[i]=0; }
   for (i=0;i<kNPlane;i++) {fTRDsignals[i]=0.; fTRDTimBin[i]=-1;}
   for (i=0;i<4;i++) {fTPCPoints[i]=-1;}
@@ -201,11 +201,11 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   //
   //copy constructor
   //
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] =track.fTrackTime[i];
-  for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i] =track.fR[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i]=track.fTrackTime[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i]=track.fR[i];
   //
-  for (Int_t i=0;i<12;i++) fITSchi2MIP[i] =track.fITSchi2MIP[i];
-  for (Int_t i=0;i<6;i++) fITSindex[i]=track.fITSindex[i];    
+  for (Int_t i=0;i<12;i++) fITSchi2MIP[i]=track.fITSchi2MIP[i];
+  for (Int_t i=0;i<12;i++) fITSindex[i]=track.fITSindex[i];    
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
   //
   for (Int_t i=0;i<180;i++) fTPCindex[i]=track.fTPCindex[i];  
@@ -283,11 +283,11 @@ void AliESDtrack::MakeMiniESDtrack(){
 
   // Reset ITS track related information
   fITSchi2 = 0;
-  for (Int_t i=0;i<12;i++) fITSchi2MIP[i] = 0;
+  for (Int_t i=0;i<12;i++) fITSchi2MIP[i]=0;
   fITSncls = 0;       
-  for (Int_t i=0;i<6;i++) fITSindex[i]= 0;    
+  for (Int_t i=0;i<12;i++) fITSindex[i]=0;    
   fITSsignal = 0;     
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]= 0; 
+  for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
   fITSLabel = 0;       
   fITSFakeRatio = 0;   
   fITStrack =0;
@@ -398,7 +398,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   case kITSin: case kITSout: case kITSrefit:
     fITSncls=t->GetNumberOfClusters();
     fITSchi2=t->GetChi2();
-    for (Int_t i=0;i<fITSncls;i++) fITSindex[i]=t->GetClusterIndex(i);
+    for (Int_t i=0;i<12;i++) fITSindex[i]=t->GetClusterIndex(i);
     fITSsignal=t->GetPIDsignal();
     fITSLabel = t->GetLabel();
     fITSFakeRatio = t->GetFakeRatio();
@@ -610,7 +610,7 @@ Int_t AliESDtrack::GetNcls(Int_t idet) const
   return ncls;
 }
 
-Int_t AliESDtrack::GetClusters(Int_t idet, UInt_t *idx) const
+Int_t AliESDtrack::GetClusters(Int_t idet, Int_t *idx) const
 {
   // Get cluster index array by subdetector index
   //
@@ -620,7 +620,7 @@ Int_t AliESDtrack::GetClusters(Int_t idet, UInt_t *idx) const
     ncls = GetITSclusters(idx);
     break;
   case 1:
-    ncls = GetTPCclusters((Int_t *)idx);
+    ncls = GetTPCclusters(idx);
     break;
   case 2:
     ncls = GetTRDclusters(idx);
@@ -666,11 +666,11 @@ void AliESDtrack::GetITSpid(Double_t *p) const {
 }
 
 //_______________________________________________________________________
-Int_t AliESDtrack::GetITSclusters(UInt_t *idx) const {
+Int_t AliESDtrack::GetITSclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined ITS clusters 
   //---------------------------------------------------------------------
-  for (Int_t i=0; i<fITSncls; i++) idx[i]=fITSindex[i];
+  for (Int_t i=0; i<12; i++) idx[i]=fITSindex[i];
   return fITSncls;
 }
 
@@ -716,7 +716,7 @@ void AliESDtrack::GetTPCpid(Double_t *p) const {
 }
 
 //_______________________________________________________________________
-Int_t AliESDtrack::GetTRDclusters(UInt_t *idx) const {
+Int_t AliESDtrack::GetTRDclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined TRD clusters 
   //---------------------------------------------------------------------

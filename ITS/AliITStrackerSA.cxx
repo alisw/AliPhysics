@@ -213,7 +213,7 @@ Int_t AliITStrackerSA::FindTracks(AliESD* event){
    while (nentr--) {
      AliESDtrack *track=event->GetTrack(nentr);
      if (track->GetStatus()&AliESDtrack::kITSin==AliESDtrack::kITSin){
-       UInt_t idx[6];
+       Int_t idx[12];
        Int_t ncl = track->GetITSclusters(idx);
        for(Int_t k=0;k<ncl;k++){
        	 AliITSRecPoint* cll = (AliITSRecPoint*)GetCluster(idx[k]);

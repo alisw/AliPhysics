@@ -39,7 +39,8 @@ public:
   Int_t Clusters2Tracks(AliESD *event);
   Int_t PropagateBack(AliESD *event);
   Int_t RefitInward(AliESD *event);
-  Bool_t RefitAt(Double_t x, AliITStrackMI *seed, const AliITStrackMI *t);
+  Bool_t RefitAt(Double_t x, AliITStrackMI *seed, 
+		 const AliITStrackMI *t, Bool_t extra=kFALSE);
   Bool_t RefitAt(Double_t x, AliITStrackMI *seed, const Int_t *clindex);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
