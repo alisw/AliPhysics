@@ -38,6 +38,11 @@ fi
 echo "Running simulation  ..."
 
 aliroot -b >& testSim.out << EOF  
+// Uncoment following lines to run simulation with local residual mis-alignment
+// (generated via MUONGenerateGeometryData.C macro)
+// AliCDBManager* man = AliCDBManager::Instance();
+// man->SetDefaultStorage("local://$ALICE_ROOT");
+// man->SetSpecificStorage("MUON","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
 gRandom->SetSeed($SEED);
 AliCDBManager::Instance()->SetDefaultStorage("$CDB");
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
