@@ -36,7 +36,7 @@ public:
   virtual void SetYImpact(Float_t value)  {fYImpact=value;}
 
   // Operators
-  const Int_t operator == (AliZDCHit &quad) {
+  Int_t operator == (AliZDCHit &quad) {
      Int_t i;
      if(fTrack!=quad.GetTrack()) return 0;
      for(i=0; i<2; i++) if(fVolume[i]!=quad.GetVolume(i)) return 0;

@@ -24,13 +24,13 @@ public:
   virtual      ~AliZDCFragment() {}
   void GenerateIMF(Int_t* fZZ, Int_t &fNalpha);
   void AttachNeutrons(Int_t* fZZ, Int_t* fNN, Int_t &Ztot, Int_t &Ntot);
-  const Float_t DeuteronFraction();
+  Float_t DeuteronFraction();
   
   // Setting parameters
   virtual void SetImpactParameter(Float_t b) {fB=b;};
   
   // Getting parameters
-  const Int_t GetFragmentNum() {return fNimf;};
+  Int_t GetFragmentNum() {return fNimf;};
   
  
 protected:

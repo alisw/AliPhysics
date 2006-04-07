@@ -23,13 +23,13 @@ class AliZDCDigit : public TObject {
   virtual ~AliZDCDigit() {}
 
   // Getters 
-  const Int_t   GetSector(Int_t i)	  {return fSector[i];}
-  const Int_t   GetADCValue(Int_t i)      {return fADCValue[i];}
+  Int_t   GetSector(Int_t i)	  {return fSector[i];}
+  Int_t   GetADCValue(Int_t i)      {return fADCValue[i];}
 
   // Operators
   // Two digits are equal if they refers to the detector
   // in the same sub-volume (same procedure as for hits)
-  const Int_t operator == (AliZDCDigit &digit) {
+  Int_t operator == (AliZDCDigit &digit) {
     Int_t i;
     for(i=0; i<2; i++) if(fSector[i]!=digit.GetSector(i)) return 0;
     return 1;

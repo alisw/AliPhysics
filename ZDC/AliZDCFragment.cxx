@@ -356,7 +356,7 @@ void AliZDCFragment::AttachNeutrons(Int_t *fZZ, Int_t *fNN, Int_t &fZtot,Int_t &
 }
 
 //_____________________________________________________________________________
-const Float_t AliZDCFragment::DeuteronFraction()
+Float_t AliZDCFragment::DeuteronFraction()
 {
     // Calculates the fraction of deuterum nucleus produced
     //
