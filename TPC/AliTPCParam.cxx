@@ -538,15 +538,17 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
   }
   AliAlignObjAngles o;
   //
-//   if (fTrackingMatrix) delete [] fTrackingMatrix;
-//   fTrackingMatrix = new TGeoHMatrix*[fNSector];
-//   if (fClusterMatrix) delete [] fClusterMatrix;
-//   fClusterMatrix = new TGeoHMatrix*[fNSector];
+  if (fTrackingMatrix) delete [] fTrackingMatrix;
+  fTrackingMatrix = new TGeoHMatrix*[fNSector];
+  if (fClusterMatrix) delete [] fClusterMatrix;
+  fClusterMatrix = new TGeoHMatrix*[fNSector];
   if (fGlobalMatrix) delete [] fGlobalMatrix;
   fGlobalMatrix = new TGeoHMatrix*[fNSector];
   //
   for (Int_t isec=0; isec<fNSector; isec++) {
     fGlobalMatrix[isec] = 0;
+    fClusterMatrix[isec]= 0;
+    fTrackingMatrix[isec]=0;   
     AliAlignObj::ELayerID iLayer;
     Int_t iModule;
 
@@ -566,12 +568,34 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     //
     TGeoRotation mchange; 
     mchange.RotateY(90); mchange.RotateX(90);
-    Float_t x0 = GetChamberCenter(isec);
-    TGeoTranslation center("center",-x0,0,0);
+    Float_t ROCcenter[3]; 
+    GetChamberCenter(isec,ROCcenter);
+    //
     // Convert to global coordinate system
-    //m->Multiply(&center);
+    //
     fGlobalMatrix[isec] = new TGeoHMatrix(*m);
     fGlobalMatrix[isec]->Multiply(&(mchange.Inverse()));
+    TGeoTranslation center("center",-ROCcenter[0],-ROCcenter[1],-ROCcenter[2]);
+    fGlobalMatrix[isec]->Multiply(&center);
+    //
+    //  cluster correction matrix
+    //
+    fClusterMatrix[isec] = new TGeoHMatrix;
+    Double_t sectorAngle = 20.*(isec%18)+10;
+    TGeoHMatrix  rotMatrix;
+    rotMatrix.RotateZ(sectorAngle);
+    if (GetGlobalMatrix(isec)->GetTranslation()[2]>0){
+      //
+      // mirrored system 
+      //
+      TGeoRotation mirrorZ;
+      mirrorZ.SetAngles(90,0,90,90,180,0);
+      fClusterMatrix[isec]->Multiply(&mirrorZ);
+    }
+    TGeoTranslation trans(0,0,GetZLength());
+    fClusterMatrix[isec]->MultiplyLeft(&trans);
+    fClusterMatrix[isec]->MultiplyLeft((GetGlobalMatrix(isec)));	
+    fClusterMatrix[isec]->MultiplyLeft(&(rotMatrix.Inverse()));
   }
   return kTRUE;
 }
@@ -672,14 +696,30 @@ Int_t AliTPCParam::GetSectorIndex(Float_t angle, Int_t row, Float_t z) const
   return sector;
 }
 
-Float_t AliTPCParam::GetChamberCenter(Int_t isec) const
+Float_t AliTPCParam::GetChamberCenter(Int_t isec, Float_t * center) const
 {
   // returns the default radial position
   // of the readout chambers
-  if (isec<fNInnerSector)
-    return (fInnerRadiusLow+fInnerRadiusUp)/2.;
-  else
-    return (fOuterRadiusLow+fOuterRadiusUp)/2.;
+
+  const Float_t kROCcenterIn = 110.2;
+  const Float_t kROCcenterOut = 188.45;
+
+  if (isec<fNInnerSector){
+    if (center){
+      center[0] = kROCcenterIn;
+      center[1] = 0; 
+      center[2] = -5.51; 
+    }
+    return kROCcenterIn;
+  }
+  else{
+    if (center){
+      center[0] = kROCcenterOut;
+      center[1] = 0; 
+      center[2] = -5.61; 
+    }
+    return kROCcenterOut;
+  }
 }
 
 

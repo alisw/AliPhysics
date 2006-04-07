@@ -30,8 +30,10 @@ public:
   Int_t  Transform0to1(Float_t *xyz, Int_t *index) const;
   //trasforamtion from global to global - adjust index[0] sector 
   //return value is equal to sector corresponding to global position
+  void Transform1to2Ideal(Float_t *xyz, Int_t *index) const;
+  //transformation to rotated coordinata - ideal frame 
   void Transform1to2(Float_t *xyz, Int_t *index) const;
-  //transformation to rotated coordinata 
+  //transformation to rotated coordinata   
   void Transform2to1(Float_t *xyz, Int_t *index) const;
   //transformation from rotated coordinata to global coordinata
   void Transform2to2(Float_t *xyz, Int_t *index, Int_t *oindex) const;
@@ -278,7 +280,7 @@ public:
   Float_t GetYInner(Int_t irow) const; // wire length in low sec row
   Float_t GetYOuter(Int_t irow) const; // wire length in up sec row  
   Int_t GetSectorIndex(Float_t angle, Int_t row, Float_t z) const; // get sector index
-  Float_t GetChamberCenter(Int_t isec) const; // get readout chamber positions
+  Float_t GetChamberCenter(Int_t isec, Float_t * center = 0) const; // get readout chamber positions
   TGeoHMatrix *GetTrackingMatrix(Int_t isec) const {
     return fTrackingMatrix[isec];}
   TGeoHMatrix *GetClusterMatrix(Int_t isec) const {
@@ -494,12 +496,13 @@ inline Float_t   AliTPCParam::GetAngle(Int_t isec) const
 }
 
 
-inline void AliTPCParam::Transform1to2(Float_t *xyz, Int_t *index) const
+inline void AliTPCParam::Transform1to2Ideal(Float_t *xyz, Int_t *index) const
 {
   //transformation to rotated coordinates
   //we must have information about sector!
-
   //rotate to given sector
+  // ideal frame
+
   Float_t cos,sin;
   AdjustCosSin(index[1],cos,sin);
   Float_t x1=xyz[0]*cos + xyz[1]*sin;
@@ -510,6 +513,20 @@ inline void AliTPCParam::Transform1to2(Float_t *xyz, Int_t *index) const
   index[0]=2;
 }
 
+
+inline void AliTPCParam::Transform1to2(Float_t *xyz, Int_t *index) const
+{
+  //transformation to rotated coordinates 
+  //we must have information about sector!
+  //rotate to given sector
+  Double_t xyzmaster[3] = {xyz[0],xyz[1],xyz[2]};
+  Double_t xyzlocal[3];  
+  fGlobalMatrix[index[1]]->MasterToLocal(xyzmaster,xyzlocal);
+  xyz[0] = xyzlocal[0];
+  xyz[1] = xyzlocal[1];
+  xyz[2] = xyzlocal[2];
+  index[0]=2;
+}
 
 
 
