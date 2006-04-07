@@ -384,6 +384,7 @@ void AliTRDgtuTrack::MakePID()
     // AliRoot v4-03-07 , v4-03-Release
     //q = q * 5.8;
 
+    // HEAD28Mar06
     // Temporary (B. Vulpescu):
     // The charge distributions do not match the new changes in simulation (A. Bercuci),
     // which are nevertheless now in agreement with the beam tests.
@@ -407,8 +408,10 @@ void AliTRDgtuTrack::MakePID()
     // I-AliCDBLocal::Get: CDB object retrieved: path "TRD/Calib/PIDLQ"; run range [0,0];
     // version v0_s1
 
-    probEle *= pd->GetProbability(0,TMath::Abs(fPt),q);
-    probPio *= pd->GetProbability(2,TMath::Abs(fPt),q);
+    // HEAD28Mar06 new distributions: factor = 6.0
+
+    probEle *= pd->GetProbability(0,TMath::Abs(fPt),q*6.0);
+    probPio *= pd->GetProbability(2,TMath::Abs(fPt),q*6.0);
 
   }
 
@@ -432,7 +435,12 @@ void AliTRDgtuTrack::MakePID()
   //Float_t PIDcut = 0.978 - 0.024 * TMath::Abs(fPt);
 
   // HEAD28Mar06 with modified distributions (A. Bercuci changes, P. Shukla distributions)
-  Float_t fPIDcut = 0.829 - 0.032 * TMath::Abs(fPt);
+  //Float_t fPIDcut = 0.829 - 0.032 * TMath::Abs(fPt);
+
+  // HEAD28Mar06 with new generated distributions (pol2 fit)
+  Float_t absPt = TMath::Abs(fPt);
+  //Float_t fPIDcut = 0.9575 - 0.0832 * absPt + 0.0037 * absPt*absPt;  // 800 bins in dEdx
+  Float_t fPIDcut = 0.9482 - 0.0795 * absPt + 0.0035 * absPt*absPt;    // 200 bins in dEdx
 
   fIsElectron = kFALSE;
   if (fPID >= fPIDcut) {

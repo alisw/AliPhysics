@@ -227,6 +227,7 @@ void AliTRDReconstructor::FillESD(AliRunLoader* runLoader,
     TrdTrack->SetEta(GtuTrack->GetEta());
     TrdTrack->SetLabel(GtuTrack->GetLabel());
     TrdTrack->SetPID(GtuTrack->GetPID());
+    TrdTrack->SetIsElectron(GtuTrack->IsElectron());
 
     esd->AddTrdTrack(TrdTrack);
 
