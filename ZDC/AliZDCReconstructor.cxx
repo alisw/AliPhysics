@@ -41,8 +41,7 @@ ClassImp(AliZDCReconstructor)
 AliZDCReconstructor:: AliZDCReconstructor()
 {
   // **** Default constructor
-  fStorage =  0;
-
+  
   //  ---      Number of generated spectator nucleons and impact parameter
   // --------------------------------------------------------------------------------------------------
   // [1] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
@@ -74,12 +73,8 @@ AliZDCReconstructor:: AliZDCReconstructor()
   fZEMsp = new TF1("fZEMsp","208.7-0.09006*x+0.000009526*x*x",0.,4000.);
   fZEMb  = new TF1("fZEMb","16.06-0.01633*x+1.44e-5*x*x-6.778e-9*x*x*x+1.438e-12*x*x*x*x-1.112e-16*x*x*x*x*x",0.,4000.);
   
-  // Setting storage
-  fStorage =  SetStorage("local://$ALICE_ROOT");
-
   // Get calibration data
-  int runNumber = 0;
-  fCalibData = GetCalibData(runNumber); 
+  fCalibData = GetCalibData(); 
 }
 
 //_____________________________________________________________________________
@@ -399,14 +394,14 @@ AliCDBStorage* AliZDCReconstructor::SetStorage(const char *uri)
 }
 
 //_____________________________________________________________________________
-AliZDCCalibData* AliZDCReconstructor::GetCalibData(int runNumber) const
+AliZDCCalibData* AliZDCReconstructor::GetCalibData() const
 {
 
-  //printf("\n\t AliZDCReconstructor::GetCalibData \n");
-      
-  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",runNumber);  
+  // Getting calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Data");
   AliZDCCalibData *calibdata = (AliZDCCalibData*) entry->GetObject();
-    
+
   if (!calibdata)  AliWarning("No calibration data from calibration database !");
 
   return calibdata;

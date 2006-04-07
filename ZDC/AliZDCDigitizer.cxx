@@ -61,9 +61,6 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   AliDigitizer(manager)
 {
 
-  // Constructor    
-  fStorage =  SetStorage("local://$ALICE_ROOT");
-
   // Get calibration data
   fCalibData = GetCalibData(); 
 
@@ -402,12 +399,14 @@ AliCDBStorage* AliZDCDigitizer::SetStorage(const char *uri)
 //_____________________________________________________________________________
 AliZDCCalibData* AliZDCDigitizer::GetCalibData() const
 {
-  // returns pointer to AliZDCCalibData object
-  //
-  AliCDBEntry  *entry = fStorage->Get("ZDC/Calib/Data",0);  
+
+  // Getting calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Data");
   AliZDCCalibData *calibdata = (AliZDCCalibData*) entry->GetObject();
-    
-  if (!calibdata)  AliWarning("No ZDC calibration data from calibration database!");
+
+  if (!calibdata)  AliWarning("No calibration data from calibration database !");
 
   return calibdata;
 }
+
