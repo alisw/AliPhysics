@@ -17,7 +17,7 @@
 //
 // Macro for generating the geometry data files:
 // (volpath.dat, transform.dat, svmap.dat)
-// and local CDB storage with zero-misalignment
+// and local CDB storage with zero, residual and full misalignment
 // To be run from aliroot:
 // .x MUONGenerateGeometryData.C
 //
@@ -29,7 +29,9 @@
 void MUONGenerateGeometryData(Bool_t volpaths = true,
                               Bool_t transforms = true, 
                               Bool_t svmaps = true,
-			      Bool_t zeroAlign = true)
+			      Bool_t zeroAlign = true,
+			      Bool_t resMisAlign = true,
+			      Bool_t fullMisAlign = true)
 {
   // Initialize
   gAlice->Init("$ALICE_ROOT/MUON/Config.C");
@@ -61,7 +63,7 @@ void MUONGenerateGeometryData(Bool_t volpaths = true,
   }  
 
   if (zeroAlign) {
-    cout << "Generating CDB storage with zero misalignment data ..." << endl;
+    cout << "Generating zero misalignment data in  MUON/Align/Data..." << endl;
    
     // Create zero alignment data
     TClonesArray* array 
@@ -78,5 +80,47 @@ void MUONGenerateGeometryData(Bool_t volpaths = true,
     cdbManager->Put(array, id, cdbData);
     
     delete array;
-  }  
+  } 
+  
+  if (resMisAlign) {
+    cout << "Generating residual misalignment data in  MUON/ResMisAlignCDB/Data..." << endl;
+   
+    AliMUONGeometryMisAligner misAligner(0.0, 0.004, 0.0, 0.003, 0.0, 0.0023);
+    AliMUONGeometryTransformer* newTransform 
+      = misAligner.MisAlign(builder->GetTransformer(), true);
+    TClonesArray* array = newTransform->GetMisAlignmentData();
+
+    AliCDBManager* cdbManager = AliCDBManager::Instance();
+    cdbManager->SetDefaultStorage("local://ResMisAlignCDB");
+  
+    AliCDBMetaData* cdbData = new AliCDBMetaData();
+    cdbData->SetResponsible("Dimuon Offline project");
+    cdbData->SetComment("MUON alignment objects with residual misalignment");
+    AliCDBId id("MUON/Align/Data", 0, 0); 
+    cdbManager->Put(array, id, cdbData);
+    
+    delete newTransform;
+  }   
+           
+  if (fullMisAlign) {
+    cout << "Generating residual misalignment data in  MUON/FullMisAlignCDB/Data..." << endl;
+   
+    AliMUONGeometryMisAligner misAligner(0.0, 0.03, 0.0, 0.03, 0.0, 0.03);
+    AliMUONGeometryTransformer* newTransform 
+      = misAligner.MisAlign(builder->GetTransformer(), true);
+    TClonesArray* array = newTransform->GetMisAlignmentData();
+
+    AliCDBManager* cdbManager = AliCDBManager::Instance();
+    cdbManager->SetDefaultStorage("local://FullMisAlignCDB");
+  
+    AliCDBMetaData* cdbData = new AliCDBMetaData();
+    cdbData->SetResponsible("Dimuon Offline project");
+    cdbData->SetComment("MUON alignment objects with full misalignment");
+    AliCDBId id("MUON/Align/Data", 0, 0); 
+    cdbManager->Put(array, id, cdbData);
+    
+    delete newTransform;
+  }   
+           
+
 }  
