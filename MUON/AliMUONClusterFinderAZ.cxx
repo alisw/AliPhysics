@@ -233,7 +233,7 @@ next:
     */
     for (Int_t i=0; i<nMax; i++) {
       if (nMax > 1) FindCluster(localMax, maxPos[i]);
-      if (!MainLoop(iSimple)) AliWarning(Form(" MainLoop failed "));
+      MainLoop(iSimple);
       if (i < nMax-1) {
 	for (Int_t j=0; j<fnPads[0]+fnPads[1]; j++) {
 	  if (fPadIJ[1][j] == 0) continue; // pad charge was not modified
@@ -781,7 +781,7 @@ void AliMUONClusterFinderAZ::AdjustPixel(Float_t wxmin, Float_t wymin)
 
   Int_t n1[2], n2[2], iOK = 1, nPix = fPixArray->GetEntriesFast();
   AliMUONPixel *pixPtr, pix;
-  Double_t xy0[2] = {9999, 9999}, wxy[2], dist[2];
+  Double_t xy0[2] = {9999, 9999}, wxy[2], dist[2] = {0};
 
   // Check if large pixel size
   for (Int_t i = 0; i < nPix; i++) {
