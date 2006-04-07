@@ -68,22 +68,22 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
   Int_t SigGenCond(Float_t x, Float_t y, Float_t z);
   void SigGenInit(Float_t x, Float_t y, Float_t z);
 
-  void SetCorrFunc(Int_t,  TF1*);
+  void SetCorrFunc(Int_t isec,  TF1* func);
 
-  TF1* CorrFunc(Int_t) const;
+  TF1* CorrFunc(Int_t isec) const;
 
-  void SetPadSize(float,float);
+  void SetPadSize(float x,float y);
 
-  void SetDAnod(float);
+  void SetDAnod(float d);
 
-  void Init(int) {}
-  void Draw(Option_t * = "");
+  void Init(int /*chamber*/) {}
+  void Draw(Option_t* opt = "");
 
   Float_t Dpx() const;
   Float_t Dpy() const;
   
-  Float_t Dpx(int) const;
-  Float_t Dpy(int) const;
+  Float_t Dpx(int ipcb) const;
+  Float_t Dpy(int ipcb) const;
   
   Float_t GetAnod(Float_t xhit) const;
 
@@ -94,7 +94,7 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
   void SetPad(Int_t ix,Int_t iy);
   
   /// Sets the current hit.
-  void SetHit(Float_t x, Float_t y, Float_t z_is_not_used);
+  void SetHit(Float_t x, Float_t y, Float_t zIsNotUsed);
  
   AliMUONGeometryDirection GetDirection();// { return kDirUndefined; }
 
@@ -128,14 +128,14 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
      
  private:
 
-  Int_t fDetElemId;
-	AliMpPlaneType fPlaneType;
-  const AliMpSlat* fSlat;
-  AliMpSlatSegmentation* fSlatSegmentation;
-  AliMpVPadIterator* fPadIterator; //!
+  Int_t fDetElemId;                // det element Id
+	AliMpPlaneType fPlaneType; // plane type
+  const AliMpSlat* fSlat;          // slat
+  AliMpSlatSegmentation* fSlatSegmentation; // slat segmentation
+  AliMpVPadIterator* fPadIterator; //! pad iterator
   AliMpPad fCurrentPad; //!FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
-  Float_t fXhit; //!
-  Float_t fYhit; //!
+  Float_t fXhit;        //!  x-position of hit
+  Float_t fYhit;        //!  y-position of hit
   ClassDef(AliMUONSt345SlatSegmentationV2,1)
 };
 

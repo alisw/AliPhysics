@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+// -------------------------------------
+// Class AliMUONSt345SlatSegmentation
+// -------------------------------------
+// Segmentation for MUON slat stations using 
+// the mapping package
+
+
 #include "AliMUONSt345SlatSegmentationV2.h"
 #include "AliMUONConstants.h"
 
@@ -36,7 +43,6 @@
 #include "AliLog.h"
 
 #include "Riostream.h"
-#include "TClass.h"
 
 ClassImp(AliMUONSt345SlatSegmentationV2)
 
@@ -56,6 +62,8 @@ fPadIterator(0),
 fXhit(FMAX),
 fYhit(FMAX)
 {
+// Default ctor
+
 	AliDebug(1,Form("this=%p default (empty) ctor",this));
 }
 
@@ -100,6 +108,8 @@ AliMUONSt345SlatSegmentationV2::AliMUONSt345SlatSegmentationV2(
 //_____________________________________________________________________________
 AliMUONSt345SlatSegmentationV2::~AliMUONSt345SlatSegmentationV2()
 {
+// Destructor
+
 	AliDebug(1,Form("dtor this=%p",this));
   delete fPadIterator;
 }
@@ -120,25 +130,30 @@ AliMUONSt345SlatSegmentationV2::operator=(const AliMUONSt345SlatSegmentationV2& 
 
 //_____________________________________________________________________________
 TF1*
-AliMUONSt345SlatSegmentationV2::CorrFunc(Int_t) const
+AliMUONSt345SlatSegmentationV2::CorrFunc(Int_t /*isec*/) const
 {
+// Not implemented
+
   AliFatal("Not Implemented");
   return 0x0;
 }
 
 //_____________________________________________________________________________
 Float_t 
-AliMUONSt345SlatSegmentationV2::Distance2AndOffset(Int_t,Int_t,
-																									 Float_t,Float_t,Int_t*)
-{
+AliMUONSt345SlatSegmentationV2::Distance2AndOffset(Int_t /*iX*/, Int_t /*iY*/, 
+			          Float_t /*x*/, Float_t /*y*/, Int_t* /*dummy*/){
+// Not implemented
+
   AliFatal("Not Implemented");
   return 0.0;
 }
 
 //_____________________________________________________________________________
 void
-AliMUONSt345SlatSegmentationV2::Draw(Option_t*)
+AliMUONSt345SlatSegmentationV2::Draw(Option_t* /*opt*/)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
@@ -146,6 +161,8 @@ AliMUONSt345SlatSegmentationV2::Draw(Option_t*)
 Float_t
 AliMUONSt345SlatSegmentationV2::Dpx() const
 {
+// Not implemented
+
   AliFatal("Not Implemented");
   return 0.0;
 }
@@ -154,6 +171,8 @@ AliMUONSt345SlatSegmentationV2::Dpx() const
 Float_t
 AliMUONSt345SlatSegmentationV2::Dpy() const
 {
+// Not implemented
+
   AliFatal("Not Implemented");
   return 0.0;
 }
@@ -162,6 +181,8 @@ AliMUONSt345SlatSegmentationV2::Dpy() const
 Float_t
 AliMUONSt345SlatSegmentationV2::Dpx(int ipcb) const
 {
+// Get pad size in x
+
 	AliMpPCB* pcb = fSlat->GetPCB(ipcb);
 	if (!pcb) 
   {
@@ -174,6 +195,8 @@ AliMUONSt345SlatSegmentationV2::Dpx(int ipcb) const
 Float_t
 AliMUONSt345SlatSegmentationV2::Dpy(int ipcb) const
 {
+// Get pad size in y
+
 	AliMpPCB* pcb = fSlat->GetPCB(ipcb);
 	if (!pcb) 
   {
@@ -184,9 +207,8 @@ AliMUONSt345SlatSegmentationV2::Dpy(int ipcb) const
 
 //_____________________________________________________________________________
 void
-AliMUONSt345SlatSegmentationV2::FirstPad(Float_t xhit, Float_t yhit, 
-																				 Float_t /*zhit*/, 
-																				 Float_t dx, Float_t dy)
+AliMUONSt345SlatSegmentationV2::FirstPad(Float_t xhit, Float_t yhit,Float_t /*zhit*/,
+                                         Float_t dx, Float_t dy)
 {
   // OK. We will do it in 2 steps. First get the area over which to
   // iterate, based on hit coordinates and (dx,dy). This first step
@@ -257,6 +279,8 @@ AliMUONSt345SlatSegmentationV2::GetAnod(Float_t xhit) const
 AliMUONGeometryDirection
 AliMUONSt345SlatSegmentationV2::GetDirection()
 {
+// Not implemented
+
   //AliWarning("Not Implemented");
   return kDirUndefined;
 }
@@ -274,16 +298,21 @@ AliMUONSt345SlatSegmentationV2::GetMpSegmentation() const
 
 //_____________________________________________________________________________
 void 
-AliMUONSt345SlatSegmentationV2::GetNParallelAndOffset(Int_t,Int_t,Int_t*,Int_t*)
+AliMUONSt345SlatSegmentationV2::GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/,
+				         Int_t* /*Nparallel*/, Int_t* /*Offset*/)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
 //_____________________________________________________________________________
 void
 AliMUONSt345SlatSegmentationV2::GetPadC(Int_t ix, Int_t iy, 
-																				Float_t& x, Float_t& y, Float_t& z)
-{
+                                        Float_t& x, Float_t& y, Float_t& z)
+{					 
+// Transform from pad to real coordinates
+
   z = 0;
   GetPadC(ix,iy,x,y);
 }
@@ -291,8 +320,10 @@ AliMUONSt345SlatSegmentationV2::GetPadC(Int_t ix, Int_t iy,
 //_____________________________________________________________________________
 void
 AliMUONSt345SlatSegmentationV2::GetPadC(Int_t ix, Int_t iy, 
-																				Float_t& x, Float_t& y)
+                                        Float_t& x, Float_t& y)
 {
+// Transform from pad to real coordinates
+
   AliMpPad pad = 
   fSlatSegmentation->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
   x = pad.Position().X();
@@ -305,14 +336,18 @@ void
 AliMUONSt345SlatSegmentationV2::GetPadI(Float_t x, Float_t y, Float_t /*z*/,
 Int_t& ix, Int_t& iy)
 {
+//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
+
   GetPadI(x,y,ix,iy);
 }
 
 //_____________________________________________________________________________
 void
 AliMUONSt345SlatSegmentationV2::GetPadI(Float_t x, Float_t y,
-																				Int_t& ix, Int_t& iy)
+                                        Int_t& ix, Int_t& iy)
 {
+//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
+
   AliMpPad pad = fSlatSegmentation->PadByPosition(TVector2(x,y), kTRUE);
 	
   if ( pad != AliMpPad::Invalid() )
@@ -328,8 +363,11 @@ AliMUONSt345SlatSegmentationV2::GetPadI(Float_t x, Float_t y,
 
 //_____________________________________________________________________________
 void 
-AliMUONSt345SlatSegmentationV2::GiveTestPoints(Int_t&,Float_t*,Float_t*) const
+AliMUONSt345SlatSegmentationV2::GiveTestPoints(Int_t& /*n*/, 
+                                    Float_t* /*x*/, Float_t* /*y*/) const
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
@@ -337,6 +375,8 @@ AliMUONSt345SlatSegmentationV2::GiveTestPoints(Int_t&,Float_t*,Float_t*) const
 Bool_t
 AliMUONSt345SlatSegmentationV2::HasPad(Float_t x, Float_t y, Float_t z)
 {
+// Returns true if a pad exists in the given position
+
   Int_t ix, iy;
   GetPadI(x,y,z,ix,iy);
   return HasPad(ix,iy);
@@ -346,13 +386,15 @@ AliMUONSt345SlatSegmentationV2::HasPad(Float_t x, Float_t y, Float_t z)
 Bool_t
 AliMUONSt345SlatSegmentationV2::HasPad(Int_t ix, Int_t iy)
 {
+// Returns true if a pad with given indices exists
+
   return fSlatSegmentation->HasPad(AliMpIntPair(ix,iy));
 }
 
 //_____________________________________________________________________________
 void  
-AliMUONSt345SlatSegmentationV2::IntegrationLimits(Float_t& x1, Float_t& x2, 
-																									Float_t& y1, Float_t& y2)
+AliMUONSt345SlatSegmentationV2::IntegrationLimits(Float_t& x1, Float_t& x2,
+                                                  Float_t& y1, Float_t& y2)
 {
   //
   //  Returns integration limits for current pad
@@ -389,6 +431,9 @@ AliMUONSt345SlatSegmentationV2::ISector()
 Int_t
 AliMUONSt345SlatSegmentationV2::Ix()
 {
+// Current pad cursor during disintegration
+// x, y-coordinate
+
   if ( fPadIterator )
 	{
 		return fPadIterator->CurrentItem().GetIndices().GetFirst();
@@ -403,6 +448,9 @@ AliMUONSt345SlatSegmentationV2::Ix()
 Int_t
 AliMUONSt345SlatSegmentationV2::Iy()
 {
+// Current pad cursor during disintegration
+// x, y-coordinate
+
   if ( fPadIterator ) 
 	{
 		return fPadIterator->CurrentItem().GetIndices().GetSecond();
@@ -422,8 +470,8 @@ AliMUONSt345SlatSegmentationV2::MorePads()
 
 //_____________________________________________________________________________
 void 
-AliMUONSt345SlatSegmentationV2::Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, 
-																					 Int_t Xlist[10], Int_t Ylist[10])
+AliMUONSt345SlatSegmentationV2::Neighbours(Int_t iX, Int_t iY, Int_t* Nlist,
+                                           Int_t Xlist[10], Int_t Ylist[10])
 {
   // Find pad at (ix,iy) for which we'll search neighbours.
   AliMpPad pad = 
@@ -456,6 +504,8 @@ AliMUONSt345SlatSegmentationV2::Neighbours(Int_t iX, Int_t iY, Int_t* Nlist,
 void
 AliMUONSt345SlatSegmentationV2::NextPad()
 {
+// Iterate over pads - stepper
+
   if ( fPadIterator )
 	{
 		fPadIterator->Next();
@@ -471,6 +521,8 @@ AliMUONSt345SlatSegmentationV2::NextPad()
 Int_t
 AliMUONSt345SlatSegmentationV2::Npx() const
 {
+// Maximum number of Pads in x
+
   return fSlatSegmentation->MaxPadIndexX()+1;
 }
 
@@ -478,13 +530,17 @@ AliMUONSt345SlatSegmentationV2::Npx() const
 Int_t
 AliMUONSt345SlatSegmentationV2::Npy() const
 {
+// Maximum number of Pads in y
+
   return fSlatSegmentation->MaxPadIndexY()+1;
 }
 
 //_____________________________________________________________________________
 void
-AliMUONSt345SlatSegmentationV2::Print(Option_t*) const
+AliMUONSt345SlatSegmentationV2::Print(Option_t* /*opt*/) const
 {
+// Printing
+
   cout << "DetElemId=" << fDetElemId << " PlaneType=" 
   << fPlaneType << " Npx,Npy=" << Npx() << "," << Npy() << " fSlat=" << fSlat 
   << " fSlatSegmentation=" << fSlatSegmentation
@@ -493,8 +549,10 @@ AliMUONSt345SlatSegmentationV2::Print(Option_t*) const
 
 //_____________________________________________________________________________
 Int_t
-AliMUONSt345SlatSegmentationV2::Sector(Int_t ix, Int_t)
+AliMUONSt345SlatSegmentationV2::Sector(Int_t ix, Int_t /*iy*/)
 {
+// Calculate sector from pad coordinates
+
   return fSlat->FindPCBIndex(ix);
 }
 
@@ -502,20 +560,26 @@ AliMUONSt345SlatSegmentationV2::Sector(Int_t ix, Int_t)
 Int_t
 AliMUONSt345SlatSegmentationV2::Sector(Float_t x, Float_t y)
 {
+// Calculate sector from pad coordinates
+
   return fSlat->FindPCBIndex(x,y);
 }
 
 //_____________________________________________________________________________
 void
-AliMUONSt345SlatSegmentationV2::SetCorrFunc(Int_t,TF1*)
+AliMUONSt345SlatSegmentationV2::SetCorrFunc(Int_t /*isec*/,TF1* /*func*/)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
 //_____________________________________________________________________________
 void
-AliMUONSt345SlatSegmentationV2::SetDAnod(float)
+AliMUONSt345SlatSegmentationV2::SetDAnod(float /*d*/)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
@@ -523,6 +587,10 @@ AliMUONSt345SlatSegmentationV2::SetDAnod(float)
 void
 AliMUONSt345SlatSegmentationV2::SetHit(Float_t x, Float_t y, Float_t)
 {
+// Set hit position
+// Sets virtual hit position, needed for evaluating pad response 
+// outside the tracking program 
+
   fXhit = x;
   fYhit = y;
 	
@@ -537,13 +605,13 @@ AliMUONSt345SlatSegmentationV2::SetHit(Float_t x, Float_t y, Float_t)
   if ( fXhit < -fSlat->DX() || fXhit > fSlat->DX() ||
        fYhit < -fSlat->DY() || fYhit > fSlat->DY() )
 	{
-    Double_t DX = - fSlat->DX() + TMath::Abs(fXhit);
-    Double_t DY = - fSlat->DY() + TMath::Abs(fYhit);
-    DX = ( DX > 0 ? DX : 0);
-    DY = ( DY > 0 ? DY : 0);
+    Double_t dx = - fSlat->DX() + TMath::Abs(fXhit);
+    Double_t dy = - fSlat->DY() + TMath::Abs(fYhit);
+    dx = ( dx > 0 ? dx : 0);
+    dy = ( dy > 0 ? dy : 0);
 		AliWarning(Form("Hit outside slat %s limits (x,y)hit = (%e,%e). "
                     "Outside by (%e,%e) cm. Might be ok though.",
-                    fSlat->GetID(),fXhit,fYhit,DX,DY));
+                    fSlat->GetID(),fXhit,fYhit,dx,dy));
 	}  
 }
 
@@ -551,6 +619,10 @@ AliMUONSt345SlatSegmentationV2::SetHit(Float_t x, Float_t y, Float_t)
 void
 AliMUONSt345SlatSegmentationV2::SetPad(Int_t ix, Int_t iy)
 {
+// Set pad position.
+// Sets virtual pad coordinates, needed for evaluating pad response 
+// outside the tracking program.
+
   fCurrentPad = 
 	fSlatSegmentation->PadByIndices(AliMpIntPair(ix,iy),kTRUE);
   if ( !fCurrentPad.IsValid() )
@@ -561,15 +633,19 @@ AliMUONSt345SlatSegmentationV2::SetPad(Int_t ix, Int_t iy)
 
 //_____________________________________________________________________________
 void
-AliMUONSt345SlatSegmentationV2::SetPadSize(float,float)
+AliMUONSt345SlatSegmentationV2::SetPadSize(float /*p1*/,float /*p2*/)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
 
 //_____________________________________________________________________________
 Int_t 
-AliMUONSt345SlatSegmentationV2::SigGenCond(Float_t,Float_t,Float_t)
+AliMUONSt345SlatSegmentationV2::SigGenCond(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
   return 0;
 }
@@ -578,5 +654,7 @@ AliMUONSt345SlatSegmentationV2::SigGenCond(Float_t,Float_t,Float_t)
 void 
 AliMUONSt345SlatSegmentationV2::SigGenInit(Float_t,Float_t,Float_t)
 {
+// Not implemented
+
   AliFatal("Not Implemented");
 }
