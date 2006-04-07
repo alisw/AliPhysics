@@ -16,12 +16,19 @@
 //_____________________________________________________________________________
 class AliTPCclusterMI : public AliCluster {
 public:
-  AliTPCclusterMI():AliCluster(){fQ=0; fUsed=0;}
+  AliTPCclusterMI():AliCluster(){fX =0; fQ=0; fUsed=0; fDetector = 0; fRow =0;}
   AliTPCclusterMI(Int_t *lab, Float_t *hit) : AliCluster(lab,hit) {fQ = (UShort_t)hit[4];}
   virtual ~AliTPCclusterMI() {}
   virtual Bool_t IsSortable() const; 
   virtual Int_t Compare(const TObject* obj) const;
   inline  void Use(Int_t inc=10);
+  virtual Float_t GetX() const { return fX;}
+  virtual void  SetX(Float_t x) { fX = x;}
+  virtual Int_t GetDetector() const {return fDetector;}
+  virtual Int_t GetRow() const {return fRow;}
+  virtual void SetDetector(Int_t detector){fDetector = (UChar_t)(detector%256);}
+  virtual void SetRow(Int_t row){fRow = (UChar_t)(row%256);}  
+  //
   void SetQ(Float_t q) {fQ=(UShort_t)q;}
   void SetType(Char_t type) {fType=type;}
   void SetMax(UShort_t max) {fMax=max;}
@@ -31,11 +38,14 @@ public:
   Char_t  GetType()const {return fType;}
  
 private:
+  Float_t   fX;        //X position of cluster
   Short_t   fQ ;       //Q of cluster (in ADC counts)  
   Char_t    fType;     //type of the cluster 0 means golden 
   Short_t   fMax;      //maximal amplitude in cluster
   Char_t    fUsed;     //counter of usage  
- ClassDef(AliTPCclusterMI,1)  // Time Projection Chamber clusters
+  UChar_t   fDetector; //detector  number
+  UChar_t   fRow;      //row number number
+  ClassDef(AliTPCclusterMI,2)  // Time Projection Chamber clusters
 };
 
 void AliTPCclusterMI::Use(Int_t inc) 

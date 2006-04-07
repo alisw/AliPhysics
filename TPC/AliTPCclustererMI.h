@@ -55,6 +55,7 @@ private:
   Int_t fMaxTime;
   Int_t fMaxPad;
   Int_t fSector;      //!current sector
+  Int_t fRow;         //!current row
   Float_t fSign;      //!current sign 
   Float_t fRx;        // current radius
   Float_t fPadWidth;  // the width of the pad

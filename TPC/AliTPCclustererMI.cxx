@@ -433,7 +433,10 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c){
   c.SetZ(fZWidth*(meanj-3)); 
   c.SetZ(c.GetZ() - 3.*fParam->GetZSigma() + fParam->GetNTBinsL1()*fParam->GetZWidth()); // PASA delay + L1 delay
   c.SetZ(fSign*(fParam->GetZLength() - c.GetZ()));
-  
+  c.SetX(fRx);
+  c.SetDetector(fSector);
+  c.SetRow(fRow);
+
   if (ki<=1 || ki>=fMaxPad-1 || kj==1 || kj==fMaxTime-2) {
     //c.SetSigmaY2(c.GetSigmaY2()*25.);
     //c.SetSigmaZ2(c.GetSigmaZ2()*4.);
@@ -479,11 +482,11 @@ void AliTPCclustererMI::Digits2Clusters()
 
   for (Int_t n=0; n<nentries; n++) {
     fInput->GetEvent(n);
-    Int_t row;
-    if (!fParam->AdjustSectorRow(digarr.GetID(),fSector,row)) {
+    if (!fParam->AdjustSectorRow(digarr.GetID(),fSector,fRow)) {
       cerr<<"AliTPC warning: invalid segment ID ! "<<digarr.GetID()<<endl;
       continue;
     }
+    Int_t row = fRow;
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
     
     //
@@ -607,6 +610,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 
       // ... prepare for the next pad row
       fSector = input.GetSector();
+      fRow    = input.GetRow();
       Int_t iRow = input.GetRow();
       fRx = fParam->GetPadRowRadii(fSector, iRow);
     
