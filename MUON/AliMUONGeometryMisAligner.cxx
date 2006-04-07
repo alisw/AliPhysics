@@ -19,7 +19,7 @@
 // ----------------------------
 // Class for misalignment of geometry transformations
 //
-// Author:Bruce Becker
+// Authors: Bruce Becker, Javier Castillo
 
 //__________________________________________________________________
 //
@@ -55,25 +55,63 @@
 
 #include "AliLog.h"
 
-#include <TGeoManager.h>
-#include <Riostream.h>
-#include <TObjArray.h>
-#include <TSystem.h>
+#include <TGeoMatrix.h>
 #include <TMath.h>
 #include <TRandom.h>
 
-#include <sstream>
-
 ClassImp(AliMUONGeometryMisAligner)
+//______________________________________________________________________________
+AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartXMisAligM, Double_t cartXMisAligW, Double_t cartYMisAligM, Double_t cartYMisAligW, Double_t angMisAligM, Double_t angMisAligW)
+:TObject(), fDisplacementGenerator(0)
+{
+  /// Standard constructor
+  fCartXMisAligM = cartXMisAligM;
+  fCartXMisAligW = cartXMisAligW;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+  fCartYMisAligM = cartYMisAligM;
+  fCartYMisAligW = cartYMisAligW;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+  fAngMisAligM = angMisAligM;
+  fAngMisAligW = angMisAligW;
+  fXYAngMisAligFactor = 0.0;
+  fZCartMisAligFactor = 0.0;
+  fDisplacementGenerator = new TRandom(0);
+  fUseUni = kFALSE;
+  fUseGaus = kTRUE;
+}
+
+//______________________________________________________________________________
+AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAligM, Double_t cartMisAligW, Double_t angMisAligM, Double_t angMisAligW)
+:TObject(), fDisplacementGenerator(0)
+{
+  /// Standard constructor
+  fCartXMisAligM = cartMisAligM;
+  fCartXMisAligW = cartMisAligW;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+  fCartYMisAligM = cartMisAligM;
+  fCartYMisAligW = cartMisAligW;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+  fAngMisAligM = angMisAligM;
+  fAngMisAligW = angMisAligW;
+  fXYAngMisAligFactor = 0.0;
+  fZCartMisAligFactor = 0.0;
+  fDisplacementGenerator = new TRandom(0);
+  fUseUni = kFALSE;
+  fUseGaus = kTRUE;
+}
+
 //______________________________________________________________________________
 AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAlig, Double_t angMisAlig)
 :TObject(), fDisplacementGenerator(0)
 {
   /// Standard constructor
-  fMaxCartMisAlig = cartMisAlig;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-  fMaxAngMisAlig = angMisAlig;
-  fXYAngMisAligFactor = 1.0;
+  fCartXMisAligM = 0.;
+  fCartXMisAligW = cartMisAlig;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+  fCartYMisAligM = 0.;
+  fCartYMisAligW = cartMisAlig;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+  fAngMisAligM = 0.;
+  fAngMisAligW = angMisAlig;
+  fXYAngMisAligFactor = 0.0;
+  fZCartMisAligFactor = 0.0;
   fDisplacementGenerator = new TRandom(0);
+  fUseUni = kTRUE;
+  fUseGaus = kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -120,12 +158,66 @@ operator=(const AliMUONGeometryMisAligner & right)
 void
 AliMUONGeometryMisAligner::SetXYAngMisAligFactor(Double_t factor)
 {
-  /// Set factor 
+  /// Set XY angular misalign factor 
 
   if (TMath::Abs(factor) > 1.0 && factor > 0.)
     fXYAngMisAligFactor = factor;
   else
-    AliError(Form("Invalid factor, %d", factor));
+    AliError(Form("Invalid XY angular misalign factor, %d", factor));
+}
+
+//_________________________________________________________________________
+void AliMUONGeometryMisAligner::SetZCartMisAligFactor(Double_t factor) 
+{
+  /// Set XY angular misalign factor 
+  if (TMath::Abs(factor)<1.0 && factor>0.)
+    fZCartMisAligFactor = factor;
+  else
+    AliError(Form("Invalid Z cartesian misalign factor, %d", factor));
+}
+
+//_________________________________________________________________________
+void AliMUONGeometryMisAligner::GetUniMisAlign(Double_t *cartMisAlig, Double_t *angMisAlig) const
+{
+  /// Misalign using uniform distribution
+  /*
+    misalign the centre of the local transformation
+    rotation axes : 
+    fAngMisAlig[1,2,3] = [x,y,z]
+    Assume that misalignment about the x and y axes (misalignment of z plane)
+    is much smaller, since the entire detection plane has to be moved (the 
+    detection elements are on a support structure), while rotation of the x-y
+    plane is more free.
+  */
+  cartMisAlig[0] = fDisplacementGenerator->Uniform(-fCartXMisAligW+fCartXMisAligM, fCartXMisAligM+fCartXMisAligW);
+  cartMisAlig[1] = fDisplacementGenerator->Uniform(-fCartYMisAligW+fCartYMisAligM, fCartYMisAligM+fCartYMisAligW);
+  cartMisAlig[2] = fDisplacementGenerator->Uniform(-fZCartMisAligFactor*(fCartXMisAligW+fCartXMisAligM), fZCartMisAligFactor*(fCartXMisAligM+fCartXMisAligW));  
+ 
+  angMisAlig[0] = fDisplacementGenerator->Uniform(-fXYAngMisAligFactor*(fAngMisAligW+fAngMisAligM), fXYAngMisAligFactor*(fAngMisAligM+fAngMisAligW));
+  angMisAlig[1] = fDisplacementGenerator->Uniform(-fXYAngMisAligFactor*(fAngMisAligW+fAngMisAligM), fXYAngMisAligFactor*(fAngMisAligM+fAngMisAligW));
+  angMisAlig[2] = fDisplacementGenerator->Uniform(-fAngMisAligW+fAngMisAligM, fAngMisAligM+fAngMisAligW);	// degrees
+}
+
+//_________________________________________________________________________
+void AliMUONGeometryMisAligner::GetGausMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3]) const
+{
+  /// Misalign using gaussian distribution
+  /*
+    misalign the centre of the local transformation
+    rotation axes : 
+    fAngMisAlig[1,2,3] = [x,y,z]
+    Assume that misalignment about the x and y axes (misalignment of z plane)
+    is much smaller, since the entire detection plane has to be moved (the 
+    detection elements are on a support structure), while rotation of the x-y
+    plane is more free.
+  */
+  cartMisAlig[0] = fDisplacementGenerator->Gaus(fCartXMisAligM, fCartXMisAligW);
+  cartMisAlig[1] = fDisplacementGenerator->Gaus(fCartYMisAligM, fCartYMisAligW);
+  cartMisAlig[2] = fDisplacementGenerator->Gaus(fCartXMisAligM, fZCartMisAligFactor*fCartXMisAligW);
+ 
+  angMisAlig[0] = fDisplacementGenerator->Gaus(fAngMisAligM, fXYAngMisAligFactor*fAngMisAligW);
+  angMisAlig[1] = fDisplacementGenerator->Gaus(fAngMisAligM, fXYAngMisAligFactor*fAngMisAligW);
+  angMisAlig[2] = fDisplacementGenerator->Gaus(fAngMisAligM, fAngMisAligW);	// degrees
 }
 
 //_________________________________________________________________________
@@ -146,26 +238,19 @@ TGeoCombiTrans AliMUONGeometryMisAligner::MisAlign(const TGeoCombiTrans & transf
     {
       rot = new TGeoRotation("rot");
     }			// default constructor.
-  
-  cartMisAlig[0] = fDisplacementGenerator->Uniform(-1. * fMaxCartMisAlig, fMaxCartMisAlig);
-  cartMisAlig[1] = fDisplacementGenerator->Uniform(-1. * fMaxCartMisAlig, fMaxCartMisAlig);
-  cartMisAlig[2] = fDisplacementGenerator->Uniform(-1. * fMaxCartMisAlig, fMaxCartMisAlig);
-  
+
+  if (fUseUni) { 
+    GetUniMisAlign(cartMisAlig,angMisAlig);
+  }
+  else { 
+    if (!fUseGaus) {
+      AliWarning("Neither uniform nor gausian distribution is set! Will use gausian...");
+    } 
+    GetGausMisAlign(cartMisAlig,angMisAlig);
+  }
+
   TGeoTranslation newTrans(cartMisAlig[0] + trans[0], cartMisAlig[1] + trans[1], cartMisAlig[2] + trans[2]);
   
-  /*
-    misalign the centre of the local transformation
-    rotation axes : 
-    fAngMisAlig[1,2,3] = [x,y,z]
-    Assume that misalignment about the x and y axes (misalignment of z plane)
-    is much smaller, since the entire detection plane has to be moved (the 
-    detection elements are on a support structure), while rotation of the x-y
-    plane is more free.
-  */
-  
-  angMisAlig[0] = fDisplacementGenerator->Uniform(fXYAngMisAligFactor * fMaxAngMisAlig,  1.0 * fMaxAngMisAlig);
-  angMisAlig[1] =    fDisplacementGenerator->Uniform(fXYAngMisAligFactor * fMaxAngMisAlig, 1.0 * fMaxAngMisAlig);
-  angMisAlig[2] = fDisplacementGenerator->Uniform(-1. * fMaxAngMisAlig, fMaxAngMisAlig);	// degrees
   AliInfo(Form("Rotated by %f about Z axis.", angMisAlig[2]));
   rot->RotateX(angMisAlig[0]);
   rot->RotateY(angMisAlig[1]);
@@ -173,7 +258,6 @@ TGeoCombiTrans AliMUONGeometryMisAligner::MisAlign(const TGeoCombiTrans & transf
 
   return TGeoCombiTrans(newTrans, *rot);
 }
-
 
 //______________________________________________________________________
 AliMUONGeometryTransformer *
