@@ -15,24 +15,34 @@
 
 /* $Id$ */
 
+// ----------------------------
+// Class AliMUONClusterInput
+// ----------------------------
+// Global data service for hit reconstruction
+// Author: to be added
+
 #include "AliMUONClusterInput.h"
 
-#include "AliMUON.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMUONGeometrySegmentation.h"
+#include "AliMUONSegFactory.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONConstants.h"
 #include "AliMUONMathieson.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONDigit.h"
 
-#include "AliRun.h"
 #include "AliLog.h"
 
 #include <TClonesArray.h>
 #include <TMinuit.h>
+#include <TGeoManager.h>
 
-AliMUONClusterInput* AliMUONClusterInput::fgClusterInput = 0; 
-TMinuit* AliMUONClusterInput::fgMinuit = 0; 
-AliMUONMathieson* AliMUONClusterInput::fgMathieson = 0; 
+AliMUONClusterInput*        AliMUONClusterInput::fgClusterInput = 0; 
+TMinuit*                    AliMUONClusterInput::fgMinuit = 0; 
+AliMUONMathieson*           AliMUONClusterInput::fgMathieson = 0; 
+AliMUONGeometryTransformer* AliMUONClusterInput::fgTransformer = 0; 
+AliMUONSegmentation*        AliMUONClusterInput::fgSegmentation = 0; 
 
 ClassImp(AliMUONClusterInput)
 
@@ -43,6 +53,8 @@ AliMUONClusterInput::AliMUONClusterInput()
     fDetElemId(0)
   
 {
+// Default constructor
+
   fDigits[0]=0;
   fDigits[1]=0;
   fSegmentation2[0]=0;
@@ -55,6 +67,16 @@ AliMUONClusterInput* AliMUONClusterInput::Instance()
     if (fgClusterInput == 0) {
 	fgClusterInput = new AliMUONClusterInput();
 	fgMinuit = new TMinuit(8);
+	
+	// Create segmentation with activated Root geometry  
+	if ( ! gGeoManager ) {
+	  AliFatalClass("Geometry not loaded.");
+	  return fgClusterInput;
+	}  
+        fgTransformer = new AliMUONGeometryTransformer(true);
+        fgTransformer->ReadGeometryData("volpath.dat", gGeoManager);
+        AliMUONSegFactory factory(fgTransformer);
+	fgSegmentation = factory.CreateSegmentation(); 
     }
     
     return fgClusterInput;
@@ -65,6 +87,8 @@ AliMUONClusterInput::~AliMUONClusterInput()
 // Destructor
     delete fgMinuit;
     delete fgMathieson;
+    delete fgTransformer;
+    delete fgSegmentation;
     fgMinuit = 0;
     fgMathieson = 0;
 }
@@ -89,13 +113,8 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     delete fgMathieson;
     fgMathieson = new AliMUONMathieson();
 
-    AliMUON *pMUON;
-    AliMUONSegmentation* pSegmentation;
-
-    pMUON = (AliMUON*) gAlice->GetModule("MUON");
-    pSegmentation = pMUON->GetSegmentation();
-    fSegmentation2[0]= pSegmentation->GetModuleSegmentation(chamber, 0);
-    fSegmentation2[1]= pSegmentation->GetModuleSegmentation(chamber, 1);
+    fSegmentation2[0]= fgSegmentation->GetModuleSegmentation(chamber, 0);
+    fSegmentation2[1]= fgSegmentation->GetModuleSegmentation(chamber, 1);
 
     fNseg = 2;
     if (chamber < AliMUONConstants::NTrackingCh()) {
@@ -121,13 +140,7 @@ void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig
     fDetElemId = idDE;
     fDigits[0] = dig;
 
-    AliMUON *pMUON;
-    AliMUONSegmentation* pSegmentation;
-
-    pMUON = (AliMUON*) gAlice->GetModule("MUON");
-    pSegmentation = pMUON->GetSegmentation();
-    fSegmentation2[0]= pSegmentation->GetModuleSegmentation(chamber, 0);
-
+    fSegmentation2[0]= fgSegmentation->GetModuleSegmentation(chamber, 0);
     fNseg=1;
 }
 

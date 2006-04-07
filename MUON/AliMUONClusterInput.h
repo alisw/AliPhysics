@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id $*/
-// Revision of includes 07/05/2004
+// Revision of includes 07/04/2006
 
 /// \ingroup rec
 /// \class AliMUONClusterInput
@@ -12,13 +12,15 @@
 
 #include <TObject.h>
 #include <TClonesArray.h> // needed for inline function Digit
-#include "AliMUONGeometrySegmentation.h"
-
-class TMinuit;
 
 class AliMUONDigit;
 class AliMUONRawCluster;
 class AliMUONMathieson;
+class AliMUONGeometryTransformer;
+class AliMUONSegmentation;
+class AliMUONGeometrySegmentation;
+
+class TMinuit;
 
 class AliMUONClusterInput : public TObject 
 {
@@ -59,8 +61,10 @@ class AliMUONClusterInput : public TObject
     AliMUONClusterInput(const AliMUONClusterInput& clusterInput);
     AliMUONClusterInput & operator = (const AliMUONClusterInput& rhs);
  private:
-    static AliMUONClusterInput* fgClusterInput; // ! singleton instance
-    static AliMUONMathieson*    fgMathieson;     // ! Mathieson
+    static AliMUONClusterInput*  fgClusterInput;  // ! singleton instance
+    static AliMUONMathieson*     fgMathieson;     // ! Mathieson
+    static AliMUONGeometryTransformer*  fgTransformer;  // ! Geometry transformer
+    static AliMUONSegmentation*  fgSegmentation;  // ! Segmentation
 
     // Digits
     TClonesArray*        fDigits[2];       // ! Array of pointers to digits
