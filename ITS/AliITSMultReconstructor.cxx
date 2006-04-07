@@ -89,8 +89,6 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
   // After this method has been called, the clusters of the two layers
   // and the tracklets can be retrieved by calling the Get'er methods.
 
-  cout << " HEEEEEEEEEEEEEEEEEEEEE " << flush << endl;
-
   // reset counters
   fNClustersLay1 = 0;
   fNClustersLay2 = 0;
@@ -278,8 +276,6 @@ AliITSMultReconstructor::SaveHists() {
   
   if (!fHistOn)
     return;
-
-  cout << "Saving histograms" << endl;
 
   fhClustersDPhi->Write();
   fhClustersDTheta->Write();
