@@ -20,14 +20,19 @@ public:
   virtual ~AliCluster() {;}
   AliCluster(Int_t *lab, Float_t *hit);
   void SetLabel(Int_t lab, Int_t i) {fTracks[i]=lab;}
+
+  virtual void SetX(Float_t /*x*/){}
   virtual void SetY(Float_t y)      {fY=y;}
   virtual void SetZ(Float_t z)      {fZ=z;}
+  virtual void SetDetector(Int_t /*detector*/) {}
   void SetSigmaY2(Float_t sy2)      {fSigmaY2=sy2;}
   void SetSigmaZ2(Float_t sz2)      {fSigmaZ2=sz2;}
 
   Int_t GetLabel(Int_t i) const {return fTracks[i];}
+  virtual Float_t GetX()          const {return 0;}
   Float_t GetY()          const {return fY;}
   Float_t GetZ()          const {return fZ;}
+  virtual Int_t GetDetector()  const {return 0;}
   Float_t GetSigmaY2()    const {return fSigmaY2;}
   Float_t GetSigmaZ2()    const {return fSigmaZ2;}
 
@@ -45,7 +50,7 @@ protected:
   Float_t   fSigmaY2;  //Sigma Y square of cluster
   Float_t   fSigmaZ2;  //Sigma Z square of cluster
   
-  ClassDef(AliCluster,1)  // Time Projection Chamber clusters
+  ClassDef(AliCluster,2)  // Time Projection Chamber clusters
 };
 
 #endif
