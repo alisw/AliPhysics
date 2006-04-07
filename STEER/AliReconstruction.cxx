@@ -1551,6 +1551,8 @@ void AliReconstruction::WriteAlignmentData(AliESD* esd)
 	  Int_t isp2 = 0;
 	  while (isp < nspdet) {
 	    Bool_t isvalid = tracker->GetTrackPoint(idx[isp2],p); isp2++;
+	    const Int_t kNTPCmax = 159;
+	    if (iDet==1 && isp2>kNTPCmax) break;   // to be fixed
 	    if (!isvalid) continue;
 	    sp->AddPoint(isptrack,&p); isptrack++; isp++;
 	  }
