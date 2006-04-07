@@ -374,6 +374,11 @@ AliMUONGeometryTransformer::LoadTransforms(TGeoManager* tgeoManager)
 /// Loads transformations for defined modules and detection elements
 /// from the root file
 
+  if ( !tgeoManager) {
+    AliFatal("No TGeoManager defined.");
+    return false;
+  }   
+
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
