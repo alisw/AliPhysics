@@ -1128,7 +1128,7 @@ TVector3 ESDCmpTr::TR2Local(AliTrackReference *trackRef,
   Float_t x[3] = { trackRef->X(),trackRef->Y(),trackRef->Z()};
   Int_t index[4];
   paramTPC->Transform0to1(x,index);
-  paramTPC->Transform1to2(x,index);
+  paramTPC->Transform1to2Ideal(x,index);
   return TVector3(x);
 }
 ////////////////////////////////////////////////////////////////////////
