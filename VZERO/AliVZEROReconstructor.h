@@ -19,9 +19,6 @@ public:
   AliVZEROReconstructor(): AliReconstructor() {};
   virtual ~AliVZEROReconstructor() {};
 
-  virtual void         Reconstruct(AliRunLoader* runLoader) const;
-  virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-
   ClassDef(AliVZEROReconstructor, 0)   // class for the VZERO reconstruction
 };
 

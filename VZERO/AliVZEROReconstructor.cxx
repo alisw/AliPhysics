@@ -27,18 +27,4 @@
 
 ClassImp(AliVZEROReconstructor)
 
-
-//_____________________________________________________________________________
-void AliVZEROReconstructor::Reconstruct(AliRunLoader* /*runLoader*/) const
-{
-// not implemented
-
-}
-
-//_____________________________________________________________________________
-void AliVZEROReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
-				    AliESD* /*esd*/) const
-{
-// not implemented
-
-}
+  // Not implemented !!!

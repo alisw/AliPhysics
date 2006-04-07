@@ -23,7 +23,7 @@ public:
   virtual ~AliVZEROhit() {};
   
   Int_t   Volume()  const {return fVolume;};
-  Int_t   Copy()    const {return fCopy;};
+  Int_t   CopyNumber()    const {return fCopy;};
   Float_t TrackPiD() const {return fTrackPiD;};
   Float_t Tof()   const {return fTof;};
   Float_t Charge() const {return fCharge;};
