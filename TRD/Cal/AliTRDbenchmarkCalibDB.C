@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "AliTRDcalibDB.h"
+#include "AliCDBManager.h"
 #include <TStopwatch.h>
 #include <TRandom.h>
 
@@ -23,7 +24,8 @@ extern TRandom* gRandom;
 
 void AliTRDbenchmarkCalibDB()
 {
-  TStopwatch timer; 
+  TStopwatch timer;
+  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
   AliTRDcalibDB* calib = AliTRDcalibDB::Instance();
   if (!calib)
   {

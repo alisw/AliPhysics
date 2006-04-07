@@ -104,11 +104,9 @@ protected:
   static AliTRDcalibDB* fgInstance;     // Instance of this class (singleton implementation)
   static Bool_t fgTerminated;               // Defines if this class has already been terminated and therefore does not return instances in GetInstance anymore
 
-  AliCDBStorage* fLocator;                  // Storage locator retrieved from AliCDBManager
-  
-  AliCDBEntry* fCDBEntries[kCDBCacheSize];    // Cache for CDB entries 
+  AliCDBEntry* fCDBEntries[kCDBCacheSize];    // Cache for CDB entries
   TObject* fCDBCache[kCDBCacheSize];          // Cache for calibration objects.
-      
+
   Long64_t fRun;
   
   struct 
@@ -122,11 +120,10 @@ protected:
   } fPadResponse;
   
 private:
-  // this is a singleton, constructor is private!  
-  AliTRDcalibDB();
+  AliTRDcalibDB(); // this is a singleton, constructor is private!  
   virtual ~AliTRDcalibDB();
 
-  ClassDef(AliTRDcalibDB, 1)
+  ClassDef(AliTRDcalibDB, 2)
 };
 
 #endif

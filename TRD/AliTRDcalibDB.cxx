@@ -70,7 +70,7 @@ AliTRDcalibDB* AliTRDcalibDB::Instance()
 
   if (fgInstance == 0)
     fgInstance = new AliTRDcalibDB();
-  
+
   return fgInstance;
 }
 
@@ -108,16 +108,7 @@ AliTRDcalibDB::AliTRDcalibDB()
   fPadResponse.fPRFwid             = 0.0;
   fPadResponse.fPRFpad             = 0;
   fPadResponse.fPRFsmp             = 0;
-    
-  AliCDBManager* manager = AliCDBManager::Instance();
-  if (!manager)
-  {
-    std::cout << "AliTRDcalibDB: CRITICAL: Failed to get instance of AliCDBManager." << std::endl;
-    fLocator = 0;
-  }
-  else
-    fLocator = manager->GetStorage("local://$ALICE_ROOT");
-  
+
   for (Int_t i=0; i<kCDBCacheSize; ++i)
   {
     fCDBCache[i] = 0;
@@ -204,13 +195,9 @@ AliCDBEntry* AliTRDcalibDB::GetCDBEntry(const char* cdbPath)
     //std::cerr << "AliTRDcalibDB: Run number not set! Use AliTRDcalibDB::SetRun." << std::endl;
     return 0;
   }
-  if (!fLocator) 
-  { 
-    std::cerr << "AliTRDcalibDB: Storage Locator not available." << std::endl; 
-    return 0; 
-  } 
-  AliCDBEntry* entry = fLocator->Get(cdbPath, fRun); 
-  if (!entry) 
+
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get(cdbPath, fRun);
+  if (!entry)
   { 
     std::cerr << "AliTRDcalibDB: Failed to get entry: " << cdbPath << std::endl; 
     return 0; 
@@ -262,10 +249,13 @@ void AliTRDcalibDB::Invalidate()
   {
     if (fCDBEntries[i])
     {
-      if (fCDBEntries[i]->IsOwner() == kFALSE && fCDBCache[i])
-        delete fCDBCache[i];
-      
-      delete fCDBEntries[i];
+      if (AliCDBManager::Instance()->GetCacheFlag() == kFALSE)
+      {
+        if (fCDBEntries[i]->IsOwner() == kFALSE && fCDBCache[i])
+          delete fCDBCache[i];
+
+        delete fCDBEntries[i];
+      }
       fCDBEntries[i] = 0;
       fCDBCache[i] = 0;
     }
