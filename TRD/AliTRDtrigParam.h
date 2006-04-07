@@ -24,15 +24,15 @@ class AliTRDtrigParam : public TNamed {
 
   void    Init();
 
-  void    SetTimeRange(const Int_t time1, const Int_t time2) { fTime1 = time1; fTime2 = time2; };
+  void    SetTimeRange(Int_t time1, Int_t time2) { fTime1 = time1; fTime2 = time2; };
   Int_t   GetTime1()                                   const { return fTime1; };
   Int_t   GetTime2()                                   const { return fTime2; };
-  void    SetClusThr(const Float_t clth)                     { fClusThr = clth; };
-  void    SetPadThr(const Float_t path)                      { fPadThr = path;  };
+  void    SetClusThr(Float_t clth)                     { fClusThr = clth; };
+  void    SetPadThr(Float_t path)                      { fPadThr = path;  };
   Float_t GetClusThr()                                 const { return fClusThr; };
   Float_t GetPadThr()                                  const { return fPadThr;  };
-  void    SetSum10(const Int_t sum)                          { fSum10 = sum; };
-  void    SetSum12(const Int_t sum)                          { fSum12 = sum; };
+  void    SetSum10(Int_t sum)                          { fSum10 = sum; };
+  void    SetSum12(Int_t sum)                          { fSum12 = sum; };
   Int_t   GetSum10()                                   const { return fSum10; };
   Int_t   GetSum12()                                   const { return fSum12; };
 
@@ -47,10 +47,10 @@ class AliTRDtrigParam : public TNamed {
   Int_t   GetFilterType()                            const { return fFilterType; };
   void    GetFilterParam(Float_t &r1, Float_t &r2, Float_t &c1, Float_t &c2, Float_t &ped) const { r1 = fR1; r2 = fR2; c1 = fC1; c2 = fC2; ped = fPedestal; };
 
-  void    SetADCnoise(const Float_t adcn)                  { fADCnoise = adcn; };
+  void    SetADCnoise(Float_t adcn)                  { fADCnoise = adcn; };
   Float_t GetADCnoise()                              const { return fADCnoise; };
 
-  void    SetDebugLevel(const Int_t deb) { fDebug = deb;  };
+  void    SetDebugLevel(Int_t deb) { fDebug = deb;  };
   Int_t   GetDebugLevel()          const { return fDebug; };
 
   void    SetDeltaY(Float_t dy) { fDeltaY = dy; };
