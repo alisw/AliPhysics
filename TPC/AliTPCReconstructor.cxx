@@ -29,7 +29,7 @@
 #include "AliTPCclustererMI.h"
 #include "AliTPCtrackerMI.h"
 #include "AliTPCpidESD.h"
-
+#include "AliTPCParam.h"
 
 ClassImp(AliTPCReconstructor)
 
@@ -123,6 +123,7 @@ AliTracker* AliTPCReconstructor::CreateTracker(AliRunLoader* runLoader) const
 
   AliTPCParam* param = GetTPCParam(runLoader);
   if (!param) return NULL;
+  param->ReadGeoMatrices();
   return new AliTPCtrackerMI(param);
 }
 
