@@ -74,15 +74,15 @@ void AliMUONTrigger::Trigger()
 
    AliRunLoader* runLoader = gAlice->GetRunLoader();
 
-   AliLoader * MUONLoader = runLoader->GetLoader("MUONLoader");
-   MUONLoader->LoadDigits("READ");
+   AliLoader * muonLoader = runLoader->GetLoader("MUONLoader");
+   muonLoader->LoadDigits("READ");
    // Creating MUON data container
-   AliMUONData* MUONData = new AliMUONData(MUONLoader,"MUON","MUON");
-   MUONData->SetTreeAddress("D");
-   MUONData->GetDigits();
+   AliMUONData* muonData = new AliMUONData(muonLoader,"MUON","MUON");
+   muonData->SetTreeAddress("D");
+   muonData->GetDigits();
    Int_t idebug = 1;
    // Creating MUONTriggerDecision
-   AliMUONTriggerDecision* decision = new AliMUONTriggerDecision(MUONLoader ,idebug,MUONData);
+   AliMUONTriggerDecision* decision = new AliMUONTriggerDecision(muonLoader ,idebug,muonData);
    AliMUONDigit * mDigit;
    Int_t tracks[10];
    Int_t charges[10];
@@ -90,10 +90,10 @@ void AliMUONTrigger::Trigger()
 
    for(Int_t ichamber=10; ichamber<14; ichamber++) {
       Int_t idigit, ndigits;
-      ndigits = (Int_t) MUONData->Digits(ichamber)->GetEntriesFast();
+      ndigits = (Int_t) muonData->Digits(ichamber)->GetEntriesFast();
 //            printf(">>> Chamber Cathode ndigits %d %d %d\n",ichamber,icathode,ndigits);
       for(idigit=0; idigit<ndigits; idigit++) {
-         mDigit = static_cast<AliMUONDigit*>(MUONData->Digits(ichamber)->At(idigit));
+         mDigit = static_cast<AliMUONDigit*>(muonData->Digits(ichamber)->At(idigit));
          digits[0] = mDigit->PadX();
          digits[1] = mDigit->PadY();
          digits[2] = mDigit->Cathode();
@@ -108,7 +108,7 @@ void AliMUONTrigger::Trigger()
          decision->AddDigit(ichamber, tracks, charges, digits, digitindex );
       } // loop on digits
    } // loop on chambers
-   MUONData->ResetDigits();
+   muonData->ResetDigits();
    decision->Trigger();
    decision->ClearDigits();
 

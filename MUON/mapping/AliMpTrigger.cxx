@@ -78,11 +78,11 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
 
   // Check that we keep our size constant.
   
-  const Double_t precision = 1E-3;
+  const Double_t kPrecision = 1E-3;
   
   if ( GetSize() > 0 && 
-       ( !::IsEqual(slat->DX(),fDX,precision) || 
-         !::IsEqual(slat->DY(),fDY,precision) )
+       ( !::IsEqual(slat->DX(),fDX,kPrecision) || 
+         !::IsEqual(slat->DY(),fDY,kPrecision) )
      )
   {
     AliError(Form("In %s trying to add a layer (%e,%e) of a different size than "

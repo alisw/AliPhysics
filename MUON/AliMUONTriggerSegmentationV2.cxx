@@ -385,7 +385,8 @@ AliMUONTriggerSegmentationV2::GetPadGlo2Loc(Int_t ixGlo, Int_t iyGlo,
 
 //_____________________________________________________________________________
 void 
-AliMUONTriggerSegmentationV2::GiveTestPoints(Int_t&,Float_t*,Float_t*) const
+AliMUONTriggerSegmentationV2::GiveTestPoints(Int_t& /*n*/, 
+                                             Float_t* /*x*/, Float_t*/*y*/) const
 {
 // Not implemented
 

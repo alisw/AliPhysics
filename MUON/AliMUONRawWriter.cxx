@@ -236,7 +236,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
 
   fTrackerTimer.Start(kFALSE);
   
-  static const Int_t MAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
+  static const Int_t kMAXADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
   // resets
   TClonesArray* muonDigits = 0;
   fSubEventArray->Delete();
@@ -285,13 +285,13 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
     padX = digit->PadX();
     padY = digit->PadY();
     charge = digit->ADC();
-    if ( charge > MAXADC )
+    if ( charge > kMAXADC )
     {
       // This is most probably an error in the digitizer (which should insure
-      // the adc is below MAXADC), so make it a (non-fatal) error indeed.
+      // the adc is below kMAXADC), so make it a (non-fatal) error indeed.
       AliError(Form("adc value %d above %x. Setting to %x",
-                      charge,MAXADC,MAXADC));
-      charge = MAXADC;
+                      charge,kMAXADC,kMAXADC));
+      charge = kMAXADC;
     }
     cathode = digit->Cathode();
     detElemId = digit->DetElemId();

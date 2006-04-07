@@ -106,8 +106,8 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
      
   char line[80];
   
-  const TString sizeKeyword("SIZES");
-  const TString motifKeyword("MOTIF");
+  const TString kSizeKeyword("SIZES");
+  const TString kMotifKeyword("MOTIF");
   
   AliMpPCB* pcb = 0;
   
@@ -117,10 +117,10 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
     
     TString sline(line);
     
-    if ( sline(0,sizeKeyword.Length()) == sizeKeyword )
+    if ( sline(0,kSizeKeyword.Length()) == kSizeKeyword )
     {
-      std::istringstream sin(sline(sizeKeyword.Length(),
-                                   sline.Length()-sizeKeyword.Length()).Data());
+      std::istringstream sin(sline(kSizeKeyword.Length(),
+                                   sline.Length()-kSizeKeyword.Length()).Data());
       float padSizeX = 0.0;
       float padSizeY = 0.0;
       float pcbSizeX = 0.0;
@@ -130,10 +130,10 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
       pcb = new AliMpPCB(pcbType,padSizeX,padSizeY,pcbSizeX,pcbSizeY);
     }
     
-    if ( sline(0,motifKeyword.Length()) == motifKeyword )
+    if ( sline(0,kMotifKeyword.Length()) == kMotifKeyword )
     {
-      std::istringstream sin(sline(motifKeyword.Length(),
-                                   sline.Length()-motifKeyword.Length()).Data());
+      std::istringstream sin(sline(kMotifKeyword.Length(),
+                                   sline.Length()-kMotifKeyword.Length()).Data());
       TString sMotifType;
       int ix;
       int iy;
@@ -172,7 +172,7 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
   
   char line[80];
   
-  const TString pcbKeyword("PCB");
+  const TString kpcbKeyword("PCB");
   
   AliMpSlat* slat = new AliMpSlat(slatType, planeType);
   
@@ -182,9 +182,9 @@ AliMpSt345Reader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
     
     TString sline(AliMpHelper::Normalize(line));
     
-    if ( sline(0,pcbKeyword.Length()) == pcbKeyword )
+    if ( sline(0,kpcbKeyword.Length()) == kpcbKeyword )
     {
-      TString tmp(sline(pcbKeyword.Length()+1,sline.Length()-pcbKeyword.Length()));
+      TString tmp(sline(kpcbKeyword.Length()+1,sline.Length()-kpcbKeyword.Length()));
       Ssiz_t blankPos = tmp.First(' ');
       if ( blankPos < 0 )
 	    {

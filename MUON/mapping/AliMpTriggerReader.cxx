@@ -597,9 +597,9 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
      
   char line[80];
   
-  const TString sizeKeyword("SIZES");
-  const TString motifKeyword("MOTIF");
-  const TString motifSpecialKeyword("SPECIAL_MOTIF");
+  const TString kSizeKeyword("SIZES");
+  const TString kMotifKeyword("MOTIF");
+  const TString kMotifSpecialKeyword("SPECIAL_MOTIF");
   
   AliMpPCB* pcb = 0;
   
@@ -609,10 +609,10 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
     
     TString sline(line);
     
-    if ( sline(0,sizeKeyword.Length()) == sizeKeyword )
+    if ( sline(0,kSizeKeyword.Length()) == kSizeKeyword )
     {
-      std::istringstream sin(sline(sizeKeyword.Length(),
-                                   sline.Length()-sizeKeyword.Length()-1).Data());
+      std::istringstream sin(sline(kSizeKeyword.Length(),
+                                   sline.Length()-kSizeKeyword.Length()-1).Data());
       float padSizeX = 0.0;
       float padSizeY = 0.0;
       float pcbSizeX = 0.0;
@@ -623,10 +623,10 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
                          pcbSizeX*scale,pcbSizeY*scale);
     }
     
-    if ( sline(0,motifSpecialKeyword.Length()) == motifSpecialKeyword )
+    if ( sline(0,kMotifSpecialKeyword.Length()) == kMotifSpecialKeyword )
     {
-      std::istringstream sin(sline(motifSpecialKeyword.Length(),
-                                   sline.Length()-motifSpecialKeyword.Length()).Data());
+      std::istringstream sin(sline(kMotifSpecialKeyword.Length(),
+                                   sline.Length()-kMotifSpecialKeyword.Length()).Data());
       TString sMotifSpecial;
       TString sMotifType;
       sin >> sMotifSpecial >> sMotifType;
@@ -639,10 +639,10 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       pcb = new AliMpPCB(pcbType,specialMotif);
     }
     
-    if ( sline(0,motifKeyword.Length()) == motifKeyword )
+    if ( sline(0,kMotifKeyword.Length()) == kMotifKeyword )
     {
-      std::istringstream sin(sline(motifKeyword.Length(),
-                                   sline.Length()-motifKeyword.Length()).Data());
+      std::istringstream sin(sline(kMotifKeyword.Length(),
+                                   sline.Length()-kMotifKeyword.Length()).Data());
       TString sMotifType;
       int ix;
       int iy;

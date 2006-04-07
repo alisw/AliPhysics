@@ -64,8 +64,8 @@ class AliMpPCB : public TObject
   
   AliMpPCB(const char* id, AliMpMotifSpecial* ms);
   
-  AliMpPCB(const AliMpPCB&);
-  AliMpPCB& operator=(const AliMpPCB&);
+  AliMpPCB(const AliMpPCB& o);
+  AliMpPCB& operator=(const AliMpPCB& o);
 
   virtual ~AliMpPCB();
 
@@ -78,7 +78,7 @@ class AliMpPCB : public TObject
   AliMpPCB* Clone(const TArrayI& manuids,
                   Int_t ixOffset, Double_t xOffset) const;
 
-  void Copy(TObject&) const;
+  void Copy(TObject& o) const;
 
   /** Add a motif to this PCB. (ix,iy) are the coordinates of one corner 
     of the motif, in pad-units. Which corner depends on the sign(s) of (ix,iy):

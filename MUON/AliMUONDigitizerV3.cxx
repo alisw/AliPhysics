@@ -600,9 +600,9 @@ AliMUONDigitizerV3::GenerateNoisyDigitsForOneCathode(Int_t detElemId, Int_t cath
   Int_t maxIx = seg->MaxPadIndexX();
   Int_t maxIy = seg->MaxPadIndexY();
   
-  static const Double_t probToBeOutsideNsigmas = 1 - TMath::Erf(fgkNSigmas/TMath::Sqrt(2.0));
+  static const Double_t kProbToBeOutsideNsigmas = 1 - TMath::Erf(fgkNSigmas/TMath::Sqrt(2.0));
   
-  Int_t nofNoisyPads = TMath::Nint(probToBeOutsideNsigmas*nofPads);
+  Int_t nofNoisyPads = TMath::Nint(kProbToBeOutsideNsigmas*nofPads);
   if ( !nofNoisyPads ) return;
   
   nofNoisyPads = 

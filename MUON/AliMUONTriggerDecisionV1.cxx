@@ -1631,7 +1631,7 @@ void AliMUONTriggerDecisionV1::DigitFiredCircuit(Int_t circuit, Int_t cathode,
 }
 
 //_______________________________________________________________________
-const Int_t AliMUONTriggerDecisionV1::CircuitSortedAsBoard[234]={
+const Int_t AliMUONTriggerDecisionV1::fgkCircuitSortedAsBoard[234]={
     911, 811, 812, 711, 712, 611, 612, 613, 411, 412, 413, 311, 312, 211, 212, 111,
     921, 821, 822, 721, 722, 621, 622, 623, 624, 521, 522, 523, 524, 421, 422, 423, 424, 321, 322, 221, 222, 121,
     931, 831, 832, 731, 732, 631, 632, 633, 634, 531, 532, 533, 534, 431, 432, 433, 434, 331, 332, 231, 232, 131,
@@ -1675,7 +1675,7 @@ Int_t AliMUONTriggerDecisionV1::CircuitNumber(Int_t idCircuit) const {
 //_______________________________________________________________________
 Int_t AliMUONTriggerDecisionV1::Board2Circuit(Int_t iboard) const {
 // returns Circuit number corresponding to iboard
-    Int_t idCircuit = CircuitSortedAsBoard[iboard];
+    Int_t idCircuit = fgkCircuitSortedAsBoard[iboard];
     return CircuitNumber(idCircuit);
 }
 

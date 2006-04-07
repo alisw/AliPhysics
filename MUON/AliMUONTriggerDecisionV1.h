@@ -72,7 +72,7 @@ class AliMUONTriggerDecisionV1 : public TTask
   Int_t Board2Circuit(Int_t iboard) const;
   Int_t CircuitNumber(Int_t idCircuit) const;
   Int_t ModuleNumber(Int_t idModule) const; 
-  static const Int_t CircuitSortedAsBoard[234]; // circuit Id. number
+  static const Int_t fgkCircuitSortedAsBoard[234]; // circuit Id. number
 
   
   ClassDef(AliMUONTriggerDecisionV1,1) // Trigger Decision class
