@@ -22,18 +22,18 @@
 // used in geometry construction
 // Author: Ivana Hrivnacova, IPN Orsay
 
-#include <TVirtualMC.h>
-#include <TGeoMatrix.h>
-#include <TObjArray.h>
-#include <TArrayI.h>
-#include <Riostream.h>
-
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONGeometryEnvelope.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryStore.h"
 #include "AliMUONGeometryBuilder.h"
+
 #include "AliLog.h"
+
+#include <TGeoMatrix.h>
+#include <TObjArray.h>
+#include <Riostream.h>
+#include <TString.h>
 
 ClassImp(AliMUONGeometryEnvelopeStore)
 

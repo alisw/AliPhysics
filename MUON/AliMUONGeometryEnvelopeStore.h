@@ -16,7 +16,6 @@
 #define ALI_MUON_GEOMETRY_ENVELOPE_STORE_H
 
 #include <TObject.h>
-#include <TString.h>
 #include <TGeoMatrix.h>
 
 class TGeoTranslation;
@@ -24,6 +23,7 @@ class TGeoRotation;
 class TGeoCombiTrans;
 class TObjArray;
 class TArrayI;
+class TString;
 
 class AliMUONChamber;
 class AliMUONGeometryEnvelope;
