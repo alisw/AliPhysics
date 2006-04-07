@@ -24,7 +24,6 @@
 #include "AliPHOSEMCAGeometry.h"
 #include "AliPHOSCPVGeometry.h"
 #include "AliPHOSSupportGeometry.h"
-#include "AliPHOSAlignData.h"
 
 
 class AliPHOSGeometry : public AliGeometry {
@@ -39,8 +38,6 @@ public:
   
   virtual ~AliPHOSGeometry(void) ; 
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title="") ; 
-  static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title,
-				       AliPHOSAlignData *alignda) ; 
   static AliPHOSGeometry * GetInstance() ; 
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos, TMatrixF & gmat) const ;
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const ;
@@ -150,9 +147,6 @@ public:
   void Init(void) ;            // steering method for PHOS and PPSD/CPV
 
 
-  void SetAlignData(AliPHOSAlignData* alignda) { fgAlignData = alignda; }
-  AliPHOSAlignData * AlignData() {return fgAlignData;}
-
 protected:
 
   AliPHOSGeometry(const Text_t* name, const Text_t* title="") : AliGeometry(name, title) { 
@@ -177,7 +171,6 @@ private:
 
   static AliPHOSGeometry * fgGeom ; // pointer to the unique instance of the singleton 
   static Bool_t fgInit ;            // Tells if geometry has been succesfully set up 
-  static AliPHOSAlignData * fgAlignData; // PHOS alignment data
 
   ClassDef(AliPHOSGeometry,2)       // PHOS geometry class 
 

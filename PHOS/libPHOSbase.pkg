@@ -10,7 +10,7 @@ SRCS          =  AliPHOS.cxx \
 		 AliPHOSCalibrationDB.cxx AliPHOSDigitizer.cxx \
 		 AliPHOSSDigitizer.cxx AliPHOSDigit.cxx \
 		 AliPHOSFastRecParticle.cxx AliPHOSRawStream2004.cxx \
-		 AliPHOSCalibData.cxx AliPHOSAlignData.cxx \
+		 AliPHOSCalibData.cxx \
                  AliPHOSCpvCalibData.cxx \
                  AliPHOSEmcCalibData.cxx
 

@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.95  2006/03/14 19:40:41  kharlov
+ * Remove De-digitizing of raw data and digitizing the raw data fit
+ *
  * Revision 1.94  2006/03/07 18:56:25  kharlov
  * CDB is passed via environment variable
  *
@@ -94,25 +97,10 @@ AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 {
   //   ctor : title is used to identify the layout
 
-  // Check if CDB_PATH is defined and take alignment data from CDB
-  AliPHOSAlignData* alignda = 0;
-  if (gSystem->Getenv("CDB_PATH")) {
-    TString cdbPath = gSystem->Getenv("CDB_PATH");
-    AliCDBStorage *cdbStorage = AliCDBManager::Instance()->GetStorage(cdbPath);
-    if (cdbStorage != NULL) {
-      alignda  =
-	(AliPHOSAlignData*)(cdbStorage->Get("PHOS/Alignment/Geometry",0)->GetObject());
-      if(AliLog::GetGlobalDebugLevel()>0) alignda->Print();
-    }
-    else {
-      Fatal("AliPHOS", "No CDB storage at the path %s", cdbPath.Data()) ;
-    }
-  }
-  
   fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
   fHighGain          = 6.64 ; 
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
-  fLowGainOffset     = GetGeometry(alignda)->GetNModules() + 1 ;   
+  fLowGainOffset     = GetGeometry()->GetNModules() + 1 ;   
     // offset added to the module id to distinguish high and low gain data
 }
 
@@ -438,7 +426,7 @@ void AliPHOS::Digits2Raw()
 
   // get the digitizer 
   loader->LoadDigitizer();
-//   AliPHOSDigitizer * digitizer = dynamic_cast<AliPHOSDigitizer *>(loader->Digitizer())  ; 
+  AliPHOSDigitizer * digitizer = dynamic_cast<AliPHOSDigitizer *>(loader->Digitizer())  ; 
   
   // get the geometry
   AliPHOSGeometry* geom = GetGeometry();
@@ -455,15 +443,6 @@ void AliPHOS::Digits2Raw()
   Int_t prevDDL = -1;
   Int_t adcValuesLow[fkTimeBins];
   Int_t adcValuesHigh[fkTimeBins];
-
-//   AliPHOSCalibData* calib=0;
-
-//   //retrieve calibration database
-//   if(AliCDBManager::Instance()->IsDefaultStorageSet()){
-//     AliCDBEntry *entry = (AliCDBEntry*) AliCDBManager::Instance()->GetDefaultStorage()
-//       ->Get("PHOS/GainFactors_and_Pedestals/Calibration",gAlice->GetRunNumber());
-//     calib = (AliPHOSCalibData*) entry->GetObject();
-//   }
 
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
@@ -512,16 +491,8 @@ void AliPHOS::Digits2Raw()
     } else {
       Double_t energy = 0 ;
       Int_t   module = relId[0];
-//       Int_t   column = relId[3];
-//       Int_t   row    = relId[2];
       if ( digit->GetId() <= geom->GetNModules() *  geom->GetNCristalsInModule()) {
-// 	if(calib)
-// 	  energy = digit->GetAmp()*calib->GetADCchannelEmc(module,column,row) + 
-// 	    calib->GetADCpedestalEmc(module,column,row);
-// 	else
-// 	  energy=digit->GetAmp()*digitizer->GetEMCchannel()+digitizer->GetEMCpedestal();
-//       } 
-	energy=digit->GetAmp();
+	energy=digit->GetAmp()*digitizer->GetEMCchannel() + digitizer->GetEMCpedestal();
       }
       else {
 // 	energy = digit->GetAmp()*digitizer->GetCPVchannel()+digitizer->GetCPVpedestal();
@@ -529,9 +500,9 @@ void AliPHOS::Digits2Raw()
       }        
       Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
       
-     if (lowgain) 
+      if (lowgain) 
 	buffer->WriteChannel(relId[3], relId[2], module + fLowGainOffset, 
-			   GetRawFormatTimeBins(), adcValuesLow, kThreshold);
+			     GetRawFormatTimeBins(), adcValuesLow , kThreshold);
       else 
 	buffer->WriteChannel(relId[3], relId[2], module, 
 			     GetRawFormatTimeBins(), adcValuesHigh, kThreshold);
@@ -605,6 +576,10 @@ Bool_t AliPHOS::RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, 
 {
   // for a start time dtime and an amplitude damp given by digit, 
   // calculates the raw sampled response AliPHOS::RawResponseFunction
+  // Input: dtime - signal start time
+  //        damp  - signal amplitude (energy)
+  // Output: adcH - array[fkTimeBins] of 10-bit samples for high-gain channel
+  //         adcL - array[fkTimeBins] of 10-bit samples for low-gain channel
 
   const Int_t kRawSignalOverflow = 0x3FF ; 
   Bool_t lowGain = kFALSE ; 

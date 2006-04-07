@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.66  2006/03/24 21:39:33  schutz
+ * Modification needed to include PHOS in the global trigger framework
+ *
  * Revision 1.65  2006/03/07 18:56:25  kharlov
  * CDB is passed via environment variable
  *
@@ -43,7 +46,6 @@ class TRandom ;
 #include "AliLog.h"
 #include "AliPHOSGeometry.h" 
 #include "AliPHOSTrigger.h"
-class AliPHOSAlignData;
 
 class AliPHOS : public AliDetector {
 
@@ -70,8 +72,6 @@ public:
   virtual void  FinishRun() {;}
   virtual AliPHOSGeometry * GetGeometry() const 
   {return AliPHOSGeometry::GetInstance(GetTitle(),"") ;  }
-  virtual AliPHOSGeometry * GetGeometry(AliPHOSAlignData *alignda) const 
-  {return AliPHOSGeometry::GetInstance(GetTitle(),"",alignda) ;  }
 
   virtual void    Hits2SDigits();
   virtual Int_t   IsVersion(void) const = 0 ;  
@@ -113,7 +113,8 @@ protected:
   Double_t fHighLowGainFactor ;         // high to low gain factor for the raw RO signal
   Int_t    fLowGainOffset ;             // to separate high from low gain in the DDL
   static Int_t fgOrder ;                // order of the gamma function for the RO signal
-  static const Int_t fkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
+//   static const Int_t fkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
+  static const Int_t fkTimeBins = 64 ; // number of sampling bins of the raw RO signal  
   static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
