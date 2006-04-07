@@ -1093,8 +1093,6 @@ AliPHOSCalibData* AliPHOSGetter::CalibData()
 { 
   // Check if the instance of AliPHOSCalibData exists, and return it
 
-  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) )
-    fCalibData=0x0;
   return fCalibData;
 }
 //____________________________________________________________________________ 

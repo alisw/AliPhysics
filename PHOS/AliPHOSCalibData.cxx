@@ -37,8 +37,8 @@ ClassImp(AliPHOSCalibData)
 {
   // Default constructor  
 
-  fEmcDataPath="PHOS/Emc/GainFactors_and_Pedestals";
-  fCpvDataPath="PHOS/Cpv/GainFactors_and_Pedestals";
+  fEmcDataPath="PHOS/Calib/EmcGainPedestals";
+  fCpvDataPath="PHOS/Calib/CpvGainPedestals";
 
 }
 
@@ -49,8 +49,8 @@ AliPHOSCalibData::AliPHOSCalibData(Int_t runNumber) :
 {
   // Constructor
   
-  fEmcDataPath="PHOS/Emc/GainFactors_and_Pedestals";
-  fCpvDataPath="PHOS/Cpv/GainFactors_and_Pedestals";
+  fEmcDataPath="PHOS/Calib/EmcGainPedestals";
+  fCpvDataPath="PHOS/Calib/CpvGainPedestals";
 
   AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data(),runNumber);
   if(entryEmc)
@@ -66,9 +66,6 @@ AliPHOSCalibData::AliPHOSCalibData(Int_t runNumber) :
 AliPHOSCalibData::~AliPHOSCalibData()
 {
   // Destructor
-
-  if(fCalibDataEmc) delete fCalibDataEmc;
-  if(fCalibDataCpv) delete fCalibDataCpv;
  
 }
 
@@ -84,7 +81,8 @@ void AliPHOSCalibData::Reset()
 //________________________________________________________________
 void  AliPHOSCalibData::Print(Option_t *option) const
 {
-
+  if (fCalibDataEmc) fCalibDataEmc->Print(option);
+  if (fCalibDataCpv) fCalibDataCpv->Print(option);
 }
 
 //________________________________________________________________
@@ -105,6 +103,9 @@ Bool_t AliPHOSCalibData::WriteEmc(Int_t firstRun, Int_t lastRun, AliCDBMetaData 
   if(!fCalibDataEmc) return kFALSE;
 
   AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("PHOS");
+  if(!storage)
+    storage = AliCDBManager::Instance()->GetDefaultStorage();
+
   if(storage) { 
     AliCDBId id(fEmcDataPath.Data(),firstRun,lastRun);
     storage->Put(fCalibDataEmc,id, md);
@@ -122,6 +123,9 @@ Bool_t AliPHOSCalibData::WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData 
   if(!fCalibDataCpv) return kFALSE;
   
   AliCDBStorage* storage = AliCDBManager::Instance()->GetSpecificStorage("PHOS");
+  if(!storage)
+    storage = AliCDBManager::Instance()->GetDefaultStorage();
+
   if(storage) { 
     AliCDBId id(fCpvDataPath.Data(),firstRun,lastRun);
     storage->Put(fCalibDataCpv,id, md);
