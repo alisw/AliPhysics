@@ -856,11 +856,17 @@ void AliMUONTrackReconstructor::MakeSegmentsPerStation(Int_t Station)
       distNonBend = TMath::Abs(hit2Ptr->GetNonBendingCoor() - extNonBendCoor);
       if (last2st) {
 	// bending slope
-	bendingSlope = (hit1Ptr->GetBendingCoor() - hit2Ptr->GetBendingCoor()) /
-	  (hit1Ptr->GetZ() - hit2Ptr->GetZ());
-	// absolute value of impact parameter
-	impactParam =
-	  TMath::Abs(hit1Ptr->GetBendingCoor() - hit1Ptr->GetZ() * bendingSlope);
+	if ( hit1Ptr->GetZ() - hit2Ptr->GetZ() != 0.0 ) {
+	  bendingSlope = (hit1Ptr->GetBendingCoor() - hit2Ptr->GetBendingCoor()) /
+	    (hit1Ptr->GetZ() - hit2Ptr->GetZ());
+	  // absolute value of impact parameter
+	  impactParam =
+	    TMath::Abs(hit1Ptr->GetBendingCoor() - hit1Ptr->GetZ() * bendingSlope);
+	 } 
+	 else {
+	   AliWarning("hit1Ptr->GetZ() = hit2Ptr->GetZ(): impactParam set to maxImpactParam");
+	   impactParam = maxImpactParam;   
+	 }   
       }
       // check for distances not too large,
       // and impact parameter not too big if stations downstream of the dipole.
