@@ -1126,6 +1126,9 @@ Int_t  AliTPCtrackerMI::LoadClusters()
     //  
     Int_t sec,row;
     fParam->AdjustSectorRow(clrow->GetID(),sec,row);
+    for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
+      Transform((AliCluster*)(clrow->GetArray()->At(icl)));
+    }
     //
     AliTPCRow * tpcrow=0;
     Int_t left=0;
@@ -1188,6 +1191,19 @@ void AliTPCtrackerMI::UnloadClusters()
   return ;
 }
 
+void   AliTPCtrackerMI::Transform(AliCluster * cluster){
+  //
+  // 
+  //
+  //if (!fParam->IsGeoRead()) fParam->ReadGeoMatrices();
+  TGeoHMatrix  *mat = fParam->GetClusterMatrix(cluster->GetDetector());
+  Double_t pos[3]= {cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+  Double_t posC[3];
+  mat->LocalToMaster(pos,posC);
+  cluster->SetX(posC[0]);
+  cluster->SetY(posC[1]);
+  cluster->SetZ(posC[2]);
+}
 
 //_____________________________________________________________________________
 Int_t AliTPCtrackerMI::LoadOuterSectors() {
@@ -1559,9 +1575,10 @@ Bool_t AliTPCtrackerMI::GetTrackPoint(Int_t index, AliTrackPoint &p ) const
   AliTPCclusterMI *cl = GetClusterMI(index);
   if (!cl) return kFALSE;
   Int_t sector = (index&0xff000000)>>24;
-  Int_t row = (index&0x00ff0000)>>16;
+  //  Int_t row = (index&0x00ff0000)>>16;
   Float_t xyz[3];
-  xyz[0] = fParam->GetPadRowRadii(sector,row);
+  //  xyz[0] = fParam->GetPadRowRadii(sector,row);
+  xyz[0] = cl->GetX();
   xyz[1] = cl->GetY();
   xyz[2] = cl->GetZ();
   Float_t sin,cos;
