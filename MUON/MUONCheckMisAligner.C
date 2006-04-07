@@ -38,6 +38,9 @@
   in this plane. Misalignments in the XZ and YZ plane will be very small 
   compared to those in the XY plane, which are small already - of the order 
   of microns)
+  --> Default behavior generates a "residual" misalignment using gaussian
+  distributions. Uniform distributions can still be used, see 
+  AliMUONGeometryAligner.
   Note : If the detection elements are allowed to be misaligned in all
   directions, this has consequences for the alignment algorithm, which 
   needs to know the number of free parameters. Eric only allowed 3 : 
@@ -48,13 +51,17 @@
 
 */
 
-void MUONCheckMisAligner(Double_t cartmisalig = 0.1, Double_t angmisalig = 1.)
+void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 0.004, 
+			 Double_t ycartmisaligm = 0.0, Double_t ycartmisaligw = 0.003, 
+			 Double_t angmisaligm = 0.0, Double_t angmisaligw = 0.0023)
 {
   
   AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
   transform->ReadGeometryData("volpath.dat", "transform.dat");
 
-  AliMUONGeometryMisAligner misAligner(cartmisalig,angmisalig);
+  AliMUONGeometryMisAligner misAligner(xcartmisaligm,xcartmisaligw,
+                                       ycartmisaligm,ycartmisaligw,
+				       angmisaligm,angmisaligw);
 
   // Generate mis alignment data
   AliMUONGeometryTransformer *newTransform = misAligner.MisAlign(transform,true); 
@@ -73,6 +80,19 @@ void MUONCheckMisAligner(Double_t cartmisalig = 0.1, Double_t angmisalig = 1.)
   transform3->ReadGeometryData("volpath.dat", "geometry2.root");
   transform3->WriteTransformations("transform3.dat");
                // Check that transform3.dat is equal to transform2.dat
+
+  // Generate misaligned data in local cdb
+  TClonesArray* array = newTransform->GetMisAlignmentData();
+   
+  // CDB manager
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage("local://ResMisAlignCDB");
+  
+  AliCDBMetaData* cdbData = new AliCDBMetaData();
+  cdbData->SetResponsible("Dimuon Offline project");
+  cdbData->SetComment("MUON alignment objects with residual misalignment");
+  AliCDBId id("MUON/Align/Data", 0, 0); 
+  cdbManager->Put(array, id, cdbData);
 
   // To run simulation with misaligned geometry, you have to set
   // the Align option in Config.C:
