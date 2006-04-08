@@ -226,7 +226,6 @@ void AliSTARTv1::CreateGeometry()
              
 // first ring: 12 units of Scintillator+PMT+divider
   Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetC);
-  AliInfo(Form("theta %f", theta));
   Float_t angle  = 2 * TMath::Pi() / 12;
   Float_t phi[3];
     
@@ -253,7 +252,6 @@ void AliSTARTv1::CreateGeometry()
       
    x=0;
    y=0;
-   // z=-pinstart[2]+ppmt[2]+2.*psupport6[2]+0.1;
     z=-pinstart[2]+ppmt[2]+psupport6[2]*2;
    gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
    // PMT
@@ -264,7 +262,6 @@ void AliSTARTv1::CreateGeometry()
    gMC->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
    //metal volume to simulate reclection  
    gMC->Gsvolu("0TOO","TUBE",idtmed[kOpAir],ptopout,3); //glass
-   //   gMC->Gsvolu("0TOP","TUBE",idtmed[12],ptop,3); //lucite
    gMC->Gspos("0TOO",1,"0PMT",0,0,z,0,"ONLY");
 
    //Fotokatod
@@ -274,7 +271,6 @@ void AliSTARTv1::CreateGeometry()
   // Bottom glass
    gMC->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
    z=ppmt[2]-pbot[2];
-   AliDebugClass(1,Form("Z bottom %f\n",z));
    gMC->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
    // Side cylinder glass
    gMC->Gsvolu("0OUT","TUBE",idtmed[kGlass],pglass,3);
