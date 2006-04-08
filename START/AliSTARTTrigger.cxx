@@ -83,7 +83,7 @@ void AliSTARTTrigger::Trigger()
 
   if (besttimeright>0 && besttimeright<10000)  SetInput("START_A_L0");
   if (besttimeleft>0  && besttimeleft<10000)   SetInput("START_C_L0"); 
-  if (TMath::Abs(timeDiff) < 5)                SetInput("START_Vertex_L0");
+  if (TMath::Abs(timeDiff) < 7000)                SetInput("START_Vertex_L0");
   if (sumMult>2300)                            SetInput("START_Centr_L0");
   if (sumMult>1800)                            SetInput("START_SemiCentral_L0");;
 
