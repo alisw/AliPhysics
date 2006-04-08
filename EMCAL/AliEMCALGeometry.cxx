@@ -973,7 +973,7 @@ void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int nsm) c
   }
 }
 
-void AliEMCALGeometry::GetGlobal(const Int_t /* absId */, TVector3 & /* vglob */) const
+void AliEMCALGeometry::GetGlobal(Int_t /* absId */, TVector3 & /* vglob */) const
 { // have to be defined  
 }
 

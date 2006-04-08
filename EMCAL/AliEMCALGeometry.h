@@ -49,7 +49,7 @@ public:
   // Have to call GetTransformationForSM() before calculation global charachteristics 
   void GetGlobal(const Double_t *loc, Double_t *glob, int nsm) const;
   void GetGlobal(const TVector3 &vloc, TVector3 &vglob, int nsm) const;
-  void GetGlobal(const Int_t absId, TVector3 &vglob) const;
+  void GetGlobal(Int_t absId, TVector3 &vglob) const;
   // for a given tower index it returns eta and phi of center of that tower.
   void EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi) const;
 
@@ -125,7 +125,7 @@ public:
   // TRD1 staff
   void    CreateListOfTrd1Modules();
   TList  *GetShishKebabTrd1Modules() const {return fShishKebabTrd1Modules;}
-  AliEMCALShishKebabTrd1Module *GetShishKebabModule(const Int_t neta=0)
+  AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta=0)
   {
     static AliEMCALShishKebabTrd1Module* trd1=0;
     if(fShishKebabTrd1Modules && neta>=0 && neta<fShishKebabTrd1Modules->GetSize()) {

@@ -74,7 +74,7 @@ class AliEMCALv0 : public AliEMCAL {
   void Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5]);
 
   TList  *GetShishKebabModules() {return fShishKebabModules;}
-  AliEMCALShishKebabTrd1Module *GetShishKebabModule(const Int_t neta=0);
+  AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta=0);
  private:
   TList *fShishKebabModules; //! list of modules
   

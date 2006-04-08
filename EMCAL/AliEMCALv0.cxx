@@ -1171,7 +1171,7 @@ void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t pa
   }
 }
 
-AliEMCALShishKebabTrd1Module* AliEMCALv0::GetShishKebabModule(const Int_t neta)
+AliEMCALShishKebabTrd1Module* AliEMCALv0::GetShishKebabModule(Int_t neta)
 { // 28-oct-05
   AliEMCALShishKebabTrd1Module* trd1=0;
   if(fShishKebabModules && neta>=0 && neta<fShishKebabModules->GetSize()) {
