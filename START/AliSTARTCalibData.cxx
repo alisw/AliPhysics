@@ -138,7 +138,6 @@ void AliSTARTCalibData::SetWalk(Int_t ipmt, const Char_t *filename)
   char funcname[256];
   sprintf(funcname,"CFD%i",ipmt+1);
   TF1* gr = (TF1*)file->Get(funcname);
-  gr->Print();
   fWalk.AddAtAndExpand(gr,ipmt);
   file->Close();
 }
@@ -150,7 +149,6 @@ void AliSTARTCalibData::SetSlewingLED(Int_t ipmt,const Char_t *filename)
 {
   Float_t mv, ps; 
   Float_t x[100], y[100];
-  cout<<"capacity  "<<fSlewingLED.Capacity()<<endl;
   string buffer;
   
   ifstream inFile(filename);
@@ -167,8 +165,35 @@ void AliSTARTCalibData::SetSlewingLED(Int_t ipmt,const Char_t *filename)
   inFile.close();
   TGraph* gr = new TGraph(i,x,y);
   fSlewingLED.AddAtAndExpand(gr,ipmt);
-  cout<<"capacity end "<<fSlewingLED.Capacity()<<endl;
+   
+}
 
+//________________________________________________________________
+
+void AliSTARTCalibData::SetSlewingRec(Int_t ipmt,const Char_t *filename)
+{
+  Float_t mv, ps; 
+  Float_t x[100], y[100];
+  string buffer;
+  
+  ifstream inFile(filename);
+  if(!inFile) {AliError(Form("Cannot open file %s !",filename));}
+  
+  inFile >> mv>>ps;
+  Int_t i=0;
+  
+  while(getline(inFile,buffer)){
+    x[i]=mv; y[i]=ps;	
+    inFile >> mv >> ps;
+    i++;
+  }
+  inFile.close();
+  Float_t y1[100], x1[100];
+  for (Int_t ir=0; ir<i; ir++){
+    y1[ir]=y[i-ir]; x1[ir]=x[i-ir];}
+  TGraph* gr = new TGraph(i,y1,x1);
+  fSlewingRec.AddAtAndExpand(gr,ipmt);
   
 }
+
 

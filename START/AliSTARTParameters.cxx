@@ -54,9 +54,9 @@ AliSTARTParameters::Instance()
 
 //____________________________________________________________________
 AliSTARTParameters::AliSTARTParameters() 
-  : fIsInit(kFALSE)
 {
   // Default constructor 
+
   for (Int_t ipmt=0; ipmt<24; ipmt++)
     {
       SetTimeDelayCablesCFD(ipmt);
@@ -64,8 +64,9 @@ AliSTARTParameters::AliSTARTParameters()
       SetTimeDelayElectronicCFD(ipmt);
       SetTimeDelayElectronicLED(ipmt);
       SetTimeDelayPMT(ipmt);
-      SetVariableDelayLine(ipmt);
+       SetVariableDelayLine(ipmt);
       SetSlewingLED(ipmt);
+      SetSlewingRec(ipmt);
       SetPh2Mip();      
       SetmV2Mip();      
       SetChannelWidth();
@@ -75,6 +76,7 @@ AliSTARTParameters::AliSTARTParameters()
       SetQTmax();
       SetPMTeff(ipmt);
    }
+  SetTimeDelayTVD();
   SetZposition();
   
 }
@@ -85,16 +87,16 @@ AliSTARTParameters::Init()
 {
   // Initialize the parameters manager.  We need to get stuff from the
   // CDB here. 
-  //  if (fIsInit) return;
+  //   if (fIsInit) return;
   
   AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT");
-  fCalibentry  = stor->Get("START/Calib/Gain_TimeDelay_Slewing_Walk",1);
+  //  AliCDBStorage *stor = cdb->GetStorage("local://$ALICE_ROOT");
+  fCalibentry  = cdb->Get("START/Calib/Gain_TimeDelay_Slewing_Walk");
   if (fCalibentry){
    fgCalibData  = (AliSTARTCalibData*)fCalibentry->GetObject();
    cout<<" got calibdata "<<endl;
   }
-   fAlignentry     = stor-> Get("START/Align/Positions",1);
+   fAlignentry     = cdb-> Get("START/Align/Positions");
   if (fAlignentry){
    fgAlignData  = (AliSTARTAlignData*) fAlignentry->GetObject();
    cout<<" got align data "<<endl;
@@ -150,13 +152,78 @@ void
 AliSTARTParameters::SetSlewingLED(Int_t ipmt)
 {
   //  Set Slweing Correction for LED channel 
+     Float_t mv[23] = {25, 30,40,60, 80,100,150,200,250,300,
+		       400,500,600,800,1000,1500, 2000, 3000, 4000, 5500,
+		       6000, 7000,8000};
+      Float_t y[23] = {5044, 4719, 3835, 3224, 2847, 2691,2327, 2067, 1937, 1781,
+		       1560, 1456 ,1339, 1163.5, 1027, 819, 650, 520, 370.5, 234,
+		       156, 78, 0};
+      
+      TGraph* gr = new TGraph(23,mv,y);
+      fSlewingLED.AddAtAndExpand(gr,ipmt);
+  }
+//__________________________________________________________________
 
-  Float_t mv[23] = {25, 30,40,60, 80,100,150,200,250,300,400,500,600,800,1000,1500, 2000, 3000, 4000, 5500, 6000, 7000,8000};
-  Float_t y[23] = {5044, 4719, 3835, 3224, 2847, 2691,2327,  1937, 1781, 1560, 1456 ,1339, 1163.5, 1027, 819, 650, 520, 370.5, 234, 156, 78, 0};
+Float_t AliSTARTParameters::GetSlewingLED(Int_t ipmt, Float_t mv) const
+{
+  if (!fCalibentry) {
+    return ((TGraph*)fSlewingLED.At(ipmt))->Eval(mv); 
+  } 
+  return fgCalibData->GetSlewingLED(ipmt, mv) ;
+}
 
-  TGraph* gr = new TGraph(23,mv,y);
-  fSlewingLED.AddAtAndExpand(gr,ipmt);
- }
+
+//__________________________________________________________________
+
+TGraph *AliSTARTParameters::GetSlew(Int_t ipmt) const
+{
+  if (!fCalibentry) {
+    return  (TGraph*)fSlewingLED.At(ipmt); 
+  } 
+  return fgCalibData -> GetSlew(ipmt) ;
+}
+
+//__________________________________________________________________
+
+
+void 
+AliSTARTParameters::SetSlewingRec(Int_t ipmt)
+{
+  //  Set Slweing Correction for LED channel 
+      Float_t mv[23] = {25, 30, 40,60, 80,100,150,200,250,300,
+			400,500,600,800,1000,1500, 2000, 3000, 4000, 5500,
+			6000, 7000,8000};
+      Float_t y[23] = {5044, 4719, 3835, 3224, 2847, 2691,2327, 2067, 1937, 1781, 
+		       1560, 1456 ,1339, 1163.5, 1027, 819, 650, 520, 370.5, 234, 
+		       156, 78, 0};
+      Float_t y1[23], mv1[23];
+      for (Int_t i=0; i<23; i++){
+	y1[i] = y[22-i]; mv1[i] = mv[22-i];}
+      cout<<endl;
+      TGraph* gr = new TGraph(23,y1,mv1);
+      fSlewingRec.AddAtAndExpand(gr,ipmt);
+
+}
+//__________________________________________________________________
+
+Float_t AliSTARTParameters::GetSlewingRec(Int_t ipmt, Float_t mv) const
+{
+  if (!fCalibentry) {
+    return ((TGraph*)fSlewingRec.At(ipmt))->Eval(mv); 
+  } 
+  return fgCalibData -> GetSlewingRec(ipmt, mv) ;
+}
+
+//__________________________________________________________________
+
+TGraph *AliSTARTParameters::GetSlewRec(Int_t ipmt) const
+{
+  if (!fCalibentry) {
+    return  (TGraph*)fSlewingRec.At(ipmt); 
+  } 
+  return fgCalibData -> GetSlewRec(ipmt) ;
+}
+
 //__________________________________________________________________
 void 
 AliSTARTParameters::SetPMTeff(Int_t ipmt)

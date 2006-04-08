@@ -137,17 +137,24 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   Int_t threshold =50; //photoelectrons
   Float_t zdetA, zdetC;
   TObjArray slewingLED;
+  TObjArray slewingRec;
   AliSTARTParameters* param = AliSTARTParameters::Instance();
+  param->Init();
+
   Int_t ph2Mip = param->GetPh2Mip();     
   Int_t channelWidth = param->GetChannelWidth() ;  
+  Float_t delayVertex = param->GetTimeDelayTVD();
   
-  param->Init();
   for (Int_t i=0; i<24; i++){
     timeDelayCFD[i] = param->GetTimeDelayCFD(i);
     timeDelayLED[i] = param->GetTimeDelayLED(i);
     gain[i] = param->GetGain(i);
     TGraph* gr = param ->GetSlew(i);
     slewingLED.AddAtAndExpand(gr,i);
+
+    TGraph* gr1 = param ->GetSlewRec(i);
+    slewingRec.AddAtAndExpand(gr1,i);
+
     TGraph* grEff = param ->GetPMTeff(i);
     fEffPMT.AddAtAndExpand(grEff,i);
   }
@@ -169,7 +176,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     Float_t besttimeleft=99999.;
     Int_t pmtBestRight=9999;
     Int_t pmtBestLeft=9999;
-    Int_t timeDiff=99999, meanTime=0;
+    Int_t timeDiff=999, meanTime=0;
     Int_t sumMult =0;
     ftimeCFD -> Reset();
     fADC -> Reset();
@@ -253,7 +260,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
  
     bestRightTDC=Int_t ((besttimeright+1000*timeDelayCFD[pmtBestLeft])
 			/channelWidth);
-    timeDiff=Int_t (((besttimeleft-besttimeright)+1000*timeDelayCFD[pmtBestRight])
+    timeDiff=Int_t (((besttimeleft-besttimeright)+1000*delayVertex)
 		    /channelWidth);
     meanTime=Int_t (((besttimeright+1000*timeDelayCFD[pmtBestLeft]+
 		      besttimeleft+1000*timeDelayCFD[pmtBestLeft])/2.)
@@ -280,7 +287,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  fADC->AddAt(qtCh,i);
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
 	  ftimeLED->AddAt(trLED,i); 
-	  sumMult += Int_t ((al*gain[i]/ph2Mip)*50) ;
+	  sumMult += Int_t ((al/ph2Mip)*50) ;
 	}
       } //pmt loop
 

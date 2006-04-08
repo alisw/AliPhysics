@@ -35,10 +35,13 @@ public:
   void SetmV2channel(Int_t size=320) { fmV2Channel = size; }
   void SetQTmin(Int_t qt=13) {fQTmin = qt;}
   void SetQTmax(Int_t qt=125) {fQTmax = qt;}
-  void SetGain(Int_t size=50) { fFixedGain = size; }
+  void SetGain(Int_t size=1) { fFixedGain = size; }
   void SetZposition( Float_t valueC=69.7, Float_t valueA=373) {
     fSTARTzPosition[0]=valueC, fSTARTzPosition[1]=valueA;}
   void SetPMTeff(Int_t ipmt);  
+
+  void SetTimeDelayTVD(Float_t r=150)   { fTimeDelayTVD = r; };
+  Float_t GetTimeDelayTVD()   { return fTimeDelayTVD; }
 
   // Set various variable parameter defaults
   void SetTimeDelayCablesCFD(Int_t ipmt,Float_t r=150)   
@@ -54,6 +57,7 @@ public:
   void SetVariableDelayLine(Int_t ipmt, Int_t v=0)  
   { fVariableDelayLine[ipmt] = v;}
   void SetSlewingLED(Int_t ipmt); 
+  void SetSlewingRec(Int_t ipmt); 
  
 
   // Get `Fixed' various parameters
@@ -82,10 +86,14 @@ public:
   Int_t GetVariableDelayLine(Int_t ipmt) const 
   {return fVariableDelayLine[ipmt];}
 
-  Float_t GetSlewingLED(Int_t ipmt, Float_t mv) const
-  {return((TGraph*)fSlewingLED.At(ipmt))->Eval(mv);} 
-   TGraph *  GetSlew(Int_t ipmt) const  
-  {return (TGraph*)fSlewingLED.At(ipmt);}
+  Float_t GetSlewingLED(Int_t ipmt, Float_t mv) const;
+  //  {return((TGraph*)fSlewingLED.At(ipmt))->Eval(mv);} 
+  TGraph *  GetSlew(Int_t ipmt) const ; 
+  //  {return (TGraph*)fSlewingLED.At(ipmt);}
+  TGraph *  GetSlewRec(Int_t ipmt) const;  
+  //  {return (TGraph*)fSlewingRec.At(ipmt);}
+  Float_t GetSlewingRec(Int_t ipmt, Float_t mv) const;
+  //  {return((TGraph*)fSlewingRec.At(ipmt))->Eval(mv);} 
 
   Float_t GetTimeDelayCFD(Int_t ipmt);
   Float_t GetTimeDelayLED(Int_t ipmt);
@@ -95,7 +103,7 @@ protected:
   virtual ~AliSTARTParameters() {}
   static AliSTARTParameters* fgInstance; // Static singleton instance
   
-  Bool_t fIsInit;               
+  Bool_t fIsInit;                // Whether we've been initialised
   Float_t  fSTARTzPosition[2] ;  // z-position of the two STARTs
   Int_t   fPh2Mip;            // # photoelectrons per MIP in radiator
   Int_t   fmV2Mip;            // # mV per MIP in radiator
@@ -111,10 +119,12 @@ protected:
   Float_t fTimeDelayPMT[24];       //! time delay in PMT
   Int_t fVariableDelayLine[24];      //time delay in VDL for trigger equvalizing
   TObjArray fSlewingLED;  //array of slewing correction for each PMT
+  TObjArray fSlewingRec;  //array of slewing correction for Reconstruction
   TObjArray fPMTeff; //array PMT registration efficiency
   
   Float_t fTimeDelayLED;  //  sum time delay for LED channel
   Float_t fTimeDelayCFD;  // sum time delay for CFD channel
+  Float_t  fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
   
   static AliSTARTAlignData * fgAlignData; // singleton for Calibration data
   static AliSTARTCalibData * fgCalibData; // singleton for Calibration data
