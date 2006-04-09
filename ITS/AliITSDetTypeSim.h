@@ -111,14 +111,15 @@ class AliITSDetTypeSim : public TObject {
     Int_t         fNSDigits;     //! number of SDigits
     TClonesArray *fSDigits;      //! [NMod][NSDigits]
     Int_t*        fNDigits;      //! [NDet] number of Digits for det.
-    Int_t         fRunNumber;    //! run number (to access DB)
+    Int_t      fRunNumber;    //! run number (to access DB)
     TObjArray     *fDigits;       //! [NMod][NDigits]
     TString       fHitClassName; //! String with Hit class name
     TString       fSDigClassName;//! String with SDigit class name.
     Char_t*       fDigClassName[3]; //! String with digit class name.
-    AliLoader* fLoader;        // loader  
+    AliLoader*    fLoader;          //! loader  
+    Bool_t fFirstcall;              //! flag
     
-  ClassDef(AliITSDetTypeSim,3) // ITS Simulation structure
+  ClassDef(AliITSDetTypeSim,4) // ITS Simulation structure
  
 };
 

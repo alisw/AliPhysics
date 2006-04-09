@@ -5378,8 +5378,6 @@ void AliITSvPPRasymmFMD::SetDefaults(){
     Int_t i;
     Float_t bx[256],bz[280];
    
-    fDetTypeSim->ResetCalibrationArray();
-    fDetTypeSim->ResetSegmentation();
     
     fDetTypeSim->SetDefaults();
     

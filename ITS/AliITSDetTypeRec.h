@@ -128,9 +128,10 @@ class AliITSDetTypeRec : public TObject {
 
     TString fSelectedVertexer; // Vertexer selected in CreateVertexer
     AliITSLoader* fLoader;     //! ITS loader
-    Int_t         fRunNumber;    //! run number (to access DB)
+    Int_t         fRunNumber;  //! run number (to access DB)
+    Bool_t fFirstcall;         //! flag
 
-    ClassDef(AliITSDetTypeRec,5) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,6) // ITS Reconstruction structure
 };
 
 #endif
