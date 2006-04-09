@@ -236,6 +236,8 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
   Int_t nMu1GeV, nMu3GeV, nMu10GeV;
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
   Float_t maxPt = .0, meanPt = .0, totalP = .0;
+  Int_t fVertexflag;
+  TString fVertexName;
 
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
@@ -280,10 +282,13 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
     maxPt = .0;
     meanPt = .0;
     totalP = .0;
+    fVertexflag = 1;
     
     b->GetEntry(iEventNumber);
     const AliESDVertex * vertexIn = esd->GetVertex();
-    
+    fVertexName = vertexIn->GetName();
+    if(fVertexName == "default") fVertexflag = 0;
+
     for (Int_t iTrackNumber = 0; iTrackNumber < esd->GetNumberOfTracks(); iTrackNumber++) {
       AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
       UInt_t status = esdTrack->GetStatus();
@@ -399,6 +404,8 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
     evTag->SetVertexX(vertexIn->GetXv());
     evTag->SetVertexY(vertexIn->GetYv());
     evTag->SetVertexZ(vertexIn->GetZv());
+    evTag->SetVertexZError(vertexIn->GetZRes());
+    evTag->SetVertexFlag(fVertexflag);
     
     evTag->SetT0VertexZ(esd->GetT0zVertex());
     

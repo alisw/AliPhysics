@@ -636,9 +636,11 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
     if(!vertex){
       AliWarning("Vertex not found");
       vertex = new AliESDVertex();
+      vertex->SetName("default");
     }
     else {
       vertex->SetTruePos(vtxPos);  // store also the vertex from MC
+      vertex->SetName("reconstructed");
     }
 
   } else {
@@ -1277,6 +1279,8 @@ void AliReconstruction::CreateTag(TFile* file)
   Int_t nMu1GeV, nMu3GeV, nMu10GeV;
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
   Float_t maxPt = .0, meanPt = .0, totalP = .0;
+  Int_t fVertexflag;
+  TString fVertexName;
 
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
@@ -1326,10 +1330,12 @@ void AliReconstruction::CreateTag(TFile* file)
     maxPt = .0;
     meanPt = .0;
     totalP = .0;
-    
+    fVertexflag = 1;
+
     b->GetEntry(iEventNumber);
     const AliESDVertex * vertexIn = esd->GetVertex();
-    
+    fVertexName = vertexIn->GetName();
+    if(fVertexName == "default") fVertexflag = 0;
     for (Int_t iTrackNumber = 0; iTrackNumber < esd->GetNumberOfTracks(); iTrackNumber++) {
       AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
       UInt_t status = esdTrack->GetStatus();
@@ -1441,7 +1447,9 @@ void AliReconstruction::CreateTag(TFile* file)
     evTag->SetVertexX(vertexIn->GetXv());
     evTag->SetVertexY(vertexIn->GetYv());
     evTag->SetVertexZ(vertexIn->GetZv());
-    
+    evTag->SetVertexZError(vertexIn->GetZRes());
+    evTag->SetVertexFlag(fVertexflag);
+
     evTag->SetT0VertexZ(esd->GetT0zVertex());
     
     evTag->SetTrigger(esd->GetTrigger());
