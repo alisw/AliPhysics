@@ -443,7 +443,7 @@ void AliTOFTrigger::GetLTMIndex(Int_t *detind, Int_t *indexLTM){
       indexLTM[1] = detind[2]+19;
     }
     else if (detind[1] ==2){
-      indexLTM[1] = detind[2]+19;
+      indexLTM[1] = detind[2]+19*2;
     }
     else{
       AliError("Smth Wrong!!!");
