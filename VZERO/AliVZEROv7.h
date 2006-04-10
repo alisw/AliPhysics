@@ -42,18 +42,19 @@ protected:
 private: 
 
 // V0C part in front of muon arm absorber 
-  Double_t  fV0CHeight1, fV0CHeight2, fV0CHeight3, fV0CHeight4; 
-  Double_t  fV0CRMin, fV0CRBox;
-  Double_t  fV0CLidThickness;
-  Double_t  fV0CCellThickness;
-  Double_t  fV0CBoxThickness; 
-  Double_t  fV0COffsetFibers;
+// V0C Parameters related to geometry: 
+  Double_t  fV0CHeight1, fV0CHeight2, fV0CHeight3, fV0CHeight4; // Heights of V0C elements
+  Double_t  fV0CRMin, fV0CRBox;  // Min and max radii of V0C box
+  Double_t  fV0CLidThickness;    // Thickness of V0C box lid
+  Double_t  fV0CCellThickness;   // Thickness of V0C cell
+  Double_t  fV0CBoxThickness;    // Thickness of V0C box
+  Double_t  fV0COffsetFibers;    // Z offsets to output fibers
 
-// V0C Parameters related to light production :
-  Float_t fV0CLightYield;       // Lightyield in BC408   (93.75 eV per photon)
-  Float_t fV0CLightAttenuation; // LightAttenuation in fibers (0.05 per meter)
-  Float_t fV0CnMeters;          // Number of meters of fibers to PM
-  Float_t fV0CFibToPhot;        // Loss in Fibers - Photocathode Connection 
+// V0C Parameters related to light production:
+  Float_t fV0CLightYield;        // Lightyield in BC408   (93.75 eV per photon)
+  Float_t fV0CLightAttenuation;  // LightAttenuation in fibers (0.05 per meter)
+  Float_t fV0CnMeters;           // Number of meters of fibers to PM
+  Float_t fV0CFibToPhot;         // Loss in Fibers - Photocathode Connection 
 
 // V0A Parameters related to geometry:
   Double_t fV0AR0, fV0AR1, fV0AR2, fV0AR3, fV0AR4, fV0AR5, fV0AR6;	// Radius of V0A
@@ -66,7 +67,7 @@ private:
   Double_t fV0APMTR4, fV0APMTH, fV0APMTB;                               // Parameters for Photo-Multiplier
   Float_t fV0AnMeters;                                                  // Must be calculated depending on each ring
   
-// V0A Parameters releted to light
+// V0A Parameters related to light production:
   Double_t fV0ALightYield;       // Lightyield in BC404
   Double_t fV0ALightAttenuation; // LightAttenuation in fibers
   Double_t fV0AFibToPhot;        // Loss in Fibers - Photocathode Connection
