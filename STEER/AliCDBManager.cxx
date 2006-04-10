@@ -76,7 +76,7 @@ AliCDBManager::AliCDBManager():
 	fDefaultStorage(NULL),
 	fDrainStorage(NULL),
 	fCache(kFALSE),
-	fRun(0)
+	fRun(-1)
 {
 // default constuctor
 	fFactories.SetOwner(1);
