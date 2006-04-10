@@ -4,8 +4,8 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-#ifndef AliMUONTriggerDecisionV1V1_H
-#define AliMUONTriggerDecisionV1V1_H
+#ifndef AliMUONTriggerDecisionV1_H
+#define AliMUONTriggerDecisionV1_H
 
 /// \ingroup sim
 /// \class AliMUONTriggerDecisionV1

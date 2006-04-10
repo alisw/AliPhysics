@@ -36,6 +36,15 @@ class AliMUONRawWriter : public TObject
 
   void  SetScalerEvent() {fScalerEvent = kTRUE;}
   
+protected:
+  AliMUONRawWriter();                  // Default constructor
+  AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
+  AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs); // assignment operator
+
+  // writing raw data
+  Int_t WriteTrackerDDL(Int_t iCh);
+  Int_t WriteTriggerDDL();
+  
 private:
 
   void AddData(const AliMUONSubEventTracker& event)
@@ -48,16 +57,7 @@ private:
   
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
 
-protected:
-  AliMUONRawWriter();                  // Default constructor
-  AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
-  AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs); // assignment operator
-
-  // writing raw data
-  Int_t WriteTrackerDDL(Int_t iCh);
-  Int_t WriteTriggerDDL();
-  
- private:
+private:
 
   AliMUONData*  fMUONData;           //! Data container for MUON subsystem 
  
