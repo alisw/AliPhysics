@@ -434,13 +434,20 @@ Bool_t AliAlignObj::ApplyToGeometry()
   }
   
   const char* volpath = GetVolPath();
-  TGeoPhysicalNode* node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(volpath);
-  if (!node) {
+
+  if (gGeoManager->GetListOfPhysicalNodes()->FindObject(volpath)) {
+    AliError(Form("Volume %s has been already misaligned!",volpath));
+    return kFALSE;
+  }
+
+  if (!gGeoManager->cd(volpath)) {
     AliError(Form("Volume path %s not valid!",volpath));
     return kFALSE;
   }
-  if (node->IsAligned()) {
-    AliWarning(Form("Volume %s has been already misaligned!",volpath));
+
+  TGeoPhysicalNode* node = (TGeoPhysicalNode*) gGeoManager->MakePhysicalNode(volpath);
+  if (!node) {
+    AliError(Form("Volume path %s not valid!",volpath));
     return kFALSE;
   }
 
