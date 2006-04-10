@@ -139,6 +139,8 @@
 
 #include "AliTrackPointArray.h"
 #include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliAlignObj.h"
 
 ClassImp(AliReconstruction)
 
@@ -164,12 +166,15 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fStopOnError(kFALSE),
   fCheckPointLevel(0),
   fOptions(),
+  fLoadAlignFromCDB(kTRUE),
+  fLoadAlignData("ALL"),
 
   fRunLoader(NULL),
   fRawReader(NULL),
 
   fVertexer(NULL),
 
+  fAlignObjArray(NULL),
   fWriteAlignmentData(kFALSE),
   fCDBUri(cdbUri)
 {
@@ -181,10 +186,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
     fTracker[iDet] = NULL;
   }
   AliPID pid;
-  // Import TGeo geometry
-  TString geom(gSystem->DirName(gAliceFilename));
-  geom += "/geometry.root";
-  TGeoManager::Import(geom.Data());
 }
 
 //_____________________________________________________________________________
@@ -204,12 +205,15 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fStopOnError(rec.fStopOnError),
   fCheckPointLevel(0),
   fOptions(),
+  fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
+  fLoadAlignData(rec.fLoadAlignData),
 
   fRunLoader(NULL),
   fRawReader(NULL),
 
   fVertexer(NULL),
 
+  fAlignObjArray(rec.fAlignObjArray),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fCDBUri(rec.fCDBUri)
 {
@@ -279,6 +283,151 @@ void AliReconstruction::SetSpecificStorage(const char* detName, const char* uri)
 
 }
 
+//_____________________________________________________________________________
+Bool_t AliReconstruction::SetRunNumber()
+{
+  // The method is called in Run() in order
+  // to set a correct run number.
+  // In case of raw data reconstruction the
+  // run number is taken from the raw data header
+
+  if(AliCDBManager::Instance()->GetRun() < 0) {
+    if (!fRunLoader) {
+      AliError("No run loader is found !"); 
+      return kFALSE;
+    }
+    // read run number from gAlice
+    AliCDBManager::Instance()->SetRun(fRunLoader->GetAliRun()->GetRunNumber());
+    AliInfo(Form("Run number: %d",AliCDBManager::Instance()->GetRun()));
+  }
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::ApplyAlignObjsToGeom(TObjArray* alObjArray)
+{
+  // Read collection of alignment objects (AliAlignObj derived) saved
+  // in the TClonesArray ClArrayName and apply them to the geometry
+  // manager singleton.
+  //
+  alObjArray->Sort();
+  Int_t nvols = alObjArray->GetEntriesFast();
+
+  for(Int_t j=0; j<nvols; j++)
+    {
+      AliAlignObj* alobj = (AliAlignObj*) alObjArray->UncheckedAt(j);
+      if (alobj->ApplyToGeometry() == kFALSE)
+	return kFALSE;
+    }
+
+  if (AliDebugLevelClass() >= 1) {
+    gGeoManager->CheckOverlaps(20);
+    TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
+    if(ovexlist->GetEntriesFast()){  
+      AliError("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
+   }
+  }
+
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::SetAlignObjArraySingleDet(const char* detName)
+{
+  // Fills array of single detector's alignable objects from CDB
+  
+  AliDebug(2, Form("Loading alignment data for detector: %s",detName));
+  
+  AliCDBEntry *entry;
+  	
+  AliCDBPath path(detName,"Align","Data");
+	
+  entry=AliCDBManager::Instance()->Get(path.GetPath());
+  if(!entry){ 
+  	AliDebug(2,Form("Couldn't load alignment data for detector %s",detName));
+	return kFALSE;
+  }
+  entry->SetOwner(1);
+  TClonesArray *alignArray = (TClonesArray*) entry->GetObject();	
+  alignArray->SetOwner(0);
+  AliDebug(2,Form("Found %d alignment objects for %s",
+			alignArray->GetEntries(),detName));
+
+  AliAlignObj *alignObj=0;
+  TIter iter(alignArray);
+	
+  // loop over align objects in detector
+  while( ( alignObj=(AliAlignObj *) iter.Next() ) ){
+  	fAlignObjArray->Add(alignObj);
+  }
+  // delete entry --- Don't delete, it is cached!
+	
+  AliDebug(2, Form("fAlignObjArray entries: %d",fAlignObjArray->GetEntries() ));
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
+{
+  // Read the alignment objects from CDB.
+  // Each detector is supposed to have the
+  // alignment objects in DET/Align/Data CDB path.
+  // All the detector objects are then collected,
+  // sorted by geometry level (starting from ALIC) and
+  // then applied to the TGeo geometry.
+  // Finally an overlaps check is performed.
+
+  // Load alignment data from CDB and fill fAlignObjArray 
+  if(fLoadAlignFromCDB){
+  	if(!fAlignObjArray) fAlignObjArray = new TObjArray();
+  	
+	//fAlignObjArray->RemoveAll(); 
+ 	fAlignObjArray->Clear();  	
+	fAlignObjArray->SetOwner(0);
+ 
+  	TString detStr = detectors;
+  	TString dataNotLoaded="";
+  	TString dataLoaded="";
+  
+	for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+	  if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+	  if(!SetAlignObjArraySingleDet(fgkDetectorName[iDet])){
+	    dataNotLoaded += fgkDetectorName[iDet];
+	    dataNotLoaded += " ";
+	  } else {
+	    dataLoaded += fgkDetectorName[iDet];
+	    dataLoaded += " ";
+	  }
+  	} // end loop over detectors
+  
+  	if ((detStr.CompareTo("ALL") == 0)) detStr = "";
+  	dataNotLoaded += detStr;
+  	AliInfo(Form("Alignment data loaded for: %s",
+  			  dataLoaded.Data()));
+  	AliInfo(Form("Didn't/couldn't load alignment data for: %s",
+  			  dataNotLoaded.Data()));
+  } // fLoadAlignFromCDB flag
+ 
+  // Check if the array with alignment objects was
+  // provided by the user. If yes, apply the objects
+  // to the present TGeo geometry
+  if (fAlignObjArray) {
+    if (gGeoManager && gGeoManager->IsClosed()) {
+      if (ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
+	AliError("The application of misalignment failed! Restart aliroot and try again. ");
+	return kFALSE;
+      }
+    }
+    else {
+      AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
+      return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
 
 //_____________________________________________________________________________
 void AliReconstruction::SetGAliceFile(const char* fileName)
@@ -321,6 +470,33 @@ Bool_t AliReconstruction::Run(const char* input,
 
   // get the run loader
   if (!InitRunLoader()) return kFALSE;
+
+  // Set run number in CDBManager (if it is not already set by the user)
+  if (!SetRunNumber()) if (fStopOnError) return kFALSE;
+
+  // Import ideal TGeo geometry and apply misalignment
+  if (!gGeoManager) {
+    TString geom(gSystem->DirName(fGAliceFileName));
+    geom += "/geometry.root";
+    TGeoManager::Import(geom.Data());
+    if (!gGeoManager) if (fStopOnError) return kFALSE;
+  }
+  if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
+
+  // Temporary fix by A.Gheata
+  // Could be removed with the next Root version (>5.11)
+  if (gGeoManager) {
+    TIter next(gGeoManager->GetListOfVolumes());
+    TGeoVolume *vol;
+    while ((vol = (TGeoVolume *)next())) {
+      if (vol->GetVoxels()) {
+	if (vol->GetVoxels()->NeedRebuild()) {
+	  vol->GetVoxels()->Voxelize();
+	  vol->FindOverlaps();
+	}
+      }
+    }
+  }
 
   // local reconstruction
   if (!fRunLocalReconstruction.IsNull()) {

@@ -139,10 +139,6 @@ public:
       else ::Warning(method, "method is depricated\nPlease use: %s", replace);
     }
 
-  // Method to introduce the detector misliagnment
-  // It is called by AliSimulation
-  static Bool_t  ApplyAlignObjsToGeom(TObjArray* AlObjArray);
-
 protected:
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
   Int_t          fRun;               //! Current run number

@@ -958,33 +958,3 @@ void AliRun::AddModule(AliModule* mod)
   TString str = name; gSystem->ExpandPathName(str);
   return !gSystem->AccessPathName(str.Data(),mode);
 }
-
-//_____________________________________________________________________________
-Bool_t AliRun::ApplyAlignObjsToGeom(TObjArray* AlObjArray)
-{
-  // Read collection of alignment objects (AliAlignObj derived) saved
-  // in the TClonesArray ClArrayName and apply them to the geometry
-  // manager singleton.
-  //
-  AlObjArray->Sort();
-  Int_t nvols = AlObjArray->GetEntriesFast();
-
-  for(Int_t j=0; j<nvols; j++)
-    {
-      AliAlignObj* alobj = (AliAlignObj*) AlObjArray->UncheckedAt(j);
-      if (alobj->ApplyToGeometry() == kFALSE)
-	return kFALSE;
-    }
-
-  if (AliDebugLevelClass() >= 1) {
-    gGeoManager->CheckOverlaps(20);
-    TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
-    if(ovexlist->GetEntriesFast()){  
-      AliErrorClass("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
-   }
-  }
-
-  return kTRUE;
-
-}
-

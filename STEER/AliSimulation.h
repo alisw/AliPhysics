@@ -60,21 +60,26 @@ public:
                    {fWriteRawData = detectors; fRawDataFileName = fileName;
 		   fDeleteIntermediateFiles = deleteIntermediateFiles;};
 
-  static Bool_t  ApplyAlignObjsToGeom(const char* fileName,
-				    const char* clArrayName);
-  static Bool_t  ApplyAlignObjsToGeom(AliCDBParam* param,
-				    AliCDBId& Id);
-  static Bool_t  ApplyAlignObjsToGeom(const char* uri, const char* path,
-				    Int_t runnum, Int_t version,
-				    Int_t sversion);
-  static Bool_t  ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version,
-				    Int_t sversion);
-  void           SetAlignObjArray(TObjArray *array)
-                   		    {fAlignObjArray = array;
-		    		     fLoadAlignFromCDB = kFALSE;}
+  Bool_t         ApplyAlignObjsToGeom(TObjArray* alObjArray);
 
-  void           SetAlignObjArray(const char* detectors="ALL"); 
+  Bool_t         ApplyAlignObjsToGeom(const char* fileName,
+				      const char* clArrayName);
+  Bool_t         ApplyAlignObjsToGeom(AliCDBParam* param,
+				      AliCDBId& Id);
+  Bool_t         ApplyAlignObjsToGeom(const char* uri, const char* path,
+				      Int_t runnum, Int_t version,
+				      Int_t sversion);
+  Bool_t         ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version,
+				      Int_t sversion);
+  void           SetAlignObjArray(TObjArray *array)
+                   {fAlignObjArray = array;
+		   fLoadAlignFromCDB = kFALSE;}
+
   Bool_t         SetAlignObjArraySingleDet(const char* detName); 		   
+
+  Bool_t         MisalignGeometry(AliRunLoader *runLoader = NULL);
+
+  Bool_t         SetRunNumber();
 		   
   // CDB storage activation
   static void InitCDBStorage(const char *uri);
