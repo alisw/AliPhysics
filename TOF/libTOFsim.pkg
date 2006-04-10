@@ -8,7 +8,7 @@ SRCS  = AliTOF.cxx  AliTOFv5T0.cxx  AliTOFv4T0.cxx  \
 	AliTOFDigitizer.cxx  \
 	AliTOFDigitMap.cxx  \
 	AliTOFDDLRawData.cxx  \
-        AliTOFT0.cxx
+        AliTOFT0.cxx AliTOFTrigger.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

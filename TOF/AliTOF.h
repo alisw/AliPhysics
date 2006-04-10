@@ -30,6 +30,7 @@ class TFolder ;
 
 #include "AliTOFSDigitizer.h"
 #include "AliTOFGeometry.h"
+#include "AliTOFTrigger.h"
 
 class AliTOF : public AliDetector {
 public:
@@ -82,6 +83,10 @@ public:
   void RecreateSDigitsArray();
   void CreateSDigitsArray();
   AliTOFGeometry *GetGeometry() const { return fTOFGeometry; }; 
+
+  // Trigger
+  virtual AliTriggerDetector* CreateTriggerDetector() const
+  	{return new AliTOFTrigger();}
 
 protected:
   TFolder* fFGeom ;       //  Folder that holds the Geometry definition

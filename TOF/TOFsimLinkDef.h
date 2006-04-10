@@ -23,5 +23,6 @@
 #pragma link C++ class  AliTOFDDLRawData+;
 
 #pragma link C++ class  AliTOFT0+;
+#pragma link C++ class  AliTOFTrigger+;
 
 #endif
