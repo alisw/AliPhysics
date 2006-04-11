@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.89  2006/03/13 14:05:42  kharlov
+ * Calibration objects for EMC and CPV
+ *
  * Revision 1.88  2006/01/11 08:54:52  hristov
  * Additional protection in case no calibration entry was found
  *
@@ -338,7 +341,9 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
   // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
 
   AliPHOSGetter * gime = AliPHOSGetter::Instance();
-  fCalibData = new AliPHOSCalibData(gAlice->GetRunNumber()); 
+  // fCalibData = new AliPHOSCalibData(gAlice->GetRunNumber()); //original
+ 
+  fCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
   
   if(!fCalibData)
     {

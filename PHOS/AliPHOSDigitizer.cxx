@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.88  2006/03/13 14:05:43  kharlov
+ * Calibration objects for EMC and CPV
+ *
  * Revision 1.87  2005/08/24 15:33:49  kharlov
  * Calibration data for raw digits
  *
@@ -397,7 +400,8 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
   AliPHOSGetter* gime = AliPHOSGetter::Instance();
 
   if(!gime->CalibData()) {
-    AliPHOSCalibData* cdb = new AliPHOSCalibData(gAlice->GetRunNumber());
+    //AliPHOSCalibData* cdb = new AliPHOSCalibData(gAlice->GetRunNumber()); // original
+    AliPHOSCalibData* cdb = new AliPHOSCalibData(-1); // use AliCDBManager's run number
     gime->SetCalibData(cdb);
   }
 
