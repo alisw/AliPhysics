@@ -15,13 +15,19 @@
 
 /* $Id$ */
 
-//*-- Author: Aleksei Pavlinov(WSU)
+//_________________________________________________________________________
+// Main class for TRD1 geometry of Shish-Kebab case.
+// Author: Aleksei Pavlinov(WSU).
+// Sep 20004.
+// See web page with description of Shish-Kebab geometries:
+// http://pdsfweb01.nersc.gov/~pavlinov/ALICE/SHISHKEBAB/RES/shishkebabALICE.html
+//_________________________________________________________________________
 
 #include "AliEMCALShishKebabTrd1Module.h"
-#include <assert.h>
+//#include <assert.h>
 #include "AliEMCALGeometry.h"
 
-#include "Riostream.h"
+#include <Riostream.h>
 #include <TMath.h>
 
 ClassImp(AliEMCALShishKebabTrd1Module)
@@ -34,29 +40,32 @@ ClassImp(AliEMCALShishKebabTrd1Module)
   Double_t AliEMCALShishKebabTrd1Module::fgangle=0.;   // around one degree 
   Double_t AliEMCALShishKebabTrd1Module::fgtanBetta=0; //
 
-AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(double theta, AliEMCALGeometry *g) : TNamed()
-{ // theta in radians ; first object shold be with theta=pi/2.
-  cout<< " theta " << theta << " geometry " << g << endl;  
+AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEMCALGeometry *g) : TNamed()
+{ 
+  // theta in radians ; first object shold be with theta=pi/2.
   fTheta = theta;
   if(fgGeometry==0) {
+    fTheta = TMath::PiOver2();
     fgGeometry = g;
     if(GetParameters()) {
       DefineFirstModule();
     }
   } else Warning("AliEMCALShishKebabTrd1Module(theta)","You should call this constractor just once !!");
   DefineName(fTheta);
+  cout<< " theta " << fTheta << " geometry " << g << endl;  
 }
 
 AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor) : TNamed()
-{ // 22-sep-04
+{ 
   //  printf("** Left Neighbor : %s **\n", leftNeighbor.GetName());
   TObject::SetUniqueID(leftNeighbor.GetUniqueID()+1);
   fTheta  = leftNeighbor.GetTheta() - fgangle; 
   Init(leftNeighbor.GetA(),leftNeighbor.GetB());
 }
 
-void AliEMCALShishKebabTrd1Module::Init(double A, double B)
-{ // Define parameter module from parameters A,B from previos.
+void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
+{ 
+  // Define parameter module from parameters A,B from previos.
   Double_t yl = (fgb/2)*TMath::Sin(fTheta) + (fga/2)*TMath::Cos(fTheta) + fgr, y = yl;
   Double_t xl = (yl - B) / A;     // y=A*x+B
 
@@ -94,6 +103,7 @@ void AliEMCALShishKebabTrd1Module::Init(double A, double B)
 
 void AliEMCALShishKebabTrd1Module::DefineFirstModule()
 {
+  // Define first module
   fOK.Set(fga2/2., fgr + fgb/2.); // position the center of module vs o
 
   // parameters of right line : y = A*z + B in system where zero point is IP.
@@ -109,16 +119,15 @@ void AliEMCALShishKebabTrd1Module::DefineFirstModule()
   TObject::SetUniqueID(1); //
 }
 
-void AliEMCALShishKebabTrd1Module::DefineName(double theta)
+void AliEMCALShishKebabTrd1Module::DefineName(Double_t theta)
 {
-  char name[100];
-  // sprintf(name,"theta_%5.2f",theta*180./TMath::Pi());
-  sprintf(name,"%2i(%5.2f)", TObject::GetUniqueID(), theta*180./TMath::Pi());
-  SetName(name);
+  // Define name of object
+  SetName(Form("%2i(%5.2f)", TObject::GetUniqueID(), theta*TMath::RadToDeg()));
 }
 
 Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 {
+ // Get needing module parameters from EMCAL geometry
   if(!fgGeometry) fgGeometry = AliEMCALGeometry::GetInstance();
   TString sn(fgGeometry->GetName()); // 2-Feb-05
   sn.ToUpper();
@@ -141,6 +150,7 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 // service methods
 void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
 {
+  // service method
   if(pri>=0) {
     Info("\n PrintShish()", "\n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
     fga, fga2, fgb, fgr, fgangle, fgangle*TMath::RadToDeg(), fgtanBetta);
@@ -156,4 +166,14 @@ void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
       fOK.Dump();
     }
   }
+}
+
+Double_t  AliEMCALShishKebabTrd1Module::GetThetaInDegree() const 
+{
+  return fTheta*TMath::RadToDeg();
+}
+
+Double_t  AliEMCALShishKebabTrd1Module::GetEtaOfCenterOfModule() const 
+{ 
+  return -TMath::Log(TMath::Tan(fOK.Phi()/2.));
 }

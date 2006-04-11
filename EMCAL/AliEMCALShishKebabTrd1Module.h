@@ -5,36 +5,43 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-//*-- Author: Aleksei Pavlinov (WSU)
-// TO DO : create class for Super module Geometry - 4-nov-04 
+//_________________________________________________________________________
+// Main class for TRD1 geometry of Shish-Kebab case.
+// Author: Aleksei Pavlinov(WSU).
+// Nov 2004; Feb 2006
 
 #include "TNamed.h"
-#include "TMath.h"
 #include "TVector2.h"
 
 class AliEMCALGeometry;
 
 class AliEMCALShishKebabTrd1Module : public TNamed {
  public:
-  AliEMCALShishKebabTrd1Module(double theta=TMath::Pi()/2., AliEMCALGeometry *g=0);
+  AliEMCALShishKebabTrd1Module(Double_t theta=0.0, AliEMCALGeometry *g=0);
   AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor);
-  void Init(double A, double B);
+  void Init(Double_t A, Double_t B);
+  AliEMCALShishKebabTrd1Module(const AliEMCALShishKebabTrd1Module& mod) : TNamed(mod.GetName(),mod.GetTitle()){
+    // cpy ctor: no implementation yet; requested by the Coding Convention
+    Fatal("cpy ctor", "not implemented") ;  
+  }
+  AliEMCALShishKebabTrd1Module & operator = (const AliEMCALShishKebabTrd1Module& /*rvalue*/)  {
+    Fatal("operator =", "not implemented") ;  
+    return *this ; 
+  }
 
   virtual ~AliEMCALShishKebabTrd1Module(void) {}
   Bool_t GetParameters();
-  void DefineName(double theta);
+  void DefineName(Double_t theta);
   void DefineFirstModule();
 
-  Double_t GetTheta() const{return fTheta;}
-  Double_t GetThetaInDegree() const {return fTheta*180./TMath::Pi();}
+  Double_t GetTheta() const {return fTheta;}
   TVector2& GetCenterOfModule() {return fOK;}
-  Double_t  GetEtaOfCenterOfModule(){return -TMath::Log(TMath::Tan(fOK.Phi()/2.));}
 
-  Double_t  GetPosX() {return fOK.Y();}
-  Double_t  GetPosZ() {return fOK.X();}
-  Double_t  GetPosXfromR() {return fOK.Y() - fgr;}
-  Double_t  GetA() {return fA;}
-  Double_t  GetB() {return fB;}
+  Double_t  GetPosX() const {return fOK.Y();}
+  Double_t  GetPosZ() const {return fOK.X();}
+  Double_t  GetPosXfromR() const {return fOK.Y() - fgr;}
+  Double_t  GetA() const {return fA;}
+  Double_t  GetB() const {return fB;}
   //  Additional offline staff 
   TVector2& GetCenterOfCellInLocalCoordinateofSM(Int_t ieta)
   { if(ieta<=1) return fOK2;
@@ -46,11 +53,14 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
     }
   }
   // 
-  Double_t GetTanBetta() {return fgtanBetta;}
-  Double_t Getb()        {return fgb;}
+  Double_t GetTanBetta() const {return fgtanBetta;}
+  Double_t Getb()        const {return fgb;}
   // service methods
-  void PrintShish(int pri=1) const;  // *MENU*
+  void PrintShish(Int_t pri=1) const;  // *MENU*
+  Double_t GetThetaInDegree() const;
+  Double_t  GetEtaOfCenterOfModule() const;
 
+ protected:
   // geometry info
   static AliEMCALGeometry *fgGeometry; //!
   static Double_t fga;        // 2*dx1=2*dy1
@@ -58,10 +68,8 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   static Double_t fgb;        // 2*dz1
   static Double_t fgangle;    // ~1 degree
   static Double_t fgtanBetta; // tan(fgangle/2.)
-  // radius to IP
-  static Double_t fgr;
+  static Double_t fgr;        // radius to IP
 
- protected:
   TVector2 fOK;     // position the module center x->y; z->x;
   Double_t fA;      // parameters of right line : y = A*z + B
   Double_t fB;      // system where zero point is IP.
@@ -72,8 +80,8 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   TVector2 fOK1; // ieta=2
   TVector2 fOK2; // ieta=1
 
- public:
-  ClassDef(AliEMCALShishKebabTrd1Module,0) // Turned Shish-Kebab module 
+  // public:
+  ClassDef(AliEMCALShishKebabTrd1Module,0) // TRD1 Shish-Kebab module 
 };
 
 #endif
