@@ -83,7 +83,8 @@ void AliRICHParam::CdbRead(Int_t run,Int_t version)
 
   AliCDBEntry *pEntry=AliCDBManager::Instance()->Get("RICH/RICHConfig/RefIdxC6F14",run,0,version); //try to get from common local storage  
   if(pEntry){
-    fIdxC6F14=(TF2*)pEntry->GetObject(); delete pEntry;
+    fIdxC6F14=(TF2*)pEntry->GetObject(); 
+    if(!(AliCDBManager::Instance()->GetCacheFlag())) delete pEntry;
   }else{
     AliWarning("No valid calibarion, the hardcoded will be used!");
     fIdxC6F14=new TF2("RidxC4F14","sqrt(1+0.554*(1239.84e-9/x)^2/((1239.84e-9/x)^2-5796)-0.0005*(y-20))",5.5e-9,8.5e-9,0,50); //DiMauro mail

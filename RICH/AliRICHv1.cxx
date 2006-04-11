@@ -79,7 +79,7 @@ void AliRICHv1::CreateMaterials()
   TF2 *pIdxC6F14;
   AliCDBEntry *pEntry=AliCDBManager::Instance()->Get("RICH/RICHConfig/RefIdxC6F14",0,0,0); //0-0-0 is for simulation
   if(pEntry){
-    pIdxC6F14=(TF2*)pEntry->GetObject(); delete pEntry;
+    pIdxC6F14=(TF2*)pEntry->GetObject(); // delete pEntry; // do not delete, entry is cached in CDB!
   }else{
     AliWarning("No valid calibarion, the hardcoded will be used!");
     pIdxC6F14=new TF2("RidxC4F14","sqrt(1+0.554*(1239.84e-9/x)^2/((1239.84e-9/x)^2-5796)-0.0005*(y-20))",5.5e-9,8.5e-9,0,50); //DiMauro mail
