@@ -148,7 +148,10 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
   trigp->Init();
   trdTrigger.SetParameter(trigp);
 
+  rawReader->RewindEvents();
+
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
+    if (!rawReader->NextEvent()) break;
     trdTrigger.Open(runLoader->GetFileName(), iEvent);
     trdTrigger.ReadDigits(rawReader);
     trdTrigger.MakeTracklets();
