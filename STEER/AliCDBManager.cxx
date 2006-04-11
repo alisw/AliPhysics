@@ -75,7 +75,7 @@ void AliCDBManager::Destroy() {
 AliCDBManager::AliCDBManager():
 	fDefaultStorage(NULL),
 	fDrainStorage(NULL),
-	fCache(kFALSE),
+	fCache(kTRUE),
 	fRun(-1)
 {
 // default constuctor
@@ -384,13 +384,12 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 	
   	AliCDBEntry *entry=0;
 	
-  
   	// first look into map of cached objects
   	if(query.GetFirstRun() == fRun) 
 		entry = (AliCDBEntry*) fEntryCache.GetValue(query.GetPath());
 
   	if(entry) {
-		AliInfo(Form("Object %s retrieved from cache !!",query.GetPath().Data()));		
+		AliDebug(2,Form("Object %s retrieved from cache !!",query.GetPath().Data()));		
 		return entry;
 	}
   	
@@ -412,7 +411,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
   	if (!entry) return NULL;
 
  	if(fCache && (query.GetFirstRun() == fRun)){
-		AliInfo(Form("Caching entry %s !",query.GetPath().Data()));
+		AliDebug(2,Form("Caching entry %s !",query.GetPath().Data()));
 		CacheEntry(query.GetPath(), entry);
 	}
   
