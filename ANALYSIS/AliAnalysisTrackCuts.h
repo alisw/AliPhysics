@@ -18,6 +18,7 @@ class AliESD;
 class AliESDtrack;
 
 class TPaveText;
+class TObjArray;
 
 class AliAnalysisTrackCuts : public TObject
 {
@@ -37,8 +38,9 @@ class AliAnalysisTrackCuts : public TObject
   void SetBzRange(Float_t r1, Float_t r2);
   void SetEtaRange(Float_t r1, Float_t r2);
   void SetRapRange(Float_t r1, Float_t r2);
-  
+
   Bool_t IsAccepted(AliESD *esd,AliESDtrack *esdtrack);
+  TObjArray *GetAcceptedParticles(AliESD *esd);
 
   TPaveText *GetTrackCuts();
   void PrintTrackCuts();
@@ -86,8 +88,9 @@ class AliAnalysisTrackCuts : public TObject
   Int_t fFlagbr;  //Flag that shows if the br cut was imposed
   Int_t fFlagbz;  //Flag that shows if the bz cut was imposed
  
+  TObjArray *fAcceptedParticleList; //List of accepted particles after quality cuts  
   
-  ClassDef(AliAnalysisTrackCuts, 1)
+  ClassDef(AliAnalysisTrackCuts, 2)
 } ;
 
 #endif

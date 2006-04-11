@@ -29,7 +29,9 @@ class AliAnalysisEventCuts : public TObject
   void SetPrimaryVertexXRange(Float_t r1, Float_t r2);
   void SetPrimaryVertexYRange(Float_t r1, Float_t r2);
   void SetPrimaryVertexZRange(Float_t r1, Float_t r2);
+  void SetPrimaryVertexZFlag() {fVzFlagType = "reconstructed";fFlagVzType = 1;};
   void SetMultiplicityRange(Int_t n1, Int_t n2);
+  void SetVerboseOff() {fVerboseOff = kTRUE;};
  
   Bool_t IsAccepted(AliESD *esd);
 
@@ -42,24 +44,29 @@ class AliAnalysisEventCuts : public TObject
   void GetVzStats();
  
  private:
+  Bool_t fVerboseOff; //cancel the output
+
   Float_t fVxMin, fVxMax;  //Definition of the range of the Vx
   Float_t fVyMin, fVyMax;  //Definition of the range of the Vy
   Float_t fVzMin, fVzMax;  //Definition of the range of the Vz
   Int_t fMultMin, fMultMax;  //Definition of the range of the multiplicity
+  TString fVzFlagType; //Flag for the primary vertex(good: "reconstructed" -- fake: "default")
 
   Int_t fMult;  //Number of events rejected due to multiplicity cut
   Int_t fVx;  //Number of events rejected due to Vx cut
   Int_t fVy;  //Number of events rejected due to Vy cut
   Int_t fVz;  //Number of events rejected due to Vz cut
+  Int_t fVzFlag;  //Number of events rejected due to Vz flag cut
   Int_t fTotalEvents;  //Total number of events
   Int_t fAcceptedEvents;  //Total number of events accepted
 
   Int_t fFlagMult; //Flag that shows if the multiplicity cut was imposed
   Int_t fFlagVx; //Flag that shows if the Vx cut was imposed
   Int_t fFlagVy; //Flag that shows if the Vy cut was imposed
-  Int_t fFlagVz; //Flag that shows ifthe Vz cut was imposed
+  Int_t fFlagVz; //Flag that shows if the Vz cut was imposed
+  Int_t fFlagVzType; //Flag that shows if the Vz flag cut was imposed
  
-  ClassDef(AliAnalysisEventCuts, 1)
+  ClassDef(AliAnalysisEventCuts, 2)
 } ;
 
 #endif

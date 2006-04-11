@@ -50,6 +50,8 @@ AliAnalysisEventCuts::~AliAnalysisEventCuts()
 //----------------------------------------//
 void AliAnalysisEventCuts::Reset()
 {
+  fVerboseOff = kFALSE;
+
   //Sets dummy values to every private member.
   fVxMin = -1000.0;
   fVxMax = 1000.0; 
@@ -59,11 +61,13 @@ void AliAnalysisEventCuts::Reset()
   fVzMax = 1000.0;
   fMultMin = 0;
   fMultMax = 100000;
-  
+  fVzFlagType = "default";
+
   fMult = 0;  
   fVx = 0;  
   fVy = 0; 
   fVz = 0; 
+  fVzFlag = 0; 
   fTotalEvents = 0; 
   fAcceptedEvents = 0; 
 
@@ -71,6 +75,7 @@ void AliAnalysisEventCuts::Reset()
   fFlagVx = 0;  
   fFlagVy = 0; 
   fFlagVz = 0; 
+  fFlagVzType = 0; 
 }
 
 //----------------------------------------//
@@ -115,31 +120,38 @@ Bool_t AliAnalysisEventCuts::IsAccepted(AliESD *esd)
 {
   //Returns true if the events is accepted otherwise false.
   fTotalEvents++;
-  if((esd->GetNumberOfTracks() < fMultMin) || (esd->GetNumberOfTracks() > fMultMax))
-    {
-      fMult++;
+  if((esd->GetNumberOfTracks() < fMultMin) || (esd->GetNumberOfTracks() > fMultMax)) {
+    fMult++;
+    if(!fVerboseOff)
       AliInfo(Form("Event rejected due to multiplicity cut"));
-      return kFALSE;
-    }
+    return kFALSE;
+  }
   const AliESDVertex *esdvertex = esd->GetVertex();
-  if((esdvertex->GetXv() < fVxMin) || (esdvertex->GetXv() > fVxMax))
-    {
-      fVx++;
+  TString vertexname = esdvertex->GetName();
+  if((esdvertex->GetXv() < fVxMin) || (esdvertex->GetXv() > fVxMax)) {
+    fVx++;
+    if(!fVerboseOff)
       AliInfo(Form("Event rejected due to Vx cut"));
-      return kFALSE;
-    }
-  if((esdvertex->GetYv() < fVyMin) || (esdvertex->GetYv() > fVyMax))
-    {
-      fVy++;
+    return kFALSE;
+  }
+  if((esdvertex->GetYv() < fVyMin) || (esdvertex->GetYv() > fVyMax)) {
+    fVy++;
+    if(!fVerboseOff)
       AliInfo(Form("Event rejected due to Vy cut"));
-      return kFALSE;
-    }
- if((esdvertex->GetZv() < fVzMin) || (esdvertex->GetZv() > fVzMax))
-    {
-      fVz++;
-      AliInfo(Form("Event rejected due to Vz cut"));
-      return kFALSE;
-    }
+    return kFALSE;
+  }
+ if((esdvertex->GetZv() < fVzMin) || (esdvertex->GetZv() > fVzMax)) {
+   fVz++;
+   if(!fVerboseOff)
+     AliInfo(Form("Event rejected due to Vz cut"));
+   return kFALSE;
+ }
+ if((fFlagVzType == 1)&&(vertexname == "default")) {
+   fVzFlag++;
+   if(!fVerboseOff)
+     AliInfo(Form("Event rejected due to Vz flag cut"));
+   return kFALSE;
+ }
  fAcceptedEvents++;
 
  return kTRUE;
@@ -270,6 +282,7 @@ void AliAnalysisEventCuts::GetVzStats()
   //Prints the percentage of events rejected due to this cut. 
   AliInfo(Form("Vz range: [%f,%f]",fVzMin,fVzMax));
   AliInfo(Form("Events rejected: %d",fVz));
+  AliInfo(Form("Events rejected (Vz flag): %d",fVzFlag));
 }
 
 //----------------------------------------//
@@ -280,14 +293,10 @@ void AliAnalysisEventCuts::PrintEventCuts()
 
   AliInfo(Form("**************EVENT CUTS**************"));
   GetEventStats();
-  if(fFlagMult)
-    GetMultStats();
-  if(fFlagVx)
-    GetVxStats();
-  if(fFlagVy)
-    GetVyStats();
-  if(fFlagVz)
-    GetVzStats();
+  if(fFlagMult) GetMultStats();
+  if(fFlagVx) GetVxStats();
+  if(fFlagVy) GetVyStats();
+  if((fFlagVz)||(fFlagVzType)) GetVzStats();
   AliInfo(Form("**************************************"));
 }
 

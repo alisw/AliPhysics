@@ -26,6 +26,8 @@
 #include <TText.h>
 #include <TLine.h>
 #include <TCanvas.h>
+#include <TObjArray.h>
+#include <Riostream.h>
 
 #include "AliLog.h"
 
@@ -48,6 +50,7 @@ AliAnalysisTrackCuts::AliAnalysisTrackCuts()
 AliAnalysisTrackCuts::~AliAnalysisTrackCuts()
 {
   //Destructor.
+  delete fAcceptedParticleList;
 }
 
 //----------------------------------------//
@@ -94,7 +97,10 @@ void AliAnalysisTrackCuts::Reset()
   fFlagRap = 0;  
   fFlagbr = 0;  
   fFlagbz = 0;  
+
+  fAcceptedParticleList = new TObjArray();
 }
+
 
 //----------------------------------------//
 void AliAnalysisTrackCuts::SetPxRange(Float_t r1, Float_t r2)
@@ -291,13 +297,17 @@ Bool_t AliAnalysisTrackCuts::IsAccepted(AliESD *esd ,AliESDtrack *esdtrack)
   //momentum related calculations
   Double_t p[3];
   esdtrack->GetPxPyPz(p);
-  Float_t momentum = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
-  Float_t pt = sqrt(pow(p[0],2) + pow(p[1],2));
-  Float_t energy = sqrt(pow(esdtrack->GetMass(),2) + pow(momentum,2));
+  Float_t momentum = TMath::Sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
+  Float_t pt = TMath::Sqrt(pow(p[0],2) + pow(p[1],2));
+  Float_t energy = TMath::Sqrt(pow(esdtrack->GetMass(),2) + pow(momentum,2));
 
   //y-eta related calculations
-  Float_t eta = 0.5*log((momentum - p[2])/(momentum + p[2]));
-  Float_t y = 0.5*log((energy - p[2])/(energy + p[2]));
+  Float_t eta = -100.;
+  Float_t y = -100.;
+  if((momentum != TMath::Abs(p[2]))&&(momentum != 0))
+    eta = 0.5*TMath::Log((momentum + p[2])/(momentum - p[2]));
+  if((energy != TMath::Abs(p[2]))&&(momentum != 0))
+    y = 0.5*TMath::Log((energy + p[2])/(energy - p[2]));
  
   //impact parameter related calculations
   Double_t trackPosition[3];
@@ -310,57 +320,62 @@ Bool_t AliAnalysisTrackCuts::IsAccepted(AliESD *esd ,AliESDtrack *esdtrack)
   Float_t br = Float_t(TMath::Sqrt(pow(trackPosition[0],2) + pow(trackPosition[1],2)));
   Float_t bz = Float_t(TMath::Abs(trackPosition[2]));
  
-  if((momentum < fPMin) || (momentum > fPMax))
-    {
-      fP++;
-      return kFALSE;
-    }
-  if((pt < fPtMin) || (pt > fPtMax))
-    {
-      fPt++;
-      return kFALSE;
-    }
-  if((p[0] < fPxMin) || (p[0] > fPxMax))
-    {
-      fPx++;
-      return kFALSE;
-    }
-  if((p[1] < fPyMin) || (p[1] > fPyMax))
-    {
-      fPy++;
-      return kFALSE;
-    }
-  if((p[2] < fPzMin) || (p[2] > fPzMax))
-    {
-      fPz++;
-      return kFALSE;
-    } 
-  if((br < fBrMin) || (br > fBrMax))
-    {
-      fbr++;
-      return kFALSE;
-    }
-  if((bz < fBzMin) || (bz > fBzMax))
-    {
-      fbz++;
-      return kFALSE;
-    }
-  if((eta < fEtaMin) || (eta > fEtaMax))
-    {
-      fEta++;
-      return kFALSE;
-    }
-  if((y < fRapMin) || (y > fRapMax))
-    {
-      fRap++;
-      return kFALSE;
-    }
+  if((momentum < fPMin) || (momentum > fPMax)) {
+    fP++;
+    return kFALSE;
+  }
+  if((pt < fPtMin) || (pt > fPtMax)) {
+    fPt++;
+    return kFALSE;
+  }
+  if((p[0] < fPxMin) || (p[0] > fPxMax)) {
+    fPx++;
+    return kFALSE;
+  }
+  if((p[1] < fPyMin) || (p[1] > fPyMax)) {
+    fPy++;
+    return kFALSE;
+  }
+  if((p[2] < fPzMin) || (p[2] > fPzMax)) {
+    fPz++;
+    return kFALSE;
+  } 
+  if((br < fBrMin) || (br > fBrMax)) {
+    fbr++;
+    return kFALSE;
+  }
+  if((bz < fBzMin) || (bz > fBzMax)) {
+    fbz++;
+    return kFALSE;
+  }
+  if((eta < fEtaMin) || (eta > fEtaMax)) {
+    fEta++;
+    return kFALSE;
+  }
+  if((y < fRapMin) || (y > fRapMax)) {
+    fRap++;
+    return kFALSE;
+  }
   
   fAcceptedTracks++;
   
   return kTRUE;
 }
 
+
+//----------------------------------------//
+TObjArray *AliAnalysisTrackCuts::GetAcceptedParticles(AliESD *esd)
+{
+  // Returns a list of all tracks that pass the cuts
+  fAcceptedParticleList->Clear();
+  for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
+    AliESDtrack* track = esd->GetTrack(iTrack);
+
+    if(IsAccepted(esd,track)) fAcceptedParticleList->Add(track);            
+  }
+  
+  return fAcceptedParticleList;
+}
 
 //----------------------------------------//
 TPaveText *AliAnalysisTrackCuts::GetTrackCuts()
