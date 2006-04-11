@@ -5,6 +5,13 @@
  *
  * See cxx source for full Copyright notice                               
  */
+//___________________________________________________________________
+//
+// The classes defined here, are utility classes for reading in data
+// for the FMD.  They are  put in a seperate library to not polute the
+// normal libraries.  The classes are intended to be used as base
+// classes for customized class that do some sort of analysis on the
+// various types of data produced by the FMD. 
 /** @file    AliFMDInput.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:42:40 2006
@@ -189,6 +196,13 @@ public:
   virtual Bool_t ProcessESD(AliESDFMD*)              { return kTRUE; }
   
 protected:
+  /** Copy ctor 
+      @param o Object to copy from  */
+  AliFMDInput(const AliFMDInput& o) : TObject(o) {}
+  /** Assignement operator 
+      @return  REference to this */
+  AliFMDInput& operator=(const AliFMDInput&) { return *this; }
+
   TString       fGAliceFile; // File name of gAlice file
   AliRunLoader* fLoader;     // Loader of FMD data 
   AliRun*       fRun;        // Run information
@@ -213,79 +227,10 @@ protected:
   TClonesArray* fArrayA;     // Raw data (digits) info array
   TGeoManager*  fGeoManager; // Geometry manager
   Int_t         fTreeMask;   // Which tree's to load
-  Bool_t        fIsInit;
+  Bool_t        fIsInit;     // Have we been initialized 
   ClassDef(AliFMDInput,0)  //Hits for detector FMD
 };
 
-
-//____________________________________________________________________
-class AliFMDHit;
-/** @brief Class to read FMD hits
- */
-class AliFMDInputHits : public AliFMDInput 
-{
-public:
-  /** Constructor
-      @param file Name of @c gAlice file */
-  AliFMDInputHits(const char* file="galice.root") 
-    : AliFMDInput(file) { AddLoad(kHits); }
-  ClassDef(AliFMDInputHits, 0);
-};
-
-//____________________________________________________________________
-class AliFMDDigit;
-/** @brief Class to read FMD digits
- */
-class AliFMDInputDigits : public AliFMDInput 
-{
-public:
-  /** Constructor
-      @param file Name of @c gAlice file */
-  AliFMDInputDigits(const char* file="galice.root")
-    : AliFMDInput(file) { AddLoad(kDigits); }
-  ClassDef(AliFMDInputDigits, 0);
-};
-
-//____________________________________________________________________
-class AliFMDSDigit;
-/** @brief Class to read FMD summable digits
- */
-class AliFMDInputSDigits : public AliFMDInput 
-{
-public:
-  /** Constructor
-      @param file Name of @c gAlice file */
-  AliFMDInputSDigits(const char* file="galice.root") 
-    : AliFMDInput(file) { AddLoad(kSDigits); }
-  ClassDef(AliFMDInputSDigits, 0);
-};
-
-//____________________________________________________________________
-/** @brief Class to read FMD raw data
- */
-class AliFMDInputRaw : public AliFMDInput 
-{
-public:
-  /** Constructor
-      @param file Name of @c gAlice file */
-  AliFMDInputRaw(const char* file="galice.root") 
-    : AliFMDInput(file) { AddLoad(kRaw); }
-  ClassDef(AliFMDInputRaw, 0);
-};
-
-//____________________________________________________________________
-class AliFMDRecPoint;
-/** @brief Class to read FMD reconstructed data
- */
-class AliFMDInputRecPoints : public AliFMDInput 
-{
-public:
-  /** Constructor
-      @param file Name of @c gAlice file */
-  AliFMDInputRecPoints(const char* file="galice.root") 
-    : AliFMDInput(file) { AddLoad(kRecPoints); }
-  ClassDef(AliFMDInputRecPoints, 0);
-};
 
 #endif
 //____________________________________________________________________

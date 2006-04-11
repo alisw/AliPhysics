@@ -20,7 +20,11 @@
 */
 //____________________________________________________________________
 //                                                                          
-//
+// Gain value and width for each strip in the FMD. 
+// Foo 
+// Bar 
+// Baz
+// Gnus
 //
 #include "AliFMDCalibGain.h"	// ALIFMDCALIBGAIN_H
 //____________________________________________________________________
@@ -32,6 +36,7 @@ ClassImp(AliFMDCalibGain)
 //____________________________________________________________________
 AliFMDCalibGain::AliFMDCalibGain()
 {
+  // CTOR
   fValue.Reset(-1.);
   fThreshold = -1.;
 }
@@ -39,12 +44,15 @@ AliFMDCalibGain::AliFMDCalibGain()
 //____________________________________________________________________
 AliFMDCalibGain::AliFMDCalibGain(const AliFMDCalibGain& o)
   : TObject(o), fValue(o.fValue), fThreshold(o.fThreshold)
-{}
+{
+  // Copy CTOR 
+}
 
 //____________________________________________________________________
 AliFMDCalibGain&
 AliFMDCalibGain::operator=(const AliFMDCalibGain& o)
 {
+  // Assignment operator 
   fValue     = o.fValue;
   fThreshold = o.fThreshold;
   return (*this);
@@ -55,6 +63,7 @@ void
 AliFMDCalibGain::Set(UShort_t det, Char_t ring, UShort_t sec, 
 		     UShort_t str, Float_t val)
 {
+  // Set the value for a strip 
   if (fValue.CheckIndex(det, ring, sec, str) < 0) return;
   fValue(det, ring, sec, str) = val;
 }
@@ -64,6 +73,7 @@ Float_t
 AliFMDCalibGain::Value(UShort_t det, Char_t ring, UShort_t sec, 
 		       UShort_t str)
 {
+  // Get the value for a strip 
   return fValue(det, ring, sec, str);
 }
 

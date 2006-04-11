@@ -45,7 +45,9 @@ AliFMDRecPoint::AliFMDRecPoint()
     fEta(0),
     fPhi(0),
     fEdep(0)
-{}
+{
+  // CTOR 
+}
 
 //____________________________________________________________________
 AliFMDRecPoint::AliFMDRecPoint(UShort_t detector,  Char_t   ring, 
@@ -67,6 +69,7 @@ AliFMDRecPoint::AliFMDRecPoint(UShort_t detector,  Char_t   ring,
 const char*
 AliFMDRecPoint::GetName() const 
 { 
+  // Get the name 
   static TString n;
   n = Form("FMD%d%c[%2d,%3d]", fDetector,fRing,fSector,fStrip);
   return n.Data();
@@ -76,6 +79,7 @@ AliFMDRecPoint::GetName() const
 const char*
 AliFMDRecPoint::GetTitle() const 
 { 
+  // Get the title 
   static TString t;
   t = Form("%f (%f,%f)", fParticles, fEta, fPhi);
   return t.Data();

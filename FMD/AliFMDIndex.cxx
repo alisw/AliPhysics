@@ -50,7 +50,9 @@ AliFMDIndex::AliFMDIndex()
     fSector(0), 
     fStrip(0), 
     fHash(-1)
-{}
+{
+  // CTOR
+}
 
 //____________________________________________________________________
 AliFMDIndex::AliFMDIndex(const AliFMDIndex& o)
@@ -102,6 +104,7 @@ AliFMDIndex::operator=(const AliFMDIndex& o)
 Int_t
 AliFMDIndex::Hash() const 
 {
+  // calculate hash value 
   if (fHash < 0) {
     size_t ringi = (fRing == 'I' ||  fRing == 'i' ? 0 : 1);
     fHash = (fStrip + 
@@ -125,6 +128,7 @@ AliFMDIndex::Print(Option_t* /* option*/) const
 const char*
 AliFMDIndex::Name() const 
 { 
+  // GEt the name of the index 
   if (fName.IsNull()) 
     fName = Form("FMD%d%c[%2d,%3d]", fDetector, fRing, fSector, fStrip);
   return fName.Data();
@@ -140,6 +144,7 @@ ClassImp(AliFMDObjIndex)
 Int_t 
 AliFMDObjIndex::Compare(const TObject* o) const
 {
+  // Compare to another index 
   const AliFMDObjIndex* a = dynamic_cast<const AliFMDObjIndex*>(o);
   if (!a) {
     Fatal("Compare", 

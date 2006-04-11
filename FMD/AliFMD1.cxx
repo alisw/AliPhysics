@@ -28,7 +28,7 @@
 // It is the FMD ring with highest eta
 //
 #include "AliFMD1.h"		// ALIFMD1_H 
-#include "AliFMDRing.h"		// ALIFMDRING_H 
+// #include "AliFMDRing.h"		// ALIFMDRING_H 
 
 
 //====================================================================

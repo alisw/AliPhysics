@@ -7,10 +7,16 @@
  *
  * See cxx source for full Copyright notice                               
  */
+//__________________________________________________________________
+//
+// Utility class to help implement the FMD geometry.  This provides
+// the interface for the concrete geometry implementations of the FMD
+// sub-detectors. 
 /** @file    AliFMDDetector.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:36:27 2006
     @brief   Sub-detector base class declaration
+    @ingroup FMD_base
 */
 #ifndef ROOT_TNamed
 # include <TNamed.h>

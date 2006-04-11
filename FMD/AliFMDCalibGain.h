@@ -10,6 +10,10 @@
     @date    Sun Mar 26 18:30:16 2006
     @brief   Per strip gain calibration 
 */
+// Gain value and width for each strip in the FMD. 
+// Foo 
+// Bar 
+//
 #ifndef ALIFMDFLOATMAP_H
 # include <AliFMDFloatMap.h>
 #endif

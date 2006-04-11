@@ -9,42 +9,27 @@
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:39:50 2006
     @brief   Per strip map of energy deposited and number of hits 
+    @ingroup FMD_sim
 */
+//
+// Contains a pair of energy deposited @c fEdep and number of hits @c
+// fN, @c fEdep is the summed energy deposition, and @c fN is the
+// number of hits  
 #ifndef ALIFMDMAP_H
 # include "AliFMDMap.h"
 #endif 
-//____________________________________________________________________
-/** @brief Cache of Energy deposited, hit information per strip.
-    Contains a pair of energy deposited @c fEdep and 
-    number of hits @c fN, @c fEdep is the summed energy deposition,
-    and @c fN is the number of hits 
-    @ingroup FMD_sim
-*/
-class AliFMDEdepHitPair 
-{
-public:
-  Float_t  fEdep; // summed energy deposition
-  UShort_t fN;    // Number of hits
-  /** CTOR  */
-  AliFMDEdepHitPair() : fEdep(0), fN(0) {}
-  /** DTOR */
-  virtual ~AliFMDEdepHitPair() {}
-  /** Assignment operator 
-      @param o Object to assign from 
-      @return Reference to this object */
-  AliFMDEdepHitPair& operator=(const AliFMDEdepHitPair& o) 
-  { fEdep = o.fEdep; fN    = o.fN; return *this; }
-  /** Copy CTOR 
-      @param o Object to copy from */
-  AliFMDEdepHitPair(const AliFMDEdepHitPair& o) : fEdep(o.fEdep), fN(o.fN) {}
-  ClassDef(AliFMDEdepHitPair, 1)
-};
+#ifndef ALIFMDEDEPHITPAIR_H
+# include <AliFMDEdepHitPair.h>
+#endif
+
 
 //____________________________________________________________________
 /** @brief Map of Energy deposited, hit information per strip.
     Contains a pair of energy deposited @c fEdep and 
     number of hits @c fN, @c fEdep is the summed energy deposition,
-    and @c fN is the number of hits */
+    and @c fN is the number of hits 
+    @ingroup FMD_sim
+*/
 class AliFMDEdepMap : public AliFMDMap
 {
 public:

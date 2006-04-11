@@ -34,16 +34,16 @@
 #include "AliFMDRecPoint.h"     // ALIFMDRECPOINT_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
-#include <AliESDFMD.h>          // ALIESDFMD_H
+// #include <AliESDFMD.h>          // ALIESDFMD_H
 #include <AliLog.h>
 #include <TStyle.h>
-#include <TArrayF.h>
+// #include <TArrayF.h>
 #include <TMarker3DBox.h>
 #include <TGeoManager.h>
-#include <TMath.h>
+// #include <TMath.h>
 #include <TApplication.h>
 #include <TButton.h>
-#include <TParticle.h>
+// #include <TParticle.h>
 #include <TCanvas.h>
 #include <TView.h>
 #include <TVirtualX.h>
@@ -61,6 +61,7 @@ AliFMDDisplay* AliFMDDisplay::fgInstance = 0;
 AliFMDDisplay* 
 AliFMDDisplay::Instance()
 {
+  // Return static instance 
   return fgInstance;
 }
 
@@ -144,6 +145,7 @@ AliFMDDisplay::DistancetoPrimitive(Int_t px, Int_t)
 Bool_t 
 AliFMDDisplay::Init()
 {
+  // Initialize.  GEt transforms and such, 
   if (!AliFMDInput::Init()) return kFALSE;
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
@@ -156,6 +158,7 @@ AliFMDDisplay::Init()
 Bool_t 
 AliFMDDisplay::Begin(Int_t event) 
 {
+  // Begin of event.  Make canvas is not already done 
   if (!fCanvas) {
     gStyle->SetPalette(1);
     fCanvas = new TCanvas("display", "Display", 700, 700);
@@ -201,6 +204,7 @@ AliFMDDisplay::Begin(Int_t event)
 Bool_t 
 AliFMDDisplay::End()
 {
+  // End of event.  Draw everything 
   fPad->cd();
   fMarkers->Draw();
   fPad->cd();
@@ -228,6 +232,7 @@ AliFMDDisplay::End()
 Int_t
 AliFMDDisplay::LookupColor(Float_t x, Float_t max) const
 {
+  // Look-up color 
   Int_t idx = Int_t(x / max * gStyle->GetNumberOfColors());
   return gStyle->GetColorPalette(idx);
 }
@@ -237,6 +242,7 @@ AliFMDDisplay::LookupColor(Float_t x, Float_t max) const
 Bool_t 
 AliFMDDisplay::ProcessHit(AliFMDHit* hit, TParticle* p) 
 {
+  // Process a hit 
   if (!hit) { AliError("No hit");   return kFALSE; }
   if (!p)   { AliError("No track"); return kFALSE; }
 
@@ -257,6 +263,7 @@ AliFMDDisplay::ProcessHit(AliFMDHit* hit, TParticle* p)
 Bool_t 
 AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
 {
+  // Process a digit 
   if (!digit) { AliError("No digit");   return kFALSE; }
 
   Double_t x, y, z;
@@ -289,6 +296,7 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
 Bool_t 
 AliFMDDisplay::ProcessRaw(AliFMDDigit* digit)
 {
+  // PRocess raw data 
   return ProcessDigit(digit);
 }
 
@@ -296,6 +304,7 @@ AliFMDDisplay::ProcessRaw(AliFMDDigit* digit)
 Bool_t 
 AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
 {
+  // Process reconstructed point 
   if (!recpoint) { AliError("No recpoint");   return kFALSE; }
   if (recpoint->Particles() < .1) return kTRUE;
   fHits->Add(recpoint);

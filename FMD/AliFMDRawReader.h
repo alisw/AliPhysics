@@ -7,18 +7,19 @@
  *
  * See cxx source for full Copyright notice                               
  */
-/* $Id$ */
-/** @file    AliFMDRawReader.h
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Mon Mar 27 12:45:23 2006
-    @brief   Class to read raw data 
-*/
 //____________________________________________________________________
 // 
 // Class to read ADC values from a AliRawReader object. 
 // Note, that it uses an ALTRO reader, which is wrong. 
 // Perhaps we need to implement it our selves
 // 
+/* $Id$ */
+/** @file    AliFMDRawReader.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:45:23 2006
+    @brief   Class to read raw data 
+    @ingroup FMD_rec
+*/
 #ifndef ROOT_TTask
 # include <TTask.h>
 #endif
@@ -57,6 +58,8 @@ public:
       @return @c true on success */
   virtual Bool_t ReadAdcs(TClonesArray* array);
 protected:
+  AliFMDRawReader(const AliFMDRawReader& o) : TTask(o) {}
+  AliFMDRawReader& operator=(const AliFMDRawReader&) { return *this; }
   TTree*        fTree;       //! Pointer to tree to read into 
   AliRawReader* fReader;     //! Pointer to raw reader 
   UShort_t      fSampleRate; // The sample rate (if 0, inferred from data)

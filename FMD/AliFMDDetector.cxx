@@ -17,6 +17,7 @@
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:36:27 2006
     @brief   Sub-detector base class implementation
+    @ingroup FMD_base
 */
 
 //____________________________________________________________________
@@ -34,7 +35,7 @@
 #include "AliLog.h"             // ALILOG_H
 #include <TGeoManager.h>	// ROOT_TGeoManager 
 #include <TGeoMatrix.h>		// ROOT_TGeoMatrix 
-#include <TMath.h>              // ROOT_TMath
+// #include <TMath.h>              // ROOT_TMath
 
 //====================================================================
 ClassImp(AliFMDDetector)
@@ -129,6 +130,8 @@ AliFMDDetector::Init()
 Bool_t
 AliFMDDetector::HasAllTransforms(Char_t ring) const
 {
+  // Check if we got all transformations for a given ring.  Return
+  // true in that case. 
   AliFMDRing* r = GetRing(ring);
   if (!r) return kTRUE;
   TObjArray* matricies = (r == fInner ? fInnerTransforms : fOuterTransforms);
@@ -147,6 +150,7 @@ AliFMDDetector::HasAllTransforms(Char_t ring) const
 void
 AliFMDDetector::InitTransformations()
 {
+  // Find all local<->global transformations for this detector. 
   if ((!fInner || (fInner && fInnerTransforms)) && 
       (!fOuter || (fOuter && fOuterTransforms))) {
     AliDebug(5, Form("Transforms for FMD%d already registered", fId));

@@ -13,10 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/** @file    AliFMDDigit.cxx
+/** @file    AliFMDBaseDigit.cxx
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:37:41 2006
     @brief   Digits for the FMD 
+    @ingroup FMD_base
 */
 //////////////////////////////////////////////////////////////////////
 //
@@ -62,37 +63,37 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+#include "AliFMDBaseDigit.h"	// ALIFMDDIGIT_H
 #include "Riostream.h"		// ROOT_Riostream
 #include <TString.h>
+#include <AliLog.h>
 
 //====================================================================
-ClassImp(AliFMDDigit)
+ClassImp(AliFMDBaseDigit)
+#if 0
+  ; // This is here to keep Emacs from indenting the next line
+#endif
 
 //____________________________________________________________________
-AliFMDDigit::AliFMDDigit()
-  : fCount1(0),
-    fCount2(-1),
-    fCount3(-1)
-{
-  // CTOR
-}
+AliFMDBaseDigit::AliFMDBaseDigit()
+  : fDetector(0), 
+    fRing('\0'), 
+    fSector(0), 
+    fStrip(0)
+{}
 
 //____________________________________________________________________
-AliFMDDigit::AliFMDDigit(UShort_t detector, 
+AliFMDBaseDigit::AliFMDBaseDigit(UShort_t detector, 
 			 Char_t   ring, 
 			 UShort_t sector, 
-			 UShort_t strip, 
-			 UShort_t count1,
-			 Short_t  count2, 
-			 Short_t  count3)
-  : AliFMDBaseDigit(detector, ring, sector, strip), 
-    fCount1(count1),
-    fCount2(count2),
-    fCount3(count3)
+			 UShort_t strip)
+  : fDetector(detector), 
+    fRing(ring), 
+    fSector(sector), 
+    fStrip(strip)
 {
   //
-  // Creates a real data digit object
+  // Creates a base data digit object
   //
   // Parameters 
   //
@@ -100,31 +101,53 @@ AliFMDDigit::AliFMDDigit(UShort_t detector,
   //    ring	  Ring ID ('I' or 'O')
   //    sector	  Sector # (For inner/outer rings: 0-19/0-39)
   //    strip	  Strip # (For inner/outer rings: 0-511/0-255)
-  //    count1    ADC count (a 10-bit word)
-  //    count2    ADC count (a 10-bit word) -1 if not used
-  //    count3    ADC count (a 10-bit word) -1 if not used
-}
-
-//____________________________________________________________________
-const char*
-AliFMDDigit::GetTitle() const 
-{ 
-  // Get the title 
-  static TString t;
-  t = Form("ADC: %d", Counts());
-  return t.Data();
 }
 
 //____________________________________________________________________
 void
-AliFMDDigit::Print(Option_t* /* option*/) const 
+AliFMDBaseDigit::Print(Option_t* /* option*/) const 
 {
   // Print digit to standard out 
-  AliFMDBaseDigit::Print();
-  cout << "\t" 
-       << fCount1 << " (+ " << fCount2 << " + " << fCount2 << ") = " 
-       << Counts() << endl;
+  cout << ClassName() << ": FMD" << GetName() << flush;
 }
+
+//____________________________________________________________________
+const char*
+AliFMDBaseDigit::GetName() const 
+{ 
+  // Get the name of a FMD digit.
+  if (fName.IsNull()) 
+    fName = Form("FMD%d%c[%2d,%3d]", fDetector, fRing, fSector, fStrip);
+  return fName.Data();
+}
+#define fMaxStrips  512
+#define fMaxSectors 40
+#define fMaxRings   2
+
+//____________________________________________________________________
+ULong_t
+AliFMDBaseDigit::Hash() const
+{
+  size_t ringi = (fRing == 'I' ||  fRing == 'i' ? 0 : 1);
+  return fStrip + fMaxStrips * 
+    (fSector + fMaxSectors * (ringi + fMaxRings * (fDetector - 1)));
+}
+
+
+//____________________________________________________________________
+Int_t
+AliFMDBaseDigit::Compare(const TObject* o) const
+{
+  if (!o) 
+    AliFatal("Can not compare to NULL!");
+  if (o->IsA() != AliFMDBaseDigit::Class()) 
+    AliFatal(Form("Cannot compare to a %s object", o->ClassName()));
+  // AliFMDBaseDigit* of = static_cast<AliFMDBaseDigit*>(o);
+  if (Hash() == o->Hash()) return 0;
+  if (Hash() < o->Hash()) return -1;
+  return 1;
+}
+
 
 //____________________________________________________________________
 //

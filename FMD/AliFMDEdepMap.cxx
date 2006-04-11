@@ -17,9 +17,15 @@
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:39:50 2006
     @brief   Per strip map of energy deposited and number of hits 
+    @ingroup FMD_sim
 */
 //____________________________________________________________________
 //                                                                          
+// Contains a pair of energy deposited fEdep and number of hits  
+// fN, fEdep is the summed energy deposition, and fN is the
+// number of hits.  The map contains one such object or each strip.
+// It is used to cache the data in the digitization classes
+// AliFMDBaseDigitizer and so on. 
 //
 //
 #include "AliFMDEdepMap.h"		// ALIFMDEDEPMAP_H

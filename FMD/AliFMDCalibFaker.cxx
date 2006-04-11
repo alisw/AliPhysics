@@ -17,6 +17,7 @@
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Sun Mar 26 18:29:21 2006
     @brief   Make fake calibration data 
+    @ingroup FMD_util
 */
 //____________________________________________________________________
 //                                                                          
@@ -38,9 +39,9 @@
 #include "AliFMDCalibStripRange.h" // ALIFMDCALIBSTRIPRANGE_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
-#include <Riostream.h>
+//#include <Riostream.h>
 #include <TSystem.h>
-#include <TMath.h>
+// #include <TMath.h>
 #include <TROOT.h>
 #include <TRandom.h>
 
@@ -102,7 +103,7 @@ AliFMDCalibFaker::Exec(Option_t*)
       fGain      = (param->GetVA1MipRange() * param->GetEdepMip() / maxADC);
     fThreshold = fThresholdFactor * param->GetEdepMip();
     AliFMDCalibGain* gain = MakePulseGain();
-    AliCDBId         id(AliFMDParameters::fgkPulseGain, fRunMin, fRunMax);
+    AliCDBId         id(AliFMDParameters::PulseGainPath(), fRunMin, fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", gain);
     cdb->Put(gain, id, meta);
@@ -113,7 +114,7 @@ AliFMDCalibFaker::Exec(Option_t*)
     fPedestalMin = TMath::Max(TMath::Min(fPedestalMin, maxADC), 0.F);
     fPedestalMax = TMath::Max(TMath::Min(fPedestalMax, maxADC), fPedestalMin);
     AliFMDCalibPedestal* pedestal = MakePedestal();
-    AliCDBId             id(AliFMDParameters::fgkPedestal, fRunMin, fRunMax);
+    AliCDBId             id(AliFMDParameters::PedestalPath(), fRunMin, fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", pedestal);
     cdb->Put(pedestal, id, meta);
@@ -123,7 +124,7 @@ AliFMDCalibFaker::Exec(Option_t*)
   if (TESTBIT(fMask, kDeadMap)) {
     fDeadChance = TMath::Max(TMath::Min(fDeadChance, 1.F), 0.F);
     AliFMDCalibDeadMap* deadMap = MakeDeadMap();
-    AliCDBId            id(AliFMDParameters::fgkDead, fRunMin, fRunMax);
+    AliCDBId            id(AliFMDParameters::DeadPath(), fRunMin, fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", deadMap);
     cdb->Put(deadMap, id, meta);
@@ -133,7 +134,7 @@ AliFMDCalibFaker::Exec(Option_t*)
   if (TESTBIT(fMask, kZeroSuppression)) {
     fZeroThreshold = TMath::Min(fZeroThreshold, UShort_t(maxADC));
     AliFMDCalibZeroSuppression* zeroSup = MakeZeroSuppression();
-    AliCDBId                    id(AliFMDParameters::fgkZeroSuppression, 
+    AliCDBId                    id(AliFMDParameters::ZeroSuppressionPath(), 
 				   fRunMin, fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", zeroSup);
@@ -144,7 +145,7 @@ AliFMDCalibFaker::Exec(Option_t*)
   if (TESTBIT(fMask, kSampleRate)) {
     fRate = TMath::Max(TMath::Min(fRate, UShort_t(8)), UShort_t(1));
     AliFMDCalibSampleRate* rate = MakeSampleRate();
-    AliCDBId               id(AliFMDParameters::fgkSampleRate,fRunMin,fRunMax);
+    AliCDBId               id(AliFMDParameters::SampleRatePath(),fRunMin,fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", rate);
     cdb->Put(rate, id, meta);
@@ -154,7 +155,7 @@ AliFMDCalibFaker::Exec(Option_t*)
   if (TESTBIT(fMask, kStripRange)) {
     fRate = TMath::Max(TMath::Min(fRate, UShort_t(8)), UShort_t(1));
     AliFMDCalibStripRange* range = MakeStripRange();
-    AliCDBId               id(AliFMDParameters::fgkStripRange,fRunMin,fRunMax);
+    AliCDBId               id(AliFMDParameters::StripRangePath(),fRunMin,fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", range);
     cdb->Put(range, id, meta);
@@ -163,7 +164,7 @@ AliFMDCalibFaker::Exec(Option_t*)
   }
   if (TESTBIT(fMask, kAltroMap)) {
     AliFMDAltroMapping* altroMap = MakeAltroMap();
-    AliCDBId            id(AliFMDParameters::fgkAltroMap, fRunMin, fRunMax);
+    AliCDBId            id(AliFMDParameters::AltroMapPath(), fRunMin, fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", altroMap);
     cdb->Put(altroMap, id, meta);
@@ -177,7 +178,7 @@ AliFMDCalibFaker::Exec(Option_t*)
 
 //__________________________________________________________________
 AliFMDCalibGain*
-AliFMDCalibFaker::MakePulseGain()
+AliFMDCalibFaker::MakePulseGain() const
 {
   // Make the actual data
   AliFMDCalibGain*  gain  = new AliFMDCalibGain;
@@ -201,7 +202,7 @@ AliFMDCalibFaker::MakePulseGain()
 
 //__________________________________________________________________
 AliFMDCalibPedestal*
-AliFMDCalibFaker::MakePedestal()
+AliFMDCalibFaker::MakePedestal() const
 {
   // Make the actual data
   AliFMDCalibPedestal*  pedestal  = new AliFMDCalibPedestal;
@@ -223,7 +224,7 @@ AliFMDCalibFaker::MakePedestal()
 
 //__________________________________________________________________
 AliFMDCalibDeadMap*
-AliFMDCalibFaker::MakeDeadMap()
+AliFMDCalibFaker::MakeDeadMap() const
 {
   // Make the actual data
   AliFMDCalibDeadMap*  deadmap  = new AliFMDCalibDeadMap;
@@ -245,7 +246,7 @@ AliFMDCalibFaker::MakeDeadMap()
 
 //__________________________________________________________________
 AliFMDCalibZeroSuppression*
-AliFMDCalibFaker::MakeZeroSuppression()
+AliFMDCalibFaker::MakeZeroSuppression() const
 {
   // Make the actual data
   AliFMDCalibZeroSuppression*  zs  = new AliFMDCalibZeroSuppression;
@@ -266,8 +267,9 @@ AliFMDCalibFaker::MakeZeroSuppression()
 
 //__________________________________________________________________
 AliFMDCalibSampleRate*
-AliFMDCalibFaker::MakeSampleRate()
+AliFMDCalibFaker::MakeSampleRate() const
 {
+  // Make sample rates 
   AliFMDCalibSampleRate*  sampleRate  = new AliFMDCalibSampleRate;
   for (UShort_t det = 1; det <= 3; det++) {
     Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
@@ -283,8 +285,9 @@ AliFMDCalibFaker::MakeSampleRate()
 
 //__________________________________________________________________
 AliFMDCalibStripRange*
-AliFMDCalibFaker::MakeStripRange()
+AliFMDCalibFaker::MakeStripRange() const
 {
+  // Make strip ranges 
   AliFMDCalibStripRange*  striprange  = new AliFMDCalibStripRange;
   for (UShort_t det = 1; det <= 3; det++) {
     Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
@@ -300,8 +303,9 @@ AliFMDCalibFaker::MakeStripRange()
 
 //__________________________________________________________________
 AliFMDAltroMapping*
-AliFMDCalibFaker::MakeAltroMap()
+AliFMDCalibFaker::MakeAltroMap() const
 {
+  // Make hardware mapping 
   AliFMDAltroMapping*  m  = new AliFMDAltroMapping;
   return m;
 }

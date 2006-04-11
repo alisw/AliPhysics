@@ -20,8 +20,7 @@
 */
 //____________________________________________________________________
 //
-// This is a class that constructs AliFMDMult (reconstructed
-// multiplicity) from of Digits
+// This is a class that constructs AliFMDRecPoint objects from of Digits
 //
 // This class reads either digits from a TClonesArray or raw data from
 // a DDL file (or similar), and stores the read ADC counts in an
@@ -36,23 +35,17 @@
 #include <AliLog.h>                        // ALILOG_H
 #include <AliRun.h>                        // ALIRUN_H
 #include <AliRunLoader.h>                  // ALIRUNLOADER_H
-#include <AliLoader.h>                     // ALILOADER_H
 #include <AliHeader.h>                     // ALIHEADER_H
-#include <AliRawReader.h>                  // ALIRAWREADER_H
 #include <AliGenEventHeader.h>             // ALIGENEVENTHEADER_H
-#include "AliFMD.h"         		   // ALIFMD_H
 #include "AliFMDGeometry.h"                // ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"              // ALIFMDPARAMETERS_H
-#include "AliFMDDetector.h"                // ALIFMDDETECTOR_H
-#include "AliFMDRing.h"                    // ALIFMDRING_H
 #include "AliFMDDigit.h"                   // ALIFMDDIGIT_H
 #include "AliFMDReconstructor.h"           // ALIFMDRECONSTRUCTOR_H
-#include "AliFMDRawStream.h"               // ALIFMDRAWSTREAM_H
 #include "AliFMDRawReader.h"               // ALIFMDRAWREADER_H
 #include "AliFMDRecPoint.h"	   	   // ALIFMDMULTNAIIVE_H
 #include "AliESD.h"			   // ALIESD_H
 #include <AliESDFMD.h>			   // ALIESDFMD_H
-#include <TFile.h>
+class AliRawReader;
 
 //____________________________________________________________________
 ClassImp(AliFMDReconstructor)

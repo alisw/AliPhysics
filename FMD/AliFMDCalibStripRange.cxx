@@ -20,7 +20,11 @@
 */
 //____________________________________________________________________
 //                                                                          
-//
+// This class stores which strips are read-out.  
+// In principle this can be set for each half-ring.   
+// However, in real life, all the detectors will probably read out all
+// strips, and dead areas can be handled off-line. 
+// This information comes from DCS or the like.
 //
 #include "AliFMDCalibStripRange.h"	// ALIFMDCALIBGAIN_H
 #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
@@ -33,22 +37,26 @@ ClassImp(AliFMDCalibStripRange)
 
 //____________________________________________________________________
 AliFMDCalibStripRange::AliFMDCalibStripRange()
-  : fRates(AliFMDMap::kMaxDetectors, AliFMDMap::kMaxRings, 2, 1)
-  // fRates(3)
+  : fRanges(AliFMDMap::kMaxDetectors, AliFMDMap::kMaxRings, 2, 1)
+  // fRanges(3)
 {
-  fRates.Reset(1);
+  // CTOR 
+  fRanges.Reset(1);
 }
 
 //____________________________________________________________________
 AliFMDCalibStripRange::AliFMDCalibStripRange(const AliFMDCalibStripRange& o)
-  : TObject(o), fRates(o.fRates)
-{}
+  : TObject(o), fRanges(o.fRanges)
+{
+  // Copy CTOR 
+}
 
 //____________________________________________________________________
 AliFMDCalibStripRange&
 AliFMDCalibStripRange::operator=(const AliFMDCalibStripRange& o)
 {
-  fRates     = o.fRates;
+  // Assignement operator
+  fRanges     = o.fRanges;
   return (*this);
 }
 
@@ -58,9 +66,10 @@ AliFMDCalibStripRange::Set(UShort_t det, Char_t ring,
 			   UShort_t sector, UShort_t, UShort_t min, 
 			   UShort_t max)
 {
+  // Set the min and max for a half-ring 
   UInt_t nSec  = (ring == 'I' ? 20 : 40);
   UInt_t board = sector / nSec;
-  fRates(det, ring, board, 0) = ((max & 0x7f) << 8) + (min & 0x7f);
+  fRanges(det, ring, board, 0) = ((max & 0x7f) << 8) + (min & 0x7f);
 }
 
 //____________________________________________________________________
@@ -68,9 +77,10 @@ UShort_t
 AliFMDCalibStripRange::Min(UShort_t det, Char_t ring, 
 			   UShort_t sec, UShort_t) const
 {
+  // Get the min for a half-ring 
   UInt_t nSec  = (ring == 'I' ? 20 : 40);
   UInt_t board = sec / nSec;
-  return (fRates(det, ring, board, 0) & 0x7f);
+  return (fRanges(det, ring, board, 0) & 0x7f);
 }
 
 //____________________________________________________________________
@@ -78,9 +88,10 @@ UShort_t
 AliFMDCalibStripRange::Max(UShort_t det, Char_t ring, 
 			   UShort_t sec, UShort_t) const
 {
+  // Get the max for a half-ring 
   UInt_t nSec  = (ring == 'I' ? 20 : 40);
   UInt_t board = sec / nSec;
-  return ((fRates(det, ring, board, 0) >> 8) & 0x7f);
+  return ((fRanges(det, ring, board, 0) >> 8) & 0x7f);
 }
 
 //____________________________________________________________________

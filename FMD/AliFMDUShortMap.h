@@ -10,6 +10,9 @@
     @date    Mon Mar 27 12:48:18 2006
     @brief   Per strip of unisgned shorts (16 bit) data 
 */
+// Map of an integer per strip
+// This class stores one short unsigned integer (16 bits) per strip in
+// the FMD detectors. 
 #ifndef ALIFMDMAP_H
 # include "AliFMDMap.h"
 #endif 

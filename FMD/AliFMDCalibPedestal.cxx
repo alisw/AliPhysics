@@ -17,10 +17,15 @@
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Sun Mar 26 18:30:36 2006
     @brief   Per strip pedestal calibration 
+    @ingroup FMD_base
 */
 //____________________________________________________________________
 //                                                                          
-//
+// This class stores a pedestal and pedestal width for each strip in
+// the FMD detectors. 
+// The values are stored as floats, since they may be results from a
+// fit. 
+// Need to make algorithm that makes this data
 //
 #include "AliFMDCalibPedestal.h"	// ALIFMDCALIBPEDESTAL_H
 //____________________________________________________________________
@@ -32,6 +37,7 @@ ClassImp(AliFMDCalibPedestal)
 //____________________________________________________________________
 AliFMDCalibPedestal::AliFMDCalibPedestal()
 {
+  // CTOR 
   fValue.Reset(-1.);
   fWidth.Reset(-1.);
 }
@@ -39,12 +45,15 @@ AliFMDCalibPedestal::AliFMDCalibPedestal()
 //____________________________________________________________________
 AliFMDCalibPedestal::AliFMDCalibPedestal(const AliFMDCalibPedestal& o)
   : TObject(o), fValue(o.fValue), fWidth(o.fWidth)
-{}
+{
+  // Copy Ctor 
+}
 
 //____________________________________________________________________
 AliFMDCalibPedestal&
 AliFMDCalibPedestal::operator=(const AliFMDCalibPedestal& o)
 {
+  // Assignment operator 
   fValue = o.fValue;
   fWidth = o.fWidth;
   return (*this);
@@ -55,6 +64,7 @@ void
 AliFMDCalibPedestal::Set(UShort_t det, Char_t ring, UShort_t sec, 
 			 UShort_t str, Float_t ped, Float_t pedW)
 {
+  // set value and width for a strip 
   if (fValue.CheckIndex(det, ring, sec, str) < 0) return;
   fValue(det, ring, sec, str) = ped;
   fWidth(det, ring, sec, str) = pedW;
@@ -65,6 +75,7 @@ Float_t
 AliFMDCalibPedestal::Value(UShort_t det, Char_t ring, UShort_t sec, 
 			   UShort_t str)
 {
+  // Get pedestal value for a strip 
   return fValue(det, ring, sec, str);
 }
 
@@ -73,6 +84,7 @@ Float_t
 AliFMDCalibPedestal::Width(UShort_t det, Char_t ring, UShort_t sec, 
 			   UShort_t str)
 {
+  // Get pedestal width for a strip 
   return fWidth(det, ring, sec, str);
 }
 

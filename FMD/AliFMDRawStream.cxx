@@ -26,11 +26,11 @@
 // and the sample rate should be set explicitly. 
 //
 #include "AliFMDRawStream.h"		// ALIFMDRAWSTREAM_H
-#include <AliRawReader.h>		// ALIRAWREADER_H
+// #include <AliRawReader.h>		// ALIRAWREADER_H
 #include "AliFMDParameters.h"
 #include <AliLog.h>
-#include <iomanip>
-#include <iostream>
+// #include <iomanip>
+// #include <iostream>
 
 //____________________________________________________________________
 ClassImp(AliFMDRawStream)
@@ -42,6 +42,7 @@ ClassImp(AliFMDRawStream)
 AliFMDRawStream::AliFMDRawStream(AliRawReader* reader) 
   : AliAltroRawStream(reader)
 {
+  // CTOR 
   fNoAltroMapping = kFALSE;
   // Select FMD DDL's 
   SelectRawData(AliFMDParameters::kBaseDDL>>8);
@@ -52,6 +53,8 @@ Bool_t
 AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr, 
 			     UInt_t& len, UShort_t* data)
 {
+  // Read one channel and return.   Returns 0 when there's no more
+  // data. 
   Int_t        l         = 0;
   static Int_t last      = 0xFFFF; // 0xFFFF means signal is used
   Bool_t       next      = kTRUE;

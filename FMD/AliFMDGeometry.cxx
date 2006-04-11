@@ -68,11 +68,11 @@
 #include "AliRecPoint.h"	// ALIRECPOINT_H
 #include "AliLog.h"		// ALIRECPOINT_H
 #include <TVector3.h>           // ROOT_TVector3
-#include <TMatrix.h>            // ROOT_TMatrix
-#include <TParticle.h>          // ROOT_TParticle
+// #include <TMatrix.h>            // ROOT_TMatrix
+// #include <TParticle.h>          // ROOT_TParticle
 #include <Riostream.h>
 #include "AliFMDGeometryBuilder.h"
-#include <TArrayI.h>
+// #include <TArrayI.h>
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
 #include <TGeoNode.h>
@@ -175,6 +175,7 @@ AliFMDGeometry::Init()
 void
 AliFMDGeometry::InitTransformations()
 {
+  // Find all local <-> global transforms 
   if (!gGeoManager) {
     AliError("No TGeoManager defined");
     return;
@@ -189,6 +190,7 @@ AliFMDGeometry::InitTransformations()
 void
 AliFMDGeometry::Build()
 {
+  // Build the geometry 
   if (!fBuilder) fBuilder = new AliFMDGeometryBuilder(fDetailed);
   fBuilder->SetDetailed(fDetailed);
   fBuilder->UseAssembly(fUseAssembly);
@@ -199,6 +201,7 @@ AliFMDGeometry::Build()
 void
 AliFMDGeometry::SetActive(Int_t* active, Int_t n) 
 {
+  // Set active volumes 
   fActive.Set(n);
   for (Int_t i = 0; i < n; i++) { 
     AliDebug(1, Form("Active vol id # %d: %d", i, active[i]));
@@ -210,6 +213,7 @@ AliFMDGeometry::SetActive(Int_t* active, Int_t n)
 void
 AliFMDGeometry::AddActive(Int_t active)
 {
+  // Add an active volume 
   Int_t n = fActive.fN;
   fActive.Set(n+1);
   fActive[n] = active;
@@ -219,6 +223,7 @@ AliFMDGeometry::AddActive(Int_t active)
 Bool_t
 AliFMDGeometry::IsActive(Int_t vol) const
 {
+  // Check if a volume is active 
   for (Int_t i = 0; i < fActive.fN; i++) 
     if (fActive[i] == vol) return kTRUE;
   return kFALSE;
@@ -474,6 +479,7 @@ CheckNodes(TGeoNode* node, const char* name, Int_t& lvl)
 Int_t 
 FindNodeDepth(const char* name, const char* volname) 
 {
+  // Find the depth of a node 
   TGeoVolume* vol  = gGeoManager->GetVolume(volname);
   if (!vol) {
     std::cerr << "No top volume defined" << std::endl;

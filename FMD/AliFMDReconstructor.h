@@ -94,20 +94,6 @@ public:
   /** Not used */
   virtual void   SetESD(AliESD* esd) { fESD = esd; }
      
-private:
-  /** Hide base classes unused function */
-  void Reconstruct(AliRawReader*, TTree*) const;
-  /** Hide base classes unused function */
-  void Reconstruct(AliRunLoader*) const;
-  /** Hide base classes unused function */
-  void Reconstruct(AliRunLoader*, AliRawReader*) const;
-  /** Hide base classes unused function */
-  void FillESD(AliRawReader*, TTree*, AliESD*) const;
-  /** Hide base classes unused function */
-  void FillESD(AliRunLoader*, AliESD*) const;
-  /** Hide base classes unused function */
-  void FillESD(AliRunLoader*, AliRawReader*, AliESD*) const;
-  
 protected:
   /** Copy CTOR 
       @param other Object to copy from. */
@@ -167,7 +153,21 @@ protected:
   mutable TTree*        fTreeR;         // Output tree 
   mutable Float_t       fCurrentVertex; // Z-coordinate of primary vertex
   mutable AliESDFMD*    fESDObj;        // ESD output object
-  AliESD*               fESD;
+  AliESD*               fESD;           // ESD object(?)
+  
+private:
+  /** Hide base classes unused function */
+  void Reconstruct(AliRawReader*, TTree*) const;
+  /** Hide base classes unused function */
+  void Reconstruct(AliRunLoader*) const;
+  /** Hide base classes unused function */
+  void Reconstruct(AliRunLoader*, AliRawReader*) const;
+  /** Hide base classes unused function */
+  void FillESD(AliRawReader*, TTree*, AliESD*) const;
+  /** Hide base classes unused function */
+  void FillESD(AliRunLoader*, AliESD*) const;
+  /** Hide base classes unused function */
+  void FillESD(AliRunLoader*, AliRawReader*, AliESD*) const;
   
   ClassDef(AliFMDReconstructor, 0)  // class for the FMD reconstruction
 }; 

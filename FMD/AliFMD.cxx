@@ -84,7 +84,7 @@
 // These files are not in the same directory, so there's no reason to
 // ask the preprocessor to search in the current directory for these
 // files by including them with `#include "..."' 
-#include <math.h>               // __CMATH__
+// #include <math.h>               // __CMATH__
 #include <TClonesArray.h>	// ROOT_TClonesArray
 #include <TGeometry.h>		// ROOT_TGeomtry
 #include <TNode.h>		// ROOT_TNode
@@ -93,79 +93,27 @@
 #include <TTUBE.h>		// ROOT_TTUBE
 #include <TTree.h>		// ROOT_TTree
 #include <TBrowser.h>		// ROOT_TBrowser
-#include <TMath.h>		// ROOT_TMath
-#include <TVirtualMC.h>		// ROOT_TVirtualMC
-#include <TVector2.h>
-#include <TVector3.h>
-#include <TMarker3DBox.h>
+// #include <TVirtualMC.h>	// ROOT_TVirtualMC
+#include <TVector2.h>           // ROOT_TVector2 
 
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliMC.h>		// ALIMC_H
-#include "AliMagF.h"		// ALIMAGF_H
+#include <AliMagF.h>		// ALIMAGF_H
 #include <AliLog.h>		// ALILOG_H
 #include "AliFMD.h"		// ALIFMD_H
-#include "AliFMDDigit.h"	// ALIFMDDIGIG_H
+#include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+#include "AliFMDSDigit.h"	// ALIFMDSDIGIT_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
 #include "AliFMDRing.h"		// ALIFMDRING_H
 #include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
-#include "AliPoints.h"	        // ALIPOINTS_H
-#include "AliFMDGeometryBuilder.h"
+#include "AliFMDSDigitizer.h"	// ALIFMDSDIGITIZER_H
+// #include "AliFMDGeometryBuilder.h"
 #include "AliFMDRawWriter.h"	// ALIFMDRAWWRITER_H
-
-
-class AliFMDPoints : public AliPoints 
-{
-public:
-  /** Constructor 
-      @param hit   Hit to draw
-      @param color Color of hit */
-  AliFMDPoints(AliFMDHit* hit, UInt_t color) 
-    : AliPoints(1), fMarker(0)
-  {
-    if (!hit) return;
-    Float_t  size  = TMath::Min(TMath::Max(hit->Edep() * .1, .1), 1.);
-    TVector3 p(hit->Px(), hit->Py(), hit->Pz());
-    fMarker = new TMarker3DBox(hit->X(), hit->Y(), hit->Z(), size, size, size,
-			       p.Theta(), p.Phi());
-    fMarker->SetLineColor(color);
-    fMarker->SetRefObject(this);
-    fP[0] = hit->X();
-    fP[1] = hit->Y();
-    fP[2] = hit->Z();
-  }
-  /** Destructor  */
-  ~AliFMDPoints() 
-  {
-    // if (fMarker) delete  fMarker;
-  }
-  void SetXYZ(Double_t x, Double_t y, Double_t z)
-  {
-    if (fMarker) fMarker->SetPosition(x, y, z);
-  }
-  Int_t DistancetoPrimitive(Int_t px, Int_t py) 
-  {
-    return fMarker->DistancetoPrimitive(px, py);
-  }
-  void Draw(Option_t* option) 
-  {
-    if (fMarker) fMarker->Draw(option);
-  }
-  void Paint(Option_t* option)
-  {
-    if (fMarker) fMarker->Paint(option);
-  }
-  void SetMarkerColor(Color_t colour) 
-  {
-    if (fMarker) fMarker->SetLineColor(colour);
-  }
-private:
-  TMarker3DBox* fMarker;
-};
-
+#include "AliFMDPoints.h"       // ALIFMDPOINTS_H
 
 //____________________________________________________________________
 ClassImp(AliFMD)
@@ -550,13 +498,13 @@ AliFMD::BuildGeometry()
 	return;
       }
       Double_t    siThick  = r->GetSiThickness();
-      const Int_t nv       = r->GetNVerticies();
+      const Int_t knv      = r->GetNVerticies();
       Double_t    theta    = r->GetTheta();
       Int_t       nmod     = r->GetNModules();
       
-      TXTRU* shape = new TXTRU(r->GetName(), r->GetTitle(), "void", nv, 2);
-      for (Int_t j = 0; j < nv; j++) {
-	TVector2* vv = r->GetVertex(nv - 1 - j);
+      TXTRU* shape = new TXTRU(r->GetName(), r->GetTitle(), "void", knv, 2);
+      for (Int_t j = 0; j < knv; j++) {
+	TVector2* vv = r->GetVertex(knv - 1 - j);
 	shape->DefineVertex(j, vv->X(), vv->Y());
       }
       shape->DefineSection(0, -siThick / 2, 1, 0, 0);
@@ -731,7 +679,7 @@ AliFMD::DrawDetector()
 
 //____________________________________________________________________
 Int_t 
-AliFMD::DistanceToPrimitive(Int_t, Int_t)
+AliFMD::DistancetoPrimitive(Int_t, Int_t)
 {
   // Calculate the distance from the mouse to the FMD on the screen
   // Dummy routine.

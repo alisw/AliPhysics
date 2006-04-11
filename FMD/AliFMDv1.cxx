@@ -18,6 +18,7 @@
     @date    Mon Mar 27 12:48:51 2006
     @brief   Concrete implementation of FMD detector driver - detailed
     version 
+    @ingroup FMD_sim
 */
 //____________________________________________________________________
 //                                                                          
@@ -37,7 +38,7 @@
 #include <AliMC.h>		// ALIMC_H
 #include <AliLog.h>		// ALILOG_H
 #include "AliFMDv1.h"		// ALIFMDV1_H
-#include "AliFMDGeometryBuilder.h"
+// #include "AliFMDGeometryBuilder.h"
 #include "AliFMDGeometry.h"
 #include "AliFMDDetector.h"
 #include "AliFMDRing.h"
@@ -57,6 +58,7 @@ Bool_t
 AliFMDv1::VMC2FMD(TLorentzVector& v, UShort_t& detector,
 		  Char_t& ring, UShort_t& sector, UShort_t& strip) const
 {
+  // Convert VMC coordinates to detector coordinates 
   TVirtualMC* mc = TVirtualMC::GetMC();
   AliFMDGeometry*  fmd = AliFMDGeometry::Instance();
 
@@ -101,6 +103,7 @@ AliFMDv1::VMC2FMD(Int_t copy, TLorentzVector& v,
 		  UShort_t& detector, Char_t& ring,
 		  UShort_t& sector, UShort_t& strip) const
 {
+  // Convert VMC coordinates to detector coordinates 
   TVirtualMC* mc = TVirtualMC::GetMC();
   AliFMDGeometry* fmd = AliFMDGeometry::Instance();
 
@@ -157,6 +160,7 @@ Bool_t
 AliFMDv1::CheckHit(Int_t trackno, Int_t pdg, Float_t absQ, 
 		   const TLorentzVector& p, Float_t edep) const
 {
+  // Check that a hit is good 
   if (AliLog::GetDebugLevel("FMD", "AliFMD") < 5) return kFALSE;
   TVirtualMC* mc   = TVirtualMC::GetMC();
   Double_t mass    = mc->TrackMass();

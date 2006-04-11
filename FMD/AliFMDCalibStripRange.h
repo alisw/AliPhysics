@@ -5,10 +5,19 @@
  *
  * See cxx source for full Copyright notice                               
  */
+//____________________________________________________________________
+//                                                                          
+// This class stores which strips are read-out.  
+// In principle this can be set for each half-ring.   
+// However, in real life, all the detectors will probably read out all
+// strips, and dead areas can be handled off-line. 
+// This information comes from DCS or the like.
+//
 /** @file    AliFMDCalibStripRange.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Sun Mar 26 18:32:14 2006
     @brief   Per digitizer card pulser calibration
+    @ingroup FMD_base
 */
 #ifndef ROOT_TObject
 # include <TObject.h>
@@ -60,7 +69,7 @@ public:
   UShort_t Max(UShort_t det, Char_t ring, UShort_t sec, UShort_t str=0) const;
 protected:
   // TArrayI fRates; // Sample rates 
-  AliFMDUShortMap fRates;
+  AliFMDUShortMap fRanges; // Min max 
   ClassDef(AliFMDCalibStripRange,1); // Sample rates 
 };
 

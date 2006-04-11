@@ -20,6 +20,11 @@
 */
 //____________________________________________________________________
 //                                                                          
+// Builder of FMD geometry. 
+// This class takes care of actually building the geometry using the 
+// TGeo classes.  Various parameters are fecthed from the
+// AliFMDGeometry manager.  
+//
 // Forward Multiplicity Detector based on Silicon wafers. This class
 // contains the base procedures for the Forward Multiplicity detector
 // Detector consists of 3 sub-detectors FMD1, FMD2, and FMD3, each of
@@ -37,11 +42,11 @@
 #include "AliLog.h"		// ALILOG_H
 #include <TGeoVolume.h>		// ROOT_TGeoVolume
 #include <TGeoTube.h>		// ROOT_TGeoTube
-#include <TGeoPcon.h>		// ROOT_TGeoPcon
-#include <TGeoMaterial.h>	// ROOT_TGeoMaterial
-#include <TGeoMedium.h>		// ROOT_TGeoMedium
+//#include <TGeoPcon.h>		// ROOT_TGeoPcon
+//#include <TGeoMaterial.h>	// ROOT_TGeoMaterial
+//#include <TGeoMedium.h>		// ROOT_TGeoMedium
 #include <TGeoXtru.h>		// ROOT_TGeoXtru
-#include <TGeoPolygon.h>	// ROOT_TGeoPolygon
+//#include <TGeoPolygon.h>	// ROOT_TGeoPolygon
 #include <TGeoTube.h>		// ROOT_TGeoTube
 #include <TGeoManager.h>	// ROOT_TGeoManager
 #include <TVector2.h>		// ROOT_TVector2
@@ -135,7 +140,7 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   }
   Char_t      id       = r->GetId();
   Double_t    siThick  = r->GetSiThickness();
-  const Int_t nv       = r->GetNVerticies();
+  const Int_t knv      = r->GetNVerticies();
   TVector2*   a        = r->GetVertex(5);
   TVector2*   b        = r->GetVertex(3);
   TVector2*   c        = r->GetVertex(4);
@@ -155,13 +160,13 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   Double_t    stripoff = a->Mod();
   Double_t    dstrip   = (rmax - stripoff) / ns;
   Double_t    space    = r->GetSpacing();
-  TArrayD xs(nv);
-  TArrayD ys(nv);
-  for (Int_t i = 0; i < nv; i++) {
+  TArrayD xs(knv);
+  TArrayD ys(knv);
+  for (Int_t i = 0; i < knv; i++) {
     // Reverse the order 
-    TVector2* vv = r->GetVertex(nv - 1 - i);
+    TVector2* vv = r->GetVertex(knv - 1 - i);
     if (!vv) {
-      AliError(Form("Failed to get vertex # %d", nv - 1 - i));
+      AliError(Form("Failed to get vertex # %d", knv - 1 - i));
       continue;
     }
     xs[i] = vv->X();
@@ -170,7 +175,7 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   
   // Shape of actual sensor 
   TGeoXtru* sensorShape = new TGeoXtru(2);
-  sensorShape->DefinePolygon(nv, xs.fArray, ys.fArray);
+  sensorShape->DefinePolygon(knv, xs.fArray, ys.fArray);
   sensorShape->DefineSection(0, - siThick/2);
   sensorShape->DefineSection(1, siThick/2);
   TGeoVolume* sensorVolume = new TGeoVolume(Form(fgkSensorName, id), 
@@ -207,10 +212,10 @@ AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r)
   }
 
   // Shape of Printed circuit Board 
-  for (Int_t i = 0;      i < nv / 2; i++) ys[i] -= off;
-  for (Int_t i = nv / 2; i < nv;     i++) ys[i] += off;
+  for (Int_t i = 0;       i < knv / 2; i++) ys[i] -= off;
+  for (Int_t i = knv / 2; i < knv;     i++) ys[i] += off;
   TGeoXtru* pcbShape         = new TGeoXtru(2);
-  pcbShape->DefinePolygon(nv, xs.fArray, ys.fArray);
+  pcbShape->DefinePolygon(knv, xs.fArray, ys.fArray);
   pcbShape->DefineSection(0, - pcbThick/2);
   pcbShape->DefineSection(1, pcbThick/2);
   TGeoVolume* pcbVolume      = new TGeoVolume(Form(fgkPCBName, id), 

@@ -15,7 +15,6 @@
 //__________________________________________________________________
 //
 // Parameters of the FMD rings. 
-// 
 // This class is responsible to make the (common) rings of the three
 // sub-detectors. 
 //

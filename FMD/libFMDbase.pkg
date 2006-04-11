@@ -3,7 +3,9 @@
 # $Id$
 
 SRCS		=  AliFMDIndex.cxx		\
+		   AliFMDBaseDigit.cxx		\
 		   AliFMDDigit.cxx		\
+		   AliFMDSDigit.cxx		\
 		   AliFMDBoolMap.cxx		\
 		   AliFMDUShortMap.cxx 		\
 		   AliFMDCalibPedestal.cxx	\
@@ -21,7 +23,7 @@ SRCS		=  AliFMDIndex.cxx		\
 
 #		   AliFMDAltroIO.cxx		
 
-HDRS		=  $(SRCS:.cxx=.h)
+HDRS		=  $(SRCS:.cxx=.h) 
 DHDR		:= FMDbaseLinkDef.h
 
 EINCLUDE        :=  RAW

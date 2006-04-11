@@ -71,7 +71,7 @@ AliFMDParameters::Instance()
 //____________________________________________________________________
 AliFMDParameters::AliFMDParameters() 
   : fIsInit(kFALSE),
-    fSiDeDxMip(1.664), 
+    fkSiDeDxMip(1.664), 
     fFixedPulseGain(0), 
     fEdepMip(0),
     fZeroSuppression(0), 
@@ -116,6 +116,8 @@ AliFMDParameters::Init()
 void
 AliFMDParameters::Print(Option_t* option) const
 {
+  // Print information. 
+  // If option contains an 'A' then everything is printed. 
   TString opt(option);
   Bool_t showStrips = opt.Contains("a", TString::kIgnoreCase);
   for (UShort_t det=1 ; det <= 3; det++) {
@@ -166,6 +168,7 @@ AliFMDParameters::Print(Option_t* option) const
 void
 AliFMDParameters::SetStripRange(UShort_t min, UShort_t max) 
 {
+  // Set fixed strip range 
   fFixedMinStrip = min;
   fFixedMaxStrip = max;
 }
@@ -174,6 +177,7 @@ AliFMDParameters::SetStripRange(UShort_t min, UShort_t max)
 void
 AliFMDParameters::InitPulseGain()
 {
+  // Get pulse gain from CDB or used fixed 
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   gain     = cdb->Get(fgkPulseGain);
   if (!gain) {
@@ -190,6 +194,7 @@ AliFMDParameters::InitPulseGain()
 void
 AliFMDParameters::InitPedestal()
 {
+  // Initialize the pedestals from CDB 
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   pedestal = cdb->Get(fgkPedestal);
   if (!pedestal) {
@@ -206,6 +211,7 @@ AliFMDParameters::InitPedestal()
 void
 AliFMDParameters::InitDeadMap()
 {
+  // Get Dead-channel-map from CDB 
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   deadMap  = cdb->Get(fgkDead);
   if (!deadMap) {
@@ -222,6 +228,7 @@ AliFMDParameters::InitDeadMap()
 void
 AliFMDParameters::InitZeroSuppression()
 {
+  // Get 0-suppression from CDB 
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   zeroSup  = cdb->Get(fgkZeroSuppression);
   if (!zeroSup) {
@@ -239,6 +246,7 @@ AliFMDParameters::InitZeroSuppression()
 void
 AliFMDParameters::InitSampleRate()
 {
+  // get Sample rate from CDB
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   sampRat  = cdb->Get(fgkSampleRate);
   if (!sampRat) {
@@ -255,6 +263,7 @@ AliFMDParameters::InitSampleRate()
 void
 AliFMDParameters::InitAltroMap()
 {
+  // Get hardware mapping from CDB
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   hwMap    = cdb->Get(fgkAltroMap);       
   if (!hwMap) {
@@ -275,6 +284,7 @@ AliFMDParameters::InitAltroMap()
 void
 AliFMDParameters::InitStripRange()
 {
+  // Get strips read-out from CDB
   AliCDBManager* cdb      = AliCDBManager::Instance();
   AliCDBEntry*   range    = cdb->Get(fgkStripRange);
   if (!range) {
@@ -292,6 +302,7 @@ AliFMDParameters::InitStripRange()
 Float_t
 AliFMDParameters::GetThreshold() const
 {
+  // Get threshold from CDB
   if (!fPulseGain) return fFixedThreshold;
   return fPulseGain->Threshold();
 }
@@ -326,6 +337,7 @@ Bool_t
 AliFMDParameters::IsDead(UShort_t detector, Char_t ring, 
 			 UShort_t sector, UShort_t strip) const
 {
+  // Check if the channel is dead 
   if (!fDeadMap) return kFALSE;
   AliDebug(50, Form("Dead for FMD%d%c[%2d,%3d]=%s",
 		    detector, ring, sector, strip,
@@ -339,6 +351,7 @@ UShort_t
 AliFMDParameters::GetZeroSuppression(UShort_t detector, Char_t ring, 
 				     UShort_t sector, UShort_t strip) const
 {
+  // Get zero suppression threshold 
   if (!fZeroSuppression) return fFixedZeroSuppression;
   // Need to map strip to ALTRO chip. 
   AliDebug(50, Form("zero sup. for FMD%d%c[%2d,%3d]=%f",
@@ -353,6 +366,7 @@ UShort_t
 AliFMDParameters::GetSampleRate(UShort_t det, Char_t ring, UShort_t sector, 
 				UShort_t str) const
 {
+  // Get sampl rate 
   if (!fSampleRate) return fFixedSampleRate;
   // Need to map sector to digitizier card. 
   UInt_t ret = fSampleRate->Rate(det, ring, sector, str);
@@ -366,6 +380,7 @@ UShort_t
 AliFMDParameters::GetMinStrip(UShort_t det, Char_t ring, UShort_t sector, 
 			      UShort_t str) const
 {
+  // Get strip range read out 
   if (!fStripRange) return fFixedMinStrip;
   // Need to map sector to digitizier card. 
   UInt_t ret = fStripRange->Min(det, ring, sector, str);
@@ -379,6 +394,7 @@ UShort_t
 AliFMDParameters::GetMaxStrip(UShort_t det, Char_t ring, UShort_t sector, 
 			      UShort_t str) const
 {
+  // Get strip range read out 
   if (!fStripRange) return fFixedMaxStrip;
   // Need to map sector to digitizier card. 
   UInt_t ret = fStripRange->Max(det, ring, sector, str);
@@ -392,6 +408,7 @@ Float_t
 AliFMDParameters::GetPedestal(UShort_t detector, Char_t ring, 
 			      UShort_t sector, UShort_t strip) const
 {
+  // Get the pedesal 
   if (!fPedestal) return fFixedPedestal;
   AliDebug(50, Form("pedestal for FMD%d%c[%2d,%3d]=%f",
 		    detector, ring, sector, strip,
@@ -404,6 +421,7 @@ Float_t
 AliFMDParameters::GetPedestalWidth(UShort_t detector, Char_t ring, 
 				   UShort_t sector, UShort_t strip) const
 {
+  // Get the pedesal 
   if (!fPedestal) return fFixedPedestalWidth;
   AliDebug(50, Form("pedetal width for FMD%d%c[%2d,%3d]=%f",
 		    detector, ring, sector, strip,
@@ -415,6 +433,7 @@ AliFMDParameters::GetPedestalWidth(UShort_t detector, Char_t ring,
 AliFMDAltroMapping*
 AliFMDParameters::GetAltroMap() const
 {
+  // Get the hardware address to detector index map 
   return fAltroMap;
 }
 
@@ -425,6 +444,7 @@ AliFMDParameters::Hardware2Detector(UInt_t ddl, UInt_t addr, UShort_t& det,
 				    Char_t& ring, UShort_t& sec, 
 				    UShort_t& str) const
 {
+  // Map hardware address to detector index
   if (!fAltroMap) return kFALSE;
   return fAltroMap->Hardware2Detector(ddl, addr, det, ring, sec, str);
 }
@@ -435,6 +455,7 @@ AliFMDParameters::Detector2Hardware(UShort_t det, Char_t ring, UShort_t sec,
 				    UShort_t str, UInt_t& ddl, 
 				    UInt_t& addr) const			      
 {
+  // Map detector index to hardware address
   if (!fAltroMap) return kFALSE;
   return fAltroMap->Detector2Hardware(det, ring, sec, str, ddl, addr);
 }
@@ -447,7 +468,7 @@ AliFMDParameters::GetEdepMip() const
   // Get energy deposited by a MIP in the silicon sensors
   if (fEdepMip <= 0){
     AliFMDGeometry* fmd = AliFMDGeometry::Instance();
-    fEdepMip = (fSiDeDxMip 
+    fEdepMip = (fkSiDeDxMip 
 		* fmd->GetRing('I')->GetSiThickness() 
 		* fmd->GetSiDensity());
   }

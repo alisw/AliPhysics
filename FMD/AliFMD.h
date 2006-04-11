@@ -213,9 +213,6 @@
 #ifndef ALIDETECTOR_H  
 # include <AliDetector.h>
 #endif
-#ifndef ROOT_TBranch
-# include <TBranch.h>
-#endif
 class TBranch;
 class TClonesArray;
 class TBrowser;
@@ -347,7 +344,7 @@ public:
   virtual        void   DrawDetector();
   /** Calculate the distance from the mouse to the FMD on the screen
       Dummy routine */
-  virtual        Int_t  DistanceToPrimitive(Int_t px, Int_t py);
+  virtual        Int_t  DistancetoPrimitive(Int_t px, Int_t py);
   /** Store x, y, z of all hits in memory for display. 
       Normally, the hits are drawn using TPolyMarker3D - however, that
       is not very useful for the FMD.  Therefor, this member function

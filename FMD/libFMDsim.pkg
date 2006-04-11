@@ -6,12 +6,15 @@ SRCS		=  AliFMD.cxx 				\
 		   AliFMDv0.cxx				\
 		   AliFMDv1.cxx				\
 		   AliFMDGeometryBuilder.cxx		\
+		   AliFMDPoints.cxx			\
 		   AliFMDHit.cxx 			\
+		   AliFMDBaseDigitizer.cxx		\
 		   AliFMDDigitizer.cxx			\
+		   AliFMDSDigitizer.cxx			\
 		   AliFMDEdepMap.cxx			\
 		   AliFMDRawWriter.cxx			\
 
-HDRS		=  $(SRCS:.cxx=.h) 
+HDRS		=  $(SRCS:.cxx=.h) AliFMDEdepHitPair.h
 DHDR		:= FMDsimLinkDef.h
 EINCLUDE 	:= RAW
 

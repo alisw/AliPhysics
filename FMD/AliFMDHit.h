@@ -5,10 +5,14 @@
  *
  * See cxx source for full Copyright notice                               
  */
+// Hits are the information that comes from a Monte Carlo at each
+// step as a particle mass through sensitive detector elements as
+// particles are transported through a detector. 
 /** @file    AliFMDHit.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:41:58 2006
     @brief   Hit in the FMD
+    @ingroup FMD_sim
 */
 //___________________________________________________________________
 //

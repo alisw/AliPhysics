@@ -17,6 +17,7 @@
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:45:23 2006
     @brief   Class to read raw data 
+    @ingroup FMD_rec
 */
 //____________________________________________________________________
 //
@@ -52,15 +53,11 @@
 #include "AliRawReader.h"	// ALIRAWREADER_H 
 #include "AliFMDRawReader.h"	// ALIFMDRAWREADER_H 
 // #include "AliFMDAltroIO.h"	// ALIFMDALTROIO_H 
-#include <TArrayI.h>		// ROOT_TArrayI
+// #include <TArrayI.h>		// ROOT_TArrayI
 #include <TTree.h>		// ROOT_TTree
 #include <TClonesArray.h>	// ROOT_TClonesArray
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#define PRETTY_HEX(N,X) \
-  "  0x" << std::setfill('0') << std::setw(N) << std::hex << X \
-         << std::setfill(' ') << std::dec
+// #include <iostream>
+// #include <iomanip>
 
 //____________________________________________________________________
 ClassImp(AliFMDRawReader)
@@ -82,6 +79,7 @@ AliFMDRawReader::AliFMDRawReader(AliRawReader* reader, TTree* tree)
 void
 AliFMDRawReader::Exec(Option_t*) 
 {
+  // Read the data 
   TClonesArray* array = new TClonesArray("AliFMDDigit");
   if (!fTree) {
     AliError("No tree");

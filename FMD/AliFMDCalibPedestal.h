@@ -5,10 +5,18 @@
  *
  * See cxx source for full Copyright notice                               
  */
+//____________________________________________________________________
+//                                                                          
+// This class stores a pedestal and pedestal width for each strip in
+// the FMD detectors. 
+// The values are stored as floats, since they may be results from a
+// fit. 
+// Need to make algorithm that makes this data
 /** @file    AliFMDCalibPedestal.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Sun Mar 26 18:30:51 2006
     @brief   Per strip pedestal calibration 
+    @ingroup FMD_base
 */
 #ifndef ALIFMDFLOATMAP_H
 # include <AliFMDFloatMap.h>

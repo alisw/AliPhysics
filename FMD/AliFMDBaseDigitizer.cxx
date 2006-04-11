@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/** @file    AliFMDDigitizer.cxx
+/** @file    AliFMDBaseDigitizer.cxx
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:38:26 2006
     @brief   FMD Digitizers implementation
@@ -199,7 +199,7 @@
 #include <TTree.h>		// ROOT_TTree
 //#include <TRandom.h>		// ROOT_TRandom
 #include <AliLog.h>		// ALILOG_H
-#include "AliFMDDigitizer.h"	// ALIFMDDIGITIZER_H
+#include "AliFMDBaseDigitizer.h" // ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
@@ -208,158 +208,291 @@
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
 #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
-#include <AliRun.h>		// ALIRUN_H
+//#include <AliRun.h>		// ALIRUN_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRunLoader.h>	// ALIRUNLOADER_H
     
 //====================================================================
-ClassImp(AliFMDDigitizer)
+ClassImp(AliFMDBaseDigitizer)
+#if 0
+  ; // This is here to keep Emacs for indenting the next line
+#endif
 
 //____________________________________________________________________
-AliFMDDigitizer::AliFMDDigitizer()  
-  : AliFMDBaseDigitizer()
+AliFMDBaseDigitizer::AliFMDBaseDigitizer()  
+  : fRunLoader(0)
 {
   // Default ctor - don't use it
 }
 
 //____________________________________________________________________
-AliFMDDigitizer::AliFMDDigitizer(AliRunDigitizer* manager) 
-  : AliFMDBaseDigitizer(manager)
+AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager) 
+  : AliDigitizer(manager, "AliFMDBaseDigitizer", "FMD Digitizer base class"), 
+    fRunLoader(0),
+    fEdep(AliFMDMap::kMaxDetectors, 
+	  AliFMDMap::kMaxRings, 
+	  AliFMDMap::kMaxSectors, 
+	  AliFMDMap::kMaxStrips)
 {
   // Normal CTOR
   AliDebug(1," processed");
+  SetShapingTime();
 }
 
 //____________________________________________________________________
-void
-AliFMDDigitizer::Exec(Option_t*) 
+AliFMDBaseDigitizer::AliFMDBaseDigitizer(const Char_t* name, 
+					 const Char_t* title) 
+  : AliDigitizer(name, title),
+    fRunLoader(0),
+    fEdep(AliFMDMap::kMaxDetectors, 
+	  AliFMDMap::kMaxRings, 
+	  AliFMDMap::kMaxSectors, 
+	  AliFMDMap::kMaxStrips)
 {
-  // Get the output manager 
-  TString outFolder(fManager->GetOutputFolderName());
-  AliRunLoader* out = 
-    AliRunLoader::GetRunLoader(outFolder.Data());
-  // Get the FMD output manager 
-  AliLoader* outFMD = out->GetLoader("FMDLoader");
-
-  // Get the input loader 
-  TString inFolder(fManager->GetInputFolderName(0));
-  fRunLoader = 
-    AliRunLoader::GetRunLoader(inFolder.Data());
-  if (!fRunLoader) {
-    AliError("Can not find Run Loader for input stream 0");
-    return;
-  }
-  // Get the AliRun object 
-  if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
-
-  // Get the AliFMD object 
-  AliFMD* fmd = 
-    static_cast<AliFMD*>(fRunLoader->GetAliRun()->GetDetector("FMD"));
-  if (!fmd) {
-    AliError("Can not get FMD from gAlice");
-    return;
-  }
-
-  Int_t nFiles= fManager->GetNinputs();
-  for (Int_t inputFile = 0; inputFile < nFiles; inputFile++) {
-    AliDebug(1,Form(" Digitizing event number %d",
-		    fManager->GetOutputEventNr()));
-    // Get the current loader 
-    fRunLoader = 
-      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
-    if (!fRunLoader) Fatal("Exec", "no run loader");
-    // Cache contriutions 
-    SumContributions(fmd);
-  }
-  // Digitize the event 
-  DigitizeHits(fmd);
-
-  // Load digits from the tree 
-  outFMD->LoadDigits("update");
-  // Get the tree of digits 
-  TTree* digitTree = outFMD->TreeD();
-  if (!digitTree) {
-    outFMD->MakeTree("D");
-    digitTree = outFMD->TreeD();
-  }
-  digitTree->Reset();
-  // Make a branch in the tree 
-  TClonesArray* digits = fmd->Digits();
-  fmd->MakeBranchInTree(digitTree, fmd->GetName(), &(digits), 4000, 0);
-  // TBranch* digitBranch = digitTree->GetBranch(fmd->GetName());
-  // Fill the tree 
-  Int_t write = 0;
-  write = digitTree->Fill();
-  AliDebug(1, Form("Wrote %d bytes to digit tree", write));
-  
-  // Write the digits to disk 
-  outFMD->WriteDigits("OVERWRITE");
-  outFMD->UnloadHits();
-  outFMD->UnloadDigits();
-
-  // Reset the digits in the AliFMD object 
-  fmd->ResetDigits();
+  // Normal CTOR
+  AliDebug(1," processed");
+  SetShapingTime();
 }
 
+//____________________________________________________________________
+AliFMDBaseDigitizer::~AliFMDBaseDigitizer()
+{
+  // Destructor
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDBaseDigitizer::Init()
+{
+  // Initialization
+  AliFMDParameters::Instance()->Init();
+  return kTRUE;
+}
+ 
 
 //____________________________________________________________________
 UShort_t
-AliFMDDigitizer::MakePedestal(UShort_t  detector, 
-			      Char_t    ring, 
-			      UShort_t  sector, 
-			      UShort_t  strip) const 
-{
-  // Make a pedestal 
-  AliFMDParameters* param =AliFMDParameters::Instance();
-  Float_t           mean  =param->GetPedestal(detector,ring,sector,strip);
-  Float_t           width =param->GetPedestalWidth(detector,ring,sector,strip);
-  return UShort_t(TMath::Max(gRandom->Gaus(mean, width), 0.));
+AliFMDBaseDigitizer::MakePedestal(UShort_t, 
+				  Char_t, 
+				  UShort_t, 
+				  UShort_t) const 
+{ 
+  // Make a pedestal
+  return 0; 
 }
 
 //____________________________________________________________________
 void
-AliFMDDigitizer::AddDigit(AliFMD*  fmd,
-			  UShort_t detector, 
-			  Char_t   ring,
-			  UShort_t sector, 
-			  UShort_t strip, 
-			  Float_t  /* edep */, 
-			  UShort_t count1, 
-			  Short_t  count2, 
-			  Short_t  count3) const
+AliFMDBaseDigitizer::SumContributions(AliFMD* fmd) 
 {
-  // Add a digit
-  fmd->AddDigitByFields(detector, ring, sector, strip, count1, count2, count3);
-}
-
-//____________________________________________________________________
-void
-AliFMDDigitizer::CheckDigit(AliFMDDigit*    digit,
-			    UShort_t        nhits,
-			    const TArrayI&  counts) 
-{
-  // Check that digit is consistent
-  AliFMDParameters* param = AliFMDParameters::Instance();
-  UShort_t          det   = digit->Detector();
-  Char_t            ring  = digit->Ring();
-  UShort_t          sec   = digit->Sector();
-  UShort_t          str   = digit->Strip();
-  Float_t           mean  = param->GetPedestal(det,ring,sec,str);
-  Float_t           width = param->GetPedestalWidth(det,ring,sec,str);
-  UShort_t          range = param->GetVA1MipRange();
-  UShort_t          size  = param->GetAltroChannelSize();
-  Int_t             integral = counts[0];
-  if (counts[1] >= 0) integral += counts[1];
-  if (counts[2] >= 0) integral += counts[2];
-  integral -= Int_t(mean + 2 * width);
-  if (integral < 0) integral = 0;
+  // Sum energy deposited contributions from each hit in a cache
+  // (fEdep).  
+  if (!fRunLoader) 
+    Fatal("SumContributions", "no run loader");
   
-  Float_t convF = Float_t(range) / size;
-  Float_t mips  = integral * convF;
-  if (mips > Float_t(nhits) + .5 || mips < Float_t(nhits) - .5) 
-    Warning("CheckDigit", "Digit -> %4.2f MIPS != %d +/- .5 hits", 
-	    mips, nhits);
+  // Clear array of deposited energies 
+  fEdep.Reset();
+  
+  // Get the FMD loader 
+  AliLoader* inFMD = fRunLoader->GetLoader("FMDLoader");
+  // And load the hits 
+  inFMD->LoadHits("READ");
+  
+  // Get the tree of hits 
+  TTree* hitsTree = inFMD->TreeH();
+  if (!hitsTree)  {
+    // Try again 
+    inFMD->LoadHits("READ");
+    hitsTree = inFMD->TreeH();
+  }
+  
+  // Get the FMD branch 
+  TBranch* hitsBranch = hitsTree->GetBranch("FMD");
+  if (hitsBranch) fmd->SetHitsAddressBranch(hitsBranch);
+  else            AliFatal("Branch FMD hit not found");
+  
+  // Get a list of hits from the FMD manager 
+  TClonesArray *fmdHits = fmd->Hits();
+  
+  // Get number of entries in the tree 
+  Int_t ntracks  = Int_t(hitsTree->GetEntries());
+  
+  AliFMDParameters* param = AliFMDParameters::Instance();
+  Int_t read = 0;
+  // Loop over the tracks in the 
+  for (Int_t track = 0; track < ntracks; track++)  {
+    // Read in entry number `track' 
+    read += hitsBranch->GetEntry(track);
+    
+    // Get the number of hits 
+    Int_t nhits = fmdHits->GetEntries ();
+    for (Int_t hit = 0; hit < nhits; hit++) {
+      // Get the hit number `hit'
+      AliFMDHit* fmdHit = 
+	static_cast<AliFMDHit*>(fmdHits->UncheckedAt(hit));
+      
+      // Extract parameters 
+      UShort_t detector = fmdHit->Detector();
+      Char_t   ring     = fmdHit->Ring();
+      UShort_t sector   = fmdHit->Sector();
+      UShort_t strip    = fmdHit->Strip();
+      Float_t  edep     = fmdHit->Edep();
+      UShort_t minstrip = param->GetMinStrip(detector, ring, sector, strip);
+      UShort_t maxstrip = param->GetMaxStrip(detector, ring, sector, strip);
+      // Check if strip is `dead' 
+      if (param->IsDead(detector, ring, sector, strip)) { 
+	AliDebug(5, Form("FMD%d%c[%2d,%3d] is marked as dead", 
+			 detector, ring, sector, strip));
+	continue;
+      }
+      // Check if strip is out-side read-out range 
+      if (strip < minstrip || strip > maxstrip) {
+	AliDebug(5, Form("FMD%d%c[%2d,%3d] is outside range [%3d,%3d]", 
+			 detector, ring, sector, strip, minstrip, maxstrip));
+	continue;
+      }
+	
+      // Give warning in case of double hit 
+      if (fEdep(detector, ring, sector, strip).fEdep != 0)
+	AliDebug(5, Form("Double hit in %d%c(%d,%d)", 
+			 detector, ring, sector, strip));
+      
+      // Sum energy deposition
+      fEdep(detector, ring, sector, strip).fEdep  += edep;
+      fEdep(detector, ring, sector, strip).fN     += 1;
+      // Add this to the energy deposited for this strip
+    }  // hit loop
+  } // track loop
+  AliDebug(1, Form("Size of cache: %d bytes, read %d bytes", 
+		   sizeof(fEdep), read));
 }
+
+//____________________________________________________________________
+void
+AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
+{
+  // For the stored energy contributions in the cache (fEdep), convert
+  // the energy signal to ADC counts, and store the created digit in
+  // the digits array (AliFMD::fDigits)
+  //
+  AliFMDGeometry* geometry = AliFMDGeometry::Instance();
+  
+  TArrayI counts(3);
+  for (UShort_t detector=1; detector <= 3; detector++) {
+    // Get pointer to subdetector 
+    AliFMDDetector* det = geometry->GetDetector(detector);
+    if (!det) continue;
+    for (UShort_t ringi = 0; ringi <= 1; ringi++) {
+      Char_t ring = ringi == 0 ? 'I' : 'O';
+      // Get pointer to Ring
+      AliFMDRing* r = det->GetRing(ring);
+      if (!r) continue;
+      
+      // Get number of sectors 
+      UShort_t nSectors = UShort_t(360. / r->GetTheta());
+      // Loop over the number of sectors 
+      for (UShort_t sector = 0; sector < nSectors; sector++) {
+	// Get number of strips 
+	UShort_t nStrips = r->GetNStrips();
+	// Loop over the stips 
+	Float_t last = 0;
+	for (UShort_t strip = 0; strip < nStrips; strip++) {
+	  // Reset the counter array to the invalid value -1 
+	  counts.Reset(-1);
+	  // Reset the last `ADC' value when we've get to the end of a
+	  // VA1_ALICE channel. 
+	  if (strip % 128 == 0) last = 0;
+	  
+	  Float_t edep = fEdep(detector, ring, sector, strip).fEdep;
+	  ConvertToCount(edep, last, detector, ring, sector, strip, counts);
+	  last = edep;
+	  AddDigit(fmd, detector, ring, sector, strip, edep, 
+		   UShort_t(counts[0]), Short_t(counts[1]), 
+		   Short_t(counts[2]));
+#if 0
+	  // This checks if the digit created will give the `right'
+	  // number of particles when reconstructed, using a naiive
+	  // approach.  It's here only as a quality check - nothing
+	  // else. 
+	  CheckDigit(digit, fEdep(detector, ring, sector, strip).fN,
+		     counts);
+#endif
+	} // Strip
+      } // Sector 
+    } // Ring 
+  } // Detector 
+}
+
+//____________________________________________________________________
+void
+AliFMDBaseDigitizer::ConvertToCount(Float_t   edep, 
+				    Float_t   last,
+				    UShort_t  detector, 
+				    Char_t    ring, 
+				    UShort_t  sector, 
+				    UShort_t  strip,
+				    TArrayI&  counts) const
+{
+  // Convert the total energy deposited to a (set of) ADC count(s). 
+  // 
+  // This is done by 
+  // 
+  //               Energy_Deposited      ALTRO_Channel_Size
+  //    ADC = -------------------------- ------------------- + pedestal
+  //          Energy_Deposition_Of_1_MIP VA1_ALICE_MIP_Range
+  //
+  //               Energy_Deposited             fAltroChannelSize
+  //        = --------------------------------- ----------------- + pedestal 
+  //          1.664 * Si_Thickness * Si_Density   fVA1MipRange	 
+  //          
+  // 
+  //        = Energy_Deposited * ConversionFactor + pedestal
+  // 
+  // However, this is modified by the response function of the
+  // VA1_ALICE pre-amp. chip in case we are doing oversampling of the
+  // VA1_ALICE output. 
+  // 
+  // In that case, we get N=fSampleRate values of the ADC, and the
+  // `EnergyDeposited' is a function of which sample where are
+  // calculating the ADC for 
+  // 
+  //     ADC_i = f(EnergyDeposited, i/N, Last) * ConversionFactor + pedestal 
+  // 
+  // where Last is the Energy deposited in the previous strip. 
+  // 
+  // Here, f is the shaping function of the VA1_ALICE.   This is given
+  // by 
+  //                       
+  //                    |   (E - l) * (1 - exp(-B * t) + l   if E > l
+  //       f(E, t, l) = <
+  //                    |   (l - E) * exp(-B * t) + E        otherwise
+  //                       
+  // 
+  //                  = E + (l - E) * ext(-B * t)
+  // 
+  AliFMDParameters* param = AliFMDParameters::Instance();
+  Float_t  convF          = 1/param->GetPulseGain(detector,ring,sector,strip);
+  UShort_t ped            = MakePedestal(detector,ring,sector,strip);
+  UInt_t   maxAdc         = param->GetAltroChannelSize();
+  UShort_t rate           = param->GetSampleRate(detector,ring,sector,strip);
+  UShort_t size           = param->GetAltroChannelSize();
+  
+  // In case we don't oversample, just return the end value. 
+  if (rate == 1) {
+    counts[0] = UShort_t(TMath::Min(edep * convF + ped, Float_t(size)));
+    return;
+  }
+  
+  // Create a pedestal 
+  Float_t b = fShapingTime;
+  for (Ssiz_t i = 0; i < rate;  i++) {
+    Float_t t = Float_t(i) / rate;
+    Float_t s = edep + (last - edep) * TMath::Exp(-b * t);
+    counts[i] = UShort_t(TMath::Min(s * convF + ped, Float_t(maxAdc)));
+  }
+}
+
+
 
 //____________________________________________________________________
 //

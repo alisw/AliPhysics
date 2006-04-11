@@ -7,6 +7,10 @@
  *
  * See cxx source for full Copyright notice                               
  */
+// Builder of FMD geometry. 
+// This class takes care of actually building the geometry using the 
+// TGeo classes.  Various parameters are fecthed from the
+// AliFMDGeometry manager.  
 /** @file    AliFMDGeometryBuilder.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:41:17 2006
@@ -60,6 +64,10 @@ public:
     /** @return Detector offfset in the volume tree  */
   Int_t GetDetectorOff() const { return fDetectorOff; }
 protected:
+  /** Copy CTOR */
+  AliFMDGeometryBuilder(const AliFMDGeometryBuilder& o) : TTask(o) {}
+  /** Assignment operator */
+  AliFMDGeometryBuilder& operator=(const AliFMDGeometryBuilder&){return *this;}
   /** Make a ring volume 
       @param r Ring geometry 
       @return  Ring volume */

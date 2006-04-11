@@ -7,17 +7,17 @@
  *
  * See cxx source for full Copyright notice                               
  */
-/** @file    AliFMDParameters.h
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Mon Mar 27 12:44:43 2006
-    @brief   Manager of FMD parameters
-*/
 //____________________________________________________________________
 //
 //  Singleton class to handle various parameters (not geometry) of the
 //  FMD
 //  Should get ata fromm Conditions DB.
 //
+/** @file    AliFMDParameters.h
+    @author  Christian Holm Christensen <cholm@nbi.dk>
+    @date    Mon Mar 27 12:44:43 2006
+    @brief   Manager of FMD parameters
+*/
 #ifndef ROOT_TNamed
 # include <TNamed.h>
 #endif
@@ -37,6 +37,12 @@ class AliFMDCalibGain;
 class AliFMDCalibSampleRate;
 class AliFMDCalibStripRange;
 class AliFMDAltroMapping;
+//____________________________________________________________________
+//
+//  Singleton class to handle various parameters (not geometry) of the
+//  FMD
+//  Should get ata fromm Conditions DB.
+//
 
 /** @brief This class is a singleton that handles various parameters
     of the FMD detectors.  
@@ -242,16 +248,22 @@ public:
   enum { 
     kBaseDDL = 0x1000 // DDL offset for the FMD
   };
-  static const char* fgkPulseGain;	 // Path to PulseGain calib object
-  static const char* fgkPedestal;	 // Path to Pedestal calib object
-  static const char* fgkDead;	         // Path to Dead calib object
-  static const char* fgkSampleRate;	 // Path to SampleRate calib object
-  static const char* fgkAltroMap;	 // Path to AltroMap calib object
-  static const char* fgkZeroSuppression; // Path to ZeroSuppression cal object
-  static const char* fgkStripRange;      // Path to strip range cal object
+  static const char* PulseGainPath()       { return fgkPulseGain; }
+  static const char* PedestalPath()        { return fgkPedestal; }
+  static const char* DeadPath()            { return fgkDead; }
+  static const char* SampleRatePath()      { return fgkSampleRate; }
+  static const char* AltroMapPath()        { return fgkAltroMap; }
+  static const char* ZeroSuppressionPath() { return fgkZeroSuppression; }
+  static const char* StripRangePath()      { return fgkStripRange; }
 protected:
   /** CTOR  */
   AliFMDParameters();
+  /** CTOR  */
+  AliFMDParameters(const AliFMDParameters& o) 
+    : TNamed(o), fkSiDeDxMip(o.fkSiDeDxMip) {}
+  /** Assignement operator 
+      @return Reference to this */
+  AliFMDParameters& operator=(const AliFMDParameters&) { return *this; }
   /** DTOR */
   virtual ~AliFMDParameters() {}
   /** Singleton instance  */
@@ -273,7 +285,14 @@ protected:
 
   Bool_t          fIsInit;               // Whether we've been initialised  
 
-  const Float_t   fSiDeDxMip;            // MIP dE/dx in Silicon
+  static const char* fgkPulseGain;	 // Path to PulseGain calib object
+  static const char* fgkPedestal;	 // Path to Pedestal calib object
+  static const char* fgkDead;	         // Path to Dead calib object
+  static const char* fgkSampleRate;	 // Path to SampleRate calib object
+  static const char* fgkAltroMap;	 // Path to AltroMap calib object
+  static const char* fgkZeroSuppression; // Path to ZeroSuppression cal object
+  static const char* fgkStripRange;      // Path to strip range cal object
+  const Float_t   fkSiDeDxMip;           // MIP dE/dx in Silicon
   UShort_t        fVA1MipRange;          // # MIPs the pre-amp can do    
   UShort_t        fAltroChannelSize;     // Largest # to store in 1 ADC ch.
   UShort_t        fChannelsPerAltro;     // Number of pre-amp. chan/adc chan.
@@ -283,9 +302,9 @@ protected:
   Float_t         fFixedPedestalWidth;   // Width of pedestal
   UShort_t        fFixedZeroSuppression; // Threshold for zero-suppression
   UShort_t        fFixedSampleRate;      // Times the ALTRO samples pre-amp.
-  Float_t         fFixedThreshold;       //
-  UShort_t        fFixedMinStrip;
-  UShort_t        fFixedMaxStrip;
+  Float_t         fFixedThreshold;       // Threshold in ADC counts
+  UShort_t        fFixedMinStrip;        // Minimum strip read-out
+  UShort_t        fFixedMaxStrip;        // Maximum strip read-out 
   mutable Float_t fFixedPulseGain;       //! Gain (cached)
   mutable Float_t fEdepMip;              //! Cache of energy loss for a MIP
   
@@ -297,7 +316,7 @@ protected:
   AliFMDAltroMapping*         fAltroMap;        // Map of hardware
   AliFMDCalibStripRange*      fStripRange;      // Strip range
   
-  ClassDef(AliFMDParameters,4)
+  ClassDef(AliFMDParameters,5) // Manager of parameters
 };
 
 #endif

@@ -11,10 +11,13 @@
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Sun Mar 26 18:29:36 2006
     @brief   Make fake calibration data 
+    @ingroup FMD_util
 */
 //____________________________________________________________________
 //
 //  Class to make fake calibration parameters 
+// Used for populating inital data base
+// Utility class 
 //
 #ifndef ROOT_TTask
 # include <TTask.h>
@@ -122,25 +125,25 @@ public:
 protected:
   /** Make zero suppression parameters 
       @return Map of zero suppression */
-  virtual AliFMDCalibZeroSuppression* MakeZeroSuppression();
+  virtual AliFMDCalibZeroSuppression* MakeZeroSuppression() const;
   /** Make sample rate parameters 
       @return Map of sample rate */
-  virtual AliFMDCalibSampleRate*      MakeSampleRate();
+  virtual AliFMDCalibSampleRate*      MakeSampleRate() const;
   /** Make pedestal parameters 
       @return Map of pedestal */
-  virtual AliFMDCalibPedestal*        MakePedestal();
+  virtual AliFMDCalibPedestal*        MakePedestal() const;
   /** Make gain parameters 
       @return Map of gain */
-  virtual AliFMDCalibGain*            MakePulseGain();
+  virtual AliFMDCalibGain*            MakePulseGain() const;
   /** Make dead channel parameters 
       @return Map of dead channel */
-  virtual AliFMDCalibDeadMap*         MakeDeadMap();
+  virtual AliFMDCalibDeadMap*         MakeDeadMap() const;
   /** Make a hardware map
       @return hardware map */
-  virtual AliFMDAltroMapping*         MakeAltroMap();
+  virtual AliFMDAltroMapping*         MakeAltroMap() const;
   /** Make a strip range
       @return strip range map */
-  virtual AliFMDCalibStripRange*      MakeStripRange();
+  virtual AliFMDCalibStripRange*      MakeStripRange() const;
 
   Long_t   fMask;            // What to write 
   Float_t  fGain;            // Gain
@@ -151,10 +154,10 @@ protected:
   Float_t  fDeadChance;      // Chance of dead channel
   UShort_t fRate;            // Sample rate 
   UShort_t fZeroThreshold;   // Zero suppression threshold
-  Int_t    fRunMin;
-  Int_t    fRunMax;
-  UShort_t fStripMin;
-  UShort_t fStripMax;
+  Int_t    fRunMin;          // Min run number
+  Int_t    fRunMax;          // Max run number
+  UShort_t fStripMin;        // Min strip read out
+  UShort_t fStripMax;        // Max strip read out
   
   ClassDef(AliFMDCalibFaker,0)
 };

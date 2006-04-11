@@ -1,5 +1,5 @@
-#ifndef ALIFMDDIGITIZER_H
-#define ALIFMDDIGITIZER_H
+#ifndef ALIFMDSDIGITIZER_H
+#define ALIFMDSDIGITIZER_H
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights
  * reserved. 
  *
@@ -22,7 +22,7 @@
 //    - Total energy deposited in the strip
 //    - ADC count in this channel                                  
 //
-/** @file    AliFMDDigitizer.h
+/** @file    AliFMDSDigitizer.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:38:26 2006
     @brief   FMD Digitizers declaration
@@ -33,31 +33,23 @@
 #endif
 
 //====================================================================
-class TClonesArray;
-class AliFMD;
-class AliLoader;
-class AliRunLoader;
-class AliFMDDigit;
-
-
-
-//====================================================================
-/** @class AliFMDDigitizer
-    @brief Concrete digitizer to make digits from hits.  See also
-    AliFMDBaseDigitizer documentation.  
+/** @class AliFMDSDigitizer AliFMDDigitizer.h <FMD/AliFMDDigitizer.h>
+    @brief Concrete implementation to make summable digits. 
+    See also class documentation of AliFMDBaseDigitizer 
     @ingroup FMD_sim
  */
-class AliFMDDigitizer : public AliFMDBaseDigitizer 
+class AliFMDSDigitizer : public AliFMDBaseDigitizer 
 {
 public:
   /** CTOR */
-  AliFMDDigitizer();
-  /** CTOR 
-      @param manager Manager of digitization */
-  AliFMDDigitizer(AliRunDigitizer * manager);
+  AliFMDSDigitizer();
+  /** CTOR
+      @param headerFile Where to write headings
+      @param sdigFile   Where to write digits. */
+  AliFMDSDigitizer(const Char_t* headerFile, const Char_t* sdigFile="");
   /** DTOR */
-  virtual ~AliFMDDigitizer() {}
-  /** Do everything
+  virtual ~AliFMDSDigitizer();
+  /** Do it all 
       @param option Not used */
   virtual void  Exec(Option_t* option=0);
 protected:
@@ -80,25 +72,9 @@ protected:
 			    UShort_t count1, 
 			    Short_t  count2, 
 			    Short_t  count3) const;
-  /** MAke a pedestal
-      @param detector Detector #
-      @param ring     Ring ID
-      @param sector   Sector number
-      @param strip    Strip number
-      @return Random noise */
-  virtual UShort_t MakePedestal(UShort_t  detector, 
-				Char_t    ring, 
-				UShort_t  sector, 
-				UShort_t  strip) const;
-  /** Check that digit data is consistent
-      @param digit   Digit
-      @param nhits   Number of hits
-      @param counts  ADC counts */
-  virtual void     CheckDigit(AliFMDDigit*    digit,
-			      UShort_t        nhits,
-			      const TArrayI&  counts);
-  ClassDef(AliFMDDigitizer,1) // Make Digits from Hits
+  ClassDef(AliFMDSDigitizer,0) // Make Summable Digits from Hits
 };
+
 
 
 #endif

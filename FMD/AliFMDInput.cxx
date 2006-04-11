@@ -38,6 +38,7 @@
 #include "AliFMD.h"             // ALIFMD_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 #include "AliFMDDigit.h"	// ALIFMDDigit_H
+#include "AliFMDSDigit.h"	// ALIFMDDigit_H
 #include "AliFMDRecPoint.h"	// ALIFMDRECPOINT_H
 #include "AliFMDRawReader.h"    // ALIFMDRAWREADER_H
 #include <AliESD.h>
@@ -348,6 +349,8 @@ AliFMDInput::Event()
 Bool_t 
 AliFMDInput::ProcessHits()
 {
+  // Read the hit tree, and pass each hit to the member function
+  // ProcessHit.
   if (!fTreeH) {
     AliError("No hit tree defined");
     return kFALSE;
@@ -518,30 +521,6 @@ AliFMDInput::Run()
   return retval;
 }
 
-//====================================================================
-ClassImp(AliFMDInputHits)
-#if 0
-  ;
-#endif
-
-
-//====================================================================
-ClassImp(AliFMDInputDigits)
-#if 0
-  ;
-#endif
-
-//====================================================================
-ClassImp(AliFMDInputSDigits)
-#if 0
-  ;
-#endif
-
-//====================================================================
-ClassImp(AliFMDInputRecPoints)
-#if 0
-  ;
-#endif
 
 //____________________________________________________________________
 //

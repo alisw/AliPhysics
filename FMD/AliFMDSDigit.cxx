@@ -13,10 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/** @file    AliFMDDigit.cxx
+/** @file    AliFMDSDigit.cxx
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:37:41 2006
     @brief   Digits for the FMD 
+    @ingroup FMD_base
 */
 //////////////////////////////////////////////////////////////////////
 //
@@ -62,31 +63,34 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+#include "AliFMDSDigit.h"	// ALIFMDDIGIT_H
 #include "Riostream.h"		// ROOT_Riostream
 #include <TString.h>
 
 //====================================================================
-ClassImp(AliFMDDigit)
+ClassImp(AliFMDSDigit)
 
 //____________________________________________________________________
-AliFMDDigit::AliFMDDigit()
-  : fCount1(0),
+AliFMDSDigit::AliFMDSDigit()
+  : fEdep(0), 
+    fCount1(0),
     fCount2(-1),
     fCount3(-1)
 {
-  // CTOR
+  // cTOR 
 }
 
 //____________________________________________________________________
-AliFMDDigit::AliFMDDigit(UShort_t detector, 
-			 Char_t   ring, 
-			 UShort_t sector, 
-			 UShort_t strip, 
-			 UShort_t count1,
-			 Short_t  count2, 
-			 Short_t  count3)
+AliFMDSDigit::AliFMDSDigit(UShort_t detector, 
+			   Char_t   ring, 
+			   UShort_t sector, 
+			   UShort_t strip, 
+			   Float_t  edep,
+			   UShort_t count1,
+			   Short_t  count2, 
+			   Short_t  count3)
   : AliFMDBaseDigit(detector, ring, sector, strip), 
+    fEdep(edep),
     fCount1(count1),
     fCount2(count2),
     fCount3(count3)
@@ -100,28 +104,19 @@ AliFMDDigit::AliFMDDigit(UShort_t detector,
   //    ring	  Ring ID ('I' or 'O')
   //    sector	  Sector # (For inner/outer rings: 0-19/0-39)
   //    strip	  Strip # (For inner/outer rings: 0-511/0-255)
+  //    edep      Total energy deposited 
   //    count1    ADC count (a 10-bit word)
   //    count2    ADC count (a 10-bit word) -1 if not used
   //    count3    ADC count (a 10-bit word) -1 if not used
 }
 
 //____________________________________________________________________
-const char*
-AliFMDDigit::GetTitle() const 
-{ 
-  // Get the title 
-  static TString t;
-  t = Form("ADC: %d", Counts());
-  return t.Data();
-}
-
-//____________________________________________________________________
 void
-AliFMDDigit::Print(Option_t* /* option*/) const 
+AliFMDSDigit::Print(Option_t* /* option*/) const 
 {
   // Print digit to standard out 
   AliFMDBaseDigit::Print();
-  cout << "\t" 
+  cout << "\t" << fEdep << " -> "
        << fCount1 << " (+ " << fCount2 << " + " << fCount2 << ") = " 
        << Counts() << endl;
 }

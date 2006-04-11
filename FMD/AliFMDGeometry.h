@@ -12,8 +12,8 @@
     @date    Mon Mar 27 12:40:37 2006
     @brief   Geometry mananger for the FMD
 */
-//____________________________________________________________________ 
-//  
+//____________________________________________________________________
+//                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 
 //
 // This class is a singleton that handles the geometry parameters of
@@ -226,16 +226,16 @@ protected:
   AliFMDGeometry& operator=(const AliFMDGeometry& other);
   virtual ~AliFMDGeometry() {}
   
-  AliFMDGeometryBuilder* fBuilder;
-  Int_t fDetectorOff;
-  Int_t fModuleOff;  
-  Int_t fRingOff;    
-  Int_t fSectorOff;  
-  TArrayI fActive;
-  Bool_t fDetailed;
-  Bool_t fUseAssembly;
+  AliFMDGeometryBuilder* fBuilder; // Geometry builder 
+  Int_t fDetectorOff;              // Detector off-set 
+  Int_t fModuleOff;                // Module off-set 
+  Int_t fRingOff;                  // ring offset
+  Int_t fSectorOff;                // Sector offset    
+  TArrayI fActive;                 // Active volumes
+  Bool_t fDetailed;                // Whether to make detailed geom
+  Bool_t fUseAssembly;             // Whther to use assemblies 
 
-  ClassDef(AliFMDGeometry,1); //
+  ClassDef(AliFMDGeometry,1); // Geometry parameters and manager 
 };
 
 

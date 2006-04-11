@@ -28,7 +28,7 @@
 // Support is not fleshed ot yet. 
 //
 #include "AliFMD2.h"		// ALIFMD2_H 
-#include "AliFMDRing.h"		// ALIFMDRING_H 
+// #include "AliFMDRing.h"		// ALIFMDRING_H 
 
 //====================================================================
 ClassImp(AliFMD2)

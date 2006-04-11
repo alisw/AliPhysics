@@ -21,7 +21,18 @@
 #ifndef ROOT_TArrayI
 # include <TArrayI.h>
 #endif
-
+//
+// Map hardware address to detector coordinates. 
+//
+//    The hardware address consist of a DDL number and 12bits of ALTRO
+//    addresses.  The ALTRO address are formatted as follows. 
+//
+//    12              7         4            0
+//    |---------------|---------|------------|
+//    | Board #       | ALTRO # | Channel #  |
+//    +---------------+---------+------------+
+//
+//
 //____________________________________________________________________
 /** @class AliFMDAltroMapping 
     @brief Class that encodes a map to/from ALTRO hardware address to
@@ -43,6 +54,8 @@ class AliFMDAltroMapping : public AliAltroMapping
 public:
   /** Constructor */
   AliFMDAltroMapping();
+  /** Destructor */
+  virtual ~AliFMDAltroMapping() {}
   /** Map a hardware address into a detector index. 
       @param ddl    Hardware DDL number 
       @param hwaddr Hardware address.  

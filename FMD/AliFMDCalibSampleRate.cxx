@@ -20,7 +20,11 @@
 */
 //____________________________________________________________________
 //                                                                          
-//
+// This class stores the sample rate (that is, how many times the
+// ATLRO's sample each VA1 channel).  In principle these can be
+// controlled per half ring, but in real life it's most likely that
+// this value will be the same for all detectors.  This value must be
+// retrived from DCS or the like. 
 //
 #include "AliFMDCalibSampleRate.h"	// ALIFMDCALIBGAIN_H
 #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
@@ -37,18 +41,22 @@ AliFMDCalibSampleRate::AliFMDCalibSampleRate()
   : fRates(AliFMDMap::kMaxDetectors, AliFMDMap::kMaxRings, 2, 1)
   // fRates(3)
 {
+  // CTOR 
   fRates.Reset(1);
 }
 
 //____________________________________________________________________
 AliFMDCalibSampleRate::AliFMDCalibSampleRate(const AliFMDCalibSampleRate& o)
   : TObject(o), fRates(o.fRates)
-{}
+{
+  // Copy ctor 
+}
 
 //____________________________________________________________________
 AliFMDCalibSampleRate&
 AliFMDCalibSampleRate::operator=(const AliFMDCalibSampleRate& o)
 {
+  // Assignment operator 
   fRates     = o.fRates;
   return (*this);
 }
@@ -58,6 +66,7 @@ void
 AliFMDCalibSampleRate::Set(UShort_t det, Char_t ring, 
 			   UShort_t sector, UShort_t, UShort_t rate)
 {
+  // Set values.  Strip argument is ignored 
   UInt_t nSec  = (ring == 'I' ? 20 : 40);
   UInt_t board = sector / nSec;
   fRates(det, ring, board, 0) = rate;
@@ -68,6 +77,7 @@ UShort_t
 AliFMDCalibSampleRate::Rate(UShort_t det, Char_t ring, 
 			    UShort_t sec, UShort_t) const
 {
+  // Get the sample rate 
   UInt_t nSec  = (ring == 'I' ? 20 : 40);
   UInt_t board = sec / nSec;
   AliDebug(10, Form("Getting sample rate for FMD%d%c[%2d,0] (board %d)", 

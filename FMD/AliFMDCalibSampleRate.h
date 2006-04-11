@@ -5,11 +5,19 @@
  *
  * See cxx source for full Copyright notice                               
  */
+//____________________________________________________________________
+//                                                                          
+// This class stores the sample rate (that is, how many times the
+// ATLRO's sample each VA1 channel).  In principle these can be
+// controlled per half ring, but in real life it's most likely that
+// this value will be the same for all detectors.  This value must be
+// retrived from DCS or the like. 
+//
 /** @file    AliFMDCalibSampleRate.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Sun Mar 26 18:32:14 2006
     @brief   Per digitizer card pulser calibration
-    
+    @ingroup FMD_base    
 */
 #ifndef ROOT_TObject
 # include <TObject.h>
@@ -53,7 +61,7 @@ public:
   UShort_t Rate(UShort_t det, Char_t ring, UShort_t sec, UShort_t str=0) const;
 protected:
   // TArrayI fRates; // Sample rates 
-  AliFMDUShortMap fRates;
+  AliFMDUShortMap fRates; // Sample rates
   ClassDef(AliFMDCalibSampleRate,2); // Sample rates 
 };
 

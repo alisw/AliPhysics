@@ -95,6 +95,9 @@ public:
       @return @c false on error  */
   virtual Int_t  LookupColor(Float_t x, Float_t max)  const;
 protected:
+  AliFMDDisplay(const AliFMDDisplay& o) : AliFMDInput(o) { } 
+  AliFMDDisplay& operator=(const AliFMDDisplay&) { return *this; } 
+  
   static AliFMDDisplay* fgInstance; // Static instance 
   Bool_t                fWait;      // Wait until user presses `Continue'
   TObjArray*            fMarkers;   // Cache of markers

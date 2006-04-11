@@ -17,6 +17,7 @@
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Mon Mar 27 12:41:58 2006
     @brief   Hit in the FMD
+    @ingroup FMD_sim
 */
 //____________________________________________________________________
 //
@@ -32,10 +33,10 @@
 //  Latest changes by Christian Holm Christensen
 //
 #include "AliFMDHit.h"		// ALIFMDHIT_H
-#include "AliLog.h"		// ALILOG_H
+// #include "AliLog.h"		// ALILOG_H
 #include "Riostream.h"		// ROOT_Riostream
 #include <TDatabasePDG.h>
-#include <TMath.h>
+// #include <TMath.h>
 #include <TString.h>
 
 //____________________________________________________________________
@@ -126,6 +127,7 @@ AliFMDHit::AliFMDHit(Int_t    shunt,
 const char*
 AliFMDHit::GetName() const 
 { 
+  // Get the name 
   static TString n;
   n = Form("FMD%d%c[%2d,%3d]", fDetector,fRing,fSector,fStrip);
   return n.Data();
@@ -135,6 +137,7 @@ AliFMDHit::GetName() const
 const char*
 AliFMDHit::GetTitle() const 
 { 
+  // Get the title 
   static TString t;
   TDatabasePDG* pdgDB = TDatabasePDG::Instance();
   TParticlePDG* pdg   = pdgDB->GetParticle(fPdg);

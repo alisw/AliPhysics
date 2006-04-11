@@ -47,7 +47,7 @@
 // #include "AliFMDAltroIO.h"   // ALIFMDALTROWRITER_H
 #include <TArrayI.h>		// ROOT_TArrayI
 #include <TClonesArray.h>	// ROOT_TClonesArray
-#include <fstream>
+// #include <fstream>
 
 //____________________________________________________________________
 ClassImp(AliFMDRawWriter)
@@ -59,7 +59,10 @@ ClassImp(AliFMDRawWriter)
 AliFMDRawWriter::AliFMDRawWriter(AliFMD* fmd) 
   : TTask("FMDRawWriter", "Writer of Raw ADC values from the FMD"),
     fFMD(fmd)
-{}
+{
+  // CTOR 
+}
+
 
 
 //____________________________________________________________________
@@ -154,6 +157,7 @@ AliFMDRawWriter::Exec(Option_t*)
 void
 AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 {
+  // WRite an array of digits to disk file 
   Int_t nDigits = digits->GetEntries();
   if (nDigits < 1) return;
 

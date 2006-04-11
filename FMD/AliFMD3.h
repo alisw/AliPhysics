@@ -8,6 +8,10 @@
     @date    Sun Mar 26 18:23:48 2006
     @brief   Geometry parameters of the FMD3 detector. 
 */
+// Geometry parameters of the FMD3 detector. FMD3 has a fairly
+// complicated support structure.  The cone also supports the
+// beam-pipe. 
+// 
 #ifndef ALIFMDDETECTOR_H
 # include "AliFMDDetector.h"
 #endif

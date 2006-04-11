@@ -19,6 +19,15 @@
     @brief   Implementation of AliFMDAlignFaker 
 */
 //____________________________________________________________________
+//
+//  Class 
+//  to 
+//  make 
+//  fake 
+//  alignment
+//  parameters 
+//
+//____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 
 //
@@ -33,19 +42,19 @@
 #include "AliFMDAlignFaker.h"      // ALIFMDALIGNFAKER_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
-#include <AliAlignObj.h>
+// #include <AliAlignObj.h>
 #include <AliAlignObjAngles.h>
-#include <Riostream.h>
-#include <TSystem.h>
-#include <TMath.h>
+// #include <Riostream.h>
+// #include <TSystem.h>
+// #include <TMath.h>
 #include <TRandom.h>
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TFile.h>
 #include <TGeoManager.h>
 #include <TGeoNode.h>
-#include <TGeoVolume.h>
-#include <TROOT.h>
+// #include <TGeoVolume.h>
+// #include <TROOT.h>
 
 //====================================================================
 ClassImp(AliFMDAlignFaker)
@@ -180,6 +189,16 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
 			    Double_t transX, Double_t transY, Double_t transZ,
 			    Double_t rotX,   Double_t rotY, Double_t rotZ)
 {
+  // make alignment for a path 
+  // Params: 
+  //   path      Path to node 
+  //   id        Volume number 
+  //   transX    Translation in X
+  //   transZ    Translation in Y
+  //   transZ    Translation in Z
+  //   rotX      Rotation about X-axis 
+  //   rotY      Rotation about Y-axis
+  //   rotZ      Rotation about Z-axis 
   AliDebug(1, Form("Make alignment for %s (volume %d): (%f,%f,%f) (%f,%f,%f)", 
 		   path.Data(), id, transX, transY, transZ, rotX, rotY, rotZ));
   Int_t nAlign = fArray->GetEntries();
@@ -200,6 +219,7 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
 Bool_t
 AliFMDAlignFaker::MakeAlignHalf(const TString& path, Int_t id)
 {
+  // Make alignment of a half ring/cone 
   AliDebug(15, Form("Make alignment for half-ring/cone %s", path.Data()));
   Double_t transX = gRandom->Uniform(fHalfTransMin.X(), fHalfTransMax.X());
   Double_t transY = gRandom->Uniform(fHalfTransMin.Y(), fHalfTransMax.Y());
@@ -215,6 +235,7 @@ AliFMDAlignFaker::MakeAlignHalf(const TString& path, Int_t id)
 Bool_t
 AliFMDAlignFaker::MakeAlignSensor(const TString& path, Int_t id)
 {
+  // Make alignment of a sensor 
   AliDebug(15, Form("Make alignment for sensor %s", path.Data()));
   Double_t transX = gRandom->Uniform(fSensorTransMin.X(), fSensorTransMax.X());
   Double_t transY = gRandom->Uniform(fSensorTransMin.Y(), fSensorTransMax.Y());
@@ -249,6 +270,7 @@ AliFMDAlignFaker::WriteToCDB()
 void
 AliFMDAlignFaker::WriteToFile()
 {
+  // Write to a local file 
   TFile* file = TFile::Open(GetTitle(), "RECREATE");
   if (!file) {
     AliFatal(Form("Failed to open file '%s' for output", GetTitle()));

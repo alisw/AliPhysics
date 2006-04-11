@@ -14,7 +14,12 @@
 */
 //____________________________________________________________________
 //
-//  Class to make fake alignration parameters 
+//  Class 
+//  to 
+//  make 
+//  fake 
+//  alignment
+//  parameters 
 //
 #ifndef ROOT_TTask
 # include <TTask.h>
@@ -119,6 +124,9 @@ public:
       @param option Not used. */
   void Exec(Option_t* option="");
 protected:
+  AliFMDAlignFaker(const AliFMDAlignFaker& o) : TTask(o) {}
+  AliFMDAlignFaker& operator=(const AliFMDAlignFaker&) { return *this; }
+  
   /** Make the alignment object for a path
       @param path   Node path.
       @param volID  Volume identifier 
