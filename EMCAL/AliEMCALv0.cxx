@@ -314,7 +314,7 @@ void AliEMCALv0::CreateGeometry()
 
       if(gn.Contains("SHISH")) envelopA[2] = geom->GetNPhiSuperModule();
 
-      gMC->Gsvolu("XEN1", "PGON ", idtmed[1599], envelopA, 10) ;   // Polygone filled with air 
+      gMC->Gsvolu("XEN1", "PGON", idtmed[1599], envelopA, 10) ;   // Polygone filled with air 
       ENVELOP1.Set(10, envelopA);
       if (gDebug==2) {
         printf("CreateGeometry: XEN1 = %f, %f\n", envelopA[5], envelopA[6]); 
