@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.4  2006/03/31 11:26:46  arcelli
  changing CDB Ids according to standard convention
 
@@ -140,8 +143,12 @@ AliTOFcalib::~AliTOFcalib()
   //TOF Calibration Class dtor
   delete fArrayToT;
   delete fArrayTime;
-  delete fTOFCal;
-  delete fTOFSimCal;
+
+  if(!(AliCDBManager::Instance()->GetCacheFlag())){ // CDB objects must NOT be deleted if cache is active!
+  	delete fTOFCal;
+  	delete fTOFSimCal;
+  }
+  
   delete fESDsel;
 }
 //__________________________________________________________________________
@@ -651,6 +658,7 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
   man->Put(fTOFCal,id,md);
+  delete md;
 }
 //_____________________________________________________________________________
 
@@ -665,6 +673,7 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFC
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
   man->Put(cal,id,md);
+  delete md;
 }
 //_____________________________________________________________________________
 
@@ -725,6 +734,7 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   sprintf(out,"%s/%s",sel,sel2); 
   AliCDBId id2(out,minrun,maxrun);
   man->Put(fTOFSimToT,id2,md);
+  delete md;
 }
 
 //_____________________________________________________________________________
@@ -746,6 +756,7 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliT
   sprintf(out,"%s/%s",sel,sel2); 
   AliCDBId id2(out,minrun,maxrun);
   man->Put(fTOFSimToT,id2,md);
+  delete md;
 }
 //_____________________________________________________________________________
 void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
@@ -753,8 +764,6 @@ void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
   //Read miscalibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
   if(!man->IsDefaultStorageSet())man->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBMetaData *md = new AliCDBMetaData();
-  md->SetResponsible("Chiara Zampolli");
   Char_t *sel1 = "SimPar" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
