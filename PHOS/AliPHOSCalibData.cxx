@@ -40,6 +40,14 @@ ClassImp(AliPHOSCalibData)
   fEmcDataPath="PHOS/Calib/EmcGainPedestals";
   fCpvDataPath="PHOS/Calib/CpvGainPedestals";
 
+  AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data());
+  if(entryEmc)
+    fCalibDataEmc = (AliPHOSEmcCalibData*)entryEmc->GetObject();
+  
+  AliCDBEntry* entryCpv = AliCDBManager::Instance()->Get(fCpvDataPath.Data());
+  if(entryCpv)
+    fCalibDataCpv = (AliPHOSCpvCalibData*)entryCpv->GetObject();
+
 }
 
 //________________________________________________________________
