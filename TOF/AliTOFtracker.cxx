@@ -548,7 +548,20 @@ Bool_t AliTOFtracker::GetTrackPoint(Int_t index, AliTrackPoint& p) const
   xyz[0] = cl->GetR()*TMath::Cos(cl->GetPhi());
   xyz[1] = cl->GetR()*TMath::Sin(cl->GetPhi());
   xyz[2] = cl->GetZ();
-  p.SetXYZ(xyz[0],xyz[1],xyz[2]);
+  Float_t phiangle = (Int_t(cl->GetPhi()*TMath::RadToDeg()/20.)+0.5)*20.*TMath::DegToRad();
+  Float_t sinphi = TMath::Sin(phiangle), cosphi = TMath::Cos(phiangle);
+  Float_t tiltangle = fGeom->GetAngles(cl->GetDetInd(1),cl->GetDetInd(2))*TMath::DegToRad();
+  Float_t sinth = TMath::Sin(tiltangle), costh = TMath::Cos(tiltangle);
+  Float_t sigmay2 = fGeom->XPad()*fGeom->XPad()/12.;
+  Float_t sigmaz2 = fGeom->ZPad()*fGeom->ZPad()/12.;
+  Float_t cov[6];
+  cov[0] = sinphi*sinphi*sigmay2 + cosphi*cosphi*sinth*sinth*sigmaz2;
+  cov[1] = -sinphi*cosphi*sigmay2 + sinphi*cosphi*sinth*sinth*sigmaz2;
+  cov[2] = -cosphi*sinth*costh*sigmaz2;
+  cov[3] = cosphi*cosphi*sigmay2 + sinphi*sinphi*sinth*sinth*sigmaz2;
+  cov[4] = -sinphi*sinth*costh*sigmaz2;
+  cov[5] = costh*costh*sigmaz2;
+  p.SetXYZ(xyz[0],xyz[1],xyz[2],cov);
 
   // Detector numbering scheme
   Int_t nSector = fGeom->NSectors();
