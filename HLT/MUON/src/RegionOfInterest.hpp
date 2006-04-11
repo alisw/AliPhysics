@@ -5,43 +5,40 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_REGION_OF_INTEREST_HPP
-#define dHLT_REGION_OF_INTEREST_HPP
+#ifndef ALIHLTMUONCOREREGIONOFINTEREST_H
+#define ALIHLTMUONCOREREGIONOFINTEREST_H
 
 #include "BasicTypes.hpp"
 #include "Utils.hpp"
 #include "Cluster.hpp"
 
-namespace dHLT
-{
 
+const Int gkNUMBER_OF_TRACKING_CHAMBERS = 10;
 
-const Int NUMBER_OF_TRACKING_CHAMBERS = 10;
-
-typedef UInt ROI;
+typedef UInt AliHLTMUONCoreROI;
 
 enum
 {
-	INVALID_ROI = 0xFFFFFFFF
+	kINVALID_ROI = 0xFFFFFFFF
 };
 
 
 /* Identification numbers specifying the tracking chambers of the dimuon
    spectrometer.
  */
-enum ChamberID
+enum AliHLTMUONCoreChamberID
 {
-	UnknownChamber = -1,
-	Chamber1 = 0,
-	Chamber2 = 1,
-	Chamber3 = 2,
-	Chamber4 = 3,
-	Chamber5 = 4,
-	Chamber6 = 5,
-	Chamber7 = 6,
-	Chamber8 = 7,
-	Chamber9 = 8,
-	Chamber10 = 9
+	kUnknownChamber = -1,
+	kChamber1 = 0,
+	kChamber2 = 1,
+	kChamber3 = 2,
+	kChamber4 = 3,
+	kChamber5 = 4,
+	kChamber6 = 5,
+	kChamber7 = 6,
+	kChamber8 = 7,
+	kChamber9 = 8,
+	kChamber10 = 9
 };
 
 
@@ -50,20 +47,20 @@ enum ChamberID
    regions of interest between different parts of the dHLT system. This is more
    efficient than sending 20 byte long region of interest objects.
  */
-class RegionOfInterest
+class AliHLTMUONCoreRegionOfInterest
 {
 public:
 
-	RegionOfInterest()
+	AliHLTMUONCoreRegionOfInterest()
 	{
-		chamber = Chamber1;
-		left = right = top = bottom = 0.0;
+		fChamber = kChamber1;
+		fLeft = fRight = fTop = fBottom = 0.0;
 	}
 	
 	/* This constructor decodes the ROI bit pattern into a region of
 	   interest object.
 	 */
-	RegionOfInterest(const ROI& code)
+	AliHLTMUONCoreRegionOfInterest(const AliHLTMUONCoreROI& code)
 	{
 		Decode(code);
 	}
@@ -71,7 +68,10 @@ public:
 	/* Creates a region of interest around the given point for the
 	   specified chamber.
 	 */
-	RegionOfInterest(const ClusterPoint& point0, ChamberID chamber0)
+	AliHLTMUONCoreRegionOfInterest(
+			const AliHLTMUONCoreClusterPoint& point0,
+			AliHLTMUONCoreChamberID chamber0
+		)
 	{
 		CreateToContain(point0, chamber0);
 	}
@@ -79,7 +79,10 @@ public:
 	/* Creates a region of interest around all the given points and for the
 	   specified chamber.
 	 */
-	RegionOfInterest(const ClusterPoint* points0, UInt count0, ChamberID chamber0)
+	AliHLTMUONCoreRegionOfInterest(
+			const AliHLTMUONCoreClusterPoint* points0, UInt count0,
+			AliHLTMUONCoreChamberID chamber0
+		)
 	{
 		CreateToContain(points0, count0, chamber0);
 	}
@@ -87,67 +90,79 @@ public:
 	/* Creates a region of interest with the specified boundaries and for
 	   the specified chamber.
 	 */
-	RegionOfInterest(Float left0, Float right0, Float bottom0, Float top0, ChamberID chamber0)
+	AliHLTMUONCoreRegionOfInterest(
+			Float left0, Float right0, Float bottom0, Float top0,
+			AliHLTMUONCoreChamberID chamber0
+		)
 	{
-		Assert( 0 <= chamber0 && chamber0 < NUMBER_OF_TRACKING_CHAMBERS );
-		this->chamber = chamber0;
-		this->left = left0;
-		this->right = right0;
-		this->bottom = bottom0;
-		this->top = top0;
+		Assert( 0 <= chamber0 && chamber0 < gkNUMBER_OF_TRACKING_CHAMBERS );
+		this->fChamber = chamber0;
+		this->fLeft = left0;
+		this->fRight = right0;
+		this->fBottom = bottom0;
+		this->fTop = top0;
 	}
 
 
 	/* Checks if the point is contained in this region of interest.
 	 */
-	bool Contains(const ClusterPoint& point) const
+	bool Contains(const AliHLTMUONCoreClusterPoint& point) const
 	{
-		return left <= point.x 
-		  && point.x <= right 
-		  && bottom <= point.y
-		  && point.y <= top;
+		return fLeft <= point.fX
+		  && point.fX <= fRight
+		  && fBottom <= point.fY
+		  && point.fY <= fTop;
 	}
 
 
 	/* Checks if the point is contained in this region of interest and the
 	   chamber number corresponds to this region object.
 	 */
-	bool Contains(const ClusterPoint& point, ChamberID chamber0) const
+	bool Contains(
+			const AliHLTMUONCoreClusterPoint& point,
+			AliHLTMUONCoreChamberID chamber
+		) const
 	{
-		return left <= point.x 
-		  && point.x <= right
-		  && bottom <= point.y
-		  && point.y <= top
-		  && this->chamber == chamber0;
+		return fLeft <= point.fX
+		  && point.fX <= fRight
+		  && fBottom <= point.fY
+		  && point.fY <= fTop
+		  && this->fChamber == chamber;
 	}
 
 
 	/* Checks if the specified region of interest is contained in this
 	   region of interest object.
 	 */
-	bool Contains(const RegionOfInterest& roi) const
+	bool Contains(const AliHLTMUONCoreRegionOfInterest& roi) const
 	{
-		return chamber == roi.chamber
-		  && left <= roi.left
-		  && right >= roi.right
-		  && bottom <= roi.bottom
-		  && top >= roi.top;
+		return fChamber == roi.fChamber
+		  && fLeft <= roi.fLeft
+		  && fRight >= roi.fRight
+		  && fBottom <= roi.fBottom
+		  && fTop >= roi.fTop;
 	}
 
 
 	/* Creates a region of interest around the given point for the
 	   specified chamber.
 	 */
-	void CreateToContain(const ClusterPoint& point, ChamberID chamber);
+	void CreateToContain(
+			const AliHLTMUONCoreClusterPoint& point,
+			AliHLTMUONCoreChamberID chamber
+		);
 
 	/* Extends the region of interest to contain the specified point.
 	 */
-	void ExpandToContain(const ClusterPoint& point);
+	void ExpandToContain(const AliHLTMUONCoreClusterPoint& point);
 
 	/* Creates a region of interest around all the given points and for the
 	   specified chamber.
 	 */
-	void CreateToContain(const ClusterPoint* points, UInt count, ChamberID chamber);
+	void CreateToContain(
+			const AliHLTMUONCoreClusterPoint* points, UInt count,
+			AliHLTMUONCoreChamberID chamber
+		);
 
 	/* Checks if the region of interest is within the boundaries imposed on
 	   the specific chamber plane. This boundary is aproximately the square
@@ -157,53 +172,56 @@ public:
 
 	/* Encodes the region of interest into a 32 bit code.
 	 */
-	ROI Encode() const;
+	AliHLTMUONCoreROI Encode() const;
 	
 	/* Encodes the region of interest into a 32 bit code, and returns the
 	   hierarchal level the region was encoded at and the left and right
 	   grid coordinate of the bottom left corner of the region boundary box.
 	 */
-	ROI Encode(UChar& level, UInt& l, UInt& b) const;
+	AliHLTMUONCoreROI Encode(UChar& level, UInt& l, UInt& b) const;
 
 	/* Decodes a 32 bit region of interest code into this region of interest
 	   object.
 	 */
-	void Decode(ROI code);
+	void Decode(AliHLTMUONCoreROI code);
 
 	/* Decodes the chamber number of the region of interest 32 bit code.
 	 */
-	static ChamberID DecodeChamber(ROI code);
+	static AliHLTMUONCoreChamberID DecodeChamber(AliHLTMUONCoreROI code);
 
 	/* Decodes the 32 bit region of interest code into the chamber number,
 	   hierarchal level, left and right grid coordinates of the region
 	   boundary box. 
 	 */
-	static void Decode(ROI code, ChamberID& chamber, UChar& level, UInt& l, UInt& b);
+	static void Decode(
+			AliHLTMUONCoreROI code, AliHLTMUONCoreChamberID& chamber,
+			UChar& level, UInt& l, UInt& b
+		);
 
 	/* Returns the chamber number of the region of interest.
 	 */
-	ChamberID Chamber() const { return chamber; };
+	AliHLTMUONCoreChamberID Chamber() const { return fChamber; };
 	
 	/* Returns the left hand boundary of the region of interest.
 	 */
-	Float Left() const    { return left; };
+	Float Left() const    { return fLeft; };
 	
 	/* Returns the right hand boundary of the region of interest.
 	 */
-	Float Right() const   { return right; };
+	Float Right() const   { return fRight; };
 	
 	/* Returns the bottom boundary of the region of interest.
 	 */
-	Float Bottom() const  { return bottom; };
+	Float Bottom() const  { return fBottom; };
 	
 	/* Returns the top boundary of the region of interest.
 	 */
-	Float Top() const     { return top; };
+	Float Top() const     { return fTop; };
 
 
 	/* Typecast operator for implicit typecasing to 32 bit ROI codes.
 	 */
-	operator ROI () const { return Encode(); };
+	operator AliHLTMUONCoreROI () const { return Encode(); };
 
 
 private:
@@ -224,24 +242,25 @@ private:
 	/* Internal method for decoding 32 bit region codes. This method is
 	   called by the Decode methods.
 	 */
-	static void DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, UInt& l, UInt& b);
+	static void DecodeBits(
+			AliHLTMUONCoreROI code, AliHLTMUONCoreChamberID& chamber,
+			UChar& colevel, UInt& l, UInt& b
+		);
 
 
 	// Boundary box scale numbers for each chamber. These are the boundary
 	// boxes around the chambers detection surface.
-	static Float planescale[NUMBER_OF_TRACKING_CHAMBERS];
+	static Float fgPlaneScale[gkNUMBER_OF_TRACKING_CHAMBERS];
 
-	static UInt indexoffsets[13];  // Offset numbers used in the encoding and decoding process.
+	static UInt fgIndexOffsets[13];  // Offset numbers used in the encoding and decoding process.
 
 
-	ChamberID chamber; // Specifies the chamber the region of interest is on.
-	Float left;        // Left boundary of boundary box.
-	Float right;       // Right boundary of boundary box.
-	Float bottom;      // Bottom boundary of boundary box.
-	Float top;         // Top boundary of boundary box.
+	AliHLTMUONCoreChamberID fChamber; // Specifies the chamber the region of interest is on.
+	Float fLeft;        // Left boundary of boundary box.
+	Float fRight;       // Right boundary of boundary box.
+	Float fBottom;      // Bottom boundary of boundary box.
+	Float fTop;         // Top boundary of boundary box.
 };
 
 
-} // dHLT
-
-#endif // dHLT_REGION_OF_INTEREST_HPP
+#endif // ALIHLTMUONCOREREGIONOFINTEREST_H

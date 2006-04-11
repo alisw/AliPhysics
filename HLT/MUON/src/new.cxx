@@ -26,15 +26,15 @@ namespace
 	
 		CheckMemoryAlloc()
 		{
-			alloc_list = NULL;
-			array_alloc_list = NULL;
+			fAllocList = NULL;
+			fArrayAllocList = NULL;
 		};
 	
 #ifdef CHECK_MEMORY_ALLOC_ON_EXIT
 		~CheckMemoryAlloc()
 		{
-			Assert( alloc_list == NULL );
-			Assert( array_alloc_list == NULL );
+			Assert( fAllocList == NULL );
+			Assert( fArrayAllocList == NULL );
 		};
 #endif // CHECK_MEMORY_ALLOC_ON_EXIT
 		
@@ -42,14 +42,14 @@ namespace
 		{
 			Node* newnode = (Node*) malloc( sizeof(Node) );
 			newnode->memory = ptr;
-			newnode->next = alloc_list;
-			alloc_list = newnode;
+			newnode->next = fAllocList;
+			fAllocList = newnode;
 		};
 		
 		bool RemoveAlloc(void* ptr)
 		{
 			Node* previous = NULL;
-			Node* current = alloc_list;
+			Node* current = fAllocList;
 			while (current != NULL)
 			{
 				if (current->memory == ptr) break;
@@ -60,7 +60,7 @@ namespace
 			if (previous != NULL)
 				previous->next = current->next;
 			else
-				alloc_list = current->next;
+				fAllocList = current->next;
 			free(( void*)current );
 			return true;
 		};
@@ -69,14 +69,14 @@ namespace
 		{
 			Node* newnode = (Node*) malloc( sizeof(Node) );
 			newnode->memory = ptr;
-			newnode->next = array_alloc_list;
-			array_alloc_list = newnode;
+			newnode->next = fArrayAllocList;
+			fArrayAllocList = newnode;
 		};
 		
 		bool RemoveArrayAlloc(void* ptr)
 		{
 			Node* previous = NULL;
-			Node* current = array_alloc_list;
+			Node* current = fArrayAllocList;
 			while (current != NULL)
 			{
 				if (current->memory == ptr) break;
@@ -87,7 +87,7 @@ namespace
 			if (previous != NULL)
 				previous->next = current->next;
 			else
-				array_alloc_list = current->next;
+				fArrayAllocList = current->next;
 			free( (void*)current );
 			return true;
 		};
@@ -100,8 +100,8 @@ namespace
 			Node* next;
 		};
 	
-		Node* alloc_list;
-		Node* array_alloc_list;
+		Node* fAllocList;
+		Node* fArrayAllocList;
 	
 	} checkmem;
 	
@@ -113,7 +113,7 @@ namespace
 void* operator new (size_t size) throw (std::bad_alloc)
 {
 	void* memory = malloc(size);
-	if (memory == NULL) dHLT::ThrowOutOfMemory();
+	if (memory == NULL) AliHLTMUONCoreThrowOutOfMemory();
 	DebugMsg(99, "new(" << size << ") allocated: " << memory);
 	DebugCode( checkmem.AddAlloc(memory) );
 	return memory;
@@ -123,7 +123,7 @@ void* operator new (size_t size) throw (std::bad_alloc)
 void* operator new [] (size_t size) throw (std::bad_alloc)
 {
 	void* memory = malloc(size);
-	if (memory == NULL) dHLT::ThrowOutOfMemory();
+	if (memory == NULL) AliHLTMUONCoreThrowOutOfMemory();
 	DebugMsg(99, "new [] (" << size << ") allocated: " << memory);
 	DebugCode( checkmem.AddArrayAlloc(memory) );
 	return memory;

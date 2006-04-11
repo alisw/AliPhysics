@@ -8,11 +8,8 @@
 #include "RegionOfInterest.hpp"
 #include <math.h>
 
-namespace dHLT
-{
 
-
-Float RegionOfInterest::planescale[NUMBER_OF_TRACKING_CHAMBERS]
+Float AliHLTMUONCoreRegionOfInterest::fgPlaneScale[gkNUMBER_OF_TRACKING_CHAMBERS]
 ///*
 	= {	100.0f,
 		100.0f,
@@ -41,31 +38,36 @@ Float RegionOfInterest::planescale[NUMBER_OF_TRACKING_CHAMBERS]
 */
 
 
-void RegionOfInterest::CreateToContain(const ClusterPoint& point, ChamberID chamber)
+void AliHLTMUONCoreRegionOfInterest::CreateToContain(
+		const AliHLTMUONCoreClusterPoint& point, AliHLTMUONCoreChamberID chamber
+	)
 {
-	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
-	this->chamber = chamber;
-	left = right = point.x;
-	bottom = top = point.y;
+	Assert( 0 <= chamber && chamber < gkNUMBER_OF_TRACKING_CHAMBERS );
+	fChamber = chamber;
+	fLeft = fRight = point.fX;
+	fBottom = fTop = point.fY;
 }
 
 
-void RegionOfInterest::ExpandToContain(const ClusterPoint& point)
+void AliHLTMUONCoreRegionOfInterest::ExpandToContain(const AliHLTMUONCoreClusterPoint& point)
 {
-	if (point.x < left)
-		left = point.x;
+	if (point.fX < fLeft)
+		fLeft = point.fX;
 	else
-		if (point.x > right) right = point.x;
-	if (point.y < bottom)
-		bottom = point.y;
+		if (point.fX > fRight) fRight = point.fX;
+	if (point.fY < fBottom)
+		fBottom = point.fY;
 	else
-		if (point.y > top) top = point.y;
+		if (point.fY > fTop) fTop = point.fY;
 }
 
 
-void RegionOfInterest::CreateToContain(const ClusterPoint* points, UInt count, ChamberID chamber)
+void AliHLTMUONCoreRegionOfInterest::CreateToContain(
+		const AliHLTMUONCoreClusterPoint* points, UInt count,
+		AliHLTMUONCoreChamberID chamber
+	)
 {
-	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
+	Assert( 0 <= chamber && chamber < gkNUMBER_OF_TRACKING_CHAMBERS );
 	Assert( count > 0 );
 	
 	CreateToContain(points[0], chamber);
@@ -74,14 +76,14 @@ void RegionOfInterest::CreateToContain(const ClusterPoint* points, UInt count, C
 }
 
 
-bool RegionOfInterest::InBounds()
+bool AliHLTMUONCoreRegionOfInterest::InBounds()
 {
-	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
-	register Float bound = planescale[chamber];
-	return -bound <= left
-	  && right <= bound
-	  && -bound <= bottom
-	  && top <= bound;
+	Assert( 0 <= fChamber && fChamber < gkNUMBER_OF_TRACKING_CHAMBERS );
+	register Float bound = fgPlaneScale[fChamber];
+	return -bound <= fLeft
+	  && fRight <= bound
+	  && -bound <= fBottom
+	  && fTop <= bound;
 }
 
 
@@ -106,7 +108,7 @@ bool RegionOfInterest::InBounds()
 #define INDICES_TO_LEVEL_1   1
 
 
-UInt RegionOfInterest::indexoffsets[13] 
+UInt AliHLTMUONCoreRegionOfInterest::fgIndexOffsets[13]
 	= {	INDICES_TO_LEVEL_1,
 		INDICES_TO_LEVEL_2,
 		INDICES_TO_LEVEL_3,
@@ -123,15 +125,17 @@ UInt RegionOfInterest::indexoffsets[13]
 	};
 
 
-inline void RegionOfInterest::ConvertToGrid(register UInt& l, register UInt& r, register UInt& b, register UInt& t) const
+inline void AliHLTMUONCoreRegionOfInterest::ConvertToGrid(
+		register UInt& l, register UInt& r, register UInt& b, register UInt& t
+	) const
 {
-	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
+	Assert( 0 <= fChamber && fChamber < gkNUMBER_OF_TRACKING_CHAMBERS );
 
-	register Float scale = planescale[chamber];
-	l = (UInt) floor( (left / scale + 1.0f) * 0.5f * GRID_SIZE );
-	r = (UInt) ceil( (right / scale + 1.0f) * 0.5f * GRID_SIZE );
-	b = (UInt) floor( (bottom / scale + 1.0f) * 0.5f * GRID_SIZE );
-	t = (UInt) ceil( (top / scale + 1.0f) * 0.5f * GRID_SIZE );
+	register Float scale = fgPlaneScale[fChamber];
+	l = (UInt) floor( (fLeft / scale + 1.0f) * 0.5f * GRID_SIZE );
+	r = (UInt) ceil( (fRight / scale + 1.0f) * 0.5f * GRID_SIZE );
+	b = (UInt) floor( (fBottom / scale + 1.0f) * 0.5f * GRID_SIZE );
+	t = (UInt) ceil( (fTop / scale + 1.0f) * 0.5f * GRID_SIZE );
 
 	/* 
 	// Not required with proper coding. This case is handled properly by
@@ -144,23 +148,25 @@ inline void RegionOfInterest::ConvertToGrid(register UInt& l, register UInt& r, 
 }
 
 
-inline void RegionOfInterest::ConvertBackFromGrid(register UInt l, register UInt r, register UInt b, register UInt t)
+inline void AliHLTMUONCoreRegionOfInterest::ConvertBackFromGrid(
+		register UInt l, register UInt r, register UInt b, register UInt t
+	)
 {
 	Assert( l <= GRID_SIZE );
 	Assert( r <= GRID_SIZE );
 	Assert( b <= GRID_SIZE );
 	Assert( t <= GRID_SIZE );
 
-	Assert( 0 <= chamber && chamber < NUMBER_OF_TRACKING_CHAMBERS );
-	register Float scale = planescale[chamber];
-	left = ((Float)l / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
-	right = ((Float)r / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
-	bottom = ((Float)b / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
-	top = ((Float)t / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
+	Assert( 0 <= fChamber && fChamber < gkNUMBER_OF_TRACKING_CHAMBERS );
+	register Float scale = fgPlaneScale[fChamber];
+	fLeft = ((Float)l / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
+	fRight = ((Float)r / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
+	fBottom = ((Float)b / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
+	fTop = ((Float)t / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
 }
 
 
-ROI RegionOfInterest::Encode() const
+AliHLTMUONCoreROI AliHLTMUONCoreRegionOfInterest::Encode() const
 {
 	UInt l, r, b, t, maxwidth, index;
 
@@ -298,11 +304,11 @@ ROI RegionOfInterest::Encode() const
 	if ( l > maxwidth - 1 ) l = maxwidth - 1;
 	if ( b > maxwidth - 1 ) b = maxwidth - 1;
 	
-	return MAX_INDICES * chamber + b * maxwidth + l + index;
+	return MAX_INDICES * fChamber + b * maxwidth + l + index;
 }
 
 
-ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
+AliHLTMUONCoreROI AliHLTMUONCoreRegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 {
 	UInt r, t, maxwidth, index;
 
@@ -454,15 +460,15 @@ ROI RegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 	if ( l > maxwidth - 1 ) l = maxwidth - 1;
 	if ( b > maxwidth - 1 ) b = maxwidth - 1;
 	
-	return MAX_INDICES * chamber + b * maxwidth + l + index;
+	return MAX_INDICES * fChamber + b * maxwidth + l + index;
 }
 
 
-void RegionOfInterest::Decode(ROI code)
+void AliHLTMUONCoreRegionOfInterest::Decode(AliHLTMUONCoreROI code)
 {
 	UInt l, r, b, t;
 	UChar colevel;
-	DecodeBits(code, chamber, colevel, l, b);
+	DecodeBits(code, fChamber, colevel, l, b);
 
 	// Complete decoding of bottom left corner.
 	b = b << colevel;
@@ -476,7 +482,10 @@ void RegionOfInterest::Decode(ROI code)
 }
 
 
-void RegionOfInterest::Decode(ROI code, ChamberID& chamber, UChar& level, UInt& l, UInt& b)
+void AliHLTMUONCoreRegionOfInterest::Decode(
+		AliHLTMUONCoreROI code, AliHLTMUONCoreChamberID& chamber,
+		UChar& level, UInt& l, UInt& b
+	)
 {
 	UChar colevel;
 	DecodeBits(code, chamber, colevel, l, b);
@@ -484,11 +493,14 @@ void RegionOfInterest::Decode(ROI code, ChamberID& chamber, UChar& level, UInt& 
 }
 
 
-void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, UInt& l, UInt& b)
+void AliHLTMUONCoreRegionOfInterest::DecodeBits(
+		AliHLTMUONCoreROI code, AliHLTMUONCoreChamberID& chamber,
+		UChar& colevel, UInt& l, UInt& b
+	)
 {
 	// First decode the chamber number and the remainder 
 	// contains the location index.
-	chamber = (ChamberID)(code / MAX_INDICES);
+	chamber = (AliHLTMUONCoreChamberID)(code / MAX_INDICES);
 	UInt index = code % MAX_INDICES;
 	
 	UInt width;
@@ -621,10 +633,8 @@ void RegionOfInterest::DecodeBits(ROI code, ChamberID& chamber, UChar& colevel, 
 }
 
 
-ChamberID RegionOfInterest::DecodeChamber(ROI code)
+AliHLTMUONCoreChamberID AliHLTMUONCoreRegionOfInterest::DecodeChamber(AliHLTMUONCoreROI code)
 {
-	return (ChamberID)(code / MAX_INDICES);
+	return (AliHLTMUONCoreChamberID)(code / MAX_INDICES);
 }
 
-
-} // dHLT

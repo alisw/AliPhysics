@@ -5,39 +5,34 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_POINT_HPP
-#define dHLT_POINT_HPP
+#ifndef ALIHLTMUONCOREPOINT_H
+#define ALIHLTMUONCOREPOINT_H
 
 #include "BasicTypes.hpp"
-
-namespace dHLT
-{
 
 
 /* A 2D point structure using floats.
    These are used to store impact points on the trigger chambers and 
    cluster centroids.
  */
-class Point
+class AliHLTMUONCorePoint
 {
 public:
 
-	Float x, y;
+	Float fX, fY;
 
-	Point()
+	AliHLTMUONCorePoint()
 	{
-		x = 0.0;
-		y = 0.0;
+		fX = 0.0;
+		fY = 0.0;
 	}
 
-	Point(Float x0, Float y0)
+	AliHLTMUONCorePoint(Float x, Float y)
 	{
-		this->x = x0;
-		this->y = y0;
+		fX = x;
+		fY = y;
 	}
 };
 
 
-} // dHLT
-
-#endif // dHLT_POINT_HPP
+#endif // ALIHLTMUONCOREPOINT_H

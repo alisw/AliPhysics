@@ -5,29 +5,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_CLUSTER_FINDER_CALLBACK_HPP
-#define dHLT_ALIROOT_CLUSTER_FINDER_CALLBACK_HPP
+#ifndef ALIHLTMUONCLUSTERFINDERCALLBACK_H
+#define ALIHLTMUONCLUSTERFINDERCALLBACK_H
 
 #include "TObject.h"
 
 
-namespace AliMUONHLT
-{
-
-
-class ClusterFinderCallback : public TObject
+class AliHLTMUONClusterFinderCallback : public TObject
 {
 public:
 
-	virtual ~ClusterFinderCallback() {};
+	virtual ~AliHLTMUONClusterFinderCallback() {};
 
 	virtual void FoundClusters(UInt_t numberfound) = 0;
 	virtual void NoClustersFound() = 0;
 	
-	ClassDef(ClusterFinderCallback, 0)  // Abstract cluster finder callback class.
+	ClassDef(AliHLTMUONClusterFinderCallback, 0)  // Abstract cluster finder callback class.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_CLUSTER_FINDER_CALLBACK_HPP
+#endif // ALIHLTMUONCLUSTERFINDERCALLBACK_H

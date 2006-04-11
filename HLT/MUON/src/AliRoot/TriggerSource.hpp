@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_TRIGGER_SOURCE_HPP
-#define dHLT_ALIROOT_TRIGGER_SOURCE_HPP
+#ifndef ALIHLTMUONTRIGGERSOURCE_H
+#define ALIHLTMUONTRIGGERSOURCE_H
 
 #include "TROOT.h"
 #include "TObject.h"
@@ -19,11 +19,7 @@ class AliMUONLocalTrigger;
 class AliMUONDataInterface;
 
 
-namespace AliMUONHLT
-{
-
-
-class TriggerSource : public TObject
+class AliHLTMUONTriggerSource : public TObject
 {
 public:
 
@@ -41,13 +37,13 @@ public:
 	};
 
 
-	TriggerSource();
+	AliHLTMUONTriggerSource();
 	
 	/* Creates a new trigger source object by filling data from the data interface.
 	 */
-	TriggerSource(AliMUONDataInterface* data);
+	AliHLTMUONTriggerSource(AliMUONDataInterface* data);
 	
-	virtual ~TriggerSource();
+	virtual ~AliHLTMUONTriggerSource();
 	
 	/* Get and set methods to specify how the FillFrom methods should fill the
 	   internal data structures.
@@ -98,14 +94,14 @@ public:
 	 */
 	Int_t NumberOfEvents() const { return fEventList.GetEntriesFast(); };
 	
-	/* Fetches the specified event number stored in this TriggerSource.
+	/* Fetches the specified event number stored in this AliHLTMUONTriggerSource.
 	   Sets the current block and trigger to the first block and trigger record in
 	   the event. If there are no blocks or trigger records then these pointers are
 	   set to NULL. kTRUE is returned if the event was found, kFALSE otherwise.
 	 */
 	Bool_t GetEvent(Int_t eventnumber) const;
 	
-	/* Fetches the first event stored in this TriggerSource.
+	/* Fetches the first event stored in this AliHLTMUONTriggerSource.
 	   Sets the current block and trigger record to the first block and trigger
 	   in the event. If there are no blocks or trigger records then these pointers
 	   are set to NULL. kTRUE is returned if the event was found, kFALSE otherwise.
@@ -169,12 +165,12 @@ public:
 	   the current block.
 	   NULL is returned if the record was not found.
 	 */
-	const TriggerRecord* GetTrigger(Int_t triggernumber) const;
+	const AliHLTMUONTriggerRecord* GetTrigger(Int_t triggernumber) const;
 	
 	/* Fetches the first trigger record in the current block.
 	   NULL is returned if the record was not found.
 	 */
-	const TriggerRecord* GetFirstTrigger() const;
+	const AliHLTMUONTriggerRecord* GetFirstTrigger() const;
 	
 	/* Returns kTRUE if there are more triggers to iterate over.
 	 */
@@ -183,12 +179,12 @@ public:
 	/* Fetches the next trigger record in the current block.
 	   NULL is returned if the record was not found.
 	 */
-	const TriggerRecord* GetNextTrigger() const;
+	const AliHLTMUONTriggerRecord* GetNextTrigger() const;
 	
 	/* Returns the current trigger record.
 	   NULL is returned if the record was not found.
 	 */
-	const TriggerRecord* GetTrigger() const { return fCurrentTrigger; };
+	const AliHLTMUONTriggerRecord* GetTrigger() const { return fCurrentTrigger; };
 	
 	/* Returns the trigger record number for the currently selected trigger record.
 	   This number corresponds to the index'th AliMUONLocalTrigger object for the
@@ -212,9 +208,9 @@ private:
 	/* Adds a new trigger record to the current event and block.
 	   The fCurrentTrigger is updated appropriately.
 	 */
-	void AddTrigger(const TriggerRecord& data);
+	void AddTrigger(const AliHLTMUONTriggerRecord& data);
 	
-	/* Checks if the file and folder names correspond to this TriggerSource's 
+	/* Checks if the file and folder names correspond to this AliHLTMUONTriggerSource's 
 	   file and folder names. kTRUE is returned if they do.
 	   If the file and folder names are empty then they are assigned the names
 	   as found in the data interface and kTRUE is returned.
@@ -237,7 +233,7 @@ private:
 	   we want to fill from.
 	   kTRUE is returned if (x, y) is in the region, and kFALSE otherwise.
 	 */
-	Bool_t InFillRegion(const TriggerRecord& data);
+	Bool_t InFillRegion(const AliHLTMUONTriggerRecord& data);
 	
 	/* Fills the trigger data from the AliMUONLocalTrigger object.
 	   if the fUseLookupTable is set to true then we use the L0 lookup table to
@@ -245,14 +241,14 @@ private:
 	   Note the fTriggerNumber parameter is not filled in to 'record'.
 	 */
 	void FillTriggerFromLocalTrigger(
-			AliMUONLocalTrigger* trigger, AliMUON* module, TriggerRecord& record
+			AliMUONLocalTrigger* trigger, AliMUON* module, AliHLTMUONTriggerRecord& record
 		);
 	
 	/* Fills the TriggerRecord structure from AliMUONHit objects.
 	   The hits on the last 4 chambers are used (i.e. chambers 11 to 14).
 	   kTRUE is returned if the structure was filled successfully.
 	 */
-	Bool_t FillTriggerFromHits(AliMUONDataInterface* data, Int_t track, TriggerRecord& record);
+	Bool_t FillTriggerFromHits(AliMUONDataInterface* data, Int_t track, AliHLTMUONTriggerRecord& record);
 	
 	/* Fetches the AliMUON module from the AliRun global object. AliRun will be loaded
 	   by the runloader if it has not yet been loaded. In such a case the AliRun object
@@ -314,16 +310,14 @@ private:
 	mutable Int_t fBlockIndex;               //! The index number of the currently selected block.
 	mutable TClonesArray* fCurrentBlock;     //! Pointer to the currently selected block.
 	mutable Int_t fTriggerIndex;             //! The index number of the currently selected trigger record.
-	mutable TriggerRecord* fCurrentTrigger;  //! Pointer to the currently selected trigger record.
+	mutable AliHLTMUONTriggerRecord* fCurrentTrigger;  //! Pointer to the currently selected trigger record.
 
 	TClonesArray fEventList;   // List of trigger records per event.
 	
 	Bool_t fHadToLoadgAlice;  //! Flag indicating if this object had to load the AliRun object.
 
-	ClassDef(TriggerSource, 1)  // The source of trigger records for dHLT.
+	ClassDef(AliHLTMUONTriggerSource, 1)  // The source of trigger records for dHLT.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_TRIGGER_SOURCE_HPP
+#endif // ALIHLTMUONTRIGGERSOURCE_H

@@ -15,15 +15,10 @@
 #include "TriggerRecord.hpp"
 #include "RegionOfInterest.hpp"
 
-namespace dHLT
-{
-
-std::ostream& operator << (std::ostream& os, const EventID& id);
-std::ostream& operator << (std::ostream& os, const Point& p);
-std::ostream& operator << (std::ostream& os, const ParticleSign s);
-std::ostream& operator << (std::ostream& os, const TriggerRecord& rec);
-std::ostream& operator << (std::ostream& os, const ChamberID chamber);
-
-}; // dHLT
+std::ostream& operator << (std::ostream& os, const AliHLTMUONCoreEventID& id);
+std::ostream& operator << (std::ostream& os, const AliHLTMUONCorePoint& p);
+std::ostream& operator << (std::ostream& os, const AliHLTMUONCoreParticleSign s);
+std::ostream& operator << (std::ostream& os, const AliHLTMUONCoreTriggerRecord& rec);
+std::ostream& operator << (std::ostream& os, const AliHLTMUONCoreChamberID chamber);
 
 #endif // dHLT_DEBUG_PRINT_ROUTINES_HPP

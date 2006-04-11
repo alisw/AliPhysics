@@ -14,16 +14,16 @@ ClassImp(AliHLTMUONTracker)
 
 AliHLTMUONTracker::AliHLTMUONTracker(AliRunLoader* runloader) : AliTracker()
 {
-// Creates the the MicrodHLT object and its associated data source and sink
-// objects. The MicrodHLT object is then initialised by hooking to these objects.
+// Creates the the AliHLTMUONMicrodHLT object and its associated data source and sink
+// objects. The AliHLTMUONMicrodHLT object is then initialised by hooking to these objects.
 
 	AliDebug(2, Form("Called for object 0x%X and with runloader = 0x%X", (ULong_t)this, (ULong_t)runloader));
 
 	// Create the dHLT objects.
-	fdHLT = new AliMUONHLT::MicrodHLT();
-	fTriggers = new AliMUONHLT::TriggerSource();
-	fClusters = new AliMUONHLT::ClusterSource();
-	fTracks = new AliMUONHLT::TrackSink();
+	fdHLT = new AliHLTMUONMicrodHLT();
+	fTriggers = new AliHLTMUONTriggerSource();
+	fClusters = new AliHLTMUONClusterSource();
+	fTracks = new AliHLTMUONTrackSink();
 
 	// Hook up all the objects.
 	fdHLT->SetTriggerSource(fTriggers);
@@ -57,7 +57,7 @@ Int_t AliHLTMUONTracker::LoadClusters(TTree* data)
 	AliDebug(2, Form("Loading for event %d", di.CurrentEvent()));
 
 	// Load the trigger records.
-	fTriggers->DataToUse(AliMUONHLT::TriggerSource::FromLocalTriggers);
+	fTriggers->DataToUse(AliHLTMUONTriggerSource::FromLocalTriggers);
 	fTriggers->FillFrom(&di, di.CurrentEvent());
 
 #ifndef LOG_NO_DEBUG
@@ -66,7 +66,7 @@ Int_t AliHLTMUONTracker::LoadClusters(TTree* data)
 	for (fTriggers->GetFirstBlock(); fTriggers->MoreBlocks(); fTriggers->GetNextBlock())
 	for (fTriggers->GetFirstTrigger(); fTriggers->MoreTriggers(); fTriggers->GetNextTrigger())
 	{
-		const AliMUONHLT::TriggerRecord* trig = fTriggers->GetTrigger();
+		const AliHLTMUONTriggerRecord* trig = fTriggers->GetTrigger();
 		str += trig->TriggerNumber();
 		str += "\t";
 		str += trig->ParticleSign();
@@ -86,7 +86,7 @@ Int_t AliHLTMUONTracker::LoadClusters(TTree* data)
 #endif // LOG_NO_DEBUG
 
 	// Load cluster points (reconstructed hits)
-	fClusters->DataToUse(AliMUONHLT::ClusterSource::FromRawClusters);
+	fClusters->DataToUse(AliHLTMUONClusterSource::FromRawClusters);
 	fClusters->FillFrom(&di, di.CurrentEvent());
 
 #ifndef LOG_NO_DEBUG
@@ -125,8 +125,8 @@ void AliHLTMUONTracker::UnloadClusters()
 }
 
 
-const AliMUONHLT::TriggerRecord*
-AliHLTMUONTracker::FindTriggerRecord(const AliMUONHLT::Track* track) const
+const AliHLTMUONTriggerRecord*
+AliHLTMUONTracker::FindTriggerRecord(const AliHLTMUONTrack* track) const
 {
 // Finds the corresponding trigger record object for the given track.
 // This is doen by matching up the trigger record number with the trigger
@@ -136,7 +136,7 @@ AliHLTMUONTracker::FindTriggerRecord(const AliMUONHLT::Track* track) const
 	for (fTriggers->GetFirstBlock(); fTriggers->MoreBlocks(); fTriggers->GetNextBlock())
 	for (fTriggers->GetFirstTrigger(); fTriggers->MoreTriggers(); fTriggers->GetNextTrigger())
 	{
-		const AliMUONHLT::TriggerRecord* trigrec = fTriggers->GetTrigger();
+		const AliHLTMUONTriggerRecord* trigrec = fTriggers->GetTrigger();
 		if ( trigrec->TriggerNumber() == track->TriggerID() )
 			return trigrec;
 	}
@@ -167,11 +167,11 @@ void AliHLTMUONTracker::LeastSquaresFit(const Double_t x[4], const Double_t y[4]
 }
 
 
-Double_t AliHLTMUONTracker::ComputeChi2(const AliMUONHLT::Track* track) const
+Double_t AliHLTMUONTracker::ComputeChi2(const AliHLTMUONTrack* track) const
 {
 // Computes the Chi^2 for the line fit of the found track fragment.
 
-	const AliMUONHLT::TriggerRecord* trigrec = FindTriggerRecord(track);
+	const AliHLTMUONTriggerRecord* trigrec = FindTriggerRecord(track);
 	if (trigrec == NULL) return -1.;
 	AliDebug(10, Form("Found trigger #%d, particle sign = %d, pt = %f",
 			trigrec->TriggerNumber(),
@@ -186,25 +186,25 @@ Double_t AliHLTMUONTracker::ComputeChi2(const AliMUONHLT::Track* track) const
 	{
 		st4x = track->Hit(7).fX;
 		st4y = track->Hit(7).fY;
-		st4z = dHLT::Tracking::MansoTracker::GetZ8();
+		st4z = AliHLTMUONCoreMansoTracker::GetZ8();
 	}
 	else
 	{
 		st4x = track->Hit(6).fX;
 		st4y = track->Hit(6).fY;
-		st4z = dHLT::Tracking::MansoTracker::GetZ7();
+		st4z = AliHLTMUONCoreMansoTracker::GetZ7();
 	}
 	if (track->Hit(8).fX == 0. && track->Hit(8).fY == 0.)
 	{
 		st5x = track->Hit(9).fX;
 		st5y = track->Hit(9).fY;
-		st5z = dHLT::Tracking::MansoTracker::GetZ10();
+		st5z = AliHLTMUONCoreMansoTracker::GetZ10();
 	}
 	else
 	{
 		st5x = track->Hit(8).fX;
 		st5y = track->Hit(8).fY;
-		st5z = dHLT::Tracking::MansoTracker::GetZ9();
+		st5z = AliHLTMUONCoreMansoTracker::GetZ9();
 	}
 
 	Double_t x[4] = {st4x, st5x,
@@ -214,8 +214,8 @@ Double_t AliHLTMUONTracker::ComputeChi2(const AliMUONHLT::Track* track) const
 			trigrec->Station1Point().fY, trigrec->Station2Point().fY
 		};
 	Double_t z[4] = {st4z, st5z,
-			dHLT::Tracking::MansoTracker::GetZ11(),
-			dHLT::Tracking::MansoTracker::GetZ13()
+			AliHLTMUONCoreMansoTracker::GetZ11(),
+			AliHLTMUONCoreMansoTracker::GetZ13()
 		};
 
 	// Fit a line to the x, y, z data points.
@@ -244,8 +244,8 @@ Double_t AliHLTMUONTracker::ComputeChi2(const AliMUONHLT::Track* track) const
 
 Int_t AliHLTMUONTracker::Clusters2Tracks(AliESD* event)
 {
-// Runs the dHLT tracking algorithm via the MicrodHLT fdHLT object. The found tracks are
-// filled by MicrodHLT in fTracks, which then need to be unpacked into the AliRoot ESD.
+// Runs the dHLT tracking algorithm via the AliHLTMUONMicrodHLT fdHLT object. The found tracks are
+// filled by AliHLTMUONMicrodHLT in fTracks, which then need to be unpacked into the AliRoot ESD.
 
 	AliDebug(1, Form("Called for object 0x%X and ESD object = 0x%X", (ULong_t)this, (ULong_t)event));
 
@@ -261,7 +261,7 @@ Int_t AliHLTMUONTracker::Clusters2Tracks(AliESD* event)
 	for (fTracks->GetFirstBlock(); fTracks->MoreBlocks(); fTracks->GetNextBlock())
 	for (fTracks->GetFirstTrack(); fTracks->MoreTracks(); fTracks->GetNextTrack())
 	{
-		const AliMUONHLT::Track* track = fTracks->GetTrack();
+		const AliHLTMUONTrack* track = fTracks->GetTrack();
 
 #ifndef LOG_NO_DEBUG
 		// Build some debug logging information.
@@ -291,11 +291,11 @@ Int_t AliHLTMUONTracker::Clusters2Tracks(AliESD* event)
 		str += "\n";
 #endif // LOG_NO_DEBUG
 
-		Double_t z = dHLT::Tracking::MansoTracker::GetZ7();
+		Double_t z = AliHLTMUONCoreMansoTracker::GetZ7();
 		Double_t x = track->Hit(6).fX;
 		if (track->Hit(6).fX == 0. && track->Hit(6).fY == 0.)
 		{
-			z = dHLT::Tracking::MansoTracker::GetZ8();
+			z = AliHLTMUONCoreMansoTracker::GetZ8();
 			x = track->Hit(7).fX;
 		};
 

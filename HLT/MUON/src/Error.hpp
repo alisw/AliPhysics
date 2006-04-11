@@ -5,23 +5,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ERROR_HPP
-#define dHLT_ERROR_HPP
+#ifndef ALIHLTMUONCOREERROR_H
+#define ALIHLTMUONCOREERROR_H
 
 #include "BasicTypes.hpp"
 #include <exception>
 #include <Riostream.h>
 
-namespace dHLT
-{
 
-
-class Error : public std::exception
+class AliHLTMUONCoreError : public std::exception
 {
 public:
 
-	Error() throw() {};
-	virtual ~Error() throw() {};
+	AliHLTMUONCoreError() throw() {};
+	virtual ~AliHLTMUONCoreError() throw() {};
 
 	/* Should return a human readable string containing a description of the
 	   error.
@@ -43,7 +40,7 @@ public:
                Error myerror;
                cout << myerror << endl;
 	*/
-	friend ostream& operator << (ostream& os, const dHLT::Error& error)
+	friend ostream& operator << (ostream& os, const AliHLTMUONCoreError& error)
 	{
 		os << error.Message();
 		return os;
@@ -51,7 +48,7 @@ public:
 };
 
 
-class OutOfMemory : public Error
+class AliHLTMUONCoreOutOfMemory : public AliHLTMUONCoreError
 {
 public:
 	virtual const char* Message() const throw();
@@ -65,16 +62,14 @@ public:
    This is because the ThrowOutOfMemory routine throws a preallocated object so
    we are safe from having to allocate more (nonexistant) memory.
  */
-void ThrowOutOfMemory() throw (OutOfMemory);
+void AliHLTMUONCoreThrowOutOfMemory() throw (AliHLTMUONCoreOutOfMemory);
 
 
 // Error code declarations.
 enum
 {
-	OUT_OF_MEMORY = 0x10000001
+	kOUT_OF_MEMORY = 0x10000001
 };
 
 
-} // dHLT
-
-#endif // dHLT_ERROR_HPP
+#endif // ALIHLTMUONCOREERROR_H

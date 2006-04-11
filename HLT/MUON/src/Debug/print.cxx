@@ -12,56 +12,54 @@ using std::endl;
 using std::cout;
 using std::ostream;
 
-namespace dHLT
-{
 
-ostream& operator << (ostream& os, const EventID& id)
+ostream& operator << (ostream& os, const AliHLTMUONCoreEventID& id)
 {
-	os << "<" << id.bunch << ":" << id.timestamp << ">";
+	os << "<" << id.fBunch << ":" << id.fTimeStamp << ">";
 	return os;
 }
 
 
-ostream& operator << (ostream& os, const Point& p)
+ostream& operator << (ostream& os, const AliHLTMUONCorePoint& p)
 {
-	os << "[" << p.x << ", " << p.y << "]";
+	os << "[" << p.fX << ", " << p.fY << "]";
 	return os;
 }
 
 
-ostream& operator << (ostream& os, const ParticleSign s)
+ostream& operator << (ostream& os, const AliHLTMUONCoreParticleSign s)
 {
 	switch (s)
 	{
-	case Minus:       os << "Minus";   break;
-	case Plus:        os << "Plus";    break;
-	case UnknownSign: os << "Unknown"; break;
-	default:          os << "FAULT!";
+	case kSignMinus:   os << "Minus";   break;
+	case kSignPlus:    os << "Plus";    break;
+	case kUnknownSign: os << "Unknown"; break;
+	default:           os << "FAULT!";
 	}
 	return os;
 }
 
 
-ostream& operator << (ostream& os, const TriggerRecord& rec)
+ostream& operator << (ostream& os, const AliHLTMUONCoreTriggerRecord& rec)
 {
 	char* signstr;
-	switch (rec.sign)
+	switch (rec.fSign)
 	{
-	case Minus:       signstr = "Minus  "; break;
-	case Plus:        signstr = "Plus   "; break;
-	case UnknownSign: signstr = "Unknown"; break;
-	default:          signstr = "FAULT!!";
+	case kSignMinus:   signstr = "Minus  "; break;
+	case kSignPlus:    signstr = "Plus   "; break;
+	case kUnknownSign: signstr = "Unknown"; break;
+	default:           signstr = "FAULT!!";
 	}
 	
 	os << "{ sign = " << signstr << ", pt = " 
-	   << rec.pt << ", impact on station 1: "
-	   << rec.station1impact << " , station 2: "
-	   << rec.station2impact << " }";
+	   << rec.fPt << ", impact on station 1: "
+	   << rec.fStation1impact << " , station 2: "
+	   << rec.fStation2impact << " }";
 	return os;
 }
 
 
-ostream& operator << (ostream& os, const ChamberID chamber)
+ostream& operator << (ostream& os, const AliHLTMUONCoreChamberID chamber)
 {
 	Int ch = (Int)chamber;
 	if (0 <= ch && ch <= 9)
@@ -71,5 +69,3 @@ ostream& operator << (ostream& os, const ChamberID chamber)
 	return os;
 }
 
-
-} // dHLT

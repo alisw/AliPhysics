@@ -7,10 +7,6 @@
 
 #include "BasicTypes.hpp"
 
-namespace dHLT
-{
-namespace Tracking
-{
 
 /* Computes the Pt (transverse mementum) based on the equations given in the
    ALICE dimuon spectrometer Technical Design Report (TDR-5): trigger section.
@@ -25,7 +21,7 @@ namespace Tracking
    Input can be in meters, cm or mm. 
    Output is in GeV.
  */
-Float CalculatePt(
+Float AliHLTMUONCoreCalculatePt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2
@@ -34,7 +30,7 @@ Float CalculatePt(
 /* Performs the same calculation as above however alows the zf and qBL
    parameters to be specified.
  */
-Float CalculatePt(
+Float AliHLTMUONCoreCalculatePt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2,
@@ -44,7 +40,7 @@ Float CalculatePt(
 /* The same Pt calculation as above however the sign of the result indicates
    the sign of the particle.
  */
-Float CalculateSignedPt(
+Float AliHLTMUONCoreCalculateSignedPt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2
@@ -53,7 +49,7 @@ Float CalculateSignedPt(
 /* Performs the same calculation as above however alows the zf and qBL
    parameters to be specified.
  */
-Float CalculateSignedPt(
+Float AliHLTMUONCoreCalculateSignedPt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2,
@@ -63,7 +59,7 @@ Float CalculateSignedPt(
 /* The same Pt calculation as above however the sign of the result indicates
    the sign of the particle. The momentum is also computed and returned.
  */
-Float CalculateSignedPt(
+Float AliHLTMUONCoreCalculateSignedPt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2,
@@ -73,7 +69,7 @@ Float CalculateSignedPt(
 /* Performs the same calculation as above however alows the zf and qBL
    parameters to be specified.
  */
-Float CalculateSignedPt(
+Float AliHLTMUONCoreCalculateSignedPt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2,
@@ -81,6 +77,3 @@ Float CalculateSignedPt(
 		Float& p
 	);
 
-
-} // Tracking
-} // dHLT

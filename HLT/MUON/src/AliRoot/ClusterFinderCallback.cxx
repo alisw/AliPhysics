@@ -7,4 +7,4 @@
 
 #include "AliRoot/ClusterFinderCallback.hpp"
 
-ClassImp(AliMUONHLT::ClusterFinderCallback)
+ClassImp(AliHLTMUONClusterFinderCallback)

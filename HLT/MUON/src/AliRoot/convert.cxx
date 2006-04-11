@@ -9,133 +9,125 @@
 #include "Utils.hpp"
 #include "Error.hpp"
 
-namespace dHLT
-{
-namespace AliRoot
-{
 
-
-AliMUONHLT::Point Convert(const dHLT::Point& point)
+AliHLTMUONPoint AliHLTMUONConvert(const AliHLTMUONCorePoint& point)
 {
-	DebugMsg(5, "Convert from dHLT::Point");
-	return AliMUONHLT::Point(point.x, point.y);
+	DebugMsg(5, "Convert from AliHLTMUONCorePoint");
+	return AliHLTMUONPoint(point.fX, point.fY);
 }
 
 
-dHLT::Point Convert(const AliMUONHLT::Point& point)
+AliHLTMUONCorePoint AliHLTMUONConvert(const AliHLTMUONPoint& point)
 {
-	DebugMsg(5, "Convert from AliMUONHLT::Point");
-	return dHLT::Point(point.fX, point.fY);
+	DebugMsg(5, "Convert from AliHLTMUONPoint");
+	return AliHLTMUONCorePoint(point.fX, point.fY);
 }
 
 
-AliMUONHLT::TriggerRecord Convert(const dHLT::TriggerRecord& record, Int_t triggernumber)
+AliHLTMUONTriggerRecord AliHLTMUONConvert(const AliHLTMUONCoreTriggerRecord& record, Int_t triggernumber)
 {
 	DebugMsg(5, "Convert from dHLT::TriggerRecord");
 	// If the trigger number is negative then set it to zero.
 	if (triggernumber >= 0)
 	{
-		return AliMUONHLT::TriggerRecord(
+		return AliHLTMUONTriggerRecord(
 					triggernumber,
-					record.sign,
-					record.pt,
-					Convert( record.station1impact ),
-					Convert( record.station2impact )
+					record.fSign,
+					record.fPt,
+					AliHLTMUONConvert( record.fStation1impact ),
+					AliHLTMUONConvert( record.fStation2impact )
 				);
 	}
 	else
 	{
-		return AliMUONHLT::TriggerRecord(
+		return AliHLTMUONTriggerRecord(
 					0,
-					record.sign,
-					record.pt,
-					Convert( record.station1impact ),
-					Convert( record.station2impact )
+					record.fSign,
+					record.fPt,
+					AliHLTMUONConvert( record.fStation1impact ),
+					AliHLTMUONConvert( record.fStation2impact )
 				);
 	}
 }
 
 
-dHLT::TriggerRecord Convert(const AliMUONHLT::TriggerRecord& record)
+AliHLTMUONCoreTriggerRecord AliHLTMUONConvert(const AliHLTMUONTriggerRecord& record)
 {
-	DebugMsg(5, "Convert from AliMUONHLT::TriggerRecord");
-	return dHLT::TriggerRecord(
-				(dHLT::ParticleSign) record.ParticleSign(),
+	DebugMsg(5, "Convert from AliHLTMUONTriggerRecord");
+	return AliHLTMUONCoreTriggerRecord(
+				(AliHLTMUONCoreParticleSign) record.ParticleSign(),
 				record.Pt(),
-				Convert( record.Station1Point() ),
-				Convert( record.Station2Point() )
+				AliHLTMUONConvert( record.Station1Point() ),
+				AliHLTMUONConvert( record.Station2Point() )
 			);
 }
 
 
-AliMUONHLT::Track Convert(const dHLT::Track& track)
+AliHLTMUONTrack AliHLTMUONConvert(const AliHLTMUONCoreTrack& track)
 {
 	DebugMsg(5, "Convert from dHLT::Track");
-	AliMUONHLT::Track t;
-	t.TriggerID( track.triggerid );
-	t.ParticleSign( track.sign );
-	t.P( track.p );
-	t.Pt( track.pt );
+	AliHLTMUONTrack t;
+	t.TriggerID( track.fTriggerid );
+	t.ParticleSign( track.fSign );
+	t.P( track.fP );
+	t.Pt( track.fPt );
 	for (Int_t i = 0; i < 10; i++)
 	{
-		t.Hit(i) = Convert( track.point[i] );
+		t.Hit(i) = AliHLTMUONConvert( track.fPoint[i] );
 		
 		// Only convert if the ROI is valid. Otherwise the Region object
 		// is filled with NaN's.
-		if (track.region[i] != dHLT::INVALID_ROI)
-			t.RegionOfInterest(i) = Convert( track.region[i] );
+		if (track.fRegion[i] != kINVALID_ROI)
+			t.RegionOfInterest(i) = AliHLTMUONConvert( track.fRegion[i] );
 	}
 	return t;
 }
 
 
-dHLT::Track Convert(const AliMUONHLT::Track& track)
+AliHLTMUONCoreTrack AliHLTMUONConvert(const AliHLTMUONTrack& track)
 {
-	DebugMsg(5, "Convert from AliMUONHLT::Track");
-	dHLT::Track t;
-	t.triggerid = track.TriggerID();
-	t.sign = (dHLT::ParticleSign) track.ParticleSign();
-	t.p = track.P();
-	t.pt = track.Pt();
+	DebugMsg(5, "Convert from AliHLTMUONTrack");
+	AliHLTMUONCoreTrack t;
+	t.fTriggerid = track.TriggerID();
+	t.fSign = (AliHLTMUONCoreParticleSign) track.ParticleSign();
+	t.fP = track.P();
+	t.fPt = track.Pt();
 	for (Int_t i = 0; i < 10; i++)
 	{
-		t.point[i] = Convert( track.Hit(i) );
-		t.region[i] = Convert( track.RegionOfInterest(i), i );
+		t.fPoint[i] = AliHLTMUONConvert( track.Hit(i) );
+		t.fRegion[i] = AliHLTMUONConvert( track.RegionOfInterest(i), i );
 	}
 	return t;
 }
 
 
-AliMUONHLT::Region Convert(const dHLT::ROI region)
+AliHLTMUONRegion AliHLTMUONConvert(const AliHLTMUONCoreROI region)
 {
-	DebugMsg(5, "Convert from dHLT::ROI");
-	dHLT::RegionOfInterest roi(region);
-	return AliMUONHLT::Region( roi.Left(), roi.Right(), roi.Bottom(), roi.Top() );
+	DebugMsg(5, "Convert from AliHLTMUONCoreROI");
+	AliHLTMUONCoreRegionOfInterest roi(region);
+	return AliHLTMUONRegion( roi.Left(), roi.Right(), roi.Bottom(), roi.Top() );
 }
 
 
-dHLT::ROI Convert(const AliMUONHLT::Region& region, UInt_t chamber)
+AliHLTMUONCoreROI AliHLTMUONConvert(const AliHLTMUONRegion& region, UInt_t chamber)
 {
-	DebugMsg(5, "Convert from AliMUONHLT::Region");
+	DebugMsg(5, "Convert from AliHLTMUONRegion");
 	// If the chamber number is too big then truncate it.
 	if (chamber < 10)
 	{
-		dHLT::RegionOfInterest roi(
+		AliHLTMUONCoreRegionOfInterest roi(
 				region.Left(), region.Right(), region.Bottom(), region.Top(),
-				(dHLT::ChamberID) chamber
+				(AliHLTMUONCoreChamberID) chamber
 			);
 		return roi;
 	}
 	else
 	{
-		dHLT::RegionOfInterest roi(
+		AliHLTMUONCoreRegionOfInterest roi(
 				region.Left(), region.Right(), region.Bottom(), region.Top(),
-				dHLT::Chamber10
+				kChamber10
 			);
 		return roi;
 	}
 }
 
-
-} // AliRoot
-} // dHLT

@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_NEW_HPP
-#define dHLT_NEW_HPP
+#ifndef ALIHLTMUONCORENEW_H
+#define ALIHLTMUONCORENEW_H
 
 #include "Error.hpp"
 
@@ -19,4 +19,4 @@ void* operator new [] (size_t size) throw (std::bad_alloc);
 void operator delete (void* memory) throw ();
 void operator delete [] (void* memory) throw ();
 
-#endif // dHLT_NEW_HPP
+#endif // ALIHLTMUONCORENEW_H

@@ -5,34 +5,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_TRACKER_PROXY_HPP
-#define dHLT_ALIROOT_TRACKER_PROXY_HPP
+#ifndef ALIHLTMUONTRACKERPROXY_H
+#define ALIHLTMUONTRACKERPROXY_H
 
 #include "Tracking/Tracker.hpp"
 #include "AliRoot/TrackerCallback.hpp"
 #include "AliRoot/TrackerInterface.hpp"
 
-namespace dHLT
-{
-namespace AliRoot
-{
 
-
-class TrackerProxy : public Tracking::Tracker, public AliMUONHLT::TrackerCallback
+class AliHLTMUONTrackerProxy : public AliHLTMUONCoreTracker, public AliHLTMUONTrackerCallback
 {
 public:
 
-	TrackerProxy(AliMUONHLT::TrackerInterface* client);
-	virtual ~TrackerProxy() {};
+	AliHLTMUONTrackerProxy(AliHLTMUONTrackerInterface* client);
+	virtual ~AliHLTMUONTrackerProxy() {};
 
 	// inherited methods from Tracking::Tracker:
-	virtual void FindTrack(const TriggerRecord& trigger);
-	virtual void ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count);
+	virtual void FindTrack(const AliHLTMUONCoreTriggerRecord& trigger);
+	virtual void ReturnClusters(void* tag, const AliHLTMUONCoreClusterPoint* clusters, UInt count);
 	virtual void EndOfClusters(void* tag);
-	virtual void FillTrackData(Track& track);
+	virtual void FillTrackData(AliHLTMUONCoreTrack& track);
 	virtual void Reset();
 
-	// inherited methods from AliMUONHLT::TrackerCallback:
+	// inherited methods from AliHLTMUONTrackerCallback:
 	virtual void RequestClusters(
 			Float_t left, Float_t right, Float_t bottom, Float_t top,
 			Int_t chamber, const void* tag = NULL
@@ -43,11 +38,8 @@ public:
 
 private:
 
-	AliMUONHLT::TrackerInterface* tracker;  // The tracker we are proxying for.
+	AliHLTMUONTrackerInterface* tracker;  // The tracker we are proxying for.
 };
 
 
-} // AliRoot
-} // dHLT
-
-#endif // dHLT_ALIROOT_TRACKER_PROXY_HPP
+#endif // ALIHLTMUONTRACKERPROXY_H

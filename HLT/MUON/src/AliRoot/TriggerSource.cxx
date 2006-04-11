@@ -24,14 +24,12 @@
 #include <float.h>
 #endif
 
-ClassImp(AliMUONHLT::TriggerSource)
-ClassImp(AliMUONHLT::TriggerSource::EventData)
+ClassImp(AliHLTMUONTriggerSource)
+ClassImp(AliHLTMUONTriggerSource::EventData)
 
-namespace AliMUONHLT
-{
 
-TriggerSource::TriggerSource()
-	: TObject(), fEventList(TriggerSource::EventData::Class())
+AliHLTMUONTriggerSource::AliHLTMUONTriggerSource()
+	: TObject(), fEventList(AliHLTMUONTriggerSource::EventData::Class())
 {
 	fAreaToUse = FromWholePlane;
 	fDataToUse = FromLocalTriggers;
@@ -44,8 +42,8 @@ TriggerSource::TriggerSource()
 }
 
 
-TriggerSource::TriggerSource(AliMUONDataInterface* data)
-	: TObject(), fEventList(TriggerSource::EventData::Class())
+AliHLTMUONTriggerSource::AliHLTMUONTriggerSource(AliMUONDataInterface* data)
+	: TObject(), fEventList(AliHLTMUONTriggerSource::EventData::Class())
 {
 	fAreaToUse = FromWholePlane;
 	fDataToUse = FromLocalTriggers;
@@ -59,13 +57,13 @@ TriggerSource::TriggerSource(AliMUONDataInterface* data)
 }
 
 
-TriggerSource::~TriggerSource()
+AliHLTMUONTriggerSource::~AliHLTMUONTriggerSource()
 {
 	fEventList.Delete();
 }
 
 
-void TriggerSource::FillFrom(AliMUONDataInterface* data)
+void AliHLTMUONTriggerSource::FillFrom(AliMUONDataInterface* data)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*)");
 	
@@ -84,7 +82,7 @@ void TriggerSource::FillFrom(AliMUONDataInterface* data)
 }
 
 
-void TriggerSource::FillFrom(AliMUONDataInterface* data, Int_t event)
+void AliHLTMUONTriggerSource::FillFrom(AliMUONDataInterface* data, Int_t event)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*, Int_t)");
 	
@@ -98,7 +96,7 @@ void TriggerSource::FillFrom(AliMUONDataInterface* data, Int_t event)
 }
 
 
-void TriggerSource::FillFrom(
+void AliHLTMUONTriggerSource::FillFrom(
 		AliMUONDataInterface* data,
 		Int_t event, Int_t trigger, Bool_t newblock
 	)
@@ -143,7 +141,7 @@ void TriggerSource::FillFrom(
 }
 
 
-void TriggerSource::Clear(Option_t* /*option*/)
+void AliHLTMUONTriggerSource::Clear(Option_t* /*option*/)
 {
 	fFilename = "";
 	fFoldername = "";
@@ -152,9 +150,9 @@ void TriggerSource::Clear(Option_t* /*option*/)
 }
 
 
-Bool_t TriggerSource::GetEvent(Int_t eventnumber) const
+Bool_t AliHLTMUONTriggerSource::GetEvent(Int_t eventnumber) const
 {
-	DebugMsg(1, "TriggerSource::GetEvent(" << eventnumber << ")" );
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetEvent(" << eventnumber << ")" );
 	
 	// Try find the corresponding event in the list of events.
 	for (Int_t i = 0; i < fEventList.GetEntriesFast(); i++)
@@ -175,9 +173,9 @@ Bool_t TriggerSource::GetEvent(Int_t eventnumber) const
 }
 
 
-Bool_t TriggerSource::GetFirstEvent() const
+Bool_t AliHLTMUONTriggerSource::GetFirstEvent() const
 {
-	DebugMsg(1, "TriggerSource::GetFirstEvent()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetFirstEvent()");
 	if (fEventList.GetEntriesFast() > 0)
 	{
 		fEventIndex = 0;
@@ -198,15 +196,15 @@ Bool_t TriggerSource::GetFirstEvent() const
 }
 
 
-Bool_t TriggerSource::MoreEvents() const
+Bool_t AliHLTMUONTriggerSource::MoreEvents() const
 {
 	return 0 <= fEventIndex && fEventIndex < fEventList.GetEntriesFast();
 }
 
 
-Bool_t TriggerSource::GetNextEvent() const
+Bool_t AliHLTMUONTriggerSource::GetNextEvent() const
 {
-	DebugMsg(1, "TriggerSource::GetNextEvent()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetNextEvent()");
 	if (fEventIndex < fEventList.GetEntriesFast() - 1)
 	{
 		fCurrentEvent = (EventData*) fEventList[ ++fEventIndex ];
@@ -224,7 +222,7 @@ Bool_t TriggerSource::GetNextEvent() const
 }
 
 
-Int_t TriggerSource::CurrentEvent() const
+Int_t AliHLTMUONTriggerSource::CurrentEvent() const
 {
 	if (fCurrentEvent != NULL)
 		return fCurrentEvent->fEventNumber;
@@ -233,9 +231,9 @@ Int_t TriggerSource::CurrentEvent() const
 }
 
 
-Int_t TriggerSource::NumberOfBlocks() const
+Int_t AliHLTMUONTriggerSource::NumberOfBlocks() const
 {
-	DebugMsg(1, "TriggerSource::NumberOfBlocks()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::NumberOfBlocks()");
 	if (fCurrentEvent == NULL)
 	{
 		Error("NumberOfBlocks", "No event selected.");
@@ -246,9 +244,9 @@ Int_t TriggerSource::NumberOfBlocks() const
 }
 
 
-Bool_t TriggerSource::GetBlock(Int_t index) const
+Bool_t AliHLTMUONTriggerSource::GetBlock(Int_t index) const
 {
-	DebugMsg(1, "TriggerSource::GetBlock(" << index << ")");
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetBlock(" << index << ")");
 	
 	// Note NumberOfBlocks() also checks if the event was selected.
 	Int_t numberofblocks = NumberOfBlocks();
@@ -282,9 +280,9 @@ Bool_t TriggerSource::GetBlock(Int_t index) const
 }
 
 
-Bool_t TriggerSource::GetFirstBlock() const
+Bool_t AliHLTMUONTriggerSource::GetFirstBlock() const
 {
-	DebugMsg(1, "TriggerSource::GetFirstBlock()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetFirstBlock()");
 	// Note: NumberOfBlocks() also checks if fCurrentEvent != NULL.
 	if (NumberOfBlocks() > 0)
 	{
@@ -301,15 +299,15 @@ Bool_t TriggerSource::GetFirstBlock() const
 }
 
 
-Bool_t TriggerSource::MoreBlocks() const
+Bool_t AliHLTMUONTriggerSource::MoreBlocks() const
 {
 	return 0 <= fBlockIndex && fBlockIndex < NumberOfBlocks();
 }
 
 
-Bool_t TriggerSource::GetNextBlock() const
+Bool_t AliHLTMUONTriggerSource::GetNextBlock() const
 {
-	DebugMsg(1, "TriggerSource::GetNextBlock()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetNextBlock()");
 
 	// Note: NumberOfBlocks() checks if fCurrentEvent != NULL. If it is then it returns -1
 	// and since fBlockIndex is always >= -1 the if statement must go to the else part.
@@ -330,9 +328,9 @@ Bool_t TriggerSource::GetNextBlock() const
 }
 
 
-Int_t TriggerSource::NumberOfTriggers() const
+Int_t AliHLTMUONTriggerSource::NumberOfTriggers() const
 {
-	DebugMsg(1, "TriggerSource::NumberOfTriggers()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::NumberOfTriggers()");
 	if (fCurrentBlock == NULL)
 	{
 		Error("NumberOfTriggers", "No block selected.");
@@ -343,9 +341,9 @@ Int_t TriggerSource::NumberOfTriggers() const
 }
 
 
-const TriggerRecord* TriggerSource::GetTrigger(Int_t triggernumber) const
+const AliHLTMUONTriggerRecord* AliHLTMUONTriggerSource::GetTrigger(Int_t triggernumber) const
 {
-	DebugMsg(1, "TriggerSource::GetTrigger(" << triggernumber << ")");
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetTrigger(" << triggernumber << ")");
 
 	if (fCurrentBlock == NULL)
 	{
@@ -356,7 +354,7 @@ const TriggerRecord* TriggerSource::GetTrigger(Int_t triggernumber) const
 	// Try find the corresponding trigger record in the list of events.
 	for (Int_t i = 0; i < fCurrentBlock->GetEntriesFast(); i++)
 	{
-		TriggerRecord* current = (TriggerRecord*) fCurrentBlock->At(i);
+		AliHLTMUONTriggerRecord* current = (AliHLTMUONTriggerRecord*) fCurrentBlock->At(i);
 		if (current->TriggerNumber() == triggernumber)
 		{
 			fTriggerIndex = i;
@@ -371,14 +369,14 @@ const TriggerRecord* TriggerSource::GetTrigger(Int_t triggernumber) const
 }
 
 
-const TriggerRecord* TriggerSource::GetFirstTrigger() const
+const AliHLTMUONTriggerRecord* AliHLTMUONTriggerSource::GetFirstTrigger() const
 {
-	DebugMsg(1, "TriggerSource::GetFirstTrigger()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetFirstTrigger()");
 	// Note: NumberOfTriggers() also checks if fCurrentBlock != NULL.
 	if (NumberOfTriggers() > 0)
 	{
 		fTriggerIndex = 0;
-		fCurrentTrigger = (TriggerRecord*) fCurrentBlock->At(0);
+		fCurrentTrigger = (AliHLTMUONTriggerRecord*) fCurrentBlock->At(0);
 		DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 			<< " , fTriggerIndex = " << fTriggerIndex
 		);
@@ -389,21 +387,21 @@ const TriggerRecord* TriggerSource::GetFirstTrigger() const
 }
 
 
-Bool_t TriggerSource::MoreTriggers() const
+Bool_t AliHLTMUONTriggerSource::MoreTriggers() const
 {
 	return 0 <= fTriggerIndex && fTriggerIndex < NumberOfTriggers();
 }
 
 
-const TriggerRecord* TriggerSource::GetNextTrigger() const
+const AliHLTMUONTriggerRecord* AliHLTMUONTriggerSource::GetNextTrigger() const
 {
-	DebugMsg(1, "TriggerSource::GetNextTrigger()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::GetNextTrigger()");
 	
 	// Note: NumberOfTriggers() checks if fCurrentBlock != NULL. If it is then it returns -1
 	// and since fTriggerIndex is always >= -1 the if statement must go to the else part.
 	if (fTriggerIndex < NumberOfTriggers() - 1)
 	{
-		fCurrentTrigger = (TriggerRecord*) fCurrentBlock->At( ++fTriggerIndex );
+		fCurrentTrigger = (AliHLTMUONTriggerRecord*) fCurrentBlock->At( ++fTriggerIndex );
 		DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 			<< " , fTriggerIndex = " << fTriggerIndex
 		);
@@ -417,7 +415,7 @@ const TriggerRecord* TriggerSource::GetNextTrigger() const
 }
 
 
-Int_t TriggerSource::CurrentTrigger() const
+Int_t AliHLTMUONTriggerSource::CurrentTrigger() const
 {
 	if (fCurrentTrigger != NULL)
 	{
@@ -431,9 +429,9 @@ Int_t TriggerSource::CurrentTrigger() const
 }
 
 
-void TriggerSource::AddEvent(Int_t eventnumber)
+void AliHLTMUONTriggerSource::AddEvent(Int_t eventnumber)
 {
-	DebugMsg(1, "TriggerSource::AddEvent(" << eventnumber << ")");
+	DebugMsg(1, "AliHLTMUONTriggerSource::AddEvent(" << eventnumber << ")");
 	Assert( eventnumber >= 0 );
 
 	// Assume the eventnumber does not already exist in the event list.
@@ -450,9 +448,9 @@ void TriggerSource::AddEvent(Int_t eventnumber)
 }
 
 
-void TriggerSource::AddBlock()
+void AliHLTMUONTriggerSource::AddBlock()
 {
-	DebugMsg(1, "TriggerSource::AddBlock()");
+	DebugMsg(1, "AliHLTMUONTriggerSource::AddBlock()");
 	
 	if (fCurrentEvent == NULL)
 	{
@@ -461,7 +459,7 @@ void TriggerSource::AddBlock()
 	}
 	
 	fBlockIndex = fCurrentEvent->fBlocks.GetEntriesFast();
-	new ( fCurrentEvent->fBlocks[fBlockIndex] ) TClonesArray(TriggerRecord::Class());
+	new ( fCurrentEvent->fBlocks[fBlockIndex] ) TClonesArray(AliHLTMUONTriggerRecord::Class());
 	fCurrentBlock = (TClonesArray*) fCurrentEvent->fBlocks[fBlockIndex];
 	
 	// Remember to reset the trigger pointer because the new block is empty.
@@ -473,9 +471,9 @@ void TriggerSource::AddBlock()
 }
 
 
-void TriggerSource::AddTrigger(const TriggerRecord& data)
+void AliHLTMUONTriggerSource::AddTrigger(const AliHLTMUONTriggerRecord& data)
 {
-	DebugMsg(1, "TriggerSource::AddTrigger(" << (void*)&data << ")");
+	DebugMsg(1, "AliHLTMUONTriggerSource::AddTrigger(" << (void*)&data << ")");
 
 	if (fCurrentBlock == NULL)
 	{
@@ -484,8 +482,8 @@ void TriggerSource::AddTrigger(const TriggerRecord& data)
 	}
 	
 	fTriggerIndex = fCurrentBlock->GetEntriesFast();
-	new ( (*fCurrentBlock)[fTriggerIndex] ) TriggerRecord(data);
-	fCurrentTrigger = (TriggerRecord*) (*fCurrentBlock)[fTriggerIndex];
+	new ( (*fCurrentBlock)[fTriggerIndex] ) AliHLTMUONTriggerRecord(data);
+	fCurrentTrigger = (AliHLTMUONTriggerRecord*) (*fCurrentBlock)[fTriggerIndex];
 	
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTriggerIndex = " << fTriggerIndex
@@ -493,7 +491,7 @@ void TriggerSource::AddTrigger(const TriggerRecord& data)
 }
 
 
-Bool_t TriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
+Bool_t AliHLTMUONTriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
 {
 	if (fFilename == "")
 	{
@@ -525,7 +523,7 @@ Bool_t TriggerSource::FileAndFolderOk(AliMUONDataInterface* data)
 }
 
 
-void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, Int_t event)
+void AliHLTMUONTriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, Int_t event)
 {
 	if ( data->GetEvent(event) )
 	{
@@ -533,7 +531,7 @@ void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, In
 
 		AddBlock();
 		UInt_t currentblocksize = 0;
-		TriggerRecord trigdata;
+		AliHLTMUONTriggerRecord trigdata;
 
 		switch (fDataToUse)
 		{
@@ -588,11 +586,11 @@ void TriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* module, In
 }
 
 
-void TriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, Int_t trigger)
+void AliHLTMUONTriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, Int_t trigger)
 {
 	DebugMsg(1, "Entering AddTriggerFrom");
 
-	TriggerRecord trigdata;
+	AliHLTMUONTriggerRecord trigdata;
 
 	switch (fDataToUse)
 	{
@@ -624,7 +622,7 @@ void TriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON* module, 
 }
 
 
-Bool_t TriggerSource::InFillRegion(const TriggerRecord& data)
+Bool_t AliHLTMUONTriggerSource::InFillRegion(const AliHLTMUONTriggerRecord& data)
 {
 	switch (fAreaToUse)
 	{
@@ -639,8 +637,8 @@ Bool_t TriggerSource::InFillRegion(const TriggerRecord& data)
 }
 
 
-void TriggerSource::FillTriggerFromLocalTrigger(
-		AliMUONLocalTrigger* trigger, AliMUON* module, TriggerRecord& record
+void AliHLTMUONTriggerSource::FillTriggerFromLocalTrigger(
+		AliMUONLocalTrigger* trigger, AliMUON* module, AliHLTMUONTriggerRecord& record
 	)
 {
 	DebugMsg(2, "Creating TriggerRecord from AliMUONLocalTrigger object: " << (void*)trigger );
@@ -687,7 +685,9 @@ void TriggerSource::FillTriggerFromLocalTrigger(
 }
 
 
-Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t track, TriggerRecord& record)
+Bool_t AliHLTMUONTriggerSource::FillTriggerFromHits(
+		AliMUONDataInterface* data, Int_t track, AliHLTMUONTriggerRecord& record
+	)
 {
 	DebugMsg(2, "Creating TriggerRecord from hits on track: " << track );
 	
@@ -792,7 +792,7 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 			<< ", z2 = " << z2
 		);
 	// Calculate and assign the transverse momentum.
-	Float_t pt = dHLT::Tracking::CalculatePt(
+	Float_t pt = AliHLTMUONCoreCalculatePt(
 				record.Station1Point().fX,
 				record.Station1Point().fY, record.Station2Point().fY,
 				z1, z2
@@ -805,7 +805,7 @@ Bool_t TriggerSource::FillTriggerFromHits(AliMUONDataInterface* data, Int_t trac
 }
 
 
-Bool_t TriggerSource::FetchAliMUON(AliMUON*& module)
+Bool_t AliHLTMUONTriggerSource::FetchAliMUON(AliMUON*& module)
 {
 	// Check if we even need the MUON module. Not having to load it will
 	// save a lot of loading time for AliRoot.
@@ -847,7 +847,7 @@ Bool_t TriggerSource::FetchAliMUON(AliMUON*& module)
 }
 
 
-void TriggerSource::FinishedWithAliMUON()
+void AliHLTMUONTriggerSource::FinishedWithAliMUON()
 {
 	// Only unload the gAlice object if we had to load it ourselves.
 	if (fHadToLoadgAlice)
@@ -855,7 +855,7 @@ void TriggerSource::FinishedWithAliMUON()
 }
 
 
-void TriggerSource::ResetAllPointers() const
+void AliHLTMUONTriggerSource::ResetAllPointers() const
 {
 	fEventIndex = -1;
 	fCurrentEvent = NULL;
@@ -869,7 +869,7 @@ void TriggerSource::ResetAllPointers() const
 }
 
 
-void TriggerSource::ResetBlockPointers() const
+void AliHLTMUONTriggerSource::ResetBlockPointers() const
 {
 	fBlockIndex = -1;
 	fCurrentBlock = NULL;
@@ -881,7 +881,7 @@ void TriggerSource::ResetBlockPointers() const
 }
 
 
-void TriggerSource::ResetTriggerPointers() const
+void AliHLTMUONTriggerSource::ResetTriggerPointers() const
 {
 	fTriggerIndex = -1;
 	fCurrentTrigger = NULL;
@@ -891,13 +891,13 @@ void TriggerSource::ResetTriggerPointers() const
 }
 
 
-TriggerSource::EventData::EventData() : fBlocks(TClonesArray::Class())
+AliHLTMUONTriggerSource::EventData::EventData() : fBlocks(TClonesArray::Class())
 {
 	fEventNumber = -1;
 }
 
 
-TriggerSource::EventData::EventData(Int_t eventnumber)
+AliHLTMUONTriggerSource::EventData::EventData(Int_t eventnumber)
 	: fBlocks(TClonesArray::Class())
 {
 	fEventNumber = eventnumber;
@@ -907,10 +907,8 @@ TriggerSource::EventData::EventData(Int_t eventnumber)
 }
 
 
-TriggerSource::EventData::~EventData()
+AliHLTMUONTriggerSource::EventData::~EventData()
 {
 	//fBlocks.Clear("C");  // Done in fBlocks destructor 
 }
 
-
-} // AliMUONHLT

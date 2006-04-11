@@ -35,20 +35,20 @@ public:
 	virtual Int_t Clusters2Tracks(AliESD* event);
 
 private:
-	const AliMUONHLT::TriggerRecord*
-	FindTriggerRecord(const AliMUONHLT::Track* track) const;
+	const AliHLTMUONTriggerRecord*
+	FindTriggerRecord(const AliHLTMUONTrack* track) const;
 
 	void LeastSquaresFit(
 			const Double_t x[4], const Double_t y[4],
 			Double_t& m, Double_t& c
 		) const;
 
-	Double_t ComputeChi2(const AliMUONHLT::Track* track) const;
+	Double_t ComputeChi2(const AliHLTMUONTrack* track) const;
 
-	AliMUONHLT::MicrodHLT*     fdHLT;      // dHLT tracker algorithm interface object.
-	AliMUONHLT::TriggerSource* fTriggers;  // Trigger record input data object.
-	AliMUONHLT::ClusterSource* fClusters;  // Reconstructed hit input data object (sorry about the poor object naming).
-	AliMUONHLT::TrackSink*     fTracks;    // Track output data object.
+	AliHLTMUONMicrodHLT*     fdHLT;      // dHLT tracker algorithm interface object.
+	AliHLTMUONTriggerSource* fTriggers;  // Trigger record input data object.
+	AliHLTMUONClusterSource* fClusters;  // Reconstructed hit input data object (sorry about the poor object naming).
+	AliHLTMUONTrackSink*     fTracks;    // Track output data object.
 
 	ClassDef(AliHLTMUONTracker, 1)  // dHLT tracker algorithm
 };

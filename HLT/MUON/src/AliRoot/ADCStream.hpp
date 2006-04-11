@@ -5,29 +5,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_ADC_STREAM_HPP
-#define dHLT_ALIROOT_ADC_STREAM_HPP
+#ifndef ALIHLTMUONSTREAM_H
+#define ALIHLTMUONSTREAM_H
 
 #include <TObject.h>
 #include <TArrayI.h>
 #include <Riostream.h>
 
 
-namespace AliMUONHLT
-{
-
-
-class ADCStream : public TObject
+class AliHLTMUONADCStream : public TObject
 {
 public:
 
 	/* Default constructor initialises everything to zero.
 	 */
-	ADCStream();
+	AliHLTMUONADCStream();
 	
-	ADCStream(const UInt_t* data, UInt_t size);
+	AliHLTMUONADCStream(const UInt_t* data, UInt_t size);
 
-	virtual ~ADCStream();
+	virtual ~AliHLTMUONADCStream();
 	
 	UInt_t Size();
 	void Size(UInt_t size);
@@ -40,17 +36,15 @@ public:
 	UInt_t operator [] (UInt_t index) const;
 
 	// ostream operator usefull for text output.
-	friend ostream& operator << (ostream& os, const ADCStream& s);
+	friend ostream& operator << (ostream& os, const AliHLTMUONADCStream& s);
 
 private:
 
 	// TODO: complete the ADC stream specification.
 	TArrayI fData;
 
-	ClassDef(ADCStream, 1)  // ADC stream data.
+	ClassDef(AliHLTMUONADCStream, 1)  // ADC stream data.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_ADC_STREAM_HPP
+#endif // ALIHLTMUONSTREAM_H

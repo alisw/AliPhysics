@@ -61,7 +61,7 @@ public:
 	   is called with the relevant track. Most of the actual decision algorithm 
 	   will go into this method on a per track basis.
 	 */
-	virtual void AddTrack(const Track& track) = 0;
+	virtual void AddTrack(const AliHLTMUONCoreTrack& track) = 0;
 	
 	/* When no more tracks are available for the decision then this method is called.
 	   Final processing of the decision algorithm should go in to this method.

@@ -5,29 +5,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_CLUSTER_FINDER_PROXY_HPP
-#define dHLT_ALIROOT_CLUSTER_FINDER_PROXY_HPP
+#ifndef ALIHLTMUONCLUSTERFINDERPROXY_H
+#define ALIHLTMUONCLUSTERFINDERPROXY_H
 
 #include "Clustering/ClusterFinder.hpp"
 #include "AliRoot/ClusterFinderCallback.hpp"
 #include "AliRoot/ClusterFinderInterface.hpp"
 
-namespace dHLT
-{
-namespace AliRoot
-{
 
-
-class ClusterFinderProxy : public Clustering::ClusterFinder, public AliMUONHLT::ClusterFinderCallback
+class AliHLTMUONClusterFinderProxy : public AliHLTMUONCoreClusterFinder, public AliHLTMUONClusterFinderCallback
 {
 public:
 
-	ClusterFinderProxy(AliMUONHLT::ClusterFinderInterface* client);
-	virtual ~ClusterFinderProxy() {};
+	AliHLTMUONClusterFinderProxy(AliHLTMUONClusterFinderInterface* client);
+	virtual ~AliHLTMUONClusterFinderProxy() {};
 
 	// inherited methods from Clustering::ClusterFinder:
-	virtual void FindClusters(const ADCStream* stream);
-	virtual UInt FillClusterData(ClusterPoint* clusters, UInt arraysize);
+	virtual void FindClusters(const AliHLTMUONCoreADCStream* stream);
+	virtual UInt FillClusterData(AliHLTMUONCoreClusterPoint* clusters, UInt arraysize);
 	virtual void Reset();
 
 	// inherited methods from AliMUONHLT::ClusterFinderCallback:
@@ -36,11 +31,8 @@ public:
 
 private:
 
-	AliMUONHLT::ClusterFinderInterface* clusterfinder;  // The clusterfinder we are proxying for.
+	AliHLTMUONClusterFinderInterface* clusterfinder;  // The clusterfinder we are proxying for.
 };
 
 
-} // AliRoot
-} // dHLT
-
-#endif // dHLT_ALIROOT_CLUSTER_FINDER_PROXY_HPP
+#endif // ALIHLTMUONCLUSTERFINDERPROXY_H

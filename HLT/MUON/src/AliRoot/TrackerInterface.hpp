@@ -5,48 +5,42 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_TRACKER_INTERFACE_HPP
-#define dHLT_ALIROOT_TRACKER_INTERFACE_HPP
+#ifndef ALIHLTMUONTRACKERINTERFACE_H
+#define ALIHLTMUONTRACKERINTERFACE_H
 
 #include "Rtypes.h"
 
-
-namespace AliMUONHLT
-{
-
-class Point;
-class TriggerRecord;
-class Track;
-class Tracker;
-class TrackerCallback;
+class AliHLTMUONPoint;
+class AliHLTMUONTriggerRecord;
+class AliHLTMUONTrack;
+class AliHLTMUONTrackerCallback;
+class AliHLTMUONDummyTracker;
 
 
-class TrackerInterface
+class AliHLTMUONTrackerInterface
 {
 public:
-	TrackerInterface(Tracker* tracker)
+	AliHLTMUONTrackerInterface(AliHLTMUONDummyTracker* tracker)
 	{
 		fTracker = tracker;
 	};
 	
-	const Tracker* GetTracker() const
+	const AliHLTMUONDummyTracker* GetTracker() const
 	{
 		return fTracker;
 	};
 	
-	void FindTrack(const TriggerRecord& trigger);
-	void ReturnClusters(void* tag, const Point* clusters, UInt_t count);
+	void FindTrack(const AliHLTMUONTriggerRecord& trigger);
+	void ReturnClusters(void* tag, const AliHLTMUONPoint* clusters, UInt_t count);
 	void EndOfClusters(void* tag);
-	void FillTrackData(Track& track);
+	void FillTrackData(AliHLTMUONTrack& track);
 	void Reset();
-	void SetCallback(TrackerCallback* callback);
+	void SetCallback(AliHLTMUONTrackerCallback* callback);
 
 private:
 
-	Tracker* fTracker;   //! Pointer to interpreted tracker class.
+	AliHLTMUONDummyTracker* fTracker;   //! Pointer to interpreted tracker class.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_TRACKER_INTERFACE_HPP
+#endif // ALIHLTMUONTRACKERINTERFACE_H

@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_TRACKER_HPP
-#define dHLT_ALIROOT_TRACKER_HPP
+#ifndef ALIHLTMUONDUMMYTRACKER_H
+#define ALIHLTMUONDUMMYTRACKER_H
 
 #ifndef __CINT__
 #include "AliRoot/Point.hpp"
@@ -16,35 +16,31 @@
 #endif // __CINT__
 
 
-namespace AliMUONHLT
-{
-
-
-class Tracker
+class AliHLTMUONDummyTracker
 {
 public:
 
-	Tracker() : fInterface(this)
+	AliHLTMUONDummyTracker() : fInterface(this)
 	{
 		fCallback = NULL;
 	};
 
-	virtual ~Tracker() {};
+	virtual ~AliHLTMUONDummyTracker() {};
 
 	/* Methods required to be implemented by the tracker.
 	   These correspond to the dHLT::Tracker specification, refer to that
 	   class for more information.
 	 */
-	virtual void FindTrack(const TriggerRecord& trigger) = 0;
-	virtual void ReturnClusters(void* tag, const Point* clusters, const UInt_t count) = 0;
+	virtual void FindTrack(const AliHLTMUONTriggerRecord& trigger) = 0;
+	virtual void ReturnClusters(void* tag, const AliHLTMUONPoint* clusters, const UInt_t count) = 0;
 	virtual void EndOfClusters(void* tag) = 0;
-	virtual void FillTrackData(Track& track) = 0;
+	virtual void FillTrackData(AliHLTMUONTrack& track) = 0;
 	virtual void Reset() = 0;
 
 	/* Set the callback for the tracker, so that the tracker can communicate
 	   with the framework.
 	 */
-	void SetCallback(TrackerCallback* callback)
+	void SetCallback(AliHLTMUONTrackerCallback* callback)
 	{
 		fCallback = callback;
 	};
@@ -52,7 +48,7 @@ public:
 	/* Returns the TrackerInterface object to this tracker.
 	   This is required by the MicrodHLT object.
 	 */
-	TrackerInterface* Interface()
+	AliHLTMUONTrackerInterface* Interface()
 	{
 		return &fInterface;
 	};
@@ -113,8 +109,8 @@ protected:
 
 private:
 
-	TrackerInterface fInterface;  // The interface via which compiled code communicates with this object.
-	TrackerCallback* fCallback;   // Callback interface to framework.
+	AliHLTMUONTrackerInterface fInterface;  // The interface via which compiled code communicates with this object.
+	AliHLTMUONTrackerCallback* fCallback;   // Callback interface to framework.
 };
 
 
@@ -122,44 +118,42 @@ private:
 // This must come here so that it gets interpreted together with the rest
 // of the AliMUONHLT::Tracker.
 
-void TrackerInterface::FindTrack(const TriggerRecord& trigger)
+void AliHLTMUONTrackerInterface::FindTrack(const AliHLTMUONTriggerRecord& trigger)
 {
 	fTracker->FindTrack(trigger);
 };
 
-void TrackerInterface::ReturnClusters(void* tag, const Point* clusters, const UInt_t count)
+void AliHLTMUONTrackerInterface::ReturnClusters(void* tag, const AliHLTMUONPoint* clusters, const UInt_t count)
 {
 	fTracker->ReturnClusters(tag, clusters, count);
 };
 
-void TrackerInterface::EndOfClusters(void* tag)
+void AliHLTMUONTrackerInterface::EndOfClusters(void* tag)
 {
 	fTracker->EndOfClusters(tag);
 };
 
-void TrackerInterface::FillTrackData(Track& track)
+void AliHLTMUONTrackerInterface::FillTrackData(AliHLTMUONTrack& track)
 {
 	fTracker->FillTrackData(track);
 };
 
-void TrackerInterface::Reset()
+void AliHLTMUONTrackerInterface::Reset()
 {
 	fTracker->Reset();
 };
 
-void TrackerInterface::SetCallback(TrackerCallback* callback)
+void AliHLTMUONTrackerInterface::SetCallback(AliHLTMUONTrackerCallback* callback)
 {
 	fTracker->SetCallback(callback);
 };
 
 
 // Implementation of the SetTracker method which is undefined in MicrodHLT.
-void MicrodHLT::SetTracker(Tracker* tracker)
+void AliHLTMUONMicrodHLT::SetTracker(AliHLTMUONDummyTracker* tracker)
 {
 	SetTracker(tracker->Interface());
 };
 
 
-}; // AliMUONHLT
-
-#endif // dHLT_ALIROOT_TRACKER_HPP
+#endif // ALIHLTMUONDUMMYTRACKER_H

@@ -8,27 +8,22 @@
 #include "AliRoot/Point.hpp"
 #include "TMath.h"
 
-ClassImp(AliMUONHLT::Point)
+ClassImp(AliHLTMUONPoint)
 
-namespace AliMUONHLT
-{
 
-Point::Point() : TObject()
+AliHLTMUONPoint::AliHLTMUONPoint() : TObject()
 {
 	fX = fY = 0.0;
 }
 
-Point::Point(Float_t x, Float_t y) : TObject()
+AliHLTMUONPoint::AliHLTMUONPoint(Float_t x, Float_t y) : TObject()
 {
 	fX = x;
 	fY = y;
 }
 
-ostream& operator << (ostream& os, const Point& p)
+ostream& operator << (ostream& os, const AliHLTMUONPoint& p)
 {
 	os << "[" << p.fX << ", " << p.fY << "]";
 	return os;
 }
-
-} // AliMUONHLT
-

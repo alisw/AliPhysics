@@ -5,18 +5,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_CLUSTER_HPP
-#define dHLT_CLUSTER_HPP
+#ifndef ALIHLTMUONCORECLUSTER_H
+#define ALIHLTMUONCORECLUSTER_H
 
 #include "Point.hpp"
 
-namespace dHLT
-{
+
+typedef AliHLTMUONCorePoint AliHLTMUONCoreClusterPoint;
 
 
-typedef Point ClusterPoint;
-
-
-} // dHLT
-
-#endif // dHLT_POINT_HPP
+#endif // ALIHLTMUONCORECLUSTER_H

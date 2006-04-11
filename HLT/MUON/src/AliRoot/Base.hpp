@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_BASE_HPP
-#define dHLT_ALIROOT_BASE_HPP
+#ifndef ALIHLTMUONBASE_H
+#define ALIHLTMUONBASE_H
 
 #include "TError.h"
 #include "TMath.h"
@@ -24,4 +24,4 @@
 #endif // COMPILE_ROOT_ASSERT
 
 
-#endif // dHLT_ALIROOT_BASE_HPP
+#endif // ALIHLTMUONBASE_H

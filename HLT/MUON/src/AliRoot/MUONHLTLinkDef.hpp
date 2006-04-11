@@ -12,47 +12,45 @@
 #pragma link off all functions;
 #pragma link off all typedefs;
 
-#pragma link C++ nestedclass;    // Makes the namespaces work properly.
-#pragma link C++ nestedtypedef;  // Makes the namespaces work properly.
-#pragma link C++ nestedfunction; // Makes the namespaces work properly.
+#pragma link C++ nestedclass;
+#pragma link C++ nestedtypedef;
+#pragma link C++ nestedfunction;
 
-#pragma link C++ namespace AliMUONHLT;
+#pragma link C++ function AliHLTMUONVersion;
+#pragma link C++ function AliHLTMUONMajorVersion;
+#pragma link C++ function AliHLTMUONMinorVersion;
+#pragma link C++ function AliHLTMUONBuildNumber;
 
-#pragma link C++ function AliMUONHLT::Version;
-#pragma link C++ function AliMUONHLT::MajorVersion;
-#pragma link C++ function AliMUONHLT::MinorVersion;
-#pragma link C++ function AliMUONHLT::BuildNumber;
+#pragma link C++ class AliHLTMUONRegion+;
+#pragma link C++ class AliHLTMUONPoint+;
+#pragma link C++ class AliHLTMUONTriggerRecord+;
+#pragma link C++ class AliHLTMUONADCStream+;
+#pragma link C++ class AliHLTMUONTrack+;
 
-#pragma link C++ class AliMUONHLT::Region+;
-#pragma link C++ class AliMUONHLT::Point+;
-#pragma link C++ class AliMUONHLT::TriggerRecord+;
-#pragma link C++ class AliMUONHLT::ADCStream+;
-#pragma link C++ class AliMUONHLT::Track+;
+#pragma link C++ class AliHLTMUONMicrodHLT+;
 
-#pragma link C++ class AliMUONHLT::MicrodHLT+;
+#pragma link C++ class AliHLTMUONADCStreamSource+;
+#pragma link C++ struct AliHLTMUONADCStreamSource::DataBlock+;
 
-#pragma link C++ class AliMUONHLT::ADCStreamSource+;
-#pragma link C++ struct AliMUONHLT::ADCStreamSource::DataBlock+;
+#pragma link C++ class AliHLTMUONTriggerSource+;
+#pragma link C++ enum AliHLTMUONTriggerSource::AreaType+;
+#pragma link C++ enum AliHLTMUONTriggerSource::SourceType+;
+#pragma link C++ class AliHLTMUONTriggerSource::EventData+;
 
-#pragma link C++ class AliMUONHLT::TriggerSource+;
-#pragma link C++ enum AliMUONHLT::TriggerSource::AreaType+;
-#pragma link C++ enum AliMUONHLT::TriggerSource::SourceType+;
-#pragma link C++ class AliMUONHLT::TriggerSource::EventData+;
+#pragma link C++ class AliHLTMUONClusterSource+;
+#pragma link C++ enum AliHLTMUONClusterSource::AreaType+;
+#pragma link C++ enum AliHLTMUONClusterSource::SourceType+;
+#pragma link C++ class AliHLTMUONClusterSource::BlockData+;
+#pragma link C++ class AliHLTMUONClusterSource::EventData+;
 
-#pragma link C++ class AliMUONHLT::ClusterSource+;
-#pragma link C++ enum AliMUONHLT::ClusterSource::AreaType+;
-#pragma link C++ enum AliMUONHLT::ClusterSource::SourceType+;
-#pragma link C++ class AliMUONHLT::ClusterSource::BlockData+;
-#pragma link C++ class AliMUONHLT::ClusterSource::EventData+;
+#pragma link C++ class AliHLTMUONTrackSink+;
+#pragma link C++ class AliHLTMUONTrackSink::EventData+;
 
-#pragma link C++ class AliMUONHLT::TrackSink+;
-#pragma link C++ class AliMUONHLT::TrackSink::EventData+;
+#pragma link C++ class AliHLTMUONTrackerInterface+;
+#pragma link C++ class AliHLTMUONTrackerCallback+;
 
-#pragma link C++ class AliMUONHLT::TrackerInterface+;
-#pragma link C++ class AliMUONHLT::TrackerCallback+;
-
-#pragma link C++ class AliMUONHLT::ClusterFinderInterface+;
-#pragma link C++ class AliMUONHLT::ClusterFinderCallback+;
+#pragma link C++ class AliHLTMUONClusterFinderInterface+;
+#pragma link C++ class AliHLTMUONClusterFinderCallback+;
 
 #pragma link C++ class AliHLTMUONTracker+;
 

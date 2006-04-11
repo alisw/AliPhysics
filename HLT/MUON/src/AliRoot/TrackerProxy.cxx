@@ -10,36 +10,31 @@
 #include "Utils.hpp"
 #include "new.hpp"
 
-namespace dHLT
-{
-namespace AliRoot
-{
 
-
-TrackerProxy::TrackerProxy(AliMUONHLT::TrackerInterface* client)
-	: Tracking::Tracker(), AliMUONHLT::TrackerCallback()
+AliHLTMUONTrackerProxy::AliHLTMUONTrackerProxy(AliHLTMUONTrackerInterface* client)
+	: AliHLTMUONCoreTracker(), AliHLTMUONTrackerCallback()
 {
 	tracker = client;
 }
 
 
-void TrackerProxy::FindTrack(const TriggerRecord& trigger)
+void AliHLTMUONTrackerProxy::FindTrack(const AliHLTMUONCoreTriggerRecord& trigger)
 {
-	AliMUONHLT::TriggerRecord rec = Convert(trigger, 0);
-	DebugMsg(6, "TrackerProxy::FindTrack : rec = " << rec);
+	AliHLTMUONTriggerRecord rec = AliHLTMUONConvert(trigger, 0);
+	DebugMsg(6, "AliHLTMUONTrackerProxy::FindTrack : rec = " << rec);
 	tracker->FindTrack(rec);
 }
 
 
-void TrackerProxy::ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count)
+void AliHLTMUONTrackerProxy::ReturnClusters(void* tag, const AliHLTMUONCoreClusterPoint* clusters, UInt count)
 {
-	AliMUONHLT::Point* points = new AliMUONHLT::Point[count];
+	AliHLTMUONPoint* points = new AliHLTMUONPoint[count];
 	try
 	{
-		DebugMsg(6, "TrackerProxy::ReturnClusters");
+		DebugMsg(6, "AliHLTMUONTrackerProxy::ReturnClusters");
 		for (UInt i = 0; i < count; i++)
 		{
-			points[i] = Convert(clusters[i]);
+			points[i] = AliHLTMUONConvert(clusters[i]);
 			DebugMsg(6, "\tpoints[" << i << "] = " << points[i] );
 		};
 		tracker->ReturnClusters(tag, points, count);
@@ -51,59 +46,56 @@ void TrackerProxy::ReturnClusters(void* tag, const ClusterPoint* clusters, UInt 
 }
 
 
-void TrackerProxy::EndOfClusters(void* tag)
+void AliHLTMUONTrackerProxy::EndOfClusters(void* tag)
 {
-	DebugMsg(6, "TrackerProxy::EndOfClusters");
+	DebugMsg(6, "AliHLTMUONTrackerProxy::EndOfClusters");
 	tracker->EndOfClusters(tag);
 }
 
 
-void TrackerProxy::FillTrackData(Track& track)
+void AliHLTMUONTrackerProxy::FillTrackData(AliHLTMUONCoreTrack& track)
 {
-	AliMUONHLT::Track data;
+	AliHLTMUONTrack data;
 	tracker->FillTrackData(data);
-	DebugMsg(6, "TrackerProxy::FillTrackData : data = " << data);
-	track = Convert(data);
+	DebugMsg(6, "AliHLTMUONTrackerProxy::FillTrackData : data = " << data);
+	track = AliHLTMUONConvert(data);
 }
 
 
-void TrackerProxy::Reset()
+void AliHLTMUONTrackerProxy::Reset()
 {
-	DebugMsg(6, "TrackerProxy::Reset");
+	DebugMsg(6, "AliHLTMUONTrackerProxy::Reset");
 	tracker->Reset();
 }
 
 
-void TrackerProxy::RequestClusters(
+void AliHLTMUONTrackerProxy::RequestClusters(
 		Float_t left, Float_t right, Float_t bottom, Float_t top,
 		Int_t chamber, const void* tag
 	)
 {
-	DebugMsg(6, "TrackerProxy::RequestClusters");
-	Tracking::Tracker::RequestClusters(left, right, bottom, top, (ChamberID)chamber, tag);
+	DebugMsg(6, "AliHLTMUONTrackerProxy::RequestClusters");
+	AliHLTMUONCoreTracker::RequestClusters(left, right, bottom, top, (AliHLTMUONCoreChamberID)chamber, tag);
 }
 
 
-void TrackerProxy::EndOfClusterRequests()
+void AliHLTMUONTrackerProxy::EndOfClusterRequests()
 {
-	DebugMsg(6, "TrackerProxy::EndOfClusterRequests");
-	Tracking::Tracker::EndOfClusterRequests();
+	DebugMsg(6, "AliHLTMUONTrackerProxy::EndOfClusterRequests");
+	AliHLTMUONCoreTracker::EndOfClusterRequests();
 }
 
 
-void TrackerProxy::FoundTrack()
+void AliHLTMUONTrackerProxy::FoundTrack()
 {
-	DebugMsg(6, "TrackerProxy::FoundTrack");
-	Tracking::Tracker::FoundTrack();
+	DebugMsg(6, "AliHLTMUONTrackerProxy::FoundTrack");
+	AliHLTMUONCoreTracker::FoundTrack();
 }
 
 
-void TrackerProxy::NoTrackFound()
+void AliHLTMUONTrackerProxy::NoTrackFound()
 {
-	DebugMsg(6, "TrackerProxy::NoTrackFound");
-	Tracking::Tracker::NoTrackFound();
+	DebugMsg(6, "AliHLTMUONTrackerProxy::NoTrackFound");
+	AliHLTMUONCoreTracker::NoTrackFound();
 }
 
-
-} // AliRoot
-} // dHLT

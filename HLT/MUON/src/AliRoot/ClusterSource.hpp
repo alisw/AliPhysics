@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_CLUSTER_SOURCE_HPP
-#define dHLT_ALIROOT_CLUSTER_SOURCE_HPP
+#ifndef ALIHLTMUONCLUSTERSOURCE_H
+#define ALIHLTMUONCLUSTERSOURCE_H
 
 #include "TROOT.h"
 #include "TObject.h"
@@ -16,11 +16,8 @@
 
 class AliMUONDataInterface;
 
-namespace AliMUONHLT
-{
 
-
-class ClusterSource : public TObject
+class AliHLTMUONClusterSource : public TObject
 {
 public:
 
@@ -37,10 +34,10 @@ public:
 		FromRawClusters
 	};
 
-	ClusterSource();
-	ClusterSource(AliMUONDataInterface* data);
+	AliHLTMUONClusterSource();
+	AliHLTMUONClusterSource(AliMUONDataInterface* data);
 	
-	virtual ~ClusterSource();
+	virtual ~AliHLTMUONClusterSource();
 	
 	/* Get and set methods to specify how the FillFrom methods should fill the
 	   internal data structures.
@@ -95,7 +92,7 @@ public:
 	 */
 	Int_t NumberOfEvents() const { return fEventList.GetEntriesFast(); };
 	
-	/* Fetches the specified event number stored in this ClusterSource.
+	/* Fetches the specified event number stored in this AliHLTMUONClusterSource.
 	   Sets the current block and cluster point to the first block and cluster
 	   point respectively. If there are no blocks or clusters then these pointers
 	   are set to NULL.
@@ -103,7 +100,7 @@ public:
 	 */
 	Bool_t GetEvent(Int_t eventnumber) const;
 	
-	/* Fetches the first event stored in this ClusterSource.
+	/* Fetches the first event stored in this AliHLTMUONClusterSource.
 	   Sets the current block and cluster point to the first block and cluster
 	   point respectively. If there are no blocks or clusters then these pointers
 	   are set to NULL.
@@ -171,12 +168,12 @@ public:
 	/* Fetches the index'th cluster point in the current block.
 	   kTRUE is returned if the point was found, kFALSE otherwise.
 	 */
-	const Point* GetCluster(Int_t index) const;
+	const AliHLTMUONPoint* GetCluster(Int_t index) const;
 	
 	/* Fetches the first cluster point in the current block.
 	   NULL is returned if the point was not found.
 	 */
-	const Point* GetFirstCluster() const;
+	const AliHLTMUONPoint* GetFirstCluster() const;
 	
 	/* Returns kTRUE if there are more cluster points to interate over.
 	 */
@@ -185,7 +182,7 @@ public:
 	/* Fetches the next cluster point in the current block.
 	   NULL is returned if the point was not found.
 	 */
-	const Point* GetNextCluster() const;
+	const AliHLTMUONPoint* GetNextCluster() const;
 	
 	/* Returns the x and y coordinate of the current cluster point.
 	   kFALSE is returned if there is no cluster point selected.
@@ -195,7 +192,7 @@ public:
 	/* Returns the current cluster point.
 	   NULL is returned if no cluster point is selected.
 	 */
-	const Point* GetCluster() const { return fCurrentCluster; };
+	const AliHLTMUONPoint* GetCluster() const { return fCurrentCluster; };
 
 private:
 
@@ -214,7 +211,7 @@ private:
 	 */
 	void AddPoint(Float_t x, Float_t y);
 	
-	/* Checks if the file and folder names correspond to this ClusterSource's 
+	/* Checks if the file and folder names correspond to this AliHLTMUONClusterSource's 
 	   file and folder names. kTRUE is returned if they do.
 	   If the file and folder names are empty then they are assigned the names
 	   as found in the data interface and kTRUE is returned.
@@ -301,14 +298,12 @@ private:
 	mutable Int_t fBlockIndex;             //! The index number of the currently selected block.
 	mutable BlockData* fCurrentBlock;      //! Pointer to the currently selected block.
 	mutable Int_t fClusterIndex;           //! The index number of the currently selected cluster point.
-	mutable Point* fCurrentCluster;        //! Pointer to the currently selected cluster point.
+	mutable AliHLTMUONPoint* fCurrentCluster;        //! Pointer to the currently selected cluster point.
 
 	TClonesArray fEventList;  // List of clusters per event.
 
-	ClassDef(ClusterSource, 1)  // The source of cluster point blocks for dHLT.
+	ClassDef(AliHLTMUONClusterSource, 1)  // The source of cluster point blocks for dHLT.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_CLUSTER_SOURCE_HPP
+#endif // ALIHLTMUONCLUSTERSOURCE_H

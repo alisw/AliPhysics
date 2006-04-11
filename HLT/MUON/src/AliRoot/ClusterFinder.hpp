@@ -5,29 +5,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_CLUSTERING_CLUSTER_FINDER_HPP
-#define dHLT_CLUSTERING_CLUSTER_FINDER_HPP
+#ifndef ALIHLTMUONDUMMYCLUSTERFINDER_H
+#define ALIHLTMUONDUMMYCLUSTERFINDER_H
 
 #ifndef __CINT__
-#include "BasicTypes.hpp"
-#include "Cluster.hpp"
-#include "ADCStream.hpp"
-#include "Utils.hpp"
+#include "AliRoot/Point.hpp"
+#include "AliRoot/ADCStream.hpp"
 #endif // __CINT__
 
-namespace AliMUONHLT
-{
 
-class ClusterFinder
+class AliHLTMUONDummyClusterFinder
 {
 public:
 
-	ClusterFinder() :fInterface(this)
+	AliHLTMUONDummyClusterFinder() : fInterface(this)
 	{
 		fCallback = NULL;
 	};
 
-	virtual ~ClusterFinder() {};
+	virtual ~AliHLTMUONDummyClusterFinder() {};
 
 	/* This is the starting point of the cluster finding algorithm.
 	   Deriving cluster finders should implement all processing in this method
@@ -35,7 +31,7 @@ public:
 	   the FoundClusters method should be called to indicate that processing is
 	   complete. If no clusters could be found then call NoClustersFound instead.
 	 */
-	virtual void FindClusters(const ADCStream * stream) = 0;
+	virtual void FindClusters(const AliHLTMUONADCStream * stream) = 0;
 
 	/* After a call to FoundClusters this method will be called to retreive the
 	   cluster points. The clusters array should be filled consecutively with 
@@ -49,7 +45,7 @@ public:
 	   the cluster finder must resume writing clusters at the point it stopped at
 	   in the previous call to FillClusterData.
 	  */
-	virtual UInt_t FillClusterData(Point * clusters, UInt_t arraysize) = 0;
+	virtual UInt_t FillClusterData(AliHLTMUONPoint* clusters, UInt_t arraysize) = 0;
 
 	/* This is called when the cluster finder should be reset to an initial state.
 	   All extra internal memory allocated during processing should be released.
@@ -58,47 +54,46 @@ public:
 
 	/* Sets the ClusterFinderCallback callback interface.
 	 */
-	inline void SetCallback(ClusterFinderCallback * callback) {
+	inline void SetCallback(AliHLTMUONClusterFinderCallback * callback) {
 		this->fCallback = callback;
 	};
 
-	ClusterFinderInterface* Interface()
+	AliHLTMUONClusterFinderInterface* Interface()
 	{
 		return &fInterface;
 	};
 
 private:
 
-	ClusterFinderInterface fInterface;
-	ClusterFinderCallback * fCallback;
+	AliHLTMUONClusterFinderInterface fInterface;
+	AliHLTMUONClusterFinderCallback * fCallback;
 };
 
 
-void ClusterFinderInterface::FindClusters(const ADCStream * stream)
+void AliHLTMUONClusterFinderInterface::FindClusters(const AliHLTMUONADCStream* stream)
 {
 	fClusterFinder->FindClusters(stream);
 };
 
-UInt_t ClusterFinderInterface::FillClusterData(Point * clusters, UInt_t arraysize)
+UInt_t AliHLTMUONClusterFinderInterface::FillClusterData(AliHLTMUONPoint* clusters, UInt_t arraysize)
 {
-	return fClusterFinder->FillClusterData(clusters,arraysize);
+	return fClusterFinder->FillClusterData(clusters, arraysize);
 };
 
-void ClusterFinderInterface::Reset()
+void AliHLTMUONClusterFinderInterface::Reset()
 {
         fClusterFinder->Reset();
 };
 
-void ClusterFinderInterface::SetCallback(ClusterFinderCallback* callback)
+void AliHLTMUONClusterFinderInterface::SetCallback(AliHLTMUONClusterFinderCallback* callback)
 {
 	fClusterFinder->SetCallback(callback);
 };
 
-void MicrodHLT::SetClusterFinder(ClusterFinder* clusterfinder)
+void AliHLTMUONMicrodHLT::SetClusterFinder(AliHLTMUONDummyClusterFinder* clusterfinder)
 {
 	SetClusterFinder(clusterfinder->Interface());
 };
 
-}				// AliMUONHLT
 
-#endif				// dHLT_CLUSTERING_CLUSTER_FINDER_HPP
+#endif // ALIHLTMUONDUMMYCLUSTERFINDER_H

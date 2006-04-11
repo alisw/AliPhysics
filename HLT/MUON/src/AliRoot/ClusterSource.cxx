@@ -17,16 +17,13 @@
 #include <float.h>
 #endif
 
-ClassImp(AliMUONHLT::ClusterSource)
-ClassImp(AliMUONHLT::ClusterSource::BlockData)
-ClassImp(AliMUONHLT::ClusterSource::EventData)
-
-namespace AliMUONHLT
-{
+ClassImp(AliHLTMUONClusterSource)
+ClassImp(AliHLTMUONClusterSource::BlockData)
+ClassImp(AliHLTMUONClusterSource::EventData)
 
 
-ClusterSource::ClusterSource()
-	: TObject(), fEventList(ClusterSource::EventData::Class())
+AliHLTMUONClusterSource::AliHLTMUONClusterSource()
+	: TObject(), fEventList(AliHLTMUONClusterSource::EventData::Class())
 {
 	fAreaToUse = FromWholePlane;
 	fDataToUse = FromRawClusters;
@@ -37,8 +34,8 @@ ClusterSource::ClusterSource()
 }
 
 
-ClusterSource::ClusterSource(AliMUONDataInterface* data)
-	: TObject(), fEventList(ClusterSource::EventData::Class())
+AliHLTMUONClusterSource::AliHLTMUONClusterSource(AliMUONDataInterface* data)
+	: TObject(), fEventList(AliHLTMUONClusterSource::EventData::Class())
 {
 	fAreaToUse = FromWholePlane;
 	fDataToUse = FromRawClusters;
@@ -50,13 +47,13 @@ ClusterSource::ClusterSource(AliMUONDataInterface* data)
 }
 
 
-ClusterSource::~ClusterSource()
+AliHLTMUONClusterSource::~AliHLTMUONClusterSource()
 {
 	fEventList.Clear("C");
 }
 
 
-void ClusterSource::FillFrom(AliMUONDataInterface* data)
+void AliHLTMUONClusterSource::FillFrom(AliMUONDataInterface* data)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*)");
 	
@@ -70,7 +67,7 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data)
 }
 
 
-void ClusterSource::FillFrom(AliMUONDataInterface* data, Int_t event)
+void AliHLTMUONClusterSource::FillFrom(AliMUONDataInterface* data, Int_t event)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*, Int_t)");
 	
@@ -79,7 +76,7 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data, Int_t event)
 }
 
 
-void ClusterSource::FillFrom(AliMUONDataInterface* data, Int_t event, Int_t chamber)
+void AliHLTMUONClusterSource::FillFrom(AliMUONDataInterface* data, Int_t event, Int_t chamber)
 {
 	DebugMsg(1, "FillFrom(AliMUONDataInterface*, Int_t)");
 	
@@ -94,7 +91,7 @@ void ClusterSource::FillFrom(AliMUONDataInterface* data, Int_t event, Int_t cham
 }
 
 
-void ClusterSource::FillFrom(
+void AliHLTMUONClusterSource::FillFrom(
 		AliMUONDataInterface* data,
 		Int_t event, Int_t chamber, Int_t cluster,
 		Bool_t newblock
@@ -147,7 +144,7 @@ void ClusterSource::FillFrom(
 }
 
 
-void ClusterSource::Clear(Option_t* /*option*/)
+void AliHLTMUONClusterSource::Clear(Option_t* /*option*/)
 {
 	fFilename = "";
 	fFoldername = "";
@@ -156,9 +153,9 @@ void ClusterSource::Clear(Option_t* /*option*/)
 }
 
 
-Bool_t ClusterSource::GetEvent(Int_t eventnumber) const
+Bool_t AliHLTMUONClusterSource::GetEvent(Int_t eventnumber) const
 {
-	DebugMsg(1, "ClusterSource::GetEvent(" << eventnumber << ")" );
+	DebugMsg(1, "AliHLTMUONClusterSource::GetEvent(" << eventnumber << ")" );
 	
 	// Try find the corresponding event in the list of events.
 	for (Int_t i = 0; i < fEventList.GetEntriesFast(); i++)
@@ -179,9 +176,9 @@ Bool_t ClusterSource::GetEvent(Int_t eventnumber) const
 }
 
 
-Bool_t ClusterSource::GetFirstEvent() const
+Bool_t AliHLTMUONClusterSource::GetFirstEvent() const
 {
-	DebugMsg(1, "ClusterSource::GetFirstEvent()");
+	DebugMsg(1, "AliHLTMUONClusterSource::GetFirstEvent()");
 	if (fEventList.GetEntriesFast() > 0)
 	{
 		fEventIndex = 0;
@@ -202,15 +199,15 @@ Bool_t ClusterSource::GetFirstEvent() const
 }
 
 
-Bool_t ClusterSource::MoreEvents() const
+Bool_t AliHLTMUONClusterSource::MoreEvents() const
 {
 	return 0 <= fEventIndex && fEventIndex < fEventList.GetEntriesFast();
 }
 
 
-Bool_t ClusterSource::GetNextEvent() const
+Bool_t AliHLTMUONClusterSource::GetNextEvent() const
 {
-	DebugMsg(1, "ClusterSource::GetNextEvent()");
+	DebugMsg(1, "AliHLTMUONClusterSource::GetNextEvent()");
 	if (fEventIndex < fEventList.GetEntriesFast() - 1)
 	{
 		fCurrentEvent = (EventData*) fEventList[ ++fEventIndex ];
@@ -228,7 +225,7 @@ Bool_t ClusterSource::GetNextEvent() const
 }
 
 
-Int_t ClusterSource::CurrentEvent() const
+Int_t AliHLTMUONClusterSource::CurrentEvent() const
 {
 	if (fCurrentEvent != NULL)
 		return fCurrentEvent->fEventNumber;
@@ -237,9 +234,9 @@ Int_t ClusterSource::CurrentEvent() const
 }
 
 
-Int_t ClusterSource::NumberOfBlocks() const
+Int_t AliHLTMUONClusterSource::NumberOfBlocks() const
 {
-	DebugMsg(1, "ClusterSource::NumberOfBlocks()");
+	DebugMsg(1, "AliHLTMUONClusterSource::NumberOfBlocks()");
 	if (fCurrentEvent == NULL)
 	{
 		Error("NumberOfBlocks", "No event selected.");
@@ -250,9 +247,9 @@ Int_t ClusterSource::NumberOfBlocks() const
 }
 
 
-Bool_t ClusterSource::GetBlock(Int_t index) const
+Bool_t AliHLTMUONClusterSource::GetBlock(Int_t index) const
 {
-	DebugMsg(1, "ClusterSource::GetBlock(" << index << ")");
+	DebugMsg(1, "AliHLTMUONClusterSource::GetBlock(" << index << ")");
 	
 	// Note NumberOfBlocks() also checks if the event was selected.
 	Int_t numberofblocks = NumberOfBlocks();
@@ -286,9 +283,9 @@ Bool_t ClusterSource::GetBlock(Int_t index) const
 }
 
 
-Bool_t ClusterSource::GetFirstBlock() const
+Bool_t AliHLTMUONClusterSource::GetFirstBlock() const
 {
-	DebugMsg(1, "ClusterSource::GetFirstBlock()");
+	DebugMsg(1, "AliHLTMUONClusterSource::GetFirstBlock()");
 	// Note: NumberOfBlocks() also checks if fCurrentEvent != NULL.
 	if (NumberOfBlocks() > 0)
 	{
@@ -305,15 +302,15 @@ Bool_t ClusterSource::GetFirstBlock() const
 }
 
 
-Bool_t ClusterSource::MoreBlocks() const
+Bool_t AliHLTMUONClusterSource::MoreBlocks() const
 {
 	return 0 <= fBlockIndex && fBlockIndex < NumberOfBlocks();
 }
 
 
-Bool_t ClusterSource::GetNextBlock() const
+Bool_t AliHLTMUONClusterSource::GetNextBlock() const
 {
-	DebugMsg(1, "ClusterSource::GetNextBlock()");
+	DebugMsg(1, "AliHLTMUONClusterSource::GetNextBlock()");
 
 	// Note: NumberOfBlocks() checks if fCurrentEvent != NULL. If it is then it returns -1
 	// and since fBlockIndex is always >= -1 the if statement must go to the else part.
@@ -334,7 +331,7 @@ Bool_t ClusterSource::GetNextBlock() const
 }
 
 
-Int_t ClusterSource::Chamber() const
+Int_t AliHLTMUONClusterSource::Chamber() const
 {
 	if (fCurrentBlock == NULL)
 	{
@@ -346,9 +343,9 @@ Int_t ClusterSource::Chamber() const
 }
 
 
-Int_t ClusterSource::NumberOfClusters() const
+Int_t AliHLTMUONClusterSource::NumberOfClusters() const
 {
-	DebugMsg(1, "ClusterSource::NumberOfClusters()");
+	DebugMsg(1, "AliHLTMUONClusterSource::NumberOfClusters()");
 	if (fCurrentBlock == NULL)
 	{
 		Error("NumberOfClusters", "No block selected.");
@@ -359,9 +356,9 @@ Int_t ClusterSource::NumberOfClusters() const
 }
 
 
-const Point* ClusterSource::GetCluster(Int_t index) const
+const AliHLTMUONPoint* AliHLTMUONClusterSource::GetCluster(Int_t index) const
 {
-	DebugMsg(1, "ClusterSource::GetCluster(" << index << ")");
+	DebugMsg(1, "AliHLTMUONClusterSource::GetCluster(" << index << ")");
 
 	// Note NumberOfClusters() also checks if the event and block was selected.
 	Int_t numberofclusters = NumberOfClusters();
@@ -370,7 +367,7 @@ const Point* ClusterSource::GetCluster(Int_t index) const
 	if ( 0 <= index && index < numberofclusters )
 	{
 		fClusterIndex = index;
-		fCurrentCluster = (Point*) fCurrentBlock->fClusters[index];
+		fCurrentCluster = (AliHLTMUONPoint*) fCurrentBlock->fClusters[index];
 		DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 			<< " , fClusterIndex = " << fClusterIndex
 		);
@@ -394,14 +391,14 @@ const Point* ClusterSource::GetCluster(Int_t index) const
 }
 
 
-const Point* ClusterSource::GetFirstCluster() const
+const AliHLTMUONPoint* AliHLTMUONClusterSource::GetFirstCluster() const
 {
-	DebugMsg(1, "ClusterSource::GetFirstCluster()");
+	DebugMsg(1, "AliHLTMUONClusterSource::GetFirstCluster()");
 	// Note: NumberOfClusters() also checks if fCurrentBlock != NULL.
 	if (NumberOfClusters() > 0)
 	{
 		fClusterIndex = 0;
-		fCurrentCluster = (Point*) fCurrentBlock->fClusters[0];
+		fCurrentCluster = (AliHLTMUONPoint*) fCurrentBlock->fClusters[0];
 		DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 			<< " , fClusterIndex = " << fClusterIndex
 		);
@@ -412,21 +409,21 @@ const Point* ClusterSource::GetFirstCluster() const
 }
 
 
-Bool_t ClusterSource::MoreClusters() const
+Bool_t AliHLTMUONClusterSource::MoreClusters() const
 {
 	return 0 <= fClusterIndex && fClusterIndex < NumberOfClusters();
 }
 
 
-const Point* ClusterSource::GetNextCluster() const
+const AliHLTMUONPoint* AliHLTMUONClusterSource::GetNextCluster() const
 {
-	DebugMsg(1, "ClusterSource::GetNextCluster()");
+	DebugMsg(1, "AliHLTMUONClusterSource::GetNextCluster()");
 	
 	// Note: NumberOfClusters() checks if fCurrentBlock != NULL. If it is then it returns -1
 	// and since fClusterIndex is always >= -1 the if statement must go to the else part.
 	if (fClusterIndex < NumberOfClusters() - 1)
 	{
-		fCurrentCluster = (Point*) fCurrentBlock->fClusters[ ++fClusterIndex ];
+		fCurrentCluster = (AliHLTMUONPoint*) fCurrentBlock->fClusters[ ++fClusterIndex ];
 		DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 			<< " , fClusterIndex = " << fClusterIndex
 		);
@@ -440,7 +437,7 @@ const Point* ClusterSource::GetNextCluster() const
 }
 
 
-Bool_t ClusterSource::FetchCluster(Float_t& x, Float_t& y) const
+Bool_t AliHLTMUONClusterSource::FetchCluster(Float_t& x, Float_t& y) const
 {
 	if (fCurrentCluster != NULL)
 	{
@@ -456,9 +453,9 @@ Bool_t ClusterSource::FetchCluster(Float_t& x, Float_t& y) const
 }
 
 
-void ClusterSource::AddEvent(Int_t eventnumber)
+void AliHLTMUONClusterSource::AddEvent(Int_t eventnumber)
 {
-	DebugMsg(1, "ClusterSource::AddEvent(" << eventnumber << ")");
+	DebugMsg(1, "AliHLTMUONClusterSource::AddEvent(" << eventnumber << ")");
 	Assert( eventnumber >= 0 );
 
 	// Assume the eventnumber does not already exist in the event list.
@@ -475,9 +472,9 @@ void ClusterSource::AddEvent(Int_t eventnumber)
 }
 
 
-void ClusterSource::AddBlock(Int_t chamber)
+void AliHLTMUONClusterSource::AddBlock(Int_t chamber)
 {
-	DebugMsg(1, "ClusterSource::AddBlock()");
+	DebugMsg(1, "AliHLTMUONClusterSource::AddBlock()");
 	
 	if (fCurrentEvent == NULL)
 	{
@@ -498,9 +495,9 @@ void ClusterSource::AddBlock(Int_t chamber)
 }
 
 
-void ClusterSource::AddPoint(Float_t x, Float_t y)
+void AliHLTMUONClusterSource::AddPoint(Float_t x, Float_t y)
 {
-	DebugMsg(1, "ClusterSource::AddPoint(" << x << ", " << y << ")");
+	DebugMsg(1, "AliHLTMUONClusterSource::AddPoint(" << x << ", " << y << ")");
 
 	if (fCurrentBlock == NULL)
 	{
@@ -509,8 +506,8 @@ void ClusterSource::AddPoint(Float_t x, Float_t y)
 	}
 	
 	fClusterIndex = fCurrentBlock->fClusters.GetEntriesFast();
-	new ( fCurrentBlock->fClusters[fClusterIndex] ) Point(x, y);
-	fCurrentCluster = (Point*) fCurrentBlock->fClusters[fClusterIndex];
+	new ( fCurrentBlock->fClusters[fClusterIndex] ) AliHLTMUONPoint(x, y);
+	fCurrentCluster = (AliHLTMUONPoint*) fCurrentBlock->fClusters[fClusterIndex];
 	
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fClusterIndex = " << fClusterIndex
@@ -518,7 +515,7 @@ void ClusterSource::AddPoint(Float_t x, Float_t y)
 }
 
 
-Bool_t ClusterSource::FileAndFolderOk(AliMUONDataInterface* data)
+Bool_t AliHLTMUONClusterSource::FileAndFolderOk(AliMUONDataInterface* data)
 {
 	if (fFilename == "")
 	{
@@ -550,7 +547,7 @@ Bool_t ClusterSource::FileAndFolderOk(AliMUONDataInterface* data)
 }
 
 
-void ClusterSource::AddEventFrom(AliMUONDataInterface* data, Int_t event)
+void AliHLTMUONClusterSource::AddEventFrom(AliMUONDataInterface* data, Int_t event)
 {
 	if ( data->GetEvent(event) )
 	{
@@ -563,7 +560,7 @@ void ClusterSource::AddEventFrom(AliMUONDataInterface* data, Int_t event)
 }
 
 
-void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
+void AliHLTMUONClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 {
 	DebugMsg(1, "Entering AddChamberFrom");
 	
@@ -651,7 +648,7 @@ void ClusterSource::AddChamberFrom(AliMUONDataInterface* data, Int_t chamber)
 }
 
 
-void ClusterSource::AddClusterFrom(
+void AliHLTMUONClusterSource::AddClusterFrom(
 		AliMUONDataInterface* data, Int_t chamber, Int_t cluster
 	)
 {
@@ -715,7 +712,7 @@ void ClusterSource::AddClusterFrom(
 }
 
 
-Bool_t ClusterSource::InFillRegion(Float_t x, Float_t /*y*/)
+Bool_t AliHLTMUONClusterSource::InFillRegion(Float_t x, Float_t /*y*/)
 {
 	switch (fAreaToUse)
 	{
@@ -730,7 +727,7 @@ Bool_t ClusterSource::InFillRegion(Float_t x, Float_t /*y*/)
 }
 
 
-void ClusterSource::ResetAllPointers() const
+void AliHLTMUONClusterSource::ResetAllPointers() const
 {
 	fEventIndex = -1;
 	fCurrentEvent = NULL;
@@ -744,7 +741,7 @@ void ClusterSource::ResetAllPointers() const
 }
 
 
-void ClusterSource::ResetBlockPointers() const
+void AliHLTMUONClusterSource::ResetBlockPointers() const
 {
 	fBlockIndex = -1;
 	fCurrentBlock = NULL;
@@ -756,7 +753,7 @@ void ClusterSource::ResetBlockPointers() const
 }
 
 
-void ClusterSource::ResetClusterPointers() const
+void AliHLTMUONClusterSource::ResetClusterPointers() const
 {
 	fClusterIndex = -1;
 	fCurrentCluster = NULL;
@@ -766,28 +763,28 @@ void ClusterSource::ResetClusterPointers() const
 }
 
 
-ClusterSource::BlockData::BlockData() : fClusters(Point::Class())
+AliHLTMUONClusterSource::BlockData::BlockData() : fClusters(AliHLTMUONPoint::Class())
 {
 	fChamber = -1;
 }
 
-ClusterSource::BlockData::BlockData(Int_t chamber) : fClusters(Point::Class())
+AliHLTMUONClusterSource::BlockData::BlockData(Int_t chamber) : fClusters(AliHLTMUONPoint::Class())
 {
 	fChamber = chamber;
 }
 
-ClusterSource::BlockData::~BlockData()
+AliHLTMUONClusterSource::BlockData::~BlockData()
 {
 	fClusters.Clear("C");
 }
 
-ClusterSource::EventData::EventData() : fBlocks(ClusterSource::BlockData::Class())
+AliHLTMUONClusterSource::EventData::EventData() : fBlocks(AliHLTMUONClusterSource::BlockData::Class())
 {
 	fEventNumber = -1;
 }
 
-ClusterSource::EventData::EventData(Int_t eventnumber)
-	: fBlocks(ClusterSource::BlockData::Class())
+AliHLTMUONClusterSource::EventData::EventData(Int_t eventnumber)
+	: fBlocks(AliHLTMUONClusterSource::BlockData::Class())
 {
 	fEventNumber = eventnumber;
 
@@ -795,10 +792,8 @@ ClusterSource::EventData::EventData(Int_t eventnumber)
 	fBlocks.BypassStreamer(kFALSE);
 }
 
-ClusterSource::EventData::~EventData()
+AliHLTMUONClusterSource::EventData::~EventData()
 {
 	fBlocks.Clear("C");
 }
 
-
-} // AliMUONHLT

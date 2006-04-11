@@ -11,40 +11,35 @@
 #include "Utils.hpp"
 #include "new.hpp"
 
-namespace dHLT
-{
-namespace AliRoot
-{
 
-
-ClusterFinderProxy::ClusterFinderProxy(AliMUONHLT::ClusterFinderInterface* client)
-	: Clustering::ClusterFinder(), AliMUONHLT::ClusterFinderCallback()
+AliHLTMUONClusterFinderProxy::AliHLTMUONClusterFinderProxy(AliHLTMUONClusterFinderInterface* client)
+	: AliHLTMUONCoreClusterFinder(), AliHLTMUONClusterFinderCallback()
 {
 	clusterfinder = client;
 }
 
 
-void ClusterFinderProxy::FindClusters(const ADCStream* stream)
+void AliHLTMUONClusterFinderProxy::FindClusters(const AliHLTMUONCoreADCStream* /*stream*/)
 {
 	// TODO: perform conversion
-	//AliMUONHLT::ADCStream stream = Convert(stream);
-	AliMUONHLT::ADCStream adc;
-	DebugMsg(6, "ClusterFinderProxy::FindClusters: " << adc);
+	//ADCStream adc = AliHLTMUONConvert(stream);
+	AliHLTMUONADCStream adc;
+	DebugMsg(6, "AliHLTMUONClusterFinderProxy::FindClusters: " << adc);
 	clusterfinder->FindClusters(&adc);
 }
 
 
-UInt ClusterFinderProxy::FillClusterData(ClusterPoint* clusters, UInt arraysize)
+UInt AliHLTMUONClusterFinderProxy::FillClusterData(AliHLTMUONCoreClusterPoint* clusters, UInt arraysize)
 {
 	UInt result;
-	AliMUONHLT::Point* points = new AliMUONHLT::Point[arraysize];
+	AliHLTMUONPoint* points = new AliHLTMUONPoint[arraysize];
 	try
 	{
-		DebugMsg(6, "ClusterFinderProxy::FillClusterData");
+		DebugMsg(6, "AliHLTMUONClusterFinderProxy::FillClusterData");
 		result = clusterfinder->FillClusterData(points, arraysize);
 		for (UInt i = 0; i < arraysize; i++)
 		{
-			clusters[i] = Convert(points[i]);
+			clusters[i] = AliHLTMUONConvert(points[i]);
 			DebugMsg(6, "\tpoints[" << i << "] = " << points[i] );
 		}
 	}
@@ -56,26 +51,22 @@ UInt ClusterFinderProxy::FillClusterData(ClusterPoint* clusters, UInt arraysize)
 }
 
 
-void ClusterFinderProxy::Reset()
+void AliHLTMUONClusterFinderProxy::Reset()
 {
-	DebugMsg(6, "ClusterFinderProxy::Reset");
+	DebugMsg(6, "AliHLTMUONClusterFinderProxy::Reset");
 	clusterfinder->Reset();
 }
 
 
-void ClusterFinderProxy::FoundClusters(UInt_t numberfound)
+void AliHLTMUONClusterFinderProxy::FoundClusters(UInt_t numberfound)
 {
-	DebugMsg(6, "ClusterFinderProxy::FoundClusters");
-	Clustering::ClusterFinder::FoundClusters(numberfound);
+	DebugMsg(6, "AliHLTMUONClusterFinderProxy::FoundClusters");
+	AliHLTMUONCoreClusterFinder::FoundClusters(numberfound);
 }
 
 
-void ClusterFinderProxy::NoClustersFound()
+void AliHLTMUONClusterFinderProxy::NoClustersFound()
 {
-	DebugMsg(6, "ClusterFinderProxy::NoClustersFound");
-	Clustering::ClusterFinder::NoClustersFound();
+	DebugMsg(6, "AliHLTMUONClusterFinderProxy::NoClustersFound");
+	AliHLTMUONCoreClusterFinder::NoClustersFound();
 }
-
-
-} // AliRoot
-} // dHLT

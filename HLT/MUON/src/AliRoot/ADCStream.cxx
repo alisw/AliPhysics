@@ -10,65 +10,62 @@
 #include "Utils.hpp"
 
 
-ClassImp(AliMUONHLT::ADCStream)
-
-namespace AliMUONHLT
-{
+ClassImp(AliHLTMUONADCStream)
 
 
-ADCStream::ADCStream() : TObject()
+AliHLTMUONADCStream::AliHLTMUONADCStream() : TObject()
 {
 	fData.Set(0);
 }
 
 
-ADCStream::ADCStream(const UInt_t* data, UInt_t size)
+AliHLTMUONADCStream::AliHLTMUONADCStream(const UInt_t* data, UInt_t size)
 {
 	fData.Set(size, (Int_t*)data);
 }
 
 
-ADCStream::~ADCStream()
+AliHLTMUONADCStream::~AliHLTMUONADCStream()
 {
 	fData.Reset();
 }
 
 
-UInt_t ADCStream::Size()
+UInt_t AliHLTMUONADCStream::Size()
 {
 	return fData.GetSize();
 }
 
 
-void ADCStream::Size(UInt_t size)
+void AliHLTMUONADCStream::Size(UInt_t size)
 {
 	fData.Set(size);
 }
 
 
-void ADCStream::Fill(const UInt_t* data, UInt_t size)
+void AliHLTMUONADCStream::Fill(const UInt_t* data, UInt_t size)
 {
 	fData.Set(size, (Int_t*)data);
 }
 
 
-// UInt_t& ADCStream::operator [] (const UInt_t index)
+// UInt_t& AliHLTMUONADCStream::operator [] (const UInt_t index)
 // {
 // 	Assert( index < (UInt_t) fData.GetSize() );
 // 	return (UInt_t) fData[index];
 // };
 
 
-UInt_t ADCStream::operator [] (UInt_t index) const
+UInt_t AliHLTMUONADCStream::operator [] (UInt_t index) const
 {
 	Assert( index < (UInt_t) fData.GetSize() );
 	return fData[index];
 }
 
 
-ostream& operator << (ostream& os, const ADCStream& s)
+ostream& operator << (ostream& os, const AliHLTMUONADCStream& s)
 {
-	os << "{ADCStream: " << (void*)s.Data() << "}";
+	os << "{AliHLTMUONADCStream: " << (void*)s.Data() << "}";
 	os << endl;
 	for (Int_t i = 0; i < s.fData.GetSize(); i++)
 	{
@@ -80,5 +77,3 @@ ostream& operator << (ostream& os, const ADCStream& s)
 	return os;
 }
 
-
-} // AliMUONHLT

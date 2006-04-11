@@ -19,32 +19,30 @@
 namespace
 {
 
-using dHLT::Tracking::MansoTracker;
-
-std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM4 state)
+std::ostream& operator << (std::ostream& os, AliHLTMUONCoreMansoTracker::StatesSM4 state)
 {
 	switch (state)
 	{
-	case MansoTracker::SM4Idle:          os << "SM4Idle"; break;
-	case MansoTracker::WaitChamber8:     os << "WaitChamber8"; break;
-	case MansoTracker::WaitMoreChamber8: os << "WaitMoreChamber8"; break;
-	case MansoTracker::WaitChamber7:     os << "WaitChamber7"; break;
-	case MansoTracker::WaitMoreChamber7: os << "WaitMoreChamber7"; break;
+	case AliHLTMUONCoreMansoTracker::kSM4Idle:          os << "kSM4Idle"; break;
+	case AliHLTMUONCoreMansoTracker::kWaitChamber8:     os << "kWaitChamber8"; break;
+	case AliHLTMUONCoreMansoTracker::kWaitMoreChamber8: os << "kWaitMoreChamber8"; break;
+	case AliHLTMUONCoreMansoTracker::kWaitChamber7:     os << "kWaitChamber7"; break;
+	case AliHLTMUONCoreMansoTracker::kWaitMoreChamber7: os << "kWaitMoreChamber7"; break;
 	default:                             os << "FAULT!!"; 
 	}
 	return os;
 }
 
-std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM5 state)
+std::ostream& operator << (std::ostream& os, AliHLTMUONCoreMansoTracker::StatesSM5 state)
 {
 	switch (state)
 	{
-	case MansoTracker::SM5Idle:           os << "SM5Idle"; break;
-	case MansoTracker::WaitChamber10:     os << "WaitChamber10"; break;
-	case MansoTracker::WaitMoreChamber10: os << "WaitMoreChamber10"; break;
-	case MansoTracker::WaitChamber9:      os << "WaitChamber9"; break;
-	case MansoTracker::WaitMoreChamber9:  os << "WaitMoreChamber9"; break;
-	case MansoTracker::SM5Done:           os << "SM5Done"; break;
+	case AliHLTMUONCoreMansoTracker::kSM5Idle:           os << "kSM5Idle"; break;
+	case AliHLTMUONCoreMansoTracker::kWaitChamber10:     os << "kWaitChamber10"; break;
+	case AliHLTMUONCoreMansoTracker::kWaitMoreChamber10: os << "kWaitMoreChamber10"; break;
+	case AliHLTMUONCoreMansoTracker::kWaitChamber9:      os << "kWaitChamber9"; break;
+	case AliHLTMUONCoreMansoTracker::kWaitMoreChamber9:  os << "kWaitMoreChamber9"; break;
+	case AliHLTMUONCoreMansoTracker::kSM5Done:           os << "kSM5Done"; break;
 	default:                              os << "FAULT!!"; 
 	}
 	return os;
@@ -54,38 +52,32 @@ std::ostream& operator << (std::ostream& os, MansoTracker::StatesSM5 state)
 #endif // DEBUG
 
 
-namespace dHLT
-{
-namespace Tracking
-{
-
-
 // Deviate from the Manso implementation by allowing a and b
 // parameters per chamber and not just per station.
 // The default values are derived from the work done in
 //    "A first algorithm for dimuon High Level Trigger"
 //    Ref ID:  ALICE-INT-2002-04 version 1.0
-Float MansoTracker::a7  = 0.016f;
-Float MansoTracker::b7  = 2.0f;
-Float MansoTracker::a8  = 0.016f;
-Float MansoTracker::b8  = 2.0f;
-Float MansoTracker::a9  = 0.020f;
-Float MansoTracker::b9  = 3.0f;
-Float MansoTracker::a10 = 0.020f;
-Float MansoTracker::b10 = 3.0f;
-Float MansoTracker::z7  = 1274.5f;
-Float MansoTracker::z8  = 1305.5f;
-Float MansoTracker::z9  = 1408.6f;
-Float MansoTracker::z10 = 1439.6f;
-Float MansoTracker::z11 = 1603.5f;
-Float MansoTracker::z13 = 1703.5f;
+Float AliHLTMUONCoreMansoTracker::fgA7  = 0.016f;
+Float AliHLTMUONCoreMansoTracker::fgB7  = 2.0f;
+Float AliHLTMUONCoreMansoTracker::fgA8  = 0.016f;
+Float AliHLTMUONCoreMansoTracker::fgB8  = 2.0f;
+Float AliHLTMUONCoreMansoTracker::fgA9  = 0.020f;
+Float AliHLTMUONCoreMansoTracker::fgB9  = 3.0f;
+Float AliHLTMUONCoreMansoTracker::fgA10 = 0.020f;
+Float AliHLTMUONCoreMansoTracker::fgB10 = 3.0f;
+Float AliHLTMUONCoreMansoTracker::fgZ7  = 1274.5f;
+Float AliHLTMUONCoreMansoTracker::fgZ8  = 1305.5f;
+Float AliHLTMUONCoreMansoTracker::fgZ9  = 1408.6f;
+Float AliHLTMUONCoreMansoTracker::fgZ10 = 1439.6f;
+Float AliHLTMUONCoreMansoTracker::fgZ11 = 1603.5f;
+Float AliHLTMUONCoreMansoTracker::fgZ13 = 1703.5f;
 
 
-void MansoTracker::RegionOfInterest::Create(Point p, Float a, Float b)
+void AliHLTMUONCoreMansoTracker::RegionOfInterest::Create(AliHLTMUONCorePoint p, Float a, Float b)
 {
-	centre = p;
+	fCentre = p;
 	// Compute the radius Rp
-	Float Rp = (Float) sqrt( p.x * p.x + p.y * p.y );
+	Float Rp = (Float) sqrt( p.fX * p.fX + p.fY * p.fY );
 
 	// The radius Rs for the region of interest is computed from the
 	// specification given in the document:
@@ -94,244 +86,244 @@ void MansoTracker::RegionOfInterest::Create(Point p, Float a, Float b)
 	//   equation:
 	//     Rs = a * Rp + b
 	//   given on page 3 section 4.
-	Rs = a * Rp + b;
+	fRs = a * Rp + b;
 }
 
 
-bool MansoTracker::RegionOfInterest::Contains(Point p) const
+bool AliHLTMUONCoreMansoTracker::RegionOfInterest::Contains(AliHLTMUONCorePoint p) const
 {
 	// Compute the distance between the centre of the region of interest and
 	// the point p. This distance must be less than the radius of the region
 	// of interest for p to be contained in the region of interest.
-	register Float lx = centre.x - p.x;
-	register Float ly = centre.y - p.y;
+	register Float lx = fCentre.fX - p.fX;
+	register Float ly = fCentre.fY - p.fY;
 	register Float r = (Float) sqrt( lx * lx + ly * ly );
 	DebugMsg(4, "\tRegionOfInterest::Contains : p = " << p
-		<< " , centre = " << centre << " , r = " << r << " , Rs = " << Rs
+		<< " , centre = " << fCentre << " , r = " << r << " , Rs = " << fRs
 	);
-	return r <= Rs;
+	return r <= fRs;
 }
 
 
-void MansoTracker::RegionOfInterest::GetBoundaryBox(Float& left, Float& right, Float& bottom, Float& top)
+void AliHLTMUONCoreMansoTracker::RegionOfInterest::GetBoundaryBox(Float& left, Float& right, Float& bottom, Float& top)
 {
-	left = centre.x - Rs;
-	right = centre.x + Rs;
-	bottom = centre.y - Rs;
-	top = centre.y + Rs;
+	left = fCentre.fX - fRs;
+	right = fCentre.fX + fRs;
+	bottom = fCentre.fY - fRs;
+	top = fCentre.fY + fRs;
 }
 
 
-MansoTracker::Vertex::Vertex(Float x, Float y, Float z)
+AliHLTMUONCoreMansoTracker::Vertex::Vertex(Float x, Float y, Float z)
 {
-	this->x = x;
-	this->y = y;
-	this->z = z;
+	fX = x;
+	fY = y;
+	fZ = z;
 }
 
 
-MansoTracker::Vertex::Vertex(Point xy, Float z)
+AliHLTMUONCoreMansoTracker::Vertex::Vertex(AliHLTMUONCorePoint xy, Float z)
 {
-	x = xy.x;
-	y = xy.y;
-	this->z = z;
+	fX = xy.fX;
+	fY = xy.fY;
+	fZ = z;
 }
 
 
-MansoTracker::Line::Line(
+AliHLTMUONCoreMansoTracker::Line::Line(
         Float Ax, Float Ay, Float Az,
         Float Bx, Float By, Float Bz
     )
 {
-	Mx = Ax - Bx;
-	My = Ay - By;
-	Mz = Az - Bz;
-	Cx = Bx;
-	Cy = By;
-	Cz = Bz;
+	fMx = Ax - Bx;
+	fMy = Ay - By;
+	fMz = Az - Bz;
+	fCx = Bx;
+	fCy = By;
+	fCz = Bz;
 }
 
 
-MansoTracker::Line::Line(Vertex A, Vertex B)
+AliHLTMUONCoreMansoTracker::Line::Line(Vertex A, Vertex B)
 {
-	Mx = A.x - B.x;
-	My = A.y - B.y;
-	Mz = A.z - B.z;
-	Cx = B.x;
-	Cy = B.y;
-	Cz = B.z;
+	fMx = A.fX - B.fX;
+	fMy = A.fY - B.fY;
+	fMz = A.fZ - B.fZ;
+	fCx = B.fX;
+	fCy = B.fY;
+	fCz = B.fZ;
 }
 
 
-Point MansoTracker::Line::FindIntersectWithXYPlain(Float z) const
+AliHLTMUONCorePoint AliHLTMUONCoreMansoTracker::Line::FindIntersectWithXYPlain(Float z) const
 {
-	Assert( Mz != 0.0 );    // Should not have a ray perpendicular to the beam axis.
-	Float t = (z - Cz) / Mz;
-	Float Lx = Mx*t + Cx;
-	Float Ly = My*t + Cy;
+	Assert( fMz != 0.0 );    // Should not have a ray perpendicular to the beam axis.
+	Float t = (z - fCz) / fMz;
+	Float Lx = fMx*t + fCx;
+	Float Ly = fMy*t + fCy;
 
-	return Point(Lx, Ly);
+	return AliHLTMUONCorePoint(Lx, Ly);
 }
 
 
-MansoTracker::MansoTracker() : Tracker()
+AliHLTMUONCoreMansoTracker::AliHLTMUONCoreMansoTracker() : AliHLTMUONCoreTracker()
 {
-	sm4state = SM4Idle;
-	sm5state = SM5Idle;
-	requests_completed = 0;
+	fSm4state = kSM4Idle;
+	fSm5state = kSM5Idle;
+	fRequestsCompleted = 0;
 }
 
 
-void MansoTracker::FindTrack(const TriggerRecord& trigger)
+void AliHLTMUONCoreMansoTracker::FindTrack(const AliHLTMUONCoreTriggerRecord& trigger)
 {
-	DebugMsg(4, "SM5 state = " << sm5state << " , SM4 state = " << sm4state);
-	DebugMsg(1, "Processing trigger with pt = " << trigger.pt);
-	v1 = Vertex( trigger.station1impact, z11 );
-	Vertex v2 = Vertex( trigger.station2impact, z13 );
+	DebugMsg(4, "SM5 state = " << fSm5state << " , SM4 state = " << fSm4state);
+	DebugMsg(1, "Processing trigger with pt = " << trigger.fPt);
+	fV1 = Vertex( trigger.fStation1impact, fgZ11 );
+	Vertex v2 = Vertex( trigger.fStation2impact, fgZ13 );
 
 	// Form the vector line between the above two impact points and
 	// find the crossing point of the line with chamber 10 (i.e. station 5).
-	mc1.line = Line(v1, v2);
-	Point p10 = mc1.line.FindIntersectWithXYPlain( z10 );
+	fMc1.fLine = Line(fV1, v2);
+	AliHLTMUONCorePoint p10 = fMc1.fLine.FindIntersectWithXYPlain( fgZ10 );
 
 	// Build a region of interest for tracking station 5 (chamber 10).
 	// Remember the parameters a and b are station specific.
-	mc1.chamber = Chamber10;
-	mc1.roi.Create(p10, a10, b10);
+	fMc1.fChamber = kChamber10;
+	fMc1.fRoi.Create(p10, fgA10, fgB10);
 	
 	// Make SM5 state transition before the call to RequestClusters since
 	// that method could call one of our methods again, so we need to be
 	// in a consistant internal state.
-	sm5state = WaitChamber10;
+	fSm5state = kWaitChamber10;
 
 	Float left, right, bottom, top;
-	mc1.roi.GetBoundaryBox(left, right, bottom, top);
-	RequestClusters(left, right, bottom, top, Chamber10, &mc1);
+	fMc1.fRoi.GetBoundaryBox(left, right, bottom, top);
+	RequestClusters(left, right, bottom, top, kChamber10, &fMc1);
 }
 
 
-void MansoTracker::ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count)
+void AliHLTMUONCoreMansoTracker::ReturnClusters(void* tag, const AliHLTMUONCoreClusterPoint* clusters, UInt count)
 {
 	Assert( count > 0 );
 	Assert( clusters != NULL );
 	
 	TagData* data = (TagData*)tag;
-	DebugMsg(4, "Got MansoTracker::ReturnClusters(tag = " << tag
-		<< ", chamber = " << data->chamber
+	DebugMsg(4, "Got AliHLTMUONCoreMansoTracker::ReturnClusters(tag = " << tag
+		<< ", chamber = " << data->fChamber
 		<< ", clusters = " << clusters <<  ", count = " << count << ")"
 	);
-	DebugMsg(4, "SM5 state = " << sm5state << " , SM4 state = " << sm4state);
+	DebugMsg(4, "SM5 state = " << fSm5state << " , SM4 state = " << fSm4state);
 
-	switch (data->chamber)
+	switch (data->fChamber)
 	{
-	case Chamber7:  ReceiveClustersChamber7(clusters, count, data); break;
-	case Chamber8:  ReceiveClustersChamber8(clusters, count, data); break;
-	case Chamber9:  ReceiveClustersChamber9(clusters, count); break;
-	case Chamber10: ReceiveClustersChamber10(clusters, count); break;
+	case kChamber7:  ReceiveClustersChamber7(clusters, count, data); break;
+	case kChamber8:  ReceiveClustersChamber8(clusters, count, data); break;
+	case kChamber9:  ReceiveClustersChamber9(clusters, count); break;
+	case kChamber10: ReceiveClustersChamber10(clusters, count); break;
 	default:
 		// Error
-		DebugMsg(1, "ERROR: Got tag with an invalid value: " << data->chamber);
+		DebugMsg(1, "ERROR: Got tag with an invalid value: " << data->fChamber);
 	}
 }
 
 
-void MansoTracker::EndOfClusters(void* tag)
+void AliHLTMUONCoreMansoTracker::EndOfClusters(void* tag)
 {
 	TagData* data = (TagData*)tag;
-	DebugMsg(4, "Got MansoTracker::EndOfClusters(chamber = " << data->chamber << ")");
-	DebugMsg(4, "SM5 state = " << sm5state << " , SM4 state = " << sm4state);
+	DebugMsg(4, "Got AliHLTMUONCoreMansoTracker::EndOfClusters(chamber = " << data->fChamber << ")");
+	DebugMsg(4, "SM5 state = " << fSm5state << " , SM4 state = " << fSm4state);
 
-	switch (data->chamber)
+	switch (data->fChamber)
 	{
-	case Chamber7:  EndOfClustersChamber7(); break;
-	case Chamber8:  EndOfClustersChamber8(); break;
-	case Chamber9:  EndOfClustersChamber9(); break;
-	case Chamber10: EndOfClustersChamber10(); break;
+	case kChamber7:  EndOfClustersChamber7(); break;
+	case kChamber8:  EndOfClustersChamber8(); break;
+	case kChamber9:  EndOfClustersChamber9(); break;
+	case kChamber10: EndOfClustersChamber10(); break;
 	default:
 		// Error
-		DebugMsg(1, "ERROR: Got tag with an invalid value: " << data->chamber);
+		DebugMsg(1, "ERROR: Got tag with an invalid value: " << data->fChamber);
 	}
 }
 
 
-void MansoTracker::FillTrackData(Track& track)
+void AliHLTMUONCoreMansoTracker::FillTrackData(AliHLTMUONCoreTrack& track)
 {
-	DebugMsg(4, "FillTrack: st5 = " << st5rec->clusterpoint << ", st4 = " << foundpoint->clusterpoint);
+	DebugMsg(4, "FillTrack: st5 = " << fSt5rec->fClusterPoint << ", st4 = " << fFoundPoint->fClusterPoint);
 	
-	Float x1 = foundpoint->clusterpoint.x;
-	Float y1 = foundpoint->clusterpoint.y;
-	Float y2 = st5rec->clusterpoint.y;
+	Float x1 = fFoundPoint->fClusterPoint.fX;
+	Float y1 = fFoundPoint->fClusterPoint.fY;
+	Float y2 = fSt5rec->fClusterPoint.fY;
 	Float momentum;
-	Float pt = CalculateSignedPt(x1, y1, y2, st4z, st5z, momentum);
+	Float pt = AliHLTMUONCoreCalculateSignedPt(x1, y1, y2, fSt4z, fSt5z, momentum);
 	DebugMsg(1, "Calculated Pt = " << pt);
 	DebugMsg(1, "\tusing x1 = " << x1 << " , y1 = " << y1 << " , y2 = " << y2
-		<< " , z1 = " << st4z << " , z2 = " << st5z
+		<< " , z1 = " << fSt4z << " , z2 = " << fSt5z
 	);
 
 	if (pt < 0)
-		track.sign = Minus;
+		track.fSign = kSignMinus;
 	else if (pt > 0)
-		track.sign = Plus;
+		track.fSign = kSignPlus;
 	else
-		track.sign = UnknownSign;
+		track.fSign = kUnknownSign;
 
-	track.p = momentum;
-	track.pt = (Float) fabs(pt);
+	track.fP = momentum;
+	track.fPt = (Float) fabs(pt);
 	for (UInt i = 0; i < 6; i++)
 	{
-		track.point[i] = Point(0.0, 0.0);
-		track.region[i] = INVALID_ROI;
+		track.fPoint[i] = AliHLTMUONCorePoint(0.0, 0.0);
+		track.fRegion[i] = kINVALID_ROI;
 	}
 
 	Float left, right, bottom, top;
 	
 	// Have to create the ROI numbers from the internal region of interest structures.
-	st5rec->tag.roi.GetBoundaryBox(left, right, bottom, top);
-	dHLT::RegionOfInterest region4(left, right, bottom, top, st4chamber);
-	mc1.roi.GetBoundaryBox(left, right, bottom, top);
-	dHLT::RegionOfInterest region5(left, right, bottom, top, mc1.chamber);
+	fSt5rec->fTag.fRoi.GetBoundaryBox(left, right, bottom, top);
+	AliHLTMUONCoreRegionOfInterest region4(left, right, bottom, top, fSt4chamber);
+	fMc1.fRoi.GetBoundaryBox(left, right, bottom, top);
+	AliHLTMUONCoreRegionOfInterest region5(left, right, bottom, top, fMc1.fChamber);
 	
 	// Depending on the chamber we received cluster points from, fill the appropriate
 	// point and ROI number. This is done for station 4 then 5.
-	if (st4chamber == Chamber8)
+	if (fSt4chamber == kChamber8)
 	{
-		track.point[6] = Point(0.0, 0.0);
-		track.region[6] = INVALID_ROI;
-		track.point[7] = foundpoint->clusterpoint;
-		track.region[7] = region4;
+		track.fPoint[6] = AliHLTMUONCorePoint(0.0, 0.0);
+		track.fRegion[6] = kINVALID_ROI;
+		track.fPoint[7] = fFoundPoint->fClusterPoint;
+		track.fRegion[7] = region4;
 	}
 	else
 	{
-		track.point[6] = foundpoint->clusterpoint;
-		track.region[6] = region4;
-		track.point[7] = Point(0.0, 0.0);
-		track.region[7] = INVALID_ROI;
+		track.fPoint[6] = fFoundPoint->fClusterPoint;
+		track.fRegion[6] = region4;
+		track.fPoint[7] = AliHLTMUONCorePoint(0.0, 0.0);
+		track.fRegion[7] = kINVALID_ROI;
 	}
-	if (mc1.chamber == Chamber10)
+	if (fMc1.fChamber == kChamber10)
 	{
-		track.point[8] = Point(0.0, 0.0);
-		track.region[8] = INVALID_ROI;
-		track.point[9] = st5rec->clusterpoint;
-		track.region[9] = region5;
+		track.fPoint[8] = AliHLTMUONCorePoint(0.0, 0.0);
+		track.fRegion[8] = kINVALID_ROI;
+		track.fPoint[9] = fSt5rec->fClusterPoint;
+		track.fRegion[9] = region5;
 	}
 	else
 	{
-		track.point[8] = st5rec->clusterpoint;
-		track.region[8] = region5;
-		track.point[9] = Point(0.0, 0.0);
-		track.region[9] = INVALID_ROI;
+		track.fPoint[8] = fSt5rec->fClusterPoint;
+		track.fRegion[8] = region5;
+		track.fPoint[9] = AliHLTMUONCorePoint(0.0, 0.0);
+		track.fRegion[9] = kINVALID_ROI;
 	}
 }
 
 
-void MansoTracker::Reset()
+void AliHLTMUONCoreMansoTracker::Reset()
 {
-	DebugMsg(4, "SM5 state = " << sm5state << " , SM4 state = " << sm4state);
-	st5data.Clear();
-	st4points.Clear();
-	sm4state = SM4Idle;
-	sm5state = SM5Idle;
-	requests_completed = 0;
+	DebugMsg(4, "SM5 state = " << fSm5state << " , SM4 state = " << fSm4state);
+	fSt5data.Clear();
+	fSt4points.Clear();
+	fSm4state = kSM4Idle;
+	fSm5state = kSM5Idle;
+	fRequestsCompleted = 0;
 }
 
 
@@ -344,328 +336,332 @@ void MansoTracker::Reset()
 // In general one should only call the callback methods at the end of any of the
 // following routines.
 
-void MansoTracker::ReceiveClustersChamber7(const ClusterPoint* clusters, UInt count, const TagData* data)
+void AliHLTMUONCoreMansoTracker::ReceiveClustersChamber7(
+		const AliHLTMUONCoreClusterPoint* clusters, UInt count, const TagData* data
+	)
 {
-	switch (sm4state)
+	switch (fSm4state)
 	{
-	case WaitChamber7:
-		sm4state = WaitMoreChamber7;
+	case kWaitChamber7:
+		fSm4state = kWaitMoreChamber7;
 	
-	case WaitMoreChamber7:
+	case kWaitMoreChamber7:
 		for (UInt j = 0; j < count; j++)
 		{
-			ClusterPoint cluster = clusters[j];
+			AliHLTMUONCoreClusterPoint cluster = clusters[j];
 			// Check that the cluster actually is in our region of interest on station 4.
-			if ( data->roi.Contains(cluster) )
+			if ( data->fRoi.Contains(cluster) )
 			{
-				DebugMsg(4, "Adding cluster [" << cluster.x << ", " << cluster.y << "] from chamber 7.");
-				Station4Data* newdata = st4points.New();
-				newdata->clusterpoint = cluster;
-				newdata->st5tag = data;
+				DebugMsg(4, "Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 7.");
+				Station4Data* newdata = fSt4points.New();
+				newdata->fClusterPoint = cluster;
+				newdata->fSt5tag = data;
 			}
 		}
 		break;
 	
 	default:
-		DebugMsg(1, "ERROR: Unexpected state for SM4 in MansoTracker::ReceiveClustersChamber7!");
+		DebugMsg(1, "ERROR: Unexpected state for SM4 in AliHLTMUONCoreMansoTracker::ReceiveClustersChamber7!");
 	}
 }
 
 
-void MansoTracker::ReceiveClustersChamber8(const ClusterPoint* clusters, UInt count, const TagData* data)
+void AliHLTMUONCoreMansoTracker::ReceiveClustersChamber8(
+		const AliHLTMUONCoreClusterPoint* clusters, UInt count, const TagData* data
+	)
 {
-	switch (sm4state)
+	switch (fSm4state)
 	{
-	case WaitChamber8:
-		sm4state = WaitMoreChamber8;
-		st4z = z8;
-		st4chamber = Chamber8;
+	case kWaitChamber8:
+		fSm4state = kWaitMoreChamber8;
+		fSt4z = fgZ8;
+		fSt4chamber = kChamber8;
 	
-	case WaitMoreChamber8:
+	case kWaitMoreChamber8:
 		for (UInt j = 0; j < count; j++)
 		{
-			ClusterPoint cluster = clusters[j];
+			AliHLTMUONCoreClusterPoint cluster = clusters[j];
 			// Check that the cluster actually is in our region of interest on station 4.
-			if ( data->roi.Contains(cluster) )
+			if ( data->fRoi.Contains(cluster) )
 			{
-				DebugMsg(4, "Adding cluster [" << cluster.x << ", " << cluster.y << "] from chamber 8.");
-				Station4Data* newdata = st4points.New();
-				newdata->clusterpoint = cluster;
-				newdata->st5tag = data;
+				DebugMsg(4, "Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 8.");
+				Station4Data* newdata = fSt4points.New();
+				newdata->fClusterPoint = cluster;
+				newdata->fSt5tag = data;
 			}
 		}
 		break;
 		
 	default:
-		DebugMsg(1, "ERROR: Unexpected state for SM4 in MansoTracker::ReceiveClustersChamber8!");
+		DebugMsg(1, "ERROR: Unexpected state for SM4 in AliHLTMUONCoreMansoTracker::ReceiveClustersChamber8!");
 	}
 }
 
 
-void MansoTracker::ReceiveClustersChamber9(const ClusterPoint* clusters, UInt count)
+void AliHLTMUONCoreMansoTracker::ReceiveClustersChamber9(const AliHLTMUONCoreClusterPoint* clusters, UInt count)
 {
-	switch (sm5state)
+	switch (fSm5state)
 	{
-	case WaitChamber9:
-		sm5state = WaitMoreChamber9;
-		sm4state = WaitChamber8;  // Start SM4.
+	case kWaitChamber9:
+		fSm5state = kWaitMoreChamber9;
+		fSm4state = kWaitChamber8;  // Start SM4.
 	
-	case WaitMoreChamber9:
+	case kWaitMoreChamber9:
 		for (UInt j = 0; j < count; j++)
 		{
-			ClusterPoint cluster = clusters[j];
+			AliHLTMUONCoreClusterPoint cluster = clusters[j];
 			// Check that the cluster actually is in our region of interest on station 5.
-			if ( mc1.roi.Contains(cluster) )
+			if ( fMc1.fRoi.Contains(cluster) )
 			{
-				DebugMsg(4, "Adding cluster [" << cluster.x << ", " << cluster.y << "] from chamber 9.");
-				Station5Data* data = st5data.New();
-				data->clusterpoint = cluster;
-				ProjectToStation4(data, z9);  // This adds a new request for station 4.
+				DebugMsg(4, "Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 9.");
+				Station5Data* data = fSt5data.New();
+				data->fClusterPoint = cluster;
+				ProjectToStation4(data, fgZ9);  // This adds a new request for station 4.
 			}
 		}
 		break;
 
 	default:
-		DebugMsg(1, "ERROR: Unexpected state for SM5 in MansoTracker::ReceiveClustersChamber9!");
+		DebugMsg(1, "ERROR: Unexpected state for SM5 in AliHLTMUONCoreMansoTracker::ReceiveClustersChamber9!");
 	}
 }
 
 
-void MansoTracker::ReceiveClustersChamber10(const ClusterPoint* clusters, UInt count)
+void AliHLTMUONCoreMansoTracker::ReceiveClustersChamber10(const AliHLTMUONCoreClusterPoint* clusters, UInt count)
 {
-	switch (sm5state)
+	switch (fSm5state)
 	{
-	case WaitChamber10:
-		sm5state = WaitMoreChamber10;
-		st5z = z10;
-		sm4state = WaitChamber8;  // Start SM4.
+	case kWaitChamber10:
+		fSm5state = kWaitMoreChamber10;
+		fSt5z = fgZ10;
+		fSm4state = kWaitChamber8;  // Start SM4.
 	
-	case WaitMoreChamber10:
+	case kWaitMoreChamber10:
 		for (UInt j = 0; j < count; j++)
 		{
-			ClusterPoint cluster = clusters[j];
+			AliHLTMUONCoreClusterPoint cluster = clusters[j];
 			// Check that the cluster actually is in our region of interest on station 5.
-			if ( mc1.roi.Contains(cluster) )
+			if ( fMc1.fRoi.Contains(cluster) )
 			{
-				DebugMsg(4, "Adding cluster [" << cluster.x << ", " << cluster.y << "] from chamber 10.");
-				Station5Data* data = st5data.New();
-				data->clusterpoint = cluster;
-				ProjectToStation4(data, z10);  // This adds a new request for station 4.
+				DebugMsg(4, "Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 10.");
+				Station5Data* data = fSt5data.New();
+				data->fClusterPoint = cluster;
+				ProjectToStation4(data, fgZ10);  // This adds a new request for station 4.
 			}
 		}
 		break;
 
 	default:
-		DebugMsg(1, "ERROR: Unexpected state for SM5 in MansoTracker::ReceiveClustersChamber10!");
+		DebugMsg(1, "ERROR: Unexpected state for SM5 in AliHLTMUONCoreMansoTracker::ReceiveClustersChamber10!");
 	}
 }
 
 
-void MansoTracker::EndOfClustersChamber7()
+void AliHLTMUONCoreMansoTracker::EndOfClustersChamber7()
 {
-	requests_completed++;  // Increment the number of requests completed for station 4.
-	DebugMsg(4, "requests_completed = " << requests_completed );
+	fRequestsCompleted++;  // Increment the number of requests completed for station 4.
+	DebugMsg(4, "fRequestsCompleted = " << fRequestsCompleted );
 
-	switch (sm4state)
+	switch (fSm4state)
 	{
-	case WaitChamber7:
+	case kWaitChamber7:
 		// If all data from station 5 is received and no data found on
 		// chambers 7 or 8 then we can not find a track.
-		if (sm5state == SM5Done) NoTrackFound();
+		if (fSm5state == kSM5Done) NoTrackFound();
 		break;
 	
-	case WaitMoreChamber7:
-		if (requests_completed == st5data.Count() && sm5state == SM5Done)
+	case kWaitMoreChamber7:
+		if (fRequestsCompleted == fSt5data.Count() && fSm5state == kSM5Done)
 			ProcessClusters();
 		break;
 	
 	default:
-		DebugMsg(1, "ERROR: Unexpected state for SM4 in MansoTracker::EndOfClustersChamber7!");
+		DebugMsg(1, "ERROR: Unexpected state for SM4 in AliHLTMUONCoreMansoTracker::EndOfClustersChamber7!");
 	}
 }
 
 
-void MansoTracker::EndOfClustersChamber8()
+void AliHLTMUONCoreMansoTracker::EndOfClustersChamber8()
 {
-	requests_completed++;  // Increment the number of requests completed for station 4.
-	DebugMsg(4, "requests_completed = " << requests_completed );
+	fRequestsCompleted++;  // Increment the number of requests completed for station 4.
+	DebugMsg(4, "fRequestsCompleted = " << fRequestsCompleted );
 
-	switch (sm4state)
+	switch (fSm4state)
 	{
-	case WaitChamber7:
+	case kWaitChamber7:
 		// Ignore. The requests for chamber 8 are already re-requested below.
 		break;
 		
-	case WaitChamber8:
+	case kWaitChamber8:
 		{
-		sm4state = WaitChamber7;
-		st4z = z7;
-		st4chamber = Chamber7;
+		fSm4state = kWaitChamber7;
+		fSt4z = fgZ7;
+		fSt4chamber = kChamber7;
 	
 		// We need to resend the requests for chamber 8, but change the request
 		// to get data for chamber 7 instead:
-		UInt reqlistsize = st5data.Count();
+		UInt reqlistsize = fSt5data.Count();
 		DebugMsg(4, "Re-requesting clusters from chamber 7... reqlistsize = " << reqlistsize);
 
-		Station5List::Iterator rec = st5data.First();
+		Station5List::Iterator rec = fSt5data.First();
 		for (UInt i = 0; i < reqlistsize; i++, rec++)
 		{
 			// Need to create a new st5 data block for the request.
-			Station5Data* data = st5data.New();
-			data->clusterpoint = rec->clusterpoint;
-			data->tag.line = rec->tag.line;
+			Station5Data* data = fSt5data.New();
+			data->fClusterPoint = rec->fClusterPoint;
+			data->fTag.fLine = rec->fTag.fLine;
 
 			// Rebuild a region of interest for chamber 7.
 			// Remember the parameters a and b are station specific.
-			Point p7 = data->tag.line.FindIntersectWithXYPlain( z7 );
-			data->tag.chamber = Chamber7;
-			data->tag.roi.Create(p7, a7, b7);
+			AliHLTMUONCorePoint p7 = data->fTag.fLine.FindIntersectWithXYPlain( fgZ7 );
+			data->fTag.fChamber = kChamber7;
+			data->fTag.fRoi.Create(p7, fgA7, fgB7);
 			
 			Float left, right, bottom, top;
-			data->tag.roi.GetBoundaryBox(left, right, bottom, top);
+			data->fTag.fRoi.GetBoundaryBox(left, right, bottom, top);
 			// Make request for chamber 7 data.
-			RequestClusters(left, right, bottom, top, Chamber7, &data->tag);
+			RequestClusters(left, right, bottom, top, kChamber7, &data->fTag);
 		}
 		}
 		break;
 	
-	case WaitMoreChamber8:
-		if (requests_completed == st5data.Count() && sm5state == SM5Done)
+	case kWaitMoreChamber8:
+		if (fRequestsCompleted == fSt5data.Count() && fSm5state == kSM5Done)
 			ProcessClusters();
 		break;
 	
 	default:
-		DebugMsg(1, "ERROR: Unexpected state for SM4 in MansoTracker::EndOfClustersChamber8!");
+		DebugMsg(1, "ERROR: Unexpected state for SM4 in AliHLTMUONCoreMansoTracker::EndOfClustersChamber8!");
 	}
 }
 
 
-void MansoTracker::EndOfClustersChamber9()
+void AliHLTMUONCoreMansoTracker::EndOfClustersChamber9()
 {
-	switch (sm5state)
+	switch (fSm5state)
 	{
-	case WaitChamber9:
-		sm5state = SM5Done;
+	case kWaitChamber9:
+		fSm5state = kSM5Done;
 		EndOfClusterRequests();
 		NoTrackFound();
 		break;
 		
-	case WaitMoreChamber9:
-		sm5state = SM5Done;
+	case kWaitMoreChamber9:
+		fSm5state = kSM5Done;
 		EndOfClusterRequests();
-		if (requests_completed == st5data.Count())
+		if (fRequestsCompleted == fSt5data.Count())
 			ProcessClusters();
 		break;
 
 	default:
-		DebugMsg(1, "ERROR: Unexpected state for SM5 in MansoTracker::EndOfClustersChamber9!");
+		DebugMsg(1, "ERROR: Unexpected state for SM5 in AliHLTMUONCoreMansoTracker::EndOfClustersChamber9!");
 	}
 }
 
 
-void MansoTracker::EndOfClustersChamber10()
+void AliHLTMUONCoreMansoTracker::EndOfClustersChamber10()
 {
-	switch (sm5state)
+	switch (fSm5state)
 	{
-	case WaitChamber10:
+	case kWaitChamber10:
 		{
-		sm5state = WaitChamber9;
-		st5z = z9;
+		fSm5state = kWaitChamber9;
+		fSt5z = fgZ9;
 		
 		// No clusters found on chamber 10 so we need to make a request for
 		// clusters from chamber 9:
-		Point p9 = mc1.line.FindIntersectWithXYPlain( z9 );
+		AliHLTMUONCorePoint p9 = fMc1.fLine.FindIntersectWithXYPlain( fgZ9 );
 
 		// Build a region of interest for tracking station 5 (chamber 9).
 		// Remember the parameters a and b are station specific.
-		mc1.chamber = Chamber9;
-		mc1.roi.Create(p9, a9, b9);
+		fMc1.fChamber = kChamber9;
+		fMc1.fRoi.Create(p9, fgA9, fgB9);
 
 		Float left, right, bottom, top;
-		mc1.roi.GetBoundaryBox(left, right, bottom, top);
-		RequestClusters(left, right, bottom, top, Chamber9, &mc1);
+		fMc1.fRoi.GetBoundaryBox(left, right, bottom, top);
+		RequestClusters(left, right, bottom, top, kChamber9, &fMc1);
 		}
 		break;
 
-	case WaitMoreChamber10:
-		sm5state = SM5Done;
+	case kWaitMoreChamber10:
+		fSm5state = kSM5Done;
 		EndOfClusterRequests();
-		if (requests_completed == st5data.Count())
+		if (fRequestsCompleted == fSt5data.Count())
 			ProcessClusters();
 		break;
 
 	default:
-		DebugMsg(1, "ERROR: Unexpected state for SM5 in MansoTracker::EndOfClustersChamber10!");
+		DebugMsg(1, "ERROR: Unexpected state for SM5 in AliHLTMUONCoreMansoTracker::EndOfClustersChamber10!");
 	}
 }
 
 
-void MansoTracker::ProjectToStation4(Station5Data* data, register Float station5z)
+void AliHLTMUONCoreMansoTracker::ProjectToStation4(Station5Data* data, register Float station5z)
 {
 	// Perform chamber specific operations:
 	// Since certain states of SM4 means that it is fetching for Chamber8
 	// and other states are for fetching from Chamber7. We need to make
 	// requests for the correct chamber.
-	Assert( sm4state == WaitChamber8 
-		|| sm4state == WaitMoreChamber8
-		|| sm4state == WaitChamber7
-		|| sm4state == WaitMoreChamber7
+	Assert( fSm4state == kWaitChamber8 
+		|| fSm4state == kWaitMoreChamber8
+		|| fSm4state == kWaitChamber7
+		|| fSm4state == kWaitMoreChamber7
 	);
-	TagData* tag = &data->tag;
-	if (sm4state == WaitChamber8 || sm4state == WaitMoreChamber8)
+	TagData* tag = &data->fTag;
+	if (fSm4state == kWaitChamber8 || fSm4state == kWaitMoreChamber8)
 	{
 		// Form the vector line between trigger station 1 and tracking station 5,
 		// and find the intersection point of the line with station 4 (chamber8).
-		Line line51( Vertex(data->clusterpoint, station5z), v1 );
-		Point intercept = line51.FindIntersectWithXYPlain(z8);
-		tag->line = line51;
+		Line line51( Vertex(data->fClusterPoint, station5z), fV1 );
+		AliHLTMUONCorePoint intercept = line51.FindIntersectWithXYPlain( fgZ8 );
+		tag->fLine = line51;
 		
 		// Build a region of interest for tracking station 4.
-		tag->chamber = Chamber8;
-		tag->roi.Create(intercept, a8, b8);
+		tag->fChamber = kChamber8;
+		tag->fRoi.Create(intercept, fgA8, fgB8);
 	}
 	else
 	{
 		// Form the vector line between trigger station 1 and tracking station 5,
 		// and find the intersection point of the line with station 4 (chamber7).
-		Line line51( Vertex(data->clusterpoint, station5z), v1 );
-		Point intercept = line51.FindIntersectWithXYPlain(z7);
-		tag->line = line51;
+		Line line51( Vertex(data->fClusterPoint, station5z), fV1 );
+		AliHLTMUONCorePoint intercept = line51.FindIntersectWithXYPlain( fgZ7 );
+		tag->fLine = line51;
 		
 		// Build a region of interest for tracking station 4.
-		tag->chamber = Chamber7;
-		tag->roi.Create(intercept, a7, b7);
+		tag->fChamber = kChamber7;
+		tag->fRoi.Create(intercept, fgA7, fgB7);
 	}
 
 	// Make the request for clusters from station 4.
 	Float left, right, bottom, top;
-	tag->roi.GetBoundaryBox(left, right, bottom, top);
-	RequestClusters(left, right, bottom, top, tag->chamber, tag);
+	tag->fRoi.GetBoundaryBox(left, right, bottom, top);
+	RequestClusters(left, right, bottom, top, tag->fChamber, tag);
 }
 
 
-void MansoTracker::ProcessClusters()
+void AliHLTMUONCoreMansoTracker::ProcessClusters()
 {
 	DebugMsg(2, "ProcessClusters...");
 	
 	// Check if the cluster point list on station 4 is empty.
 	// If it is then we have not found any tracks.
-	foundpoint = st4points.First();
-	if (foundpoint == st4points.End())
+	fFoundPoint = fSt4points.First();
+	if (fFoundPoint == fSt4points.End())
 	{
 		NoTrackFound();
 		return;
 	}
 	
-	st5rec = st5data.First();
-	if (st5rec != st5data.End())
+	fSt5rec = fSt5data.First();
+	if (fSt5rec != fSt5data.End())
 	{
 		// Only look at station 5 data records that are for the found chamber number.
 		// Note: either we only have chamber 8 data or we have chamber 7 data followed
 		// by chamber 8 data.
 		// Thus if we hit records that we are not interested in already then the list
 		// contains no interesting data and we can signal no track found.
-		if (st5rec->tag.chamber != st4chamber)
+		if (fSt5rec->fTag.fChamber != fSt4chamber)
 		{
 			NoTrackFound();
 			return;
@@ -675,23 +671,20 @@ void MansoTracker::ProcessClusters()
 		// signal a found track:
 		do
 		{
-			DebugMsg(4, "\tst5rec->tag.chamber = " << st5rec->tag.chamber
-				<< " , st4chamber = " << st4chamber
+			DebugMsg(4, "\tfSt5rec->fTag.chamber = " << fSt5rec->fTag.fChamber
+				<< " , fSt4chamber = " << fSt4chamber
 			);
 
-			for (foundpoint = st4points.First(); foundpoint != st4points.End(); foundpoint++)
+			for (fFoundPoint = fSt4points.First(); fFoundPoint != fSt4points.End(); fFoundPoint++)
 			{
-				if (foundpoint->st5tag == &st5rec->tag)
+				if (fFoundPoint->fSt5tag == &fSt5rec->fTag)
 					FoundTrack();
 			}
 
-			st5rec++;  // Get next station 5 cluster point.
-		} while (st5rec != st5data.End() && st5rec->tag.chamber == st4chamber);
+			fSt5rec++;  // Get next station 5 cluster point.
+		} while (fSt5rec != fSt5data.End() && fSt5rec->fTag.fChamber == fSt4chamber);
 	}
 	else
 		NoTrackFound();
 }
 
-
-} // Tracking
-} // dHLT

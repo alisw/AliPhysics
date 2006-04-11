@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_TRACK_SINK_HPP
-#define dHLT_ALIROOT_TRACK_SINK_HPP
+#ifndef ALIHLTMUONTRACKSINK_H
+#define ALIHLTMUONTRACKSINK_H
 
 #include "TROOT.h"
 #include "TObject.h"
@@ -17,16 +17,13 @@
 
 #include <vector>
 
-namespace AliMUONHLT
-{
 
-
-class TrackSink : public TObject
+class AliHLTMUONTrackSink : public TObject
 {
 public:
 
-	TrackSink();
-	virtual ~TrackSink();
+	AliHLTMUONTrackSink();
+	virtual ~AliHLTMUONTrackSink();
 	
 	/* Adds a new EventData block to the fEventList and updates internal pointers.
 	   Cannot have duplicate event numbers so this method will display an error
@@ -44,24 +41,24 @@ public:
 	   The fCurrentTrack is updated appropriately.
 	   If no current block is selected then NULL is returned.
 	 */
-	Track* AddTrack();
+	AliHLTMUONTrack* AddTrack();
 	
 	/* Adds the given track to the current block.
 	   If no current block is selected then an error message is displayed.
 	 */
-	void AddTrack(const Track& track);
+	void AddTrack(const AliHLTMUONTrack& track);
 	
 	/* Adds the specified track parameters as a new track.
 	   The fCurrentTrack is updated appropriately.
 	 */
 	void AddTrack(
 			Int_t triggerid, Int_t sign, Float_t momentum,
-			Float_t pt, const Point hits[10], const Region regions[10]
+			Float_t pt, const AliHLTMUONPoint hits[10], const AliHLTMUONRegion regions[10]
 		);
 	
 	/* Sets the internal file and folder names from the trigger source.
 	 */
-	void SetNames(const TriggerSource* triggersource);
+	void SetNames(const AliHLTMUONTriggerSource* triggersource);
 	
 	/* Clears all the internal arrays.
 	 */
@@ -84,7 +81,7 @@ public:
 	 */
 	Bool_t GetEvent(Int_t eventnumber) const;
 	
-	/* Fetches the first event stored in this TrackSink.
+	/* Fetches the first event stored in this AliHLTMUONTrackSink.
 	   Sets the current block and track to the first block and track of the
 	   first event.
 	   If there are no blocks or tracks then these pointers are set to NULL.
@@ -151,12 +148,12 @@ public:
 	/* Fetches the index'th track in the current block.
 	   NULL is returned if the track was not found.
 	 */
-	const Track* GetTrack(Int_t index) const;
+	const AliHLTMUONTrack* GetTrack(Int_t index) const;
 	
 	/* Fetches the first track in the current block.
 	   NULL is returned if the track was not found.
 	 */
-	const Track* GetFirstTrack() const;
+	const AliHLTMUONTrack* GetFirstTrack() const;
 	
 	/* Returns kTRUE if there are more tracks to iterate over in
 	   the current block. kFALSE is returned otherwise.
@@ -166,12 +163,12 @@ public:
 	/* Fetches the next track in the current block.
 	   NULL is returned if the track was not found.
 	 */
-	const Track* GetNextTrack() const;
+	const AliHLTMUONTrack* GetNextTrack() const;
 	
 	/* Returns the currently selected track.
 	   NULL is returned if there is no track selected.
 	 */
-	const Track* GetTrack() const { return fCurrentTrack; };
+	const AliHLTMUONTrack* GetTrack() const { return fCurrentTrack; };
 	
 	/* Returns the currently selected track index.
 	   -1 is returned if no track was selected.
@@ -216,14 +213,12 @@ private:
 	mutable Int_t fBlockIndex;            //! The current block index number.
 	mutable TClonesArray* fCurrentBlock;  //! Pointer to the currently selected block.
 	mutable Int_t fTrackIndex;            //! The current track index number.
-	mutable Track* fCurrentTrack;         //! Pointer to the currently selected track.
+	mutable AliHLTMUONTrack* fCurrentTrack;         //! Pointer to the currently selected track.
 
 	TClonesArray fEventList;  // List of tracks per event.
 
-	ClassDef(TrackSink, 1)  // The data sink for track blocks for dHLT.
+	ClassDef(AliHLTMUONTrackSink, 1)  // The data sink for track blocks for dHLT.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_TRACK_SINK_HPP
+#endif // ALIHLTMUONTRACKSINK_H

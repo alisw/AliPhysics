@@ -12,27 +12,23 @@
 
 // TODO: Change all the Error message statements to AliError at some stage.
 
-
-ClassImp(AliMUONHLT::ADCStreamSource)
-ClassImp(AliMUONHLT::ADCStreamSource::DataBlock)
-
-namespace AliMUONHLT
-{
+ClassImp(AliHLTMUONADCStreamSource)
+ClassImp(AliHLTMUONADCStreamSource::DataBlock)
 
 
-ADCStreamSource::ADCStreamSource() : TObject()
+AliHLTMUONADCStreamSource::AliHLTMUONADCStreamSource() : TObject()
 {
 	fCurrentStream = -1;
 }
 
 
-ADCStreamSource::~ADCStreamSource()
+AliHLTMUONADCStreamSource::~AliHLTMUONADCStreamSource()
 {
 	// Everything is cleaned up implicitly.
 }
 
 
-void ADCStreamSource::FillFromFile(const TString& filename, Int_t eventnumber)
+void AliHLTMUONADCStreamSource::FillFromFile(const TString& filename, Int_t eventnumber)
 {
 	DebugMsg(1, "Entering FillFromFile, file = " << filename.Data()
 		<< ", event number = " << eventnumber
@@ -47,7 +43,7 @@ void ADCStreamSource::FillFromFile(const TString& filename, Int_t eventnumber)
 		if ( gSystem->GetPathInfo(filename, &id, &size, &flags, &modtime) == 0 )
 		{
 			DebugMsg(2, "Size of file: " << filename.Data() << " is " << size << " bytes");
-			ADCStream stream;
+			AliHLTMUONADCStream stream;
 			stream.Size(size/sizeof(Int_t));
 			size_t bytesread = fread(stream.Data(), 1, size, file);
 			if (bytesread == (size_t)size)
@@ -67,7 +63,7 @@ void ADCStreamSource::FillFromFile(const TString& filename, Int_t eventnumber)
 }
 
 
-void ADCStreamSource::FillFrom(const TString& directory, Int_t eventnumber)
+void AliHLTMUONADCStreamSource::FillFrom(const TString& directory, Int_t eventnumber)
 {
 	DebugMsg(1, "Entering FillFrom, directory = " << directory.Data()
 		<< ", event number = " << eventnumber
@@ -95,7 +91,7 @@ void ADCStreamSource::FillFrom(const TString& directory, Int_t eventnumber)
 }
 
 
-void ADCStreamSource::FillFrom(const TString& dirprefix, UInt_t firstevent, UInt_t lastevent)
+void AliHLTMUONADCStreamSource::FillFrom(const TString& dirprefix, UInt_t firstevent, UInt_t lastevent)
 {
 	DebugMsg(1, "Entering FillFrom");
 	
@@ -110,20 +106,20 @@ void ADCStreamSource::FillFrom(const TString& dirprefix, UInt_t firstevent, UInt
 }
 
 
-void ADCStreamSource::Clear(Option_t* /*option*/)
+void AliHLTMUONADCStreamSource::Clear(Option_t* /*option*/)
 {
 	fCurrentStream = -1;
 	fList.erase( fList.begin(), fList.end() );
 }
 
 
-Int_t ADCStreamSource::NumberOfStreams() const
+Int_t AliHLTMUONADCStreamSource::NumberOfStreams() const
 {
 	return fList.size();
 }
 
 
-Bool_t ADCStreamSource::GetStream(Int_t index) const
+Bool_t AliHLTMUONADCStreamSource::GetStream(Int_t index) const
 {
 	if ( 0 <= index && index < NumberOfStreams() )
 	{
@@ -148,7 +144,7 @@ Bool_t ADCStreamSource::GetStream(Int_t index) const
 }
 
 
-Bool_t ADCStreamSource::FirstStream() const
+Bool_t AliHLTMUONADCStreamSource::FirstStream() const
 {
 	if (NumberOfStreams() > 0)
 	{
@@ -160,7 +156,7 @@ Bool_t ADCStreamSource::FirstStream() const
 }
 
 
-Bool_t ADCStreamSource::NextStream() const
+Bool_t AliHLTMUONADCStreamSource::NextStream() const
 {
 	if ( 0 <= fCurrentStream && fCurrentStream < NumberOfStreams() - 1 )
 	{
@@ -172,7 +168,7 @@ Bool_t ADCStreamSource::NextStream() const
 };
 
 
-Int_t ADCStreamSource::EventNumber() const
+Int_t AliHLTMUONADCStreamSource::EventNumber() const
 {
 	if (fCurrentStream >= 0)
 	{
@@ -187,7 +183,7 @@ Int_t ADCStreamSource::EventNumber() const
 }
 
 
-Bool_t ADCStreamSource::FetchStream(ADCStream& stream) const
+Bool_t AliHLTMUONADCStreamSource::FetchStream(AliHLTMUONADCStream& stream) const
 {
 	if (fCurrentStream >= 0)
 	{
@@ -203,7 +199,7 @@ Bool_t ADCStreamSource::FetchStream(ADCStream& stream) const
 }
 
 
-Bool_t ADCStreamSource::FetchStream(Int_t index, ADCStream& stream) const
+Bool_t AliHLTMUONADCStreamSource::FetchStream(Int_t index, AliHLTMUONADCStream& stream) const
 {
 	if ( GetStream(index) )
 		return FetchStream(stream);
@@ -212,7 +208,7 @@ Bool_t ADCStreamSource::FetchStream(Int_t index, ADCStream& stream) const
 }
 
 
-const ADCStream* ADCStreamSource::FetchStream() const
+const AliHLTMUONADCStream* AliHLTMUONADCStreamSource::FetchStream() const
 {
 	if (fCurrentStream >= 0)
 	{
@@ -227,7 +223,7 @@ const ADCStream* ADCStreamSource::FetchStream() const
 }
 
 
-void ADCStreamSource::AddStream(ADCStream& stream, UInt_t eventnumber)
+void AliHLTMUONADCStreamSource::AddStream(AliHLTMUONADCStream& stream, UInt_t eventnumber)
 {
 	DebugMsg(1, "Entering AddStream");
 	
@@ -240,5 +236,3 @@ void ADCStreamSource::AddStream(ADCStream& stream, UInt_t eventnumber)
 	DebugMsg(1, "Leaving AddStream");
 }
 
-
-} // AliMUONHLT

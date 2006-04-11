@@ -5,42 +5,37 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_EVENT_ID_HPP
-#define dHLT_EVENT_ID_HPP
+#ifndef ALIHLTMUONCOREEVENTID_H
+#define ALIHLTMUONCOREEVENTID_H
 
 #include "BasicTypes.hpp"
 #include "Utils.hpp"
 
-namespace dHLT
-{
-
 
 // Must correct this definition!!!!
-struct EventID
+struct AliHLTMUONCoreEventID
 {
-	UInt bunch;
-	UInt timestamp;
+	UInt fBunch;
+	UInt fTimeStamp;
 
 
-	EventID(UInt bunch = 0, UInt timestamp = 0)
+	AliHLTMUONCoreEventID(UInt bunch = 0, UInt timestamp = 0)
 	{
-		this->bunch = bunch;
-		this->timestamp = timestamp;
+		fBunch = bunch;
+		fTimeStamp = timestamp;
 	};
 
 
-	bool operator == (const EventID& rhs)
+	bool operator == (const AliHLTMUONCoreEventID& rhs)
 	{
-		return bunch == rhs.bunch and timestamp == rhs.timestamp;
+		return fBunch == rhs.fBunch and fTimeStamp == rhs.fTimeStamp;
 	};
 
-	bool operator != (const EventID& rhs)
+	bool operator != (const AliHLTMUONCoreEventID& rhs)
 	{
 		return not (*this == rhs);
 	};
 };
 
 
-} // dHLT
-
-#endif // dHLT_EVENT_ID_HPP
+#endif // ALIHLTMUONCOREEVENTID_H

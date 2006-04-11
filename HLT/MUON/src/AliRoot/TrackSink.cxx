@@ -8,15 +8,12 @@
 #include "AliRoot/TrackSink.hpp"
 #include "AliRoot/Base.hpp"
 
-ClassImp(AliMUONHLT::TrackSink)
-ClassImp(AliMUONHLT::TrackSink::EventData)
-
-namespace AliMUONHLT
-{
+ClassImp(AliHLTMUONTrackSink)
+ClassImp(AliHLTMUONTrackSink::EventData)
 
 
-TrackSink::TrackSink() :
-	TObject(), fEventList(TrackSink::EventData::Class())
+AliHLTMUONTrackSink::AliHLTMUONTrackSink() :
+	TObject(), fEventList(AliHLTMUONTrackSink::EventData::Class())
 {
 	fFilename = "";
 	fFoldername = "";
@@ -24,16 +21,16 @@ TrackSink::TrackSink() :
 }
 
 
-TrackSink::~TrackSink()
+AliHLTMUONTrackSink::~AliHLTMUONTrackSink()
 {
-	DebugMsg(1, "TrackSink::~TrackSink()");
+	DebugMsg(1, "AliHLTMUONTrackSink::~AliHLTMUONTrackSink()");
 	fEventList.Clear("C");
 }
 
 
-void TrackSink::AddEvent(Int_t eventnumber)
+void AliHLTMUONTrackSink::AddEvent(Int_t eventnumber)
 {
-	DebugMsg(1, "TrackSink::AddEvent(" << eventnumber << ")");
+	DebugMsg(1, "AliHLTMUONTrackSink::AddEvent(" << eventnumber << ")");
 	
 	if (eventnumber < 0)
 	{
@@ -66,9 +63,9 @@ void TrackSink::AddEvent(Int_t eventnumber)
 }
 
 
-void TrackSink::AddBlock()
+void AliHLTMUONTrackSink::AddBlock()
 {
-	DebugMsg(1, "TrackSink::AddBlock()");
+	DebugMsg(1, "AliHLTMUONTrackSink::AddBlock()");
 	
 	if (fCurrentEvent == NULL)
 	{
@@ -77,7 +74,7 @@ void TrackSink::AddBlock()
 	};
 	
 	fBlockIndex = fCurrentEvent->fBlocks.GetEntriesFast();
-	new ( fCurrentEvent->fBlocks[fBlockIndex] ) TClonesArray(Track::Class());
+	new ( fCurrentEvent->fBlocks[fBlockIndex] ) TClonesArray(AliHLTMUONTrack::Class());
 	fCurrentBlock = (TClonesArray*) fCurrentEvent->fBlocks[fBlockIndex];
 	
 	// Remember to reset the track pointer because the new block is empty.
@@ -89,9 +86,9 @@ void TrackSink::AddBlock()
 }
 
 
-void TrackSink::AddTrack(const Track& track)
+void AliHLTMUONTrackSink::AddTrack(const AliHLTMUONTrack& track)
 {
-	DebugMsg(1, "TrackSink::AddTrack()");
+	DebugMsg(1, "AliHLTMUONTrackSink::AddTrack()");
 
 	if (fCurrentBlock == NULL)
 	{
@@ -100,8 +97,8 @@ void TrackSink::AddTrack(const Track& track)
 	};
 	
 	fTrackIndex = fCurrentBlock->GetEntriesFast();
-	new ( (*fCurrentBlock)[fTrackIndex] ) Track(track);
-	fCurrentTrack = (Track*) (*fCurrentBlock)[fTrackIndex];
+	new ( (*fCurrentBlock)[fTrackIndex] ) AliHLTMUONTrack(track);
+	fCurrentTrack = (AliHLTMUONTrack*) (*fCurrentBlock)[fTrackIndex];
 	
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
@@ -109,9 +106,9 @@ void TrackSink::AddTrack(const Track& track)
 }
 
 
-Track* TrackSink::AddTrack()
+AliHLTMUONTrack* AliHLTMUONTrackSink::AddTrack()
 {
-	DebugMsg(1, "TrackSink::AddTrack()");
+	DebugMsg(1, "AliHLTMUONTrackSink::AddTrack()");
 
 	if (fCurrentBlock == NULL)
 	{
@@ -120,7 +117,7 @@ Track* TrackSink::AddTrack()
 	};
 	
 	fTrackIndex = fCurrentBlock->GetEntriesFast();
-	fCurrentTrack = (Track*) fCurrentBlock->New(fTrackIndex);
+	fCurrentTrack = (AliHLTMUONTrack*) fCurrentBlock->New(fTrackIndex);
 	
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
@@ -129,12 +126,12 @@ Track* TrackSink::AddTrack()
 };
 
 
-void TrackSink::AddTrack(
+void AliHLTMUONTrackSink::AddTrack(
 		Int_t triggerid, Int_t sign, Float_t momentum,
-		Float_t pt, const Point hits[10], const Region regions[10]
+		Float_t pt, const AliHLTMUONPoint hits[10], const AliHLTMUONRegion regions[10]
 	)
 {
-	DebugMsg(1, "TrackSink::AddTrack(" << triggerid << ", " << sign << ", "
+	DebugMsg(1, "AliHLTMUONTrackSink::AddTrack(" << triggerid << ", " << sign << ", "
 		<< momentum << ", " << pt << ", " << (void*)(&hits[0]) << ", "
 		<< (void*)(&regions[0]) << ")"
 	);
@@ -146,8 +143,8 @@ void TrackSink::AddTrack(
 	};
 	
 	fTrackIndex = fCurrentBlock->GetEntriesFast();
-	new ( (*fCurrentBlock)[fTrackIndex] ) Track(triggerid, sign, momentum, pt, hits, regions);
-	fCurrentTrack = (Track*) (*fCurrentBlock)[fTrackIndex];
+	new ( (*fCurrentBlock)[fTrackIndex] ) AliHLTMUONTrack(triggerid, sign, momentum, pt, hits, regions);
+	fCurrentTrack = (AliHLTMUONTrack*) (*fCurrentBlock)[fTrackIndex];
 	
 	DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 		<< " , fTrackIndex = " << fTrackIndex
@@ -155,14 +152,14 @@ void TrackSink::AddTrack(
 }
 
 
-void TrackSink::SetNames(const TriggerSource* triggersource)
+void AliHLTMUONTrackSink::SetNames(const AliHLTMUONTriggerSource* triggersource)
 {
 	fFilename = triggersource->FileName();
 	fFoldername = triggersource->FolderName();
 }
 
 
-void TrackSink::Clear(Option_t* /*option*/)
+void AliHLTMUONTrackSink::Clear(Option_t* /*option*/)
 {
 	fFilename = "";
 	fFoldername = "";
@@ -171,9 +168,9 @@ void TrackSink::Clear(Option_t* /*option*/)
 }
 
 
-Bool_t TrackSink::GetEvent(Int_t eventnumber) const
+Bool_t AliHLTMUONTrackSink::GetEvent(Int_t eventnumber) const
 {
-	DebugMsg(1, "TrackSink::GetEvent(" << eventnumber << ")" );
+	DebugMsg(1, "AliHLTMUONTrackSink::GetEvent(" << eventnumber << ")" );
 	
 	// Try find the corresponding event in the list of events.
 	for (Int_t i = 0; i < fEventList.GetEntriesFast(); i++)
@@ -194,9 +191,9 @@ Bool_t TrackSink::GetEvent(Int_t eventnumber) const
 }
 
 
-Bool_t TrackSink::GetFirstEvent() const
+Bool_t AliHLTMUONTrackSink::GetFirstEvent() const
 {
-	DebugMsg(1, "TrackSink::GetFirstEvent()");
+	DebugMsg(1, "AliHLTMUONTrackSink::GetFirstEvent()");
 	if (fEventList.GetEntriesFast() > 0)
 	{
 		fEventIndex = 0;
@@ -217,15 +214,15 @@ Bool_t TrackSink::GetFirstEvent() const
 }
 
 
-Bool_t TrackSink::MoreEvents() const
+Bool_t AliHLTMUONTrackSink::MoreEvents() const
 {
 	return 0 <= fEventIndex && fEventIndex < fEventList.GetEntriesFast();
 }
 
 
-Bool_t TrackSink::GetNextEvent() const
+Bool_t AliHLTMUONTrackSink::GetNextEvent() const
 {
-	DebugMsg(1, "TrackSink::GetNextEvent()");
+	DebugMsg(1, "AliHLTMUONTrackSink::GetNextEvent()");
 	if (fEventIndex < fEventList.GetEntriesFast() - 1)
 	{
 		fCurrentEvent = (EventData*) fEventList[ ++fEventIndex ];
@@ -243,7 +240,7 @@ Bool_t TrackSink::GetNextEvent() const
 };
 
 
-Int_t TrackSink::CurrentEvent() const
+Int_t AliHLTMUONTrackSink::CurrentEvent() const
 {
 	if (fCurrentEvent != NULL)
 		return fCurrentEvent->fEventNumber;
@@ -252,9 +249,9 @@ Int_t TrackSink::CurrentEvent() const
 }
 
 
-Int_t TrackSink::NumberOfBlocks() const
+Int_t AliHLTMUONTrackSink::NumberOfBlocks() const
 {
-	DebugMsg(1, "TrackSink::NumberOfBlocks()");
+	DebugMsg(1, "AliHLTMUONTrackSink::NumberOfBlocks()");
 	if (fCurrentEvent == NULL)
 	{
 		Error("NumberOfBlocks", "No event selected.");
@@ -265,9 +262,9 @@ Int_t TrackSink::NumberOfBlocks() const
 }
 
 
-Bool_t TrackSink::GetBlock(Int_t index) const
+Bool_t AliHLTMUONTrackSink::GetBlock(Int_t index) const
 {
-	DebugMsg(1, "TrackSink::GetBlock(" << index << ")");
+	DebugMsg(1, "AliHLTMUONTrackSink::GetBlock(" << index << ")");
 	
 	// Note NumberOfBlocks() also checks if the event was selected.
 	Int_t numberofblocks = NumberOfBlocks();
@@ -301,9 +298,9 @@ Bool_t TrackSink::GetBlock(Int_t index) const
 }
 
 
-Bool_t TrackSink::GetFirstBlock() const
+Bool_t AliHLTMUONTrackSink::GetFirstBlock() const
 {
-	DebugMsg(1, "TrackSink::GetFirstBlock()");
+	DebugMsg(1, "AliHLTMUONTrackSink::GetFirstBlock()");
 	// Note: NumberOfBlocks() also checks if fCurrentEvent != NULL.
 	if (NumberOfBlocks() > 0)
 	{
@@ -320,15 +317,15 @@ Bool_t TrackSink::GetFirstBlock() const
 }
 
 
-Bool_t TrackSink::MoreBlocks() const
+Bool_t AliHLTMUONTrackSink::MoreBlocks() const
 {
 	return 0 <= fBlockIndex && fBlockIndex < NumberOfBlocks();
 }
 
 
-Bool_t TrackSink::GetNextBlock() const
+Bool_t AliHLTMUONTrackSink::GetNextBlock() const
 {
-	DebugMsg(1, "TrackSink::GetNextBlock()");
+	DebugMsg(1, "AliHLTMUONTrackSink::GetNextBlock()");
 
 	// Note: NumberOfBlocks() checks if fCurrentEvent != NULL. If it is then it returns -1
 	// and since fBlockIndex is always >= -1 the if statement must go to the else part.
@@ -349,9 +346,9 @@ Bool_t TrackSink::GetNextBlock() const
 }
 
 
-Int_t TrackSink::NumberOfTracks() const
+Int_t AliHLTMUONTrackSink::NumberOfTracks() const
 {
-	DebugMsg(1, "TrackSink::NumberOfTracks()");
+	DebugMsg(1, "AliHLTMUONTrackSink::NumberOfTracks()");
 	if (fCurrentBlock == NULL)
 	{
 		Error("NumberOfTracks", "No block selected.");
@@ -362,9 +359,9 @@ Int_t TrackSink::NumberOfTracks() const
 };
 
 
-const Track* TrackSink::GetTrack(Int_t index) const
+const AliHLTMUONTrack* AliHLTMUONTrackSink::GetTrack(Int_t index) const
 {
-	DebugMsg(1, "TrackSink::GetTrack(" << index << ")");
+	DebugMsg(1, "AliHLTMUONTrackSink::GetTrack(" << index << ")");
 
 	// Note NumberOfTracks() also checks if the event and block was selected.
 	Int_t numberoftracks = NumberOfTracks();
@@ -373,7 +370,7 @@ const Track* TrackSink::GetTrack(Int_t index) const
 	if ( 0 <= index && index < numberoftracks )
 	{
 		fTrackIndex = index;
-		fCurrentTrack = (Track*) fCurrentBlock->At(index);
+		fCurrentTrack = (AliHLTMUONTrack*) fCurrentBlock->At(index);
 		DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 			<< " , fTrackIndex = " << fTrackIndex
 		);
@@ -397,14 +394,14 @@ const Track* TrackSink::GetTrack(Int_t index) const
 }
 
 
-const Track* TrackSink::GetFirstTrack() const
+const AliHLTMUONTrack* AliHLTMUONTrackSink::GetFirstTrack() const
 {
-	DebugMsg(1, "TrackSink::GetFirstTrack()");
+	DebugMsg(1, "AliHLTMUONTrackSink::GetFirstTrack()");
 	// Note: NumberOfTracks() also checks if fCurrentBlock != NULL.
 	if (NumberOfTracks() > 0)
 	{
 		fTrackIndex = 0;
-		fCurrentTrack = (Track*) fCurrentBlock->At(0);
+		fCurrentTrack = (AliHLTMUONTrack*) fCurrentBlock->At(0);
 		DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 			<< " , fTrackIndex = " << fTrackIndex
 		);
@@ -415,21 +412,21 @@ const Track* TrackSink::GetFirstTrack() const
 }
 
 
-Bool_t TrackSink::MoreTracks() const
+Bool_t AliHLTMUONTrackSink::MoreTracks() const
 {
 	return 0 <= fTrackIndex && fTrackIndex < NumberOfTracks();
 }
 
 
-const Track* TrackSink::GetNextTrack() const
+const AliHLTMUONTrack* AliHLTMUONTrackSink::GetNextTrack() const
 {
-	DebugMsg(1, "TrackSink::GetNextTrack()");
+	DebugMsg(1, "AliHLTMUONTrackSink::GetNextTrack()");
 	
 	// Note: NumberOfTracks() checks if fCurrentBlock != NULL. If it is then it returns -1
 	// and since fTrackIndex is always >= -1 the if statement must go to the else part.
 	if (fTrackIndex < NumberOfTracks() - 1)
 	{
-		fCurrentTrack = (Track*) fCurrentBlock->At( ++fTrackIndex );
+		fCurrentTrack = (AliHLTMUONTrack*) fCurrentBlock->At( ++fTrackIndex );
 		DebugMsg(2, "\tfEventIndex = " << fEventIndex << " , fBlockIndex = " << fBlockIndex
 			<< " , fTrackIndex = " << fTrackIndex
 		);
@@ -443,7 +440,7 @@ const Track* TrackSink::GetNextTrack() const
 }
 
 
-void TrackSink::ResetAllPointers() const
+void AliHLTMUONTrackSink::ResetAllPointers() const
 {
 	fEventIndex = -1;
 	fCurrentEvent = NULL;
@@ -457,7 +454,7 @@ void TrackSink::ResetAllPointers() const
 }
 
 
-void TrackSink::ResetBlockPointers() const
+void AliHLTMUONTrackSink::ResetBlockPointers() const
 {
 	fBlockIndex = -1;
 	fCurrentBlock = NULL;
@@ -469,7 +466,7 @@ void TrackSink::ResetBlockPointers() const
 }
 
 
-void TrackSink::ResetTrackPointers() const
+void AliHLTMUONTrackSink::ResetTrackPointers() const
 {
 	fTrackIndex = -1;
 	fCurrentTrack = NULL;
@@ -479,13 +476,13 @@ void TrackSink::ResetTrackPointers() const
 }
 
 
-TrackSink::EventData::EventData() : fBlocks(TClonesArray::Class())
+AliHLTMUONTrackSink::EventData::EventData() : fBlocks(TClonesArray::Class())
 {
 	fEventNumber = -1;
 }
 
 
-TrackSink::EventData::EventData(Int_t eventnumber)
+AliHLTMUONTrackSink::EventData::EventData(Int_t eventnumber)
 	: fBlocks(TClonesArray::Class())
 {
 	fEventNumber = eventnumber;
@@ -495,11 +492,9 @@ TrackSink::EventData::EventData(Int_t eventnumber)
 }
 
 
-TrackSink::EventData::~EventData()
+AliHLTMUONTrackSink::EventData::~EventData()
 {
-	DebugMsg(1, "TrackSink::EventData::~EventData()");
+	DebugMsg(1, "AliHLTMUONTrackSink::EventData::~EventData()");
 	fBlocks.Clear("C");
 }
 
-
-} // AliMUONHLT

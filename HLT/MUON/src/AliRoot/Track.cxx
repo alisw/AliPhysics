@@ -9,39 +9,36 @@
 #include <TMath.h>
 #include "Utils.hpp"
 
-ClassImp(AliMUONHLT::Track)
-
-namespace AliMUONHLT
-{
+ClassImp(AliHLTMUONTrack)
 
 
-Track::Track() : TObject()
+AliHLTMUONTrack::AliHLTMUONTrack() : TObject()
 {
 	Init();
 }
 
 
-Track::Track(
+AliHLTMUONTrack::AliHLTMUONTrack(
 		Int_t triggerid, Int_t sign, Float_t momentum, Float_t pt,
-		const Point hits[10], const Region regions[10]
+		const AliHLTMUONPoint hits[10], const AliHLTMUONRegion regions[10]
 	) : TObject()
 {
 	if (sign < -1 || +1 < sign)
 	{
 		Init();
-		Error("Track", "The particle sign was not one of -1, 0 or +1. Got %d", sign);
+		Error("AliHLTMUONTrack", "The particle sign was not one of -1, 0 or +1. Got %d", sign);
 	}
 	else if (momentum < pt)
 	{
 		Init();
-		Error("Track", "The momentum (%f) must be larger or equal to the pt (%f).",
+		Error("AliHLTMUONTrack", "The momentum (%f) must be larger or equal to the pt (%f).",
 			momentum, pt
 		);
 	}
 	else if (pt < 0.0)
 	{
 		Init();
-		Error("Track", "The pt must be a positive number. Got: %f", pt);
+		Error("AliHLTMUONTrack", "The pt must be a positive number. Got: %f", pt);
 	}
 	else
 	{
@@ -58,7 +55,7 @@ Track::Track(
 }
 
 
-void Track::Init()
+void AliHLTMUONTrack::Init()
 {
 	fTriggerID = -1;
 	fParticleSign = 0;
@@ -66,7 +63,7 @@ void Track::Init()
 }
 
 
-void Track::ParticleSign(Int_t value)
+void AliHLTMUONTrack::ParticleSign(Int_t value)
 {
 	if (-1 <= value && value <= +1)
 		fParticleSign = value;
@@ -78,7 +75,7 @@ void Track::ParticleSign(Int_t value)
 }
 
 
-void Track::P(Float_t value)
+void AliHLTMUONTrack::P(Float_t value)
 {
 	if (value >= fPt)
 		fP = value;
@@ -89,7 +86,7 @@ void Track::P(Float_t value)
 		);
 }
 
-void Track::Pt(Float_t value)
+void AliHLTMUONTrack::Pt(Float_t value)
 {
 	if (value >= 0.0)
 	{
@@ -106,7 +103,7 @@ void Track::Pt(Float_t value)
 };
 
 
-Point& Track::Hit(UInt_t chamber)
+AliHLTMUONPoint& AliHLTMUONTrack::Hit(UInt_t chamber)
 {
 	if (chamber < 10)
 		return fHit[chamber];
@@ -121,7 +118,7 @@ Point& Track::Hit(UInt_t chamber)
 }
 
 
-const Point& Track::Hit(UInt_t chamber) const
+const AliHLTMUONPoint& AliHLTMUONTrack::Hit(UInt_t chamber) const
 {
 	if (chamber < 10)
 		return fHit[chamber];
@@ -136,7 +133,7 @@ const Point& Track::Hit(UInt_t chamber) const
 };
 
 
-void Track::Hit(UInt_t chamber, const Point& value)
+void AliHLTMUONTrack::Hit(UInt_t chamber, const AliHLTMUONPoint& value)
 {
 	if (chamber < 10)
 		fHit[chamber] = value;
@@ -148,7 +145,7 @@ void Track::Hit(UInt_t chamber, const Point& value)
 }
 
 
-Region& Track::RegionOfInterest(UInt_t chamber)
+AliHLTMUONRegion& AliHLTMUONTrack::RegionOfInterest(UInt_t chamber)
 {
 	if (chamber < 10)
 		return fRegionOfInterest[chamber];
@@ -163,7 +160,7 @@ Region& Track::RegionOfInterest(UInt_t chamber)
 }
 
 
-const Region& Track::RegionOfInterest(UInt_t chamber) const
+const AliHLTMUONRegion& AliHLTMUONTrack::RegionOfInterest(UInt_t chamber) const
 {
 	if (chamber < 10)
 		return fRegionOfInterest[chamber];
@@ -178,7 +175,7 @@ const Region& Track::RegionOfInterest(UInt_t chamber) const
 }
 
 
-void Track::RegionOfInterest(UInt_t chamber, const Region& value)
+void AliHLTMUONTrack::RegionOfInterest(UInt_t chamber, const AliHLTMUONRegion& value)
 {
 	if (chamber < 10)
 		fRegionOfInterest[chamber] = value;
@@ -190,7 +187,7 @@ void Track::RegionOfInterest(UInt_t chamber, const Region& value)
 }
 
 
-Bool_t Track::HitsInRegions() const
+Bool_t AliHLTMUONTrack::HitsInRegions() const
 {
 	for (Int_t i = 0; i < 10; i++)
 	{
@@ -201,12 +198,10 @@ Bool_t Track::HitsInRegions() const
 }
 
 
-ostream& operator << (ostream& os, const Track& t)
+ostream& operator << (ostream& os, const AliHLTMUONTrack& t)
 {
 	os << "{trigid: " << t.fTriggerID << ", sign: " << t.fParticleSign
 	   << ", p: " << t.fP << ", pt: " << t.fPt << "}";
 	return os;
 }
 
-
-} // AliMUONHLT

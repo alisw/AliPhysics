@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_ADC_STREAM_SOURCE_HPP
-#define dHLT_ALIROOT_ADC_STREAM_SOURCE_HPP
+#ifndef ALIHLTMUONADCSTREAMSOURCE_H
+#define ALIHLTMUONADCSTREAMSOURCE_H
 
 #include "TROOT.h"
 #include "TObject.h"
@@ -15,16 +15,13 @@
 
 #include <vector>
 
-namespace AliMUONHLT
-{
 
-
-class ADCStreamSource : public TObject
+class AliHLTMUONADCStreamSource : public TObject
 {
 public:
 
-	ADCStreamSource();
-	virtual ~ADCStreamSource();
+	AliHLTMUONADCStreamSource();
+	virtual ~AliHLTMUONADCStreamSource();
 
 	/* Fills the internal data structures from the specified file
 	 */
@@ -76,23 +73,23 @@ public:
 	/* Returns the current ADC stream selected.
 	   kFALSE is returned if there is no stream selected.
 	 */
-	Bool_t FetchStream(ADCStream& stream) const;
+	Bool_t FetchStream(AliHLTMUONADCStream& stream) const;
 	
 	/* Returns the index'th ADC stream.
 	   kTRUE is returned if the stream was found, kFALSE otherwise.
 	 */
-	Bool_t FetchStream(Int_t index, ADCStream& stream) const;
+	Bool_t FetchStream(Int_t index, AliHLTMUONADCStream& stream) const;
 	
 	/* Returns the current ADC stream selected.
 	   A NULL pointer is returned if no ADC stream is selected.
 	 */
-	const ADCStream* FetchStream() const;
+	const AliHLTMUONADCStream* FetchStream() const;
 
 private:
 
-	/* Adds a new ADCStream object to the internal arrays.
+	/* Adds a new AliHLTMUONADCStream object to the internal arrays.
 	 */
-	void AddStream(ADCStream& stream, UInt_t eventnumber);
+	void AddStream(AliHLTMUONADCStream& stream, UInt_t eventnumber);
 
 	mutable Int_t fCurrentStream;  //! The currently selected stream index.
 	
@@ -104,7 +101,7 @@ public:  // Unfortunately ROOT requires the following to be public.
 		virtual ~DataBlock() {};
 
 		Int_t fEventNumber;  // Event number of the stream.
-		ADCStream fStream;  // The ADC stream block.
+		AliHLTMUONADCStream fStream;  // The ADC stream block.
 		
 		ClassDef(DataBlock, 1)  // Data per event.
 	};
@@ -113,10 +110,8 @@ private:
 
 	std::vector<DataBlock> fList;  // List of ADC streams.
 
-	ClassDef(ADCStreamSource, 1)  // The source of ADC stream data for dHLT.
+	ClassDef(AliHLTMUONADCStreamSource, 1)  // The source of ADC stream data for dHLT.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_ADC_STREAM_SOURCE_HPP
+#endif // ALIHLTMUONADCSTREAMSOURCE_H

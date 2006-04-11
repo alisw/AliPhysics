@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_TRACK_HPP
-#define dHLT_ALIROOT_TRACK_HPP
+#ifndef ALIHLTMUONTRACK_H
+#define ALIHLTMUONTRACK_H
 
 #include <TObject.h>
 #include <Riostream.h>
@@ -15,17 +15,13 @@
 #include "AliRoot/Region.hpp"
 
 
-namespace AliMUONHLT
-{
-
-
-class Track : public TObject
+class AliHLTMUONTrack : public TObject
 {
 public:
 
 	/* Default constructor initialises everything to zero and fTriggerID to -1.
 	 */
-	Track();
+	AliHLTMUONTrack();
 	
 	/* Create a track object from the given parameters.
 	   This constructor checks that momentum >= pt and sign is one of the
@@ -33,12 +29,12 @@ public:
 	   the internal data is initialised as in the default constructor and an
 	   error message is displayed.
 	 */
-	Track(
+	AliHLTMUONTrack(
 		Int_t triggerid, Int_t sign, Float_t momentum, Float_t pt,
-		const Point hits[10], const Region regions[10]
+		const AliHLTMUONPoint hits[10], const AliHLTMUONRegion regions[10]
 	);
 
-	virtual ~Track() {}
+	virtual ~AliHLTMUONTrack() {}
 	
 	
 	// Get/et methods for the trigger ID.
@@ -67,23 +63,23 @@ public:
 	   If the chamber number in out of bounds the point on the first
 	   chamber is returned and an error message displayed.
 	 */
-	Point& Hit(UInt_t chamber);
-	const Point& Hit(UInt_t chamber) const;
+	AliHLTMUONPoint& Hit(UInt_t chamber);
+	const AliHLTMUONPoint& Hit(UInt_t chamber) const;
 	
 	/* Set method for hits. The chamber must be in the range [0..9]
 	 */
-	void Hit(UInt_t chamber, const Point& value);
+	void Hit(UInt_t chamber, const AliHLTMUONPoint& value);
 	
 	/* Returns the region of interest for the specified chamber.
 	   If the chamber number in out of bounds the region on the first
 	   chamber is returned and an error message displayed.
 	 */
-	Region& RegionOfInterest(UInt_t chamber);
-	const Region& RegionOfInterest(UInt_t chamber) const;
+	AliHLTMUONRegion& RegionOfInterest(UInt_t chamber);
+	const AliHLTMUONRegion& RegionOfInterest(UInt_t chamber) const;
 	
 	/* Set method for regions. The chamber must be in the range [0..9]
 	 */
-	void RegionOfInterest(UInt_t chamber, const Region& value);
+	void RegionOfInterest(UInt_t chamber, const AliHLTMUONRegion& value);
 	
 	/* Checks to see if the all the hits are within their respective regions
 	   of interest for each chamber. kTRUE is returned if they are and kFALSE
@@ -92,7 +88,7 @@ public:
 	Bool_t HitsInRegions() const;
 
 	// ostream operator usefull for text output.
-	friend ostream& operator << (ostream& os, const Track& t);
+	friend ostream& operator << (ostream& os, const AliHLTMUONTrack& t);
 
 private:
 
@@ -103,13 +99,11 @@ private:
 	Int_t fParticleSign;  // The sign of the particle.
 	Float_t fP;       // momentum of particle.
 	Float_t fPt;      // transverse momentum.
-	Point fHit[10];   // Fitted track hit coordinates for the 10 tracking chambers.
-	Region fRegionOfInterest[10];  // Region of interest per chamber.
+	AliHLTMUONPoint fHit[10];   // Fitted track hit coordinates for the 10 tracking chambers.
+	AliHLTMUONRegion fRegionOfInterest[10];  // Region of interest per chamber.
 
-	ClassDef(Track, 1)  // Track data.
+	ClassDef(AliHLTMUONTrack, 1)  // Track data.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_TRACK_HPP
+#endif // ALIHLTMUONTRACK_H

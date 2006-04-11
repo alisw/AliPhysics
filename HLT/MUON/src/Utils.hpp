@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_UTILITIES_HPP
-#define dHLT_UTILITIES_HPP
+#ifndef ALIHLTHLTMUONUTILITIES_H
+#define ALIHLTHLTMUONUTILITIES_H
 
 /* Since c++ is missing a finally "keyword" we define one. Its usage is identical
    to a try..finally statement in Java etc.. however, since it is officialy a macro
@@ -73,10 +73,7 @@
 
 
 #ifdef DEBUG
-namespace dHLT
-{
-	extern int DebugLevel;
-};
+extern int gAliHLTMUONDebugLevel;
 #endif // DEBUG
 
 
@@ -123,9 +120,9 @@ namespace dHLT
 
 #	include <iostream>
 #	define DebugMsg(level, message) \
-		DebugCode( if (dHLT::DebugLevel > level) std::cout << message << std::endl; )
+		DebugCode( if (dHLT::gAliHLTMUONDebugLevel > level) std::cout << message << std::endl; )
 
 #endif // USE_ALILOG
 
 
-#endif // dHLT_BASIC_TYPES_HPP
+#endif // ALIHLTHLTMUONUTILITIES_H

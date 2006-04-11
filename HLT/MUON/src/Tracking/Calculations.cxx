@@ -8,13 +8,8 @@
 #include "Calculations.hpp"
 #include <math.h>
 
-namespace dHLT
-{
-namespace Tracking
-{
 
-
-Float CalculateSignedPt(
+Float AliHLTMUONCoreCalculateSignedPt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2,
@@ -37,7 +32,7 @@ Float CalculateSignedPt(
 };
 
 
-Float CalculateSignedPt(
+Float AliHLTMUONCoreCalculateSignedPt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2,
@@ -59,7 +54,7 @@ Float CalculateSignedPt(
 };
 
 
-Float CalculateSignedPt(
+Float AliHLTMUONCoreCalculateSignedPt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2
@@ -78,7 +73,7 @@ Float CalculateSignedPt(
 };
 
 
-Float CalculateSignedPt(
+Float AliHLTMUONCoreCalculateSignedPt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2,
@@ -96,26 +91,23 @@ Float CalculateSignedPt(
 };
 
 
-Float CalculatePt(
+Float AliHLTMUONCoreCalculatePt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2
 	)
 {
-	return (Float) fabs(CalculateSignedPt(x1, y1, y2, z1, z2));
+	return (Float) fabs(AliHLTMUONCoreCalculateSignedPt(x1, y1, y2, z1, z2));
 };
 
 
-Float CalculatePt(
+Float AliHLTMUONCoreCalculatePt(
 		register Float x1,
 		register Float y1, register Float y2,
 		register Float z1, register Float z2,
 		register Float zf, register Float qBL
 	)
 {
-	return (Float) fabs(CalculateSignedPt(x1, y1, y2, z1, z2, zf, qBL));
+	return (Float) fabs(AliHLTMUONCoreCalculateSignedPt(x1, y1, y2, z1, z2, zf, qBL));
 };
 
-
-} // Tracking
-} // dHLT

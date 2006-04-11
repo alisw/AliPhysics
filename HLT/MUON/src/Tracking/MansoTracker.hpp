@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_TRACKING_MANSO_TRACKER_HPP
-#define dHLT_TRACKING_MANSO_TRACKER_HPP
+#ifndef ALIHLTMUONCOREMANSOTRACKER_H
+#define ALIHLTMUONCOREMANSOTRACKER_H
 
 #include "BasicTypes.hpp"
 #include "Tracking/Tracker.hpp"
@@ -14,64 +14,58 @@
 #include "Buffers/CountedList.hpp"
 
 
-namespace dHLT
-{
-namespace Tracking
-{
-
-
-class MansoTracker : public Tracker
+class AliHLTMUONCoreMansoTracker : public AliHLTMUONCoreTracker
 {
 public:
 
-	MansoTracker();
-	virtual ~MansoTracker() {};
+	AliHLTMUONCoreMansoTracker();
+	virtual ~AliHLTMUONCoreMansoTracker() {};
 
 
 	/* Note: Reset should be called for before calling FindTrack, for the
 	   second or subsequent method calls to FindTrack.
 	 */
-	virtual void FindTrack(const TriggerRecord& trigger);
+	virtual void FindTrack(const AliHLTMUONCoreTriggerRecord& trigger);
 	
-	virtual void ReturnClusters(void* tag, const ClusterPoint* clusters, UInt count);
+	virtual void ReturnClusters(void* tag, const AliHLTMUONCoreClusterPoint* clusters, UInt count);
 	virtual void EndOfClusters(void* tag);
-	virtual void FillTrackData(Track& track);
+	virtual void FillTrackData(AliHLTMUONCoreTrack& track);
 	virtual void Reset();
 
 
 	/* Get and set methods for the a and b parameters used to build the region
 	   of interests. Refer to MansoFilter() for details about a and b parameters.
 	 */
-	static Float GetA7()            { return a7; };
-	static void SetA7(Float value)  { a7 = value; };
-	static Float GetA8()            { return a8; };
-	static void SetA8(Float value)  { a8 = value; };
-	static Float GetA9()            { return a9; };
-	static void SetA9(Float value)  { a9 = value; };
-	static Float GetA10()           { return a10; };
-	static void SetA10(Float value) { a10 = value; };
+	static Float GetA7()            { return fgA7; };
+	static void SetA7(Float value)  { fgA7 = value; };
+	static Float GetA8()            { return fgA8; };
+	static void SetA8(Float value)  { fgA8 = value; };
+	static Float GetA9()            { return fgA9; };
+	static void SetA9(Float value)  { fgA9 = value; };
+	static Float GetA10()           { return fgA10; };
+	static void SetA10(Float value) { fgA10 = value; };
 
-	static Float GetB7()            { return b7; };
-	static void SetB7(Float value)  { b7 = value; };
-	static Float GetB8()            { return b8; };
-	static void SetB8(Float value)  { b8 = value; };
-	static Float GetB9()            { return b9; };
-	static void SetB9(Float value)  { b9 = value; };
-	static Float GetB10()           { return b10; };
-	static void SetB10(Float value) { b10 = value; };
+	static Float GetB7()            { return fgB7; };
+	static void SetB7(Float value)  { fgB7 = value; };
+	static Float GetB8()            { return fgB8; };
+	static void SetB8(Float value)  { fgB8 = value; };
+	static Float GetB9()            { return fgB9; };
+	static void SetB9(Float value)  { fgB9 = value; };
+	static Float GetB10()           { return fgB10; };
+	static void SetB10(Float value) { fgB10 = value; };
 	
-	static Float GetZ7()            { return z7; };
-	static void SetZ7(Float value)  { z7 = value; };
-	static Float GetZ8()            { return z8; };
-	static void SetZ8(Float value)  { z8 = value; };
-	static Float GetZ9()            { return z9; };
-	static void SetZ9(Float value)  { z9 = value; };
-	static Float GetZ10()           { return z10; };
-	static void SetZ10(Float value) { z10 = value; };
-	static Float GetZ11()           { return z11; };
-	static void SetZ11(Float value) { z11 = value; };
-	static Float GetZ13()           { return z13; };
-	static void SetZ13(Float value) { z13 = value; };
+	static Float GetZ7()            { return fgZ7; };
+	static void SetZ7(Float value)  { fgZ7 = value; };
+	static Float GetZ8()            { return fgZ8; };
+	static void SetZ8(Float value)  { fgZ8 = value; };
+	static Float GetZ9()            { return fgZ9; };
+	static void SetZ9(Float value)  { fgZ9 = value; };
+	static Float GetZ10()           { return fgZ10; };
+	static void SetZ10(Float value) { fgZ10 = value; };
+	static Float GetZ11()           { return fgZ11; };
+	static void SetZ11(Float value) { fgZ11 = value; };
+	static Float GetZ13()           { return fgZ13; };
+	static void SetZ13(Float value) { fgZ13 = value; };
 
 
 protected:
@@ -82,7 +76,7 @@ protected:
 		
 		RegionOfInterest() {};
 
-		RegionOfInterest(Point p, Float a, Float b)
+		RegionOfInterest(AliHLTMUONCorePoint p, Float a, Float b)
 		{
 			Create(p, a, b);
 		};
@@ -98,18 +92,18 @@ protected:
 		     Rs = a * Rp + b
 		   given on page 3 section 4.
 		 */
-		void Create(Point p, Float a, Float b);
+		void Create(AliHLTMUONCorePoint p, Float a, Float b);
 
 		/* Returns true if the point p is within the region of interest.
 		 */
-		bool Contains(Point p) const;
+		bool Contains(AliHLTMUONCorePoint p) const;
 
 		void GetBoundaryBox(Float& left, Float& right, Float& bottom, Float& top);
 
 	private:
 
-		Point centre;  // The centre point of the region of interest.
-		Float Rs;      // The redius of the region of interest around fcentre.
+		AliHLTMUONCorePoint fCentre;  // The centre point of the region of interest.
+		Float fRs;      // The redius of the region of interest around fcentre.
 	};
 
 
@@ -117,14 +111,14 @@ protected:
 	{
 	public:
 
-		Float x, y, z;
+		Float fX, fY, fZ;
 
 		Vertex(Float x = 0.0, Float y = 0.0, Float z = 0.0);
-		Vertex(Point xy, Float z);
+		Vertex(AliHLTMUONCorePoint xy, Float z);
 
-		Point AsXYPoint() const
+		AliHLTMUONCorePoint AsXYPoint() const
 		{
-			return Point(x, y);
+			return AliHLTMUONCorePoint(fX, fY);
 		};
 	};
 
@@ -150,43 +144,43 @@ protected:
 		   The z coordiante would be the distance of the n'th chamber to the interaction
 		   vertex.
 		 */
-		Point FindIntersectWithXYPlain(Float z) const;
+		AliHLTMUONCorePoint FindIntersectWithXYPlain(Float z) const;
 
 	private:
 
 		// Parameters for the vector line:  L = M*t + C
-		Float Mx, My, Mz, Cx, Cy, Cz;
+		Float fMx, fMy, fMz, fCx, fCy, fCz;
 	};
 
 	
 	struct TagData
 	{
-		ChamberID chamber;     // The chamber on which the region of interest lies.
-		RegionOfInterest roi;  // Region of interest on the next station.
-		Line line;             // line between a cluster point and the previous station.
+		AliHLTMUONCoreChamberID fChamber;     // The chamber on which the region of interest lies.
+		RegionOfInterest fRoi;  // Region of interest on the next station.
+		Line fLine;             // line between a cluster point and the previous station.
 	};
 	
 	struct Station5Data
 	{
-		ClusterPoint clusterpoint;  // Cluster point found on station 5.
-		TagData tag;
+		AliHLTMUONCoreClusterPoint fClusterPoint;  // Cluster point found on station 5.
+		TagData fTag;
 	};
 	
-	typedef Buffers::CountedList<Station5Data> Station5List;
+	typedef AliHLTMUONCoreCountedList<Station5Data> Station5List;
 
 	struct Station4Data
 	{
-		ClusterPoint clusterpoint;  // Cluster point found on station 4.
-		const TagData* st5tag;      // Corresponding station 5 tag.
+		AliHLTMUONCoreClusterPoint fClusterPoint;  // Cluster point found on station 4.
+		const TagData* fSt5tag;      // Corresponding station 5 tag.
 	};
 
-	typedef Buffers::List<Station4Data> Station4List;
+	typedef AliHLTMUONCoreList<Station4Data> Station4List;
 	
 	
-	void ReceiveClustersChamber7(const ClusterPoint* clusters, UInt count, const TagData* data);
-	void ReceiveClustersChamber8(const ClusterPoint* clusters, UInt count, const TagData* data);
-	void ReceiveClustersChamber9(const ClusterPoint* clusters, UInt count);
-	void ReceiveClustersChamber10(const ClusterPoint* clusters, UInt count);
+	void ReceiveClustersChamber7(const AliHLTMUONCoreClusterPoint* clusters, UInt count, const TagData* data);
+	void ReceiveClustersChamber8(const AliHLTMUONCoreClusterPoint* clusters, UInt count, const TagData* data);
+	void ReceiveClustersChamber9(const AliHLTMUONCoreClusterPoint* clusters, UInt count);
+	void ReceiveClustersChamber10(const AliHLTMUONCoreClusterPoint* clusters, UInt count);
 	void EndOfClustersChamber7();
 	void EndOfClustersChamber8();
 	void EndOfClustersChamber9();
@@ -201,56 +195,53 @@ public:
 	// States for state machine 4 (SM4).
 	enum StatesSM4
 	{
-		SM4Idle,
-		WaitChamber8,
-		WaitMoreChamber8,
-		WaitChamber7,
-		WaitMoreChamber7
+		kSM4Idle,
+		kWaitChamber8,
+		kWaitMoreChamber8,
+		kWaitChamber7,
+		kWaitMoreChamber7
 	};
 	
 	// States for state machine 5 (SM5).
 	enum StatesSM5
 	{
-		SM5Idle,
-		WaitChamber10,
-		WaitMoreChamber10,
-		WaitChamber9,
-		WaitMoreChamber9,
-		SM5Done
+		kSM5Idle,
+		kWaitChamber10,
+		kWaitMoreChamber10,
+		kWaitChamber9,
+		kWaitMoreChamber9,
+		kSM5Done
 	};
 	
 protected:
 	
-	StatesSM4 sm4state;  // State of SM4 used for fetching clusters on chambers 7 and 8.
-	StatesSM5 sm5state;  // State of SM5 used for fetching clusters on chambers 9 and 10.
-	UInt requests_completed;  // Number of requests for station 4 that have completed.
-	ChamberID st4chamber;     // The chamber on station 4 that data was retreived from.
+	StatesSM4 fSm4state;  // State of SM4 used for fetching clusters on chambers 7 and 8.
+	StatesSM5 fSm5state;  // State of SM5 used for fetching clusters on chambers 9 and 10.
+	UInt fRequestsCompleted;  // Number of requests for station 4 that have completed.
+	AliHLTMUONCoreChamberID fSt4chamber;     // The chamber on station 4 that data was retreived from.
 	
-	Vertex v1;    // The impact (hit) vertex for trigger station 1.
-	TagData mc1;  // Trigger station 1 data.
+	Vertex fV1;    // The impact (hit) vertex for trigger station 1.
+	TagData fMc1;  // Trigger station 1 data.
 
-	Float st5z;   // The z coordinate to use for station 5.
-	Station5List st5data;  // List of found cluster points for station 5 and their tag data.
-	Float st4z;   // The z coordinate to use for station 4.
-	Station4List st4points;  // The found cluster points for station 4.
+	Float fSt5z;   // The z coordinate to use for station 5.
+	Station5List fSt5data;  // List of found cluster points for station 5 and their tag data.
+	Float fSt4z;   // The z coordinate to use for station 4.
+	Station4List fSt4points;  // The found cluster points for station 4.
 
 	// Iterators used in the FoundTrack, FillTrackData methods.
-	Station5List::Iterator st5rec;
-	Station4List::Iterator foundpoint; 
+	Station5List::Iterator fSt5rec;
+	Station4List::Iterator fFoundPoint;
 
 private:
 
-	static Float a7, b7;    // Parameters used to create a region of interest for the 7'th chamber.
-	static Float a8, b8;    // Parameters used to create a region of interest for the 8'th chamber.
-	static Float a9, b9;    // Parameters used to create a region of interest for the 9'th chamber.
-	static Float a10, b10;  // Parameters used to create a region of interest for the 10'th chamber.
-	static Float z7, z8, z9, z10, z11, z13;  // Z coordinates of chambers 7 to 10.
+	static Float fgA7, fgB7;    // Parameters used to create a region of interest for the 7'th chamber.
+	static Float fgA8, fgB8;    // Parameters used to create a region of interest for the 8'th chamber.
+	static Float fgA9, fgB9;    // Parameters used to create a region of interest for the 9'th chamber.
+	static Float fgA10, fgB10;  // Parameters used to create a region of interest for the 10'th chamber.
+	static Float fgZ7, fgZ8, fgZ9, fgZ10, fgZ11, fgZ13;  // Z coordinates of chambers 7 to 10.
 
 };
 
 
-} // Tracking
-} // dHLT
-
-#endif // dHLT_TRACKING_MANSO_TRACKER_HPP
+#endif // ALIHLTMUONCOREMANSOTRACKER_H
 

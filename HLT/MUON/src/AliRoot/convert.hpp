@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_CONVERT_HPP
-#define dHLT_ALIROOT_CONVERT_HPP
+#ifndef ALIHLTMUONCONVERT_H
+#define ALIHLTMUONCONVERT_H
 
 #include "../Point.hpp"
 #include "AliRoot/Point.hpp"
@@ -17,26 +17,17 @@
 #include "../RegionOfInterest.hpp"
 #include "AliRoot/Region.hpp"
 
-namespace dHLT
-{
-namespace AliRoot
-{
-
-
 /* Conversion routines to convert from dHLT structures to AliRoot structures
    and back again.
  */
-extern AliMUONHLT::Point         Convert(const dHLT::Point&               point);
-extern dHLT::Point               Convert(const AliMUONHLT::Point&         point);
-extern AliMUONHLT::TriggerRecord Convert(const dHLT::TriggerRecord&       record, Int_t triggernumber);
-extern dHLT::TriggerRecord       Convert(const AliMUONHLT::TriggerRecord& record);
-extern AliMUONHLT::Track         Convert(const dHLT::Track&               track);
-extern dHLT::Track               Convert(const AliMUONHLT::Track&         track);
-extern AliMUONHLT::Region        Convert(const dHLT::ROI                  region);
-extern dHLT::ROI                 Convert(const AliMUONHLT::Region&        region, UInt_t chamber);
+extern AliHLTMUONPoint             AliHLTMUONConvert(const AliHLTMUONCorePoint&         point);
+extern AliHLTMUONCorePoint         AliHLTMUONConvert(const AliHLTMUONPoint&             point);
+extern AliHLTMUONTriggerRecord     AliHLTMUONConvert(const AliHLTMUONCoreTriggerRecord& record, Int_t triggernumber);
+extern AliHLTMUONCoreTriggerRecord AliHLTMUONConvert(const AliHLTMUONTriggerRecord&     record);
+extern AliHLTMUONTrack             AliHLTMUONConvert(const AliHLTMUONCoreTrack&         track);
+extern AliHLTMUONCoreTrack         AliHLTMUONConvert(const AliHLTMUONTrack&             track);
+extern AliHLTMUONRegion            AliHLTMUONConvert(const AliHLTMUONCoreROI            region);
+extern AliHLTMUONCoreROI           AliHLTMUONConvert(const AliHLTMUONRegion&            region, UInt_t chamber);
 
 
-} // AliRoot
-} // dHLT
-
-#endif // dHLT_ALIROOT_CONVERT_HPP
+#endif // ALIHLTMUONCONVERT_H

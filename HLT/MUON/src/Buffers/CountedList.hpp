@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_BUFFERS_COUNTED_LIST_HPP
-#define dHLT_BUFFERS_COUNTED_LIST_HPP
+#ifndef ALIHLTMUONCORECOUNTEDLIST_H
+#define ALIHLTMUONCORECOUNTEDLIST_H
 
 #include "BasicTypes.hpp"
 #include "Utils.hpp"
@@ -20,31 +20,26 @@ using std::endl;
 using std::cout;
 #endif // DEBUG
 
-namespace dHLT
-{
-namespace Buffers
-{
-
 
 template <typename DataType>
-class CountedList : public List<DataType>
+class AliHLTMUONCoreCountedList : public AliHLTMUONCoreList<DataType>
 {
 public:
 
-	typedef typename List<DataType>::Iterator Iterator;
-	typedef typename List<DataType>::ConstIterator ConstIterator;
+	typedef typename AliHLTMUONCoreList<DataType>::Iterator Iterator;
+	typedef typename AliHLTMUONCoreList<DataType>::ConstIterator ConstIterator;
 
 
-	CountedList() : List<DataType>()
+	AliHLTMUONCoreCountedList() : AliHLTMUONCoreList<DataType>()
 	{
-		count = 0;
+		fCount = 0;
 	};
 
 	
 	DataType* New()
 	{
-		DataType* newdata = List<DataType>::New();
-		count++;
+		DataType* newdata = AliHLTMUONCoreList<DataType>::New();
+		fCount++;
 		return newdata;
 	};
 	
@@ -57,15 +52,15 @@ public:
 
 	void Add(const DataType& data)
 	{
-		List<DataType>::Add(data);
-		count++;
+		AliHLTMUONCoreList<DataType>::Add(data);
+		fCount++;
 	};
 	
 
 	DataType* AddNew(const DataType& data)
 	{
-		DataType* newdata = List<DataType>::AddNew(data);
-		count++;
+		DataType* newdata = AliHLTMUONCoreList<DataType>::AddNew(data);
+		fCount++;
 		return newdata;
 	};
 
@@ -82,8 +77,8 @@ public:
 	
 	void Remove(const UInt index)
 	{
-		List<DataType>::Remove(index);
-		count--;
+		AliHLTMUONCoreList<DataType>::Remove(index);
+		fCount--;
 	};
 	
 
@@ -102,31 +97,28 @@ public:
 
 	void Remove(Iterator& iter)
 	{
-		List<DataType>::Remove(iter);
-		count--;
+		AliHLTMUONCoreList<DataType>::Remove(iter);
+		fCount--;
 	};
 
 
 	void Clear()
 	{
-		List<DataType>::Clear();
-		count = 0;
+		AliHLTMUONCoreList<DataType>::Clear();
+		fCount = 0;
 	};
 	
 	
 	UInt Count() const
 	{
-		return count;
+		return fCount;
 	};
 
 
 protected:
 
-	UInt count;
+	UInt fCount;
 };
 
 
-} // Buffers
-} // dHLT
-
-#endif // dHLT_BUFFERS_COUNTED_LIST_HPP
+#endif // ALIHLTMUONCORECOUNTEDLIST_H

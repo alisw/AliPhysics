@@ -23,56 +23,53 @@
 #include "new.hpp"
 
 
-namespace dHLT
+namespace  // MicroFramework should be hidden.
 {
 
-using namespace dHLT::AliRoot;
 
-
-class MicroFramework : public Tracking::TrackerCallback
+class MicroFramework : public AliHLTMUONCoreTrackerCallback
 {
 public:
 
 	virtual ~MicroFramework() {}
 
 	virtual void RequestClusters(
-			Tracking::Tracker* tracker, 
+			AliHLTMUONCoreTracker* tracker,
 			Float /*left*/, Float /*right*/, Float /*bottom*/, Float /*top*/,
-			ChamberID chamber, const void* tag
+			AliHLTMUONCoreChamberID chamber, const void* tag
 		)
 	{
 		Assert( 0 <= chamber && chamber <= 10 );
 		DebugMsg(2, "RequestClusters: tag = " << tag);
 		register void* ctag = const_cast<void*>(tag);  // We never modify tag so this is OK.
-		if (clusters[chamber] != NULL)
-			tracker->ReturnClusters(ctag, clusters[chamber], clustercount[chamber]);
+		if (fClusters[chamber] != NULL)
+			tracker->ReturnClusters(ctag, fClusters[chamber], fClusterCount[chamber]);
 		tracker->EndOfClusters(ctag);
 	}
 
-	
-  virtual void EndOfClusterRequests(Tracking::Tracker* /*tracker*/)
+	virtual void EndOfClusterRequests(AliHLTMUONCoreTracker* /*tracker*/)
 	{
 		DebugMsg(2, "EndOfClusterRequests");
 		// We can ignore this. Nothing special to do here.
 	}
 
 	
-	virtual void FoundTrack(Tracking::Tracker* tracker)
+	virtual void FoundTrack(AliHLTMUONCoreTracker* tracker)
 	{
 		DebugMsg(2, "FoundTrack");
 		
 		// Fetch the track data from the tracker.
-		dHLT::Track newtrack;
+		AliHLTMUONCoreTrack newtrack;
 		tracker->FillTrackData(newtrack);
 		
 		// Don't forget to fill the trigger ID number, this is not done by the tracker.
-		newtrack.triggerid = currenttriggernumber;
+		newtrack.fTriggerid = fCurrentTriggerNumber;
 
-		*trackoutput->AddTrack() = Convert(newtrack);
+		*fTrackOutput->AddTrack() = AliHLTMUONConvert(newtrack);
 	}
 	
 	
-	virtual void NoTrackFound(Tracking::Tracker* /*tracker*/)
+	virtual void NoTrackFound(AliHLTMUONCoreTracker* /*tracker*/)
 	{
 		DebugMsg(2, "NoTrackFound");
 		// Again nothing special to do here. The allocated memory is released
@@ -81,10 +78,10 @@ public:
 
 
 	void Run(
-			const AliMUONHLT::TriggerSource* triggersource,
-			const AliMUONHLT::ClusterSource* clustersource,
-			AliMUONHLT::TrackSink* tracksink,
-			Tracking::Tracker* tracker
+			const AliHLTMUONTriggerSource* triggersource,
+			const AliHLTMUONClusterSource* clustersource,
+			AliHLTMUONTrackSink* tracksink,
+			AliHLTMUONCoreTracker* tracker
 		)
 	{
 		if ( ! triggersource->GetFirstEvent()) return;
@@ -97,22 +94,22 @@ public:
 
 
 	void Run(
-			const AliMUONHLT::TriggerSource* triggersource,
-			const AliMUONHLT::ClusterSource* clustersource,
-			AliMUONHLT::TrackSink* tracksink,
-			Tracking::Tracker* tracker, const Int eventnumber
+			const AliHLTMUONTriggerSource* triggersource,
+			const AliHLTMUONClusterSource* clustersource,
+			AliHLTMUONTrackSink* tracksink,
+			AliHLTMUONCoreTracker* tracker, const Int eventnumber
 		)
 	{
 		// Tell the tracker to make callbacks to this framework object.
 		tracker->SetCallback(this);
-		trackoutput = tracksink;
-		trackoutput->SetNames(triggersource);  // Want the file and folder names to correspond.
+		fTrackOutput = tracksink;
+		fTrackOutput->SetNames(triggersource);  // Want the file and folder names to correspond.
 		
 		CreateClusterBlocks(clustersource, eventnumber);
 		try
 		{
-			trackoutput->AddEvent(eventnumber);
-			trackoutput->AddBlock();
+			fTrackOutput->AddEvent(eventnumber);
+			fTrackOutput->AddBlock();
 			ProcessTriggers(triggersource, tracker);
 		}
 		finally
@@ -124,10 +121,10 @@ public:
 
 private:
 
-	void CountClusterPoints(const AliMUONHLT::ClusterSource* cs)
+	void CountClusterPoints(const AliHLTMUONClusterSource* cs)
 	{
 		for (Int i = 0; i < 10; i++)
-			clustercount[i] = 0;
+			fClusterCount[i] = 0;
 
 		cs->GetFirstBlock();
 		while (cs->MoreBlocks())
@@ -135,14 +132,14 @@ private:
 			Int chamber = cs->Chamber();
 			if (0 <= chamber && chamber < 10)
 			{
-				clustercount[chamber] += cs->NumberOfClusters();
+				fClusterCount[chamber] += cs->NumberOfClusters();
 			}
 			cs->GetNextBlock();
 		}
 	}
 	
 
-	void CreateClusterBlocks(const AliMUONHLT::ClusterSource* cs, Int eventnumber)
+	void CreateClusterBlocks(const AliHLTMUONClusterSource* cs, Int eventnumber)
 	{
 		// Must select the proper event before counting or filling the arrays.
 		if ( ! cs->GetEvent(eventnumber) ) return;
@@ -156,10 +153,10 @@ private:
 			currentcount[i] = 0;
 
 			// Allocate arrays.
-			if (clustercount[i] > 0)
-				clusters[i] = new ClusterPoint[ clustercount[i] ];
+			if (fClusterCount[i] > 0)
+				fClusters[i] = new AliHLTMUONCoreClusterPoint[ fClusterCount[i] ];
 			else
-				clusters[i] = NULL;
+				fClusters[i] = NULL;
 		}
 
 		// Copy all the cluster data into arrays.
@@ -172,9 +169,9 @@ private:
 				cs->GetFirstCluster();
 				while (cs->MoreClusters())
 				{
-					ClusterPoint newpoint;
-					cs->FetchCluster(newpoint.x, newpoint.y);
-					clusters[chamber][currentcount[chamber]++] = newpoint;
+					AliHLTMUONCoreClusterPoint newpoint;
+					cs->FetchCluster(newpoint.fX, newpoint.fY);
+					fClusters[chamber][currentcount[chamber]++] = newpoint;
 					cs->GetNextCluster();
 				}
 			}
@@ -187,13 +184,13 @@ private:
 	{
 		for (Int i = 0; i < 10; i++)
 		{
-			if (clusters[i] != NULL)
-				delete [] clusters[i];
+			if (fClusters[i] != NULL)
+				delete [] fClusters[i];
 		}
 	}
 	
 	
-	void ProcessTriggers(const AliMUONHLT::TriggerSource* ts, Tracking::Tracker* tracker)
+	void ProcessTriggers(const AliHLTMUONTriggerSource* ts, AliHLTMUONCoreTracker* tracker)
 	{
 		// The proper event must be selected before calling this method.
 	
@@ -203,11 +200,11 @@ private:
 			ts->GetFirstTrigger();
 			while (ts->MoreTriggers())
 			{
-				const AliMUONHLT::TriggerRecord* trigdata = ts->GetTrigger();
+				const AliHLTMUONTriggerRecord* trigdata = ts->GetTrigger();
 				Assert( trigdata != NULL );
-				currenttriggernumber = (UInt)trigdata->TriggerNumber();
+				fCurrentTriggerNumber = (UInt)trigdata->TriggerNumber();
 
-				TriggerRecord trigger = Convert(*trigdata);
+				AliHLTMUONCoreTriggerRecord trigger = AliHLTMUONConvert(*trigdata);
 
 				DebugMsg(2, "Finding track:");
 				tracker->FindTrack(trigger);
@@ -222,49 +219,46 @@ private:
 	}
 	
 	
-	UInt clustercount[10];
-	ClusterPoint* clusters[10];
+	UInt fClusterCount[10];
+	AliHLTMUONCoreClusterPoint* fClusters[10];
 	
-	AliMUONHLT::TrackSink* trackoutput;  // The current track output object.
-	UInt currenttriggernumber;   // The current trigger, trigger number to use.
+	AliHLTMUONTrackSink* fTrackOutput;  // The current track output object.
+	UInt fCurrentTriggerNumber;   // The current trigger, trigger number to use.
 };
 
 
-} // dHLT
+} // end of namespace
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-ClassImp(AliMUONHLT::MicrodHLT)
-
-namespace AliMUONHLT
-{
+ClassImp(AliHLTMUONMicrodHLT)
 
 
-TString Version()
+TString AliHLTMUONVersion()
 {
 	TString str = dHLT::VersionString();
 	return str;
 }
 
-UInt_t MajorVersion()
+UInt_t AliHLTMUONMajorVersion()
 {
 	return dHLT::MajorVersion();
 }
 
-UInt_t MinorVersion()
+UInt_t AliHLTMUONMinorVersion()
 {
 	return dHLT::MinorVersion();
 }
 
-UInt_t BuildNumber()
+UInt_t AliHLTMUONBuildNumber()
 {
 	return dHLT::BuildNumber();
 }
 
 
-MicrodHLT::MicrodHLT() : TObject()
+AliHLTMUONMicrodHLT::AliHLTMUONMicrodHLT() : TObject()
 {
 	fTriggerSource = NULL;
 	fClusterSource = NULL;
@@ -274,30 +268,30 @@ MicrodHLT::MicrodHLT() : TObject()
 }
 
 
-MicrodHLT::~MicrodHLT()
+AliHLTMUONMicrodHLT::~AliHLTMUONMicrodHLT()
 {
 	// Nothing to do here.
 }
 
 
-void MicrodHLT::SetTriggerSource(const TriggerSource* source)
+void AliHLTMUONMicrodHLT::SetTriggerSource(const AliHLTMUONTriggerSource* source)
 {
-	fTriggerSource = const_cast<TriggerSource*>( source );
+	fTriggerSource = const_cast<AliHLTMUONTriggerSource*>( source );
 }
 
-void MicrodHLT::SetClusterSource(const ClusterSource* source)
+void AliHLTMUONMicrodHLT::SetClusterSource(const AliHLTMUONClusterSource* source)
 {
-	fClusterSource = const_cast<ClusterSource*>( source );
+	fClusterSource = const_cast<AliHLTMUONClusterSource*>( source );
 }
 
 
-void MicrodHLT::Run()
+void AliHLTMUONMicrodHLT::Run()
 {
 	DebugMsg(1, "Run");
 
-	//dHLT::Clustering::ClusterFinder* clusterfinder;
+	//AliHLTMUONCoreClusterFinder* clusterfinder;
 	//dHLT::Decision::DecisionMaker* decisionmaker;
-	//dHLT::Tracking::Tracker* tracker;
+	//AliHLTMUONCoreTracker* tracker;
 	
 	if (fTriggerSource == NULL)
 	{
@@ -321,20 +315,20 @@ void MicrodHLT::Run()
 		Warning("Run", "The file and folder names of the trigger source and cluster source do not correspond.");
 	}
 
-	dHLT::Clustering::ClusterFinder* clusterfinder = NULL;
-	dHLT::Tracking::Tracker* tracker = NULL;
+	AliHLTMUONCoreClusterFinder* clusterfinder = NULL;
+	AliHLTMUONCoreTracker* tracker = NULL;
 	try
 	{
 		// Assign the dHLT cluster finder object. If the fClusterFinder field is
 		// not set then use the default CenterOfGravityFinder.
 		if (fClusterFinder == NULL)
 		{
-			clusterfinder = new dHLT::Clustering::CenterOfGravityFinder();
+			clusterfinder = new AliHLTMUONCoreCenterOfGravityFinder();
 		}
 		else
 		{
-			dHLT::AliRoot::ClusterFinderProxy* clusterfinderproxy
-				= new dHLT::AliRoot::ClusterFinderProxy(fClusterFinder);
+			AliHLTMUONClusterFinderProxy* clusterfinderproxy
+				= new AliHLTMUONClusterFinderProxy(fClusterFinder);
 			fClusterFinder->SetCallback(clusterfinderproxy);
 			clusterfinder = clusterfinderproxy;
 		}
@@ -343,16 +337,16 @@ void MicrodHLT::Run()
 		// use the default MansoTracker implementation.
 		if (fTracker == NULL)
 		{
-			tracker = new dHLT::Tracking::MansoTracker();
+			tracker = new AliHLTMUONCoreMansoTracker();
 		}
 		else
 		{
-			dHLT::AliRoot::TrackerProxy* trackerproxy = new dHLT::AliRoot::TrackerProxy(fTracker);
+			AliHLTMUONTrackerProxy* trackerproxy = new AliHLTMUONTrackerProxy(fTracker);
 			fTracker->SetCallback(trackerproxy);
 			tracker = trackerproxy;
 		}
 
-		dHLT::MicroFramework framework;
+		MicroFramework framework;
 		framework.Run(fTriggerSource, fClusterSource, fTrackSink, tracker);
 	}
 	finally
@@ -364,23 +358,20 @@ void MicrodHLT::Run()
 
 
 #ifdef DEBUG
-void MicrodHLT::DebugLevel(Int_t value)
+void AliHLTMUONMicrodHLT::DebugLevel(Int_t value)
 {
-	dHLT::DebugLevel = value;
+	gAliHLTMUONDebugLevel = value;
 }
 #else // DEBUG
-void MicrodHLT::DebugLevel(Int_t /*value*/) {}
+void AliHLTMUONMicrodHLT::DebugLevel(Int_t /*value*/) {}
 #endif // DEBUG
 
 
-Int_t MicrodHLT::DebugLevel()
+Int_t AliHLTMUONMicrodHLT::DebugLevel()
 {
 #ifdef DEBUG
-	return dHLT::DebugLevel;
+	return gAliHLTMUONDebugLevel;
 #else // DEBUG
 	return -1;
 #endif // DEBUG
 }
-
-
-} // AliMUONHLT

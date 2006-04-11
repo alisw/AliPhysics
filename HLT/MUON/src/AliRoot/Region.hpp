@@ -5,35 +5,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_REGION_HPP
-#define dHLT_ALIROOT_REGION_HPP
+#ifndef ALIHLTMUONREGION_H
+#define ALIHLTMUONREGION_H
 
 #include <TObject.h>
 #include <Riostream.h>
 
-
-namespace AliMUONHLT
-{
-
-class Point;
+class AliHLTMUONPoint;
 
 
-class Region : public TObject
+class AliHLTMUONRegion : public TObject
 {
 public:
 
 	/* Default constructor initialises everything to zero.
 	 */
-	Region();
+	AliHLTMUONRegion();
 	
 	/* Constructs the boundary box from the specified boundary parameters.
 	   Note: the following conditions must apply: left <= right and bottom <= top
 	   If this is not the case then an error message is shown and everything
 	   is set to zero.
 	 */
-	Region(Float_t left, Float_t right, Float_t bottom, Float_t top);
+	AliHLTMUONRegion(Float_t left, Float_t right, Float_t bottom, Float_t top);
 
-	virtual ~Region() {}
+	virtual ~AliHLTMUONRegion() {}
 	
 	/* Get/Set methods for the boundary lines.
 	   Note: before assignment we check for the following parameter consistency:
@@ -53,10 +49,10 @@ public:
 	/* Checks if the point is within this region. If it is then kTRUE is returned
 	   otherwise kFALSE is returned.
 	 */
-	Bool_t Contains(const Point& p) const;
+	Bool_t Contains(const AliHLTMUONPoint& p) const;
 
 	// ostream operator usefull for text output.
-	friend ostream& operator << (ostream& os, const Region& r);
+	friend ostream& operator << (ostream& os, const AliHLTMUONRegion& r);
 
 private:
 
@@ -65,10 +61,8 @@ private:
 	Float_t fBottom;  // Bottom boundary of boundary box.
 	Float_t fTop;     // Top boundary of boundary box.
 
-	ClassDef(Region, 1)  // A boundary box region.
+	ClassDef(AliHLTMUONRegion, 1)  // A boundary box region.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_REGION_HPP
+#endif // ALIHLTMUONREGION_H

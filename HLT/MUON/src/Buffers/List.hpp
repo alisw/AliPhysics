@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_BUFFERS_LIST_HPP
-#define dHLT_BUFFERS_LIST_HPP
+#ifndef ALIHLTMUONCOREBUFFERSLIST_H
+#define ALIHLTMUONCOREBUFFERSLIST_H
 
 #include "BasicTypes.hpp"
 #include "Utils.hpp"
@@ -19,26 +19,22 @@ using std::endl;
 using std::cout;
 #endif // DEBUG
 
-namespace dHLT
-{
-namespace Buffers
-{
-
 
 template <typename DataType>
-class List
+class AliHLTMUONCoreList
 {
-  //protected:
-
-public:
+protected:
 
 	struct Node
 	{
-		Node* next;
-		DataType data;
+		Node* fNext;
+		DataType fData;
 	};
 
-	Node* first;
+	Node* fFirst;
+
+public:
+
 
 	class ConstIterator
 	{
@@ -46,64 +42,64 @@ public:
 
 		ConstIterator()
 		{
-			current = NULL;
+			fCurrent = NULL;
 		}
 
 		ConstIterator(const ConstIterator& iter)
 		{
-			current = iter.current;
+			fCurrent = iter.fCurrent;
 		}
 
 		ConstIterator(Node* node)
 		{
-			current = node;
+			fCurrent = node;
 		}
 
 		const DataType& operator * () const
 		{
-			return current->data;
+			return fCurrent->fData;
 		}
 
 		const DataType* operator -> () const
 		{
-			return &current->data;
+			return &fCurrent->fData;
 		}
 
 		ConstIterator& operator ++ ()
 		{
-			Assert( current != NULL );
-			current = current->next;
+			Assert( fCurrent != NULL );
+			fCurrent = fCurrent->fNext;
 			return *this;
 		}
 
 		ConstIterator operator ++ (int)
 		{
-			Assert( current != NULL );
+			Assert( fCurrent != NULL );
 			ConstIterator copy = *this;
-			current = current->next;
+			fCurrent = fCurrent->fNext;
 			return copy;
 		}
 		
 		operator const DataType* () const
 		{
-			return &current->data;
+			return &fCurrent->fData;
 		}
 
 		friend bool operator == (const ConstIterator& a, const ConstIterator& b)
 		{
-			return a.current == b.current;
+			return a.fCurrent == b.fCurrent;
 		}
 
 		friend bool operator != (const ConstIterator& a, const ConstIterator& b)
 		{
-			return a.current != b.current;
+			return a.fCurrent != b.fCurrent;
 		}
 
 	protected:
 	
-		friend class List;
+		friend class AliHLTMUONCore;
 
-		Node* current;
+		Node* fCurrent;
 	};
 	
 
@@ -113,75 +109,75 @@ public:
 
 		Iterator() : ConstIterator()
 		{
-			previous = NULL;
+			fPrevious = NULL;
 		}
 
 		Iterator(const Iterator& iter) : ConstIterator(iter)
 		{
-			previous = iter.previous;
+			fPrevious = iter.fPrevious;
 		}
 
 		Iterator(Node* current, Node* prev) : ConstIterator(current)
 		{
-			previous = prev;
+			fPrevious = prev;
 		}
 
 		DataType& operator * ()
 		{
-			return ConstIterator::current->data;
+			return ConstIterator::fCurrent->fData;
 		}
 
 		DataType* operator -> ()
 		{
-			return &ConstIterator::current->data;
+			return &ConstIterator::fCurrent->fData;
 		}
 
 		Iterator& operator ++ ()
 		{
-			Assert( ConstIterator::current != NULL );
-			previous = ConstIterator::current;
-			ConstIterator::current = ConstIterator::current->next;
+			Assert( ConstIterator::fCurrent != NULL );
+			fPrevious = ConstIterator::fCurrent;
+			ConstIterator::fCurrent = ConstIterator::fCurrent->fNext;
 			return *this;
 		}
 
 		Iterator operator ++ (int)
 		{
-			Assert( ConstIterator::current != NULL );
+			Assert( ConstIterator::fCurrent != NULL );
 			Iterator copy = *this;
-			previous = ConstIterator::current;
-			ConstIterator::current = ConstIterator::current->next;
+			fPrevious = ConstIterator::fCurrent;
+			ConstIterator::fCurrent = ConstIterator::fCurrent->fNext;
 			return copy;
 		}
 		
 		operator DataType* ()
 		{
-			if (ConstIterator::current != NULL)
-				return &ConstIterator::current->data;
+			if (ConstIterator::fCurrent != NULL)
+				return &ConstIterator::fCurrent->fData;
 			else
 				return NULL;
 		}
 
 	protected:
 	
-		friend class List;
+		friend class AliHLTMUONCore;
 
-		Node* previous;
+		Node* fPrevious;
 	};
 
 	
-	List()
+	AliHLTMUONCoreList()
 	{
-		first = NULL;
+		fFirst = NULL;
 	}
 	
 	
-	~List()
+	~AliHLTMUONCoreList()
 	{
-		Node* current = first;
+		Node* current = fFirst;
 		while (current != NULL)
 		{
 			Node* temp = current;
-			current = current->next;
+			current = current->fNext;
 			delete temp;
 		}
 	}
@@ -189,16 +185,16 @@ public:
 
 	bool Empty() const
 	{
-		return first == NULL;
+		return fFirst == NULL;
 	}
 
 	
 	DataType* New()
 	{
 		Node* newnode = new Node();
-		newnode->next = first;
-		first = newnode;
-		return &newnode->data;
+		newnode->fNext = fFirst;
+		fFirst = newnode;
+		return &newnode->fData;
 	}
 	
 	
@@ -236,23 +232,23 @@ public:
 	void Remove(const UInt index)
 	{
 		Node* previous = NULL;
-		Node* current = first;
+		Node* current = fFirst;
 		for (UInt i = 0; i < index; i++)
 		{
 			Assert( current != NULL );
 			previous = current;
-			current = current->next;
+			current = current->fNext;
 		}
 		Node* temp;
 		if (previous == NULL)
 		{
-			temp = first;
-			first = first->next;
+			temp = fFirst;
+			fFirst = fFirst->fNext;
 		}
 		else
 		{
 			temp = current;
-			previous->next = current->next;
+			previous->fNext = current->fNext;
 		}
 		delete temp;
 	}
@@ -280,13 +276,13 @@ public:
 		Node* temp;
 		if (previous == NULL)
 		{
-			temp = first;
-			first = first->next;
+			temp = fFirst;
+			fFirst = fFirst->fNext;
 		}
 		else
 		{
 			temp = current;
-			previous->next = current->next;
+			previous->fNext = current->fNext;
 		}
 		delete temp;
 	}
@@ -295,13 +291,13 @@ public:
 	Iterator Find(const DataType& data)
 	{
 		Node* previous = NULL;
-		Node* current = first;
+		Node* current = fFirst;
 		while (current != NULL)
 		{
-			if (current->data == data)
+			if (current->fData == data)
 				return Iterator(current, previous);
 			previous = current;
-			current = current->next;
+			current = current->fNext;
 		}
 		return End();
 	}
@@ -309,12 +305,12 @@ public:
 
 	ConstIterator Find(const DataType& data) const
 	{
-		Node* current = first;
+		Node* current = fFirst;
 		while (current != NULL)
 		{
-			if (current->data == data)
+			if (current->fData == data)
 				return current;
-			current = current->next;
+			current = current->fNext;
 		};
 		return End();
 	}
@@ -324,13 +320,13 @@ public:
 	Iterator Find(PredicateType predicate)
 	{
 		Node* previous = NULL;
-		Node* current = first;
+		Node* current = fFirst;
 		while (current != NULL)
 		{
-			if ( predicate(current->data) )
+			if ( predicate(current->fData) )
 				return Iterator(current, previous);
 			previous = current;
-			current = current->next;
+			current = current->fNext;
 		}
 		return End();
 	}
@@ -339,12 +335,12 @@ public:
 	template <typename PredicateType>
 	ConstIterator Find(PredicateType predicate) const
 	{
-		Node* current = first;
+		Node* current = fFirst;
 		while (current != NULL)
 		{
-			if ( predicate(current->data) )
+			if ( predicate(current->fData) )
 				return current;
-			current = current->next;
+			current = current->fNext;
 		}
 		return End();
 	}
@@ -358,26 +354,26 @@ public:
 
 	void Clear()
 	{
-		Node* current = first;
+		Node* current = fFirst;
 		while (current != NULL)
 		{
 			Node* temp = current;
-			current = current->next;
+			current = current->fNext;
 			delete temp;
 		};
-		first = NULL;
+		fFirst = NULL;
 	}
 
 
 	Iterator First()
 	{
-		return Iterator(first, NULL);
+		return Iterator(fFirst, NULL);
 	}
 
 
 	ConstIterator First() const
 	{
-		return first;
+		return fFirst;
 	}
 
 
@@ -397,11 +393,11 @@ public:
 
 	void Dump()
 	{
-		Node* current = first;
+		Node* current = fFirst;
 		while (current != NULL)
 		{
-			cout << current->data << endl;
-			current = current->next;
+			cout << current->fData << endl;
+			current = current->fNext;
 		}
 	}
 
@@ -409,7 +405,4 @@ public:
 };
 
 
-} // Buffers
-} // dHLT
-
-#endif // dHLT_BUFFERS_LIST_HPP
+#endif // ALIHLTMUONCOREBUFFERSLIST_H

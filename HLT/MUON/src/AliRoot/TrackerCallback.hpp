@@ -5,17 +5,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_TRACKER_CALLBACK_HPP
-#define dHLT_ALIROOT_TRACKER_CALLBACK_HPP
+#ifndef ALIHLTMUONTRACKERCALLBACK_H
+#define ALIHLTMUONTRACKERCALLBACK_H
 
 #include "TObject.h"
 
 
-namespace AliMUONHLT
-{
-
-
-class TrackerCallback : public TObject
+class AliHLTMUONTrackerCallback : public TObject
 {
 public:
 
@@ -27,10 +23,8 @@ public:
 	virtual void FoundTrack() = 0;
 	virtual void NoTrackFound() = 0;
 	
-	ClassDef(TrackerCallback, 0)  // Abstract tracker callback class.
+	ClassDef(AliHLTMUONTrackerCallback, 0)  // Abstract tracker callback class.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_TRACKER_CALLBACK_HPP
+#endif // ALIHLTMUONTRACKERCALLBACK_H

@@ -5,11 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_BASIC_TYPES_HPP
-#define dHLT_BASIC_TYPES_HPP
-
-namespace dHLT
-{
+#ifndef ALIHLTMUONBASICTYPES_H
+#define ALIHLTMUONBASICTYPES_H
 
 
 #ifndef NULL
@@ -31,6 +28,4 @@ typedef double Double;
 typedef char* NullString;
 
 
-} // dHLT
-
-#endif // dHLT_BASIC_TYPES_HPP
+#endif // ALIHLTMUONBASICTYPES_H

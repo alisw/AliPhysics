@@ -5,33 +5,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_TRACK_HPP
-#define dHLT_TRACK_HPP
+#ifndef ALIHLTMUONCORETRACK_H
+#define ALIHLTMUONCORETRACK_H
 
 #include "Point.hpp"
 #include "RegionOfInterest.hpp"
 #include "TriggerRecord.hpp"
 
-namespace dHLT
+
+typedef UInt AliHLTMUONCoreTrackID;
+
+
+struct AliHLTMUONCoreTrack
 {
 
-
-typedef UInt TrackID;
-
-
-struct Track
-{
-
-	TriggerRecordID triggerid;
-	ParticleSign sign;
-	Float p;   // momentum.
-	Float pt;  // transverse momentum.
-	Point point[10];  // Computed track coordinates on the 10 tracking chambers.
-	ROI region[10];   // Regions of interest from which clusters were used to compute this track.
+	AliHLTMUONCoreTriggerRecordID fTriggerid;
+	AliHLTMUONCoreParticleSign fSign;
+	Float fP;   // momentum.
+	Float fPt;  // transverse momentum.
+	AliHLTMUONCorePoint fPoint[10];  // Computed track coordinates on the 10 tracking chambers.
+	AliHLTMUONCoreROI fRegion[10];   // Regions of interest from which clusters were used to compute this track.
 
 };
 
 
-} // dHLT
-
-#endif // dHLT_TRACK_HPP
+#endif // ALIHLTMUONCORETRACK_H

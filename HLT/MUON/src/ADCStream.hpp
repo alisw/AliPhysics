@@ -5,20 +5,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ADC_STREAM_HPP
-#define dHLT_ADC_STREAM_HPP
+#ifndef ALIHLTMUONCOREADCSTREAM_H
+#define ALIHLTMUONCOREADCSTREAM_H
 
 #include "BasicTypes.hpp"
 
-namespace dHLT
-{
 
-
-class ADCStream
+class AliHLTMUONCoreADCStream
 {
 };
 
 
-} // dHLT
-
-#endif // dHLT_ADC_STREAM_HPP
+#endif // ALIHLTMUONCOREADCSTREAM_H

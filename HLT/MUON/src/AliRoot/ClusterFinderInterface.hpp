@@ -5,45 +5,39 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef dHLT_ALIROOT_CLUSTER_FINDER_INTERFACE_HPP
-#define dHLT_ALIROOT_CLUSTER_FINDER_INTERFACE_HPP
+#ifndef ALIHLTMUONCLUSTERFINDERINTERFACE_H
+#define ALIHLTMUONCLUSTERFINDERINTERFACE_H
 
 #include "Rtypes.h"
 
-
-namespace AliMUONHLT
-{
-
-class Point;
-class ADCStream;
-class ClusterFinder;
-class ClusterFinderCallback;
+class AliHLTMUONPoint;
+class AliHLTMUONADCStream;
+class AliHLTMUONClusterFinderCallback;
+class AliHLTMUONDummyClusterFinder;
 
 
-class ClusterFinderInterface
+class AliHLTMUONClusterFinderInterface
 {
 public:
-	ClusterFinderInterface(ClusterFinder* clusterfinder)
+	AliHLTMUONClusterFinderInterface(AliHLTMUONDummyClusterFinder* clusterfinder)
 	{
 		fClusterFinder = clusterfinder;
 	};
 	
-	const ClusterFinder* GetClusterFinder() const
+	const AliHLTMUONDummyClusterFinder* GetClusterFinder() const
 	{
 		return fClusterFinder;
 	};
 	
-        void FindClusters(const ADCStream* stream);
- 	UInt_t FillClusterData(Point* clusters, UInt_t arraysize);
+        void FindClusters(const AliHLTMUONADCStream* stream);
+ 	UInt_t FillClusterData(AliHLTMUONPoint* clusters, UInt_t arraysize);
  	void Reset();
-        void SetCallback(ClusterFinderCallback* callback);
+        void SetCallback(AliHLTMUONClusterFinderCallback* callback);
 
 private:
 
-	ClusterFinder* fClusterFinder;   //! Pointer to interpreted cluster finder class.
+	AliHLTMUONDummyClusterFinder* fClusterFinder;   //! Pointer to interpreted cluster finder class.
 };
 
 
-} // AliMUONHLT
-
-#endif // dHLT_ALIROOT_CLUSTER_FINDER_INTERFACE_HPP
+#endif // ALIHLTMUONCLUSTERFINDERINTERFACE_H
