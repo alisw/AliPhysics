@@ -378,7 +378,8 @@ void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
 
 //_____________________________________________________________________________
 void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib) const {
-  calib->ReadSimParFromCDB("TOF/Calib", 0);
+  // calib->ReadSimParFromCDB("TOF/Calib", 0); // original
+  calib->ReadSimParFromCDB("TOF/Calib", -1); // use AliCDBManager's number
 }
 //---------------------------------------------------------------------
 void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
