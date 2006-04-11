@@ -9,10 +9,6 @@
 /// \ingroup rec
 /// \class AliMUONClusterReconstructor
 /// \brief MUON cluster reconstructor in ALICE
-///
-/////////////////////////////////////
-/// MUON event reconstructor in ALICE
-/////////////////////////////////////
 
 #include <TObject.h>
 

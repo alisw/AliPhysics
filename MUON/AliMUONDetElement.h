@@ -7,7 +7,10 @@
 
 /// \ingroup rec
 /// \class AliMUONDetElement
-/// \brief Detection element object containing information for combined cluster / track finder in MUON arm 
+/// \brief Detection element object containing information for combined 
+/// cluster / track finder in MUON arm 
+///
+/// \author Alexander Zinchenko, JINR Dubna
  
 #include <TObject.h>
 class TObjArray;

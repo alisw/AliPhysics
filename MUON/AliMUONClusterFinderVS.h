@@ -9,10 +9,6 @@
 /// \ingroup rec
 /// \class AliMUONClusterFinderVS
 /// \brief Class for clustering and reconstruction of space points
-///
-/////////////////////////////////////////////////
-///  MUON Cluster Finder Class                 //
-/////////////////////////////////////////////////
 
 #include <TObject.h>
 

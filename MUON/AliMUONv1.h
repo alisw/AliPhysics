@@ -8,11 +8,8 @@
 
 /// \ingroup base
 /// \class AliMUONv1
-/// \brief Manager and hits classes for set:MUON version 1
-
-/////////////////////////////////////////////////////////
-//  Manager and hits classes for set:MUON version 1    //
-/////////////////////////////////////////////////////////
+/// \brief AliDetector class for MUON subsystem which implements
+/// functions for simulation 
  
 #include "AliMUON.h"
 

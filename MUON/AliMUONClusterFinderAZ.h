@@ -8,6 +8,8 @@
 /// \ingroup rec
 /// \class AliMUONClusterFinderAZ
 /// \brief Cluster finder in MUON arm of ALICE
+///
+/// \author Alexander Zinchenko, JINR Dubna
 
 class TH2D;
 class TClonesArray;

@@ -9,16 +9,11 @@
 //
 /// \ingroup base
 /// \class AliMUONDataLoader
-/// \brief MUON loader
+/// \brief Implements AliLoader for MUON subsystem
+///
+/// \author Gines Martinez
 
 #include "AliLoader.h"
-
-//__________________________________________________________________
-/////////////////////////////////////////////////////////////////////
-//                                                                 //
-//  class AliMUONLoader                                            //
-//                                                                 //
-/////////////////////////////////////////////////////////////////////
 
 class AliMUONData;
 

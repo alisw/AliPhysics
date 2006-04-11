@@ -9,7 +9,7 @@
 
 /// \ingroup base
 /// \class AliMUONHitMapA1
-/// \brief Implements HitMap as a 1-dim array
+/// \brief Implements AliHitMap as a 1-dim array
 
 #include "AliHitMap.h"
 

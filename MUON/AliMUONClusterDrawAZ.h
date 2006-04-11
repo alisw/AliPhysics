@@ -8,6 +8,8 @@
 /// \ingroup rec
 /// \class AliMUONClusterDrawAZ
 /// \brief Cluster drawing object for AZ cluster finder in MUON arm of ALICE
+///
+/// \author Alexander Zinchenko, JINR Dubna
 
 #include "AliMUONClusterDrawAZ.h"
 

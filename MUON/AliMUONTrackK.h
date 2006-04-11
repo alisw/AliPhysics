@@ -9,6 +9,8 @@
 /// \ingroup rec
 /// \class AliMUONTrack
 /// \brief Kalman track in MUON arm of ALICE
+///
+/// \author: Alexander Zinchenko, JINR Dubna
 
 class TArrayD;
 class TClonesArray;

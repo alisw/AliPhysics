@@ -10,6 +10,8 @@
 /// \ingroup base
 /// \class AliMUONDigitMapA1
 /// \brief Implements cluster Map as a 1-dim array
+/// 
+/// \author Christian Finck
 
 #include "AliHitMap.h"
 

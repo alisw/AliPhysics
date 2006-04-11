@@ -8,11 +8,9 @@
 
 /// \ingroup base
 /// \class AliMUON
-/// \brief AliDetector Class for MUON subsystem
-
-////////////////////////////////////////////////
-//  AliDetector Class for MUON subsystem      //
-////////////////////////////////////////////////
+/// \brief AliDetector class for MUON subsystem providing
+/// simulation data management 
+ 
 
 #include <TObjArray.h>
 

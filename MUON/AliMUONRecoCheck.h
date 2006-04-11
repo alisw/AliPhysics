@@ -10,11 +10,6 @@
 /// \class AliMUONRecoCheck
 /// \brief Utility class to check reconstruction
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// AliMUONRecoCheck                                                     //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
 #include <TObject.h>
 #include "AliMUONTrack.h"
 
