@@ -100,7 +100,7 @@ AliTRDcalibDB::AliTRDcalibDB()
   
   // TODO Default runnumber is set to 0, this should be changed later to an invalid value (e.g. -1) to prevent
   // TODO invalid calibration data to be used.
-  fRun = 0;
+  fRun = -1;
   
   fPadResponse.fPRFbin             = 0;
   fPadResponse.fPRFlo              = 0.0;
@@ -189,13 +189,6 @@ AliCDBEntry* AliTRDcalibDB::GetCDBEntry(const char* cdbPath)
   // Retrieves an entry with path <cdbPath> from the CDB.
   //
     
-  if (fRun < 0)
-  {
-    AliFatal("AliTRDcalibDB: Run number not set! Use AliTRDcalibDB::SetRun.");
-    //std::cerr << "AliTRDcalibDB: Run number not set! Use AliTRDcalibDB::SetRun." << std::endl;
-    return 0;
-  }
-
   AliCDBEntry* entry = AliCDBManager::Instance()->Get(cdbPath, fRun);
   if (!entry)
   { 
