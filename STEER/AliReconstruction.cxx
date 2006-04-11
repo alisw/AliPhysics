@@ -263,6 +263,12 @@ void AliReconstruction::InitCDBStorage()
     AliWarning(Form("Using default storage declared in AliSimulation: %s",fCDBUri.Data()));
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     SetDefaultStorage(fCDBUri);
+    
+    Int_t cdbRun = AliCDBManager::Instance()->GetRun();
+    if(cdbRun == -1){
+    	AliWarning("AliCDBManager's run number temporarily set to 0!!");
+    	AliCDBManager::Instance()->SetRun(0);
+    }
   }  
   
 }
