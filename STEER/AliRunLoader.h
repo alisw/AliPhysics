@@ -120,12 +120,12 @@ class AliRunLoader: public TNamed
     Int_t       WriteRecPoints(Option_t* opt="");
     Int_t       WriteTracks(Option_t* opt="");
     
-    Int_t       LoadHits(Option_t* detectors = "all",Option_t* opt = "RAED");
-    Int_t       LoadSDigits(Option_t* detectors = "all",Option_t* opt = "RAED");
-    Int_t       LoadDigits(Option_t* detectors = "all",Option_t* opt = "RAED");
-    Int_t       LoadRecPoints(Option_t* detectors = "all",Option_t* opt = "RAED");
-    Int_t       LoadTracks(Option_t* detectors = "all",Option_t* opt = "RAED");
-    Int_t       LoadRecParticles(Option_t* detectors = "all",Option_t* opt = "RAED");
+    Int_t       LoadHits(Option_t* detectors = "all",Option_t* opt = "READ");
+    Int_t       LoadSDigits(Option_t* detectors = "all",Option_t* opt = "READ");
+    Int_t       LoadDigits(Option_t* detectors = "all",Option_t* opt = "READ");
+    Int_t       LoadRecPoints(Option_t* detectors = "all",Option_t* opt = "READ");
+    Int_t       LoadTracks(Option_t* detectors = "all",Option_t* opt = "READ");
+    Int_t       LoadRecParticles(Option_t* detectors = "all",Option_t* opt = "READ");
     
     void        UnloadHits(Option_t* detectors = "all");
     void        UnloadSDigits(Option_t* detectors = "all");
