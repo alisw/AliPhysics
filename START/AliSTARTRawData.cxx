@@ -232,7 +232,6 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   buf[fIndex]=baseWord;
 
 
-
   // besttime right & left
   word=98;
   PackWord(baseWord,word, 0, 8); // T0-A sign
@@ -259,7 +258,7 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   PackWord(baseWord,word,8,31); // time-of-flight T0-C 
   fIndex++;
   buf[fIndex]=baseWord;
- 
+
   // time difference
   word=100;
   PackWord(baseWord,word, 0, 8); // TVDS sign
@@ -292,7 +291,6 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   fIndex++;
   buf[fIndex]=baseWord;
   
-
 
   // trigger channels
    // besttime right & left
@@ -369,40 +367,26 @@ void AliSTARTRawData::GetDigits(AliSTARTdigit *fDigits, UInt_t *buf)
   PackWord(baseWord,word,8,31); // time amplitude
   fIndex++;
   buf[fIndex]=baseWord;
-  cout<<endl;
+
 }
 
 //-----------------------------------------------------------------------------------
 
 void AliSTARTRawData::PackWord(UInt_t &BaseWord, UInt_t Word, Int_t StartBit, Int_t StopBit)
 {
-  //This method packs a word into the Baseword buffer starting form the "StartBit"
-  //and tacking StopBit-StartBit+1 bits
-  UInt_t dummyWord,offSet;
-  Int_t  length;
-  UInt_t sum;
-  //The BaseWord is being filled with 1 from StartBit to StopBit
-  length=StopBit-StartBit+1;
-  sum=(UInt_t)TMath::Power(2,length)-1;
 
-  if(Word > sum){
+  // Build mask
+  Int_t len=StopBit-StartBit+1;
+  UInt_t mask=0;
+  for(Int_t jb=0; jb<len; mask|=1<<jb++);
+  // Check consistency
+  if(Word > mask){
     Error("PackWord", "Word to be filled is not within desired length\n"
           "Word:%d Start bit:%d Stop Bit:%d",Word,StartBit,StopBit);
     return;
   }
-  offSet=sum;
-  offSet<<=StartBit;
-  BaseWord=BaseWord|offSet;
+  BaseWord=(BaseWord&~(mask<<StartBit))|Word<<StartBit;
 
-  //The Word to be filled is shifted to the position StartBit
-  //and the remaining  Left and Right bits are filled with 1
-  sum=(UInt_t)TMath::Power(2,StartBit)-1;
-  dummyWord=0xFFFFFFFF<<length;
-  dummyWord +=Word;
-  dummyWord<<=StartBit;
-  dummyWord+=sum;
-  BaseWord=BaseWord&dummyWord;
-  return;
 }
 
 //---------------------------------------------------------------------------------------
