@@ -526,7 +526,14 @@ Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
   xyz[0] = r*cp - cl->GetY()*sp;
   xyz[1] = r*sp + cl->GetY()*cp;
   xyz[2] = cl->GetZ();
-  p.SetXYZ(xyz[0],xyz[1],xyz[2]);
+  Float_t cov[6];
+  cov[0] = sp*sp*cl->GetSigmaY2();
+  cov[1] = -sp*cp*cl->GetSigmaY2();
+  cov[2] = 0.;
+  cov[3] = cp*cp*cl->GetSigmaY2();
+  cov[4] = 0.;
+  cov[5] = cl->GetSigmaZ2();
+  p.SetXYZ(xyz[0],xyz[1],xyz[2],cov);
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer; 
   switch (l) {
   case 0:
