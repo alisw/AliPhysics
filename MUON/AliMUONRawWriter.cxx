@@ -146,6 +146,8 @@ AliMUONRawWriter::operator=(const AliMUONRawWriter& rhs)
 //__________________________________________________________________________
 AliMUONRawWriter::~AliMUONRawWriter(void)
 {
+// Destructor
+
   AliDebug(1,"dtor");
   
   delete fSubEventArray;
@@ -573,6 +575,7 @@ Int_t AliMUONRawWriter::GetBusPatch(const AliMUONDigit& digit)
 //____________________________________________________________________
 Int_t AliMUONRawWriter::WriteTriggerDDL()
 {
+// Write trigger DDL
 
   fTriggerTimer.Start(kFALSE);
   

@@ -15,12 +15,11 @@
 
 /* $Id$ */
 
-////////////////////////////////////
-//
+// -----------------------------------
+// Class AliMUONClusterReconstructor
+// ----------------------------------
 // MUON cluster reconstructor for MUON
-//
-// Should implement a virtual class ClusterFinder to chose between VS and AZ method
-////////////////////////////////////
+// Should implement a virtual class ClusterFinder to choose between VS and AZ method
 
 #include "AliMUONClusterReconstructor.h"
 #include "AliRun.h" // for gAlice
@@ -46,7 +45,7 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONData* data)
   fDigitsCath0(new TClonesArray("AliMUONDigit",1000)),
   fDigitsCath1(new TClonesArray("AliMUONDigit",1000))
 {
-  // Standard Constructor
+/// Standard Constructor
 
   fDigitsCath0->SetOwner(kTRUE); 
   fDigitsCath1->SetOwner(kTRUE);
@@ -56,7 +55,7 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONData* data)
 AliMUONClusterReconstructor::AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs)
   : TObject(rhs)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -65,7 +64,7 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor (const AliMUONClusterRe
 AliMUONClusterReconstructor & 
 AliMUONClusterReconstructor::operator=(const AliMUONClusterReconstructor& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -77,6 +76,8 @@ AliMUONClusterReconstructor::operator=(const AliMUONClusterReconstructor& rhs)
 //__________________________________________________________________________
 AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 {
+/// Destructor
+
   delete fRecModel;
   delete fDigitsCath0;
   delete fDigitsCath1;
@@ -86,10 +87,9 @@ AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 void
 AliMUONClusterReconstructor::CheckSize(TClonesArray& a)
 {
-  // 
-  // Check if one can adds a new element, or if a is already full.
-  // If full, it is resized.
-  //
+/// Check if one can adds a new element, or if a is already full.
+/// If full, it is resized.
+
   if ( a.GetLast()+1 >= a.GetSize() )
   {
     AliInfo(Form("Increasing array size from %d to %d",
@@ -102,10 +102,8 @@ AliMUONClusterReconstructor::CheckSize(TClonesArray& a)
 void
 AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId)
 {
-  //
-  // Clusterize one detection element, and let fMUONData know about
-  // the results.
-  // 
+/// Clusterize one detection element, and let fMUONData know about
+/// the results.
   
   if ( fDigitsCath0->GetEntriesFast() || fDigitsCath1->GetEntriesFast() )
   {
@@ -136,15 +134,13 @@ AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId)
 //____________________________________________________________________
 void AliMUONClusterReconstructor::Digits2Clusters(Int_t chBeg)
 {
-  //
-  // Clusterize all the tracking chamber digits.
-  //
-  // For each chamber, we loop *once* on that chamber digits, and store them
-  // in 2 temporary arrays (one pair of arrays per detection element, 
-  // one array per cathode). Once a pair of arrays is full (i.e. all the digits
-  // of that detection element have been stored), we clusterize this DE, and
-  // move to the next one.
-  //
+/// Clusterize all the tracking chamber digits.
+///
+/// For each chamber, we loop *once* on that chamber digits, and store them
+/// in 2 temporary arrays (one pair of arrays per detection element, 
+/// one array per cathode). Once a pair of arrays is full (i.e. all the digits
+/// of that detection element have been stored), we clusterize this DE, and
+/// move to the next one.
   
   if (!fRecModel)
   {
@@ -208,6 +204,8 @@ void AliMUONClusterReconstructor::Digits2Clusters(Int_t chBeg)
 void 
 AliMUONClusterReconstructor::SetRecoModel(AliMUONClusterFinderVS* rec)
 { 
+/// Set reconstruction model
+
   delete fRecModel; 
   fRecModel = rec;
 } 
@@ -215,7 +213,7 @@ AliMUONClusterReconstructor::SetRecoModel(AliMUONClusterFinderVS* rec)
 //_______________________________________________________________________
 void AliMUONClusterReconstructor::Trigger2Trigger() 
 {
-// copy trigger from TreeD to TreeR
+/// Copy trigger from TreeD to TreeR
 
   fMUONData->SetTreeAddress("GLT");
   fMUONData->GetTriggerD();

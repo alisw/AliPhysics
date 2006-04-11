@@ -15,10 +15,12 @@
 
 /* $Id$ */
 
+// -------------------------
+// Class AliMUONDataLoader
+// -------------------------
+// Implements AliLoader for MUON subsystem
+// Author: Gines Martinez
 
-//Root includes
-
-//AliRoot includes
 #include "AliMUONLoader.h"
 #include "AliMUONConstants.h"
 #include "AliLog.h"
@@ -29,7 +31,7 @@ AliMUONLoader::AliMUONLoader()
   : AliLoader(),
     fMUONData(0)
 {
-//default constructor
+/// Default constructor
 }
 //_______________________________________________________________________________
 AliMUONLoader::AliMUONLoader(const Char_t* detname,const Char_t* eventfoldername)
@@ -42,13 +44,13 @@ AliMUONLoader::AliMUONLoader(const Char_t * detname,TFolder* eventfolder)
   : AliLoader(detname,eventfolder),
   fMUONData(0)
 {
-//constructor
+/// Constructor
 }
 //___________________________________________
 AliMUONLoader::AliMUONLoader(const AliMUONLoader& rhs)
   : AliLoader(rhs)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -56,13 +58,13 @@ AliMUONLoader::AliMUONLoader(const AliMUONLoader& rhs)
 //_______________________________________________________________________________
 AliMUONLoader::~AliMUONLoader()
 {
-//detructor 
+/// Destructor 
 }
 //-------------------------------------------------------------------
 AliMUONLoader&  
 AliMUONLoader::operator=(const AliMUONLoader& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -74,11 +76,15 @@ AliMUONLoader::operator=(const AliMUONLoader& rhs)
 //_______________________________________________________________________________
 void AliMUONLoader::SetMUONData(AliMUONData * MUONData)
 {
+/// Set MUON data
+
   fMUONData = MUONData;
 }
 //_______________________________________________________________________________
 AliMUONData * AliMUONLoader::GetMUONData()
 {
+/// Get MUON data
+
   return fMUONData;
 }
 

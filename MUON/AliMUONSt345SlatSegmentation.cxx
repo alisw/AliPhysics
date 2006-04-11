@@ -123,6 +123,7 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345Sla
 	fIymin(0),
 	fIymax(0)
 {
+// Copy constructor
 		AliFatal("Not implemented");
 }
 //----------------------------------------------------------------------
@@ -179,6 +180,8 @@ Float_t AliMUONSt345SlatSegmentation::GetAnod(Float_t xhit) const
 //_____________________________________________________________________________
 Bool_t AliMUONSt345SlatSegmentation::HasPad(Int_t ix, Int_t iy)
 {
+// Return true if pas with given indices exists
+
 	if ( ix < 1 || ix > Npx() || iy < 1 || iy > Npy() )
 	{
 		return kFALSE;
@@ -198,13 +201,14 @@ Bool_t AliMUONSt345SlatSegmentation::HasPad(Int_t ix, Int_t iy)
 //--------------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
 {
+    //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
+
   if (ix < 1 || ix > Npx() || iy < 1 || iy > Npy() ){
     AliWarning(Form("ix %d or iy %d out of boundaries: Npx=%d and Npy=%d",ix, iy, Npx(), Npy()));
     x = y= 0.;
 
   } else { 
 
-    //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
     //  Find sector isec
     Int_t isec = Sector(ix,iy);
     if (isec == -1) AliWarning(Form("isector = %d  with ix %d, iy %d", isec, ix, iy));
@@ -253,6 +257,8 @@ void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_
 //-------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy)
 {
+//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
+
   GetPadI(x, y, ix, iy);
 }
 
@@ -316,6 +322,8 @@ void AliMUONSt345SlatSegmentation::SetHit(Float_t x, Float_t y)
 //----------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
 {
+  // Set current hit 
+
   SetHit(xhit, yhit);
 }
 
@@ -387,6 +395,8 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
 //----------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, Float_t dx, Float_t dy)
 {
+// Initialises iteration over pads for charge distribution algorithm
+
   FirstPad(xhit, yhit, dx, dy);
 }
 //----------------------------------------------------------------------

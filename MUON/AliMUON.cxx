@@ -15,10 +15,11 @@
 
 /* $Id$ */
 
-
-///////////////////////////////////////////////
-//  Manager and hits classes for set:MUON     //
-////////////////////////////////////////////////
+// ------------------
+// Class AliMUON
+// ------------------
+// AliDetector class for MUON subsystem 
+// providing simulation data management 
 
 #include "Riostream.h"
 
@@ -118,9 +119,9 @@ AliMUON::AliMUON()
     fDigitizerType(""),
   fRawWriter(0x0)
 {
-// Default Constructor
-//
-	AliDebug(1,Form("default (empty) ctor this=%p",this));
+/// Default Constructor
+    
+    AliDebug(1,Form("default (empty) ctor this=%p",this));
     fIshunt          = 0;
 }
 
@@ -151,7 +152,9 @@ AliMUON::AliMUON(const char *name, const char *title,
     fDigitizerType(digitizerClassName),
   fRawWriter(0x0)
 {
-	AliDebug(1,Form("ctor this=%p",this));
+/// Standard constructor  
+  
+  AliDebug(1,Form("ctor this=%p",this));
   fIshunt =  0;
 
   SetMarkerColor(kRed);//
@@ -204,7 +207,7 @@ AliMUON::AliMUON(const char *name, const char *title,
 AliMUON::AliMUON(const AliMUON& rMUON)
  : AliDetector(rMUON)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -212,7 +215,8 @@ AliMUON::AliMUON(const AliMUON& rMUON)
 //____________________________________________________________________
 AliMUON::~AliMUON()
 {
-// Destructor
+/// Destructor
+
   AliDebug(1,Form("dtor this=%p",this));
   fIshunt  = 0;
 
@@ -233,7 +237,7 @@ AliMUON::~AliMUON()
 //________________________________________________________________________
 AliMUON& AliMUON::operator = (const AliMUON& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -245,8 +249,7 @@ AliMUON& AliMUON::operator = (const AliMUON& rhs)
 //_____________________________________________________________________________
 void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)
 {
-// Adds the geometry builder to the list
-// ---
+/// Add the geometry builder to the list
 
   fGeometryBuilder->AddBuilder(geomBuilder);
 }
@@ -254,7 +257,7 @@ void AliMUON::AddGeometryBuilder(AliMUONVGeometryBuilder* geomBuilder)
 //____________________________________________________________________
 void AliMUON::BuildGeometry()
 {
-// Geometry for event display
+/// Geometry for event display
 
 
 //     for (Int_t i = 0; i < AliMUONConstants::NCh(); i++)     
@@ -266,7 +269,7 @@ void AliMUON::BuildGeometry()
 //____________________________________________________________________
 const AliMUONGeometry*  AliMUON::GetGeometry() const
 {
-// Return geometry parametrisation
+/// Return geometry parametrisation
 
   if ( !fGeometryBuilder) {
     AliWarningStream() << "GeometryBuilder not defined." << std::endl;
@@ -279,7 +282,7 @@ const AliMUONGeometry*  AliMUON::GetGeometry() const
 //____________________________________________________________________
 const AliMUONGeometryTransformer*  AliMUON::GetGeometryTransformer() const
 {
-// Return geometry parametrisation
+/// Return geometry parametrisation
 
   const AliMUONGeometry* kGeometry = GetGeometry();
   
@@ -291,6 +294,8 @@ const AliMUONGeometryTransformer*  AliMUON::GetGeometryTransformer() const
 //__________________________________________________________________
 void  AliMUON::SetTreeAddress()
 {
+/// Set Hits tree address
+
   GetMUONData()->SetLoader(fLoader); 
   //  GetMUONData()->MakeBranch("D,S,RC");
   //  GetMUONData()->SetTreeAddress("H,D,S,RC");
@@ -308,7 +313,8 @@ void  AliMUON::SetTreeAddress()
 //_________________________________________________________________
 void AliMUON::SetChargeSlope(Int_t id, Float_t p1)
 {
-// Set the inverse charge slope for chamber id
+/// Set the inverse charge slope for chamber id
+
     Int_t i=2*(id-1);    //PH    ((AliMUONChamber*) (*fChambers)[i])->SetSigmaIntegration(p1);
     //PH    ((AliMUONChamber*) (*fChambers)[i+1])->SetSigmaIntegration(p1);
     ((AliMUONChamber*) fChambers->At(i))->SetChargeSlope(p1);
@@ -317,7 +323,8 @@ void AliMUON::SetChargeSlope(Int_t id, Float_t p1)
 //__________________________________________________________________
 void AliMUON::SetChargeSpread(Int_t id, Float_t p1, Float_t p2)
 {
-// Set sigma of charge spread for chamber id
+/// Set sigma of charge spread for chamber id
+
     Int_t i=2*(id-1);
     ((AliMUONChamber*) fChambers->At(i))->SetChargeSpread(p1,p2);
     ((AliMUONChamber*) fChambers->At(i+1))->SetChargeSpread(p1,p2);
@@ -325,7 +332,7 @@ void AliMUON::SetChargeSpread(Int_t id, Float_t p1, Float_t p2)
 //___________________________________________________________________
 void AliMUON::SetSigmaIntegration(Int_t id, Float_t p1)
 {
-// Set integration limits for charge spread
+/// Set integration limits for charge spread
     Int_t i=2*(id-1);
     ((AliMUONChamber*) fChambers->At(i))->SetSigmaIntegration(p1);
     ((AliMUONChamber*) fChambers->At(i+1))->SetSigmaIntegration(p1);
@@ -334,7 +341,8 @@ void AliMUON::SetSigmaIntegration(Int_t id, Float_t p1)
 //__________________________________________________________________
 void AliMUON::SetMaxAdc(Int_t id, Int_t p1)
 {
-// Set maximum number for ADCcounts (saturation)
+/// Set maximum number for ADCcounts (saturation)
+
     Int_t i=2*(id-1);
     ((AliMUONChamber*) fChambers->At(i))->SetMaxAdc(p1);
     ((AliMUONChamber*) fChambers->At(i+1))->SetMaxAdc(p1);
@@ -343,32 +351,36 @@ void AliMUON::SetMaxAdc(Int_t id, Int_t p1)
 //__________________________________________________________________
 void AliMUON::SetMaxStepGas(Float_t p1)
 {
-// Set stepsize in gas
+/// Set stepsize in gas
+
   fMaxStepGas=p1;
 }
 //__________________________________________________________________
 void AliMUON::SetMaxStepAlu(Float_t p1)
 {
-// Set step size in Alu
+/// Set step size in Alu
+
     fMaxStepAlu=p1;
 }
 //__________________________________________________________________
 void AliMUON::SetMaxDestepGas(Float_t p1)
 {
-// Set maximum step size in Gas
+/// Set maximum step size in Gas
+
     fMaxDestepGas=p1;
 }
 //__________________________________________________________________
 void AliMUON::SetMaxDestepAlu(Float_t p1)
 {
-// Set maximum step size in Alu
+/// Set maximum step size in Alu
+
   fMaxDestepAlu=p1;
 }
 
 //____________________________________________________________________
 Float_t  AliMUON::GetMaxStepGas() const
 {
-// Return stepsize in gas
+/// Return stepsize in gas
   
   return fMaxStepGas;
 }  
@@ -376,7 +388,7 @@ Float_t  AliMUON::GetMaxStepGas() const
 //____________________________________________________________________
 Float_t  AliMUON::GetMaxStepAlu() const
 {
-// Return step size in Alu
+/// Return step size in Alu
   
   return fMaxStepAlu;
 }
@@ -384,7 +396,7 @@ Float_t  AliMUON::GetMaxStepAlu() const
 //____________________________________________________________________
 Float_t  AliMUON::GetMaxDestepGas() const
 {
-// Return maximum step size in Gas
+/// Return maximum step size in Gas
   
   return fMaxDestepGas;
 }
@@ -392,7 +404,7 @@ Float_t  AliMUON::GetMaxDestepGas() const
 //____________________________________________________________________
 Float_t  AliMUON::GetMaxDestepAlu() const
 {
-// Return maximum step size in Gas
+/// Return maximum step size in Gas
   
   return fMaxDestepAlu;
 }
@@ -400,7 +412,7 @@ Float_t  AliMUON::GetMaxDestepAlu() const
 //____________________________________________________________________
  void  AliMUON::SetAlign(Bool_t align)
 {
- // Sets option for alignement to geometry builder
+/// Set option for alignement to geometry builder
  
    fGeometryBuilder->SetAlign(align);
 }   
@@ -408,7 +420,7 @@ Float_t  AliMUON::GetMaxDestepAlu() const
 //____________________________________________________________________
  void  AliMUON::SetAlign(const TString& fileName, Bool_t align)
 {
- // Sets option for alignement to geometry builder
+/// Set option for alignement to geometry builder
  
    fGeometryBuilder->SetAlign(fileName, align);
 }   
@@ -416,14 +428,15 @@ Float_t  AliMUON::GetMaxDestepAlu() const
 //____________________________________________________________________
 void   AliMUON::SetResponseModel(Int_t id, AliMUONResponse *response)
 {
-// Set the response for chamber id
+/// Set the response for chamber id
     ((AliMUONChamber*) fChambers->At(id))->SetResponseModel(response);
 }
+
 //____________________________________________________________________
 AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 {
-  // FIXME: the selection of the class should be done through a factory
-  // mechanism. (see also Hits2SDigits()).
+/// FIXME: the selection of the class should be done through a factory
+/// mechanism. (see also Hits2SDigits()).
   
   AliInfo(Form("Digitizer used : %s",fDigitizerType.Data()));
   
@@ -458,14 +471,15 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
 TString
 AliMUON::SDigitizerType() const
 {
+/// Return digitizer type
+
   return fSDigitizerType;
 }
 
 //_____________________________________________________________________
 void AliMUON::SDigits2Digits()
 {
-
-// write TreeD here 
+/// Write TreeD here only 
 
     char hname[30];
     //    sprintf(hname,"TreeD%d",fLoader->GetHeader()->GetEvent());
@@ -476,8 +490,8 @@ void AliMUON::SDigits2Digits()
 //_____________________________________________________________________
 void AliMUON::Hits2SDigits()
 {
-  // FIXME: the selection of the sdigitizer should be done through a
-  // factory mechanism.
+/// FIXME: the selection of the sdigitizer should be done through a
+/// factory mechanism.
   
   AliInfo(Form("SDigitizer used : %s",fSDigitizerType.Data()));
 
@@ -510,13 +524,16 @@ void AliMUON::Hits2SDigits()
 TString
 AliMUON::DigitizerType() const
 {
+/// Return digitizer type
+
   return fDigitizerType;
 }
 
 //_____________________________________________________________________
 void AliMUON::Digits2Raw()
 {
-  // convert digits of the current event to raw data
+/// Convert digits of the current event to raw data
+
   if (!fRawWriter)
   {
     fRawWriter = new AliMUONRawWriter(fMUONData);
@@ -535,9 +552,8 @@ void AliMUON::Digits2Raw()
 //_______________________________________________________________________
 AliLoader* AliMUON::MakeLoader(const char* topfoldername)
 { 
-//builds standard getter (AliLoader type)
-//if detector wants to use castomized getter, it must overload this method
-
+/// Build standard getter (AliLoader type);
+/// if detector wants to use castomized getter, it must overload this method
  
  AliDebug(1,Form("Creating standard getter for detector %s. Top folder is %s.",
          GetName(),topfoldername));
@@ -550,9 +566,9 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
 
 AliMUONRawCluster *AliMUON::RawCluster(Int_t ichamber, Int_t icathod, Int_t icluster)
 {
-//
-//  Return rawcluster (icluster) for chamber ichamber and cathode icathod
-//  Obsolete ??
+/// Return rawcluster (icluster) for chamber ichamber and cathode icathod
+/// Obsolete ??
+
     TClonesArray *muonRawCluster  = GetMUONData()->RawClusters(ichamber);
     ResetRawClusters();
     TTree *treeR = fLoader->TreeR();
@@ -571,11 +587,12 @@ AliMUONRawCluster *AliMUON::RawCluster(Int_t ichamber, Int_t icathod, Int_t iclu
 void
 AliMUON::ResetGeometryBuilder()
 {
-  // Only to be used by "experts" wanting to change the geometry builders
-  // to be used. 
-  // As the ctor of AliMUON now defines a default geometrybuilder, this
-  // ResetGeometryBuilder() must be called prior to call the 
-  // AddGeometryBuilder()
+/// Only to be used by "experts" wanting to change the geometry builders
+/// to be used. 
+/// As the ctor of AliMUON now defines a default geometrybuilder, this
+/// ResetGeometryBuilder() must be called prior to call the 
+/// AddGeometryBuilder()
+
   delete fGeometryBuilder;
   fGeometryBuilder = new AliMUONGeometryBuilder(this);
   fGeometryBuilder

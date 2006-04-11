@@ -35,7 +35,8 @@ ClassImp(AliMUONTrackHit) // Class implementation in ROOT context
 AliMUONTrackHit::AliMUONTrackHit()
   : TObject()
 {
-  // Default constructor
+/// Default constructor
+
   fHitForRecPtr = 0;
   fNextTrackHitWithSameHitForRec = 0;
   fPrevTrackHitWithSameHitForRec = 0;
@@ -44,6 +45,8 @@ AliMUONTrackHit::AliMUONTrackHit()
 AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& theMUONTrackHit)
   :  TObject(theMUONTrackHit)
 {
+/// Copy constructor
+
   fTrackParam                    =  theMUONTrackHit.fTrackParam;
   fHitForRecPtr                  =  theMUONTrackHit.fHitForRecPtr;
   fNextTrackHitWithSameHitForRec =  theMUONTrackHit.fNextTrackHitWithSameHitForRec;
@@ -52,6 +55,8 @@ AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& theMUONTrackHit)
   //__________________________________________________________________________
 AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& theMUONTrackHit)
 {
+/// Assignment operator
+
   // check assignement to self
   if (this == &theMUONTrackHit)
     return *this;
@@ -70,7 +75,8 @@ AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& theMUONTrack
   //__________________________________________________________________________
 AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
 {
-  // Constructor from the HitForRec pointed to by "Hit"
+/// Constructor from the HitForRec pointed to by "Hit"
+
   fHitForRecPtr = Hit; // pointer to HitForRec
   // links from/to HitForRec
   if (Hit->GetNTrackHits() == 0) {
@@ -88,9 +94,10 @@ AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
   //__________________________________________________________________________
 AliMUONTrackHit::~AliMUONTrackHit()
 {
-  // Destructor
-  // Update links between HitForRec's and TrackHit's
-  // connected to the current TrackHit being removed.
+/// Destructor
+/// Update links between HitForRec's and TrackHit's
+/// connected to the current TrackHit being removed.
+
   AliMUONHitForRec *hit = fHitForRecPtr; // pointer to HitForRec
   // remove current TrackHit in HitForRec links
   if (this == hit->GetFirstTrackHitPtr())
@@ -114,9 +121,10 @@ AliMUONTrackHit::~AliMUONTrackHit()
   //__________________________________________________________________________
 Int_t AliMUONTrackHit::Compare(const TObject* TrackHit) const
 {
-  // "Compare" function to sort with decreasing Z (spectro. muon Z <0).
-  // Returns 1 (0, -1) if Z of current TrackHit
-  // is smaller than (equal to, larger than) Z of TrackHit
+/// "Compare" function to sort with decreasing Z (spectro. muon Z <0).
+/// Returns 1 (0, -1) if Z of current TrackHit
+/// is smaller than (equal to, larger than) Z of TrackHit
+
   if (fHitForRecPtr->GetZ() <
       ((AliMUONTrackHit*)TrackHit)->fHitForRecPtr->GetZ()) return(1);
   else if (fHitForRecPtr->GetZ() ==

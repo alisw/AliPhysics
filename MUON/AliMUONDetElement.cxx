@@ -15,6 +15,14 @@
 
 /* $Id$ */
 
+// --------------------------
+// Class AliMUONDetElement
+// --------------------------
+// Detection element object containing information for combined 
+// cluster / track finder in MUON arm 
+// Author: Alexander Zinchenko, JINR Dubna
+ 
+
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include "AliMUONDetElement.h"
@@ -37,7 +45,7 @@ ClassImp(AliMUONDetElement) // Class implementation in ROOT context
 AliMUONDetElement::AliMUONDetElement()
   : TObject()
 {
-// Default constructor
+/// Default constructor
   for (Int_t i = 0; i < 2; i++) {
     fHitMap[i] = NULL;
     fDigits[i] = NULL;
@@ -51,7 +59,7 @@ AliMUONDetElement::AliMUONDetElement()
 AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClusterFinderAZ *recModel) 
   : TObject()
 {
-  // Constructor
+/// Constructor
   fidDE = idDE;
   fChamber = fidDE / 100 - 1;
   fDigits[0] = new TObjArray(10);
@@ -73,7 +81,7 @@ AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClust
 //_________________________________________________________________________
 AliMUONDetElement::~AliMUONDetElement()
 {
-  // Destructor
+/// Destructor
   for (Int_t i = 0; i < 2; i++) {
     delete fHitMap[i]; fHitMap[i] = NULL; 
     delete fDigits[i]; fDigits[i] = NULL; 
@@ -87,7 +95,7 @@ AliMUONDetElement::~AliMUONDetElement()
 AliMUONDetElement::AliMUONDetElement (const AliMUONDetElement& rhs)
   : TObject(rhs)
 {
-// Copy constructor
+/// Copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -95,7 +103,7 @@ AliMUONDetElement::AliMUONDetElement (const AliMUONDetElement& rhs)
 //________________________________________________________________________
 AliMUONDetElement & AliMUONDetElement::operator = (const AliMUONDetElement& rhs)
 {
-// Assignement operator
+/// Assignement operator
 
   if (this == &rhs) return *this;
   AliFatal( "Not implemented.");
@@ -105,9 +113,9 @@ AliMUONDetElement & AliMUONDetElement::operator = (const AliMUONDetElement& rhs)
 //_________________________________________________________________________
 Int_t AliMUONDetElement::Compare(const TObject* detElem) const
 {
-  // "Compare" function to sort in Z (towards interaction point)
-  // Returns -1 (0, +1) if charge of current pixel
-  // is greater than (equal to, less than) charge of pixel
+/// "Compare" function to sort in Z (towards interaction point)
+/// Returns -1 (0, +1) if charge of current pixel
+/// is greater than (equal to, less than) charge of pixel
   if (fZ > ((AliMUONDetElement*)detElem)->Z()) return(+1);
   else if (fZ == ((AliMUONDetElement*)detElem)->Z()) return( 0);
   else return(-1);
@@ -116,7 +124,7 @@ Int_t AliMUONDetElement::Compare(const TObject* detElem) const
 //_________________________________________________________________________
 void AliMUONDetElement::Fill(AliMUONData */*data*/)
 {
-  // Fill hit maps
+/// Fill hit maps
   fLeft[0] = fDigits[0]->GetEntriesFast();
   fLeft[1] = fDigits[1]->GetEntriesFast();
 
@@ -151,7 +159,7 @@ void AliMUONDetElement::Fill(AliMUONData */*data*/)
 //_________________________________________________________________________
 void AliMUONDetElement::AddDigit(AliMUONDigit *dig)
 {
-  // Add digit
+/// Add digit
 
   fDigits[dig->Cathode()]->Add(dig);
 }
@@ -159,7 +167,7 @@ void AliMUONDetElement::AddDigit(AliMUONDigit *dig)
 //_________________________________________________________________________
 Bool_t AliMUONDetElement::Inside(Double_t x, Double_t y, Double_t z) const
 {
-  // Check if point is inside detection element
+/// Check if point is inside detection element
 
   Int_t ix, iy;
   for (Int_t i = 0; i < 2; i++) {
@@ -188,7 +196,7 @@ Bool_t AliMUONDetElement::Inside(Double_t x, Double_t y, Double_t z) const
 //_________________________________________________________________________
 void AliMUONDetElement::ClusterReco(Double_t xTrack, Double_t yTrack)
 {
-  // Run cluster reconstruction around point (x,y)
+/// Run cluster reconstruction around point (x,y)
 
   if (fLeft[0] == 0 && fLeft[1] == 0) return; // all digits have been used 
   Float_t dx, dy;
@@ -260,7 +268,7 @@ void AliMUONDetElement::ClusterReco(Double_t xTrack, Double_t yTrack)
 //_________________________________________________________________________
 void AliMUONDetElement::AddHitForRec(AliMUONRawCluster *clus)
 {
-  // Make HitForRec from raw cluster (rec. point)
+/// Make HitForRec from raw cluster (rec. point)
 
   fRawClus->Add(new AliMUONRawCluster(*clus));
   AliMUONHitForRec *hitForRec = 

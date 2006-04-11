@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// -------------------------
+// Class AliMUONResponse
+// -------------------------
+// Chamber response base class
+// ...
+
 #include "AliMUONResponse.h"
 
 #include "AliLog.h"
@@ -25,19 +31,21 @@ ClassImp(AliMUONResponse)
 AliMUONResponse::AliMUONResponse()
   : TObject()
 {
-// Default constructor
+/// Default constructor
 }
 
 
 AliMUONResponse::~AliMUONResponse()
 {
-// Destructor
+/// Destructor
 }
 
 //_____________________________________________________________________________
 void
 AliMUONResponse::DisIntegrate(const AliMUONHit&, TList& digits)
 {
+/// Not implemented disintegration
+
   digits.Clear();
   AliError("Not implemented in this base class");
 }

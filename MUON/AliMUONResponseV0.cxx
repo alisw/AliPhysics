@@ -15,6 +15,11 @@
 
 /* $Id$ */
 
+// --------------------------
+// Class AliMUONResponseV0
+// --------------------------
+// Implementation of Mathieson response
+// ...
 
 #include "AliMUONResponseV0.h"
 
@@ -111,6 +116,8 @@ AliMUONResponseV0& AliMUONResponseV0::operator = (const AliMUONResponseV0& rhs)
 void
 AliMUONResponseV0::Print(Option_t*) const
 {
+// Printing
+
   cout << " ChargeSlope=" << fChargeSlope
     << " ChargeSpreadX,Y=" << fChargeSpreadX
     << fChargeSpreadY

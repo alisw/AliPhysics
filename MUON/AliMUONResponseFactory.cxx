@@ -13,9 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////
-//  Factory for muon response                             //
-////////////////////////////////////////////////////////////
+// -----------------------------
+// Class AliMUONResponseFactory
+// -----------------------------
+// Factory for muon response
+// Class separated from AliMUONFactoryV4
 
 /* $Id$ */
 
@@ -39,7 +41,9 @@ ClassImp(AliMUONResponseFactory)
     : TNamed(name, ""),
       fMUON(0),
       fResponse0(0)
-{  
+{
+/// Standard constructor
+  
   AliDebug(1,Form("ctor this=%p",this));
 }
 
@@ -49,15 +53,16 @@ ClassImp(AliMUONResponseFactory)
       fMUON(0),
       fResponse0(0)
 {
+/// Default constructor
+
   AliDebug(1,Form("default (empty) ctor this=%p",this));
-// Default constructor
 }
 
 //__________________________________________________________________________
 AliMUONResponseFactory::AliMUONResponseFactory(const AliMUONResponseFactory& rhs)
  : TNamed(rhs)
 {
-  // Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -66,14 +71,14 @@ AliMUONResponseFactory::AliMUONResponseFactory(const AliMUONResponseFactory& rhs
 
 AliMUONResponseFactory::~AliMUONResponseFactory()
 {
-// Destructor
+/// Destructor
 	AliDebug(1,Form("dtor this=%p",this));
 }
 
 //__________________________________________________________________________
 AliMUONResponseFactory&  AliMUONResponseFactory::operator=(const AliMUONResponseFactory& rhs)
 {
-  // Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -85,9 +90,7 @@ AliMUONResponseFactory&  AliMUONResponseFactory::operator=(const AliMUONResponse
 //__________________________________________________________________________
 void AliMUONResponseFactory::BuildCommon() 
 {
-  //
-  // Construct the default response.
-  //
+/// Construct the default response.
 
   // Default response: 5 mm of gas
   fResponse0 = new AliMUONResponseV0;
@@ -189,7 +192,7 @@ void AliMUONResponseFactory::BuildStation6()
 //__________________________________________________________________________
 void AliMUONResponseFactory::Build(AliMUON* where) 
 {
-// Construct MUON responses
+/// Construct MUON responses
 
   fMUON = where;
 
@@ -211,7 +214,7 @@ void AliMUONResponseFactory::Build(AliMUON* where)
 //__________________________________________________________________________
 void AliMUONResponseFactory::BuildStation(AliMUON* where, Int_t stationNumber) 
 {
-// Construct MUON responses
+/// Construct MUON responses for given station
 
   fMUON = where;
   if (!fResponse0) BuildCommon(); 

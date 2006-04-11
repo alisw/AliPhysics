@@ -15,9 +15,11 @@
 
 /* $Id$ */
 
-/////////////////////////////////////////////////////////
-//  Manager and hits classes for set:MUON version 1    //
-/////////////////////////////////////////////////////////
+// --------------------
+// Class AliMUONv1
+// --------------------
+// AliDetector class for MUON subsystem which implements
+// functions for simulation 
 
 #include "AliMUONv1.h"
 #include "AliMUONConstants.h"
@@ -65,8 +67,9 @@ AliMUONv1::AliMUONv1()
     fAngleEffect10(0x0),
     fAngleEffectNorma(0x0)
 {
-// Default constructor
-	AliDebug(1,Form("default (empty) ctor this=%p",this));
+/// Default constructor
+  
+  AliDebug(1,Form("default (empty) ctor this=%p",this));
 } 
 
 //___________________________________________
@@ -86,9 +89,9 @@ AliMUONv1::AliMUONv1(const char *name, const char *title,
     fAngleEffect10(0x0),
     fAngleEffectNorma(0x0)
 {
-// Standard onstructor
+/// Standard onstructor
 
-	AliDebug(1,Form("ctor this=%p",this));	
+    AliDebug(1,Form("ctor this=%p",this));	
 	
     // By default include all stations
 
@@ -124,7 +127,7 @@ AliMUONv1::AliMUONv1(const char *name, const char *title,
 AliMUONv1::AliMUONv1(const AliMUONv1& right) 
   : AliMUON(right) 
 {  
-  // copy constructor (not implemented)
+/// Copy constructor (not implemented)
 
   AliFatal("Copy constructor not provided.");
 }
@@ -132,8 +135,9 @@ AliMUONv1::AliMUONv1(const AliMUONv1& right)
 //___________________________________________
 AliMUONv1::~AliMUONv1()
 {
-// Destructor
-	AliDebug(1,Form("dtor this=%p",this));
+/// Destructor
+  
+  AliDebug(1,Form("dtor this=%p",this));
   delete [] fStepSum;
   delete [] fDestepSum;
   delete fElossRatio;
@@ -144,7 +148,7 @@ AliMUONv1::~AliMUONv1()
 //_____________________________________________________________________________
 AliMUONv1& AliMUONv1::operator=(const AliMUONv1& right)
 {
-  // assignement operator (not implemented)
+/// Assignement operator (not implemented)
 
   // check assignement to self
   if (this == &right) return *this;
@@ -157,9 +161,7 @@ AliMUONv1& AliMUONv1::operator=(const AliMUONv1& right)
 //__________________________________________________
 void AliMUONv1::CreateGeometry()
 {
-//
-// Construct geometry using geometry builder
-//
+/// Construct geometry using geometry builder
 
   fGeometryBuilder->CreateGeometry();
 }
@@ -167,9 +169,7 @@ void AliMUONv1::CreateGeometry()
 //________________________________________________________________
 void AliMUONv1::CreateMaterials()
 {
-//
-// Construct materials using geometry builder
-//
+/// Construct materials using geometry builder
 
   fGeometryBuilder->CreateMaterials();
 }
@@ -177,11 +177,10 @@ void AliMUONv1::CreateMaterials()
 //___________________________________________
 void AliMUONv1::Init()
 { 
+/// Initialize geometry
+
   AliDebug(1,"Start Init for version 1 - CPC chamber type");
    
-  //
-  // Initialize geometry
-  //
   fGeometryBuilder->InitGeometry();
   AliDebug(1,"Finished Init for version 1 - CPC chamber type");   
  
@@ -221,10 +220,9 @@ void AliMUONv1::Init()
 //__________________________________________________________________
 Int_t  AliMUONv1::GetChamberId(Int_t volId) const
 {
-// Check if the volume with specified  volId is a sensitive volume (gas) 
-// of some chamber and returns the chamber number;
-// if not sensitive volume - return 0.
-// ---
+/// Check if the volume with specified  volId is a sensitive volume (gas) 
+/// of some chamber and returns the chamber number;
+/// if not sensitive volume - return 0.
 
   for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {
     if ( GetGeometry()->GetModule(i)->IsSensitiveVolume(volId) )
@@ -237,9 +235,8 @@ Int_t  AliMUONv1::GetChamberId(Int_t volId) const
 //_______________________________________________________________________________
 TString  AliMUONv1::CurrentVolumePath() const
 {
-// Returns current volume path
-// (Could be removed when this function is available via gMC)
-// ---	     
+/// Return current volume path
+/// (Could be removed when this function is available via gMC)
 
   TString path = "";
   TString name;
@@ -262,8 +259,8 @@ TString  AliMUONv1::CurrentVolumePath() const
 //_______________________________________________________________________________
 void AliMUONv1::StepManager()
 {
-  // Stepmanager for the chambers
-  // TBR
+/// Step manager for the chambers
+/// TBR
 
  if (fStepManagerVersionDE) {
     StepManager2();
@@ -432,7 +429,7 @@ void AliMUONv1::StepManager()
 //_______________________________________________________________________________
 void AliMUONv1::StepManager2()
 {
-  // Stepmanager for the chambers
+/// Step manager for the chambers
 
   // Only charged tracks
   if( !(gMC->TrackCharge()) ) return; 

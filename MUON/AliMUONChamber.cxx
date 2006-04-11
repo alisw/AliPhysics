@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// -----------------------
+// Class AliMUONChamber
+// -----------------------
+// MUON tracking chamber class
+// now only providing DisIntegration function
+
 // --- ROOT includes ---
 #include <TRandom.h>
 #include <TMath.h>
@@ -37,7 +43,7 @@ AliMUONChamber::AliMUONChamber()
     fResponse(0),
     fMUON(0)
 {
-// Default constructor
+/// Default constructor
 
   AliDebug(1, Form("default (empty) ctor this = %p", this));
 }
@@ -50,6 +56,7 @@ AliMUONChamber::AliMUONChamber(Int_t id)
     fResponse(0),
     fMUON(0)
 {
+/// Standard constructor
 
     // muon
     fMUON = (AliMUON*)gAlice->GetModule("MUON");
@@ -65,7 +72,7 @@ AliMUONChamber::AliMUONChamber(Int_t id)
 AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)
   : TObject(rChamber)
 {
-  // Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
   // Dummy copy constructor
@@ -74,7 +81,7 @@ AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)
 //_______________________________________________________
 AliMUONChamber::~AliMUONChamber() 
 {
-  // Destructor
+/// Destructor
 
   AliDebug(1, Form("dtor this = %p", this));
 }
@@ -82,7 +89,7 @@ AliMUONChamber::~AliMUONChamber()
 //_______________________________________________________
 AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& rhs)
 {
-  // Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -92,9 +99,10 @@ AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& rhs)
 }
 
 //_____________________________________________________
-void AliMUONChamber::ChargeCorrelationInit() {
-  // Initialisation of charge correlation for current hit
-  // the value is stored, and then used by Disintegration
+void AliMUONChamber::ChargeCorrelationInit() 
+{
+/// Initialisation of charge correlation for current hit
+/// the value is stored, and then used by Disintegration
 
   // exponential is here to avoid eventual problems in 0 
   // factor 2 because chargecorrel is q1/q2 and not q1/qtrue
@@ -105,9 +113,9 @@ void AliMUONChamber::ChargeCorrelationInit() {
 void AliMUONChamber::DisIntegration(AliMUONHit *hit, 
 				    Int_t& nnew,Float_t newclust[6][500]) 
 {
-  //    
-  //  Generates pad hits (simulated cluster) 
-  //  using the segmentation and the response model 
+///  Generates pad hits (simulated cluster) 
+///  using the segmentation and the response model 
+
   Float_t dx, dy;
 
   Float_t  xhit = hit->X();

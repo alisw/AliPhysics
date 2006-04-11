@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// -------------------------------
+// Class AliMUONClusterFinderVS
+// -------------------------------
+// Class for clustering and reconstruction of space points
+// (Not used by default)
+
 #include "AliMUONClusterFinderVS.h"
 #include "AliMUONDigit.h"
 #include "AliMUONRawCluster.h"
@@ -43,7 +49,7 @@ ClassImp(AliMUONClusterFinderVS)
 AliMUONClusterFinderVS::AliMUONClusterFinderVS()
   : TObject()
 {
-// Default constructor
+/// Default constructor
     fInput=AliMUONClusterInput::Instance();
     fDigitMap[0] = 0;
     fDigitMap[1] = 0;
@@ -63,6 +69,8 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
  //____________________________________________________________________________
 AliMUONClusterFinderVS::~AliMUONClusterFinderVS()
 {
+/// Destructor
+
   // Reset tracks information
    fNRawClusters = 0;
    if (fRawClusters) {
@@ -73,27 +81,27 @@ AliMUONClusterFinderVS::~AliMUONClusterFinderVS()
 
 AliMUONClusterFinderVS::AliMUONClusterFinderVS(const AliMUONClusterFinderVS & clusterFinder):TObject(clusterFinder)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
 //____________________________________________________________________________
 void AliMUONClusterFinderVS::ResetRawClusters()
 {
-  // Reset tracks information
+/// Reset tracks information
   fNRawClusters = 0;
   if (fRawClusters) fRawClusters->Clear();
 }
 //____________________________________________________________________________
 void AliMUONClusterFinderVS::Decluster(AliMUONRawCluster *cluster)
 {
-// Decluster by local maxima
+/// Decluster by local maxima
     SplitByLocalMaxima(cluster);
 }
 //____________________________________________________________________________
 void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 {
-  // Split complex cluster by local maxima 
+/// Split complex cluster by local maxima 
     Int_t cath, i;
 
     fInput->SetCluster(c);
@@ -948,7 +956,7 @@ void AliMUONClusterFinderVS::SplitByLocalMaxima(AliMUONRawCluster *c)
 
 void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 {
-// Find all local maxima of a cluster
+/// Find all local maxima of a cluster
     AliDebug(1,"\n Find Local maxima  !");
     
     AliMUONDigit* digt;
@@ -1152,9 +1160,8 @@ void AliMUONClusterFinderVS::FindLocalMaxima(AliMUONRawCluster* /*c*/)
 
 void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_t cath) 
 {
-  //
-  //  Completes cluster information starting from list of digits
-  //
+///  Completes cluster information starting from list of digits
+
   AliMUONDigit* dig;
   Float_t x, y, z;
   Int_t  ix, iy;
@@ -1240,9 +1247,8 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t flag, Int_
 
 void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath) 
 {
-  //
-  //  Completes cluster information starting from list of digits
-  //
+///  Completes cluster information starting from list of digits
+
   static Float_t dr0;
   
   AliMUONDigit* dig;
@@ -1289,15 +1295,10 @@ void  AliMUONClusterFinderVS::FillCluster(AliMUONRawCluster* c, Int_t cath)
     c->SetX(cath,fSeg2[cath]->GetAnod(fInput->DetElemId(), c->GetX(cath)));
 }
 
-void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONRawCluster &c){
-
-
-//
-//  Find a super cluster on both cathodes
-//
-//
-//  Add i,j as element of the cluster
-//
+void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONRawCluster &c)
+{
+///  Find a super cluster on both cathodes
+///  Add i,j as element of the cluster
     
     Int_t idx = fDigitMap[cath]->GetHitIndex(i,j);
     AliMUONDigit* dig = (AliMUONDigit*) fDigitMap[cath]->GetHit(i,j);
@@ -1428,10 +1429,8 @@ void  AliMUONClusterFinderVS::FindCluster(Int_t i, Int_t j, Int_t cath, AliMUONR
 
 void AliMUONClusterFinderVS::FindRawClusters()
 {
-  //
-  // MUON cluster finder from digits -- finds neighbours on both cathodes and 
-  // fills the tree with raw clusters
-  //
+/// MUON cluster finder from digits -- finds neighbours on both cathodes and 
+/// fills the tree with raw clusters
 
     ResetRawClusters();
 //  Return if no input datad available
@@ -1544,8 +1543,8 @@ void AliMUONClusterFinderVS::FindRawClusters()
 
 Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t cath)
 {
-// Performs a single Mathieson fit on one cathode
-// 
+/// Performs a single Mathieson fit on one cathode
+
     Double_t arglist[20];
     Int_t ierflag=0;
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
@@ -1607,8 +1606,8 @@ Float_t AliMUONClusterFinderVS::SingleMathiesonFit(AliMUONRawCluster *c, Int_t c
 
 Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster * /*c*/)
 {
-// Perform combined Mathieson fit on both cathode planes
-//
+/// Perform combined Mathieson fit on both cathode planes
+
     Double_t arglist[20];
     Int_t ierflag=0;
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
@@ -1701,8 +1700,7 @@ Float_t AliMUONClusterFinderVS::CombiSingleMathiesonFit(AliMUONRawCluster * /*c*
 
 Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster * /*c*/, Int_t cath)
 {
-// Performs a double Mathieson fit on one cathode
-// 
+/// Performs a double Mathieson fit on one cathode 
 
 //
 //  Initialise global variables for fit
@@ -1782,9 +1780,8 @@ Bool_t AliMUONClusterFinderVS::DoubleMathiesonFit(AliMUONRawCluster * /*c*/, Int
 
 Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*/)
 {
-//
-// Perform combined double Mathieson fit on both cathode planes
-//
+/// Perform combined double Mathieson fit on both cathode planes
+
     Double_t arglist[20];
     Int_t ierflag=0;
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
@@ -1939,9 +1936,8 @@ Float_t AliMUONClusterFinderVS::CombiDoubleMathiesonFit(AliMUONRawCluster * /*c*
 
 void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 {
-//
-// One cluster for each maximum
-//
+/// One cluster for each maximum
+
     Int_t i, j, cath;
     AliMUONClusterInput& clusterInput = *(AliMUONClusterInput::Instance());
     for (j=0; j<2; j++) {
@@ -1988,9 +1984,8 @@ void AliMUONClusterFinderVS::Split(AliMUONRawCluster* c)
 }
 void AliMUONClusterFinderVS::AddRawCluster(AliMUONRawCluster& c)
 {
-  //
-  // Add a raw cluster copy to the list
-  //
+/// Add a raw cluster copy to the list
+
   //     AliMUON *pMUON=(AliMUON*)gAlice->GetModule("MUON");
   //     pMUON->GetMUONData()->AddRawCluster(fInput->Chamber(),c); 
   //     fNRawClusters++;

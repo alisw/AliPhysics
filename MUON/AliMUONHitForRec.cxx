@@ -15,10 +15,11 @@
 
 /* $Id$ */
 
-//__________________________________________________________________________
-//
+// ------------------------
+// Class AliMUONHitForRec
+// ------------------------
 // Hit for reconstruction in ALICE dimuon spectrometer
-//__________________________________________________________________________
+// Author: J. Gosset
 
 #include "AliTrackReference.h" 
 #include "AliMUONHitForRec.h" 
@@ -33,7 +34,7 @@ ClassImp(AliMUONHitForRec) // Class implementation in ROOT context
 AliMUONHitForRec::AliMUONHitForRec()
   : TObject()
 {
- // Default Constructor
+/// Default Constructor
  
     fFirstTrackHitPtr = 0;
     fLastTrackHitPtr = 0;
@@ -43,11 +44,12 @@ AliMUONHitForRec::AliMUONHitForRec()
 AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
   : TObject()
 {
-  // Constructor for AliMUONHitForRec from a track ref. hit.
-  // Fills the bending, non bending, and Z coordinates,
-  // which are taken from the coordinates of the track ref. hit,
-  // the track number (track ref. and not TH),
-  // and the chamber number (0...).
+/// Constructor for AliMUONHitForRec from a track ref. hit.
+/// Fills the bending, non bending, and Z coordinates,
+/// which are taken from the coordinates of the track ref. hit,
+/// the track number (track ref. and not TH),
+/// and the chamber number (0...).
+
   fBendingCoor = theGhit->Y();
   fNonBendingCoor = theGhit->X();
   fZ = theGhit->Z();
@@ -84,8 +86,9 @@ AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
 AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
   : TObject()
 {
-  // Constructor for AliMUONHitForRec from a raw cluster.
-  // Fills the bending and non bending coordinates.
+/// Constructor for AliMUONHitForRec from a raw cluster.
+/// Fills the bending and non bending coordinates.
+
   fNonBendingCoor = theRawCluster->GetX(0);
   fBendingCoor = theRawCluster->GetY(0);
   fDetElemId = theRawCluster->GetDetElemId();
@@ -105,6 +108,8 @@ AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
 AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& theMUONHitForRec)
   :  TObject(theMUONHitForRec)
 {
+/// Copy constructor
+
   fBendingCoor = theMUONHitForRec.fBendingCoor;
   fNonBendingCoor = theMUONHitForRec.fNonBendingCoor;
   fZ = theMUONHitForRec.fZ;
@@ -125,6 +130,8 @@ AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& theMUONHitForRec)
   //__________________________________________________________________________
 AliMUONHitForRec & AliMUONHitForRec::operator=(const AliMUONHitForRec& theMUONHitForRec)
 {
+/// Assignment operator
+
   fBendingCoor = theMUONHitForRec.fBendingCoor;
   fNonBendingCoor = theMUONHitForRec.fNonBendingCoor;
   fZ = theMUONHitForRec.fZ;
@@ -157,9 +164,10 @@ Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
   //__________________________________________________________________________
 Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
 {
-  // "Compare" function to sort with decreasing Z-coordinate (spectro. MUON z<0).
-  // Returns 1 (0, -1) if Z-coordinate of current HitForRec
-  // is smaller than (equal to, larger than) Z-coordinate of Hit
+/// "Compare" function to sort with decreasing Z-coordinate (spectro. MUON z<0).
+/// Returns 1 (0, -1) if Z-coordinate of current HitForRec
+/// is smaller than (equal to, larger than) Z-coordinate of Hit
+
   if (fZ <  ((AliMUONHitForRec*)Hit)->fZ) return(1);
   else if (fZ == ((AliMUONHitForRec*)Hit)->fZ) return( 0);
   else return(-1);
@@ -168,15 +176,16 @@ Int_t AliMUONHitForRec::Compare(const TObject* Hit) const
   //__________________________________________________________________________
 Double_t AliMUONHitForRec::NormalizedChi2WithHitForRec(AliMUONHitForRec* hitForRec, Double_t Sigma2Cut) const
 {
-  // Calculate the normalized Chi2 between the current hitForRec (this)
-  // and the hitForRec pointed to by "hitForRec",
-  // i.e. the square deviations between the coordinates,
-  // in both the bending and the non bending plane,
-  // divided by the variance of the same quantities and by "Sigma2Cut".
-  // Returns 3 if none of the 2 quantities is OK,
-  // something smaller than or equal to 2 otherwise.
-  // Would it be more correct to use a real chi square
-  // including the non diagonal term ????
+/// Calculate the normalized Chi2 between the current hitForRec (this)
+/// and the hitForRec pointed to by "hitForRec",
+/// i.e. the square deviations between the coordinates,
+/// in both the bending and the non bending plane,
+/// divided by the variance of the same quantities and by "Sigma2Cut".
+/// Returns 3 if none of the 2 quantities is OK,
+/// something smaller than or equal to 2 otherwise.
+/// Would it be more correct to use a real chi square
+/// including the non diagonal term ????
+
   Double_t chi2, chi2Max, diff, normDiff;
   chi2 = 0.0;
   chi2Max = 3.0;

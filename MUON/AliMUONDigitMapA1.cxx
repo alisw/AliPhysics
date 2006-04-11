@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// ---------------------------
+// Class AliMUONDigitMapA1
+// ---------------------------
+// Implements cluster Map as a 1-dim array
+// Author: Christian Finck
+
 #include "AliMUONDigitMapA1.h"
 #include "AliMUONDigit.h"
 
@@ -33,13 +39,13 @@ AliMUONDigitMapA1::AliMUONDigitMapA1()
     fMaxIndex(0),
     fHitMap(0)
 {
-    // Default constructor
+/// Default constructor
 
 }
 //________________________________________________________________________________
 AliMUONDigitMapA1::AliMUONDigitMapA1(Int_t idDE, Int_t npx, Int_t npy )
 {
-// Constructor with new segmentation
+/// Standard constructor
 
    fIdDE = idDE;
    fNpx = npx;
@@ -54,27 +60,27 @@ AliMUONDigitMapA1::AliMUONDigitMapA1(Int_t idDE, Int_t npx, Int_t npy )
 AliMUONDigitMapA1::AliMUONDigitMapA1(const AliMUONDigitMapA1& hitMap)
   : TObject(hitMap)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
 //_________________________________
 AliMUONDigitMapA1::~AliMUONDigitMapA1()
 {
-// Destructor
+/// Destructor
     if (fHitMap) delete[] fHitMap;
 }
 //______________________________________
 void AliMUONDigitMapA1::Clear(const char *)
 {
-// Clear hitmap
+/// Clear hitmap
     memset(fHitMap,0,sizeof(int)*fMaxIndex);
 }
 
 //_________________________________________________________
 Int_t AliMUONDigitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 {
-// Return checked indices ix, iy
+/// Return checked indices ix, iy
   Int_t index =  iy * fNpx + ix;
     if ( index < 0 || index >= fMaxIndex ) {
       AliWarning(Form("index outside array idDE %d ix %d iy %d MaxIndex %d index %d Npx %d Npy %d",
@@ -87,7 +93,7 @@ Int_t AliMUONDigitMapA1::CheckedIndex(Int_t ix, Int_t iy) const
 //_____________________________
 void  AliMUONDigitMapA1::FillHits(TObjArray* digits)
 {
-// Fill hits from digits list  
+/// Fill hits from digits list  
     fDigits = digits;
     Int_t ndigits = fDigits->GetEntriesFast();
     if (!ndigits) return;
@@ -100,43 +106,43 @@ void  AliMUONDigitMapA1::FillHits(TObjArray* digits)
 //___________________________________________________________
 void  AliMUONDigitMapA1::SetHit(Int_t ix, Int_t iy, Int_t idigit)
 {
-// Assign digit to hit cell ix,iy
+/// Assign digit to hit cell ix,iy
 
     fHitMap[CheckedIndex(ix, iy)] = idigit + 1;
 }
 //_______________________________________________
 void AliMUONDigitMapA1::DeleteHit(Int_t ix, Int_t iy)
 {
-// Delete hit at cell ix,iy
+/// Delete hit at cell ix,iy
 
     fHitMap[CheckedIndex(ix, iy)]=0;
 }
 //_____________________________________________
 void AliMUONDigitMapA1::FlagHit(Int_t ix, Int_t iy)
 {
-// Flag hit as used
+/// Flag hit as used
     fHitMap[CheckedIndex(ix, iy)]=
 	-TMath::Abs(fHitMap[CheckedIndex(ix, iy)]);
 }
 //________________________________________________________
 Int_t AliMUONDigitMapA1::GetHitIndex(Int_t ix, Int_t iy) const
 {
-// Get absolute value of contents of hit cell ix,iy
+/// Get absolute value of contents of hit cell ix,iy
     return TMath::Abs(fHitMap[CheckedIndex(ix, iy)])-1;
 }
 //_______________________________________________________
 TObject* AliMUONDigitMapA1::GetHit(Int_t ix, Int_t iy) const
 {
-    // Get pointer to object at hit cell ix, iy
-    // Force crash if index does not exist ! (Manu)
+/// Get pointer to object at hit cell ix, iy
+/// Force crash if index does not exist ! (Manu)
     Int_t index = GetHitIndex(ix,iy);
     return (index <0) ? 0 : fDigits->UncheckedAt(GetHitIndex(ix,iy));
 }
 //_________________________________________________
 FlagType AliMUONDigitMapA1::TestHit(Int_t ix, Int_t iy)
 {
-// Check if hit cell is empty, used or unused
-//
+/// Check if hit cell is empty, used or unused
+
     Int_t index = CheckedIndex(ix, iy);
     if (index<0 || index >= fMaxIndex) return kEmpty;
 
@@ -152,7 +158,7 @@ FlagType AliMUONDigitMapA1::TestHit(Int_t ix, Int_t iy)
 //________________________________________________________________________
 AliMUONDigitMapA1 & AliMUONDigitMapA1::operator = (const AliMUONDigitMapA1 & rhs) 
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -160,8 +166,3 @@ AliMUONDigitMapA1 & AliMUONDigitMapA1::operator = (const AliMUONDigitMapA1 & rhs
     
   return *this;  
 }
-
-
-
-
-

@@ -15,11 +15,12 @@
 
 /* $Id$ */
 
+// -------------------------
+// Class AliMUONRawCluster
+// -------------------------
 // Class for the MUON RecPoint
 // It contains the properties of the physics cluters found in the tracking chambers
 // RawCluster contains also the information from the both cathode of the chambers.
-//
-//
 
 #include <TArrayF.h>
 
@@ -31,7 +32,7 @@ ClassImp(AliMUONRawCluster)
 AliMUONRawCluster::AliMUONRawCluster() 
   : TObject()
 {
-// Constructor
+/// Constructor
     fTracks[0]=fTracks[1]=fTracks[2]=-1; 
     for (int j=0;j<2;j++) {
 	fQ[j]=0;
@@ -57,6 +58,8 @@ AliMUONRawCluster::AliMUONRawCluster()
 //____________________________________________________
 Int_t AliMUONRawCluster::Compare(const TObject *obj) const
 {
+/// Compare
+
   /*
          AliMUONRawCluster *raw=(AliMUONRawCluster *)obj;
 	 Float_t r=GetRadius();
@@ -76,8 +79,8 @@ Int_t AliMUONRawCluster::Compare(const TObject *obj) const
 //____________________________________________________
 Int_t AliMUONRawCluster::BinarySearch(Float_t y, TArrayF coord, Int_t from, Int_t upto)
 {
-   // Find object using a binary search. Array must first have been sorted.
-   // Search can be limited by setting upto to desired index.
+/// Find object using a binary search. Array must first have been sorted.
+/// Search can be limited by setting upto to desired index.
 
    Int_t low=from, high=upto-1, half;
    while(high-low>1) {
@@ -90,10 +93,8 @@ Int_t AliMUONRawCluster::BinarySearch(Float_t y, TArrayF coord, Int_t from, Int_
 //____________________________________________________
 void AliMUONRawCluster::SortMin(Int_t *idx,Float_t *xdarray,Float_t *xarray,Float_t *yarray,Float_t *qarray, Int_t ntr)
 {
-  //
-  // Get the 3 closest points(cog) one can find on the second cathode 
-  // starting from a given cog on first cathode
-  //
+/// Get the 3 closest points(cog) one can find on the second cathode 
+/// starting from a given cog on first cathode
   
   //
   //  Loop over deltax, only 3 times
@@ -151,7 +152,7 @@ void AliMUONRawCluster::SortMin(Int_t *idx,Float_t *xdarray,Float_t *xarray,Floa
 //____________________________________________________
 Int_t AliMUONRawCluster::PhysicsContribution() const
 {
-// Evaluate physics contribution to cluster
+/// Evaluate physics contribution to cluster
   Int_t iPhys=0;
   Int_t iBg=0;
   Int_t iMixed=0;
@@ -171,7 +172,7 @@ Int_t AliMUONRawCluster::PhysicsContribution() const
 //____________________________________________________
 void AliMUONRawCluster::DumpIndex(void)
 {
-  // Dumping IdexMap of the cluster
+/// Dumping IdexMap of the cluster
     printf ("-----\n");
     for (Int_t icat=0;icat<2;icat++) {
 	printf ("Mult %d\n",fMultiplicity[icat]);
@@ -184,7 +185,7 @@ void AliMUONRawCluster::DumpIndex(void)
 //____________________________________________________
 Int_t AliMUONRawCluster::AddCharge(Int_t i, Int_t Q)
 {
-  // Adding Q to the fQ value
+/// Adding Q to the fQ value
   if (i==0 || i==1) {
     fQ[i]+=Q;
     return 1;
@@ -194,7 +195,7 @@ Int_t AliMUONRawCluster::AddCharge(Int_t i, Int_t Q)
 //____________________________________________________
 Int_t AliMUONRawCluster::AddX(Int_t i, Float_t X)
 {
-  // Adding X to the fX value
+/// Adding X to the fX value
   if (i==0 || i==1) {
     fX[i]+=X;
     return 1;
@@ -204,7 +205,7 @@ Int_t AliMUONRawCluster::AddX(Int_t i, Float_t X)
 //____________________________________________________
 Int_t AliMUONRawCluster::AddY(Int_t i, Float_t Y)
 {
-  // Adding Y to the fY value 
+/// Adding Y to the fY value 
   if (i==0 || i==1) {
     fY[i]+=Y;
     return 1;
@@ -214,7 +215,7 @@ Int_t AliMUONRawCluster::AddY(Int_t i, Float_t Y)
 //____________________________________________________
 Int_t AliMUONRawCluster::AddZ(Int_t i, Float_t Z)
 {
-  // Adding Z to the fZ value
+/// Adding Z to the fZ value
   if (i==0 || i==1) {
     fZ[i]+=Z;
     return 1;
@@ -224,82 +225,82 @@ Int_t AliMUONRawCluster::AddZ(Int_t i, Float_t Z)
 //____________________________________________________
 Int_t AliMUONRawCluster::GetCharge(Int_t i) const
 {
-  // Getting the charge of the cluster
+/// Getting the charge of the cluster
   if (i==0 || i==1) return fQ[i];
   else  return 99999;
 }
 //____________________________________________________
 Float_t AliMUONRawCluster::GetX(Int_t i)  const
 {
-  // Getting X value of the cluster
+/// Getting X value of the cluster
   if (i==0 || i==1) return fX[i];
   else  return 99999.;
 }
 //____________________________________________________
 Float_t AliMUONRawCluster::GetY(Int_t i) const 
 {
-  // Getting Y value of the cluster
+/// Getting Y value of the cluster
   if (i==0 || i==1) return fY[i];
   else  return 99999.;
 }
 //____________________________________________________
 Float_t AliMUONRawCluster::GetZ(Int_t i) const 
 {
-  // Getting Z value of the cluster
+/// Getting Z value of the cluster
   if (i==0 || i==1) return fZ[i];
   else  return 99999.;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::GetTrack(Int_t i) const 
 {
-  // Getting track i contributing to the cluster
+/// Getting track i contributing to the cluster
   if (i==0 || i==1 || i==2) return fTracks[i];
   else  return 99999;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::GetPeakSignal(Int_t i) const 
 {
-  // Getting cluster peaksignal
+/// Getting cluster peaksignal
   if (i==0 || i==1 ) return fPeakSignal[i];
   else  return 99999;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::GetMultiplicity(Int_t i) const 
 {
-  // Getting cluster multiplicity
+/// Getting cluster multiplicity
   if (i==0 || i==1 ) return fMultiplicity[i];
   else  return 99999;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::GetClusterType() const 
 {
-  // Getting Cluster Type
+/// Getting Cluster Type
   return fClusterType;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::GetGhost() const 
 {
-  // Getting Ghost
+/// Getting Ghost
   return fGhost;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::GetNcluster(Int_t i) const 
 {
-  // Getting number of clusters
+/// Getting number of clusters
   if (i==0 || i==1 ) return fNcluster[i];
   else  return 99999;
 }
 //____________________________________________________
 Float_t AliMUONRawCluster::GetChi2(Int_t i) const 
 {
-  // Getting chi2 value of the cluster
+/// Getting chi2 value of the cluster
   if (i==0 || i==1) return fChi2[i];
   else  return 99999.;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::SetCharge(Int_t i, Int_t Q)
 {
-  // Setting Charge of the cluster
+/// Setting Charge of the cluster
   if (i==0 || i==1) {
     fQ[i]=Q;
     return 1;
@@ -309,7 +310,7 @@ Int_t AliMUONRawCluster::SetCharge(Int_t i, Int_t Q)
 //____________________________________________________
 Int_t AliMUONRawCluster::SetX(Int_t i, Float_t X)
 {
-  // Setting X value of the cluster
+/// Setting X value of the cluster
   if (i==0 || i==1) {
     fX[i]=X;
     return 1;
@@ -319,7 +320,7 @@ Int_t AliMUONRawCluster::SetX(Int_t i, Float_t X)
 //____________________________________________________
 Int_t AliMUONRawCluster::SetY(Int_t i, Float_t Y)
 {
-  // Setting Y value of the cluster
+/// Setting Y value of the cluster
   if (i==0 || i==1) {
     fY[i]=Y;
     return 1;
@@ -329,7 +330,7 @@ Int_t AliMUONRawCluster::SetY(Int_t i, Float_t Y)
 //____________________________________________________
 Int_t AliMUONRawCluster::SetZ(Int_t i, Float_t Z)
 {
-  // Setting Z value of the cluste
+/// Setting Z value of the cluste
   if (i==0 || i==1) {
     fZ[i]=Z;
     return 1;
@@ -339,7 +340,7 @@ Int_t AliMUONRawCluster::SetZ(Int_t i, Float_t Z)
 //____________________________________________________
 Int_t AliMUONRawCluster::SetTrack(Int_t i, Int_t track)
 {
-  // Setting tracks contributing to the cluster
+/// Setting tracks contributing to the cluster
   if (i==0 || i==1 || i==2) {
     fTracks[i]=track;
     return 1;
@@ -349,7 +350,7 @@ Int_t AliMUONRawCluster::SetTrack(Int_t i, Int_t track)
 //____________________________________________________
 Int_t AliMUONRawCluster::SetPeakSignal(Int_t i, Int_t peaksignal)
 {
-  // Setting PeakSignal of the cluster
+/// Setting PeakSignal of the cluster
   if (i==0 || i==1 ) {
     fPeakSignal[i]=peaksignal;
     return 1;
@@ -359,7 +360,7 @@ Int_t AliMUONRawCluster::SetPeakSignal(Int_t i, Int_t peaksignal)
 //____________________________________________________
 Int_t AliMUONRawCluster::SetMultiplicity(Int_t i, Int_t mul)
 {
-  // Setting multiplicity of the cluster
+/// Setting multiplicity of the cluster
   if (i==0 || i==1 ) {
     fMultiplicity[i]=mul;
     return 1;
@@ -369,21 +370,21 @@ Int_t AliMUONRawCluster::SetMultiplicity(Int_t i, Int_t mul)
 //____________________________________________________
 Int_t AliMUONRawCluster::SetClusterType(Int_t type)
 {
-  // Setting the cluster type
+/// Setting the cluster type
   fClusterType=type;
   return 1;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::SetGhost(Int_t ghost)
 {
-  // Setting the ghost
+/// Setting the ghost
   fGhost=ghost;
   return 1;
 }
 //____________________________________________________
 Int_t AliMUONRawCluster::SetNcluster(Int_t i, Int_t ncluster)
 {
-  // Setting number the cluster
+/// Setting number the cluster
   if (i==0 || i==1 ) {
     fNcluster[i]=ncluster;
     return 1;
@@ -393,7 +394,7 @@ Int_t AliMUONRawCluster::SetNcluster(Int_t i, Int_t ncluster)
 //____________________________________________________
 Int_t AliMUONRawCluster::SetChi2(Int_t i, Float_t chi2)
 {
-  // Setting chi2 of the cluster
+/// Setting chi2 of the cluster
   if (i==0 || i==1) {
     fChi2[i]=chi2;
     return 1;

@@ -44,26 +44,26 @@ ClassImp(AliMUONDigitizerv2)
 //___________________________________________
 AliMUONDigitizerv2::AliMUONDigitizerv2() : AliMUONDigitizer()
 {
-	// Default ctor - don't use it
+/// Default ctor - don't use it
 }
 
 //___________________________________________
 AliMUONDigitizerv2::AliMUONDigitizerv2(AliRunDigitizer* manager) : AliMUONDigitizer(manager)
 {
-	// ctor which should be used
+/// ctor which should be used
 }
 
 //___________________________________________
 AliMUONDigitizerv2::~AliMUONDigitizerv2()
 {
-	// Destructor
+/// Destructor
 }
 
 //-----------------------------------------------------------------------
 void AliMUONDigitizerv2::GenerateTransientDigits()
 {
-// Loop over all chambers and s-digits in the input stream and create 
-// AliMUONTransientDigit objects from them. These are then added to fTDList.
+/// Loop over all chambers and s-digits in the input stream and create 
+/// AliMUONTransientDigit objects from them. These are then added to fTDList.
 
 	AliDebug(2,"Generating transient digits using treeH = 0x%X");
 	//
@@ -97,8 +97,8 @@ void AliMUONDigitizerv2::GenerateTransientDigits()
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDigit* sDigit)
 {
-// Makes a transient digit from the specified s-digit from the specified chamber. 
-// Once the digit is created it is added to the fTDList.
+/// Makes a transient digit from the specified s-digit from the specified chamber. 
+/// Once the digit is created it is added to the fTDList.
 
 	AliDebug(4,Form("Making transient digit from s-digit for chamber %d.", iChamber));
 	Int_t digits[7];
@@ -136,15 +136,15 @@ void AliMUONDigitizerv2::MakeTransientDigitFromSDigit(Int_t iChamber, AliMUONDig
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::AddDigit(Int_t chamber, Int_t tracks[kMAXTRACKS], Int_t charges[kMAXTRACKS], Int_t digits[7])
 {
-// Override to add new digits to the digits tree TreeD.
+/// Override to add new digits to the digits tree TreeD.
 	fMUONData->AddDigit(chamber, tracks, charges, digits);   
 }
 
 //------------------------------------------------------------------------
 Int_t AliMUONDigitizerv2::GetSignalFrom(AliMUONTransientDigit* td)
 {
-// Derived to apply the chamber response model to the digit. 
-// Using AliMUONChamber::ResponseModel() for this.
+/// Derived to apply the chamber response model to the digit. 
+/// Using AliMUONChamber::ResponseModel() for this.
 
 	AliDebug(4, "Applying response of chamber to TransientDigit signal.");
 	//
@@ -163,9 +163,9 @@ Int_t AliMUONDigitizerv2::GetSignalFrom(AliMUONTransientDigit* td)
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizerv2::InitInputData(AliMUONLoader* muonloader)
 {
-// Overridden to initialize fMUONData to read from the s-digits tree TreeS. 
-// If the s-digits are not loaded then the muon loader is used to load the
-// s-digits into memory.
+/// Overridden to initialize fMUONData to read from the s-digits tree TreeS. 
+/// If the s-digits are not loaded then the muon loader is used to load the
+/// s-digits into memory.
 
 	AliDebug(3,"Loading s-digits in READ mode and setting the tree address.");
 	fMUONData->SetLoader(muonloader);
@@ -187,7 +187,7 @@ Bool_t AliMUONDigitizerv2::InitInputData(AliMUONLoader* muonloader)
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::CleanupInputData(AliMUONLoader* muonloader)
 {
-// Overridden to release and unload s-digits from memory.
+/// Overridden to release and unload s-digits from memory.
 
 	AliDebug(3,"Releasing loaded s-digits.");
 	fMUONData->ResetSDigits();
@@ -197,8 +197,8 @@ void AliMUONDigitizerv2::CleanupInputData(AliMUONLoader* muonloader)
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizerv2::InitOutputData(AliMUONLoader* muonloader)
 {
-// Derived to initialize the output digits tree TreeD, create it if necessary
-// and sets the fMUONData tree address to treeD.
+/// Derived to initialize the output digits tree TreeD, create it if necessary
+/// and sets the fMUONData tree address to treeD.
 
 	AliDebug(3, "Creating digits branch and setting the tree address.");
 
@@ -224,7 +224,7 @@ Bool_t AliMUONDigitizerv2::InitOutputData(AliMUONLoader* muonloader)
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::FillOutputData()
 {
-// Derived to fill TreeD and resets the digit array in fMUONData.
+/// Derived to fill TreeD and resets the digit array in fMUONData.
 
 	AliDebug(3, "Filling trees with digits.");
 	fMUONData->Fill("D");
@@ -234,7 +234,7 @@ void AliMUONDigitizerv2::FillOutputData()
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::CleanupOutputData(AliMUONLoader* muonloader)
 {
-// Derived to write the digits tree and then unload the digits tree once written.
+/// Derived to write the digits tree and then unload the digits tree once written.
 
 	AliDebug(3, "Writing digits and releasing pointers.");
 	muonloader->WriteDigits("OVERWRITE");
@@ -245,6 +245,8 @@ void AliMUONDigitizerv2::CleanupOutputData(AliMUONLoader* muonloader)
 
 void AliMUONDigitizerv2::CleanupTriggerArrays()
 {
+/// Cleanup trigger arrays
+
   fTrigDec->ClearDigits();
 }
 
@@ -255,14 +257,14 @@ void AliMUONDigitizerv2::AddDigitTrigger(
 		Int_t digitindex
 	)
 {
-// Derived to add digits to TreeD for trigger.
+/// Derived to add digits to TreeD for trigger.
   fTrigDec->AddDigit(chamber, tracks, charges, digits, digitindex); 
 }
 
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::FillTriggerOutput()
 {
-// Derived to fill TreeD and resets the trigger array in fMUONData.
+/// Derived to fill TreeD and resets the trigger array in fMUONData.
 
 	AliDebug(3,"Filling trees with trigger.");
 	fMUONData->Fill("GLT");
@@ -272,6 +274,8 @@ void AliMUONDigitizerv2::FillTriggerOutput()
 //------------------------------------------------------------------------
 void AliMUONDigitizerv2::CreateTrigger()
 {
+/// Create trigger data
+
   fMUONData->MakeBranch("GLT");
   fMUONData->SetTreeAddress("GLT");
   fTrigDec->Digits2Trigger(); 

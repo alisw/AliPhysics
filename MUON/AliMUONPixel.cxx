@@ -15,11 +15,11 @@
 
 /* $Id$ */
 
+// -------------------------------------
 // Class AliMUONPixel
 // -------------------------------------
 // Basic object of the cluster / rec. point finder based 
 // on Expectation-Minimization approach (AZ cluster finder)
-//
 // Author: Alexander Zinchenko, JINR Dubna
 
 #include "AliMUONPixel.h"
@@ -30,7 +30,7 @@ ClassImp(AliMUONPixel) // Class implementation in ROOT context
 AliMUONPixel::AliMUONPixel()
   : TObject()
 {
-  // Default constructor
+/// Default constructor
   fXY[0] = fXY[1] = fSize[0] = fSize[1] = fCharge = 0;
   fFlag = 0;
 } 
@@ -39,7 +39,7 @@ AliMUONPixel::AliMUONPixel()
 AliMUONPixel::AliMUONPixel(Double_t xc, Double_t yc, Double_t wx, Double_t wy, Double_t charge)
   : TObject()
 {
-  // Constructor
+/// Constructor
   fXY[0] = xc; fXY[1] = yc; fSize[0] = wx; fSize[1] = wy; fCharge = charge;
   fFlag = 0;
 }
@@ -47,15 +47,15 @@ AliMUONPixel::AliMUONPixel(Double_t xc, Double_t yc, Double_t wx, Double_t wy, D
 //_____________________________________________________________________________
 AliMUONPixel::~AliMUONPixel()
 {
-  // Destructor
+/// Destructor
 }
 
 //__________________________________________________________________________
 Int_t AliMUONPixel::Compare(const TObject* pixel) const
 {
-  // "Compare" function to sort with decreasing pixel charge.
-  // Returns -1 (0, +1) if charge of current pixel
-  // is greater than (equal to, less than) charge of pixel
+/// "Compare" function to sort with decreasing pixel charge.
+/// Returns -1 (0, +1) if charge of current pixel
+/// is greater than (equal to, less than) charge of pixel
   if (fCharge > ((AliMUONPixel*)pixel)->Charge()) return(-1);
   else if (fCharge == ((AliMUONPixel*)pixel)->Charge()) return( 0);
   else return(+1);
@@ -64,6 +64,6 @@ Int_t AliMUONPixel::Compare(const TObject* pixel) const
 //__________________________________________________________________________
 void AliMUONPixel::Print(const char* /*opt*/) const
 {
-  // Print function
+/// Print function
   printf("%9.4f %9.4f %9.4f %9.4f %9.4f %1d\n", fXY[0], fXY[1], fSize[0], fSize[1], fCharge, fFlag);
 }

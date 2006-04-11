@@ -13,14 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////////////////
-//                                                                     
+/* $Id$ */
+
+// -----------------------
+// Class AliMUONRecoCheck
+// -----------------------
 // Utility class to check the muon reconstruction. Reconstructed tracks are compared
 // to reference tracks. The reference tracks are built from AliTrackReference for the
 // hit in chamber (0..9) and from kinematics for the vertex parameters.     
-//                                                                      
-//////////////////////////////////////////////////////////////////////////////////////
-
 
 #include <TParticle.h>
 
@@ -43,7 +43,7 @@ ClassImp(AliMUONRecoCheck)
 //_____________________________________________________________________________
 AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
 {
-// Constructor
+/// Constructor
   fMuonTrackRef = new TClonesArray("AliMUONTrack", 10);
 
   // open the run loader
@@ -73,7 +73,7 @@ AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
 AliMUONRecoCheck::AliMUONRecoCheck(const AliMUONRecoCheck& rhs)
  : TObject(rhs)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -81,6 +81,8 @@ AliMUONRecoCheck::AliMUONRecoCheck(const AliMUONRecoCheck& rhs)
 //_____________________________________________________________________________
 AliMUONRecoCheck::~AliMUONRecoCheck()
 {
+/// Destructor
+
   fRunLoader->UnloadKinematics();
   fRunLoader->UnloadTrackRefs();
   fRunLoader->UnloadTracks();
@@ -92,7 +94,7 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
 //________________________________________________________________________
 AliMUONRecoCheck& AliMUONRecoCheck::operator = (const AliMUONRecoCheck& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -104,7 +106,7 @@ AliMUONRecoCheck& AliMUONRecoCheck::operator = (const AliMUONRecoCheck& rhs)
 //_____________________________________________________________________________
 void AliMUONRecoCheck::MakeTrackRef()
 {
-  // Make reconstructible tracks
+/// Make reconstructible tracks
 
   AliTrackReference *trackReference;
   AliMUONTrack *muonTrack;
@@ -244,7 +246,7 @@ void AliMUONRecoCheck::MakeTrackRef()
 //____________________________________________________________________________
 TClonesArray* AliMUONRecoCheck::GetTrackReco()
 {
-  // Return TClonesArray of reconstructed tracks
+/// Return TClonesArray of reconstructed tracks
 
   GetMUONData()->ResetRecTracks();
   GetMUONData()->SetTreeAddress("RT");
@@ -256,7 +258,7 @@ TClonesArray* AliMUONRecoCheck::GetTrackReco()
 //_____________________________________________________________________________
 void AliMUONRecoCheck::PrintEvent() const
 {
-  // debug facility
+/// Debug facility
 
   AliMUONTrack *track;
   AliMUONHitForRec *hitForRec;
@@ -286,14 +288,16 @@ void AliMUONRecoCheck::PrintEvent() const
 //_____________________________________________________________________________
 void AliMUONRecoCheck::ResetTracks() const
 {
+/// Reset tracks
+
   if (fMuonTrackRef) fMuonTrackRef->Clear();
 }
 //_____________________________________________________________________________
 void AliMUONRecoCheck::CleanMuonTrackRef()
 {
-  // Re-calculate hits parameters because two AliTrackReferences are recorded for
-  // each chamber (one when particle is entering + one when particle is leaving 
-  // the sensitive volume) 
+/// Re-calculate hits parameters because two AliTrackReferences are recorded for
+/// each chamber (one when particle is entering + one when particle is leaving 
+/// the sensitive volume) 
 
   Float_t maxGasGap = 1.; // cm 
   AliMUONTrack *track, *trackNew;
@@ -423,7 +427,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
 //_____________________________________________________________________________
 void AliMUONRecoCheck::ReconstructibleTracks()
 {
-  // calculate the number of reconstructible tracks
+/// Calculate the number of reconstructible tracks
   
   AliMUONTrack* track;
   TClonesArray* hitForRecAtHit = NULL;

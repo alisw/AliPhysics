@@ -15,11 +15,11 @@
 
 /* $Id$ */
 
+// ---------------------
 // Class AliMUONTrackK
-// -------------------------------------
+// ---------------------
 // Reconstructed track in the muons system based on the extended 
 // Kalman filter approach
-//
 // Author: Alexander Zinchenko, JINR Dubna
 
 #include <Riostream.h>
@@ -62,7 +62,7 @@ AliMUONTrackK::AliMUONTrackK()
   //AZ: TObject()
   : AliMUONTrack() 
 {
-  // Default constructor
+/// Default constructor
 
   fgTrackReconstructor = NULL; // pointer to event reconstructor
   fgHitForRec = NULL; // pointer to points
@@ -88,7 +88,7 @@ AliMUONTrackK::AliMUONTrackK()
 AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClonesArray *hitForRec)
   : AliMUONTrack()
 {
-  // Constructor
+/// Constructor
 
   if (!TrackReconstructor) return;
   fgTrackReconstructor = TrackReconstructor; // pointer to event reconstructor
@@ -117,7 +117,7 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   //: AliMUONTrack(segment, segment, fgTrackReconstructor)
   : AliMUONTrack(NULL, segment, fgTrackReconstructor)
 {
-  // Constructor from a segment
+/// Constructor from a segment
   Double_t dX, dY, dZ;
   AliMUONHitForRec *hit1, *hit2;
   AliMUONRawCluster *clus;
@@ -212,7 +212,7 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   //__________________________________________________________________________
 AliMUONTrackK::~AliMUONTrackK()
 {
-  // Destructor
+/// Destructor
 
   if (fTrackHits) {
     //cout << fNmbTrackHits << endl;
@@ -296,14 +296,15 @@ AliMUONTrackK::~AliMUONTrackK()
 AliMUONTrackK::AliMUONTrackK (const AliMUONTrackK& source)
   : AliMUONTrack(source)
 {
-// Protected copy constructor
+/// Protected copy constructor
   AliFatal("Not implemented.");
 }
 
   //__________________________________________________________________________
 AliMUONTrackK & AliMUONTrackK::operator=(const AliMUONTrackK& source)
 {
-  // Assignment operator
+/// Assignment operator
+
   // Members
   if(&source == this) return *this;
 
@@ -361,7 +362,7 @@ AliMUONTrackK & AliMUONTrackK::operator=(const AliMUONTrackK& source)
   //__________________________________________________________________________
 void AliMUONTrackK::EvalCovariance(Double_t dZ)
 {
-  // Evaluate covariance (and weight) matrix for track candidate
+/// Evaluate covariance (and weight) matrix for track candidate
   Double_t sigmaB, sigmaNonB, tanA, tanB, dAdY, rad, dBdX, dBdY;
 
   dZ = -dZ;
@@ -403,7 +404,7 @@ void AliMUONTrackK::EvalCovariance(Double_t dZ)
   //__________________________________________________________________________
 Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, Double_t zDipole1, Double_t zDipole2)
 {
-  // Follows track through detector stations 
+/// Follows track through detector stations 
   Bool_t miss, success;
   Int_t ichamb, iFB, iMin, iMax, dChamb, ichambOK;
   Int_t ihit, firstIndx = -1, lastIndx = -1, currIndx = -1, iz0 = -1, iz = -1;
@@ -663,7 +664,7 @@ Bool_t AliMUONTrackK::KalmanFilter(Int_t ichamBeg, Int_t ichamEnd, Bool_t Back, 
   //__________________________________________________________________________
 void AliMUONTrackK::ParPropagation(Double_t zEnd)
 {
-  // Propagation of track parameters to zEnd
+/// Propagation of track parameters to zEnd
   Int_t iFB, nTries;
   Double_t dZ, step, distance, charge;
   Double_t vGeant3[7], vGeant3New[7];
@@ -724,8 +725,8 @@ void AliMUONTrackK::ParPropagation(Double_t zEnd)
   //__________________________________________________________________________
 void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
 {
-  // Propagation of the weight matrix
-  // W = DtWD, where D is Jacobian 
+/// Propagation of the weight matrix
+/// W = DtWD, where D is Jacobian 
   Int_t i, j;
   Double_t dPar;
 
@@ -810,8 +811,8 @@ void AliMUONTrackK::WeightPropagation(Double_t zEnd, Bool_t smooth)
   //__________________________________________________________________________
 Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int_t iFB, AliMUONHitForRec *&hitAdd, Int_t iz)
 {
-  // Picks up point within a window for the chamber No ichamb 
-  // Split the track if there are more than 1 hit
+/// Picks up point within a window for the chamber No ichamb 
+/// Split the track if there are more than 1 hit
   Int_t ihit, nRecTracks;
   Double_t windowB, windowNonB, dChi2Tmp=0, dChi2, y, x, savePosition=0;
   TClonesArray *trackPtr;
@@ -1061,8 +1062,8 @@ Bool_t AliMUONTrackK::FindPoint(Int_t ichamb, Double_t zEnd, Int_t currIndx, Int
   //__________________________________________________________________________
 void AliMUONTrackK::TryPoint(TMatrixD &point, const TMatrixD &pointWeight, TMatrixD &trackParTmp, Double_t &dChi2)
 {
-  // Adds a measurement point (modifies track parameters and computes
-  // change of Chi2)
+/// Adds a measurement point (modifies track parameters and computes
+/// change of Chi2)
 
   // Solving linear system (W+U)p' = U(m-p) + (W+U)p
   TMatrixD wu = *fWeight;
@@ -1099,7 +1100,7 @@ void AliMUONTrackK::TryPoint(TMatrixD &point, const TMatrixD &pointWeight, TMatr
   //__________________________________________________________________________
 void AliMUONTrackK::MSThin(Int_t sign)
 {
-  // Adds multiple scattering in a thin layer (only angles are affected)
+/// Adds multiple scattering in a thin layer (only angles are affected)
   Double_t cosAlph, cosBeta, momentum, velo, path, theta0;
 
   // check whether the Invert method returns flag if matrix cannot be inverted,
@@ -1129,7 +1130,7 @@ void AliMUONTrackK::MSThin(Int_t sign)
   //__________________________________________________________________________
 void AliMUONTrackK::StartBack(void)
 {
-  // Starts backpropagator
+/// Starts backpropagator
   
   fBPFlag = kTRUE;
   fChi2 = 0;
@@ -1147,8 +1148,8 @@ void AliMUONTrackK::StartBack(void)
   //__________________________________________________________________________
 void AliMUONTrackK::SortHits(Int_t iflag, TObjArray *array)
 {
-  // Sort hits in Z if the seed segment in the last but one station
-  // (if iflag==0 in descending order in abs(z), if !=0 - unsort)
+/// Sort hits in Z if the seed segment in the last but one station
+/// (if iflag==0 in descending order in abs(z), if !=0 - unsort)
   
   if (iflag && ((AliMUONHitForRec*)(array->UncheckedAt(0)))->GetChamberNumber() == 6) return;
   Double_t z = 0, zmax = TMath::Abs(((AliMUONHitForRec*)(array->UncheckedAt(0)))->GetZ());
@@ -1179,8 +1180,8 @@ void AliMUONTrackK::SortHits(Int_t iflag, TObjArray *array)
   //__________________________________________________________________________
 void AliMUONTrackK::SetGeantParam(Double_t *VGeant3, Int_t iFB)
 {
-  // Set vector of Geant3 parameters pointed to by "VGeant3"
-  // from track parameters 
+/// Set vector of Geant3 parameters pointed to by "VGeant3"
+/// from track parameters 
 
   VGeant3[0] = (*fTrackParNew)(1,0); // X
   VGeant3[1] = (*fTrackParNew)(0,0); // Y
@@ -1194,8 +1195,8 @@ void AliMUONTrackK::SetGeantParam(Double_t *VGeant3, Int_t iFB)
   //__________________________________________________________________________
 void AliMUONTrackK::GetFromGeantParam(Double_t *VGeant3, Int_t iFB)
 {
-  // Get track parameters from vector of Geant3 parameters pointed 
-  // to by "VGeant3"
+/// Get track parameters from vector of Geant3 parameters pointed 
+/// to by "VGeant3"
 
   fPositionNew = VGeant3[2]; // Z
   (*fTrackParNew)(0,0) = VGeant3[1]; // Y 
@@ -1208,7 +1209,7 @@ void AliMUONTrackK::GetFromGeantParam(Double_t *VGeant3, Int_t iFB)
   //__________________________________________________________________________
 void AliMUONTrackK::SetTrackQuality(Int_t iChi2)
 {
-  // Computes "track quality" from Chi2 (if iChi2==0) or vice versa
+/// Computes "track quality" from Chi2 (if iChi2==0) or vice versa
 
   if (fChi2 > 500) {
     AliWarning(Form(" *** Too high Chi2: %f ", fChi2));
@@ -1221,9 +1222,9 @@ void AliMUONTrackK::SetTrackQuality(Int_t iChi2)
   //__________________________________________________________________________
 Int_t AliMUONTrackK::Compare(const TObject* trackK) const
 {
-  // "Compare" function to sort with decreasing "track quality".
-  // Returns +1 (0, -1) if quality of current track
-  // is smaller than (equal to, larger than) quality of trackK
+/// "Compare" function to sort with decreasing "track quality".
+/// Returns +1 (0, -1) if quality of current track
+/// is smaller than (equal to, larger than) quality of trackK
 
   if (fChi2 < ((AliMUONTrackK*)trackK)->fChi2) return(+1);
   else if (fChi2 == ((AliMUONTrackK*)trackK)->fChi2) return(0);
@@ -1233,8 +1234,8 @@ Int_t AliMUONTrackK::Compare(const TObject* trackK) const
   //__________________________________________________________________________
 Bool_t AliMUONTrackK::KeepTrack(AliMUONTrackK* track0) const
 {
-  // Check whether or not to keep current track 
-  // (keep, if it has less than half of common hits with track0)
+/// Check whether or not to keep current track 
+/// (keep, if it has less than half of common hits with track0)
   Int_t hitsInCommon, nHits0, i, j, nTrackHits2;
   AliMUONHitForRec *hit0, *hit1;
 
@@ -1262,14 +1263,14 @@ Bool_t AliMUONTrackK::KeepTrack(AliMUONTrackK* track0) const
   //__________________________________________________________________________
 void AliMUONTrackK::Kill(void)
 {
-  // Kill track candidate
+/// Kill track candidate
   fgTrackReconstructor->GetRecTracksPtr()->Remove(this);
 }
 
   //__________________________________________________________________________
 void AliMUONTrackK::FillMUONTrack(void)
 {
-  // Compute track parameters at hit positions (as for AliMUONTrack)
+/// Compute track parameters at hit positions (as for AliMUONTrack)
 
   // Set number of hits per track
   SetNTrackHits(fNmbTrackHits);
@@ -1299,7 +1300,7 @@ void AliMUONTrackK::FillMUONTrack(void)
   //__________________________________________________________________________
 void AliMUONTrackK::SetTrackParam(AliMUONTrackParam *trackParam, TMatrixD *par, Double_t z)
 {
-  // Fill AliMUONTrackParam object
+/// Fill AliMUONTrackParam object
 
   trackParam->SetBendingCoor((*par)(0,0));
   trackParam->SetNonBendingCoor((*par)(1,0));
@@ -1312,8 +1313,8 @@ void AliMUONTrackK::SetTrackParam(AliMUONTrackParam *trackParam, TMatrixD *par, 
   //__________________________________________________________________________
 void AliMUONTrackK::Branson(void)
 {
-  // Propagates track to the vertex thru absorber using Branson correction
-  // (makes use of the AliMUONTrackParam class)
+/// Propagates track to the vertex thru absorber using Branson correction
+/// (makes use of the AliMUONTrackParam class)
  
   //AliMUONTrackParam *trackParam = new AliMUONTrackParam();
   AliMUONTrackParam trackParam = AliMUONTrackParam();
@@ -1352,7 +1353,7 @@ void AliMUONTrackK::Branson(void)
   //__________________________________________________________________________
 void AliMUONTrackK::GoToZ(Double_t zEnd)
 {
-  // Propagates track to given Z
+/// Propagates track to given Z
 
   ParPropagation(zEnd);
   MSThin(1); // multiple scattering in the chamber
@@ -1364,9 +1365,9 @@ void AliMUONTrackK::GoToZ(Double_t zEnd)
   //__________________________________________________________________________
 void AliMUONTrackK::GoToVertex(Int_t iflag)
 {
-  // Version 3.08
-  // Propagates track to the vertex
-  // All material constants are taken from AliRoot
+/// Version 3.08
+/// Propagates track to the vertex
+/// All material constants are taken from AliRoot
 
     static Double_t x01[5] = { 24.282,  // C
   			       24.282,  // C
@@ -1594,7 +1595,7 @@ vertex:
   //__________________________________________________________________________
 void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
 {
-  // Adds multiple scattering in a thick layer for linear propagation
+/// Adds multiple scattering in a thick layer for linear propagation
 
   Double_t cosAlph = TMath::Cos((*fTrackPar)(2,0));
   Double_t tanAlph = TMath::Tan((*fTrackPar)(2,0));
@@ -1667,7 +1668,7 @@ void AliMUONTrackK::MSLine(Double_t dZ, Double_t x0)
   //__________________________________________________________________________
 Bool_t AliMUONTrackK::Recover(void)
 {
-  // Adds new failed track(s) which can be tried to be recovered
+/// Adds new failed track(s) which can be tried to be recovered
   Int_t nRecTracks;
   TClonesArray *trackPtr;
   AliMUONTrackK *trackK;
@@ -1791,8 +1792,8 @@ Bool_t AliMUONTrackK::Recover(void)
   //__________________________________________________________________________
 void AliMUONTrackK::AddMatrices(AliMUONTrackK *trackK, Double_t dChi2, AliMUONHitForRec *hitAdd)
 {
-  // Adds matrices for the smoother and keep Chi2 for the point
-  // Track parameters
+/// Adds matrices for the smoother and keep Chi2 for the point
+/// Track parameters
   //trackK->fParFilter->Last()->Print();
   Int_t iD = trackK->fParFilter->Last()->GetUniqueID();
   if (iD > 1) { 
@@ -1836,7 +1837,7 @@ void AliMUONTrackK::AddMatrices(AliMUONTrackK *trackK, Double_t dChi2, AliMUONHi
   //__________________________________________________________________________
 void AliMUONTrackK::CreateMatrix(TObjArray *objArray) const
 {
-  // Create new matrix and add it to TObjArray 
+/// Create new matrix and add it to TObjArray 
 
   TMatrixD *matrix = (TMatrixD*) objArray->First();
   TMatrixD *tmp = new TMatrixD(*matrix);
@@ -1847,7 +1848,7 @@ void AliMUONTrackK::CreateMatrix(TObjArray *objArray) const
   //__________________________________________________________________________
 void AliMUONTrackK::RemoveMatrices(Double_t zEnd)
 {
-  // Remove matrices (and saved steps) in the smoother part with abs(z) < abs(zEnd)
+/// Remove matrices (and saved steps) in the smoother part with abs(z) < abs(zEnd)
 
   for (Int_t i=fNSteps-1; i>=0; i--) {
     if (fgDebug > 1) printf("%10.4f %10.4f \n", (*fSteps)[i], zEnd);
@@ -1859,7 +1860,7 @@ void AliMUONTrackK::RemoveMatrices(Double_t zEnd)
   //__________________________________________________________________________
 void AliMUONTrackK::RemoveMatrices(AliMUONTrackK* trackK)
 {
-  // Remove last saved matrices and steps in the smoother part 
+/// Remove last saved matrices and steps in the smoother part 
 
   trackK->fNSteps--;
   Int_t i = trackK->fNSteps;
@@ -1901,7 +1902,7 @@ void AliMUONTrackK::RemoveMatrices(AliMUONTrackK* trackK)
   //__________________________________________________________________________
 Bool_t AliMUONTrackK::Smooth(void)
 {
-  // Apply smoother
+/// Apply smoother
   Int_t ihit = fNmbTrackHits - 1;
   AliMUONHitForRec *hit = (AliMUONHitForRec*) (*fTrackHits)[ihit];
   fChi2Smooth = new TArrayD(fNmbTrackHits);
@@ -2035,7 +2036,7 @@ L33:
   //__________________________________________________________________________
 void AliMUONTrackK::Outlier()
 {
-  // Adds new track with removed hit having the highest chi2
+/// Adds new track with removed hit having the highest chi2
 
   if (fgDebug > 0) {
     cout << " ******** Enter Outlier " << endl;
@@ -2141,7 +2142,7 @@ void AliMUONTrackK::Outlier()
   //__________________________________________________________________________
 Double_t AliMUONTrackK::GetChi2PerPoint(Int_t iPoint) const
 {
-  // Return Chi2 at point
+/// Return Chi2 at point
   return fChi2Smooth ? (*fChi2Smooth)[iPoint] : (*fChi2Array)[iPoint];
   //return 0.;
 }
@@ -2149,7 +2150,7 @@ Double_t AliMUONTrackK::GetChi2PerPoint(Int_t iPoint) const
   //__________________________________________________________________________
 void AliMUONTrackK::Print(FILE *lun) const
 {
-  // Print out track information
+/// Print out track information
 
   Int_t flag = 1;
   AliMUONHitForRec *hit = 0; 
@@ -2212,7 +2213,7 @@ void AliMUONTrackK::Print(FILE *lun) const
   //__________________________________________________________________________
 void AliMUONTrackK::DropBranches(Int_t imax, TObjArray *hits)
 {
-  // Drop branches downstream of the skipped hit 
+/// Drop branches downstream of the skipped hit 
   Int_t nRecTracks;
   TClonesArray *trackPtr;
   AliMUONTrackK *trackK;
@@ -2258,7 +2259,7 @@ void AliMUONTrackK::DropBranches(Int_t imax, TObjArray *hits)
   //__________________________________________________________________________
 void AliMUONTrackK::DropBranches(AliMUONSegment *segment)
 {
-  // Drop all candidates with the same seed segment
+/// Drop all candidates with the same seed segment
   Int_t nRecTracks;
   TClonesArray *trackPtr;
   AliMUONTrackK *trackK;
@@ -2279,7 +2280,7 @@ void AliMUONTrackK::DropBranches(AliMUONSegment *segment)
   //__________________________________________________________________________
 AliMUONHitForRec* AliMUONTrackK::GetHitLastOk(void)
 {
-  // Return the hit where track stopped
+/// Return the hit where track stopped
 
   if (!fNSteps) return (AliMUONHitForRec*)((*fTrackHits)[1]);
   return fSkipHit;
@@ -2288,14 +2289,14 @@ AliMUONHitForRec* AliMUONTrackK::GetHitLastOk(void)
   //__________________________________________________________________________
 Int_t AliMUONTrackK::GetStation0(void)
 {
-  // Return seed station number
+/// Return seed station number
   return fStartSegment->GetHitForRec1()->GetChamberNumber() / 2;
 }
 
   //__________________________________________________________________________
 Bool_t AliMUONTrackK::ExistDouble(AliMUONHitForRec *hit)
 {
-  // Check if the track will make a double after outlier removal
+/// Check if the track will make a double after outlier removal
 
   TClonesArray *trackPtr = fgTrackReconstructor->GetRecTracksPtr();
   Int_t nRecTracks = fgTrackReconstructor->GetNRecTracks();
@@ -2348,7 +2349,7 @@ Bool_t AliMUONTrackK::ExistDouble(AliMUONHitForRec *hit)
   //__________________________________________________________________________
 Bool_t AliMUONTrackK::ExistDouble(void)
 {
-  // Check if the track will make a double after recovery
+/// Check if the track will make a double after recovery
 
   TClonesArray *trackPtr = fgTrackReconstructor->GetRecTracksPtr();
   Int_t nRecTracks = fgTrackReconstructor->GetNRecTracks();

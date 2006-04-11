@@ -76,10 +76,10 @@ AliMUONRawReader::AliMUONRawReader(AliMUONData* data)
 : TObject(),
   fScalerEvent(kFALSE)
 {
+// Standard Constructor
+ 
   AliDebug(1,"");
       
-  // Standard Constructor
- 
   // initialize segmentation factory
   fSegFactory = new AliMpSegFactory();
 
@@ -140,6 +140,8 @@ AliMUONRawReader::operator=(const AliMUONRawReader& rhs)
 //__________________________________________________________________________
 AliMUONRawReader::~AliMUONRawReader()
 {
+// Destructor
+
   delete fSegFactory;  
 
   delete fDDLTracker;

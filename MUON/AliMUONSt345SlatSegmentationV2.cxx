@@ -15,13 +15,6 @@
 
 /* $Id$ */
 
-// -------------------------------------
-// Class AliMUONSt345SlatSegmentation
-// -------------------------------------
-// Segmentation for MUON slat stations using 
-// the mapping package
-
-
 #include "AliMUONSt345SlatSegmentationV2.h"
 #include "AliMUONConstants.h"
 

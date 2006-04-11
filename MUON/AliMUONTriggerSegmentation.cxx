@@ -47,6 +47,8 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation()
     fRpcHalfXsize(0),
     fRpcHalfYsize(0)
 {
+// Default constructor
+
 // add to St345SlatSegmentation
   for (Int_t i=0; i<7; i++) {
       fNstrip[i]=0;
@@ -97,6 +99,8 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(Bool_t bending)
 //----------------------------------------------------------------------
 AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(const AliMUONTriggerSegmentation& rhs) : AliMUONVGeometryDESegmentation(rhs)
 {
+// Copy constructor
+
   AliFatal("Not implemented.");
 }
 //----------------------------------------------------------------------
@@ -273,11 +277,13 @@ void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t 
 //-------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy)
 {
+//  Returns global pad coordinates (ix,iy) for local real coordinates (x,y)
   GetPadI(x, y, ix, iy);
 }
 
 //-------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::SetLineNumber(Int_t iLineNumber){
+// Set line number
     fLineNumber = iLineNumber;    
 }
 //-------------------------------------------------------------------------
@@ -300,6 +306,7 @@ void AliMUONTriggerSegmentation::SetHit(Float_t x, Float_t y)
 //----------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
 {
+  // Set current hit 
   SetHit(xhit, yhit);
 }
 
@@ -554,6 +561,8 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
 void
 AliMUONTriggerSegmentation::Print(Option_t*) const
 {
+// Printing
+
   cout << "fId=" << fId << " fBending=" << fBending << " fNsec=" 
   << fNsec << " Nx,Ny=" << fNpx << "," << fNpy 
   << " LineNumber=" << fLineNumber 

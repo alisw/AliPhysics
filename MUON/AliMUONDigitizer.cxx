@@ -55,8 +55,8 @@ AliMUONDigitizer::AliMUONDigitizer() :
 	fMask(0),
 	fSignal(0)
 {
-// Default constructor.
-// Initializes all pointers to NULL.
+/// Default constructor.
+/// Initializes all pointers to NULL.
 
 	fRunLoader = NULL;
 	fGime = NULL;
@@ -74,8 +74,8 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 	fMask(0),
 	fSignal(0)
 {
-// Constructor which should be used rather than the default constructor.
-// Initializes all pointers to NULL.
+/// Constructor which should be used rather than the default constructor.
+/// Initializes all pointers to NULL.
 
 	fRunLoader = NULL;
 	fGime = NULL;
@@ -88,7 +88,7 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 AliMUONDigitizer::AliMUONDigitizer(const AliMUONDigitizer& rhs)
   : AliDigitizer(rhs)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -96,7 +96,8 @@ AliMUONDigitizer::AliMUONDigitizer(const AliMUONDigitizer& rhs)
 //___________________________________________
 AliMUONDigitizer::~AliMUONDigitizer() 
 {
-// Destructor
+/// Destructor
+
   if (fMUONData)
     delete fMUONData;
 
@@ -108,7 +109,7 @@ AliMUONDigitizer::~AliMUONDigitizer()
 AliMUONDigitizer&  
 AliMUONDigitizer::operator=(const AliMUONDigitizer& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -120,19 +121,20 @@ AliMUONDigitizer::operator=(const AliMUONDigitizer& rhs)
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::Init()
 {
-// Does nothing. 
-	return kTRUE;
+/// Initialize - Does nothing. 
+
+  return kTRUE;
 }
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::Exec(Option_t* /*option*/)
 {
-// The main work loop starts here. 
-// The digitization process is broken up into two steps: 
-// 1) Loop over input streams and create transient digits from the input.
-//    Done in GenerateTransientDigits()
-// 2) Loop over the generated transient digits and write them to the output
-//    stream. Done in CreateDigits()
+/// The main work loop starts here. 
+/// The digitization process is broken up into two steps: 
+/// 1) Loop over input streams and create transient digits from the input.
+///    Done in GenerateTransientDigits()
+/// 2) Loop over the generated transient digits and write them to the output
+///    stream. Done in CreateDigits()
 
 	AliDebug(1, "Running digitiser.");
 
@@ -184,8 +186,8 @@ void AliMUONDigitizer::Exec(Option_t* /*option*/)
 //--------------------------------------------------------------------------
 void AliMUONDigitizer::AddOrUpdateTransientDigit(AliMUONTransientDigit* mTD)
 {
-// Checks to see if the transient digit exists in the corresponding fHitMap.
-// If it does then the digit is updated otherwise it is added. 
+/// Checks to see if the transient digit exists in the corresponding fHitMap.
+/// If it does then the digit is updated otherwise it is added. 
 
 	if (ExistTransientDigit(mTD)) 
 	{
@@ -199,8 +201,8 @@ void AliMUONDigitizer::AddOrUpdateTransientDigit(AliMUONTransientDigit* mTD)
 //------------------------------------------------------------------------
 void AliMUONDigitizer::UpdateTransientDigit(AliMUONTransientDigit* mTD)
 {
-// Update the transient digit that is already in the fTDList by adding the new
-// transient digits charges and track lists to the existing one.
+/// Update the transient digit that is already in the fTDList by adding the new
+/// transient digits charges and track lists to the existing one.
 
 	AliDebug(4,Form( "Updating transient digit 0x%X", (void*)mTD));
 	// Choosing the maping of the cathode plane of the chamber:
@@ -235,8 +237,8 @@ void AliMUONDigitizer::UpdateTransientDigit(AliMUONTransientDigit* mTD)
 //------------------------------------------------------------------------
 void AliMUONDigitizer::AddTransientDigit(AliMUONTransientDigit* mTD)
 {
-// Adds the transient digit to the fTDList and sets the appropriate entry
-// in the fHitMap arrays. 
+/// Adds the transient digit to the fTDList and sets the appropriate entry
+/// in the fHitMap arrays. 
 
 	AliDebug(4,Form( "Adding transient digit 0x%X", (void*)mTD));
 	// Choosing the maping of the cathode plane of the chamber:
@@ -254,9 +256,9 @@ void AliMUONDigitizer::AddTransientDigit(AliMUONTransientDigit* mTD)
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::ExistTransientDigit(AliMUONTransientDigit* mTD)
 {
-// Checks if the transient digit already exists on the corresponding fHitMap.
-// i.e. is there a transient digit on the same chamber, cathode and pad position 
-// as mTD. If yes then kTRUE is returned else kFASLE is returned.
+/// Checks if the transient digit already exists on the corresponding fHitMap.
+/// i.e. is there a transient digit on the same chamber, cathode and pad position 
+/// as mTD. If yes then kTRUE is returned else kFASLE is returned.
 
 	// Choosing the maping of the cathode plane of the chamber:
 	Int_t detElemId =  mTD->DetElemId();
@@ -272,8 +274,8 @@ Bool_t AliMUONDigitizer::ExistTransientDigit(AliMUONTransientDigit* mTD)
 //-----------------------------------------------------------------------
 void AliMUONDigitizer::CreateDigits()
 {
-// Loops over the fTDList for each cathode, gets the correct signal for the 
-// digit and adds the new digit to the output stream.
+/// Loops over the fTDList for each cathode, gets the correct signal for the 
+/// digit and adds the new digit to the output stream.
 
 	fTDList->Sort(); // sort by idDE
         AliDebug(2, "Creating digits...");
@@ -315,14 +317,14 @@ void AliMUONDigitizer::AddDigit(
 		Int_t digitindex
 	)
 {
-// Prepares the digits, track and charge arrays in preparation for a call to
-// AddDigit(Int_t, Int_t[kMAXTRACKS], Int_t[kMAXTRACKS], Int_t[6])
-// This method is called by CreateDigits() whenever a new digit needs to be added
-// to the output stream trees.
-// The responseCharge value is used as the Signal of the new digit. 
-// The OnWriteTransientDigit method is also called just before the adding the 
-// digit to allow inheriting digitizers to be able to do some specific processing 
-// at this point. 
+/// Prepares the digits, track and charge arrays in preparation for a call to
+/// AddDigit(Int_t, Int_t[kMAXTRACKS], Int_t[kMAXTRACKS], Int_t[6])
+/// This method is called by CreateDigits() whenever a new digit needs to be added
+/// to the output stream trees.
+/// The responseCharge value is used as the Signal of the new digit. 
+/// The OnWriteTransientDigit method is also called just before the adding the 
+/// digit to allow inheriting digitizers to be able to do some specific processing 
+/// at this point. 
 
 	Int_t tracks[kMAXTRACKS];
 	Int_t charges[kMAXTRACKS];
@@ -373,27 +375,27 @@ void AliMUONDigitizer::AddDigit(
 //------------------------------------------------------------------------
 void AliMUONDigitizer::OnCreateTransientDigit(AliMUONTransientDigit* /*digit*/, TObject* /*source_object*/)
 {
-	// Does nothing.
-	//
-	// This is derived by Digitisers that want to trace which digits were made from
-	// which hits.
+/// Does nothing.
+///
+/// This is derived by Digitisers that want to trace which digits were made from
+/// which hits.
 }
 
 //------------------------------------------------------------------------
 void AliMUONDigitizer::OnWriteTransientDigit(AliMUONTransientDigit* /*digit*/)
 {
-	// Does nothing.
-	//
-	// This is derived by Digitisers that want to trace which digits were made from
-	// which hits.
+/// Does nothing.
+///
+/// This is derived by Digitisers that want to trace which digits were made from
+/// which hits.
 }
 
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::FetchLoaders(const char* foldername, AliRunLoader*& runloader, AliMUONLoader*& muonloader)
 {
-// Fetches the run loader from the current folder, specified by 'foldername'. 
-// The muon loader is then loaded from the fetched run loader. 
-// kTRUE is returned if no error occurred otherwise kFALSE is returned. 
+/// Fetches the run loader from the current folder, specified by 'foldername'. 
+/// The muon loader is then loaded from the fetched run loader. 
+/// kTRUE is returned if no error occurred otherwise kFALSE is returned. 
 
 	AliDebug(3, Form("Fetching run loader and muon loader from folder: %s", foldername));
 
@@ -416,11 +418,11 @@ Bool_t AliMUONDigitizer::FetchLoaders(const char* foldername, AliRunLoader*& run
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 {
-// Fetches the AliRun object into the global gAlice pointer from the specified
-// run loader. The AliRun object is loaded into memory using the run loader if 
-// not yet loaded. The MUON module object is then loaded from gAlice and 
-// AliMUONData fetched from the MUON module. 
-// kTRUE is returned if no error occurred otherwise kFALSE is returned. 
+/// Fetches the AliRun object into the global gAlice pointer from the specified
+/// run loader. The AliRun object is loaded into memory using the run loader if 
+/// not yet loaded. The MUON module object is then loaded from gAlice and 
+/// AliMUONData fetched from the MUON module. 
+/// kTRUE is returned if no error occurred otherwise kFALSE is returned. 
 
         AliDebug(3, Form("Fetching gAlice, MUON module and AliMUONData from runloader 0x%X.",
 			(void*)runloader
@@ -460,6 +462,8 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 //-----------------------------------------------------------------------
 Bool_t  AliMUONDigitizer::FetchTriggerPointer(AliMUONLoader* loader)
 {
+/// \todo add description
+
   if (fMUONData == NULL) {
     AliError("MUONData not found");
     return kFALSE;
@@ -474,12 +478,12 @@ Bool_t  AliMUONDigitizer::FetchTriggerPointer(AliMUONLoader* loader)
 //------------------------------------------------------------------------
 void AliMUONDigitizer::InitArrays()
 {
-// Creates a new fTDList object. 
-// Also creates an array of 2 * chamber_number AliMUONHitMapA1 objects
-// in the fHitMaps array. Each one is set to a chamber and cathode
-// specific segmentation model. 
-//
-// Note: the fTDList and fHitMap arrays must be NULL before calling this method.
+/// Creates a new fTDList object. 
+/// Also creates an array of 2 * chamber_number AliMUONHitMapA1 objects
+/// in the fHitMaps array. Each one is set to a chamber and cathode
+/// specific segmentation model. 
+///
+/// Note: the fTDList and fHitMap arrays must be NULL before calling this method.
 
     AliDebug(2, "Initialising internal arrays.");
     AliDebug(4, "Creating transient digits list.");
@@ -531,7 +535,7 @@ void AliMUONDigitizer::InitArrays()
 //------------------------------------------------------------------------
 void AliMUONDigitizer::CleanupArrays()
 {
-// The arrays fTDList and fHitMap are deleted and the pointers set to NULL.
+/// The arrays fTDList and fHitMap are deleted and the pointers set to NULL.
 
 	AliDebug(2, "Deleting internal arrays.");
 	for(Int_t i = 0; i < 2*AliMUONConstants::NDetElem(); i++) {
@@ -550,10 +554,8 @@ void AliMUONDigitizer::CleanupArrays()
 //------------------------------------------------------------------------
 void AliMUONDigitizer::SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr) const
 {
-//
-// Sort the list of tracks contributing to a given digit
-// Only the 3 most significant tracks are actually sorted
-//
+/// Sort the list of tracks contributing to a given digit
+/// Only the 3 most significant tracks are actually sorted
 
        if (ntr <= 1) return;
 

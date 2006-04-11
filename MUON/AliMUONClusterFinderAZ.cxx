@@ -15,8 +15,11 @@
 
 /* $Id$ */
 
-// Clusterizer class developed by A. Zinchenko (Dubna), based on the 
-// Expectation-Maximization algorithm
+// -------------------------------
+// Class AliMUONClusterFinderAZ
+// -------------------------------
+// Clusterizer class based on the Expectation-Maximization algorithm
+// Author: Alexander Zinchenko, JINR Dubna
 
 #include <stdlib.h>
 #include <Riostream.h>
@@ -50,7 +53,7 @@ ClassImp(AliMUONClusterFinderAZ)
 AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw)
   : AliMUONClusterFinderVS()
 {
-// Constructor
+/// Constructor
   fnPads[0]=fnPads[1]=0;
   
   for (Int_t i=0; i<7; i++)
@@ -90,7 +93,7 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw)
 AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs)
   : AliMUONClusterFinderVS(rhs)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -98,7 +101,7 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs
 //_____________________________________________________________________________
 AliMUONClusterFinderAZ::~AliMUONClusterFinderAZ()
 {
-  // Destructor
+/// Destructor
   delete fgMinuit; fgMinuit = 0; delete fPixArray; fPixArray = 0;
   delete fDraw;
 }
@@ -106,7 +109,7 @@ AliMUONClusterFinderAZ::~AliMUONClusterFinderAZ()
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::FindRawClusters()
 {
-// To provide the same interface as in AliMUONClusterFinderVS
+/// To provide the same interface as in AliMUONClusterFinderVS
 
   ResetRawClusters(); 
   EventLoop (gAlice->GetEvNumber(), fInput->Chamber());
@@ -115,7 +118,7 @@ void AliMUONClusterFinderAZ::FindRawClusters()
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::EventLoop(Int_t nev, Int_t ch)
 {
-// Loop over digits
+/// Loop over digits
   
   if (fDraw && !fDraw->FindEvCh(nev, ch)) return;
 
@@ -252,7 +255,8 @@ next:
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::AddPad(Int_t cath, Int_t digit)
 {
-  // Add pad to the cluster
+/// Add pad to the cluster
+
   AliMUONDigit *mdig = fInput->Digit(cath,digit); 
 
   Int_t charge = mdig->Signal();
@@ -305,8 +309,8 @@ void AliMUONClusterFinderAZ::AddPad(Int_t cath, Int_t digit)
 //_____________________________________________________________________________
 Bool_t AliMUONClusterFinderAZ::Overlap(Int_t cath, AliMUONDigit *mdig)
 {
-  // Check if the pad from one cathode overlaps with a pad 
-  // in the precluster on the other cathode
+/// Check if the pad from one cathode overlaps with a pad 
+/// in the precluster on the other cathode
 
   Float_t xpad, ypad, zpad;
   fSegmentation[cath]->GetPadC(mdig->PadX(), mdig->PadY(), xpad, ypad, zpad);
@@ -330,7 +334,7 @@ Bool_t AliMUONClusterFinderAZ::Overlap(Int_t cath, AliMUONDigit *mdig)
 //_____________________________________________________________________________
 Bool_t AliMUONClusterFinderAZ::Overlap(Float_t *xy1, Int_t iPad, Float_t *xy12, Int_t iSkip)
 {
-  // Check if the pads xy1 and iPad overlap and return overlap area
+/// Check if the pads xy1 and iPad overlap and return overlap area
 
   Float_t xy2[4];
   xy2[0] = fXyq[0][iPad] - fXyq[3][iPad];
@@ -350,8 +354,8 @@ Bool_t AliMUONClusterFinderAZ::Overlap(Float_t *xy1, Int_t iPad, Float_t *xy12, 
 //_____________________________________________________________________________
 Bool_t AliMUONClusterFinderAZ::CheckPrecluster(Int_t *nShown)
 {
-  // Check precluster in order to attempt to simplify it (mostly for
-  // two-cathode preclusters)
+/// Check precluster in order to attempt to simplify it (mostly for
+/// two-cathode preclusters)
 
   Int_t i1, i2, cath=0, digit=0;
   Float_t xy1[4], xy12[4];
@@ -616,7 +620,7 @@ Bool_t AliMUONClusterFinderAZ::CheckPrecluster(Int_t *nShown)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::BuildPixArray()
 {
-  // Build pixel array for MLEM method
+/// Build pixel array for MLEM method
   
   Int_t nPix=0, i1, i2;
   Float_t xy1[4], xy12[4];
@@ -723,7 +727,7 @@ void AliMUONClusterFinderAZ::BuildPixArray()
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::AdjustPixel(Float_t width, Int_t ixy)
 {
-  // Check if some pixels have small size (adjust if necessary)
+/// Check if some pixels have small size (adjust if necessary)
 
   AliMUONPixel *pixPtr, *pixPtr1 = 0;
   Int_t ixy1 = TMath::Even(ixy);
@@ -777,7 +781,7 @@ void AliMUONClusterFinderAZ::AdjustPixel(Float_t width, Int_t ixy)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::AdjustPixel(Float_t wxmin, Float_t wymin)
 {
-  // Check if some pixels have large size (adjust if necessary)
+/// Check if some pixels have large size (adjust if necessary)
 
   Int_t n1[2], n2[2], iOK = 1, nPix = fPixArray->GetEntriesFast();
   AliMUONPixel *pixPtr, pix;
@@ -843,7 +847,7 @@ void AliMUONClusterFinderAZ::AdjustPixel(Float_t wxmin, Float_t wymin)
 //_____________________________________________________________________________
 Bool_t AliMUONClusterFinderAZ::MainLoop(Int_t iSimple)
 {
-  // Repeat MLEM algorithm until pixel size becomes sufficiently small
+/// Repeat MLEM algorithm until pixel size becomes sufficiently small
   
   TH2D *mlem;
 
@@ -1133,7 +1137,7 @@ Bool_t AliMUONClusterFinderAZ::MainLoop(Int_t iSimple)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::Mlem(Double_t *coef, Double_t *probi, Int_t nIter)
 {
-  // Use MLEM to find pixel charges
+/// Use MLEM to find pixel charges
   
   Int_t nPix = fPixArray->GetEntriesFast();
   Int_t npad = fnPads[0] + fnPads[1];
@@ -1176,7 +1180,7 @@ void AliMUONClusterFinderAZ::Mlem(Double_t *coef, Double_t *probi, Int_t nIter)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::FindCOG(TH2D *mlem, Double_t *xyc)
 {
-  // Calculate position of the center-of-gravity around the maximum pixel
+/// Calculate position of the center-of-gravity around the maximum pixel
 
   Int_t ixmax, iymax, ix, nsumx=0, nsumy=0, nsum=0;
   Int_t i1 = -9, j1 = -9;
@@ -1259,8 +1263,8 @@ void AliMUONClusterFinderAZ::FindCOG(TH2D *mlem, Double_t *xyc)
 //_____________________________________________________________________________
 Int_t AliMUONClusterFinderAZ::FindNearest(AliMUONPixel *pixPtr0)
 {
-  // Find the pixel nearest to the given one
-  // (algorithm may be not very efficient)
+/// Find the pixel nearest to the given one
+/// (algorithm may be not very efficient)
 
   Int_t nPix = fPixArray->GetEntriesFast(), imin = 0;
   Double_t rmin = 99999, dx = 0, dy = 0, r = 0;
@@ -1281,9 +1285,9 @@ Int_t AliMUONClusterFinderAZ::FindNearest(AliMUONPixel *pixPtr0)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
 {
-  // The main steering function to work with clusters of pixels in anode
-  // plane (find clusters, decouple them from each other, merge them (if
-  // necessary), pick up coupled pads, call the fitting function)
+/// The main steering function to work with clusters of pixels in anode
+/// plane (find clusters, decouple them from each other, merge them (if
+/// necessary), pick up coupled pads, call the fitting function)
   
   Int_t nx = mlem->GetNbinsX();
   Int_t ny = mlem->GetNbinsY();
@@ -1518,7 +1522,7 @@ void AliMUONClusterFinderAZ::Split(TH2D *mlem, Double_t *coef)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::AddBin(TH2D *mlem, Int_t ic, Int_t jc, Int_t mode, Bool_t *used, TObjArray *pix)
 {
-  // Add a bin to the cluster
+/// Add a bin to the cluster
 
   Int_t nx = mlem->GetNbinsX();
   Int_t ny = mlem->GetNbinsY();
@@ -1547,7 +1551,7 @@ void AliMUONClusterFinderAZ::AddBin(TH2D *mlem, Int_t ic, Int_t jc, Int_t mode, 
 //_____________________________________________________________________________
 TObject* AliMUONClusterFinderAZ::BinToPix(TH2D *mlem, Int_t jc, Int_t ic)
 {
-  // Translate histogram bin to pixel 
+/// Translate histogram bin to pixel 
   
   Double_t yc = mlem->GetYaxis()->GetBinCenter(ic);
   Double_t xc = mlem->GetXaxis()->GetBinCenter(jc);
@@ -1568,7 +1572,7 @@ TObject* AliMUONClusterFinderAZ::BinToPix(TH2D *mlem, Int_t jc, Int_t ic)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::AddCluster(Int_t ic, Int_t nclust, TMatrixD *aijcluclu, Bool_t *used, Int_t *clustNumb, Int_t &nCoupled)
 {
-  // Add a cluster to the group of coupled clusters
+/// Add a cluster to the group of coupled clusters
 
   for (Int_t i=0; i<nclust; i++) {
     if (used[i]) continue;
@@ -1582,7 +1586,7 @@ void AliMUONClusterFinderAZ::AddCluster(Int_t ic, Int_t nclust, TMatrixD *aijclu
 //_____________________________________________________________________________
 Double_t AliMUONClusterFinderAZ::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb, TMatrixD *aijcluclu, Int_t *minGroup)
 {
-  // Find group of clusters with minimum coupling to all the others
+/// Find group of clusters with minimum coupling to all the others
 
   Int_t i123max = TMath::Min(3,nCoupled/2); 
   Int_t indx, indx1, indx2, indx3, nTot = 0;
@@ -1664,8 +1668,8 @@ Double_t AliMUONClusterFinderAZ::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
 //_____________________________________________________________________________
 Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *clustNumb, Int_t *clustFit, TMatrixD *aijclupad)
 {
-  // Select pads for fit. If too many coupled clusters, find pads giving 
-  // the strongest coupling with the rest of clusters and exclude them from the fit.
+/// Select pads for fit. If too many coupled clusters, find pads giving 
+/// the strongest coupling with the rest of clusters and exclude them from the fit.
 
   Int_t npad = fnPads[0] + fnPads[1];
   Double_t *padpix = 0;
@@ -1711,7 +1715,7 @@ Int_t AliMUONClusterFinderAZ::SelectPad(Int_t nCoupled, Int_t nForFit, Int_t *cl
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNumb, Int_t *clustFit, TObjArray **clusters, TMatrixD *aijcluclu, TMatrixD *aijclupad)
 {
-  // Merge the group of clusters with the one having the strongest coupling with them
+/// Merge the group of clusters with the one having the strongest coupling with them
 
   Int_t indx, indx1, npxclu, npxclu1, imax=0;
   TObjArray *pix, *pix1;
@@ -1764,7 +1768,7 @@ void AliMUONClusterFinderAZ::Merge(Int_t nForFit, Int_t nCoupled, Int_t *clustNu
 //_____________________________________________________________________________
 Int_t AliMUONClusterFinderAZ::Fit(Int_t iSimple, Int_t nfit, Int_t *clustFit, TObjArray **clusters, Double_t *parOk)
 {
-  // Find selected clusters to selected pad charges
+/// Find selected clusters to selected pad charges
   
   TH2D *mlem = (TH2D*) gROOT->FindObject("mlem");
   Double_t xmin = mlem->GetXaxis()->GetXmin() - mlem->GetXaxis()->GetBinWidth(1);
@@ -2189,8 +2193,9 @@ Int_t AliMUONClusterFinderAZ::Fit(Int_t iSimple, Int_t nfit, Int_t *clustFit, TO
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::Fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t &f, Double_t *par, Int_t /*iflag*/)
 {
-  // Fit for one track
-  //AZ for Muinuit AliMUONClusterFinderAZ& c = *(AliMUONClusterFinderAZ::fgClusterFinder);    
+/// Fit for one track
+/// AZ for Muinuit AliMUONClusterFinderAZ& c = *(AliMUONClusterFinderAZ::fgClusterFinder);    
+
   AliMUONClusterFinderAZ& c = *this; //AZ
   
   Int_t cath, ix, iy, indx, npads=0;
@@ -2229,7 +2234,7 @@ void AliMUONClusterFinderAZ::Fcn1(Int_t & /*npar*/, Double_t * /*gin*/, Double_t
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::UpdatePads(Int_t /*nfit*/, Double_t *par)
 {
-  // Subtract the fitted charges from pads with strong coupling
+/// Subtract the fitted charges from pads with strong coupling
 
   Int_t cath, ix, iy, indx;
   Double_t charge, coef=0;
@@ -2259,8 +2264,10 @@ void AliMUONClusterFinderAZ::UpdatePads(Int_t /*nfit*/, Double_t *par)
 }  
 
 //_____________________________________________________________________________
-Bool_t AliMUONClusterFinderAZ::TestTrack(Int_t /*t*/) const {
-// Test if track was user selected
+Bool_t AliMUONClusterFinderAZ::TestTrack(Int_t /*t*/) const 
+{
+/// Test if track was user selected
+
   return kTRUE;
   /*
     if (fTrack[0]==-1 || fTrack[1]==-1) {
@@ -2276,9 +2283,8 @@ Bool_t AliMUONClusterFinderAZ::TestTrack(Int_t /*t*/) const {
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::AddRawCluster(Double_t x, Double_t y, Double_t qTot, Double_t fmin, Int_t nfit, Int_t *tracks, Double_t /*sigx*/, Double_t /*sigy*/, Double_t /*dist*/)
 {
-  //
-  // Add a raw cluster copy to the list
-  //
+/// Add a raw cluster copy to the list
+
   if (qTot <= 0.501) return; 
   AliMUONRawCluster cnew;
 
@@ -2326,9 +2332,9 @@ void AliMUONClusterFinderAZ::AddRawCluster(Double_t x, Double_t y, Double_t qTot
 //_____________________________________________________________________________
 Int_t AliMUONClusterFinderAZ::FindLocalMaxima(TObjArray *pixArray, Int_t *localMax, Double_t *maxVal)
 {
-  // Find local maxima in pixel space for large preclusters in order to
-  // try to split them into smaller pieces (to speed up the MLEM procedure)
-  // or to find additional fitting seeds if clusters were not completely resolved  
+/// Find local maxima in pixel space for large preclusters in order to
+/// try to split them into smaller pieces (to speed up the MLEM procedure)
+/// or to find additional fitting seeds if clusters were not completely resolved  
 
   TH2D *hist = NULL;
   //if (pixArray == fPixArray) hist = (TH2D*) gROOT->FindObject("anode");
@@ -2387,7 +2393,7 @@ Int_t AliMUONClusterFinderAZ::FindLocalMaxima(TObjArray *pixArray, Int_t *localM
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t *isLocalMax)
 {
-  // Flag pixels (whether or not local maxima)
+/// Flag pixels (whether or not local maxima)
 
   Int_t nx = hist->GetNbinsX();
   Int_t ny = hist->GetNbinsY();
@@ -2420,8 +2426,8 @@ void AliMUONClusterFinderAZ::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t *i
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::FindCluster(Int_t *localMax, Int_t iMax)
 {
-  // Find pixel cluster around local maximum #iMax and pick up pads
-  // overlapping with it
+/// Find pixel cluster around local maximum #iMax and pick up pads
+/// overlapping with it
 
   TH2D *hist = (TH2D*) gROOT->FindObject("anode");
   Int_t nx = hist->GetNbinsX();
@@ -2469,7 +2475,7 @@ void AliMUONClusterFinderAZ::FindCluster(Int_t *localMax, Int_t iMax)
 AliMUONClusterFinderAZ&  
 AliMUONClusterFinderAZ::operator=(const AliMUONClusterFinderAZ& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -2481,8 +2487,8 @@ AliMUONClusterFinderAZ::operator=(const AliMUONClusterFinderAZ& rhs)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::AddVirtualPad()
 {
-  // Add virtual pad (with small charge) to improve fit for some
-  // clusters (when pad with max charge is at the extreme of the cluster)
+/// Add virtual pad (with small charge) to improve fit for some
+/// clusters (when pad with max charge is at the extreme of the cluster)
 
   // Get number of pads in X and Y-directions
   Int_t nInX = -1, nInY;
@@ -2697,8 +2703,8 @@ void AliMUONClusterFinderAZ::AddVirtualPad()
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::PadsInXandY(Int_t &nInX, Int_t &nInY)
 {
-  // Find number of pads in X and Y-directions (excluding virtual ones and
-  // overflows)
+/// Find number of pads in X and Y-directions (excluding virtual ones and
+/// overflows)
 
   static Int_t nXsaved = 0, nYsaved = 0;
   nXsaved = nYsaved = 0;
@@ -2762,7 +2768,7 @@ void AliMUONClusterFinderAZ::PadsInXandY(Int_t &nInX, Int_t &nInY)
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::Simple()
 {
-  // Process simple cluster (small number of pads) without EM-procedure
+/// Process simple cluster (small number of pads) without EM-procedure
 
   Int_t nForFit = 1, clustFit[1] = {0}, nfit;
   Double_t parOk[3] = {0.}; 
@@ -2778,7 +2784,7 @@ void AliMUONClusterFinderAZ::Simple()
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::Errors(AliMUONRawCluster *clus)
 {
-  // Correct reconstructed coordinates for some clusters and evaluate errors
+/// Correct reconstructed coordinates for some clusters and evaluate errors
 
   Double_t qTot = clus->GetCharge(0), fmin = clus->GetChi2(0);
   Double_t xreco = clus->GetX(0), yreco = clus->GetY(0), zreco = clus->GetZ(0);
@@ -2895,7 +2901,7 @@ void AliMUONClusterFinderAZ::Errors(Int_t ny, Int_t nx, Int_t iby, Int_t ibx, Do
 				    Double_t dyc, Double_t /*dxc*/, Double_t qtot, 
 				    Double_t &yrec, Double_t &xrec, Double_t &erry, Double_t &errx)
 {
-  // Correct reconstructed coordinates for some clusters and evaluate errors
+/// Correct reconstructed coordinates for some clusters and evaluate errors
 
     erry = 0.01;
     errx = 0.144;

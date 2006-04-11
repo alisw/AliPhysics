@@ -15,10 +15,10 @@
 
 /* $Id$ */
 
+// -------------------------------------
 // Class AliMUONClusterDrawAZ
 // -------------------------------------
 // Cluster drawing for AZ cluster finder 
-//
 // Author: Alexander Zinchenko, JINR Dubna
 
 #include <stdlib.h>
@@ -53,7 +53,7 @@ ClassImp(AliMUONClusterDrawAZ)
 AliMUONClusterDrawAZ::AliMUONClusterDrawAZ()
   : TObject()
 {
-// Default constructor
+/// Default constructor
   fFind = NULL; fData = NULL;
   for (Int_t i=0; i<4; i++) fHist[i] = NULL;
 }
@@ -62,7 +62,7 @@ AliMUONClusterDrawAZ::AliMUONClusterDrawAZ()
 AliMUONClusterDrawAZ::AliMUONClusterDrawAZ(AliMUONClusterFinderAZ *clusFinder)
   : TObject()
 {
-// Constructor
+/// Constructor
   fFind = clusFinder;
   for (Int_t i=0; i<4; i++) fHist[i] = NULL;
   fDebug = 1; 
@@ -74,14 +74,14 @@ AliMUONClusterDrawAZ::AliMUONClusterDrawAZ(AliMUONClusterFinderAZ *clusFinder)
 //_____________________________________________________________________________
 AliMUONClusterDrawAZ::~AliMUONClusterDrawAZ()
 {
-  // Destructor
+/// Destructor
 }
 
 //_____________________________________________________________________________
 AliMUONClusterDrawAZ::AliMUONClusterDrawAZ(const AliMUONClusterDrawAZ& rhs)
   : TObject(rhs)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Not implemented.");
 }
@@ -91,7 +91,7 @@ AliMUONClusterDrawAZ::AliMUONClusterDrawAZ(const AliMUONClusterDrawAZ& rhs)
 AliMUONClusterDrawAZ&  
 AliMUONClusterDrawAZ::operator=(const AliMUONClusterDrawAZ& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 
@@ -102,7 +102,7 @@ AliMUONClusterDrawAZ::operator=(const AliMUONClusterDrawAZ& rhs)
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::Init()
 {
-  // Initialization
+/// Initialization
 
   TCanvas *c1 = new TCanvas("c1","Clusters",0,0,600,700);
   //c1->SetFillColor(10);
@@ -124,7 +124,7 @@ void AliMUONClusterDrawAZ::Init()
 //_____________________________________________________________________________
 Bool_t AliMUONClusterDrawAZ::FindEvCh(Int_t nev, Int_t ch)
 {
-  // Find requested event and chamber (skip the ones before the selected)
+/// Find requested event and chamber (skip the ones before the selected)
 
   if (nev < fEvent) return kFALSE;
   else if (nev == fEvent) {
@@ -140,7 +140,7 @@ Bool_t AliMUONClusterDrawAZ::FindEvCh(Int_t nev, Int_t ch)
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::DrawCluster()
 {
-  // Draw preclusters
+/// Draw preclusters
 
   TCanvas *c1 = (TCanvas*) gROOT->GetListOfCanvases()->FindObject("c1");
 
@@ -334,7 +334,7 @@ void AliMUONClusterDrawAZ::DrawCluster()
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::DrawHits()
 {
-  // Draw simulated and reconstructed hits 
+/// Draw simulated and reconstructed hits 
 
   TView *view[2] = { 0x0, 0x0 };
   Double_t p1[3]={0}, p2[3], xNDC[6], xl, yl, zl;
@@ -471,7 +471,8 @@ void AliMUONClusterDrawAZ::DrawHits()
 //_____________________________________________________________________________
 Int_t AliMUONClusterDrawAZ::Next()
 {
-  // What to do next?
+/// What to do next?
+
   // File
   FILE *lun = 0;
   //lun = fopen("pull.dat","w");
@@ -506,7 +507,8 @@ Int_t AliMUONClusterDrawAZ::Next()
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::ModifyHistos(void)
 {
-  // Modify histograms to bring them to (approximately) the same size
+/// Modify histograms to bring them to (approximately) the same size
+
   Int_t nhist = 0;
   Float_t hlim[4][4], hbin[4][4]; // first index - xmin, xmax, ymin, ymax
 
@@ -612,7 +614,7 @@ void AliMUONClusterDrawAZ::ModifyHistos(void)
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::AdjustHist(Double_t *xylim, const AliMUONPixel *pixPtr)
 {
-  // Adjust histogram limits for pixel drawing
+/// Adjust histogram limits for pixel drawing
 
   Float_t xypads[4];
   if (fHist[0]) {
@@ -632,7 +634,7 @@ void AliMUONClusterDrawAZ::AdjustHist(Double_t *xylim, const AliMUONPixel *pixPt
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::DrawHist(const char* canvas, TH2D *hist)
 {
-  // Draw histogram in given canvas 
+/// Draw histogram in given canvas 
 
   Int_t ix = 0;
   //((TCanvas*)gROOT->FindObject("c2"))->cd();
@@ -648,7 +650,7 @@ void AliMUONClusterDrawAZ::DrawHist(const char* canvas, TH2D *hist)
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::FillMuon(Int_t nfit, const Double_t *parOk, const Double_t *errOk)
 {
-  // Fill muon information
+/// Fill muon information
 
   Int_t indx, imax;
   Double_t cmax, rad;
@@ -674,7 +676,7 @@ void AliMUONClusterDrawAZ::FillMuon(Int_t nfit, const Double_t *parOk, const Dou
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::UpdateCluster(Int_t npad)
 {
-  // Update cluster after removing non-overlapped pads
+/// Update cluster after removing non-overlapped pads
 
   Int_t cath = 0, ix = 0, iy = 0;
   cout << " Update cluster " << endl;
@@ -706,7 +708,7 @@ void AliMUONClusterDrawAZ::UpdateCluster(Int_t npad)
 //_____________________________________________________________________________
 TH2D* AliMUONClusterDrawAZ::GetBackground(Int_t iHist)
 {
-  // Build histogram with pads from the cluster contaminated by the background
+/// Build histogram with pads from the cluster contaminated by the background
 
   //return 0x0;
   Int_t cath = iHist / 2;

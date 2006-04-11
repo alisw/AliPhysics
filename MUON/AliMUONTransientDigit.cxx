@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// ------------------------------
+// Class AliMUONTransientDigit
+// ------------------------------
+// MUON transient digit
+// Extends AliMUONDigit with a list of contributing tracks
+
 #include <TObjArray.h>
 #include <TVector.h>
 
@@ -29,14 +35,14 @@ AliMUONTransientDigit::AliMUONTransientDigit() :
   fChamber(0),
   fTrackList(0)
 {
-  // Default constructor
+/// Default constructor
 }
  
 //____________________________________________________________________________
 AliMUONTransientDigit::AliMUONTransientDigit(const AliMUONTransientDigit& digit) :
   AliMUONDigit(digit)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal( "Not implemented.");
 }
@@ -48,14 +54,14 @@ AliMUONTransientDigit::AliMUONTransientDigit(Int_t ich, Int_t *digits) :
   fTrackList(new TObjArray(5))
   // 5 is arbitrary number, just to decrease default 16
 {
-  //
-  // Creates a MUON digit list object
-  //
+/// Creates a MUON digit list object
 }
 
 ////////////////////////////////////////////////////////////////////////
 AliMUONTransientDigit::~AliMUONTransientDigit() 
 {
+/// Destructor
+
   fTrackList->Delete();
   delete fTrackList;
 }
@@ -64,7 +70,7 @@ AliMUONTransientDigit::~AliMUONTransientDigit()
 AliMUONTransientDigit& 
 AliMUONTransientDigit::operator =(const AliMUONTransientDigit& rhs)
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   if (this == &rhs) return *this;
 

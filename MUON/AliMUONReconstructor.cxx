@@ -54,6 +54,8 @@ ClassImp(AliMUONReconstructor)
 AliMUONReconstructor::AliMUONReconstructor()
   : AliReconstructor(), fCalibrationData(0x0)
 {
+/// Default constructor
+
     AliDebug(1,"");
 }
 
@@ -69,6 +71,8 @@ AliMUONReconstructor::AliMUONReconstructor(const AliMUONReconstructor& right)
 //_____________________________________________________________________________
 AliMUONReconstructor::~AliMUONReconstructor()
 {
+/// Destructor
+
   AliDebug(1,"");
   delete fCalibrationData;
 }
@@ -91,9 +95,7 @@ AliMUONReconstructor::operator=(const AliMUONReconstructor& right)
 TTask* 
 AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
 {
-  //
-  // Create the calibration task(s). 
-  //
+/// Create the calibration task(s). 
   
   const AliRun* run = fRunLoader->GetAliRun();
   
@@ -129,13 +131,17 @@ AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
 void
 AliMUONReconstructor::Init(AliRunLoader* runLoader)
 {
+/// Initialize
+
   fRunLoader = runLoader;
 }
 
 //_____________________________________________________________________________
 void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
-//  AliLoader
+/// Reconstruct
+/// \todo add more
+
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
@@ -265,6 +271,9 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 //_____________________________________________________________________________
 void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const
 {
+/// Recontruct
+/// \todo add more
+
   //  AliLoader
   AliLoader* loader = runLoader->GetLoader("MUONLoader");
   AliMUONData data(loader,"MUON","MUON");
@@ -413,6 +422,9 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 //_____________________________________________________________________________
 void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 {
+/// Fill ESD
+/// \todo add more
+
   TClonesArray* recTracksArray = 0;
   TClonesArray* recTrigTracksArray = 0;
   
@@ -546,6 +558,9 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 }//_____________________________________________________________________________
 void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliRawReader* /*rawReader*/, AliESD* esd) const
 {
+/// Fill ESD
+/// \todo add more
+
   // don't need rawReader ???
   FillESD(runLoader, esd);
 }
