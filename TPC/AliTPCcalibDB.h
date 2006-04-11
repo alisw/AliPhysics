@@ -13,7 +13,7 @@
 #include "TObject.h"
 class AliTPCCalPad;
 class AliCDBEntry;
-class AliCDBStorage;
+//class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
 {
@@ -33,7 +33,7 @@ protected:
   void         Update();  //update entries
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
   Long64_t        fRun;         // current run number            
-  AliCDBStorage* fLocator;      // Storage locator retrieved from AliCDBManager
+//  AliCDBStorage* fLocator;      // Storage locator retrieved from AliCDBManager
   //
   // calibration parameters per pad
   //

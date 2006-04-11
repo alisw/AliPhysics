@@ -82,19 +82,8 @@ AliTPCcalibDB::AliTPCcalibDB()
   //
   // constructor
   //  
-   // TODO Default runnumber is set to 0, this should be changed later to an invalid value (e.g. -1) to prevent
-  // TODO invalid calibration data to be used.
-  fRun = 0;
+  fRun = -1;
       
-  AliCDBManager* manager = AliCDBManager::Instance();
-  if (!manager)
-  {
-    AliFatal("AliTRDcalibDB: CRITICAL: Failed to get instance of AliCDBManager.");
-    fLocator = 0;
-  }
-  else
-    fLocator = manager->GetStorage("local://$ALICE_ROOT");    
-
   //
   //
   //
@@ -111,10 +100,12 @@ AliTPCcalibDB::~AliTPCcalibDB()
   //
   // destructor
   //
-  if (fPadGainFactor) delete fPadGainFactor;
-  if (fPadTime0) delete fPadTime0;
-  if (fPadPRFWidth) delete fPadPRFWidth;
-  if (fPadNoise) delete fPadNoise;
+  
+  // don't delete anything, CDB cache is active!
+  //if (fPadGainFactor) delete fPadGainFactor;
+  //if (fPadTime0) delete fPadTime0;
+  //if (fPadPRFWidth) delete fPadPRFWidth;
+  //if (fPadNoise) delete fPadNoise;
 }
 
 
@@ -126,17 +117,7 @@ AliCDBEntry* AliTPCcalibDB::GetCDBEntry(const char* cdbPath)
   //
   char chinfo[1000];
     
-  if (fRun < 0)
-  {
-    AliFatal("AliTPCcalibDB: Run number not set! Use AliTPCcalibDB::SetRun.");
-    return 0;
-  }
-  if (!fLocator) 
-  { 
-    AliError("AliTPCcalibDB: Storage Locator not available."); 
-    return 0; 
-  } 
-  AliCDBEntry* entry = fLocator->Get(cdbPath, fRun); 
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get(cdbPath, fRun); 
   if (!entry) 
   { 
     sprintf(chinfo,"AliTPCcalibDB: Failed to get entry:\t%s ", cdbPath);
@@ -164,34 +145,39 @@ void AliTPCcalibDB::SetRun(Long64_t run)
 void AliTPCcalibDB::Update(){
   //
   AliCDBEntry * entry=0;
+  
+  Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
+  AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
+  
   //
   entry          = GetCDBEntry("TPC/Calib/PadGainFactor");
   if (entry){
-    if (fPadGainFactor) delete fPadGainFactor;
+    //if (fPadGainFactor) delete fPadGainFactor;
     entry->SetOwner(kTRUE);
     fPadGainFactor = (AliTPCCalPad*)entry->GetObject();
   }
   //
   entry          = GetCDBEntry("TPC/Calib/PadTime0");
   if (entry){
-    if (fPadTime0) delete fPadTime0;
+    //if (fPadTime0) delete fPadTime0;
     entry->SetOwner(kTRUE);
     fPadTime0 = (AliTPCCalPad*)entry->GetObject();
   }
   //
   entry          = GetCDBEntry("TPC/Calib/PadPRF");
   if (entry){
-    if (fPadPRFWidth) delete fPadPRFWidth;
+    //if (fPadPRFWidth) delete fPadPRFWidth;
     entry->SetOwner(kTRUE);
     fPadPRFWidth = (AliTPCCalPad*)entry->GetObject();
   }
   //
   entry          = GetCDBEntry("TPC/Calib/PadNoise");
   if (entry){
-    if (fPadNoise) delete fPadNoise;
+    //if (fPadNoise) delete fPadNoise;
     entry->SetOwner(kTRUE);
     fPadNoise = (AliTPCCalPad*)entry->GetObject();
   }
   //
-
+  AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
+  
 }
