@@ -19,7 +19,6 @@
 # include <TGraph.h>
 #include <TObjArray.h>
 class AliSTARTCalibData;
-class AliSTARTAlignData;
 class AliCDBEntry;
 
 class AliSTARTParameters : public TNamed
@@ -126,13 +125,11 @@ protected:
   Float_t fTimeDelayCFD;  // sum time delay for CFD channel
   Float_t  fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
   
-  static AliSTARTAlignData * fgAlignData; // singleton for Calibration data
   static AliSTARTCalibData * fgCalibData; // singleton for Calibration data
 
-  AliCDBEntry*   fAlignentry ;  //pointer to START align object
   AliCDBEntry*   fCalibentry ;  // pointer to START calibration object
 
-  ClassDef(AliSTARTParameters,1)
+  ClassDef(AliSTARTParameters,2)
 };
 
 #endif

@@ -27,13 +27,11 @@
 #include "AliLog.h"		  
 #include "AliSTARTParameters.h"	  
 #include "AliSTARTCalibData.h"   
-#include "AliSTARTAlignData.h"  
 #include <AliCDBManager.h>        
 #include <AliCDBEntry.h>          
 #include <AliCDBStorage.h>         
 #include <Riostream.h>
 
-AliSTARTAlignData* AliSTARTParameters::fgAlignData = 0;
 AliSTARTCalibData* AliSTARTParameters::fgCalibData = 0;
 //====================================================================
 ClassImp(AliSTARTParameters)
@@ -94,12 +92,6 @@ AliSTARTParameters::Init()
   fCalibentry  = cdb->Get("START/Calib/Gain_TimeDelay_Slewing_Walk");
   if (fCalibentry){
    fgCalibData  = (AliSTARTCalibData*)fCalibentry->GetObject();
-   cout<<" got calibdata "<<endl;
-  }
-   fAlignentry     = cdb-> Get("START/Align/Positions");
-  if (fAlignentry){
-   fgAlignData  = (AliSTARTAlignData*) fAlignentry->GetObject();
-   cout<<" got align data "<<endl;
   }
 
   fIsInit = kTRUE;
@@ -199,7 +191,7 @@ AliSTARTParameters::SetSlewingRec(Int_t ipmt)
       Float_t y1[23], mv1[23];
       for (Int_t i=0; i<23; i++){
 	y1[i] = y[22-i]; mv1[i] = mv[22-i];}
-      cout<<endl;
+
       TGraph* gr = new TGraph(23,y1,mv1);
       fSlewingRec.AddAtAndExpand(gr,ipmt);
 
