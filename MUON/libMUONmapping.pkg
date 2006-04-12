@@ -100,5 +100,3 @@ HDRS  = $(SRCS:.cxx=.h)
 DHDR := MUONLinkDefMapping.h
  
 EINCLUDE:= RAW MUON/mapping
- 
-SUBDIR := mapping

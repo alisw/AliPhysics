@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.57  2006/01/23 17:51:48  hristov
+ * Using the recommended way of forward declarations for TVector and TMatrix (see v5-08-00 release notes). Additional clean-up
+ *
  * Revision 1.56  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -19,25 +22,26 @@
 // Oh yeah                 
 //*-- Author: Yves Schutz (SUBATECH), Gustavo Conesa.
 
-// --- ROOT system ---
-#include <TMatrixFfwd.h>
+// --- Standard library ---
 
-class TVector3 ;
-class TPrincipal ;
-class TROOT ;
-class TTree ;
+// --- ROOT system ---
 class TCanvas ;
 class TFolder ;
 class TFormula;
-// --- Standard library ---
-// --- AliRoot header files ---
-class AliPHOSEmcRecPoint ;
-class AliPHOSCpvRecPoint ;
-class AliPHOSClusterizerv1 ;
-class AliPHOSTrackSegmentMakerv1 ;
+class TPrincipal ;
+class TROOT ;
+class TTree ;
+class TVector3 ;
+#include <TMatrixDfwd.h>
 
+// --- AliRoot header files ---
+class AliPHOSClusterizerv1 ;
+class AliPHOSCpvRecPoint ;
+class AliPHOSEmcRecPoint ;
+class AliPHOSTrackSegmentMakerv1 ;
 #include "AliPHOSPID.h"
 #include "AliPID.h"
+
 class  AliPHOSPIDv1 : public AliPHOSPID {
   
 public:

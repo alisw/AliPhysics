@@ -85,9 +85,6 @@ endif
 @PACKAGE@S:=$(patsubst %,$(MODDIR)/%,$(SRCS))
 @PACKAGE@H:=$(patsubst %,$(MODDIR)/%,$(HDRS)) $(EHDRS)
 
-#c++ source subdirectories
-@PACKAGE@SDIR:=$(SUBDIR)
-
 #############################################################################
 #
 #            If special rootcint headerfiles is specified use them
@@ -363,12 +360,8 @@ check-@MODULE@: $(@PACKAGE@CHECKS)
 	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
 
 # IRST coding rule check
-@MODULE@/check/$(SUBDIR)/%.viol : @MODULE@/check/$(SUBDIR)/%.i
-	$(MUTE)echo $@ ; $(CODE_CHECK) $< ./@MODULE@/$(@PACKAGE@SDIR) > $@
-
-# IRST coding rule check
 @MODULE@/check/%.viol : @MODULE@/check/%.i
-	$(MUTE)echo $@ ; $(CODE_CHECK) $< ./@MODULE@ > $@
+	$(MUTE)echo $@ ; $(CODE_CHECK) $< $(shell echo $(dir $<) | sed -e 's:/check::') > $@
 
 @PACKAGE@PREPROC       = $(patsubst %.viol,%.i,$(@PACKAGE@CHECKS))
 
