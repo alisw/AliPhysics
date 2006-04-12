@@ -358,6 +358,8 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
   Int_t time, col, row, col1, col2;
   Float_t amp;
   Int_t idet, iStack, iStackPrev;
+  idet = -1;
+
   iStack     = -1;
   iStackPrev = -1;
   for (Int_t isect = sectBeg; isect < sectEnd; isect++) {

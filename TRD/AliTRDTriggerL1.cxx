@@ -111,7 +111,10 @@ void AliTRDTriggerL1::Trigger()
   Int_t   electronPlus,          electronMinus;
   Int_t   sectorElePlus[maxEle], sectorEleMinus[maxEle];
   Float_t ptElePlus[maxEle],     ptEleMinus[maxEle];
-  Int_t   hadronLowPt=0, hadronHighPt=0;
+  Int_t   hadronLowPt, hadronHighPt;
+
+  hadronLowPt  = 0;
+  hadronHighPt = 0;
 
   electronPlus  = 0;
   electronMinus = 0;
