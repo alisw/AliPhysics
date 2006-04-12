@@ -364,7 +364,7 @@ void AliTPCPid::SetPcod(Int_t track,Int_t partcode)
 	}
 }
 //-----------------------------------------------------------
-void AliTPCPid::Print(Int_t track)
+void AliTPCPid::PrintPID(Int_t track)
 {
   //
   // control print

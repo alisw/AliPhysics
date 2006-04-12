@@ -28,7 +28,7 @@ public:
 	void	SetEdep(Int_t track,Float_t Edep);
 	void	SetPmom(Int_t track,Float_t Pmom);
 	void	SetPcod(Int_t track,Int_t Pcod);
-	void	Print(Int_t track);
+	void	PrintPID(Int_t track);
 	void	Tab(void);
 	void    Reset(void);
 	void	SetVec(Int_t track,TVector info) const;
