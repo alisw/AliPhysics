@@ -80,11 +80,9 @@ void AliRICHCluster::Print(Option_t* opt)const
     case         kCoG: status="coged"      ;break;
     case       kEmpty: status="empty"      ;break;
   }
-  Int_t iNdigs=0;  if(fDigs) iNdigs=fDigs->GetEntriesFast();
-    
   Printf("%s cs=%2i, Size=%2i (x=%7.3f cm,y=%7.3f cm,Q=%4i qdc), %s",
-         opt,fCham,iNdigs,fX,fY,fQdc,status);
-  for(Int_t i=0;i<iNdigs;i++) Dig(i)->Print();    
+         opt,fCham,Size(),fX,fY,fQdc,status);
+  for(Int_t i=0;i<Size();i++) Dig(i)->Print();    
 }//Print()
 //__________________________________________________________________________________________________
 Int_t AliRICHCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
@@ -132,15 +130,9 @@ Int_t AliRICHCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
     Double_t fitX,fitY,fitQ,d1,d2,d3; TString sName;                                //vars to get results from TMinuit
     for(Int_t i=0;i<iLocMaxCnt;i++){//local maxima loop
       pMinuit->mnpout(3*i   ,sName,  fitX, d1 , d2, d3, iErrFlg);
-      if (pMinuit->GetStatus()) {
-	pMinuit->mnpout(3*i+1 ,sName,  fitY, d1 , d2, d3, iErrFlg);
-	if (pMinuit->GetStatus()) {
-	  pMinuit->mnpout(3*i+2 ,sName,  fitQ, d1 , d2, d3, iErrFlg);
-	  if (pMinuit->GetStatus())
-	    new ((*pCluLst)[iCluCnt++]) AliRICHCluster(C(),fitX,fitY,(Int_t)fitQ);
-	  //add new unfolded clusters
-	}
-      }
+      pMinuit->mnpout(3*i+1 ,sName,  fitY, d1 , d2, d3, iErrFlg);
+      pMinuit->mnpout(3*i+2 ,sName,  fitQ, d1 , d2, d3, iErrFlg);
+      new ((*pCluLst)[iCluCnt++]) AliRICHCluster(C(),fitX,fitY,(Int_t)fitQ);	    //add new unfolded clusters
     }//local maxima loop
   }else{//do not unfold since number of loc max is unresonably high or user's baned unfolding 
     CoG();
@@ -185,8 +177,11 @@ void AliRICHCluster::Test()
 //  Returns: none
   AliRICHCluster clu; Int_t ch,padx,pady,qdc; TClonesArray *pCluLst=new TClonesArray("AliRICHCluster",10);
   Printf("2 digits vertical cluster");
-  clu.DigAdd(new AliRICHDigit(ch=1,padx=3,pady=3,qdc=101));
-  clu.DigAdd(new AliRICHDigit(ch=1,padx=3,pady=4,qdc=202)); clu.Print("Formed cluster:");
-  clu.Solve(pCluLst,kTRUE);  pCluLst->Print();
+  clu.DigAdd(new AliRICHDigit(AliRICHDigit::P2A(ch=1,padx=3,pady=3),qdc=101));
+  clu.DigAdd(new AliRICHDigit(AliRICHDigit::P2A(ch=1,padx=3,pady=4),qdc=202)); 
+  
+  clu.Print("Formed cluster:");
+  clu.Solve(pCluLst,kTRUE);  
+  pCluLst->Print();
   delete pCluLst;
 }
