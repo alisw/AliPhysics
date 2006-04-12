@@ -55,6 +55,8 @@ public:
   void  SetMultiple(Int_t mult,Int_t pos){fMultiple[pos]=mult;}
   const Int_t * GetMultiple() const {return fMultiple;}
   //  
+  const AliExternalTrackParam& RefParamDaughter() {return fParamDaughter;}
+  const AliExternalTrackParam& RefParamMother()   {return fParamMother;}
  protected:
   Int_t          fID;       // kink ID
   AliExternalTrackParam fParamDaughter;

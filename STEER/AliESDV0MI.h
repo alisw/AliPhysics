@@ -78,7 +78,8 @@ public:
   void SetNAfter(Float_t na) {fNAfter=na;}
   Float_t GetNBefore() const {return fNBefore;}
   void SetNBefore(Float_t nb) {fNBefore=nb;}  
-  void SetLab(Int_t i, Int_t lab) {fLab[i]=lab;}
+  Int_t GetLab(Int_t i) const {return fLab[i];}
+  void  SetLab(Int_t i, Int_t lab) {fLab[i]=lab;}
   void SetCausality(Float_t pb0, Float_t pb1, Float_t pa0, Float_t pa1);
   const Float_t * GetCausalityP() const {return fCausality;}
   void SetClusters(Int_t *clp, Int_t *clm);
