@@ -1,150 +1,138 @@
 #ifndef ALIITSSIMULATIONSPD_H
 #define ALIITSSIMULATIONSPD_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
-$Id$
-*/
-////////////////////////////////////////////////////////////////////////
-// Version: 0                                                         //
-// Written by Rocco Caliandro                                         //
-// from a model developed with T. Virgili and R.A. Fini               //
-// June 15 2000                                                       //
-//                                                                    //
-// AliITSsimulationSPD is the simulation of SPDs                      //
-////////////////////////////////////////////////////////////////////////
-
+#include "TH1F.h"
+#include "TObjArray.h"
+#include "AliITSsimulation.h"
 #include "AliITSCalibrationSPD.h"
 #include "AliITSsegmentationSPD.h"
-#include "AliITSsimulation.h"
 #include "AliITSresponseSPD.h"
+#include "AliCDBEntry.h"
+#include "AliCDBLocal.h"
 
-class AliITSMapA2;
-class AliITSpList;
 class AliITSmodule;
 
 //-------------------------------------------------------------------
 
 class AliITSsimulationSPD : public AliITSsimulation {
-
- public:        
-    AliITSsimulationSPD(); // Default constructor
-    // Standard constructor
+ public:
+    AliITSsimulationSPD();
+    //    AliITSsimulationSPD(AliITSsegmentation *seg,AliITSCalibration *res);
     AliITSsimulationSPD(AliITSDetTypeSim *dettyp);
-    virtual ~AliITSsimulationSPD();// destructor
-    AliITSsimulationSPD(const AliITSsimulationSPD &source); // copy constructo
-    // assignment operator
-    AliITSsimulationSPD& operator=(const AliITSsimulationSPD &source);
+    virtual ~AliITSsimulationSPD();
+    // copy constructor
+    AliITSsimulationSPD(const AliITSsimulationSPD &source); 
+     // ass. operator
+    AliITSsimulationSPD& operator=(const AliITSsimulationSPD &s);
     virtual AliITSsimulation& operator=(const AliITSsimulation &source);
+    // Initilizes the variables
+    void Init();
+    // Get pointers (calObj[]) to the calibration objects
+    // ??? Is there a better way to do this ???
+    void GetCalibrationObjects(Int_t RunNr);
+
+    // General User calling routines
+    // Initilize simulation for a specific event and module
+    void InitSimulationModule(Int_t module, Int_t event);
+    // Finish and write S Digitization
+    void FinishSDigitiseModule();
+    // From hits to Digits, without creating SDigits
+    void DigitiseModule(AliITSmodule *mod,Int_t,Int_t);
+
+    // More or less Internal Routines
+    // Create S Digits from specific module
+    void SDigitiseModule(AliITSmodule *mod, Int_t mask, Int_t event);
+    // Write S Digits to the tree of SDigits.
+    void WriteSDigits();
+    // fill pList from hits, charge sharing, diffusion, coupling
+    void HitToSDigit(AliITSmodule *mod);
+    // fill pList from hits, charge sharing, diffusion, coupling  (faster method optimized by Bjorne)
+    void HitToSDigitFast(AliITSmodule *mod);
+    // Removes dead pixels from pList
+    void RemoveDeadPixels(AliITSmodule *mod);
+    // Take pList of signals and apply noise... create Digis
+    void pListToDigits();
+    //
+    void CreateHistograms();
+    void FillHistograms(Int_t ix,Int_t iz,Double_t v=1.0);
+    void ResetHistograms();
+    TH1F* GetHistogram(Int_t i){return (TH1F*)(fHis->At(i));}// get histogram
+    TObjArray*  GetHistArray() {return fHis;}// get hist array
+    TString& GetHistName(){return fSPDname;}
+    void SetHistName(TString &n){fSPDname = n;}
+    //
+    // For backwards compatibility
+    void SDigitsToDigits(){ FinishSDigitiseModule();};
+    void HitToDigit(AliITSmodule *mod){
+        // Standard interface to DigitiseModule
+        // Inputs:
+        //    AliITSmodule *mod  Pointer to this module
+        // Outputs:
+        //    none.
+        // Return:
+        //    none.
+        DigitiseModule(mod,GetModuleNumber(),0);};
+
+ private:
+    void SpreadCharge(Double_t x0,Double_t z0,Int_t ix0,Int_t iz0,
+		      Double_t el,Double_t sig,Int_t t,Int_t hi);
+    void SpreadChargeAsym(Double_t x0,Double_t z0,Int_t ix0,Int_t iz0,
+                      Double_t el,Double_t sigx,Double_t sigz,Int_t t,Int_t hi);
+    void UpdateMapSignal(Int_t ix,Int_t iz,Int_t trk,Int_t ht,Double_t signal){
+        //  This function adds a signal to the pList from the pList class
+        //  Inputs:
+        //    Int_t       iz     // row number
+        //    Int_t       ix     // column number
+        //    Int_t       trk    // track number
+        //    Int_t       ht     // hit number
+        //    Double_t    signal // signal strength
+        //  Outputs:
+        //    none.
+        //  Return:
+        //    none
+        GetMap()->AddSignal(iz,ix,trk,ht,GetModuleNumber(),signal);};
+    void UpdateMapNoise(Int_t ix,Int_t iz,Float_t noise){
+        //  This function adds noise to data in the MapA2 as well as the pList
+        //  Inputs:
+        //    Int_t       iz       // row number
+        //    Int_t       ix       // column number
+        //    Double_t    ns    // electronic noise generated by pListToDigits
+        //  Outputs:
+        //    none.
+        //  Return:
+        //    none
+        GetMap()->AddNoise(iz,ix,GetModuleNumber(),noise);}
     // Get a pointer to the segmentation object
     virtual AliITSsegmentation* GetSegmentationModel(Int_t /*dt*/){return fDetType->GetSegmentationModel(0);}
     // set pointer to segmentation objec
     virtual void SetSegmentationModel(Int_t /*dt*/, AliITSsegmentation *seg){fDetType->SetSegmentationModel(0,seg);}
-    // Initilizes the variables
-    void Init();
-    // Initilizes the variables with replacement segmentation/response class
-    //    void Init(AliITSsegmentationSPD *seg, AliITSCalibrationSPD *resp);
-
-    // Sum digitize module
-    // Create maps to build the lists of tracks for each summable digit
-    void InitSimulationModule(Int_t module,Int_t events);
-    // Digitize module from the sum of summable digits.
-    void FinishSDigitiseModule();
-    void SDigitiseModule(AliITSmodule *mod, Int_t dummy0,Int_t dummy1);
-    // digitize module. Also need to digitize modules with only noise.
-    void DigitiseModule(AliITSmodule *mod,Int_t dummy0, Int_t dummy1);
-    // sum digits to Digits.
-    void SDigitsToDigits(Int_t module,AliITSpList *pList);
-    // updates the Map of signal, adding the energy  (ene) released by
-    // the current track
-    void UpdateMapSignal(Int_t row,Int_t col,Int_t trk,Int_t hit,Int_t mod,
-			 Double_t ene,AliITSpList *pList);
-    // updates the Map of noise, adding the energy  (ene) give my noise
-    void UpdateMapNoise(Int_t row,Int_t col,Int_t mod,Double_t ene,
-			AliITSpList *pList);
-    // Loops over all hits to produce Analog/floting point digits. This
-    // is also the first task in producing standard digits.
-    void HitsToAnalogDigits(AliITSmodule *mod,Int_t *frowpixel,
-			    Int_t *fcolpixel,Double_t *fenepixel,
-			    AliITSpList *pList);
-    //  Steering function to determine the digits associated to a given
-    // hit (hitpos)
-    // The digits are created by charge sharing (ChargeSharing) and by
-    // capacitive coupling (SetCoupling). At all the created digits is
-    // associated the track number of the hit (ntrack)
-    void HitToDigit(AliITSmodule *mod, Int_t hitpos,Int_t *frowpixel,
-		    Int_t *fcolpixel, Double_t *fenepixel,AliITSpList *pList);
-    //  Take into account the geometrical charge sharing when the track
-    //  crosses more than one pixel.
-    void ChargeSharing(Float_t x1l,Float_t z1l,Float_t x2l,Float_t z2l,
-		       Int_t c1,Int_t r1,Int_t c2,Int_t r2,Float_t etot,
-		       Int_t &npixel,Int_t *frowpixel,Int_t *fcolpixel,
-		       Double_t *fenepixel);
-    //  Take into account the coupling between adiacent pixels.
-    //  The parameters probcol and probrow are the fractions of the
-    //  signal in one pixel shared in the two adjacent pixels along
-    //  the column and row direction, respectively. Now done in a statistical
-    //  way and not "mechanical" as in the Old version.
-    void SetCoupling(Int_t row,Int_t col,Int_t ntrack,Int_t idhit,Int_t module,
-		     AliITSpList *pList);
-    //  Take into account the coupling between adiacent pixels.
-    //  The parameters probcol and probrow are the fractions of the
-    //  signal in one pixel shared in the two adjacent pixels along
-    //  the column and row direction, respectively.
-    void SetCouplingOld(Int_t row,Int_t col,Int_t ntrack,Int_t idhit,
-			Int_t module,AliITSpList *pList);
-    // The pixels are fired if the energy deposited inside them is above
-    // the threshold parameter ethr. Fired pixed are interpreted as digits
-    // and stored in the file digitfilename. One also needs to write out
-    // cases when there is only noise (nhits==0).
-    void CreateDigit(Int_t module,AliITSpList *pList);
-    //  Set the electronic noise and threshold non-uniformities to all the
-    //  pixels in a detector.
-    //  The parameter fSigma is the squared sum of the sigma due to noise
-    //  and the sigma of the threshold distribution among pixels.
-    void SetFluctuations(AliITSpList *pList,Int_t module);
-    //  Apply a mask to the SPD module. 1% of the pixel channels are
-    //  masked. When the database will be ready, the masked pixels
-    //  should be read from it.
-    void SetMask(Int_t mod);
-    // Create Histograms
-    void CreateHistograms();
-    // Reset histograms for this detector
-    void ResetHistograms();
-    // Fills the Summable digits Tree
-    void WriteSDigits(AliITSpList *pList);
-    // Fills fMap2A from the pList of Summable digits
-    void FillMapFrompList(AliITSpList *pList);
-    // get hist array
-    TObjArray*  GetHistArray() {return fHis;}
-
- private:
+    // Bari-Salerno Coupling parameters
+    // "New" coupling routine  Tiziano Virgili
+    void SetCoupling(Int_t row,Int_t col,Int_t ntrack,Int_t idhit);
+    // "Old" coupling routine  Rocco Caliandro
+    void SetCouplingOld(Int_t row, Int_t col,Int_t ntrack,Int_t idhit);
     // Getters for data kept in fSegmentation and fResponse.
     // Returns the Threshold in electrons
-    Double_t GetThreshold(){Double_t a=0.0,b=0.0;
-    AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber());
-    res->Thresholds(a,b); return a;}
-    // Returns the threshold and rms noise.
-    void GetThresholds(Double_t &t,Double_t &s){
-      AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber());
-      res->Thresholds(t,s);}
+    Double_t GetThreshold(){
+      Double_t th,sig;AliITSCalibrationSPD* res=(AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber()); 
+	res->Thresholds(th,sig);return th;};
     // Returns the couplings Columb and Row.
     void GetCouplings(Double_t &cc,Double_t &cr){
       AliITSCalibrationSPD* res = (AliITSCalibrationSPD*)GetCalibrationModel(GetModuleNumber());
-      res->GetCouplingParam(cc,cr);}
+      res->GetCouplingParam(cc,cr);};
     // Returns the number of pixels in x
-    Int_t GetNPixelsX(){AliITSsegmentationSPD* seg= (AliITSsegmentationSPD*)GetSegmentationModel(0);return seg->Npx();}
+    Int_t GetNPixelsX(){return GetSegmentationModel(0)->Npx();};
     // Returns the number of pixels in z
-    Int_t GetNPixelsZ(){AliITSsegmentationSPD* seg= (AliITSsegmentationSPD*)GetSegmentationModel(0);return seg->Npz();}
+    Int_t GetNPixelsZ(){return GetSegmentationModel(0)->Npz();};
 
- private:
-    AliITSMapA2  *fMapA2;   //! MapA2 for Local internal use only
-    TObjArray    *fHis;     //! just in case for histogramming for Local
-                            // internal use only
-
-    ClassDef(AliITSsimulationSPD,1)  // Simulation of SPD clusters
-
+    TObjArray    *fHis;          //! just in case for histogramming
+    TString       fSPDname;      //! Histogram name
+    Int_t         fCoupling;     // Sets the coupling to be used.
+                                 // ==1 use SetCoupling, ==2 use SetCouplingOld
+    AliITSCalibrationSPD* calObj[240];
+    ClassDef(AliITSsimulationSPD,2)  // Simulation of SPD clusters
 };
-
-#endif
+#endif 

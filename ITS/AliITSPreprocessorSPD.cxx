@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/03 11:31:18  masera
+Calibration framework improved (E. Crescio)
+
 Revision 1.1  2005/10/11 12:31:50  masera
 Preprocessor classes for SPD (Paul Nilsson)
 
@@ -33,6 +36,10 @@ Preprocessor classes for SPD (Paul Nilsson)
 // .readNoisyChannels.C (Read noisy channels from the CDB)
 // .findDeadChannels.C  (Locate and store dead channels in the CDB)
 // .readDeadChannels.C  (Read dead channels from the CDB)
+//
+// Modified by D. Elia, H. Tydesjo
+// March 2006: Mixed up coordinates, bug fixed
+//
 ///////////////////////////////////////////////////////////////////////////
 
 #include "TFile.h"
@@ -633,8 +640,8 @@ Bool_t AliITSPreprocessorSPD::FillHistograms(void)
 		{
 		  // Get the current digit
 		  digitSPD = (AliITSdigitSPD*) digitsArraySPD->At(digit);
-		  row = digitSPD->GetCoord1();
-		  column = digitSPD->GetCoord2();
+		  column = digitSPD->GetCoord1();
+		  row = digitSPD->GetCoord2();
 
 		  // Fill the digits histogram
 		  ((TH2F*)(*fDigitsHistogram)[module])->Fill(column, row);
@@ -1196,8 +1203,8 @@ void AliITSPreprocessorSPD::MarkNoisyChannels(void)
 		{
 		  // Get the current digit
 		  digitSPD = (AliITSdigitSPD*) digitsArraySPD->At(digit);
-		  newDigit[0] = digitSPD->GetCoord1(); // row
-		  newDigit[1] = digitSPD->GetCoord2(); // column
+		  newDigit[0] = digitSPD->GetCoord1(); // column
+		  newDigit[1] = digitSPD->GetCoord2(); // row
 		  newDigit[2] = digitSPD->GetSignal(); // signal
 
 		  // Check if this channel is noisy
@@ -1419,27 +1426,21 @@ Bool_t AliITSPreprocessorSPD::Store(AliCDBId& /*id*/, AliCDBMetaData* /*md*/, In
     return kFALSE;
   }
   
+
   Int_t i=0;
   AliITSChannelSPD *channel = 0;
   AliITSCalibrationSPD* res;
   for (Int_t module=0; module<respSPD->GetEntries(); module++) {
-    Int_t k=0;
     res = (AliITSCalibrationSPD*) respSPD->At(module);
-    res->SetNBadChannels(fNumberOfBadChannels[module]*2+1);
-    res->AddBadChannel(fNumberOfBadChannels[module],k++);
     Int_t j = 0;
-    while (j < fNumberOfBadChannels[module])
-	{
-	  channel = (AliITSChannelSPD *) fBadChannelsObjArray->At(i++);
-	  res->AddBadChannel(channel->GetColumn(),k++);
-	  res->AddBadChannel(channel->GetRow(),k++);
-
-	  // Go to next bad channel
-	  j++;
-	}
-    
-    
+    while (j < fNumberOfBadChannels[module]) {
+      channel = (AliITSChannelSPD *) fBadChannelsObjArray->At(i++);
+      res->AddDead(channel->GetColumn(),channel->GetRow());
+      // Go to next bad channel
+      j++;
+    }
   }
+    
   
   AliCDBManager::Instance()->Put(entrySPD);
   entrySPD->SetObject(NULL);

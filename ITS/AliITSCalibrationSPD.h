@@ -25,6 +25,9 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     // Get Threshold and noise + threshold fluctuations parameter values
     virtual  void   Thresholds(Double_t &thresh, Double_t &sigma) const
 	{thresh=fThresh; sigma=fSigma;}
+    // Set Bias Voltage parameter
+    virtual void    SetBiasVoltage(Double_t bias=18.182) {fBiasVoltage=bias;}
+    Double_t  GetBiasVoltage() const {return fBiasVoltage;}
     //Returns just baseline value
     Double_t GetBaseline() const {return fBaseline;}
     // Set noise and baseline in one (abstract method of AliITSCalibration)
@@ -39,14 +42,13 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     // Applies a random noise and addes the baseline
     Double_t ApplyBaselineAndNoise() const {return fBaseline+
                                                fNoise*gRandom->Gaus();}
+    // Set coupling parameters 
+    virtual void SetCouplingParam(Double_t col, Double_t row)
+        {fCouplCol = col; fCouplRow = row;}
+    // Get coupling parameters 
+    virtual void GetCouplingParam(Double_t &col, Double_t &row) const
+        {col = fCouplCol; row = fCouplRow;}
 
-    //Declaration of member functions peculiar to this class
-    // Sets the fraction of Dead SPD Pixels
-    void SetFractionDead(Double_t d=0.01){ fDeadPixels = d;}
-    // Retruns the fraction of Dead SPD Pixels
-    Double_t GetFractionDead() const {return fDeadPixels;}
-    // Returns a logical if a pixels is dead or not
-    Bool_t IsPixelDead(Int_t mod,Int_t ix,Int_t iz) const ;
 
     virtual void    GiveCompressParam(Int_t *) const
       {NotImplemented("GiveCompressParam");}
@@ -62,27 +64,50 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
       {NotImplemented("SetSigmaSpread");}
     virtual void    SigmaSpread(Double_t & /* p1 */,Double_t & /* p2 */) const 
       {NotImplemented("SigmaSpread");}
- 
-    void SetNBadChannels(Int_t n) {fBadChannels.Set(n);}
-    void AddBadChannel(Int_t bad,Int_t i) {fBadChannels.AddAt(bad,i);}
-    TArrayI GetBadChannels() const {return fBadChannels;}
-    virtual void SetCouplingParam(Double_t col, Double_t row) {((AliITSresponseSPD*)fResponse)->SetCouplingParam(col,row);}
-    virtual void GetCouplingParam(Double_t &col, Double_t &row) const {((AliITSresponseSPD*)fResponse)->GetCouplingParam(col, row);} 
+
+    virtual void GetCouplingOption(char *opt) const {((AliITSresponseSPD*)fResponse)->CouplingOption(opt);}
+    virtual void SetCouplingOption(const char* opt) {((AliITSresponseSPD*)fResponse)->SetCouplingOption(opt);}
     virtual void SetParamOptions(const char* a,const char* b) {((AliITSresponseSPD*)fResponse)->SetParamOptions(a,b);}
     virtual void GetParamOptions(char *a,char* b) const {((AliITSresponseSPD*)fResponse)->ParamOptions(a,b);}
+    virtual void SetSigmaDiffusionAsymmetry(Double_t ecc) {((AliITSresponseSPD*)fResponse)->SetSigmaDiffusionAsymmetry(ecc);}
+    virtual void GetSigmaDiffusionAsymmetry(Double_t &ecc) const {((AliITSresponseSPD*)fResponse)->GetSigmaDiffusionAsymmetry(ecc);}
+    
+    void   AddDead(UInt_t col, UInt_t row);
+    Int_t  GetNrDead() {return nrDead;}
+    Int_t  GetDeadColAt(UInt_t index); //returns -1 if out of bounds
+    Int_t  GetDeadRowAt(UInt_t index); //returns -1 if out of bounds
+    void   ClearDead() {fDeadChannels.Reset(); nrDead=0;}
+    Bool_t IsPixelDead(Int_t col, Int_t row) const ;
+    Bool_t IsPixelDead(Int_t mod,Int_t ix,Int_t iz) const ; // remove as soon as possible!!!
+
+    void   AddNoisy(UInt_t col, UInt_t row);
+    Int_t  GetNrNoisy() {return nrNoisy;}
+    Int_t  GetNoisyColAt(UInt_t index); //returns -1 if out of bounds
+    Int_t  GetNoisyRowAt(UInt_t index); //returns -1 if out of bounds
+    void   ClearNoisy() {fNoisyChannels.Reset(); nrNoisy=0;}
+    Bool_t IsPixelNoisy(Int_t col, Int_t row) const ;
+
 
  protected:
     // static const Double_t fgkDiffCoeffDefault; //default for fDiffCoeff
     static const Double_t fgkThreshDefault; //default for fThresh
     static const Double_t fgkSigmaDefault; //default for fSigma
+    static const Double_t fgkCouplColDefault; //default for fCouplCol
+    static const Double_t fgkCouplRowDefault; //default for fCouplRow
+    static const Double_t fgkBiasVoltageDefault; //default for fBiasVoltage
     Double_t fBaseline;        // Base-line value
     Double_t fNoise;           // Gaussian noise scale
     Double_t fThresh;          // Threshold value
     Double_t fSigma;           // Noise + threshold fluctuations value
-    Double_t fDeadPixels;      // the fraction of dead pixels
-    TArrayI fBadChannels;     // Array with bad channels info (N, row0,col0,row1,col1...rowN,colN)
+    Double_t fCouplCol;        // Coupling parameter along the cols
+    Double_t fCouplRow;        // Coupling parameter along the rows
+    Double_t fBiasVoltage;     // Bias Voltage for the SPD (used to compute DistanceOverVoltage)
+    UInt_t   nrDead;           // Nr of dead pixels
+    TArrayI fDeadChannels;     // Array with dead channels info (col0,row0,col1...rowN) N = nrDead
+    UInt_t   nrNoisy;          // Nr of noisy pixels
+    TArrayI fNoisyChannels;    // Array with noisy channels info (col0,row0,col1...rowN) N = nrNoisy
 
-    ClassDef(AliITSCalibrationSPD,2) // SPD response
+    ClassDef(AliITSCalibrationSPD,3) // SPD response
 };
 
 #endif

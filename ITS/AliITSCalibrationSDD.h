@@ -84,6 +84,12 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     Int_t GetBadChannel(Int_t i) const {return fBadChannels[i];}
     Bool_t IsBadChannel(Int_t anode); 
 
+    Float_t GetMapACell(Int_t i,Int_t j) const {return fMapA[i][j];}
+    virtual void SetMapACell(Int_t i,Int_t j,Float_t dev) {fMapA[i][j]=dev;} 
+    Float_t GetMapTCell(Int_t i,Int_t j) const {return fMapT[i][j];}
+    virtual void SetMapTCell(Int_t i,Int_t j,Float_t dev) {fMapT[i][j]=dev;} 
+    static const Int_t GetMapTimeNBin() {return fgkMapTimeNBin;} 
+
     virtual void SetElectronics(Int_t p1=1) {((AliITSresponseSDD*)fResponse)->SetElectronics(p1);}
     virtual Int_t GetElectronics() const {return ((AliITSresponseSDD*)fResponse)->Electronics();}
     virtual void SetMaxAdc(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetMaxAdc(p1);}
@@ -109,6 +115,8 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual Double_t GetJitterError() const {return ((AliITSresponseSDD*)fResponse)->JitterError();}
     virtual void  SetDo10to8(Bool_t bitcomp=kTRUE) {((AliITSresponseSDD*)fResponse)->SetDo10to8(bitcomp);}
  protected:
+
+
     // these statis const should be move to AliITSsegmentationSDD
     static const Int_t fgkWings = 2;     // Number of wings per module
     static const Int_t fgkChips = 4;        // Number of chips/module
@@ -118,6 +126,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     static const Double_t fgkBaselineDefault; // default for fBaseline
     static const Double_t fgkMinValDefault; // default for fMinVal
     static const Double_t fgkGainDefault; //default for gain
+    static const Int_t fgkMapTimeNBin = 72; //map granularity along drift direction
     Int_t fDeadChips;                     // Number of dead chips
     Int_t fDeadChannels;                  // Number of dead channels
     Double_t fGain[fgkWings][fgkChips][fgkChannels];//Array for channel gains
@@ -128,12 +137,15 @@ class AliITSCalibrationSDD : public AliITSCalibration {
 
     Bool_t   fIsDead;  // module is dead or alive ?
     TArrayI  fBadChannels; //Array with bad anodes number (0-512) 
+    Float_t fMapA[fgkChips*fgkChannels][fgkMapTimeNBin]; //array with deviations on anode coordinate
+    Float_t fMapT[fgkChips*fgkChannels][fgkMapTimeNBin]; //array with deviations on time coordinate
+
  private:
     AliITSCalibrationSDD(const AliITSCalibrationSDD &ob); // copy constructor
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,3) // SDD response 
+    ClassDef(AliITSCalibrationSDD,4) // SDD response 
     
     };
 #endif

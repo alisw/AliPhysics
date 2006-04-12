@@ -19,6 +19,14 @@ class AliITSresponseSPD :  public AliITSresponse {
         {fCouplCol=col; fCouplRow=row;}   
     virtual  void   GetCouplingParam(Double_t &col, Double_t &row) const 
         {col=fCouplCol; row=fCouplRow;}
+    virtual void SetCouplingOption(const char *opt) {   // Options: "old" or "new"
+        fCouplOpt=opt;}
+    virtual void CouplingOption(char *opt) const {
+        strcpy(opt,fCouplOpt.Data());}
+    virtual  void   SetSigmaDiffusionAsymmetry(Double_t ecc)
+        {fEccDiff=ecc;}   
+    virtual  void   GetSigmaDiffusionAsymmetry(Double_t &ecc) const 
+        {ecc=fEccDiff;}
     virtual void   SetParamOptions(const char* /* a */,const char* /* b */)
       {NotImplemented("SetParamOptions");}
     virtual void   ParamOptions(char *,char*) const
@@ -27,14 +35,18 @@ class AliITSresponseSPD :  public AliITSresponse {
  protected:
 
     static const Float_t fgkDiffCoeffDefault;  //default for fDiffCoeff
+    static const TString fgkCouplingOptDefault;  // type of pixel Coupling (old or new)
     static const Float_t fgkCouplingColDefault;//default for fCouplCol 
     static const Float_t fgkCouplingRowDefault;//default for fCouplRow 
+    static const Float_t fgkEccentricityDiffDefault;//default for fCouplRow 
 
     Float_t fCouplCol;        // Coupling probability along a column
     Float_t fCouplRow;        // Coupling probability along a row
+    TString fCouplOpt;        // Coupling Option
+    Float_t fEccDiff;         // Eccentricity (i.e. asymmetry parameter) in the Gaussian Diffusion
 
 
-    ClassDef(AliITSresponseSPD,4) // SPD base response class
+    ClassDef(AliITSresponseSPD,5) // SPD base response class
 };
 
 #endif

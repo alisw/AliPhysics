@@ -26,7 +26,9 @@
 #include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSDD.h"
-
+#include "AliITSCalibrationSDD.h"
+#include "AliITSDetTypeRec.h"
+#include "AliITSsegmentationSDD.h"
 #include <TClonesArray.h>
 #include "AliITSdigitSDD.h"
 
@@ -219,6 +221,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          z=  -z+fZshift[fModule];
 	 //      c.SetY(y);
 	 //  c.SetZ(z);
+	 CorrectPosition(z,y);
 	 c.SetYZ(fModule,y,z);
 	 c.SetNy(maxj-minj+1);
 	 c.SetNz(maxi-mini+1);
@@ -323,3 +326,32 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 }
 
 
+//_________________________________________________________________________
+void AliITSClusterFinderV2SDD::CorrectPosition(Float_t &z, Float_t&y){
+
+  //correction of coordinates using the maps stored in the DB
+
+  AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
+  static const Int_t nbint = cal->GetMapTimeNBin();
+  static const Int_t nbina = cal->Chips()*cal->Channels();
+  Float_t stepa = (GetSeg()->Dpz(0))/10000.; //anode pitch in cm
+  Float_t stept = (GetSeg()->Dx()/cal->GetMapTimeNBin()/2.)/10.;
+  Float_t xdet,zdet;
+  fDetTypeRec->GetITSgeom()->TrackingV2ToDetL(fModule,y,z,xdet,zdet);
+
+  Int_t bint = TMath::Abs((Int_t)(xdet/stept));
+  if(xdet>=0) bint+=(Int_t)(nbint/2.);
+  if(bint>nbint) AliError("Wrong bin number!");
+
+  Int_t bina = TMath::Abs((Int_t)(zdet/stepa));
+  if(zdet>=0) bina+=(Int_t)(nbina/2.);
+  if(bina>nbina) AliError("Wrong bin number!");
+
+  Float_t devz = cal->GetMapACell(bina,bint)/10000.;
+  Float_t devx = cal->GetMapTCell(bina,bint)/10000.;
+  zdet+=devz;
+  xdet+=devx;
+  fDetTypeRec->GetITSgeom()->DetLToTrackingV2(fModule,xdet,zdet,y,z);
+
+
+}

@@ -10,10 +10,13 @@
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //--------------------------------------------------------------
 #include "AliITSClusterFinderV2.h"
+#include "AliITSDetTypeRec.h"
 
 class TClonesArray;
 class AliRawReader;
 class AliITSRawStream;
+class AliITSCalibrationSDD;
+class AliITSsegmentationSDD;
 
 class AliITSClusterFinderV2SDD : public AliITSClusterFinderV2 {
 public:
@@ -28,6 +31,12 @@ public:
 		       TClonesArray *dig, TClonesArray *clusters=0x0);
 
   void FindClustersSDD(AliITSRawStream* input,TClonesArray** clusters);
+  void CorrectPosition(Float_t &z, Float_t&y);
+  virtual AliITSCalibrationSDD* GetResp(Int_t mod)const{
+    return (AliITSCalibrationSDD*) fDetTypeRec->GetCalibrationModel(mod);}
+  virtual AliITSsegmentationSDD* GetSeg()const{
+    return (AliITSsegmentationSDD*)fDetTypeRec->GetSegmentationModel(1);} 
+
 
   Int_t fNySDD;           //number of "pixels" in Y
   Int_t fNzSDD;           //number of "pixels" in Z

@@ -13,7 +13,6 @@ SRCS = 	AliITS.cxx \
 		AliITSsimulationFastPointsV0.cxx \
 		AliITSsimulation.cxx \
 		AliITSsimulationSPD.cxx \
-		AliITSsimulationSPDdubna.cxx \
 		AliITSsimulationSDD.cxx \
 		AliITSsimulationSSD.cxx \
 		AliITSTableSSD.cxx \

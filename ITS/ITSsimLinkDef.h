@@ -38,7 +38,6 @@
 #pragma link C++ class  AliITSmodule+;
 #pragma link C++ class  AliITSsimulation+;
 #pragma link C++ class  AliITSsimulationSPD+;
-#pragma link C++ class  AliITSsimulationSPDdubna+;
 #pragma link C++ class  AliITSsimulationSDD+;
 #pragma link C++ class  AliITSsimulationSSD+;
 #pragma link C++ class  AliITSTableSSD+;

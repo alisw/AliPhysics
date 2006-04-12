@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2005/10/11 12:31:50  masera
+Preprocessor classes for SPD (Paul Nilsson)
+
 */
 
 ///////////////////////////////////////////////////////////////////////////
@@ -64,6 +67,10 @@ $Log$
 // The signal member of the digit is not a member of the channel class.
 // It is artificially introduced by the CreateDigitFromChannel method and
 // is per default set to 1.
+//
+// Modified by D. Elia, H. Tydesjo
+// March 2006: Mixed up coordinates, bug fixed
+//
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliITSBadChannelsAuxSPD.h"
@@ -211,7 +218,7 @@ Bool_t AliITSBadChannelsAuxSPD::Find(AliITSdigitSPD *&digit, TObjArray *&array) 
   const Int_t kN = array->GetEntries();
   Int_t channelNr = 0;
   Int_t column = digit->GetCoord1();
-  Int_t row = digit->GetCoord1();
+  Int_t row = digit->GetCoord2();
 
   // Loop over all channels in the array
   while (channelNr < kN)

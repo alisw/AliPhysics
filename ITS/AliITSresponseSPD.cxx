@@ -12,17 +12,25 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//////////////////////////////////////////////////////
-//  Base Response class forITS                      //
-//  It is used to set static data members           //
-//  connected to parameters equal for all           //
-//  the SPD modules                                 //
-//////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+//  Base Response class forITS                      
+//  It is used to set static data members           
+//  connected to parameters equal for all           
+//  the SPD modules                                 
+//
+//  Modified by D. Elia, G.E. Bruno
+//  March-April 2006
+//
+///////////////////////////////////////////////////////////////////////////
+
 #include "AliITSresponseSPD.h"
 
-const Float_t AliITSresponseSPD::fgkDiffCoeffDefault = 0.;
+const Float_t AliITSresponseSPD::fgkDiffCoeffDefault = 0.; //change this
+const TString AliITSresponseSPD::fgkCouplingOptDefault = "old";
 const Float_t AliITSresponseSPD::fgkCouplingColDefault = 0;
-const Float_t AliITSresponseSPD::fgkCouplingRowDefault = 0;
+const Float_t AliITSresponseSPD::fgkCouplingRowDefault = 0.047;
+const Float_t AliITSresponseSPD::fgkEccentricityDiffDefault = 0.85;
+//geb const Float_t AliITSresponseSPD::fgkDistanceOverVoltage = 0.0010;
 
 ClassImp(AliITSresponseSPD)	
 //______________________________________________________________________
@@ -32,6 +40,8 @@ AliITSresponseSPD::AliITSresponseSPD():
 
   // constructor
   SetCouplingParam(fgkCouplingColDefault,fgkCouplingRowDefault);
+  SetCouplingOption(fgkCouplingOptDefault);
   SetDiffCoeff(fgkDiffCoeffDefault,0.);
+  SetSigmaDiffusionAsymmetry(fgkEccentricityDiffDefault);
 
 }

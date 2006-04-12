@@ -47,7 +47,7 @@
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSsimulationSPDdubna.h"
+#include "AliITSsimulationSPD.h"
 #include "AliITSsimulationSDD.h"
 #include "AliITSsimulationSSD.h"
 
@@ -919,7 +919,7 @@ void AliITSvSDD03::SetDefaultSimulation(){
       //if(seg==0) seg = new AliITSsegmentationSPD();
       //res = (AliITSCalibration*)fDetTypeSim->GetResponseModel(GetITSgeom()->GetStartSPD());
       //if(res==0) res = new AliITSCalibrationSPD();
-      sim = new AliITSsimulationSPDdubna(fDetTypeSim);
+      sim = new AliITSsimulationSPD(fDetTypeSim);
       SetSimulationModel(kSPD,sim);
     }else{ // simulation exists, make sure it is set up properly.
       sim->SetSegmentationModel(kSPD,(AliITSsegmentation*)fDetTypeSim->GetSegmentationModel(kSPD));
