@@ -46,7 +46,7 @@
 #include "START/AliSTARTv1.h"
 #include "EMCAL/AliEMCALv2.h"
 #include "CRT/AliCRTv0.h"
-#include "VZERO/AliVZEROv6.h"
+#include "VZERO/AliVZEROv7.h"
 #endif
 
 
@@ -330,7 +330,7 @@ void Config()
 
 
   Int_t iABSO  = 1;
-  Int_t iCRT   = 1;
+  Int_t iCRT   = 0;
   Int_t iDIPO  = 1;
   Int_t iEMCAL = 1;
   Int_t iFMD   = 1;
@@ -551,7 +551,7 @@ void Config()
      if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv6("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
 }
 //

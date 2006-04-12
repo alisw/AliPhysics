@@ -38,7 +38,7 @@
 #include "START/AliSTARTv1.h"
 #include "EMCAL/AliEMCALv2.h"
 #include "CRT/AliCRTv0.h"
-#include "VZERO/AliVZEROv6.h"
+#include "VZERO/AliVZEROv7.h"
 #endif
 
 Float_t EtaToTheta(Float_t arg);
@@ -375,7 +375,7 @@ void Config()
      if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv6("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
 
      AliLog::Message(AliLog::kInfo, "End of Config", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);

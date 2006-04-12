@@ -346,7 +346,7 @@ void ConfigCommon(Bool_t interactiveSetup)
     if (iVZERO)
     {
         //=================== CRT parameters ============================
-        AliVZERO *VZERO = new AliVZEROv6("VZERO", "normal VZERO");
+        AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
     }
 
   } // end (!isSetInteractively)
