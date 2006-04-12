@@ -12,8 +12,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliGeometry.h"
-
+#include "TObjArray.h"
 class AliRunLoader;
+class TGeoHMatrix;
 
 class AliTRDgeometry : public AliGeometry {
 
@@ -38,6 +39,11 @@ class AliTRDgeometry : public AliGeometry {
 
   virtual Bool_t   Rotate(Int_t d, Double_t *pos, Double_t *rot) const;
   virtual Bool_t   RotateBack(Int_t d, Double_t *rot, Double_t *pos) const;
+
+  Bool_t   ReadGeoMatrices();  
+  TGeoHMatrix *    GetGeoMatrix(Int_t detector){ return (TGeoHMatrix*)fMatrixGeo->At(detector);}
+  TGeoHMatrix *    GetMatrix(Int_t detector){ return (TGeoHMatrix*)fMatrixArray->At(detector);}
+  TGeoHMatrix *    GetCorrectionMatrix(Int_t detector){ return (TGeoHMatrix*)fMatrixCorrectionArray->At(detector);}
 
   static  Int_t    Nsect()   { return fgkNsect; };
   static  Int_t    Nplan()   { return fgkNplan; };
@@ -180,7 +186,9 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fChamberUDboxd[3*kNdets][3];         // dimensions (half)
   Float_t              fChamberUFboxd[3*kNdets][3];         // [3] = x, y, z
   Float_t              fChamberUUboxd[3*kNdets][3];
-
+  TObjArray *          fMatrixArray;                        //! array of matrix - Transformation Global to Local
+  TObjArray *          fMatrixCorrectionArray;              //! array of Matrix - Transformation Cluster to  Tracking systerm
+  TObjArray *          fMatrixGeo;                          //! geo matrices
   ClassDef(AliTRDgeometry,7)                                // TRD geometry base class
 
 };

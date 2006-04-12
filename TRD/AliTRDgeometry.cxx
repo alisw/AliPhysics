@@ -23,10 +23,17 @@
 
 
 #include <TError.h>
+#include <TGeoManager.h>
+#include <TGeoPhysicalNode.h>
+#include <TGeoMatrix.h>
+
 
 #include "AliRunLoader.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDpadPlane.h"
+
+#include "AliAlignObj.h"
+#include "AliAlignObjAngles.h"
 
 #include "AliRun.h"
 #include "AliTRD.h"
@@ -152,7 +159,8 @@ AliTRDgeometry::AliTRDgeometry():AliGeometry()
   //
   // AliTRDgeometry default constructor
   //
-
+  fMatrixArray =0;
+  fMatrixCorrectionArray= 0;
   Init();
 }
 
@@ -162,6 +170,8 @@ AliTRDgeometry::~AliTRDgeometry()
   //
   // AliTRDgeometry destructor
   //
+  delete fMatrixArray;
+  delete fMatrixCorrectionArray;
 }
 
 //_____________________________________________________________________________
@@ -332,7 +342,7 @@ Bool_t AliTRDgeometry::Global2Local(Int_t mode, Double_t *local, Double_t *globa
 
   //Int_t    idet    = GetDetector(iplan,icham,isect); // Detector number
   Int_t    idet      = GetDetector(index[0],index[1],index[2]); // Detector number
-  Rotate(idet,global,local);
+  RotateBack(idet,global,local);
   if (mode==0) return kTRUE;
   //
   //  Float_t  row0      = par->GetRow0(iplan,icham,isect);
@@ -357,19 +367,23 @@ Bool_t AliTRDgeometry::Global2Local(Int_t mode, Double_t *local, Double_t *globa
 Bool_t AliTRDgeometry::Global2Detector(Double_t global[3], Int_t index[3])
 {
   //  
+  //  Find detector for given global point - Ideal geometry 
+  //  
+  //
   // input    = global position
   // output   = index
   // index[0] = plane number
   // index[1] = chamber number
   // index[2] = sector number
   //
-
-  Float_t fi;
   //
-  fi = TMath::ATan2(global[1],global[0]);
+  // Find sector
+  //
+  Float_t fi = TMath::ATan2(global[1],global[0]);
   if (fi<0) fi += 2*TMath::Pi();
-  index[2] = Int_t(TMath::Nint((fi - GetAlpha()/2.)/GetAlpha()));
+  index[2] = fgkNsect-1-TMath::Nint((fi - GetAlpha()/2.)/GetAlpha());
   //
+  // Find plane
   //
   Float_t locx = global[0] * fRotA11[index[2]] + global[1] * fRotA12[index[2]];  
   index[0] = 0;
@@ -381,10 +395,23 @@ Bool_t AliTRDgeometry::Global2Detector(Double_t global[3], Int_t index[3])
       max = dist;
     }
   }
-  Float_t theta = TMath::ATan2(global[2],locx);
-  index[1] = TMath::Nint(float(fgkNcham)*theta/(0.25*TMath::Pi()));
+  //
+  // Find chamber
+  //
+  if (TMath::Abs(global[2]) < 0.5*GetChamberLength(index[0],2)){
+    index[1]=2;
+  }else{
+    Double_t localZ = global[2];
+    if (global[2]>0){
+      localZ -= 0.5*(GetChamberLength(index[0],2)+GetChamberLength(index[0],1));
+      index[1] = (TMath::Abs(localZ) < 0.5*GetChamberLength(index[0],3)) ? 1:0;
+    }
+    else{
+      localZ += 0.5*(GetChamberLength(index[0],2)+GetChamberLength(index[0],3));
+      index[1] = (TMath::Abs(localZ) < 0.5*GetChamberLength(index[0],1)) ? 3:4;
+    }
+  }  
   return kTRUE;
-
 }
 
 
@@ -511,3 +538,66 @@ AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader* runLoader)
   saveDir->cd();
   return geom;
 }
+
+
+//_____________________________________________________________________________
+Bool_t   AliTRDgeometry::ReadGeoMatrices(){
+  //
+  // Read geo matrices from current gGeoManager for each TRD sector
+  //
+
+  //
+  // fMatrixArray - 
+  //
+
+  //
+  // fMatrixCorrectionArray - 
+  //
+
+
+  if (!gGeoManager) return kFALSE;
+  fMatrixArray = new TObjArray(kNdet); 
+  fMatrixCorrectionArray = new TObjArray(kNdet);
+  fMatrixGeo   = new TObjArray(kNdet);
+  AliAlignObjAngles o;
+  //
+  for (Int_t iLayer = AliAlignObj::kTRD1; iLayer <= AliAlignObj::kTRD6; iLayer++) {
+    for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
+      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
+      const char *path = AliAlignObj::GetVolPath(volid);
+      if (!gGeoManager->cd(path)) return kFALSE;      
+      TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
+      Int_t     iLayerTRD    = iLayer-AliAlignObj::kTRD1;
+      Int_t     isector      = Nsect()-1-(iModule/Ncham());
+      Int_t     ichamber     = Ncham()-1-(iModule%Ncham());
+      Int_t     lid          = GetDetector(iLayerTRD,ichamber,isector);    
+      //
+      //
+      //
+      // local geo system z-x-y  to x-y--z 
+      //
+      fMatrixGeo->AddAt(new TGeoHMatrix(*m),lid);
+      
+      TGeoRotation mchange; 
+      mchange.RotateY(90); mchange.RotateX(90);
+      //
+      TGeoHMatrix gMatrix(mchange.Inverse());
+      gMatrix.MultiplyLeft(m);
+      fMatrixArray->AddAt(new TGeoHMatrix(gMatrix),lid); 
+      //
+      //  Cluster transformation matrix
+      //
+      TGeoHMatrix  rotMatrix(mchange.Inverse());
+      rotMatrix.MultiplyLeft(m);
+      Double_t sectorAngle = 20.*(isector%18)+10;
+      TGeoHMatrix  rotSector;
+      rotSector.RotateZ(sectorAngle);
+      rotMatrix.MultiplyLeft(&rotSector);      
+      //
+      fMatrixCorrectionArray->AddAt(new TGeoHMatrix(rotMatrix),lid);       
+    }    
+  }
+  return kTRUE;
+}
+
+
