@@ -11,7 +11,6 @@
 #pragma link C++ class  AliSTARTdigit+;
 #pragma link C++ class  AliSTARTLoader+;
 #pragma link C++ class  AliSTARTTrigger+;
-#pragma link C++ class  AliSTARTAlignData+;
 #pragma link C++ class  AliSTARTCalibData+;
 #pragma link C++ class  AliSTARTParameters+;
 
