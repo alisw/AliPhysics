@@ -97,7 +97,6 @@ AliMpMotifMap::~AliMpMotifMap()
 void  AliMpMotifMap::PrintMotif(const AliMpVMotif* motif) const
 {
 /// Print the motif.
-// ---
 
   cout << motif->GetID().Data() << "  "
        << motif->GetMotifType()->GetID() << "    "
@@ -260,6 +259,8 @@ AliMpMotifMap::GetAllMotifPositionsIDs(TArrayI& ecn) const
 //_____________________________________________________________________________
 Int_t AliMpMotifMap::CalculateNofPads() const 
 {
+/// Calculate total number of pads in the map
+
   Int_t nofPads = 0;
 
 #ifdef WITH_STL
@@ -286,7 +287,7 @@ Int_t AliMpMotifMap::CalculateNofPads() const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotifPositions() const
 {
-/// Print all the the motifs positions.
+/// Print all motif positions.
 
 #ifdef WITH_STL
   if (fMotifPositions.size()) {
@@ -325,7 +326,7 @@ void  AliMpMotifMap::PrintMotifPositions() const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintMotifPositions2() const
 {
-/// Print all the the motifs positions from the second map
+/// Print all motif positions from the second map
 /// (by global indices)
 
 #ifdef WITH_STL
@@ -515,7 +516,7 @@ void  AliMpMotifMap::Print(const char* opt) const
 //_____________________________________________________________________________
 void  AliMpMotifMap::PrintGlobalIndices(const char* fileName) const
 {
-/// Print all the motifs positions and their global indices.
+/// Print all motif positions and their global indices.
 
   ofstream out(fileName, ios::out);
 
@@ -553,8 +554,7 @@ void  AliMpMotifMap::PrintGlobalIndices(const char* fileName) const
 //_____________________________________________________________________________
 void  AliMpMotifMap::UpdateGlobalIndices(const char* fileName)
 {
-/// Updates the motifs positions global indices
-/// from the file.
+/// Update the motif positions global indices from the file.
 
   ifstream in(fileName, ios::in);
 
@@ -597,7 +597,7 @@ void  AliMpMotifMap::UpdateGlobalIndices(const char* fileName)
 //_____________________________________________________________________________
 AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID) const
 {
-/// Finds the motif with the specified ID.
+/// Find the motif with the specified ID.
   
 #ifdef WITH_STL
   MotifMapIterator i = fMotifs.find(motifID);
@@ -617,7 +617,7 @@ AliMpVMotif* AliMpMotifMap::FindMotif(const TString& motifID,
                                       const TString& motifTypeID,
 			              const TVector2& padDimensions ) const
 {
-/// Finds the motif with the specified ID and returns it
+/// Find the motif with the specified ID and returns it
 /// only if its motif type and motif dimensions agree
 /// with the given motifTypeID and motifDimensions.
 /// Disagreement causes fatal error.
