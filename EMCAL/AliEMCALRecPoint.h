@@ -71,6 +71,8 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual Int_t GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
                                                                    // searches for the local maxima 
+  
+  Int_t       GetPrimaryIndex() const  ;
   Float_t     GetTime(void) const{return  fTime ; }
  
   virtual Bool_t  IsEmc(void)const { return kTRUE ;  }

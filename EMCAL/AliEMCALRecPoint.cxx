@@ -32,7 +32,12 @@
 
 // --- AliRoot header files ---
 #include "AliGenerator.h"
+#include "AliRunLoader.h"
+#include "AliRun.h"
+#include "AliEMCAL.h"
+#include "AliEMCALLoader.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALHit.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALRecPoint.h"
 
@@ -57,7 +62,10 @@ AliEMCALRecPoint::AliEMCALRecPoint()
   fTime = 0. ;
   //  fLocPos.SetX(1.e+6)  ;      //Local position should be evaluated
   fCoreRadius = 10;        //HG Check this
-  fGeom = AliEMCALGeometry::GetInstance();
+
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+  //fGeom = AliEMCALGeometry::GetInstance();
   fGeom->GetTransformationForSM(); // Global <-> Local
 }
 
@@ -79,7 +87,9 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
   fTime = -1. ;
   //fLocPos.SetX(1.e+6)  ;      //Local position should be evaluated
   fCoreRadius = 10;        //HG Check this
-  fGeom = AliEMCALGeometry::GetInstance();
+  //fGeom = AliEMCALGeometry::GetInstance();
+  AliRunLoader *rl = AliRunLoader::GetRunLoader();
+  fGeom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   fGeom->GetTransformationForSM(); // Global <-> Local
 }
 //____________________________________________________________________________
@@ -337,7 +347,7 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
   //  printf("eval axis done\n");
   EvalDispersion(logWeight, digits) ;
   //  printf("eval dispersion done\n");
- // EvalCoreEnergy(logWeight, digits);
+  //EvalCoreEnergy(logWeight, digits);
  // printf("eval energy done\n");
   EvalTime(digits) ;
   //  printf("eval time done\n");
@@ -448,7 +458,7 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
 void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
 {
   // This function calculates energy in the core, 
-  // i.e. within a radius rad = 3cm around the center. Beyond this radius
+  // i.e. within a radius rad = fCoreEnergy around the center. Beyond this radius
   // in accordance with shower profile the energy deposition 
   // should be less than 2%
 
@@ -463,12 +473,14 @@ void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
   
   for(iDigit=0; iDigit < fMulDigit; iDigit++) {
     digit = (AliEMCALDigit *) ( digits->At(fDigitsList[iDigit]) ) ;
-    Float_t etai = 0. ;
-    Float_t phii = 0. ;
-    fGeom->PosInAlice(digit->GetId(), etai, phii);
-    phii = phii * kDeg2Rad;
+    
+    Float_t ieta = 0.0;
+    Float_t iphi = 0.0;
+    //fGeom->PosInAlice(digit->GetId(), ieta, iphi);
+    fGeom->EtaPhiFromIndex(digit->GetId(),ieta, iphi) ;
+    iphi = iphi * kDeg2Rad;
   
-    Float_t distance = TMath::Sqrt((etai-fLocPos.X())*(etai-fLocPos.X())+(phii-fLocPos.Y())*(phii-fLocPos.Y())) ;
+    Float_t distance = TMath::Sqrt((ieta-fLocPos.X())*(ieta-fLocPos.X())+(iphi-fLocPos.Y())*(iphi-fLocPos.Y())) ;
     if(distance < fCoreRadius)
       fCoreEnergy += fEnergyList[iDigit] ;
   }
@@ -759,6 +771,66 @@ Int_t  AliEMCALRecPoint::GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * 
   }
   return iDigitN ;
 }
+
+//____________________________________________________________________________
+Int_t AliEMCALRecPoint::GetPrimaryIndex() const  
+{
+  // Get the primary track index in TreeK which deposits the most energy 
+  // in Digits which forms RecPoint. Kinematics, Hits and Digits must be 
+  // loaded before the call of the method.
+
+  AliRunLoader *rl = AliRunLoader::GetRunLoader(); 
+  if (!rl) 
+    AliError(Form(" No Runloader ")) ; 
+ 
+  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>
+    (rl->GetDetectorLoader("EMCAL"));
+
+  // Get the list of digits forming this RecPoint
+  Int_t  nDigits   = fMulDigit   ;
+  Int_t *digitList = fDigitsList ;
+  
+  // Find the digit with maximum amplitude
+  AliEMCALDigit *digit = 0;
+  TClonesArray *digits = emcalLoader->Digits();
+  Int_t maxAmp = 0;
+  Int_t bestDigitIndex = -1;
+  for (Int_t iDigit=0; iDigit<nDigits; iDigit++) {
+    digit = static_cast<AliEMCALDigit *>(digits->At(digitList[iDigit]));
+    if (digit->GetAmp() > maxAmp) {
+      maxAmp = digit->GetAmp();
+      bestDigitIndex = iDigit;
+    }
+  }
+
+  digit = static_cast<AliEMCALDigit *>(digits->At(digitList[bestDigitIndex]));  
+
+  // Get the list of hits producing this digit,
+  // find which hit has deposited more energy 
+  // and find the primary track.
+
+  AliEMCALHit *hit = 0;
+  TClonesArray *hits = emcalLoader->Hits();
+
+  Double_t maxedep  =  0;
+  Int_t    maxtrack = -1;
+  Int_t    nHits    = hits ->GetEntries();
+  Int_t    id       = digit->GetId();
+  for (Int_t iHit=0; iHit<nHits; iHit++) {
+    hit = static_cast<AliEMCALHit*> (hits->At(iHit)) ;
+    if(hit->GetId() == id){
+      Double_t edep  = hit->GetEnergy();
+      Int_t    track = hit->GetIparent();//Primary();
+      if(edep > maxedep){
+	maxedep  = edep;
+	maxtrack = track;
+      }
+    }
+  }
+  if (maxtrack != -1) return maxtrack; 
+  return -12345;                       // no track found :(
+}
+
 //____________________________________________________________________________
 void AliEMCALRecPoint::EvalTime(TClonesArray * digits){
   // time is set to the time of the digit with the maximum energy
