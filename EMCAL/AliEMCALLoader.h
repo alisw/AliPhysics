@@ -50,6 +50,10 @@ class AliEMCALLoader : public AliLoader {
   const AliEMCALLoader & operator = (const AliEMCALLoader & ) {return *this;}
 
   virtual Int_t GetEvent();  // Overload to fill TClonesArray
+  virtual Int_t LoadHits(Option_t* opt);  // Overload to fill TClonesArray
+  virtual Int_t LoadSDigits(Option_t* opt); // Overload to fill TClonesArray
+  virtual Int_t LoadDigits(Option_t* opt); // Overload to fill TClonesArray
+  virtual Int_t LoadRecPoints(Option_t* opt); // Overload to fill TClonesArray
 
   virtual void    CleanHits() const 
     { if (fHits) fHits->Clear(); AliLoader::CleanHits(); }
