@@ -31,16 +31,16 @@ class AliTRDcluster : public AliCluster {
   Bool_t  FromLarge() const   { return TestBit(kLarge);}
   Bool_t  Isolated() const    { return (TestBit(k2pad) || TestBit(k3pad)); }
  
-  void    SetDetector(Int_t d)         { fDetector  = d; }
+  virtual void    SetDetector(Int_t d) { fDetector  = d; }
   void    SetLocalTimeBin(Int_t t)     { fTimeBin   = t; }
   void    SetQ(Float_t q)              { fQ         = q; }
-  void    SetX(Float_t x)              { fX         = x; }
+  virtual void    SetX(Float_t x)      { fX         = x; }
   void    SetSignals(Short_t *signals);
   
-  Int_t   GetDetector() const          { return fDetector; }
+  virtual Int_t   GetDetector() const  { return fDetector; }
   Int_t   GetLocalTimeBin() const      { return fTimeBin;  }
   Float_t GetQ() const                 { return fQ; }
-  Float_t GetX() const                 { return fX; }
+  virtual Float_t GetX() const         { return fX; }
 
   void    Set2pad()                    { SetBit(k2pad); fNPads=2; }
   void    Set3pad()                    { SetBit(k3pad); fNPads=3; }
