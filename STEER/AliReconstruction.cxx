@@ -319,11 +319,12 @@ Bool_t AliReconstruction::ApplyAlignObjsToGeom(TObjArray* alObjArray)
   alObjArray->Sort();
   Int_t nvols = alObjArray->GetEntriesFast();
 
+  Bool_t flag = kTRUE;
+
   for(Int_t j=0; j<nvols; j++)
     {
       AliAlignObj* alobj = (AliAlignObj*) alObjArray->UncheckedAt(j);
-      if (alobj->ApplyToGeometry() == kFALSE)
-	return kFALSE;
+      if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
     }
 
   if (AliDebugLevelClass() >= 1) {
@@ -334,7 +335,7 @@ Bool_t AliReconstruction::ApplyAlignObjsToGeom(TObjArray* alObjArray)
    }
   }
 
-  return kTRUE;
+  return flag;
 
 }
 
@@ -422,7 +423,8 @@ Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
   if (fAlignObjArray) {
     if (gGeoManager && gGeoManager->IsClosed()) {
       if (ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
-	AliError("The application of misalignment failed! Restart aliroot and try again. ");
+	AliError("The misalignment of one or more volumes failed!"
+		 "Compare the list of simulated detectors and the list of detector alignment data!");
 	return kFALSE;
       }
     }
