@@ -45,7 +45,10 @@ public:
     Fatal("operator =", "not implemented");
     return *(GetInstance()); 
   };
-
+  
+  void FillTRU(const TClonesArray * digits, TClonesArray * amptru, TClonesArray * timeRtru)  ; //Fills Trigger Unit matrices with digit amplitudes and time
+  void GetCellPhiEtaIndexInSModuleFromTRUIndex(const Int_t itru, const Int_t iphitru, const Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const ; // Tranforms Eta-Phi Cell index in TRU into Eta-Phi index in Super Module
+  
   // Have to call GetTransformationForSM() before calculation global charachteristics 
   void GetGlobal(const Double_t *loc, Double_t *glob, int nsm) const;
   void GetGlobal(const TVector3 &vloc, TVector3 &vglob, int nsm) const;
@@ -58,7 +61,6 @@ public:
   virtual void GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const;
   // Bool_t AreInSameTower(Int_t id1, Int_t id2) const ;  
 
-  TClonesArray *  FillTRU(const TClonesArray * digits)  ;
   virtual void GetGlobal(const AliRecPoint *, TVector3 &, TMatrixF &) const {}
 
   virtual Bool_t Impact(const TParticle *) const {return kTRUE;}
