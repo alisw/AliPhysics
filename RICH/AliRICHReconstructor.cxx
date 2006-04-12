@@ -156,8 +156,10 @@ void AliRICHReconstructor::Reconstruct(AliRunLoader *pAL)const
 //Arguments: pAL - ALICE run loader pointer
 //  Returns: none    
   AliDebug(1,"Start.");
-  AliLoader *pRL=pAL->GetDetectorLoader("RICH");  AliRICH *pRich=(AliRICH*)pAL->GetAliRun()->GetDetector("RICH");//get pointers for RICH and RICH loader
+  AliLoader *pRL=pAL->GetDetectorLoader("RICH");
+  AliRICH *pRich=(AliRICH*)pAL->GetAliRun()->GetDetector("RICH");//get pointers for RICH and RICH loader
   pRL->LoadDigits();   
+  pRL->LoadRecPoints("recreate");
   
   for(Int_t iEvtN=0;iEvtN<pAL->GetNumberOfEvents();iEvtN++){//events loop
     pAL->GetEvent(iEvtN++); AliDebug(1,Form("Processing event %i...",iEvtN)); //switch current directory to next event    
