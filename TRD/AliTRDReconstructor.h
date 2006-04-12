@@ -30,9 +30,13 @@ public:
   virtual void         FillESD(TTree*, TTree*, AliESD*) const { };
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
   static  Bool_t       SeedingOn(){ return fgkSeedingOn;}
-  static  void         SetSeedingOn(Bool_t seeding) { fgkSeedingOn = seeding;}
+  static  void         SetSeedingOn(Bool_t seeding) { fgkSeedingOn = seeding;}  
+  static Int_t StreamLevel()               { return fgStreamLevel;}
+  static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
 private:
   static Bool_t fgkSeedingOn;               // set flag for seeding during reconstruction
+  static Int_t    fgStreamLevel;     // flag for streaming      - for TPC reconstruction
+
   ClassDef(AliTRDReconstructor, 0)   // class for the TRD reconstruction
 };
 

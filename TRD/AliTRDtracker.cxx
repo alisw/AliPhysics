@@ -298,7 +298,7 @@ Bool_t  AliTRDtracker::Transform(AliTRDcluster * cluster){
   //
   //
   //
-  if (1){
+  if (AliTRDReconstructor::StreamLevel()>1){
     (*fDebugStreamer)<<"Transform"<<
       "Cl.="<<cluster<<
       "matrix.="<<matrix<<
@@ -603,20 +603,22 @@ Int_t AliTRDtracker::PropagateBack(AliESD* event) {
     // Debug part of tracking
     TTreeSRedirector& cstream = *fDebugStreamer;
     Int_t eventNr = event->GetEventNumber();
-    if (track->GetBackupTrack()){
-      cstream<<"Tracks"<<
-	"EventNr="<<eventNr<<
-	"ESD.="<<seed<<
-	"trd.="<<track<<
-	"trdback.="<<track->GetBackupTrack()<<	
-	"\n";
-    }else{
-      cstream<<"Tracks"<<
-	"EventNr="<<eventNr<<
-	"ESD.="<<seed<<
-	"trd.="<<track<<
-	"trdback.="<<track<<
-	"\n";
+    if (AliTRDReconstructor::StreamLevel()>0){
+      if (track->GetBackupTrack()){
+	cstream<<"Tracks"<<
+	  "EventNr="<<eventNr<<
+	  "ESD.="<<seed<<
+	  "trd.="<<track<<
+	  "trdback.="<<track->GetBackupTrack()<<	
+	  "\n";
+      }else{
+	cstream<<"Tracks"<<
+	  "EventNr="<<eventNr<<
+	  "ESD.="<<seed<<
+	  "trd.="<<track<<
+	  "trdback.="<<track<<
+	  "\n";
+      }
     }
     //
     //Propagation to the TOF (I.Belikov)    
@@ -1319,30 +1321,32 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD * esd)
 	    if (cl0->GetLabel(0)!=cl3->GetLabel(0)) isFake = kTRUE;
 	    if (cl1->GetLabel(0)!=cl3->GetLabel(0)) isFake = kTRUE;
 	    if (cl2->GetLabel(0)!=cl3->GetLabel(0)) isFake = kTRUE;
-	    if ((!isFake) || (icl3%10)==0 ){  //debugging print
-	      TTreeSRedirector& cstream = *fDebugStreamer;
-	      cstream<<"Seeds0"<<
-		"isFake="<<isFake<<
-		"Cl0.="<<cl0<<
-		"Cl1.="<<cl1<<
-		"Cl2.="<<cl2<<
-		"Cl3.="<<cl3<<
-		"Xref="<<xref<<
-		"X0="<<xcl[sLayer+0]<<
-		"X1="<<xcl[sLayer+1]<<
-		"X2="<<xcl[sLayer+2]<<
-		"X3="<<xcl[sLayer+3]<<
-		"Y2exp="<<y2exp<<
-		"Z2exp="<<z2exp<<
-		"Chi2R="<<chi2R<<
-		"Chi2Z="<<chi2Z<<		
-		"Seed0.="<<&cseed[sLayer+0]<<
-		"Seed1.="<<&cseed[sLayer+1]<<
-		"Seed2.="<<&cseed[sLayer+2]<<
-		"Seed3.="<<&cseed[sLayer+3]<<
-		"Zmin="<<minmax[0]<<
-		"Zmax="<<minmax[1]<<
-		"\n";
+	    if (AliTRDReconstructor::StreamLevel()>0){
+	      if ((!isFake) || (icl3%10)==0 ){  //debugging print
+		TTreeSRedirector& cstream = *fDebugStreamer;
+		cstream<<"Seeds0"<<
+		  "isFake="<<isFake<<
+		  "Cl0.="<<cl0<<
+		  "Cl1.="<<cl1<<
+		  "Cl2.="<<cl2<<
+		  "Cl3.="<<cl3<<
+		  "Xref="<<xref<<
+		  "X0="<<xcl[sLayer+0]<<
+		  "X1="<<xcl[sLayer+1]<<
+		  "X2="<<xcl[sLayer+2]<<
+		  "X3="<<xcl[sLayer+3]<<
+		  "Y2exp="<<y2exp<<
+		  "Z2exp="<<z2exp<<
+		  "Chi2R="<<chi2R<<
+		  "Chi2Z="<<chi2Z<<		
+		  "Seed0.="<<&cseed[sLayer+0]<<
+		  "Seed1.="<<&cseed[sLayer+1]<<
+		  "Seed2.="<<&cseed[sLayer+2]<<
+		  "Seed3.="<<&cseed[sLayer+3]<<
+		  "Zmin="<<minmax[0]<<
+		  "Zmax="<<minmax[1]<<
+		  "\n";
+	      }
 	    }
 	    
 	    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -1861,6 +1865,7 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD * esd)
 	    if (1||(!isFake)){  //debugging print
 	      Float_t zvertex = GetZ();
 	      TTreeSRedirector& cstream = *fDebugStreamer;
+	      if (AliTRDReconstructor::StreamLevel()>0)
 	      cstream<<"Seeds1"<<
 		"isFake="<<isFake<<
 		"Vertex="<<zvertex<<
@@ -2042,15 +2047,16 @@ void AliTRDtracker::MakeSeedsMI(Int_t /*inner*/, Int_t /*outer*/, AliESD * esd)
 	  esdtrack.SetLabel(label);
 	  esd->AddTrack(&esdtrack);	
 	  TTreeSRedirector& cstream = *fDebugStreamer;
-	  cstream<<"Tracks"<<
-	    "EventNr="<<eventNr<<
-	    "ESD.="<<&esdtrack<<
-	    "trd.="<<track<<
-	    "trdback.="<<track<<
-	    "\n";
+	  if (AliTRDReconstructor::StreamLevel()>0)
+	    cstream<<"Tracks"<<
+	      "EventNr="<<eventNr<<
+	      "ESD.="<<&esdtrack<<
+	      "trd.="<<track<<
+	      "trdback.="<<track<<
+	      "\n";
 	}
-
-	cstream<<"Seeds2"<<
+	if (AliTRDReconstructor::StreamLevel()>0)
+	  cstream<<"Seeds2"<<
 	  "Iter="<<iter<<
 	  "Track.="<<track<<
 	  "Like="<<seedquality[index]<<
@@ -3220,6 +3226,7 @@ Int_t AliTRDtracker::FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack 
   TGraph graphz(t1-t0,x,zt);
   //
   //
+  if (AliTRDReconstructor::StreamLevel()>0)
   cstream<<"tracklet"<<
     "track.="<<track<<                                       // track parameters
     "tany="<<tany<<                                          // tangent of the local track angle 

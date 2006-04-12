@@ -40,6 +40,7 @@
 ClassImp(AliTRDReconstructor)
 
 Bool_t  AliTRDReconstructor::fgkSeedingOn = kFALSE;
+Int_t   AliTRDReconstructor::fgStreamLevel     = 0;      // stream (debug) level
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
