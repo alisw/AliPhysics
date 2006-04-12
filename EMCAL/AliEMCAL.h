@@ -77,6 +77,7 @@ class AliEMCAL : public AliDetector {
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatChannelsPerDDL() const { return fgChannelsPerDDL ; }       
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
+  Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
   //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual const TString Version() const {return TString(" ") ; }   
@@ -86,7 +87,6 @@ class AliEMCAL : public AliDetector {
 protected:
   
   static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
-  Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
   void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) ;
 
   Int_t fBirkC0;    // constants for Birk's Law implementation
