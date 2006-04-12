@@ -239,7 +239,7 @@ void AliEMCAL::Digits2Raw()
   AliEMCALLoader * loader = dynamic_cast<AliEMCALLoader*>(fLoader) ; 
 
   // get the digits
-  loader->LoadDigits();
+  loader->LoadDigits("EMCAL");
   TClonesArray* digits = loader->Digits() ;
 
   if (!digits) {
@@ -327,7 +327,7 @@ void AliEMCAL::Raw2Digits(AliRawReader* reader)
 
   // get the digits
   loader->CleanDigits(); // start from scratch
-  loader->LoadDigits();
+  loader->LoadDigits("EMCAL");
   TClonesArray* digits = loader->Digits() ;
   digits->Clear(); // yes, this is perhaps somewhat paranoid.. [clearing an extra time]
 
