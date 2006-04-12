@@ -464,7 +464,7 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
     Float_t tToT= dig->GetToT();
     dig->SetTdcND(dig->GetTdc());
     Float_t tdc = ((dig->GetTdc())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3; //tof signal in ns
-    Float_t timeoffset=par[0] + tToT*par[1] +tToT*tToT*par[2] +tToT*tToT*tToT*par[3] +tToT*tToT*tToT*tToT*par[4] +tToT*tToT*tToT*tToT*tToT*par[5]; 
+    Float_t timeoffset=par[0] + tToT*(par[1] +tToT*(par[2] +tToT*(par[3] +tToT*(par[4] +tToT*par[5])))); 
     Float_t timeSlewed = tdc + timeoffset;
     // Setting Decalibrated Time signal    
     dig->SetTdc((timeSlewed*1E3-32)/AliTOFGeometry::TdcBinWidth());   
