@@ -36,7 +36,7 @@ class AliTRDseed : public TObject{
   void           CookLabels();  // cook label
   void           UpdateUsed();
   void           Reset();       // reset seed
-  Bool_t         isOK(){return fN2>8;}
+  Bool_t         IsOK() const {return fN2>8;}
  private:
   Float_t        fTilt;         // tilting angle
   Float_t        fPadLength;    // pad length
