@@ -13,7 +13,6 @@
 #pragma link C++ enum  AliEMCALJetFinderAlgoUA1UnitFlagType_t;
 #pragma link C++ enum  AliEMCALJetFinderAlgoUA1FillUnitFlagType_t;
 // -
-#pragma link C++ class AliEMCALGeneratorFactory+;
 #pragma link C++ class AliEMCALJet+;
 #pragma link C++ class AliEMCALParton+;
 #pragma link C++ class AliEMCALJetFinder+;
