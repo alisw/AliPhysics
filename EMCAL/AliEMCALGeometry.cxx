@@ -943,7 +943,7 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
     for(Int_t ic=0; ic<fNPHIdiv; ic++) { // array index
       Float_t ytLeftCenterCell = ytLeftCenterModule + fPhiTileSize *(2*ic-1)/2.; // tower(cell) 
       fPhiCentersOfCells->AddAt(ytLeftCenterCell,ind);
-      printf(" ind %2.2i : y %8.3f ", ind, fPhiCentersOfCells->At(ind++));
+      printf(" ind %2.2i : y %8.3f ", ind, fPhiCentersOfCells->At(ind)); ind++;
       if(ic == fNPHIdiv-1) printf("\n"); 
     }
   }
