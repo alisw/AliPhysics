@@ -1715,9 +1715,11 @@ Double_t AliTRDdigitizer::TimeStruct(Float_t vdrift, Double_t dist, Double_t z)
   
   // indices:
   Int_t r1 = (Int_t)(10*dist);
-  Int_t r2 = r1+1;
   if (r1<0)  r1 = 0;
   if (r1>37) r1 = 37;
+  Int_t r2 = r1+1;
+  if (r2<0)  r2 = 0;
+  if (r2>37) r2 = 37;
   const Int_t kz1 = (Int_t)(100*z/2.5);
   const Int_t kz2 = kz1+1;
 
