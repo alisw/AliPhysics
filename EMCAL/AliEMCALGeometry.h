@@ -127,14 +127,8 @@ public:
   // TRD1 staff
   void    CreateListOfTrd1Modules();
   TList  *GetShishKebabTrd1Modules() const {return fShishKebabTrd1Modules;}
-  AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta=0)
-  {
-    static AliEMCALShishKebabTrd1Module* trd1=0;
-    if(fShishKebabTrd1Modules && neta>=0 && neta<fShishKebabTrd1Modules->GetSize()) {
-      trd1 = (AliEMCALShishKebabTrd1Module*)fShishKebabTrd1Modules->At(neta);
-    } else trd1 = 0;
-    return trd1;
-  }
+  AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta);
+
   void     GetTransformationForSM();
   Float_t *GetSuperModulesPars() {return fParSM;}
   TGeoMatrix *GetTransformationForSM(int i) {
@@ -185,10 +179,8 @@ public:
   Int_t GetNCellsInTower() const {return fNCellsInTower; }
 
   AliEMCALGeometry() :
-    AliGeometry() {// ctor only for internal usage (singleton)
-   // default ctor 
-   // must be kept public for root persistency purposes, but should never be called 
-   // by the outside world    
+    AliGeometry() {// default ctor only for internal usage (singleton)
+   // must be kept public for root persistency purposes, but should never be called by the outside world    
      CreateListOfTrd1Modules();
   };
 
@@ -207,12 +199,14 @@ protected:
   };
 
   void Init(void);     			// initializes the parameters of EMCAL
-  void CheckAditionalOptions();         //
+  void CheckAdditionalOptions();         //
   
 private:
   static AliEMCALGeometry * fgGeom;	// pointer to the unique instance of the singleton
   static Bool_t fgInit;			// Tells if geometry has been succesfully set up.
-  static AliEMCALAlignData *fgAlignData;// 
+  static AliEMCALAlignData *fgAlignData;// Alignment data, to be replaced by AliAlignData soon
+
+  TString fGeoName;                     //geometry name
 
   TObjArray *fArrayOpts;                //! array of geometry options
 
@@ -244,9 +238,9 @@ private:
   Float_t fPassiveScintThick;            // 13-may-05
   Float_t fPhiModuleSize;                // Phi -> X 
   Float_t fEtaModuleSize;                // Eta -> Y
-  Float_t fPhiTileSize;                  // 
-  Float_t fEtaTileSize;                  // 
-  Float_t fLongModuleSize;               // 
+  Float_t fPhiTileSize;                  // Size of phi tile
+  Float_t fEtaTileSize;                  // Size of eta tile
+  Float_t fLongModuleSize;               // Size of long module
   Int_t   fNPhiSuperModule;              // 6 - number supermodule in phi direction
   Int_t   fNPHIdiv;                      // number phi divizion of module
   Int_t   fNETAdiv;                      // number eta divizion of module
@@ -279,6 +273,9 @@ private:
   // Local coordinates of SM for TRD1
   Float_t     fParSM[3];       // SM sizes as in GEANT (TRD1)
   TGeoMatrix* fMatrixOfSM[12]; //![fNumberOfSuperModules]; get from gGeoManager;
+
+  char *fAdditionalOpts[3];  //! some additional options for the geometry type and name
+  int  fNAdditionalOpts;  //! size of additional options parameter
 
   ClassDef(AliEMCALGeometry, 10) // EMCAL geometry class 
   };
