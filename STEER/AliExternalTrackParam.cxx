@@ -225,9 +225,10 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   //----------------------------------------------------------------
   // Propagate this track to the plane X=xk (cm) in the field "b" (kG)
   //----------------------------------------------------------------
-  Double_t crv=kB2C*b*fP[4];
   Double_t dx=xk-fX;
   if (TMath::Abs(dx)<=0)  return kTRUE;
+
+  Double_t crv=kB2C*b*fP[4];
   Double_t f1=fP[2], f2=f1 + crv*dx;
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
@@ -244,7 +245,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
 
   fX=xk;
   fP0 += dx*(f1+f2)/(r1+r2);
-  fP1 += dx*(f1+f2)/(f1*r2 + f2*r1)*fP3;
+  fP1 += dx*(r2 + f2*(f1+f2)/(r1+r2))*fP3;  // Many thanks to P.Hristov !
   fP2 += dx*crv;
 
   //f = F - 1
