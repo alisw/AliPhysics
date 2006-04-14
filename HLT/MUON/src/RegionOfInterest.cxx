@@ -5,44 +5,38 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* The region of interest object is used to encode/decode and work with boundary
+   box type regions of interest. The 32 bit ROI codes are used to communicate
+   regions of interest between different parts of the dHLT system. This is more
+   efficient than sending 20 byte long region of interest objects.
+ */
+
 #include "RegionOfInterest.hpp"
 #include <math.h>
 
 
-Float AliHLTMUONCoreRegionOfInterest::fgPlaneScale[gkNUMBER_OF_TRACKING_CHAMBERS]
-///*
-	= {	100.0f,
-		100.0f,
+Float AliHLTMUONCoreRegionOfInterest::fgPlaneScale[AliHLTMUONCoreRegionOfInterest::kNumberOfTrackingChambers]
+	= {	102.0f,
+		104.0f,
 		130.0f,
-		130.0f,
-		180.0f,
-		180.0f,
-		240.0f,
-		240.0f,
-		250.0f,
-		250.0f
+		132.0f,
+		184.0f,
+		188.0f,
+		238.0f,
+		244.0f,
+		270.0f,
+		275.0f
 	};
-//*/
-/*
-	= {	101.397718695768f,
-		103.868515964831f,
-		128.956611312237f,
-		131.807531238079f,
-		183.219120567424f,
-		187.400469791991f,
-		237.861752479389f,
-		242.993408345904f,
-		269.221871663647f,
-		274.353527530162f
-	};
-*/
 
 
 void AliHLTMUONCoreRegionOfInterest::CreateToContain(
 		const AliHLTMUONCoreClusterPoint& point, AliHLTMUONCoreChamberID chamber
 	)
 {
-	Assert( 0 <= chamber && chamber < gkNUMBER_OF_TRACKING_CHAMBERS );
+// Creates a region of interest around the given point for the
+// specified chamber.
+
+	Assert( 0 <= chamber && chamber < (AliHLTMUONCoreChamberID)kNumberOfTrackingChambers );
 	fChamber = chamber;
 	fLeft = fRight = point.fX;
 	fBottom = fTop = point.fY;
@@ -51,6 +45,8 @@ void AliHLTMUONCoreRegionOfInterest::CreateToContain(
 
 void AliHLTMUONCoreRegionOfInterest::ExpandToContain(const AliHLTMUONCoreClusterPoint& point)
 {
+// Extends the region of interest to contain the specified point.
+
 	if (point.fX < fLeft)
 		fLeft = point.fX;
 	else
@@ -67,7 +63,10 @@ void AliHLTMUONCoreRegionOfInterest::CreateToContain(
 		AliHLTMUONCoreChamberID chamber
 	)
 {
-	Assert( 0 <= chamber && chamber < gkNUMBER_OF_TRACKING_CHAMBERS );
+// Creates a region of interest around all the given points and for the
+// specified chamber.
+
+	Assert( 0 <= chamber && chamber < (AliHLTMUONCoreChamberID)kNumberOfTrackingChambers );
 	Assert( count > 0 );
 	
 	CreateToContain(points[0], chamber);
@@ -78,7 +77,11 @@ void AliHLTMUONCoreRegionOfInterest::CreateToContain(
 
 bool AliHLTMUONCoreRegionOfInterest::InBounds()
 {
-	Assert( 0 <= fChamber && fChamber < gkNUMBER_OF_TRACKING_CHAMBERS );
+// Checks if the region of interest is within the boundaries imposed on
+// the specific chamber plane. This boundary is aproximately the square
+// box around the chamber's detection region.
+
+	Assert( 0 <= fChamber && fChamber < (AliHLTMUONCoreChamberID)kNumberOfTrackingChambers );
 	register Float bound = fgPlaneScale[fChamber];
 	return -bound <= fLeft
 	  && fRight <= bound
@@ -129,7 +132,12 @@ inline void AliHLTMUONCoreRegionOfInterest::ConvertToGrid(
 		register UInt& l, register UInt& r, register UInt& b, register UInt& t
 	) const
 {
-	Assert( 0 <= fChamber && fChamber < gkNUMBER_OF_TRACKING_CHAMBERS );
+// Converts the internal region of interest boundary box, which is
+// specified in as floats, into a regular integer grid.
+// l = left boundary, r = right boundary, b = bottom boundary, 
+// t = top boundary.
+
+	Assert( 0 <= fChamber && fChamber < (AliHLTMUONCoreChamberID)kNumberOfTrackingChambers );
 
 	register Float scale = fgPlaneScale[fChamber];
 	l = (UInt) floor( (fLeft / scale + 1.0f) * 0.5f * GRID_SIZE );
@@ -152,12 +160,16 @@ inline void AliHLTMUONCoreRegionOfInterest::ConvertBackFromGrid(
 		register UInt l, register UInt r, register UInt b, register UInt t
 	)
 {
+// Performs the inverse conversion of the method ConvertToGrid.
+// That is converts from a regular integer grid back to the internal
+// floating point boundary box specification.
+
 	Assert( l <= GRID_SIZE );
 	Assert( r <= GRID_SIZE );
 	Assert( b <= GRID_SIZE );
 	Assert( t <= GRID_SIZE );
 
-	Assert( 0 <= fChamber && fChamber < gkNUMBER_OF_TRACKING_CHAMBERS );
+	Assert( 0 <= fChamber && fChamber < (AliHLTMUONCoreChamberID)kNumberOfTrackingChambers );
 	register Float scale = fgPlaneScale[fChamber];
 	fLeft = ((Float)l / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
 	fRight = ((Float)r / (Float)GRID_SIZE - 0.5f) * 2.0f * scale;
@@ -168,6 +180,8 @@ inline void AliHLTMUONCoreRegionOfInterest::ConvertBackFromGrid(
 
 AliHLTMUONCoreROI AliHLTMUONCoreRegionOfInterest::Encode() const
 {
+// Encodes the region of interest into a 32 bit code.
+
 	UInt l, r, b, t, maxwidth, index;
 
 	ConvertToGrid(l, r, b, t);
@@ -310,6 +324,10 @@ AliHLTMUONCoreROI AliHLTMUONCoreRegionOfInterest::Encode() const
 
 AliHLTMUONCoreROI AliHLTMUONCoreRegionOfInterest::Encode(UChar& level, UInt& l, UInt& b) const
 {
+// Encodes the region of interest into a 32 bit code, and returns the
+// hierarchal level the region was encoded at and the left and right
+// grid coordinate of the bottom left corner of the region boundary box.
+
 	UInt r, t, maxwidth, index;
 
 	ConvertToGrid(l, r, b, t);
@@ -466,6 +484,8 @@ AliHLTMUONCoreROI AliHLTMUONCoreRegionOfInterest::Encode(UChar& level, UInt& l, 
 
 void AliHLTMUONCoreRegionOfInterest::Decode(AliHLTMUONCoreROI code)
 {
+// Decodes a 32 bit region of interest code into this region of interest object.
+
 	UInt l, r, b, t;
 	UChar colevel;
 	DecodeBits(code, fChamber, colevel, l, b);
@@ -487,6 +507,10 @@ void AliHLTMUONCoreRegionOfInterest::Decode(
 		UChar& level, UInt& l, UInt& b
 	)
 {
+// Decodes the 32 bit region of interest code into the chamber number,
+// hierarchal level, left and right grid coordinates of the region
+// boundary box.
+
 	UChar colevel;
 	DecodeBits(code, chamber, colevel, l, b);
 	level = MAX_LEVELS - colevel;
@@ -635,6 +659,8 @@ void AliHLTMUONCoreRegionOfInterest::DecodeBits(
 
 AliHLTMUONCoreChamberID AliHLTMUONCoreRegionOfInterest::DecodeChamber(AliHLTMUONCoreROI code)
 {
+// Decodes the chamber number of the region of interest 32 bit code.
+
 	return (AliHLTMUONCoreChamberID)(code / MAX_INDICES);
 }
 

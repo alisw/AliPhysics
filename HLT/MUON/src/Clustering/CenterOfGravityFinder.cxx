@@ -12,6 +12,7 @@
 AliHLTMUONCoreCenterOfGravityFinder::AliHLTMUONCoreCenterOfGravityFinder()
 	: AliHLTMUONCoreClusterFinder()
 {
+/*
 	fDiff_Y = 0.5; // 5000 micron slat size in Y
 	fDiff_X = 1.0; // 10000 micron slat size in X
 	fX = 56;
@@ -19,6 +20,7 @@ AliHLTMUONCoreCenterOfGravityFinder::AliHLTMUONCoreCenterOfGravityFinder()
 	fDigitMax = 35; // maximum number of padhits in columns or rows.
 	fDDLMax = 200; // Maximum number of padhits in one ddl;
 	fDDLTot = 500; // totoal number of padhits in one ddl;
+*/
 }
 
 

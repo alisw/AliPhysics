@@ -5,6 +5,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* The region of interest object is used to encode/decode and work with boundary
+   box type regions of interest. The 32 bit ROI codes are used to communicate
+   regions of interest between different parts of the dHLT system. This is more
+   efficient than sending 20 byte long region of interest objects.
+ */
+
 #ifndef ALIHLTMUONCOREREGIONOFINTEREST_H
 #define ALIHLTMUONCOREREGIONOFINTEREST_H
 
@@ -13,13 +19,11 @@
 #include "Cluster.hpp"
 
 
-const Int gkNUMBER_OF_TRACKING_CHAMBERS = 10;
-
 typedef UInt AliHLTMUONCoreROI;
 
 enum
 {
-	kINVALID_ROI = 0xFFFFFFFF
+	kInvalidROI = 0xFFFFFFFF
 };
 
 
@@ -42,11 +46,6 @@ enum AliHLTMUONCoreChamberID
 };
 
 
-/* The region of interest object is used to encode/decode and work with boundary
-   box type regions of interest. The 32 bit ROI codes are used to communicate
-   regions of interest between different parts of the dHLT system. This is more
-   efficient than sending 20 byte long region of interest objects.
- */
 class AliHLTMUONCoreRegionOfInterest
 {
 public:
@@ -91,29 +90,13 @@ public:
 	   the specified chamber.
 	 */
 	AliHLTMUONCoreRegionOfInterest(
-			Float left0, Float right0, Float bottom0, Float top0,
-			AliHLTMUONCoreChamberID chamber0
-		)
-	{
-		Assert( 0 <= chamber0 && chamber0 < gkNUMBER_OF_TRACKING_CHAMBERS );
-		this->fChamber = chamber0;
-		this->fLeft = left0;
-		this->fRight = right0;
-		this->fBottom = bottom0;
-		this->fTop = top0;
-	}
-
+			Float left, Float right, Float bottom, Float top,
+			AliHLTMUONCoreChamberID chamber
+		);
 
 	/* Checks if the point is contained in this region of interest.
 	 */
-	bool Contains(const AliHLTMUONCoreClusterPoint& point) const
-	{
-		return fLeft <= point.fX
-		  && point.fX <= fRight
-		  && fBottom <= point.fY
-		  && point.fY <= fTop;
-	}
-
+	bool Contains(const AliHLTMUONCoreClusterPoint& point) const;
 
 	/* Checks if the point is contained in this region of interest and the
 	   chamber number corresponds to this region object.
@@ -121,28 +104,12 @@ public:
 	bool Contains(
 			const AliHLTMUONCoreClusterPoint& point,
 			AliHLTMUONCoreChamberID chamber
-		) const
-	{
-		return fLeft <= point.fX
-		  && point.fX <= fRight
-		  && fBottom <= point.fY
-		  && point.fY <= fTop
-		  && this->fChamber == chamber;
-	}
-
+		) const;
 
 	/* Checks if the specified region of interest is contained in this
 	   region of interest object.
 	 */
-	bool Contains(const AliHLTMUONCoreRegionOfInterest& roi) const
-	{
-		return fChamber == roi.fChamber
-		  && fLeft <= roi.fLeft
-		  && fRight >= roi.fRight
-		  && fBottom <= roi.fBottom
-		  && fTop >= roi.fTop;
-	}
-
+	bool Contains(const AliHLTMUONCoreRegionOfInterest& roi) const;
 
 	/* Creates a region of interest around the given point for the
 	   specified chamber.
@@ -247,10 +214,11 @@ private:
 			UChar& colevel, UInt& l, UInt& b
 		);
 
+	enum {kNumberOfTrackingChambers = 10};  // Number of tracking chambers.
 
 	// Boundary box scale numbers for each chamber. These are the boundary
 	// boxes around the chambers detection surface.
-	static Float fgPlaneScale[gkNUMBER_OF_TRACKING_CHAMBERS];
+	static Float fgPlaneScale[kNumberOfTrackingChambers];  // scale numbers.
 
 	static UInt fgIndexOffsets[13];  // Offset numbers used in the encoding and decoding process.
 
@@ -263,4 +231,68 @@ private:
 };
 
 
+//-----------------------------------------------------------------------------
+// Inline methods:
+
+
+inline AliHLTMUONCoreRegionOfInterest::AliHLTMUONCoreRegionOfInterest(
+		Float left, Float right, Float bottom, Float top,
+		AliHLTMUONCoreChamberID chamber
+	)
+{
+// Creates a region of interest with the specified boundaries and for
+// the specified chamber.
+
+	Assert( 0 <= chamber && chamber < (AliHLTMUONCoreChamberID)kNumberOfTrackingChambers );
+	fChamber = chamber;
+	fLeft = left;
+	fRight = right;
+	fBottom = bottom;
+	fTop = top;
+}
+
+
+inline bool AliHLTMUONCoreRegionOfInterest::Contains(const AliHLTMUONCoreClusterPoint& point) const
+{
+// Checks if the point is contained in this region of interest.
+
+	return fLeft <= point.fX
+	  && point.fX <= fRight
+	  && fBottom <= point.fY
+	  && point.fY <= fTop;
+}
+
+
+inline bool AliHLTMUONCoreRegionOfInterest::Contains(
+		const AliHLTMUONCoreClusterPoint& point,
+		AliHLTMUONCoreChamberID chamber
+	) const
+{
+// Checks if the point is contained in this region of interest and the
+// chamber number corresponds to this region object.
+
+	return fLeft <= point.fX
+	  && point.fX <= fRight
+	  && fBottom <= point.fY
+	  && point.fY <= fTop
+	  && fChamber == chamber;
+}
+
+
+inline bool AliHLTMUONCoreRegionOfInterest::Contains(
+		const AliHLTMUONCoreRegionOfInterest& roi
+	) const
+{
+// Checks if the specified region of interest is contained in this
+// region of interest object.
+
+	return fChamber == roi.fChamber
+	  && fLeft <= roi.fLeft
+	  && fRight >= roi.fRight
+	  && fBottom <= roi.fBottom
+	  && fTop >= roi.fTop;
+}
+
+
 #endif // ALIHLTMUONCOREREGIONOFINTEREST_H
+

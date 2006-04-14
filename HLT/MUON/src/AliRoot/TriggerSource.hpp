@@ -5,6 +5,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* AliHLTMUONTriggerSource is used to extract L0 trigger information for
+   the muon spectrometer from a simulated event stored in .root files by AliRoot.
+   It is used by the AliHLTMUONMicrodHLT class as a input data set for the
+   dHLT algorithm.
+ */
+
 #ifndef ALIHLTMUONTRIGGERSOURCE_H
 #define ALIHLTMUONTRIGGERSOURCE_H
 
@@ -25,15 +31,15 @@ public:
 
 	enum AreaType
 	{
-		FromWholePlane,
-		FromLeftHalfPlane,
-		FromRightHalfPlane
+		kFromWholePlane,
+		kFromLeftHalfPlane,
+		kFromRightHalfPlane
 	};
 	
 	enum SourceType
 	{
-		FromHits,
-		FromLocalTriggers
+		kFromHits,
+		kFromLocalTriggers
 	};
 
 
@@ -196,7 +202,7 @@ public:
 
 private:
 
-	/* Adds a new EventData block to the fEventList and updates the fCurrentEvent,
+	/* Adds a new AliEventData block to the fEventList and updates the fCurrentEvent,
 	   fCurrentBlock and fCurrentTrigger pointers.
 	 */ 
 	void AddEvent(Int_t eventnumber);
@@ -233,7 +239,7 @@ private:
 	   we want to fill from.
 	   kTRUE is returned if (x, y) is in the region, and kFALSE otherwise.
 	 */
-	Bool_t InFillRegion(const AliHLTMUONTriggerRecord& data);
+	Bool_t InFillRegion(const AliHLTMUONTriggerRecord& data) const;
 	
 	/* Fills the trigger data from the AliMUONLocalTrigger object.
 	   if the fUseLookupTable is set to true then we use the L0 lookup table to
@@ -254,7 +260,7 @@ private:
 	   by the runloader if it has not yet been loaded. In such a case the AliRun object
 	   will also we unloaded when we are done with it.
 	   kTRUE is returned if no error occured and kFALSE otherwise.
-	   Note that if fDataToUse is set to FromHits then gAlice is not loaded and 'module'
+	   Note that if fDataToUse is set to kFromHits then gAlice is not loaded and 'module'
 	   will be left untouched. The method will still return kTRUE however since this is
 	   not an error. We do not need the AliMUON module when filling from hits.
 	 */
@@ -282,20 +288,30 @@ private:
 
 public:  // Unfortunately ROOT requires the following to be public.
 
-	class EventData : public TObject
+	class AliEventData : public TObject
 	{
 	public:
-		EventData();
-		EventData(Int_t eventnumber);
-		virtual ~EventData();
+		AliEventData();
+		AliEventData(Int_t eventnumber);
+		virtual ~AliEventData();
+		
+		Int_t& EventNumber() { return fEventNumber; }
+		TClonesArray& Blocks() { return fBlocks; }
 
+	private:
+	
 		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the triggers were taken.
 		TClonesArray fBlocks; // The list of blocks of trigger records.
 		
-		ClassDef(EventData, 1)  // Data per event.
+		ClassDef(AliEventData, 1)  // Data per event.
 	};
 	
 private:
+
+	// Do not allow copying of this object.
+	AliHLTMUONTriggerSource(const AliHLTMUONTriggerSource& /*object*/) : TObject() {}
+	AliHLTMUONTriggerSource& operator = (const AliHLTMUONTriggerSource& /*object*/) { return *this; }
+
 
 	AreaType fAreaToUse;    //! The part of the chamber to fill from.
 	SourceType fDataToUse;  //! The type of raw AliRoot data to fill from.
@@ -306,7 +322,7 @@ private:
 	TString fFoldername;  // The folder name from which trigger data was taken.
 	
 	mutable Int_t fEventIndex;               //! The index number of the currently selected event.
-	mutable EventData* fCurrentEvent;        //! Pointer to the currently selected event.
+	mutable AliEventData* fCurrentEvent;        //! Pointer to the currently selected event.
 	mutable Int_t fBlockIndex;               //! The index number of the currently selected block.
 	mutable TClonesArray* fCurrentBlock;     //! Pointer to the currently selected block.
 	mutable Int_t fTriggerIndex;             //! The index number of the currently selected trigger record.

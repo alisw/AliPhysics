@@ -5,13 +5,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* AliHLTMUONCoreError is the base excpetion class used by the dHLT subsystem.
+   All child classes used to throw exception should be derived from this
+   class to allow easy catching of classes of errors.
+   
+   AliHLTMUONCoreOutOfMemory is also defined to be used when the system runs
+   out of memory. Do not throw this object directly but rather use
+   AliHLTMUONCoreThrowOutOfMemory which throws a pree allocated static object.
+ */
+ 
 #include "Error.hpp"
 #include "Utils.hpp"
 
 namespace
 {
 	// The one and only pree allocated out of memory error object.
-	static AliHLTMUONCoreOutOfMemory _out_of_memory_;
+	static AliHLTMUONCoreOutOfMemory gAliOutOfMemObject;
 
 } // end of namespace
 
@@ -23,11 +32,11 @@ const char* AliHLTMUONCoreOutOfMemory::Message() const throw()
 
 Int AliHLTMUONCoreOutOfMemory::ErrorCode() const throw()
 {
-	return kOUT_OF_MEMORY;
+	return kOutOfMemory;
 }
 
 void AliHLTMUONCoreThrowOutOfMemory() throw (AliHLTMUONCoreOutOfMemory)
 {
-	throw _out_of_memory_;
+	throw gAliOutOfMemObject;
 }
 

@@ -35,16 +35,16 @@
 #pragma link C++ class AliHLTMUONTriggerSource+;
 #pragma link C++ enum AliHLTMUONTriggerSource::AreaType+;
 #pragma link C++ enum AliHLTMUONTriggerSource::SourceType+;
-#pragma link C++ class AliHLTMUONTriggerSource::EventData+;
+#pragma link C++ class AliHLTMUONTriggerSource::AliEventData+;
 
 #pragma link C++ class AliHLTMUONClusterSource+;
 #pragma link C++ enum AliHLTMUONClusterSource::AreaType+;
 #pragma link C++ enum AliHLTMUONClusterSource::SourceType+;
-#pragma link C++ class AliHLTMUONClusterSource::BlockData+;
-#pragma link C++ class AliHLTMUONClusterSource::EventData+;
+#pragma link C++ class AliHLTMUONClusterSource::AliBlockData+;
+#pragma link C++ class AliHLTMUONClusterSource::AliEventData+;
 
 #pragma link C++ class AliHLTMUONTrackSink+;
-#pragma link C++ class AliHLTMUONTrackSink::EventData+;
+#pragma link C++ class AliHLTMUONTrackSink::AliEventData+;
 
 #pragma link C++ class AliHLTMUONTrackerInterface+;
 #pragma link C++ class AliHLTMUONTrackerCallback+;

@@ -77,7 +77,7 @@ AliHLTMUONTrack AliHLTMUONConvert(const AliHLTMUONCoreTrack& track)
 		
 		// Only convert if the ROI is valid. Otherwise the Region object
 		// is filled with NaN's.
-		if (track.fRegion[i] != kINVALID_ROI)
+		if (track.fRegion[i] != kInvalidROI)
 			t.RegionOfInterest(i) = AliHLTMUONConvert( track.fRegion[i] );
 	}
 	return t;

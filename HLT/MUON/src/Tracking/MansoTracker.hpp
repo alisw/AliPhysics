@@ -70,13 +70,13 @@ public:
 
 protected:
 
-	class RegionOfInterest
+	class AliRegionOfInterest
 	{
 	public:
 		
-		RegionOfInterest() {};
+		AliRegionOfInterest() {};
 
-		RegionOfInterest(AliHLTMUONCorePoint p, Float a, Float b)
+		AliRegionOfInterest(AliHLTMUONCorePoint p, Float a, Float b)
 		{
 			Create(p, a, b);
 		};
@@ -98,7 +98,7 @@ protected:
 		 */
 		bool Contains(AliHLTMUONCorePoint p) const;
 
-		void GetBoundaryBox(Float& left, Float& right, Float& bottom, Float& top);
+		void GetBoundaryBox(Float& left, Float& right, Float& bottom, Float& top) const;
 
 	private:
 
@@ -107,38 +107,51 @@ protected:
 	};
 
 
-	class Vertex
+	class AliVertex
 	{
 	public:
 
-		Float fX, fY, fZ;
-
-		Vertex(Float x = 0.0, Float y = 0.0, Float z = 0.0);
-		Vertex(AliHLTMUONCorePoint xy, Float z);
+		AliVertex(Float x = 0.0, Float y = 0.0, Float z = 0.0);
+		AliVertex(AliHLTMUONCorePoint xy, Float z);
 
 		AliHLTMUONCorePoint AsXYPoint() const
 		{
 			return AliHLTMUONCorePoint(fX, fY);
 		};
+
+		// Get/set methods:
+		Float X() const { return fX; };
+		Float Y() const { return fY; };
+		Float Z() const { return fZ; };
+		Float& X() { return fX; };
+		Float& Y() { return fY; };
+		Float& Z() { return fZ; };
+		void X(Float value) { fX = value; };
+		void Y(Float value) { fY = value; };
+		void Z(Float value) { fZ = value; };
+
+	private:
+
+		Float fX, fY, fZ; // 3D coordinates.
 	};
 
 	
-	class Line
+	class AliLine
 	{
 	public:
 
 		/* Creates a vector line between points A and B.
-		   Ax, Ay, Az are x, y and z coordinates for space point A respectively.
+		   ax, ay, az are x, y and z coordinates for space point A respectively.
 		   simmilarly for B.
 		 */
-		Line(
-			Float Ax = 0.0, Float Ay = 0.0, Float Az = 0.0,
-			Float Bx = 0.0, Float By = 0.0, Float Bz = 0.0
+		AliLine(
+			Float ax = 0.0, Float ay = 0.0, Float az = 0.0,
+			Float bx = 0.0, Float by = 0.0, Float bz = 0.0
 		);
 
 		/* Creates a vector line between vertices A and B.
 		 */
-		Line(Vertex A, Vertex B);
+		AliLine(AliVertex a, AliVertex b);
 
 		/* Finds the intersection point with the xy plain specified by the z coordinate.
 		   The z coordiante would be the distance of the n'th chamber to the interaction
@@ -149,36 +162,36 @@ protected:
 	private:
 
 		// Parameters for the vector line:  L = M*t + C
-		Float fMx, fMy, fMz, fCx, fCy, fCz;
+		Float fMx, fMy, fMz, fCx, fCy, fCz;  // line parameters.
 	};
 
 	
-	struct TagData
+	struct AliTagData
 	{
 		AliHLTMUONCoreChamberID fChamber;     // The chamber on which the region of interest lies.
-		RegionOfInterest fRoi;  // Region of interest on the next station.
-		Line fLine;             // line between a cluster point and the previous station.
+		AliRegionOfInterest fRoi;  // Region of interest on the next station.
+		AliLine fLine;             // line between a cluster point and the previous station.
 	};
 	
-	struct Station5Data
+	struct AliStation5Data
 	{
 		AliHLTMUONCoreClusterPoint fClusterPoint;  // Cluster point found on station 5.
-		TagData fTag;
+		AliTagData fTag;  // Chamber, ROI and line data for station 5.
 	};
 	
-	typedef AliHLTMUONCoreCountedList<Station5Data> Station5List;
+	typedef AliHLTMUONCoreCountedList<AliStation5Data> Station5List;
 
-	struct Station4Data
+	struct AliStation4Data
 	{
 		AliHLTMUONCoreClusterPoint fClusterPoint;  // Cluster point found on station 4.
-		const TagData* fSt5tag;      // Corresponding station 5 tag.
+		const AliTagData* fSt5tag;      // Corresponding station 5 tag.
 	};
 
-	typedef AliHLTMUONCoreList<Station4Data> Station4List;
+	typedef AliHLTMUONCoreList<AliStation4Data> Station4List;
 	
 	
-	void ReceiveClustersChamber7(const AliHLTMUONCoreClusterPoint* clusters, UInt count, const TagData* data);
-	void ReceiveClustersChamber8(const AliHLTMUONCoreClusterPoint* clusters, UInt count, const TagData* data);
+	void ReceiveClustersChamber7(const AliHLTMUONCoreClusterPoint* clusters, UInt count, const AliTagData* data);
+	void ReceiveClustersChamber8(const AliHLTMUONCoreClusterPoint* clusters, UInt count, const AliTagData* data);
 	void ReceiveClustersChamber9(const AliHLTMUONCoreClusterPoint* clusters, UInt count);
 	void ReceiveClustersChamber10(const AliHLTMUONCoreClusterPoint* clusters, UInt count);
 	void EndOfClustersChamber7();
@@ -186,7 +199,7 @@ protected:
 	void EndOfClustersChamber9();
 	void EndOfClustersChamber10();
 
-	void ProjectToStation4(Station5Data* data, register Float station5z);
+	void ProjectToStation4(AliStation5Data* data, register Float station5z);
 	void ProcessClusters();
 
 #if defined(DEBUG) || (defined(USE_ALILOG) && ! defined(LOG_NO_DEBUG))
@@ -220,8 +233,8 @@ protected:
 	UInt fRequestsCompleted;  // Number of requests for station 4 that have completed.
 	AliHLTMUONCoreChamberID fSt4chamber;     // The chamber on station 4 that data was retreived from.
 	
-	Vertex fV1;    // The impact (hit) vertex for trigger station 1.
-	TagData fMc1;  // Trigger station 1 data.
+	AliVertex fV1;    // The impact (hit) vertex for trigger station 1.
+	AliTagData fMc1;  // Trigger station 1 data.
 
 	Float fSt5z;   // The z coordinate to use for station 5.
 	Station5List fSt5data;  // List of found cluster points for station 5 and their tag data.
@@ -229,8 +242,8 @@ protected:
 	Station4List fSt4points;  // The found cluster points for station 4.
 
 	// Iterators used in the FoundTrack, FillTrackData methods.
-	Station5List::Iterator fSt5rec;
-	Station4List::Iterator fFoundPoint;
+	Station5List::Iterator fSt5rec;      // current station 5 record
+	Station4List::Iterator fFoundPoint;  // current found point
 
 private:
 

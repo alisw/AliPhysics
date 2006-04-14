@@ -57,7 +57,7 @@ Int_t AliHLTMUONTracker::LoadClusters(TTree* data)
 	AliDebug(2, Form("Loading for event %d", di.CurrentEvent()));
 
 	// Load the trigger records.
-	fTriggers->DataToUse(AliHLTMUONTriggerSource::FromLocalTriggers);
+	fTriggers->DataToUse(AliHLTMUONTriggerSource::kFromLocalTriggers);
 	fTriggers->FillFrom(&di, di.CurrentEvent());
 
 #ifndef LOG_NO_DEBUG
@@ -86,7 +86,7 @@ Int_t AliHLTMUONTracker::LoadClusters(TTree* data)
 #endif // LOG_NO_DEBUG
 
 	// Load cluster points (reconstructed hits)
-	fClusters->DataToUse(AliHLTMUONClusterSource::FromRawClusters);
+	fClusters->DataToUse(AliHLTMUONClusterSource::kFromRawClusters);
 	fClusters->FillFrom(&di, di.CurrentEvent());
 
 #ifndef LOG_NO_DEBUG

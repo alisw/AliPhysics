@@ -5,6 +5,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* AliHLTMUONMicrodHLT is a minimalist framework for the dHLT tracking algorithm
+   to run in. It integrates all the internal components to execute the algorithm
+   properly.
+   To run the dHLT with the default Manso algorithm one performs the following
+   steps (Assuming we have an initialise AliMUONDataInterface object called
+   data):
+
+     // Create a trigger source for the track seeds and populate it with data.
+     AliHLTMUONTriggerSource ts(data);
+     // We also need the cluster points.
+     AliHLTMUONClusterSource cs(data);
+     // Need a track sink to store the output data.
+     AliHLTMUONTrackSink output;
+
+     // Now we need the framework created and hook up the input and output.
+     AliHLTMUONMicrodHLT dhlt;
+     dhlt.SetTriggerSource(&ts);
+     dhlt.SetClusterSource(&ts);
+     dhlt.SetTrackSink(&output);
+
+     // And finally run the algorithm.
+     dhlt.Run();
+ */
+
 #ifndef ALIHLTMUONMICRODHLT_H
 #define ALIHLTMUONMICRODHLT_H
 
@@ -87,6 +111,10 @@ public:
 	static Int_t DebugLevel();
 	
 private:
+	
+	// Do not allow copying of this object.
+	AliHLTMUONMicrodHLT(const AliHLTMUONMicrodHLT& /*object*/) : TObject() {}
+	AliHLTMUONMicrodHLT& operator = (const AliHLTMUONMicrodHLT& /*object*/) { return *this; }
 
 	AliHLTMUONTriggerSource* fTriggerSource;           //! Trigger record input source.
 	AliHLTMUONClusterSource* fClusterSource;           //! Cluster point input source.

@@ -5,6 +5,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* AliHLTMUONTrackSink is used as the output target object by AliHLTMUONMicrodHLT.
+   It is just a fancy buffer to store tracks that are found by the dHLT
+   algorithm.
+ */
+
 #ifndef ALIHLTMUONTRACKSINK_H
 #define ALIHLTMUONTRACKSINK_H
 
@@ -25,7 +30,7 @@ public:
 	AliHLTMUONTrackSink();
 	virtual ~AliHLTMUONTrackSink();
 	
-	/* Adds a new EventData block to the fEventList and updates internal pointers.
+	/* Adds a new AliEventData block to the fEventList and updates internal pointers.
 	   Cannot have duplicate event numbers so this method will display an error
 	   message if one attempts to add the same event number more than once.
 	 */ 
@@ -178,20 +183,29 @@ public:
 
 public:  // Unfortunately ROOT requires the following to be public.
 
-	class EventData : public TObject
+	class AliEventData : public TObject
 	{
 	public:
-		EventData();
-		EventData(Int_t eventnumber);
-		virtual ~EventData();
+		AliEventData();
+		AliEventData(Int_t eventnumber);
+		virtual ~AliEventData();
 
+		Int_t& EventNumber() { return fEventNumber; }
+		TClonesArray& Blocks() { return fBlocks; }
+
+	private:
+	
 		Int_t fEventNumber;  // Event number for this set of track blocks.
 		TClonesArray fBlocks;  // The list of track blocks for this event.
 		
-		ClassDef(EventData, 1);  // Data per event.
+		ClassDef(AliEventData, 1);  // Data per event.
 	};
 
 private:
+
+	// Do not allow copying of this object.
+	AliHLTMUONTrackSink(const AliHLTMUONTrackSink& /*object*/) : TObject() {}
+	AliHLTMUONTrackSink& operator = (const AliHLTMUONTrackSink& /*object*/) { return *this; }
 
 	/* Sets all the current pointers to NULL and indices to -1.
 	 */
@@ -209,7 +223,7 @@ private:
 	TString fFoldername;  // The folder name from which track data was taken.
 	
 	mutable Int_t fEventIndex;            //! The current event index number.
-	mutable EventData* fCurrentEvent;     //! Pointer to the currently selected event.
+	mutable AliEventData* fCurrentEvent;     //! Pointer to the currently selected event.
 	mutable Int_t fBlockIndex;            //! The current block index number.
 	mutable TClonesArray* fCurrentBlock;  //! Pointer to the currently selected block.
 	mutable Int_t fTrackIndex;            //! The current track index number.

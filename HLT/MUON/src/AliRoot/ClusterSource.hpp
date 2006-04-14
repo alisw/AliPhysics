@@ -5,6 +5,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* AliHLTMUONClusterSource is used to extract cluster points from the data
+   stored in a root file for a AliRoot simulated event.
+   It is used by AliHLTMUONMicrodHLT as the input data set object.
+ */
+
 #ifndef ALIHLTMUONCLUSTERSOURCE_H
 #define ALIHLTMUONCLUSTERSOURCE_H
 
@@ -23,15 +28,15 @@ public:
 
 	enum AreaType
 	{
-		FromWholePlane,
-		FromLeftHalfPlane,
-		FromRightHalfPlane
+		kFromWholePlane,
+		kFromLeftHalfPlane,
+		kFromRightHalfPlane
 	};
 	
 	enum SourceType
 	{
-		FromHits,
-		FromRawClusters
+		kFromHits,
+		kFromRawClusters
 	};
 
 	AliHLTMUONClusterSource();
@@ -196,7 +201,7 @@ public:
 
 private:
 
-	/* Adds a new EventData block to the fEventList and updates the fCurrentEvent,
+	/* Adds a new AliEventData block to the fEventList and updates the fCurrentEvent,
 	   fCurrentBlock and fCurrentCluster pointers.
 	 */ 
 	void AddEvent(Int_t eventnumber);
@@ -240,7 +245,7 @@ private:
 	   chamber region we want to fill from.
 	   kTRUE is returned if (x, y) is in the region, and kFALSE otherwise.
 	 */
-	Bool_t InFillRegion(Float_t x, Float_t y);
+	Bool_t InFillRegion(Float_t x, Float_t y) const;
 
 	/* Sets all the current pointers to NULL and indices to -1.
 	 */
@@ -257,34 +262,48 @@ private:
 
 public:  // Unfortunately ROOT requires the following to be public.
 	
-	class BlockData : public TObject
+	class AliBlockData : public TObject
 	{
 	public:
-		BlockData();
-		BlockData(Int_t chamber);
-		virtual ~BlockData();
+		AliBlockData();
+		AliBlockData(Int_t chamber);
+		virtual ~AliBlockData();
+
+		Int_t& Chamber() { return fChamber; };
+		TClonesArray& Clusters() { return fClusters; };
+
+	private:
 
 		Int_t fChamber;  // The chamber number this block of clusters came from.
 		TClonesArray fClusters;  // The cluster points in this block.
 		
-		ClassDef(BlockData, 1);  // Data per block.
+		ClassDef(AliBlockData, 1);  // Data per block.
 	};
 	
-	class EventData : public TObject
+	class AliEventData : public TObject
 	{
 	public:
-		EventData();
-		EventData(Int_t eventnumber);
-		virtual ~EventData();
+		AliEventData();
+		AliEventData(Int_t eventnumber);
+		virtual ~AliEventData();
+
+		Int_t& EventNumber() { return fEventNumber; };
+		TClonesArray& Blocks() { return fBlocks; };
+
+	private:
 
 		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the clusters were taken.
 		TClonesArray fBlocks;  // The list of cluster blocks for this event.
 		
-		ClassDef(EventData, 1);  // Data per event.
+		ClassDef(AliEventData, 1);  // Data per event.
 	};
 
 
 private:
+
+	// Dont allow copying.
+	AliHLTMUONClusterSource(const AliHLTMUONClusterSource& /*object*/) : TObject() {};
+	AliHLTMUONClusterSource& operator = (const AliHLTMUONClusterSource& /*object*/) { return *this; };
 
 	AreaType fAreaToUse;    //! The part of the chamber to fill from.
 	SourceType fDataToUse;  //! The type of raw AliRoot data to fill from.
@@ -294,9 +313,9 @@ private:
 	TString fFoldername;  // The folder name from which cluster data was taken.
 	
 	mutable Int_t fEventIndex;             //! The index number of the currently selected event.
-	mutable EventData* fCurrentEvent;      //! Pointer to the currently selected event.
+	mutable AliEventData* fCurrentEvent;      //! Pointer to the currently selected event.
 	mutable Int_t fBlockIndex;             //! The index number of the currently selected block.
-	mutable BlockData* fCurrentBlock;      //! Pointer to the currently selected block.
+	mutable AliBlockData* fCurrentBlock;      //! Pointer to the currently selected block.
 	mutable Int_t fClusterIndex;           //! The index number of the currently selected cluster point.
 	mutable AliHLTMUONPoint* fCurrentCluster;        //! Pointer to the currently selected cluster point.
 

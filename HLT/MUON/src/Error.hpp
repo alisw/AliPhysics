@@ -5,6 +5,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* AliHLTMUONCoreError is the base excpetion class used by the dHLT subsystem.
+   All child classes used to throw exception should be derived from this
+   class to allow easy catching of classes of errors.
+   
+   AliHLTMUONCoreOutOfMemory is also defined to be used when the system runs
+   out of memory. Do not throw this object directly but rather use
+   AliHLTMUONCoreThrowOutOfMemory which throws a pree allocated static object.
+ */
+
 #ifndef ALIHLTMUONCOREERROR_H
 #define ALIHLTMUONCOREERROR_H
 
@@ -15,6 +24,17 @@
 
 class AliHLTMUONCoreError : public std::exception
 {
+	/* Define the << operator for streams to be able to do something like:
+
+               Error myerror;
+               cout << myerror << endl;
+	*/
+	friend ostream& operator << (ostream& os, const AliHLTMUONCoreError& error)
+	{
+		os << error.Message();
+		return os;
+	};
+	
 public:
 
 	AliHLTMUONCoreError() throw() {};
@@ -34,17 +54,6 @@ public:
 	{
 		return Message();
 	};
-	
-	/* Define the << operator for streams to be able to do something like:
-
-               Error myerror;
-               cout << myerror << endl;
-	*/
-	friend ostream& operator << (ostream& os, const AliHLTMUONCoreError& error)
-	{
-		os << error.Message();
-		return os;
-	};
 };
 
 
@@ -57,7 +66,7 @@ public:
 
 
 /* When one needs to indicate that no more memory is available one should use the
-   ThrowOutOfMemory method rather than explicitly using the code
+   AliHLTMUONCoreThrowOutOfMemory method rather than explicitly using the code
        throw OutOfMemory();
    This is because the ThrowOutOfMemory routine throws a preallocated object so
    we are safe from having to allocate more (nonexistant) memory.
@@ -68,7 +77,7 @@ void AliHLTMUONCoreThrowOutOfMemory() throw (AliHLTMUONCoreOutOfMemory);
 // Error code declarations.
 enum
 {
-	kOUT_OF_MEMORY = 0x10000001
+	kOutOfMemory = 0x10000001
 };
 
 

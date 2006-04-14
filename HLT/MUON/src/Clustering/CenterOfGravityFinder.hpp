@@ -25,7 +25,7 @@ public:
 	virtual void Reset();
 
 private:
-
+/*
 	FILE* fLut13;
 	FILE* fLut14;
 	FILE* fLut15;
@@ -42,7 +42,7 @@ private:
 	UInt_t fDigitMax; // maximum number of padhits in columns or rows.
 	UInt_t fDDLMax; // Maximum number of padhits in one ddl;
 	UInt_t fDDLTot; // totoal number of padhits in one ddl;
-
+*/
 };
 
 
