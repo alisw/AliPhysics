@@ -20,7 +20,8 @@ MakeCalibration()
 
   gSystem->Load("libFMDutil.so");
   AliFMDCalibFaker f(AliFMDCalibFaker::kAll, 0);
-  f.SetGainSeed(30);
+  f.SetRunRange(0,0);
+  f.SetGainSeed(.002272);
   f.SetThresholdFactor(3);
   f.SetPedestalRange(20,40);
   f.SetDeadChance(0);

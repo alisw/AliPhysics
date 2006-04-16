@@ -72,6 +72,7 @@ public:
   { 
     fPrimary = primary;
     AddLoad(kRecPoints);
+    AddLoad(kHits);
     if (fPrimary) AddLoad(kKinematics);
     TArrayF eloss(MakeLogScale(n, emin, emax));
     TArrayF mults(m+1);

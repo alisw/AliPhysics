@@ -19,6 +19,7 @@
 #include <iostream>
 #include <TStyle.h>
 #include <TArrayF.h>
+#include <AliLog.h>
 
 /** @class DrawHitsDigits
     @brief Draw hit energy loss versus digit ADC
@@ -30,7 +31,7 @@
     @endcode
     @ingroup FMD_script
  */
-class DrawHitsDigits : public AliFMDInputHits
+class DrawHitsDigits : public AliFMDInput
 {
 private:
   TH2D* fElossVsAdc; // Histogram 
@@ -54,6 +55,7 @@ public:
 		 Int_t m=1100, Double_t amin=-0.5, Double_t amax=1099.5) 
   { 
     AddLoad(kDigits);
+    AddLoad(kHits);
     TArrayF eloss(MakeLogScale(n, emin, emax));
     TArrayF adcs(m+1);
     adcs[0] = amin;
@@ -70,7 +72,7 @@ public:
   Bool_t Begin(Int_t ev) 
   {
     fMap.Reset();
-    return AliFMDInputHits::Begin(ev);
+    return AliFMDInput::Begin(ev);
   }
   //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle*) 
@@ -92,7 +94,7 @@ public:
   //__________________________________________________________________
   Bool_t ProcessDigit(AliFMDDigit* digit)
   {
-    if (!digit) continue;
+    if (!digit) return kFALSE;
     UShort_t det = digit->Detector();
     Char_t   rng = digit->Ring();
     UShort_t sec = digit->Sector();

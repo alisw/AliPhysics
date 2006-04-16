@@ -34,7 +34,7 @@
     @endcode
     @ingroup FMD_script
  */
-class DrawDigitsRecs : public AliFMDInputDigits
+class DrawDigitsRecs : public AliFMDInput
 {
 private:
   TH2D* fAdcVsSingle; // Histogram 
@@ -57,6 +57,7 @@ public:
   DrawDigitsRecs(Int_t m=1100, Double_t amin=-0.5, Double_t amax=1099.5,
 		 Int_t n=105, Double_t mmin=-0.5, Double_t mmax=20.5) 
   { 
+    AddLoad(kDigits);
     AddLoad(kRecPoints);
     fAdcVsSingle = new TH2D("adcVsSingle", "ADC vs. Multiplicity (strip)", 
 			    m, amin, amax, n, mmin, mmax);

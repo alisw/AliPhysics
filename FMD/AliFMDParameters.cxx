@@ -39,6 +39,7 @@
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
 #include <Riostream.h>
+#include <sstream>
 
 //====================================================================
 ClassImp(AliFMDParameters)
@@ -120,6 +121,32 @@ AliFMDParameters::Print(Option_t* option) const
   // If option contains an 'A' then everything is printed. 
   TString opt(option);
   Bool_t showStrips = opt.Contains("a", TString::kIgnoreCase);
+  if (opt.Contains("fmd",TString::kIgnoreCase)) {
+    size_t   i   = opt.Index("fmd",TString::kIgnoreCase);
+    size_t   j   = opt.Index("]",TString::kIgnoreCase);
+    UShort_t det, sec, str;
+    Char_t ring, lbrack, rbrack, comma;
+    UInt_t ddl, addr;
+    Detector2Hardware(det, ring, sec, str, ddl, addr);
+    std::stringstream s(opt(i+4, j-i-3).Data());
+    s >> det >> ring >> lbrack >> sec >> comma >> str >> rbrack;
+    std::cout 
+      << "     Strip    |     Pedestal      |    Gain    | ZS thr. | Address\n"
+      << "--------------+-------------------+------------+---------+---------" 
+      << "\nFMD" << det << ring << "[" << std::setw(2) << sec << "," 
+      << std::setw(3) << str << "] | " 
+      << std::setw(7) << GetPedestal(det, ring, sec, str) 
+      << "+/-" << std::setw(7) 
+      << GetPedestalWidth(det, ring, sec, str) 
+      << " | " << std::setw(10) 
+      << GetPulseGain(det, ring, sec, str) 
+      << " | " << std::setw(7) 
+      << GetZeroSuppression(det, ring, sec, str) 
+      << " | 0x" << std::hex << std::setw(4) 
+      << std::setfill('0') << ddl << ",0x" << std::setw(3) 
+      << addr << std::dec << std::setfill(' ') << std::endl;
+    return;
+  }
   for (UShort_t det=1 ; det <= 3; det++) {
     std::cout << "FMD" << det << std::endl;
     Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
@@ -137,8 +164,8 @@ AliFMDParameters::Print(Option_t* option) const
 		  << rate << std::endl;
 	if (!showStrips) continue;
 	std::cout 
-	  << "  Strip |     Pedestal      |   Gain   | ZS thr. | Address\n" 
-	  << "--------+-------------------+----------+---------+---------" 
+	  << "  Strip |     Pedestal      |    Gain    | ZS thr. | Address\n" 
+	  << "--------+-------------------+------------+---------+---------" 
 	  << std::endl;
         for (UShort_t str = 0; str < nStr; str++) {
 	  std::cout << "    " << std::setw(3) << str << " | ";
@@ -151,7 +178,7 @@ AliFMDParameters::Print(Option_t* option) const
 	  std::cout << std::setw(7) << GetPedestal(det, *ring, sec, str) 
 		    << "+/-" << std::setw(7) 
 		    << GetPedestalWidth(det, *ring, sec, str) 
-		    << " | " << std::setw(8) 
+		    << " | " << std::setw(10) 
 		    << GetPulseGain(det, *ring, sec, str) 
 		    << " | " << std::setw(5) 
 		    << GetZeroSuppression(det, *ring, sec, str) 

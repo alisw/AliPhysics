@@ -29,7 +29,7 @@
     @endcode
     @ingroup FMD_script
  */
-class DrawHits : public AliFMDInputHits
+class DrawHits : public AliFMDInput
 {
 private:
   TH2D* fElossVsPMQ; // Histogram 
@@ -59,6 +59,7 @@ public:
     : fPdg(pdg)
   { 
     AddLoad(kKinematics);
+    AddLoad(kHits);
     TArrayF tkine(MakeLogScale(n, tmin, tmax));
     TArrayF eloss(MakeLogScale(m, emin, emax));
     TString name(Form("elossVsP%s", (fPdg == 0 ? "MQ" : "")));

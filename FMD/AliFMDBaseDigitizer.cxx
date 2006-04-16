@@ -479,7 +479,9 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   
   // In case we don't oversample, just return the end value. 
   if (rate == 1) {
-    counts[0] = UShort_t(TMath::Min(edep * convF + ped, Float_t(size)));
+    counts[0] = UShort_t(TMath::Min(edep * convF + ped, Float_t(maxAdc)));
+    AliDebug(2, Form("FMD%d%c[%2d,%3d]: converting ELoss %f to ADC %d (%f)", 
+		     detector,ring,sector,strip,edep,counts[0],convF));
     return;
   }
   

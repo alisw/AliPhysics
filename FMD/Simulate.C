@@ -31,6 +31,7 @@ Simulate()
     TClonesArray* array = dynamic_cast<TClonesArray*>(align->GetObject());
     if (array) sim.SetAlignObjArray(array);
   }
+  AliLog::SetModuleDebugLevel("FMD", 2);
   sim.SetConfigFile("$(ALICE_ROOT)/FMD/Config.C");
   // sim.SetMakeSDigits("FMD");
   sim.SetMakeDigits("FMD"); 

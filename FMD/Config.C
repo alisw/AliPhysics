@@ -659,7 +659,6 @@ Config()
   if (useFMD) {
     // =================== FMD parameters ============================
     AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
-    AliLog::SetModuleDebugLevel("FMD", 1);
     // FMD->UseDetailed(kFALSE);
     // FMD->UseAssembly();
     // FMD->UseOld();

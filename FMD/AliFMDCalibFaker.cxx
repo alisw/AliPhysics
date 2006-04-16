@@ -88,7 +88,7 @@ AliFMDCalibFaker::Exec(Option_t*)
   // Make the objects. 
   AliCDBManager*     cdb      = AliCDBManager::Instance();
   AliFMDParameters*  param    = AliFMDParameters::Instance();
-  Float_t            maxADC   = param->GetAltroChannelSize();
+  Float_t            maxADC   = 1.F*param->GetAltroChannelSize();
   TObjArray          cleanup;
 
   if (GetTitle() && GetTitle()[0] != '\0') { 
@@ -99,8 +99,12 @@ AliFMDCalibFaker::Exec(Option_t*)
     
   AliCDBMetaData* meta = 0;
   if (TESTBIT(fMask, kPulseGain)) {
-    if (fGain <= 0) 
-      fGain      = (param->GetVA1MipRange() * param->GetEdepMip() / maxADC);
+    // Info("Exec","Default gain to %f = %d * %f / %d", 
+    //      (param->GetVA1MipRange() * param->GetEdepMip() / maxADC),
+    //      param->GetVA1MipRange(), param->GetEdepMip(), Int_t(maxADC));
+    if (fGain <= 0) {
+      fGain = (param->GetVA1MipRange() * param->GetEdepMip() / maxADC);
+    }
     fThreshold = fThresholdFactor * param->GetEdepMip();
     AliFMDCalibGain* gain = MakePulseGain();
     AliCDBId         id(AliFMDParameters::PulseGainPath(), fRunMin, fRunMax);
@@ -114,7 +118,7 @@ AliFMDCalibFaker::Exec(Option_t*)
     fPedestalMin = TMath::Max(TMath::Min(fPedestalMin, maxADC), 0.F);
     fPedestalMax = TMath::Max(TMath::Min(fPedestalMax, maxADC), fPedestalMin);
     AliFMDCalibPedestal* pedestal = MakePedestal();
-    AliCDBId             id(AliFMDParameters::PedestalPath(), fRunMin, fRunMax);
+    AliCDBId             id(AliFMDParameters::PedestalPath(),fRunMin,fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", pedestal);
     cdb->Put(pedestal, id, meta);
@@ -145,7 +149,8 @@ AliFMDCalibFaker::Exec(Option_t*)
   if (TESTBIT(fMask, kSampleRate)) {
     fRate = TMath::Max(TMath::Min(fRate, UShort_t(8)), UShort_t(1));
     AliFMDCalibSampleRate* rate = MakeSampleRate();
-    AliCDBId               id(AliFMDParameters::SampleRatePath(),fRunMin,fRunMax);
+    AliCDBId               id(AliFMDParameters::SampleRatePath(),
+			      fRunMin,fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", rate);
     cdb->Put(rate, id, meta);
@@ -155,7 +160,8 @@ AliFMDCalibFaker::Exec(Option_t*)
   if (TESTBIT(fMask, kStripRange)) {
     fRate = TMath::Max(TMath::Min(fRate, UShort_t(8)), UShort_t(1));
     AliFMDCalibStripRange* range = MakeStripRange();
-    AliCDBId               id(AliFMDParameters::StripRangePath(),fRunMin,fRunMax);
+    AliCDBId               id(AliFMDParameters::StripRangePath(),
+			      fRunMin,fRunMax);
     MAKE_META(meta);
     meta->SetProperty("key1", range);
     cdb->Put(range, id, meta);

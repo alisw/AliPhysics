@@ -106,7 +106,7 @@ struct Media : public TNamed
     @endcode
     @ingroup FMD_script
  */
-class GetMedia : public AliFMDInputHits
+class GetMedia : public AliFMDInput
 {
 private:
   TString    fModList;
@@ -124,6 +124,7 @@ public:
     :  fModList(modlist)
   { 
     AddLoad(kGeometry);
+    AddLoad(kHits);
     AddLoad(kKinematics);
 
     fOutput = TFile::Open(output, "RECREATE");
