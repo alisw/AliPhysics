@@ -108,47 +108,50 @@ ClassImp(AliSTARTReconstructor)
   clustersTree->Branch( "START", "AliSTARTRecPoint" ,&frecpoints, 405,1);
 
   Float_t time[24], adc[24];
-  for (Int_t ipmt=0; ipmt<24; ipmt++)
-    {
+  for (Int_t ipmt=0; ipmt<24; ipmt++) {
       
-         if(fTimeCFD->At(ipmt)>0 ){
-	 time[ipmt] = channelWidth *( fTimeCFD->At(ipmt)) - 1000*timeDelayCFD[ipmt];
-	 Float_t adc_digPs = channelWidth * Float_t (fADC->At(ipmt)) ;
-	 adc[ipmt] = TMath::Exp(adc_digPs/1000) /gain[ipmt];
-	 AliDebug(1,Form(" time %f ps,  adc %f mv in MIP %i\n ",
-			 time[ipmt], adc[ipmt], Int_t (adc[ipmt]/mV2Mip +0.5)));
-	 frecpoints->SetTime(ipmt,time[ipmt]);
-	 frecpoints->SetAmp(ipmt,adc[ipmt]);
-        }
+    if(fTimeCFD->At(ipmt)>0 ){
+      time[ipmt] = channelWidth *( fTimeCFD->At(ipmt)) - 1000*timeDelayCFD[ipmt];
+      Float_t adc_digPs = channelWidth * Float_t (fADC->At(ipmt)) ;
+      adc[ipmt] = TMath::Exp(adc_digPs/1000) /gain[ipmt];
+      AliDebug(1,Form(" time %f ps,  adc %f mv in MIP %i\n ",
+		      time[ipmt], adc[ipmt], Int_t (adc[ipmt]/mV2Mip +0.5)));
+      frecpoints->SetTime(ipmt,time[ipmt]);
+      frecpoints->SetAmp(ipmt,adc[ipmt]);
     }
-    for (Int_t ipmt=0; ipmt<12; ipmt++){
-      if(time[ipmt] > 1 ) {
-	if(time[ipmt]<besttimeleft){
-	  besttimeleft=time[ipmt]; //timeleft
-	  pmtBestLeft=ipmt;
-	}
+    else {
+      time[ipmt] = 0;
+      adc[ipmt] = 0;
+    }
+  }
+  for (Int_t ipmt=0; ipmt<12; ipmt++){
+    if(time[ipmt] > 1 ) {
+      if(time[ipmt]<besttimeleft){
+	besttimeleft=time[ipmt]; //timeleft
+	pmtBestLeft=ipmt;
       }
     }
-     for ( Int_t ipmt=12; ipmt<24; ipmt++){
-      if(time[ipmt] > 1) {
-	if(time[ipmt]<besttimeright) {
-	  besttimeright=time[ipmt]; //timeright
+  }
+  for ( Int_t ipmt=12; ipmt<24; ipmt++){
+    if(time[ipmt] > 1) {
+      if(time[ipmt]<besttimeright) {
+	besttimeright=time[ipmt]; //timeright
         pmtBestRight=ipmt;}
-      }
     }
-    if(besttimeright !=999999)  frecpoints->SetTimeBestRight(Int_t(besttimeright));
-    if( besttimeleft != 999999 ) frecpoints->SetTimeBestLeft(Int_t(besttimeleft));
-    AliDebug(1,Form(" besttimeright %f ps,  besttimeleft %f ps",besttimeright, besttimeleft));
-    Float_t c = 0.0299792; // cm/ps
-    Float_t vertex = 0;
-    if(besttimeright !=999999 && besttimeleft != 999999 ){
-      timeDiff = besttimeright - besttimeleft;
-      meanTime = (besttimeright + besttimeleft)/2.;
-      vertex = c*(timeDiff); //-(lenr-lenl))/2;
-      AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
-      frecpoints->SetVertex(vertex);
-      frecpoints->SetMeanTime(Int_t(meanTime));
-      
+  }
+  if(besttimeright !=999999)  frecpoints->SetTimeBestRight(Int_t(besttimeright));
+  if( besttimeleft != 999999 ) frecpoints->SetTimeBestLeft(Int_t(besttimeleft));
+  AliDebug(1,Form(" besttimeright %f ps,  besttimeleft %f ps",besttimeright, besttimeleft));
+  Float_t c = 0.0299792; // cm/ps
+  Float_t vertex = 0;
+  if(besttimeright !=999999 && besttimeleft != 999999 ){
+    timeDiff = besttimeright - besttimeleft;
+    meanTime = (besttimeright + besttimeleft)/2.;
+    vertex = c*(timeDiff); //-(lenr-lenl))/2;
+    AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
+    frecpoints->SetVertex(vertex);
+    frecpoints->SetMeanTime(Int_t(meanTime));
+    
   }
   clustersTree->Fill();
 }
