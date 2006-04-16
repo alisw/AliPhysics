@@ -109,13 +109,13 @@ Int_t AliRICHCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
     AliRICHDigit *pDig1 = Dig(iDig1);                                                   //take next digit
     Int_t iHowManyMoreCnt = 0;                                                          //counts how many neighbouring pads has QDC more then current one
     for(Int_t iDig2=0;iDig2<Size();iDig2++) {                                           //loop on all digits again
-      AliRICHDigit *pDig2 = Dig(iDig2);                                                 //take second digit to compare with the first one
       if(iDig1==iDig2) continue;                                                        //the same digit, no need to compare 
+      AliRICHDigit *pDig2 = Dig(iDig2);                                                 //take second digit to compare with the first one
       Int_t dist = TMath::Sign(Int_t(pDig1->PadX()-pDig2->PadX()),1)+TMath::Sign(Int_t(pDig1->PadY()-pDig2->PadY()),1);//distance between pads
       if(dist==1)                                                                       //means dig2 is a neighbour of dig1
          if(pDig2->Qdc()>=pDig1->Qdc()) iHowManyMoreCnt++;                              //count number of pads with Q more then Q of current pad
     }//second digits loop
-    if(iHowManyMoreCnt==0&&iLocMaxCnt<=kMaxLocMax){                                     //this pad has Q more then any neighbour so it's local maximum
+    if(iHowManyMoreCnt==0&&iLocMaxCnt<kMaxLocMax){                                     //this pad has Q more then any neighbour so it's local maximum
         TVector2 x2=AliRICHParam::Pad2Loc(pDig1->Pad());                                //take pad center position and use it as parameter for current Mathienson shape
         pMinuit->mnparm(3*iLocMaxCnt  ,Form("x%i",iLocMaxCnt),parStart=x2.X()      ,parStep=0.01,parLow=0,parHigh=0,iErrFlg);
         pMinuit->mnparm(3*iLocMaxCnt+1,Form("y%i",iLocMaxCnt),parStart=x2.Y()      ,parStep=0.01,parLow=0,parHigh=0,iErrFlg);
@@ -125,7 +125,7 @@ Int_t AliRICHCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
   }//first digits loop
 //Phase 2. Fit loc max number of Mathiesons or add this current cluster to the list
   Int_t iCluCnt=pCluLst->GetEntriesFast();                                          //get current number of clusters already stored in the list by previous operations
-  if(isTryUnfold==kTRUE && iLocMaxCnt<=kMaxLocMax){                                        //resonable number of local maxima to fit and user requested it
+  if(isTryUnfold==kTRUE && iLocMaxCnt<kMaxLocMax){                                        //resonable number of local maxima to fit and user requested it
     pMinuit->mnexcm("MIGRAD" ,&aArg,0,iErrFlg);                                     //start fitting
     Double_t fitX,fitY,fitQ,d1,d2,d3; TString sName;                                //vars to get results from TMinuit
     for(Int_t i=0;i<iLocMaxCnt;i++){//local maxima loop
