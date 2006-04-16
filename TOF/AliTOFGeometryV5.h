@@ -21,20 +21,20 @@ class AliTOFGeometryV5: public AliTOFGeometry {
    
   void    ImportGeometry();
   void    Init();
-  Bool_t  IsInsideThePad(Int_t *det, TGeoHMatrix mat, Float_t *pos);
-  Float_t DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d=0);
-  Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos); 
-  Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0);
+  Bool_t  IsInsideThePad(Int_t *det, TGeoHMatrix mat, Float_t *pos) const;
+  Float_t DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d=0) const;
+  Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos) const; 
+  Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0) const;
   void    GetVolumePath(Int_t *ind, Char_t *path );
-  Int_t   GetPlate(Float_t *pos);
-  Int_t   GetStrip(Float_t *pos);
-  Int_t   GetSector(Float_t *pos);
-  Int_t   GetPadX(Float_t *pos);
-  Int_t   GetPadZ(Float_t *pos);
+  Int_t   GetPlate(Float_t *pos) const;
+  Int_t   GetStrip(Float_t *pos) const;
+  Int_t   GetSector(Float_t *pos) const;
+  Int_t   GetPadX(Float_t *pos) const;
+  Int_t   GetPadZ(Float_t *pos) const;
   void    GetPos(Int_t *det,Float_t *pos);
-  Float_t GetX(Int_t *det);
-  Float_t GetY(Int_t *det);
-  Float_t GetZ(Int_t *det);
+  Float_t GetX(Int_t *det) const;
+  Float_t GetY(Int_t *det) const;
+  Float_t GetZ(Int_t *det) const;
   Float_t GetPadDx(Float_t *pos);
   Float_t GetPadDy(Float_t *pos);
   Float_t GetPadDz(Float_t *pos);
@@ -52,15 +52,17 @@ class AliTOFGeometryV5: public AliTOFGeometry {
   Float_t ZlenC() const      { return fgkZlenC;};
   Float_t MaxhZtof() const   { return fgkMaxhZtof;};
 
-  void Translation(Float_t *xyz, Float_t translationVector[3]);
-  void Rotation(Float_t *xyz, Double_t rotationAngles[6]);
-  void InverseRotation(Float_t *xyz, Double_t rotationAngles[6]);
+  void Translation(Float_t *xyz, Float_t translationVector[3]) const;
+  void Rotation(Float_t *xyz, Double_t rotationAngles[6]) const;
+  void InverseRotation(Float_t *xyz, Double_t rotationAngles[6]) const;
 
   protected:
 
-  //private:
+  enum {
+    kNStripC    = 19 // number of strips in C type module 
+  };
 
-  static const Int_t kNStripC;         // number of strips in C type module 
+  //private:
 
   static const Float_t fgkZlenA;       // length (cm) of the A module
   static const Float_t fgkZlenB;       // length (cm) of the B module

@@ -58,7 +58,7 @@ class AliTOFDigitMap : public TObject
     Int_t fMaxIndex;                      // maximum index in hit map
     Int_t *fDigitMap;                     // ! [fMaxIndex]         
 
-    AliTOFGeometry *fTOFGeometry;
+    AliTOFGeometry *fTOFGeometry;         // Pointer to the TOF geometry
 
     ClassDef(AliTOFDigitMap,0) // Implements DigitMap as a 1-dim array
 };

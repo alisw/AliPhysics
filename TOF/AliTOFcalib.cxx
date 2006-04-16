@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2006/04/16 20:12:46  hristov
+Removing memory leak in case of cached CDB entries
+
 Revision 1.6  2006/04/11 15:28:32  hristov
 Checks on cache status before deleting calibration objects (A.Colla)
 
@@ -133,6 +136,27 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):TTask("AliTOFcalib","")
   fTOFCal=calib.fTOFCal;
   fTOFSimCal = calib.fTOFSimCal;
   fTOFSimToT=calib.fTOFSimToT;
+}
+
+//____________________________________________________________________________ 
+
+AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
+{
+  //TOF Calibration Class assignment operator
+  this->fNSector = calib.fNSector;
+  this->fNPlate = calib.fNPlate;
+  this->fNStripA = calib.fNStripA;
+  this->fNStripB = calib.fNStripB;
+  this->fNStripC = calib.fNStripC;
+  this->fNpadZ = calib.fNpadZ;
+  this->fNpadX = calib.fNpadX;
+  this->fNChannels = calib.fNChannels;
+  this->fArrayToT = calib.fArrayToT;
+  this->fArrayTime = calib.fArrayTime;
+  this->fTOFCal=calib.fTOFCal;
+  this->fTOFSimCal = calib.fTOFSimCal;
+  this->fTOFSimToT=calib.fTOFSimToT;
+  return *this;
 }
 
 //____________________________________________________________________________ 

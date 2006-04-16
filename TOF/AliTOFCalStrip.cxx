@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.3  2006/03/28 14:58:08  arcelli
 updates to handle new V5 geometry & some re-arrangements
 
@@ -100,6 +103,17 @@ AliTOFCalStrip::AliTOFCalStrip(const AliTOFCalStrip& strip):
     fCh = strip.fCh;
     fNpadZ = strip.fNpadZ;
     fNpadX = strip.fNpadX;
+
+  }
+//________________________________________________________________
+
+AliTOFCalStrip& AliTOFCalStrip::operator=(const AliTOFCalStrip& strip)
+  {
+    //assignment operator
+    this->fCh = strip.fCh;
+    this->fNpadZ = strip.fNpadZ;
+    this->fNpadX = strip.fNpadX;
+    return *this;
 
   }
 //________________________________________________________________

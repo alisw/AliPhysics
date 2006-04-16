@@ -21,7 +21,8 @@ class AliTOFcalib:public TTask{
 public:
   AliTOFcalib();          // ctor
   AliTOFcalib(AliTOFGeometry *geom);
-  AliTOFcalib(const AliTOFcalib & calib);
+  AliTOFcalib(const AliTOFcalib & calib); // copy constructor
+  AliTOFcalib& operator=(const AliTOFcalib & calib); // assignment operator
   virtual ~AliTOFcalib() ; // dtor
   Int_t NSector()const {return fNSector;}
   Int_t NPlate()const {return fNPlate;}
@@ -59,6 +60,18 @@ public:
       fSize(size),
       fArray(new TArrayF*[size]) {
     } 
+    AliTOFArray(const AliTOFArray & source):
+      TObject(){ // copy constructor
+      this->fSize= source.fSize;
+      this->fArray= source.fArray;
+    };
+
+    AliTOFArray& operator=(const AliTOFArray & source) { // assignment operator
+      this->fSize= source.fSize;
+      this->fArray= source.fArray;
+      return *this;
+    }
+
     Int_t GetSize() const {return fSize;}
     void AddArray(Int_t pos, TArrayF * parr) {
       if (pos>-1 && pos < fSize)fArray[pos] = parr;}

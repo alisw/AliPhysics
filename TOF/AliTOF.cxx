@@ -161,6 +161,30 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
 }
 
 //_____________________________________________________________________________
+AliTOF::AliTOF(const AliTOF &source)
+  :AliDetector()
+{
+  // copy constructor
+
+  this->fReconParticles=source.fReconParticles;
+  this->fSDigits=source.fSDigits;
+  this->fTOFGeometry=source.fTOFGeometry;
+
+}
+
+//_____________________________________________________________________________
+AliTOF& AliTOF::operator=(const AliTOF &source)
+{
+  // ass. op.
+
+  this->fReconParticles=source.fReconParticles;
+  this->fSDigits=source.fSDigits;
+  this->fTOFGeometry=source.fTOFGeometry;
+  return *this;
+
+}
+
+//_____________________________________________________________________________
 void AliTOF::CreateTOFFolders()
 {
   // create the ALICE TFolder
@@ -411,7 +435,7 @@ void AliTOF::DrawModule() const
 }
 
 //_____________________________________________________________________________
-Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t )
+Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t ) const
 {
   //
   // Returns distance from mouse pointer to detector, default version

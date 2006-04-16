@@ -29,6 +29,7 @@ public:
   AliTOFCalSector(AliTOFGeometry *geom);
   AliTOFCalSector(AliTOFGeometry *geom, AliTOFChannel *ch);
   AliTOFCalSector(const AliTOFCalSector& sec);
+  AliTOFCalSector& operator=(const AliTOFCalSector &source); // ass. op.
   virtual ~AliTOFCalSector();
   Int_t NPlate()const {return fNPlate;}
   Int_t NStripA()const {return fNStripA;}

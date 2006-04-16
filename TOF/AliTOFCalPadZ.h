@@ -25,6 +25,8 @@ class AliTOFCalPadZ: public TObject
   AliTOFCalPadZ(AliTOFChannel *ch);
   AliTOFCalPadZ(AliTOFGeometry *geom);
   AliTOFCalPadZ(AliTOFGeometry *geom,AliTOFChannel *ch);
+  AliTOFCalPadZ(const AliTOFCalPadZ &source); // copy constructor
+  AliTOFCalPadZ& operator=(const AliTOFCalPadZ &source); // ass. op.
   virtual ~AliTOFCalPadZ();
   Int_t NpadX()const {return fNpadX;}
   void Browse(TBrowser *b);

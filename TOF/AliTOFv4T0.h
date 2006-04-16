@@ -30,8 +30,8 @@ public:
   virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t) {};
   virtual void   StepManager();
   virtual void   DrawModule() const;
-  virtual void   DrawDetectorModules();
-  virtual void   DrawDetectorStrips();
+  virtual void   DrawDetectorModules() const;
+  virtual void   DrawDetectorStrips() const;
  
 private:
   Int_t fIdFTOA; // FTOA volume identifier (outer plate A)

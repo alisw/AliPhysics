@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.3  2006/03/28 14:58:16  arcelli
 updates to handle new V5 geometry & some re-arrangements
 
@@ -123,6 +126,22 @@ AliTOFCalSector::AliTOFCalSector(const AliTOFCalSector& sec):
     fNpadZ = sec.fNpadZ;
     fNpadX = sec.fNpadX;
     gROOT->GetListOfBrowsables()->Add(this);
+  }
+//________________________________________________________________
+
+AliTOFCalSector& AliTOFCalSector::operator=(const AliTOFCalSector& sec)
+  {
+    //assignment operator
+    this->fCh = sec.fCh;
+    this->fNPlate = sec.fNPlate;
+    this->fNStripA = sec.fNStripA;
+    this->fNStripB = sec.fNStripB;
+    this->fNStripC = sec.fNStripC;
+    this->fNpadZ = sec.fNpadZ;
+    this->fNpadX = sec.fNpadX;
+    gROOT->GetListOfBrowsables()->Add(this);
+    return *this;
+
   }
 //________________________________________________________________
 

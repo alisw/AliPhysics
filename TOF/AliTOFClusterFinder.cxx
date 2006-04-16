@@ -111,6 +111,28 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader):
   fTOFGeometry = (AliTOFGeometry*)in->Get("TOFgeometry");
 
 }
+
+//------------------------------------------------------------------------
+AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
+  :TObject()
+{
+  // copy constructor
+  this->fDigits=source.fDigits;
+  this->fRecPoints=source.fRecPoints;
+  this->fTOFGeometry=source.fTOFGeometry;
+
+}
+
+//------------------------------------------------------------------------
+  AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &source)
+{
+  // ass. op.
+  this->fDigits=source.fDigits;
+  this->fRecPoints=source.fRecPoints;
+  this->fTOFGeometry=source.fTOFGeometry;
+  return *this;
+
+}
 //______________________________________________________________________________
 
 AliTOFClusterFinder::~AliTOFClusterFinder()

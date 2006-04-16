@@ -707,7 +707,7 @@ void AliTOFv4T0::DrawModule() const
   gMC->Gdopt("hide","off");
 }
 //_____________________________________________________________________________
-void AliTOFv4T0::DrawDetectorModules()
+void AliTOFv4T0::DrawDetectorModules() const
 {
 //
 // Draw a shaded view of the TOF detector version 4
@@ -779,7 +779,7 @@ void AliTOFv4T0::DrawDetectorModules()
 }                                 
 
 //_____________________________________________________________________________
-void AliTOFv4T0::DrawDetectorStrips()
+void AliTOFv4T0::DrawDetectorStrips() const
 {
   //
   // Draw a shaded view of the TOF strips for version 4

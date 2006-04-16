@@ -26,6 +26,8 @@ class AliTOFClusterFinder : public TObject
 
   AliTOFClusterFinder();
   AliTOFClusterFinder(AliRunLoader* runLoader);
+  AliTOFClusterFinder(const AliTOFClusterFinder &source); // copy constructor
+  AliTOFClusterFinder& operator=(const AliTOFClusterFinder &source); // ass. op.
   virtual ~AliTOFClusterFinder();
 
   void Digits2RecPoints(Int_t ievt);

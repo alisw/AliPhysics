@@ -19,7 +19,8 @@ public:
 
  AliTOFAlignment(); 
  AliTOFAlignment(const AliTOFAlignment &t); //Copy Ctor 
-  virtual ~AliTOFAlignment() {delete fTOFAlignObjArray;}
+ AliTOFAlignment& operator=(const AliTOFAlignment &source); // Assignment Operator
+ virtual ~AliTOFAlignment() {delete fTOFAlignObjArray;}
   virtual void WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   virtual void ReadParFromCDB(Char_t *sel, Int_t nrun);
   virtual void WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
@@ -32,10 +33,9 @@ public:
 
 private:
 
-  Int_t fNTOFAlignObj;      // Number of Alignable Objects
-  TObjArray *fTOFAlignObjArray;
-  ClassDef(AliTOFAlignment,1) // TOF Alignment 
+  Int_t fNTOFAlignObj;          // Number of Alignable Objects
+  TObjArray *fTOFAlignObjArray; // Pointer to the TOF alignable objects
+  ClassDef(AliTOFAlignment,1)   // TOF Alignment 
 };
 
 #endif
-

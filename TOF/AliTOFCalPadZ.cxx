@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.3  2006/03/28 14:57:30  arcelli
 updates to handle new V5 geometry & some re-arrangements
 
@@ -74,6 +77,27 @@ AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom,AliTOFChannel *ch):
   fGeom = geom;
   fNpadX = fGeom->NpadX();
 }
+
+//________________________________________________________________
+AliTOFCalPadZ::AliTOFCalPadZ(const AliTOFCalPadZ &source)
+  :TObject()
+{
+  // copy constructor
+
+  this->fGeom=source.fGeom;
+
+}
+
+//_____________________________________________________________________________
+AliTOFCalPadZ& AliTOFCalPadZ::operator=(const AliTOFCalPadZ &source)
+{
+  // assignment operator
+
+  this->fGeom=source.fGeom;
+  return *this;
+
+}
+
 //________________________________________________________________
 
 AliTOFCalPadZ::~AliTOFCalPadZ()

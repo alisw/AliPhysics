@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.13  2006/03/12 14:37:54  arcelli
  Changes for TOF Reconstruction using TGeo
 
@@ -107,15 +110,15 @@ AliTOFGeometry::AliTOFGeometry()
   // AliTOFGeometry default constructor
   //
 
-  kNStripC     = 19;  // number of strips in C type module 
-  kZlenA    = 106.0;  // length (cm) of the A module
-  kZlenB    = 141.0;  // length (cm) of the B module
-  kZlenC    = 177.5;  // length (cm) of the C module
-  kMaxhZtof = 371.5;  // Max half z-size of TOF (cm)
+  fNStripC     = 19;  // number of strips in C type module 
+  fZlenA    = 106.0;  // length (cm) of the A module
+  fZlenB    = 141.0;  // length (cm) of the B module
+  fZlenC    = 177.5;  // length (cm) of the C module
+  fMaxhZtof = 371.5;  // Max half z-size of TOF (cm)
 
-  fgkxTOF     = 371.; // Inner radius of the TOF for Reconstruction (cm)
-  fgkRmin     = 370.; // Inner radius of the TOF (cm)
-  fgkRmax     = 399.; // Outer radius of the TOF (cm)
+  fxTOF     = 371.; // Inner radius of the TOF for Reconstruction (cm)
+  fRmin     = 370.; // Inner radius of the TOF (cm)
+  fRmax     = 399.; // Outer radius of the TOF (cm)
 
   Init();
 
@@ -190,7 +193,7 @@ void AliTOFGeometry::Init()
 }
 
 //_____________________________________________________________________________
-void AliTOFGeometry::GetPosPar(Int_t *det, Float_t *pos) 
+void AliTOFGeometry::GetPosPar(Int_t *det, Float_t *pos) const
 {
 //
 // Returns space point coor (x,y,z) (cm)  for Detector 
@@ -203,7 +206,7 @@ void AliTOFGeometry::GetPosPar(Int_t *det, Float_t *pos)
   
 }
 //_____________________________________________________________________________
-void AliTOFGeometry::GetDetID( Float_t *pos, Int_t *det) 
+void AliTOFGeometry::GetDetID( Float_t *pos, Int_t *det) const
 {
  //
  // Returns Detector Indices (iSect,iPlate,iStrip,iPadX,iPadZ) 

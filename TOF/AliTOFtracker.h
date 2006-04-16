@@ -32,11 +32,13 @@ public:
 
  AliTOFtracker(AliTOFGeometry* geom, Double_t parPID[2]); 
  AliTOFtracker(const AliTOFtracker &t); //Copy Ctor 
+ AliTOFtracker& operator=(const AliTOFtracker &source); // ass. op.
+
   virtual ~AliTOFtracker() {delete fTOFpid;}
   virtual Int_t Clusters2Tracks(AliESD* /*event*/) {return -1;};
   virtual Int_t PropagateBack(AliESD* event);
   virtual Int_t RefitInward(AliESD* /*event*/) {return -1;};
-  virtual Int_t LoadClusters(TTree * /*cTree*/); // Load Clusters
+  virtual Int_t LoadClusters(TTree * cTree); // Load Clusters
   virtual void  UnloadClusters();// UnLoad Clusters
   virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
   Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;

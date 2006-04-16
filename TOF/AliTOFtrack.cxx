@@ -110,6 +110,17 @@ AliTOFtrack::AliTOFtrack(const AliESDtrack& t)
 
 
 }              
+
+//____________________________________________________________________________
+AliTOFtrack& AliTOFtrack::operator=(const AliTOFtrack &source)
+{
+  // ass. op.
+
+  this->fTOFgeometry=source.fTOFgeometry;
+  return *this;
+
+}
+
 //____________________________________________________________________________
 void AliTOFtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
   //

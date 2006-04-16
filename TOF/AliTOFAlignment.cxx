@@ -12,6 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
 $Log$
+Revision 1.4  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.3  2006/03/31 13:49:07  arcelli
 Removing some junk printout
 
@@ -55,6 +58,16 @@ AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):TTask("AliTOFAlignmen
 
   fNTOFAlignObj=t.fNTOFAlignObj;
   fTOFAlignObjArray=t.fTOFAlignObjArray;
+
+}
+
+//_____________________________________________________________________________
+AliTOFAlignment& AliTOFAlignment::operator=(const AliTOFAlignment &t){ 
+  //AliTOFAlignment assignment operator
+
+  this->fNTOFAlignObj=t.fNTOFAlignObj;
+  this->fTOFAlignObjArray=t.fTOFAlignObjArray;
+  return *this;
 
 }
 

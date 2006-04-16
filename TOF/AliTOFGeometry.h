@@ -23,7 +23,7 @@ class AliTOFGeometry: public TObject{
 
   static  Int_t NStripA()     { return kNStripA;};
   static  Int_t NStripB()     { return kNStripB;};
-  virtual Int_t NStripC() const { return kNStripC;};
+  virtual Int_t NStripC() const { return fNStripC;};
   static  Int_t NMaxNstrip()  { return kMaxNstrip;};
   static  Int_t NpadX()       { return kNpadX;};
   static  Int_t NpadZ()       { return kNpadZ;};
@@ -31,11 +31,11 @@ class AliTOFGeometry: public TObject{
   static  Int_t NSectors()    { return kNSectors;};
   static  Int_t NPlates()     { return kNPlates;};
   virtual Int_t NPadXSector() const { return (kNStripA + 2*kNStripB +
-					2*kNStripC)*kNpadX*kNpadZ;};
+					2*fNStripC)*kNpadX*kNpadZ;};
 
-  virtual Float_t RinTOF() const   { return fgkxTOF;};
-  virtual Float_t Rmin() const     { return fgkRmin;};
-  virtual Float_t Rmax() const     { return fgkRmax;};
+  virtual Float_t RinTOF() const   { return fxTOF;};
+  virtual Float_t Rmin() const     { return fRmin;};
+  virtual Float_t Rmax() const     { return fRmax;};
 
   static  Float_t XPad()     { return fgkXPad;};
   static  Float_t ZPad()     { return fgkZPad;};
@@ -51,10 +51,10 @@ class AliTOFGeometry: public TObject{
   static  Int_t NCh()         { return kNCh;};
   static  Int_t NPadXTRM()    { return kNCh*kNTdc;};
 
-  virtual  Float_t ZlenA() const      { return kZlenA;};
-  virtual  Float_t ZlenB() const      { return kZlenB;};
-  virtual  Float_t ZlenC() const      { return kZlenC;};
-  virtual  Float_t MaxhZtof() const   { return kMaxhZtof;};
+  virtual  Float_t ZlenA() const      { return fZlenA;};
+  virtual  Float_t ZlenB() const      { return fZlenB;};
+  virtual  Float_t ZlenC() const      { return fZlenC;};
+  virtual  Float_t MaxhZtof() const   { return fMaxhZtof;};
 
   static  Float_t SigmaForTail1() { return fgkSigmaForTail1;};
   static  Float_t SigmaForTail2() { return fgkSigmaForTail2;};
@@ -68,22 +68,22 @@ class AliTOFGeometry: public TObject{
   virtual void    ImportGeometry() {};
   virtual void    SetHoles(Bool_t holes) {fHoles = holes;};
   virtual Bool_t  GetHoles() const {return fHoles;};
-  virtual Bool_t  IsInsideThePadPar(Int_t */*det*/, Float_t */*pos*/) {return kFALSE;};
-  virtual Float_t DistanceToPadPar(Int_t */*det*/, Float_t */*pos*/, Float_t *dist3d=0) {return dist3d[0];};
-  virtual Bool_t  IsInsideThePad(Int_t */*det*/,TGeoHMatrix /*mat*/, Float_t */*pos*/){return kFALSE;};
-  virtual Float_t DistanceToPad(Int_t */*det*/,TGeoHMatrix /*mat*/, Float_t */*pos*/, Float_t *dist3d=0){return dist3d[0];};
+  virtual Bool_t  IsInsideThePadPar(Int_t */*det*/, Float_t */*pos*/) const {return kFALSE;};
+  virtual Float_t DistanceToPadPar(Int_t */*det*/, Float_t */*pos*/, Float_t *dist3d=0) const {return dist3d[0];};
+  virtual Bool_t  IsInsideThePad(Int_t */*det*/,TGeoHMatrix /*mat*/, Float_t */*pos*/) const {return kFALSE;};
+  virtual Float_t DistanceToPad(Int_t */*det*/,TGeoHMatrix /*mat*/, Float_t */*pos*/, Float_t *dist3d=0) const {return dist3d[0];};
   virtual void    GetVolumePath(Int_t */*ind*/, Char_t */*path*/ ){};
   virtual void    GetPos(Int_t */*det*/,Float_t */*pos*/){};
-  virtual void    GetPosPar(Int_t */*det*/,Float_t */*pos*/);
-  virtual void    GetDetID(Float_t */*pos*/,Int_t */*det*/);
-  virtual Int_t   GetPlate(Float_t */*pos*/) {return -1;};
-  virtual Int_t   GetStrip(Float_t */*pos*/) {return -1;};
-  virtual Int_t   GetSector(Float_t */*pos*/) {return -1;};
-  virtual Int_t   GetPadX(Float_t */*pos*/) {return -1;};
-  virtual Int_t   GetPadZ(Float_t */*pos*/) {return -1;};
-  virtual Float_t GetX(Int_t */*det*/) {return -500.;};
-  virtual Float_t GetY(Int_t */*det*/) {return -500.;};
-  virtual Float_t GetZ(Int_t */*det*/) {return -500.;};
+  virtual void    GetPosPar(Int_t *det,Float_t *pos) const;
+  virtual void    GetDetID(Float_t *pos,Int_t *det) const;
+  virtual Int_t   GetPlate(Float_t */*pos*/) const {return -1;};
+  virtual Int_t   GetStrip(Float_t */*pos*/) const {return -1;};
+  virtual Int_t   GetSector(Float_t */*pos*/) const {return -1;};
+  virtual Int_t   GetPadX(Float_t */*pos*/) const {return -1;};
+  virtual Int_t   GetPadZ(Float_t */*pos*/) const {return -1;};
+  virtual Float_t GetX(Int_t */*det*/) const {return -500.;};
+  virtual Float_t GetY(Int_t */*det*/) const {return -500.;};
+  virtual Float_t GetZ(Int_t */*det*/) const {return -500.;};
 
   Float_t GetAngles(Int_t iplate, Int_t istrip)  const {return fAngles[iplate][istrip];};
   Float_t GetHeights(Int_t iplate, Int_t istrip) const {return fHeights[iplate][istrip];};
@@ -115,16 +115,16 @@ class AliTOFGeometry: public TObject{
 
   static const Int_t fgkTimeDiff;      // Min signal separation (ps)
 
-  mutable Int_t kNStripC;       // number of strips in C type module 
+  mutable Int_t fNStripC;       // number of strips in C type module 
 
-  mutable Float_t kZlenA;       // length (cm) of the A module
-  mutable Float_t kZlenB;       // length (cm) of the B module
-  mutable Float_t kZlenC;       // length (cm) of the C module
-  mutable Float_t kMaxhZtof;    // Max half z-size of TOF (cm)
+  mutable Float_t fZlenA;       // length (cm) of the A module
+  mutable Float_t fZlenB;       // length (cm) of the B module
+  mutable Float_t fZlenC;       // length (cm) of the C module
+  mutable Float_t fMaxhZtof;    // Max half z-size of TOF (cm)
 
-  mutable Float_t fgkRmin;     // Inner radius of the TOF (cm)
-  mutable Float_t fgkRmax;     // Outer radius of the TOF (cm)
-  mutable Float_t fgkxTOF;     // Inner TOF Radius used in Reconstruction (cm)
+  mutable Float_t fRmin;       // Inner radius of the TOF (cm)
+  mutable Float_t fRmax;       // Outer radius of the TOF (cm)
+  mutable Float_t fxTOF;       // Inner TOF Radius used in Reconstruction (cm)
 
   static const Float_t fgkStripLength; // Strip Length (rho X phi direction) (cm)
 
@@ -144,7 +144,7 @@ class AliTOFGeometry: public TObject{
 
   static const Float_t fgkTdcBin;   // time-window for the TDC bins [ps]
 
-  ClassDef(AliTOFGeometry,3) // TOF Geometry base class
+  ClassDef(AliTOFGeometry,4) // TOF Geometry base class
 };
 
 #endif

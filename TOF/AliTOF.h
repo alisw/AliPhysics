@@ -36,6 +36,9 @@ class AliTOF : public AliDetector {
 public:
   AliTOF(); 
   AliTOF(const char *name, const char *title, Option_t *option="noTimeZero");
+  AliTOF(const AliTOF &source); // copy constructor
+  AliTOF& operator=(const AliTOF &source); // ass. op.
+
   virtual ~AliTOF() ;
 // getters for AliTOF object status
   //Float_t GetTimeRes() const {return fTimeRes;};
@@ -55,15 +58,15 @@ public:
   virtual void    Makehits(Bool_t hits=1);
   virtual void    FinishEvent();
   virtual Int_t   IsVersion() const =0;
-  Int_t           DistancetoPrimitive(Int_t px, Int_t py);
+  Int_t           DistancetoPrimitive(Int_t px, Int_t py) const;
   virtual void    StepManager()=0;
   virtual void    TOFpc(Float_t /*xtof*/, Float_t /*ytof*/, Float_t /*zlenC*/,
                         Float_t /*zlenB*/, Float_t /*zlenA*/, Float_t /*ztof0*/){};
   virtual void    TOFpc(Float_t /*xtof*/,  Float_t /*ytof*/, Float_t /*zlenA*/,
 			Float_t /*zlenB*/){};
   virtual void    DrawModule() const;
-  virtual void    DrawDetectorModules()=0;
-  virtual void    DrawDetectorStrips()=0;
+  virtual void    DrawDetectorModules() const {};
+  virtual void    DrawDetectorStrips() const {};
   //virtual void   DrawDetectorModulesinFrame()=0;
   //virtual void   DrawDetectorStripsinFrame()=0;
           void    CreateTOFFolders();

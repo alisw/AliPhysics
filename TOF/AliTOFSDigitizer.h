@@ -25,6 +25,9 @@ public:
   //AliTOFSDigitizer(const char* HeaderFile) ; // par ctor
   AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1=-1, Int_t nEvents=0) ; // par ctor
 
+  AliTOFSDigitizer(const AliTOFSDigitizer &source); // copy constructor
+  AliTOFSDigitizer& operator=(const AliTOFSDigitizer &source); // ass. op.
+
   virtual ~AliTOFSDigitizer() ; // dtor
 
   //static Float_t WidthTdcBin() {return fgkTdcBin;};
@@ -120,7 +123,7 @@ private:
   AliRunLoader* fRunLoader; //! Run Loader
   AliLoader* fTOFLoader;    //! Loader
 
-  AliTOFGeometry* fTOFGeometry;    //  
+  AliTOFGeometry* fTOFGeometry;  // Pointer to the TOF geometry
 
   Int_t fSelectedSector;    // sector number for sdigitization
   Int_t fSelectedPlate ;    // plate  number for sdigitization

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.3  2006/03/28 14:57:56  arcelli
 updates to handle new V5 geometry & some re-arrangements
 
@@ -86,6 +89,19 @@ AliTOFCalPlateC::AliTOFCalPlateC(AliTOFGeometry *geom, AliTOFChannel *ch): fCh(c
   fNpadX = fGeom->NpadX();
 }
 
+//________________________________________________________________
+
+AliTOFCalPlateC& AliTOFCalPlateC::operator=(const AliTOFCalPlateC& pl)
+  {
+  //assignment operator
+    this->fCh = pl.fCh;
+    this->fNStripC = pl.fNStripC;
+    this->fNpadZ = pl.fNpadZ;
+    this->fNpadX = pl.fNpadX;
+    this->fGeom = pl.fGeom;
+    return *this;
+
+  }
 //________________________________________________________________
 
 AliTOFCalPlateC::~AliTOFCalPlateC()

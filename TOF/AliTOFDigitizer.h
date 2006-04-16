@@ -28,6 +28,8 @@ class AliTOFDigitizer : public AliDigitizer {
   AliTOFDigitizer();
   AliTOFDigitizer(AliRunDigitizer * manager);
   virtual ~AliTOFDigitizer();
+  AliTOFDigitizer(const AliTOFDigitizer &source); // copy constructor
+  AliTOFDigitizer& operator=(const AliTOFDigitizer &source); // ass. op.
   
   // Do the main work
   void Exec(Option_t* option=0) ;
@@ -39,12 +41,17 @@ class AliTOFDigitizer : public AliDigitizer {
   
  private:
   void CollectSDigit(AliTOFSDigit * sdigit) ;
-  Int_t PutNoise(Int_t /*charge*/)const {return 0;}; // not yet implemented
-                                           // due to the low noise expected level
-  AliTOFGeometry *fGeom;    // AliTOFgeometry pointer
-  TClonesArray *fDigits;             //! array with digits
-  TClonesArray *fSDigitsArray; //! List of summable digits; used as a container for all sdigits to be merged
-  AliTOFHitMap *fhitMap ;            //! hit map used to perform the merging
+  Int_t PutNoise(Int_t /*charge*/)const {return 0;}; // not yet
+						     // implemented
+						     // due to the low
+						     // noise expected
+						     // level
+  AliTOFGeometry *fGeom;       // Pointer to the TOF geometry
+  TClonesArray *fDigits;       //! array with digits
+  TClonesArray *fSDigitsArray; //! List of summable digits; used as a
+			       //container for all sdigits to be
+			       //merged
+  AliTOFHitMap *fhitMap ;      //! hit map used to perform the merging
   
   ClassDef(AliTOFDigitizer,0)  // TOF/Merging/Digitization
 };    

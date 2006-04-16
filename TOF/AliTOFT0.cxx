@@ -17,39 +17,51 @@
 
 //_________________________________________________________________________
 // This is a TTask that made the calculation of the Time zero using TOF.
-// Description: The algorithm used to calculate the time zero of interaction
-// using TOF detector is the following.
-// We select in the MonteCarlo some primary particles - or tracks in the following - 
-// that strike the TOF detector (the larger part are pions, kaons or protons). 
-// We choose a set of 10 selected tracks, for each track You have the length
-// of the track when the TOF is reached (a standard TOF hit does not contain this
-// additional information, this is the reason why we implemented a new time zero 
-// dedicated TOF hit class AliTOFhitT0; in order to store this type of hit You 
-// have to use the AliTOFv4T0 as TOF class in Your Config.C. In AliTOFv4T0 the 
-// StepManager was modified in order to fill the TOF hit branch with this type 
-// of hits; in fact the AliTOF::AddT0Hit is called rather that the usual AliTOF::AddHit), 
-// the momentum at generation (from TreeK) and the time of flight
-// given by the TOF detector.
-// (Observe that the ctor of the AliTOF class, when the AliTOFv4T0 class is used, is called
-// with the "tzero" option: it is in order create the fHits TClonesArray filled with
-// AliTOFhitT0 objects, rather than with normal AliTOFhit)
-// Then Momentum and time of flight for each track are smeared according to 
-// known experimental resolution (all sources of error have been token into account).
-// Let consider now only one set of 10 tracks (the algorithm is the same for all sets).
-// Assuming the (mass) hypothesis that each track can be AUT a pion, AUT a kaon, AUT a proton,
-// we consider all the 3 at 10 possible cases. 
+// Description: The algorithm used to calculate the time zero of
+// interaction using TOF detector is the following.
+// We select in the MonteCarlo some primary particles - or tracks in
+// the following - that strike the TOF detector (the larger part are
+// pions, kaons or protons).
+// We choose a set of 10 selected tracks, for each track You have the
+// length of the track when the TOF is reached (a standard TOF hit
+// does not contain this additional information, this is the reason
+// why we implemented a new time zero dedicated TOF hit class
+// AliTOFhitT0; in order to store this type of hit You have to use the
+// AliTOFv4T0 as TOF class in Your Config.C. In AliTOFv4T0 the
+// StepManager was modified in order to fill the TOF hit branch with
+// this type of hits; in fact the AliTOF::AddT0Hit is called rather
+// that the usual AliTOF::AddHit), the momentum at generation (from
+// TreeK) and the time of flight given by the TOF detector.
+// (Observe that the ctor of the AliTOF class, when the AliTOFv4T0
+// class is used, is called with the "tzero" option: it is in order
+// create the fHits TClonesArray filled with AliTOFhitT0 objects,
+// rather than with normal AliTOFhit)
+// Then Momentum and time of flight for each track are smeared
+// according to known experimental resolution (all sources of error
+// have been token into account).
+// Let consider now only one set of 10 tracks (the algorithm is the
+// same for all sets).
+// Assuming the (mass) hypothesis that each track can be AUT a pion,
+// AUT a kaon, AUT a proton, we consider all the 3 at 10 possible
+// cases.
 // For each track in each (mass) configuration
-// (a configuration can be e.g. pion/pion/kaon/proton/pion/proton/kaon/kaon/pion/pion)
-// we calculate the time zero (we know in fact the velocity of the track after 
-// the assumption about its mass, the time of flight given by the TOF, and the 
-// corresponding path travelled till the TOF detector). Then for each mass configuration we have
-// 10 time zero and we can calculate the ChiSquare for the current configuration using the 
-// weighted mean over all 10 time zero.
-// We call the best assignment the mass configuration that gives the minimum value of the ChiSquare. 
-// We plot the weighted mean over all 10 time zero for the best assignment, 
-// the ChiSquare for the best assignment and the corresponding confidence level.
-// The strong assumption is the MC selection of primary particles. It will be introduced
-// in the future also some more realistic simulation about this point. 
+// (a configuration can be
+// e.g. pion/pion/kaon/proton/pion/proton/kaon/kaon/pion/pion)
+// we calculate the time zero (we know in fact the velocity of the
+// track after the assumption about its mass, the time of flight given
+// by the TOF, and the corresponding path travelled till the TOF
+// detector). Then for each mass configuration we have 10 time zero
+// and we can calculate the ChiSquare for the current configuration
+// using the weighted mean over all 10 time zero.
+// We call the best assignment the mass configuration that gives the
+// minimum value of the ChiSquare.
+// We plot the weighted mean over all 10 time zero for the best
+// assignment, the ChiSquare for the best assignment and the
+// corresponding confidence level.
+// The strong assumption is the MC selection of primary particles. It
+// will be introduced in the future also some more realistic
+// simulation about this point.
+
 // Use case:
 // root [0] AliTOFT0 * tzero = new AliTOFT0("galice.root")
 // Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
@@ -57,8 +69,9 @@
 // root [2] tzero->ExecuteTask("tim")
 //             // available parameters:
 //             tim - print benchmarking information
-//             all - print usefull informations about the number of misidentified tracks 
-//                   and a comparison about the true configuration (known from MC) and the best
+//             all - print usefull informations about the number of
+//                   misidentified tracks and a comparison about the
+//                   true configuration (known from MC) and the best
 //                   assignment
 //-- Author: F. Pierella
 //////////////////////////////////////////////////////////////////////////////
@@ -102,6 +115,10 @@ ClassImp(AliTOFT0)
 //____________________________________________________________________________ 
   AliTOFT0::AliTOFT0(char* headerFile, Int_t nEvents):TTask("AliTOFT0","") 
 {
+  //
+  //
+  //
+
   fNevents=nEvents ; // Number of events for which calculate the T0, 
                      // default 0: it means all evens in current file
   fLowerMomBound=1.5; // [GeV/c] default value
@@ -128,6 +145,8 @@ ClassImp(AliTOFT0)
 //____________________________________________________________________________ 
   AliTOFT0::AliTOFT0(const AliTOFT0 & tzero):TTask("AliTOFT0","")
 {
+  // copy ctr
+
 ( (AliTOFT0 &)tzero ).Copy(*this);
 }
 
@@ -219,9 +238,9 @@ void AliTOFT0::Exec(Option_t *option)
   Float_t chisquare=999.;
   Float_t tracktoflen[10]={0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
 
-  AliTOF *TOF = (AliTOF *) gAlice->GetDetector ("TOF");
+  AliTOF *detTOF = (AliTOF *) gAlice->GetDetector ("TOF");
 
-  if (!TOF) {
+  if (!detTOF) {
     Error("AliTOFT0","TOF not found");
     return;
   }
@@ -235,34 +254,34 @@ void AliTOFT0::Exec(Option_t *option)
 
   for (Int_t ievent = 0; ievent < fNevents; ievent++) {
     gAlice->GetEvent(ievent);
-    TTree *TH = TOF->TreeH ();
-    if (!TH)
+    TTree *hitTree = detTOF->TreeH ();
+    if (!hitTree)
       return;
     TParticle*    particle;
     AliTOFhitT0*  tofHit;
-    TClonesArray* TOFhits = TOF->Hits();
+    TClonesArray* tofHits = detTOF->Hits();
 
     Int_t lasttrack=-1;
     Int_t nset=0;
 
-    TH->SetBranchStatus("*",0); // switch off all branches
-    TH->SetBranchStatus("TOF*",1); // switch on only TOF
+    hitTree->SetBranchStatus("*",0); // switch off all branches
+    hitTree->SetBranchStatus("TOF*",1); // switch on only TOF
 
     // Start loop on primary tracks in the hits containers
 
-    Int_t ntracks = static_cast<Int_t>(TH->GetEntries());
+    Int_t ntracks = static_cast<Int_t>(hitTree->GetEntries());
     for (Int_t track = 0; track < ntracks; track++)
     {
       if(nset>=5) break; // check on the number of set analyzed
       
       gAlice->ResetHits();
-      TH->GetEvent(track);
+      hitTree->GetEvent(track);
       particle = gAlice->GetMCApp()->Particle(track);
-      Int_t nhits = TOFhits->GetEntriesFast();
+      Int_t nhits = tofHits->GetEntriesFast();
 
       for (Int_t hit = 0; hit < nhits; hit++)
       {
-	tofHit = (AliTOFhitT0 *) TOFhits->UncheckedAt(hit);
+	tofHit = (AliTOFhitT0 *) tofHits->UncheckedAt(hit);
 	ipart    = tofHit->GetTrack();
 	// check to discard the case when the same particle is selected more than one
 	// time 
@@ -474,22 +493,33 @@ void AliTOFT0::Exec(Option_t *option)
 }
  
 //__________________________________________________________________
-void AliTOFT0::SetTZeroFile(char * file ){
-  cout << "Destination file : " << file << endl ;
+void AliTOFT0::SetTZeroFile(char * file )
+{
+  //
+  //
+  //
+  printf("Destination file : %s \n", file) ;
   fT0File=file;
+
 }
+
 //__________________________________________________________________
 void AliTOFT0::Print(Option_t* /*option*/)const
 {
-  cout << "------------------- "<< GetName() << " -------------" << endl ;
+  //
+  //
+  //
+  printf("------------------- %s -------------\n", GetName()) ;
   if(!fT0File.IsNull())
-    cout << "  Writing T0 Distribution to file  " << (char*) fT0File.Data() << endl ;
+    printf("  Writing T0 Distribution to file  %s \n",(char*) fT0File.Data());
+
 }
 
 //__________________________________________________________________
 Bool_t AliTOFT0::operator==( AliTOFT0 const &tzero )const
 {
-  // Equal operator.
+  //
+  // Equal operator
   // 
 
   if( (fTimeResolution==tzero.fTimeResolution)&&(fLowerMomBound==tzero.fLowerMomBound)&&(fUpperMomBound==tzero.fUpperMomBound))

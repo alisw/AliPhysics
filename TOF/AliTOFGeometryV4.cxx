@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/12 14:38:13  arcelli
+ Changes for TOF Reconstruction using TGeo
+
 Revision 1.2  2006/02/28 10:38:00  decaro
 AliTOFGeometry::fAngles, AliTOFGeometry::fHeights, AliTOFGeometry::fDistances arrays: dimension definition in the right location
 
@@ -48,7 +51,6 @@ Revision 0.1  2005/07/19 A. De Caro
 
 ClassImp(AliTOFGeometryV4)
 
-const Int_t AliTOFGeometryV4::kNStripC      = 20;       // number of strips in C type module
 
 const Float_t AliTOFGeometryV4::fgkZlenA    = 106.0;    // length (cm) of the A module
 const Float_t AliTOFGeometryV4::fgkZlenB    = 141.0;    // length (cm) of the B module
@@ -75,16 +77,16 @@ AliTOFGeometryV4::AliTOFGeometryV4()
   // AliTOFGeometryV4 default constructor
   //
 
-  AliTOFGeometry::kNStripC   = kNStripC;         // number of strips in C type module
+  AliTOFGeometry::fNStripC   = kNStripC;         // number of strips in C type module
 
-  AliTOFGeometry::kZlenA    = fgkZlenA;          // length (cm) of the A module
-  AliTOFGeometry::kZlenB    = fgkZlenB;          // length (cm) of the B module
-  AliTOFGeometry::kZlenC    = fgkZlenC;          // length (cm) of the C module
-  AliTOFGeometry::kMaxhZtof = fgkMaxhZtof;       // Max half z-size of TOF (cm)
+  AliTOFGeometry::fZlenA    = fgkZlenA;          // length (cm) of the A module
+  AliTOFGeometry::fZlenB    = fgkZlenB;          // length (cm) of the B module
+  AliTOFGeometry::fZlenC    = fgkZlenC;          // length (cm) of the C module
+  AliTOFGeometry::fMaxhZtof = fgkMaxhZtof;       // Max half z-size of TOF (cm)
 
-  AliTOFGeometry::fgkxTOF   = fgkxTOF;           // Inner radius of the TOF for Reconstruction (cm)
-  AliTOFGeometry::fgkRmin   = fgkRmin;           // Inner radius of the TOF (cm)
-  AliTOFGeometry::fgkRmax   = fgkRmax;           // Outer radius of the TOF (cm)
+  AliTOFGeometry::fxTOF   = fgkxTOF;           // Inner radius of the TOF for Reconstruction (cm)
+  AliTOFGeometry::fRmin   = fgkRmin;           // Inner radius of the TOF (cm)
+  AliTOFGeometry::fRmax   = fgkRmax;           // Outer radius of the TOF (cm)
 
   Init();
 
@@ -110,6 +112,8 @@ void AliTOFGeometryV4::Init()
   //
   // Strips Tilt Angles
  
+  fPhiSec   = 360./kNSectors;
+
   Float_t const kangles[kNPlates][kMaxNstrip] ={
 
  {44.494, 43.725, 42.946, 42.156, 41.357, 40.548, 39.729, 38.899, 
@@ -164,7 +168,7 @@ void AliTOFGeometryV4::Init()
 }
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV4::DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d) 
+Float_t AliTOFGeometryV4::DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d) const
 {
 //
 // Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
@@ -224,7 +228,7 @@ Float_t AliTOFGeometryV4::DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *di
 }
 
 //_____________________________________________________________________________
-Bool_t AliTOFGeometryV4::IsInsideThePadPar(Int_t *det, Float_t *pos) 
+Bool_t AliTOFGeometryV4::IsInsideThePadPar(Int_t *det, Float_t *pos) const
 {
 //
 // Returns true if space point with coor pos (x,y,z) (cm) falls 
@@ -283,7 +287,7 @@ Bool_t AliTOFGeometryV4::IsInsideThePadPar(Int_t *det, Float_t *pos)
 
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV4::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) 
+Float_t AliTOFGeometryV4::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) const
 {
 //
 // Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
@@ -324,7 +328,7 @@ Float_t AliTOFGeometryV4::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *po
 
 
 //_____________________________________________________________________________
-Bool_t AliTOFGeometryV4::IsInsideThePad( Int_t *det, TGeoHMatrix mat, Float_t *pos) 
+Bool_t AliTOFGeometryV4::IsInsideThePad( Int_t *det, TGeoHMatrix mat, Float_t *pos) const
 {
 //
 // Returns true if space point with coor pos (x,y,z) (cm) falls 
@@ -360,7 +364,7 @@ Bool_t AliTOFGeometryV4::IsInsideThePad( Int_t *det, TGeoHMatrix mat, Float_t *p
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV4::GetX(Int_t *det) 
+Float_t AliTOFGeometryV4::GetX(Int_t *det) const
 {
   //
   // Returns X coordinate (cm)
@@ -391,7 +395,7 @@ Float_t AliTOFGeometryV4::GetX(Int_t *det)
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV4::GetY(Int_t *det) 
+Float_t AliTOFGeometryV4::GetY(Int_t *det) const
 {
   //
   // Returns Y coordinate (cm)
@@ -423,7 +427,7 @@ Float_t AliTOFGeometryV4::GetY(Int_t *det)
 }
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV4::GetZ(Int_t *det) 
+Float_t AliTOFGeometryV4::GetZ(Int_t *det) const
 {
   //
   // Returns Z coordinate (cm)
@@ -443,7 +447,7 @@ Float_t AliTOFGeometryV4::GetZ(Int_t *det)
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV4::GetSector(Float_t *pos) 
+Int_t AliTOFGeometryV4::GetSector(Float_t *pos) const
 {
   //
   // Returns the Sector index 
@@ -463,7 +467,7 @@ Int_t AliTOFGeometryV4::GetSector(Float_t *pos)
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV4::GetPadX(Float_t *pos) 
+Int_t AliTOFGeometryV4::GetPadX(Float_t *pos) const
 {
   //
   // Returns the Pad index along X 
@@ -512,7 +516,7 @@ Int_t AliTOFGeometryV4::GetPadX(Float_t *pos)
 
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV4::GetPlate(Float_t *pos) 
+Int_t AliTOFGeometryV4::GetPlate(Float_t *pos) const
 {
   //
   // Returns the Plate index 
@@ -547,7 +551,7 @@ Int_t AliTOFGeometryV4::GetPlate(Float_t *pos)
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV4::GetStrip(Float_t *pos) 
+Int_t AliTOFGeometryV4::GetStrip(Float_t *pos) const
 {
   //
   // Returns the Strip index 
@@ -597,7 +601,7 @@ Int_t AliTOFGeometryV4::GetStrip(Float_t *pos)
 
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV4::GetPadZ(Float_t *pos) 
+Int_t AliTOFGeometryV4::GetPadZ(Float_t *pos) const
 {
   //
   // Returns the Pad index along Z 
@@ -636,7 +640,7 @@ Int_t AliTOFGeometryV4::GetPadZ(Float_t *pos)
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV4::GetMinPlateTheta(Int_t iPlate) 
+Float_t AliTOFGeometryV4::GetMinPlateTheta(Int_t iPlate) const
 {
   //
   // Returns the minimum theta angle of a given plate iPlate (rad)
@@ -661,7 +665,7 @@ Float_t AliTOFGeometryV4::GetMinPlateTheta(Int_t iPlate)
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV4::GetMaxPlateTheta(Int_t iPlate) 
+Float_t AliTOFGeometryV4::GetMaxPlateTheta(Int_t iPlate) const
 {
   //
   // Returns the maximum theta angle of a given plate iPlate (rad)
@@ -688,7 +692,7 @@ Float_t AliTOFGeometryV4::GetMaxPlateTheta(Int_t iPlate)
 
 }
 //_____________________________________________________________________________
-Float_t  AliTOFGeometryV4::GetMaxStripTheta(Int_t iPlate, Int_t iStrip) 
+Float_t  AliTOFGeometryV4::GetMaxStripTheta(Int_t iPlate, Int_t iStrip) const
 {
   //
   // Returns the maximum theta angle of a given strip iStrip (rad)
@@ -710,7 +714,7 @@ Float_t  AliTOFGeometryV4::GetMaxStripTheta(Int_t iPlate, Int_t iStrip)
 
 }
 //_____________________________________________________________________________
-Float_t  AliTOFGeometryV4::GetMinStripTheta(Int_t iPlate, Int_t iStrip) 
+Float_t  AliTOFGeometryV4::GetMinStripTheta(Int_t iPlate, Int_t iStrip) const
 {
   //
   // Returns the minimum theta angle of a given Strip iStrip (rad)
@@ -734,7 +738,7 @@ Float_t  AliTOFGeometryV4::GetMinStripTheta(Int_t iPlate, Int_t iStrip)
 
 }
 //_____________________________________________________________________________
-Float_t  AliTOFGeometryV4::GetStripTheta(Int_t iPlate, Int_t iStrip) 
+Float_t  AliTOFGeometryV4::GetStripTheta(Int_t iPlate, Int_t iStrip) const
 {
   //
   // returns the median theta angle of a given strip iStrip (rad)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/12 14:38:05  arcelli
+ Changes for TOF Reconstruction using TGeo
+
 Revision 1.2  2006/02/28 10:38:00  decaro
 AliTOFGeometry::fAngles, AliTOFGeometry::fHeights, AliTOFGeometry::fDistances arrays: dimension definition in the right location
 
@@ -48,7 +51,6 @@ Revision 0.1  2005/07/19 G. Cara Romeo and A. De Caro
 
 ClassImp(AliTOFGeometryV5)
 
-const Int_t AliTOFGeometryV5::kNStripC      = 19;       // number of strips in C type module
 
 const Float_t AliTOFGeometryV5::fgkZlenA    = 370.6*2.; // length (cm) of the A module
 const Float_t AliTOFGeometryV5::fgkZlenB    = 146.5;    // length (cm) of the B module
@@ -67,16 +69,16 @@ AliTOFGeometryV5::AliTOFGeometryV5()
   // AliTOFGeometryV5 default constructor
   //
 
-  AliTOFGeometry::kNStripC     = kNStripC;       // number of strips in C type module
+  AliTOFGeometry::fNStripC     = kNStripC;       // number of strips in C type module
 
-  AliTOFGeometry::kZlenA       = fgkZlenA;       // length of the TOF supermodule (cm)
-  AliTOFGeometry::kZlenB       = fgkZlenB;       // length of the B module (cm)
-  AliTOFGeometry::kZlenC       = fgkZlenC;       // length of the C module (cm)
-  AliTOFGeometry::kMaxhZtof    = fgkMaxhZtof;    // Max half z-size of TOF supermodule (cm)
+  AliTOFGeometry::fZlenA       = fgkZlenA;       // length of the TOF supermodule (cm)
+  AliTOFGeometry::fZlenB       = fgkZlenB;       // length of the B module (cm)
+  AliTOFGeometry::fZlenC       = fgkZlenC;       // length of the C module (cm)
+  AliTOFGeometry::fMaxhZtof    = fgkMaxhZtof;    // Max half z-size of TOF supermodule (cm)
 
-  AliTOFGeometry::fgkxTOF   = fgkxTOF;           // Inner radius of the TOF for Reconstruction (cm)
-  AliTOFGeometry::fgkRmin   = fgkRmin;           // Inner radius of the TOF (cm)
-  AliTOFGeometry::fgkRmax   = fgkRmax;           // Outer radius of the TOF (cm)
+  AliTOFGeometry::fxTOF   = fgkxTOF;           // Inner radius of the TOF for Reconstruction (cm)
+  AliTOFGeometry::fRmin   = fgkRmin;           // Inner radius of the TOF (cm)
+  AliTOFGeometry::fRmax   = fgkRmax;           // Outer radius of the TOF (cm)
 
   Init();
 
@@ -108,6 +110,8 @@ void AliTOFGeometryV5::Init()
   //   the Y of the center with respect to the FLTA/FLTB/FLTC reference frame
   //   the Z of the center with respect to the BT01/BT02/BT03 reference frame
 
+
+  fPhiSec   = 360./kNSectors;
 
   Float_t const kangles[kNPlates][kMaxNstrip] ={
     { 43.99,  43.20,  42.40,  41.59,  40.77,  39.94,  39.11,  38.25,  37.40,  36.53,
@@ -173,7 +177,7 @@ void AliTOFGeometryV5::Init()
 }
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV5::DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d) 
+Float_t AliTOFGeometryV5::DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d) const
 {
 //
 // Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
@@ -237,7 +241,7 @@ Float_t AliTOFGeometryV5::DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *di
 }
 
 //_____________________________________________________________________________
-Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos) 
+Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos) const
 {
 //
 // Returns true if space point with coor pos (x,y,z) (cm) falls 
@@ -310,7 +314,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePadPar(Int_t *det, Float_t *pos)
 
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) 
+Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d) const
 {
 //
 // Returns distance of  space point with coor pos (x,y,z) (cm) wrt 
@@ -347,7 +351,7 @@ Float_t AliTOFGeometryV5::DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *po
 
 
 //_____________________________________________________________________________
-Bool_t AliTOFGeometryV5::IsInsideThePad( Int_t *det, TGeoHMatrix mat, Float_t *pos) 
+Bool_t AliTOFGeometryV5::IsInsideThePad( Int_t *det, TGeoHMatrix mat, Float_t *pos) const
 {
 //
 // Returns true if space point with coor pos (x,y,z) (cm) falls 
@@ -379,7 +383,7 @@ Bool_t AliTOFGeometryV5::IsInsideThePad( Int_t *det, TGeoHMatrix mat, Float_t *p
 }
 //_____________________________________________________________________________
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV5::GetX(Int_t *det)
+Float_t AliTOFGeometryV5::GetX(Int_t *det) const
 {
   //
   // Returns X coordinate (cm)
@@ -492,7 +496,7 @@ Float_t AliTOFGeometryV5::GetX(Int_t *det)
 
 }
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV5::GetY(Int_t *det)
+Float_t AliTOFGeometryV5::GetY(Int_t *det) const
 {
   //
   // Returns Y coordinate (cm)
@@ -607,7 +611,7 @@ Float_t AliTOFGeometryV5::GetY(Int_t *det)
 }
 
 //_____________________________________________________________________________
-Float_t AliTOFGeometryV5::GetZ(Int_t *det)
+Float_t AliTOFGeometryV5::GetZ(Int_t *det) const
 {
   //
   // Returns Z coordinate (cm)
@@ -706,7 +710,7 @@ Float_t AliTOFGeometryV5::GetZ(Int_t *det)
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV5::GetSector(Float_t *pos) 
+Int_t AliTOFGeometryV5::GetSector(Float_t *pos) const
 {
   //
   // Returns the Sector index 
@@ -740,7 +744,7 @@ Int_t AliTOFGeometryV5::GetSector(Float_t *pos)
 }
 //_____________________________________________________________________________
 
-Int_t AliTOFGeometryV5::GetPlate(Float_t *pos)
+Int_t AliTOFGeometryV5::GetPlate(Float_t *pos) const
 {
   //
   // Returns the Plate index 
@@ -836,7 +840,7 @@ Int_t AliTOFGeometryV5::GetPlate(Float_t *pos)
 }
 
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV5::GetStrip(Float_t *pos)
+Int_t AliTOFGeometryV5::GetStrip(Float_t *pos) const
 {
   //
   // Returns the Strip index 
@@ -962,7 +966,7 @@ Int_t AliTOFGeometryV5::GetStrip(Float_t *pos)
   
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV5::GetPadZ(Float_t *pos)
+Int_t AliTOFGeometryV5::GetPadZ(Float_t *pos) const
 {
   //
   // Returns the Pad index along Z 
@@ -1061,7 +1065,7 @@ Int_t AliTOFGeometryV5::GetPadZ(Float_t *pos)
 
 }
 //_____________________________________________________________________________
-Int_t AliTOFGeometryV5::GetPadX(Float_t *pos)
+Int_t AliTOFGeometryV5::GetPadX(Float_t *pos) const
 {
   //
   // Returns the Pad index along X 
@@ -1465,8 +1469,11 @@ Float_t AliTOFGeometryV5::GetPadDz(Float_t *pos)
 }
 //_____________________________________________________________________________
 
-void AliTOFGeometryV5::Translation(Float_t *xyz, Float_t translationVector[3])
+void AliTOFGeometryV5::Translation(Float_t *xyz, Float_t translationVector[3]) const
 {
+  //
+  // Return the vector xyz translated by translationVector vector
+  //
 
   Int_t ii=0;
 
@@ -1478,8 +1485,11 @@ void AliTOFGeometryV5::Translation(Float_t *xyz, Float_t translationVector[3])
 }
 //_____________________________________________________________________________
 
-void AliTOFGeometryV5::Rotation(Float_t *xyz, Double_t rotationAngles[6])
+void AliTOFGeometryV5::Rotation(Float_t *xyz, Double_t rotationAngles[6]) const
 {
+  //
+  // Return the vector xyz rotated according to the rotationAngles angles
+  //
 
   Int_t ii=0;
   /*
@@ -1505,8 +1515,11 @@ void AliTOFGeometryV5::Rotation(Float_t *xyz, Double_t rotationAngles[6])
 
 }
 //_____________________________________________________________________________
-void AliTOFGeometryV5::InverseRotation(Float_t *xyz, Double_t rotationAngles[6])
+void AliTOFGeometryV5::InverseRotation(Float_t *xyz, Double_t rotationAngles[6]) const
 {
+  //
+  //
+  //
 
   Int_t ii=0;
 

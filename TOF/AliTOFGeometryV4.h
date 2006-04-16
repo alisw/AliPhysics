@@ -21,25 +21,25 @@ class AliTOFGeometryV4: public AliTOFGeometry {
   
   void    ImportGeometry();
   void    Init();
-  Bool_t  IsInsideThePad(Int_t *det, TGeoHMatrix mat, Float_t *pos);
-  Float_t DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d=0);
-  Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos); 
-  Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0);
+  Bool_t  IsInsideThePad(Int_t *det, TGeoHMatrix mat, Float_t *pos) const ;
+  Float_t DistanceToPad(Int_t *det, TGeoHMatrix mat, Float_t *pos, Float_t *dist3d=0) const ;
+  Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos) const ; 
+  Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0) const ;
   void    GetVolumePath(Int_t *ind, Char_t *path );
-  Int_t   GetPlate(Float_t *pos) ;
-  Int_t   GetStrip(Float_t *pos);
-  Int_t   GetSector(Float_t *pos);
-  Int_t   GetPadX(Float_t *pos);
-  Int_t   GetPadZ(Float_t *pos);
+  Int_t   GetPlate(Float_t *pos) const ;
+  Int_t   GetStrip(Float_t *pos) const ;
+  Int_t   GetSector(Float_t *pos) const ;
+  Int_t   GetPadX(Float_t *pos) const ;
+  Int_t   GetPadZ(Float_t *pos) const ;
   void    GetPos(Int_t *det,Float_t *pos);
-  Float_t GetX(Int_t *det);
-  Float_t GetY(Int_t *det);
-  Float_t GetZ(Int_t *det);
-  Float_t GetMinPlateTheta(Int_t iPlate);
-  Float_t GetMaxPlateTheta(Int_t iPlate);
-  Float_t GetMinStripTheta(Int_t iPlate, Int_t iStrip);
-  Float_t GetMaxStripTheta(Int_t iPlate, Int_t iStrip);
-  Float_t GetStripTheta(Int_t iPlate, Int_t iStrip);
+  Float_t GetX(Int_t *det) const ;
+  Float_t GetY(Int_t *det) const ;
+  Float_t GetZ(Int_t *det) const ;
+  Float_t GetMinPlateTheta(Int_t iPlate) const;
+  Float_t GetMaxPlateTheta(Int_t iPlate) const;
+  Float_t GetMinStripTheta(Int_t iPlate, Int_t iStrip) const;
+  Float_t GetMaxStripTheta(Int_t iPlate, Int_t iStrip) const;
+  Float_t GetStripTheta(Int_t iPlate, Int_t iStrip) const;
 
   Int_t NStripC() const    { return kNStripC;};
   Int_t   NPadXSector() const { return (AliTOFGeometry::kNStripA + 2*AliTOFGeometry::kNStripB +
@@ -59,10 +59,11 @@ class AliTOFGeometryV4: public AliTOFGeometry {
   static  Float_t OverSpc()     { return fgkOverSpc;};
 
   protected:
+  enum {
+    kNStripC    = 20 // number of strips in C type module 
+  };
 
   //private:
-
-  static const Int_t kNStripC;         // number of strips in C type module 
 
   static const Float_t fgkZlenA;       // length (cm) of the A module
   static const Float_t fgkZlenB;       // length (cm) of the B module

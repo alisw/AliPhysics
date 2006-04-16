@@ -26,6 +26,7 @@ class AliTOFCalPlateA: public TObject
   AliTOFCalPlateA(AliTOFChannel *ch);
   AliTOFCalPlateA(AliTOFGeometry *geom,AliTOFChannel *ch);
   AliTOFCalPlateA(const AliTOFCalPlateA& pl);
+  AliTOFCalPlateA& operator=(const AliTOFCalPlateA &source); // ass. op.
   virtual ~AliTOFCalPlateA();
   Int_t NStripA()const {return fNStripA;}
   Int_t NpadZ()const {return fNpadZ;}

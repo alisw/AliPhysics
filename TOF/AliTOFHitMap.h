@@ -58,7 +58,7 @@ class AliTOFHitMap : public TObject
     Int_t fMaxIndex;                      // maximum index in hit map
     Int_t *fHitMap;                       // ! [fMaxIndex]         
 
-    AliTOFGeometry *fTOFGeometry;
+    AliTOFGeometry *fTOFGeometry;         // Pointer to the TOF geometry
 
     ClassDef(AliTOFHitMap,0) // Implements HitMap as a 1-dim array
 };

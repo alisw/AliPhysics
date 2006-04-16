@@ -45,15 +45,15 @@ public:
   virtual void  Print(Option_t* option) const ;
   Bool_t   operator == (const AliTOFT0 & tzero) const ;
 
-private:
+ protected:
+
+ private:
   Int_t   fNevents;         // Number of events for which calculate the T0
   Float_t fTimeResolution;  // global time resolution used to calculate T0
   Float_t fLowerMomBound;   // momentum lower bound for selected primary tracks 
   Float_t fUpperMomBound;   // momentum upper bound for selected primary tracks 
   TString fT0File ;         // output file; it contains for time being only 3 histos 
   TString fHeadersFile;     // input file
-
- protected:
 
   ClassDef(AliTOFT0,1)  // Calculate the time zero using TOF detector
 

@@ -93,6 +93,36 @@ AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):AliTracker() {
   fTracks=t.fTracks;
   fN=t.fN;
 }
+
+//_____________________________________________________________________________
+AliTOFtracker& AliTOFtracker::operator=(const AliTOFtracker &t)
+{ 
+  //AliTOFtracker assignment operator
+
+  this->fHoles=t.fHoles;
+  this->fNseeds=t.fNseeds;
+  this->fNseedsTOF=t.fNseedsTOF;
+  this->fngoodmatch=t.fngoodmatch;
+  this->fnbadmatch=t.fnbadmatch;
+  this->fnunmatch=t.fnunmatch;
+  this->fnmatch=t.fnmatch;
+  this->fGeom = t.fGeom;
+  this->fTOFpid = t.fTOFpid;
+  this->fR=t.fR; 
+  this->fTOFHeigth=t.fTOFHeigth;  
+  this->fdCut=t.fdCut; 
+  this->fDy=t.fDy; 
+  this->fDz=t.fDz; 
+  this->fDx=t.fDx; 
+  this->fDzMax=t.fDzMax; 
+  this->fDyMax=t.fDyMax; 
+  this->fSeeds=t.fSeeds;
+  this->fTracks=t.fTracks;
+  this->fN=t.fN;
+  return *this;
+
+}
+
 //_____________________________________________________________________________
 Int_t AliTOFtracker::PropagateBack(AliESD* event) {
   //
@@ -446,8 +476,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     delete trackTOFin;
 
     //  Store quantities to be used in the TOF Calibration
-    Float_t ToT=c->GetToT(); // in ps
-    t->SetTOFsignalToT(ToT);
+    Float_t tToT=c->GetToT(); // in ps
+    t->SetTOFsignalToT(tToT);
     Int_t ind[5];
     ind[0]=c->GetDetInd(0);
     ind[1]=c->GetDetInd(1);

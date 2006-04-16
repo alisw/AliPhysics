@@ -28,15 +28,17 @@ public:
 
  AliTOFtrackerMI(AliTOFGeometry* geom, Double_t parPID[2]); 
  AliTOFtrackerMI(const AliTOFtrackerMI &t); //Copy Ctor 
+ AliTOFtrackerMI& operator=(const AliTOFtrackerMI &source); // ass. op.
+
  //  virtual ~AliTOFtrackerMI() {delete fTOFpid;}
  virtual ~AliTOFtrackerMI();
-  virtual Int_t Clusters2Tracks(AliESD* /*event*/) {return -1;};
-  virtual Int_t PropagateBack(AliESD* event);
-  virtual Int_t RefitInward(AliESD* /*event*/) {return -1;};
-  virtual Int_t LoadClusters(TTree *dTree); // Loading Clusters from Digits
-  virtual void  UnloadClusters();// UnLoad Clusters
-  virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
-  void    GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov, AliTOFtrack * track, Float_t & py, Float_t &pz);
+ virtual Int_t Clusters2Tracks(AliESD* /*event*/) {return -1;};
+ virtual Int_t PropagateBack(AliESD* event);
+ virtual Int_t RefitInward(AliESD* /*event*/) {return -1;};
+ virtual Int_t LoadClusters(TTree *dTree); // Loading Clusters from Digits
+ virtual void  UnloadClusters();// UnLoad Clusters
+ virtual AliCluster *GetCluster(Int_t /*index*/) const {return NULL;};
+ void    GetLikelihood(Float_t dy, Float_t dz, const Double_t *cov, AliTOFtrack * track, Float_t & py, Float_t &pz);
 public:
  /*  class AliTOFcluster { */
 /*     friend class AliTOFtrackerMI; */

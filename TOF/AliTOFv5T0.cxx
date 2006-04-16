@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/03/20 08:20:35  decaro
+Al layer: positioning correction
+
 Revision 1.5  2006/03/20 07:54:20  decaro
 Correction of some layer thickness
 
@@ -237,6 +240,9 @@ void AliTOFv5T0::CreateGeometry()
 void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
 		       Float_t zlenB)
 {
+  //
+  // Definition of the Time Of Fligh Resistive Plate Chambers
+  //
 
   const Float_t kPi = TMath::Pi();
 
@@ -978,7 +984,7 @@ void AliTOFv5T0::DrawModule() const
   gMC->Gdopt("hide","off");
 }
 //_____________________________________________________________________________
-void AliTOFv5T0::DrawDetectorModules()
+void AliTOFv5T0::DrawDetectorModules() const
 {
   //
   // Draw a shaded view of the TOF detector version 4
@@ -1044,7 +1050,7 @@ void AliTOFv5T0::DrawDetectorModules()
 }                                 
 
 //_____________________________________________________________________________
-void AliTOFv5T0::DrawDetectorStrips()
+void AliTOFv5T0::DrawDetectorStrips() const
 {
   //
   // Draw a shaded view of the TOF strips for version 4
@@ -1477,7 +1483,8 @@ void AliTOFv5T0::StepManager()
   }
 }
 //-------------------------------------------------------------------
-void AliTOFv5T0::MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Float_t* d,Float_t* s,Int_t n) {
+void AliTOFv5T0::MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Float_t* d,Float_t* s,Int_t n) const
+{
   // a[] atomic weights vector  (in)
   //     (atoms present in more compound appear separately)
   // m[] number of corresponding atoms in the mixture  (in)

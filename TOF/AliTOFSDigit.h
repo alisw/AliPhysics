@@ -19,9 +19,6 @@
 //class TArrayF;
 class AliTOFGeometry;
 
-// number 3 is a legacy from AliDigit object
-const Int_t kMAXDIGITS = 3;
-
 class AliTOFSDigit : public TObject {
 
   //overloading of the streamer << operator
@@ -34,6 +31,7 @@ class AliTOFSDigit : public TObject {
   AliTOFSDigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx, Int_t padz, Float_t tdc, Float_t adc);
 // copy ctor
   AliTOFSDigit(const AliTOFSDigit & digit) ;
+  AliTOFSDigit& operator=(const AliTOFSDigit & digit) ;
   virtual ~AliTOFSDigit();
   void            GetLocation(Int_t* Loc) const;
   Int_t           GetTotPad(AliTOFGeometry *tofGeom) const;
@@ -53,7 +51,12 @@ class AliTOFSDigit : public TObject {
   Int_t   GetPadx()   const     {return fPadx;}
   Int_t   GetPadz()   const     {return fPadz;}
 
+  enum {
+    kMAXDIGITS = 3 // number 3 is a legacy from AliDigit object
+  };
+
 protected:
+
   Int_t   fSector;  // number of sector
   Int_t   fPlate;   // number of plate
   Int_t   fStrip;   // number of strip

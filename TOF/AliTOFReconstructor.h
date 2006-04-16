@@ -12,7 +12,7 @@ class AliTOFGeometry;
 class AliTOFReconstructor: public AliReconstructor {
 public:
   //AliTOFReconstructor(): AliReconstructor() {};
-  //virtual ~AliTOFReconstructor() {};
+  virtual ~AliTOFReconstructor() {};
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
   virtual void         Reconstruct(AliRunLoader* runLoader,

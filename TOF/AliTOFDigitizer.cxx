@@ -80,6 +80,30 @@ AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager)
 }
 
 //------------------------------------------------------------------------
+AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source)
+  :AliDigitizer(source)
+{
+  // copy constructor
+  this->fDigits=source.fDigits;
+  this->fSDigitsArray=source.fSDigitsArray;
+  this->fhitMap=source.fhitMap;
+  this->fGeom=source.fGeom; 
+
+}
+
+//------------------------------------------------------------------------
+  AliTOFDigitizer& AliTOFDigitizer::operator=(const AliTOFDigitizer &source)
+{
+  // ass. op.
+  this->fDigits=source.fDigits;
+  this->fSDigitsArray=source.fSDigitsArray;
+  this->fhitMap=source.fhitMap;
+  this->fGeom=source.fGeom; 
+  return *this;
+
+}
+
+//------------------------------------------------------------------------
 AliTOFDigitizer::~AliTOFDigitizer()
 {
   // Destructor
@@ -236,7 +260,7 @@ void AliTOFDigitizer::CreateDigits()
     // start loop on number of slots for current sdigit
     for (Int_t islot = 0; islot < nslot; islot++) {
       Float_t  digit[2];     // TOF digit variables
-      Int_t tracknum[kMAXDIGITS];     // contributing tracks for the current slot
+      Int_t tracknum[AliTOFSDigit::kMAXDIGITS];     // contributing tracks for the current slot
       
       Float_t tdc=tofsdigit->GetTdc(islot); digit[0]=tdc;
       Float_t adc=tofsdigit->GetAdc(islot); digit[1]=adc;

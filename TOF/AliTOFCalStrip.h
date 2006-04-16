@@ -25,6 +25,7 @@ class AliTOFCalStrip: public TObject
   AliTOFCalStrip();
   AliTOFCalStrip(AliTOFChannel *ch);
   AliTOFCalStrip(const AliTOFCalStrip& strip);
+  AliTOFCalStrip& operator=(const AliTOFCalStrip &source); // ass. op.
   virtual ~AliTOFCalStrip();
   Int_t NpadZ()const {return fNpadZ;}
   Int_t NpadX()const {return fNpadX;}

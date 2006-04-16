@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.3  2006/03/28 14:56:48  arcelli
 updates to handle new V5 geometry & some re-arrangements
 
@@ -97,6 +100,24 @@ AliTOFCal::AliTOFCal(const AliTOFCal& cal):
       fPads[i]=cal.fPads[i];
     }
     gROOT->GetListOfBrowsables()->Add(this);
+  }
+//____________________________________________________________________________ 
+AliTOFCal& AliTOFCal::operator=(const AliTOFCal& cal)
+  {
+    //assignment operator
+    this->fNSector = cal.fNSector;
+    this->fNPlate = cal.fNPlate;
+    this->fNStripA = cal.fNStripA;
+    this->fNStripB = cal.fNStripB;
+    this->fNStripC = cal.fNStripC;
+    this->fNpadZ = cal.fNpadZ;
+    this->fNpadX = cal.fNpadX;
+    this->fnpad = cal.fnpad;
+    for (Int_t i = 0; i<fnpad; i++){
+      this->fPads[i]=cal.fPads[i];
+    }
+    return *this;
+
   }
 //____________________________________________________________________________ 
 AliTOFCal::~AliTOFCal()

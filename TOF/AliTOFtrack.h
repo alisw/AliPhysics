@@ -15,9 +15,9 @@ class AliTOFtrack : public AliKalmanTrack {
 public:
 
    AliTOFtrack():AliKalmanTrack(){}
-   AliTOFtrack(const AliTOFtrack& t);    
-   AliTOFtrack(const AliESDtrack& t);    
-
+   AliTOFtrack(const AliTOFtrack& t);
+   AliTOFtrack(const AliESDtrack& t);
+   AliTOFtrack& operator=(const AliTOFtrack &source); // ass. op.
 
    Double_t GetAlpha() const {return fAlpha;}
    Int_t    GetSector() const {
@@ -63,7 +63,7 @@ public:
 
 protected:
    void GetXYZ(Float_t r[3]) const;
-  
+   
    Int_t Update(const AliCluster */*c*/, Double_t /*chi2*/, UInt_t /*idx*/) { 
      return 0;
    }

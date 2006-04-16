@@ -74,6 +74,24 @@ ClassImp(AliTOFSDigitizer)
 
 }
 
+//------------------------------------------------------------------------
+AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source)
+  :TTask(source)
+{
+  // copy constructor
+  this->fTOFGeometry=source.fTOFGeometry;
+
+}
+
+//____________________________________________________________________________ 
+AliTOFSDigitizer& AliTOFSDigitizer::operator=(const AliTOFSDigitizer &source)
+{
+  // ass. op.
+  this->fTOFGeometry=source.fTOFGeometry;
+  return *this;
+
+}
+
 //____________________________________________________________________________ 
 AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("TOFSDigitizer","")
 {

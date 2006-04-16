@@ -30,7 +30,7 @@ class AliTOFDDLRawData:public TObject{
 
   Int_t fVerbose;               //Verbose level (0:no msg, 1:msg, 2:digits in txt files)
   Int_t fIndex;                 //number of 32 words to be stored into the output file
-  AliTOFGeometry *fTOFgeometry; //
+  AliTOFGeometry *fTOFgeometry; //Pointer to the TOF geometry
 
   ClassDef(AliTOFDDLRawData,1)
 

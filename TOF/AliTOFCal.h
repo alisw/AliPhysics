@@ -24,6 +24,7 @@ class AliTOFCal: public TObject
   AliTOFCal();
   AliTOFCal(AliTOFGeometry *geom);
   AliTOFCal(const AliTOFCal& cal);
+  AliTOFCal& operator=(const AliTOFCal &source); // ass. op.
   virtual ~AliTOFCal();
   void Browse(TBrowser *b);
   Bool_t IsFolder() const{return kTRUE;}

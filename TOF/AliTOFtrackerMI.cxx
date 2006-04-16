@@ -85,6 +85,33 @@ AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):AliTracker() {
 }
 
 //_________________________________________________________________________________
+AliTOFtrackerMI& AliTOFtrackerMI::operator=(const AliTOFtrackerMI &t)
+{ 
+  //AliTOFtrackerMI assignment operator
+
+  this->fHoles=t.fHoles;
+  this->fNseeds=t.fNseeds;
+  this->fNseedsTOF=t.fNseedsTOF;
+  this->fngoodmatch=t.fngoodmatch;
+  this->fnbadmatch=t.fnbadmatch;
+  this->fnunmatch=t.fnunmatch;
+  this->fnmatch=t.fnmatch;
+  this->fGeom = t.fGeom;
+  this->fTOFpid = t.fTOFpid;
+  this->fR=t.fR; 
+  this->fTOFHeigth=t.fTOFHeigth;  
+  this->fdCut=t.fdCut; 
+  this->fDy=t.fDy;
+  this->fDz=t.fDz;
+  this->fDx=t.fDx;
+  this->fSeeds=t.fSeeds;
+  this->fTracks=t.fTracks;
+  this->fN=t.fN;
+  return *this;
+
+}
+
+//_____________________________________________________________________________
 AliTOFtrackerMI::~AliTOFtrackerMI(){
   //
   //
@@ -518,8 +545,8 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     }
     //
     //  Store quantities to be used for TOF Calibration
-    Float_t ToT=cgold->GetToT(); // in ps
-    t->SetTOFsignalToT(ToT);
+    Float_t tToT=cgold->GetToT(); // in ps
+    t->SetTOFsignalToT(tToT);
     Int_t ind[5];
     ind[0]=cgold->GetDetInd(0);
     ind[1]=cgold->GetDetInd(1);

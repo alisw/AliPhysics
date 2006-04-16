@@ -97,6 +97,25 @@ AliTOFSDigit::AliTOFSDigit(const AliTOFSDigit & digit)
 }
 
 ////////////////////////////////////////////////////////////////////////
+AliTOFSDigit& AliTOFSDigit::operator=(const AliTOFSDigit & digit)
+{
+  // 
+  // copy ctor for AliTOFSDigit object
+  //
+  this->fSector = digit.fSector;
+  this->fPlate  = digit.fPlate;
+  this->fStrip  = digit.fStrip;
+  this->fPadx   = digit.fPadx;
+  this->fPadz   = digit.fPadz;
+  this->fNDigits = digit.fNDigits;
+  this->fTdc = digit.fTdc;
+  this->fAdc = digit.fAdc;
+  this->fTracks = digit.fTracks;
+  return *this;
+
+}
+
+////////////////////////////////////////////////////////////////////////
 AliTOFSDigit::AliTOFSDigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx,
 			   Int_t padz, Float_t tdc, Float_t adc)
 {

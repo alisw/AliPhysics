@@ -30,12 +30,12 @@ public:
   virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t, Float_t) {};
   virtual void   StepManager();
   virtual void   DrawModule() const;
-  virtual void   DrawDetectorModules();
-  virtual void   DrawDetectorStrips();
+  virtual void   DrawDetectorModules() const;
+  virtual void   DrawDetectorStrips() const;
  
  protected:
 
-  void MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Float_t* d,Float_t* s,Int_t n);
+  void MaterialMixer(Float_t* p,Float_t* a,Float_t* m,Float_t* d,Float_t* s,Int_t n) const;
 
 private:
   Int_t fIdFTOA; // FTOA volume identifier (outer plate A)
