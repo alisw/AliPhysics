@@ -666,6 +666,7 @@ Double_t AliRICHParam::ErrGeom(Double_t thetaC, Double_t phiC, Double_t Ptheta, 
   Double_t alpha =TMath::Cos(Ptheta)-TMath::Tan(thetaC)*TMath::Cos(dphi)*TMath::Sin(Ptheta);
 
   Double_t k = 1.-RefC6F14m*RefC6F14m+alpha*alpha/(beta*beta);
+  if (k<0) k=0;  //PH more investigation needed...
 
   Double_t Hgap = Pc2Win();
 
