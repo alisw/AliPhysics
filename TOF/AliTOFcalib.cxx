@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/04/11 15:28:32  hristov
+Checks on cache status before deleting calibration objects (A.Colla)
+
 Revision 1.5  2006/04/05 08:35:38  hristov
 Coding conventions (S.Arcelli, C.Zampolli)
 
@@ -89,11 +92,9 @@ AliTOFcalib::AliTOFcalib():TTask("AliTOFcalib",""){
   fNpadZ = geom->NpadZ();
   fNpadX = geom->NpadX();
   fNChannels = fNSector*(2*(fNStripC+fNStripB)+fNStripA)*fNpadZ*fNpadX; //generalized version
-  fTOFCal = new AliTOFCal(geom);
-  fTOFSimCal = new AliTOFCal(geom);
-  fTOFCal->CreateArray();
-  fTOFSimCal->CreateArray();
-  fTOFSimToT=0x0;
+  fTOFCal = 0x0;
+  fTOFSimCal = 0x0;
+  fTOFSimToT = 0x0;
   delete geom;
 }
 //_______________________________________________________________________
@@ -110,11 +111,9 @@ AliTOFcalib::AliTOFcalib(AliTOFGeometry *geom):TTask("AliTOFcalib",""){
   fNpadZ = geom->NpadZ();
   fNpadX = geom->NpadX();
   fNChannels = fNSector*(2*(fNStripC+fNStripB)+fNStripA)*fNpadZ*fNpadX; //generalized version
-  fTOFCal = new AliTOFCal(geom);
-  fTOFSimCal = new AliTOFCal(geom);
-  fTOFCal->CreateArray();
-  fTOFSimCal->CreateArray();
-  fTOFSimToT=0x0;
+  fTOFCal = 0x0;
+  fTOFSimCal = 0x0;
+  fTOFSimToT = 0x0;
 }
 //____________________________________________________________________________ 
 
@@ -484,6 +483,12 @@ void AliTOFcalib::CalibrateESD(){
     for (Int_t kk = 0; kk< nfpar; kk++){
       par[kk]=fGold->GetParameter(kk);
     }
+    if (!fTOFCal) {
+      AliTOFGeometry *geom=new AliTOFGeometryV5();
+      fTOFCal = new AliTOFCal(geom);
+      fTOFCal->CreateArray();
+      delete geom;
+    }
     AliTOFChannel * calChannel = fTOFCal->GetChannel(i);
     calChannel->SetSlewPar(par);
   }
@@ -605,6 +610,12 @@ void AliTOFcalib::CorrectESDTime()
     else if (ipid == 1) etime = expTime[3]*1E-3; //ns
     else if (ipid == 2) etime = expTime[4]*1E-3; //ns
     Float_t par[6];
+    if (!fTOFCal) {
+      AliTOFGeometry *geom=new AliTOFGeometryV5();
+      fTOFCal = new AliTOFCal(geom);
+      fTOFCal->CreateArray();
+      delete geom;
+    }
     AliTOFChannel * calChannel = fTOFCal->GetChannel(index);
     for (Int_t j = 0; j<6; j++){
       par[j]=calChannel->GetSlewPar(j);
@@ -634,6 +645,12 @@ void AliTOFcalib::CorrectESDTime(AliESD *event){
       continue;
     }
     Int_t index = t->GetTOFCalChannel();
+    if (!fTOFCal) {
+      AliTOFGeometry *geom=new AliTOFGeometryV5();
+      fTOFCal = new AliTOFCal(geom);
+      fTOFCal->CreateArray();
+      delete geom;
+    }
     AliTOFChannel * calChannel = fTOFCal->GetChannel(index);
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
@@ -657,6 +674,12 @@ void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   AliCDBId id(out,minrun,maxrun);
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
+  if (!fTOFCal) {
+    AliTOFGeometry *geom=new AliTOFGeometryV5();
+    fTOFCal = new AliTOFCal(geom);
+    fTOFCal->CreateArray();
+    delete geom;
+  }
   man->Put(fTOFCal,id,md);
   delete md;
 }
@@ -713,7 +736,12 @@ void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   for (Int_t ipar=0;ipar<npar;ipar++){
     par[ipar]=f->GetParameter(ipar);
   }
-
+  if (!fTOFSimCal) {
+    AliTOFGeometry *geom=new AliTOFGeometryV5();
+    fTOFSimCal = new AliTOFCal(geom);
+    fTOFSimCal->CreateArray();
+    delete geom;
+  }
   for(Int_t iTOFch=0; iTOFch<fTOFSimCal->NPads();iTOFch++){
     AliTOFChannel * calChannel = fTOFSimCal->GetChannel(iTOFch);
     calChannel->SetSlewPar(par);
