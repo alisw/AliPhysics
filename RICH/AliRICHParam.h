@@ -625,6 +625,7 @@ Double_t RefC6F14m = 1.29337;
 
   Double_t alpha =TMath::Cos(Ptheta)-TMath::Tan(thetaC)*TMath::Cos(dphi)*TMath::Sin(Ptheta);
   Double_t k = 1.-RefC6F14m*RefC6F14m+alpha*alpha/(beta*beta);
+  if (k<0) k=0; //PH more investigation needed...
 
   Double_t mu = TMath::Sin(Ptheta)*TMath::Sin(Pphi) + TMath::Tan(thetaC)*(TMath::Cos(Ptheta)*TMath::Cos(dphi)*TMath::Sin(Pphi)
 + TMath::Sin(dphi)*TMath::Cos(Pphi));
