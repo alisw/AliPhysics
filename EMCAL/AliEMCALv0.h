@@ -21,7 +21,7 @@ class AliEMCALShishKebabTrd1Module;
 
 // --- AliRoot header files ---
 #include "AliEMCAL.h"
-
+#include <TArrayF.h>
 //class AliEMCALGeometry ; 
 
 class AliEMCALv0 : public AliEMCAL {
@@ -30,13 +30,16 @@ class AliEMCALv0 : public AliEMCAL {
 
   AliEMCALv0():AliEMCAL() {}
   AliEMCALv0(const char *name, const char *title="") ;
-  AliEMCALv0(const AliEMCALv0 & emcal):AliEMCAL(emcal) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;  
-  } 
   virtual ~AliEMCALv0(){} 
 
+  AliEMCALv0(const AliEMCALv0 & emcal):AliEMCAL(emcal) {
+    Fatal("cpy ctor", "not implemented") ;  }
+  AliEMCALv0 & operator = (const AliEMCALv0  & /*rvalue*/) {
+    // assignement operator requested by coding convention but not needed
+    Fatal("operator =", "not implemented");
+    return *this; 
+  }
+ 
   using AliEMCAL::AddHit;
 
   virtual void BuildGeometry();// creates the geometry for the ROOT display
@@ -52,11 +55,6 @@ class AliEMCALv0 : public AliEMCAL {
     return TString("v0") ; 
   }
   
-  AliEMCALv0 & operator = (const AliEMCALv0 & /*rvalue*/)  {
-    // assignement operator requested by coding convention but not needed
-    Fatal("operator =", "not implemented") ;  
-    return *this ; 
-  }
   // ShishKebab 
   void CreateShishKebabGeometry();
   void CreateSmod(const char* mother="XEN1");
@@ -66,19 +64,27 @@ class AliEMCALv0 : public AliEMCAL {
   void Trd1Tower4X4();
   void PbInTrap(const double parTRAP[11], TString n);
   // TRD2 - 1th design
-  void Scm0InTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5], Double_t parSCM0[5]);
+  void Scm0InTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parSCM0[5]);
   void Division2X2InScm0(const AliEMCALGeometry * g, const Double_t parSCM0[5]);
   void PbInTrapForTrd2(const double *parTRAP, TString name);
   // TRD2 - 2th design
-  void PbmoInTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5], Double_t parPBMO[5]);
+  void PbmoInTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parPBMO[5]);
   void Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5]);
 
   TList  *GetShishKebabModules() {return fShishKebabModules;}
   AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta=0);
- private:
-  TList *fShishKebabModules; //! list of modules
-  
+
  protected:
+  TList   *fShishKebabModules; //! list of modules
+ private:
+  TArrayF  fEnvelop1;          //! parameters of EMCAL envelop for TRD1(2) case 
+  Int_t    fIdRotm;            //! number of rotation matrix (working variable)
+  Int_t   *fIdTmedArr;         //! fIdtmed->GetArray() - 1599;
+  Double_t fSampleWidth;       //! sample width = double(g->GetECPbRadThick()+g->GetECScintThick());
+  Double_t fSmodPar0;          //! x size of super module  
+  Double_t fSmodPar1;          //! y size of super module  
+  Double_t fSmodPar2;          //! z size of super module  
+  Double_t fParEMOD[5];        //! parameters of EMCAL module (TRD1,2)
 
   ClassDef(AliEMCALv0,3) // Implementation of EMCAL manager class for midrapidity barrel layout between 80 and 180(190) degrees 
     

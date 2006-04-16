@@ -25,20 +25,19 @@
 
 // --- ROOT system ---
 
-#include "TNode.h"
-#include "TBRIK.h"
-#include "TTRD1.h"
-#include "TTRD2.h"
-#include "TTRAP.h"
-#include "TPGON.h"
-#include "TTUBS.h"
-#include "TGeometry.h"
-#include "TVirtualMC.h"
-#include "TArrayI.h"
-#include "TROOT.h"
-#include "TArrayF.h"
-#include "TList.h"
-#include "TVector2.h"
+#include <TNode.h>
+#include <TBRIK.h>
+#include <TTRD1.h>
+#include <TTRD2.h>
+#include <TTRAP.h>
+#include <TPGON.h>
+#include <TTUBS.h>
+#include <TGeometry.h>
+#include <TVirtualMC.h>
+#include <TArrayI.h>
+#include <TROOT.h>
+#include <TList.h>
+#include <TVector2.h>
 
 #include "AliEMCALShishKebabModule.h"
 #include "AliEMCALShishKebabTrd1Module.h"
@@ -56,12 +55,14 @@
 
 ClassImp(AliEMCALv0)
 
-TArrayF ENVELOP1; // now global for BuildGeometry() - 30-aug-2004
-int idAIR=1599, idPB = 1600, idSC = 1601, idSTEEL = 1603; // global
-Int_t *idtmed=0, idrotm=0;
-double sampleWidth=0.;
-double parEMOD[5], smodPar0=0., smodPar1=0., smodPar2=0.;
-
+// EMCAL material
+enum
+ {
+  kIdAIR   = 1599, 
+  kIdPB    = 1600, 
+  kIdSC    = 1601, 
+  kIdSTEEL = 1603
+ };
 //______________________________________________________________________
 AliEMCALv0::AliEMCALv0(const char *name, const char *title):
   AliEMCAL(name,title)
@@ -106,8 +107,8 @@ void AliEMCALv0::BuildGeometry()
         TPGON *pgon = new TPGON(envn, "PGON that contains arm 1", "void", 
         geom->GetArm1PhiMin(),geom->GetArm1PhiMax()-geom->GetArm1PhiMin(),geom->GetNPhiSuperModule(), 2);
       // define section
-        pgon->DefineSection(0, ENVELOP1[4],  ENVELOP1[5], ENVELOP1[6]);
-        pgon->DefineSection(1, ENVELOP1[7],  ENVELOP1[5], ENVELOP1[6]);
+        pgon->DefineSection(0, fEnvelop1[4],  fEnvelop1[5], fEnvelop1[6]);
+        pgon->DefineSection(1, fEnvelop1[7],  fEnvelop1[5], fEnvelop1[6]);
         top->cd();
         envelopNode = new TNode(envn, "Arm1 Envelop2", envn, 0., 0., 0., "") ;
       }
@@ -118,7 +119,8 @@ void AliEMCALv0::BuildGeometry()
 }
 
 TNode *AliEMCALv0::BuildGeometryOfWSUC()
-{ // June 8, 2005; see directory geant3/TGeant3/G3toRoot.cxx
+{ 
+  // June 8, 2005; see directory geant3/TGeant3/G3toRoot.cxx
   // enum EColor { kWhite, kBlack, kRed, kGreen, kBlue, kYellow, kMagenta, kCyan } - see $ROOTSYS/include/Gtypes.h
    AliEMCALGeometry * g = GetGeometry(); 
    TNode * top = gAlice->GetGeometry()->GetNode("alice") ; // See AliceGeom/Nodes
@@ -128,45 +130,45 @@ TNode *AliEMCALv0::BuildGeometryOfWSUC()
    char *name = "";
    /*
     name = "WSUC";
-   new TBRIK(name, "WSUC(XEN1 in Geant)","void",ENVELOP1[0],ENVELOP1[1],ENVELOP1[2]);
+   new TBRIK(name, "WSUC(XEN1 in Geant)","void",fEnvelop1[0],fEnvelop1[1],fEnvelop1[2]);
     envelopNode = new TNode(name, "envelope for WSUC", name, 0., 0., 0., "");
    envelopNode->SetVisibility(0);
    */
 
    TNode *emod=0, *scmx=0;
    name = "SMOD"; // super module
-   new TBRIK(name, "SMOD(SMOD in Geant)","void", smodPar0,smodPar1,smodPar2);
+   new TBRIK(name, "SMOD(SMOD in Geant)","void", fSmodPar0,fSmodPar1,fSmodPar2);
    if(envelopNode) envelopNode->cd();
    TNode *smod = new TNode(name, "SMOD", name, 0., 0., 0., "");   
    smod->SetLineColor(kBlue) ;
    if(envelopNode==0) envelopNode = smod;
 
    name = "EMOD"; // see CreateEMOD 
-   TTRD1 *EMOD = new TTRD1(name, "EMOD(EMOD in Geant)","void", float(parEMOD[0]),
-   float(parEMOD[1]),float(parEMOD[2]),float(parEMOD[3]));
+   TTRD1 *emodTrd1 = new TTRD1(name, "EMOD(EMOD in Geant)","void", float(fParEMOD[0]),
+   float(fParEMOD[1]),float(fParEMOD[2]),float(fParEMOD[3]));
 
    // SCMX = EMOD/4 for simplicity of drawing
    name = "SCMX";
    Float_t dz=0.,theta=0.,phi=0.,h1=0.,bl1=0.,tl1=0.,alpha1=0.,h2=0.,bl2=0.,tl2=0.,alpha2=0.;
-   h1     = EMOD->GetDy()/2.;
-   bl1    = EMOD->GetDx()/2.;
+   h1     = emodTrd1->GetDy()/2.;
+   bl1    = emodTrd1->GetDx()/2.;
    tl1    = bl1;
    alpha1 = 0.;
-   h2     = EMOD->GetDy()/2.;
-   bl2    = EMOD->GetDx2()/2.;
+   h2     = emodTrd1->GetDy()/2.;
+   bl2    = emodTrd1->GetDx2()/2.;
    tl2    = bl2;
    alpha2 = 0.;
 
-   dz       = EMOD->GetDz();
+   dz       = emodTrd1->GetDz();
    double dr = TMath::Sqrt((h2-h1)*(h2-h1)+(bl2-bl1)*(bl2-bl1));
    theta    = TMath::ATan2(dr,2.*dz) * TMath::RadToDeg(); 
    phi      = 180.;
 
-   TTRAP *SCMX = new TTRAP(name, "SCMX(SCMX as in Geant)","void",
+   TTRAP *scmxTrap = new TTRAP(name, "SCMX(SCMX as in Geant)","void",
    	     dz,theta,phi, h1,bl1,tl1,alpha1, h2,bl2,tl2,alpha2);
-   //   SCMX->Dump();
-   Float_t xShiftSCMX = (EMOD->GetDx() + EMOD->GetDx2())/4.;
-   Float_t yShiftSCMX = EMOD->GetDy()/2.;
+   //   scmxTrap->Dump();
+   Float_t xShiftSCMX = (emodTrd1->GetDx() + emodTrd1->GetDx2())/4.;
+   Float_t yShiftSCMX = emodTrd1->GetDy()/2.;
    printf(" xShiftSCMX %7.4f yShiftSCMX %7.4f \n",xShiftSCMX,yShiftSCMX);
 
    name = "EMOD"; // see CreateEMOD 
@@ -179,8 +181,8 @@ TNode *AliEMCALv0::BuildGeometryOfWSUC()
    int numEmod=0;
    for(int iz=0; iz<g->GetNZ(); iz++) {
      mod   = (AliEMCALShishKebabTrd1Module*)fShishKebabModules->At(iz);
-     zpos = mod->GetPosZ()      - smodPar2;
-     ypos = mod->GetPosXfromR() - smodPar1;
+     zpos = mod->GetPosZ()      - fSmodPar2;
+     ypos = mod->GetPosXfromR() - fSmodPar1;
 
      angle = mod->GetThetaInDegree();
      sprintf(rtmn,"rmEmod%5.1f",angle);
@@ -195,10 +197,10 @@ TNode *AliEMCALv0::BuildGeometryOfWSUC()
        TString namNode=name;
        namNode += numEmod++;
        smod->cd();
-       emod = new TNode(namNode.Data(), rtmt, (TShape*)EMOD, xpos,ypos,zpos,rtm);   
+       emod = new TNode(namNode.Data(), rtmt, (TShape*)emodTrd1, xpos,ypos,zpos,rtm);   
        //       emod->SetLineColor(kGreen) ;
        emod->SetVisibility(0); // SCMX will bi visible 
-       if(SCMX) { // 4(2x2) sensetive volume inside EMOD
+       if(scmxTrap) { // 4(2x2) sensetive volume inside EMOD
          emod->cd();
          zposSCMX = 0.;
          for(int jy=0; jy<2; jy++){ // division on y
@@ -218,7 +220,7 @@ TNode *AliEMCALv0::BuildGeometryOfWSUC()
              }
              if(rtmSCMX == 0) rtmSCMX = new TRotMatrix(rtmn,rtmt, theta1,phi1, theta2,phi2, theta3,phi3);
              sprintf(rtmt,"%s inside %s", namNode.Data(), emod->GetName());
-             scmx = new TNode(namNode.Data(), rtmt, (TShape*)SCMX, xposSCMX,yposSCMX,zposSCMX,rtmSCMX);   
+             scmx = new TNode(namNode.Data(), rtmt, (TShape*)scmxTrap, xposSCMX,yposSCMX,zposSCMX,rtmSCMX);   
              scmx->SetLineColor(kMagenta);
            }
          }
@@ -267,11 +269,11 @@ void AliEMCALv0::CreateGeometry()
     } // end if
 
     // Get pointer to the array containing media indices
-    idtmed = fIdtmed->GetArray() - 1599 ;
+    fIdTmedArr = fIdtmed->GetArray() - 1599 ;
 
-    idrotm = 1;
+    fIdRotm = 1;
     //  gMC->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3) - see AliModule
-    AliMatrix(idrotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ; 
+    AliMatrix(fIdRotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ; 
 
     // Create the EMCAL Mother Volume (a polygone) within which to place the Detector and named XEN1 
 
@@ -283,20 +285,20 @@ void AliEMCALv0::CreateGeometry()
        envelopA[2] = 390.; // 6-feb-05
        envelopA[3] = geom->GetArm1PhiMin();
        envelopA[4] = geom->GetArm1PhiMax();
-       gMC->Gsvolu("XEN1", "TUBS", idtmed[1599], envelopA, 5) ;   // Tubs filled with air 
-       ENVELOP1.Set(5, envelopA);
+       gMC->Gsvolu("XEN1", "TUBS", fIdTmedArr[kIdAIR], envelopA, 5) ;   // Tubs filled with air 
+       fEnvelop1.Set(5, envelopA);
     // Position the EMCAL Mother Volume (XEN1) in Alice (ALIC)  
-       gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+       gMC->Gspos("XEN1", 1, "ALIC", 0.0, 0.0, 0.0, fIdRotm, "ONLY") ;
     } else if(gn.Contains("TRD1") && gn.Contains("WSUC") ) { // TRD1 for WSUC facility
       // 17-may-05 - just BOX
       envelopA[0] = 26;
       envelopA[1] = 15;
       envelopA[2] = 30;
-      gMC->Gsvolu("XEN1", "BOX", idtmed[idSC], envelopA, 3) ;
-      ENVELOP1.Set(3);
-      for(int i=0; i<3; i++) ENVELOP1[i] = envelopA[i]; // 23-may-05  
+      gMC->Gsvolu("XEN1", "BOX", fIdTmedArr[kIdSC], envelopA, 3) ;
+      fEnvelop1.Set(3);
+      for(int i=0; i<3; i++) fEnvelop1[i] = envelopA[i]; // 23-may-05  
       // Position the EMCAL Mother Volume (XEN1) in WSUC  
-      gMC->Gspos("XEN1", 1, "WSUC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+      gMC->Gspos("XEN1", 1, "WSUC", 0.0, 0.0, 0.0, fIdRotm, "ONLY") ;
     } else { 
       envelopA[0] = geom->GetArm1PhiMin();                         // minimum phi angle
       envelopA[1] = geom->GetArm1PhiMax() - geom->GetArm1PhiMin(); // angular range in phi
@@ -314,14 +316,14 @@ void AliEMCALv0::CreateGeometry()
 
       if(gn.Contains("SHISH")) envelopA[2] = geom->GetNPhiSuperModule();
 
-      gMC->Gsvolu("XEN1", "PGON", idtmed[1599], envelopA, 10) ;   // Polygone filled with air 
-      ENVELOP1.Set(10, envelopA);
+      gMC->Gsvolu("XEN1", "PGON", fIdTmedArr[kIdAIR], envelopA, 10) ;   // Polygone filled with air 
+      fEnvelop1.Set(10, envelopA);
       if (gDebug==2) {
         printf("CreateGeometry: XEN1 = %f, %f\n", envelopA[5], envelopA[6]); 
         printf("CreateGeometry: XU0 = %f, %f\n", envelopA[5], envelopA[6]); 
       }
     // Position the EMCAL Mother Volume (XEN1) in Alice (ALIC)  
-      gMC->Gspos(geom->GetNameOfEMCALEnvelope(), 1, "ALIC", 0.0, 0.0, 0.0, idrotm, "ONLY") ;
+      gMC->Gspos(geom->GetNameOfEMCALEnvelope(), 1, "ALIC", 0.0, 0.0, 0.0, fIdRotm, "ONLY") ;
     }
 
     if(gn.Contains("SHISH")){
@@ -361,12 +363,13 @@ void AliEMCALv0::Init(void)
 
 // 24-aug-04 by PAI
 void AliEMCALv0::CreateShishKebabGeometry()
-{  // TWIST, TRD1 and TRD2 
+{  
+  // TWIST, TRD1 and TRD2 
   AliEMCALGeometry * g = GetGeometry(); 
   TString gn(g->GetName()); gn.ToUpper(); 
-  // see AliModule::fIdtmed
-  //  idtmed = fIdtmed->GetArray() - 1599 ; // see AliEMCAL::::CreateMaterials()
-  //  int idAIR=1599, idPB = 1600, idSC = 1601, idSTEEL = 1603;
+  // see AliModule::fFIdTmedArr
+  //  fIdTmedArr = fIdtmed->GetArray() - 1599 ; // see AliEMCAL::::CreateMaterials()
+  //  int kIdAIR=1599, kIdPB = 1600, kIdSC = 1601, kIdSTEEL = 1603;
   //  idAL = 1602;
   Double_t par[10], xpos=0., ypos=0., zpos=0.;
 
@@ -382,7 +385,7 @@ void AliEMCALv0::CreateShishKebabGeometry()
    if(!gn.Contains("TRD")) { // standard module
     par[0] = (g->GetECPbRadThick()+g->GetECScintThick())*g->GetNECLayers()/2.;
     par[1] = par[2] = g->GetPhiTileSize();   // Symetric case
-    gMC->Gsvolu("SCM0", "BOX", idtmed[idSC], par, 3); // 2x2 tiles
+    gMC->Gsvolu("SCM0", "BOX", fIdTmedArr[kIdSC], par, 3); // 2x2 tiles
     gMC->Gspos("SCM0", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
     // Division to tile size
     gMC->Gsdvn("SCM1","SCM0", g->GetNPHIdiv(), 2); // y-axis
@@ -390,34 +393,34 @@ void AliEMCALv0::CreateShishKebabGeometry()
   // put LED to the SCM2 
     par[0] = g->GetECPbRadThick()/2.;
     par[1] = par[2] = g->GetPhiTileSize()/2.; // Symetric case
-    gMC->Gsvolu("PBTI", "BOX", idtmed[idPB], par, 3);
+    gMC->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], par, 3);
 
     printf(" Pb tiles \n");
     int nr=0;
     ypos = zpos = 0.0;
-    xpos = -sampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
+    xpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
     for(int ix=0; ix<g->GetNECLayers(); ix++){
       gMC->Gspos("PBTI", ++nr, "SCM2", xpos, ypos, zpos, 0, "ONLY") ;
     //    printf(" %i xpos %f \n", ix+1, xpos);
-      xpos += sampleWidth;
+      xpos += fSampleWidth;
     } 
     printf(" Number of Pb tiles in SCM2 %i \n", nr);
   } else if(gn.Contains("TRD1")) { // TRD1 - 30-sep-04
     if(gn.Contains("MAY05")){
       Double_t dzTmp = g->GetFrontSteelStrip()+g->GetPassiveScintThick();
-      parSCM0[0] = parEMOD[0] + tanTmp*dzTmp; // dx1
-      parSCM0[1] = parEMOD[1];                // dx2
-      parSCM0[2] = parEMOD[2];                // dy
+      parSCM0[0] = fParEMOD[0] + tanTmp*dzTmp; // dx1
+      parSCM0[1] = fParEMOD[1];                // dx2
+      parSCM0[2] = fParEMOD[2];                // dy
       for(int i=0; i<3; i++) parSCM0[i] -= g->GetLateralSteelStrip();
-      parSCM0[3] = parEMOD[3] - dzTmp/2.; // dz
+      parSCM0[3] = fParEMOD[3] - dzTmp/2.; // dz
 
-      gMC->Gsvolu("SCM0", "TRD1", idtmed[idAIR], parSCM0, 4);
+      gMC->Gsvolu("SCM0", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
       gMC->Gspos("SCM0", 1, "EMOD", 0., 0., dzTmp/2., 0, "ONLY") ;
     } else { // before MAY 2005
       double wallThickness = g->GetPhiModuleSize()/2. -  g->GetPhiTileSize(); // Need check
-      for(int i=0; i<3; i++) parSCM0[i] = parEMOD[i] - wallThickness;
-      parSCM0[3] = parEMOD[3];
-      gMC->Gsvolu("SCM0", "TRD1", idtmed[idAIR], parSCM0, 4);
+      for(int i=0; i<3; i++) parSCM0[i] = fParEMOD[i] - wallThickness;
+      parSCM0[3] = fParEMOD[3];
+      gMC->Gsvolu("SCM0", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
       gMC->Gspos("SCM0", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
     }
 
@@ -442,33 +445,33 @@ void AliEMCALv0::CreateShishKebabGeometry()
       printf(" ** TRAP ** \n");
       for(int i=0; i<11; i++) AliDebug(3, Form(" par[%2.2i] %9.4f\n", i, parTRAP[i]));
 
-      gMC->Gsvolu("SCMX", "TRAP", idtmed[idSC], parTRAP, 11);
+      gMC->Gsvolu("SCMX", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
       xpos = +(parSCM0[1]+parSCM0[0])/4.;
       gMC->Gspos("SCMX", 1, "SCMY", xpos, 0.0, 0.0, 0, "ONLY") ;
 
       // Using rotation because SCMX should be the same due to Pb tiles
       xpos = -xpos; 
-      AliMatrix(idrotm, 90.0,180., 90.0, 270.0, 0.0,0.0) ;
-      gMC->Gspos("SCMX", 2, "SCMY", xpos, 0.0, 0.0, idrotm, "ONLY");
+      AliMatrix(fIdRotm, 90.0,180., 90.0, 270.0, 0.0,0.0) ;
+      gMC->Gspos("SCMX", 2, "SCMY", xpos, 0.0, 0.0, fIdRotm, "ONLY");
     // put LED to the SCM0 
       AliEMCALShishKebabTrd1Module *mod = (AliEMCALShishKebabTrd1Module*)fShishKebabModules->At(0);
-      gMC->Gsvolu("PBTI", "BOX", idtmed[idPB], dummy, 0);
+      gMC->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
 
       par[1] = parSCM0[2]/2;            // y 
       par[2] = g->GetECPbRadThick()/2.; // z
 
       int nr=0;
       ypos = 0.0; 
-      zpos = -sampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
+      zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
       double xCenterSCMX =  (parTRAP[4] +  parTRAP[8])/2.;
       if(!gn.Contains("NOPB")) { // for testing - 11-jul-05
         printf(" Pb tiles \n");
         for(int iz=0; iz<g->GetNECLayers(); iz++){
-          par[0] = (parSCM0[0] + mod->GetTanBetta()*sampleWidth*iz)/2.;
+          par[0] = (parSCM0[0] + mod->GetTanBetta()*fSampleWidth*iz)/2.;
           xpos   = par[0] - xCenterSCMX;
           gMC->Gsposp("PBTI", ++nr, "SCMX", xpos, ypos, zpos, 0, "ONLY", par, 3) ;
           AliDebug(3,Form(" %i xpos %f zpos %f par[0] %f \n", iz+1, xpos, zpos, par[0]));
-          zpos += sampleWidth;
+          zpos += fSampleWidth;
         } 
         printf(" Number of Pb tiles in SCMX %i \n", nr);
       }
@@ -478,13 +481,14 @@ void AliEMCALv0::CreateShishKebabGeometry()
       Trd1Tower4X4();
     }
   } else if(gn.Contains("TRD2")) {    // TRD2 - 14-jan-05
-    //    Scm0InTrd2(g, parEMOD, parSCM0); // First dessin 
-    PbmoInTrd2(g, parEMOD, parSCM0); // Second dessin 
+    //    Scm0InTrd2(g, fParEMOD, parSCM0); // First dessin 
+    PbmoInTrd2(g, fParEMOD, parSCM0); // Second dessin 
   }
 }
 
 void AliEMCALv0::CreateSmod(const char* mother)
-{ // 18-may-05; mother="XEN1"; 
+{ 
+  // 18-may-05; mother="XEN1"; 
   // child="SMOD" from first to 10th, "SM10" (11th and 12th) (TRD1 case)
   // child="SMON" and "SMOP"("TRD2" case)
   AliEMCALGeometry * g = GetGeometry(); 
@@ -493,12 +497,12 @@ void AliEMCALv0::CreateSmod(const char* mother)
   Double_t par[3], parTubs[5], xpos=0., ypos=0., zpos=0., rpos=0., dphi=0., phi=0.0, phiRad=0.;
   Double_t par1C = 0.;
   //  ===== define Super Module from air - 14x30 module ==== ;
-  sampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
-  printf("\n ## Super Module | sampleWidth %5.3f ## %s \n", sampleWidth, gn.Data());
+  fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
+  printf("\n ## Super Module | fSampleWidth %5.3f ## %s \n", fSampleWidth, gn.Data());
   par[0] = g->GetShellThickness()/2.;
   par[1] = g->GetPhiModuleSize()*g->GetNPhi()/2.; 
   par[2] = g->GetEtaModuleSize()*15.; 
-  idrotm=0;
+  fIdRotm=0;
   int nphism = g->GetNumberOfSuperModules()/2; // 20-may-05
   if(nphism>0) {
     dphi = (g->GetArm1PhiMax() - g->GetArm1PhiMin())/nphism;
@@ -514,25 +518,25 @@ void AliEMCALv0::CreateSmod(const char* mother)
     parTubs[3] = -dphi/2.;                            // PHI1 starting angle of the segment;
     parTubs[4] = +dphi/2.;                            // PHI2 ending angle of the segment;
 
-    gMC->Gsvolu("SMOP", "TUBS", idtmed[idAIR], parTubs, 5); // pozitive Z
-    gMC->Gsvolu("SMON", "TUBS", idtmed[idAIR], parTubs, 5); // negative Z
+    gMC->Gsvolu("SMOP", "TUBS", fIdTmedArr[kIdAIR], parTubs, 5); // pozitive Z
+    gMC->Gsvolu("SMON", "TUBS", fIdTmedArr[kIdAIR], parTubs, 5); // negative Z
 
     printf(" SMOP,N ** TUBS **\n"); 
     printf("tmed %i | Rmin %7.2f Rmax %7.2f dz %7.2f phi1,2 (%7.2f,%7.2f)\n", 
-    idtmed[idAIR], parTubs[0],parTubs[1],parTubs[2], parTubs[3],parTubs[4]);
+    fIdTmedArr[kIdAIR], parTubs[0],parTubs[1],parTubs[2], parTubs[3],parTubs[4]);
     // have to add 1 cm plastic before EMOD - time solution 
   } else if(gn.Contains("WSUC")) {
     par[0] = g->GetPhiModuleSize()*g->GetNPhi()/2.; 
     par[1] = g->GetShellThickness()/2.;
     par[2] = g->GetEtaModuleSize()*g->GetNZ()/2. + 5; 
 
-    gMC->Gsvolu("SMOD", "BOX", idtmed[idAIR], par, 3);
+    gMC->Gsvolu("SMOD", "BOX", fIdTmedArr[kIdAIR], par, 3);
 
     printf("SMOD in WSUC : tmed %i | dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
-    idtmed[idAIR], par[0],par[1],par[2]);
-    smodPar0 = par[0]; 
-    smodPar1 = par[1];
-    smodPar2 = par[2];
+    fIdTmedArr[kIdAIR], par[0],par[1],par[2]);
+    fSmodPar0 = par[0]; 
+    fSmodPar1 = par[1];
+    fSmodPar2 = par[2];
     nphism   =  g->GetNumberOfSuperModules();
   } else {
     if     (gn.Contains("TWIST")) {
@@ -545,23 +549,23 @@ void AliEMCALv0::CreateSmod(const char* mother)
         for(int i=0; i<3; i++) par[i] = parSM[i];
       }
     }
-    gMC->Gsvolu("SMOD", "BOX", idtmed[idAIR], par, 3);
+    gMC->Gsvolu("SMOD", "BOX", fIdTmedArr[kIdAIR], par, 3);
     printf("tmed %i | dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
-    idtmed[idAIR], par[0],par[1],par[2]);
-    smodPar0 = par[0]; 
-    smodPar2 = par[2];
+    fIdTmedArr[kIdAIR], par[0],par[1],par[2]);
+    fSmodPar0 = par[0]; 
+    fSmodPar2 = par[2];
     if(gn.Contains("110DEG")) { // 12-oct-05
       par1C = par[1];
       par[1] /= 2.;
-      gMC->Gsvolu("SM10", "BOX", idtmed[idAIR], par, 3);
+      gMC->Gsvolu("SM10", "BOX", fIdTmedArr[kIdAIR], par, 3);
       printf(" Super module with name \"SM10\" was created too par[1] = %f\n", par[1]);
       par[1] = par1C;
     }
   // Steel plate
     if(g->GetSteelFrontThickness() > 0.0) { // 28-mar-05
       par[0] = g->GetSteelFrontThickness()/2.;
-      gMC->Gsvolu("STPL", "BOX", idtmed[idSTEEL], par, 3);
-      printf("tmed %i | dx %7.2f dy %7.2f dz %7.2f (STPL) \n", idtmed[idSTEEL], par[0],par[1],par[2]);
+      gMC->Gsvolu("STPL", "BOX", fIdTmedArr[kIdSTEEL], par, 3);
+      printf("tmed %i | dx %7.2f dy %7.2f dz %7.2f (STPL) \n", fIdTmedArr[kIdSTEEL], par[0],par[1],par[2]);
       xpos = -(g->GetShellThickness() - g->GetSteelFrontThickness())/2.;
       gMC->Gspos("STPL", 1, "SMOD", xpos, 0.0, 0.0, 0, "ONLY") ;
     }
@@ -571,12 +575,12 @@ void AliEMCALv0::CreateSmod(const char* mother)
   if(gn.Contains("TEST")) {nphism = 1;} // just only 2 super modules;
 
   // Turn whole super module
-  int TurnSupMod = 1; // should be ONE; for testing =0
+  int turnSupMod = 1; // should be ONE; for testing = 0
   for(int i=i0; i<nphism; i++) {
     if (gn.Contains("TRD2")) {      // tubs - 27-jan-05
       if(i==i0) {
         printf("** TRD2 ** ");
-        if(TurnSupMod==1) printf(" No 3 degree rotation !!! ");
+        if(turnSupMod==1) printf(" No 3 degree rotation !!! ");
         printf("\n");
       }
       Double_t phic=0., phicRad=0.; // phi angle of arc center
@@ -584,7 +588,7 @@ void AliEMCALv0::CreateSmod(const char* mother)
       phicRad = phic*TMath::DegToRad();
       phi     = phic - g->GetTubsTurnAngle();
       phiRad  = phi*TMath::DegToRad();
-      if(TurnSupMod==1) {
+      if(turnSupMod==1) {
         TVector2  vc;     // position of super module center
         vc.SetMagPhi(parTubs[0], phicRad);
         TVector2  vcTurn; // position of super module center with turn
@@ -598,28 +602,28 @@ void AliEMCALv0::CreateSmod(const char* mother)
         xpos = ypos = 0.0;
       }
       zpos = parTubs[2];
-      AliMatrix(idrotm, 90.0, phic, 90.0, 90.0+phic, 0.0, 0.0);
+      AliMatrix(fIdRotm, 90.0, phic, 90.0, 90.0+phic, 0.0, 0.0);
 
-      gMC->Gspos("SMOP", ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
-      printf("SMOP %2i | %2i idrotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
-      i, nr, idrotm, phic, phicRad, xpos, ypos, zpos);
+      gMC->Gspos("SMOP", ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+      printf("SMOP %2i | %2i fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
+      i, nr, fIdRotm, phic, phicRad, xpos, ypos, zpos);
       printf(" phiy(90+phic)  %6.1f \n", 90. + phic);
 
       if(!gn.Contains("TEST1") && g->GetNumberOfSuperModules() > 1){
 	//        double  phiy = 90. + phic + 180.;
 	//        if(phiy>=360.) phiy -= 360.;
 	//        printf(" phiy  %6.1f \n", phiy);
-	//        AliMatrix(idrotm, 90.0, phic, 90.0, phiy, 180.0, 0.0);
-        gMC->Gspos("SMON", nr, mother, xpos, ypos, -zpos, idrotm, "ONLY") ;
-        printf("SMON %2i | %2i idrotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
-        i, nr, idrotm, phic, phicRad, xpos, ypos, -zpos);
+	//        AliMatrix(fIdRotm, 90.0, phic, 90.0, phiy, 180.0, 0.0);
+        gMC->Gspos("SMON", nr, mother, xpos, ypos, -zpos, fIdRotm, "ONLY") ;
+        printf("SMON %2i | %2i fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
+        i, nr, fIdRotm, phic, phicRad, xpos, ypos, -zpos);
       }
     } else if(gn.Contains("WSUC")) {
       xpos = ypos = zpos = 0.0;
-      idrotm = 0;
-      gMC->Gspos("SMOD", 1, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
-      printf(" idrotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
-      idrotm, phi, phiRad, xpos, ypos, zpos);
+      fIdRotm = 0;
+      gMC->Gspos("SMOD", 1, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+      printf(" fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
+      fIdRotm, phi, phiRad, xpos, ypos, zpos);
       nr++;
     } else { // TRD1 
       TString smName("SMOD"); // 12-oct-05
@@ -631,32 +635,32 @@ void AliEMCALv0::CreateSmod(const char* mother)
       phi    = g->GetArm1PhiMin() + dphi*(2*i+1)/2.; // phi= 70, 90, 110, 130, 150, 170
       phiRad = phi*TMath::Pi()/180.;
 
-      AliMatrix(idrotm, 90.0, phi, 90.0, 90.0+phi, 0.0, 0.0);
+      AliMatrix(fIdRotm, 90.0, phi, 90.0, 90.0+phi, 0.0, 0.0);
 
       xpos = rpos * TMath::Cos(phiRad);
       ypos = rpos * TMath::Sin(phiRad);
-      zpos = smodPar2; // 21-sep-04
+      zpos = fSmodPar2; // 21-sep-04
       if(i==5 && gn.Contains("110DEG")) {
         xpos += (par1C/2. * TMath::Sin(phiRad)); 
         ypos -= (par1C/2. * TMath::Cos(phiRad)); 
       }
       
       // 1th module in z-direction;
-      gMC->Gspos(smName.Data(), ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
-      AliDebug(3, Form(" %s : %2i idrotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f : i %i \n", 
-		       smName.Data(), nr, idrotm, phi, phiRad, xpos, ypos, zpos, i));
+      gMC->Gspos(smName.Data(), ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+      AliDebug(3, Form(" %s : %2i fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f : i %i \n", 
+		       smName.Data(), nr, fIdRotm, phi, phiRad, xpos, ypos, zpos, i));
       // 2th module in z-direction;
       if(gn.Contains("TWIST") || gn.Contains("TRD")) {
       // turn arround X axis; 0<phi<360
         double phiy = 90. + phi + 180.;
         if(phiy>=360.) phiy -= 360.;
  
-        AliMatrix(idrotm, 90.0, phi, 90.0, phiy, 180.0, 0.0);
-        gMC->Gspos(smName.Data(), ++nr, mother, xpos, ypos, -zpos, idrotm, "ONLY");
-        AliDebug(3, Form(" %s : %2i idrotm %3i phiy %6.1f  xpos %7.2f ypos %7.2f zpos %7.2f \n", 
-			 smName.Data(), nr, idrotm, phiy, xpos, ypos, -zpos));
+        AliMatrix(fIdRotm, 90.0, phi, 90.0, phiy, 180.0, 0.0);
+        gMC->Gspos(smName.Data(), ++nr, mother, xpos, ypos, -zpos, fIdRotm, "ONLY");
+        AliDebug(3, Form(" %s : %2i fIdRotm %3i phiy %6.1f  xpos %7.2f ypos %7.2f zpos %7.2f \n", 
+			 smName.Data(), nr, fIdRotm, phiy, xpos, ypos, -zpos));
       } else {
-        gMC->Gspos("SMOD", ++nr, mother, xpos, ypos, -zpos, idrotm, "ONLY");
+        gMC->Gspos("SMOD", ++nr, mother, xpos, ypos, -zpos, fIdRotm, "ONLY");
       }
     }
   }
@@ -664,7 +668,8 @@ void AliEMCALv0::CreateSmod(const char* mother)
 }
 
 void AliEMCALv0::CreateEmod(const char* mother, const char* child)
-{ // 17-may-05; mother="SMOD"; child="EMOD"
+{ 
+  // 17-may-05; mother="SMOD"; child="EMOD"
   AliEMCALGeometry * g = GetGeometry(); 
   TString gn(g->GetName()); gn.ToUpper(); 
   // Module definition
@@ -673,36 +678,36 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
   Double_t trd1Angle = g->GetTrd1Angle()*TMath::DegToRad(), tanTrd1 = TMath::Tan(trd1Angle/2.);
   Double_t tanTrd2y  = TMath::Tan(g->GetTrd2AngleY()*TMath::DegToRad()/2.);
   int nr=0;
-  idrotm=0;
+  fIdRotm=0;
   if(!gn.Contains("TRD")) { // standard module
-    par[0] = (sampleWidth*g->GetNECLayers())/2.; 
+    par[0] = (fSampleWidth*g->GetNECLayers())/2.; 
     par[1] = par[2] = g->GetPhiModuleSize()/2.;
-    gMC->Gsvolu(child, "BOX", idtmed[idSTEEL], par, 3);
+    gMC->Gsvolu(child, "BOX", fIdTmedArr[kIdSTEEL], par, 3);
 
   } else if (gn.Contains("TRD1")){ // TRD1 system coordinate iz differnet
     if(strcmp(mother,"SMOD")==0) {
-      parEMOD[0] = g->GetEtaModuleSize()/2.;   // dx1
-      parEMOD[1] = g->Get2Trd1Dx2()/2.;        // dx2
-      parEMOD[2] = g->GetPhiModuleSize()/2.;;  // dy
-      parEMOD[3] = g->GetLongModuleSize()/2.;  // dz
-      gMC->Gsvolu(child, "TRD1", idtmed[idSTEEL], parEMOD, 4);
+      fParEMOD[0] = g->GetEtaModuleSize()/2.;   // dx1
+      fParEMOD[1] = g->Get2Trd1Dx2()/2.;        // dx2
+      fParEMOD[2] = g->GetPhiModuleSize()/2.;;  // dy
+      fParEMOD[3] = g->GetLongModuleSize()/2.;  // dz
+      gMC->Gsvolu(child, "TRD1", fIdTmedArr[kIdSTEEL], fParEMOD, 4);
       if(gn.Contains("WSUC") || gn.Contains("MAY05")){
         parSCPA[0] = g->GetEtaModuleSize()/2. + tanTrd1*g->GetFrontSteelStrip();   // dx1
         parSCPA[1] = parSCPA[0]               + tanTrd1*g->GetPassiveScintThick(); // dx2
         parSCPA[2] = g->GetPhiModuleSize()/2.;     // dy
         parSCPA[3] = g->GetPassiveScintThick()/2.; // dz
-        gMC->Gsvolu("SCPA", "TRD1", idtmed[idSC], parSCPA, 4);
-        zposSCPA   = -parEMOD[3] + g->GetFrontSteelStrip() + g->GetPassiveScintThick()/2.;
+        gMC->Gsvolu("SCPA", "TRD1", fIdTmedArr[kIdSC], parSCPA, 4);
+        zposSCPA   = -fParEMOD[3] + g->GetFrontSteelStrip() + g->GetPassiveScintThick()/2.;
         gMC->Gspos ("SCPA", ++nr, child, 0.0, 0.0, zposSCPA, 0, "ONLY");
       }
     }
   } else if (gn.Contains("TRD2")){ // TRD2 as for TRD1 - 27-jan-05
-    parEMOD[0] = g->GetEtaModuleSize()/2.;   // dx1
-    parEMOD[1] = g->Get2Trd1Dx2()/2.;        // dx2
-    parEMOD[2] = g->GetPhiModuleSize()/2.;   // dy1
-    parEMOD[3] = parEMOD[2] + tanTrd2y*g->GetLongModuleSize();// dy2
-    parEMOD[4] = g->GetLongModuleSize()/2.;  // dz
-    gMC->Gsvolu(child, "TRD2", idtmed[idSTEEL], parEMOD, 5);
+    fParEMOD[0] = g->GetEtaModuleSize()/2.;   // dx1
+    fParEMOD[1] = g->Get2Trd1Dx2()/2.;        // dx2
+    fParEMOD[2] = g->GetPhiModuleSize()/2.;   // dy1
+    fParEMOD[3] = fParEMOD[2] + tanTrd2y*g->GetLongModuleSize();// dy2
+    fParEMOD[4] = g->GetLongModuleSize()/2.;  // dz
+    gMC->Gsvolu(child, "TRD2", fIdTmedArr[kIdSTEEL], fParEMOD, 5);
   }
 
   nr   = 0;
@@ -713,20 +718,20 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
       //for(int iz=0; iz<4; iz++) {
       if(iz==0) {
         mod    = new AliEMCALShishKebabModule();
-        idrotm = 0;
+        fIdRotm = 0;
       } else {
         mTmp = new AliEMCALShishKebabModule(*mod);
         mod  = mTmp;
         Double_t  angle = mod->GetThetaInDegree();
-        AliMatrix(idrotm, angle,0., 90.0,90.0, 90.-angle, 180.);
+        AliMatrix(fIdRotm, angle,0., 90.0,90.0, 90.-angle, 180.);
       }
       fShishKebabModules->Add(mod);
 
-      xpos = mod->GetPosXfromR() + g->GetSteelFrontThickness() - smodPar0;
-      zpos = mod->GetPosZ() - smodPar2;
+      xpos = mod->GetPosXfromR() + g->GetSteelFrontThickness() - fSmodPar0;
+      zpos = mod->GetPosZ() - fSmodPar2;
       for(int iy=0; iy<g->GetNPhi(); iy++) {
         ypos = g->GetPhiModuleSize()*(2*iy+1 - g->GetNPhi())/2.;
-        gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
+        gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
 	//        printf(" %3i(%2i,2i) xpos %7.2f ypos %7.2f zpos %7.2f \n", nr,iy,iz, xpos, ypos, zpos);
       }
     }    
@@ -740,13 +745,13 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
         mod = (AliEMCALShishKebabTrd1Module*)fShishKebabModules->At(iz);
         angle = mod->GetThetaInDegree();
         if(!gn.Contains("WSUC")) { // ALICE 
-          if(iz==0) AliMatrix(idrotm, 0.,0., 90.,90., 90.,0.); // z'(x); y'(y); x'(z)
-          else      AliMatrix(idrotm, 90.-angle,180., 90.0,90.0, angle, 0.);
+          if(iz==0) AliMatrix(fIdRotm, 0.,0., 90.,90., 90.,0.); // z'(x); y'(y); x'(z)
+          else      AliMatrix(fIdRotm, 90.-angle,180., 90.0,90.0, angle, 0.);
           phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
 	  //          printf(" %2i | angle | %6.3f - %6.3f = %6.3f(eta %5.3f)\n", 
           //iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
-          xpos = mod->GetPosXfromR() + g->GetSteelFrontThickness() - smodPar0;
-          zpos = mod->GetPosZ() - smodPar2;
+          xpos = mod->GetPosXfromR() + g->GetSteelFrontThickness() - fSmodPar0;
+          zpos = mod->GetPosZ() - fSmodPar2;
 
           int iyMax = g->GetNPhi();
           if(strcmp(mother,"SMOD") && gn.Contains("110DEG")) {
@@ -754,23 +759,23 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
           }
           for(int iy=0; iy<iyMax; iy++) { // flat in phi
             ypos = g->GetPhiModuleSize()*(2*iy+1 - iyMax)/2.;
-            gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
-        //printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f idrotm %i\n", nr, xpos, ypos, zpos, idrotm);
+            gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+        //printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f fIdRotm %i\n", nr, xpos, ypos, zpos, fIdRotm);
             AliDebug(3,Form("%3.3i(%2.2i,%2.2i) ", nr,iy+1,iz+1));
           }
           printf("\n");
 	} else {
-          if(iz==0) AliMatrix(idrotm, 0.,0., 90.,0., 90.,90.); // (x')z; y'(x); z'(y)
-          else      AliMatrix(idrotm, 90-angle,270., 90.0,0.0, angle,90.);
+          if(iz==0) AliMatrix(fIdRotm, 0.,0., 90.,0., 90.,90.); // (x')z; y'(x); z'(y)
+          else      AliMatrix(fIdRotm, 90-angle,270., 90.0,0.0, angle,90.);
           phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
           printf(" %2i | angle -phiOK | %6.3f - %6.3f = %6.3f(eta %5.3f)\n", 
           iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
-          zpos = mod->GetPosZ()      - smodPar2;
-          ypos = mod->GetPosXfromR() - smodPar1;
-          printf(" zpos %7.2f ypos %7.2f idrotm %i\n xpos ", zpos, xpos, idrotm);
+          zpos = mod->GetPosZ()      - fSmodPar2;
+          ypos = mod->GetPosXfromR() - fSmodPar1;
+          printf(" zpos %7.2f ypos %7.2f fIdRotm %i\n xpos ", zpos, xpos, fIdRotm);
           for(int ix=0; ix<g->GetNPhi(); ix++) { // flat in phi
             xpos = g->GetPhiModuleSize()*(2*ix+1 - g->GetNPhi())/2.;
-            gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, idrotm, "ONLY") ;
+            gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
             printf(" %7.2f ", xpos);
           }
           printf("\n");
@@ -803,19 +808,19 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
           theta2  = 90.;          phi2 = 90. + angEtaRow;// y' ~ y;
           theta3  = angle;        phi3 = angEtaRow;      // z' ~ x;
           if(phi3 < 0.0) phi3 += 360.; 
-          AliMatrix(idrotm, theta1,phi1, theta2,phi2, theta3,phi3);
+          AliMatrix(fIdRotm, theta1,phi1, theta2,phi2, theta3,phi3);
 
           xpos = rpos * TMath::Cos(angEtaRow*TMath::DegToRad());
           ypos = rpos * TMath::Sin(angEtaRow*TMath::DegToRad());
-          gMC->Gspos(child, ++nr, "SMOP", xpos, ypos, zpos, idrotm, "ONLY") ;
+          gMC->Gspos(child, ++nr, "SMOP", xpos, ypos, zpos, fIdRotm, "ONLY") ;
 	  // SMON; 
 	  phi1    = 180 + angEtaRow;
 	  theta3  = 180.-theta3;  phi3 = angEtaRow;
-          AliMatrix(idrotm, theta1,phi1, theta2,phi2, theta3,phi3);
-          gMC->Gspos(child,  nr, "SMON", xpos, ypos, -zpos, idrotm, "ONLY") ;
+          AliMatrix(fIdRotm, theta1,phi1, theta2,phi2, theta3,phi3);
+          gMC->Gspos(child,  nr, "SMON", xpos, ypos, -zpos, fIdRotm, "ONLY") ;
           if(0) {
 	    printf(" angEtaRow(phi) %7.2f |  angle(eta) %7.2f \n",  angEtaRow, angle);
-	    printf("iy=%2i xpos %7.2f ypos %7.2f zpos %7.2f idrotm %i\n", iy, xpos, ypos, zpos, idrotm);
+	    printf("iy=%2i xpos %7.2f ypos %7.2f zpos %7.2f fIdRotm %i\n", iy, xpos, ypos, zpos, fIdRotm);
           }
         } // for(int iy=0; iy<g->GetNPhi(); iy++)
       }
@@ -823,7 +828,7 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
   } else {
     xpos = g->GetSteelFrontThickness()/2.;
     for(int iz=0; iz<g->GetNZ(); iz++) {
-      zpos = -smodPar2 + g->GetEtaModuleSize()*(2*iz+1)/2.;
+      zpos = -fSmodPar2 + g->GetEtaModuleSize()*(2*iz+1)/2.;
       for(int iy=0; iy<g->GetNPhi(); iy++) {
         ypos = g->GetPhiModuleSize()*(2*iy+1 - g->GetNPhi())/2.;
         gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, 0, "ONLY") ;
@@ -836,7 +841,8 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
 
 // 8-dec-04 by PAI
 void AliEMCALv0::Trd1Tower3X3(const double parSCM0[4])
-{// PB should be for whole SCM0 - ?
+{
+  // PB should be for whole SCM0 - ?
   double parTRAP[11], *dummy=0;
   AliEMCALGeometry * g = GetGeometry(); 
   TString gn(g->GetName()), scmx; 
@@ -847,10 +853,10 @@ void AliEMCALv0::Trd1Tower3X3(const double parSCM0[4])
   double dx1=parSCM0[0], dx2=parSCM0[1], dy=parSCM0[2], dz=parSCM0[3];
   double ndiv=3., xpos=0.0;
   // should be defined once
-  gMC->Gsvolu("PBTI", "BOX", idtmed[idPB], dummy, 0);
+  gMC->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
   if(gn.Contains("TEST")==0) { // one name for all trapesoid
     scmx = "SCMX"; 
-    gMC->Gsvolu(scmx.Data(), "TRAP", idtmed[idSC], dummy, 0);
+    gMC->Gsvolu(scmx.Data(), "TRAP", fIdTmedArr[kIdSC], dummy, 0);
   }
 
   
@@ -884,7 +890,7 @@ void AliEMCALv0::Trd1Tower3X3(const double parSCM0[4])
     for(int i=0; i<11; i++) printf(" par[%2.2i] %9.4f\n", i, parTRAP[i]);
     if(gn.Contains("TEST")){
       scmx = "SCX"; scmx += ix;
-      gMC->Gsvolu(scmx.Data(), "TRAP", idtmed[idSC], parTRAP, 11);
+      gMC->Gsvolu(scmx.Data(), "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
       gMC->Gspos(scmx.Data(), 1, "SCMY", xpos, 0.0, 0.0, 0, "ONLY") ;
     } else {
       gMC->Gsposp(scmx.Data(), ix, "SCMY", xpos, 0.0, 0.0, 0, "ONLY", parTRAP, 11) ;
@@ -897,15 +903,16 @@ void AliEMCALv0::Trd1Tower3X3(const double parSCM0[4])
 
 // 8-dec-04 by PAI
 void AliEMCALv0::PbInTrap(const double parTRAP[11], TString n)
-{// see for example CreateShishKebabGeometry(); just for case TRD1
+{
+ // see for example CreateShishKebabGeometry(); just for case TRD1
   static int nr=0;
   printf(" Pb tiles : nrstart %i\n", nr);
   AliEMCALGeometry * g = GetGeometry(); 
 
   double par[3];
-  double sampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
+  //  double fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
   double xpos = 0.0, ypos = 0.0;
-  double zpos = -sampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
+  double zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
 
   double coef = (parTRAP[8] -  parTRAP[4]) / (2.*parTRAP[0]);
   double xCenterSCMX =  (parTRAP[4] +  parTRAP[8])/2.; // ??
@@ -914,12 +921,12 @@ void AliEMCALv0::PbInTrap(const double parTRAP[11], TString n)
   par[1] = parTRAP[3];              // y 
   par[2] = g->GetECPbRadThick()/2.; // z
   for(int iz=0; iz<g->GetNECLayers(); iz++){
-    par[0] = parTRAP[4] + coef*sampleWidth*iz;
+    par[0] = parTRAP[4] + coef*fSampleWidth*iz;
     xpos   = par[0] - xCenterSCMX;
     if(parTRAP[1] < 0.) xpos = -xpos;
     gMC->Gsposp("PBTI", ++nr, n.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
     printf(" %i xpos %9.3f zpos %9.3f par[0] %9.3f |", iz+1, xpos, zpos, par[0]);
-    zpos += sampleWidth;
+    zpos += fSampleWidth;
     if(iz%2>0) printf("\n");
   } 
   printf(" Number of Pb tiles in SCMX %i coef %9.7f \n", nr, coef);
@@ -929,20 +936,21 @@ void AliEMCALv0::PbInTrap(const double parTRAP[11], TString n)
 
 // 8-dec-04 by PAI
 void AliEMCALv0::Trd1Tower4X4()
-{// see for example CreateShishKebabGeometry()
+{
+ // Not ready yet
 }
 // 3-feb-05
-void AliEMCALv0::Scm0InTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5], Double_t parSCM0[5])
+void AliEMCALv0::Scm0InTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parSCM0[5])
 {
   // Passive material inside the detector
   double wallThickness = g->GetPhiModuleSize()/2. -  g->GetPhiTileSize(); //Need check
   printf(" wall thickness %7.5f \n", wallThickness);
   for(int i=0; i<4; i++) { // on pictures sometimes I can not see 0 -> be carefull!!
-    parSCM0[i] = parEMOD[i] - wallThickness;
-    printf(" %i parSCMO %7.3f parEMOD %7.3f : dif %7.3f \n", i, parSCM0[i],parEMOD[i], parSCM0[i]-parEMOD[i]);
+    parSCM0[i] = emodPar[i] - wallThickness;
+    printf(" %i parSCMO %7.3f emodPar %7.3f : dif %7.3f \n", i, parSCM0[i],emodPar[i], parSCM0[i]-emodPar[i]);
   }
-  parSCM0[4] = parEMOD[4];
-  gMC->Gsvolu("SCM0", "TRD2", idtmed[idSC], parSCM0, 5); // idAIR -> idSC
+  parSCM0[4] = emodPar[4];
+  gMC->Gsvolu("SCM0", "TRD2", fIdTmedArr[kIdSC], parSCM0, 5); // kIdAIR -> kIdSC
   gMC->Gspos("SCM0", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
   // Division 
   if(g->GetNPHIdiv()==2 && g->GetNETAdiv()==2) {
@@ -955,9 +963,10 @@ void AliEMCALv0::Scm0InTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5
 
 void AliEMCALv0::Division2X2InScm0(const AliEMCALGeometry * g, const Double_t parSCM0[5])
 {
+  // Division 2X2
   Double_t parTRAP[11], xpos=0.,ypos=0., dx1=0.0,dx2=0.,dy1=0.0,dy2=0.,dz=0.
   ,dr1=0.0,dr2=0.;
-  idrotm=0;
+  fIdRotm=0;
 
   Info("Division2X2InScm0","Divide SCM0 on y-axis %i\n", g->GetNETAdiv());
   TString n("SCMX"), overLapFlagSCMY("ONLY"), overLapFlagSCMX("ONLY");
@@ -986,15 +995,15 @@ void AliEMCALv0::Division2X2InScm0(const AliEMCALGeometry * g, const Double_t pa
   printf(" ** SCMY ** \n");
   for(int i=0; i<11; i++) printf(" par[%2.2i] %9.4f\n", i, parTRAP[i]);
 
-  idrotm=0;
-  gMC->Gsvolu("SCMY", "TRAP", idtmed[idSC], parTRAP, 11); // idAIR -> idSC
+  fIdRotm=0;
+  gMC->Gsvolu("SCMY", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11); // kIdAIR -> kIdSC
   ypos = +(parTRAP[3]+parTRAP[7])/2.; //
   printf(" Y shift SCMY inside SCM0 : %7.3f : opt %s\n", ypos, overLapFlagSCMY.Data()); 
-  gMC->Gspos("SCMY", 1, "SCM0", 0.0, ypos, 0.0, idrotm,  overLapFlagSCMY.Data()) ;
+  gMC->Gspos("SCMY", 1, "SCM0", 0.0, ypos, 0.0, fIdRotm,  overLapFlagSCMY.Data()) ;
   // Rotation SCMY around z-axis on 180 degree; x'=-x; y'=-y and z=z
-  AliMatrix(idrotm, 90.0,180., 90.0, 270.0, 0.0,0.0) ;
+  AliMatrix(fIdRotm, 90.0,180., 90.0, 270.0, 0.0,0.0) ;
   // We may have problem with numeration due to rotation - 4-feb-05
-  gMC->Gspos("SCMY", 2, "SCM0", 0.0, -ypos, 0.0, idrotm,  overLapFlagSCMY.Data()); 
+  gMC->Gspos("SCMY", 2, "SCM0", 0.0, -ypos, 0.0, fIdRotm,  overLapFlagSCMY.Data()); 
 
   Info("Division2X2InScm0","Divide SCMY on x-axis %i\n", g->GetNPHIdiv());
   dx1 = parSCM0[0]; 
@@ -1018,14 +1027,14 @@ void AliEMCALv0::Division2X2InScm0(const AliEMCALGeometry * g, const Double_t pa
   printf(" ** SCMX ** \n");
   for(int i=0; i<11; i++) printf(" par[%2.2i] %9.4f\n", i, parTRAP[i]);
 
-  idrotm=0;
-  gMC->Gsvolu("SCMX", "TRAP", idtmed[idSC], parTRAP, 11);
+  fIdRotm=0;
+  gMC->Gsvolu("SCMX", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
   xpos = (parTRAP[4]+parTRAP[8])/2.;
   printf(" X shift SCMX inside SCMX : %7.3f : opt %s\n", xpos, overLapFlagSCMX.Data()); 
-  gMC->Gspos("SCMX", 1, "SCMY", xpos, 0.0, 0.0, idrotm,  overLapFlagSCMX.Data()) ;
-  //  AliMatrix(idrotm, 90.0,270., 90.0, 0.0, 0.0,0.0); // x'=-y; y'=x; z'=z
-  AliMatrix(idrotm, 90.0,90., 90.0, -180.0, 0.0,0.0);     // x'=y;  y'=-x; z'=z
-  gMC->Gspos("SCMX", 2, "SCMY", -xpos, 0.0, 0.0, idrotm,  overLapFlagSCMX.Data()) ;
+  gMC->Gspos("SCMX", 1, "SCMY", xpos, 0.0, 0.0, fIdRotm,  overLapFlagSCMX.Data()) ;
+  //  AliMatrix(fIdRotm, 90.0,270., 90.0, 0.0, 0.0,0.0); // x'=-y; y'=x; z'=z
+  AliMatrix(fIdRotm, 90.0,90., 90.0, -180.0, 0.0,0.0);     // x'=y;  y'=-x; z'=z
+  gMC->Gspos("SCMX", 2, "SCMY", -xpos, 0.0, 0.0, fIdRotm,  overLapFlagSCMX.Data()) ;
   // PB:
   if(n=="SCMX" && overLapFlagSCMY == "ONLY") {
     PbInTrapForTrd2(parTRAP, n);
@@ -1034,14 +1043,15 @@ void AliEMCALv0::Division2X2InScm0(const AliEMCALGeometry * g, const Double_t pa
 
 // 4-feb-05 by PAI
 void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
-{// TRD2 cases
+{
+ // TRD2 cases
   Double_t *dummy=0;
   TString pbShape("BOX"), pbtiChonly("ONLY");
   if(name=="SCM0") {
     pbShape    = "TRD2";
     //    pbtiChonly = "MANY";
   }
-  gMC->Gsvolu("PBTI", pbShape.Data(), idtmed[idPB], dummy, 0);
+  gMC->Gsvolu("PBTI", pbShape.Data(), fIdTmedArr[kIdPB], dummy, 0);
 
   int nr=0;
   Info("PbInTrapForTrd2"," Pb tiles inside %s: shape %s :pbtiChonly %s\n nrstart %i\n", 
@@ -1049,9 +1059,9 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
   AliEMCALGeometry * g = GetGeometry(); 
 
   double par[5], parPB[5], parSC[5];
-  double sampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
+  //double fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
   double xpos = 0.0, ypos = 0.0;
-  double zpos = -sampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
+  double zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
   if(name == "SCMX") { // common trapezoid - 11 parameters
     double coef = (parTRAP[8] -  parTRAP[4]) / (2.*parTRAP[0]);
     double xCenterSCMX =  (parTRAP[4] +  parTRAP[8])/2.; // the same for y
@@ -1059,14 +1069,14 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
 
     par[2] = g->GetECPbRadThick()/2.; // z
     for(int iz=0; iz<g->GetNECLayers(); iz++){
-      par[0] = parTRAP[4] + coef*sampleWidth*iz;
+      par[0] = parTRAP[4] + coef*fSampleWidth*iz;
       par[1] = par[0];
       xpos   = ypos = par[0] - xCenterSCMX;
     //if(parTRAP[1] < 0.) xpos = -xpos;
       gMC->Gsposp("PBTI", ++nr, name.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
       printf(" %2.2i xpos %8.5f zpos %6.3f par[0,1] %6.3f |", iz+1, xpos, zpos, par[0]);
       if(iz%2>0) printf("\n");
-      zpos += sampleWidth;
+      zpos += fSampleWidth;
     } 
     printf(" Number of Pb tiles in SCMX %i coef %9.7f \n", nr, coef);
     printf(" par[1] %9.5f  par[2] %9.5f ypos %9.5f \n", par[1], par[2], ypos); 
@@ -1080,7 +1090,7 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
     parPB[4] = g->GetECPbRadThick()/2.;
     parSC[2] = g->GetECScintThick()/2.;
     for(int iz=0; iz<g->GetNECLayers(); iz++){
-      ztmp     = sampleWidth*double(iz);
+      ztmp     = fSampleWidth*double(iz);
       parPB[0] = parTRAP[0] + tanx*ztmp;
       parPB[1] = parPB[0]   + tanx*g->GetECPbRadThick();
       parPB[2] = parTRAP[2] + tany*ztmp;
@@ -1097,7 +1107,7 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
       printf("\n SCTI     zpos %6.3f | par = ", zpos+g->GetECScintThick());
       for(int i=0; i<3; i++) printf(" %9.5f ", parPB[i]);
       */
-      zpos  += sampleWidth;
+      zpos  += fSampleWidth;
     }
     printf("\n");
   }
@@ -1105,18 +1115,19 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
 }
 
 // 15-mar-05
-void AliEMCALv0::PbmoInTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5], Double_t parPBMO[5])
+void AliEMCALv0::PbmoInTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5], Double_t parPBMO[5])
 {
+  // Pb inside Trd2
   Info("PbmoInTrd2"," started : geometry %s ", g->GetName());
   double wallThickness = g->GetPhiModuleSize()/2. -  g->GetPhiTileSize();
   printf(" wall thickness %7.5f \n", wallThickness);
   for(int i=0; i<4; i++) {
-    parPBMO[i] = parEMOD[i] - wallThickness;
-    printf(" %i parPBMO %7.3f parEMOD %7.3f : dif %7.3f \n", 
-    i, parPBMO[i],parEMOD[i], parPBMO[i]-parEMOD[i]);
+    parPBMO[i] = emodPar[i] - wallThickness;
+    printf(" %i parPBMO %7.3f emodPar %7.3f : dif %7.3f \n", 
+    i, parPBMO[i],emodPar[i], parPBMO[i]-emodPar[i]);
   }
-  parPBMO[4] = parEMOD[4];
-  gMC->Gsvolu("PBMO", "TRD2", idtmed[idPB], parPBMO, 5);
+  parPBMO[4] = emodPar[4];
+  gMC->Gsvolu("PBMO", "TRD2", fIdTmedArr[kIdPB], parPBMO, 5);
   gMC->Gspos("PBMO", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
   // Division 
   if(g->GetNPHIdiv()==2 && g->GetNETAdiv()==2) {
@@ -1128,14 +1139,15 @@ void AliEMCALv0::PbmoInTrd2(const AliEMCALGeometry * g, const Double_t parEMOD[5
   }
 }
 
-void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5])
+void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t parPBMO[5]) 
 {
+  // Division 2X2
   Info("Division2X2InPbmo"," started : geometry %s ", g->GetName());
   //Double_t *dummy=0;
-  //  gMC->Gsvolu("SCTI", "BOX", idtmed[idSC], dummy, 0);
+  //  gMC->Gsvolu("SCTI", "BOX", fIdTmedArr[kIdSC], dummy, 0);
 
   double parSC[3];
-  double sampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
+  //double fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
   double xpos = 0.0, ypos = 0.0, zpos = 0.0, ztmp=0;;
   double tanx = (parPBMO[1] -  parPBMO[0]) / (2.*parPBMO[4]); //  tanx =  tany now
   double tany = (parPBMO[3] -  parPBMO[2]) / (2.*parPBMO[4]);
@@ -1146,15 +1158,15 @@ void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t pa
   printf("\n");
 
   parSC[2] = g->GetECScintThick()/2.;
-  zpos = -sampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick() + g->GetECScintThick()/2.;
+  zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick() + g->GetECScintThick()/2.;
   printf(" parSC[2] %9.5f \n", parSC[2]);
   for(int iz=0; iz<g->GetNECLayers(); iz++){
-    ztmp     = g->GetECPbRadThick() + sampleWidth*double(iz); // Z for previous PB
+    ztmp     = g->GetECPbRadThick() + fSampleWidth*double(iz); // Z for previous PB
     parSC[0] =  parPBMO[0] + tanx*ztmp;
     parSC[1] =  parPBMO[2] + tany*ztmp;
 
     sprintf(name,"SC%2.2i", iz+1);
-    gMC->Gsvolu(name, "BOX", idtmed[idSC], parSC, 3);
+    gMC->Gsvolu(name, "BOX", fIdTmedArr[kIdSC], parSC, 3);
     gMC->Gspos(name, 1, "PBMO", xpos, ypos, zpos, 0, "ONLY") ;
     printf("%s | zpos %6.3f | parSC[0,1]=(%7.5f,%7.5f) -> ", 
     name, zpos, parSC[0], parSC[1]);
@@ -1167,12 +1179,13 @@ void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t pa
     printf(" %s \n", named2);
     gMC->Gsdvn(named2,named, 2, 1);
 
-    zpos    += sampleWidth;
+    zpos    += fSampleWidth;
   }
 }
 
 AliEMCALShishKebabTrd1Module* AliEMCALv0::GetShishKebabModule(Int_t neta)
-{ // 28-oct-05
+{ 
+  // 28-oct-05
   AliEMCALShishKebabTrd1Module* trd1=0;
   if(fShishKebabModules && neta>=0 && neta<fShishKebabModules->GetSize()) {
     trd1 = (AliEMCALShishKebabTrd1Module*)fShishKebabModules->At(neta);

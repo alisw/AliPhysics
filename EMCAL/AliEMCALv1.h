@@ -26,11 +26,15 @@ public:
 
   AliEMCALv1(void) ; 
   AliEMCALv1(const char *name, const char *title="") ;
-  // cpy ctor: no implementation yet
-  // requested by the Coding Convention
-  AliEMCALv1(const AliEMCALv0 & emcal):AliEMCALv0(emcal) {
-    Fatal("cpy ctor", "not implemented") ;  }
   virtual ~AliEMCALv1(void) ;
+
+  AliEMCALv1(const AliEMCALv1 & emcal):AliEMCALv0(emcal) {
+    Fatal("cpy ctor", "not implemented") ;  }
+  AliEMCALv1 & operator = (const AliEMCALv1  & /*rvalue*/) {
+    // assignement operator requested by coding convention but not needed
+    Fatal("operator =", "not implemented");
+    return *this; 
+  }
 
   using AliEMCALv0::AddHit;
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
@@ -42,21 +46,15 @@ public:
   virtual void FinishPrimary();
   virtual const TString Version(void)const {return TString("v0");}
   virtual void SetTimeCut(Float_t tc){ fTimeCut = tc;}
-  virtual Float_t GetTimeCut(){return fTimeCut;}
-  // assignement operator requested by coding convention but not needed  
-  AliEMCALv1 & operator = (const AliEMCALv0 & /*rvalue*/){
-    Fatal("operator =", "not implemented") ;  
-    return *this;}
- 
+  virtual Float_t GetTimeCut() const {return fTimeCut;} 
     
 protected:
-  // Marco advice - 16-jan-05
-  Int_t fCurPrimary;
-  Int_t fCurParent;
-  Int_t fCurTrack;
-  Float_t fTimeCut;       // Cut to remove the background from the ALICE system
+  Int_t fCurPrimary;  // Current primary track
+  Int_t fCurParent;   // Current parent 
+  Int_t fCurTrack;    // Current track
+  Float_t fTimeCut;   // Cut to remove the background from the ALICE system
 
-  ClassDef(AliEMCALv1,9)//Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
+  ClassDef(AliEMCALv1,9) // Implementation of EMCAL manager class to produce hits in a Central Calorimeter 
     
 };
 

@@ -30,8 +30,8 @@
 //  2. Timing signal is collected and added to hit
 
 // --- ROOT system ---
-#include "TParticle.h"
-#include "TVirtualMC.h"
+#include <TParticle.h>
+#include <TVirtualMC.h>
 
 // --- Standard library ---
 
@@ -48,7 +48,6 @@ ClassImp(AliEMCALv1)
 //______________________________________________________________________
 AliEMCALv1::AliEMCALv1():AliEMCALv0(), fCurPrimary(-1), fCurParent(-1), fCurTrack(-1){
   // ctor
-
 }
 
 //______________________________________________________________________
@@ -189,19 +188,19 @@ void AliEMCALv1::StepManager(void){
       // Apply Birk's law (copied from G3BIRK)
 
       if (gMC->TrackCharge()!=0) { // Check
-	  Float_t BirkC1_mod = 0;
+	  Float_t birkC1Mod = 0;
 	if (fBirkC0==1){ // Apply correction for higher charge states
 	  if (TMath::Abs(gMC->TrackCharge())>=2)
-	    BirkC1_mod=fBirkC1*7.2/12.6;
+	    birkC1Mod=fBirkC1*7.2/12.6;
 	  else
-	    BirkC1_mod=fBirkC1;
+	    birkC1Mod=fBirkC1;
 	}
 	Float_t dedxcm;
 	if (gMC->TrackStep()>0) 
 	  dedxcm=1000.*gMC->Edep()/gMC->TrackStep();
 	else
 	  dedxcm=0;
-	lightYield=lightYield/(1.+BirkC1_mod*dedxcm+fBirkC2*dedxcm*dedxcm);
+	lightYield=lightYield/(1.+birkC1Mod*dedxcm+fBirkC2*dedxcm*dedxcm);
       } 
 
       // use sampling fraction to get original energy --HG
@@ -220,20 +219,21 @@ void AliEMCALv1::RemapTrackHitIDs(Int_t *map) {
   // (Called by AliStack::PurifyKine)
   if (Hits()==0)
     return;
-  TIter hit_it(Hits());
-  Int_t i_hit=0;
-  while (AliEMCALHit *hit=dynamic_cast<AliEMCALHit*>(hit_it()) ) {
+  TIter hitIter(Hits());
+  Int_t iHit=0;
+  while (AliEMCALHit *hit=dynamic_cast<AliEMCALHit*>(hitIter()) ) {
     if (map[hit->GetIparent()]==-99)
-      cout << "Remapping, found -99 for parent id " << hit->GetIparent() << ", " << map[hit->GetIparent()] << ", i_hit " << i_hit << endl;
+      cout << "Remapping, found -99 for parent id " << hit->GetIparent() << ", " << map[hit->GetIparent()] << ", iHit " << iHit << endl;
     hit->SetIparent(map[hit->GetIparent()]);
     if (map[hit->GetPrimary()]==-99)
-      cout << "Remapping, found -99 for primary id " << hit->GetPrimary() << ", " << map[hit->GetPrimary()] << ", i_hit " << i_hit << endl;
+      cout << "Remapping, found -99 for primary id " << hit->GetPrimary() << ", " << map[hit->GetPrimary()] << ", iHit " << iHit << endl;
     hit->SetPrimary(map[hit->GetPrimary()]);
-    i_hit++;
+    iHit++;
   }
 }
 
 void AliEMCALv1::FinishPrimary() {
+  // finish primary
   fCurPrimary=-1;
   fCurParent=-1;
   fCurTrack=-1;

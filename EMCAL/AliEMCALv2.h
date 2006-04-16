@@ -31,12 +31,16 @@ public:
 
   AliEMCALv2(void) ; 
   AliEMCALv2(const char *name, const char *title="") ;
-  // cpy ctor: no implementation yet
-  // requested by the Coding Convention
-  AliEMCALv2(const AliEMCALv1 & emcal):AliEMCALv1(emcal) {
-    Fatal("cpy ctor", "not implemented") ;  }
   virtual ~AliEMCALv2(void) ;
 
+  AliEMCALv2(const AliEMCALv2 & emcal):AliEMCALv1(emcal) {
+    Fatal("cpy ctor", "not implemented") ;  }
+  AliEMCALv2 & operator = (const AliEMCALv2  & /*rvalue*/) {
+    // assignement operator requested by coding convention but not needed
+    Fatal("operator =", "not implemented");
+    return *this; 
+  }
+ 
   using AliEMCALv1::AddHit;
   virtual void  AddHit( Int_t shunt, Int_t primary, Int_t track, Int_t iparent, Float_t ienergy,
 			Int_t id, Float_t *hits, Float_t *p);
@@ -47,9 +51,6 @@ public:
   // Gives the version number 
   virtual Int_t  IsVersion(void) const {return 2;}
   virtual const TString Version(void)const {return TString("v2");}
-  AliEMCALv2 & operator = (const AliEMCALv1 & /*rvalue*/){
-    Fatal("operator =", "not implemented") ;  
-    return *this;}
   // 23-mar-05
   virtual Double_t GetDepositEnergy(int print=1); // *MENU*
   // 30-aug-04
@@ -62,6 +63,7 @@ public:
   void SetVolumeAttributes(const char *name="SCM0", int seen=1, int color=1, int fill=1); // *MENU*
   void TestIndexTransition(int pri=0, int idmax=0); // *MENU*
 
+ protected:
   AliEMCALGeometry* fGeometry; //!
   TH1F*             fHDe;      //!
   TH1F*             fHNhits;      //!

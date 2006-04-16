@@ -26,11 +26,11 @@
 // This is done by setting fIShunt =2, and flagging all parents of particles entering the EMCAL.
 
 // --- ROOT system ---
-#include "TParticle.h"
-#include "TVirtualMC.h"
-#include "TBrowser.h"
-#include "TH1.h"
-#include "TH2.h"
+#include <TParticle.h>
+#include <TVirtualMC.h>
+#include <TBrowser.h>
+#include <TH1.h>
+#include <TH2.h>
 
 // --- Standard library ---
 
@@ -46,13 +46,9 @@
 
 ClassImp(AliEMCALv2)
 
-  //extern "C" void gdaxis_(float &x0, float &y0, float &z0, float &axsiz);
-
-
 //______________________________________________________________________
 AliEMCALv2::AliEMCALv2():AliEMCALv1(), fGeometry(0){
   // ctor
-
 }
 
 //______________________________________________________________________
@@ -135,8 +131,9 @@ void AliEMCALv2::StepManager(void){
   static Float_t ienergy = 0;
   static TString curVolName;
   static int supModuleNumber, moduleNumber, yNumber, xNumber, absid;
-  static int keyGeom=0;
-  static char *vn = "SX"; // 15-mar-05
+  static int keyGeom=1;
+  static char *vn = "SCMX"; // Apr 13, 2006 - only TRD1 case now
+  //  static char *vn = "SX"; // 15-mar-05
   static int nSMOP[7]={1,3,5,7,9,11}; // 30-mar-05
   static int nSMON[7]={2,4,6,8,10,12};
   static Float_t depositedEnergy=0.0; 
@@ -231,16 +228,16 @@ void AliEMCALv2::StepManager(void){
       // Apply Birk's law (copied from G3BIRK)
 
       if (gMC->TrackCharge()!=0) { // Check
-	  Float_t BirkC1_mod = 0;
+	  Float_t birkC1Mod = 0;
 	if (fBirkC0==1){ // Apply correction for higher charge states
-	  if (TMath::Abs(gMC->TrackCharge())>=2) BirkC1_mod=fBirkC1*7.2/12.6;
-	  else                                    BirkC1_mod=fBirkC1;
+	  if (TMath::Abs(gMC->TrackCharge())>=2) birkC1Mod = fBirkC1*7.2/12.6;
+	  else                                   birkC1Mod = fBirkC1;
 	}
 
 	Float_t dedxcm;
 	if (gMC->TrackStep()>0)  dedxcm=1000.*gMC->Edep()/gMC->TrackStep();
 	else                     dedxcm=0;
-	lightYield=lightYield/(1.+BirkC1_mod*dedxcm+fBirkC2*dedxcm*dedxcm);
+	lightYield=lightYield/(1.+birkC1Mod*dedxcm+fBirkC2*dedxcm*dedxcm);
       } 
 
       // use sampling fraction to get original energy --HG
@@ -257,7 +254,8 @@ void AliEMCALv2::StepManager(void){
 }
 
 void AliEMCALv2::FinishEvent()
-{ // 26-may-05
+{ 
+  // Calculate deposit energy and fill control histogram; 26-may-05
   static double de=0.;
   fHNhits->Fill(double(fHits->GetEntries()));
   de = GetDepositEnergy(0);
@@ -265,7 +263,8 @@ void AliEMCALv2::FinishEvent()
 }
 
 Double_t AliEMCALv2::GetDepositEnergy(int print)
-{ // 23-mar-05 - for testing
+{ 
+  // 23-mar-05 - for testing
   if(fHits == 0) return 0.;
   AliEMCALHit  *hit=0;
   Double_t de=0.;
@@ -289,7 +288,8 @@ void AliEMCALv2::Browse(TBrowser* b)
 }
 
 void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
-{ // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
+{ 
+  // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
   TString g(fGeometry->GetName());
   g.ToUpper();
   gMC->Gsatt("*", "seen", 0);
@@ -330,7 +330,8 @@ void AliEMCALv2::DrawCalorimeterCut(const char *name, int axis, double dcut)
 }
 
 void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int fill)
-{ // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
+{ 
+ // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
   TString sn(GetGeometry()->GetName());
   sn.ToUpper();
   char *tit[3]={"xcut", "ycut", "zcut"};
@@ -394,7 +395,8 @@ void AliEMCALv2::DrawSuperModuleCut(const char *name, int axis, double dcut, int
 }
 
 void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill, char *optShad)
-{ // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
+{ 
+  // Size of tower is 5.6x5.6x24.8 (25.0); cut on Z axiz
   if(axis<1) axis=1; if(axis>3) axis=3;
   TString mn(name); mn.ToUpper();
   TString sn(GetGeometry()->GetName());
@@ -460,7 +462,8 @@ void AliEMCALv2::DrawTowerCut(const char *name, int axis, double dcut, int fill,
 }
   
 void AliEMCALv2::DrawAlicWithHits(int mode)
-{ // 20-sep-04; does not work now
+{ 
+ // 20-sep-04; does not work now
   static TH2F *h2;
   if(h2==0) h2 = new TH2F("h2","test fo hits", 60,0.5,60.5, 28,0.5,28.5);
   else      h2->Reset();
@@ -510,7 +513,8 @@ void AliEMCALv2::SetVolumeAttributes(const char *name, int seen, int color, int 
 } 
 
 void AliEMCALv2::TestIndexTransition(int pri, int idmax)
-{ // for EMCAL_SHISH geometry
+{ 
+ // Test for EMCAL_SHISH geometry
   TString sn(fGeometry->GetName());
   if(!sn.Contains("SHISH")) {
     printf("Wrong geometry |%s| ! Bye \n", sn.Data());
