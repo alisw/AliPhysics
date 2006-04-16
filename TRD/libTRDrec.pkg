@@ -6,6 +6,7 @@ SRCS= AliTRDpixel.cxx \
       AliTRDclusterizer.cxx \
       AliTRDclusterizerV1.cxx \
       AliTRDclusterCorrection.cxx \
+      AliTRDtracklet.cxx \
       AliTRDtrack.cxx \
       AliTRDtracker.cxx \
       AliTRDpid.cxx \

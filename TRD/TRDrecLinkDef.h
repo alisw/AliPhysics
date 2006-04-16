@@ -20,8 +20,8 @@
 
 #pragma link C++ class  AliTRDclusterCorrection+;
 
-#pragma link C++ class  AliTRDtracklet+;
 #pragma link C++ class  AliTRDtrack+;
+#pragma link C++ class  AliTRDtracklet+;
 #pragma link C++ class  AliTRDtracker+;
 #pragma link C++ class  AliTRDseed;
 
