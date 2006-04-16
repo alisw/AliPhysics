@@ -1362,7 +1362,7 @@ Int_t   AliTRDtrack::PropagateToR(Double_t r,Double_t step)
 }
 
 //_____________________________________________________________________________
-inline Int_t AliTRDtrack::GetSector() const
+Int_t AliTRDtrack::GetSector() const
 {
   //
   // Return the current sector
@@ -1375,7 +1375,7 @@ inline Int_t AliTRDtrack::GetSector() const
 }
 
 //_____________________________________________________________________________
-inline Double_t  AliTRDtrack::Get1Pt() const                       
+Double_t  AliTRDtrack::Get1Pt() const                       
 { 
   //
   // Returns 1 / pt
@@ -1386,7 +1386,7 @@ inline Double_t  AliTRDtrack::Get1Pt() const
 }
 
 //_____________________________________________________________________________
-inline Double_t  AliTRDtrack::GetP() const                         
+Double_t  AliTRDtrack::GetP() const                         
 { 
   //
   // Returns the total momentum
@@ -1397,7 +1397,7 @@ inline Double_t  AliTRDtrack::GetP() const
 }
 
 //_____________________________________________________________________________
-inline Double_t AliTRDtrack::GetYat(Double_t xk) const            
+Double_t AliTRDtrack::GetYat(Double_t xk) const            
 {     
   //
   // This function calculates the Y-coordinate of a track at 
@@ -1414,7 +1414,7 @@ inline Double_t AliTRDtrack::GetYat(Double_t xk) const
 }
 
 //_____________________________________________________________________________
-inline void AliTRDtrack::SetSampledEdx(Float_t q, Int_t i)    
+void AliTRDtrack::SetSampledEdx(Float_t q, Int_t i)    
 {
   //
   // The sampled energy loss
@@ -1428,7 +1428,7 @@ inline void AliTRDtrack::SetSampledEdx(Float_t q, Int_t i)
 }     
 
  //_____________________________________________________________________________
-inline void AliTRDtrack::SetSampledEdx(Float_t q) 
+void AliTRDtrack::SetSampledEdx(Float_t q) 
 {
   //
   // The sampled energy loss
@@ -1443,7 +1443,7 @@ inline void AliTRDtrack::SetSampledEdx(Float_t q)
 }     
 
 //_____________________________________________________________________________
-inline void AliTRDtrack::GetXYZ(Float_t r[3]) const 
+void AliTRDtrack::GetXYZ(Float_t r[3]) const 
 {
 
   //---------------------------------------------------------------------
