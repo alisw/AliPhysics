@@ -21,13 +21,15 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TMath.h"
 #include "TRandom.h"
 #include "AliPHOSCalibData.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBId.h"
 #include "AliCDBEntry.h"
+#include "AliPHOSEmcCalibData.h"
+#include "AliPHOSCpvCalibData.h"
+#include "AliCDBMetaData.h"
 
 ClassImp(AliPHOSCalibData)
 
@@ -71,6 +73,18 @@ AliPHOSCalibData::AliPHOSCalibData(Int_t runNumber) :
 }
 
 //________________________________________________________________
+AliPHOSCalibData::AliPHOSCalibData(AliPHOSCalibData & phosCDB) :
+  TNamed(phosCDB)
+{
+  // Copy constructor
+
+  fCalibDataEmc = phosCDB.fCalibDataEmc;
+  fCalibDataCpv = phosCDB.fCalibDataCpv;
+  
+  fEmcDataPath  = phosCDB.fEmcDataPath;
+  fCpvDataPath  = phosCDB.fCpvDataPath;
+}
+//________________________________________________________________
 AliPHOSCalibData::~AliPHOSCalibData()
 {
   // Destructor
@@ -89,6 +103,9 @@ void AliPHOSCalibData::Reset()
 //________________________________________________________________
 void  AliPHOSCalibData::Print(Option_t *option) const
 {
+  // Print EMC and CPV calibration containers
+  // Input: option="ped"  to print pedestals
+  //        option="gain" to print calibration coefficients
   if (fCalibDataEmc) fCalibDataEmc->Print(option);
   if (fCalibDataCpv) fCalibDataCpv->Print(option);
 }
@@ -96,6 +113,8 @@ void  AliPHOSCalibData::Print(Option_t *option) const
 //________________________________________________________________
 void AliPHOSCalibData::CreateNew()
 {
+  // Create new EMC and CPV calibration containers with ideal coefficients
+
   if(fCalibDataEmc) delete fCalibDataEmc;
   fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
 
@@ -107,6 +126,7 @@ void AliPHOSCalibData::CreateNew()
 //________________________________________________________________
 Bool_t AliPHOSCalibData::WriteEmc(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md)
 {
+  // Write EMC calibration container to CDB
 
   if(!fCalibDataEmc) return kFALSE;
 
@@ -127,6 +147,7 @@ Bool_t AliPHOSCalibData::WriteEmc(Int_t firstRun, Int_t lastRun, AliCDBMetaData 
 //________________________________________________________________
 Bool_t AliPHOSCalibData::WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData *md)
 {
+  // Write CPV calibration container to CDB
 
   if(!fCalibDataCpv) return kFALSE;
   
@@ -147,8 +168,12 @@ Bool_t AliPHOSCalibData::WriteCpv(Int_t firstRun, Int_t lastRun, AliCDBMetaData 
 //________________________________________________________________
 Float_t AliPHOSCalibData::GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const
 {
-  //module, column,raw should follow the internal PHOS convention:
-  //module 1:5, column 1:56, row 1:64
+  // Return EMC calibration coefficient
+  // for channel defined by (module,column,row)
+  // module, column,raw should follow the internal PHOS convention:
+  // module 1:5, column 1:56, row 1:64
+  // if CBD instance exists, the value is taken from CDB.
+  // Otherwise it is an ideal one
 
   if(fCalibDataEmc) 
     return fCalibDataEmc->GetADCchannelEmc(module,column,row);
@@ -156,24 +181,37 @@ Float_t AliPHOSCalibData::GetADCchannelEmc(Int_t module, Int_t column, Int_t row
     return 0.0015; // default width of one EMC ADC channel in GeV
 }
 
+//________________________________________________________________
 Float_t AliPHOSCalibData::GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const
 {
+  // Return EMC pedestal for channel defined by (module,column,row)
+  // module, column,raw should follow the internal PHOS convention:
+  // module 1:5, column 1:56, row 1:64
+  // if CBD instance exists, the value is taken from CDB.
+  // Otherwise it is an ideal one
+
   if(fCalibDataEmc) 
     return fCalibDataEmc->GetADCpedestalEmc(module,column,row);
   else
     return 0.005; // default EMC ADC pedestal
 }
 
+//________________________________________________________________
 void AliPHOSCalibData::SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)
 {
+  // Set EMC calibration coefficient for (module,column,row)
+
   if(!fCalibDataEmc)
     fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
 
   fCalibDataEmc->SetADCchannelEmc(module,column,row,value);
 }
 
+//________________________________________________________________
 void AliPHOSCalibData::SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value)
 {
+  // Set EMC pedestal for (module,column,row)
+
   if(!fCalibDataEmc)
     fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
 
@@ -183,8 +221,12 @@ void AliPHOSCalibData::SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, 
 //________________________________________________________________
 Float_t AliPHOSCalibData::GetADCchannelCpv(Int_t module, Int_t column, Int_t row) const
 {
-  //module, column,raw should follow the internal CPV convention:
-  //module 1:5, column 1:64, row 1:128
+  // Return CPV calibration coefficient
+  // for channel defined by (module,column,row)
+  // module, column,raw should follow the internal CPV convention:
+  // module 1:5, column 1:56, row 1:128
+  // if CBD instance exists, the value is taken from CDB.
+  // Otherwise it is an ideal one
 
   if(fCalibDataCpv) 
     return fCalibDataCpv->GetADCchannelCpv(module,column,row);
@@ -192,24 +234,38 @@ Float_t AliPHOSCalibData::GetADCchannelCpv(Int_t module, Int_t column, Int_t row
     return 0.0012; // default width of one ADC channel in CPV 'popugais'
 }
 
+//________________________________________________________________
 Float_t AliPHOSCalibData::GetADCpedestalCpv(Int_t module, Int_t column, Int_t row) const
 {
+  // Return CPV pedestal
+  // for channel defined by (module,column,row)
+  // module, column,raw should follow the internal CPV convention:
+  // module 1:5, column 1:56, row 1:128
+  // if CBD instance exists, the value is taken from CDB.
+  // Otherwise it is an ideal one
+
   if(fCalibDataCpv) 
     return fCalibDataCpv->GetADCpedestalCpv(module,column,row);
   else
     return 0.012; // default CPV ADC pedestal
 }
 
+//________________________________________________________________
 void AliPHOSCalibData::SetADCchannelCpv(Int_t module, Int_t column, Int_t row, Float_t value)
 {
+  // Set CPV calibration coefficient for (module,column,row)
+
   if(!fCalibDataCpv)
     fCalibDataCpv = new AliPHOSCpvCalibData("PHOS-CPV");
 
   fCalibDataCpv->SetADCchannelCpv(module,column,row,value);
 }
 
+//________________________________________________________________
 void AliPHOSCalibData::SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, Float_t value)
 {
+  // Set CPV pedestal for (module,column,row)
+
   if(!fCalibDataCpv)
     fCalibDataCpv = new AliPHOSCpvCalibData("PHOS-CPV");
 
@@ -219,6 +275,8 @@ void AliPHOSCalibData::SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, 
 //________________________________________________________________
 void AliPHOSCalibData::RandomEmc()
 {
+  // Create decalibrated EMC with calibration coefficients and pedestals
+  // randomly distributed within hard-coded limits
 
   if(fCalibDataEmc) delete fCalibDataEmc;
   fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
@@ -226,15 +284,15 @@ void AliPHOSCalibData::RandomEmc()
   TRandom rn;
   rn.SetSeed(0); //the seed is set to the current  machine clock
   
-  Float_t ADCchanelEmc,ADCpedestalEmc;
+  Float_t adcChannelEmc,adcPedestalEmc;
 
   for(Int_t module=1; module<6; module++) {
     for(Int_t column=1; column<57; column++) {
       for(Int_t row=1; row<65; row++) {
-        ADCchanelEmc=rn.Uniform(0.00075,0.00375); // Cmax/Cmin = 5, (Cmax-Cmin)/2 = 0.0015
-        ADCpedestalEmc=rn.Uniform(0.0045,0.0055); //+-10% spread of pedestals from 0.005
-        fCalibDataEmc->SetADCchannelEmc(module,column,row,ADCchanelEmc);
-        fCalibDataEmc->SetADCpedestalEmc(module,column,row,ADCpedestalEmc);
+        adcChannelEmc=rn.Uniform(0.00075,0.00375); // Cmax/Cmin = 5, (Cmax-Cmin)/2 = 0.0015
+        adcPedestalEmc=rn.Uniform(0.0045,0.0055); //+-10% spread of pedestals from 0.005
+        fCalibDataEmc->SetADCchannelEmc(module,column,row,adcChannelEmc);
+        fCalibDataEmc->SetADCpedestalEmc(module,column,row,adcPedestalEmc);
       }
     }
   }
@@ -244,6 +302,8 @@ void AliPHOSCalibData::RandomEmc()
 //________________________________________________________________
 void AliPHOSCalibData::RandomCpv()
 {
+  // Create decalibrated CPV with calibration coefficients and pedestals
+  // randomly distributed within hard-coded limits
 
   if(fCalibDataCpv) delete fCalibDataCpv;
   fCalibDataCpv = new AliPHOSCpvCalibData("PHOS-CPV");
@@ -251,15 +311,15 @@ void AliPHOSCalibData::RandomCpv()
   TRandom rn;
   rn.SetSeed(0); //the seed is set to the current  machine clock
   
-  Float_t ADCchanelCpv,ADCpedestalCpv;
+  Float_t adcChannelCpv,adcPedestalCpv;
 
   for(Int_t module=1; module<6; module++) {
     for(Int_t column=1; column<65; column++) {
       for(Int_t row=1; row<129; row++) {
-	ADCchanelCpv=TMath::Abs(rn.Uniform(0.0009,0.0015)); // 0.0012 +- 25%
-        ADCpedestalCpv=rn.Uniform(0.0048,0.0192); // Ped[max]/Ped[min] = 4, <Ped> = 0.012
-        fCalibDataCpv->SetADCchannelCpv(module,column,row,ADCchanelCpv);
-        fCalibDataCpv->SetADCpedestalCpv(module,column,row,ADCpedestalCpv);
+	adcChannelCpv =rn.Uniform(0.0009,0.0015); // 0.0012 +- 25%
+        adcPedestalCpv=rn.Uniform(0.0048,0.0192); // Ped[max]/Ped[min] = 4, <Ped> = 0.012
+        fCalibDataCpv->SetADCchannelCpv(module,column,row,adcChannelCpv);
+        fCalibDataCpv->SetADCpedestalCpv(module,column,row,adcPedestalCpv);
       }
     }
   }

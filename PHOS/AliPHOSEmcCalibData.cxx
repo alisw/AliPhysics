@@ -131,25 +131,41 @@ void  AliPHOSEmcCalibData::Print(Option_t *option) const
   }
 }
 
+//________________________________________________________________
 Float_t AliPHOSEmcCalibData::GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const
 {
+  //Return EMC calibration coefficient
   //module, column,raw should follow the internal PHOS convention:
   //module 1:5, column 1:56, row 1:64
 
   return fADCchannelEmc[module-1][column-1][row-1];
 }
 
+//________________________________________________________________
 Float_t AliPHOSEmcCalibData::GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const
 {
+  //Return EMC pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+
   return fADCpedestalEmc[module-1][column-1][row-1];
 }
 
+//________________________________________________________________
 void AliPHOSEmcCalibData::SetADCchannelEmc(Int_t module, Int_t column, Int_t row, Float_t value)
 {
+  //Set EMC calibration coefficient
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
+
   fADCchannelEmc[module-1][column-1][row-1] = value;
 }
 
+//________________________________________________________________
 void AliPHOSEmcCalibData::SetADCpedestalEmc(Int_t module, Int_t column, Int_t row, Float_t value)
 {
+  //Set EMC pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:64
   fADCpedestalEmc[module-1][column-1][row-1] = value;
 }

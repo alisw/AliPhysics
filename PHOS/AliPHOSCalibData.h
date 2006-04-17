@@ -12,15 +12,17 @@
 
 #include "TNamed.h"
 #include "TString.h"
-#include "AliPHOSEmcCalibData.h"
-#include "AliPHOSCpvCalibData.h"
-#include "AliCDBMetaData.h"
+
+class AliPHOSEmcCalibData;
+class AliPHOSCpvCalibData;
+class AliCDBMetaData;
 
 class AliPHOSCalibData: public TNamed {
 
  public:
   AliPHOSCalibData();
   AliPHOSCalibData(Int_t runNumber);
+  AliPHOSCalibData(AliPHOSCalibData & phosCDB);
   virtual ~AliPHOSCalibData();
   void Reset();
   virtual void Print(Option_t *option = "") const; 
@@ -41,7 +43,6 @@ class AliPHOSCalibData: public TNamed {
   void SetADCchannelCpv(Int_t module, Int_t column, Int_t row, Float_t value);
   void SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, Float_t value);
 
-  void SetDB(const char* db) {fDB=db;}
   void SetEmcDataPath(const char* emcPath) {fEmcDataPath=emcPath;}
   void SetCpvDataPath(const char* cpvPath) {fCpvDataPath=cpvPath;}
 
@@ -53,12 +54,10 @@ class AliPHOSCalibData: public TNamed {
   AliPHOSEmcCalibData* fCalibDataEmc; // EMC calibration data
   AliPHOSCpvCalibData* fCalibDataCpv; // CPV calibration data
   
-  TString fDB;
   TString fEmcDataPath; // path to EMC calibration data
   TString fCpvDataPath; // path to CPV calibration data
 
-  //
-  ClassDef(AliPHOSCalibData,1)    // PHOS Calibration data
+  ClassDef(AliPHOSCalibData,2)    // PHOS Calibration data
 };
 
 #endif

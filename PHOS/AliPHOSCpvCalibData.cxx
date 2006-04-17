@@ -52,7 +52,7 @@ AliPHOSCpvCalibData::AliPHOSCpvCalibData(const AliPHOSCpvCalibData& calibda) :
   SetTitle(calibda.GetName());
   Reset();
   for(Int_t module=0; module<5; module++) {
-    for(Int_t column=0; column<64; column++) {
+    for(Int_t column=0; column<56; column++) {
       for(Int_t row=0; row<128; row++) {
 	fADCchannelCpv[module][column][row] = calibda.GetADCchannelCpv(module,column,row);
 	fADCpedestalCpv[module][column][row] = calibda.GetADCpedestalCpv(module,column,row);
@@ -69,7 +69,7 @@ AliPHOSCpvCalibData &AliPHOSCpvCalibData::operator =(const AliPHOSCpvCalibData& 
   SetTitle(calibda.GetName());
   Reset();
   for(Int_t module=0; module<5; module++) {
-    for(Int_t column=0; column<64; column++) {
+    for(Int_t column=0; column<56; column++) {
       for(Int_t row=0; row<128; row++) {
 	fADCchannelCpv[module][column][row] = calibda.GetADCchannelCpv(module,column,row);
 	fADCpedestalCpv[module][column][row] = calibda.GetADCpedestalCpv(module,column,row);
@@ -88,10 +88,10 @@ AliPHOSCpvCalibData::~AliPHOSCpvCalibData()
 //________________________________________________________________
 void AliPHOSCpvCalibData::Reset()
 {
-  // Set all pedestals and all ADC channels to its default values.
+  // Set all pedestals and all ADC channels to its default (ideal) values.
 
   for (Int_t module=0; module<5; module++){
-    for (Int_t column=0; column<64; column++){
+    for (Int_t column=0; column<56; column++){
       for (Int_t row=0; row<128; row++){
 	fADCpedestalCpv[module][column][row] = 0.012;
 	fADCchannelCpv[module][column][row] = 0.0012;
@@ -110,7 +110,7 @@ void  AliPHOSCpvCalibData::Print(Option_t *option) const
     printf("\n	----	Pedestal values	----\n\n");
     for (Int_t module=0; module<5; module++){
       printf("============== Module %d\n",module+1);
-      for (Int_t column=0; column<64; column++){
+      for (Int_t column=0; column<56; column++){
 	for (Int_t row=0; row<128; row++){
 	  printf("%4.1f",fADCpedestalCpv[module][column][row]);
 	}
@@ -123,7 +123,7 @@ void  AliPHOSCpvCalibData::Print(Option_t *option) const
     printf("\n	----	ADC channel values	----\n\n");
     for (Int_t module=0; module<5; module++){
       printf("============== Module %d\n",module+1);
-      for (Int_t column=0; column<64; column++){
+      for (Int_t column=0; column<56; column++){
 	for (Int_t row=0; row<128; row++){
 	  printf("%4.1f",fADCchannelCpv[module][column][row]);
 	}
@@ -133,26 +133,39 @@ void  AliPHOSCpvCalibData::Print(Option_t *option) const
   }
 }
 
+//________________________________________________________________
 Float_t AliPHOSCpvCalibData::GetADCchannelCpv(Int_t module, Int_t column, Int_t row) const
 {
-  //CPV pads
+  //Return CPV calibration coefficient
   //module, column,raw should follow the internal PHOS convention:
-  //module 1:5, column 1:64, row 1:128.
+  //module 1:5, column 1:56, row 1:128.
 
   return fADCchannelCpv[module-1][column-1][row-1];
 }
 
+//________________________________________________________________
 Float_t AliPHOSCpvCalibData::GetADCpedestalCpv(Int_t module, Int_t column, Int_t row) const
 {
+  //Return CPV pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:128.
   return fADCpedestalCpv[module-1][column-1][row-1];
 }
 
+//________________________________________________________________
 void AliPHOSCpvCalibData::SetADCchannelCpv(Int_t module, Int_t column, Int_t row, Float_t value)
 {
+  //Set CPV calibration coefficient
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:128.
   fADCchannelCpv[module-1][column-1][row-1] = value;
 }
 
+//________________________________________________________________
 void AliPHOSCpvCalibData::SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, Float_t value)
 {
+  //Set CPV pedestal
+  //module, column,raw should follow the internal PHOS convention:
+  //module 1:5, column 1:56, row 1:128.
   fADCpedestalCpv[module-1][column-1][row-1] = value;
 }
