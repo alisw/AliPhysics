@@ -29,26 +29,26 @@ class AliFieldReader : public TObject
     virtual void SetStepSize(Float_t dz = 0.08) {fStepSize = dz;}
     virtual void SetZStart(Float_t zstart = 1383.) {fZStart = zstart;}    
     virtual void SetPolarity(Float_t pol = 1.) {fPolarity = pol;}
- private:
-    void MakeHtmlHeaderMain(FILE*);
-    void MakeHtmlHeaderPict(FILE*);
-    void MakeHtmlPict(FILE*, char*);
+ protected:
+    void MakeHtmlHeaderMain(FILE* file);
+    void MakeHtmlHeaderPict(FILE* file);
+    void MakeHtmlPict(FILE* file, char* name);
     void MakeHtmlTableEntry(FILE* htmlmain, char* fileName, char* htmlFile, Float_t x, Float_t y, Int_t i, Float_t bdl, Int_t ifile);
-    void MakeHtmlTrailor(FILE*);
+    void MakeHtmlTrailor(FILE* file);
     void ReadRegisterMap();
     void ReadRegisterMapSolenoid();
  protected:
-    AliMagFMaps* fField;
-    TNtuple*     fMap;
-    FILE*        fCatalogue;
-    FILE*        fHtmlMain;
-    Int_t        fRegMap[200][3];
-    Float_t      fStepSize;
-    Float_t      fZStart;
-    Float_t      fDd;
-    Float_t      fDz;
-    Float_t      fPolarity;
-    char*        fCatalogueName;
+    AliMagFMaps* fField;           // Pointer to calculated map
+    TNtuple*     fMap;             // Pointer to measured map
+    FILE*        fCatalogue;       // Pointer to file catalogue
+    FILE*        fHtmlMain;        // Pointer to the html output file
+    Int_t        fRegMap[200][3];  // Mapping between addresses and physical location 
+    Float_t      fStepSize;        // Step size in z 
+    Float_t      fZStart;          // Starting position in z
+    Float_t      fDd;              // Distance between sensors
+    Float_t      fDz;              // Distance between sensor planes  
+    Float_t      fPolarity;        // Polarity of the field
+    char*        fCatalogueName;   // Name of the catalogue
     ClassDef(AliFieldReader,1) 
 };
 

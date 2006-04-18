@@ -34,6 +34,9 @@ ClassImp(AliFieldReader)
 //_______________________________________________________________________
 AliFieldReader::AliFieldReader()
 {
+//
+//  Constructor
+//
     SetCatalogueName();
     SetZStart();
     SetPolarity();
@@ -53,6 +56,9 @@ AliFieldReader::~AliFieldReader()
 //_______________________________________________________________________
 void AliFieldReader::Init()
 {   
+//
+// Initialize the reader
+//
     // Calculated map
     fField = new AliMagFMaps("Maps","Maps", 2, 1., 10., 2);
     // Catalogue
@@ -67,8 +73,9 @@ void AliFieldReader::Init()
 
 void AliFieldReader::ReadMap()
 {   
-    // html
-    
+//
+// Read the measured dipole field map 
+//    
     
     Float_t zA[450], bxzA[200], byzA[200], bzzA[200], bxzcA[200], byzcA[200], bzzcA[200];
     Float_t yA[450], bxyA[200], byyA[200], bzyA[200], bxycA[200], byycA[200], bzycA[200];
@@ -386,6 +393,9 @@ void AliFieldReader::ReadMap()
 }
 
 void AliFieldReader::ReadMapSolenoid(){
+//
+//  Read map for solenoid measurement
+// 
     Float_t phiA[450], bzPhiA[200], brPhiA[200], btPhiA[200], bbPhiA[200];
     Float_t bzcPhiA[200], brcPhiA[200], btcPhiA[200], bbcPhiA[200];    
     Char_t sLine[255];
@@ -658,6 +668,9 @@ void AliFieldReader::ReadMapSolenoid(){
 
 void AliFieldReader::MakeHtmlHeaderMain(FILE* file)
 {
+//
+//  Write the header of the heml output
+//
     fprintf(file,"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n");
     fprintf(file, "<html>\n");
     fprintf(file, "<head>\n");
@@ -681,6 +694,9 @@ void AliFieldReader::MakeHtmlHeaderMain(FILE* file)
 
 void  AliFieldReader::MakeHtmlHeaderPict(FILE* file)
 {
+//
+//  Write header for picture
+//
     fprintf(file,"<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n");
     fprintf(file, "<html>\n");
     fprintf(file, "<head>\n");
@@ -693,6 +709,9 @@ void  AliFieldReader::MakeHtmlHeaderPict(FILE* file)
 
 void AliFieldReader:: MakeHtmlPict(FILE* chtml, char* pictFile)
 {
+//
+//  Write html for including picture
+//
     fprintf(chtml, "<img src=\"./%s\" alt=\"%s\" style=\"width: 1196px; height: 772px;\">\n", 
 	    pictFile, pictFile);
     
@@ -725,6 +744,9 @@ void AliFieldReader::MakeHtmlTableEntry(FILE* htmlmain, char* fileName, char* ht
 
 void  AliFieldReader::MakeHtmlTrailor(FILE* htmlmain)
 {
+//
+//  Write the html trailor
+//
     fprintf(htmlmain, "</tbody>\n");
     fprintf(htmlmain, "</table>\n");	
     fprintf(htmlmain, "</body>\n");
@@ -734,6 +756,9 @@ void  AliFieldReader::MakeHtmlTrailor(FILE* htmlmain)
 
 void AliFieldReader::ReadRegisterMap()
 {
+//
+//  Read the register map
+//
     FILE* regmap = fopen("register.map", "r");
     Int_t ireg;
     for (ireg = 0; ireg < 200; ireg++) {
@@ -763,6 +788,9 @@ void AliFieldReader::ReadRegisterMap()
 
 void AliFieldReader::ReadRegisterMapSolenoid()
 {
+//
+//  Read the register map
+//
     FILE* regmap = fopen("register.map", "r");
     Int_t ireg;
     
