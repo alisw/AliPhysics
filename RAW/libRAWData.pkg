@@ -15,6 +15,7 @@ SRCS:=  AliRawEventHeaderBase.cxx AliRawEquipmentHeader.cxx \
 	AliRawReaderMemory.cxx \
 	AliBitPacking.cxx AliAltroBuffer.cxx AliAltroMapping.cxx \
 	AliAltroRawStream.cxx \
+	AliAltroRawStreamOld.cxx \
 	AliVMERawStream.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

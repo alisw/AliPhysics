@@ -37,6 +37,7 @@
 
 #pragma link C++ class AliTPCAltroMapping+;
 #pragma link C++ class AliTPCRawStream+;
+#pragma link C++ class AliTPCRawStreamOld+;
 
 #endif
 

@@ -22,6 +22,7 @@
 #pragma link C++ class AliAltroBuffer+;
 #pragma link C++ class AliAltroMapping+;
 #pragma link C++ class AliAltroRawStream+;
+#pragma link C++ class AliAltroRawStreamOld+;
 #pragma link C++ class AliVMERawStream+;
 
 #endif
