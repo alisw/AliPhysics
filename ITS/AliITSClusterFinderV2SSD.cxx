@@ -318,6 +318,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   Int_t cused2[3000];
   for (Int_t i=0;i<3000;i++) {cnegative[i]=0; cused1[i]=0;}
   for (Int_t i=0;i<3000;i++) {cpositive[i]=0; cused2[i]=0;}
+  for (Int_t i=0;i<30000;i++) {negativepair[i]=0; positivepair[i]=0;}
   static Short_t pairs[1000][1000];
   memset(pairs,0,sizeof(Short_t)*1000000);
 //   Short_t ** pairs = new Short_t*[1000];
