@@ -78,14 +78,14 @@ void AliSTARTTrigger::Trigger()
   brDigits->GetEntry(0);
   Int_t   besttimeright = fDigits->BestTimeRight();
   Int_t   besttimeleft = fDigits->BestTimeLeft();
-  Int_t   timeDiff = besttimeright-besttimeleft;
+  Int_t   timeDiff = fDigits->TimeDiff();
   Int_t    sumMult=   fDigits->SumMult();
 
-  if (besttimeright>0 && besttimeright<10000)  SetInput("START_A_L0");
-  if (besttimeleft>0  && besttimeleft<10000)   SetInput("START_C_L0"); 
-  if (TMath::Abs(timeDiff) < 7000)                SetInput("START_Vertex_L0");
-  if (sumMult>2300)                            SetInput("START_Centr_L0");
-  if (sumMult>1800)                            SetInput("START_SemiCentral_L0");;
+  if (besttimeright > 0 && besttimeright <99999  )  SetInput("START_A_L0");
+  if (besttimeleft>0  && besttimeleft<99999)   SetInput("START_C_L0"); 
+  if (timeDiff >5500 && timeDiff < 6500)       SetInput("START_Vertex_L0");
+  if (sumMult > 175)                           SetInput("START_Centr_L0");
+  if (sumMult>155 && sumMult <= 175)           SetInput("START_SemiCentral_L0");;
 
    
 }

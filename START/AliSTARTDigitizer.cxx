@@ -131,11 +131,11 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   Float_t sl, qt;
   Int_t  bestRightTDC, bestLeftTDC, qtCh;
   Float_t time[24], besttime[24], timeGaus[24] ;
-  //  Float_t channelWidth=25.; //ps
     //Q->T-> coefficients !!!! should be asked!!!
   Float_t gain[24],timeDelayCFD[24], timeDelayLED[24];
   Int_t threshold =50; //photoelectrons
   Float_t zdetA, zdetC;
+   Int_t sumMultCoeff = 25;
   TObjArray slewingLED;
   TObjArray slewingRec;
   AliSTARTParameters* param = AliSTARTParameters::Instance();
@@ -144,7 +144,6 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
   Int_t ph2Mip = param->GetPh2Mip();     
   Int_t channelWidth = param->GetChannelWidth() ;  
   Float_t delayVertex = param->GetTimeDelayTVD();
-  
   for (Int_t i=0; i<24; i++){
     timeDelayCFD[i] = param->GetTimeDelayCFD(i);
     timeDelayLED[i] = param->GetTimeDelayLED(i);
@@ -177,7 +176,9 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     Int_t pmtBestRight=9999;
     Int_t pmtBestLeft=9999;
     Int_t timeDiff=999, meanTime=0;
-    Int_t sumMult =0;
+    Int_t sumMult =0;// fSumMult=0;
+    bestRightTDC = 99999;  bestLeftTDC = 99999;
+ 
     ftimeCFD -> Reset();
     fADC -> Reset();
     fADC0 -> Reset();
@@ -242,7 +243,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	if(timeGaus[ipmt]<besttimeleft){
 	  besttimeleft=timeGaus[ipmt]; //timeleft
 	  pmtBestLeft=ipmt;}
-      }
+     }
     }
     for ( Int_t ipmt=12; ipmt<24; ipmt++){
       if(countE[ipmt] > threshold) {
@@ -252,32 +253,35 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  pmtBestRight=ipmt;}
       }	
     }
-  
    //folding with alignmentz position distribution  
-
-    bestLeftTDC=Int_t ((besttimeleft+1000*timeDelayCFD[pmtBestLeft])
-		       /channelWidth);
+    if( besttimeleft > 10000. && besttimeleft <15000)
+      bestLeftTDC=Int_t ((besttimeleft+1000*timeDelayCFD[pmtBestLeft])
+			 /channelWidth);
  
-    bestRightTDC=Int_t ((besttimeright+1000*timeDelayCFD[pmtBestLeft])
+    if( besttimeright > 10000. && besttimeright <15000)
+      bestRightTDC=Int_t ((besttimeright+1000*timeDelayCFD[pmtBestRight])
 			/channelWidth);
-    timeDiff=Int_t (((besttimeleft-besttimeright)+1000*delayVertex)
-		    /channelWidth);
-    meanTime=Int_t (((besttimeright+1000*timeDelayCFD[pmtBestLeft]+
-		      besttimeleft+1000*timeDelayCFD[pmtBestLeft])/2.)
-		    /channelWidth);
- 
-     AliDebug(2,Form(" time in ns %f %f  ",besttimeleft,besttimeright ));
+
+    if (bestRightTDC < 99999 && bestLeftTDC < 99999)
+      {
+	timeDiff=Int_t (((besttimeleft-besttimeright)+1000*delayVertex)
+			/channelWidth);
+	meanTime=Int_t (((besttimeright+1000*timeDelayCFD[pmtBestLeft]+
+			  besttimeleft+1000*timeDelayCFD[pmtBestLeft])/2.)
+			/channelWidth);
+	AliDebug(10,Form(" time right& left %i %i  time diff && mean time in channels %i %i",bestRightTDC,bestLeftTDC, timeDiff, meanTime));
+      }
     for (Int_t i=0; i<24; i++)
       {
        	Float_t  al = countE[i]; 
 	if (al>threshold && timeGaus[i]<50000 ) {
-	//fill ADC
-	// QTC procedure:
-	// phe -> mV 0.3; 1MIP ->500phe -> ln (amp (mV)) = 5;
-	// max 200ns, HIJING  mean 50000phe -> 15000mv -> ln = 15 (s zapasom)
-	// channel 25ps
+	  //fill ADC
+	  // QTC procedure:
+	  // phe -> mV 0.3; 1MIP ->500phe -> ln (amp (mV)) = 5;
+	  // max 200ns, HIJING  mean 50000phe -> 15000mv -> ln = 15 (s zapasom)
+	  // channel 25ps
 	  qt= 50.*al*gain[i]/ph2Mip;  // 50mv/Mip amp in mV 
-	//  fill TDC
+	  //  fill TDC
 	  trCFD = Int_t (timeGaus[i] + 1000.*timeDelayCFD[i])/channelWidth; 
 	  trLED= Int_t (timeGaus[i] + 1000.*timeDelayLED[i]); 
 	  sl = ((TGraph*)slewingLED.At(i))->Eval(qt);
@@ -287,15 +291,28 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  fADC->AddAt(qtCh,i);
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
 	  ftimeLED->AddAt(trLED,i); 
-	  sumMult += Int_t ((al/ph2Mip)*50) ;
+	  //	  sumMult += Int_t ((al*gain[i]/ph2Mip)*50) ;
+	  sumMult += Int_t (qt/sumMultCoeff)  ;
+	 
+	AliDebug(10,Form("  pmt %i : time in ns %f time in channels %i   ",
+			i, timeGaus[i],trCFD ));
+	AliDebug(10,Form(" qt in mV %f qt in ns %f qt in channels %i   ",qt, 
+			TMath::Log(qt), qtCh));
 	}
       } //pmt loop
 
-	if (sumMult > threshold){
-	  fSumMult =  Int_t (TMath::Log(sumMult));
-	}
-    fSTART->AddDigit(bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult,
-		     ftimeCFD,fADC,ftimeLED,fADC0);
+    if (sumMult > threshold){
+      fSumMult =  Int_t (1000.* TMath::Log(Double_t(sumMult) / Double_t(sumMultCoeff))
+			 /channelWidth);
+      AliDebug(2,Form("summult mv %i   mult  in chammens %i in ps %i ", 
+		      sumMult, fSumMult, fSumMult*channelWidth));
+    }
+    if (  besttimeleft<99999 || besttimeleft < 99999) {
+      fSTART->AddDigit(bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult,
+		       ftimeCFD,fADC,ftimeLED,fADC0);
+      
+      AliDebug(2,Form(" Digits wrote bestRightTDC %i bestLeftTDC %i  meanTime %i  timeDiff %i fSumMult %i ", bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult ));
+    }  
     pOutStartLoader->UnloadHits();
   } //input streams loop
   
