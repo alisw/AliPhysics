@@ -27,12 +27,21 @@ it does not seem to be necessary it is also possible to interpolate
 between pT bins using SetInt().
 
 $Log$
+Revision 1.9  2005/09/24 03:51:43  hristov
+Removing extra semicolon (Fedora Core 4)
+
 Revision 1.8  2005/09/22 11:31:42  morsch
 Completely revised version. (P. Cortese)
 
 */
 
 #include "AliFastMuonTriggerEff.h"
+#include "TROOT.h"
+#include "TFile.h"
+#include "stdlib.h"
+#include "TH3.h"
+#include "TObjString.h"
+
 #define PLIN printf("%s: %d: ",__FILE__,__LINE__)
 
 ClassImp(AliFastMuonTriggerEff)
@@ -51,6 +60,8 @@ AliFastMuonTriggerEff::AliFastMuonTriggerEff():
 
 void AliFastMuonTriggerEff::SetCut(Int_t cut) 
 {  
+  //
+  // Set the pt cut
   if(cut==kLow){
     printf("Selecting Low Pt cut\n");
   }else if(cut==kHigh){
@@ -67,6 +78,9 @@ void AliFastMuonTriggerEff::SetCut(Int_t cut)
 
 Int_t AliFastMuonTriggerEff::SetBkgLevel(Float_t Bkg)
 {
+  //
+  // Set the background level
+  //
     if((Bkg!=0.)) {
        printf("%s: Warning: requested Bkg: %f\n",
        __FILE__,Bkg);
@@ -87,6 +101,9 @@ Int_t AliFastMuonTriggerEff::SetBkgLevel(Float_t Bkg)
 
 Int_t AliFastMuonTriggerEff::ForceBkgLevel(Float_t Bkg)
 {
+  //
+  // Check and enforce consistency of the background level 
+  // 
     if((Bkg!=0.)) {
        printf("%s: Warning: requested Bkg: %f\n",
        __FILE__,Bkg);
@@ -104,6 +121,9 @@ Int_t AliFastMuonTriggerEff::ForceBkgLevel(Float_t Bkg)
 }
 
 Int_t AliFastMuonTriggerEff::LoadTables(Char_t *namet=""){
+  //
+  // Load the trigger tables
+  //
     Char_t hNameA[100],hNameL[100],hNameH[100];
     sprintf(hNameA,"hEffAPt%s",namet);
     sprintf(hNameL,"hEffLPt%s",namet);

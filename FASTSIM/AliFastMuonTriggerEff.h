@@ -7,11 +7,9 @@
 
 #include <AliFastResponse.h>
 #include <TString.h>
-#include <TObjString.h>
-#include <TFile.h>
-#include <TH3.h>
-#include <TROOT.h>
-#include <stdlib.h>
+
+class TH3F;
+class TAxis;
 
 // Debugging flag
 //#define MYTRIGDEBUG
@@ -40,34 +38,34 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     void UnsetInt() {fInt=0;}
     Int_t GetInt() {return fInt;}
   protected:
-    Double_t fPtMin;
-    Double_t fPtMax;
+    Double_t fPtMin;               // Minimun pt
+    Double_t fPtMax;               // Maximum pt
     Double_t fDpt;                 // Delta_pt
-    Int_t    fnptb;
-    Double_t fPhiMin;              // lower limit for phi 
-    Double_t fPhiMax;              // upper limit for phi
+    Int_t    fnptb;                // Number of bins
+    Double_t fPhiMin;              // Lower limit for phi 
+    Double_t fPhiMax;              // Upper limit for phi
     Double_t fDphi;                // Delta_phi
-    Int_t    fnphib;
+    Int_t    fnphib;               // Number of bins   
     Double_t fThetaMin;            // lower limit for theta
     Double_t fThetaMax;            // upper limit for theta
     Double_t fDtheta;              // Delta_theta
-    Int_t    fnthetab;
-    Int_t   fCut;                 // Cut type (low/high)
-    Int_t   fZones;               // Total number of zones
-    TH3F*   fhEffAPt;             // Trig. prob. for Any Pt
-    TH3F*   fhEffLPt;             // Trig. prob. for Low Pt
-    TH3F*   fhEffHPt;             // Trig. prob. for High Pt
-    TAxis*  fhLX;
-    TAxis*  fhLY;
-    TAxis*  fhLZ;
-    Float_t fBkg;                 // Background level
-    TString fTableTitle;          // Title of the LUT
-    TString fDescription;         // Description of the table content
-    Int_t fInt;                   // Interpolation flag (1 to interpolate)
+    Int_t    fnthetab;             // Number of bins 
+    Int_t   fCut;                  // Cut type (low/high)
+    Int_t   fZones;                // Total number of zones
+    TH3F*   fhEffAPt;              // Trig. prob. for Any Pt
+    TH3F*   fhEffLPt;              // Trig. prob. for Low Pt
+    TH3F*   fhEffHPt;              // Trig. prob. for High Pt
+    TAxis*  fhLX;                  // x-axis 
+    TAxis*  fhLY;                  // y-axis
+    TAxis*  fhLZ;                  // z-axis
+    Float_t fBkg;                  // Background level
+    TString fTableTitle;           // Title of the LUT
+    TString fDescription;          // Description of the table content
+    Int_t fInt;                    // Interpolation flag (1 to interpolate)
   private:
-    Int_t fibx;
-    Int_t fiby;
-    Int_t fibz;
+    Int_t fibx;                    // index x 
+    Int_t fiby;                    // index y
+    Int_t fibz;                    // index z
     ClassDef(AliFastMuonTriggerEff,1)    // Fast Muon Trigger response
 };
 
