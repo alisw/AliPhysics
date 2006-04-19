@@ -190,8 +190,8 @@ void AliBalance::CalculateBalance()
 	{
 	  for(j = 0; j < i; j++)
 	    {
-	      Double_t rap1 = 0.5*log((fV[i].E() - fV[i].Pz())/(fV[i].E() + fV[i].Pz())); 
-	      Double_t rap2 = 0.5*log((fV[j].E() - fV[j].Pz())/(fV[j].E() + fV[j].Pz())); 
+	      Double_t rap1 = 0.5*log((fV[i].E() + fV[i].Pz())/(fV[i].E() - fV[i].Pz())); 
+	      Double_t rap2 = 0.5*log((fV[j].E() + fV[j].Pz())/(fV[j].E() - fV[j].Pz())); 
 	      Double_t dy = TMath::Abs(rap1 - rap2);
 	      ibin = Int_t(dy/fP2Step);
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
@@ -213,8 +213,8 @@ void AliBalance::CalculateBalance()
 	    {
 	      Double_t p1 = sqrt(pow(fV[i].Px(),2) + pow(fV[i].Py(),2) + pow(fV[i].Pz(),2)); 
 	      Double_t p2 = sqrt(pow(fV[j].Px(),2) + pow(fV[j].Py(),2) + pow(fV[j].Pz(),2));
-	      Double_t eta1 = 0.5*log((p1 - fV[i].Pz())/(p1 + fV[i].Pz())); 
-	      Double_t eta2 = 0.5*log((p2 - fV[j].Pz())/(p2 + fV[j].Pz())); 
+	      Double_t eta1 = 0.5*log((p1 + fV[i].Pz())/(p1 - fV[i].Pz())); 
+	      Double_t eta2 = 0.5*log((p2 + fV[j].Pz())/(p2 - fV[j].Pz())); 
 	      Double_t deta = TMath::Abs(eta1 - eta2);
 	      ibin = Int_t(deta/fP2Step);
 	      if((fCharge[i] > 0)&&(fCharge[j] > 0))
