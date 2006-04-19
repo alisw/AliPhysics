@@ -321,11 +321,12 @@ Bool_t AliSimulation::ApplyAlignObjsToGeom(TObjArray* alObjArray)
   alObjArray->Sort();
   Int_t nvols = alObjArray->GetEntriesFast();
 
+  Bool_t flag = kTRUE;
+
   for(Int_t j=0; j<nvols; j++)
     {
       AliAlignObj* alobj = (AliAlignObj*) alObjArray->UncheckedAt(j);
-      if (alobj->ApplyToGeometry() == kFALSE)
-	return kFALSE;
+      if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
     }
 
   if (AliDebugLevelClass() >= 1) {
@@ -336,7 +337,7 @@ Bool_t AliSimulation::ApplyAlignObjsToGeom(TObjArray* alObjArray)
    }
   }
 
-  return kTRUE;
+  return flag;
 
 }
 
@@ -512,12 +513,15 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   if (fAlignObjArray) {
     if (gGeoManager && gGeoManager->IsClosed()) {
       if (ApplyAlignObjsToGeom(fAlignObjArray) == kFALSE) {
-	AliError("The application of misalignment failed! Restart aliroot and try again. ");
+	AliError("The misalignment of one or more volumes failed!"
+		 "Compare the list of simulated detectors and the list of detector alignment data!");
+	if (delRunLoader) delete runLoader;
 	return kFALSE;
       }
     }
     else {
       AliError("Can't apply the misalignment! gGeoManager doesn't exist or it is still opened!");
+      if (delRunLoader) delete runLoader;
       return kFALSE;
     }
   }
