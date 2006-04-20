@@ -30,7 +30,7 @@
 #pragma link C++ class AliHLTMUONMicrodHLT+;
 
 #pragma link C++ class AliHLTMUONADCStreamSource+;
-#pragma link C++ struct AliHLTMUONADCStreamSource::DataBlock+;
+#pragma link C++ struct AliHLTMUONADCStreamSource::AliDataBlock+;
 
 #pragma link C++ class AliHLTMUONTriggerSource+;
 #pragma link C++ enum AliHLTMUONTriggerSource::AreaType+;

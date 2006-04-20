@@ -27,6 +27,27 @@ class AliMUONDataInterface;
 
 class AliHLTMUONTriggerSource : public TObject
 {
+public:  // Unfortunately ROOT requires the following to be public.
+
+	class AliEventData : public TObject
+	{
+	public:
+		AliEventData();
+		AliEventData(Int_t eventnumber);
+		virtual ~AliEventData();
+		
+		Int_t& EventNumber() { return fEventNumber; }
+		TClonesArray& Blocks() { return fBlocks; }
+
+	private:
+	
+		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the triggers were taken.
+		TClonesArray fBlocks; // The list of blocks of trigger records.
+		
+		ClassDef(AliEventData, 1)  // Data per event.
+	};
+
+
 public:
 
 	enum AreaType
@@ -285,28 +306,6 @@ private:
 	 */
 	void ResetTriggerPointers() const;
 
-
-public:  // Unfortunately ROOT requires the following to be public.
-
-	class AliEventData : public TObject
-	{
-	public:
-		AliEventData();
-		AliEventData(Int_t eventnumber);
-		virtual ~AliEventData();
-		
-		Int_t& EventNumber() { return fEventNumber; }
-		TClonesArray& Blocks() { return fBlocks; }
-
-	private:
-	
-		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the triggers were taken.
-		TClonesArray fBlocks; // The list of blocks of trigger records.
-		
-		ClassDef(AliEventData, 1)  // Data per event.
-	};
-	
-private:
 
 	// Do not allow copying of this object.
 	AliHLTMUONTriggerSource(const AliHLTMUONTriggerSource& /*object*/) : TObject() {}

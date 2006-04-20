@@ -16,6 +16,9 @@ class AliHLTMUONPoint;
 
 class AliHLTMUONRegion : public TObject
 {
+	// ostream operator usefull for text output.
+	friend ostream& operator << (ostream& os, const AliHLTMUONRegion& r);
+
 public:
 
 	/* Default constructor initialises everything to zero.
@@ -50,9 +53,6 @@ public:
 	   otherwise kFALSE is returned.
 	 */
 	Bool_t Contains(const AliHLTMUONPoint& p) const;
-
-	// ostream operator usefull for text output.
-	friend ostream& operator << (ostream& os, const AliHLTMUONRegion& r);
 
 private:
 

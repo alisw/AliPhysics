@@ -13,6 +13,8 @@ ClassImp(AliHLTMUONTriggerRecord)
 
 AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord()
 {
+// Default constructor initialises everything to zero and the trigger number to -1.
+
 	Init();
 }
 
@@ -22,6 +24,13 @@ AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord(
 		const AliHLTMUONPoint& station1point, const AliHLTMUONPoint& station2point
 	)
 {
+// Creates a trigger record from the specified parameters.
+// Note: the trigger number must be greater or equal to zero. The particle
+// sign must also be one of the following values: -1, 0 or +1
+// Pt must be a positive number.
+// If these conditions are not met then an error message is displayed and
+// the object is filled like it is in the default constructor. 
+
 	if (triggernumber < 0)
 	{
 		Init();
@@ -59,6 +68,8 @@ AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord(
 
 void AliHLTMUONTriggerRecord::Init()
 {
+// Performs internal initialisation for the constructors.
+
 	fTriggerNumber = -1;
 	fParticleSign = 0;
 	fPt = 0.0;
@@ -67,6 +78,11 @@ void AliHLTMUONTriggerRecord::Init()
 
 void AliHLTMUONTriggerRecord::TriggerNumber(Int_t value)
 {
+// Set method for the trigger number. 
+// The trigger number must be positive when assigning the trigger number.
+// If it is not then an error message is displayed and the internal value
+// remains untouched.
+
 	if (value >= 0)
 		fTriggerNumber = value;
 	else
@@ -79,6 +95,11 @@ void AliHLTMUONTriggerRecord::TriggerNumber(Int_t value)
 
 void AliHLTMUONTriggerRecord::ParticleSign(Int_t value)
 {
+// Set method for the particle sign.
+// The particle sign must be one of the following values: -1, 0 or +1
+// If it is not then an error message is displayed and the internal value
+// remains untouched.
+
 	if (-1 <= value && value <= +1)
 		fParticleSign = value;
 	else
@@ -91,6 +112,11 @@ void AliHLTMUONTriggerRecord::ParticleSign(Int_t value)
 
 void AliHLTMUONTriggerRecord::Pt(Float_t value)
 {
+// Set method for the particle Pt, as measured by the L0 trigger.
+// The pt must be a positive number when assigning the pt.
+// If it is not then an error message is displayed and the internal value
+// remains untouched.
+
 	if (value >= 0)
 		fPt = value;
 	else

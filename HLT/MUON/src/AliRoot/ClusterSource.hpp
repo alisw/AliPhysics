@@ -24,6 +24,45 @@ class AliMUONDataInterface;
 
 class AliHLTMUONClusterSource : public TObject
 {
+public:  // Unfortunately ROOT requires the following to be public.
+	
+	class AliBlockData : public TObject
+	{
+	public:
+		AliBlockData();
+		AliBlockData(Int_t chamber);
+		virtual ~AliBlockData();
+
+		Int_t& Chamber() { return fChamber; };
+		TClonesArray& Clusters() { return fClusters; };
+
+	private:
+
+		Int_t fChamber;  // The chamber number this block of clusters came from.
+		TClonesArray fClusters;  // The cluster points in this block.
+		
+		ClassDef(AliBlockData, 1);  // Data per block.
+	};
+	
+	class AliEventData : public TObject
+	{
+	public:
+		AliEventData();
+		AliEventData(Int_t eventnumber);
+		virtual ~AliEventData();
+
+		Int_t& EventNumber() { return fEventNumber; };
+		TClonesArray& Blocks() { return fBlocks; };
+
+	private:
+
+		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the clusters were taken.
+		TClonesArray fBlocks;  // The list of cluster blocks for this event.
+		
+		ClassDef(AliEventData, 1);  // Data per event.
+	};
+
+
 public:
 
 	enum AreaType
@@ -259,47 +298,6 @@ private:
 	 */
 	void ResetClusterPointers() const;
 	
-
-public:  // Unfortunately ROOT requires the following to be public.
-	
-	class AliBlockData : public TObject
-	{
-	public:
-		AliBlockData();
-		AliBlockData(Int_t chamber);
-		virtual ~AliBlockData();
-
-		Int_t& Chamber() { return fChamber; };
-		TClonesArray& Clusters() { return fClusters; };
-
-	private:
-
-		Int_t fChamber;  // The chamber number this block of clusters came from.
-		TClonesArray fClusters;  // The cluster points in this block.
-		
-		ClassDef(AliBlockData, 1);  // Data per block.
-	};
-	
-	class AliEventData : public TObject
-	{
-	public:
-		AliEventData();
-		AliEventData(Int_t eventnumber);
-		virtual ~AliEventData();
-
-		Int_t& EventNumber() { return fEventNumber; };
-		TClonesArray& Blocks() { return fBlocks; };
-
-	private:
-
-		Int_t fEventNumber;  // Event number in AliMUONDataInterface from which the clusters were taken.
-		TClonesArray fBlocks;  // The list of cluster blocks for this event.
-		
-		ClassDef(AliEventData, 1);  // Data per event.
-	};
-
-
-private:
 
 	// Dont allow copying.
 	AliHLTMUONClusterSource(const AliHLTMUONClusterSource& /*object*/) : TObject() {};

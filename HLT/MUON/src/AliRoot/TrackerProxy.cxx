@@ -14,20 +14,24 @@
 AliHLTMUONTrackerProxy::AliHLTMUONTrackerProxy(AliHLTMUONTrackerInterface* client)
 	: AliHLTMUONCoreTracker(), AliHLTMUONTrackerCallback()
 {
-	tracker = client;
+	fTracker = client;
 }
 
 
 void AliHLTMUONTrackerProxy::FindTrack(const AliHLTMUONCoreTriggerRecord& trigger)
 {
+// Finds a track from the tigger seed by invoking the tracker object.
+
 	AliHLTMUONTriggerRecord rec = AliHLTMUONConvert(trigger, 0);
 	DebugMsg(6, "AliHLTMUONTrackerProxy::FindTrack : rec = " << rec);
-	tracker->FindTrack(rec);
+	fTracker->FindTrack(rec);
 }
 
 
 void AliHLTMUONTrackerProxy::ReturnClusters(void* tag, const AliHLTMUONCoreClusterPoint* clusters, UInt count)
 {
+// Passes the cluster points the tracker requested to the tracker.
+
 	AliHLTMUONPoint* points = new AliHLTMUONPoint[count];
 	try
 	{
@@ -37,7 +41,7 @@ void AliHLTMUONTrackerProxy::ReturnClusters(void* tag, const AliHLTMUONCoreClust
 			points[i] = AliHLTMUONConvert(clusters[i]);
 			DebugMsg(6, "\tpoints[" << i << "] = " << points[i] );
 		};
-		tracker->ReturnClusters(tag, points, count);
+		fTracker->ReturnClusters(tag, points, count);
 	}
 	finally
 	(
@@ -48,15 +52,19 @@ void AliHLTMUONTrackerProxy::ReturnClusters(void* tag, const AliHLTMUONCoreClust
 
 void AliHLTMUONTrackerProxy::EndOfClusters(void* tag)
 {
+// Tells the tracker there are no more clusters.
+
 	DebugMsg(6, "AliHLTMUONTrackerProxy::EndOfClusters");
-	tracker->EndOfClusters(tag);
+	fTracker->EndOfClusters(tag);
 }
 
 
 void AliHLTMUONTrackerProxy::FillTrackData(AliHLTMUONCoreTrack& track)
 {
+// Fills the tracker data for the found track.
+
 	AliHLTMUONTrack data;
-	tracker->FillTrackData(data);
+	fTracker->FillTrackData(data);
 	DebugMsg(6, "AliHLTMUONTrackerProxy::FillTrackData : data = " << data);
 	track = AliHLTMUONConvert(data);
 }
@@ -65,7 +73,7 @@ void AliHLTMUONTrackerProxy::FillTrackData(AliHLTMUONCoreTrack& track)
 void AliHLTMUONTrackerProxy::Reset()
 {
 	DebugMsg(6, "AliHLTMUONTrackerProxy::Reset");
-	tracker->Reset();
+	fTracker->Reset();
 }
 
 

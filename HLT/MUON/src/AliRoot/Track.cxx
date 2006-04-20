@@ -14,6 +14,8 @@ ClassImp(AliHLTMUONTrack)
 
 AliHLTMUONTrack::AliHLTMUONTrack() : TObject()
 {
+// Default constructor initialises everything to zero and fTriggerID to -1.
+
 	Init();
 }
 
@@ -23,6 +25,12 @@ AliHLTMUONTrack::AliHLTMUONTrack(
 		const AliHLTMUONPoint hits[10], const AliHLTMUONRegion regions[10]
 	) : TObject()
 {
+// Create a track object from the given parameters.
+// This constructor checks that momentum >= pt and sign is one of the
+// following values: -1, 0 or +1. If these conditions are violated then
+// the internal data is initialised as in the default constructor and an
+// error message is displayed.
+
 	if (sign < -1 || +1 < sign)
 	{
 		Init();
@@ -57,6 +65,8 @@ AliHLTMUONTrack::AliHLTMUONTrack(
 
 void AliHLTMUONTrack::Init()
 {
+// Internal initialisation routine used by the constructors.
+
 	fTriggerID = -1;
 	fParticleSign = 0;
 	fP = fPt = 0.0;
@@ -65,6 +75,11 @@ void AliHLTMUONTrack::Init()
 
 void AliHLTMUONTrack::ParticleSign(Int_t value)
 {
+// Set method for the particle sign. The particle sign must be one
+// of the following values: -1, 0 or +1
+// If the new value is not in this range then an error message is
+// displayed and the internal value remain unchanged.
+
 	if (-1 <= value && value <= +1)
 		fParticleSign = value;
 	else
@@ -77,6 +92,11 @@ void AliHLTMUONTrack::ParticleSign(Int_t value)
 
 void AliHLTMUONTrack::P(Float_t value)
 {
+// The set method for the momentum.
+// This method checks that the momentum is always equal or larger than
+// the pt. If not then the internal values are left unchanged and an
+// error message is displayed. The numbers must also be positive.
+
 	if (value >= fPt)
 		fP = value;
 	else
@@ -88,6 +108,11 @@ void AliHLTMUONTrack::P(Float_t value)
 
 void AliHLTMUONTrack::Pt(Float_t value)
 {
+// The set method for the pt.
+// This method checks that the momentum is always equal or larger than
+// the pt. If not then the internal values are left unchanged and an
+// error message is displayed. The numbers must also be positive.
+
 	if (value >= 0.0)
 	{
 		if (value <= fP)
@@ -105,6 +130,10 @@ void AliHLTMUONTrack::Pt(Float_t value)
 
 AliHLTMUONPoint& AliHLTMUONTrack::Hit(UInt_t chamber)
 {
+// Returns the hit point for the specified chamber.
+// If the chamber number in out of bounds the point on the first
+// chamber is returned and an error message displayed.
+
 	if (chamber < 10)
 		return fHit[chamber];
 	else
@@ -120,6 +149,10 @@ AliHLTMUONPoint& AliHLTMUONTrack::Hit(UInt_t chamber)
 
 const AliHLTMUONPoint& AliHLTMUONTrack::Hit(UInt_t chamber) const
 {
+// Returns a constant hit object for the specified chamber.
+// If the chamber number in out of bounds the point on the first
+// chamber is returned and an error message displayed.
+
 	if (chamber < 10)
 		return fHit[chamber];
 	else
@@ -135,6 +168,8 @@ const AliHLTMUONPoint& AliHLTMUONTrack::Hit(UInt_t chamber) const
 
 void AliHLTMUONTrack::Hit(UInt_t chamber, const AliHLTMUONPoint& value)
 {
+// Set method for hits. The chamber must be in the range [0..9]
+
 	if (chamber < 10)
 		fHit[chamber] = value;
 	else
@@ -147,6 +182,10 @@ void AliHLTMUONTrack::Hit(UInt_t chamber, const AliHLTMUONPoint& value)
 
 AliHLTMUONRegion& AliHLTMUONTrack::RegionOfInterest(UInt_t chamber)
 {
+// Returns the region of interest for the specified chamber.
+// If the chamber number in out of bounds the region on the first
+// chamber is returned and an error message displayed.
+
 	if (chamber < 10)
 		return fRegionOfInterest[chamber];
 	else
@@ -162,6 +201,10 @@ AliHLTMUONRegion& AliHLTMUONTrack::RegionOfInterest(UInt_t chamber)
 
 const AliHLTMUONRegion& AliHLTMUONTrack::RegionOfInterest(UInt_t chamber) const
 {
+// Returns the constatn region of interest object for the specified chamber.
+// If the chamber number in out of bounds the region on the first
+// chamber is returned and an error message displayed.
+
 	if (chamber < 10)
 		return fRegionOfInterest[chamber];
 	else
@@ -177,6 +220,8 @@ const AliHLTMUONRegion& AliHLTMUONTrack::RegionOfInterest(UInt_t chamber) const
 
 void AliHLTMUONTrack::RegionOfInterest(UInt_t chamber, const AliHLTMUONRegion& value)
 {
+// Set method for regions. The chamber must be in the range [0..9]
+
 	if (chamber < 10)
 		fRegionOfInterest[chamber] = value;
 	else
@@ -189,6 +234,10 @@ void AliHLTMUONTrack::RegionOfInterest(UInt_t chamber, const AliHLTMUONRegion& v
 
 Bool_t AliHLTMUONTrack::HitsInRegions() const
 {
+// Checks to see if the all the hits are within their respective regions
+// of interest for each chamber. kTRUE is returned if they are and kFALSE
+// otherwise.
+
 	for (Int_t i = 0; i < 10; i++)
 	{
 		if ( ! fRegionOfInterest[i].Contains(fHit[i]) )

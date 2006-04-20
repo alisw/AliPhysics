@@ -17,6 +17,9 @@
 
 class AliHLTMUONTrack : public TObject
 {
+	// ostream operator usefull for text output.
+	friend ostream& operator << (ostream& os, const AliHLTMUONTrack& t);
+	
 public:
 
 	/* Default constructor initialises everything to zero and fTriggerID to -1.
@@ -51,7 +54,7 @@ public:
 	
 	/* The get and set methods for the momentum and transverse momentum pt.
 	   These methods check that the momentum is always equal or larger than
-	   the pt. If not then the internal value are left unchanged and an
+	   the pt. If not then the internal values are left unchanged and an
 	   error message is displayed. The numbers must also be positive.
 	 */
 	void P(Float_t value);
@@ -86,9 +89,6 @@ public:
 	   otherwise.
 	 */
 	Bool_t HitsInRegions() const;
-
-	// ostream operator usefull for text output.
-	friend ostream& operator << (ostream& os, const AliHLTMUONTrack& t);
 
 private:
 

@@ -15,28 +15,32 @@
 AliHLTMUONClusterFinderProxy::AliHLTMUONClusterFinderProxy(AliHLTMUONClusterFinderInterface* client)
 	: AliHLTMUONCoreClusterFinder(), AliHLTMUONClusterFinderCallback()
 {
-	clusterfinder = client;
+	fClusterFinder = client;
 }
 
 
 void AliHLTMUONClusterFinderProxy::FindClusters(const AliHLTMUONCoreADCStream* /*stream*/)
 {
+// Finds clusters in the ADC stream by invoking the cluster finder.
+
 	// TODO: perform conversion
 	//ADCStream adc = AliHLTMUONConvert(stream);
 	AliHLTMUONADCStream adc;
 	DebugMsg(6, "AliHLTMUONClusterFinderProxy::FindClusters: " << adc);
-	clusterfinder->FindClusters(&adc);
+	fClusterFinder->FindClusters(&adc);
 }
 
 
 UInt AliHLTMUONClusterFinderProxy::FillClusterData(AliHLTMUONCoreClusterPoint* clusters, UInt arraysize)
 {
+// Fills the cluster points array with the clusters found.
+
 	UInt result;
 	AliHLTMUONPoint* points = new AliHLTMUONPoint[arraysize];
 	try
 	{
 		DebugMsg(6, "AliHLTMUONClusterFinderProxy::FillClusterData");
-		result = clusterfinder->FillClusterData(points, arraysize);
+		result = fClusterFinder->FillClusterData(points, arraysize);
 		for (UInt i = 0; i < arraysize; i++)
 		{
 			clusters[i] = AliHLTMUONConvert(points[i]);
@@ -54,7 +58,7 @@ UInt AliHLTMUONClusterFinderProxy::FillClusterData(AliHLTMUONCoreClusterPoint* c
 void AliHLTMUONClusterFinderProxy::Reset()
 {
 	DebugMsg(6, "AliHLTMUONClusterFinderProxy::Reset");
-	clusterfinder->Reset();
+	fClusterFinder->Reset();
 }
 
 
@@ -70,3 +74,4 @@ void AliHLTMUONClusterFinderProxy::NoClustersFound()
 	DebugMsg(6, "AliHLTMUONClusterFinderProxy::NoClustersFound");
 	AliHLTMUONCoreClusterFinder::NoClustersFound();
 }
+

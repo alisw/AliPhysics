@@ -38,7 +38,15 @@ public:
 
 private:
 
-	AliHLTMUONTrackerInterface* tracker;  // The tracker we are proxying for.
+	AliHLTMUONTrackerProxy(const AliHLTMUONTrackerProxy& /*object*/)
+		: AliHLTMUONCoreTracker(), AliHLTMUONTrackerCallback()
+	{}
+	
+	AliHLTMUONTrackerProxy& operator = (const AliHLTMUONTrackerProxy& /*object*/)
+	{ return *this; }
+
+
+	AliHLTMUONTrackerInterface* fTracker;  // The tracker we are proxying for.
 };
 
 

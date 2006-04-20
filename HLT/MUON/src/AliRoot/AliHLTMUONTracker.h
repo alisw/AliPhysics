@@ -35,6 +35,12 @@ public:
 	virtual Int_t Clusters2Tracks(AliESD* event);
 
 private:
+	
+	// Do not allow copying of this object.
+	AliHLTMUONTracker(const AliHLTMUONTracker& /*object*/) : AliTracker() {}
+	AliHLTMUONTracker& operator = (const AliHLTMUONTracker& /*object*/) { return *this; }
+
+
 	const AliHLTMUONTriggerRecord*
 	FindTriggerRecord(const AliHLTMUONTrack* track) const;
 

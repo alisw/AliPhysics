@@ -55,6 +55,7 @@ class AliMicroFramework : public AliHLTMUONCoreTrackerCallback
 {
 public:
 
+	AliMicroFramework();
 	virtual ~AliMicroFramework() {}
 
 	virtual void RequestClusters(
@@ -96,6 +97,14 @@ public:
 
 private:
 
+	// Do not allow copying
+	AliMicroFramework(const AliMicroFramework& /*object*/)
+		: AliHLTMUONCoreTrackerCallback()
+	{}
+	
+	AliMicroFramework& operator = (const AliMicroFramework& /*object*/) { return *this; }
+
+
 	void CountClusterPoints(const AliHLTMUONClusterSource* cs);
 	void CreateClusterBlocks(const AliHLTMUONClusterSource* cs, Int eventnumber);
 	void FreeClusterBlocks();
@@ -108,6 +117,19 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+
+AliMicroFramework::AliMicroFramework()
+{
+// Default constructor.
+
+	for (Int_t i = 0; i < 10; i++)
+	{
+		fClusterCount[i] = 0;
+		fClusters[i] = NULL;
+	}
+	fTrackOutput = NULL;
+	fCurrentTriggerNumber = 0;
+}
 
 
 void AliMicroFramework::RequestClusters(

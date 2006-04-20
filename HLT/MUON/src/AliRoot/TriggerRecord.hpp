@@ -15,6 +15,9 @@
 
 class AliHLTMUONTriggerRecord : public TObject
 {
+	// ostream operator usefull for text output.
+	friend ostream& operator << (ostream& os, const AliHLTMUONTriggerRecord& r);
+	
 public:
 
 	/* Default constructor initialises everything to zero and the trigger
@@ -68,9 +71,7 @@ public:
 	void Station2Point(const AliHLTMUONPoint& value) { fSt2Point = value; };
 	AliHLTMUONPoint& Station2Point() { return fSt2Point; };
 	const AliHLTMUONPoint& Station2Point() const { return fSt2Point; };
-
-	// ostream operator usefull for text output.
-	friend ostream& operator << (ostream& os, const AliHLTMUONTriggerRecord& r);
+	
 
 private:
 

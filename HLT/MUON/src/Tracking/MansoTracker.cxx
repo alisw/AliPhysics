@@ -80,7 +80,7 @@ void AliHLTMUONCoreMansoTracker::AliRegionOfInterest::Create(AliHLTMUONCorePoint
 
 	fCentre = p;
 	// Compute the radius Rp
-	Float Rp = (Float) sqrt( p.fX * p.fX + p.fY * p.fY );
+	Float rp = (Float) sqrt( p.fX * p.fX + p.fY * p.fY );
 
 	// The radius Rs for the region of interest is computed from the
 	// specification given in the document:
@@ -89,7 +89,7 @@ void AliHLTMUONCoreMansoTracker::AliRegionOfInterest::Create(AliHLTMUONCorePoint
 	//   equation:
 	//     Rs = a * Rp + b
 	//   given on page 3 section 4.
-	fRs = a * Rp + b;
+	fRs = a * rp + b;
 }
 
 

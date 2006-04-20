@@ -30,8 +30,16 @@ public:
 	virtual void NoClustersFound();
 
 private:
+	// Do not allow copying.
+	AliHLTMUONClusterFinderProxy(const AliHLTMUONClusterFinderProxy& /*object*/)
+		: AliHLTMUONCoreClusterFinder(), AliHLTMUONClusterFinderCallback()
+	{}
 
-	AliHLTMUONClusterFinderInterface* clusterfinder;  // The clusterfinder we are proxying for.
+	AliHLTMUONClusterFinderProxy& operator = (const AliHLTMUONClusterFinderProxy& /*object*/)
+	{ return *this; }
+
+
+	AliHLTMUONClusterFinderInterface* fClusterFinder;  // The clusterfinder we are proxying for.
 };
 
 

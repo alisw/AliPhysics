@@ -14,6 +14,9 @@
 
 class AliHLTMUONPoint : public TObject
 {
+	// ostream operator usefull for text output.
+	friend ostream& operator << (ostream& os, const AliHLTMUONPoint& p);
+
 public:
 
 	/* Default constructor initialises everything to zero.
@@ -26,9 +29,6 @@ public:
 
 	virtual ~AliHLTMUONPoint() {};
 	
-	// ostream operator usefull for text output.
-	friend ostream& operator << (ostream& os, const AliHLTMUONPoint& p);
-
 
 	Float_t fX;    // X coordinate of the 2D point.
 	Float_t fY;    // Y coordinate of the 2D point.

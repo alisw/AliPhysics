@@ -5,6 +5,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* AliHLTMUONADCStreamSource is used to store the raw DDL data generated
+   from an AliRoot simulation.
+   This class is used as a storage class for the input dataset for
+   AliHLTMUONMicrodHLT.
+ */
+
 #include "AliRoot/ADCStreamSource.hpp"
 #include "AliRoot/Base.hpp"
 #include "TSystem.h"
@@ -13,10 +19,11 @@
 // TODO: Change all the Error message statements to AliError at some stage.
 
 ClassImp(AliHLTMUONADCStreamSource)
-ClassImp(AliHLTMUONADCStreamSource::DataBlock)
+ClassImp(AliHLTMUONADCStreamSource::AliDataBlock)
 
 
-AliHLTMUONADCStreamSource::AliHLTMUONADCStreamSource() : TObject()
+AliHLTMUONADCStreamSource::AliHLTMUONADCStreamSource()
+	: TObject(), fList(AliHLTMUONADCStreamSource::AliDataBlock::Class())
 {
 	fCurrentStream = -1;
 }
@@ -30,6 +37,8 @@ AliHLTMUONADCStreamSource::~AliHLTMUONADCStreamSource()
 
 void AliHLTMUONADCStreamSource::FillFromFile(const TString& filename, Int_t eventnumber)
 {
+// Fills the internal data structures from the specified file.
+
 	DebugMsg(1, "Entering FillFromFile, file = " << filename.Data()
 		<< ", event number = " << eventnumber
 	);
@@ -65,6 +74,10 @@ void AliHLTMUONADCStreamSource::FillFromFile(const TString& filename, Int_t even
 
 void AliHLTMUONADCStreamSource::FillFrom(const TString& directory, Int_t eventnumber)
 {
+// Fills the internal data structures from the specified directory.
+// FillFromFile is called for every file in the directory that is
+// prefixed with MUON_ and ends in .ddl
+
 	DebugMsg(1, "Entering FillFrom, directory = " << directory.Data()
 		<< ", event number = " << eventnumber
 	);
@@ -91,8 +104,14 @@ void AliHLTMUONADCStreamSource::FillFrom(const TString& directory, Int_t eventnu
 }
 
 
-void AliHLTMUONADCStreamSource::FillFrom(const TString& dirprefix, UInt_t firstevent, UInt_t lastevent)
+void AliHLTMUONADCStreamSource::FillFrom(
+		const TString& dirprefix, UInt_t firstevent, UInt_t lastevent
+	)
 {
+// Same as the methods above except the directory name is created as
+// dirprefix + eventnumber, where eventnumber is looped from firstevent
+// to lastevent.
+
 	DebugMsg(1, "Entering FillFrom");
 	
 	for (UInt_t i = firstevent; i <= lastevent; i++)
@@ -108,19 +127,26 @@ void AliHLTMUONADCStreamSource::FillFrom(const TString& dirprefix, UInt_t firste
 
 void AliHLTMUONADCStreamSource::Clear(Option_t* /*option*/)
 {
+// Clears all the internal arrays.
+
 	fCurrentStream = -1;
-	fList.erase( fList.begin(), fList.end() );
+	fList.Clear("C");
 }
 
 
 Int_t AliHLTMUONADCStreamSource::NumberOfStreams() const
 {
-	return fList.size();
+// Returns the number of ADC streams stored.
+
+	return fList.GetEntriesFast();
 }
 
 
 Bool_t AliHLTMUONADCStreamSource::GetStream(Int_t index) const
 {
+// Fetches the index'th ADC stream stored.
+// kTRUE is returned if the stream was found, kFALSE otherwise.
+
 	if ( 0 <= index && index < NumberOfStreams() )
 	{
 		fCurrentStream = index;
@@ -146,6 +172,9 @@ Bool_t AliHLTMUONADCStreamSource::GetStream(Int_t index) const
 
 Bool_t AliHLTMUONADCStreamSource::FirstStream() const
 {
+// Fetches the first ADC stream stored.
+// kTRUE is returned if the stream was found, kFALSE otherwise.
+
 	if (NumberOfStreams() > 0)
 	{
 		fCurrentStream = 0;
@@ -158,6 +187,9 @@ Bool_t AliHLTMUONADCStreamSource::FirstStream() const
 
 Bool_t AliHLTMUONADCStreamSource::NextStream() const
 {
+// Fetches the next ADC stream stored following the currently selected one.
+// kTRUE is returned if the stream was found, kFALSE otherwise.
+
 	if ( 0 <= fCurrentStream && fCurrentStream < NumberOfStreams() - 1 )
 	{
 		fCurrentStream++;
@@ -170,10 +202,13 @@ Bool_t AliHLTMUONADCStreamSource::NextStream() const
 
 Int_t AliHLTMUONADCStreamSource::EventNumber() const
 {
+// Returns the corresponding AliRoot event number for the current stream.
+// -1 is returned if no stream is selected.
+
 	if (fCurrentStream >= 0)
 	{
 		Assert( fCurrentStream < NumberOfStreams() );
-		return fList[fCurrentStream].fEventNumber;
+		return ((AliDataBlock*)fList[fCurrentStream])->EventNumber();
 	}
 	else
 	{
@@ -185,10 +220,13 @@ Int_t AliHLTMUONADCStreamSource::EventNumber() const
 
 Bool_t AliHLTMUONADCStreamSource::FetchStream(AliHLTMUONADCStream& stream) const
 {
+// Returns the current ADC stream selected.
+// kFALSE is returned if there is no stream selected.
+
 	if (fCurrentStream >= 0)
 	{
 		Assert( fCurrentStream < NumberOfStreams() );
-		stream = fList[fCurrentStream].fStream;
+		stream = ((AliDataBlock*)fList[fCurrentStream])->Stream();
 		return kTRUE;
 	}
 	else
@@ -201,6 +239,9 @@ Bool_t AliHLTMUONADCStreamSource::FetchStream(AliHLTMUONADCStream& stream) const
 
 Bool_t AliHLTMUONADCStreamSource::FetchStream(Int_t index, AliHLTMUONADCStream& stream) const
 {
+// Returns the index'th ADC stream.
+// kTRUE is returned if the stream was found, kFALSE otherwise.
+
 	if ( GetStream(index) )
 		return FetchStream(stream);
 	else
@@ -210,10 +251,13 @@ Bool_t AliHLTMUONADCStreamSource::FetchStream(Int_t index, AliHLTMUONADCStream& 
 
 const AliHLTMUONADCStream* AliHLTMUONADCStreamSource::FetchStream() const
 {
+// Returns the current ADC stream selected.
+// A NULL pointer is returned if no ADC stream is selected.
+
 	if (fCurrentStream >= 0)
 	{
 		Assert( fCurrentStream < NumberOfStreams() );
-		return &( fList[fCurrentStream].fStream );
+		return &( ((AliDataBlock*)fList[fCurrentStream])->Stream() );
 	}
 	else
 	{
@@ -223,15 +267,18 @@ const AliHLTMUONADCStream* AliHLTMUONADCStreamSource::FetchStream() const
 }
 
 
-void AliHLTMUONADCStreamSource::AddStream(AliHLTMUONADCStream& stream, UInt_t eventnumber)
+void AliHLTMUONADCStreamSource::AddStream(
+		AliHLTMUONADCStream& stream, UInt_t eventnumber
+	)
 {
+// Adds a new AliHLTMUONADCStream object to the internal arrays.
+
 	DebugMsg(1, "Entering AddStream");
 	
-	DataBlock newdata;
-	newdata.fEventNumber = eventnumber;
-	newdata.fStream = stream;
-	fList.push_back(newdata);
-	fCurrentStream = fList.size() - 1;
+	fCurrentStream = fList.GetEntriesFast();
+	new ( fList[fCurrentStream] ) AliDataBlock();
+	((AliDataBlock*)fList[fCurrentStream])->EventNumber() = eventnumber;
+	((AliDataBlock*)fList[fCurrentStream])->Stream() = stream;
 	
 	DebugMsg(1, "Leaving AddStream");
 }

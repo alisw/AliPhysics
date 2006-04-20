@@ -5,19 +5,42 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+/* AliHLTMUONADCStreamSource is used to store the raw DDL data generated
+   from an AliRoot simulation.
+   This class is used as a storage class for the input dataset for
+   AliHLTMUONMicrodHLT.
+ */
+
 #ifndef ALIHLTMUONADCSTREAMSOURCE_H
 #define ALIHLTMUONADCSTREAMSOURCE_H
 
 #include "TROOT.h"
 #include "TObject.h"
+#include "TClonesArray.h"
 #include "TString.h"
 #include "AliRoot/ADCStream.hpp"
-
-#include <vector>
 
 
 class AliHLTMUONADCStreamSource : public TObject
 {
+public:  // Unfortunately ROOT requires the following to be public.
+	
+	class AliDataBlock : public TObject
+	{
+	public:
+		virtual ~AliDataBlock() {};
+		
+		Int_t& EventNumber() { return fEventNumber; }
+		AliHLTMUONADCStream& Stream() { return fStream; }
+
+	private:
+	
+		Int_t fEventNumber;  // Event number of the stream.
+		AliHLTMUONADCStream fStream;  // The ADC stream block.
+		
+		ClassDef(AliDataBlock, 1)  // Data per event.
+	};
+
 public:
 
 	AliHLTMUONADCStreamSource();
@@ -92,23 +115,8 @@ private:
 	void AddStream(AliHLTMUONADCStream& stream, UInt_t eventnumber);
 
 	mutable Int_t fCurrentStream;  //! The currently selected stream index.
-	
 
-public:  // Unfortunately ROOT requires the following to be public.
-	
-	struct DataBlock
-	{
-		virtual ~DataBlock() {};
-
-		Int_t fEventNumber;  // Event number of the stream.
-		AliHLTMUONADCStream fStream;  // The ADC stream block.
-		
-		ClassDef(DataBlock, 1)  // Data per event.
-	};
-
-private:
-
-	std::vector<DataBlock> fList;  // List of ADC streams.
+	TClonesArray fList;  // List of ADC streams.
 
 	ClassDef(AliHLTMUONADCStreamSource, 1)  // The source of ADC stream data for dHLT.
 };

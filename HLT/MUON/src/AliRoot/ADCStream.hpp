@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALIHLTMUONSTREAM_H
-#define ALIHLTMUONSTREAM_H
+#ifndef ALIHLTMUONADCSTREAM_H
+#define ALIHLTMUONADCSTREAM_H
 
 #include <TObject.h>
 #include <TArrayI.h>
@@ -15,6 +15,9 @@
 
 class AliHLTMUONADCStream : public TObject
 {
+	// ostream operator usefull for text output.
+	friend ostream& operator << (ostream& os, const AliHLTMUONADCStream& s);
+
 public:
 
 	/* Default constructor initialises everything to zero.
@@ -35,16 +38,13 @@ public:
 // 	UInt_t& operator [] (const UInt_t index);
 	UInt_t operator [] (UInt_t index) const;
 
-	// ostream operator usefull for text output.
-	friend ostream& operator << (ostream& os, const AliHLTMUONADCStream& s);
-
 private:
 
 	// TODO: complete the ADC stream specification.
-	TArrayI fData;
+	TArrayI fData;  // The DDL raw data.
 
 	ClassDef(AliHLTMUONADCStream, 1)  // ADC stream data.
 };
 
 
-#endif // ALIHLTMUONSTREAM_H
+#endif // ALIHLTMUONADCSTREAM_H
