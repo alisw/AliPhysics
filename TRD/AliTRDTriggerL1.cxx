@@ -37,6 +37,9 @@ ClassImp(AliTRDTriggerL1)
 //_____________________________________________________________________________
 AliTRDTriggerL1::AliTRDTriggerL1():AliTriggerDetector()
 {
+  //
+  // Default constructor
+  //
 
   SetName("TRD");
 
@@ -46,26 +49,31 @@ AliTRDTriggerL1::AliTRDTriggerL1():AliTriggerDetector()
 void AliTRDTriggerL1::CreateInputs()
 {
 
-  fInputs.AddLast(new AliTriggerInput( "TRD_HadrLPt_L1",          "Single hadron low pt ",        0x01 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_HadrHPt_L1",          "Single hadron high pt",        0x02 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Unlike_EPair_L1",     "Unlike electron pair",         0x04 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Unlike_EPair_HPt_L1", "Unlike electron pair high pt", 0x08 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Like_EPair_L1",       "Like electron pair",           0x10 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Like_EPair_HPt_L1",   "Like electron pair high pt",   0x20 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Electron_L1",         "Single electron",              0x40 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Electron_HPt_L1",     "Single electron high pt",      0x80 ));
+  //
+  // See TRIGGER/DAQ/HLT/DCS Techical Design Report, p. 58, Table 4.1 for the proposed inputs
+  //
+
+  fInputs.AddLast(new AliTriggerInput( "TRD_Unlike_EPair_L1",     "Unlike electron pair",         0x01 ));
+  fInputs.AddLast(new AliTriggerInput( "TRD_Like_EPair_L1",       "Like electron pair",           0x02 ));
+  fInputs.AddLast(new AliTriggerInput( "TRD_Jet_LPt_L1",          "Jet low pt",                   0x04 ));
+  fInputs.AddLast(new AliTriggerInput( "TRD_Jet_HPt_L1",          "Jet high pt",                  0x08 ));
+  fInputs.AddLast(new AliTriggerInput( "TRD_Electron_L1",         "Single electron",              0x10 ));
+  fInputs.AddLast(new AliTriggerInput( "TRD_HadrLPt_L1",          "Single hadron low pt ",        0x20 ));
+  fInputs.AddLast(new AliTriggerInput( "TRD_HadrHPt_L1",          "Single hadron high pt",        0x40 ));
+
 
 }
 
 //_____________________________________________________________________________
 void AliTRDTriggerL1::Trigger()
 {
+  // 
+  // Run the online tracking and trigger
+  // 
 
   AliRunLoader* runLoader = gAlice->GetRunLoader();
 
   AliLoader *loader=runLoader->GetLoader("TRDLoader");
-
-  Int_t nEvents = runLoader->GetNumberOfEvents();
 
   // Trigger (tracklets, LTU)
 
@@ -75,7 +83,6 @@ void AliTRDTriggerL1::Trigger()
 
   AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
 
-  gAlice = runLoader->GetAliRun();
   Double_t x[3] = { 0.0, 0.0, 0.0 };
   Double_t b[3];
   gAlice->Field(x,b);  // b[] is in kilo Gauss
@@ -89,18 +96,16 @@ void AliTRDTriggerL1::Trigger()
   trdTrigger.SetRunLoader(runLoader);
   trdTrigger.Init();
 
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-
-    trdTrigger.Open(runLoader->GetFileName(), iEvent);
-    trdTrigger.ReadDigits();
-    trdTrigger.MakeTracklets(kTRUE);
-    trdTrigger.WriteTracklets(-1);
-
-  }
+  trdTrigger.Open(runLoader->GetFileName(), runLoader->GetEventNumber());
+  trdTrigger.ReadDigits();
+  trdTrigger.MakeTracklets(kTRUE);
+  trdTrigger.WriteTracklets(-1);
 
   // Trigger (tracks, GTU)
 
   Float_t highPt = trigp->GetHighPt();
+  Float_t jetLowPt  = trigp->GetJetLowPt();
+  Float_t jetHighPt = trigp->GetJetHighPt();
 
   Float_t pid, pt;
   Int_t   det, sec;
@@ -112,6 +117,10 @@ void AliTRDTriggerL1::Trigger()
   Int_t   sectorElePlus[maxEle], sectorEleMinus[maxEle];
   Float_t ptElePlus[maxEle],     ptEleMinus[maxEle];
   Int_t   hadronLowPt, hadronHighPt;
+  Int_t   hadronJetLowPt, hadronJetHighPt;
+
+  hadronJetLowPt  = 0;
+  hadronJetHighPt = 0;
 
   hadronLowPt  = 0;
   hadronHighPt = 0;
@@ -152,6 +161,9 @@ void AliTRDTriggerL1::Trigger()
 	hadronHighPt++;
       }
 
+      if (TMath::Abs(pt) > jetLowPt ) hadronJetLowPt++;
+      if (TMath::Abs(pt) > jetHighPt) hadronJetHighPt++;
+
     }
 
   }
@@ -162,6 +174,11 @@ void AliTRDTriggerL1::Trigger()
 
   if (hadronLowPt)  SetInput("TRD_Hadr_LPt_L1");
   if (hadronHighPt) SetInput("TRD_Hadr_HPt_L1");
+
+  // hadrons from jets
+
+  if (hadronJetLowPt  >= trigp->GetNPartJetLow() )  SetInput("TRD_Jet_LPt_L1");
+  if (hadronJetHighPt >= trigp->GetNPartJetHigh())  SetInput("TRD_Jet_HPt_L1");
 
   // electron-positron pairs (open angle > 80 deg)
 
@@ -187,7 +204,7 @@ void AliTRDTriggerL1::Trigger()
   }
 
   if (electronUnlikePair)    SetInput("TRD_Unlike_EPair_L1");
-  if (electronUnlikePairHPt) SetInput("TRD_Unlike_EPair_HPt_L1");
+  //if (electronUnlikePairHPt) SetInput("TRD_Unlike_EPair_HPt_L1");
 
   // like electron/positron pairs
 
@@ -218,7 +235,7 @@ void AliTRDTriggerL1::Trigger()
   }
 
   if (ele1    && ele2   ) SetInput("TRD_Like_EPair_L1");
-  if (ele1HPt && ele2HPt) SetInput("TRD_Like_EPair_HPt_L1");
+  //if (ele1HPt && ele2HPt) SetInput("TRD_Like_EPair_HPt_L1");
   
   // negative
 
@@ -244,12 +261,13 @@ void AliTRDTriggerL1::Trigger()
   }
 
   if (ele1    && ele2   ) SetInput("TRD_Like_EPair_L1");
-  if (ele1HPt && ele2HPt) SetInput("TRD_Like_EPair_HPt_L1");
+  //if (ele1HPt && ele2HPt) SetInput("TRD_Like_EPair_HPt_L1");
   
   // single electron/positron
 
   if (electronPlus > 0 || electronMinus > 0) {
     SetInput("TRD_Electron_L1");
+    /*
     for (Int_t iPlus = 0; iPlus < electronPlus; iPlus++) {
       if (TMath::Abs(ptElePlus[iPlus]) > highPt) SetInput("TRD_Electron_HPt_L1");
       break;
@@ -258,6 +276,7 @@ void AliTRDTriggerL1::Trigger()
       if (TMath::Abs(ptEleMinus[iMinus]) > highPt) SetInput("TRD_Electron_HPt_L1");
       break;
     }
+    */
   }
 
 }

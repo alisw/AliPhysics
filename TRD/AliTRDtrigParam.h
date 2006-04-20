@@ -24,15 +24,15 @@ class AliTRDtrigParam : public TNamed {
 
   void    Init();
 
-  void    SetTimeRange(Int_t time1, Int_t time2) { fTime1 = time1; fTime2 = time2; };
+  void    SetTimeRange(const Int_t time1, const Int_t time2) { fTime1 = time1; fTime2 = time2; };
   Int_t   GetTime1()                                   const { return fTime1; };
   Int_t   GetTime2()                                   const { return fTime2; };
-  void    SetClusThr(Float_t clth)                     { fClusThr = clth; };
-  void    SetPadThr(Float_t path)                      { fPadThr = path;  };
+  void    SetClusThr(const Float_t clth)                     { fClusThr = clth; };
+  void    SetPadThr(const Float_t path)                      { fPadThr = path;  };
   Float_t GetClusThr()                                 const { return fClusThr; };
   Float_t GetPadThr()                                  const { return fPadThr;  };
-  void    SetSum10(Int_t sum)                          { fSum10 = sum; };
-  void    SetSum12(Int_t sum)                          { fSum12 = sum; };
+  void    SetSum10(const Int_t sum)                          { fSum10 = sum; };
+  void    SetSum12(const Int_t sum)                          { fSum12 = sum; };
   Int_t   GetSum10()                                   const { return fSum10; };
   Int_t   GetSum12()                                   const { return fSum12; };
 
@@ -47,10 +47,10 @@ class AliTRDtrigParam : public TNamed {
   Int_t   GetFilterType()                            const { return fFilterType; };
   void    GetFilterParam(Float_t &r1, Float_t &r2, Float_t &c1, Float_t &c2, Float_t &ped) const { r1 = fR1; r2 = fR2; c1 = fC1; c2 = fC2; ped = fPedestal; };
 
-  void    SetADCnoise(Float_t adcn)                  { fADCnoise = adcn; };
+  void    SetADCnoise(const Float_t adcn)                  { fADCnoise = adcn; };
   Float_t GetADCnoise()                              const { return fADCnoise; };
 
-  void    SetDebugLevel(Int_t deb) { fDebug = deb;  };
+  void    SetDebugLevel(const Int_t deb) { fDebug = deb;  };
   Int_t   GetDebugLevel()          const { return fDebug; };
 
   void    SetDeltaY(Float_t dy) { fDeltaY = dy; };
@@ -71,6 +71,16 @@ class AliTRDtrigParam : public TNamed {
 
   void    SetHighPt(Float_t hpt) { fHighPt = hpt; };
   Float_t GetHighPt() const { return fHighPt; };
+
+  void    SetNPartJetLow(Int_t npj) { fNPartJetLow = npj; };
+  Int_t   GetNPartJetLow() const { return fNPartJetLow; };
+  void    SetNPartJetHigh(Int_t npj) { fNPartJetHigh = npj; };
+  Int_t   GetNPartJetHigh() const { return fNPartJetHigh; };
+
+  void    SetJetLowPt(Float_t thr) { fJetLowPt = thr; };
+  Float_t GetJetLowPt() const { return fJetLowPt; };
+  void    SetJetHighPt(Float_t thr) { fJetHighPt = thr; };
+  Float_t GetJetHighPt() const { return fJetHighPt; };
 
  protected:
 
@@ -105,6 +115,11 @@ class AliTRDtrigParam : public TNamed {
   Float_t  fField;                         // Magnetic field
 
   Float_t  fHighPt;                        // High pt selection
+
+  Int_t    fNPartJetLow;                   // Number of tracks for jet (low)
+  Int_t    fNPartJetHigh;                  // Number of tracks for jet (high)
+  Float_t  fJetLowPt;                      // Low pt threshold for jet particles
+  Float_t  fJetHighPt;                     // High pt threshold for jet particles
 
   ClassDef(AliTRDtrigParam,2)              // TRD trigger parameter class
 

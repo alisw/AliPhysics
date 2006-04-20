@@ -57,6 +57,11 @@ AliTRDtrigParam::AliTRDtrigParam():TNamed()
   fGtuPtCut   = 0.0;
   fHighPt     = 0.0;
 
+  fNPartJetLow  = 0;
+  fNPartJetHigh = 0;
+  fJetLowPt     = 0.0;
+  fJetHighPt    = 0.0;
+
 }
 
 //_____________________________________________________________________________
@@ -89,6 +94,11 @@ AliTRDtrigParam::AliTRDtrigParam(const Text_t *name, const Text_t *title)
   fLtuPtCut   =  2.3;
   fGtuPtCut   =  3.0;
   fHighPt     = 10.0;
+
+  fNPartJetLow  = 5;
+  fNPartJetHigh = 3;
+  fJetLowPt     = 3.0;
+  fJetHighPt    = 5.0;
 
   // PASA.v.4
 
@@ -169,6 +179,10 @@ void AliTRDtrigParam::Copy(TObject &p) const
   ((AliTRDtrigParam &) p).fLtuPtCut   = fLtuPtCut;
   ((AliTRDtrigParam &) p).fGtuPtCut   = fGtuPtCut;
   ((AliTRDtrigParam &) p).fHighPt     = fHighPt;
+  ((AliTRDtrigParam &) p).fNPartJetLow  = fNPartJetLow;
+  ((AliTRDtrigParam &) p).fNPartJetHigh = fNPartJetHigh;
+  ((AliTRDtrigParam &) p).fJetLowPt     = fJetLowPt;
+  ((AliTRDtrigParam &) p).fJetHighPt    = fJetHighPt;
 
 }
 
