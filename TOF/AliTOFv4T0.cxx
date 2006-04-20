@@ -37,26 +37,26 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-#include <stdlib.h>
-
+#include "TBRIK.h"
+#include "TGeometry.h"
+#include "TLorentzVector.h"
+#include "TNode.h"
 #include "TVirtualMC.h"
-#include <TBRIK.h>
-#include <TGeometry.h>
-#include <TLorentzVector.h>
-#include <TNode.h>
-#include <TObject.h>
-#include <TVirtualMC.h>
 
-#include "AliLog.h"
 #include "AliConst.h"
-#include "AliRun.h"
-#include "AliMC.h"
+#include "AliLog.h"
 #include "AliMagF.h"
+#include "AliMC.h"
+#include "AliRun.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFGeometryV4.h"
 #include "AliTOFv4T0.h"
+
+extern TDirectory *gDirectory;
+extern TVirtualMC *gMC;
+
+extern AliRun *gAlice;
 
 ClassImp(AliTOFv4T0)
 
@@ -80,7 +80,7 @@ AliTOFv4T0::AliTOFv4T0(const char *name, const char *title)
   // put TOF
 
 
-  AliModule* frame=gAlice->GetModule("FRAME");
+  AliModule* frame = (AliModule*)gAlice->GetModule("FRAME");
   if(!frame) {
     AliFatal("TOF needs FRAME to be present");
   } else{
@@ -116,8 +116,10 @@ void AliTOFv4T0::BuildGeometry()
   TNode *node, *top;
   const int kColorTOF  = 27;
   
+  TGeometry *globalGeometry = (TGeometry*)gAlice->GetGeometry();
+
   // Find top TNODE
-  top = gAlice->GetGeometry()->GetNode("alice");
+  top = (TNode*)globalGeometry->GetNode("alice");
   
   // Position the different copies
   const Float_t krTof  =(fTOFGeometry->Rmax()+fTOFGeometry->Rmin())/2.;
@@ -906,9 +908,11 @@ void AliTOFv4T0::CreateMaterials()
   // Revision: F. Pierella 18-VI-2002
   //
 
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
-  //
+  AliMagF *magneticField = (AliMagF*)gAlice->Field();
+
+  Int_t   isxfld = magneticField->Integ();
+  Float_t sxmgmx = magneticField->Max();
+
   //--- Quartz (SiO2) to simulate float glass
   //    density tuned to have correct float glass 
   //    radiation length
@@ -1101,7 +1105,10 @@ void AliTOFv4T0::StepManager()
      )
   {
 
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
+
+    AddTrackReference(mcApplication->GetCurrentTrackNumber());
+    //AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 
     // getting information about hit volumes
     
@@ -1216,6 +1223,7 @@ void AliTOFv4T0::StepManager()
     vol[3]= padx;
     vol[4]= padz;    
 
-    AddT0Hit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
+    AddT0Hit(mcApplication->GetCurrentTrackNumber(),vol, hits);
+    //AddT0Hit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
   }
 }

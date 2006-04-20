@@ -1,6 +1,13 @@
+#ifndef ALITOF_H
+#define ALITOF_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ////////////////////////////////////////////////
 //					      //
-//  Manager classe for TOF                    //
+//  Manager class for TOF                     //
 //  Interface :                               //
 //  AliTOF                                    //
 //  Associations between TOF related objects  //
@@ -10,27 +17,17 @@
 //                                            //
 ////////////////////////////////////////////////
 
-#ifndef ALITOF_H
-#define ALITOF_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
-
-class TFile;
-class TDirectory;
-class TString ;  
-class TTask ;
-class TFolder ;
-
-#include "TObject.h"
-#include "TTree.h" 
-
 #include "AliDetector.h"
 
-#include "AliTOFSDigitizer.h"
-#include "AliTOFGeometry.h"
 #include "AliTOFTrigger.h"
+
+class TDirectory;
+class TFile;
+class TFolder ;
+class TString ;  
+class TTask ;
+
+class AliTOFGeometry;
 
 class AliTOF : public AliDetector {
 public:
@@ -58,7 +55,7 @@ public:
   virtual void    Makehits(Bool_t hits=1);
   virtual void    FinishEvent();
   virtual Int_t   IsVersion() const =0;
-  Int_t           DistancetoPrimitive(Int_t px, Int_t py) const;
+  Int_t           DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    StepManager()=0;
   virtual void    TOFpc(Float_t /*xtof*/, Float_t /*ytof*/, Float_t /*zlenC*/,
                         Float_t /*zlenB*/, Float_t /*zlenA*/, Float_t /*ztof0*/){};

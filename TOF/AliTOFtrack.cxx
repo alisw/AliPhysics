@@ -12,25 +12,24 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-////////////////////////////////////////////////////////////////////////
-//
-// AliTOFtrack class
-//
-// Authors: Bologna-CERN-ITEP-Salerno Group
-//
-// Description: class for handling ESD extracted tracks for TOF matching.
+
 /* $Id$ */
 
-#include <Riostream.h>
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+// AliTOFtrack class                                                       //
+//                                                                         //
+// Authors: Bologna-CERN-ITEP-Salerno Group                                //
+//                                                                         //
+// Description: class for handling ESD extracted tracks for TOF matching.  //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 
-#include <TObject.h>   
-
-#include "AliLog.h" 
 #include "AliESDtrack.h" 
+#include "AliLog.h" 
 
-#include "AliTOFGeometry.h"
 #include "AliTOFGeometryV4.h"
-#include "AliTOFGeometryV5.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFtrack.h" 
 
 ClassImp(AliTOFtrack)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2006/04/16 22:29:05  hristov
+Coding conventions (Annalisa)
+
 Revision 1.14  2006/04/05 08:35:38  hristov
 Coding conventions (S.Arcelli, C.Zampolli)
 
@@ -77,16 +80,12 @@ Revision 0.02  2003/12/10 S.Arcelli:
 Revision 0.01  2003/12/04 S.Arcelli
 */
 
-#include <stdlib.h>
-#include <Riostream.h>
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  TOF Geometry class                                                       //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliLog.h"
-#include "AliConst.h"
 #include "AliTOFGeometry.h"
 
 ClassImp(AliTOFGeometry)

@@ -8,11 +8,9 @@
 //  class for TOF calibration:: simulation of uncalibrated data //
 //////////////////////////////////////////////////////////////////
 
-#include "AliPID.h"
 #include "AliESDtrack.h"
-#include "TObject.h"
 
-//class AliESDtrack;
+class AliPID;
 
 class AliTOFcalibESD:public AliESDtrack{
 public:

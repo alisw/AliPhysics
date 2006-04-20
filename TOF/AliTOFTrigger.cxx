@@ -26,14 +26,16 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-#include "AliTOFTrigger.h"
-#include "AliLog.h"
-#include "AliRun.h"
 #include "AliLoader.h"
+#include "AliLog.h"
 #include "AliRunLoader.h"
+#include "AliRun.h"
 #include "AliTriggerInput.h"
-#include "AliTOFdigit.h"
 
+#include "AliTOFdigit.h"
+#include "AliTOFTrigger.h"
+
+extern AliRun* gAlice;
 
 //-------------------------------------------------------------------------
 ClassImp(AliTOFTrigger)

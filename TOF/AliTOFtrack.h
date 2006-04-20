@@ -1,15 +1,26 @@
 #ifndef ALITOFTRACK_H
 #define ALITOFTRACK_H
-// Description: class for handling ESD extracted tracks for TOF matching.
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <AliKalmanTrack.h>
-#include <TMath.h>
-#include "AliTOFGeometry.h"
+//----------------------------------------------------------------------------//
+//                                                                            //
+//   Description: class for handling ESD extracted tracks for TOF matching.   //
+//                                                                            //
+//----------------------------------------------------------------------------//
+
+#include "TMath.h"
 #include "TVector2.h"
 
+#include "AliKalmanTrack.h"
+
+#include "AliTOFGeometry.h"
+
+class TObject;
+
 class AliESDtrack;
+
 class AliTOFtrack : public AliKalmanTrack {
 
 public:

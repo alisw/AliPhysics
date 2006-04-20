@@ -1,3 +1,8 @@
+#ifndef ALITOFHIT_H
+#define ALITOFHIT_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 ////////////////////////////////////////////////
 //                                            //
 //  Hit class for TOF                         //
@@ -6,11 +11,6 @@
 //  declared here                             //
 //                                            //
 ////////////////////////////////////////////////
-
-#ifndef ALITOFHIT_H
-#define ALITOFHIT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 

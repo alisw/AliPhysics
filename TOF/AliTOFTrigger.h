@@ -1,15 +1,15 @@
+#ifndef ALITOFTRIGGER_H
+#define ALITOFTRIGGER_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
-#ifndef ALITOFTRIGGER_H
-#define ALITOFTRIGGER_H
-
 /////////////////////////////////////////////////
-//
-//      TOF Trigger Detector Class               
-//
+//                                             //
+//      TOF Trigger Detector Class             //
+//                                             //
 /////////////////////////////////////////////////
 
 #include "AliTriggerDetector.h"

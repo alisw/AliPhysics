@@ -1,13 +1,16 @@
-//_________________________________________________________________________
-// Implementation version v5 of TOF Manager class
-// FULL COVERAGE VERSION + OPTION FOR PHOS HOLES
-//
-//*-- Authors: G. Cara Romeo, A. De Caro
-
 #ifndef ALITOFv5T0_H
 #define ALITOFv5T0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+//_________________________________________________________________________//
+//                                                                         //
+// Implementation version v5 of TOF Manager class                          //
+// FULL COVERAGE VERSION + OPTION FOR PHOS HOLES                           //
+//                                                                         //
+// -- Authors: G. Cara Romeo, A. De Caro                                   //
+//                                                                         //
+//_________________________________________________________________________//
 
 #include "AliTOF.h"
  
@@ -17,9 +20,7 @@ class AliTOFv5T0 : public AliTOF {
 public:
   AliTOFv5T0();
   AliTOFv5T0(const char *name, const char *title);
-  virtual ~AliTOFv5T0() {   if (fTOFGeometry) {delete fTOFGeometry; 
-    fTOFGeometry  = 0;  }
-}
+  virtual ~AliTOFv5T0() {};
   virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();

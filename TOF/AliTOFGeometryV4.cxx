@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/04/16 22:29:05  hristov
+Coding conventions (Annalisa)
+
 Revision 1.3  2006/03/12 14:38:13  arcelli
  Changes for TOF Reconstruction using TGeo
 
@@ -35,19 +38,20 @@ Revision 0.1  2005/07/19 A. De Caro
                according to the PPR TOF geometry
 */
 
-#include <stdlib.h>
-#include <Riostream.h>
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  TOF Geometry class (PPR version)                                         //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliLog.h"
-#include "AliConst.h"
+#include "TGeoManager.h"
 
-#include "AliTOFGeometry.h"
+#include "AliConst.h"
+#include "AliLog.h"
+
 #include "AliTOFGeometryV4.h"
+
+extern TGeoManager *gGeoManager;
 
 ClassImp(AliTOFGeometryV4)
 

@@ -1,22 +1,21 @@
 #ifndef ALITOFSDIGIT_H
 #define ALITOFSDIGIT_H
 
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
 ////////////////////////////////////////////////
 //                                            //
 //  Class for TOF SDigits                     //
 //                                            //
 ////////////////////////////////////////////////
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
 /* $Id$ */
 
+#include "TObject.h"
 #include "TArrayF.h"
 #include "TArrayI.h"
-#include "AliDigit.h"
 
-//class TArrayF;
 class AliTOFGeometry;
 
 class AliTOFSDigit : public TObject {

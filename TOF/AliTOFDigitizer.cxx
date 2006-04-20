@@ -13,48 +13,46 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//_________________________________________________________________________
-// This is a TTask that makes TOF-Digits out of TOF-SDigits. 
-// The simulation of the detector is performed at sdigits level:
-// during digitization the unique task is the sum of all sdigits in the
-// same pad.
-// Digits are written to TreeD in branch "TOF".
-//
-// -- Author :  F. Pierella (Bologna University) pierella@bo.infn.it
-//////////////////////////////////////////////////////////////////////////////
+//_________________________________________________________________________//
+//                                                                         //
+// This is a TTask that makes TOF-Digits out of TOF-SDigits.               //
+// The simulation of the detector is performed at sdigits level:           //
+// during digitization the unique task is the sum of all sdigits in the    //
+// same pad.                                                               //
+// Digits are written to TreeD in branch "TOF".                            //
+//                                                                         //
+// -- Author :  F. Pierella (Bologna University) pierella@bo.infn.it       //
+//                                                                         //
+//_________________________________________________________________________//
 
+#include "Riostream.h"
 
-#include <stdlib.h>
-#include <Riostream.h>
-#include <TTree.h> 
-#include <TVector.h>
-#include <TObjArray.h>
-#include <TFile.h>
-#include <TDirectory.h>
-#include <TRandom.h>
-#include "TF1.h"
+#include "TFile.h"
 #include "TH1F.h"
-#include "TList.h"
-#include "TRandom.h"
+#include "TTree.h"
 
-#include "AliLog.h"
-#include "AliRun.h"
-#include "AliRunLoader.h"
 #include "AliLoader.h"
-#include "AliDigitizer.h"
+#include "AliLog.h"
 #include "AliRunDigitizer.h"
-#include "AliPDG.h"
+#include "AliRunLoader.h"
+#include "AliRun.h"
 
-#include "AliTOF.h"
-#include "AliTOFDigitizer.h"
-#include "AliTOFSDigitizer.h"
-#include "AliTOFhit.h"
-#include "AliTOFdigit.h"
-#include "AliTOFSDigit.h"
-#include "AliTOFHitMap.h"
-#include "AliTOFChannel.h"
 #include "AliTOFCal.h"
+#include "AliTOFcalib.h"
+#include "AliTOFChannel.h"
+#include "AliTOFDigitizer.h"
+#include "AliTOFdigit.h"
+#include "AliTOFHitMap.h"
 #include "AliTOFGeometryV5.h"
+#include "AliTOFSDigit.h"
+#include "AliTOF.h"
+
+extern TDirectory *gDirectory;
+extern TFile *gFile;
+extern TRandom *gRandom;
+
+extern AliRun *gAlice;
+
 
 ClassImp(AliTOFDigitizer)
 

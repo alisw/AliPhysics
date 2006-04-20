@@ -23,8 +23,12 @@ Revision 0.01 2005/07/25 A. De Caro
 	 (originally implemented by S. Arcelli and C. Zampolli)
 */
 
-// AliTOFcluster Class
-// Description: class for TOF cluster definition
+////////////////////////////////////////////////////////
+//                                                    //
+//    AliTOFcluster Class                             //
+//    Description: class for TOF cluster definition   //
+//                                                    //
+////////////////////////////////////////////////////////
 
 #include "AliTOFcluster.h"
 

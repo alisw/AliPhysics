@@ -12,33 +12,39 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// AliTOFtracker Class
-// Task: Perform association of the ESD tracks to TOF Clusters
-// and Update ESD track with associated TOF Cluster parameters 
-//
-// -- Authors : S. Arcelli, C. Zampolli (Bologna University and INFN) 
-// -- Contacts: Annalisa.De.Caro@cern.ch
-// --         : Chiara.Zampolli@bo.infn.it
-// --         : Silvia.Arcelli@bo.infn.it
-//--------------------------------------------------------------------
 
-#include <Rtypes.h>
+//--------------------------------------------------------------------//
+//                                                                    //
+// AliTOFtracker Class                                                //
+// Task: Perform association of the ESD tracks to TOF Clusters        //
+// and Update ESD track with associated TOF Cluster parameters        //
+//                                                                    //
+// -- Authors : S. Arcelli, C. Zampolli (Bologna University and INFN) //
+// -- Contacts: Annalisa.De.Caro@cern.ch                              //
+// --         : Chiara.Zampolli@bo.infn.it                            //
+// --         : Silvia.Arcelli@bo.infn.it                             //
+//                                                                    //
+//--------------------------------------------------------------------//
+
+#include "Rtypes.h"
 
 #include "TClonesArray.h"
+#include "TGeoManager.h"
+#include "TTree.h"
 
+#include "AliAlignObj.h"
+#include "AliESDtrack.h"
+#include "AliESD.h"
 #include "AliLog.h"
-#include "AliRun.h"
-#include "AliModule.h"
+#include "AliTrackPointArray.h"
 
+#include "AliTOFcalib.h"
 #include "AliTOFcluster.h"
-#include "AliTOFtrack.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtracker.h"
+#include "AliTOFtrack.h"
 
-
-#include "AliTrackPointArray.h"
-#include "AliAlignObj.h"
-#include "AliTOFcalib.h"
+extern TGeoManager *gGeoManager;
 
 ClassImp(AliTOFtracker)
 

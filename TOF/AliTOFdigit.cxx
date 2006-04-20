@@ -15,29 +15,27 @@
 
 /* $Id$ */
 
-//_________________________________________________________________________
-//  TOF digit: member variables 
-//  fSector  : TOF sector
-//  fPlate   : TOF plate
-//  fStrip   : strips number
-//  fPadx    : pad number along x
-//  fPadz    : pad number along z
-//  fTdc     : TDC
-//  fAdc     : ADC
-//              
-//  Getters, setters and member functions  defined here
-//
-//*-- Authors: F. Pierella, A. Seganti, D. Vicinanza
+//_________________________________________________________________________//
+//                                                                         //
+//  TOF digit: member variables                                            //
+//  fSector  : TOF sector                                                  //
+//  fPlate   : TOF plate                                                   //
+//  fStrip   : strips number                                               //
+//  fPadx    : pad number along x                                          //
+//  fPadz    : pad number along z                                          //
+//  fTdc     : TDC                                                         //
+//  fAdc     : ADC                                                         //
+//                                                                         //
+//  Getters, setters and member functions  defined here                    //
+//                                                                         //
+// -- Authors: F. Pierella, A. Seganti, D. Vicinanza                       //
+//_________________________________________________________________________//
 
  
-#include <Riostream.h>
+#include "Riostream.h"
 
-#include "AliRun.h"
-
-#include "AliTOFGeometry.h"
-#include "AliTOFGeometryV4.h"
-#include "AliTOFGeometryV5.h"
 #include "AliTOFdigit.h"
+#include "AliTOFGeometry.h"
 
 ClassImp(AliTOFdigit)
 

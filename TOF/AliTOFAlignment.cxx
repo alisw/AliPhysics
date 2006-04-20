@@ -11,7 +11,13 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
+***************************************************************************/
+
+/*
 $Log$
+Revision 1.5  2006/04/16 22:29:05  hristov
+Coding conventions (Annalisa)
+
 Revision 1.4  2006/04/05 08:35:38  hristov
 Coding conventions (S.Arcelli, C.Zampolli)
 
@@ -27,21 +33,27 @@ class for TOF alignment
 author: Silvia Arcelli, arcelli@bo.infn.it
 */  
 
-#include <TBenchmark.h>
+/////////////////////////////////////////////////////////
+//                                                     //
+//            Class for alignment procedure            //
+//                                                     //
+//                                                     //
+//                                                     //
+/////////////////////////////////////////////////////////
+
 #include <Rtypes.h>
-#include "TClonesArray.h"
-#include "TObjString.h"
+
+#include "TRandom.h"
+#include "TString.h"
+
 #include "AliLog.h"
-#include "AliRun.h"
-#include "AliModule.h"
-#include "AliTOFAlignment.h"
 #include "AliAlignObj.h"
 #include "AliAlignObjAngles.h"
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
-#include "AliCDBStorage.h"
 #include "AliCDBId.h"
 #include "AliCDBEntry.h"
+#include "AliTOFAlignment.h"
 
 ClassImp(AliTOFAlignment)
 

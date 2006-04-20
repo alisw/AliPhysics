@@ -1,17 +1,19 @@
+#ifndef AliTOFDDLRAWDATA_H
+#define AliTOFDDLRAWDATA_H
+
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////////
+//                                                                        //
 // Class used for generating the files containing raw data,               //
-// required for  Data Challenge                                           //
+// required for Data Challenge                                            //
+//                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef AliTOFDDLRAWDATA_H
-#define AliTOFDDLRAWDATA_H
+#include "TObject.h"
 
-class AliTOF;
 class AliTOFGeometry;
-class TTree;
 
 class AliTOFDDLRawData:public TObject{
  public:

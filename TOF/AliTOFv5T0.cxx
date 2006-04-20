@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2006/04/16 22:29:05  hristov
+Coding conventions (Annalisa)
+
 Revision 1.6  2006/03/20 08:20:35  decaro
 Al layer: positioning correction
 
@@ -64,26 +67,26 @@ Revision 0.1 2004 November G. Cara Romeo and A. De Caro
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Riostream.h"
-#include <stdlib.h>
-
+#include "TBRIK.h"
+#include "TGeometry.h"
+#include "TLorentzVector.h"
+#include "TNode.h"
 #include "TVirtualMC.h"
-#include <TBRIK.h>
-#include <TGeometry.h>
-#include <TLorentzVector.h>
-#include <TNode.h>
-#include <TObject.h>
-#include <TVirtualMC.h>
 
-#include "AliLog.h"
 #include "AliConst.h"
-#include "AliRun.h"
-#include "AliMC.h"
+#include "AliLog.h"
 #include "AliMagF.h"
+#include "AliMC.h"
+#include "AliRun.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFGeometryV5.h"
 #include "AliTOFv5T0.h"
+
+extern TDirectory *gDirectory;
+extern TVirtualMC *gMC;
+
+extern AliRun *gAlice;
 
 ClassImp(AliTOFv5T0)
 
@@ -107,7 +110,7 @@ AliTOFv5T0::AliTOFv5T0(const char *name, const char *title)
   // put TOF
 
 
-  AliModule* frame=gAlice->GetModule("FRAME");
+  AliModule* frame = (AliModule*)gAlice->GetModule("FRAME");
   if(!frame) {
     AliFatal("TOF needs FRAME to be present");
   } else{
@@ -145,8 +148,10 @@ void AliTOFv5T0::BuildGeometry()
   TNode *node, *top;
   const int kColorTOF  = 27;
   
+  TGeometry *globalGeometry = (TGeometry*)gAlice->GetGeometry();
+
   // Find top TNODE
-  top = gAlice->GetGeometry()->GetNode("alice");
+  top = globalGeometry->GetNode("alice");
   
   // Position the different copies
   const Float_t krTof  =(fTOFGeometry->Rmax()+fTOFGeometry->Rmin())/2.;
@@ -1183,12 +1188,14 @@ void AliTOFv5T0::CreateMaterials()
 
   //AliTOF::CreateMaterials();
 
-  Int_t   isxfld = gAlice->Field()->Integ();
-  Float_t sxmgmx = gAlice->Field()->Max();
+  AliMagF *magneticField = (AliMagF*)gAlice->Field();
+
+  Int_t   isxfld = magneticField->Integ();
+  Float_t sxmgmx = magneticField->Max();
+
   Float_t we[7], ae[7], na[7], fr[7], vl[7];
   Int_t i;
 
-  //
   //--- Quartz (SiO2) to simulate float glass
   //    density tuned to have correct float glass 
   //    radiation length
@@ -1383,7 +1390,10 @@ void AliTOFv5T0::StepManager()
      )
   {
 
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
+    AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
+
+    AddTrackReference(mcApplication->GetCurrentTrackNumber());
+    //AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
 
     // getting information about hit volumes
     
@@ -1479,7 +1489,8 @@ void AliTOFv5T0::StepManager()
     vol[3]= padx;
     vol[4]= padz;    
 
-    AddT0Hit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
+    AddT0Hit(mcApplication->GetCurrentTrackNumber(),vol, hits);
+    //AddT0Hit(gAlice->GetMCApp()->GetCurrentTrackNumber(),vol, hits);
   }
 }
 //-------------------------------------------------------------------

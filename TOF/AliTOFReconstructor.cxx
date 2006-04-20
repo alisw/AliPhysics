@@ -21,20 +21,24 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-
-#include <TFile.h>
+#include "TFile.h"
 
 #include "AliLog.h"
-#include "AliRun.h"
+#include "AliRawReader.h"
 #include "AliRunLoader.h"
 
-#include "AliTOFGeometry.h"
-#include "AliTOFGeometryV4.h"
-#include "AliTOFGeometryV5.h"
-#include "AliTOFtracker.h"
-#include "AliTOFtrackerMI.h"
 #include "AliTOFClusterFinder.h"
+#include "AliTOFGeometry.h"
+#include "AliTOFtrackerMI.h"
+#include "AliTOFtracker.h"
 #include "AliTOFReconstructor.h"
+
+class TTree;
+
+class AliESD;
+
+extern TDirectory *gDirectory;
+extern TFile *gFile;
 
 ClassImp(AliTOFReconstructor)
 

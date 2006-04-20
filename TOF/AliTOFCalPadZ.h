@@ -11,12 +11,10 @@
 //_____________________________________________________________
 
 #include "TObject.h"
-#include "TROOT.h"
-#include "TBrowser.h"
-#include "TClass.h"
-#include "AliTOFGeometry.h"
-#include "AliTOFChannel.h"
 
+class TBrowser;
+class AliTOFGeometry;
+class AliTOFChannel;
 
 class AliTOFCalPadZ: public TObject 
 {

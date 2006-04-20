@@ -3,22 +3,20 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-
-//_________________________________________________________________________
-//  Task Class for calculating the time zero of interaction using TOF      
-//  The input file need the track length till TOF detector                 
-//  It can be done modifyng the AliTOFvj StepManager and the AliTOFHit class
-//  as follow 
-//-- Author: F. Pierella
-
+//_____________________________________________________________________________//
+//                                                                             //
+//  Task Class for calculating the time zero of interaction using TOF          //
+//  The input file need the track length till TOF detector                     //
+//  It can be done modifyng the AliTOFvj StepManager and the AliTOFHit class   //
+//  as follow                                                                  //
+//                                                                             //
+//-- Author: F. Pierella                                                       //
+//                                                                             //
+//_____________________________________________________________________________//
 
 #include "TTask.h"
-#include "TString.h"
-#include "TObjString.h"
-#include "AliTOF.h"
-#include "AliDetector.h"
 
-class TClonesArray;
+class TString;
 
 class AliTOFT0: public TTask {
 

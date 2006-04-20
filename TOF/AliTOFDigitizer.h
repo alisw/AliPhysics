@@ -1,26 +1,29 @@
 #ifndef ALITOFDIGITIZER_H
 #define ALITOFDIGITIZER_H
+
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//_________________________________________________________________________
-//  Task Class for making Digits in TOF      
-// Class performs digitization of Summable digits (in the TOF case this is just
-// sum of contributions of all signals into a given pad). 
-// In addition it performs mixing of summable digits from different events.
-//                  
-//*-- Author: Fabrizio Pierella (Bologna University)
+//_______________________________________________________________________________//
+//                                                                               //
+//  Task Class for making Digits in TOF                                          //
+// Class performs digitization of Summable digits (in the TOF case this is just  //
+// sum of contributions of all signals into a given pad).                        //
+// In addition it performs mixing of summable digits from different events.      //
+//                                                                               //
+// -- Author: Fabrizio Pierella (Bologna University)
+//                                                                               //
+//_______________________________________________________________________________//
 
-#include "TH1F.h"
-#include "TList.h"
+/* $Id$ */
+
 #include "AliDigitizer.h"
-#include "AliTOFcalib.h"
-#include "AliTOFCal.h"
-#include "AliTOFGeometry.h"
 
 class AliRunDigitizer;
 class AliTOFHitMap;
 class AliTOFSDigit;
+class AliTOFcalib;
+class AliTOFGeometry;
 
 class AliTOFDigitizer : public AliDigitizer {
  public:

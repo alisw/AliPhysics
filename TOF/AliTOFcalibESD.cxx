@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/04/05 08:35:38  hristov
+Coding conventions (S.Arcelli, C.Zampolli)
+
 Revision 1.3  2006/03/28 14:57:13  arcelli
 updates to handle new V5 geometry & some re-arrangements
 
@@ -35,6 +38,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 
 #include "AliTOFcalibESD.h"
 
+class AliPID;
 
 ClassImp(AliTOFcalibESD)
 

@@ -1,5 +1,6 @@
 #ifndef ALITOFGEOMETRY_H
 #define ALITOFGEOMETRY_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -11,9 +12,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-
+#include "TGeoMatrix.h"
 #include "TObject.h"
-#include "TGeoManager.h"
 
 class AliTOFGeometry: public TObject{
 

@@ -1,5 +1,6 @@
 #ifndef ALITOFPIDESD_H
 #define ALITOFPIDESD_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -8,11 +9,11 @@
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
 
-#include <TObject.h>
-#include <TMath.h>
+#include "TObject.h"
+
+class AliESD;
 
 class AliTOFGeometry;
-class AliESD;
 
 class AliTOFpidESD : public TObject {
 enum {kMaxCluster=77777}; //maximal number of the TOF clusters

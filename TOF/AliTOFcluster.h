@@ -1,13 +1,18 @@
 #ifndef ALITOFCLUSTER_H
 #define ALITOFCLUSTER_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-// AliTOFcluster Class
 
-/* $Id $ */
+/* $Id$ */
+
+//////////////////////////////////////////////
+//                                          //
+//     Class for TOF cluster definition     //
+//                                          //
+//////////////////////////////////////////////
 
 #include "TMath.h"
-
 #include "TObject.h"
 
 class AliTOFcluster : public TObject {

@@ -29,15 +29,14 @@ Revision 0.01  2005/07/22 A. De Caro
 	                  GetPadX()
 */
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// This class provides access to TOF raw data in DDL files.
-//
-// It loops over all TOF raw data given by the AliRawReader.
-//
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+//                                                                    //
+//     This class provides access to TOF raw data in DDL files.       //
+//                                                                    //
+//      It loops over all TOF raw data given by the AliRawReader.     //
+//                                                                    //
+////////////////////////////////////////////////////////////////////////
 
-#include "AliLog.h"
 #include "AliRawReader.h"
 
 #include "AliTOFGeometry.h"

@@ -39,43 +39,37 @@
 */
 //End_Html
 
+#include "TFile.h"
+#include "TFolder.h"
+#include "TROOT.h"
+#include "TTask.h"
+#include "TTree.h"
+#include "TVirtualMC.h"
 
-
-#include <Riostream.h>
-#include <Rstrstream.h>
-#include <stdlib.h>
-
-#include <TBRIK.h>
-#include <TFile.h>
-#include <TFolder.h>
-#include <TNode.h>
-#include <TObject.h>
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TTask.h>
-#include <TTree.h>
-#include <TVirtualMC.h>
-#include <TDirectory.h>
-
-#include "AliLog.h"
-#include "AliConfig.h"
-#include "AliHeader.h"
 #include "AliConst.h"
 #include "AliLoader.h"
-#include "AliMagF.h"
-#include "AliRun.h"
-#include "AliTOF.h"
-#include "AliTOFGeometry.h"
-#include "AliTOFGeometryV4.h"
-#include "AliTOFGeometryV5.h"
-#include "AliTOFSDigit.h"
-#include "AliTOFdigit.h"
-#include "AliTOFhit.h"
-#include "AliTOFhitT0.h"
+#include "AliLog.h"
 #include "AliMC.h"
-#include "AliTOFDigitizer.h"
+#include "AliRun.h"
+
 #include "AliTOFDDLRawData.h"
-#include "AliTOFcluster.h"
+#include "AliTOFDigitizer.h"
+#include "AliTOFdigit.h"
+#include "AliTOFhitT0.h"
+#include "AliTOFhit.h"
+#include "AliTOFGeometry.h"
+#include "AliTOFSDigitizer.h"
+#include "AliTOFSDigit.h"
+#include "AliTOF.h"
+
+class AliTOFcluster;
+
+extern TFile *gFile;
+extern TROOT *gROOT;
+extern TVirtualMC *gMC;
+
+extern AliRun *gAlice;
+
  
 ClassImp(AliTOF)
  
@@ -127,8 +121,11 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   if (gAlice==0) {
      AliFatal("gAlice==0 !");
   }
-  if (gAlice->GetMCApp()->GetHitLists())
-     gAlice->GetMCApp()->AddHitList(fHits);
+
+  AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
+
+  if (mcApplication->GetHitLists())
+     mcApplication->AddHitList(fHits);
   else AliError("gAlice->GetHitLists()==0");
 
   fIshunt  = 0;
@@ -435,7 +432,7 @@ void AliTOF::DrawModule() const
 }
 
 //_____________________________________________________________________________
-Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t ) const
+Int_t AliTOF::DistancetoPrimitive(Int_t , Int_t )
 {
   //
   // Returns distance from mouse pointer to detector, default version
@@ -565,7 +562,7 @@ void AliTOF::Hits2SDigits()
 // Use the TOF SDigitizer to make TOF SDigits
 //
 
-//  cout<<"AliTOF::Hits2SDigits> start...\n";
+//  AliInfo("Start...");
   
   AliRunLoader * rl = fLoader->GetRunLoader();
   AliTOFSDigitizer sd((rl->GetFileName()).Data());

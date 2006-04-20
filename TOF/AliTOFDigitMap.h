@@ -5,19 +5,19 @@
  * See cxx source for full Copyright notice                               */
 
 
-////////////////////////////////////////////////////////////////////////
-//
-// AliTOFDigitMap class
-//
-// digitmap enables fast check if the pad was already hit
-//
-// Author: F. Pierella | pierella@bo.infn.it
-//
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//                                                          //
+//   AliTOFDigitMap class                                   //
+//                                                          //
+//  digitmap enables fast check if the pad was already hit  //
+//                                                          //
+//   Author: F. Pierella | pierella@bo.infn.it              //
+//                                                          //
+//////////////////////////////////////////////////////////////
+
+#include "TObject.h"
 
 #include "AliHitMap.h"
-#include "TObject.h"
-#include "AliTOFGeometry.h"
 
 class TClonesArray;
 class AliTOFGeometry;

@@ -32,15 +32,10 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-#include <TMath.h>
+#include "TClonesArray.h"
 
 #include "AliTOFDigitMap.h"
-#include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
-
-
-#include <TClonesArray.h>
 
 ClassImp(AliTOFDigitMap)
 

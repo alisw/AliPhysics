@@ -9,13 +9,16 @@
 //////////////////////////////////////////////////////////////////
 
 #include "TTask.h"
-#include "TH1F.h"
-#include "AliTOFChannel.h"
-#include "TClonesArray.h"
-#include "TList.h"
-#include "AliTOFCal.h"
-#include "AliTOFGeometry.h"
-#include "AliESD.h"
+
+class TArrayF;
+class TF1;
+class TH1F;
+class TObjArray;
+
+class AliESD;
+
+class AliTOFCal;
+class AliTOFGeometry;
 
 class AliTOFcalib:public TTask{
 public:

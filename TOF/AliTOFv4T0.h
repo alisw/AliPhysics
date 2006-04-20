@@ -1,13 +1,17 @@
-//_________________________________________________________________________
-// Implementation version v4 of TOF Manager class
-// FULL COVERAGE VERSION i.e. NO HOLES FOR PHOS AND HMPID (RICH) ARE DEFINED
-//   
-//*-- Authors: Pierella, Seganti, Vicinanza (Bologna and Salerno University)
-
 #ifndef ALITOFv4T0_H
 #define ALITOFv4T0_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+//_____________________________________________________________________________//
+//                                                                             //
+// Implementation version v4 of TOF Manager class                              //
+// FULL COVERAGE VERSION i.e. NO HOLES FOR PHOS AND HMPID (RICH) ARE DEFINED   //
+//                                                                             //
+// -- Authors: Pierella, Seganti, Vicinanza (Bologna and Salerno University)   //
+//                                                                             //
+//_____________________________________________________________________________//
 
 #include "AliTOF.h"
  
@@ -17,9 +21,7 @@ class AliTOFv4T0 : public AliTOF {
 public:
   AliTOFv4T0();
   AliTOFv4T0(const char *name, const char *title);
-  virtual ~AliTOFv4T0() {   if (fTOFGeometry) {delete fTOFGeometry; 
-    fTOFGeometry  = 0;  }
-}
+  virtual ~AliTOFv4T0() {};
   virtual void   BuildGeometry();
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();

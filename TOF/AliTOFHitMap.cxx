@@ -33,12 +33,8 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
-#include <TMath.h>
-
 #include "AliLog.h"
 #include "AliTOFHitMap.h"
-#include "AliTOFSDigit.h"
 #include "AliTOFGeometry.h"
 
 

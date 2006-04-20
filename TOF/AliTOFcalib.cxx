@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2006/04/16 22:29:05  hristov
+Coding conventions (Annalisa)
+
 Revision 1.7  2006/04/16 20:12:46  hristov
 Removing memory leak in case of cached CDB entries
 
@@ -45,33 +48,28 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTOFcalib.h"
-#include "AliRun.h"
-#include <TTask.h>
-#include <TFile.h>
-#include <TROOT.h>
-#include <TSystem.h>
-#include "AliTOF.h"
-#include "AliTOFcalibESD.h"
-#include "AliESD.h"
-#include <TObject.h>
 #include "TF1.h"
+#include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "AliESDtrack.h"
-#include "AliTOFChannel.h"
-#include "AliTOFChSim.h"
-#include "AliTOFGeometryV5.h"
-#include "TClonesArray.h"
-#include "AliTOFCal.h"
-#include "TRandom.h"
-#include "AliTOFcluster.h"
 #include "TList.h"
+#include "TROOT.h"
+#include "TStyle.h"
+
+#include "AliCDBEntry.h"
+#include "AliCDBId.h"
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
-#include "AliCDBStorage.h"
-#include "AliCDBId.h"
-#include "AliCDBEntry.h"
+#include "AliESDtrack.h"
+#include "AliESD.h"
+#include "AliLog.h"
+
+#include "AliTOFCal.h"
+#include "AliTOFcalibESD.h"
+#include "AliTOFcalib.h"
+#include "AliTOFChannel.h"
+#include "AliTOFGeometryV5.h"
+#include "AliTOFGeometry.h"
 
 extern TROOT *gROOT;
 extern TStyle *gStyle;

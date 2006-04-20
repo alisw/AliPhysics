@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/04/16 22:29:05  hristov
+Coding conventions (Annalisa)
+
 Revision 1.4  2006/04/05 08:35:38  hristov
 Coding conventions (S.Arcelli, C.Zampolli)
 
@@ -36,14 +39,13 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TObject.h"
-#include "TROOT.h"
 #include "TBrowser.h"
-#include "TClass.h"
+
 #include "AliLog.h"
-#include "AliTOFGeometryV5.h"
-#include "AliTOFChannel.h"
+
 #include "AliTOFCalPadZ.h"
+#include "AliTOFChannel.h"
+#include "AliTOFGeometryV5.h"
 
 ClassImp(AliTOFCalPadZ)
 

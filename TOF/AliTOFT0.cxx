@@ -16,6 +16,7 @@
 /* $Id$ */
 
 //_________________________________________________________________________
+//
 // This is a TTask that made the calculation of the Time zero using TOF.
 // Description: The algorithm used to calculate the time zero of
 // interaction using TOF detector is the following.
@@ -61,7 +62,7 @@
 // The strong assumption is the MC selection of primary particles. It
 // will be introduced in the future also some more realistic
 // simulation about this point.
-
+//
 // Use case:
 // root [0] AliTOFT0 * tzero = new AliTOFT0("galice.root")
 // Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
@@ -73,35 +74,38 @@
 //                   misidentified tracks and a comparison about the
 //                   true configuration (known from MC) and the best
 //                   assignment
+//
 //-- Author: F. Pierella
-//////////////////////////////////////////////////////////////////////////////
+//
+//_________________________________________________________________________
 
-#include <Riostream.h>
-#include <stdlib.h>
+#include "TCanvas.h"
+#include "TClonesArray.h"
+#include "TFile.h"
+#include "TFolder.h"
+#include "TFrame.h"
+#include "TH1.h"
+#include "TParticle.h"
+#include "TRandom.h"
+#include "TBenchmark.h"
+#include "TSystem.h"
+#include "TTask.h"
+#include "TTree.h"
 
-#include <TBenchmark.h>
-#include <TCanvas.h>
-#include <TClonesArray.h>
-#include <TFile.h>
-#include <TFolder.h>
-#include <TFrame.h>
-#include <TH1.h>
-#include <TParticle.h>
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TTask.h>
-#include <TTree.h>
-#include <TVirtualMC.h>
-
-#include "AliDetector.h"
 #include "AliMC.h"
 #include "AliRun.h"
 
-#include "AliTOF.h"
-#include "AliTOFT0.h"
 #include "AliTOFhitT0.h"
-#include "AliTOFv4T0.h"
-#include "AliTOFv5T0.h"
+#include "AliTOFT0.h"
+#include "AliTOF.h"
+
+extern TBenchmark *gBenchmark;
+extern TSystem *gSystem;
+extern TRandom *gRandom;
+extern TROOT *gROOT;
+
+extern AliRun *gAlice;
+
 
 ClassImp(AliTOFT0)
 
@@ -246,8 +250,8 @@ void AliTOFT0::Exec(Option_t *option)
   }
 
   if(strstr(option,"all")){
-    cout << "Selecting primary tracks with momentum between " << fLowerMomBound << " GeV/c and " << fUpperMomBound << " GeV/c" << endl;
-    cout << "Memorandum: 0 means PION | 1 means KAON | 2 means PROTON" << endl;
+    AliInfo(Form("Selecting primary tracks with momentum between %d GeV/c and %d GeV/c",  fLowerMomBound, fUpperMomBound));
+    AliInfo("Memorandum: 0 means PION | 1 means KAON | 2 means PROTON")
   }
 
   if (fNevents == 0) fNevents = (Int_t) gAlice->TreeE()->GetEntries();
@@ -276,7 +280,10 @@ void AliTOFT0::Exec(Option_t *option)
       
       gAlice->ResetHits();
       hitTree->GetEvent(track);
-      particle = gAlice->GetMCApp()->Particle(track);
+
+      AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
+
+      particle = mcApplication->Particle(track);
       Int_t nhits = tofHits->GetEntriesFast();
 
       for (Int_t hit = 0; hit < nhits; hit++)
@@ -312,7 +319,7 @@ void AliTOFT0::Exec(Option_t *option)
 	    timeofflight[index]=time;
 	    tracktoflen[index]=toflen;
 	    momentum[index]=mom;
-	    //	    cout << timeofflight[index] << " " << tracktoflen[index] << " " << momentum[index] << endl;
+	    //AliInfo(Form(" %d  %d  %d ", timeofflight[index], tracktoflen[index], momentum[index]));
 	    switch (abspdg) {
 	    case 211:
 	      truparticle[index]=0;
@@ -333,7 +340,7 @@ void AliTOFT0::Exec(Option_t *option)
 	    lasttrack=track;
 	    istop=0;
 	    selected=0;
-	    //cout << "starting t0 calculation for current set" << endl;
+	    //AliInfo("starting t0 calculation for current set");
 	    for (Int_t i1=0; i1<3;i1++) {
 	      beta[0]=momentum[0]/sqrt(massarray[i1]*massarray[i1]+momentum[0]*momentum[0]);
 	      for (Int_t i2=0; i2<3;i2++) { 
@@ -419,10 +426,10 @@ void AliTOFT0::Exec(Option_t *option)
 	    hchibestconflevel->Fill(confLevel);
 	    itimes++;
 	    if(strstr(option,"all")){
-	      cout << "True Assignment " << truparticle[0] << truparticle[1] << truparticle[2] << truparticle[3] << truparticle[4] << truparticle[5] << truparticle[6] << truparticle[7] << truparticle[8] << truparticle[9] <<endl;
-	      cout << "Best Assignment " << assparticle[0] << assparticle[1] << assparticle[2] << assparticle[3] << assparticle[4] << assparticle[5] << assparticle[6] << assparticle[7] << assparticle[8] << assparticle[9] << endl;
-	      cout << "Minimum ChiSquare for current set    " << chisquare << endl;
-	      cout << "Confidence Level (Minimum ChiSquare) " << confLevel << endl;
+	      AliInfo(Form("True Assignment %d  %d  %d  %d  %d  %d  %d  %d  %d  %d", truparticle[0], truparticle[1], truparticle[2], truparticle[3], truparticle[4], truparticle[5], truparticle[6], truparticle[7], truparticle[8], truparticle[9]));
+	      AliInfo(Form("Best Assignment %d  %d  %d  %d  %d  %d  %d  %d  %d  %d", assparticle[0], assparticle[1], assparticle[2], assparticle[3], assparticle[4], assparticle[5], assparticle[6], assparticle[7], assparticle[8], assparticle[9]));
+	      AliInfo(Form("Minimum ChiSquare for current set   %d ", chisquare));
+	      AliInfo(Form("Confidence Level (Minimum ChiSquare) %d", confLevel));
 	    }
 	    if (strstr(option,"visual") && itimes && (itimes%kUPDATE) == 0) {
 	      if (itimes == kUPDATE){
@@ -454,12 +461,12 @@ void AliTOFT0::Exec(Option_t *option)
   
   if(strstr(option,"all")){
     nmisidentified=(nmisidentified0+nmisidentified1+nmisidentified2+nmisidentified3+nmisidentified4+nmisidentified5+nmisidentified6+nmisidentified7+nmisidentified8+nmisidentified9);
-    cout << "total number of tracks token into account  " << 10*5*fNevents << endl;
+    AliInfo(Form("total number of tracks token into account  %i", 10*5*fNevents));
     Float_t badPercentage=100.*(Float_t)nmisidentified/(10*5*fNevents);
-    cout << "total misidentified                        " << nmisidentified << "("<< badPercentage << "%)" <<endl;
-    cout << "Total Number of set token into account     " << 5*fNevents << endl;
+    AliInfo(Form("total misidentified                       %i (%d %) ", nmisidentified, badPercentage));
+    AliInfo(Form("Total Number of set token into account     %i", 5*fNevents));
     Float_t goodSetPercentage=100.*(Float_t)ngood/(5*fNevents);
-    cout << "Number of set with no misidentified tracks " << ngood << "("<< goodSetPercentage << "%)" <<endl;
+    AliInfo(Form("Number of set with no misidentified tracks %i (%d %)", ngood, goodSetPercentage));
   }
 
   // free used memory for canvas
@@ -485,10 +492,12 @@ void AliTOFT0::Exec(Option_t *option)
   
   if(strstr(option,"tim") || strstr(option,"all")){
     gBenchmark->Stop("TOFT0");
-    cout << "AliTOFT0:" << endl ;
+    AliInfo("AliTOFT0:");
+    /*
     cout << "   took " << gBenchmark->GetCpuTime("TOFT0") << " seconds in order to calculate T0 " 
-	 <<  gBenchmark->GetCpuTime("TOFT0")/fNevents << " seconds per event " << endl ;
-    cout << endl ;
+	 << gBenchmark->GetCpuTime("TOFT0")/fNevents << " seconds per event " << endl ;
+    */
+    gBenchmark->Print("TOFT0");
   }
 }
  

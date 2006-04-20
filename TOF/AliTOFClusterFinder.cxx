@@ -50,26 +50,26 @@ Revision 0.01  2005/07/25 A. De Caro
 //                                                            //
 ////////////////////////////////////////////////////////////////
 
-#include <TTree.h>
-#include <TObjArray.h>
-#include <TClonesArray.h>
-#include <TFile.h>
+#include "TClonesArray.h"
+#include "TFile.h"
+#include "TTree.h"
 
-#include "AliLog.h"
-#include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliLog.h"
+#include "AliRawReader.h"
+#include "AliRunLoader.h"
 
-#include "AliTOFdigit.h"
-#include "AliTOFcluster.h"
-#include "AliTOFGeometry.h"
-#include "AliTOFGeometryV4.h"
-#include "AliTOFGeometryV5.h"
-#include "AliTOFRawStream.h"
 #include "AliTOFcalib.h"
 #include "AliTOFCal.h"
 #include "AliTOFChannel.h"
-
 #include "AliTOFClusterFinder.h"
+#include "AliTOFcluster.h"
+#include "AliTOFdigit.h"
+#include "AliTOFGeometryV5.h"
+#include "AliTOFGeometry.h"
+#include "AliTOFRawStream.h"
+
+extern TFile *gFile;
 
 ClassImp(AliTOFClusterFinder)
 

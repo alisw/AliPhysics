@@ -12,25 +12,33 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// AliTOFtracker Class
-// Task: Perform association of the ESD tracks to TOF Clusters
-// and Update ESD track with associated TOF Cluster parameters 
-//
-//--------------------------------------------------------------------
+
+//-----------------------------------------------------------------//
+//                                                                 //
+//   AliTOFtracker Class                                           //
+//   Task: Perform association of the ESD tracks to TOF Clusters   //
+//   and Update ESD track with associated TOF Cluster parameters   //
+//                                                                 //
+//-----------------------------------------------------------------//
 
 #include <Rtypes.h>
+
+#include "TClonesArray.h"
+#include "TGeoManager.h"
+#include "TTree.h"
+#include "TTreeStream.h"
+
+#include "AliRun.h"
+#include "AliESD.h"
+#include "AliESDtrack.h"
+
+#include "AliTOFcalib.h"
+#include "AliTOFcluster.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtrack.h"
-#include "TClonesArray.h"
-#include "TError.h"
-#include "AliTOFdigit.h"
-#include "AliTOFGeometry.h"
-#include "AliTOF.h"
-#include "AliRun.h"
-#include "AliModule.h"
-#include "TTreeStream.h"
-#include "AliTOFcluster.h"
-#include "AliTOFcalib.h"
+
+extern TGeoManager *gGeoManager;
 
 ClassImp(AliTOFtrackerMI)
 
@@ -133,7 +141,7 @@ void AliTOFtrackerMI::Init() {
   AliModule* frame=gAlice->GetModule("FRAME"); 
 
   if(!frame) {
-    Error("Init","Could Not load FRAME! Assume Frame with Holes \n");
+    AliError("Could Not load FRAME! Assume Frame with Holes ");
     fHoles=true;
   } else{
     if(frame->IsVersion()==1) {fHoles=false;}    
@@ -589,7 +597,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
 
 //   TBranch *branch=dTree->GetBranch("TOF");
 //   if (!branch) { 
-//     Error("LoadClusters"," can't get the branch with the TOF digits !\n");
+//     AliError(" can't get the branch with the TOF digits !");
 //     return 1;
 //   }
 
@@ -702,7 +710,7 @@ Int_t AliTOFtrackerMI::InsertCluster(AliTOFcluster *c) {
   //This function adds a cluster to the array of clusters sorted in Z
   //--------------------------------------------------------------------
   if (fN==kMaxCluster) {
-    Error("InsertCluster","Too many clusters !\n");
+    AliError("Too many clusters !");
     return 1;
   }
 

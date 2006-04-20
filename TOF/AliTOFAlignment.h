@@ -9,7 +9,8 @@
 //////////////////////////////////////////////////////////////////
 
 #include "TTask.h"
-#include "AliAlignObj.h"
+
+class TObjArray;
 
 class AliTOFAlignment :public TTask{
 

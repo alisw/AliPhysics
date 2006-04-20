@@ -6,7 +6,7 @@
 // Task: Transform digits/raw data to TOF Clusters, to fill TOF RecPoints
 // and feed TOF tracking 
 
-#include "AliRawReader.h"
+#include "TObject.h"
 
 class TClonesArray;
 class TFile;
@@ -14,8 +14,10 @@ class TTree;
 
 class AliLoader;
 class AliRunLoader;
+class AliRawReader;
 
 class AliTOFGeometry;
+class AliTOFcluster;
 
 class AliTOFClusterFinder : public TObject
 {

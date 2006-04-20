@@ -6,18 +6,19 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////////////////////
-//
-// AliTOFHitMap class
-//
-// hitmap enables fast check if the pad was already hit
-//
-// Author: Jiri Chudoba (CERN)
-//
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//                                                          //
+//   AliTOFHitMap class                                     //
+//                                                          //
+//   hitmap enables fast check if the pad was already hit   //
+//                                                          //
+//   Author: Jiri Chudoba (CERN)                            //
+//                                                          //
+//////////////////////////////////////////////////////////////
+
+#include "TObject.h"
 
 #include "AliHitMap.h"
-#include "TObject.h"
 
 class TClonesArray;
 class AliTOFGeometry;

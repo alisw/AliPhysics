@@ -13,14 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-----------------------------------------------------------------
-//           Implementation of the TOF PID class
-//      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
-//-----------------------------------------------------------------
-#include "TError.h"
-#include "AliTOFpidESD.h"
+//-----------------------------------------------------------------//
+//                                                                 //
+//           Implementation of the TOF PID class                   //
+//      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch         //
+//                                                                 //
+//-----------------------------------------------------------------//
+
+#include "TMath.h"
+
 #include "AliESDtrack.h"
 #include "AliESD.h"
+
+#include "AliTOFpidESD.h"
 
 ClassImp(AliTOFpidESD)
 

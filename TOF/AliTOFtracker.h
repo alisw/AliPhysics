@@ -1,28 +1,34 @@
 #ifndef ALITOFTRACKER_H
 #define ALITOFTRACKER_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-// AliTOFtracker Class
-// Task: Perform association of the ESD tracks to TOF Clusters
-// and Update ESD track with associated TOF Cluster parameters 
-//
-// -- Authors : S. Arcelli, C. Zampolli (Bologna University and INFN) 
-// -- Contacts: Annalisa.De.Caro@cern.ch
-// --         : Chiara.Zampolli@bo.infn.it
-// --         : Silvia.Arcelli@bo.infn.it
-//--------------------------------------------------------------------
 
 /* $Id$ */
 
-#include "TClonesArray.h"
+//----------------------------------------------------------------------//
+//                                                                      //
+// AliTOFtracker Class                                                  //
+// Task: Perform association of the ESD tracks to TOF Clusters          //
+// and Update ESD track with associated TOF Cluster parameters          //
+//                                                                      //
+// -- Authors : S. Arcelli, C. Zampolli (Bologna University and INFN)   //
+// -- Contacts: Annalisa.De.Caro@cern.ch                                //
+// --         : Chiara.Zampolli@bo.infn.it                              //
+// --         : Silvia.Arcelli@bo.infn.it                               //
+//                                                                      //
+//----------------------------------------------------------------------//
 
-#include "AliESD.h"
 #include "AliTracker.h"
 
 #include "AliTOFpidESD.h"
 
-class AliTOFGeometry;
+class TClonesArray;
+
+class AliESD;
+
 class AliTOFcluster;
+class AliTOFGeometry;
 
 class AliTOFtracker : public AliTracker {
 

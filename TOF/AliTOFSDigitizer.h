@@ -1,22 +1,28 @@
 #ifndef ALITOFSDigitizer_H
 #define ALITOFSDigitizer_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+//__________________________________________//
+//                                          //
+//  Task Class for making SDigits in TOF    // 
+//                                          //
+//-- Authors: F. Pierella, A. De Caro       //
+//                                          //
+//__________________________________________//
 
-//_________________________________________________________________________
-//  Task Class for making SDigits in TOF      
-//                  
-//-- Authors: F. Pierella, A. De Caro
-
+/* $Id$ */
 
 #include "TTask.h"
-#include "TString.h"
-class AliRunLoader;
+
+class TF1;
+class TString;
+
 class AliLoader;
+class AliRunLoader;
 
 class AliTOFGeometry;
-class TF1;
 
 class AliTOFSDigitizer: public TTask {
 

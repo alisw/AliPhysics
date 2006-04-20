@@ -15,44 +15,45 @@
 
 /* $Id$ */
 
-//_________________________________________________________________________
-// This is a TTask that constructs SDigits out of Hits
-// A Summable Digits is the "sum" of all hits in a pad
-// Detector response has been simulated via the method
-// SimulateDetectorResponse
-//
-//-- Authors: F. Pierella, A. De Caro
-// Use case: see AliTOFhits2sdigits.C macro in the CVS
-//////////////////////////////////////////////////////////////////////////////
+//__________________________________________________________//
+//                                                          //
+//   This is a TTask that constructs SDigits out of Hits    //
+//   A Summable Digits is the "sum" of all hits in a pad    //
+//   Detector response has been simulated via the method    //
+//   SimulateDetectorResponse                               //
+//                                                          //
+//  -- Authors: F. Pierella, A. De Caro                     //
+//   Use case: see AliTOFhits2sdigits.C macro in the CVS    //
+//__________________________________________________________//
 
-#include <Riostream.h>
-#include <stdlib.h>
+#include "TBenchmark.h"
+#include "TF1.h"
+#include "TFile.h"
+#include "TParticle.h"
+#include "TTree.h"
 
-#include <TBenchmark.h>
-#include <TF1.h>
-#include <TFile.h>
-#include <TFolder.h>
-#include <TH1.h>
-#include <TParticle.h>
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TTask.h>
-#include <TTree.h>
-
-#include "AliLog.h"
-#include "AliDetector.h"
 #include "AliLoader.h"
+#include "AliLog.h"
 #include "AliMC.h"
-#include "AliRun.h"
 #include "AliRunLoader.h"
+#include "AliRun.h"
 
-#include "AliTOF.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFHitMap.h"
-#include "AliTOFSDigit.h"
-#include "AliTOFSDigitizer.h"
-#include "AliTOFhit.h"
 #include "AliTOFhitT0.h"
+#include "AliTOFhit.h"
+#include "AliTOFSDigitizer.h"
+#include "AliTOFSDigit.h"
+#include "AliTOF.h"
+
+extern TBenchmark *gBenchmark;
+extern TDirectory *gDirectory;
+extern TFile *gFile;
+extern TRandom *gRandom;
+extern TROOT *gROOT;
+
+extern AliRun *gAlice;
+
 
 ClassImp(AliTOFSDigitizer)
 
@@ -267,8 +268,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
   fTOFLoader->LoadSDigits("recreate");
   
   for (Int_t iEvent=fEvent1; iEvent<fEvent2; iEvent++) {
-//     cout << "------------------- "<< GetName() << " ------------- \n";
-//     cout << "Sdigitizing event " << iEvent << endl;
+    //AliInfo(Form("------------------- %s -------------", GetName()));
+    //AliInfo(Form("Sdigitizing event %i", iEvent));
 
     fRunLoader->GetEvent(iEvent);
 
@@ -311,7 +312,10 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     {
       gAlice->ResetHits();
       tofHitsBranch->GetEvent(track);
-      particle = gAlice->GetMCApp()->Particle(track);
+
+      AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
+
+      particle = mcApplication->Particle(track);
       Int_t nhits = tofHitArray->GetEntriesFast();
       // cleaning all hits of the same track in the same pad volume
       // it is a rare event, however it happens
@@ -503,7 +507,7 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 //__________________________________________________________________
 void AliTOFSDigitizer::Print(Option_t* /*opt*/)const
 {
-  cout << "------------------- "<< GetName() << " ------------- \n";
+  AliInfo(Form(" ------------------- %s ------------- ", GetName()));
 }
 
 //__________________________________________________________________
@@ -812,36 +816,36 @@ void AliTOFSDigitizer::PrintParameters()const
   //
   // Print parameters used for sdigitization
   //
-  cout << " ------------------- "<< GetName() << " -------------" << endl ;
-  cout << " Parameters used for TOF SDigitization " << endl ;
+  AliInfo(Form(" ------------------- %s -------------", GetName()));
+  AliInfo(" Parameters used for TOF SDigitization ");
   //  Printing the parameters
   
-  cout << " Number of events:                        " << (fEvent2-fEvent1) << endl; 
-  cout << " from event " << fEvent1 << " to event " << (fEvent2-1) << endl; 
-  cout << " Time Resolution (ns) "<< fTimeResolution <<" Pad Efficiency: "<< fpadefficiency << endl;
-  cout << " Edge Effect option:  "<<  fEdgeEffect<< endl;
+  AliInfo(Form(" Number of events:                       %i ", (fEvent2-fEvent1)));
+  AliInfo(Form(" from event %i to event %i", fEvent1, (fEvent2-1)));
+  AliInfo(Form(" Time Resolution (ns) %d  Pad Efficiency: %d ", fTimeResolution, fpadefficiency));
+  AliInfo(Form(" Edge Effect option:  %d", fEdgeEffect));
 
-  cout << " Boundary Effect Simulation Parameters " << endl;
-  cout << " Hparameter: "<< fHparameter<<"  H2parameter:"<< fH2parameter <<"  Kparameter:"<< fKparameter<<"  K2parameter: "<< fK2parameter << endl;
-  cout << " Efficiency in the central region of the pad: "<< fEffCenter << endl;
-  cout << " Efficiency at the boundary region of the pad: "<< fEffBoundary << endl;
-  cout << " Efficiency value at H2parameter "<< fEff2Boundary << endl;
-  cout << " Efficiency value at K2parameter "<< fEff3Boundary << endl;
-  cout << " Resolution (ps) in the central region of the pad: "<< fResCenter << endl;
-  cout << " Resolution (ps) at the boundary of the pad      : "<< fResBoundary << endl;
-  cout << " Slope (ps/K) for neighbouring pad               : "<< fResSlope <<endl;
-  cout << " Time walk (ps) in the central region of the pad : "<< fTimeWalkCenter << endl;
-  cout << " Time walk (ps) at the boundary of the pad       : "<< fTimeWalkBoundary<< endl;
-  cout << " Slope (ps/K) for neighbouring pad               : "<< fTimeWalkSlope<<endl;
-  cout << " Pulse Heigth Simulation Parameters " << endl;
-  cout << " Flag for delay due to the PulseHeightEffect  : "<< fTimeDelayFlag <<endl;
-  cout << " Pulse Height Slope                           : "<< fPulseHeightSlope<<endl;
-  cout << " Time Delay Slope                             : "<< fTimeDelaySlope<<endl;
-  cout << " Minimum charge amount which could be induced : "<< fMinimumCharge<<endl;
-  cout << " Smearing in charge in (q1/q2) vs x plot      : "<< fChargeSmearing<<endl;
-  cout << " Smearing in log of charge ratio              : "<< fLogChargeSmearing<<endl;
-  cout << " Smearing in time in time vs log(q1/q2) plot  : "<< fTimeSmearing<<endl;
-  cout << " Flag for average time                        : "<< fAverageTimeFlag<<endl;
-  cout << " Edge tails option                            : "<< fEdgeTails << endl;
+  AliInfo(" Boundary Effect Simulation Parameters ");
+  AliInfo(Form(" Hparameter: %d  H2parameter: %d  Kparameter: %d  K2parameter: %d", fHparameter, fH2parameter, fKparameter, fK2parameter));
+  AliInfo(Form(" Efficiency in the central region of the pad: %d", fEffCenter));
+  AliInfo(Form(" Efficiency at the boundary region of the pad: %d", fEffBoundary));
+  AliInfo(Form(" Efficiency value at H2parameter %d", fEff2Boundary));
+  AliInfo(Form(" Efficiency value at K2parameter %d", fEff3Boundary));
+  AliInfo(Form(" Resolution (ps) in the central region of the pad: %d", fResCenter));
+  AliInfo(Form(" Resolution (ps) at the boundary of the pad      : %d", fResBoundary));
+  AliInfo(Form(" Slope (ps/K) for neighbouring pad               : %d", fResSlope));
+  AliInfo(Form(" Time walk (ps) in the central region of the pad : %d", fTimeWalkCenter));
+  AliInfo(Form(" Time walk (ps) at the boundary of the pad       : %d", fTimeWalkBoundary));
+  AliInfo(Form(" Slope (ps/K) for neighbouring pad               : %d", fTimeWalkSlope));
+  AliInfo(" Pulse Heigth Simulation Parameters ");
+  AliInfo(Form(" Flag for delay due to the PulseHeightEffect  : %d", fTimeDelayFlag));
+  AliInfo(Form(" Pulse Height Slope                           : %d", fPulseHeightSlope));
+  AliInfo(Form(" Time Delay Slope                             : %d", fTimeDelaySlope));
+  AliInfo(Form(" Minimum charge amount which could be induced : %d", fMinimumCharge));
+  AliInfo(Form(" Smearing in charge in (q1/q2) vs x plot      : %d", fChargeSmearing));
+  AliInfo(Form(" Smearing in log of charge ratio              : %d", fLogChargeSmearing));
+  AliInfo(Form(" Smearing in time in time vs log(q1/q2) plot  : %d", fTimeSmearing));
+  AliInfo(Form(" Flag for average time                        : %d", fAverageTimeFlag));
+  AliInfo(Form(" Edge tails option                            : %d", fEdgeTails));
   
 }

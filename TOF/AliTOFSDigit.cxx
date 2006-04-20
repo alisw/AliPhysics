@@ -15,27 +15,27 @@
 
 /* $Id$ */
 
-//_________________________________________________________________________
-//  TOF sdigit: member variables 
-//  fSector  : TOF sector
-//  fPlate   : TOF plate
-//  fStrip   : strips number
-//  fPadx    : pad number along x
-//  fPadz    : pad number along z
-//  fTdc     : TArrayF of TDC values
-//  fAdc     : TArrayF of ADC values
-//              
-//  Getters, setters and member functions  defined here
-//
-//*-- Authors: F. Pierella, A. Seganti, D. Vicinanza
+//_________________________________________________________________________//
+//                                                                         //
+//  TOF sdigit: member variables                                           //
+//  fSector  : TOF sector                                                  //
+//  fPlate   : TOF plate                                                   //
+//  fStrip   : strips number                                               //
+//  fPadx    : pad number along x                                          //
+//  fPadz    : pad number along z                                          //
+//  fTdc     : TArrayF of TDC values                                       //
+//  fAdc     : TArrayF of ADC values                                       //
+//                                                                         //
+//  Getters, setters and member functions  defined here                    //
+//                                                                         //
+// -- Authors: F. Pierella, A. Seganti, D. Vicinanza                       //
+//_________________________________________________________________________//
 
-#include <Riostream.h>
 #include "TArrayF.h"
 #include "TArrayI.h"
 
 #include "AliLog.h"
-#include "AliRun.h"
-#include "AliTOF.h"
+
 #include "AliTOFGeometry.h"
 #include "AliTOFSDigit.h"
 

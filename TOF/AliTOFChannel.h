@@ -8,7 +8,7 @@
 //  class for TOF calibration                 //
 ////////////////////////////////////////////////
 
-#include "TNamed.h"
+#include "TObject.h"
 
 class AliTOFChannel: public TObject {
 
