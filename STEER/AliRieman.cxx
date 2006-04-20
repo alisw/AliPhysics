@@ -1,8 +1,50 @@
-#include "TTree.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+// Class for global helix fit of a track
+// Author: M.Ivanov
+// The method uses the following idea:
+//------------------------------------------------------
+// XY direction
+//
+//  (x-x0)^2+(y-y0)^2-R^2=0 ===>
+//
+//  (x^2+y^2 -2*x*x0 - 2*y*y0+ x0^2 -y0^2 -R^2 =0;  ==>
+//
+//   substitution t = 1/(x^2+y^2),   u = 2*x*t, v = 2*y*t,  D0 = R^2 - x0^2- y0^2
+//
+//  1 - u*x0 - v*y0 - t *D0 =0 ;  - linear equation
+//     
+//  next substition   a = 1/y0    b = -x0/y0   c = -D0/y0
+//
+//  final linear equation :   a + u*b +t*c - v =0;
+//
+// Minimization :
+//
+// sum( (a + ui*b +ti*c - vi)^2)/(sigmai)^2 = min;
+//
+// where sigmai is the error of  maesurement  (a + ui*b +ti*c - vi)
+//
+// neglecting error of xi, and supposing  xi>>yi    sigmai ~ sigmaVi ~ 2*sigmay*t  
+
+
 #include "TMatrixDSym.h"
+//#include "TDecompChol.h"
 #include "TMatrixD.h"
 #include "AliRieman.h"
-#include "TRandom.h"
 
 ClassImp(AliRieman)
 
@@ -23,6 +65,9 @@ AliRieman::AliRieman(){
   fZ  = 0;
   fSy = 0;
   fSz = 0;
+  fChi2  = 0;
+  fChi2Y = 0;
+  fChi2Z = 0;
   fCovar = 0;
   fConv = kFALSE;
 }
@@ -38,16 +83,19 @@ AliRieman::AliRieman(Int_t capacity){
 
   fCapacity = capacity;
   fN =0;
-  fX  = new Float_t[fCapacity];
-  fY  = new Float_t[fCapacity];
-  fZ  = new Float_t[fCapacity];
-  fSy = new Float_t[fCapacity];
-  fSz = new Float_t[fCapacity];
+  fX  = new Double_t[fCapacity];
+  fY  = new Double_t[fCapacity];
+  fZ  = new Double_t[fCapacity];
+  fSy = new Double_t[fCapacity];
+  fSz = new Double_t[fCapacity];
   fCovar = new TMatrixDSym(6);
+  fChi2  = 0;
+  fChi2Y = 0;
+  fChi2Z = 0;
   fConv = kFALSE;
 }
 
-AliRieman::AliRieman(const AliRieman &rieman):TObject(){
+AliRieman::AliRieman(const AliRieman &rieman):TObject(rieman){
   //
   // copy constructor
   // 
@@ -58,11 +106,11 @@ AliRieman::AliRieman(const AliRieman &rieman):TObject(){
   fN =rieman.fN;
   fCovar = new TMatrixDSym(*(rieman.fCovar)); 
   fConv = rieman.fConv;
-  fX  = new Float_t[fN];
-  fY  = new Float_t[fN];
-  fZ  = new Float_t[fN];
-  fSy = new Float_t[fN];
-  fSz = new Float_t[fN];
+  fX  = new Double_t[fN];
+  fY  = new Double_t[fN];
+  fZ  = new Double_t[fN];
+  fSy = new Double_t[fN];
+  fSz = new Double_t[fN];
   for (Int_t i=0;i<rieman.fN;i++){
     fX[i]   = rieman.fX[i];
     fY[i]   = rieman.fY[i];
@@ -74,6 +122,9 @@ AliRieman::AliRieman(const AliRieman &rieman):TObject(){
 
 AliRieman::~AliRieman()
 {
+  //
+  // Destructor
+  //
   delete[]fX;
   delete[]fY;
   delete[]fZ;
@@ -84,6 +135,9 @@ AliRieman::~AliRieman()
 
 void AliRieman::Reset()
 {
+  //
+  // Reset all the data members
+  //
   fN=0;
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
@@ -92,7 +146,7 @@ void AliRieman::Reset()
 }
 
 
-void AliRieman::AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy, Float_t sz)
+void AliRieman::AddPoint(Double_t x, Double_t y, Double_t z, Double_t sy, Double_t sz)
 {
   //
   //  Rieman update
@@ -104,7 +158,7 @@ void AliRieman::AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy, Float_t sz
   //
   //  (x^2+y^2 -2*x*x0 - 2*y*y0+ x0^2 -y0^2 -R^2 =0;  ==>
   //
-  //   substitution t = 1/(x^2+y^2),   u = 2*x*t, y = 2*y*t,  D0 = R^2 - x0^2- y0^2
+  //   substitution t = 1/(x^2+y^2),   u = 2*x*t, v = 2*y*t,  D0 = R^2 - x0^2- y0^2
   //
   //  1 - u*x0 - v*y0 - t *D0 =0 ;  - linear equation
   //     
@@ -246,7 +300,16 @@ void AliRieman::Update(){
 
   smatrix(0,0) = fSumXY[0]; smatrix(1,1)=fSumXY[4]; smatrix(2,2)=fSumXY[5];
   smatrix(0,1) = fSumXY[1]; smatrix(0,2)=fSumXY[3]; smatrix(1,2)=fSumXY[7];
+  //
+  smatrix(1,0) = fSumXY[1];
+  smatrix(2,0) = fSumXY[3];
+  smatrix(2,1) = fSumXY[7];
+
   sums(0,0)    = fSumXY[2]; sums(0,1)   =fSumXY[6]; sums(0,2)   =fSumXY[8];
+  //TDecompChol decomp(smatrix);
+  //decomp.SetTol(1.0e-14);
+  //smatrix = 
+  //decomp.Invert();
   smatrix.Invert();
   if (smatrix.IsValid()){
     for (Int_t i=0;i<3;i++)
@@ -263,20 +326,24 @@ void AliRieman::Update(){
     fConv = kFALSE;   //non converged
     return;
   }
+  if (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1.<0){
+    fConv = kFALSE;   //non converged
+    return;
+  }
   //
   // XZ part
   //
   Double_t x0 = -fParams[1]/fParams[0];
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1.); 
   Double_t sumXZ[9];
 
   for (Int_t i=0;i<9;i++) sumXZ[i]=0;
   for (Int_t i=0;i<fN;i++){
-    Double_t phi  = TMath::ASin((fX[i]-x0)*Rm1);
-    Double_t phi0 = TMath::ASin((0.-x0)*Rm1);
+    Double_t phi  = TMath::ASin((fX[i]-x0)*rm1);
+    Double_t phi0 = TMath::ASin((0.-x0)*rm1);
     Double_t weight = 1/fSz[i];
     weight *=weight;
-    Double_t dphi = (phi-phi0)/Rm1;
+    Double_t dphi = (phi-phi0)/rm1;
     sumXZ[0] +=weight;
     sumXZ[1] +=weight*dphi;
     sumXZ[2] +=weight*dphi*dphi;
@@ -288,6 +355,7 @@ void AliRieman::Update(){
   TMatrixDSym     smatrixz(2);
   TMatrixD        sumsz(1,2);
   smatrixz(0,0) = sumXZ[0]; smatrixz(0,1) = sumXZ[1]; smatrixz(1,1) = sumXZ[2];
+  smatrixz(1,0) = sumXZ[1];
   smatrixz.Invert();
   if (smatrixz.IsValid()){
     sumsz(0,0)    = sumXZ[3];
@@ -305,7 +373,7 @@ void AliRieman::Update(){
   //  (x-x0)^2+(y-y0)^2-R^2=0 ===>
   //
   //  (x^2+y^2 -2*x*x0 - 2*y*y0+ x0^2 -y0^2 -R^2 =0;  ==>
-  //   substitution t = 1/(x^2+y^2),   u = 2*x*t, y = 2*y*t,  D0 = R^2 - x0^2- y0^2
+  //   substitution t = 1/(x^2+y^2),   u = 2*x*t, v = 2*y*t,  D0 = R^2 - x0^2- y0^2
   //
   //  1 - u*x0 - v*y0 - t *D0 =0 ;  - linear equation
   //     
@@ -318,11 +386,17 @@ void AliRieman::Update(){
   if (conv>1) fConv =kTRUE;
   else
     fConv=kFALSE;
+  fChi2Y = CalcChi2Y();
+  fChi2Z = CalcChi2Z();
+  fChi2  = fChi2Y +fChi2Z;
 }
 
 
 
-Double_t AliRieman::GetYat(Double_t x){
+Double_t AliRieman::GetYat(Double_t x) const {
+  //
+  // get y at given x position
+  //
   if (!fConv) return 0.;
   Double_t res2 = (x*fParams[0]+fParams[1]);
   res2*=res2;
@@ -333,43 +407,98 @@ Double_t AliRieman::GetYat(Double_t x){
   return res2;
 }
 
-Double_t AliRieman::GetDYat(Double_t x){
+Double_t AliRieman::GetDYat(Double_t x) const {
+  //
+  // get dy/dx at given x position
+  //
   if (!fConv) return 0.;
   Double_t x0 = -fParams[1]/fParams[0];
   if (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<0) return 0;
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  if ( 1./(Rm1*Rm1)-(x-x0)*(x-x0)<=0) return 0;
-  Double_t res = (x-x0)/TMath::Sqrt(1./(Rm1*Rm1)-(x-x0)*(x-x0));
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  if ( 1./(rm1*rm1)-(x-x0)*(x-x0)<=0) return 0;
+  Double_t res = (x-x0)/TMath::Sqrt(1./(rm1*rm1)-(x-x0)*(x-x0));
   if (fParams[0]<0) res*=-1.;
   return res;
 }
 
 
 
-Double_t AliRieman::GetZat(Double_t x){
+Double_t AliRieman::GetZat(Double_t x) const {
+  //
+  // get z at given x position
+  //
   if (!fConv) return 0.;
   Double_t x0 = -fParams[1]/fParams[0];
   if (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<=0) return 0;
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  Double_t phi  = TMath::ASin((x-x0)*Rm1);
-  Double_t phi0 = TMath::ASin((0.-x0)*Rm1);
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  Double_t phi  = TMath::ASin((x-x0)*rm1);
+  Double_t phi0 = TMath::ASin((0.-x0)*rm1);
   Double_t dphi = (phi-phi0);
-  Double_t res = fParams[3]+fParams[4]*dphi/Rm1;
+  Double_t res = fParams[3]+fParams[4]*dphi/rm1;
   return res;
 }
 
-Double_t AliRieman::GetDZat(Double_t x){
+Double_t AliRieman::GetDZat(Double_t x) const {
+  //
+  // get dz/dx at given x postion
+  //
   if (!fConv) return 0.;
   Double_t x0 = -fParams[1]/fParams[0]; 
   if  (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<=0) return 0;
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  Double_t res = fParams[4]/TMath::Cos(TMath::ASin((x-x0)*Rm1));
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  Double_t res = fParams[4]/TMath::Cos(TMath::ASin((x-x0)*rm1));
   return res;
 }
 
 
-Double_t AliRieman::GetC(){
+Double_t AliRieman::GetC() const{
+  //
+  // get curvature
+  //
   return fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1);
+}
+
+Double_t AliRieman::CalcChi2Y() const{ 
+  //
+  // calculate chi2 for Y
+  //
+  Double_t sumchi2 = 0;
+  for (Int_t i=0;i<fN;i++){
+    Double_t chi2 = (fY[i] - GetYat(fX[i]))/fSy[i];
+    sumchi2+=chi2*chi2;    
+  }  
+  return sumchi2;
+}
+
+
+Double_t AliRieman::CalcChi2Z() const{
+  //
+  // calculate chi2 for Z
+  //
+  Double_t sumchi2 = 0;
+  for (Int_t i=0;i<fN;i++){
+    Double_t chi2 = (fZ[i] - GetZat(fX[i]))/fSy[i];
+    sumchi2+=chi2*chi2;    
+  }  
+  return sumchi2;
+}
+
+Double_t AliRieman::CalcChi2() const{
+  //
+  // sum chi2 in both coord - supposing Y and Z independent
+  //
+  return CalcChi2Y()+CalcChi2Z();
+}
+
+AliRieman * AliRieman::MakeResiduals() const{
+  //
+  // create residual structure - ONLY for debug purposes
+  //
+  AliRieman *rieman = new AliRieman(fN);  
+  for (Int_t i=0;i<fN;i++){
+    rieman->AddPoint(fX[i],fY[i]-GetYat(fX[i]),fZ[i]-GetZat(fX[i]), fSy[i],fSz[i]);
+  }
+  return rieman;
 }
 
 
