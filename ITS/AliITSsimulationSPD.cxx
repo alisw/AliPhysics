@@ -722,7 +722,14 @@ void AliITSsimulationSPD::pListToDigits(){
         dig.SetCoord1(iz);
         dig.SetCoord2(ix);
         dig.SetSignal(1);
-        dig.SetSignalSPD((Int_t) GetMap()->GetSignal(iz,ix));
+	Double_t aSignal =  GetMap()->GetSignal(iz,ix);
+	if (TMath::Abs(aSignal)>2147483647.0) { 
+	  //PH 2147483647 is the max. integer
+	  //PH This apparently is a problem which needs investigation
+	  AliWarning(Form("Too big or too small signal value %f",aSignal));
+	  aSignal = TMath::Sign((Double_t)2147483647,aSignal);
+	}
+	dig.SetSignalSPD((Int_t)aSignal); 
         for(j=0;j<nmaxtrk;j++){
             if (j<GetMap()->GetNEntries()) {
                 dig.SetTrack(j,GetMap()->GetTrack(iz,ix,j));
