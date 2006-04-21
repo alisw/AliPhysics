@@ -13,6 +13,7 @@ ClassImp(AliSTARTRawReader)
   
   AliSTARTRawReader::AliSTARTRawReader (AliRawReader *rawReader, TTree* tree)
     :  TTask("STARTRawReader","read raw START data"),
+       fDigits(NULL),
        fTree(tree),
        fRawReader(rawReader)
 {
@@ -48,8 +49,8 @@ Bool_t  AliSTARTRawReader::Next()
     Error("ReadSTARTRaw","Couldn't read header");
     return kFALSE;
   }
-  AliSTARTdigit *fDigits = new AliSTARTdigit(); 
-  fTree->Branch("START","AliSTARTdigit",&fDigits,400,1);
+  if (fDigits == 0x0) fDigits = new AliSTARTdigit(); 
+  fTree->Branch("START","AliSTARTdigit",&fDigits,405,1);
   if (!fRawReader->ReadNextInt(word)) return kFALSE;
    
   for (Int_t i=0; i<24; i++) //time LED
@@ -69,7 +70,7 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
     }
-  cout<<endl;
+
   for (Int_t i=0; i<24; i++) //time CFD
     {
       word=0;
@@ -86,7 +87,7 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
     } 
-  cout<<endl;
+
 
   for (Int_t i=0; i<24; i++)
     {
@@ -106,7 +107,6 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
     }
-  cout<<endl;
   
    for (Int_t i=0; i<24; i++)   //QTC amplified
      {
@@ -123,7 +123,7 @@ Bool_t  AliSTARTRawReader::Next()
       adc=unpackword;  
       chargeTDC2->AddAt(adc,pmt-72);
      }
-   cout<<endl;
+
    fDigits->SetTime(*timeTDC2);
    fDigits->SetADC(*chargeTDC1);
  
