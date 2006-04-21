@@ -22,11 +22,11 @@ class AliRieman : public TObject{
   void AddPoint(Double_t x, Double_t y, Double_t z, Double_t sy, Double_t sz);
   Int_t GetN() const {return fN;}
   Int_t GetCapacity() const {return fCapacity;}
-  Double_t * GetX(){return fX;}
-  Double_t * GetY(){return fY;}
-  Double_t * GetZ(){return fZ;}
-  Double_t * GetSy(){return fSy;}
-  Double_t * GetSz(){return fSz;}
+  Double_t * GetX()  const {return fX;}
+  Double_t * GetY()  const {return fY;}
+  Double_t * GetZ()  const {return fZ;}
+  Double_t * GetSy() const {return fSy;}
+  Double_t * GetSz() const {return fSz;}
   void Update();
   void UpdatePol();
   Double_t*  GetParam(){return fParams;}
@@ -65,7 +65,7 @@ class AliRieman : public TObject{
   Bool_t        fConv;      // indicates convergation
  protected:  
  private:
-  AliRieman& operator=(const AliRieman &rieman){return *this;}
+  AliRieman& operator=(const AliRieman &rieman);
   ClassDef(AliRieman,1)  // Fast fit of helices on ITS RecPoints
 };
 
