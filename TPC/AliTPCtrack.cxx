@@ -79,6 +79,10 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
   fRemoval    = 0;
   fTrackType  = 0;
   fLab2       = 0;
+
+  for (Int_t i=1; i<kMaxRow;i++) fIndex[i]=-2;
+  for (Int_t i=0; i<4;i++) fPoints[i]=0.;
+  for (Int_t i=0; i<12;i++) fKinkPoint[i]=0.;
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
   for (Int_t i=0; i<3;i++) fV0Indexes[i]=0;
 }
@@ -91,8 +95,10 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   SetNumberOfClusters(t.GetTPCclusters(fIndex));
   SetLabel(t.GetLabel());
   SetMass(t.GetMass());
-  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.GetKinkIndex(i);
-  for (Int_t i=0; i<3;i++) fV0Indexes[i]=t.GetV0Index(i);
+  for (Int_t i=0; i<4;i++) fPoints[i]=0.;
+  for (Int_t i=0; i<12;i++) fKinkPoint[i]=0.;
+  for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
+  for (Int_t i=0; i<3;i++) fV0Indexes[i]=0;
 
   fdEdx  = t.GetTPCsignal();
   fAlpha = t.GetAlpha();
@@ -169,6 +175,8 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
   fRemoval    = t.fRemoval ;
   fTrackType  = t.fTrackType;
   fLab2       = t.fLab2;
+  for (Int_t i=0; i<4;i++) fPoints[i]=t.fPoints[i];
+  for (Int_t i=0; i<12;i++) fKinkPoint[i]=t.fKinkPoint[i];
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.fKinkIndexes[i];
   for (Int_t i=0; i<3;i++) fV0Indexes[i]=t.fV0Indexes[i];
 }

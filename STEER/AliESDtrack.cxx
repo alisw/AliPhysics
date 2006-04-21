@@ -130,10 +130,10 @@ AliESDtrack::AliESDtrack() :
   Int_t i;
   for (i=0; i<12; i++)  fITSchi2MIP[i]=1e10;
   for (i=0; i<12; i++)  { fITSindex[i]=-1; }
-  for (i=0; i<180; i++) { fTPCindex[i]=0; }
+  for (i=0; i<180; i++) { fTPCindex[i]=-2; }
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
-  for (i=0; i<180; i++) { fTRDindex[i]=0; }
+  for (i=0; i<180; i++) { fTRDindex[i]=-2; }
   for (i=0;i<kNPlane;i++) {fTRDsignals[i]=0.; fTRDTimBin[i]=-1;}
   for (i=0;i<4;i++) {fTPCPoints[i]=-1;}
   for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
@@ -285,7 +285,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fITSchi2 = 0;
   for (Int_t i=0;i<12;i++) fITSchi2MIP[i]=0;
   fITSncls = 0;       
-  for (Int_t i=0;i<12;i++) fITSindex[i]=0;    
+  for (Int_t i=0;i<12;i++) fITSindex[i]=-1;    
   fITSsignal = 0;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
   fITSLabel = 0;       
@@ -296,7 +296,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTPCchi2 = 0;       
   fTPCncls = 0;       
   fTPCnclsF = 0;       
-  for (Int_t i=0;i<180;i++) fTPCindex[i] = 0;  
+  for (Int_t i=0;i<180;i++) fTPCindex[i] = -2;  
   fTPCClusterMap = 0;  
   fTPCsignal= 0;      
   fTPCsignalS= 0;      
@@ -311,7 +311,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTRDchi2 = 0;        
   fTRDncls = 0;       
   fTRDncls0 = 0;       
-  for (Int_t i=0;i<180;i++) fTRDindex[i] = 0;   
+  for (Int_t i=0;i<180;i++) fTRDindex[i] = -2;   
   fTRDsignal = 0;      
   for (Int_t i=0;i<kNPlane;i++) {
       fTRDsignals[i] = 0; 
@@ -423,6 +423,8 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
        for (Int_t i=0;i<160;i++) 
         {
           fTPCindex[i]=t->GetClusterIndex(i);
+
+	  if (fTPCindex[i]<0) continue; 
 
           // Piotr's Cluster Map for HBT  
           // ### please change accordingly if cluster array is changing 
@@ -921,13 +923,4 @@ void AliESDtrack::Print(Option_t *) const {
       printf("%f, ", p[index]) ;
     printf("\n           signal = %f\n", GetRICHsignal()) ;
   }
-  // Since 9 March 2006 PHOS left ESDtrack for ESDCaloCluster
-  // and cannot participate in the global PID for the moment
-//   if( IsOn(kPHOSpid) ){
-//     printf("From PHOS: ") ; 
-//     GetPHOSpid(p) ; 
-//     for(index = 0 ; index < AliPID::kSPECIESN; index++) 
-//       printf("%f, ", p[index]) ;
-//     printf("\n           signal = %f\n", GetPHOSsignal()) ;
-//   }
 } 
