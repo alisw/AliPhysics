@@ -103,10 +103,10 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     AliError("No TClonesArray passed");
     return kFALSE;
   }
-  if (!fReader->ReadHeader()) {
-    AliError("Couldn't read header");
-    return kFALSE;
-  }
+  //  if (!fReader->ReadHeader()) {
+  //    AliError("Couldn't read header");
+  //    return kFALSE;
+  //  }
   // Get sample rate 
   AliFMDParameters* pars = AliFMDParameters::Instance();
   AliFMDRawStream input(fReader);
@@ -166,10 +166,10 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     AliError("No TClonesArray passed");
     return kFALSE;
   }
-  if (!fReader->ReadHeader()) {
-    AliError("Couldn't read header");
-    return kFALSE;
-  }
+  //  if (!fReader->ReadHeader()) {
+  //    AliError("Couldn't read header");
+  //    return kFALSE;
+  //  }
   // Get sample rate 
   AliFMDParameters* pars = AliFMDParameters::Instance();
 
@@ -242,10 +242,10 @@ void
 AliFMDRawReader::Exec(Option_t*) 
 {
   // Read raw data into the digits array
-  if (!fReader->ReadHeader()) {
-    Error("ReadAdcs", "Couldn't read header");
-    return;
-  }
+  //  if (!fReader->ReadHeader()) {
+  //    Error("ReadAdcs", "Couldn't read header");
+  //    return;
+  //  }
 
   Int_t n = 0;
   TClonesArray* array = new TClonesArray("AliFMDDigit");
