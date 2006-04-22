@@ -115,6 +115,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) : TTask(sd
 
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::~AliEMCALSDigitizer() {
+  //dtor
   AliLoader *emcalLoader=0;
   if ((emcalLoader = AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL")))
       emcalLoader->CleanSDigitizer();
@@ -146,6 +147,8 @@ void AliEMCALSDigitizer::Init(){
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::InitParameters()
 {
+  //initialize parameters for sdigitization
+
   const AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
   if (geom->GetSampling() == 0.) {
     Fatal("InitParameters", "Sampling factor not set !") ; 
@@ -404,7 +407,9 @@ void AliEMCALSDigitizer::Browse(TBrowser* b)
 }
 
 TList *AliEMCALSDigitizer::BookControlHists(int var)
-{ // 22-nov-04
+{ 
+  //book histograms for monitoring sdigitization
+  // 22-nov-04
   gROOT->cd();
   const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance() ;
   if(var>=1){

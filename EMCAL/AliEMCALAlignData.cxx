@@ -17,6 +17,13 @@
 
 ////////////////////////////////////////////////
 //  class for EMCAL alignment parameters       //
+//  
+//  A. Pavlinov
+//
+//  JLK (21-Apr-2006): this should go away sometime
+//  soon and EMCAL should use
+//  official ALICE alignment classes
+//
 ////////////////////////////////////////////////
 
 #include "AliEMCALAlignData.h"

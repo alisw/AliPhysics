@@ -83,12 +83,14 @@ AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
 //____________________________________________________________________________
 AliEMCAL::~AliEMCAL()
 {
-
+  //dtor
 }
 
 //____________________________________________________________________________
 void AliEMCAL::Copy(AliEMCAL & emcal) const
 {
+  //copy
+
   TObject::Copy(emcal) ; 
   emcal.fHighCharge        = fHighCharge ;
   emcal.fHighGain          = fHighGain ; 
@@ -99,6 +101,7 @@ void AliEMCAL::Copy(AliEMCAL & emcal) const
 //____________________________________________________________________________
 AliDigitizer* AliEMCAL::CreateDigitizer(AliRunDigitizer* manager) const
 {
+  //create and return the digitizer
   return new AliEMCALDigitizer(manager);
 }
 
@@ -254,8 +257,8 @@ void AliEMCAL::Digits2Raw()
 
   AliAltroBuffer* buffer = NULL;
   Int_t prevDDL = -1;
-  Int_t adcValuesLow[fkTimeBins];
-  Int_t adcValuesHigh[fkTimeBins];
+  Int_t adcValuesLow[fgkTimeBins];
+  Int_t adcValuesHigh[fgkTimeBins];
   
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
@@ -532,6 +535,7 @@ Double_t AliEMCAL::RawResponseFunction(Double_t *x, Double_t *par)
 //__________________________________________________________________
 Double_t AliEMCAL::RawResponseFunctionMax(Double_t charge, Double_t gain) 
 {
+  //compute the maximum of the raw response function and return
   return ( charge * TMath::Power(fgOrder, fgOrder) * TMath::Power(gain, fgOrder) 
      / ( fgCapa * TMath::Exp(fgOrder) ) );  
 

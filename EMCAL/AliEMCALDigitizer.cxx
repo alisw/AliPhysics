@@ -147,6 +147,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd):
 //____________________________________________________________________________ 
   AliEMCALDigitizer::~AliEMCALDigitizer()
 {
+  //dtor
   if (AliRunLoader::GetRunLoader()) {
     AliLoader *emcalLoader=0;
     if ((emcalLoader = AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL")))
@@ -175,13 +176,13 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-  Int_t ReadEvent = event ; 
+  Int_t readEvent = event ; 
   // fManager is data member from AliDigitizer
   if (fManager) 
-    ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
+    readEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
   AliDebug(1,Form("Adding event %d from input stream 0 %s %s", 
-		  ReadEvent, GetTitle(), fEventFolderName.Data())) ; 
-  rl->GetEvent(ReadEvent);
+		  readEvent, GetTitle(), fEventFolderName.Data())) ; 
+  rl->GetEvent(readEvent);
 
   TClonesArray * digits = emcalLoader->Digits() ; 
   digits->Clear() ;
@@ -229,10 +230,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       rl2 = AliRunLoader::Open(fInputFileNames[i], tempo) ; 
 
     if (fManager) 
-      ReadEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
-    Info("Digitize", "Adding event %d from input stream %d %s %s", ReadEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
+      readEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
+    Info("Digitize", "Adding event %d from input stream %d %s %s", readEvent, i, fInputFileNames[i].Data(), tempo.Data()) ; 
     rl2->LoadSDigits();
-    rl2->GetEvent(ReadEvent);
+    rl2->GetEvent(readEvent);
     AliEMCALLoader *emcalLoader2 = dynamic_cast<AliEMCALLoader*>(rl2->GetDetectorLoader("EMCAL"));
     sdigArray->AddAt(emcalLoader2->SDigits(), i) ;
   }
@@ -542,7 +543,9 @@ Bool_t AliEMCALDigitizer::Init()
 
 //____________________________________________________________________________ 
 void AliEMCALDigitizer::InitParameters()
-{ // Tune parameters - 24-nov-04
+{ 
+  //parameter initialization for digitizer
+  // Tune parameters - 24-nov-04
 
   fMeanPhotonElectron = 3300 ; // electrons per GeV 
   fPinNoise           = 0.004; 
@@ -665,7 +668,10 @@ void AliEMCALDigitizer::Print(Option_t*)const
 }
 
 //__________________________________________________________________
-void AliEMCALDigitizer::PrintDigits(Option_t * option){
+void AliEMCALDigitizer::PrintDigits(Option_t * option)
+{
+  //utility method for printing digit information
+
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
   TClonesArray * digits  = emcalLoader->Digits() ;
   TClonesArray * sdigits = emcalLoader->SDigits() ;
@@ -762,7 +768,10 @@ void AliEMCALDigitizer::Browse(TBrowser* b)
 }
 
 TList *AliEMCALDigitizer::BookControlHists(int var)
-{ // 22-nov-04
+{ 
+  // 22-nov-04
+  // histograms for monitoring digitizer performance
+
   Info("BookControlHists"," started ");
   gROOT->cd();
   const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();

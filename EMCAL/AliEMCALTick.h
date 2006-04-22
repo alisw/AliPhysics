@@ -7,6 +7,8 @@
 
 //_________________________________________________________________________
 //  Class for EMCAL time digitization
+//  holds info on a single
+//  digit time bucket
 //                  
 //*-- Author: Dmitri Peressounko (SUBATECH)
 

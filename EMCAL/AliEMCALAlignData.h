@@ -44,7 +44,7 @@ class AliEMCALAlignData: public TNamed {
 
  protected:
   Int_t   fNSuperModules;                    // number of EMCAL supermodules (max=12)
-  AliAlignObjMatrix *fSuperModuleMatrix[12]; 
+  AliAlignObjMatrix *fSuperModuleMatrix[12]; //matrix info for supermodules
 
   ClassDef(AliEMCALAlignData,1)    // EMCAL Alignment data
 };

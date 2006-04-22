@@ -39,9 +39,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-
 // --- ROOT system ---
-
 #include "TTree.h"
 
 // --- Standard library ---
@@ -56,12 +54,14 @@
 ClassImp(AliEMCALLoader)
   
 const TString AliEMCALLoader::fgkECARecPointsBranchName("EMCALECARP");//Name for branch with ECA Reconstructed Points
-AliEMCALCalibData* AliEMCALLoader::fCalibData = 0; //calibation data
-AliEMCALAlignData* AliEMCALLoader::fAlignData = 0; //alignment data
+AliEMCALCalibData* AliEMCALLoader::fgCalibData = 0; //calibation data
+AliEMCALAlignData* AliEMCALLoader::fgAlignData = 0; //alignment data
 
 //____________________________________________________________________________ 
 AliEMCALLoader::AliEMCALLoader()
 {
+  //Default constructor for EMCAL Loader Class
+
   fDebug = 0;
   fHits = new TClonesArray("AliEMCALHit");
   fDigits = new TClonesArray("AliEMCALDigit");
@@ -73,6 +73,8 @@ AliEMCALLoader::AliEMCALLoader()
 AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername):
   AliLoader(detname,eventfoldername)
 {
+  //Specific constructor for EMCAL Loader class
+
   fDebug=0;
   fHits = new TClonesArray("AliEMCALHit");
   fDigits = new TClonesArray("AliEMCALDigit");
@@ -104,8 +106,8 @@ AliEMCALAlignData* AliEMCALLoader::AlignData()
   // Check if the instance of AliEMCALAlignData exists, and return it
   
   if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) )
-    fAlignData=0x0;
-  return fAlignData;
+    fgAlignData=0x0;
+  return fgAlignData;
 }
 
 //____________________________________________________________________________ 
@@ -114,9 +116,9 @@ AliEMCALCalibData* AliEMCALLoader::CalibData()
   // Check if the instance of AliEMCALCalibData exists, and return it
 
   if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) 
-    fCalibData=0x0;
+    fgCalibData=0x0;
   
-  return fCalibData;
+  return fgCalibData;
   
 }
 
@@ -150,7 +152,10 @@ Int_t AliEMCALLoader::CalibrateRaw(Double_t energy, Int_t module,
 }
 
 //____________________________________________________________________________ 
-Int_t AliEMCALLoader::LoadHits(Option_t* opt) {
+Int_t AliEMCALLoader::LoadHits(Option_t* opt) 
+{
+  //Load the hits tree for the
+  //EMCAL
   
   Int_t status = AliLoader::LoadHits(opt);  // First call AliLoader to do all the groundwork
   
@@ -167,8 +172,10 @@ Int_t AliEMCALLoader::LoadHits(Option_t* opt) {
 }
 
 //____________________________________________________________________________ 
-Int_t AliEMCALLoader::LoadSDigits(Option_t* opt) {
-  
+Int_t AliEMCALLoader::LoadSDigits(Option_t* opt) 
+{
+  //Load SDigits from TreeS for EMCAL
+
   Int_t status = AliLoader::LoadSDigits(opt);  // First call AliLoader to do all the groundwork
   
   TTree *treeS = TreeS();
@@ -182,8 +189,10 @@ Int_t AliEMCALLoader::LoadSDigits(Option_t* opt) {
 }
 
 //____________________________________________________________________________ 
-Int_t AliEMCALLoader::LoadDigits(Option_t* opt) {
-  
+Int_t AliEMCALLoader::LoadDigits(Option_t* opt) 
+{
+  //Load Digits from TreeD for EMCAL
+
   Int_t status = AliLoader::LoadDigits(opt);  // First call AliLoader to do all the groundwork
   
   TTree *treeD = TreeD();
@@ -197,7 +206,9 @@ Int_t AliEMCALLoader::LoadDigits(Option_t* opt) {
 }
 
 //____________________________________________________________________________ 
-Int_t AliEMCALLoader::LoadRecPoints(Option_t* opt) {
+Int_t AliEMCALLoader::LoadRecPoints(Option_t* opt) 
+{
+  //Load RecPoints from TreeR for EMCAL
   
   Int_t status = AliLoader::LoadRecPoints(opt);  // First call AliLoader to do all the groundwork
   
@@ -211,8 +222,12 @@ Int_t AliEMCALLoader::LoadRecPoints(Option_t* opt) {
 }
 
 //____________________________________________________________________________ 
-Int_t AliEMCALLoader::GetEvent() {
-  
+Int_t AliEMCALLoader::GetEvent() 
+{
+  //Method to load all of the data
+  //members of the EMCAL for a given
+  //event from the Trees
+
   AliLoader::GetEvent();  // First call AliLoader to do all the groundwork
   
   // Now connect and fill TClonesArray

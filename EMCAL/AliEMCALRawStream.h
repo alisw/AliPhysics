@@ -41,10 +41,10 @@ protected:
 
   virtual void ApplyAltroMapping();
 
-  Int_t            fId;
-  Int_t            fPrevId;
-  Int_t            fModule;
-  Int_t            fPrevModule;
+  Int_t            fId;         //Id of channel
+  Int_t            fPrevId;     //previous id
+  Int_t            fModule;     //module containing channel
+  Int_t            fPrevModule; //previous module
 
   ClassDef(AliEMCALRawStream, 0)   // class for reading EMCAL raw digits
     };

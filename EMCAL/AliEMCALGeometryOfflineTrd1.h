@@ -30,10 +30,28 @@ class AliEMCALGeometryOfflineTrd1 : public TNamed {
     Fatal("Cpy ctor", "Not implemented");
   }
 
+  //assignment operator for coding convention
+  const AliEMCALGeometryOfflineTrd1 & operator = (const AliEMCALGeometryOfflineTrd1 &) {return *this;}
+
   virtual ~AliEMCALGeometryOfflineTrd1() { /* nothing */ };
   static   AliEMCALGeometryOfflineTrd1* GetInstance();
   // positon in SuperModule
   TVector3&  PosInSuperModule(int nSupMod, int nTower, int nIphi, int nIeta); 
+
+ public:
+  // One Super Module
+  void PositionInSuperModule(int iphi, int ieta, double &lphi, double &leta);
+  void PositionInSuperModule(int nSupMod, int nTower, int nIphi, int nIeta, double &lphi, double &leta);
+  // Position towers(cells)
+  TVector3* CellPosition(int absId); // from 0 to fGeometry->GetNCells()
+  // Global System
+  TRotation* Rotation(Int_t module); // module change from 1 to 12;
+
+  // service methods
+  void    PrintSuperModule();       // *MENU*
+  void    PrintCell(Int_t absId=1); // *MENU*
+  virtual void Browse(TBrowser* b);
+  virtual Bool_t  IsFolder() const;
 
  private:
   AliEMCALGeometryOfflineTrd1();
@@ -57,20 +75,6 @@ class AliEMCALGeometryOfflineTrd1 : public TNamed {
   TRotation fSuperModuleRotation[12];                    //! 
   // position of cells in global coordinate system
   TObjArray *fXYZofCells;                                //! 
- public:
-  // One Super Module
-  void PositionInSuperModule(int iphi, int ieta, double &lphi, double &leta);
-  void PositionInSuperModule(int nSupMod, int nTower, int nIphi, int nIeta, double &lphi, double &leta);
-  // Position towers(cells)
-  TVector3* CellPosition(int absId); // from 0 to fGeometry->GetNCells()
-  // Global System
-  TRotation* Rotation(Int_t module); // module change from 1 to 12;
-
-  // service methods
-  void    PrintSuperModule();       // *MENU*
-  void    PrintCell(Int_t absId=1); // *MENU*
-  virtual void Browse(TBrowser* b);
-  virtual Bool_t  IsFolder() const;
 
   ClassDef(AliEMCALGeometryOfflineTrd1, 0) // EMCAL geometry for offline 
 };

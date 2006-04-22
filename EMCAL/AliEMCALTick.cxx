@@ -16,8 +16,12 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Auxiliary class to help calculate the time of crossing 
-// of the threshold by the front edge of the time signal
+// Auxiliary class to 
+// help calculate the 
+// time of crossing 
+// of the threshold by 
+// the front edge of the 
+// time signal
 //
 //*-- Author :  Dmitri Peressounko (SUBATECH) 
 //////////////////////////////////////////////////////////////////////////////

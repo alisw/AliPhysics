@@ -7,6 +7,8 @@
 
 //_________________________________________________________________________
 //  Base Class for EMCAL     
+//  holds all geant information of
+//  materials, etc.
 //                  
 //*-- Author: Yves Schutz (SUBATECH)
 
@@ -69,7 +71,7 @@ class AliEMCAL : public AliDetector {
   Double_t GetRawFormatLowGain() const { return ( fHighGain / fHighLowGainFactor ) ; }  
   Int_t GetRawFormatLowGainOffset() const { return fLowGainOffset ; }  
   Int_t GetRawFormatOrder() const { return fgOrder ; }   
-  Int_t GetRawFormatTimeBins() const { return fkTimeBins ; }    
+  Int_t GetRawFormatTimeBins() const { return fgkTimeBins ; }    
   Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
   Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
@@ -99,13 +101,13 @@ protected:
   Double_t fHighLowGainFactor ;         // high to low gain factor for the raw RO signal
   Int_t    fLowGainOffset ;             // to separate high from low gain in the DDL
   static Int_t fgOrder ;                // order of the gamma function for the RO signal
-  static const Int_t fkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
+  static const Int_t fgkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
   static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
-  static Int_t fgDDLOffset;
-  static Int_t fgThreshold;
-  static Int_t fgChannelsPerDDL;
+  static Int_t fgDDLOffset;             // DDL offset
+  static Int_t fgThreshold;             // threshold
+  static Int_t fgChannelsPerDDL;        // number of channels per DDL
 
   ClassDef(AliEMCAL,9) // Electromagnetic calorimeter (base class)
     

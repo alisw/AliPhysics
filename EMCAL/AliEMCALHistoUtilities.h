@@ -6,7 +6,10 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// This is just set of static methods for common using
+// This is a set of histogram
+// utilities for the EMCAL
+// to make some common
+// functions easier
 //                  
 //*-- Authors: J.L. Klay (LLNL) & Aleksei Pavlinov (WSU)
 

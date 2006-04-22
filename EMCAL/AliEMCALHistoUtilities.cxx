@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/03/29 18:15:06  pavlinov
+Alignmnet staff and some clean up
+
 Revision 1.2  2006/03/01 23:36:50  jklay
 suppress compiler warnings by correcting some hidden virtual methods
 
@@ -24,7 +27,10 @@ add histogram utilities class, correct package definitions
 */
 
 //_________________________________________________________________________
-// This is just set of static methods for common using
+// This is a set of histogram
+// utilities for the EMCAL
+// to make some common
+// functions easier
 //
 //*-- Authors: J.L. Klay (LLNL) & Aleksei Pavlinov (WSU) 
 
@@ -70,6 +76,7 @@ TList* AliEMCALHistoUtilities::MoveHistsToList(const char* name, Bool_t putToBro
 
 void AliEMCALHistoUtilities::FillH1(TList *l, Int_t ind, Double_t x, Double_t w)
 {
+  //fill 1d histogram
   static TH1* hid=0;
   if(l == 0) return;
   if(ind < l->GetSize()){
@@ -80,6 +87,7 @@ void AliEMCALHistoUtilities::FillH1(TList *l, Int_t ind, Double_t x, Double_t w)
 
 void AliEMCALHistoUtilities::FillH2(TList *l, Int_t ind, Double_t x, Double_t y, Double_t w)
 {
+  //fill 2d histogram
   static TH2* hid=0;
   if(l == 0) return;
   if(ind < l->GetSize()){
@@ -90,6 +98,7 @@ void AliEMCALHistoUtilities::FillH2(TList *l, Int_t ind, Double_t x, Double_t y,
 
 int AliEMCALHistoUtilities::SaveListOfHists(TList *mylist,const char* name,Bool_t kSingleKey,const char* opt)
 {
+  //write histograms to file
   printf(" Name of out file |%s|\n", name); 
   int save = 0;
   if(mylist && mylist->GetSize() && strlen(name)){
@@ -124,9 +133,10 @@ int AliEMCALHistoUtilities::SaveListOfHists(TList *mylist,const char* name,Bool_
   return save;
 }
 
-// Moved from AliEMCALGeometry
 int AliEMCALHistoUtilities::ParseString(const TString &topt, TObjArray &Opt)
-{ // Feb 06, 2006
+{ 
+  // Moved from AliEMCALGeometry
+  // Feb 06, 2006
   Ssiz_t begin, index, end, end2;
   begin = index = end = end2 = 0;
   TRegexp separator("[^ ;,\\t\\s/]+");

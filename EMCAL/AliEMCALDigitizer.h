@@ -107,7 +107,7 @@ private:
   Float_t fTimeThreshold ;        // Threshold to start timing for given crystall
   Float_t fTimeSignalLength ;     // Length of the timing signal 
   Float_t fADCchannelEC ;         // width of one ADC channel in EC section (GeV)
-  Float_t fADCpedestalEC ;        //
+  Float_t fADCpedestalEC ;        // pedestal for one ADC channel
   Int_t   fNADCEC ;               // number of channels in EC section ADC
 
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode

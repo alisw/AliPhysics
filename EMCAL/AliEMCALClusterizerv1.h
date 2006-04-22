@@ -36,6 +36,9 @@ class AliEMCALClusterizerv1 : public AliEMCALClusterizer {
 public:
   
   AliEMCALClusterizerv1() ;         
+  //cpy ctor required by coding convention
+  AliEMCALClusterizerv1(const AliEMCALClusterizerv1& clus):AliEMCALClusterizer(clus){};
+
   AliEMCALClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
   virtual ~AliEMCALClusterizerv1()  ;
   virtual void Browse(TBrowser* b);
@@ -85,16 +88,16 @@ protected:
             
 ///////////////////// 
    TList  *fHists;   //!
-   TH1F* fPointE;
-   TH1F* fPointL1;
-   TH1F* fPointL2;
-   TH1F* fPointDis;
-   TH1F* fPointMult;
-   TH1F* fDigitAmp;
-   TH1F* fMaxE;
-   TH1F* fMaxL1;
-   TH1F* fMaxL2;
-   TH1F* fMaxDis;
+   TH1F* fPointE;    //histogram of point energy
+   TH1F* fPointL1;   //histogram of point L1
+   TH1F* fPointL2;   //histogram of point L2
+   TH1F* fPointDis;  //histogram of point dispersion
+   TH1F* fPointMult; //histogram of point multiplicity
+   TH1F* fDigitAmp;  //histogram of digit ADC Amplitude
+   TH1F* fMaxE;      //histogram of maximum point energy
+   TH1F* fMaxL1;     //histogram of maximum point L1
+   TH1F* fMaxL2;     //histogram of maximum point L2
+   TH1F* fMaxDis;    //histogram of maximum point dispersion
 ///////////////////////
 
 

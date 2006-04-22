@@ -50,6 +50,9 @@ class AliEMCALTrigger : public AliTriggerDetector {
   void            Print(const Option_t * opt ="") const ;  
   virtual void    Trigger();  //Make EMCAL trigger
 
+  //assignment operator for coding convention
+  const AliEMCALTrigger & operator = (const AliEMCALTrigger & ) {return *this;}
+
   //Getters
   Float_t  Get2x2MaxAmplitude()  const {return f2x2MaxAmp ; }
   Float_t  Get4x4MaxAmplitude()  const {return f4x4MaxAmp ; }

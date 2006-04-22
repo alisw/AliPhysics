@@ -13,6 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 // GeometryOfflineTrd1 class  for EMCAL : singleton
+//  implementation of 
+//  specific geometry
+//  for trd 1
+//
 //*-- Author: Aleksei Pavlinov (WSU)
 
 /* $Id$*/
@@ -33,6 +37,7 @@ AliEMCALGeometryOfflineTrd1* AliEMCALGeometryOfflineTrd1::fgGeomOfflineTrd1=0;
 
 AliEMCALGeometryOfflineTrd1* AliEMCALGeometryOfflineTrd1::GetInstance()
 {
+  //retrurn instance of the geometry
   if(fgGeomOfflineTrd1==0) {
     fgGeomOfflineTrd1 = new AliEMCALGeometryOfflineTrd1();
   }
@@ -40,7 +45,8 @@ AliEMCALGeometryOfflineTrd1* AliEMCALGeometryOfflineTrd1::GetInstance()
 }
 
 AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1() : TNamed("geomTRD1","")
-{ // this private constarctor
+{ 
+  // this private constarctor
   fGeometry = AliEMCALGeometry::GetInstance("SHISH_62_TRD1");
   Init();
 }
@@ -104,7 +110,9 @@ void AliEMCALGeometryOfflineTrd1::Init()
 }
 
 TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(int nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta)
-{ // 10-nov-04
+{ 
+  //return location of position within supermodule
+  // 10-nov-04
   static Int_t iphi, ieta;
   static TVector3 v;
   fGeometry->GetCellPhiEtaIndexInSModule(nSupMod, nTower,nIphi,nIeta, iphi,ieta);
@@ -117,6 +125,8 @@ TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(int nSupMod, Int_t nTowe
 void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(Int_t iphi, Int_t ieta, 
 double &lphi, double &leta)
 { 
+  //return location of position within supermodule
+
   static Int_t ie=0;
   lphi = fSMPositionPhi[iphi-1];
   ie = ieta - 1;
@@ -128,26 +138,34 @@ double &lphi, double &leta)
 void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(int nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta,
 double &lphi, double &leta)
 {
+  //return location of position within supermodule
+
   static Int_t iphi,ieta;
   fGeometry->GetCellPhiEtaIndexInSModule(nSupMod, nTower,nIphi,nIeta,iphi,ieta);
   PositionInSuperModule(iphi,ieta, lphi,leta);
 }
 
 TRotation* AliEMCALGeometryOfflineTrd1::Rotation(Int_t module)
-{ // module chabge from 1 to 12
+{ 
+  //return rotation matrix for module
+  // module chabge from 1 to 12
   if(module<1)  module=1;
   if(module>12) module=12;
   return &fSuperModuleRotation[module];
 }
 
 TVector3* AliEMCALGeometryOfflineTrd1::CellPosition(int absId)
-{ // 15-nov-04
+{ 
+  //return cell position given absoluted cell id
+  // 15-nov-04
   if(absId<1 || absId>fXYZofCells->GetSize()) return 0;
   return (TVector3*)fXYZofCells->At(absId-1);
 }
 
 void AliEMCALGeometryOfflineTrd1::PrintSuperModule()
-{ // 12-nov-04
+{
+  //utility method for printing supermodule info
+  // 12-nov-04
   printf(" ** Super module ** fSMMaxEta %i fSMMaxPHI %i\n ETA     eta(Z)          (X)\n",
   fSMMaxEta,fSMPositionPhi.GetSize());
   for(Int_t i=0; i<fSMMaxEta; i++) {
@@ -161,6 +179,7 @@ void AliEMCALGeometryOfflineTrd1::PrintSuperModule()
 
 void AliEMCALGeometryOfflineTrd1::PrintCell(Int_t absId)
 {
+  //utility method for printing cell info
   Int_t nSupMod, nTower, nIphi, nIeta, iphi, ieta;
   if(fGeometry->GetCellIndex(absId, nSupMod,nTower,nIphi,nIeta)){
      fGeometry->GetCellPhiEtaIndexInSModule(nSupMod,nTower,nIphi,nIeta, iphi,ieta);
@@ -174,6 +193,7 @@ void AliEMCALGeometryOfflineTrd1::PrintCell(Int_t absId)
 
 void AliEMCALGeometryOfflineTrd1::Browse(TBrowser* b)
 {
+  //Browse the geometry
   if(fGeometry) b->Add(fGeometry);
 
   for(Int_t i=0; i<fMaxInEta; i++)  if(fTrd1Modules[i]>0) b->Add(fTrd1Modules[i]);
@@ -193,5 +213,6 @@ void AliEMCALGeometryOfflineTrd1::Browse(TBrowser* b)
 
 Bool_t AliEMCALGeometryOfflineTrd1::IsFolder() const
 {
+  //folder check
   return kTRUE;
 }

@@ -100,7 +100,7 @@ protected:
 	  Float_t EtaToTheta(Float_t arg) const;  //Converts Eta (Radians) to Theta(Radians)
 
 private:
-          AliEMCALGeometry* fGeom;  //! Pointer to geometry for utilities
+          AliEMCALGeometry* fGeomPtr;  //! Pointer to geometry for utilities
 
           Int_t   fClusterType;    // type of cluster stored:
 				   // pseudocluster or v1
@@ -115,7 +115,7 @@ private:
           Int_t fMulParent;           // Multiplicity of the parents
           Int_t fMaxParent;           // Maximum number of parents allowed
           Int_t * fParentsList;       // [fMulParent] list of the parents of the digits
-          Int_t   fSuperModuleNumber; //
+          Int_t   fSuperModuleNumber; // number identifying supermodule containing recpoint
 
   ClassDef(AliEMCALRecPoint,7) // RecPoint for EMCAL (Base Class)
  

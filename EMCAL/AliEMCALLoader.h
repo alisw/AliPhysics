@@ -109,8 +109,8 @@ class AliEMCALLoader : public AliLoader {
 
   Int_t CalibrateRaw (Double_t energy, Int_t module, Int_t column, Int_t row);//take real calibration coefficients
   
-  void  SetAlignData(AliEMCALAlignData* alignda)  { fAlignData = alignda; } 
-  void  SetCalibData(AliEMCALCalibData* calibda)  { fCalibData = calibda; }
+  void  SetAlignData(AliEMCALAlignData* alignda)  { fgAlignData = alignda; } 
+  void  SetCalibData(AliEMCALCalibData* calibda)  { fgCalibData = calibda; }
   AliEMCALAlignData * AlignData(); // to get the alignment CDB object
   AliEMCALCalibData * CalibData(); // to get the calibration CDB object
 
@@ -128,8 +128,8 @@ private:
   TClonesArray     *fSDigits;      //! TClonesArray of sdigits (for tree reading)
   TObjArray        *fRecPoints;    //! TClonesArray of recpoints (for tree reading)   
   
-  static AliEMCALAlignData * fAlignData;
-  static AliEMCALCalibData * fCalibData;  //  calibration data 
+  static AliEMCALAlignData * fgAlignData;  //  alignment data
+  static AliEMCALCalibData * fgCalibData;  //  calibration data 
 
   ClassDef(AliEMCALLoader,0)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
    

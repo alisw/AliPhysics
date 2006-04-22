@@ -820,6 +820,8 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
 }
 TList* AliEMCALClusterizerv1::BookHists()
 {
+  //set up histograms for monitoring clusterizer performance
+
   gROOT->cd();
 
 	fPointE = new TH1F("pointE","point energy", 2000, 0.0, 150.);
