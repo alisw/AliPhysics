@@ -28,8 +28,8 @@ ClassImp(AliDigitNew)
 //_______________________________________________________________________
 AliDigitNew::AliDigitNew():
   fAmp(0),
-  fId(0),
-  fIndexInList(0)
+  fId(-1),
+  fIndexInList(-1)
 {
   //
   // Default constructor
