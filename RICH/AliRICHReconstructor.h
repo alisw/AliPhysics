@@ -29,6 +29,7 @@ public:
   static inline AliRICHDigit* UseDig  (Int_t padX,Int_t padY,TClonesArray *pDigList,TMatrixF *pDigMap                 );//use this pad's digit to form a cluster
   static        void          RichAna (Int_t iNevMin=0,Int_t iNevMax=99999,Bool_t isPatRec=kFALSE                     );//utility-> create ntuples for analysis  
   static        void          Test    (Bool_t isTryUnfold=kTRUE                                                       );//test digits->clusters  conversion
+  static        void          Test    (TClonesArray *pDigLst,Bool_t isTryUnfold=kTRUE                                 );//test digits->clusters  conversion
 protected:
   ClassDef(AliRICHReconstructor, 0)   //class for the RICH reconstruction
 };

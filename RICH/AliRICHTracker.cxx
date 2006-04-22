@@ -64,34 +64,35 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
    
   for(Int_t iTrk=0;iTrk<iNtracks;iTrk++){//ESD tracks loop
     AliESDtrack *pTrack = pESD->GetTrack(iTrk);// get next reconstructed track    
-    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),(Int_t)pTrack->GetSign(),-GetBz()/10); //construct helix out of track running parameters  
+    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),(Int_t)pTrack->GetSign(),-0.1*GetBz()); //construct helix out of track running parameters  
      //Printf(" magnetic field %f charged %f\n",GetBz(),pTrack->GetSign()); helix.Print("Track");
     Int_t iChamber=helix.RichIntersect(AliRICHParam::Instance());    
     if(!iChamber) continue;                                         //no intersection with chambers, ignore this track go after the next one
   
     //find MIP cluster candidate (closest to track intersection point cluster with large enough QDC)
-    Double_t    dR=9999,   dX=9999,   dY=9999; //distance between track-PC intersection point and current cluster
-    Double_t dRmip=9999,dXmip=9999,dYmip=9999; //distance between track-PC intersection point and nearest cluster
+    Double_t    dR=9999,   dX=9999,   dY=9999;                     //distance between track-PC intersection point and current cluster
+    Double_t mipDr=9999,mipDx=9999,mipDy=9999,mipX=9999,mipY=9999; //nearest cluster parameters
     Int_t   iMipId=-1;                         //index of this nearest cluster
     for(Int_t iClu=0;iClu<pRich->Clus(iChamber)->GetEntries();iClu++){//clusters loop for intersected chamber
       AliRICHCluster *pClu=(AliRICHCluster*)pRich->Clus(iChamber)->UncheckedAt(iClu);//get pointer to current cluster
       if(pClu->Q()<AliRICHParam::QthMIP()) continue; //to low QDC, go after another one
       pClu->DistXY(helix.PosPc(),dX,dY); dR=TMath::Sqrt(dX*dX+dY*dY); //get distance for current cluster
-      if(dR<dRmip){iMipId=iClu; dRmip=dR; dXmip=dX; dYmip=dY; }       //current cluster is closer, overwrite data for min cluster
+      if(dR<mipDr){iMipId=iClu; mipDr=dR; mipDx=dX; mipDy=dY; mipX=pClu->X(); mipY=pClu->Y();} //current cluster is closer, overwrite data for min cluster
     }//clusters loop for intersected chamber
 
     pTrack->SetRICHthetaPhi(helix.Ploc().Theta(),helix.Ploc().Phi()); //store track impact angles with respect to RICH planes
-    pTrack->SetRICHdxdy(dXmip,dYmip);                                 //distance between track-PC intersection and closest cluster with Qdc>100
+    pTrack->SetRICHdxdy(mipDx,mipDy);                                 //distance between track-PC intersection and closest cluster with Qdc>100
+    pTrack->SetRICHmipXY(mipX,mipY);                                  //position of that closest cluster with Qdc>100
     
     if(iMipId==-1)                        {pTrack->SetRICHsignal(kMipQdcCut);  continue;} //no cluster with enough QDC found
-    if(dRmip>AliRICHParam::DmatchMIP())   {pTrack->SetRICHsignal(kMipDistCut); continue;} //closest cluster with enough carge is still too far 
+    if(mipDr>AliRICHParam::DmatchMIP())   {pTrack->SetRICHsignal(kMipDistCut); continue;} //closest cluster with enough carge is still too far 
   
     pTrack->SetRICHcluster(iMipId+1000000*iChamber);                                //set mip cluster index
     pTrack->SetRICHsignal(recon.ThetaCerenkov(&helix,pRich->Clus(iChamber),iMipId));//search for mean Cerenkov angle for this track
     pTrack->SetRICHnclusters(iMipId);                                               //on return iMipId is number of photon clusters accepted in reconstruction
 
     AliDebug(1,Form("Ch=%i PC Intersection=(%5.2f,%5.2f) cm MIP cluster dist=(%5.2f,%5.2f)=%5.2f cm ThetaCkov=%f",
-                     iChamber,helix.PosPc().X(),helix.PosPc().Y(),            dXmip,dYmip,dRmip,     pTrack->GetRICHsignal()));
+                     iChamber,helix.PosPc().X(),helix.PosPc().Y(),            mipDx,mipDy,mipDr,     pTrack->GetRICHsignal()));
     
 //here comes PID calculations    
     if(pTrack->GetRICHsignal()>0) {
@@ -263,10 +264,20 @@ void AliRICHTracker::EsdPrint()
     Int_t iNtracks=pEsd->GetNumberOfTracks(); Printf("ESD contains %i tracks created in Bz=%.2f Tesla",iNtracks,pEsd->GetMagneticField()/10.);
     for(Int_t iTrk=0;iTrk<iNtracks;iTrk++){//ESD tracks loop
       AliESDtrack *pTrack = pEsd->GetTrack(iTrk);// get next reconstructed track
-      Double_t dx,dy;         pTrack->GetRICHdxdy(dx,dy);
-      Double_t theta,phi;     pTrack->GetRICHthetaPhi(theta,phi);
-      Printf("Track %2i Q=%4.1f P=%.3f GeV RICH: ChamberCluster %7i Track-Mip=(%7.2f,%7.2f)=%5.2f cm ThetaCer %7.1f rad",iTrk,pTrack->GetSign(),pTrack->GetP(),
-                   pTrack->GetRICHcluster(),dx,dy,TMath::Sqrt(dx*dx+dy*dy),pTrack->GetRICHsignal());
+      Float_t dx,dy;         pTrack->GetRICHdxdy(dx,dy);
+      Float_t theta,phi;     pTrack->GetRICHthetaPhi(theta,phi);
+      TString comment;
+      if(pTrack->GetRICHsignal()>0)
+        comment="OK";
+      else if(pTrack->GetRICHsignal()==kMipQdcCut)
+        comment="no enough QDC";
+      else if(pTrack->GetRICHsignal()==kMipDistCut)
+        comment="nearest cluster is too far";
+      else if(pTrack->GetRICHsignal()==-1)
+        comment="no intersection";            
+      Printf("Track %2i Q=%4.1f P=%.3f GeV RICH: ChamClus %7i Track-Mip=(%7.2f,%7.2f)=%5.2f cm ThetaCer %7.1f rad %s",
+                   iTrk,pTrack->GetSign(),pTrack->GetP(),
+                   pTrack->GetRICHcluster(),dx,dy,TMath::Sqrt(dx*dx+dy*dy),pTrack->GetRICHsignal(), comment.Data());
     }//ESD tracks loop
   }//ESD events loop
   delete pEsd;  pFile->Close();//close AliESDs.root
@@ -289,8 +300,8 @@ void AliRICHTracker::MatrixPrint(Double_t probCut)
       iTrkCnt+=pEsd->GetNumberOfTracks();
       for(Int_t iTrk=0;iTrk<pEsd->GetNumberOfTracks();iTrk++){//ESD tracks loop
         AliESDtrack *pTrack = pEsd->GetTrack(iTrk);// get next reconstructed track
-        Double_t dx,dy;         pTrack->GetRICHdxdy(dx,dy);
-        Double_t theta,phi;     pTrack->GetRICHthetaPhi(theta,phi);
+        Float_t dx,dy;         pTrack->GetRICHdxdy(dx,dy);
+        Float_t theta,phi;     pTrack->GetRICHthetaPhi(theta,phi);
         Double_t prob[5];       pTrack->GetRICHpid(prob);
         if(pTrack->GetRICHsignal()>0){
           if(prob[4]>probCut)                         iProtCnt++; 

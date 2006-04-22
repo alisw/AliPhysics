@@ -26,9 +26,10 @@
 #include <TH2F.h>                 //CluQA() 
 #include <TCanvas.h>              //CluQA() 
 #include <TNtupleD.h>             //CheckPR()
+#include <TPolyMarker.h>          //Test()
 ClassImp(AliRICHReconstructor)
 
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHReconstructor::CluQA(AliRunLoader *pAL)
 {
 // Quality assesment plots for clusters. 
@@ -87,7 +88,7 @@ void AliRICHReconstructor::CluQA(AliRunLoader *pAL)
   pC->cd(4); pN->Draw();          pC->cd(5); pMipQ->Draw();       pC->cd(6); pMipS->Draw();        
   pC->cd(7); pN->Draw();          pC->cd(8); pCerQ->Draw();       pC->cd(9); pCerS->Draw();        
 }//CluQA()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHReconstructor::CheckPR()
 {
 //Pattern recognition with stack particles
@@ -121,7 +122,7 @@ void AliRICHReconstructor::Dig2Clu(TClonesArray *pDigLst,TClonesArray *pCluLst,B
   TMatrixF digMap(1,AliRICHParam::NpadsX(),1,AliRICHParam::NpadsY());  digMap=(Float_t)-1; //digit map for one chamber reseted to -1
   for(Int_t iDigN=0 ; iDigN < pDigLst->GetEntriesFast() ; iDigN++){                        //digits loop to fill digits map
     AliRICHDigit *pDig= (AliRICHDigit*)pDigLst->At(iDigN);                                   //get current digit
-    digMap( pDig->PadX(), pDig->PadY() )=iDigN;                                              //fill the map, (padx,pady) cell takes digit number
+    digMap( pDig->PadX(), pDig->PadY() )=iDigN;                                              //fill the map, (padx,pady) cell takes digit index
   }                                                                                        //digits loop to fill digits map 
   
   AliRICHCluster clu;                                                                      //tmp cluster to be used as current
@@ -233,7 +234,6 @@ void AliRICHReconstructor::RichAna(Int_t iNevMin,Int_t iNevMax,Bool_t askPatRec)
   TString var3 = "ErrPar1:ErrPar2:ErrPar3:Th1:Th2:Th3:nPhotBKG:pdgCode";
   TString varList = var1+var2+var3;
   
-  Double_t dx,dy;
   Double_t hnvec[30];
 
 //  TFile *pFileRA = new TFile("$(HOME)/RichAna.root","RECREATE","RICH Pattern Recognition");
@@ -264,27 +264,20 @@ void AliRICHReconstructor::RichAna(Int_t iNevMin,Int_t iNevMax,Bool_t askPatRec)
         TParticle *pPart=pStack->Particle(lab);
         Int_t code=pPart->GetPdgCode();
 
-        pTrack->GetRICHdxdy(dx,dy);
         hnvec[0]=pTrack->GetP();
         hnvec[1]=pTrack->GetSign();
-//  cout << " Track momentum " << pTrack->GetP() << " charge " << pTrack->GetSign() << endl;
-  
-        pTrack->GetRICHthetaPhi(hnvec[2],hnvec[3]);
-        pTrack->GetRICHdxdy(hnvec[4],hnvec[5]);
+        Float_t dx,dy,trkTheta,trkPhi; 
+        pTrack->GetRICHthetaPhi(trkTheta,trkPhi); hnvec[2]=trkTheta; hnvec[3]=trkPhi;
+        pTrack->GetRICHdxdy(dx,dy);               hnvec[4]=dx;       hnvec[5]=dy;
         hnvec[6]=pTrack->GetRICHsignal();
         hnvec[7]=pTrack->GetRICHnclusters();
         hnvec[9]=pTrack->GetRICHcluster()/1000000;
         hnvec[8]=pTrack->GetRICHcluster()-hnvec[9]*1000000;
         hnvec[10]=pTrack->GetTOFsignal();
         hnvec[11]=pTrack->GetIntegratedLength();
-        Double_t prob[5];
-        pTrack->GetRICHpid(prob);
-        hnvec[12]=prob[0]+prob[1]+prob[2];
-        hnvec[13]=prob[3];
-        hnvec[14]=prob[4];
-        hnvec[15]=pTrRich->fErrPar[2];
-        hnvec[16]=pTrRich->fErrPar[3];
-        hnvec[17]=pTrRich->fErrPar[4];
+        Double_t prob[5];   pTrack->GetRICHpid(prob);
+        hnvec[12]=prob[0]+prob[1]+prob[2];     hnvec[13]=prob[3];     hnvec[14]=prob[4];
+        hnvec[15]=pTrRich->fErrPar[2];   hnvec[16]=pTrRich->fErrPar[3];   hnvec[17]=pTrRich->fErrPar[4];
         for(Int_t i=0;i<3;i++) {
           Double_t mass = AliRICHParam::fgMass[i+2];
           Double_t refIndex=AliRICHParam::Instance()->IdxC6F14(AliRICHParam::EckovMean());
@@ -303,7 +296,7 @@ void AliRICHReconstructor::RichAna(Int_t iNevMin,Int_t iNevMax,Bool_t askPatRec)
   pFileRA->Write();pFileRA->Close();// close RichAna.root
   delete pESD;  pFile->Close();//close AliESDs.root
 }//RichAna()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHReconstructor::Test(Bool_t isTryUnfold)
 {
 // Test the cluster finding algorithm by providing predifined set of digits
@@ -313,21 +306,52 @@ void AliRICHReconstructor::Test(Bool_t isTryUnfold)
   Int_t iDigCnt=0;
   Int_t c,padx,pady,qdc;
 //ckov cluster  
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx= 89,pady=13,qdc= 10);
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx= 90,pady=13,qdc=  7);
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx= 90,pady=12,qdc=  6);
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx= 91,pady=12,qdc=  7);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx= 89,pady=13),qdc= 10);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx= 90,pady=13),qdc=  7);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx= 90,pady=12),qdc=  6);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx= 91,pady=12),qdc=  7);
 //mip cluster  
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx= 99,pady=21,qdc=  9);
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx= 99,pady=22,qdc= 26);
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx=100,pady=21,qdc= 39);
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx=100,pady=22,qdc=109);
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx=100,pady=23,qdc=  7);
-  new((*pDigTst)[iDigCnt++]) AliRICHDigit(c=1,padx=101,pady=22,qdc= 11);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx= 99,pady=21),qdc=  9);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx= 99,pady=22),qdc= 26);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx=100,pady=21),qdc= 39);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx=100,pady=22),qdc=109);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx=100,pady=23),qdc=  7);
+  new((*pDigTst)[iDigCnt++]) AliRICHDigit(AliRICHDigit::P2A(c=1,padx=101,pady=22),qdc= 11);
   
-  pDigTst->Print("","Initial digit:");
+  Printf("Initial digits (1 ckov cluster and 1 mip cluster):"); pDigTst->Print();
   Dig2Clu(pDigTst,pCluTst,isTryUnfold);   
-  pCluTst->Print("","Solved cluster:"); 
+  Printf("Resulting clusters (expecting to have 2):"); pCluTst->Print(); 
   delete pDigTst; delete pCluTst;
 }//Test()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliRICHReconstructor::Test(TClonesArray *pDigLst,Bool_t isTryUnfold)
+{
+// Test the cluster finding algorithm for given list of digits. Note that list of digits will not be deleted.
+// Arguments: pDigLst- list of digits
+//   Returns: none  
+  TClonesArray *pCluLst=new TClonesArray("AliRICHCluster");     
+  Dig2Clu(pDigLst,pCluLst,isTryUnfold);   
+  
+  Int_t iNdig=pDigLst->GetEntriesFast();
+  Int_t iNclu=pCluLst->GetEntriesFast();
+  
+  TH2F *pH2=new TH2F("RDH2",Form("Tst dig->clu Digs: %i Clus: %i;cm;cm",iNdig,iNclu),AliRICHParam::NpadsX(),0,AliRICHParam::PcSizeX(),AliRICHParam::NpadsY(),0,AliRICHParam::PcSizeY());
+  pH2->SetStats(kFALSE);
+  for(Int_t iDig=0;iDig < iNdig;iDig++) {//digits loop
+    AliRICHDigit *pDig = (AliRICHDigit*)pDigLst->At(iDig);
+    TVector2 x2=AliRICHParam::Pad2Loc(pDig->Pad());
+    pH2->Fill(x2.X(),x2.Y(),pDig->Qdc());
+  }//digits loop
+  
+  TPolyMarker *pCluMarker=new TPolyMarker(iNclu); pCluMarker->SetMarkerStyle(5); pCluMarker->SetMarkerColor(kBlue);
+  for(Int_t iClu=0;iClu < iNclu;iClu++) {//clusters loop
+    AliRICHCluster *pClu = (AliRICHCluster*)pCluLst->At(iClu);
+    pCluMarker->SetNextPoint(pClu->X(),pClu->Y());
+  }//digits loop
+  
+  pH2->Draw("col");
+  pCluMarker->Draw();  
+  AliRICHParam::DrawSectors();
+  delete pCluLst;
+}//Test()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

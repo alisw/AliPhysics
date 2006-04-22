@@ -183,18 +183,12 @@ public:
   Int_t  GetRICHcluster() const {return fRICHindex;}
   void    SetRICHnclusters(Int_t n) {fRICHncls=n;}
   Int_t   GetRICHnclusters() const {return fRICHncls;}
-  void    SetRICHthetaPhi(Double_t theta, Double_t phi) {
-    fRICHtheta=theta; fRICHphi=phi;
-  }
-  void    GetRICHthetaPhi(Double_t &theta, Double_t &phi) const {
-    theta=fRICHtheta; phi=fRICHphi;
-  }
-  void    SetRICHdxdy(Double_t dx, Double_t dy) {
-    fRICHdx=dx; fRICHdy=dy;
-  }
-  void    GetRICHdxdy(Double_t &dx, Double_t &dy) const {
-    dx=fRICHdx; dy=fRICHdy;
-  }
+  void    SetRICHthetaPhi(Float_t  theta, Float_t  phi)      {fRICHtheta=theta; fRICHphi=phi;}
+  void    GetRICHthetaPhi(Float_t &theta, Float_t &phi)const {theta=fRICHtheta; phi=fRICHphi;}
+  void    SetRICHdxdy    (Float_t     dx, Float_t   dy)      {fRICHdx=dx;         fRICHdy=dy;}
+  void    GetRICHdxdy    (Float_t    &dx, Float_t  &dy)const {dx=fRICHdx;         dy=fRICHdy;}
+  void    SetRICHmipXY   (Float_t      x, Float_t    y)      {fRICHmipX=x;       fRICHmipY=y;} 
+  void    GetRICHmipXY   (Float_t     &x, Float_t   &y)const {x=fRICHmipX;       y=fRICHmipY;}
   
   Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
   Bool_t IsRICH()  const {return fFlags&kRICHpid;}
@@ -308,10 +302,12 @@ protected:
   Float_t fRICHphi;        // phi of the track extrapolated to the RICH
   Float_t fRICHdx;         // x of the track impact minus x of the MIP
   Float_t fRICHdy;         // y of the track impact minus y of the MIP
+  Float_t fRICHmipX;       // x of the MIP in LORS
+  Float_t fRICHmipY;       // y of the MIP in LORS
 
   AliTrackPointArray *fPoints; // Array which contains the track space points in the global frame
 
-  ClassDef(AliESDtrack,25)  //ESDtrack 
+  ClassDef(AliESDtrack,26)  //ESDtrack 
 };
 
 #endif 

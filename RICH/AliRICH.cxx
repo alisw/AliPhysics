@@ -429,15 +429,11 @@ void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
   
   pTree->GetEvent(iEventN);
   
-  Double_t b = pESD->GetMagneticField()/10.;
-  
-  Printf("b=%f",b);
   Int_t iNtracks=pESD->GetNumberOfTracks();    
   
   for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
     AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
-    Int_t charge = (Int_t)(-TMath::Sign(1.,pTrack->GetSign()*b));
-    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),charge,b);
+    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),(Int_t)pTrack->GetSign(),-0.1*pESD->GetMagneticField());
     Int_t iChamberOnRICH=helix.RichIntersect(AliRICHParam::Instance());        
     if(iChamberOnRICH==iChamber) {
       TMarker *trackImpact = new TMarker(helix.PosPc().X(),helix.PosPc().Y(),kStar);
@@ -449,13 +445,13 @@ void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
         Double_t thetaCer = pTrack->GetRICHsignal();
         if(thetaCer<0) continue;
         TVector3 entrance(helix.PosRad().X(),helix.PosRad().Y(),0);
-        Double_t thetaTrack,phiTrack;
+        Float_t thetaTrack,phiTrack;
         pTrack->GetRICHthetaPhi(thetaTrack,phiTrack);
         TVector3 vectorTrack;
         vectorTrack.SetMagThetaPhi(pTrack->GetP(),thetaTrack,phiTrack);
         AliInfo(Form("Draw ring started for track %i on chamber %i",iTrackN,iChamber));
         AliInfo(Form("ThetaCer %f TrackTheta %f TrackPhi %f Momentum %f",thetaCer,thetaTrack,phiTrack,pTrack->GetP()));
-        Double_t dx,dy;
+        Float_t dx,dy;
         pTrack->GetRICHdxdy(dx,dy);
         DrawRing(entrance,vectorTrack,thetaCer);
       }

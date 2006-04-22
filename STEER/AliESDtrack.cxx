@@ -103,10 +103,12 @@ AliESDtrack::AliESDtrack() :
   fRICHncls(0),
   fRICHindex(0),
   fRICHsignal(-1),
-  fRICHtheta(0),
-  fRICHphi(0),
-  fRICHdx(0),
-  fRICHdy(0),
+  fRICHtheta(-1),
+  fRICHphi(-1),
+  fRICHdx(-1),
+  fRICHdy(-1),
+  fRICHmipX(-1),
+  fRICHmipY(-1),
   fPoints(0)
 {
   //
