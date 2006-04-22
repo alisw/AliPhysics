@@ -55,7 +55,7 @@ Bool_t AliPHOSReconstructor::fgDebug = kFALSE ;
 } 
 
 //____________________________________________________________________________
-void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const 
+void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
   // method called by AliReconstruction; 
   // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
@@ -75,14 +75,14 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 }
 
 //____________________________________________________________________________
-void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const 
+void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const
 {
   // method called by AliReconstruction; 
   // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
   // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
   // the global tracking.
   // Here we reconstruct from Raw Data
-  
+
   rawreader->Reset() ; 
   TString headerFile(runLoader->GetFileName()) ; 
   TString branchName(runLoader->GetEventFolder()->GetName()) ;  
@@ -125,7 +125,7 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     ec->SetGlobalPosition(xyz);
     ec->SetClusterEnergy(rp->Energy());
     ec->SetPid          (rp->GetPID()) ;
-    ec->SetPrimaryIndex (rp->GetPrimaryIndex());
+//     ec->SetPrimaryIndex (rp->GetPrimaryIndex()); // for dry events only
     // add the track to the esd object
     esd->AddCaloCluster(ec);
     delete ec;
