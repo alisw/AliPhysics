@@ -67,24 +67,24 @@ public:
   //-----------------now getter's data--------------------------------------
   
   //========== Digits ================
-  virtual TClonesArray * Digits(){return fDigits ; }
+  virtual TClonesArray * Digits() const {return fDigits ; }
   virtual AliPHOSDigit * Digit(Int_t index) { return static_cast<AliPHOSDigit *>(fDigits->At(index)) ;} 
   //  virtual AliPHOSDigitizer * Digitizer(){Error("Digitizer","Method not defined") ; return 0;}
   
   //========== RecPoints =============
-  virtual TObjArray *           EmcRecPoints(){return fEmcRecPoints ;}
+  virtual TObjArray *           EmcRecPoints() const {return fEmcRecPoints ;}
   virtual AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<AliPHOSEmcRecPoint *>(fEmcRecPoints->At(index)) ;} 
-  virtual TObjArray *           CpvRecPoints(){return fCpvRecPoints ;} 
+  virtual TObjArray *           CpvRecPoints() const {return fCpvRecPoints ;} 
   virtual AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(fCpvRecPoints->At(index)) ;} 
   virtual AliPHOSClusterizer * Clusterizer() { return fClusterizer;}
   
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
-  virtual TClonesArray *        TrackSegments(){return fTS ;} ;
+  virtual TClonesArray *        TrackSegments() const {return fTS ;} ;
   virtual AliPHOSTrackSegment * TrackSegment(Int_t index) { return static_cast<AliPHOSTrackSegment *>(fTS->At(index)) ;} 
   virtual AliPHOSTrackSegmentMaker * TrackSegmentMaker(){ return fTSM ;}
   
   //========== RecParticles ===========
-  virtual TClonesArray *        RecParticles(){ return fRP;} 
+  virtual TClonesArray *        RecParticles() const { return fRP;} 
   virtual AliPHOSRecParticle *  RecParticle(Int_t index) { return static_cast<AliPHOSRecParticle *>(fRP->At(index)) ;} 
   virtual AliPHOSPID *          PID(){return fPID ;} 
 

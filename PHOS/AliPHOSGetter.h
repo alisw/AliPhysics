@@ -54,14 +54,6 @@ public:
   AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
     Fatal("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
   } 
-protected :
-  AliPHOSGetter(Int_t /*i*/){    // special constructor for onflight 
-
-  } 
-private:
-  AliPHOSGetter(const char* headerFile,
-		const char* version = AliConfig::GetDefaultEventFolderName(),
-		Option_t * openingOption = "READ") ;
 
 public:
   AliPHOSGetter(const AliPHOSGetter & obj) : TObject(obj) {
@@ -110,10 +102,8 @@ public:
   void ReadCalibrationDB(const char * /*name*/, const char * /*filename*/){ ;}
   void SetCalibrationDB(AliPHOSCalibrationDB * cdb) {fcdb = cdb ;}
   
-  void SetCalibData(AliPHOSCalibData* calibda) { fCalibData = calibda; }
-  void SetAlignData(AliPHOSAlignData* alignda) { fAlignData = alignda; }
+  void SetCalibData(AliPHOSCalibData* calibda) { fgCalibData = calibda; }
   AliPHOSCalibData * CalibData();
-  AliPHOSAlignData * AlignData();
 
   //=========== Primaries ============
   virtual TClonesArray *    Primaries(void) ;
@@ -122,12 +112,12 @@ public:
   virtual TParticle * Secondary(const TParticle * p, Int_t index=1) const ;  
   
   //=========== Hits =================
-  virtual TClonesArray *  Hits(void)  ; 
+  virtual TClonesArray *  Hits(void) const ; 
   virtual AliPHOSHit *    Hit(Int_t index) { return dynamic_cast<AliPHOSHit*>(Hits()->At(index) );}
   virtual TTree *         TreeH() const ; 
   
   //=========== SDigits ==============
-  virtual TClonesArray *      SDigits() ;  
+  virtual TClonesArray *      SDigits() const ;  
   virtual AliPHOSDigit *      SDigit(Int_t index) { return static_cast<AliPHOSDigit *>(SDigits()->At(index)) ;} 
   virtual TTree *             TreeS() const ; 
   virtual AliPHOSSDigitizer * SDigitizer() ;  
@@ -140,7 +130,7 @@ public:
     return  PhosLoader()->WriteSDigitizer(opt) ; }
   
   //========== Digits ================
-  virtual TClonesArray * Digits() ;
+  virtual TClonesArray * Digits() const ;
   virtual AliPHOSDigit * Digit(Int_t index) { return static_cast<AliPHOSDigit *>(Digits()->At(index)) ;} 
   virtual TTree *        TreeD() const ; 
   virtual AliPHOSDigitizer * Digitizer() ;
@@ -157,9 +147,9 @@ public:
   virtual void                SetRawDigits(Bool_t isRaw = kTRUE){fRawDigits = isRaw;}
   
   //========== RecPoints =============
-  virtual TObjArray *           EmcRecPoints() ;
+  virtual TObjArray *           EmcRecPoints() const;
   virtual AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} 
-  virtual TObjArray *           CpvRecPoints() ; 
+  virtual TObjArray *           CpvRecPoints() const ; 
   virtual AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;} 
   virtual TTree *               TreeR() const ;
   virtual AliPHOSClusterizer * Clusterizer() ;
@@ -172,7 +162,7 @@ public:
     return  PhosLoader()->WriteClusterizer(opt) ; }
   
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
-  virtual TClonesArray *           TrackSegments() ;
+  virtual TClonesArray *           TrackSegments() const;
   virtual AliPHOSTrackSegment *  TrackSegment(Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
   virtual TTree *               TreeT() const ;
   virtual AliPHOSTrackSegmentMaker * TrackSegmentMaker() ;
@@ -185,7 +175,7 @@ public:
     return  PhosLoader()->WriteTracker(opt) ; }
   
   //========== RecParticles ===========
-  virtual TClonesArray *         RecParticles() ;
+  virtual TClonesArray *         RecParticles() const;
   virtual AliPHOSRecParticle *   RecParticle(Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
   virtual TTree *               TreeP() const ;
   virtual AliPHOSPID * PID() ;
@@ -218,6 +208,17 @@ public:
   
   virtual AliESD * ESD() const { return fESD ; }
   
+protected :
+  AliPHOSGetter(Int_t /*i*/){    // special constructor for onflight 
+
+  } 
+protected:
+  static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
+  
+private:
+  AliPHOSGetter(const char* headerFile,
+		const char* version = AliConfig::GetDefaultEventFolderName(),
+		Option_t * openingOption = "READ") ;
 private:
   
   Int_t ReadTreeD(void) ;
@@ -231,7 +232,7 @@ private:
   Bool_t OpenESDFile() ;
   void ReadPrimaries(void) ;
 
-  void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) ; 
+  void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) const; 
 
   Int_t CalibrateRaw (Double_t energy, Int_t *relId);
 
@@ -251,18 +252,14 @@ private:
   Bool_t            fRawDigits ;         //! true is raw data
 
   AliPHOSCalibrationDB * fcdb ;       //!
-  static AliPHOSCalibData * fCalibData;
-  static AliPHOSAlignData * fAlignData;
+  static AliPHOSCalibData * fgCalibData;
 
   static AliPHOSLoader * fgPhosLoader ; // the loader for the NewIO
   
   enum EDataTypes{kHits,kSDigits,kDigits,kRecPoints,kTracks,kNDataTypes};
 
- protected:
-  static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
   
-  
-  ClassDef(AliPHOSGetter,1)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
+  ClassDef(AliPHOSGetter,2)  // Algorithm class that provides methods to retrieve objects from a list knowing the index 
     
     };
 
