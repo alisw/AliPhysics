@@ -143,7 +143,7 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
   fgr        = (Double_t)fgGeometry->GetIPDistance();
   if(!sn.Contains("TRD2")) fgr += fgGeometry->GetSteelFrontThickness();
   fga2       = Double_t(fgGeometry->Get2Trd1Dx2());
-  PrintShish(0);
+  //PH  PrintShish(0);
   return kTRUE;
 }
 
