@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.38  2006/04/22 10:30:17  hristov
+ * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
+ *
  * Revision 1.37  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -48,15 +51,16 @@
 ClassImp(AliPHOSDigit)
 
 //____________________________________________________________________________
-  AliPHOSDigit::AliPHOSDigit() 
+AliPHOSDigit::AliPHOSDigit() :
+  AliDigitNew(),
+  fNprimary(0),  
+  fPrimary(0x0),
+  fEnergy(0.),
+  fTime(0.),
+  fTimeR(0.) 
+  
 {
   // default ctor 
-
-  fIndexInList = -1 ; 
-  fNprimary    = 0 ;  
-  fPrimary = 0;
-  fTime = 0. ; 
-  fTimeR = 0. ; 
 }
 
 //____________________________________________________________________________

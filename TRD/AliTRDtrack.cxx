@@ -33,6 +33,58 @@ ClassImp(AliTRDtrack)
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+AliTRDtrack::AliTRDtrack():
+  AliKalmanTrack(),
+  fSeedLab(-1),
+  fdEdx(0),
+  fdEdxT(0),
+  fDE(0),
+  fAlpha(0),
+  fX(0),
+  fStopped(kFALSE),
+  fY(0),
+  fZ(0),
+  fE(0),
+  fT(0),
+  fC(0),
+  fCyy(1e10),
+  fCzy(0),
+  fCzz(1e10),
+  fCey(0),
+  fCez(0),
+  fCee(1e10),
+  fCty(0),
+  fCtz(0),
+  fCte(0),
+  fCtt(1e10),
+  fCcy(0),
+  fCcz(0),
+  fCce(0),
+  fCct(0),
+  fCcc(1e10),
+  fLhElectron(0),
+  fNWrong(0),
+  fNRotate(0),
+  fNCross(0),
+  fNExpected(0),
+  fNLast(0),
+  fNExpectedLast(0),
+  fNdedx(0),
+  fChi2Last(1e10),
+  fBackupTrack(0x0)
+
+{
+  for (Int_t i=0; i<kNplane; i++) {
+    fdEdxPlane[i] = 0;
+    fTimBinPlane[i] = -1;
+  }
+  for (UInt_t i=0; i<kMAXCLUSTERSPERTRACK; i++) {
+    fIndex[i] = 0;
+    fIndexBackup[i] = 0;
+    fdQdl[i] = 0;
+  }
+  for (Int_t i=0; i<3; i++) fBudget[i] = 0;
+}
 //_____________________________________________________________________________
 AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index, 
                          const Double_t xx[5], const Double_t cc[15], 

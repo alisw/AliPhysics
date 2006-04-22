@@ -28,7 +28,7 @@ class AliTRDtrack : public AliKalmanTrack {
 
  public:
 
-   AliTRDtrack():AliKalmanTrack()                       { fBackupTrack = 0;      }
+  AliTRDtrack();
    AliTRDtrack(const AliTRDcluster *c, UInt_t index, const Double_t xx[5],
                const Double_t cc[15], Double_t xr, Double_t alpha);  
    AliTRDtrack(const AliTRDtrack& t);    
