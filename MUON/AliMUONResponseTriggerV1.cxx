@@ -57,7 +57,8 @@ Int_t AliMUONResponseTriggerV1::SetGenerCluster(){
 } 
 
 //------------------------------------------------------------------   
-Float_t AliMUONResponseTriggerV1::IntXY(Int_t idDE, AliMUONGeometrySegmentation * segmentation){
+Float_t AliMUONResponseTriggerV1::IntXY(Int_t idDE, AliMUONGeometrySegmentation * segmentation) const
+{
 // Returns 1 or 0 if the current strip is fired or not 
 // get the "parameters" needed to evaluate the strip response
 // x1 : hit x(y) position
@@ -73,7 +74,9 @@ Float_t AliMUONResponseTriggerV1::IntXY(Int_t idDE, AliMUONGeometrySegmentation 
 }
 
 //------------------------------------------------------------------   
-Float_t AliMUONResponseTriggerV1::FireStripProb(Float_t x4, Float_t theta){
+Float_t AliMUONResponseTriggerV1::FireStripProb(Float_t x4, Float_t theta)
+const
+{
 // parametrisation of the probability that a strip neighbour of the main 
 // strip is fired (V.Barret B.Espagnon and P.Rosnet Alice/note xxx)
 // WARNING : need to convert x4 from cm to mm

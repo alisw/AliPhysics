@@ -40,8 +40,6 @@ class AliMUONClusterReconstructor : public TObject
 
   void ClusterizeOneDE(Int_t detElemId);
   
-  void CheckSize(TClonesArray&);
-  
  private:
 
   AliMUONData*            fMUONData;           //! Data container for MUON subsystem 

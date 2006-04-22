@@ -153,13 +153,11 @@ class AliMpSlat : public TObject
   mutable AliMpExMap fManuMap; // map of int to AliMpMotifPosition*
 #ifdef WITH_ROOT
   TObjArray fPCBs; // array of AliMpPCB*
-  //mutable AliMpExMap fManuMap; // map of int to AliMpMotifPosition*
 #else  
   std::vector<AliMpPCB*> fPCBs; // array of AliMpPCB*
-  //std::map<int,AliMpMotifPosition*> fManuMap;
 #endif
   TVector2 fPosition; // Position of the slat center.
-  Int_t fNofPads;
+  Int_t fNofPads; // number of pads in this slat
   
   ClassDef(AliMpSlat,2) // A slat for stations 3,4,5
 };

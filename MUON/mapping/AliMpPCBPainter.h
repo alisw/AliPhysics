@@ -8,7 +8,7 @@
 /// \class AliMpPCBPainter
 /// \brief Class for drawing a PCB into canvas
 ///
-/// Authors: Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #ifndef ALIMPPCBPAINTER_H
 #define ALIMPPCBPAINTER_H
@@ -35,7 +35,7 @@ public:
   AliMpPCBPainter&  operator = (const AliMpPCBPainter& right);
      
  private:
-  AliMpPCB* fPCB;
+  AliMpPCB* fPCB; //! PCB to be plotted.
 
   ClassDef(AliMpPCBPainter,1) // A painter for a PCB of stations 3,4,5
 };

@@ -16,8 +16,16 @@
 #include "AliMUONDDLTrigger.h"
 
 ClassImp(AliMUONDDLTrigger)
- 
- const Int_t AliMUONDDLTrigger::fgkHeaderLength = 6;
+
+///
+/// \class AliMUONDDLTrigger
+///
+/// One DDL for trigger part of the MUON spectrometer.
+/// 
+/// \author C. Finck
+///
+
+const Int_t AliMUONDDLTrigger::fgkHeaderLength = 6;
 
 //___________________________________________
 AliMUONDDLTrigger::AliMUONDDLTrigger()

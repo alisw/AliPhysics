@@ -43,8 +43,8 @@ public:
    Int_t*  GetGlobalInput()    {return &fGlobalInput[0];}
 
 
-   AliRawDataHeader GetHeader(){return fHeader;}
-   Int_t GetHeaderSize() {return sizeof(AliRawDataHeader)/4;} // in words
+   AliRawDataHeader GetHeader() const {return fHeader;}
+   Int_t GetHeaderSize() const {return sizeof(AliRawDataHeader)/4;} // in words
 
  private:
 

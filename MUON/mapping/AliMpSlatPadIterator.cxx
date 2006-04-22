@@ -28,13 +28,23 @@
 #include <limits>
 #include <cassert>
 
+///
+/// \class AliMpSlatPadIterator
+///
+/// Implementation of AliMpVPadIterator for slats.
+///
+/// This class first split the input area (upon which to iterate)
+/// into a set of areas of constant pad size.
+/// Then each of those areas is iterated over, using
+/// AliMpSlatZonePadIterator objects.
+///
+/// \author L. Aphecetche
+///
+
 ClassImp(AliMpSlatPadIterator)
 
-
-namespace 
-{
-  Double_t DMAX(std::numeric_limits<Double_t>::max());
-}
+//const Double_t
+//AliMpSlatPadIterator::fgkDmax = std::numeric_limits<Double_t>::max();
 
 //_____________________________________________________________________________
 AliMpSlatPadIterator::AliMpSlatPadIterator()

@@ -31,8 +31,8 @@
 
 #include "AliLog.h"
 
-#include <TArrayI.h>
-#include <Riostream.h>
+#include "TArrayI.h"
+#include "Riostream.h"
 
 ClassImp(AliMpBusPatch)
 
@@ -119,7 +119,8 @@ Int_t AliMpBusPatch::GetDDLfromBus(Int_t busPatchId)
 }
 
 //____________________________________________________________________
-void AliMpBusPatch::GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP)
+void AliMpBusPatch::GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP) 
+const
 {
 /// calculates the number of DSP & buspatch per block
 

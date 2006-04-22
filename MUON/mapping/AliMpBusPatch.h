@@ -35,7 +35,7 @@ class AliMpBusPatch : public TObject
   
   // methods
   void ReadBusPatchFile();
-  void GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP);
+  void GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP) const;
 
   Int_t    GetDEfromBus(Int_t busPatchId);
   TArrayI* GetBusfromDE(Int_t idDE);

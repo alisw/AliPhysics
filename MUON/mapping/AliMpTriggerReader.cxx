@@ -40,17 +40,23 @@
 #include <sstream>
 #include <cassert>
 
+/// 
+/// \class AliMpTriggerReader
+/// Read trigger slat ASCII files
+/// Basically provides 2 static methods:
+/// - AliMpTrigger* ReadSlat()
+/// - AliMpPCB* ReadPCB()
+///
+/// \author Laurent Aphecetche
+
 TMap AliMpTriggerReader::fgPCBMap;
 TMap AliMpTriggerReader::fgLocalBoardMap;
 
-namespace
-{
-  const TString KEYWORD_LAYER("LAYER");
-  const TString KEYWORD_SCALE("SCALE");
-  const TString KEYWORD_PCB("PCB");  
-  const TString KEYWORD_FLIPX("FLIP_X");
-  const TString KEYWORD_FLIPY("FLIP_Y");
-}
+const TString AliMpTriggerReader::fgkKeywordLayer("LAYER");
+const TString AliMpTriggerReader::fgkKeywordScale("SCALE");
+const TString AliMpTriggerReader::fgkKeywordPcb("PCB");  
+const TString AliMpTriggerReader::fgkKeywordFlipX("FLIP_X");
+const TString AliMpTriggerReader::fgkKeywordFlipY("FLIP_Y");
 
 ClassImp(AliMpTriggerReader)
 
@@ -79,6 +85,9 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
                               const TList& lines,
                               Double_t scale)
 {
+  // Construct a slat from the list of lines, taking into account
+  // the scale factor
+
   AliMpSlat* slat = new AliMpSlat(slatName, planeType);
     
   TIter it(&lines);
@@ -92,7 +101,7 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
     
     TString& keyword = ((TObjString*)tokens->At(0))->String();
     
-    if ( keyword == KEYWORD_PCB )
+    if ( keyword == fgkKeywordPcb )
     {
       if ( tokens->GetEntriesFast() != 3 )
       {
@@ -167,13 +176,14 @@ AliMpTriggerReader::BuildSlat(const char* slatName,
 TString
 AliMpTriggerReader::GetBoardNameFromPCBLine(const TString& s)
 {
+  // Decode the string to get the board name
   TString boardName;
   
   TObjArray* tokens = s.Tokenize(' ');
   
   TString& keyword = ((TObjString*)tokens->At(0))->String();
 
-  if ( keyword == KEYWORD_PCB &&
+  if ( keyword == fgkKeywordPcb &&
        tokens->GetEntriesFast() == 3 )
   {
     boardName = ((TObjString*)tokens->At(2))->String();
@@ -195,13 +205,11 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
   // from top to bottom
   //
  
-//  cout << "--- Original lines (flipX=" << flipX << " flipY=" << flipY
-//  << " srcLine=" << srcLine << " destLine=" << destLine << " : " << endl;
-//  lines.Print();
-//
+
   if ( flipX )
   {
-    // Simply swaps R(ight) and L(eft) in the first character of local board names
+    // Simply swaps R(ight) and L(eft) in the first character of 
+    // local board names
 
     TObjString* oline;
     TIter it(&lines);
@@ -221,9 +229,6 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
     }
   }
   
-//  cout << "*** After flipX :" << endl;
-//  lines.Print();
-
   if ( flipY )
   {
     // Change line number, according to parameters srcLine and destLine
@@ -243,7 +248,7 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
         
         TString& s = oline->String();
         
-        if ( !s.Contains(KEYWORD_PCB) ) 
+        if ( !s.Contains(fgkKeywordPcb) )
         {
           // Only consider PCB lines.
           continue;
@@ -309,15 +314,15 @@ AliMpTriggerReader::FlipLines(TList& lines, Bool_t flipX, Bool_t flipY,
       }    
     }
   }
-//  cout << "*** After flipY :" << endl;
-//  lines.Print();
 }
 
 //___________________________________________________________________________
 Int_t
 AliMpTriggerReader::IsLayerLine(const TString& sline)
 {
-  if ( sline.BeginsWith(KEYWORD_LAYER) )
+  // Whether sline contains LAYER keyword
+
+  if ( sline.BeginsWith(fgkKeywordLayer) )
   {
     return 1;
   }
@@ -333,15 +338,17 @@ AliMpTriggerReader::DecodeFlipLine(const TString& sline,
                                    TString& slatType2,
                                    Bool_t& flipX, Bool_t& flipY)
 {
+  // Decode a line containing FLIP_X and/or FLIP_Y keywords
+
   Ssiz_t blankPos = sline.First(' ');
   if ( blankPos < 0 ) return 0;
   
   TString keyword(sline(0,blankPos));
   
-  if ( keyword == KEYWORD_FLIPX ) 
+  if ( keyword == fgkKeywordFlipX )
   {
     flipX = kTRUE;
-  } else if ( keyword == KEYWORD_FLIPY ) 
+  } else if ( keyword == fgkKeywordFlipY )
   {
     flipY = kTRUE;
   }
@@ -359,10 +366,12 @@ Int_t
 AliMpTriggerReader::DecodeScaleLine(const TString& sline, 
                                     Double_t& scale, TString& slatType)
 {
-  if ( sline(0,KEYWORD_SCALE.Length()) == KEYWORD_SCALE )
+  // Decode sline containing SCALE keyword
+
+  if ( sline(0,fgkKeywordScale.Length()) == fgkKeywordScale )
   {
-    TString tmp(sline(KEYWORD_SCALE.Length()+1,
-                      sline.Length()-KEYWORD_SCALE.Length()-1));
+    TString tmp(sline(fgkKeywordScale.Length()+1,
+                      sline.Length()-fgkKeywordScale.Length()-1));
     Ssiz_t blankPos = tmp.First(' ');
     if ( blankPos < 0 )
     {
@@ -404,6 +413,8 @@ AliMpTriggerReader::GetLine(const TString& slatType)
 int
 AliMpTriggerReader::LocalBoardNumber(const char* localBoardName)
 {
+  // From local board name to local board number
+
   if ( !fgLocalBoardMap.GetSize() ) 
   {
     ReadLocalBoardMapping();
@@ -451,6 +462,11 @@ AliMpTriggerReader::ReadLines(const char* slatType,
                               Bool_t& flipX, Bool_t& flipY,
                               Int_t& srcLine, Int_t& destLine)
 {
+  //
+  // Reads in lines from file for a given slat
+  // Returns the list of lines (lines), together with some global
+  // information as the scale, whether to flip the lines, etc...
+  //
   AliDebugClass(1,Form("SlatType %s Scale %e FlipX %d FlipY %d srcLine %d"
                        " destLine %d\n",slatType,scale,flipX,flipY,
                        srcLine,destLine));
@@ -472,10 +488,11 @@ AliMpTriggerReader::ReadLines(const char* slatType,
     if ( sline.Length() == 0 || sline[0] == '#' ) continue;
     
     Bool_t isKeywordThere = 
-      sline.Contains(KEYWORD_PCB) || 
-      sline.Contains(KEYWORD_LAYER) ||
-      sline.Contains(KEYWORD_SCALE) || 
-      sline.Contains(KEYWORD_FLIPY) || sline.Contains(KEYWORD_FLIPX);
+      sline.Contains(fgkKeywordPcb) || 
+      sline.Contains(fgkKeywordLayer) ||
+      sline.Contains(fgkKeywordScale) || 
+      sline.Contains(fgkKeywordFlipX) || 
+      sline.Contains(fgkKeywordFlipY);
     
     if ( !isKeywordThere ) 
     {
@@ -493,7 +510,7 @@ AliMpTriggerReader::ReadLines(const char* slatType,
 
     if ( isScaleLine < 0 )
     {
-      AliFatalClass(Form("Syntax error near %s keyword\n",KEYWORD_SCALE.Data()));
+      AliFatalClass(Form("Syntax error near %s keyword\n",fgkKeywordScale.Data()));
     }
     else if ( isScaleLine > 0 && slatType2 != slatType )
     {
@@ -529,6 +546,8 @@ AliMpTriggerReader::ReadLines(const char* slatType,
 void
 AliMpTriggerReader::ReadLocalBoardMapping()
 {
+  // Reads the file that contains the mapping local board name <-> number
+
   TString filename(AliMpFiles::LocalTriggerBoardMapping());
   
   AliDebugClass(1,Form("Reading from %s\n",filename.Data()));
@@ -687,7 +706,7 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
   if ( !IsLayerLine(firstLine) ) 
   {
     std::ostringstream s;
-    s << KEYWORD_LAYER;
+    s << fgkKeywordLayer;
     lines.AddFirst(new TObjString(s.str().c_str()));
   }
   
@@ -748,5 +767,6 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMpPlaneType planeType)
 void
 AliMpTriggerReader::Reset()
 {
+  // Resets the PCB internal map
   fgPCBMap.Delete();
 }

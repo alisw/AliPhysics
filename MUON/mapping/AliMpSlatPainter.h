@@ -40,7 +40,7 @@ class AliMpSlatPainter : public AliMpVPainter
      
   
  private:
-  const AliMpSlat* fkSlat;
+  const AliMpSlat* fkSlat; //! pointer to the slat to be drawn
 
   ClassDef(AliMpSlatPainter,1) // A painter for a slat of stations 3,4,5
 };

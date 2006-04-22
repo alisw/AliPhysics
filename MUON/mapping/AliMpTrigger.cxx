@@ -25,6 +25,18 @@
 #include "TArrayI.h"
 #include "TObjArray.h"
 
+/// 
+/// \class AliMpTrigger
+/// 
+/// A trigger 'slat' object. 
+/// It is to be viewed as a superposition of  
+/// virtual layers of AliMpSlat objects. The need for more than one layer  
+/// arise from the fact that a given local board deals with strips  
+/// located in different detelem. So a given strip (pad) can have several  
+/// "locations".
+///
+/// \author Laurent Aphecetche
+
 ClassImp(AliMpTrigger)
 
 namespace
@@ -52,6 +64,7 @@ AliMpTrigger::AliMpTrigger()
 : TObject(), fId(""), fPlaneType(kNonBendingPlane), 
 fMaxNofPadsY(0), fDX(0), fDY(0)
 {
+  // default ctor
 }
 
 //_____________________________________________________________________________
@@ -59,11 +72,13 @@ AliMpTrigger::AliMpTrigger(const char* slatType, AliMpPlaneType bendingOrNot)
 :  TObject(), fId(slatType), fPlaneType(bendingOrNot), 
 fMaxNofPadsY(0), fDX(0), fDY(0)
 {
+  // normal ctor
 }
 
 //_____________________________________________________________________________
 AliMpTrigger::~AliMpTrigger()
 {
+  // dtor
   AliDebug(1,Form("this=%p before fSlats.Delete()",this));			
   fSlats.Delete();
   AliDebug(1,Form("this=%p after fSlats.Delete()",this));			
@@ -73,6 +88,9 @@ AliMpTrigger::~AliMpTrigger()
 Bool_t
 AliMpTrigger::AdoptLayer(AliMpSlat* slat)
 {
+  // Adopt (i.e. we become owner of that pointer) a slat, as 
+  // a layer of this trigger slat.
+
   AliDebug(1,Form("%s is adopting %s :\n",
                   GetID(),slat->GetID()));
 
@@ -101,6 +119,7 @@ AliMpTrigger::AdoptLayer(AliMpSlat* slat)
 TVector2
 AliMpTrigger::Dimensions() const
 {
+  // Returns the dimensions (half-sizes) of that slat (cm)
   return TVector2(DX(),DY());
 }
 
@@ -108,6 +127,7 @@ AliMpTrigger::Dimensions() const
 Double_t
 AliMpTrigger::DX() const
 {
+  // Returns the half-size in X (cm)
   return fDX;
 }
 
@@ -115,6 +135,7 @@ AliMpTrigger::DX() const
 Double_t
 AliMpTrigger::DY() const
 {
+  // Returns the half-size in Y (cm)
   return fDY;
 }
 
@@ -122,6 +143,7 @@ AliMpTrigger::DY() const
 void 
 AliMpTrigger::GetAllLocalBoardNumbers(TArrayI& lbn) const
 {
+  // Fills lbn with the local board numbers we're dealing with
   Int_t n(0);
   for ( Int_t i = 0; i < GetSize(); ++i )
   {
@@ -148,6 +170,7 @@ AliMpTrigger::GetAllLocalBoardNumbers(TArrayI& lbn) const
 const char*
 AliMpTrigger::GetID() const
 {
+  // returns the id of this slat
   return fId.Data();
 }
 
@@ -155,6 +178,7 @@ AliMpTrigger::GetID() const
 const char*
 AliMpTrigger::GetName() const
 {
+  // returns the name (=id+bending/non-bending) of this slat
   TString name(GetID());
   if ( fPlaneType == kBendingPlane )
   {
@@ -175,6 +199,7 @@ AliMpTrigger::GetName() const
 AliMpSlat*
 AliMpTrigger::GetLayer(int layer) const
 {
+  // Returns a given layer
   if ( IsLayerValid(layer) )
   {
     return (AliMpSlat*)fSlats.At(layer);
@@ -186,6 +211,7 @@ AliMpTrigger::GetLayer(int layer) const
 Int_t
 AliMpTrigger::GetNofPadsX() const
 {
+  // Returns the number of pad in x direction
   if ( !GetSize() ) return -1;
   if ( GetLayer(0) )
   {
@@ -198,6 +224,7 @@ AliMpTrigger::GetNofPadsX() const
 Int_t
 AliMpTrigger::GetMaxNofPadsY() const
 {
+  // Maximum number of pads in y direction
   return fMaxNofPadsY;
 }
 
@@ -205,6 +232,7 @@ AliMpTrigger::GetMaxNofPadsY() const
 Int_t
 AliMpTrigger::GetSize() const
 {
+  // Number of layers
   return fSlats.GetEntriesFast();
 }
 
@@ -212,6 +240,7 @@ AliMpTrigger::GetSize() const
 Bool_t
 AliMpTrigger::IsLayerValid(int layer) const
 {
+  // Whether a given layer index is valid or not
   if ( layer >= 0 && layer < GetSize() )
   {
     return kTRUE;
@@ -223,6 +252,7 @@ AliMpTrigger::IsLayerValid(int layer) const
 AliMpPlaneType
 AliMpTrigger::PlaneType() const
 {
+  // Bending or not
   return fPlaneType;
 }
 
@@ -230,6 +260,7 @@ AliMpTrigger::PlaneType() const
 TVector2
 AliMpTrigger::Position() const
 {
+  // Slat position (cm)
   return TVector2(DX(),DY());
 }
 
@@ -237,6 +268,7 @@ AliMpTrigger::Position() const
 void
 AliMpTrigger::Print(Option_t* opt) const
 {
+  // Dump on screen
   cout << "AliMpTrigger::" << GetID();
   if ( GetSize() == 0 )
   {

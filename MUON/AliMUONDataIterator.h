@@ -28,7 +28,6 @@ public:
   AliMUONDataIterator();
   AliMUONDataIterator(AliMUONData* data, const char* onWhatToIterate,
                       EIterationStyle howToIterate);
-  
   virtual ~AliMUONDataIterator();
     
   TObject* Next();
@@ -38,7 +37,11 @@ public:
   void Reset();
   
 private:
-  AliMUONVDataIterator* fIterator;   
+  AliMUONVDataIterator* fIterator; //! the real worker   
+
+private:
+  AliMUONDataIterator(const AliMUONDataIterator& rhs);
+  AliMUONDataIterator& operator=(const AliMUONDataIterator& rhs);
   
   ClassDef(AliMUONDataIterator,0) // 
 };

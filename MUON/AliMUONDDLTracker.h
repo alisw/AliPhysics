@@ -49,8 +49,8 @@ public:
    Int_t* GetBlkHeader() {return &fTotalBlkLength;}
    Int_t* GetDspHeader() {return &fTotalDspLength;}
 
-   AliRawDataHeader GetHeader(){return fHeader;}
-   Int_t GetHeaderSize() {return sizeof(AliRawDataHeader)/4;} // in words
+   AliRawDataHeader GetHeader() const {return fHeader;}
+   Int_t GetHeaderSize() const {return sizeof(AliRawDataHeader)/4;} // in words
 
    Int_t   GetEoD()      const {return fgkEndOfDDL;}  
 

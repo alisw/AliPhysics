@@ -28,6 +28,24 @@
 #include "TMath.h"
 #include <sstream>
 
+/// 
+/// \class AliMpPCB
+///
+/// A PCB for station 3,4 or 5
+/// 
+/// A PCB is a group of pads having the same size
+/// Pads are grouped in motifs, where 1 motif = 1 MANU
+///
+/// The notion of PCB enveloppe is due to the fact that not all PCBs are
+/// "full" of pads, e.g. the rounded or short ones miss some pads,
+/// but the enveloppe is a virtual size that should be constant 
+/// across the slats, and is 400x400 mm.
+/// It's a usefull notion to compute e.g. slat center in a uniform way, 
+/// considering that a slat is N PCBs, of the same "virtual" size, that of 
+/// the enveloppe.
+///
+/// \author L. Aphecetche
+
 ClassImp(AliMpPCB)
 
 //_____________________________________________________________________________
@@ -286,6 +304,8 @@ AliMpPCB::Clone(const TArrayI& manuids, Int_t ixOffset, Double_t xOffset) const
 void
 AliMpPCB::Copy(TObject& o) const
 {
+  // Copy *this into o
+
   TObject::Copy(o);
   AliMpPCB& pcb = static_cast<AliMpPCB&>(o);
   pcb.fId = fId;

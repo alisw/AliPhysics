@@ -15,12 +15,13 @@
 
 // $Id$
 // $MpId: AliMpPCBPainter.cxx,v 1.4 2005/09/19 18:56:46 ivana Exp $
-// Category: graphics
-//
-// Class AliMpSlatPainter
-// -----------------------
-// Class for drawing a PCB into canvas
-// Authors: Laurent Aphecetche
+
+///
+/// \class AliMpSlatPainter
+/// 
+/// Class for drawing a PCB into canvas
+/// 
+/// \author L. Aphecetche
 
 #include "AliMpPCBPainter.h"
 

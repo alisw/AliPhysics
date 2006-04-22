@@ -35,8 +35,6 @@ ClassImp(AliMUONResponseTrigger)
 
 namespace
 {
-  Float_t TOFLIMIT = 75E-9;
-
   AliMUON* muon()
   {
     return static_cast<AliMUON*>(gAlice->GetModule("MUON"));
@@ -62,6 +60,9 @@ namespace
   }
 }
 
+const Float_t 
+AliMUONResponseTrigger::fgkTofLimit = 75E-9;
+
 //------------------------------------------------------------------   
 AliMUONResponseTrigger::AliMUONResponseTrigger()
   : AliMUONResponse()
@@ -71,7 +72,8 @@ AliMUONResponseTrigger::AliMUONResponseTrigger()
 
 //------------------------------------------------------------------   
 Int_t AliMUONResponseTrigger::DigitResponse(Int_t digit, 
-					    AliMUONTransientDigit* /*where*/){
+					    AliMUONTransientDigit* /*where*/) const
+{
 //  only digital (0/1) information available
 
   if (digit) 
@@ -103,7 +105,7 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits)
   
   Float_t tof = hit.Age();
   Int_t twentyNano(100);
-  if (tof<TOFLIMIT)
+  if (tof<fgkTofLimit)
   {
     twentyNano=1;
   }

@@ -60,7 +60,7 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   virtual AliMpPad PadByPosition(const TVector2& position,
 			 Bool_t warning) const;
 
-  virtual void Print(Option_t*) const;
+  virtual void Print(Option_t* opt) const;
   
   const AliMpSlat* Slat() const;
   

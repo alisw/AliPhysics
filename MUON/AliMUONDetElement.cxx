@@ -30,7 +30,6 @@
 #include "AliMUONSegmentation.h"
 #include "AliMUONDigit.h"
 #include "AliMUONHitMapA1.h"
-#include "AliMUONData.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONClusterInput.h"
@@ -39,7 +38,6 @@
 #include "AliLog.h"
 
 ClassImp(AliMUONDetElement) // Class implementation in ROOT context
-  FILE *lun = 0x0; //fopen("hitmap.dat","w");
 
 //_________________________________________________________________________
 AliMUONDetElement::AliMUONDetElement()
@@ -257,7 +255,7 @@ void AliMUONDetElement::ClusterReco(Double_t xTrack, Double_t yTrack)
 	  if (!fRecModel->GetUsed(cath1,j)) continue;
 	  if (fHitMap[cath1]->TestHit(dig->PadX(), dig->PadY()) == kUsed) continue;
 	  fHitMap[cath1]->FlagHit(dig->PadX(), dig->PadY());
-	  if (lun) fprintf(lun," %d %d %d %d \n", cath1, fidDE, dig->PadX(), dig->PadY());
+	  AliDebug(10,Form(" %d %d %d %d \n", cath1, fidDE, dig->PadX(), dig->PadY()));
 	  fLeft[cath1]--;
 	}
       }

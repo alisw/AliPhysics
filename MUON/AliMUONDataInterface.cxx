@@ -24,6 +24,30 @@ using std::cout;
 
 ClassImp(AliMUONDataInterface)
 
+///
+/// \class AliMUONDataInterface
+///
+/// An easy to use interface to the MUON module data stored in
+/// TreeK, TreeH, TreeS, TreeD and TreeR
+/// One can fetch any of the data objects with all the calls to runloader, 
+/// muon loader and AliMUONData done behind the scenes and automatically.
+///
+/// This interface in not necessarily the fastest way to fetch the data but
+/// it is the easiest.
+/// Note: If independant calls to the run loader, muon loader or 
+/// AliMUONData objects are interspersed with calls to the 
+/// AliMUONDataInterface to fetch data, one might need to call the Reset 
+/// method between these method calls at some point to prevent 
+/// AliMUONDataInterface from getting confused.
+/// This is necessary since this object assumes the state of runloader,
+/// muon loader nor AliMUONData has not changed between calls.
+/// If the state has changes then one must call Reset so that 
+/// AliMUONDataInterface refreshes what it knows about the state
+/// of the loader and AliMUONData objects.
+///
+/// \deprecated We have to revisit all this AliMUONData stuff anyway,
+/// and probably make a real AliMUONLoader instead...
+///
 
 AliMUONDataInterface::AliMUONDataInterface()
 	: TObject(), fData(NULL, "MUON", "MUON")
@@ -111,6 +135,8 @@ Bool_t AliMUONDataInterface::UseCurrentRunLoader()
 
 Bool_t AliMUONDataInterface::FetchMuonLoader(TString filename, TString foldername)
 {
+  // fetches the muon loader for the given filename/foldername
+
 	fMuonloader = fRunloader->GetLoader("MUONLoader");
 	if (fMuonloader == NULL)
 	{

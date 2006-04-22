@@ -27,6 +27,14 @@
 #include "AliMUONTriggerDecision.h"
 #include "AliMUONTrigger.h"
 
+///
+/// \class AliMUONTrigger
+///
+/// Implementation of AliTriggerDetector for MUON detector
+///
+/// So far, the inputs are taken from AliMUONTriggerDecision object
+///
+
 //----------------------------------------------------------------------
 ClassImp(AliMUONTrigger)
 
@@ -70,7 +78,7 @@ void AliMUONTrigger::CreateInputs()
 //----------------------------------------------------------------------
 void AliMUONTrigger::Trigger()
 {
-
+  // sets the trigger inputs
 
    AliRunLoader* runLoader = gAlice->GetRunLoader();
 

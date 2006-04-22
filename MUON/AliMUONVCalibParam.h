@@ -19,6 +19,7 @@
 class AliMUONVCalibParam : public TObject
 {
 public:
+  AliMUONVCalibParam();
   virtual ~AliMUONVCalibParam();
 
   /// j indices in following methods are valid from 0 to Dimension()-1.

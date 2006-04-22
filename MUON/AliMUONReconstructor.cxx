@@ -24,8 +24,6 @@
 
 #include "AliESD.h"
 #include "AliESDMuonTrack.h"
-#include "AliGenEventHeader.h"
-#include "AliHeader.h"
 #include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONCalibrationData.h"
@@ -44,8 +42,6 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "TTask.h"
-#include <TArrayF.h>
-#include <TParticle.h>
 #include "TStopwatch.h"
 
 ClassImp(AliMUONReconstructor)

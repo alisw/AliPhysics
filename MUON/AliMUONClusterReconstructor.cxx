@@ -85,21 +85,6 @@ AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 
 //______________________________________________________________________________
 void
-AliMUONClusterReconstructor::CheckSize(TClonesArray& a)
-{
-/// Check if one can adds a new element, or if a is already full.
-/// If full, it is resized.
-
-  if ( a.GetLast()+1 >= a.GetSize() )
-  {
-    AliInfo(Form("Increasing array size from %d to %d",
-                 a.GetSize(),a.GetSize()*2));
-    a.Expand(a.GetSize()*2);
-  }
-}
-
-//______________________________________________________________________________
-void
 AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId)
 {
 /// Clusterize one detection element, and let fMUONData know about
@@ -183,12 +168,10 @@ void AliMUONClusterReconstructor::Digits2Clusters(Int_t chBeg)
       // Add the digit to the array with the right cathode number.
       if (digit->Cathode() == 0)
       {
-        CheckSize(*fDigitsCath0);
         new((*fDigitsCath0)[fDigitsCath0->GetLast()+1]) AliMUONDigit(*digit);
       }
       else 
       {
-        CheckSize(*fDigitsCath1);
         new((*fDigitsCath1)[fDigitsCath1->GetLast()+1]) AliMUONDigit(*digit);
       }
     } // end of loop on chamber digits

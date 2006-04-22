@@ -7,13 +7,7 @@
 /// \ingroup trigger
 /// \class AliMpTrigger
 /// \brief A trigger slat
-/// 
-/// A trigger 'slat' object. It is to be viewed as a superposition of  
-/// virtual layers of AliMpSlat objects. The need for more than one layer  
-/// arise from the fact that a given local board deals with strips  
-/// located in different detelem. So a given strip (pad) can have several  
-/// "locations".
-/// Author: Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #ifndef ALI_MP_TRIGGER_H
 #define ALI_MP_TRIGGER_H
@@ -81,12 +75,12 @@ private:
     
   Bool_t IsLayerValid(int layer) const;
   
-  TString fId;
-  AliMpPlaneType fPlaneType;
-  TObjArray fSlats;
-  Int_t fMaxNofPadsY;
-  Double_t fDX;
-  Double_t fDY;
+  TString fId; //! name of that slat
+  AliMpPlaneType fPlaneType; //! bending or non-bending
+  TObjArray fSlats; //! virtual slat composing this trigger slat
+  Int_t fMaxNofPadsY; //! max number of pads in y direction
+  Double_t fDX; //! half-size in x (cm)
+  Double_t fDY; //! half-size in y (cm)
   
   ClassDef(AliMpTrigger,1) // Slat for trigger
 };

@@ -8,7 +8,7 @@
 /// \class AliMpSt345Reader
 /// \brief Read slat and pcb ASCII files
 /// 
-/// Author: Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #ifndef ALI_MP_ST345_READER_H
 #define ALI_MP_ST345_READER_H

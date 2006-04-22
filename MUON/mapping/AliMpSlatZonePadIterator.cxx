@@ -26,17 +26,18 @@
 #include "Riostream.h"
 #include <algorithm>
 #include <limits>
-#include <cassert>
 
 ClassImp(AliMpSlatZonePadIterator)
 
-// This iterator only works within a region of constant density.
+/// 
+/// \class AliMpSlatZonePadIterator
+/// 
+/// Iterates over slat pads within a region of constant pad size.
+/// 
+/// \author Laurent Aphecetche
 
-namespace 
-{
-  const Double_t epsilon = 1E-4; // cm
-  Double_t DMAX(std::numeric_limits<Double_t>::max());
-}
+const Double_t AliMpSlatZonePadIterator::fgkEpsilon = 1E-4; // cm
+const Double_t AliMpSlatZonePadIterator::fgkDmax = std::numeric_limits<Double_t>::max();
 
 //_____________________________________________________________________________
 AliMpSlatZonePadIterator::AliMpSlatZonePadIterator(const AliMpSlat* slat,
@@ -109,7 +110,7 @@ AliMpSlatZonePadIterator::CropArea()
   // Left and right x-limits have to come from first and last pcbs
   // to deal with short and rounded pcbs cases.
   AliMpPCB* first = fkSlat->FindPCB(fArea.LeftBorder(),fArea.DownBorder());
-  AliMpPCB* last = fkSlat->FindPCB(fArea.RightBorder()-epsilon,
+  AliMpPCB* last = fkSlat->FindPCB(fArea.RightBorder()-fgkEpsilon,
                                  fArea.DownBorder());
 
   AliDebug(3,Form("First PCB %s Ixmin %2d Last PCB %s Ixmax %2d",
@@ -117,14 +118,14 @@ AliMpSlatZonePadIterator::CropArea()
 		  last->GetID(),last->Ixmax()));
 
   Double_t xleft = first->ActiveXmin();
-  Double_t xright = last->ActiveXmax() - epsilon;
+  Double_t xright = last->ActiveXmax() - fgkEpsilon;
 
   AliDebug(3,Form("xleft,xright=%e,%e",xleft,xright));
 
   Double_t xmin = std::max(fArea.LeftBorder(),xleft);
   Double_t xmax = std::min(fArea.RightBorder(),xright);
   Double_t ymin = std::max(fArea.DownBorder(),0.0);
-  Double_t ymax = std::min(fArea.UpBorder(),fkSlat->DY()*2.0-epsilon);
+  Double_t ymax = std::min(fArea.UpBorder(),fkSlat->DY()*2.0-fgkEpsilon);
 
   AliDebug(3,Form("Cropped area (%e,%e)->(%e,%e)",
 		  xmin,ymin,xmax,ymax));
@@ -278,7 +279,7 @@ AliMpSlatZonePadIterator::Invalidate()
   // Invalidate the iterator.
   //
   
-  fOffset = TVector2(DMAX,DMAX);
+  fOffset = TVector2(fgkDmax,fgkDmax);
   fCurrentPad = AliMpPad::Invalid();
   fIsDone = kTRUE;
 }

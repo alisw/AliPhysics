@@ -19,6 +19,7 @@
 class AliMUONVDataIterator : public TObject
 {
 public:
+  AliMUONVDataIterator();
   virtual ~AliMUONVDataIterator();
   
   virtual TObject* Next() = 0;

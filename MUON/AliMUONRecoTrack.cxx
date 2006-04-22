@@ -84,7 +84,7 @@ void AliMUONRecoTrack::SetHitPosition(Int_t chamber, Double_t x, Double_t y, Dou
 }
 
 //-------------------------------------------------------------------		
-void AliMUONRecoTrack::TrackInfo()
+void AliMUONRecoTrack::TrackInfo() const
 {
 // Prints momentum info for this track
    cout << "Px=" << GetMomReconstr(0) << " Py=" << GetMomReconstr(1) <<

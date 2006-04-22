@@ -26,6 +26,14 @@
 
 ClassImp(AliMUONChamberTrigger)
 
+///
+/// \class AliMUONChamberTrigger
+///
+/// Implementation of AliMUONChamber for the trigger
+///
+/// This class is to be deprecated.
+///
+
 //-------------------------------------------
 
 AliMUONChamberTrigger::AliMUONChamberTrigger()

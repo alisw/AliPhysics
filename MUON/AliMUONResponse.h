@@ -67,14 +67,14 @@ class AliMUONResponse : public TObject
     //  
     // Chamber response methods
     // Pulse height from scored quantity (eloss)
-    virtual Float_t IntPH(Float_t)                            {return 1.;}
+    virtual Float_t IntPH(Float_t) const                      {return 1.;}
     // Charge disintegration 
-    virtual Float_t IntXY(Int_t, AliMUONGeometrySegmentation*) {return 1.;}
+    virtual Float_t IntXY(Int_t, AliMUONGeometrySegmentation*) const {return 1.;}
 
     // Noise, zero-suppression, adc saturation
     //virtual Int_t DigitResponse(Int_t )                {return kTRUE;}
     virtual Int_t DigitResponse(Int_t , 
-                                AliMUONTransientDigit* ) {return kTRUE;}
+                                AliMUONTransientDigit* ) const {return kTRUE;}
     
     /// Go from one hit to several digits, applying charge spreading.
     virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);

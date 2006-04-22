@@ -1,3 +1,6 @@
+#ifndef ALI_MP_SLAT_ZONE_PAD_ITERATOR_H
+#define ALI_MP_SLAT_ZONE_PAD_ITERATOR_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -6,12 +9,8 @@
 
 /// \ingroup slat
 /// \class AliMpSlatZonePadIterator
-/// \brief To be added ...
-/// 
-/// Author: Laurent Aphecetche
-
-#ifndef ALI_MP_SLAT_ZONE_PAD_ITERATOR_H
-#define ALI_MP_SLAT_ZONE_PAD_ITERATOR_H
+/// \brief Iterates over slat pads within a region of constant pad size.
+/// \author Laurent Aphecetche
 
 #include "AliMpVPadIterator.h"
 #include "AliMpArea.h"
@@ -42,13 +41,16 @@ class AliMpSlatZonePadIterator : public AliMpVPadIterator
   void SetPad(AliMpPad& pad, const TVector2& pos);
 
  private:
-  const AliMpSlat*       fkSlat;
-  AliMpSlatSegmentation* fSlatSegmentation;
-  AliMpArea  fArea;
-  TVector2   fOffset;
-  TVector2   fStep;
-  AliMpPad   fCurrentPad;
-  Bool_t     fIsDone;
+  const AliMpSlat*       fkSlat; //! the slat we're iterating over
+  AliMpSlatSegmentation* fSlatSegmentation; //! segmentation pointer
+  AliMpArea  fArea; //! area we're iterating over
+  TVector2   fOffset; //! current position (relative to bottom-left of area)
+  TVector2   fStep; //! step sizes
+  AliMpPad   fCurrentPad; //! current pad
+  Bool_t     fIsDone; //! whether we've finished or not
+
+  static const Double_t fgkDmax; // maximum double
+  static const Double_t fgkEpsilon; // comparison precision 
 
   ClassDef(AliMpSlatZonePadIterator,1) // Pad iterator for a zone of constant density, for St345.
 };

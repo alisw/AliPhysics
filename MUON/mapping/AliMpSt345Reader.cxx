@@ -38,9 +38,20 @@
 #include <sstream>
 #include <assert.h>
 
-TMap AliMpSt345Reader::fgPCBMap;
+/// 
+/// \class AliMpSt345Reader
+//
+/// Read slat and pcb ASCII files.
+/// 
+/// Basically this class provides 2 static methods :
+/// - AliMpSlat* ReadSlat()
+/// - AliMpPCB ReadPCB()
+///
+/// \author Laurent Aphecetche
 
 ClassImp(AliMpSt345Reader)
+
+TMap AliMpSt345Reader::fgPCBMap;
 
 //_____________________________________________________________________________
 AliMpSt345Reader::AliMpSt345Reader() : TObject()

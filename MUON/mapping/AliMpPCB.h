@@ -51,13 +51,7 @@ class AliMpPCB : public TObject
   
   AliMpPCB();
   /** Ctor. The sizes are given in mm.
-      enveloppe is due to the fact that not all PCBs are "full" of pads,
-      e.g. the rounded or short ones miss some pads, but the enveloppe 
-      is a virtual size that should be constant across the slats, 
-      and is 400x400 mm.
-      It's a usefull notion to compute e.g. slat center in a uniform way, 
-      considering that a slat is N PCBs, of the same "virtual" size, that of 
-      the enveloppe.
+      See full doc for the meaning of enveloppe parameters.
   */
   AliMpPCB(const char* id, Double_t padSizeX, Double_t padSizeY,
 	   Double_t enveloppeSizeX, Double_t enveloppeSizeY);
@@ -140,24 +134,24 @@ class AliMpPCB : public TObject
   Int_t NofPads() const { return fNofPads; }
   
  private:
-  TString fId;
-  Double_t fPadSizeX;
-  Double_t fPadSizeY;
-  Double_t fEnveloppeSizeX;
-  Double_t fEnveloppeSizeY;
-  Double_t fXoffset;
-  Double_t fActiveXmin;
-  Double_t fActiveXmax;
-  Int_t fIxmin;
-  Int_t fIxmax;
-  Int_t fIymin;
-  Int_t fIymax;
+  TString fId; // PCB name
+  Double_t fPadSizeX; // x-size of this PCB's pads (cm)
+  Double_t fPadSizeY; // y-size of this PCB's pads (cm)
+  Double_t fEnveloppeSizeX; // max x-size of this PCB (cm)
+  Double_t fEnveloppeSizeY; // max y-size of this PCB (cm)
+  Double_t fXoffset; // x-offset = x of first pad of this PCB (cm)
+  Double_t fActiveXmin; // min x of an actual pad in this PCB (cm)
+  Double_t fActiveXmax; // max x of an actual pad in this PCB (cm)
+  Int_t fIxmin; // min pad index in x
+  Int_t fIxmax; // max pad index in x
+  Int_t fIymin; // min pad index in y
+  Int_t fIymax; // max pad index in y
 #ifdef WITH_ROOT
-  TObjArray fMotifs;
+  TObjArray fMotifs; // array of motifs
 #else  
-  std::vector<AliMpMotifPosition*> fMotifs;
+  std::vector<AliMpMotifPosition*> fMotifs; // array of motifs
 #endif
-  Int_t fNofPads;
+  Int_t fNofPads; // number of pads in this PCB
   
   ClassDef(AliMpPCB,2) // A PCB for Stations 3,4,5
 };

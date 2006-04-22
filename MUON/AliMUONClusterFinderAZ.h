@@ -33,7 +33,7 @@ public:
   Int_t    GetNPads(Int_t cath) const { return fnPads[cath]; }
   Int_t    GetIJ(Int_t indx, Int_t iPad) const { return fPadIJ[indx][iPad]; }
   Float_t  GetXyq(Int_t indx, Int_t iPad) const { return fXyq[indx][iPad]; }
-  Float_t  GetZpad() { return fZpad; }
+  Float_t  GetZpad() const { return fZpad; }
   Bool_t GetUsed(Int_t cath, Int_t dig) const { return fUsed[cath][dig]; }
   void SetUsed(Int_t cath, Int_t dig) { fUsed[cath][dig] = kTRUE; } // mark used digits
   void SetUnused(Int_t cath, Int_t dig) { fUsed[cath][dig] = kFALSE; } // unmark digits

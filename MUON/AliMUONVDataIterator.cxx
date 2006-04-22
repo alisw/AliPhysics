@@ -19,6 +19,18 @@
 
 ClassImp(AliMUONVDataIterator)
 
+///
+/// \class AliMUONVDataIterator
+///
+/// Defines an interface of an iterator over muon data structure(s).
+///
+/// \author L. Aphecetche
+
+//_____________________________________________________________________________
+AliMUONVDataIterator::AliMUONVDataIterator() : TObject()
+{
+}
+
 //_____________________________________________________________________________
 AliMUONVDataIterator::~AliMUONVDataIterator()
 {

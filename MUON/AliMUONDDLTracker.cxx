@@ -17,6 +17,14 @@
 #include "AliRawDataHeader.h"
 
 ClassImp(AliMUONDDLTracker)
+
+///
+/// \class AliMUONDDLTracker
+///
+/// A wrapper object for 1 DDL of the MUON tracking chambers.
+///
+/// \author C. Finck
+
  const Int_t AliMUONDDLTracker::fgkBlkHeaderLength = 8;
  const Int_t AliMUONDDLTracker::fgkDspHeaderLength = 8;
  const Int_t AliMUONDDLTracker::fgkEndOfDDL = 0x0FFFFFFFF;

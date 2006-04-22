@@ -28,6 +28,15 @@
 #include "AliMpSlatSegmentation.h"
 #include "AliMpTrigger.h"
 
+/// 
+/// \class AliMpTriggerSegmentation
+///
+/// Implementation of AliMpVSegmentation for trigger slats.
+///
+/// \todo Implement CreateIterator method, if needed.
+///
+/// \author Laurent Aphecetche
+
 ClassImp(AliMpTriggerSegmentation)
 
 //_____________________________________________________________________________
@@ -131,6 +140,7 @@ AliMpTriggerSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 const char*
 AliMpTriggerSegmentation::GetName() const
 {
+  // Name of that segmentation = TriggerSegmentation + slatName
   TString name("TriggerSegmentation");
   if ( fkSlat) 
   {
@@ -194,17 +204,17 @@ AliMpTriggerSegmentation::PadByLocation(const AliMpIntPair& location,
   {
     const AliMpSlat* slat = fkSlat->GetLayer(i);
     AliMpSlatSegmentation seg(slat);
-    AliMpPad p_i = seg.PadByLocation(location,kFALSE);
-    if ( p_i.IsValid() ) 
+    AliMpPad pi = seg.PadByLocation(location,kFALSE);
+    if ( pi.IsValid() ) 
     {
       if ( !pad.IsValid() )
       {
-        pad = AliMpPad(invloc,p_i.GetIndices(),p_i.Position(),p_i.Dimensions());
-        pad.AddLocation(p_i.GetLocation());
+        pad = AliMpPad(invloc,pi.GetIndices(),pi.Position(),pi.Dimensions());
+        pad.AddLocation(pi.GetLocation());
       }
       else
       {
-        pad.AddLocation(p_i.GetLocation());
+        pad.AddLocation(pi.GetLocation());
       }  
     }
   }
@@ -237,17 +247,17 @@ AliMpTriggerSegmentation::PadByIndices(const AliMpIntPair& indices,
   {
     const AliMpSlat* slat = fkSlat->GetLayer(i);
     AliMpSlatSegmentation seg(slat);
-    AliMpPad p_i = seg.PadByIndices(indices,kFALSE);
-    if ( p_i.IsValid() ) 
+    AliMpPad pi = seg.PadByIndices(indices,kFALSE);
+    if ( pi.IsValid() ) 
     {      
       if ( !pad.IsValid() )
       {
-        pad = AliMpPad(invloc,p_i.GetIndices(),p_i.Position(),p_i.Dimensions());
-        pad.AddLocation(p_i.GetLocation());
+        pad = AliMpPad(invloc,pi.GetIndices(),pi.Position(),pi.Dimensions());
+        pad.AddLocation(pi.GetLocation());
       }
       else
       {
-        pad.AddLocation(p_i.GetLocation());
+        pad.AddLocation(pi.GetLocation());
       }  
     }
   }
@@ -279,17 +289,17 @@ AliMpTriggerSegmentation::PadByPosition(const TVector2& position,
   {
     const AliMpSlat* slat = fkSlat->GetLayer(i);
     AliMpSlatSegmentation seg(slat);
-    AliMpPad p_i = seg.PadByPosition(position,kFALSE);
-    if ( p_i.IsValid() ) 
+    AliMpPad pi = seg.PadByPosition(position,kFALSE);
+    if ( pi.IsValid() ) 
     {
       if ( !pad.IsValid() )
       {
-        pad = AliMpPad(invloc,p_i.GetIndices(),p_i.Position(),p_i.Dimensions());
-        pad.AddLocation(p_i.GetLocation());
+        pad = AliMpPad(invloc,pi.GetIndices(),pi.Position(),pi.Dimensions());
+        pad.AddLocation(pi.GetLocation());
       }
       else
       {
-        pad.AddLocation(p_i.GetLocation());
+        pad.AddLocation(pi.GetLocation());
       }  
     }
   }

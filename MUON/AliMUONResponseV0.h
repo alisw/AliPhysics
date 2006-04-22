@@ -81,11 +81,13 @@ class AliMUONResponseV0 : public AliMUONResponse
     //  
     // Chamber response methods
     // Pulse height from scored quantity (eloss)
-    virtual Float_t  IntPH(Float_t eloss);
+    virtual Float_t  IntPH(Float_t eloss) const;
     // Charge disintegration
-    virtual Float_t  IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation);
+    virtual Float_t  IntXY(Int_t idDE, 
+			   AliMUONGeometrySegmentation* segmentation) const;
     // Noise, zero-suppression, adc saturation
-    virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where);
+    virtual Int_t DigitResponse(Int_t digit, 
+				AliMUONTransientDigit* where) const;
 
     virtual Float_t GetAnod(Float_t x) const;
     

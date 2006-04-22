@@ -61,7 +61,7 @@ private:
   void ApplyResponseToTriggerDigit(AliMUONDigit& digit, AliMUONData* data);
 
 private:  
-  AliMUONDigit* FindCorrespondingDigit(AliMUONDigit& digit,AliMUONData* data);
+  AliMUONDigit* FindCorrespondingDigit(AliMUONDigit& digit,AliMUONData* data) const;
   
   Int_t FindDigitIndex(TClonesArray& array, const AliMUONDigit& digit) const;
 

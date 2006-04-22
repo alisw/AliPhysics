@@ -30,7 +30,6 @@
 #include "AliMpMotif.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpMotifType.h"
-#include "AliMpPCB.h"
 #include "AliMpSlat.h"
 #include "AliMpSlatPadIterator.h"
 
@@ -128,6 +127,8 @@ AliMpSlatSegmentation::GetAllElectronicCardIDs(TArrayI& ecn) const
 const char*
 AliMpSlatSegmentation::GetName() const
 {
+  // The name of this segmentation is "SlatSegmentation"+slatName
+
   TString name("SlatSegmentation");
   if ( fkSlat) 
   {

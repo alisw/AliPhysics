@@ -41,7 +41,7 @@ class AliMUONDigitMapA1 : public TObject
     // Flag a hit as used
     virtual  void  FlagHit(Int_t ix, Int_t iy);
     // Test hit status
-    virtual FlagType TestHit(Int_t ix, Int_t iy);
+    virtual FlagType TestHit(Int_t ix, Int_t iy) const;
 
  protected:
     AliMUONDigitMapA1(const AliMUONDigitMapA1 & hitMap);

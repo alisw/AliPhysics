@@ -7,8 +7,7 @@
 /// \ingroup trigger
 /// \class AliMpTriggerReader
 /// \brief Read trigger slat ASCII files
-/// 
-/// Author: Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #ifndef ALI_MP_TRIGGER_READER_H
 #define ALI_MP_TRIGGER_READER_H
@@ -50,7 +49,7 @@ class AliMpTriggerReader : public TObject
   
   static void Reset();
   
-//private:
+private:
     
   static AliMpSlat* BuildSlat(const char* slatName, 
                               AliMpPlaneType planeType,
@@ -67,7 +66,7 @@ class AliMpTriggerReader : public TObject
   static void FlipLines(TList& lines, Bool_t flipX, Bool_t flipY, 
                         Int_t srcLine, Int_t destLine);
   
-  static TString GetBoardNameFromPCBLine(const TString&);
+  static TString GetBoardNameFromPCBLine(const TString& sline);
   
   static Int_t GetLine(const TString& slatType);
   
@@ -90,6 +89,12 @@ private:
   static TMap fgPCBMap; //! map of TObjString to AliMpPCB*
   
   static TMap fgLocalBoardMap; //! map of TObjString to TObjString
+
+  static const TString fgkKeywordLayer; //! Keyword: LAYER
+  static const TString fgkKeywordScale; //! Keyword: SCALE
+  static const TString fgkKeywordPcb; //! Keyword : PCB
+  static const TString fgkKeywordFlipX; //! Keyword : FLIPX
+  static const TString fgkKeywordFlipY; //! Keyword : FLIPY
   
   ClassDef(AliMpTriggerReader,1) // Reader for trigger slats mapping files 
 };

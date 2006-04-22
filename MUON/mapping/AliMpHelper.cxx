@@ -18,12 +18,17 @@
 
 #include "AliMpHelper.h"
 
-#include "AliLog.h"
 #include "TArrayI.h"
-#include "TClass.h"
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TString.h"
+
+///
+/// \class AliMpHelper
+///
+/// Helper class used to parse mapping files for St345 slats.
+///
+/// \author L. Aphecetche
 
 ClassImp(AliMpHelper)
 

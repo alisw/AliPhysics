@@ -18,7 +18,7 @@ class AliMUONResponseTrigger : public AliMUONResponse
   AliMUONResponseTrigger();
   virtual ~AliMUONResponseTrigger(){} 
 
-  virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where);
+  virtual Int_t DigitResponse(Int_t digit, AliMUONTransientDigit* where) const;
 
 
   // Set the GenerCluster parameter       
@@ -26,6 +26,8 @@ class AliMUONResponseTrigger : public AliMUONResponse
 
   virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
   
+ private:
+  static const Float_t fgkTofLimit; // particle above this threshold are discarded
   ClassDef(AliMUONResponseTrigger,1) // Implementation of RPC response
     
 };

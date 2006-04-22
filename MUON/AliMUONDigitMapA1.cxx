@@ -139,7 +139,7 @@ TObject* AliMUONDigitMapA1::GetHit(Int_t ix, Int_t iy) const
     return (index <0) ? 0 : fDigits->UncheckedAt(GetHitIndex(ix,iy));
 }
 //_________________________________________________
-FlagType AliMUONDigitMapA1::TestHit(Int_t ix, Int_t iy)
+FlagType AliMUONDigitMapA1::TestHit(Int_t ix, Int_t iy) const
 {
 /// Check if hit cell is empty, used or unused
 

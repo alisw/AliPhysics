@@ -46,7 +46,7 @@ class AliMUONRecoTrack : public TObject
     void           SetFlag(Int_t flag)  {fFlag = flag;};
 
     Double_t Theta() const;
-    void           TrackInfo();
+    void TrackInfo() const;
 
   private:
     Int_t       fSign;                  // charge sign

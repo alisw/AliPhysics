@@ -159,7 +159,7 @@ void AliMUONResponseV0::SetSqrtKy3AndDeriveKy2Ky4(Float_t SqrtKy3)
   fMathieson->SetSqrtKy3AndDeriveKy2Ky4(SqrtKy3);
 }
   //__________________________________________________________________________
-Float_t AliMUONResponseV0::IntPH(Float_t eloss)
+Float_t AliMUONResponseV0::IntPH(Float_t eloss) const
 {
   // Calculate charge from given ionization energy loss
   Int_t nel;
@@ -175,7 +175,9 @@ Float_t AliMUONResponseV0::IntPH(Float_t eloss)
 }
 
   //-------------------------------------------
-Float_t AliMUONResponseV0::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation)
+Float_t AliMUONResponseV0::IntXY(Int_t idDE,
+				 AliMUONGeometrySegmentation* segmentation) 
+const
 {
  // Calculate charge on current pad according to Mathieson distribution
 
@@ -184,7 +186,9 @@ Float_t AliMUONResponseV0::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmen
 
 
   //-------------------------------------------
-Int_t  AliMUONResponseV0::DigitResponse(Int_t digit, AliMUONTransientDigit* /*where*/)
+Int_t  AliMUONResponseV0::DigitResponse(Int_t digit,
+					AliMUONTransientDigit* /*where*/)
+const
 {
   // \deprecated method
   // Now part of the digitizer (where it belongs really), e.g. DigitizerV3

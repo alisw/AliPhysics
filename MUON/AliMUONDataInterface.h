@@ -28,17 +28,9 @@ class AliMUONHit;
 class AliMUONDigit;
 class AliMUONTrack;
 
-// An easy to use interface to the MUON module data stored in TreeK, TreeH, TreeS, TreeD and TreeR
-// One can fetch any of the data objects with all the calls to runloader, muon loader and AliMUONData
-// done behind the scenes and automatically.
-// This interface in not necessarily the fastest way to fetch the data but it is the easiest.
-// Note: If independant calls to the run loader, muon loader or AliMUONData objects are interspersed
-// with calls to the AliMUONDataInterface to fetch data, one might need to call the Reset method
-// between these method calls at some point to prevent AliMUONDataInterface from getting confused.
-// This is necessary since this object assumes the state of runloader, muon loader nor AliMUONData
-// has not changed between calls. If the state has changes then one must call Reset so that 
-// AliMUONDataInterface refreshes what it knows about the state of the loader and AliMUONData objects.
-//
+/// An easy to use interface to the MUON module data stored.
+/// \deprecated
+
 class AliMUONDataInterface : public TObject
 {
  public:

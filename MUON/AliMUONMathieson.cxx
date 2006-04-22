@@ -98,7 +98,7 @@ AliMUONMathieson::IntXY(Float_t xi1, Float_t yi1, Float_t xi2, Float_t yi2) cons
 }
 
 // -------------------------------------------
-Float_t AliMUONMathieson::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation)
+Float_t AliMUONMathieson::IntXY(Int_t idDE, AliMUONGeometrySegmentation* segmentation) const
 {
 /// Calculate charge on current pad according to Mathieson distribution
 /// using Detection elt

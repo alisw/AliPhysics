@@ -18,14 +18,17 @@
 #include "AliMUONDataDigitIterator.h"
 
 #include "AliMUONData.h"
-#include "AliMUONDigit.h"
 #include "TClonesArray.h"
 
+///
+/// \class AliMUONDataDigitIterator
 ///
 /// An iterator to access digits (stored into AliMUONData).
 ///
 /// Iteration can occur on tracking chambers only, trigger chambers only,
 /// or both.
+///
+/// \author L. Aphecetche
 ///
 
 //_____________________________________________________________________________
@@ -64,6 +67,7 @@ AliMUONDataDigitIterator::operator=(const AliMUONDataDigitIterator& rhs)
 void
 AliMUONDataDigitIterator::CopyTo(AliMUONDataDigitIterator& destination) const
 {
+  // Copy *this to destination
   destination.fData=fData;
   destination.fFirstChamber=fFirstChamber;
   destination.fLastChamber=fLastChamber;
@@ -127,6 +131,7 @@ AliMUONDataDigitIterator::Remove()
 void
 AliMUONDataDigitIterator::Reset()
 {
+  // Resets the iterator
   fData->GetDigits();
   fCurrentDigit = 0;
   fCurrentChamber = fFirstChamber;

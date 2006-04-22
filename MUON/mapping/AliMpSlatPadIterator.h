@@ -40,10 +40,10 @@ class AliMpSlatPadIterator : public AliMpVPadIterator
   AliMpArea Intersect(const AliMpArea& a, const AliMpArea& b) const;
 
  private:
-  const AliMpSlat* fkSlat;
-  std::vector<AliMpVPadIterator*> fDelegates;
-  AliMpVPadIterator* fCurrentDelegate;
-  UInt_t fCurrentDelegateIndex;
+  const AliMpSlat* fkSlat; // pointer to the slat being iterated over
+  std::vector<AliMpVPadIterator*> fDelegates; // iterators we do use
+  AliMpVPadIterator* fCurrentDelegate; // current iterator
+  UInt_t fCurrentDelegateIndex; // current iterator index
 
   ClassDef(AliMpSlatPadIterator,1) // Pad iterator for St 345 Slats
 };

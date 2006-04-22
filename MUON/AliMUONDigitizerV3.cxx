@@ -479,7 +479,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
 //_____________________________________________________________________________
 AliMUONDigit* 
 AliMUONDigitizerV3::FindCorrespondingDigit(AliMUONDigit& digit,
-                                           AliMUONData* data)
+                                           AliMUONData* data) const
 {                                                
   AliMUONDataIterator it(data,"D",AliMUONDataIterator::kTriggerChambers);
   AliMUONDigit* cd;

@@ -11,10 +11,7 @@
 /// \class AliMUONChamberTrigger
 /// \brief Muon trigger chamber class
 
-#include <TRef.h>
-
 #include "AliMUONChamber.h"
-
 
 class AliMUONClusterFinder;
 class AliMUONSegmentationTrigger;

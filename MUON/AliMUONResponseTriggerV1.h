@@ -20,7 +20,7 @@ class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger
     AliMUONResponseTriggerV1(Float_t hv);
     virtual ~AliMUONResponseTriggerV1(){} 
     // Charge disintegration
-    virtual Float_t  IntXY(Int_t idDE, AliMUONGeometrySegmentation * segmentation);
+    virtual Float_t  IntXY(Int_t idDE, AliMUONGeometrySegmentation * segmentation) const;
 
     // Set the GenerCluster parameter       
     virtual Int_t SetGenerCluster();
@@ -35,7 +35,7 @@ class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger
     // initialize parameters
     void SetParameters(Float_t hv);
     // parametrization of the cluster-size
-    Float_t FireStripProb(Float_t x4, Float_t theta);
+    Float_t FireStripProb(Float_t x4, Float_t theta) const;
 
   ClassDef(AliMUONResponseTriggerV1,1) // Implementation of RPC response
     

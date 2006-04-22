@@ -17,9 +17,20 @@
 
 #include "AliMUONVCalibParam.h"
 
-#include "Riostream.h"
+/// 
+/// \class AliMUONVCalibParam
+///  
+/// Defines an interface for a calibration container object.
+///
+/// \author Laurent Aphecetche
 
 ClassImp(AliMUONVCalibParam)
+
+//_____________________________________________________________________________
+  AliMUONVCalibParam::AliMUONVCalibParam() : TObject()
+{
+  // ctor
+}
 
 //_____________________________________________________________________________
 AliMUONVCalibParam::~AliMUONVCalibParam()

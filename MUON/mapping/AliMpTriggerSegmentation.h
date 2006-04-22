@@ -7,8 +7,7 @@
 /// \ingroup trigger
 /// \class AliMpTriggerSegmentation
 /// \brief Implementation of AliMpVSegmentation for trigger slats.
-/// 
-/// Author: Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #ifndef ALI_MP_TRIGGER_SEGMENTATION_H
 #define ALI_MP_TRIGGER_SEGMENTATION_H
