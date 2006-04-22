@@ -46,7 +46,8 @@
 #include <TParticle.h>
 #include <TF1.h>
 #include <TGraph.h>
-//#include <TCanvas.h>
+#include <TCanvas.h>
+#include <TStyle.h>
 //#include <TFrame.h>
 
 // --- Standard library ---
@@ -70,11 +71,10 @@
 
 ClassImp(AliPHOSGetter)
   
-AliPHOSGetter * AliPHOSGetter::fgObjGetter = 0 ; 
-AliPHOSLoader * AliPHOSGetter::fgPhosLoader = 0;
+AliPHOSGetter   * AliPHOSGetter::fgObjGetter  = 0 ; 
+AliPHOSLoader   * AliPHOSGetter::fgPhosLoader = 0;
+AliPHOSCalibData* AliPHOSGetter::fgCalibData  = 0;
 Int_t AliPHOSGetter::fgDebug = 0;
-AliPHOSCalibData* AliPHOSGetter::fCalibData = 0;
-AliPHOSAlignData* AliPHOSGetter::fAlignData = 0;
 
 //  TFile * AliPHOSGetter::fgFile = 0 ; 
 
@@ -169,7 +169,7 @@ AliPHOSClusterizer * AliPHOSGetter::Clusterizer()
 }
 
 //____________________________________________________________________________ 
-TObjArray * AliPHOSGetter::CpvRecPoints() 
+TObjArray * AliPHOSGetter::CpvRecPoints() const
 {
   // asks the Loader to return the CPV RecPoints container 
 
@@ -184,7 +184,7 @@ TObjArray * AliPHOSGetter::CpvRecPoints()
 }
 
 //____________________________________________________________________________ 
-TClonesArray * AliPHOSGetter::Digits() 
+TClonesArray * AliPHOSGetter::Digits() const
 {
   // asks the Loader to return the Digits container 
 
@@ -213,7 +213,7 @@ AliPHOSDigitizer * AliPHOSGetter::Digitizer()
 
 
 //____________________________________________________________________________ 
-TObjArray * AliPHOSGetter::EmcRecPoints() 
+TObjArray * AliPHOSGetter::EmcRecPoints() const
 {
   // asks the Loader to return the EMC RecPoints container 
 
@@ -228,7 +228,7 @@ TObjArray * AliPHOSGetter::EmcRecPoints()
 }
 
 //____________________________________________________________________________ 
-TClonesArray * AliPHOSGetter::TrackSegments() 
+TClonesArray * AliPHOSGetter::TrackSegments() const
 {
   // asks the Loader to return the TrackSegments container 
 
@@ -256,7 +256,7 @@ AliPHOSTrackSegmentMaker * AliPHOSGetter::TrackSegmentMaker()
 }
 
 //____________________________________________________________________________ 
-TClonesArray * AliPHOSGetter::RecParticles() 
+TClonesArray * AliPHOSGetter::RecParticles() const
 {
   // asks the Loader to return the TrackSegments container 
 
@@ -347,7 +347,6 @@ void AliPHOSGetter::Event(AliRawReader *rawReader, const char* opt)
     Int_t iEvent = rl->GetEventNumber();
     rl->GetEvent(iEvent);
     ReadRaw(rawReader) ;
-    rl->SetEventNumber(++iEvent);
   }    
  
 }
@@ -362,7 +361,7 @@ Int_t AliPHOSGetter::EventNumber() const
 }
 
 //____________________________________________________________________________ 
-  TClonesArray * AliPHOSGetter::Hits()  
+  TClonesArray * AliPHOSGetter::Hits() const
 {
   // asks the loader to return  the Hits container 
   
@@ -563,7 +562,7 @@ Bool_t AliPHOSGetter::OpenESDFile()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time)
+void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) const
 {
   // Fits the raw signal time distribution 
 
@@ -594,7 +593,7 @@ void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHigh
     if ( timezero1 + PHOS()->GetRawFormatTimePeak() < PHOS()->GetRawFormatTimeMax() * 0.4 ) { // else its noise 
       signalF->SetParameter(2, signalmax) ; 
       signalF->SetParameter(3, timezero1) ;    	    
-      gLowGain->Fit(signalF, "QRON", "", 0., timezero2); //, "QRON") ; 
+      gLowGain->Fit(signalF, "QRO", "", 0., timezero2); //, "QRON") ; 
       energy = signalF->GetParameter(2) ; 
       time   = signalF->GetMaximumX() - PHOS()->GetRawFormatTimePeak() - PHOS()->GetRawFormatTimeTrigger() ;
     }
@@ -619,7 +618,7 @@ void AliPHOSGetter::FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHigh
     if ( timezero1 + PHOS()->GetRawFormatTimePeak() < PHOS()->GetRawFormatTimeMax() * 0.4 ) { // else its noise  
       signalF->SetParameter(2, signalmax) ; 
       signalF->SetParameter(3, timezero1) ;               
-      gHighGain->Fit(signalF, "QRON", "", 0., timezero2) ; 
+      gHighGain->Fit(signalF, "QRO", "", 0., timezero2) ; 
       energy = signalF->GetParameter(2) ; 
       time   = signalF->GetMaximumX() - PHOS()->GetRawFormatTimePeak() - PHOS()->GetRawFormatTimeTrigger() ;
     }
@@ -673,7 +672,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 
   Int_t relId[4], id =0;
   Bool_t lowGainFlag = kFALSE ; 
- 
+
   TClonesArray * digits = Digits() ;
   digits->Clear() ; 
   Int_t idigit = 0 ; 
@@ -683,9 +682,29 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
 
   TGraph * gLowGain = new TGraph(PHOS()->GetRawFormatTimeBins()) ; 
   TGraph * gHighGain= new TGraph(PHOS()->GetRawFormatTimeBins()) ;  
+  gLowGain ->SetTitle("Low gain channel");
+  gHighGain->SetTitle("High gain channel");
 
   while ( in.Next() ) { // PHOS entries loop 
     if ( (in.IsNewRow() || in.IsNewColumn() || in.IsNewModule()) ) {
+      if (!first) {
+	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
+ 	amp = (Int_t)energy;
+	if (energy > 0) {
+	  new((*digits)[idigit]) AliPHOSDigit( -1, id, (Float_t)energy, time) ;	
+	  idigit++ ; 
+	}
+	Int_t index ; 
+	for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
+	  gLowGain ->SetPoint(index,
+			      index * PHOS()->GetRawFormatTimeMax() /
+			      PHOS()->GetRawFormatTimeBins(), 0) ;  
+	  gHighGain->SetPoint(index,
+			      index * PHOS()->GetRawFormatTimeMax() / 
+			      PHOS()->GetRawFormatTimeBins(), 0) ; 
+	} 
+      }
+      first = kFALSE ; 
       relId[0] = in.GetModule() ;
       if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
 	relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ;
@@ -696,38 +715,24 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
       relId[2] = in.GetRow() ;
       relId[3] = in.GetColumn() ;
       PHOSGeometry()->RelToAbsNumbering(relId, id) ;
-      if (!first) {
-	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
-//  	amp = CalibrateRaw(energy,relId);
- 	amp = (Int_t)energy;
-	if (amp > 0) {
-	  new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
-	  idigit++ ; 
-	}
-	Int_t index ; 
-	for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
-	  gLowGain->SetPoint(index, index * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 0) ;  
-	  gHighGain->SetPoint(index, index * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 0) ; 
-	} 
-      }
-      first = kFALSE ; 
     }
     if (lowGainFlag)
       gLowGain->SetPoint(in.GetTime(), 
-		     in.GetTime()* PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
-		     in.GetSignal()) ;
+			 in.GetTime()* PHOS()->GetRawFormatTimeMax() /
+			 PHOS()->GetRawFormatTimeBins(), 
+			 in.GetSignal()) ;
     else 
       gHighGain->SetPoint(in.GetTime(), 
-			 in.GetTime() * PHOS()->GetRawFormatTimeMax() / PHOS()->GetRawFormatTimeBins(), 
-			 in.GetSignal() ) ;
+			  in.GetTime() * PHOS()->GetRawFormatTimeMax() /
+			  PHOS()->GetRawFormatTimeBins(), 
+			  in.GetSignal() ) ;
 
   } // PHOS entries loop
 
   FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
-//   amp = CalibrateRaw(energy,relId);
   amp = (Int_t)energy;
-  if (amp > 0 ) {
-    new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;
+  if (energy > 0 ) {
+    new((*digits)[idigit]) AliPHOSDigit( -1, id, (Float_t)energy, time) ;
     idigit++ ; 
   }
   digits->Sort() ; 
@@ -736,40 +741,9 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
   delete gLowGain;
   delete gHighGain ; 
   
-//   AliInfo(Form("Event %d, digits: %d\n", EventNumber(),digits->GetEntries())); //bvp
   return digits->GetEntriesFast() ; 
 }
 
-//   TClonesArray * digits = Digits() ;
-//   digits->Clear() ; 
-//   Int_t idigit = 0 ; 
-
-//   while ( in.Next() ) { // PHOS entries loop 
- 
-//     Int_t amp = in.GetSignal() ; 
-//     Double_t time = in.GetTime() ; 
-//     Int_t relId[4], id ;
-
-//     relId[0] = in.GetModule() ;
-//     if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
-//       relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ; 
-//     }
-//     relId[1] = 0 ; 
-//     relId[2] = in.GetRow() ; 
-//     relId[3] = in.GetColumn() ; 
-//     PHOSGeometry()->RelToAbsNumbering(relId, id) ;	
-    
-//     if (amp > 0 && id >=0 ) {
-//       new((*digits)[idigit]) AliPHOSDigit( -1, id, amp, time) ;	
-//       idigit++ ; 
-//     }
-    
-//   } // PHOS entries loop
-  
-//   digits->Sort() ; 
-  
-//   return digits->GetEntriesFast() ; 
-// }
 //____________________________________________________________________________ 
 Int_t AliPHOSGetter::ReadTreeD()
 {
@@ -881,7 +855,7 @@ Int_t AliPHOSGetter::ReadTreeE(Int_t event)
 }
 
 //____________________________________________________________________________ 
-TClonesArray * AliPHOSGetter::SDigits() 
+TClonesArray * AliPHOSGetter::SDigits() const
 {
   // asks the Loader to return the Digits container 
 
@@ -1093,15 +1067,5 @@ AliPHOSCalibData* AliPHOSGetter::CalibData()
 { 
   // Check if the instance of AliPHOSCalibData exists, and return it
 
-  return fCalibData;
-}
-//____________________________________________________________________________ 
-
-AliPHOSAlignData* AliPHOSGetter::AlignData()
-{ 
-  // Check if the instance of AliPHOSAlignData exists, and return it
-
-  if( !(AliCDBManager::Instance()->IsDefaultStorageSet()) )
-    fAlignData=0x0;
-  return fAlignData;
+  return fgCalibData;
 }
