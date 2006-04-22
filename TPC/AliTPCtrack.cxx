@@ -31,15 +31,51 @@
 ClassImp(AliTPCtrack)
 
 //_________________________________________________________________________
-AliTPCtrack::AliTPCtrack(): AliKalmanTrack() 
+AliTPCtrack::AliTPCtrack(): 
+  AliKalmanTrack(),
+  fX(0),
+  fAlpha(0),
+  fdEdx(0),
+  fP0(0),
+  fP1(0),
+  fP2(0),
+  fP3(0),
+  fP4(0),
+  fC00(1e10),
+  fC10(0),
+  fC11(1e10),
+  fC20(0),
+  fC21(0),
+  fC22(1e10),
+  fC30(0),
+  fC31(0),
+  fC32(0),
+  fC33(1e10),
+  fC40(0),
+  fC41(0),
+  fC42(0),
+  fC43(0),
+  fC44(0),
+  fNumber(0),
+  fSdEdx(1e10),
+  fNFoundable(0),
+  fBConstrain(kFALSE),
+  fLastPoint(-1),
+  fFirstPoint(-1),
+  fRemoval(0),
+  fTrackType(0),
+  fLab2(-1),
+  fNShared(0),
+  fReference()
 {
   //-------------------------------------------------
   // default constructor
   //-------------------------------------------------
-  fX = fP0 = fP1 = fP2 = fP3 = fP3 = fP4 = 0.0;
-  fAlpha = fdEdx = 0.0;
-  fNumber = 0;  // [SR, 01.04.2003]
+  for (Int_t i=0; i<kMaxRow;i++) fIndex[i]=-2;
+  for (Int_t i=0; i<4;i++) fPoints[i]=0.;
+  for (Int_t i=0; i<12;i++) fKinkPoint[i]=0.;
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=0;
+  for (Int_t i=0; i<3;i++) fV0Indexes[i]=0;
 }
 
 //_________________________________________________________________________
@@ -47,39 +83,54 @@ AliTPCtrack::AliTPCtrack(): AliKalmanTrack()
 
 
 AliTPCtrack::AliTPCtrack(UInt_t index, const Double_t xx[5],
-const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
+const Double_t cc[15], Double_t xref, Double_t alpha) :
+  AliKalmanTrack(),
+  fX(xref),
+  fdEdx(0),
+  fP0(xx[0]),
+  fP1(xx[1]),
+  fP2(xx[2]),
+  fP3(xx[3]),
+  fP4(xx[4]),
+  fC00(cc[0]),
+  fC10(cc[1]),
+  fC11(cc[2]),
+  fC20(cc[3]),
+  fC21(cc[4]),
+  fC22(cc[5]),
+  fC30(cc[6]),
+  fC31(cc[7]),
+  fC32(cc[8]),
+  fC33(cc[9]),
+  fC40(cc[10]),
+  fC41(cc[11]),
+  fC42(cc[12]),
+  fC43(cc[13]),
+  fC44(cc[14]),
+  fNumber(1),
+  fSdEdx(1e10),
+  fNFoundable(0),
+  fBConstrain(kFALSE),
+  fLastPoint(0),
+  fFirstPoint(0),
+  fRemoval(0),
+  fTrackType(0),
+  fLab2(0),
+  fNShared(0),
+  fReference()
+{
   //-----------------------------------------------------------------
   // This is the main track constructor.
   //-----------------------------------------------------------------
-  fX=xref;
   fAlpha=alpha;
   if (fAlpha<-TMath::Pi()) fAlpha += 2*TMath::Pi();
   if (fAlpha>=TMath::Pi()) fAlpha -= 2*TMath::Pi();
-  fdEdx=0.;
-
-  fP0=xx[0]; fP1=xx[1]; fP2=xx[2]; fP3=xx[3]; fP4=xx[4];
 
   SaveLocalConvConst();
 
-  fC00=cc[0];
-  fC10=cc[1];  fC11=cc[2];
-  fC20=cc[3];  fC21=cc[4];  fC22=cc[5];
-  fC30=cc[6];  fC31=cc[7];  fC32=cc[8];  fC33=cc[9];
-  fC40=cc[10]; fC41=cc[11]; fC42=cc[12]; fC43=cc[13]; fC44=cc[14];
-
-  fIndex[0]=index;
   SetNumberOfClusters(1);
-  //
-  //MI
-  fSdEdx      = 0;
-  fNFoundable = 0;
-  fBConstrain = 0;
-  fLastPoint  = 0;
-  fFirstPoint = 0;
-  fRemoval    = 0;
-  fTrackType  = 0;
-  fLab2       = 0;
-
+  
+  fIndex[0]=index;
   for (Int_t i=1; i<kMaxRow;i++) fIndex[i]=-2;
   for (Int_t i=0; i<4;i++) fPoints[i]=0.;
   for (Int_t i=0; i<12;i++) fKinkPoint[i]=0.;
@@ -88,7 +139,19 @@ const Double_t cc[15], Double_t xref, Double_t alpha) : AliKalmanTrack() {
 }
 
 //_____________________________________________________________________________
-AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
+AliTPCtrack::AliTPCtrack(const AliESDtrack& t) :
+  AliKalmanTrack(),
+  fSdEdx(1e10),
+  fNFoundable(0),
+  fBConstrain(kFALSE),
+  fLastPoint(0),
+  fFirstPoint(0),
+  fRemoval(0),
+  fTrackType(0),
+  fLab2(0),
+  fNShared(0),
+  fReference()
+{
   //-----------------------------------------------------------------
   // Conversion AliESDtrack -> AliTPCtrack.
   //-----------------------------------------------------------------
@@ -133,48 +196,51 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t) : AliKalmanTrack() {
   StartTimeIntegral();
   Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
   SetIntegratedLength(t.GetIntegratedLength());
-  //
-  //MI
-  fSdEdx      = 0;
-  fNFoundable = 0;
-  fBConstrain = 0;
-  fLastPoint  = 0;
-  fFirstPoint = 0;
-  fRemoval    = 0;
-  fTrackType  = 0;
-  fLab2       = 0;
-  //  SetFakeRatio(t.GetTPCFakeRatio());
 }
 
 //_____________________________________________________________________________
-AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) : AliKalmanTrack(t) {
+AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) :
+  AliKalmanTrack(t),
+  fX(t.fX),
+  fAlpha(t.fAlpha),
+  fdEdx(t.fdEdx),
+  fP0(t.fP0),
+  fP1(t.fP1),
+  fP2(t.fP2),
+  fP3(t.fP3),
+  fP4(t.fP4),
+  fC00(t.fC00),
+  fC10(t.fC10),
+  fC11(t.fC11),
+  fC20(t.fC20),
+  fC21(t.fC21),
+  fC22(t.fC22),
+  fC30(t.fC30),
+  fC31(t.fC31),
+  fC32(t.fC32),
+  fC33(t.fC33),
+  fC40(t.fC40),
+  fC41(t.fC41),
+  fC42(t.fC42),
+  fC43(t.fC43),
+  fC44(t.fC44),
+  fNumber(t.fNumber),
+  fSdEdx(t.fSdEdx),
+  fNFoundable(t.fNFoundable),
+  fBConstrain(t.fBConstrain),
+  fLastPoint(t.fLastPoint),
+  fFirstPoint(t.fFirstPoint),
+  fRemoval(t.fRemoval),
+  fTrackType(t.fTrackType),
+  fLab2(t.fLab2),
+  fNShared(t.fNShared),
+  fReference(t.fReference)
+
+{
   //-----------------------------------------------------------------
   // This is a track copy constructor.
   //-----------------------------------------------------------------
-  fX=t.fX;
-  fAlpha=t.fAlpha;
-  fdEdx=t.fdEdx;
-
-  fP0=t.fP0; fP1=t.fP1; fP2=t.fP2; fP3=t.fP3; fP4=t.fP4;
-
-  fC00=t.fC00;
-  fC10=t.fC10;  fC11=t.fC11;
-  fC20=t.fC20;  fC21=t.fC21;  fC22=t.fC22;
-  fC30=t.fC30;  fC31=t.fC31;  fC32=t.fC32;  fC33=t.fC33;
-  fC40=t.fC40;  fC41=t.fC41;  fC42=t.fC42;  fC43=t.fC43;  fC44=t.fC44;
-
-  //Int_t n=GetNumberOfClusters();
   for (Int_t i=0; i<kMaxRow; i++) fIndex[i]=t.fIndex[i];
-  //
-  //MI 
-  fSdEdx      = t.fSdEdx;
-  fNFoundable = t.fNFoundable;
-  fBConstrain = t.fBConstrain;
-  fLastPoint  = t.fLastPoint;
-  fFirstPoint = t.fFirstPoint;
-  fRemoval    = t.fRemoval ;
-  fTrackType  = t.fTrackType;
-  fLab2       = t.fLab2;
   for (Int_t i=0; i<4;i++) fPoints[i]=t.fPoints[i];
   for (Int_t i=0; i<12;i++) fKinkPoint[i]=t.fKinkPoint[i];
   for (Int_t i=0; i<3;i++) fKinkIndexes[i]=t.fKinkIndexes[i];
@@ -336,7 +402,7 @@ Int_t AliTPCtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t rho) {
   fC44 += xz*xz*theta2;
   /*
   //
-  //MI coeficints
+  //MI coeficients
   Double_t dc22 = (1-ey*ey+xz*xz*fX*fX)*theta2;
   Double_t dc32 = (xz*fX*zz1)*theta2;
   Double_t dc33 = (zz1*zz1)*theta2;
