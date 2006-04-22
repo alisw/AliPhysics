@@ -1,7 +1,18 @@
 #ifndef ALITRACKFITTERRIEMAN_H
 #define ALITRACKFITTERRIEMAN_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-#include "TMatrixDSym.h"
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Class to the track points on the Riemann sphere. Inputs are
+// the set of id's (volids) of the volumes in which residuals are
+// calculated to construct a chi2 function to be minimized during 
+// the alignment procedures
+//
+//////////////////////////////////////////////////////////////////////////////
 
 #include "AliTrackFitter.h"
 
@@ -11,7 +22,7 @@ class AliTrackFitterRieman : public AliTrackFitter{
   AliTrackFitterRieman(AliTrackPointArray *array, Bool_t owner = kTRUE);
   AliTrackFitterRieman(const AliTrackFitterRieman &rieman);
   AliTrackFitterRieman &operator =(const AliTrackFitterRieman& rieman);
-  virtual ~AliTrackFitterRieman();
+  virtual ~AliTrackFitterRieman() {}
 
   Bool_t Fit(const TArrayI *volIds,const TArrayI *volIdsFit = 0x0,
 	     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
@@ -22,12 +33,12 @@ class AliTrackFitterRieman : public AliTrackFitter{
   void AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy, Float_t sz);
   void Update();
 
-  Double_t GetC(); 
-  Double_t GetYat(Double_t x);
+  Double_t GetC() const; 
+  Double_t GetYat(Double_t x) const;
   Double_t GetZat(Double_t x) const;
   Double_t GetDYat(Double_t x) const;
   Double_t GetDZat(Double_t x) const;
-  Bool_t   GetXYZat(Double_t r, Float_t *xyz);
+  Bool_t   GetXYZat(Double_t r, Float_t *xyz) const;
 
  protected:
 
@@ -38,11 +49,11 @@ class AliTrackFitterRieman : public AliTrackFitter{
   Double_t      fSumZZ;     //sum for ZZ part
   Int_t         fNUsed;     //actual number of space-points used in the fit
   Bool_t        fConv;      // indicates convergation
-  Float_t      *fX;
-  Float_t      *fY;
-  Float_t      *fZ;
-  Float_t      *fSy;
-  Float_t      *fSz;
+  Float_t      *fX;         // Array of x coordinates
+  Float_t      *fY;         // Array of y coordinates
+  Float_t      *fZ;         // Array of z coordinates
+  Float_t      *fSy;        // Array of errors on y coordinate
+  Float_t      *fSz;        // Array of errors on z coordinate
 
  private:
 

@@ -1,3 +1,32 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Class to the track points on the Riemann sphere. Inputs are
+// the set of id's (volids) of the volumes in which residuals are
+// calculated to construct a chi2 function to be minimized during 
+// the alignment procedures. For the moment the track extrapolation is 
+// taken at the space-point reference plane. The reference plane is
+// found using the covariance matrix of the point
+// (assuming sigma(x)=0 at the reference coordinate system.
+//
+//////////////////////////////////////////////////////////////////////////////
+
 #include "TMatrixDSym.h"
 #include "TMatrixD.h"
 #include "AliTrackFitterRieman.h"
@@ -54,7 +83,8 @@ AliTrackFitterRieman::AliTrackFitterRieman(const AliTrackFitterRieman &rieman):
 //_____________________________________________________________________________
 AliTrackFitterRieman &AliTrackFitterRieman::operator =(const AliTrackFitterRieman& rieman)
 {
-  // assignment operator
+  //
+  // Assignment operator
   //
   if(this==&rieman) return *this;
   ((AliTrackFitter *)this)->operator=(rieman);
@@ -70,16 +100,13 @@ AliTrackFitterRieman &AliTrackFitterRieman::operator =(const AliTrackFitterRiema
   return *this;
 }
 
-AliTrackFitterRieman::~AliTrackFitterRieman()
-{
-  // destructor
-  //
-}
-
+//_____________________________________________________________________________
 void AliTrackFitterRieman::Reset()
 {
+  //
   // Reset the track parameters and
   // rieman sums
+  //
   AliTrackFitter::Reset();
   fAlpha = 0.;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
@@ -357,14 +384,14 @@ void AliTrackFitterRieman::Update(){
   //
   if (1) {
     Double_t x0 = -fParams[1]/fParams[0];
-    Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+    Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
 
     for (Int_t i=0;i<fNUsed;i++){
-      Double_t phi  = TMath::ASin((fX[i]-x0)*Rm1);
-      Double_t phi0 = TMath::ASin((0.-x0)*Rm1);
+      Double_t phi  = TMath::ASin((fX[i]-x0)*rm1);
+      Double_t phi0 = TMath::ASin((0.-x0)*rm1);
       Double_t weight = 1/fSz[i];
       weight *=weight;
-      Double_t dphi = (phi-phi0)/Rm1;
+      Double_t dphi = (phi-phi0)/rm1;
       fSumXZ[0] +=weight;
       fSumXZ[1] +=weight*dphi;
       fSumXZ[2] +=weight*dphi*dphi;
@@ -394,10 +421,10 @@ void AliTrackFitterRieman::Update(){
     }
   }
   else {
-    Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-    fSumXZ[1] += fSumXZ[5]*Rm1*Rm1;
-    fSumXZ[2] += fSumXZ[6]*Rm1*Rm1 + fSumXZ[8]*Rm1*Rm1*Rm1*Rm1;
-    fSumXZ[4] += fSumXZ[7]*Rm1*Rm1;
+    Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+    fSumXZ[1] += fSumXZ[5]*rm1*rm1;
+    fSumXZ[2] += fSumXZ[6]*rm1*rm1 + fSumXZ[8]*rm1*rm1*rm1*rm1;
+    fSumXZ[4] += fSumXZ[7]*rm1*rm1;
 
     TMatrixDSym     smatrixz(2);
     smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = fSumXZ[1]; smatrixz(1,1) = fSumXZ[2];
@@ -439,7 +466,12 @@ void AliTrackFitterRieman::Update(){
     fConv=kFALSE;
 }
 
-Double_t AliTrackFitterRieman::GetYat(Double_t x){
+//_____________________________________________________________________________
+Double_t AliTrackFitterRieman::GetYat(Double_t x) const
+{
+  //
+  // Returns value of Y at given X 
+  //
   if (!fConv) return 0.;
   Double_t res2 = (x*fParams[0]+fParams[1]);
   res2*=res2;
@@ -450,46 +482,69 @@ Double_t AliTrackFitterRieman::GetYat(Double_t x){
   return res2;
 }
 
-Double_t AliTrackFitterRieman::GetDYat(Double_t x) const {
+//_____________________________________________________________________________
+Double_t AliTrackFitterRieman::GetDYat(Double_t x) const 
+{
+  //
+  // Returns value of dY/dX at given X
+  //
   if (!fConv) return 0.;
   Double_t x0 = -fParams[1]/fParams[0];
   if (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<0) return 0;
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  if ( 1./(Rm1*Rm1)-(x-x0)*(x-x0)<=0) return 0;
-  Double_t res = (x-x0)/TMath::Sqrt(1./(Rm1*Rm1)-(x-x0)*(x-x0));
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  if ( 1./(rm1*rm1)-(x-x0)*(x-x0)<=0) return 0;
+  Double_t res = (x-x0)/TMath::Sqrt(1./(rm1*rm1)-(x-x0)*(x-x0));
   if (fParams[0]<0) res*=-1.;
   return res;
 }
 
-
-
-Double_t AliTrackFitterRieman::GetZat(Double_t x) const {
+//_____________________________________________________________________________
+Double_t AliTrackFitterRieman::GetZat(Double_t x) const 
+{
+  //
+  // Returns value of Z given X
+  //
   if (!fConv) return 0.;
   Double_t x0 = -fParams[1]/fParams[0];
   if (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<=0) return 0;
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  Double_t phi  = TMath::ASin((x-x0)*Rm1);
-  Double_t phi0 = TMath::ASin((0.-x0)*Rm1);
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  Double_t phi  = TMath::ASin((x-x0)*rm1);
+  Double_t phi0 = TMath::ASin((0.-x0)*rm1);
   Double_t dphi = (phi-phi0);
-  Double_t res = fParams[3]+fParams[4]*dphi/Rm1;
+  Double_t res = fParams[3]+fParams[4]*dphi/rm1;
   return res;
 }
 
-Double_t AliTrackFitterRieman::GetDZat(Double_t x) const {
+//_____________________________________________________________________________
+Double_t AliTrackFitterRieman::GetDZat(Double_t x) const 
+{
+  //
+  // Returns value of dZ/dX given X
+  //
   if (!fConv) return 0.;
   Double_t x0 = -fParams[1]/fParams[0]; 
   if  (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<=0) return 0;
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  Double_t res = fParams[4]/TMath::Cos(TMath::ASin((x-x0)*Rm1));
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  Double_t res = fParams[4]/TMath::Cos(TMath::ASin((x-x0)*rm1));
   return res;
 }
 
 
-Double_t AliTrackFitterRieman::GetC(){
+//_____________________________________________________________________________
+Double_t AliTrackFitterRieman::GetC() const
+{
+  //
+  // Returns curvature
+  //
   return fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1);
 }
 
-Bool_t AliTrackFitterRieman::GetXYZat(Double_t r, Float_t *xyz){
+//_____________________________________________________________________________
+Bool_t AliTrackFitterRieman::GetXYZat(Double_t r, Float_t *xyz) const
+{
+  //
+  // Returns position given radius
+  //
   if (!fConv) return kFALSE;
   Double_t res2 = (r*fParams[0]+fParams[1]);
   res2*=res2;
@@ -501,11 +556,11 @@ Bool_t AliTrackFitterRieman::GetXYZat(Double_t r, Float_t *xyz){
   if (!fConv) return kFALSE;
   Double_t x0 = -fParams[1]/fParams[0];
   if (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<=0) return 0;
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  Double_t phi  = TMath::ASin((r-x0)*Rm1);
-  Double_t phi0 = TMath::ASin((0.-x0)*Rm1);
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  Double_t phi  = TMath::ASin((r-x0)*rm1);
+  Double_t phi0 = TMath::ASin((0.-x0)*rm1);
   Double_t dphi = (phi-phi0);
-  Double_t res = fParams[3]+fParams[4]*dphi/Rm1;
+  Double_t res = fParams[3]+fParams[4]*dphi/rm1;
 
   Double_t sin = TMath::Sin(fAlpha);
   Double_t cos = TMath::Cos(fAlpha);
@@ -516,11 +571,13 @@ Bool_t AliTrackFitterRieman::GetXYZat(Double_t r, Float_t *xyz){
   return kTRUE;
 }
 
+//_____________________________________________________________________________
 Bool_t AliTrackFitterRieman::GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) const
 {
+  //
   // Get the closest to a given spacepoint track trajectory point
   // Look for details in the description of the Fit() method
-
+  //
   if (!fConv) return kFALSE;
 
   // First X and Y coordinates
@@ -534,7 +591,7 @@ Bool_t AliTrackFitterRieman::GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) c
   Double_t x0 = -fParams[1]/fParams[0]*cos -         1./fParams[0]*sin;
   Double_t y0 =          1./fParams[0]*cos - fParams[1]/fParams[0]*sin;
   if ((-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1) <= 0) return kFALSE;
-  Double_t R  = TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1)/
+  Double_t r  = TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1)/
                 fParams[0];
 
   // Define space-point refence plane
@@ -545,11 +602,11 @@ Bool_t AliTrackFitterRieman::GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) c
   Double_t y  = p.GetY()*cosp - p.GetX()*sinp;
   Double_t x0p= x0*cosp + y0*sinp;
   Double_t y0p= y0*cosp - x0*sinp;
-  if ((R*R - (x-x0p)*(x-x0p))<0) {
-    AliWarning(Form("Track extrapolation failed ! (Track radius = %f, track circle x = %f, space-point x = %f, reference plane angle = %f\n",R,x0p,x,alphap));
+  if ((r*r - (x-x0p)*(x-x0p))<0) {
+    AliWarning(Form("Track extrapolation failed ! (Track radius = %f, track circle x = %f, space-point x = %f, reference plane angle = %f\n",r,x0p,x,alphap));
     return kFALSE;
   }
-  Double_t temp = TMath::Sqrt(R*R - (x-x0p)*(x-x0p));
+  Double_t temp = TMath::Sqrt(r*r - (x-x0p)*(x-x0p));
   Double_t y1 = y0p + temp;
   Double_t y2 = y0p - temp;
   Double_t yprime = y1;
