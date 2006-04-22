@@ -29,52 +29,104 @@ ClassImp(AliTPCseed)
 
 
 
-AliTPCseed::AliTPCseed():AliTPCtrack(){
+AliTPCseed::AliTPCseed():
+  AliTPCtrack(),
+  fEsd(0x0),
+  fPoints(0x0),
+  fEPoints(0x0),
+  fRow(0),
+  fSector(-1),
+  fRelativeSector(-1),
+  fCurrentSigmaY2(1e10),
+  fCurrentSigmaZ2(1e10),
+  fErrorY2(1e10),
+  fErrorZ2(1e10),
+  fCurrentCluster(0x0),
+  fCurrentClusterIndex1(-1),
+  fInDead(kFALSE),
+  fIsSeeding(kFALSE),
+  fNoCluster(0),
+  fSort(0),
+  fBSigned(kFALSE),
+  fSeedType(0),
+  fSeed1(-1),
+  fSeed2(-1),
+  fMAngular(0),
+  fCircular(0)
+{
   //
-  fRow=0; 
-  fRemoval =0; 
   for (Int_t i=0;i<200;i++) SetClusterIndex2(i,-3);
   for (Int_t i=0;i<160;i++) fClusterPointer[i]=0;
   for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=0;
-  for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
-  fPoints = 0;
-  fEPoints = 0;
-  fNFoundable =0;
-  fNShared  =0;
-  fRemoval = 0;
-  fSort =0;
-  fFirstPoint =0;
-  fNoCluster =0;
-  fBSigned = kFALSE;
-  fSeed1 =-1;
-  fSeed2 =-1;
-  fCurrentCluster =0;
-  fCurrentSigmaY2=0;
-  fCurrentSigmaZ2=0;
-  fEsd =0;
-  fCircular = 0;  // not curling track
+  for (Int_t i=0;i<AliPID::kSPECIES;i++)   fTPCr[i]=0.2;
+  for (Int_t i=0;i<4;i++) {
+    fDEDX[i] = 0.;
+    fSDEDX[i] = 1e10;
+    fNCDEDX[i] = 0;
+  }
+  for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
-AliTPCseed::AliTPCseed(const AliTPCseed &s):AliTPCtrack(s){
+
+AliTPCseed::AliTPCseed(const AliTPCseed &s):
+  AliTPCtrack(s),
+  fEsd(0x0),
+  fPoints(0x0),
+  fEPoints(0x0),
+  fRow(0),
+  fSector(-1),
+  fRelativeSector(-1),
+  fCurrentSigmaY2(1e10),
+  fCurrentSigmaZ2(1e10),
+  fErrorY2(1e10),
+  fErrorZ2(1e10),
+  fCurrentCluster(0x0),
+  fCurrentClusterIndex1(-1),
+  fInDead(kFALSE),
+  fIsSeeding(kFALSE),
+  fNoCluster(0),
+  fSort(0),
+  fBSigned(kFALSE),
+  fSeedType(0),
+  fSeed1(-1),
+  fSeed2(-1),
+  fMAngular(0),
+  fCircular(0)
+{
   //---------------------
   // dummy copy constructor
   //-------------------------
   for (Int_t i=0;i<160;i++) fClusterPointer[i] = s.fClusterPointer[i];
   for (Int_t i=0;i<160;i++) fIndex[i] = s.fIndex[i];
-
-  fPoints  = 0;
-  fEPoints = 0;
-  fCircular =0;
-  fEsd =0;
 }
-AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
+AliTPCseed::AliTPCseed(const AliTPCtrack &t):
+  AliTPCtrack(t),
+  fEsd(0x0),
+  fPoints(0x0),
+  fEPoints(0x0),
+  fRow(0),
+  fSector(-1),
+  fRelativeSector(-1),
+  fCurrentSigmaY2(1e10),
+  fCurrentSigmaZ2(1e10),
+  fErrorY2(1e10),
+  fErrorZ2(1e10),
+  fCurrentCluster(0x0),
+  fCurrentClusterIndex1(-1),
+  fInDead(kFALSE),
+  fIsSeeding(kFALSE),
+  fNoCluster(0),
+  fSort(0),
+  fBSigned(kFALSE),
+  fSeedType(0),
+  fSeed1(-1),
+  fSeed2(-1),
+  fMAngular(0),
+  fCircular(0)
+{
   //
-  //copy constructor
-  fPoints = 0;
-  fEPoints = 0;
-  fNShared  =0; 
-  //  fTrackPoints =0;
-  fRemoval =0;
-  fSort =0;
+  // Constructor from AliTPCtrack
+  //
+  fFirstPoint =0;
   for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=t.GetKinkIndex(i);
   for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<160;i++) {
@@ -87,48 +139,55 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){
       SetClusterIndex2(i,-3); 
     }    
   }
-  fFirstPoint =0;
-  fNoCluster =0;
-  fBSigned = kFALSE;
-  fSeed1 =-1;
-  fSeed2 =-1;
-  fCurrentCluster =0;
-  fCurrentSigmaY2=0;
-  fCurrentSigmaZ2=0;
-  fCircular =0;
-  fEsd =0;
+  for (Int_t i=0;i<4;i++) {
+    fDEDX[i] = 0.;
+    fSDEDX[i] = 1e10;
+    fNCDEDX[i] = 0;
+  }
+  for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
-AliTPCseed::AliTPCseed(UInt_t index,  const Double_t xx[5], const Double_t cc[15], 
-                                        Double_t xr, Double_t alpha):      
-  AliTPCtrack(index, xx, cc, xr, alpha) {
-   //
+AliTPCseed::AliTPCseed(UInt_t index,  const Double_t xx[5],
+		       const Double_t cc[15], 
+		       Double_t xr, Double_t alpha):      
+  AliTPCtrack(index, xx, cc, xr, alpha),
+  fEsd(0x0),
+  fPoints(0x0),
+  fEPoints(0x0),
+  fRow(0),
+  fSector(-1),
+  fRelativeSector(-1),
+  fCurrentSigmaY2(1e10),
+  fCurrentSigmaZ2(1e10),
+  fErrorY2(1e10),
+  fErrorZ2(1e10),
+  fCurrentCluster(0x0),
+  fCurrentClusterIndex1(-1),
+  fInDead(kFALSE),
+  fIsSeeding(kFALSE),
+  fNoCluster(0),
+  fSort(0),
+  fBSigned(kFALSE),
+  fSeedType(0),
+  fSeed1(-1),
+  fSeed2(-1),
+  fMAngular(0),
+  fCircular(0)
+{
   //
-  //constructor
-  fRow =0;
+  // Constructor
+  //
+  fFirstPoint =0;
   for (Int_t i=0;i<200;i++) SetClusterIndex2(i,-3);
   for (Int_t i=0;i<160;i++) fClusterPointer[i]=0;
   for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=0;
   for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
-
-  fPoints = 0;
-  fEPoints = 0;
-  fNFoundable =0;
-  fNShared  = 0;
-  //  fTrackPoints =0;
-  fRemoval =0;
-  fSort =0;
-  fFirstPoint =0;
-  //  fHelixIn = new TClonesArray("AliHelix",0);
-  //fHelixOut = new TClonesArray("AliHelix",0);
-  fNoCluster =0;
-  fBSigned = kFALSE;
-  fSeed1 =-1;
-  fSeed2 =-1;
-  fCurrentCluster =0;
-  fCurrentSigmaY2=0;
-  fCurrentSigmaZ2=0;
-  fEsd =0;
+  for (Int_t i=0;i<4;i++) {
+    fDEDX[i] = 0.;
+    fSDEDX[i] = 1e10;
+    fNCDEDX[i] = 0;
+  }
+  for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
 AliTPCseed::~AliTPCseed(){
