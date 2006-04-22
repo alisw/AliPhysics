@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.90  2006/04/11 15:22:59  hristov
+ * run number in query set to -1: forces AliCDBManager to use its run number (A.Colla)
+ *
  * Revision 1.89  2006/03/13 14:05:42  kharlov
  * Calibration objects for EMC and CPV
  *
@@ -207,7 +210,6 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
       gime->Event(ievent    ,"D"); // Read digits from simulated data
     else
       gime->Event(fRawReader,"W"); // Read digits from raw data
-    
     fNumberOfEmcClusters  = fNumberOfCpvClusters  = 0 ;
     
     MakeClusters() ;
@@ -223,7 +225,12 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     //increment the total number of recpoints per run 
     fRecPointsInRun += gime->EmcRecPoints()->GetEntriesFast() ;  
     fRecPointsInRun += gime->CpvRecPoints()->GetEntriesFast() ;  
+    if (fRawReader != 0) {
+      AliRunLoader * rl = AliRunLoader::GetRunLoader(gime->PhosLoader()->GetTitle());
+      Int_t iEvent = ievent;
+      rl->SetEventNumber(++iEvent);
     }
+  }
   
   if(fWrite) //do not unload in "on flight" mode
     Unload();
@@ -460,7 +467,8 @@ void AliPHOSClusterizerv1::CleanDigits(TClonesArray * digits){
   for(Int_t i=0; i<digits->GetEntriesFast(); i++){
     AliPHOSDigit * digit = static_cast<AliPHOSDigit*>(digits->At(i)) ;
     Float_t cut = IsInEmc(digit) ? fEmcMinE : fCpvMinE ;
-    if(Calibrate(digit->GetAmp(),digit->GetId()) < cut)
+//     if(Calibrate(digit->GetAmp(),digit->GetId()) < cut) //YVK
+    if(digit->GetEnergy() < cut)
       digits->RemoveAt(i) ;
   }
   digits->Compress() ;
@@ -597,9 +605,7 @@ void AliPHOSClusterizerv1::MakeClusters()
   //Remove digits below threshold
   CleanDigits(digits) ;
 
-
   TClonesArray * digitsC =  static_cast<TClonesArray*>( digits->Clone() ) ;
-  
  
   // Clusterization starts  
 
@@ -615,7 +621,7 @@ void AliPHOSClusterizerv1::MakeClusters()
     TArrayI clusterdigitslist(1500) ;   
     Int_t index ;
 
-    if (( IsInEmc (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fEmcClusteringThreshold  ) || 
+    if (( IsInEmc (digit) && digit->GetEnergy() > fEmcClusteringThreshold  ) || 
         ( IsInCpv (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fCpvClusteringThreshold  ) ) {
       Int_t iDigitInCluster = 0 ; 
       
@@ -627,7 +633,8 @@ void AliPHOSClusterizerv1::MakeClusters()
         emcRecPoints->AddAt(new  AliPHOSEmcRecPoint(""), fNumberOfEmcClusters) ;
         clu = dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(fNumberOfEmcClusters) ) ; 
           fNumberOfEmcClusters++ ; 
-        clu->AddDigit(*digit, Calibrate(digit->GetAmp(),digit->GetId())) ; 
+//         clu->AddDigit(*digit, Calibrate(digit->GetAmp(),digit->GetId())) ; // YVK
+        clu->AddDigit(*digit, digit->GetEnergy()) ; 
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;        
         iDigitInCluster++ ; 
         digitsC->Remove(digit) ; 
@@ -675,7 +682,8 @@ void AliPHOSClusterizerv1::MakeClusters()
           case 0 :   // not a neighbour
             break ;
           case 1 :   // are neighbours 
-            clu->AddDigit(*digitN, Calibrate( digitN->GetAmp(), digitN->GetId() ) ) ;
+//             clu->AddDigit(*digitN, Calibrate( digitN->GetAmp(), digitN->GetId() ) ) ; // YVK: distinguish EMC and CPV!!!
+            clu->AddDigit(*digitN, digitN->GetEnergy()) ;
             clusterdigitslist[iDigitInCluster] = digitN->GetIndexInList() ; 
             iDigitInCluster++ ; 
             digitsC->Remove(digitN) ;

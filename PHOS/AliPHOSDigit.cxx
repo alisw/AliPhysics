@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.37  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -62,6 +65,29 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
   // ctor with all data 
 
   fAmp         = digEnergy ;
+  fEnergy      = 0 ;
+  fTime        = time ;
+  fTimeR       = fTime ;
+  fId          = id ;
+  fIndexInList = index ; 
+  if( primary != -1){
+    fNprimary    = 1 ; 
+    fPrimary = new Int_t[fNprimary] ;
+    fPrimary[0]  = primary ;
+  }
+  else{  //If the contribution of this primary smaller than fDigitThreshold (AliPHOSv1)
+    fNprimary = 0 ; 
+    fPrimary  = 0 ;
+  }
+}
+
+//____________________________________________________________________________
+AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Float_t energy, Float_t time, Int_t index) 
+{  
+  // ctor with all data 
+
+  fAmp         = 0 ;
+  fEnergy      = energy ;
   fTime        = time ;
   fTimeR       = fTime ;
   fId          = id ;
@@ -91,6 +117,7 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) : AliDigitNew(digit)
   else
     fPrimary = 0 ;
   fAmp         = digit.fAmp ;
+  fEnergy      = digit.fEnergy ;
   fTime        = digit.fTime ;
   fTimeR       = digit.fTimeR ;
   fId          = digit.fId;
@@ -144,7 +171,7 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 void AliPHOSDigit::Print(const Option_t *) const
 {
   // Print the digit together with list of primaries
-  printf("PHOS digit: Amp=%d, Id=%d, Time=%e, TimeR=%e, NPrim=%d ",fAmp,fId,fTime,fTimeR,fNprimary);
+  printf("PHOS digit: Amp=%d/E=%.3f, Id=%d, Time=%.3e, TimeR=%.3e, NPrim=%d ",fAmp,fEnergy,fId,fTime,fTimeR,fNprimary);
   for(Int_t index = 0; index <fNprimary; index ++ )
     printf(" %d ",fPrimary[index]); 
   printf("\n") ;
@@ -175,7 +202,7 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
   // Adds the amplitude of digits and completes the list of primary particles
   if(digit.fNprimary>0){
      Int_t *tmp = new Int_t[fNprimary+digit.fNprimary] ;
-     if(fAmp < digit.fAmp){//most energetic primary in second digit => first primaries in list from second digit
+     if(fAmp < digit.fAmp || fEnergy < digit.fEnergy){//most energetic primary in second digit => first primaries in list from second digit
         for (Int_t index = 0 ; index < digit.fNprimary ; index++)
            tmp[index]=(digit.fPrimary)[index] ;
         for (Int_t index = 0 ; index < fNprimary ; index++)
@@ -192,7 +219,8 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
      fPrimary = tmp ;
    }
    fNprimary+=digit.fNprimary ;
-   fAmp += digit.fAmp ;
+   fAmp     += digit.fAmp ;
+   fEnergy  += digit.fEnergy ;
    if(fTime > digit.fTime)
       fTime = digit.fTime ;
    fTimeR = fTime ; 

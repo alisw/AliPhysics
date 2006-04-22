@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.96  2006/04/07 08:41:59  hristov
+ * Follow AliAlignObj framework and remove AliPHOSAlignData (Yu.Kharlov)
+ *
  * Revision 1.95  2006/03/14 19:40:41  kharlov
  * Remove De-digitizing of raw data and digitizing the raw data fit
  *
@@ -424,10 +427,6 @@ void AliPHOS::Digits2Raw()
     return;
   }
 
-  // get the digitizer 
-  loader->LoadDigitizer();
-  AliPHOSDigitizer * digitizer = dynamic_cast<AliPHOSDigitizer *>(loader->Digitizer())  ; 
-  
   // get the geometry
   AliPHOSGeometry* geom = GetGeometry();
   if (!geom) {
@@ -437,7 +436,9 @@ void AliPHOS::Digits2Raw()
 
   // some digitization constants
   const Int_t    kDDLOffset = 0x600; // assigned to PHOS
-  const Int_t    kThreshold = 1; // skip digits below this threshold
+//   const Int_t    kThreshold = 1; // skip digits below this threshold // YVK
+  const Float_t    kThreshold = 0.001; // skip digits below 1 MeV
+  const Int_t      kAdcThreshold = 1;  // Lower ADC threshold to write to raw data
 
   AliAltroBuffer* buffer = NULL;
   Int_t prevDDL = -1;
@@ -447,7 +448,7 @@ void AliPHOS::Digits2Raw()
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
     AliPHOSDigit* digit = dynamic_cast<AliPHOSDigit *>(digits->At(iDigit)) ;
-    if (digit->GetAmp() < kThreshold) 
+    if (digit->GetEnergy() < kThreshold) 
       continue;
     Int_t relId[4];
     geom->AbsToRelNumbering(digit->GetId(), relId);
@@ -482,7 +483,7 @@ void AliPHOS::Digits2Raw()
 
     // out of time range signal (?)
     if (digit->GetTimeR() > GetRawFormatTimeMax() ) {
-      buffer->FillBuffer(digit->GetAmp());
+      buffer->FillBuffer((Int_t)digit->GetEnergy());
       buffer->FillBuffer(GetRawFormatTimeBins() );  // time bin
       buffer->FillBuffer(3);          // bunch length      
       buffer->WriteTrailer(3, relId[3], relId[2], module);  // trailer
@@ -492,7 +493,7 @@ void AliPHOS::Digits2Raw()
       Double_t energy = 0 ;
       Int_t   module = relId[0];
       if ( digit->GetId() <= geom->GetNModules() *  geom->GetNCristalsInModule()) {
-	energy=digit->GetAmp()*digitizer->GetEMCchannel() + digitizer->GetEMCpedestal();
+	energy=digit->GetEnergy();
       }
       else {
 // 	energy = digit->GetAmp()*digitizer->GetCPVchannel()+digitizer->GetCPVpedestal();
@@ -502,10 +503,10 @@ void AliPHOS::Digits2Raw()
       
       if (lowgain) 
 	buffer->WriteChannel(relId[3], relId[2], module + fLowGainOffset, 
-			     GetRawFormatTimeBins(), adcValuesLow , kThreshold);
+			     GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
       else 
 	buffer->WriteChannel(relId[3], relId[2], module, 
-			     GetRawFormatTimeBins(), adcValuesHigh, kThreshold);
+			     GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
       
     }
   }

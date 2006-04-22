@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.33  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -38,6 +41,7 @@ class AliPHOSDigit : public AliDigitNew {
   
   AliPHOSDigit() ;
   AliPHOSDigit(Int_t primary, Int_t id, Int_t DigEnergy, Float_t Time, Int_t index = -1) ;
+  AliPHOSDigit(Int_t primary, Int_t id, Float_t energy , Float_t Time, Int_t index = -1) ;
   AliPHOSDigit(const AliPHOSDigit & digit) ;
   virtual ~AliPHOSDigit() ;
 
@@ -47,25 +51,28 @@ class AliPHOSDigit : public AliDigitNew {
   //  AliPHOSDigit& operator=(const AliPHOSDigit) {
   //  Fatal("operator = ", "not implemented") ; return *this ; } 
   Int_t   Compare(const TObject * obj) const ;  
-  Int_t   GetNprimary() const { return fNprimary ; }
+  Int_t   GetNprimary()           const { return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 
-  Float_t GetTime(void) const {return fTime ;}
-  Float_t GetTimeR(void) const {return fTimeR ;}
-  Bool_t  IsSortable() const { return kTRUE ; }
+  Float_t GetEnergy(void)         const {return fEnergy ;}
+  Float_t GetTime(void)           const {return fTime ;}
+  Float_t GetTimeR(void)          const {return fTimeR ;}
+  Bool_t  IsSortable()            const { return kTRUE ; }
   void    Print(const Option_t * = "") const;
-  void    SetAmp(Int_t Amp) { fAmp=Amp ; } 
-  void    SetTime(Float_t time) {fTime = time ;}
+  void    SetAmp(Int_t Amp)      {fAmp   = Amp  ;} 
+  void    SetEnergy(Float_t E)   {fEnergy= E    ;} 
+  void    SetTime(Float_t time)  {fTime  = time ;}
   void    SetTimeR(Float_t time) {fTimeR = time ;}
   void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
 
  private:
 
-  Int_t fNprimary ;        // Number of primaries
+  Int_t   fNprimary ;      // Number of primaries
   Int_t * fPrimary ;       //[fNprimary] Array of primaries      
+  Float_t fEnergy ;        // Deposited energy in GeV
   Float_t fTime ;          // Calculcated time 
   Float_t fTimeR ;         // Earliest time: to be used by Digits2Raw
     
-  ClassDef(AliPHOSDigit,3)   // Digit in PHOS 
+  ClassDef(AliPHOSDigit,4) // Digit in PHOS 
 
 } ;
 

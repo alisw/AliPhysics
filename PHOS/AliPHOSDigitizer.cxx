@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.89  2006/04/11 15:22:59  hristov
+ * run number in query set to -1: forces AliCDBManager to use its run number (A.Colla)
+ *
  * Revision 1.88  2006/03/13 14:05:43  kharlov
  * Calibration objects for EMC and CPV
  *
@@ -226,7 +229,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     sdigArray->AddAt(gime->SDigits(), i) ;
   }
 
-  //Find the first crystall with signal
+  //Find the first crystal with signal
   Int_t nextSig = 200000 ; 
   TClonesArray * sdigits ;  
   for(i = 0 ; i < fInput ; i++){
@@ -249,7 +252,9 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //Put Noise contribution
   for(absID = 1 ; absID <= nEMC ; absID++){
     Float_t noise = gRandom->Gaus(0., fPinNoise) ; 
-    new((*digits)[absID-1]) AliPHOSDigit( -1, absID, sDigitizer->Digitize(noise), TimeOfNoise() ) ;
+    // YVK: do not digitize amplitudes for EMC
+//     new((*digits)[absID-1]) AliPHOSDigit( -1, absID, sDigitizer->Digitize(noise), TimeOfNoise() ) ;
+    new((*digits)[absID-1]) AliPHOSDigit( -1, absID, noise, TimeOfNoise() ) ;
     //look if we have to add signal?
     digit = dynamic_cast<AliPHOSDigit *>(digits->At(absID-1)) ;
     
@@ -257,11 +262,11 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       //Add SDigits from all inputs 
       ticks->Clear() ;
       Int_t contrib = 0 ;
-      Float_t a = digit->GetAmp() ;
+      Float_t a = digit->GetEnergy() ;
       Float_t b = TMath::Abs( a / fTimeSignalLength) ;
       //Mark the beginning of the signal
       new((*ticks)[contrib++]) AliPHOSTick(digit->GetTime(),0, b);  
-      //Mark the end of the ignal     
+      //Mark the end of the signal     
       new((*ticks)[contrib++]) AliPHOSTick(digit->GetTime()+fTimeSignalLength, -a, -b); 
       
       //loop over inputs
@@ -280,13 +285,13 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 	    primaryoffset = 10000000*i ;
 	  curSDigit->ShiftPrimary(primaryoffset) ;
 	  
-	  a = curSDigit->GetAmp() ;
+	  a = curSDigit->GetEnergy() ;
 	  b = a /fTimeSignalLength ;
 	  new((*ticks)[contrib++]) AliPHOSTick(curSDigit->GetTime(),0, b);  
 	  new((*ticks)[contrib++]) AliPHOSTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
 	  
 	  *digit = *digit + *curSDigit ;  //add energies
-	  
+
 	  index[i]++ ;
 	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
 	    curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
@@ -367,7 +372,9 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //remove digits below thresholds
   for(i = 0 ; i < nEMC ; i++){
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
-    if(sDigitizer->Calibrate( digit->GetAmp() ) < fEMCDigitThreshold)
+    // YVK: amplitude is in energy units
+//     if(sDigitizer->Calibrate( digit->GetAmp() ) < fEMCDigitThreshold)
+    if(digit->GetEnergy() < fEMCDigitThreshold)
       digits->RemoveAt(i) ;
     else
       digit->SetTime(gRandom->Gaus(digit->GetTime(),fTimeResolution) ) ;
@@ -375,7 +382,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 
 
   for(i = nEMC; i < nCPV ; i++)
-    if( sDigitizer->Calibrate( dynamic_cast<AliPHOSDigit*>(digits->At(i))->GetAmp() ) < fCPVDigitThreshold )
+//     if( sDigitizer->Calibrate( dynamic_cast<AliPHOSDigit*>(digits->At(i))->GetAmp() ) < fCPVDigitThreshold )
+    if( dynamic_cast<AliPHOSDigit*>(digits->At(i))->GetEnergy() < fCPVDigitThreshold )
       digits->RemoveAt(i) ;
     
   digits->Compress() ;  
@@ -387,8 +395,9 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   for (i = 0 ; i < ndigits ; i++) { 
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ; 
     digit->SetIndexInList(i) ;     
-    Float_t energy = sDigitizer->Calibrate(digit->GetAmp()) ;
-    digit->SetAmp(DigitizeEnergy(energy,digit->GetId()) ) ;
+    if(digit->GetId() > fEmcCrystals){ //digitize CPV only
+      digit->SetAmp(DigitizeEnergy(digit->GetEnergy(),digit->GetId()) ) ;
+    }
   }
 }
 
@@ -409,7 +418,7 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
   Int_t relId[4];
   gime->PHOSGeometry()->AbsToRelNumbering(absId,relId);
   Int_t module=relId[0];
-  Int_t raw=relId[2];
+  Int_t row   =relId[2];
   Int_t column=relId[3];
   
   Int_t chanel ;
@@ -420,19 +429,17 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
     //If no calibration DB found, accept default values.
 
     if(gime->CalibData()) {
-      fADCpedestalEmc = gime->CalibData()->GetADCpedestalEmc(module,column,raw);
-      fADCchanelEmc = gime->CalibData()->GetADCchannelEmc(module,column,raw);
+      fADCpedestalEmc = gime->CalibData()->GetADCpedestalEmc(module,column,row);
+      fADCchanelEmc = gime->CalibData()->GetADCchannelEmc(module,column,row);
     }
-//         printf("\t\tabsId %d ==>>module=%d column=%d raw=%d ped=%.4f gain=%.4f\n",
-//     	   absId,module,column,raw,fADCpedestalEmc,fADCchanelEmc);
 
     chanel = (Int_t) TMath::Ceil((energy - fADCpedestalEmc)/fADCchanelEmc) ;       
     if(chanel > fNADCemc ) chanel =  fNADCemc ;
   }
   else{ //Digitize as CPV
     if(gime->CalibData()) {
-      fADCpedestalCpv = gime->CalibData()->GetADCpedestalCpv(module,column,raw);
-      fADCchanelCpv = gime->CalibData()->GetADCchannelCpv(module,column,raw);
+      fADCpedestalCpv = gime->CalibData()->GetADCpedestalCpv(module,column,row);
+      fADCchanelCpv = gime->CalibData()->GetADCchannelCpv(module,column,row);
     }
 
     chanel = (Int_t) TMath::Ceil((energy - fADCpedestalCpv)/fADCchanelCpv) ;       
@@ -579,12 +586,12 @@ void AliPHOSDigitizer::InitParameters()
 {
   // Set initial parameters Digitizer
 
-  fPinNoise           = 0.004 ;
-  fEMCDigitThreshold  = 0.012 ;
-  fCPVNoise           = 0.01;
-  fCPVDigitThreshold  = 0.09 ;
-  fTimeResolution     = 0.5e-9 ;
-  fTimeSignalLength   = 1.0e-9 ;
+  fPinNoise           = 0.004 ;  // [GeV]
+  fEMCDigitThreshold  = 0.012 ;  // [GeV]
+  fCPVNoise           = 0.01;    // [aux units]
+  fCPVDigitThreshold  = 0.09 ;   // [aux units]
+  fTimeResolution     = 0.5e-9 ; // [sec]
+  fTimeSignalLength   = 1.0e-9 ; // [sec]
   fDigitsInRun  = 0 ; 
   fADCchanelEmc = 0.0015;        // width of one ADC channel in GeV
   fADCpedestalEmc = 0.005 ;      //
@@ -594,7 +601,8 @@ void AliPHOSDigitizer::InitParameters()
   fADCpedestalCpv = 0.012 ;         // 
   fNADCcpv = (Int_t) TMath::Power(2,12);      // number of channels in CPV ADC
 
-  fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
+//   fTimeThreshold = 0.001*10000000 ; //Means 1 MeV in terms of SDigits amplitude
+  fTimeThreshold = 0.001 ; // [GeV]
   SetEventRange(0,-1) ;
     
 }
@@ -679,10 +687,10 @@ void AliPHOSDigitizer::Print(const Option_t *)const
     printf("\nWriting digits to %s", gime->GetDigitsFileName().Data()) ;
     
     printf("\nWith following parameters:\n") ;
-    printf("  Electronics noise in EMC (fPinNoise) = %f\n", fPinNoise ) ; 
-    printf("  Threshold  in EMC  (fEMCDigitThreshold) = %f\n", fEMCDigitThreshold ) ;  
-    printf("  Noise in CPV (fCPVNoise) = %f\n", fCPVNoise ) ; 
-    printf("  Threshold in CPV (fCPVDigitThreshold) = %f\n",fCPVDigitThreshold ) ;  
+    printf("  Electronics noise in EMC (fPinNoise)    = %f GeV\n", fPinNoise ) ; 
+    printf("  Threshold  in EMC  (fEMCDigitThreshold) = %f GeV\n", fEMCDigitThreshold ) ;  
+    printf("  Noise in CPV (fCPVNoise)                = %f aux units\n", fCPVNoise ) ; 
+    printf("  Threshold in CPV (fCPVDigitThreshold)   = %f aux units\n",fCPVDigitThreshold ) ;  
     printf(" ---------------------------------------------------\n") ;   
   }
   else
@@ -715,8 +723,10 @@ void AliPHOSDigitizer::Print(const Option_t *)const
       digit = (AliPHOSDigit * )  digits->At(index) ;
       if(digit->GetNprimary() == 0) 
 	continue;
-      printf("%6d  %8d    %6.5e %4d      %2d :",
-	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
+//       printf("%6d  %8d    %6.5e %4d      %2d :",
+// 	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  // YVK
+      printf("%6d  %.4f    %6.5e %4d      %2d :",
+	      digit->GetId(), digit->GetEnergy(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
 	printf("%d ",digit->GetPrimary(iprimary+1) ) ; 

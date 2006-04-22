@@ -19,6 +19,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.47  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -216,10 +219,10 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 	
 	if( hit->GetEnergy() > fPrimThreshold)
 	  new((*sdigits)[nSdigits]) AliPHOSDigit(hit->GetPrimary(),hit->GetId(),
-						 Digitize(hit->GetEnergy()), hit->GetTime()) ;
+						 hit->GetEnergy() ,hit->GetTime()) ;
 	else
-	  new((*sdigits)[nSdigits]) AliPHOSDigit( -1              , hit->GetId(), 
-						  Digitize(hit->GetEnergy()), hit->GetTime()) ;
+	  new((*sdigits)[nSdigits]) AliPHOSDigit(-1               ,hit->GetId(), 
+						 hit->GetEnergy() ,hit->GetTime()) ;
 	nSdigits++ ;	
 	
        }
@@ -325,8 +328,9 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
       digit = dynamic_cast<AliPHOSDigit *>( sdigits->At(index) ) ;
       //  if(digit->GetNprimary() == 0) 
       // 	continue;
-      printf("%6d  %8d    %6.5e %4d      %2d :\n",
-  	      digit->GetId(), digit->GetAmp(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
+//       printf("%6d  %8d    %6.5e %4d      %2d :\n", // YVK
+      printf("%6d  %.4f    %6.5e %4d      %2d :\n",
+  	      digit->GetId(), digit->GetEnergy(), digit->GetTime(), digit->GetIndexInList(), digit->GetNprimary()) ;  
       Int_t iprimary;
       for (iprimary=0; iprimary<digit->GetNprimary(); iprimary++) {
 	printf("%d ",digit->GetPrimary(iprimary+1) ) ; 
