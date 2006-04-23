@@ -31,8 +31,6 @@ class AliESDVertex;
 class AliKalmanTrack;
 class AliTrackPointArray;
 
-const Int_t kNPlane = 6;
-
 class AliESDtrack : public AliExternalTrackParam {
 public:
   AliESDtrack();
@@ -216,6 +214,12 @@ public:
     kESDpid=0x40000000,
     kTIME=0x80000000
   }; 
+  enum {
+    kNPlane = 6,
+    kMaxITScluster=12,
+    kMaxTPCcluster=160,
+    kMaxTRDcluster=180
+  };
 protected:
   
   //AliESDtrack & operator=(const AliESDtrack & );
@@ -244,9 +248,9 @@ protected:
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
-  Float_t fITSchi2MIP[12];     // chi2s in the ITS
+  Float_t fITSchi2MIP[kMaxITScluster];     // chi2s in the ITS
   Int_t   fITSncls;        // number of clusters assigned in the ITS
-  Int_t   fITSindex[12];   //! indices of the assigned ITS clusters
+  Int_t   fITSindex[kMaxITScluster];   //! indices of the assigned ITS clusters
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fITSLabel;       // label according TPC
@@ -257,7 +261,7 @@ protected:
   Float_t fTPCchi2;        // chi2 in the TPC
   Int_t   fTPCncls;        // number of clusters assigned in the TPC
   UShort_t fTPCnclsF;      // number of findable clusters in the TPC
-  Int_t  fTPCindex[180];  //! indices of the assigned TPC clusters
+  Int_t  fTPCindex[kMaxTPCcluster];  //! indices of the assigned TPC clusters
   TBits   fTPCClusterMap;  // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   Float_t fTPCsignal;      // detector's PID signal
   UShort_t fTPCsignalN;      // number of points used for dEdx
@@ -272,7 +276,7 @@ protected:
   Float_t fTRDchi2;        // chi2 in the TRD
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
   Int_t   fTRDncls0;       // number of clusters assigned in the TRD before first material cross
-  Int_t  fTRDindex[180];   //! indices of the assigned TRD clusters
+  Int_t  fTRDindex[kMaxTRDcluster];   //! indices of the assigned TRD clusters
   Float_t fTRDsignal;      // detector's PID signal
   Float_t fTRDsignals[kNPlane];  // TRD signals from all six planes
   Int_t   fTRDTimBin[kNPlane];   // Time bin of Max cluster from all six planes
