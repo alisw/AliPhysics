@@ -114,7 +114,8 @@ AliESDtrack::AliESDtrack() :
   //
   // The default ESD constructor 
   //
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) {
+  Int_t i;
+  for (i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=1.;
     fITSr[i]=1.;
@@ -124,12 +125,6 @@ AliESDtrack::AliESDtrack() :
     fRICHr[i]=1.;
   }
   
-  //  for (Int_t i=0; i<AliPID::kSPECIESN; i++) {
-  //  fPHOSr[i]  = 1.;
-  // } 
-  //  fPHOSpos[0]=fPHOSpos[1]=fPHOSpos[2]=0.;
-
-  Int_t i;
   for (i=0; i<kMaxITScluster; i++)  fITSchi2MIP[i]=1e10;
   for (i=0; i<kMaxITScluster; i++)  { fITSindex[i]=-1; }
   for (i=0; i<kMaxTPCcluster; i++) { fTPCindex[i]=-2; }
@@ -140,13 +135,6 @@ AliESDtrack::AliESDtrack() :
   for (i=0;i<4;i++) {fTPCPoints[i]=-1;}
   for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (i=0;i<10;i++) {fTOFInfo[i]=-1;}
-  fTPCLabel = 0;
-  fTRDLabel = 0;
-  fTRDQuality =0;
-  fTRDBudget =0;
-  fITSLabel = 0;
-  fITStrack = 0;
-  fTRDtrack = 0;  
 }
 
 //_______________________________________________________________________
@@ -198,7 +186,9 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fRICHtheta(track.fRICHtheta),
   fRICHphi(track.fRICHphi),
   fRICHdx(track.fRICHdx),
-  fRICHdy(track.fRICHdy)
+  fRICHdy(track.fRICHdy),
+  fRICHmipX(track.fRICHmipX),
+  fRICHmipY(track.fRICHmipY)
 {
   //
   //copy constructor
@@ -222,14 +212,9 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
       fTRDTimBin[i]=track.fTRDTimBin[i];
   }
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
-  //
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
   for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
   for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
-  //
-  //  for (Int_t i=0;i<3;i++) fPHOSpos[i]=track.fPHOSpos[i]; 
-  //for (Int_t i=0;i<AliPID::kSPECIESN;i++) fPHOSr[i]=track.fPHOSr[i]; 
-  //
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fRICHr[i]=track.fRICHr[i];
 
   if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
