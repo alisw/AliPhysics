@@ -62,7 +62,17 @@ class AliTPCTrackerPoint  {
   friend class AliTPCseed;
  public:
 
-  AliTPCTrackerPoint(){fTX=0; fTY=0; fTZ=0; fTAngleZ=0; fTAngleY=0; fIsShared = 0;}
+  AliTPCTrackerPoint():
+    fTX(0),
+    fTZ(0),
+    fTY(0),
+    fTAngleZ(0),
+    fTAngleY(0),
+    fSigmaZ(0),
+    fSigmaY(0),
+    fErrZ(0),
+    fErrY(0),
+    fIsShared(0){}
   virtual ~AliTPCTrackerPoint(){}
   Float_t  GetX() const  {return (fTX*0.01);}
   Float_t  GetZ() const {return (fTZ*0.01);}
