@@ -91,8 +91,15 @@ Double_t AliExternalTrackParam::GetP() const {
   // This function returns the track momentum
   // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
-  if (TMath::Abs(fP[4])<=0) return 0;
+  if (TMath::Abs(fP[4])<=0) return 1e+33;
   return TMath::Sqrt(1.+ fP[3]*fP[3])/TMath::Abs(fP[4]);
+}
+
+Double_t AliExternalTrackParam::Get1P() const {
+  //---------------------------------------------------------------------
+  // This function returns the 1/(track momentum)
+  //---------------------------------------------------------------------
+  return TMath::Abs(fP[4])/TMath::Sqrt(1.+ fP[3]*fP[3]);
 }
 
 //_______________________________________________________________________

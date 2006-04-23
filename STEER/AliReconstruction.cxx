@@ -73,7 +73,7 @@
 //                                                                           //
 // Uniform/nonuniform field tracking switches (default: uniform field)       //
 //                                                                           //
-//   rec.SetUniformFieldTracking();  ( rec.SetNonuniformFieldTracking(); )   //
+//   rec.SetUniformFieldTracking(); ( rec.SetUniformFieldTracking(kFALSE); ) //
 //                                                                           //
 // The filling of additional ESD information can be steered by               //
 //                                                                           //
@@ -123,6 +123,7 @@
 #include "AliRawReaderDate.h"
 #include "AliRawReaderRoot.h"
 #include "AliESD.h"
+#include "AliESDfriend.h"
 #include "AliESDVertex.h"
 #include "AliTracker.h"
 #include "AliVertexer.h"
@@ -133,7 +134,6 @@
 #include "AliESDtrack.h"
 
 #include "AliRunTag.h"
-//#include "AliLHCTag.h"
 #include "AliDetectorTag.h"
 #include "AliEventTag.h"
 
@@ -153,17 +153,20 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
 				     const char* name, const char* title) :
   TNamed(name, title),
 
-  fRunLocalReconstruction("ALL"),
   fUniformField(kTRUE),
   fRunVertexFinder(kTRUE),
   fRunHLTTracking(kFALSE),
+  fStopOnError(kFALSE),
+  fWriteAlignmentData(kFALSE),
+  fWriteESDfriend(kFALSE),
+
+  fRunLocalReconstruction("ALL"),
   fRunTracking("ALL"),
   fFillESD("ALL"),
   fGAliceFileName(gAliceFilename),
   fInput(""),
   fFirstEvent(0),
   fLastEvent(-1),
-  fStopOnError(kFALSE),
   fCheckPointLevel(0),
   fOptions(),
   fLoadAlignFromCDB(kTRUE),
@@ -175,7 +178,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fVertexer(NULL),
 
   fAlignObjArray(NULL),
-  fWriteAlignmentData(kFALSE),
   fCDBUri(cdbUri)
 {
 // create reconstruction object with default parameters
@@ -192,17 +194,20 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
 AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   TNamed(rec),
 
-  fRunLocalReconstruction(rec.fRunLocalReconstruction),
   fUniformField(rec.fUniformField),
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunHLTTracking(rec.fRunHLTTracking),
+  fStopOnError(rec.fStopOnError),
+  fWriteAlignmentData(rec.fWriteAlignmentData),
+  fWriteESDfriend(rec.fWriteESDfriend),
+
+  fRunLocalReconstruction(rec.fRunLocalReconstruction),
   fRunTracking(rec.fRunTracking),
   fFillESD(rec.fFillESD),
   fGAliceFileName(rec.fGAliceFileName),
   fInput(rec.fInput),
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
-  fStopOnError(rec.fStopOnError),
   fCheckPointLevel(0),
   fOptions(),
   fLoadAlignFromCDB(rec.fLoadAlignFromCDB),
@@ -214,7 +219,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fVertexer(NULL),
 
   fAlignObjArray(rec.fAlignObjArray),
-  fWriteAlignmentData(rec.fWriteAlignmentData),
   fCDBUri(rec.fCDBUri)
 {
 // copy constructor
@@ -562,6 +566,18 @@ Bool_t AliReconstruction::Run(const char* input,
   hlttree->Branch("ESD", "AliESD", &hltesd);
   delete esd; delete hltesd;
   esd = NULL; hltesd = NULL;
+
+  // create the file and tree with ESD additions
+  TFile *filef=0; TTree *treef=0; AliESDfriend *esdf=0;
+  if (fWriteESDfriend) {
+     filef = TFile::Open("AliESDfriends.root", "RECREATE");
+     if (!filef->IsOpen()) {
+        AliError("opening AliESDfriends.root failed");
+     }
+     treef = new TTree("esdFriendTree", "Tree with ESD friends");
+     treef->Branch("ESDfriend", "AliESDfriend", &esdf);
+  }
+
   gROOT->cd();
 
   // loop over events
@@ -658,6 +674,12 @@ Bool_t AliReconstruction::Run(const char* input,
     // write HLT ESD
     hlttree->Fill();
 
+    // write ESD friend
+    if (fWriteESDfriend) {
+       esdf=new AliESDfriend(*esd);
+       treef->Fill();  
+    }
+
     if (fCheckPointLevel > 0)  WriteESD(esd, "final"); 
  
     delete esd; delete hltesd;
@@ -670,6 +692,11 @@ Bool_t AliReconstruction::Run(const char* input,
   file->cd();
   tree->Write();
   hlttree->Write();
+
+  if (fWriteESDfriend) {
+     filef->cd();
+     treef->Write(); delete treef; filef->Close(); delete filef; 
+  }
 
   // Create tags for the events in the ESD tree (the ESD tree is always present)
   // In case of empty events the tags will contain dummy values

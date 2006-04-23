@@ -54,7 +54,6 @@ public:
 
   void           SetRunLocalReconstruction(const char* detectors) {
     fRunLocalReconstruction = detectors;};
-  void           SetRunVertexFinder(Bool_t run) {fRunVertexFinder = run;};
   void           SetRunTracking(const char* detectors) {
     fRunTracking = detectors;};
   void           SetFillESD(const char* detectors) {fFillESD = detectors;};
@@ -66,14 +65,18 @@ public:
   void           SetLoadAlignData(const char* detectors) 
     {fLoadAlignData = detectors;};
 
-   void SetUniformFieldTracking(){fUniformField=kTRUE;} 
-   void SetNonuniformFieldTracking(){fUniformField=kFALSE;} 
 
-  void           SetStopOnError(Bool_t stopOnError) 
-    {fStopOnError = stopOnError;}
+  //*** Global reconstruction flag setters
+  void SetUniformFieldTracking(Bool_t flag=kTRUE){fUniformField=flag;} 
+  void SetRunVertexFinder(Bool_t flag=kTRUE) {fRunVertexFinder=flag;};
+  void SetRunHLTTracking(Bool_t flag=kTRUE) {fRunHLTTracking=flag;};
+  void SetStopOnError(Bool_t flag=kTRUE) {fStopOnError=flag;}
+  void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
+  void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
+
+		   
   void           SetCheckPointLevel(Int_t checkPointLevel)
     {fCheckPointLevel = checkPointLevel;}
-		   
   // CDB storage activation
   void InitCDBStorage();
   void SetDefaultStorage(const char* uri);
@@ -96,7 +99,6 @@ public:
   Bool_t         Run(Int_t firstEvent, Int_t lastEvent = -1)
     {return Run(NULL, firstEvent, lastEvent);};
 
-  void SetWriteAlignmentData(){fWriteAlignmentData=kTRUE;}
 
 private:
   Bool_t         RunLocalReconstruction(const TString& detectors);
@@ -124,18 +126,22 @@ private:
   void           WriteAlignmentData(AliESD* esd);
 
 
-
-  TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
+  //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
   Bool_t         fRunVertexFinder;    // run the vertex finder
   Bool_t         fRunHLTTracking;     // run the HLT tracking
+  Bool_t         fStopOnError;        // stop or continue on errors
+  Bool_t         fWriteAlignmentData; // write track space-points flag
+  Bool_t         fWriteESDfriend;     // write ESD friend flag
+
+
+  TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   TString        fRunTracking;        // run the tracking for these detectors
   TString        fFillESD;            // fill ESD for these detectors
   TString        fGAliceFileName;     // name of the galice file
   TString        fInput;              // name of input file or directory
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
-  Bool_t         fStopOnError;        // stop or continue on errors
   Int_t          fCheckPointLevel;    // level of ESD check points
   TObjArray      fOptions;            // options for reconstructor objects
   Bool_t         fLoadAlignFromCDB;   // Load alignment data from CDB and apply it to geometry or not
@@ -152,11 +158,10 @@ private:
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
 
   TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
-  Bool_t         fWriteAlignmentData; // write track space-points flag
 
   TString	 fCDBUri;	      // Uri of the default CDB storage
 
-  ClassDef(AliReconstruction, 6)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 7)      // class for running the reconstruction
 };
 
 #endif

@@ -11,7 +11,9 @@
 #pragma link C++ enum   AliLog::EType_t;
 
 #pragma link C++ class  AliESD+;
+#pragma link C++ class  AliESDfriend+;
 #pragma link C++ class  AliESDtrack+;
+#pragma link C++ class  AliESDfriendTrack+;
 #pragma link C++ class  AliESDMuonTrack+;
 #pragma link C++ class  AliESDPmdTrack+;
 #pragma link C++ class  AliESDTrdTrack+;

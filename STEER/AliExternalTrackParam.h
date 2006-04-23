@@ -49,6 +49,7 @@ class AliExternalTrackParam: public TObject {
   Double_t GetAlpha() const {return fAlpha;}
   Double_t GetSign() const {return (fP[4]>0) ? 1 : -1;}
   Double_t GetP() const;
+  Double_t Get1P() const;
   Double_t GetD(Double_t xv, Double_t yv, Double_t b) const; 
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
   Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass);
