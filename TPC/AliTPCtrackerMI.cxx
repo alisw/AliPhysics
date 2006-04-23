@@ -1316,6 +1316,11 @@ AliTPCclusterMI *AliTPCtrackerMI::GetClusterMI(Int_t index) const {
   const AliTPCRow * tpcrow=0;
   AliTPCclusterMI * clrow =0;
 
+  if (sec<0 || sec>=fkNIS*4) {
+    AliWarning(Form("Wrong sector %d",sec));
+    return 0x0;
+  }
+
   if (sec<fkNIS*2){
     tpcrow = &(fInnerSec[sec%fkNIS][row]);
     if (tpcrow==0) return 0;
