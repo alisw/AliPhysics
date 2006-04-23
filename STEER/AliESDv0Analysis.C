@@ -40,10 +40,10 @@ Int_t AliESDv0Analysis(const Char_t *dir=".") {
 
    //****** Tentative particle type "concentrations"
    Double_t c[5]={0.0, 0.0, 1, 0, 1};
+   AliPID::SetPriors(c);
 
    //******* The loop over events
-    while (tree->GetEvent(n))
-    {
+    while (tree->GetEvent(n)) {
 
      cerr<<"Processing event number : "<<n++<<endl;
 
@@ -58,7 +58,7 @@ Int_t AliESDv0Analysis(const Char_t *dir=".") {
       
        v0->ChangeMassHypothesis(3122);
        Double_t mass=v0->GetEffMass();
-       if (mass>1.17) {  //check also a LambdaBar hypothesis
+       if (mass>1.17) {  //check also the LambdaBar hypothesis
           v0->ChangeMassHypothesis(-3122);
           mass=v0->GetEffMass();
           if (mass>1.17) continue;
@@ -73,36 +73,24 @@ Int_t AliESDv0Analysis(const Char_t *dir=".") {
        // Check if the "proton track" is a proton
        if ((protonTrk->GetStatus()&AliESDtrack::kESDpid)!=0) {
 	 Double_t r[10]; protonTrk->GetESDpid(r);
-         Double_t rcc=0.;
-         Int_t i;
-         for (i=0; i<AliESDtrack::kSPECIES; i++) rcc+=(c[i]*r[i]);
-         if (rcc==0.) continue;
-         //Here we apply Bayes' formula
-         Double_t w[10];
-         for (i=0; i<AliESDtrack::kSPECIES; i++) w[i]=c[i]*r[i]/rcc;
-
-         if (w[4]<w[3]) continue;
-         if (w[4]<w[2]) continue;
-         if (w[4]<w[1]) continue;
-	 if (w[4]<w[0]) continue;
+         AliPID pid(r);
+         Double_t pp=pid.GetProbability(AliPID::kProton);
+         if (pp < pid.GetProbability(AliPID::kElectron)) continue;
+         if (pp < pid.GetProbability(AliPID::kMuon)) continue;
+         if (pp < pid.GetProbability(AliPID::kPion)) continue;
+         if (pp < pid.GetProbability(AliPID::kKaon)) continue;
        }
  
        //Check if the "pion track" is a pion
        if ((pionTrk->GetStatus()&AliESDtrack::kESDpid)!=0) {
 	 Double_t r[10]; pionTrk->GetESDpid(r);
-         Double_t rcc=0.;
-         Int_t i;
-         for (i=0; i<AliESDtrack::kSPECIES; i++) rcc+=(c[i]*r[i]);
-         if (rcc==0.) continue;
-         //Here we apply Bayes' formula
-         Double_t w[10];
-         for (i=0; i<AliESDtrack::kSPECIES; i++) w[i]=c[i]*r[i]/rcc;
-
-         if (w[2]<w[4]) continue;
-         if (w[2]<w[3]) continue;
-         if (w[2]<w[1]) continue;
-	 if (w[2]<w[0]) continue;
-       }
+         AliPID pid(r);
+         Double_t ppi=pid.GetProbability(AliPID::kPion);
+         if (ppi < pid.GetProbability(AliPID::kElectron)) continue;
+         if (ppi < pid.GetProbability(AliPID::kMuon)) continue;
+         if (ppi < pid.GetProbability(AliPID::kKaon)) continue;
+         if (ppi < pid.GetProbability(AliPID::kProton)) continue;
+        }
 
        hm->Fill(mass);
      } 
