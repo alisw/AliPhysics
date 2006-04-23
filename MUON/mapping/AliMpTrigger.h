@@ -82,7 +82,7 @@ private:
   Double_t fDX; //! half-size in x (cm)
   Double_t fDY; //! half-size in y (cm)
   
-  ClassDef(AliMpTrigger,1) // Slat for trigger
+  ClassDef(AliMpTrigger,2) // Slat for trigger
 };
 
 #endif
