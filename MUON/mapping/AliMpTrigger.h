@@ -75,14 +75,14 @@ private:
     
   Bool_t IsLayerValid(int layer) const;
   
-  TString fId; //! name of that slat
-  AliMpPlaneType fPlaneType; //! bending or non-bending
-  TObjArray fSlats; //! virtual slat composing this trigger slat
-  Int_t fMaxNofPadsY; //! max number of pads in y direction
-  Double_t fDX; //! half-size in x (cm)
-  Double_t fDY; //! half-size in y (cm)
+  TString fId; // name of that slat
+  AliMpPlaneType fPlaneType; // bending or non-bending
+  TObjArray fSlats; // virtual slat composing this trigger slat
+  Int_t fMaxNofPadsY; // max number of pads in y direction
+  Double_t fDX; // half-size in x (cm)
+  Double_t fDY; // half-size in y (cm)
   
-  ClassDef(AliMpTrigger,2) // Slat for trigger
+  ClassDef(AliMpTrigger,3) // Slat for trigger
 };
 
 #endif
