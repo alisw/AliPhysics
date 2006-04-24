@@ -40,6 +40,8 @@ class AliAltroRawStreamOld: public TObject {
 
     void SelectRawData(Int_t detId);                           // Select raw data for specific detector id
 
+    inline void  SetNoAltroMapping(Bool_t flag) { fNoAltroMapping = flag; }  // Specify whenever to use or not the altro mapping
+
   protected:
     AliAltroRawStreamOld(const AliAltroRawStreamOld& stream);
     AliAltroRawStreamOld& operator = (const AliAltroRawStreamOld& stream);
