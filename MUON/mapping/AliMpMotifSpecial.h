@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifSpecial.h,v 1.8 2006/03/17 11:37:51 ivana Exp $
+// $MpId: AliMpMotifSpecial.h,v 1.9 2006/04/24 13:54:27 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifSpecial
@@ -58,6 +58,7 @@ class AliMpMotifSpecial : public AliMpVMotif
                         const TVector2& dimensions);
   
   // Geometry
+  void CalculateDimensions();
   virtual TVector2 Dimensions() const;
 
   // Other methods
@@ -69,10 +70,11 @@ class AliMpMotifSpecial : public AliMpVMotif
   Int_t VectorIndex(const AliMpIntPair& indices) const;
 
   // data members
+  TVector2        fDimensions;           // motif dimensions
   DimensionsMap   fPadDimensionsVector;  // the vector of pad dimensions
   DimensionsMap2  fPadDimensionsVector2; // the vector of different pad dimensions
 
-  ClassDef(AliMpMotifSpecial,1) // A motif with its ID
+  ClassDef(AliMpMotifSpecial,2) // A motif with its ID
 };
 
 #endif //ALI_MP_MOTIF_SPECIAL_H

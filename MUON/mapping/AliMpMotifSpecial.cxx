@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifSpecial.cxx,v 1.10 2006/03/17 11:38:06 ivana Exp $
+// $MpId: AliMpMotifSpecial.cxx,v 1.11 2006/04/24 13:54:33 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifSpecial
@@ -148,10 +148,9 @@ TVector2 AliMpMotifSpecial::GetPadDimensions(Int_t i) const
 }  
 
 //______________________________________________________________________________
-TVector2 AliMpMotifSpecial::Dimensions() const
+void AliMpMotifSpecial::CalculateDimensions()
 {
-  /// Give the dimension of the motif
-
+  /// Calculate motif dimensions and keep them in fDimensions data
 
   Int_t i,j;
   Double_t sizeY=0.;
@@ -175,7 +174,15 @@ TVector2 AliMpMotifSpecial::Dimensions() const
 
   delete [] tabSizeX;
   
-  return TVector2(sizeX,sizeY);
+  fDimensions = TVector2(sizeX,sizeY);
+}  
+
+//______________________________________________________________________________
+TVector2 AliMpMotifSpecial::Dimensions() const
+{
+  /// Give the dimension of the motif
+
+  return fDimensions;
 }
 
 //______________________________________________________________________________

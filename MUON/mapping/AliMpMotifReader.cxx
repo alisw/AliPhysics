@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifReader.cxx,v 1.8 2006/03/17 11:38:06 ivana Exp $
+// $MpId: AliMpMotifReader.cxx,v 1.9 2006/04/24 13:54:33 ivana Exp $
 // Category: sector
 //
 // Class AliMpMotifReader
@@ -309,6 +309,7 @@ AliMpMotifReader::BuildMotifSpecial(const TString& motifID,
     res->SetPadDimensions(AliMpIntPair(i,j),TVector2(x*scale/2.,y*scale/2.));
     in >> i;
   }
+  res->CalculateDimensions();
   
   in.close();
   return res;
