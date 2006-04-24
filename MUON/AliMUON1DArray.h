@@ -4,7 +4,7 @@
 // $Id$
 
 /// \ingroup base
-/// \class AliMUON1DStore
+/// \class AliMUON1DArray
 /// \brief Implementation of AliMUONV1DStore
 /// 
 /// \author Laurent Aphecetche

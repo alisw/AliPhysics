@@ -4,11 +4,11 @@
 // $Id$
 // Revision of includes 07/05/2004
 //
-// Class AliMUONSt1GeometryBuilderV2
-// ---------------------------------
-// MUON Station1 detailed geometry construction class.
-//
-// Authors: David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
+/// \ingroup base
+/// \class AliMUONSt1GeometryBuilderV2
+/// \brief MUON Station1 detailed geometry construction class
+///
+/// \author David Guez, Ivana Hrivnacova, Marion MacCormick; IPN Orsay
 
 #ifndef ALI_MUON_ST1_GEOMETRY_BUILDER_V2_H
 #define ALI_MUON_ST1_GEOMETRY_BUILDER_V2_H

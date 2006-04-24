@@ -7,7 +7,7 @@
 // Revision of includes 07/05/2004
 
 /// \ingroup rec
-/// \class AliMUONTrack
+/// \class AliMUONTrackK
 /// \brief Kalman track in MUON arm of ALICE
 ///
 /// \author: Alexander Zinchenko, JINR Dubna

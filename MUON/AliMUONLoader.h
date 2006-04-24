@@ -8,7 +8,7 @@
 // Revision of includes 07/05/2004
 //
 /// \ingroup base
-/// \class AliMUONDataLoader
+/// \class AliMUONLoader
 /// \brief Implements AliLoader for MUON subsystem
 ///
 /// \author Gines Martinez
