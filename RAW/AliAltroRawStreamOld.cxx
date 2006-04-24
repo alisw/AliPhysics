@@ -50,6 +50,11 @@ AliAltroRawStreamOld::AliAltroRawStreamOld(AliRawReader* rawReader) :
 {
 // create an object to read Altro raw digits
   fSegmentation[0] = fSegmentation[1] = fSegmentation[2] = -1;
+
+  // Invalid Common Data Header is used
+  // --> therefore skip the header and read
+  // only the payload
+  rawReader->RequireHeader(kFALSE);
 }
 
 //_____________________________________________________________________________
