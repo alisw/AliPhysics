@@ -163,7 +163,7 @@ void AliRICHReconstructor::Reconstruct(AliRunLoader *pAL)const
   pRL->LoadRecPoints("recreate");
   
   for(Int_t iEvtN=0;iEvtN<pAL->GetNumberOfEvents();iEvtN++){//events loop
-    pAL->GetEvent(iEvtN++); AliDebug(1,Form("Processing event %i...",iEvtN)); //switch current directory to next event    
+    pAL->GetEvent(iEvtN); AliDebug(1,Form("Processing event %i...",iEvtN)); //switch current directory to next event    
     pRL->TreeD()->GetEntry(0);  pRL->MakeTree("R");  pRich->MakeBranch("R");  //load digits to memory  and create branches for clusters              
     for(Int_t iChN=1;iChN<=7;iChN++){//chambers loop
       if(pRich->Digs(iChN)->GetEntriesFast()>0) Dig2Clu(pRich->Digs(iChN),pRich->Clus(iChN));//cluster finder for the current chamber if any digits present
