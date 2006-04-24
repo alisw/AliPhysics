@@ -9,6 +9,7 @@ SRCS= AliTRDpixel.cxx \
       AliTRDtracklet.cxx \
       AliTRDtrack.cxx \
       AliTRDtracker.cxx \
+      AliTRDseed.cxx \
       AliTRDpid.cxx \
       AliTRDpidLQ.cxx \
       AliTRDPartID.cxx \
