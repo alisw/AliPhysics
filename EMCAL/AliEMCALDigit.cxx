@@ -40,20 +40,21 @@
 ClassImp(AliEMCALDigit)
 
 //____________________________________________________________________________
-  AliEMCALDigit::AliEMCALDigit()  
+AliEMCALDigit::AliEMCALDigit() :  
+  AliDigitNew(),
+  fNprimary(0),
+  fNMaxPrimary(5),
+  fPrimary(0x0),
+  fNiparent(0),
+  fNMaxiparent(5), 
+  fIparent(0x0),
+  fMaxIter(0),
+  fTime(0.), 
+  fTimeR(0.) 
+
 {
   // default ctor 
 
-  fIndexInList = -1 ; 
-  fNprimary    = 0 ;  
-  fNMaxPrimary = 5 ; 
-  fNiparent    = 0 ;
-  fNMaxiparent = 5; 
-  fPrimary = 0 ;
-  fIparent = 0 ;
-  fMaxIter = 0;
-  fTime = 0. ; 
-  fTimeR = 0. ; 
 }
 
 //____________________________________________________________________________
@@ -61,15 +62,18 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Int_t DigEn
 {  
   // ctor with all data 
 
+  // data memebrs of the base class (AliNewDigit)
+  fAmp         = DigEnergy ;
+  fId          = id ;
+  fIndexInList = index ; 
+
+  // data members
   fNMaxPrimary = 25 ; 
   fNMaxiparent = 150 ; 
   fPrimary = new Int_t[fNMaxPrimary] ;
   fIparent = new Int_t[fNMaxiparent] ; 
-  fAmp         = DigEnergy ;
   fTime        = time ;
   fTimeR       = fTime ;
-  fId          = id ;
-  fIndexInList = index ; 
   fMaxIter     = 5;
   if( primary != -1){
     fNprimary    = 1 ; 
@@ -97,7 +101,12 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit) : AliDigitNew(digit)
 {
   // copy ctor
   
+  // data memebrs of the base class (AliNewDigit)
+  fAmp         = digit.fAmp ;
+  fId          = digit.fId;
+  fIndexInList = digit.fIndexInList ; 
 
+  // data members
   fNMaxPrimary = digit.fNMaxPrimary ;  
   fNMaxiparent = digit.fNMaxiparent ;
   fPrimary = new Int_t[fNMaxPrimary] ;
@@ -108,12 +117,9 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit) : AliDigitNew(digit)
   Int_t j ;
   for (j = 0; j< fNMaxiparent ; j++)
   fIparent[j]  = digit.fIparent[j] ;
-  fAmp         = digit.fAmp ;
   fTime        = digit.fTime ;
   fTimeR       = digit.fTimeR ;
-  fId          = digit.fId;
   fMaxIter     = digit.fMaxIter;
-  fIndexInList = digit.fIndexInList ; 
   fNprimary    = digit.fNprimary ;
   fNiparent    = digit.fNiparent ;
 }
