@@ -8,31 +8,47 @@
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
-#include "AliESDtrack.h"
 
 class AliTrackPointArray;
+class AliKalmanTrack;
 
 //_____________________________________________________________________________
 class AliESDfriendTrack : public TObject {
 public:
+  enum {
+    kMaxITScluster=12,
+    kMaxTPCcluster=160,
+    kMaxTRDcluster=180
+  };
   AliESDfriendTrack();
   AliESDfriendTrack(const AliESDfriendTrack &);
-  AliESDfriendTrack(const AliESDtrack &);
   virtual ~AliESDfriendTrack();
 
-  Float_t Get1P() const {return f1P;}
-  const Int_t *GetITSindices() const {return fITSindex;}
-  const Int_t *GetTPCindices() const {return fTPCindex;}
-  const Int_t *GetTRDindices() const {return fTRDindex;}
+  void Set1P(Float_t p) {f1P=p;}
+  void SetTrackPointArray(AliTrackPointArray *points) {
+    fPoints=points;
+  }
+  Float_t Get1P() const  {return f1P;}
+  Int_t *GetITSindices() {return fITSindex;}
+  Int_t *GetTPCindices() {return fTPCindex;}
+  Int_t *GetTRDindices() {return fTRDindex;}
   const AliTrackPointArray *GetTrackPointArray() const {return fPoints;}
 
-protected:
-  Float_t f1P;                                  // 1/P (1/(GeV/c))
-  Int_t fITSindex[AliESDtrack::kMaxITScluster]; // indices of the ITS clusters 
-  Int_t fTPCindex[AliESDtrack::kMaxTPCcluster]; // indices of the TPC clusters
-  Int_t fTRDindex[AliESDtrack::kMaxTRDcluster]; // indices of the TRD clusters
+  void SetITStrack(AliKalmanTrack *t) {fITStrack=t;}
+  void SetTRDtrack(AliKalmanTrack *t) {fTRDtrack=t;}
+  AliKalmanTrack *GetTRDtrack() {return fTRDtrack;}
+  AliKalmanTrack *GetITStrack() {return fITStrack;}
 
-  AliTrackPointArray *fPoints; // Array of track space points in the global frame
+protected:
+  Float_t f1P;                     // 1/P (1/(GeV/c))
+  Int_t fITSindex[kMaxITScluster]; // indices of the ITS clusters 
+  Int_t fTPCindex[kMaxTPCcluster]; // indices of the TPC clusters
+  Int_t fTRDindex[kMaxTRDcluster]; // indices of the TRD clusters
+  AliTrackPointArray *fPoints;//Array of track space points in the global frame
+
+  AliKalmanTrack *fITStrack; //! pointer to the ITS track (debug purposes) 
+  AliKalmanTrack *fTRDtrack; //! pointer to the TRD track (debug purposes) 
+
   ClassDef(AliESDfriendTrack,1) //ESD friend track
 };
 

@@ -24,9 +24,10 @@
 
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
+#include "AliESDfriendTrack.h"
 #include "AliKalmanTrack.h"
-#include "AliTrackPointArray.h"
 #include "AliLog.h"
+#include "AliTrackPointArray.h"
 
 ClassImp(AliESDtrack)
 
@@ -76,7 +77,6 @@ AliESDtrack::AliESDtrack() :
   fITSsignal(0),
   fITSLabel(0),
   fITSFakeRatio(0),
-  fITStrack(0),
   fTPCchi2(0),
   fTPCncls(0),
   fTPCnclsF(0),
@@ -92,13 +92,11 @@ AliESDtrack::AliESDtrack() :
   fTRDLabel(0),
   fTRDQuality(0),
   fTRDBudget(0),
-  fTRDtrack(0),
   fTOFchi2(0),
   fTOFindex(0),
   fTOFCalChannel(-1),
   fTOFsignal(-1),
   fTOFsignalToT(0),
-  //  fPHOSsignal(-1),
   fRICHchi2(1e10),
   fRICHncls(0),
   fRICHindex(0),
@@ -109,7 +107,8 @@ AliESDtrack::AliESDtrack() :
   fRICHdy(-1),
   fRICHmipX(-1),
   fRICHmipY(-1),
-  fPoints(0)
+  fPoints(0),
+  fFriendTrack(new AliESDfriendTrack())
 {
   //
   // The default ESD constructor 
@@ -125,12 +124,8 @@ AliESDtrack::AliESDtrack() :
     fRICHr[i]=1.;
   }
   
-  for (i=0; i<kMaxITScluster; i++)  fITSchi2MIP[i]=1e10;
-  for (i=0; i<kMaxITScluster; i++)  { fITSindex[i]=-1; }
-  for (i=0; i<kMaxTPCcluster; i++) { fTPCindex[i]=-2; }
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
-  for (i=0; i<kMaxTRDcluster; i++) { fTRDindex[i]=-2; }
   for (i=0;i<kNPlane;i++) {fTRDsignals[i]=0.; fTRDTimBin[i]=-1;}
   for (i=0;i<4;i++) {fTPCPoints[i]=-1;}
   for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
@@ -156,7 +151,6 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fITSsignal(track.fITSsignal),
   fITSLabel(track.fITSLabel),
   fITSFakeRatio(track.fITSFakeRatio),
-  fITStrack(0),    //coping separatelly - in user code
   fTPCchi2(track.fTPCchi2),
   fTPCncls(track.fTPCncls),
   fTPCnclsF(track.fTPCnclsF),
@@ -172,13 +166,11 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTRDLabel(track.fTRDLabel),
   fTRDQuality(track.fTRDQuality),
   fTRDBudget(track.fTRDBudget),
-  fTRDtrack(0),
   fTOFchi2(track.fTOFchi2),
   fTOFindex(track.fTOFindex),
   fTOFCalChannel(track.fTOFCalChannel),
   fTOFsignal(track.fTOFsignal),
   fTOFsignalToT(track.fTOFsignalToT),
-  //fPHOSsignal(track.fPHOSsignal),
   fRICHchi2(track.fRICHchi2),
   fRICHncls(track.fRICHncls),
   fRICHindex(track.fRICHindex),
@@ -188,7 +180,9 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fRICHdx(track.fRICHdx),
   fRICHdy(track.fRICHdy),
   fRICHmipX(track.fRICHmipX),
-  fRICHmipY(track.fRICHmipY)
+  fRICHmipY(track.fRICHmipY),
+  fPoints(0),
+  fFriendTrack(new AliESDfriendTrack(*(track.fFriendTrack)))
 {
   //
   //copy constructor
@@ -196,17 +190,13 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i]=track.fTrackTime[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i]=track.fR[i];
   //
-  for (Int_t i=0;i<kMaxITScluster;i++) fITSchi2MIP[i]=track.fITSchi2MIP[i];
-  for (Int_t i=0;i<kMaxITScluster;i++) fITSindex[i]=track.fITSindex[i];    
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
   //
-  for (Int_t i=0;i<kMaxTPCcluster;i++) fTPCindex[i]=track.fTPCindex[i];  
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
   for (Int_t i=0;i<4;i++) {fTPCPoints[i]=track.fTPCPoints[i];}
   for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
   for (Int_t i=0; i<3;i++)   { fV0Indexes[i]=track.fV0Indexes[i];}
   //
-  for (Int_t i=0;i<kMaxTRDcluster;i++) fTRDindex[i]=track.fTRDindex[i];   
   for (Int_t i=0;i<kNPlane;i++) {
       fTRDsignals[i]=track.fTRDsignals[i]; 
       fTRDTimBin[i]=track.fTRDTimBin[i];
@@ -220,11 +210,10 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
   if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
-  fPoints =0;
-  if (track.fPoints){
-    fPoints  = new AliTrackPointArray(*(track.fPoints));
-  }
+
+  if (track.fPoints) fPoints=new AliTrackPointArray(*(track.fPoints));
 }
+
 //_______________________________________________________________________
 AliESDtrack::~AliESDtrack(){ 
   //
@@ -234,8 +223,7 @@ AliESDtrack::~AliESDtrack(){
   delete fIp; 
   delete fOp;
   delete fCp; 
-  delete fITStrack;
-  delete fTRDtrack; 
+  delete fFriendTrack;
   delete fPoints;
 }
 
@@ -270,20 +258,16 @@ void AliESDtrack::MakeMiniESDtrack(){
 
   // Reset ITS track related information
   fITSchi2 = 0;
-  for (Int_t i=0;i<kMaxITScluster;i++) fITSchi2MIP[i]=0;
   fITSncls = 0;       
-  for (Int_t i=0;i<kMaxITScluster;i++) fITSindex[i]=-1;    
   fITSsignal = 0;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
   fITSLabel = 0;       
   fITSFakeRatio = 0;   
-  fITStrack =0;
 
   // Reset TPC related track information
   fTPCchi2 = 0;       
   fTPCncls = 0;       
   fTPCnclsF = 0;       
-  for (Int_t i=0;i<kMaxTPCcluster;i++) fTPCindex[i] = -2;  
   fTPCClusterMap = 0;  
   fTPCsignal= 0;      
   fTPCsignalS= 0;      
@@ -298,7 +282,6 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTRDchi2 = 0;        
   fTRDncls = 0;       
   fTRDncls0 = 0;       
-  for (Int_t i=0;i<kMaxTRDcluster;i++) fTRDindex[i] = -2;   
   fTRDsignal = 0;      
   for (Int_t i=0;i<kNPlane;i++) {
       fTRDsignals[i] = 0; 
@@ -306,7 +289,6 @@ void AliESDtrack::MakeMiniESDtrack(){
   }
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
   fTRDLabel = 0;       
-  fTRDtrack = 0; 
   fTRDQuality  = 0;
   fTRDBudget  = 0;
 
@@ -320,11 +302,6 @@ void AliESDtrack::MakeMiniESDtrack(){
   for (Int_t i=0;i<3;i++) fTOFLabel[i] = 0;
   for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;
 
-  // Reset PHOS related track information
-  //for (Int_t i=0;i<3;i++) fPHOSpos[i] = 0; 
-  //fPHOSsignal = 0; 
-  //for (Int_t i=0;i<AliPID::kSPECIESN;i++) fPHOSr[i] = 0;
-  
   // Reset RICH related track information
   fRICHchi2 = 0;     
   fRICHncls = 0;     
@@ -336,7 +313,8 @@ void AliESDtrack::MakeMiniESDtrack(){
   fRICHdx = 0;     
   fRICHdy = 0;      
 
-  fPoints = 0;
+  delete fFriendTrack; fFriendTrack = 0;
+  delete fPoints; fPoints = 0;
 } 
 //_______________________________________________________________________
 Double_t AliESDtrack::GetMass() const {
@@ -367,6 +345,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   //
   // This function updates track's running parameters 
   //
+  Int_t *index=0;
   Bool_t rc=kTRUE;
 
   SetStatus(flags);
@@ -383,9 +362,11 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   switch (flags) {
     
   case kITSin: case kITSout: case kITSrefit:
+    index=fFriendTrack->GetITSindices(); 
+    for (Int_t i=0;i<AliESDfriendTrack::kMaxITScluster;i++) 
+         index[i]=t->GetClusterIndex(i);
     fITSncls=t->GetNumberOfClusters();
     fITSchi2=t->GetChi2();
-    for (Int_t i=0;i<kMaxITScluster;i++) fITSindex[i]=t->GetClusterIndex(i);
     fITSsignal=t->GetPIDsignal();
     fITSLabel = t->GetLabel();
     fITSFakeRatio = t->GetFakeRatio();
@@ -396,6 +377,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     if (!fIp) fIp=new AliExternalTrackParam(*t);
     else fIp->Set(*t);
   case kTPCout:
+    index=fFriendTrack->GetTPCindices(); 
     if (flags & kTPCout){
       if (!fOp) fOp=new AliExternalTrackParam(*t);
       else fOp->Set(*t);
@@ -407,16 +389,16 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
       //"jump to case label crosses initialization of `Int_t prevrow'"
        Int_t prevrow = -1;
        //       for (Int_t i=0;i<fTPCncls;i++) 
-       for (Int_t i=0;i<kMaxTPCcluster;i++) 
+       for (Int_t i=0;i<AliESDfriendTrack::kMaxTPCcluster;i++) 
         {
-          fTPCindex[i]=t->GetClusterIndex(i);
+          index[i]=t->GetClusterIndex(i);
+          Int_t idx = index[i];
 
-	  if (fTPCindex[i]<0) continue; 
+	  if (idx<0) continue; 
 
           // Piotr's Cluster Map for HBT  
           // ### please change accordingly if cluster array is changing 
           // to "New TPC Tracking" style (with gaps in array) 
-          Int_t idx = fTPCindex[i];
           Int_t sect = (idx&0xff000000)>>24;
           Int_t row = (idx&0x00ff0000)>>16;
           if (sect > 18) row +=63; //if it is outer sector, add number of inner sectors
@@ -458,10 +440,11 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     break;
 
   case kTRDout: case kTRDin: case kTRDrefit:
+    index=fFriendTrack->GetTRDindices();
     fTRDLabel = t->GetLabel(); 
     fTRDncls=t->GetNumberOfClusters();
     fTRDchi2=t->GetChi2();
-    for (Int_t i=0;i<fTRDncls;i++) fTRDindex[i]=t->GetClusterIndex(i);
+    for (Int_t i=0;i<fTRDncls;i++) index[i]=t->GetClusterIndex(i);
     fTRDsignal=t->GetPIDsignal();
     break;
   case kTRDbackup:
@@ -645,9 +628,6 @@ void AliESDtrack::SetITSpid(const Double_t *p) {
   SetStatus(AliESDtrack::kITSpid);
 }
 
-void AliESDtrack::SetITSChi2MIP(const Float_t *chi2mip){
-  for (Int_t i=0; i<kMaxITScluster; i++) fITSchi2MIP[i]=chi2mip[i];
-}
 //_______________________________________________________________________
 void AliESDtrack::GetITSpid(Double_t *p) const {
   // Gets the probability of each particle type (in ITS)
@@ -659,7 +639,10 @@ Int_t AliESDtrack::GetITSclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined ITS clusters 
   //---------------------------------------------------------------------
-  for (Int_t i=0; i<kMaxITScluster; i++) idx[i]=fITSindex[i];
+  if (idx!=0) {
+     Int_t *index=fFriendTrack->GetITSindices();
+     for (Int_t i=0; i<AliESDfriendTrack::kMaxITScluster; i++) idx[i]=index[i];
+  }
   return fITSncls;
 }
 
@@ -668,8 +651,10 @@ Int_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined ITS clusters 
   //---------------------------------------------------------------------
-  if (idx!=0)
-    for (Int_t i=0; i<kMaxTPCcluster; i++) idx[i]=fTPCindex[i];  // MI I prefer some constant
+  if (idx!=0) {
+    Int_t *index=fFriendTrack->GetTPCindices();
+    for (Int_t i=0; i<AliESDfriendTrack::kMaxTPCcluster; i++) idx[i]=index[i];
+  }
   return fTPCncls;
 }
 
@@ -681,10 +666,11 @@ Float_t AliESDtrack::GetTPCdensity(Int_t row0, Int_t row1) const{
   Int_t good  = 0;
   Int_t found = 0;
   //  
+  Int_t *index=fFriendTrack->GetTPCindices();
   for (Int_t i=row0;i<=row1;i++){     
-    Int_t index = fTPCindex[i];
-    if (index!=-1)  good++;             // track outside of dead zone
-    if (index>0)    found++;
+    Int_t idx = index[i];
+    if (idx!=-1)  good++;             // track outside of dead zone
+    if (idx>0)    found++;
   }
   Float_t density=0.5;
   if (good>(row1-row0)*0.5) density = Float_t(found)/Float_t(good);
@@ -709,8 +695,10 @@ Int_t AliESDtrack::GetTRDclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   // This function returns indices of the assgined TRD clusters 
   //---------------------------------------------------------------------
-  if (idx!=0)
-    for (Int_t i=0; i<kMaxTRDcluster; i++) idx[i]=fTRDindex[i];  // MI I prefer some constant
+  if (idx!=0) {
+     Int_t *index=fFriendTrack->GetTRDindices();
+     for (Int_t i=0; i<AliESDfriendTrack::kMaxTRDcluster; i++) idx[i]=index[i];
+  }
   return fTRDncls;
 }
 
@@ -866,6 +854,15 @@ Bool_t AliESDtrack::RelateToVertex
   }
 
   return kTRUE;
+}
+
+void AliESDtrack::SetTrackPointArray(AliTrackPointArray *points) { 
+    fPoints=points;
+    //fFriendTrack->SetTrackPointArray(points); 
+}
+const AliTrackPointArray *AliESDtrack::GetTrackPointArray() const { 
+    return fPoints;
+  //return fFriendTrack->GetTrackPointArray(); 
 }
 
 //_______________________________________________________________________

@@ -77,7 +77,7 @@ AliITStrackV2(t,c) {
 
 void AliITStrackMI::UpdateESDtrack(ULong_t flags) {
   fESDtrack->UpdateTrackParams(this,flags);
-  if (flags == AliESDtrack::kITSin) fESDtrack->SetITSChi2MIP(fChi2MIP);
+  //if (flags == AliESDtrack::kITSin) fESDtrack->SetITSChi2MIP(fChi2MIP);
 }
 
 //____________________________________________________________________________

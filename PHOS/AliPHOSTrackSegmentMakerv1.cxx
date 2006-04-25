@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.78  2005/11/18 13:04:51  hristov
+ * Bug fix
+ *
  * Revision 1.77  2005/11/17 23:34:36  hristov
  * Corrected logics
  *
@@ -201,8 +204,6 @@ Float_t  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint *
       AliESDtrack *track;
       for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
 	track = fESD->GetTrack(iTrack);
-	if (track->IsPHOS()) 
-	  continue ; //Skip the PHOS tracks
 	if (!track->GetXYZAt(rPHOS, fESD->GetMagneticField(), xyz))
            continue; //track coord on the cylinder of PHOS radius
 	if ((TMath::Abs(xyz[0])+TMath::Abs(xyz[1])+TMath::Abs(xyz[2]))<=0)

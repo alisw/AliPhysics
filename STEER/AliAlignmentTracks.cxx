@@ -183,7 +183,7 @@ void AliAlignmentTracks::ProcessESD()
   }
 
   TTree *pointsTree = new TTree("spTree", "Tree with track space point arrays");
-  AliTrackPointArray *array = 0;
+  const AliTrackPointArray *array = 0;
   pointsTree->Branch("SP","AliTrackPointArray", &array);
 
   Int_t ievent = 0;

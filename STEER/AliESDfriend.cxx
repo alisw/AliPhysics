@@ -49,7 +49,9 @@ fTracks("AliESDfriendTrack",event.GetNumberOfTracks()) {
 
   for (Int_t i=0; i<ntrk; i++) {
     const AliESDtrack *t=event.GetTrack(i);
-    new (fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*t); 
+    AliESDfriendTrack *ft=(AliESDfriendTrack *)t->GetFriendTrack();
+    ft->Set1P(t->Get1P());
+    new (fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*ft); 
   }
 }
 

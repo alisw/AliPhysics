@@ -20,48 +20,48 @@
 //-------------------------------------------------------------------------
 #include "AliTrackPointArray.h"
 #include "AliESDfriendTrack.h"
-#include "AliESD.h"
+#include "AliKalmanTrack.h"
 
 ClassImp(AliESDfriendTrack)
 
-  AliESDfriendTrack::AliESDfriendTrack(): TObject(), f1P(0), fPoints(0) {
+AliESDfriendTrack::AliESDfriendTrack(): 
+TObject(), 
+f1P(0), 
+fPoints(0), 
+fITStrack(0),
+fTRDtrack(0)
+{
   //
   // Default constructor
   //
   Int_t i;
-  for (i=0; i<AliESDtrack::kMaxITScluster; i++) fITSindex[i]=-2;
-  for (i=0; i<AliESDtrack::kMaxTPCcluster; i++) fTPCindex[i]=-2;
-  for (i=0; i<AliESDtrack::kMaxTRDcluster; i++) fTRDindex[i]=-2;
+  for (i=0; i<kMaxITScluster; i++) fITSindex[i]=-2;
+  for (i=0; i<kMaxTPCcluster; i++) fTPCindex[i]=-2;
+  for (i=0; i<kMaxTRDcluster; i++) fTRDindex[i]=-2;
 }
 
 AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t): 
 TObject(t),
 f1P(t.f1P),
-fPoints(0)
+fPoints(0),
+fITStrack(0),
+fTRDtrack(0)
 {
   //
   // Copy constructor
   //
   Int_t i;
-  for (i=0; i<AliESDtrack::kMaxITScluster; i++) fITSindex[i]=t.fITSindex[i];
-  for (i=0; i<AliESDtrack::kMaxTPCcluster; i++) fTPCindex[i]=t.fTPCindex[i];
-  for (i=0; i<AliESDtrack::kMaxTRDcluster; i++) fTRDindex[i]=t.fTRDindex[i];
+  for (i=0; i<kMaxITScluster; i++) fITSindex[i]=t.fITSindex[i];
+  for (i=0; i<kMaxTPCcluster; i++) fTPCindex[i]=t.fTPCindex[i];
+  for (i=0; i<kMaxTRDcluster; i++) fTRDindex[i]=t.fTRDindex[i];
   if (t.fPoints) fPoints=new AliTrackPointArray(*t.fPoints);
 }
 
-AliESDfriendTrack::AliESDfriendTrack(const AliESDtrack &t): 
-TObject(t),
-f1P(t.Get1P()),
-fPoints(0) 
-{
+AliESDfriendTrack::~AliESDfriendTrack() {
   //
-  // Extracts the complementary info from the ESD track
+  // Simple destructor
   //
-  t.GetITSclusters(fITSindex); 
-  t.GetTPCclusters(fTPCindex); 
-  t.GetTRDclusters(fTRDindex); 
-  const AliTrackPointArray *points=t.GetTrackPointArray();
-  if (points) fPoints=new AliTrackPointArray(*points);
+   delete fPoints;
+   delete fITStrack;
+   delete fTRDtrack;
 }
-
-AliESDfriendTrack::~AliESDfriendTrack() {delete fPoints;}

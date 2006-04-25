@@ -368,16 +368,6 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       }
     }
 
-    // loop over calo tracks
-    for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
-      AliESDtrack* track = esd->GetTrack(iTrack);
-      if (track->IsPHOS()) {
-	hEPHOS->Fill(track->GetPHOSsignal());
-      } else if (track->IsEMCAL()) {
-	hEEMCAL->Fill(track->GetEMCALsignal());
-      }
-    }
-
     // loop over muon tracks
     {
     for (Int_t iTrack = 0; iTrack < esd->GetNumberOfMuonTracks(); iTrack++) {
