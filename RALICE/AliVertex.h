@@ -29,6 +29,7 @@ class AliVertex : public AliJet,public AliPosition
   void AddVertex(AliVertex& v,Int_t connect=1); // Add (and connect) a (sec.) vertex to the current vertex
   void AddJet(AliJet* j,Int_t tracks=1)    { AddJet(*j,tracks); }
   void AddVertex(AliVertex* v,Int_t connect=1) { AddVertex(*v,connect); }
+  using AliPosition::Data;
   virtual void Data(TString f="car",TString u="rad"); // Print the vertex info within frame f and ang units u
   virtual void List(TString f="car",TString u="rad"); // Vertex prim. track info for frame f and ang units u
   virtual void ListAll(TString f="car",TString u="rad");// Prim.+sec. vtx full track info for frame f and ang units u
@@ -67,6 +68,6 @@ class AliVertex : public AliJet,public AliPosition
  private:
   void Dumps(AliVertex* v,Int_t n,TString f,TString u); // Recursively print all sec. vertices
  
- ClassDef(AliVertex,11) // Creation and investigation of an AliVertex.
+ ClassDef(AliVertex,12) // Creation and investigation of an AliVertex.
 };
 #endif

@@ -68,12 +68,12 @@ AliAttribObj::~AliAttribObj()
 // Destructor to delete dynamically allocated memory
 }
 ///////////////////////////////////////////////////////////////////////////
-AliAttribObj::AliAttribObj(AliAttribObj& a) : TObject(a),AliAttrib(a)
+AliAttribObj::AliAttribObj(const AliAttribObj& a) : TObject(a),AliAttrib(a)
 {
 // Copy constructor
 }
 ///////////////////////////////////////////////////////////////////////////
-TObject* AliAttribObj::Clone(const char* name)
+TObject* AliAttribObj::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.
 // This memberfunction enables automatic creation of new objects of the

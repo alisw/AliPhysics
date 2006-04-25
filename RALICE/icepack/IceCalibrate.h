@@ -9,6 +9,7 @@
 #include "TROOT.h"
 #include "TTask.h"
 #include "TString.h"
+#include "TFile.h"
 
 #include "AliJob.h"
 #include "IceEvent.h"
@@ -27,6 +28,6 @@ class IceCalibrate : public TTask
   TFile* fCalfile;     // The (optional) calibration input file in ROOT format
   AliObjMatrix* fOmdb; // The OM database object
 
- ClassDef(IceCalibrate,1) // TTask derived class to perform the various calibrations
+ ClassDef(IceCalibrate,2) // TTask derived class to perform the various calibrations
 };
 #endif

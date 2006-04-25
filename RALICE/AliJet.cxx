@@ -1002,7 +1002,10 @@ TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)
     fSelected->AddAt(tx,j); // add track at the end
     break; // go for next track
    }
-   
+
+   val1=0;
+   val2=0;
+
    switch (abs(mode))
    {
     case 1:

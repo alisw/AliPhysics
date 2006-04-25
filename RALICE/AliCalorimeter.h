@@ -36,6 +36,7 @@ class AliCalorimeter : public AliDevice
   void AddSignal(AliCalmodule* m);                       // Add module signal to current calorimeter
   void Reset(Int_t row,Int_t col);                       // Reset signal for a certain module
   virtual void Reset(Int_t mode=0);                      // Reset the complete calorimeter
+  using AliDevice::GetSignal;
   virtual Float_t GetSignal(Int_t row,Int_t col=0) { return GetSignal(row,col,0); }
   Float_t GetSignal(Int_t row,Int_t col,Int_t mode);     // Provide signal of a certain module
   Int_t GetNsignals() const;                             // Return number of modules with a signal
@@ -101,6 +102,6 @@ class AliCalorimeter : public AliDevice
   AliObjMatrix* fPositions;                  //! Matrix dbase of module position pointers
   void LoadMatrix();                         // Loading of matrix lookup table from the linear hit array
  
- ClassDef(AliCalorimeter,10) // Description of a modular calorimeter system.
+ ClassDef(AliCalorimeter,11) // Description of a modular calorimeter system.
 };
 #endif

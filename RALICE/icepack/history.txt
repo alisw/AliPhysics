@@ -63,3 +63,5 @@
 29-mar-2006 NvE Modified numerical evaluation of pandel value in IcePandel to extend validity
                 range (by George and Dipo).
                 Also new memberfunction SetPenalty() introduced in IcePandel.
+21-apr-2006 NvE TFile.h included in header files of IceCalibrate and IceXtalk to prevent
+                compiler error with new ROOT 5.11 version.

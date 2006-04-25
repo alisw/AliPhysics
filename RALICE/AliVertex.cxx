@@ -1092,6 +1092,9 @@ TObjArray* AliVertex::SortJets(Int_t mode,TObjArray* jets)
     fSelected->AddAt(jx,j); // add jet at the end
     break; // go for next jet
    }
+
+   val1=0;
+   val2=0;
    
    switch (abs(mode))
    {
