@@ -824,7 +824,9 @@ Bool_t AliESDtrack::RelateToVertex
   //Propagate to the DCA
   Double_t crv=0.299792458e-3*b*GetParameter()[4];
   Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
-  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv); cs=TMath::Sqrt(1.- sn*sn);
+  sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv);
+  if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;
+  else cs=1.;
 
   x = xv*cs + yv*sn;
   yv=-xv*sn + yv*cs; xv=x;
