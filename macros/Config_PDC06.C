@@ -306,7 +306,7 @@ void Config()
   printf("\n \n Diamond size x-y: %10.3e z: %10.3e\n \n", sigmaxy, sigmaz);
     
   gener->SetSigma(sigmaxy, sigmaxy, sigmaz);      // Sigma in (X,Y,Z) (cm) on IP position
-  gener->SetCutVertexZ(1.);        // Truncate at 1 sigma
+  gener->SetCutVertexZ(3.);        // Truncate at 3 sigma
   gener->SetVertexSmear(kPerEvent);
 
   gener->Init();
