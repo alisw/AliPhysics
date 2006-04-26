@@ -49,11 +49,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TBenchmark.h"
-#include "TH1.h"
-#include "TBrowser.h"
-#include "Riostream.h"
-//#include "TObjectTable.h"
+#include <TBenchmark.h>
+#include <TH1.h>
+#include <TBrowser.h>
+#include <Riostream.h>
+#include <TMath.h>
 
 // --- Standard library ---
 #include "stdlib.h"
@@ -318,6 +318,22 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   }
 }
 
+//__________________________________________________________________
+
+Int_t AliEMCALSDigitizer::Digitize(Float_t energy)const {
+  // Digitize the energy
+    Double_t aSignal = fA + energy*fB;
+    if (TMath::Abs(aSignal)>2147483647.0) { 
+      //PH 2147483647 is the max. integer
+      //PH This apparently is a problem which needs investigation
+      AliWarning(Form("Too big or too small energy %f",aSignal));
+      aSignal = TMath::Sign((Double_t)2147483647,aSignal);
+    }
+    return (Int_t ) aSignal;
+  }
+ 
+
+//__________________________________________________________________
 
 void AliEMCALSDigitizer::Print1(Option_t * option)
 {

@@ -35,7 +35,7 @@ public:
   virtual ~AliEMCALSDigitizer(); // dtor
 
   Float_t       Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
-  Int_t         Digitize(Float_t energy)const { return (Int_t ) (fA + energy*fB); }
+  Int_t         Digitize(Float_t energy)const;
   virtual void  Exec(Option_t *option); 
   Int_t         GetSDigitsInRun() const {return fSDigitsInRun ;}  
   virtual void  Print(Option_t *option="") const;
