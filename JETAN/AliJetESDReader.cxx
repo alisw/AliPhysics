@@ -121,7 +121,11 @@ void AliJetESDReader::FillMomentumArray(Int_t event)
   for (Int_t it = 0; it < nt; it++) {
       AliESDtrack *track = fESD->GetTrack(it);
       UInt_t status = track->GetStatus();
-      p3 = track->P3();
+
+      Double_t mom[3];
+      track->GetPxPyPz(mom);
+
+      p3.SetXYZ(mom[0],mom[1],mom[2]);
       pt = p3.Pt();
       if (((status & AliESDtrack::kITSrefit) == 0) ||
 	  ((status & AliESDtrack::kTPCrefit) == 0)) continue;    // quality check
