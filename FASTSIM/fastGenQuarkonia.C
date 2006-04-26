@@ -110,7 +110,7 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 // Smear
 	    // the mu+
 	    Float_t thetas1, phis1, ps1, thetas2, phis2, ps2, pts1, pts2, etas1, etas2;
-	    Float_t trigeffpL, trigeffpH, trigeffnL, trigeffnH;
+	    Float_t trigeffpL, trigeffpH, trigeffnL, trigeffnH, trigeffnA;
 	    
 	    res->SetCharge(1);
 	    eff->SetCharge(1);
@@ -120,7 +120,7 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 	    
 	    Float_t effp     = eff->Evaluate(pt1, thetad1, phid1);
 	    Float_t accp     = acc->Evaluate(pt1, thetad1, phid1);
-	    trigeff->Evaluate(1, pt1, thetad1, phid1, trigeffpL, trigeffpH);
+	    trigeff->Evaluate(1, pt1, thetad1, phid1, trigeffpL, trigeffpH, trigeffnA);
 	    thetas1 *= TMath::Pi()/180.;
 	    phis1 *= TMath::Pi()/180.;
 	    Float_t etas;
@@ -138,7 +138,7 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 	    res->Evaluate(p2, thetad2, phid2, ps2, thetas2, phis2);
 	    Float_t effn     = eff->Evaluate(pt2, thetad2, phid2);
 	    Float_t accn     = acc->Evaluate(pt2, thetad2, phid2);
-	    trigeff->Evaluate(-1, pt2, thetad2, phid2, trigeffnL, trigeffnH);
+	    trigeff->Evaluate(-1, pt2, thetad2, phid2, trigeffnL, trigeffnH, trigeffnA);
 	    thetas2 *= TMath::Pi()/180.;
 	    phis2 *= TMath::Pi()/180.;
 	    if (TMath::Tan(thetas2/2.) > 0) {
@@ -169,6 +169,7 @@ void fastGenQuarkonia(Int_t nev = 1, char* filename = "galice.root")
 	rl->TreeE()->Fill();
 	header->SetNprimary(stack->GetNprimary());
 	header->SetNtrack(stack->GetNtrack());  
+	rl->WriteKinematics("OVERWRITE");
     } // event loop
     TCanvas *c1 = new TCanvas("c1","Canvas 1",400,10,600,700);
     massHU->Draw();

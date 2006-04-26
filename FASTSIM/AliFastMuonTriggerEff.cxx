@@ -27,6 +27,9 @@ it does not seem to be necessary it is also possible to interpolate
 between pT bins using SetInt().
 
 $Log$
+Revision 1.10  2006/04/19 21:58:28  morsch
+Coding rule violations corrected
+
 Revision 1.9  2005/09/24 03:51:43  hristov
 Removing extra semicolon (Fedora Core 4)
 
@@ -428,15 +431,7 @@ void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,Float_t theta,
   return;
 }
 
-void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt, Float_t theta,
-                                Float_t phi, Float_t& effLow, Float_t& effHigh)
-{
-    //
-    //  Trigger efficiency for pt, theta, phi (low and high cut)
-    //
-    Float_t effAny;
-    Evaluate(charge,pt,theta,phi,effLow,effHigh,effAny);
-}
+
 
 Float_t AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,
                    Float_t theta, Float_t phi)

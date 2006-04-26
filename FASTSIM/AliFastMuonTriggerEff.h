@@ -25,8 +25,6 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     virtual void    Init();
     virtual void    Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi,
 			     Float_t& effLow, Float_t& effHigh, Float_t& effAny);
-    virtual void    Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi,
-			     Float_t& effLow, Float_t& effHigh);
     virtual Float_t Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi);
     virtual void    SetCut(Int_t cut = kLow);
     virtual Float_t Cut() {return fCut;}
