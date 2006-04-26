@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// ------------------
+// Class AliMUONLocalTrigger
+// ------------------
+// Local Trigger algorithm data outputs
+// (contains local trigger decision and bit patterns)
+
 #include "AliMUONLocalTrigger.h"
 #include <assert.h>
 #include "AliLog.h"
@@ -135,6 +141,7 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& di
 //----------------------------------------------------------------------
 Char_t AliMUONLocalTrigger::GetLoDecision()
 {
+// returns local trigger decision
   fLoDecision  = (fLoLpt & 0x3);
   fLoDecision |= (fLoHpt << 2) & 0xC;
 

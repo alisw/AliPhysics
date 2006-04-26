@@ -14,12 +14,13 @@
  **************************************************************************/
 
 // $Id$
-//
+
+// -----------------------------------
 // Class AliMUONTriggerGeometryBuilder
 // -----------------------------------
-// MUON Trigger stations geometry construction class.
-//
-// Author: Philippe Crochette, LPC Clermont-Ferrand
+// MUON Trigger stations geometry 
+// construction class.
+// Author: Philippe Crochet (LPCCFd)
 
 #include <TVirtualMC.h>
 #include <TGeoMatrix.h>

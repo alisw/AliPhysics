@@ -15,6 +15,12 @@
 
 /* $Id$ */
 
+// ------------------
+// Class AliMUONTriggerConstants
+// ------------------
+// constants for building the trigger segmentation
+// to be removed soon (the next version is based on mapping only)
+
 #include "AliMUONTriggerConstants.h"
 
 ClassImp(AliMUONTriggerConstants)

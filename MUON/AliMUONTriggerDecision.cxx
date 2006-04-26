@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+// ------------------
+// Class AliMUONTriggerDecision
+// ------------------
+// The (very-old) version of the trigger algorithm.
+// to be removed soon (the current version is AliMUONTriggerDecisionV1)
+
+
 #include <TError.h>
 
 #include "AliMUONTriggerCircuit.h"
@@ -138,6 +145,7 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(const AliMUONTriggerDecision& rhs
 //----------------------------------------------------------------------
 void AliMUONTriggerDecision::ClearDigits()
 {
+// cleaning digits
   for ( int i=0;i<AliMUONConstants::NCh();i++ )
   {
     if ((*fDigits)[i]) ((TClonesArray*)fDigits->At(i))->Clear();

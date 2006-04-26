@@ -8,7 +8,7 @@
 /// \class AliMUONTriggerGeometryBuilder
 /// \brief MUON Trigger stations geometry construction class
 ///
-/// Author: Philippe Crochette, LPC Clermont-Ferrand
+/// \author Philippe Crochet (LPCCFd)
 
 #ifndef ALI_MUON_TRIGGER_GEOMETRY_BUILDER_H
 #define ALI_MUON_TRIGGER_GEOMETRY_BUILDER_H

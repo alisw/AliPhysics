@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+// ------------------
+// Class AliMUONTriggerCircuit
+// ------------------
+// description of the global position of the trigger boards strip positions
+// based on the "old" segmentation (to be replaced soon)
+
+
 #include <TMath.h>
 
 #include "AliMUONTriggerCircuit.h"
@@ -396,7 +403,7 @@ void AliMUONTriggerCircuit::LoadXPos2(){
   Int_t nStrY=AliMUONTriggerConstants::NstripY(ModuleNumber(idModule)); 
   Int_t idSector=segmentation->Sector(idDE, idModule,0); // corresp. sector
   Float_t width=segmentation->Dpx(idDE, idSector);      // corresponding strip width
-  
+
 // first case : up middle and down parts have all 8 or 16 strip 
   if ((nStrY==16)||(nStrY==8&&fX2m==0&&fX2ud==0)) { 
     for (istrip=0; istrip<nStrY; istrip++) {
@@ -544,6 +551,7 @@ void dump(const char* what, const Int_t* array, Int_t size)
 void
 AliMUONTriggerCircuit::Print(Option_t* ) const
 {
+// prints-out data member
   cout << "IdCircuit " << fIdCircuit << " X2m,X2ud=" << fX2m << ","
   << fX2ud;
   for ( Int_t i = 0; i < 2; ++i )

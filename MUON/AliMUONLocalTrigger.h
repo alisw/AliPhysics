@@ -80,15 +80,15 @@ private:
   Int_t fLoHpt;     // High pt 0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
   Int_t fLoApt;     // All pt  0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
 
-  UShort_t fX1Pattern; // X and Y strip pattern for each chamber
-  UShort_t fX2Pattern;
-  UShort_t fX3Pattern;
-  UShort_t fX4Pattern;
+  UShort_t fX1Pattern; // X strip pattern for chamber 11
+  UShort_t fX2Pattern; // X strip pattern for chamber 12
+  UShort_t fX3Pattern; // X strip pattern for chamber 21
+  UShort_t fX4Pattern; // X strip pattern for chamber 22
  
-  UShort_t fY1Pattern;
-  UShort_t fY2Pattern;
-  UShort_t fY3Pattern;
-  UShort_t fY4Pattern;
+  UShort_t fY1Pattern; // Y strip pattern for chamber 11
+  UShort_t fY2Pattern; // Y strip pattern for chamber 12
+  UShort_t fY3Pattern; // Y strip pattern for chamber 21
+  UShort_t fY4Pattern; // Y strip pattern for chamber 22
 
   Char_t fLoDecision; // local decision word (4 bits)
 
