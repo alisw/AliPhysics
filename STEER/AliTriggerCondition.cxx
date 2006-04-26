@@ -90,7 +90,7 @@ AliTriggerCondition& AliTriggerCondition::operator=(const AliTriggerCondition& r
 
 //_____________________________________________________________________________
 AliTriggerCondition::AliTriggerCondition( TString & condition, TString & name,
-                                          TString & description, Long_t mask ) :
+                                          TString & description, ULong64_t mask ) :
    TNamed( name, description ),
    fClassMask( mask ),
    fCondition( condition ),
@@ -112,7 +112,7 @@ Bool_t AliTriggerCondition::CheckInputs( TObjArray& inputs )
    // return false if one input is missing
 
    TString condition( fCondition );
-   TObjArray* tokens = condition.Tokenize(".&+| ");
+   TObjArray* tokens = condition.Tokenize(" !&|()");
 
    Int_t ntokens = tokens->GetEntriesFast();
    for( Int_t i=0; i<ntokens; i++ ) {
@@ -140,9 +140,7 @@ Bool_t AliTriggerCondition::CheckInputs( TObjArray& inputs )
 void AliTriggerCondition::Trigger( TObjArray& inputs )
 {
    // Check if the inputs satify the expression condition 
-   
    AliExpression* exp = new AliExpression( fCondition );
-//   cout << exp->Unparse() << endl;
    fStatus = exp->Value( inputs );
    delete exp;
 }
@@ -155,6 +153,6 @@ void AliTriggerCondition::Print( const Option_t* ) const
    cout << "  Name:        " << GetName() << endl;
    cout << "  Description: " << GetTitle() << endl;
    cout << "  Condition:   " << fCondition << endl;
-   cout << "  Class Mask:  " << "0x" << hex << fClassMask << dec << endl;
-   cout << "  Value:       " << GetValue() << endl;
+   cout << "  Class Mask:  " << "0x" << hex << fClassMask << endl;
+   cout << "  Value:       " << "0x" << hex << GetValue() << dec << endl;
 }

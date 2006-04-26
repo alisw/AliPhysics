@@ -38,7 +38,7 @@ public:
    //  Setters
                 Bool_t    AddDetectorCluster( TString & cluster );
                   void    AddCondition( TString & cond,  TString & name,
-                                        TString & description, Long_t mask  );
+                                        TString & description, ULong64_t mask  );
                   void    AddCondition( AliTriggerCondition* cond ) { fConditions.AddLast( cond ); }
   //  Getters
                TString    GetDetectorCluster() const { return fDetectorCluster; }
@@ -65,7 +65,7 @@ private:
                 Bool_t    IsSelected( TString detName, TString & detectors ) const;
   static const TString    fgkDescriptorFileName;        //! name of default descriptors file
 
-   ClassDef( AliTriggerDescriptor, 1 )  // Define a trigger descriptor
+   ClassDef( AliTriggerDescriptor, 2 )  // Define a trigger descriptor
 };
 
 #endif

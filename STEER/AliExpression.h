@@ -18,22 +18,26 @@ class TObjArray;
 
 // These are the valid operators types.
 
-enum { kOpAND,     // AND '&'
+enum { kOpAND=1,   // AND '&'
        kOpOR,      // OR '|'
        kOpNOT };   // Unary negation '!'
 
 class AliExpression : public TObject {
 
 public:
-                           AliExpression() : fArg1(0), fArg2(0), fOperator(0) {}
+                           AliExpression() : fVname(0), fArg1(0), fArg2(0), fOperator(0)  {}
                            AliExpression( TString exp );
                virtual    ~AliExpression();
                            AliExpression( const AliExpression& exp ) : TObject( exp ),
-                                          fArg1(exp.fArg1), fArg2(exp.fArg2), fOperator(exp.fOperator) {}
+                                          fVname(exp.fVname),
+                                          fArg1(exp.fArg1), fArg2(exp.fArg2),
+                                          fOperator(exp.fOperator)  {}
          AliExpression&    operator=(const AliExpression& exp);
 
         virtual Bool_t     Value( TObjArray & vars );
        virtual TString     Unparse() const;
+
+                TString    fVname;   // Variable name
 
 private:
          AliExpression*    fArg1;         // left argument
@@ -48,7 +52,7 @@ private:
   static AliExpression*    Primary( TObjArray &st, Int_t &i );
   static AliExpression*    Expression( TObjArray &st, Int_t &i );
 
-   ClassDef( AliExpression, 1 )  // Class to evaluate an expression
+   ClassDef( AliExpression, 2 )  // Class to evaluate an expression
 };
 
 
@@ -58,15 +62,12 @@ private:
 
 class AliVariableExpression: public AliExpression {
 public:
-                     AliVariableExpression( TString a ): AliExpression(), fVname(a) {};
+                     AliVariableExpression( TString a ): AliExpression() { fVname = a; };
                     ~AliVariableExpression() {}
    virtual Bool_t    Value( TObjArray& pgm );
   virtual TString    Unparse() const { return fVname; }
 
-private:
-          TString    fVname;   // Variable name
-
-   ClassDef( AliVariableExpression, 1 )  // Class to define a variable expression
+   ClassDef( AliVariableExpression, 2 )  // Class to define a variable expression
 };
 
 #endif

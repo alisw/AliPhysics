@@ -150,7 +150,7 @@ Bool_t AliTriggerDescriptor::AddDetectorCluster( TString & cluster )
 }
 
 //_____________________________________________________________________________
-void AliTriggerDescriptor::AddCondition( TString & cond, TString & name, TString & description, Long_t mask   )
+void AliTriggerDescriptor::AddCondition( TString & cond, TString & name, TString & description, ULong64_t mask   )
 {
    // Add a new condition
    AliTriggerCondition* acond = new AliTriggerCondition( cond, name, description, mask );
@@ -316,12 +316,23 @@ Bool_t AliTriggerDescriptor::CheckInputsConditions( TString& configfile )
 
    // check if the condition is compatible with the triggers inputs
    Int_t ncond = fConditions.GetEntriesFast();
+   Bool_t check = kTRUE;
+   ULong64_t mask = 0L;
    for( Int_t j=0; j<ncond; j++ ) {
       AliTriggerCondition* cond = (AliTriggerCondition*)(fConditions.At( j ));
-      if( !(cond->CheckInputs( inputs )) ) return kFALSE;
+      if( !(cond->CheckInputs( inputs )) ) check = kFALSE;
+      else AliInfo( Form( "Condition (%s) inputs names OK, class mask (0x%Lx)",
+                    cond->GetName(), cond->GetMask( ) ) );
+      // check if condition mask is duplicated
+      if( mask & cond->GetMask() ) {
+         AliError( Form("Condition (%s). The class mask (0x%Lx) is ambiguous. It was previous defined",
+                   cond->GetName(), cond->GetMask()  ) );
+         check = kFALSE;
+      }
+      mask |= cond->GetMask();
    }
 
-   return kTRUE;
+   return check;
 }
 
 

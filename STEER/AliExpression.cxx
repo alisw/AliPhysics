@@ -48,6 +48,7 @@ AliExpression::AliExpression( TString exp )
    fArg1 = e->fArg1; e->fArg1 = 0;
    fArg2 = e->fArg2; e->fArg2 = 0;
    fOperator = e->fOperator;
+   fVname = e->fVname;
    delete e;
    delete tokens;
 }
@@ -69,6 +70,7 @@ AliExpression& AliExpression::operator=(const AliExpression& e)
       fArg1 = e.fArg1;
       fArg2 = e.fArg2;
       fOperator = e.fOperator;
+      fVname = e.fVname;
    }
    return *this;
 }
@@ -95,7 +97,7 @@ AliExpression::AliExpression( int op, AliExpression* a )
 Bool_t AliExpression::Value( TObjArray &vars )
 {
    //  Evaluate the expression
-   if ( fArg2 == 0 ) {
+   if ( fArg2 == 0 && fVname.IsNull() ) {
        AliError( "Expression undefined." );
        return kFALSE;
    }
@@ -111,6 +113,16 @@ Bool_t AliExpression::Value( TObjArray &vars )
       case kOpNOT :
           return !(fArg2->Value(vars));
 
+      case 0 :
+	{
+          TObject* dd = vars.FindObject( fVname.Data() );
+          if( dd == NULL ) {
+             AliError( fVname + " is undefined" );
+             return 0;
+          }
+          return ((AliTriggerInput*)dd)->GetValue();
+	}
+
       default:
           AliError( "Illegal operator in expression!");
 
@@ -124,14 +136,16 @@ TString AliExpression::Unparse() const
 {
    // Unparse the expression
 
-   TString opVals[4] = { "&", "|","!" };
-   if ( fArg2 == 0 ) {
-       AliError( "Expression undefined." );
-       return "Error";
+   TString opVals[4] = { "", "&", "|","!" };
+   if ( fArg2 == 0 && fVname.IsNull() ) {
+      AliError( "Expression undefined." );
+      return "Error";
    }
 
+   if( fArg2 == 0 && !fVname.IsNull() ) return fVname;
+
    if (fArg1 == 0 && fArg2) {
-       return opVals[fOperator]+fArg2->Unparse();
+      return opVals[fOperator]+fArg2->Unparse();
    }
    return "("+fArg1->Unparse()+" "+opVals[fOperator]+" "+fArg2->Unparse()+")";
 }
