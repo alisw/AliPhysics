@@ -50,6 +50,7 @@
 #include "AliCDBLocal.h"
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
+#include "AliEMCALHit.h"
 
 ClassImp(AliEMCALLoader)
   
@@ -152,76 +153,6 @@ Int_t AliEMCALLoader::CalibrateRaw(Double_t energy, Int_t module,
 }
 
 //____________________________________________________________________________ 
-Int_t AliEMCALLoader::LoadHits(Option_t* opt) 
-{
-  //Load the hits tree for the
-  //EMCAL
-  
-  Int_t status = AliLoader::LoadHits(opt);  // First call AliLoader to do all the groundwork
-  
-  TTree *treeH = TreeH();
-  
-  if (treeH) {
-    treeH->SetBranchAddress(fDetectorName,&fHits);
-    if (treeH->GetEntries() > 1)
-      AliWarning("Multiple arrays in treeH no longer supported");
-    treeH->GetEvent(0);
-  }
- 
-  return status;
-}
-
-//____________________________________________________________________________ 
-Int_t AliEMCALLoader::LoadSDigits(Option_t* opt) 
-{
-  //Load SDigits from TreeS for EMCAL
-
-  Int_t status = AliLoader::LoadSDigits(opt);  // First call AliLoader to do all the groundwork
-  
-  TTree *treeS = TreeS();
-  
-  if (treeS) {
-    treeS->SetBranchAddress(fDetectorName,&fSDigits);
-    treeS->GetEvent(0);
-  }
- 
-  return status;
-}
-
-//____________________________________________________________________________ 
-Int_t AliEMCALLoader::LoadDigits(Option_t* opt) 
-{
-  //Load Digits from TreeD for EMCAL
-
-  Int_t status = AliLoader::LoadDigits(opt);  // First call AliLoader to do all the groundwork
-  
-  TTree *treeD = TreeD();
-  
-  if (treeD) {
-    treeD->SetBranchAddress(fDetectorName,&fDigits);
-    treeD->GetEvent(0);
-  }
- 
-  return status;
-}
-
-//____________________________________________________________________________ 
-Int_t AliEMCALLoader::LoadRecPoints(Option_t* opt) 
-{
-  //Load RecPoints from TreeR for EMCAL
-  
-  Int_t status = AliLoader::LoadRecPoints(opt);  // First call AliLoader to do all the groundwork
-  
-  TTree *treeR = TreeR();
-  if (treeR) {
-    treeR->SetBranchAddress(fgkECARecPointsBranchName,&fRecPoints);
-    treeR->GetEvent(0);
-  }
-  
-  return status;
-}
-
-//____________________________________________________________________________ 
 Int_t AliEMCALLoader::GetEvent() 
 {
   //Method to load all of the data
@@ -236,13 +167,21 @@ Int_t AliEMCALLoader::GetEvent()
    TTree *treeH = TreeH();
    
    if (treeH) {
-     treeH->SetBranchAddress(fDetectorName,&fHits);
-     if (treeH->GetEntries() > 1)
-       AliWarning("Multiple arrays in treeH no longer supported");
-     treeH->GetEvent(0);
+     Int_t nEnt = treeH->GetEntries();  // TreeH has array of hits for every primary
+     fHits->Clear();
+     Int_t index = 0;
+     TClonesArray *temp_arr = new TClonesArray("AliEMCALHit");
+     treeH->SetBranchAddress(fDetectorName,&temp_arr);
+     for (Int_t iEnt = 0; iEnt < nEnt; iEnt++) {
+       treeH->GetEntry(iEnt);
+       Int_t nHit = temp_arr->GetEntriesFast();
+       for (Int_t iHit = 0; iHit < nHit; iHit++) {
+	 new ((*fHits)[index]) AliEMCALHit(*((AliEMCALHit*)temp_arr->At(iHit)));
+	 index++;
+       }
+     }
    }
-   
-   
+  
    // SDigits
    TTree *treeS = TreeS();
    if (treeS) {
