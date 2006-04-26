@@ -32,7 +32,8 @@ AliCentralTrigger.cxx AliRieman.cxx\
 AliTrackFitter.cxx AliTrackFitterRieman.cxx AliTrackFitterStraight.cxx\
 AliTrackResiduals.cxx AliTrackResidualsChi2.cxx AliTrackResidualsFast.cxx\
 AliAlignmentTracks.cxx \
-AliExpression.cxx
+AliExpression.cxx \
+AliCTPRawData.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
@@ -43,5 +44,5 @@ EINCLUDE:=$(ALICE)/geant3/TGeant3 RAW
 EINCLUDE+= TPC
 #endif
 
-EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h
+EXPORT:=$(SRCS:.cxx=.h) AliConst.h AliCallf77.h AliRawDataHeaderSim.h
 

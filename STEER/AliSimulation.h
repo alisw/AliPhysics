@@ -91,6 +91,7 @@ public:
   virtual Bool_t RunSimulation(Int_t nEvents = 0);
   virtual Bool_t RunSDigitization(const char* detectors = "ALL");
   virtual Bool_t RunTrigger(const char* descriptors ="" );
+  virtual Bool_t WriteTriggerRawData();
   virtual Bool_t RunDigitization(const char* detectors = "ALL",
 				 const char* excludeDetectors = "");
   virtual Bool_t RunHitsDigitization(const char* detectors = "ALL");

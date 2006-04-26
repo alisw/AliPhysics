@@ -129,5 +129,6 @@
 #pragma link C++ class AliTriggerCondition+;
 #pragma link C++ class AliTriggerDescriptor+;
 #pragma link C++ class AliCentralTrigger+;
+#pragma link C++ class AliCTPRawData+;
 
 #endif

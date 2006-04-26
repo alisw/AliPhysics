@@ -127,6 +127,7 @@
 #include "AliSimulation.h"
 #include "AliVertexGenFile.h"
 #include "AliCentralTrigger.h"
+#include "AliCTPRawData.h"
 
 ClassImp(AliSimulation)
 
@@ -662,7 +663,17 @@ Bool_t AliSimulation::RunTrigger(const char* descriptors)
    return kTRUE;
 }
 
+//_____________________________________________________________________________
+Bool_t AliSimulation::WriteTriggerRawData()
+{
+  // Writes the CTP (trigger) DDL raw data
+  // Details of the format are given in the
+  // trigger TDR - pages 134 and 135.
+  AliCTPRawData writer;
+  writer.RawData();
 
+  return kTRUE;
+}
 
 //_____________________________________________________________________________
 Bool_t AliSimulation::RunSimulation(Int_t nEvents)
@@ -1023,6 +1034,9 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
 	det->Digits2Raw();
       }
     }
+
+    if (!WriteTriggerRawData())
+      if (fStopOnError) return kFALSE;
 
     gSystem->ChangeDirectory(baseDir);
     if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
