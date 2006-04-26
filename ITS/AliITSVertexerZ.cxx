@@ -286,7 +286,8 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
     centre+= hc->GetBinCenter(ii)*hc->GetBinContent(ii);
     nn+=static_cast<Int_t>(hc->GetBinContent(ii));
   }
-  centre/=nn;
+  // PH Sometimes nn is 0, so we need a protection
+  if (nn) centre/=nn;
   /*
   if(fDebug>0){
     cout<<"Value of center "<<centre<<endl;

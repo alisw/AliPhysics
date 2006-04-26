@@ -127,13 +127,21 @@ Int_t AliRICHCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
   Int_t iCluCnt=pCluLst->GetEntriesFast();                                          //get current number of clusters already stored in the list by previous operations
   if(isTryUnfold==kTRUE && iLocMaxCnt<kMaxLocMax){                                        //resonable number of local maxima to fit and user requested it
     pMinuit->mnexcm("MIGRAD" ,&aArg,0,iErrFlg);                                     //start fitting
-    Double_t fitX,fitY,fitQ,d1,d2,d3; TString sName;                                //vars to get results from TMinuit
-    for(Int_t i=0;i<iLocMaxCnt;i++){//local maxima loop
-      pMinuit->mnpout(3*i   ,sName,  fitX, d1 , d2, d3, iErrFlg);
-      pMinuit->mnpout(3*i+1 ,sName,  fitY, d1 , d2, d3, iErrFlg);
-      pMinuit->mnpout(3*i+2 ,sName,  fitQ, d1 , d2, d3, iErrFlg);
-      new ((*pCluLst)[iCluCnt++]) AliRICHCluster(C(),fitX,fitY,(Int_t)fitQ);	    //add new unfolded clusters
-    }//local maxima loop
+    if (!iErrFlg) { // Only if MIGRAD converged normally
+      Double_t fitX,fitY,fitQ,d1,d2,d3; TString sName;                                //vars to get results from TMinuit
+      for(Int_t i=0;i<iLocMaxCnt;i++){//local maxima loop
+	pMinuit->mnpout(3*i   ,sName,  fitX, d1 , d2, d3, iErrFlg);
+	pMinuit->mnpout(3*i+1 ,sName,  fitY, d1 , d2, d3, iErrFlg);
+	pMinuit->mnpout(3*i+2 ,sName,  fitQ, d1 , d2, d3, iErrFlg);
+	if (TMath::Abs(fitQ)>2147483647.0) { 
+	  //PH 2147483647 is the max. integer
+	  //PH This apparently is a problem which needs investigation
+	  AliWarning(Form("Too big or too small fitQ %f",fitQ));
+	  fitQ = TMath::Sign((Double_t)2147483647,fitQ);
+	}
+	new ((*pCluLst)[iCluCnt++]) AliRICHCluster(C(),fitX,fitY,(Int_t)fitQ);	    //add new unfolded clusters
+      }//local maxima loop
+    }
   }else{//do not unfold since number of loc max is unresonably high or user's baned unfolding 
     CoG();
     new ((*pCluLst)[iCluCnt++]) AliRICHCluster(*this);  //add this raw cluster 
