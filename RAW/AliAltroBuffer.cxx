@@ -22,7 +22,7 @@
 
 #include "AliAltroBuffer.h"
 #include "AliAltroMapping.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliLog.h"
 #include <Riostream.h>
 #include <stdlib.h>
@@ -590,7 +590,7 @@ void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t compressed)
 //Write a (dummy or real) DDL data header, 
 //set the compression bit if compressed
 
-  AliRawDataHeader header;
+  AliRawDataHeaderSim header;
   if (dummy) {
     //if size=0 it means that this data header is a dummy data header
     fDataHeaderPos = fFile->tellp();
