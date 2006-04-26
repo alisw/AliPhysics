@@ -5,6 +5,7 @@
 
 #include <TError.h>
 
+#include "AliRawDataHeader.h"
 #include "AliRunLoader.h"
 #include "AliCentralTrigger.h"
 
