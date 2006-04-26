@@ -68,24 +68,24 @@ public:
   
   //========== Digits ================
   virtual TClonesArray * Digits() const {return fDigits ; }
-  virtual AliPHOSDigit * Digit(Int_t index) { return static_cast<AliPHOSDigit *>(fDigits->At(index)) ;} 
+  virtual AliPHOSDigit * Digit(Int_t index) const { return static_cast<AliPHOSDigit *>(fDigits->At(index)) ;} 
   //  virtual AliPHOSDigitizer * Digitizer(){Error("Digitizer","Method not defined") ; return 0;}
   
   //========== RecPoints =============
   virtual TObjArray *           EmcRecPoints() const {return fEmcRecPoints ;}
-  virtual AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<AliPHOSEmcRecPoint *>(fEmcRecPoints->At(index)) ;} 
+  virtual AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) const { return static_cast<AliPHOSEmcRecPoint *>(fEmcRecPoints->At(index)) ;} 
   virtual TObjArray *           CpvRecPoints() const {return fCpvRecPoints ;} 
-  virtual AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(fCpvRecPoints->At(index)) ;} 
+  virtual AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) const { return static_cast<AliPHOSCpvRecPoint *>(fCpvRecPoints->At(index)) ;} 
   virtual AliPHOSClusterizer * Clusterizer() { return fClusterizer;}
   
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
   virtual TClonesArray *        TrackSegments() const {return fTS ;} ;
-  virtual AliPHOSTrackSegment * TrackSegment(Int_t index) { return static_cast<AliPHOSTrackSegment *>(fTS->At(index)) ;} 
+  virtual AliPHOSTrackSegment * TrackSegment(Int_t index) const { return static_cast<AliPHOSTrackSegment *>(fTS->At(index)) ;} 
   virtual AliPHOSTrackSegmentMaker * TrackSegmentMaker(){ return fTSM ;}
   
   //========== RecParticles ===========
   virtual TClonesArray *        RecParticles() const { return fRP;} 
-  virtual AliPHOSRecParticle *  RecParticle(Int_t index) { return static_cast<AliPHOSRecParticle *>(fRP->At(index)) ;} 
+  virtual AliPHOSRecParticle *  RecParticle(Int_t index) const { return static_cast<AliPHOSRecParticle *>(fRP->At(index)) ;} 
   virtual AliPHOSPID *          PID(){return fPID ;} 
 
   //========== Raw ===========

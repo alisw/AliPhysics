@@ -113,12 +113,12 @@ public:
   
   //=========== Hits =================
   virtual TClonesArray *  Hits(void) const ; 
-  virtual AliPHOSHit *    Hit(Int_t index) { return dynamic_cast<AliPHOSHit*>(Hits()->At(index) );}
+  virtual AliPHOSHit *    Hit(Int_t index) const { return dynamic_cast<AliPHOSHit*>(Hits()->At(index) );}
   virtual TTree *         TreeH() const ; 
   
   //=========== SDigits ==============
   virtual TClonesArray *      SDigits() const ;  
-  virtual AliPHOSDigit *      SDigit(Int_t index) { return static_cast<AliPHOSDigit *>(SDigits()->At(index)) ;} 
+  virtual AliPHOSDigit *      SDigit(Int_t index) const { return static_cast<AliPHOSDigit *>(SDigits()->At(index)) ;} 
   virtual TTree *             TreeS() const ; 
   virtual AliPHOSSDigitizer * SDigitizer() ;  
   
@@ -131,7 +131,7 @@ public:
   
   //========== Digits ================
   virtual TClonesArray * Digits() const ;
-  virtual AliPHOSDigit * Digit(Int_t index) { return static_cast<AliPHOSDigit *>(Digits()->At(index)) ;} 
+  virtual AliPHOSDigit * Digit(Int_t index) const { return static_cast<AliPHOSDigit *>(Digits()->At(index)) ;} 
   virtual TTree *        TreeD() const ; 
   virtual AliPHOSDigitizer * Digitizer() ;
   virtual TString             GetDigitsFileName() const { return PhosLoader()->GetDigitsFileName() ; }  
@@ -148,9 +148,9 @@ public:
   
   //========== RecPoints =============
   virtual TObjArray *           EmcRecPoints() const;
-  virtual AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) { return static_cast<AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} 
+  virtual AliPHOSEmcRecPoint *  EmcRecPoint(Int_t index) const { return static_cast<AliPHOSEmcRecPoint *>(EmcRecPoints()->At(index)) ;} 
   virtual TObjArray *           CpvRecPoints() const ; 
-  virtual AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) { return static_cast<AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;} 
+  virtual AliPHOSCpvRecPoint *  CpvRecPoint(Int_t index) const { return static_cast<AliPHOSCpvRecPoint *>(CpvRecPoints()->At(index)) ;} 
   virtual TTree *               TreeR() const ;
   virtual AliPHOSClusterizer * Clusterizer() ;
   virtual TString               GetRecPointsFileName() const { return PhosLoader()->GetRecPointsFileName() ; } 
@@ -163,7 +163,7 @@ public:
   
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
   virtual TClonesArray *           TrackSegments() const;
-  virtual AliPHOSTrackSegment *  TrackSegment(Int_t index) { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
+  virtual AliPHOSTrackSegment *  TrackSegment(Int_t index) const { return static_cast<AliPHOSTrackSegment *>(TrackSegments()->At(index)) ;} 
   virtual TTree *               TreeT() const ;
   virtual AliPHOSTrackSegmentMaker * TrackSegmentMaker() ;
   virtual TString               GetTracksFileName() const { return PhosLoader()->GetTracksFileName() ; } 
@@ -176,7 +176,7 @@ public:
   
   //========== RecParticles ===========
   virtual TClonesArray *         RecParticles() const;
-  virtual AliPHOSRecParticle *   RecParticle(Int_t index) { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
+  virtual AliPHOSRecParticle *   RecParticle(Int_t index) const { return static_cast<AliPHOSRecParticle *>(RecParticles()->At(index)) ;} 
   virtual TTree *               TreeP() const ;
   virtual AliPHOSPID * PID() ;
   virtual TString               GetRecParticlesFileName() const { return PhosLoader()->GetRecParticlesFileName() ; } 
@@ -221,12 +221,12 @@ private:
 		Option_t * openingOption = "READ") ;
 private:
   
-  Int_t ReadTreeD(void) ;
-  Int_t ReadTreeH(void) ;
-  Int_t ReadTreeR(void) ;
-  Int_t ReadTreeT(void) ;
-  Int_t ReadTreeS(void) ;
-  Int_t ReadTreeP(void) ;
+  Int_t ReadTreeD(void) const ;
+  Int_t ReadTreeH(void) const ;
+  Int_t ReadTreeR(void) const ;
+  Int_t ReadTreeT(void) const ;
+  Int_t ReadTreeS(void) const ;
+  Int_t ReadTreeP(void) const ;
 
   Int_t ReadTreeE(Int_t event) ;    
   Bool_t OpenESDFile() ;
@@ -251,8 +251,8 @@ private:
   
   Bool_t            fRawDigits ;         //! true is raw data
 
-  AliPHOSCalibrationDB * fcdb ;       //!
-  static AliPHOSCalibData * fgCalibData;
+  AliPHOSCalibrationDB * fcdb ;          //! Calibration DB for beam test run 2004
+  static AliPHOSCalibData * fgCalibData; //! instance of AliPHOSCalibData
 
   static AliPHOSLoader * fgPhosLoader ; // the loader for the NewIO
   
