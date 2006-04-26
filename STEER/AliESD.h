@@ -30,10 +30,15 @@
 #include "AliESDV0MI.h"
 #include "AliESDFMD.h"
 
+class AliESDfriend;
+
 class AliESD : public TObject {
 public:
   AliESD();
   virtual ~AliESD(); 
+
+  void SetESDfriend(const AliESDfriend *f);
+  void GetESDfriend(AliESDfriend *f) const;
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
   void SetRunNumber(Int_t n) {fRunNumber=n;}

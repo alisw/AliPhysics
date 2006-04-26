@@ -24,7 +24,6 @@
 
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
-#include "AliESDfriendTrack.h"
 #include "AliKalmanTrack.h"
 #include "AliLog.h"
 #include "AliTrackPointArray.h"

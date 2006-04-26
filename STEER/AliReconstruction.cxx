@@ -676,7 +676,8 @@ Bool_t AliReconstruction::Run(const char* input,
 
     // write ESD friend
     if (fWriteESDfriend) {
-       esdf=new AliESDfriend(*esd);
+       esdf=new AliESDfriend();
+       esd->GetESDfriend(esdf);
        treef->Fill();  
     }
 

@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------
 
 #include "AliESD.h"
+#include "AliESDfriend.h"
 
 ClassImp(AliESD)
 
@@ -165,4 +166,33 @@ void AliESD::Print(Option_t *) const
   printf("                 V0MIs     %d\n)", GetNumberOfV0MIs());
   printf("                 CaloClusters %d\n)", GetNumberOfCaloClusters());
   printf("                 FMD       %s\n)", (fESDFMD ? "yes" : "no"));
+}
+
+void AliESD::SetESDfriend(const AliESDfriend *ev) {
+  //
+  // Attaches the complementary info to the ESD
+  //
+  if (!ev) return;
+
+  Int_t ntrk=ev->GetNumberOfTracks();
+
+  for (Int_t i=0; i<ntrk; i++) {
+    const AliESDfriendTrack *f=ev->GetTrack(i);
+    GetTrack(i)->SetFriendTrack(f);
+  }
+}
+
+void AliESD::GetESDfriend(AliESDfriend *ev) const {
+  //
+  // Extracts the complementary info from the ESD
+  //
+  if (!ev) return;
+
+  Int_t ntrk=GetNumberOfTracks();
+
+  for (Int_t i=0; i<ntrk; i++) {
+    const AliESDtrack *t=GetTrack(i);
+    const AliESDfriendTrack *f=t->GetFriendTrack();
+    ev->AddTrack(f);
+  }
 }

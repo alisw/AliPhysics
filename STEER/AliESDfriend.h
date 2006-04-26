@@ -10,20 +10,21 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 
-class AliESD;
-class AliESDfriendTrack;
+#include <AliESDfriendTrack.h>
 
 //_____________________________________________________________________________
 class AliESDfriend : public TObject {
 public:
   AliESDfriend();
   AliESDfriend(const AliESDfriend &);
-  AliESDfriend(const AliESD &);
   virtual ~AliESDfriend();
 
   Int_t GetNumberOfTracks() const {return fTracks.GetEntriesFast();}
   AliESDfriendTrack *GetTrack(Int_t i) const {
-    return (AliESDfriendTrack *)fTracks.UncheckedAt(i);
+     return (AliESDfriendTrack *)fTracks.UncheckedAt(i);
+  }
+  void AddTrack(const AliESDfriendTrack *t) {
+     new(fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*t);
   }
 
 protected:

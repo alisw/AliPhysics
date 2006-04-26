@@ -21,8 +21,6 @@
 //-------------------------------------------------------------------------
 
 #include "AliESDfriend.h"
-#include "AliESDfriendTrack.h"
-#include "AliESD.h"
 
 ClassImp(AliESDfriend)
 
@@ -38,21 +36,6 @@ AliESDfriend::AliESDfriend(const AliESDfriend &f):TObject(f),fTracks(f.fTracks)
  //
  // Copy constructor
  //
-}
-
-AliESDfriend::AliESDfriend(const AliESD &event): TObject(event),
-fTracks("AliESDfriendTrack",event.GetNumberOfTracks()) {
-  //
-  // Extracts the additional info from the ESD
-  //
-  Int_t ntrk=event.GetNumberOfTracks();
-
-  for (Int_t i=0; i<ntrk; i++) {
-    const AliESDtrack *t=event.GetTrack(i);
-    AliESDfriendTrack *ft=(AliESDfriendTrack *)t->GetFriendTrack();
-    ft->Set1P(t->Get1P());
-    new (fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*ft); 
-  }
 }
 
 AliESDfriend::~AliESDfriend() {

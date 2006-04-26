@@ -37,6 +37,9 @@ public:
   AliESDtrack(const AliESDtrack& track);
   virtual ~AliESDtrack();
   const AliESDfriendTrack *GetFriendTrack() const {return fFriendTrack;}
+  void SetFriendTrack(const AliESDfriendTrack *t) {
+    delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*t);
+  }
   void MakeMiniESDtrack();
   void SetID(Int_t id) { fID =id;}
   Int_t GetID() const { return fID;}
