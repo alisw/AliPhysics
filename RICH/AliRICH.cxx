@@ -433,7 +433,10 @@ void AliRICH::ReadESD(Int_t iEventN, Int_t iChamber)const
   
   for(Int_t iTrackN=0;iTrackN<iNtracks;iTrackN++){//ESD tracks loop
     AliESDtrack *pTrack = pESD->GetTrack(iTrackN);// get next reconstructed track
-    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),(Int_t)pTrack->GetSign(),-0.1*pESD->GetMagneticField());
+    Double_t mom[3], pos[3];
+    pTrack->GetPxPyPz(mom); TVector3 mom3(mom[0],mom[1],mom[2]);
+    pTrack->GetXYZ(pos); TVector3 pos3(pos[0],pos[1],pos[2]);
+    AliRICHHelix helix(pos3,mom3,(Int_t)pTrack->GetSign(),-0.1*pESD->GetMagneticField());
     Int_t iChamberOnRICH=helix.RichIntersect(AliRICHParam::Instance());        
     if(iChamberOnRICH==iChamber) {
       TMarker *trackImpact = new TMarker(helix.PosPc().X(),helix.PosPc().Y(),kStar);

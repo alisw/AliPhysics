@@ -19,6 +19,8 @@
 //      Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-----------------------------------------------------------------
 
+#include <TMath.h>
+
 #include "AliITSpidESD.h"
 #include "AliESDtrack.h"
 
@@ -39,7 +41,7 @@ Double_t AliITSpidESD::Bethe(Double_t bg) {
   /*if (bg<3.5) 
      bethe=(1.+ bg2)/bg2*(log(5940*bg2) - bg2/(1.+ bg2));
   else*/  // not 100% clear why...
-     bethe=(1.+ bg2)/bg2*(log(3.5*5940*bg) - bg2/(1.+ bg2));
+  bethe=(1.+ bg2)/bg2*(TMath::Log(3.5*5940*bg) - bg2/(1.+ bg2));
   return bethe/11.091;
 }
 

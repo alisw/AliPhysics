@@ -1,9 +1,9 @@
 #ifndef ALIESDTRDTRACK_H
 #define ALIESDTRDTRACK_H
 
-//
 //  Tracks from the TRD Global Tracking Unit (GTU, trigger)
-//  
+//  Stored in the ESD object
+//  Author: B.Vulpescu
 
 #include "TObject.h"
 
@@ -16,19 +16,19 @@ class AliESDTrdTrack : public TObject {
   AliESDTrdTrack(const AliESDTrdTrack& track);
   AliESDTrdTrack& operator=(const AliESDTrdTrack& track);
 
-  Float_t GetYproj()     { return fYproj; };
-  Float_t GetZproj()     { return fZproj; };
-  Float_t GetSlope()     { return fSlope; };
-  Int_t   GetDetector()  { return fDetector; };
-  Int_t   GetTracklets() { return fNtracklets; };
-  Int_t   GetPlanes()    { return fNplanes; };
-  Int_t   GetClusters()  { return fNclusters; };
-  Float_t GetPt()        { return fPt; };
-  Float_t GetPhi()       { return fPhi; };
-  Float_t GetEta()       { return fEta; };
-  Int_t   GetLabel()     { return fLabel; };
-  Float_t GetPID()       { return fPID; };
-  Bool_t  IsElectron()   { return fIsElectron; }
+  Float_t GetYproj()     const { return fYproj; };
+  Float_t GetZproj()     const { return fZproj; };
+  Float_t GetSlope()     const { return fSlope; };
+  Int_t   GetDetector()  const { return fDetector; };
+  Int_t   GetTracklets() const { return fNtracklets; };
+  Int_t   GetPlanes()    const { return fNplanes; };
+  Int_t   GetClusters()  const { return fNclusters; };
+  Float_t GetPt()        const { return fPt; };
+  Float_t GetPhi()       const { return fPhi; };
+  Float_t GetEta()       const { return fEta; };
+  Int_t   GetLabel()     const { return fLabel; };
+  Float_t GetPID()       const { return fPID; };
+  Bool_t  IsElectron()   const { return fIsElectron; }
 
   void SetYproj(Float_t val)     { fYproj = val; };
   void SetZproj(Float_t val)     { fZproj = val; };
@@ -48,7 +48,7 @@ class AliESDTrdTrack : public TObject {
 
   Float_t fYproj;                                   // Average values calculated
   Float_t fZproj;                                   // from the tracklets 
-  Float_t fSlope;                                   //
+  Float_t fSlope;                                   // slope of the tracklet
   Int_t   fDetector;                                // First detector in the module
   Int_t   fNtracklets;                              // Number of tracklets
   Int_t   fNplanes;                                 // Number of TRD planes

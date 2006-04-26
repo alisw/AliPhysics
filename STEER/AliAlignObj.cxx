@@ -270,6 +270,8 @@ void AliAlignObj::Transform(AliTrackPoint &p) const
 //_____________________________________________________________________________
 void AliAlignObj::Transform(AliTrackPointArray &array) const
 {
+  // This method is used to transform all the track points
+  // from the input AliTrackPointArray
   AliTrackPoint p;
   for (Int_t i = 0; i < array.GetNPoints(); i++) {
     array.GetPoint(p,i);
@@ -546,8 +548,17 @@ void  AliAlignObj::InitAlignObjFromGeometry()
 }
 
 //_____________________________________________________________________________
+AliAlignObj* AliAlignObj::GetAlignObj(UShort_t voluid) {
+  // Returns the alignment object for given volume ID
+  Int_t modId;
+  ELayerID layerId = VolUIDToLayer(voluid,modId);
+  return GetAlignObj(layerId,modId);
+}
+
+//_____________________________________________________________________________
 AliAlignObj* AliAlignObj::GetAlignObj(ELayerID layerId, Int_t modId)
 {
+  // Returns pointer to alignment object givent its layer and module ID
   if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
     return NULL;
@@ -556,8 +567,17 @@ AliAlignObj* AliAlignObj::GetAlignObj(ELayerID layerId, Int_t modId)
 }
 
 //_____________________________________________________________________________
+const char* AliAlignObj::GetVolPath(UShort_t voluid) {
+  // Returns the volume path for given volume ID
+  Int_t modId;
+  ELayerID layerId = VolUIDToLayer(voluid,modId);
+  return GetVolPath(layerId,modId);
+}
+
+//_____________________________________________________________________________
 const char* AliAlignObj::GetVolPath(ELayerID layerId, Int_t modId)
 {
+  // Returns volume path to alignment object givent its layer and module ID
   if(modId<0 || modId>=fgLayerSize[layerId-kFirstLayer]){
     AliWarningClass(Form("Module number %d not in the valid range (0->%d) !",modId,fgLayerSize[layerId-kFirstLayer]-1));
     return NULL;
@@ -729,20 +749,20 @@ void AliAlignObj::InitVolPaths()
     Int_t modnum = 0;
     TString str1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
     TString str2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
-    TString str_in = "/TPC_IROC_1";
+    TString strIn = "/TPC_IROC_1";
     TString volpath;
     
     for(Int_t cnt=1; cnt<=18; cnt++){
       volpath = str1;
       volpath += cnt;
-      volpath += str_in;
+      volpath += strIn;
       fgVolPath[kTPC1-kFirstLayer][modnum] = volpath.Data();
       modnum++;
     }
     for(Int_t cnt=1; cnt<=18; cnt++){
       volpath = str2;
       volpath += cnt;
-      volpath += str_in;
+      volpath += strIn;
       fgVolPath[kTPC1-kFirstLayer][modnum] = volpath.Data();
       modnum++;
     }
@@ -753,20 +773,20 @@ void AliAlignObj::InitVolPaths()
     Int_t modnum = 0;
     TString str1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
     TString str2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
-    TString str_out = "/TPC_OROC_1";
+    TString strOut = "/TPC_OROC_1";
     TString volpath;
     
     for(Int_t cnt=1; cnt<=18; cnt++){
       volpath = str1;
       volpath += cnt;
-      volpath += str_out;
+      volpath += strOut;
       fgVolPath[kTPC2-kFirstLayer][modnum] = volpath.Data();
       modnum++;
     }
     for(Int_t cnt=1; cnt<=18; cnt++){
       volpath = str2;
       volpath += cnt;
-      volpath += str_out;
+      volpath += strOut;
       fgVolPath[kTPC2-kFirstLayer][modnum] = volpath.Data();
       modnum++;
     }
@@ -853,7 +873,7 @@ void AliAlignObj::InitVolPaths()
     TString zeroStr = "0";
     TString volpath;
 
-    Int_t TRDlayId[6] = {kTRD1, kTRD2, kTRD3, kTRD4, kTRD5, kTRD6};
+    Int_t arTRDlayId[6] = {kTRD1, kTRD2, kTRD3, kTRD4, kTRD5, kTRD6};
 
     for(Int_t layer=0; layer<6; layer++){
       Int_t modnum=0;
@@ -864,7 +884,7 @@ void AliAlignObj::InitVolPaths()
 	  if(chnum<10) volpath += zeroStr;
 	  volpath += chnum;
 	  volpath += strPost;
-	  fgVolPath[TRDlayId[layer]-kFirstLayer][modnum] = volpath.Data();
+	  fgVolPath[arTRDlayId[layer]-kFirstLayer][modnum] = volpath.Data();
 	  modnum++;
 	}
       }

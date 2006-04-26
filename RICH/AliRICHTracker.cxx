@@ -64,7 +64,10 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
    
   for(Int_t iTrk=0;iTrk<iNtracks;iTrk++){//ESD tracks loop
     AliESDtrack *pTrack = pESD->GetTrack(iTrk);// get next reconstructed track    
-    AliRICHHelix helix(pTrack->X3(),pTrack->P3(),(Int_t)pTrack->GetSign(),-0.1*GetBz()); //construct helix out of track running parameters  
+    Double_t mom[3], pos[3];
+    pTrack->GetPxPyPz(mom); TVector3 mom3(mom[0],mom[1],mom[2]);
+    pTrack->GetXYZ(pos); TVector3 pos3(pos[0],pos[1],pos[2]);
+    AliRICHHelix helix(pos3,mom3,(Int_t)pTrack->GetSign(),-0.1*GetBz()); //construct helix out of track running parameters  
      //Printf(" magnetic field %f charged %f\n",GetBz(),pTrack->GetSign()); helix.Print("Track");
     Int_t iChamber=helix.RichIntersect(AliRICHParam::Instance());    
     if(!iChamber) continue;                                         //no intersection with chambers, ignore this track go after the next one

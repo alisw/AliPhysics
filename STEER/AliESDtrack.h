@@ -27,11 +27,8 @@
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
 
-#include <TVector3.h>
-
 class AliESDVertex;
 class AliKalmanTrack;
-class AliESDfriendTrack;
 class AliTrackPointArray;
 
 class AliESDtrack : public AliExternalTrackParam {
@@ -42,7 +39,7 @@ public:
   const AliESDfriendTrack *GetFriendTrack() const {return fFriendTrack;}
   void MakeMiniESDtrack();
   void SetID(Int_t id) { fID =id;}
-  Int_t GetID(){ return fID;}
+  Int_t GetID() const { return fID;}
   void SetStatus(ULong_t flags) {fFlags|=flags;}
   void ResetStatus(ULong_t flags) {fFlags&=~flags;}
   Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
@@ -62,9 +59,6 @@ public:
   Double_t GetIntegratedLength() const {return fTrackLength;}
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetMass() const;
-  TVector3 P3() const {Double_t p[3]; GetPxPyPz(p); return TVector3(p[0],p[1],p[2]);} //running track momentum
-  TVector3 X3() const {Double_t x[3]; GetXYZ(x); return TVector3(x[0],x[1],x[2]);}    //running track position 
-
 
   Bool_t GetConstrainedPxPyPz(Double_t *p) const {
     if (!fCp) return kFALSE;
@@ -131,7 +125,7 @@ public:
      for (Int_t i=0;i<4;i++) fTPCPoints[i]=points[i];
   }
   void    SetTPCPointsF(UChar_t  findable){fTPCnclsF = findable;}
-  Float_t GetTPCPoints(Int_t i){return fTPCPoints[i];}
+  Float_t GetTPCPoints(Int_t i) const {return fTPCPoints[i];}
   void    SetKinkIndexes(Int_t points[3]) {
      for (Int_t i=0;i<3;i++) fKinkIndexes[i] = points[i];
   }
@@ -247,7 +241,6 @@ public:
   };
 protected:
   
-  //AliESDtrack & operator=(const AliESDtrack & );
 
   ULong_t   fFlags;         // Reconstruction status flags 
   Int_t     fLabel;         // Track label
@@ -261,15 +254,14 @@ protected:
 
   Int_t   fStopVertex;  // Index of the stop vertex
 
-//Track parameters constrained to the primary vertex
-  AliExternalTrackParam *fCp; 
-  Double_t fCchi2; //chi2 at the primary vertex
+  AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
+  Double_t fCchi2; // chi2 at the primary vertex
 
-//Track parameters at the inner wall of the TPC
-  AliExternalTrackParam *fIp;
 
-//Track parameters at the inner wall of the TRD 
-  AliExternalTrackParam *fOp;
+  AliExternalTrackParam *fIp; // Track parameters at the inner wall of the TPC
+
+
+  AliExternalTrackParam *fOp; // Track parameters at the inner wall of the TRD 
 
   // ITS related track information
   Float_t fITSchi2;        // chi2 in the ITS
@@ -330,9 +322,13 @@ protected:
   Float_t fRICHmipX;       // x of the MIP in LORS
   Float_t fRICHmipY;       // y of the MIP in LORS
 
-  AliTrackPointArray *fPoints;//Array of track space points in the global frame
+  AliTrackPointArray *fPoints;// Array of track space points in the global frame
 
   AliESDfriendTrack *fFriendTrack; //! All the complementary information
+
+ private:
+
+  AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
   ClassDef(AliESDtrack,27)  //ESDtrack 
 };

@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.12  2006/03/10 13:23:36  hristov
+ * Using AliESDCaloCluster instead of AliESDtrack
+ *
  * Revision 1.11  2006/01/31 20:30:52  hristov
  * Including TFile.h
  *
@@ -894,10 +897,11 @@ void AliPHOSGammaJet::CreateParticleListFromESD(TClonesArray * pl,
     AliESDtrack * track = esd->GetTrack(npar) ; // retrieve track from esd
     
     Double_t en = track ->GetTPCsignal() ;
-    TVector3 mom = track->P3() ;
-    Double_t px = mom.Px();
-    Double_t py = mom.Py();
-    Double_t pz = mom.Pz(); //Check with TPC people if this is correct.
+    Double_t mom[3];
+    track->GetPxPyPz(mom) ;
+    Double_t px = mom[0];
+    Double_t py = mom[1];
+    Double_t pz = mom[2]; //Check with TPC people if this is correct.
 
     //cout<<"TPC signal "<<en<<endl;
     //cout<<"px "<<px<<"; py "<<py<<"; pz "<<pz<<endl;

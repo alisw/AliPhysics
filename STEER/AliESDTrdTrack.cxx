@@ -15,7 +15,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// The TRD trigger stores the found tracks as ESDTrdTrack objects in the ESD 
+//  Tracks from the TRD Global Tracking Unit (GTU, trigger)
+//  The TRD trigger stores the found tracks 
+//  as ESDTrdTrack objects in the ESD object
+//  Related classes: AliTRDReconstructor, AliESD
+//  Author: B.Vulpescu
 //
 ///////////////////////////////////////////////////////////////////////////////
 
