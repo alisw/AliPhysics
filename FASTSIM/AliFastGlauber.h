@@ -4,20 +4,22 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-//
+
 // Utility class to make simple Glauber type calculations for collision geometries:
 // Impact parameter, production points, reaction plane dependence
-//
-// Author: andreas.morsch@cern.ch
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
 
 #include <TObject.h>
 #include <TString.h>
-#include <TF2.h>
 class TF1;
+class TF2;
+
 
 class AliFastGlauber : public TObject {
  public:
     AliFastGlauber();
+    AliFastGlauber(const AliFastGlauber& glauber);
     virtual ~AliFastGlauber();
     void Init(Int_t mode = 0);
 
@@ -26,7 +28,7 @@ class AliFastGlauber : public TObject {
     void SetWoodSaxonParametersAu()
 	{fWSr0 = 6.38; fWSd = 0.535; fWSw = 0.; fWSn = 8.59e-4;}
     void SetWoodSaxonParametersPb()
-	{fWSr0 = 6.624; fWSd = 0.549; fWSw = 0.; fWSn = 7.69e-4;}
+	{fWSr0 = 6.78; fWSd = 0.54; fWSw = 0.; fWSn = 7.14e-4;}
     void SetMaxImpact(Float_t bmax = 20.) {fgBMax = bmax;};
     void SetHardCrossSection(Float_t xs = 1.0) {fSigmaHard = xs;}
     void SetNNCrossSection  (Float_t xs = 55.6) {fSigmaNN = xs;}
@@ -91,6 +93,8 @@ class AliFastGlauber : public TObject {
     Double_t GetNumberOfParticipants(Double_t  b) const;
     Double_t GetNumberOfCollisions(Double_t  b)   const;
     Double_t GetNumberOfCollisionsPerEvent(Double_t  b) const;
+    Double_t MeanOverlap(Double_t b1, Double_t b2);
+    Double_t MeanNumberOfCollisionsPerEvent(Double_t b1, Double_t b2);
     void SimulateTrigger(Int_t n);
     void GetRandom(Float_t& b, Float_t& p, Float_t& mult);
     void GetRandom(Int_t& bin, Bool_t& hard);
@@ -152,6 +156,9 @@ class AliFastGlauber : public TObject {
     void PlotI0I1B2BDistr(Int_t n=1000,Double_t ellCut=20.,Bool_t save=kFALSE,
 			  const char *fname="i0i1B2B.root");
     void PlotAlmonds() const;
+    // Copy
+    AliFastGlauber& operator=(const AliFastGlauber & rhs);
+    void Copy(TObject&) const;
  protected:
     static Double_t WSb            (Double_t *xx, Double_t *par);
     static Double_t WSbz           (Double_t *xx, Double_t *par);
@@ -170,7 +177,7 @@ class AliFastGlauber : public TObject {
     static Double_t WIntRadius     (Double_t *xx, Double_t *par);
     static Double_t WEnergyDensity (Double_t *xx, Double_t *par);
 
-    void Reset();
+    void Reset() const;
 
     static Float_t fgBMax;           // Maximum Impact Parameter
     static Int_t fgCounter;          // Counter to protect double instantiation

@@ -1,9 +1,16 @@
-#ifndef ALIFASTMUONTRACKINGACC
-#define ALIFASTMUONTRACKINGACC
+#ifndef ALIFASTMUONTRACKINGACC_H
+#define ALIFASTMUONTRACKINGACC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
+// Realisation of AliFastResponse for the
+// fast simulation of the muon spectrometer acceptance.
+// The acceptance depends on the muon 3-vector which can be passed as (pt, theta, phi), 
+// where pt is the transverse momentum, theta the polar angle and phi the azimuthal angle.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch 
 
 #include "AliFastResponse.h"
 class AliMUONFastTracking;
@@ -11,7 +18,8 @@ class AliMUONFastTracking;
 class AliFastMuonTrackingAcc :  public AliFastResponse {
  public:
     AliFastMuonTrackingAcc();
-    ~AliFastMuonTrackingAcc(){;}
+    AliFastMuonTrackingAcc(const AliFastMuonTrackingAcc& acc);
+    virtual ~AliFastMuonTrackingAcc(){;}
     void SetBackground(Float_t bg = 1.) {fBackground = bg;}
     void SetCharge(Float_t charge = 1.) {fCharge     = charge;}
     virtual void Init();
@@ -23,6 +31,8 @@ class AliFastMuonTrackingAcc :  public AliFastResponse {
     virtual Float_t Evaluate(AliFastParticle* part) {
       return AliFastResponse::Evaluate(part);
     }
+     // Copy
+    AliFastMuonTrackingAcc& operator=(const AliFastMuonTrackingAcc& rhs);
  protected:
     Float_t              fBackground;   // Background level
     Float_t              fCharge;       // Current charge

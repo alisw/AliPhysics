@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+// Basic implementation of a fast detector response. 
+// The 3-vector of the particle can be passes as
+// a TParticle or as
+// transverse momentum pt, polar angle theta and azimuthal angle phi
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
+//
 #include "AliFastResponse.h"
 #include "AliFastParticle.h"
 
@@ -42,5 +49,13 @@ void AliFastResponse::Evaluate(Float_t   p,  Float_t  theta , Float_t   phi,
     pS     = p;
     thetaS = theta;
     phiS   = phi;
+}
+
+void AliFastResponse::Copy(TObject&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
 }
 

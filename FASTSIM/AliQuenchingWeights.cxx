@@ -15,13 +15,12 @@
 
 /* $Id$ */
 
-//----------------------------------------------------------------------------
-//     Implementation of the class to calculate the parton energy loss
-//  Based on the "BDMPS" quenching weights by C.A.Salgado and U.A.Wiedemann
-//
-//  References:
-//   C.A.Salgado and U.A.Wiedemann, Phys.Rev.D68 (2003) 014008 [hep-ph/0302184]
-//   A.Dainese, Eur.Phys.J.C, in press, [nucl-ex/0312005]             
+
+// Implementation of the class to calculate the parton energy loss
+// Based on the "BDMPS" quenching weights by C.A.Salgado and U.A.Wiedemann
+// References:
+// C.A.Salgado and U.A.Wiedemann, Phys.Rev.D68 (2003) 014008 [hep-ph/0302184]
+// A.Dainese, Eur.Phys.J.C, in press, [nucl-ex/0312005]             
 //
 //
 //            Origin:  C. Loizides   constantinos.loizides@cern.ch
@@ -29,8 +28,8 @@
 //
 //=================== Added by C. Loizides 27/03/04 ===========================
 //
-//  Added support for k-Quenching, where wc=I1*k and R=2I1^2/I0*k
-//  (see the AliFastGlauber class for definition of I0/I1)
+// Added support for k-Quenching, where wc=I1*k and R=2I1^2/I0*k
+// (see the AliFastGlauber class for definition of I0/I1)
 //-----------------------------------------------------------------------------
 
 #include <Riostream.h>
@@ -816,15 +815,15 @@ Int_t AliQuenchingWeights::CalcSingleHard(Int_t ipart,
 
 Double_t AliQuenchingWeights::CalcR(Double_t wc, Double_t l) const 
 { 
-  //calculate R value and 
+  //calculate r value and 
   //check if it is less then maximum
 
-  Double_t R = wc*l*fgkConvFmToInvGeV;
-  if(R>=fgkRMax) {
-    Warning("CalcR","Value of R = %.2f; should be less than %.2f",R,fgkRMax);
+  Double_t r = wc*l*fgkConvFmToInvGeV;
+  if(r >= fgkRMax) {
+    Warning("CalcR","Value of r = %.2f; should be less than %.2f", r, fgkRMax);
     return fgkRMax-1;
   }  
-  return R;
+  return r;
 }
 
 Double_t AliQuenchingWeights::CalcRk(Double_t k, Double_t I0, Double_t I1) const
@@ -832,14 +831,14 @@ Double_t AliQuenchingWeights::CalcRk(Double_t k, Double_t I0, Double_t I1) const
   //calculate R value and 
   //check if it is less then maximum
 
-  Double_t R = fgkRMax-1;
+  Double_t r = fgkRMax-1;
   if(I0>0)
-    R = 2*I1*I1/I0*k;
-  if(R>=fgkRMax) {
-    Warning("CalcRk","Value of R = %.2f; should be less than %.2f",R,fgkRMax);
+    r = 2*I1*I1/I0*k;
+  if(r>=fgkRMax) {
+    Warning("CalcRk","Value of r = %.2f; should be less than %.2f",r,fgkRMax);
     return fgkRMax-1;
   }  
-  return R;
+  return r;
 }
 
 Double_t AliQuenchingWeights::GetELossRandom(Int_t ipart, Double_t length, Double_t e) const

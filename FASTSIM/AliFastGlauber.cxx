@@ -16,7 +16,7 @@
 /* $Id$ */
 //
 // Utility class to make simple Glauber type calculations 
-//           for SYMMTRIC collision geometries (AA):
+//           for SYMMETRIC collision geometries (AA):
 // Impact parameter, production points, reaction plane dependence
 //
 // The SimulateTrigger method can be used for simple MB and hard-process
@@ -88,8 +88,7 @@ Int_t AliFastGlauber::fgCounter = 0;
 
 AliFastGlauber::AliFastGlauber() : fName()
 {
-  //  Default Constructor
-  //
+  //  Default Constructor 
   fgCounter++;
   if(fgCounter>1)
     Error("AliFastGlauber","More than more instance (%d) is not supported, check your code!",fgCounter);
@@ -100,11 +99,18 @@ AliFastGlauber::AliFastGlauber() : fName()
   SetPbPbLHC();
 }
 
+AliFastGlauber::AliFastGlauber(const AliFastGlauber & gl)
+    :TObject(gl)
+{
+// Copy constructor
+    gl.Copy(*this);
+}
+
 AliFastGlauber::~AliFastGlauber()
 {
+// Destructor
   fgCounter--;
   for(Int_t k=0; k<40; k++) delete fgWAlmondFixedB[k];
-  //if(fgCounter==0) Reset();
 }
 
 void AliFastGlauber::SetAuAuRhic()
@@ -269,7 +275,7 @@ void AliFastGlauber::Init(Int_t mode)
   fgWPathLength->SetParameter(2, 0);     //Pathlength definition
 }
 
-void AliFastGlauber::Reset()
+void AliFastGlauber::Reset() const
 {
   //
   // Reset dynamic allocated formulas
@@ -332,7 +338,7 @@ void AliFastGlauber::DrawOverlap() const
   TCanvas *c2 = new TCanvas("c2","Overlap",400,10,600,700);
   c2->cd();
   Double_t max=fgWStaa->GetMaximum(0,fgBMax)*1.01;
-  TH2F *h2f=new TH2F("h2ftaa","Overlap function: T_{AB} [mbarn^{-1}]",2,0,fgBMax,2,0,max);
+  TH2F *h2f=new TH2F("h2ftaa","Overlap function: T_{AB} [mbarn^{-1}]",2,0,fgBMax,2,0, max);
   h2f->SetStats(0);
   h2f->GetXaxis()->SetTitle("b [fm]");
   h2f->GetYaxis()->SetTitle("T_{AB} [mbarn^{-1}]");
@@ -682,8 +688,11 @@ Double_t AliFastGlauber::WStaa(Double_t* x, Double_t* par)
   //  MC Integration
   //
   Double_t y = 0;
+  
+
   for (Int_t i = 0; i < fgkMCInts; i++)
     {
+	
       const Double_t kphi = TMath::Pi() * gRandom->Rndm();
       const Double_t kb1  = fgBMax      * gRandom->Rndm();	
       y += fgWStarfi->Eval(kb1, kphi);
@@ -999,6 +1008,44 @@ Double_t AliFastGlauber::Binaries(Double_t b) const
   if(b==0) b=1e-4;
   return fgWSN->Eval(b)/fgWSN->Eval(1e-4);
 }
+
+Double_t AliFastGlauber::MeanOverlap(Double_t b1, Double_t b2)
+{
+//
+// Calculate the mean overlap for impact parameter range b1 .. b2
+//
+    Double_t sum  = 0.;
+    Double_t sumc = 0.;
+    Double_t b    = b1;
+    
+    while (b < b2-0.005) {
+	Double_t  nc = GetNumberOfCollisions(b);
+	sum  += 10. * fgWStaa->Eval(b) * fgWSgeo->Eval(b) * 0.01 / (1. - TMath::Exp(-nc));
+	sumc += 10. * fgWSgeo->Eval(b) * 0.01;
+	b += 0.01;
+    }
+    return (sum / CrossSection(b1, b2));
+}
+
+
+Double_t AliFastGlauber::MeanNumberOfCollisionsPerEvent(Double_t b1, Double_t b2)
+{
+//
+// Calculate the mean number of collisions per event for impact parameter range b1 .. b2
+//
+    Double_t sum  = 0.;
+    Double_t sumc = 0.;
+    Double_t b    = b1;
+    
+    while (b < b2-0.005) {
+	Double_t  nc = GetNumberOfCollisions(b);
+	sum  += nc / (1. - TMath::Exp(-nc)) * 10. * fgWSgeo->Eval(b) * 0.01;
+	sumc += 10. * fgWSgeo->Eval(b) * 0.01;
+	b += 0.01;
+    }
+    return (sum / CrossSection(b1, b2));
+}
+
 
 Double_t AliFastGlauber::GetNumberOfBinaries(Double_t b) const
 {
@@ -1762,5 +1809,20 @@ void AliFastGlauber::PlotI0I1B2BDistr(Int_t n,Double_t ellCut,
     f->Close();
   }
   return;
+}
+
+AliFastGlauber& AliFastGlauber::operator=(const  AliFastGlauber& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this);
+    return *this;
+}
+
+void AliFastGlauber::Copy(TObject&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
 }
 

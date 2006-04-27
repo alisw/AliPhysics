@@ -14,7 +14,14 @@
  **************************************************************************/
 
 /* $Id$ */
-
+//
+// Class for fast simulation of the ALICE Muon Spectrometer
+// Tracking Efficiency.
+// The efficiency depends on trasverse momentum pt, polar angle theta and azimuthal angle phi.
+//
+// Author: Alessandro de Falco 
+// alessandro.de.falco@ca.infn.it
+// 
 #include "AliFastMuonTrackingEff.h"
 #include "AliMUONFastTracking.h"
 
@@ -24,11 +31,22 @@ ClassImp(AliFastMuonTrackingEff)
 AliFastMuonTrackingEff::AliFastMuonTrackingEff() :
     AliFastResponse("Efficiency", "Muon Tracking Efficiency")
 {
+//
+// Constructor
     SetBackground();
+}
+
+AliFastMuonTrackingEff::AliFastMuonTrackingEff(const AliFastMuonTrackingEff& eff)
+    :AliFastResponse(eff)
+{
+// Copy constructor
+    eff.Copy(*this);
 }
 
 void AliFastMuonTrackingEff::Init()
 {
+//
+// Initialization
     fFastTracking = AliMUONFastTracking::Instance();
     fFastTracking->Init(fBackground);
 }
@@ -37,7 +55,17 @@ void AliFastMuonTrackingEff::Init()
 
 Float_t AliFastMuonTrackingEff::Evaluate(Float_t pt, Float_t theta, Float_t phi)
 {
+//
+// Evaluate the efficience for muon with 3-vector (pt, theta, phi)
     Float_t p = pt / TMath::Sin(theta*TMath::Pi()/180.);
     Float_t eff =  fFastTracking->Efficiency(p, theta, phi, Int_t(fCharge));
     return eff;
 }
+
+AliFastMuonTrackingEff& AliFastMuonTrackingEff::operator=(const  AliFastMuonTrackingEff& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this);
+    return *this;
+}
+

@@ -15,6 +15,13 @@
 
 /* $Id$ */
 
+// Realisation of AliFastResponse for the
+// fast simulation of the muon spectrometer acceptance.
+// The acceptance depends on the muon 3-vector which can be passed as (pt, theta, phi), 
+// where pt is the transverse momentum, theta the polar angle and phi the azimuthal angle.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch 
+
 #include "AliFastMuonTrackingAcc.h"
 #include "AliMUONFastTracking.h"
 
@@ -27,6 +34,13 @@ AliFastMuonTrackingAcc::AliFastMuonTrackingAcc() :
     SetBackground();
 }
 
+AliFastMuonTrackingAcc::AliFastMuonTrackingAcc(const AliFastMuonTrackingAcc & acc)
+    :AliFastResponse(acc)
+{
+// Copy constructor
+    acc.Copy(*this);
+}
+
 void AliFastMuonTrackingAcc::Init()
 {
     fFastTracking = AliMUONFastTracking::Instance();
@@ -37,7 +51,15 @@ void AliFastMuonTrackingAcc::Init()
 
 Float_t AliFastMuonTrackingAcc::Evaluate(Float_t pt, Float_t theta, Float_t phi)
 {
+// Evaluate the tracking acceptance for 3-vector pt, theta, phi
     Float_t p = pt / TMath::Sin(theta*TMath::Pi()/180.);
     Float_t eff =  fFastTracking->Acceptance(p, theta, phi, Int_t(fCharge));
     return eff;
+}
+
+AliFastMuonTrackingAcc& AliFastMuonTrackingAcc::operator=(const  AliFastMuonTrackingAcc& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this);
+    return *this;
 }

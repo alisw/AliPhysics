@@ -1,9 +1,16 @@
-#ifndef ALIFASTMUONTRACKINGEFF
-#define ALIFASTMUONTRACKINGEFF
+#ifndef ALIFASTMUONTRACKINGEFF_H
+#define ALIFASTMUONTRACKINGEFF_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+//
+// Class for fast simulation of the ALICE Muon Spectrometer
+// Tracking Efficiency.
+// The efficiency depends on trasverse momentum pt, polar angle theta and azimuthal angle phi.
+//
+// Author: Alessandro de Falco 
+// alessandro.de.falco@ca.infn.it
 
 #include "AliFastResponse.h"
 class AliMUONFastTracking;
@@ -11,7 +18,8 @@ class AliMUONFastTracking;
 class AliFastMuonTrackingEff :  public AliFastResponse {
  public:
     AliFastMuonTrackingEff();
-    ~AliFastMuonTrackingEff(){;}
+    virtual ~AliFastMuonTrackingEff(){;}
+    AliFastMuonTrackingEff(const AliFastMuonTrackingEff& eff);
     void SetBackground(Float_t bg = 1.) {fBackground = bg;}
     void SetCharge(Float_t charge = 1.) {fCharge     = charge;}
     virtual void Init();
@@ -23,6 +31,8 @@ class AliFastMuonTrackingEff :  public AliFastResponse {
     virtual Float_t Evaluate(AliFastParticle* part) {
       return AliFastResponse::Evaluate(part);
     }
+     // Copy
+    AliFastMuonTrackingEff& operator=(const AliFastMuonTrackingEff& rhs);
  protected:
     Float_t              fBackground;   // Background level
     Float_t              fCharge;       // Current charge

@@ -4,6 +4,16 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+// Class for the fast simulation of the muon trigger efficiency
+// The trigger parametrization is computed for background levels 0., 0.5 and 1.
+// In order to set a background level different from 0 it is necessary to 
+// explicitly force it with:
+// ForceBkgLevel(BkgLevel).
+// For intermediate background levels, the trigger response is linearly 
+// interpolated between these values.
+// There is increased granularity in the pT region below 3 GeV. Although
+// it does not seem to be necessary it is also possible to interpolate
+// between pT bins using SetInt().
 
 #include <AliFastResponse.h>
 #include <TString.h>
@@ -21,20 +31,23 @@ class AliFastMuonTriggerEff : public AliFastResponse {
  public:
     AliFastMuonTriggerEff();
     AliFastMuonTriggerEff(const char* /*Name*/, const char* /*Title*/) {;}
+    AliFastMuonTriggerEff(const AliFastMuonTriggerEff& eff);
     virtual ~AliFastMuonTriggerEff(){;}
     virtual void    Init();
     virtual void    Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi,
 			     Float_t& effLow, Float_t& effHigh, Float_t& effAny);
     virtual Float_t Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi);
     virtual void    SetCut(Int_t cut = kLow);
-    virtual Float_t Cut() {return fCut;}
+    virtual Float_t Cut() const {return fCut;}
     virtual Int_t   SetBkgLevel(Float_t Bkg=0.);
     virtual Int_t   ForceBkgLevel(Float_t Bkg=0.);
-    virtual Float_t GetBkgLevel() {return fBkg;}
+    virtual Float_t GetBkgLevel() const {return fBkg;}
     Int_t LoadTables(Char_t *namet);  // Load trigger response tables
     void SetInt() {fInt=1;}
     void UnsetInt() {fInt=0;}
-    Int_t GetInt() {return fInt;}
+    Int_t GetInt() const {return fInt;}
+    // Copy
+    AliFastMuonTriggerEff& operator=(const AliFastMuonTriggerEff& rhs);
   protected:
     Double_t fPtMin;               // Minimun pt
     Double_t fPtMax;               // Maximum pt

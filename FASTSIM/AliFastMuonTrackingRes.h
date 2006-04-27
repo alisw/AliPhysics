@@ -6,14 +6,19 @@
 /* $Id$ */
 
 // Implementation of AliFastResponse for the Muon Spectrometer resolution.
+// The response depends on the charge of the muon and
+// the background level.
+// The class uses the instance of an object of type AliMUONFastTracking to 
+// obtain the smearing parameters.
 // Author: andreas.morsch@cern.ch
-//
+
 #include "AliFastResponse.h"
 class AliMUONFastTracking;
 
 class AliFastMuonTrackingRes :  public AliFastResponse {
  public:
     AliFastMuonTrackingRes();
+    AliFastMuonTrackingRes(const AliFastMuonTrackingRes& glauber);
     virtual ~AliFastMuonTrackingRes(){;}
     void SetBackground(Float_t bg = 1.) {fBackground = bg;}
     void SetCharge(Float_t charge = 1.) {fCharge     = charge;}
@@ -26,6 +31,9 @@ class AliFastMuonTrackingRes :  public AliFastResponse {
     virtual Float_t Evaluate(Float_t  pt,  Float_t  theta , Float_t   phi) {
       return AliFastResponse::Evaluate(pt,theta,phi);
     }
+      // Copy
+    AliFastMuonTrackingRes& operator=(const AliFastMuonTrackingRes & rhs);
+
  protected:
     Float_t              fBackground;   // Background level
     Float_t              fCharge;       // Current charge
