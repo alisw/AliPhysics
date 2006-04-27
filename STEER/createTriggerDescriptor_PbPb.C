@@ -100,21 +100,21 @@ createTriggerDescriptor_PbPb()
                          "TDRHPt_MB",             "TDR High Pt Minimum Bias",
                          (ULong64_t)0x1 << 17 );
    // 19
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & TRD_Unlike_EPair_HPt_L1 & ZDC_1_L1",  // & TRD_pre_L0
-   //                         "TDRUnlikeHPt_MB",       "TDR Unlike Electron Pair High Pt Minimum Bias",
-   //                         (ULong64_t)0x1 << 18 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & TRD_Unlike_EPair_L1 & ZDC_1_L1",  // & TRD_pre_L0
+			 "TDRUnlikeHPt_MB",       "TDR Unlike Electron Pair High Pt Minimum Bias",
+			 (ULong64_t)0x1 << 18 );
    // 20
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_OR & TRD_Unlike_EPair_HPt_L1 & ZDC_2_L1",  // & TRD_pre_L0
-   //                      "TDRUnlikeHPt_SC",       "TDR Unlike Electron Pair High Pt Semi Central",
-   //                    (ULong64_t)0x1 << 19 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_OR & TRD_Unlike_EPair_L1 & ZDC_2_L1",  // & TRD_pre_L0
+                         "TDRUnlikeHPt_SC",       "TDR Unlike Electron Pair High Pt Semi Central",
+			 (ULong64_t)0x1 << 19 );
    // 21
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & TRD_Like_EPair_HPt_L1 & ZDC_1_L1",  // & TRD_pre_L0
-   //                         "TDRLikeHPt_MB",         "TDR Like Electron Pair High Pt Minimum Bias",
-   //                         (ULong64_t)0x1 << 20 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & TRD_Like_EPair_L1 & ZDC_1_L1",  // & TRD_pre_L0
+			 "TDRLikeHPt_MB",         "TDR Like Electron Pair High Pt Minimum Bias",
+			 (ULong64_t)0x1 << 20 );
    // 22
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_OR & TRD_Like_EPair_HPt_L1 & ZDC_2_L1",  // & TRD_pre_L0
-   //                    "TDRLikeHPt_SC",         "TDR Like Electron Pair High Pt Semi Central",
-   //                    (ULong64_t)0x1 << 21 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_OR & TRD_Like_EPair_L1 & ZDC_2_L1",  // & TRD_pre_L0
+			 "TDRLikeHPt_SC",         "TDR Like Electron Pair High Pt Semi Central",
+			 (ULong64_t)0x1 << 21 );
 
    // TRD Jet inputs are not yet implemented
 
@@ -132,37 +132,37 @@ createTriggerDescriptor_PbPb()
 //                         (ULong64_t)0x1 << 24 );
 
    // 26
-   //   descrip.AddCondition( "(START_Vertex_L0 & VZERO_AND) & PHOS_PbPb_JetHPt_L1 & ZDC_1_L1",  // & TRD_pre_L0
-   //                         "PHOSHPt_MB",            "PHOS High Pt Minimum Bias",
-   //                         (ULong64_t)0x1 << 25 );
+   descrip.AddCondition( "(START_Vertex_L0 & VZERO_AND) & PHOS_JetHPt_L1 & ZDC_1_L1",  // & TRD_pre_L0
+			 "PHOSHPt_MB",            "PHOS High Pt Minimum Bias",
+			 (ULong64_t)0x1 << 25 );
    // 27
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & PHOS_PbPb_JetLPt_L1 & ZDC_1_L1",  // & TRD_pre_L0
-   //                    "PHOSLPt_MB",            "PHOS Low Pt Minimum Bias",
-   //                    (ULong64_t)0x1 << 26 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & PHOS_JetLPt_L1 & ZDC_1_L1",  // & TRD_pre_L0
+			 "PHOSLPt_MB",            "PHOS Low Pt Minimum Bias",
+			 (ULong64_t)0x1 << 26 );
    // 28
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_OR & PHOS_PbPb_JetLPt_L1 & ZDC_2_L1",  // & TRD_pre_L0
-   //                    "PHOSLPt_SC",            "PHOS Low Pt Semi Central",
-   //                    (ULong64_t)0x1 << 27 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_OR & PHOS_JetLPt_L1 & ZDC_2_L1",  // & TRD_pre_L0
+			 "PHOSLPt_SC",            "PHOS Low Pt Semi Central",
+			 (ULong64_t)0x1 << 27 );
    // 29
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & PHOS_MB_PbPb_L0 & ZDC_1_L1",
-   //                    "PHOSStand-along",       "PHOS Stand-along Minimum Bias",
-   //                    (ULong64_t)0x1 << 28 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & PHOS_L0 & ZDC_1_L1",
+			 "PHOSStand-along",       "PHOS Stand-along Minimum Bias",
+			 (ULong64_t)0x1 << 28 );
    // 30
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & EMCAL_PbPb_JetHPt_L1 & ZDC_1_L1",
-   //                    "EMCALJetHPt_MB",        "EMCAL Jet High Pt Minimum Bias",
-   //                       (ULong64_t)0x1 << 29 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & EMCAL_JetHPt_L1 & ZDC_1_L1",
+			 "EMCALJetHPt_MB",        "EMCAL Jet High Pt Minimum Bias",
+			 (ULong64_t)0x1 << 29 );
    // 31
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & EMCAL_PbPb_JetMPt_L1 & ZDC_1_L1",
-   //                 "EMCALJetMPt_MB",        "EMCAL Jet Medium Pt Minimum Bias",
-   //                    (ULong64_t)0x1 << 30 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & EMCAL_JetMPt_L1 & ZDC_1_L1",
+			 "EMCALJetMPt_MB",        "EMCAL Jet Medium Pt Minimum Bias",
+			 (ULong64_t)0x1 << 30 );
    // 32
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & EMCAL_PbPb_JetLPt_L1 & ZDC_1_L1",
-   //                    "EMCALJetLPt_MB",        "EMCAL Jet Low Pt Minimum Bias",
-   //                    (ULong64_t)0x1 << 31 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_AND & EMCAL_JetLPt_L1 & ZDC_1_L1",
+			 "EMCALJetLPt_MB",        "EMCAL Jet Low Pt Minimum Bias",
+			 (ULong64_t)0x1 << 31 );
    // 33
-   //   descrip.AddCondition( "START_Vertex_L0 & VZERO_OR & EMCAL_PbPb_JetLPt_L1 & ZDC_2_L1",
-   //                    "EMCALJetLPt_SC",        "EMCAL Jet Low Pt Semi Central",
-   //                    (ULong64_t)0x1 << 32 );
+   descrip.AddCondition( "START_Vertex_L0 & VZERO_OR & EMCAL_JetLPt_L1 & ZDC_2_L1",
+			 "EMCALJetLPt_SC",        "EMCAL Jet Low Pt Semi Central",
+			 (ULong64_t)0x1 << 32 );
    // 34
    descrip.AddCondition( "ZDC_EMD_L1", // CRT_L0
                          "ZDC_diss",              "ZDC EMD Event",
