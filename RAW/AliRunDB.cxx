@@ -155,24 +155,24 @@ void AliRunDB::UpdateRDBMS(AliStats *stats)
            bt, et);
 
    // open connection to MySQL server on pcsalo
-   TSQLServer *db = TSQLServer::Connect("mysql://pcsalo.cern.ch/mdc", "alice", "amdc");
+//    TSQLServer *db = TSQLServer::Connect("mysql://pcsalo.cern.ch/mdc", "alice", "amdc");
 
-   if (!db || db->IsZombie()) {
-      Error("UpdateRDBMS", "failed to connect to MySQL server on pcsalo");
-      printf("%s\n", sql);
-      delete db;
-      return;
-   }
+//    if (!db || db->IsZombie()) {
+//       Error("UpdateRDBMS", "failed to connect to MySQL server on pcsalo");
+//       printf("%s\n", sql);
+//       delete db;
+//       return;
+//    }
 
-   TSQLResult *res = db->Query(sql);
+//    TSQLResult *res = db->Query(sql);
 
-   if (!res) {
-      Error("UpdateRDBMS", Form("insert into mdc%dcatalog failed", AliRawDB::kMDC));
-      printf("%s\n", sql);
-   }
+//    if (!res) {
+//       Error("UpdateRDBMS", Form("insert into mdc%dcatalog failed", AliRawDB::kMDC));
+//       printf("%s\n", sql);
+//    }
 
-   delete res;
-   delete db;
+//    delete res;
+//    delete db;
 }
 
 //______________________________________________________________________________
