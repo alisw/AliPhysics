@@ -23,15 +23,16 @@ class AliFastMuonTrackingRes :  public AliFastResponse {
     void SetBackground(Float_t bg = 1.) {fBackground = bg;}
     void SetCharge(Float_t charge = 1.) {fCharge     = charge;}
     virtual void Init();
-    virtual void Evaluate(Float_t   p,  Float_t  theta , Float_t   phi,
-			  Float_t& pS,  Float_t& thetaS, Float_t&  phiS);
-    virtual Float_t Evaluate(AliFastParticle* part) {
-      return AliFastResponse::Evaluate(part);
-    }
-    virtual Float_t Evaluate(Float_t  pt,  Float_t  theta , Float_t   phi) {
-      return AliFastResponse::Evaluate(pt,theta,phi);
-    }
-      // Copy
+    void Evaluate(Float_t   p,  Float_t  theta , Float_t   phi,
+		  Float_t& pS,  Float_t& thetaS, Float_t&  phiS);
+
+    void Evaluate(Float_t /*charge*/, Float_t   p,  Float_t  theta , Float_t   phi,
+		  Float_t& pS,  Float_t& thetaS, Float_t&  phiS)
+	{Evaluate(p, theta, phi, pS, thetaS, phiS);}
+    virtual Float_t Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi)
+	{return AliFastResponse::Evaluate(charge, pt, theta, phi);}
+    
+    // Copy
     AliFastMuonTrackingRes& operator=(const AliFastMuonTrackingRes & rhs);
 
  protected:

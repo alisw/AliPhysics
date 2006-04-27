@@ -28,16 +28,24 @@
 ClassImp(AliFastResponse)
 
 
-Float_t AliFastResponse::Evaluate(AliFastParticle* part)
+Float_t AliFastResponse::Evaluate(Float_t /*charge*/, Float_t /*pt*/, Float_t /*theta*/, Float_t /*phi*/)
 {
 //
+//  Dummy implementation of this method
+// 
+    return 0.;
+}
+
+
+void AliFastResponse::Evaluate(Float_t /*charge*/, Float_t   p,  Float_t  theta , Float_t   phi,
+			       Float_t& pS,  Float_t& thetaS, Float_t&  phiS)
+{
+//    
 // Basic implementation of this method 
 //
-    Float_t theta = part->Theta();
-    Float_t phi   = part->Phi();
-    Float_t pt    = part->Pt();
-    Float_t eff   = Evaluate(pt, theta, phi);
-    return eff;
+    pS     = p;
+    thetaS = theta;
+    phiS   = phi;
 }
 
 void AliFastResponse::Evaluate(Float_t   p,  Float_t  theta , Float_t   phi,

@@ -21,12 +21,14 @@ class AliFastResponse : public TNamed {
     AliFastResponse(const char* Name, const char* Title): TNamed(Name, Title){}
     virtual ~AliFastResponse(){}
     virtual void    Init()                                                  = 0;
-    virtual Float_t Evaluate(Float_t  /*pt*/,  Float_t  /*theta*/ , Float_t   /*phi*/)
-	{Fatal("Evaluate","Not implemented in base class !\n"); return (-1);}
-    
+
+    virtual void    Evaluate(Float_t charge, Float_t   p,  Float_t  theta , Float_t   phi,
+			     Float_t& pS,  Float_t& thetaS, Float_t&  phiS);
     virtual void    Evaluate(Float_t   p,  Float_t  theta , Float_t   phi,
 			     Float_t& pS,  Float_t& thetaS, Float_t&  phiS);
-    virtual Float_t Evaluate(AliFastParticle* part);
+ 
+    virtual Float_t Evaluate(Float_t charge, Float_t pt, Float_t theta, Float_t phi);
+ 
     void Copy(TObject&) const;
  protected:
     ClassDef(AliFastResponse,1)    // Base class for fast response

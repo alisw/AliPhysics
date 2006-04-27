@@ -53,7 +53,7 @@ void AliFastMuonTrackingEff::Init()
 
 
 
-Float_t AliFastMuonTrackingEff::Evaluate(Float_t pt, Float_t theta, Float_t phi)
+Float_t AliFastMuonTrackingEff::Evaluate(Float_t /*charge*/, Float_t pt, Float_t theta, Float_t phi)
 {
 //
 // Evaluate the efficience for muon with 3-vector (pt, theta, phi)
@@ -61,6 +61,7 @@ Float_t AliFastMuonTrackingEff::Evaluate(Float_t pt, Float_t theta, Float_t phi)
     Float_t eff =  fFastTracking->Efficiency(p, theta, phi, Int_t(fCharge));
     return eff;
 }
+
 
 AliFastMuonTrackingEff& AliFastMuonTrackingEff::operator=(const  AliFastMuonTrackingEff& rhs)
 {

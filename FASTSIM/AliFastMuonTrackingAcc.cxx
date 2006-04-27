@@ -49,7 +49,7 @@ void AliFastMuonTrackingAcc::Init()
 
 
 
-Float_t AliFastMuonTrackingAcc::Evaluate(Float_t pt, Float_t theta, Float_t phi)
+Float_t AliFastMuonTrackingAcc::Evaluate(Float_t /*charge*/, Float_t pt, Float_t theta, Float_t phi)
 {
 // Evaluate the tracking acceptance for 3-vector pt, theta, phi
     Float_t p = pt / TMath::Sin(theta*TMath::Pi()/180.);
