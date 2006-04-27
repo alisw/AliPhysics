@@ -66,6 +66,10 @@ void Config()
     rl->SetNumberOfEventsPerFile(6);        
     gAlice->SetRunLoader(rl);
 
+    // Set the trigger configuration
+    gAlice->SetTriggerDescriptor("Pb-Pb");
+    cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
+
     //
     // Set External decayer
     AliDecayer *decayer = new AliDecayerPythia();

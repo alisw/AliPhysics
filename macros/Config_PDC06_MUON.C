@@ -33,6 +33,11 @@ void Config(char directory[100]="", char option[6]="trg2mu")
   gAlice->SetRunLoader(rl);
   
   //=======================================================================
+  // Set the trigger configuration
+  gAlice->SetTriggerDescriptor("p-p");
+  cout<<"Trigger configuration is set to  p-p"<<endl;
+
+  //=======================================================================
   // Set External decayer
   TVirtualMCDecayer *decayer = new AliDecayerPythia();
   decayer->SetForceDecay(kAll);

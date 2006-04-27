@@ -85,6 +85,17 @@ enum Mag_t
 {
     k2kG, k4kG, k5kG
 };
+
+//--- Trigger config ---
+enum TrigConf_t
+{
+    kDefaultPPTrig, kDefaultPbPbTrig
+};
+
+const char * TrigConfName[] = {
+    "p-p","Pb-Pb"
+};
+
 //--- Functions ---
 AliGenPythia *PythiaHVQ(PDC06Proc_t proc);
 AliGenerator *MbCocktail();
@@ -96,6 +107,7 @@ static PDC06Proc_t   proc     = kPyOmegaPlus;
 static DecayHvFl_t   decHvFl  = kNature; 
 static YCut_t        ycut     = kFull;
 static Mag_t         mag      = k5kG; 
+static TrigConf_t    trig     = kDefaultPPTrig; // default pp trigger configuration
 //========================//
 // Set Random Number seed //
 //========================//
@@ -168,6 +180,10 @@ void Config()
   rl->SetCompressionLevel(2);
   rl->SetNumberOfEventsPerFile(1000);
   gAlice->SetRunLoader(rl);
+  
+  // Set the trigger configuration
+  gAlice->SetTriggerDescriptor(TrigConfName[trig]);
+  cout<<"Trigger configuration is set to  "<<TrigConfName[trig]<<endl;
 
   //
   //=======================================================================
