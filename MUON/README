@@ -273,16 +273,20 @@ MUONTracker(iEventMin,iEventMax,"galice.root"); // iEventMin: first event
  Macro  MUONGenerateGeometryData.C
 ===========================================================
 						
-Macro for generating the geometry data files:
-(transform.dat, svmap.dat).
-- MUON/data/transform.dat file contains all the information 
-about the transformation (traslation + rotation) needed for 
-the positionning of each detection element of the MUON
-spectrometer.
+Macro for generating the geometry data files
+and mis-alignment data.
+
+Geometry data files:
+- MUON/data/volpath.dat file contains the volume paths 
+for all alignable objects (modules & detection 
+elements).
+- MUON/data/transform.dat file contains the transformations
+data (translation and rotation) for all alignable objects
+(modules & detection elements)
 - MUON/data/svmap.dat file contains all the information to link 
 each geant volume (it can be extended to other virtual MC) with
 a detection element. The point here is that a given detection
-element, i.e. a slat chamber consists of many geant volumes.
+element, i.e. a slat chamber can consist of more geant volumes.
 the correspondence is then defined in an input file.
 Each time there is a change in the definition of MC geometry, these
 input files must be re-generated via the macro  
@@ -295,6 +299,49 @@ The generated files do not replace the existing ones
 but have different names (with extension ".out").
 Replacement with new files has to be done manually.
 
+If the appropiate flags are set (zeroAlign, resMisAlign and/or fullMisAlign)
+zero, residual and/or full misalignment data are generated in a
+local CDB folder (defaults are ResMisAlignCDB and FullMisAlignCDB
+in the working directory). Inside the local CDB the path for the
+alignment data is (and must be) "MUON/Align/Data/".
+Residual misalignment: Default is our current estimate of
+misalignment after all our alignment procedure has been applied.
+Full misalignment: Default is our current estimate of initial
+misalignment.
+
+==========================================================
+How to simulate events with misaligned geometry in local CDB
+==========================================================
+
+If you want to use a misaligned geometry to simulate some
+events you can use a local CDB. For this need to follow
+the next steps:
+
+- Generate misaligned data in local CDB.
+You can use MUONGenerateGeometryData.C as described above in
+the corresponding section. Let's assume you used the default
+residual misalignment settings, then you have a local CDB in
+your working directory called ResMisAlignCDB containing
+misalignement data (ResMisAlignCDB/MUON/Align).
+
+- Copy the calibration data in your local CDB.
+cp -r $ALICE_ROOT/MUON/Calib ResMisAlignCDB/MUON
+
+- Tell AliSimulation you want to use your local CDB for MUON
+To do this you need to instantiate the AliCDBManager, set the
+default storage and set the specific storage for MUON, before
+instantiating AliSimulation (see for example the commented
+lines AlirootRun_MUONtest.sh).
+
+aliroot -b  >& testSim.out << EOF
+AliCDBManager* man = AliCDBManager::Instance();
+man->SetDefaultStorage("local://$ALICE_ROOT");
+man->SetSpecificStorage("MUON","local://ResMisAlignCDB");
+AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
+MuonSim.SetWriteRawData("MUON");
+MuonSim.Run(10);
+.q
+EOF
 
 ==========================================================
  How to Merge events
@@ -353,6 +400,65 @@ EOF
 
 If you'd like to see how the CDB is created, please have a look at the 
 MUONCDB.C (work in progress, though).
+
+==========================================================
+...on track numbering 
+==========================================================
+
+All generated particles, including primary and secondary
+particles are put on the stack. The secondary particles are kept
+in the stack only if they gave a hit in *any* of the ALICE detectors
+The number of all particles placed on the stack for a given event 
+can be obtained with
+Int_t nPart = AliStack::GetNtrack();
+Looping from 0 to nPart via AliStack::Particle(ipart)
+gives the particle listing as obtained from the particle generator (primaries) 
+and Monte Carlo (secondaries).
+
+The particle response in the detector, a hit, is registered
+in the hits tree and the hits are filled with each primary track.
+The total number of "tracks" (fills of the tree) can be obtained
+with ntracks = AliMUONData::GetNtracks() and is usually smaller than "nPart".
+Since particles can also deposit hits in other detectors than 
+the MUON spectrometer, there will be many "tracks" (fills) in the hit-tree
+without a hit in MUON.
+
+The correspondence between "track ID" in the hits-tree ("itr") and the
+particle ID for particles on the stack (i.e. generated particles) can be
+obtained via:
+for (Int_t itr = 0; itr < ntracks; itr++) {
+    MUONData->GetTrack(itr); //track "itr" of the hits-tree
+    Int_t nhitstot = MUONData->Hits()->GetEntriesFast();
+    AliMUONHit* mHit;    
+    for (Int_t ihit=0; ihit<nhitstot; ihit++) {
+       mHit = static_cast<AliMUONHit*>(MUONData->Hits()->At(ihit));
+       Int_t id = muonHit->Track(); //gives particle ID on stack
+       TParticle* particle = gAlice->Stack()->Particle(id);
+    }  
+}
+
+During the procedure to go from hits to digits, the hits 
+are summed up such that more than one track can contribute
+to a given digit. As a consequence the method
+Int_t AliMUONDigit::Track(Int_t trackID)
+takes an argument, where "trackID" runs from 0 to 
+AliMUONDigit::Ntracks() to provide the reference to *all*
+tracks that contributed to it. The returned track ID is the one 
+referred to in the hit-tree. To know which is the generated particle
+that deposited a given digit one has to follow the sequence of the kind:
+
+
+mDigit = static_cast<AliMUONDigit*>(digits->At(idigit));
+for (int tr = 0; tr < mDigit->Ntracks(); tr++){
+   Int_t hitTrackID = mDigit->Track(tr);
+   MUONData->GetTrack(hitTrackID);
+   mHit = static_cast<AliMUONHit*>(MUONData->Hits()->At(0));
+                                  //just take first hit of given track
+   Int_t numPart = mHit->Track(); //gives ID of particle on the stack
+   Int_t idTrack  = mHit->Particle(); //gives flavour code of the particle
+}
+In this example, for simplicity, only the first hit of a 
+hit-track is used to check the particle ID.
 
 ===========================================================
  Still working ..............
