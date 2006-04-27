@@ -27,7 +27,7 @@
 // retrived from DCS or the like. 
 //
 #include "AliFMDCalibSampleRate.h"	// ALIFMDCALIBGAIN_H
-#include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
+// #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
 #include <AliLog.h>
 
 //____________________________________________________________________

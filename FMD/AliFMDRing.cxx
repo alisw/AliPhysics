@@ -21,8 +21,7 @@
 //__________________________________________________________________
 //
 // Utility class to help implement collection of FMD modules into
-// rings.  This is used by AliFMDDetector and AliFMDGeometry.  
-//
+// rings.  This is used by AliFMDDetector and AliFMDGeometry.
 // The AliFMDGeometry object owns the AliFMDRing objects, and the
 // AliFMDDetector objects reference these.  That is, the AliFMDRing
 // objects are share amoung the AliFMDDetector objects.

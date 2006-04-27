@@ -27,8 +27,9 @@
 // the bit mask passed to the constructor, or added by `AddCalib'.
 //
 // The default is to write all calibration parameters to a local
-// storage `local://cdb' which is a directory in the current
-// directory. 
+// storage `local://$ALICE_ROOT' which is were the sources live (sigh!
+// - why oh why do we need to shit where we eat - it's just not
+// healty).
 //                                                       
 #include "AliLog.h"		   // ALILOG_H
 #include "AliFMDCalibFaker.h"      // ALIFMDCALIBFAKER_H

@@ -7,6 +7,14 @@
  *
  * See cxx source for full Copyright notice                               
  */
+//____________________________________________________________________
+//
+// Class to read ALTRO formated data from an AliRawReader.  
+// This class is mostly here to set AliAltroRawStream::fNoAltroMapping
+// to false.   Furthermore, it defines the utility function
+// ReadChannel to read in a full ALTRO channel.  The data is unpacked
+// into the passed array.  
+//
 /** @file    AliFMDRawStream.h
     @author  Christian Holm Christensen <cholm@nbi.dk>
     @date    Tue Mar 28 12:53:26 2006

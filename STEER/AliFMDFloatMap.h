@@ -11,6 +11,11 @@
 //____________________________________________________________________
 //
 // Array of floats indexed by strip identifier.
+// the floats are indexed by the coordinates 
+//     DETECTOR # (1-3)
+//     RING ID    ('I' or 'O', any case)
+//     SECTOR #   (0-39)
+//     STRIP #    (0-511)
 //
 class AliFMDFloatMap : public AliFMDMap
 {

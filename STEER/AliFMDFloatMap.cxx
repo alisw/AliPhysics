@@ -18,6 +18,12 @@
 //__________________________________________________________
 // 
 // Map of per strip Float_t information
+// the floats are indexed by the coordinates 
+//     DETECTOR # (1-3)
+//     RING ID    ('I' or 'O', any case)
+//     SECTOR #   (0-39)
+//     STRIP #    (0-511)
+//
 // 
 // Created Mon Nov  8 12:51:51 2004 by Christian Holm Christensen
 // 

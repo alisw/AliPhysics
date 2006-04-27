@@ -26,7 +26,6 @@
 // contains the base procedures for the Forward Multiplicity detector
 // Detector consists of 3 sub-detectors FMD1, FMD2, and FMD3, each of
 // which has 1 or 2 rings of silicon sensors. 
-//                                                       
 // This class contains the detailed version of the FMD - that is, hits
 // are produced during simulation. 
 //                                                                           

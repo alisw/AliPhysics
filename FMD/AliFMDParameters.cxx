@@ -24,8 +24,10 @@
 //
 // This class is a singleton that handles various parameters of
 // the FMD detectors.  
-// Eventually, this class will use the Conditions DB to get the
-// various parameters, which code can then request from here.
+// The manager normally serves the parameters from the Conditions
+// Database (CDB).  These are retrivied by the member function
+// `Init'.  Optionally, the class can serve hard-coded constants, if
+// no CDB is available. 
 //                                                       
 #include "AliLog.h"		   // ALILOG_H
 #include "AliFMDParameters.h"	   // ALIFMDPARAMETERS_H
@@ -40,6 +42,8 @@
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
 #include <Riostream.h>
 #include <sstream>
+#include <TArrayF.h>
+#include <TH2D.h>
 
 //====================================================================
 ClassImp(AliFMDParameters)
@@ -111,6 +115,129 @@ AliFMDParameters::Init()
   InitAltroMap();
   fIsInit = kTRUE;
   
+}
+
+//__________________________________________________________________
+#define DET2IDX(det,ring,sec,str) \
+  (det * 10000 + (ring == 'I' ? 0 : 1000) + str)  
+  
+//__________________________________________________________________
+void
+AliFMDParameters::Draw(Option_t* option)
+{
+  TString opt(option);
+  enum {
+    kPulseGain,       // Path to PulseGain calib object
+    kThreshold,       // Path to PulseGain calib object
+    kPedestal,        // Path to Pedestal calib object
+    kPedestalWidth,   // Path to Pedestal calib object
+    kDead,            // Path to Dead calib object
+    kSampleRate,      // Path to SampleRate calib object
+    kAltroMap,        // Path to AltroMap calib object
+    kZeroSuppression, // Path to ZeroSuppression cal object
+    kMinStripRange,   // Path to strip range cal object
+    kMaxStripRange    // Path to strip range cal object
+  } what;
+  
+    
+  if      (opt.Contains("dead", TString::kIgnoreCase)) 
+    what = kDead;
+  else if (opt.Contains("threshold",TString::kIgnoreCase)) 
+    what = kThreshold;
+  else if (opt.Contains("gain",TString::kIgnoreCase)) 
+    what = kPulseGain;
+  else if (opt.Contains("pedestal",TString::kIgnoreCase)) 
+    what = kPedestal;
+  else if (opt.Contains("noise",TString::kIgnoreCase)) 
+    what = kPedestalWidth;
+  else if (opt.Contains("zero",TString::kIgnoreCase)) 
+    what = kZeroSuppression;
+  else if (opt.Contains("rate",TString::kIgnoreCase)) 
+    what = kSampleRate;
+  else if (opt.Contains("min",TString::kIgnoreCase)) 
+    what = kMinStripRange;
+  else if (opt.Contains("max",TString::kIgnoreCase)) 
+    what = kMaxStripRange;
+  else if (opt.Contains("map",TString::kIgnoreCase)) 
+    what = kAltroMap;
+  else {
+    Warning("Draw", "unknown parameter: %s\n\tShould be one of\n\t"
+	    "dead, threshold, gain, pedestal, noise, zero, rate, "
+	    "min, max, map",  
+	    option); 
+    return;
+  }
+
+  TArrayD xbins(3 * 512 + 2 * 256 + 5);
+  Int_t i = 1;
+  Bool_t skip = kTRUE;
+  for (UShort_t det = 1; det <= 3; det++) {
+    UShort_t nRings = (det == 1 ? 1 : 2);
+    for (UShort_t iring = 0; iring < nRings; iring++) {
+      UShort_t nStrip  = (iring == 0 ? 512 : 256);
+      Char_t   ring    = (iring == 0 ? 'I' : 'O');
+      for (UShort_t str = 0; str < nStrip; str++) {
+	Int_t idx = DET2IDX(det, ring, 0, str);
+	if (skip) {
+	  xbins[i-1] = idx - .5;
+	  skip  = kFALSE;
+	}
+	xbins[i] = idx + .5;
+	i++;
+      }
+      skip = kTRUE;
+      i++;
+    }
+  }
+  TArrayD ybins(41);
+  for (Int_t i = 0; i < 41; i++) ybins[i] = Float_t(i - .5);
+  TH2D* hist = new TH2D("calib", Form("Calibration %s", option), 
+			xbins.fN-1, xbins.fArray,  
+			ybins.fN-1, ybins.fArray);
+
+  // hist->Draw("Lego");
+  // return;
+  
+  for (UShort_t det = 1; det <= 3; det++) {
+    UShort_t nRings = (det == 1 ? 1 : 2);
+    for (UShort_t iring = 0; iring < nRings; iring++) {
+      UShort_t nSector = (iring == 0 ?  20 : 40);
+      UShort_t nStrip  = (iring == 0 ? 512 : 256);
+      Char_t   ring    = (iring == 0 ? 'I' : 'O');
+      for (UShort_t sec = 0; sec < nSector; sec++) {
+	for (UShort_t str = 0; str < nStrip; str++) {
+	  Int_t idx = DET2IDX(det, ring, sec, str);
+	  UInt_t ddl, addr;
+	  Double_t val = 0;
+	  switch (what) {
+	  case kPulseGain:       // Path to PulseGain calib object
+            val = GetPulseGain(det,ring,sec,str); break;
+	  case kThreshold:       // Path to PulseGain calib object
+            val = GetThreshold(); break;
+	  case kPedestal:        // Path to Pedestal calib object
+            val = GetPedestal(det,ring,sec,str); break;
+	  case kPedestalWidth:   // Path to Pedestal calib object
+            val = GetPedestalWidth(det,ring,sec,str); break;
+	  case kDead:            // Path to Dead calib object
+            val = IsDead(det,ring,sec,str); break;
+	  case kSampleRate:      // Path to SampleRate calib object
+            val = GetSampleRate(det,ring,sec,str); break;
+	  case kAltroMap:        // Path to AltroMap calib object
+	    Detector2Hardware(det,ring,sec,str, ddl, addr); 
+            val = addr; break;
+	  case kZeroSuppression: // Path to ZeroSuppression cal object
+            val = GetZeroSuppression(det,ring,sec,str); break;
+	  case kMinStripRange:   // Path to strip range cal object
+            val = GetMinStrip(det,ring,sec,str); break;
+	  case kMaxStripRange:    // Path to strip range cal object
+            val = GetMaxStrip(det,ring,sec,str); break;
+	  }
+	  hist->Fill(idx,sec,val);
+	}
+      }
+    }
+  }
+  hist->Draw("lego");
 }
 
 //__________________________________________________________________

@@ -21,10 +21,10 @@
 //____________________________________________________________________
 //                                                                          
 // Builder of FMD geometry. 
+//
 // This class takes care of actually building the geometry using the 
 // TGeo classes.  Various parameters are fecthed from the
 // AliFMDGeometry manager.  
-//
 // Forward Multiplicity Detector based on Silicon wafers. This class
 // contains the base procedures for the Forward Multiplicity detector
 // Detector consists of 3 sub-detectors FMD1, FMD2, and FMD3, each of
@@ -38,7 +38,7 @@
 #include "AliFMD1.h"		// ALIFMD1_H
 #include "AliFMD2.h"		// ALIFMD2_H
 #include "AliFMD3.h"		// ALIFMD3_H
-#include "AliFMD.h"		// ALIFMD_H
+// #include "AliFMD.h"		// ALIFMD_H
 #include "AliLog.h"		// ALILOG_H
 #include <TGeoVolume.h>		// ROOT_TGeoVolume
 #include <TGeoTube.h>		// ROOT_TGeoTube

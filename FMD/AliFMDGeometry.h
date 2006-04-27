@@ -18,6 +18,7 @@
 //
 // This class is a singleton that handles the geometry parameters of
 // the FMD detectors.  
+// The actual code is done by various separate classes.
 //                                                       
 #ifndef ALIGEOMETRY_H
 # include <AliGeometry.h>

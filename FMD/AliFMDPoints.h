@@ -13,6 +13,13 @@
     @brief   Specialised class for drawing hits in the FMD. 
     @ingroup FMD_sim
 */
+//____________________________________________________________________
+//
+// AliFMDPoints.  
+// Class to draw FMD Hits. 
+// Normally, hits are drawn using TPolyMarker3D.  However, that's not
+// really appropriate for the FMD.  Instead, we use TMarker3DBox. 
+//
 #ifndef ALIPOINTS_H
 # include <AliPoints.h>
 #endif

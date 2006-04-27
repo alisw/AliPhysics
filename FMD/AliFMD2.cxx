@@ -26,6 +26,7 @@
 // The FMD2 has two ring, one of both types. 
 // FMD2 is mounted on the space-frame via 4 flanges
 // Support is not fleshed ot yet. 
+// Support will be simple compared to FMD3.
 //
 #include "AliFMD2.h"		// ALIFMD2_H 
 // #include "AliFMDRing.h"		// ALIFMDRING_H 

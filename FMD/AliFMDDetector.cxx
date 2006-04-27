@@ -22,6 +22,10 @@
 
 //____________________________________________________________________
 //
+// AliFMDDetector.   
+//
+// Base class for concrete FMD detectors, like AliFMD1, AliFMD2,
+// AliFMD3. 
 // Utility class to help implement the FMD geometry.  This provides
 // the interface for the concrete geometry implementations of the FMD
 // sub-detectors. 

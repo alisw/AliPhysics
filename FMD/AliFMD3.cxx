@@ -26,6 +26,8 @@
 // This has 2 rings.
 // The support of the FMD3 is a carbon-fibre cone, attached to the ITS
 // support via flanges.  The cone also supports the beam-pipe.
+// The support is a special cone of carbon-fibre made by a Danish
+// Yacht company.
 //
 #include "AliFMD3.h"		// ALIFMD3_H 
 #include "AliLog.h"		// ALILOG_H

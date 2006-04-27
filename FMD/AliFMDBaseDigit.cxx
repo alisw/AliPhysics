@@ -128,6 +128,7 @@ AliFMDBaseDigit::GetName() const
 ULong_t
 AliFMDBaseDigit::Hash() const
 {
+  // Calculate a hash value based on the detector coordinates. 
   size_t ringi = (fRing == 'I' ||  fRing == 'i' ? 0 : 1);
   return fStrip + fMaxStrips * 
     (fSector + fMaxSectors * (ringi + fMaxRings * (fDetector - 1)));
@@ -138,6 +139,18 @@ AliFMDBaseDigit::Hash() const
 Int_t
 AliFMDBaseDigit::Compare(const TObject* o) const
 {
+  // Compare to other digit.  If the passed pointer to TObject does
+  // not point to an object of class AliFMDBaseDigit (or one of it's
+  // derived classes), then a fatal exception is made. 
+  // 
+  // Returns -1, if this object's detector coordinates are smaller
+  // than passed object's detector coordinates. 
+  // 
+  // Returns  0, if this object's detector coordinates is the same as
+  // passed object's detector coordinates.  
+  // 
+  // Returns  1, if this object's detector coordinates are larger
+  // than passed object's detector coordinates. 
   if (!o) 
     AliFatal("Can not compare to NULL!");
   if (o->IsA() != AliFMDBaseDigit::Class()) 

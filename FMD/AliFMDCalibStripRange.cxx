@@ -27,7 +27,7 @@
 // This information comes from DCS or the like.
 //
 #include "AliFMDCalibStripRange.h"	// ALIFMDCALIBGAIN_H
-#include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
+// #include "AliFMDParameters.h"           // ALIFMDPARAMETERS_H
 
 //____________________________________________________________________
 ClassImp(AliFMDCalibStripRange)

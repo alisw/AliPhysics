@@ -22,15 +22,17 @@
 //                                                                          
 // Mapping of ALTRO hardware channel to detector coordinates 
 //
-//    The hardware address consist of a DDL number and 12bits of ALTRO
-//    addresses.  The ALTRO address are formatted as follows. 
+// The hardware address consist of a DDL number and 12bits of ALTRO
+// addresses.  The ALTRO address are formatted as follows. 
 //
 //    12              7         4            0
 //    |---------------|---------|------------|
 //    | Board #       | ALTRO # | Channel #  |
 //    +---------------+---------+------------+
 //
-//
+// The mapping is done purely by calculations.  In the future,
+// however, we may need some hard-coded stuff, or an external file to
+// read from.  
 //
 #include "AliFMDAltroMapping.h"		// ALIFMDALTROMAPPING_H
 #include "AliFMDParameters.h"

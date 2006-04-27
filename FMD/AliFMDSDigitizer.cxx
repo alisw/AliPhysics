@@ -196,18 +196,18 @@
 //                    -1 + B + exp(-B)
 //
 
-#include <TTree.h>		// ROOT_TTree
+// #include <TTree.h>		// ROOT_TTree
 //#include <TRandom.h>		// ROOT_TRandom
 #include <AliLog.h>		// ALILOG_H
 #include "AliFMDSDigitizer.h"	// ALIFMDDIGITIZER_H
 #include "AliFMD.h"		// ALIFMD_H
-#include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
-#include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
-#include "AliFMDRing.h"	        // ALIFMDRING_H
+// #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
+// #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
+// #include "AliFMDRing.h"	        // ALIFMDRING_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
-#include "AliFMDDigit.h"	// ALIFMDDIGIT_H
-#include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
-#include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
+// #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+// #include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
+// #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRunLoader.h>	// ALIRUNLOADER_H

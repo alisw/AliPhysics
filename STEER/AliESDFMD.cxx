@@ -134,6 +134,7 @@ AliESDFMD::SetEta(UShort_t detector, Char_t ring, UShort_t /* sector */,
 void
 AliESDFMD::Print(Option_t* /* option*/) const
 {
+  // Print all information to standard output. 
   std::cout << "AliESDFMD:" << std::endl;
   for (size_t det = 1; det <= fMultiplicity.MaxDetectors(); det++) {
     for (size_t ir = 0; ir < fMultiplicity.MaxRings(); ir++) {

@@ -53,8 +53,8 @@ public:
     kInvalidEta = 1000
   };
 protected:
-  AliFMDFloatMap fMultiplicity;
-  AliFMDFloatMap fEta;
+  AliFMDFloatMap fMultiplicity; // Psuedo multplicity per strip
+  AliFMDFloatMap fEta;          // Psuedo-rapidity per strip
   
   ClassDef(AliESDFMD,1)  // ESD info from FMD
 };

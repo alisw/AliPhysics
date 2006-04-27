@@ -228,9 +228,10 @@ Config()
 {
   //____________________________________________________________________
   // This part for configuration    
-  //static EG_t eg = test50;
-  //EG_t  eg   = kParam_fmd;
-  EG_t  eg   = kParam_2000; // kPythia;
+  // EG_t  eg   = test50;
+  // EG_t  eg   = kParam_fmd;
+  // EG_t  eg   = kParam_2000; // kPythia;
+  EG_t  eg   = kFMDFlat;
   Geo_t geo  = kNoHoles;
   Rad_t rad  = kGluonRadiation;
   Mag_t mag  = k5kG;
@@ -1612,18 +1613,20 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
   case kFMDFlat:
     {
       comment = comment.Append(" Flat in FMD range");
-      AliGenCocktail* gener = AliGenCocktail("FMD cocktail");
-      gener->SetPart(211);
+      AliGenCocktail* gener = new AliGenCocktail();
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);
       AliGenBox* gener3 = new AliGenBox(2000);
       gener3->SetThetaRange(155.97, 176.73);
+      gener3->SetPart(211);
       gener->AddGenerator(gener3, "FMD3", .33);
       AliGenBox* gener2 = new AliGenBox(2000);
       gener2->SetThetaRange(2.95, 20.42);
+      gener2->SetPart(211);
       gener->AddGenerator(gener2, "FMD2", .33);
       AliGenBox* gener1 = new AliGenBox(2000);
       gener1->SetThetaRange(0.77, 3.08);
+      gener1->SetPart(211);
       gener->AddGenerator(gener1, "FMD1", .34);
       gGener = gener;
     }

@@ -21,10 +21,10 @@
 //____________________________________________________________________
 //
 // This is a class that constructs AliFMDRecPoint objects from of Digits
-//
-// This class reads either digits from a TClonesArray or raw data from
+// This class reads either digits from a TClonesArray or raw data from 
 // a DDL file (or similar), and stores the read ADC counts in an
-// internal cache (fAdcs). 
+// internal cache (fAdcs).   The rec-points are made via the naiive
+// method. 
 //
 //-- Authors: Evgeny Karpechev(INR) and Alla Maevsksia
 //  Latest changes by Christian Holm Christensen <cholm@nbi.dk>
@@ -33,7 +33,7 @@
 //____________________________________________________________________
 
 #include <AliLog.h>                        // ALILOG_H
-#include <AliRun.h>                        // ALIRUN_H
+// #include <AliRun.h>                        // ALIRUN_H
 #include <AliRunLoader.h>                  // ALIRUNLOADER_H
 #include <AliHeader.h>                     // ALIHEADER_H
 #include <AliGenEventHeader.h>             // ALIGENEVENTHEADER_H

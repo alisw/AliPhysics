@@ -205,9 +205,9 @@
 #include "AliFMDDetector.h"	// ALIFMDDETECTOR_H
 #include "AliFMDRing.h"	        // ALIFMDRING_H
 #include "AliFMDHit.h"		// ALIFMDHIT_H
-#include "AliFMDDigit.h"	// ALIFMDDIGIT_H
+// #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
-#include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
+// #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
 //#include <AliRun.h>		// ALIRUN_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRunLoader.h>	// ALIRUNLOADER_H
@@ -475,7 +475,6 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   UShort_t ped            = MakePedestal(detector,ring,sector,strip);
   UInt_t   maxAdc         = param->GetAltroChannelSize();
   UShort_t rate           = param->GetSampleRate(detector,ring,sector,strip);
-  UShort_t size           = param->GetAltroChannelSize();
   
   // In case we don't oversample, just return the end value. 
   if (rate == 1) {

@@ -86,6 +86,20 @@ public:
   /** Print all parameters. 
       @param option Option string */
   void Print(Option_t* option="A") const;
+  /** Draw parameters. 
+      @param option What to draw. Should be one of 
+      - dead	  Dead channels
+      - threshold Threshold
+      - gain	  Gain
+      - pedestal  Pedestal
+      - noise	  Noise (or pedestal width)
+      - zero	  Zero suppression
+      - rate	  Sampling rate (VA1 clock / ALTRO clock)
+      - min	  Minimum strip read out
+      - max 	  Maximum strip read out
+      - map	  hardware address
+  */
+  void Draw(Option_t* option="pedestal");
   
   /** @{ */
   /** @name Set various `Fixed' parameters */
