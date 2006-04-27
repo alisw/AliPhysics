@@ -83,6 +83,8 @@ public:
    void           SetRootGeometry(Bool_t flag=kTRUE);
    const char*    GetGeometryFileName() const {return fGeometryFileName.Data();}
    void           SetGeometryFileName(const char *name) {fGeometryFileName = name;}
+   const char*    GetTriggerDescriptor() const {return fTriggerDescriptor.Data();}
+   void           SetTriggerDescriptor(const char *name) {fTriggerDescriptor = name;}
    virtual  void  ResetDigits();
    virtual  void  ResetSDigits();
    virtual  void  ResetPoints();
@@ -159,6 +161,7 @@ protected:
   TString        fBaseFileName;      //  Name of the base root file
   Bool_t         fIsRootGeometry;    //! Flag telling if the geometry is loaded from file
   TString        fGeometryFileName;  //! Name of the geometry file
+  TString        fTriggerDescriptor; //  Trigger descriptor identifier
   AliRunLoader  *fRunLoader;         //!run getter - written as a separate object
 private:
   void Copy(TObject &arun) const;
