@@ -52,14 +52,14 @@ class AliITSMapA2 : public AliITSMapA1{
     virtual Int_t  GetHitIndex(Int_t iz, Int_t ix) const {
 	return CheckedIndex(iz, ix);};
     // Get object (1D histogram)
-    virtual TObject *GetHit(Int_t iz, Int_t dummy);
+    virtual TObject *GetHit(Int_t iz, Int_t dummy) const;
     // Test hit status
     virtual FlagType TestHit(Int_t iz, Int_t ix);
     // Get signal using two dim. index
-    virtual Double_t GetSignal(Int_t iz, Int_t ix)
+    virtual Double_t GetSignal(Int_t iz, Int_t ix) const
 	{return GetSignal(GetHitIndex(iz,ix));}
     // Get signal
-    Double_t GetSignal(Int_t index);
+    Double_t GetSignal(Int_t index) const ;
     // Add new value to Map at cell
     virtual void AddSignal(Int_t iz, Int_t ix, Double_t sig);
 

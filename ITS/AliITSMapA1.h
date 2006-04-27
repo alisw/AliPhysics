@@ -47,13 +47,13 @@ class AliITSMapA1 : public AliITSMap{
     // Get index of hit in the list of digits
     virtual Int_t  GetHitIndex(Int_t iz, Int_t ix) const ;
     // Get pointer to digit
-    virtual TObject* GetHit(Int_t iz, Int_t ix);
+    virtual TObject* GetHit(Int_t iz, Int_t ix) const;
     // Flag a hit as used
     virtual  void  FlagHit(Int_t iz, Int_t ix);
     // Test hit status
     virtual FlagType TestHit(Int_t iz, Int_t ix);
     // Get signal from map
-    virtual Double_t  GetSignal(Int_t iz, Int_t ix);
+    virtual Double_t  GetSignal(Int_t iz, Int_t ix) const;
     // Get max index inmap
     Int_t   MaxIndex() const  {return fMaxIndex;}
     // Set the array of objects

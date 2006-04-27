@@ -34,11 +34,11 @@ class AliITSMap : public TObject {
     // Get index of hit in the list of digits
     virtual Int_t  GetHitIndex(Int_t iz, Int_t ix) const           =0;
     // Get pointer to digit
-    virtual TObject * GetHit(Int_t iz, Int_t ix)                   =0;
+    virtual TObject * GetHit(Int_t iz, Int_t ix) const             =0;
     // Test hit status
     virtual FlagType TestHit(Int_t iz, Int_t ix)                   =0;
     // Get signal from map
-    virtual Double_t  GetSignal(Int_t iz, Int_t ix)                =0;
+    virtual Double_t  GetSignal(Int_t iz, Int_t ix) const          =0;
 
     ClassDef(AliITSMap,1) //virtual base class for ITS Hit/Digit Map
 

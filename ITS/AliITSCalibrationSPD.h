@@ -73,18 +73,18 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     virtual void GetSigmaDiffusionAsymmetry(Double_t &ecc) const {((AliITSresponseSPD*)fResponse)->GetSigmaDiffusionAsymmetry(ecc);}
     
     void   AddDead(UInt_t col, UInt_t row);
-    Int_t  GetNrDead() {return nrDead;}
+    Int_t  GetNrDead() const {return fNrDead;}
     Int_t  GetDeadColAt(UInt_t index); //returns -1 if out of bounds
     Int_t  GetDeadRowAt(UInt_t index); //returns -1 if out of bounds
-    void   ClearDead() {fDeadChannels.Reset(); nrDead=0;}
+    void   ClearDead() {fDeadChannels.Reset(); fNrDead=0;}
     Bool_t IsPixelDead(Int_t col, Int_t row) const ;
     Bool_t IsPixelDead(Int_t mod,Int_t ix,Int_t iz) const ; // remove as soon as possible!!!
 
     void   AddNoisy(UInt_t col, UInt_t row);
-    Int_t  GetNrNoisy() {return nrNoisy;}
+    Int_t  GetNrNoisy() const {return fNrNoisy;}
     Int_t  GetNoisyColAt(UInt_t index); //returns -1 if out of bounds
     Int_t  GetNoisyRowAt(UInt_t index); //returns -1 if out of bounds
-    void   ClearNoisy() {fNoisyChannels.Reset(); nrNoisy=0;}
+    void   ClearNoisy() {fNoisyChannels.Reset(); fNrNoisy=0;}
     Bool_t IsPixelNoisy(Int_t col, Int_t row) const ;
 
 
@@ -102,12 +102,12 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     Double_t fCouplCol;        // Coupling parameter along the cols
     Double_t fCouplRow;        // Coupling parameter along the rows
     Double_t fBiasVoltage;     // Bias Voltage for the SPD (used to compute DistanceOverVoltage)
-    UInt_t   nrDead;           // Nr of dead pixels
-    TArrayI fDeadChannels;     // Array with dead channels info (col0,row0,col1...rowN) N = nrDead
-    UInt_t   nrNoisy;          // Nr of noisy pixels
-    TArrayI fNoisyChannels;    // Array with noisy channels info (col0,row0,col1...rowN) N = nrNoisy
+    UInt_t   fNrDead;           // Nr of dead pixels
+    TArrayI fDeadChannels;     // Array with dead channels info (col0,row0,col1...rowN) N = fNrDead
+    UInt_t   fNrNoisy;          // Nr of noisy pixels
+    TArrayI fNoisyChannels;    // Array with noisy channels info (col0,row0,col1...rowN) N = fNrNoisy
 
-    ClassDef(AliITSCalibrationSPD,3) // SPD response
+    ClassDef(AliITSCalibrationSPD,4) // SPD response
 };
 
 #endif

@@ -156,7 +156,7 @@ void AliITSMapA2::FlagHit(Int_t iz, Int_t ix){
                 -1000.*TMath::Abs((Int_t)(fHitMapD[CheckedIndex(iz, ix)])+1.);
 }
 //______________________________________________________________________
-TObject* AliITSMapA2::GetHit(Int_t i, Int_t dummy){
+TObject* AliITSMapA2::GetHit(Int_t i, Int_t dummy) const {
   //return a pointer to the 1D histogram
 
     dummy = 0; // added to remove unused variable warning.
@@ -165,7 +165,7 @@ TObject* AliITSMapA2::GetHit(Int_t i, Int_t dummy){
     } else return NULL;
 }
 //______________________________________________________________________
-Double_t AliITSMapA2::GetSignal(Int_t index){
+Double_t AliITSMapA2::GetSignal(Int_t index) const {
     //get signal in a cell 
 
     if (index<fMaxIndex) return (index <0) ? 0. : fHitMapD[index];

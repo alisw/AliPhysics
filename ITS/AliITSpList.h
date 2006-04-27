@@ -3,6 +3,15 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
+//***********************************************************************
+//
+// It consist of a TClonesArray of 
+// AliITSpListItem objects
+// This array can be accessed via 2 indexed
+// it is used at digitization level by 
+// all the 3 ITS subdetectors
+//
+// ***********************************************************************
 #include "TArrayI.h"
 #include "TClonesArray.h"
 #include "AliITSMap.h"
@@ -35,48 +44,48 @@ class AliITSpList: public AliITSMap {
 	if(i<0||i>=fNi || j<0||j>=fNj){i=-1;j=-1; return;}
     }
     // Returns the signal+noise for a give map coordinate
-    Double_t GetSignal(Int_t index) {
+    Double_t GetSignal(Int_t index)  {
 	if(GetpListItem(index)==0) return 0.0;
 	return GetpListItem(index)->GetSumSignal();
     }
     // Returns the signal+noise for a give map coordinate
-    virtual Double_t GetSignal(Int_t i,Int_t j)  {
+    virtual Double_t GetSignal(Int_t i,Int_t j) const  {
 	if(GetpListItem(i,j)==0) return 0.0;
 	return GetpListItem(i,j)->GetSumSignal();
     }
     // Returns the signal only for a give map coordinate
-    Double_t GetSignalOnly(Int_t i,Int_t j) {
+    Double_t GetSignalOnly(Int_t i,Int_t j)const  {
 	if(GetpListItem(i,j)==0) return 0.0;
 	return GetpListItem(i,j)->GetSignal();
     }
     // Returns the noise for a give map coordinate
-    Double_t GetNoise(Int_t i,Int_t j) {
+    Double_t GetNoise(Int_t i,Int_t j) const {
 	if(GetpListItem(i,j)==0) return 0.0;
 	return GetpListItem(i,j)->GetNoise();
     }
     // returns the track number which generated the signal at a given map
     // coordinate. If there is no signal or only noise, then -2 is returned.
     // k is the track rank number.
-    Double_t GetTSignal(Int_t i,Int_t j,Int_t k) {
+    Double_t GetTSignal(Int_t i,Int_t j,Int_t k) const {
 	if(GetpListItem(i,j)==0) return 0.0;
 	return GetpListItem(i,j)->GetSignal(k);
     }
     // returns the track number which generated the signal at a given map
     // coordinate. If there is no signal or only noise, then -2 is returned.
     // k is the track rank number.
-    Int_t GetTrack(Int_t i,Int_t j,Int_t k) {
+    Int_t GetTrack(Int_t i,Int_t j,Int_t k) const {
 	if(GetpListItem(i,j)==0) return -2;
 	return GetpListItem(i,j)->GetTrack(k);
     }
     // returns the hit number which generated the signal at a given map
     // coordinate. If there is no signal or only noise, then -2 is returned.
     // k is the hit rank number.
-    Int_t GetHit(Int_t i,Int_t j,Int_t k) {
+    Int_t GetHit(Int_t i,Int_t j,Int_t k) const {
 	if(GetpListItem(i,j)==0) return -2;
 	return GetpListItem(i,j)->GetHit(k);
     }
     // returns the number of Signal values
-    Int_t GetNSignals(Int_t i,Int_t j) {
+    Int_t GetNSignals(Int_t i,Int_t j) const {
 	if(GetpListItem(i,j)==0) return 0;
 	return GetpListItem(i,j)->GetNsignals();
     }
@@ -94,7 +103,7 @@ class AliITSpList: public AliITSMap {
     // returns hit index in TClonesArray
     virtual Int_t GetHitIndex(Int_t i,Int_t j) const {return GetIndex(i,j);}
     // returns "hit" AliITSpListItem as a TObject.
-    TObject * GetHit(Int_t i,Int_t j){return (TObject*)GetpListItem(i,j);}
+    TObject * GetHit(Int_t i,Int_t j) const {return (TObject*)GetpListItem(i,j);}
     // tests hit status.
     virtual FlagType TestHit(Int_t i,Int_t j){if(GetpListItem(i,j)==0) return kEmpty;
     else if(GetSignal(i,j)<=0) return kUnused; else return kUsed;}
