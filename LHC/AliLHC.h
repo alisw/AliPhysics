@@ -4,6 +4,17 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
+//
+// Class for a simple description of the LHC.
+// The LHC is described by two beams,
+// the interaction regions and the
+// beam loss processes.
+// Run paramters can be set in order to simulate the time evolution
+// of emittance, number of particles per bunch and luminosity.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
+
 #include <TObject.h>
 #include <TList.h>
 #include <TObjArray.h>
@@ -32,23 +43,23 @@ class AliLHC : public TObject
     virtual void SetAverageBeta(Float_t b) {fAverageBeta = b;}
     virtual void SetAverageDisp(Float_t b) {fAverageDisp = b;}
     
-    virtual Float_t Radius() {return fRadius;}
-    virtual Float_t AverageBeta() {return fAverageBeta;}
-    virtual Float_t AverageDisp() {return fAverageDisp;}
-    virtual Float_t SetUpTime()   {return fSetUpTime;}
-    virtual Float_t FillingTime() {return fFillingTime;}
+    virtual Float_t Radius()      const {return fRadius;}
+    virtual Float_t AverageBeta() const {return fAverageBeta;}
+    virtual Float_t AverageDisp() const {return fAverageDisp;}
+    virtual Float_t SetUpTime()   const {return fSetUpTime;}
+    virtual Float_t FillingTime() const {return fFillingTime;}
 
 
     virtual AliLhcBeam* Beam(Int_t i) 
       {return (AliLhcBeam*) (*fBeams)[i];}
-    virtual TList* IRegions(){return fIRegions;}
+    virtual TList* IRegions()   const {return fIRegions;}
     virtual void Init();
     virtual void EvolveTime();
     virtual void Evaluate();
-    virtual Float_t  Time()     {return fTime;}
-    virtual Float_t  TimeStep() {return fTimeStep;}
-    virtual Float_t* TimeA()    {return fTimeA;}
-    virtual Int_t    Nt()       {return fNt;}
+    virtual Float_t  Time()     const {return fTime;}
+    virtual Float_t  TimeStep() const {return fTimeStep;}
+    virtual Float_t* TimeA()    const {return fTimeA;}
+    virtual Int_t    Nt()       const {return fNt;}
     
     AliLHC & operator=(const AliLHC & rhs);
     

@@ -1,9 +1,19 @@
 #ifndef ALILHCBEAM_H
-#define ALILHCBAEM_H
+#define ALILHCBEAM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
+//
+// Class that holds all parameters about an LHC beam.
+// The parameters can change with time.
+// A monitor can be set that stores the time distribution of 
+// emittance and number of particles per bunch.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
+//
+
 #include <TNamed.h>
 #include "AliLhcMonitor.h"
 
@@ -18,14 +28,14 @@ class AliLhcBeam : public TNamed, public AliLhcMonitor
     
     virtual void Init();
     
-    virtual Float_t N() {return fN;}
-    virtual Float_t A() {return fA;}
-    virtual Float_t Z() {return fZ;}
-    virtual Float_t Emittance()   {return fEmittance;}
-    virtual Float_t Energy()      {return fEnergy;}
-    virtual Float_t Gamma()       {return fGamma;}
-    virtual Float_t LongEmittance() {return fEmittanceL;}
-    virtual Float_t EnergySpread() {return fEnergySpread;}
+    virtual Float_t N() const {return fN;}
+    virtual Float_t A() const {return fA;}
+    virtual Float_t Z() const {return fZ;}
+    virtual Float_t Emittance() const   {return fEmittance;}
+    virtual Float_t Energy()    const   {return fEnergy;}
+    virtual Float_t Gamma()     const   {return fGamma;}
+    virtual Float_t LongEmittance() const {return fEmittanceL;}
+    virtual Float_t EnergySpread()  const {return fEnergySpread;}
 
     virtual void  SetParticle(Float_t a, Float_t z) {fA = a; fZ = z;}
     virtual void  SetN(Float_t n) {fN = n;}	    

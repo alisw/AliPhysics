@@ -15,6 +15,16 @@
 
 /* $Id$ */
 
+//
+// Class for a simple description of the LHC.
+// The LHC is described by two beams,
+// the interaction regions and the
+// beam loss processes.
+// Run paramters can be set in order to simulate the time evolution
+// of emittance, number of particles per bunch and luminosity.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
+
 #include "AliLHC.h"
 #include "AliLhcIRegion.h"
 #include "AliLhcProcess.h"

@@ -4,6 +4,16 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
+//
+// Realisation of AliLhcMonitor simulating an LHC interaction region.
+// The interaction region is described by the two LHC beams,
+// by the beta* and the crossing angle. 
+// As a monitor it records the luminosity, average luminosity and beta*
+// time evolution.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
+//
 #include <TNamed.h>
 #include "AliLhcMonitor.h"
 
@@ -20,8 +30,8 @@ class AliLhcIRegion : public TNamed, public AliLhcMonitor
     
     virtual void Init();
     virtual Float_t Luminosity();
-    virtual Float_t InitialLumi()   {return fLuminosity0;}
-    virtual Float_t BetaStar()   {return fBetaStar;}
+    virtual Float_t InitialLumi()   const {return fLuminosity0;}
+    virtual Float_t BetaStar()      const {return fBetaStar;}
     virtual void  SetBetaStar(Float_t beta) {fBetaStar = beta;}
     virtual void  SetCrossingAngle(Float_t angle) {fCrossingAngle = angle;}	    
     virtual void  SetAccelerator(AliLHC* acc) {fAccelerator = acc;}

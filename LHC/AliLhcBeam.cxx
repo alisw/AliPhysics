@@ -14,6 +14,14 @@
  **************************************************************************/
 
 /* $Id$ */
+//
+// Class that holds all parameters about an LHC beam.
+// The parameters can change with time.
+// A monitor can be set that stores the time distribution of 
+// emittance and number of particles per bunch.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
+//
 
 #include "AliLhcBeam.h"
 #include "AliLHC.h"
@@ -68,6 +76,8 @@ void AliLhcBeam::RemoveParticles(Float_t loss)
 
 void AliLhcBeam::IncreaseEmittance(Float_t de, Float_t del)
 {
+//
+// Increase the emittance
   fEmittance    *= (1.+de);
   fEmittanceL   *= (1.+del);
   fEnergySpread *= (1.+del);
@@ -80,6 +90,8 @@ AliLhcBeam& AliLhcBeam::operator=(const  AliLhcBeam & /*rhs*/)
 }
 void AliLhcBeam::SetMonitor(Int_t n)
 {
+//
+// Initialize a monitor with n time bins
   fNmax = n;
   if (fEmittanceArray)  delete fEmittanceArray;
   if (fEmittanceLArray) delete fEmittanceLArray;

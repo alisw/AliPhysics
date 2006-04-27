@@ -15,6 +15,14 @@
 
 /* $Id$ */
 
+//
+// Realisation of AliLhcProcess for the fast simulation of the
+// Intra Beam Scattering process
+// in transverse and longitudinal direction.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
+//
+
 #include "AliLhcProcessIBS.h"
 #include "AliLHC.h"
 #include "AliLhcIRegion.h"
@@ -62,6 +70,8 @@ void AliLhcProcessIBS::Init()
 
 void AliLhcProcessIBS::Evolve(Float_t dt)
 {
+//
+// Evolve by one time step dt
   printf("\n Here process %s %f:", GetName(), dt);
    for (Int_t i=0; i<2; i++) {
      // Density
@@ -179,12 +189,12 @@ Double_t func(Double_t *x, Double_t *par)
   Double_t b  = par[1];
   Double_t cc = par[2];
 
-  const Double_t bc = 0.5772;
+  const Double_t kbc = 0.5772;
   Double_t xx = x[0];
   Double_t x2=xx*xx;
   Double_t x1=1.0-x2;
   Double_t p=1.0/TMath::Sqrt(x2+a*a*x1);
   Double_t q=1.0/TMath::Sqrt(x2+b*b*x1);
-  return (1.0-3.0*x2)*p*q*(2.0*TMath::Log(0.5*cc*(p+q))-bc);
+  return (1.0-3.0*x2)*p*q*(2.0*TMath::Log(0.5*cc*(p+q))-kbc);
 }
 

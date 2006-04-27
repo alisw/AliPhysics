@@ -15,6 +15,15 @@
 
 /* $Id$ */
 
+//
+// Realisation of AliLhcMonitor simulating an LHC interaction region.
+// The interaction region is described by the two LHC beams,
+// by the beta* and the crossing angle. 
+// As a monitor it records the luminosity, average luminosity and beta*
+// time evolution.
+// Author: Andreas Morsch
+// andreas.morsch@cern.ch
+//
 #include "AliLhcIRegion.h"
 #include "AliLhcBeam.h"
 #include "AliLHC.h"
