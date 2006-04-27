@@ -1,4 +1,4 @@
- /**************************************************************************
+/**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -46,6 +46,7 @@
 
 // -- ALICE Headers.
 //#include "AliConst.h"
+#include "AliLog.h"
 
 // --- EMCAL headers
 #include "AliEMCALGeometry.h"
@@ -245,7 +246,7 @@ void AliEMCALGeometry::Init(void){
  
   fgInit = kTRUE; 
   
-  if (kTRUE) {
+  if (AliDebugLevel()>=2) {
     printf("Init: geometry of EMCAL named %s is as follows:\n", fGeoName.Data());
     printf( "               ECAL      : %d x (%f cm Pb, %f cm Sc) \n", 
     GetNECLayers(), GetECPbRadThick(), GetECScintThick() ) ; 
@@ -327,15 +328,15 @@ void AliEMCALGeometry::CheckAdditionalOptions()
       }
     }
     if(indj<0) {
-      printf("<E> option |%s| unavailable : ** look to the file AliEMCALGeometry.h **\n", 
-      addOpt.Data());
+      AliDebug(2,Form("<E> option |%s| unavailable : ** look to the file AliEMCALGeometry.h **\n", 
+		      addOpt.Data()));
       assert(0);
     } else {
-      printf("<I> option |%s| is valid : number %i : |%s|\n", 
-	     addOpt.Data(), indj, fAdditionalOpts[indj]);
+      AliDebug(2,Form("<I> option |%s| is valid : number %i : |%s|\n", 
+		      addOpt.Data(), indj, fAdditionalOpts[indj]));
       if       (addOpt.Contains("NL=",TString::kIgnoreCase))   {// number of sampling layers
         sscanf(addOpt.Data(),"NL=%i", &fNECLayers);
-        printf(" fNECLayers %i (new) \n", fNECLayers);
+        AliDebug(2,Form(" fNECLayers %i (new) \n", fNECLayers));
       } else if(addOpt.Contains("PBTH=",TString::kIgnoreCase)) {//Thickness of the Pb
         sscanf(addOpt.Data(),"PBTH=%f", &fECPbRadThickness);
       } else if(addOpt.Contains("SCTH=",TString::kIgnoreCase)) {//Thickness of the Sc
@@ -475,7 +476,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
     AliEMCALGeometry * rv = 0; 
     if ( fgGeom == 0 ) {
 	if ( strcmp(name,"") == 0 ) rv = 0;
-	else {    
+	else {
 	    fgGeom = new AliEMCALGeometry(name, title);
 	    if ( fgInit ) rv = (AliEMCALGeometry * ) fgGeom;
 	    else {
@@ -485,11 +486,9 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
 	    } // end if fgInit
 	} // end if strcmp(name,"")
     }else{
-	if ( strcmp(fgGeom->GetName(), name) != 0 ) {
-	  printf("\ncurrent geometry is ") ;  
-	  printf(fgGeom->GetName());
-	  printf("\n                      you cannot call     "); 
-	  printf(name);  
+	if ( strcmp(fgGeom->GetName(), name) != 0) {
+	  printf("\ncurrent geometry is %s : ", fgGeom->GetName());
+	  printf(" you cannot call %s ", name);  
 	}else{
 	  rv = (AliEMCALGeometry *) fgGeom; 
 	} // end 
@@ -546,8 +545,7 @@ void AliEMCALGeometry::TowerIndexes(Int_t index,Int_t &ieta,Int_t &iphi) const {
     iphi = nindex / GetNZ() ; 
   ieta = nindex - (iphi - 1) * GetNZ() ; 
 
-  if (gDebug==2)
-    printf("TowerIndexes: index=%d,%d, ieta=%d, iphi = %d", index, nindex,ieta, iphi) ; 
+  AliDebug(2,Form("TowerIndexes: index=%d,%d, ieta=%d, iphi = %d", index, nindex,ieta, iphi)); 
   return;
   
 }
@@ -568,8 +566,7 @@ void AliEMCALGeometry::EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi) co
 
     TowerIndexes(index,ieta,iphi);
     
-    if (gDebug == 2) 
-      printf("EtaPhiFromIndex: index = %d, ieta = %d, iphi = %d", index, ieta, iphi) ;
+    AliDebug(2,Form("EtaPhiFromIndex: index = %d, ieta = %d, iphi = %d", index, ieta, iphi));
 
     deta = (GetArm1EtaMax()-GetArm1EtaMin())/(static_cast<Float_t>(GetNEta()));
     eta  = GetArm1EtaMin() + ((static_cast<Float_t>(ieta) - 0.5 ))*deta;
@@ -914,7 +911,8 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
   //which will make up the EMCAL
   //geometry
 
-  cout<< endl<< " AliEMCALGeometry::CreateListOfTrd1Modules() started " << endl;
+  AliDebug(2,Form(" AliEMCALGeometry::CreateListOfTrd1Modules() started "));
+
   AliEMCALShishKebabTrd1Module *mod=0, *mTmp=0; // current module
   if(fShishKebabTrd1Modules == 0) {
     fShishKebabTrd1Modules = new TList;
@@ -928,15 +926,15 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
       fShishKebabTrd1Modules->Add(mod);
     }
   } else {
-    cout<<" Already exits : ";
+    AliDebug(2,Form(" Already exits : "));
   }
-  cout<<" fShishKebabTrd1Modules "<< fShishKebabTrd1Modules << " has " 
-  << fShishKebabTrd1Modules->GetSize() << " modules" <<endl << endl;
+  AliDebug(2,Form(" fShishKebabTrd1Modules has %i modules \n", 
+		  fShishKebabTrd1Modules->GetSize()));
   // Feb 20,2006;
   // define grid for cells in eta(z) and x directions in local coordinates system of SM
   fEtaCentersOfCells = new TArrayD(fNZ *fNETAdiv);
   fXCentersOfCells = new TArrayD(fNZ *fNETAdiv);
-  printf(" Cells grid in eta directions : size %i\n", fEtaCentersOfCells->GetSize());
+  AliDebug(2,Form(" Cells grid in eta directions : size %i\n", fEtaCentersOfCells->GetSize()));
   Int_t iphi=0, ieta=0, nTower=0;
   Double_t xr, zr;
   for(Int_t it=0; it<fNZ; it++) { // array index
@@ -950,24 +948,23 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
     }
   }
   for(Int_t i=0; i<fEtaCentersOfCells->GetSize(); i++) {
-    printf(" ind %2.2i : z %8.3f : x %8.3f", i+1, fEtaCentersOfCells->At(i),fXCentersOfCells->At(i));
-    if(i%2 != 0) printf("\n"); 
+    AliDebug(2,Form(" ind %2.2i : z %8.3f : x %8.3f", i+1, 
+                    fEtaCentersOfCells->At(i),fXCentersOfCells->At(i)));
   }
-  printf("\n"); 
+
  // define grid for cells in phi(y) direction in local coordinates system of SM
   fPhiCentersOfCells = new TArrayD(fNPhi*fNPHIdiv);
-  printf(" Cells grid in phi directions : size %i\n", fPhiCentersOfCells->GetSize());
+  AliDebug(2,Form(" Cells grid in phi directions : size %i\n", fPhiCentersOfCells->GetSize()));
   Int_t ind=0;
   for(Int_t it=0; it<fNPhi; it++) { // array index
     Float_t ytLeftCenterModule = -fParSM[1] + fPhiModuleSize*(2*it+1)/2;         // module
     for(Int_t ic=0; ic<fNPHIdiv; ic++) { // array index
       Float_t ytLeftCenterCell = ytLeftCenterModule + fPhiTileSize *(2*ic-1)/2.; // tower(cell) 
       fPhiCentersOfCells->AddAt(ytLeftCenterCell,ind);
-      printf(" ind %2.2i : y %8.3f ", ind, fPhiCentersOfCells->At(ind)); ind++;
-      if(ic == fNPHIdiv-1) printf("\n"); 
+      AliDebug(2,Form(" ind %2.2i : y %8.3f ", ind, fPhiCentersOfCells->At(ind))); 
+      ind++;
     }
   }
-  printf("\n"); 
 }
 
 void  AliEMCALGeometry::GetTransformationForSM()
