@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/04/20 22:30:49  hristov
+Coding conventions (Annalisa)
+
 Revision 1.5  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -82,6 +85,9 @@ AliTOFAlignment& AliTOFAlignment::operator=(const AliTOFAlignment &t){
   return *this;
 
 }
+
+//_____________________________________________________________________________
+AliTOFAlignment::~AliTOFAlignment() {delete fTOFAlignObjArray;}
 
 //_____________________________________________________________________________
 void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)

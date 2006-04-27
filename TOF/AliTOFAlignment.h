@@ -14,14 +14,14 @@ class TObjArray;
 
 class AliTOFAlignment :public TTask{
 
-enum {kMaxAlignObj=2000}; //maximal number of the TOF Alignable Objects
+  enum {kMaxAlignObj=2000}; //maximal number of the TOF Alignable Objects
 
-public:
+ public:
 
- AliTOFAlignment(); 
- AliTOFAlignment(const AliTOFAlignment &t); //Copy Ctor 
- AliTOFAlignment& operator=(const AliTOFAlignment &source); // Assignment Operator
- virtual ~AliTOFAlignment() {delete fTOFAlignObjArray;}
+  AliTOFAlignment(); 
+  AliTOFAlignment(const AliTOFAlignment &t); //Copy Ctor 
+  AliTOFAlignment& operator=(const AliTOFAlignment &source); // Assignment Operator
+  virtual ~AliTOFAlignment();
   virtual void WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   virtual void ReadParFromCDB(Char_t *sel, Int_t nrun);
   virtual void WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
