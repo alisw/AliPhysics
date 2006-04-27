@@ -772,7 +772,7 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
         //printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f fIdRotm %i\n", nr, xpos, ypos, zpos, fIdRotm);
             AliDebug(3,Form("%3.3i(%2.2i,%2.2i) ", nr,iy+1,iz+1));
           }
-          printf("\n");
+	  //PH          printf("\n");
 	} else {
           if(iz==0) AliMatrix(fIdRotm, 0.,0., 90.,0., 90.,90.); // (x')z; y'(x); z'(y)
           else      AliMatrix(fIdRotm, 90-angle,270., 90.0,0.0, angle,90.);
