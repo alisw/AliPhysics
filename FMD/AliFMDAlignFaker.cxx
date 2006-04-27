@@ -202,6 +202,7 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
   AliDebug(1, Form("Make alignment for %s (volume %d): (%f,%f,%f) (%f,%f,%f)", 
 		   path.Data(), id, transX, transY, transZ, rotX, rotY, rotZ));
   Int_t nAlign = fArray->GetEntries();
+  id = 0;
   AliAlignObjAngles* obj = 
     new ((*fArray)[nAlign]) AliAlignObjAngles(path.Data(), id,0,0,0,0,0,0);
   if (!obj) {
