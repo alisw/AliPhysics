@@ -405,6 +405,8 @@ CSRCS+=$(TCSRCS)
 
 .SECONDARY: $(TCSRCS)
 
+PACKCFLAGS:=$(CFLAGS) -w
+
 PDF/ctmp/%.c: PDF/%.F
 	[ -d $(dir $@) ] || mkdir -p $(dir $@)
 ifeq (macosx,$(ALICE_TARGET))
