@@ -119,18 +119,18 @@ void AliCTPRawData::RawData()
   // First 3 words here - Bunch-crossing and orbit numbers
   UInt_t word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
-  word |= bunchCross && 0xFFF;
+  word |= bunchCross & 0xFFF;
   AliDebug(1,Form("CTP word1 = 0x%x",word));
   outfile.write((char*)(&word),sizeof(UInt_t));
 
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
-  word |= (orbitId >> 12) && 0xFFF;
+  word |= (orbitId >> 12) & 0xFFF;
   AliDebug(1,Form("CTP word2 = 0x%x",word));
   outfile.write((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
-  word |= orbitId && 0xFFF;
+  word |= orbitId & 0xFFF;
   AliDebug(1,Form("CTP word3 = 0x%x",word));
   outfile.write((char*)(&word),sizeof(UInt_t));
 
@@ -139,30 +139,30 @@ void AliCTPRawData::RawData()
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
   word |= ((UInt_t)esr) << 10;
   word |= 0 << 8; // L2SwC - physics trigger
-  word |= (l2cluster && 0x3F) << 2; // L2Cluster
-  word |= (l2class >> 48) && 0x3;
+  word |= (l2cluster & 0x3F) << 2; // L2Cluster
+  word |= (l2class >> 48) & 0x3;
   AliDebug(1,Form("CTP word4 = 0x%x",word));
   outfile.write((char*)(&word),sizeof(UInt_t));
 
   // Then the last 4 words with the trigger classes
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
-  word |= (l2class >> 36) && 0xFFF;
+  word |= (l2class >> 36) & 0xFFF;
   AliDebug(1,Form("CTP word5 = 0x%x",word));
   outfile.write((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
-  word |= (l2class >> 24) && 0xFFF;
+  word |= (l2class >> 24) & 0xFFF;
   AliDebug(1,Form("CTP word6 = 0x%x",word));
   outfile.write((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
-  word |= (l2class >> 12) && 0xFFF;
+  word |= (l2class >> 12) & 0xFFF;
   AliDebug(1,Form("CTP word7 = 0x%x",word));
   outfile.write((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 13; // BlockID = 0 in case of CTP readout
-  word |= l2class && 0xFFF;
+  word |= l2class & 0xFFF;
   AliDebug(1,Form("CTP word8 = 0x%x",word));
   outfile.write((char*)(&word),sizeof(UInt_t));
 
