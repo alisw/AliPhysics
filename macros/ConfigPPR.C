@@ -110,6 +110,14 @@ enum PprMag_t
     k2kG, k4kG, k5kG
 };
 
+enum PprTrigConf_t
+{
+    kDefaultPPTrig, kDefaultPbPbTrig
+};
+
+const char * pprTrigConfName[] = {
+    "p-p","Pb-Pb"
+};
 
 // This part for configuration    
 //static PprRun_t srun = test50;
@@ -117,6 +125,8 @@ static PprRun_t srun = kHIJINGplus;
 static PprRad_t srad = kGluonRadiation;
 static PprMag_t smag = k5kG;
 static Int_t    sseed = 12345; //Set 0 to use the current time
+//static PprTrigConf_t strig = kDefaultPPTrig; // default pp trigger configuration
+static PprTrigConf_t strig = kDefaultPbPbTrig; // default PbPb trigger configuration
 
 // Comment line 
 static TString  comment;
@@ -163,6 +173,10 @@ void Config()
     rl->SetCompressionLevel(2);
     rl->SetNumberOfEventsPerFile(3);
     gAlice->SetRunLoader(rl);
+
+    // Set the trigger configuration
+    gAlice->SetTriggerDescriptor(pprTrigConfName[strig]);
+    cout<<"Trigger configuration is set to  "<<pprTrigConfName[strig]<<endl;
 
     //
     // Set External decayer
