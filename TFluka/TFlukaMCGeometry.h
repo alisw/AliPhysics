@@ -66,7 +66,7 @@ class TFlukaMCGeometry :public TNamed {
    
   private:
     TFlukaMCGeometry(const TFlukaMCGeometry& rhs);
-    TFlukaMCGeometry& operator=(const TFlukaMCGeometry& rhs) {return (*this);}
+    TFlukaMCGeometry& operator=(const TFlukaMCGeometry& /*rhs*/) {return (*this);}
 
     static TFlukaMCGeometry*  fgInstance; // singleton instance
     Bool_t       fDebug;                  // debug flag
