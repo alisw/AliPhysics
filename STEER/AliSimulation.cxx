@@ -1068,7 +1068,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
 
   AliInfo(Form("converting raw data DDL files to DATE file %s", dateFileName));
   char command[256];
-  sprintf(command, "dateStream -o %s -# %d -C", 
+  sprintf(command, "dateStream -D -o %s -# %d -C", 
 	  dateFileName, runLoader->GetNumberOfEvents());
   FILE* pipe = gSystem->OpenPipe(command, "w");
 
