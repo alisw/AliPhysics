@@ -613,10 +613,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   }
 
   // digits -> trigger
-  if (!fMakeTrigger.IsNull()) {
-    if (!RunTrigger(fMakeTrigger)) {
-      if (fStopOnError) return kFALSE;
-    }
+  if (!RunTrigger(fMakeTrigger)) {
+    if (fStopOnError) return kFALSE;
   }
 
   // digits -> raw data
@@ -641,6 +639,16 @@ Bool_t AliSimulation::RunTrigger(const char* descriptors)
    AliRunLoader* runLoader = LoadRun("READ");
    if (!runLoader) return kFALSE;
    TString des = descriptors;
+
+   if (des.IsNull()) {
+     if (gAlice->GetTriggerDescriptor() != "") {
+       des = gAlice->GetTriggerDescriptor();
+     }
+     else {
+       AliWarning("No trigger descriptor is specified. Skipping the trigger simulation...");
+       return kTRUE;
+     }
+   }
 
    runLoader->MakeTree( "CT" );
    AliCentralTrigger* aCTP = runLoader->GetTrigger();
@@ -697,6 +705,16 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   StdoutToAliInfo(StderrToAliError(
     gAlice->Init(fConfigFileName.Data());
   ););
+
+  // Get the trigger descriptor string
+  // Either from AliSimulation or from
+  // gAlice
+  if (fMakeTrigger.IsNull()) {
+    if (gAlice->GetTriggerDescriptor() != "")
+      fMakeTrigger = gAlice->GetTriggerDescriptor();
+  }
+  else
+    gAlice->SetTriggerDescriptor(fMakeTrigger.Data());
 
   // Set run number in CDBManager
   AliCDBManager::Instance()->SetRun(gAlice->GetRunNumber());
