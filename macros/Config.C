@@ -76,6 +76,9 @@ void Config()
     rl->SetNumberOfEventsPerFile(3);
     gAlice->SetRunLoader(rl);
 
+    // Set the trigger configuration
+    gAlice->SetTriggerDescriptor("p-p");
+
     //
     // Set External decayer
     TVirtualMCDecayer *decayer = new AliDecayerPythia();
