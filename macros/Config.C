@@ -77,7 +77,8 @@ void Config()
     gAlice->SetRunLoader(rl);
 
     // Set the trigger configuration
-    gAlice->SetTriggerDescriptor("p-p");
+    gAlice->SetTriggerDescriptor("Pb-Pb");
+    cout<<"Trigger configuration is set to  Pb-Pb"<<endl;
 
     //
     // Set External decayer
