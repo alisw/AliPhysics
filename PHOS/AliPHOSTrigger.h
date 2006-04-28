@@ -112,7 +112,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t   f4x4CrystalEta ; //! and column(eta)
   Int_t   f4x4SM ;         //! Module where maximum is found
 
-  Int_t*   fADCValuesHigh4x4 ; // Sampled ADC high gain values for the 4x4 crystals amplitude sum
+  Int_t*   fADCValuesHigh4x4 ; //! Sampled ADC high gain values for the 4x4 crystals amplitude sum
   Int_t*   fADCValuesLow4x4  ; //! " low gain  " 
   Int_t*   fADCValuesHigh2x2 ; //! " high gain " 2x2 "
   Int_t*   fADCValuesLow2x2  ; //! " low gaing " "
