@@ -71,7 +71,7 @@ void AliVZEROTrigger::Trigger()
     Int_t nDigits = vzeroDigits->GetEntriesFast();
     
     for (Int_t d=0; d<nDigits; d++) {
-      vzeroDigitsTree->GetEvent(d);
+      //      vzeroDigitsTree->GetEvent(d);
       AliVZEROdigit* digit = (AliVZEROdigit*)vzeroDigits->At(d);
       
       Int_t   cellNumber = digit->CellNumber();
