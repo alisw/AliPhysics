@@ -65,7 +65,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   // Trigger (tracklets, LTU)
 
-  loader->LoadTracks();
+  loader->LoadTracks("UPDATE");
   if (loader->TreeT()) {
     Info("Reconstruct","Tracklets already exist");
     return;
