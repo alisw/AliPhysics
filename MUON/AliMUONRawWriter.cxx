@@ -628,7 +628,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   }
 
   if (!nEntries)
-    AliError("No Trigger information available");
+    AliInfo("No Trigger information available");
 
   if(fScalerEvent)
     // [16(local)*50 words + 14 words]*8(reg) + 6 + 10 + 6 words scaler event 6534 words
