@@ -68,8 +68,8 @@ void SetCC(Int_t flag=0)
   if      (flag == 0) {
     DBFolder  ="local://InitCalibDB";
     firstRun  =  0;
-    lastRun   =  0;
-    objFormat = "PHOS initial gain factors and pedestals";
+    lastRun   = 10;
+    objFormat = "PHOS initial pedestals and ADC gain factors (5x64x56)";
     cdb = new AliPHOSCalibData();
     cdb->CreateNew();
   }
@@ -119,7 +119,7 @@ void GetCC(Int_t flag=0)
   }
 
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
+//   AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
 
   AliPHOSCalibData* clb  = new AliPHOSCalibData(gAlice->GetRunNumber());
 
