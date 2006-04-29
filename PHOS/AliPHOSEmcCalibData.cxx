@@ -86,13 +86,13 @@ AliPHOSEmcCalibData::~AliPHOSEmcCalibData()
 //________________________________________________________________
 void AliPHOSEmcCalibData::Reset()
 {
-  // Set all pedestals and all ADC channels to its default values.
+  // Set all pedestals and all ADC channels to its ideal values = 1.
 
   for (Int_t module=0; module<5; module++){
     for (Int_t column=0; column<56; column++){
       for (Int_t row=0; row<64; row++){
-	fADCpedestalEmc[module][column][row] = 0.005;
-	fADCchannelEmc[module][column][row] = 0.0015;
+	fADCpedestalEmc[module][column][row] = 0.;
+	fADCchannelEmc[module][column][row]  = 1.;
       }
     }
   }
