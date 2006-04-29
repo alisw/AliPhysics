@@ -120,7 +120,7 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
     for (Int_t j=0; j<ns; j++) {
       p[j]=1.;
       for (Int_t ilayer=0; ilayer <6; ilayer++) {
-        Double_t dedx=t->GetTRDsignals(ilayer);
+        Double_t dedx=t->GetTRDsignals(ilayer,1);
         Int_t timbin=t->GetTRDTimBin(ilayer);
 	p[j]*= pd->GetProbability(j,mom,dedx);
 	p[j]*= pd->GetProbabilityT(j,mom,timbin);

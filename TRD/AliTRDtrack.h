@@ -22,7 +22,13 @@ const unsigned kMAXCLUSTERSPERTRACK = 210;
 
 class AliTRDtrack : public AliKalmanTrack {
    
-  enum { kNdet = 540, kNstacks = 90, kNplane = 6, kNcham = 5, kNsect = 18 };
+  enum { kNdet      = 540
+       , kNstacks   = 90
+       , kNplane    = 6
+       , kNcham     = 5
+       , kNsect     = 18
+       , kNslice    = 3
+       , kNtimeBins = 22 };
 
   friend class AliTRDtracker;
 
@@ -50,7 +56,8 @@ class AliTRDtrack : public AliKalmanTrack {
    void            GetCovariance(Double_t cov[15]) const;  
    Double_t        GetdEdx() const                      { return fdEdx;          }
    Double_t        GetPIDsignal() const                 { return GetdEdx();      }
-   Float_t         GetPIDsignals(Int_t i) const         { return fdEdxPlane[i];  }
+   Float_t         GetPIDsignals(Int_t iPlane, Int_t iSlice) const 
+                                                        { return fdEdxPlane[iPlane][iSlice]; }
    Int_t           GetPIDTimBin(Int_t i) const          { return fTimBinPlane[i];}
    Double_t        GetEta() const                       { return fE;             }
 
@@ -92,7 +99,8 @@ class AliTRDtrack : public AliKalmanTrack {
    Int_t           Rotate(Double_t angle, Bool_t absolute=kFALSE);
 
    void            SetdEdx(Float_t dedx)                { fdEdx           = dedx;   }  
-   void            SetPIDsignals(Float_t dedx, Int_t i) { fdEdxPlane[i]   = dedx;   }
+   void            SetPIDsignals(Float_t dedx, Int_t iPlane, Int_t iSlice) 
+                                                        { fdEdxPlane[iPlane][iSlice] = dedx; }
    void            SetPIDTimBin(Int_t timbin, Int_t i)  { fTimBinPlane[i] = timbin; }
    void            SetLikelihoodElectron(Float_t l)     { fLhElectron     = l;      }
 
@@ -124,7 +132,7 @@ class AliTRDtrack : public AliKalmanTrack {
    Float_t         fdEdx;                                  // dE/dx 
    Float_t         fdEdxT;                                 // dE/dx  - truncated mean
    Float_t         fDE;                                    // integrated delta energy
-   Float_t         fdEdxPlane[kNplane];                    // dE/dx from all 6 planes
+   Float_t         fdEdxPlane[kNplane][kNslice];           // dE/dx from all 6 planes in 3 slices each
    Int_t           fTimBinPlane[kNplane];                  // time bin of Max cluster from all 6 planes
 
    Double_t        fAlpha;                                 // rotation angle
@@ -160,7 +168,7 @@ class AliTRDtrack : public AliKalmanTrack {
    Float_t         fBudget[3];                             // integrated material budget
    AliTRDtrack    *fBackupTrack;                           //! backup track
 
-   ClassDef(AliTRDtrack,4)                                 // TRD reconstructed tracks
+   ClassDef(AliTRDtrack,5)                                 // TRD reconstructed tracks
 
 };                     
 

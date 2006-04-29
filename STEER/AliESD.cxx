@@ -41,6 +41,7 @@ AliESD::AliESD():
   fZDCEMEnergy(0),
   fZDCParticipants(0),
   fT0zVertex(0),
+  fT0timeStart(0),
   fPrimaryVertex(),
   fTracks("AliESDtrack",15000),
   fHLTConfMapTracks("AliESDHLTtrack",25000),
@@ -59,7 +60,10 @@ AliESD::AliESD():
   fFirstPHOSCluster(-1),
   fESDFMD(0x0)
 {
-
+  for (Int_t i=0; i<24; i++) {
+    fT0time[i] = 0;
+    fT0amplitude[i] = 0;
+  }
 }
 
 //______________________________________________________________________________
@@ -117,6 +121,7 @@ void AliESD::Reset()
   fZDCEMEnergy=0;
   fZDCParticipants=0;
   fT0zVertex=0;
+  fT0timeStart = 0;
   fPrimaryVertex.Reset();
   fTracks.Clear();
   fHLTConfMapTracks.Clear();

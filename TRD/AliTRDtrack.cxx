@@ -76,7 +76,9 @@ AliTRDtrack::AliTRDtrack():
 
 {
   for (Int_t i=0; i<kNplane; i++) {
-    fdEdxPlane[i] = 0;
+    for (Int_t j=0; j<kNslice; j++) {
+      fdEdxPlane[i][j] = 0;
+    }
     fTimBinPlane[i] = -1;
   }
   for (UInt_t i=0; i<kMAXCLUSTERSPERTRACK; i++) {
@@ -86,6 +88,7 @@ AliTRDtrack::AliTRDtrack():
   }
   for (Int_t i=0; i<3; i++) fBudget[i] = 0;
 }
+
 //_____________________________________________________________________________
 AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index, 
                          const Double_t xx[5], const Double_t cc[15], 
@@ -119,8 +122,10 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   fdEdxT=0.;
   fDE=0.;
   for (Int_t i=0;i<kNplane;i++){
-      fdEdxPlane[i] = 0.;
-      fTimBinPlane[i] = -1;
+    for (Int_t j=0; j<kNslice; j++) {
+      fdEdxPlane[i][j] = 0;
+    }
+    fTimBinPlane[i] = -1;
   }
 
   fLhElectron = 0.0;
@@ -166,9 +171,11 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack& t) : AliKalmanTrack(t)
   fdEdxT=t.fdEdxT;
   fDE=t.fDE;
   for (Int_t i=0;i<kNplane;i++){
-      fdEdxPlane[i] = t.fdEdxPlane[i];
-      fTimBinPlane[i] = t.fTimBinPlane[i];
-      fTracklets[i]   = t.fTracklets[i];
+    for (Int_t j=0; j<kNslice; j++) {
+      fdEdxPlane[i][j] = t.fdEdxPlane[i][j];
+    }
+    fTimBinPlane[i] = t.fTimBinPlane[i];
+    fTracklets[i]   = t.fTracklets[i];
   }
 
   fLhElectron = 0.0;
@@ -230,7 +237,9 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack& t, Double_t alpha)
   fdEdx=t.GetPIDsignal();
   fDE  = 0;
   for (Int_t i=0;i<kNplane;i++){
-    fdEdxPlane[i] = 0.0;
+    for (Int_t j=0;j<kNslice;j++){
+      fdEdxPlane[i][j] = 0.0;
+    }
     fTimBinPlane[i] = -1;
   }
 
@@ -305,7 +314,9 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack& t)
   fdEdx=t.GetTRDsignal();  
   fDE =0;     
   for (Int_t i=0;i<kNplane;i++){
-    fdEdxPlane[i] = t.GetTRDsignals(i);
+    for (Int_t j=0;j<kNslice;j++){
+      fdEdxPlane[i][j] = t.GetTRDsignals(i,j);
+    }
     fTimBinPlane[i] = t.GetTRDTimBin(i);
   }
 
@@ -715,6 +726,7 @@ Int_t AliTRDtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   }
 
   return 1;            
+
 }     
 
 //_____________________________________________________________________________

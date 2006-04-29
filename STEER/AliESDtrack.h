@@ -152,11 +152,14 @@ public:
   Float_t GetTRDQuality()const {return fTRDQuality;}
   void    SetTRDBudget(Float_t budget){fTRDBudget=budget;}
   Float_t GetTRDBudget()const {return fTRDBudget;}
-  void    SetTRDsignals(Float_t dedx, Int_t i) {fTRDsignals[i]=dedx;}
+  void    SetTRDsignals(Float_t dedx, Int_t i, Int_t j) {fTRDsignals[i][j]=dedx;}
   void    SetTRDTimBin(Int_t timbin, Int_t i) {fTRDTimBin[i]=timbin;}
   void    GetTRDpid(Double_t *p) const;
   Float_t GetTRDsignal() const {return fTRDsignal;}
-  Float_t GetTRDsignals(Int_t i) const {return fTRDsignals[i];}
+  Float_t GetTRDsignals(Int_t iPlane, Int_t iSlice=-1) const { if (iSlice == -1) 
+    return (fTRDsignals[iPlane][0] + fTRDsignals[iPlane][1] + fTRDsignals[iPlane][3])/3.0;
+    return fTRDsignals[iPlane][iSlice];
+  }
   Int_t   GetTRDTimBin(Int_t i) const {return fTRDTimBin[i];}
   Float_t GetTRDchi2() const {return fTRDchi2;}
   Int_t   GetTRDclusters(Int_t *idx) const;
@@ -240,7 +243,8 @@ public:
     kTIME=0x80000000
   }; 
   enum {
-    kNPlane = 6
+    kNPlane = 6,
+    kNSlice = 3
   };
 protected:
   
@@ -294,7 +298,7 @@ protected:
   Int_t   fTRDncls;        // number of clusters assigned in the TRD
   Int_t   fTRDncls0;       // number of clusters assigned in the TRD before first material cross
   Float_t fTRDsignal;      // detector's PID signal
-  Float_t fTRDsignals[kNPlane];  // TRD signals from all six planes
+  Float_t fTRDsignals[kNPlane][kNSlice];  // TRD signals from all six planes in 3 slices each
   Int_t   fTRDTimBin[kNPlane];   // Time bin of Max cluster from all six planes
   Float_t fTRDr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fTRDLabel;       // label according TRD
@@ -333,7 +337,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,27)  //ESDtrack 
+  ClassDef(AliESDtrack,28)  //ESDtrack 
 };
 
 #endif 

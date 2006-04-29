@@ -112,7 +112,7 @@ AliESDtrack::AliESDtrack() :
   //
   // The default ESD constructor 
   //
-  Int_t i;
+  Int_t i, j;
   for (i=0; i<AliPID::kSPECIES; i++) {
     fTrackTime[i]=0.;
     fR[i]=1.;
@@ -125,7 +125,12 @@ AliESDtrack::AliESDtrack() :
   
   for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
   for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
-  for (i=0;i<kNPlane;i++) {fTRDsignals[i]=0.; fTRDTimBin[i]=-1;}
+  for (i=0;i<kNPlane;i++) {
+    for (j=0;j<kNSlice;j++) {
+      fTRDsignals[i][j]=0.; 
+    }
+    fTRDTimBin[i]=-1;
+  }
   for (i=0;i<4;i++) {fTPCPoints[i]=-1;}
   for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
   for (i=0;i<10;i++) {fTOFInfo[i]=-1;}
@@ -197,8 +202,10 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   for (Int_t i=0; i<3;i++)   { fV0Indexes[i]=track.fV0Indexes[i];}
   //
   for (Int_t i=0;i<kNPlane;i++) {
-      fTRDsignals[i]=track.fTRDsignals[i]; 
-      fTRDTimBin[i]=track.fTRDTimBin[i];
+    for (Int_t j=0;j<kNSlice;j++) {
+      fTRDsignals[i][j]=track.fTRDsignals[i][j]; 
+    }
+    fTRDTimBin[i]=track.fTRDTimBin[i];
   }
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
@@ -283,8 +290,10 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTRDncls0 = 0;       
   fTRDsignal = 0;      
   for (Int_t i=0;i<kNPlane;i++) {
-      fTRDsignals[i] = 0; 
-      fTRDTimBin[i]  = 0;
+    for (Int_t j=0;j<kNSlice;j++) {
+      fTRDsignals[i][j] = 0; 
+    }
+    fTRDTimBin[i]  = 0;
   }
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
   fTRDLabel = 0;       
