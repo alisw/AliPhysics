@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.33  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -97,7 +100,8 @@ private:
   //Calculate the time of crossing of the threshold by front edge
   Float_t FrontEdgeTime(TClonesArray * ticks) const ; 
   //Calculate digitized signal with gived ADC parameters
-  Int_t   DigitizeEnergy(Float_t energy, Int_t absId) ;
+  void    DecalibrateEMC(AliPHOSDigit * digit);
+  Int_t   DigitizeCPV(Float_t charge, Int_t absId) ;
 
 private:
 

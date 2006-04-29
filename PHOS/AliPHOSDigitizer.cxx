@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.90  2006/04/22 10:30:17  hristov
+ * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
+ *
  * Revision 1.89  2006/04/11 15:22:59  hristov
  * run number in query set to -1: forces AliCDBManager to use its run number (A.Colla)
  *
@@ -372,8 +375,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //remove digits below thresholds
   for(i = 0 ; i < nEMC ; i++){
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
-    // YVK: amplitude is in energy units
-//     if(sDigitizer->Calibrate( digit->GetAmp() ) < fEMCDigitThreshold)
+    DecalibrateEMC(digit);
     if(digit->GetEnergy() < fEMCDigitThreshold)
       digits->RemoveAt(i) ;
     else
@@ -396,20 +398,41 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ; 
     digit->SetIndexInList(i) ;     
     if(digit->GetId() > fEmcCrystals){ //digitize CPV only
-      digit->SetAmp(DigitizeEnergy(digit->GetEnergy(),digit->GetId()) ) ;
+      digit->SetAmp(DigitizeCPV(digit->GetEnergy(),digit->GetId()) ) ;
     }
   }
 }
 
 //____________________________________________________________________________
-Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
+void AliPHOSDigitizer::DecalibrateEMC(AliPHOSDigit *digit)
 {
-  // Returns digitized value of the energy in a cell absId
+  // Decalibrate EMC digit, i.e. change its energy by a factor read from CDB
 
   AliPHOSGetter* gime = AliPHOSGetter::Instance();
 
   if(!gime->CalibData()) {
-    //AliPHOSCalibData* cdb = new AliPHOSCalibData(gAlice->GetRunNumber()); // original
+    AliPHOSCalibData* cdb = new AliPHOSCalibData(-1);
+    gime->SetCalibData(cdb);
+  }
+
+  //Determine rel.position of the cell absolute ID
+  Int_t relId[4];
+  gime->PHOSGeometry()->AbsToRelNumbering(digit->GetId(),relId);
+  Int_t module=relId[0];
+  Int_t row   =relId[2];
+  Int_t column=relId[3];
+  Float_t decalibration = gime->CalibData()->GetADCchannelEmc(module,column,row);
+  Float_t energy = digit->GetEnergy() * decalibration;
+  digit->SetEnergy(energy);
+}
+//____________________________________________________________________________
+Int_t AliPHOSDigitizer::DigitizeCPV(Float_t charge, Int_t absId)
+{
+  // Returns digitized value of the CPV charge in a pad absId
+
+  AliPHOSGetter* gime = AliPHOSGetter::Instance();
+
+  if(!gime->CalibData()) {
     AliPHOSCalibData* cdb = new AliPHOSCalibData(-1); // use AliCDBManager's run number
     gime->SetCalibData(cdb);
   }
@@ -421,31 +444,22 @@ Int_t AliPHOSDigitizer::DigitizeEnergy(Float_t energy, Int_t absId)
   Int_t row   =relId[2];
   Int_t column=relId[3];
   
-  Int_t chanel ;
+  Int_t channel = 0;
   
-  if(absId <= fEmcCrystals){ //digitize as EMC 
+  if(absId > fEmcCrystals){ //digitize CPV only
 
     //reading calibration data for cell absId.
     //If no calibration DB found, accept default values.
 
     if(gime->CalibData()) {
-      fADCpedestalEmc = gime->CalibData()->GetADCpedestalEmc(module,column,row);
-      fADCchanelEmc = gime->CalibData()->GetADCchannelEmc(module,column,row);
-    }
-
-    chanel = (Int_t) TMath::Ceil((energy - fADCpedestalEmc)/fADCchanelEmc) ;       
-    if(chanel > fNADCemc ) chanel =  fNADCemc ;
-  }
-  else{ //Digitize as CPV
-    if(gime->CalibData()) {
       fADCpedestalCpv = gime->CalibData()->GetADCpedestalCpv(module,column,row);
-      fADCchanelCpv = gime->CalibData()->GetADCchannelCpv(module,column,row);
+      fADCchanelCpv   = gime->CalibData()->GetADCchannelCpv( module,column,row);
     }
 
-    chanel = (Int_t) TMath::Ceil((energy - fADCpedestalCpv)/fADCchanelCpv) ;       
-    if(chanel > fNADCcpv ) chanel =  fNADCcpv ;
+    channel = (Int_t) TMath::Ceil((charge - fADCpedestalCpv)/fADCchanelCpv) ;       
+    if(channel > fNADCcpv ) channel =  fNADCcpv ;
   }
-  return chanel ;
+  return channel ;
 }
 
 //____________________________________________________________________________
@@ -593,8 +607,8 @@ void AliPHOSDigitizer::InitParameters()
   fTimeResolution     = 0.5e-9 ; // [sec]
   fTimeSignalLength   = 1.0e-9 ; // [sec]
   fDigitsInRun  = 0 ; 
-  fADCchanelEmc = 0.0015;        // width of one ADC channel in GeV
-  fADCpedestalEmc = 0.005 ;      //
+  fADCchanelEmc = 1.0;        // Coefficient between real and measured energies in EMC
+  fADCpedestalEmc = 0. ;      //
   fNADCemc = (Int_t) TMath::Power(2,16) ;  // number of channels in EMC ADC
 
   fADCchanelCpv = 0.0012 ;          // width of one ADC channel in CPV 'popugais'
