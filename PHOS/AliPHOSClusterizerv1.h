@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.44  2005/09/02 14:32:07  kharlov
+ * Calibration of raw data
+ *
  * Revision 1.43  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -51,7 +54,8 @@ public:
   virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
-  virtual Float_t Calibrate(Int_t amp, Int_t absId) ;  // Tranforms Amp to energy 
+  virtual Float_t CalibrateCPV(Int_t   amp, Int_t absId) ;  // Tranforms CPV Amp to energy 
+  virtual Float_t CalibrateEMC(Float_t amp, Int_t absId) ;  // Tranforms EMC Amp to energy 
 
   virtual void    GetNumberOfClustersFound(int * numb )const{  numb[0] = fNumberOfEmcClusters ; 
                                                                numb[1] = fNumberOfCpvClusters ; }

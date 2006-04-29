@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.91  2006/04/22 10:30:17  hristov
+ * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
+ *
  * Revision 1.90  2006/04/11 15:22:59  hristov
  * run number in query set to -1: forces AliCDBManager to use its run number (A.Colla)
  *
@@ -142,9 +145,9 @@ const TString AliPHOSClusterizerv1::BranchName() const
 }
  
 //____________________________________________________________________________
-Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId)
+Float_t  AliPHOSClusterizerv1::CalibrateEMC(Float_t amp, Int_t absId)
 {  
-  // Convert digitized amplitude into energy.
+  // Convert EMC measured amplitude into real energy.
   // Calibration parameters are taken from calibration data base for raw data,
   // or from digitizer parameters for simulated data.
 
@@ -155,23 +158,43 @@ Float_t  AliPHOSClusterizerv1::Calibrate(Int_t amp, Int_t absId)
     Int_t   module = relId[0];
     Int_t   column = relId[3];
     Int_t   row    = relId[2];
-    if(absId <= fEmcCrystals) { //calibrate as EMC 
+    if(absId <= fEmcCrystals) { // this is EMC 
       fADCchanelEmc   = fCalibData->GetADCchannelEmc (module,column,row);
-      fADCpedestalEmc = fCalibData->GetADCpedestalEmc(module,column,row);
-      return fADCpedestalEmc + amp*fADCchanelEmc ;        
+      return amp*fADCchanelEmc ;        
     }
-    else { //calibrate as CPV
+  }
+  else{ //simulation
+    if(absId <= fEmcCrystals) // this is EMC 
+      return fADCpedestalEmc + amp*fADCchanelEmc ;        
+  }
+  return 0;
+}
+
+//____________________________________________________________________________
+Float_t  AliPHOSClusterizerv1::CalibrateCPV(Int_t amp, Int_t absId)
+{  
+  // Convert digitized CPV amplitude into charge.
+  // Calibration parameters are taken from calibration data base for raw data,
+  // or from digitizer parameters for simulated data.
+
+  if(fCalibData){
+    Int_t relId[4];
+    AliPHOSGetter *gime = AliPHOSGetter::Instance();
+    gime->PHOSGeometry()->AbsToRelNumbering(absId,relId) ;
+    Int_t   module = relId[0];
+    Int_t   column = relId[3];
+    Int_t   row    = relId[2];
+    if(absId > fEmcCrystals) { // this is CPV
       fADCchanelCpv   = fCalibData->GetADCchannelCpv (module,column,row);
       fADCpedestalCpv = fCalibData->GetADCpedestalCpv(module,column,row);
       return fADCpedestalCpv + amp*fADCchanelCpv ;              
     }     
   }
   else{ //simulation
-    if(absId <= fEmcCrystals) //calibrate as EMC 
-      return fADCpedestalEmc + amp*fADCchanelEmc ;        
-    else //calibrate as CPV
+    if(absId > fEmcCrystals) // this is CPV
       return fADCpedestalCpv+ amp*fADCchanelCpv ;       
   }
+  return 0;
 }
 
 //____________________________________________________________________________
@@ -463,12 +486,14 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
   return rv ; 
 }
 //____________________________________________________________________________
-void AliPHOSClusterizerv1::CleanDigits(TClonesArray * digits){
+void AliPHOSClusterizerv1::CleanDigits(TClonesArray * digits)
+{
+  // Remove digits with amplitudes below threshold
+
   for(Int_t i=0; i<digits->GetEntriesFast(); i++){
     AliPHOSDigit * digit = static_cast<AliPHOSDigit*>(digits->At(i)) ;
-    Float_t cut = IsInEmc(digit) ? fEmcMinE : fCpvMinE ;
-//     if(Calibrate(digit->GetAmp(),digit->GetId()) < cut) //YVK
-    if(digit->GetEnergy() < cut)
+    if ( (IsInEmc(digit) && CalibrateEMC(digit->GetEnergy(),digit->GetId()) < fEmcMinE) ||
+	 (IsInCpv(digit) && CalibrateCPV(digit->GetAmp()   ,digit->GetId()) < fCpvMinE) )
       digits->RemoveAt(i) ;
   }
   digits->Compress() ;
@@ -621,8 +646,10 @@ void AliPHOSClusterizerv1::MakeClusters()
     TArrayI clusterdigitslist(1500) ;   
     Int_t index ;
 
-    if (( IsInEmc (digit) && digit->GetEnergy() > fEmcClusteringThreshold  ) || 
-        ( IsInCpv (digit) && Calibrate(digit->GetAmp(),digit->GetId()) > fCpvClusteringThreshold  ) ) {
+    if (( IsInEmc (digit) &&
+	  CalibrateEMC(digit->GetEnergy(),digit->GetId()) > fEmcClusteringThreshold ) || 
+        ( IsInCpv (digit) &&
+	  CalibrateCPV(digit->GetAmp()   ,digit->GetId()) > fCpvClusteringThreshold ) ) {
       Int_t iDigitInCluster = 0 ; 
       
       if  ( IsInEmc(digit) ) {   
@@ -632,11 +659,10 @@ void AliPHOSClusterizerv1::MakeClusters()
           
         emcRecPoints->AddAt(new  AliPHOSEmcRecPoint(""), fNumberOfEmcClusters) ;
         clu = dynamic_cast<AliPHOSEmcRecPoint *>( emcRecPoints->At(fNumberOfEmcClusters) ) ; 
-          fNumberOfEmcClusters++ ; 
-//         clu->AddDigit(*digit, Calibrate(digit->GetAmp(),digit->GetId())) ; // YVK
-        clu->AddDigit(*digit, digit->GetEnergy()) ; 
-        clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;        
-        iDigitInCluster++ ; 
+	fNumberOfEmcClusters++ ; 
+	clu->AddDigit(*digit, CalibrateEMC(digit->GetEnergy(),digit->GetId())) ;
+        clusterdigitslist[iDigitInCluster] = digit->GetIndexInList() ;
+        iDigitInCluster++ ;
         digitsC->Remove(digit) ; 
 
       } else { 
@@ -649,7 +675,7 @@ void AliPHOSClusterizerv1::MakeClusters()
 
         clu =  dynamic_cast<AliPHOSCpvRecPoint *>( cpvRecPoints->At(fNumberOfCpvClusters) ) ;  
         fNumberOfCpvClusters++ ; 
-        clu->AddDigit(*digit, Calibrate(digit->GetAmp(),digit->GetId()) ) ;        
+        clu->AddDigit(*digit, CalibrateCPV(digit->GetAmp(),digit->GetId()) ) ;        
         clusterdigitslist[iDigitInCluster] = digit->GetIndexInList()  ;        
         iDigitInCluster++ ; 
         digitsC->Remove(digit) ; 
@@ -682,8 +708,11 @@ void AliPHOSClusterizerv1::MakeClusters()
           case 0 :   // not a neighbour
             break ;
           case 1 :   // are neighbours 
-//             clu->AddDigit(*digitN, Calibrate( digitN->GetAmp(), digitN->GetId() ) ) ; // YVK: distinguish EMC and CPV!!!
-            clu->AddDigit(*digitN, digitN->GetEnergy()) ;
+	    if (IsInEmc (digitN))
+	      clu->AddDigit(*digitN, CalibrateEMC( digitN->GetEnergy(), digitN->GetId() ) );
+	    else
+	      clu->AddDigit(*digitN, CalibrateCPV( digitN->GetAmp()   , digitN->GetId() ) );
+
             clusterdigitslist[iDigitInCluster] = digitN->GetIndexInList() ; 
             iDigitInCluster++ ; 
             digitsC->Remove(digitN) ;
