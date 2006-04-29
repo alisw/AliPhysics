@@ -19,9 +19,6 @@
 #pragma link C++ class  AliTRDv2+;
 
 #pragma link C++ class  AliTRDmcTrack+;
-#pragma link C++ class  AliTRDsimple+;
-#pragma link C++ class  AliTRDsimpleMC+;
-#pragma link C++ class  AliTRDsimpleGen+;
 
 #pragma link C++ class  AliTRDdigitizer+;
 #pragma link C++ class  AliTRDSimParam+;
