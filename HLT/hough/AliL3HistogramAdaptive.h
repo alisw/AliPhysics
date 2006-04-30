@@ -15,6 +15,15 @@ class AliL3HistogramAdaptive : public AliL3Histogram {
   ~AliL3HistogramAdaptive();
 
   void Fill(Double_t x,Double_t y,Int_t weight=1);
+  void Fill(Double_t x,Int_t ybin,Int_t weight=1) {
+    AliL3Histogram::Fill(x,ybin,weight);
+  }
+  void Fill(Int_t xbin,Double_t y,Int_t weight=1) {
+    AliL3Histogram::Fill(xbin,y,weight);
+  }
+  void Fill(Int_t xbin,Int_t ybin,Int_t weight=1) {
+    AliL3Histogram::Fill(xbin,ybin,weight);
+  }
   Int_t FindBin(Double_t x,Double_t y) const;
   Int_t FindXbin(Double_t x) const;
   Int_t FindYbin(Double_t x) const;

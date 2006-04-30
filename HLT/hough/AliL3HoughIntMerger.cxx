@@ -146,7 +146,7 @@ void AliL3HoughIntMerger::Print(AliL3Track **tracks)
   
 }
 
-void AliL3HoughIntMerger::SortTracks(AliL3Track **trs, Int_t ntrack)
+void AliL3HoughIntMerger::SortTracks(AliL3Track **trs, Int_t ntrack) const
 {
   //Sort the tracks according to their weight
 

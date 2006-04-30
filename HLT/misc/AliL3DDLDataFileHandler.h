@@ -24,7 +24,7 @@ class AliL3DDLDataFileHandler:public AliL3MemHandler{
 #ifdef use_newio
    Bool_t SetReaderInput(AliRawEvent *rawevent);
    Bool_t SetReaderInput(Char_t *name,Int_t event=0);
-   Bool_t IsDigit(Int_t i=0) const;
+   Bool_t IsDigit(Int_t i=0);
    AliL3DigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t /*eventmerge*/=kFALSE){return DDLData2Memory(nrow,event);};
 #else
    Bool_t SetReaderInput(Char_t *name,Bool_t add=kTRUE);

@@ -16,9 +16,31 @@ public:
   AliHLTReconstructor(Bool_t doTracker, Bool_t doHough);
   virtual ~AliHLTReconstructor();
 
+  virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const{
+    AliReconstructor::Reconstruct(digitsTree,clustersTree);
+  }
+  virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const {
+    AliReconstructor::Reconstruct(rawReader,clustersTree);
+  }
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
+  virtual void         Reconstruct(AliRunLoader* runLoader, 
+				   AliRawReader* rawReader) const {
+    AliReconstructor::Reconstruct(runLoader,rawReader);
+  }
   virtual AliTracker*  CreateTracker(AliRunLoader*) const;
+  virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
+			       AliESD* esd) const {
+    AliReconstructor::FillESD(digitsTree,clustersTree,esd);
+  }
+  virtual void         FillESD(AliRawReader* rawReader, TTree* clustersTree, 
+			       AliESD* esd) const {
+    AliReconstructor::FillESD(rawReader,clustersTree,esd);
+  }
   virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+  virtual void         FillESD(AliRunLoader* runLoader, 
+			       AliRawReader* rawReader, AliESD* esd) const {
+    AliReconstructor:: FillESD(runLoader,rawReader,esd);
+  }
   void SetDoBench(Bool_t b){fDoBench=b;}
   void SetDoCleanup(Bool_t b){fDoCleanUp=b;}
 

@@ -27,9 +27,25 @@ class AliL3HoughTransformerGlobal : public AliL3HoughTransformer {
   virtual ~AliL3HoughTransformerGlobal();
   
   void CreateHistograms(Float_t ptmin,Int_t nxbin,Int_t nybin);
+  void CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t pres,Int_t nybin,Float_t psi) {
+    AliL3HoughTransformer::CreateHistograms(ptmin,ptmax,pres,nybin,psi);
+  }
+  void CreateHistograms(Int_t nxbin,Float_t ptmin,Int_t nybin,Float_t phimin,Float_t phimax) {
+    AliL3HoughTransformer::CreateHistograms(nxbin,ptmin,nybin,phimin,phimax);
+  }
+  void CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
+			Int_t nybin,Float_t ymin,Float_t ymax) {
+    AliL3HoughTransformer::CreateHistograms(nxbin,xmin,xmax,nybin,ymin,ymax);
+  }
   void VerifyTracks(AliL3TrackArray *tracks,Int_t &index);
   void TransformCircle();
+  void TransformCircle(Int_t *row_range,Int_t every) {
+    AliL3HoughTransformer::TransformCircle(row_range,every);
+  }
   void TransformCircleC();
+  void TransformCircleC(Int_t *rowrange,Int_t every){
+    AliL3HoughTransformer::TransformCircleC(rowrange,every);
+  }
   void DefineRegion(Float_t ptmin,Float_t linephi,Int_t seedpadrow);
   void LoadActiveSlices(Bool_t binary=kTRUE);
   void UnloadActiveSlices();

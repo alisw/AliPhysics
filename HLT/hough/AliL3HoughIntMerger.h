@@ -23,7 +23,7 @@ class AliL3HoughIntMerger : public AliL3Merger {
   Int_t Merge();
   void MMerge();  //Loop over tracks from different subsectors
   void SetParameters(Double_t maxkappa=0.001, Double_t maxpsi=0.05, Double_t maxtgl=0.1);
-  void SortTracks(AliL3Track **tracks, Int_t ntrack);
+  void SortTracks(AliL3Track **tracks, Int_t ntrack) const;
   void Print(AliL3Track **tracks);
 
  private:

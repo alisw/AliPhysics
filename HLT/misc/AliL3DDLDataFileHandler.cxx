@@ -141,9 +141,10 @@ void AliL3DDLDataFileHandler::CloseReaderInput()
 }
 
 #ifdef use_newio
-Bool_t AliL3DDLDataFileHandler::IsDigit(Int_t /*i*/) const
+Bool_t AliL3DDLDataFileHandler::IsDigit(Int_t /*i*/)
 {
   // dummy
+  AliL3MemHandler::IsDigit();
   return kTRUE;
 }
 #endif

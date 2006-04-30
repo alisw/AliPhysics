@@ -27,6 +27,9 @@ class AliL3HoughTransformer : public AliL3HoughBaseTransformer {
 			Int_t nybin,Float_t ymin,Float_t ymax);
   void Reset();
   void TransformCircle();
+  void TransformCircle(Int_t *rowrange,Int_t every) {
+    AliL3HoughBaseTransformer:: TransformCircle(rowrange,every);
+  }
   void TransformCircleC(Int_t *rowrange,Int_t every=1);
   void TransformLine(Int_t *rowrange=0,Float_t *phirange=0);
   void TransformLineC(Int_t *rowrange,Float_t *phirange);

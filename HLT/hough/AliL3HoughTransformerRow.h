@@ -38,13 +38,18 @@ class AliL3HoughTransformerRow : public AliL3HoughBaseTransformer {
   AliL3HoughTransformerRow(Int_t slice,Int_t patch,Int_t netasegments,Bool_t DoMC=kFALSE,Float_t zvertex=0.0);
   virtual ~AliL3HoughTransformerRow();
 
-  //void CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t ptres,Int_t nybin,Float_t psi);
+  void CreateHistograms(Float_t ptmin,Float_t ptmax,Float_t pres,Int_t nybin,Float_t psi) {
+    AliL3HoughBaseTransformer::CreateHistograms(ptmin,ptmax,pres,nybin,psi);
+  }
   void CreateHistograms(Int_t /*nxbin*/,Float_t /*ptmin*/,Int_t /*nybin*/,Float_t /*phimin*/,Float_t /*phimax*/)
   {STDCERR<<"This method for creation of parameter space histograms is not supported for this Transformer!"<<STDENDL;}
   void CreateHistograms(Int_t nxbin,Float_t xmin,Float_t xmax,
 			Int_t nybin,Float_t ymin,Float_t ymax);
   void Reset();
   void TransformCircle();
+  void TransformCircle(Int_t *row_range,Int_t every) {
+    AliL3HoughBaseTransformer::TransformCircle(row_range,every);
+  }
 
   Int_t GetEtaIndex(Double_t eta) const;
   AliL3Histogram *GetHistogram(Int_t etaindex);
