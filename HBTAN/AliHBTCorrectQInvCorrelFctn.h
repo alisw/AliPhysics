@@ -90,6 +90,7 @@ class AliHBTCorrectQInvCorrelFctn: public AliHBTOnePairFctn1D, public AliHBTCorr
     
   protected:
     virtual void BuildHistos(Int_t nbins, Float_t max, Float_t min);
+    virtual void BuildHistos() {AliHBTFunction1D::BuildHistos();}
     Double_t GetValue(AliHBTPair * pair) const {return pair->GetQInv();}
     Double_t GetModelValue(Double_t qinv);
 

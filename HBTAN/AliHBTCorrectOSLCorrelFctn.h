@@ -51,6 +51,7 @@ class AliHBTCorrectOSLCorrelFctn: public AliHBTOnePairFctn3D, public AliHBTCorre
     void BuildHistos(Int_t nxbins, Float_t xmax, Float_t xmin,
                      Int_t nybins, Float_t ymax, Float_t ymin,
 	 Int_t nzbins, Float_t zmax, Float_t zmin);
+    virtual void BuildHistos() {AliHBTFunction3D::BuildHistos();}
 
     TH3F* fMeasCorrelFctn; //!Measured correlation function
     

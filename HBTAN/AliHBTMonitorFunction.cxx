@@ -100,10 +100,11 @@ AliHBTMonitorFunction::~AliHBTMonitorFunction()
  }
 /******************************************************************/
 
-void AliHBTMonitorFunction::Write()
+Int_t AliHBTMonitorFunction::Write(const char*,Int_t, Int_t)
  {
    //Writes an function to disk
    if (GetResult()) GetResult()->Write();
+   return 0;
  }
 /******************************************************************/
 

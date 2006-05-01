@@ -82,12 +82,13 @@ AliHBTMonPIDPurityVsPtFctn& AliHBTMonPIDPurityVsPtFctn::operator=
 }
 /******************************************************************/
 
-void AliHBTMonPIDPurityVsPtFctn::Write()
+Int_t AliHBTMonPIDPurityVsPtFctn::Write(const char*,Int_t, Int_t)
 {
 //Writes a fucntion results
  AliHBTMonitorFunction::Write();
  fGood->Write();
  fAll->Write();
+ return 0;
 }
 /******************************************************************/
 
@@ -267,12 +268,13 @@ AliHBTMonPIDContaminationVsPtFctn& AliHBTMonPIDContaminationVsPtFctn::operator=
 }
 /******************************************************************/
 
-void AliHBTMonPIDContaminationVsPtFctn::Write()
+Int_t AliHBTMonPIDContaminationVsPtFctn::Write(const char*,Int_t, Int_t)
 {
  //Writes the function results
  AliHBTMonitorFunction::Write();
  fWrong->Write();
  fAll->Write();
+ return 0;
 }
 /******************************************************************/
 

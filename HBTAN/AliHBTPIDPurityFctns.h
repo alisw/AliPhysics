@@ -32,7 +32,8 @@ class AliHBTMonPIDPurityVsPtFctn: public AliHBTMonTwoParticleFctn1D, public AliH
     AliHBTMonPIDPurityVsPtFctn& operator=(const AliHBTMonPIDPurityVsPtFctn& /*in*/);
     
     void Init();
-    void Write();
+    Int_t Write(const char* /*x1*/ = "",Int_t /*x2*/ = 0, Int_t /*x3*/ = 0);
+    Int_t Write(const char* x1 = "",Int_t x2 = 0, Int_t x3 = 0) const {return AliHBTMonTwoParticleFctn1D::Write(x1,x2,x3);}
     void Rename(const Char_t * name);
     void Rename(const Char_t * name, const Char_t * title);
     TH1* GetResult();
@@ -55,7 +56,8 @@ class AliHBTMonPIDContaminationVsPtFctn: public AliHBTMonTwoParticleFctn1D, publ
     AliHBTMonPIDContaminationVsPtFctn& operator=(const AliHBTMonPIDContaminationVsPtFctn& /*in*/);
 
     void Init();
-    void Write();
+    Int_t Write(const char* /*x1*/ = "",Int_t /*x2*/ = 0, Int_t /*x3*/ = 0);
+    Int_t Write(const char* x1 = "",Int_t x2 = 0, Int_t x3 = 0) const {return AliHBTMonTwoParticleFctn1D::Write(x1,x2,x3);}
     void Rename(const Char_t * name);
     void Rename(const Char_t * name, const Char_t * title);
     TH1* GetResult();

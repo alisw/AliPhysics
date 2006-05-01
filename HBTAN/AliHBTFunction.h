@@ -407,6 +407,7 @@ class AliHBTOnePairFctn1D: public AliHBTOnePairFctn, public AliHBTFunction1D
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
   Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
+  Int_t Write(const char* x1 = "",Int_t x2 = 0, Int_t x3 = 0) const {return TObject::Write(x1,x2,x3);}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
   
@@ -451,6 +452,7 @@ class AliHBTOnePairFctn2D: public AliHBTOnePairFctn, public AliHBTFunction2D
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
   Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
+  Int_t Write(const char* x1 = "",Int_t x2 = 0, Int_t x3 = 0) const {return TObject::Write(x1,x2,x3);}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
  protected:
@@ -495,6 +497,7 @@ class AliHBTOnePairFctn3D: public AliHBTOnePairFctn, public AliHBTFunction3D
   void ProcessSameEventParticles(AliHBTPair* pair);
   void ProcessDiffEventParticles(AliHBTPair* pair);
   Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
+  Int_t Write(const char* x1 = "",Int_t x2 = 0, Int_t x3 = 0) const {return TObject::Write(x1,x2,x3);}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
  protected:
@@ -532,6 +535,7 @@ class AliHBTTwoPairFctn1D: public AliHBTTwoPairFctn, public AliHBTFunction1D
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
+  Int_t Write(const char* x1 = "",Int_t x2 = 0, Int_t x3 = 0) const {return TObject::Write(x1,x2,x3);}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
   
@@ -577,6 +581,7 @@ class AliHBTTwoPairFctn2D: public AliHBTTwoPairFctn, public AliHBTFunction2D
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
+  Int_t Write(const char* x1 = "",Int_t x2 = 0, Int_t x3 = 0) const {return TObject::Write(x1,x2,x3);}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
 
@@ -624,6 +629,7 @@ class AliHBTTwoPairFctn3D: public AliHBTTwoPairFctn, public AliHBTFunction3D
   void ProcessSameEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   void ProcessDiffEventParticles(AliHBTPair* trackpair, AliHBTPair* partpair);
   Int_t Write(const char* /*x1*/ = 0,Int_t /*x2*/ = 0, Int_t /*x3*/ = 0){return WriteFunction();}
+  Int_t Write(const char* x1 = "",Int_t x2 = 0, Int_t x3 = 0) const {return TObject::Write(x1,x2,x3);}
   void Init(){InitFunction();}
   const char* Name(){return GetName();}
 

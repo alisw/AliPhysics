@@ -62,7 +62,7 @@ AliHBTasCorrFctn::~AliHBTasCorrFctn()
 }
 
 /******************************************************************/
-void AliHBTasCorrFctn::Write()
+Int_t AliHBTasCorrFctn::Write(const char*,Int_t, Int_t)
 {
 //out    
      Int_t i;
@@ -82,7 +82,7 @@ void AliHBTasCorrFctn::Write()
 	  den->Write();
 	  rat.Write();
      }
-
+     return 0;
 }
 
 //-------------------------------------
