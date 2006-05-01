@@ -32,7 +32,7 @@ CXXFLAGS       = $(OPT) -W -Wall -fPIC -pipe
 CXXFLAGSNO     = $(NOOPT) -W -Wall -fPIC -pipe
 else
 ifeq ($(CCMAJORV),3)
-CXXFLAGS       = $(OPT) -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
+CXXFLAGS       = $(OPT) -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux
 CXXFLAGSNO     = $(NOOPT) -W -Wall -Werror -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi
 else
 CXXFLAGS       = $(OPT) -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -ansi -Dlinux
