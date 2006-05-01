@@ -124,12 +124,12 @@ Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, Int_t accept){
   //
 
   Double_t angle2 = track->GetSnp()*track->GetSnp();
-  angle2 = TMath::Sqrt(angle2/(1-angle2)); 
   //
   //SET NEW Track Point
   //
-  //  if (debug)
+  if (angle2<1) //PH sometimes angle2 is very big. To be investigated...
   {
+    angle2 = TMath::Sqrt(angle2/(1-angle2)); 
     AliTPCTrackerPoint   &point =*(track->GetTrackPoint(track->fRow));
     //
     point.SetSigmaY(c->GetSigmaY2()/track->fCurrentSigmaY2);
