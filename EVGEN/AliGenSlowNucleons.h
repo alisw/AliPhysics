@@ -13,7 +13,8 @@
 #include "AliGenerator.h"
 class AliSlowNucleonModel;
 class TH2F;
-
+class TH1F;
+class TF1;
 
 class AliGenSlowNucleons : public AliGenerator
 {
@@ -43,9 +44,12 @@ public:
     virtual void   SetDebug(Int_t flag = 0) {fDebug = flag;}
     virtual void   SetNumbersOfSlowNucleons(Int_t ngp, Int_t ngn, Int_t nbp, Int_t nbn)
 	{fNgp = ngp; fNgn = ngn; fNbp = nbp; fNbn = nbn;}
+    //
+    // Added by Chiara to take into account angular distribution 4 gray tracks
+    virtual void   SetThetaDist(Int_t flag=0) {fThetaDistribution = flag;}
     
  protected:
-    void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q);
+    void     GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q, Float_t &theta);
     Double_t Maxwell(Double_t m, Double_t p, Double_t t);
     void     Lorentz(Double_t m, Double_t beta, Float_t* q);
     void Copy(TObject&) const;
@@ -70,10 +74,14 @@ public:
     Int_t    fDebug;           // Debug flag
     TH2F*    fDebugHist1;      // Histogram for debugging
     TH2F*    fDebugHist2;      // Histogram for debugging
+    // Added by Chiara to take into account angular distribution 4 gray tracks
+    Int_t    fThetaDistribution;// 0 -> flat dist., 1 -> fwd. peaked distribution
+    TH1F*    fCosThetaGrayHist; // Histogram for debugging
+    TF1*     fCosTheta;         // Function for non-uniform cos(theta) distribution
     
     //
     AliSlowNucleonModel* fSlowNucleonModel; // The slow nucleon model
-    ClassDef(AliGenSlowNucleons,1) // Slow Nucleon Generator
+    ClassDef(AliGenSlowNucleons,2) // Slow Nucleon Generator
 };
 #endif
 

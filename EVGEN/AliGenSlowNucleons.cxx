@@ -27,6 +27,8 @@
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
 #include <TH2F.h>
+#include <TH1F.h>
+#include <TF1.h>
 #include <TCanvas.h>
 
 #include "AliCollisionGeometry.h"
@@ -59,6 +61,7 @@ AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
     fDebug = 0;
 }
 
+//____________________________________________________________
 AliGenSlowNucleons::AliGenSlowNucleons(const AliGenSlowNucleons & sn):
     AliGenerator(sn)
 {
@@ -89,6 +92,15 @@ void AliGenSlowNucleons::Init()
     if (fDebug) {
 	fDebugHist1 = new TH2F("DebugHist1", "nu vs N_slow", 100, 0., 100., 20, 0., 20.);
 	fDebugHist2 = new TH2F("DebugHist2", "b  vs N_slow", 100, 0., 100., 15, 0., 15.);
+    	fCosThetaGrayHist = new TH1F("fCosThetaGrayHist", "Gray particles angle", 100, -1., 1.);
+    }
+    //
+    // non-uniform cos(theta) distribution
+    //
+    if(fThetaDistribution != 0) {
+	fCosTheta = new TF1("fCosTheta",
+			    "(2./3.14159265358979312)/(exp(2./3.14159265358979312)-exp(-2./3.14159265358979312))*exp(2.*x/3.14159265358979312)",
+			    -1., 1.);
     }
 }
 
@@ -103,6 +115,8 @@ void AliGenSlowNucleons::FinishRun()
 	fDebugHist1->Draw();
 	c->cd(2);
 	fDebugHist2->Draw();
+	c->cd(3);
+	fCosThetaGrayHist->Draw();
     }
 }
 
@@ -133,7 +147,7 @@ void AliGenSlowNucleons::Generate()
     }     
 
    //
-    Float_t p[3];
+    Float_t p[3], theta=0;
     Float_t origin[3] = {0., 0., 0.};
     Float_t polar [3] = {0., 0., 0.};    
     Int_t nt, i, j;
@@ -149,7 +163,8 @@ void AliGenSlowNucleons::Generate()
     fCharge = 1;
     kf = kProton;    
     for(i = 0; i < fNgp; i++) {
-	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p);
+	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
+	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
 	KeepTrack(nt);
@@ -160,7 +175,8 @@ void AliGenSlowNucleons::Generate()
     fCharge = 0;
     kf = kNeutron;    
     for(i = 0; i < fNgn; i++) {
-	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p);
+	GenerateSlow(fCharge, fTemperatureG, fBetaSourceG, p, theta);
+	if (fDebug) fCosThetaGrayHist->Fill(TMath::Cos(theta));
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
 	KeepTrack(nt);
@@ -171,7 +187,7 @@ void AliGenSlowNucleons::Generate()
     fCharge = 1;
     kf = kProton;    
     for(i = 0; i < fNbp; i++) {
-	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p);
+	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
 	KeepTrack(nt);
@@ -182,7 +198,7 @@ void AliGenSlowNucleons::Generate()
     fCharge = 0;
     kf = kNeutron;    
     for(i = 0; i < fNbn; i++) {
-	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p);
+	GenerateSlow(fCharge, fTemperatureB, fBetaSourceB, p, theta);
 	PushTrack(fTrackIt, -1, kf, p, origin, polar,
 		 0., kPNoProcess, nt, 1.);
 	KeepTrack(nt);
@@ -192,7 +208,8 @@ void AliGenSlowNucleons::Generate()
 
 
 
-void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T, Double_t beta, Float_t* q)
+void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T, 
+	Double_t beta, Float_t* q, Float_t &theta)
 
 {
 /* 
@@ -201,7 +218,7 @@ void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T, Double_t beta, F
    Three-momentum [GeV/c] is given back in q[3]    
 */
 
- Double_t m, pmax, p, f, theta, phi;
+ Double_t m, pmax, p, f, phi;
  TDatabasePDG * pdg = TDatabasePDG::Instance();
  const Double_t kMassProton  = pdg->GetParticle(kProton) ->Mass();
  const Double_t kMassNeutron = pdg->GetParticle(kNeutron)->Mass();
@@ -225,8 +242,14 @@ void AliGenSlowNucleons::GenerateSlow(Int_t charge, Double_t T, Double_t beta, F
  }
  while(f < Rndm());
 
- /* Spherical symmetric emission */
- theta = TMath::ACos(2. * Rndm() - 1.);
+ /* Spherical symmetric emission for black particles (beta=0)*/
+ if(beta==0 || fThetaDistribution==0) theta = TMath::ACos(2. * Rndm() - 1.);
+ /* cos theta distributed according to experimental results for gray particles (beta=0.05)*/
+ else if(fThetaDistribution!=0){
+   Double_t costheta = fCosTheta->GetRandom();
+   theta = TMath::ACos(costheta);
+ }
+ //
  phi   = 2. * TMath::Pi() * Rndm();
 
  /* Determine momentum components in system of the moving source */
