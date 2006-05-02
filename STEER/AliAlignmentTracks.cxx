@@ -229,6 +229,10 @@ void AliAlignmentTracks::BuildIndex()
 
   fIsIndexBuilt = kTRUE;
 
+  // Dummy object is created in order
+  // to initialize the volume paths
+  AliAlignObjAngles alobj;
+
   TFile *fPointsFile = TFile::Open(fPointsFilename);
   if (!fPointsFile || !fPointsFile->IsOpen()) {
     AliWarning(Form("Can't open %s !",fPointsFilename.Data()));
@@ -251,6 +255,8 @@ void AliAlignmentTracks::BuildIndex()
       if (!array) continue;
       for (Int_t ipoint = 0; ipoint < array->GetNPoints(); ipoint++) {
 	UShort_t volId = array->GetVolumeID()[ipoint];
+	// check if the volId is valid
+	if (!AliAlignObj::GetVolPath(volId)) continue;
 	Int_t modId;
 	Int_t layerId = AliAlignObj::VolUIDToLayer(volId,modId)
 	              - AliAlignObj::kFirstLayer;
@@ -487,8 +493,9 @@ void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *voli
     minimizer->InitAlignObj();
     AliTrackFitter *fitter = CreateFitter();
     for (Int_t iArray = 0; iArray < nArrays; iArray++) {
+      if (!points[iArray]) continue;
       fitter->SetTrackPointArray(points[iArray], kFALSE);
-      fitter->Fit(volids,volidsfit,layerRangeMin,layerRangeMax);
+      if (fitter->Fit(volids,volidsfit,layerRangeMin,layerRangeMax) == kFALSE) continue;
       AliTrackPointArray *pVolId,*pTrack;
       fitter->GetTrackResiduals(pVolId,pTrack);
       minimizer->AddTrackPointArrays(pVolId,pTrack);
@@ -595,6 +602,8 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
 	array->GetPoint(p,iPoint);
 	Int_t modnum;
 	AliAlignObj::ELayerID layer = AliAlignObj::VolUIDToLayer(p.GetVolumeID(),modnum);
+	// check if the layer id is valid
+	if (layer == AliAlignObj::kInvalidLayer) continue;
 
 	// Misalignment is introduced here
 	// Switch it off in case of real

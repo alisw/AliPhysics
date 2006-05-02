@@ -24,6 +24,7 @@
 
 #include "AliTrackFitter.h"
 #include "AliTrackPointArray.h"
+#include "AliLog.h"
 
 ClassImp(AliTrackFitter)
 
@@ -114,7 +115,12 @@ void AliTrackFitter::SetTrackPointArray(AliTrackPointArray *array, Bool_t owner)
   // Load space points from array
   // By default we don't copy them but
   // just put the pointers to them
-  if (!array) return;
+  if (!array) {
+    AliWarning("Invalid pointer to the space-points array !");
+    if (fIsOwner) delete fPoints;
+    fPoints = NULL;
+    return;
+  }
 
   Reset();
 
