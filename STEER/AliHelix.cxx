@@ -54,13 +54,20 @@ AliHelix::AliHelix(const AliKalmanTrack &t)
   alpha=t.GetAlpha();
   //
   //circle parameters
+  //PH Sometimes fP4 and fHelix[4] are very big and the calculation
+  //PH of the Sqrt cannot be done. To be investigated...
   fHelix[4]=fHelix[4]/t.GetConvConst();    // C
   cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
 
   Double_t xc, yc, rc;
   rc  =  1/fHelix[4];
   xc  =  x-fHelix[2]*rc;
-  yc  =  fHelix[0]+TMath::Sqrt(1-(x-xc)*(x-xc)*fHelix[4]*fHelix[4])/fHelix[4];
+  Double_t dummy = 1-(x-xc)*(x-xc)*fHelix[4]*fHelix[4];
+  if (dummy<0) {
+    AliError(Form("The argument of the Sqrt is %f => set to 0\n",dummy));
+    dummy = 0;
+  }
+  yc  =  fHelix[0]+TMath::Sqrt(dummy)/fHelix[4];
   
   fHelix[6] = xc*cs - yc*sn;
   fHelix[7] = xc*sn + yc*cs;
@@ -92,13 +99,20 @@ AliHelix::AliHelix(const AliExternalTrackParam &t)
   alpha=t.GetAlpha();
   //
   //circle parameters
+  //PH Sometimes fP4 and fHelix[4] are very big and the calculation
+  //PH of the Sqrt cannot be done. To be investigated...
   fHelix[4]=fHelix[4]/AliKalmanTrack::GetConvConst();    // C
   cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
 
   Double_t xc, yc, rc;
   rc  =  1/fHelix[4];
   xc  =  x-fHelix[2]*rc;
-  yc  =  fHelix[0]+TMath::Sqrt(1-(x-xc)*(x-xc)*fHelix[4]*fHelix[4])/fHelix[4];
+  Double_t dummy = 1-(x-xc)*(x-xc)*fHelix[4]*fHelix[4];
+  if (dummy<0) {
+    AliError(Form("The argument of the Sqrt is %f => set to 0\n",dummy));
+    dummy = 0;
+  }
+  yc  =  fHelix[0]+TMath::Sqrt(dummy)/fHelix[4];
   
   fHelix[6] = xc*cs - yc*sn;
   fHelix[7] = xc*sn + yc*cs;
