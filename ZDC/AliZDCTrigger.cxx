@@ -63,8 +63,8 @@ void AliZDCTrigger::CreateInputs()
    if( fInputs.GetEntriesFast() > 0 ) return;
    
    fInputs.AddLast(new AliTriggerInput("ZDC_1_L1",   "ZDC Minimum Bias", 0x01));
-   fInputs.AddLast(new AliTriggerInput("ZDC_2_L1",   "ZDC Central", 0x02));
-   fInputs.AddLast(new AliTriggerInput("ZDC_3_L1",   "ZDC Semi-central", 0x04));
+   fInputs.AddLast(new AliTriggerInput("ZDC_2_L1",   "ZDC Semi-central", 0x02));
+   fInputs.AddLast(new AliTriggerInput("ZDC_3_L1",   "ZDC Central", 0x04));
    fInputs.AddLast(new AliTriggerInput("ZDC_EMD_L1", "ZDC EMD events", 0x08));
 }
 
@@ -116,27 +116,27 @@ void AliZDCTrigger::Trigger()
 	  }
    }
    // *******************************************************************
-   if(signalZNLeft[0]>fZDCLeftEMDCuts[0] && signalZNLeft[0]<fZDCLeftEMDCuts[1] && 
-      signalZNRight[0]>fZDCRightEMDCuts[0] && signalZNRight[0]<fZDCRightEMDCuts[1] &&
-      signalZEMSum[1]<fZEMMinCut){ // *** 1n EMD trigger
-        SetInput("ZDC_EMD_L1");
-   }
-   // *******************************************************************
    if(signalZDCLeftSum[1]>fZDCLeftMBCut && signalZDCRightSum[1]>fZDCRightMBCut) 
        // *** ZDC minimum bias trigger
        SetInput("ZDC_1_L1");
-   // *******************************************************************
-   if(signalZDCLeftSum[1]>fZDCLeftMinCut && signalZDCLeftSum[1]<fZDCLeftCentrCut &&
-      signalZDCRightSum[1]>fZDCRightMinCut && signalZDCRightSum[1]<fZDCRightCentrCut &&
-      signalZEMSum[1]>fZEMCentrCut) 
-       // *** ZDC central (0-10%)
-       SetInput("ZDC_2_L1");
    // *******************************************************************
    if(signalZDCLeftSum[1]>fZDCLeftCentrCut && signalZDCLeftSum[1]<fZDCLeftSemiCentrCut &&
       signalZDCRightSum[1]>fZDCRightCentrCut && signalZDCRightSum[1]<fZDCRightSemiCentrCut
       && signalZEMSum[1]>fZEMCentrCut) 
        // *** ZDC semi-central (10-40%)
+       SetInput("ZDC_2_L1");
+   // *******************************************************************
+   if(signalZDCLeftSum[1]>fZDCLeftMinCut && signalZDCLeftSum[1]<fZDCLeftCentrCut &&
+      signalZDCRightSum[1]>fZDCRightMinCut && signalZDCRightSum[1]<fZDCRightCentrCut &&
+      signalZEMSum[1]>fZEMCentrCut) 
+       // *** ZDC central (0-10%)
        SetInput("ZDC_3_L1");
+   // *******************************************************************
+   if(signalZNLeft[0]>fZDCLeftEMDCuts[0] && signalZNLeft[0]<fZDCLeftEMDCuts[1] && 
+      signalZNRight[0]>fZDCRightEMDCuts[0] && signalZNRight[0]<fZDCRightEMDCuts[1] &&
+      signalZEMSum[1]<fZEMMinCut){ // *** 1n EMD trigger
+        SetInput("ZDC_EMD_L1");
+   }
    
 }
 
