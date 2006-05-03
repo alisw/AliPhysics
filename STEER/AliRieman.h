@@ -36,11 +36,12 @@ class AliRieman : public TObject{
   Double_t GetZat(Double_t x) const; 
   Double_t GetDYat(Double_t x) const;
   Double_t GetDZat(Double_t x) const;
+  Bool_t   GetXYZat(Double_t r, Double_t alpha, Float_t *xyz) const;
   //
+  Bool_t   IsValid(){ return fConv;}
   Double_t GetChi2Y() const { return fChi2Y;}
   Double_t GetChi2Z() const { return fChi2Z;}
   Double_t GetChi2() const  { return fChi2; }
-
   Double_t CalcChi2Y() const;  
   Double_t CalcChi2Z() const;
   Double_t CalcChi2() const;
@@ -59,6 +60,7 @@ class AliRieman : public TObject{
   TMatrixDSym  *fCovar;     //Covariance
   Double_t      fSumXY[9];  //sums for XY part
   Double_t      fSumXZ[9];  //sums for XZ part
+  Double_t      fSumZZ;     //sums of Z2 
   Double_t      fChi2;      //sums of chi2
   Double_t      fChi2Y;     //sums of chi2 for y coord
   Double_t      fChi2Z;     //sums of chi2 foz z coord 

@@ -57,7 +57,7 @@ AliRieman::AliRieman(){
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
-
+  fSumZZ = 0;
   fCapacity = 0;
   fN =0;
   fX  = 0;
@@ -80,7 +80,7 @@ AliRieman::AliRieman(Int_t capacity){
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
-
+  fSumZZ =0;
   fCapacity = capacity;
   fN =0;
   fX  = new Double_t[fCapacity];
@@ -102,6 +102,7 @@ AliRieman::AliRieman(const AliRieman &rieman):TObject(rieman){
   for (Int_t i=0;i<6;i++) fParams[i] = rieman.fParams[i];
   for (Int_t i=0;i<9;i++) fSumXY[i]  = rieman.fSumXY[i];
   for (Int_t i=0;i<9;i++) fSumXZ[i]  = rieman.fSumXZ[i];
+  fSumZZ    = rieman.fSumZZ;
   fCapacity = rieman.fN;
   fN =rieman.fN;
   fCovar = new TMatrixDSym(*(rieman.fCovar)); 
@@ -142,6 +143,7 @@ void AliRieman::Reset()
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
+  fSumZZ =0;
   fConv =kFALSE;
 }
 
@@ -194,10 +196,14 @@ void AliRieman::AddPoint(Double_t x, Double_t y, Double_t z, Double_t sy, Double
   //
   // XZ part
   //
-  weight = 1./sz;
+  weight = 1./(sz*sz);
   fSumXZ[0] +=weight;
-  fSumXZ[1] +=weight*x;   fSumXZ[2] +=weight*x*x; fSumXZ[3] +=weight*x*x*x; fSumXZ[4] += weight*x*x*x*x;
-  fSumXZ[5] +=weight*z;   fSumXZ[6] +=weight*x*z; fSumXZ[7] +=weight*x*x*z;
+  Double_t r = TMath::Sqrt(x*x+y*y);
+  fSumXZ[1] +=weight*r;   fSumXZ[2] +=weight*r*r; fSumXZ[3] +=weight*z; fSumXZ[4] += weight*r*z;
+  // Now the auxulary sums
+  fSumXZ[5] +=weight*r*r*r/24; fSumXZ[6] +=weight*r*r*r*r/12; fSumXZ[7] +=weight*r*r*r*z/24;
+  fSumXZ[8] +=weight*r*r*r*r*r*r/(24*24);
+  fSumZZ += z*z*weight;
   //
   fN++;
 }
@@ -242,26 +248,29 @@ void AliRieman::UpdatePol(){
   //
   // XZ part
   //
-  TMatrixDSym     smatrixz(3);
-  smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = fSumXZ[1]; smatrixz(0,2) = fSumXZ[2];
-  smatrixz(1,1) = fSumXZ[2]; smatrixz(1,2) = fSumXZ[3];
-  smatrixz(2,2) = fSumXZ[4];
+  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  fSumXZ[1] += fSumXZ[5]*Rm1*Rm1;
+  fSumXZ[2] += fSumXZ[6]*Rm1*Rm1 + fSumXZ[8]*Rm1*Rm1*Rm1*Rm1;
+  fSumXZ[4] += fSumXZ[7]*Rm1*Rm1;
+  
+  TMatrixDSym     smatrixz(2);
+  smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = fSumXZ[1]; smatrixz(1,1) = fSumXZ[2];
+  smatrixz(1,0) = fSumXZ[1];
   smatrixz.Invert();
+  TMatrixD        sumsxz(1,2);
   if (smatrixz.IsValid()){
-    sums(0,0)    = fSumXZ[5];
-    sums(0,1)    = fSumXZ[6];
-    sums(0,2)    = fSumXZ[7];
-    TMatrixD res = sums*smatrixz;
+    sumsxz(0,0)    = fSumXZ[3];
+    sumsxz(0,1)    = fSumXZ[4];
+    TMatrixD res = sumsxz*smatrixz;
     fParams[3] = res(0,0);
     fParams[4] = res(0,1);
-    fParams[5] = res(0,2);
-    for (Int_t i=0;i<3;i++)
+    fParams[5] = 0;
+    for (Int_t i=0;i<2;i++)
       for (Int_t j=0;j<=i;j++){
-	(*fCovar)(i+2,j+2)=smatrixz(i,j);
-    }
+	(*fCovar)(i+3,j+3)=smatrixz(i,j);
+      }
     conv++;
   }
-
   //  (x-x0)^2+(y-y0)^2-R^2=0 ===>
   //
   //  (x^2+y^2 -2*x*x0 - 2*y*y0+ x0^2 -y0^2 -R^2 =0;  ==>
@@ -448,6 +457,39 @@ Double_t AliRieman::GetDZat(Double_t x) const {
   Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
   Double_t res = fParams[4]/TMath::Cos(TMath::ASin((x-x0)*rm1));
   return res;
+}
+
+
+//_____________________________________________________________________________
+Bool_t AliRieman::GetXYZat(Double_t r, Double_t alpha, Float_t *xyz) const
+{
+  //
+  // Returns position given radius
+  //
+  if (!fConv) return kFALSE;
+  Double_t res2 = (r*fParams[0]+fParams[1]);
+  res2*=res2;
+  res2 = 1.-fParams[2]*fParams[0]+fParams[1]*fParams[1]-res2;
+  if (res2<0) return kFALSE;
+  res2 = TMath::Sqrt(res2);
+  res2 = (1-res2)/fParams[0];
+
+  if (!fConv) return kFALSE;
+  Double_t x0 = -fParams[1]/fParams[0];
+  if (-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1<=0) return 0;
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  Double_t phi  = TMath::ASin((r-x0)*rm1);
+  Double_t phi0 = TMath::ASin((0.-x0)*rm1);
+  Double_t dphi = (phi-phi0);
+  Double_t res = fParams[3]+fParams[4]*dphi/rm1;
+
+  Double_t sin = TMath::Sin(alpha);
+  Double_t cos = TMath::Cos(alpha);
+  xyz[0] = r*cos - res2*sin;
+  xyz[1] = res2*cos + r*sin;
+  xyz[2] = res;
+
+  return kTRUE;
 }
 
 

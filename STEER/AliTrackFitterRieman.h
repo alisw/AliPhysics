@@ -15,6 +15,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "AliTrackFitter.h"
+#include "AliRieman.h"  
+class TTreeSRedirector;
+class AliRieman;
 
 class AliTrackFitterRieman : public AliTrackFitter{
  public:
@@ -22,7 +25,7 @@ class AliTrackFitterRieman : public AliTrackFitter{
   AliTrackFitterRieman(AliTrackPointArray *array, Bool_t owner = kTRUE);
   AliTrackFitterRieman(const AliTrackFitterRieman &rieman);
   AliTrackFitterRieman &operator =(const AliTrackFitterRieman& rieman);
-  virtual ~AliTrackFitterRieman() {}
+  virtual ~AliTrackFitterRieman();
 
   Bool_t Fit(const TArrayI *volIds,const TArrayI *volIdsFit = 0x0,
 	     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
@@ -34,29 +37,20 @@ class AliTrackFitterRieman : public AliTrackFitter{
   void Update();
 
   Double_t GetC() const; 
-  Double_t GetYat(Double_t x) const;
-  Double_t GetZat(Double_t x) const;
-  Double_t GetDYat(Double_t x) const;
-  Double_t GetDZat(Double_t x) const;
-  Bool_t   GetXYZat(Double_t r, Float_t *xyz) const;
-
+  Double_t GetYat(Double_t x) const  {return fRieman->GetYat(x);}
+  Double_t GetZat(Double_t x) const  {return fRieman->GetZat(x);}
+  Double_t GetDYat(Double_t x) const {return fRieman->GetDYat(x);}
+  Double_t GetDZat(Double_t x) const {return fRieman->GetDZat(x);}
+  Bool_t   GetXYZat(Double_t r, Float_t *xyz) const {return fRieman->GetXYZat(r, fAlpha,xyz);}
+  AliRieman *GetRieman() const {return fRieman;}
  protected:
 
   Double_t      fAlpha;     //angle to transform to the fitting coordinate system
-  Double_t      fSumXY[9];  //sums for XY part
-  Double_t      fSumYY;     //sum for YY part
-  Double_t      fSumXZ[9];  //sums for XZ part
-  Double_t      fSumZZ;     //sum for ZZ part
   Int_t         fNUsed;     //actual number of space-points used in the fit
-  Bool_t        fConv;      // indicates convergation
-  Float_t      *fX;         // Array of x coordinates
-  Float_t      *fY;         // Array of y coordinates
-  Float_t      *fZ;         // Array of z coordinates
-  Float_t      *fSy;        // Array of errors on y coordinate
-  Float_t      *fSz;        // Array of errors on z coordinate
-
+  Bool_t        fConv;      //indicates convergation
+  AliRieman    *fRieman;    // rieman fitter
  private:
-
+  TTreeSRedirector *fDebugStream;   //!debug streamer
   ClassDef(AliTrackFitterRieman,1)  // Fast fit of helices on ITS RecPoints
 
 };
