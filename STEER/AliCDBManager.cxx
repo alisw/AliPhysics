@@ -424,6 +424,15 @@ TList* AliCDBManager::GetAll(const AliCDBPath& path, Int_t runNumber,
 	Int_t version, Int_t subVersion) {
 // get multiple AliCDBEntry objects from the database
 
+	if(runNumber < 0){
+		// RunNumber is not specified. Try with fRun
+  		if (fRun < 0){
+   	 		AliError("Run number neither specified in query nor set in AliCDBManager! Use AliCDBManager::SetRun.");
+    			return NULL;
+  		}
+		runNumber = fRun;
+	}
+
 	return GetAll(AliCDBId(path, runNumber, runNumber, version, 	
 			subVersion));
 }
@@ -452,8 +461,9 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
                 return NULL;
         }
 
-	if(query.GetPath().BeginsWith('*')){
-                AliError("Query too generic in this context!");
+	if((fSpecificStorages.GetEntries()>0) && query.GetPath().BeginsWith('*')){
+                // if specific storages are active a query with "*" is ambiguous
+		AliError("Query too generic in this context!");
                 return NULL;		
 	}
 
