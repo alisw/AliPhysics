@@ -98,33 +98,28 @@ void AliDIPOv2::CreateSpectrometerDipole()
   //       DIPOLE MAGNET 
   const Float_t kZDipole = 975; 
 
-  tpar[0] = 0.; 
-  tpar[1] = 360.;
-  tpar[2] = 5.; 
+  tpar[ 0] = 0.; 
+  tpar[ 1] = 360.;
+  tpar[ 2] = 4.; 
   //
-  tpar[3] = -250.55+kZDipole;
-  tpar[4] = 30.1;
-  tpar[5] = 527.34; 
+  tpar[ 3] = -250.55 + kZDipole;
+  tpar[ 4] =  30.1;
+  tpar[ 5] = 527.34; 
   //
-  tpar[6] = -160.7+kZDipole;
-  tpar[7] = 30.1;
-  tpar[8] = 527.34; 
+  tpar[ 6] = 37. + kZDipole;
+  tpar[ 7] =  30.1;
+  tpar[ 8] = 527.34;
   //
-  tpar[9] = 35.+kZDipole;
-  tpar[10] = 30.1;
+  tpar[ 9] = 37. + kZDipole;
+  tpar[10] = tpar[ 9] * TMath::Tan(2. * TMath::Pi() / 180.);
   tpar[11] = 527.34;
-
-  tpar[12] = 150.8+kZDipole;
-  tpar[13] = 182.4;
-  tpar[14] = 527.34;
   //
-  tpar[15] = 260.55+kZDipole;
-  tpar[16] = 182.4;
-  tpar[17] = 527.34;
-
-
-  gMC->Gsvolu("DDIP", "PCON", idtmed[1814], tpar, 18);  
-  //       COILS 
+  tpar[12] = 260.55 + kZDipole;
+  tpar[13] = tpar[12] * TMath::Tan(2. * TMath::Pi() / 180.);
+  tpar[14] = 527.34;
+  gMC->Gsvolu("DDIP", "PCON", idtmed[1814], tpar, 15);
+  //
+  //       Coils 
   // air - m.f. 
   cpar[0] = 207.;
   cpar[1] = 274.;
