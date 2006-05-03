@@ -484,7 +484,7 @@ void AliZDCv2::CreateBeamLine()
   tubpar[0] = 4.5;
   tubpar[1] = 55.;
   tubpar[2] = 170./2.;
-  gMC->Gsvolu("YMBX", "TUBE", idtmed[7], tubpar, 3);
+  gMC->Gsvolu("YMBX", "TUBE", idtmed[13], tubpar, 3);
 
   gMC->Gspos("MBXW", 1, "ZDC ", 0., 0., -tubpar[2]-zc, 0, "ONLY");
   gMC->Gspos("YMBX", 1, "ZDC ", 0., 0., -tubpar[2]-zc, 0, "ONLY");
@@ -947,6 +947,7 @@ void AliZDCv2::CreateMaterials()
   // --- Iron (no energy loss)
   ubuf[0] = 1.1;
   AliMaterial(8, "IRON1", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
+  AliMaterial(13, "IRON2", 55.85, 26., 7.87, 1.76, 0., ubuf, 1);
   
   // ---------------------------------------------------------  
   Float_t aResGas[3]={1.008,12.0107,15.9994};
@@ -1012,7 +1013,8 @@ void AliZDCv2::CreateMaterials()
   AliMedium(10,"ZVOID",10, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(12,"ZAIR", 12, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   //
-  AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(11,"ZVOIM", 11, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(13,"ZIRONE",13, isvol, ifield, fieldm, tmaxfd, stemax, deemax, epsil, stmin);
   
   // Thresholds for showering in the ZDCs 
   i = 1; //tantalum
@@ -1049,6 +1051,12 @@ void AliZDCv2::CreateMaterials()
   i = 8; //iron with energy loss (ZIRONN)
   gMC->Gstpar(idtmed[i], "CUTGAM", .1);
   gMC->Gstpar(idtmed[i], "CUTELE", .1);
+  gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
+  gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
+  // Avoid too detailed showering along the beam line 
+  i = 13; //iron with energy loss (ZIRONN)
+  gMC->Gstpar(idtmed[i], "CUTGAM", 1.);
+  gMC->Gstpar(idtmed[i], "CUTELE", 1.);
   gMC->Gstpar(idtmed[i], "CUTNEU", 1.);
   gMC->Gstpar(idtmed[i], "CUTHAD", 1.);
   
@@ -1213,15 +1221,15 @@ void AliZDCv2::StepManager()
   
   // --- This part is for no shower developement in beam pipe and TDI
   // If particle interacts with beam pipe or TDI -> return
-  if((gMC->CurrentMedium() == fMedSensPI) || (gMC->CurrentMedium() == fMedSensTDI)){ 
+  if((gMC->GetMedium() == fMedSensPI) || (gMC->GetMedium() == fMedSensTDI)){ 
   // If option NoShower is set -> StopTrack
     if(fNoShower==1) {
-      if(gMC->CurrentMedium() == fMedSensPI) {
+      if(gMC->GetMedium() == fMedSensPI) {
         knamed = gMC->CurrentVolName();
        if(!strncmp(knamed,"YMQ",3))  fpLostIT += 1;
         if(!strncmp(knamed,"YD1",3))   fpLostD1 += 1;
       }
-      else if(gMC->CurrentMedium() == fMedSensTDI){ // NB->Cu = TDI or D1 vacuum chamber
+      else if(gMC->GetMedium() == fMedSensTDI){ // NB->Cu = TDI or D1 vacuum chamber
         knamed = gMC->CurrentVolName();
         if(!strncmp(knamed,"MD1",3)) fpLostD1 += 1;
         if(!strncmp(knamed,"QTD",3)) fpLostTDI += 1;
@@ -1234,9 +1242,9 @@ void AliZDCv2::StepManager()
     return;
   }
 
-  if((gMC->CurrentMedium() == fMedSensZN) || (gMC->CurrentMedium() == fMedSensZP) ||
-     (gMC->CurrentMedium() == fMedSensGR) || (gMC->CurrentMedium() == fMedSensF1) ||
-     (gMC->CurrentMedium() == fMedSensF2) || (gMC->CurrentMedium() == fMedSensZEM)){
+  if((gMC->GetMedium() == fMedSensZN) || (gMC->GetMedium() == fMedSensZP) ||
+     (gMC->GetMedium() == fMedSensGR) || (gMC->GetMedium() == fMedSensF1) ||
+     (gMC->GetMedium() == fMedSensF2) || (gMC->GetMedium() == fMedSensZEM)){
 
   
   //Particle coordinates 
@@ -1353,7 +1361,7 @@ void AliZDCv2::StepManager()
 
 
   // *** Light production in fibres 
-  if((gMC->CurrentMedium() == fMedSensF1) || (gMC->CurrentMedium() == fMedSensF2)){
+  if((gMC->GetMedium() == fMedSensF1) || (gMC->GetMedium() == fMedSensF2)){
 
      //Select charged particles
      if((destep=gMC->Edep())){
@@ -1411,7 +1419,7 @@ void AliZDCv2::StepManager()
 	 // Ch. debug
          //if(ibeta==3) printf("\t %f \t %f \t %f\n",alfa, be, out);
 	 //printf("\t ibeta = %d, ialfa = %d, ibe = %d -> nphe = %d\n\n",ibeta,ialfa,ibe,nphe);
-	 if(gMC->CurrentMedium() == fMedSensF1){
+	 if(gMC->GetMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;
@@ -1428,7 +1436,7 @@ void AliZDCv2::StepManager()
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
 	 nphe = gRandom->Poisson(out);
-	 if(gMC->CurrentMedium() == fMedSensF1){
+	 if(gMC->GetMedium() == fMedSensF1){
 	   hits[7] = nphe;  	//fLightPMQ
 	   hits[8] = 0;
 	   hits[9] = 0;
