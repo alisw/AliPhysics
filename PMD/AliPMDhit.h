@@ -27,14 +27,14 @@ class AliPMDhit : public AliHit {
     return *this;
   }
   virtual void Print(Option_t *) const {
-    printf("PMD Cell %d %d %d %d\n   Primary %d -   Energy %f\n",
-	   fVolume[0],fVolume[1],fVolume[2],fVolume[3],fTrack,fEnergy);
+    printf("PMD Cell %d %d %d %d %d %d\n   Primary %d -   Energy %f\n",
+	   fVolume[0],fVolume[1],fVolume[2],fVolume[3],fVolume[7],fVolume[8],fTrack,fEnergy);
   }
   
  protected:
-  Int_t      fVolume[8];  //array of volumes
+  Int_t      fVolume[10];  //array of volumes
   Float_t    fEnergy;     //Total energy deposited in eV
   
-  ClassDef(AliPMDhit,2)  //Hits object for set:PMD
+  ClassDef(AliPMDhit,3)  //Hits object for set:PMD
 };
 #endif

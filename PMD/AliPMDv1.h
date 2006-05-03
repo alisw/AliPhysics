@@ -39,7 +39,7 @@ private:
   static const Float_t fgkCellRadius;    // Radius of a hexagonal cell
   static const Float_t fgkCellWall;      // Thickness of cell Wall
   static const Float_t fgkCellDepth;     // Gas thickness
-  static const Float_t fgkBoundary;      // Thickness of Boundary wall
+  static const Float_t fgkThBKP;      // Thickness of Back plane
   static const Float_t fgkThBase;        // Thickness of Base plate
   static const Float_t fgkThAir;         // Thickness of Air
   static const Float_t fgkThPCB;         // Thickness of PCB
@@ -49,8 +49,13 @@ private:
   static const Float_t fgkZdist;         // z-position of the detector
   static const Float_t fgkSqroot3;       // Square Root of 3
   static const Float_t fgkSqroot3by2;    // Square Root of 3 by 2
+  static const Float_t fgkSSBoundary;
+  static const Float_t fgkThSS ;
+  static const Float_t fgkThG10 ;
+
 
   Float_t fSMthick;     // Thickness of the supermodule
+  Float_t fDthick;     // Thickness of the pre/veto module
   Float_t fSMLengthax;  // Supermodule length along X, type A
   Float_t fSMLengthay;  // Supermodule length along Y, type A
   Float_t fSMLengthbx;  // Supermodule length along X, type B
@@ -61,7 +66,7 @@ private:
   Float_t fDboxmm2[3];  // Master MODULE EMPB of aluminum for PMD
   Float_t fDboxmm22[3]; // Master MODULE EMCB of aluminum for CPV
  
-  ClassDef(AliPMDv1,1)     //Hits manager for set:PMD
+  ClassDef(AliPMDv1,2)     //Hits manager for set:PMD
 };
  
 #endif

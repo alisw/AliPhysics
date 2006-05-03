@@ -18,8 +18,6 @@ class AliPMDUtility
   AliPMDUtility(Float_t px, Float_t py, Float_t pz);
   virtual ~AliPMDUtility();
 
-  void HexGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
-		Float_t & xpos, Float_t & ypos);
   void RectGeomCellPos(Int_t ism, Int_t ium, 
 		       Int_t xpad, Int_t ypad,
 		       Float_t & xpos, Float_t & ypos);

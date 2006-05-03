@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Photon Multiplicity Detector Version 1                                   //
+//  Bedanga Mohanty : February 14th 2006
 //                                                                           //
 //Begin_Html
 /*
@@ -45,9 +46,9 @@ const Int_t   AliPMDv1::fgkNrowUM2    = 48;  // Number of rows in UM, type 2
 const Float_t AliPMDv1::fgkCellRadius = 0.25;     // Radius of a hexagonal cell
 const Float_t AliPMDv1::fgkCellWall   = 0.02;     // Thickness of cell Wall
 const Float_t AliPMDv1::fgkCellDepth  = 0.50;     // Gas thickness
-const Float_t AliPMDv1::fgkBoundary   = 0.7;      // Thickness of Boundary wall
-const Float_t AliPMDv1::fgkThBase     = 0.3;      // Thickness of Base plate
-const Float_t AliPMDv1::fgkThAir      = 0.1;      // Thickness of Air
+const Float_t AliPMDv1::fgkThBase     = 0.2;      // Thickness of Base plate
+const Float_t AliPMDv1::fgkThBKP      = 0.1;      // Thickness of Back plane
+const Float_t AliPMDv1::fgkThAir      = 1.03;      // Thickness of Air
 const Float_t AliPMDv1::fgkThPCB      = 0.16;     // Thickness of PCB
 const Float_t AliPMDv1::fgkThLead     = 1.5;      // Thickness of Pb
 const Float_t AliPMDv1::fgkThSteel    = 0.5;      // Thickness of Steel
@@ -55,7 +56,9 @@ const Float_t AliPMDv1::fgkGap        = 0.025;    // Air Gap
 const Float_t AliPMDv1::fgkZdist      = 361.5;    // z-position of the detector
 const Float_t AliPMDv1::fgkSqroot3    = 1.7320508;// Square Root of 3
 const Float_t AliPMDv1::fgkSqroot3by2 = 0.8660254;// Square Root of 3 by 2
-
+const Float_t AliPMDv1::fgkSSBoundary = 0.3;
+const Float_t AliPMDv1::fgkThSS       = 1.03;
+const Float_t AliPMDv1::fgkThG10      = 1.03;
 ClassImp(AliPMDv1)
  
   //_____________________________________________________________________________
@@ -102,7 +105,7 @@ void AliPMDv1::CreateSupermodule()
   // 2 types of unit modules are made EUM1 and EUM2 which contains these strips
   // placed repeatedly 
   // Each supermodule (ESMA, ESMB), made of G10 is filled with following 
-  //components. They have 9 unit moudles inside them
+  //components. They have 6 unit moudles inside them
   // ESMA, ESMB are placed in EPMD along with EMPB (Pb converter) 
   // and EMFE (iron support) 
 
@@ -117,6 +120,8 @@ void AliPMDv1::CreateSupermodule()
   AliMatrix(ihrotm, 90., 30.,   90.,  120., 0., 0.);
   AliMatrix(irotdm, 90., 180.,  90.,  270., 180., 0.);
  
+  // STEP - I
+  //******************************************************//
   // First create the sensitive medium of a hexagon cell (ECAR)
   // Inner hexagon filled with gas (Ar+CO2)
   
@@ -128,7 +133,10 @@ void AliPMDv1::CreateSupermodule()
   
   gMC->Gsvolu("ECAR", "PGON", idtmed[604], hexd2,10);
   gMC->Gsatt("ECAR", "SEEN", 0);
-  
+  //******************************************************//
+
+  // STEP - II
+  //******************************************************//
   // Place the sensitive medium inside a hexagon copper cell (ECCU)
   // Outer hexagon made of Copper
   
@@ -140,19 +148,23 @@ void AliPMDv1::CreateSupermodule()
 
   gMC->Gsvolu("ECCU", "PGON", idtmed[614], hexd1,10);
   gMC->Gsatt("ECCU", "SEEN", 0);
+  gMC->Gsatt("ECCU", "COLO", 4);
 
   // Place  inner hex (sensitive volume) inside outer hex (copper)
   
   gMC->Gspos("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY");
-  
+  //******************************************************//
+
+  // STEP - III
+  //******************************************************//
   // Now create Rectangular TWO strips (EST1, EST2) 
   // of 1 column and 48 or 96 cells length
 
   // volume for first strip EST1 made of AIR 
 
   Float_t dbox1[3];
-  dbox1[0] = fgkNcolUM1*fgkCellRadius;
-  dbox1[1] = fgkCellRadius/fgkSqroot3by2;
+  dbox1[0] = fgkCellRadius/fgkSqroot3by2;
+  dbox1[1] = fgkNrowUM1*fgkCellRadius;
   dbox1[2] = fgkCellDepth/2.;
   
   gMC->Gsvolu("EST1","BOX", idtmed[698], dbox1, 3);
@@ -160,115 +172,709 @@ void AliPMDv1::CreateSupermodule()
 
   // volume for second strip EST2 
 
+
   Float_t dbox2[3];
-  dbox2[0] = fgkNcolUM2*fgkCellRadius;
-  dbox2[1] = dbox1[1];
+  dbox2[1] = fgkNrowUM2*fgkCellRadius;
+  dbox2[0] = dbox1[0];
   dbox2[2] = dbox1[2];
 
   gMC->Gsvolu("EST2","BOX", idtmed[698], dbox2, 3);
   gMC->Gsatt("EST2", "SEEN", 0);
 
   // Place hexagonal cells ECCU placed inside EST1 
-  yb = 0.; 
+  xb = 0.; 
   zb = 0.;
-  xb = -(dbox1[0]) + fgkCellRadius; 
-  for (i = 1; i <= fgkNcolUM1; ++i) 
+  yb = (dbox1[1]) - fgkCellRadius; 
+  for (i = 1; i <= fgkNrowUM1; ++i) 
     {
       number = i;
-      gMC->Gspos("ECCU", number, "EST1", xb,yb,zb, ihrotm, "ONLY");
-      xb += (fgkCellRadius*2.);
-    }
-  // Place hexagonal cells ECCU placed inside EST2 
-  yb = 0.; 
-  zb = 0.;
-  xb = -(dbox2[0]) + fgkCellRadius; 
-  for (i = 1; i <= fgkNcolUM2; ++i) 
-    {
-      number = i;
-      gMC->Gspos("ECCU", number, "EST2", xb,yb,zb, ihrotm, "ONLY");
-      xb += (fgkCellRadius*2.);
+      gMC->Gspos("ECCU", number, "EST1", xb,yb,zb, 0, "ONLY");
+      yb -= (fgkCellRadius*2.);
     }
 
-  // 2 types of rectangular shaped unit modules EUM1 and EUM2 (defined by BOX) 
+  // Place hexagonal cells ECCU placed inside EST2 
+  xb = 0.; 
+  zb = 0.;
+  yb = (dbox2[1]) - fgkCellRadius; 
+  for (i = 1; i <= fgkNrowUM2; ++i) 
+    {
+      number = i;
+      gMC->Gspos("ECCU", number, "EST2", xb,yb,zb, 0, "ONLY");
+      //PH      cout << "ECCU in EST2 ==> " << number << "\t"<<xb <<  "\t"<<yb <<endl;
+      yb -= (fgkCellRadius*2.);
+    }
+
+
+  //******************************************************//
+ 
+
+  // STEP - IV
+  //******************************************************//
+ // 2 types of rectangular shaped unit modules EUM1 and EUM2 (defined by BOX) 
+  //---------------------------------EHC1 Start----------------------//
+  // Create EHC1 : The honey combs for a unit module type 1
+  // First step is to create a honey comb unit module.
+  // This is named as EHC1, we will lay the EST1 strips of
+  // honey comb cells inside it.
   
-  // Create EUM1
-  
+  //Dimensions of EHC1
+  //X-dimension = Number of columns + cell radius
+  //Y-dimension = Number of rows * cell radius/sqrt3by2 - (some factor)
+  //Z-dimension = cell depth/2
+
   Float_t dbox3[3];
-  dbox3[0] = dbox1[0]+fgkCellRadius/2.;
-  dbox3[1] = (dbox1[1]*fgkNrowUM1)-(fgkCellRadius*fgkSqroot3*(fgkNrowUM1-1)/6.); 
+  dbox3[0] = (dbox1[0]*fgkNcolUM1)-(fgkCellRadius*fgkSqroot3*(fgkNcolUM1-1)/6.);   
+  dbox3[1] = dbox1[1]+fgkCellRadius/2.;
   dbox3[2] = fgkCellDepth/2.;
+
+  //Create a BOX, Material AIR
+  gMC->Gsvolu("EHC1","BOX", idtmed[698], dbox3, 3);
+  gMC->Gsatt("EHC1", "SEEN", 0);  
+  // Place rectangular strips EST1 inside EHC1 unit module
+  xb = dbox3[0]-dbox1[0];  
   
-  gMC->Gsvolu("EUM1","BOX", idtmed[698], dbox3, 3);
-  gMC->Gsatt("EUM1", "SEEN", 1);
-  
-  // Place rectangular strips EST1 inside EUM1 unit module
-  
-  yb = -dbox3[1]+dbox1[1];  
-  for (j = 1; j <= fgkNrowUM1; ++j)  
+  for (j = 1; j <= fgkNcolUM1; ++j)  
     {
       if(j%2 == 0)
 	{
-	  xb = fgkCellRadius/2.0;
+	  yb = -fgkCellRadius/2.0;
 	}
       else
 	{
-	  xb = -fgkCellRadius/2.0;
+	  yb = fgkCellRadius/2.0;
 	}
       number = j;
-      gMC->Gspos("EST1",number, "EUM1", xb, yb , 0. , 0, "MANY");
-      yb = (-dbox3[1]+dbox1[1])+j*1.0*fgkCellRadius*fgkSqroot3;
-    }
+      gMC->Gspos("EST1",number, "EHC1", xb, yb , 0. , 0, "MANY");
+      //The strips are being placed from top towards bottom of the module
+      //This is because the first cell in a module in hardware is the top
+      //left corner cell
+      xb = (dbox3[0]-dbox1[0])-j*fgkCellRadius*fgkSqroot3;
 
-  // Create EUM2
+    }
+  //--------------------EHC1 done----------------------------------//
+
+
+  //---------------------------------EHC2 Start----------------------//
+  // Create EHC2 : The honey combs for a unit module type 2
+  // First step is to create a honey comb unit module.
+  // This is named as EHC2, we will lay the EST2 strips of
+  // honey comb cells inside it.
+
+  //Dimensions of EHC2
+  //X-dimension = Number of columns + cell radius
+  //Y-dimension = Number of rows * cell radius/sqrt3by2 - (some factor)
+  //Z-dimension = cell depth/2
+
+  dbox3[0] = (dbox1[0]*fgkNcolUM1)-(fgkCellRadius*fgkSqroot3*(fgkNcolUM1-1)/6.);   
+  dbox3[1] = dbox1[1]+fgkCellRadius/2.;
+  dbox3[2] = fgkCellDepth/2.;
 
   Float_t dbox4[3];
-  dbox4[0] = dbox2[0] + fgkCellRadius/2.;
-  dbox4[1] =(dbox2[1]*fgkNrowUM2)-(fgkCellRadius*fgkSqroot3*(fgkNrowUM2-1)/6.); 
+
+  dbox4[0] =(dbox2[0]*fgkNcolUM2)-(fgkCellRadius*fgkSqroot3*(fgkNcolUM2-1)/6.); 
+  dbox4[1] = dbox2[1] + fgkCellRadius/2.;
   dbox4[2] = dbox3[2];
   
-  gMC->Gsvolu("EUM2","BOX", idtmed[698], dbox4, 3);
-  gMC->Gsatt("EUM2", "SEEN", 1);
+  //Create a BOX of AIR
+  gMC->Gsvolu("EHC2","BOX", idtmed[698], dbox4, 3);
+  gMC->Gsatt("EHC2", "SEEN", 0);
+
+  // Place rectangular strips EST2 inside EHC2 unit module
+  xb = dbox4[0]-dbox2[0]; 
+  for (j = 1; j <= fgkNcolUM2; ++j) 
+  {
+    if(j%2 == 0)
+  {
+    yb = -fgkCellRadius/2.0;
+  }
+    else
+  {
+    yb = +fgkCellRadius/2.0;
+  }
+    number = j;
+    gMC->Gspos("EST2",number, "EHC2", xb, yb , 0. ,0, "MANY");
+    xb = (dbox4[0]-dbox2[0])-j*fgkCellRadius*fgkSqroot3;
+  }
   
-  // Place rectangular strips EST2 inside EUM2 unit module
+
+  //--------------------EHC2 done----------------------------------//
+
+
+  // Now the job is to assmeble an Unit module
+  // It will have the following components
+  // (a) Base plate of G10 of 0.2 cm 
+  // (b) Air gap  of 0.05 cm 
+  // (c) Bottom PCB of 0.16 cm G10
+  // (d) Honey comb 0f 0.5 cm
+  // (e) Top PCB  of 0.16 cm G10
+  // (f) Air gap of 0.16 cm
+  // (g) Back Plane of 0.1 cm G10
+  // (h) Then all around then we have an air gap of 0.5mm
+  // (i) Then all around 0.5mm thick G10 insulation
+  // (h) Then all around Stainless Steel boundary channel 0.3 cm thick
+  //Let us first create them one by one
+  //---------------------------------------------------//
+
+  // ---------------- Lets do it first for UM Type A -----//
+
+ //--------------------------------------------------//
+  //Bottom and Top PCB : EPCA
+  //===========================
+  // Make a 1.6mm thick G10 Bottom and Top PCB for Unit module A
+  // X-dimension same as EHC1 - dbox3[0]
+  // Y-dimension same as EHC1 - dbox3[1]
+  // Z-dimension 0.16/2 = 0.08 cm
+  //-------------------------------------------------//
+  Float_t dboxPcbA[3];
+  dboxPcbA[0]      = dbox3[0]; 
+  dboxPcbA[1]      = dbox3[1];       
+  dboxPcbA[2]      = fgkThPCB/2.;
   
-  yb = -dbox4[1]+dbox2[1]; 
-  for (j = 1; j <= fgkNrowUM2; ++j) 
-    {
-      if(j%2 == 0)
-	{
-	  xb = fgkCellRadius/2.0;
-	}
-      else
-	{
-	  xb = -fgkCellRadius/2.0;
-	}
-      number = j;
-      gMC->Gspos("EST2",number, "EUM2", xb, yb , 0. , 0, "MANY");
-      yb = (-dbox4[1]+dbox2[1])+j*1.0*fgkCellRadius*fgkSqroot3;
-    }
+  //Top and Bottom PCB is a BOX of Material G10
+  gMC->Gsvolu("EPCA","BOX", idtmed[607], dboxPcbA, 3);
+  gMC->Gsatt("EPCA", "SEEN", 0);
+  //--------------------------------------------------------//  
+  //Back Plane : EBKA
+  //==================
+  // Make a 1.0mm thick Back Plane PCB for Unit module A
+  // X-dimension same as EHC1 - dbox3[0]
+  // Y-dimension same as EHC1 - dbox3[1]
+  // Z-dimension 0.1/2 = 0.05 cm
+  //------------------------------------------------------//
+  Float_t dboxBPlaneA[3];
+  dboxBPlaneA[0]   = dbox3[0]; 
+  dboxBPlaneA[1]   = dbox3[1];       
+  dboxBPlaneA[2]   = fgkThBKP/2.;
+  
+  //Back PLane PCB of MAterial G10
+  gMC->Gsvolu("EBKA","BOX", idtmed[607], dboxBPlaneA, 3);
+  gMC->Gsatt("EBKA", "SEEN", 0);
+  //-------------------------------------------------------------//  
+
+ //---------- That was all in the Z -direction of Unit Module A----//
+
+  //  Now lets us construct the boundary arround the Unit Module --//
+  // This boundary has 
+  // (a) 0.5 mm X and Y and 10.3 mm Z dimension  AIR gap
+  // (b) 0.5 mm X and Y and 10.3 mm Z dimension G10
+  // (c) 3.0 mm X and Y and 12.3 mm Z dimension Stainless Steel
+
+
+
+  //-------------------------------------------------//
+  //AIR GAP between UM and Boundary : ECGA FOR PRESHOWER PLANE
+  //==========================================================
+  // Make a 10.3mm thick Air gap for Unit module A
+  // X-dimension same as EHC1+0.05
+  // Y-dimension same as EHC1+0.05
+  // Z-dimension 1.03/2 = 0.515 cm
+  Float_t dboxAir3A[3];
+  dboxAir3A[0]         = dbox3[0]+(2.0*fgkGap); 
+  dboxAir3A[1]         = dbox3[1]+(2.0*fgkGap); 
+  dboxAir3A[2]         = fgkThAir/2.;
+
+  //FOR PRESHOWER
+  //Air gap is a BOX of Material Air
+  gMC->Gsvolu("ECGA","BOX", idtmed[698], dboxAir3A, 3);
+  gMC->Gsatt("ECGA", "SEEN", 0);
+
+  //FOR VETO
+  //Air gap is a BOX of Material Air
+  gMC->Gsvolu("ECVA","BOX", idtmed[698], dboxAir3A, 3);
+  gMC->Gsatt("ECVA", "SEEN", 0);
+  //-------------------------------------------------//  
+
+ //-------------------------------------------------//
+  //G10 boundary between honeycomb and SS : EDGA
+  //================================================
+  // Make a 10.3mm thick G10 Boundary for Unit module A
+  // X-dimension same as EHC1+Airgap+0.05
+  // Y-dimension same as EHC1+Airgap+0.05
+  // Z-dimension 1.03/2 = 0.515 cm
+  Float_t dboxGGA[3];
+  dboxGGA[0]         = dboxAir3A[0]+(2.0*fgkGap); 
+  dboxGGA[1]         = dboxAir3A[1]+(2.0*fgkGap); 
+  dboxGGA[2]         = fgkThG10/2.;
+
+  //FOR PRESHOWER
+  //G10 BOX 
+  gMC->Gsvolu("EDGA","BOX", idtmed[607], dboxGGA, 3);
+  gMC->Gsatt("EDGA", "SEEN", 0);
+
+  //FOR VETO
+  //G10 BOX 
+  gMC->Gsvolu("EDVA","BOX", idtmed[607], dboxGGA, 3);
+  gMC->Gsatt("EDVA", "SEEN", 0);
+
+  //-------------------------------------------------//  
+  //----------------------------------------------------------//
+  //Stainless Steel Bounadry : ESSA
+  //==================================
+  // Make a 10.3mm thick Stainless Steel boundary for Unit module A
+  // X-dimension same as EHC1 + Airgap + G10 + 0.3
+  // Y-dimension same as EHC1 + Airgap + G10 + 0.3
+  // Z-dimension 1.03/2 = 0.515 cm
+  //------------------------------------------------------//
+  // A Stainless Steel Boundary Channel to house the unit module
+  Float_t fDboxss1[3];
+  fDboxss1[0]           = dboxGGA[0]+fgkSSBoundary; 
+  fDboxss1[1]           = dboxGGA[1]+fgkSSBoundary;       
+  fDboxss1[2]           = fgkThSS/2.;
+  
+  //FOR PRESHOWER
+
+  //Stainless Steel boundary - Material Stainless Steel
+  gMC->Gsvolu("ESSA","BOX", idtmed[618], fDboxss1, 3);
+  gMC->Gsatt("ESSA", "SEEN", 0);
+
+  //FOR VETO
+  //Stainless Steel boundary - Material Stainless Steel
+  gMC->Gsvolu("ESVA","BOX", idtmed[618], fDboxss1, 3);
+  gMC->Gsatt("ESVA", "SEEN", 0);
+
+  //----------------------------------------------------------------//
+
+  //----------------------------------------------------------------//
+  // Here we need to place the volume in order ESSA -> EDGA -> ECGA 
+  // this makes the SS boundary and the 0.5mm thick FR4 insulation in place, 
+  // and the air volume ECGA acts as mother for the rest of components.
+  // The above placeemnt is done at (0.,0.,0.) relative coordiante 
+  // Now we place bottom PCB, honeycomb, top PCB in this volume. We donot place
+  // unnecessary air volumes now. Just leave the gap as we are placing them
+  // in  air only. This also reduces the number of volumes for geant to track.
+
+// Tree structure for different volumes
+//
+//				EUM1
+//				 |
+//			--------------------
+//			|        |         |
+//		      EBPA	ESSA	  EBKA
+//				 |
+//				EDGA
+//				 |
+//				ECGA
+//				 |
+//			--------------------
+//			|        |	   |
+//		      EPCA(1)   EHC1	 EPCA(2)
+//		     (bottom)	 |	(top PCB)
+//				 |
+//			    Sensitive volume
+//				(gas)
+//	
+
+
+  //FOR VETO
+//Creating the side channels 
+// SS boundary channel, followed by G10 and Air Gap  
+  gMC->Gspos("EDVA", 1, "ESVA", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ECVA", 1, "EDVA", 0., 0., 0., 0, "ONLY");
+
+//FOR PRESHOWER
+  gMC->Gspos("EDGA", 1, "ESSA", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ECGA", 1, "EDGA", 0., 0., 0., 0, "ONLY");
+
+ // now other components, using Bedanga's code, but changing the values.
+  //Positioning Bottom PCB, Honey Comb abd Top PCB in AIR
+
+  //For veto plane
+  //Positioning the Bottom 0.16 cm PCB
+  Float_t zbpcb = -dboxAir3A[2] + (2.0*fgkGap) + fgkThPCB/2.;
+  gMC->Gspos("EPCA", 1, "ECVA", 0., 0., zbpcb, 0, "ONLY");
+  //Positioning the Honey Comb 0.5 cm
+  Float_t zhc = zbpcb + fgkThPCB/2. + fgkCellDepth/2.;
+  gMC->Gspos("EHC1", 1, "ECVA", 0., 0., zhc, 0, "ONLY");
+  //Positioning the Top PCB 0.16 cm
+  Float_t ztpcb = zhc + fgkCellDepth/2 + fgkThPCB/2.;
+  gMC->Gspos("EPCA", 2, "ECVA", 0., 0., ztpcb, 0, "ONLY");
+
+
+  //For Preshower plane the ordering is reversed
+  //Positioning the Bottom 0.16 cm PCB
+  zbpcb = -dboxAir3A[2] + fgkThPCB + fgkThPCB/2.;
+  gMC->Gspos("EPCA", 1, "ECGA", 0., 0., zbpcb, 0, "ONLY");
+  //Positioning the Honey Comb 0.5 cm
+  zhc = zbpcb + fgkThPCB/2. + fgkCellDepth/2.;
+  gMC->Gspos("EHC1", 1, "ECGA", 0., 0., zhc, 0, "ONLY");
+  //Positioning the Top PCB 0.16 cm
+  ztpcb = zhc + fgkCellDepth/2 + fgkThPCB/2.;
+  gMC->Gspos("EPCA", 2, "ECGA", 0., 0., ztpcb, 0, "ONLY");
+
+
+
+
+ //--------------Now let us construct final UM ---------------//
+  // We will do it as follows :
+  // (i)  First make a UM of air. which will have dimensions
+  //      of the SS boundary Channel (in x,y) and of height 13.3mm
+  //(ii)  Then we will place all the components
+
+  //----------------------------------------------------------//
+  // A  unit module type A of Air
+  // Dimensions of Unit Module same as SS boundary channel
+  Float_t fDboxum1[3];
+  fDboxum1[0] = fDboxss1[0];
+  fDboxum1[1] = fDboxss1[1];
+  fDboxum1[2] = fgkThSS/2. +0.15; // 0.15 added to accomodate Base Plate at
+  // the bottom and the backplane PCB at the top.
+
+  //FOR PRESHOWER
+  //Create a Unit module of above dimensions Material : AIR
+  gMC->Gsvolu("EUM1","BOX", idtmed[698], fDboxum1, 3);
+  gMC->Gsatt("EUM1", "SEEN", 0);
+  //FOR VETO
+  gMC->Gsvolu("EUV1","BOX", idtmed[698], fDboxum1, 3);
+  gMC->Gsatt("EUV1", "SEEN", 0);
+
+  //----------------------------------------------------------------//
+
+  //BASE PLATE : EBPA
+  //==================
+  // Make a 2mm thick G10 Base plate for Unit module A
+  // Base plate is as big as the final UM dimensions that is as 
+  // SS boundary channel
+  Float_t dboxBaseA[3];
+  dboxBaseA[0]       = fDboxss1[0];
+  dboxBaseA[1]       = fDboxss1[1];       
+  dboxBaseA[2]       = fgkThBase/2.;
+  
+  //Base Blate is a G10 BOX
+  gMC->Gsvolu("EBPA","BOX", idtmed[607], dboxBaseA, 3);
+  gMC->Gsatt("EBPA", "SEEN", 0);
+  //----------------------------------------------------//  
+
+  //FOR VETO
+  //- Placing of all components of UM in AIR BOX EUM1--//
+  //(1)   FIRST PUT THE BASE PLATE
+  Float_t zbaseplate = -fDboxum1[2] + fgkThBase/2.;
+  gMC->Gspos("EBPA", 1, "EUV1", 0., 0., zbaseplate, 0, "ONLY");
+
+  //(2)   NEXT PLACING the SS BOX 
+  Float_t zss = zbaseplate + fgkThBase/2. + fgkThSS/2.;
+  gMC->Gspos("ESVA", 1, "EUV1", 0., 0., zss, 0, "ONLY");
+  
+  // (3) Positioning the Backplane PCB 0.1 cm
+  Float_t zbkp = zss + fgkThSS/2. + fgkThBKP/2.;
+  gMC->Gspos("EBKA", 1, "EUV1", 0., 0., zbkp, 0, "ONLY");
+
+  //FOR PRESHOWER
+  // (3) Positioning the Backplane PCB 0.1 cm
+  zbkp = -fDboxum1[2] + fgkThBKP/2.;
+  gMC->Gspos("EBKA", 1, "EUM1", 0., 0., zbkp, 0, "ONLY");
+
+  //(2)   NEXT PLACING the SS BOX 
+  zss = zbkp + fgkThBKP/2. + fgkThSS/2.;
+  gMC->Gspos("ESSA", 1, "EUM1", 0., 0., zss, 0, "ONLY");
+  
+  //(1)   FIRST PUT THE BASE PLATE
+  zbaseplate = zss + fgkThSS/2 + fgkThBase/2.;
+  gMC->Gspos("EBPA", 1, "EUM1", 0., 0., zbaseplate, 0, "ONLY");
+  //-------------------- UM Type A completed ------------------------//
+
+
+
+  //-------------------- Lets do the same thing for UM type B -------//
+ //--------------------------------------------------//
+  //Bottom and Top PCB : EPCB
+  //===========================
+  // Make a 1.6mm thick G10 Bottom and Top PCB for Unit module B
+  // X-dimension same as EHC2 - dbox4[0]
+  // Y-dimension same as EHC2 - dbox4[1]
+  // Z-dimension 0.16/2 = 0.08 cm
+  //-------------------------------------------------//
+  Float_t dboxPcbB[3];
+  dboxPcbB[0]      = dbox4[0]; 
+  dboxPcbB[1]      = dbox4[1];       
+  dboxPcbB[2]      = fgkThPCB/2.;
+  
+  //Top and Bottom PCB is a BOX of Material G10
+  gMC->Gsvolu("EPCB","BOX", idtmed[607], dboxPcbB, 3);
+  gMC->Gsatt("EPCB", "SEEN", 0);
+  //--------------------------------------------------------//  
+  //Back Plane : EBKB
+  //==================
+  // Make a 1.0mm thick Back Plane PCB for Unit module B
+  // X-dimension same as EHC2 - dbox4[0]
+  // Y-dimension same as EHC2 - dbox4[1]
+  // Z-dimension 0.1/2 = 0.05 cm
+  //------------------------------------------------------//
+  Float_t dboxBPlaneB[3];
+  dboxBPlaneB[0]   = dbox4[0]; 
+  dboxBPlaneB[1]   = dbox4[1];       
+  dboxBPlaneB[2]   = fgkThBKP/2.;
+  
+  //Back PLane PCB of MAterial G10
+  gMC->Gsvolu("EBKB","BOX", idtmed[607], dboxBPlaneB, 3);
+  gMC->Gsatt("EBKB", "SEEN", 0);
+  //-------------------------------------------------------------//  
+
+ //---------- That was all in the Z -direction of Unit Module B----//
+
+  //  Now lets us construct the boundary arround the Unit Module --//
+  // This boundary has 
+  // (a) 0.5 mm X and Y and 10.3 mm Z dimension  AIR gap
+  // (b) 0.5 mm X and Y and 10.3 mm Z dimension G10
+  // (c) 3.0 mm X and Y and 12.3 mm Z dimension Stainless Steel
+
+  //-------------------------------------------------//
+  //AIR GAP between UM and Boundary : ECGB
+  //================================================
+  // Make a 10.3mm thick Air gap for Unit module B
+  // X-dimension same as EHC2+0.05
+  // Y-dimension same as EHC2+0.05
+  // Z-dimension 1.03/2 = 0.515 cm
+  Float_t dboxAir3B[3];
+  dboxAir3B[0]         = dbox4[0]+(2.0*fgkGap); 
+  dboxAir3B[1]         = dbox4[1]+(2.0*fgkGap);       
+  dboxAir3B[2]         = fgkThAir/2.;
+
+  //PRESHOWER
+  //Air gap is a BOX of Material Air
+  gMC->Gsvolu("ECGB","BOX", idtmed[698], dboxAir3B, 3);
+  gMC->Gsatt("ECGB", "SEEN", 0);
+  //VETO
+  gMC->Gsvolu("ECVB","BOX", idtmed[698], dboxAir3B, 3);
+  gMC->Gsatt("ECVB", "SEEN", 0);
+
+  //-------------------------------------------------//  
+
+ //-------------------------------------------------//
+  //G10 boundary between honeycomb and SS : EDGB
+  //================================================
+  // Make a 10.3mm thick G10 Boundary for Unit module B
+  // X-dimension same as EHC2+Airgap+0.05
+  // Y-dimension same as EHC2+Airgap+0.05
+  // Z-dimension 1.03/2 = 0.515 cm
+  Float_t dboxGGB[3];
+  dboxGGB[0]         = dboxAir3B[0]+(2.0*fgkGap); 
+  dboxGGB[1]         = dboxAir3B[1]+(2.0*fgkGap);      
+  dboxGGB[2]         = fgkThG10/2.;
+
+  //PRESHOWER
+  //G10 BOX 
+  gMC->Gsvolu("EDGB","BOX", idtmed[607], dboxGGB, 3);
+  gMC->Gsatt("EDGB", "SEEN", 0);
+  //VETO
+  gMC->Gsvolu("EDVB","BOX", idtmed[607], dboxGGB, 3);
+  gMC->Gsatt("EDVB", "SEEN", 0);
+  //-------------------------------------------------//  
+  //----------------------------------------------------------//
+  //Stainless Steel Bounadry : ESSB
+  //==================================
+  // Make a 10.3mm thick Stainless Steel boundary for Unit module B
+  // X-dimension same as EHC2 + Airgap + G10 + 0.3
+  // Y-dimension same as EHC2 + Airgap + G10 + 0.3
+  // Z-dimension 1.03/2 = 0.515 cm
+  //------------------------------------------------------//
+  // A Stainless Steel Boundary Channel to house the unit module
+  Float_t fDboxss2[3];
+  fDboxss2[0]           = dboxGGB[0]+fgkSSBoundary; 
+  fDboxss2[1]           = dboxGGB[1]+fgkSSBoundary;       
+  fDboxss2[2]           = fgkThSS/2.;
+  
+  //PRESHOWER
+  //Stainless Steel boundary - Material Stainless Steel
+  gMC->Gsvolu("ESSB","BOX", idtmed[618], fDboxss2, 3);
+  gMC->Gsatt("ESSB", "SEEN", 0);
+  //VETO
+  gMC->Gsvolu("ESVB","BOX", idtmed[618], fDboxss2, 3);
+  gMC->Gsatt("ESVB", "SEEN", 0);
+  //----------------------------------------------------------------//
+
+  //----------------------------------------------------------------//
+  // Here we need to place the volume in order ESSB -> EDGB -> ECGB 
+  // this makes the SS boiundary and the 0.5mm thick FR4 insulation in place, 
+  // and the air volume ECGB acts as mother for the rest of components.
+  // The above placeemnt is done at (0.,0.,0.) relative coordiante 
+  // Now we place bottom PCB, honeycomb, top PCB in this volume. We donot place
+  // unnecessary air volumes now. Just leave the gap as we are placing them
+  // in  air only. This also reduces the number of volumes for geant to track.
+
+// Tree structure for different volumes
+//
+//				EUM2
+//				 |
+//			--------------------
+//			|        |         |
+//		      EBPB	ESSB	  EBKB
+//				 |
+//				EDGB
+//				 |
+//				ECGB
+//				 |
+//			--------------------
+//			|        |	   |
+//		      EPCB(1)   EHC2	 EPCB(2)
+//		     (bottom)	 |	(top PCB)
+//				 |
+//			    Sensitive volume
+//				(gas)
+//	
+
+//PRESHOWER
+//Creating the side channels
+// SS boundary channel, followed by G10 and Air Gap  
+  gMC->Gspos("EDGB", 1, "ESSB", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ECGB", 1, "EDGB", 0., 0., 0., 0, "ONLY");
+  //VETO
+  gMC->Gspos("EDVB", 1, "ESVB", 0., 0., 0., 0, "ONLY");
+  gMC->Gspos("ECVB", 1, "EDVB", 0., 0., 0., 0, "ONLY");
+
+ // now other components, using Bedang's code, but changing the values.
+  //Positioning Bottom PCB, Honey Comb abd Top PCB in AIR
+
+  //VETO
+  //Positioning the Bottom 0.16 cm PCB
+  Float_t zbpcb2 = -dboxAir3B[2] + (2.0*fgkGap) + fgkThPCB/2.;
+  gMC->Gspos("EPCB", 1, "ECVB", 0., 0., zbpcb2, 0, "ONLY");
+  //Positioning the Honey Comb 0.5 cm
+  Float_t zhc2 = zbpcb2 + fgkThPCB/2. + fgkCellDepth/2.;
+  gMC->Gspos("EHC2", 1, "ECVB", 0., 0., zhc2, 0, "ONLY");
+  //Positioning the Top PCB 0.16 cm
+  Float_t ztpcb2 = zhc2 + fgkCellDepth/2 + fgkThPCB/2.;
+  gMC->Gspos("EPCB", 2, "ECVB", 0., 0., ztpcb2, 0, "ONLY");
+
+  //PRESHOWER
+  //For preshower plane the ordering is reversed
+  //Positioning the Bottom 0.16 cm PCB
+  zbpcb2 = -dboxAir3B[2] + fgkThPCB + fgkThPCB/2.;
+  gMC->Gspos("EPCB", 1, "ECGB", 0., 0., zbpcb2, 0, "ONLY");
+  //Positioning the Honey Comb 0.5 cm
+  zhc2 = zbpcb2 + fgkThPCB/2. + fgkCellDepth/2.;
+  gMC->Gspos("EHC2", 1, "ECGB", 0., 0., zhc2, 0, "ONLY");
+  //Positioning the Top PCB 0.16 cm
+  ztpcb2 = zhc2 + fgkCellDepth/2 + fgkThPCB/2.;
+  gMC->Gspos("EPCB", 2, "ECGB", 0., 0., ztpcb2, 0, "ONLY");
+
+
+
+ //--------------Now let us construct final UM ---------------//
+  // We will do it as follows :
+  // (i)  First make a UM of air. which will have dimensions
+  //      of the SS boundary Channel (in x,y) and of height 13.3mm
+  //(ii)  Then we will place all the components
+
+  //----------------------------------------------------------//
+  // A  unit module type B of Air
+  // Dimensions of Unit Module same as SS boundary channel
+  Float_t fDboxum2[3];
+  fDboxum2[0] = fDboxss2[0];
+  fDboxum2[1] = fDboxss2[1];
+  fDboxum2[2] = fgkThSS/2. +0.15; // 0.15 added to accomodate Base Plate at
+  // the bottom and the backplane PCB at the top.
+
+  //PRESHOWER
+  //Create a Unit module of above dimensions Material : AIR
+  gMC->Gsvolu("EUM2","BOX", idtmed[698], fDboxum2, 3);
+  gMC->Gsatt("EUM2", "SEEN", 0);
+
+  //VETO
+  gMC->Gsvolu("EUV2","BOX", idtmed[698], fDboxum2, 3);
+  gMC->Gsatt("EUV2", "SEEN", 0);
+  //----------------------------------------------------------------//
+
+  //BASE PLATE : EBPB
+  //==================
+  // Make a 2mm thick G10 Base plate for Unit module B
+  // Base plate is as big as the final UM dimensions that is as 
+  // SS boundary channel
+  Float_t dboxBaseB[3];
+  dboxBaseB[0]       = fDboxss2[0];
+  dboxBaseB[1]       = fDboxss2[1];       
+  dboxBaseB[2]       = fgkThBase/2.;
+  
+  //Base Blate is a G10 BOX
+  gMC->Gsvolu("EBPB","BOX", idtmed[607], dboxBaseB, 3);
+  gMC->Gsatt("EBPB", "SEEN", 0);
+  //----------------------------------------------------//  
+
+  //VETO
+  //- Placing of all components of UM in AIR BOX EUM2--//
+  //(1)   FIRST PUT THE BASE PLATE
+  Float_t zbaseplate2 = -fDboxum2[2] + fgkThBase/2.;
+  gMC->Gspos("EBPB", 1, "EUV2", 0., 0., zbaseplate2, 0, "ONLY");
+
+  //(2)   NEXT PLACING the SS BOX 
+  Float_t zss2 = zbaseplate2 + fgkThBase/2. + fgkThSS/2.;
+  gMC->Gspos("ESVB", 1, "EUV2", 0., 0., zss2, 0, "ONLY");
+  
+  // (3) Positioning the Backplane PCB 0.1 cm
+  Float_t zbkp2 = zss2 + fgkThSS/2. + fgkThBKP/2.;
+  gMC->Gspos("EBKB", 1, "EUV2", 0., 0., zbkp2, 0, "ONLY");
+
+
+
+  //FOR PRESHOWER
+  // (3) Positioning the Backplane PCB 0.1 cm
+  zbkp2 = -fDboxum2[2] + fgkThBKP/2.;
+  gMC->Gspos("EBKB", 1, "EUM2", 0., 0., zbkp2, 0, "ONLY");
+
+  //(2)   NEXT PLACING the SS BOX 
+  zss2 = zbkp2 + fgkThBKP/2. + fgkThSS/2.;
+  gMC->Gspos("ESSB", 1, "EUM2", 0., 0., zss2, 0, "ONLY");
+  
+  //(1)   FIRST PUT THE BASE PLATE
+  zbaseplate2 = zss2 + fgkThSS/2 + fgkThBase/2.;
+  gMC->Gspos("EBPB", 1, "EUM2", 0., 0., zbaseplate2, 0, "ONLY");
+  //-------------------- UM Type B completed ------------------------//
+
+
+  //--- Now we need to make Lead plates of UM dimension -----//
+
+  /**************************/
+  //----------------------------------------------------------//
+  // The lead convertor is of unit module size
+  // Dimensions of Unit Module same as SS boundary channel
+
+  Float_t dboxPba[3];
+  dboxPba[0] = fDboxum1[0];
+  dboxPba[1] = fDboxum1[1];
+  dboxPba[2] = fgkThLead/2.;
+  // Lead of UM dimension
+  gMC->Gsvolu("EPB1","BOX", idtmed[600], dboxPba, 3);
+  gMC->Gsatt ("EPB1", "SEEN", 0);
+
+  Float_t dboxPbb[3];
+  dboxPbb[0] = fDboxum2[0];
+  dboxPbb[1] = fDboxum2[1];
+  dboxPbb[2] = fgkThLead/2.;
+  // Lead of UM dimension
+  gMC->Gsvolu("EPB2","BOX", idtmed[600], dboxPbb, 3);
+  gMC->Gsatt ("EPB2", "SEEN", 0);
+
+  //----------------------------------------------------------------//
 
   // 2 types of Rectangular shaped supermodules (BOX) 
   //each with 6 unit modules 
   
   // volume for SUPERMODULE ESMA 
   //Space added to provide a gapping for HV between UM's
+  //There is a gap of 0.15 cm between two Modules (UMs)
+  // in x-direction and 0.1cm along y-direction
 
   Float_t dboxSM1[3];
-  dboxSM1[0] = 3.0*dbox3[0]+(2.0*0.025);
-  dboxSM1[1] = 2.0*dbox3[1]+0.025;
-  dboxSM1[2] = fgkCellDepth/2.;
-  
+  dboxSM1[0] = 3.0*fDboxum1[0] + (2.0*0.075);
+  dboxSM1[1] = 2.0*fDboxum1[1] +  0.05;
+  dboxSM1[2] = fDboxum1[2];
+
+  //FOR PRESHOWER  
   gMC->Gsvolu("ESMA","BOX", idtmed[698], dboxSM1, 3);
-  gMC->Gsatt("ESMA", "SEEN", 1);
+  gMC->Gsatt("ESMA", "SEEN", 0);
   
+  //FOR VETO
+  gMC->Gsvolu("EMVA","BOX", idtmed[698], dboxSM1, 3);
+  gMC->Gsatt("EMVA", "SEEN", 0);
+
   //Position the 6 unit modules in EMSA
   Float_t xa1,xa2,xa3,ya1,ya2; 
-  xa1 = -dboxSM1[0] + dbox3[0];
-  xa2 = 0.;
-  xa3 = dboxSM1[0]  - dbox3[0]; 
-  ya1 = dboxSM1[1]  - dbox3[1];
-  ya2 = -dboxSM1[1] + dbox3[1];
-  
+  xa1 =  dboxSM1[0] - fDboxum1[0];
+  xa2 = xa1 - fDboxum1[0] - 0.15 - fDboxum1[0];
+  xa3 = xa2 - fDboxum1[0] - 0.15 - fDboxum1[0];
+  ya1 = dboxSM1[1]  - fDboxum1[1];
+  ya2 = ya1 - fDboxum1[1] - 0.1 - fDboxum1[1];
+
+  //PRESHOWER
   gMC->Gspos("EUM1", 1, "ESMA", xa1, ya1, 0., 0, "ONLY");
   gMC->Gspos("EUM1", 2, "ESMA", xa2, ya1, 0., 0, "ONLY");
   gMC->Gspos("EUM1", 3, "ESMA", xa3, ya1, 0., 0, "ONLY");
@@ -276,25 +882,39 @@ void AliPMDv1::CreateSupermodule()
   gMC->Gspos("EUM1", 5, "ESMA", xa2, ya2, 0., 0, "ONLY");
   gMC->Gspos("EUM1", 6, "ESMA", xa3, ya2, 0., 0, "ONLY");
 
+  //VETO
+  gMC->Gspos("EUV1", 1, "EMVA", xa1, ya1, 0., 0, "ONLY");
+  gMC->Gspos("EUV1", 2, "EMVA", xa2, ya1, 0., 0, "ONLY");
+  gMC->Gspos("EUV1", 3, "EMVA", xa3, ya1, 0., 0, "ONLY");
+  gMC->Gspos("EUV1", 4, "EMVA", xa1, ya2, 0., 0, "ONLY");
+  gMC->Gspos("EUV1", 5, "EMVA", xa2, ya2, 0., 0, "ONLY");
+  gMC->Gspos("EUV1", 6, "EMVA", xa3, ya2, 0., 0, "ONLY");
+
 
   // volume for SUPERMODULE ESMB 
   //Space is added to provide a gapping for HV between UM's
   Float_t dboxSM2[3];
-  dboxSM2[0] = 2.0*dbox4[0]+0.025;
-  dboxSM2[1] = 3.0*dbox4[1]+(2.0*0.025);
-  dboxSM2[2] = fgkCellDepth/2.;
+  dboxSM2[0] = 2.0*fDboxum2[0] + 0.075; 
+  dboxSM2[1] = 3.0*fDboxum2[1] + (2.0*0.05);
+  dboxSM2[2] = fDboxum2[2];
   
+  //PRESHOWER
   gMC->Gsvolu("ESMB","BOX", idtmed[698], dboxSM2, 3);
-  gMC->Gsatt("ESMB", "SEEN", 1);
- 
+  gMC->Gsatt("ESMB", "SEEN", 0);
+  //VETO 
+  gMC->Gsvolu("EMVB","BOX", idtmed[698], dboxSM2, 3);
+  gMC->Gsatt("EMVB", "SEEN", 0);
+
   //Position the 6 unit modules in EMSB
   Float_t xb1,xb2,yb1,yb2,yb3; 
-  xb1 = -dboxSM2[0] +dbox4[0];
-  xb2 = dboxSM2[0]-dbox4[0];
-  yb1 = dboxSM2[1]-dbox4[1];
-  yb2 = 0.; 
-  yb3 = -dboxSM2[1]+dbox4[1];
-  
+  xb1 = dboxSM2[0] - fDboxum2[0];
+  xb2 = xb1 - fDboxum2[0] - 0.15 - fDboxum2[0];
+  yb1 = dboxSM2[1]-fDboxum2[1];
+  yb2 = yb1 - fDboxum2[1] - 0.1 -  fDboxum2[1];
+  yb3 = yb2 - fDboxum2[1] - 0.1 -  fDboxum2[1];
+
+
+  //PRESHOWER  
   gMC->Gspos("EUM2", 1, "ESMB", xb1, yb1, 0., 0, "ONLY");
   gMC->Gspos("EUM2", 2, "ESMB", xb2, yb1, 0., 0, "ONLY");
   gMC->Gspos("EUM2", 3, "ESMB", xb1, yb2, 0., 0, "ONLY");
@@ -302,179 +922,222 @@ void AliPMDv1::CreateSupermodule()
   gMC->Gspos("EUM2", 5, "ESMB", xb1, yb3, 0., 0, "ONLY");
   gMC->Gspos("EUM2", 6, "ESMB", xb2, yb3, 0., 0, "ONLY");
   
-  // Make a 3mm thick G10 Base plate for ESMA
-  Float_t dboxG1a[3];
-  dboxG1a[0] = dboxSM1[0]; 
-  dboxG1a[1] = dboxSM1[1];       
-  dboxG1a[2] = fgkThBase/2.;
-
-  gMC->Gsvolu("EBPA","BOX", idtmed[607], dboxG1a, 3);
-  gMC->Gsatt("EBPA", "SEEN", 1);
-
-  // Make a 1.6mm thick G10 PCB for ESMA
-  Float_t dboxG2a[3];
-  dboxG2a[0] = dboxSM1[0]; 
-  dboxG2a[1] = dboxSM1[1];       
-  dboxG2a[2] = fgkThPCB/2.;
-
-  gMC->Gsvolu("EPCA","BOX", idtmed[607], dboxG2a, 3);
-  gMC->Gsatt("EPCA", "SEEN", 1);
-
-
-  // Make a Full module EFPA of AIR to place EBPA, 
-  // 1mm AIR, EPCA, ESMA,EPCA for PMD
+  //VETO
+  gMC->Gspos("EUV2", 1, "EMVB", xb1, yb1, 0., 0, "ONLY");
+  gMC->Gspos("EUV2", 2, "EMVB", xb2, yb1, 0., 0, "ONLY");
+  gMC->Gspos("EUV2", 3, "EMVB", xb1, yb2, 0., 0, "ONLY");
+  gMC->Gspos("EUV2", 4, "EMVB", xb2, yb2, 0., 0, "ONLY");
+  gMC->Gspos("EUV2", 5, "EMVB", xb1, yb3, 0., 0, "ONLY");
+  gMC->Gspos("EUV2", 6, "EMVB", xb2, yb3, 0., 0, "ONLY");
   
-  Float_t dboxAlla[3];
-  dboxAlla[0] = dboxSM1[0]; 
-  dboxAlla[1] = dboxSM1[1];       
-  dboxAlla[2] = (fgkThBase+fgkThAir+fgkThPCB+dboxSM1[2]+fgkThPCB)/2.;
+  // Make smiliar stucture for lead as for PMD plane
+  //================================================
 
-  gMC->Gsvolu("EFPA","BOX", idtmed[698], dboxAlla, 3);
-  gMC->Gsatt("EFPA", "SEEN", 1);
+  // 2 types of Rectangular shaped supermodules (BOX) 
+  //each with 6 unit modules 
+  
+  // volume for SUPERMODULE ESMPbA 
+  //Space added to provide a gapping for HV between UM's
 
+  Float_t dboxSMPb1[3];
+  dboxSMPb1[0] = 3.0*fDboxum1[0] + (2.0*0.075);
+  dboxSMPb1[1] = 2.0*fDboxum1[1] +  0.05;
+  dboxSMPb1[2] = fgkThLead/2.;
+  
+  gMC->Gsvolu("ESPA","BOX", idtmed[698], dboxSMPb1, 3);
+  gMC->Gsatt("ESPA", "SEEN", 0);
+  
 
-  // Make a Full module EFCA of AIR to place EBPA, 
-  // 1mm AIR, EPCA, ESMA,EPC for CPV
-  Float_t dboxAlla2[3];
-  dboxAlla2[0] = dboxSM1[0]; 
-  dboxAlla2[1] = dboxSM1[1];       
-  dboxAlla2[2] = (fgkThBase+fgkThAir+fgkThPCB+dboxSM1[2]+fgkThPCB)/2.;
-
-  gMC->Gsvolu("EFCA","BOX", idtmed[698], dboxAlla2, 3);
-  gMC->Gsatt("EFCA", "SEEN", 1);
-
-  // Now place everything in EFPA for PMD
-
-  Float_t zbpa,zpcba1,zpcba2,zsma; 
-  zpcba1 = - dboxAlla[2]+fgkThPCB/2.0;
-  gMC->Gspos("EPCA", 1, "EFPA", 0., 0., zpcba1, 0, "ONLY");
-  zsma = zpcba1+dboxSM1[2];
-  gMC->Gspos("ESMA", 1, "EFPA", 0., 0., zsma, 0, "ONLY");
-  zpcba2 = zsma+fgkThPCB/2.0;
-  gMC->Gspos("EPCA", 2, "EFPA", 0., 0., zpcba2, 0, "ONLY");
-  zbpa = zpcba2+fgkThAir+fgkThBase/2.0;
-  gMC->Gspos("EBPA", 1, "EFPA", 0., 0., zbpa, 0, "ONLY");
-
-  // Now place everything in EFCA for CPV
-
-  Float_t zbpa2,zpcba12,zpcba22,zsma2; 
-  zbpa2 = - dboxAlla2[2]+fgkThBase/2.0;
-  gMC->Gspos("EBPA", 1, "EFCA", 0., 0., zbpa2, 0, "ONLY");
-  zpcba12 = zbpa2+fgkThAir+fgkThPCB/2.0;
-  gMC->Gspos("EPCA", 1, "EFCA", 0., 0., zpcba12, 0, "ONLY");
-  zsma2 = zpcba12+dboxSM1[2];
-  gMC->Gspos("ESMA", 1, "EFCA", 0., 0., zsma2, 0, "ONLY");
-  zpcba22 = zsma2+fgkThPCB/2.0;
-  gMC->Gspos("EPCA", 2, "EFCA", 0., 0., zpcba22, 0, "ONLY");
+  //Position the 6 unit modules in ESMPbA
+  Float_t xpa1,xpa2,xpa3,ypa1,ypa2; 
+  xpa1 = -dboxSMPb1[0] + fDboxum1[0];
+  xpa2 = xpa1 + fDboxum1[0] + 0.15 + fDboxum1[0];
+  xpa3 = xpa2 + fDboxum1[0] + 0.15 + fDboxum1[0];
+  ypa1 = dboxSMPb1[1]  - fDboxum1[1];
+  ypa2 = ypa1 - fDboxum1[1] - 0.1 - fDboxum1[1];
 
 
-
-  // Make a 3mm thick G10 Base plate for ESMB
-  Float_t dboxG1b[3];
-  dboxG1b[0] = dboxSM2[0]; 
-  dboxG1b[1] = dboxSM2[1];       
-  dboxG1b[2] = fgkThBase/2.;
-
-  gMC->Gsvolu("EBPB","BOX", idtmed[607], dboxG1b, 3);
-  gMC->Gsatt("EBPB", "SEEN", 1);
-
-  // Make a 1.6mm thick G10 PCB for ESMB
-  Float_t dboxG2b[3];
-  dboxG2b[0] = dboxSM2[0]; 
-  dboxG2b[1] = dboxSM2[1];       
-  dboxG2b[2] = fgkThPCB/2.;
-
-  gMC->Gsvolu("EPCB","BOX", idtmed[607], dboxG2b, 3);
-  gMC->Gsatt("EPCB", "SEEN", 1);
-
-  // Make a Full module EFPB of AIR to place EBPB, 
-  //1mm AIR, EPCB, ESMB,EPCB for PMD
-  Float_t dboxAllb[3];
-  dboxAllb[0] = dboxSM2[0]; 
-  dboxAllb[1] = dboxSM2[1];       
-  dboxAllb[2] = (fgkThBase+fgkThAir+fgkThPCB+dboxSM2[2]+fgkThPCB)/2.;
-
-  gMC->Gsvolu("EFPB","BOX", idtmed[698], dboxAllb, 3);
-  gMC->Gsatt("EFPB", "SEEN", 1);
-
-  // Make a Full module EFCB of AIR to place EBPB, 
-  //1mm AIR, EPCB, ESMB,EPCB for CPV
-  Float_t dboxAllb2[3];
-  dboxAllb2[0] = dboxSM2[0]; 
-  dboxAllb2[1] = dboxSM2[1];       
-  dboxAllb2[2] = (fgkThBase+fgkThAir+fgkThPCB+dboxSM2[2]+fgkThPCB)/2.;
-
-  gMC->Gsvolu("EFCB","BOX", idtmed[698], dboxAllb2, 3);
-  gMC->Gsatt("EFCB", "SEEN", 1);
+  gMC->Gspos("EPB1", 1, "ESPA", xpa1, ypa1, 0., 0, "ONLY");
+  gMC->Gspos("EPB1", 2, "ESPA", xpa2, ypa1, 0., 0, "ONLY");
+  gMC->Gspos("EPB1", 3, "ESPA", xpa3, ypa1, 0., 0, "ONLY");
+  gMC->Gspos("EPB1", 4, "ESPA", xpa1, ypa2, 0., 0, "ONLY");
+  gMC->Gspos("EPB1", 5, "ESPA", xpa2, ypa2, 0., 0, "ONLY");
+  gMC->Gspos("EPB1", 6, "ESPA", xpa3, ypa2, 0., 0, "ONLY");
 
 
-  // Now place everything in EFPB for PMD
+  // volume for SUPERMODULE ESMPbB 
+  //Space is added to provide a gapping for HV between UM's
+  Float_t dboxSMPb2[3];
+  dboxSMPb2[0] = 2.0*fDboxum2[0] + 0.075;
+  dboxSMPb2[1] = 3.0*fDboxum2[1] + (2.0*0.05);
+  dboxSMPb2[2] = fgkThLead/2.;
 
-  Float_t zbpb,zpcbb1,zpcbb2,zsmb; 
-  zpcbb1 = - dboxAllb[2]+fgkThPCB/2.0;
-  gMC->Gspos("EPCB", 1, "EFPB", 0., 0., zpcbb1, 0, "ONLY");
-  zsmb = zpcbb1+dboxSM2[2];
-  gMC->Gspos("ESMB", 1, "EFPB", 0., 0., zsmb, 0, "ONLY");
-  zpcbb2 = zsmb+fgkThPCB/2.0;
-  gMC->Gspos("EPCB", 2, "EFPB", 0., 0., zpcbb2, 0, "ONLY");
-  zbpb = zpcbb2+fgkThAir+fgkThBase/2.0;
-  gMC->Gspos("EBPB", 1, "EFPB", 0., 0., zbpb, 0, "ONLY");
-
-
-  // Now place everything in EFCB for CPV
-
-  Float_t zbpb2,zpcbb12,zpcbb22,zsmb2; 
-  zbpb2 = - dboxAllb2[2]+fgkThBase/2.0;
-  gMC->Gspos("EBPB", 1, "EFCB", 0., 0., zbpb2, 0, "ONLY");
-  zpcbb12 = zbpb2+0.1+fgkThPCB/2.0;
-  gMC->Gspos("EPCB", 1, "EFCB", 0., 0., zpcbb12, 0, "ONLY");
-  zsmb2 = zpcbb12+dboxSM2[2];
-  gMC->Gspos("ESMB", 1, "EFCB", 0., 0., zsmb2, 0, "ONLY");
-  zpcbb22 = zsmb2+fgkThPCB/2.0;
-  gMC->Gspos("EPCB", 2, "EFCB", 0., 0., zpcbb22, 0, "ONLY");
+  gMC->Gsvolu("ESPB","BOX", idtmed[698], dboxSMPb2, 3);
+  gMC->Gsatt("ESPB", "SEEN", 0);
+ 
+  //Position the 6 unit modules in ESMPbB
+  Float_t xpb1,xpb2,ypb1,ypb2,ypb3; 
+  xpb1 = -dboxSMPb2[0] + fDboxum2[0];
+  xpb2 = xpb1 + fDboxum2[0] + 0.15 + fDboxum2[0];
+  ypb1 = dboxSMPb2[1]  - fDboxum2[1];
+  ypb2 = ypb1 - fDboxum2[1] - 0.1 -  fDboxum2[1];
+  ypb3 = ypb2 - fDboxum2[1] - 0.1 -  fDboxum2[1];
 
 
-  // Master MODULE EMPA of aluminum for PMD
-  fDboxmm1[0] = dboxSM1[0]+fgkBoundary; 
-  fDboxmm1[1] = dboxSM1[1]+fgkBoundary;       
-  fDboxmm1[2] = dboxAlla[2];
-
-  gMC->Gsvolu("EMPA","BOX", idtmed[603], fDboxmm1, 3);
-  gMC->Gsatt("EMPA", "SEEN", 1);
-
-  // Master MODULE EMCA of aluminum for CPV
-  fDboxmm12[0] = dboxSM1[0]+fgkBoundary; 
-  fDboxmm12[1] = dboxSM1[1]+fgkBoundary;       
-  fDboxmm12[2] = dboxAlla[2];
-
-  gMC->Gsvolu("EMCA","BOX", idtmed[603], fDboxmm12, 3);
-  gMC->Gsatt("EMCA", "SEEN", 1);
+  gMC->Gspos("EPB2", 1, "ESPB", xpb1, ypb1, 0., 0, "ONLY");
+  gMC->Gspos("EPB2", 2, "ESPB", xpb2, ypb1, 0., 0, "ONLY");
+  gMC->Gspos("EPB2", 3, "ESPB", xpb1, ypb2, 0., 0, "ONLY");
+  gMC->Gspos("EPB2", 4, "ESPB", xpb2, ypb2, 0., 0, "ONLY");
+  gMC->Gspos("EPB2", 5, "ESPB", xpb1, ypb3, 0., 0, "ONLY");
+  gMC->Gspos("EPB2", 6, "ESPB", xpb2, ypb3, 0., 0, "ONLY");
 
 
-  //Position EFMA inside EMMA for PMD and CPV
-  gMC->Gspos("EFPA", 1, "EMPA", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("EFCA", 1, "EMCA", 0., 0., 0., 0, "ONLY");
+  //---------------------------------------------------
+  /// ALICE PMD FEE BOARDS IMPLEMENTATION
+  // Dt: 25th February 2006 
+  // - M.M.  Mondal, S.K. Prasad and P.K. Netrakanti
+  //---------------------------------------------------
+
+  //FEE boards 
+  // It is FR4 board of length 7cm
+  // breadth of 2.4 cm and thickness 0.1cm
+  Float_t dboxFEE[3];
+  dboxFEE[0] = 0.05;
+  dboxFEE[1] = 3.50;
+  dboxFEE[2] = 1.20;
+
+  gMC->Gsvolu("EFEE","BOX", idtmed[607], dboxFEE, 3);
+  gMC->Gsatt("EFEE", "SEEN", 0);
+  gMC->Gsatt("EFEE", "COLO", 4);
+
+  //Mother volume to accomodate FEE boards
+  // It should have the dimension 
+  // as the back plane or the 
+  //corresponding UM
+  //TYPE A
+  //------------------------------------------------------//
+
+  Float_t dboxFEEBPlaneA[3];
+  dboxFEEBPlaneA[0]   = dboxBPlaneA[0]; //dbox3[0]; 
+  dboxFEEBPlaneA[1]   = dboxBPlaneA[1];//dbox3[1];       
+  dboxFEEBPlaneA[2]   = 1.2;
+  
+  //Volume of same dimension as Back PLane of Material AIR
+  gMC->Gsvolu("EFBA","BOX", idtmed[698], dboxFEEBPlaneA, 3);
+  gMC->Gsatt("EFBA", "SEEN", 0);
+
+  //TYPE B
+  Float_t dboxFEEBPlaneB[3];
+  dboxFEEBPlaneB[0]   = dboxBPlaneB[0]; //dbox4[0]; 
+  dboxFEEBPlaneB[1]   = dboxBPlaneB[1];//dbox4[1];       
+  dboxFEEBPlaneB[2]   = 1.2;
+  
+  //Back PLane PCB of MAterial G10
+  gMC->Gsvolu("EFBB","BOX", idtmed[698], dboxFEEBPlaneB, 3);
+  gMC->Gsatt("EFBB", "SEEN", 0);
+
+  //Placing the FEE boards in the Mother volume of AIR
+
+  //Type A 
+
+  Float_t x_fee; // X-position of FEE board
+  Float_t y_fee; // Y-position of FEE board
+  Float_t z_fee = 0.0; // Z-position of FEE board
+
+  Float_t x_a    = 0.25; //distance from the border to 1st FEE board
+  Float_t y_a    = 4.00; //distance from the border to 1st FEE board
+  Float_t x_sepa = 1.70; //Distance between two FEE boards
+  Float_t y_sepa = 8.00; //Distance between two FEE boards
+
+  
+  // FEE Boards EFEE placed inside EFBA
+  number = 1;
+  y_fee =  dboxFEEBPlaneA[1] - y_a;  
+  for (i = 1; i <= 6; ++i) 
+    {
+      x_fee = -dboxFEEBPlaneA[0] + x_a; 
+      for (j = 1; j <= 12; ++j) 
+	{
+	  gMC->Gspos("EFEE", number, "EFBA", x_fee,y_fee,z_fee, 0, "ONLY");
+	  x_fee += x_sepa;
+	  number += 1;
+	}
+      y_fee -= y_sepa; 
+    }
+  // FEE Boards EFEE placed inside EFBB
+  number = 1;
+  y_fee =  dboxFEEBPlaneB[1] - y_a;  
+  for (i = 1; i <= 3; ++i) 
+    {
+      x_fee = -dboxFEEBPlaneB[0] + x_a; 
+      for (j = 1; j <= 24; ++j) 
+	{
+	  gMC->Gspos("EFEE", number, "EFBB", x_fee,y_fee,z_fee, 0, "ONLY");
+	  x_fee += x_sepa;
+	  number += 1;
+	}
+      y_fee -= y_sepa; 
+    }
 
 
-  // Master MODULE EMPB of aluminum for PMD
-  fDboxmm2[0] = dboxSM2[0]+fgkBoundary; 
-  fDboxmm2[1] = dboxSM2[1]+fgkBoundary;       
-  fDboxmm2[2] = dboxAllb[2];
+  //Distance between the two backplanes of two UMs
+  //in x-direction is 0.92 and ydirection is 0.95
+  Float_t dboxEFSA[3];
+  dboxEFSA[0] = 3.0*dboxFEEBPlaneA[0] + 0.92;
+  dboxEFSA[1] = 2.0*dboxFEEBPlaneA[1] + (0.95/2.0);
+  dboxEFSA[2] = dboxFEEBPlaneA[2];
 
-  gMC->Gsvolu("EMPB","BOX", idtmed[603], fDboxmm2, 3);
-  gMC->Gsatt("EMPB", "SEEN", 1);
+  //Type A
+  gMC->Gsvolu("EFSA","BOX", idtmed[698],dboxEFSA, 3);
+  gMC->Gsatt("EFSA", "SEEN", 0);
 
-  // Master MODULE EMCB of aluminum for CPV
-  fDboxmm22[0] = dboxSM2[0]+fgkBoundary; 
-  fDboxmm22[1] = dboxSM2[1]+fgkBoundary;       
-  fDboxmm22[2] = dboxAllb[2];
+  //Distance between the two backplanes of two UMs
+  //in x-direction is 0.92 and ydirection is 0.95
+  Float_t dboxEFSB[3];
+  dboxEFSB[0] = 2.0*dboxFEEBPlaneB[0] + (0.938/2.0);
+  dboxEFSB[1] = 3.0*dboxFEEBPlaneB[1] + 1.05;
+  dboxEFSB[2] = dboxFEEBPlaneB[2];
 
-  gMC->Gsvolu("EMCB","BOX", idtmed[603], fDboxmm22, 3);
-  gMC->Gsatt("EMCB", "SEEN", 1);
+  //Type A
+  gMC->Gsvolu("EFSB","BOX", idtmed[698],dboxEFSB, 3);
+  gMC->Gsatt("EFSB", "SEEN", 0);
 
-  //Position EFMB inside EMMB
-  gMC->Gspos("EFPB", 1, "EMPB", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("EFCB", 1, "EMCB", 0., 0., 0., 0, "ONLY");
+
+  Float_t xfs1,xfs2,xfs3,yfs1,yfs2,yfs3; 
+  xfs1 = -dboxEFSA[0] + dboxFEEBPlaneA[0];
+  xfs2 = xfs1 + dboxFEEBPlaneA[0] +  0.92 + dboxFEEBPlaneA[0];
+  xfs3 = xfs2 + dboxFEEBPlaneA[0] +  0.92 + dboxFEEBPlaneA[0];
+  yfs1 = dboxEFSA[1] - dboxFEEBPlaneA[1];
+  yfs2 = yfs1 - dboxFEEBPlaneA[1] - 0.95 - dboxFEEBPlaneA[1];
+
+
+
+  gMC->Gspos("EFBA", 1, "EFSA", xfs1, yfs1, 0., 0, "ONLY");
+  gMC->Gspos("EFBA", 2, "EFSA", xfs2, yfs1, 0., 0, "ONLY");
+  gMC->Gspos("EFBA", 3, "EFSA", xfs3, yfs1, 0., 0, "ONLY");
+  gMC->Gspos("EFBA", 4, "EFSA", xfs1, yfs2, 0., 0, "ONLY");
+  gMC->Gspos("EFBA", 5, "EFSA", xfs2, yfs2, 0., 0, "ONLY");
+  gMC->Gspos("EFBA", 6, "EFSA", xfs3, yfs2, 0., 0, "ONLY");
+
+
+  //Type B positioning
+
+  xfs1 = -dboxEFSB[0] + dboxFEEBPlaneB[0];
+  xfs2 = xfs1 + dboxFEEBPlaneB[0] + 0.938 + dboxFEEBPlaneB[0];
+  yfs1 = dboxEFSB[1] - dboxFEEBPlaneB[1];
+  yfs2 = yfs1 - dboxFEEBPlaneB[1] - 1.05 - dboxFEEBPlaneB[1];
+  yfs3 = yfs2 - dboxFEEBPlaneB[1] - 1.05 - dboxFEEBPlaneB[1];
+
+
+
+  gMC->Gspos("EFBB", 1, "EFSB", xfs1, yfs1, 0., 0, "ONLY");
+  gMC->Gspos("EFBB", 2, "EFSB", xfs2, yfs1, 0., 0, "ONLY");
+  gMC->Gspos("EFBB", 3, "EFSB", xfs1, yfs2, 0., 0, "ONLY");
+  gMC->Gspos("EFBB", 4, "EFSB", xfs2, yfs2, 0., 0, "ONLY");
+  gMC->Gspos("EFBB", 5, "EFSB", xfs1, yfs3, 0., 0, "ONLY");
+  gMC->Gspos("EFBB", 6, "EFSB", xfs2, yfs3, 0., 0, "ONLY");
+
+
 }
  
 //_____________________________________________________________________________
@@ -485,22 +1148,13 @@ void AliPMDv1::CreatePMD()
   // Create final detector from supermodules
   // -- Author : Bedanga and Viyogi June 2003
 
-  Float_t  xp, yp, zp;
+  Float_t   zp;
   Int_t jhrot12,jhrot13, irotdm;
   Int_t *idtmed = fIdtmed->GetArray()-599;
   
   //VOLUMES Names : begining with "E" for all PMD volumes, 
 
-  // --- DEFINE Iron, and lead volumes  for SM A
-  
-  Float_t dboxPba[3];
-  dboxPba[0] = fSMLengthax;
-  dboxPba[1] = fSMLengthay;
-  dboxPba[2] = fgkThLead/2.;
-  
-  gMC->Gsvolu("EPBA","BOX", idtmed[600], dboxPba, 3);
-  gMC->Gsatt ("EPBA", "SEEN", 0);
-  
+  // --- DEFINE Iron volumes  for SM A
   //   Fe Support 
   Float_t dboxFea[3];
   dboxFea[0] = fSMLengthax;
@@ -510,15 +1164,7 @@ void AliPMDv1::CreatePMD()
   gMC->Gsvolu("EFEA","BOX", idtmed[618], dboxFea, 3);
   gMC->Gsatt ("EFEA", "SEEN", 0);
 
-  // --- DEFINE Iron, and lead volumes  for SM B
-
-  Float_t dboxPbb[3];
-  dboxPbb[0] = fSMLengthbx;
-  dboxPbb[1] = fSMLengthby;
-  dboxPbb[2] = fgkThLead/2.;
-  
-  gMC->Gsvolu("EPBB","BOX", idtmed[600], dboxPbb, 3);
-  gMC->Gsatt ("EPBB", "SEEN", 0);
+  // --- DEFINE Iron volumes  for SM B
   
   //   Fe Support 
   Float_t dboxFeb[3];
@@ -539,9 +1185,9 @@ void AliPMDv1::CreatePMD()
   // and avoid overlap with beam pipe
 
   Float_t gaspmd[3];
-  gaspmd[0] = fDboxmm1[0];
-  gaspmd[1] = fDboxmm1[1];
-  gaspmd[2] = 7.0; // for the entire detector, including connectors etc
+  gaspmd[0] = fSMLengthax;
+  gaspmd[1] = fSMLengthay;
+  gaspmd[2] = fSMthick;
 
   gMC->Gsvolu("EPM1", "BOX", idtmed[698], gaspmd, 3);
   gMC->Gsatt("EPM1", "SEEN", 1);
@@ -550,29 +1196,44 @@ void AliPMDv1::CreatePMD()
 
   //Complete detector for Type A
   //Position Super modules type A for both CPV and PMD in EPMD  
-  Float_t zpsa,zpba,zfea,zcva; 
+  Float_t zpsa,zpba,zfea,zcva,zfee; 
 
   // zpsa = - gaspmd[2] + fSMthick/2.;
   // -2.5 is given to place PMD at -361.5 
   // BM : In future after putting proper electronics
   // -2.5 will be replaced by -gaspmd[2]
-  zpsa = -2.5 + fSMthick/2.;
 
-  gMC->Gspos("EMPA", 1, "EPM1", 0., 0., zpsa, 0, "ONLY");
-  gMC->Gspos("EMPA", 2, "EPM2", 0., 0., zpsa, jhrot12, "ONLY");
-  zpba=zpsa+fSMthick/2.+dboxPba[2];
-  gMC->Gspos("EPBA", 1, "EPM1", 0., 0., zpba, 0, "ONLY");
-  gMC->Gspos("EPBA", 2, "EPM2", 0., 0., zpba, 0, "ONLY");
-  zfea=zpba+dboxPba[2]+dboxFea[2];
+  //TYPE A
+  //Fee board
+  zfee=-gaspmd[2] + 1.2;
+  gMC->Gspos("EFSA", 1, "EPM1", 0., 0., zfee, 0, "ONLY");
+  gMC->Gspos("EFSA", 2, "EPM2", 0., 0., zfee, jhrot12, "ONLY");
+  //VETO
+  zcva = zfee + 1.2 + fDthick;
+  gMC->Gspos("EMVA", 1, "EPM1", 0., 0., zcva, 0, "ONLY");
+  gMC->Gspos("EMVA", 2, "EPM2", 0., 0., zcva, jhrot12, "ONLY");
+  //Iron support
+  zfea = zcva + fDthick + fgkThSteel/2.;
   gMC->Gspos("EFEA", 1, "EPM1", 0., 0., zfea, 0, "ONLY");
   gMC->Gspos("EFEA", 2, "EPM2", 0., 0., zfea, 0, "ONLY");
-  zcva=zfea+dboxFea[2]+fSMthick/2.;
-  gMC->Gspos("EMCA", 1, "EPM1", 0., 0., zcva, 0, "ONLY");
-  gMC->Gspos("EMCA", 2, "EPM2", 0., 0., zcva, jhrot12, "ONLY");
+  //Lead
+  zpba=zfea+fgkThSteel/2.+ fgkThLead/2.;
+  gMC->Gspos("ESPA", 1, "EPM1", 0., 0., zpba, 0, "ONLY");
+  gMC->Gspos("ESPA", 2, "EPM2", 0., 0., zpba, 0, "ONLY");
+  //Preshower
+  zpsa = zpba + fgkThLead/2. + fDthick;
+  gMC->Gspos("ESMA", 1, "EPM1", 0., 0., zpsa, 0, "ONLY");
+  gMC->Gspos("ESMA", 2, "EPM2", 0., 0., zpsa, jhrot12, "ONLY");
+  //FEE boards
+  zfee=zpsa + fDthick + 1.2;
+  gMC->Gspos("EFSA", 3, "EPM1", 0., 0., zfee, 0, "ONLY");
+  gMC->Gspos("EFSA", 4, "EPM2", 0., 0., zfee, jhrot12, "ONLY");
+
  
-  gaspmd[0] = fDboxmm2[0];
-  gaspmd[1] = fDboxmm2[1];
-  gaspmd[2] = 7.0; // for the entire detector, including connectors etc
+  //TYPE - B
+  gaspmd[0] = fSMLengthbx; 
+  gaspmd[1] = fSMLengthby; 
+  gaspmd[2] = fSMthick; 
 
   gMC->Gsvolu("EPM3", "BOX", idtmed[698], gaspmd, 3);
   gMC->Gsatt("EPM3", "SEEN", 1);
@@ -587,37 +1248,64 @@ void AliPMDv1::CreatePMD()
   // BM: In future after putting proper electronics
   // -2.5 will be replaced by -gaspmd[2]
 
-  zpsb = -2.5 + fSMthick/2.; 
-  gMC->Gspos("EMPB", 3, "EPM3", 0., 0., zpsb, 0, "ONLY");
-  gMC->Gspos("EMPB", 4, "EPM4", 0., 0., zpsb, jhrot12, "ONLY");
-  zpbb=zpsb+fSMthick/2.+dboxPbb[2];
-  gMC->Gspos("EPBB", 3, "EPM3", 0., 0., zpbb, 0, "ONLY");
-  gMC->Gspos("EPBB", 4, "EPM4", 0., 0., zpbb, 0, "ONLY");
-  zfeb=zpbb+dboxPbb[2]+dboxFeb[2];
+ //Fee board
+  zfee=-gaspmd[2] + 1.2;
+  gMC->Gspos("EFSB", 5, "EPM3", 0., 0., zfee, 0, "ONLY");
+  gMC->Gspos("EFSB", 6, "EPM4", 0., 0., zfee, jhrot12, "ONLY");
+  //VETO
+  zcvb= zfee + 1.2 + fDthick;
+  gMC->Gspos("EMVB", 3, "EPM3", 0., 0., zcvb, 0, "ONLY");
+  gMC->Gspos("EMVB", 4, "EPM4", 0., 0., zcvb, jhrot12, "ONLY");
+
+  //IRON SUPPORT
+  zfeb= zcvb + fDthick +  fgkThSteel/2.;
   gMC->Gspos("EFEB", 3, "EPM3", 0., 0., zfeb, 0, "ONLY");
   gMC->Gspos("EFEB", 4, "EPM4", 0., 0., zfeb, 0, "ONLY");
-  zcvb=zfeb+dboxFeb[2]+fSMthick/2.;
-  gMC->Gspos("EMCB", 3, "EPM3", 0., 0., zcvb, 0, "ONLY");
-  gMC->Gspos("EMCB", 4, "EPM4", 0., 0., zcvb, jhrot12, "ONLY");
-  
+  //LEAD
+  zpbb= zfeb + fgkThSteel/2.+ fgkThLead/2.;
+  gMC->Gspos("ESPB", 3, "EPM3", 0., 0., zpbb, 0, "ONLY");
+  gMC->Gspos("ESPB", 4, "EPM4", 0., 0., zpbb, 0, "ONLY");
+  //PRESHOWER
+  zpsb = zpbb + fgkThLead/2.+ fDthick;
+  gMC->Gspos("ESMB", 3, "EPM3", 0., 0., zpsb, 0, "ONLY");
+  gMC->Gspos("ESMB", 4, "EPM4", 0., 0., zpsb, jhrot12, "ONLY");
+  //FEE boards
+  zfee=zpsb + fDthick + 1.2;
+  gMC->Gspos("EFSB", 7, "EPM3", 0., 0., zfee, 0, "ONLY");
+  gMC->Gspos("EFSB", 8, "EPM4", 0., 0., zfee, jhrot12, "ONLY");
+
+
   // --- Place the EPMD in ALICE 
-  xp = 0.;
-  yp = 0.;
+  //Z-distance of PMD from Interaction Point
   zp = fgkZdist;
 
-  Float_t xsma,ysma;
+  //X and Y-positions of the PMD planes
+  Float_t xfinal,yfinal; 
   Float_t xsmb,ysmb;
-  xsma = -fSMLengthbx;
-  ysma =  fSMLengthby;
-  xsmb = -fSMLengthax;
-  ysmb = -fSMLengthay;
+  Float_t xsma,ysma;
 
-  //Position Full PMD in ALICE   
-  gMC->Gspos("EPM1", 1, "ALIC", xsma,ysma,zp, 0, "ONLY");
+  xfinal = fSMLengthax + 0.48/2 + fSMLengthbx;
+  yfinal = fSMLengthay + 0.20/2 + fSMLengthby;
+  
+
+  xsma =  xfinal  - fSMLengthax;
+  ysma =  yfinal  - fSMLengthay;
+  xsmb =  -xfinal + fSMLengthbx;
+  ysmb =  yfinal  - fSMLengthby;
+
+
+//Position Full PMD in ALICE   
+//
+//   EPM1      EPM3
+//
+//   EPM4      EPM2
+// (rotated   (rotated EPM1)
+//  EPM3)
+//
+  gMC->Gspos("EPM1", 1, "ALIC",  xsma,ysma,zp,  0, "ONLY");
   gMC->Gspos("EPM2", 1, "ALIC", -xsma,-ysma,zp, 0, "ONLY");
-  gMC->Gspos("EPM3", 1, "ALIC", xsmb,ysmb,zp, 0, "ONLY");
+  gMC->Gspos("EPM3", 1, "ALIC",  xsmb,ysmb,zp,  0, "ONLY");
   gMC->Gspos("EPM4", 1, "ALIC", -xsmb,-ysmb,zp, 0, "ONLY");
-
 }
 
  
@@ -704,7 +1392,6 @@ void AliPMDv1::CreateMaterials()
   
   Float_t aG10[4]={1.,12.011,15.9994,28.086};
   Float_t zG10[4]={1.,6.,8.,14.};
-  //PH  Float_t wG10[4]={0.148648649,0.104054054,0.483499056,0.241666667};
   Float_t wG10[4]={0.15201,0.10641,0.49444,0.24714};
   AliMixture(8,"G10",aG10,zG10,1.7,4,wG10);
   
@@ -813,19 +1500,19 @@ void AliPMDv1::StepManager()
   Int_t   copy;
   Float_t hits[4], destep;
   Float_t center[3] = {0,0,0};
-  Int_t   vol[8];
-  //const char *namep;
+  Int_t   vol[10];
+  //  const char *namep;
   
-  if(gMC->CurrentMedium() == fMedSens && (destep = gMC->Edep())) {
+  if(gMC->GetMedium() == fMedSens && (destep = gMC->Edep())) {
   
     gMC->CurrentVolID(copy);
-    //namep=gMC->CurrentVolName();
-    //printf("Current vol  is %s \n",namep);
+    //     namep=gMC->CurrentVolName();
+    // printf("Current vol  is %s \n",namep);
     vol[0]=copy;
 
     gMC->CurrentVolOffID(1,copy);
     //namep=gMC->CurrentVolOffName(1);
-    //printf("Current vol 11 is %s \n",namep);
+    // printf("Current vol 11 is %s \n",namep);
     vol[1]=copy;
 
     gMC->CurrentVolOffID(2,copy);
@@ -836,32 +1523,43 @@ void AliPMDv1::StepManager()
     //	if(strncmp(namep,"EHC1",4))vol[2]=1;
 
     gMC->CurrentVolOffID(3,copy);
-    //namep=gMC->CurrentVolOffName(3);
+    // namep=gMC->CurrentVolOffName(3);
     //printf("Current vol 33 is %s \n",namep);
     vol[3]=copy;
 
     gMC->CurrentVolOffID(4,copy);
-    //namep=gMC->CurrentVolOffName(4);
-    //printf("Current vol 44 is %s \n",namep);
+    // namep=gMC->CurrentVolOffName(4);
+    // printf("Current vol 44 is %s \n",namep);
     vol[4]=copy;
 
     gMC->CurrentVolOffID(5,copy);
-    //namep=gMC->CurrentVolOffName(5);
-    //printf("Current vol 55 is %s \n",namep);
+    // namep=gMC->CurrentVolOffName(5);
+    // printf("Current vol 55 is %s \n",namep);
     vol[5]=copy;
 
     gMC->CurrentVolOffID(6,copy);
-    //namep=gMC->CurrentVolOffName(6);
-    //printf("Current vol 66 is %s \n",namep);
+    // namep=gMC->CurrentVolOffName(6);
+    // printf("Current vol 66 is %s \n",namep);
     vol[6]=copy;
 
     gMC->CurrentVolOffID(7,copy);
-    //namep=gMC->CurrentVolOffName(7);
-    //printf("Current vol 77 is %s \n",namep);
+    //  namep=gMC->CurrentVolOffName(7);
+    // printf("Current vol 77 is %s \n",namep);
     vol[7]=copy;
 
+    gMC->CurrentVolOffID(8,copy);
+    // namep=gMC->CurrentVolOffName(8);
+    // printf("Current vol 88 is %s \n",namep);
+    vol[8]=copy;
 
-    //printf("volume number %4d %4d %4d %4d %4d %4d %4d %4d %10.3f \n",vol[0],vol[1],vol[2],vol[3],vol[4],vol[5],vol[6],vol[7],destep*1000000);
+
+    gMC->CurrentVolOffID(9,copy);
+    // namep=gMC->CurrentVolOffName(9);
+    // printf("Current vol 99 is %s \n",namep);
+    vol[9]=copy;
+
+
+    // printf("volume number %4d %4d %4d %4d %4d %4d %4d %4d %4d %4d %10.3f \n",vol[0],vol[1],vol[2],vol[3],vol[4],vol[5],vol[6],vol[7],vol[8],vol[9],destep*1000000);
     
     gMC->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
@@ -881,19 +1579,53 @@ void AliPMDv1::GetParameters()
   // thickness of the Supermodule
   //
   
-  fSMLengthax = (3.0*(fgkNcolUM1*fgkCellRadius+fgkCellRadius/2.)
-		 + (2.0*fgkGap)) + fgkBoundary;
-  fSMLengthbx = 2.0*(fgkNcolUM2*fgkCellRadius+fgkCellRadius/2.)
-    + fgkGap + fgkBoundary; 
-  
-  fSMLengthay = 2.0*(((fgkCellRadius/fgkSqroot3by2)*fgkNrowUM1)
-		     - (fgkCellRadius*fgkSqroot3*(fgkNrowUM1-1)/6.))
-    + fgkGap + fgkBoundary;
-  fSMLengthby = 3.0*(((fgkCellRadius/fgkSqroot3by2)*fgkNrowUM2)
-		     - (fgkCellRadius*fgkSqroot3*(fgkNrowUM2-1)/6.))
-    + (2.0*fgkGap) + fgkBoundary;
-  
-  fSMthick    = fgkThBase + fgkThAir + fgkThPCB 
-    + fgkCellDepth + fgkThPCB + fgkThAir + fgkThPCB;
+  fSMLengthax = 32.7434;
+  //The total length in X is due to the following components
+  // Factor 3 is because of 3 module length in X for this type
+  // fgkNcolUM1*fgkCellRadius (48 x 0.25): Total span of each module in X
+  // fgkCellRadius/2. : There is offset of 1/2 cell
+  // 0.05+0.05 : Insulation gaps etc
+  // fgkSSBoundary (0.3) : Boundary frame
+  // double XA = 3.0*((fgkCellRadius/fgkSqroot3by2*fgkNcolUM1)-(fgkCellRadius*fgkSqroot3*(fgkNcolUM1-1)/6.)+(2.0*fgkGap)+(2.0*fgkGap)+fgkSSBoundary) + (2.0*0.075);
+
+  fSMLengthbx = 42.5886;
+  //The total length in X is due to the following components
+  // Factor 2 is because of 2 module length in X for this type
+  // fgkNcolUM2*fgkCellRadius (96 x 0.25): Total span of each module in X
+  // fgkCellRadius/2. : There is offset of 1/2 cell
+  // 0.05+0.05 : Insulation gaps etc
+  // fgkSSBoundary (0.3) : Boundary frame
+  //double XB = 2.0*((fgkCellRadius/fgkSqroot3by2*fgkNcolUM2)-(fgkCellRadius*fgkSqroot3*(fgkNcolUM2-1)/6.)+(2.0*fgkGap)+(2.0*fgkGap)+fgkSSBoundary) + 0.075; 
+
+
+
+  fSMLengthay = 49.1;
+  //The total length in Y is due to the following components
+  // Factor 2 is because of 2 module length in Y for this type
+  // fgkCellRadius/fgkSqroot3by2)*fgkNrowUM1 (0.25/sqrt3/2 * 96): Total span of each module in Y
+  //  of strips
+  // 0.05+0.05 : Insulation gaps etc
+  // fgkSSBoundary (0.3) : Boundary frame
+  // double  YA = 2.0*(fgkNrowUM1*fgkCellRadius+fgkCellRadius/2.+(2.0*fgkGap)+(2.0*fgkGap)+fgkSSBoundary) +  0.05;
+
+  fSMLengthby =  37.675;
+  //The total length in Y is due to the following components
+  // Factor 3 is because of 3 module length in Y for this type
+  // fgkCellRadius/fgkSqroot3by2)*fgkNrowUM2 (0.25/sqrt3/2 * 48): Total span of each module in Y
+  //  of strips
+  // 0.05+0.05 : Insulation gaps etc
+  // fgkSSBoundary (0.3) : Boundary frame
+    //double YB = 3.0*((fgkNrowUM2*fgkCellRadius + fgkCellRadius/2.)+(2.0*fgkGap)+(2.0*fgkGap)+fgkSSBoundary) + (2.0*0.05);
+
+
+  //Thickness of a pre/veto plane 
+  fDthick     = fgkThSS/2. +0.15;
+
+  //Thickness of the PMD ; 2.4 added for FEE boards 
+    fSMthick    = 2.0*(fgkThSS/2. +0.15)
+                +fgkThSteel/2.+fgkThLead/2.0 + 2.4;
+
+
   
 }
+
