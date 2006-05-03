@@ -36,7 +36,7 @@ class AliTrackFitterRieman : public AliTrackFitter{
   void AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy, Float_t sz);
   void Update();
 
-  Double_t GetC() const; 
+  Double_t GetC() const              {return fRieman->GetC();}
   Double_t GetYat(Double_t x) const  {return fRieman->GetYat(x);}
   Double_t GetZat(Double_t x) const  {return fRieman->GetZat(x);}
   Double_t GetDYat(Double_t x) const {return fRieman->GetDYat(x);}
