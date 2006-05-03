@@ -312,7 +312,6 @@ AliFMDDetector::Detector2XYZ(Char_t   ring,
   // (x,y,z) coordinates (in global reference frame)
   AliFMDRing* r = GetRing(ring);
   if (!r) return;
-#if 1
   TGeoMatrix* m = FindTransform(ring, sector);
   if (!m) return;
   Double_t rho      = r->GetStripRadius(strip);
@@ -323,23 +322,19 @@ AliFMDDetector::Detector2XYZ(Char_t   ring,
 		       + r->GetCopperThickness()
 		       + r->GetChipThickness()
 		       + r->GetSpacing());
-  AliDebug(10,Form("Rho %7.3f, angle %7.3f", rho, phi));
+  AliDebug(30,Form("Rho %7.3f, angle %7.3f", rho, phi));
 # define DEGRAD TMath::Pi() / 180. 
   Double_t local[]  = { rho * TMath::Cos(phi * DEGRAD), 
 		        rho * TMath::Sin(phi * DEGRAD), 
 		        -modThick + siThick / 2 };
   Double_t master[3];
-  AliDebug(10, Form("Local (%7.3f,%7.3f,%7.3f)",local[0], local[1], local[2]));
+  AliDebug(30, Form("Local (%7.3f,%7.3f,%7.3f)",local[0], local[1], local[2]));
   m->LocalToMaster(local, master);
-  AliDebug(10, Form("Master (%7.3f,%7.3f,%7.3f)",
+  AliDebug(30, Form("Master (%7.3f,%7.3f,%7.3f)",
 		    master[0],master[1],master[2]));
   x = master[0];
   y = master[1];
   z = master[2];
-#else
-  z = GetRingZ(ring);
-  r->Detector2XYZ(sector, strip, x, y, z);
-#endif
 }
 
 //____________________________________________________________________

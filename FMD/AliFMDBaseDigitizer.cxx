@@ -337,8 +337,8 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
       UShort_t sector   = fmdHit->Sector();
       UShort_t strip    = fmdHit->Strip();
       Float_t  edep     = fmdHit->Edep();
-      UShort_t minstrip = param->GetMinStrip(detector, ring, sector, strip);
-      UShort_t maxstrip = param->GetMaxStrip(detector, ring, sector, strip);
+      // UShort_t minstrip = param->GetMinStrip(detector, ring, sector, strip);
+      // UShort_t maxstrip = param->GetMaxStrip(detector, ring, sector, strip);
       // Check if strip is `dead' 
       if (param->IsDead(detector, ring, sector, strip)) { 
 	AliDebug(5, Form("FMD%d%c[%2d,%3d] is marked as dead", 
@@ -346,11 +346,11 @@ AliFMDBaseDigitizer::SumContributions(AliFMD* fmd)
 	continue;
       }
       // Check if strip is out-side read-out range 
-      if (strip < minstrip || strip > maxstrip) {
-	AliDebug(5, Form("FMD%d%c[%2d,%3d] is outside range [%3d,%3d]", 
-			 detector, ring, sector, strip, minstrip, maxstrip));
-	continue;
-      }
+      // if (strip < minstrip || strip > maxstrip) {
+      //   AliDebug(5, Form("FMD%d%c[%2d,%3d] is outside range [%3d,%3d]", 
+      //		    detector,ring,sector,strip,minstrip,maxstrip));
+      //   continue;
+      // }
 	
       // Give warning in case of double hit 
       if (fEdep(detector, ring, sector, strip).fEdep != 0)
@@ -473,7 +473,7 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   AliFMDParameters* param = AliFMDParameters::Instance();
   Float_t  convF          = 1/param->GetPulseGain(detector,ring,sector,strip);
   UShort_t ped            = MakePedestal(detector,ring,sector,strip);
-  UInt_t   maxAdc         = param->GetAltroChannelSize();
+  UInt_t   maxAdc         = param->GetAltroChannelSize()-1;
   UShort_t rate           = param->GetSampleRate(detector,ring,sector,strip);
   
   // In case we don't oversample, just return the end value. 

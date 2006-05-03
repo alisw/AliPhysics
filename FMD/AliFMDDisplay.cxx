@@ -34,7 +34,7 @@
 #include "AliFMDRecPoint.h"     // ALIFMDRECPOINT_H
 #include "AliFMDGeometry.h"	// ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"	// ALIFMDPARAMETERS_H
-// #include <AliESDFMD.h>          // ALIESDFMD_H
+#include <AliESDFMD.h>          // ALIESDFMD_H
 #include <AliLog.h>
 #include <TStyle.h>
 // #include <TArrayF.h>
@@ -83,6 +83,8 @@ AliFMDDisplay::AliFMDDisplay(const char* gAliceFile)
   fMarkers->SetOwner(kTRUE);
   fHits->SetOwner(kFALSE);
   fgInstance = this;
+  SetMultiplicityCut();
+  SetPedestalFactor();
 }
 
 //____________________________________________________________________
@@ -237,6 +239,36 @@ AliFMDDisplay::LookupColor(Float_t x, Float_t max) const
   return gStyle->GetColorPalette(idx);
 }
 
+//____________________________________________________________________
+void
+AliFMDDisplay::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
+			 TObject* o, Float_t s, Float_t max)
+{
+  // Add a marker to the display
+  //
+  //    det 	Detector
+  //    rng 	Ring
+  //    sec 	Sector 
+  //    str 	Strip
+  //    o   	Object to refer to
+  //    s   	Signal 
+  //    max 	Maximum of signal 
+  //
+  AliFMDGeometry*   geom = AliFMDGeometry::Instance();
+  Double_t x, y, z;
+  geom->Detector2XYZ(det, rng, sec, str, x, y, z);
+  Float_t  size  = .1;
+  Float_t  zsize = s / max * 10;
+  Float_t  r     = TMath::Sqrt(x * x + y * y);
+  Float_t  theta = TMath::ATan2(r, z);
+  Float_t  phi   = TMath::ATan2(y, x);
+  Float_t  rz    = z + (z < 0 ? 1 : -1) * zsize;
+  TMarker3DBox* marker = new  TMarker3DBox(x,y,rz,size,size,zsize,theta,phi);
+  if (o) marker->SetRefObject(o);
+  marker->SetLineColor(LookupColor(s, max));
+  fMarkers->Add(marker);
+}
+  
 
 //____________________________________________________________________
 Bool_t 
@@ -248,11 +280,13 @@ AliFMDDisplay::ProcessHit(AliFMDHit* hit, TParticle* p)
 
   fHits->Add(hit);
   Float_t  size  = .1;
+  Float_t  zsize = hit->Edep() * 10;
+  Float_t  z     = hit->Z() + (hit->Z() < 0 ? 1 : -1) * zsize; 
   Float_t  pt    = TMath::Sqrt(hit->Py()*hit->Py()+hit->Px()*hit->Px());
   Float_t  theta = TMath::ATan2(pt, hit->Pz());
   Float_t  phi   = TMath::ATan2(hit->Py(), hit->Px());
-  TMarker3DBox* marker = new  TMarker3DBox(hit->X(), hit->Y(), hit->Z(),
-					   size, size, size, theta, phi);
+  TMarker3DBox* marker = new  TMarker3DBox(hit->X(), hit->Y(), z,
+					   size, size, zsize, theta, phi);
   marker->SetLineColor(LookupColor(hit->Edep(), 1));
   marker->SetRefObject(hit);
   fMarkers->Add(marker);
@@ -266,29 +300,19 @@ AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
   // Process a digit 
   if (!digit) { AliError("No digit");   return kFALSE; }
 
-  Double_t x, y, z;
-  AliFMDGeometry*   geom = AliFMDGeometry::Instance();
   AliFMDParameters* parm = AliFMDParameters::Instance();
-  Double_t threshold = (parm->GetPedestal(digit->Detector(), 
-					  digit->Ring(), 
-					  digit->Sector(), 
-					  digit->Strip())
-			+ 4 * parm->GetPedestalWidth(digit->Detector(), 
-						     digit->Ring(), 
-						     digit->Sector(), 
-						     digit->Strip()));
-  if (digit->Counts() < threshold) return kTRUE;
+  UShort_t det           =  digit->Detector();
+  Char_t   ring          =  digit->Ring();
+  UShort_t sec           =  digit->Sector();
+  UShort_t str           =  digit->Strip();
+  Double_t ped           =  parm->GetPedestal(det,ring, sec, str);
+  Double_t pedW          =  parm->GetPedestalWidth(det,ring, sec, str);
+  Double_t threshold     =  ped * fPedestalFactor * pedW;
+  Float_t  counts        = digit->Counts();
+  if (counts < threshold) return kTRUE;
   fHits->Add(digit);
-  geom->Detector2XYZ(digit->Detector(), digit->Ring(), digit->Sector(), 
-		    digit->Strip(), x, y, z);
-  Float_t  size  = .1;
-  Float_t  r     = TMath::Sqrt(x * x + y * y);
-  Float_t  theta = TMath::ATan2(r, z);
-  Float_t  phi   = TMath::ATan2(y, x);
-  TMarker3DBox* marker = new  TMarker3DBox(x,y,z,size,size,size,theta,phi);
-  marker->SetRefObject(digit);
-  marker->SetLineColor(LookupColor(digit->Counts(), 1024));
-  fMarkers->Add(marker);
+
+  AddMarker(det, ring, sec, str, digit, counts, 1024);
   return kTRUE;
 }
 
@@ -306,21 +330,32 @@ AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
 {
   // Process reconstructed point 
   if (!recpoint) { AliError("No recpoint");   return kFALSE; }
-  if (recpoint->Particles() < .1) return kTRUE;
+  if (recpoint->Particles() < fMultCut) return kTRUE;
   fHits->Add(recpoint);
-  Double_t x, y, z;
-  AliFMDGeometry* geom = AliFMDGeometry::Instance();
-  geom->Detector2XYZ(recpoint->Detector(), recpoint->Ring(), 
-		    recpoint->Sector(),  recpoint->Strip(), x, y, z);
+  AddMarker(recpoint->Detector(), recpoint->Ring(), recpoint->Sector(),  
+	    recpoint->Strip(), recpoint, recpoint->Particles(), 20);
+  return kTRUE;
+}
 
-  Float_t  size  = .1;
-  Float_t  r     = TMath::Sqrt(x * x + y * y);
-  Float_t  theta = TMath::ATan2(r, z);
-  Float_t  phi   = TMath::ATan2(y, x);
-  TMarker3DBox* marker = new  TMarker3DBox(x,y,z,size,size,size,theta,phi);
-  marker->SetRefObject(recpoint);
-  marker->SetLineColor(LookupColor(recpoint->Particles(), 20));
-  fMarkers->Add(marker);
+//____________________________________________________________________
+Bool_t 
+AliFMDDisplay::ProcessESD(AliESDFMD* esd)
+{
+  // Process event summary data
+  for (UShort_t det = 1; det <= 3; det++) {
+    Char_t rings[] = { 'I', (det == 1 ? '\0' : 'O'), '\0' };
+    for (Char_t* rng = rings; *rng != '\0'; rng++) {
+      UShort_t nsec = (*rng == 'I' ?  20 :  40);
+      UShort_t nstr = (*rng == 'O' ? 512 : 256);
+      for (UShort_t sec = 0; sec < nsec; sec++) {
+	for (UShort_t str = 0; str < nstr; str++) {
+	  Float_t mult = esd->Multiplicity(det,*rng,sec,str);
+	  if (mult < fMultCut) continue;
+	  AddMarker(det,*rng,sec,str, 0, mult, 20);
+	}
+      }
+    }
+  }
   return kTRUE;
 }
 

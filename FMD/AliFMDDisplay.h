@@ -88,15 +88,39 @@ public:
       @param recpoint Reconstructed point
       @return @c false on error  */
   virtual Bool_t ProcessRecPoint(AliFMDRecPoint* recpoint);
+  /** Visualize data in ESD 
+      @param esd FMD ESD data 
+      @return  Always @c true */
+  virtual Bool_t ProcessESD(AliESDFMD* esd);
   /** Look up a color index, based on the value @a x and the maximum
       value of @a x
       @param x   Value 
       @param max Maximum (for example 1023 for digits)
       @return @c false on error  */
   virtual Int_t  LookupColor(Float_t x, Float_t max)  const;
+  /** Set multiplicity cut 
+      @param cut Cut-off in multiplicity */
+  virtual void SetMultiplicityCut(Float_t c=.01) { fMultCut = c; }//*MENU*
+  /** Set pedestal width factor 
+      @param fac Factor */
+  virtual void SetPedestalFactor(Float_t f=3) { fPedestalFactor = f; }//*MENU*
 protected:
+  /** Copy constructor 
+      @param o Object to copy from  */
   AliFMDDisplay(const AliFMDDisplay& o) : AliFMDInput(o) { } 
+  /** Assignment operator 
+      @return Reference to this object */
   AliFMDDisplay& operator=(const AliFMDDisplay&) { return *this; } 
+  /** Add a marker to the display
+      @param det Detector
+      @param rng Ring
+      @param sec Sector 
+      @param str Strip
+      @param o   Object to refer to
+      @param s   Signal 
+      @param max Maximum of signal */
+  void AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str, 
+		 TObject* o, Float_t s, Float_t max);
   
   static AliFMDDisplay* fgInstance; // Static instance 
   Bool_t                fWait;      // Wait until user presses `Continue'
@@ -112,6 +136,8 @@ protected:
   Float_t               fY0;        // Y at lower left corner or range 
   Float_t               fX1;        // X at upper right corner or range 
   Float_t               fY1;        // Y at upper right corner or range 
+  Float_t               fMultCut;   // Multiplicity cut  
+  Float_t               fPedestalFactor; // ADC acceptance factor 
   Int_t                 fXPixel;    // X pixel of mark
   Int_t                 fYPixel;    // Y pixel of mark
   Int_t                 fOldXPixel; // Old x pixel of mark

@@ -13,9 +13,8 @@
 //
 #include <TH2D.h>
 #include <AliFMDHit.h>
-#include <AliFMDMultStrip.h>
-#include <AliFMDMultRegion.h>
 #include <AliFMDDigit.h>
+#include <AliFMDRecPoint.h>
 #include <AliFMDInput.h>
 #include <AliFMDEdepMap.h>
 #include <AliFMDFloatMap.h>
@@ -40,13 +39,15 @@
     @endcode
     @ingroup FMD_script
  */
-class DrawHitsRecs : public AliFMDInputHits
+class DrawHitsRecs : public AliFMDInput
 {
 private:
-  TH2D* fElossVsMult; // Histogram 
-  TH2D* fHitsVsStrip;  // Histogram 
-  TH2D* fHitsVsRegion;  // Histogram 
-  AliFMDEdepMap fMap;
+  TH2D* fHitEvsAdc;
+  TH2D* fHitEvsRecM;  // Histogram 
+  TH2D* fHitEvsRecE;  // Histogram 
+  TH1D* fDiffE;       // Histogram 
+  TH2D* fHitsVsRecM;  // Histogram 
+  AliFMDEdepMap  fMap;
   AliFMDFloatMap fEta;
   AliFMDFloatMap fPhi;
   AliFMDFloatMap fMult;
@@ -73,25 +74,41 @@ public:
     fPrimary = primary;
     AddLoad(kRecPoints);
     AddLoad(kHits);
+    AddLoad(kDigits);
     if (fPrimary) AddLoad(kKinematics);
     TArrayF eloss(MakeLogScale(n, emin, emax));
     TArrayF mults(m+1);
     mults[0] = mmin;
     for (Int_t i = 1; i < m+1; i++) mults[i] = mults[i-1] + (mmax-mmin)/m;
-    fElossVsMult = new TH2D("elossVsMult", 
-			    "#Delta E vs. Multiplicity (single)", 
-			   eloss.fN-1, eloss.fArray, mults.fN-1, mults.fArray);
-    fElossVsMult->SetXTitle("#Delta E/#Delta x [MeV/cm]");
-    fElossVsMult->SetYTitle("Strip Multiplicity");
 
+    fHitEvsAdc  = new TH2D("hitEvsAdc", "#Delta E_{sim} vs. ADC",
+			   n, emin, emax, 1025, -.5, 1024.5);
+    fHitEvsAdc->SetXTitle("#Delta E_{sim} [MeV]");
+    fHitEvsAdc->SetYTitle("ADC");
+    
+    fHitEvsRecM = new TH2D("hitEvsRecM", "#Delta E_{sim} vs. M_{rec}", 
+			   eloss.fN-1, eloss.fArray, mults.fN-1, mults.fArray);
+    fHitEvsRecM->SetXTitle("#Delta E_{sim} [MeV]");
+    fHitEvsRecM->SetYTitle("M_{rec}");
+
+    fHitEvsRecE = new TH2D("hitEvsRecE", "#Delta E_{sim} vs. #Delta E_{rec}", 
+			    n, emin, emax, n, emin, emax);
+    fHitEvsRecE->SetXTitle("#Delta E_{sim} [MeV]");
+    fHitEvsRecE->SetYTitle("#Delta E_{rec} [MeV]");
+
+
+    fDiffE = new TH1D("diffE", 
+		      "#frac{#Delta E_{sim}-#Delta E_{rec}}{#Delta E_{sim}}", 
+		      1100, -1, 1.1);
+    fDiffE->SetXTitle("#frac{#Delta E_{sim}-#Delta E_{rec}}{#Delta E_{sim}}");
+    
     Double_t omin = -.5;
     Double_t omax = 7.5;
     Int_t    o    = 8;
-    fHitsVsStrip = new TH2D("hitsVsStrip", 
-			    "# of Hits vs. Multiplicity (strip)",
+    fHitsVsRecM = new TH2D("hitsVsStrip", "# of Hits vs. M_{rec}",
 			   o, omin, omax, m, mmin, mmax);
-    fHitsVsStrip->SetXTitle("# of Hits");
-    fHitsVsStrip->SetYTitle("Strip Multiplicity");
+    fHitsVsRecM->SetXTitle("# of Hits");
+    fHitsVsRecM->SetYTitle("M_{rec}");
   }
   //__________________________________________________________________
   /** Begining of event
@@ -100,7 +117,7 @@ public:
   Bool_t Begin(Int_t ev) 
   {
     fMap.Reset();
-    return AliFMDInputHits::Begin(ev);
+    return AliFMDInput::Begin(ev);
   }
   //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle*) 
@@ -125,24 +142,46 @@ public:
     fMap(det, rng, sec, str).fN++;
     return kTRUE;
   }
+
+  //__________________________________________________________________
+  Bool_t ProcessDigit(AliFMDDigit* digit)
+  {
+    if (!digit) return kTRUE;
+
+    UShort_t det = digit->Detector();
+    Char_t   rng = digit->Ring();
+    UShort_t sec = digit->Sector();
+    UShort_t str = digit->Strip();
+    if (str > 511) {
+      AliWarning(Form("Bad strip number %d in digit", str));
+      return kTRUE;
+    }
+    Double_t edep = fMap(det, rng, sec, str).fEdep;
+    if (edep > 0) fHitEvsAdc->Fill(edep, digit->Counts());
+      
+    return kTRUE;
+  }
+
   //__________________________________________________________________
   Bool_t ProcessRecPoint(AliFMDRecPoint* single) 
   {
-    if (!single) continue;
+    if (!single) return kTRUE;
     UShort_t det = single->Detector();
     Char_t   rng = single->Ring();
     UShort_t sec = single->Sector();
     UShort_t str = single->Strip();
     if (str > 511) {
       AliWarning(Form("Bad strip number %d in single", str));
-      continue;
+      return kTRUE;
     }
-    if (fMap(det, rng, sec, str).fEdep > 0) 
-      fElossVsMult->Fill(fMap(det, rng, sec, str).fEdep, 
-			 single->Particles());
-    if (fMap(det, rng, sec, str).fN > 0) 
-      fHitsVsStrip->Fill(fMap(det, rng, sec, str).fN, 
-			 single->Particles());
+    Double_t edep = fMap(det, rng, sec, str).fEdep;
+    Int_t    nhit = fMap(det, rng, sec, str).fN;
+    if (edep > 0) {
+      fHitEvsRecM->Fill(edep, single->Particles());
+      fHitEvsRecE->Fill(edep, single->Edep());
+      fDiffE->Fill((single->Edep() - edep) / edep);
+    }
+    if (nhit > 0) fHitsVsRecM->Fill(nhit, single->Particles());
     return kTRUE;
   }
   //__________________________________________________________________
@@ -155,13 +194,24 @@ public:
     gStyle->SetPadColor(0);
     gStyle->SetPadBorderSize(0);
 
-    new TCanvas("c1", "Energy loss vs. Strip Multiplicity");
-    fElossVsMult->SetStats(kFALSE);
-    fElossVsMult->Draw("COLZ");
+    new TCanvas("c0", fHitEvsAdc->GetTitle());
+    fHitEvsAdc->SetStats(kFALSE);
+    fHitEvsAdc->Draw("COLZ");
 
-    new TCanvas("c2", "# of Hits vs. Strip Multiplicity");
-    fHitsVsStrip->SetStats(kFALSE);
-    fHitsVsStrip->Draw("COLZ");
+    new TCanvas("c1", fHitEvsRecM->GetTitle());
+    fHitEvsRecM->SetStats(kFALSE);
+    fHitEvsRecM->Draw("COLZ");
+
+    new TCanvas("c2", fHitEvsRecE->GetTitle());
+    fHitEvsRecE->SetStats(kFALSE);
+    fHitEvsRecE->Draw("COLZ");
+
+    new TCanvas("c3", fDiffE->GetTitle());
+    fDiffE->Draw();
+
+    new TCanvas("c4", fHitsVsRecM->GetTitle());
+    fHitsVsRecM->SetStats(kFALSE);
+    fHitsVsRecM->Draw("COLZ");
 
     return kTRUE;
   }
