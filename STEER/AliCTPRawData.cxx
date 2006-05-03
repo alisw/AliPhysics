@@ -61,7 +61,7 @@ void AliCTPRawData::RawData()
   // This method writes the CTP (trigger)
   // raw data in a DDL file
   ULong64_t l2class = 0;
-  UInt_t l2cluster = 0;
+  UChar_t l2cluster = 0;
   AliInfo("Storing the CTP DDL raw data...");
   AliRunLoader *runloader = AliRunLoader::GetRunLoader();
   if (runloader) {
@@ -72,15 +72,7 @@ void AliCTPRawData::RawData()
       // First get the trigger mask
       l2class = aCTP->GetClassMask();
       // Then get the detector cluster to be read out
-      TString detectorCluster = aCTP->GetDetectors();
-      if (detectorCluster.Contains("START")) {
-	if (detectorCluster.Contains("MUON"))
-	  l2cluster |= 1;
-	else
-	  l2cluster |= 1 << 1;
-      }
-      else
-	l2cluster |= 1 << 2;
+      l2cluster = aCTP->GetClusterMask();
     }
     else
       AliWarning("No trigger can be loaded! Putting empty trigger class into the CTP raw data !");
