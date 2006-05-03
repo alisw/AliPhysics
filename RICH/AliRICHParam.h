@@ -604,84 +604,95 @@ Int_t AliRICHParam::Hit2SDigs(TVector2 hitX2,Double_t e,TClonesArray *pSDigLst)
   return iQtot;
 }//Hit2SDigs() for TVector2
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliRICHParam::SigmaSinglePhotonFormula(Double_t thetaCer, Double_t phiCer, Double_t theta, Double_t phi, Double_t beta)
+Double_t AliRICHParam::SigmaSinglePhotonFormula(Double_t thetaC, Double_t phiC, Double_t thetaM, Double_t phiM, Double_t betaM)
 {
+// Analithical calculation of total error (as a sum of localization, geometrical and chromatic errors) on Cerenkov angle for a given Cerenkov photon 
+// created by a given MIP. Fromulae according to CERN-EP-2000-058 
+// Arguments: Cerenkov and azimuthal angles for Cerenkov photon, [radians]
+//            dip and azimuthal angles for MIP taken at the entrance to radiator, [radians]        
+//            MIP beta
+//   Returns: absolute error on Cerenkov angle, [radians]    
+  
   TVector3 v(-999,-999,-999);
 
-  v.SetX(ErrLoc(thetaCer,phiCer,theta,phi,beta));
-  v.SetY(ErrGeom(thetaCer,phiCer,theta,phi,beta));
-  v.SetZ(ErrCrom(thetaCer,phiCer,theta,phi,beta));
+  v.SetX(ErrLoc (thetaC,phiC,thetaM,phiM,betaM));
+  v.SetY(ErrGeom(thetaC,phiC,thetaM,phiM,betaM));
+  v.SetZ(ErrCrom(thetaC,phiC,thetaM,phiM,betaM));
 
   return v.Mag2();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliRICHParam::ErrLoc(Double_t thetaC, Double_t phiC, Double_t Ptheta, Double_t Pphi, Double_t beta)
+Double_t AliRICHParam::ErrLoc(Double_t thetaC, Double_t phiC, Double_t thetaM, Double_t phiM, Double_t betaM)
 {
-//par->RefIdxC6F14(par->MeanCkovEnergy())
-//(Float_t)1.29337525367736816e+00
-Double_t RefC6F14m = 1.29337;
-  Double_t Hgap = Pc2Win();
-  Double_t dphi = phiC - Pphi;
+// Analithical calculation of localization error (due to finite segmentation of PC) on Cerenkov angle for a given Cerenkov photon 
+// created by a given MIP. Fromulae according to CERN-EP-2000-058 
+// Arguments: Cerenkov and azimuthal angles for Cerenkov photon, [radians]
+//            dip and azimuthal angles for MIP taken at the entrance to radiator, [radians]        
+//            MIP beta
+//   Returns: absolute error on Cerenkov angle, [radians]    
+  Double_t refC6F14m = 1.29337;
+  Double_t phiDelta = phiC - phiM;
 
-  Double_t alpha =TMath::Cos(Ptheta)-TMath::Tan(thetaC)*TMath::Cos(dphi)*TMath::Sin(Ptheta);
-  Double_t k = 1.-RefC6F14m*RefC6F14m+alpha*alpha/(beta*beta);
-  if (k<0) k=0; //PH more investigation needed...
+  Double_t alpha =TMath::Cos(thetaM)-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(thetaM);
+  Double_t k = 1.-refC6F14m*refC6F14m+alpha*alpha/(betaM*betaM);
+  if (k<0) return 1e10;
 
-  Double_t mu = TMath::Sin(Ptheta)*TMath::Sin(Pphi) + TMath::Tan(thetaC)*(TMath::Cos(Ptheta)*TMath::Cos(dphi)*TMath::Sin(Pphi)
-+ TMath::Sin(dphi)*TMath::Cos(Pphi));
+  Double_t mu =TMath::Sin(thetaM)*TMath::Sin(phiM)+TMath::Tan(thetaC)*(TMath::Cos(thetaM)*TMath::Cos(phiDelta)*TMath::Sin(phiM)+TMath::Sin(phiDelta)*TMath::Cos(phiM));
+  Double_t e  =TMath::Sin(thetaM)*TMath::Cos(phiM)+TMath::Tan(thetaC)*(TMath::Cos(thetaM)*TMath::Cos(phiDelta)*TMath::Cos(phiM)-TMath::Sin(phiDelta)*TMath::Sin(phiM));
 
-  Double_t e = TMath::Sin(Ptheta)*TMath::Cos(Pphi)+TMath::Tan(thetaC)*(TMath::Cos(Ptheta)*TMath::Cos(dphi)*TMath::Cos(Pphi) -TMath::Sin(dphi)*TMath::Sin(Pphi));
-
-  Double_t kk = beta*TMath::Sqrt(k)/(Hgap*alpha);
-  Double_t dtdxc = kk*(k*(TMath::Cos(dphi)*TMath::Cos(Pphi) - TMath::Cos(Ptheta)*TMath::Sin(dphi)*TMath::Sin(Pphi)) - ( alpha*
-  mu/(beta*beta) )*TMath::Sin(Ptheta)*TMath::Sin(dphi));
-
-  Double_t dtdyc = kk*(k*(TMath::Cos(dphi)*TMath::Sin(Pphi) + TMath::Cos(Ptheta)*TMath::Sin(dphi)*TMath::Cos(Pphi)) + ( alpha*
-  e/(beta*beta) )* TMath::Sin(Ptheta)*TMath::Sin(dphi));
+  Double_t kk = betaM*TMath::Sqrt(k)/(Pc2Win()*alpha);
+  Double_t dtdxc = kk*(k*(TMath::Cos(phiDelta)*TMath::Cos(phiM)-TMath::Cos(thetaM)*TMath::Sin(phiDelta)*TMath::Sin(phiM))-(alpha*mu/(betaM*betaM))*TMath::Sin(thetaM)*TMath::Sin(phiDelta));
+  Double_t dtdyc = kk*(k*(TMath::Cos(phiDelta)*TMath::Sin(phiM)+TMath::Cos(thetaM)*TMath::Sin(phiDelta)*TMath::Cos(phiM))+(alpha* e/(betaM*betaM))*TMath::Sin(thetaM)*TMath::Sin(phiDelta));
 
   return  TMath::Sqrt(0.2*0.2*dtdxc*dtdxc + 0.25*0.25*dtdyc*dtdyc);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliRICHParam::ErrCrom(Double_t thetaC, Double_t phiC, Double_t Ptheta, Double_t Pphi, Double_t beta)
+Double_t AliRICHParam::ErrCrom(Double_t thetaC, Double_t phiC, Double_t thetaM, Double_t phiM, Double_t betaM)
 {
-  Double_t dphi = phiC - Pphi;
-  Double_t RefC6F14m = 1.29337;
-  Double_t alpha =TMath::Cos(Ptheta)-TMath::Tan(thetaC)*TMath::Cos(dphi)*TMath::Sin(Ptheta);
+// Analithical calculation of chromatic error (due to lack of knowledge of Cerenkov photon energy) on Cerenkov angle for a given Cerenkov photon 
+// created by a given MIP. Fromulae according to CERN-EP-2000-058 
+// Arguments: Cerenkov and azimuthal angles for Cerenkov photon, [radians]
+//            dip and azimuthal angles for MIP taken at the entrance to radiator, [radians]        
+//            MIP beta
+//   Returns: absolute error on Cerenkov angle, [radians]    
+  Double_t phiDelta = phiC - phiM;
+  Double_t refC6F14m = 1.29337;
+  Double_t alpha =TMath::Cos(thetaM)-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(thetaM);
 
-  Double_t dtdn = TMath::Cos(Ptheta)*RefC6F14m*beta*beta/(alpha*TMath::Tan(thetaC));
+  Double_t dtdn = TMath::Cos(thetaM)*refC6F14m*betaM*betaM/(alpha*TMath::Tan(thetaC));
             
   Double_t f = 0.00928*(7.75-5.635)/TMath::Sqrt(12.);
 
   return f*dtdn;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliRICHParam::ErrGeom(Double_t thetaC, Double_t phiC, Double_t Ptheta, Double_t Pphi, Double_t beta )
+Double_t AliRICHParam::ErrGeom(Double_t thetaC, Double_t phiC, Double_t thetaM, Double_t phiM, Double_t betaM)
 {
+// Analithical calculation of geometric error (due to lack of knowledge of creation point in radiator) on Cerenkov angle for a given Cerenkov photon 
+// created by a given MIP. Fromulae according to CERN-EP-2000-058 
+// Arguments: Cerenkov and azimuthal angles for Cerenkov photon, [radians]
+//            dip and azimuthal angles for MIP taken at the entrance to radiator, [radians]        
+//            MIP beta
+//   Returns: absolute error on Cerenkov angle, [radians]    
 
-  Double_t Tr = RadThick();
-  Double_t Xep = 0.5*Tr;
+  Double_t phiDelta = phiC - phiM;
+  Double_t refC6F14m = 1.29337;
+  Double_t alpha =TMath::Cos(thetaM)-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(thetaM);
 
-  Double_t dphi = phiC - Pphi;
-  Double_t RefC6F14m = 1.29337;
-  Double_t alpha =TMath::Cos(Ptheta)-TMath::Tan(thetaC)*TMath::Cos(dphi)*TMath::Sin(Ptheta);
+  Double_t k = 1.-refC6F14m*refC6F14m+alpha*alpha/(betaM*betaM);
+  if (k<0) return 1e10;
 
-  Double_t k = 1.-RefC6F14m*RefC6F14m+alpha*alpha/(beta*beta);
-  if (k<0) k=0;  //PH more investigation needed...
-
-  Double_t Hgap = Pc2Win();
-
-
-  Double_t eTr = (Tr - Xep)*beta*TMath::Sqrt(k)/(Hgap*alpha);
-  Double_t lambda = 1.-TMath::Sin(Ptheta)*TMath::Sin(Ptheta)*TMath::Sin(phiC)*TMath::Sin(phiC);
+  Double_t eTr = 0.5*RadThick()*betaM*TMath::Sqrt(k)/(Pc2Win()*alpha);
+  Double_t lambda = 1.-TMath::Sin(thetaM)*TMath::Sin(thetaM)*TMath::Sin(phiC)*TMath::Sin(phiC);
 
   Double_t c = 1./(1.+ eTr*k/(alpha*alpha*TMath::Cos(thetaC)*TMath::Cos(thetaC)));
-  Double_t I = beta*TMath::Tan(thetaC)*lambda*TMath::Power(k,1.5);
-  Double_t II = 1.+eTr*beta*I;
+  Double_t i = betaM*TMath::Tan(thetaC)*lambda*TMath::Power(k,1.5);
+  Double_t ii = 1.+eTr*betaM*i;
 
-  Double_t err = c * (I/(alpha*alpha*Hgap) +  II* (1.-lambda) / ( alpha*alpha*Hgap*beta*(1.+eTr)) );
-  Double_t TrErr = Tr/(TMath::Sqrt(12.)*TMath::Cos(Ptheta));
+  Double_t err = c * (i/(alpha*alpha*Pc2Win()) +  ii*(1.-lambda) / ( alpha*alpha*Pc2Win()*betaM*(1.+eTr)) );
+  Double_t trErr = RadThick()/(TMath::Sqrt(12.)*TMath::Cos(thetaM));
 
-  return TrErr*err;
+  return trErr*err;
 }//ErrGeom()
 
 #endif //AliRICHParam_h
