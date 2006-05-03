@@ -89,8 +89,8 @@ void AliSHIL::CreateMaterials()
 			.337021,.013,.044,.014 };
 // Ni-Cu-W alloy
   Float_t aniwcu[3] ={58.6934, 183.84, 63.546};
-  Float_t zniwcu[3] ={28., 74., 29};
-  Float_t wniwcu[3] ={0.015,0.95,0.035};
+  Float_t zniwcu[3] ={28.,      74.,   29.};
+  Float_t wniwcu[3] ={ 0.015,    0.95,  0.035};
 //
 // Insulation powder
 //                    Si         O       Ti     Al
@@ -146,6 +146,7 @@ void AliSHIL::CreateMaterials()
   AliMixture(15, "AIR1      ", aAir, zAir, dAir, 4, wAir);
   AliMixture(35, "AIR2      ", aAir, zAir, dAir, 4, wAir);
   AliMixture(55, "AIR3      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(75, "AIR_MUON  ", aAir, zAir, dAir, 4, wAir);
 
   //     Vacuum 
   AliMixture(16, "VACUUM1 ", aAir, zAir, dAir1, 4, wAir);
@@ -198,7 +199,7 @@ void AliSHIL::CreateMaterials()
   AliMedium(30, "FE_C1           ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(50, "FE_C2           ", 50, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
-  //    Iron 
+  //    Copper 
   AliMedium(11, "Cu_C0           ", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(31, "Cu_C1           ", 31, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(51, "Cu_C2           ", 51, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
@@ -222,6 +223,7 @@ void AliSHIL::CreateMaterials()
   AliMedium(15, "AIR_C0          ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(75, "AIR_MUON        ", 75, 0, 1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Vacuum 
   AliMedium(16, "VA_C0           ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);

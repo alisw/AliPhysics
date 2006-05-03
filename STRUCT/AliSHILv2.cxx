@@ -93,7 +93,7 @@ void AliSHILv2::CreateGeometry()
     
     enum {kC=1705, kAl=1708, kFe=1709, kCu=1710, kW=1711, kPb=1712,
 	  kNiCuW=1720, kVacuum=1715, kAir=1714, kConcrete=1716,
-	  kPolyCH2=1717, kSteel=1709, kInsulation=1713};	
+	  kPolyCH2=1717, kSteel=1718, kInsulation=1713, kAirMuon = 1774};	
     Int_t i;
     
 //
@@ -238,6 +238,192 @@ void AliSHILv2::CreateGeometry()
   AliMatrix(idrotm[1705], 270., 0., 90., 90., 180., 0.);
 
   dZ=-dl;
+
+//
+// Dimuon arm mother volumes (YOUT1, YOUT3)
+//
+
+  // Dipole parameters
+  Float_t z01 =  -724.45;
+  // Float_t z02 =  -814.30;
+  Float_t z05 = -1235.55;
+
+// Before dipole
+//
+
+  Float_t zpos  = -zstart - kzLength;
+  Float_t shift_after_absorber = 35;
+  Float_t delta = 1e-06;
+  Float_t rst1  = 120;
+  Float_t rst2  = 150;
+  Float_t rst3  = 252;
+  Float_t rst4  = 252;
+  Float_t rst5  = 304;
+  //Float_t rst6  = 430.;
+  Float_t rst7  = 460.;
+
+  // Float_t zstart2 = zpos + zstart;
+
+  par0[0]  = 0.;
+  par0[1]  = 360.;
+  par0[2]  = 11.;
+
+//
+// start
+  // par0[3]  = zpos - ( -dl );
+       // start only after absorber
+  // z = -503.00     
+  par0[3]  = zpos - ( -dl + shift_after_absorber ) + delta;
+  par0[4]  = ( zstart + shift_after_absorber ) * TMath::Tan(kAccMin) + delta;
+  par0[5]  = rst1;
+
+// recess station 1
+  // z = -517.70     
+  par0[6]  = zpos - ( -dl  - zstart + kZch11 + delta );
+  par0[7]  = 18.2 + delta;
+  par0[8]  = rst1;
+
+  // z = -517.70     
+  par0[9]   = par0[6];
+  par0[10]  = kR11 + delta;
+  par0[11]  = rst1;
+
+  // z = -553.70     
+  par0[12]  = zpos - ( -dl - zstart + kZch12 - delta );
+  par0[13]  = kR11 + delta;
+  par0[14]  = rst1;
+
+  // z = -553.70     
+  par0[15]  = par0[12];
+  par0[16]  = 19.5 + delta;
+  par0[17]  = rst1;
+
+// recess station 2
+  // z = -661.30     
+  par0[18]  = zpos - ( -dz+kZch21 + delta );
+  par0[19]  = kZch21 * TMath::Tan(kAccMin) + delta;
+  par0[20]  = rst2;
+
+  // z = -661.30     
+  par0[21]  = par0[18];
+  par0[22] = kR21 + delta;
+  par0[23] = rst2;
+
+  // z = -709.90     
+  par0[24]  = zpos - ( -dz+kZch22 - delta );
+  par0[25] = kR21 + delta;
+  par0[26] = rst2;
+
+  // z = -709.90     
+  par0[27]  = par0[24];
+  par0[28]  = kZch22 * TMath::Tan(kAccMin) + delta;
+  par0[29]  = rst2;
+//
+  // z = -711.00     
+  par0[30] = zpos - ( -dz+kZvac6 );
+  par0[31] = kZvac6 * TMath::Tan(kAccMin) + delta;
+  par0[32] = rst2;
+
+  Float_t nextZ = zpos - ( -dz+kZConeE );
+  Float_t nextRin = 30. + delta;
+  Float_t nextRout = rst3;
+  Float_t tgin  = ( nextRin - par0[31]) / (nextZ - par0[30]);
+  Float_t tgout = ( nextRout - par0[32])/ (nextZ - par0[30]);
+
+  // z = -724.45     
+  par0[33] = z01;
+  par0[34] = par0[31] + (z01 - par0[30]) * tgin;
+  par0[35] = par0[32] + (z01 - par0[30]) * tgout;
+
+  gMC->Gsvolu("YOUT1", "PCON", idtmed[kAirMuon], par0, 36);
+  gMC->Gspos("YOUT1", 1, "ALIC", 0., 0., 0., 0, "ONLY");  
+
+
+// 
+// After dipole
+// 
+
+  par0[0]  = 0.;
+  par0[1]  = 360.;
+  par0[2]  = 14.;
+
+  // z = -1235.55
+  par0[3] = z05;
+  par0[4] = nextRout - (z05 - nextZ) * TMath::Tan(kThetaOpenPbO) + delta ;
+  par0[5] = rst4;
+
+// recess station 4
+  // z = -1259.90
+  par0[6] = zpos - ( -dz+kZch41 + delta );
+  par0[7] = 30.+(kZch41-kZConeE)*TMath::Tan(kThetaOpenPbO) + delta;
+  par0[8] = rst4;
+
+  // z = -1259.90
+  par0[9] = par0[6];
+  par0[10] = 36.9 + delta;
+  par0[11] = rst4;
+
+  // z = -1324.10
+  par0[12] = zpos - ( -dz+kZch42 - delta );
+  par0[13] = 36.9 + delta;
+  par0[14] = rst4;
+
+  // z = -1324.10
+  par0[15] = par0[12];
+  par0[16] = 30.+(kZch42-kZConeE)*TMath::Tan(kThetaOpenPbO) + delta;
+  par0[17] = rst5;
+
+// recess station 5
+
+  // z = -1390.00
+  par0[18] = zpos - ( -dz+kZch51 + delta );
+  par0[19] = 30.+(kZch51-kZConeE)*TMath::Tan(kThetaOpenPbO) + delta;
+  par0[20] = rst5;
+
+  // z = -1390.00
+  par0[21] = par0[18];
+  par0[22] = 36.9 + delta;
+  par0[23] = rst5;
+
+  // z = -1454.20
+  par0[24] = zpos - ( -dz+kZch52 - delta );
+  par0[25] = 36.9 + delta;
+  par0[26] = rst5;
+
+  // z = -1454.20
+  par0[27] = par0[24];
+  par0[28] =  30.+(kZch52+4.-kZConeE)*TMath::Tan(kThetaOpenPbO) + delta;
+  par0[29] = rst5;
+
+// end of cone
+
+  // z = -1466.00
+  par0[30] = zpos - ( -dz+kZvac10 - delta );
+  par0[31] = par0[70];
+  par0[32] = rst7;
+
+  // z = -1466.00
+  par0[33] = par0[30];
+  par0[34] = kR42 + delta;
+  par0[35] = rst7;
+
+  // z = -1800.00
+  par0[36] = zpos - ( -dz+kZvac11 - delta );
+  par0[37] = kR42 + delta;
+  par0[38] = rst7;
+
+  // z = -1800.00
+  par0[39] = par0[36];
+  par0[40] = kR43 + delta;
+  par0[41] = rst7;
+
+  // z = -1900.00
+  par0[42] = zpos - ( -dz+kZvac12 );
+  par0[43] = kR43 + delta;
+  par0[44] = rst7;
+
+  gMC->Gsvolu("YOUT3", "PCON", idtmed[kAirMuon], par0, 45);
+  gMC->Gspos("YOUT3", 1, "ALIC", 0., 0., 0., 0, "ONLY");  
 
 //
 // First section: bellows below and behind front absorber 
@@ -990,14 +1176,14 @@ void AliSHILv2::CreateGeometry()
   tpar[0]=31.;
   tpar[1]=kR43;
   tpar[2]=(kZvac12-kZvac11)/2.;
-  gMC->Gsvolu("YFEI", "TUBE", idtmed[kFe+40], tpar, 3);
+  gMC->Gsvolu("YFEI", "TUBE", idtmed[kSteel+40], tpar, 3);
   dz=dl-tpar[2];
   gMC->Gspos("YFEI", 1, "YGO4", 0., 0., dz, 0, "ONLY"); 
 
   tpar[0]=31.;
   tpar[1]=kR43;
   tpar[2]=2.5;
-  gMC->Gsvolu("YFEO", "TUBE", idtmed[kFe], tpar, 3);
+  gMC->Gsvolu("YFEO", "TUBE", idtmed[kSteel], tpar, 3);
   dz=-(kZvac12-kZvac11)/2.+tpar[2];
   gMC->Gspos("YFEO", 1, "YFEI", 0., 0., dz, 0, "ONLY"); 
 
@@ -1048,19 +1234,30 @@ void AliSHILv2::CreateGeometry()
   
   dz=dl-cpar[0];
   gMC->Gspos("YV32", 1, "YMO4", 0., 0., dz, 0, "ONLY"); 
-//
-//
-// MUON trigger wall
-//  
-  tpar[0] = 50.;
-  tpar[1] = 310.;
-  tpar[2] = (kZFilterOut - kZFilterIn) / 2.;
-  gMC->Gsvolu("YFIM", "TUBE", idtmed[kFe+40], tpar, 3);
+
+///////////////////////////////////
+//    Muon Filter                //
+//    Drawing ALIP2A__0105       //
+///////////////////////////////////
+  TGeoBBox*   shMuonFilterO1  = new TGeoBBox(550./2., 620./2., 120./2.);
+  shMuonFilterO1->SetName("FilterO1");
+  TGeoTube*   shMuonFilterI1  = new TGeoTube(0., 50., 121./2.);
+  shMuonFilterI1->SetName("FilterI1");
+  TGeoCompositeShape* shMuonFilterM = new TGeoCompositeShape("YMuonFilterM", "FilterO1-FilterI1");
+  TGeoVolume* voMuonFilterM = new TGeoVolume("YMuonFilterM", shMuonFilterM,  gGeoManager->GetMedium("SHIL_ST_C0"));
+  
+  TGeoBBox*   shMuonFilterO2  = new TGeoBBox(550./2., 620./2., 110./2.);
+  shMuonFilterO2->SetName("FilterO2");
+  TGeoTube*   shMuonFilterI2  = new TGeoTube(0., 50., 111./2.);
+  shMuonFilterI2->SetName("FilterI2");
+  TGeoCompositeShape* shMuonFilterI = new TGeoCompositeShape("YMuonFilterI", "FilterO2-FilterI2");
+  TGeoVolume* voMuonFilterI = new TGeoVolume("YMuonFilterI", shMuonFilterI,  gGeoManager->GetMedium("SHIL_ST_C3"));
+  voMuonFilterI->SetName("YMuonFilterI");
+  voMuonFilterM->AddNode(voMuonFilterI, 1, new TGeoTranslation(0., 0., 0.));
+  
   dz = (kZFilterIn + kZFilterOut) / 2.;
-  tpar[2] -= 10.;
-  gMC->Gsvolu("YFII","TUBE", idtmed[kFe], tpar, 3);
-  gMC->Gspos("YFII", 1, "YFIM", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("YFIM", 1, "ALIC", 0., 0., - dz, 0, "ONLY");
+  gMC->Gspos("YMuonFilterM", 1, "YOUT3", 0., 0., - dz, 0, "ONLY");
+
 //
 // Outer Pb Cone
 //  
@@ -1272,7 +1469,9 @@ void AliSHILv2::CreateGeometry()
       extraShield1->AddNode(voFaWring2,    4, new TGeoCombiTrans(0., 0., dz, rot180));
       dz +=   faWring2HWidth;
 
-      assembly->AddNode(extraShield1, 1, new TGeoTranslation(0., 0., -kzLength + 49.7 + dz));
+      // assembly->AddNode(extraShield1, 1, new TGeoTranslation(0., 0., -kzLength + 49.7 + dz));
+      Float_t dzKeep = dz;
+
 
 ///////////////////////////////////
 //                               //
@@ -1384,12 +1583,16 @@ void AliSHILv2::CreateGeometry()
       dz +=   saa1Wring3HWidth;   
       extraShield2->AddNode(voSaa1Wring4,    1, new TGeoTranslation(0., 0., dz));
       dz +=   saa1Wring4Width;   
-      assembly->AddNode(extraShield2, 1, new TGeoTranslation(0., 0., -kzLength + (kZch21 - zstart) + dz));
+      //assembly->AddNode(extraShield2, 1, new TGeoTranslation(0., 0., -kzLength + (kZch21 - zstart) + dz));
       
-      TGeoVolume* top =  gGeoManager->GetVolume("ALIC");
       TGeoRotation* rotxz = new TGeoRotation("rotxz",  90., 0., 90., 90., 180., 0.);
+      TGeoVolume* yout1 =  gGeoManager->GetVolume("YOUT1");
+      cout << zstart << "..." << dz << endl;
+      yout1->AddNode(extraShield1, 1, new TGeoCombiTrans(0., 0., -zstart - ( 49.7 + dzKeep), rotxz));
+      yout1->AddNode(extraShield2, 1, new TGeoCombiTrans(0., 0., -zstart - (kZch21 - zstart + dz ), rotxz));
+
+      TGeoVolume* top =  gGeoManager->GetVolume("ALIC");
       top->AddNode(assembly, 1, new TGeoCombiTrans(0., 0., -zstart - kzLength, rotxz));
-      
   }
 }
 

@@ -117,7 +117,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
   tpar[12] = 260.55 + kZDipole;
   tpar[13] = tpar[12] * TMath::Tan(2. * TMath::Pi() / 180.);
   tpar[14] = 527.34;
-  gMC->Gsvolu("DDIP", "PCON", idtmed[1814], tpar, 15);
+  gMC->Gsvolu("DDIP", "PCON", idtmed[1874], tpar, 15);
   //
   //       Coils 
   // air - m.f. 
@@ -863,6 +863,7 @@ void AliDIPOv2::CreateMaterials()
   AliMixture(15, "AIR0$      ", aAir, zAir, dAir, 4, wAir);
   AliMixture(35, "AIR1$      ", aAir, zAir, dAir, 4, wAir);
   AliMixture(55, "AIR2$      ", aAir, zAir, dAir, 4, wAir);
+  AliMixture(75, "AIR_MUON   ", aAir, zAir, dAir, 4, wAir);
   //     Vacuum 
   AliMixture(16, "VACUUM0$ ", aAir, zAir, dAir1, 4, wAir);
   AliMixture(36, "VACUUM1$ ", aAir, zAir, dAir1, 4, wAir);
@@ -900,7 +901,7 @@ void AliDIPOv2::CreateMaterials()
   // *************** 
   
   //    Aluminum 
-  AliMedium(9, "ALU_C0          ",  9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(9, "ALU_C0          ",  9,  0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(29, "ALU_C1          ", 29, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(49, "ALU_C2          ", 49, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
@@ -913,6 +914,7 @@ void AliDIPOv2::CreateMaterials()
   AliMedium(15, "AIR_C0          ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(75, "AIR_MUON        ", 75, 0, 1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Vacuum 
   AliMedium(16, "VA_C0           ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
