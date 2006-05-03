@@ -45,6 +45,7 @@ public:
   //  Getters
                TString    GetDetectors();
              ULong64_t    GetClassMask() const { return fClassMask; }
+               UChar_t    GetClusterMask();
              TObjArray*   GetLoadedDescriptors() { return &fDescriptors; }
              TObjArray*   GetResultConditions();
                   void    Print( const Option_t* opt ="" ) const;

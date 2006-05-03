@@ -196,6 +196,34 @@ TString AliCentralTrigger::GetDetectors()
 }
 
 //_____________________________________________________________________________
+UChar_t AliCentralTrigger::GetClusterMask()
+{
+   // Return the detector cluster mask following
+   // table 4.3 pag 60, TDR Trigger and DAQ
+
+   TString detStr = GetDetectors();
+   TObjArray* det = detStr.Tokenize(" ");
+   Int_t ndet = det->GetEntriesFast();
+
+   UInt_t idmask = 0;
+   if( ndet >= 8 ) {  // All detectors, should be 9 but CRT is not implemented yet
+      idmask = 1;
+      return idmask;
+   }
+
+   if( ndet >= 7 && !detStr.Contains("MUON") ) {  // Central Barrel, All but MUON
+      idmask = 2;
+      return idmask;
+   }
+
+   if( detStr.Contains("MUON") && detStr.Contains("START") ) {  // MUON arm
+      idmask = 4;
+      return idmask;
+   }
+
+   return idmask; // 0 something else!!!
+}
+//_____________________________________________________________________________
 Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader )
 {
    // run the trigger
