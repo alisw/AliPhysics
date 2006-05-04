@@ -184,14 +184,26 @@ Bool_t AliTrackResidualsFast::Update()
   TMatrixDSym     smatrix(6);
   TMatrixD        sums(1,6);
 
-  smatrix(0,0) = fSum[0]; smatrix(0,1) = fSum[1]; smatrix(0,2)=fSum[2];
-  smatrix(0,3) = fSum[3]; smatrix(0,4) = fSum[4]; smatrix(0,5)=fSum[5];
-  smatrix(1,1) = fSum[6]; smatrix(1,2) = fSum[7]; smatrix(1,3)=fSum[8];
-  smatrix(1,4) = fSum[9]; smatrix(1,5) = fSum[10];
-  smatrix(2,2) = fSum[11];smatrix(2,3) = fSum[12];smatrix(2,4)=fSum[13];
-  smatrix(2,5) = fSum[14];
-  smatrix(3,3) = fSum[15];smatrix(3,4) = fSum[16];smatrix(3,5)=fSum[17];
-  smatrix(4,4) = fSum[18];smatrix(4,5) = fSum[19];
+  smatrix(0,0) = fSum[0];
+  smatrix(0,1) = smatrix(1,0) = fSum[1];
+  smatrix(0,2) = smatrix(2,0) = fSum[2];
+  smatrix(0,3) = smatrix(3,0) = fSum[3];
+  smatrix(0,4) = smatrix(4,0) = fSum[4];
+  smatrix(0,5) = smatrix(5,0) = fSum[5];
+  smatrix(1,1) = fSum[6];
+  smatrix(1,2) = smatrix(2,1) = fSum[7];
+  smatrix(1,3) = smatrix(3,1) = fSum[8];
+  smatrix(1,4) = smatrix(4,1) = fSum[9];
+  smatrix(1,5) = smatrix(5,1) = fSum[10];
+  smatrix(2,2) = fSum[11];
+  smatrix(2,3) = smatrix(3,2) = fSum[12];
+  smatrix(2,4) = smatrix(4,2) = fSum[13];
+  smatrix(2,5) = smatrix(5,2) = fSum[14];
+  smatrix(3,3) = fSum[15];
+  smatrix(3,4) = smatrix(4,3) = fSum[16];
+  smatrix(3,5) = smatrix(5,3) = fSum[17];
+  smatrix(4,4) = fSum[18];
+  smatrix(4,5) = smatrix(5,4) = fSum[19];
   smatrix(5,5) = fSum[20];
 
   sums(0,0)    = fSum[21]; sums(0,1) = fSum[22]; sums(0,2) = fSum[23];

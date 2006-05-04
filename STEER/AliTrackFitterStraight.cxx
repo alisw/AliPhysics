@@ -224,7 +224,7 @@ void AliTrackFitterStraight::Update(){
   TMatrixDSym     smatrix(2);
   TMatrixD        sums(1,2);
   smatrix(0,0) = fSumXY[0]; smatrix(1,1)=fSumXY[2];
-  smatrix(0,1) = fSumXY[1];
+  smatrix(0,1) = fSumXY[1]; smatrix(1,0)=fSumXY[1];
   sums(0,0)    = fSumXY[3]; sums(0,1)   =fSumXY[4];
   smatrix.Invert();
   if (smatrix.IsValid()){
@@ -246,7 +246,7 @@ void AliTrackFitterStraight::Update(){
   TMatrixDSym     smatrixz(2);
   TMatrixD        sumsxz(1,2);
   smatrixz(0,0) = fSumXZ[0]; smatrixz(1,1) = fSumXZ[2];
-  smatrixz(0,1) = fSumXZ[1];
+  smatrixz(0,1) = fSumXZ[1]; smatrixz(1,0) = fSumXZ[1];
   sumsxz(0,0)   = fSumXZ[3]; sumsxz(0,1)   = fSumXZ[4];
   smatrixz.Invert();
   if (smatrixz.IsValid()){
