@@ -536,10 +536,6 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
       esd->AddMuonTrack(theESDTrack);
   } // end loop tracks
 
-  // add global trigger pattern
-  if (nRecTracks != 0)  
-    esd->SetTrigger(trigPat);
-
   // reset muondata
   muonData->ResetRecTracks();
   muonData->ResetRecTriggerTracks();
