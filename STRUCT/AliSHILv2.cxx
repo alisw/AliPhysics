@@ -240,7 +240,7 @@ void AliSHILv2::CreateGeometry()
   dZ=-dl;
 
 //
-// Dimuon arm mother volumes (YOUT1, YOUT3)
+// Dimuon arm mother volumes (YOUT1, YOUT2)
 //
 
   // Dipole parameters
@@ -422,8 +422,8 @@ void AliSHILv2::CreateGeometry()
   par0[43] = kR43 + delta;
   par0[44] = rst7;
 
-  gMC->Gsvolu("YOUT3", "PCON", idtmed[kAirMuon], par0, 45);
-  gMC->Gspos("YOUT3", 1, "ALIC", 0., 0., 0., 0, "ONLY");  
+  gMC->Gsvolu("YOUT2", "PCON", idtmed[kAirMuon], par0, 45);
+  gMC->Gspos("YOUT2", 1, "ALIC", 0., 0., 0., 0, "ONLY");  
 
 //
 // First section: bellows below and behind front absorber 
@@ -1256,7 +1256,7 @@ void AliSHILv2::CreateGeometry()
   voMuonFilterM->AddNode(voMuonFilterI, 1, new TGeoTranslation(0., 0., 0.));
   
   dz = (kZFilterIn + kZFilterOut) / 2.;
-  gMC->Gspos("YMuonFilterM", 1, "YOUT3", 0., 0., - dz, 0, "ONLY");
+  gMC->Gspos("YMuonFilterM", 1, "YOUT2", 0., 0., - dz, 0, "ONLY");
 
 //
 // Outer Pb Cone
