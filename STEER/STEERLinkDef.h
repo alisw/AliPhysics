@@ -114,6 +114,7 @@
 #pragma link C++ class AliTrackResiduals+;
 #pragma link C++ class AliTrackResidualsChi2+;
 #pragma link C++ class AliTrackResidualsFast+;
+#pragma link C++ class AliTrackResidualsLinear+;
 #pragma link C++ class AliAlignmentTracks+;
 
 #pragma link C++ class  TTreeDataElement+;
