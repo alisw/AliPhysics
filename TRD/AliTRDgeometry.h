@@ -26,24 +26,27 @@ class AliTRDgeometry : public AliGeometry {
   virtual ~AliTRDgeometry();
 
   virtual void     CreateGeometry(Int_t *idtmed);
-  virtual Int_t    IsVersion() const = 0;
+  virtual Int_t    IsVersion() { return 1; };
   virtual void     Init();
   virtual Bool_t   Impact(const TParticle* ) const { return kTRUE; };
+
   virtual Bool_t   Local2Global(Int_t d, Double_t *local, Double_t *global) const;
   virtual Bool_t   Local2Global(Int_t p, Int_t c, Int_t s
                                 , Double_t *local, Double_t *global) const;
-
   virtual Bool_t   Global2Local(Int_t mode, Double_t *local, Double_t *global
                                , Int_t* index) const;
   virtual Bool_t   Global2Detector(Double_t global[3], Int_t index[3]);
-
   virtual Bool_t   Rotate(Int_t d, Double_t *pos, Double_t *rot) const;
   virtual Bool_t   RotateBack(Int_t d, Double_t *rot, Double_t *pos) const;
 
-  Bool_t   ReadGeoMatrices();  
-  TGeoHMatrix *    GetGeoMatrix(Int_t detector){ return (TGeoHMatrix*)fMatrixGeo->At(detector);}
-  TGeoHMatrix *    GetMatrix(Int_t detector){ return (TGeoHMatrix*)fMatrixArray->At(detector);}
-  TGeoHMatrix *    GetCorrectionMatrix(Int_t detector){ return (TGeoHMatrix*)fMatrixCorrectionArray->At(detector);}
+          void     GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed);
+          void     CreateFrame(Int_t *idtmed);
+          void     CreateServices(Int_t *idtmed);
+
+          Bool_t   ReadGeoMatrices();  
+  TGeoHMatrix *    GetGeoMatrix(Int_t det)       { return (TGeoHMatrix *) fMatrixGeo->At(det);             }
+  TGeoHMatrix *    GetMatrix(Int_t det)          { return (TGeoHMatrix *) fMatrixArray->At(det);           }
+  TGeoHMatrix *    GetCorrectionMatrix(Int_t det){ return (TGeoHMatrix *) fMatrixCorrectionArray->At(det); }
 
   static  Int_t    Nsect()   { return fgkNsect; };
   static  Int_t    Nplan()   { return fgkNplan; };
@@ -71,18 +74,18 @@ class AliTRDgeometry : public AliGeometry {
   static  Float_t  RpadW()   { return fgkRpadW;   };
   static  Float_t  CpadW()   { return fgkCpadW;   };
 
-  virtual void     SetPHOShole() = 0;
-  virtual void     SetRICHhole() = 0;
+          void     SetSMstatus(Int_t sm, Char_t status)     { sm += 5; if (sm > 17) sm -= 18;
+                                                              fSMstatus[sm] = status; };
 
-  virtual Bool_t   GetPHOShole() const = 0;
-  virtual Bool_t   GetRICHhole() const = 0;
-  virtual Bool_t   IsHole(Int_t /*iplan*/, Int_t /*icham*/, Int_t /*isect*/) const {return kFALSE;}
+  virtual Bool_t   IsHole(Int_t /*iplan*/, Int_t /*icham*/, Int_t /*isect*/) const { return kFALSE; };
   static  Int_t    GetDetectorSec(Int_t p, Int_t c);
   static  Int_t    GetDetector(Int_t p, Int_t c, Int_t s);
   virtual Int_t    GetPlane(Int_t d)   const;
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d)  const;
 
+          Char_t   GetSMstatus(Int_t sm) const              { sm += 5; if (sm > 17) sm -= 18;
+                                                              return fSMstatus[sm];  };
           Float_t  GetChamberWidth(Int_t p) const           { return fCwidth[p];     };
           Float_t  GetChamberLength(Int_t p, Int_t c) const { return fClength[p][c]; }; 
 
@@ -93,7 +96,7 @@ class AliTRDgeometry : public AliGeometry {
 
   static  AliTRDgeometry* GetGeometry(AliRunLoader* runLoader = NULL);
   
-  static Float_t  GetTime0(Int_t p)                        { return fgkTime0[p];          };
+  static Float_t   GetTime0(Int_t p)                        { return fgkTime0[p];    };
 
  protected:
  
@@ -159,10 +162,10 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkCoZpos;                           // Position of the PE of the cooling device
   static const Float_t fgkWaZpos;                           // Position of the colling water
 
+  Char_t               fSMstatus[kNsect];                   // Super module status byte
+
   Float_t              fCwidth[kNplan];                     // Outer widths of the chambers
   Float_t              fClength[kNplan][kNcham];            // Outer lengths of the chambers
-  Float_t              fClengthPH[kNplan][kNcham];          // For sectors with holes for the PHOS
-  Float_t              fClengthRH[kNplan][kNcham];          // For sectors with holes for the RICH
 
   Float_t              fRotA11[kNsect];                     // Matrix elements for the rotation
   Float_t              fRotA12[kNsect];                     // Matrix elements for the rotation
@@ -175,21 +178,23 @@ class AliTRDgeometry : public AliGeometry {
   Float_t              fRotB22[kNsect];                     // Matrix elements for the backward rotation
 
   static const Double_t fgkTime0Base;                       // Base value for calculation of Time-position of pad 0
-  static const Float_t fgkTime0[kNplan];                    //  Time-position of pad 0
+  static const Float_t  fgkTime0[kNplan];                   // Time-position of pad 0
   
   Float_t              fChamberUAorig[3*kNdets][3];         // Volumes origin in
   Float_t              fChamberUDorig[3*kNdets][3];         // the chamber
   Float_t              fChamberUForig[3*kNdets][3];         // [3] = x, y, z
-  Float_t              fChamberUUorig[3*kNdets][3];
+  Float_t              fChamberUUorig[3*kNdets][3];         //
 
   Float_t              fChamberUAboxd[3*kNdets][3];         // Volumes box
   Float_t              fChamberUDboxd[3*kNdets][3];         // dimensions (half)
   Float_t              fChamberUFboxd[3*kNdets][3];         // [3] = x, y, z
-  Float_t              fChamberUUboxd[3*kNdets][3];
+  Float_t              fChamberUUboxd[3*kNdets][3];         // 
+
   TObjArray *          fMatrixArray;                        //! array of matrix - Transformation Global to Local
   TObjArray *          fMatrixCorrectionArray;              //! array of Matrix - Transformation Cluster to  Tracking systerm
   TObjArray *          fMatrixGeo;                          //! geo matrices
-  ClassDef(AliTRDgeometry,7)                                // TRD geometry base class
+
+  ClassDef(AliTRDgeometry,8)                                // TRD geometry class
 
 };
 

@@ -29,7 +29,7 @@
 
 #include "AliConst.h"
 #include "AliRun.h"
-#include "AliTRDgeometryFull.h"
+#include "AliTRDgeometry.h"
 #include "AliTRDv2.h"
 
 ClassImp(AliTRDv2)
@@ -62,7 +62,7 @@ AliTRDv2::AliTRDv2(const char *name, const char *title)
   if (frame->IsVersion() == 1) {
     // Detailed geometry without hole
     if (fGeometry) delete fGeometry;
-    fGeometry = new AliTRDgeometryFull();
+    fGeometry = new AliTRDgeometry();
   }
   else {
     Error("Ctor","Could not find valid FRAME version 1\n");

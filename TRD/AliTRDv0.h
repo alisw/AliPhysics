@@ -34,14 +34,13 @@ class AliTRDv0 : public AliTRD {
           void       SetSensPlane(Int_t )        { };
           void       SetSensSector(Int_t )       { };
           void       SetSensSector(Int_t ,Int_t) { };
+          void       SetTR(Bool_t )              { };
 
           Int_t      GetSensChamber() const      { return 0; };
           Int_t      GetSensPlane() const        { return 0; };
           Int_t      GetSensSector() const       { return 0; };
           Int_t      GetSensSectorRange() const  { return 0; };
-
-          AliTRDsim *CreateTR()                  { return 0; };
-          AliTRDsim *GetTR() const               { return 0; };
+          Bool_t     GetTR() const               { return 0; };
 
  protected:
 

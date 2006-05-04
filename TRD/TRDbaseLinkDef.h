@@ -20,7 +20,6 @@
 #pragma link C++ class  AliTRDsegmentArray+;
 
 #pragma link C++ class  AliTRDgeometry+;
-#pragma link C++ class  AliTRDgeometryFull+;
 #pragma link C++ class  AliTRDpadPlane+;
 
 #pragma link C++ class  AliTRDdigit+;

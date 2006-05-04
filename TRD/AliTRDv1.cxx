@@ -64,6 +64,7 @@ AliTRDv1::AliTRDv1():AliTRD()
   fDeltaE            = NULL;
   fDeltaG            = NULL;
   fTR                = NULL;
+  fTRon              = kFALSE;
 
   fStepSize          = 0.1;
   fTypeOfStepManager = 1;
@@ -87,6 +88,7 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   fDeltaE            = NULL;
   fDeltaG            = NULL;
   fTR                = NULL;
+  fTRon              = kTRUE;
   fStepSize          = 0.1;
   fTypeOfStepManager = 1;
 
@@ -146,6 +148,8 @@ void AliTRDv1::Copy(TObject &trd) const
 
   ((AliTRDv1 &) trd).fTypeOfStepManager = fTypeOfStepManager;
   ((AliTRDv1 &) trd).fStepSize          = fStepSize;
+
+  ((AliTRDv1 &) trd).fTRon              = fTRon;
 
   fDeltaE->Copy(*((AliTRDv1 &) trd).fDeltaE);
   fDeltaG->Copy(*((AliTRDv1 &) trd).fDeltaG);
@@ -302,10 +306,14 @@ void AliTRDv1::Init()
 	    AliInfo(Form("Only sectors %d - %d are sensitive\n",sens1,sens2-1));
     }
   }
-  if (fTR) 
-    AliInfo("TR simulation on")
-  else
+
+  // Switch on TR simulation as default
+  if (!fTRon) {
     AliInfo("TR simulation off");
+  }
+  else {
+    fTR = new AliTRDsim();
+  }
 
   // First ionization potential (eV) for the gas mixture (90% Xe + 10% CO2)
   const Float_t kPoti = 12.1;
@@ -322,18 +330,6 @@ void AliTRDv1::Init()
   fDeltaG = new TF1("deltag",IntSpecGeant,2.421257,28.536469,0);
 
   AliDebug(1,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-}
-
-//_____________________________________________________________________________
-AliTRDsim *AliTRDv1::CreateTR()
-{
-  //
-  // Enables the simulation of TR
-  //
-
-  fTR = new AliTRDsim();
-  return fTR;
 
 }
 

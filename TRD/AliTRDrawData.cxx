@@ -25,7 +25,7 @@
 
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
-#include "AliTRDgeometryFull.h"
+#include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDRawStream.h"
 #include "AliRawDataHeader.h"
@@ -132,8 +132,8 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     return kFALSE;
   }
 
-  AliTRDgeometryFull *geo = new AliTRDgeometryFull();
-  AliTRDdataArrayI   *digits;
+  AliTRDgeometry   *geo = new AliTRDgeometry();
+  AliTRDdataArrayI *digits;
 
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
   if (!commonParam)
@@ -322,7 +322,7 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
   AliTRDdataArrayI *track1    = 0;
   AliTRDdataArrayI *track2    = 0; 
 
-  AliTRDgeometryFull *geo = new AliTRDgeometryFull();
+  AliTRDgeometry *geo = new AliTRDgeometry();
 
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
   if (!commonParam)

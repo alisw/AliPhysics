@@ -27,7 +27,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDpadPlane.h"
-#include "AliTRDgeometryFull.h"
+#include "AliTRDgeometry.h"
 
 ClassImp(AliTRDpadPlane)
 
@@ -73,7 +73,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject(),fPadRow(0),fPadCol(0)
   // Constructor that initializes a given pad plane type
   //
 
-  fGeo = new AliTRDgeometryFull();
+  fGeo = new AliTRDgeometry();
 
   fPla = p;
   fCha = c;

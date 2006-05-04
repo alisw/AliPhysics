@@ -60,14 +60,12 @@ class AliTRD : public AliDetector {
   virtual void       SetStepSize(Double_t s)    = 0;
 
   virtual void       SetHits()             {};
-  virtual void       SetPHOShole();
-  virtual void       SetRICHhole();
   virtual void       SetDrawTR(Int_t idraw = 1)     { fDrawTR      = idraw; };
   virtual void       SetDisplayType(Int_t type = 0) { fDisplayType = type;  };
 
   AliTRDgeometry    *GetGeometry() const            { return fGeometry; };
 
-  virtual void       SetGasMix(Int_t )     {};
+  virtual void       SetTR(Bool_t ) = 0;
 
   virtual void       SetSensChamber(Int_t ichamber)              = 0;
   virtual void       SetSensPlane(Int_t iplane)                  = 0;
@@ -85,8 +83,7 @@ class AliTRD : public AliDetector {
   virtual void       SDigits2Digits();
   virtual void       Digits2Raw();
 
-  virtual AliTRDsim *CreateTR()     = 0;
-  virtual AliTRDsim *GetTR() const  = 0;
+  virtual Bool_t     GetTR() const = 0;
 
   virtual AliTRDTriggerL1 *CreateTriggerDetector() const { return new AliTRDTriggerL1(); };
 
