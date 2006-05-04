@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/04/20 22:30:50  hristov
+Coding conventions (Annalisa)
+
 Revision 1.4  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -1563,24 +1566,11 @@ void AliTOFGeometryV5::GetVolumePath(Int_t *ind, Char_t *path ) {
   Char_t  string3[100];
   
   Int_t icopy=-1;
-  
-  if(sector<3){
-    icopy=sector+1;
-    sprintf(string1,"/ALIC_1/B077_1/B075_%i/BTO3_1/FTOA_0/FLTA_0",icopy);
-  }
-  else if(sector<11){
-    icopy=sector+3;
-    sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1/FTOA_0/FLTA_0",icopy);
-  }
-  else if(sector==11 || sector==12){
-    icopy=sector-10;
-    sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1/FTOA_0/FLTA_0",icopy);
-    if(fHoles)sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1",icopy);
-  }
-  else {
-    icopy=sector-12;
-    sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1/FTOA_0/FLTA_0",icopy);
-  }
+
+  if(sector<13){
+    icopy=sector+5;}  
+  else{ icopy=sector-13;}
+  sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0/FLTA_0",icopy,icopy);
   
   Int_t iplate=ind[1];
   Int_t istrip=ind[2];

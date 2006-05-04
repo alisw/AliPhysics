@@ -157,6 +157,19 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
 
 }
 
+//____________________________________________________________________________
+void AliTOF::SetTOFSectors(Int_t *sectors){
+  for(Int_t isec=0;isec<18;isec++){
+    fTOFSectors[isec]=sectors[isec];
+  }
+}
+//____________________________________________________________________________
+void AliTOF::GetTOFSectors(Int_t *sectors) const {
+
+  for(Int_t isec=0;isec<18;isec++){
+    sectors[isec]=fTOFSectors[isec];
+  }
+}
 //_____________________________________________________________________________
 AliTOF::AliTOF(const AliTOF &source)
   :AliDetector()

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2006/04/27 13:13:29  hristov
+Moving the destructor to the implementation file
+
 Revision 1.6  2006/04/20 22:30:49  hristov
 Coding conventions (Annalisa)
 
@@ -97,70 +100,28 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)
   Float_t dx, dy, dz;  // shifts
   Float_t dpsi, dtheta, dphi; // angular displacements
   TRandom *rnd   = new TRandom(1567);
-
-  TString path;
-  const char *sSM71="/ALIC_1/B077_1/B071_"; //1-13
-  const char *sm71="/BTO1_1";
-  const char *sSM74="/ALIC_1/B077_1/B074_"; //1-2
-  const char *sm74="/BTO2_1";
-  const char *sSM75="/ALIC_1/B077_1/B075_"; //1-3
-  const char *sm75="/BTO3_1";
-
-
-  Int_t nSM71 = 13, nSM74=2, nSM75=3;
+ 
+  Int_t nSMTOF = 18;
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t iIndex=0; //dummy volume index
   //  AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
   //  Int_t iIndex=1; //dummy volume index
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
   Int_t i;
-  for (i = 1; i<=nSM71 ; i++) {
+  for (i = 0; i<nSMTOF ; i++) {
+    Char_t  path[100];
+    sprintf(path,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",i,i);
 
-    dx = (rnd->Gaus(0.,1.))*tr[0]/nSM71;
-    dy = (rnd->Gaus(0.,1.))*tr[1]/nSM71;
-    dz = (rnd->Gaus(0.,1.))*tr[2]/nSM71;
-    dpsi   = rot[0]/nSM71;
-    dtheta = rot[1]/nSM71;
-    dphi   = rot[2]/nSM71;
-    
-    path = sSM71;
-    path += i;
-    path += sm71;
+    dx = (rnd->Gaus(0.,1.))*tr[0];
+    dy = (rnd->Gaus(0.,1.))*tr[1];
+    dz = (rnd->Gaus(0.,1.))*tr[2];
+    dpsi   = rot[0];
+    dtheta = rot[1];
+    dphi   = rot[2];
     AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
     fTOFAlignObjArray->Add(o);
   }
 
-  for (i = 1; i<=nSM74 ; i++) {
-
-    dx = (rnd->Gaus(0.,1.))*tr[0]/nSM74;
-    dy = (rnd->Gaus(0.,1.))*tr[1]/nSM74;
-    dz = (rnd->Gaus(0.,1.))*tr[2]/nSM74;
-    dpsi   = rot[0]/nSM74;
-    dtheta = rot[1]/nSM74;
-    dphi   = rot[2]/nSM74;
-    
-    path = sSM74;
-    path += i;
-    path += sm74;
-    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
-    fTOFAlignObjArray->Add(o);
-  }
-
-  for (i = 1; i<=nSM75; i++) {
-
-    dx = (rnd->Gaus(0.,1.))*tr[0]/nSM75;
-    dy = (rnd->Gaus(0.,1.))*tr[1]/nSM75;
-    dz = (rnd->Gaus(0.,1.))*tr[2]/nSM75;
-    dpsi   = rot[0]/nSM75;
-    dtheta = rot[1]/nSM75;
-    dphi   = rot[2]/nSM75;
-    
-    path = sSM75;
-    path += i;
-    path += sm75;
-    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
-    fTOFAlignObjArray->Add(o);
-  }
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
   AliInfo(Form("Number of Alignable Volumes: %d",fNTOFAlignObj));
   delete rnd;
@@ -174,66 +135,26 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot)
   fTOFAlignObjArray = new TObjArray(kMaxAlignObj);
   Float_t dx, dy, dz;  // shifts
   Float_t dpsi, dtheta, dphi; // angular displacements
-  TString path;
-  const char *sSM71="/ALIC_1/B077_1/B071_"; //1-13
-  const char *sm71="/BTO1_1";
-  const char *sSM74="/ALIC_1/B077_1/B074_"; //1-2
-  const char *sm74="/BTO2_1";
-  const char *sSM75="/ALIC_1/B077_1/B075_"; //1-3
-  const char *sm75="/BTO3_1";
 
 
-  Int_t nSM71 = 13, nSM74=2, nSM75=3;
+  Int_t nSMTOF = 18;
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t iIndex=0; //dummy volume index
   //  AliAlignObj::ELayerID iLayer = AliAlignObj::kTOF;
   //  Int_t iIndex=1; //dummy volume index
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
   Int_t i;
-  for (i = 1; i<=nSM71 ; i++) {
+  for (i = 0; i<nSMTOF ; i++) {
 
-    dx = tr[0]/nSM71;
-    dy = tr[1]/nSM71;
-    dz = tr[2]/nSM71;
-    dpsi   = rot[0]/nSM71;
-    dtheta = rot[1]/nSM71;
-    dphi   = rot[2]/nSM71;
+    Char_t  path[100];
+    sprintf(path,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",i,i);
+    dx = tr[0];
+    dy = tr[1];
+    dz = tr[2];
+    dpsi   = rot[0];
+    dtheta = rot[1];
+    dphi   = rot[2];
     
-    path = sSM71;
-    path += i;
-    path += sm71;
-    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
-    fTOFAlignObjArray->Add(o);
-  }
-
-  for (i = 1; i<=nSM74 ; i++) {
-
-    dx = tr[0]/nSM74;
-    dy = tr[1]/nSM74;
-    dz = tr[2]/nSM74;
-    dpsi   = rot[0]/nSM74;
-    dtheta = rot[1]/nSM74;
-    dphi   = rot[2]/nSM74;
-    
-    path = sSM74;
-    path += i;
-    path += sm74;
-    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
-    fTOFAlignObjArray->Add(o);
-  }
-
-  for (i = 1; i<=nSM75; i++) {
-
-    dx = tr[0]/nSM75;
-    dy = tr[1]/nSM75;
-    dz = tr[2]/nSM75;
-    dpsi   = rot[0]/nSM75;
-    dtheta = rot[1]/nSM75;
-    dphi   = rot[2]/nSM75;
-    
-    path = sSM75;
-    path += i;
-    path += sm75;
     AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
     fTOFAlignObjArray->Add(o);
   }

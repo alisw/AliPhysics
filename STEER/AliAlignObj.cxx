@@ -806,25 +806,12 @@ void AliAlignObj::InitVolPaths()
       Int_t sector = modnum/nStripSec;
       Char_t  string1[100];
       Char_t  string2[100];
-
       Int_t icopy=-1;
+      if(sector<13){
+	icopy=sector+5;}  
+      else{ icopy=sector-13;}
 
-      if(sector<3){
-	icopy=sector+1;
-	sprintf(string1,"/ALIC_1/B077_1/B075_%i/BTO3_1/FTOA_0/FLTA_0",icopy);
-      }
-      else if(sector<11){
-	icopy=sector+3;
-	sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1/FTOA_0/FLTA_0",icopy);
-      }
-      else if(sector==11 || sector==12){
-	icopy=sector-10;
-	sprintf(string1,"/ALIC_1/B077_1/B074_%i/BTO2_1/FTOA_0/FLTA_0",icopy);
-      }
-      else {
-	icopy=sector-12;
-	sprintf(string1,"/ALIC_1/B077_1/B071_%i/BTO1_1/FTOA_0/FLTA_0",icopy);
-      }
+      sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0/FLTA_0",sector,sector);
       
       Int_t strInSec=modnum%nStripSec;
       icopy= strInSec;

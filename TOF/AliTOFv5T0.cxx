@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2006/04/20 22:30:50  hristov
+Coding conventions (Annalisa)
+
 Revision 1.7  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -300,20 +303,21 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
   xcoor = 0.;
   ycoor = 0.;
   zcoor = 0.;
-  gMC->Gspos("FTOA", 0, "BTO1", xcoor, ycoor, zcoor, idrotm[0], "ONLY");
-  gMC->Gspos("FTOA", 0, "BTO3", xcoor, ycoor, zcoor, idrotm[0], "ONLY");
-
-  if (fTOFHoles) {
-    xcoor = 0.;
-    ycoor = (zlenA*0.5 + kInterCentrModBorder1)*0.5;
-    zcoor = 0.;
-    gMC->Gspos("FTOB", 0, "BTO2", xcoor, ycoor, zcoor, idrotm[0], "ONLY");
-    gMC->Gspos("FTOC", 0, "BTO2", xcoor,-ycoor, zcoor, idrotm[0], "ONLY");
+  for(Int_t isec=0;isec<18;isec++){
+    if(fTOFSectors[isec]==-1)continue;
+    char name[6];
+    sprintf(name, "BTOF%d",isec);
+    if (fTOFHoles && (isec==16||isec==17)) {
+      xcoor = 0.;
+      ycoor = (zlenA*0.5 + kInterCentrModBorder1)*0.5;
+      zcoor = 0.;
+      gMC->Gspos("FTOB", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
+      gMC->Gspos("FTOC", 0, name, xcoor,-ycoor, zcoor, idrotm[0], "ONLY");
+    }
+    else gMC->Gspos("FTOA", 0,name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
   }
-  else gMC->Gspos("FTOA", 0, "BTO2", xcoor, ycoor, zcoor, idrotm[0], "ONLY");
-
   // Large not sensitive volumes with Insensitive Freon (FLTA, FLTB and FLTC)
-
+  
   Float_t xFLT, yFLT, zFLTA;
   
   xFLT  = xtof  - kModuleWallThickness*2.;
@@ -1374,9 +1378,6 @@ void AliTOFv5T0::StepManager()
   Int_t   *idtmed = fIdtmed->GetArray()-499;
   Float_t incidenceAngle;
 
-  const char * path71 = "B071";
-  const char * path75 = "B075";
-  const char * path74 = "B074";
   const char* volpath;
 
   Int_t index = 0;
@@ -1459,16 +1460,17 @@ void AliTOFv5T0::StepManager()
       strip = strip - fTOFGeometry->NStripC() - fTOFGeometry->NStripB() - fTOFGeometry->NStripA() - fTOFGeometry->NStripB();
     }
 
-    volpath=gMC->CurrentVolOffName(8);
-    index=gMC->CurrentVolOffID(8,copy);
-    index=copy;
-
+    volpath=gMC->CurrentVolOffName(7);
+    index=atoi(&volpath[4]);
     sector=-1;
-    if(strcmp(path71,volpath)==0 && index <6) sector=12+index;
-    if(strcmp(path71,volpath)==0 && index >=6) sector=index-3;
-    if(strcmp(path75,volpath)==0) sector=index-1;
-    if(strcmp(path74,volpath)==0) sector=10+index;
-
+  
+    if(index<5){
+      sector=index+13;
+	}
+    else{
+      sector=index-5;
+    } 
+ 
     for(i=0;i<3;++i) {
       hits[i]   = pos[i];
       hits[i+3] = pm[i];
