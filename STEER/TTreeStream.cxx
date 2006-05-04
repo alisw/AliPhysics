@@ -211,7 +211,7 @@ void TTreeSRedirector::Close(){
     delete fDataLayouts;
     fDataLayouts=0;
   }
-  backup->cd();
+  if (backup) backup->cd();
 }
 
 
