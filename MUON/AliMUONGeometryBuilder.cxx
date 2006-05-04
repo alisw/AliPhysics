@@ -244,7 +244,7 @@ void AliMUONGeometryBuilder::PlaceVolume(const TString& name, const TString& mNa
     fModule->AliMatrix(krot, theta1, phi1, theta2, phi2, theta3, phi3);
   }	
 	
-  // Place the volume in ALIC
+  // Place the volume
   if (npar == 0)
     gMC->Gspos(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only);
   else 
@@ -421,7 +421,7 @@ void AliMUONGeometryBuilder::CreateGeometryWithoutTGeo()
 
         if (!env->IsVirtual() && env->GetConstituents()->GetEntriesFast() == 0 ) {
           // non virtual envelope + nof constituents = 0 
-          //        => place envelope in ALICE by composed transformation:
+          //        => place envelope by composed transformation:
           //           Tch * [Tglobal] * Tenv
 
           // Compound chamber transformation with the envelope one
@@ -445,7 +445,7 @@ void AliMUONGeometryBuilder::CreateGeometryWithoutTGeo()
         if (env->IsVirtual() && env->GetConstituents()->GetEntriesFast() > 0 ) {
           // virtual envelope + nof constituents > 0 
           //         => do not place envelope and place constituents
-          //            in ALICE by composed transformation:
+          //            by composed transformation:
           //            Tch * [Tglobal] * Tenv * Tconst   
 
           for  (Int_t l=0; l<env->GetConstituents()->GetEntriesFast(); l++) {
