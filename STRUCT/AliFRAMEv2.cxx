@@ -23,6 +23,7 @@
 
 #include <TSystem.h>
 #include <TVirtualMC.h>
+#include <TString.h>
 
 #include "AliFRAMEv2.h"
 #include "AliMagF.h"
@@ -477,7 +478,7 @@ void AliFRAMEv2::CreateGeometry()
   Float_t r      = 341.8;
   Float_t rout1  = 410.564;
   Float_t rout2  = 415.2;
-  char* module[18];
+  TString module[18];
 // Position of Holes for PHOS (P) and RICH (R) starting at 6h
 //                 P  P  P  -  -  R  R  R  -  -  -  -  -  -  -  -  P  P
   Int_t mod[18] = {0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
@@ -487,6 +488,8 @@ void AliFRAMEv2::CreateGeometry()
       char name[6];
       sprintf(name, "BSEGMO%d", i);
       gMC->Gsvolu(name, "TRD1", kAir, ptrd1, 4);
+
+      
       module[i] = name;
       // Place volume i
       Float_t phi  = i * 20.;
