@@ -73,6 +73,7 @@ public:
   void SetStopOnError(Bool_t flag=kTRUE) {fStopOnError=flag;}
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
+  void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
 
 		   
   void           SetCheckPointLevel(Int_t checkPointLevel)
@@ -107,6 +108,7 @@ private:
   Bool_t         RunHLTTracking(AliESD*& esd);
   Bool_t         RunTracking(AliESD*& esd);
   Bool_t         FillESD(AliESD*& esd, const TString& detectors);
+  Bool_t         FillTriggerESD(AliESD*& esd);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;
   Bool_t         InitRunLoader();
@@ -133,7 +135,7 @@ private:
   Bool_t         fStopOnError;        // stop or continue on errors
   Bool_t         fWriteAlignmentData; // write track space-points flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
-
+  Bool_t         fFillTriggerESD;     // fill trigger info into ESD
 
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   TString        fRunTracking;        // run the tracking for these detectors

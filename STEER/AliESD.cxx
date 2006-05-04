@@ -31,7 +31,8 @@ ClassImp(AliESD)
 AliESD::AliESD():
   fEventNumber(0),
   fRunNumber(0),
-  fTrigger(0),
+  fTriggerMask(0),
+  fTriggerCluster(0),
   fRecoVersion(0),
   fMagneticField(0),
   fZDCN1Energy(0),
@@ -111,7 +112,8 @@ void AliESD::Reset()
 {
   fEventNumber=0;
   fRunNumber=0;
-  fTrigger=0;
+  fTriggerMask=0;
+  fTriggerCluster=0;
   fRecoVersion=0;
   fMagneticField=0;
   fZDCN1Energy=0;
@@ -146,10 +148,10 @@ void AliESD::Print(Option_t *) const
   // Print header information of the event
   //
   printf("ESD run information\n");
-  printf("Event # %d Run # %d Trigger %ld Magnetic field %f \n",
+  printf("Event # %d Run # %d Trigger %lld Magnetic field %f \n",
 	 GetEventNumber(),
 	 GetRunNumber(),
-	 GetTrigger(),
+	 GetTriggerMask(),
 	 GetMagneticField() );
   printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
 	 fPrimaryVertex.GetXv(), fPrimaryVertex.GetXRes(),

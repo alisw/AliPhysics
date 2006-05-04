@@ -408,7 +408,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
     
     evTag->SetT0VertexZ(esd->GetT0zVertex());
     
-    evTag->SetTrigger(esd->GetTrigger());
+    evTag->SetTrigger(esd->GetTriggerMask());
     
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());

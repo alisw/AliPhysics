@@ -42,7 +42,8 @@ public:
 
   void SetEventNumber(Int_t n) {fEventNumber=n;}
   void SetRunNumber(Int_t n) {fRunNumber=n;}
-  void SetTrigger(Long_t n) {fTrigger=n;}
+  void SetTriggerMask(ULong64_t n) {fTriggerMask=n;}
+  void SetTriggerCluster(UChar_t n) {fTriggerCluster = n;}
   void SetMagneticField(Float_t mf){fMagneticField = mf;}
   Float_t GetMagneticField() const {return fMagneticField;}
   
@@ -136,7 +137,8 @@ public:
 
   Int_t  GetEventNumber() const {return fEventNumber;}
   Int_t  GetRunNumber() const {return fRunNumber;}
-  Long_t GetTrigger() const {return fTrigger;}
+  ULong64_t GetTriggerMask() const {return fTriggerMask;}
+  UChar_t  GetTriggerCluster() const {return fTriggerCluster;}
   
   Int_t GetNumberOfTracks()     const {return fTracks.GetEntriesFast();}
   Int_t GetNumberOfHLTConfMapTracks()     const {return fHLTConfMapTracks.GetEntriesFast();}
@@ -201,7 +203,8 @@ protected:
   // Event Identification
   Int_t        fEventNumber;     // Event Number
   Int_t        fRunNumber;       // Run Number
-  Long_t       fTrigger;         // Trigger Type
+  ULong64_t    fTriggerMask;     // Trigger Type (mask)
+  UChar_t      fTriggerCluster;  // Trigger cluster (mask)
   Int_t        fRecoVersion;     // Version of reconstruction 
   Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
 
@@ -237,7 +240,7 @@ protected:
  
   AliESDFMD *  fESDFMD; // FMD object containing rough multiplicity
 
-  ClassDef(AliESD,9)  //ESD class 
+  ClassDef(AliESD,10)  //ESD class 
 };
 #endif 
 
