@@ -71,7 +71,9 @@ void AliSHIL::CreateMaterials()
   //
   // Defines materials for the muon shield
   //
-  Int_t   isxfld = gAlice->Field()->Integ();
+  Int_t   isxfld1 = gAlice->Field()->Integ();
+  Int_t   isxfld2 = gAlice->Field()->PrecInteg();
+
   Float_t sxmgmx = gAlice->Field()->Max();
 // Steel  
   Float_t asteel[4] = { 55.847,51.9961,58.6934,28.0855 };
@@ -190,60 +192,60 @@ void AliSHIL::CreateMaterials()
   // *************** 
   
   //    Aluminum 
-  AliMedium(9,  "ALU_C0          ", 9, 0,  isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(29, "ALU_C1          ", 29, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(49, "ALU_C2          ", 49, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(9,  "ALU_C0          ", 9, 0,  isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(29, "ALU_C1          ", 29, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(49, "ALU_C2          ", 49, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Iron 
-  AliMedium(10, "FE_C0           ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(30, "FE_C1           ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(50, "FE_C2           ", 50, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(10, "FE_C0           ", 10, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(30, "FE_C1           ", 30, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(50, "FE_C2           ", 50, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
   //    Copper 
-  AliMedium(11, "Cu_C0           ", 11, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(31, "Cu_C1           ", 31, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(51, "Cu_C2           ", 51, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(11, "Cu_C0           ", 11, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(31, "Cu_C1           ", 31, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(51, "Cu_C2           ", 51, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Tungsten 
-  AliMedium(12, "W_C0            ", 12, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(32, "W_C1            ", 32, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(52, "W_C2            ", 52, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(12, "W_C0            ", 12, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(32, "W_C1            ", 32, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(52, "W_C2            ", 52, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Lead 
-  AliMedium(13, "PB_C0           ", 13, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(33, "PB_C1           ", 33, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(53, "PB_C2           ", 53, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(13, "PB_C0           ", 13, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(33, "PB_C1           ", 33, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(53, "PB_C2           ", 53, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
   //    Insulation Powder 
-  AliMedium(14, "INS_C0          ", 14, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(34, "INS_C1          ", 34, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(54, "INS_C2          ", 54, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(14, "INS_C0          ", 14, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(34, "INS_C1          ", 34, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(54, "INS_C2          ", 54, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Air 
-  AliMedium(15, "AIR_C0          ", 15, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(75, "AIR_MUON        ", 75, 0, 1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(15, "AIR_C0          ", 15, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(35, "AIR_C1          ", 35, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(55, "AIR_C2          ", 55, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(75, "AIR_MUON        ", 75, 0, isxfld2, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Vacuum 
-  AliMedium(16, "VA_C0           ", 16, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(36, "VA_C1           ", 36, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(56, "VA_C2           ", 56, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(16, "VA_C0           ", 16, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(36, "VA_C1           ", 36, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(56, "VA_C2           ", 56, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Steel 
-  AliMedium(19, "ST_C0           ", 19, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(39, "ST_C1           ", 39, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(59, "ST_C3           ", 59, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(19, "ST_C0           ", 19, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(39, "ST_C1           ", 39, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(59, "ST_C3           ", 59, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
   //    Lead/Tungsten 
-  AliMedium(20, "PB/W0           ", 20, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(40, "PB/W1           ", 40, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(60, "PB/W3           ", 60, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(20, "PB/W0           ", 20, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(40, "PB/W1           ", 40, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(60, "PB/W3           ", 60, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
   //    Ni/Tungsten 
-  AliMedium(21, "Ni/W0           ", 21, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(41, "Ni/W1           ", 41, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(61, "Ni/W3           ", 61, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(21, "Ni/W0           ", 21, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(41, "Ni/W1           ", 41, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(61, "Ni/W3           ", 61, 0, isxfld1, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 //    Concrete 
   AliMedium(17, "CC_C0           ", 17, 0, 0,      sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
