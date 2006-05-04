@@ -834,6 +834,7 @@ void AliFRAMEv2::CreateGeometry()
 //
 //
 // Spacer between TRD and TOF modules
+/*
   ptrap[0]  =   0.99;
   ptrap[1]  =  10.00;
   ptrap[2]  =   0.00;
@@ -850,7 +851,7 @@ void AliFRAMEv2::CreateGeometry()
       gMC->Gspos("B056", 2*jmod+1, module[jmod],  61.9607, 0.0, 27.2, 0           , "ONLY");
       gMC->Gspos("B056", 2*jmod+2, module[jmod], -61.9607, 0.0, 27.2, idrotm[2085], "ONLY");
   }
-
+*/
   //
   // TRD mother volumes
   //
