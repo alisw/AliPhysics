@@ -785,6 +785,11 @@ void AliMUONSt2GeometryBuilderV2::SetTransformations()
 // Defines the transformations for the station2 chambers.
 // ---
 
+  if (gAlice->GetModule("SHIL")) {
+    SetMotherVolume(2, "YOUT1");
+    SetMotherVolume(3, "YOUT1");
+  }  
+
   // Define chamber volumes as virtual
   SetVolume(2, "SC03", true);
   SetVolume(3, "SC04", true);

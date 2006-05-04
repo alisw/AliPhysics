@@ -26,6 +26,7 @@
 #include <TGeoMatrix.h>
 
 #include "AliLog.h"
+#include "AliRun.h"
 
 #include "AliMUONTriggerGeometryBuilder.h"
 #include "AliMUON.h"
@@ -338,6 +339,13 @@ void AliMUONTriggerGeometryBuilder::SetTransformations()
 {
 // Defines the transformations for the trigger chambers.
 // ---
+
+    if (gAlice->GetModule("SHIL")) {
+      SetMotherVolume(10, "YOUT2");
+      SetMotherVolume(11, "YOUT2");
+      SetMotherVolume(12, "YOUT2");
+      SetMotherVolume(13, "YOUT2");
+    }  
 
     SetVolume(10, "SC11");
     SetVolume(11, "SC12");

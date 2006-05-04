@@ -1187,7 +1187,15 @@ void AliMUONSlatGeometryBuilder::SetTransformations()
   else {
     SetVolume(4, "CH05");
     SetVolume(5, "CH06");
+  } 
+   
+  if (gAlice->GetModule("SHIL")) {
+    SetMotherVolume(6, "YOUT2");
+    SetMotherVolume(7, "YOUT2");
+    SetMotherVolume(8, "YOUT2");
+    SetMotherVolume(9, "YOUT2");
   }  
+
   SetVolume(6, "CH07");
   SetVolume(7, "CH08");
   SetVolume(8, "CH09");
