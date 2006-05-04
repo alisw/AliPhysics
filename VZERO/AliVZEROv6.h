@@ -12,9 +12,32 @@
 //                                                 //
 /////////////////////////////////////////////////////
 
-#include "TLorentzVector.h" 
 #include "AliVZERO.h"
 
+// --- ROOT libraries ---
+#include "TClonesArray.h"
+#include "TLorentzVector.h"
+#include "TMath.h"
+#include "TObjectTable.h"
+#include "TVirtualMC.h"
+#include "TParticle.h"
+
+#include "TGeoManager.h"
+#include "TGeoMaterial.h"
+#include "TGeoMedium.h"
+#include "TGeoNode.h"
+#include "TGeoVolume.h"
+#include "TGeoTube.h"
+#include "TGeoMatrix.h"
+
+// --- AliRoot header files ---
+#include "AliRun.h"
+#include "AliMC.h"
+#include "AliConst.h"
+#include "AliMagF.h"
+#include "AliVZEROhit.h"
+#include "AliLog.h"
+ 
 class AliVZEROv6 : public AliVZERO {
   
 public:
@@ -44,18 +67,18 @@ private:
 // Parameters related to geometry :
 // V0 part in front of muon arm absorber 
 
-  Float_t  fV0CHeight1, fV0CHeight2, fV0CHeight3, fV0CHeight4; 
-  Float_t  fV0CRMin, fV0CRBox;
-  Float_t  fV0CLidThickness;
-  Float_t  fV0CCellThickness;
-  Float_t  fV0CBoxThickness; 
-  Float_t  fV0COffsetFibers;
+  Float_t  fV0CHeight1, fV0CHeight2, fV0CHeight3, fV0CHeight4; // Heights of V0C elements 
+  Float_t  fV0CRMin, fV0CRBox;  // Min and max radii of V0C box
+  Float_t  fV0CLidThickness;    // Thickness of V0C box lid
+  Float_t  fV0CCellThickness;   // Thickness of V0C cell
+  Float_t  fV0CBoxThickness;    // Thickness of V0C box
+  Float_t  fV0COffsetFibers;    // Z offsets to output fibers
 
 // V0 part on the other side with respect to IP
 
-  Float_t  fV0AHeight1, fV0AHeight2, fV0AHeight3, fV0AHeight4; 
-  Float_t  fV0ARMin;
-  Float_t  fV0ACellThickness;
+  Float_t  fV0AHeight1, fV0AHeight2, fV0AHeight3, fV0AHeight4; // Heights of V0A elements  
+  Float_t  fV0ARMin;            // Minimim radius of V0A box
+  Float_t  fV0ACellThickness;   // Thickness of V0A cell
   
 // Parameters related to light production :
  

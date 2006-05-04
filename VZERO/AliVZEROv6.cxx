@@ -27,39 +27,7 @@
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-// --- Standard libraries ---
-#include <Riostream.h>
-#include <stdlib.h>
-#include <string.h>
-
-// --- ROOT libraries ---
-#include <TClonesArray.h>
-#include <TGeometry.h>
-#include <TLorentzVector.h>
-#include <TMath.h>
-#include <TNode.h>
-#include <TObjectTable.h>
-#include <TVirtualMC.h>
-#include <TParticle.h>
-
-#include <TGeoManager.h>
-#include <TGeoMaterial.h>
-#include <TGeoMedium.h>
-#include <TGeoNode.h>
-#include <TGeoVolume.h>
-#include "TGeoTube.h"
-#include "TGeoMatrix.h"
-
-// --- AliRoot header files ---
-#include "AliRun.h"
-#include "AliMC.h"
-#include "AliConst.h"
-#include "AliMagF.h"
-#include "AliVZEROLoader.h"
-#include "AliVZEROdigit.h"
-#include "AliVZEROhit.h"
 #include "AliVZEROv6.h"
-#include "AliLog.h"
  
 ClassImp(AliVZEROv6)
 
@@ -704,7 +672,7 @@ Int_t AliVZEROv6::GetCellId(Int_t *vol, Float_t *hits)
   //   vol[1]  = copy number (1 to 8)
 
    Int_t index      = vol[1];
-   Int_t RingNumber = Int_t(hits[8]);   
+   Int_t ringNumber = Int_t(hits[8]);   
    fCellId          = 0;
    
 //    cout << "volID = " << vol[0] << "  copy = " << vol[1] << endl;
@@ -717,24 +685,24 @@ Int_t AliVZEROv6::GetCellId(Int_t *vol, Float_t *hits)
    if (index < 7) index = index + 8; 
    
    if (hits[2] < 0.0) { 
-      if(RingNumber < 3) {
-         index = (index - 7) + ( ( RingNumber - 1 ) * 8);}
-      else if(RingNumber >= 3){ 
+      if(ringNumber < 3) {
+         index = (index - 7) + ( ( ringNumber - 1 ) * 8);}
+      else if(ringNumber >= 3){ 
        if(gMC->CurrentVolID(vol[1]) == gMC->VolId("V0R3")|| 
           gMC->CurrentVolID(vol[1]) == gMC->VolId("V0R5") ) 
-         {index = (index*2 - 14) + ( ( RingNumber - 2 ) * 16); }
+         {index = (index*2 - 14) + ( ( ringNumber - 2 ) * 16); }
        if(gMC->CurrentVolID(vol[1]) == gMC->VolId("V0R4")||
           gMC->CurrentVolID(vol[1]) == gMC->VolId("V0R6") ) 
-         {index = (index*2 - 13) + ( ( RingNumber - 2 ) * 16); }
+         {index = (index*2 - 13) + ( ( ringNumber - 2 ) * 16); }
       }
       fCellId   = index;           
    }
            
    else if (hits[2] > 0.0){
-      index = (index - 7 + 48) + ( ( RingNumber - 1 ) * 8);
+      index = (index - 7 + 48) + ( ( ringNumber - 1 ) * 8);
       fCellId   = index;}
              
-//    cout << " ring   = " << RingNumber << " phi = "<<  phi << endl; 
+//    cout << " ring   = " << ringNumber << " phi = "<<  phi << endl; 
 //    cout << " cellID = " << fCellId <<  endl;
 //    cout <<  "**********" << endl;         
            
