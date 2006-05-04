@@ -27,18 +27,21 @@ public:
   virtual Float_t Max() const {return fMax;}
   virtual Int_t Map() const {return fMap;}
   virtual Int_t Integ() const {return fInteg;}
+  virtual Int_t PrecInteg() const {return fPrecInteg;}  
   virtual Float_t Factor() const {return fFactor;}
   virtual void ReadField() {}
   virtual Float_t SolenoidField() const {return 2.;}
+  virtual void SetPrecInteg(Int_t integ) {fPrecInteg = integ;}
   static void  SetReadField(Bool_t flag = kTRUE) {fgReadField = flag;}
  protected:
   Int_t     fMap;       // Field Map identifier
   Int_t     fType;      // Mag Field type
-  Int_t     fInteg;     // Integration method as indicated in Geant
+  Int_t     fInteg;     // Default integration method as indicated in Geant
+  Int_t     fPrecInteg; // Alternative integration method, e.g. for higher precision
   Float_t   fFactor;    // Multiplicative factor
   Float_t   fMax;       // Max Field as indicated in Geant
   static  Bool_t    fgReadField;  // Flag for reading the field from file (if available) 
-  ClassDef(AliMagF,3)  //Base class for all Alice MagField
+  ClassDef(AliMagF,4)  //Base class for all Alice MagField
 };
 
 #endif

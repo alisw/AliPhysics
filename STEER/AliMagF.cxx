@@ -31,6 +31,7 @@ AliMagF::AliMagF():
   fMap(0),
   fType(0),
   fInteg(0),
+  fPrecInteg(1),
   fFactor(0),
   fMax(0)
 {
@@ -46,6 +47,7 @@ AliMagF::AliMagF(const char *name, const char *title, Int_t integ,
   fMap(0),
   fType(0),
   fInteg(0),
+  fPrecInteg(1),
   fFactor(factor),
   fMax(fmax)
 {
