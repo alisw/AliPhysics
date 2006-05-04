@@ -124,7 +124,7 @@ void AliMUONCommonGeometryBuilder::CreateMaterials()
   Float_t wbak[3] = {6.     , 6.   , 1.}; 
   Float_t dbak = 1.4;
 
-  Int_t iSXFLD   = gAlice->Field()->Integ();
+  Int_t iSXFLD   = gAlice->Field()->PrecInteg();
   Float_t sXMGMX = gAlice->Field()->Max();
   //
   // --- Define the various materials for GEANT --- 
