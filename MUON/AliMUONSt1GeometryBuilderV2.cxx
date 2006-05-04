@@ -2468,7 +2468,7 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
   GReal_t maxStepAlu   = fMUON->GetMaxStepAlu();
   GReal_t maxDestepAlu = fMUON->GetMaxDestepAlu();
   GReal_t maxStepGas   = fMUON->GetMaxStepGas();
-  Int_t iSXFLD   = gAlice->Field()->Integ();
+  Int_t iSXFLD   = gAlice->Field()->PrecInteg();
   Float_t sXMGMX = gAlice->Field()->Max();
 
   fMUON->AliMedium(21, "ALU_II$",    41, 0, iSXFLD, sXMGMX, 
@@ -2625,6 +2625,11 @@ void AliMUONSt1GeometryBuilderV2::SetTransformations()
 {
 // Defines the transformations for the station2 chambers.
 // ---
+
+  if (gAlice->GetModule("SHIL")) {
+    SetMotherVolume(0, "YOUT1");
+    SetMotherVolume(1, "YOUT1");
+  }  
 
   SetVolume(0, "SC01", true);
   SetVolume(1, "SC02", true);
