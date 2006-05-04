@@ -1331,10 +1331,11 @@ void AliZDCv2::StepManager()
 	AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	
 	if(fNoShower==1){
-	  fpDetected += 1;
+	  if(vol[0]==1) fnDetected += 1;
+	  else if(vol[0]==2) fpDetected += 1;
+ 	  printf("\n  # of nucleons in ZN = %d",fnDetected);
+	  printf("\n  # of nucleons in ZP = %d\n\n",fpDetected);
 	  gMC->StopTrack();
-	  if(vol[0]==1) printf("\n	# of detected neutrons = %d\n\n",fpDetected);
-	  if(vol[0]==2) printf("\n	# of detected protons = %d\n\n",fpDetected);
 	  return;
 	}
       }

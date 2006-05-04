@@ -64,9 +64,9 @@ protected:
   Float_t fZEMLength; // ZEM length
   
   // Parameters for tracking studies
-  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected; // For proton acceptance
+  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected, fnDetected; // For spectators acceptance
   
-   ClassDef(AliZDCv2,3)  // Zero Degree Calorimeter version 1
+   ClassDef(AliZDCv2,4)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif
