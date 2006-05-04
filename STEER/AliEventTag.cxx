@@ -40,7 +40,7 @@ ClassImp(AliEventTag)
     fPrimaryVertexY(-100.0),
     fPrimaryVertexZ(-100.0),
     fPrimaryVertexZError(-100.0),
-    fTriggerInfo(-10),
+    fTriggerInfo(0),
     fZDCNeutron1Energy(-10.0),
     fZDCProton1Energy(-10.0),
     fZDCNeutron2Energy(-10.0),

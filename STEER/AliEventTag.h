@@ -43,7 +43,7 @@ class AliEventTag : public TObject
   void   SetVertexFlag(Int_t i) {fPrimaryVertexFlag = i;}
   void   SetVertexZError(Float_t f) { fPrimaryVertexZError = f;}
 
-  void   SetTrigger(Long_t Ptr) {fTriggerInfo = Ptr;}
+  void   SetTrigger(ULong64_t Ptr) {fTriggerInfo = Ptr;}
 
   void   SetZDCNeutron1Energy(Float_t Pen) {fZDCNeutron1Energy = Pen;}
   void   SetZDCProton1Energy(Float_t Pen) {fZDCProton1Energy = Pen;}
@@ -126,7 +126,7 @@ class AliEventTag : public TObject
   Int_t GetVertexFlag() const {return fPrimaryVertexFlag;}
   Float_t GetVertexZError() const {return fPrimaryVertexZError;}
 
-  Long_t   GetTrigger() const {return fTriggerInfo;}
+  ULong64_t   GetTrigger() const {return fTriggerInfo;}
 
   Float_t GetZDCNeutron1Energy() const {return fZDCNeutron1Energy;}
   Float_t GetZDCProton1Energy() const {return fZDCProton1Energy;}
@@ -209,7 +209,7 @@ class AliEventTag : public TObject
 
   Float_t  fPrimaryVertexZError;	       //Primary vertex - Z coordinate - error
 
-  Long_t    fTriggerInfo;		       //Information from trigger
+  ULong64_t    fTriggerInfo;		       //Information from trigger
   Float_t  fZDCNeutron1Energy;		       //ZDC info - neutron
   Float_t  fZDCProton1Energy;		       //ZDC info - proton
   Float_t  fZDCNeutron2Energy;		       //ZDC info - neutron
