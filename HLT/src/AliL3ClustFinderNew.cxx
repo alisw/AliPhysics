@@ -388,6 +388,12 @@ void AliL3ClustFinderNew::WriteClusters(Int_t nclusters,AliClusterData *list)
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
 	Int_t patch = AliL3Transform::GetPatch(fCurrentRow);
 	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
+	if (!q2) {
+	    LOG(AliL3Log::kError,"AliL3ClustFinderNew::WriteClusters","Total charge")
+	      <<"Zero total charge "<<q2<<" on row "<<fCurrentRow<<" "<<fpad<<" "<<ftime<<ENDLOG;
+	    continue;
+
+	}
 	Float_t sy2=list[j].fPad2 * list[j].fTotalCharge - list[j].fPad * list[j].fPad;
 	sy2/=q2;
 	if(sy2 < 0) {
