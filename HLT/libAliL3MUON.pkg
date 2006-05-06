@@ -23,7 +23,7 @@ MUON/src/AliRoot/Tracker.hpp \
 MUON/src/AliRoot/ClusterFinder.hpp \
 
 SRCS += MUON/src/Utils.cxx \
-MUON/src/Error.cxx \
+MUON/src/AliHLTMUONError.cxx \
 MUON/src/Version/Version.cxx \
 MUON/src/RegionOfInterest.cxx \
 MUON/src/Tracking/Calculations.cxx \
@@ -36,7 +36,7 @@ MUON/src/AliRoot/AliHLTMUONTracker.cxx \
 MUON/src/Debug/print.cxx
 
 
-DHDR:= MUON/src/AliRoot/MUONHLTLinkDef.hpp
+DHDR:= MUON/src/AliRoot/MUONHLTLinkDef.h
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}

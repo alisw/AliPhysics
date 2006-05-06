@@ -1,25 +1,29 @@
+#ifndef ALIHLTMUONCOREERROR_H
+#define ALIHLTMUONCOREERROR_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Author: Artur Szostak
 // Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
 //
+// AliHLTMUONCoreError is the base excpetion class used by the dHLT subsystem.
+// All child classes used to throw exception should be derived from this
+// class to allow easy catching of classes of errors.
+// 
+// AliHLTMUONCoreOutOfMemory is also defined to be used when the system runs
+// out of memory. Do not throw this object directly but rather use
+// AliHLTMUONCoreThrowOutOfMemory which throws a pree allocated static object.
+//
 ////////////////////////////////////////////////////////////////////////////////
-
-/* AliHLTMUONCoreError is the base excpetion class used by the dHLT subsystem.
-   All child classes used to throw exception should be derived from this
-   class to allow easy catching of classes of errors.
-   
-   AliHLTMUONCoreOutOfMemory is also defined to be used when the system runs
-   out of memory. Do not throw this object directly but rather use
-   AliHLTMUONCoreThrowOutOfMemory which throws a pree allocated static object.
- */
-
-#ifndef ALIHLTMUONCOREERROR_H
-#define ALIHLTMUONCOREERROR_H
 
 #include "BasicTypes.hpp"
 #include <exception>
-#include <Riostream.h>
+//#include <Riostream.h>
+#include <ostream>
 
 
 class AliHLTMUONCoreError : public std::exception
@@ -29,7 +33,7 @@ class AliHLTMUONCoreError : public std::exception
                Error myerror;
                cout << myerror << endl;
 	*/
-	friend ostream& operator << (ostream& os, const AliHLTMUONCoreError& error)
+	friend std::ostream& operator << (std::ostream& os, const AliHLTMUONCoreError& error)
 	{
 		os << error.Message();
 		return os;
