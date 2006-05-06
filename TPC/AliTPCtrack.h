@@ -50,9 +50,7 @@ public:
   Double_t GetY()   const {return fP0;}
   Double_t GetZ()   const {return fP1;}
   Double_t GetSnp() const {return fX*fP4 - fP2;}
-  Double_t Get1Pt() const {
-    return (TMath::Sign(1e-9,fP4) + fP4)*GetLocalConvConst();
-  }
+  Double_t Get1Pt() const;
   Double_t GetTgl() const {return fP3;}
 
   Double_t GetSigmaY2() const {return fC00;}
@@ -161,7 +159,8 @@ inline
 void AliTPCtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const {
   // This function return external TPC track representation
      xr=fX;
-     x[0]=GetY(); x[1]=GetZ(); x[2]=GetSnp(); x[3]=GetTgl(); x[4]=Get1Pt();
+     x[0]=GetY(); x[1]=GetZ(); x[2]=GetSnp(); x[3]=GetTgl();
+     x[4]=(TMath::Sign(1e-9,fP4) + fP4)*GetLocalConvConst();
 }
 
 inline void AliTPCtrack::GetXYZ(Float_t r[3]) const {

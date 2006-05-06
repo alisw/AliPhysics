@@ -830,7 +830,9 @@ Bool_t AliESDtrack::RelateToVertex
   if (d > maxd) return kFALSE; 
 
   //Propagate to the DCA
-  Double_t crv=0.299792458e-3*b*GetParameter()[4];
+  Double_t crv=kB2C*b*GetParameter()[4];
+  if (TMath::Abs(b) < kAlmost0Field) crv=0.;
+
   Double_t tgfv=-(crv*x - snp)/(crv*y + TMath::Sqrt(1.-snp*snp));
   sn=tgfv/TMath::Sqrt(1.+ tgfv*tgfv);
   if (TMath::Abs(tgfv)>0.) cs = sn/tgfv;

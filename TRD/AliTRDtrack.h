@@ -172,4 +172,15 @@ class AliTRDtrack : public AliKalmanTrack {
 
 };                     
 
+inline
+void AliTRDtrack::GetExternalParameters(Double_t& xr, Double_t x[5]) const 
+{
+  //
+  // This function returns external TRD track representation
+  //
+  xr   = fX;
+  x[0] = GetY();  x[1] = GetZ();  x[2] = GetSnp();  x[3] = GetTgl();
+  x[4] = (TMath::Sign(1e-9,fC) + fC)*GetLocalConvConst();
+}           
+
 #endif   

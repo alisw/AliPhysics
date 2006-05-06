@@ -740,3 +740,13 @@ void  AliTPCtrack::UpdatePoints()
   }
   //
 }
+
+Double_t AliTPCtrack::Get1Pt() const {
+  //--------------------------------------------------------------
+  // Returns the inverse Pt (1/GeV/c)
+  // (or 1/"most probable pt", if the field is too weak)
+  //--------------------------------------------------------------
+  if (TMath::Abs(GetLocalConvConst()) > kVeryBigConvConst)
+      return 1./kMostProbableMomentum/TMath::Sqrt(1.+ GetTgl()*GetTgl());
+  return (TMath::Sign(1e-9,fP4) + fP4)*GetLocalConvConst();
+}
