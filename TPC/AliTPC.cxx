@@ -181,7 +181,10 @@ AliTPC::~AliTPC()
   delete fTPCParam;
   delete fTrackHits; //MI 15.09.2000
   //  delete fTrackHitsOld; //MI 10.12.2001
-  if (fNoiseTable) delete [] fNoiseTable;
+  
+  fDigitsArray = 0x0;
+  delete [] fNoiseTable;
+  delete [] fActiveSectors;
 
 }
 

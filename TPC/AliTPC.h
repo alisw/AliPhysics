@@ -100,10 +100,10 @@ protected:
   Int_t          fSens;             // ISENS
   Int_t          fNsectors;         // Number of sectors in TPC
   //MI changes
-  AliTPCDigitsArray * fDigitsArray;              //!detector digit object  
+  AliTPCDigitsArray * fDigitsArray;              //! detector digit object  
   AliTPCParam *fTPCParam;           // pointer to TPC parameters 
-  AliTPCTrackHitsV2 *fTrackHits;      //!hits for given track M.I.
-  //  AliTPCTrackHits *fTrackHitsOld;      //!hits for given track M.I. MIold -
+  AliTPCTrackHitsV2 *fTrackHits;      //! hits for given track M.I.
+  //  AliTPCTrackHits *fTrackHitsOld;      //! hits for given track M.I. MIold -
 
   Int_t  fHitType; // if fNewHit = 1 old data structure if 2 new hits  if 4  old MI stucture
   //  3 both types 
@@ -127,10 +127,10 @@ protected:
                          // index[1] sector number, 
                          // index[2] pad row number  
                          // index[3] pad row number for which signal is calculated
-  Int_t      fNoiseDepth;  //!noise table
-  Float_t *  fNoiseTable;  //![fNoiseDepth] table with noise
-  Int_t      fCurrentNoise; //!index of the noise in  the noise table 
-  Bool_t*    fActiveSectors; //!bool indicating which sectors are active
+  Int_t      fNoiseDepth;  //! noise table
+  Float_t *  fNoiseTable;  //! table with noise
+  Int_t      fCurrentNoise; //! index of the noise in  the noise table 
+  Bool_t*    fActiveSectors; //! bool indicating which sectors are active
 
   ClassDef(AliTPC,12)  // Time Projection Chamber class
 };
