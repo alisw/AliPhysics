@@ -1,5 +1,5 @@
-#ifndef ALIHLTMUONERROR_H
-#define ALIHLTMUONERROR_H
+#ifndef ALIHLTMUONCOREPOINT_H
+#define ALIHLTMUONCOREPOINT_H
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -22,50 +22,40 @@
 // Author: Artur Szostak
 // Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
 //
-// AliHLTMUONError is the base excpetion class used by the dHLT subsystem.
-// All child classes used to throw exceptions should be derived from this
-// class to allow easy catching of classes of errors.
+// A 2D point structure using floats.
+// These are used to store impact points on the trigger chambers and 
+// cluster centroids.
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliHLTMUONBasicTypes.h"
-#include <exception>
-#include <ostream>
 
-
-class AliHLTMUONError : public std::exception
+class AliHLTMUONCorePoint
 {
-	/* Define the << operator for streams to be able to do something like:
-
-               AliHLTMUONError myerror;
-               cout << myerror << endl;
-	*/
-	friend std::ostream& operator << (std::ostream& os, const AliHLTMUONError& error)
-	{
-		os << error.Message();
-		return os;
-	};
-	
 public:
 
-	AliHLTMUONError() throw() {};
-	virtual ~AliHLTMUONError() throw() {};
-
-	/* Should return a human readable string containing a description of the
-	   error.
-	 */
-	virtual const char* Message() const throw() = 0;
-	
-	/* Returns an error code describing the error. The error code should be
-	   unique to the entire system
-	 */
-	virtual Int ErrorCode() const throw() = 0;
-	
-	virtual const char* what() const throw()
+	AliHLTMUONCorePoint()
 	{
-		return Message();
-	};
+		fX = 0.0;
+		fY = 0.0;
+	}
+
+	AliHLTMUONCorePoint(Float x, Float y)
+	{
+		fX = x;
+		fY = y;
+	}
+
+	Float X() const { return fX; }
+	Float& X() { return fX; }
+	void X(Float x) { fX = x; }
+	Float Y() const { return fY; }
+	Float& Y() { return fY; }
+	void Y(Float y) { fY = y; }
+
+private:
+
+	Float fX, fY; // X and Y coordinate.
 };
 
-
-#endif // ALIHLTMUONERROR_H
+#endif // ALIHLTMUONCOREPOINT_H

@@ -8,13 +8,13 @@
 #ifndef ALIHLTMUONCONVERT_H
 #define ALIHLTMUONCONVERT_H
 
-#include "../Point.hpp"
+#include "../AliHLTMUONCorePoint.h"
 #include "AliRoot/Point.hpp"
-#include "../TriggerRecord.hpp"
+#include "../AliHLTMUONCoreTriggerRecord.h"
 #include "AliRoot/TriggerRecord.hpp"
-#include "../Track.hpp"
+#include "../AliHLTMUONCoreTrack.h"
 #include "AliRoot/Track.hpp"
-#include "../RegionOfInterest.hpp"
+#include "../AliHLTMUONCoreRegionOfInterest.h"
 #include "AliRoot/Region.hpp"
 
 /* Conversion routines to convert from dHLT structures to AliRoot structures

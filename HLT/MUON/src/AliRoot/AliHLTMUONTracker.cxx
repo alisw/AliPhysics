@@ -73,13 +73,13 @@ Int_t AliHLTMUONTracker::LoadClusters(TTree* data)
 		str += "\t";
 		str += trig->Pt();
 		str += "\t";
-		str += trig->Station1Point().fX;
+		str += trig->Station1Point().X();
 		str += "\t";
-		str += trig->Station1Point().fY;
+		str += trig->Station1Point().Y();
 		str += "\t";
-		str += trig->Station2Point().fX;
+		str += trig->Station2Point().X();
 		str += "\t";
-		str += trig->Station2Point().fY;
+		str += trig->Station2Point().Y();
 		str += "\n";
 	}
 	AliDebug(5, str);
@@ -182,36 +182,36 @@ Double_t AliHLTMUONTracker::ComputeChi2(const AliHLTMUONTrack* track) const
 
 	// Initialise X, Y and Z coordinate arrays.	
 	Double_t st4x, st4y, st4z, st5x, st5y, st5z;
-	if (track->Hit(6).fX == 0. && track->Hit(6).fY == 0.)
+	if (track->Hit(6).X() == 0. && track->Hit(6).Y() == 0.)
 	{
-		st4x = track->Hit(7).fX;
-		st4y = track->Hit(7).fY;
+		st4x = track->Hit(7).X();
+		st4y = track->Hit(7).Y();
 		st4z = AliHLTMUONCoreMansoTracker::GetZ8();
 	}
 	else
 	{
-		st4x = track->Hit(6).fX;
-		st4y = track->Hit(6).fY;
+		st4x = track->Hit(6).X();
+		st4y = track->Hit(6).Y();
 		st4z = AliHLTMUONCoreMansoTracker::GetZ7();
 	}
-	if (track->Hit(8).fX == 0. && track->Hit(8).fY == 0.)
+	if (track->Hit(8).X() == 0. && track->Hit(8).Y() == 0.)
 	{
-		st5x = track->Hit(9).fX;
-		st5y = track->Hit(9).fY;
+		st5x = track->Hit(9).X();
+		st5y = track->Hit(9).Y();
 		st5z = AliHLTMUONCoreMansoTracker::GetZ10();
 	}
 	else
 	{
-		st5x = track->Hit(8).fX;
-		st5y = track->Hit(8).fY;
+		st5x = track->Hit(8).X();
+		st5y = track->Hit(8).Y();
 		st5z = AliHLTMUONCoreMansoTracker::GetZ9();
 	}
 
 	Double_t x[4] = {st4x, st5x,
-			trigrec->Station1Point().fX, trigrec->Station2Point().fX
+			trigrec->Station1Point().X(), trigrec->Station2Point().X()
 		};
 	Double_t y[4] = {st4y, st5y,
-			trigrec->Station1Point().fY, trigrec->Station2Point().fY
+			trigrec->Station1Point().Y(), trigrec->Station2Point().Y()
 		};
 	Double_t z[4] = {st4z, st5z,
 			AliHLTMUONCoreMansoTracker::GetZ11(),
@@ -273,30 +273,30 @@ Int_t AliHLTMUONTracker::Clusters2Tracks(AliESD* event)
 		str += "\t";
 		str += track->Pt();
 		str += "\t7\t";
-		str += track->Hit(6).fX;
+		str += track->Hit(6).X();
 		str += "\t";
-		str += track->Hit(6).fY;
+		str += track->Hit(6).Y();
 		str += "\n\t\t\t\t\t\t8\t";
-		str += track->Hit(7).fX;
+		str += track->Hit(7).X();
 		str += "\t";
-		str += track->Hit(7).fY;
+		str += track->Hit(7).Y();
 		str += "\n\t\t\t\t\t\t9\t";
-		str += track->Hit(8).fX;
+		str += track->Hit(8).X();
 		str += "\t";
-		str += track->Hit(8).fY;
+		str += track->Hit(8).Y();
 		str += "\n\t\t\t\t\t\t10\t";
-		str += track->Hit(9).fX;
+		str += track->Hit(9).X();
 		str += "\t";
-		str += track->Hit(9).fY;
+		str += track->Hit(9).Y();
 		str += "\n";
 #endif // LOG_NO_DEBUG
 
 		Double_t z = AliHLTMUONCoreMansoTracker::GetZ7();
-		Double_t x = track->Hit(6).fX;
-		if (track->Hit(6).fX == 0. && track->Hit(6).fY == 0.)
+		Double_t x = track->Hit(6).X();
+		if (track->Hit(6).X() == 0. && track->Hit(6).Y() == 0.)
 		{
 			z = AliHLTMUONCoreMansoTracker::GetZ8();
-			x = track->Hit(7).fX;
+			x = track->Hit(7).X();
 		};
 
 		Double_t p = track->P();

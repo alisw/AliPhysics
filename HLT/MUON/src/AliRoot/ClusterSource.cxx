@@ -529,8 +529,8 @@ Bool_t AliHLTMUONClusterSource::FetchCluster(Float_t& x, Float_t& y) const
 
 	if (fCurrentCluster != NULL)
 	{
-		x = fCurrentCluster->fX;
-		y = fCurrentCluster->fY;
+		x = fCurrentCluster->X();
+		y = fCurrentCluster->Y();
 		return kTRUE;
 	}
 	else

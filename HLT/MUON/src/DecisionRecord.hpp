@@ -8,8 +8,8 @@
 #ifndef dHLT_DECISION_RECORD_HPP
 #define dHLT_DECISION_RECORD_HPP
 
-#include "BasicTypes.hpp"
-#include "Track.hpp"
+#include "AliHLTMUONBasicTypes.h"
+#include "AliHLTMUONCoreTrack.h"
 
 namespace dHLT
 {

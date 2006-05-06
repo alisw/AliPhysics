@@ -27,8 +27,16 @@ public:
 	 */
 	AliHLTMUONPoint(Float_t x, Float_t y);
 
-	virtual ~AliHLTMUONPoint() {};
+	virtual ~AliHLTMUONPoint() {}
 	
+	Float_t X() const { return fX; }
+	Float_t& X() { return fX; }
+	void X(Float_t x) { fX = x; }
+	Float_t Y() const { return fY; }
+	Float_t& Y() { return fY; }
+	void Y(Float_t y) { fY = y; }
+
+private:
 
 	Float_t fX;    // X coordinate of the 2D point.
 	Float_t fY;    // Y coordinate of the 2D point.

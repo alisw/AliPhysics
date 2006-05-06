@@ -8,7 +8,7 @@
 #include "AliRoot/Region.hpp"
 #include "AliRoot/Point.hpp"
 #include <TMath.h>
-#include "Utils.hpp"
+#include "AliHLTMUONUtils.h"
 
 ClassImp(AliHLTMUONRegion)
 
@@ -95,10 +95,10 @@ Bool_t AliHLTMUONRegion::Contains(const AliHLTMUONPoint& p) const
 // otherwise kFALSE is returned.
 
 	return 
-	  fLeft <= p.fX 
-	  && p.fX <= fRight 
-	  && fBottom <= p.fY 
-	  && p.fY <= fTop;
+	  fLeft <= p.X()
+	  && p.X() <= fRight 
+	  && fBottom <= p.Y()
+	  && p.Y() <= fTop;
 }
 
 

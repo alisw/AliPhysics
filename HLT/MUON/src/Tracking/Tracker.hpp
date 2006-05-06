@@ -8,13 +8,13 @@
 #ifndef ALIHLTMUONCORETRACKER_H
 #define ALIHLTMUONCORETRACKER_H
 
-#include "BasicTypes.hpp"
-#include "TriggerRecord.hpp"
-#include "Cluster.hpp"
-#include "Track.hpp"
-#include "EventID.hpp"
-#include "RegionOfInterest.hpp"
-#include "Utils.hpp"
+#include "AliHLTMUONBasicTypes.h"
+#include "AliHLTMUONUtils.h"
+#include "AliHLTMUONCoreTriggerRecord.h"
+#include "AliHLTMUONCoreCluster.h"
+#include "AliHLTMUONCoreTrack.h"
+#include "AliHLTMUONCoreEventID.h"
+#include "AliHLTMUONCoreRegionOfInterest.h"
 
 
 class AliHLTMUONCoreTracker;

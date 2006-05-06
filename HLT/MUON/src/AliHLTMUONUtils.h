@@ -1,12 +1,19 @@
+#ifndef ALIHLTHLTMUONUTILITIES_H
+#define ALIHLTHLTMUONUTILITIES_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Author: Artur Szostak
 // Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
 //
+// We define some useful macros used in the code.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALIHLTHLTMUONUTILITIES_H
-#define ALIHLTHLTMUONUTILITIES_H
 
 /* Since c++ is missing a finally "keyword" we define one. Its usage is identical
    to a try..finally statement in Java etc.. however, since it is officialy a macro

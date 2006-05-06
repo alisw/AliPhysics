@@ -8,9 +8,9 @@
 #ifndef ALIHLTMUONCORECOUNTEDLIST_H
 #define ALIHLTMUONCORECOUNTEDLIST_H
 
-#include "BasicTypes.hpp"
-#include "Utils.hpp"
-#include "new.hpp"
+#include "AliHLTMUONBasicTypes.h"
+#include "AliHLTMUONUtils.h"
+#include "AliHLTMUONOutOfMemory.h"
 #include "Buffers/List.hpp"
 
 #ifdef DEBUG

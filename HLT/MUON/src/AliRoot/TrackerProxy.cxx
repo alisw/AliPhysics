@@ -7,8 +7,8 @@
 
 #include "AliRoot/TrackerProxy.hpp"
 #include "AliRoot/convert.hpp"
-#include "Utils.hpp"
-#include "new.hpp"
+#include "AliHLTMUONUtils.h"
+#include "AliHLTMUONOutOfMemory.h"
 
 
 AliHLTMUONTrackerProxy::AliHLTMUONTrackerProxy(AliHLTMUONTrackerInterface* client)

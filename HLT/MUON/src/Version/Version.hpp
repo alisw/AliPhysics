@@ -12,7 +12,7 @@
 #ifndef dHLT_VERSION_FUNCTIONS_HPP
 #define dHLT_VERSION_FUNCTIONS_HPP
 
-#include "BasicTypes.hpp"
+#include "AliHLTMUONBasicTypes.h"
 
 namespace dHLT
 {

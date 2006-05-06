@@ -10,7 +10,7 @@
 
 #include <TObject.h>
 #include "AliRoot/Point.hpp"
-#include "Utils.hpp"
+#include "AliHLTMUONUtils.h"
 
 
 class AliHLTMUONTriggerRecord : public TObject

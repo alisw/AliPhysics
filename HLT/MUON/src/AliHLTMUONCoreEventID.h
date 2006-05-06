@@ -1,5 +1,5 @@
-#ifndef ALIHLTMUONERROR_H
-#define ALIHLTMUONERROR_H
+#ifndef ALIHLTMUONCOREEVENTID_H
+#define ALIHLTMUONCOREEVENTID_H
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -22,50 +22,36 @@
 // Author: Artur Szostak
 // Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
 //
-// AliHLTMUONError is the base excpetion class used by the dHLT subsystem.
-// All child classes used to throw exceptions should be derived from this
-// class to allow easy catching of classes of errors.
-// 
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliHLTMUONBasicTypes.h"
-#include <exception>
-#include <ostream>
+#include "AliHLTMUONUtils.h"
 
 
-class AliHLTMUONError : public std::exception
+// Must correct this definition!!!!
+struct AliHLTMUONCoreEventID
 {
-	/* Define the << operator for streams to be able to do something like:
+	UInt fBunch;
+	UInt fTimeStamp;
 
-               AliHLTMUONError myerror;
-               cout << myerror << endl;
-	*/
-	friend std::ostream& operator << (std::ostream& os, const AliHLTMUONError& error)
+
+	AliHLTMUONCoreEventID(UInt bunch = 0, UInt timestamp = 0)
 	{
-		os << error.Message();
-		return os;
+		fBunch = bunch;
+		fTimeStamp = timestamp;
 	};
-	
-public:
 
-	AliHLTMUONError() throw() {};
-	virtual ~AliHLTMUONError() throw() {};
 
-	/* Should return a human readable string containing a description of the
-	   error.
-	 */
-	virtual const char* Message() const throw() = 0;
-	
-	/* Returns an error code describing the error. The error code should be
-	   unique to the entire system
-	 */
-	virtual Int ErrorCode() const throw() = 0;
-	
-	virtual const char* what() const throw()
+	bool operator == (const AliHLTMUONCoreEventID& rhs)
 	{
-		return Message();
+		return fBunch == rhs.fBunch and fTimeStamp == rhs.fTimeStamp;
+	};
+
+	bool operator != (const AliHLTMUONCoreEventID& rhs)
+	{
+		return not (*this == rhs);
 	};
 };
 
 
-#endif // ALIHLTMUONERROR_H
+#endif // ALIHLTMUONCOREEVENTID_H

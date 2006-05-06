@@ -737,8 +737,8 @@ Bool_t AliHLTMUONTriggerSource::InFillRegion(const AliHLTMUONTriggerRecord& data
 	switch (fAreaToUse)
 	{
 	case kFromWholePlane:     return kTRUE;
-	case kFromLeftHalfPlane:  return data.Station1Point().fX <= 0;
-	case kFromRightHalfPlane: return data.Station1Point().fX > 0;
+	case kFromLeftHalfPlane:  return data.Station1Point().X() <= 0;
+	case kFromRightHalfPlane: return data.Station1Point().X() > 0;
 
 	default:
 		Error("InFillRegion", "fAreaToUse is not set to a valid value.");
@@ -789,14 +789,14 @@ void AliHLTMUONTriggerSource::FillTriggerFromLocalTrigger(
 	DebugMsg(2, "Pt = " << record.Pt() );
 
 	// Build the impact points.
-	record.Station1Point().fX = circuit.GetX11Pos(trigger->LoStripY());
-	record.Station1Point().fY = circuit.GetY11Pos(trigger->LoStripX());
-	record.Station2Point().fY = circuit.GetY21Pos(trigger->LoStripX() + trigger->LoDev() + 1);  // Why + 1?
-	record.Station2Point().fX = AliMUONConstants::DefaultChamberZ(12) * record.Station1Point().fX / AliMUONConstants::DefaultChamberZ(10);
-	DebugMsg(2, "fStation1x = " << record.Station1Point().fX);
-	DebugMsg(2, "fStation1y = " << record.Station1Point().fY);
-	DebugMsg(2, "fStation2x = " << record.Station2Point().fX);
-	DebugMsg(2, "fStation2y = " << record.Station2Point().fY);
+	record.Station1Point().X() = circuit.GetX11Pos(trigger->LoStripY());
+	record.Station1Point().Y() = circuit.GetY11Pos(trigger->LoStripX());
+	record.Station2Point().Y() = circuit.GetY21Pos(trigger->LoStripX() + trigger->LoDev() + 1);  // Why + 1?
+	record.Station2Point().X() = AliMUONConstants::DefaultChamberZ(12) * record.Station1Point().X() / AliMUONConstants::DefaultChamberZ(10);
+	DebugMsg(2, "fStation1x = " << record.Station1Point().X());
+	DebugMsg(2, "fStation1y = " << record.Station1Point().Y());
+	DebugMsg(2, "fStation2x = " << record.Station2Point().X());
+	DebugMsg(2, "fStation2y = " << record.Station2Point().Y());
 }
 
 
@@ -848,14 +848,14 @@ Bool_t AliHLTMUONTriggerSource::FillTriggerFromHits(
 	// use hits from chamber 12.
 	if ( ! TMath::IsNaN(x1))
 	{
-		record.Station1Point().fX = x1;
-		record.Station1Point().fY = y1;
+		record.Station1Point().X() = x1;
+		record.Station1Point().Y() = y1;
 		DebugMsg(3, "Using value from chamber 11: x1 = " << x1 << ", y1 = " << y1 << ", z1 = " << z1 );
 	}
 	else if ( ! TMath::IsNaN(x2))
 	{
-		record.Station1Point().fX = x2;
-		record.Station1Point().fY = y2;
+		record.Station1Point().X() = x2;
+		record.Station1Point().Y() = y2;
 		z1 = z2;
 		DebugMsg(3, "Using value from chamber 12: x2 = " << x2 << ", y2 = " << y2 << ", z2 = " << z2 );
 	}
@@ -870,15 +870,15 @@ Bool_t AliHLTMUONTriggerSource::FillTriggerFromHits(
 	// use hits from chamber 14.
 	if ( ! TMath::IsNaN(x3))
 	{
-		record.Station2Point().fX = x3;
-		record.Station2Point().fY = y3;
+		record.Station2Point().X() = x3;
+		record.Station2Point().Y() = y3;
 		z2 = z3;
 		DebugMsg(3, "Using value from chamber 13: x3 = " << x3 << ", y3 = " << y3 << ", z3 = " << z3 );
 	}
 	else if ( ! TMath::IsNaN(x4))
 	{
-		record.Station2Point().fX = x4;
-		record.Station2Point().fY = y4;
+		record.Station2Point().X() = x4;
+		record.Station2Point().Y() = y4;
 		z2 = z4;
 		DebugMsg(3, "Using value from chamber 14: x4 = " << x4 << ", y4 = " << y4 << ", z4 = " << z4 );
 	}
@@ -904,16 +904,16 @@ Bool_t AliHLTMUONTriggerSource::FillTriggerFromHits(
 		record.ParticleSign(0);
 	DebugMsg(3, "Particle sign = " << record.ParticleSign());
 	
-	DebugMsg(3, "Calculating Pt: x1 = " << record.Station1Point().fX
-			<< ", y1 = " << record.Station1Point().fY
-			<< ", y2 = " << record.Station2Point().fY
+	DebugMsg(3, "Calculating Pt: x1 = " << record.Station1Point().X()
+			<< ", y1 = " << record.Station1Point().Y()
+			<< ", y2 = " << record.Station2Point().Y()
 			<< ", z1 = " << z1
 			<< ", z2 = " << z2
 		);
 	// Calculate and assign the transverse momentum.
 	Float_t pt = AliHLTMUONCoreCalculatePt(
-				record.Station1Point().fX,
-				record.Station1Point().fY, record.Station2Point().fY,
+				record.Station1Point().X(),
+				record.Station1Point().Y(), record.Station2Point().Y(),
 				z1, z2
 			);
 	record.Pt(pt);

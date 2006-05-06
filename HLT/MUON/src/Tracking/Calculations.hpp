@@ -5,7 +5,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "BasicTypes.hpp"
+#include "AliHLTMUONBasicTypes.h"
 
 
 /* Computes the Pt (transverse mementum) based on the equations given in the

@@ -1,5 +1,3 @@
-#ifndef ALIHLTMUONERROR_H
-#define ALIHLTMUONERROR_H
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -22,50 +20,14 @@
 // Author: Artur Szostak
 // Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
 //
-// AliHLTMUONError is the base excpetion class used by the dHLT subsystem.
-// All child classes used to throw exceptions should be derived from this
-// class to allow easy catching of classes of errors.
-// 
+// Implement the gAliHLTMUONDebugLevel global variable.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "AliHLTMUONBasicTypes.h"
-#include <exception>
-#include <ostream>
+#ifdef DEBUG
 
+// The global debug level, specifying how much debug information should
+// be written to screen.
+int gAliHLTMUONDebugLevel = 0x7FFFFFFF;
 
-class AliHLTMUONError : public std::exception
-{
-	/* Define the << operator for streams to be able to do something like:
-
-               AliHLTMUONError myerror;
-               cout << myerror << endl;
-	*/
-	friend std::ostream& operator << (std::ostream& os, const AliHLTMUONError& error)
-	{
-		os << error.Message();
-		return os;
-	};
-	
-public:
-
-	AliHLTMUONError() throw() {};
-	virtual ~AliHLTMUONError() throw() {};
-
-	/* Should return a human readable string containing a description of the
-	   error.
-	 */
-	virtual const char* Message() const throw() = 0;
-	
-	/* Returns an error code describing the error. The error code should be
-	   unique to the entire system
-	 */
-	virtual Int ErrorCode() const throw() = 0;
-	
-	virtual const char* what() const throw()
-	{
-		return Message();
-	};
-};
-
-
-#endif // ALIHLTMUONERROR_H
+#endif // DEBUG

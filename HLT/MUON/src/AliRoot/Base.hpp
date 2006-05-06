@@ -10,7 +10,7 @@
 
 #include "TError.h"
 #include "TMath.h"
-#include "Utils.hpp"
+#include "AliHLTMUONUtils.h"
 
 
 // I prefer to have the option of compiling in the ROOT Assert statements.

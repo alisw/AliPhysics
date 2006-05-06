@@ -7,7 +7,7 @@
 
 #include "AliRoot/ADCStream.hpp"
 #include <TMath.h>
-#include "Utils.hpp"
+#include "AliHLTMUONUtils.h"
 
 
 ClassImp(AliHLTMUONADCStream)

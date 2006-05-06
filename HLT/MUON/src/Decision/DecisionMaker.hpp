@@ -8,10 +8,10 @@
 #ifndef dHLT_DECISION_DECISION_MAKER_HPP
 #define dHLT_DECISION_DECISION_MAKER_HPP
 
-#include "BasicTypes.hpp"
-#include "Track.hpp"
+#include "AliHLTMUONBasicTypes.h"
+#include "AliHLTMUONUtils.h"
+#include "AliHLTMUONCoreTrack.h"
 #include "DecisionRecord.hpp"
-#include "Utils.hpp"
 
 
 namespace dHLT

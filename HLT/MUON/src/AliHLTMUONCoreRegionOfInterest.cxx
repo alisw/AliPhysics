@@ -1,17 +1,33 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Author: Artur Szostak
 // Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
 //
+// The region of interest object is used to encode/decode and work with boundary
+// box type regions of interest. The 32 bit ROI codes are used to communicate
+// regions of interest between different parts of the dHLT system. This is more
+// efficient than sending 20 byte long region of interest objects.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
-/* The region of interest object is used to encode/decode and work with boundary
-   box type regions of interest. The 32 bit ROI codes are used to communicate
-   regions of interest between different parts of the dHLT system. This is more
-   efficient than sending 20 byte long region of interest objects.
- */
-
-#include "RegionOfInterest.hpp"
+#include "AliHLTMUONCoreRegionOfInterest.h"
 #include <math.h>
 
 
@@ -38,8 +54,8 @@ void AliHLTMUONCoreRegionOfInterest::CreateToContain(
 
 	Assert( 0 <= chamber && chamber < (AliHLTMUONCoreChamberID)kNumberOfTrackingChambers );
 	fChamber = chamber;
-	fLeft = fRight = point.fX;
-	fBottom = fTop = point.fY;
+	fLeft = fRight = point.X();
+	fBottom = fTop = point.Y();
 }
 
 
@@ -47,14 +63,14 @@ void AliHLTMUONCoreRegionOfInterest::ExpandToContain(const AliHLTMUONCoreCluster
 {
 // Extends the region of interest to contain the specified point.
 
-	if (point.fX < fLeft)
-		fLeft = point.fX;
+	if (point.X() < fLeft)
+		fLeft = point.X();
 	else
-		if (point.fX > fRight) fRight = point.fX;
-	if (point.fY < fBottom)
-		fBottom = point.fY;
+		if (point.X() > fRight) fRight = point.X();
+	if (point.Y() < fBottom)
+		fBottom = point.Y();
 	else
-		if (point.fY > fTop) fTop = point.fY;
+		if (point.Y() > fTop) fTop = point.Y();
 }
 
 

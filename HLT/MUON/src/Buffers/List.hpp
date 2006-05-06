@@ -8,9 +8,9 @@
 #ifndef ALIHLTMUONCOREBUFFERSLIST_H
 #define ALIHLTMUONCOREBUFFERSLIST_H
 
-#include "BasicTypes.hpp"
-#include "Utils.hpp"
-#include "new.hpp"
+#include "AliHLTMUONBasicTypes.h"
+#include "AliHLTMUONUtils.h"
+#include "AliHLTMUONOutOfMemory.h"
 
 #ifdef DEBUG
 #include <iostream>

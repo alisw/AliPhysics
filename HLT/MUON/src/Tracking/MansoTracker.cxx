@@ -8,14 +8,14 @@
 #include "Tracking/MansoTracker.hpp"
 #include <math.h>
 #include "Tracking/Calculations.hpp"
-#include "Utils.hpp"
-#include "Error.hpp"
-#include "RegionOfInterest.hpp"
+#include "AliHLTMUONUtils.h"
+#include "AliHLTMUONError.h"
+#include "AliHLTMUONCoreRegionOfInterest.h"
 
 
 #if defined(DEBUG) || (defined(USE_ALILOG) && ! defined(LOG_NO_DEBUG))
 #include <ostream>
-#include "Debug/print.hpp"
+#include "Debug/AliHLTMUONPrint.h"
 namespace
 {
 
@@ -80,7 +80,7 @@ void AliHLTMUONCoreMansoTracker::AliRegionOfInterest::Create(AliHLTMUONCorePoint
 
 	fCentre = p;
 	// Compute the radius Rp
-	Float rp = (Float) sqrt( p.fX * p.fX + p.fY * p.fY );
+	Float rp = (Float) sqrt( p.X() * p.X() + p.Y() * p.Y() );
 
 	// The radius Rs for the region of interest is computed from the
 	// specification given in the document:
@@ -98,8 +98,8 @@ bool AliHLTMUONCoreMansoTracker::AliRegionOfInterest::Contains(AliHLTMUONCorePoi
 	// Compute the distance between the centre of the region of interest and
 	// the point p. This distance must be less than the radius of the region
 	// of interest for p to be contained in the region of interest.
-	register Float lx = fCentre.fX - p.fX;
-	register Float ly = fCentre.fY - p.fY;
+	register Float lx = fCentre.X() - p.X();
+	register Float ly = fCentre.Y() - p.Y();
 	register Float r = (Float) sqrt( lx * lx + ly * ly );
 	DebugMsg(4, "\tAliRegionOfInterest::Contains : p = " << p
 		<< " , centre = " << fCentre << " , r = " << r << " , Rs = " << fRs
@@ -114,10 +114,10 @@ void AliHLTMUONCoreMansoTracker::AliRegionOfInterest::GetBoundaryBox(
 {
 // Works out the smallest boundary box that will contain the region of interest.
 
-	left = fCentre.fX - fRs;
-	right = fCentre.fX + fRs;
-	bottom = fCentre.fY - fRs;
-	top = fCentre.fY + fRs;
+	left = fCentre.X() - fRs;
+	right = fCentre.X() + fRs;
+	bottom = fCentre.Y() - fRs;
+	top = fCentre.Y() + fRs;
 }
 
 
@@ -135,8 +135,8 @@ AliHLTMUONCoreMansoTracker::AliVertex::AliVertex(AliHLTMUONCorePoint xy, Float z
 {
 // Construct vertex from a point on the XY plane and z coordinate.
 
-	fX = xy.fX;
-	fY = xy.fY;
+	fX = xy.X();
+	fY = xy.Y();
 	fZ = z;
 }
 
@@ -279,9 +279,9 @@ void AliHLTMUONCoreMansoTracker::FillTrackData(AliHLTMUONCoreTrack& track)
 
 	DebugMsg(4, "FillTrack: st5 = " << fSt5rec->fClusterPoint << ", st4 = " << fFoundPoint->fClusterPoint);
 	
-	Float x1 = fFoundPoint->fClusterPoint.fX;
-	Float y1 = fFoundPoint->fClusterPoint.fY;
-	Float y2 = fSt5rec->fClusterPoint.fY;
+	Float x1 = fFoundPoint->fClusterPoint.X();
+	Float y1 = fFoundPoint->fClusterPoint.Y();
+	Float y2 = fSt5rec->fClusterPoint.Y();
 	Float momentum;
 	Float pt = AliHLTMUONCoreCalculateSignedPt(x1, y1, y2, fSt4z, fSt5z, momentum);
 	DebugMsg(1, "Calculated Pt = " << pt);
@@ -385,7 +385,7 @@ void AliHLTMUONCoreMansoTracker::ReceiveClustersChamber7(
 			// Check that the cluster actually is in our region of interest on station 4.
 			if ( data->fRoi.Contains(cluster) )
 			{
-				DebugMsg(4, "Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 7.");
+				DebugMsg(4, "Adding cluster [" << cluster.X() << ", " << cluster.Y() << "] from chamber 7.");
 				AliStation4Data* newdata = fSt4points.New();
 				newdata->fClusterPoint = cluster;
 				newdata->fSt5tag = data;
@@ -419,7 +419,7 @@ void AliHLTMUONCoreMansoTracker::ReceiveClustersChamber8(
 			// Check that the cluster actually is in our region of interest on station 4.
 			if ( data->fRoi.Contains(cluster) )
 			{
-				DebugMsg(4, "Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 8.");
+				DebugMsg(4, "Adding cluster [" << cluster.X() << ", " << cluster.Y() << "] from chamber 8.");
 				AliStation4Data* newdata = fSt4points.New();
 				newdata->fClusterPoint = cluster;
 				newdata->fSt5tag = data;
@@ -450,7 +450,7 @@ void AliHLTMUONCoreMansoTracker::ReceiveClustersChamber9(const AliHLTMUONCoreClu
 			// Check that the cluster actually is in our region of interest on station 5.
 			if ( fMc1.fRoi.Contains(cluster) )
 			{
-				DebugMsg(4, "Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 9.");
+				DebugMsg(4, "Adding cluster [" << cluster.X() << ", " << cluster.Y() << "] from chamber 9.");
 				AliStation5Data* data = fSt5data.New();
 				data->fClusterPoint = cluster;
 				ProjectToStation4(data, fgZ9);  // This adds a new request for station 4.
@@ -482,7 +482,7 @@ void AliHLTMUONCoreMansoTracker::ReceiveClustersChamber10(const AliHLTMUONCoreCl
 			// Check that the cluster actually is in our region of interest on station 5.
 			if ( fMc1.fRoi.Contains(cluster) )
 			{
-				DebugMsg(4, "Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 10.");
+				DebugMsg(4, "Adding cluster [" << cluster.X() << ", " << cluster.Y() << "] from chamber 10.");
 				AliStation5Data* data = fSt5data.New();
 				data->fClusterPoint = cluster;
 				ProjectToStation4(data, fgZ10);  // This adds a new request for station 4.

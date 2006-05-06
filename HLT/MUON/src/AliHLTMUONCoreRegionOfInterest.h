@@ -1,22 +1,25 @@
+#ifndef ALIHLTMUONCOREREGIONOFINTEREST_H
+#define ALIHLTMUONCOREREGIONOFINTEREST_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Author: Artur Szostak
 // Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
 //
+// The region of interest object is used to encode/decode and work with boundary
+// box type regions of interest. The 32 bit ROI codes are used to communicate
+// regions of interest between different parts of the dHLT system. This is more
+// efficient than sending 20 byte long region of interest objects.
+//
 ////////////////////////////////////////////////////////////////////////////////
 
-/* The region of interest object is used to encode/decode and work with boundary
-   box type regions of interest. The 32 bit ROI codes are used to communicate
-   regions of interest between different parts of the dHLT system. This is more
-   efficient than sending 20 byte long region of interest objects.
- */
-
-#ifndef ALIHLTMUONCOREREGIONOFINTEREST_H
-#define ALIHLTMUONCOREREGIONOFINTEREST_H
-
-#include "BasicTypes.hpp"
-#include "Utils.hpp"
-#include "Cluster.hpp"
+#include "AliHLTMUONBasicTypes.h"
+#include "AliHLTMUONUtils.h"
+#include "AliHLTMUONCoreCluster.h"
 
 
 typedef UInt AliHLTMUONCoreROI;
@@ -256,10 +259,10 @@ inline bool AliHLTMUONCoreRegionOfInterest::Contains(const AliHLTMUONCoreCluster
 {
 // Checks if the point is contained in this region of interest.
 
-	return fLeft <= point.fX
-	  && point.fX <= fRight
-	  && fBottom <= point.fY
-	  && point.fY <= fTop;
+	return fLeft <= point.X()
+	  && point.X() <= fRight
+	  && fBottom <= point.Y()
+	  && point.Y() <= fTop;
 }
 
 
@@ -271,10 +274,10 @@ inline bool AliHLTMUONCoreRegionOfInterest::Contains(
 // Checks if the point is contained in this region of interest and the
 // chamber number corresponds to this region object.
 
-	return fLeft <= point.fX
-	  && point.fX <= fRight
-	  && fBottom <= point.fY
-	  && point.fY <= fTop
+	return fLeft <= point.X()
+	  && point.X() <= fRight
+	  && fBottom <= point.Y()
+	  && point.Y() <= fTop
 	  && fChamber == chamber;
 }
 
