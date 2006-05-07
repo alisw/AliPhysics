@@ -36,7 +36,7 @@ MUON/src/AliRoot/AliHLTMUONTracker.cxx \
 MUON/src/Debug/AliHLTMUONPrint.cxx
 
 
-DHDR:= MUON/src/AliRoot/MUONHLTLinkDef.h
+DHDR:= MUON/src/AliRoot/HLTMUONLinkDef.h
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
