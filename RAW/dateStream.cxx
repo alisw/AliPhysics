@@ -45,8 +45,8 @@ char fileHandlerIdent[]= "@(#)""" __FILE__ """: """ DESCRIPTION \
 const char *myName;
 int debug;
 FILE *outF;
-enum { unknown, ldc, gdc } workingAs;
-enum { collider, fixedTarget } workingMode;
+static enum { unknown, ldc, gdc } workingAs;
+static enum { collider, fixedTarget } workingMode;
 struct ldcDescriptorStruct {
   eventLdcIdType id;
   struct ldcDescriptorStruct *next;
@@ -496,8 +496,13 @@ void loadPayload( const char *fileName ) {
 	  printf( " CDH: blockLenght:%d=0x%08x ",
 		  cdh->cdhBlockLength, cdh->cdhBlockLength );
 	  if ( cdh->cdhBlockLength < sizeof( *cdh ) ) {
+#ifdef __APPLE__
+	    printf( "TOO SMALL (minimum:%ld=0x%08lx)\n",
+		    sizeof( *cdh ), sizeof( *cdh ) );
+#else
 	    printf( "TOO SMALL (minimum:%d=0x%08x)\n",
 		    sizeof( *cdh ), sizeof( *cdh ) );
+#endif
 	  } else {
 	    printf( "version:%d=0x%x ", cdh->cdhVersion, cdh->cdhVersion );
 	    if ( cdh->cdhVersion != CDH_VERSION ) {
