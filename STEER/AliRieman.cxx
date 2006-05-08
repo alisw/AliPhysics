@@ -57,6 +57,10 @@ AliRieman::AliRieman(){
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
+  for (Int_t i=0;i<6;i++) {
+    fSumPolY[i]=0;
+    fSumPolZ[i]=0;
+  }
   fSumZZ = 0;
   fCapacity = 0;
   fN =0;
@@ -69,6 +73,8 @@ AliRieman::AliRieman(){
   fChi2Y = 0;
   fChi2Z = 0;
   fCovar = 0;
+  fCovarPolY = 0;
+  fCovarPolZ = 0;
   fConv = kFALSE;
 }
 
@@ -80,6 +86,10 @@ AliRieman::AliRieman(Int_t capacity){
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
+  for (Int_t i=0;i<6;i++) {
+    fSumPolY[i]=0;
+    fSumPolZ[i]=0;
+  }
   fSumZZ =0;
   fCapacity = capacity;
   fN =0;
@@ -89,6 +99,8 @@ AliRieman::AliRieman(Int_t capacity){
   fSy = new Double_t[fCapacity];
   fSz = new Double_t[fCapacity];
   fCovar = new TMatrixDSym(6);
+  fCovarPolY = new TMatrixDSym(3);
+  fCovarPolZ = new TMatrixDSym(2);
   fChi2  = 0;
   fChi2Y = 0;
   fChi2Z = 0;
@@ -102,10 +114,16 @@ AliRieman::AliRieman(const AliRieman &rieman):TObject(rieman){
   for (Int_t i=0;i<6;i++) fParams[i] = rieman.fParams[i];
   for (Int_t i=0;i<9;i++) fSumXY[i]  = rieman.fSumXY[i];
   for (Int_t i=0;i<9;i++) fSumXZ[i]  = rieman.fSumXZ[i];
+  for (Int_t i=0;i<6;i++) {
+    fSumPolY[i]=rieman.fSumPolY[i];
+    fSumPolZ[i]=rieman.fSumPolZ[i];
+  }
   fSumZZ    = rieman.fSumZZ;
   fCapacity = rieman.fN;
   fN =rieman.fN;
   fCovar = new TMatrixDSym(*(rieman.fCovar)); 
+  fCovarPolY = new TMatrixDSym(*(rieman.fCovarPolY)); 
+  fCovarPolZ = new TMatrixDSym(*(rieman.fCovarPolZ)); 
   fConv = rieman.fConv;
   fX  = new Double_t[fN];
   fY  = new Double_t[fN];
@@ -132,6 +150,8 @@ AliRieman::~AliRieman()
   delete[]fSy;
   delete[]fSz;
   delete fCovar;
+  delete fCovarPolY;
+  delete fCovarPolZ;
 }
 
 void AliRieman::Reset()
@@ -142,7 +162,11 @@ void AliRieman::Reset()
   fN=0;
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
-  for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
+  for (Int_t i=0;i<9;i++) fSumXZ[i] = 0; 
+  for (Int_t i=0;i<6;i++) {
+    fSumPolY[i]=0;
+    fSumPolZ[i]=0;
+  }
   fSumZZ =0;
   fConv =kFALSE;
 }
@@ -205,11 +229,18 @@ void AliRieman::AddPoint(Double_t x, Double_t y, Double_t z, Double_t sy, Double
   fSumXZ[8] +=weight*r*r*r*r*r*r/(24*24);
   fSumZZ += z*z*weight;
   //
+  // sum accumulation for rough error estimates of the track extrapolation error
+  //
+  Double_t maty = 1./(sy*sy);
+  Double_t matz = 1./(sz*sz);
+  for (Int_t i=0;i<5; i++){
+    fSumPolY[i] += maty;
+    fSumPolZ[i] += matz;
+    maty *= x;
+    matz *= x;
+  }
   fN++;
 }
-
-
-
 
 
 void AliRieman::UpdatePol(){
@@ -232,6 +263,7 @@ void AliRieman::UpdatePol(){
 
   smatrix(0,0) = fSumXY[0]; smatrix(1,1)=fSumXY[4]; smatrix(2,2)=fSumXY[5];
   smatrix(0,1) = fSumXY[1]; smatrix(0,2)=fSumXY[3]; smatrix(1,2)=fSumXY[7];
+  smatrix(1,0) = fSumXY[1]; smatrix(2,0)=fSumXY[3]; smatrix(2,1)=fSumXY[7];
   sums(0,0)    = fSumXY[2]; sums(0,1)   =fSumXY[6]; sums(0,2)   =fSumXY[8];
   smatrix.Invert();
   if (smatrix.IsValid()){
@@ -248,19 +280,26 @@ void AliRieman::UpdatePol(){
   //
   // XZ part
   //
-  Double_t Rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
-  fSumXZ[1] += fSumXZ[5]*Rm1*Rm1;
-  fSumXZ[2] += fSumXZ[6]*Rm1*Rm1 + fSumXZ[8]*Rm1*Rm1*Rm1*Rm1;
-  fSumXZ[4] += fSumXZ[7]*Rm1*Rm1;
+  Double_t rm1  = fParams[0]/TMath::Sqrt(-fParams[2]*fParams[0]+fParams[1]*fParams[1]+1); 
+  
+//   fSumXZ[1] += fSumXZ[5]*rm1*rm1;
+//   fSumXZ[2] += fSumXZ[6]*rm1*rm1 + fSumXZ[8]*rm1*rm1*rm1*rm1;
+//   fSumXZ[4] += fSumXZ[7]*rm1*rm1;
+  Double_t sum1 = fSumXZ[1] + fSumXZ[5]*rm1*rm1;
+  Double_t sum2 = fSumXZ[2] + fSumXZ[6]*rm1*rm1 + fSumXZ[8]*rm1*rm1*rm1*rm1;
+  Double_t sum4 = fSumXZ[4] + fSumXZ[7]*rm1*rm1;
   
   TMatrixDSym     smatrixz(2);
-  smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = fSumXZ[1]; smatrixz(1,1) = fSumXZ[2];
-  smatrixz(1,0) = fSumXZ[1];
+  //  smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = fSumXZ[1]; smatrixz(1,1) = fSumXZ[2];
+  //smatrixz(1,0) = fSumXZ[1];
+  smatrixz(0,0) = fSumXZ[0]; smatrixz(0,1) = sum1; smatrixz(1,1) = sum2;
+  smatrixz(1,0) = sum1;
   smatrixz.Invert();
   TMatrixD        sumsxz(1,2);
   if (smatrixz.IsValid()){
     sumsxz(0,0)    = fSumXZ[3];
-    sumsxz(0,1)    = fSumXZ[4];
+    //    sumsxz(0,1)    = fSumXZ[4];
+    sumsxz(0,1)    = sum4;
     TMatrixD res = sumsxz*smatrixz;
     fParams[3] = res(0,0);
     fParams[4] = res(0,1);
@@ -271,6 +310,7 @@ void AliRieman::UpdatePol(){
       }
     conv++;
   }
+  UpdateCovariancePol();
   //  (x-x0)^2+(y-y0)^2-R^2=0 ===>
   //
   //  (x^2+y^2 -2*x*x0 - 2*y*y0+ x0^2 -y0^2 -R^2 =0;  ==>
@@ -378,7 +418,7 @@ void AliRieman::Update(){
     }
     conv++;
   }
-
+  UpdateCovariancePol();
   //  (x-x0)^2+(y-y0)^2-R^2=0 ===>
   //
   //  (x^2+y^2 -2*x*x0 - 2*y*y0+ x0^2 -y0^2 -R^2 =0;  ==>
@@ -399,6 +439,108 @@ void AliRieman::Update(){
   fChi2Z = CalcChi2Z();
   fChi2  = fChi2Y +fChi2Z;
 }
+
+void AliRieman::UpdateCovariancePol(){
+  //
+  // covariance matrices for rough extrapolation error estimate
+  // covariance matrix - get error estimates at point x = 0 
+  // ! NOTE - error estimates is very rough and it is valid only if dl<<R
+  // when dl is the distance between first and last point  
+  //
+  //
+  (*fCovarPolY)(0,0) = fSumPolY[0]; (*fCovarPolY)(0,1) = fSumPolY[1]; (*fCovarPolY)(0,2) = fSumPolY[2];
+  (*fCovarPolY)(1,0) = fSumPolY[1]; (*fCovarPolY)(1,1) = fSumPolY[2]; (*fCovarPolY)(1,2) = fSumPolY[3];
+  (*fCovarPolY)(2,0) = fSumPolY[2]; (*fCovarPolY)(2,1) = fSumPolY[3]; (*fCovarPolY)(2,2) = fSumPolY[4];
+  fCovarPolY->Invert();
+  //
+
+  (*fCovarPolZ)(0,0) = fSumPolZ[0]; (*fCovarPolZ)(0,1) = fSumPolZ[1];
+  (*fCovarPolZ)(1,0) = fSumPolZ[1]; (*fCovarPolZ)(1,1) = fSumPolZ[2];
+  fCovarPolZ->Invert();
+  //
+}
+
+Double_t  AliRieman::GetErrY(Double_t x) const{
+  //
+  //    P0'  = P0 + P1 * x +  P2 * x^2 
+  //    P1'  =      P1     +  P2 * x
+  //    P2'  =             +  P2
+  TMatrixD trans(3,3);
+  trans(0,0) = 1;
+  trans(0,1) = x;
+  trans(0,2) = x*x;
+  trans(1,1) = 1;
+  trans(1,2) = x;
+  trans(2,2) = 1;
+  //
+  TMatrixD covarX(trans,TMatrixD::kMult,*fCovarPolY);
+  covarX*=trans.T();
+  return covarX(0,0);
+}
+
+Double_t  AliRieman::GetErrZ(Double_t x) const{
+  //
+  //    assumption error of curvature determination neggligible
+  //
+  //    P0'  = P0 + P1 * x  
+  //    P1'  =      P1    
+  TMatrixD trans(2,2);
+  trans(0,0) = 1;
+  trans(0,1) = x;
+  trans(1,1) = 1;
+  //
+  TMatrixD covarX(trans,TMatrixD::kMult,*fCovarPolZ);
+  covarX*=trans.T();
+  return covarX(0,0);
+}
+
+Bool_t AliRieman::GetExternalParameters(Double_t xref, Double_t *params, Double_t * covar){
+  //
+  // Get external parameters
+  // + approximative covariance  
+  //  0  1  2  3  4      // y   - local y
+  //     5  6  7  8      // z   - local z
+  //        9  10 11     // snp - local sin fi  
+  //           12 13     // tgl - deep angle
+  //              14     // C   - curvature
+  Double_t sign = (GetC()>0) ? 1.:-1.;
+
+  params[0] = GetYat(xref);
+  params[1] = GetZat(xref);
+  params[2] = TMath::Sin(TMath::ATan(GetDYat(xref)));
+  params[3] = sign*fParams[4];
+  params[4] = GetC();
+  //
+  // covariance matrix in y 
+  //
+  TMatrixD transY(3,3);
+  transY(0,0) = 1;
+  transY(0,1) = xref;
+  transY(0,2) = xref*xref;
+  transY(1,1) = 1;
+  transY(1,2) = xref;
+  transY(2,2) = 1;
+  TMatrixD covarY(transY,TMatrixD::kMult,*fCovarPolY);
+  covarY*=transY.T();
+  //
+  TMatrixD transZ(2,2);
+  transZ(0,0) = 1;
+  transZ(0,1) = xref;
+  transZ(1,1) = 1;
+  TMatrixD covarZ(transZ,TMatrixD::kMult,*fCovarPolZ);
+  covarZ*=transZ.T();
+  //
+  // C ~ 2*P2 - in rotated frame
+  //
+  covar[0]  = covarY(0,0);  covar[1] = 0; covar[2] = covarY(0,1); covar[3] = 0; covar[4] = TMath::Sqrt(2.)*covarY(0,2);
+  covar[5]  = covarZ(0,0);  covar[6] = 0; covar[7] = sign*covarZ(0,1); covar[8] = 0;
+  covar[9]  = covarY(1,1);  covar[10]= 0; covar[11]= TMath::Sqrt(2.)*covarY(1,2);  
+  covar[12] = covarZ(1,1);  covar[13]= 0; 
+  covar[14] = 2.*covarY(2,2);
+  //
+  return fConv;
+}
+
 
 
 

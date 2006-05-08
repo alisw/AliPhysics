@@ -46,8 +46,12 @@ class AliRieman : public TObject{
   Double_t CalcChi2Z() const;
   Double_t CalcChi2() const;
   AliRieman * MakeResiduals() const;
+  Double_t    GetErrY(Double_t x) const; 
+  Double_t    GetErrZ(Double_t x) const;
+  Bool_t GetExternalParameters(Double_t xref, Double_t *params, Double_t * covar);
   //
  protected:
+  void          UpdateCovariancePol();  // update covariance for error estimates
   // public:
   Int_t         fCapacity;  // capacity
   Int_t         fN;         // numebr of points
@@ -58,8 +62,12 @@ class AliRieman : public TObject{
   Double_t      *fSz;        //[fN] sigma z coordinate
   Double_t      fParams[6]; //Parameters
   TMatrixDSym  *fCovar;     //Covariance
+  TMatrixDSym  *fCovarPolY; // covariance matrix for parabola fit in xy - used for error estimation
+  TMatrixDSym  *fCovarPolZ; // covariance matrix for parabola fit in xy - used for error estimation
   Double_t      fSumXY[9];  //sums for XY part
   Double_t      fSumXZ[9];  //sums for XZ part
+  Double_t      fSumPolY[5]; //sums of polynoms X with weight Z
+  Double_t      fSumPolZ[5]; //sums of polynoms X with weight Z
   Double_t      fSumZZ;     //sums of Z2 
   Double_t      fChi2;      //sums of chi2
   Double_t      fChi2Y;     //sums of chi2 for y coord
@@ -68,7 +76,7 @@ class AliRieman : public TObject{
  protected:  
  private:
   AliRieman& operator=(const AliRieman &rieman);
-  ClassDef(AliRieman,1)  // Fast fit of helices on ITS RecPoints
+  ClassDef(AliRieman,2)  // Fast fit of helices on ITS RecPoints
 };
 
 
