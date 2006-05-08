@@ -256,7 +256,11 @@ void AliAlignmentTracks::BuildIndex()
       for (Int_t ipoint = 0; ipoint < array->GetNPoints(); ipoint++) {
 	UShort_t volId = array->GetVolumeID()[ipoint];
 	// check if the volId is valid
-	if (!AliAlignObj::GetVolPath(volId)) continue;
+	if (!AliAlignObj::GetVolPath(volId)) {
+	  AliError(Form("The volume id %d has no default volume path !",
+			volId));
+	  continue;
+	}
 	Int_t modId;
 	Int_t layerId = AliAlignObj::VolUIDToLayer(volId,modId)
 	              - AliAlignObj::kFirstLayer;
@@ -603,7 +607,18 @@ Int_t AliAlignmentTracks::LoadPoints(const TArrayI *volids, AliTrackPointArray**
 	Int_t modnum;
 	AliAlignObj::ELayerID layer = AliAlignObj::VolUIDToLayer(p.GetVolumeID(),modnum);
 	// check if the layer id is valid
-	if (layer == AliAlignObj::kInvalidLayer) continue;
+	if ((layer < AliAlignObj::kFirstLayer) ||
+	    (layer >= AliAlignObj::kLastLayer)) {
+	  AliError(Form("Layer index is invalid: %d (%d -> %d) !",
+			layer,AliAlignObj::kFirstLayer,AliAlignObj::kLastLayer-1));
+	  continue;
+	}
+	if ((modnum >= AliAlignObj::LayerSize(layer)) ||
+	    (modnum < 0)) {
+	  AliError(Form("Module number inside layer %d is invalid: %d (0 -> %d)",
+			layer,modnum,AliAlignObj::LayerSize(layer)));
+	  continue;
+	}
 
 	// Misalignment is introduced here
 	// Switch it off in case of real
