@@ -148,7 +148,7 @@ namespace
 
 }; // end of namespace
 
-
+/*
 void* operator new (size_t size) throw (AliHLTMUONOutOfMemory)
 {
 	void* memory = malloc(size);
@@ -184,3 +184,4 @@ void operator delete [] (void* memory) throw ()
 	free(memory);
 };
 
+*/

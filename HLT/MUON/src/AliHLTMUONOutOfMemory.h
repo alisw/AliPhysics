@@ -47,9 +47,10 @@ void ThrowAliHLTMUONOutOfMemory() throw (AliHLTMUONOutOfMemory);
    These new operators throw AliHLTMUONOutOfMemory exceptions if the system runs
    out of memory.
  */
+/*
 void* operator new (size_t size) throw (AliHLTMUONOutOfMemory);
 void* operator new [] (size_t size) throw (AliHLTMUONOutOfMemory);
 void operator delete (void* memory) throw ();
 void operator delete [] (void* memory) throw ();
-
+*/
 #endif // ALIHLTMUONOUTOFMEMORY_H
