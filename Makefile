@@ -63,7 +63,7 @@ CFLAGS    += $(DATEFLAGS)
 CINTFLAGS += $(DATEFLAGS)
 DEPINC    += $(DATEFLAGS)
 else
-DATEFLAGS  = -DALI_DATE -D`uname` -DDATE_SYS=`uname` -Dlong32='int' \
+DATEFLAGS  = -D`uname` -DDATE_SYS=`uname` -Dlong32='int' \
              -Dlong64='long long' -DdatePointer='long'
 CXXFLAGS  += $(DATEFLAGS)
 CFLAGS    += $(DATEFLAGS)
