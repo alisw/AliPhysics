@@ -73,8 +73,6 @@ class AliITSVertexerTracks : public AliITSVertexer {
   void  SetSkipTracks(Int_t n,Int_t *skipped); 
   void  SetVtxStart(Double_t x=0,Double_t y=0) 
     { fNominalPos[0]=x; fNominalPos[1]=y; return; }
-  void  SetDCAcut(Double_t maxdca)
-    { fDCAcut=maxdca; return;}
   
  private:
     // copy constructor (NO copy allowed: the constructor is protected
@@ -86,7 +84,6 @@ class AliITSVertexerTracks : public AliITSVertexer {
   TFile    *fOutFile;         // output file for vertices
   Double_t  fNominalPos[2];   // initial knowledge on vertex position
   Int_t     fMinTracks;       // minimum number of tracks
-  Double_t  fDCAcut;          // maximum DCA between 2 tracks used for vertex
   Double_t  fMaxChi2PerTrack; // maximum contribition to the chi2 
   TObjArray fTrkArray;        // array with tracks to be processed
   Int_t     *fTrksToSkip;     // tracks to be skipped for find and fit 
@@ -101,7 +98,7 @@ class AliITSVertexerTracks : public AliITSVertexer {
   //  void     VertexFinder(Int_t OptUseWeights=0);
   void     VertexFitter();
 
-  ClassDef(AliITSVertexerTracks,2) // 3D Vertexing with ITS tracks 
+  ClassDef(AliITSVertexerTracks,3) // 3D Vertexing with ITS tracks 
 };
 
 #endif
