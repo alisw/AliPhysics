@@ -45,8 +45,10 @@ char fileHandlerIdent[]= "@(#)""" __FILE__ """: """ DESCRIPTION \
 const char *myName;
 int debug;
 FILE *outF;
-static enum { unknown, ldc, gdc } workingAs;
-static enum { collider, fixedTarget } workingMode;
+typedef enum { unknown, ldc, gdc } workingAsType;
+typedef enum { collider, fixedTarget } workingModeType;
+workingAsType workingAs;
+workingModeType workingMode;
 struct ldcDescriptorStruct {
   eventLdcIdType id;
   struct ldcDescriptorStruct *next;
@@ -126,7 +128,7 @@ void dumpPayload( const struct payloadDescriptorStruct *p ) {
       }
       if ( i < p->size ) {
 	int j = 0;
-      
+
 	printf( "\n       " );
 	while ( i != p->size ) {
 	  printf( "%02x ", *((char *)p->data + p->size - j - 1) & 0xff );
@@ -200,7 +202,7 @@ void dumpEvents() {
 void getLine( char *line, const int maxSize ) {
   int read;
   int c;
-  
+
   for ( read = 0; !feof( stdin ) && !ferror( stdin ) && read != maxSize; read++ ) {
     if ( (line[read] = getchar()) == '\n' ) break;
   }
@@ -289,7 +291,7 @@ void createNewEvent() {
     } else {
       struct ldcEventDescriptorStruct *q =
 	(struct ldcEventDescriptorStruct *)eventsTail;
-      
+
       q->next = p;
       eventsTail = p;
     }
@@ -314,7 +316,7 @@ void createNewEvent() {
     } else {
       struct gdcEventDescriptorStruct *q =
 	(struct gdcEventDescriptorStruct *)eventsTail;
-      
+
       q->next = p;
       eventsTail = p;
     }
@@ -349,7 +351,7 @@ void createNewLdcEvent() {
 void loadBuffer( struct payloadDescriptorStruct * const payload ) {
   FILE *f;
   int bytesRead;
-  
+
   if ( (f = fopen( payload->fileName, "r" )) == NULL ) {
     fprintf( stderr,
 	     "%s: line:%d payload file \"%s\" not found or not readable, errno:%d. ",
@@ -417,7 +419,7 @@ void loadPayload( const char *fileName ) {
   }
   if ( payload == NULL ) {
     FILE *f;
-    
+
     if ( (payload = (struct payloadDescriptorStruct *)malloc( sizeof( *payload ) ))
 	   == NULL ) {
       fprintf( stderr,
@@ -467,7 +469,7 @@ void loadPayload( const char *fileName ) {
     payload->fileSize = payload->size;
     while ( (payload->size & 3) != 0 ) payload->size++;
     fclose( f );
-    
+
     if ( bufferData ) {
       loadBuffer( payload );
     } else {
@@ -483,7 +485,7 @@ void loadPayload( const char *fileName ) {
     }
     DBG_VERBOSE {
       int b, n;
-      
+
       printf( "%d)       Payload \"%s\" loaded at %p\n",
 	      lineNo,
 	      fileName,
@@ -496,13 +498,9 @@ void loadPayload( const char *fileName ) {
 	  printf( " CDH: blockLenght:%d=0x%08x ",
 		  cdh->cdhBlockLength, cdh->cdhBlockLength );
 	  if ( cdh->cdhBlockLength < sizeof( *cdh ) ) {
-#ifdef __APPLE__
 	    printf( "TOO SMALL (minimum:%ld=0x%08lx)\n",
-		    sizeof( *cdh ), sizeof( *cdh ) );
-#else
-	    printf( "TOO SMALL (minimum:%d=0x%08x)\n",
-		    sizeof( *cdh ), sizeof( *cdh ) );
-#endif
+		   (unsigned long)sizeof( *cdh ),
+		   (unsigned long)sizeof( *cdh ) );
 	  } else {
 	    printf( "version:%d=0x%x ", cdh->cdhVersion, cdh->cdhVersion );
 	    if ( cdh->cdhVersion != CDH_VERSION ) {
@@ -752,7 +750,7 @@ void parseEquipment( char * const line ) {
 void parseGdc( char * const line ) {
   char *p;
   char *keyword;
-  
+
   p = line;
   while ( (keyword = strtok_r( p, " \t", &p )) != NULL ) {
     if ( strcasecmp( "id", keyword ) == 0 ) {
@@ -790,7 +788,7 @@ void parseGdc( char * const line ) {
 void parseLdc( char * const line ) {
   char *p;
   char *keyword;
-  
+
   p = line;
   while ( (keyword = strtok_r( p, " \t", &p )) != NULL ) {
     if ( strcasecmp( "id", keyword ) == 0 ) {
@@ -905,7 +903,7 @@ void parseRules() {
 	      "UNKNOWN" );
     if ( workingAs == gdc ) {
       struct ldcDescriptorStruct *ldc;
-      
+
       printf( "LDCs (%d):", numOfLdcs );
       for ( ldc = ldcsHead; ldc != NULL; ldc = ldc->next ) {
 	printf( " %d", ldc->id );
@@ -922,7 +920,7 @@ void parseRules() {
 
   if ( workingAs == gdc ) {
     struct ldcDescriptorStruct *ldc;
-    
+
     assert( ldcsHead != NULL );
     assert( ldcsTail != NULL );
     assert( ldcsTail->next == NULL );
@@ -941,7 +939,7 @@ void parseRules() {
 
 void loadTimestamp( struct eventHeaderStruct * const ev ) {
   time_t t;
-  
+
   if ( time( &t ) == (time_t)-1 ) {
     fprintf( stderr,
 	     "%s: failed to get system time errno:%d (%s)\n",
@@ -977,7 +975,7 @@ void outputEvent( const void * const ev,
     const long32 * const v = (long32 *)ev;
     printf( "Writing %d bytes @ %p (%d)\n", size, ev, *v );
   }
-  
+
   if ( (done = fwrite( ev, size, 1, outF )) != 1 ) {
     fprintf( stderr,
 	     "%s: failed to write event size:%d bytes, errno:%d (%s)\n",
@@ -992,7 +990,7 @@ void createSorAndEor( const int sor ) {
   struct eventHeaderStruct sev;
 
   assert( workingAs == ldc || workingAs == gdc );
-  
+
   if ( !createSorEor ) return;
   ev = (struct eventHeaderStruct *)event;
   initEvent( ev );
@@ -1015,7 +1013,7 @@ void createSorAndEor( const int sor ) {
     currLdc = currGdc->head;
   }
   ev->eventLdcId = currLdc->id;
-  
+
   if ( workingAs == ldc ) {
     loadTimestamp( ev );
     outputEvent( ev, ev->eventSize );
@@ -1024,7 +1022,7 @@ void createSorAndEor( const int sor ) {
     struct ldcDescriptorStruct *ldc;
 
     loadTimestamp( ev );
-    
+
     sev.eventSize = sizeof( sev ) + numOfLdcs * ev->eventSize;
     sev.eventType = sor ? START_OF_RUN : END_OF_RUN ;
     COPY_EVENT_ID( ev->eventId, sev.eventId );
@@ -1039,7 +1037,7 @@ void createSorAndEor( const int sor ) {
       outputEvent( ev, ev->eventSize );
     }
   }
-  
+
   ADD_EVENT_ID( ev->eventId, oneEventDelta );
   ev->eventSize = ev->eventSize / 2;
   ev->eventType = sor ? START_OF_RUN_FILES : END_OF_RUN_FILES;
@@ -1052,7 +1050,7 @@ void createSorAndEor( const int sor ) {
     struct ldcDescriptorStruct *ldc;
 
     loadTimestamp( ev );
-    
+
     sev.eventSize = ev->eventSize;
     sev.eventType = sor ? START_OF_RUN_FILES : END_OF_RUN_FILES;
     COPY_EVENT_ID( ev->eventId, sev.eventId );
@@ -1066,7 +1064,7 @@ void createSorAndEor( const int sor ) {
     COPY_EVENT_ID( ev->eventId, sev.eventId );
     COPY_SYSTEM_ATTRIBUTES( ev->eventTypeAttribute, sev.eventTypeAttribute );
     SET_SYSTEM_ATTRIBUTE( sev.eventTypeAttribute, ATTR_SUPER_EVENT );
-    
+
     loadTimestamp( &sev );
 
     ev->eventGdcId = currGdcId;
@@ -1097,7 +1095,7 @@ void createSorAndEor( const int sor ) {
     COPY_SYSTEM_ATTRIBUTES( ev->eventTypeAttribute, sev.eventTypeAttribute );
     SET_SYSTEM_ATTRIBUTE( sev.eventTypeAttribute, ATTR_SUPER_EVENT );
     loadTimestamp( &sev );
-    
+
     outputEvent( &sev, sizeof( sev ) );
 
     for ( ldc = ldcsHead; ldc != NULL; ldc = ldc->next ) {
@@ -1137,14 +1135,14 @@ void createEvent( void ) {
   /* Step 1: load all buffers (if needed) and compose the GDC/LDC headers */
   if ( workingAs == gdc ) {
     struct ldcEventDescriptorStruct *ldc;
-    
+
     for( ldc = currGdc->head; ldc != NULL; ldc = ldc->next ) {
       COPY_EVENT_ID( currEventId, ldc->header.eventId );
       loadTimestamp( &ldc->header );
     }
     COPY_EVENT_ID( currEventId, currGdc->header.eventId );
     loadTimestamp( &currGdc->header );
-    
+
     for( ldc = currGdc->head; ldc != NULL; ldc = ldc->next ) {
       struct equipmentEventDescriptorStruct *eq;
       int n;
@@ -1189,12 +1187,12 @@ void createEvent( void ) {
   /* Step 2: output the event */
   if ( workingAs == gdc ) {
     struct ldcEventDescriptorStruct *ldc;
-    
+
     outputEvent( &currGdc->header, sizeof( currGdc->header ) );
 
     for( ldc = currGdc->head; ldc != NULL; ldc = ldc->next ) {
       struct equipmentEventDescriptorStruct *eq;
-      
+
       outputEvent( &ldc->header, sizeof( ldc->header ) );
 
       for ( eq = ldc->head; eq != NULL; eq = eq->next ) {
@@ -1207,9 +1205,9 @@ void createEvent( void ) {
       currGdc = (struct gdcEventDescriptorStruct *)eventsHead;
   } else if ( workingAs == ldc ) {
     struct equipmentEventDescriptorStruct *eq;
-    
+
     outputEvent( &currLdc->header, sizeof( currLdc->header ) );
-      
+
     for ( eq = currLdc->head; eq != NULL; eq = eq->next ) {
       outputEvent( &eq->header, sizeof( eq->header ) );
       outputEvent( eq->payload->data, eq->payload->size );
@@ -1282,7 +1280,7 @@ void parseArgs( int argc, char **argv ) {
       outFileName = arg;
     } else if ( strcmp( "-#", argv[ arg ] ) == 0 ) {
       int n;
-      
+
       if ( ++arg == argc ) exit( usage() );
       if ( sscanf( argv[ arg ], "%d", &n ) != 1 ) exit( usage() );
       if ( n < 0 ) exit( usage() );
@@ -1364,7 +1362,7 @@ void decodeCDH(       struct ldcEventDescriptorStruct * const ldc,
     static int softwareTriggerIndicator = FALSE;
     int attr;
     int trig;
-    
+
     if ( payloadDesc->size < CDH_SIZE ) {
       fprintf( stderr,
 	       "%s: payload too small got:%d CDH:%d\n",
@@ -1537,7 +1535,7 @@ void initEvents() {
 	  gdc != NULL;
 	  gdc = gdc->next ) {
       struct ldcEventDescriptorStruct *ldc;
-      
+
       initEvent( &gdc->header );
       gdc->header.eventSize = gdc->header.eventHeadSize;
       gdc->header.eventType = PHYSICS_EVENT;
@@ -1599,7 +1597,7 @@ void initEvents() {
     }
   } else if ( workingAs == ldc ) {
     struct ldcEventDescriptorStruct *ldc;
-      
+
     for ( ldc = (struct ldcEventDescriptorStruct *)eventsHead;
 	  ldc != NULL;
 	  ldc = ldc->next ) {
