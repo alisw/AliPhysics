@@ -27,6 +27,8 @@
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
 
+// raw data
+#pragma link C++ class AliMUONDigitMaker+;
 #endif
 
 
