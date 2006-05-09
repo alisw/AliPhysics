@@ -233,6 +233,31 @@ MMuonRec.Run();
 .q
 EOF
 
+============================================================
+ How to read & decode raw data 
+============================================================
+These macros can read & decode DDL files, root and DATE files.
+Nevertheless for the two latter, aliroot has to be compiled with DATE.
+
+For tracker raw data
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.includepath $ALICE_ROOT/RAW
+.L $ALICE_ROOT/MUON/MUONRawStreamTracker.C+
+MUONRawStreamTracker(maxEvent, firstDDL, lastDDL, rawFileName)
+
+For trigger raw data
+.includepath $ALICE_ROOT/STEER
+.includepath $ALICE_ROOT/MUON
+.includepath $ALICE_ROOT/RAW
+.L $ALICE_ROOT/MUON/MUONRawStreamTrigger.C+ 
+MUONRawStreamTrigger(maxEvent, firstDDL, lastDDL, rawFileName)
+
+Default wise the macro read all DDL files from the current directory for 1000 events.
+For root file rawFileName must end with .root, for date file rawFileName 
+must be no extention. For DDL files you have to specified the directory 
+where the raw0...n subdirectories are located:
+MUONRawStreamTracker(maxEvent, "$YOUR_WORKING_DIRECTORY/"); //Do not forget the slash at the end!
 
 
 ============================================================
