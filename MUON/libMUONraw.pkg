@@ -1,0 +1,20 @@
+# $Id$
+
+SRCS:= AliMUONDDLTrigger.cxx \
+       AliMUONDarcHeader.cxx \
+       AliMUONRegHeader.cxx \
+       AliMUONLocalStruct.cxx \
+       AliMUONRawStreamTrigger.cxx \
+       AliMUONDDLTracker.cxx \
+       AliMUONBlockHeader.cxx \
+       AliMUONDspHeader.cxx \
+       AliMUONBusStruct.cxx \
+       AliMUONRawStreamTracker.cxx 
+ 
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= MUONrawLinkDef.h
+
+
+EINCLUDE := RAW MUON/mapping
