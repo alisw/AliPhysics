@@ -187,17 +187,7 @@ void AliMUONData::AddSDigit(Int_t id, const AliMUONDigit& Sdigit)
   TClonesArray &lSdigits = * SDigits(id) ; 
   new(lSdigits[fNSdigits[id]++]) AliMUONDigit(Sdigit);
 }
-//_____________________________________________________________________________
-void AliMUONData::AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
-				   Int_t *singleUndef,
-				   Int_t *pairUnlike, Int_t *pairLike)
-{
-  // add a MUON Global Trigger to the list (only one GlobalTrigger per event !)
- 
-  TClonesArray &globalTrigger = *fGlobalTrigger;
-  new(globalTrigger[fNglobaltrigger++]) 
-    AliMUONGlobalTrigger(singlePlus, singleMinus,  singleUndef, pairUnlike, pairLike);
-}
+
 //_____________________________________________________________________________
 void AliMUONData::AddGlobalTrigger(const AliMUONGlobalTrigger& trigger )
 {
@@ -236,13 +226,6 @@ void AliMUONData::AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId,
 				  Xref,Yref,Zref, true);
 }
 //____________________________________________________________________________
-void AliMUONData::AddLocalTrigger(const Int_t *localtr, const TArrayI& digits)
-{
-  // add a MUON Local Trigger to the list
-  TClonesArray &localTrigger = *fLocalTrigger;
-  new(localTrigger[fNlocaltrigger++]) AliMUONLocalTrigger(localtr, digits);
-}
-//____________________________________________________________________________
 void AliMUONData::AddLocalTrigger(const  AliMUONLocalTrigger& trigger)
 {
   // add a MUON Local Trigger to the list
@@ -266,7 +249,6 @@ void AliMUONData::AddRecTrack(const AliMUONTrack& track)
   //
   TClonesArray &lrectracks = *fRecTracks;
   new(lrectracks[fNrectracks++]) AliMUONTrack(track);
-  //  printf("TTTTTT %d ,\n",((AliMUONTrack*)fRecTracks->At(fNrectracks-1))->GetNTrackHits());
 }
 //_____________________________________________________________________________
 void AliMUONData::AddRecTriggerTrack(const AliMUONTriggerTrack& triggertrack)
@@ -276,9 +258,7 @@ void AliMUONData::AddRecTriggerTrack(const AliMUONTriggerTrack& triggertrack)
   //
   TClonesArray &lrectriggertracks = *fRecTriggerTracks;  
   new(lrectriggertracks[fNrectriggertracks++]) AliMUONTriggerTrack(triggertrack);
-  //  printf("TTTTTT %d ,\n",((AliMUONTrack*)fRecTracks->At(fNrectracks-1))->GetNTrackHits());
 }
-
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::Digits(Int_t DetectionPlane) const
 {

@@ -14,9 +14,12 @@
  **************************************************************************/
  
 #include "AliMUONDDLTracker.h"
-#include "AliRawDataHeader.h"
+#include "AliMUONBusStruct.h"
+#include "AliMUONDspHeader.h"
+#include "AliMUONBlockHeader.h"
 
 ClassImp(AliMUONDDLTracker)
+
 
 ///
 /// \class AliMUONDDLTracker
@@ -25,23 +28,73 @@ ClassImp(AliMUONDDLTracker)
 ///
 /// \author C. Finck
 
- const Int_t AliMUONDDLTracker::fgkBlkHeaderLength = 8;
- const Int_t AliMUONDDLTracker::fgkDspHeaderLength = 8;
- const Int_t AliMUONDDLTracker::fgkEndOfDDL = 0x0FFFFFFFF;
 
 //___________________________________________
 AliMUONDDLTracker::AliMUONDDLTracker()
-  :  TObject(),
-     fTotalBlkLength(0),
-     fBlkLength(0),
-     fDSPId(0),
-     fPadding(0x0DEADDEAD),
-     fTotalDspLength(0),
-     fDspLength(0),
-     fDSPId1(0),
-     fEventWord(0) 
+  :  TObject()
 {
+  //
   //ctor
-  for (Int_t i = 0; i < 4; i++)
-    fBlkTriggerWord[i] = fDspTriggerWord[i] = 0;
+  //
+  fBlkHeaderArray = new TClonesArray("AliMUONBlockHeader", 2);
+
+}
+
+//___________________________________________
+AliMUONDDLTracker::~AliMUONDDLTracker()
+{
+  //
+  //dtor
+  //
+  fBlkHeaderArray->Delete();
+  delete fBlkHeaderArray;
+
+}
+
+//___________________________________________
+void AliMUONDDLTracker::AddBusPatch(const AliMUONBusStruct& busPatch, Int_t iBlock, Int_t iDsp )
+{
+  // adding bus patch informations
+  // for a given block & Dsp structure
+  // using TClonesArrays
+
+  AliMUONBlockHeader* blockHeader = (AliMUONBlockHeader*)fBlkHeaderArray->At(iBlock);
+  AliMUONDspHeader* dspHeader     = (AliMUONDspHeader*)blockHeader->GetDspHeaderEntry(iDsp);
+
+  TClonesArray* busPatchArray = (TClonesArray*)dspHeader->GetBusPatchArray();
+
+  TClonesArray &eventArray = *busPatchArray;
+  new(eventArray[eventArray.GetEntriesFast()]) AliMUONBusStruct(busPatch);
+}
+
+//___________________________________________
+void AliMUONDDLTracker::AddDspHeader(const AliMUONDspHeader& dspHeader, Int_t iBlock)
+{
+  // adding DspHeader informations
+  // for a given block structure
+  // using TClonesArrays
+
+  AliMUONBlockHeader* blockHeader = (AliMUONBlockHeader*)fBlkHeaderArray->At(iBlock);
+
+  TClonesArray* dspHeaderArray = (TClonesArray*)blockHeader->GetDspHeaderArray();
+
+  TClonesArray &dspArray = *dspHeaderArray;
+  new(dspArray[dspArray.GetEntriesFast()]) AliMUONDspHeader(dspHeader);
+}
+
+//___________________________________________
+void AliMUONDDLTracker::AddBlkHeader(const AliMUONBlockHeader& blkHeader)
+{
+  TClonesArray &blkArray = *fBlkHeaderArray;
+  new(blkArray[blkArray.GetEntriesFast()]) AliMUONBlockHeader(blkHeader);
+}
+
+//___________________________________________
+void AliMUONDDLTracker::Clear(Option_t* )
+{
+  // Clear TClones arrays
+  // instead of deleting
+  //
+  fBlkHeaderArray->Clear("C");
+
 }

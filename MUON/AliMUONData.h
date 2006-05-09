@@ -71,12 +71,8 @@ class AliMUONData : public TNamed
 			  Float_t phi, Float_t length, Float_t destep, 
 			  Float_t Xref,Float_t Yref,Float_t Zref);
     
-    virtual void   AddGlobalTrigger(Int_t *singlePlus, Int_t *singleMinus,
-				    Int_t *singleUndef, Int_t *pairUnlike, 
-				    Int_t *pairLike);
     virtual void   AddGlobalTrigger(const AliMUONGlobalTrigger& trigger); // use copy constructor
 
-    virtual void   AddLocalTrigger(const Int_t* ltrigger, const TArrayI& digits);
     virtual void   AddLocalTrigger(const AliMUONLocalTrigger& trigger); // use copy constructor
 
     virtual void   AddRawCluster(Int_t id, const AliMUONRawCluster& clust);

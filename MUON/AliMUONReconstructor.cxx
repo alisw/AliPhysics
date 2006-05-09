@@ -33,7 +33,7 @@
 #include "AliMUONData.h"
 #include "AliMUONDigitCalibrator.h"
 #include "AliMUONEventRecoCombi.h" 
-#include "AliMUONRawReader.h"
+#include "AliMUONDigitMaker.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackReconstructor.h"
@@ -277,7 +277,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   // passing loader as argument.
   AliMUONTrackReconstructor recoEvent(loader, &data);
 
-  AliMUONRawReader rawData(&data);
+  AliMUONDigitMaker rawData(&data);
 
   AliMUONClusterReconstructor recoCluster(&data);
 
@@ -441,8 +441,7 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   AliMUONTrack* recTrack = 0;
   AliMUONTrackParam* trackParam = 0;
   AliMUONTriggerTrack* recTriggerTrack = 0;
-//   TParticle* particle = new TParticle();
-//   AliGenEventHeader* header = 0;
+
   iEvent = runLoader->GetEventNumber(); 
   runLoader->GetEvent(iEvent);
 
@@ -451,28 +450,6 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
   const AliESDVertex *esdVert = esd->GetVertex(); 
   if (esdVert) esdVert->GetXYZ(vertex);
   
-  //  nPrimary = 0;
-//   if ( (header = runLoader->GetHeader()->GenEventHeader()) ) {
-//     header->PrimaryVertex(vertex);
-//   } else {
-//     runLoader->LoadKinematics("READ");
-//     runLoader->TreeK()->GetBranch("Particles")->SetAddress(&particle);
-//     nPart = (Int_t)runLoader->TreeK()->GetEntries();
-//     for(Int_t iPart = 0; iPart < nPart; iPart++) {
-//       runLoader->TreeK()->GetEvent(iPart);
-//       if (particle->GetFirstMother() == -1) {
-// 	vertex[0] += particle->Vx();
-// 	vertex[1] += particle->Vy();
-// 	vertex[2] += particle->Vz();
-// 	nPrimary++;
-//       }
-//       if (nPrimary) {
-// 	vertex[0] /= (double)nPrimary;
-// 	vertex[1] /= (double)nPrimary;
-// 	vertex[2] /= (double)nPrimary;
-//       }
-//     }
-//   }
   // setting ESD MUON class
   AliESDMuonTrack* theESDTrack = new  AliESDMuonTrack() ;
 
@@ -542,11 +519,9 @@ void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
 
   //} // end loop on event  
   loader->UnloadTracks(); 
- //  if (!header)
-//     runLoader->UnloadKinematics();
+
   delete theESDTrack;
   delete muonData;
-  // delete particle;
 }//_____________________________________________________________________________
 void AliMUONReconstructor::FillESD(AliRunLoader* runLoader, AliRawReader* /*rawReader*/, AliESD* esd) const
 {

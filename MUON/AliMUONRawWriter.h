@@ -13,15 +13,18 @@
 
 #include <TObject.h>
 #include <TClonesArray.h>
-#include "AliMUONSubEventTracker.h"
+#include "AliMUONBusStruct.h"
+#include "AliRawDataHeader.h"
 #include "TStopwatch.h"
 
-class AliMUONDDLTracker;
-class AliMUONDDLTrigger;
 class AliMUONData;
 class AliMUONDigit;
+class AliMUONDspHeader;
+class AliMUONBlockHeader;
+class AliMUONDarcHeader;
+class AliMUONRegHeader;
+class AliMUONLocalStruct;
 class AliMUONGlobalTrigger;
-class AliMUONSubEventTrigger;
 class AliMpBusPatch;
 class AliMpSegFactory;
 
@@ -29,7 +32,7 @@ class AliMUONRawWriter : public TObject
 {
  public:
   AliMUONRawWriter(AliMUONData* data); // Constructor
-  virtual ~AliMUONRawWriter(void); // Destructor
+  virtual ~AliMUONRawWriter(); // Destructor
     
   // write raw data
   Int_t Digits2Raw();
@@ -47,10 +50,10 @@ protected:
   
 private:
 
-  void AddData(const AliMUONSubEventTracker& event)
+  void AddData(const AliMUONBusStruct& event)
   {
-    TClonesArray &temp = *fSubEventArray;
-    new(temp[temp.GetEntriesFast()]) AliMUONSubEventTracker(event); 
+    TClonesArray &temp = *fBusArray;
+    new(temp[temp.GetEntriesFast()]) AliMUONBusStruct(event); 
   }
 
   Int_t GetBusPatch(const AliMUONDigit& digit);
@@ -63,14 +66,20 @@ private:
  
   FILE*         fFile[2];            //! DDL binary file pointer one per 1/2 chamber
 
-  TClonesArray* fSubEventArray;      //! array to sub event tracker
+  TClonesArray* fBusArray;           //! array to sub event tracker
    
-  AliMUONDDLTracker* fDDLTracker;    //! DDL tracker class pointers
-  AliMUONDDLTrigger* fDDLTrigger;    //! DDL trigger class pointers
+  AliMUONBlockHeader* fBlockHeader;  //! DDL block header class pointers
+  AliMUONDspHeader*   fDspHeader;    //! DDL Dsp header class pointers
+  AliMUONBusStruct*   fBusStruct;    //! DDL bus patch structure class pointers
+  AliMUONDarcHeader*  fDarcHeader;   //! DDL darc header class pointers
+  AliMUONRegHeader*   fRegHeader;    //! DDL regional header class pointers
+  AliMUONLocalStruct* fLocalStruct;  //! DDL local structure class pointers
 
   AliMpBusPatch* fBusPatchManager;   //! buspatch versus DE's & DDL
 
   Bool_t fScalerEvent;               // flag to generates scaler event
+
+  AliRawDataHeader    fHeader;           // header of DDL
 
   static Int_t fgManuPerBusSwp1B[12];   //! array containing the first manuId for each buspatch st1, Bending
   static Int_t fgManuPerBusSwp1NB[12];  //! array containing the first manuId for each buspatch st1, NBending
@@ -84,7 +93,7 @@ private:
   
   AliMpSegFactory* fSegFactory; //!
   
-  ClassDef(AliMUONRawWriter,0) // MUON cluster reconstructor in ALICE
+  ClassDef(AliMUONRawWriter,1) // MUON cluster reconstructor in ALICE
 };
 	
 #endif
