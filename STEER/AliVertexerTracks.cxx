@@ -140,7 +140,9 @@ AliVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray) {
     trkTree->Fill();
   }
     
-  return VertexForSelectedTracks(trkTree);
+  AliVertex *vtx =  VertexForSelectedTracks(trkTree);
+  delete trkTree;
+  return vtx;
 }
 
 //---------------------------------------------------------------------------
