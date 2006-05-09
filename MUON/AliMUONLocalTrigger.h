@@ -10,9 +10,12 @@
 /// \ingroup base
 /// \class AliMUONLocalTrigger
 /// \brief Reconstructed Local Trigger object
+/// \author Ph. Crochet
 
 #include <TObject.h>
 #include <TArrayI.h>
+
+class AliMUONLocalStruct;
 
 class AliMUONLocalTrigger : public TObject {
  public:
@@ -63,13 +66,15 @@ class AliMUONLocalTrigger : public TObject {
   void SetY3Pattern(UShort_t pat) {fY3Pattern = pat;}
   void SetY4Pattern(UShort_t pat) {fY4Pattern = pat;}
 
+  void SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& localStruct);
+
   // data link
   Int_t NumberOfDigits() const { return fDigits.GetSize(); }
   Int_t GetDigitNumber(Int_t i) const { return fDigits[i]; }
-  void GetDigit(Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const;
+  void  GetDigit(Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const;
 
   static Int_t EncodeDigitNumber(Int_t chamber, Int_t cathode, Int_t digit);
-  static void DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
+  static void  DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
 
 private:
   Int_t fLoCircuit; // circuit number 
@@ -84,11 +89,12 @@ private:
   UShort_t fX2Pattern; // X strip pattern for chamber 12
   UShort_t fX3Pattern; // X strip pattern for chamber 21
   UShort_t fX4Pattern; // X strip pattern for chamber 22
- 
+
   UShort_t fY1Pattern; // Y strip pattern for chamber 11
   UShort_t fY2Pattern; // Y strip pattern for chamber 12
   UShort_t fY3Pattern; // Y strip pattern for chamber 21
   UShort_t fY4Pattern; // Y strip pattern for chamber 22
+
 
   Char_t fLoDecision; // local decision word (4 bits)
 
