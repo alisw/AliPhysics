@@ -254,9 +254,9 @@ AliFMDParameters::Print(Option_t* option) const
     UShort_t det, sec, str;
     Char_t ring, lbrack, rbrack, comma;
     UInt_t ddl, addr;
-    Detector2Hardware(det, ring, sec, str, ddl, addr);
     std::stringstream s(opt(i+4, j-i-3).Data());
     s >> det >> ring >> lbrack >> sec >> comma >> str >> rbrack;
+    Detector2Hardware(det, ring, sec, str, ddl, addr);
     std::cout 
       << "     Strip    |     Pedestal      |    Gain    | ZS thr. | Address\n"
       << "--------------+-------------------+------------+---------+---------" 
