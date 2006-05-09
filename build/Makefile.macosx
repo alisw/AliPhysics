@@ -42,7 +42,7 @@ CLIBCOPT      =
 CLIBFOPT      = $(CLIBDEFS)
 
 # Compiler flags
-CXXFLAGS      = $(CXXOPT)   -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -I$(FINK_ROOT)/include -Woverloaded-virtual #-Weffc++ 
+CXXFLAGS      = $(CXXOPT)   -Wall -W -Wno-long-double -pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -I/usr/X11R6/include -I$(FINK_ROOT)/include -Woverloaded-virtual #-Weffc++ 
 
 ifeq (g95,$(findstring g95,$(ROOTBUILD)))
 CXXFLAGS+=-DFORTRAN_G95

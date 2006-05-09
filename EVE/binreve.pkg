@@ -6,3 +6,11 @@ ELIBSDIR :=
 ELIBS    := Reve
 
 PACKBLIBS := $(ROOTCLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL $(SYSLIBS)
+
+ifeq (macosx,$(ALICE_TARGET))
+
+PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
+# On Mac OS X gcc we need GL
+ELIBS+=GL
+ELIBSDIR+=/usr/X11R6/lib/
+endif
