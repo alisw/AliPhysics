@@ -1,0 +1,70 @@
+// $Header$
+
+#ifndef REVE_RGeoNodeEditors_H
+#define REVE_RGeoNodeEditors_H
+
+#include <TGedFrame.h>
+
+class TGCheckButton;
+class TGNumberEntry;
+class TGColorSelect;
+
+namespace Reve {
+
+class GeoNodeRnrEl;
+class GeoTopNodeRnrEl;
+
+
+class GeoNodeRnrElEditor : public TGedFrame
+{
+protected:
+  GeoNodeRnrEl*   fNodeRE;
+
+  TGCheckButton*  fVizNode;
+  TGCheckButton*  fVizNodeDaughters;
+  TGCheckButton*  fVizVolume;
+  TGCheckButton*  fVizVolumeDaughters;
+
+  TGNumberEntry*  fTransparency;
+
+public:
+  GeoNodeRnrElEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  virtual ~GeoNodeRnrElEditor() {}
+
+  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
+
+  void DoVizNode();
+  void DoVizNodeDaughters();
+  void DoVizVolume();
+  void DoVizVolumeDaughters();
+
+  void DoTransparency();
+
+  ClassDef(GeoNodeRnrElEditor, 1);
+};
+
+/**************************************************************************/
+
+class GeoTopNodeRnrElEditor : public TGedFrame
+{
+protected:
+  GeoTopNodeRnrEl*   fTopNodeRE;
+
+  TGNumberEntry*     fVisOption;
+  TGNumberEntry*     fVisLevel;
+
+public:
+  GeoTopNodeRnrElEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  virtual ~GeoTopNodeRnrElEditor() {}
+
+  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
+
+  void DoVisOption();
+  void DoVisLevel();
+
+  ClassDef(GeoTopNodeRnrElEditor, 1);
+};
+
+}
+
+#endif

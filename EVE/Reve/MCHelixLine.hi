@@ -1,0 +1,252 @@
+#ifndef REVE_MCHelixLine_H
+#define REVE_MCHelixLine_H
+
+#include <Reve/Track.h>
+#include <vector>
+
+namespace Reve {
+
+  struct MCVertex {
+    Float_t x,y,z,t;
+  };
+
+
+  struct MCStruct
+  {
+    TrackRnrStyle*      fRnrMod;  
+    std::vector<MCVertex>* track_points;
+    MCVertex               v;
+    Float_t                fVelocity; // size of particle velocity
+  
+    MCStruct(TrackRnrStyle* rs, MCVertex* v0 , Float_t vel, std::vector<MCVertex>* tpv) 
+    { 
+      fRnrMod = rs;
+      v = *v0;
+      fVelocity = vel;
+      track_points = tpv;
+      track_points->push_back(v);
+    }
+  };
+
+  struct MCHelix : public MCStruct {
+    // constant
+    Float_t fA;       // contains charge and magnetic field data
+
+    //parameters dependend pT and pZ size, set in init function
+    Float_t fLam;        // momentum ratio pT/pZ
+    Float_t fR;          // a/pT
+    Float_t fPhiStep;    // step size in xy projection, dependent of RnrMode and momentum
+    Float_t fTimeStep;   
+ 
+    Int_t   fN;           // step number in helix;
+    Int_t   NMax;         // max number of points in helix
+    Float_t x_off, y_off; // offset for fitting daughters
+    Float_t sin, cos;
+    Bool_t  crosR;
+
+    MCHelix(TrackRnrStyle* rs, MCVertex* v0, Float_t vel, std::vector<MCVertex>* tpv, Float_t a):
+      MCStruct(rs, v0 , vel, tpv){
+	fA = a;
+      };
+
+    void Init(Float_t pT, Float_t pZ)
+    {
+      fN=0;
+      crosR = false;
+      x_off = 0; y_off = 0;
+      fLam = pZ/pT;
+      fR =  pT/fA;
+
+      fPhiStep = fRnrMod->fMinAng *TMath::Pi()/180;
+      if(fRnrMod->fDelta < TMath::Abs(fR)){
+	Float_t ang  = 2*TMath::ACos(1 - fRnrMod->fDelta/TMath::Abs(fR));
+	if (ang < fPhiStep) fPhiStep = ang; 
+      }
+      if(fA<0) fPhiStep = -fPhiStep;
+
+      // printf("MCHelix::init (%f/%f) labda %f time step %e phi step %f \n", pT, pZ,fLam,  fTimeStep,fPhiStep);
+      fTimeStep = TMath::Abs(fR*fPhiStep)*TMath::Sqrt(1+fLam*fLam)/fVelocity;
+      fTimeStep *= 0.01; //cm->m
+
+      sin = TMath::Sin(fPhiStep); 
+      cos = TMath::Cos(fPhiStep);
+    }
+
+    void SetBounds()
+    {
+      // check steps for max orbits
+      NMax = Int_t(fRnrMod->fMaxOrbs*TMath::TwoPi()/TMath::Abs(fPhiStep));
+      // check steps for Z boundaries
+      Float_t nz;
+      if(fLam > 0) {
+	nz = (fRnrMod->fMaxZ - v.z)/(fLam*TMath::Abs(fR*fPhiStep));
+      } else {
+	nz = (-fRnrMod->fMaxZ - v.z)/(fLam*TMath::Abs(fR*fPhiStep));
+      }
+      //  printf("steps in helix line %d nz   %f vz %f\n", NMax, nz, v.z);
+      if (nz < NMax) NMax = Int_t(nz);
+    
+      // check steps if circles intersect
+      if(TMath::Sqrt(v.x*v.x+v.y*v.y) < fRnrMod->fMaxR + TMath::Abs(fR)) {
+	crosR = true;
+      }
+      // printf("end steps in helix line %d \n", NMax);
+    }
+
+
+    void Step(Float_t &px, Float_t &py, Float_t &/*pz*/) 
+    {
+      v.t += fTimeStep;
+      v.x += (px*sin - py*(1 - cos))/fA + x_off;
+      v.y += (py*sin + px*(1 - cos))/fA + y_off;
+      v.z += fLam*TMath::Abs(fR*fPhiStep);
+      track_points->push_back(v);
+      Float_t px_t = px*cos - py*sin ;
+      Float_t py_t = py*cos + px*sin ;
+      px = px_t;
+      py = py_t;
+      fN++;
+    }
+
+
+    Bool_t LoopToVertex(Float_t &px, Float_t &py, Float_t &pz, 
+			  Float_t ex, Float_t ey, Float_t ez)
+    {
+      Float_t p0x = px, p0y = py;
+      Float_t zs = fLam*TMath::Abs(fR*fPhiStep);
+      Float_t fnsteps = (ez - v.z)/zs;
+      Int_t   nsteps  = Int_t((ez - v.z)/zs);
+      Float_t sinf = TMath::Sin(fnsteps*fPhiStep);
+      Float_t cosf = TMath::Cos(fnsteps*fPhiStep);
+
+      { 
+	track_points->push_back(v); 
+	if(nsteps > 0){
+	  Float_t xf  = v.x + (px*sinf - py*(1 - cosf))/fA;  
+	  Float_t yf =  v.y + (py*sinf + px*(1 - cosf))/fA;
+	  x_off =  (ex - xf)/fnsteps;
+	  y_off =  (ey - yf)/fnsteps;
+	  Float_t xforw, yforw, zforw;
+	  for (Int_t l=0; l<nsteps; l++) {
+	    xforw  = v.x + (px*sin - py*(1 - cos))/fA + x_off;
+	    yforw =  v.y + (py*sin + px*(1 - cos))/fA + y_off;
+	    zforw =  v.z + fLam*TMath::Abs(fR*fPhiStep);
+	    if ((xforw*xforw+yforw*yforw > fRnrMod->fMaxR*fRnrMod->fMaxR) ||(TMath::Abs(zforw) > fRnrMod->fMaxZ) ) {
+	      return false;
+	    }
+	    Step(px,py,pz); 
+	  }
+	 
+	}
+	// set time to the end point
+	v.t += TMath::Sqrt((v.x-ex)*(v.x-ex)+(v.y-ey)*(v.y-ey) +(v.z-ez)*(v.z-ez))/fVelocity;
+	v.x = ex; v.y = ey; v.z = ez;      
+	track_points->push_back(v);
+      }
+      
+      { // fix momentum in the remaining part
+	Float_t cosr =  TMath::Cos((fnsteps-nsteps)*fPhiStep); 
+	Float_t sinr =  TMath::Sin((fnsteps-nsteps)*fPhiStep); 
+	Float_t px_t = px*cosr - py*sinr ;
+	Float_t py_t = py*cosr + px*sinr ;
+	px = px_t;
+	py = py_t;
+      }
+      { // calculate direction of faked px,py
+	Float_t pxf = (p0x*cosf - p0y*sinf)/TMath::Abs(fA) + x_off/fPhiStep;
+	Float_t pyf = (p0y*cosf + p0x*sinf)/TMath::Abs(fA) + y_off/fPhiStep;
+	Float_t fac = TMath::Sqrt(p0x*p0x + p0y*p0y)/TMath::Sqrt(pxf*pxf + pyf*pyf);
+	px = fac*pxf;
+	py = fac*pyf;
+      }
+      return true;
+    }
+    
+    Bool_t LoopToBounds(Float_t &px, Float_t &py, Float_t &pz)
+    {
+      //    printf("MC helix  loop_to_bounds\n");
+      SetBounds();
+      if(NMax > 0){
+	// printf("NMAx MC helix  loop_to_bounds\n");
+	track_points->push_back(v);
+	Float_t xforw,yforw,zforw;
+	while(fN < NMax){
+	  xforw = v.x + (px*sin - py*(1 - cos))/fA + x_off;
+	  yforw = v.y + (py*sin + px*(1 - cos))/fA + y_off;
+	  zforw =  v.z + fLam*TMath::Abs(fR*fPhiStep);
+	
+	  if ((crosR && (xforw*xforw+yforw*yforw > fRnrMod->fMaxR*fRnrMod->fMaxR)) ||(TMath::Abs(zforw) > fRnrMod->fMaxZ)) {
+	    return false;
+	  }
+	  Step(px,py,pz);
+	}
+	return true;
+      }
+      return false;
+    }
+  };
+
+  /**************************************************************************/
+  //  LINE
+  /**************************************************************************/
+
+  struct MCLine : public MCStruct
+  {
+    MCLine(TrackRnrStyle* rs, MCVertex* v0 ,Float_t vel, std::vector<MCVertex>* tpv):
+      MCStruct(rs, v0 , vel, tpv){};
+
+    Bool_t InBounds(Float_t ex, Float_t ey, Float_t ez)
+    {
+      if(TMath::Abs(ez) > fRnrMod->fMaxZ ||
+	 ex*ex + ey*ey  > fRnrMod->fMaxR*fRnrMod->fMaxR)
+	return false;
+      else
+	return true;
+    }
+
+    void GotoVertex(Float_t  x1, Float_t  y1, Float_t  z1)
+    {
+      track_points->push_back(v);
+      v.t += TMath::Sqrt((v.x-x1)*(v.x-x1)+(v.y-y1)*(v.y-y1)+(v.z-z1)*(v.z-z1))/fVelocity;
+      v.x=x1; v.y=y1; v.z=z1;
+      track_points->push_back(v);
+    }
+  
+
+    void GotoBounds( Float_t px, Float_t py, Float_t pz)
+    {
+      Float_t tZ = 0,Tb = 0;
+      // time where particle intersect +/- fMaxZ
+      if (pz > 0) {
+	tZ = (fRnrMod->fMaxZ - v.z)/pz;
+      }
+      else  if (pz < 0 ) {
+	tZ = (-1)*(fRnrMod->fMaxZ + v.z)/pz;
+      }
+      // time where particle intersects cylinder
+      Float_t tR=0;
+      Double_t a = px*px + py*py;
+      Double_t b = 2*(v.x*px + v.y*py);
+      Double_t c = v.x*v.x + v.y*v.y - fRnrMod->fMaxR*fRnrMod->fMaxR;
+      Double_t D = b*b - 4*a*c;
+      if(D >= 0) {
+	Double_t D_sqrt=TMath::Sqrt(D);
+	tR = ( -b - D_sqrt )/(2*a);
+	if( tR < 0) {
+	  tR = ( -b + D_sqrt )/(2*a);
+	}
+
+	// compare the two times
+	Tb = tR < tZ ? tR : tZ;
+      } else {
+	Tb = tZ;
+      }
+
+      GotoVertex(v.x+px*Tb, v.y+py*Tb, v.z+ pz*Tb);
+    }
+  }; // struct Line
+
+
+} // namespace Reve
+
+#endif

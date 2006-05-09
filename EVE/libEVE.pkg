@@ -1,0 +1,6 @@
+# Dummy library, provides target all-EVE.
+
+ELIBS    := Reve Alieve
+ELIBSDIR := $(CURDIR)/$(LIBPATH)
+
+all-EVE: all-Reve all-reve all-Alieve

@@ -1,0 +1,4 @@
+ORGSRCS  := $(wildcard EVE/Reve/*.cxx)
+SRCS     := $(patsubst EVE/%, %, ${ORGSRCS})
+HDRS     := $(SRCS:.cxx=.h)
+DHDR     := Reve/LinkDef.h

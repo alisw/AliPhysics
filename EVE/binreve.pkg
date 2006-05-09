@@ -1,0 +1,8 @@
+SRCS  := Reve/reve_main/reve_main.cxx
+CSRCS :=
+
+EINCLUDE :=
+ELIBSDIR :=
+ELIBS    := Reve
+
+PACKBLIBS := $(ROOTCLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL $(SYSLIBS)

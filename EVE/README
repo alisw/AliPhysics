@@ -1,0 +1,50 @@
+EVE - Event Visualization Environment
+=====================================
+
+EVE is composed of:
+1. small application kernel;
+2. graphics classes with editors and OpenGL renderers;
+3. CINT scripts that extract data, fill graphics classes and register
+   them to the application.
+
+This is an early release ... expect problems and be sure that what you
+need is not supported.
+
+
+Usage
+=====
+
+1. Initialize ALICE environment.
+
+2. Spawn 'reve' executable and invoke the alieve_init.C macro, for example:
+
+To load first event from current directory:
+   # reve  alieve_init.C 
+To load 5th event from directory /data/my-pp-run:
+   # reve 'alieve_init.C("/data/my-pp-run", 5)' 
+Interactively:
+   # reve
+   root[0] .L alieve_init.C
+   root[1] alieve_init("/somedir")
+
+3. Use GUI or CINT command-line to invoke further visualization macros.
+  
+See files in EVE/alice-macros/. For specific uses these should be
+edited to suit your needs.
+
+
+Directory structure
+===================
+
+EVE is split into two modules: REVE (ROOT part, not dependent on
+AliROOT) and ALIEVE (ALICE specific part). For the time being both
+modules are kept in AliROOT CVS.
+
+Alieve/ and Reve/ -- sources
+
+macros/		  -- macros for bootstraping and internal steering
+alice-macros/	  -- macros for ALICE visualization
+alica-data/	  -- data files used by ALICE macros
+
+bin/, Makefile and make_base.inc are used for stand-alone build of the
+packages.
