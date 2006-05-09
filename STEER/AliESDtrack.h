@@ -157,7 +157,7 @@ public:
   void    GetTRDpid(Double_t *p) const;
   Float_t GetTRDsignal() const {return fTRDsignal;}
   Float_t GetTRDsignals(Int_t iPlane, Int_t iSlice=-1) const { if (iSlice == -1) 
-    return (fTRDsignals[iPlane][0] + fTRDsignals[iPlane][1] + fTRDsignals[iPlane][3])/3.0;
+    return (fTRDsignals[iPlane][0] + fTRDsignals[iPlane][1] + fTRDsignals[iPlane][2])/3.0;
     return fTRDsignals[iPlane][iSlice];
   }
   Int_t   GetTRDTimBin(Int_t i) const {return fTRDTimBin[i];}

@@ -371,7 +371,7 @@ void AliPHOSTrigger::SetTriggers(const Int_t iMod, const TMatrixD * ampmax2, con
       max2[3] =  (*ampmax2)(3,i) ; // corresponding most recent time
       itru2   = i ; // TRU number
     }
-    if(max4[4] < (*ampmax4)(0,i) ){
+    if(max4[0] < (*ampmax4)(0,i) ){
       max4[0] =  (*ampmax4)(0,i) ; // 4x4 summed max amplitude
       max4[1] =  (*ampmax4)(1,i) ; // corresponding phi position in TRU
       max4[2] =  (*ampmax4)(2,i) ; // corresponding eta position in TRU

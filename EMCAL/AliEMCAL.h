@@ -79,7 +79,7 @@ class AliEMCAL : public AliDetector {
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatChannelsPerDDL() const { return fgChannelsPerDDL ; }       
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
-  Bool_t   RawSampledResponse(const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
+  Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const ; 
   //  
   virtual AliLoader* MakeLoader(const char* topfoldername);
   virtual const TString Version() const {return TString(" ") ; }   

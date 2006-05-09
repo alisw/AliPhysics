@@ -88,7 +88,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void SetMapACell(Int_t i,Int_t j,Float_t dev) {fMapA[i][j]=dev;} 
     Float_t GetMapTCell(Int_t i,Int_t j) const {return fMapT[i][j];}
     virtual void SetMapTCell(Int_t i,Int_t j,Float_t dev) {fMapT[i][j]=dev;} 
-    static const Int_t GetMapTimeNBin() {return fgkMapTimeNBin;} 
+    static Int_t GetMapTimeNBin() {return fgkMapTimeNBin;} 
 
     virtual void SetElectronics(Int_t p1=1) {((AliITSresponseSDD*)fResponse)->SetElectronics(p1);}
     virtual Int_t GetElectronics() const {return ((AliITSresponseSDD*)fResponse)->Electronics();}

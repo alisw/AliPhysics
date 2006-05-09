@@ -62,7 +62,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   Int_t *  GetADCValuesLowGainMax4x4Sum()  {return fADCValuesLow4x4; }
   Int_t *  GetADCValuesHighGainMax4x4Sum() {return fADCValuesHigh4x4; }
 
-  void GetCrystalPhiEtaIndexInModuleFromTRUIndex(const Int_t itru,const Int_t iphitru,const Int_t ietatru,Int_t &ietaMod,Int_t &iphiMod, const AliPHOSGeometry *geom) const ;
+  void GetCrystalPhiEtaIndexInModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru,Int_t &ietaMod,Int_t &iphiMod, const AliPHOSGeometry *geom) const ;
 
   Float_t  GetL0Threshold()          const {return fL0Threshold ; } 
   Float_t  GetL1JetLowPtThreshold()  const {return fL1JetLowPtThreshold ; }
@@ -97,9 +97,9 @@ class AliPHOSTrigger : public AliTriggerDetector {
 
   void FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * amptru, TClonesArray * timeRtru) const ;
 
-  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, const Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmax4, const AliPHOSGeometry *geom) ;
+  void MakeSlidingCell(const TClonesArray * amptrus, const TClonesArray * timeRtrus, Int_t mod, TMatrixD *ampmax2, TMatrixD *ampmax4, const AliPHOSGeometry *geom) ;
 
-  void SetTriggers(const Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmax4, const AliPHOSGeometry *geom) ;
+  void SetTriggers(Int_t iMod, const TMatrixD *ampmax2,const TMatrixD *ampmax4, const AliPHOSGeometry *geom) ;
 
  private: 
 

@@ -204,6 +204,7 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
   default:
     return 0;
   } //end switch
+  return 0;
 }
 
 
