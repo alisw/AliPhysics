@@ -62,15 +62,6 @@
 #pragma link C++ class AliMUONDisplay+; 
 #pragma link C++ class AliMUONRecoCheck+; 
 
-// raw data
-#pragma link C++ class AliMUONRawReader+;
-#pragma link C++ class AliMUONRawStream+;
-#pragma link C++ class AliMUONSubEventTracker+;
-#pragma link C++ class AliMUONDDLTrigger+;
-#pragma link C++ class AliMUONDDLTracker+;
-#pragma link C++ class AliMUONSubEventTrigger+;
-#pragma link C++ class AliMUONScalerEventTrigger+;
-
 // debug
 #pragma link C++ class AliMUONCheck+;
 

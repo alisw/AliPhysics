@@ -45,15 +45,8 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONCalibParam1I.cxx \
         AliMUONCalibParam2F.cxx \
         AliMUONCalibrationData.cxx \
-       AliMUONSubEventTracker.cxx \
-       AliMUONDDLTrigger.cxx \
-       AliMUONDDLTracker.cxx \
-       AliMUONSubEventTrigger.cxx \
-       AliMUONScalerEventTrigger.cxx \
-       AliMUONRawReader.cxx \
-       AliMUONRawStream.cxx \
-       AliMUONCheck.cxx 
-                
+        AliMUONCheck.cxx 
+     
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MUONbaseLinkDef.h
