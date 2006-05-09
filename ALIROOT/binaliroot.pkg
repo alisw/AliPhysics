@@ -5,7 +5,7 @@ CSRCS:=fpu.c
 
 ELIBSDIR:=
 
-ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONmapping \
+ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         TPCbase TPCsim TPCrec TPCfast \
 	ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
         TRDsim TRDrec TRDfast \
