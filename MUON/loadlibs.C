@@ -1,7 +1,6 @@
 void loadlibs () 
 {
   gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
   gSystem->Load("libmicrocern");
   gSystem->Load("libpdf");
   gSystem->Load("libpythia6");
@@ -20,6 +19,7 @@ void loadlibs ()
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONbase");
+  gSystem->Load("libMUONraw");
 
   gSystem->Load("libMUONsim");
   new AliRun("gAlice","The ALICE Off-line Simulation Framework");
