@@ -33,7 +33,8 @@ AliTrackFitter.cxx AliTrackFitterRieman.cxx AliTrackFitterStraight.cxx\
 AliTrackResiduals.cxx AliTrackResidualsChi2.cxx AliTrackResidualsFast.cxx AliTrackResidualsLinear.cxx\
 AliAlignmentTracks.cxx \
 AliExpression.cxx \
-AliCTPRawData.cxx AliCTPRawStream.cxx
+AliCTPRawData.cxx AliCTPRawStream.cxx \
+AliFstream.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
