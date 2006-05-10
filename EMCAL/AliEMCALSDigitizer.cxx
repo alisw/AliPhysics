@@ -207,73 +207,62 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     TClonesArray * hits = emcalLoader->Hits() ; 
     TClonesArray * sdigits = emcalLoader->SDigits() ;
     sdigits->Clear();
-    Int_t nSdigits = 0 ;
-    //Now make SDigits from hits, for EMCAL it is the same, so just copy    
-    Int_t nPrim =  static_cast<Int_t>((emcalLoader->TreeH())->GetEntries()) ; 
-    // This is not true: there is only one list of hits (MvL jan 2006)
-    // Attention nPrim is the number of primaries tracked by Geant 
-    // and this number could be different to the number of Primaries in TreeK; 
-    Int_t iprim ;
-    for ( iprim = 0 ; iprim < nPrim ; iprim++ ) { 
-      //=========== Get the EMCAL branch from Hits Tree for the Primary iprim
-      rl->Stack()->Particle(iprim) ;
-      Int_t i;
-      AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(); 
-      for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
-	AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(hits->At(i)) ;
-	AliEMCALDigit * curSDigit = 0 ;
-	AliEMCALDigit * sdigit = 0 ;
-	Bool_t newsdigit = kTRUE; 
 
-        // hit->GetId() - Absolute Id number EMCAL segment
-	if(geom->CheckAbsCellId(hit->GetId())) { // was IsInECA(hit->GetId())
-          energy = hit->GetEnergy() * fSampling; // 23-nov-04
-	  if(energy >  fECPrimThreshold )
-	// Assign primary number only if deposited energy is significant
-	    curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
-					    hit->GetIparent(), hit->GetId(), 
-					    Digitize(energy), hit->GetTime() ) ;
+    Int_t nSdigits = 0 ;
+    Int_t i;
+    AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(); 
+    for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
+      AliEMCALHit * hit = dynamic_cast<AliEMCALHit*>(hits->At(i)) ;
+      AliEMCALDigit * curSDigit = 0 ;
+      AliEMCALDigit * sdigit = 0 ;
+      Bool_t newsdigit = kTRUE; 
+      
+      // hit->GetId() - Absolute Id number EMCAL segment
+      if(geom->CheckAbsCellId(hit->GetId())) { // was IsInECA(hit->GetId())
+	energy = hit->GetEnergy() * fSampling; // 23-nov-04
+	if(energy >  fECPrimThreshold )
+	  // Assign primary number only if deposited energy is significant
+	  curSDigit =  new AliEMCALDigit( hit->GetPrimary(),
+					  hit->GetIparent(), hit->GetId(), 
+					  Digitize(energy), hit->GetTime() ) ;
 	  else
 	    curSDigit =  new AliEMCALDigit( -1               , 
 					    -1               ,
 					    hit->GetId(), 
 					    Digitize(energy), hit->GetTime() ) ;
-	} else {
-          Warning("Exec"," abs id %i is bad \n", hit->GetId());
-          newsdigit = kFALSE;
-	  curSDigit = 0;
-        }
-
-	if(curSDigit != 0){
-	  for(Int_t check= 0; check < nSdigits ; check++) {
-	    sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
-	    
-	    if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL tower ?              
-	      *sdigit = *sdigit + *curSDigit;
-	      newsdigit = kFALSE;
-	    }
+      } else {
+	Warning("Exec"," abs id %i is bad \n", hit->GetId());
+	newsdigit = kFALSE;
+	curSDigit = 0;
+      }
+      
+      if(curSDigit != 0){
+	for(Int_t check= 0; check < nSdigits ; check++) {
+	  sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
+	  
+	  if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL tower ?              
+	    *sdigit = *sdigit + *curSDigit;
+	    newsdigit = kFALSE;
 	  }
 	}
-	if (newsdigit) {
-	  new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
-	  nSdigits++ ;  
-	}
-	delete curSDigit ; 
-      }  // loop over all hits (hit = deposited energy/entering particle)
-    } // loop over iprim
+      }
+      if (newsdigit) {
+	new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
+	nSdigits++ ;  
+      }
+      delete curSDigit ; 
+    }  // loop over all hits (hit = deposited energy/entering particle)
     sdigits->Sort() ;
     
     nSdigits = sdigits->GetEntriesFast() ;
     fSDigitsInRun += nSdigits ;  
-
-    Int_t nPrimarymax = -1 ; 
-    Int_t i ;
+    
     Double_t e=0.,esum=0.;
     AliEMCALHistoUtilities::FillH1(fHists, 0, double(sdigits->GetEntriesFast()));
     for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { 
       AliEMCALDigit * sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(i)) ;
       sdigit->SetIndexInList(i) ;
-
+      
       AliEMCALHistoUtilities::FillH1(fHists, 2, double(sdigit->GetAmp()));
       e = double(Calibrate(sdigit->GetAmp()));
       esum += e;
@@ -282,20 +271,15 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     }
     if(esum>0.) AliEMCALHistoUtilities::FillH1(fHists, 1, esum);
     
-    for (i = 0 ; i < sdigits->GetEntriesFast() ; i++) { // for what 
-      if (((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) > nPrimarymax)
-	nPrimarymax = ((dynamic_cast<AliEMCALDigit *>(sdigits->At(i)))->GetNprimary()) ;
-    }
-
     // Now write SDigits    
-
+    
     Int_t bufferSize = 32000 ;    
     TBranch * sdigitsBranch = treeS->GetBranch("EMCAL");
     if (sdigitsBranch)
       sdigitsBranch->SetAddress(&sdigits);
     else
       treeS->Branch("EMCAL",&sdigits,bufferSize);
- 
+    
     treeS->Fill();
     
     emcalLoader->WriteSDigits("OVERWRITE");
@@ -306,7 +290,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
     if(strstr(option,"deb"))
       PrintSDigits(option) ;  
   }
-
+  
   Unload();
   
   emcalLoader->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
@@ -314,7 +298,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALSDigitizer"); 
     printf("\n Exec: took %f seconds for SDigitizing %f seconds per event\n", 
-	 gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer")/nEvents ) ; 
+	   gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer")/nEvents ) ; 
   }
 }
 
