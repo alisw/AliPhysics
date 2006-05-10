@@ -19,6 +19,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.48  2006/04/22 10:30:17  hristov
+ * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
+ *
  * Revision 1.47  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -192,7 +195,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     fLastEvent = TMath::Min(fFirstEvent, gime->MaxEvent()); // only ine event at the time 
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
   
-  Int_t ievent ;
+  Int_t ievent, i;
 
   //AliMemoryWatcher memwatcher;
 
@@ -204,31 +207,20 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     sdigits->Clear();
     Int_t nSdigits = 0 ;
     //Now make SDigits from hits, for PHOS it is the same, so just copy    
-    Int_t nPrim =  static_cast<Int_t>((gime->TreeH())->GetEntries()) ; 
-    // Attention nPrim is the number of primaries tracked by Geant 
-    // and this number could be different to the number of Primaries in TreeK;
-    Int_t iprim ;
-
-    for (iprim = 0 ; iprim < nPrim ; iprim ++) { 
-      //=========== Get the PHOS branch from Hits Tree for the Primary iprim
-      gime->Track(iprim) ;
-     Int_t i;
-       for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
- 	AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
- 	// Assign primary number only if contribution is significant
-	
-	if( hit->GetEnergy() > fPrimThreshold)
-	  new((*sdigits)[nSdigits]) AliPHOSDigit(hit->GetPrimary(),hit->GetId(),
-						 hit->GetEnergy() ,hit->GetTime()) ;
-	else
-	  new((*sdigits)[nSdigits]) AliPHOSDigit(-1               ,hit->GetId(), 
-						 hit->GetEnergy() ,hit->GetTime()) ;
-	nSdigits++ ;	
-	
-       }
+    for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
+      AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
+      // Assign primary number only if contribution is significant
+      
+      if( hit->GetEnergy() > fPrimThreshold)
+	new((*sdigits)[nSdigits]) AliPHOSDigit(hit->GetPrimary(),hit->GetId(),
+					       hit->GetEnergy() ,hit->GetTime()) ;
+      else
+	new((*sdigits)[nSdigits]) AliPHOSDigit(-1               ,hit->GetId(), 
+					       hit->GetEnergy() ,hit->GetTime()) ;
+      nSdigits++ ;	
+      
+    }
  
-    } // loop over iprim
-
     sdigits->Sort() ;
 
     nSdigits = sdigits->GetEntriesFast() ;
@@ -236,7 +228,6 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     fSDigitsInRun += nSdigits ;  
     sdigits->Expand(nSdigits) ;
 
-    Int_t i ;
     for (i = 0 ; i < nSdigits ; i++) { 
       AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ; 
       digit->SetIndexInList(i) ;     
