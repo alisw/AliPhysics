@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <Riostream.h>
+#include <TMath.h>
+#include "AliLog.h"
 #include "AliITSpListItem.h"
 // ************************************************************************
 // the data member "fa" of the AliITSpList class
@@ -178,6 +180,12 @@ void AliITSpListItem::AddSignal(Int_t track,Int_t hit,Int_t module,
     Double_t sig;
     Bool_t   flg=kFALSE;
 
+    if (TMath::Abs(signal)>2147483647.0) {
+      //PH 2147483647 is the max. integer
+      //PH This apparently is a problem which needs investigation
+      AliWarning(Form("Too big or too small signal value %f",signal));
+      signal = TMath::Sign((Double_t)2147483647,signal);
+    }
     if(findex!=index || fmodule!=module) 
         Warning("AddSignal","index=%d != findex=%d or module=%d != fmodule=%d",
                  index,findex,module,fmodule);
