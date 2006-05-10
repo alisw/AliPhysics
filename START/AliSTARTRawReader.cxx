@@ -47,21 +47,13 @@ Bool_t  AliSTARTRawReader::Next()
   TArrayI *timeTDC2 = new TArrayI(24);
   TArrayI *chargeTDC2 = new TArrayI(24);
 
-  
-  if (!fRawReader->ReadHeader()){
-    Error("ReadSTARTRaw","Couldn't read header");
-    return kFALSE;
-  }
-  //    if (!fRawReader->ReadNextInt(word)) return kFALSE;
   do {
     if (!fRawReader->ReadNextData(fData)) return kFALSE;
   } while (fRawReader->GetDataSize() == 0);
   
-    fPosition = GetPosition();
-  //  fPosition = 0;
-  cout<<" !!!! fPosition "<<fPosition<<endl;
+  fPosition = GetPosition();
 
-  for( Int_t i=0; i<9; i++) word = GetNextWord();
+  for( Int_t i=0; i<11; i++) word = GetNextWord();
  //  multiplicity 
    word=0;
    unpackword=0;
@@ -245,14 +237,12 @@ UInt_t AliSTARTRawReader::GetNextWord()
 
   Int_t iBit = fPosition * 32;
   Int_t iByte = iBit / 8;
-  // recalculate the byte numbers and the shift because
-  // the raw data is written as integers where the high bits are filled first
-  // -> little endian is assumed here !
+
   UInt_t word = 0;
-  word += fData[iByte+3]<<24;
-  word += fData[iByte+2]<<16;
-  word += fData[iByte+1]<<8;
-  word += fData[iByte];
+  word  = fData[iByte+3]<<24;
+  word |= fData[iByte+2]<<16;
+  word |= fData[iByte+1]<<8;
+  word |= fData[iByte];
   return word;
 
 }
