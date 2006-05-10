@@ -485,7 +485,7 @@ void AliFRAMEv2::CreateGeometry()
   
   for (i = 0; i < 18; i++) {
       // Create volume i 
-      char name[6];
+      char name[16];
       sprintf(name, "BSEGMO%d", i);
       gMC->Gsvolu(name, "TRD1", kAir, ptrd1, 4);
 
@@ -867,9 +867,9 @@ void AliFRAMEv2::CreateGeometry()
 //  ptrd1[3] = 37.;
 
   for (i = 0; i < 18; i++) {
-    char nameCh[6];
+    char nameCh[16];
     sprintf(nameCh, "BTRD%d",i);
-    char nameMo[6];
+    char nameMo[16];
     sprintf(nameMo, "BSEGMO%d",i);
     gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
     gMC->Gspos(nameCh, 1, nameMo, 0., 0., -10.37, 0, "ONLY");
@@ -883,9 +883,9 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[2] = 375.5;
   ptrd1[3] = 14.5;
   for (i = 0; i < 18; i++) {
-    char nameCh[6];
+    char nameCh[16];
     sprintf(nameCh, "BTOF%d",i);
-    char nameMo[6];
+    char nameMo[16];
     sprintf(nameMo, "BSEGMO%d",i);
     gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
     gMC->Gspos(nameCh, 1, nameMo, 0., 0., 42.69, 0, "ONLY");

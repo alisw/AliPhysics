@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2006/05/04 19:41:42  hristov
+Possibility for partial TOF geometry (S.Arcelli)
+
 Revision 1.8  2006/04/20 22:30:50  hristov
 Coding conventions (Annalisa)
 
@@ -172,8 +175,8 @@ void AliTOFv5T0::BuildGeometry()
   Float_t zOffsetA = 0.;
   // Define TOF basic volume
   
-  char nodeName0[7], nodeName1[7], nodeName2[7];
-  char nodeName3[7], nodeName4[7], rotMatNum[7];
+  char nodeName0[16], nodeName1[16], nodeName2[16];
+  char nodeName3[16], nodeName4[16], rotMatNum[16];
 
   if (fTOFHoles) {
     new TBRIK("S_TOF_B","TOF box","void",
@@ -305,7 +308,7 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
   zcoor = 0.;
   for(Int_t isec=0;isec<18;isec++){
     if(fTOFSectors[isec]==-1)continue;
-    char name[6];
+    char name[16];
     sprintf(name, "BTOF%d",isec);
     if (fTOFHoles && (isec==16||isec==17)) {
       xcoor = 0.;
