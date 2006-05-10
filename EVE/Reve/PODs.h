@@ -43,6 +43,7 @@ public:
 
   Vector() : x(0), y(0), z(0) {}
   Vector(Float_t _x, Float_t _y, Float_t _z) : x(_x), y(_y), z(_z) {}
+  virtual ~Vector() {}
 
   Float_t* c_vec() { return &x; }
   void Set(Float_t*  v) { x=v[0]; y=v[1]; z=v[2]; }
@@ -90,6 +91,7 @@ class PathMark
   Type_e type;
 
   PathMark(Type_e t=Reference) : type(t) {}
+  virtual ~PathMark() {}
 
   ClassDef(PathMark, 1);
 };
@@ -111,6 +113,7 @@ public:
   Vector  P_decay;     // Decay momentum
 
   MCTrack() { decayed = false; }
+  virtual ~MCTrack() {}
 
   MCTrack& operator=(const TParticle& p)
   { *((TParticle*)this) = p; return *this; }
@@ -138,6 +141,7 @@ public:
   Float_t time;
 
   MCTrackRef() {}
+  virtual ~MCTrackRef() {}
 
   ClassDef(MCTrackRef, 1)
 };
@@ -166,6 +170,7 @@ public:
   // ?? Float_t charge. Probably specific.
 
   Hit() {}
+  virtual ~Hit() {}
 
   ClassDef(Hit, 1);
 };
@@ -192,6 +197,7 @@ public:
   // ?? Coord system? Special variables Wz, Wy?
 
   Cluster() {}
+  virtual ~Cluster() {}
 
   ClassDef(Cluster, 1);
 };
@@ -214,6 +220,7 @@ public:
   // PID data missing
 
   RecTrack() {}
+  virtual ~RecTrack() {}
 
   Float_t Pt() { return P.Perp(); }
 
@@ -234,6 +241,9 @@ public:
   Vector  V_end;      // End vertex: last point on the primary track
   Vector  V_kink;     // Kink vertex: reconstructed position of the kink
   Vector  P_sec;      // Momentum of secondary track
+
+  RecKink() : RecTrack() {}
+  virtual ~RecKink() {}
 
   ClassDef(RecKink, 1);
 };
@@ -261,6 +271,9 @@ public:
   Int_t pdg;          // PDG code of mother
   Int_t d_label[2];   // Daughter labels ?? Rec labels present anyway.
 
+  RecV0() {}
+  virtual ~RecV0() {}
+
   ClassDef(RecV0, 1);
 };
 
@@ -282,6 +295,7 @@ public:
   Int_t        n_clus;
 
   GenInfo() { is_rec = has_V0 = has_kink = false; }
+  virtual ~GenInfo() {}
 
   ClassDef(GenInfo, 1);
 };

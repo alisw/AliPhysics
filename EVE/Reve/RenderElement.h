@@ -35,7 +35,8 @@ protected:
 
     ListTreeInfo() {}
     ListTreeInfo(TGListTree* lt, TGListTreeItem* lti) : fTree(lt), fItem(lti) {}
-    
+    virtual ~ListTreeInfo() {}
+
     bool operator==(const ListTreeInfo& x) const
     { return fTree == x.fTree && fItem == x.fItem; }
     bool operator<(const ListTreeInfo& x) const
@@ -102,6 +103,7 @@ protected:
 public:
   RenderElementListBase() {}
   RenderElementListBase(Color_t& col) : RenderElement(col) {}
+  virtual ~RenderElementListBase() {}
 
   virtual void AddElement(RenderElement* el) { fList.push_back(el); }
 
@@ -127,6 +129,7 @@ public:
   RenderElementList(const Text_t* n="RenderElementList", const Text_t* t="") :
     TNamed(n, t), RenderElementListBase(fColor), fColor(0)
   {}
+  virtual ~RenderElementList() {}
 
   virtual Bool_t CanEditMainColor()  { return true; }
 

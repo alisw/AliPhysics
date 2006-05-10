@@ -1,3 +1,5 @@
+// $Header$
+
 #include "QuadSet.h"
 
 #include <TColor.h>

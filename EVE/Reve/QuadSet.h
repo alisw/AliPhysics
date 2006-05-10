@@ -1,3 +1,5 @@
+// $Header$
+
 #ifndef REVE_QuadSet_H
 #define REVE_QuadSet_H
 
@@ -29,6 +31,8 @@ struct Quad
 
   Quad(const Quad& org) { memcpy(this, &org, sizeof(Quad)); }
 
+  virtual ~Quad() {}
+
   ClassDef(Quad, 1);
 };
 
@@ -48,6 +52,7 @@ protected:
 public:
   QuadSet(const Text_t* n="QuadSet", const Text_t* t="") : TNamed(n, t)
   { Init(); }
+  virtual ~QuadSet() {}
 
   Bool_t GetTrans() const { return fTrans; }
   void SetTrans(Bool_t t) { fTrans = t; }
