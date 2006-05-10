@@ -14,7 +14,7 @@ gcccomp="-fPIC -c -g0 -Wall -Wno-long-long -I$ROOTSYS/include -I$ALIROOT/RALICE 
 ### The option string for GCC shared lib compilation and linking ***
 ### For the GCC ROOT loadable shared lib the strict requirements are ***
 ### dropped to avoid many warnings from the rootcint generated code ***
-gccroot="-fPIC -shared -g0 -ansi -pedantic -Wall -Wno-long-long -I$ROOTSYS/include -I$ALIROOT/RALICE -I$ALIROOT/RALICE/icepack -o $lib"
+gccroot="-fPIC -shared -g0 -ansi -pedantic -Wall -Wno-long-long -Woverloaded-virtual -I$ROOTSYS/include -I$ALIROOT/RALICE -I$ALIROOT/RALICE/icepack -o $lib"
 #
 echo "lib = " $lib
 echo "gcccomp = " $gcccomp 

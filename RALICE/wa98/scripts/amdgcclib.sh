@@ -9,7 +9,7 @@ lib=rwa98.so
 ### The option string for GCC shared lib compilation and linking ***
 ### For the GCC ROOT loadable shared lib the strict requirements are ***
 ### dropped to avoid many warnings from the rootcint generated code ***
-gccroot="-fPIC -shared -g0 -ansi -pedantic -Wall -Wno-long-long -I$ROOTSYS/include -I$ALIROOT/RALICE -o $lib"
+gccroot="-fPIC -shared -g0 -ansi -pedantic -Wall -Wno-long-long -Woverloaded-virtual -I$ROOTSYS/include -I$ALIROOT/RALICE -o $lib"
 #
 echo "lib = " $lib
 echo "gccroot = " $gccroot 

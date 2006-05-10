@@ -46,3 +46,5 @@
                 Also installation script macgcclib.sh for gcc on MAC systems introduced.
 16-feb-2005 NvE Support for user selectable split level and buffer size of the output tree
                 introduced in Wa98Convert.
+10-may-2006 NvE Compiler warnings activated for overloaded virtuals in installation
+                script for AMD Athlon in the /scripts sub-directory.

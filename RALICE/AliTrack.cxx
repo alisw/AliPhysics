@@ -1306,6 +1306,10 @@ Double_t AliTrack::GetDistance(AliPosition* p)
 
  if (!rx) return dist;
 
+ Ali3Vector p1=Get3Momentum();
+
+ if (p1.GetNorm() <= 0.) return dist;
+
  Ali3Vector r0=(Ali3Vector)(*rx);
 
  Float_t tscale=rx->GetUnitScale();
@@ -1315,7 +1319,6 @@ Double_t AliTrack::GetDistance(AliPosition* p)
  // Obtain the direction unit vector of this track
  Double_t vec[3];
  Double_t err[3];
- Ali3Vector p1=Get3Momentum();
  p1.GetVector(vec,"sph");
  p1.GetErrors(err,"sph");
  vec[0]=1.;
@@ -1328,6 +1331,78 @@ Double_t AliTrack::GetDistance(AliPosition* p)
  Ali3Vector d=r.Cross(p1);
  dist=d.GetNorm();
  fDresult=d.GetResultError();
+ return dist;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTrack::GetDistance(AliTrack* t)
+{
+// Provide distance of the current track to the track t.
+// The error on the result can be obtained as usual by invoking
+// GetResultError() afterwards. 
+//
+// The distance will be provided in the unit scale of the current track.
+// As such it is possible to obtain a correctly computed distance even in case
+// the track parameters have a different unit scale.
+// This implies that in such cases the results of t1.GetDistance(t2) and
+// t2.GetDistance(t1) will be numerically different.
+// However, it is recommended to work always with one single unit scale.
+//
+// Note : In case of incomplete information, a distance value of -1 is
+//        returned.
+ 
+ Double_t dist=-1.;
+ fDresult=0.;
+
+ if (!t) return dist;
+
+ // Obtain a defined position on this track
+ AliPosition* rx=fRef;
+ if (!rx) rx=fBegin;
+ if (!rx) rx=fEnd;
+
+ if (!rx) return dist;
+
+ // Obtain a defined position on track t
+ AliPosition* ry=t->GetReferencePoint();
+ if (!ry) ry=t->GetBeginPoint();
+ if (!ry) ry=t->GetEndPoint();
+
+ if (!ry) return dist;
+ 
+ Ali3Vector p1=Get3Momentum();
+ Ali3Vector p2=t->Get3Momentum();
+
+ if (p1.GetNorm() <= 0. || p2.GetNorm() <= 0.) return dist;
+
+ // The vector normal to both track directions
+ Ali3Vector n=p1.Cross(p2);
+
+ if (n.GetNorm() > 1.e-10)
+ {
+  // Normalise n to a unit vector
+  Double_t vec[3];
+  Double_t err[3];
+  n.GetVector(vec,"sph");
+  n.GetErrors(err,"sph");
+  vec[0]=1.;
+  err[0]=0.;
+  n.SetVector(vec,"sph");
+  n.SetErrors(err,"sph");
+  Ali3Vector r1=(Ali3Vector)(*rx);
+  Ali3Vector r2=(Ali3Vector)(*ry);
+  // Correct components of r2 in case of different unit scales
+  Float_t scale=rx->GetUnitScale();
+  Float_t tscale=ry->GetUnitScale();
+  if ((tscale/scale > 1.1) || (scale/tscale > 1.1)) r2=r2*(tscale/scale);
+  Ali3Vector r=r1-r2;
+  dist=fabs(r.Dot(n));
+  fDresult=r.GetResultError();
+ }
+ else // Parallel tracks
+ {
+  dist=t->GetDistance(rx);
+  fDresult=t->GetResultError();
+ }
  return dist;
 }
 ///////////////////////////////////////////////////////////////////////////

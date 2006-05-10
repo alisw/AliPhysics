@@ -1069,6 +1069,115 @@ TObjArray* AliJet::SortTracks(Int_t mode,TObjArray* tracks)
  return fSelected;
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetDistance(AliPosition* p)
+{
+// Provide distance of the current jet to the position p.
+// The error on the result can be obtained as usual by invoking
+// GetResultError() afterwards. 
+//
+// The distance will be provided in the unit scale of the AliPosition p.
+// As such it is possible to obtain a correctly computed distance even in case
+// the jet parameters have a different unit scale.
+// However, it is recommended to work always with one single unit scale.
+//
+// Note : In case of incomplete information, a distance value of -1 is
+//        returned.
+ 
+ Double_t dist=-1.;
+ fDresult=0.;
+
+ if (!p) return dist;
+
+ // Obtain a defined position on this jet
+ AliPosition* rx=fRef;
+
+ if (!rx) return dist;
+
+ Ali3Vector pj=Get3Momentum();
+
+ if (pj.GetNorm() <= 0.) return dist;
+
+ AliTrack tj;
+ tj.Set3Momentum(pj);
+ tj.SetReferencePoint(*rx);
+ dist=tj.GetDistance(p);
+ fDresult=tj.GetResultError();
+ return dist;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetDistance(AliTrack* t)
+{
+// Provide distance of the current jet to the track t.
+// The error on the result can be obtained as usual by invoking
+// GetResultError() afterwards. 
+//
+// The distance will be provided in the unit scale of the current jet.
+// As such it is possible to obtain a correctly computed distance even in case
+// the jet and track parameters have a different unit scale.
+// However, it is recommended to work always with one single unit scale.
+//
+// Note : In case of incomplete information, a distance value of -1 is
+//        returned.
+ 
+ Double_t dist=-1.;
+ fDresult=0.;
+
+ if (!t) return dist;
+
+ // Obtain a defined position on this jet
+ AliPosition* rx=fRef;
+
+ if (!rx) return dist;
+
+ Ali3Vector pj=Get3Momentum();
+
+ if (pj.GetNorm() <= 0.) return dist;
+
+ AliTrack tj;
+ tj.Set3Momentum(pj);
+ tj.SetReferencePoint(*rx);
+ dist=tj.GetDistance(t);
+ fDresult=tj.GetResultError();
+ return dist;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliJet::GetDistance(AliJet* j)
+{
+// Provide distance of the current jet to the jet j.
+// The error on the result can be obtained as usual by invoking
+// GetResultError() afterwards. 
+//
+// The distance will be provided in the unit scale of the current jet.
+// As such it is possible to obtain a correctly computed distance even in case
+// the jet and track parameters have a different unit scale.
+// This implies that in such cases the results of j1.GetDistance(j2) and
+// j2.GetDistance(j1) will be numerically different.
+// However, it is recommended to work always with one single unit scale.
+//
+// Note : In case of incomplete information, a distance value of -1 is
+//        returned.
+ 
+ Double_t dist=-1.;
+ fDresult=0.;
+
+ if (!j) return dist;
+
+ // Obtain a defined position on jet j
+ AliPosition* rx=j->GetReferencePoint();
+
+ if (!rx) return dist;
+
+ Ali3Vector pj=j->Get3Momentum();
+
+ if (pj.GetNorm() <= 0.) return dist;
+
+ AliTrack tj;
+ tj.Set3Momentum(pj);
+ tj.SetReferencePoint(*rx);
+ dist=GetDistance(tj);
+ return dist;
+}
+///////////////////////////////////////////////////////////////////////////
 TObject* AliJet::Clone(const char* name) const
 {
 // Make a deep copy of the current object and provide the pointer to the copy.

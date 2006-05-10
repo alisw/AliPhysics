@@ -54,6 +54,12 @@ class AliJet : public TNamed,public Ali4Vector
   void SetReferencePoint(AliPosition& p);  // Set the jet reference-point
   AliPosition* GetReferencePoint();        // Provide the jet reference-point
   TObjArray* SortTracks(Int_t mode=-1,TObjArray* tracks=0); // Sort tracks by a certain observable
+  Double_t GetDistance(AliPosition* p);    // Provide distance to position p
+  Double_t GetDistance(AliPosition& p) { return GetDistance(&p); }
+  Double_t GetDistance(AliTrack* t);       // Provide distance to track t
+  Double_t GetDistance(AliTrack& t) { return GetDistance(&t); }
+  Double_t GetDistance(AliJet* j);         // Provide distance to jet j
+  Double_t GetDistance(AliJet& j) { return GetDistance(&j); }
 
  protected:
   void Init();                           // Initialisation of pointers etc...
@@ -70,6 +76,6 @@ class AliJet : public TNamed,public Ali4Vector
   AliPositionObj* fRef;                  // The reference-point of the jet
   TObjArray* fSelected;                  //! Temp. array to hold user selected or ordered objects
  
- ClassDef(AliJet,16) // Creation and investigation of a jet of particle tracks.
+ ClassDef(AliJet,17) // Creation and investigation of a jet of particle tracks.
 };
 #endif

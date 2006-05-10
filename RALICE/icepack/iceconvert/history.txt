@@ -55,4 +55,6 @@
 08-mar-2006 NvE Time offset correction in IceF2k extended to allow also a user defined offset
                 to cope with Monte Carlo data.
 22-mar-2006 NvE Support for selective MC track storage introduced in IceF2k.
+10-may-2006 NvE Compiler warnings activated for overloaded virtuals in installation
+                script for AMD Athlon in the /scripts sub-directory.
 

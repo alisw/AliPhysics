@@ -65,3 +65,5 @@
                 Also new memberfunction SetPenalty() introduced in IcePandel.
 21-apr-2006 NvE TFile.h included in header files of IceCalibrate and IceXtalk to prevent
                 compiler error with new ROOT 5.11 version.
+10-may-2006 NvE Compiler warnings activated for overloaded virtuals in installation
+                script for AMD Athlon in the /scripts sub-directory.
