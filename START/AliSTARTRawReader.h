@@ -16,13 +16,18 @@ class AliSTARTRawReader : public TTask {
 
 
   Bool_t  Next(); //read next raw digit
+  Int_t            GetPosition();
+  UInt_t         GetNextWord();
   
   protected :
 
-    UInt_t           fData;         // data read for file
   AliSTARTdigit* fDigits;
   TTree*        fTree;
   AliRawReader*    fRawReader;    // object for reading the raw data
+
+  UChar_t*         fData;         // raw data
+  Int_t            fPosition;     // current (32 bit) position in fData
+
   
  ClassDef(AliSTARTRawReader, 0) //class for reading START Raw data
 };
