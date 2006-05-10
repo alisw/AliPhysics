@@ -162,17 +162,17 @@ void AliESD::Print(Option_t *) const
   printf("                 charged   %d\n", GetNumberOfTracks());
   printf("                 hlt CF    %d\n", GetNumberOfHLTConfMapTracks());
   printf("                 hlt HT    %d\n", GetNumberOfHLTHoughTracks());
-  printf("                 phos      %d\n", GetNumberOfPHOSClusters());
-  printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
   printf("                 muon      %d\n", GetNumberOfMuonTracks());
   printf("                 pmd       %d\n", GetNumberOfPmdTracks());
   printf("                 trd       %d\n", GetNumberOfTrdTracks());
   printf("                 v0        %d\n", GetNumberOfV0s());
-  printf("                 cascades  %d\n)", GetNumberOfCascades());
-  printf("                 kinks     %d\n)", GetNumberOfKinks());
-  printf("                 V0MIs     %d\n)", GetNumberOfV0MIs());
-  printf("                 CaloClusters %d\n)", GetNumberOfCaloClusters());
-  printf("                 FMD       %s\n)", (fESDFMD ? "yes" : "no"));
+  printf("                 cascades  %d\n", GetNumberOfCascades());
+  printf("                 kinks     %d\n", GetNumberOfKinks());
+  printf("                 V0MIs     %d\n", GetNumberOfV0MIs());
+  printf("                 CaloClusters %d\n", GetNumberOfCaloClusters());
+  printf("                 phos      %d\n", GetNumberOfPHOSClusters());
+  printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
+  printf("                 FMD       %s\n", (fESDFMD ? "yes" : "no"));
 }
 
 void AliESD::SetESDfriend(const AliESDfriend *ev) {
