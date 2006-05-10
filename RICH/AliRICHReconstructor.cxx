@@ -43,22 +43,18 @@ void AliRICHReconstructor::CluQA(AliRunLoader *pAL)
 //                                            AliStack *pStack=pAL->Stack();
   TH1::AddDirectory(kFALSE);
   
-  TH1F *pN   =new TH1F("RichCluPerEvt"  ,"Number of clusters per event;number" ,100                    ,0  ,99                                                        );
-  TH1F* pQ   =new TH1F("RichCluQdc"     ,"Cluster QDC;q [QDC]"                 ,4000 ,0  ,4000                                    );
-  TH1F* pS   =new TH1F("RichCluSize"    ,"Cluster size;size"                   ,100                    ,0  ,100                                                       );
-  TH2F* pM   =new TH2F("RichCluMap"     ,"Cluster map;x [cm];y [cm]"           ,1000                   ,0  ,AliRICHParam::PcSizeX()   ,1000,0,AliRICHParam::PcSizeY() );
         
-  TH1F* pMipQ=new TH1F("RichCluMipQdc"  ,"MIP QDC;q [QDC]"                     ,4000 ,0  ,4000                                    );
-  TH1F* pMipS=new TH1F("RichCluMipSize" ,"MIP size;size"                       ,100                    ,0  ,100                                                       );
-  TH2F* pMipM=new TH2F("RichCluMipMap"  ,"MIP map;x [cm];y [cm]"               ,1000                   ,0  ,AliRICHParam::PcSizeX()   ,1000,0,AliRICHParam::PcSizeY() );
+  TH1F*    pQ=new TH1F("RichCluQdc"     ,"All QDC;q [QDC]"           ,4000 ,0  ,4000);// QDC hists
+  TH1F* pCerQ=new TH1F("RichCluCerQdc"  ,"Ckov QDC;q [QDC]"          ,4000 ,0  ,4000);
+  TH1F* pMipQ=new TH1F("RichCluMipQdc"  ,"MIP QDC;q [QDC]"           ,4000 ,0  ,4000);
   
-  TH1F* pCerQ=new TH1F("RichCluCerQdc"  ,"Ckov QDC;q [QDC]"                    ,4000 ,0  ,4000                                    );
-  TH1F* pCerS=new TH1F("RichCluCerSize" ,"Ckov size;size"                      ,100                    ,0  ,100                                                       );
-  TH2F* pCerM=new TH2F("RichCluCerMap"  ,"Ckov map;x [cm];y [cm]"              ,1000                   ,0  ,AliRICHParam::PcSizeX()   ,1000,0,AliRICHParam::PcSizeY() );
-    
-  TH1F* pFeeQ=new TH1F("RichCluFeeQdc"  ,"Fee QDC;q [QDC]"                     ,4000 ,0  ,4000);
-  TH1F* pFeeS=new TH1F("RichCluFeeSize" ,"Fee size;size"                       ,100                    ,0  ,100                                                       );
-  TH2F* pFeeM=new TH2F("RichCluFeeMap"  ,"Fee map;x [cm];y [cm]"               ,1000                   ,0  ,AliRICHParam::PcSizeX()   ,1000,0,AliRICHParam::PcSizeY() );
+  TH1F*    pS=new TH1F("RichCluSize"    ,"Cluster size;size"         ,100  ,0  ,100 );// size hists
+  TH1F* pCerS=new TH1F("RichCluCerSize" ,"Ckov size;size"            ,100  ,0  ,100 );
+  TH1F* pMipS=new TH1F("RichCluMipSize" ,"MIP size;size"             ,100  ,0  ,100 );
+  
+  TH2F*    pM=new TH2F("RichCluMap"     ,"Cluster map;x [cm];y [cm]" ,1000 ,0  ,AliRICHParam::PcSizeX(),1000,0,AliRICHParam::PcSizeY()); // maps
+  TH2F* pMipM=new TH2F("RichCluMipMap"  ,"MIP map;x [cm];y [cm]"     ,1000 ,0  ,AliRICHParam::PcSizeX(),1000,0,AliRICHParam::PcSizeY());
+  TH2F* pCerM=new TH2F("RichCluCerMap"  ,"Ckov map;x [cm];y [cm]"    ,1000 ,0  ,AliRICHParam::PcSizeX(),1000,0,AliRICHParam::PcSizeY());
  
   
   TClonesArray *pCluLst=new TClonesArray("AliRICHCluster");//tmp list of clusters
@@ -66,17 +62,17 @@ void AliRICHReconstructor::CluQA(AliRunLoader *pAL)
   for(Int_t iEvtN=0; iEvtN<iNevt; iEvtN++){
     pAL->GetEvent(iEvtN);               
     pRL->TreeD()->GetEntry(0); 
-    for(Int_t iChN=1;iChN<=7;iChN++){//chambers loop
+    for(Int_t iChN=1;iChN<=AliRICHParam::kNch;iChN++){//chambers loop
       if(pRich->Digs(iChN)->GetEntriesFast()>0) Dig2Clu(pRich->Digs(iChN),pCluLst,kFALSE);//cluster finder for the current chamber if any digits present
     }//chambers loop
     
-    pCluLst->Print();
     for(Int_t iCluN=0 ; iCluN < pCluLst->GetEntriesFast() ; iCluN++){
       AliRICHCluster *pClu = (AliRICHCluster*)pCluLst->At(iCluN);
-      Int_t iNckov=0,iNfee=0,iNmip=0; 
+      Int_t cfm=0; for(Int_t iDig=0;iDig<pClu->Size();iDig++)  cfm+=pClu->Dig(iDig)->Cfm(); //collect ckov-fee-mip structure of current cluster
+      Int_t iNckov=cfm/1000000;      Int_t iNfee =cfm%1000000/1000;      Int_t iNmip =cfm%1000000%1000; 
+
                                              pQ   ->Fill(pClu->Q()) ; pS   ->Fill(pClu->Size()) ; pM    ->Fill(pClu->X(),pClu->Y()); //all clusters                                      
       if(iNckov!=0 && iNfee==0 && iNmip==0) {pCerQ->Fill(pClu->Q()) ; pCerS->Fill(pClu->Size()) ; pCerM ->Fill(pClu->X(),pClu->Y());}//ckov only cluster
-      if(iNckov==0 && iNfee!=0 && iNmip==0) {pFeeQ->Fill(pClu->Q()) ; pFeeS->Fill(pClu->Size()) ; pFeeM ->Fill(pClu->X(),pClu->Y());}//feed only cluster
       if(iNckov==0 && iNfee==0 && iNmip!=0) {pMipQ->Fill(pClu->Q()) ; pMipS->Fill(pClu->Size()) ; pMipM ->Fill(pClu->X(),pClu->Y());}//mip only cluster
                                        
     }//clusters loop   
@@ -84,9 +80,9 @@ void AliRICHReconstructor::CluQA(AliRunLoader *pAL)
   
   pRL->UnloadDigits(); pAL->UnloadKinematics(); pAL->UnloadHeader();
   TCanvas *pC=new TCanvas("RichCluQA",Form("QA for cluster from %i events",iNevt),1000,900); pC->Divide(3,3);
-  pC->cd(1); pN->Draw();          pC->cd(2); pQ->Draw();          pC->cd(3); pS->Draw();        
-  pC->cd(4); pN->Draw();          pC->cd(5); pMipQ->Draw();       pC->cd(6); pMipS->Draw();        
-  pC->cd(7); pN->Draw();          pC->cd(8); pCerQ->Draw();       pC->cd(9); pCerS->Draw();        
+  pC->cd(1);    pM->Draw();          pC->cd(2);    pQ->Draw();       pC->cd(3);    pS->Draw();        
+  pC->cd(4); pMipM->Draw();          pC->cd(5); pMipQ->Draw();       pC->cd(6); pMipS->Draw();        
+  pC->cd(7); pCerM->Draw();          pC->cd(8); pCerQ->Draw();       pC->cd(9); pCerS->Draw();        
 }//CluQA()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHReconstructor::CheckPR()
