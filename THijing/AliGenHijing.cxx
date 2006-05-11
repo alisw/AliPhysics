@@ -309,9 +309,15 @@ void AliGenHijing::Generate()
 	      pSelected[i] = 1;
 	  } // selected
       } // particle loop final state
+
+//
+//    Time of the interactions
+      Float_t tInt = 0.;
+      if (fPileUpTimeWindow > 0.) tInt = fPileUpTimeWindow * (2. * gRandom->Rndm() - 1.);
+
 //
 // Write particles to stack
-//
+
       for (i = 0; i<np; i++) {
 	  TParticle *  iparticle = (TParticle *) fParticles->At(i);
 	  Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
@@ -325,7 +331,9 @@ void AliGenHijing::Generate()
 	      origin[0] = origin0[0]+iparticle->Vx()/10;
 	      origin[1] = origin0[1]+iparticle->Vy()/10;
 	      origin[2] = origin0[2]+iparticle->Vz()/10;
-	      tof = kconv*iparticle->T();
+	      tof = kconv * iparticle->T() + sign * origin0[2] / 3.e10;
+	      if (fPileUpTimeWindow > 0.) tof += tInt;
+	      
 	      imo = -1;
 	      TParticle* mother = 0;
 	      if (hasMother) {
@@ -334,8 +342,7 @@ void AliGenHijing::Generate()
 		  imo = (mother->GetPdgCode() != 92) ? newPos[imo] : -1;
 	      } // if has mother   
 	      Bool_t tFlag = (fTrackIt && !hasDaughter);
-	      PushTrack(tFlag,imo,kf,p,origin,polar,
-		       tof,kPNoProcess,nt, 1., ks);
+	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
 
 	      
 	      KeepTrack(nt);
