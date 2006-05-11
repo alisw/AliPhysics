@@ -102,20 +102,20 @@ AliFstream::~AliFstream()
 }
 
 //______________________________________________________________________________
-void AliFstream::Seekg(UInt_t position)
+void AliFstream::Seekp(UInt_t position)
 {
   // Go to a given position
   // inside the output stream
-  if (fFile) fFile->seekg(position);
+  if (fFile) fFile->seekp(position);
 }
 
 //______________________________________________________________________________
-UInt_t AliFstream::Tellg()
+UInt_t AliFstream::Tellp()
 {
   // Return the current
   // position inside the
   // output stream
-  if (fFile) return fFile->tellg();
+  if (fFile) return fFile->tellp();
   else return 0;
 }
 
@@ -129,6 +129,12 @@ void AliFstream::WriteBuffer(const char *buffer, UInt_t size, Bool_t force)
   // endianess and swap the buffer data
   // so that it is always stored using
   // little endian format.
+
+  // The raw data payload size is always
+  // 4 bytes aligned
+  if ((size % 4) != 0)
+    AliFatal(Form("Size of the buffer is not multiple of 4 (size = %d) !",size));
+
   if (force) {
     fFile->write(buffer,size);
   }

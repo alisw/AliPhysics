@@ -23,8 +23,8 @@ public:
   AliFstream& operator= (const AliFstream &source);
   virtual ~AliFstream();
 
-  void   Seekg(UInt_t position);
-  UInt_t Tellg();
+  void   Seekp(UInt_t position);
+  UInt_t Tellp();
   void   WriteBuffer(const char *buffer, UInt_t size, Bool_t force = kFALSE);
 
 private:
