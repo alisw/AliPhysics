@@ -21,7 +21,7 @@ public:
   void GuiPhys (TGHorizontalFrame *pMainF);  void WritePhys (FILE *pF);  void PhysAddSlot(Int_t id); void PhysRemSlot(Int_t id);
   void GuiGen  (TGCompositeFrame  *pMainF);  void WriteGen  (FILE *pF);  void GenAddSlot (Int_t id); void GenRemSlot (Int_t id);
   void GuiDet  (TGHorizontalFrame *pMainF);  void WriteDet  (FILE *pF);  void DetAddSlot (Int_t id); void DetRemSlot (Int_t id);
-  void GuiBatch(TGHorizontalFrame *pMainF);  void WriteBatch(        );
+  void GuiBatch(TGHorizontalFrame *pMainF);  void WriteBatch(        );  void SlotBatch  (Int_t id);
   
   void    WriteConfig();
   void    ExitSlot();
@@ -39,7 +39,7 @@ public:
 
    char         *fFileName;
 };//class RichConfig
-//__________________________________________________________________________________________________	 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),700,400)
 {
   fFileName=sFileName;
@@ -62,8 +62,8 @@ RichConfig::RichConfig(const char *sFileName):TGMainFrame(gClient->GetRoot(),700
   Resize(GetDefaultSize());
   SetWindowName("Create AliROOT scripts");
   MapWindow(); 
-}//KirCondig::ctor
-//__________________________________________________________________________________________________          
+}//ctor
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::GuiRich(TGHorizontalFrame *pMainHF)
 {
   pMainHF->AddFrame(pLeftVF=new TGVerticalFrame(pMainHF,100,200));  
@@ -93,12 +93,12 @@ void RichConfig::GuiRich(TGHorizontalFrame *pMainHF)
     new TGRadioButton(fMagBG,   "-0.4 T"     ,kFld_4  ));
     new TGRadioButton(fMagBG,   "-0.5 T"     ,kFld_5  ));
 }//Rich()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::RichVerSlot(Int_t ver)  
 {
   if(ver==kTest)    {fMagBG->SetButton(kFld0); fGenBG->SetButton(kGunZ); }
 } 
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::WriteRich(FILE *pF)
 {
   if(!fVerBG->GetButton(kNo)->GetState()){
@@ -114,7 +114,7 @@ void RichConfig::WriteRich(FILE *pF)
     else if(fVerBG->GetButton(kVer2)->GetState())           fprintf(pF,"  new AliRICHv2(\"Tic %s\");\n\n",title.Data());   
   }
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::GuiPhys(TGHorizontalFrame *pMainHF)
 {
   pMainHF->AddFrame(fProcBG=new TGButtonGroup(pMainHF,"Procs"));
@@ -136,21 +136,21 @@ void RichConfig::GuiPhys(TGHorizontalFrame *pMainHF)
     new TGCheckButton(fProcBG,"MULS Multiple scattering"    ,kMULS));  fProcBG->SetButton(kMULS);       
     new TGCheckButton(fProcBG,"RAYL Rayleigh scattering"    ,kRAYL));  fProcBG->SetButton(kRAYL);       
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::PhysAddSlot(Int_t id)
 {//slot is invoked when any of physics check button is pressed
   if(id==kALL)  //if the pressed check button is kALL then switch on all the buttons 
     for(int i=1;i<=fProcBG->GetCount();i++) 
       fProcBG->SetButton(i,kButtonDown);
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void  RichConfig::PhysRemSlot(Int_t id)
 {//slot is invoked when any of physics check button is released
   if(id==kALL) //if the released check button is kALL then switch off all the buttons 
     for(int i=1;i<=fProcBG->GetCount();i++) 
       fProcBG->SetButton(i,kButtonUp);
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::WritePhys(FILE *pF)
 {
   if(fProcBG->GetButton(kDCAY)->GetState()) fprintf(pF,"  gMC->SetProcess(\"DCAY\",1);  ");else fprintf(pF,"  gMC->SetProcess(\"DCAY\",0);  ");
@@ -174,7 +174,7 @@ void RichConfig::WritePhys(FILE *pF)
   fprintf(pF,"  gMC->SetCut(\"BCUTM\" ,0.001);  "); fprintf(pF,"  gMC->SetCut(\"DCUTE\" ,0.001);  "); fprintf(pF,"  gMC->SetCut(\"DCUTM\" ,0.001);\n"); 
   fprintf(pF,"  gMC->SetCut(\"PPCUTM\",0.001);  "); fprintf(pF,"  gMC->SetCut(\"TOFMAX\",1e10);\n\n"); 
 }//WritePhys()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::GuiGen(TGCompositeFrame *pMainF)
 {//generator configurator implemented as group of radio buttons
   pMainF->AddFrame(fGenF=new TGVerticalFrame(pMainF));//add generator vertical frame to horizontal main frame
@@ -226,17 +226,17 @@ void RichConfig::GuiGen(TGCompositeFrame *pMainF)
   fGenChamCO->AddEntry("not used",kNotUsed);
   for(int i=1;i<=7;i++) fGenChamCO->AddEntry(Form("Chamber %i",i),i);  fGenChamCO->Resize(160,20); fGenChamCO->Select(kNotUsed);
 }//GuiGen()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::GenAddSlot(Int_t id)
 {//is invoked when any of generator check button is pressed
   if(id==kGunZ){
-    fGenBG->GetButton(kGun1)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenNprimCO);
-    fGenBG->GetButton(kGun7)->SetEnabled(kFALSE);                                fGenPidCO->Select(kProton);
-    fGenBG->GetButton(kBox )->SetEnabled(kFALSE);  fGenF->HideFrame(fGenPmaxCO); fGenPminCO->Select(25);
+    fGenBG->GetButton(kGun1)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenNprimCO); fGenF->HideFrame(fGenPmaxCO);
+    fGenBG->GetButton(kGun7)->SetEnabled(kFALSE);                                
+    fGenBG->GetButton(kBox )->SetEnabled(kFALSE);  fGenPidCO->Select(kProton);    fGenPminCO->Select(25);
   } 
   if(id==kGun1){
-    fGenBG->GetButton(kGunZ)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenNprimCO);
-    fGenBG->GetButton(kGun7)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenPmaxCO); 
+    fGenBG->GetButton(kGunZ)->SetEnabled(kFALSE);  fGenF->HideFrame(fGenNprimCO); fGenF->HideFrame(fGenPmaxCO); 
+    fGenBG->GetButton(kGun7)->SetEnabled(kFALSE);  fGenPidCO->Select(kProton);    fGenPminCO->Select(25); fGenChamCO->Select(4);
     fGenBG->GetButton(kBox )->SetEnabled(kFALSE);  
   }
   if(id==kGun7){
@@ -264,7 +264,7 @@ void RichConfig::GenAddSlot(Int_t id)
     fGenBG->GetButton(kHijingPara)->SetEnabled(kFALSE);
   }
 }//GenAddSlot()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::GenRemSlot(Int_t id)
 {//is invoked when any of generator check button is released
   if(id==kGunZ){
@@ -303,7 +303,7 @@ void RichConfig::GenRemSlot(Int_t id)
     fGenBG->GetButton(kHijingPara)->SetEnabled();
   }
 }//GenRemSlot()
-//__________________________________________________________________________________________________    
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::WriteGen(FILE *pF)
 {
   Int_t pid=fGenPidCO->GetSelected();
@@ -379,7 +379,7 @@ void RichConfig::WriteGen(FILE *pF)
   }
   fprintf(pF,"  pG->Init();\n\n");
 }//WriteGenerator()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::GuiDet(TGHorizontalFrame *pMainHF)
 {
   pMainHF->AddFrame(fDetBG=new TGButtonGroup(pMainHF,"Dets"));
@@ -393,13 +393,13 @@ void RichConfig::GuiDet(TGHorizontalFrame *pMainHF)
     new TGCheckButton(fDetBG,"EMCAL" ,kEMCAL));    new TGCheckButton(fDetBG,"VZERO" ,kVZERO)); new TGCheckButton(fDetBG,"MUON"  ,kMUON));         
     new TGCheckButton(fDetBG,"ZDC"   ,kZDC));      new TGCheckButton(fDetBG,"SHILD" ,kSHILD));         
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::DetAddSlot(Int_t id)
 {//slot is invoked when any detector check button is pressed
   if(id==kTRD || id==kTOF)     //TRD and TOF geometries depend on FRAME 
     fDetBG->SetButton(kFRAME);
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::DetRemSlot(Int_t id)
 {//slot is invoked when any detector check button is released
   if(id==kFRAME){
@@ -407,10 +407,10 @@ void RichConfig::DetRemSlot(Int_t id)
     fDetBG->SetButton(kTOF,kFALSE);
   }
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::WriteDet(FILE *pF)
 {
-//central detectors                  
+//CORE detectors                  
   if(fDetBG->GetButton(kPIPE )->GetState()) fprintf(pF,"\n  new AliPIPEv0(\"PIPE\",\"Beam Pipe\");\n");
   if(fDetBG->GetButton(kSHILD)->GetState()) fprintf(pF,"\n  new AliSHILv2(\"SHIL\",\"Shielding Version 2\");\n");  
   if(fDetBG->GetButton(kITS  )->GetState()){
@@ -423,12 +423,9 @@ void RichConfig::WriteDet(FILE *pF)
   }  
   if(fDetBG->GetButton(kTPC  )->GetState())  fprintf(pF,"\n  new AliTPCv2(\"TPC\",\"Default\");\n");
   if(fDetBG->GetButton(kFRAME)->GetState())  fprintf(pF,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");
-  if(fDetBG->GetButton(kTRD  )->GetState()) {
-    fprintf(pF,"\n  AliTRD *pTrd=new AliTRDv1(\"TRD\",\"TRD slow simulator\");\n");
-    fprintf(pF,"  pTrd->SetGasMix(1); pTrd->SetPHOShole(); pTrd->SetRICHhole();pTrd->CreateTR();\n");
-  }  
+  if(fDetBG->GetButton(kTRD  )->GetState())  fprintf(pF,"\n  AliTRD *pTrd=new AliTRDv1(\"TRD\",\"TRD slow simulator\");\n");  
   if(fDetBG->GetButton(kTOF  )->GetState()) fprintf(pF,"\n  new AliTOFv4T0(\"TOF\", \"normal TOF\");\n");
-//central detectors  
+//central detectors  behind RICH
   if(fDetBG->GetButton(kMAG  )->GetState()) fprintf(pF,"\n  new AliMAG(\"MAG\",\"Magnet\");\n");  
   if(fDetBG->GetButton(kHALL )->GetState()) fprintf(pF,"\n  new AliHALL(\"HALL\",\"Alice Hall\");\n");
 //forward detectors  
@@ -445,7 +442,7 @@ void RichConfig::WriteDet(FILE *pF)
   if(fDetBG->GetButton(kEMCAL)->GetState()) fprintf(pF,"\n  new AliEMCALv1(\"EMCAL\",\"G56_2_55_19_104_14\");\n");
   if(fDetBG->GetButton(kCRT  )->GetState()) fprintf(pF,"\n  new AliCRTv0(\"CRT\",\"normal ACORDE\");\n");
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::GuiBatch(TGHorizontalFrame *pMainF)
 {
   TGGroupFrame *pSimF=new TGGroupFrame(pMainF,"Simu"); pMainF->AddFrame(pSimF);    
@@ -454,11 +451,11 @@ void RichConfig::GuiBatch(TGHorizontalFrame *pMainF)
     new TGCheckButton(fSimBG,   "Transport"       ,kTransport));   fSimBG->SetButton(kTransport);
   pSimF->AddFrame (fSDigBG=new TGButtonGroup(pSimF,""  ));
     new TGRadioButton(fSDigBG,  "No SDigits"      ,kNo       ));   
-    new TGRadioButton(fSDigBG,  "SDigits ALL"     ,kAll      ));  
+    new TGRadioButton(fSDigBG,  "SDigits CORE"    ,kAll      ));  
     new TGRadioButton(fSDigBG,  "SDigits RICH"    ,kOnly     ));   fSDigBG->SetButton(kOnly);
   pSimF->AddFrame (fDigBG=new TGButtonGroup(pSimF,""   ));
     new TGRadioButton(fDigBG,   "No Digits"       ,kNo       ));   
-    new TGRadioButton(fDigBG,   "Digits ALL"      ,kAll      ));  
+    new TGRadioButton(fDigBG,   "Digits CORE"     ,kAll      ));  
     new TGRadioButton(fDigBG,   "Digits RICH"     ,kOnly     ));   fDigBG->SetButton(kOnly); 
   pSimF->AddFrame(fRawBG=new TGButtonGroup(pSimF,""    ));
     new TGRadioButton(fRawBG,   "No RAW files"    ,kNo       ));   fRawBG->SetButton(kNo);
@@ -469,14 +466,24 @@ void RichConfig::GuiBatch(TGHorizontalFrame *pMainF)
   TGCompositeFrame *pRecF=new TGGroupFrame(pMainF,"Reco"); pMainF->AddFrame(pRecF);    
   pRecF->AddFrame(fClusBG=new TGButtonGroup(pRecF,""   ));
     new TGRadioButton(fClusBG,  "No Clusters"     ,kNo       ));  
-    new TGRadioButton(fClusBG,  "Clusters ALL"    ,kAll      ));  
+    new TGRadioButton(fClusBG,  "Clusters CORE"   ,kAll      ));  
     new TGRadioButton(fClusBG,  "Clusters RICH"   ,kOnly     ));   fClusBG->SetButton(kOnly);
-  pRecF->AddFrame(fRecoBG=new TGButtonGroup(pRecF,""   ));
-    new TGCheckButton(fRecoBG,  "Find vertex"     ,kVertex   ));  
+    
+  pRecF->AddFrame(fRecoBG=new TGButtonGroup(pRecF,""   ));                       fRecoBG->Connect("Pressed(Int_t)","RichConfig",this,"SlotBatch(Int_t)");
     new TGCheckButton(fRecoBG,  "Find ESD tracks" ,kTrack    ));  
+    new TGCheckButton(fRecoBG,  "Find vertex"     ,kVertex   ));  
     new TGCheckButton(fRecoBG,  "Add info ESD"    ,kEsd      ));
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void RichConfig::SlotBatch(Int_t id)
+{//slot is invoked when any button in fRecoBG is pressed
+  if(id==kTrack){
+    fSDigBG->SetButton(kAll); //switch off TRD and TOF when FRAME is switched off by user hence TRD&TOF depend on FRAME
+    fDigBG->SetButton(kAll);
+    fClusBG->SetButton(kAll);
+  }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::WriteBatch()
 {//creates Batch.C file
   char *sBatchName="RichBatch";
@@ -500,16 +507,16 @@ void RichConfig::WriteBatch()
                                                        fprintf(fp,"  pSim->SetRunSimulation(kFALSE);                 //no transport and hits creation\n");
 //sdigits  
   if     (fSDigBG->GetButton(kNo)    ->GetState())     fprintf(fp,"  pSim->SetMakeSDigits(\"\");                     //no sdigits created\n");
-  else if(fSDigBG->GetButton(kAll)   ->GetState())     fprintf(fp,"  pSim->SetMakeSDigits(\"ITS TPC TRD TOF RICH\"); //sdigits created for core detectors\n");
-  else if(fSDigBG->GetButton(kOnly)  ->GetState())     fprintf(fp,"  pSim->SetMakeSDigits(\"RICH\");                 //sdigits created for RICH\n");
+  else if(fSDigBG->GetButton(kAll)   ->GetState())     fprintf(fp,"  pSim->SetMakeSDigits(\"ITS TPC TRD TOF RICH\"); //sdigits created for these detectors\n");
+  else if(fSDigBG->GetButton(kOnly)  ->GetState())     fprintf(fp,"  pSim->SetMakeSDigits(\"RICH\");                 //sdigits created for RICH only\n");
 //digits  
   if     (fDigBG->GetButton(kNo)    ->GetState())      fprintf(fp,"  pSim->SetMakeDigits(\"\");                      //no digits created\n");
-  else if(fDigBG->GetButton(kAll)   ->GetState())      fprintf(fp,"  pSim->SetMakeDigits(\"ITS TPC TRD TOF RICH\");  //digits created for core detectors\n");
-  else if(fDigBG->GetButton(kOnly)  ->GetState())      fprintf(fp,"  pSim->SetMakeDigits(\"RICH\");                  //digits created for RICH\n");
+  else if(fDigBG->GetButton(kAll)   ->GetState())      fprintf(fp,"  pSim->SetMakeDigits(\"ITS TPC TRD TOF RICH\");  //digits created for these detectors\n");
+  else if(fDigBG->GetButton(kOnly)  ->GetState())      fprintf(fp,"  pSim->SetMakeDigits(\"RICH\");                  //digits created for RICH only\n");
 //raw data generation  
-  if     (fRawBG->GetButton(kRawDdl)->GetState())      fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\");//raw data in DDL  format for core detectors\n");
-  else if(fRawBG->GetButton(kRawDate)->GetState())     fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\",\".date\");//raw data in DATE format for ALL\n");
-  else if(fRawBG->GetButton(kRawRoot)->GetState())     fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\",\".root\");//raw data in ROOT format for ALL\n");
+  if     (fRawBG->GetButton(kRawDdl)->GetState())      fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\");//raw data in DDL  format for these detectors\n");
+  else if(fRawBG->GetButton(kRawDate)->GetState())     fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\",\".date\");//raw data in DATE format for these detectors\n");
+  else if(fRawBG->GetButton(kRawRoot)->GetState())     fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\",\".root\");//raw data in ROOT format for these detectors\n");
   
                                                        fprintf(fp,"  pSim->Run(iNevents);\n  delete pSim;\n\n");
                                                        fprintf(fp,"  delete AliRICHParam::Instance();\n\n");
@@ -519,16 +526,16 @@ void RichConfig::WriteBatch()
 //reconstraction section  
   if(!fClusBG->GetButton(kNo)->GetState()){
                                                        fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
-    if     (fClusBG->GetButton(kAll)   ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");        //run cluster creation for ALL\n");
-    else if(fClusBG->GetButton(kOnly)  ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"RICH\");       //run cluster creation for RICH\n");
+    if     (fClusBG->GetButton(kAll)   ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");        //clusters created for these detectors\n");
+    else if(fClusBG->GetButton(kOnly)  ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"RICH\");       //clusters created for RICH only\n");
     
     if(fRecoBG->GetButton(kVertex)->GetState())
-                                                       fprintf(fp,"  pRec->SetRunVertexFinder(kTRUE);                 //run ESD vertex task\n");
+                                                       fprintf(fp,"  pRec->SetRunVertexFinder(kTRUE);                 //vertex created\n");
     else
-                                                       fprintf(fp,"  pRec->SetRunVertexFinder(kFALSE);                //not run ESD vertex task\n");
+                                                       fprintf(fp,"  pRec->SetRunVertexFinder(kFALSE);                //no vertex creation\n");
     
     if(fRecoBG->GetButton(kTrack)->GetState())
-                                                       fprintf(fp,"  pRec->SetRunTracking(\"ITS TPC TRD TOF RICH\");  //run ESD track task\n");
+                                                       fprintf(fp,"  pRec->SetRunTracking(\"ITS TPC TRD TOF RICH\");  //tracks are created\n");
     else
                                                        fprintf(fp,"  pRec->SetRunTracking(\"\");                      //not run ESD track task\n");
     
@@ -549,7 +556,7 @@ void RichConfig::WriteBatch()
                                                        fprintf(fp,"  gSystem->Exec(\"touch ZZZ______finished_______ZZZ\");\n}\n");
   fclose(fp);  
 }//WriteBatch()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::ExitSlot()
 {
 //slot to be invoked by clik on the Create button  
@@ -558,7 +565,7 @@ void RichConfig::ExitSlot()
   SendCloseMessage();
   gApplication->Terminate(0);
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::WriteConfig()
 {   
   FILE *pF=fopen(fFileName,"w"); if(!pF){Info("CreateConfigFile","Cannot open output file:%sn",fFileName);return;}
@@ -607,11 +614,8 @@ void RichConfig::WriteConfig()
   fprintf(pF,"}\n");
   fclose(pF);  
 }//WriteConfig()
-
-
-RichConfig *kir=0;
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig()
 {
-   kir=new RichConfig("Config.C");
+   new RichConfig("Config.C");
 }   
