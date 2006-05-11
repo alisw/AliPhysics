@@ -64,6 +64,8 @@ class AliGenerator : public TNamed, public AliRndm
 	{fVertex[0] = vx; fVertex[1] = vy; fVertex[2] = vz;}
     void SetVertexGenerator(AliVertexGenerator* vertexGenerator)
       {fVertexGenerator = vertexGenerator; fVertexSource = kExternal; fVertexSmear = kPerEvent;}
+    void SetPileUpTimeWindow(Float_t pileUpTimeW) {fPileUpTimeWindow = pileUpTimeW;}
+    
     virtual void SetTrackingFlag(Int_t flag=1) {fTrackIt=flag;}
     void Vertex();
     void VertexExternal();
@@ -122,7 +124,8 @@ class AliGenerator : public TNamed, public AliRndm
    //
     VertexSmear_t     fVertexSmear;  //Vertex Smearing mode
     VertexSource_t    fVertexSource; //Vertex source (internal/external)
-    Float_t     fCutVertexZ;    // Vertex cut in units of sigma_z
+    Float_t     fCutVertexZ;         //Vertex cut in units of sigma_z
+    Float_t     fPileUpTimeWindow;   //Time window for pile-up events
     Int_t       fTrackIt;    // if 1, Track final state particles 
     AliVertexGenerator* fVertexGenerator;  //! Generator for the vertex
     TArrayF     fOrigin;     // Origin of event
