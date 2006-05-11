@@ -44,6 +44,7 @@
 #include "AliMUONHitForRec.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONTriggerCircuit.h"
+#include "AliMUONTriggerCircuitNew.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
@@ -974,14 +975,18 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
     TClonesArray *globalTrigger;
     AliMUONLocalTrigger *locTrg;
     AliMUONGlobalTrigger *gloTrg;
-    AliMUONTriggerCircuit *circuit;
+
     AliMUONTriggerTrack *recTriggerTrack = 0;
 
     TTree* treeR = fLoader->TreeR();
     
     // Loading MUON subsystem
     AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
-    
+    // Not really clean, but for the moment we must check whether the
+    // trigger uses new or old TriggerCircuit
+    Bool_t newTrigger=kFALSE;
+    if ( pMUON->DigitizerType().Contains("NewTrigger") ) newTrigger = kTRUE;
+
     nTRentries = Int_t(treeR->GetEntries());
      
     treeR->GetEvent(0); // only one entry  
@@ -1027,20 +1032,39 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
     Float_t z11 = AliMUONConstants::DefaultChamberZ(10);
     Float_t z21 = AliMUONConstants::DefaultChamberZ(12);
 
+    Float_t y11 = 0.;
+    Int_t stripX21 = 0;
+    Float_t y21 = 0.;
+    Float_t x11 = 0.;
+
     for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
       locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
-      circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
-      Float_t y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-      Int_t stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
-      Float_t y21 = circuit->GetY21Pos(stripX21);	
-      Float_t x11 = circuit->GetX11Pos(locTrg->LoStripY());
+
+      if (!newTrigger) { // old trigger
+//	  printf("AliMUONTrackReconstructor::MakeTriggerTrack using OLD trigger \n");
+	  AliMUONTriggerCircuit * circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
+	  y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+	  stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+	  y21 = circuit->GetY21Pos(stripX21);	
+	  x11 = circuit->GetX11Pos(locTrg->LoStripY());
+      } else { // new trigger
+//       printf("AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
+	  AliMUONTriggerCircuitNew * circuit = 
+	      &(pMUON->TriggerCircuitNew(locTrg->LoCircuit()-1)); // -1 !!!
+	  y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+	  stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+	  y21 = circuit->GetY21Pos(stripX21);	
+	  x11 = circuit->GetX11Pos(locTrg->LoStripY());
+      }
+//      printf(" MakeTriggerTrack %d %d %d %d %d %f %f %f \n",i,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11);
+
       Float_t thetax = TMath::ATan2( x11 , z11 );
       Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
-
+      
       recTriggerTrack = new AliMUONTriggerTrack(x11,y11,thetax,thetay,gloTrigPat);
       
       // since static statement does not work, set gloTrigPat for each track
-
+      
       fMUONData->AddRecTriggerTrack(*recTriggerTrack);
       delete recTriggerTrack;
     } // end of loop on Local Trigger
