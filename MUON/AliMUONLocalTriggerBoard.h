@@ -21,14 +21,31 @@ class AliMUONTriggerLut;
 class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard 
 {
    public: 
+
+     enum ESwitch { 
+       kX2d = 0,
+       kX2m,
+       kX2u,
+       kOR0,
+       kOR1,
+       kENY,
+       kZeroAllYLSB,
+       kZeroDown,
+       kZeroMiddle,
+       kZeroUp };
+       
       AliMUONLocalTriggerBoard();
       AliMUONLocalTriggerBoard(const char *name, Int_t a, AliMUONTriggerLut* lut);
       virtual ~AliMUONLocalTriggerBoard() {;}
+      
+      Bool_t HasLUT() const { return (fLUT != 0); }
+      
+      void SetLUT(AliMUONTriggerLut* lut) { fLUT = lut; }
 
       virtual void     Setbit(Int_t strip, Int_t cathode, Int_t chamber);
       virtual void     SetbitM(Int_t strip, Int_t cathode, Int_t chamber);
 
-      virtual void     Pattern(Option_t *option = "X Y"); // default option displays X then Y bp
+      virtual void     Pattern(Option_t *option = "X Y") const; // default option displays X then Y bp
 
       virtual void     Reset();
 
@@ -40,9 +57,9 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual Bool_t   GetTC() const {return fTC;}
 
-		virtual void     SetNumber(Int_t nb) {fNumber = nb;}
+      virtual void     SetNumber(Int_t nb) {fNumber = nb;}
 
-		virtual Int_t    GetNumber() const {return fNumber;}
+      virtual Int_t    GetNumber() const {return fNumber;}
 
       virtual void     Module(char *mod);
 
@@ -60,7 +77,7 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     SetXY(UShort_t XY[2][4]) {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) fXY[i][j] = XY[i][j];}
 
-      virtual void     Conf();
+      virtual void     Conf() const;
 
       virtual void     Response();
 
@@ -80,9 +97,9 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     SetXYD(UShort_t V[2][4]) {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) fXYD[i][j] = V[i][j];}
 
-      virtual void     Scan(Option_t *option = "");
+      virtual void     Scan(Option_t *option = "") const;
 
-      virtual Int_t    GetI();
+      virtual Int_t    GetI() const;
 
       virtual void     LocalTrigger();
 
@@ -94,24 +111,25 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual Int_t    GetDev() const {return fDev;}
       
-		virtual void     SetCrate(TString crate) {fCrate = crate;}
+      virtual void     SetCrate(TString crate) {fCrate = crate;}
 
-		virtual TString  GetCrate() const {return fCrate;}
+      virtual TString  GetCrate() const {return fCrate;}
 
    protected:
       AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right);
       AliMUONLocalTriggerBoard&  operator = (const AliMUONLocalTriggerBoard& right);
       
+      static const Int_t fgkCircuitId[234]; // old numbering (to be removed)
 
-      virtual void     Resp(Option_t *option); // local trigger info before ("I") and after ("F") LUT
+      virtual void     Resp(Option_t *option) const; // local trigger info before ("I") and after ("F") LUT
 
-      virtual void     BP(Option_t *option);   // display X/Y bp
+      virtual void     BP(Option_t *option) const;   // display X/Y bp
 
    private:
 
       Int_t    fNumber;           // Board number
 
-		TString  fCrate;            // Crate name
+      TString  fCrate;            // Crate name
 
       UShort_t fSwitch[10];       // Switch
       UShort_t fXY[2][4];         // Bit pattern

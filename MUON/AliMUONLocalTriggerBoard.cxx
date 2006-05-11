@@ -32,6 +32,28 @@
 #include <TBits.h>
 #include <Riostream.h>
 
+const Int_t AliMUONLocalTriggerBoard::fgkCircuitId[234] = 
+{
+  111,  121,  131,  141,  151,  161,  171,
+  211,  212,  221,  222,  231,  232,  241,  242,  251,  252,  261,  262,  271,
+  311,  312,  321,  322,  331,  332,  341,  342,  351,  352,  361,  362,  371,
+  411,  412,  413,  421,  422,  423,  424,  431,  432,  433,  434,  441,  442,  451,  452,  461,  462,  471,
+  521,  522,  523,  524,  531,  532,  533,  534,  541,  542,  551,  552,  561,  562,  571, 
+  611,  612,  613,  621,  622,  623,  624,  631,  632,  633,  634,  641,  642,  651,  652,  661,  662,  671,
+  711,  712,  721,  722,  731,  732,  741,  742,  751,  752,  761,  762,  771,
+  811,  812,  821,  822,  831,  832,  841,  842,  851,  852,  861,  862,  871,
+  911,  921,  931,  941,  951,  961,  971,
+  -111, -121, -131, -141, -151, -161, -171,
+  -211, -212, -221, -222, -231, -232, -241, -242, -251, -252, -261, -262, -271,
+  -311, -312, -321, -322, -331, -332, -341, -342, -351, -352, -361, -362, -371,
+  -411, -412, -413, -421, -422, -423, -424, -431, -432, -433, -434, -441, -442, -451, -452, -461, -462, -471,
+  -521, -522, -523, -524, -531, -532, -533, -534, -541, -542, -551, -552, -561, -562, -571, 
+  -611, -612, -613, -621, -622, -623, -624, -631, -632, -633, -634, -641, -642, -651, -652, -661, -662, -671,
+  -711, -712, -721, -722, -731, -732, -741, -742, -751, -752, -761, -762, -771,
+  -811, -812, -821, -822, -831, -832, -841, -842, -851, -852, -861, -862, -871,
+  -911, -921, -931, -941, -951, -961, -971 
+};
+
 //___________________________________________
 AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
 : AliMUONTriggerBoard()
@@ -185,7 +207,7 @@ void AliMUONLocalTriggerBoard::SetbitM(Int_t strip, Int_t cathode, Int_t chamber
 }
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Pattern(Option_t *option)
+void AliMUONLocalTriggerBoard::Pattern(Option_t *option) const
 {
 //* print bit pattern
 //*
@@ -198,13 +220,53 @@ void AliMUONLocalTriggerBoard::Pattern(Option_t *option)
 
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::BP(Option_t *option)
+void AliMUONLocalTriggerBoard::BP(Option_t *option) const
 {
 // RESPECT THE OLD PRINTOUT FORMAT
+  
+  const Int_t kModuleId[126] = 
+  {11,12,13,14,15,16,17,         // right side of the chamber
+  21,22,23,24,25,26,27,
+  31,32,33,34,35,36,37,
+  41,42,43,44,45,46,47,
+  51,52,53,54,55,56,57,
+  61,62,63,64,65,66,67,
+  71,72,73,74,75,76,77,
+  81,82,83,84,85,86,87,
+  91,92,93,94,95,96,97,   
+  -11,-12,-13,-14,-15,-16,-17,  // right side of chamber
+  -21,-22,-23,-24,-25,-26,-27,
+  -31,-32,-33,-34,-35,-36,-37,
+  -41,-42,-43,-44,-45,-46,-47,
+  -51,-52,-53,-54,-55,-56,-57,
+  -61,-62,-63,-64,-65,-66,-67,
+  -71,-72,-73,-74,-75,-76,-77,
+  -81,-82,-83,-84,-85,-86,-87,
+  -91,-92,-93,-94,-95,-96,-97};
+
+  const Int_t kNstripY[126]=
+  { 8, 8, 8, 8, 8, 8,16,  // right side of the chamber
+  8, 8, 8, 8, 8, 8,16,
+  16,16,16,16,16, 8,16,
+  16,16,16,16,16, 8,16,
+  0, 8,16,16,16, 8,16,
+  16,16,16,16,16, 8,16,
+  16,16,16,16,16, 8,16,
+  8, 8, 8, 8, 8, 8,16,
+  8, 8, 8, 8, 8, 8,16,  
+  8, 8, 8, 8, 8, 8,16,  // left side of the chamber
+  8, 8, 8, 8, 8, 8,16,
+  16,16,16,16,16, 8,16,
+  16,16,16,16,16, 8,16,
+  0, 8,16,16,16, 8,16,
+  16,16,16,16,16, 8,16,
+  16,16,16,16,16, 8,16,
+  8, 8, 8, 8, 8, 8,16,
+  8, 8, 8, 8, 8, 8,16};
 
    TString op = option;
-
-	TString nn = GetName();
+   	
+   TString nn = GetName();
 
    if (op.Contains("X"))
    {
@@ -259,24 +321,24 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option)
 /**/
       Int_t idCircuit = 0, absidModule = 0;
 
-		if (!(nn.Contains("Int"))) 
-		{
-			idCircuit   = AliMUONTriggerConstants::CircuitId(GetI());
-			absidModule = TMath::Abs(Int_t(idCircuit/10));
-		}
+      if (!(nn.Contains("Int"))) 
+      {	
+	idCircuit   = fgkCircuitId[GetI()];
+	absidModule = TMath::Abs(Int_t(idCircuit/10));
+      }
 		
       Int_t iModule=0;
 
       for (Int_t i=0; i<63; i++) 
       {
-         if (AliMUONTriggerConstants::ModuleId(i)==absidModule) 
+	if (kModuleId[i]==absidModule) 
          { 
             iModule=i;
             break;
          }
       }
 
-      Int_t nStrip = AliMUONTriggerConstants::NstripY(iModule);
+      Int_t nStrip = kNstripY[iModule];
       for (Int_t istrip=nStrip-1; istrip>=0; istrip--) {
          if (istrip>9)  printf("%i",istrip-10*Int_t(istrip/10));
          if (istrip<10) printf("%i",istrip);
@@ -357,7 +419,7 @@ void AliMUONLocalTriggerBoard::BP(Option_t *option)
 }
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Conf()
+void AliMUONLocalTriggerBoard::Conf() const
 {
 //* board switches
 //*
@@ -1029,36 +1091,26 @@ void AliMUONLocalTriggerBoard::LocalTrigger()
 
       fDev      = deviation;
 
-		fStripY11 = iStripY;
-		
-		if ( fSwitch[1] && 
-			  (fSwitch[0] || fSwitch[2]) && 
-			  !(!fSwitch[0] && fSwitch[4]) && 
-			  !(!fSwitch[2] && fSwitch[3]) ) fStripY11 /= 2;
+      fStripY11 = iStripY;
 
       Int_t sign = 0;
 
       if ( !fMinDev[4] &&  deviation ) sign=-1;
       if ( !fMinDev[4] && !deviation ) sign= 0;
-      if (  fMinDev[4]==1)             sign=+1;    
+      if (  fMinDev[4] == 1 )          sign=+1;    
 
       fDev *= sign; 
 
 //    calculate deviation in [0;+30]
       fDev += 15;
 
-      Int_t icirc = GetI();
-
-//    LEFT SHIFT OF ZERO-ALLY-LSB BOARDS TO ACCESS TO LUT
-		if (GetSwitch(6)) fStripY11 -= 8;
-
 //    GET LUT OUTPUT FOR icirc/istripX1/deviation/istripY
-      fLUT->GetLutOutput(icirc, fStripX11, fDev, fStripY11, fLutLpt, fLutHpt, fLutApt);
+      fLUT->GetLutOutput(fNumber, fStripX11, fDev, fStripY11, fLutLpt, fLutHpt, fLutApt);
    }  
 }
 
 //___________________________________________
-Int_t AliMUONLocalTriggerBoard::GetI()
+Int_t AliMUONLocalTriggerBoard::GetI() const
 {
 //* old numbering
 //*
@@ -1097,7 +1149,7 @@ Int_t AliMUONLocalTriggerBoard::GetI()
 
    Int_t ic = 0;
 
-   for (Int_t i=0; i<234; i++) if (AliMUONTriggerConstants::CircuitId(i) == code) {ic = i; break;}
+   for (Int_t i=0; i<234; i++) if (fgkCircuitId[i] == code) {ic = i; break;}
 
    return ic;
 }
@@ -1120,7 +1172,7 @@ void AliMUONLocalTriggerBoard::Mask(Int_t index, UShort_t mask)
 }
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Scan(Option_t *option)
+void AliMUONLocalTriggerBoard::Scan(Option_t *option) const
 {
 //* full dump
 //*
@@ -1144,7 +1196,7 @@ void AliMUONLocalTriggerBoard::Scan(Option_t *option)
 }
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::Resp(Option_t *option)
+void AliMUONLocalTriggerBoard::Resp(Option_t *option) const
 {
 //* board I/O
 //*
@@ -1167,7 +1219,7 @@ void AliMUONLocalTriggerBoard::Resp(Option_t *option)
    if (op.Contains("F"))
    {
       Int_t icirc = GetI();
-      Int_t idCircuit = AliMUONTriggerConstants::CircuitId(icirc);
+      Int_t idCircuit = fgkCircuitId[icirc];
 
       Int_t deviation = 0, iStripY = 0;
 
