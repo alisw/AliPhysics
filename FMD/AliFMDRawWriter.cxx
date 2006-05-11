@@ -233,7 +233,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
       AliDebug(15, Form("New altro buffer with DDL file %s", filename.Data()));
       // Create a new altro buffer - a `1' as the second argument
       // means `write mode' 
-      altro = new AliAltroBuffer(filename.Data(), 1);
+      altro = new AliAltroBuffer(filename.Data());
       altro->SetMapping(pars->GetAltroMap());      
       // Write a dummy (first argument is true) header to the DDL
       // file - later on, when we close the file, we write the real

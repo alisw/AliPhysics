@@ -281,7 +281,7 @@ void AliEMCAL::Digits2Raw()
       TString fileName("EMCAL_") ;
       fileName += (iDDL + fgDDLOffset) ; 
       fileName += ".ddl" ; 
-      buffer = new AliAltroBuffer(fileName.Data(), 1);
+      buffer = new AliAltroBuffer(fileName.Data());
       buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
 
       prevDDL = iDDL;

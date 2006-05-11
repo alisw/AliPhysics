@@ -18,27 +18,20 @@
 #define AliALTROBUFFER_H
 
 #include <TObject.h>
-#ifdef __CINT__
-class fstream;
-#else
-#include "Riostream.h"
-#endif
+
+class AliFstream;
 
 class AliAltroMapping;
 
 class AliAltroBuffer: public TObject {
  public:
-  AliAltroBuffer(const char* fileName, Int_t flag, const AliAltroMapping *mapping = NULL);
+  AliAltroBuffer(const char* fileName, const AliAltroMapping *mapping = NULL);
   virtual ~AliAltroBuffer();
 
   void  FillBuffer(Int_t val);
   //this method stores a word into the buffer
   Int_t GetFreeCellNumber()const {return fFreeCellBuffer;}
   //this method returns the number of free cells of the internal buffer
-  Int_t GetNextBackWord();
-  //this method returns the next word of 10 bit (reading the file backward) if it exists -1 otherwise
-  Int_t GetNext();
-  //this method returns the next word of 10 bit (reading the file forward) if it exists -1 otherwise
 
   void  WriteTrailer(Int_t wordsNumber, Int_t padNumber, 
 		     Int_t rowNumber, Int_t secNumber);
@@ -48,22 +41,6 @@ class AliAltroBuffer: public TObject {
   void  WriteDummyTrailer(Int_t wordsNumber, Int_t padNumber, 
 			  Int_t rowNumber, Int_t secNumber);
   //this method is used to write a dummy trailer
-  Bool_t ReadTrailer(Int_t& wordsNumber, Int_t& padNumber, 
-		     Int_t& rowNumber, Int_t &secNumber);
-  //this method is used to read the trailer when the file is read forward
-  Bool_t ReadTrailer(Int_t& wordsNumber, Short_t& hwAddress); 
-  //this method is used to read the trailer when the file is read forward
-  Bool_t ReadDummyTrailer(Int_t& wordsNumber, Int_t& padNumber, 
-			  Int_t& rowNumber, Int_t &secNumber);
-  //this method is used to read the trailer when the file is read forward
-  Bool_t ReadTrailerBackward(Int_t& wordsNumber, Int_t& padNumber, 
-			     Int_t& rowNumber, Int_t& secNumber);
-  //this method is used to read the trailer when the file is read backward
-  Bool_t ReadTrailerBackward(Int_t& wordsNumber, Short_t& hwAddress); 
-  //this method is used to read the trailer when the file is read backward
-  Bool_t ReadDummyTrailerBackward(Int_t& wordsNumber, Int_t& padNumber, 
-				  Int_t& rowNumber, Int_t& secNumber);
-  //this method is used to read the trailer when the file is read backward
 
   void  WriteChannel(Int_t padNumber, Int_t rowNumber, Int_t secNumber,
 		     Int_t nTimeBins, const Int_t* adcValues, 
@@ -76,27 +53,15 @@ class AliAltroBuffer: public TObject {
   Int_t WriteBunch(Int_t nTimeBins, const Int_t* adcValues,
 		   Int_t threshold = 0);
   //this method is used to write all ADC values
-  void  ReadChannelBackward(Int_t& padNumber, Int_t& rowNumber,  Int_t& secNumber,
-			   Int_t& nTimeBins, Int_t* adcValues);
-  //this method is used to read all ADC values and the trailer of a channel
-  void  ReadChannelBackward(Short_t& hwAddress,
-			   Int_t& nTimeBins, Int_t* adcValues);
-  //this method is used to read all ADC values and the trailer of a channel
-  void  ReadBunchBackward(Int_t wordsNumber,
-			  Int_t& nTimeBins, Int_t* adcValues);
-  //this method is used to read all ADC values
 
   void  WriteDataHeader(Bool_t dummy, Bool_t compressed);
   //this method is used to write the data header
-  Bool_t ReadDataHeader();
-  //this method is used to read the data header
   void  SetVerbose(Int_t val) {fVerbose = val;}
   //this method is used to set the verbose level 
   //level  0 no output messages
   //level !=0 some messages are displayed during the run
   void  Flush();
   //this method is used to fill the buffer with 2AA hexadecimal value and save it into the output file
-  Int_t GetFillWordsNum() const {return fEndingFillWords;}
 
   void  SetMapping(AliAltroMapping *mapping) { fMapping = mapping; }
 
@@ -114,14 +79,9 @@ class AliAltroBuffer: public TObject {
                         //the shift operation are performed only on value Val.
   Int_t fCurrentCell;   //This variable contains the cell number of the cell currently used 
   Int_t fFreeCellBuffer;//number of free cells of the buffer
-  Int_t fFlag;          //0 read  1 write
   Int_t fVerbose;       //verbose level
-  fstream* fFile;       //logical name of the I/O file
-  Int_t fMaskBackward;  //bit mask for backward reading of a file
-  UInt_t fFilePosition;//'pointer' to the actual position in the file
-  UInt_t fFileEnd;     //position of the last element of the file (File dimension)
+  AliFstream* fFile;    //logical name of the I/O file
   UInt_t fDataHeaderPos;//Data header position
-  Int_t  fEndingFillWords;//Few words at the end of the stream
 
   // Now the parameters for the mapping
   const AliAltroMapping*    fMapping;      // Pointer to the mapping handler

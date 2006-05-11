@@ -113,7 +113,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
       sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
       Int_t patchIndex = data.SubSec;
       if(data.Sec>=36) patchIndex += 2;
-      buffer=new AliAltroBuffer(filename,1,mapping[patchIndex]);
+      buffer=new AliAltroBuffer(filename,mapping[patchIndex]);
       //size magic word sector number sub-sector number 0 for TPC 0 for uncompressed
       buffer->WriteDataHeader(kTRUE,kFALSE);//Dummy;
       bunchLength=1;
@@ -151,7 +151,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
 	    sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
 	    Int_t patchIndex = data.SubSec;
 	    if(data.Sec>=36) patchIndex += 2;
-	    buffer=new AliAltroBuffer(filename,1,mapping[patchIndex]);
+	    buffer=new AliAltroBuffer(filename,mapping[patchIndex]);
 	    buffer->WriteDataHeader(kTRUE,kFALSE);//Dummy;
 	    pSubSector=data.SubSec;
 	  }//end if
