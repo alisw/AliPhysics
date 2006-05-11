@@ -92,15 +92,6 @@ AliSTARTParameters::Init()
   fCalibentry  = cdb->Get("START/Calib/Gain_TimeDelay_Slewing_Walk");
   if (fCalibentry){
    fgCalibData  = (AliSTARTCalibData*)fCalibentry->GetObject();
-   //<<<<<<< AliSTARTParameters.cxx
-	  //   cout<<" got calibdata "<<endl;
-	  //  }
-	  //   fAlignentry     = cdb-> Get("START/Align/Positions");
-	  //  if (fAlignentry){
-	  //   fgAlignData  = (AliSTARTAlignData*) fAlignentry->GetObject();
-	  //   cout<<" got align data "<<endl;
-	  //=======
-	  //>>>>>>> 1.5
   }
 
   fIsInit = kTRUE;
@@ -188,7 +179,6 @@ TGraph *AliSTARTParameters::GetSlew(Int_t ipmt) const
 //__________________________________________________________________
 
 
-//<<<<<<< AliSTARTParameters.cxx
 void 
 AliSTARTParameters::SetSlewingRec(Int_t ipmt)
 {
@@ -202,7 +192,6 @@ AliSTARTParameters::SetSlewingRec(Int_t ipmt)
       Float_t y1[23], mv1[23];
       for (Int_t i=0; i<23; i++){
 	y1[i] = y[22-i]; mv1[i] = mv[22-i];}
-      cout<<endl;
       TGraph* gr = new TGraph(23,y1,mv1);
       fSlewingRec.AddAtAndExpand(gr,ipmt);
 
