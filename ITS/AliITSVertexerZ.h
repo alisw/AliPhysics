@@ -27,8 +27,8 @@ class AliITSVertexerZ : public AliITSVertexer {
   void SetDiffPhiMax(Float_t pm = 0.01){fDiffPhiMax = pm;}
   void SetFirstLayerModules(Int_t m1 = 0, Int_t m2 = 79){fFirstL1 = m1; fLastL1 = m2;}
   void SetSecondLayerModules(Int_t m1 = 80, Int_t m2 = 239){fFirstL2 = m1; fLastL2 = m2;}
-  void SetLowLimit(Float_t lim=-10.){fLowLim = lim;}
-  void SetHighLimit(Float_t lim=10.){fHighLim = lim;}
+  void SetLowLimit(Float_t lim=-20.){fLowLim = lim;}
+  void SetHighLimit(Float_t lim=20.){fHighLim = lim;}
   Float_t GetLowLimit() const {return fLowLim;}
   Float_t GetHighLimit() const {return fHighLim;}
   void SetBinWidthCoarse(Float_t bw=0.01){fStepCoarse = bw;}
