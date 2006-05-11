@@ -40,7 +40,7 @@ class AliRawReaderMemory: public AliRawReader {
 
     virtual Int_t    GetEquipmentSize() const {return 0;};
     virtual Int_t    GetEquipmentType() const {return 0;};
-    virtual Int_t    GetEquipmentId() const {return 0;};
+    virtual Int_t    GetEquipmentId() const {return fEquipmentId;};
     virtual const UInt_t* GetEquipmentAttributes() const {return NULL;};
     virtual Int_t    GetEquipmentElementSize() const {return 0;};
 
@@ -53,13 +53,16 @@ class AliRawReaderMemory: public AliRawReader {
     virtual Bool_t   NextEvent();
     virtual Bool_t   RewindEvents();
 
-    virtual Bool_t SetMemory( UChar_t* memory, ULong_t size );
+    virtual Bool_t   SetMemory( UChar_t* memory, ULong_t size );
+
+    void             SetEquipmentID(Int_t id) { fEquipmentId = id; }
 
   protected :
 
     UChar_t*         fBuffer;      // buffer for payload
-    UInt_t            fBufferSize;  // size of fBuffer in bytes
-    UInt_t          fPosition;    // Current position in memory
+    UInt_t           fBufferSize;  // size of fBuffer in bytes
+    UInt_t           fPosition;    // Current position in memory
+    Int_t            fEquipmentId;  // Equipment id provided by the user
 
     ClassDef(AliRawReaderMemory, 0) // class for reading raw digits from a memory block
 
