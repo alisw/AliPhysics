@@ -526,7 +526,7 @@ void AliTPCclustererMI::Digits2Clusters()
 	Float_t dig=digarr.CurrentDigit();
 	if (dig<=fParam->GetZeroSup()) continue;
 	Int_t j=digarr.CurrentRow()+3, i=digarr.CurrentColumn()+3;
-	Float_t gain = gainROC->GetValue(row,digarr.CurrentRow()/fParam->GetMaxTBin());
+	Float_t gain = gainROC->GetValue(row,digarr.CurrentColumn());
 	fBins[i*fMaxTime+j]=dig/gain;
       } while (digarr.Next());
     digarr.ExpandTrackBuffer();
@@ -647,7 +647,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     Int_t i = input.GetPad() + 3;
     Int_t j = input.GetTime() + 3;
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
-    Float_t gain = gainROC->GetValue(fRow,input.GetRow()/fParam->GetMaxTBin());
+    Float_t gain = gainROC->GetValue(fRow,input.GetPad());
     fBins[i*fMaxTime+j] = input.GetSignal()/gain;
   }
 
