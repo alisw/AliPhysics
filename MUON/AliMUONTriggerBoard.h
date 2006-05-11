@@ -5,7 +5,11 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
+/// \ingroup sim
+/// \class AliMUONTriggerBoard
+/// \brief TRIGGER BOARD BASE CLASS
+///
+/// \author Rachid Guernane (LPCCFd)
 
 #include <TNamed.h>
 
@@ -23,19 +27,19 @@ class AliMUONTriggerBoard : public TNamed
 
       virtual void Reset() = 0;
 
-      virtual void Scan(Option_t *option) = 0;
+      virtual void Scan(Option_t *option) const = 0;
 
-      virtual void Resp(Option_t *option) = 0;
+      virtual void Resp(Option_t *option) const = 0;
 
-      virtual UShort_t GetResponse() {return fResponse;}
+      virtual UShort_t GetResponse() const {return fResponse;}
 
       virtual void Mask(Int_t index, UShort_t mask) = 0;
       
    protected:
 
-      Int_t fSlot; 
+      Int_t fSlot;                // SLOT NUMBER IN CRATE
 
-      UShort_t fResponse;
+      UShort_t fResponse;         // RESPONSE
 
       void Copy(TObject&) const;
 

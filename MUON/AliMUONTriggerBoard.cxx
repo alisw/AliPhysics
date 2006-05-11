@@ -16,6 +16,10 @@
 /* $Id$ */
 
 //*-- Author: Rachid Guernane (LPCCFd)
+//    TRIGGER BOARD SUPER CLASS IMPLEMENTATION
+//    CAN BE A LOCAL, REGIONAL, OR GLOBAL BOARD
+//    REGIONAL BOARD IS PER CONVENTION
+//    ALWAYS IN THE SLOT 0
 
 #include "AliMUONTriggerBoard.h"
 #include "AliLog.h"
@@ -30,6 +34,7 @@ AliMUONTriggerBoard::AliMUONTriggerBoard()
 //___________________________________________
 AliMUONTriggerBoard::AliMUONTriggerBoard(const char *Name, Int_t islot) : TNamed(Name,"Trigger board")
 {
+// Standard Ctor
    fSlot = islot;
 
    fResponse = 0;

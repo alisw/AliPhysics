@@ -5,7 +5,11 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
+/// \ingroup sim
+/// \class AliMUONRegionalTriggerBoard
+/// \brief REGIONAL TRIGGER
+/// REAL HW ALGORITHM IS IMPLEMENTED
+/// \author Rachid Guernane (LPCCFd)
 
 #include "AliMUONTriggerBoard.h"
 
@@ -18,9 +22,9 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
     
       virtual void Reset() {for (Int_t i=0; i<16; i++) fLocalResponse[i] = 0;}
 
-      virtual void Scan(Option_t *option);
+      virtual void Scan(Option_t *option) const;
 
-      virtual void Resp(Option_t*) {}
+      virtual void Resp(Option_t*) const {}
 
       virtual void Response();
 
@@ -31,8 +35,8 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
       void Mask(Int_t index, UShort_t mask);
       
    private:
-      UShort_t fLocalResponse[16];
-      UShort_t fMask[16];
+      UShort_t fLocalResponse[16]; // Local trigger inputs
+      UShort_t fMask[16];          // Entry mask
       
       ClassDef(AliMUONRegionalTriggerBoard,1)
 };

@@ -16,6 +16,10 @@
 /* $Id$ */
 
 //*-- Author: Rachid Guernane (LPCCFd)
+//    DIMUON REGIONAL TRIGGER IMPLEMENTATION
+//    ENTRY ARE LOCAL BOARD RESPONSES
+//    OUTPUT IS 12-BIT WORD
+//    ALGORITHM IS SIMILAR TO THE GLOBAL ONE
 
 #include "AliMUONRegionalTriggerBoard.h"
 
@@ -42,7 +46,10 @@ AliMUONRegionalTriggerBoard::AliMUONRegionalTriggerBoard(const char *name, Int_t
 //___________________________________________
 void AliMUONRegionalTriggerBoard::Response()
 {
-   Int_t t[16];
+/*   
+  RESPONSE IS GIVEN FOLLOWING THE REGIONAL ALGORITHM
+*/
+  Int_t t[16];
 
    for (Int_t i=0;i<16;i++) t[i] = fLocalResponse[i] & fMask[i];
 
@@ -74,7 +81,10 @@ void AliMUONRegionalTriggerBoard::Response()
 //___________________________________________
 UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, Int_t level)
 {
-   TBits a(12), b(12); a.Set(12,&i); b.Set(12,&j);
+// IMPLEMENTATION OF THE REGIONAL ALGORITHM
+// SIMILAR TO THE GLOBAL ALGORITHM EXCEPT FOR THE
+// INPUT LAYER
+  TBits a(12), b(12); a.Set(12,&i); b.Set(12,&j);
 
    TBits trg1(2), trg2(2), trg(2);
 
@@ -161,10 +171,14 @@ UShort_t AliMUONRegionalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres, 
 
    return rv;
 }
+
 //___________________________________________
-void AliMUONRegionalTriggerBoard::Scan(Option_t*)
+void AliMUONRegionalTriggerBoard::Scan(Option_t*) const
 {
-   for (Int_t i=0; i<16; i++) 
+/*  
+  SCAN LOCAL BOARD ENTRIES 
+*/
+  for (Int_t i=0; i<16; i++) 
    {
       TBits b;
       b.Set(6,&fLocalResponse[i]);
@@ -178,6 +192,7 @@ void AliMUONRegionalTriggerBoard::Scan(Option_t*)
 //___________________________________________
 void AliMUONRegionalTriggerBoard::Mask(Int_t index, UShort_t mask)
 {
+// MASK ENTRY index
   if ( index>=0 && index < 16 ) 
   {
     fMask[index]=mask;

@@ -16,9 +16,15 @@
 /* $Id$ */
 
 //*-- Author: Rachid Guernane (LPCCFd)
+//    COLLECTION OF TRIGGER BOARDS
+//    ONE REGIONAL
+//    SIXTEEN LOCAL
+//    SLOT 0 HOLDS THE REGIONAL BOARD
 
-#include "AliMUONTriggerCrate.h"
+#include <TObjArray.h>
+
 #include "AliMUONTriggerBoard.h"
+#include "AliMUONTriggerCrate.h"
 
 ClassImp(AliMUONTriggerCrate)
 
@@ -47,6 +53,7 @@ AliMUONTriggerCrate::AliMUONTriggerCrate(const char *name, Int_t n) : TNamed(nam
 //___________________________________________
 void AliMUONTriggerCrate::AddBoard(AliMUONTriggerBoard *board, Int_t i)
 {
+  // ADD BOARD IN CRATE CONTAINER
    fBoards->AddAt(board,i);
    fNboards++;
 }

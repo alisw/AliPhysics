@@ -5,12 +5,16 @@
 
 /* $Id$ */
 
-//*-- Author: Rachid Guernane (LPCCFd)
+/// \ingroup sim
+/// \class AliMUONTriggerCrate
+/// \brief Trigger Crate
+///
+/// \author Rachid Guernane (LPCCFd)
 
 #include <TNamed.h>
-#include <TObjArray.h>
 
 class AliMUONTriggerBoard;
+class TObjArray;
 
 class AliMUONTriggerCrate : public TNamed
 {
@@ -36,11 +40,11 @@ class AliMUONTriggerCrate : public TNamed
 
    private:
 
-      Int_t     fNslots;
-      Int_t     fNboards;
+      Int_t     fNslots;          // NUMBER OF SLOTS
+      Int_t     fNboards;         // NUMBER OF BOARDS
 
-      TObjArray *fBoards;
-      TString   fSourceFileName;
+      TObjArray *fBoards;         // POINTER TO BOARD OBJECTS
+      TString   fSourceFileName;  // SOURCE FILE
 
    ClassDef(AliMUONTriggerCrate,1)
 };
