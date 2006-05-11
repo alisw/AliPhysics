@@ -490,6 +490,10 @@ void Config()
     if (iTOF) {
         //=================== TOF parameters ============================
 	AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
+	// Partial geometry: modules at 2,3,4,6,7,11,12,14,15,16
+	// starting at 6h in positive direction
+	Int_t TOFSectors[18]={-1,-1,0,0,0,-1,0,0,-1,-1,-1,0,0,-1,0,0,0,-1};
+	TOF->SetTOFSectors(TOFSectors);
     }
 
 
@@ -513,6 +517,19 @@ void Config()
         //=================== TRD parameters ============================
 
         AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
+        AliTRDgeometry *geoTRD = TRD->GetGeometry();
+	// Partial geometry: modules at 2,3,4,6,12,14,15,16
+	// starting at 6h in positive direction
+	geoTRD->SetSMstatus(0,0);
+        geoTRD->SetSMstatus(1,0);
+        geoTRD->SetSMstatus(5,0);
+        geoTRD->SetSMstatus(7,0);
+        geoTRD->SetSMstatus(8,0);
+        geoTRD->SetSMstatus(9,0);
+        geoTRD->SetSMstatus(10,0);
+        geoTRD->SetSMstatus(11,0);
+        geoTRD->SetSMstatus(13,0);
+        geoTRD->SetSMstatus(17,0);
     }
 
     if (iFMD)
