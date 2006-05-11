@@ -515,7 +515,7 @@ void generateTrigger(const char* cdbpath)
   }
     
   AliMUONTriggerLut lut;
-  lut.ReadFromFile("$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root");
+  lut.ReadFromFile("$(ALICE_ROOT)/MUON/data/lutAptLpt1Hpt1p7.root");
   
   AliMUONTriggerEfficiencyCells cells("$ALICE_ROOT/MUON/data/efficiencyCells.dat");
   
