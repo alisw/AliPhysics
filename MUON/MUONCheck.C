@@ -48,13 +48,15 @@
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONTriggerConstants.h"
+#include "AliMUONTriggerCircuit.h"
+#include "AliMUONTriggerCircuitNew.h"
 
 #include "AliMpVSegmentation.h"
 #include "AliMpIntPair.h"
 #include "AliMpDEManager.h"
 #include "AliMpSegFactory.h"
 #endif
-
 
 void MUONkine(Int_t event2Check=0, char * filename="galice.root")
 {
@@ -449,8 +451,10 @@ void MUONrecpoints(Int_t event2Check=0, char * filename="galice.root") {
   MUONLoader->UnloadRecPoints();
 }
 
-void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t WRITE = 0)
+void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t WRITE = 0, Bool_t newTrigger=kFALSE)
 {
+// USAGE: newTrigger=kFALSE/kTRUE for old/new trigger version
+
   // reads and dumps trigger objects from MUON.RecPoints.root
   TClonesArray * globalTrigger;
   TClonesArray * localTrigger;
@@ -460,7 +464,7 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
 
   // Book a ntuple for more detailled studies
   TNtuple *TgtupleGlo = new TNtuple("TgtupleGlo","Global Trigger Ntuple","ev:global:spapt:smapt:undefapt:uplpt:uphpt:upapt:lpapt");
-  TNtuple *TgtupleLoc = new TNtuple("TgtupleLoc","Local Trigger Ntuple","LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:LoApt");
+  TNtuple *TgtupleLoc = new TNtuple("TgtupleLoc","Local Trigger Ntuple","ev:LoCircuit:LoStripX:LoDev:StripY:LoLpt:LoHpt:LoApt:y11:y21:x11");
 
   // counters
   Int_t SPLowpt=0,SPHighpt=0,SPAllpt=0;
@@ -475,6 +479,10 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     printf(">>> Error : Error Opening %s file \n",filename);
     return;
   }
+
+  // Loading MUON subsystem
+  RunLoader->LoadgAlice();
+  AliMUON* pMUON = (AliMUON*)RunLoader->GetAliRun()->GetModule("MUON");
   
   AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
   MUONLoader->LoadDigits("READ");
@@ -573,9 +581,22 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
              << locTrg->LoLpt() << " "   
              << locTrg->LoHpt() << " "  
              << locTrg->LoApt() << "\n";
-
       }
-	TgtupleLoc->Fill(locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),locTrg->LoApt());
+
+      
+      if (!newTrigger) { // old trigger
+//	  printf("MUONCheck::rectrigger using OLD trigger \n");
+	  AliMUONTriggerCircuit * circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
+  	  TgtupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),locTrg->LoApt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
+
+      } else { // new trigger
+//	  printf("MUONCheck::rectrigger using NEW trigger \n");
+	  AliMUONTriggerCircuitNew * circuit = &(pMUON->TriggerCircuitNew(locTrg->LoCircuit()-1));
+
+	  TgtupleLoc->Fill(ievent,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoDev(),locTrg->LoStripY(),locTrg->LoLpt(),locTrg->LoHpt(),locTrg->LoApt(),circuit->GetY11Pos(locTrg->LoStripX()),circuit->GetY21Pos(locTrg->LoStripX()+locTrg->LoDev()+1),circuit->GetX11Pos(locTrg->LoStripY()));
+      }
+
+
     } // end of loop on Local Trigger
 
 
@@ -706,11 +727,6 @@ void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
   } // end loop on event  
   MUONLoader->UnloadTracks();
 }
-
-
-
-
-
 
 
 
