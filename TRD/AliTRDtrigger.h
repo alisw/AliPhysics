@@ -19,6 +19,9 @@ class TTree;
 
 class AliTRDdigitsManager;
 class AliTRDdataArrayI;
+class AliTRDgeometry;
+class AliTRDcalibDB;
+class AliTRDCommonParam;
 
 class AliRunLoader;
 class AliRawReader;
@@ -53,6 +56,7 @@ class AliTRDtrigger : public TNamed {
   Bool_t ReadTracklets(AliRunLoader *rl);
 
   void   AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n);
+  Bool_t TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n);
   TObjArray *Tracklets() { 
     if(!fTracklets) fTracklets = new TObjArray(400); return fTracklets; 
   };
@@ -76,6 +80,11 @@ class AliTRDtrigger : public TNamed {
 
  protected:
 
+  Float_t                fField;                       //! Magnetic field
+  AliTRDgeometry        *fGeo;                         //! TRD geometry
+  AliTRDcalibDB         *fCalib;                       //! Calibration DB
+  AliTRDCommonParam     *fCParam;                      //! Common parameters
+
   AliTRDtrigParam       *fTrigParam;                   //! Trigger class parameters
   AliRunLoader          *fRunLoader;                   //! Run Loader
   AliTRDdigitsManager   *fDigitsManager;               //! TRD digits manager
@@ -85,6 +94,7 @@ class AliTRDtrigger : public TNamed {
   Int_t                  fNROB;                        //! Number of ROBs in the current chamber
   AliTRDmcm             *fMCM;                         //! Current MCM
   AliTRDmcmTracklet     *fTrk;                         //! Current tracklet
+  AliTRDmcmTracklet     *fTrkTest;                     //! Test tracklet
   AliTRDmodule          *fModule;                      //! Current module
   AliTRDgtuTrack        *fGTUtrk;                      //! Current GTU track
 

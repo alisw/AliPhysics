@@ -65,6 +65,7 @@ AliTRDtrigger::AliTRDtrigger():
   fTrigParam = NULL;
   fMCM = NULL;
   fTrk = NULL;
+  fTrkTest = NULL;
   fGTUtrk = NULL;
 
   fNtracklets = 0;
@@ -77,6 +78,11 @@ AliTRDtrigger::AliTRDtrigger():
   fModule = NULL;
 
   fNPrimary = 0;
+
+  fField  = 0.0;
+  fGeo    = NULL;
+  fCalib  = NULL;
+  fCParam = NULL;
 
 }
 
@@ -97,6 +103,7 @@ AliTRDtrigger::AliTRDtrigger(const Text_t *name, const Text_t *title):
   fTrigParam = NULL;
   fMCM = NULL;
   fTrk = NULL;
+  fTrkTest = NULL;
   fGTUtrk = NULL;
 
   fNtracklets = 0;
@@ -109,6 +116,11 @@ AliTRDtrigger::AliTRDtrigger(const Text_t *name, const Text_t *title):
   fModule = NULL;
 
   fNPrimary = 0;
+
+  fField  = 0.0;
+  fGeo    = NULL;
+  fCalib  = NULL;
+  fCParam = NULL;
 
 }
 
@@ -172,6 +184,23 @@ void AliTRDtrigger::Init()
   fNPrimary = header->GetNprimary();
   */
   fTracks.Clear();
+
+  fField = fTrigParam->GetField();
+  fGeo = (AliTRDgeometry*)AliTRDgeometry::GetGeometry(fRunLoader);
+
+  fCalib = AliTRDcalibDB::Instance();
+  if (!fCalib)
+  {
+    Error("Init","No instance of AliTRDcalibDB.");
+    return;  
+  }
+
+  fCParam = AliTRDCommonParam::Instance();
+  if (!fCParam)
+  {
+    Error("Init","No common params.");
+    return;
+  }
 
 }
 
@@ -329,22 +358,9 @@ Bool_t AliTRDtrigger::ReadTracklets(AliRunLoader *rl)
 //_____________________________________________________________________________
 Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 {
-
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
-    Error("MakeTracklets","No instance of AliTRDcalibDB.");
-    return kFALSE;  
-  }
-  
-  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    Error("MakeTracklets","No common params.");
-    return kFALSE;
-  }
-    
-  AliTRDgeometry *geo = AliTRDgeometry::GetGeometry(fRunLoader);
+  //
+  // Create tracklets from digits
+  //
 
   Int_t    chamBeg = 0;
   Int_t    chamEnd = AliTRDgeometry::Ncham();
@@ -353,13 +369,14 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
   Int_t    sectBeg = 0;
   Int_t    sectEnd = AliTRDgeometry::Nsect();
 
+  fTrkTest = new AliTRDmcmTracklet(0,0,0);
+
   fMCM = new AliTRDmcm(fTrigParam,0);
 
   Int_t time, col, row, col1, col2;
   Float_t amp;
   Int_t idet, iStack, iStackPrev;
-  idet = -1;
-
+  idet       = -1;
   iStack     = -1;
   iStackPrev = -1;
   for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
@@ -375,7 +392,7 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 
       for (Int_t iplan = planBeg; iplan < planEnd; iplan++) {
 
-        idet = geo->GetDetector(iplan,icham,isect);
+        idet = fGeo->GetDetector(iplan,icham,isect);
 	ResetTracklets();
 	
 	if (makeTracks) {
@@ -391,9 +408,9 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 	  }
 	}
 
-        Int_t    nRowMax     = commonParam->GetRowMax(iplan,icham,isect);
-	Int_t    nColMax     = commonParam->GetColMax(iplan);
-        Int_t    nTimeTotal  = calibration->GetNumberOfTimeBins();
+        Int_t    nRowMax     = fCParam->GetRowMax(iplan,icham,isect);
+	Int_t    nColMax     = fCParam->GetColMax(iplan);
+        Int_t    nTimeTotal  = fCalib->GetNumberOfTimeBins();
 
         // Get the digits
         fDigits = fDigitsManager->GetDigits(idet);
@@ -418,9 +435,8 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 
 	    row = fMCM->GetRow();
 
-	    if (row < 0 || row >= nRowMax) {
+	    if (row < 0 || row > nRowMax) {
 	      Error("MakeTracklets","MCM row number out of range.");
-	      continue;
 	    }
 
 	    fMCM->GetColRange(col1,col2);
@@ -460,7 +476,9 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 		  }
 		}
 
-		AddTracklet(idet,row,iSeed,fNtracklets++);
+		if (TestTracklet(idet,row,iSeed,0)) {
+		  AddTracklet(idet,row,iSeed,fNtracklets++);
+		}
 
 	      }
 
@@ -496,6 +514,9 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 //_____________________________________________________________________________
 void AliTRDtrigger::SetMCMcoordinates(Int_t imcm)
 {
+  //
+  // Configure MCM position in the pad plane
+  //
 
   Int_t robid = fMCM->GetRobId();
 
@@ -543,20 +564,89 @@ void AliTRDtrigger::SetMCMcoordinates(Int_t imcm)
 }
 
 //_____________________________________________________________________________
-void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
+Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
 {
+  //
+  // Check first the tracklet pt
+  //
 
-  Float_t field = fTrigParam->GetField();
-  AliTRDgeometry *geo = (AliTRDgeometry*)AliTRDgeometry::GetGeometry(fRunLoader);
+  Int_t nTimeTotal  = fCalib->GetNumberOfTimeBins();
 
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
-    Error("AddTracklets","No instance of AliTRDcalibDB.");
-    return;  
+  fTrkTest->Reset();
+
+  fTrkTest->SetDetector(det);
+  fTrkTest->SetRow(row);
+  fTrkTest->SetN(n);
+
+  Int_t iCol, iCol1, iCol2, track[3];
+  iCol = fMCM->GetSeedCol()[seed];  // 0....20 (MCM)
+  fMCM->GetColRange(iCol1,iCol2);   // range in the pad plane
+	    
+  Float_t amp[3];
+  for (Int_t iTime = 0; iTime < nTimeTotal; iTime++) {
+
+    amp[0] = fMCM->GetADC(iCol-1,iTime);
+    amp[1] = fMCM->GetADC(iCol  ,iTime);
+    amp[2] = fMCM->GetADC(iCol+1,iTime);
+
+    // extract track contribution only from the central pad
+    track[0] = fTrack0->GetDataUnchecked(row,iCol+iCol1,iTime);
+    track[1] = fTrack1->GetDataUnchecked(row,iCol+iCol1,iTime);
+    track[2] = fTrack2->GetDataUnchecked(row,iCol+iCol1,iTime);
+
+    if (fMCM->IsCluster(iCol,iTime)) {
+
+      fTrkTest->AddCluster(iCol+iCol1,iTime,amp,track);
+
+    } else if ((iCol+1+1) < kMcmCol) {
+
+      amp[0] = fMCM->GetADC(iCol-1+1,iTime);
+      amp[1] = fMCM->GetADC(iCol  +1,iTime);
+      amp[2] = fMCM->GetADC(iCol+1+1,iTime);
+
+      if (fMCM->IsCluster(iCol+1,iTime)) {
+
+	// extract track contribution only from the central pad
+	track[0] = fTrack0->GetDataUnchecked(row,iCol+1+iCol1,iTime);
+	track[1] = fTrack1->GetDataUnchecked(row,iCol+1+iCol1,iTime);
+	track[2] = fTrack2->GetDataUnchecked(row,iCol+1+iCol1,iTime);
+
+	fTrkTest->AddCluster(iCol+1+iCol1,iTime,amp,track);
+
+      }
+
+    } else {
+    }
+
+  }
+
+  fTrkTest->CookLabel(0.8);  
+  /*
+  if (fTrkTest->GetLabel() >= fNPrimary) {
+    Info("AddTracklet","Only primaries are stored!");
+    return;
+  }
+  */
+  // LTU Pt cut
+    
+  fTrkTest->MakeTrackletGraph(fGeo,fField);
+  fTrkTest->MakeClusAmpGraph();
+  if (TMath::Abs(fTrkTest->GetPt()) < fTrigParam->GetLtuPtCut()) {
+    return kFALSE;
   }
   
-  Int_t nTimeTotal  = calibration->GetNumberOfTimeBins();
+  return kTRUE;  
+
+}
+
+//_____________________________________________________________________________
+void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
+{
+  //
+  // Add a found tracklet
+  //
+
+  Int_t nTimeTotal  = fCalib->GetNumberOfTimeBins();
 
   fTrk = new AliTRDmcmTracklet(det,row,n);
 
@@ -610,7 +700,7 @@ void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
   }
   */
   // LTU Pt cut
-  fTrk->MakeTrackletGraph(geo,field);
+  fTrk->MakeTrackletGraph(fGeo,fField);
   fTrk->MakeClusAmpGraph();
   if (TMath::Abs(fTrk->GetPt()) < fTrigParam->GetLtuPtCut()) {
     return;
@@ -688,16 +778,7 @@ void AliTRDtrigger::MakeTracks(Int_t det)
   
   fModule->Reset();
 
-  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    Error("MakeTracks","No common params.");
-    return;
-  }
-    
   Int_t nRowMax, iplan, icham, isect, row;
-
-  AliTRDgeometry *geo = (AliTRDgeometry*)AliTRDgeometry::GetGeometry(fRunLoader);
 
   if ((det < 0) || (det >= AliTRDgeometry::Ndet())) {
     Error("MakeTracks","Unexpected detector index %d.",det);
@@ -711,11 +792,11 @@ void AliTRDtrigger::MakeTracks(Int_t det)
     
     trk = (AliTRDmcmTracklet *) Tracklets()->UncheckedAt(i);
     
-    iplan = geo->GetPlane(trk->GetDetector());
-    icham = geo->GetChamber(trk->GetDetector());
-    isect = geo->GetSector(trk->GetDetector());
+    iplan = fGeo->GetPlane(trk->GetDetector());
+    icham = fGeo->GetChamber(trk->GetDetector());
+    isect = fGeo->GetSector(trk->GetDetector());
 
-    nRowMax = commonParam->GetRowMax(iplan,icham,isect);
+    nRowMax = fCParam->GetRowMax(iplan,icham,isect);
     row = trk->GetRow();
 
     fModule->AddTracklet(trk->GetDetector(),
@@ -732,7 +813,7 @@ void AliTRDtrigger::MakeTracks(Int_t det)
 
   fModule->SortTracklets();
   fModule->RemoveMultipleTracklets();
-  fModule->SortZ((Int_t)geo->GetChamber(det));
+  fModule->SortZ((Int_t)fGeo->GetChamber(det));
   fModule->FindTracks();
   fModule->SortTracks();
   fModule->RemoveMultipleTracks();

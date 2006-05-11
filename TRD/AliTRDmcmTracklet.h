@@ -27,10 +27,16 @@ class AliTRDmcmTracklet : public TObject {
   AliTRDmcmTracklet &operator=(const AliTRDmcmTracklet &t);
   virtual void Copy(TObject &t) const;
 
+  void Reset();
+
   void AddCluster(Int_t icol, Int_t itb, Float_t *adc, Int_t *track);
   void MakeTrackletGraph(AliTRDgeometry *geo = 0, Float_t field = 0);
   void MakeClusAmpGraph();
   void CookLabel(Float_t frac);
+
+  void SetRow(Int_t row)      { fRow = row; };
+  void SetDetector(Int_t det) { fDetector = det; };
+  void SetN(Int_t n)          { fN = n; };
 
   Int_t     GetNclusters() const { return fNclusters; };
   Int_t     GetDetector()  const { return fDetector; };

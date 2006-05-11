@@ -37,7 +37,6 @@ ClassImp(AliTRDmcmTracklet)
 //_____________________________________________________________________________
 AliTRDmcmTracklet::AliTRDmcmTracklet() 
 {
-
   //
   // AliTRDmcmTracklet default constructor
   //
@@ -75,7 +74,6 @@ AliTRDmcmTracklet::AliTRDmcmTracklet()
 //_____________________________________________________________________________
 AliTRDmcmTracklet::AliTRDmcmTracklet(Int_t det, Int_t row, Int_t n) 
 {
-
   //
   // AliTRDmcmTracklet default constructor
   //
@@ -115,12 +113,13 @@ AliTRDmcmTracklet::AliTRDmcmTracklet(Int_t det, Int_t row, Int_t n)
 //_____________________________________________________________________________
 AliTRDmcmTracklet::~AliTRDmcmTracklet() 
 {
-
   //
   // AliTRDmcmTracklet destructor
   //
-  delete fGPos;
-  delete fGAmp;
+
+  if (fGPos != 0) delete fGPos;
+  if (fGAmp != 0) delete fGAmp;
+
 }
 
 //_____________________________________________________________________________
@@ -170,10 +169,47 @@ void AliTRDmcmTracklet::Copy(TObject &t) const
 }
 
 //_____________________________________________________________________________
+void AliTRDmcmTracklet::Reset() 
+{
+  //
+  // Reset the tracklet information
+  //
+
+  fDetector = -1;
+  fRow      = -1;
+
+  for (Int_t time = 0; time < kNtimeBins; time++) {
+    for (Int_t icl = 0; icl < kNclsPads; icl++) {
+      fADC[time][icl] = 0;
+    }
+    for (Int_t it = 0; it < kNdict; it++) {
+      fTrack[time][it] = -1;
+    }
+    fTime[time]   = 0;
+    fCol[time]    = 0;
+  }
+
+  fNclusters  =  0;
+  fN          =  0;
+  fTrackLabel = -1;
+
+  fGPos->Set(0);
+  fGAmp->Set(0);
+
+  fSlope  = 0.0;
+  fOffset = 0.0;
+  fTime0  = 0.0;
+  fRowz   = 0.0;
+  fPt     = 0.0;
+  fdQdl   = 0.0;
+
+}
+
+//_____________________________________________________________________________
 void AliTRDmcmTracklet::AddCluster(Int_t icol, Int_t itb, Float_t *adc, Int_t *track) 
 {
   //
-  //
+  // Add a cluster to the tracklet
   //
  
   if (fNclusters >= kNtimeBins) return;
@@ -196,7 +232,6 @@ void AliTRDmcmTracklet::AddCluster(Int_t icol, Int_t itb, Float_t *adc, Int_t *t
 //_____________________________________________________________________________
 void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field) 
 {
-
   //
   // Tracklet graph of positions (global coordinates, rotated [cm])
   //
@@ -281,7 +316,7 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
   fGPos->Set(npg);
   
   fTime0 = geo->GetTime0(iplan) - AliTRDgeometry::CdrHght() - 0.5*AliTRDgeometry::CamHght();
-  fRowz = padPlane->GetRowPos(fRow) - padPlane->GetRowSize(fRow)/2.0;
+  fRowz = 0.5*(padPlane->GetRowPos(fRow) + padPlane->GetRowPos(fRow+1));
 
   Double_t xMin = 0, xMax = 0, x, y;
   fGPos->GetPoint(0    ,x,y); xMax = x + 0.1;
@@ -314,13 +349,6 @@ void AliTRDmcmTracklet::MakeClusAmpGraph()
   //
   // Tracklet graph of cluster charges
   //
-
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
-    Error("MakeClusAmpGraph","No instance of AliTRDcalibDB.");
-    return;
-  }
 
   Int_t time;
   Float_t amp[3];
