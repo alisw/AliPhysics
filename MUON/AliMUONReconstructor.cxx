@@ -359,7 +359,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     // trigger branch
     data.MakeBranch("TC");
     data.SetTreeAddress("TC");
-//    recoCluster.Trigger2Trigger(); 
+    recoCluster.Trigger2Trigger();
     data.Fill("TC");
     
     loader->WriteRecPoints("OVERWRITE");
