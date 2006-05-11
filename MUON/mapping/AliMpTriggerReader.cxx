@@ -568,12 +568,17 @@ AliMpTriggerReader::ReadLocalBoardMapping()
       if ( line[0] == '#' ) continue;
       
       TString sline(line);
-      TObjArray* tokens = sline.Tokenize(' ');
-      TString& number = ((TObjString*)(tokens->At(0)))->String();
-      TString& name = ((TObjString*)(tokens->At(1)))->String();
-      fgLocalBoardMap.Add(new TObjString(name), new TObjString(number));
-      AliDebugClass(10,Form("Board %s has number %s\n",name.Data(),number.Data()));
-      delete tokens;
+      if ( sline.Contains("Board") )
+      {
+        TObjArray* tokens = sline.Tokenize(' ');
+        TString& number = ((TObjString*)(tokens->At(1)))->String();
+        Int_t n = atoi(number.Data());
+        if ( n == 0 ) continue;
+        TString& name = ((TObjString*)(tokens->At(4)))->String();
+        fgLocalBoardMap.Add(new TObjString(name), new TObjString(number));
+        AliDebugClass(10,Form("Board %s has number %s\n",name.Data(),number.Data()));
+        delete tokens;
+      }
     }      
   }
   in.close();

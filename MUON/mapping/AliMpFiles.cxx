@@ -55,7 +55,7 @@ const TString AliMpFiles::fgkMotifSpecialPrefix ="motifSpecial";
 const TString AliMpFiles::fgkPadPosPrefix  = "padPos"; 
 const TString AliMpFiles::fgkDataExt = ".dat";      
 const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
-const TString AliMpFiles::fgkTriggerLocalBoards = "MUONLocalTriggerBoard";
+const TString AliMpFiles::fgkTriggerLocalBoards = "CRATE.TXT";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
 
 ClassImp(AliMpFiles)
@@ -206,9 +206,7 @@ TString AliMpFiles::LocalTriggerBoardMapping()
 {
 /// Return path to data file with DE names for given station.
 
-  return TString(PlaneDataDir(kStationTrigger,kNonBendingPlane) 
-                 + fgkTriggerLocalBoards
-                 + fgkDataExt);
+  return GetTop() + "/.." + fgkDataDir + "/" + fgkTriggerLocalBoards;
 }
 
 //_____________________________________________________________________________
