@@ -29,7 +29,7 @@ class AliMUONTriggerCrate;
 class AliMUONCalibrationData;
 class AliMUONData;
 class AliMUONGlobalTriggerBoard;
-class TClonesArray;
+class AliMUONTriggerCrateStore;
 
 class AliMUONTriggerElectronics : public TTask
 {
@@ -46,13 +46,9 @@ class AliMUONTriggerElectronics : public TTask
 
       virtual void Factory(AliMUONCalibrationData* calibData);
       void LoadMasks(AliMUONCalibrationData* calibData);
-      virtual void AddCrate(char *name);
 
-      virtual AliMUONTriggerCrate* Crate(char *name);
-
-      virtual void Feed();
       virtual void Feed(UShort_t pattern[2][4]);
-		virtual void FeedM();
+		  virtual void FeedM();
 
       virtual void BoardName(Int_t ix, Int_t iy, char *name);
 
@@ -79,18 +75,11 @@ class AliMUONTriggerElectronics : public TTask
      
    private:
       TString                    fSourceFileName;     // Source file
-      TClonesArray              *fCrates;             // Crate array
+      AliMUONTriggerCrateStore  *fCrates;             // Crate array
       AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; // Global trigger board
-      Int_t                      fNCrates;            // Number of trigger crates
-      static const Int_t         fgkNCrates;          // Number of trigger crates (const)
-      UShort_t                   fLocal[16][16];      // 16 crates of 16 LB
-      UShort_t                   fRegional[16];       // 16 RB
-      UShort_t                   fGlobal;             // 1 GB
       AliMUONData               *fMUONData;           //! Data container for MUON subsystem 
       TArrayI                    fDigitNumbers[234];  //! The digit number that fired a circuit.
-      char                     **fCrateMap;           // Map crate name <-> crate number
-      Int_t                      fBoardMap[234];      // Map board number <-> slot number
 
-   ClassDef(AliMUONTriggerElectronics,1)
+   ClassDef(AliMUONTriggerElectronics,2)
 };
 #endif
