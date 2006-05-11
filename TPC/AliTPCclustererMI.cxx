@@ -554,6 +554,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     return;
   }
 
+  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
+
   rawReader->Reset();
   AliTPCRawStream input(rawReader);
 
@@ -644,7 +646,9 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     if (input.GetSignal() <= zeroSup) continue;
     Int_t i = input.GetPad() + 3;
     Int_t j = input.GetTime() + 3;
-    fBins[i*fMaxTime+j] = input.GetSignal();
+    AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
+    Float_t gain = gainROC->GetValue(fRow,input.GetRow()/fParam->GetMaxTBin());
+    fBins[i*fMaxTime+j] = input.GetSignal()/gain;
   }
 
   // find clusters in split rows that were skipped until now.
