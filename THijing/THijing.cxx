@@ -127,11 +127,12 @@ TObjArray* THijing::ImportParticles(Option_t *option)
 //
 		nump++;
 		TParticle* p = new TParticle(
-		    HIMAIN2.katt[0][i], HIMAIN2.katt[1][i] ,
+		    HIMAIN2.katt[0][i], HIMAIN2.katt[3][i] ,
 		    -1, -1, -1, -1,
 		    HIMAIN2.patt[0][i], HIMAIN2.patt[1][i], HIMAIN2.patt[2][i], HIMAIN2.patt[3][i] ,
 		    HIMAIN2.vatt[0][i], HIMAIN2.vatt[1][i], HIMAIN2.vatt[2][i], HIMAIN2.vatt[3][i] 
 		  );
+		p->SetUniqueID(HIMAIN2.katt[1][i]);
 		fParticles->Add(p);
 	    }
 	}
@@ -150,11 +151,12 @@ TObjArray* THijing::ImportParticles(Option_t *option)
 	    }
 	    
 	    TParticle* p = new TParticle(
-		HIMAIN2.katt[0][i], HIMAIN2.katt[1][i], iParent,
+		HIMAIN2.katt[0][i], HIMAIN2.katt[3][i], iParent,
 		-1, -1, -1,
 		HIMAIN2.patt[0][i], HIMAIN2.patt[1][i], HIMAIN2.patt[2][i], HIMAIN2.patt[3][i] ,
 		HIMAIN2.vatt[0][i], HIMAIN2.vatt[1][i], HIMAIN2.vatt[2][i], HIMAIN2.vatt[3][i]
 		);
+	    p->SetUniqueID(HIMAIN2.katt[1][i]);
 	    fParticles->Add(p);
 	}
     }
@@ -192,7 +194,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 	    nump++;
 	    new(particlesR[i]) TParticle(
 		  HIMAIN2.katt[0][i] ,
-		  HIMAIN2.katt[1][i] ,
+		  HIMAIN2.katt[3][i] ,
 		  -1 ,
 		  -1,
 		  -1,
@@ -208,6 +210,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 		  HIMAIN2.vatt[2][i] ,
 		  HIMAIN2.vatt[3][i] 
 		  );
+	    particlesR[i]->SetUniqueID(HIMAIN2.katt[1][i]);
 	  }
       }
   }
@@ -226,7 +229,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 
 	  new(particlesR[i]) TParticle(
 	      HIMAIN2.katt[0][i] ,
-	      HIMAIN2.katt[1][i] ,
+	      HIMAIN2.katt[3][i] ,
 	      iParent,
 	      -1,
 	      -1,
@@ -242,6 +245,7 @@ Int_t THijing::ImportParticles(TClonesArray *particles, Option_t *option)
 	      HIMAIN2.vatt[2][i] ,
 	      HIMAIN2.vatt[3][i]
 	      );
+	  particlesR[i]->SetUniqueID(HIMAIN2.katt[1][i]);
       }
   }
   return nump;
