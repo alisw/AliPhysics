@@ -411,8 +411,6 @@ AliESDVertex* AliITSVertexerTracks::FindPrimaryVertexForCurrentEvent(AliESD *esd
   esdEvent->GetVertex()->GetTruePos(tp);
   fCurrentVertex->SetTruePos(tp);
 
-  esdEvent->SetVertex(fCurrentVertex);
-
   return fCurrentVertex;
 }
 //---------------------------------------------------------------------------
