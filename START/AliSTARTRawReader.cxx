@@ -38,7 +38,6 @@ Bool_t  AliSTARTRawReader::Next()
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
-  AliBitPacking *pack ;
 
   UInt_t word, unpackword;
   Int_t time,  pmt;
@@ -56,56 +55,56 @@ Bool_t  AliSTARTRawReader::Next()
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
    word=0;
    unpackword=0;
    word = GetNextWord();
-    unpackword=pack->UnpackWord(word,0,8);
+    unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
 
 
@@ -113,12 +112,12 @@ Bool_t  AliSTARTRawReader::Next()
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
    fDigits->SetSumMult(time);   
 
@@ -126,25 +125,25 @@ Bool_t  AliSTARTRawReader::Next()
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
    fDigits->SetDiffTime(time);   
   // best time left 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
    fDigits->SetTimeBestLeft(time);   
    
@@ -152,28 +151,28 @@ Bool_t  AliSTARTRawReader::Next()
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
  
    word=0;
    unpackword=0;
    
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
    fDigits->SetTimeBestRight(time);  
   // mean 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
+   unpackword=AliBitPacking::UnpackWord(word,8,31);
    time=unpackword;
  
    word=0;
    unpackword=0;
    
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
+   unpackword=AliBitPacking::UnpackWord(word,0,8);
    pmt=unpackword;
    fDigits->SetMeanTime(time);  
 
@@ -183,12 +182,12 @@ Bool_t  AliSTARTRawReader::Next()
       unpackword=0;
     
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,8,31);
+      unpackword=AliBitPacking::UnpackWord(word,8,31);
       time=unpackword;
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword= pack->UnpackWord(word,0,8);
+      unpackword= AliBitPacking::UnpackWord(word,0,8);
       pmt=unpackword;  
       chargeTDC2->AddAt(time,pmt-72);
      }
@@ -199,12 +198,12 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,8,31);
+      unpackword=AliBitPacking::UnpackWord(word,8,31);
       time=unpackword;
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword= pack->UnpackWord(word,0,8);
+      unpackword= AliBitPacking::UnpackWord(word,0,8);
       pmt=unpackword; //
       chargeTDC1->AddAt(time,pmt-48);
     }
@@ -214,12 +213,12 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,8,31);
+      unpackword=AliBitPacking::UnpackWord(word,8,31);
       time=unpackword;
       word=0;
       unpackword=0;
       word = GetNextWord();
-       unpackword=pack->UnpackWord(word,0,8);
+       unpackword=AliBitPacking::UnpackWord(word,0,8);
       pmt=unpackword;
       timeTDC2->AddAt(time,pmt-24);
     } 
@@ -230,13 +229,13 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,8,31);
+      unpackword=AliBitPacking::UnpackWord(word,8,31);
       time=unpackword; 
       
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,0,8);
+      unpackword=AliBitPacking::UnpackWord(word,0,8);
       pmt=unpackword;
       timeTDC1->AddAt(time,pmt);
     }
