@@ -189,7 +189,7 @@ void AliGenHijing::Generate()
 //
   Int_t nt  = 0;
   Int_t jev = 0;
-  Int_t j, kf, ks, imo;
+  Int_t j, kf, ks, ksp, imo;
   kf = 0;
     
 
@@ -283,14 +283,15 @@ void AliGenHijing::Generate()
 	  Bool_t  selected             =  kTRUE;
 	  kf        = iparticle->GetPdgCode();
 	  ks        = iparticle->GetStatusCode();
+	  ksp       = iparticle->GetUniqueID();
 	  
 // --------------------------------------------------------------------------
 // Count spectator neutrons and protons
-	  if(ks == 0 || ks == 1){
+	  if(ksp == 0 || ksp == 1){
 	      if(kf == kNeutron) fProjectileSpecn += 1;
 	      if(kf == kProton)  fProjectileSpecp += 1;
 	  }
-	  else if(ks == 10 || ks == 11){
+	  else if(ksp == 10 || ksp == 11){
 	      if(kf == kNeutron) fTargetSpecn += 1;
 	      if(kf == kProton)  fTargetSpecp += 1;
 	  }
@@ -298,8 +299,8 @@ void AliGenHijing::Generate()
 //	    
 	  if (!fSelectAll) {
 	      selected = KinematicSelection(iparticle,0)&&SelectFlavor(kf);
-	      if (!fSpectators && selected) selected = (ks != 0 && ks != 1 && ks != 10
-							&& ks != 11);
+	      if (!fSpectators && selected) selected = (ksp != 0 && ksp != 1 && ksp != 10
+							&& ksp != 11);
 	  }
 //
 // Put particle on the stack if selected
@@ -605,8 +606,8 @@ Bool_t AliGenHijing::CheckTrigger()
 	for (Int_t i = 0; i < np; i++) {
 	    TParticle* part = (TParticle*) fParticles->At(i);
 	    Int_t kf = part->GetPdgCode();
-	    Int_t ks = part->GetStatusCode();
-	    if (kf == 22 && ks == 40) {
+	    Int_t ksp = part->GetUniqueID();
+	    if (kf == 22 && ksp == 40) {
 		Float_t phi = part->Phi();
 		Float_t eta = part->Eta();
 		if  (eta < fEtaMaxJet && 
