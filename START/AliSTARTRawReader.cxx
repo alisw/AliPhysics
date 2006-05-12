@@ -41,7 +41,7 @@ Bool_t  AliSTARTRawReader::Next()
   AliBitPacking *pack ;
 
   UInt_t word, unpackword;
-  Int_t time, adc,  pmt;
+  Int_t time,  pmt;
   TArrayI *timeTDC1 = new TArrayI(24);
   TArrayI * chargeTDC1 = new TArrayI(24);
   TArrayI *timeTDC2 = new TArrayI(24);
@@ -52,88 +52,145 @@ Bool_t  AliSTARTRawReader::Next()
   } while (fRawReader->GetDataSize() == 0);
   
   fPosition = GetPosition();
-
-  for( Int_t i=0; i<11; i++) word = GetNextWord();
- //  multiplicity 
-   word=0;
-   unpackword=0;
-      word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
-   pmt=unpackword;
+ //  trigger 
    word=0;
    unpackword=0;
    word = GetNextWord();
    unpackword=pack->UnpackWord(word,8,31);
    time=unpackword;
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
+
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,8,31);
+   time=unpackword;
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
+
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,8,31);
+   time=unpackword;
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+    unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
+
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,8,31);
+   time=unpackword;
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
+
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,8,31);
+   time=unpackword;
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
+
+
+//multiplicity
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,8,31);
+   time=unpackword;
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
+   unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
    fDigits->SetSumMult(time);   
 
    // best time differece  
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
-   pmt=unpackword;
+   unpackword=pack->UnpackWord(word,8,31);
+   time=unpackword;
 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
-   time=unpackword;
+   unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
    fDigits->SetDiffTime(time);   
   // best time left 
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
-   pmt=unpackword;
+   unpackword=pack->UnpackWord(word,8,31);
+   time=unpackword;
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
-   time=unpackword;
+   unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
    fDigits->SetTimeBestLeft(time);   
    
   // Best time right &left  
    word=0;
    unpackword=0;
    word = GetNextWord();
-   unpackword=pack->UnpackWord(word,0,8);
-   pmt=unpackword;
+   unpackword=pack->UnpackWord(word,8,31);
+   time=unpackword;
  
    word=0;
    unpackword=0;
    
    word = GetNextWord();
+   unpackword=pack->UnpackWord(word,0,8);
+   pmt=unpackword;
+   fDigits->SetTimeBestRight(time);  
+  // mean 
+   word=0;
+   unpackword=0;
+   word = GetNextWord();
    unpackword=pack->UnpackWord(word,8,31);
    time=unpackword;
-   fDigits->SetTimeBestRight(time);   
  
    word=0;
    unpackword=0;
+   
    word = GetNextWord();
    unpackword=pack->UnpackWord(word,0,8);
    pmt=unpackword;
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=pack->UnpackWord(word,8,31);
-   time=unpackword;
-   fDigits->SetMeanTime(time);   
-    
+   fDigits->SetMeanTime(time);  
+
    for (Int_t i=0; i<24; i++)   //QTC amplified
      {
       word=0;
       unpackword=0;
     
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,0,8);
-      pmt=unpackword;
+      unpackword=pack->UnpackWord(word,8,31);
+      time=unpackword;
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword= pack->UnpackWord(word,8,31);
-      adc=unpackword;  
-          chargeTDC2->AddAt(adc,pmt-72);
+      unpackword= pack->UnpackWord(word,0,8);
+      pmt=unpackword;  
+      chargeTDC2->AddAt(time,pmt-72);
      }
 
   for (Int_t i=0; i<24; i++)
@@ -142,14 +199,14 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,0,8);
-      pmt=unpackword;
+      unpackword=pack->UnpackWord(word,8,31);
+      time=unpackword;
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword= pack->UnpackWord(word,8,31);
-      adc=unpackword; //
-      chargeTDC1->AddAt(adc,pmt-48);
+      unpackword= pack->UnpackWord(word,0,8);
+      pmt=unpackword; //
+      chargeTDC1->AddAt(time,pmt-48);
     }
   
   for (Int_t i=0; i<24; i++) //time CFD
@@ -157,13 +214,13 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,0,8);
-      pmt=unpackword;
+      unpackword=pack->UnpackWord(word,8,31);
+      time=unpackword;
       word=0;
       unpackword=0;
       word = GetNextWord();
-       unpackword=pack->UnpackWord(word,8,31);
-      time=unpackword;
+       unpackword=pack->UnpackWord(word,0,8);
+      pmt=unpackword;
       timeTDC2->AddAt(time,pmt-24);
     } 
 
@@ -173,15 +230,15 @@ Bool_t  AliSTARTRawReader::Next()
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,0,31);
-      pmt=unpackword; 
+      unpackword=pack->UnpackWord(word,8,31);
+      time=unpackword; 
       
       word=0;
       unpackword=0;
       word = GetNextWord();
-      unpackword=pack->UnpackWord(word,8,31);
-      time=unpackword;
-      timeTDC1->AddAt(time,i);
+      unpackword=pack->UnpackWord(word,0,8);
+      pmt=unpackword;
+      timeTDC1->AddAt(time,pmt);
     }
  
   
@@ -216,7 +273,6 @@ UInt_t AliSTARTRawReader::GetNextWord()
   // The input stream access is given by fData and fPosition
 
    fPosition--;
-
   Int_t iBit = fPosition * 32;
   Int_t iByte = iBit / 8;
 
@@ -225,7 +281,7 @@ UInt_t AliSTARTRawReader::GetNextWord()
   word |= fData[iByte+2]<<16;
   word |= fData[iByte+1]<<8;
   word |= fData[iByte];
-
+// fPosition--;
   return word;
 
 }
