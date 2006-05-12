@@ -316,7 +316,7 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
   fGPos->Set(npg);
   
   fTime0 = geo->GetTime0(iplan) - AliTRDgeometry::CdrHght() - 0.5*AliTRDgeometry::CamHght();
-  fRowz = 0.5*(padPlane->GetRowPos(fRow) + padPlane->GetRowPos(fRow+1));
+  fRowz = padPlane->GetRowPos(fRow) - padPlane->GetRowSize(fRow)/2.0;
 
   Double_t xMin = 0, xMax = 0, x, y;
   fGPos->GetPoint(0    ,x,y); xMax = x + 0.1;

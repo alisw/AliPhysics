@@ -435,8 +435,9 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 
 	    row = fMCM->GetRow();
 
-	    if (row < 0 || row > nRowMax) {
+	    if (row < 0 || row >= nRowMax) {
 	      Error("MakeTracklets","MCM row number out of range.");
+	      continue;
 	    }
 
 	    fMCM->GetColRange(col1,col2);
