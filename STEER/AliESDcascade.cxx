@@ -38,13 +38,39 @@ AliESDcascade::AliESDcascade() :
   fPdgCode(kXiMinus),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
   fChi2(1.e+33),
-  fBachIdx(0)
+  fBachIdx(-1)
 {
   //--------------------------------------------------------------------
   // Default constructor  (Xi-)
   //--------------------------------------------------------------------
-  fPos[0]=fPos[1]=fPos[2]=0.;
-  fPosCov[0]=fPosCov[1]=fPosCov[2]=fPosCov[3]=fPosCov[4]=fPosCov[5]=0.;
+  for (Int_t j=0; j<3; j++) {
+    fPos[j]=0.;
+    fBachMom[j]=0.;
+  }
+
+  for (Int_t i=0; i<2; i++)
+    for (Int_t j=0; j<3; j++)
+      fV0mom[i][j]=0.;
+
+  fV0idx[0]=fV0idx[1]=-1;
+
+  fPosCov[0]=1e10;
+  fPosCov[1]=fPosCov[2]=0.;
+  fPosCov[3]=1e10;
+  fPosCov[4]=0.;
+  fPosCov[5]=1e10;
+
+  fV0momCov[0]=1e10;
+  fV0momCov[1]=fV0momCov[2]=0.;
+  fV0momCov[3]=1e10;
+  fV0momCov[4]=0.;
+  fV0momCov[5]=1e10;
+
+  fBachMomCov[0]=1e10;
+  fBachMomCov[1]=fBachMomCov[2]=0.;
+  fBachMomCov[3]=1e10;
+  fBachMomCov[4]=0.;
+  fBachMomCov[5]=1e10;
 }
 
 AliESDcascade::AliESDcascade(const AliESDv0 &v,
@@ -99,6 +125,24 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   v.GetPPxPyPz(px2,py2,pz2);
   fV0mom[1][0]=px2; fV0mom[1][1]=py2; fV0mom[1][2]=pz2;
 
+  //PH Covariance matrices: to be calculated correctly in the future
+  fPosCov[0]=1e10;
+  fPosCov[1]=fPosCov[2]=0.;
+  fPosCov[3]=1e10;
+  fPosCov[4]=0.;
+  fPosCov[5]=1e10;
+
+  fV0momCov[0]=1e10;
+  fV0momCov[1]=fV0momCov[2]=0.;
+  fV0momCov[3]=1e10;
+  fV0momCov[4]=0.;
+  fV0momCov[5]=1e10;
+
+  fBachMomCov[0]=1e10;
+  fBachMomCov[1]=fBachMomCov[2]=0.;
+  fBachMomCov[3]=1e10;
+  fBachMomCov[4]=0.;
+  fBachMomCov[5]=1e10;
 
   fChi2=7.;   
 
