@@ -39,6 +39,13 @@
 #include "AliGenAfterBurnerFlow.h"
 #include "AliGenCocktailAfterBurner.h"
 
+// emanuele ---------------------------------------------------------------(
+#include <TList.h>
+#include "AliCollisionGeometry.h"
+#include "AliGenCocktailEntry.h"
+#include "TRandom.h"
+// emanuele ---------------------------------------------------------------)
+
 ClassImp(AliGenAfterBurnerFlow)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,14 +65,20 @@ AliGenAfterBurnerFlow::AliGenAfterBurnerFlow(Float_t reactionPlane) {
   //
   // Standard Construction
   // 
-  // reactionPlane - Reaction Plane Angle in Deg [0-360]
-  //
+  // reactionPlane - Reaction Plane Angle given in Deg [0-360]
+  // but stored and applied in radiants (standard for TParticle & AliCollisionGeometry) 
 
-  if (reactionPlane < 0 || reactionPlane > 360)
-    Error("AliGenAfterBurnerFlow", 
-	  "Reaction Plane Angle - %d - ot of bounds [0-360]", reactionPlane);
+// emanuele ---------------------------------------------------------------(
 
-  fReactionPlane = reactionPlane;
+  if(reactionPlane == 0)     { Info("AliGenAfterBurnerFlow", "Using a random R.P. Angle event by event ( ! not the same used by Hijing ! ) ") ; }
+  else if(reactionPlane < 0) { Info("AliGenAfterBurnerFlow", "Using the Hijing R.P. Angle event by event ") ; }
+  else if(reactionPlane > 0) { Info("AliGenAfterBurnerFlow", "Using a fixed R.P. Angle ( psi = %d deg.) for every event ", reactionPlane) ; }
+  
+  // it was // if(reactionPlane < 0 || reactionPlane > 360)   Error("AliGenAfterBurnerFlow", "Reaction Plane Angle - %d - out of bounds [0-360]", reactionPlane); //
+
+// emanuele ---------------------------------------------------------------(
+
+  fReactionPlane = 2 * TMath::Pi() * (reactionPlane/360) ;  // r.p. given in degrees (Radomski's way) but stored and applied in radiants (TParticle's way) 
   fCounter = 0;
 }
 
@@ -323,34 +336,95 @@ void AliGenAfterBurnerFlow::Generate() {
 
   // Get Stack of the first Generator
   gen = (AliGenCocktailAfterBurner *)gAlice->Generator();
-  stack = gen->GetStack(0);
 
-  // Loop over particles
+// emanuele ---------------------------------------------------------------(
 
-  for (Int_t i=0; i<stack->GetNtrack(); i++) {
+  AliGenerator* genHijing = 0 ;
+  AliCollisionGeometry* geom = 0 ;
+  AliGenCocktailEntry* entry = 0 ;
+  TList* fEntries = 0 ;
 
-    particle = stack->Particle(i);
+  TRandom* rand = new TRandom(0) ;
+  Float_t fHow = fReactionPlane ;   // this is a temp. solution not to add a new data member in the .h
 
-    particle->Momentum(momentum);
-    pdg = particle->GetPdgCode();
-    phi = particle->Phi();
+  for(Int_t ns=0;ns<gen->GetNumberOfEvents();ns++) 
+  {
+   gen->SetActiveEventNumber(ns) ;
+   stack = gen->GetStack(ns);                                  // it was 0.  
+   fEntries = gen->Entries() ;
 
-    // get Pt, Y
+   TIter next(fEntries) ;
+   while((entry = (AliGenCocktailEntry*)next())) 
+   {
+    if(fHow == 0) // hijing R.P.
+    {
+     Info("Generate (e)","Using R.P. from HIJING ... ");       
+     genHijing = entry->Generator() ;        //  cout <<" * GENERATOR IS "<< genHijing << "  : " << genHijing->GetName() << endl;
+     if(genHijing->ProvidesCollisionGeometry()) 
+     { 
+      geom = gen->GetCollisionGeometry(ns) ; //  cout << " * GEOMETRY YES * " << endl ;
+      fReactionPlane = geom->ReactionPlaneAngle() ; 
+     }
+     else 
+     {
+      Error("Generate (e)", "NO CollisionGeometry !!!  -  using fixed R.P. angle = 0. ") ; 
+      fReactionPlane = 0. ; 
+     }
+    }
+    else if(fHow < 0) // random R.P.
+    {
+     Info("Generate (e)","Using random R.P.s ... ");       
+     fReactionPlane = 2 * TMath::Pi() * rand->Rndm() ;
+    }
+    else  // if constant R.P. -> do nothing (fReactionPlane already setted)
+    {
+     Info("Generate (e)","Using a fixed R.P. psi = %d rad.",fReactionPlane);       
+    }    
+    cout << " * Reaction Plane Angle (event " << ns << ") = " << fReactionPlane << " rad. ( = " << (360*fReactionPlane/(2*TMath::Pi())) << " deg.) * " << endl ;
+   }
 
-    pt = momentum.Pt();
-    y = momentum.Rapidity();
+// emanuele ---------------------------------------------------------------)
 
-    // Calculate Delta Phi for Directed and Elliptic Flow
-    
-    dPhi = -2 * GetCoefficient(pdg, 1, pt, y) * TMath::Sin( phi - fReactionPlane );
-    dPhi -= GetCoefficient(pdg, 2, pt, y) * TMath::Sin( 2 * (phi - fReactionPlane));
-    
-    // Set new phi 
-    
-    phi += dPhi;
-    momentum.SetPhi(phi);
-    particle->SetMomentum(momentum);
+   // Loop over particles
+   
+   for (Int_t i=0; i<stack->GetNtrack(); i++) 
+   {
+     particle = stack->Particle(i);
+
+     particle->Momentum(momentum);
+     pdg = particle->GetPdgCode();
+     phi = particle->Phi();
+
+     // get Pt, Y
+     
+     pt = momentum.Pt() ; 
+     //y = momentum.Rapidity() ;
+
+// emanuele ---------------------------------------------------------------(
+
+    if(TMath::Abs(momentum.Z()) != TMath::Abs(momentum.T())) { y = momentum.Rapidity() ; }
+    else { y = 0. ; }
+    // cout << " * Lorentz Vector (momentum) = " << momentum.X() << " , "  << momentum.Y() << " , " << momentum.Z() << " , " << momentum.T() << " . * " << endl ;
+    // cout << " *                        pt = " << momentum.Pt() << " . * " << endl ;
+    // cout << " *                         Y = " << y << " . * " << endl ;
+
+// emanuele ---------------------------------------------------------------)
+
+     // Calculate Delta Phi for Directed and Elliptic Flow
+     
+     dPhi = -2 * GetCoefficient(pdg, 1, pt, y) * TMath::Sin( phi - fReactionPlane );
+     dPhi -= GetCoefficient(pdg, 2, pt, y) * TMath::Sin( 2 * (phi - fReactionPlane));
+     
+     // Set new phi      
+     
+     phi += dPhi;
+     momentum.SetPhi(phi);
+     particle->SetMomentum(momentum);
+   }
+
+// emanuele ---------------------------------------------------------------(
   }
+// emanuele ---------------------------------------------------------------)
 
   Info("Generate","Flow After Burner: DONE");  
 }
