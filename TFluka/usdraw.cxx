@@ -43,8 +43,6 @@ void usdraw(Int_t& icode, Int_t& mreg,
 	  } // Track found in stack
       } // Loop over emf stack 
   } // Electromagnetic process
-  
-
 
   Int_t mlttc = LTCLCM.mlatm1;
   fluka->SetMreg(mreg, mlttc);
@@ -52,11 +50,16 @@ void usdraw(Int_t& icode, Int_t& mreg,
   fluka->SetYsco(ysco);
   fluka->SetZsco(zsco);
 
-  if (debug) printf("USDRAW: Number of track segments:%6d %6d %6d %10.3e\n", TRACKR.ntrack, TRACKR.mtrack, icode, TRACKR.atrack);
+  if (debug) printf("USDRAW: Number of track segments:%6d %6d icode=%d tof=%10.3e track=%d pdg=%d\n",
+  TRACKR.ntrack, TRACKR.mtrack, icode, TRACKR.atrack, TRACKR.ispusr[mkbmx2-1], fluka->PDGFromId(TRACKR.jtrack) );
+
+  TVirtualMCStack* cppstack = fluka->GetStack();
+  cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-1] );
 
   (TVirtualMCApplication::Instance())->Stepping();
   fluka->SetTrackIsNew(kFALSE);
-  
+
+ 
 } // end of usdraw
 } // end of extern "C"
 

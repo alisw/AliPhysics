@@ -952,8 +952,8 @@ Int_t TFluka::PDGFromId(Int_t id) const
 		printf("PDGFromId: Error intfluka < 0: %d\n", id);
 	    return -1;
 	}
-	if (fVerbosityLevel >= 3)
-	    printf("mpdgha called with %d %d \n", id, intfluka);
+//	if (fVerbosityLevel >= 3)
+//	    printf("mpdgha called with %d %d \n", id, intfluka);
 	return mpdgha(intfluka);
     } else {
 	// ions and optical photons
@@ -1484,13 +1484,34 @@ Double_t TFluka::Edep() const
 }
 
 //______________________________________________________________________________ 
+Int_t TFluka::CorrectFlukaId() const
+{
+   // since we don't put photons and e- created bellow transport cut on the vmc stack
+   // and there is a call to endraw for energy deposition for each of them
+   // and they have the track number of their parent, but different identity (pdg)
+   // so we want to assign also their parent identity also.
+   if( (IsTrackStop() )
+        && TRACKR.ispusr[mkbmx2 - 4] == TRACKR.ispusr[mkbmx2 - 1]
+        && TRACKR.jtrack != TRACKR.ispusr[mkbmx2 - 3] ) {
+      if (fVerbosityLevel >=3)
+         cout << "CorrectFlukaId() for icode=" << GetIcode()
+               << " track=" << TRACKR.ispusr[mkbmx2 - 1]
+               << " current PDG=" << PDGFromId(TRACKR.jtrack)
+               << " assign parent PDG=" << PDGFromId(TRACKR.ispusr[mkbmx2 - 3]) << endl;
+      return TRACKR.ispusr[mkbmx2 - 3]; // assign parent identity
+   }
+   return TRACKR.jtrack;
+}
+
+
+//______________________________________________________________________________ 
 Int_t TFluka::TrackPid() const
 {
 // Return the id of the particle transported
 // TRACKR.jtrack = identity number of the particle
   FlukaCallerCode_t caller = GetCaller();
   if (caller != kEEDRAW) {
-      return PDGFromId(TRACKR.jtrack);
+     return PDGFromId( CorrectFlukaId() );
   }
   else
     return -1000;
@@ -1504,7 +1525,7 @@ Double_t TFluka::TrackCharge() const
 // TRACKR.jtrack = identity number of the particle
   FlukaCallerCode_t caller = GetCaller();
   if (caller != kEEDRAW) 
-    return PAPROP.ichrge[TRACKR.jtrack+6];
+     return PAPROP.ichrge[CorrectFlukaId()+6];
   else
     return -1000.0;
 }
@@ -1516,7 +1537,7 @@ Double_t TFluka::TrackMass() const
 // TRACKR.jtrack = identity number of the particle
   FlukaCallerCode_t caller = GetCaller();
   if (caller != kEEDRAW)
-    return PAPROP.am[TRACKR.jtrack+6];
+     return PAPROP.am[CorrectFlukaId()+6];
   else
     return -1000.0;
 }
@@ -1634,15 +1655,15 @@ Bool_t   TFluka::IsTrackStop() const
 // True if the track energy has fallen below the threshold
 // means stopped by signal or below energy threshold
   FlukaProcessCode_t icode = GetIcode();
-  if (icode == kKASKADstopping  ||
-      icode == kKASKADtimekill  ||
-      icode == kEMFSCOstopping1 ||
-      icode == kEMFSCOstopping2 ||
-      icode == kEMFSCOtimekill  ||
-      icode == kKASNEUstopping  ||
-      icode == kKASNEUtimekill  ||
-      icode == kKASHEAtimekill  ||
-      icode == kKASOPHtimekill) return 1;
+  if (icode == kKASKADstopping  || // stopping particle
+      icode == kKASKADtimekill  || // time kill 
+      icode == kEMFSCOstopping1 || // below user-defined cut-off
+      icode == kEMFSCOstopping2 || // below user cut-off
+      icode == kEMFSCOtimekill  || // time kill
+      icode == kKASNEUstopping  || // neutron below threshold
+      icode == kKASNEUtimekill  || // time kill
+      icode == kKASHEAtimekill  || // time kill
+      icode == kKASOPHtimekill) return 1; // time kill
   else return 0;
 }
 

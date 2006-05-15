@@ -2,6 +2,7 @@
 #include "TVirtualMCApplication.h"
 #include "TGeoMaterial.h"
 #include "TGeoManager.h"
+#include <TParticle.h>
 #include "TFlukaCerenkov.h"
 
 #include "TFluka.h"
@@ -11,6 +12,7 @@
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #include "Fltclcm.h"  //(LTCLCM) fluka common
 #include "Fpaprop.h"  //(PAPROP) fluka common
+
 #ifndef WIN32
 # define endraw endraw_
 #else
@@ -34,33 +36,49 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   
   Float_t edep = rull;
   
-  if (icode == kKASKADinelarecoil) {
-    if (debug) cout << " For icode=" << icode << " Stepping is NOT called" << endl;
-    return;
-  }
-
   if (TRACKR.jtrack == -1) {
-// Handle quantum efficiency the G3 way
+  // Handle quantum efficiency the G3 way
       if (debug) printf("endraw: Cerenkov photon depositing energy: %d %e\n", mreg, rull);
       TGeoMaterial* material = (gGeoManager->GetCurrentVolume())->GetMaterial();
       TFlukaCerenkov*  cerenkov = dynamic_cast<TFlukaCerenkov*> (material->GetCerenkovProperties());
       if (cerenkov) {
-	  Double_t eff = (cerenkov->GetQuantumEfficiency(rull));
-	  if (gRandom->Rndm() > eff) {
-	      edep = 0.;
-	  }
+          Double_t eff = (cerenkov->GetQuantumEfficiency(rull));
+          if (gRandom->Rndm() > eff) {
+              edep = 0.;
+          }
       }
+  }
+
+  TVirtualMCStack* cppstack = fluka->GetStack();
+  Int_t saveTrackId = cppstack->GetCurrentTrackNumber();
+
+  if (debug) {
+     cout << "ENDRAW For icode=" << icode << " stacktrack=" << saveTrackId
+          << " track=" << TRACKR.ispusr[mkbmx2-1] << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
+          << " edep="<< edep <<endl;
   }
 
   if (icode != kEMFSCOstopping1 && icode != kEMFSCOstopping2) {
       fluka->SetIcode((FlukaProcessCode_t)icode);
       fluka->SetRull(edep);
+      if (icode == kKASKADelarecoil && TRACKR.ispusr[mkbmx2-5]) {
+	  //  Elastic recoil and in stuprf npprmr > 0,
+	  //  the secondary being loaded is actually still the interacting particle
+	  cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-4] );
+	  //      cout << "endraw elastic recoil track=" << TRACKR.ispusr[mkbmx2-1] << " parent=" << TRACKR.ispusr[mkbmx2-4]
+	  //           << endl;
+      }
+      else
+	  cppstack->SetCurrentTrack(TRACKR.ispusr[mkbmx2-1] );
       (TVirtualMCApplication::Instance())->Stepping();
+      
+//      cppstack->SetCurrentTrack( saveTrackId );
   } else {
   //
   // For icode 21,22 the particle has fallen below thresshold.
   // This has to be signalled to the StepManager() 
   //
+      cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-1] );
       fluka->SetRull(edep);
       fluka->SetIcode((FlukaProcessCode_t) icode);
       (TVirtualMCApplication::Instance())->Stepping();
@@ -68,6 +86,8 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
       fluka->SetIcode((FlukaProcessCode_t)icode);
       fluka->SetRull(0.);
       (TVirtualMCApplication::Instance())->Stepping();
+//      cppstack->SetCurrentTrack( saveTrackId );
+
   }
 } // end of endraw
 } // end of extern "C"

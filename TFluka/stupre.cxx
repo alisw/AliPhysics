@@ -92,6 +92,7 @@ void stupre()
     {
 	EMFSTK.iespak[kp][mkbmx2-1] = TRACKR.ispusr[mkbmx2-1];
 	EMFSTK.iespak[kp][mkbmx2-2] =  0;
+	EMFSTK.iespak[kp][mkbmx2-3] = TRACKR.jtrack;
 	continue;
     }
 

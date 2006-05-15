@@ -222,6 +222,7 @@ class TFluka : public TVirtualMC {
   virtual Double_t TrackTime() const;
   virtual Double_t Edep() const;
   // Static properties
+  virtual Int_t    CorrectFlukaId() const;
   virtual Int_t    TrackPid() const;
   virtual Double_t TrackCharge() const;
   virtual Double_t TrackMass() const;

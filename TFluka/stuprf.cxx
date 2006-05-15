@@ -15,6 +15,7 @@
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #include "Fgenstk.h"  //(GENSTK)  fluka common
 
+
 //Virtual MC
 #include "TFluka.h"
 
@@ -25,8 +26,8 @@
 
 extern "C" {
     void stuprf(Int_t& /*ij*/, Int_t& /*mreg*/,
-		Double_t& xx, Double_t& yy, Double_t& zz,
-		Int_t& numsec, Int_t& npprmr)
+                Double_t& xx, Double_t& yy, Double_t& zz,
+                Int_t& numsec, Int_t& npprmr)
 {
 //*----------------------------------------------------------------------*
 //*                                                                      *
@@ -53,6 +54,11 @@ extern "C" {
     FLKSTK.ispark[FLKSTK.npflka][ispr] = TRACKR.ispusr[ispr];
   }  
  
+  // save parent info
+  FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 3] = TRACKR.jtrack;   // fluka particle id
+  FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 4] = TRACKR.ispusr[mkbmx2 - 1];  // current track number
+  FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 5] = npprmr; // flag special case when npprmr>0
+
 // Get the pointer to the VMC
   TFluka* fluka =  (TFluka*) gMC;
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
@@ -66,7 +72,11 @@ extern "C" {
 // Increment the track number and put it into the last flag
 // was numsec -1
 // clarify with Alberto
-  if (numsec > npprmr) {
+  
+//  npprmr > 0, the secondary being loaded is actually still the interacting
+//  particle (it can happen in some biasing situations)
+
+  if (numsec > npprmr || npprmr > 0) {
 // Now call the PushTrack(...)
     Int_t done = 0;
 
@@ -76,7 +86,6 @@ extern "C" {
 
     Int_t pdg = fluka->PDGFromId(kpart);
 
-    
     Double_t px = GENSTK.plr[numsec-1] * GENSTK.cxr[numsec-1];
     Double_t py = GENSTK.plr[numsec-1] * GENSTK.cyr[numsec-1];
     Double_t pz = GENSTK.plr[numsec-1] * GENSTK.czr[numsec-1];
@@ -85,51 +94,71 @@ extern "C" {
     Double_t vx = xx;
     Double_t vy = yy;
     Double_t vz = zz;
-    
+
     Double_t tof  = TRACKR.atrack;
     Double_t polx = GENSTK.cxrpol[numsec-1];
     Double_t poly = GENSTK.cyrpol[numsec-1];
     Double_t polz = GENSTK.czrpol[numsec-1];
-    
+
 
     TMCProcess mech = kPHadronic;
-    
+
     if (EVTFLG.ldecay == 1) {
-	mech = kPDecay;
-	if (debug) cout << endl << "Decay" << endl;
-	
+        mech = kPDecay;
+        if (debug) cout << endl << "Decay" << endl;
     } else if (EVTFLG.ldltry == 1) {
-	mech = kPDeltaRay;
-	if (debug) cout << endl << "Delta Ray" << endl;
-	
+        mech = kPDeltaRay;
+        if( fluka->GetIcode() == kKASHEA ) {
+           //  For all interactions secondaries are put on GENSTK common (kp=1,np)
+           //  but for KASHEA delta ray generation where only the secondary elec-
+           //  tron is present and stacked on FLKSTK common for kp=lstack
+           pdg  = fluka->PDGFromId( FLKSTK.iloflk[FLKSTK.npflka] );
+           px   = FLKSTK.pmoflk[FLKSTK.npflka] * FLKSTK.txflk[FLKSTK.npflka];
+           py   = FLKSTK.pmoflk[FLKSTK.npflka] * FLKSTK.tyflk[FLKSTK.npflka];
+           pz   = FLKSTK.pmoflk[FLKSTK.npflka] * FLKSTK.tzflk[FLKSTK.npflka];
+           e    = FLKSTK.tkeflk[FLKSTK.npflka] + PAPROP.am[FLKSTK.iloflk[FLKSTK.npflka]+6];
+           polx = FLKSTK.txpol[FLKSTK.npflka];
+           poly = FLKSTK.typol[FLKSTK.npflka];
+           polz = FLKSTK.tzpol[FLKSTK.npflka];
+           if (debug) cout << endl << "Delta Ray from KASHEA...." << " pdg from FLKSTK=" << pdg << endl;
+        } else
+           if (debug) cout << endl << "Delta Ray" << endl;
     } else if (EVTFLG.lpairp == 1) {
-	mech = kPPair;
-	if (debug) cout << endl << "Pair Production" << endl;
-	
+        mech = kPPair;
+        if (debug) cout << endl << "Pair Production" << endl;
     } else if (EVTFLG.lbrmsp == 1) {
-	mech = kPBrem;
-	if (debug) cout << endl << "Bremsstrahlung" << endl;
-	
+        mech = kPBrem;
+        if (debug) cout << endl << "Bremsstrahlung" << endl;
     }
-    
 
     Double_t weight = GENSTK.wei[numsec-1];
     Int_t is = 0;
-    Int_t ntr;  
+    Int_t ntr;
     // 
     // Save particle in VMC stack
     cppstack->PushTrack(done, parent, pdg,
-		       px, py, pz, e,
-		       vx, vy, vz, tof,
-		       polx, poly, polz,
-		       mech, ntr, weight, is);
-    if (debug) cout << endl << " !!! stuprf: ntr=" << ntr << "pdg " << pdg << " parent=" << parent << "numsec " 
-	 << numsec << "npprmr " << npprmr << endl;
+                       px, py, pz, e,
+                       vx, vy, vz, tof,
+                       polx, poly, polz,
+                       mech, ntr, weight, is);
+    if (debug)
+       cout << endl << " !!! stuprf: ntr=" << ntr << " pdg " << pdg << " parent=" << parent
+             << " parent_pdg="<< fluka->PDGFromId(TRACKR.jtrack) << " numsec "
+             << numsec << " npprmr " << npprmr << " icode=" << fluka->GetIcode()
+             << endl;
+
 //
 //  Save current track number
     FLKSTK.ispark[FLKSTK.npflka][mkbmx2-1] = ntr;
     FLKSTK.ispark[FLKSTK.npflka][mkbmx2-2] = 0;
-  } // end of if (numsec-1 > npprmr)
+  } // end of if (numsec > npprmr)
+//  else {
+//     if(debug) {
+//        cout << endl << " !!! stuprf: skipping pushtrack   track=" << TRACKR.ispusr[mkbmx2-1]
+//              << " pdg " << fluka->PDGFromId(TRACKR.jtrack) << " numsec=" << numsec<< " npprmr=" << npprmr
+//              << " GENSTK pdg=" << fluka->PDGFromId(GENSTK.kpart[numsec-1]) << endl;
+//     }
+//  }
 } // end of stuprf
 } // end of extern "C"
 

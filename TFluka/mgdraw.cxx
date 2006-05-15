@@ -24,7 +24,6 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 {
     TFluka* fluka =  (TFluka*) gMC;
     if (mreg == fluka->GetDummyRegion()) return;
-    Int_t verbosityLevel = fluka->GetVerbosityLevel();
 //
 //  Make sure that stack has currrent track Id
 //
@@ -32,12 +31,25 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     TVirtualMCStack* cppstack = fluka->GetStack();
     
     if (TRACKR.jtrack == -1) {
-	trackId = OPPHST.louopp[OPPHST.lstopp];
-	if (trackId == 0) {
-	    trackId = FLKSTK.ispark[FLKSTK.npflka][mkbmx2-1];
-	}
+        trackId = OPPHST.louopp[OPPHST.lstopp];
+        if (trackId == 0) {
+            trackId = FLKSTK.ispark[FLKSTK.npflka][mkbmx2-1];
+        }
     } else {
-	trackId = TRACKR.ispusr[mkbmx2-1];
+        trackId = TRACKR.ispusr[mkbmx2-1];
+    }
+    
+    Int_t verbosityLevel = fluka->GetVerbosityLevel();
+
+    if (TRACKR.jtrack < -6) {
+       // (Unknow heavy Ion???)
+       // assing parent id ???
+       // id < -6 was skipped in stuprf =>   if (kpart < -6) return;
+       if (verbosityLevel >= 3) {
+          cout << "mgdraw: jtrack < -6 =" << TRACKR.jtrack
+               << " assign parent pdg=" << fluka->PDGFromId(TRACKR.ispusr[mkbmx2 - 3]) << endl;
+       }
+       TRACKR.jtrack = TRACKR.ispusr[mkbmx2 - 3];
     }
     
     cppstack->SetCurrentTrack(trackId);
@@ -50,38 +62,40 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     fluka->SetCaller(kMGDRAW);
 
     if (!TRACKR.ispusr[mkbmx2 - 2]) {
-	//
-	// Single step
-	if (verbosityLevel >= 3) {
-	    cout << endl << "mgdraw: energy deposition for:" << trackId << endl;
-	}
-	(TVirtualMCApplication::Instance())->Stepping();
-	fluka->SetTrackIsNew(kFALSE);
+        //
+        // Single step
+        if (verbosityLevel >= 3) {
+           cout << endl << "mgdraw: energy deposition for:" << trackId
+                 << " icode=" << icode
+                 << " pdg=" << fluka->PDGFromId(TRACKR.jtrack) << " flukaid="<< TRACKR.jtrack << endl;
+        }
+        (TVirtualMCApplication::Instance())->Stepping();
+        fluka->SetTrackIsNew(kFALSE);
     } else {
-	//
-	// Tracking is being resumed after secondary tracking
-	//
-	if (verbosityLevel >= 3) {
-	    cout << endl << "mgdraw: resuming Stepping(): " << trackId << endl;
-	}
+        //
+        // Tracking is being resumed after secondary tracking
+        //
+        if (verbosityLevel >= 3) {
+            cout << endl << "mgdraw: resuming Stepping(): " << trackId << endl;
+        }
 
-	fluka->SetTrackIsNew(kTRUE);
-	fluka->SetCaller(kMGResumedTrack);
-	(TVirtualMCApplication::Instance())->Stepping();
+        fluka->SetTrackIsNew(kTRUE);
+        fluka->SetCaller(kMGResumedTrack);
+        (TVirtualMCApplication::Instance())->Stepping();
 
-	// Reset flag and stored values
-	TRACKR.ispusr[mkbmx2 - 2] = 0;
-	for (Int_t i = 0; i < 9; i++) TRACKR.spausr[i] = -1.;
+        // Reset flag and stored values
+        TRACKR.ispusr[mkbmx2 - 2] = 0;
+        for (Int_t i = 0; i < 9; i++) TRACKR.spausr[i] = -1.;
 
 
-	if (verbosityLevel >= 3) {
-	    cout << endl << " !!! I am in mgdraw - first Stepping() after resume: " << icode << endl;
-	    cout << endl << " Track Id = " << trackId << " region = " << mreg << endl;
-	}
+        if (verbosityLevel >= 3) {
+            cout << endl << " !!! I am in mgdraw - first Stepping() after resume: " << icode << endl;
+            cout << " Track= " << trackId << " region = " << mreg << endl;
+        }
 
-	fluka->SetTrackIsNew(kFALSE);
-	fluka->SetCaller(kMGDRAW);
-	(TVirtualMCApplication::Instance())->Stepping();
+        fluka->SetTrackIsNew(kFALSE);
+        fluka->SetCaller(kMGDRAW);
+        (TVirtualMCApplication::Instance())->Stepping();
     }
 } // end of mgdraw
 } // end of extern "C"
