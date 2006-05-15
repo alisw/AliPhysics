@@ -23,6 +23,7 @@ aliroot -b  >& testSim.out << EOF
 // man->SetSpecificStorage("MUON","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
 gRandom->SetSeed($SEED);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
+MuonSim.SetMakeTrigger("MUON");
 MuonSim.SetWriteRawData("MUON");
 MuonSim.Run($NEVENTS);
 .q

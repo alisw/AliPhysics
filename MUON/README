@@ -213,6 +213,7 @@ The method AliSimulation::SetWriteRawData("MUON") enables on
 the muon rawdata generation
 aliroot -b << EOF  
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C")
+MuonSim.SetMakeTrigger("MUON");
 MuonSim.SetWriteRawData("MUON")
 MuonSim.Run(10)
 .q
