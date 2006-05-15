@@ -16,9 +16,9 @@ LDFLAGS		= -rdynamic -Wl,-rpath,./ $(LIBS) -o
 SOFLAGS         = -shared -Wl,-soname,
 CP		= cp
 
-LIB	  = libESDtrackQuality.so
-LIBO	  = ESDtrackQualityCutsCint.o \
-	    ESDtrackQualityCuts.o 
+LIB	  = libESDtrackCuts.so
+LIBO	  = AliESDtrackCutsCint.o \
+	    AliESDtrackCuts.o 
 
 #
 # Rules
