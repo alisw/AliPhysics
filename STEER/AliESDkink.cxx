@@ -49,8 +49,18 @@ AliESDkink::AliESDkink() :
       fTPCdensity[i][j]=-1;
       fTPCdensity2[i][j]=-1;
     }
-  fTPCncls[0]=0;
-  fTPCncls[1]=0;
+  fTPCncls[0]=fTPCncls[1]=0;
+
+  for (Int_t i=0; i<3; i++) {
+    fPdr[i] = 0;
+    fXr[i] = 0;
+    fPm[i] = 0;
+    fAngle[i] = 0;
+  }
+  
+  fLab[0]=fLab[1]=-1;
+  fIndex[0]=fIndex[1]=-1;
+  fMultiple[0]=fMultiple[1]=0;
 }
 
 void AliESDkink::SetMother(const AliExternalTrackParam & pmother)  {
