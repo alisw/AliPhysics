@@ -384,7 +384,7 @@ void AliMUONTrackReconstructor::ResetHitsForRec(void)
   // To reset the array and the number of HitsForRec,
   // and also the number of HitsForRec
   // and the index of the first HitForRec per chamber
-  if (fHitsForRecPtr) fHitsForRecPtr->Clear();
+  if (fHitsForRecPtr) fHitsForRecPtr->Delete();
   fNHitsForRec = 0;
   for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++)
     fNHitsForRecPerChamber[ch] = fIndexOfFirstHitForRecPerChamber[ch] = 0;
