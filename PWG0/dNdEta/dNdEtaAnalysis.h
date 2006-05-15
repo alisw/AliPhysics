@@ -1,3 +1,6 @@
+#ifndef DNDETANALYSIS_H
+#define DNDETANALYSIS_H
+
 // ------------------------------------------------------
 //
 // Class for dn/deta analysis
@@ -48,4 +51,4 @@ public:
   ClassDef(dNdEtaAnalysis,0)
 };
 
-
+#endif

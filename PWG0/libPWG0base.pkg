@@ -1,0 +1,11 @@
+SRCS= AliSelector.cxx \
+      dNdEta/AlidNdEtaEffSelector.cxx \
+      dNdEta/dNdEtaAnalysis.cxx \
+      dNdEta/dNdEtaCorrection.cxx \
+      esdTrackCuts/ESDtrackQualityCuts.cxx
+
+HDRS= $(SRCS:.cxx=.h)
+
+DHDR= PWG0baseLinkDef.h
+
+EINCLUDE=
