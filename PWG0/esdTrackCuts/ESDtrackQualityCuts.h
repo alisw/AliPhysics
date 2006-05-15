@@ -1,4 +1,7 @@
-//**************************************************************** 
+#ifndef ESDTRACKQUALITYCUTS
+#define ESDTRACKQUALITYCUTS
+
+//****************************************************************
 //
 //  Class for handling of ESD track quality cuts
 //
@@ -114,3 +117,4 @@ public:
   ClassDef(ESDtrackQualityCuts,0)
 };
 
+#endif

@@ -1,3 +1,6 @@
+#ifndef DNDETACORRECTION_H
+#define DNDETACORRECTION_H
+
 // ------------------------------------------------------
 //
 // Class to handle corrections for dN/dEta measurements
@@ -22,7 +25,7 @@
 #endif
 
 
-class dNdEtaCorrection : public TObject 
+class dNdEtaCorrection : public TObject
 {
 protected:
   
@@ -57,4 +60,4 @@ public:
   ClassDef(dNdEtaCorrection,0)
 };
 
-
+#endif
