@@ -2,12 +2,12 @@ testESDtrackCuts(Char_t* dataDir=, Int_t nRuns=10) {
 
   Char_t str[256];
 
-  gSystem->Load("libESDtrackQuality.so");
+  gSystem->Load("libESDtrackCuts.so");
 
   // ########################################################
   // definition of ESD track cuts
 
-  ESDtrackQualityCuts* trackCuts = new ESDtrackQualityCuts();
+  AliESDtrackCuts* trackCuts = new AliESDtrackCuts();
   trackCuts->DefineHistograms(4);
 
   trackCuts->SetMinNClustersTPC(50);
@@ -18,7 +18,9 @@ testESDtrackCuts(Char_t* dataDir=, Int_t nRuns=10) {
   trackCuts->SetMinNsigmaToVertex(3);
   trackCuts->SetAcceptKingDaughters(kFALSE);
 
-  AliLog::SetClassDebugLevel("ESDtrackQualityCuts",1);
+  trackCuts->SetPRange(0.3);
+
+  AliLog::SetClassDebugLevel("AliESDtrackCuts",1);
 
   // ########################################################
   // definition of used pointers
