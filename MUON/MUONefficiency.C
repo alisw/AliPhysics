@@ -297,7 +297,7 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
       return kFALSE;
     }
 
-    Int_t triggerWord = esd->GetTrigger();
+    Int_t triggerWord = esd->GetTriggerMask();
     Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ; 
 
     if (PRINTLEVEL > 0){
@@ -459,7 +459,7 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 		  ptTrig = 0x200;// mask for Lpt unlike sign pair
 		
 
-		if (esd->GetTrigger() &  ptTrig) NbTrigger++;
+		if (esd->GetTriggerMask() &  ptTrig) NbTrigger++;
 		
 		if (invMass > invMassMinInPeak && invMass < invMassMaxInPeak) {
 		  EventInMass++;
@@ -467,7 +467,7 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 		  hPtResonance->Fill(fVtot.Pt());
 
 		  // match with trigger
-		  if (muonTrack->GetMatchTrigger() && (esd->GetTrigger() & ptTrig))  EventInMassMatch++;
+		  if (muonTrack->GetMatchTrigger() && (esd->GetTriggerMask() & ptTrig))  EventInMassMatch++;
 
 		}
 		

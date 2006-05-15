@@ -81,9 +81,9 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
   TH1F *hChi2PerDof = new TH1F("hChi2PerDof", "Muon track chi2/d.o.f.", 100, 0., 20.);
   TH1F *hInvMassAll = new TH1F("hInvMassAll", "Mu+Mu- invariant mass (GeV/c2)", 480, 0., 12.);
   TH1F *hInvMassBg = new TH1F("hInvMassBg", "Mu+Mu- invariant mass BG(GeV/c2)", 480, 0., 12.);
-TH2F *hInvMassAll_vs_Pt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",480,0.,12.,80,0.,20.);
-TH2F *hInvMassBgk_vs_Pt = new TH2F("hInvMassBgk_vs_Pt","hInvMassBgk_vs_Pt",480,0.,12.,80,0.,20.);
-TH1F *hInvMassRes;
+  TH2F *hInvMassAll_vs_Pt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",480,0.,12.,80,0.,20.);
+  TH2F *hInvMassBgk_vs_Pt = new TH2F("hInvMassBgk_vs_Pt","hInvMassBgk_vs_Pt",480,0.,12.,80,0.,20.);
+  TH1F *hInvMassRes;
   TH1F *hPrimaryVertex = new TH1F("hPrimaryVertex","SPD reconstructed Z vertex",120,-12,12);
 
   if (ResType == 553) {
@@ -277,10 +277,10 @@ TH1F *hInvMassRes;
 	      else 
 		ptTrig =  0x200;// mask for Lpt unlike sign pair
 
-	      if (esd->GetTrigger() &  ptTrig) NbTrigger++; 
+	      if (esd->GetTriggerMask() &  ptTrig) NbTrigger++; 
 	      if (invMass > massMin && invMass < massMax) {
 		EventInMass++;
-		if (muonTrack->GetMatchTrigger() && (esd->GetTrigger() & ptTrig))// match with trigger
+		if (muonTrack->GetMatchTrigger() && (esd->GetTriggerMask() & ptTrig))// match with trigger
 		  EventInMassMatch++;
 
   		hRapResonance->Fill(fVtot.Rapidity());

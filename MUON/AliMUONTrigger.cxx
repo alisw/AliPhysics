@@ -24,7 +24,7 @@
 #include "AliMUONLoader.h"
 #include "AliMUONData.h"
 #include "AliMUONDigit.h"
-#include "AliMUONTriggerDecision.h"
+#include "AliMUONGlobalTrigger.h"
 #include "AliMUONTrigger.h"
 
 ///
@@ -33,7 +33,8 @@
 /// Implementation of AliTriggerDetector for MUON detector
 ///
 /// So far, the inputs are taken from AliMUONTriggerDecision object
-///
+/// April 06, E.L.T.
+/// May 06, taken info from Global Trigger branch (Ch.F)
 
 //----------------------------------------------------------------------
 ClassImp(AliMUONTrigger)
@@ -79,72 +80,49 @@ void AliMUONTrigger::CreateInputs()
 void AliMUONTrigger::Trigger()
 {
   // sets the trigger inputs
+  AliMUONGlobalTrigger* globalTrigger;
+  TClonesArray* globalTriggerArray;
 
    AliRunLoader* runLoader = gAlice->GetRunLoader();
 
    AliLoader * muonLoader = runLoader->GetLoader("MUONLoader");
    muonLoader->LoadDigits("READ");
+
    // Creating MUON data container
    AliMUONData* muonData = new AliMUONData(muonLoader,"MUON","MUON");
-   muonData->SetTreeAddress("D");
-   muonData->GetDigits();
-   Int_t idebug = 1;
-   // Creating MUONTriggerDecision
-   AliMUONTriggerDecision* decision = new AliMUONTriggerDecision(muonLoader ,idebug,muonData);
-   AliMUONDigit * mDigit;
-   Int_t tracks[10];
-   Int_t charges[10];
-   Int_t digits[7];
 
-   for(Int_t ichamber=10; ichamber<14; ichamber++) {
-      Int_t idigit, ndigits;
-      ndigits = (Int_t) muonData->Digits(ichamber)->GetEntriesFast();
-//            printf(">>> Chamber Cathode ndigits %d %d %d\n",ichamber,icathode,ndigits);
-      for(idigit=0; idigit<ndigits; idigit++) {
-         mDigit = static_cast<AliMUONDigit*>(muonData->Digits(ichamber)->At(idigit));
-         digits[0] = mDigit->PadX();
-         digits[1] = mDigit->PadY();
-         digits[2] = mDigit->Cathode();
-         digits[3] = mDigit->Signal();
-         digits[4] = mDigit->Physics();
-         digits[5] = mDigit->Hit();
-         digits[6] = mDigit->DetElemId();
+   // get global info
+   muonData->SetTreeAddress("GLT");
+   muonData->GetTriggerD();
+   globalTriggerArray = muonData->GlobalTrigger(); 
+   globalTrigger = (AliMUONGlobalTrigger*)globalTriggerArray->UncheckedAt(0);
 
-         Int_t digitindex = 0 ;
-  //       printf("ichamber ix iy %d %d %d \n",ichamber,mDigit->PadX(),mDigit->PadY());
-
-         decision->AddDigit(ichamber, tracks, charges, digits, digitindex );
-      } // loop on digits
-   } // loop on chambers
-   muonData->ResetDigits();
-   decision->Trigger();
-   decision->ClearDigits();
-
-   // Set the trigger inputs = "global decision" 
-   Int_t singlePlus[3];  // tot num of single plus
-   Int_t singleMinus[3]; // tot num of single minus
-   Int_t singleUndef[3]; // tot num of single undefined
-   Int_t pairUnlike[3];  // tot num of unlike-sign pairs
-   Int_t pairLike[3];    // tot num of like-sign pairs
-   decision->GetGlobalTrigger(singlePlus, singleMinus, singleUndef, pairUnlike, pairLike);
-
-   if( singlePlus[0] )  SetInput("MUON_SPlus_LPt_L0");
-   if( singlePlus[1] )  SetInput("MUON_SPlus_HPt_L0");
-   if( singlePlus[2] )  SetInput("MUON_SPlus_All_L0");
+   if (globalTrigger == 0x0) { 
+     AliWarning("No Global Trigger available");
+     return;
+   }
+   // set CTP
+   if (globalTrigger->SinglePlusLpt())  SetInput("MUON_SPlus_LPt_L0");
+   if (globalTrigger->SinglePlusHpt())  SetInput("MUON_SPlus_HPt_L0");
+   if (globalTrigger->SinglePlusApt())  SetInput("MUON_SPlus_All_L0");
    
-   if( singleMinus[0] ) SetInput("MUON_SMinus_LPt_L0");
-   if( singleMinus[1] ) SetInput("MUON_SMinus_HPt_L0");
-   if( singleMinus[2] ) SetInput("MUON_SMinus_All_L0");
+   if (globalTrigger->SingleMinusLpt()) SetInput("MUON_SMinus_LPt_L0");
+   if (globalTrigger->SingleMinusHpt()) SetInput("MUON_SMinus_HPt_L0");
+   if (globalTrigger->SingleMinusApt()) SetInput("MUON_SMinus_All_L0");
    
-   if( singleUndef[0] ) SetInput("MUON_SUndef_LPt_L0");
-   if( singleUndef[1] ) SetInput("MUON_SUndef_HPt_L0");
-   if( singleUndef[2] ) SetInput("MUON_SUndef_All_L0");
+   if (globalTrigger->SingleUndefLpt()) SetInput("MUON_SUndef_LPt_L0");
+   if (globalTrigger->SingleUndefHpt()) SetInput("MUON_SUndef_HPt_L0");
+   if (globalTrigger->SingleUndefApt()) SetInput("MUON_SUndef_All_L0");
    
-   if( pairUnlike[0] )  SetInput("MUON_Unlike_LPt_L0");
-   if( pairUnlike[1] )  SetInput("MUON_Unlike_HPt_L0");
-   if( pairUnlike[2] )  SetInput("MUON_Unlike_All_L0");
+   if (globalTrigger->PairUnlikeLpt())  SetInput("MUON_Unlike_LPt_L0");
+   if (globalTrigger->PairUnlikeHpt())  SetInput("MUON_Unlike_HPt_L0");
+   if (globalTrigger->PairUnlikeApt())  SetInput("MUON_Unlike_All_L0");
    
-   if( pairLike[0] )    SetInput("MUON_Like_LPt_L0");
-   if( pairLike[1] )    SetInput("MUON_Like_HPt_L0");
-   if( pairLike[2] )    SetInput("MUON_Like_All_L0");
+   if (globalTrigger->PairLikeLpt())    SetInput("MUON_Like_LPt_L0");
+   if (globalTrigger->PairLikeHpt())    SetInput("MUON_Like_HPt_L0");
+   if (globalTrigger->PairLikeApt())    SetInput("MUON_Like_All_L0");
+
+   muonData->ResetTrigger();
+   muonLoader->UnloadDigits();
+
 }
