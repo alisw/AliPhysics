@@ -39,7 +39,7 @@
 const Bool_t AliITSClusterFinderSSD::fgkSIDEP=kTRUE;
 const Bool_t AliITSClusterFinderSSD::fgkSIDEN=kFALSE;
 const Int_t AliITSClusterFinderSSD::fgkNoiseThreshold=5;
-const Int_t debug=0;
+//const Int_t debug=0;
 
 ClassImp(AliITSClusterFinderSSD)
   
@@ -170,7 +170,7 @@ void AliITSClusterFinderSSD::InitReconstruction(){
     //fSegmentation->Angles(stereoP,stereoN);
      GetSeg()->Angles(stereoP,stereoN);
    CalcStepFactor(stereoP,stereoN);
-    if (debug) cout<<"fSFF = "<<fSFF<<"  fSFB = "<<fSFB<<"\n";
+   //    if (debug) cout<<"fSFF = "<<fSFF<<"  fSFB = "<<fSFB<<"\n";
 }
 //______________________________________________________________________
 void AliITSClusterFinderSSD::FindRawClusters(Int_t module){
@@ -243,10 +243,20 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(Int_t module){
     dbuffer[0]=lDigitsIndexP[0];
     
     //If next digit is a neigh. of previous, adds to last clust. this digit
+    /*    
+    cout<<"----------------------------------------------------------------"<<endl;
+    cout<<"module="<<module<<" , # of Pdigits="<<fNDigitsP<<" , # of Ndigits="<<fNDigitsN<<endl;
+
+    cout<<"  Pside"<<endl;
+    cout<<"       "<<((AliITSdigitSSD*)lDigits[lDigitsIndexP[0]])->GetStripNumber()<<" "<<
+      ((AliITSdigitSSD*)lDigits[lDigitsIndexP[0]])->GetSignal()<<endl;
+    */
+
     for (i=1; i<fNDigitsP; i++) {
       
       //reads new digit
       currentstripNo = ((AliITSdigitSSD*)lDigits[lDigitsIndexP[i]])->GetStripNumber(); 
+      //      cout<<"       "<<currentstripNo<<" "<<((AliITSdigitSSD*)lDigits[lDigitsIndexP[i]])->GetSignal()<<endl;
       
       if((((AliITSdigitSSD*)lDigits[lDigitsIndexP[i-1]])->GetStripNumber()) ==  (currentstripNo-1) ) 
 	dbuffer[dnumber++]=lDigitsIndexP[i];
@@ -266,6 +276,9 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(Int_t module){
 	//if(flag==dnumber) {
 	if(flag>0) {
 	  //create a new one side cluster
+
+	  //	  cout<<"          new cluster with "<<dnumber<<" digits"<<endl;
+
 	  new(lClusterP[fNClusterP++]) AliITSclusterSSD(dnumber,dbuffer,
 							Digits(),
 							fgkSIDEP); 
@@ -294,6 +307,9 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(Int_t module){
     //if(flag==dnumber) {
     if(flag>0) {
       //create a new one side cluster
+
+      //      cout<<"          new cluster with "<<dnumber<<" digits"<<endl;
+
       new(lClusterP[fNClusterP++]) AliITSclusterSSD(dnumber,dbuffer,
 						    Digits(),
 						    fgkSIDEP); 
@@ -309,8 +325,13 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(Int_t module){
     dbuffer[0]=lDigitsIndexN[0];
     //If next digit is a neigh. of previous, adds to last clust. this digit
     
+    //    cout<<"  Nside"<<endl;
+    //    cout<<"       "<<((AliITSdigitSSD*)lDigits[lDigitsIndexN[0]])->GetStripNumber()<<" "<<
+    //      ((AliITSdigitSSD*)lDigits[lDigitsIndexN[0]])->GetSignal()<<endl;
+
     for (i=1; i<fNDigitsN; i++) { 
       currentstripNo = ((AliITSdigitSSD*)(lDigits[lDigitsIndexN[i]]))->GetStripNumber();
+      //      cout<<"       "<<currentstripNo<<" "<<((AliITSdigitSSD*)lDigits[lDigitsIndexN[i]])->GetSignal()<<endl;
       
       if ( (((AliITSdigitSSD*)lDigits[lDigitsIndexN[i-1]])->GetStripNumber()) == (currentstripNo-1) ) 
 	dbuffer[dnumber++]=lDigitsIndexN[i];
@@ -330,6 +351,9 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(Int_t module){
 	//if(flag==dnumber) {
 	if(flag>0) {
 	  //create a new one side cluster
+
+	  //	  cout<<"          new cluster with "<<dnumber<<" digits"<<endl;
+
 	  new(lClusterN[fNClusterN++]) AliITSclusterSSD(dnumber,dbuffer,
 							Digits(),
 							fgkSIDEN);
@@ -356,6 +380,9 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(Int_t module){
     //if(flag==dnumber) {
     if(flag>0) {
       //create a new one side cluster
+
+      //      cout<<"          new cluster with "<<dnumber<<" digits"<<endl;
+
       new(lClusterN[fNClusterN++]) AliITSclusterSSD(dnumber,dbuffer,
 						    Digits(),
 						    fgkSIDEN);
@@ -366,8 +393,8 @@ void AliITSClusterFinderSSD::FindNeighbouringDigits(Int_t module){
     flag=0;
     delete [] dbuffer;
     
-    if (debug) cout<<"\n Found clusters: fNClusterP = "<<fNClusterP
-		   <<"  fNClusterN ="<<fNClusterN<<"\n";
+    //    if (debug) cout<<"\n Found clusters: fNClusterP = "<<fNClusterP
+    //		   <<"  fNClusterN ="<<fNClusterN<<"\n";
 }
 //______________________________________________________________________
 void AliITSClusterFinderSSD::SeparateOverlappedClusters(){
@@ -557,7 +584,7 @@ void AliITSClusterFinderSSD::FillDigitsIndex(){
     //    delete [] psidx;
     //delete [] nsidx;
 
-    if (debug) cout<<"Digits :  P = "<<fNDigitsP<<"   N = "<<fNDigitsN<<endl;
+    //    if (debug) cout<<"Digits :  P = "<<fNDigitsP<<"   N = "<<fNDigitsN<<endl;
 }
 //______________________________________________________________________
 void AliITSClusterFinderSSD::SortDigits(){
@@ -751,6 +778,9 @@ Bool_t AliITSClusterFinderSSD::CreateNewRecPoint(Float_t P,Float_t dP,
         rnew.SetLabel(tr[2],2);
         rnew.SetDetectorIndex(ind);
         rnew.SetLayer(lyr);
+
+	rnew.SetNy(nstripsP);
+	rnew.SetNz(nstripsN);
 
     //rnew.fTracks[0]=tr[0];
     // rnew.fTracks[1]=tr[1];
