@@ -2584,6 +2584,13 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
       Float_t sdedx = (seed->fSDEDX[0]+seed->fSDEDX[1]+seed->fSDEDX[2]+seed->fSDEDX[3])*0.25;
       Float_t dedx  = seed->GetdEdx();
       esd->SetTPCsignal(dedx, sdedx, ndedx);
+      //
+      // add seed to the esd track in Calib level
+      //
+      if (AliTPCReconstructor::StreamLevel()>0){
+	AliTPCseed * seedCopy = new AliTPCseed(*seed, kTRUE); 
+	esd->AddCalibObject(seedCopy);
+      }
       ntracks++;
     }
     else{
