@@ -14,6 +14,6 @@
 #pragma link C++ class dNdEtaAnalysis+;
 #pragma link C++ class dNdEtaCorrection+;
 
-#pragma link C++ class ESDtrackQualityCuts+;
+#pragma link C++ class AliESDtrackCuts+;
 
 #endif

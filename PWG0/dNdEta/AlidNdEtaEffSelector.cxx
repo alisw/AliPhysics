@@ -51,7 +51,7 @@ void AlidNdEtaEffSelector::SlaveBegin(TTree * tree)
 
   AliSelector::SlaveBegin(tree);
 
-  fEsdTrackCuts = new ESDtrackQualityCuts();
+  fEsdTrackCuts = new AliESDtrackCuts();
   fEsdTrackCuts->DefineHistograms(1);
 
   fEsdTrackCuts->SetMinNClustersTPC(50);

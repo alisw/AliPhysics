@@ -16,6 +16,6 @@ void makeCorrection2(Char_t* dataDir, Int_t nRuns=20)
   gSystem->Load("../AliSelector_cxx.so");*/
   //gSystem->Load("AlidNdEtaEffSelector_cxx.so");
 
-  TChain* chain = CreateESDChain(dataDir);
+  TChain* chain = CreateESDChain(dataDir, nRuns);
   chain->Process("AlidNdEtaEffSelector.cxx+");
 }
