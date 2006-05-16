@@ -7,7 +7,7 @@ createTriggerDescriptor_pp()
 
    // Define a Cluster Detector
    //descrip.AddDetectorCluster( "ALL" );
-   descrip.AddDetectorCluster( "ITS START VZERO" ); // no CRT yet
+   descrip.AddDetectorCluster( "ITS START VZERO TOF" ); // no CRT yet
 
    descrip.AddCondition( "VZERO_LEFT",      "VZERO_LEFT",      "VZERO A (Left)",            (ULong64_t)0x1  );
    descrip.AddCondition( "VZERO_RIGHT",     "VZERO_RIGHT",     "VZERO C (Right)",           (ULong64_t)0x1 << 1 );
@@ -17,7 +17,14 @@ createTriggerDescriptor_pp()
    descrip.AddCondition( "ITS_SPD_GFO_L0",  "ITS_SPD_GFO_L0",  "SPD global fast-or",        (ULong64_t)0x1 << 5 );
    descrip.AddCondition( "ITS_SPD_HMULT_L0","ITS_SPD_HMULT_L0","SPD high mult. 100 ",       (ULong64_t)0x1 << 6 );
 
-   descrip.AddCondition( "ITS_SPD_GFO_L0 & VZERO_AND", "MB","Minimum Bias",                 (ULong64_t)0x1 << 7 );
+   descrip.AddCondition( "ITS_SPD_GFO_L0 & VZERO_AND",
+                         "MB",
+                         "Minimum Bias",
+                         (ULong64_t)0x1 << 7 );
+   descrip.AddCondition( "ITS_SPD_GFO_L0 & VZERO_AND | TOF_pp_MB_L0",
+                         "MB-TOF",
+                         "Minimum Bias with TOF",
+                         (ULong64_t)0x1 << 8 );
 
    cout << endl << endl;
 
