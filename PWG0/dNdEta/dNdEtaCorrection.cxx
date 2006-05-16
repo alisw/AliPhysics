@@ -3,7 +3,7 @@
 #include <TCanvas.h>
 
 //____________________________________________________________________
-ClassImp(dNdEtaCorrection);
+ClassImp(dNdEtaCorrection)
 
 //____________________________________________________________________
 dNdEtaCorrection::dNdEtaCorrection(Char_t* name) {
