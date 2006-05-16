@@ -369,21 +369,22 @@ Bool_t AliRawReaderRoot::ReadHeader()
       fPosition += sizeof(AliRawDataHeader);
     }
 
-    if (fHeader->fSize != 0xFFFFFFFF) {
+    if (fHeader && (fHeader->fSize != 0xFFFFFFFF)) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
+
+      // check consistency of data size in the header and in the sub event
+      if (fPosition + fCount > fEnd) {  
+	Error("ReadHeader", "size in data header exceeds event size!");
+	Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
+	fEquipment->GetEquipmentHeader()->Dump();
+	fCount = 0;
+	fPosition = fEnd;
+	fErrorCode = kErrSize;
+	continue;
+      }
+
     } else {
       fCount = fEnd - fPosition;
-    }
-
-    // check consistency of data size in the header and in the sub event
-    if (fPosition + fCount > fEnd) {  
-      Error("ReadHeader", "size in data header exceeds event size!");
-      Warning("ReadHeader", "skipping %d bytes", fEnd - fPosition);
-      fEquipment->GetEquipmentHeader()->Dump();
-      fCount = 0;
-      fPosition = fEnd;
-      fErrorCode = kErrSize;
-      continue;
     }
 
   } while (!IsSelected());
@@ -525,9 +526,7 @@ Int_t AliRawReaderRoot::CheckData() const
       // check consistency of data size in the header and in the equipment
       AliRawDataHeader* header = (AliRawDataHeader*) position;
       if (header->fSize != 0xFFFFFFFF) {
-	if (position + header->fSize > end) {
-	  result |= kErrSize;
-	}
+	if (position + header->fSize > end) result |= kErrSize;
       }
     }
   };
