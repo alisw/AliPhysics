@@ -4,7 +4,7 @@
 #include <TH2F.h>
 
 #include "../AliSelector.h"
-#include "../esdTrackCuts/ESDtrackQualityCuts.h"
+#include "../esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEtaCorrection.h"
 
 class TParticle;
@@ -24,7 +24,7 @@ class AlidNdEtaEffSelector : public AliSelector {
  protected:
   Bool_t IsPrimary(const TParticle* aParticle, Int_t aTotalPrimaries);
 
-  ESDtrackQualityCuts* fEsdTrackCuts;
+  AliESDtrackCuts* fEsdTrackCuts;
   dNdEtaCorrection* fdNdEtaCorrection;
 
  private:

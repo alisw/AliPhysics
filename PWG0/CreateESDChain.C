@@ -1,4 +1,4 @@
-TChain* CreateESDChain(const char* aDataDir, Bool_t aAddHeader = kTRUE)
+TChain* CreateESDChain(const char* aDataDir, Int_t aRuns = 20, Bool_t aAddHeader = kTRUE)
 {
   if (!aDataDir)
     return 0;
@@ -15,11 +15,16 @@ TChain* CreateESDChain(const char* aDataDir, Bool_t aAddHeader = kTRUE)
   Int_t nDirs               = dirList->GetEntries();
   gSystem->cd(execDir);
 
+  Int_t count = 0;
+
   for (Int_t iDir=0; iDir<nDirs; ++iDir)
   {
     TSystemFile* presentDir = (TSystemFile*) dirList->At(iDir);
     if (!presentDir || !presentDir->IsDirectory() || strcmp(presentDir->GetName(), ".") == 0 || strcmp(presentDir->GetName(), "..") == 0)
       continue;
+
+    if (count++ == aRuns)
+      break;
 
     TString presentDirName(aDataDir);
     presentDirName += "/";

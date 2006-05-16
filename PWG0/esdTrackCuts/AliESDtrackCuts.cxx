@@ -59,25 +59,6 @@ AliESDtrackCuts::AliESDtrackCuts() {
 
 //____________________________________________________________________
 Bool_t 
-AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack, AliESDVertex* esdVtx, Double_t field) {
-  //
-  // re-calculate the track-to-vertex
-  esdTrack->RelateToVertex(esdVtx, field, 1e99);
-  
-  return AcceptTrack(esdTrack);
-}
-
-//____________________________________________________________________
-Bool_t 
-AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack, Double_t* vtx, Double_t* vtx_res, Double_t field) {
-  
-  AliESDVertex* esdVtx = new AliESDVertex(vtx, vtx_res,"new vertex");
-  esdTrack->RelateToVertex(esdVtx, field, 1e99);
-  return AcceptTrack(esdTrack);
-} 
-
-//____________________________________________________________________
-Bool_t 
 AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // 
   // figure out if the tracks survives all the track cuts defined
@@ -399,7 +380,7 @@ AliESDtrackCuts::DefineHistograms(Int_t color) {
 
 //____________________________________________________________________
 void 
-AliESDtrackCuts::Print() {
+AliESDtrackCuts::Print(const Option_t*) const {
 
   AliInfo("AliESDtrackCuts...");
 }

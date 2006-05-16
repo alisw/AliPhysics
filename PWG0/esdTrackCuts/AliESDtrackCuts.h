@@ -14,16 +14,15 @@
 //  - update print method
 //  - is there a smarter way to manage the cuts?
 //
+//
+//  NOTE: 
+//  - 
+//
 
-#ifndef ROOT_TObject
+
 #include "TObject.h"
-#endif
-#ifndef ROOT_TTree
 #include "TTree.h"
-#endif
-#ifndef ROOT_TH2
 #include "TH2.h"
-#endif
 
 #include "AliESD.h"
 #include "AliESDtrack.h"
@@ -108,11 +107,7 @@ public:
   AliESDtrackCuts();
   
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
-  Bool_t AcceptTrack(AliESDtrack* esdTrack, AliESDVertex* esdVtx, Double_t field);
-  Bool_t AcceptTrack(AliESDtrack* esdTrack, Double_t* vtx, Double_t* vtx_res, Double_t field);
-  Bool_t AcceptTrack(AliESDtrack* esdTrack, AliESDVertex* esdVtx, Float_t field)
-    {return AcceptTrack(esdTrack,esdVtx, Double_t(field));}
-
+  
   TObjArray* GetAcceptedTracks(AliESD* esd);
 
   //######################################################
@@ -145,7 +140,7 @@ public:
   void DefineHistograms(Int_t color=1);
   void SaveHistograms(Char_t* dir="track_selection");
   
-  void Print();
+  virtual void Print(const Option_t* = "") const;
 
   // void SaveQualityCuts(Char_t* file)
   // void LoadQualityCuts(Char_t* file)
