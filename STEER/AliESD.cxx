@@ -42,8 +42,9 @@ AliESD::AliESD():
   fZDCEMEnergy(0),
   fZDCParticipants(0),
   fT0zVertex(0),
+  fSPDVertex(0),
+  fPrimaryVertex(0),
   fT0timeStart(0),
-  fPrimaryVertex(),
   fTracks("AliESDtrack",15000),
   fHLTConfMapTracks("AliESDHLTtrack",25000),
   fHLTHoughTracks("AliESDHLTtrack",15000),
@@ -73,6 +74,8 @@ AliESD::~AliESD()
   //
   // Standard destructor
   //
+  delete fSPDVertex;
+  delete fPrimaryVertex;
   fTracks.Delete();
   fHLTConfMapTracks.Delete();
   fHLTHoughTracks.Delete();
@@ -124,7 +127,8 @@ void AliESD::Reset()
   fZDCParticipants=0;
   fT0zVertex=0;
   fT0timeStart = 0;
-  fPrimaryVertex.Reset();
+  delete fSPDVertex; fSPDVertex=0;
+  delete fPrimaryVertex; fPrimaryVertex=0;
   fTracks.Clear();
   fHLTConfMapTracks.Clear();
   fHLTHoughTracks.Clear();
@@ -154,9 +158,9 @@ void AliESD::Print(Option_t *) const
 	 GetTriggerMask(),
 	 GetMagneticField() );
   printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
-	 fPrimaryVertex.GetXv(), fPrimaryVertex.GetXRes(),
-	 fPrimaryVertex.GetYv(), fPrimaryVertex.GetYRes(),
-	 fPrimaryVertex.GetZv(), fPrimaryVertex.GetZRes());
+	 fPrimaryVertex->GetXv(), fPrimaryVertex->GetXRes(),
+	 fPrimaryVertex->GetYv(), fPrimaryVertex->GetYRes(),
+	 fPrimaryVertex->GetZv(), fPrimaryVertex->GetZRes());
   printf("Event from reconstruction version %d \n",fRecoVersion);
   printf("Number of tracks: \n");
   printf("                 charged   %d\n", GetNumberOfTracks());

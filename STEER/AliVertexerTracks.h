@@ -21,13 +21,12 @@
  *                                                                           *
  *****************************************************************************/
 
-#include "AliVertex.h"
+#include "AliESDVertex.h"
 #include "AliTracker.h"
 
 #include <TObjArray.h>
 
 class TTree; 
-class AliVertex; 
 class AliESD;
 
 class AliVertexerTracks : public TObject {
@@ -36,6 +35,8 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(); 
   AliVertexerTracks(Double_t xStart, Double_t yStart); 
   virtual ~AliVertexerTracks();
+
+  AliESDVertex *FindVertex(const AliESD *event);
 
   // computes the vertex from the set of tracks in the tree
   AliVertex* VertexForSelectedTracks(TTree *trkTree);
@@ -61,7 +62,7 @@ class AliVertexerTracks : public TObject {
   static Double_t GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t *x0);
   static Double_t GetDeterminant3X3(Double_t matr[][3]);
 
-  AliVertex fVert;            // vertex after vertex finder
+  AliESDVertex fVert;         // vertex after vertex finder
   Double_t  fNominalPos[2];   // initial knowledge on vertex position
   Int_t     fMinTracks;       // minimum number of tracks
   TObjArray fTrkArray;        // array with tracks to be processed
@@ -81,7 +82,7 @@ class AliVertexerTracks : public TObject {
   //         approximated as straight lines 
 
 
-  ClassDef(AliVertexerTracks,1) // 3D Vertexing with ESD tracks 
+  ClassDef(AliVertexerTracks,2) // 3D Vertexing with ESD tracks 
 };
 
 #endif

@@ -30,6 +30,7 @@
 //---- AliRoot headers -----
 #include "AliStrLine.h"
 #include "AliVertexerTracks.h"
+#include "AliESD.h"
 #include "AliESDtrack.h"
 
 ClassImp(AliVertexerTracks)
@@ -116,6 +117,43 @@ AliVertex* AliVertexerTracks::VertexForSelectedTracks(TTree *trkTree) {
   if(fAlgo==5)  VertexFinder(0);
   return &fVert;
 }
+
+//----------------------------------------------------------------------------
+AliESDVertex* AliVertexerTracks::FindVertex(const AliESD *event) {
+//
+// This is a simple wrapping (by Jouri.Belikov@cern.ch) over the original
+// code by the authors of this class.
+//
+  Int_t nt=event->GetNumberOfTracks(), nacc=0;
+  while (nt--) {
+    AliESDtrack *t=event->GetTrack(nt);
+    if ((t->GetStatus()&AliESDtrack::kITSrefit)==0) continue;
+    fTrkArray.AddLast(t);
+    nacc++;
+  }
+
+  // get tracks and propagate them to initial vertex position
+  if(nacc < fMinTracks) {
+    printf("TooFewTracks\n");
+    Double_t vtx[3]={0,0,0};
+    fVert.SetXYZ(vtx);
+    fVert.SetDispersion(999);
+    fVert.SetNContributors(-5);
+  } else 
+    switch (fAlgo) {
+       case 1: StrLinVertexFinderMinDist(1); break;
+       case 2: StrLinVertexFinderMinDist(0); break;
+       case 3: HelixVertexFinder();          break;
+       case 4: VertexFinder(1);              break;
+       case 5: VertexFinder(0);              break;
+       default: printf("Wrong algorithm\n"); break;  
+    }
+
+  fTrkArray.Clear();
+  return &fVert;
+}
+
+
 //----------------------------------------------------------------------------
 AliVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray) {
 //
