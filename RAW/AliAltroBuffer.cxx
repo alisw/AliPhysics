@@ -34,7 +34,7 @@ ClassImp(AliAltroBuffer)
 AliAltroBuffer::AliAltroBuffer(const char* fileName, const AliAltroMapping *mapping):
   fShift(0),
   fCurrentCell(0),
-  fFreeCellBuffer(0),
+  fFreeCellBuffer(16),
   fVerbose(0),
   fFile(NULL),
   fDataHeaderPos(0),
@@ -43,8 +43,6 @@ AliAltroBuffer::AliAltroBuffer(const char* fileName, const AliAltroMapping *mapp
   //the buffer is cleaned 
   for (Int_t i = 0; i < 5; i++) fBuffer[i] = 0;
 
-  fFreeCellBuffer = 16;
-  fShift = 32; 
   //open the output file
   fFile = new AliFstream(fileName);
 
@@ -110,23 +108,22 @@ void AliAltroBuffer::FillBuffer(Int_t val)
     val = 0x3FF;
   }
   fFreeCellBuffer--;
-  if (fShift < 10) {
-    Int_t temp = val;
-    val = val >> (10-fShift);
-    fBuffer[fCurrentCell] |= val;
+
+  fBuffer[fCurrentCell] |= (val << fShift);
+  fShift += 10;
+
+  if (fShift > 32) {
     fCurrentCell++;
-    fShift += 32;
-    val = temp;
+    fShift -= 32;
+    fBuffer[fCurrentCell] |= (val >> (10 - fShift));
   }
-  fShift -= 10;
-  val = val << fShift;
-  fBuffer[fCurrentCell] |= val;
-  if (!fShift) {
+
+  if (fShift == 32) {
     //Buffer is written into a file
     fFile->WriteBuffer((char*)fBuffer, sizeof(UInt_t)*5);
     //Buffer is empty
     for (Int_t j = 0; j < 5; j++) fBuffer[j] = 0;
-    fShift = 32;
+    fShift = 0;
     fCurrentCell = 0;
     fFreeCellBuffer = 16;
   }
@@ -265,6 +262,7 @@ void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t compressed)
     fDataHeaderPos = fFile->Tellp();
     fFile->WriteBuffer((char*)(&header), sizeof(header));
   } else {
+    WriteRCUTrailer(0);
     UInt_t currentFilePos = fFile->Tellp();
     fFile->Seekp(fDataHeaderPos);
     header.fSize = currentFilePos-fDataHeaderPos;
@@ -273,4 +271,42 @@ void AliAltroBuffer::WriteDataHeader(Bool_t dummy, Bool_t compressed)
     fFile->WriteBuffer((char*)(&header), sizeof(header));
     fFile->Seekp(currentFilePos);
   }
+}
+
+//_____________________________________________________________________________
+void AliAltroBuffer::WriteRCUTrailer(Int_t rcuId)
+{
+  // Writes the RCU trailer
+  // rcuId the is serial number of the corresponding
+  // RCU. The basic format of the trailer can be
+  // found in the RCU manual.
+  // This method should be called at the end of
+  // raw data writing.
+
+  UInt_t currentFilePos = fFile->Tellp();
+  UInt_t size = currentFilePos-fDataHeaderPos;
+  size -= sizeof(AliRawDataHeader);
+  
+  if ((size % 5) != 0) {
+    AliFatal(Form("The current raw data payload is not a mutiple of 5 (%d) ! Can not write the RCU trailer !",size));
+    return;
+  }
+
+  // Now put the size in unit of number of 40bit words
+  size /= 5;
+  fFile->WriteBuffer((char *)(&size),sizeof(UInt_t));
+
+  // Now several not yet full defined fields
+  // In principle they are supposed to contain
+  // information about the sampling frequency,
+  // L1 phase, list of 'dead' FECs, etc.
+  //  UInt_t buffer[n];
+  //  fFile->WriteBuffer((char *)(buffer),sizeof(UInt_t)*n);
+  
+  //  Now the RCU identifier and size of the trailer
+  //  FOr the moment the triler size is 2 32-bit words
+  UInt_t buffer = 2;
+  buffer |= ((rcuId & 0x3FF) << 22);
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
+
 }

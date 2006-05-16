@@ -56,6 +56,10 @@ class AliAltroBuffer: public TObject {
 
   void  WriteDataHeader(Bool_t dummy, Bool_t compressed);
   //this method is used to write the data header
+
+  void  WriteRCUTrailer(Int_t rcuId);
+  //this method is used to write the RCU trailer
+
   void  SetVerbose(Int_t val) {fVerbose = val;}
   //this method is used to set the verbose level 
   //level  0 no output messages

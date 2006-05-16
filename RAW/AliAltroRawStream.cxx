@@ -38,6 +38,8 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fNoAltroMapping(kTRUE),
   fDDLNumber(-1),
   fPrevDDLNumber(-1),
+  fRCUId(-1),
+  fPrevRCUId(-1),
   fHWAddress(-1),
   fPrevHWAddress(-1),
   fTime(-1),
@@ -48,7 +50,9 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fData(NULL),
   fPosition(0),
   fCount(0),
-  fBunchLength(0)
+  fBunchLength(0),
+  fRCUTrailerData(NULL),
+  fRCUTrailerSize(0)
 {
 // create an object to read Altro raw digits
   fSegmentation[0] = fSegmentation[1] = fSegmentation[2] = -1;
@@ -60,6 +64,8 @@ AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   fNoAltroMapping(kTRUE),
   fDDLNumber(-1),
   fPrevDDLNumber(-1),
+  fRCUId(-1),
+  fPrevRCUId(-1),
   fHWAddress(-1),
   fPrevHWAddress(-1),
   fTime(-1),
@@ -70,7 +76,9 @@ AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   fData(NULL),
   fPosition(0),
   fCount(0),
-  fBunchLength(0)
+  fBunchLength(0),
+  fRCUTrailerData(NULL),
+  fRCUTrailerSize(0)
 {
   Fatal("AliAltroRawStream", "copy constructor not implemented");
 }
@@ -97,7 +105,10 @@ void AliAltroRawStream::Reset()
 
   fPosition = fCount = fBunchLength = 0;
 
-  fDDLNumber = fPrevDDLNumber = fHWAddress = fPrevHWAddress = fTime = fPrevTime = fSignal = fTimeBunch = -1;
+  fRCUTrailerData = NULL;
+  fRCUTrailerSize = 0;
+
+  fDDLNumber = fPrevDDLNumber = fRCUId = fPrevRCUId = fHWAddress = fPrevHWAddress = fTime = fPrevTime = fSignal = fTimeBunch = -1;
 
   if (fRawReader) fRawReader->Reset();
 
@@ -111,6 +122,7 @@ Bool_t AliAltroRawStream::Next()
 // returns kFALSE if there is no digit left
 
   fPrevDDLNumber = fDDLNumber;
+  fPrevRCUId = fRCUId;
   fPrevHWAddress = fHWAddress;
   fPrevTime = fTime;
 
@@ -160,13 +172,11 @@ UShort_t AliAltroRawStream::GetNextWord()
   Int_t iByte = iBit / 8;
   Int_t shift = iBit % 8;
 
-  // recalculate the byte numbers and the shift because
-  // the raw data is written as integers where the high bits are filled first
+  // the raw data is written as integers where the low bits are filled first
   // -> little endian is assumed here !
-  Int_t iByteHigh = 4 * (iByte / 4) + 3 - (iByte % 4);
+  Int_t iByteLow = iByte;
   iByte++;
-  Int_t iByteLow  = 4 * (iByte / 4) + 3 - (iByte % 4);
-  shift = 6 - shift;
+  Int_t iByteHigh  = iByte;
   return ((fData[iByteHigh] * 256 + fData[iByteLow]) >> shift) & 0x03FF;
 }
 
@@ -270,7 +280,81 @@ Int_t AliAltroRawStream::GetPosition()
 {
   // Sets the position in the
   // input stream
-  if (((fRawReader->GetDataSize() * 8) % 10) != 0)
-    AliFatal(Form("Incorrect raw data size ! %d words are found !",fRawReader->GetDataSize()));
-  return (fRawReader->GetDataSize() * 8) / 10;
+  // Read the RCU trailer
+  // This includes the trailer size,
+  // RCU identifier and raw data payload.
+  // The RCU trailer format is described
+  // in details in the RCU manual.
+
+  // First read 32-bit word with the
+  // trailer size (22 bits) and RCU ID (the rest)
+  Int_t index = fRawReader->GetDataSize();
+  UInt_t word = Get32bitWord(index);
+  fRCUId = (Int_t)(word >> 22);
+  Int_t trailerSize = (word & 0x3FFFFF);
+
+  // Now read the beginning of the trailer
+  // where the payload size is written
+  if (trailerSize < 2)
+    AliFatal(Form("Invalid trailer size found (%d bytes) !",trailerSize*4));
+  fRCUTrailerSize = (trailerSize-2)*4;
+  index -= fRCUTrailerSize;
+  if (index < 4)
+    AliFatal(Form("Invalid trailer size found (%d bytes) ! The size is bigger than the raw data size (%d bytes)!",
+		  trailerSize*4,
+		  fRawReader->GetDataSize()));
+  fRCUTrailerData = fData + index;
+  Int_t position = Get32bitWord(index);
+  // The size is specified in a number of 40bits
+  // Therefore we need to transform it to number of bytes
+  position *= 5;
+
+  // Check the consistency of the header and trailer
+  if ((fRawReader->GetDataSize() - trailerSize*4) != position)
+    AliFatal(Form("Inconsistent raw data size ! Raw data size - %d bytes (from the header), RCU trailer - %d bytes, raw data paylod - %d bytes !",
+		  fRawReader->GetDataSize(),
+		  trailerSize*4,
+		  position));
+
+  return position * 8 / 10;
+}
+
+//_____________________________________________________________________________
+UInt_t AliAltroRawStream::Get32bitWord(Int_t &index)
+{
+  // This method returns the 32 bit word at a given
+  // position inside the raw data payload.
+  // The 'index' points to the beginning of the next word.
+  // The method is supposed to be endian (platform)
+  // independent.
+  if (!fData)
+    AliFatal("Raw data paylod buffer is not yet initialized !");
+  if (index < 4)
+    AliFatal(Form("Invalid raw data payload index (%d) !",index));
+
+  UInt_t word = 0;
+  word  = fData[--index] << 24;
+  word |= fData[--index] << 16;
+  word |= fData[--index] << 8;
+  word |= fData[--index];
+
+  return word;
+}
+
+//_____________________________________________________________________________
+Bool_t AliAltroRawStream::GetRCUTrailerData(UChar_t*& data) const
+{
+  // Return a pointer to the RCU trailer
+  // data. Should be called always after
+  // the RCU trailer was already processed
+  // in the GetPosition() method
+  if (!fRCUTrailerSize || !fRCUTrailerData) {
+    AliError("No valid RCU trailer data is found !");
+    data = NULL;
+    return kFALSE;
+  }
+
+  data = fRCUTrailerData;
+
+  return kTRUE;
 }
