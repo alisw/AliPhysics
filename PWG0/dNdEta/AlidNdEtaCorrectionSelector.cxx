@@ -1,4 +1,4 @@
-#include "AlidNdEtaEffSelector.h"
+#include "AlidNdEtaCorrectionSelector.h"
 
 #include <TStyle.h>
 #include <TSystem.h>
@@ -7,43 +7,44 @@
 #include <TParticlePDG.h>
 
 #include <AliLog.h>
-#include <../PYTHIA6/AliGenPythiaEventHeader.h>
-#include <../TPC/AliTPCtrack.h>
+#include <AliGenEventHeader.h>
 #include <AliTracker.h>
 
-#include <iostream>
-using namespace std;
+#include "../esdTrackCuts/AliESDtrackCuts.h"
+#include "dNdEtaCorrection.h"
 
-ClassImp(AlidNdEtaEffSelector)
+ClassImp(AlidNdEtaCorrectionSelector)
 
-AlidNdEtaEffSelector::AlidNdEtaEffSelector(TTree *) :
+AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector(TTree *) :
   AliSelector(),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0)
 {
+  //
   // Constructor. Initialization of pointers
+  //
 }
 
-AlidNdEtaEffSelector::~AlidNdEtaEffSelector()
+AlidNdEtaCorrectionSelector::~AlidNdEtaCorrectionSelector()
 {
-  // Remove all pointers
+  //
+  // Destructor
+  //
 
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
 }
 
-void AlidNdEtaEffSelector::Begin(TTree * tree)
+void AlidNdEtaCorrectionSelector::Begin(TTree * tree)
 {
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
   AliSelector::Begin(tree);
-
-  fdNdEtaCorrection = new dNdEtaCorrection();
 }
 
-void AlidNdEtaEffSelector::SlaveBegin(TTree * tree)
+void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
 {
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
@@ -51,21 +52,18 @@ void AlidNdEtaEffSelector::SlaveBegin(TTree * tree)
 
   AliSelector::SlaveBegin(tree);
 
-  fEsdTrackCuts = new AliESDtrackCuts();
-  fEsdTrackCuts->DefineHistograms(1);
+  fdNdEtaCorrection = new dNdEtaCorrection();
 
-  fEsdTrackCuts->SetMinNClustersTPC(50);
-  fEsdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-  fEsdTrackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
-  fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+  if (fChain)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fChain->GetUserInfo()->FindObject("AliESDtrackCuts"));
 
-  fEsdTrackCuts->SetMinNsigmaToVertex(3);
-  fEsdTrackCuts->SetAcceptKingDaughters(kFALSE);
+  if (!fEsdTrackCuts)
+    printf("ERROR: Could not read EsdTrackCuts from user info\n");
 
   AliLog::SetClassDebugLevel("ESDtrackQualityCuts",1);
 }
 
-Bool_t AlidNdEtaEffSelector::Notify()
+Bool_t AlidNdEtaCorrectionSelector::Notify()
 {
   // The Notify() function is called when a new file is opened. This
   // can be either for a new TTree in a TChain or when when a new TTree
@@ -77,15 +75,16 @@ Bool_t AlidNdEtaEffSelector::Notify()
   if (AliSelector::Notify() == kFALSE)
     return kFALSE;
 
-  // ########################################################
-  // Magnetic field
-  AliTracker::SetFieldMap(GetAliRun()->Field(), kTRUE); // kTRUE means uniform magnetic field
-
   return kTRUE;
 }
 
-Bool_t AlidNdEtaEffSelector::IsPrimary(const TParticle* aParticle, Int_t aTotalPrimaries)
+Bool_t AlidNdEtaCorrectionSelector::IsPrimary(const TParticle* aParticle, Int_t aTotalPrimaries)
 {
+  //
+  // Returns if the given particle is a primary particle
+  // This function or a equivalent should be available in some common place of AliRoot
+  //
+
   // if the particle has a daughter primary, we do not want to count it
   if (aParticle->GetFirstDaughter() != -1 && aParticle->GetFirstDaughter() < aTotalPrimaries)
     return kFALSE;
@@ -99,7 +98,7 @@ Bool_t AlidNdEtaEffSelector::IsPrimary(const TParticle* aParticle, Int_t aTotalP
   return kFALSE;
 }
 
-Bool_t AlidNdEtaEffSelector::Process(Long64_t entry)
+Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 {
   // The Process() function is called for each entry in the tree (or possibly
   // keyed object in the case of PROOF) to be processed. The entry argument
@@ -129,17 +128,14 @@ Bool_t AlidNdEtaEffSelector::Process(Long64_t entry)
   // get the EDS vertex
   const AliESDVertex* vtxESD = fESD->GetVertex();
 
-  Double_t vtx[3];
-  Double_t vtx_res[3];
-  vtxESD->GetXYZ(vtx);
-
-  vtx_res[0] = vtxESD->GetXRes();
-  vtx_res[1] = vtxESD->GetYRes();
-  vtx_res[2] = vtxESD->GetZRes();
-
   // the vertex should be reconstructed
   if (strcmp(vtxESD->GetName(),"default")==0)
     return kTRUE;
+
+  Double_t vtx_res[3];
+  vtx_res[0] = vtxESD->GetXRes();
+  vtx_res[1] = vtxESD->GetYRes();
+  vtx_res[2] = vtxESD->GetZRes();
 
   // the resolution should be reasonable???
   if (vtx_res[2]==0 || vtx_res[2]>0.1)
@@ -147,13 +143,10 @@ Bool_t AlidNdEtaEffSelector::Process(Long64_t entry)
 
   // ########################################################
   // get the MC vertex
-  AliGenPythiaEventHeader* genHeader = (AliGenPythiaEventHeader*) fHeader->GenEventHeader();
+  AliGenEventHeader* genHeader = fHeader->GenEventHeader();
 
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
-  vtx[0] = vtxMC[0];
-  vtx[1] = vtxMC[1];
-  vtx[2] = vtxMC[2];
 
   // ########################################################
   // loop over mc particles
@@ -191,7 +184,7 @@ Bool_t AlidNdEtaEffSelector::Process(Long64_t entry)
     if (pdgPart->Charge() == 0)
       continue;
 
-    fdNdEtaCorrection->FillGene(vtx[2], particle->Eta());
+    fdNdEtaCorrection->FillGene(vtxMC[2], particle->Eta());
 
   }// end of mc particle
 
@@ -206,33 +199,23 @@ Bool_t AlidNdEtaEffSelector::Process(Long64_t entry)
     if (!fEsdTrackCuts->AcceptTrack(esdTrack))
       continue;
 
-    AliTPCtrack* tpcTrack = new AliTPCtrack(*esdTrack);
-    if (tpcTrack->GetAlpha()==0)
-    {
-      cout << " Warning esd track alpha = 0" << endl;
-      continue;
-    }
-
-    //Float_t theta = tpcTrack->Theta();
-    //Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
-
     // using the eta of the mc particle
     Int_t label = TMath::Abs(esdTrack->GetLabel());
-    if (label<0) 
+    if (label == 0)
     {
-      cout << " cannot find corresponding mc part !!! " << label << endl;
+      printf("WARNING: cannot find corresponding mc part for track %d.", t);
       continue;
     }
     particleTree->GetEntry(nTotal - nPrim + label);
 
-    fdNdEtaCorrection->FillMeas(vtx[2], particle->Eta());
+    fdNdEtaCorrection->FillMeas(vtxMC[2], particle->Eta());
 
   } // end of track loop
 
   return kTRUE;
 }
 
-void AlidNdEtaEffSelector::SlaveTerminate()
+void AlidNdEtaCorrectionSelector::SlaveTerminate()
 {
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
@@ -246,9 +229,12 @@ void AlidNdEtaEffSelector::SlaveTerminate()
     printf("ERROR: Output list not initialized\n");
     return;
   }
+
+  fOutput->Add(fdNdEtaCorrection->GetGeneratedHistogram());
+  fOutput->Add(fdNdEtaCorrection->GetMeasuredHistogram());
 }
 
-void AlidNdEtaEffSelector::Terminate()
+void AlidNdEtaCorrectionSelector::Terminate()
 {
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
@@ -256,15 +242,26 @@ void AlidNdEtaEffSelector::Terminate()
 
   AliSelector::Terminate();
 
-  fdNdEtaCorrection->Finish();
+  fdNdEtaCorrectionFinal = new dNdEtaCorrection();
+  TH2F* measuredHistogram = dynamic_cast<TH2F*> (fOutput->FindObject("etaVsVtx_meas"));
+  TH2F* generatedHistogram = dynamic_cast<TH2F*> (fOutput->FindObject("etaVsVtx_gene"));
+  if (!measuredHistogram || !generatedHistogram)
+  {
+    printf("ERROR: Histograms not available %p %p\n", (void*) generatedHistogram, (void*) measuredHistogram);
+    return;
+  }
+  fdNdEtaCorrectionFinal->SetGeneratedHistogram(generatedHistogram);
+  fdNdEtaCorrectionFinal->SetMeasuredHistogram(measuredHistogram);
+
+  fdNdEtaCorrectionFinal->Finish();
 
   TFile* fout = new TFile("correction_map.root","RECREATE");
 
   fEsdTrackCuts->SaveHistograms("esd_track_cuts");
-  fdNdEtaCorrection->SaveHistograms();
+  fdNdEtaCorrectionFinal->SaveHistograms();
 
   fout->Write();
   fout->Close();
 
-  fdNdEtaCorrection->DrawHistograms();
+  fdNdEtaCorrectionFinal->DrawHistograms();
 }

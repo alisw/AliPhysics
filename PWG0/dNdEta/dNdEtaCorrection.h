@@ -40,6 +40,12 @@ protected:
 public:
   dNdEtaCorrection(Char_t* name="dndeta_correction");
 
+  TH2F* GetGeneratedHistogram() { return hEtaVsVtx_gene; }
+  TH2F* GetMeasuredHistogram() { return hEtaVsVtx_meas; }
+
+  void SetGeneratedHistogram(TH2F* aGeneratedHistogram) { hEtaVsVtx_gene = aGeneratedHistogram; }
+  void SetMeasuredHistogram(TH2F* aMeasuredHistogram) { hEtaVsVtx_meas = aMeasuredHistogram; }
+
   void FillMeas(Float_t vtx, Float_t eta) {hEtaVsVtx_meas->Fill(vtx, eta);}
   void FillGene(Float_t vtx, Float_t eta) {hEtaVsVtx_gene->Fill(vtx, eta);}
 

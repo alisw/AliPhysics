@@ -10,7 +10,7 @@
  
 #pragma link C++ class AliSelector+;
 
-#pragma link C++ class AlidNdEtaEffSelector+;
+#pragma link C++ class AlidNdEtaCorrectionSelector+;
 #pragma link C++ class dNdEtaAnalysis+;
 #pragma link C++ class dNdEtaCorrection+;
 

@@ -11,11 +11,20 @@ void makeCorrection2(Char_t* dataDir, Int_t nRuns=20)
 {
   gSystem->Load("libPWG0base");
 
-  /*gSystem->Load("../esdTrackCuts/libESDtrackQuality.so");
-  gSystem->Load("libdNdEta.so");
-  gSystem->Load("../AliSelector_cxx.so");*/
-  //gSystem->Load("AlidNdEtaEffSelector_cxx.so");
-
   TChain* chain = CreateESDChain(dataDir, nRuns);
-  chain->Process("AlidNdEtaEffSelector.cxx+");
+
+  fEsdTrackCuts = new AliESDtrackCuts();
+  fEsdTrackCuts->DefineHistograms(1);
+
+  fEsdTrackCuts->SetMinNClustersTPC(50);
+  fEsdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
+  fEsdTrackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+  fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+
+  fEsdTrackCuts->SetMinNsigmaToVertex(3);
+  fEsdTrackCuts->SetAcceptKingDaughters(kFALSE);
+
+  chain->GetUserInfo()->Add(fEsdTrackCuts);
+
+  chain->Process("AlidNdEtaCorrectionSelector.cxx+");
 }
