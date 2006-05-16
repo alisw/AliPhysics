@@ -33,7 +33,7 @@ class AliTPCseed : public AliTPCtrack {
      AliTPCseed();
      virtual ~AliTPCseed();
      AliTPCseed(const AliTPCtrack &t);
-     AliTPCseed(const AliTPCseed &s);
+     AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner = kFALSE);
      //AliTPCseed(const AliTPCseed &t, Double_t a);
      AliTPCseed(UInt_t index, const Double_t xx[5], 
                 const Double_t cc[15], Double_t xr, Double_t alpha);     
@@ -76,6 +76,7 @@ class AliTPCseed : public AliTPCtrack {
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
      AliESDtrack * fEsd; //!
      AliTPCclusterMI*   fClusterPointer[160];  // array of cluster pointers  - 
+     Bool_t             fClusterOwner;         // indicates the track is owner of cluster
      TClonesArray * fPoints;              //!array with points along the track
      TClonesArray * fEPoints;             //! array with exact points - calculated in special macro not used in tracking
      //---CURRENT VALUES
@@ -107,7 +108,6 @@ class AliTPCseed : public AliTPCtrack {
      Float_t fMAngular;           // mean angular factor
      Char_t   fCircular;           // indicates curlin track
      AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
-   
      ClassDef(AliTPCseed,1)  
 };
 
