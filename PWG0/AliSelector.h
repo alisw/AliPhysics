@@ -30,16 +30,15 @@ class AliSelector : public TSelector {
 
     TChain          *fChain;   //! pointer to the analyzed TTree or TChain
 
-    AliESD*          fESD;
-    AliHeader*       fHeader;
-
-    AliRunLoader* fRunLoader;
+    AliESD*          fESD;     //! "ESD" branch in fChain
+    AliHeader*       fHeader;  //! "TE" branch in fChain, contains event header
 
  private:
   void DeleteKinematicsFile();
   void DeleteRunLoader();
 
-  TFile*           fKineFile;
+  TFile*        fKineFile;  //! pointer to Kinematics.root if the file was opened
+  AliRunLoader* fRunLoader;    //! pointer to the RunLoader if galice.root was opened
 
   ClassDef(AliSelector,0);
 };

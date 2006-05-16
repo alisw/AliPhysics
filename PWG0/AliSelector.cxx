@@ -40,15 +40,19 @@ AliSelector::AliSelector(TTree *) :
   fChain(0),
   fESD(0),
   fHeader(0),
-  fRunLoader(0),
-  fKineFile(0)
+  fKineFile(0),
+  fRunLoader(0)
 {
+  //
   // Constructor. Initialization of pointers
+  //
 }
 
 AliSelector::~AliSelector()
 {
-  // Remove all pointers
+  //
+  // Destructor
+  //
 
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
@@ -59,8 +63,6 @@ void AliSelector::Begin(TTree *)
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
-
-  //TString option = GetOption();
 }
 
 void AliSelector::SlaveBegin(TTree * tree)
@@ -202,6 +204,10 @@ void AliSelector::Terminate()
 
 TTree* AliSelector::GetKinematics()
 {
+  // Returns kinematics tree corresponding to current ESD active in fChain
+  // Loads the kinematics from the kinematics file, the file is identified by replacing "AliESDs" to
+  // "Kinematics" in the file path of the ESD file. This is a hack, to be changed!
+
   if (!fKineFile)
   {
     if (!fChain->GetCurrentFile())
@@ -253,6 +259,10 @@ TTree* AliSelector::GetKinematics()
 
 void AliSelector::DeleteKinematicsFile()
 {
+  //
+  // Closes the kinematics file and deletes the pointer.
+  //
+
   if (fKineFile)
   {
     fKineFile->Close();
@@ -263,6 +273,10 @@ void AliSelector::DeleteKinematicsFile()
 
 AliRun* AliSelector::GetAliRun()
 {
+  // Returns AliRun instance corresponding to current ESD active in fChain
+  // Loads galice.root, the file is identified by replacing "AliESDs" to
+  // "galice" in the file path of the ESD file. This is a hack, to be changed!
+
   if (!fRunLoader)
   {
     if (!fChain->GetCurrentFile())
@@ -283,6 +297,10 @@ AliRun* AliSelector::GetAliRun()
 
 void AliSelector::DeleteRunLoader()
 {
+  //
+  // deletes the runloader
+  //
+  
   if (fRunLoader)
   {
     fRunLoader->Delete();
