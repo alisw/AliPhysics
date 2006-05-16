@@ -41,7 +41,7 @@ AliKalmanTrack::AliKalmanTrack():
   // Default constructor
   //
   if (AliTracker::GetFieldMap()==0) {
-      AliFatal("The magnetic field has not been set!");
+      AliError("The magnetic field has not been set!");
   }
 
   for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;
