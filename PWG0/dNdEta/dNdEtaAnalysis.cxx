@@ -1,7 +1,7 @@
 #include "dNdEtaAnalysis.h"
 
 //____________________________________________________________________
-ClassImp(dNdEtaAnalysis);
+ClassImp(dNdEtaAnalysis)
 
 //____________________________________________________________________
 dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name) {
