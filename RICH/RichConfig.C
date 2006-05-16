@@ -478,9 +478,12 @@ void RichConfig::GuiBatch(TGHorizontalFrame *pMainF)
 void RichConfig::SlotBatch(Int_t id)
 {//slot is invoked when any button in fRecoBG is pressed
   if(id==kTrack){
-    fSDigBG->SetButton(kAll); //switch off TRD and TOF when FRAME is switched off by user hence TRD&TOF depend on FRAME
+    fSDigBG->SetButton(kAll); 
     fDigBG->SetButton(kAll);
     fClusBG->SetButton(kAll);
+    fDetBG->SetButton(kITS);
+    fDetBG->SetButton(kTPC);
+    fDetBG->SetButton(kTRD);
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
