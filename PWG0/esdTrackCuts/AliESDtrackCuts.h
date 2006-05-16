@@ -21,8 +21,9 @@
 
 
 #include "TObject.h"
-#include "TTree.h"
+#include "TH1.h"
 #include "TH2.h"
+class TTree;
 
 #include "AliESD.h"
 #include "AliESDtrack.h"
@@ -76,28 +77,28 @@ protected:
   // diagnostics histograms
   Bool_t fHistogramsOn;
 
-  TH1F** hNClustersITS;
-  TH1F** hNClustersTPC;
+  TH1F *fhNClustersITS[2];
+  TH1F *fhNClustersTPC[2];
   
-  TH1F** hChi2PerClusterITS;
-  TH1F** hChi2PerClusterTPC;
+  TH1F* fhChi2PerClusterITS[2];
+  TH1F* fhChi2PerClusterTPC[2];
 
-  TH1F** hC11;
-  TH1F** hC22;
-  TH1F** hC33;
-  TH1F** hC44;
-  TH1F** hC55;
+  TH1F* fhC11[2];
+  TH1F* fhC22[2];
+  TH1F* fhC33[2];
+  TH1F* fhC44[2];
+  TH1F* fhC55[2];
 
-  TH1F** hDXY;
-  TH1F** hDZ;
-  TH2F** hDXYvsDZ;
+  TH1F* fhDXY[2];
+  TH1F* fhDZ[2];
+  TH2F* fhDXYvsDZ[2];
 
-  TH1F** hDXYNormalized;
-  TH1F** hDZNormalized;
-  TH2F** hDXYvsDZNormalized;
+  TH1F* fhDXYNormalized[2];
+  TH1F* fhDZNormalized[2];
+  TH2F* fhDXYvsDZNormalized[2];
 
-  TH1F*  hCutStatistics;
-  TH2F*  hCutCorrelation;
+  TH1F*  fhCutStatistics;
+  TH2F*  fhCutCorrelation;
   
 
   // dummy array
