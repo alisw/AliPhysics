@@ -11,7 +11,7 @@
 
 class AliTrackPointArray;
 class AliKalmanTrack;
-
+class TObjArrray;
 //_____________________________________________________________________________
 class AliESDfriendTrack : public TObject {
 public:
@@ -38,18 +38,19 @@ public:
   void SetTRDtrack(AliKalmanTrack *t) {fTRDtrack=t;}
   AliKalmanTrack *GetTRDtrack() {return fTRDtrack;}
   AliKalmanTrack *GetITStrack() {return fITStrack;}
-
+  void AddCalibObject(TObject * calibObject); 
+  TObject * GetCalibObject(Int_t index);
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
   Int_t fITSindex[kMaxITScluster]; // indices of the ITS clusters 
   Int_t fTPCindex[kMaxTPCcluster]; // indices of the TPC clusters
   Int_t fTRDindex[kMaxTRDcluster]; // indices of the TRD clusters
   AliTrackPointArray *fPoints;//Array of track space points in the global frame
-
+  TObjArray      *fCalibContainer; //Array of objects for calibration    
   AliKalmanTrack *fITStrack; //! pointer to the ITS track (debug purposes) 
   AliKalmanTrack *fTRDtrack; //! pointer to the TRD track (debug purposes) 
 
-  ClassDef(AliESDfriendTrack,1) //ESD friend track
+  ClassDef(AliESDfriendTrack,2) //ESD friend track
 };
 
 #endif

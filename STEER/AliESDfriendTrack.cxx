@@ -21,13 +21,15 @@
 #include "AliTrackPointArray.h"
 #include "AliESDfriendTrack.h"
 #include "AliKalmanTrack.h"
+#include "TObjArray.h"
 
 ClassImp(AliESDfriendTrack)
 
 AliESDfriendTrack::AliESDfriendTrack(): 
 TObject(), 
 f1P(0), 
-fPoints(0), 
+fPoints(0),
+fCalibContainer(0),
 fITStrack(0),
 fTRDtrack(0)
 {
@@ -44,6 +46,7 @@ AliESDfriendTrack::AliESDfriendTrack(const AliESDfriendTrack &t):
 TObject(t),
 f1P(t.f1P),
 fPoints(0),
+fCalibContainer(0),
 fITStrack(0),
 fTRDtrack(0)
 {
@@ -55,6 +58,7 @@ fTRDtrack(0)
   for (i=0; i<kMaxTPCcluster; i++) fTPCindex[i]=t.fTPCindex[i];
   for (i=0; i<kMaxTRDcluster; i++) fTRDindex[i]=t.fTRDindex[i];
   if (t.fPoints) fPoints=new AliTrackPointArray(*t.fPoints);
+  if (t.fCalibContainer) fCalibContainer = new TObjArray(*(t.fCalibContainer));
 }
 
 AliESDfriendTrack::~AliESDfriendTrack() {
@@ -62,6 +66,26 @@ AliESDfriendTrack::~AliESDfriendTrack() {
   // Simple destructor
   //
    delete fPoints;
+   delete fCalibContainer;
    delete fITStrack;
    delete fTRDtrack;
+}
+
+
+void AliESDfriendTrack::AddCalibObject(TObject * calibObject){
+  //
+  // add calibration object to array -
+  // track is owner of the objects in the container 
+  //
+  if (!fCalibContainer) fCalibContainer = new TObjArray(5);
+  fCalibContainer->AddLast(calibObject);
+}
+
+TObject * AliESDfriendTrack::GetCalibObject(Int_t index){
+  //
+  //
+  //
+  if (!fCalibContainer) return 0;
+  if (index>=fCalibContainer->GetEntriesFast()) return 0;
+  return fCalibContainer->At(index);
 }

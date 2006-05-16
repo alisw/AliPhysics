@@ -233,6 +233,23 @@ AliESDtrack::~AliESDtrack(){
   delete fPoints;
 }
 
+void AliESDtrack::AddCalibObject(TObject * object){
+  //
+  // add calib object to the list
+  //
+  if (!fFriendTrack) fFriendTrack  = new AliESDfriendTrack;
+  fFriendTrack->AddCalibObject(object);
+}
+
+TObject *  AliESDtrack::GetCalibObject(Int_t index){
+  //
+  // return calib objct at given position
+  //
+  if (!fFriendTrack) return 0;
+  return fFriendTrack->GetCalibObject(index);
+}
+
+
 //_______________________________________________________________________
 void AliESDtrack::MakeMiniESDtrack(){
   // Resets everything except
