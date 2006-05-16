@@ -79,7 +79,7 @@ ClassImp(AliTriggerDescriptor)
 
 //_____________________________________________________________________________
 const char* AliTriggerDescriptor::fgkDetectorName[AliTriggerDescriptor::fgkNDetectors] =
-             { "ITS", "TRD", "PHOS", "EMCAL", "MUON", "ZDC", "START", "VZERO", "CRT" };
+             { "ITS", "TRD", "PHOS", "EMCAL", "MUON", "ZDC", "START", "VZERO", "CRT", "TOF" };
 
 const TString AliTriggerDescriptor::fgkDescriptorFileName("/data/triggerDescriptors.root");
 

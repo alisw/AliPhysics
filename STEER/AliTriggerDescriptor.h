@@ -58,7 +58,7 @@ protected:
                TString    fDetectorCluster;    // Array of Detector Trigger
              TObjArray    fConditions;         // Array of Trigger Condition (AliTriggerCondition)
                
-    static const Int_t    fgkNDetectors = 9;              //! number possible trigger detectors
+    static const Int_t    fgkNDetectors = 10;             //! number possible trigger detectors
      static const char*   fgkDetectorName[fgkNDetectors]; //! names of detectors
 
 private:
