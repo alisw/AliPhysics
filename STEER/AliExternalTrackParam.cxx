@@ -91,7 +91,7 @@ Double_t AliExternalTrackParam::GetP() const {
   // This function returns the track momentum
   // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
-  if (TMath::Abs(fP[4])<=0) return kVeryBig;
+  if (TMath::Abs(fP[4])<=kAlmost0) return kVeryBig;
   return TMath::Sqrt(1.+ fP[3]*fP[3])/TMath::Abs(fP[4]);
 }
 
@@ -213,6 +213,11 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   fX =  x*ca + fP0*sa;
   fP0= -x*sa + fP0*ca;
   fP2=  sf*ca - cf*sa;
+
+  if (TMath::Abs(cf)<kAlmost0) {
+    AliError(Form("Too small cosine value %f",cf)); 
+    cf = kAlmost0;
+  } 
 
   Double_t rr=(ca+sf/cf*sa);  
 
