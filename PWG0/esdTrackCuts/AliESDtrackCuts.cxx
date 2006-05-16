@@ -3,7 +3,7 @@
 #include <Riostream.h>
 
 //____________________________________________________________________
-ClassImp(AliESDtrackCuts);
+ClassImp(AliESDtrackCuts)
 
 //____________________________________________________________________
 AliESDtrackCuts::AliESDtrackCuts() {
@@ -176,44 +176,44 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   //########################################################################
   // filling histograms
   if (fHistogramsOn) {
-    hCutStatistics->Fill(hCutStatistics->GetBinCenter(hCutStatistics->GetXaxis()->FindBin("n tracks")));
+    fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n tracks")));
     
     if (cut)
-      hCutStatistics->Fill(hCutStatistics->GetBinCenter(hCutStatistics->GetXaxis()->FindBin("n cut tracks")));
+      fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n cut tracks")));
     
     for (Int_t i=0; i<fNCuts; i++) {
       if (cuts[i])
- 	hCutStatistics->Fill(hCutStatistics->GetBinCenter(hCutStatistics->GetXaxis()->FindBin(fCutNames[i])));
+ 	fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fCutNames[i])));
       
       for (Int_t j=i; j<fNCuts; j++) {
  	if (cuts[i] && cuts[j]) {
- 	  Float_t x = hCutCorrelation->GetXaxis()->GetBinCenter(hCutCorrelation->GetXaxis()->FindBin(fCutNames[i]));
- 	  Float_t y = hCutCorrelation->GetYaxis()->GetBinCenter(hCutCorrelation->GetYaxis()->FindBin(fCutNames[j]));
- 	  hCutCorrelation->Fill(x,y);
+ 	  Float_t x = fhCutCorrelation->GetXaxis()->GetBinCenter(fhCutCorrelation->GetXaxis()->FindBin(fCutNames[i]));
+ 	  Float_t y = fhCutCorrelation->GetYaxis()->GetBinCenter(fhCutCorrelation->GetYaxis()->FindBin(fCutNames[j]));
+ 	  fhCutCorrelation->Fill(x,y);
  	}
       }
     }
     
 
-    hNClustersITS[0]->Fill(nClustersITS);        
-    hNClustersTPC[0]->Fill(nClustersTPC);        
-    hChi2PerClusterITS[0]->Fill(chi2PerClusterITS);
-    hChi2PerClusterTPC[0]->Fill(chi2PerClusterTPC);   
+    fhNClustersITS[0]->Fill(nClustersITS);        
+    fhNClustersTPC[0]->Fill(nClustersTPC);        
+    fhChi2PerClusterITS[0]->Fill(chi2PerClusterITS);
+    fhChi2PerClusterTPC[0]->Fill(chi2PerClusterTPC);   
     
-    hC11[0]->Fill(extCov[0]);                 
-    hC22[0]->Fill(extCov[2]);                 
-    hC33[0]->Fill(extCov[5]);                 
-    hC44[0]->Fill(extCov[9]);                                  
-    hC55[0]->Fill(extCov[14]);                                  
+    fhC11[0]->Fill(extCov[0]);                 
+    fhC22[0]->Fill(extCov[2]);                 
+    fhC33[0]->Fill(extCov[5]);                 
+    fhC44[0]->Fill(extCov[9]);                                  
+    fhC55[0]->Fill(extCov[14]);                                  
     
-    hDZ[0]->Fill(b[1]);     
-    hDXY[0]->Fill(b[0]);    
-    hDXYvsDZ[0]->Fill(b[1],b[0]);
+    fhDZ[0]->Fill(b[1]);     
+    fhDXY[0]->Fill(b[0]);    
+    fhDXYvsDZ[0]->Fill(b[1],b[0]);
 
     if (bRes[0]!=0 && bRes[1]!=0) {
-      hDZNormalized[0]->Fill(b[1]/bRes[1]);     
-      hDXYNormalized[0]->Fill(b[0]/bRes[0]);    
-      hDXYvsDZNormalized[0]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+      fhDZNormalized[0]->Fill(b[1]/bRes[1]);     
+      fhDXYNormalized[0]->Fill(b[0]/bRes[0]);    
+      fhDXYvsDZNormalized[0]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
     }
   }
 
@@ -224,24 +224,24 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   //########################################################################  
   // filling histograms after cut
   if (fHistogramsOn) {
-    hNClustersITS[1]->Fill(nClustersITS);        
-    hNClustersTPC[1]->Fill(nClustersTPC);        
-    hChi2PerClusterITS[1]->Fill(chi2PerClusterITS);
-    hChi2PerClusterTPC[1]->Fill(chi2PerClusterTPC);   
+    fhNClustersITS[1]->Fill(nClustersITS);        
+    fhNClustersTPC[1]->Fill(nClustersTPC);        
+    fhChi2PerClusterITS[1]->Fill(chi2PerClusterITS);
+    fhChi2PerClusterTPC[1]->Fill(chi2PerClusterTPC);   
     
-    hC11[1]->Fill(extCov[0]);                 
-    hC22[1]->Fill(extCov[2]);                 
-    hC33[1]->Fill(extCov[5]);                 
-    hC44[1]->Fill(extCov[9]);                                  
-    hC55[1]->Fill(extCov[14]);                                  
+    fhC11[1]->Fill(extCov[0]);                 
+    fhC22[1]->Fill(extCov[2]);                 
+    fhC33[1]->Fill(extCov[5]);                 
+    fhC44[1]->Fill(extCov[9]);                                  
+    fhC55[1]->Fill(extCov[14]);                                  
     
-    hDZ[1]->Fill(b[1]);     
-    hDXY[1]->Fill(b[0]);    
-    hDXYvsDZ[1]->Fill(b[1],b[0]);
+    fhDZ[1]->Fill(b[1]);     
+    fhDXY[1]->Fill(b[0]);    
+    fhDXYvsDZ[1]->Fill(b[1],b[0]);
 
-    hDZNormalized[1]->Fill(b[1]/bRes[1]);     
-    hDXYNormalized[1]->Fill(b[0]/bRes[0]);    
-    hDXYvsDZNormalized[1]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+    fhDZNormalized[1]->Fill(b[1]/bRes[1]);     
+    fhDXYNormalized[1]->Fill(b[0]/bRes[0]);    
+    fhDXYvsDZNormalized[1]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
   }
   
   return kTRUE;
@@ -265,51 +265,50 @@ AliESDtrackCuts::GetAcceptedTracks(AliESD* esd) {
 }
 
 //____________________________________________________________________
-void 
-AliESDtrackCuts::DefineHistograms(Int_t color) {
+ void AliESDtrackCuts::DefineHistograms(Int_t color) {
 
-  fHistogramsOn=kTRUE;
+   fHistogramsOn=kTRUE;
 
-  //###################################################################################
-  // defining histograms
+//   //###################################################################################
+   // defining histograms
 
-  hCutStatistics = new TH1F("cut_statistics","cut statistics",fNCuts+4,-0.5,fNCuts+3.5);
+   fhCutStatistics = new TH1F("cut_statistics","cut statistics",fNCuts+4,-0.5,fNCuts+3.5);
 
-  hCutStatistics->GetXaxis()->SetBinLabel(1,"n tracks");
-  hCutStatistics->GetXaxis()->SetBinLabel(2,"n cut tracks");
+   fhCutStatistics->GetXaxis()->SetBinLabel(1,"n tracks");
+   fhCutStatistics->GetXaxis()->SetBinLabel(2,"n cut tracks");
 
-  hCutCorrelation = new TH2F("cut_correlation","cut correlation",fNCuts,-0.5,fNCuts-0.5,fNCuts,-0.5,fNCuts-0.5);;
+   fhCutCorrelation = new TH2F("cut_correlation","cut correlation",fNCuts,-0.5,fNCuts-0.5,fNCuts,-0.5,fNCuts-0.5);;
   
-  for (Int_t i=0; i<fNCuts; i++) {
-    hCutStatistics->GetXaxis()->SetBinLabel(i+4,fCutNames[i]);
-    hCutCorrelation->GetXaxis()->SetBinLabel(i+1,fCutNames[i]);
-    hCutCorrelation->GetYaxis()->SetBinLabel(i+1,fCutNames[i]);
-  } 
+   for (Int_t i=0; i<fNCuts; i++) {
+     fhCutStatistics->GetXaxis()->SetBinLabel(i+4,fCutNames[i]);
+     fhCutCorrelation->GetXaxis()->SetBinLabel(i+1,fCutNames[i]);
+     fhCutCorrelation->GetYaxis()->SetBinLabel(i+1,fCutNames[i]);
+   } 
 
-  hCutStatistics  ->SetLineColor(color);
-  hCutCorrelation ->SetLineColor(color);
-  hCutStatistics  ->SetLineWidth(2);
-  hCutCorrelation ->SetLineWidth(2);
+  fhCutStatistics  ->SetLineColor(color);
+  fhCutCorrelation ->SetLineColor(color);
+  fhCutStatistics  ->SetLineWidth(2);
+  fhCutCorrelation ->SetLineWidth(2);
 
 
-  hNClustersITS        = new TH1F*[2];
-  hNClustersTPC        = new TH1F*[2];
-  hChi2PerClusterITS   = new TH1F*[2];
-  hChi2PerClusterTPC   = new TH1F*[2];
+  TH1F *fhNClustersITS  = new TH1F[2];
+  TH1F *fhNClustersTPC  = new TH1F[2];
+  TH1F *fhChi2PerClusterITS   = new TH1F[2];
+  TH1F *fhChi2PerClusterTPC   = new TH1F[2];
   		       
-  hC11                 = new TH1F*[2];
-  hC22                 = new TH1F*[2];
-  hC33                 = new TH1F*[2];
-  hC44                 = new TH1F*[2];
-  hC55                 = new TH1F*[2];
+  TH1F *fhC11                 = new TH1F[2];
+  TH1F *fhC22                 = new TH1F[2];
+  TH1F *fhC33                 = new TH1F[2];
+  TH1F *fhC44                 = new TH1F[2];
+  TH1F *fhC55                 = new TH1F[2];
   
-  hDXY                 = new TH1F*[2];
-  hDZ		       = new TH1F*[2];
-  hDXYvsDZ	       = new TH2F*[2];
+  TH1F *fhDXY                 = new TH1F[2];
+  TH1F *fhDZ		       = new TH1F[2];
+  TH2F *fhDXYvsDZ	       = new TH2F[2];
 
-  hDXYNormalized       = new TH1F*[2];
-  hDZNormalized        = new TH1F*[2];
-  hDXYvsDZNormalized   = new TH2F*[2];
+  TH1F *fhDXYNormalized       = new TH1F[2];
+  TH1F *fhDZNormalized        = new TH1F[2];
+  TH2F *fhDXYvsDZNormalized   = new TH2F[2];
 
 
   Char_t str[256];
@@ -317,63 +316,63 @@ AliESDtrackCuts::DefineHistograms(Int_t color) {
     if (i==0) sprintf(str," ");
     else sprintf(str,"_cut");
 
-    hNClustersITS[i]        = new TH1F(Form("nClustersITS%s",str),"",8,-0.5,7.5);
-    hNClustersTPC[i]        = new TH1F(Form("nClustersTPC%s",str),"",165,-0.5,164.5);
-    hChi2PerClusterITS[i]   = new TH1F(Form("chi2PerClusterITS%s",str),"",500,0,10);
-    hChi2PerClusterTPC[i]   = new TH1F(Form("chi2PerClusterTPC%s",str),"",500,0,10);
+    fhNClustersITS[i]        = TH1F(Form("nClustersITS%s",str),"",8,-0.5,7.5);
+    fhNClustersTPC[i]        = TH1F(Form("nClustersTPC%s",str),"",165,-0.5,164.5);
+    fhChi2PerClusterITS[i]   = TH1F(Form("chi2PerClusterITS%s",str),"",500,0,10);
+    fhChi2PerClusterTPC[i]   = TH1F(Form("chi2PerClusterTPC%s",str),"",500,0,10);
     
-    hC11[i]                 = new TH1F(Form("covMatrixDiagonal11%s",str),"",1000,0,5);
-    hC22[i]                 = new TH1F(Form("covMatrixDiagonal22%s",str),"",1000,0,5);
-    hC33[i]                 = new TH1F(Form("covMatrixDiagonal33%s",str),"",1000,0,0.5);
-    hC44[i]                 = new TH1F(Form("covMatrixDiagonal44%s",str),"",1000,0,5);
-    hC55[i]                 = new TH1F(Form("covMatrixDiagonal55%s",str),"",1000,0,5);
+    fhC11[i]                 = TH1F(Form("covMatrixDiagonal11%s",str),"",1000,0,5);
+    fhC22[i]                 =  TH1F(Form("covMatrixDiagonal22%s",str),"",1000,0,5);
+    fhC33[i]                 =  TH1F(Form("covMatrixDiagonal33%s",str),"",1000,0,0.5);
+    fhC44[i]                 =  TH1F(Form("covMatrixDiagonal44%s",str),"",1000,0,5);
+    fhC55[i]                 =  TH1F(Form("covMatrixDiagonal55%s",str),"",1000,0,5);
     
-    hDXY[i]                 = new TH1F(Form("dXY%s",str),"",500,-10,10);
-    hDZ[i]                  = new TH1F(Form("dZ%s",str),"",500,-10,10);
-    hDXYvsDZ[i]             = new TH2F(Form("dXYvsDZ%s",str),"",200,-10,10,200,-10,10);
+    fhDXY[i]                 =  TH1F(Form("dXY%s",str),"",500,-10,10);
+    fhDZ[i]                  =  TH1F(Form("dZ%s",str),"",500,-10,10);
+    fhDXYvsDZ[i]             =  TH2F(Form("dXYvsDZ%s",str),"",200,-10,10,200,-10,10);
 
-    hDXYNormalized[i]       = new TH1F(Form("dXYNormalized%s",str),"",500,-10,10);
-    hDZNormalized[i]        = new TH1F(Form("dZNormalized%s",str),"",500,-10,10);
-    hDXYvsDZNormalized[i]   = new TH2F(Form("dXYvsDZNormalized%s",str),"",200,-10,10,200,-10,10);
+    fhDXYNormalized[i]       =  TH1F(Form("dXYNormalized%s",str),"",500,-10,10);
+    fhDZNormalized[i]        =  TH1F(Form("dZNormalized%s",str),"",500,-10,10);
+    fhDXYvsDZNormalized[i]   =  TH2F(Form("dXYvsDZNormalized%s",str),"",200,-10,10,200,-10,10);
 
 
-    hNClustersITS[i]        ->SetXTitle("n ITS clusters");  
-    hNClustersTPC[i]        ->SetXTitle("n TPC clusters"); 
-    hChi2PerClusterITS[i]   ->SetXTitle("#Chi^{2} per ITS cluster"); 
-    hChi2PerClusterTPC[i]   ->SetXTitle("#Chi^{2} per TPC cluster"); 
+    fhNClustersITS[i].SetXTitle("n ITS clusters");  
+    fhNClustersTPC[i].SetXTitle("n TPC clusters"); 
+    fhChi2PerClusterITS[i].SetXTitle("#Chi^{2} per ITS cluster"); 
+    fhChi2PerClusterTPC[i].SetXTitle("#Chi^{2} per TPC cluster"); 
     
-    hC11[i]                 ->SetXTitle("cov 11 : #sigma_{y}^{2} [cm^{2}]"); 
-    hC22[i]                 ->SetXTitle("cov 22 : #sigma_{z}^{2} [cm^{2}]"); 
-    hC33[i]                 ->SetXTitle("cov 33 : #sigma_{sin(#phi)}^{2}"); 
-    hC44[i]                 ->SetXTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}"); 
-    hC55[i]                 ->SetXTitle("cov 55 : #sigma_{1/p_{T}}^{2} [(c/GeV)^2]"); 
+    fhC11[i].SetXTitle("cov 11 : #sigma_{y}^{2} [cm^{2}]"); 
+    fhC22[i].SetXTitle("cov 22 : #sigma_{z}^{2} [cm^{2}]"); 
+    fhC33[i].SetXTitle("cov 33 : #sigma_{sin(#phi)}^{2}"); 
+    fhC44[i].SetXTitle("cov 44 : #sigma_{tan(#theta_{dip})}^{2}"); 
+    fhC55[i].SetXTitle("cov 55 : #sigma_{1/p_{T}}^{2} [(c/GeV)^2]"); 
    
-    hDXY[i]                 ->SetXTitle("transverse impact parameter"); 
-    hDZ[i]                  ->SetXTitle("longitudinal impact parameter"); 
-    hDXYvsDZ[i]             ->SetXTitle("longitudinal impact parameter"); 
-    hDXYvsDZ[i]             ->SetYTitle("transverse impact parameter"); 
+    fhDXY[i].SetXTitle("transverse impact parameter"); 
+    fhDZ[i].SetXTitle("longitudinal impact parameter"); 
+    fhDXYvsDZ[i].SetXTitle("longitudinal impact parameter"); 
+    fhDXYvsDZ[i].SetYTitle("transverse impact parameter"); 
 
-    hDXYNormalized[i]       ->SetXTitle("normalized trans impact par"); 
-    hDZNormalized[i]        ->SetXTitle("normalized long impact par"); 
-    hDXYvsDZNormalized[i]   ->SetXTitle("normalized long impact par"); 
-    hDXYvsDZNormalized[i]   ->SetYTitle("normalized trans impact par"); 
+    fhDXYNormalized[i].SetXTitle("normalized trans impact par"); 
+    fhDZNormalized[i].SetXTitle("normalized long impact par"); 
+    fhDXYvsDZNormalized[i].SetXTitle("normalized long impact par"); 
+    fhDXYvsDZNormalized[i].SetYTitle("normalized trans impact par"); 
 
-    hNClustersITS[i]        ->SetLineColor(color);   hNClustersITS[i]        ->SetLineWidth(2);
-    hNClustersTPC[i]        ->SetLineColor(color);   hNClustersTPC[i]        ->SetLineWidth(2);
-    hChi2PerClusterITS[i]   ->SetLineColor(color);   hChi2PerClusterITS[i]   ->SetLineWidth(2);
-    hChi2PerClusterTPC[i]   ->SetLineColor(color);   hChi2PerClusterTPC[i]   ->SetLineWidth(2);
+    fhNClustersITS[i].SetLineColor(color);   fhNClustersITS[i].SetLineWidth(2);
+    fhNClustersTPC[i].SetLineColor(color);   fhNClustersTPC[i].SetLineWidth(2);
+    fhChi2PerClusterITS[i].SetLineColor(color);   fhChi2PerClusterITS[i].SetLineWidth(2);
+    fhChi2PerClusterTPC[i].SetLineColor(color);   fhChi2PerClusterTPC[i].SetLineWidth(2);
     						     					      
-    hC11[i]                 ->SetLineColor(color);   hC11[i]                 ->SetLineWidth(2);
-    hC22[i]                 ->SetLineColor(color);   hC22[i]                 ->SetLineWidth(2);
-    hC33[i]                 ->SetLineColor(color);   hC33[i]                 ->SetLineWidth(2);
-    hC44[i]                 ->SetLineColor(color);   hC44[i]                 ->SetLineWidth(2);
-    hC55[i]                 ->SetLineColor(color);   hC55[i]                 ->SetLineWidth(2);
+    fhC11[i].SetLineColor(color);   fhC11[i].SetLineWidth(2);
+    fhC22[i].SetLineColor(color);   fhC22[i].SetLineWidth(2);
+    fhC33[i].SetLineColor(color);   fhC33[i].SetLineWidth(2);
+    fhC44[i].SetLineColor(color);   fhC44[i].SetLineWidth(2);
+    fhC55[i].SetLineColor(color);   fhC55[i].SetLineWidth(2);
    						     					      
-    hDXY[i]                 ->SetLineColor(color);   hDXY[i]                 ->SetLineWidth(2);
-    hDZ[i]                  ->SetLineColor(color);   hDZ[i]                  ->SetLineWidth(2);
+    fhDXY[i].SetLineColor(color);   fhDXY[i].SetLineWidth(2);
+    fhDZ[i].SetLineColor(color);   fhDZ[i].SetLineWidth(2);
 						     
-    hDXYNormalized[i]       ->SetLineColor(color);   hDXYNormalized[i]       ->SetLineWidth(2);
-    hDZNormalized[i]        ->SetLineColor(color);   hDZNormalized[i]        ->SetLineWidth(2);
+    fhDXYNormalized[i].SetLineColor(color);   fhDXYNormalized[i].SetLineWidth(2);
+    fhDZNormalized[i].SetLineColor(color);   fhDZNormalized[i].SetLineWidth(2);
 
   }
 }
@@ -387,8 +386,7 @@ AliESDtrackCuts::Print(const Option_t*) const {
 
 
 //____________________________________________________________________
-void 
-AliESDtrackCuts::SaveHistograms(Char_t* dir) {
+void AliESDtrackCuts::SaveHistograms(Char_t* dir) {
   
   if (!fHistogramsOn) {
     AliDebug(0, "Histograms not on - cannot save histograms!!!");
@@ -401,8 +399,8 @@ AliESDtrackCuts::SaveHistograms(Char_t* dir) {
   gDirectory->mkdir("before_cuts");
   gDirectory->mkdir("after_cuts");
  
-  hCutStatistics->Write();
-  hCutCorrelation->Write();
+  fhCutStatistics->Write();
+  fhCutCorrelation->Write();
 
   for (Int_t i=0; i<2; i++) {
     if (i==0)
@@ -410,24 +408,24 @@ AliESDtrackCuts::SaveHistograms(Char_t* dir) {
     else
       gDirectory->cd("after_cuts");
     
-    hNClustersITS[i]        ->Write();
-    hNClustersTPC[i]        ->Write();
-    hChi2PerClusterITS[i]   ->Write();
-    hChi2PerClusterTPC[i]   ->Write();
+    fhNClustersITS[i]        ->Write();
+    fhNClustersTPC[i]        ->Write();
+    fhChi2PerClusterITS[i]   ->Write();
+    fhChi2PerClusterTPC[i]   ->Write();
     
-    hC11[i]                 ->Write();
-    hC22[i]                 ->Write();
-    hC33[i]                 ->Write();
-    hC44[i]                 ->Write();
-    hC55[i]                 ->Write();
+    fhC11[i]                 ->Write();
+    fhC22[i]                 ->Write();
+    fhC33[i]                 ->Write();
+    fhC44[i]                 ->Write();
+    fhC55[i]                 ->Write();
 
-    hDXY[i]                 ->Write();
-    hDZ[i]                  ->Write();
-    hDXYvsDZ[i]             ->Write();
+    fhDXY[i]                 ->Write();
+    fhDZ[i]                  ->Write();
+    fhDXYvsDZ[i]             ->Write();
     
-    hDXYNormalized[i]       ->Write();
-    hDZNormalized[i]        ->Write();
-    hDXYvsDZNormalized[i]   ->Write();
+    fhDXYNormalized[i]       ->Write();
+    fhDZNormalized[i]        ->Write();
+    fhDXYvsDZNormalized[i]   ->Write();
 
     gDirectory->cd("../");
   }
