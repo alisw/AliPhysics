@@ -221,6 +221,7 @@ void AliGenMUONCocktailpp::Init()
     pythia->SetPtRange(0.,100.);
     pythia->SetYRange(-8.,8.);
     pythia->SetPhiRange(0.,360.);
+    pythia->SetPtHard(2.76,-1.0);
     pythia->Init(); 
     AddGenerator(pythia,"Pythia",1);
     fTotalRate+=1.;
