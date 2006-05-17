@@ -39,7 +39,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= STEERLinkDef.h
 
-EINCLUDE:=$(ALICE)/geant3/TGeant3 RAW
+EINCLUDE:= RAW
 #ifeq (macosx,$(ALICE_TARGET))
 EINCLUDE+= TPC
 #endif

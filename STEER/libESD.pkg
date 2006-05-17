@@ -16,7 +16,7 @@ SRCS = AliESD.cxx AliESDfriend.cxx\
 
 HDRS:= $(SRCS:.cxx=.h) 
 
-EINCLUDE:=$(ALICE)/geant3/TGeant3 RAW
+EINCLUDE:= RAW
 
 DHDR= ESDLinkDef.h
 
