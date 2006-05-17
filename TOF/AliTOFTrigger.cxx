@@ -415,7 +415,7 @@ void AliTOFTrigger::CreateLTMMatrix(){
   }
 
   rl->UnloadDigits();
-  rl->UnloadgAlice();
+//   rl->UnloadgAlice();
 }
 //-----------------------------------------------------------------------------
 void AliTOFTrigger::GetLTMIndex(Int_t *detind, Int_t *indexLTM){
