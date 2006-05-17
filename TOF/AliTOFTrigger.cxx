@@ -414,7 +414,7 @@ void AliTOFTrigger::CreateLTMMatrix(){
     fLTMmatrix[indexLTM[0]][indexLTM[1]] = kTRUE;
   }
 
-  rl->UnloadDigits();
+  tofLoader->UnloadDigits();
 //   rl->UnloadgAlice();
 }
 //-----------------------------------------------------------------------------
