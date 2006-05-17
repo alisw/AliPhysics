@@ -79,9 +79,10 @@ void AliEMCALGeometry::Init(void){
   // 11-oct-05   - correction for pre final design
   // Feb 06,2006 - decrease the weight of EMCAL
 
-  fAdditionalOpts[0] = "nl=";   // number of sampling layers
-  fAdditionalOpts[1] = "pbTh="; // cm, Thickness of the Pb
-  fAdditionalOpts[2] = "scTh=";  // cm, Thickness of the Sc
+  fAdditionalOpts[0] = "nl=";    // number of sampling layers (fNECLayers)
+  fAdditionalOpts[1] = "pbTh=";  // cm, Thickness of the Pb   (fECPbRadThick)
+  fAdditionalOpts[2] = "scTh=";  // cm, Thickness of the Sc    (fECScintThick)
+  fAdditionalOpts[3] = "latSS=";  // cm, Thickness of lateral steel strip (fLateralSteelStrip)
 
   fNAdditionalOpts = sizeof(fAdditionalOpts) / sizeof(char*);
 
@@ -337,10 +338,13 @@ void AliEMCALGeometry::CheckAdditionalOptions()
       if       (addOpt.Contains("NL=",TString::kIgnoreCase))   {// number of sampling layers
         sscanf(addOpt.Data(),"NL=%i", &fNECLayers);
         AliDebug(2,Form(" fNECLayers %i (new) \n", fNECLayers));
-      } else if(addOpt.Contains("PBTH=",TString::kIgnoreCase)) {//Thickness of the Pb
+      } else if(addOpt.Contains("PBTH=",TString::kIgnoreCase)) {//Thickness of the Pb(fECPbRadThicknes)
         sscanf(addOpt.Data(),"PBTH=%f", &fECPbRadThickness);
-      } else if(addOpt.Contains("SCTH=",TString::kIgnoreCase)) {//Thickness of the Sc
+      } else if(addOpt.Contains("SCTH=",TString::kIgnoreCase)) {//Thickness of the Sc(fECScintThick)
         sscanf(addOpt.Data(),"SCTH=%f", &fECScintThick);
+      } else if(addOpt.Contains("LATSS=",TString::kIgnoreCase)) {// Thickness of lateral steel strip (fLateralSteelStrip)
+        sscanf(addOpt.Data(),"LATSS=%f", &fLateralSteelStrip);
+        AliDebug(2,Form(" fLateralSteelStrip %f (new) \n", fLateralSteelStrip));
       }
     }
   }

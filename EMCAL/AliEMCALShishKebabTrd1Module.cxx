@@ -99,6 +99,11 @@ void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
   Double_t xk2 = fOK.X() + kk1*TMath::Sin(fTheta);
   Double_t yk2 = fOK.Y() - kk1*TMath::Cos(fTheta) - fgr;
   fOK2.Set(xk2,yk2);
+
+  // May 15, 2006; position of cell face of cells 
+  fOB.Set(fOK.X()-fgb/2.*TMath::Cos(fTheta),  fOK.Y()-fgb/2.*TMath::Sin(fTheta)-fgr);
+  fOB1.Set(fOB.X()-fga/4.*TMath::Sin(fTheta), fOB.Y()+fga/4.*TMath::Cos(fTheta));
+  fOB2.Set(fOB.X()+fga/4.*TMath::Sin(fTheta), fOB.Y()-fga/4.*TMath::Cos(fTheta));
 }
 
 void AliEMCALShishKebabTrd1Module::DefineFirstModule()
@@ -115,6 +120,10 @@ void AliEMCALShishKebabTrd1Module::DefineFirstModule()
   Double_t kk1 = (fga+fga2)/(2.*4.); // kk1=kk2 
   fOK1.Set(fOK.X() - kk1, fOK.Y()-fgr);
   fOK2.Set(fOK.X() + kk1, fOK.Y()-fgr);
+
+  fOB.Set(fOK.X(),fOK.Y()-fgb/2.-fgr);
+  fOB1.Set(fOB.X()-fga/4., fOB.Y());
+  fOB2.Set(fOB.X()+fga/4., fOB.Y());
 
   TObject::SetUniqueID(1); //
 }
@@ -152,18 +161,21 @@ void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
 {
   // service method
   if(pri>=0) {
-    Info("\n PrintShish()", "\n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
+    printf("PrintShish() \n a %7.3f:%7.3f | b %7.2f | r %7.2f \n TRD1 angle %7.6f(%5.2f) | tanBetta %7.6f", 
     fga, fga2, fgb, fgr, fgangle, fgangle*TMath::RadToDeg(), fgtanBetta);
     printf(" fTheta %f : %5.2f : cos(theta) %f\n", 
     fTheta, GetThetaInDegree(),TMath::Cos(fTheta)); 
     if(pri>=1) {
-      printf("\n%i |%s| theta %f :  fOK.Phi = %f(%5.2f)\n", 
+      printf(" %i |%s| theta %f :  fOK.Phi = %f(%5.2f)\n", 
       GetUniqueID(), GetName(), fTheta, fOK.Phi(),fOK.Phi()*TMath::RadToDeg());
       printf(" A %f B %f | fThetaA %7.6f(%5.2f)\n", fA,fB, fThetaA,fThetaA*TMath::RadToDeg());
-      printf(" fOK  : X %8.3f: Y %8.3f \n",  fOK.X(), fOK.Y());
-      printf(" fOK1 : X %8.3f: Y %8.3f (in SM, ieta=2)\n", fOK1.X(), fOK1.Y());
-      printf(" fOK2 : X %8.3f: Y %8.3f (in SM, ieta=1)\n\n", fOK2.X(), fOK2.Y());
-      fOK.Dump();
+      printf(" fOK  : X %9.4f: Y %9.4f \n",  fOK.X(), fOK.Y());
+      printf(" fOK1 : X %9.4f: Y %9.4f (local, ieta=2)\n", fOK1.X(), fOK1.Y());
+      printf(" fOK2 : X %9.4f: Y %9.4f (local, ieta=1)\n\n", fOK2.X(), fOK2.Y());
+      printf(" fOB  : X %9.4f: Y %9.4f \n", fOB.X(), fOB.Y());
+      printf(" fOB1 : X %9.4f: Y %9.4f (local, ieta=2)\n", fOB1.X(), fOB1.Y());
+      printf(" fOB2 : X %9.4f: Y %9.4f (local, ieta=1)\n", fOB2.X(), fOB2.Y());
+      //      fOK.Dump();
     }
   }
 }

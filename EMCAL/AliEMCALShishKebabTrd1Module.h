@@ -52,6 +52,12 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
     } else      {xr = fOK1.Y(); zr = fOK1.X();
     }
   }
+  // 15-may-06
+  TVector2& GetCenterOfModuleFace() {return fOB;}  
+  TVector2& GetCenterOfModuleFace(Int_t ieta) {
+    if(ieta<=1) return fOB2;
+    else        return fOB1;
+  }  
   // 
   Double_t GetTanBetta() const {return fgtanBetta;}
   Double_t Getb()        const {return fgb;}
@@ -70,7 +76,7 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   static Double_t fgtanBetta; // tan(fgangle/2.)
   static Double_t fgr;        // radius to IP
 
-  TVector2 fOK;     // position the module center x->y; z->x;
+  TVector2 fOK;     // position the module center in ALICE system; x->y; z->x;
   Double_t fA;      // parameters of right line : y = A*z + B
   Double_t fB;      // system where zero point is IP.
   Double_t fThetaA; // angle coresponding fA - for convinience
@@ -79,6 +85,10 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   // Nov 04,2004; Feb 19,2006 
   TVector2 fOK1; // ieta=2
   TVector2 fOK2; // ieta=1
+  // May 13, 2006; local position of module (cells) face  
+  TVector2 fOB;  // module
+  TVector2 fOB1; // ieta=2
+  TVector2 fOB2; // ieta=1
 
   // public:
   ClassDef(AliEMCALShishKebabTrd1Module,0) // TRD1 Shish-Kebab module 

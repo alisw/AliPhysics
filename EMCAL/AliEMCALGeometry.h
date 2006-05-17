@@ -274,7 +274,7 @@ private:
   Float_t     fParSM[3];       // SM sizes as in GEANT (TRD1)
   TGeoMatrix* fMatrixOfSM[12]; //![fNumberOfSuperModules]; get from gGeoManager;
 
-  char *fAdditionalOpts[3];  //! some additional options for the geometry type and name
+  char *fAdditionalOpts[4];  //! some additional options for the geometry type and name
   int  fNAdditionalOpts;  //! size of additional options parameter
 
   ClassDef(AliEMCALGeometry, 10) // EMCAL geometry class 
