@@ -47,13 +47,13 @@ ClassImp(AliTOFReconstructor)
 {
 // reconstruct clusters from digits
 
-  AliTOFClusterFinder *tofClus = new AliTOFClusterFinder(runLoader);
-  tofClus->Load();
+  AliTOFClusterFinder tofClus(runLoader);
+  tofClus.Load();
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
     {
-      tofClus->Digits2RecPoints(iEvent);
+      tofClus.Digits2RecPoints(iEvent);
     }
-  tofClus->UnLoad();
+  tofClus.UnLoad();
 
 }
 
