@@ -59,10 +59,11 @@
 #pragma link C++ class AliMUONCalibParam1I+;
 #pragma link C++ class AliMUONCalibParam2F+;
 #pragma link C++ class AliMUONCalibrationData+;
+#pragma link C++ class AliMUONTriggerEfficiencyCells+;
 
 // display
 #pragma link C++ class AliMUONDisplay+; 
-#pragma link C++ class AliMUONRecoCheck+; 
+#pragma link C++ class AliMUONRecoCheck+;
 
 // debug
 #pragma link C++ class AliMUONCheck+;

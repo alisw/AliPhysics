@@ -47,7 +47,8 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONCalibParam1I.cxx \
         AliMUONCalibParam2F.cxx \
         AliMUONCalibrationData.cxx \
-        AliMUONCheck.cxx 
+        AliMUONCheck.cxx \
+        AliMUONTriggerEfficiencyCells.cxx
      
 HDRS:= $(SRCS:.cxx=.h)
 
