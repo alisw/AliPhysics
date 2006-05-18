@@ -13,7 +13,8 @@
 //  - upper and lower cuts for all (non-boolean) cuts
 //  - update print method
 //  - is there a smarter way to manage the cuts?
-//
+//  - put comment to each variable
+//  - implement destructor !!!
 //
 //  NOTE: 
 //  - 
@@ -23,7 +24,6 @@
 #include "TObject.h"
 #include "TH1.h"
 #include "TH2.h"
-class TTree;
 
 #include "AliESD.h"
 #include "AliESDtrack.h"
@@ -31,85 +31,18 @@ class TTree;
 
 class AliESDtrackCuts : public TObject 
 {
-protected:
-
-  //######################################################
-  // esd track quality cuts
-  static const Int_t fNCuts = 21;
-  Char_t*            fCutNames[21];
-
-  Int_t   fCut_MinNClusterTPC;        // min number of tpc clusters
-  Int_t   fCut_MinNClusterITS;        // min number of its clusters  
-
-  Float_t fCut_MaxChi2PerClusterTPC;  // max tpc fit chi2 per tpc cluster
-  Float_t fCut_MaxChi2PerClusterITS;  // max its fit chi2 per its cluster
-
-  Float_t fCut_MaxC11;                // max resolutions of covariance matrix diag. elements
-  Float_t fCut_MaxC22;
-  Float_t fCut_MaxC33;
-  Float_t fCut_MaxC44;
-  Float_t fCut_MaxC55;
- 
-  Bool_t  fCut_AcceptKinkDaughters;   // accepting kink daughters?
-  Bool_t  fCut_RequireTPCRefit;       // require TPC refit
-  Bool_t  fCut_RequireITSRefit;       // require ITS refit
-  
-  // track to vertex cut
-  Float_t fCut_NsigmaToVertex;        // max number of estimated sigma from track-to-vertex
-  Bool_t  fCut_SigmaToVertexRequired; // cut track if sigma from track-to-vertex could not be calculated
-
-  // esd kinematics cuts
-  Float_t fPMin,   fPMax;             // definition of the range of the P
-  Float_t fPtMin,  fPtMax;            // definition of the range of the Pt
-  Float_t fPxMin,  fPxMax;            // definition of the range of the Px
-  Float_t fPyMin,  fPyMax;            // definition of the range of the Py
-  Float_t fPzMin,  fPzMax;            // definition of the range of the Pz
-  Float_t fEtaMin, fEtaMax;           // definition of the range of the eta
-  Float_t fRapMin, fRapMax;           // definition of the range of the y
-
-  //######################################################
-  // array of accepted ESD tracks
-
-  TObjArray* fAcceptedTracks; // List of accepted esd tracks after cuts
-
-
-  //######################################################
-  // diagnostics histograms
-  Bool_t fHistogramsOn;
-
-  TH1F *fhNClustersITS[2];
-  TH1F *fhNClustersTPC[2];
-  
-  TH1F* fhChi2PerClusterITS[2];
-  TH1F* fhChi2PerClusterTPC[2];
-
-  TH1F* fhC11[2];
-  TH1F* fhC22[2];
-  TH1F* fhC33[2];
-  TH1F* fhC44[2];
-  TH1F* fhC55[2];
-
-  TH1F* fhDXY[2];
-  TH1F* fhDZ[2];
-  TH2F* fhDXYvsDZ[2];
-
-  TH1F* fhDXYNormalized[2];
-  TH1F* fhDZNormalized[2];
-  TH2F* fhDXYvsDZNormalized[2];
-
-  TH1F*  fhCutStatistics;
-  TH2F*  fhCutCorrelation;
-  
-
-  // dummy array
-  Int_t  fIdxInt[200];
 
 public:
   AliESDtrackCuts();
-  
+  virtual ~AliESDtrackCuts();
+  AliESDtrackCuts(const AliESDtrackCuts& pd);  // Copy Constructor
+
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
-  
+
   TObjArray* GetAcceptedTracks(AliESD* esd);
+
+  AliESDtrackCuts &operator=(const AliESDtrackCuts &c);
+  virtual void Copy(TObject &c) const;
 
   //######################################################
   // track quality cut setters  
@@ -146,6 +79,71 @@ public:
   // void SaveQualityCuts(Char_t* file)
   // void LoadQualityCuts(Char_t* file)
 
+protected:
+  void Init(); // sets everything to 0
+
+  enum { kNCuts = 21 };
+
+  //######################################################
+  // esd track quality cuts
+  static const Char_t* fCutNames[kNCuts];
+
+  Int_t   fCut_MinNClusterTPC;        // min number of tpc clusters
+  Int_t   fCut_MinNClusterITS;        // min number of its clusters  
+
+  Float_t fCut_MaxChi2PerClusterTPC;  // max tpc fit chi2 per tpc cluster
+  Float_t fCut_MaxChi2PerClusterITS;  // max its fit chi2 per its cluster
+
+  Float_t fCut_MaxC11;                // max resolutions of covariance matrix diag. elements
+  Float_t fCut_MaxC22;
+  Float_t fCut_MaxC33;
+  Float_t fCut_MaxC44;
+  Float_t fCut_MaxC55;
+ 
+  Bool_t  fCut_AcceptKinkDaughters;   // accepting kink daughters?
+  Bool_t  fCut_RequireTPCRefit;       // require TPC refit
+  Bool_t  fCut_RequireITSRefit;       // require ITS refit
+  
+  // track to vertex cut
+  Float_t fCut_NsigmaToVertex;        // max number of estimated sigma from track-to-vertex
+  Bool_t  fCut_SigmaToVertexRequired; // cut track if sigma from track-to-vertex could not be calculated
+
+  // esd kinematics cuts
+  Float_t fPMin,   fPMax;             // definition of the range of the P
+  Float_t fPtMin,  fPtMax;            // definition of the range of the Pt
+  Float_t fPxMin,  fPxMax;            // definition of the range of the Px
+  Float_t fPyMin,  fPyMax;            // definition of the range of the Py
+  Float_t fPzMin,  fPzMax;            // definition of the range of the Pz
+  Float_t fEtaMin, fEtaMax;           // definition of the range of the eta
+  Float_t fRapMin, fRapMax;           // definition of the range of the y
+
+  //######################################################
+  // diagnostics histograms
+  Bool_t fHistogramsOn;
+
+  TH1F *fhNClustersITS[2];            //[2]
+  TH1F *fhNClustersTPC[2];            //[2]
+  
+  TH1F* fhChi2PerClusterITS[2];            //[2]
+  TH1F* fhChi2PerClusterTPC[2];            //[2]
+
+  TH1F* fhC11[2];            //[2]
+  TH1F* fhC22[2];            //[2]
+  TH1F* fhC33[2];            //[2]
+  TH1F* fhC44[2];            //[2]
+  TH1F* fhC55[2];            //[2]
+
+  TH1F* fhDXY[2];            //[2]
+  TH1F* fhDZ[2];            //[2]
+  TH2F* fhDXYvsDZ[2];            //[2]
+
+  TH1F* fhDXYNormalized[2];            //[2]
+  TH1F* fhDZNormalized[2];            //[2]
+  TH2F* fhDXYvsDZNormalized[2];            //[2]
+
+  TH1F*  fhCutStatistics;            //[2]
+  TH2F*  fhCutCorrelation;            //[2]
+  
   ClassDef(AliESDtrackCuts,0)
 };
 
