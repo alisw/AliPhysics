@@ -1,5 +1,6 @@
 SRCS= AliSelector.cxx \
       dNdEta/AlidNdEtaCorrectionSelector.cxx \
+      dNdEta/AlidNdEtaAnalysisSelector.cxx \
       dNdEta/dNdEtaAnalysis.cxx \
       dNdEta/dNdEtaCorrection.cxx \
       esdTrackCuts/AliESDtrackCuts.cxx
