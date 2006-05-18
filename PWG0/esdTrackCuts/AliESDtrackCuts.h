@@ -141,8 +141,8 @@ protected:
   TH1F* fhDZNormalized[2];            //[2]
   TH2F* fhDXYvsDZNormalized[2];            //[2]
 
-  TH1F*  fhCutStatistics;            //[2]
-  TH2F*  fhCutCorrelation;            //[2]
+  TH1F*  fhCutStatistics;            //
+  TH2F*  fhCutCorrelation;            //
   
   ClassDef(AliESDtrackCuts,0)
 };
