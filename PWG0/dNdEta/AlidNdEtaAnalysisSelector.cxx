@@ -3,8 +3,6 @@
 #include <TStyle.h>
 #include <TSystem.h>
 #include <TCanvas.h>
-#include <TParticle.h>
-#include <TParticlePDG.h>
 #include <TVector3.h>
 
 #include <AliLog.h>
@@ -128,7 +126,7 @@ Bool_t AlidNdEtaAnalysisSelector::Process(Long64_t entry)
       continue;
 
     Double_t p[3];
-    esdTrack->GetConstrainedPxPyPz(p); // ### TODO or GetInnerPxPyPy / GetOuter
+    esdTrack->GetConstrainedPxPyPz(p); // ### TODO or GetInnerPxPyPy / GetOuterPxPyPy
     TVector3 vector(p);
 
     Float_t theta = vector.Theta();
