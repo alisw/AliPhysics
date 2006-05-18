@@ -64,9 +64,10 @@ testAnalysis(Char_t* dataDir, Int_t nRuns=20) {
     if (!presentDir->IsDirectory())
       continue;
     // check that the files are there
-    sprintf(str,"%s/%s",dataDir, presentDir->GetName());
-    if ((!gSystem->Which(str,"galice.root")) ||
-        (!gSystem->Which(str,"AliESDs.root"))) 
+    TString currentDataDir;
+    currentDataDir.Form("%s/%s",dataDir, presentDir->GetName());
+    if ((!gSystem->Which(currentDataDir.Data(),"galice.root")) ||
+        (!gSystem->Which(currentDataDir.Data(),"AliESDs.root")))
       continue;
     
     if (nRunCounter++ >= nRuns)
@@ -82,7 +83,7 @@ testAnalysis(Char_t* dataDir, Int_t nRuns=20) {
       gAlice=0;
     }
 
-    sprintf(str,"%s/run%d/galice.root",dataDir,r);
+    sprintf(str,"%s/galice.root",currentDataDir.Data());
     AliRunLoader* runLoader = AliRunLoader::Open(str);
 
     runLoader->LoadgAlice();
@@ -93,7 +94,7 @@ testAnalysis(Char_t* dataDir, Int_t nRuns=20) {
     // #########################################################
     // open esd file and get the tree
 
-    sprintf(str,"%s/run%d/AliESDs.root",dataDir,r);
+    sprintf(str,"%s/AliESDs.root",currentDataDir.Data());
     // close it first to avoid memory leak
     if (esdFile)
       if (esdFile->IsOpen())

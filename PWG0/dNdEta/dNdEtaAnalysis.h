@@ -15,39 +15,43 @@
 // - figure out correct way to treat the errors
 // - add functionality to make dn/deta for different mult classes?
 
-#ifndef ROOT_TObject
-#include "TObject.h"
-#endif
-#ifndef ROOT_TFile
-#include "TFile.h"
-#endif
-#ifndef ROOT_TH2
-#include "TH2.h"
-#endif
-#ifndef ROOT_TMath
-#include "TMath.h"
-#endif
+#include <TObject.h>
+#include <TString.h>
 
-class dNdEtaAnalysis : public TObject 
+class TH2F;
+class TH1D;
+
+class dNdEtaAnalysis : public TObject
 {
-protected:    
-
-  TString  fName; 
-
-  TH2F* hEtaVsVtx;
-  TH1F* hVtx;
-  TH1F* hdNdEta;
-
 public:
   dNdEtaAnalysis(Char_t* name="dndeta_correction");
 
   void FillTrack(Float_t vtx, Float_t eta, Float_t weight);
   void FillEvent(Float_t vtx);
-  
+
   void Finish();
-  
+
+  void DrawHistograms();
   void SaveHistograms();
-  
+
+  TH2F* GetEtaVsVtxHistogram() { return hEtaVsVtx; }
+  TH2F* GetEtaVsVtxUncorrectedHistogram() { return hEtaVsVtxUncorrected; }
+  TH1D* GetVtxHistogram() { return hVtx; }
+  TH1D* GetdNdEtaHistogram() { return hdNdEta; }
+
+  void SetEtaVsVtxHistogram(TH2F* aHist) { hEtaVsVtx = aHist; }
+  void SetEtaVsVtxUncorrectedHistogram(TH2F* aHist) { hEtaVsVtxUncorrected = aHist; }
+  void SetVtxHistogram(TH1D* aHist) { hVtx = aHist; }
+  void SetdNdEtaHistogram(TH1D* aHist) { hdNdEta = aHist; }
+
+protected:
+  TString  fName;
+
+  TH2F* hEtaVsVtx;
+  TH2F* hEtaVsVtxUncorrected;
+  TH1D* hVtx;
+  TH1D* hdNdEta;
+
   ClassDef(dNdEtaAnalysis,0)
 };
 
