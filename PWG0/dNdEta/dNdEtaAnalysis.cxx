@@ -1,5 +1,11 @@
 #include "dNdEtaAnalysis.h"
 
+#include <TFile.h>
+#include <TH2F.h>
+#include <TH1D.h>
+#include <TMath.h>
+#include <TCanvas.h>
+
 //____________________________________________________________________
 ClassImp(dNdEtaAnalysis)
 
@@ -8,9 +14,10 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name) {
 
   fName = TString(name);
 
-  hEtaVsVtx  = new TH2F("eta_vs_vtx","",80,-20,20,120,-6,6);   
-  hVtx       = (TH1F*)hEtaVsVtx->ProjectionX("vtx");
-  hdNdEta    = (TH1F*)hEtaVsVtx->ProjectionY("dNdEta");
+  hEtaVsVtx  = new TH2F("eta_vs_vtx","",80,-20,20,120,-6,6);
+  hEtaVsVtxUncorrected = new TH2F("eta_vs_vtx_uncorrected","",80,-20,20,120,-6,6);
+  hVtx       = hEtaVsVtx->ProjectionX("vtx");
+  hdNdEta    = hEtaVsVtx->ProjectionY("dNdEta");
  
   hEtaVsVtx->SetXTitle("vtx z [cm]");
   hEtaVsVtx->SetYTitle("#eta");
@@ -20,13 +27,13 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name) {
 
   hEtaVsVtx->Sumw2();
   hVtx->Sumw2();
-
 }
 
 //____________________________________________________________________
 void
 dNdEtaAnalysis::FillTrack(Float_t vtx, Float_t eta, Float_t weight) {
   hEtaVsVtx->Fill(vtx, eta, weight);
+  hEtaVsVtxUncorrected->Fill(vtx,eta);
 }
 
 //____________________________________________________________________
@@ -93,8 +100,8 @@ dNdEtaAnalysis::Finish() {
       dndeta = dndeta/hdNdEta->GetBinWidth(i_eta);
       error  = error/hdNdEta->GetBinWidth(i_eta);
 
-      hdNdEta->SetBinContent(i_eta, dndeta);    
-      hdNdEta->SetBinError(i_eta, error);    
+      hdNdEta->SetBinContent(i_eta, dndeta);
+      hdNdEta->SetBinError(i_eta, error);
     }
 
   }
@@ -116,3 +123,25 @@ dNdEtaAnalysis::SaveHistograms() {
   gDirectory->cd("../");
 }
 
+//____________________________________________________________________
+void dNdEtaAnalysis::DrawHistograms()
+{
+  TCanvas* canvas = new TCanvas("dNdEtaAnalysis", "dNdEtaAnalysis", 800, 800);
+  canvas->Divide(2, 2);
+
+  canvas->cd(1);
+  if (hEtaVsVtx)
+    hEtaVsVtx->Draw("COLZ");
+
+  canvas->cd(2);
+  if (hEtaVsVtxUncorrected)
+    hEtaVsVtxUncorrected->Draw("COLZ");
+
+  canvas->cd(3);
+  if (hVtx)
+    hVtx->Draw();
+
+  canvas->cd(4);
+  if (hdNdEta)
+    hdNdEta->Draw();
+}
