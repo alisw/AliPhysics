@@ -23,6 +23,7 @@ protected:
   std::vector<TPCSectorData*>  fSectors;
   Int_t                        fSectorBlockSize;
   Short_t                      fLoadThreshold;
+  Short_t                      fLoadPedestal;
 
 public:
   TPCData();
@@ -38,6 +39,9 @@ public:
 
   Short_t GetLoadThreshold()     const { return fLoadThreshold; }
   void    SetLoadThreshold(Short_t lt) { fLoadThreshold = lt; }
+
+  Short_t GetLoadPedestal()     const { return fLoadPedestal; }
+  void    SetLoadPedestal(Short_t lp) { fLoadPedestal = lp; }
 
   void LoadDigits(TTree* tree, Bool_t spawnSectors=kTRUE);
   void LoadRaw(AliTPCRawStream&    input, Bool_t spawnSectors=kTRUE);

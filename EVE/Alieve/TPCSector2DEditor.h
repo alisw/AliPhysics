@@ -24,13 +24,20 @@ protected:
 
   TGNumberEntry*   fSectorID;
 
+  TGCheckButton*   fRnrInn;
+  TGCheckButton*   fRnrOut1;
+  TGCheckButton*   fRnrOut2;
+
   TGLabel*         fThresholdLabel;
   TGLabel*         fMaxValLabel;
-  TGHSlider*       fthreshold;
+  TGHSlider*       fThreshold;
   TGHSlider*       fMaxVal;
 
   TGCheckButton*   fShowMax;
+  TGCheckButton*   fAverage;
 
+  TGNumberEntry*   fMinTime;
+  TGNumberEntry*   fMaxTime;
   TGDoubleHSlider* fTime;
 
 public:
@@ -45,9 +52,17 @@ public:
 
   void DoSectorID();
 
-  void Dothreshold();
+  void DoRnrInn();
+  void DoRnrOut1();
+  void DoRnrOut2();
+
+  void DoThreshold();
   void DoMaxVal();
   void DoShowMax();
+  void DoAverage();
+  void SetupAverage();
+  void DoMinTime();
+  void DoMaxTime();
   void DoTime();
  
   ClassDef(TPCSector2DEditor, 0); // Editor for TPCSector2D

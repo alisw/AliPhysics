@@ -63,7 +63,7 @@ void TPCSector2DGL::SetCol(Float_t z, UChar_t* pixel) const
 
   Int_t ci = gStyle->GetColorPalette
     (TMath::Min(n_col - 1,
-                Int_t((n_col*(z - fSector->fthreshold))/(fSector->fMaxVal - fSector->fthreshold))));
+                Int_t((n_col*(z - fSector->fThreshold))/(fSector->fMaxVal - fSector->fThreshold))));
 
   TColor* c = gROOT->GetColor(ci);
 
@@ -114,9 +114,6 @@ void TPCSector2DGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
       glEnable(GL_BLEND);
       glDepthMask(GL_FALSE);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glShadeModel(GL_FLAT);
-
-      glBindTexture  (GL_TEXTURE_2D, fTexture);
 
       glPolygonOffset(2,2);
       glEnable(GL_POLYGON_OFFSET_FILL);
@@ -125,27 +122,33 @@ void TPCSector2DGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
       glBindTexture(GL_TEXTURE_2D, fTexture);
       glEnable(GL_TEXTURE_2D);
 
-      DisplayTexture(iSeg.GetPadWidth(),  iSeg.GetPadHeight(),  iSeg.GetRLow(),
-		     iSeg.GetNMaxPads(),  iSeg.GetNRows(),
-		     0,                   0);
-      DisplayTexture(o1Seg.GetPadWidth(), o1Seg.GetPadHeight(), o1Seg.GetRLow(),
-		     o1Seg.GetNMaxPads(), o1Seg.GetNRows(),
-		     iSeg.GetNMaxPads(),  0);
-      DisplayTexture(o2Seg.GetPadWidth(), o2Seg.GetPadHeight(), o2Seg.GetRLow(),
-		     o2Seg.GetNMaxPads(), o2Seg.GetNRows(),
-		     0,                   o1Seg.GetNRows());
+      if(fSector->fRnrInn)
+	DisplayTexture(iSeg.GetPadWidth(),  iSeg.GetPadHeight(),  iSeg.GetRLow(),
+		       iSeg.GetNMaxPads(),  iSeg.GetNRows(),
+		       0,                   0);
+      if(fSector->fRnrOut1)
+	DisplayTexture(o1Seg.GetPadWidth(), o1Seg.GetPadHeight(), o1Seg.GetRLow(),
+		       o1Seg.GetNMaxPads(), o1Seg.GetNRows(),
+		       iSeg.GetNMaxPads(),  0);
+      if(fSector->fRnrOut2)
+	DisplayTexture(o2Seg.GetPadWidth(), o2Seg.GetPadHeight(), o2Seg.GetRLow(),
+		       o2Seg.GetNMaxPads(), o2Seg.GetNRows(),
+		       0,                   o1Seg.GetNRows());
 
       glDisable(GL_TEXTURE_2D);
     } else {
-      DisplayQuads(iSeg.GetPadWidth(),  iSeg.GetPadHeight(),  iSeg.GetRLow(),
-		   iSeg.GetNMaxPads(),  iSeg.GetNRows(),
-		   0,                   0);
-      DisplayQuads(o1Seg.GetPadWidth(), o1Seg.GetPadHeight(), o1Seg.GetRLow(),
-		   o1Seg.GetNMaxPads(), o1Seg.GetNRows(),
-		   iSeg.GetNMaxPads(),    0);
-      DisplayQuads(o2Seg.GetPadWidth(), o2Seg.GetPadHeight(), o2Seg.GetRLow(),
-		   o2Seg.GetNMaxPads(), o2Seg.GetNRows(),
-		   0,                   o1Seg.GetNRows());
+      if(fSector->fRnrInn)
+	DisplayQuads(iSeg.GetPadWidth(),  iSeg.GetPadHeight(),  iSeg.GetRLow(),
+		     iSeg.GetNMaxPads(),  iSeg.GetNRows(),
+		     0,                   0);
+      if(fSector->fRnrOut1)
+	DisplayQuads(o1Seg.GetPadWidth(), o1Seg.GetPadHeight(), o1Seg.GetRLow(),
+		     o1Seg.GetNMaxPads(), o1Seg.GetNRows(),
+		     iSeg.GetNMaxPads(),    0);
+      if(fSector->fRnrOut2)
+	DisplayQuads(o2Seg.GetPadWidth(), o2Seg.GetPadHeight(), o2Seg.GetRLow(),
+		     o2Seg.GetNMaxPads(), o2Seg.GetNRows(),
+		     0,                   o1Seg.GetNRows());
     }
   }
 
@@ -163,39 +166,42 @@ void TPCSector2DGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
 void TPCSector2DGL::LoadPadrow(TPCSectorData::RowIterator& iter,
 			       Int_t row, Int_t col_off) const
 {
-  Int_t    pad_var;
+  Int_t    padVal;
   Int_t    time, val;   
 
-  Int_t    min_time = fSector->fMinTime;
-  Int_t    max_time = fSector->fMaxTime;
-  Bool_t   half_border_time = ((fSector->fMaxTime - fSector->fMinTime) % 2 == 0);
+  Int_t    minTime = fSector->fMinTime;
+  Int_t    maxTime = fSector->fMaxTime;
+  Bool_t   halfBorderTime = ((maxTime - minTime) % 2 == 0);
 
   UChar_t* img_pos = GetRowCol(row, col_off);
   while (iter.NextPad()) {
-    pad_var = 0; 
+    padVal = 0; 
 
     while (iter.Next()) {
       time = iter.Time();
       val  = iter.Signal();
 
+      if(time < minTime || time > maxTime)
+	continue;
+
       if(fSector->fShowMax) {
-        if(val > pad_var) {
-          pad_var = val;
+        if(val > padVal) {
+          padVal = val;
         }
       } else {
-        // Integrate int max_val.
-        if(time >= min_time && time <= max_time) {
-          if(half_border_time && (time == min_time || time == max_time))
-            pad_var += val/2;
-          else
-            pad_var += val;
-        }
+	if(halfBorderTime && (time == minTime || time == maxTime))
+	  padVal += val/2;
+	else
+	  padVal += val;
       }
     }
 
-    pad_var = TMath::Min(pad_var, fSector->fMaxVal);
-    if(pad_var > fSector->fthreshold)
-      SetCol(pad_var, img_pos);
+    if(fSector->fShowMax == kFALSE && fSector->fAverage) {
+      padVal = (Int_t)((Float_t)padVal / (maxTime - minTime));
+    }
+    padVal = TMath::Min(padVal, fSector->fMaxVal);
+    if(padVal > fSector->fThreshold)
+      SetCol(padVal, img_pos);
     img_pos += 4;
   }
 }
@@ -211,11 +217,19 @@ void TPCSector2DGL::CreateTexture() const
   memset(fImage, 0, fgkTextureByteSize);
 
   Int_t rowOff[3], colOff[3];
-  rowOff[0] = 0; rowOff[1] = rowOff[2] = -TPCSectorData::GetSeg(1).GetFirstRow();
-  colOff[0] = colOff[2] = 0; colOff[1] =  TPCSectorData::GetSeg(0).GetNMaxPads();
+  Bool_t isOn[3];
+  rowOff[0] = 0;
+  rowOff[1] = rowOff[2] = -TPCSectorData::GetSeg(1).GetFirstRow();
+  colOff[0] = colOff[2] = 0;
+  colOff[1] =  TPCSectorData::GetSeg(0).GetNMaxPads();
+  isOn[0] = fSector->fRnrInn;
+  isOn[1] = fSector->fRnrOut1;
+  isOn[2] = fSector->fRnrOut2;
 
   // Loop over 3 main segments
   for (Int_t sId = 0; sId <= 2; ++sId) {
+    if(isOn[sId] == kFALSE)
+      continue;
     const TPCSectorData::SegmentInfo& sInfo = TPCSectorData::GetSeg(sId);
     for (Int_t row=sInfo.GetFirstRow(); row<=sInfo.GetLastRow(); ++row) {
       TPCSectorData::RowIterator i = fSectorData->MakeRowIterator(row);
@@ -333,18 +347,23 @@ void TPCSector2DGL::DisplayFrame() const
              (UChar_t)(255*c->GetGreen()),
              (UChar_t)(255*c->GetBlue()));
 
-  glBegin(GL_LINE_LOOP);
-  TraceStepsUp  (TPCSectorData::GetInnSeg());
-  TraceStepsDown(TPCSectorData::GetInnSeg());
-  glEnd();
-
-  glBegin(GL_LINE_LOOP);
-  TraceStepsUp  (TPCSectorData::GetOut1Seg());
-  TraceStepsDown(TPCSectorData::GetOut1Seg());
-  glEnd();
-
-  glBegin(GL_LINE_STRIP);
-  TraceStepsUp  (TPCSectorData::GetOut2Seg());
-  TraceStepsDown(TPCSectorData::GetOut2Seg());
-  glEnd();
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  if(fSector->fRnrInn) {
+    glBegin(GL_POLYGON);
+    TraceStepsUp  (TPCSectorData::GetInnSeg());
+    TraceStepsDown(TPCSectorData::GetInnSeg());
+    glEnd();
+  }
+  if(fSector->fRnrOut1) {
+    glBegin(GL_POLYGON);
+    TraceStepsUp  (TPCSectorData::GetOut1Seg());
+    TraceStepsDown(TPCSectorData::GetOut1Seg());
+    glEnd();
+  }
+  if(fSector->fRnrOut2) {
+    glBegin(GL_POLYGON);
+    TraceStepsUp  (TPCSectorData::GetOut2Seg());
+    TraceStepsDown(TPCSectorData::GetOut2Seg());
+    glEnd();
+  }
 }

@@ -1,3 +1,5 @@
+// $Header$
+
 #include "TPCSector2D.h"
 
 #include <Alieve/TPCData.h>
@@ -18,16 +20,21 @@ void TPCSector2D::Init()
   fTPCData   = 0;
 
   fSectorID  = 0;
-  fShowMax   = true;
+  fShowMax   = kTRUE;
+  fAverage   = kFALSE;
   fMinTime   = 0;
-  fMaxTime   = 1;
-  fthreshold  = 5;
+  fMaxTime   = 450;
+  fThreshold = 5;
   fMaxVal    = 80;
 
-  fRnrFrame   = true;
-  fUseTexture = true;
+  fRnrInn    = kTRUE;
+  fRnrOut1   = kTRUE;
+  fRnrOut2   = kTRUE;
 
-  fTrans      = false;
+  fRnrFrame   = kTRUE;
+  fUseTexture = kTRUE;
+
+  fTrans      = kFALSE;
 }
 
 TPCSector2D::~TPCSector2D()

@@ -2,6 +2,27 @@
 
 	EVE-dev branch
 
+	* TPCData.cxx:
+	* TPCData.h:
+	Added member fLoadPedestal to support subtraction of common
+	pedestal during data loading.
+
+	* TPCSector2D.cxx:
+	* TPCSector2D.h:
+	* TPCSector2DEditor.cxx:
+	* TPCSector2DEditor.h:
+	* TPCSector2DGL.cxx:
+	Added option fAverage to divide the integrated time-bin contents
+	by window width; fShowMax now works within the given time
+	window. Added flags to control rendering of inner/outer1/outer2
+	segments. Widgets have been extended to display numeric values for
+	threshold, max-value and min/max time (there were only sliders and
+	print-out before).
+
+2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
 	* ITSModule.cxx:
 	* TPCSector2D.cxx:
 	* TPCSector2D.h:

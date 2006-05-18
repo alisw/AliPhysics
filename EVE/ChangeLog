@@ -1,7 +1,8 @@
 2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	Merged EVE-dev to HEAD.
-	Tagged the EVE-dev branch with EVE-head-merge.
+	Merged EVE-dev to HEAD. Tagged EVE-dev (EVE-dev-after-merge) and
+	EVE's HEAD (EVE-head-after-merge).
+	Merging was actually done twice.
 
 2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
 

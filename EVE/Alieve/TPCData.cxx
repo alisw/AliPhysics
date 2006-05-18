@@ -28,7 +28,7 @@ ClassImp(TPCData)
 
 TPCData::TPCData() :
   fSectors(36), fSectorBlockSize(65536),
-  fLoadThreshold(0)
+  fLoadThreshold(0), fLoadPedestal(0)
 {
   TPCSectorData::InitStatics();
 }
@@ -107,7 +107,7 @@ void TPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
 	inFill = kTRUE;
       }
       if(signal > fLoadThreshold)
-	secData->RegisterData(time, signal);
+	secData->RegisterData(time, signal - fLoadPedestal);
 
     } while (digit.Next());
     if(inFill) {
@@ -159,7 +159,7 @@ void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors)
     }
 
     if(input.GetSignal() > fLoadThreshold)
-      secData->RegisterData(input.GetTime(), input.GetSignal());
+      secData->RegisterData(input.GetTime(), input.GetSignal() - fLoadPedestal);
   }
 
   if(inFill) {
@@ -220,7 +220,7 @@ void TPCData::LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors, Bool_t war
     }
 
     if(input.GetSignal() > fLoadThreshold)
-      secData->RegisterData(input.GetTime(), input.GetSignal());
+      secData->RegisterData(input.GetTime(), input.GetSignal() - fLoadPedestal);
   }
 
   if(inFill) {

@@ -1,3 +1,5 @@
+// $Header$
+
 #ifndef ALIEVE_TPCSector2D_H
 #define ALIEVE_TPCSector2D_H
 
@@ -34,10 +36,15 @@ protected:
   // These change data representation:
   Int_t       fSectorID; 
   Bool_t      fShowMax;
+  Bool_t      fAverage;
   Int_t       fMinTime;     
   Int_t       fMaxTime;
-  Short_t     fthreshold;
+  Short_t     fThreshold;
   Int_t       fMaxVal;
+
+  Bool_t      fRnrInn;
+  Bool_t      fRnrOut1;
+  Bool_t      fRnrOut2;
 
   Bool_t      fRnrFrame;
   Bool_t      fUseTexture;
@@ -57,10 +64,15 @@ public:
   void SetDataSource(TPCData* data);
   virtual void SetSectorID(Int_t id);
 
+  void SetRnrInn(Bool_t r)  { fRnrInn = r; ++fRTS; }
+  void SetRnrOut1(Bool_t r) { fRnrOut1 = r; ++fRTS; }
+  void SetRnrOut2(Bool_t r) { fRnrOut2 = r; ++fRTS; }
+
   void SetShowMax(Bool_t sm)  { fShowMax  = sm; ++fRTS; }
+  void SetAverage(Bool_t avg) { fAverage  = avg; ++fRTS; }
   void SetMinTime(Int_t mt)   { fMinTime  = mt; ++fRTS; }
   void SetMaxTime(Int_t mt)   { fMaxTime  = mt; ++fRTS; }
-  void Setthreshold(Short_t t) { fthreshold =  t; ++fRTS; }
+  void SetThreshold(Short_t t) { fThreshold =  t; ++fRTS; }
   void SetMaxVal(Int_t mv)    { fMaxVal   = mv; ++fRTS; }
 
   virtual void ComputeBBox();
