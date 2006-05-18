@@ -14,25 +14,25 @@
 
 #pragma link C++ class Alieve::VSDCreator+;
 
+// ITS
+
 #pragma link C++ class Alieve::ITSDigitsInfo+;
-#pragma link C++ class Alieve::TPCDigitsInfo+;
-#pragma link C++ class Alieve::TPCSeg+;
-
-//================================
-// g3d/
-//================================
-
 #pragma link C++ class Alieve::ITSModule+;
-#pragma link C++ class Alieve::TPCSegment+;
 
-//================================
-// ged/
-//================================
+// TPC
 
-#pragma link C++ class Alieve::TPCSegmentEditor+;
+#pragma link C++ class Alieve::TPCData+;
 
-//================================
-// gl/
-//================================
+#pragma link C++ class Alieve::TPCSectorData+;
+#pragma link C++ class Alieve::TPCSectorData::PadData;
+#pragma link C++ class Alieve::TPCSectorData::PadIterator;
+#pragma link C++ class Alieve::TPCSectorData::RowIterator;
+#pragma link C++ class Alieve::TPCSectorData::SegmentInfo;
 
-#pragma link C++ class Alieve::TPCSegmentGL+;
+#pragma link C++ class Alieve::TPCSector2D+;
+#pragma link C++ class Alieve::TPCSector2DEditor+;
+#pragma link C++ class Alieve::TPCSector2DGL+;
+
+// Almost ready
+// #pragma link C++ class Alieve::TPCSector3D+;
+// #pragma link C++ class Alieve::TPCSector3DEditor+;

@@ -2,15 +2,14 @@
 
 #include "CLASS.h"
 
+using namespace Reve;
+using namespace Alieve;
 
 //______________________________________________________________________
 // CLASS
 //
 
 ClassImp(CLASS);
-
-using namespace Reve;
-using namespace Alieve;
 
 CLASS::CLASS()
 {

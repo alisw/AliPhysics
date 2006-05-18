@@ -107,7 +107,7 @@ void ITSModule::LoadQuads()
   // printf("its module load quads \n");
   Float_t x = fDx;
   Float_t z = fDz;
-  Bool_t above_treshold = false;
+  Bool_t aboveThreshold = false;
 
   // Module frame in xy plane
   fQuads.push_back(Reve::Quad(fFrameCol));
@@ -130,7 +130,7 @@ void ITSModule::LoadQuads()
   switch(fDetID) {
 
   case 0: { // SPD
-    above_treshold = true;
+    aboveThreshold = true;
     AliITSsegmentationSPD* seg =  fInfo->fSegSPD; 
     AliITSdigitSPD *d=0;
 
@@ -165,7 +165,7 @@ void ITSModule::LoadQuads()
       if (d->GetSignal() > fgSDDThreshold) {
 	j = d->GetCoord1();
 	i = d->GetCoord2();
-	above_treshold = true;
+	aboveThreshold = true;
 	seg->DetToLocal(i,j,x,z);
 	dpx = seg->Dpx(i)*0.0001;
 	dpz = seg->Dpz(j)*0.0001;
@@ -192,7 +192,7 @@ void ITSModule::LoadQuads()
     for (Int_t k=0; k<ndigits; k++) {
       d=(AliITSdigitSSD*)digits->UncheckedAt(k);
       if(d->GetSignal() > fgSSDThreshold){
-	above_treshold = true;
+	aboveThreshold = true;
 	j = d->GetCoord1();
 	i = d->GetCoord2();
 	seg->DetToLocal(i,j,x,z);

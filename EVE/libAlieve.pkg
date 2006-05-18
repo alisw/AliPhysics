@@ -4,4 +4,4 @@ HDRS     := $(SRCS:.cxx=.h)
 
 DHDR     := Alieve/LinkDef.h
 
-EINCLUDE := ITS TPC
+EINCLUDE := ITS TPC RAW

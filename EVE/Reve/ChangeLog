@@ -1,0 +1,36 @@
+2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* RGTopFrame.cxx:
+	Added missing initializations. In particular, fCurrentEvent,
+	fCurrentEventLTI and fGeometryLTI were not initialized and this
+	caused segvs for usage without bootstrap with alieve_init.C macro.
+
+2006-05-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* LinkDef.h:
+	* Reve.h:
+	New class Reve::ReferenceCount; to be used as secondary base class.
+
+2006-05-15  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* Reve.cxx:
+	* Reve.h:
+	New function ColorFromIdx().
+
+	* BoxSet.cxx:
+	* BoxSet.h:
+	* BoxSetGL.cxx:
+	* BoxSetGL.h:
+	New files: a set of boxes with direct GL rendering.
+
+	* LinkDef.h:
+	Pragmas for BoxSet/GL.
+
+	* ChangeLog:
+	New file.

@@ -12,6 +12,8 @@ void alieve_loadlibs ()
   // Uncomment the following line for macosx
   // Waiting for a better solution
   //  gSystem->Load("libg2c_sh");
+  // And the following works for gcc-4.
+  //  gSystem->Load("/usr/lib/libg2c");
   gSystem->Load("libmicrocern");
   gSystem->Load("libpdf");
   gSystem->Load("libpythia6");

@@ -69,9 +69,18 @@ ToolBarData_t tb_data[] = {
 
 
 void RGTopFrame::Init(){
-  fSelector = 0;
-  fCC = 0;
-  // fVSDFile = "";
+  fCC          = 0;
+  fHistoCanvas = 0;
+  fSelector    = 0;
+  fBrowser     = 0;
+  fStatusBar   = 0;
+  fVSDFile     = "";
+
+  fEditor = 0;
+
+  fCurrentEvent    = 0;
+  fCurrentEventLTI = 0;
+  fGeometryLTI     = 0;
 
   fRedrawDisabled = false;
   fTimerActive    = false;

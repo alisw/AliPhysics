@@ -1,0 +1,39 @@
+2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	Merged EVE-dev to HEAD.
+	Tagged the EVE-dev branch with EVE-head-merge.
+
+2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* macros/alieve_loadlibs.C:
+	Commented out loading of libg2c as it breaks things at other
+	systems. One should uncomment this at a gcc-4 system.
+
+2006-05-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* alice-macros/tpc_digits.C:
+	Use new TPCData classes.
+
+	* libAlieve.pkg:
+	Added RAW to EINCLUDES (need AliTPCRawStreamOld.h in TPCData).
+
+	* macros/alieve_loadlibs.C:
+	Add loading of /usr/lib/libg2c prior to libmicrocern (problem with
+	gcc-4).
+
+	* README:
+	Explain purpose of test-macros/ directory.
+
+	* test-macros/tpc_digi_test.C:
+	* test-macros/tpc_raw_test.C:
+	New files: demonstrate usage of TPCData class.
+
+	* reve-genclass.pl:
+	New file: generate class skeletons from template files.
+
+	* ChangeLog:
+	New file.

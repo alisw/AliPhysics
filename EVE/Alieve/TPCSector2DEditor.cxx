@@ -1,7 +1,7 @@
 // $Header$
 
-#include "TPCSegmentEditor.h"
-#include <Alieve/TPCSegment.h>
+#include "TPCSector2DEditor.h"
+#include <Alieve/TPCSector2D.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -17,22 +17,22 @@ using namespace Reve;
 using namespace Alieve;
 
 //______________________________________________________________________
-// TPCSegmentEditor
+// TPCSector2DEditor
 //
 
-ClassImp(TPCSegmentEditor)
+ClassImp(TPCSector2DEditor)
 
-TPCSegmentEditor::TPCSegmentEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
+TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
 				   UInt_t options, Pixel_t back) :
   TGedFrame(p, id, width, height, options | kVerticalFrame, back)
 {
   fM = 0;
-  MakeTitle("TPCSegment");
+  MakeTitle("TPCSector2D");
 
   //!!! create the widgets here ...
 
   // Register the editor.
-  // TClass *cl = TPCSegment::Class();
+  // TClass *cl = TPCSector2D::Class();
   //  TGedElement *ge = new TGedElement;
   // ge->fGedFrame = this;
   //  ge->fCanvas = 0;
@@ -41,53 +41,53 @@ TPCSegmentEditor::TPCSegmentEditor(const TGWindow *p, Int_t id, Int_t width, Int
   fUseTexture = new TGCheckButton(this, "UseTexture");
   AddFrame(fUseTexture, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fUseTexture->Connect
-    ("Toggled(Bool_t)","Alieve::TPCSegmentEditor", this, "DoUseTexture()");
+    ("Toggled(Bool_t)","Alieve::TPCSector2DEditor", this, "DoUseTexture()");
 
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "SegmentID:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 15, 2, 1, 1));
+    TGLabel *l = new TGLabel(f, "SectorID:");
+    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 3, 2, 1, 1));
 
-    fSegmentID = new TGNumberEntry(f, 0., 6, -1, 
+    fSectorID = new TGNumberEntry(f, 0., 6, -1, 
 				   TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative,
 				   TGNumberFormat::kNELLimitMinMax, 0, 35);
 
-    fSegmentID->GetNumberEntry()->SetToolTipText("0-18 front plate 18-36 back plate");
-    f->AddFrame(fSegmentID, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fSegmentID->Associate(this);
-    fSegmentID->Connect("ValueSet(Long_t)",
-			"Alieve::TPCSegmentEditor", this, "DoSegmentID()");		    
+    fSectorID->GetNumberEntry()->SetToolTipText("0-17 +z plate 18-35 -z plate");
+    f->AddFrame(fSectorID, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
+    fSectorID->Associate(this);
+    fSectorID->Connect("ValueSet(Long_t)",
+			"Alieve::TPCSector2DEditor", this, "DoSectorID()");		    
 
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));  
   }
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "Treshold:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 15, 2, 1, 1));
+    fThresholdLabel = new TGLabel(f, "threshold [XXX]:");
+    f->AddFrame(fThresholdLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 3, 2, 1, 1));
 
-    fTreshold = new TGHSlider(f, 150);
-    fTreshold->SetRange(0,10);
-    fTreshold->Associate(this);
-    f->AddFrame(fTreshold, new TGLayoutHints(kLHintsLeft, 0, 5));
-    fTreshold->Connect("PositionChanged(Int_t)",
-		       "Alieve::TPCSegmentEditor", this, "DoTreshold()");
+    fthreshold = new TGHSlider(f, 150);
+    fthreshold->SetRange(0,149);
+    fthreshold->Associate(this);
+    f->AddFrame(fthreshold, new TGLayoutHints(kLHintsLeft, 0, 5));
+    fthreshold->Connect("PositionChanged(Int_t)",
+		       "Alieve::TPCSector2DEditor", this, "Dothreshold()");
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   }
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "MaxValue:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 1, 2, 1, 1));
+    fMaxValLabel = new TGLabel(f, "MaxValue [XXX]:");
+    f->AddFrame(fMaxValLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 3, 2, 1, 1));
     fMaxVal = new TGHSlider(f, 150);
-    fMaxVal->SetRange(0,100);
+    fMaxVal->SetRange(0,299);
     fMaxVal->Associate(this);
     f->AddFrame(fMaxVal, new TGLayoutHints(kLHintsLeft, 0, 5));
     fMaxVal->Connect("PositionChanged(Int_t)",
-		     "Alieve::TPCSegmentEditor", this, "DoMaxVal()");
+		     "Alieve::TPCSector2DEditor", this, "DoMaxVal()");
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   }
   fShowMax = new TGCheckButton(this, "ShowMax");
   AddFrame(fShowMax, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
-  fShowMax->Connect("Toggled(Bool_t)","Alieve::TPCSegmentEditor", this, "DoShowMax()");
+  fShowMax->Connect("Toggled(Bool_t)","Alieve::TPCSector2DEditor", this, "DoShowMax()");
 
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
@@ -98,29 +98,29 @@ TPCSegmentEditor::TPCSegmentEditor(const TGWindow *p, Int_t id, Int_t width, Int
     fTime->SetRange(0, 500);
     fTime->Resize(160, 20);
     f->AddFrame(fTime);//, new TGLayoutHints(kLHintsLeft, 0, 5));
-    fTime->Connect("PositionChanged()", "Alieve::TPCSegmentEditor",
+    fTime->Connect("PositionChanged()", "Alieve::TPCSector2DEditor",
 		   this, "DoTime()");
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   }
   // What is this crap?
-  TClass *cl = TPCSegmentEditor::Class();
+  TClass *cl = TPCSector2DEditor::Class();
   TGedElement *ge = new TGedElement;
   ge->fGedFrame = this;
   ge->fCanvas = 0;
   cl->GetEditorList()->Add(ge);
 }
 
-TPCSegmentEditor::~TPCSegmentEditor()
+TPCSector2DEditor::~TPCSector2DEditor()
 {}
 
 /**************************************************************************/
 
-void TPCSegmentEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
+void TPCSector2DEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
 {
   fModel = 0;
   fPad   = 0;
 
-  if (!obj || !obj->InheritsFrom(TPCSegment::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
+  if (!obj || !obj->InheritsFrom(TPCSector2D::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
     SetActive(kFALSE);
     return;
   }
@@ -128,55 +128,57 @@ void TPCSegmentEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
   fModel = obj;
   fPad   = pad;
 
-  fM = dynamic_cast<TPCSegment*>(fModel);
+  fM = dynamic_cast<TPCSector2D*>(fModel);
 
   fUseTexture->SetState(fM->fUseTexture ? kButtonDown : kButtonUp);
-  fSegmentID->SetNumber(fM->fID);
-  fTreshold->SetPosition(fM->fTreshold);//(fTreshold->GetMaxPosition()- fTreshold->GetMinPosition() ));
+  fSectorID->SetNumber(fM->fSectorID);
+  fThresholdLabel->SetText(Form("threshold [%3d]:", fM->fthreshold));
+  fthreshold->SetPosition(fM->fthreshold);
 
+  fMaxValLabel->SetText(Form("MaxValue [%3d]:", fM->fMaxVal));
   fMaxVal->SetPosition(fM->fMaxVal);
   fTime->SetPosition(fM->fMinTime, fM->fMaxTime);
 
   fShowMax->SetState(fM->fShowMax ? kButtonDown : kButtonUp);
-  //  fTime->SetPosition(fM->fMaxTime);
+
   SetActive();
 }
 
 /**************************************************************************/
 
-void TPCSegmentEditor::DoUseTexture()
+void TPCSector2DEditor::DoUseTexture()
 {
   fM->fUseTexture = fUseTexture->IsOn();
   Update();
 }
 
-void TPCSegmentEditor::DoSegmentID()
+void TPCSector2DEditor::DoSectorID()
 {
-  fM->SetSegmentID((Int_t) fSegmentID->GetNumber());
+  fM->SetSectorID((Int_t) fSectorID->GetNumber());
   Update();
 }
 
-void TPCSegmentEditor::DoTreshold()
+void TPCSector2DEditor::Dothreshold()
 {
-  fM->SetTreshold((Short_t) fTreshold->GetPosition());
-  printf("DoTreshold %d \n",  fM->fTreshold);
+  fM->Setthreshold((Short_t) fthreshold->GetPosition());
+  fThresholdLabel->SetText(Form("threshold [%3d]:", fM->fthreshold));
   Update();
 }
 
-void TPCSegmentEditor::DoMaxVal()
+void TPCSector2DEditor::DoMaxVal()
 {
   fM->SetMaxVal((Int_t) fMaxVal->GetPosition());
-  printf("DoMaxVal %d \n",fM->fMaxVal);
+  fMaxValLabel->SetText(Form("MaxValue [%3d]:", fM->fMaxVal));
   Update();
 }
 
-void TPCSegmentEditor::DoShowMax()
+void TPCSector2DEditor::DoShowMax()
 {
   fM->SetShowMax(fShowMax->IsOn());
   Update();
 }
 
-void TPCSegmentEditor::DoTime()
+void TPCSector2DEditor::DoTime()
 { 
   Double_t min = fTime->GetMinPosition(), max = fTime->GetMaxPosition();
   printf("hslidor min=%f max=%f\n", min, max);

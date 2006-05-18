@@ -10,6 +10,7 @@
 //================================
 
 // Reve
+#pragma link C++ function Reve::ColorFromIdx;
 #pragma link C++ function Reve::SetupEnvironment;
 #pragma link C++ function Reve::AssertMacro;
 #pragma link C++ function Reve::Macro;
@@ -19,6 +20,7 @@
 #pragma link C++ class Reve::Exc_t+;
 #pragma link C++ class Reve::PadHolder+;
 #pragma link C++ class Reve::GeoManagerHolder+;
+#pragma link C++ class Reve::ReferenceCount+;
 
 // PODs
 #pragma link C++ class Reve::Vector+;
@@ -82,6 +84,10 @@
 #pragma link C++ class Reve::Quad+;
 #pragma link C++ class Reve::QuadSet+;
 
+// BoxSet
+#pragma link C++ class Reve::Box+;
+#pragma link C++ class Reve::BoxSet+;
+
 // GeoNode
 #pragma link C++ class Reve::GeoNodeRnrEl+;
 #pragma link C++ class Reve::GeoTopNodeRnrEl+;
@@ -103,3 +109,4 @@
 
 // ReveGLRenderers
 #pragma link C++ class Reve::QuadSetGL+;
+#pragma link C++ class Reve::BoxSetGL+;

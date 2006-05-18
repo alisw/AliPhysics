@@ -5,6 +5,7 @@
 #include <TError.h>
 #include <TPad.h>
 #include <TGeoManager.h>
+#include <TColor.h>
 
 #include <TROOT.h>
 
@@ -31,6 +32,17 @@ Exc_t operator+(const Exc_t &s1,  const char *s2)
 void WarnCaller(const TString& warning)
 {
   std::cout << "WRN: " << warning << std::endl;
+}
+
+void ColorFromIdx(Color_t ci, UChar_t* col)
+{
+  TColor* c = gROOT->GetColor(ci);
+  if(c) { 
+    col[0] = (UChar_t)(255*c->GetRed());  
+    col[1] = (UChar_t)(255*c->GetGreen());
+    col[2] = (UChar_t)(255*c->GetBlue()); 
+    col[3] = 255;
+  }
 }
 
 /**************************************************************************/

@@ -45,6 +45,8 @@ Alieve/ and Reve/ -- sources
 macros/		  -- macros for bootstraping and internal steering
 alice-macros/	  -- macros for ALICE visualization
 alica-data/	  -- data files used by ALICE macros
+test-macros/      -- macros for tests of specific features; usually one needs
+                     to copy and edit them
 
 bin/, Makefile and make_base.inc are used for stand-alone build of the
 packages.

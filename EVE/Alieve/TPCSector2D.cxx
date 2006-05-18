@@ -1,103 +1,105 @@
-#include "TPCSegment.h"
+#include "TPCSector2D.h"
 
+#include <Alieve/TPCData.h>
+#include <Alieve/TPCSectorData.h>
+
+#include <AliTPCParam.h>
 
 using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
-ClassImp(TPCSegment)
+ClassImp(TPCSector2D);
 
 /**************************************************************************/
 
-void TPCSegment::Init()
+void TPCSector2D::Init()
 {
-  fID = 0;
-  fInfo = 0;
+  fTPCData   = 0;
 
-  fTrans = false;
-
-  fRnrFrame = true;
-  fUseTexture = true;
-  fTreshold = 1;
-  fShowMax = true;
-
+  fSectorID  = 0;
+  fShowMax   = true;
   fMinTime   = 0;
   fMaxTime   = 1;
-  fTreshold  = 5;
+  fthreshold  = 5;
   fMaxVal    = 80;
+
+  fRnrFrame   = true;
+  fUseTexture = true;
+
+  fTrans      = false;
 }
 
-TPCSegment::~TPCSegment()
+TPCSector2D::~TPCSector2D()
 {
-  if(fInfo) fInfo->DecRefCount();
+  if(fTPCData) fTPCData->DecRefCount();
 }
 
 /**************************************************************************/
 
-void TPCSegment::SetInfo(TPCDigitsInfo* info)
+void TPCSector2D::SetDataSource(TPCData* data)
 {
-  if(fInfo) fInfo->DecRefCount();
-  fInfo = info;
-  if(fInfo) fInfo->IncRefCount();
+  if(data == fTPCData) return;
+  if(fTPCData) fTPCData->DecRefCount();
+  fTPCData = data;
+  if(fTPCData) fTPCData->IncRefCount();
+  ++fRTS;
 }
 
-void TPCSegment::SetSegmentID(Int_t segment)
+void TPCSector2D::SetSectorID(Int_t segment)
 {
   if(segment < 0 ) segment = 0;
-  if(segment > 36) segment = 36;
-  fID = segment;
-  SetName(Form("TPCSegment %d", fID));
+  if(segment > 35) segment = 35;
+  fSectorID = segment;
+  SetName(Form("TPCSector2D %d", fSectorID));
   ++fRTS;
 }
 
 /**************************************************************************/
 
-void TPCSegment::ComputeBBox()
+void TPCSector2D::ComputeBBox()
 {
-  Float_t b = fInfo->fInnSeg.fRlow;
-  Float_t w = fInfo->fOut2Seg.fNMaxPads* fInfo->fOut2Seg.fPadWidth/2;
-  Float_t h = fInfo->fOut2Seg.fRlow +
-    fInfo->fOut2Seg.fNRows* fInfo->fOut2Seg.fPadLength - fInfo->fInnSeg.fRlow;
+  const TPCSectorData::SegmentInfo&  iSeg = TPCSectorData::GetInnSeg();
+  const TPCSectorData::SegmentInfo& o2Seg = TPCSectorData::GetOut2Seg();
 
   bbox_init();
-  fBBox[0] = -w;   fBBox[1] = w;
-  fBBox[2] =  b;   fBBox[3] = b + h;
-  fBBox[4] = -0.5; fBBox[5] = 0.5;   // Fake z-width to 1 cm.
+  Float_t w = o2Seg.GetNMaxPads()*o2Seg.GetPadWidth()/2;
+  fBBox[0] = -w;
+  fBBox[1] =  w;
+  fBBox[2] =  iSeg.GetRLow();
+  fBBox[3] =  o2Seg.GetRLow() + o2Seg.GetNRows()*o2Seg.GetPadHeight();
+  fBBox[4] = -0.5; // Fake z-width to 1 cm.
+  fBBox[5] =  0.5;
 }
 
 /**************************************************************************/
 
-void TPCSegment::SetTrans(Bool_t trans) 
+void TPCSector2D::SetTrans(Bool_t trans) 
 {
   fTrans = trans;
   if(fTrans) {
     for (Int_t k = 0; k< 16; k++)
       fMatrix[k] = 0.;
 
-    Float_t z, s, c;
-    if(fID < 18) {
-      z =  fInfo->fParameter->GetZLength();
-    } else {
-      z = -fInfo->fParameter->GetZLength();
-    } 
+    Float_t c = TMath::Cos((fSectorID + 0.5)*20*TMath::Pi()/180 - TMath::Pi()/2);
+    Float_t s = TMath::Sin((fSectorID + 0.5)*20*TMath::Pi()/180 - TMath::Pi()/2);
+    Float_t z = TPCSectorData::GetParam().GetZLength();
+    if(fSectorID >= 18) z = -z;
   
-    // column major ii
-    fMatrix[14] = z;
-    fMatrix[15] = 1;
-
-    c = TMath::Cos((fID + 0.5)*20*TMath::Pi()/180 - TMath::Pi()/2);
-    s = TMath::Sin((fID + 0.5)*20*TMath::Pi()/180 - TMath::Pi()/2);
-  
-    fMatrix[0] = -c;
-    fMatrix[1] = -s;
-    fMatrix[4] = -s;
-    fMatrix[5] =  c;
+    // column major
+    fMatrix[0]  = -c;
+    fMatrix[1]  = -s;
+    fMatrix[4]  = -s;
+    fMatrix[5]  =  c;
     fMatrix[10] = -1;
+    fMatrix[14] =  z;
+    fMatrix[15] =  1;
   }
 }
 
 /**************************************************************************/
-void TPCSegment::Paint(Option_t* )
+
+void TPCSector2D::Paint(Option_t* )
 {
   TBuffer3D buffer(TBuffer3DTypes::kGeneric);
 
@@ -106,19 +108,19 @@ void TPCSegment::Paint(Option_t* )
   buffer.fColor        = 1;
   buffer.fTransparency = 0;
   buffer.fLocalFrame   = fTrans; 
-
   if (fTrans)
     memcpy(buffer.fLocalMaster, fMatrix, 16*sizeof(Double_t));
   buffer.SetSectionsValid(TBuffer3D::kCore);
    
-  // We fill kCore on first pass and try with viewer
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
   if (reqSections == TBuffer3D::kNone) {
-    // printf("TPCSegment::Paint viewer was happy with Core buff3d.\n");
+    // printf("TPCSector2D::Paint viewer was happy with Core buff3d.\n");
     return;
   }
-  printf("TPCSegment::Paint only GL supported.\n");
+
+  printf("TPCSector2D::Paint only GL supported.\n");
   return;
+
   /*
     if (reqSections & TBuffer3D::kRawSizes) {
     Int_t nbPnts = fQuads.size()*4;

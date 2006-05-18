@@ -5,6 +5,7 @@
 
 #include <string>
 #include <TString.h>
+#include <Gtypes.h>
 
 inline bool operator==(const TString& t, const std::string& s)
 { return (s == t.Data()); }
@@ -36,6 +37,8 @@ Exc_t operator+(const Exc_t &s1, const TString &s2);
 Exc_t operator+(const Exc_t &s1, const char    *s2);
 
 void WarnCaller(const TString& warning);
+
+void ColorFromIdx(Color_t ci, UChar_t* col);
 
 /**************************************************************************/
 /**************************************************************************/
@@ -75,6 +78,25 @@ public:
   virtual ~GeoManagerHolder();
 
   ClassDef(GeoManagerHolder, 0);
+};
+
+/**************************************************************************/
+
+class ReferenceCount
+{
+protected:
+  Int_t fRefCount;
+
+public:
+  ReferenceCount() : fRefCount(0) {}
+  virtual ~ReferenceCount() {}
+
+  void IncRefCount() { ++fRefCount; }
+  void DecRefCount() { if(--fRefCount <= 0) OnZeroRefCount(); }
+
+  virtual void OnZeroRefCount() { delete this; }
+
+  ClassDef(ReferenceCount, 0);
 };
 
 }
