@@ -23,17 +23,16 @@
 // Sylwester Radomski <radomski@if.pw.edu.pl>
 //
 
+#include "TParticle.h"
 #include <Riostream.h>
 
-//#include "TSystem.h"
-//#include "TUnixSystem.h"
-#include "TParticle.h"
+#include "AliGenMevSim.h"
+#include "AliMevSimConfig.h"
+#include "AliMevSimParticle.h"
+//#include "AliRun.h"
 #include "TMevSim.h"
 
-#include "AliGenMevSim.h"
-#include "AliRun.h"
-
-static TRandom * sRandom;
+static TRandom * gAliRandom;
 
 ClassImp(AliGenMevSim)
 
@@ -41,20 +40,22 @@ ClassImp(AliGenMevSim)
 AliGenMevSim::AliGenMevSim() : AliGenerator(-1) 
 {
   //
-  // Standard creator
+  // Default ctor
   //
-  
   fConfig = new AliMevSimConfig();
   fMevSim = new TMevSim();
-  sRandom = fRandom;
+  gAliRandom = fRandom;
   
 }
 //____________________________________________________________________________
-AliGenMevSim::AliGenMevSim(AliMevSimConfig *config): AliGenerator(-1) {
-
+AliGenMevSim::AliGenMevSim(AliMevSimConfig *config): AliGenerator(-1) 
+{
+  //
+  // Standard ctor
+  //
   fConfig = config;
   fMevSim = new TMevSim(); 
-  sRandom = fRandom;
+  gAliRandom = fRandom;
 }
 
 //____________________________________________________________________________
@@ -66,15 +67,23 @@ AliGenMevSim::~AliGenMevSim()
   if (fMevSim) delete fMevSim;
 }
 //____________________________________________________________________________
-void AliGenMevSim::SetConfig(AliMevSimConfig *config) {
-  
+void AliGenMevSim::SetConfig(AliMevSimConfig *config) 
+{
+  //
+  // Sets the MevSim configuration
+  //
   fConfig = config;
 }
-//____________________________________________________________________________
-void AliGenMevSim::AddParticleType(AliMevSimParticle *type) {
 
+//____________________________________________________________________________
+void AliGenMevSim::AddParticleType(AliMevSimParticle *type) 
+{
+  //
+  // Add one particle type to MevSim
+  //
   fMevSim->AddPartTypeParams((TMevSimPartTypeParams*)type);
 }
+
 //____________________________________________________________________________
 void AliGenMevSim::Init() 
 {
@@ -129,7 +138,7 @@ void AliGenMevSim::Generate()
   Float_t p[3] = {1,1,1};
   Float_t time = 0;
   
-  const Int_t parent = -1;
+  const Int_t kParent = -1;
   Int_t id;
 
   // vertexing 
@@ -165,17 +174,15 @@ void AliGenMevSim::Generate()
     p[1] = particle->Py();
     p[2] = particle->Pz();
     
-    PushTrack(fTrackIt, parent, pdg, p, orgin, polar, time, kPPrimary, id);
+    PushTrack(fTrackIt, kParent, pdg, p, orgin, polar, time, kPPrimary, id);
 
   }  
  
   particles->Clear();
   if (particles) delete particles;
 }
-//____________________________________________________________________________
-//____________________________________________________________________________
 
-
+//____________________________________________________________________________
 #ifndef WIN32
 # define ran ran_
 # define type_of_call
@@ -186,7 +193,9 @@ void AliGenMevSim::Generate()
 
 extern "C" Float_t type_of_call ran(Int_t &)
 {
-  return sRandom->Rndm(); 
+  //
+  //  Replacement for package random number generator
+  //
+  return gAliRandom->Rndm(); 
 }
 
-//____________________________________________________________________________
