@@ -8,7 +8,7 @@
 
 #include "../CreateESDChain.C"
 
-testAnalysis2(Char_t* dataDir, Int_t nRuns=20)
+testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Bool_t aMC = kFALSE)
 {
   gSystem->Load("libPWG0base");
 
@@ -35,7 +35,9 @@ testAnalysis2(Char_t* dataDir, Int_t nRuns=20)
 
   chain->GetUserInfo()->Add(dNdEtaCorrection);
 
-  AliLog::SetClassDebugLevel("AlidNdEtaAnalysisSelector", AliLog::kWarning);
-  
-  chain->Process("AlidNdEtaAnalysisSelector.cxx+");
+  TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisSelector" : "AlidNdEtaAnalysisMCSelector");
+
+  AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
+
+  chain->Process(selectorName + ".cxx+");
 }

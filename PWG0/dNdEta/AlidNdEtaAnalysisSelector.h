@@ -7,8 +7,6 @@ class AliESDtrackCuts;
 class dNdEtaCorrection;
 class dNdEtaAnalysis;
 
-class TParticle;
-
 class AlidNdEtaAnalysisSelector : public AliSelector {
   public:
     AlidNdEtaAnalysisSelector(TTree *tree=0);

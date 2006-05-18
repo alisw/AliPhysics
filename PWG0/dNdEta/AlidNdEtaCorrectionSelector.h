@@ -21,8 +21,6 @@ class AlidNdEtaCorrectionSelector : public AliSelector {
     virtual void    Terminate();
 
  protected:
-  Bool_t IsPrimary(const TParticle* aParticle, Int_t aTotalPrimaries);
-
   AliESDtrackCuts*  fEsdTrackCuts;          // Object containing the parameters of the esd track cuts
 
   dNdEtaCorrection* fdNdEtaCorrection;      // contains the intermediate histograms (on each slave)

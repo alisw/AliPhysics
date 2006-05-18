@@ -15,14 +15,13 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name) {
   fName = TString(name);
 
   hEtaVsVtx  = new TH2F("eta_vs_vtx","",80,-20,20,120,-6,6);
-  hEtaVsVtxUncorrected = new TH2F("eta_vs_vtx_uncorrected","",80,-20,20,120,-6,6);
-  hVtx       = hEtaVsVtx->ProjectionX("vtx");
-  hdNdEta    = hEtaVsVtx->ProjectionY("dNdEta");
- 
   hEtaVsVtx->SetXTitle("vtx z [cm]");
   hEtaVsVtx->SetYTitle("#eta");
-  hVtx->SetXTitle("vtx z [cm]");
-  hdNdEta->SetXTitle("#eta");
+
+  hEtaVsVtxUncorrected = dynamic_cast<TH2F*> (hEtaVsVtx->Clone("eta_vs_vtx_uncorrected"));
+  hVtx       = hEtaVsVtx->ProjectionX("vtx");
+  hdNdEta    = hEtaVsVtx->ProjectionY("dNdEta");
+
   hdNdEta->SetYTitle("dN/d#eta");
 
   hEtaVsVtx->Sumw2();

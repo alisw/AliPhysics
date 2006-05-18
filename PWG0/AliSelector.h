@@ -10,6 +10,8 @@
 #include <AliRun.h>
 #include <AliRunLoader.h>
 
+class TParticle;
+
 class AliSelector : public TSelector {
   public:
     AliSelector(TTree *tree=0);
@@ -27,6 +29,8 @@ class AliSelector : public TSelector {
  protected:
     TTree*  GetKinematics();
     AliRun* GetAliRun();
+
+    Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries) const;
 
     TChain          *fChain;   //! pointer to the analyzed TTree or TChain
 

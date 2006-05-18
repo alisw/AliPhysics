@@ -77,26 +77,6 @@ Bool_t AlidNdEtaCorrectionSelector::Notify()
   return kTRUE;
 }
 
-Bool_t AlidNdEtaCorrectionSelector::IsPrimary(const TParticle* aParticle, Int_t aTotalPrimaries)
-{
-  //
-  // Returns if the given particle is a primary particle
-  // This function or a equivalent should be available in some common place of AliRoot
-  //
-
-  // if the particle has a daughter primary, we do not want to count it
-  if (aParticle->GetFirstDaughter() != -1 && aParticle->GetFirstDaughter() < aTotalPrimaries)
-    return kFALSE;
-
-  Int_t pdgCode = TMath::Abs(aParticle->GetPdgCode());
-
-  // skip quarks and gluon
-  if (pdgCode > 10 && pdgCode != 21)
-    return kTRUE;
-
-  return kFALSE;
-}
-
 Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 {
   // The Process() function is called for each entry in the tree (or possibly
@@ -179,28 +159,10 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     if (!particle)
       continue;
 
-    if (strcmp(particle->GetName(),"XXX") == 0)
-    {
-       AliDebug(AliLog::kWarning, Form("WARNING: There is a particle named XXX (%d).", i_mc));
-      continue;
-    }
-
-    TParticlePDG* pdgPart = particle->GetPDG();
-
-    if (strcmp(pdgPart->ParticleClass(),"Unknown") == 0)
-    {
-       AliDebug(AliLog::kError, Form("WARNING: There is a particle with an unknown particle class (%d pdg code %d).", i_mc, particle->GetPdgCode()));
-      continue;
-    }
-
-    if (IsPrimary(particle, nPrim) == kFALSE)
-      continue;
-
-    if (pdgPart->Charge() == 0)
+    if (IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
     fdNdEtaCorrection->FillGene(vtxMC[2], particle->Eta());
-
   }// end of mc particle
 
   // ########################################################

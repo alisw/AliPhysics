@@ -14,6 +14,7 @@
 // - add functionality to set the bin sizes
 // - figure out correct way to treat the errors
 // - add functionality to make dn/deta for different mult classes?
+// - implement destructor
 
 #include <TObject.h>
 #include <TString.h>
