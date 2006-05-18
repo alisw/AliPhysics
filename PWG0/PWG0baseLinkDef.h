@@ -11,6 +11,7 @@
 #pragma link C++ class AliSelector+;
 
 #pragma link C++ class AlidNdEtaCorrectionSelector+;
+#pragma link C++ class AlidNdEtaAnalysisSelector+;
 #pragma link C++ class dNdEtaAnalysis+;
 #pragma link C++ class dNdEtaCorrection+;
 
