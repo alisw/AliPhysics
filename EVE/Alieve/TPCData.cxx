@@ -24,7 +24,7 @@ using namespace Alieve;
 // No separation of inner/outer segments, use row numbers for addressing.
 //
 
-ClassImp(TPCData);
+ClassImp(TPCData)
 
 TPCData::TPCData() :
   fSectors(36), fSectorBlockSize(65536),

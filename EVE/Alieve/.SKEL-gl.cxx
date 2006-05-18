@@ -18,7 +18,7 @@ using namespace Alieve;
 // CLASS
 //
 
-ClassImp(CLASS);
+ClassImp(CLASS)
 
 CLASS::CLASS()
 {

@@ -8,7 +8,7 @@ using namespace Reve;
 // CLASS
 //
 
-ClassImp(CLASS);
+ClassImp(CLASS)
 
 CLASS::CLASS()
 {

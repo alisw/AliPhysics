@@ -16,7 +16,7 @@ using namespace Reve;
 // BoxSetGL
 //
 
-ClassImp(BoxSetGL);
+ClassImp(BoxSetGL)
 
 BoxSetGL::BoxSetGL()
 {

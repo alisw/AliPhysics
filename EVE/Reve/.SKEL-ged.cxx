@@ -18,7 +18,7 @@ using namespace Reve;
 // CLASS
 //
 
-ClassImp(CLASS);
+ClassImp(CLASS)
 
 CLASS::CLASS(const TGWindow *p, Int_t id, Int_t width, Int_t height,
 	     UInt_t options, Pixel_t back) :

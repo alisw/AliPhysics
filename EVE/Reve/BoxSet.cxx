@@ -42,7 +42,7 @@ Box::Box(TRandom& rnd, Float_t origin, Float_t size)
 // BoxSet
 //
 
-ClassImp(BoxSet);
+ClassImp(BoxSet)
 
 void BoxSet::Init()
 {

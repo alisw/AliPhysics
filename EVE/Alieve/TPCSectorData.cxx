@@ -23,7 +23,7 @@
 using namespace Reve;
 using namespace Alieve;
 
-ClassImp(TPCSectorData);
+ClassImp(TPCSectorData)
 
 AliTPCParam* TPCSectorData::fgParam    = 0;
 Int_t        TPCSectorData::fgNAllRows = 0;
@@ -394,7 +394,7 @@ void TPCSectorData::RowIterator::Test()
 // TPCSectorData::SegmentInfo
 /**************************************************************************/
 
-ClassImp(TPCSectorData::SegmentInfo);
+ClassImp(TPCSectorData::SegmentInfo)
 
 TPCSectorData::SegmentInfo::SegmentInfo()
 {

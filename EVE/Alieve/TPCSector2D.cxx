@@ -9,7 +9,7 @@ using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
-ClassImp(TPCSector2D);
+ClassImp(TPCSector2D)
 
 /**************************************************************************/
 
