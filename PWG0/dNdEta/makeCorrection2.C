@@ -26,5 +26,6 @@ void makeCorrection2(Char_t* dataDir, Int_t nRuns=20)
 
   chain->GetUserInfo()->Add(fEsdTrackCuts);
 
+  AliLog::SetClassDebugLevel("AlidNdEtaCorrectionSelector", AliLog::kWarning);
   chain->Process("AlidNdEtaCorrectionSelector.cxx+");
 }

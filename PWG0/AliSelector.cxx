@@ -23,15 +23,14 @@
 //
 
 #include "AliSelector.h"
+
 #include <TStyle.h>
 #include <TSystem.h>
 #include <TCanvas.h>
 #include <TRegexp.h>
+#include <TTime.h>
 
-#include <TFriendElement.h>
-
-#include <iostream>
-using namespace std;
+#include <AliLog.h>
 
 ClassImp(AliSelector)
 
@@ -73,11 +72,11 @@ void AliSelector::SlaveBegin(TTree * tree)
 
   Init(tree);
 
-  printf("=======SLAVEBEGIN========\n");
-  gSystem->Exec("hostname");
-  gSystem->Exec("date");
+  AliDebug(AliLog::kDebug, "=======SLAVEBEGIN========");
+  AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
+  AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
   TFile *f = fChain->GetCurrentFile();
-  printf("%s\n",f->GetName());
+  AliDebug(AliLog::kDebug, f->GetName());
 
   TString option = GetOption();
 }
@@ -90,30 +89,29 @@ void AliSelector::Init(TTree *tree)
   // generated code, but the routine can be extended by the user if needed.
   // Init() will be called many times when running with PROOF.
 
-  printf("=========Init==========\n");
+  AliDebug(AliLog::kDebug, "=========Init==========");
 
   // Set branch addresses
   if (tree == 0)
   {
-    printf("ERROR: tree argument is 0.\n");
+    AliDebug(AliLog::kError, "ERROR: tree argument is 0.");
     return;
   }
 
   fChain = dynamic_cast<TChain*> (tree);
   if (fChain == 0)
   {
-    printf("ERROR: tree argument could not be casted to TChain.\n");
+    AliDebug(AliLog::kDebug, "ERROR: tree argument could not be casted to TChain.");
     return;
   }
 
   fChain->SetBranchAddress("ESD", &fESD);
   if (fESD != 0)
-    printf("INFO: Found ESD branch in chain.\n");
+    AliDebug(AliLog::kInfo, "INFO: Found ESD branch in chain.");
 
   fChain->SetBranchAddress("Header", &fHeader);
   if (fHeader != 0)
-    printf("INFO: Found event header branch in chain.\n");
-
+    AliDebug(AliLog::kInfo, "INFO: Found event header branch in chain.");
 }
 
 Bool_t AliSelector::Notify()
@@ -125,12 +123,12 @@ Bool_t AliSelector::Notify()
   // to the generated code, but the routine can be extended by the
   // user if needed.
 
-  printf("=========NOTIFY==========\n");
-  gSystem->Exec("hostname");
-  gSystem->Exec("date");
+  AliDebug(AliLog::kDebug, "=========NOTIFY==========");
+  AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
+  AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
+  
   TFile *f = fChain->GetCurrentFile();
-  TString fileName(f->GetName());
-  printf("%s\n",fileName.Data());
+  AliDebug(AliLog::kDebug, f->GetName());
 
   DeleteKinematicsFile();
   DeleteRunLoader();
@@ -158,27 +156,25 @@ Bool_t AliSelector::Process(Long64_t entry)
   //  Assuming that fChain is the pointer to the TChain being processed,
   //  use fChain->GetTree()->GetEntry(entry).
 
-  printf("=========PROCESS========== Entry %lld\n", entry);
+  AliDebug(AliLog::kDebug, Form("=========PROCESS========== Entry %lld", entry));
 
   if (!fChain)
   {
-    printf("ERROR: fChain is 0.\n");
+    AliDebug(AliLog::kError, "ERROR: fChain is 0.");
     return kFALSE;
   }
 
   fChain->GetTree()->GetEntry(entry);
 
   if (fESD)
-    printf("ESD: We have %d tracks.\n", fESD->GetNumberOfTracks());
+    AliDebug(AliLog::kDebug, Form("ESD: We have %d tracks.", fESD->GetNumberOfTracks()));
 
   if (fHeader)
-    printf("Header: We have %d primaries.\n", fHeader->GetNprimary());
+    AliDebug(AliLog::kDebug, Form("Header: We have %d primaries.", fHeader->GetNprimary()));
 
   TTree* kinematics = GetKinematics();
   if (kinematics)
-    printf("Kinematics from folder: We have %lld particles.\n", kinematics->GetEntries());
-
-  printf("\n");
+    AliDebug(AliLog::kDebug, Form("Kinematics: We have %lld particles.", kinematics->GetEntries()));
 
   return kTRUE;
 }
@@ -199,7 +195,7 @@ void AliSelector::Terminate()
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
 
-  printf("=========TERMINATE==========\n");
+  AliDebug(AliLog::kDebug, "=========TERMINATE==========");
 }
 
 TTree* AliSelector::GetKinematics()
@@ -300,10 +296,11 @@ void AliSelector::DeleteRunLoader()
   //
   // deletes the runloader
   //
-  
+
   if (fRunLoader)
   {
     fRunLoader->Delete();
     fRunLoader = 0;
   }
 }
+

@@ -56,10 +56,10 @@ void AlidNdEtaAnalysisSelector::SlaveBegin(TTree * tree)
   }
 
   if (!fEsdTrackCuts)
-    printf("ERROR: Could not read EsdTrackCuts from user info\n");
+     AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info.");
 
   if (!fEsdTrackCuts)
-    printf("ERROR: Could not read dNdEtaCorrection from user info\n");
+     AliDebug(AliLog::kError, "ERROR: Could not read dNdEtaCorrection from user info.");
 
   AliLog::SetClassDebugLevel("AliESDtrackCuts", 1);
 }
@@ -119,7 +119,7 @@ Bool_t AlidNdEtaAnalysisSelector::Process(Long64_t entry)
     AliESDtrack* esdTrack = fESD->GetTrack(t);
     if (!esdTrack)
     {
-      printf("ERROR: Could not retrieve track %d.\n", t);
+      AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", t));
       continue;
     }
 
@@ -157,7 +157,7 @@ void AlidNdEtaAnalysisSelector::SlaveTerminate()
   // Add the histograms to the output on each slave server
   if (!fOutput)
   {
-    printf("ERROR: Output list not initialized\n");
+    AliDebug(AliLog::kError, Form("ERROR: Output list not initialized."));
     return;
   }
 
@@ -183,7 +183,7 @@ void AlidNdEtaAnalysisSelector::Terminate()
 
   if (!etaVsVtxHistogram || !vtxHistogram || !etaVsVtxUncorrectedHistogram)
   {
-    printf("ERROR: Histograms not available %p %p %p\n", (void*) etaVsVtxHistogram, (void*) etaVsVtxUncorrectedHistogram, (void*) vtxHistogram);
+     AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p %p %p", (void*) etaVsVtxHistogram, (void*) etaVsVtxUncorrectedHistogram, (void*) vtxHistogram));
     return;
   }
 
