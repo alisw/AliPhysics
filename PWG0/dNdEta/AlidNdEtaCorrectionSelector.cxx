@@ -18,7 +18,8 @@ ClassImp(AlidNdEtaCorrectionSelector)
 AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector(TTree *) :
   AliSelector(),
   fEsdTrackCuts(0),
-  fdNdEtaCorrection(0)
+  fdNdEtaCorrection(0),
+  fdNdEtaCorrectionFinal(0)
 {
   //
   // Constructor. Initialization of pointers
