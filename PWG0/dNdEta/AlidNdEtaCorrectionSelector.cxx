@@ -59,9 +59,7 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fChain->GetUserInfo()->FindObject("AliESDtrackCuts"));
 
   if (!fEsdTrackCuts)
-    printf("ERROR: Could not read EsdTrackCuts from user info\n");
-
-  AliLog::SetClassDebugLevel("ESDtrackQualityCuts",1);
+    AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info");
 }
 
 Bool_t AlidNdEtaCorrectionSelector::Notify()
@@ -122,8 +120,24 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   if (AliSelector::Process(entry) == kFALSE)
     return kFALSE;
 
-  if (!fESD || !fHeader)
+  // check prerequesites
+  if (!fESD)
+  {
+    AliDebug(AliLog::kError, "ESD branch not available");
     return kFALSE;
+  }
+
+  if (!fHeader)
+  {
+    AliDebug(AliLog::kError, "Header branch not available");
+    return kFALSE;
+  }
+
+  if (!fEsdTrackCuts)
+  {
+    AliDebug(AliLog::kError, "fESDTrackCuts not available");
+    return kFALSE;
+  }
 
   // ########################################################
   // get the EDS vertex
@@ -167,7 +181,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 
     if (strcmp(particle->GetName(),"XXX") == 0)
     {
-      printf("WARNING: There is a particle named XXX (%d).\n", i_mc);
+       AliDebug(AliLog::kWarning, Form("WARNING: There is a particle named XXX (%d).", i_mc));
       continue;
     }
 
@@ -175,7 +189,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 
     if (strcmp(pdgPart->ParticleClass(),"Unknown") == 0)
     {
-      printf("WARNING: There is a particle with an unknown particle class (%d pdg code %d).\n", i_mc, particle->GetPdgCode());
+       AliDebug(AliLog::kError, Form("WARNING: There is a particle with an unknown particle class (%d pdg code %d).", i_mc, particle->GetPdgCode()));
       continue;
     }
 
@@ -204,7 +218,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     Int_t label = TMath::Abs(esdTrack->GetLabel());
     if (label == 0)
     {
-      printf("WARNING: cannot find corresponding mc part for track %d.", t);
+      AliDebug(AliLog::kWarning, Form("WARNING: cannot find corresponding mc part for track %d.", t));
       continue;
     }
     particleTree->GetEntry(nTotal - nPrim + label);
@@ -227,7 +241,7 @@ void AlidNdEtaCorrectionSelector::SlaveTerminate()
   // Add the histograms to the output on each slave server
   if (!fOutput)
   {
-    printf("ERROR: Output list not initialized\n");
+    AliDebug(AliLog::kError, "ERROR: Output list not initialized");
     return;
   }
 
@@ -248,7 +262,7 @@ void AlidNdEtaCorrectionSelector::Terminate()
   TH2F* generatedHistogram = dynamic_cast<TH2F*> (fOutput->FindObject("etaVsVtx_gene"));
   if (!measuredHistogram || !generatedHistogram)
   {
-    printf("ERROR: Histograms not available %p %p\n", (void*) generatedHistogram, (void*) measuredHistogram);
+     AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p %p", (void*) generatedHistogram, (void*) measuredHistogram));
     return;
   }
   fdNdEtaCorrectionFinal->SetGeneratedHistogram(generatedHistogram);

@@ -35,5 +35,7 @@ testAnalysis2(Char_t* dataDir, Int_t nRuns=20)
 
   chain->GetUserInfo()->Add(dNdEtaCorrection);
 
+  AliLog::SetClassDebugLevel("AlidNdEtaAnalysisSelector", AliLog::kWarning);
+  
   chain->Process("AlidNdEtaAnalysisSelector.cxx+");
 }
