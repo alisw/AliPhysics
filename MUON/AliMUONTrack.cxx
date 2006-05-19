@@ -158,26 +158,35 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
   fTrackParamAtVertex = theMUONTrack.fTrackParamAtVertex;
 
  // necessary to make a copy of the objects and not only the pointers in TObjArray.
-  fTrackHitsPtr  =  new TObjArray(10);
-  for (Int_t index = 0; index < (theMUONTrack.fTrackHitsPtr)->GetEntriesFast(); index++) {
-    AliMUONTrackHit *trackHit = new AliMUONTrackHit(*(AliMUONTrackHit*)(theMUONTrack.fTrackHitsPtr)->At(index));
-    fTrackHitsPtr->Add(trackHit);
-  }
-  fTrackHitsPtr->SetOwner(); // nedeed for deleting TClonesArray
-
-  // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
-  for (Int_t index = 0; index < (theMUONTrack.fTrackParamAtHit)->GetEntriesFast(); index++) {
-    {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) 
-	AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));}
+  fTrackHitsPtr = 0;
+  if (theMUONTrack.fTrackHitsPtr) {
+    fTrackHitsPtr  =  new TObjArray(10);
+    for (Int_t index = 0; index < (theMUONTrack.fTrackHitsPtr)->GetEntriesFast(); index++) {
+      AliMUONTrackHit *trackHit = new AliMUONTrackHit(*(AliMUONTrackHit*)(theMUONTrack.fTrackHitsPtr)->At(index));
+      fTrackHitsPtr->Add(trackHit);
+    }
+    fTrackHitsPtr->SetOwner(); // nedeed for deleting TClonesArray
   }
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  fHitForRecAtHit  =  new TClonesArray("AliMUONHitForRec",10);
-  for (Int_t index = 0; index < (theMUONTrack.fHitForRecAtHit)->GetEntriesFast(); index++) {
-    {new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) 
-	AliMUONHitForRec(*(AliMUONHitForRec*)(theMUONTrack.fHitForRecAtHit)->At(index));}
-  }
+  fTrackParamAtHit = 0;
+  if (theMUONTrack.fTrackParamAtHit) {
+    fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
+    for (Int_t index = 0; index < (theMUONTrack.fTrackParamAtHit)->GetEntriesFast(); index++) {
+      {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) 
+	  AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));}
+    }
+  }  
+
+  // necessary to make a copy of the objects and not only the pointers in TClonesArray.
+  fHitForRecAtHit = 0;
+  if (theMUONTrack.fHitForRecAtHit) {
+    fHitForRecAtHit  =  new TClonesArray("AliMUONHitForRec",10);
+    for (Int_t index = 0; index < (theMUONTrack.fHitForRecAtHit)->GetEntriesFast(); index++) {
+      {new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) 
+ 	  AliMUONHitForRec(*(AliMUONHitForRec*)(theMUONTrack.fHitForRecAtHit)->At(index));}
+    }
+  }  
 
   fNTrackHits       =  theMUONTrack.fNTrackHits;
   fFitMCS           =  theMUONTrack.fFitMCS;
@@ -207,26 +216,35 @@ AliMUONTrack & AliMUONTrack::operator=(const AliMUONTrack& theMUONTrack)
   fTrackParamAtVertex =  theMUONTrack.fTrackParamAtVertex;
 
  // necessary to make a copy of the objects and not only the pointers in TObjArray.
-  fTrackHitsPtr  =  new TObjArray(10);
-  for (Int_t index = 0; index < (theMUONTrack.fTrackHitsPtr)->GetEntriesFast(); index++) {
-    AliMUONTrackHit *trackHit = new AliMUONTrackHit(*(AliMUONTrackHit*)(theMUONTrack.fTrackHitsPtr)->At(index));
-    fTrackHitsPtr->Add(trackHit);
-  }
-  fTrackHitsPtr->SetOwner();  // nedeed for deleting TClonesArray
+  fTrackHitsPtr = 0;
+  if (theMUONTrack.fTrackHitsPtr) {
+    fTrackHitsPtr  =  new TObjArray(10);
+    for (Int_t index = 0; index < (theMUONTrack.fTrackHitsPtr)->GetEntriesFast(); index++) {
+      AliMUONTrackHit *trackHit = new AliMUONTrackHit(*(AliMUONTrackHit*)(theMUONTrack.fTrackHitsPtr)->At(index));
+      fTrackHitsPtr->Add(trackHit);
+    }
+    fTrackHitsPtr->SetOwner();  // nedeed for deleting TClonesArray
+  }  
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
-  for (Int_t index = 0; index < (theMUONTrack.fTrackParamAtHit)->GetEntriesFast(); index++) {
-    {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) 
-	AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));}
-  }
+  fTrackParamAtHit = 0;
+  if (theMUONTrack.fTrackParamAtHit) {
+    fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
+    for (Int_t index = 0; index < (theMUONTrack.fTrackParamAtHit)->GetEntriesFast(); index++) {
+      {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) 
+	  AliMUONTrackParam(*(AliMUONTrackParam*)(theMUONTrack.fTrackParamAtHit)->At(index));}
+    }
+  }  
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  fHitForRecAtHit  =  new TClonesArray("AliMUONHitForRec",10);
-  for (Int_t index = 0; index < (theMUONTrack.fHitForRecAtHit)->GetEntriesFast(); index++) {
-    {new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) 
-	AliMUONHitForRec(*(AliMUONHitForRec*)(theMUONTrack.fHitForRecAtHit)->At(index));}
-  }
+  fHitForRecAtHit = 0;
+  if (theMUONTrack.fHitForRecAtHit) {  
+    fHitForRecAtHit  =  new TClonesArray("AliMUONHitForRec",10);
+    for (Int_t index = 0; index < (theMUONTrack.fHitForRecAtHit)->GetEntriesFast(); index++) {
+      {new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) 
+	  AliMUONHitForRec(*(AliMUONHitForRec*)(theMUONTrack.fHitForRecAtHit)->At(index));}
+    }
+  }  
 
   fNTrackHits         =  theMUONTrack.fNTrackHits;
   fFitMCS             =  theMUONTrack.fFitMCS;
@@ -607,6 +625,26 @@ void AliMUONTrack::SetTrackParamAtVertex()
   trackParam->SetZ(0.0);
   trackParam->SetBendingCoor(0.0);
   trackParam->SetNonBendingCoor(0.0);
+}
+
+  //__________________________________________________________________________
+void AliMUONTrack::AddTrackParamAtHit(const AliMUONTrackParam *trackParam) 
+{
+  // Add track paremeters
+
+  if (!fTrackParamAtHit)
+    fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);  
+
+  new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) AliMUONTrackParam(*trackParam);
+}
+
+  //__________________________________________________________________________
+void AliMUONTrack::AddHitForRecAtHit(const AliMUONHitForRec *hitForRec) 
+{
+  if (!fHitForRecAtHit)
+    fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10); 
+
+  new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) AliMUONHitForRec(*hitForRec);
 }
 
   //__________________________________________________________________________

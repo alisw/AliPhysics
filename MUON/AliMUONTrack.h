@@ -48,10 +48,8 @@ class AliMUONTrack : public TObject
   TClonesArray *GetHitForRecAtHit(void) const {return fHitForRecAtHit;}
   void ResetTrackParamAtHit(void) { fTrackParamAtHit->Delete(); }
   void ResetHitForRecAtHit(void) { fHitForRecAtHit->Delete(); }
-  void AddTrackParamAtHit(const AliMUONTrackParam *trackParam) 
-    {new ((*fTrackParamAtHit)[fTrackParamAtHit->GetEntriesFast()]) AliMUONTrackParam(*trackParam);}
-  void AddHitForRecAtHit(const AliMUONHitForRec *hitForRec) 
-    {new ((*fHitForRecAtHit)[fHitForRecAtHit->GetEntriesFast()]) AliMUONHitForRec(*hitForRec);}
+  void AddTrackParamAtHit(const AliMUONTrackParam *trackParam); 
+  void AddHitForRecAtHit(const AliMUONHitForRec *hitForRec); 
 
   TObjArray* GetTrackHitsPtr(void) const {return fTrackHitsPtr;}
   Int_t GetNTrackHits(void) const {return fNTrackHits;}
