@@ -275,7 +275,7 @@ void AliRICHReconstructor::RichAna(Int_t iNevMin,Int_t iNevMax,Bool_t askPatRec)
         hnvec[12]=prob[0]+prob[1]+prob[2];     hnvec[13]=prob[3];     hnvec[14]=prob[4];
         hnvec[15]=pTrRich->fErrPar[2];   hnvec[16]=pTrRich->fErrPar[3];   hnvec[17]=pTrRich->fErrPar[4];
         for(Int_t i=0;i<3;i++) {
-          Double_t mass = AliRICHParam::fgMass[i+2];
+          Double_t mass = AliPID::ParticleMass(i+2);
           Double_t refIndex=AliRICHParam::Instance()->IdxC6F14(AliRICHParam::EckovMean());
           Double_t cosThetaTh = TMath::Sqrt(mass*mass+pTrack->GetP()*pTrack->GetP())/(refIndex*pTrack->GetP());
           hnvec[18+i]=0;
@@ -351,3 +351,45 @@ void AliRICHReconstructor::Test(TClonesArray *pDigLst,Bool_t isTryUnfold)
   delete pCluLst;
 }//Test()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+void AliRICHReconstructor::FillESD(AliRunLoader *, AliESD *pESD) const
+{
+// Calculates probability to be a electron-muon-pion-kaon-proton
+// from the given Cerenkov angle and momentum assuming no initial particle composition
+// (i.e. apriory probability to be the particle of the given sort is the same for all sorts)
+
+  AliPID ppp; //needed
+  Double_t pid[AliPID::kSPECIES],h[AliPID::kSPECIES];
+  Double_t refIndex=AliRICHParam::Instance()->IdxC6F14(AliRICHParam::EckovMean());
+   
+  for(Int_t iTrk=0;iTrk<pESD->GetNumberOfTracks();iTrk++){//ESD tracks loop
+    AliESDtrack *pTrack = pESD->GetTrack(iTrk);// get next reconstructed track
+    if(pTrack->GetRICHsignal()<=0){//RICH does not find anything reasonable for this track, assign 0.2 for all species
+      for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) pid[iPart]=1.0/AliPID::kSPECIES;
+      pTrack->SetRICHpid(pid);
+      continue;
+    } 
+    Double_t pmod = pTrack->GetP();
+    Double_t hTot=0;
+    for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
+      Double_t mass = AliPID::ParticleMass(iPart);
+      Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(refIndex*pmod);
+      if(cosThetaTh<1) //calculate the height of theortical theta ckov on the gaus of experimental one
+        h[iPart] =TMath::Gaus(TMath::ACos(cosThetaTh),pTrack->GetRICHsignal(),TMath::Sqrt(pTrack->GetRICHchi2()),kTRUE);
+      
+      else             //beta < 1/ref. idx. => no light at all  
+        h[iPart] =0 ;       
+      hTot    +=h[iPart]; //total height of all theoretical heights for normalization
+    }//species loop
+     
+    Double_t hMin=TMath::Gaus(5*TMath::Sqrt(pTrack->GetRICHchi2()),pTrack->GetRICHsignal(),TMath::Sqrt(pTrack->GetRICHchi2()),kTRUE);//5 sigma protection
+    
+    for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)//species loop to assign probabilities
+      if(hTot>hMin)  
+        pid[iPart]=h[iPart]/hTot;
+      else                               //all theoretical values are far away from experemental one
+        pid[iPart]=1.0/AliPID::kSPECIES; 
+    pTrack->SetRICHpid(pid);
+  }//ESD tracks loop
+  //last line is to check if the nearest thetacerenkov to the teorethical one is within 5 sigma, otherwise no response (equal prob to every particle
+}//FillESD

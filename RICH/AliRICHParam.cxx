@@ -36,10 +36,6 @@
 
 ClassImp(AliRICHParam)
 AliRICHParam * AliRICHParam::fgInstance             =0x0;     //singleton pointer               
-
-Double_t AliRICHParam::fgMass[5]              ={0.00051,0.10566,0.13957,0.49360,0.93828};  
-
-
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliRICHParam::AliRICHParam():TNamed("RichParam","default version") 
 {

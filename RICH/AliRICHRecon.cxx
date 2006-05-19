@@ -62,6 +62,10 @@ Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluster
 
   SetThetaCerenkov(-1);   
 
+  //
+  // Photon Flag:  Flag = 0 initial set; Flag = 1 good candidate (charge compatible with photon); Flag = 2 photon used for the ring;
+  //
+  
   for (Int_t iClu=0; iClu<fClusters->GetEntriesFast();iClu++){//clusters loop
     if(iClu == iMipId) continue; // do not consider MIP cluster as a photon candidate
     SetPhotonIndex(iClu);
@@ -69,11 +73,10 @@ Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluster
     SetPhotonEta(-999.);
     SetPhotonWeight(0.);
     AliRICHCluster *pClu=(AliRICHCluster*)fClusters->UncheckedAt(iClu);                      //get pointer to current cluster
-//    if(pClu->Q()>AliRICHParam::QthMIP()) continue;                                         //avoid MIP clusters from bkg
+    if(pClu->Q()>AliRICHParam::QthMIP()) continue;                                           //avoid MIP clusters from bkg
     SetEntranceX(pClu->X() - GetShiftX());    SetEntranceY(pClu->Y() - GetShiftY());         //cluster position with respect to track intersection
     FindPhiPoint();
-//      if(PhotonInBand()==0) continue;  ????????????
-    SetPhotonFlag(1);
+    SetPhotonFlag(1); 
     FindThetaPhotonCerenkov();
     Float_t thetaPhotonCerenkov = GetThetaPhotonCerenkov();
     AliDebug(1,Form("Track Theta=%5.2f deg, Phi=%5.2f deg Photon clus=%2i ThetaCkov=%5.2f rad",GetTrackTheta()*TMath::RadToDeg(),GetTrackPhi()*TMath::RadToDeg()
@@ -590,6 +593,7 @@ Float_t AliRICHRecon::FromEmissionToCathode()
 
   Float_t nfreon, nquartz, ngas; 
 
+  //fParam->Print();
 
   nfreon  = fParam->IdxC6F14(fParam->EckovMean());
   nquartz = fParam->IdxSiO2(fParam->EckovMean());
@@ -762,24 +766,41 @@ Double_t AliRICHRecon::HoughResponse()
 //__________________________________________________________________________________________________
 void AliRICHRecon::FindThetaCerenkov()
 {
-  // manage with weight for photons
+// Loops on all Ckov candidates and estimates the best Theta Ckov for a ring formed by those candidates. Also estimates an error for that Theat Ckov
+// collecting errors for all single Ckov candidates thetas. (Assuming they are independent)  
+// Arguments: none
+//    Return: none    
 
   Float_t wei = 0.;
   Float_t weightThetaCerenkov = 0.;
 
   Double_t etaMin=9999.,etaMax=0.;
+  Double_t sigma2 = 0;   //to collect error squared for this ring
+  
   for(Int_t i=0;i<GetPhotonsNumber();i++){
     SetPhotonIndex(i);
     if(GetPhotonFlag() == 2){
-  	  Float_t photonEta = GetPhotonEta();
+      Float_t photonEta = GetPhotonEta();
       if(photonEta<etaMin) etaMin=photonEta;
       if(photonEta>etaMax) etaMax=photonEta;
-	    Float_t photonWeight = GetPhotonWeight();
-	    weightThetaCerenkov += photonEta*photonWeight;
-	    wei += photonWeight;
-	  }
+      Float_t photonWeight = GetPhotonWeight();
+      weightThetaCerenkov += photonEta*photonWeight;
+      wei += photonWeight;      
+      //here comes sigma of the reconstructed ring
+      
+     //Double_t phiref=(GetPhiPoint()-GetTrackPhi());
+       if(GetPhotonEta()<=0) continue;//?????????????????Flag photos = 2 may imply CkovEta = 0?????????????? 
+                                      //???????????  Look at SetPhoton Flag method    
+      Double_t phiref=GetTrackPhi();
+  
+      Double_t beta = 1./(TMath::Cos(GetPhotonEta())*fParam->IdxC6F14(AliRICHParam::EckovMean()));
+      sigma2 += 1./AliRICHParam::SigmaSinglePhotonFormula(GetPhotonEta(),GetPhiPoint(),GetTrackTheta(),phiref,beta);
+    }
   }
-
+  
+  if(sigma2>0) SetRingSigma2(1./sigma2);
+  else         SetRingSigma2(1e10);  
+  
   if(wei != 0.) weightThetaCerenkov /= wei; else weightThetaCerenkov = 0.;  
   SetThetaCerenkov(weightThetaCerenkov);
 
@@ -791,7 +812,6 @@ void AliRICHRecon::FindThetaCerenkov()
   Double_t nPhotBKG = (externalArea-internalArea)/effArea*fClusters->GetEntries();
   if(nPhotBKG<0) nPhotBKG=0; //just protection from funny angles...
   SetPhotBKG(nPhotBKG);
-  //
   
   AliDebug(1,Form(" thetac weighted -> %f",weightThetaCerenkov));
 }
@@ -814,7 +834,10 @@ Int_t AliRICHRecon::FlagPhotons(Double_t thetaCkovHough)
   for(Int_t i=0;i<GetPhotonsNumber();i++){//photon candidates loop
     SetPhotonIndex(i);  Float_t photonEta = GetPhotonEta();
     if(photonEta == -999.) continue;
-    if(photonEta >= tmin && photonEta <= tmax)	{ SetPhotonFlag(2);	  iInsideCnt++;}
+    if(photonEta >= tmin && photonEta <= tmax)	{ 
+      SetPhotonFlag(2);	  
+      iInsideCnt++;
+    }
   }
   return iInsideCnt;
 }//FlagPhotons

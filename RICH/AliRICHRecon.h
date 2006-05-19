@@ -84,7 +84,8 @@ public :
   Float_t GetFittedTrackTheta()                     const{ return fFittedTrackTheta;}               //
   Float_t GetFittedTrackPhi()                       const{ return fFittedTrackPhi;}                 //
   Float_t GetFittedThetaCerenkov()                  const{ return fFittedThetaCerenkov;}            //
-  void    SetPhotonEnergy(Float_t e)                     { fEphot = e;}                       //
+  Float_t GetRingSigma2()                           const{ return fRingSigma2;}                     //
+  void    SetPhotonEnergy(Float_t e)                     { fEphot = e;}                             //
   void SetEmissionPoint(Float_t LengthEmissionPoint) { fLengthEmissionPoint = LengthEmissionPoint;} //
   void SetEntranceX(Float_t Xtoentr) { fXtoentr = Xtoentr;}                                         //
   void SetEntranceY(Float_t Ytoentr) { fYtoentr = Ytoentr;}                                         //
@@ -129,6 +130,7 @@ public :
   void SetFittedTrackPhi(Float_t FittedTrackPhi)    { fFittedTrackPhi = FittedTrackPhi;}            //
   void SetFittedThetaCerenkov(Float_t FittedThetaCerenkov) { fFittedThetaCerenkov = FittedThetaCerenkov;}//
   void SetFittedHoughPhotons(Int_t FittedHoughPhotons) { fFittedHoughPhotons = FittedHoughPhotons;} //
+  void SetRingSigma2(Float_t RingSigma2) { fRingSigma2 = RingSigma2;} //
   Float_t SnellAngle(Float_t n1, Float_t n2, Float_t theta1);                                       //
   Float_t FromEmissionToCathode();                                                                  //
 
@@ -201,7 +203,7 @@ protected:
   Float_t fThetaCerenkov;                     // Theta angle for Hough
   Float_t fWeightThetaCerenkov;               // Theta Cerenkov angle weighted
   Float_t fThetaPeakPos;                      // Peak position
-
+  Float_t fRingSigma2;                        // sigma2 of the reconstructed ring
   ClassDef(AliRICHRecon,0)
 };
     

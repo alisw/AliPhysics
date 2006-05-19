@@ -20,8 +20,15 @@ public:
   AliTracker*  CreateTracker         (AliRunLoader*                      )const{return new AliRICHTracker;}            //from AliReconstructor for clusters->PID
   void         Reconstruct           (AliRunLoader* pAL                  )const;                                       //from AliReconstruction for digits->clusters
   void         Reconstruct           (AliRunLoader* pAL,AliRawReader *pRR)const;                                       //from AliReconstruction for raws->clusters
-  using AliReconstructor::Reconstruct;                                                                                 //to get rid of virtual hidden warning 
-//private part  
+  virtual void FillESD               (AliRunLoader* pAL,AliESD *pESD)const;                                    //calculate pid for RICH
+  virtual void FillESD(AliRunLoader*, AliRawReader*, AliESD*) const { };
+  virtual void FillESD(AliRawReader*, TTree*, AliESD*) const { };
+  virtual void FillESD(TTree*, TTree*, AliESD*) const { };
+
+  
+   using AliReconstructor::Reconstruct;                                                                                 //to get rid of virtual hidden warning 
+
+  //private part  
   static        void          Dig2Clu (TClonesArray*pDigLst,TClonesArray *pCluLst,Bool_t isTryUnfold=kTRUE            );//digits list -> clusters list
   static        void          CluQA   (AliRunLoader* pAL                                                              );//QA for clusters
   static        void          CheckPR (                                                                               );//utility-> run staff for stack
@@ -30,7 +37,8 @@ public:
   static        void          RichAna (Int_t iNevMin=0,Int_t iNevMax=99999,Bool_t isPatRec=kFALSE                     );//utility-> create ntuples for analysis  
   static        void          Test    (Bool_t isTryUnfold=kTRUE                                                       );//test digits->clusters  conversion
   static        void          Test    (TClonesArray *pDigLst,Bool_t isTryUnfold=kTRUE                                 );//test digits->clusters  conversion
-protected:
+
+  protected:
   ClassDef(AliRICHReconstructor, 0)   //class for the RICH reconstruction
 };
 //__________________________________________________________________________________________________

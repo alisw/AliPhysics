@@ -1,10 +1,13 @@
 #include "AliRICHTracker.h" //class header
 #include "AliRICH.h"
 #include "AliRICHRecon.h"
+#include "AliRICHParam.h"
 #include <AliESD.h>
+#include <TGeoManager.h>     //EsdQA()
 #include <TVector3.h>
-#include <TTree.h>          //EsdPrint() 
-#include <TFile.h>          //EsdPrint()    
+#include <TTree.h>          //EsdQA() 
+#include <TFile.h>          //EsdQA()  
+#include <TProfile.h>   //EsdQA() 
 #include "AliRICHHelix.h"
 #include <AliMagF.h>
 #include <AliStack.h>
@@ -14,6 +17,9 @@
 #include <TNtupleD.h>            //RecWithStack();
 #include <AliTrackPointArray.h>  //GetTrackPoint()
 #include <AliAlignObj.h>         //GetTrackPoint()
+#include <TH1F.h>                //EsdQA()  
+#include <TH2F.h>                //EsdQA()  
+#include <TCanvas.h>             //EsdQA()  
 ClassImp(AliRICHTracker)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliRICHTracker::AliRICHTracker():AliTracker()
@@ -92,41 +98,14 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
   
     pTrack->SetRICHcluster(iMipId+1000000*iChamber);                                //set mip cluster index
     pTrack->SetRICHsignal(recon.ThetaCerenkov(&helix,pRich->Clus(iChamber),iMipId));//search for mean Cerenkov angle for this track
+    pTrack->SetRICHchi2(recon.GetRingSigma2());
     pTrack->SetRICHnclusters(iMipId);                                               //on return iMipId is number of photon clusters accepted in reconstruction
 
     AliDebug(1,Form("Ch=%i PC Intersection=(%5.2f,%5.2f) cm MIP cluster dist=(%5.2f,%5.2f)=%5.2f cm ThetaCkov=%f",
                      iChamber,helix.PosPc().X(),helix.PosPc().Y(),            mipDx,mipDy,mipDr,     pTrack->GetRICHsignal()));
     
 //here comes PID calculations    
-    if(pTrack->GetRICHsignal()>0) {
-      AliDebug(1,Form("Start to assign the probabilities"));
-      Double_t sigmaPID[AliPID::kSPECIES];  Double_t richPID[AliPID::kSPECIES];
-      for (Int_t iPid=0;iPid<AliPID::kSPECIES;iPid++){//PID loop
-        sigmaPID[iPid] = 0; fErrPar[iPid] = 0;
-        for(Int_t iCkov=0;iCkov<pRich->Clus(iChamber)->GetEntries();iCkov++){//Ckov candidates loop ????????????? somehting fomr AliRICHRecon must be
-          recon.SetPhotonIndex(iCkov);
-          if(recon.GetPhotonFlag() == 2) {
-            Double_t thetaCkov=0.6; //??????????????????
-            Double_t   phiCkov=0.6; //??????????????????
-            Double_t  thetaTrk=recon.GetTrackTheta();
-            Double_t    phiTrk=(recon.GetPhiPoint()-recon.GetTrackPhi());
-            Double_t     beta =pTrack->GetP()/TMath::Sqrt((pTrack->GetP()*pTrack->GetP()+pid.ParticleMass(iPid)*pid.ParticleMass(iPid)));
-            Double_t   sigma2 = AliRICHParam::SigmaSinglePhotonFormula(thetaCkov,phiCkov,thetaTrk,phiTrk,beta);
-            if(sigma2>0) sigmaPID[iPid] += 1/sigma2;
-          }
-        }//Ckov candidates loop
-        
-        if (sigmaPID[iPid]>0)
-          sigmaPID[iPid] *= (Double_t)(iMipId-recon.GetPhotBKG())/(Double_t)(iMipId); // n total phots, m are background...the sigma are scaled..
-          if(sigmaPID[iPid]>0) sigmaPID[iPid] = 1/TMath::Sqrt(sigmaPID[iPid])*0.001; // sigma from parametrization are in mrad...
-          else                  sigmaPID[iPid] = 0;
-          fErrPar[iPid]=sigmaPID[iPid];
-        AliDebug(1,Form("sigma for %s is %f rad",AliPID::ParticleName(iPid),sigmaPID[iPid]));
-      }
-      CalcProb(pTrack->GetRICHsignal(),pTrack->GetP(),sigmaPID,richPID);
-      pTrack->SetRICHpid(richPID);         
-      AliDebug(1,Form("PROBABILITIES ---> %f - %f - %f - %f - %f",richPID[0],richPID[1],richPID[2],richPID[3],richPID[4]));
-    }//if(pTrack->GetRICHsignal())    
+//    CalcProb(pTrack->GetRICHsignal(),pTrack->GetP(),sigmaPID,richPID);
   }//ESD tracks loop
   AliDebug(1,"Stop pattern recognition");
   return 0; // error code: 0=no error;
@@ -219,42 +198,10 @@ void AliRICHTracker::RecWithStack(TNtupleD *hn)
   AliDebug(1,"Stop.");  
 }//RecWithStack
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliRICHTracker::CalcProb(Double_t thetaCer,Double_t pmod, Double_t *sigmaPID, Double_t *richPID)
+void AliRICHTracker::EsdQA(Bool_t isPrint)
 {
-// Calculates probability to be a electron-muon-pion-kaon-proton
-// from the given Cerenkov angle and momentum assuming no initial particle composition
-// (i.e. apriory probability to be the particle of the given sort is the same for all sorts)
-  Double_t height[AliPID::kSPECIES];Double_t totalHeight=0;
-  Double_t thetaTh[AliPID::kSPECIES];
-  for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++){
-    height[iPart]=0;
-    Double_t mass = AliRICHParam::fgMass[iPart];
-    Double_t refIndex=AliRICHParam::Instance()->IdxC6F14(AliRICHParam::EckovMean());
-    Double_t cosThetaTh = TMath::Sqrt(mass*mass+pmod*pmod)/(refIndex*pmod);
-    thetaTh[iPart]=0;
-    if(cosThetaTh>=1) continue;
-    thetaTh[iPart] = TMath::ACos(cosThetaTh);
-//    Double_t sinThetaThNorm = TMath::Sin(thetaTh)/TMath::Sqrt(1-1/(refIndex*refIndex));
-//    Double_t sigmaThetaTh = (0.014*(1/sinThetaThNorm-1) + 0.0043)*1.25;
-//    height[iPart] = TMath::Gaus(thetaCer,thetaTh,sigmaThetaTh);
-    if(sigmaPID[iPart]>0) height[iPart] = TMath::Gaus(thetaCer,thetaTh[iPart],sigmaPID[iPart],kTRUE);
-    else                  height[iPart] = 0;
-    totalHeight +=height[iPart];
-    AliDebugClass(1,Form(" Particle %s with mass %f with height %f and thetaTH %f",AliPID::ParticleName(iPart),mass,height[iPart],thetaTh[iPart]));
-    AliDebugClass(1,Form(" partial height %15.14f total height %15.14f",height[iPart],totalHeight));
-  }
-  if(totalHeight<1e-5) {for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;return;}
-  for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++) richPID[iPart] = height[iPart]/totalHeight;
-  Int_t iPartNear = TMath::LocMax(AliPID::kSPECIES,richPID);
-  if(TMath::Abs(thetaCer-thetaTh[iPartNear])>5.*sigmaPID[iPartNear]) for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)richPID[iPart]=1.0/AliPID::kSPECIES;
-  //last line is to check if the nearest thetacerenkov to the teorethical one is within 5 sigma, otherwise no response (equal prob to every particle
-
-}//CalcProb
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliRICHTracker::EsdPrint()
-{
-// Reads a set of ESD files and print out some information
-// Arguments: probCut - cut on probability 
+// Reads a set of ESD files and print out or plot some information
+// Arguments: isPrint is a flag to choose between printing (isPrint = kTRUE) and plotting (isPrint = kFALSE)
 //   Returns: none
     
   TFile *pFile=TFile::Open("AliESDs.root","read");              if(!pFile) {Printf("ERROR: AliESDs.root does not exist!");return;} 
@@ -262,6 +209,25 @@ void AliRICHTracker::EsdPrint()
   AliESD *pEsd=new AliESD;  pTr->SetBranchAddress("ESD", &pEsd); 
   
   Int_t iNevt=pTr->GetEntries();  Printf("This ESD contains %i events",iNevt);
+   //AliRICHParam *pPar;
+  
+  TH1D *pDx,*pDy,*pProbEl,*pProbMu,*pProbPi,*pProbKa,*pProbPr; TH2F *pThP; TProfile *pChiTh;
+  if(!isPrint){
+    TH1::AddDirectory(kFALSE);    
+    pDx    =new TH1D("dX"  ,"distance between Xmip and Xtrack;cm",300,-1.5,1.5);
+    pDy    =new TH1D("dY"  ,"distance between Ymip and Ytrack;cm",300,-1.5,1.5);
+    pThP   =new TH2F("tvsp","#theta_{Ckov} radian;P GeV"              ,65 ,-0.5,6.0,75,0,0.75); pThP->SetStats(0);
+    pProbPi=new TH1D("RichProbPion","HMPID PID probability for  e #mu #pi"   ,101,0.05,1.05); pProbPi->SetLineColor(kRed);
+    pProbEl=new TH1D("RichProbEle" ,""   ,101,0.05,1.05);                                     pProbEl->SetLineColor(kGreen); 
+    pProbMu=new TH1D("RichProbMuon" ,""  ,101,0.05,1.05);                                     pProbMu->SetLineColor(kBlue);
+    pProbKa=new TH1D("RichProbKaon","HMPID PID probability for K"     ,101,0.05,1.05);
+    pProbPr=new TH1D("RichProbProton","HMPID PID probability for p"   ,101,0.05,1.05);
+    pChiTh =new TProfile("RichChiTh","#chi^{2};#theta_{C}"            ,80 ,0,0.8 , -2,2);
+    
+    //if(!gGeoManager)TGeoManager::Import("geometry.root");
+    //pPar = AliRICHParam::Instance();
+  }
+  
   for(Int_t iEvt=0;iEvt<iNevt;iEvt++){//ESD events loop
     pTr->GetEvent(iEvt);
     Int_t iNtracks=pEsd->GetNumberOfTracks(); Printf("ESD contains %i tracks created in Bz=%.2f Tesla",iNtracks,pEsd->GetMagneticField()/10.);
@@ -270,20 +236,46 @@ void AliRICHTracker::EsdPrint()
       Float_t dx,dy;         pTrack->GetRICHdxdy(dx,dy);
       Float_t theta,phi;     pTrack->GetRICHthetaPhi(theta,phi);
       TString comment;
-      if(pTrack->GetRICHsignal()>0)
-        comment="OK";
-      else if(pTrack->GetRICHsignal()==kMipQdcCut)
-        comment="no enough QDC";
-      else if(pTrack->GetRICHsignal()==kMipDistCut)
-        comment="nearest cluster is too far";
-      else if(pTrack->GetRICHsignal()==-1)
-        comment="no intersection";            
-      Printf("Track %2i Q=%4.1f P=%.3f GeV RICH: ChamClus %7i Track-Mip=(%7.2f,%7.2f)=%5.2f cm ThetaCer %7.1f rad %s",
-                   iTrk,pTrack->GetSign(),pTrack->GetP(),
-                   pTrack->GetRICHcluster(),dx,dy,TMath::Sqrt(dx*dx+dy*dy),pTrack->GetRICHsignal(), comment.Data());
+      if(isPrint){
+        if(pTrack->GetRICHsignal()>0)                         comment="OK";
+        else if(pTrack->GetRICHsignal()==kMipQdcCut)          comment="no enough QDC";
+        else if(pTrack->GetRICHsignal()==kMipDistCut)         comment="nearest cluster is too far";
+        else if(pTrack->GetRICHsignal()==-1)                  comment="no intersection";
+        Double_t pid[5]; pTrack->GetRICHpid(pid);           
+        Printf("Tr %2i Q=%4.1f P=%.3f GeV Tr-Mip=%5.2f cm Th=%7.3f rad Prob : e=%.4f mu=%.4f pi=%.4f K=%.4f p=%.4f %s" ,
+                     iTrk,pTrack->GetSign(),pTrack->GetP(),TMath::Sqrt(dx*dx+dy*dy),pTrack->GetRICHsignal(), 
+                     pid[0],pid[1],pid[2],pid[3],pid[4], comment.Data());
+      }else{//collect hists
+    
+        pDx->Fill(dx);  pDy->Fill(dy);
+        pThP->Fill(pTrack->GetP(),pTrack->GetRICHsignal());
+        pChiTh->Fill(pTrack->GetRICHsignal(),pTrack->GetRICHchi2());
+        Double_t prob[5]; pTrack->GetRICHpid(prob);
+        pProbEl->Fill(prob[0]); pProbMu->Fill(prob[1]); pProbPi->Fill(prob[2]);  pProbKa->Fill(prob[3]);  pProbPr->Fill(prob[4]); 
+      }//if plot
     }//ESD tracks loop
   }//ESD events loop
   delete pEsd;  pFile->Close();//close AliESDs.root
+  if(!isPrint){
+    TCanvas *pC=new TCanvas("c","Quality",1200,1500); pC->Divide(2,2);
+    TF1 *pPion = new TF1("RICHtheor","acos(sqrt(x*x+[0]*[0])/(x*[1]))",1.2,6);  pPion->SetLineWidth(1);pPion->SetParameter(1,1.292);
+    AliPID ppp;                   pPion->SetParameter(0,AliPID::ParticleMass(AliPID::kPion))  ; pPion->SetLineColor(kRed);
+    TF1 *pKaon = (TF1*)pPion->Clone();  pKaon->SetParameter(0,AliPID::ParticleMass(AliPID::kKaon))  ; pKaon->SetLineColor(kGreen);
+    TF1 *pProt = (TF1*)pPion->Clone();  pProt->SetParameter(0,AliPID::ParticleMass(AliPID::kProton)); pProt->SetLineColor(kBlue);
+    
+    
+    pC->cd(1);        pDx->Draw();
+    pC->cd(2);        pDy->Draw();
+    pC->cd(3);        pThP->Draw();       pPion->Draw("same"); pKaon->Draw("same"); pProt->Draw("same");
+    pC->cd(4);        pChiTh->Draw();
+    
+    TCanvas *pC2=new TCanvas("c2","Quality 2",1200,1500); pC2->Divide(2,2);
+    pC2->cd(1);        pProbPi->Draw(); pProbMu->Draw("same"); pProbEl->Draw("same");
+    pC2->cd(2);        pProbKa->Draw();
+    pC2->cd(3);        pProbPr->Draw();
+    
+    
+  }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHTracker::MatrixPrint(Double_t probCut)

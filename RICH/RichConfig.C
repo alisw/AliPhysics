@@ -527,7 +527,6 @@ void RichConfig::WriteBatch()
 
 
 //reconstraction section  
-  if(!fClusBG->GetButton(kNo)->GetState()){
                                                        fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
     if     (fClusBG->GetButton(kAll)   ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");        //clusters created for these detectors\n");
     else if(fClusBG->GetButton(kOnly)  ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"RICH\");       //clusters created for RICH only\n");
@@ -549,7 +548,6 @@ void RichConfig::WriteBatch()
     
     
                                                        fprintf(fp,"  pRec->Run();delete pRec;\n\n");         
-  }
 //benchmarks  
                                                        fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/Batch.C>: Start time: \";time.Print();\n");
                                                        fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/Batch.C>: Stop  time: \";time.Set();  time.Print();\n");

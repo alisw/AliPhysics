@@ -6,6 +6,7 @@
 #include <TVector.h>      //old style
 #include <TVector2.h>
 #include <TVector3.h>
+#include <Riostream.h>     //---------to be deleted-------------
 #include <TRandom.h>
 #include <TClonesArray.h>  //Hit2SDigs()
 #include <AliLog.h>
@@ -159,7 +160,6 @@ public:
   static void     TestSeg();                                                             //test the segmentation group of methodes
   static void     TestTrans();                                                           //test the transform group of methodes
 
-  static Double_t fgMass[5];                                // mass array
   enum EPlaneId {kCenter,kPc,kRad,kAnod,kNch=7};            //4 planes in chamber and total number of chambers
 protected:
          AliRICHParam();             //default ctor is protected to enforce it to be singleton
@@ -659,6 +659,7 @@ Double_t AliRICHParam::ErrCrom(Double_t thetaC, Double_t phiC, Double_t thetaM, 
   Double_t refC6F14m = 1.29337;
   Double_t alpha =TMath::Cos(thetaM)-TMath::Tan(thetaC)*TMath::Cos(phiDelta)*TMath::Sin(thetaM);
 
+  //cout << "alpha : "<<alpha<<"         thetaC : "<<thetaC<<endl;
   Double_t dtdn = TMath::Cos(thetaM)*refC6F14m*betaM*betaM/(alpha*TMath::Tan(thetaC));
             
   Double_t f = 0.00928*(7.75-5.635)/TMath::Sqrt(12.);
