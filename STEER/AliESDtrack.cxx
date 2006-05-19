@@ -835,6 +835,9 @@ Bool_t AliESDtrack::RelateToVertex
   //    In the case of success, the returned value is kTRUE
   //    (otherwise, it's kFALSE)
   //  
+
+  if (!vtx) return kFALSE;
+
   Double_t alpha=GetAlpha();
   Double_t sn=TMath::Sin(alpha), cs=TMath::Cos(alpha);
   Double_t x=GetX(), y=GetParameter()[0], snp=GetParameter()[2];
