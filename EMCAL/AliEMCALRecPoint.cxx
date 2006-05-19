@@ -21,20 +21,21 @@
 //*-- Author: Heather Gray (LBL) merged AliEMCALRecPoint and AliEMCALTowerRecPoint 02/04
 
 // --- ROOT system ---
-#include <Riostream.h>
+class Riostream;
 #include <TPad.h>
-#include <TGraph.h>
-#include <TPaveText.h>
+class TGraph;
+class TPaveText;
 #include <TClonesArray.h>
 #include <TMath.h>
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliGenerator.h"
+//#include "AliGenerator.h"
+class AliGenerator;
 #include "AliRunLoader.h"
 #include "AliRun.h"
-#include "AliEMCAL.h"
+class AliEMCAL;
 #include "AliEMCALLoader.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALHit.h"

@@ -46,22 +46,24 @@
 
 // --- ROOT system ---
 
-#include <TROOT.h>
+class TROOT;
 #include <TH1.h>
 #include <TFile.h> 
-#include <TFolder.h> 
+class TFolder;
 #include <TMath.h> 
 #include <TMinuit.h>
 #include <TTree.h> 
-#include <TSystem.h> 
+class TSystem; 
 #include <TBenchmark.h>
 #include <TBrowser.h>
+
 // --- Standard library ---
 
 
 // --- AliRoot header files ---
 #include "AliRunLoader.h"
 #include "AliRun.h"
+#include "AliESD.h"
 #include "AliEMCALLoader.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALRecPoint.h"
@@ -71,7 +73,8 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALHistoUtilities.h"
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
+
+class AliCDBStorage;
 #include "AliCDBEntry.h"
 
 ClassImp(AliEMCALClusterizerv1)
@@ -552,7 +555,7 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
 	recPoint = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
 	fNumberOfECAClusters++ ; 
 
-	recPoint->SetClusterType(AliEMCALRecPoint::kPseudoCluster);
+	recPoint->SetClusterType(AliESDCaloCluster::kPseudoCluster);
 
 	recPoint->AddDigit(*digit, digit->GetAmp()) ; 
 	clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
@@ -589,7 +592,9 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
 	nextdigit.Reset() ;  // will start from beggining
       }
     }
-    if(recPoint) cout << "cl.e " << recPoint->GetEnergy() << endl; 
+    if(recPoint)
+      AliDebug(1,Form("MakeClusters: cl.e %f \n", recPoint->GetEnergy())); 
+    //if(recPoint) cout << "cl.e " << recPoint->GetEnergy() << endl; 
     delete digitsC ;
   }
 
@@ -611,9 +616,11 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
     AliEMCALHistoUtilities::FillH1(fHists, 11, e);
     if(e < fMinECut ) digitsC->Remove(digit);
     else              ehs += e;
-  }  
-  cout << " Number of digits " << digits->GetEntries() << " -> (e>" <<fMinECut <<")";
-  cout << digitsC->GetEntries()<< " ehs "<<ehs<<endl; 
+  } 
+  AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f), ehs %d\n",
+		  digits->GetEntries(),fMinECut,ehs));
+  //cout << " Number of digits " << digits->GetEntries() << " -> (e>" <<fMinECut <<")";
+  //cout << digitsC->GetEntries()<< " ehs "<<ehs<<endl; 
 
   // Clusterization starts    
   //  cout << "Outer Loop" << endl;
@@ -632,7 +639,7 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
       recPoint = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
       fNumberOfECAClusters++ ; 
 
-      recPoint->SetClusterType(AliEMCALRecPoint::kClusterv1);
+      recPoint->SetClusterType(AliESDCaloCluster::kClusterv1);
 
       recPoint->AddDigit(*digit, Calibrate(digit->GetAmp(), digit->GetId())) ; 
       clusterECAdigitslist[iDigitInECACluster] = digit->GetIndexInList() ;	
@@ -667,8 +674,10 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
       } // scan over digits already in cluster
       nextdigit.Reset() ;  // will start from beggining
     }
-  } // while digit  
-  if(recPoint) cout << "cl.e " << recPoint->GetEnergy() << endl; 
+  } // while digit 
+  if(recPoint)
+    AliDebug(1,Form("MakeClusters: cl.e %f \n", recPoint->GetEnergy())); 
+  //if(recPoint) cout << "cl.e " << recPoint->GetEnergy() << endl; 
   delete digitsC ;
 
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,digits->GetEntriesFast())); 

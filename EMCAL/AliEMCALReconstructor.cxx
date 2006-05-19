@@ -33,7 +33,8 @@
 #include "AliEMCALLoader.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALRecPoint.h"
-#include "AliRawReaderFile.h"
+#include "AliRawReader.h"
+
 
 ClassImp(AliEMCALReconstructor)
 
@@ -156,7 +157,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESD* esd) const
     ec->SetDigitTime(timeList);      //times
     ec->SetDigitIndex(digiList);     //indices
     ec->SetNumberOfDigits(newdigitMult);
-    if(clust->GetClusterType()== AliEMCALRecPoint::kClusterv1){
+    if(clust->GetClusterType()== AliESDCaloCluster::kClusterv1){
       ec->SetClusterDisp(clust->GetDispersion());
       ec->SetClusterChi2(-1); //not yet implemented
       ec->SetM02(elipAxis[0]*elipAxis[0]) ;

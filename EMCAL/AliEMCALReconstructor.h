@@ -19,7 +19,7 @@ class AliEMCALDigitizer ;
 class AliEMCALClusterizer ;
 class AliEMCALSDigitizer ;
 class AliESD ;
-class AliRawReaderFile ; 
+class AliRawReader ;
 
 // --- Standard library ---
 

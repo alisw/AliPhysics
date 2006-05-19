@@ -17,8 +17,7 @@ class TVector3 ;
 // --- AliRoot header files ---
 
 #include "AliRecPoint.h"
-#include "AliEMCALDigit.h"
-
+class AliEMCALDigit;
 class AliEMCALGeometry;
 
 class AliEMCALRecPoint : public AliRecPoint {
@@ -33,7 +32,7 @@ class AliEMCALRecPoint : public AliRecPoint {
   
   virtual ~AliEMCALRecPoint();
   virtual void    AddDigit(AliDigitNew &){ Fatal("AddDigit", "use AddDigit(AliEMCALDigit & digit, Float_t Energy )") ; }
-  virtual void    AddDigit(AliEMCALDigit & digit, Float_t Energy); 
+  virtual void    AddDigit(AliEMCALDigit & digit, const Float_t Energy); 
   virtual Int_t   Compare(const TObject * obj) const;   
   virtual Int_t   DistancetoPrimitive(Int_t px, Int_t py);
   virtual void    Draw(Option_t * option="") ;
@@ -87,8 +86,6 @@ class AliEMCALRecPoint : public AliRecPoint {
     Fatal("operator =", "not implemented") ;
     return *this ; 
   }
-
-  enum RecPointType {kPseudoCluster, kClusterv1};
 
 protected:
           void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
