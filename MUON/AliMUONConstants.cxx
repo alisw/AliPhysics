@@ -17,7 +17,10 @@
 
 #include "AliMUONConstants.h"
 
+#include "AliLog.h"
+
 #include "TMath.h"
+#include "TClass.h"
 
 ///
 /// This class holds various constants to be used in many places,
@@ -79,14 +82,26 @@ Int_t AliMUONConstants::ChamberNumber(Float_t z)
   // return chamber number according z position of hit. Should be taken from geometry ?
  
   Float_t dMaxChamber = DzSlat() + DzCh() + 0.25; // cm st 3 &4 & 5
+  dMaxChamber += 3.00;                            // factor for inclination of chamber  
+  // dMaxChamber += Rmax(4) * TMath::Sin(fgSt345inclination*TMath::Pi()/360.); 
+                                                  // factor for inclination of chamber 
   if ( z >  (DefaultChamberZ(4)+50.)) dMaxChamber = 7.; // cm stations 1 & 2
   Int_t iChamber;
 
   for (iChamber = 0; iChamber < 10; iChamber++) {
-    
     if (TMath::Abs(z-DefaultChamberZ(iChamber)) < dMaxChamber) {
       return iChamber;
     }
+  }
+  
+  if ( z > DefaultChamberZ(NTrackingCh()-1) ) {
+    AliWarningClass(Form("No chamber number found for z = %f",z));
+    // for (iChamber = 0; iChamber < 10; iChamber++) {
+    //   cout << iChamber << " zpos: " << DefaultChamberZ(iChamber)
+    //        << "  from " << DefaultChamberZ(iChamber) + dMaxChamber
+    // 	      << "  to " << DefaultChamberZ(iChamber) - dMaxChamber 
+    //        << "  delta " << dMaxChamber << endl;
+    //}
   }
   return -1;
 }
