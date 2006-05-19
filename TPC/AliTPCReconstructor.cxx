@@ -30,6 +30,7 @@
 #include "AliTPCtrackerMI.h"
 #include "AliTPCpidESD.h"
 #include "AliTPCParam.h"
+#include "AliTPCParamSR.h"
 
 ClassImp(AliTPCReconstructor)
 
@@ -94,7 +95,10 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
   loader->LoadRecPoints("recreate");
 
   AliTPCParam* param = GetTPCParam(runLoader);
-  if (!param) return;
+  if (!param) {
+    AliWarning("Loading default TPC parameters !");
+    param = new AliTPCParamSR;
+  }
   AliTPCclustererMI clusterer(param);
 
   Int_t iEvent = 0;
@@ -122,7 +126,10 @@ AliTracker* AliTPCReconstructor::CreateTracker(AliRunLoader* runLoader) const
 // create a TPC tracker
 
   AliTPCParam* param = GetTPCParam(runLoader);
-  if (!param) return NULL;
+  if (!param) {
+    AliWarning("Loading default TPC parameters !");
+    param = new AliTPCParamSR;
+  }
   param->ReadGeoMatrices();
   return new AliTPCtrackerMI(param);
 }
