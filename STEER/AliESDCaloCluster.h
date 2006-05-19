@@ -31,6 +31,8 @@ public:
   void SetID(Int_t id) {fID = id;}
   Int_t GetID() const {return fID;}
 
+  enum ClusterType {kPseudoCluster, kClusterv1};//Two types of clusters stored
+                                                //in EMCAL.
   void SetClusterType(Int_t type) { fClusterType = type; }
   Int_t GetClusterType() const {return fClusterType; }
 
