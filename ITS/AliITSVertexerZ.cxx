@@ -321,13 +321,13 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       fZsig+=fZCombf->GetBinCenter(n)*fZCombf->GetBinCenter(n)*fZCombf->GetBinContent(n);
     }
     if(num<2){
-      fZsig = 0.;
+      fZsig = 5.3;  // Default error from the beam sigmoid
     }
     else{
       Float_t radi =  fZsig/(num-1)-fZFound*fZFound/num/(num-1);
       // radi = square root of sample variance of Z
       if(radi>0.)fZsig=TMath::Sqrt(radi);
-      else fZsig=0.;
+      else fZsig=5.3;  // Default error from the beam sigmoid
       // fZfound - Average Z
       fZFound/=num;
     }
@@ -375,6 +375,7 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   }
   //  if(fDebug>0)cout<<"Numer of Iterations "<<niter<<endl<<endl;
   if(num!=0)fZsig/=TMath::Sqrt(num);
+  if (fZsig<=0) fZsig=5.3; // Default error from the beam sigmoid
   fCurrentVertex = new AliESDVertex(fZFound,fZsig,num);
   fCurrentVertex->SetTitle("vertexer: B");
   ResetHistograms();
