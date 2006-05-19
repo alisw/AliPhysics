@@ -6,7 +6,7 @@
  * See cxx source for full Copyright notice                               
  */
 #ifndef ALIFMDMAP_H
-# include <AliFMDMap.h>
+# include "AliFMDMap.h"
 #endif
 //____________________________________________________________________
 //

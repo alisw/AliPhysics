@@ -10,7 +10,7 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 
-#include <AliESDfriendTrack.h>
+#include "AliESDfriendTrack.h"
 
 //_____________________________________________________________________________
 class AliESDfriend : public TObject {

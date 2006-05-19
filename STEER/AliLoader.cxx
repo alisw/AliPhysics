@@ -7,7 +7,7 @@
 //Author: Alice Offline Group http://alisoft.cern.ch
 //Responsible: Piotr.Skowronski@cern.ch
 //
-#include <AliLoader.h>
+#include "AliLoader.h"
 
 //Root includes
 #include <TROOT.h>

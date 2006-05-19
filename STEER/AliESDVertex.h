@@ -27,7 +27,7 @@
  *****************************************************************************/
 
 
-#include <AliVertex.h>
+#include "AliVertex.h"
 
 class AliESDVertex : public AliVertex {
  

@@ -16,7 +16,7 @@
 /* $Id$ */
 
 #include "AliLog.h"
-#include <AliVertexer.h>
+#include "AliVertexer.h"
 
 ClassImp(AliVertexer)
 

@@ -17,7 +17,7 @@
 # include <TObject.h>
 #endif
 #ifndef ALIFMDFLOATMAP_H
-# include <AliFMDFloatMap.h>
+# include "AliFMDFloatMap.h"
 #endif
 
 //___________________________________________________________________
