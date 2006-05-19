@@ -153,7 +153,7 @@ public:
 
   void BeginPad(Int_t row, Int_t pad, Bool_t reverseTime=kFALSE);
   void RegisterData(Short_t time, Short_t signal);
-  void EndPad();
+  void EndPad(Bool_t autoPedestal=kFALSE, Short_t threshold=0);
 
   const PadData& GetPadData(Int_t padAddr);
   const PadData& GetPadData(Int_t row, Int_t pad);

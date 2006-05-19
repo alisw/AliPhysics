@@ -28,7 +28,7 @@ ClassImp(TPCData)
 
 TPCData::TPCData() :
   fSectors(36), fSectorBlockSize(65536),
-  fLoadThreshold(0), fLoadPedestal(0)
+  fLoadThreshold(0), fLoadPedestal(0), fAutoPedestal(kFALSE)
 {
   TPCSectorData::InitStatics();
 }
@@ -101,7 +101,7 @@ void TPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
 
       if(pad != curPad) {
 	if(inFill)
-	  secData->EndPad();
+	  secData->EndPad(fAutoPedestal, fLoadThreshold);
 	secData->BeginPad(row, pad, kFALSE);
 	curPad = pad;
 	inFill = kTRUE;
@@ -111,7 +111,7 @@ void TPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
 
     } while (digit.Next());
     if(inFill) {
-      secData->EndPad();
+      secData->EndPad(fAutoPedestal, fLoadThreshold);
       inFill = kFALSE;
     }
   }
@@ -124,14 +124,15 @@ void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors)
   // via CreateSector() are loaded.
   // If spawnSectors is true sectors are created if data for them is encountered.
 
-  Int_t  sector = -1, row = -1, pad = -1, rowOffset = 0;
-  Bool_t inFill = kFALSE;
+  Int_t   sector = -1, row = -1, pad = -1, rowOffset = 0;
+  Short_t time, signal;
+  Bool_t  inFill = kFALSE;
   TPCSectorData* secData = 0;
 
   while (input.Next()) {
     if (input.IsNewSector()) {
       if(inFill) {
-	secData->EndPad();
+	secData->EndPad(fAutoPedestal, fLoadThreshold);
 	inFill = kFALSE;
       }
       sector = input.GetSector();
@@ -148,7 +149,7 @@ void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors)
 
     if (input.IsNewPad()) {
       if(inFill) {
-	secData->EndPad();
+	secData->EndPad(fAutoPedestal, fLoadThreshold);
 	inFill = kFALSE;
       }
       row = input.GetRow() + rowOffset;
@@ -158,12 +159,18 @@ void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors)
       inFill = kTRUE;
     }
 
-    if(input.GetSignal() > fLoadThreshold)
-      secData->RegisterData(input.GetTime(), input.GetSignal() - fLoadPedestal);
+    time   = input.GetTime();
+    signal = input.GetSignal();
+    if(fAutoPedestal) {
+      secData->RegisterData(time, signal);
+    } else {
+      if(signal > fLoadThreshold)
+	secData->RegisterData(time, signal - fLoadPedestal);
+    }
   }
 
   if(inFill) {
-    secData->EndPad();
+    secData->EndPad(fAutoPedestal, fLoadThreshold);
     inFill = kFALSE;
   }
 }
@@ -177,14 +184,15 @@ void TPCData::LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors, Bool_t war
 
   static const Exc_t eH("TPCData::LoadRaw ");
 
-  Int_t  sector = -1, row = -1, pad = -1, rowOffset = 0;
-  Bool_t inFill = kFALSE;
+  Int_t   sector = -1, row = -1, pad = -1, rowOffset = 0;
+  Short_t time, signal;
+  Bool_t  inFill = kFALSE;
   TPCSectorData* secData = 0;
 
   while (input.Next()) {
     if (input.IsNewSector()) {
       if(inFill) {
-	secData->EndPad();
+	secData->EndPad(fAutoPedestal, fLoadThreshold);
 	inFill = kFALSE;
       }
       sector = input.GetSector();
@@ -201,7 +209,7 @@ void TPCData::LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors, Bool_t war
 
     if (input.IsNewPad()) {
       if(inFill) {
-	secData->EndPad();
+	secData->EndPad(fAutoPedestal, fLoadThreshold);
 	inFill = kFALSE;
       }
       row = input.GetRow() + rowOffset;
@@ -219,12 +227,18 @@ void TPCData::LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors, Bool_t war
       inFill = kTRUE;
     }
 
-    if(input.GetSignal() > fLoadThreshold)
-      secData->RegisterData(input.GetTime(), input.GetSignal() - fLoadPedestal);
+    time   = input.GetTime();
+    signal = input.GetSignal();
+    if(fAutoPedestal) {
+      secData->RegisterData(time, signal);
+    } else {
+      if(signal > fLoadThreshold)
+	secData->RegisterData(time, signal - fLoadPedestal);
+    }
   }
 
   if(inFill) {
-    secData->EndPad();
+    secData->EndPad(fAutoPedestal, fLoadThreshold);
     inFill = kFALSE;
   }
 }

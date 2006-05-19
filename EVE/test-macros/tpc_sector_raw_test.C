@@ -22,9 +22,10 @@ void tpc_sector_raw_test(const char *file = "",Int_t ievent = 0)
 
   x = new Alieve::TPCData;
   //x->SetSectorBlockSize(8192);
-  x->SetLoadThreshold(65);
-  x->CreateAllSectors();
-  x->LoadRaw(input, kFALSE);
+  x->SetAutoPedestal(kTRUE);
+  x->SetLoadThreshold(3);
+  //x->CreateAllSectors();
+  x->LoadRaw(input, kTRUE);
 
   gStyle->SetPalette(1, 0);
 

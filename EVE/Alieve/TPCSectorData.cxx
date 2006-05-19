@@ -193,7 +193,7 @@ void TPCSectorData::BeginPad(Int_t row, Int_t pad, Bool_t reverseTime)
   }
 }
 
-void TPCSectorData::EndPad()
+void TPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
 {
   Short_t *beg, *end;
   if(fCurrentStep > 0) {
@@ -203,6 +203,34 @@ void TPCSectorData::EndPad()
     beg = fPadBuffer + fCurrentPos + 2;
     end = fPadBuffer + 2048;
   }
+
+  if(autoPedestal) {
+    Short_t array[1024];
+    Short_t* val;
+    val = beg + 1;    
+    while(val <= end) {
+      array[(val-beg)/2] = *val;
+      val += 2;
+    }    
+    Short_t pedestal = TMath::Nint(TMath::Median((end-beg)/2, array));
+    val = beg + 1;
+    while(val <= end) {
+      *val -= pedestal;
+      val += 2;
+    }
+    Short_t* wpos = beg;
+    Short_t* rpos = beg;
+    while(rpos < end) {
+      if(rpos[1] > threshold) {
+	wpos[0] = rpos[0];
+	wpos[1] = rpos[1];
+	wpos += 2;
+      }
+      rpos += 2;
+    }
+    end = wpos;
+  }
+
   Short_t* wpos = beg;
   Short_t* rpos = beg;
 
