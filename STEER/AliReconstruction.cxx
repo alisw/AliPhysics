@@ -1550,7 +1550,7 @@ void AliReconstruction::CreateTag(TFile* file)
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
   Float_t maxPt = .0, meanPt = .0, totalP = .0;
   Int_t fVertexflag;
-  TString fVertexName;
+  TString fVertexName("default");
 
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
@@ -1600,12 +1600,13 @@ void AliReconstruction::CreateTag(TFile* file)
     maxPt = .0;
     meanPt = .0;
     totalP = .0;
-    fVertexflag = 1;
+    fVertexflag = 0;
 
     b->GetEntry(iEventNumber);
     const AliESDVertex * vertexIn = esd->GetVertex();
-    fVertexName = vertexIn->GetName();
-    if(fVertexName == "default") fVertexflag = 0;
+    if (!vertexIn) AliError("ESD has not defined vertex.");
+    if (vertexIn) fVertexName = vertexIn->GetName();
+    if(fVertexName != "default") fVertexflag = 1;
     for (Int_t iTrackNumber = 0; iTrackNumber < esd->GetNumberOfTracks(); iTrackNumber++) {
       AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
       UInt_t status = esdTrack->GetStatus();
@@ -1714,10 +1715,12 @@ void AliReconstruction::CreateTag(TFile* file)
       meanPt = meanPt/ntrack;
     
     evTag->SetEventId(iEventNumber+1);
-    evTag->SetVertexX(vertexIn->GetXv());
-    evTag->SetVertexY(vertexIn->GetYv());
-    evTag->SetVertexZ(vertexIn->GetZv());
-    evTag->SetVertexZError(vertexIn->GetZRes());
+    if (vertexIn) {
+      evTag->SetVertexX(vertexIn->GetXv());
+      evTag->SetVertexY(vertexIn->GetYv());
+      evTag->SetVertexZ(vertexIn->GetZv());
+      evTag->SetVertexZError(vertexIn->GetZRes());
+    }  
     evTag->SetVertexFlag(fVertexflag);
 
     evTag->SetT0VertexZ(esd->GetT0zVertex());
