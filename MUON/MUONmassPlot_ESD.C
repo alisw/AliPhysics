@@ -116,7 +116,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
 
   Int_t ntrackhits, nevents;
   Double_t fitfmin;
-  Double_t fZVertex;
+  Double_t fZVertex=0;
 
  
   TLorentzVector fV1, fV2, fVtot;
@@ -173,7 +173,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
     }
 
     // get the SPD reconstructed vertex (vertexer) and fill the histogram
-    fZVertex = Vertex->GetZv();
+    if (Vertex) fZVertex = Vertex->GetZv();
     hPrimaryVertex->Fill(fZVertex);
 
     Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ; 
