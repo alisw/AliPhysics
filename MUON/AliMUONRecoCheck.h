@@ -44,14 +44,14 @@ protected:
 
 private:
   
-  AliRunLoader* fRunLoader;     // alice run loader 
-  AliMUONData*  fMUONData;      // Data container for MUON subsystem 
-  TClonesArray* fMuonTrackRef;  // reference muon tracks
-  TClonesArray* fTrackReco;     // reconstructed muon tracks
-  Int_t fReconstructibleTracks; // number of reconstructible tracks 
-  Int_t fRecoTracks; // number of reconstructed tracks 
+  AliRunLoader* fRunLoader;     ///< alice run loader 
+  AliMUONData*  fMUONData;      ///< Data container for MUON subsystem 
+  TClonesArray* fMuonTrackRef;  ///< reference muon tracks
+  TClonesArray* fTrackReco;     ///< reconstructed muon tracks
+  Int_t fReconstructibleTracks; ///< number of reconstructible tracks 
+  Int_t fRecoTracks;            ///< number of reconstructed tracks 
 
-  ClassDef(AliMUONRecoCheck, 0)   //Utility class to check reconstruction
+  ClassDef(AliMUONRecoCheck, 0) //Utility class to check reconstruction
 };
 
 #endif
