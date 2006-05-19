@@ -22,21 +22,21 @@
 // to reference tracks. The reference tracks are built from AliTrackReference for the
 // hit in chamber (0..9) and from kinematics for the vertex parameters.     
 
-#include <TParticle.h>
-
-#include "AliRun.h" // for gAlice
-#include "AliLog.h" 
-#include "AliLoader.h" 
-#include "AliRunLoader.h" 
-#include "AliTrackReference.h"
-#include "AliHeader.h"
-#include "AliMC.h"
-#include "AliStack.h"
 #include "AliMUON.h"
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrack.h"
 #include "AliMUONData.h"
 #include "AliMUONConstants.h"
+
+#include "AliRun.h" // for gAlice
+#include "AliLoader.h" 
+#include "AliRunLoader.h" 
+#include "AliHeader.h"
+#include "AliStack.h"
+#include "AliTrackReference.h"
+#include "AliLog.h" 
+
+#include <TParticle.h>
 
 ClassImp(AliMUONRecoCheck)
 
@@ -139,7 +139,9 @@ void AliMUONRecoCheck::MakeTrackRef()
   hitForRec = new AliMUONHitForRec();
   muonTrack = new AliMUONTrack();
 
+  Int_t max = fRunLoader->GetHeader()->Stack()->GetNtrack();
   for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; iTrackRef++) {
+
     branch->GetEntry(iTrackRef);
     
     iHitMin = 0;
@@ -148,7 +150,6 @@ void AliMUONRecoCheck::MakeTrackRef()
     if (!trackRefs->GetEntries()) continue; 
 
     while (isNewTrack) {
-      
       for (Int_t iHit = iHitMin; iHit < trackRefs->GetEntries(); iHit++) {
       
 	trackReference = (AliTrackReference*)trackRefs->At(iHit);
@@ -161,6 +162,13 @@ void AliMUONRecoCheck::MakeTrackRef()
 
 	track = trackReference->GetTrack();
 
+	if(track >= max){
+	  AliWarningStream()
+	    << "Track ID " << track 
+	    << " larger than max number of particles " << max << endl;
+	  isNewTrack = kFALSE;
+	  break;
+	}
 	if (track != trackSave && iHit != 0) {
 	  iHitMin = iHit;
 	  trackSave = track;
@@ -171,7 +179,7 @@ void AliMUONRecoCheck::MakeTrackRef()
 	trackParam->SetBendingCoor(y);
 	trackParam->SetNonBendingCoor(x);
 	trackParam->SetZ(z);
-       
+
 	if (TMath::Abs(pZ) > 0) {
 	  bendingSlope = pY/pZ;
 	  nonBendingSlope = pX/pZ;
@@ -194,14 +202,16 @@ void AliMUONRecoCheck::MakeTrackRef()
 	muonTrack->AddTrackParamAtHit(trackParam);
 	muonTrack->AddHitForRecAtHit(hitForRec);
 	muonTrack->SetTrackID(track);
-	
+
 	trackSave = track;
 	if (iHit == trackRefs->GetEntries()-1) isNewTrack = kFALSE;
       }
-      
+
       // track parameters at vertex 
       particle = fRunLoader->GetHeader()->Stack()->Particle(muonTrack->GetTrackID());
+
       if (particle) {
+
 	x = particle->Vx();
 	y = particle->Vy();
 	z = particle->Vz();
@@ -224,13 +234,12 @@ void AliMUONRecoCheck::MakeTrackRef()
       
 	muonTrack->SetTrackParamAtVertex(trackParam);
       }
-      
+
       AddMuonTrackReference(muonTrack);
       muonTrack->ResetTrackParamAtHit();
       muonTrack->ResetHitForRecAtHit();
       
     } // end while isNewTrack
-    
   }
   
   CleanMuonTrackRef();
@@ -322,7 +331,6 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
   trackNew = new AliMUONTrack();
 
   Int_t nTrackRef = fMuonTrackRef->GetEntriesFast();
-  
   for (Int_t index = 0; index < nTrackRef; index++) {
     track = (AliMUONTrack*)fMuonTrackRef->At(index);
     hitForRecAtHit = track->GetHitForRecAtHit();
@@ -361,6 +369,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
 	  bendingMomentum2 = 1./trackParam2->GetInverseBendingMomentum();
 	
 	if ( TMath::Abs(zRec2-zRec1) < maxGasGap ) {
+
 	  nRec++;
 	  xRec += xRec2;
 	  yRec += yRec2;
@@ -453,16 +462,22 @@ void AliMUONRecoCheck::ReconstructibleTracks()
       iChamber = hitForRec->GetChamberNumber();
       if (iChamber < 0 || iChamber > 10) continue;
       isChamberInTrack[iChamber] = 1;
-      
-    }
-    // track is reconstructible if the particle is crossing every tracking chambers
+    } 
+    // track is reconstructible if the particle is depositing a hit
+    // in the following chamber combinations:
+
     isTrackOK = kTRUE;
-    for (Int_t ch = 0; ch < 10; ch++) {
-      if (!isChamberInTrack[ch]) isTrackOK = kFALSE;
-    }    if (isTrackOK) fReconstructibleTracks++;
+    if (!isChamberInTrack[0] && !isChamberInTrack[1]) isTrackOK = kFALSE;
+    if (!isChamberInTrack[2] && !isChamberInTrack[3]) isTrackOK = kFALSE;
+    if (!isChamberInTrack[4] && !isChamberInTrack[5]) isTrackOK = kFALSE;
+    Int_t nHitsInLastStations=0;
+    for (Int_t ch = 6; ch < AliMUONConstants::NTrackingCh(); ch++)
+      if (isChamberInTrack[ch]) nHitsInLastStations++; 
+    if(nHitsInLastStations < 3) isTrackOK = kFALSE;
+
+    if (isTrackOK) fReconstructibleTracks++;
     if (!isTrackOK) fMuonTrackRef->Remove(track); // remove non reconstructible tracks
   }
   fMuonTrackRef->Compress();
 }
-
 
