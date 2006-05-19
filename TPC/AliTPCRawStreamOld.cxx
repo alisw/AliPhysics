@@ -126,7 +126,29 @@ void AliTPCRawStreamOld::ApplyAltroMapping()
   // Take the DDL index, load
   // the corresponding altro mapping
   // object and fill the sector,row and pad indeces
-  Int_t ddlNumber = GetDDLNumber()-228;
+  Int_t ddlNumber = GetDDLNumber();
+  switch (ddlNumber) {
+    case 152:
+      ddlNumber = 74;
+      break;
+    case 153:
+      ddlNumber = 75;
+      break;
+    case 253:
+      ddlNumber = 0;
+      break;
+    case 0:
+      ddlNumber = 73;
+      break;
+    case 1:
+      ddlNumber = 1;
+      break;
+    case 5:
+      ddlNumber = 72;
+      break;
+    default:
+      break;
+  }
   Int_t patchIndex;
   if (ddlNumber < 72) {
     fSector = ddlNumber / 2;

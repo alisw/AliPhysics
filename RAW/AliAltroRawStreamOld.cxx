@@ -274,23 +274,23 @@ Int_t AliAltroRawStreamOld::GetPosition()
 
   // Get the payload size from the RCU trailer
   // The trailer is actually one 32-bit word
-  Int_t position = (fData[fRawReader->GetDataSize()-1]) << 24;
-  position |= (fData[fRawReader->GetDataSize()-2]) << 16;
-  position |= (fData[fRawReader->GetDataSize()-3]) << 8;
-  position |= (fData[fRawReader->GetDataSize()-4]);
+  Int_t position = (fData[fRawReader->GetDataSize()-29]) << 24;
+  position |= (fData[fRawReader->GetDataSize()-30]) << 16;
+  position |= (fData[fRawReader->GetDataSize()-31]) << 8;
+  position |= (fData[fRawReader->GetDataSize()-32]);
   // The size is specified in a number of 40bits
   // Therefore we need to transform it to number of bytes
   position *= 5;
 
   // Check the consistency of the header and trailer
-  if ((fRawReader->GetDataSize() - 32) != position)
+  if ((fRawReader->GetDataSize() - 64) != position)
     AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d words (in the RCU trailer)!",
-		  fRawReader->GetDataSize()-32,
+		  fRawReader->GetDataSize()-64,
 		  position));
 
   // Skip the Common Data Header which contains
   // only 7 (!) words
-  fData += 28;
+  fData += 32;
 
   // Return the position in units of 10-bit words
   return position*8/10;
