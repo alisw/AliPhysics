@@ -48,7 +48,8 @@ ClassImp(AliTrackReference)
    fPy(0),
    fPz(0),
    fLength(0),
-   fTime(0)
+   fTime(0),
+   fUserId(0)
 {
   //
   // Default constructor
@@ -68,7 +69,8 @@ AliTrackReference::AliTrackReference(Int_t label) :
   fPy(0),
   fPz(0),
   fLength(gMC->TrackLength()),
-  fTime(gMC->TrackTime())
+  fTime(gMC->TrackTime()),
+  fUserId(0)
 {
   //
   // Create Reference object out of label and

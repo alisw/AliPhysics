@@ -44,8 +44,10 @@ public:
   virtual Float_t Py() const {return fPy;}
   virtual Float_t Pz() const {return fPz;}
   virtual Float_t P() const {return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz);}
+  virtual Int_t   UserId() const {return fUserId;}
   virtual void SetPosition(Float_t x, Float_t y, Float_t z){fX=x; fY=y; fZ=z;}
   virtual void SetMomentum(Float_t px, Float_t py, Float_t pz){fPx=px; fPy=py; fPz=pz;}
+  virtual void SetUserId(Int_t userId){fUserId=userId;}
 
   // Methods to get position of the track reference in 
   // in the TPC/TRD/TOF Tracking coordinate system
@@ -67,7 +69,8 @@ protected:
   Float_t   fPz;     // momentum
   Float_t   fLength; // track lenght from its origin in cm
   Float_t   fTime;   // time of flight in cm  
+  Int_t     fUserId; // optional Id defined by user
 
-  ClassDef(AliTrackReference,3)  //Base class for all Alice track references
+  ClassDef(AliTrackReference,4)  //Base class for all Alice track references
 };
 #endif

@@ -144,7 +144,7 @@ public:
   virtual void        RemapTrackHitIDs(Int_t *) {}
   virtual void        RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
   virtual void        ResetTrackReferences();
-  virtual void        AddTrackReference(Int_t label);
+  virtual  AliTrackReference * AddTrackReference(Int_t label);
   virtual  AliTrackReference * FirstTrackReference(Int_t track);
   virtual  AliTrackReference * NextTrackReference();
   virtual void        MakeBranchTR(Option_t *opt=" ");

@@ -803,16 +803,16 @@ void AliModule::SetTreeAddress()
 }
 
 //_____________________________________________________________________________
-void  AliModule::AddTrackReference(Int_t label){
+AliTrackReference*  AliModule::AddTrackReference(Int_t label){
   //
   // add a trackrefernce to the list
   if (!fTrackReferences) {
     AliError("Container trackrefernce not active");
-    return;
+    return 0;
   }
   Int_t nref = fTrackReferences->GetEntriesFast();
   TClonesArray &lref = *fTrackReferences;
-  new(lref[nref]) AliTrackReference(label);
+  return new(lref[nref]) AliTrackReference(label);
 }
 
 
