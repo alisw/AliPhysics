@@ -1,12 +1,12 @@
-SRCS= AliSelector.cxx \
-      dNdEta/AlidNdEtaCorrectionSelector.cxx \
-      dNdEta/AlidNdEtaAnalysisSelector.cxx \
-      dNdEta/AlidNdEtaAnalysisMCSelector.cxx \
-      dNdEta/dNdEtaAnalysis.cxx \
-      dNdEta/dNdEtaCorrection.cxx \
-      esdTrackCuts/AliESDtrackCuts.cxx
+HDRS = AliSelector.h \
+      dNdEta/AlidNdEtaCorrectionSelector.h \
+      dNdEta/AlidNdEtaAnalysisSelector.h \
+      dNdEta/AlidNdEtaAnalysisMCSelector.h \
+      dNdEta/dNdEtaAnalysis.h \
+      dNdEta/dNdEtaCorrection.h \
+      esdTrackCuts/AliESDtrackCuts.h
 
-HDRS= $(SRCS:.cxx=.h)
+SRCS = $(HDRS:.h=.cxx)
 
 DHDR= PWG0baseLinkDef.h
 
