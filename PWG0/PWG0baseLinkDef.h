@@ -18,4 +18,7 @@
 
 #pragma link C++ class AliESDtrackCuts+;
 
+#pragma link C++ class CorrectionMatrix2D+;
+
+
 #endif
