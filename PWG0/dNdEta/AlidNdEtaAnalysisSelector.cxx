@@ -57,7 +57,7 @@ void AlidNdEtaAnalysisSelector::SlaveBegin(TTree * tree)
      AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info.");
 
   if (!fEsdTrackCuts)
-     AliDebug(AliLog::kError, "ERROR: Could not read dNdEtaCorrection from user info.");
+     AliDebug(AliLog::kWarning, "ERROR: Could not read dNdEtaCorrection from user info.");
 
   AliLog::SetClassDebugLevel("AliESDtrackCuts", 1);
 }
@@ -195,8 +195,12 @@ void AlidNdEtaAnalysisSelector::Terminate()
 
   TFile* fout = new TFile("out.root","RECREATE");
 
-  fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
-  fdNdEtaCorrection->SaveHistograms();
+  if (fEsdTrackCuts)
+    fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
+
+  if (fdNdEtaCorrection)
+    fdNdEtaCorrection->SaveHistograms();
+
   fdNdEtaAnalysisFinal->SaveHistograms();
 
   fout->Write();
