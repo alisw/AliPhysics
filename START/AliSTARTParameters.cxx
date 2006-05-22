@@ -132,7 +132,6 @@ AliSTARTParameters::GetTimeDelayCFD(Int_t ipmt)
   if (!fCalibentry) 
     {
       fTimeDelayCFD = fTimeDelayCablesCFD[ipmt] + fTimeDelayElectronicCFD[ipmt] + fTimeDelayPMT[ipmt] + fVariableDelayLine[ipmt];
-      
       return fTimeDelayCFD+37;
     }
    
@@ -192,6 +191,7 @@ AliSTARTParameters::SetSlewingRec(Int_t ipmt)
       Float_t y1[23], mv1[23];
       for (Int_t i=0; i<23; i++){
 	y1[i] = y[22-i]; mv1[i] = mv[22-i];}
+
       TGraph* gr = new TGraph(23,y1,mv1);
       fSlewingRec.AddAtAndExpand(gr,ipmt);
 
@@ -216,13 +216,12 @@ TGraph *AliSTARTParameters::GetSlewRec(Int_t ipmt) const
   return fgCalibData -> GetSlewRec(ipmt) ;
 }
 
-//
 //__________________________________________________________________
 void 
 AliSTARTParameters::SetPMTeff(Int_t ipmt)
 {
   Float_t lambda[50];
-  Float_t eff[50] = {0,        0,       0.23619,  0.202909, 0.177913, 
+  Float_t eff[50 ] = {0,        0,       0.23619,  0.202909, 0.177913, 
 		    0.175667, 0.17856, 0.190769, 0.206667, 0.230286,
 		    0.252276, 0.256267,0.26,     0.27125,  0.281818,
 		    0.288118, 0.294057,0.296222, 0.301622, 0.290421, 

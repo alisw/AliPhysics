@@ -245,7 +245,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	  pmtBestLeft=ipmt;}
      }
     }
-    for ( Int_t ipmt=12; ipmt<24; ipmt++){
+     for ( Int_t ipmt=12; ipmt<24; ipmt++){
       if(countE[ipmt] > threshold) {
 	timeGaus[ipmt]=gRandom->Gaus(time[ipmt],25); 
 	if(timeGaus[ipmt]<besttimeright) {
@@ -304,14 +304,14 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     if (sumMult > threshold){
       fSumMult =  Int_t (1000.* TMath::Log(Double_t(sumMult) / Double_t(sumMultCoeff))
 			 /channelWidth);
-      AliDebug(2,Form("summult mv %i   mult  in chammens %i in ps %i ", 
+      AliDebug(10,Form("summult mv %i   mult  in chammens %i in ps %i ", 
 		      sumMult, fSumMult, fSumMult*channelWidth));
     }
-    if (  besttimeleft<99999 || besttimeleft < 99999) {
+    if (  besttimeright<99999 || besttimeleft < 99999) {
       fSTART->AddDigit(bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult,
 		       ftimeCFD,fADC,ftimeLED,fADC0);
       
-      AliDebug(2,Form(" Digits wrote bestRightTDC %i bestLeftTDC %i  meanTime %i  timeDiff %i fSumMult %i ", bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult ));
+      AliDebug(10,Form(" Digits wrote bestRightTDC %i bestLeftTDC %i  meanTime %i  timeDiff %i fSumMult %i ", bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult ));
     }  
     pOutStartLoader->UnloadHits();
   } //input streams loop
