@@ -33,13 +33,7 @@ class AliMUONv1 : public AliMUON
    virtual void   Init();
    virtual Int_t  IsVersion() const {return 1;}
    virtual void   StepManager();
-                  //TBR
-   virtual void   StepManager2();
 
-   void SetStepManagerVersionOld(Bool_t Opt) 
-     { fStepManagerVersionOld = Opt; }
-   void SetStepManagerVersionDE(Bool_t Opt) 
-     { fStepManagerVersionDE = Opt; }
    void SetAngleEffect(Bool_t Opt) 
      { fAngleEffect = Opt; }
    void SetStepMaxInActiveGas(Float_t StepMax)
@@ -52,20 +46,18 @@ class AliMUONv1 : public AliMUON
    virtual Int_t  GetChamberId(Int_t volId) const;
    TString CurrentVolumePath() const;	     
 
-   Bool_t  fStepManagerVersionOld; // Version of StepManager, Default is false
-   Bool_t  fStepManagerVersionDE;  // Version of StepManager with DE, Default is false
-   Bool_t  fAngleEffect; // Angle Effect along wires, Default is true
-   Float_t fStepMaxInActiveGas;    // Step max in active gas default 0.6cm
+   Bool_t  fAngleEffect;           ///< Angle Effect along wires, Default is true
+   Float_t fStepMaxInActiveGas;    ///< Step max in active gas default 0.6cm
 
    // StepManager 
-   Float_t *  fStepSum; //!
-   Float_t *  fDestepSum; //!
+   Float_t *  fStepSum;   //!< Sum of track steps per chamber
+   Float_t *  fDestepSum; //!< Sum of energy deposits per chamber
   
-   TLorentzVector fTrackMomentum; // Momentum of the particle entering in the active gas of chamber
-   TLorentzVector fTrackPosition; // Position of the particle exiting the active gas of chamber
-   TF1 *          fElossRatio;    // Ratio of particle mean eloss with respect MIP's 
-   TF1 *          fAngleEffect10; // Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
-   TF1 *          fAngleEffectNorma;// Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
+   TLorentzVector fTrackMomentum; ///< Momentum of the particle entering in the active gas of chamber
+   TLorentzVector fTrackPosition; ///< Position of the particle exiting the active gas of chamber
+   TF1 *          fElossRatio;    ///< Ratio of particle mean eloss with respect MIP's 
+   TF1 *          fAngleEffect10; ///< Angle effect in tracking chambers at theta =10 degres as a function of ElossRatio (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis) (in micrometers)  
+   TF1 *          fAngleEffectNorma;///< Angle effect: Normalisation form theta=10 degres to theta between 0 and 10 (Khalil BOUDJEMLINE sep 2003 Ph.D Thesis)
      
    ClassDef(AliMUONv1,5)  // MUON Detector class Version 1
 };
