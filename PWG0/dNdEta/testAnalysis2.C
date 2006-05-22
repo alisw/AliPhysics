@@ -42,5 +42,11 @@ testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Bool_t aMC = kFALSE)
 
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 
+  TStopwatch timer;
+  timer.Start();
+
   chain->Process(selectorName + ".cxx+");
+
+  timer.Stop();
+  timer.Print();
 }
