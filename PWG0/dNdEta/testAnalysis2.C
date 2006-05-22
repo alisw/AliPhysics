@@ -29,12 +29,15 @@ testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Bool_t aMC = kFALSE)
 
   chain->GetUserInfo()->Add(esdTrackCuts);
 
-  dNdEtaCorrection* dNdEtaCorrection = new dNdEtaCorrection();
-  dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
-  dNdEtaCorrection->RemoveEdges(2,0,2);
+  if (aMC == kFALSE)
+  {
+    dNdEtaCorrection* dNdEtaCorrection = new dNdEtaCorrection();
+    dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
+    dNdEtaCorrection->RemoveEdges(2,0,2);
 
-  chain->GetUserInfo()->Add(dNdEtaCorrection);
-
+    chain->GetUserInfo()->Add(dNdEtaCorrection);
+  }
+  
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisSelector" : "AlidNdEtaAnalysisMCSelector");
 
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
