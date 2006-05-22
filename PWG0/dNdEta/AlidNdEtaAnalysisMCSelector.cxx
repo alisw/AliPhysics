@@ -32,6 +32,13 @@ AlidNdEtaAnalysisMCSelector::~AlidNdEtaAnalysisMCSelector()
   //
 }
 
+void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
+{
+   AlidNdEtaAnalysisSelector::Init(tree);
+
+  tree->SetBranchStatus("ESD", 0);
+}
+
 Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
 {
   //
@@ -49,6 +56,13 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
 
+  particleTree->SetBranchStatus("*", 0);
+  particleTree->SetBranchStatus("fDaughter[2]", 1);
+  particleTree->SetBranchStatus("fPdgCode", 1);
+  particleTree->SetBranchStatus("fPx", 1);
+  particleTree->SetBranchStatus("fPy", 1);
+  particleTree->SetBranchStatus("fPz", 1);
+  
   TParticle* particle = 0;
   particleTree->SetBranchAddress("Particles", &particle);
 
