@@ -80,6 +80,7 @@ protected:
 
  protected:
   void SetupCintExport(TClass* cl);
+  void CalculateReparentXY(TGObject* parent, Int_t& x, Int_t& y);
 
  public:
   RGBrowser(const TGWindow *p, UInt_t w, UInt_t h);

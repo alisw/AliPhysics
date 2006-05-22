@@ -55,6 +55,18 @@ void RGBrowser::SetupCintExport(TClass* cl)
   l->AddFirst(n);
 }
 
+void RGBrowser::CalculateReparentXY(TGObject* parent, Int_t& x, Int_t& y)
+{
+  UInt_t   w, h;
+  Window_t childdum;
+  gVirtualX->GetWindowSize(parent->GetId(), x, y, w, h);
+  gVirtualX->TranslateCoordinates(parent->GetId(),
+				  gClient->GetDefaultRoot()->GetId(),
+				  0, 0, x, y, childdum);
+}
+
+/**************************************************************************/
+
 RGBrowser::RGBrowser(const TGWindow *p, UInt_t w, UInt_t h)
   : TGCompositeFrame(p, w, h)
 {
@@ -142,11 +154,15 @@ void RGBrowser::SetupClassicLook()
   fV2->MapSubwindows();
 }
 
+
+
 void RGBrowser::SetupEditorLook(RGEditor* editor)
 {
   editor->UnmapWindow();
   fV2->AddFrame(editor, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
-  editor->ReparentWindow(fV2, 0, 0);
+  Int_t x, y;
+  CalculateReparentXY(fV2, x, y);
+  editor->ReparentWindow(fV2, x, y);
 
   fV2->MapSubwindows();
 }
@@ -171,7 +187,9 @@ void RGBrowser::SetupGLViewerLook(RGEditor* editor, TVirtualPad* glpad)
   editor->ChangeOptions(editor->GetOptions() | kFixedHeight);
   lo = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,2,2,2);
   fV1->AddFrame(editor, lo);
-  editor->ReparentWindow(fV1, 0, 0);
+  Int_t x, y;
+  CalculateReparentXY(fV1, x, y);
+  editor->ReparentWindow(fV1, x, y);
 
   splitter->SetFrame(editor, kFALSE);
 
