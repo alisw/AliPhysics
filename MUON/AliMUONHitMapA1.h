@@ -7,7 +7,7 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-/// \ingroup base
+/// \ingroup sim
 /// \class AliMUONHitMapA1
 /// \brief Implements AliHitMap as a 1-dim array
 
@@ -51,10 +51,12 @@ class AliMUONHitMapA1 : public AliHitMap
     // Check index
     Int_t CheckedIndex(Int_t ix, Int_t iy) const;
  private:
-    Int_t fNpx;                           // Maximum number of pads in x
-    Int_t fNpy;                           // Maximum number of pads in y
-    TObjArray *fDigits;                   // Pointer to digits
-    Int_t fMaxIndex;                      // maximum index in hit map
+    Int_t fNpx;                           ///< Maximum number of pads in x
+    Int_t fNpy;                           ///< Maximum number of pads in y
+    TObjArray *fDigits;                   ///< Pointer to digits
+    Int_t fMaxIndex;                      ///< maximum index in hit map
+
+    /// The array of digits
     Int_t *fHitMap;                       // ! [fMaxIndex]         
 
     ClassDef(AliMUONHitMapA1,0) // Implements HitMap as a 1-dim array

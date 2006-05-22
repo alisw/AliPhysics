@@ -7,7 +7,7 @@
 /* $Id$ */
 // Revision of includes 07/05/2004
 
-/// \ingroup base
+/// \ingroup rec
 /// \class AliMUONDigitMapA1
 /// \brief Implements cluster Map as a 1-dim array
 /// 
@@ -52,11 +52,13 @@ class AliMUONDigitMapA1 : public TObject
     // Check index
     Int_t CheckedIndex(Int_t ix, Int_t iy) const;
  private:
-    Int_t fIdDE;                          // id DE
-    Int_t fNpx;                           // Maximum number of pads in x
-    Int_t fNpy;                           // Maximum number of pads in y
-    TObjArray *fDigits;                   // Pointer to digits
-    Int_t fMaxIndex;                      // maximum index in hit map
+    Int_t fIdDE;                          ///< id DE
+    Int_t fNpx;                           ///< Maximum number of pads in x
+    Int_t fNpy;                           ///< Maximum number of pads in y
+    TObjArray *fDigits;                   ///< Pointer to digits
+    Int_t fMaxIndex;                      ///< maximum index in hit map
+    
+    /// The array of hits
     Int_t *fHitMap;                       // ! [fMaxIndex]         
 
     ClassDef(AliMUONDigitMapA1,0) // Implements HitMap as a 1-dim array
