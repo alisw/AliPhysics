@@ -78,28 +78,29 @@ public:
    void         SetErrY(Float_t err);
 
 private:
-   Int_t       fIndexMap[50][2];  // indeces of digits
-   Int_t       fOffsetMap[50][2]; // Emmanuel special
-   Float_t     fContMap[50][2];   // Contribution from digit
-   Int_t       fPhysicsMap[50];   // Distinguish signal and background contr.
+   Int_t       fIndexMap[50][2];  ///< Indices of digits
+   Int_t       fOffsetMap[50][2]; ///< Emmanuel special
+   Float_t     fContMap[50][2];   ///< Contribution from digit
+   Int_t       fPhysicsMap[50];   ///< Distinguish signal and background contr.
   
-   Int_t       fQ[2]  ;           // Q of cluster (in ADC counts)     
-   Float_t     fX[2]  ;           // X of cluster
-   Float_t     fY[2]  ;           // Y of cluster
-   Float_t     fZ[2]  ;           // Z of cluster
-   Int_t       fTracks[3];        //labels of overlapped tracks
-   Int_t       fPeakSignal[2];    // Peak signal 
-   Int_t       fMultiplicity[2];  // Cluster multiplicity
-   Int_t       fClusterType;      // Cluster type
-   Int_t       fGhost;            // 0 if not a ghost or ghost problem solved
+   Int_t       fQ[2]  ;           ///< Q of cluster (in ADC counts)     
+   Float_t     fX[2]  ;           ///< X of cluster
+   Float_t     fY[2]  ;           ///< Y of cluster
+   Float_t     fZ[2]  ;           ///< Z of cluster
+   Int_t       fTracks[3];        ///< Labels of overlapped tracks
+   Int_t       fPeakSignal[2];    ///< Peak signal 
+   Int_t       fMultiplicity[2];  ///< Cluster multiplicity
+   Int_t       fClusterType;      ///< Cluster type
+   Int_t       fGhost;            ///< Ghost info
+                                  // 0 if not a ghost or ghost problem solved
                                   // >0 if ghost problem remains because
                                   // 1 both (true and ghost) satify 
                                   //   charge chi2 compatibility
                                   // 2 none give satisfactory chi2
-   Int_t       fNcluster[2];      // Number of clusters
-   Float_t     fChi2[2];          // Chi**2 of fit
-   Int_t       fDetElemId;        // ID number of the detection element (slat) on which the cluster is found. 
-   Float_t     fErrXY[2];         // coordinate errors
+   Int_t       fNcluster[2];      ///< Number of clusters
+   Float_t     fChi2[2];          ///< Chi**2 of fit
+   Int_t       fDetElemId;        ///< ID number of the detection element (slat) on which the cluster is found. 
+   Float_t     fErrXY[2];         ///< coordinate errors
    ClassDef(AliMUONRawCluster,1)  //Cluster class for MUON
 };
 

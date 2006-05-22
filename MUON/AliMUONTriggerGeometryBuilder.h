@@ -37,7 +37,7 @@ class AliMUONTriggerGeometryBuilder : public AliMUONVGeometryBuilder
     AliMUONTriggerGeometryBuilder& operator = (const AliMUONTriggerGeometryBuilder& rhs);
     
   private:
-     AliMUON*  fMUON; // the MUON detector class 
+     AliMUON*  fMUON; ///< the MUON detector class 
         
   ClassDef(AliMUONTriggerGeometryBuilder,1) // MUON Trigger stations geometry construction class
 };

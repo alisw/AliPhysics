@@ -37,7 +37,7 @@ private:
     void CopyTo(AliMUON2DMap& destination) const;
   
 private:
-  AliMpExMap* fMap; // Our internal map (an AliMpExMap of AliMpExMaps)
+  AliMpExMap* fMap; ///< Our internal map (an AliMpExMap of AliMpExMaps)
   
   ClassDef(AliMUON2DMap,1) // A 2D container
 };

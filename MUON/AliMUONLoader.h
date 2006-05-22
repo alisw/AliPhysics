@@ -33,7 +33,7 @@ class AliMUONLoader : public AliLoader
     AliMUONLoader(const AliMUONLoader& rhs);
     AliMUONLoader& operator=(const AliMUONLoader& rhs);
 
-    AliMUONData * fMUONData; // data for MUON subsystem 
+    AliMUONData * fMUONData; ///< data for MUON subsystem 
 
   private:
     //descendant classes should

@@ -91,56 +91,56 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
 
  private:
     //  Internal geometry of the slat 
-    Bool_t      fBending;        // 0: Bending or 1:Non Bending segmentation
-    Int_t       fId;             // Identifier of detection element
-    Int_t       fNsec;           // Number of density sectors (should be 4, if not not warranty about the output
-    TArrayI*    fNDiv;           // Densities (d1, d2, d3, d4). It should be (4, 4, 2, 1) which goes from beam to out-beam
-    TArrayF*    fDpxD;           // x pad width per density sector
-    TArrayF*    fDpyD;           // x pad width per density sector
-    Float_t     fDpx;            // x pad base width  
-    Float_t     fDpy;            // y pad base width
-    Int_t       fNpx;            // Number of pads in x
-    Int_t       fNpy;            // Number of pads in y
-    Float_t     fWireD;          // wire pitch
-    Int_t       fRtype;          // type of the slat: rounded R=1,2,3, rounded short R=-1,-2,-3, short R=4, normal R=0
+    Bool_t      fBending;        ///< 0: Bending or 1:Non Bending segmentation
+    Int_t       fId;             ///< Identifier of detection element
+    Int_t       fNsec;           ///< Number of density sectors (should be 4, if not not warranty about the output
+    TArrayI*    fNDiv;           ///< Densities (d1, d2, d3, d4). It should be (4, 4, 2, 1) which goes from beam to out-beam
+    TArrayF*    fDpxD;           ///< x pad width per density sector
+    TArrayF*    fDpyD;           ///< x pad width per density sector
+    Float_t     fDpx;            ///< x pad base width  
+    Float_t     fDpy;            ///< y pad base width
+    Int_t       fNpx;            ///< Number of pads in x
+    Int_t       fNpy;            ///< Number of pads in y
+    Float_t     fWireD;          ///< Wire pitch
+    Int_t       fRtype;          ///< Type of the slat: rounded R=1,2,3, rounded short R=-1,-2,-3, short R=4, normal R=0
     // 
-    Int_t       fSector;         // Current density sector
-    Float_t     fDxPCB;          // x-size of PCB board
-    Float_t     fDyPCB;          // y-size of PCB board
-    Int_t       fPcbBoards[4];   // number of PCB boards per density sector n1,n2,n3,n4 
+    Int_t       fSector;         ///< Current density sector
+    Float_t     fDxPCB;          ///< x-size of PCB board
+    Float_t     fDyPCB;          ///< y-size of PCB board
+    Int_t       fPcbBoards[4];   ///< Number of PCB boards per density sector n1,n2,n3,n4 
     // n1 PcbBoard with density d1, n2 PcbBoards with density d2, etc ....
    
     // Segmentation map
-    Int_t       fNpxS[10];       // Number of pads per sector in x
-    Int_t       fNpyS[10];       // Number of pads per sector in y    
-    Float_t     fCx[10];         // pad-sector contour x vs y      
-    Float_t     fCy;             // y offset      
+    Int_t       fNpxS[10];       ///< Number of pads per sector in x
+    Int_t       fNpyS[10];       ///< Number of pads per sector in y    
+    Float_t     fCx[10];         ///< Pad-sector contour x vs y      
+    Float_t     fCy;             ///< y offset      
 
     // Current pad and wire during tracking (cursor at hit centre)
-    Float_t     fXhit;  // ! x-position of hit
-    Float_t     fYhit;  // ! y-position of hit
+    Float_t     fXhit;  //!< x-position of hit
+    Float_t     fYhit;  //!< y-position of hit
 
     // Current pad and wire during tracking (cursor at hit centre)
-    Int_t       fIx;   // ! pad coord.  x 
-    Int_t       fIy;   // ! pad coord.  y 
-    Float_t     fX;    // ! real coord. x
-    Float_t     fY;    // ! real ccord. y
+    Int_t       fIx;   //!< Pad coord.  x 
+    Int_t       fIy;   //!< Pad coord.  y 
+    Float_t     fX;    //!< Real coord. x
+    Float_t     fY;    //!< Real ccord. y
     
     // Chamber region consideres during disintegration   
-    Int_t       fIxmin; // ! lower left  x
-    Int_t       fIxmax; // ! lower left  y
-    Int_t       fIymin; // ! upper right x
-    Int_t       fIymax; // ! upper right y 
+    Int_t       fIxmin; //!< Lower left  x
+    Int_t       fIxmax; //!< Lower left  y
+    Int_t       fIymin; //!< Upper right x
+    Int_t       fIymax; //!< Upper right y 
 
     // Chamber region consideres during disintegration  (lower left and upper right corner)
-    Float_t     fXmin;           // lower left  x
-    Float_t     fXmax;           // lower left  y
-    Float_t     fYmin;           // upper right x
-    Float_t     fYmax;           // upper right y 
+    Float_t     fXmin;  ///< Lower left  x
+    Float_t     fXmax;  ///< Lower left  y
+    Float_t     fYmin;  ///< Upper right x
+    Float_t     fYmax;  ///< Upper right y 
 
-    Bool_t      fInitDone;       // flag for initialization
+    Bool_t      fInitDone; ///< Flag for initialization
 
-    ClassDef(AliMUONSt345SlatSegmentation,3) 
+    ClassDef(AliMUONSt345SlatSegmentation,3) // St345 segmentation
 };
 #endif
 

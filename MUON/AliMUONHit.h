@@ -74,25 +74,25 @@ class AliMUONHit : public AliHit {
     Float_t Zref()     const {return fZref;}
 
  private:  
-    Bool_t    fIsDetElemId;   // False if fDetElemId contains Chamber Id (old code) 
-    Int_t     fDetElemId;     // Detection element ID
-    Float_t   fParticle;      // Geant3 particle type
-    Float_t   fTheta ;        // Incident theta angle in degrees      
-    Float_t   fPhi   ;        // Incident phi angle in degrees
-    Float_t   fTlength;       // Track length inside the chamber
-    Float_t   fEloss;         // ionisation energy loss in gas
-    Float_t   fAge;           // Particle Age
-    Int_t     fPHfirst;       // first padhit
-    Int_t     fPHlast;        // last padhit
+    Bool_t    fIsDetElemId;   ///< False if fDetElemId contains Chamber Id (old code) 
+    Int_t     fDetElemId;     ///< Detection element ID
+    Float_t   fParticle;      ///< Geant3 particle type
+    Float_t   fTheta ;        ///< Incident theta angle in degrees      
+    Float_t   fPhi   ;        ///< Incident phi angle in degrees
+    Float_t   fTlength;       ///< Track length inside the chamber
+    Float_t   fEloss;         ///< ionisation energy loss in gas
+    Float_t   fAge;           ///< Particle Age
+    Int_t     fPHfirst;       ///< First padhit
+    Int_t     fPHlast;        ///< Last padhit
 
-    Float_t   fPTot;          // Local momentum P of the track when entering in the chamber
-    Float_t   fPx;            // Px
-    Float_t   fPy;            // Py
-    Float_t   fPz;            // Pz
+    Float_t   fPTot;          ///< Local momentum P of the track when entering in the chamber
+    Float_t   fPx;            ///< Px
+    Float_t   fPy;            ///< Py
+    Float_t   fPz;            ///< Pz
     
-    Float_t   fXref;          // X position of hit in the center of the chamber (without angle effect)
-    Float_t   fYref;          // Y position of hit in the center of the chamber (without angle effect)
-    Float_t   fZref;          // Z position of hit in the center of the chamber (without angle effect)
+    Float_t   fXref;          ///< X position of hit in the center of the chamber (without angle effect)
+    Float_t   fYref;          ///< Y position of hit in the center of the chamber (without angle effect)
+    Float_t   fZref;          ///< Z position of hit in the center of the chamber (without angle effect)
 
     
     ClassDef(AliMUONHit,1)    //Hit object for MUON

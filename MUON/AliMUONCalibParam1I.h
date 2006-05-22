@@ -55,8 +55,10 @@ private:
   void CopyTo(AliMUONCalibParam1I& destination) const;
   
 private:
-  Int_t fSize; // The number of values we hold
-  Int_t* fValues; //[fSize]
+  Int_t fSize;    ///< The number of values we hold
+
+  ///  The values array 
+  Int_t* fValues; //[fSize] The values array
   
   ClassDef(AliMUONCalibParam1I,1) // Container for calibration parameters
 };

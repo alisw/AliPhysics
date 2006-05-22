@@ -37,7 +37,7 @@ public:
   void Reset();
   
 private:
-  AliMUONVDataIterator* fIterator; //! the real worker   
+  AliMUONVDataIterator* fIterator; //!< the real worker   
 
 private:
   AliMUONDataIterator(const AliMUONDataIterator& rhs);

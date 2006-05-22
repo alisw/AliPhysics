@@ -78,25 +78,30 @@ class AliMUONDigit : public TObject
     virtual void PatchTracks(Int_t mask);
     
 private:
-    Int_t fDetElemId;     // Detection element ID
-    Int_t fManuId;        // Id of the MANU chip.
-    Int_t fManuChannel;   // Channel within the MANU chip.
-    Int_t fSignal;        // Signal amplitude    
+    Int_t fDetElemId;     ///< Detection element ID
+    Int_t fManuId;        ///< Id of the MANU chip.
+    Int_t fManuChannel;   ///< Channel within the MANU chip.
+    Int_t fSignal;        ///< Signal amplitude    
       
-    Int_t fPadX;          // Pad number along x
-    Int_t fPadY;          // Pad number along y
-    Int_t fCathode;       // Cathode number
-    Int_t fADC;           // ADC value
-    UInt_t fFlags;        // Special flags (e.g. is the signal an overflow ?)
+    Int_t fPadX;          ///< Pad number along x
+    Int_t fPadY;          ///< Pad number along y
+    Int_t fCathode;       ///< Cathode number
+    Int_t fADC;           ///< ADC value
+    UInt_t fFlags;        ///< Special flags (e.g. is the signal an overflow ?)
     
-    Int_t fNtracks;       // MC tracks making to this digit.
-    Int_t* fTcharges;     //[fNtracks] charges of MC track making this digit
-    Int_t* fTracks;       //[fNtracks] primary MC tracks making this digit
-    Int_t fPhysics;       // MC physics contribution to signal 
-    Int_t fHit;           // MC hit number - temporary solution
+    Int_t fNtracks;       ///< MC tracks making to this digit.
+    
+    /// charges of MC track making this digit
+    Int_t* fTcharges;     //[fNtracks]  charges of MC track making this digit
+
+    /// primary MC tracks making this digit
+    Int_t* fTracks;       //[fNtracks]  primary MC tracks making this digit
+
+    Int_t fPhysics;       ///< MC physics contribution to signal 
+    Int_t fHit;           ///< MC hit number - temporary solution
   
-    static const UInt_t fgkSaturatedMask = 0x1; // the mask (part of fFlags) to indicate this digit is saturated
-    static const UInt_t fgkNoiseOnlyMask = 0x1000; // indicate a simulated digit due to noise only
+    static const UInt_t fgkSaturatedMask = 0x1; ///< the mask (part of fFlags) to indicate this digit is saturated
+    static const UInt_t fgkNoiseOnlyMask = 0x1000; ///< indicate a simulated digit due to noise only
     
     ClassDef(AliMUONDigit,4)  //Digits for MUON
 };

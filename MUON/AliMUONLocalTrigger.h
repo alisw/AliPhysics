@@ -77,28 +77,28 @@ class AliMUONLocalTrigger : public TObject {
   static void  DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
 
 private:
-  Int_t fLoCircuit; // circuit number 
-  Int_t fLoStripX;  // X strip in MT11 
-  Int_t fLoDev;     // deviation 
-  Int_t fLoStripY;  // Y strip in MT11 
-  Int_t fLoLpt;     // Low pt  0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
-  Int_t fLoHpt;     // High pt 0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
-  Int_t fLoApt;     // All pt  0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
+  Int_t fLoCircuit; ///< Circuit number 
+  Int_t fLoStripX;  ///< X strip in MT11 
+  Int_t fLoDev;     ///< Deviation 
+  Int_t fLoStripY;  ///< Y strip in MT11 
+  Int_t fLoLpt;     ///< Low pt  0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
+  Int_t fLoHpt;     ///< High pt 0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
+  Int_t fLoApt;     ///< All pt  0 : nothing, 1 : Minus, 2 : Plus, 3 : Undef
 
-  UShort_t fX1Pattern; // X strip pattern for chamber 11
-  UShort_t fX2Pattern; // X strip pattern for chamber 12
-  UShort_t fX3Pattern; // X strip pattern for chamber 21
-  UShort_t fX4Pattern; // X strip pattern for chamber 22
+  UShort_t fX1Pattern; ///< X strip pattern for chamber 11
+  UShort_t fX2Pattern; ///< X strip pattern for chamber 12
+  UShort_t fX3Pattern; ///< X strip pattern for chamber 21
+  UShort_t fX4Pattern; ///< X strip pattern for chamber 22
 
-  UShort_t fY1Pattern; // Y strip pattern for chamber 11
-  UShort_t fY2Pattern; // Y strip pattern for chamber 12
-  UShort_t fY3Pattern; // Y strip pattern for chamber 21
-  UShort_t fY4Pattern; // Y strip pattern for chamber 22
+  UShort_t fY1Pattern; ///< Y strip pattern for chamber 11
+  UShort_t fY2Pattern; ///< Y strip pattern for chamber 12
+  UShort_t fY3Pattern; ///< Y strip pattern for chamber 21
+  UShort_t fY4Pattern; ///< Y strip pattern for chamber 22
 
 
-  Char_t fLoDecision; // local decision word (4 bits)
+  Char_t fLoDecision; ///< Local decision word (4 bits)
 
-  TArrayI fDigits;    // List of digit numbers from which this object was created.
+  TArrayI fDigits;    ///< List of digit numbers from which this object was created.
 
   ClassDef(AliMUONLocalTrigger,2)  // reconstructed Local Trigger object
 };

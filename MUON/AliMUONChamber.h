@@ -73,11 +73,12 @@ class AliMUONChamber : public TObject
   // assignment operator  
   AliMUONChamber& operator =(const AliMUONChamber& rhs);
 
-  Int_t   fId;   // chamber number
-  Float_t fCurrentCorrel; //! charge correlation for current hit.
+  Int_t   fId;            ///< chamber number
+  Float_t fCurrentCorrel; //!< charge correlation for current hit.
 
-  AliMUONResponse        *fResponse;        // pointer to response
-  AliMUON                *fMUON;            // pointer to MUON
+  AliMUONResponse        *fResponse; ///< pointer to response
+  AliMUON                *fMUON;     ///< pointer to MUON
+
   ClassDef(AliMUONChamber,3) // Muon tracking chamber class
 };
 

@@ -51,14 +51,14 @@ class AliMUONMathieson : public TObject
     
  private:
   
-    Float_t fSqrtKx3;                  // Mathieson Sqrt(Kx3)
-    Float_t fKx2;                      // Mathieson Kx2
-    Float_t fKx4;                      // Mathieson Kx4 = Kx1/Kx2/Sqrt(Kx3)  
-    Float_t fSqrtKy3;                  // Mathieson Sqrt(Ky3)
-    Float_t fKy2;                      // Mathieson Ky2
-    Float_t fKy4;                      // Mathieson Ky4 = Ky1/Ky2/Sqrt(Ky3)
-    Float_t fPitch;                    // anode-cathode pitch
-    Float_t fInversePitch;             // 1/Pitch
+    Float_t fSqrtKx3;                  ///< Mathieson Sqrt(Kx3)
+    Float_t fKx2;                      ///< Mathieson Kx2
+    Float_t fKx4;                      ///< Mathieson Kx4 = Kx1/Kx2/Sqrt(Kx3)  
+    Float_t fSqrtKy3;                  ///< Mathieson Sqrt(Ky3)
+    Float_t fKy2;                      ///< Mathieson Ky2
+    Float_t fKy4;                      ///< Mathieson Ky4 = Ky1/Ky2/Sqrt(Ky3)
+    Float_t fPitch;                    ///< anode-cathode pitch
+    Float_t fInversePitch;             ///< 1/Pitch
     ClassDef(AliMUONMathieson,3) // Implementation of Mathieson response
 };
 #endif

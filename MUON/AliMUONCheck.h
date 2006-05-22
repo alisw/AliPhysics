@@ -40,11 +40,11 @@ private:
   AliMUONCheck& operator=(const AliMUONCheck& rhs);
   
 private:
-  TString fFileName; //! File (galice.root) to read from
-  Int_t fFirstEvent; //! First event to consider
-  Int_t fLastEvent; //! Last event to consider
-  AliRunLoader* fRunLoader; //! AliRunLoader pointer
-  AliMUONData* fData; //! AliMUONData pointer (to access containers)
+  TString fFileName;   //!< File (galice.root) to read from
+  Int_t   fFirstEvent; //!< First event to consider
+  Int_t   fLastEvent;  //!< Last event to consider
+  AliRunLoader* fRunLoader; //!< AliRunLoader pointer
+  AliMUONData*  fData; //!< AliMUONData pointer (to access containers)
 
   ClassDef(AliMUONCheck,0) // Dumper of MUON related data
 };

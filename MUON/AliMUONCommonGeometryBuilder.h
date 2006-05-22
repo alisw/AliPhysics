@@ -37,7 +37,7 @@ class AliMUONCommonGeometryBuilder : public AliMUONVGeometryBuilder
  
   private:
     // data members
-    AliMUON*  fMUON; // Class to build common materials 
+    AliMUON*  fMUON; ///< Class to build common materials 
 
   ClassDef(AliMUONCommonGeometryBuilder,1)  // Common MUON geometry definitions
 };

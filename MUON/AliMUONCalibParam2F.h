@@ -46,9 +46,11 @@ private:
   Int_t Index(Int_t i, Int_t j) const;  
     
 private:
-  Int_t fSize; // The number of float pair we hold
-  Int_t fN; // The total number of floats we hold (2*fSize)
-  Float_t* fValues; //[fN]
+  Int_t fSize; ///< The number of float pair we hold
+  Int_t fN;    ///< The total number of floats we hold (2*fSize)
+
+  /// The values array
+  Float_t* fValues; //[fN] The values array
   
   ClassDef(AliMUONCalibParam2F,1) // Container for calibration parameters
 };

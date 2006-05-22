@@ -128,15 +128,15 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
      
  private:
 
-  Int_t fDetElemId;                // det element Id
-	AliMpPlaneType fPlaneType; // plane type
-  const AliMpSlat* fSlat;          // slat
-  AliMpSlatSegmentation* fSlatSegmentation; // slat segmentation
-  AliMpVPadIterator* fPadIterator; //! pad iterator
-  AliMpPad fCurrentPad; //!FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
-  Float_t fXhit;        //!  x-position of hit
-  Float_t fYhit;        //!  y-position of hit
-  ClassDef(AliMUONSt345SlatSegmentationV2,1)
+  Int_t fDetElemId;                ///< det element Id
+	AliMpPlaneType fPlaneType; ///< plane type
+  const AliMpSlat* fSlat;          ///< slat
+  AliMpSlatSegmentation* fSlatSegmentation; ///< slat segmentation
+  AliMpVPadIterator* fPadIterator; //!< pad iterator
+  AliMpPad fCurrentPad; //!< FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
+  Float_t fXhit;        //!<  x-position of hit
+  Float_t fYhit;        //!<  y-position of hit
+  ClassDef(AliMUONSt345SlatSegmentationV2,1) // St345 segmentation V2
 };
 
 #endif

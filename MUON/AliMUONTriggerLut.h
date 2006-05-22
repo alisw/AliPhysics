@@ -36,15 +36,15 @@ class AliMUONTriggerLut : public TNamed
   Int_t GetMask(Int_t ystrip);
 
 private:
-  TH3 *fLptPlus; //3-d histogram with 234x32x31 bins Low pt Plus  
-  TH3 *fLptMinu; //3-d histogram with 234x32x31 bins Low pt Minus
-  TH3 *fLptUnde; //3-d histogram with 234x32x31 bins Low pt Undefined
-  TH3 *fHptPlus; //3-d histogram with 234x32x31 bins High pt Plus
-  TH3 *fHptMinu; //3-d histogram with 234x32x31 bins High pt Minus 
-  TH3 *fHptUnde; //3-d histogram with 234x32x31 bins High pt Undefined 
-  TH3 *fAptPlus; //3-d histogram with 234x32x31 bins All pt Plus  
-  TH3 *fAptMinu; //3-d histogram with 234x32x31 bins All pt Minus  
-  TH3 *fAptUnde; //3-d histogram with 234x32x31 bins All pt Undefined    
+  TH3 *fLptPlus; ///< 3-d histogram with 234x32x31 bins Low pt Plus  
+  TH3 *fLptMinu; ///< 3-d histogram with 234x32x31 bins Low pt Minus
+  TH3 *fLptUnde; ///< 3-d histogram with 234x32x31 bins Low pt Undefined
+  TH3 *fHptPlus; ///< 3-d histogram with 234x32x31 bins High pt Plus
+  TH3 *fHptMinu; ///< 3-d histogram with 234x32x31 bins High pt Minus 
+  TH3 *fHptUnde; ///< 3-d histogram with 234x32x31 bins High pt Undefined 
+  TH3 *fAptPlus; ///< 3-d histogram with 234x32x31 bins All pt Plus  
+  TH3 *fAptMinu; ///< 3-d histogram with 234x32x31 bins All pt Minus  
+  TH3 *fAptUnde; ///< 3-d histogram with 234x32x31 bins All pt Undefined    
 
   ClassDef(AliMUONTriggerLut,1) // Trigger Look up Table class
 

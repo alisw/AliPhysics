@@ -37,7 +37,7 @@ class AliMUONSt1GeometryBuilder : public AliMUONVGeometryBuilder
     AliMUONSt1GeometryBuilder& operator = (const AliMUONSt1GeometryBuilder& rhs);
     
   private:
-     AliMUON*  fMUON; // the MUON detector class 
+     AliMUON*  fMUON; ///< the MUON detector class 
         
   ClassDef(AliMUONSt1GeometryBuilder,1) //MUON Station1 coarse geometry construction class 
 };

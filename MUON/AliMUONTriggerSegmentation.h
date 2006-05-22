@@ -92,36 +92,36 @@ class AliMUONTriggerSegmentation : public AliMUONVGeometryDESegmentation
     AliMUONTriggerSegmentation& operator=(const AliMUONTriggerSegmentation& rhs);
     
     //  Internal geometry 
-    Bool_t      fBending;        // 0: Bending or 1:Non Bending segmentation
-    Int_t       fId;             // Identifier of detection element
-    Int_t       fNsec;           // Number of density sectors 
-    Int_t       fNpx;            // Number of pads in x
-    Int_t       fNpy;            // Number of pads in y
-    Int_t       fSector;         // Current density sector
+    Bool_t      fBending;        ///< 0: Bending or 1:Non Bending segmentation
+    Int_t       fId;             ///< Identifier of detection element
+    Int_t       fNsec;           ///< Number of density sectors 
+    Int_t       fNpx;            ///< Number of pads in x
+    Int_t       fNpy;            ///< Number of pads in y
+    Int_t       fSector;         ///< Current density sector
 
     // Current pad and wire during tracking (cursor at hit centre)
-    Float_t     fXhit;  // ! x-position of hit
-    Float_t     fYhit;  // ! y-position of hit
+    Float_t     fXhit;  //!< x-position of hit
+    Float_t     fYhit;  //!< y-position of hit
 
     // Current pad and wire during tracking (cursor at hit centre)
-    Int_t       fIx;   // ! pad coord.  x 
-    Int_t       fIy;   // ! pad coord.  y 
-    Float_t     fX;    // ! real coord. x
-    Float_t     fY;    // ! real ccord. y
+    Int_t       fIx;   //!< pad coord.  x 
+    Int_t       fIy;   //!< pad coord.  y 
+    Float_t     fX;    //!< real coord. x
+    Float_t     fY;    //!< real ccord. y
     
 // add to St345SlatSegmentation
-    Int_t fLineNumber;        // line number of the RPC (1:9 - top:bottom)
-    Int_t fNstrip[7];         // number of strips per module in RPC
-    Float_t fStripYsize[7];   // strip Y size per module in RPC
-    Float_t fStripXsize[7];   // strip X size per module in RPC
-    Float_t fModuleXmin[7];   // x min position of modules
-    Float_t fModuleXmax[7];   // x max position of modules
-    Float_t fModuleYmin[7];   // y min position of modules
-    Float_t fRpcHalfXsize;    // RPC half size in x 
-    Float_t fRpcHalfYsize;    // RPC half size in y
+    Int_t fLineNumber;        ///< line number of the RPC (1:9 - top:bottom)
+    Int_t fNstrip[7];         ///< number of strips per module in RPC
+    Float_t fStripYsize[7];   ///< strip Y size per module in RPC
+    Float_t fStripXsize[7];   ///< strip X size per module in RPC
+    Float_t fModuleXmin[7];   ///< x min position of modules
+    Float_t fModuleXmax[7];   ///< x max position of modules
+    Float_t fModuleYmin[7];   ///< y min position of modules
+    Float_t fRpcHalfXsize;    ///< RPC half size in x 
+    Float_t fRpcHalfYsize;    ///< RPC half size in y
 // add to St345SlatSegmentation
     
-    ClassDef(AliMUONTriggerSegmentation,1) 
+    ClassDef(AliMUONTriggerSegmentation,1) // Trigger segmentation
 };
 #endif
 

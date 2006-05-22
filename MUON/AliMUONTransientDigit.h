@@ -33,8 +33,8 @@ class AliMUONTransientDigit : public AliMUONDigit
     AliMUONTransientDigit(const AliMUONTransientDigit& digit);
     AliMUONTransientDigit & operator =(const AliMUONTransientDigit & rhs);
 
-    Int_t          fChamber;       // chamber number of pad
-    TObjArray     *fTrackList;     // List of tracks contributing
+    Int_t          fChamber;       ///< chamber number of pad
+    TObjArray     *fTrackList;     ///< List of tracks contributing
 
   ClassDef(AliMUONTransientDigit,1)  // Transient digit for MUON
 };

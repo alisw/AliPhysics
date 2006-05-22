@@ -43,7 +43,7 @@ private:
   
 private:  
     
-    TObjArray* fArray; // Internal array
+    TObjArray* fArray; ///< Internal array
   
     ClassDef(AliMUON1DArray,1) // Implementation of AliMUONV1DStore
 };

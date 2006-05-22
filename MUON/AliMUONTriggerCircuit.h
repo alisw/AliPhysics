@@ -68,19 +68,17 @@ class AliMUONTriggerCircuit : public TObject
   void LoadYPos2();
   void LoadXPos2();
    
-  ClassDef(AliMUONTriggerCircuit,1) // Trigger Circuit class
-    
- private:    
-  Int_t fIdCircuit;            // circuit Id number
-  Int_t fX2m;                  // internal info needed by TriggerDecision
-  Int_t fX2ud;                 // internal info needed by TriggerDecision
-  Int_t fOrMud[2];             // internal info needed by TriggerDecision
-  Int_t fXcode[4][32];         // code of X strips
-  Int_t fYcode[4][32];         // code of Y strips 
-  Float_t fXpos11[16];         // X position of Y strips in MC11
-  Float_t fYpos11[31];         // Y position of X strips in MC11
-  Float_t fYpos21[63];         // Y position of X strips in MC21
+  Int_t fIdCircuit;            ///< circuit Id number
+  Int_t fX2m;                  ///< internal info needed by TriggerDecision
+  Int_t fX2ud;                 ///< internal info needed by TriggerDecision
+  Int_t fOrMud[2];             ///< internal info needed by TriggerDecision
+  Int_t fXcode[4][32];         ///< code of X strips
+  Int_t fYcode[4][32];         ///< code of Y strips 
+  Float_t fXpos11[16];         ///< X position of Y strips in MC11
+  Float_t fYpos11[31];         ///< Y position of X strips in MC11
+  Float_t fYpos21[63];         ///< Y position of X strips in MC21
 
+  ClassDef(AliMUONTriggerCircuit,1) // Trigger Circuit class
 };
 #endif
 

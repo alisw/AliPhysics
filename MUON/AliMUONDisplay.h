@@ -98,22 +98,22 @@ protected:
 	   
 
 private:
-   Int_t             fEvent;                // Current event
-   Int_t             fChamber;              // Current Chamber
-   Int_t             fCathode;              // Current cathode plane
-   Bool_t            fDrawClusters;         //Flag True if Clusters to be drawn
-   Bool_t            fDrawCoG;              //Flag True if CoG to be drawn
-   Bool_t            fDrawTracks;           //Flag True if tracks to be drawn
+   Int_t             fEvent;                ///< Current event
+   Int_t             fChamber;              ///< Current Chamber
+   Int_t             fCathode;              ///< Current cathode plane
+   Bool_t            fDrawClusters;         ///< Flag True if Clusters to be drawn
+   Bool_t            fDrawCoG;              ///< Flag True if CoG to be drawn
+   Bool_t            fDrawTracks;           ///< Flag True if tracks to be drawn
                                            
-   Int_t             fClustersCuts;         //Number of clusters surviving cuts
-   TPad             *fColPad;               //Pointer to the colors pad 
-   TObjArray        *fPoints;               //Array of points for each cathode
-   TObjArray        *fPhits;                //Array of hit points for each chamber
-   TObjArray        *fRpoints;              //Array of cog points for each cathode
-   Int_t            fNextCathode;           //Flagging next cathode
+   Int_t             fClustersCuts;         ///< Number of clusters surviving cuts
+   TPad             *fColPad;               ///< Pointer to the colors pad 
+   TObjArray        *fPoints;               ///< Array of points for each cathode
+   TObjArray        *fPhits;                ///< Array of hit points for each chamber
+   TObjArray        *fRpoints;              ///< Array of cog points for each cathode
+   Int_t            fNextCathode;           ///< Flagging next cathode
 
-   AliLoader*       fLoader;                //! MUON loader to get data
-   AliMUONData*     fMUONData;              //! Data container for MUON subsystem 
+   AliLoader*       fLoader;                //!< MUON loader to get data
+   AliMUONData*     fMUONData;              //!< Data container for MUON subsystem 
 
    ClassDef(AliMUONDisplay, 0)   //Utility class to display MUON events
 };

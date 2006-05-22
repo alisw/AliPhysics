@@ -98,10 +98,10 @@ class AliMUONSegFactory : public  TObject {
     void BuildStation6();
 
     // data members	
-    AliMpSegFactory       fMpSegFactory;   // Mapping segmentation factory
-    AliMpStringObjMap     fDESegmentations;// Map of DE segmentations to DE names
-    AliMUONSegmentation*  fSegmentation;   // Segmentation container 
-    const AliMUONGeometryTransformer* fkTransformer; // Geometry transformer
+    AliMpSegFactory       fMpSegFactory;   ///< Mapping segmentation factory
+    AliMpStringObjMap     fDESegmentations;///< Map of DE segmentations to DE names
+    AliMUONSegmentation*  fSegmentation;   ///< Segmentation container 
+    const AliMUONGeometryTransformer* fkTransformer; ///< Geometry transformer
 
   ClassDef(AliMUONSegFactory,0)  // MUON Factory for Chambers and Segmentation
 };

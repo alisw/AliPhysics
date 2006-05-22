@@ -70,13 +70,12 @@ private:
                 Int_t detElemId, const AliMpPad& pad,
                 Double_t xyGlobal[4]);    
   
-  ClassDef(AliMUONTriggerCircuitNew,1) // Trigger Circuit class
-    
 private:    
-  Int_t fILocalBoard;          // local board number
-  Float_t fXpos11[16];         // X position of Y strips in MC11
-  Float_t fYpos11[31];         // Y position of X strips in MC11
-  Float_t fYpos21[63];         // Y position of X strips in MC21
-  
+  Int_t fILocalBoard;          ///< local board number
+  Float_t fXpos11[16];         ///< X position of Y strips in MC11
+  Float_t fYpos11[31];         ///< Y position of X strips in MC11
+  Float_t fYpos21[63];         ///< Y position of X strips in MC21
+
+  ClassDef(AliMUONTriggerCircuitNew,1) // Trigger Circuit class
 };
 #endif

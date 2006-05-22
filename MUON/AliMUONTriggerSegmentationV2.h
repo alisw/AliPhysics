@@ -122,17 +122,17 @@ protected:
     AliMUONTriggerSegmentationV2& operator=(const AliMUONTriggerSegmentationV2& rhs);
 
 private:
-    Int_t fDetElemId;          // det elem Id
-    AliMpPlaneType fPlaneType; // plane type
-    const AliMpTrigger* fSlat; // slat
-    AliMpTriggerSegmentation* fSlatSegmentation; // mapping segmentation
+    Int_t fDetElemId;          ///< det elem Id
+    AliMpPlaneType fPlaneType; ///< plane type
+    const AliMpTrigger* fSlat; ///< slat
+    AliMpTriggerSegmentation* fSlatSegmentation; ///< mapping segmentation
 //    AliMpVPadIterator* fPadIterator; //!
-    AliMpPad fCurrentPad; //!FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
-    Float_t fXhit;        //! x-position of hit
-    Float_t fYhit;        //! y-position of hit
-    Int_t fLineNumber;    // Line number of that detection element (from 1 to 9)
+    AliMpPad fCurrentPad; //!< FIXME: should not be needed, if we externalise the SetPad, SetHit, IntegrationLimits methods which have nothing to do here anyway, together with the iteration methods FirstPad, NextPad, MorePads, which have nothing to do here either.
+    Float_t fXhit;        //!< x-position of hit
+    Float_t fYhit;        //!< y-position of hit
+    Int_t fLineNumber;    ///< Line number of that detection element (from 1 to 9)
     
-    ClassDef(AliMUONTriggerSegmentationV2,1) 
+    ClassDef(AliMUONTriggerSegmentationV2,1) // Trigger segmentation V2
 };
 #endif
 

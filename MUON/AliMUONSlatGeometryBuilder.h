@@ -39,7 +39,7 @@ class AliMUONSlatGeometryBuilder : public AliMUONVGeometryBuilder
   private:
     Int_t  ConvertSlatNum(Int_t numslat, Int_t quadnum, Int_t fspq) const;
 
-    AliMUON*  fMUON; // the MUON detector class 
+    AliMUON*  fMUON; ///< the MUON detector class 
         
   ClassDef(AliMUONSlatGeometryBuilder,1) //MUON Station3 geometry construction class 
 };

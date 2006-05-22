@@ -43,12 +43,12 @@ private:
   void AddCrate(const char* crateName); 
   
 private:
-  AliMpExMap* fCrates; // list of crates
-  AliMpExMap* fLocalBoards; // local boards (indexed by their number)
-  TExMapIter* fCrateIterator; //! iterator for the crate map above
-  TExMapIter* fLBIterator; //! iterator for boards (through crates)
-  AliMUONTriggerCrate* fCurrentCrate; //! used for iterating on local board
-  Int_t fCurrentLocalBoard; //! used for iterating on local board
+  AliMpExMap* fCrates; ///< list of crates
+  AliMpExMap* fLocalBoards; ///< local boards (indexed by their number)
+  TExMapIter* fCrateIterator; //!< iterator for the crate map above
+  TExMapIter* fLBIterator; //!< iterator for boards (through crates)
+  AliMUONTriggerCrate* fCurrentCrate; //!< used for iterating on local board
+  Int_t fCurrentLocalBoard; //!< used for iterating on local board
 
   ClassDef(AliMUONTriggerCrateStore,1) // Reader for CRATE.TXT file
 };

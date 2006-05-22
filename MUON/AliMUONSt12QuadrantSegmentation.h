@@ -168,47 +168,47 @@ class AliMUONSt12QuadrantSegmentation : public AliMUONVGeometryDESegmentation
 
     // From mapping
     //
-    AliMpStationType         fStationType;       // station type
-    AliMpPlaneType           fPlaneType;         // plane type
-    const AliMpSector*       fSector;            // sector (from mapping)
-    AliMpSectorSegmentation* fSectorSegmentation;// sector segmentation (from mapping)
-    AliMpVPadIterator*       fSectorIterator;    // ! iterator over pads
+    AliMpStationType         fStationType;       ///< Station type
+    AliMpPlaneType           fPlaneType;         ///< Plane type
+    const AliMpSector*       fSector;            ///< Sector (from mapping)
+    AliMpSectorSegmentation* fSectorSegmentation;///< Sector segmentation (from mapping)
+    AliMpVPadIterator*       fSectorIterator;    //!< Iterator over pads
 
     // Wire pitch
     //
-    Float_t         fWireD;  // wire pitch
-                             // (smaller distance between anode wires)
+    Float_t         fWireD;  ///< \ brief Wire pitch
+                             ///< (smaller distance between anode wires)
     
     // Reference to mother chamber
     //
-    AliMUONChamber* fChamber; // ! Reference to mother chamber
-    Int_t           fId;      // Identifier
-    Float_t         fRmin;    // inner radius
-    Float_t         fRmax;    // outer radius
-    Float_t         fZ;       // z-position of chamber
+    AliMUONChamber* fChamber; //!< Reference to mother chamber
+    Int_t           fId;      ///< Identifier
+    Float_t         fRmin;    ///< Inner radius
+    Float_t         fRmax;    ///< Outer radius
+    Float_t         fZ;       ///< Z-position of chamber
 
     // Current pad during integration (cursor for disintegration)
     //
-    Int_t   fIx;     // ! pad coord.  x 
-    Int_t   fIy;     // ! pad coord.  y 
-    Float_t fX;      // ! real coord. x
-    Float_t fY;      // ! real ccord. y
-    Int_t   fZone;   // ! Current zone (sector in AliSegmentation naming)
+    Int_t   fIx;     //!< Pad coord.  x 
+    Int_t   fIy;     //!< Pad coord.  y 
+    Float_t fX;      //!< Real coord. x
+    Float_t fY;      //!< Real ccord. y
+    Int_t   fZone;   //!< Current zone (sector in AliSegmentation naming)
     
     // Current pad and wire during tracking (cursor at hit centre)
     //
-    Float_t fXhit;  // ! x-position of hit
-    Float_t fYhit;  // ! y-position of hit
+    Float_t fXhit;  //!< X-position of hit
+    Float_t fYhit;  //!< Y-position of hit
 
     // Reference point to define signal generation condition
     //
-    Int_t   fIxt;   // ! pad coord. x
-    Int_t   fIyt;   // ! pad coord. y
-    Int_t   fIwt;   // ! wire number
-    Float_t fXt;    // ! x
-    Float_t fYt;    // ! y
+    Int_t   fIxt;   //!< Pad coord. x
+    Int_t   fIyt;   //!< Pad coord. y
+    Int_t   fIwt;   //!< Wire number
+    Float_t fXt;    //!< X
+    Float_t fYt;    //!< Y
 
-    TObjArray* fCorrA; // ! Array of correction functions
+    TObjArray* fCorrA; //!< Array of correction functions
 
   ClassDef(AliMUONSt12QuadrantSegmentation,2) // Station1 segmentation
 };

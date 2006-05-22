@@ -41,11 +41,13 @@ private:
     Int_t FindChamberIndex(Int_t detElemId);
     Int_t FindSlatIndex(Int_t detElemId);
     
-    static const Int_t fgkNofCells=80; // number of cells
+    static const Int_t fgkNofCells=80; ///< Number of cells
     
+    /// Cell content [trig. chambers][RPCs][cathode][cellsX][cellsY]
     Float_t fCellContent[4][18][2][fgkNofCells][fgkNofCells]; //[trig. chambers][RPCs][cathode][cellsX][cellsY]
-    Float_t fCellSize[4][18][2]; //the size of the cells
-    Int_t fCellNumber[4][18][2]; //id of the cells
+
+    Float_t fCellSize[4][18][2]; ///< the size of the cells
+    Int_t fCellNumber[4][18][2]; ///< id of the cells
     
     ClassDef(AliMUONTriggerEfficiencyCells,1) // Trigger efficiency store
 };

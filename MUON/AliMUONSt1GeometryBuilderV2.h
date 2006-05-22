@@ -63,63 +63,63 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
   private:
     // Constants
     //
-    static const GReal_t fgkHzPadPlane;    // Pad plane
-    static const GReal_t fgkHzFoam;        // Foam of mechanicalplane
-    static const GReal_t fgkHzFR4;         // FR4 of mechanical plane
-    static const GReal_t fgkHzSnPb;        // Pad/Kapton connection (66 pt)
-    static const GReal_t fgkHzKapton;      // Kapton
-    static const GReal_t fgkHzBergPlastic; // Berg connector 
-    static const GReal_t fgkHzBergCopper;  // Berg connector (80 pt)
-    static const GReal_t fgkHzDaughter;    // Daughter board
-    static const GReal_t fgkHzGas;         // ArCO2 Gas
+    static const GReal_t fgkHzPadPlane;    ///< Pad plane
+    static const GReal_t fgkHzFoam;        ///< Foam of mechanicalplane
+    static const GReal_t fgkHzFR4;         ///< FR4 of mechanical plane
+    static const GReal_t fgkHzSnPb;        ///< Pad/Kapton connection (66 pt)
+    static const GReal_t fgkHzKapton;      ///< Kapton
+    static const GReal_t fgkHzBergPlastic; ///< Berg connector 
+    static const GReal_t fgkHzBergCopper;  ///< Berg connector (80 pt)
+    static const GReal_t fgkHzDaughter;    ///< Daughter board
+    static const GReal_t fgkHzGas;         ///< ArCO2 Gas
         
     // Sensitive copper pads, foam layer, PCB and electronics model parameters
-    static const GReal_t fgkHxHole;          // foam hole paremeter
-    static const GReal_t fgkHyHole;          // foam hole paremeter
-    static const GReal_t fgkHxBergPlastic;   // Berg connector parameter
-    static const GReal_t fgkHyBergPlastic;   // Berg connector parameter
-    static const GReal_t fgkHxBergCopper;    // Berg connector parameter
-    static const GReal_t fgkHyBergCopper;    // Berg connector parameter
-    static const GReal_t fgkHxKapton;        // Kapton parameter
-    static const GReal_t fgkHyKapton;        // Kapton parameter
-    static const GReal_t fgkHxDaughter;      // Electronics parameter
-    static const GReal_t fgkHyDaughter;      // Electronics parameter
-    static const GReal_t fgkOffsetX;         // Offset X
-    static const GReal_t fgkOffsetY;         // Offset Y
-    static const GReal_t fgkDeltaFilleEtamX; // Electronics parameter
-    static const GReal_t fgkDeltaFilleEtamY; // Electronics parameter
+    static const GReal_t fgkHxHole;          ///< foam hole paremeter
+    static const GReal_t fgkHyHole;          ///< foam hole paremeter
+    static const GReal_t fgkHxBergPlastic;   ///< Berg connector parameter
+    static const GReal_t fgkHyBergPlastic;   ///< Berg connector parameter
+    static const GReal_t fgkHxBergCopper;    ///< Berg connector parameter
+    static const GReal_t fgkHyBergCopper;    ///< Berg connector parameter
+    static const GReal_t fgkHxKapton;        ///< Kapton parameter
+    static const GReal_t fgkHyKapton;        ///< Kapton parameter
+    static const GReal_t fgkHxDaughter;      ///< Electronics parameter
+    static const GReal_t fgkHyDaughter;      ///< Electronics parameter
+    static const GReal_t fgkOffsetX;         ///< Offset X
+    static const GReal_t fgkOffsetY;         ///< Offset Y
+    static const GReal_t fgkDeltaFilleEtamX; ///< Electronics parameter
+    static const GReal_t fgkDeltaFilleEtamY; ///< Electronics parameter
 
-    static const GReal_t fgkDeltaQuadLHC; // LHC Origin wrt Quadrant Origin
-    static const GReal_t fgkFrameOffset;  // Frame offset
+    static const GReal_t fgkDeltaQuadLHC; ///< LHC Origin wrt Quadrant Origin
+    static const GReal_t fgkFrameOffset;  ///< Frame offset
 
     // Pad planes offsets
-    static const GReal_t fgkPadXOffsetBP; // Horizontal offset in bending plane  
-    static const GReal_t fgkPadYOffsetBP; // Vertical offset in bending plane 
+    static const GReal_t fgkPadXOffsetBP; ///< Horizontal offset in bending plane  
+    static const GReal_t fgkPadYOffsetBP; ///< Vertical offset in bending plane 
 
     // Quadrant Mother volume - TUBS1   
-    static const GReal_t fgkMotherIR1;    // Middle Layer Rin
-    static const GReal_t fgkMotherOR1;    // Middle Layer Rout
-    static const GReal_t fgkMotherThick1; // Middle Layer Hz 
-    static const GReal_t fgkMotherPhiL1;  // Middle Layer Sphi
-    static const GReal_t fgkMotherPhiU1;  // Middle Layer Endphi
+    static const GReal_t fgkMotherIR1;    ///< Middle Layer Rin
+    static const GReal_t fgkMotherOR1;    ///< Middle Layer Rout
+    static const GReal_t fgkMotherThick1; ///< Middle Layer Hz 
+    static const GReal_t fgkMotherPhiL1;  ///< Middle Layer Sphi
+    static const GReal_t fgkMotherPhiU1;  ///< Middle Layer Endphi
 
     // Quadrant Mother volume - TUBS2 (2 copies at different Z's)   
-    static const GReal_t fgkMotherIR2;    // Near and Far Layer Rin
-    static const GReal_t fgkMotherOR2;    // Near and Far Layer Rout
-    static const GReal_t fgkMotherThick2; // Near and Far Layer Hz 
-    static const GReal_t fgkMotherPhiL2;  // Near and Far Layer Sphi
-    static const GReal_t fgkMotherPhiU2;  // Near and Far Layer Endphi  
+    static const GReal_t fgkMotherIR2;    ///< Near and Far Layer Rin
+    static const GReal_t fgkMotherOR2;    ///< Near and Far Layer Rout
+    static const GReal_t fgkMotherThick2; ///< Near and Far Layer Hz 
+    static const GReal_t fgkMotherPhiL2;  ///< Near and Far Layer Sphi
+    static const GReal_t fgkMotherPhiU2;  ///< Near and Far Layer Endphi  
 
-    static const char* fgkHoleName;          // prefix for automatic volume naming
-    static const char* fgkQuadrantEnvelopeName; // prefix for automatic volume naming
-    static const char* fgkQuadrantMLayerName;// prefix for automatic volume naming
-    static const char* fgkQuadrantNLayerName;// prefix for automatic volume naming
-    static const char* fgkQuadrantFLayerName;// prefix for automatic volume naming
-    static const char* fgkDaughterName;      // prefix for automatic volume naming
-    static const Int_t fgkFoamBoxNameOffset; // coefficient for automatic volume naming
-    static const Int_t fgkFR4BoxNameOffset;  // coefficient for automatic volume naming
-    static const Int_t fgkDaughterCopyNoOffset; // copy number offset for daugher
-                                                // boards positions in non-bending plane
+    static const char* fgkHoleName;          ///< prefix for automatic volume naming
+    static const char* fgkQuadrantEnvelopeName; ///< prefix for automatic volume naming
+    static const char* fgkQuadrantMLayerName;///< prefix for automatic volume naming
+    static const char* fgkQuadrantNLayerName;///< prefix for automatic volume naming
+    static const char* fgkQuadrantFLayerName;///< prefix for automatic volume naming
+    static const char* fgkDaughterName;      ///< prefix for automatic volume naming
+    static const Int_t fgkFoamBoxNameOffset; ///< coefficient for automatic volume naming
+    static const Int_t fgkFR4BoxNameOffset;  ///< coefficient for automatic volume naming
+    static const Int_t fgkDaughterCopyNoOffset; ///< \brief copy number offset for daughter 
+                                                /// boards positions in non-bending plane
 
     // Methods
     //
@@ -157,7 +157,7 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     //Float_t  fRadlCopper;  //! copper computed radiation length
     //Float_t  fRadlFoam;    //! foam   computed radiation length
     //Float_t  fRadlFR4;     //! FR4    computed radiation length
-    AliMUON*  fMUON; // the MUON detector class 
+    AliMUON*  fMUON; ///< the MUON detector class 
     
   ClassDef(AliMUONSt1GeometryBuilderV2,1)  // MUON Detector base class
 };

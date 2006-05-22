@@ -37,14 +37,14 @@ private:
     void CopyTo(AliMUONDataDigitIterator& destination) const;
   
 private:
-    const AliMUONData* fData; //! Pointer to data accessor
-  Int_t fFirstChamber; //! First chamber to iterate on
-  Int_t fLastChamber; //! Last chamber to iterate on      
-  TClonesArray* fDigits; //! Digits of the current chamber
-  Int_t fCurrentDigit; //! Current position within fDigits array
-  Int_t fCurrentChamber; //! Current chamber
+  const AliMUONData* fData; //!< Pointer to data accessor
+  Int_t fFirstChamber;      //!< First chamber to iterate on
+  Int_t fLastChamber;       //!< Last chamber to iterate on      
+  TClonesArray* fDigits;    //!< Digits of the current chamber
+  Int_t fCurrentDigit;      //!< Current position within fDigits array
+  Int_t fCurrentChamber;    //!< Current chamber
   
-  ClassDef(AliMUONDataDigitIterator,0)
+  ClassDef(AliMUONDataDigitIterator,0) // Iterator on digits
 };      
 
 #endif

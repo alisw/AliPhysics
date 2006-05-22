@@ -45,12 +45,12 @@ protected:
   AliMUONPoints(const AliMUONPoints& points);  
   AliMUONPoints& operator = (const AliMUONPoints& rhs);
 
-   Int_t            fHitIndex;         // Link to hit number 
-   Int_t            fTrackIndex;       // Link to track number 
-   Int_t            fDigitIndex;       // Link to digit 
-  TMarker3DBox     *fMarker[3];        // pointer to  associated 3D-marker
-  TMatrixF          *fMatrix;           // test
-  
+   Int_t            fHitIndex;         ///< Link to hit number 
+   Int_t            fTrackIndex;       ///< Link to track number 
+   Int_t            fDigitIndex;       ///< Link to digit 
+   TMarker3DBox    *fMarker[3];        ///< pointer to  associated 3D-marker
+   TMatrixF        *fMatrix;           ///< test
+   
   ClassDef(AliMUONPoints,1) //Class to draw detector clusters (is PolyMarker3D) for MUON
 };
 #endif

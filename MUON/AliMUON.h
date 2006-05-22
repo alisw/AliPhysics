@@ -136,38 +136,38 @@ class AliMUON : public  AliDetector
 
     const AliMUONGeometry* GetGeometry() const;
 
-    Int_t                 fNCh;                // Number of chambers   
-    Int_t                 fNTrackingCh;        // Number of tracking chambers*
-    AliMUONData*          fMUONData;           // Data container for MUON subsystem  
-    Int_t                 fSplitLevel;         // Splitlevel when making branches in outfiles.
-    TObjArray*            fChambers;           // List of Tracking Chambers
-    TObjArray*            fTriggerCircuits;    // List of Trigger Circuits
-    TObjArray*            fTriggerCircuitsNew;    // List of Trigger Circuits
-    AliMUONGeometryBuilder*  fGeometryBuilder; // Geometry builder 
-    AliMUONSegmentation*  fSegmentation;       // New segmentation 
+    Int_t                 fNCh;                ///< Number of chambers   
+    Int_t                 fNTrackingCh;        ///< Number of tracking chambers*
+    AliMUONData*          fMUONData;           ///< Data container for MUON subsystem  
+    Int_t                 fSplitLevel;         ///< Splitlevel when making branches in outfiles.
+    TObjArray*            fChambers;           ///< List of Tracking Chambers
+    TObjArray*            fTriggerCircuits;    ///< List of Trigger Circuits
+    TObjArray*            fTriggerCircuitsNew; ///< List of Trigger Circuits
+    AliMUONGeometryBuilder*  fGeometryBuilder; ///< Geometry builder 
+    AliMUONSegmentation*  fSegmentation;       ///< New segmentation 
    
     //
-    Bool_t   fAccCut;          //Transport acceptance cut
-    Float_t  fAccMin;          //Minimum acceptance cut used during transport
-    Float_t  fAccMax;          //Minimum acceptance cut used during transport
+    Bool_t   fAccCut;         ///<Transport acceptance cut
+    Float_t  fAccMin;         ///<Minimum acceptance cut used during transport
+    Float_t  fAccMax;         ///<Minimum acceptance cut used during transport
     //  
     //  Stepping Parameters
-    Float_t fMaxStepGas;      // Maximum step size inside the chamber gas
-    Float_t fMaxStepAlu;      // Maximum step size inside the chamber aluminum
-    Float_t fMaxDestepGas;    // Maximum relative energy loss in gas
-    Float_t fMaxDestepAlu;    // Maximum relative energy loss in aluminum
+    Float_t fMaxStepGas;      ///< Maximum step size inside the chamber gas
+    Float_t fMaxStepAlu;      ///< Maximum step size inside the chamber aluminum
+    Float_t fMaxDestepGas;    ///< Maximum relative energy loss in gas
+    Float_t fMaxDestepAlu;    ///< Maximum relative energy loss in aluminum
     
     // Pad Iterator
-    Int_t fMaxIterPad;        // Maximum pad index
-    Int_t fCurIterPad;        // Current pad index
+    Int_t fMaxIterPad;        ///< Maximum pad index
+    Int_t fCurIterPad;        ///< Current pad index
    
     // setting scaler for trigger
-    Bool_t fTriggerScalerEvent; // flag to generates scaler event
+    Bool_t fTriggerScalerEvent; ///< Flag to generates scaler event
     
-    TString fSDigitizerType; // Class to use for SDigitizer
-    TString fDigitizerType; // Class to use for Digitizer
+    TString fSDigitizerType;    ///< Class to use for SDigitizer
+    TString fDigitizerType;     ///< Class to use for Digitizer
     
-    AliMUONRawWriter* fRawWriter; //!
+    AliMUONRawWriter* fRawWriter; //!< Raw data writer
     
     ClassDef(AliMUON,13)  // MUON Detector base class
 };

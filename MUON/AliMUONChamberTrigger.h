@@ -36,7 +36,7 @@ class AliMUONChamberTrigger : public AliMUONChamber
     AliMUONChamberTrigger(const AliMUONChamberTrigger& right);
     AliMUONChamberTrigger&  operator = (const AliMUONChamberTrigger& right);
 
-    const AliMUONGeometryTransformer* fkGeomTransformer;// geometry transformations
+    const AliMUONGeometryTransformer* fkGeomTransformer;///< geometry transformations
 
   ClassDef(AliMUONChamberTrigger,2) // Muon trigger chamber class
 };
