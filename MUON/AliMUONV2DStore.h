@@ -4,7 +4,7 @@
 // $Id$
 
 /// \ingroup base
-/// \class AliMUON2DStore
+/// \class AliMUONV2DStore
 /// \brief Generic container indexed by a pair of integers.
 /// 
 /// \author Laurent Aphecetche
