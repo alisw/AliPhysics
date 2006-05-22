@@ -8,6 +8,7 @@ class AlidNdEtaAnalysisMCSelector : public AlidNdEtaAnalysisSelector {
     AlidNdEtaAnalysisMCSelector(TTree *tree=0);
     virtual ~AlidNdEtaAnalysisMCSelector();
 
+    virtual void    Init(TTree *tree);
     virtual Bool_t  Process(Long64_t entry);
 
  protected:
