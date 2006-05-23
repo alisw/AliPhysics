@@ -44,7 +44,7 @@ ifeq ($(RootTarget),linuxicc)
  LibOpt      :=-g -shared -Wl
 else
  Compiler    :=g++
- CompilerOpt :=-g -W -Wall -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
+ CompilerOpt :=-O -g -W -Wall -Werror -Woverloaded-virtual -fPIC -pipe -fmessage-length=0 -Wno-long-long -pedantic-errors -ansi -Dlinux -D`uname` -I$(shell root-config --incdir) -I$(ALICE_ROOT)/include
  LibOpt      :=-g -shared -Wl
 endif
 

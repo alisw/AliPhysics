@@ -211,7 +211,7 @@ void AliRICHTracker::EsdQA(Bool_t isPrint)
   Int_t iNevt=pTr->GetEntries();  Printf("This ESD contains %i events",iNevt);
    //AliRICHParam *pPar;
   
-  TH1D *pDx,*pDy,*pProbEl,*pProbMu,*pProbPi,*pProbKa,*pProbPr; TH2F *pThP; TProfile *pChiTh;
+  TH1D *pDx=0,*pDy=0,*pProbEl=0,*pProbMu=0,*pProbPi=0,*pProbKa=0,*pProbPr=0; TH2F *pThP=0; TProfile *pChiTh=0;
   if(!isPrint){
     TH1::AddDirectory(kFALSE);    
     pDx    =new TH1D("dX"  ,"distance between Xmip and Xtrack;cm",300,-1.5,1.5);
