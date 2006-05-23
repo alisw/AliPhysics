@@ -34,21 +34,16 @@ void tpc_digits(Int_t mode=0)
   */
 
   gStyle->SetPalette(1, 0);
-  UInt_t col = 36;
+  Color_t col = 36;
 
   switch(mode) {
 
   case 0: { // Display a single sector
-   
-    gReve->DisableRedraw();
-  
     Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
+    s->SetFrameColor(col);
     s->SetDataSource(g_tpc_data);
-    s->SetMainColor(Color_t(col));
     gReve->AddRenderElement(s);
     gReve->DrawRenderElement(s);
-
-    gReve->EnableRedraw();
 
     TGLViewer* cam = dynamic_cast<TGLViewer*>(gReve->GetCC()->GetViewer3D());
     //cam->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
@@ -59,7 +54,6 @@ void tpc_digits(Int_t mode=0)
   }
 
   case 1: { // Display all sectors
-
     gReve->DisableRedraw();
     {
       Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 1");
@@ -69,9 +63,9 @@ void tpc_digits(Int_t mode=0)
       
       for(Int_t i = 0; i<18; i++) {
 	Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
-	s->SetSegmentID(i);
+	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
-	s->SetMainColor(Color_t(col));
+	s->SetFrameColor(col);
 	s->SetTrans(true);
 	l->AddElement(s);
 	gReve->AddRenderElement(ti, s);
@@ -86,9 +80,9 @@ void tpc_digits(Int_t mode=0)
       TGListTreeItem *ti = gReve->AddRenderElement(l);
       for(Int_t i = 18; i<36; i++) {
 	Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
-	s->SetSegmentID(i);
+	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
-	s->SetMainColor(Color_t(col));
+	s->SetFrameColor(col);
 	s->SetTrans(true);
 	l->AddElement(s);
 	gReve->AddRenderElement(ti, s);
@@ -100,22 +94,14 @@ void tpc_digits(Int_t mode=0)
     break;
   }
 
-    /* // Almost ready ...
   case 2 : { // Display a single sector in 3D
-    Reve::RenderElementList* l = new Reve::RenderElementList("TPC Drift");
-    l->SetTitle("TPC Segment Drift");
-    l->SetMainColor(Color_t(col));
-    TGListTreeItem *ti = gReve->AddRenderElement(l);
-  
-    Alieve::TPCSector3D* = new Alieve::TPCSector3D(di, 0);
-    s->SetMainColor(Color_t(col));
-    l->AddElement(s);
-    gReve->AddRenderElement(ti, s);
-    gReve->DrawRenderElement(l);
-    gReve->EnableRedraw();
+    Alieve::TPCSector3D* s = new Alieve::TPCSector3D();
+    s->SetFrameColor(col);
+    s->SetDataSource(g_tpc_data);
+    gReve->AddRenderElement(s);
+    gReve->DrawRenderElement(s);
     break;
   }
-    */
 
   } // switch
 }

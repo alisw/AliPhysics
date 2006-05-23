@@ -213,7 +213,16 @@ void RGBrowser::ItemClicked(TGListTreeItem *item, Int_t btn, Int_t x, Int_t y)
   //printf("ItemClicked item %s List %d btn=%d, x=%d, y=%d\n",
   //  item->GetText(),fDisplayFrame->GetList()->GetEntries(), btn, x, y);
 
-  TObject* obj = (TObject*)item->GetUserData();
+  RenderElement* re = (RenderElement*)item->GetUserData();
+  if(re == 0) return;
+  TObject* obj = re->GetObject();
+
+  // A pathetic hack to get at least a bit of color coordination
+  // for RenderElementObjPtr.
+  if(item->GetColor() != re->GetMainColor()) {
+    item->SetColor(re->GetMainColor());
+    fListTree->GetClient()->NeedRedraw(fListTree);
+  }
 
   if(btn == 3) {
     if (obj) {
@@ -222,10 +231,7 @@ void RGBrowser::ItemClicked(TGListTreeItem *item, Int_t btn, Int_t x, Int_t y)
     return;
   }
 
-  {
-    RenderElement* re = dynamic_cast<RenderElement*>(obj);
-    gReve->EditRenderElement(re);
-  }
+  gReve->EditRenderElement(re);
 
   // This only available in classic look.
   // Still working but slowly drifting towards obscurity (4.2006).
@@ -237,13 +243,15 @@ void RGBrowser::DbClickListItem(TGListTreeItem* item, Int_t btn)
   static const Exc_t eH("RGBrowser::DbClickListItem ");
 
   printf("dbclick item %s\n", item->GetText());
-  TObject* obj = (TObject*)item->GetUserData();
+  RenderElement* re = (RenderElement*)item->GetUserData();
+  if(re == 0) return;
+  TObject* obj = re->GetObject();
 
   if (obj) {
     //	ListTreeHighlight(item);
 
     {
-      RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(obj);
+      RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(re);
       if(rel != 0) {
 	Int_t ni = rel->ExpandIntoListTree(fListTree, item);
 	printf("%s expanded by %d\n", eH.Data(), ni);
@@ -322,7 +330,8 @@ void RGBrowser::DisplayChildren(TGListTreeItem *item, Int_t btn)
     fDisplayFrame->AddFrame(b2, lh);
     x += wW;
 
-    TObject* obj = reinterpret_cast<TObject*>(child->GetUserData());
+    RenderElement* re = (RenderElement*)child->GetUserData();
+    TObject* obj = re->GetObject();
     if(obj != 0) {
       TGXYLayoutHints* lh;
 
@@ -519,7 +528,6 @@ void RGBrowser::SetTransparency(Long_t )
     vol->SetTransparency(char(rv.GetNumber()));
   }
 
- 
   TGFrameElement* fel;
   TList* list = fDisplayFrame->GetList();
   TIter nextin(list);
@@ -528,7 +536,8 @@ void RGBrowser::SetTransparency(Long_t )
     // printf("RGBrowser::SetTransparency %s  in fDisplayFrame\n", fel->fFrame->GetName());
     cw = dynamic_cast<ReveValuator*>(fel->fFrame);
     if(cw) {
-      TGeoVolume* v = dynamic_cast<TGeoVolume*>((TObject*)cw->GetUserData());
+
+      TGeoVolume* v = dynamic_cast<TGeoVolume*>((RenderElement*)cw->GetUserData());
       if(v) {
 	cw->SetNumber(v->GetTransparency());
       }
@@ -642,7 +651,8 @@ void RGBrowser::UpdateListItems(TGListTreeItem* item, Int_t )
 {
   if (item->GetUserData()) {
     //	ListTreeHighlight(item);
-    TObject* obj = (TObject *) item->GetUserData();
+    RenderElement* re = (RenderElement*)item->GetUserData();
+    TObject* obj = re->GetObject();
 
     // geometry tree
     if(obj->IsA()->InheritsFrom("TGeoNode")){

@@ -7,60 +7,43 @@
 
 #include <AliTPCParam.h>
 
+#include <TBuffer3D.h>
+#include <TBuffer3DTypes.h>
+#include <TVirtualPad.h>
+#include <TVirtualViewer3D.h>
+
 using namespace Reve;
 using namespace Alieve;
 using namespace std;
+
+//______________________________________________________________________
+// TPCSector2D
+//
+// Displays TPC raw-data in 2D.
+//
+// fShowMax: true  - display maximum value for given time interval
+//           false - display integral
+// fAverage: only available when fShowMax = false; divide by time window width
+//
+// fUseTexture: use OpenGL textures to display data (fast rendering,
+//   updates take the same time)
+//
 
 ClassImp(TPCSector2D)
 
 /**************************************************************************/
 
-void TPCSector2D::Init()
-{
-  fTPCData   = 0;
+TPCSector2D::TPCSector2D(const Text_t* n, const Text_t* t) :
+  TPCSectorViz(n,t),
 
-  fSectorID  = 0;
-  fShowMax   = kTRUE;
-  fAverage   = kFALSE;
-  fMinTime   = 0;
-  fMaxTime   = 450;
-  fThreshold = 5;
-  fMaxVal    = 80;
+  fShowMax (kTRUE),
+  fAverage (kFALSE),
 
-  fRnrInn    = kTRUE;
-  fRnrOut1   = kTRUE;
-  fRnrOut2   = kTRUE;
-
-  fRnrFrame   = kTRUE;
-  fUseTexture = kTRUE;
-
-  fTrans      = kFALSE;
-}
+  fUseTexture (kTRUE)
+{}
 
 TPCSector2D::~TPCSector2D()
-{
-  if(fTPCData) fTPCData->DecRefCount();
-}
-
-/**************************************************************************/
-
-void TPCSector2D::SetDataSource(TPCData* data)
-{
-  if(data == fTPCData) return;
-  if(fTPCData) fTPCData->DecRefCount();
-  fTPCData = data;
-  if(fTPCData) fTPCData->IncRefCount();
-  ++fRTS;
-}
-
-void TPCSector2D::SetSectorID(Int_t segment)
-{
-  if(segment < 0 ) segment = 0;
-  if(segment > 35) segment = 35;
-  fSectorID = segment;
-  SetName(Form("TPCSector2D %d", fSectorID));
-  ++fRTS;
-}
+{}
 
 /**************************************************************************/
 
@@ -81,33 +64,11 @@ void TPCSector2D::ComputeBBox()
 
 /**************************************************************************/
 
-void TPCSector2D::SetTrans(Bool_t trans) 
-{
-  fTrans = trans;
-  if(fTrans) {
-    for (Int_t k = 0; k< 16; k++)
-      fMatrix[k] = 0.;
-
-    Float_t c = TMath::Cos((fSectorID + 0.5)*20*TMath::Pi()/180 - TMath::Pi()/2);
-    Float_t s = TMath::Sin((fSectorID + 0.5)*20*TMath::Pi()/180 - TMath::Pi()/2);
-    Float_t z = TPCSectorData::GetParam().GetZLength();
-    if(fSectorID >= 18) z = -z;
-  
-    // column major
-    fMatrix[0]  = -c;
-    fMatrix[1]  = -s;
-    fMatrix[4]  = -s;
-    fMatrix[5]  =  c;
-    fMatrix[10] = -1;
-    fMatrix[14] =  z;
-    fMatrix[15] =  1;
-  }
-}
-
-/**************************************************************************/
-
 void TPCSector2D::Paint(Option_t* )
 {
+  if(fRnrElement == kFALSE)
+    return;
+
   TBuffer3D buffer(TBuffer3DTypes::kGeneric);
 
   // Section kCore

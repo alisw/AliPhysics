@@ -38,7 +38,8 @@ Exc_t operator+(const Exc_t &s1, const char    *s2);
 
 void WarnCaller(const TString& warning);
 
-void ColorFromIdx(Color_t ci, UChar_t* col);
+void     ColorFromIdx(Color_t ci, UChar_t* col);
+Color_t* FindColorVar(TObject* obj, const Text_t* varname);
 
 /**************************************************************************/
 /**************************************************************************/

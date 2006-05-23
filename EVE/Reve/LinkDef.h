@@ -47,6 +47,7 @@
 // RenderElement
 #pragma link C++ class Reve::RenderElement+;
 #pragma link C++ class Reve::RenderElement::ListTreeInfo+;
+#pragma link C++ class Reve::RenderElementObjPtr+;
 #pragma link C++ class Reve::RenderElementListBase+;
 #pragma link C++ class Reve::RenderElementList+;
 

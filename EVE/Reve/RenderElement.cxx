@@ -46,11 +46,11 @@ TGListTreeItem* RenderElement::AddIntoListTree(TGListTree* ltree,
   static const Exc_t eH("RenderElement::AddIntoListTree ");
 
   TObject* tobj = GetObject(eH);
-  TGListTreeItem* item = ltree->AddItem(parent, tobj->GetName(), tobj,
-					 0, 0, kTRUE);
+  Bool_t colorp = fMainColorPtr != 0;
+  TGListTreeItem* item = ltree->AddItem(parent, tobj->GetName(), this,
+					 0, 0, colorp);
   item->CheckItem(GetRnrElement());
-  item->SetColor(GetMainColor());
-  // printf("%s setting title for %s, '%s'\n", eH.Data(), tobj->GetName(), tobj->GetTitle());
+  if(colorp) item->SetColor(GetMainColor());
   item->SetTipText(tobj->GetTitle());
 
   fItems.insert(ListTreeInfo(ltree, item));
@@ -119,6 +119,7 @@ void RenderElement::SetRnrElement(Bool_t rnr)
     FullUpdate();
   }
 }
+
 /**************************************************************************/
 
 void RenderElement::SetMainColor(Color_t color)
@@ -132,6 +133,48 @@ void RenderElement::SetMainColor(Color_t color)
 void RenderElement::SetMainColorByPixel(Pixel_t pixel)
 {
   SetMainColor(Color_t(TColor::GetColor(pixel)));
+}
+
+/**************************************************************************/
+/**************************************************************************/
+
+ClassImp(RenderElementObjPtr)
+
+RenderElementObjPtr::RenderElementObjPtr(TObject* obj) :
+  RenderElement(),
+  fObject(obj)  
+{}
+
+RenderElementObjPtr::RenderElementObjPtr(TObject* obj, Color_t& mainColor) :
+  RenderElement(mainColor),
+  fObject(obj)  
+{}
+
+RenderElementObjPtr::~RenderElementObjPtr()
+{
+  delete fObject;
+}
+
+/**************************************************************************/
+
+TObject* RenderElementObjPtr::GetObject(Reve::Exc_t eh)
+{
+  if(fObject == 0)
+    throw(eh + "fObject not set.");
+  return fObject;
+}
+
+void RenderElementObjPtr::SetRnrElement(Bool_t rnr)
+{
+  if(rnr != fRnrElement) {
+    fRnrElement = rnr;
+    if(rnr) {
+      gReve->GetCC()->GetListOfPrimitives()->Add(fObject);
+    } else {
+      gReve->GetCC()->GetListOfPrimitives()->Remove(fObject);
+    }
+    FullUpdate();
+  }
 }
 
 /**************************************************************************/

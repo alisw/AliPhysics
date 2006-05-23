@@ -170,6 +170,15 @@ TPCSectorData::~TPCSectorData()
     delete [] *b;
 }
 
+void TPCSectorData::DropData()
+{
+  fPads.assign(fgNAllPads, PadData());
+  for(std::vector<Short_t*>::iterator b=fBlocks.begin(); b!=fBlocks.end(); ++b)
+    delete [] *b;
+  fBlocks.clear();
+  fBlockPos = fBlockSize; // Enforce creation of a new block.
+}
+
 /**************************************************************************/
 
 void TPCSectorData::Print(Option_t* /*opt*/) const
@@ -191,6 +200,9 @@ void TPCSectorData::BeginPad(Int_t row, Int_t pad, Bool_t reverseTime)
     fCurrentPos  = 0;
     fCurrentStep = 2;
   }
+  //printf("begpad for row=%d pad=%d\n  buf=%p pos=%d step=%d\n",
+  //     fCurrentRow, fCurrentPad,
+  //     fPadBuffer, fCurrentPos, fCurrentStep);
 }
 
 void TPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
@@ -203,6 +215,12 @@ void TPCSectorData::EndPad(Bool_t autoPedestal, Short_t threshold)
     beg = fPadBuffer + fCurrentPos + 2;
     end = fPadBuffer + 2048;
   }
+
+  //printf("endpad for row=%d pad=%d\n  buf=%p beg=%p end=%p pos=%d step=%d\n",
+  //     fCurrentRow, fCurrentPad,
+  //     fPadBuffer, beg, end, fCurrentPos, fCurrentStep);
+  if(beg >= end)
+    return;
 
   if(autoPedestal) {
     Short_t array[1024];

@@ -54,7 +54,7 @@ public:
   RenderElement(Color_t& main_color);
   virtual ~RenderElement() {}
 
-  TObject* GetObject(Reve::Exc_t eh="RenderElement::GetObject ");
+  virtual TObject* GetObject(Reve::Exc_t eh="RenderElement::GetObject ");
 
   /*
     TRef&    GetSource() { return fSource; }
@@ -86,7 +86,26 @@ public:
           void    SetMainColorByPixel(Pixel_t pixel);
 
   ClassDef(RenderElement, 1);
-}; // endclass Reve
+}; // endclass RenderElement
+
+/**************************************************************************/
+
+class RenderElementObjPtr : public RenderElement
+{
+protected:
+  TObject* fObject;
+
+public:
+  RenderElementObjPtr(TObject* obj);
+  RenderElementObjPtr(TObject* obj, Color_t& mainColor);
+  virtual ~RenderElementObjPtr();
+
+  virtual TObject* GetObject(Reve::Exc_t eh="RenderElementObjPtr::GetObject ");
+
+  virtual void SetRnrElement(Bool_t rnr);
+
+  ClassDef(RenderElementObjPtr, 1);
+}; // endclass RenderElementObjPtr
 
 /**************************************************************************/
 

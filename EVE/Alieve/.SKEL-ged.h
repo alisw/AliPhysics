@@ -26,7 +26,7 @@ public:
 
   // void DoXYZZ();
 
-  ClassDef(CLASS, 1); // Editor for STEM
+  ClassDef(CLASS, 0); // Editor for STEM
 }; // endclass CLASS
 
 }

@@ -1,7 +1,7 @@
 // $Header$
 
 #include "CLASS.h"
-#include <Reve/STEM.h>
+#include <Alieve/STEM.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>

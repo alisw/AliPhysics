@@ -43,6 +43,8 @@ void alieve_init(const Text_t* path=".", Int_t event=0,
 
   new TBrowser;
 
+  Reve::AssertMacro("region_marker.C");
+
   // Open event
 
   Alieve::Event::Initialize(use_runloader, use_esd);

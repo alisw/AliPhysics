@@ -1,3 +1,43 @@
+2006-05-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* RGBrowser.cxx:
+	* RGTopFrame.cxx:
+	Use RenderElement* as user-data of list-tree entries (it was
+	TObject* before).
+
+	* LinkDef.h:
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Added class RenderElementObjPtr to allow display and control of
+	pure TObjects (see alice-macros/region_marker.C for an
+	example). This is not perfect as there is no way to get
+	color-change updates from the editor (can fix this when i get
+	control over TGedEditor::Update()). RenderElement::GetObject() is
+	now virtual.
+
+	* Reve.cxx:
+	* Reve.h:
+	Added function FindColorVar() to allow RenderElementObjPtr objects
+	to peek into appropriate color.
+
+2006-05-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* BoxSet.cxx:
+	* BoxSet.h:
+	Do not initialize bbox in ctor. Moved ctor to cxx file, removed
+	Init().
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	Fix for editor window not appearing under some window
+	managers. For me it was working OK under fvwm and KDE (any focus
+	policy) but not at all under Gnome. This fixed my gnome problem
+	but it's quite likely the problem is not completely solved.
+
 2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev branch

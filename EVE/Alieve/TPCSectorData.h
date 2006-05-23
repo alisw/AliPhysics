@@ -149,6 +149,8 @@ public:
   TPCSectorData(Int_t sector, Int_t bsize=65536);
   virtual ~TPCSectorData();
 
+  void DropData();
+
   virtual void Print(Option_t* opt="") const;
 
   void BeginPad(Int_t row, Int_t pad, Bool_t reverseTime=kFALSE);

@@ -4,7 +4,6 @@
 #include <TRandom.h>
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>
-#include <TGeometry.h>
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
 
@@ -44,11 +43,10 @@ Box::Box(TRandom& rnd, Float_t origin, Float_t size)
 
 ClassImp(BoxSet)
 
-void BoxSet::Init()
-{
-  fTrans = false;
-  bbox_init();
-}
+BoxSet::BoxSet(const Text_t* n, const Text_t* t) :
+  TNamed(n, t),
+  fTrans(kFALSE)
+{}
 
 /**************************************************************************/
 

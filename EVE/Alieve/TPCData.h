@@ -32,6 +32,8 @@ public:
 
   void CreateSector(Int_t sector);
   void CreateAllSectors();
+  void DropAllSectors();
+  void DeleteAllSectors();
 
   TPCSectorData* GetSectorData(Int_t sector, Bool_t spawnSectors=kFALSE);
 

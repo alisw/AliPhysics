@@ -23,6 +23,13 @@ using namespace Alieve;
 // Sectors 0 - 17: +z side, 18 - 35: -z side.
 // No separation of inner/outer segments, use row numbers for addressing.
 //
+// Threshold application and pedestal subtraction can be performed at
+// load time: use SetLoadThreshold(thresh) and SetLoadPedestal(ped).
+//
+// For raw-data (loaded using LoadRaw) pedestals can be calculated
+// automatically per pad. Use SetAutoPedestal(kTRUE) to activate it. 
+// You might still want to set load threshold (default iz zero).
+//
 
 ClassImp(TPCData)
 
@@ -35,7 +42,7 @@ TPCData::TPCData() :
 
 TPCData::~TPCData()
 {
-  // !!!! delete sectors
+  DeleteAllSectors();
 }
 
 /**************************************************************************/
@@ -50,6 +57,22 @@ void TPCData::CreateAllSectors()
 {
   for(Int_t s=0; s<36; ++s)
     CreateSector(s);
+}
+
+void TPCData::DropAllSectors()
+{
+  for(Int_t s=0; s<36; ++s) {
+    if(fSectors[s] != 0)
+      fSectors[s]->DropData();
+  }
+}
+
+void TPCData::DeleteAllSectors()
+{
+  for(Int_t s=0; s<36; ++s) {
+    delete fSectors[s];
+    fSectors[s] = 0;
+  }
 }
 
 /**************************************************************************/
@@ -185,8 +208,10 @@ void TPCData::LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors, Bool_t war
   static const Exc_t eH("TPCData::LoadRaw ");
 
   Int_t   sector = -1, row = -1, pad = -1, rowOffset = 0;
-  Short_t time, signal;
-  Bool_t  inFill = kFALSE;
+  Short_t time,  signal;
+  Bool_t  inFill   = kFALSE;
+  Short_t lastTime = 9999;
+  Bool_t  lastTimeWarn = kFALSE;
   TPCSectorData* secData = 0;
 
   while (input.Next()) {
@@ -224,11 +249,21 @@ void TPCData::LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors, Bool_t war
       }
 
       secData->BeginPad(row, pad, kTRUE);
-      inFill = kTRUE;
+      inFill   = kTRUE;
+      lastTime = 1024;  lastTimeWarn = kFALSE;
     }
 
     time   = input.GetTime();
     signal = input.GetSignal();
+    if(time >= lastTime) {
+      if(lastTimeWarn == kFALSE) {
+        Warning(eH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).",
+                row, pad, time, lastTime);
+        lastTimeWarn = kTRUE;
+      }
+      continue;
+    }
+    lastTime = time;
     if(fAutoPedestal) {
       secData->RegisterData(time, signal);
     } else {

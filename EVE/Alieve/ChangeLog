@@ -1,6 +1,79 @@
+2006-05-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCSector2D.cxx:
+	Honor fRnrElement in Paint(); it was impossible to disable
+	rendering of 2D sectors.
+
+2006-05-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCData.cxx:
+	* TPCData.h:
+	In LoadRaw(AliTPCRawStreamOld&) added protection against repeated
+	data for a given pad; added methods DropAllSectors() and
+	DeleteAllSectors().
+
+	* TPCSectorData.cxx:
+	* TPCSectorData.h:
+	Added method DropData(); in EndPad() return immediately if no data
+	was registered.
+
+	* TPCSector2D.h:
+	* TPCSector2DGL.cxx:
+	* TPCSectorViz.cxx:
+	* TPCSectorViz.h:
+	Increase of rendering time-stamp now done in a virtual function
+	IncRTS(); renamed fFrameCol to fFrameColor; minor cleanup.
+
+	* TPCSector3D.cxx:
+	* TPCSector3D.h:
+	* TPCSector3DEditor.cxx:
+	* TPCSector3DEditor.h:
+	* LinkDef.h:
+	New classes TPCSector3D and TPCSector3DEditor.
+
+	* ITSModule.cxx:
+	* ITSModule.h:
+	Renamed fFrameCol to fFrameColor.
+
+2006-05-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev and HEAD
+
+	* TPCData.cxx:
+	* TPCData.h:
+	* TPCSectorData.cxx:
+	* TPCSectorData.h:
+	Add support for automatic pedestal determination and subtraction
+	on per pad basis (for RAW data only). Done with Marian.
+
+	EVE-dev
+
+	* LinkDef.h:
+	* TPCSector2D.cxx:
+	* TPCSector2D.h:
+	* TPCSector2DEditor.cxx:
+	* TPCSector2DEditor.h:
+	* TPCSectorViz.cxx:
+	* TPCSectorViz.h:
+	* TPCSectorVizEditor.cxx:
+	* TPCSectorVizEditor.h:
+	Split TPCSectorViz from TPCSector2D as a base class. TPCSectorViz
+	holds the general parametrs that will also be used by TPCSector3D.
+
+	* TPCSector2DGL.cxx:
+	Use Reve::ColorFromIdx().
+
+	* .SKEL-ged.cxx:
+	* .SKEL-ged.h:
+	Include from Alieve, default class version 0.
+
 2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	EVE-dev branch
+	EVE-dev
 
 	* TPCData.cxx:
 	* TPCData.h:
@@ -21,7 +94,7 @@
 
 2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	EVE-dev branch
+	EVE-dev
 
 	* ITSModule.cxx:
 	* TPCSector2D.cxx:
@@ -33,7 +106,7 @@
 
 2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	EVE-dev branch
+	EVE-dev
 
 	* TPCData.cxx:
 	* TPCData.h:
@@ -45,7 +118,7 @@
 
 2006-05-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	EVE-dev branch
+	EVE-dev
 
 	Introduce support for reading of raw TPC data. At the same time
 	the TPCSegment* classes have been renamed to TPCSector*.

@@ -122,26 +122,7 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look)
   fEmbeddedCanvas3->GetCanvas()->SetBorderMode(0);
   fCC = fEmbeddedCanvas3->GetCanvas();
   // fCC->SetFillColor(1);
-
-  { // Workaround for empty scene.
-    TPolyMarker3D* bugmark = new TPolyMarker3D(8);
-    // bugmark->SetMarkerStyle(2);
-    // bugmark->SetMarkerColor(1);
-    const Float_t a = 10.0;
-    bugmark->SetPoint(0, a, a,a);
-    bugmark->SetPoint(1, a, -a,a);
-    bugmark->SetPoint(2, -a, -a,a);
-    bugmark->SetPoint(3, -a, a,a);
-
-    bugmark->SetPoint(4, a, a,-a);
-    bugmark->SetPoint(5, a, -a,-a);
-    bugmark->SetPoint(6, -a, a,-a);
-    bugmark->SetPoint(7, -a, -a,-a);
-    bugmark->Draw();
-  }
-
   Reve::PopPad();
-
 
   // histo canvas
   TGCompositeFrame* frame4 = fDisplayFrame->AddTab("HistoCanvas");
@@ -149,7 +130,6 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look)
   frame4->AddFrame(ecanvas4, fL2);
   fHistoCanvas =  ecanvas4->GetCanvas();
   fHistoCanvas->SetBorderMode(0);
-
 
   fV2->AddFrame(fDisplayFrame, fL0);
   AddFrame(fMainFrame, fL0);
@@ -244,7 +224,7 @@ void RGTopFrame::EditRenderElement(RenderElement* rnr_element)
   static const Exc_t eH("RGTopFrame::EditRenderElement ");
 
   TObject* tobj = 0;
-  if(rnr_element) tobj = dynamic_cast<TObject*>(rnr_element);
+  if(rnr_element) tobj = rnr_element->GetObject();
   fEditor->DisplayObject(tobj);
 }
 
@@ -299,25 +279,16 @@ int RGTopFrame::SpawnGuiAndRun(int argc, char **argv)
 
 TGListTreeItem* RGTopFrame::AddEvent(TObject* event)
 {
-  fCurrentEvent    = event;
-  fCurrentEventLTI = GetListTree()->AddItem(0, event->GetName());
-  fCurrentEventLTI->SetUserData(event);
-  fCurrentEventLTI->SetTipText(event->GetTitle());
+  fCurrentEvent = event;
+  RenderElementObjPtr* rnrEv = new RenderElementObjPtr(event);
+  fCurrentEventLTI = rnrEv->AddIntoListTree(GetListTree(), 0);
   GetListTree()->OpenItem(fCurrentEventLTI);
   return fCurrentEventLTI;
 }
 
 TGListTreeItem* RGTopFrame::AddRenderElement(RenderElement* rnr_element)
 {
-  static const Exc_t eH("RGTopFrame::AddGlobalRenderElement ");
-
-  // Here could route rnr-element to several browsers/pads.
-
-  TGListTreeItem* newitem =
-    rnr_element->AddIntoListTree(GetListTree(), GetEventTreeItem());
-  NotifyBrowser();
-
-  return newitem;
+  return AddRenderElement(GetEventTreeItem(), rnr_element);
 }
 
 TGListTreeItem* RGTopFrame::AddRenderElement(TGListTreeItem* parent,
@@ -336,10 +307,10 @@ TGListTreeItem* RGTopFrame::AddRenderElement(TGListTreeItem* parent,
 
 TGListTreeItem* RGTopFrame::AddGlobalRenderElement(RenderElement* rnr_element)
 {
-  return AddGlobalRenderElement(GetEventTreeItem(), rnr_element);
+  return AddGlobalRenderElement(GetGlobalTreeItem(), rnr_element);
 }
 
-TGListTreeItem* RGTopFrame::AddGlobalRenderElement(TGListTreeItem* ,
+TGListTreeItem* RGTopFrame::AddGlobalRenderElement(TGListTreeItem* parent,
 						   RenderElement* rnr_element)
 {
   static const Exc_t eH("RGTopFrame::AddGlobalRenderElement ");
@@ -347,7 +318,7 @@ TGListTreeItem* RGTopFrame::AddGlobalRenderElement(TGListTreeItem* ,
   // Here could route rnr-element to several browsers/pads.
 
   TGListTreeItem* newitem =
-    rnr_element->AddIntoListTree(GetListTree(), GetGlobalTreeItem());
+    rnr_element->AddIntoListTree(GetListTree(), parent);
   NotifyBrowser();
 
   return newitem;
@@ -368,10 +339,11 @@ void RGTopFrame::DrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad)
 
 void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t state)
 {
-  RenderElement* rnr_element = dynamic_cast<RenderElement*>(obj);
-  // printf("Checked %p %p %d\n", obj, rnr_element, state);
-  if(rnr_element)
-    rnr_element->SetRnrElement(state);
+  // Item's user-data is blindly casted into TObject.
+  // We recast it blindly back into the render element.
+
+  RenderElement* rnrEl = (RenderElement*) obj;
+  rnrEl->SetRnrElement(state);
 }
 
 /**************************************************************************/

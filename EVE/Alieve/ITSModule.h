@@ -31,11 +31,11 @@ protected:
   Float_t     fDz;
   Float_t     fDy;
 
-  Color_t     fFrameCol;
+  Color_t     fFrameColor;
 
 public:
   ITSModule(const Text_t* n="ITSModule", const Text_t* t=0, Color_t col=2) :
-    QuadSet(n, t), Reve::RenderElement(fFrameCol), fFrameCol(col)
+    QuadSet(n, t), Reve::RenderElement(fFrameColor), fFrameColor(col)
   { Init(); }
   ITSModule(Int_t id, ITSDigitsInfo* info, Color_t col=2);
   virtual ~ITSModule();

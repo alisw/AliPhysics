@@ -45,6 +45,16 @@ void ColorFromIdx(Color_t ci, UChar_t* col)
   }
 }
 
+Color_t* FindColorVar(TObject* obj, const Text_t* varname)
+{
+  static const Exc_t eH("Reve::FindColorVar");
+
+  Int_t off = obj->IsA()->GetDataMemberOffset(varname);
+  if(off == 0)
+    throw(eH + "could not find member '" + varname + "' in class " + obj->IsA()->GetName() + ".");
+  return (Color_t*) (((char*)obj) + off);
+}
+
 /**************************************************************************/
 /**************************************************************************/
 

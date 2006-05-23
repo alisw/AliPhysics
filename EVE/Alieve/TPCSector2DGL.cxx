@@ -4,8 +4,6 @@
 
 #include <Alieve/TPCData.h>
 
-#include <TStyle.h>
-#include <TColor.h>
 #include <TStopwatch.h>
 
 #include <GL/gl.h>
@@ -52,28 +50,6 @@ Bool_t TPCSector2DGL::SetModel(TObject* obj)
 void TPCSector2DGL::SetBBox()
 {
   set_axis_aligned_bbox(((TPCSector2D*)fExternalObj)->AssertBBox());
-}
-
-/**************************************************************************/
-
-void TPCSector2DGL::SetCol(Float_t z, UChar_t* pixel) const
-{
- 
-  Int_t n_col = gStyle->GetNumberOfColors();
-
-  Int_t ci = gStyle->GetColorPalette
-    (TMath::Min(n_col - 1,
-                Int_t((n_col*(z - fSector->fThreshold))/(fSector->fMaxVal - fSector->fThreshold))));
-
-  TColor* c = gROOT->GetColor(ci);
-
-  if(c) {
-    //    UChar_t *x = (UChar_t*) &c;
-    pixel[0] = (UChar_t)(255*c->GetRed());
-    pixel[1] = (UChar_t)(255*c->GetGreen());
-    pixel[2] = (UChar_t)(255*c->GetBlue());
-    pixel[3] = 255;
-  }
 }
 
 /**************************************************************************/
@@ -201,7 +177,7 @@ void TPCSector2DGL::LoadPadrow(TPCSectorData::RowIterator& iter,
     }
     padVal = TMath::Min(padVal, fSector->fMaxVal);
     if(padVal > fSector->fThreshold)
-      SetCol(padVal, img_pos);
+      fSector->SetupColor(padVal, img_pos);
     img_pos += 4;
   }
 }
@@ -221,7 +197,7 @@ void TPCSector2DGL::CreateTexture() const
   rowOff[0] = 0;
   rowOff[1] = rowOff[2] = -TPCSectorData::GetSeg(1).GetFirstRow();
   colOff[0] = colOff[2] = 0;
-  colOff[1] =  TPCSectorData::GetSeg(0).GetNMaxPads();
+  colOff[1] = TPCSectorData::GetSeg(0).GetNMaxPads();
   isOn[0] = fSector->fRnrInn;
   isOn[1] = fSector->fRnrOut1;
   isOn[2] = fSector->fRnrOut2;
@@ -337,15 +313,9 @@ void TPCSector2DGL::TraceStepsDown(const TPCSectorData::SegmentInfo& s)
 
 void TPCSector2DGL::DisplayFrame() const
 {
-  TColor* c = gROOT->GetColor(fSector->fFrameCol);
-  if(c == 0) return; 
-
-  // x[0] = (UChar_t)(255*c->GetRed());  x[1] = (UChar_t)(255*c->GetGreen());
-  // x[2] = (UChar_t)(255*c->GetBlue()); x[3] = 255;
-
-  glColor3ub((UChar_t)(255*c->GetRed()), 
-             (UChar_t)(255*c->GetGreen()),
-             (UChar_t)(255*c->GetBlue()));
+  UChar_t col[4];
+  ColorFromIdx(fSector->fFrameColor, col);
+  glColor4ubv(col);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   if(fSector->fRnrInn) {

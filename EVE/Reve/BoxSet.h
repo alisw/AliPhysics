@@ -37,9 +37,6 @@ class BoxSet: public TNamed, public TAtt3D, public TAttBBox
 {
   friend class BoxSetGL;
 
-private:
-  void Init();
-
 protected:
   Double_t          fMatrix[16];
   Bool_t            fTrans;
@@ -47,8 +44,7 @@ protected:
 public:
   std::vector<Box>  fBoxes;
 
-  BoxSet(const Text_t* n="BoxSet", const Text_t* t="") : TNamed(n, t)
-  { Init(); }
+  BoxSet(const Text_t* n="BoxSet", const Text_t* t="");
   virtual ~BoxSet() {}
 
   void ClearSet() { fBoxes.clear(); }

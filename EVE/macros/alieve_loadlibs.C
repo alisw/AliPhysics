@@ -46,9 +46,10 @@ void alieve_loadlibs ()
   gSystem->Load("libPHOSrec");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
-  //gSystem->Load("libMUONbase");
-  //gSystem->Load("libMUONsim");
-  //gSystem->Load("libMUONrec");
+  gSystem->Load("libMUONbase");
+  gSystem->Load("libMUONrec");
+  gSystem->Load("libMUONraw");
+  gSystem->Load("libMUONsim");
   gSystem->Load("libFMDbase");
   gSystem->Load("libFMDsim");
   gSystem->Load("libFMDrec");

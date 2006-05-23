@@ -29,8 +29,8 @@ void ITSModule::Init()
 /**************************************************************************/
 
 ITSModule::ITSModule(Int_t id, ITSDigitsInfo* info, Color_t col) :
-  QuadSet(Form("ITS module %d", id)), Reve::RenderElement(fFrameCol),
-  fFrameCol(col)
+  QuadSet(Form("ITS module %d", id)), Reve::RenderElement(fFrameColor),
+  fFrameColor(col)
 {
   Init();
   
@@ -110,7 +110,7 @@ void ITSModule::LoadQuads()
   Bool_t aboveThreshold = false;
 
   // Module frame in xy plane
-  fQuads.push_back(Reve::Quad(fFrameCol));
+  fQuads.push_back(Reve::Quad(fFrameColor));
   Float_t dy = -0.;
   Float_t* p = fQuads.back().vertices;
   p[0] = -x;  p[1] =  dy; p[2]  = -z;

@@ -1,3 +1,39 @@
+2006-05-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	Merged EVE-dev to HEAD. Re-tagged EVE-dev (EVE-dev-after-merge) and
+	EVE's HEAD (EVE-head-after-merge).
+
+2006-05-23  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/region_marker.C:
+	New file: allow users to mark a given region (like primary
+	vertex); demonstrate usage of RenderElementObjPtr.
+
+	* alice-macros/tpc_digits.C:
+	Use new conventions for TPCSectorViz classes; added a mode for 3D
+	sector visualization.
+
+	* macros/alieve_init.C:
+	Execute macro region_marker.C during startup (the origin
+	marker removed from RGTopFrame).
+
+	* test-macros/tpc_sector_raw_test.C:
+	Clean-up, added function next_event() and display of 3D data.
+
+2006-05-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev and HEAD
+
+	* test-macros/tpc_sector_raw_test.C:
+	Use automatic pedestal determination by default.
+
+	EVE-dev
+
+	* macros/alieve_loadlibs.C:
+	MUON libraries now load OK.
+
 2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	Merged EVE-dev to HEAD. Tagged EVE-dev (EVE-dev-after-merge) and
@@ -6,7 +42,7 @@
 
 2006-05-18  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	EVE-dev branch
+	EVE-dev
 
 	* macros/alieve_loadlibs.C:
 	Commented out loading of libg2c as it breaks things at other
@@ -14,7 +50,7 @@
 
 2006-05-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	EVE-dev branch
+	EVE-dev
 
 	* alice-macros/tpc_digits.C:
 	Use new TPCData classes.
