@@ -2,7 +2,7 @@
 * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpTrigger.h,v 1.2 2006/03/02 16:35:27 ivana Exp $
+// $MpId: AliMpTrigger.h,v 1.4 2006/05/23 13:07:51 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTrigger
@@ -75,12 +75,12 @@ private:
     
   Bool_t IsLayerValid(int layer) const;
   
-  TString fId; // name of that slat
-  AliMpPlaneType fPlaneType; // bending or non-bending
-  TObjArray fSlats; // virtual slat composing this trigger slat
-  Int_t fMaxNofPadsY; // max number of pads in y direction
-  Double_t fDX; // half-size in x (cm)
-  Double_t fDY; // half-size in y (cm)
+  TString fId; ///< name of that slat
+  AliMpPlaneType fPlaneType; ///< bending or non-bending
+  TObjArray fSlats; ///< virtual slat composing this trigger slat
+  Int_t fMaxNofPadsY; ///< max number of pads in y direction
+  Double_t fDX; ///< half-size in x (cm)
+  Double_t fDY; ///< half-size in y (cm)
   
   ClassDef(AliMpTrigger,3) // Slat for trigger
 };

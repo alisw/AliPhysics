@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRowPainter.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpRowPainter.h,v 1.7 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpRowPainter
@@ -35,7 +35,8 @@ class AliMpRowPainter : public AliMpVPainter
   AliMpRowPainter&  operator = (const AliMpRowPainter& right);
 
  private: 
-  AliMpRow *fRow;             // the row to paint
+  AliMpRow *fRow;             ///< the row to paint
+  
   ClassDef(AliMpRowPainter,1) // Row painter
 };
 #endif //ALI_MP_ROW_PAINTER_H

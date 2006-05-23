@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSector.h,v 1.12 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpSector.h,v 1.13 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSector
@@ -116,18 +116,18 @@ class AliMpSector : public TNamed
     void SetNofPads();
 
     // data members        
-    TString    fID;       // sector ID
-    TVector2   fOffset;   // sector position
-    ZoneVector fZones;    // zones
-    RowVector  fRows;     // rows
-    AliMpMotifMap* fMotifMap; // motif map
-    AliMpDirection fDirection;// the direction of constant pad size
-    TVector2       fMinPadDimensions; // minimal pad dimensions
-    AliMpIntPair   fMaxPadIndices;    // maximum pad indices    
-    Int_t          fNofPads;     //  total number of pads
+    TString    fID;       ///< sector ID
+    TVector2   fOffset;   ///< sector position
+    ZoneVector fZones;    ///< zones
+    RowVector  fRows;     ///< rows
+    AliMpMotifMap* fMotifMap; ///< motif map
+    AliMpDirection fDirection;///< the direction of constant pad size
+    TVector2       fMinPadDimensions; ///< minimal pad dimensions
+    AliMpIntPair   fMaxPadIndices;    ///< maximum pad indices    
+    Int_t          fNofPads;          ///<  total number of pads
 
 
-  ClassDef(AliMpSector,1)  //Sector
+  ClassDef(AliMpSector,1)  // Sector
 };
 
 // inline functions

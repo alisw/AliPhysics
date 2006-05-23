@@ -58,15 +58,15 @@ public:
  private:
 
    // block header
-   Int_t     fTotalLength;    // total length of block structure (w/o padding word)
-   Int_t     fLength;         // length of raw data
-   Int_t     fDspId;          // Dsp id
-   Int_t     fTriggerWord[4]; // counter trigger word
-   Int_t     fPadding;        // padding dummy word for 64 bits transfer
+   Int_t     fTotalLength;    ///< total length of block structure (w/o padding word)
+   Int_t     fLength;         ///< length of raw data
+   Int_t     fDspId;          ///< Dsp id
+   Int_t     fTriggerWord[4]; ///< counter trigger word
+   Int_t     fPadding;        ///< padding dummy word for 64 bits transfer
 
-   static const Int_t fgkHeaderLength; // header length in word
+   static const Int_t fgkHeaderLength; ///< header length in word
  
-   TClonesArray*  fDspHeaderArray;  // array of block header
+   TClonesArray*  fDspHeaderArray;  ///< array of block header
 
    ClassDef(AliMUONBlockHeader,1)  // MUON block header for Tracker event
 };

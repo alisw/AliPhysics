@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpFiles.h,v 1.8 2006/03/17 11:34:29 ivana Exp $
+// $MpId: AliMpFiles.h,v 1.9 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpFiles
@@ -91,21 +91,21 @@ class AliMpFiles : public TObject
     static TString StationDataDir(AliMpStationType station); 
   
     // static data members  
-    static const TString fgkDataDir;       //data directory
-    static const TString fgkStationDir;    //station directory
-    static const TString fgkBendingDir;    //bending plane directory
-    static const TString fgkNonBendingDir; //non-bending plane directory
-    static const TString fgkDENames;       //DE names data file name
-    static const TString fgkSector;        //sector data file name
-    static const TString fgkSectorSpecial; //sector special data file name
-    static const TString fgkSectorSpecial2;//sector special data file name
-    static const TString fgkMotifPrefix;   //motif data file name
-    static const TString fgkMotifSpecialPrefix; //special motif data file name 
-    static const TString fgkPadPosPrefix;  //pad position data file name
-    static const TString fgkDataExt;       //file extension
-    static const TString fgkBergToGCFileName;  //BergToGC mapping filr name
-    static const TString fgkTriggerLocalBoards;// local board name to id mapping
-    static const TString fgkBusPatchFileName;  //DetElemIdToBusPatch file name
+    static const TString fgkDataDir;       ///< data directory
+    static const TString fgkStationDir;    ///< station directory
+    static const TString fgkBendingDir;    ///< bending plane directory
+    static const TString fgkNonBendingDir; ///< non-bending plane directory
+    static const TString fgkDENames;       ///< DE names data file name
+    static const TString fgkSector;        ///< sector data file name
+    static const TString fgkSectorSpecial; ///< sector special data file name
+    static const TString fgkSectorSpecial2;///< sector special data file name
+    static const TString fgkMotifPrefix;   ///< motif data file name
+    static const TString fgkMotifSpecialPrefix; ///< special motif data file name 
+    static const TString fgkPadPosPrefix;  ///< pad position data file name
+    static const TString fgkDataExt;       ///< file extension
+    static const TString fgkBergToGCFileName;  ///< BergToGC mapping filr name
+    static const TString fgkTriggerLocalBoards;///<  local board name to id mapping
+    static const TString fgkBusPatchFileName;  ///< DetElemIdToBusPatch file name
     
 
   ClassDef(AliMpFiles, 0) //File names and paths 

@@ -80,42 +80,42 @@ class AliMUONTrackK : public AliMUONTrack {
 
  private:
  
-  static Int_t fgDebug; // debug level
-  static Int_t fgNOfPoints; // number of points in event
-  //static AliMUON *fgMUON; // pointer to MUON module  
-  static AliMUONTrackReconstructor *fgTrackReconstructor; // pointer to event reconstructor
-  static TClonesArray *fgHitForRec; // pointer to hits
-  static AliMUONEventRecoCombi *fgCombi; // pointer to combined cluster/track finder
+  static Int_t fgDebug; ///< debug level
+  static Int_t fgNOfPoints; ///< number of points in event
+  //static AliMUON *fgMUON; ///< pointer to MUON module  
+  static AliMUONTrackReconstructor *fgTrackReconstructor; ///< pointer to event reconstructor
+  static TClonesArray *fgHitForRec; ///< pointer to hits
+  static AliMUONEventRecoCombi *fgCombi; ///< pointer to combined cluster/track finder
 
-  AliMUONSegment *fStartSegment; // seed segment  
-  Double_t fPosition; // Z-coordinate of track
-  Double_t fPositionNew; //! Z-coordinate of track
-  Double_t fChi2; // Chi2 of track
-  TObjArray *fTrackHits; // pointer to hits on track
-  Int_t fNmbTrackHits; // number of points on track
-  Int_t fTrackDir; // track direction (+(-) towards high (low) z)
-  Bool_t fBPFlag; // backpropagation flag (TRUE if backpropagation)
-  Int_t fRecover; // recover flag (!=0 if recovery procedure was applied)
-  AliMUONHitForRec *fSkipHit; // hit to skip during recovery procedure
+  AliMUONSegment *fStartSegment; ///< seed segment  
+  Double_t fPosition; ///< Z-coordinate of track
+  Double_t fPositionNew; //!< Z-coordinate of track
+  Double_t fChi2; ///< Chi2 of track
+  TObjArray *fTrackHits; ///< pointer to hits on track
+  Int_t fNmbTrackHits; ///< number of points on track
+  Int_t fTrackDir; ///< track direction (+(-) towards high (low) z)
+  Bool_t fBPFlag; ///< backpropagation flag (TRUE if backpropagation)
+  Int_t fRecover; ///< recover flag (!=0 if recovery procedure was applied)
+  AliMUONHitForRec *fSkipHit; ///< hit to skip during recovery procedure
 
-  TMatrixD *fTrackPar; // track parameters
-  TMatrixD *fTrackParNew; //! track parameters
-  TMatrixD *fCovariance; // covariance matrix
-  TMatrixD *fWeight; //! weight matrix (inverse of covariance)
+  TMatrixD *fTrackPar; ///< track parameters
+  TMatrixD *fTrackParNew; //!< track parameters
+  TMatrixD *fCovariance; ///< covariance matrix
+  TMatrixD *fWeight; //!< weight matrix (inverse of covariance)
 
   // For smoother
-  TObjArray *fParExtrap; //! extrapolated track parameters
-  TObjArray *fParFilter; //! filtered track parameters
-  TObjArray *fParSmooth; //! smoothed track parameters
+  TObjArray *fParExtrap; //!< extrapolated track parameters
+  TObjArray *fParFilter; //!< filtered track parameters
+  TObjArray *fParSmooth; //!< smoothed track parameters
 
-  TObjArray *fCovExtrap; //! extrapolated covariance matrices
-  TObjArray *fCovFilter; //! filtered covariance matrices
+  TObjArray *fCovExtrap; //!< extrapolated covariance matrices
+  TObjArray *fCovFilter; //!< filtered covariance matrices
 
-  TObjArray *fJacob; //! Jacobian matrices
-  Int_t fNSteps; //!
-  TArrayD *fSteps; //!
-  TArrayD *fChi2Array; //!
-  TArrayD *fChi2Smooth; //!
+  TObjArray *fJacob; //!< Jacobian matrices
+  Int_t fNSteps; //!< 
+  TArrayD *fSteps; //!< 
+  TArrayD *fChi2Array; //!< 
+  TArrayD *fChi2Smooth; //!< 
 
   // Functions
 
@@ -142,11 +142,11 @@ class AliMUONTrackK : public AliMUONTrack {
 
   private:
    // Some constants
-   static const Int_t fgkSize; // number of track parameters
-   static const Int_t fgkNSigma; //4; // acceptance window width in sigmas
-   static const Double_t fgkChi2max; //25; // chi2 cut in smoother for outlier detection
-   static const Int_t fgkTriesMax; // max number of attempts to find exact position during tracking
-   static const Double_t fgkEpsilon; // tracking precision (cm)
+   static const Int_t fgkSize; ///< number of track parameters
+   static const Int_t fgkNSigma; ///< 4; acceptance window width in sigmas
+   static const Double_t fgkChi2max; ///< 25; chi2 cut in smoother for outlier detection
+   static const Int_t fgkTriesMax; ///< max number of attempts to find exact position during tracking
+   static const Double_t fgkEpsilon; ///< tracking precision (cm)
 
   ClassDef(AliMUONTrackK,0) // Kalman track in MUON arm of ALICE
     };

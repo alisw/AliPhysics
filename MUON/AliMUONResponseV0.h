@@ -99,17 +99,17 @@ class AliMUONResponseV0 : public AliMUONResponse
     AliMUONResponseV0(const AliMUONResponseV0& rhs);
     AliMUONResponseV0& operator = (const AliMUONResponseV0& rhs);
 
-    Float_t fChargeSlope;              // Slope of the charge distribution
-    Float_t fChargeSpreadX;            // Width of the charge distribution in x
-    Float_t fChargeSpreadY;            // Width of the charge distribution in y
-    Float_t fSigmaIntegration;         // Number of sigma's used for charge distribution
-    Int_t   fMaxAdc;                   // Maximum ADC channel
-    Int_t   fSaturation;               // Pad saturation in ADC channel
-    Int_t   fZeroSuppression;          // Zero suppression threshold
-    Float_t fChargeCorrel;             // amplitude of charge correlation on 2 cathods
-                                       // is RMS of ln(q1/q2)
-    AliMUONMathieson* fMathieson;      // pointer to mathieson fct
-    Float_t fChargeThreshold;          // Charges below this threshold are = 0  
+    Float_t fChargeSlope;              ///< Slope of the charge distribution
+    Float_t fChargeSpreadX;            ///< Width of the charge distribution in x
+    Float_t fChargeSpreadY;            ///< Width of the charge distribution in y
+    Float_t fSigmaIntegration;         ///< Number of sigma's used for charge distribution
+    Int_t   fMaxAdc;                   ///< Maximum ADC channel
+    Int_t   fSaturation;               ///< Pad saturation in ADC channel
+    Int_t   fZeroSuppression;          ///< Zero suppression threshold
+    Float_t fChargeCorrel;             ///< \brief amplitude of charge correlation on 2 cathods
+                                       ///  is RMS of ln(q1/q2)
+    AliMUONMathieson* fMathieson;      ///< pointer to mathieson fct
+    Float_t fChargeThreshold;          ///< Charges below this threshold are = 0  
     
     ClassDef(AliMUONResponseV0,2) // Implementation of detector response
 };

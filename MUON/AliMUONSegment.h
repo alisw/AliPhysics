@@ -61,26 +61,26 @@ class AliMUONSegment : public TObject
   AliMUONSegment& operator=(const AliMUONSegment& AliMUONSegment); // assignment operator
 
  private:
-  AliMUONHitForRec* fHitForRecPtr1; // pointer to HitForRec in first chamber
-  AliMUONHitForRec* fHitForRecPtr2; // pointer to HitForRec in second chamber
+  AliMUONHitForRec* fHitForRecPtr1; ///< pointer to HitForRec in first chamber
+  AliMUONHitForRec* fHitForRecPtr2; ///< pointer to HitForRec in second chamber
   // Bending plane:
-  Double_t fBendingCoor; // Coordinate in bending plane
-  Double_t fBendingSlope; // Slope in bending plane
+  Double_t fBendingCoor; ///< Coordinate in bending plane
+  Double_t fBendingSlope; ///< Slope in bending plane
   // Covariance in bending plane:
-  Double_t fBendingCoorReso2; // Covariance(coordinate C1 in first chamber)
-  Double_t fBendingSlopeReso2; // Covariance(slope)
-  Double_t fBendingCoorSlopeReso2; // Covariance(C1,slope)
-  Double_t fBendingImpact; // Impact parameter in bending plane
+  Double_t fBendingCoorReso2; ///< Covariance(coordinate C1 in first chamber)
+  Double_t fBendingSlopeReso2; ///< Covariance(slope)
+  Double_t fBendingCoorSlopeReso2; ///< Covariance(C1,slope)
+  Double_t fBendingImpact; ///< Impact parameter in bending plane
   // Non Bending plane:
-  Double_t fNonBendingCoor; // Coordinate in non bending plane
-  Double_t fNonBendingSlope; // Slope in non bending plane
+  Double_t fNonBendingCoor; ///< Coordinate in non bending plane
+  Double_t fNonBendingSlope; ///< Slope in non bending plane
   // Covariance in non bending plane:
-  Double_t fNonBendingCoorReso2; // Covariance(coordinate C1 in first chamber)
-  Double_t fNonBendingSlopeReso2; // Covariance(slope)
-  Double_t fNonBendingCoorSlopeReso2; // Covariance(C1,slope)
-  Double_t fNonBendingImpact; // Impact parameter in non bending plane
-  Double_t fZ;                // Z of the segment
-  Bool_t fInTrack; // TRUE if segment belongs to one track
+  Double_t fNonBendingCoorReso2; ///< Covariance(coordinate C1 in first chamber)
+  Double_t fNonBendingSlopeReso2; ///< Covariance(slope)
+  Double_t fNonBendingCoorSlopeReso2; ///< Covariance(C1,slope)
+  Double_t fNonBendingImpact; ///< Impact parameter in non bending plane
+  Double_t fZ;                ///< Z of the segment
+  Bool_t fInTrack; ///< TRUE if segment belongs to one track
   
   ClassDef(AliMUONSegment, 1) // Segment for reconstruction in ALICE dimuon spectrometer
 };

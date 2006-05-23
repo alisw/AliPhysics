@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVRowSegmentSpecial.h,v 1.8 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpVRowSegmentSpecial.h,v 1.9 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpVRowSegmentSpecial
@@ -107,15 +107,15 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
 #endif    
 
     // data members
-    AliMpRow*     fRow;     //the row containing this segment 
-    Double_t      fOffsetX; //the x position of the border that touches a standard
-                            //row segment
-    PadRowVector  fPadRows; //pad rows vector
-    MotifVector   fMotifs;  //motifs vector
-    MotifPositionIdVector  fMotifPositionIds; //motifs position Ids vector
+    AliMpRow*     fRow;     ///< the row containing this segment 
+    Double_t      fOffsetX; ///< \brief the x position of the border that touches a standard
+                            /// row segment
+    PadRowVector  fPadRows; ///< pad rows vector
+    MotifVector   fMotifs;  ///< motifs vector
+    MotifPositionIdVector  fMotifPositionIds; ///< motifs position Ids vector
 
 #ifdef WITH_ROOT
-    Int_t  fNofMotifPositionIds; // number of motif positions Ids
+    Int_t  fNofMotifPositionIds; ///< number of motif positions Ids
 #endif    
     
   ClassDef(AliMpVRowSegmentSpecial,1)  //Row segment

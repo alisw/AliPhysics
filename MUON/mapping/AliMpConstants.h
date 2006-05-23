@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpConstants.h,v 1.9 2006/03/13 12:08:51 ivana Exp $
+// $MpId: AliMpConstants.h,v 1.10 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpConstants
@@ -40,12 +40,12 @@ class AliMpConstants : public TObject
   virtual Bool_t  IsEqual(const TObject*) const { return true; }
  
   // static data members
-  static const Double_t  fgkLengthTolerance;// the length precision for tests
-  static const Double_t  fgkLengthStep;     // the step in length used to move from
-                                            // a geometric border inside (pad, motif)
-  static const Int_t     fgkStartPadIndex;  // global pad indices start value
-  static const Int_t     fgkNCh;            // number of chambers
-  static const Int_t     fgkNonBendingManuMask; // bit to set to indicate a manu located in non-bending plane
+  static const Double_t  fgkLengthTolerance;///< the length precision for tests
+  static const Double_t  fgkLengthStep;     ///< \brief the step in length used to move from
+                                            /// a geometric border inside (pad, motif)
+  static const Int_t     fgkStartPadIndex;  ///< global pad indices start value
+  static const Int_t     fgkNCh;            ///< number of chambers
+  static const Int_t     fgkNonBendingManuMask; ///< bit to set to indicate a manu located in non-bending plane
   
   ClassDef(AliMpConstants,3) //Class for globally used constants definition
 };

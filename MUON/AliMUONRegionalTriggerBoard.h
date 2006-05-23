@@ -35,8 +35,8 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
       void Mask(Int_t index, UShort_t mask);
       
    private:
-      UShort_t fLocalResponse[16]; // Local trigger inputs
-      UShort_t fMask[16];          // Entry mask
+      UShort_t fLocalResponse[16]; ///< Local trigger inputs
+      UShort_t fMask[16];          ///< Entry mask
       
       ClassDef(AliMUONRegionalTriggerBoard,1)
 };

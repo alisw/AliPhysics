@@ -57,19 +57,19 @@ public:
    Int_t*  GetBusPatchHeader() {return &fTotalLength;}
 
  private:
-   Int_t     fTotalLength;   // total length of buspatch structure
-   Int_t     fLength;        // length of raw data
-   Int_t     fBusPatchId;    // bus patch id
-   Int_t     fTriggerWord ;  // counter trigger word
+   Int_t     fTotalLength;   ///< total length of buspatch structure
+   Int_t     fLength;        ///< length of raw data
+   Int_t     fBusPatchId;    ///< bus patch id
+   Int_t     fTriggerWord ;  ///< counter trigger word
 
-   static const Int_t fgkHeaderLength;   // header length in word
+   static const Int_t fgkHeaderLength;   ///< header length in word
 
-   UInt_t*   fData;          // data 
+   UInt_t*   fData;          ///< data 
 
-   Int_t     fBufSize;      // initial size for data array
+   Int_t     fBufSize;       ///< initial size for data array
 
-   Int_t     fDspId;             // Dsp number for monitoring
-   Int_t     fBlkId;             // block numer for monitoring
+   Int_t     fDspId;             ///< Dsp number for monitoring
+   Int_t     fBlkId;             ///< block numer for monitoring
 
    void ResizeData(Int_t size = 0);
 

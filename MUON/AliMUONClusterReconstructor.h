@@ -42,11 +42,11 @@ class AliMUONClusterReconstructor : public TObject
   
  private:
 
-  AliMUONData*            fMUONData;           //! Data container for MUON subsystem 
-  AliMUONClusterFinderVS* fRecModel;           //! cluster recontruction model
+  AliMUONData*            fMUONData;           //!< Data container for MUON subsystem 
+  AliMUONClusterFinderVS* fRecModel;           //!< cluster recontruction model
 
-  TClonesArray* fDigitsCath0; //! digits for cathode 0 of the current DE
-  TClonesArray* fDigitsCath1; //! digits for cathode 1 of the current DE
+  TClonesArray* fDigitsCath0; //!< digits for cathode 0 of the current DE
+  TClonesArray* fDigitsCath1; //!< digits for cathode 1 of the current DE
   
   ClassDef(AliMUONClusterReconstructor,0) // MUON cluster reconstructor in ALICE
 };

@@ -67,9 +67,9 @@ class AliMUONTest : public  TObject
                   Int_t detElemId, Int_t ix, Int_t iy,
                   AliMUONGeometrySegmentation* segmentation);
     // data members
-    const AliMUONGeometryTransformer* fkTransformer; // Geometry parametrisation
-    AliMUONSegmentation*  fSegmentation;  // Segmentation
-    TCanvas*              fCanvas;        // The canvas for drawing				       
+    const AliMUONGeometryTransformer* fkTransformer; ///< Geometry parametrisation
+    AliMUONSegmentation*  fSegmentation;  ///< Segmentation
+    TCanvas*              fCanvas;        ///< The canvas for drawing				       
 
     ClassDef(AliMUONTest,0)  // MUON class for tests
 };

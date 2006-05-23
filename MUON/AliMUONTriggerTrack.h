@@ -38,11 +38,11 @@ class AliMUONTriggerTrack : public TObject
     
 protected:
   private:
-  Float_t fx11;    // x position of fired Y strip in MC11
-  Float_t fy11;    // y position of fired X strip in MC11
-  Float_t fthetax; // track theta angle in X   
-  Float_t fthetay; // track theta angle in Y
-  Long_t fGTPattern; // Global trigger pattern  (do not work with static statement) 
+  Float_t fx11;    ///< x position of fired Y strip in MC11
+  Float_t fy11;    ///< y position of fired X strip in MC11
+  Float_t fthetax; ///< track theta angle in X   
+  Float_t fthetay; ///< track theta angle in Y
+  Long_t fGTPattern; ///< Global trigger pattern  (do not work with static statement) 
 
   ClassDef(AliMUONTriggerTrack, 3) // Reconstructed trigger track in ALICE dimuon spectrometer
     };

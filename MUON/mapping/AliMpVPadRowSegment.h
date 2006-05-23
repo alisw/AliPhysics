@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVPadRowSegment.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVPadRowSegment.h,v 1.6 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpVPadRowSegment
@@ -49,13 +49,13 @@ class AliMpVPadRowSegment : public TObject
 
   private:
     // data members
-    Int_t         fNofPads;  //number of pads
-    Double_t      fOffsetX;  //the x position of the right/left border
-    AliMpPadRow*  fPadRow;   //the pad row containing this segment 
-    AliMpMotif*   fMotif;    //the motif 
-    Int_t         fMotifPositionId;  // the motif position id
+    Int_t         fNofPads;  ///< number of pads
+    Double_t      fOffsetX;  ///< the x position of the right/left border
+    AliMpPadRow*  fPadRow;   ///< the pad row containing this segment 
+    AliMpMotif*   fMotif;    ///< the motif 
+    Int_t         fMotifPositionId;  ///< the motif position id
     
-  ClassDef(AliMpVPadRowSegment,1)  //Row segment
+  ClassDef(AliMpVPadRowSegment,1)  // Row segment
 };
 
 #endif //ALI_MP_V_PAD_ROW_SEGMENT_H

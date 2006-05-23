@@ -62,36 +62,36 @@ private:
 
 private:
 
-  AliMUONData*  fMUONData;           //! Data container for MUON subsystem 
+  AliMUONData*  fMUONData;           //!< Data container for MUON subsystem 
  
-  FILE*         fFile[2];            //! DDL binary file pointer one per 1/2 chamber
+  FILE*         fFile[2];            //!< DDL binary file pointer one per 1/2 chamber
 
-  TClonesArray* fBusArray;           //! array to sub event tracker
+  TClonesArray* fBusArray;           //!< array to sub event tracker
    
-  AliMUONBlockHeader* fBlockHeader;  //! DDL block header class pointers
-  AliMUONDspHeader*   fDspHeader;    //! DDL Dsp header class pointers
-  AliMUONBusStruct*   fBusStruct;    //! DDL bus patch structure class pointers
-  AliMUONDarcHeader*  fDarcHeader;   //! DDL darc header class pointers
-  AliMUONRegHeader*   fRegHeader;    //! DDL regional header class pointers
-  AliMUONLocalStruct* fLocalStruct;  //! DDL local structure class pointers
+  AliMUONBlockHeader* fBlockHeader;  //!< DDL block header class pointers
+  AliMUONDspHeader*   fDspHeader;    //!< DDL Dsp header class pointers
+  AliMUONBusStruct*   fBusStruct;    //!< DDL bus patch structure class pointers
+  AliMUONDarcHeader*  fDarcHeader;   //!< DDL darc header class pointers
+  AliMUONRegHeader*   fRegHeader;    //!< DDL regional header class pointers
+  AliMUONLocalStruct* fLocalStruct;  //!< DDL local structure class pointers
 
-  AliMpBusPatch* fBusPatchManager;   //! buspatch versus DE's & DDL
+  AliMpBusPatch* fBusPatchManager;   //!< buspatch versus DE's & DDL
 
-  Bool_t fScalerEvent;               // flag to generates scaler event
+  Bool_t fScalerEvent;               ///< flag to generates scaler event
 
-  AliRawDataHeader    fHeader;           // header of DDL
+  AliRawDataHeader    fHeader;           ///< header of DDL
 
-  static Int_t fgManuPerBusSwp1B[12];   //! array containing the first manuId for each buspatch st1, Bending
-  static Int_t fgManuPerBusSwp1NB[12];  //! array containing the first manuId for each buspatch st1, NBending
+  static Int_t fgManuPerBusSwp1B[12];   //!< array containing the first manuId for each buspatch st1, Bending
+  static Int_t fgManuPerBusSwp1NB[12];  //!< array containing the first manuId for each buspatch st1, NBending
 
-  static Int_t fgManuPerBusSwp2B[12];   //! array containing the first manuId for each buspatch st2, Bending
-  static Int_t fgManuPerBusSwp2NB[12];  //! array containing the first manuId for each buspatch st2, NBending
+  static Int_t fgManuPerBusSwp2B[12];   //!< array containing the first manuId for each buspatch st2, Bending
+  static Int_t fgManuPerBusSwp2NB[12];  //!< array containing the first manuId for each buspatch st2, NBending
   
-  TStopwatch fTrackerTimer; //!
-  TStopwatch fTriggerTimer; //!
-  TStopwatch fMappingTimer; //!
+  TStopwatch fTrackerTimer;             //!< 
+  TStopwatch fTriggerTimer;             //!< 
+  TStopwatch fMappingTimer;             //!< 
   
-  AliMpSegFactory* fSegFactory; //!
+  AliMpSegFactory* fSegFactory;         //!< mapping segmentation factory
   
   ClassDef(AliMUONRawWriter,1) // MUON cluster reconstructor in ALICE
 };

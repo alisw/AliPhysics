@@ -61,29 +61,29 @@ class AliMUONRawStreamTracker: public TObject {
 
   protected :
 
-    AliRawReader*    fRawReader;    // object for reading the raw data
+    AliRawReader*    fRawReader;    ///< object for reading the raw data
  
-    Int_t  fDDL;          // number of DDL
-    Int_t  fBusPatchId;   // entry of buspatch structure
-    Int_t  fDspId;        // entry of Dsp header
-    Int_t  fBlkId;        // entry of Block header
+    Int_t  fDDL;          ///< number of DDL
+    Int_t  fBusPatchId;   ///< entry of buspatch structure
+    Int_t  fDspId;        ///< entry of Dsp header
+    Int_t  fBlkId;        ///< entry of Block header
 
-    Bool_t fNextDDL;      // flag for next DDL to be read
+    Bool_t fNextDDL;      ///< flag for next DDL to be read
 
-    Int_t fMaxDDL;        // maximum number of DDL in DATE file
-    Int_t fMaxBlock;      // maximum number of block per DDL in DATE file
-    Int_t fMaxDsp;        // maximum number of Dsp per block in DATE file
-    Int_t fMaxBus;        // maximum number of Buspatch per Dsp in DATE file
+    Int_t fMaxDDL;        ///< maximum number of DDL in DATE file
+    Int_t fMaxBlock;      ///< maximum number of block per DDL in DATE file
+    Int_t fMaxDsp;        ///< maximum number of Dsp per block in DATE file
+    Int_t fMaxBus;        ///< maximum number of Buspatch per Dsp in DATE file
 
 
-    AliMpBusPatch* fBusPatchManager; //! buspatch versus DE's & DDL
+    AliMpBusPatch* fBusPatchManager; //!< buspatch versus DE's & DDL
 
-    AliMUONDDLTracker*      fDDLTracker;      //! pointer for buspatch structure
-    AliMUONBusStruct*       fBusStruct;       //! pointer for local structure
-    AliMUONBlockHeader*     fBlockHeader;     //! pointer for block structure 
-    AliMUONDspHeader*       fDspHeader;       //! pointer for dsp structure 
+    AliMUONDDLTracker*      fDDLTracker;      //!< pointer for buspatch structure
+    AliMUONBusStruct*       fBusStruct;       //!< pointer for local structure
+    AliMUONBlockHeader*     fBlockHeader;     //!< pointer for block structure 
+    AliMUONDspHeader*       fDspHeader;       //!< pointer for dsp structure 
 
-    AliMUONBusStruct*       fBusStructPtr;       //! pointer for local structure
+    AliMUONBusStruct*       fBusStructPtr;    //!< pointer for local structure
 
     ClassDef(AliMUONRawStreamTracker, 1)    // base class for reading MUON raw digits
 };

@@ -33,7 +33,7 @@ public:
 
  private:
 
-   AliMUONDarcHeader* fDarcHeader;  // pointer of darc header
+   AliMUONDarcHeader* fDarcHeader;  ///< pointer of darc header
    
 
    ClassDef(AliMUONDDLTrigger,1)  // MUON DDL Trigger

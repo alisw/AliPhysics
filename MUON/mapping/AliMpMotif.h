@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotif.h,v 1.6 2006/03/17 11:37:50 ivana Exp $
+// $MpId: AliMpMotif.h,v 1.7 2006/05/23 13:07:41 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotif
@@ -43,7 +43,7 @@ class AliMpMotif : public AliMpVMotif
   // methods
 
   // data members 
-  TVector2    fPadDimensions; //pad dimensions (halflength x, y size) 
+  TVector2  fPadDimensions; ///< pad dimensions (halflength x, y size) 
 
   ClassDef(AliMpMotif,1) // A motif with its ID
 };

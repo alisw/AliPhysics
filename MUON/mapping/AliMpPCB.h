@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpPCB.h,v 1.6 2006/03/17 16:42:28 ivana Exp $ 
+// $MpId: AliMpPCB.h,v 1.8 2006/05/23 13:07:47 ivana Exp $ 
 
 /// \ingroup slat
 /// \class AliMpPCB
@@ -134,24 +134,24 @@ class AliMpPCB : public TObject
   Int_t NofPads() const { return fNofPads; }
   
  private:
-  TString fId; // PCB name
-  Double_t fPadSizeX; // x-size of this PCB's pads (cm)
-  Double_t fPadSizeY; // y-size of this PCB's pads (cm)
-  Double_t fEnveloppeSizeX; // max x-size of this PCB (cm)
+  TString fId; ///< PCB name
+  Double_t fPadSizeX; ///< x-size of this PCB's pads (cm)
+  Double_t fPadSizeY; ///< y-size of this PCB's pads (cm)
+  Double_t fEnveloppeSizeX; ///< max x-size of this PCB (cm)
   Double_t fEnveloppeSizeY; // max y-size of this PCB (cm)
-  Double_t fXoffset; // x-offset = x of first pad of this PCB (cm)
-  Double_t fActiveXmin; // min x of an actual pad in this PCB (cm)
-  Double_t fActiveXmax; // max x of an actual pad in this PCB (cm)
-  Int_t fIxmin; // min pad index in x
-  Int_t fIxmax; // max pad index in x
-  Int_t fIymin; // min pad index in y
-  Int_t fIymax; // max pad index in y
+  Double_t fXoffset; ///< x-offset = x of first pad of this PCB (cm)
+  Double_t fActiveXmin; ///< min x of an actual pad in this PCB (cm)
+  Double_t fActiveXmax; ///< max x of an actual pad in this PCB (cm)
+  Int_t fIxmin; ///< min pad index in x
+  Int_t fIxmax; ///< max pad index in x
+  Int_t fIymin; ///< min pad index in y
+  Int_t fIymax; ///< max pad index in y
 #ifdef WITH_ROOT
-  TObjArray fMotifs; // array of motifs
+  TObjArray fMotifs; ///< array of motifs
 #else  
-  std::vector<AliMpMotifPosition*> fMotifs; // array of motifs
+  std::vector<AliMpMotifPosition*> fMotifs; ///< array of motifs
 #endif
-  Int_t fNofPads; // number of pads in this PCB
+  Int_t fNofPads; ///< number of pads in this PCB
   
   ClassDef(AliMpPCB,2) // A PCB for Stations 3,4,5
 };

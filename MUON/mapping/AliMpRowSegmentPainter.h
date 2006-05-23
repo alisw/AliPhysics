@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRowSegmentPainter.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpRowSegmentPainter.h,v 1.7 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpRowSegmentPainter
@@ -35,7 +35,8 @@ class AliMpRowSegmentPainter : public AliMpVPainter
   AliMpRowSegmentPainter&  operator = (const AliMpRowSegmentPainter& right);
 
  private: 
-  AliMpVRowSegment *fRowSegment;      // the row segment to draw
+  AliMpVRowSegment *fRowSegment; ///< the row segment to draw
+
   ClassDef(AliMpRowSegmentPainter,1) // Row Segment painter
 };
 #endif //ALI_MP_ROW_SEGMENT_PAINTER_H

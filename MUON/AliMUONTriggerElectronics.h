@@ -74,11 +74,11 @@ class AliMUONTriggerElectronics : public TTask
       AliMUONTriggerElectronics&  operator = (const AliMUONTriggerElectronics& right);
      
    private:
-      TString                    fSourceFileName;     // Source file
-      AliMUONTriggerCrateStore  *fCrates;             // Crate array
-      AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; // Global trigger board
-      AliMUONData               *fMUONData;           //! Data container for MUON subsystem 
-      TArrayI                    fDigitNumbers[234];  //! The digit number that fired a circuit.
+      TString                    fSourceFileName;     ///< Source file
+      AliMUONTriggerCrateStore  *fCrates;             ///< Crate array
+      AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; ///< Global trigger board
+      AliMUONData               *fMUONData;           //!< Data container for MUON subsystem 
+      TArrayI                    fDigitNumbers[234];  //!< The digit number that fired a circuit.
 
    ClassDef(AliMUONTriggerElectronics,2)
 };

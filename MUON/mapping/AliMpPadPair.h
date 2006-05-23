@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPadPair.h,v 1.8 2006/03/17 11:34:29 ivana Exp $
+// $MpId: AliMpPadPair.h,v 1.9 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpPadPair
@@ -37,8 +37,8 @@ class AliMpPadPair : public TObject
 
   private:
     // data members
-    AliMpPad  fPadFirst;  // first pad
-    AliMpPad  fPadSecond; // second pad
+    AliMpPad  fPadFirst;  ///<  first pad
+    AliMpPad  fPadSecond; ///<  second pad
     
     
   ClassDef(AliMpPadPair,1) //utility class for the motif type

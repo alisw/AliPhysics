@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpGraphContext.h,v 1.9 2006/03/17 11:35:15 ivana Exp $
+// $MpId: AliMpGraphContext.h,v 1.10 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpGraphContext
@@ -75,20 +75,20 @@ class AliMpGraphContext : public TObject
   //private constructor (not instanciable from outside)
   AliMpGraphContext();
 
-  // static data members
-  static AliMpGraphContext *fgInstance;   // the global instance
-  static GraphContextVector fgStack;  // the object stack
+  ///< static data members
+  static AliMpGraphContext *fgInstance; ///< the global instance
+  static GraphContextVector fgStack;    ///< the object stack
 #ifdef WITH_ROOT
-  static Int_t fgStackSize;  // the object stack size
+  static Int_t fgStackSize;  ///< the object stack size
 #endif
 
   //data members
-  Int_t    fColor;          // color to use
-  TVector2 fPadPosition;    // Position of the pad area where to draw
-  TVector2 fPadDimensions;   // Dimensions of the pad area where to draw
+  Int_t    fColor;          ///< color to use
+  TVector2 fPadPosition;    ///< Position of the pad area where to draw
+  TVector2 fPadDimensions;  ///< Dimensions of the pad area where to draw
 
-  TVector2 fRealPosition;   // Position of the real area to draw
-  TVector2 fRealDimensions;  // Dimensions of the real area to draw
+  TVector2 fRealPosition;   ///< Position of the real area to draw
+  TVector2 fRealDimensions; ///< Dimensions of the real area to draw
 
   ClassDef(AliMpGraphContext,1) // Correspondance pad area/real world
 };

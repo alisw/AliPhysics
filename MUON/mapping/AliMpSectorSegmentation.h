@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.h,v 1.13 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpSectorSegmentation.h,v 1.14 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorSegmentation
@@ -115,18 +115,17 @@ protected:
                                      Double_t maxY) const;
  
     // data members        
-    const AliMpSector*  fkSector;   // Sector
-    AliMpPad*           fPadBuffer; // The pad buffer
+    const AliMpSector*  fkSector;   ///< Sector
+    AliMpPad*           fPadBuffer; ///< The pad buffer
 #ifdef WITH_STL
-    PadDimensionsMap    fPadDimensionsMap; // Map between zone IDs and pad dimensions
-                              // EXCLUDED FOR CINT (does not compile on HP)    
+    PadDimensionsMap    fPadDimensionsMap; ///< Map between zone IDs and pad dimensions
 #endif    
 #ifdef WITH_ROOT
-    mutable PadDimensionsMap  fPadDimensionsMap; //  Map between zone IDs and pad dimensions
+    mutable PadDimensionsMap  fPadDimensionsMap; ///< Map between zone IDs and pad dimensions
 #endif 
 
-    Int_t  fMaxIndexInX;  // maximum pad index in x    
-    Int_t  fMaxIndexInY;  // maximum pad index in y    
+    Int_t  fMaxIndexInX;  ///< maximum pad index in x    
+    Int_t  fMaxIndexInY;  ///< maximum pad index in y    
 
   ClassDef(AliMpSectorSegmentation,1)  // Segmentation
 };

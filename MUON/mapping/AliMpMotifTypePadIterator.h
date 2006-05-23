@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifTypePadIterator.h,v 1.6 2005/09/26 16:10:46 ivana Exp $
+// $MpId: AliMpMotifTypePadIterator.h,v 1.7 2006/05/23 13:07:42 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifTypePadIterator
@@ -42,8 +42,8 @@ class AliMpMotifTypePadIterator : public AliMpVPadIterator
     Bool_t IsValid() const;
 
     // private data members
-    const AliMpMotifType* fMotifType;// the motif type over which iterate
-    AliMpIntPair fCurrentPosition;   // the current position inside the motif type
+    const AliMpMotifType* fMotifType;///< the motif type over which iterate
+    AliMpIntPair fCurrentPosition;   ///< the current position inside the motif type
 
  ClassDef(AliMpMotifTypePadIterator,1) // iterator over motif's pads
 };

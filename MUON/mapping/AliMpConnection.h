@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpConnection.h,v 1.7 2006/03/17 11:37:50 ivana Exp $
+// $MpId: AliMpConnection.h,v 1.8 2006/05/23 13:07:41 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpConnection
@@ -49,11 +49,11 @@ class AliMpConnection : public TObject
     
   private:
     // data members
-    Int_t fPadNum;    // Pad number
-    Int_t fBergNum;   // Berg connector number
-    Int_t fKaptonNum; // Kapton connector number
-    Int_t fGassiNum;  // Gassiplex channel number
-    AliMpMotifType *fOwner; //The motif type which contains this connection
+    Int_t fPadNum;    ///< Pad number
+    Int_t fBergNum;   ///< Berg connector number
+    Int_t fKaptonNum; ///< Kapton connector number
+    Int_t fGassiNum;  ///< Gassiplex channel number
+    AliMpMotifType *fOwner; ///< The motif type which contains this connection
 
   ClassDef(AliMpConnection,1)  // Connection description
 };

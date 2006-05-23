@@ -85,10 +85,10 @@ class AliMUONSegmentation : public TObject
      
   private:
     // data members
-    TObjArray*  fMpSegmentations;        // array of mapping segmentations
-    TObjArray*  fDESegmentations;        // array of DE segmentations
-    TObjArray*  fModuleSegmentations[2]; // array of module segmentations
-                                         // for two cathods         
+    TObjArray*  fMpSegmentations;        ///< array of mapping segmentations
+    TObjArray*  fDESegmentations;        ///< array of DE segmentations
+    TObjArray*  fModuleSegmentations[2]; ///< \brief array of module segmentations
+                                         /// for two cathods         
   ClassDef(AliMUONSegmentation,2)  // Container class for module segmentations
 };
 

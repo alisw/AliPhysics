@@ -75,12 +75,12 @@ class AliMUONGeometryModuleTransformer : public TObject
 
   private:
     // data members
-    Int_t                 fModuleId;   // the module Id
-    TString               fVolumePath; // the full path of aligned module volume
-                                       // or envelope in geometry
-    TGeoHMatrix*          fTransformation;// the module transformation wrt to top
-                                          // volume
-    AliMUONGeometryStore* fDetElements;   // detection elements
+    Int_t                 fModuleId;   ///< the module Id
+    TString               fVolumePath; ///< \brief the full path of aligned module volume
+                                       /// or envelope in geometry
+    TGeoHMatrix*          fTransformation;///< \brief the module transformation wrt to top
+                                          /// volume
+    AliMUONGeometryStore* fDetElements;   ///< detection elements
  
   ClassDef(AliMUONGeometryModuleTransformer,3) // MUON geometry module class
 };

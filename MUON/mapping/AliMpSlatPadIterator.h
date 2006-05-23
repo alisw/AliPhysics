@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatPadIterator.h,v 1.4 2005/09/19 19:01:09 ivana Exp $
+// $MpId: AliMpSlatPadIterator.h,v 1.7 2006/05/23 13:07:47 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlatPadIterator
@@ -40,10 +40,10 @@ class AliMpSlatPadIterator : public AliMpVPadIterator
   AliMpArea Intersect(const AliMpArea& a, const AliMpArea& b) const;
 
  private:
-  const AliMpSlat* fkSlat; // pointer to the slat being iterated over
-  std::vector<AliMpVPadIterator*> fDelegates; // iterators we do use
-  AliMpVPadIterator* fCurrentDelegate; // current iterator
-  UInt_t fCurrentDelegateIndex; // current iterator index
+  const AliMpSlat* fkSlat; ///< pointer to the slat being iterated over
+  std::vector<AliMpVPadIterator*> fDelegates; ///< iterators we do use
+  AliMpVPadIterator* fCurrentDelegate; ///< current iterator
+  UInt_t fCurrentDelegateIndex; ///< current iterator index
 
   ClassDef(AliMpSlatPadIterator,1) // Pad iterator for St 345 Slats
 };

@@ -66,49 +66,49 @@ class AliMUONClusterFinderVS : public TObject
 //  Assignment operator
     AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
 
-    AliMUONClusterInput*          fInput;              // ! AliMUONClusterInput instance
-    AliMUONDigitMapA1*            fDigitMap[2];          // Hit Maps for cathode 1 and 2
-    AliMUONGeometrySegmentation*  fSeg2[2];            // New Segmentations for cathode 1 and 2
+    AliMUONClusterInput*          fInput;        //!< AliMUONClusterInput instance
+    AliMUONDigitMapA1*            fDigitMap[2];  ///< Hit Maps for cathode 1 and 2
+    AliMUONGeometrySegmentation*  fSeg2[2];      ///< New Segmentations for cathode 1 and 2
 
     
 // Configuration    
-    Int_t                   fDeclusterFlag;      // flag for declusterin
-    Int_t                   fClusterSize;        // cluster size 
-    Int_t                   fNperMax;            // Maximum number of pads per peak
-    Float_t                 fGhostChi2Cut;       // Cut in charge matching chi2
-	                                         // (2 degrees of freedom)
-                                                 // Used by ghost removal
+    Int_t                   fDeclusterFlag;      ///< flag for declusterin
+    Int_t                   fClusterSize;        ///< cluster size 
+    Int_t                   fNperMax;            ///< Maximum number of pads per peak
+    Float_t                 fGhostChi2Cut;       ///< \brief Cut in charge matching chi2
+	                                         /// (2 degrees of freedom)
+                                                 /// Used by ghost removal
     // Current decluster result    
-    Int_t                   fMul[2];             // current multiplicity
-    Int_t                   fNPeaks;             // number of local maxima
-    Int_t                   fNRawClusters;       // Number of Raw Clusters
-    TClonesArray*           fRawClusters;        // array of cluster per ch.
+    Int_t                   fMul[2];             ///< current multiplicity
+    Int_t                   fNPeaks;             ///< number of local maxima
+    Int_t                   fNRawClusters;       ///< Number of Raw Clusters
+    TClonesArray*           fRawClusters;        ///< array of cluster per ch.
 
     // Local data store    
-    AliMUONDigit*           fDig[100][2];        // current list of digits 
-    Int_t                   fIx[100][2];         // current list of x-pad-coord.
-    Int_t                   fIy[100][2];         // current list of y-pad-coord.
-    Float_t                 fX[100][2];          // current list of x-coord.
-    Float_t                 fY[100][2];          // current list of y-coord.
-    Float_t                 fZ[100][2];          // current list of z-coord.
-    Int_t                   fIndLocal[100][2];   // indices of local maxima
-    Int_t                   fNLocal[2];          // Number of local maxima
-    Int_t                   fQ[100][2];          // current list of charges
-    Float_t                 fZPlane;             // currenz z-plane position
-    Int_t                   fSector;             // current sector
+    AliMUONDigit*           fDig[100][2];        ///< current list of digits 
+    Int_t                   fIx[100][2];         ///< current list of x-pad-coord.
+    Int_t                   fIy[100][2];         ///< current list of y-pad-coord.
+    Float_t                 fX[100][2];          ///< current list of x-coord.
+    Float_t                 fY[100][2];          ///< current list of y-coord.
+    Float_t                 fZ[100][2];          ///< current list of z-coord.
+    Int_t                   fIndLocal[100][2];   ///< indices of local maxima
+    Int_t                   fNLocal[2];          ///< Number of local maxima
+    Int_t                   fQ[100][2];          ///< current list of charges
+    Float_t                 fZPlane;             ///< currenz z-plane position
+    Int_t                   fSector;             ///< current sector
     
     // Current Fit
-    Double_t                 fXFit[2];         // x-coordinate
-    Double_t                 fYFit[2];         // y-coordinate
-    Double_t                 fQrFit[2];        // charge ratio
-    Float_t                  fChi2[2];         // chi2 of fit
-    Float_t                  fXInit[2];        // start values
-    Float_t                  fYInit[2];        // start values
-    Float_t                  fQrInit[2];       // start values
-    Int_t                    fFitStat;         // status of fit
+    Double_t                 fXFit[2];         ///< x-coordinate
+    Double_t                 fYFit[2];         ///< y-coordinate
+    Double_t                 fQrFit[2];        ///< charge ratio
+    Float_t                  fChi2[2];         ///< chi2 of fit
+    Float_t                  fXInit[2];        ///< start values
+    Float_t                  fYInit[2];        ///< start values
+    Float_t                  fQrInit[2];       ///< start values
+    Int_t                    fFitStat;         ///< status of fit
     
     // Selected track for debugging
-    Int_t                    fTrack[2];        // Only digits with main contributions from these tracks are
+    Int_t                    fTrack[2];        ///< Only digits with main contributions from these tracks are
     // considered 
     
     //  Return pointer to raw clusters    

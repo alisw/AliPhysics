@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPadRowLSegment.h,v 1.5 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpPadRowLSegment.h,v 1.6 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpPadRowLSegment
@@ -41,7 +41,7 @@ class AliMpPadRowLSegment : public AliMpVPadRowSegment
     Double_t  FirstPadBorderX() const;
     Double_t  LastPadBorderX() const;
     
-  ClassDef(AliMpPadRowLSegment,1)  //Row segment
+  ClassDef(AliMpPadRowLSegment,1)  // Row segment
 };
 
 #endif //ALI_MP_PAD_ROW_L_SEGMENT_H

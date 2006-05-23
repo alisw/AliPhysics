@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRowSegment.h,v 1.8 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpRowSegment.h,v 1.9 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpRowSegment
@@ -69,16 +69,16 @@ class AliMpRowSegment : public AliMpVRowSegment
     Bool_t    IsInside(const TVector2& position, Bool_t warn = true) const;
 
     // data members
-    Int_t         fNofMotifs;  //number of motifs
-    AliMpIntPair  fPadOffset;  //the offset in nof pads 
-    TVector2      fOffset;     //the position of the centre of the first motif
-                               //(x wtr to left border, y wtr to row center)
-    AliMpRow*     fRow;        //the row containing this segment 
-    AliMpVMotif*  fMotif;      //the motif 
-    Int_t   fMotifPositionId;  // the first motif position id
-    Int_t   fMotifPositionDId; // +1 if ids are increasing, -1 if decreasing
+    Int_t         fNofMotifs;  ///< number of motifs
+    AliMpIntPair  fPadOffset;  ///< the offset in nof pads 
+    TVector2      fOffset;     ///< \brief the position of the centre of the first motif
+                               /// (x wtr to left border, y wtr to row center)
+    AliMpRow*     fRow;        ///< the row containing this segment 
+    AliMpVMotif*  fMotif;      ///< the motif 
+    Int_t   fMotifPositionId;  ///< the first motif position id
+    Int_t   fMotifPositionDId; ///< +1 if ids are increasing, -1 if decreasing
     
-  ClassDef(AliMpRowSegment,1)  //Row segment
+  ClassDef(AliMpRowSegment,1)  // Row segment
 };
 
 #endif //ALI_MP_ROW_SEGMENT_H

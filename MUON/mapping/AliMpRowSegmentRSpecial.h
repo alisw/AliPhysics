@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRowSegmentRSpecial.h,v 1.7 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpRowSegmentRSpecial.h,v 1.8 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpRowSegmentRSpecial
@@ -51,7 +51,7 @@ class AliMpRowSegmentRSpecial : public AliMpVRowSegmentSpecial
     AliMpVPadRowSegment* FindMostLeftPadRowSegment(Int_t motifPositionId) const;
     void SetGlobalIndicesLow();
     
-  ClassDef(AliMpRowSegmentRSpecial,1)  //Row segment
+  ClassDef(AliMpRowSegmentRSpecial,1)  // Row segment
 };
 
 #endif //ALI_MP_ROW_SEGMENT_R_SPECIAL_H

@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatZonePadIterator.h,v 1.3 2005/08/26 15:42:32 ivana Exp $
+// $MpId: AliMpSlatZonePadIterator.h,v 1.6 2006/05/23 13:07:47 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlatZonePadIterator
@@ -41,16 +41,16 @@ class AliMpSlatZonePadIterator : public AliMpVPadIterator
   void SetPad(AliMpPad& pad, const TVector2& pos);
 
  private:
-  const AliMpSlat*       fkSlat; //! the slat we're iterating over
-  AliMpSlatSegmentation* fSlatSegmentation; //! segmentation pointer
-  AliMpArea  fArea; //! area we're iterating over
-  TVector2   fOffset; //! current position (relative to bottom-left of area)
-  TVector2   fStep; //! step sizes
-  AliMpPad   fCurrentPad; //! current pad
-  Bool_t     fIsDone; //! whether we've finished or not
+  const AliMpSlat*       fkSlat; //!< the slat we're iterating over
+  AliMpSlatSegmentation* fSlatSegmentation; //!< segmentation pointer
+  AliMpArea  fArea; //!< area we're iterating over
+  TVector2   fOffset; //!< current position (relative to bottom-left of area)
+  TVector2   fStep; //!< step sizes
+  AliMpPad   fCurrentPad; //!< current pad
+  Bool_t     fIsDone; //!< whether we've finished or not
 
-  static const Double_t fgkDmax; // maximum double
-  static const Double_t fgkEpsilon; // comparison precision 
+  static const Double_t fgkDmax; ///< maximum double
+  static const Double_t fgkEpsilon; ///< comparison precision 
 
   ClassDef(AliMpSlatZonePadIterator,1) // Pad iterator for a zone of constant density, for St345.
 };

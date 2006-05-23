@@ -50,10 +50,10 @@ private:
     TTask* GetCalibrationTask(AliMUONData* data) const;
 
 private:
-    AliRunLoader* fRunLoader;       //! pointer to runloader
-    AliMUONDigitMaker* fDigitMaker; //! pointer to the digit maker class
+    AliRunLoader* fRunLoader;       //!< pointer to runloader
+    AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
 
-    mutable AliMUONCalibrationData* fCalibrationData; //! pointer to calibration data
+    mutable AliMUONCalibrationData* fCalibrationData; //!< pointer to calibration data
     
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
 };

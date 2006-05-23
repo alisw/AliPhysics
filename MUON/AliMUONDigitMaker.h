@@ -52,25 +52,25 @@ class AliMUONDigitMaker : public TObject
 
  private:
 
-  AliMUONData*     fMUONData;          //! Data container for MUON subsystem 
+  AliMUONData*     fMUONData;          //!< Data container for MUON subsystem 
   
-  AliMpSegFactory* fSegFactory;        //! Mapping segmentation factory
+  AliMpSegFactory* fSegFactory;        //!< Mapping segmentation factory
 
-  AliMpBusPatch*   fBusPatchManager;   //! buspatch versus DE's & DDL
+  AliMpBusPatch*   fBusPatchManager;   //!< buspatch versus DE's & DDL
 
-  Bool_t           fScalerEvent;       //! flag to generates scaler event
+  Bool_t           fScalerEvent;       //!< flag to generates scaler event
 
-  AliMUONRawStreamTracker* fRawStreamTracker;  //!pointer of raw stream for tracker
-  AliMUONRawStreamTrigger* fRawStreamTrigger;  //!pointer of raw stream for trigger
+  AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
+  AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
 
-  AliMUONDigit*        fDigit;         //! pointer to digits
+  AliMUONDigit*        fDigit;         //!< pointer to digits
 
-  AliMUONLocalTrigger*  fLocalTrigger;  //! pointer to local trigger
-  AliMUONGlobalTrigger* fGlobalTrigger;  //! pointer to local trigger
+  AliMUONLocalTrigger*  fLocalTrigger; //!< pointer to local trigger
+  AliMUONGlobalTrigger* fGlobalTrigger;//!< pointer to local trigger
 
-  TStopwatch fTrackerTimer; //!
-  TStopwatch fTriggerTimer; //!
-  TStopwatch fMappingTimer; //!
+  TStopwatch fTrackerTimer; //!< 
+  TStopwatch fTriggerTimer; //!< 
+  TStopwatch fMappingTimer; //!< 
 
   ClassDef(AliMUONDigitMaker,1) // MUON digit maker from rawdata
 };

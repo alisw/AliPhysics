@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpArea.h,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpArea.h,v 1.8 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpArea
@@ -45,9 +45,9 @@ class AliMpArea : public TObject
   
  private:
   // data members
-  TVector2  fPosition;  // position
-  TVector2  fDimensions;// dimensions (half lengths)
-  Bool_t    fValidity;  // validity
+  TVector2  fPosition;  ///<  position
+  TVector2  fDimensions;///<  dimensions (half lengths)
+  Bool_t    fValidity;  ///<  validity
 
   ClassDef(AliMpArea,1) //utility class for area iterators
 };

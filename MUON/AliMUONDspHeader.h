@@ -59,14 +59,14 @@ public:
  private:
 
    // Dsp header
-   Int_t     fTotalLength;      // total length of block structure
-   Int_t     fLength;           // length of raw data
-   Int_t     fDspId;            // Dsp id ??
-   Int_t     fTriggerWord[4];   // counter trigger word ?
-   Int_t     fEventWord;        // nb word odd = 1, even = 0
-   static const Int_t fgkHeaderLength; // header length
+   Int_t     fTotalLength;      ///< total length of block structure
+   Int_t     fLength;           ///< length of raw data
+   Int_t     fDspId;            ///< Dsp id ??
+   Int_t     fTriggerWord[4];   ///< counter trigger word ?
+   Int_t     fEventWord;        ///< nb word odd = 1, even = 0
+   static const Int_t fgkHeaderLength; ///< header length
 
-    TClonesArray* fBusPatchArray;   // array of buspatch structure
+    TClonesArray* fBusPatchArray;   ///< array of buspatch structure
 
    ClassDef(AliMUONDspHeader,1)  // MUON Dsp header for Tracker event
 };

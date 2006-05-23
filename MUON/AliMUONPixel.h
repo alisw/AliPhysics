@@ -41,10 +41,10 @@ class AliMUONPixel : public TObject {
 
  private:
  
-  Double_t fCharge; // ! pixel charge
-  Double_t fSize[2]; // ! pixel size
-  Double_t fXY[2]; // ! pixel coordinates
-  Int_t fFlag; // ! pixel flag
+  Double_t fCharge; //!< pixel charge
+  Double_t fSize[2]; //!< pixel size
+  Double_t fXY[2]; //!< pixel coordinates
+  Int_t fFlag; //!< pixel flag
 
   // Functions
 

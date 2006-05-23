@@ -27,8 +27,8 @@ class AliMUONResponseTrigger : public AliMUONResponse
   virtual void DisIntegrate(const AliMUONHit& hit, TList& digits);
   
  private:
-  static const Float_t fgkTofLimit; // particle above this threshold are discarded
-  ClassDef(AliMUONResponseTrigger,1) // Implementation of RPC response
+  static const Float_t fgkTofLimit;  ///< Particle above this threshold are discarded
+  ClassDef(AliMUONResponseTrigger,1) ///< Implementation of RPC response
     
 };
 #endif

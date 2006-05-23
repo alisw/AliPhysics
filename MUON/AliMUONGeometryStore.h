@@ -47,14 +47,14 @@ class AliMUONGeometryStore : public TObject
   
   private:
     // static data members
-    static const Int_t fgkInitSize;    // Initial size of array of objects
-    static const Int_t fgkCoefficient; // Coefficient used in DE Id <-> Module Id
+    static const Int_t fgkInitSize;    ///< Initial size of array of objects
+    static const Int_t fgkCoefficient; ///< Coefficient used in DE Id <-> Module Id
 
     // methods
     Int_t GetDEIndex(Int_t detElemId) const;
 
     // data members
-    TObjArray  fObjects; // The array of detection elements
+    TObjArray  fObjects; ///< The array of detection elements
 
   ClassDef(AliMUONGeometryStore,1) // MUON geometry store
 };

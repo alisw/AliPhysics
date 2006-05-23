@@ -89,34 +89,34 @@ public:
 
  private:
 
-   UInt_t    fWord;              // first word
-   Int_t     fGlobalInput[4];    // global input
-   Int_t     fGlobalOutput;      // global ouput
+   UInt_t    fWord;              ///< first word
+   Int_t     fGlobalInput[4];    ///< global input
+   Int_t     fGlobalOutput;      ///< global ouput
 
-   static const Int_t fgkHeaderLength; // header length
+   static const Int_t fgkHeaderLength; ///< header length
 
 
  // global card scalers   
-   UInt_t     fGlobalL0;         // global L0
-   UInt_t     fGlobalClk;        // global clock
-   UInt_t     fGlobalScaler[6];  // global ouput
-   UInt_t     fGlobalHold;       // global hold (dead time)
-   UInt_t     fGlobalSpare;      // global spare
-   static const Int_t      fgkGlobalScalerLength;  // length of global scaler in word
+   UInt_t     fGlobalL0;         ///< global L0
+   UInt_t     fGlobalClk;        ///< global clock
+   UInt_t     fGlobalScaler[6];  ///< global ouput
+   UInt_t     fGlobalHold;       ///< global hold (dead time)
+   UInt_t     fGlobalSpare;      ///< global spare
+   static const Int_t      fgkGlobalScalerLength;  ///< length of global scaler in word
 
    // DARC Scalers
-   UInt_t     fDarcL0R;       // DARC L0 received
-   UInt_t     fDarcL0U;       // DARC L0 used
-   UInt_t     fDarcL0P;       // DARC Physical L0
-   UInt_t     fDarcL0S;       // DARC Software (checking) L0
-   UInt_t     fDarcClk;       // DARC clock
-   UInt_t     fDarcHold;      // DARC hold (dead time)
-   static const Int_t      fgkDarcScalerLength;  // length of DARC scaler in word
+   UInt_t     fDarcL0R;       ///< DARC L0 received
+   UInt_t     fDarcL0U;       ///< DARC L0 used
+   UInt_t     fDarcL0P;       ///< DARC Physical L0
+   UInt_t     fDarcL0S;       ///< DARC Software (checking) L0
+   UInt_t     fDarcClk;       ///< DARC clock
+   UInt_t     fDarcHold;      ///< DARC hold (dead time)
+   static const Int_t      fgkDarcScalerLength;  ///< length of DARC scaler in word
 
-   static const UInt_t     fgkEndOfDarc;         // end of darc info word
-   static const UInt_t     fgkEndOfGlobal;       // end of global info word
+   static const UInt_t     fgkEndOfDarc;         ///< end of darc info word
+   static const UInt_t     fgkEndOfGlobal;       ///< end of global info word
 
-   TClonesArray* fRegHeaderArray; //container for regional header
+   TClonesArray* fRegHeaderArray; ///< container for regional header
 
    ClassDef(AliMUONDarcHeader,1)  // MUON DDL Trigger
 };

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPadIteratorPtr.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPadIteratorPtr.h,v 1.6 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpPadIteratorPtr
@@ -42,7 +42,7 @@ class AliMpPadIteratorPtr : public TObject
     
   private:   
     // data members
-    AliMpVPadIterator*  fIterator; //The pad iterator
+    AliMpVPadIterator*  fIterator; ///< The pad iterator
      
   ClassDef(AliMpPadIteratorPtr,1) // Pointer to abstract pad iterator
 };

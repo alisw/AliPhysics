@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSubZonePainter.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSubZonePainter.h,v 1.7 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpSubZonePainter
@@ -37,7 +37,8 @@ class AliMpSubZonePainter : public AliMpVPainter
   AliMpSubZonePainter&  operator = (const AliMpSubZonePainter& right);
 
  private: 
-  AliMpSubZone *fSubZone;         // the subzone to draw
+  AliMpSubZone *fSubZone; ///< the subzone to draw
+
   ClassDef(AliMpSubZonePainter,1) // SubZone painter
 };
 #endif //ALI_MP_SUBZONE_PAINTER_H

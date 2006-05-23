@@ -132,8 +132,8 @@ class AliMUONGeometryTransformer : public TObject
     void    WriteDetElemTransforms(ofstream& out) const;
 
     // data members
-    TObjArray*     fModuleTransformers; // arryy of module transformers
-    TClonesArray*  fMisAlignArray;      // array of misalignment data
+    TObjArray*     fModuleTransformers; ///< array of module transformers
+    TClonesArray*  fMisAlignArray;      ///< array of misalignment data
 
   ClassDef(AliMUONGeometryTransformer,2)  // Geometry parametrisation
 };

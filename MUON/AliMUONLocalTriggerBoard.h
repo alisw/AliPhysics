@@ -127,35 +127,35 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
    private:
 
-      Int_t    fNumber;           // Board number
+      Int_t    fNumber;           ///< Board number
 
-      TString  fCrate;            // Crate name
+      TString  fCrate;            ///< Crate name
 
-      UShort_t fSwitch[10];       // Switch
-      UShort_t fXY[2][4];         // Bit pattern
-      UShort_t fXYU[2][4];        // Bit pattern UP
-      UShort_t fXYD[2][4];        // Bit pattern DOWN
-      UShort_t fMask[2][4];       // Mask
+      UShort_t fSwitch[10];       ///< Switch
+      UShort_t fXY[2][4];         ///< Bit pattern
+      UShort_t fXYU[2][4];        ///< Bit pattern UP
+      UShort_t fXYD[2][4];        ///< Bit pattern DOWN
+      UShort_t fMask[2][4];       ///< Mask
 
-      Bool_t   fTC;               // Transverse connector
+      Bool_t   fTC;               ///< Transverse connector
 
-      Int_t    fStripX11;         // MT1 X position of the valid road 
+      Int_t    fStripX11;         ///< MT1 X position of the valid road 
 
-      Int_t    fStripY11;         // MT1 Y position of the valid road
+      Int_t    fStripY11;         ///< MT1 Y position of the valid road
 
-      Int_t    fDev;              // Deviation in [0;+30]
+      Int_t    fDev;              ///< Deviation in [0;+30]
 
-      Int_t    fLutLpt[2];        // Low Pt cuts estimated from LUT
-      Int_t    fLutHpt[2];        // High Pt cuts estimated from LUT
-      Int_t    fLutApt[2];        // All Pt cuts estimated from LUT
+      Int_t    fLutLpt[2];        ///< Low Pt cuts estimated from LUT
+      Int_t    fLutHpt[2];        ///< High Pt cuts estimated from LUT
+      Int_t    fLutApt[2];        ///< All Pt cuts estimated from LUT
 
 //    Outputs of the local logic
-      Int_t    fOutput;           // Board has triggered
-      Int_t    fMinDevStrip[5];   // X (from algo)
-      Int_t    fMinDev[5];        // Dev (from algo)
-      Int_t    fCoordY[5];        // Y (from algo)
+      Int_t    fOutput;           ///< Board has triggered
+      Int_t    fMinDevStrip[5];   ///< X (from algo)
+      Int_t    fMinDev[5];        ///< Dev (from algo)
+      Int_t    fCoordY[5];        ///< Y (from algo)
 
-      AliMUONTriggerLut *fLUT;    //! Pointer to trigger LUT, that we do not own.
+      AliMUONTriggerLut *fLUT;    //!< Pointer to trigger LUT, that we do not own.
       
       ClassDef(AliMUONLocalTriggerBoard,1) 
 };

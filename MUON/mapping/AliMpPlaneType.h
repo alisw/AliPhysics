@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPlaneType.h,v 1.6 2006/03/17 11:34:29 ivana Exp $
+// $MpId: AliMpPlaneType.h,v 1.7 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \enum AliMpPlaneType

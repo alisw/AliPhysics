@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPadRow.h,v 1.8 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpPadRow.h,v 1.9 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpPadRow
@@ -67,12 +67,12 @@ class AliMpPadRow : public TObject
     Double_t CurrentBorderX() const;
 
     // data members
-    AliMpXDirection     fDirection;//the pad row x direction
-    Int_t               fID;       //the pad row ID
-    Double_t            fOffsetX;  //the x position of the border
-    PadRowSegmentVector fSegments; //the pad row segments
+    AliMpXDirection     fDirection; ///< the pad row x direction
+    Int_t               fID;        ///< the pad row ID
+    Double_t            fOffsetX;   ///< the x position of the border
+    PadRowSegmentVector fSegments;  ///< the pad row segments
 
-  ClassDef(AliMpPadRow,1)  //Pad row
+  ClassDef(AliMpPadRow,1)  // Pad row
 };
 
 #endif //ALI_MP_PAD_ROW_H

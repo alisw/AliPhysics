@@ -40,11 +40,11 @@ class AliMUONEventRecoCombi : public TObject
     AliMUONEventRecoCombi & operator = (const AliMUONEventRecoCombi& rhs);
 
  private:
-    static AliMUONEventRecoCombi* fgRecoCombi; // ! singleton instance
-    TClonesArray *fDetElems; // ! array of Det. Elem. objects
-    TArrayD *fZ; // ! array of det. elem. Z-coordinates
-    Int_t fNZ; // ! number of different Z's
-    Int_t **fDEvsZ; // ! list of DE's vs Z-coordinates
+    static AliMUONEventRecoCombi* fgRecoCombi; //!<  singleton instance
+    TClonesArray *fDetElems; //!<  array of Det. Elem. objects
+    TArrayD *fZ; //!<  array of det. elem. Z-coordinates
+    Int_t fNZ; //!<  number of different Z's
+    Int_t **fDEvsZ; //!<  list of DE's vs Z-coordinates
 
     ClassDef(AliMUONEventRecoCombi, 0) // Combined cluster/track finder steering class
       };

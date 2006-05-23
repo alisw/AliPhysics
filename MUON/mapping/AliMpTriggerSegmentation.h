@@ -2,7 +2,7 @@
 * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpTriggerSegmentation.h,v 1.5 2006/03/17 16:42:36 ivana Exp $
+// $MpId: AliMpTriggerSegmentation.h,v 1.7 2006/05/23 13:07:51 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTriggerSegmentation
@@ -67,8 +67,9 @@ protected:
   AliMpTriggerSegmentation&  operator = (const AliMpTriggerSegmentation& right);
      
 private:
-    const AliMpTrigger* fkSlat; // Slat
-  Int_t fNofStrips; // Number of strips in this slat
+  const AliMpTrigger* fkSlat; ///< Slat
+  Int_t fNofStrips; ///< Number of strips in this slat
+
   ClassDef(AliMpTriggerSegmentation,2) // Segmentation for slat trigger stations
 };
 

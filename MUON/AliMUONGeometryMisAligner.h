@@ -72,17 +72,17 @@ class AliMUONGeometryMisAligner:public TObject
   void GetUniMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3]) const;
   void GetGausMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3]) const;
 
-  Bool_t fUseUni;            // use uniform distribution for misaligmnets
-  Bool_t fUseGaus;            // use gaussian distribution for misaligmnets
-  Double_t fCartXMisAligM;   // cartesian displacement mean along x,  (translations)
-  Double_t fCartXMisAligW;   // cartesian displacement width along x,  (translations)
-  Double_t fCartYMisAligM;   // cartesian displacement mean along y,  (translations)
-  Double_t fCartYMisAligW;   // cartesian displacement width along y,  (translations)
-  Double_t fAngMisAligM;    // Angular displacement mean (rotations)
-  Double_t fAngMisAligW;    // Angular displacement range (rotations)
-  Double_t fXYAngMisAligFactor; // factor (<1) to apply to angular misalignment range since range of motion is restricted out of the xy plane
-  Double_t fZCartMisAligFactor; // factor (<1) to apply to cartetian misalignment range since range of motion is restricted in z direction
-  TRandom *fDisplacementGenerator;  // random number generator for the displacements
+  Bool_t fUseUni;            ///< use uniform distribution for misaligmnets
+  Bool_t fUseGaus;           ///< use gaussian distribution for misaligmnets
+  Double_t fCartXMisAligM;   ///< cartesian displacement mean along x,  (translations)
+  Double_t fCartXMisAligW;   ///< cartesian displacement width along x,  (translations)
+  Double_t fCartYMisAligM;   ///< cartesian displacement mean along y,  (translations)
+  Double_t fCartYMisAligW;   ///< cartesian displacement width along y,  (translations)
+  Double_t fAngMisAligM;     ///< Angular displacement mean (rotations)
+  Double_t fAngMisAligW;     ///< Angular displacement range (rotations)
+  Double_t fXYAngMisAligFactor; ///< factor (<1) to apply to angular misalignment range since range of motion is restricted out of the xy plane
+  Double_t fZCartMisAligFactor; ///< factor (<1) to apply to cartetian misalignment range since range of motion is restricted in z direction
+  TRandom *fDisplacementGenerator;  ///< random number generator for the displacements
   
   ClassDef(AliMUONGeometryMisAligner,3)	// Geometry parametrisation
 };

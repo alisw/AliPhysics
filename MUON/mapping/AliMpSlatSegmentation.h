@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.h,v 1.9 2006/03/14 09:04:25 ivana Exp $
+// $MpId: AliMpSlatSegmentation.h,v 1.11 2006/05/23 13:07:47 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlatSegmentation
@@ -75,7 +75,7 @@ class AliMpSlatSegmentation : public AliMpVSegmentation
   AliMpSlatSegmentation&  operator = (const AliMpSlatSegmentation& right);
      
  private:
-  const AliMpSlat* fkSlat; // Slat
+  const AliMpSlat* fkSlat; ///< Slat
 
   ClassDef(AliMpSlatSegmentation,1) // A slat for stations 3,4,5
 };

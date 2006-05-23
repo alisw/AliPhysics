@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpTriggerReader.h,v 1.2 2006/03/02 16:36:26 ivana Exp $
+// $MpId: AliMpTriggerReader.h,v 1.4 2006/05/23 13:07:51 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTriggerReader
@@ -86,15 +86,15 @@ private:
   
 private:
     
-  static TMap fgPCBMap; //! map of TObjString to AliMpPCB*
+  static TMap fgPCBMap; //!< map of TObjString to AliMpPCB*
   
-  static TMap fgLocalBoardMap; //! map of TObjString to TObjString
+  static TMap fgLocalBoardMap; //!< map of TObjString to TObjString
 
-  static const TString fgkKeywordLayer; //! Keyword: LAYER
-  static const TString fgkKeywordScale; //! Keyword: SCALE
-  static const TString fgkKeywordPcb; //! Keyword : PCB
-  static const TString fgkKeywordFlipX; //! Keyword : FLIPX
-  static const TString fgkKeywordFlipY; //! Keyword : FLIPY
+  static const TString fgkKeywordLayer; //!< Keyword: LAYER
+  static const TString fgkKeywordScale; //!< Keyword: SCALE
+  static const TString fgkKeywordPcb; //!< Keyword : PCB
+  static const TString fgkKeywordFlipX; //!< Keyword : FLIPX
+  static const TString fgkKeywordFlipY; //!< Keyword : FLIPY
   
   ClassDef(AliMpTriggerReader,1) // Reader for trigger slats mapping files 
 };

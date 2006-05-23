@@ -56,8 +56,8 @@ class AliMUONGeometry : public TObject
     void    WriteData3(ofstream& out) const;
 
     // data members
-    TObjArray*                  fModules;     // Array of geometry modules
-    AliMUONGeometryTransformer* fTransformer; // Geometry transformer
+    TObjArray*                  fModules;     ///< Array of geometry modules
+    AliMUONGeometryTransformer* fTransformer; ///< Geometry transformer
 
   ClassDef(AliMUONGeometry,1)  // Geometry parametrisation
 };

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVPadIterator.h,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVPadIterator.h,v 1.5 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpVPadIterator

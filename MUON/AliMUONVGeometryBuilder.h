@@ -118,11 +118,11 @@ class AliMUONVGeometryBuilder : public TObject
                       const TString& volName, Int_t detElemId) const;
 
     // data members
-    TObjArray*  fGeometryModules;   // the modules geometries that will be built
-                                    // by this builder				    
-    TGeoCombiTrans fReferenceFrame; // the transformation from the builder 
-                                    // reference frame to that of the transform 
-				    // data files
+    TObjArray*  fGeometryModules;   ///< \brief the modules geometries that will be built
+                                    /// by this builder				    
+    TGeoCombiTrans fReferenceFrame; ///< \brief the transformation from the builder 
+                                    /// reference frame to that of the transform 
+				    /// data files
 				        
   ClassDef(AliMUONVGeometryBuilder,4) // MUON chamber geometry base class
 };

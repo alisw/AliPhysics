@@ -75,14 +75,14 @@ class AliMUONGeometryModule : public TObject
     Int_t  GetSVIndex(Int_t svVolId) const; 
   
     // data members
-    Bool_t           fIsVirtual;     // true if module is not represented
-                                     // by a real volume
-    Int_t            fNofSVs;        // number of sensitive volumes   
-    TArrayI*         fSVVolumeIds;   // sensitive volumes IDs  
+    Bool_t           fIsVirtual;     ///< \brief true if module is not represented
+                                     /// by a real volume
+    Int_t            fNofSVs;        ///< number of sensitive volumes   
+    TArrayI*         fSVVolumeIds;   ///< sensitive volumes IDs  
 
-    AliMUONGeometryEnvelopeStore*     fEnvelopes;  // envelopes                                 
-    AliMUONStringIntMap*              fSVMap;      // sensitive volumes map
-    AliMUONGeometryModuleTransformer* fTransformer;// geometry transformations
+    AliMUONGeometryEnvelopeStore*     fEnvelopes;  ///< envelopes                                 
+    AliMUONStringIntMap*              fSVMap;      ///< sensitive volumes map
+    AliMUONGeometryModuleTransformer* fTransformer;///< geometry transformations
  
   ClassDef(AliMUONGeometryModule,4) // MUON geometry module class
 };

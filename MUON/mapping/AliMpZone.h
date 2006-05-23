@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpZone.h,v 1.8 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpZone.h,v 1.9 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpZone
@@ -64,11 +64,11 @@ class AliMpZone : public TObject
 
   private:
     // data members
-    UInt_t        fID;           // ID
-    SubZoneVector fSubZones;     // subzones
-    TVector2      fPadDimensions;// pad dimensions
+    UInt_t        fID;           ///< ID
+    SubZoneVector fSubZones;     ///< subzones
+    TVector2      fPadDimensions;///< pad dimensions
 
-  ClassDef(AliMpZone,1)  //Zone
+  ClassDef(AliMpZone,1)  // Zone
 };
 
 // inline functions

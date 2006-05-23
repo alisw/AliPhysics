@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpIntPair.h,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpIntPair.h,v 1.5 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpIntPair
@@ -49,11 +49,11 @@ class AliMpIntPair : public TObject
   
  private:
   // data members
-  Int_t   fFirst;    // position along x
-  Int_t   fSecond;   // position along y
-  Bool_t  fValidity; // validity
+  Int_t   fFirst;    ///< the first value
+  Int_t   fSecond;   ///< the second value
+  Bool_t  fValidity; ///< validity
 
-  ClassDef(AliMpIntPair,1) //utility class for the motif type
+  ClassDef(AliMpIntPair,1) // utility class for the motif type
 };
 
 AliMpIntPair operator + (const AliMpIntPair& op1,const AliMpIntPair& op2);

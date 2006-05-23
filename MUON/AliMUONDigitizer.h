@@ -173,19 +173,19 @@ protected:
 			Int_t charges[kMAXTRACKS], Int_t digits[6],
 			Int_t digitindex ) = 0;
 
-	AliRunLoader* fRunLoader;         //! Global run loader.
-	AliMUONLoader* fGime;             //! MUON specific loader.
-	AliMUON* fMUON;                   //! Pointer to MUON module.
-	AliMUONData* fMUONData;           //! muon data interface
-	AliMUONTriggerDecision* fTrigDec; //!trigger pointer
+	AliRunLoader* fRunLoader;         //!< Global run loader.
+	AliMUONLoader* fGime;             //!< MUON specific loader.
+	AliMUON* fMUON;                   //!< Pointer to MUON module.
+	AliMUONData* fMUONData;           //!< muon data interface
+	AliMUONTriggerDecision* fTrigDec; //!< trigger pointer
 
-	AliMUONHitMapA1 **fHitMap;      //! pointer to array of pointers to hitmaps
-	TObjArray *fTDList;             //! list of AliMUONTransientDigits
-	Int_t fTDCounter;               //! nr. of AliMUONTransientDigit
-	Int_t fMask;                    //! mask dependent on input file
-	Bool_t fSignal;                 //! kTRUE if signal file is processed 
-	Int_t fSegmentation;            //! segmentation type 1=old, 2=new;
-	Int_t fNDetElemId[1500];       //! detection element number array 
+	AliMUONHitMapA1 **fHitMap;    //!< pointer to array of pointers to hitmaps
+	TObjArray *fTDList;           //!< list of AliMUONTransientDigits
+	Int_t fTDCounter;             //!< nr. of AliMUONTransientDigit
+	Int_t fMask;                  //!< mask dependent on input file
+	Bool_t fSignal;               //!< kTRUE if signal file is processed 
+	Int_t fSegmentation;          //!< segmentation type 1=old, 2=new;
+	Int_t fNDetElemId[1500];      //!< detection element number array 
 
 
 private:

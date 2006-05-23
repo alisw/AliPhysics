@@ -8,11 +8,7 @@
 
 /// \ingroup sim
 /// \class AliMUONTrigger
-/// \brief MUON trigger class
-///
-/////////////////////////////////////////////////
-///  MUON Trigger Detector Class               //
-/////////////////////////////////////////////////
+/// \brief MUON trigger detector class
 
 #include "AliTriggerDetector.h"
 

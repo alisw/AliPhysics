@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifReader.h,v 1.7 2006/03/17 11:37:51 ivana Exp $
+// $MpId: AliMpMotifReader.h,v 1.8 2006/05/23 13:07:42 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifReader
@@ -67,8 +67,8 @@ class AliMpMotifReader : public TObject
 
   private:
     // data members  
-    AliMpStationType  fStationType; // station type 
-    AliMpPlaneType    fPlaneType;   // plane type 
+    AliMpStationType  fStationType; ///< station type 
+    AliMpPlaneType    fPlaneType;   ///< plane type 
 
   ClassDef(AliMpMotifReader,1)  // Data reader
 };

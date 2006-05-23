@@ -32,8 +32,8 @@ protected:
   AliMUONDigitCalibrator& operator=(const AliMUONDigitCalibrator& other);
        
 private:    
-    AliMUONData* fData; //!
-    AliMUONCalibrationData* fCalibrationData; //!
+    AliMUONData* fData;                       //!< MUON data 
+    AliMUONCalibrationData* fCalibrationData; //!< Calibration data
   
   ClassDef(AliMUONDigitCalibrator,1) // Subtract pedestal from digit charge.
 };

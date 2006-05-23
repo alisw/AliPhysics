@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpDEIterator.h,v 1.3 2006/03/17 11:35:58 ivana Exp $ 
+// $MpId: AliMpDEIterator.h,v 1.4 2006/05/23 13:07:38 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpDEIterator
@@ -51,15 +51,15 @@ class AliMpDEIterator : public  TObject {
     static void   ReadData();
 
     // static data members	
-    static const Int_t  fgkMaxNofDetElements; // Maximum number of DEs
-    static TArrayI      fgDetElemIds;         // DE Ids	
-    static Int_t        fgNofDetElemIds;      // Number of DE Ids	
+    static const Int_t  fgkMaxNofDetElements; ///< Maximum number of DEs
+    static TArrayI      fgDetElemIds;         ///< DE Ids	
+    static Int_t        fgNofDetElemIds;      ///< Number of DE Ids	
 
     // data members	
-    Int_t  fIndex;    // Current DE index
-    Int_t  fModuleId; // The iterated module 
+    Int_t  fIndex;    ///< Current DE index
+    Int_t  fModuleId; ///< The iterated module 
 
-  ClassDef(AliMpDEIterator,0)  // MUON Factory for Chambers and Segmentation
+  ClassDef(AliMpDEIterator,0)  // The iterator over valid detection element IDs
 };
 
 #endif //ALI_MP_DE_ITERATOR_H

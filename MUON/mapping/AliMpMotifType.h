@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifType.h,v 1.9 2006/03/17 11:37:51 ivana Exp $
+// $MpId: AliMpMotifType.h,v 1.10 2006/05/23 13:07:42 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifType
@@ -85,16 +85,16 @@ class AliMpMotifType : public TObject
 
   private:
     // static data members
-    static const Int_t   fgkPadNumForA; // the pad number for the pad "A"
+    static const Int_t  fgkPadNumForA; ///< the pad number for the pad "A"
   
     // data members
-    TString   fID;              // unique motif ID
-    Int_t     fNofPadsX;        // number of pads in x direction
-    Int_t     fNofPadsY;        // number of pads in y direction
-    Int_t     fVerboseLevel;    // verbose level
-    ConnectionMap fConnections; // Map (ix,iy) of connections
+    TString   fID;              ///< unique motif ID
+    Int_t     fNofPadsX;        ///< number of pads in x direction
+    Int_t     fNofPadsY;        ///< number of pads in y direction
+    Int_t     fVerboseLevel;    ///< verbose level
+    ConnectionMap fConnections; ///< Map (ix,iy) of connections
     
-  ClassDef(AliMpMotifType,1)  //Motif type
+  ClassDef(AliMpMotifType,1)  // Motif type
 };
 
 // inline functions

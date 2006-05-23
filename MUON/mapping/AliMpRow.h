@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRow.h,v 1.9 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpRow.h,v 1.10 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpRow
@@ -83,12 +83,12 @@ class AliMpRow : public AliMpVIndexed
     void CheckEmpty() const;
   
     // data members
-    UInt_t            fID;      // row ID
-    Double_t          fOffsetY; // the y position of the centre of motifs
-    RowSegmentVector  fSegments;// row segments
-    AliMpMotifMap*    fMotifMap;// the motif map associated with its sector
+    UInt_t            fID;      ///< row ID
+    Double_t          fOffsetY; ///< the y position of the centre of motifs
+    RowSegmentVector  fSegments;///< row segments
+    AliMpMotifMap*    fMotifMap;///< the motif map associated with its sector
 
-  ClassDef(AliMpRow,1)  //Row
+  ClassDef(AliMpRow,1)  // Row
 };
 
 // inline functions

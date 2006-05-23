@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSubZone.h,v 1.9 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpSubZone.h,v 1.10 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSubZone
@@ -59,10 +59,10 @@ class AliMpSubZone : public TObject
 
   private:
     // data members
-    AliMpVMotif*     fMotif;   // the motif in this subzone
-    RowSegmentVector fSegments;// contained row segments
+    AliMpVMotif*     fMotif;   ///< the motif in this subzone
+    RowSegmentVector fSegments;///< contained row segments
     
-  ClassDef(AliMpSubZone,1)  //Zone segment
+  ClassDef(AliMpSubZone,1)  // Zone segment
 };
 
 #endif //ALI_MP_SUB_ZONE_H

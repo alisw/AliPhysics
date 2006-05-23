@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorPainter.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSectorPainter.h,v 1.7 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpSectorPainter
@@ -35,7 +35,8 @@ class AliMpSectorPainter : public AliMpVPainter
   AliMpSectorPainter&  operator = (const AliMpSectorPainter& right);
 
  private:
-  AliMpSector *fSector;          // the sector to draw
+  AliMpSector *fSector; ///< the sector to draw
+
   ClassDef(AliMpSectorPainter,1) // Sector painter
 };
 #endif //ALI_MP_SECTOR_PAINTER_H

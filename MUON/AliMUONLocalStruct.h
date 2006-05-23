@@ -79,32 +79,32 @@ public:
  private:
   
    // local info
-   UInt_t    fData[5];  // local data
+   UInt_t    fData[5];  ///< local data
    
    // local card scalers   
-   UInt_t     fL0;        // local L0
-   UInt_t     fHold;      // local hold (dead time)
-   UInt_t     fClk;       // local clock
+   UInt_t     fL0;        ///< local L0
+   UInt_t     fHold;      ///< local hold (dead time)
+   UInt_t     fClk;       ///< local clock
 
-   UInt_t     fLPtNTrig;  // local low Pt no trigger
-   UInt_t     fHPtNTrig;  // local high Pt no trigger
+   UInt_t     fLPtNTrig;  ///< local low Pt no trigger
+   UInt_t     fHPtNTrig;  ///< local high Pt no trigger
 
-   UInt_t     fLPtRTrig;  // local low Pt right trigger
-   UInt_t     fHPtRTrig;  // local high Pt right trigger
+   UInt_t     fLPtRTrig;  ///< local low Pt right trigger
+   UInt_t     fHPtRTrig;  ///< local high Pt right trigger
 
-   UInt_t     fLPtLTrig;  // local low Pt left trigger
-   UInt_t     fHPtLTrig;  // local high Pt left trigger
+   UInt_t     fLPtLTrig;  ///< local low Pt left trigger
+   UInt_t     fHPtLTrig;  ///< local high Pt left trigger
 
-   UInt_t     fLPtSTrig;  // local low Pt straight trigger
-   UInt_t     fHPtSTrig;  // local high Pt straight trigger
+   UInt_t     fLPtSTrig;  ///< local low Pt straight trigger
+   UInt_t     fHPtSTrig;  ///< local high Pt straight trigger
 
-   UInt_t     fScaler[8*4];   // local data
-   UInt_t     fEOS;           // contains switches conf. & flag for reading X (0) or Y (1) in fScaler
-   UInt_t     fReset;         // reset signal
+   UInt_t     fScaler[8*4];   ///< local data
+   UInt_t     fEOS;           ///< contains switches conf. & flag for reading X (0) or Y (1) in fScaler
+   UInt_t     fReset;         ///< reset signal
 
-   static const Int_t  fgkLength;       // local info length in word
-   static const Int_t  fgkScalerLength; // scaler length in word
-   static const UInt_t fgkEndOfLocal;   // end of local info word
+   static const Int_t  fgkLength;       ///< local info length in word
+   static const Int_t  fgkScalerLength; ///< scaler length in word
+   static const UInt_t fgkEndOfLocal;   ///< end of local info word
 
    ClassDef(AliMUONLocalStruct,3)
 };

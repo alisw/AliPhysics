@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorAreaHPadIterator.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSectorAreaHPadIterator.h,v 1.6 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorAreaHPadIterator
@@ -46,13 +46,13 @@ class AliMpSectorAreaHPadIterator : public AliMpVPadIterator
     void MoveUp();
 
     // private data members
-    const AliMpSectorSegmentation*  fkSegmentation; // the sector segmentation 
-                                    // over which we iterate
-    //const AliMpArea  fkArea;         // the area
-                                       // (const caused problem with CINT)
-    AliMpArea  fkArea;                 // the area
-    AliMpPad   fCurrentPad;         // the current pad
-    Double_t   fCurrentRowPosition; // the current row position
+    const AliMpSectorSegmentation*  fkSegmentation; ///< \brief the sector segmentation 
+                                    /// over which we iterate
+    //const AliMpArea  fkArea;      ///< \brief the area
+                                    /// (const caused problem with CINT)
+    AliMpArea  fkArea;              ///< the area
+    AliMpPad   fCurrentPad;         ///< the current pad
+    Double_t   fCurrentRowPosition; ///< the current row position
 
  ClassDef(AliMpSectorAreaHPadIterator,1) // iterator over motif's pads
 };

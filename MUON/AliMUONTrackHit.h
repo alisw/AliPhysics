@@ -44,10 +44,10 @@ class AliMUONTrackHit : public TObject
   void SetNextTrackHitWithSameHitForRec(AliMUONTrackHit *Next) {fNextTrackHitWithSameHitForRec = Next;}
   void SetPrevTrackHitWithSameHitForRec(AliMUONTrackHit *Prev) {fPrevTrackHitWithSameHitForRec = Prev;}
 
-  AliMUONTrackParam fTrackParam; // Track parameters
-  AliMUONHitForRec *fHitForRecPtr; // Pointer to HitForRec
-  AliMUONTrackHit *fNextTrackHitWithSameHitForRec; // Pointer to next track hit with same HitForRec
-  AliMUONTrackHit *fPrevTrackHitWithSameHitForRec; // Pointer to previous track hit with same HitForRec
+  AliMUONTrackParam fTrackParam; ///< Track parameters
+  AliMUONHitForRec *fHitForRecPtr; ///< Pointer to HitForRec
+  AliMUONTrackHit *fNextTrackHitWithSameHitForRec; ///< Pointer to next track hit with same HitForRec
+  AliMUONTrackHit *fPrevTrackHitWithSameHitForRec; ///< Pointer to previous track hit with same HitForRec
 
   ClassDef(AliMUONTrackHit, 1) // Reconstructed track hit in ALICE dimuon spectrometer
     };

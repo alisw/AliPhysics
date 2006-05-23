@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVPainter.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVPainter.h,v 1.7 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpVPainter
@@ -58,10 +58,11 @@ class AliMpVPainter : public TObject
   AliMpVPainter *DrawObject(TObject *object,Option_t *option="");
 
  private:
-  Int_t fColor;               //  color
-  TVector2 fPadPosition;      // position inside the graphics pad
-  TVector2 fPadDimensions;    // dimensions inside the graphics pad
-  TList *fTrashList;           // list of painter object created
+  Int_t fColor;            ///< color
+  TVector2 fPadPosition;   ///< position inside the graphics pad
+  TVector2 fPadDimensions; ///< dimensions inside the graphics pad
+  TList *fTrashList;       ///< list of painter object created
+
   ClassDef(AliMpVPainter,1) // abstract object painter
 };
 

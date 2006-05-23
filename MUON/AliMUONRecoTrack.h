@@ -49,14 +49,14 @@ class AliMUONRecoTrack : public TObject
     void TrackInfo() const;
 
   private:
-    Int_t       fSign;                  // charge sign
-    Int_t       fFlag;                  //  flag of reconstructed track (0-"good", >0-"bad") 
-    Double_t 	fZvr;                   // z of track vertex point
-    Double_t 	fChi2r;	                // chi squared for reco. track
+    Int_t       fSign;                  ///< charge sign
+    Int_t       fFlag;                  ///<  flag of reconstructed track (0-"good", >0-"bad") 
+    Double_t 	fZvr;                   ///< z of track vertex point
+    Double_t 	fChi2r;	                ///< chi squared for reco. track
     Double_t 	fPr[3];	                // reconstr. momentum (same as in vertex)
-    Double_t 	fPosX[10];              // hit X position in all chambers
-    Double_t 	fPosY[10];              // hit Y position in all chambers    
-    Double_t 	fPosZ[10];              // hit Z position in all chambers
+    Double_t 	fPosX[10];              ///< hit X position in all chambers
+    Double_t 	fPosY[10];              ///< hit Y position in all chambers    
+    Double_t 	fPosZ[10];              ///< hit Z position in all chambers
 
   ClassDef(AliMUONRecoTrack,1)	// A reconstructed muon track
 };

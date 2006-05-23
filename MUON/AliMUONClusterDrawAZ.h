@@ -39,16 +39,16 @@ protected:
   AliMUONClusterDrawAZ& operator=(const AliMUONClusterDrawAZ& rhs);
 
 private:
-  AliMUONData *fData; //! pointer to muon data container
-  AliMUONClusterFinderAZ* fFind; //! pointer to ClusterFinder
-  TH2D*      fHist[4]; // ! histograms
-  Int_t      fnMu; // ! number of muons passing thru the selected area
-  Double_t   fxyMu[2][7]; // ! muon information
-  Int_t      fEvent; // ! current event
-  Int_t      fChamber; //! current chamber
-  Int_t      fidDE; //! current Det. Elem.
-  Int_t      fDebug; // ! debug level
-  Int_t      fModif; // ! modification flag (modified ROOT)
+  AliMUONData *fData; //!<  pointer to muon data container
+  AliMUONClusterFinderAZ* fFind; //!<  pointer to ClusterFinder
+  TH2D*      fHist[4]; //!<  histograms
+  Int_t      fnMu; //!<  number of muons passing thru the selected area
+  Double_t   fxyMu[2][7]; //!<  muon information
+  Int_t      fEvent; //!<  current event
+  Int_t      fChamber; //!<  current chamber
+  Int_t      fidDE; //!<  current Det. Elem.
+  Int_t      fDebug; //!<  debug level
+  Int_t      fModif; //!<  modification flag (modified ROOT)
 
   // Functions
 

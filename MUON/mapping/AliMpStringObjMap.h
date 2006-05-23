@@ -38,9 +38,9 @@ class AliMpStringObjMap : public TObject
  
   private:
     // data members
-    Int_t      fNofItems;    // number of items
-    TObjArray  fFirstArray;  // first item array
-    TObjArray  fSecondArray; // second item array
+    Int_t      fNofItems;    ///<  number of items
+    TObjArray  fFirstArray;  ///<  first item array
+    TObjArray  fSecondArray; ///<  second item array
  
   ClassDef(AliMpStringObjMap,1)  // motif map
 };    

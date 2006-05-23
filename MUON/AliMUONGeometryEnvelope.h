@@ -73,17 +73,17 @@ class AliMUONGeometryEnvelope : public TNamed
     AliMUONGeometryEnvelope& operator = (const AliMUONGeometryEnvelope& rhs);
 
   private:
-    Bool_t           fIsVirtual;     // true if envelope is not represented
-                                     // by a real volume
-    Bool_t           fIsMANY;        // true if envelope is placed with
-                                     // MANY option
-    Int_t            fCopyNo;        // copy number 
-                                     // (only non virtual envelope can have 
-				     //  more than one copy)
-    TGeoCombiTrans*  fTransformation;// the envelope transformation wrt to the
-                                     // mother frame (the chamber position)
-    TObjArray*       fConstituents;  // the constituents names and transformations
-		                     // wrt to the envelope position                                 
+    Bool_t           fIsVirtual;     ///< \brief true if envelope is not represented
+                                     /// by a real volume
+    Bool_t           fIsMANY;        ///< \brief true if envelope is placed with
+                                     /// MANY option
+    Int_t            fCopyNo;        ///< \brief copy number 
+                                     /// (only non virtual envelope can have 
+				     ///  more than one copy)
+    TGeoCombiTrans*  fTransformation;///< \brief  the envelope transformation wrt to the
+                                     /// mother frame (the chamber position)
+    TObjArray*       fConstituents;  ///< \brief the constituents names and transformations
+		                     /// wrt to the envelope position                                 
  
   ClassDef(AliMUONGeometryEnvelope,1) // MUON chamber geometry base class
 };

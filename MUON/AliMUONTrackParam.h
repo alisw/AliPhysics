@@ -59,12 +59,12 @@ class AliMUONTrackParam : public TObject
 			       Double_t* vect, Double_t* vout) const;
  protected:
  private:
-  Double_t fInverseBendingMomentum; // Inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
-  Double_t fBendingSlope; // Bending slope (cm ** -1)
-  Double_t fNonBendingSlope; // Non bending slope (cm ** -1)
-  Double_t fZ; // Z coordinate (cm)
-  Double_t fBendingCoor; // bending coordinate (cm)
-  Double_t fNonBendingCoor; // non bending coordinate (cm)
+  Double_t fInverseBendingMomentum; ///< Inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)
+  Double_t fBendingSlope; ///< Bending slope (cm ** -1)
+  Double_t fNonBendingSlope; ///< Non bending slope (cm ** -1)
+  Double_t fZ; ///< Z coordinate (cm)
+  Double_t fBendingCoor; ///< bending coordinate (cm)
+  Double_t fNonBendingCoor; ///< non bending coordinate (cm)
 
   void SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardBackward);
   void GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge);

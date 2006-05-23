@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVMotif.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVMotif.h,v 1.7 2006/05/23 13:07:42 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpVMotif
@@ -52,8 +52,8 @@ class AliMpVMotif : public TObject
   // methods
 
   // data members 
-  TString         fID;            //identifier
-  AliMpMotifType *fMotifType;     //the motif type
+  TString         fID;        ///< identifier
+  AliMpMotifType *fMotifType; ///< the motif type
 
   ClassDef(AliMpVMotif,1) // A motif with its ID
 };

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatPainter.h,v 1.6 2005/09/19 18:56:46 ivana Exp $
+// $MpId: AliMpSlatPainter.h,v 1.9 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpSlatPainter
@@ -40,7 +40,7 @@ class AliMpSlatPainter : public AliMpVPainter
      
   
  private:
-  const AliMpSlat* fkSlat; //! pointer to the slat to be drawn
+  const AliMpSlat* fkSlat; //!< pointer to the slat to be drawn
 
   ClassDef(AliMpSlatPainter,1) // A painter for a slat of stations 3,4,5
 };

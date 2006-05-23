@@ -74,20 +74,20 @@ public:
  private:
    
    // regional header
-   UInt_t    fWord;          // first word
-   UInt_t    fInput[2];      // regional input
+   UInt_t    fWord;          ///< first word
+   UInt_t    fInput[2];      ///< regional input
 
    // regional card scalers   
-   UInt_t     fL0;         // regional L0
-   UInt_t     fClk;        // regional clock
-   UInt_t     fScaler[8];  // regional ouput
-   UInt_t     fHold;       // regional hold (dead time)
+   UInt_t     fL0;         ///< regional L0
+   UInt_t     fClk;        ///< regional clock
+   UInt_t     fScaler[8];  ///< regional ouput
+   UInt_t     fHold;       ///< regional hold (dead time)
 
-   static const Int_t  fgkScalerLength;  // length of regional scaler in word
-   static const Int_t  fgkHeaderLength;  // header length in word
-   static const UInt_t fgkEndOfReg;      // end of regional info word
+   static const Int_t  fgkScalerLength;  ///< length of regional scaler in word
+   static const Int_t  fgkHeaderLength;  ///< header length in word
+   static const UInt_t fgkEndOfReg;      ///< end of regional info word
 
-   TClonesArray* fLocalArray;   // array of local structure
+   TClonesArray* fLocalArray;   ///< array of local structure
 
    ClassDef(AliMUONRegHeader,3)
 };

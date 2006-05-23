@@ -61,34 +61,34 @@ class AliMUONClusterInput : public TObject
     AliMUONClusterInput(const AliMUONClusterInput& clusterInput);
     AliMUONClusterInput & operator = (const AliMUONClusterInput& rhs);
  private:
-    static AliMUONClusterInput*  fgClusterInput;  // ! singleton instance
-    static AliMUONMathieson*     fgMathieson;     // ! Mathieson
-    static AliMUONGeometryTransformer*  fgTransformer;  // ! Geometry transformer
-    static AliMUONSegmentation*  fgSegmentation;  // ! Segmentation
+    static AliMUONClusterInput*  fgClusterInput;  //!< singleton instance
+    static AliMUONMathieson*     fgMathieson;     //!< Mathieson
+    static AliMUONGeometryTransformer*  fgTransformer;  //!< Geometry transformer
+    static AliMUONSegmentation*  fgSegmentation;  //!< Segmentation
 
     // Digits
-    TClonesArray*        fDigits[2];       // ! Array of pointers to digits
-    Int_t                fNDigits[2];      // ! Number of digits
-    AliMUONGeometrySegmentation*     fSegmentation2[2]; // ! Geometry Segmentation per cathode
+    TClonesArray*        fDigits[2];       //!< Array of pointers to digits
+    Int_t                fNDigits[2];      //!< Number of digits
+    AliMUONGeometrySegmentation*     fSegmentation2[2]; //!< Geometry Segmentation per cathode
 
-    Int_t                fNseg;            // ! number of cathode planes
-    Int_t                fChamber;         // ! Current chamber number
+    Int_t                fNseg;            //!< number of cathode planes
+    Int_t                fChamber;         //!< Current chamber number
     
     // Current cluster
-    AliMUONRawCluster*   fCluster;         // ! current cluster
-    Int_t                fNmul[2];         // ! current cluster multiplicity
+    AliMUONRawCluster*   fCluster;         //!< current cluster
+    Int_t                fNmul[2];         //!< current cluster multiplicity
     // Digits contribuing to current cluster
-    Int_t                fix[500][2];      // ! List of x-positions for current cluster
-    Int_t                fiy[500][2];      // ! List of y-positions for current cluster
-    Float_t              fCharge[500][2];  // ! List of charges for current cluster
-    Int_t                fChargeTot[2];    // ! Total charge
-    Float_t              fQtot[2];         // ! Total charge
-    Float_t              fZ;               // ! Current z-position
-    Float_t              fChargeCorrel;    // ! charge correlation 
-    Int_t                fDetElemId;       // ! detection elt id    
+    Int_t                fix[500][2];      //!< List of x-positions for current cluster
+    Int_t                fiy[500][2];      //!< List of y-positions for current cluster
+    Float_t              fCharge[500][2];  //!< List of charges for current cluster
+    Int_t                fChargeTot[2];    //!< Total charge
+    Float_t              fQtot[2];         //!< Total charge
+    Float_t              fZ;               //!< Current z-position
+    Float_t              fChargeCorrel;    //!< charge correlation 
+    Int_t                fDetElemId;       //!< detection elt id    
 
     // Fitter
-    static TMinuit*      fgMinuit;          // ! Fitter
+    static TMinuit*      fgMinuit;          //!< Fitter
     ClassDef(AliMUONClusterInput, 0)        // Global data service for hit reconstruction
 };
 #endif

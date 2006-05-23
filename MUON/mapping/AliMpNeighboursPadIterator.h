@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpNeighboursPadIterator.h,v 1.10 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpNeighboursPadIterator.h,v 1.11 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpNeighboursPadIterator
@@ -82,11 +82,11 @@ class AliMpNeighboursPadIterator : public AliMpVPadIterator
     Bool_t    IsValid() const;
 
     // private data members
-    const AliMpSectorSegmentation* fkSegmentation; // The sector segmentation 
-                                                   // over which to iterate
-    AliMpPad   fCenterPad; // Pad arround which we iterate
-    PadVector  fPads;      // The list of pad arround fCenterIndices
-    UInt_t     fIndex;     // Current index inside the fPads vector
+    const AliMpSectorSegmentation* fkSegmentation; ///< \brief The sector
+                           ///  segmentation over which to iterate
+    AliMpPad   fCenterPad; ///< Pad arround which we iterate
+    PadVector  fPads;      ///< The list of pad arround fCenterIndices
+    UInt_t     fIndex;     ///< Current index inside the fPads vector
 
   ClassDef(AliMpNeighboursPadIterator,1) // iterator over motif's pads
 };

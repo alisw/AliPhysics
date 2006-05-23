@@ -51,11 +51,14 @@ class AliMUONGeometryConstituent : public TNamed
     AliMUONGeometryConstituent& operator = (const AliMUONGeometryConstituent& rhs);
 
   private:
-    Int_t            fCopyNo;        // copy number
-    Int_t            fNpar;          // number of shape parameters
+    Int_t            fCopyNo;        ///< copy number
+    Int_t            fNpar;          ///< number of shape parameters
+    
+    /// shape parameters
     Double_t*        fParam;         //[fNpar] shape parameters
-    TGeoCombiTrans*  fTransformation;// the constituent transformation wrt to the
-                                     // envelope
+
+    TGeoCombiTrans*  fTransformation;///< \brief the constituent transformation
+                                     ///  wrt to the envelope
  
   ClassDef(AliMUONGeometryConstituent,1) // MUON chamber geometry base class
 };

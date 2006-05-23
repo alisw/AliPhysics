@@ -44,7 +44,7 @@ public:
 
  private:
 
-   TClonesArray* fBlkHeaderArray;  // array of block header
+   TClonesArray* fBlkHeaderArray;  ///< array of block header
    
  
    ClassDef(AliMUONDDLTracker,1)  // MUON DDL Tracker

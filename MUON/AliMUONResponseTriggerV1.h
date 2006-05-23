@@ -26,10 +26,10 @@ class AliMUONResponseTriggerV1 : public AliMUONResponseTrigger
     virtual Int_t SetGenerCluster();
 
   protected:
-    Float_t fGenerCluster;   // Random number  
-    Float_t fA;              // first parameter  of the cluster-size param
-    Float_t fB;              // second parameter of the cluster-size param
-    Float_t fC;              // third parameter  of the cluster-size param
+    Float_t fGenerCluster;   ///< Random number  
+    Float_t fA;              ///< first parameter  of the cluster-size param
+    Float_t fB;              ///< second parameter of the cluster-size param
+    Float_t fC;              ///< third parameter  of the cluster-size param
 
   private:
     // initialize parameters

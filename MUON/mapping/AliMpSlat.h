@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlat.h,v 1.5 2006/03/17 16:42:28 ivana Exp $
+// $MpId: AliMpSlat.h,v 1.7 2006/05/23 13:07:47 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlat
@@ -144,20 +144,20 @@ class AliMpSlat : public TObject
   AliMpSlat& operator=(const AliMpSlat& rhs);
   
  private:
-  TString fId; // The name of this slat, e.g. 112233N
-  AliMpPlaneType fPlaneType; // Whether it's bending or non-bending plane
-  Double_t fDX; // Half-size in X (cm)
-  Double_t fDY; // Half-size in Y (cm)
-  Int_t fNofPadsX; // Actual number of pads in x direction
-  Int_t fMaxNofPadsY; // Maximum number of pads in y direction
-  mutable AliMpExMap fManuMap; // map of int to AliMpMotifPosition*
+  TString fId; ///< The name of this slat, e.g. 112233N
+  AliMpPlaneType fPlaneType; ///< Whether it's bending or non-bending plane
+  Double_t fDX; ///< Half-size in X (cm)
+  Double_t fDY; ///< Half-size in Y (cm)
+  Int_t fNofPadsX; ///< Actual number of pads in x direction
+  Int_t fMaxNofPadsY; ///< Maximum number of pads in y direction
+  mutable AliMpExMap fManuMap; ///< map of int to AliMpMotifPosition*
 #ifdef WITH_ROOT
-  TObjArray fPCBs; // array of AliMpPCB*
+  TObjArray fPCBs; ///< array of AliMpPCB*
 #else  
-  std::vector<AliMpPCB*> fPCBs; // array of AliMpPCB*
+  std::vector<AliMpPCB*> fPCBs; ///< array of AliMpPCB*
 #endif
-  TVector2 fPosition; // Position of the slat center.
-  Int_t fNofPads; // number of pads in this slat
+  TVector2 fPosition; ///< Position of the slat center.
+  Int_t fNofPads; ///< number of pads in this slat
   
   ClassDef(AliMpSlat,2) // A slat for stations 3,4,5
 };

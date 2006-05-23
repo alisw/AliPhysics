@@ -66,10 +66,10 @@ class AliMUONGeometryDetElement : public TObject
     void PrintTransform(const TGeoHMatrix* transform) const;
   
     // data members
-    TString       fVolumePath; // the full path of aligned volume or envelope
-                               // in geometry
-    TGeoHMatrix*  fLocalTransformation;  // the transformation wrt module
-    TGeoHMatrix*  fGlobalTransformation; // the transformation wrt world
+    TString       fVolumePath; ///< \brief the full path of aligned volume
+                               ///  or envelope in geometry
+    TGeoHMatrix*  fLocalTransformation;  ///< the transformation wrt module
+    TGeoHMatrix*  fGlobalTransformation; ///< the transformation wrt world
 
   ClassDef(AliMUONGeometryDetElement,2) // MUON det element transformations
 };

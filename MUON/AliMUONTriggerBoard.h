@@ -37,9 +37,9 @@ class AliMUONTriggerBoard : public TNamed
       
    protected:
 
-      Int_t fSlot;                // SLOT NUMBER IN CRATE
+      Int_t fSlot;                ///< SLOT NUMBER IN CRATE
 
-      UShort_t fResponse;         // RESPONSE
+      UShort_t fResponse;         ///< RESPONSE
 
       void Copy(TObject&) const;
 

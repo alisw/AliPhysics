@@ -38,9 +38,9 @@ class AliMUONStringIntMap : public TObject
  
   private:
     // data members
-    Int_t      fNofItems;    // number of items
-    TObjArray  fFirstArray;  // first item array
-    TArrayI    fSecondArray; // second item array
+    Int_t      fNofItems;    ///< number of items
+    TObjArray  fFirstArray;  ///< first item array
+    TArrayI    fSecondArray; ///< second item array
  
   ClassDef(AliMUONStringIntMap,1)  // motif map
 };    

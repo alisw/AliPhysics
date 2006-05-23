@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSt345Reader.h,v 1.4 2005/09/19 19:01:09 ivana Exp $
+// $MpId: AliMpSt345Reader.h,v 1.6 2006/05/23 13:07:47 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSt345Reader
@@ -47,7 +47,7 @@ class AliMpSt345Reader : public TObject
 
 	static AliMpPCB* PCB(const char* pcbType); 
 
-  static TMap fgPCBMap; // map of TObjString to AliMpPCB*
+  static TMap fgPCBMap; ///< map of TObjString to AliMpPCB*
 
   ClassDef(AliMpSt345Reader,1) // Reader for slat stations mapping files 
 };

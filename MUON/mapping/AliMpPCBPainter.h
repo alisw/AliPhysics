@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPCBPainter.h,v 1.3 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPCBPainter.h,v 1.6 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpPCBPainter
@@ -35,7 +35,7 @@ public:
   AliMpPCBPainter&  operator = (const AliMpPCBPainter& right);
      
  private:
-  AliMpPCB* fPCB; //! PCB to be plotted.
+  AliMpPCB* fPCB; //!< PCB to be plotted.
 
   ClassDef(AliMpPCBPainter,1) // A painter for a PCB of stations 3,4,5
 };

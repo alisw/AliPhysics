@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifMap.h,v 1.12 2006/03/17 11:37:50 ivana Exp $
+// $MpId: AliMpMotifMap.h,v 1.13 2006/05/23 13:07:41 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifMap
@@ -103,15 +103,15 @@ class AliMpMotifMap : public TObject
     void  PrintMotifPositions2() const;
  
     // data members
-    MotifMap           fMotifs;         //  motifs map
-    MotifTypeMap       fMotifTypes;     //  motifs types map
+    MotifMap           fMotifs;         ///< motifs map
+    MotifTypeMap       fMotifTypes;     ///< motifs types map
 #ifdef WITH_STL
-    std::map<Int_t, AliMpMotifPosition*> fMotifPositions; // motif positions map by Id
+    std::map<Int_t, AliMpMotifPosition*> fMotifPositions; ///< motif positions map by Id
 #endif
 #ifdef WITH_ROOT
-    MotifPositionMap   fMotifPositions; //  motifs positions map
+    MotifPositionMap   fMotifPositions; ///< motifs positions map
 #endif
-    MotifPositionMap2  fMotifPositions2;//  motifs positions map
+    MotifPositionMap2  fMotifPositions2;///< motifs positions map
 
   ClassDef(AliMpMotifMap,1)  // motif map
 };

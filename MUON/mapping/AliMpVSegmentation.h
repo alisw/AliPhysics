@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVSegmentation.h,v 1.10 2006/03/17 11:34:29 ivana Exp $
+// $MpId: AliMpVSegmentation.h,v 1.11 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpVSegmentation

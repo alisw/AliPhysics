@@ -71,21 +71,21 @@ class AliMUONGeometryBuilder : public TObject
     void SetAlign(AliMUONVGeometryBuilder* builder);	     
 
     // static data members
-    static const TString  fgkDefaultVolPathsFileName;  // default volume paths file name					   
-    static const TString  fgkDefaultTransformFileName; // default transformations file name					   
-    static const TString  fgkDefaultSVMapFileName;     // default svmaps file name					   
-    static const TString  fgkOutFileNameExtension;     // default output file name extension					   
+    static const TString  fgkDefaultVolPathsFileName;  ///< default volume paths file name					   
+    static const TString  fgkDefaultTransformFileName; ///< default transformations file name					   
+    static const TString  fgkDefaultSVMapFileName;     ///< default svmaps file name					   
+    static const TString  fgkOutFileNameExtension;     ///< default output file name extension					   
 
     // data members
-    AliModule*       fModule;              // the AliRoot module
-    Bool_t           fAlign;               // option to read transformations 
-                                           // from a file
-    TString          fTransformFileName;   // transformations file name					   
-    TString          fSVMapFileName;       // svmaps file name					   
-    TGeoCombiTrans   fGlobalTransformation;// global transformation 
-                                           // applied to the whole geometry 
-    TObjArray*       fGeometryBuilders;    // list of Geometry Builders
-    AliMUONGeometry* fGeometry;            // geometry parametrisation
+    AliModule*       fModule;              ///< the AliRoot module
+    Bool_t           fAlign;               ///< \brief option to read transformations 
+                                           /// from a file
+    TString          fTransformFileName;   ///< transformations file name					   
+    TString          fSVMapFileName;       ///< svmaps file name					   
+    TGeoCombiTrans   fGlobalTransformation;///< \brief global transformation 
+                                           /// applied to the whole geometry 
+    TObjArray*       fGeometryBuilders;    ///< list of Geometry Builders
+    AliMUONGeometry* fGeometry;            ///< geometry parametrisation
 
   ClassDef(AliMUONGeometryBuilder,6)  // Geometry builder
 };

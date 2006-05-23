@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifPainter.h,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifPainter.h,v 1.7 2006/05/23 13:07:35 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpMotifPainter
@@ -34,7 +34,7 @@ class AliMpMotifPainter : public AliMpVPainter
   AliMpMotifPainter&  operator = (const AliMpMotifPainter& right);
 
  private:
-  AliMpMotifPosition *fMotifPos;          // the motif to draw
+  AliMpMotifPosition *fMotifPos; ///< the motif to draw
 
   ClassDef(AliMpMotifPainter,1) // Motif painter
 };

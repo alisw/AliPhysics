@@ -55,19 +55,19 @@ class AliMUONRawStreamTrigger: public TObject {
 
   protected :
 
-    AliRawReader*    fRawReader;    // object for reading the raw data
+    AliRawReader*    fRawReader;    ///< object for reading the raw data
  
-    Int_t  fDDL;          // number of DDL
-    Int_t  fSubEntries;   // entries of buspatch structure
-    Bool_t fNextDDL;      // flag for next DDL to be read
+    Int_t  fDDL;          ///< number of DDL
+    Int_t  fSubEntries;   ///< entries of buspatch structure
+    Bool_t fNextDDL;      ///< flag for next DDL to be read
 
-    Int_t fMaxDDL;        // maximum number of DDL in DATE file
-    Int_t fMaxReg;        // maximum number of regional cards in DATE file
-    Int_t fMaxLoc;        // maximum number of local cards in DATE file
+    Int_t fMaxDDL;        ///< maximum number of DDL in DATE file
+    Int_t fMaxReg;        ///< maximum number of regional cards in DATE file
+    Int_t fMaxLoc;        ///< maximum number of local cards in DATE file
 
-    AliMUONDDLTrigger*       fDDLTrigger;   //! pointer for DDL structure
-    AliMUONRegHeader*        fRegHeader;    //! pointer for regional structure
-    AliMUONLocalStruct*      fLocalStruct;  //! pointer to local structure
+    AliMUONDDLTrigger*       fDDLTrigger;   //!< pointer for DDL structure
+    AliMUONRegHeader*        fRegHeader;    //!< pointer for regional structure
+    AliMUONLocalStruct*      fLocalStruct;  //!< pointer to local structure
 
     ClassDef(AliMUONRawStreamTrigger, 2)    // base class for reading MUON trigger rawdata
 };

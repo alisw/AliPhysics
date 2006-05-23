@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpHelper.h,v 1.4 2005/09/19 19:01:09 ivana Exp $ 
+// $MpId: AliMpHelper.h,v 1.5 2006/05/23 13:07:47 ivana Exp $ 
 
 /// \ingroup slat
 /// \class AliMpHelper

@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorReader.h,v 1.5 2006/03/17 11:38:28 ivana Exp $
+// $MpId: AliMpSectorReader.h,v 1.6 2006/05/23 13:07:44 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorReader
@@ -64,22 +64,22 @@ class AliMpSectorReader : public TObject
 			  AliMpXDirection direction);
     
     // static data members
-    static const TString  fgkSectorKeyword;        // sector keyword
-    static const TString  fgkZoneKeyword;          // zone keyword
-    static const TString  fgkSubZoneKeyword;       // subzone keyword
-    static const TString  fgkRowKeyword;           // row keyword
-    static const TString  fgkEofKeyword;           // eof keyword
-    static const TString  fgkSectorSpecialKeyword; // sector special keyword
-    static const TString  fgkMotifKeyword;         // motif keyword
-    static const TString  fgkRowSpecialKeyword;    // row special keyword
-    static const TString  fgkPadRowsKeyword;       // pad rows keyword
-    static const TString  fgkPadRowSegmentKeyword; // pad row segment keyword
+    static const TString  fgkSectorKeyword;        ///< sector keyword
+    static const TString  fgkZoneKeyword;          ///< zone keyword
+    static const TString  fgkSubZoneKeyword;       ///< subzone keyword
+    static const TString  fgkRowKeyword;           ///< row keyword
+    static const TString  fgkEofKeyword;           ///< eof keyword
+    static const TString  fgkSectorSpecialKeyword; ///< sector special keyword
+    static const TString  fgkMotifKeyword;         ///< motif keyword
+    static const TString  fgkRowSpecialKeyword;    ///< row special keyword
+    static const TString  fgkPadRowsKeyword;       ///< pad rows keyword
+    static const TString  fgkPadRowSegmentKeyword; ///< pad row segment keyword
   
     // data members  
-    AliMpStationType  fStationType; // station type 
-    AliMpPlaneType    fPlaneType;   // plane type 
-    AliMpSector*      fSector;      // sector
-    AliMpMotifReader* fMotifReader; // motif reader
+    AliMpStationType  fStationType; ///< station type 
+    AliMpPlaneType    fPlaneType;   ///< plane type 
+    AliMpSector*      fSector;      ///< sector
+    AliMpMotifReader* fMotifReader; ///< motif reader
 
   ClassDef(AliMpSectorReader,1)  // Data reader
 };

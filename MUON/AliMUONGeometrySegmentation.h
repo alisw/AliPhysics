@@ -192,17 +192,17 @@ class AliMUONGeometrySegmentation : public TObject
     Bool_t OwnNotify(Int_t detElemId, Bool_t warn = true) const;
 
     // static data members
-    static  const Float_t  fgkMaxDistance; // the big value passed to pad coordinates
-                                           // if pad does not exist
+    static  const Float_t  fgkMaxDistance; ///< \brief the big value passed to pad coordinates
+                                           /// if pad does not exist
   
     // data members
-    mutable  Int_t                           fCurrentDetElemId;   // current DE ID 
-    mutable  AliMUONGeometryDetElement*      fCurrentDetElement;  // current detection element 
-    mutable  AliMUONVGeometryDESegmentation* fCurrentSegmentation;// current DE segmentation
+    mutable  Int_t                           fCurrentDetElemId;   ///< current DE ID 
+    mutable  AliMUONGeometryDetElement*      fCurrentDetElement;  ///< current detection element 
+    mutable  AliMUONVGeometryDESegmentation* fCurrentSegmentation;///< current DE segmentation
    
-    const AliMUONGeometryModuleTransformer*  fkModuleTransformer; // associated geometry transformer
-    AliMUONGeometryStore*        fDESegmentations;// DE segmentations
-    AliMUONGeometryStore*        fDENames;        // DE names
+    const AliMUONGeometryModuleTransformer*  fkModuleTransformer; ///< associated geometry transformer
+    AliMUONGeometryStore*        fDESegmentations;///< DE segmentations
+    AliMUONGeometryStore*        fDENames;        ///< DE names
     
  
    ClassDef(AliMUONGeometrySegmentation,3) // Geometry segmentation

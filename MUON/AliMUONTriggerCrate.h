@@ -40,11 +40,11 @@ class AliMUONTriggerCrate : public TNamed
 
    private:
 
-      Int_t     fNslots;          // NUMBER OF SLOTS
-      Int_t     fNboards;         // NUMBER OF BOARDS
+      Int_t     fNslots;          ///< NUMBER OF SLOTS
+      Int_t     fNboards;         ///< NUMBER OF BOARDS
 
-      TObjArray *fBoards;         // POINTER TO BOARD OBJECTS
-      TString   fSourceFileName;  // SOURCE FILE
+      TObjArray *fBoards;         ///< POINTER TO BOARD OBJECTS
+      TString   fSourceFileName;  ///< SOURCE FILE
 
    ClassDef(AliMUONTriggerCrate,1)
 };

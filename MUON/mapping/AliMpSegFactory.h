@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpSegFactory.h,v 1.5 2006/03/17 11:35:58 ivana Exp $ 
+// $MpId: AliMpSegFactory.h,v 1.6 2006/05/23 13:07:38 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpSegFactory
@@ -53,10 +53,10 @@ class AliMpSegFactory : public  TObject {
   
   private:
 
-    AliMpStringObjMap  fMpSegmentations;// Map of mapping segmentations to DE names
-    AliMpExMap*        fMpMap;          // Map of el. cards IDs to segmentations
+    AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE names
+    AliMpExMap*        fMpMap;          ///< Map of el. cards IDs to segmentations
       
-  ClassDef(AliMpSegFactory,0)  // MUON Factory for Chambers and Segmentation
+  ClassDef(AliMpSegFactory,0)  // The factory for building mapping segmentations
 };
 
 #endif //ALI_MP_SEG_FACTORY_H

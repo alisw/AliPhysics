@@ -83,21 +83,21 @@ class AliMUONTrack : public TObject
 
  protected:
  private:
-  static TVirtualFitter* fgFitter; //!                  Pointer to track fitter
-  AliMUONTrackReconstructor* fTrackReconstructor; //!   Pointer to TrackReconstructor
-  AliMUONTrackParam fTrackParamAtVertex; // Track parameters at vertex
-  TClonesArray *fTrackParamAtHit; // Track parameters at hit
-  TClonesArray *fHitForRecAtHit; // Cluster parameters at hit
-  TObjArray *fTrackHitsPtr; //!  Pointer to array of pointers to TrackHit's
-  Int_t fNTrackHits; // Number of TrackHit's
-  Int_t fFitMCS; // 0(1) for fit without(with) multiple Coulomb scattering
-  Int_t fFitNParam; // 3(5) for fit with 3(5) parameters
-  Int_t fFitStart; // 0 or 1 for fit starting from parameters at vertex (0) or at first TrackHit(1)
-  Double_t fFitFMin; // minimum value of the function minimized by the fit
-  Bool_t fMatchTrigger; // 1 if track matches with trigger track, 0 if not
-  Double_t fChi2MatchTrigger; // chi2 of trigger/track matching 
+  static TVirtualFitter* fgFitter; //!< Pointer to track fitter
+  AliMUONTrackReconstructor* fTrackReconstructor; //!< Pointer to TrackReconstructor
+  AliMUONTrackParam fTrackParamAtVertex; ///< Track parameters at vertex
+  TClonesArray *fTrackParamAtHit; ///< Track parameters at hit
+  TClonesArray *fHitForRecAtHit; ///< Cluster parameters at hit
+  TObjArray *fTrackHitsPtr; //!<  Pointer to array of pointers to TrackHit's
+  Int_t fNTrackHits; ///< Number of TrackHit's
+  Int_t fFitMCS; ///< 0(1) for fit without(with) multiple Coulomb scattering
+  Int_t fFitNParam; ///< 3(5) for fit with 3(5) parameters
+  Int_t fFitStart; ///< 0 or 1 for fit starting from parameters at vertex (0) or at first TrackHit(1)
+  Double_t fFitFMin; ///< minimum value of the function minimized by the fit
+  Bool_t fMatchTrigger; ///< 1 if track matches with trigger track, 0 if not
+  Double_t fChi2MatchTrigger; ///< chi2 of trigger/track matching 
  
-  Int_t fTrackID; // track ID = track number in TrackRefs
+  Int_t fTrackID; ///< track ID = track number in TrackRefs
 
   ClassDef(AliMUONTrack, 2) // Reconstructed track in ALICE dimuon spectrometer
     };

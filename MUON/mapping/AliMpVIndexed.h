@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVIndexed.h,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVIndexed.h,v 1.6 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpVIndexed
@@ -42,8 +42,8 @@ class AliMpVIndexed : public TObject
 
  private:
   // data members 
-  AliMpIntPair   fLowIndicesLimit;  // the lowest global pad indices 
-  AliMpIntPair   fHighIndicesLimit; // the hihgest global pad indices 
+  AliMpIntPair   fLowIndicesLimit;  ///<  the lowest global pad indices 
+  AliMpIntPair   fHighIndicesLimit; ///<  the hihgest global pad indices 
 
   ClassDef(AliMpVIndexed,1) // A motif position
 };

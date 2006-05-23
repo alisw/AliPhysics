@@ -46,30 +46,30 @@ protected:
 
  private:
   // Some constants
-  static const Int_t fgkDim = 10000; // array size
-  static const Double_t fgkCouplMin; // threshold on coupling 
-  static const Double_t fgkZeroSuppression; // average zero suppression value
-  static const Double_t fgkSaturation; // average saturation level
+  static const Int_t fgkDim = 10000; ///< array size
+  static const Double_t fgkCouplMin; ///< threshold on coupling 
+  static const Double_t fgkZeroSuppression; ///< average zero suppression value
+  static const Double_t fgkSaturation; ///< average saturation level
 
-  static  AliMUONClusterFinderAZ* fgClusterFinder; // the ClusterFinderAZ instance
+  static  AliMUONClusterFinderAZ* fgClusterFinder; ///< the ClusterFinderAZ instance
 
-  Int_t      fnPads[2];         // ! number of pads in the cluster on 2 cathodes
-  Float_t    fXyq[7][fgkDim];   // ! pad information
-  Int_t      fPadIJ[4][fgkDim]; // ! pad information
-  AliMUONVGeometryDESegmentation *fSegmentation[2]; // ! new segmentation
-  Float_t    fZpad;             // ! z-coordinate of the hit
-  Int_t      fNpar;             // ! number of fit parameters
-  Double_t   fQtot;             // ! total cluster charge
-  Int_t      fReco;             // ! !=0 if run reco with writing of reconstructed clusters 
-  Int_t fCathBeg;               // ! starting cathode (for combined cluster / track reco)
-  Int_t fPadBeg[2];             // ! starting pads (for combined cluster / track reco)
+  Int_t      fnPads[2];         //!< number of pads in the cluster on 2 cathodes
+  Float_t    fXyq[7][fgkDim];   //!< pad information
+  Int_t      fPadIJ[4][fgkDim]; //!< pad information
+  AliMUONVGeometryDESegmentation *fSegmentation[2]; //!< new segmentation
+  Float_t    fZpad;             //!< z-coordinate of the hit
+  Int_t      fNpar;             //!< number of fit parameters
+  Double_t   fQtot;             //!< total cluster charge
+  Int_t      fReco;             //!< !=0 if run reco with writing of reconstructed clusters 
+  Int_t fCathBeg;               //!< starting cathode (for combined cluster / track reco)
+  Int_t fPadBeg[2];             //!< starting pads (for combined cluster / track reco)
 
-  static     TMinuit* fgMinuit; // ! Fitter
-  Bool_t     fUsed[2][fgkDim]; // ! flags for used pads
-  AliMUONClusterDrawAZ *fDraw; // ! drawing object 
-  TObjArray* fPixArray; // ! collection of pixels
-  Int_t fnCoupled; // ! number of coupled clusters in precluster
-  Int_t fDebug; // ! debug level
+  static     TMinuit* fgMinuit; //!< Fitter
+  Bool_t     fUsed[2][fgkDim]; //!< flags for used pads
+  AliMUONClusterDrawAZ *fDraw; //!< drawing object 
+  TObjArray* fPixArray; //!< collection of pixels
+  Int_t fnCoupled; //!< number of coupled clusters in precluster
+  Int_t fDebug; //!< debug level
 
   // Functions
 

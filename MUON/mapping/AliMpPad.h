@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPad.h,v 1.9 2006/03/17 11:34:29 ivana Exp $
+// $MpId: AliMpPad.h,v 1.10 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpPad
@@ -73,15 +73,15 @@ class AliMpPad : public TObject
 
  private:
   // static data members
-  static const Int_t  fgkMaxNofLocations; // maximum number of pad locations
-                                          // in the collection
+  static const Int_t  fgkMaxNofLocations; ///< \brief maximum number of pad locations
+                                          /// in the collection
   // data members
-  IntPairVector*  fLocations;      // collection of pad locations 
-  AliMpIntPair    fLocation;       // pad location
-  AliMpIntPair    fIndices;        // pad indices
-  TVector2        fPosition;       // the pad position (in cm)
-  TVector2        fDimensions;     // the pad dimensions (in cm)
-  Bool_t          fValidity;       // validity
+  IntPairVector*  fLocations;      ///<  collection of pad locations 
+  AliMpIntPair    fLocation;       ///<  pad location
+  AliMpIntPair    fIndices;        ///<  pad indices
+  TVector2        fPosition;       ///<  the pad position (in cm)
+  TVector2        fDimensions;     ///<  the pad dimensions (in cm)
+  Bool_t          fValidity;       ///<  validity
 
   ClassDef(AliMpPad,1) //utility class for the motif type
 };

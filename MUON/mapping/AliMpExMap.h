@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpExMap.h,v 1.2 2006/03/17 11:34:29 ivana Exp $
+// $MpId: AliMpExMap.h,v 1.3 2006/05/23 13:07:29 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpExMap
@@ -62,20 +62,20 @@ class AliMpExMap : public TObject
     void AddKey(Long_t key);
     
     // static data members
-    static const Int_t    fgkDefaultSize;      // Default initial size
-    static const Bool_t   fgkDefaultOwnership; // Default ownership
+    static const Int_t    fgkDefaultSize;      ///< Default initial size
+    static const Bool_t   fgkDefaultOwnership; ///< Default ownership
 
-    static const Int_t    fgkSeparator1; // the separator used for conversion
-                                         // of AliMpIntPair to Int_t
-    static const Int_t    fgkSeparator2; // the separator used for conversion
-                                         // of TString to Int_t
-    static const TString  fgkCharacterMap; // the string mapping characters 
-                                           // to integers 
+    static const Int_t    fgkSeparator1; ///< \brief the separator used for conversion
+                                         ///  of AliMpIntPair to Int_t
+    static const Int_t    fgkSeparator2; ///< \brief the separator used for conversion
+                                         ///  of TString to Int_t
+    static const TString  fgkCharacterMap; ///< \brief the string mapping characters 
+                                           ///  to integers 
     
     // data members
-    mutable TExMap  fMap;     //! Transient map class
-    TObjArray       fObjects; // Array of objects 
-    TArrayL         fKeys;    // Array of keys 
+    mutable TExMap  fMap;     //!<  Transient map class
+    TObjArray       fObjects; ///<  Array of objects 
+    TArrayL         fKeys;    ///<  Array of keys 
 
   ClassDef(AliMpExMap,1)  // Root persistent TExMap
 };

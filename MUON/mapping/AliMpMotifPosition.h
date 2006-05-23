@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifPosition.h,v 1.7 2006/03/17 11:37:51 ivana Exp $
+// $MpId: AliMpMotifPosition.h,v 1.8 2006/05/23 13:07:42 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifPosition
@@ -53,9 +53,9 @@ class AliMpMotifPosition : public AliMpVIndexed
  private:
   // methods
   // data members 
-  Int_t         fID;       //identifier=manu id
-  AliMpVMotif*  fMotif;    //motif
-  TVector2      fPosition; //position
+  Int_t         fID;       ///< identifier=manu id
+  AliMpVMotif*  fMotif;    ///< motif
+  TVector2      fPosition; ///< position
 
   ClassDef(AliMpMotifPosition,1) // A motif position
 };

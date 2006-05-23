@@ -2,9 +2,9 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpContainers.h,v 1.3 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpContainers.h,v 1.4 2006/05/23 13:07:29 ivana Exp $
 
-/// \ingroup basis
+/// \ingroup basic
 /// AliMpContainers
 /// Compiler directive for selection of containers type:
 /// Either STL or ROOT

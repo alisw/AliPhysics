@@ -131,15 +131,15 @@ class AliMUONGeometryEnvelopeStore : public TObject
     Bool_t AlignEnvelope(AliMUONGeometryEnvelope* envelope) const;
  
     // data members
-    TObjArray*  fEnvelopes; // the envelopes names and transformations
-		            // wrt to the chamber position in mother volume                                 
-    AliMUONGeometryStore*  fDetElements; // detection elements
-                            // used for alignement of enevelopes
-    TGeoCombiTrans fReferenceFrame; // the transformation from the builder 
-                                    // reference frame to that of the transform 
-				    // data files
-    Bool_t      fDebug;     // Switch for debugging  
-    Bool_t      fAlign;     // option to read transformations from a file
+    TObjArray*  fEnvelopes; ///< \brief the envelopes names and transformations
+		            /// wrt to the chamber position in mother volume                                 
+    AliMUONGeometryStore*  fDetElements; ///< \brief detection elements
+                            /// used for alignement of enevelopes
+    TGeoCombiTrans fReferenceFrame; ///< \brief the transformation from the builder 
+                                    /// reference frame to that of the transform 
+				    /// data files
+    Bool_t      fDebug;     ///< Switch for debugging  
+    Bool_t      fAlign;     ///< option to read transformations from a file
  
   ClassDef(AliMUONGeometryEnvelopeStore,2) // Geometry envelope store
 };

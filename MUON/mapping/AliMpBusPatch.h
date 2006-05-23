@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpBusPatch.h,v 1.2 2006/03/17 11:35:58 ivana Exp $
+// $MpId: AliMpBusPatch.h,v 1.4 2006/05/23 13:07:38 ivana Exp $
 
 /// \ingroup management
 /// \class AliMpBusPatch
@@ -43,11 +43,11 @@ class AliMpBusPatch : public TObject
 
  private:
 
-  TExMap fDetElemIdToBusPatch;       //! Map from idDE to BusPatch   
-  TExMap fBusPatchToDetElem;         //! Map from BusPatch to idDE
-  TExMap fBusPatchToDDL;             //! Map from BusPatch to iDDL
+  TExMap fDetElemIdToBusPatch;       //!< Map from idDE to BusPatch   
+  TExMap fBusPatchToDetElem;         //!< Map from BusPatch to idDE
+  TExMap fBusPatchToDDL;             //!< Map from BusPatch to iDDL
 
-  Int_t fMaxBusPerCh[10];            //! max buspatch number per chamber
+  Int_t fMaxBusPerCh[10];            //!< max buspatch number per chamber
 
   ClassDef(AliMpBusPatch,1) //utility class for the motif type
 };

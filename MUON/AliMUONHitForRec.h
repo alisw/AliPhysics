@@ -68,29 +68,29 @@ class AliMUONHitForRec : public TObject {
 
 
  private:
-  Double_t fBendingCoor; // coordinate (cm) in bending plane
-  Double_t fNonBendingCoor; // coordinate (cm) in non bending plane
-  Double_t fZ; // Z coordinate (cm)
-  Double_t fBendingReso2; // resolution**2 (cm**2) on coordinate in bending plane
-  Double_t fNonBendingReso2; // resolution**2 (cm**2) on coordinate in non bending plane
+  Double_t fBendingCoor; ///< coordinate (cm) in bending plane
+  Double_t fNonBendingCoor; ///< coordinate (cm) in non bending plane
+  Double_t fZ; ///< Z coordinate (cm)
+  Double_t fBendingReso2; ///< resolution**2 (cm**2) on coordinate in bending plane
+  Double_t fNonBendingReso2; ///< resolution**2 (cm**2) on coordinate in non bending plane
 
   // links back to original hit for various checks
   // ideal would be real link to "hit" or "reconstructed hit"
   // if everything would be in memory ????
-  Int_t fChamberNumber; // chamber number (0...)
-  Int_t fDetElemId; // detection element Id   
-  Int_t fHitNumber; // hit number (0...): RawCluster in "chamber" event of TR or track ref. hit in "track" event of TTR
-  Int_t fTTRTrack; // track number (0...) in TTR
-  Int_t fTrackRefSignal; // Track ref. signal (1) or background (0)
+  Int_t fChamberNumber; ///< chamber number (0...)
+  Int_t fDetElemId; ///< detection element Id   
+  Int_t fHitNumber; ///< hit number (0...): RawCluster in "chamber" event of TR or track ref. hit in "track" event of TTR
+  Int_t fTTRTrack; ///< track number (0...) in TTR
+  Int_t fTrackRefSignal; ///< Track ref. signal (1) or background (0)
 
   // links forward to the segment(s) if HitForRec in first chamber of a station
-  Int_t fIndexOfFirstSegment; //! index of first Segment
-  Int_t fNSegments; //! number of Segments
+  Int_t fIndexOfFirstSegment; //!<  index of first Segment
+  Int_t fNSegments; //!<  number of Segments
 
   // links forward to reconstructed track hits
-  AliMUONTrackHit *fFirstTrackHitPtr ; //! pointer to first TrackHit made with HitForRec
-  AliMUONTrackHit *fLastTrackHitPtr ; //! pointer to last TrackHit made with HitForRec
-  Int_t fNTrackHits; //! number of TrackHit's made with HitForRec
+  AliMUONTrackHit *fFirstTrackHitPtr ; //!<  pointer to first TrackHit made with HitForRec
+  AliMUONTrackHit *fLastTrackHitPtr ; //!<  pointer to last TrackHit made with HitForRec
+  Int_t fNTrackHits; //!<  number of TrackHit's made with HitForRec
   
   ClassDef(AliMUONHitForRec, 2) // Hit for reconstruction in ALICE dimuon spectrometer
     };

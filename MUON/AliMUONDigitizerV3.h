@@ -76,20 +76,20 @@ private:
                         Int_t mask);
   
 private:
-  Bool_t fIsInitialized; // are we initialized ?
-  AliMUONData* fOutputData; //! pointer to access digits
-  AliMUONCalibrationData* fCalibrationData; //! pointer to access calib parameters
-  TTask* fTriggerProcessor; // pointer to the trigger part of the job
-  ETriggerCodeVersion fTriggerCodeVersion; // which version of trigger job
-  Bool_t fUseTriggerEfficiency; // whether or not we should apply trigger efficiency
-  AliMUONTriggerEfficiencyCells* fTriggerEfficiency; // trigger efficiency map  
-  mutable TStopwatch fFindDigitIndexTimer; //! counting time spent in FindDigitIndex
-  TStopwatch fGenerateNoisyDigitsTimer; //! counting time spent in GenerateNoisyDigits()
-  TStopwatch fExecTimer; //! couting time spent in Exec()  
-  TF1* fNoiseFunction; //! function to randomly get signal above n*sigma_ped
-  Bool_t fGenerateNoisyDigits; //! whether or not we should generate noise-only digits for tracker
-  static const Double_t fgkNSigmas; // number of sigmas above ped to use 
-  // for noise-only digit generation and zero-suppression
+  Bool_t fIsInitialized; ///< are we initialized ?
+  AliMUONData* fOutputData; //!< pointer to access digits
+  AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
+  TTask* fTriggerProcessor; ///< pointer to the trigger part of the job
+  ETriggerCodeVersion fTriggerCodeVersion; ///< which version of trigger job
+  Bool_t fUseTriggerEfficiency; ///< whether or not we should apply trigger efficiency
+  AliMUONTriggerEfficiencyCells* fTriggerEfficiency; ///< trigger efficiency map  
+  mutable TStopwatch fFindDigitIndexTimer; //!< counting time spent in FindDigitIndex
+  TStopwatch fGenerateNoisyDigitsTimer; //!< counting time spent in GenerateNoisyDigits()
+  TStopwatch fExecTimer; //!< couting time spent in Exec()  
+  TF1* fNoiseFunction; //!< function to randomly get signal above n*sigma_ped
+  Bool_t fGenerateNoisyDigits; //!< whether or not we should generate noise-only digits for tracker
+  static const Double_t fgkNSigmas; ///< \brief number of sigmas above ped to use 
+  /// for noise-only digit generation and zero-suppression
 
   ClassDef(AliMUONDigitizerV3,3) // MUON Digitizer V3-3
 };

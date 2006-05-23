@@ -74,10 +74,6 @@ class AliMUONTriggerDecisionV1 : public TTask
   Int_t ModuleNumber(Int_t idModule) const; 
   static const Int_t fgkCircuitSortedAsBoard[234]; // circuit Id. number
 
-  
-  ClassDef(AliMUONTriggerDecisionV1,1) // Trigger Decision class
-
-
 protected:
 
   AliMUONTriggerDecisionV1(const AliMUONTriggerDecisionV1& rhs);
@@ -91,41 +87,43 @@ protected:
         );
 
   // Global Trigger information [0] : Low pt, [1] : High pt, [2] : All pt 
-  Int_t fGlobalSinglePlus[3];  // tot num of single plus
-  Int_t fGlobalSingleMinus[3]; // tot num of single minus
-  Int_t fGlobalSingleUndef[3]; // tot num of single undefined
-  Int_t fGlobalPairUnlike[3];  // tot num of unlike-sign pairs
-  Int_t fGlobalPairLike[3];    // tot num of like-sign pairs
+  Int_t fGlobalSinglePlus[3];  ///< tot num of single plus
+  Int_t fGlobalSingleMinus[3]; ///< tot num of single minus
+  Int_t fGlobalSingleUndef[3]; ///< tot num of single undefined
+  Int_t fGlobalPairUnlike[3];  ///< tot num of unlike-sign pairs
+  Int_t fGlobalPairLike[3];    ///< tot num of like-sign pairs
 
   // Local Trigger information
-  Int_t fTrigger[234];  // fTrigger = 0 : no trigger, 1 : trigger
-  Int_t fStripX11[234];  // X strip in MC11 which triggers
-  Int_t fDev[234];       // deviation which triggers
-  Int_t fStripY11[234];  // Y strip in MC11 which triggers
-  Int_t fLutLpt[234][2]; // Local Trigger info Low pt
-  Int_t fLutHpt[234][2]; // Local Trigger info High pt
-  Int_t fLutApt[234][2]; // Local Trigger info All pt
+  Int_t fTrigger[234];   ///< fTrigger = 0 : no trigger, 1 : trigger
+  Int_t fStripX11[234];  ///< X strip in MC11 which triggers
+  Int_t fDev[234];       ///< deviation which triggers
+  Int_t fStripY11[234];  ///< Y strip in MC11 which triggers
+  Int_t fLutLpt[234][2]; ///< Local Trigger info Low pt
+  Int_t fLutHpt[234][2]; ///< Local Trigger info High pt
+  Int_t fLutApt[234][2]; ///< Local Trigger info All pt
 
   // bit pattern
-  Int_t fXbit11[234][16]; // bit pattern XM11
-  Int_t fXbit12[234][16]; // bit pattern XM12
-  Int_t fXbit21[234][32]; // bit pattern XM21
-  Int_t fXbit22[234][32]; // bit pattern XM22
-  Int_t fYbit11[234][16]; // bit pattern YM11
-  Int_t fYbit12[234][16]; // bit pattern YM12
-  Int_t fYbit21[234][16]; // bit pattern YM21
-  Int_t fYbit22[234][16]; // bit pattern YM22
+  Int_t fXbit11[234][16]; ///< bit pattern XM11
+  Int_t fXbit12[234][16]; ///< bit pattern XM12
+  Int_t fXbit21[234][32]; ///< bit pattern XM21
+  Int_t fXbit22[234][32]; ///< bit pattern XM22
+  Int_t fYbit11[234][16]; ///< bit pattern YM11
+  Int_t fYbit12[234][16]; ///< bit pattern YM12
+  Int_t fYbit21[234][16]; ///< bit pattern YM21
+  Int_t fYbit22[234][16]; ///< bit pattern YM22
 
-  Int_t fYbit21U[234][16]; // bit pattern YM21 Up
-  Int_t fYbit22U[234][16]; // bit pattern YM22 Up
-  Int_t fYbit21D[234][16]; // bit pattern YM21 Down
-  Int_t fYbit22D[234][16]; // bit pattern YM22 Down
+  Int_t fYbit21U[234][16]; ///< bit pattern YM21 Up
+  Int_t fYbit22U[234][16]; ///< bit pattern YM22 Up
+  Int_t fYbit21D[234][16]; ///< bit pattern YM21 Down
+  Int_t fYbit22D[234][16]; ///< bit pattern YM22 Down
 
-  TArrayI fDigitNumbers[234];  //! The digit number that fired a circuit.
+  TArrayI fDigitNumbers[234];  //!< The digit number that fired a circuit.
   
-  TObjArray*     fTriggerCircuit;     //! List of Trigger Circuit
-  AliMUONData*   fMUONData;           //! Data container for MUON subsystem 
-  AliMUON*       fMUON;               //! pointer to MUON  
+  TObjArray*     fTriggerCircuit;     //!< List of Trigger Circuit
+  AliMUONData*   fMUONData;           //!< Data container for MUON subsystem 
+  AliMUON*       fMUON;               //!< pointer to MUON  
+
+  ClassDef(AliMUONTriggerDecisionV1,1) // Trigger Decision class
 };
 #endif
 

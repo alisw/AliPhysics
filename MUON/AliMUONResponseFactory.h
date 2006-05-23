@@ -43,8 +43,8 @@ class AliMUONResponseFactory : public  TNamed {
     void BuildStation6();
     
     // data members	
-    AliMUON*             fMUON;           // MUON detector 
-    AliMUONResponseV0*   fResponse0;      // default response 
+    AliMUON*             fMUON;           ///< MUON detector 
+    AliMUONResponseV0*   fResponse0;      ///< default response 
 
   ClassDef(AliMUONResponseFactory,0)  // MUON Factory for Chambers and Segmentation
 };

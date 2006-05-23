@@ -60,18 +60,18 @@ class AliMUONDetElement : public TObject
 
  private:
  
-  Int_t fidDE; // det. elem. ID
-  Int_t fIndex; // det. elem. position index in container
-  Int_t fChamber; // chamber No
-  Double_t fZ; // det. elem. Z-coordinate
-  Int_t fLeft[2]; // numbers of digits not used for clustering
-  Int_t fNHitsForRec; // number of hits for rec.
-  AliMUONGeometrySegmentation* fSeg[2]; // segmentation
-  AliMUONHitMapA1 *fHitMap[2]; // map of digits
-  TObjArray *fDigits[2]; // container of digits from this det. elem.
-  TObjArray *fRawClus; // raw clusters
-  TClonesArray *fHitsForRec; // HitForRec's
-  AliMUONClusterFinderAZ *fRecModel; // cluster finder
+  Int_t fidDE; ///< det. elem. ID
+  Int_t fIndex; ///< det. elem. position index in container
+  Int_t fChamber; ///< chamber No
+  Double_t fZ; ///< det. elem. Z-coordinate
+  Int_t fLeft[2]; ///< numbers of digits not used for clustering
+  Int_t fNHitsForRec; ///< number of hits for rec.
+  AliMUONGeometrySegmentation* fSeg[2]; ///< segmentation
+  AliMUONHitMapA1 *fHitMap[2]; ///< map of digits
+  TObjArray *fDigits[2]; ///< container of digits from this det. elem.
+  TObjArray *fRawClus; ///< raw clusters
+  TClonesArray *fHitsForRec; ///< HitForRec's
+  AliMUONClusterFinderAZ *fRecModel; ///< cluster finder
 
   // Functions
 

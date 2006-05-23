@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpDEManager.h,v 1.4 2006/03/17 11:35:58 ivana Exp $ 
+// $MpId: AliMpDEManager.h,v 1.5 2006/05/23 13:07:38 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpDEManager
@@ -61,17 +61,17 @@ class AliMpDEManager : public  TObject {
     static void   FillDENames();
 
     // static data members	
-    static const char  fgkNameSeparator; // Separator character used in DE names
-    static const char  fgkCommentPrefix; // Comment prefix in DE names file
-    static const Int_t fgkCoefficient;   // Coefficient used in DE Id <-> station
+    static const char  fgkNameSeparator; ///< Separator character used in DE names
+    static const char  fgkCommentPrefix; ///< Comment prefix in DE names file
+    static const Int_t fgkCoefficient;   ///< Coefficient used in DE Id <-> station
 
     // data members	
-    static  AliMpExMap fgDENamesMap;  // Map between DE Ids and 
-                                      // a pair of DE names for 2 cathods
-    static  AliMpExMap fgDECathBNBMap;// Map between DE Is and a pair
-                                      // of planeTypes for cathodes (0,1)
+    static  AliMpExMap fgDENamesMap;  ///< \brief Map between DE Ids and 
+                                      /// a pair of DE names for 2 cathods
+    static  AliMpExMap fgDECathBNBMap;///< \brief  Map between DE Is and a pair
+                                      /// of planeTypes for cathodes (0,1)
 
-  ClassDef(AliMpDEManager,0)  // 
+  ClassDef(AliMpDEManager,0)  // The manager class for definition of detection element types
 };
 
 #endif //ALI_MP_MANAGER_H
