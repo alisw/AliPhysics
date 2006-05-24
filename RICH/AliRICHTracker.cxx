@@ -97,9 +97,10 @@ Int_t AliRICHTracker::PropagateBack(AliESD *pESD)
     if(mipDr>AliRICHParam::DmatchMIP())   {pTrack->SetRICHsignal(kMipDistCut); continue;} //closest cluster with enough carge is still too far 
   
     pTrack->SetRICHcluster(iMipId+1000000*iChamber);                                //set mip cluster index
-    pTrack->SetRICHsignal(recon.ThetaCerenkov(&helix,pRich->Clus(iChamber),iMipId));//search for mean Cerenkov angle for this track
+    Int_t nphots =0;
+    pTrack->SetRICHsignal(recon.ThetaCerenkov(&helix,pRich->Clus(iChamber),nphots));//search for mean Cerenkov angle for this track
     pTrack->SetRICHchi2(recon.GetRingSigma2());
-    pTrack->SetRICHnclusters(iMipId);                                               //on return iMipId is number of photon clusters accepted in reconstruction
+    pTrack->SetRICHnclusters(nphots);                                               //on return nphots is number of photon clusters accepted in reconstruction
 
     AliDebug(1,Form("Ch=%i PC Intersection=(%5.2f,%5.2f) cm MIP cluster dist=(%5.2f,%5.2f)=%5.2f cm ThetaCkov=%f",
                      iChamber,helix.PosPc().X(),helix.PosPc().Y(),            mipDx,mipDy,mipDr,     pTrack->GetRICHsignal()));
