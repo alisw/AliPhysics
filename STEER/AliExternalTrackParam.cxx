@@ -769,7 +769,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t m
   Double_t dir      = (xpos<xToGo) ? 1.:-1.;
   //
   while ( (xToGo-xpos)*dir > kEpsilon){
-    if (TMath::Abs(fP[2]) >= kAlmost1) { return kFALSE;}
+    if (TMath::Abs(fP[2]) >= kAlmost1) return kFALSE;
     Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
     Double_t x    = xpos+step;
     Double_t xyz0[3],xyz1[3],param[7];
@@ -783,6 +783,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t m
 
     if (!CorrectForMaterial(d,x0,mass)) return kFALSE;
     if (rotateTo){
+      if (TMath::Abs(fP[2]) >= kAlmost1) return kFALSE;
       GetXYZ(xyz0);   // global position
       Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]);
       if (!Rotate(alphan)) return kFALSE;
