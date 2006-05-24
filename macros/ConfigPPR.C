@@ -381,8 +381,8 @@ void Config()
     //    ITS->SetWriteDet("$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det");  // don't touch this parameter if you're not an ITS developer
 	ITS->SetThicknessDet1(200.);   // detector thickness on layer 1 must be in the range [100,300]
 	ITS->SetThicknessDet2(200.);   // detector thickness on layer 2 must be in the range [100,300]
-	ITS->SetThicknessChip1(200.);  // chip thickness on layer 1 must be in the range [150,300]
-	ITS->SetThicknessChip2(200.);  // chip thickness on layer 2 must be in the range [150,300]
+	ITS->SetThicknessChip1(150.);  // chip thickness on layer 1 must be in the range [150,300]
+	ITS->SetThicknessChip2(150.);  // chip thickness on layer 2 must be in the range [150,300]
 	ITS->SetRails(0);	     // 1 --> rails in ; 0 --> rails out
 	ITS->SetCoolingFluid(1);   // 1 --> water ; 0 --> freon
 
