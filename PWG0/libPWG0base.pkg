@@ -1,4 +1,5 @@
 HDRS = AliSelector.h \
+       AliSelectorRL.h \
       dNdEta/AlidNdEtaCorrectionSelector.h \
       dNdEta/AlidNdEtaAnalysisSelector.h \
       dNdEta/AlidNdEtaAnalysisMCSelector.h \
@@ -8,6 +9,10 @@ HDRS = AliSelector.h \
       CorrectionMatrix2D.h
 
 SRCS = $(HDRS:.h=.cxx)
+
+#PARBLACKLIST = dNdEta/AlidNdEtaCorrectionSelector.h \
+#      dNdEta/AlidNdEtaAnalysisSelector.h \
+#      dNdEta/AlidNdEtaAnalysisMCSelector.h
 
 DHDR= PWG0baseLinkDef.h
 

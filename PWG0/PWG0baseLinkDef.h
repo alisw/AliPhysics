@@ -7,8 +7,9 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
- 
+
 #pragma link C++ class AliSelector+;
+#pragma link C++ class AliSelectorRL+;
 
 #pragma link C++ class AlidNdEtaCorrectionSelector+;
 #pragma link C++ class AlidNdEtaAnalysisSelector+;
