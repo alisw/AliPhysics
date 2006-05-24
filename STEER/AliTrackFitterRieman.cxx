@@ -50,6 +50,7 @@ AliTrackFitterRieman::AliTrackFitterRieman():
   fAlpha = 0.;
   fNUsed = 0;
   fConv = kFALSE;
+  fMaxDelta = 3;
   fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
   fRieman = new AliRieman(10000);  // allocate rieman
 }
@@ -64,6 +65,7 @@ AliTrackFitterRieman::AliTrackFitterRieman(AliTrackPointArray *array, Bool_t own
   fAlpha = 0.;
   fNUsed = 0;
   fConv = kFALSE;
+  fMaxDelta = 3;
   if (AliLog::GetDebugLevel("","AliTrackFitterRieman")) fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
   fRieman = new AliRieman(10000);  //allocate rieman
 }
@@ -77,6 +79,7 @@ AliTrackFitterRieman::AliTrackFitterRieman(const AliTrackFitterRieman &rieman):
   fAlpha = rieman.fAlpha;
   fNUsed = rieman.fNUsed;
   fConv = rieman.fConv;
+  fMaxDelta = rieman.fMaxDelta;
   fRieman = new AliRieman(*(rieman.fRieman));
 }
 
@@ -92,6 +95,7 @@ AliTrackFitterRieman &AliTrackFitterRieman::operator =(const AliTrackFitterRiema
   fAlpha  = rieman.fAlpha;
   fNUsed  = rieman.fNUsed;
   fConv   = rieman.fConv;
+  fMaxDelta = rieman.fMaxDelta;
   fRieman = new AliRieman(*(rieman.fRieman));
   return *this;
 }
@@ -183,15 +187,16 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
 	isAlphaCalc = kTRUE;
       }
       plocal = p.Rotate(fAlpha);
-      if (TMath::Abs(plocal.GetX())>500 || TMath::Abs(plocal.GetX())<2){
+      if (TMath::Abs(plocal.GetX())>500 || TMath::Abs(plocal.GetX())<2 || plocal.GetCov()[3]<=0 ||plocal.GetCov()[5]<=0 ){
 	printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<</n");
 	p.Dump();
 	plocal.Dump();
 	printf("Problematic point\n");	
 	printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<</n");
+      }else{
+	AddPoint(plocal.GetX(),plocal.GetY(),plocal.GetZ(),
+		 TMath::Sqrt(plocal.GetCov()[3]),TMath::Sqrt(plocal.GetCov()[5]));
       }
-      AddPoint(plocal.GetX(),plocal.GetY(),plocal.GetZ(),
-	       TMath::Sqrt(plocal.GetCov()[3]),TMath::Sqrt(plocal.GetCov()[5]));
       // fNUsed++;  AddPoint should be responsible
     }
 
@@ -226,10 +231,14 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
     {
       Int_t index = pindex[ipoint];
       fPoints->GetPoint(p,index);
-      if (GetPCA(p,p2)) {
+      if (GetPCA(p,p2) && (
+	  TMath::Abs(p.GetX()-p2.GetX())<fMaxDelta && 
+	  TMath::Abs(p.GetY()-p2.GetY())<fMaxDelta &&
+	  TMath::Abs(p.GetZ()-p2.GetZ())<fMaxDelta
+	  )) {
 	Float_t xyz[3],xyz2[3];
 	p.GetXYZ(xyz); p2.GetXYZ(xyz2);
-	//	printf("residuals %f %d %d %f %f %f %f %f %f\n",fChi2,fNUsed,fConv,xyz[0],xyz[1],xyz[2],xyz2[0]-xyz[0],xyz2[1]-xyz[1],xyz2[2]-xyz[2]);
+	//	printf("residuals %f %d %d %f %f %f %f %f %f\n",fChi2,fNUsed,fConv,xyz[0],xyz[1],xyz[2],xyz2[0]-xyz[0],xyz2[1]-xyz[1],xyz2[2]-xyz[2]);	
 	fPVolId->AddPoint(ipoint,&p);
 	fPTrack->AddPoint(ipoint,&p2);
       }else{

@@ -31,6 +31,8 @@ class AliTrackFitterRieman : public AliTrackFitter{
 	     AliAlignObj::ELayerID layerRangeMin = AliAlignObj::kFirstLayer,
 	     AliAlignObj::ELayerID layerRangeMax = AliAlignObj::kLastLayer);
   Bool_t GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) const;
+  void SetMaxDelta(Float_t maxDelta) { fMaxDelta = maxDelta;}
+  Float_t GetMaxDelta() const { return fMaxDelta;}
 
   void Reset();
   void AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy, Float_t sz);
@@ -48,10 +50,11 @@ class AliTrackFitterRieman : public AliTrackFitter{
   Double_t      fAlpha;     //angle to transform to the fitting coordinate system
   Int_t         fNUsed;     //actual number of space-points used in the fit
   Bool_t        fConv;      //indicates convergation
+  Float_t       fMaxDelta;  // maximal allowed delta in PCA exported for PCA minimization
   AliRieman    *fRieman;    // rieman fitter
  private:
   TTreeSRedirector *fDebugStream;   //!debug streamer
-  ClassDef(AliTrackFitterRieman,1)  // Fast fit of helices on ITS RecPoints
+  ClassDef(AliTrackFitterRieman,2)  // Fast fit of helices on ITS RecPoints
 
 };
 
