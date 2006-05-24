@@ -186,7 +186,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fRICHmipX(track.fRICHmipX),
   fRICHmipY(track.fRICHmipY),
   fPoints(0),
-  fFriendTrack(new AliESDfriendTrack(*(track.fFriendTrack)))
+  fFriendTrack(0)
 {
   //
   //copy constructor
@@ -218,6 +218,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
 
   if (track.fPoints) fPoints=new AliTrackPointArray(*(track.fPoints));
+  if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
 }
 
 //_______________________________________________________________________
@@ -259,11 +260,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   // fD: Impact parameter in XY-plane
   // fZ: Impact parameter in Z 
   // fR[AliPID::kSPECIES]: combined "detector response probability"
-  // Running track parameters
-  // fRalpha: track rotation angle
-  // fRx: X-coordinate of the track reference plane 
-  // fRp[5]: external track parameters  
-  // fRc[15]: external cov. matrix of the track parameters
+  // Running track parameters in the base class (AliExternalTrackParam)
   
   fTrackLength = 0;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] = 0;
@@ -337,6 +334,8 @@ void AliESDtrack::MakeMiniESDtrack(){
   fRICHphi = 0;      
   fRICHdx = 0;     
   fRICHdy = 0;      
+  fRICHmipX = 0;
+  fRICHmipY = 0;
 
   delete fFriendTrack; fFriendTrack = 0;
   delete fPoints; fPoints = 0;

@@ -157,10 +157,11 @@ void AliESD::Print(Option_t *) const
 	 GetRunNumber(),
 	 GetTriggerMask(),
 	 GetMagneticField() );
-  printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
-	 fPrimaryVertex->GetXv(), fPrimaryVertex->GetXRes(),
-	 fPrimaryVertex->GetYv(), fPrimaryVertex->GetYRes(),
-	 fPrimaryVertex->GetZv(), fPrimaryVertex->GetZRes());
+  if (fPrimaryVertex)
+    printf("Vertex: (%.4f +- %.4f, %.4f +- %.4f, %.4f +- %.4f) cm\n",
+	   fPrimaryVertex->GetXv(), fPrimaryVertex->GetXRes(),
+	   fPrimaryVertex->GetYv(), fPrimaryVertex->GetYRes(),
+	   fPrimaryVertex->GetZv(), fPrimaryVertex->GetZRes());
   printf("Event from reconstruction version %d \n",fRecoVersion);
   printf("Number of tracks: \n");
   printf("                 charged   %d\n", GetNumberOfTracks());

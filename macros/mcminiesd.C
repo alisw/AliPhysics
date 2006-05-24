@@ -63,24 +63,29 @@ void copyGeneralESDInfo(AliESD* esdIn, AliESD* esdOut) {
   esdOut->SetRunNumber(esdIn->GetRunNumber());
   
   // Trigger
-  esdOut->SetTrigger(esdIn->GetTrigger());
+  esdOut->SetTriggerMask(esdIn->GetTriggerMask());
 
   // Magnetic field
   esdOut->SetMagneticField(esdIn->GetMagneticField());
 
   // Copy ESD vertex
   const AliESDVertex * vtxIn = esdIn->GetVertex();
-  Double_t pos[3];
-  vtxIn->GetXYZ(pos);
-  Double_t cov[6];
-  vtxIn->GetCovMatrix(cov);
+  AliESDVertex * vtxOut = 0x0;
+  if (vtxIn) {
+    Double_t pos[3];
+    vtxIn->GetXYZ(pos);
+    Double_t cov[6];
+    vtxIn->GetCovMatrix(cov);
   
-  AliESDVertex * vtxOut = new AliESDVertex(pos,cov,
-					   vtxIn->GetChi2(),
-					   vtxIn->GetNContributors());
-  Double_t tp[3];
-  vtxIn->GetTruePos(tp);
-  vtxOut->SetTruePos(tp);
+    vtxOut = new AliESDVertex(pos,cov,
+					     vtxIn->GetChi2(),
+					     vtxIn->GetNContributors());
+    Double_t tp[3];
+    vtxIn->GetTruePos(tp);
+    vtxOut->SetTruePos(tp);
+  }
+  else
+    vtxOut = new AliESDVertex();
   
   esdOut->SetVertex(vtxOut);
 }
@@ -101,7 +106,7 @@ void selectMiniESD(AliESD* esdIn, AliESD* &esdOut) {
 
   // Copy the general information
   copyGeneralESDInfo(esdIn, esdOut);
-     
+
   // Select tracks
   Int_t ntrk = esdIn->GetNumberOfTracks();
   
