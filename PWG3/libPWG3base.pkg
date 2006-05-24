@@ -1,0 +1,11 @@
+# $Id$
+
+SRCS:=  AliQuarkoniaAcceptance.cxx         
+     
+     
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= PWG3baseLinkDef.h
+
+EINCLUDE:= 
+
