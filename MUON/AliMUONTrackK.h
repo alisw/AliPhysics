@@ -112,10 +112,10 @@ class AliMUONTrackK : public AliMUONTrack {
   TObjArray *fCovFilter; //!< filtered covariance matrices
 
   TObjArray *fJacob; //!< Jacobian matrices
-  Int_t fNSteps; //!< 
-  TArrayD *fSteps; //!< 
-  TArrayD *fChi2Array; //!< 
-  TArrayD *fChi2Smooth; //!< 
+  Int_t fNSteps;     //!< number of the track propagation points
+  TArrayD *fSteps;   //!< Z-coordinates of the track propagation points
+  TArrayD *fChi2Array; //!< measurements' contributions to the track Chi2
+  TArrayD *fChi2Smooth;//!< measurements' contributions to the smoothed track Chi2
 
   // Functions
 
