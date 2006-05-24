@@ -30,7 +30,6 @@ const Double_t kVeryBigConvConst=1/kB2C/kAlmost0Field;
 const Double_t kMostProbableMomentum=0.35;
 
 class AliKalmanTrack;
-class AliStrLine;
 class AliESDVertex;
 
 class AliExternalTrackParam: public TObject {
@@ -78,11 +77,9 @@ class AliExternalTrackParam: public TObject {
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
   Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t r[3]) const;
-  void ApproximateHelixWithLine(Double_t xk, Double_t b, AliStrLine *line);
   void Print(Option_t* option = "") const;
   // MI
-  virtual Bool_t   CorrectForMaterial(Double_t d, Double_t x0, Double_t rho, Double_t mass);
-  virtual Bool_t   PropagateTo(Double_t x, Double_t mass, Double_t maxStep, Bool_t rotateTo=kTRUE);
+  virtual Bool_t   PropagateTo(Double_t x, Double_t b, Double_t mass, Double_t maxStep, Bool_t rotateTo=kTRUE);
 
 private:
   Double_t             fX;     // X coordinate for the point of parametrisation

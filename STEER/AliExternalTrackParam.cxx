@@ -27,8 +27,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "AliExternalTrackParam.h"
 #include "AliKalmanTrack.h"
-#include "AliTracker.h"
-#include "AliStrLine.h"
 #include "AliESDVertex.h"
 
 
@@ -734,25 +732,6 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   return Local2GlobalPosition(r,fAlpha);
 }
 
-
-//_____________________________________________________________________________
-void AliExternalTrackParam::ApproximateHelixWithLine(Double_t xk, Double_t b, AliStrLine *line)
-{
-  //------------------------------------------------------------
-  // Approximate the track (helix) with a straight line tangent to the
-  // helix in the point defined by r (F. Prino, prino@to.infn.it)
-  //------------------------------------------------------------
-  Double_t mom[3];
-  Double_t azim = TMath::ASin(fP[2])+fAlpha;
-  Double_t theta = TMath::Pi()/2. - TMath::ATan(fP[3]);
-  mom[0] = TMath::Sin(theta)*TMath::Cos(azim);
-  mom[1] = TMath::Sin(theta)*TMath::Sin(azim);
-  mom[2] = TMath::Cos(theta);
-  Double_t pos[3];
-  GetXYZAt(xk,b,pos);
-  line->SetP0(pos);
-  line->SetCd(mom);
-}
 //_____________________________________________________________________________
 void AliExternalTrackParam::Print(Option_t* /*option*/) const
 {
@@ -771,13 +750,16 @@ void AliExternalTrackParam::Print(Option_t* /*option*/) const
 }
 
 
-Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t mass, Double_t maxStep, Bool_t rotateTo){
+Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t mass, Double_t maxStep, Bool_t rotateTo){
   //----------------------------------------------------------------
-  // Propagate this track to the plane X=xk (cm) 
-  // correction for unhomogenity of the magnetic field and the
+  //
+  // Very expensive function !  Don't abuse it !
+  //
+  // Propagates this track to the plane X=xk (cm) 
+  // in the magnetic field "b" (kG),
   // the correction for the material is included
   //
-  //  Require acces to magnetic field and geomanager
+  //  Requires acces to geomanager
   //
   // mass     - mass used in propagation - used for energy loss correction
   // maxStep  - maximal step for propagation
@@ -787,17 +769,19 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t mass, Double_
   Double_t dir      = (xpos<xToGo) ? 1.:-1.;
   //
   while ( (xToGo-xpos)*dir > kEpsilon){
+    if (TMath::Abs(fP[2]) >= kAlmost1) { return kFALSE;}
     Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
     Double_t x    = xpos+step;
     Double_t xyz0[3],xyz1[3],param[7];
     GetXYZ(xyz0);   //starting global position
-    Float_t  pos0[3] = {xyz0[0],xyz0[1],xyz0[2]};
-    Double_t magZ = AliTracker::GetBz(pos0);
-    if (!GetXYZAt(x,magZ,xyz1)) return kFALSE;   // no prolongation
+    if (!GetXYZAt(x,b,xyz1)) return kFALSE;   // no prolongation
     AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
-    if (!PropagateTo(x,magZ))  return kFALSE;
-    Double_t distance = param[4];
-    if (!CorrectForMaterial(distance,param[1],param[0],mass)) return kFALSE;
+    if (!PropagateTo(x,b))  return kFALSE;
+
+    Double_t rho=param[0],x0=param[1],distance=param[4];
+    Double_t d=distance*rho/x0;
+
+    if (!CorrectForMaterial(d,x0,mass)) return kFALSE;
     if (rotateTo){
       GetXYZ(xyz0);   // global position
       Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]);
@@ -808,37 +792,6 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t mass, Double_
   return kTRUE;
 }
 
-//_____________________________________________________________________________
-Bool_t AliExternalTrackParam::CorrectForMaterial(Double_t d, Double_t x0, Double_t rho, Double_t mass)
-{
-  //
-  // Take into account material effects assuming:
-  // x0  - mean rad length
-  // rho - mean density
 
-  //
-  // multiple scattering
-  //
-  if (mass<=0) {
-    AliError("Non-positive mass");
-    return kFALSE;
-  }
-  Double_t p2=(1.+ fP[3]*fP[3])/(fP[4]*fP[4]);
-  Double_t beta2=p2/(p2 + mass*mass);
-  Double_t theta2=14.1*14.1/(beta2*p2*1e6)*d/x0*rho;
-  //
-  fC[5] += theta2*(1.- fP[2]*fP[2])*(1. + fP[3]*fP[3]);
-  fC[9] += theta2*(1. + fP[3]*fP[3])*(1. + fP[3]*fP[3]);
-  fC[13] += theta2*fP[3]*fP[4]*(1. + fP[3]*fP[3]);
-  fC[14] += theta2*fP[3]*fP[4]*fP[3]*fP[4];
-  //
-  Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2+1e-10)) - beta2)*d*rho;  
-  fP[4] *=(1.- TMath::Sqrt(p2+mass*mass)/p2*dE);
-  //
-  Double_t sigmade = 0.02*TMath::Sqrt(TMath::Abs(dE));   // energy loss fluctuation 
-  Double_t sigmac2 = sigmade*sigmade*fP[4]*fP[4]*(p2+mass*mass)/(p2*p2);
-  fC[14] += sigmac2;
-  return kTRUE;
-}
 
 

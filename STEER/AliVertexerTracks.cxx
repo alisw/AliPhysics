@@ -206,15 +206,20 @@ void AliVertexerTracks::VertexFinder(Int_t optUseWeights) {
     track1 = (AliESDtrack*)fTrkArray.At(i);
     alpha=track1->GetAlpha();
     mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
-    AliStrLine *line1 = new AliStrLine();
-    track1->ApproximateHelixWithLine(mindist,field,line1);
+
+    Double_t pos[3]; track1->GetXYZAt(mindist,field,pos);
+    Double_t dir[3]; track1->GetPxPyPzAt(mindist,field,dir);
+    AliStrLine *line1 = new AliStrLine(pos,dir);
    
     for(Int_t j=i+1; j<nacc; j++){
       track2 = (AliESDtrack*)fTrkArray.At(j);
       alpha=track2->GetAlpha();
       mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
-      AliStrLine *line2 = new AliStrLine();
-      track2->ApproximateHelixWithLine(mindist,field,line2);
+
+      Double_t pos[3]; track2->GetXYZAt(mindist,field,pos);
+      Double_t dir[3]; track2->GetPxPyPzAt(mindist,field,dir);
+      AliStrLine *line2 = new AliStrLine(pos,dir);
+
       Double_t distCA=line2->GetDCA(line1);
       if(fDCAcut<=0 || (fDCAcut>0&&distCA<fDCAcut)){
 	Double_t pnt1[3],pnt2[3],crosspoint[3];
@@ -376,8 +381,10 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights){
     track1 = (AliESDtrack*)fTrkArray.At(i);
     Double_t alpha=track1->GetAlpha();
     Double_t mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
-    AliStrLine *line1 = new AliStrLine();
-    track1->ApproximateHelixWithLine(mindist,field,line1);
+
+    Double_t pos[3]; track1->GetXYZAt(mindist,field,pos);
+    Double_t dir[3]; track1->GetPxPyPzAt(mindist,field,pos);
+    AliStrLine *line1 = new AliStrLine(pos,dir);
 
     Double_t p0[3],cd[3];
     line1->GetP0(p0);
