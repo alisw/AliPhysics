@@ -35,14 +35,79 @@
 #define NPointsOfRing 201
 
 //__________________________________________________________________________________________________
-AliRICHRecon::AliRICHRecon()
-             :TTask       ("RichRec","RichPat")
+AliRICHRecon::AliRICHRecon():
+  TTask       ("RichRec","RichPat"),
+  fClusters(0x0),
+  fParam(AliRICHParam::Instance()),
+  fPhotonsNumber(0),
+  fPhotonIndex(0), // should we use -1?
+  fFittedHoughPhotons(0),
+  fMinNumPhots(3),
+  fTrackTheta(0),
+  fTrackPhi(0),
+  fMinDist(999),
+  fTrackBeta(0),
+  fXtoentr(999),
+  fYtoentr(999),
+  fThetaPhotonInTRS(0),
+  fPhiPhotonInTRS(0),
+  fThetaPhotonInDRS(0),
+  fPhiPhotonInDRS(0),
+  fThetaAtQuartz(0),
+  fXEmiss(-999),
+  fYEmiss(-999),
+  fXInner(-999),
+  fYInner(-999),
+  fXOuter(-999),
+  fYOuter(-999),
+  fInnerRadius(-999),
+  fOuterRadius(-999),
+  fEphot(0),
+  fLengthEmissionPoint(0),
+  fPhotonLimitX(999),
+  fPhotonLimitY(999),
+  fDistanceFromCluster(999),
+  fCerenkovAnglePad(999),
+  fThetaPhotonCerenkov(0),
+  fShiftX(0),
+  fShiftY(0),
+  fXcoord(999),
+  fYcoord(999),
+  fIntersectionX(999),
+  fIntersectionY(999),
+  fMassHypotesis(0.139567),
+  fThetaOfRing(0),
+  fAreaOfRing(0),
+  fPortionOfRing(0),
+  fHoughArea(0),
+  fHoughRMS(999),
+  fCandidatePhotonX(0x0),
+  fCandidatePhotonY(0x0),
+  fFittedTrackTheta(0),
+  fFittedTrackPhi(0),
+  fFittedThetaCerenkov(0),
+  fThetaMin(0.0),
+  fThetaMax(0.75),
+  fIsWEIGHT(kFALSE),
+  fIsBACKGROUND(kFALSE),
+  fDTheta(0.001),
+  fWindowWidth(0.045),
+  fNumEtaPhotons(0),
+  fnPhotBKG(0),
+  fThetaCerenkov(0),
+  fWeightThetaCerenkov(0),
+  fThetaPeakPos(0)
 {
 // main ctor
-  fThetaMin = 0.0; fThetaMax = 0.75; 
-  fDTheta       = 0.001;   fWindowWidth  = 0.045;
-  fMinNumPhots = 3;
-  fParam=AliRICHParam::Instance(); //get the pointer to AliRICHParam
+  for (Int_t i=0; i<3000; i++) {
+    fPhotonFlag[i] = 0;
+    fPhiPoint[i] = -999;
+    fPhotonEta[i] = -999;
+    fPhotonWeight[i] = 0.0;
+    fEtaFlag[i] = 0;
+    fEtaPhotons[i] = 0;
+    fWeightPhotons[i] = 0;
+  }
 }
 //__________________________________________________________________________________________________
 Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t &iMipId)

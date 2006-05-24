@@ -56,7 +56,7 @@ AliTPCseed::AliTPCseed():
   fCircular(0)
 {
   //
-  for (Int_t i=0;i<200;i++) SetClusterIndex2(i,-3);
+  for (Int_t i=0;i<160;i++) SetClusterIndex2(i,-3);
   for (Int_t i=0;i<160;i++) fClusterPointer[i]=0;
   for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=0;
   for (Int_t i=0;i<AliPID::kSPECIES;i++)   fTPCr[i]=0.2;
@@ -108,7 +108,16 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
     fTrackPoints[i] = s.fTrackPoints[i];
   }
   for (Int_t i=0;i<160;i++) fIndex[i] = s.fIndex[i];
+  for (Int_t i=0;i<AliPID::kSPECIES;i++)   fTPCr[i]=s.fTPCr[i];
+  for (Int_t i=0;i<4;i++) {
+    fDEDX[i] = s.fDEDX[i];
+    fSDEDX[i] = s.fSDEDX[i];
+    fNCDEDX[i] = s.fNCDEDX[i];
+  }
+  for (Int_t i=0;i<12;i++) fOverlapLabels[i] = s.fOverlapLabels[i];
 }
+
+
 AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   AliTPCtrack(t),
   fEsd(0x0),
@@ -139,7 +148,6 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   // Constructor from AliTPCtrack
   //
   fFirstPoint =0;
-  for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=t.GetKinkIndex(i);
   for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<160;i++) {
     fClusterPointer[i] = 0;
@@ -191,9 +199,8 @@ AliTPCseed::AliTPCseed(UInt_t index,  const Double_t xx[5],
   // Constructor
   //
   fFirstPoint =0;
-  for (Int_t i=0;i<200;i++) SetClusterIndex2(i,-3);
+  for (Int_t i=0;i<160;i++) SetClusterIndex2(i,-3);
   for (Int_t i=0;i<160;i++) fClusterPointer[i]=0;
-  for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=0;
   for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<4;i++) {
     fDEDX[i] = 0.;
