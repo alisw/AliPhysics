@@ -31,7 +31,7 @@
 #include "TH2F.h"
 
 
-#include "AliITSclusterV2.h"
+#include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
 #include "AliLog.h"
 
@@ -209,8 +209,8 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
   fNClustersLay1 = 0;
   fNClustersLay2 = 0;
   
-  TClonesArray* itsClusters = new TClonesArray("AliITSclusterV2");
-  TBranch* itsClusterBranch=itsClusterTree->GetBranch("Clusters");
+  TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
+  TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
   itsClusterBranch->SetAddress(&itsClusters);
   
   Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();  
@@ -243,7 +243,7 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
     
     // loop over clusters
     while(nClusters--) {
-      AliITSclusterV2* cluster = (AliITSclusterV2*)itsClusters->UncheckedAt(nClusters);	
+      AliITSRecPoint* cluster = (AliITSRecPoint*)itsClusters->UncheckedAt(nClusters);	
       
       if (cluster->GetLayer()>1) 
 	continue;            
