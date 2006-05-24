@@ -33,13 +33,14 @@ class AliITSMultReconstructor : public TObject
 {
 public:
   AliITSMultReconstructor();
+  virtual ~AliITSMultReconstructor();
 
   void SetGeometry(AliITSgeom* geo) {fGeometry = geo;}
 
   void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes);
 
   void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
-  void SetZetaWindow(Float_t w=0.1) {fZetaWindow=w;}
+  void SetZetaWindow(Float_t w=0.5) {fZetaWindow=w;}
   void SetOnlyOneTrackletPerC2(Float_t b = kFALSE) {fOnlyOneTrackletPerC2 = b;}
   
   Int_t GetNClustersLayer1() const {return fNClustersLay1;}
@@ -68,16 +69,26 @@ protected:
   Float_t       fPhiWindow;     // Search window in phi
   Float_t       fZetaWindow;    // SEarch window in eta
 
-  Bool_t        fOnlyOneTrackletPerC2; // only one tracklet per cluster in layer 2?
+  Bool_t        fOnlyOneTrackletPerC2; // only one tracklet per cluster in layer 2
   
   Bool_t        fHistOn;
 
-  TH1F*         fhClustersDPhi;
-  TH1F*         fhClustersDTheta;
-  TH1F*         fhClustersDZeta;
+  TH1F*         fhClustersDPhiAcc;
+  TH1F*         fhClustersDThetaAcc;
+  TH1F*         fhClustersDZetaAcc;
+  TH1F*         fhClustersDPhiAll;
+  TH1F*         fhClustersDThetaAll;
+  TH1F*         fhClustersDZetaAll;
  
   TH2F*         fhDPhiVsDThetaAll;
   TH2F*         fhDPhiVsDThetaAcc;
+  TH2F*         fhDPhiVsDZetaAll;
+  TH2F*         fhDPhiVsDZetaAcc;
+
+  TH1F*         fhetaTracklets;
+  TH1F*         fhphiTracklets;
+  TH1F*         fhetaClustersLay1;
+  TH1F*         fhphiClustersLay1;
 
   void LoadClusterArrays(TTree* tree);
 

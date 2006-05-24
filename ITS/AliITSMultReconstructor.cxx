@@ -61,20 +61,72 @@ AliITSMultReconstructor::AliITSMultReconstructor() {
   }
 
   // definition of histograms
-  fhClustersDPhi   = new TH1F("dphi",  "dphi",  200,-0.1,0.1);
-  fhClustersDPhi->SetDirectory(0);
-  fhClustersDTheta = new TH1F("dtheta","dtheta",200,-0.1,0.1);
-  fhClustersDTheta->SetDirectory(0);
-  fhClustersDZeta = new TH1F("dzeta","dzeta",200,-0.2,0.2);
-  fhClustersDZeta->SetDirectory(0);
+  fhClustersDPhiAcc   = new TH1F("dphiacc",  "dphi",  100,-0.1,0.1);
+  fhClustersDPhiAcc->SetDirectory(0);
+  fhClustersDThetaAcc = new TH1F("dthetaacc","dtheta",100,-0.1,0.1);
+  fhClustersDThetaAcc->SetDirectory(0);
+  fhClustersDZetaAcc = new TH1F("dzetaacc","dzeta",100,-1.,1.);
+  fhClustersDZetaAcc->SetDirectory(0);
 
-  fhDPhiVsDThetaAll = new TH2F("dphiVsDthetaAll","",200,-0.1,0.1,200,-0.1,0.1);
-  fhDPhiVsDThetaAll->SetDirectory(0);
-  fhDPhiVsDThetaAcc = new TH2F("dphiVsDthetaAcc","",200,-0.1,0.1,200,-0.1,0.1);
+  fhDPhiVsDZetaAcc = new TH2F("dphiVsDzetaacc","",100,-1.,1.,100,-0.1,0.1);
+  fhDPhiVsDZetaAcc->SetDirectory(0);
+  fhDPhiVsDThetaAcc = new TH2F("dphiVsDthetaAcc","",100,-0.1,0.1,100,-0.1,0.1);
   fhDPhiVsDThetaAcc->SetDirectory(0);
 
-}
+  fhClustersDPhiAll   = new TH1F("dphiall",  "dphi",  100,-0.5,0.5);
+  fhClustersDPhiAll->SetDirectory(0);
+  fhClustersDThetaAll = new TH1F("dthetaall","dtheta",100,-0.5,0.5);
+  fhClustersDThetaAll->SetDirectory(0);
+  fhClustersDZetaAll = new TH1F("dzetaall","dzeta",100,-5.,5.);
+  fhClustersDZetaAll->SetDirectory(0);
 
+  fhDPhiVsDZetaAll = new TH2F("dphiVsDzetaall","",100,-5.,5.,100,-0.5,0.5);
+  fhDPhiVsDZetaAll->SetDirectory(0);
+  fhDPhiVsDThetaAll = new TH2F("dphiVsDthetaAll","",100,-0.5,0.5,100,-0.5,0.5);
+  fhDPhiVsDThetaAll->SetDirectory(0);
+
+  fhetaTracklets  = new TH1F("etaTracklets",  "eta",  100,-2.,2.);
+  fhetaTracklets->SetDirectory(0);
+  fhphiTracklets  = new TH1F("phiTracklets",  "phi",  100,-3.14159,3.14159);
+  fhphiTracklets->SetDirectory(0);
+  fhetaClustersLay1  = new TH1F("etaClustersLay1",  "etaCl1",  100,-2.,2.);
+  fhetaClustersLay1->SetDirectory(0);
+  fhphiClustersLay1  = new TH1F("phiClustersLay1", "phiCl1", 100,-3.141,3.141);
+  fhphiClustersLay1->SetDirectory(0);
+}
+//____________________________________________________________________
+AliITSMultReconstructor::~AliITSMultReconstructor() {
+  // Destructor
+
+  fGeometry = 0x0;
+  for(Int_t i=0; i<300000; i++) {
+    delete [] fClustersLay1[i];
+    delete [] fClustersLay2[i];
+    delete [] fTracklets[i];
+  }
+  
+  delete [] fClustersLay1;
+  delete [] fClustersLay2;
+  delete [] fTracklets;
+  delete [] fAssociationFlag;
+  
+  delete fhClustersDPhiAcc;
+  delete fhClustersDThetaAcc;
+  delete fhClustersDZetaAcc;
+  delete fhClustersDPhiAll;
+  delete fhClustersDThetaAll;
+  delete fhClustersDZetaAll;
+ 
+  delete fhDPhiVsDThetaAll;
+  delete fhDPhiVsDThetaAcc;
+  delete fhDPhiVsDZetaAll;
+  delete fhDPhiVsDZetaAcc;
+
+  delete fhetaTracklets;
+  delete fhphiTracklets;
+  delete fhetaClustersLay1;
+  delete fhphiClustersLay1;
+}
 
 //____________________________________________________________________
 void
@@ -96,7 +148,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 
   // loading the clusters 
   LoadClusterArrays(clusterTree);
-  
+ 
   // find the tracklets
   AliDebug(1,"Looking for tracklets... ");  
 
@@ -106,31 +158,38 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
     Float_t x = fClustersLay1[iC1][0] - vtx[0];
     Float_t y = fClustersLay1[iC1][1] - vtx[1];
     Float_t z = fClustersLay1[iC1][2] - vtx[2];
-    
+
     Float_t r    = TMath::Sqrt(TMath::Power(x,2) +
 			       TMath::Power(y,2) +
 			       TMath::Power(z,2));
     
     fClustersLay1[iC1][0] = TMath::ACos(z/r);  // Store Theta
-    fClustersLay1[iC1][1] = TMath::ATan(y/x);  // Store Phi
+    fClustersLay1[iC1][1] = TMath::ATan2(x,y);  // Store Phi
     fClustersLay1[iC1][2] = z/r;               // Store scaled z 
-  }
+    if (fHistOn) {
+      Float_t eta=fClustersLay1[iC1][0];
+      eta= TMath::Tan(eta/2.);
+      eta=-TMath::Log(eta);
+      fhetaClustersLay1->Fill(eta);    
+      fhphiClustersLay1->Fill(fClustersLay1[iC1][1]);    
+    }      
+}
   
   // Loop on layer 2 : finding theta, phi and r   
   for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {    
     Float_t x = fClustersLay2[iC2][0] - vtx[0];
     Float_t y = fClustersLay2[iC2][1] - vtx[1];
     Float_t z = fClustersLay2[iC2][2] - vtx[2];
-    
+   
     Float_t r    = TMath::Sqrt(TMath::Power(x,2) +
 			       TMath::Power(y,2) +
 			       TMath::Power(z,2));
     
     fClustersLay2[iC2][0] = TMath::ACos(z/r);  // Store Theta
-    fClustersLay2[iC2][1] = TMath::ATan(y/x);  // Store Phi
+    fClustersLay2[iC2][1] = TMath::ATan2(x,y);  // Store Phi
     fClustersLay2[iC2][2] = z;                 // Store z
 
-    // this only needs to be initialized for the fNClustersLay2 first associations
+ // this only needs to be initialized for the fNClustersLay2 first associations
     fAssociationFlag[iC2] = kFALSE;
   }  
   
@@ -139,8 +198,11 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
   for (Int_t iC1=0; iC1<fNClustersLay1; iC1++) {    
 
     // reset of variables for multiple candidates
-    Int_t   iC2WithBestPhi = 0;     // reset 
-    Float_t dPhimin        = 100.;  // just to put a huge number! 
+    Int_t  iC2WithBestDist = 0;     // reset 
+    Float_t Distmin        = 100.;  // just to put a huge number! 
+    Float_t dPhimin        = 0.;  // Used for histograms only! 
+    Float_t dThetamin      = 0.;  // Used for histograms only! 
+    Float_t dZetamin       = 0.;  // Used for histograms only! 
     
     // Loop on layer 2 
     for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {      
@@ -154,39 +216,59 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 	
 	// find the difference in z (between linear projection from layer 1
 	// and the actual point: Dzeta= z1/r1*r2 -z2) 	
-	Float_t r2     = fClustersLay2[iC2][2]/TMath::Cos(fClustersLay2[iC2][0]);
-	Float_t dZeta  = fClustersLay2[iC1][2]*r2 - fClustersLay2[iC2][2]; 
-	
-	if (fHistOn) {
-	  fhClustersDPhi->Fill(dPhi);    
-	  fhClustersDTheta->Fill(dTheta);    
-	  fhClustersDZeta->Fill(dZeta);    
+	Float_t r2   = fClustersLay2[iC2][2]/TMath::Cos(fClustersLay2[iC2][0]);
+        Float_t dZeta  = fClustersLay1[iC1][2]*r2 - fClustersLay2[iC2][2]; 
+
+ 	if (fHistOn) {
+	  fhClustersDPhiAll->Fill(dPhi);    
+	  fhClustersDThetaAll->Fill(dTheta);    
+	  fhClustersDZetaAll->Fill(dZeta);    
 	  fhDPhiVsDThetaAll->Fill(dTheta, dPhi);
+	  fhDPhiVsDZetaAll->Fill(dZeta, dPhi);
 	}
 	// make "elliptical" cut in Phi and Zeta! 
 	Float_t d = TMath::Sqrt(TMath::Power(dPhi/fPhiWindow,2) + TMath::Power(dZeta/fZetaWindow,2));
 	if (d>1) continue;      
 	
-	//look for the minimum distance in Phi: the minimum is in iC2WithBestPhi
-	if (TMath::Abs(dPhi) < dPhimin) {
-	  dPhimin = TMath::Abs(dPhi);
-	  iC2WithBestPhi = iC2;
+	//look for the minimum distance: the minimum is in iC2WithBestDist
+       	if (TMath::Sqrt(dZeta*dZeta+(r2*dPhi*r2*dPhi)) < Distmin ) {
+	  Distmin=TMath::Sqrt(dZeta*dZeta + (r2*dPhi*r2*dPhi));
+	  dPhimin = dPhi;
+	  dThetamin = dTheta;
+	  dZetamin = dZeta; 
+	  iC2WithBestDist = iC2;
 	}
       } 
     } // end of loop over clusters in layer 2 
     
-    if (dPhimin<100) { // This means that a cluster in layer 2 was found that mathes with iC1
+    if (Distmin<100) { // This means that a cluster in layer 2 was found that mathes with iC1
+
+	if (fHistOn) {
+	  fhClustersDPhiAcc->Fill(dPhimin);    
+	  fhClustersDThetaAcc->Fill(dThetamin);    
+	  fhClustersDZetaAcc->Fill(dZetamin);    
+	  fhDPhiVsDThetaAcc->Fill(dThetamin, dPhimin);
+	  fhDPhiVsDZetaAcc->Fill(dZetamin, dPhimin);
+	}
       
-      if (fOnlyOneTrackletPerC2) fAssociationFlag[iC2WithBestPhi] = kTRUE; // flag the association
+      if (fOnlyOneTrackletPerC2) fAssociationFlag[iC2WithBestDist] = kTRUE; // flag the association
       
       // store the tracklet
       
-      // use the average theta from the clusters in the two layers
-      fTracklets[fNTracklets][0] = 0.5*(fClustersLay1[iC1][0]+fClustersLay2[iC2WithBestPhi][0]);
+      // use the theta from the clusters in the first layer 
+      fTracklets[fNTracklets][0] = fClustersLay1[iC1][0];
       // use the phi from the clusters in the first layer 
       fTracklets[fNTracklets][1] = fClustersLay1[iC1][1];
       // Store the difference between phi1 and phi2
-      fTracklets[fNTracklets][2] = fClustersLay1[iC1][1] - fClustersLay2[iC2WithBestPhi][1];         
+      fTracklets[fNTracklets][2] = fClustersLay1[iC1][1] - fClustersLay2[iC2WithBestDist][1];       
+  
+ 	if (fHistOn) {
+	  Float_t eta=fTracklets[fNTracklets][0];
+	  eta= TMath::Tan(eta/2.);
+	  eta=-TMath::Log(eta);
+	  fhetaTracklets->Fill(eta);    
+	  fhphiTracklets->Fill(fTracklets[fNTracklets][1]);    
+	}
       fNTracklets++;
       
       AliDebug(1,Form(" Adding tracklet candidate %d (cluster %d  of layer 1 and %d  of layer 2)", fNTracklets, iC1));
@@ -211,10 +293,11 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
   
   TClonesArray* itsClusters = new TClonesArray("AliITSRecPoint");
   TBranch* itsClusterBranch=itsClusterTree->GetBranch("ITSRecPoints");
+
   itsClusterBranch->SetAddress(&itsClusters);
-  
+
   Int_t nItsSubs = (Int_t)itsClusterTree->GetEntries();  
-  
+ 
   // loop over the its subdetectors
   for (Int_t iIts=0; iIts < nItsSubs; iIts++) {
     
@@ -277,9 +360,20 @@ AliITSMultReconstructor::SaveHists() {
   if (!fHistOn)
     return;
 
-  fhClustersDPhi->Write();
-  fhClustersDTheta->Write();
-  fhClustersDZeta->Write();
+  fhClustersDPhiAll->Write();
+  fhClustersDThetaAll->Write();
+  fhClustersDZetaAll->Write();
   fhDPhiVsDThetaAll->Write();
+  fhDPhiVsDZetaAll->Write();
+
+  fhClustersDPhiAcc->Write();
+  fhClustersDThetaAcc->Write();
+  fhClustersDZetaAcc->Write();
   fhDPhiVsDThetaAcc->Write();
+  fhDPhiVsDZetaAcc->Write();
+
+  fhetaTracklets->Write();
+  fhphiTracklets->Write();
+  fhetaClustersLay1->Write();
+  fhphiClustersLay1->Write();
 }
