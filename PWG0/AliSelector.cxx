@@ -36,13 +36,12 @@
 
 ClassImp(AliSelector)
 
-AliSelector::AliSelector(TTree *) :
+AliSelector::AliSelector() :
   TSelector(),
   fChain(0),
   fESD(0),
   fHeader(0),
-  fKineFile(0),
-  fRunLoader(0)
+  fKineFile(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -128,12 +127,11 @@ Bool_t AliSelector::Notify()
   AliDebug(AliLog::kDebug, "=========NOTIFY==========");
   AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
   AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
-  
+
   TFile *f = fChain->GetCurrentFile();
   AliDebug(AliLog::kInfo, Form("Processing file %s", f->GetName()));
 
   DeleteKinematicsFile();
-  DeleteRunLoader();
 
   return kTRUE;
 }
@@ -188,7 +186,6 @@ void AliSelector::SlaveTerminate()
   // on each slave server.
 
   DeleteKinematicsFile();
-  DeleteRunLoader();
 }
 
 void AliSelector::Terminate()
@@ -266,43 +263,6 @@ void AliSelector::DeleteKinematicsFile()
     fKineFile->Close();
     delete fKineFile;
     fKineFile = 0;
-  }
-}
-
-AliRun* AliSelector::GetAliRun()
-{
-  // Returns AliRun instance corresponding to current ESD active in fChain
-  // Loads galice.root, the file is identified by replacing "AliESDs" to
-  // "galice" in the file path of the ESD file. This is a hack, to be changed!
-
-  if (!fRunLoader)
-  {
-    if (!fChain->GetCurrentFile())
-      return 0;
-
-    TString fileName(fChain->GetCurrentFile()->GetName());
-    fileName.ReplaceAll("AliESDs", "galice");
-
-    fRunLoader = AliRunLoader::Open(fileName);
-    if (!fRunLoader)
-      return 0;
-
-    fRunLoader->LoadgAlice();
-  }
-
-  return fRunLoader->GetAliRun();
-}
-
-void AliSelector::DeleteRunLoader()
-{
-  //
-  // deletes the runloader
-  //
-
-  if (fRunLoader)
-  {
-    fRunLoader->Delete();
-    fRunLoader = 0;
   }
 }
 

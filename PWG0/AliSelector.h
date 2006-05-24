@@ -1,20 +1,20 @@
 #ifndef ALISELECTOR_H
 #define ALISELECTOR_H
 
+// This selector is only dependent on the ESD library, if you need the whole of AliROOT use AliSelectorRL
+
 #include <TFile.h>
 #include <TSelector.h>
 #include <TChain.h>
 
 #include <AliESD.h>
 #include <AliHeader.h>
-#include <AliRun.h>
-#include <AliRunLoader.h>
 
 class TParticle;
 
 class AliSelector : public TSelector {
   public:
-    AliSelector(TTree *tree=0);
+    AliSelector();
     virtual ~AliSelector();
 
     virtual Int_t   Version() const {return 1;}
@@ -28,8 +28,6 @@ class AliSelector : public TSelector {
 
  protected:
     TTree*  GetKinematics();
-    AliRun* GetAliRun();
-
     Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries) const;
 
     TChain          *fChain;   //! pointer to the analyzed TTree or TChain
@@ -38,11 +36,9 @@ class AliSelector : public TSelector {
     AliHeader*       fHeader;  //! "TE" branch in fChain, contains event header
 
  private:
-  void DeleteKinematicsFile();
-  void DeleteRunLoader();
+    void DeleteKinematicsFile();
 
-  TFile*        fKineFile;  //! pointer to Kinematics.root if the file was opened
-  AliRunLoader* fRunLoader;    //! pointer to the RunLoader if galice.root was opened
+    TFile*        fKineFile;  //! pointer to Kinematics.root if the file was opened
 
   ClassDef(AliSelector,0);
 };
