@@ -383,7 +383,7 @@ void AliVertexerTracks::StrLinVertexFinderMinDist(Int_t optUseWeights){
     Double_t mindist = TMath::Cos(alpha)*fNominalPos[0]+TMath::Sin(alpha)*fNominalPos[1];
 
     Double_t pos[3]; track1->GetXYZAt(mindist,field,pos);
-    Double_t dir[3]; track1->GetPxPyPzAt(mindist,field,pos);
+    Double_t dir[3]; track1->GetPxPyPzAt(mindist,field,dir);
     AliStrLine *line1 = new AliStrLine(pos,dir);
 
     Double_t p0[3],cd[3];
