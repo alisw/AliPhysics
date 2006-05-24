@@ -449,7 +449,7 @@ void AliESDRecInfo::Update(AliMCInfo* info,AliTPCParam * /*par*/, Bool_t reconst
     fTPCinP1[4] = TMath::Sqrt(fTPCinP1[3]*fTPCinP1[3]+fTPCinP1[2]*fTPCinP1[2]);
     //
     //
-    if (fTPCinP1[3]>0.0000001){
+    if (fTPCinP1[3]>0.000000000000001){
       fTPCAngle1[0] = TMath::ATan2(fTPCinP1[1],fTPCinP1[0]);
       fTPCAngle1[1] = TMath::ATan(fTPCinP1[2]/fTPCinP1[3]);  
     }    
@@ -1323,7 +1323,7 @@ Int_t ESDCmpTr::TreeGenLoop(Int_t eventNr)
       }	
       //
       if (track) {
-	fRecInfo->fESDTrack =*track;
+	new (&(fRecInfo->fESDTrack)) AliESDtrack(*track);
       }else{
 	fRecInfo->fESDTrack = dummytrack;
       }
@@ -1574,39 +1574,41 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
 	//
 	// TPC V0 Info
 	Double_t x,alpha, param[5],cov[15];
-	fRecV0Info->fT1.fESDTrack.GetInnerExternalParameters(alpha,x,param);
-	fRecV0Info->fT1.fESDTrack.GetInnerExternalCovariance(cov);
-	AliExternalTrackParam paramP(x,alpha,param,cov);
-	//
-	fRecV0Info->fT2.fESDTrack.GetInnerExternalParameters(alpha,x,param);
-	fRecV0Info->fT2.fESDTrack.GetInnerExternalCovariance(cov);
-	AliExternalTrackParam paramM(x,alpha,param,cov);
-	//
-	fRecV0Info->fV0tpc.SetM(paramM);
-	fRecV0Info->fV0tpc.SetP(paramP);
-	Double_t pid1[5],pid2[5];
-	fRecV0Info->fT1.fESDTrack.GetESDpid(pid1);
-	fRecV0Info->fT1.fESDTrack.GetESDpid(pid2);
-	//
-	fRecV0Info->fV0tpc.UpdatePID(pid1,pid2);
-	fRecV0Info->fV0tpc.Update(vertex);
-	//
-	//
-	fRecV0Info->fT1.fESDTrack.GetExternalParameters(x,param);
-	fRecV0Info->fT1.fESDTrack.GetExternalCovariance(cov);
-	alpha = fRecV0Info->fT1.fESDTrack.GetAlpha();
-	new (&paramP) AliExternalTrackParam(x,alpha,param,cov);
-	//
-	fRecV0Info->fT2.fESDTrack.GetExternalParameters(x,param);
-	fRecV0Info->fT2.fESDTrack.GetExternalCovariance(cov);
-	alpha = fRecV0Info->fT2.fESDTrack.GetAlpha();
-	new (&paramM) AliExternalTrackParam(x,alpha,param,cov);
-	//
-	fRecV0Info->fV0its.SetM(paramM);
-	fRecV0Info->fV0its.SetP(paramP);
-	fRecV0Info->fV0its.UpdatePID(pid1,pid2);
-	fRecV0Info->fV0its.Update(vertex);
-
+	if ( fRecV0Info->fT1.fESDTrack.GetInnerParam() && fRecV0Info->fT2.fESDTrack.GetInnerParam()){
+	  fRecV0Info->fT1.fESDTrack.GetInnerExternalParameters(alpha,x,param);
+	  fRecV0Info->fT1.fESDTrack.GetInnerExternalCovariance(cov);
+	  AliExternalTrackParam paramP(x,alpha,param,cov);
+	  //
+	  fRecV0Info->fT2.fESDTrack.GetInnerExternalParameters(alpha,x,param);
+	  fRecV0Info->fT2.fESDTrack.GetInnerExternalCovariance(cov);
+	  AliExternalTrackParam paramM(x,alpha,param,cov);
+	  //
+	  fRecV0Info->fV0tpc.SetM(paramM);
+	  fRecV0Info->fV0tpc.SetP(paramP);
+	  Double_t pid1[5],pid2[5];
+	  fRecV0Info->fT1.fESDTrack.GetESDpid(pid1);
+	  fRecV0Info->fT1.fESDTrack.GetESDpid(pid2);
+	  //
+	  fRecV0Info->fV0tpc.UpdatePID(pid1,pid2);
+	  fRecV0Info->fV0tpc.Update(vertex);
+	
+	  //
+	  //
+	  fRecV0Info->fT1.fESDTrack.GetExternalParameters(x,param);
+	  fRecV0Info->fT1.fESDTrack.GetExternalCovariance(cov);
+	  alpha = fRecV0Info->fT1.fESDTrack.GetAlpha();
+	  new (&paramP) AliExternalTrackParam(x,alpha,param,cov);
+	  //
+	  fRecV0Info->fT2.fESDTrack.GetExternalParameters(x,param);
+	  fRecV0Info->fT2.fESDTrack.GetExternalCovariance(cov);
+	  alpha = fRecV0Info->fT2.fESDTrack.GetAlpha();
+	  new (&paramM) AliExternalTrackParam(x,alpha,param,cov);
+	  //
+	  fRecV0Info->fV0its.SetM(paramM);
+	  fRecV0Info->fV0its.SetP(paramP);
+	  fRecV0Info->fV0its.UpdatePID(pid1,pid2);
+	  fRecV0Info->fV0its.Update(vertex);
+	}
       }
       if (TMath::Abs(fGenV0Info->fMCm.fPdg)==11 &&TMath::Abs(fGenV0Info->fMCd.fPdg)==11){
 	if (fRecV0Info->fDist2>10){
