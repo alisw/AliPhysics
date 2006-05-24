@@ -23,10 +23,22 @@ Bool_t AliceRead()
     if(!gAlice) Fatal("menu.C::ReadAlice","No gAlice in file");
     a=al->GetAliRun();//provides pointer to AliRun object
     Info("AliceRead","Run contains %i event(s)",a->GetEventsPerRun());      
+    GeomAlign(kTRUE);
     RichGet();
     return kTRUE;   //old session opened from file
   }        
 }//AliceRead()
+//__________________________________________________________________________________________________
+void GeomAlign(Bool_t isAlign)
+{
+  if(gGeoManager) delete gGeoManager;
+  if(AliRICHParam::Instance()) delete AliRICHParam::Instance();
+  if(isAlign) 
+    TGeoManager::Import("geometry.root");
+  else
+    TGeoManager::Import("misaligned_geometry.root");
+  AliRICHParam::Instance();
+}
 //__________________________________________________________________________________________________
 void AliceNew()
 {
@@ -46,6 +58,8 @@ void RichMenu()
   TControlBar *pMenu = new TControlBar("vertical","MAIN");
        
   if(AliceRead()){//it's from file, show some info
+    pMenu->AddButton("Geometry Align OK      "         ,"GeomAlign(kTRUE);"  , "Ideal Geometry Aligned");
+    pMenu->AddButton("Geometry MisAligned SET"         ,"GeomAlign(kFALSE);"  , "Misaligned Geometry SET");
     pMenu->AddButton("Display single chambers"         ,"r->Display();"  , "Display Fast");
     pMenu->AddButton("Display ALL chambers"            ,"r->DisplayEvent(0,0);"  , "Display Fast");
     pMenu->AddButton("Recon with stack"                ,"AliRICHReconstructor::CheckPR(        )","Create RSR.root with ntuple hn");    
