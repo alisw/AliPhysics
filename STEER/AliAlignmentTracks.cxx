@@ -46,7 +46,8 @@ AliAlignmentTracks::AliAlignmentTracks():
   fIsIndexBuilt(kFALSE),
   fMisalignObjs(0),
   fTrackFitter(0),
-  fMinimizer(0)
+  fMinimizer(0),
+  fDoUpdate(kTRUE)
 {
   // Default constructor
   InitIndex();
@@ -64,7 +65,8 @@ AliAlignmentTracks::AliAlignmentTracks(TChain *esdchain):
   fIsIndexBuilt(kFALSE),
   fMisalignObjs(0),
   fTrackFitter(0),
-  fMinimizer(0)
+  fMinimizer(0),
+  fDoUpdate(kTRUE)
 {
   // Constructor in the case
   // the user provides an already
@@ -84,7 +86,8 @@ AliAlignmentTracks::AliAlignmentTracks(const char *esdfilename, const char *esdt
   fIsIndexBuilt(kFALSE),
   fMisalignObjs(0),
   fTrackFitter(0),
-  fMinimizer(0)
+  fMinimizer(0),
+  fDoUpdate(kTRUE)
 {
   // Constructor in the case
   // the user provides a single ESD file
@@ -185,7 +188,6 @@ void AliAlignmentTracks::ProcessESD()
   TTree *pointsTree = new TTree("spTree", "Tree with track space point arrays");
   const AliTrackPointArray *array = 0;
   pointsTree->Branch("SP","AliTrackPointArray", &array);
-
   Int_t ievent = 0;
   while (fESDChain->GetEntry(ievent++)) {
     if (!esd) break;
@@ -507,11 +509,11 @@ void AliAlignmentTracks::AlignVolumes(const TArrayI *volids, const TArrayI *voli
     minimizer->Minimize();
 
     // Update the alignment object(s)
-    for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
+    if (fDoUpdate) for (Int_t iVolId = 0; iVolId < nVolIds; iVolId++) {
       UShort_t volid = (*volids)[iVolId];
       Int_t iModule;
       AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
-      AliAlignObj *alignObj = fAlignObjs[iLayer-AliAlignObj::kFirstLayer][iModule];
+      AliAlignObj *alignObj = fAlignObjs[iLayer-AliAlignObj::kFirstLayer][iModule];      
       *alignObj *= *minimizer->GetAlignObj();
       alignObj->Print("");
     }

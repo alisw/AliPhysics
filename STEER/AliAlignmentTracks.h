@@ -64,7 +64,8 @@ class AliAlignmentTracks : public TObject {
     AliAlignObj::ELayerID iLayer = AliAlignObj::VolUIDToLayer(volid,iModule);
     return fAlignObjs[iLayer-AliAlignObj::kFirstLayer][iModule];
   }
-
+  void    SetUpdate(Bool_t update){fDoUpdate = update;}
+  Bool_t  GetUpdate() const { return fDoUpdate;}
  protected:
 
   void InitIndex();
@@ -94,8 +95,8 @@ class AliAlignmentTracks : public TObject {
   AliAlignObj    ***fMisalignObjs;   //  Array with alignment objects used to introduce misalignment of the space-points
   AliTrackFitter   *fTrackFitter;    //  Pointer to the track fitter
   AliTrackResiduals*fMinimizer;      //  Pointer to track residuals minimizer
-
-  ClassDef(AliAlignmentTracks,1)
+  Bool_t            fDoUpdate;       //  Indicator - update Alignment object after minimization
+  ClassDef(AliAlignmentTracks,2)
 
 };
 
