@@ -1,32 +1,80 @@
+PACKAGE = PWG0base
+
 include $(ROOTSYS)/test/Makefile.arch
-include libPWG0base.pkg
+include lib$(PACKAGE).pkg
 
-ALICEINC = -I$(ALICE_ROOT)/include
-CXXFLAGS += $(ALICEINC)
-SRCS += dict.cxx
-OBJS          = $(SRCS:.cxx=.o)
-PROGRAM       = libPWG0.so
+ALICEINC      = -I. 
 
-all:          $(PROGRAM)
-
-$(PROGRAM):     $(OBJS)
-	@echo "Linking" $(PROGRAM) ...
-	@/bin/rm -f $(PROGRAM)
-ifeq ($(PLATFORM),macosx)
-	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $(PROGRAM)
+### define include dir for local case and par case
+ifneq ($(ALICE_ROOT),)
+  ALICEINC += -I$(ALICE_ROOT)/include
 else
-	@$(LD) $(SOFLAGS) $(LDFLAGS) $(OBJS) -o $(PROGRAM)
+  ifneq ($(STEER_INCLUDE),)
+    ALICEINC += -I../$(STEER_INCLUDE)
+  endif
+  ifneq ($(ESD_INCLUDE),)
+    ALICEINC += -I../$(ESD_INCLUDE)
+  endif
 endif
-	@chmod a+x $(PROGRAM)
+
+CXXFLAGS     += $(ALICEINC)
+SRCS         += dict.cxx
+OBJS          = $(SRCS:.cxx=.o)
+PARFILE       = $(PACKAGE).par
+
+lib$(PACKAGE).so: $(OBJS)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(PLATFORM),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $(OBJS) -o $@
+endif
+	@chmod a+x $@
 	@echo "done"
 
 %.o:    %.cxx %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS) core *~ *.so dict.*
+	@rm -f $(OBJS) core *~ *.so dict.* $(PARFILE)
 
 dict.cxx dict.h: $(HDRS) $(DHDR)
 	@echo "Generating dictionary ..."
 	@[ -f dict ] || rm -f $@
 	rootcint -f $@ -c $(ALICEINC) $^
+
+### CREATE PAR FILE
+
+$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
+	@echo "Creating archive" $@ ...
+	@tar cfzh $@ $(PACKAGE)
+	@rm -rf $(PACKAGE)
+	@echo "done"
+
+$(PACKAGE)/Makefile: Makefile #.$(PACKAGE)
+	@echo Copying $< to $@ with transformations
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@sed 's/include \$$(ROOTSYS)\/test\/Makefile.arch/include Makefile.arch/' < $^ > $@
+
+$(PACKAGE)/Makefile.arch: $(ROOTSYS)/test/Makefile.arch
+	@echo Copying $< to $@
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@cp $^ $@
+
+$(PACKAGE)/PROOF-INF: PROOF-INF.$(PACKAGE)
+	@echo Copying $< to $@
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@cp -r $^ $@
+
+$(PACKAGE)/%: %
+	@echo Copying $< to $@
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@cp $< $@
+
+test-%.par: %.par
+	@echo "INFO: The file $< is now tested, in case of an error check in par-tmp."
+	@mkdir -p par-tmp
+	@cd par-tmp; tar xfz ../$<;	cd $(subst .par,,$<); PROOF-INF/BUILD.sh
+	@rm -rf par-tmp
+	@echo "INFO: Testing succeeded (already cleaned up)"
