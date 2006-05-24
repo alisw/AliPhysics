@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPlaneType.h,v 1.7 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpPlaneType.h,v 1.8 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \enum AliMpPlaneType
 /// Enumeration for refering to bending and non-bending planes.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
  
 #ifndef ALI_MP_PLANE_TYPE_H
 #define ALI_MP_PLANE_TYPE_H

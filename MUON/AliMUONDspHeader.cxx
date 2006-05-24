@@ -12,10 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
  
 #include "AliMUONDspHeader.h"
 #include "AliMUONBusStruct.h"
-
 
 /// 
 /// DSP structure for tracker raw data.
@@ -25,7 +26,9 @@
 /// and event word (1 for nb of word is odd and 0 if not 
 ///
 
+/// \cond CLASSIMP
 ClassImp(AliMUONDspHeader)
+/// \endcond
   
   const Int_t AliMUONDspHeader::fgkHeaderLength = 8;
 

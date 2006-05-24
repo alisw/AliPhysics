@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorPainter.cxx,v 1.7 2006/03/17 11:35:29 ivana Exp $
+// $MpId: AliMpSectorPainter.cxx,v 1.8 2006/05/24 13:58:32 ivana Exp $
 //
 // Class AliMpSectorPainter
 // ------------------------
@@ -33,7 +33,9 @@
 #include <TVirtualX.h>
 #include <TPad.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpSectorPainter)
+/// \endcond
 
 //_______________________________________________________________________
 AliMpSectorPainter::AliMpSectorPainter()
@@ -151,7 +153,7 @@ TVector2 AliMpSectorPainter::GetDimensions() const
 void AliMpSectorPainter::Draw(Option_t *option)
 {
 /// Draw the sector on the current pad
-/// The first letter of <option> is treated as follows:
+/// The first letter of \a option is treated as follows:
 /// - case "Z" : each zones are drawn separately
 /// - case "R" : each rows are drawn separately
 /// - case ""  : the whole sector is drawn at once

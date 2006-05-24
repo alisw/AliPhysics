@@ -6,7 +6,7 @@
 /// \ingroup sim
 /// \class AliMUONSegFactory
 /// \brief New factory for building segmentations at all levels
-//
+///
 /// The factory is associated with a AliMUONGeometryTransformer
 /// object, used in geometry (module) segmentations for performing
 /// trasformation between the global reference frame and the local DE one.
@@ -30,7 +30,7 @@
 /// container:                                                                \n
 /// delete factory.GetSegmentation();
 ///
-/// Authors: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_SEG_FACTORY_H
 #define ALI_MUON_SEG_FACTORY_H

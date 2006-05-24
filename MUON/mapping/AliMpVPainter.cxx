@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVPainter.cxx,v 1.9 2006/03/17 11:35:29 ivana Exp $
+// $MpId: AliMpVPainter.cxx,v 1.10 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
 //
 // Class AliMpVPainter
@@ -46,7 +46,9 @@
 #include <TVirtualX.h>
 #include <TPad.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpVPainter)
+/// \endcond
 
 //_______________________________________________________________________
 AliMpVPainter::AliMpVPainter()
@@ -98,7 +100,7 @@ AliMpVPainter& AliMpVPainter::operator=(const AliMpVPainter& right)
 //_______________________________________________________________________
 Bool_t AliMpVPainter::IsInside(const TVector2 &point,const TVector2& pos,const TVector2& dim)
 {
-  /// Is the point <point> inside the area (pos,dim)?
+  /// Is the point \a point inside the \a area (pos,dim)?
 
   return ( (TMath::Abs(point.X()-pos.X())<dim.X() ) && (TMath::Abs(point.Y()-pos.Y())<dim.Y() ) );
 }

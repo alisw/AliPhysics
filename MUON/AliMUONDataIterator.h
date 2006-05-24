@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup
+/// \ingroup base
 /// \class AliMUONDataIterator
 /// \brief
 /// 

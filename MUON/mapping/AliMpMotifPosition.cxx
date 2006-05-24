@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifPosition.cxx,v 1.8 2006/03/17 11:38:06 ivana Exp $
+// $MpId: AliMpMotifPosition.cxx,v 1.9 2006/05/24 13:58:41 ivana Exp $
 //
 // Class AliMpMotifPosition
 // ------------------------
@@ -28,7 +28,9 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpMotifPosition)
+/// \endcond
 
 //______________________________________________________________________________
 AliMpMotifPosition::AliMpMotifPosition(Int_t id, AliMpVMotif* motif, 

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpHelper.cxx,v 1.3 2005/09/19 19:01:31 ivana Exp $
+// $MpId: AliMpHelper.cxx,v 1.5 2006/05/24 13:58:50 ivana Exp $
 
 #include "AliMpHelper.h"
 
@@ -30,7 +30,9 @@
 ///
 /// \author L. Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMpHelper)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpHelper::AliMpHelper() : TObject()

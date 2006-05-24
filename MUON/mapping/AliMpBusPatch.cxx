@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpBusPatch.cxx,v 1.3 2006/03/17 11:51:34 ivana Exp $
+// $MpId: AliMpBusPatch.cxx,v 1.5 2006/05/24 13:58:34 ivana Exp $
 // Category: management
 
 // Class AliMpBusPatch
@@ -34,14 +34,9 @@
 #include "TArrayI.h"
 #include "Riostream.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpBusPatch)
-
-//////////////////////////////////////////////////////////
-//
-// This class contains the informations about buspatch vs (DE-DDL)
-//
-//////////////////////////////////////////////////////////
-
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpBusPatch::AliMpBusPatch()

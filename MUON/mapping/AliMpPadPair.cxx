@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPadPair.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPadPair.cxx,v 1.7 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 //
 // Class AliMpPadPair
@@ -26,8 +26,9 @@
 
 #include "AliMpPadPair.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpPadPair)
-
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpPadPair::AliMpPadPair(const AliMpPad& pad1, const AliMpPad& pad2)

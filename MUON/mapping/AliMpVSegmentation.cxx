@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVSegmentation.cxx,v 1.4 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVSegmentation.cxx,v 1.5 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 //
 // Class AliMpVSegmentation
@@ -30,7 +30,9 @@
 #include "AliMpVSegmentation.h"
 #include "AliMpConstants.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpVSegmentation)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpVSegmentation::AliMpVSegmentation() 

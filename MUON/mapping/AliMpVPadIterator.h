@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVPadIterator.h,v 1.5 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpVPadIterator.h,v 1.6 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpVPadIterator
 /// \brief An interface for an iterator over pads
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_VPAD_ITERATOR_H
 #define ALI_MP_VPAD_ITERATOR_H

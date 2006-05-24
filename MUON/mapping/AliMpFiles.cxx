@@ -37,9 +37,11 @@
 
 #include <stdlib.h>
 
-//
-// static
+/// \cond CLASSIMP
+ClassImp(AliMpFiles)
+/// \endcond
 
+//
 // static data members
 
 const TString AliMpFiles::fgkDataDir = "/data";
@@ -57,8 +59,6 @@ const TString AliMpFiles::fgkDataExt = ".dat";
 const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
 const TString AliMpFiles::fgkTriggerLocalBoards = "CRATE.TXT";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
-
-ClassImp(AliMpFiles)
 
 //______________________________________________________________________________
 AliMpFiles::AliMpFiles()

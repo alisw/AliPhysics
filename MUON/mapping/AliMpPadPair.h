@@ -2,14 +2,14 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPadPair.h,v 1.9 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpPadPair.h,v 1.10 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpPadPair
 /// \brief Wrap up for std::pair<AliMpPad, AliMpPad>
 /// to avoid problems with CINT.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_PAD_PAIR_H
 #define ALI_MP_PAD_PAIR_H

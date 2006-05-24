@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifSpecial.cxx,v 1.11 2006/04/24 13:54:33 ivana Exp $
+// $MpId: AliMpMotifSpecial.cxx,v 1.12 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifSpecial
@@ -31,7 +31,9 @@
 
 #include <TString.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpMotifSpecial)
+/// \endcond
 
 
 //______________________________________________________________________________
@@ -264,8 +266,8 @@ AliMpIntPair AliMpMotifSpecial::PadIndicesLocal(const TVector2& localPos) const
 void AliMpMotifSpecial::SetPadDimensions(const AliMpIntPair& localIndices,
                                          const TVector2& dimensions)
 {
-  /// Set the dimensions of the pad located at <localIndices> to the given
-  /// <dimensions>
+  /// Set the dimensions of the pad located at \a localIndices to the given
+  /// \a dimensions
   
   if ( !GetMotifType()->HasPad(localIndices)){
     Warning("SetPadDimensions","Pad indices outside limits");

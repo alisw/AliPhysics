@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifPositionPadIterator.h,v 1.6 2006/05/23 13:07:42 ivana Exp $
+// $MpId: AliMpMotifPositionPadIterator.h,v 1.7 2006/05/24 13:58:18 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifPositionPadIterator
 /// \brief An iterator over the pads of a given motif position
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_POSITION_PAD_ITERATOR_H
 #define ALI_MP_MOTIF_POSITION_PAD_ITERATOR_H

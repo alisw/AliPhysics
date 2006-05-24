@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPadIteratorPtr.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpPadIteratorPtr.cxx,v 1.7 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 //
 // Class AliMpPadIteratorPtr
@@ -31,7 +31,9 @@
 #include "AliMpPadIteratorPtr.h"
 #include "AliMpVPadIterator.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpPadIteratorPtr)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpPadIteratorPtr::AliMpPadIteratorPtr(AliMpVPadIterator* it)

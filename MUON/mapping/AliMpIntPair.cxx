@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpIntPair.cxx,v 1.6 2006/03/17 11:34:46 ivana Exp $
+// $MpId: AliMpIntPair.cxx,v 1.7 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 //
 // Class AliMpIntPair
@@ -30,7 +30,9 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpIntPair)
+/// \endcond
 
 
 ///////////////////////////////////////////////////

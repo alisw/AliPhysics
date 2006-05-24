@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPCB.cxx,v 1.6 2006/03/17 16:42:33 ivana Exp $
+// $MpId: AliMpPCB.cxx,v 1.8 2006/05/24 13:58:50 ivana Exp $
 
 #include "AliMpPCB.h"
 
@@ -46,7 +46,9 @@
 ///
 /// \author L. Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMpPCB)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpPCB::AliMpPCB() 

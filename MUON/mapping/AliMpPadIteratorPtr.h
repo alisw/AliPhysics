@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPadIteratorPtr.h,v 1.6 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpPadIteratorPtr.h,v 1.7 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpPadIteratorPtr
@@ -13,7 +13,7 @@
 /// AliMpVIndexed* myIndexed = MyIndexed();                                \n
 /// MVIterator& it = *AliMpPadIteratorPtr(myIndexed->CreateIterator());    \n
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_PAD_ITERATOR_PTR_H
 #define ALI_MP_PAD_ITERATOR_PTR_H

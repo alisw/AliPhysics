@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSt345Reader.cxx,v 1.9 2006/03/02 16:36:23 ivana Exp $
+// $MpId: AliMpSt345Reader.cxx,v 1.11 2006/05/24 13:58:50 ivana Exp $
 
 #include "AliMpSt345Reader.h"
 
@@ -49,7 +49,9 @@
 ///
 /// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMpSt345Reader)
+/// \endcond
 
 TMap AliMpSt345Reader::fgPCBMap;
 

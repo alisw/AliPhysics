@@ -13,10 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 #include "AliMUONRegHeader.h"
 #include "AliMUONLocalStruct.h"
-
-
 
 /// 
 /// Regional structure for trigger raw data.
@@ -25,7 +25,9 @@
 /// regional inputs
 /// 
 
+/// \cond CLASSIMP
 ClassImp(AliMUONRegHeader)
+/// \endcond
  
  const Int_t  AliMUONRegHeader::fgkHeaderLength = 3;
  const Int_t  AliMUONRegHeader::fgkScalerLength = 8;

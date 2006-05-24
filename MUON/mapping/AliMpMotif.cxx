@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotif.cxx,v 1.7 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotif.cxx,v 1.8 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotif
@@ -28,7 +28,9 @@
 #include "AliMpMotifType.h"
 #include "AliMpIntPair.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpMotif)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpMotif::AliMpMotif()

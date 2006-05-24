@@ -7,7 +7,7 @@
 /// \class AliMpStringObjMap
 /// \brief Substitutes map <string, TObject> which ALICE does not allow to use 
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MP_STRING_OBJ_MAP_H
 #define ALI_MP_STRING_OBJ_MAP_H

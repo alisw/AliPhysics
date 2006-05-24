@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSector.h,v 1.13 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpSector.h,v 1.14 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSector
 /// \brief A sector (quadrant) of the MUON chamber of stations 1 and 2.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_SECTOR_H
 #define ALI_MP_SECTOR_H

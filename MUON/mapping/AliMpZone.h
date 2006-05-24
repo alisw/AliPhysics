@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpZone.h,v 1.9 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpZone.h,v 1.10 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpZone
@@ -11,7 +11,7 @@
 /// The zone contains pads of the same dimensions,
 /// it is composed of the subzones.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_ZONE_H
 #define ALI_MP_ZONE_H

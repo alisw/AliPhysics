@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVPadIterator.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVPadIterator.cxx,v 1.6 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 //
 // Class AliMpVPadIterator
@@ -25,7 +25,9 @@
 
 #include "AliMpVPadIterator.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpVPadIterator)
+/// \endcond
 
 //___________________________________________________________________
 AliMpVPadIterator::AliMpVPadIterator():

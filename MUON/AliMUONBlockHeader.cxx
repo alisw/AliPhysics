@@ -12,10 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
  
 #include "AliMUONBlockHeader.h"
 #include "AliMUONDspHeader.h"
-
 
 /// 
 /// Block structure for tracker raw data
@@ -25,9 +26,11 @@
 /// the header of the block contains the front end DSP id, trigger words and paddind word
 ///
 
+/// \cond CLASSIMP
 ClassImp(AliMUONBlockHeader)
+/// \endcond
 
-  const Int_t AliMUONBlockHeader::fgkHeaderLength = 7;
+const Int_t AliMUONBlockHeader::fgkHeaderLength = 7;
 
 //___________________________________________
 AliMUONBlockHeader::AliMUONBlockHeader()

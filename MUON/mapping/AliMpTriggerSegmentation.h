@@ -2,12 +2,13 @@
 * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpTriggerSegmentation.h,v 1.7 2006/05/23 13:07:51 ivana Exp $
+// $MpId: AliMpTriggerSegmentation.h,v 1.8 2006/05/24 13:58:27 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTriggerSegmentation
 /// \brief Implementation of AliMpVSegmentation for trigger slats.
-/// \author Laurent Aphecetche
+///
+//  Author: Laurent Aphecetche
 
 #ifndef ALI_MP_TRIGGER_SEGMENTATION_H
 #define ALI_MP_TRIGGER_SEGMENTATION_H

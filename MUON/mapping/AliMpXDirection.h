@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpXDirection.h,v 1.5 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpXDirection.h,v 1.6 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \enum  AliMpDirection
 /// Enumeration for the directions in a plane.
 ///
-/// Authors: David Guez, IPN Orsay
+/// \author David Guez, IPN Orsay
 
 #ifndef ALI_MP_X_DIRECTION_H
 #define ALI_MP_X_DIRECTION_H

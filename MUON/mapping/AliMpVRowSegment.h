@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVRowSegment.h,v 1.8 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpVRowSegment.h,v 1.9 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpVRowSegment
 /// \brief An interface for a row segment.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_V_ROW_SEGMENT_H
 #define ALI_MP_V_ROW_SEGMENT_H

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpRowSegmentRSpecial.cxx,v 1.6 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpRowSegmentRSpecial.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpRowSegmentRSpecial
@@ -36,7 +36,9 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpRowSegmentRSpecial)
+/// \endcond
 
 //______________________________________________________________________________
 AliMpRowSegmentRSpecial::AliMpRowSegmentRSpecial(AliMpRow* row, Double_t offsetX)

@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpArea.h,v 1.8 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpArea.h,v 1.9 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpArea
 /// \brief A rectangle area positioned in plane..
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_AREA_H
 #define ALI_MP_AREA_H

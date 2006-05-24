@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSegFactory.cxx,v 1.6 2006/03/17 11:36:27 ivana Exp $
+// $MpId: AliMpSegFactory.cxx,v 1.7 2006/05/24 13:58:34 ivana Exp $
 // Category: management
 
 // -----------------------
@@ -45,7 +45,9 @@
 #include <TObjString.h>
 #include <TSystem.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpSegFactory)
+/// \endcond
 
 //______________________________________________________________________________
 AliMpSegFactory::AliMpSegFactory()

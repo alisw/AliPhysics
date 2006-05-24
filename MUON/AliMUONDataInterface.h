@@ -28,9 +28,6 @@ class AliMUONHit;
 class AliMUONDigit;
 class AliMUONTrack;
 
-/// An easy to use interface to the MUON module data stored.
-/// \deprecated
-
 class AliMUONDataInterface : public TObject
 {
  public:

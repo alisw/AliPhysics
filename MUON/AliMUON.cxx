@@ -93,7 +93,9 @@
 //          according to (Z1 = zch) and  (Z2 = zch + DTPLANES)
 //          for the first and second chambers in the station, respectively
 
-ClassImp(AliMUON)
+/// \cond CLASSIMP
+ClassImp(AliMUON)  
+/// \endcond
 
 //__________________________________________________________________
 AliMUON::AliMUON()

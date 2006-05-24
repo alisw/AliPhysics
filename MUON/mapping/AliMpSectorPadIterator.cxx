@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorPadIterator.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpSectorPadIterator.cxx,v 1.6 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorPadIterator
@@ -33,7 +33,9 @@
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpSectorPadIterator)
+/// \endcond
 
 //______________________________________________________________________________
 AliMpSectorPadIterator::AliMpSectorPadIterator()

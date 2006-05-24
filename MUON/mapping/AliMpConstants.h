@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpConstants.h,v 1.10 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpConstants.h,v 1.11 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpConstants
 /// \brief Globally used constants definition.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_CONSTANTS_H
 #define ALI_MP_CONSTANTS_H

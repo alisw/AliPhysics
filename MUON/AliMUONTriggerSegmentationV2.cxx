@@ -183,7 +183,7 @@ AliMUONTriggerSegmentationV2::Dpy() const
 
 //_____________________________________________________________________________
 Float_t
-AliMUONTriggerSegmentationV2::Dpx(int sectorCode) const
+AliMUONTriggerSegmentationV2::Dpx(Int_t sectorCode) const
 {
 // Get pad size in x
 
@@ -196,7 +196,7 @@ AliMUONTriggerSegmentationV2::Dpx(int sectorCode) const
 
 //_____________________________________________________________________________
 Float_t
-AliMUONTriggerSegmentationV2::Dpy(int sectorCode) const
+AliMUONTriggerSegmentationV2::Dpy(Int_t sectorCode) const
 {
 // Get pad size in y
 
@@ -770,7 +770,7 @@ AliMUONTriggerSegmentationV2::SetCorrFunc(Int_t,TF1*)
 
 //_____________________________________________________________________________
 void
-AliMUONTriggerSegmentationV2::SetDAnod(float)
+AliMUONTriggerSegmentationV2::SetDAnod(Float_t)
 {
 // Not implemented
 
@@ -834,7 +834,7 @@ AliMUONTriggerSegmentationV2::SetPad(Int_t ix, Int_t iy)
 
 //_____________________________________________________________________________
 void
-AliMUONTriggerSegmentationV2::SetPadSize(float,float)
+AliMUONTriggerSegmentationV2::SetPadSize(Float_t,Float_t)
 {
 // Not implemented
 

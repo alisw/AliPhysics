@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpZone.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpZone.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpZone
@@ -27,7 +27,9 @@
 #include "AliMpZone.h"
 #include "AliMpSubZone.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpZone)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpZone::AliMpZone(Int_t id) 

@@ -7,12 +7,8 @@
 // Revision of includes 07/05/2004
 
 /// \ingroup rec
-/// \class AliMUONTrigger
+/// \class AliMUONTriggerTrack
 /// \brief Reconstructed trigger track in ALICE dimuon spectrometer
-///
-////////////////////////////////////////////////////////////
-/// Reconstructed trigger track in ALICE dimuon spectrometer
-////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 

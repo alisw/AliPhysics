@@ -40,7 +40,9 @@
 #include "AliMUONMathieson.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderAZ)
+/// \endcond
  
  const Double_t AliMUONClusterFinderAZ::fgkCouplMin = 1.e-3; // threshold on coupling 
  const Double_t AliMUONClusterFinderAZ::fgkZeroSuppression = 6; // average zero suppression value
@@ -2426,7 +2428,7 @@ void AliMUONClusterFinderAZ::FlagLocalMax(TH2D *hist, Int_t i, Int_t j, Int_t *i
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::FindCluster(Int_t *localMax, Int_t iMax)
 {
-/// Find pixel cluster around local maximum #iMax and pick up pads
+/// Find pixel cluster around local maximum \a iMax and pick up pads
 /// overlapping with it
 
   TH2D *hist = (TH2D*) gROOT->FindObject("anode");

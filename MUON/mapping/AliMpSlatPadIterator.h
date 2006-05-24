@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatPadIterator.h,v 1.7 2006/05/23 13:07:47 ivana Exp $
+// $MpId: AliMpSlatPadIterator.h,v 1.8 2006/05/24 13:58:24 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlatPadIterator
 /// \brief Iterator for slat pads.
 /// 
-/// Author: Laurent Aphecetche
+//  Author: Laurent Aphecetche
 
 #ifndef ALI_MP_SLAT_PAD_ITERATOR_H
 #define ALI_MP_SLAT_PAD_ITERATOR_H

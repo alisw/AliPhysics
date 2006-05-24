@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpTriggerSegmentation.cxx,v 1.5 2006/03/17 16:42:39 ivana Exp $
+// $MpId: AliMpTriggerSegmentation.cxx,v 1.7 2006/05/24 13:58:52 ivana Exp $
 
 #include "AliMpTriggerSegmentation.h"
 
@@ -37,7 +37,9 @@
 ///
 /// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMpTriggerSegmentation)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpTriggerSegmentation::AliMpTriggerSegmentation() 

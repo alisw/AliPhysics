@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifReader.cxx,v 1.9 2006/04/24 13:54:33 ivana Exp $
+// $MpId: AliMpMotifReader.cxx,v 1.10 2006/05/24 13:58:41 ivana Exp $
 // Category: sector
 //
 // Class AliMpMotifReader
@@ -44,7 +44,9 @@
   #include <sstream>
 #endif
 
+/// \cond CLASSIMP
 ClassImp(AliMpMotifReader)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpMotifReader::AliMpMotifReader(AliMpStationType station, 

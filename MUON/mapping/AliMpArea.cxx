@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpArea.cxx,v 1.7 2006/03/17 11:34:46 ivana Exp $
+// $MpId: AliMpArea.cxx,v 1.8 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 //
 // Class AliMpArea
@@ -27,8 +27,9 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpArea)
-
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpArea::AliMpArea(const TVector2& position, const TVector2& dimensions)

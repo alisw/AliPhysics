@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVRowSegment.cxx,v 1.5 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpVRowSegment.cxx,v 1.6 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpVRowSegment
@@ -25,7 +25,9 @@
 
 #include "AliMpVRowSegment.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpVRowSegment)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpVRowSegment::AliMpVRowSegment()

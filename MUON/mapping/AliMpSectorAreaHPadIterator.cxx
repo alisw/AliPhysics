@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorAreaHPadIterator.cxx,v 1.6 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpSectorAreaHPadIterator.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorAreaHPadIterator
@@ -30,7 +30,9 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpSectorAreaHPadIterator)
+/// \endcond
 
 //______________________________________________________________________________
 AliMpSectorAreaHPadIterator::AliMpSectorAreaHPadIterator(

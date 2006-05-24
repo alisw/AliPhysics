@@ -2,19 +2,19 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifMap.h,v 1.13 2006/05/23 13:07:41 ivana Exp $
+// $MpId: AliMpMotifMap.h,v 1.14 2006/05/24 13:58:18 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifMap
 /// \brief Motif map containers
-
+///
 /// The class defines:
 /// - map of motif objects to their string IDs
 /// - map of motif type objects to their string IDs
 /// - map of motif position objects to their string IDs
 /// - map of motif position objects to their global indices
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_MAP_H
 #define ALI_MP_MOTIF_MAP_H

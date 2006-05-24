@@ -12,6 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
  
 #include "AliMUONBusStruct.h"
 #include "AliLog.h"
@@ -26,10 +28,11 @@
 /// 12 bits for charge)
 ///
 
-
+/// \cond CLASSIMP
 ClassImp(AliMUONBusStruct)
+/// \endcond
 
- const Int_t AliMUONBusStruct::fgkHeaderLength = 4;
+const Int_t AliMUONBusStruct::fgkHeaderLength = 4;
 
 //___________________________________________
 AliMUONBusStruct::AliMUONBusStruct()

@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifSpecial.h,v 1.10 2006/05/23 13:07:42 ivana Exp $
+// $MpId: AliMpMotifSpecial.h,v 1.11 2006/05/24 13:58:18 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifSpecial
 /// \brief A special motif with varying pad dimensions
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_SPECIAL_H
 #define ALI_MP_MOTIF_SPECIAL_H

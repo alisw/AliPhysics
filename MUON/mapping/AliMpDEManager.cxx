@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpDEManager.cxx,v 1.2 2006/03/02 16:30:09 ivana Exp $
+// $MpId: AliMpDEManager.cxx,v 1.4 2006/05/24 13:58:34 ivana Exp $
 // Category: management
 //
 // Class AliMpDEManager
@@ -35,13 +35,15 @@
 #include <TObjString.h>
 #include <TMap.h>
 
+/// \cond CLASSIMP
+ClassImp(AliMpDEManager)
+/// \endcond
+
 const char  AliMpDEManager::fgkNameSeparator = '_'; 
 const char  AliMpDEManager::fgkCommentPrefix = '#'; 
 const Int_t AliMpDEManager::fgkCoefficient = 100;
 AliMpExMap  AliMpDEManager::fgDENamesMap(true);
 AliMpExMap  AliMpDEManager::fgDECathBNBMap(true);
-
-ClassImp(AliMpDEManager)
 
 //______________________________________________________________________________
 AliMpDEManager::AliMpDEManager()

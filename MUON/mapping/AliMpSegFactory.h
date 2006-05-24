@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpSegFactory.h,v 1.6 2006/05/23 13:07:38 ivana Exp $ 
+// $MpId: AliMpSegFactory.h,v 1.7 2006/05/24 13:58:16 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpSegFactory
@@ -16,7 +16,7 @@
 /// As the same segmentation objects can be shared with more detection elements,
 /// the class provides Clear() method for a safe deleting.
 ///
-/// Authors: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ROOT_TObject
 #  include <TObject.h>

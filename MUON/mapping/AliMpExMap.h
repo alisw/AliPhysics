@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpExMap.h,v 1.3 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpExMap.h,v 1.4 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpExMap
@@ -11,7 +11,7 @@
 /// The objects and keys from TExMap are store in additional
 /// arrays which are Root persistent.
 ///
-/// Author: Ivana Hrivnacova; IPN Orsay
+/// \author Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_EX_MAP_H
 #define ALI_MP_EX_MAP_H

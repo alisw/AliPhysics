@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatPainter.h,v 1.9 2006/05/23 13:07:35 ivana Exp $
+// $MpId: AliMpSlatPainter.h,v 1.10 2006/05/24 13:58:13 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpSlatPainter
 /// \brief Class for drawing a slat into canvas
 ///
-/// Authors: Laurent Aphecetche
+//  Author: Laurent Aphecetche
 
 #ifndef ALIMPSLATPAINTER_H
 #define ALIMPSLATPAINTER_H

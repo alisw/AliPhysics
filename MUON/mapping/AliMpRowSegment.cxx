@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpRowSegment.cxx,v 1.9 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpRowSegment.cxx,v 1.10 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpRowSegment
@@ -36,7 +36,9 @@
 #include <TMath.h>
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpRowSegment)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpRowSegment::AliMpRowSegment(AliMpRow* row, AliMpVMotif* motif, 

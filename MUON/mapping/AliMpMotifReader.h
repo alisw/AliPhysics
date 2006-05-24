@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifReader.h,v 1.8 2006/05/23 13:07:42 ivana Exp $
+// $MpId: AliMpMotifReader.h,v 1.9 2006/05/24 13:58:18 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifReader
 /// \brief Class that takes care of reading the motifs data.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_READER_H
 #define ALI_MP_MOTIF_READER_H

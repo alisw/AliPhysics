@@ -12,14 +12,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
- 
+
+ /* $Id$ */
+
 #include "AliMUONDDLTracker.h"
 #include "AliMUONBusStruct.h"
 #include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
-
-ClassImp(AliMUONDDLTracker)
-
 
 ///
 /// \class AliMUONDDLTracker
@@ -28,6 +27,9 @@ ClassImp(AliMUONDDLTracker)
 ///
 /// \author C. Finck
 
+/// \cond CLASSIMP
+ClassImp(AliMUONDDLTracker)
+/// \endcond
 
 //___________________________________________
 AliMUONDDLTracker::AliMUONDDLTracker()

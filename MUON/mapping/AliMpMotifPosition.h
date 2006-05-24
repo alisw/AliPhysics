@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifPosition.h,v 1.8 2006/05/23 13:07:42 ivana Exp $
+// $MpId: AliMpMotifPosition.h,v 1.9 2006/05/24 13:58:18 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifPosition
 /// \brief A placed motif.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_POSITION_H
 #define ALI_MP_MOTIF_POSITION_H

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 #include "AliMUONLocalStruct.h"
 
 /// 
@@ -23,12 +25,14 @@
 /// x position)
 ///
 
+/// \cond CLASSIMP
 ClassImp(AliMUONLocalStruct)
- 
+/// \endcond
+
  const Int_t  AliMUONLocalStruct::fgkLength = 5;
  const Int_t  AliMUONLocalStruct::fgkScalerLength = 45;
  const UInt_t AliMUONLocalStruct::fgkEndOfLocal   = 0xCAFEFADE;
-
+ 
 //___________________________________________
 AliMUONLocalStruct::AliMUONLocalStruct()
   :  TObject(),

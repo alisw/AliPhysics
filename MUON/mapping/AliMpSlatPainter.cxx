@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatPainter.cxx,v 1.6 2005/09/19 18:56:46 ivana Exp $
+// $MpId: AliMpSlatPainter.cxx,v 1.10 2006/05/24 13:58:32 ivana Exp $
 
 ///
 /// \class AliMpSlatPainter
@@ -34,7 +34,9 @@
 #include "TPad.h"
 #include <iostream>
 
+/// \cond CLASSIMP
 ClassImp(AliMpSlatPainter)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpSlatPainter::AliMpSlatPainter()

@@ -3,11 +3,11 @@
 
 // $Id$
 
-/// \ingroup
+/// \ingroup base
 /// \class AliMUONVDataIterator
-/// \brief
+/// \brief Defines an interface of an iterator over muon data structure(s)
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONVDATAITERATOR_H
 #define ALIMUONVDATAITERATOR_H

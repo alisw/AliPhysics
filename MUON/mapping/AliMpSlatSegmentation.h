@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.h,v 1.11 2006/05/23 13:07:47 ivana Exp $
+// $MpId: AliMpSlatSegmentation.h,v 1.12 2006/05/24 13:58:24 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlatSegmentation
@@ -13,7 +13,7 @@
 /// (where the slat is to be understood as N PCBs of fixed size = 40cm
 /// even if not all pads of a given PCBs are actually physically there).
 ///
-/// Author: Laurent Aphecetche
+/// \author Laurent Aphecetche
 
 #ifndef ALI_MP_SLAT_SEGMENTATION_H
 #define ALI_MP_SLAT_SEGMENTATION_H

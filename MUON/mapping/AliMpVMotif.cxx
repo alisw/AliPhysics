@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVMotif.cxx,v 1.8 2006/03/17 11:38:06 ivana Exp $
+// $MpId: AliMpVMotif.cxx,v 1.9 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
 ///
 // Class AliMpVMotif
@@ -33,8 +33,9 @@
 
 #include <iomanip>
 
-
+/// \cond CLASSIMP
 ClassImp(AliMpVMotif)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpVMotif::AliMpVMotif():

@@ -17,14 +17,16 @@
 
 #include "AliMUONVDataIterator.h"
 
-ClassImp(AliMUONVDataIterator)
-
 ///
 /// \class AliMUONVDataIterator
 ///
 /// Defines an interface of an iterator over muon data structure(s).
 ///
 /// \author L. Aphecetche
+
+/// \cond CLASSIMP
+ClassImp(AliMUONVDataIterator)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONVDataIterator::AliMUONVDataIterator() : TObject()

@@ -14,10 +14,10 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPCBPainter.cxx,v 1.4 2005/09/19 18:56:46 ivana Exp $
+// $MpId: AliMpPCBPainter.cxx,v 1.8 2006/05/24 13:58:32 ivana Exp $
 
 ///
-/// \class AliMpSlatPainter
+/// \class AliMpPCBPainter
 /// 
 /// Class for drawing a PCB into canvas
 /// 
@@ -36,7 +36,9 @@
 
 #include <iostream>
 
+/// \cond CLASSIMP
 ClassImp(AliMpPCBPainter)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpPCBPainter::AliMpPCBPainter(AliMpPCB* pcb)

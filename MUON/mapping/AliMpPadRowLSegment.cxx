@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpPadRowLSegment.cxx,v 1.5 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpPadRowLSegment.cxx,v 1.6 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpPadRowLSegment
@@ -32,7 +32,9 @@
 #include "AliMpMotif.h"
 #include "AliMpMotifType.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpPadRowLSegment)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpPadRowLSegment::AliMpPadRowLSegment(

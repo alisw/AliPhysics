@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSector.cxx,v 1.13 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpSector.cxx,v 1.14 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpSector
@@ -35,7 +35,9 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpSector)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows, 

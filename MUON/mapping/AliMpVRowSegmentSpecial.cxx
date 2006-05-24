@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVRowSegmentSpecial.cxx,v 1.8 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpVRowSegmentSpecial.cxx,v 1.9 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpVRowSegmentSpecial
@@ -36,11 +36,13 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
+ClassImp(AliMpVRowSegmentSpecial)
+/// \endcond
+
 #ifdef WITH_ROOT
 const Int_t  AliMpVRowSegmentSpecial::fgkMaxNofMotifPositionIds = 20;
 #endif    
-
-ClassImp(AliMpVRowSegmentSpecial)
 
 //______________________________________________________________________________
 AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial(AliMpRow* row, Double_t offsetX)

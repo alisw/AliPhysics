@@ -7,7 +7,7 @@
 /// \class AliMUONVCalibParam
 /// \brief Container of calibration values for a given number of channels.
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONVCALIBPARAM_H
 #define ALIMUONVCALIBPARAM_H

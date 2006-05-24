@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatZonePadIterator.cxx,v 1.6 2006/03/02 16:38:11 ivana Exp $
+// $MpId: AliMpSlatZonePadIterator.cxx,v 1.9 2006/05/24 13:58:50 ivana Exp $
 
 #include "AliMpSlatZonePadIterator.h"
 
@@ -27,14 +27,16 @@
 #include <algorithm>
 #include <limits>
 
-ClassImp(AliMpSlatZonePadIterator)
-
 /// 
 /// \class AliMpSlatZonePadIterator
 /// 
 /// Iterates over slat pads within a region of constant pad size.
 /// 
 /// \author Laurent Aphecetche
+
+/// \cond CLASSIMP
+ClassImp(AliMpSlatZonePadIterator)
+/// \endcond
 
 const Double_t AliMpSlatZonePadIterator::fgkEpsilon = 1E-4; // cm
 const Double_t AliMpSlatZonePadIterator::fgkDmax = std::numeric_limits<Double_t>::max();

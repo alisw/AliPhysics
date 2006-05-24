@@ -2,14 +2,14 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpGraphContext.h,v 1.10 2006/05/23 13:07:35 ivana Exp $
+// $MpId: AliMpGraphContext.h,v 1.11 2006/05/24 13:58:13 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpGraphContext
 /// \brief Class describing the correspondance between a given area
 /// in pad, and a zone of real (cm) position
 ///
-/// Author: David GUEZ, IPN Orsay
+/// \author David GUEZ, IPN Orsay
 
 #ifndef ALI_MP_GRAPH_CONTEXT_H
 #define ALI_MP_GRAPH_CONTEXT_H

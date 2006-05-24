@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRowSegment.h,v 1.9 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpRowSegment.h,v 1.10 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpRowSegment
 /// \brief A row segment composed of the the identic motifs.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_ROW_SEGMENT_H
 #define ALI_MP_ROW_SEGMENT_H

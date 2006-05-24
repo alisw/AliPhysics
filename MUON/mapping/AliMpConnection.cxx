@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpConnection.cxx,v 1.6 2006/03/17 11:38:06 ivana Exp $
+// $MpId: AliMpConnection.cxx,v 1.7 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
 //
 // Class AliMpConnection
@@ -25,7 +25,9 @@
 
 #include "AliMpConnection.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpConnection)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpConnection::AliMpConnection(Int_t padNum, Int_t bergNum,Int_t kaptonNum,

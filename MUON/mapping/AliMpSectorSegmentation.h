@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.h,v 1.14 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpSectorSegmentation.h,v 1.15 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorSegmentation
@@ -12,7 +12,7 @@
 /// conversion between pad indices, pad location, pad position;
 /// finding pad neighbour.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_SECTOR_SEGMENTATION_H
 #define ALI_MP_SECTOR_SEGMENTATION_H

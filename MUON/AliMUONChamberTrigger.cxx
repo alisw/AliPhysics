@@ -24,8 +24,6 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliLog.h"
 
-ClassImp(AliMUONChamberTrigger)
-
 ///
 /// \class AliMUONChamberTrigger
 ///
@@ -33,6 +31,10 @@ ClassImp(AliMUONChamberTrigger)
 ///
 /// This class is to be deprecated.
 ///
+
+/// \cond CLASSIMP
+ClassImp(AliMUONChamberTrigger)
+/// \endcond
 
 //-------------------------------------------
 

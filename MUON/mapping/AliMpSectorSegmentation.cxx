@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorSegmentation.cxx,v 1.14 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpSectorSegmentation.cxx,v 1.15 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorSegmentation
@@ -48,12 +48,14 @@
 #include <Riostream.h>
 #include <TMath.h>
 
+/// \cond CLASSIMP
+ClassImp(AliMpSectorSegmentation)
+/// \endcond
+
 #ifdef WITH_ROOT
 const Double_t AliMpSectorSegmentation::fgkS1 = 100000.;
 const Double_t AliMpSectorSegmentation::fgkS2 = 1000.;
 #endif
-
-ClassImp(AliMpSectorSegmentation)
 
 //______________________________________________________________________________
 AliMpSectorSegmentation::AliMpSectorSegmentation(const AliMpSector* sector) 
@@ -530,7 +532,7 @@ Int_t  AliMpSectorSegmentation::NofPads() const
 //______________________________________________________________________________
 Bool_t AliMpSectorSegmentation::HasPad(const AliMpIntPair& indices) const
 {
-/// Does the pad specified by <indices> exist ?
+/// Does the pad specified by \a indices exist ?
 
   return PadByIndices(indices,kFALSE) != AliMpPad::Invalid();
 }

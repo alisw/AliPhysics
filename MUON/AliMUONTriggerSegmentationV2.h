@@ -46,7 +46,7 @@ class AliMUONTriggerSegmentationV2 : public AliMUONVGeometryDESegmentation
   virtual Float_t Dpx(Int_t sectorCode) const;
   virtual Float_t Dpy(Int_t sectorCode) const;
   
-  virtual void Draw(const char */*opt*/ = "");
+  virtual void Draw(Option_t*/*opt*/ = "");
   
   void FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, 
                 Float_t dx, Float_t dy);

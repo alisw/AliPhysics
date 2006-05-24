@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatPadIterator.cxx,v 1.4 2005/09/19 19:01:31 ivana Exp $
+// $MpId: AliMpSlatPadIterator.cxx,v 1.6 2006/05/24 13:58:50 ivana Exp $
 
 #include "AliMpSlatPadIterator.h"
 
@@ -41,7 +41,9 @@
 /// \author L. Aphecetche
 ///
 
+/// \cond CLASSIMP
 ClassImp(AliMpSlatPadIterator)
+/// \endcond
 
 //const Double_t
 //AliMpSlatPadIterator::fgkDmax = std::numeric_limits<Double_t>::max();

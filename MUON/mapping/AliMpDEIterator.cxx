@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$ 
-// $MpId: AliMpDEIterator.cxx,v 1.5 2006/03/17 11:36:27 ivana Exp $
+// $MpId: AliMpDEIterator.cxx,v 1.6 2006/05/24 13:58:34 ivana Exp $
 // Category: management
 
 // ------------------------
@@ -32,11 +32,13 @@
 #include <Riostream.h>
 #include <TSystem.h>
 
+/// \cond CLASSIMP
+ClassImp(AliMpDEIterator)
+/// \endcond
+
 const  Int_t  AliMpDEIterator::fgkMaxNofDetElements = 250;
 TArrayI  AliMpDEIterator::fgDetElemIds(fgkMaxNofDetElements);
 Int_t    AliMpDEIterator::fgNofDetElemIds = 0;	
-
-ClassImp(AliMpDEIterator)
 
 //
 // static private methods

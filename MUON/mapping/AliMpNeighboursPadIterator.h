@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpNeighboursPadIterator.h,v 1.11 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpNeighboursPadIterator.h,v 1.12 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpNeighboursPadIterator
 /// \brief An iterator over the pads surrounding a given pad
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_NEIGHBOURS_PAD_ITERATOR_H
 #define ALI_MP_NEIGHBOURS_PAD_ITERATOR_H

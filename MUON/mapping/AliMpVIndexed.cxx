@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVIndexed.cxx,v 1.6 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpVIndexed.cxx,v 1.7 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 //
 // Class AliMpVIndexed
@@ -25,7 +25,9 @@
 
 #include "AliMpVIndexed.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpVIndexed)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpVIndexed::AliMpVIndexed(const AliMpIntPair& lowLimit, 

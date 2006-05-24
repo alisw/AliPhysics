@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpZonePainter.cxx,v 1.7 2006/03/17 11:35:29 ivana Exp $
+// $MpId: AliMpZonePainter.cxx,v 1.8 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
 //
 // Class AliMpZonePainter
@@ -32,7 +32,9 @@
 #include <TVirtualX.h>
 #include <TPad.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpZonePainter)
+/// \endcond
 
 //_______________________________________________________________________
 AliMpZonePainter::AliMpZonePainter()
@@ -189,7 +191,7 @@ TVector2 AliMpZonePainter::GetDimensions() const
 void AliMpZonePainter::Draw(Option_t *option)
 {
 /// Draw the sector on the current pad
-/// The first letter of <option> is treated as follows:
+/// The first letter of \a option is treated as follows:
 /// - case "S" : each sub zones are drawn separately
 /// - case ""  : the whole zone is drawn at once
 /// in both cases, the rest of the option is passed

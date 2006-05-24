@@ -2,14 +2,14 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVRowSegmentSpecial.h,v 1.9 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpVRowSegmentSpecial.h,v 1.10 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpVRowSegmentSpecial
 /// \brief Abstract base class for a special row segment composed of the 
 /// pad rows.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_V_ROW_SEGMENT_SPECIAL_H
 #define ALI_MP_V_ROW_SEGMENT_SPECIAL_H

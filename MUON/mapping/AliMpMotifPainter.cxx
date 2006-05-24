@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifPainter.cxx,v 1.8 2006/03/17 11:35:29 ivana Exp $
+// $MpId: AliMpMotifPainter.cxx,v 1.9 2006/05/24 13:58:32 ivana Exp $
 // Category: graphics
 //
 // Class AliMpMotifPainter
@@ -33,7 +33,9 @@
 #include <TVirtualX.h>
 #include <TPad.h>
  
+/// \cond CLASSIMP
 ClassImp(AliMpMotifPainter)
+/// \endcond
 
 //_______________________________________________________________________
 AliMpMotifPainter::AliMpMotifPainter()

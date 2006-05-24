@@ -5,12 +5,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlatZonePadIterator.h,v 1.6 2006/05/23 13:07:47 ivana Exp $
+// $MpId: AliMpSlatZonePadIterator.h,v 1.7 2006/05/24 13:58:24 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlatZonePadIterator
 /// \brief Iterates over slat pads within a region of constant pad size.
-/// \author Laurent Aphecetche
+///
+//  Author: Laurent Aphecetche
 
 #include "AliMpVPadIterator.h"
 #include "AliMpArea.h"

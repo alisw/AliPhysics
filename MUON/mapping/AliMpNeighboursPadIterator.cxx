@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpNeighboursPadIterator.cxx,v 1.11 2006/03/02 16:37:30 ivana Exp $
+// $MpId: AliMpNeighboursPadIterator.cxx,v 1.12 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpNeighboursPadIterator
@@ -31,10 +31,12 @@
 
 #include <TVector2.h>
 
+/// \cond CLASSIMP
+ClassImp(AliMpNeighboursPadIterator)
+/// \endcond
+
 const UInt_t AliMpNeighboursPadIterator::fgkInvalidIndex = 9999; 
                                                    //never so much neighbours...
-
-ClassImp(AliMpNeighboursPadIterator)
 
 //______________________________________________________________________________
 AliMpNeighboursPadIterator::AliMpNeighboursPadIterator()
@@ -119,8 +121,8 @@ AliMpNeighboursPadIterator::operator = (const AliMpNeighboursPadIterator& right)
 //______________________________________________________________________________
 Bool_t AliMpNeighboursPadIterator::IsNeighbour(const AliMpPad& pad) const
 {
-/// Return true if the pad located by <padIndice> is a neighbour of those
-/// located at <fCenterPad>
+/// Return true if the pad located by \a pad is a neighbour of those
+/// located at a\ fCenterPad
 
     if ( !pad.IsValid() ) return kFALSE;    
 
@@ -138,8 +140,8 @@ AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
                                           const AliMpIntPair& direction) const
 {
 /// Fill  a new vector with all pads which have common
-/// parts with the pad located at <fCenterPad>, in a given line
-/// starting from <from> and moving by <direction>
+/// parts with the pad located at \a fCenterPad, in a given line
+/// starting from \a from and moving by \a direction
 
     AliMpPad current = from;
     PadVector ans;
@@ -175,8 +177,8 @@ AliMpNeighboursPadIterator::PadVectorLine(const AliMpPad& from,
                                           const AliMpIntPair& direction) const
 {
 /// Fill  a new vector with all pads which have common
-/// parts with the pad located at <fCenterPad>, in a given line
-/// starting from <from> and moving by <direction>
+/// parts with the pad located at \a fCenterPad, in a given line
+/// starting from \a from and moving by \a direction
 
     AliMpPad current = from;
     PadVector* ans = new PadVector();
@@ -227,7 +229,7 @@ void  AliMpNeighboursPadIterator::UpdateTotalSet(PadSet& setTotal,
 void AliMpNeighboursPadIterator::FillPadsVector(Bool_t includeCenter)
 {
 /// Fill the indices vector with all indices of pads which have common
-/// parts with the pad located at <fCenterPad>
+/// parts with the pad located at \a fCenterPad
 
     if (!fkSegmentation || !fCenterPad.IsValid()) return;
     

@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSlat.h,v 1.7 2006/05/23 13:07:47 ivana Exp $
+// $MpId: AliMpSlat.h,v 1.8 2006/05/24 13:58:24 ivana Exp $
 
 /// \ingroup slat
 /// \class AliMpSlat
 /// \brief A slat (building block of stations 3, 4 and 5)
 /// 
-/// Author: Laurent Aphecetche
+//  Author: Laurent Aphecetche
 
 #ifndef ALI_MP_SLAT_H
 #define ALI_MP_SLAT_H

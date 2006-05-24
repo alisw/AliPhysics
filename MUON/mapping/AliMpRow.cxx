@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpRow.cxx,v 1.8 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpRow.cxx,v 1.9 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpRow
@@ -36,7 +36,9 @@
 #include <TMath.h>
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpRow)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpRow::AliMpRow(Int_t id, AliMpMotifMap* motifMap) 

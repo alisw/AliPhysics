@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpTrigger.cxx,v 1.2 2006/03/02 16:35:31 ivana Exp $
+// $MpId: AliMpTrigger.cxx,v 1.4 2006/05/24 13:58:52 ivana Exp $
 
 #include "AliMpTrigger.h"
 
@@ -37,7 +37,9 @@
 ///
 /// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMpTrigger)
+/// \endcond
 
 namespace
 {

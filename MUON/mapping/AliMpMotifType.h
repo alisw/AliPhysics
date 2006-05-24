@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpMotifType.h,v 1.10 2006/05/23 13:07:42 ivana Exp $
+// $MpId: AliMpMotifType.h,v 1.11 2006/05/24 13:58:18 ivana Exp $
 
 /// \ingroup motif
 /// \class AliMpMotifType
 /// \brief Class that defines the motif properties.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_MOTIF_TYPE_H
 #define ALI_MP_MOTIF_TYPE_H

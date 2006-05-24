@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpIntPair.h,v 1.5 2006/05/23 13:07:29 ivana Exp $
+// $MpId: AliMpIntPair.h,v 1.6 2006/05/24 13:58:07 ivana Exp $
 
 /// \ingroup basic
 /// \class AliMpIntPair
@@ -11,7 +11,7 @@
 /// The pair created by the default constructor is in invalide state,
 /// setting one of values changes the state to valid.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_INT_PAIR_H
 #define ALI_MP_INT_PAIR_H

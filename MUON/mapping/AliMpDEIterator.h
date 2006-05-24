@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpDEIterator.h,v 1.4 2006/05/23 13:07:38 ivana Exp $ 
+// $MpId: AliMpDEIterator.h,v 1.5 2006/05/24 13:58:16 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpDEIterator
@@ -14,7 +14,7 @@
 /// - or over detection elements in a selected module, if started with
 ///   First(Int_t moduleId) function                                          \n 
 /// 
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MP_DE_ITERATOR_H
 #define ALI_MP_DE_ITERATOR_H

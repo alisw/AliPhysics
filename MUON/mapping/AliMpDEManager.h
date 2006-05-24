@@ -2,20 +2,20 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpDEManager.h,v 1.5 2006/05/23 13:07:38 ivana Exp $ 
+// $MpId: AliMpDEManager.h,v 1.6 2006/05/24 13:58:16 ivana Exp $ 
 
 /// \ingroup management
 /// \class AliMpDEManager
 /// \brief The manager class for definition of detection element types
-//
+///
 /// The detection element types are defined via unique names
 /// in denames.dat file for each station in the mapping data.
 /// Detection element name is composed of DETypeName and planeTypeName.
 /// DETypeName is only one per station in case of station1 and 2 quadrants, 
 /// there are more DETypes in case of slat and trigger stations. 
 ///
-/// Authors: Ivana Hrivnacova, IPN Orsay
-///          Laurent Aphecetche, SUBATECH Nantes
+/// \author Ivana Hrivnacova, IPN Orsay;
+///         Laurent Aphecetche, SUBATECH Nantes
 
 #ifndef ALI_MP_DE_MANAGER_H
 #define ALI_MP_DE_MANAGER_H

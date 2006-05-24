@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlat.cxx,v 1.5 2006/03/17 16:42:33 ivana Exp $
+// $MpId: AliMpSlat.cxx,v 1.6 2006/05/24 13:58:50 ivana Exp $
 
 #include "AliMpSlat.h"
 
@@ -35,9 +35,12 @@
 /// All the PCBs have a least the same height, if not the same width. In most
 /// of the case, height=width=40 cm, at least for St345 (for trigger,
 /// width varies)
-///
+// 
+/// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMpSlat)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpSlat::AliMpSlat() 

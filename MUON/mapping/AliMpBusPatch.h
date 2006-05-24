@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpBusPatch.h,v 1.4 2006/05/23 13:07:38 ivana Exp $
+// $MpId: AliMpBusPatch.h,v 1.5 2006/05/24 13:58:16 ivana Exp $
 
 /// \ingroup management
 /// \class AliMpBusPatch
@@ -10,7 +10,7 @@
 ///
 /// Calculates also the maximum DSP and buspatch numbers for a given DE
 ///
-/// Author: Ch. Finck; Subatech Nantes
+/// \author Ch. Finck; Subatech Nantes
 
 #ifndef ALI_MP_BUSPATCH_H
 #define ALI_MP_BUSPATCH_H

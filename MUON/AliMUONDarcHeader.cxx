@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
+/* $Id$ */
+
 #include "AliMUONDarcHeader.h"
 #include "AliMUONRegHeader.h"
 
@@ -25,15 +27,16 @@
 /// regional structures.
 ///
 
+/// \cond CLASSIMP
 ClassImp(AliMUONDarcHeader)
- 
+/// \endcond
+
  const Int_t AliMUONDarcHeader::fgkHeaderLength = 8;
  const Int_t AliMUONDarcHeader::fgkDarcScalerLength   = 6;
  const Int_t AliMUONDarcHeader::fgkGlobalScalerLength = 10;
 
  const UInt_t AliMUONDarcHeader::fgkEndOfDarc   = 0xDEADFACE;
  const UInt_t AliMUONDarcHeader::fgkEndOfGlobal = 0xDEADBEEF;
-
 
 //___________________________________________
 AliMUONDarcHeader::AliMUONDarcHeader()

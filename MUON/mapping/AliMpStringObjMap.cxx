@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpStringObjMap.cxx,v 1.3 2006/03/17 11:34:46 ivana Exp $
+// $MpId: AliMpStringObjMap.cxx,v 1.4 2006/05/24 13:58:29 ivana Exp $
 
 // ------------------------------------ 
 // Class AliMpStringObjMap
@@ -30,7 +30,9 @@
 #include <TObjString.h>
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpStringObjMap)
+/// \endcond
 
 //______________________________________________________________________________
 AliMpStringObjMap::AliMpStringObjMap()

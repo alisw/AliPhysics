@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpHelper.h,v 1.5 2006/05/23 13:07:47 ivana Exp $ 
+// $MpId: AliMpHelper.h,v 1.6 2006/05/24 13:58:24 ivana Exp $ 
 
 /// \ingroup slat
 /// \class AliMpHelper
 /// \brief Helper class to parse slat mapping ascii files.
 /// 
-/// Author: Laurent Aphecetche
+//  Author: Laurent Aphecetche
 
 #ifndef ALI_MP_HELPER_H
 #define ALI_MP_HELPER_H

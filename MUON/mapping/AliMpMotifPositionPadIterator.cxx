@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifPositionPadIterator.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifPositionPadIterator.cxx,v 1.6 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifPositionPadIterator
@@ -28,7 +28,9 @@
 #include "AliMpMotifType.h"
 #include "AliMpConnection.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpMotifPositionPadIterator)
+/// \endcond
 
 //______________________________________________________________________________
 AliMpMotifPositionPadIterator::AliMpMotifPositionPadIterator():

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifMap.cxx,v 1.14 2006/03/17 11:38:06 ivana Exp $
+// $MpId: AliMpMotifMap.cxx,v 1.16 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
 // -------------------
 // Class AliMpMotifMap
@@ -37,7 +37,9 @@
 #include <TVector2.h>
 #include <TArrayI.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMpMotifMap)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpMotifMap::AliMpMotifMap(Bool_t /*standardConstructor*/) 

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpExMap.cxx,v 1.4 2006/03/17 11:34:46 ivana Exp $
+// $MpId: AliMpExMap.cxx,v 1.5 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 // ------------------------
 // Class AliMpExMap
@@ -33,6 +33,10 @@
 
 #include <stdlib.h>
 
+/// \cond CLASSIMP
+ClassImp(AliMpExMap)
+/// \endcond
+
 //
 // static members
 //
@@ -45,8 +49,6 @@ const Int_t AliMpExMap::fgkSeparator2 = 100;
 
 const TString  AliMpExMap::fgkCharacterMap 
   = " 1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.";
-
-ClassImp(AliMpExMap)
 
 //
 // static methods

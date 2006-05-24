@@ -2,14 +2,14 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVPadRowSegment.h,v 1.6 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpVPadRowSegment.h,v 1.7 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpVPadRowSegment
 /// \brief The abstract base class for a pad row segment composed of the 
 /// the identic pads.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_V_PAD_ROW_SEGMENT_H
 #define ALI_MP_V_PAD_ROW_SEGMENT_H

@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifTypePadIterator.cxx,v 1.5 2005/08/26 15:43:36 ivana Exp $
+// $MpId: AliMpMotifTypePadIterator.cxx,v 1.6 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifTypePadIterator
@@ -26,7 +26,9 @@
 #include "AliMpMotifTypePadIterator.h"
 #include "AliMpMotifType.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpMotifTypePadIterator)
+/// \endcond
 
 //______________________________________________________________________________
 AliMpMotifTypePadIterator::AliMpMotifTypePadIterator():
@@ -95,8 +97,8 @@ AliMpIntPair
 AliMpMotifTypePadIterator::FindFirstPadInLine(AliMpIntPair indices) const
 {
 /// Find the indices of the first pad in the same line
-/// as the <indices>, and in column, at least equal, to the
-/// one of <indices>
+/// as the \a indices, and in column, at least equal, to the
+/// one of \a indices
 
     if (!fMotifType) return AliMpIntPair::Invalid();
 

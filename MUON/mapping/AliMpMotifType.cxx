@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpMotifType.cxx,v 1.9 2006/03/17 11:38:06 ivana Exp $
+// $MpId: AliMpMotifType.cxx,v 1.10 2006/05/24 13:58:41 ivana Exp $
 // Category: motif
 //
 // Class AliMpMotifType
@@ -31,9 +31,11 @@
 
 #include <stdlib.h>
 
-const Int_t AliMpMotifType::fgkPadNumForA = 65;
-
+/// \cond CLASSIMP
 ClassImp(AliMpMotifType)
+/// \endcond
+
+const Int_t AliMpMotifType::fgkPadNumForA = 65;
 
 //______________________________________________________________________________
 AliMpMotifType::AliMpMotifType(const TString &id) 
@@ -381,7 +383,7 @@ Int_t  AliMpMotifType::GetNofPads() const
 //______________________________________________________________________________
 Bool_t AliMpMotifType::HasPad(const AliMpIntPair& localIndices) const
 {
-  /// Return true if the pad indexed by <localIndices> has a connection
+  /// Return true if the pad indexed by \a localIndices has a connection
   
   if (!localIndices.IsValid()) return false;
 

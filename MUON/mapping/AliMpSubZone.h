@@ -2,14 +2,14 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSubZone.h,v 1.10 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpSubZone.h,v 1.11 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSubZone
 /// \brief A region in zone composed of the row segments with the same 
 /// motif type.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_SUB_ZONE_H
 #define ALI_MP_SUB_ZONE_H

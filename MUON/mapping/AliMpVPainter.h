@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpVPainter.h,v 1.7 2006/05/23 13:07:35 ivana Exp $
+// $MpId: AliMpVPainter.h,v 1.8 2006/05/24 13:58:13 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpVPainter
 /// \brief Abstract base class for drawing objects into canvas
 ///
-/// Authors: David Guez, IPN Orsay
+/// \author David Guez, IPN Orsay
 
 #ifndef ALI_MP_V_PAINTER_H
 #define ALI_MP_V_PAINTER_H

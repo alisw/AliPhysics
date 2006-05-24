@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpRow.h,v 1.10 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpRow.h,v 1.11 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpRow
 /// \brief A row composed of the row segments.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_ROW_H
 #define ALI_MP_ROW_H

@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSlatSegmentation.cxx,v 1.10 2006/03/17 16:42:33 ivana Exp $
+// $MpId: AliMpSlatSegmentation.cxx,v 1.12 2006/05/24 13:58:50 ivana Exp $
 
 // Caution !!
 // Implementation note.
@@ -33,7 +33,9 @@
 #include "AliMpSlat.h"
 #include "AliMpSlatPadIterator.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpSlatSegmentation)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpSlatSegmentation::AliMpSlatSegmentation() 

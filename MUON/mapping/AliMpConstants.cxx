@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpConstants.cxx,v 1.9 2006/03/02 16:27:04 ivana Exp $
+// $MpId: AliMpConstants.cxx,v 1.11 2006/05/24 13:58:29 ivana Exp $
 // Category: basic
 //
 // Class AliMpConstants
@@ -28,14 +28,16 @@
 #include <TMath.h>
 #include <TVector2.h>
 
+/// \cond CLASSIMP
+ClassImp(AliMpConstants)
+/// \endcond
+
 // static data
 const Double_t AliMpConstants::fgkLengthTolerance = 1e-05; // 0.1 mum
 const Double_t AliMpConstants::fgkLengthStep = 0.1; // 1 mm
 const Int_t    AliMpConstants::fgkStartPadIndex = 1;
 const Int_t    AliMpConstants::fgkNCh = 14;
 const Int_t AliMpConstants::fgkNonBendingManuMask(1<<10);
-
-ClassImp(AliMpConstants)
 
 //_____________________________________________________________________________
 AliMpConstants::AliMpConstants()

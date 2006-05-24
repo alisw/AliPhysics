@@ -2,12 +2,13 @@
 * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpTrigger.h,v 1.4 2006/05/23 13:07:51 ivana Exp $
+// $MpId: AliMpTrigger.h,v 1.5 2006/05/24 13:58:27 ivana Exp $
 
 /// \ingroup trigger
 /// \class AliMpTrigger
 /// \brief A trigger slat
-/// \author Laurent Aphecetche
+///
+//  Author: Laurent Aphecetche
 
 #ifndef ALI_MP_TRIGGER_H
 #define ALI_MP_TRIGGER_H

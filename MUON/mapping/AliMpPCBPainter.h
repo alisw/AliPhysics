@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPCBPainter.h,v 1.6 2006/05/23 13:07:35 ivana Exp $
+// $MpId: AliMpPCBPainter.h,v 1.7 2006/05/24 13:58:13 ivana Exp $
 
 /// \ingroup graphics
 /// \class AliMpPCBPainter
 /// \brief Class for drawing a PCB into canvas
 ///
-/// \author Laurent Aphecetche
+//  Author: Laurent Aphecetche
 
 #ifndef ALIMPPCBPAINTER_H
 #define ALIMPPCBPAINTER_H

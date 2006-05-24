@@ -14,7 +14,7 @@
 **************************************************************************/
 
 // $Id$
-// $MpId: AliMpTriggerReader.cxx,v 1.2 2006/03/02 16:36:30 ivana Exp $
+// $MpId: AliMpTriggerReader.cxx,v 1.4 2006/05/24 13:58:52 ivana Exp $
 
 #include "AliMpTriggerReader.h"
 #include "AliMpMotifReader.h"
@@ -49,6 +49,10 @@
 ///
 /// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
+ClassImp(AliMpTriggerReader)
+/// \endcond
+
 TMap AliMpTriggerReader::fgPCBMap;
 TMap AliMpTriggerReader::fgLocalBoardMap;
 
@@ -57,8 +61,6 @@ const TString AliMpTriggerReader::fgkKeywordScale("SCALE");
 const TString AliMpTriggerReader::fgkKeywordPcb("PCB");  
 const TString AliMpTriggerReader::fgkKeywordFlipX("FLIP_X");
 const TString AliMpTriggerReader::fgkKeywordFlipY("FLIP_Y");
-
-ClassImp(AliMpTriggerReader)
 
 //_____________________________________________________________________________
 AliMpTriggerReader::AliMpTriggerReader() : TObject()

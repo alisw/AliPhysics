@@ -2,13 +2,13 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$ 
-// $MpId: AliMpPCB.h,v 1.8 2006/05/23 13:07:47 ivana Exp $ 
+// $MpId: AliMpPCB.h,v 1.9 2006/05/24 13:58:24 ivana Exp $ 
 
 /// \ingroup slat
 /// \class AliMpPCB
 /// \brief A PCB for station 3,4 or 5
 /// 
-/// Author: Laurent Aphecetche
+//  Author: Laurent Aphecetche
 
 #ifndef ALIMPPCB_H
 #define ALIMPPCB_H

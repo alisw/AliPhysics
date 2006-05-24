@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpSectorReader.cxx,v 1.8 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpSectorReader.cxx,v 1.9 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpSectorReader
@@ -55,6 +55,10 @@
   #include <sstream>
 #endif
 
+/// \cond CLASSIMP
+ClassImp(AliMpSectorReader)
+/// \endcond
+
 const TString  AliMpSectorReader::fgkSectorKeyword  = "SECTOR_DATA";
 const TString  AliMpSectorReader::fgkZoneKeyword    = "ZONE";
 const TString  AliMpSectorReader::fgkSubZoneKeyword = "SUBZONE";
@@ -65,8 +69,6 @@ const TString  AliMpSectorReader::fgkMotifKeyword          = "MOTIF";
 const TString  AliMpSectorReader::fgkRowSpecialKeyword     = "ROW";
 const TString  AliMpSectorReader::fgkPadRowsKeyword        = "PAD_ROWS";
 const TString  AliMpSectorReader::fgkPadRowSegmentKeyword  = "PAD_ROW_SEGMENT";
-
-ClassImp(AliMpSectorReader)
 
 //_____________________________________________________________________________
 AliMpSectorReader::AliMpSectorReader(AliMpStationType station, 

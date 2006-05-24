@@ -10,7 +10,7 @@
 /// \class AliMUONTriggerCrateStore
 /// \brief A container for AliMUONTriggerCrate objects.
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"

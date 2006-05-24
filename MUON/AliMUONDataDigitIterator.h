@@ -10,7 +10,7 @@
 /// \class AliMUONDataDigitIterator
 /// \brief Iterator on digits (handled by AliMUONData).
 /// 
-/// \author Laurent Aphecetche
+//  Author: Laurent Aphecetche
 
 #ifndef ALIMUONVDATAITERATOR_H
 #  include "AliMUONVDataIterator.h"

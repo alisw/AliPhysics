@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpVPadRowSegment.cxx,v 1.6 2006/03/17 11:38:43 ivana Exp $
+// $MpId: AliMpVPadRowSegment.cxx,v 1.7 2006/05/24 13:58:46 ivana Exp $
 // Category: sector
 //
 // Class AliMpVPadRowSegment
@@ -29,7 +29,9 @@
 #include "AliMpMotif.h"
 #include "AliMpMotifType.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMpVPadRowSegment)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMpVPadRowSegment::AliMpVPadRowSegment(AliMpPadRow* padRow, AliMpMotif* motif, 

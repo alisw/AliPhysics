@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpPadRowLSegment.h,v 1.6 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpPadRowLSegment.h,v 1.7 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpPadRowLSegment
@@ -12,7 +12,7 @@
 /// the pads are placed from the offset (defined in the base class)
 /// to the left.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_PAD_ROW_L_SEGMENT_H
 #define ALI_MP_PAD_ROW_L_SEGMENT_H

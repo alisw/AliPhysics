@@ -2,14 +2,14 @@
  * See cxx source for full Copyright notice                               */
 
 // $Id$
-// $MpId: AliMpSectorAreaHPadIterator.h,v 1.6 2006/05/23 13:07:44 ivana Exp $
+// $MpId: AliMpSectorAreaHPadIterator.h,v 1.7 2006/05/24 13:58:21 ivana Exp $
 
 /// \ingroup sector
 /// \class AliMpSectorAreaHPadIterator
 /// \brief An iterator over the pads inside a given area in a sector
 /// in horizontal direction.
 ///
-/// Authors: David Guez, Ivana Hrivnacova; IPN Orsay
+/// \author David Guez, Ivana Hrivnacova; IPN Orsay
 
 #ifndef ALI_MP_SECTOR_AREA_H_PAD_ITERATOR_H
 #define ALI_MP_SECTOR_AREA_H_PAD_ITERATOR_H
