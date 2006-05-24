@@ -8,6 +8,12 @@
 #
 # modification history
 # $Log$
+# Revision 1.10.4.1  2006/05/24 10:09:05  hristov
+# Correct dependences for files from subdirecties (Matevz)
+#
+# Revision 1.10  2005/06/14 11:11:19  alibrary
+# Always output at least one line
+#
 # Revision 1.9  2004/06/18 10:30:54  rdm
 # fix typo in comment.
 #
@@ -128,12 +134,14 @@
 MkDepend()
 {
 echo "#"
-rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
+rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\([^/]*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
+# rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
 }
 MkDependF()
 {
 echo "#"
-rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
+rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\([^/]*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
+# rmkdepend -f- -Y -w 3000 -- $* 2>/dev/null | sed -e "s@^\(.*\)\/\(.*\)\.o:@\1\/tgt_${ALICE_TARGET}\/\2.d \1\/tgt_${ALICE_TARGET}/\\2.o:@" -e 's@^#.*$@@' -e '/^$/d'
 }
 
 MkModule()
