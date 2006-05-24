@@ -1,7 +1,7 @@
 #ifndef ALIDNDETAANALYSISSELECTOR_H
 #define ALIDNDETAANALYSISSELECTOR_H
 
-#include "../AliSelector.h"
+#include "AliSelector.h"
 
 class AliESDtrackCuts;
 class dNdEtaCorrection;

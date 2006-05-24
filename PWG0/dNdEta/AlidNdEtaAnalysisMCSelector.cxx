@@ -9,10 +9,7 @@
 
 #include <AliLog.h>
 #include <AliGenEventHeader.h>
-#include <AliTracker.h>
 
-#include "../esdTrackCuts/AliESDtrackCuts.h"
-#include "dNdEtaCorrection.h"
 #include "dNdEtaAnalysis.h"
 
 ClassImp(AlidNdEtaAnalysisMCSelector)
