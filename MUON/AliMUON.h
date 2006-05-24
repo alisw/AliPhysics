@@ -53,25 +53,33 @@ class AliMUON : public  AliDetector
     void ResetGeometryBuilder();
     
     virtual void   BuildGeometry();
-    virtual Int_t  IsVersion()   const {return 0;}
     
+                   /// Return geometry builder
     AliMUONGeometryBuilder*            GetGeometryBuilder() const {return fGeometryBuilder;}
     const AliMUONGeometryTransformer*  GetGeometryTransformer() const;
+                   /// Return segmentation
     AliMUONSegmentation*               GetSegmentation() const    { return fSegmentation; }
 
-    // MUONData   
+                   /// Return MUONData   
     AliMUONData*   GetMUONData() {return fMUONData;}
 
     // MUONLoader definition
     virtual AliLoader* MakeLoader(const char* topfoldername); //builds standard getter (AliLoader type)
+
     // Interface with AliMUONData
-    virtual void       MakeBranch(Option_t *opt=" ") {GetMUONData()->MakeBranch(opt);}
-    virtual void       SetTreeAddress();
-    virtual void       ResetHits()                   {GetMUONData()->ResetHits();}
-    virtual void       ResetDigits()                 {GetMUONData()->ResetDigits();}
-    virtual void       ResetTrigger()                {GetMUONData()->ResetTrigger();}
-    virtual void       ResetRawClusters()            {GetMUONData()->ResetRawClusters();}
-    virtual void       SetSplitLevel(Int_t SplitLevel)     {fSplitLevel=SplitLevel;}
+                   /// Make branch
+    virtual void   MakeBranch(Option_t *opt=" ") {GetMUONData()->MakeBranch(opt);}
+    virtual void   SetTreeAddress();
+                   /// Reset hits
+    virtual void   ResetHits()                   {GetMUONData()->ResetHits();}
+                   /// Reset digits
+    virtual void   ResetDigits()                 {GetMUONData()->ResetDigits();}
+                   /// Reset trigger
+    virtual void   ResetTrigger()                {GetMUONData()->ResetTrigger();}
+                   /// Reset raw clusters
+    virtual void   ResetRawClusters()            {GetMUONData()->ResetRawClusters();}
+                   /// Set split level
+    virtual void   SetSplitLevel(Int_t SplitLevel)     {fSplitLevel=SplitLevel;}
 
     // Digitisation 
     virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
@@ -80,6 +88,7 @@ class AliMUON : public  AliDetector
     virtual void   Digits2Raw();
     
     // Trigger
+                   /// Create trigger
     virtual AliTriggerDetector* CreateTriggerDetector() const
        { return new AliMUONTrigger(); }
     
@@ -110,18 +119,21 @@ class AliMUON : public  AliDetector
     virtual void  SetAlign(Bool_t align = true);
     virtual void  SetAlign(const TString& fileName, Bool_t align = true);
 
-    // Set scaler event for trigger
+                   /// Set scaler event for trigger
     virtual void  SetTriggerScalerEvent(Bool_t scaler = true){fTriggerScalerEvent = scaler;}
 
-    // Return reference to Chamber #id
+    // Getters
+                  /// Return reference to Chamber \a id
     virtual AliMUONChamber& Chamber(Int_t id)
       {return *((AliMUONChamber *) (*fChambers)[id]);}
-    // Return reference to Circuit #id
+                  /// Return reference to Circuit \a id
     virtual AliMUONTriggerCircuit& TriggerCircuit(Int_t id)
       {return *((AliMUONTriggerCircuit *) (*fTriggerCircuits)[id]);}
+                  /// Return reference to New Circuit \a id 
     virtual AliMUONTriggerCircuitNew& TriggerCircuitNew(Int_t id)
 	{return *((AliMUONTriggerCircuitNew*) (*fTriggerCircuitsNew)[id]);}
-    // Return pointers to digits
+
+    // Return pointers to digit
     AliMUONRawCluster    *RawCluster(Int_t ichamber, Int_t icathod,
 				     Int_t icluster);
     // Inherited and overridden from AliModule:
