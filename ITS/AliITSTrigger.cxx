@@ -52,7 +52,7 @@ AliITSTrigger::AliITSTrigger()
 
    // set parameters to define trigger condition thresholds
    fGlobalFOThreshold = 1;
-   fHighMultFOThreshold = 100; 
+   fHighMultFOThreshold = 150; 
 }
 
 //______________________________________________________________________
@@ -113,7 +113,7 @@ void AliITSTrigger::MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITS
   Int_t ndigitsInChip[5];
 
   // loop over modules (ladders)
-  for (Int_t moduleIndex=startSPD; moduleIndex<lastSPD; moduleIndex++) {
+  for (Int_t moduleIndex=startSPD; moduleIndex<lastSPD+1; moduleIndex++) {
     treeD->GetEvent(moduleIndex);
     TClonesArray* digits = (TClonesArray*) (digDet->At(0)); // SPD only.
     
@@ -169,7 +169,7 @@ void AliITSTrigger::GeometryTriggers()
 //   //   Int_t iFOperchip[ntotal];   // not used
 //   Int_t iFOperChipinStave[20][40][2];
   
-//   for (Int_t m=startSPD;m<lastSPD;m++) {
+//   for (Int_t m=startSPD;m<lastSPD+1;m++) {
 //     iFOperladder[m] = 0;
 //   }
 
@@ -188,7 +188,7 @@ void AliITSTrigger::GeometryTriggers()
 //   Int_t checkStave = 0;
   
 //   // loop over modules
-//   for (Int_t moduleIndex=startSPD; moduleIndex<lastSPD; moduleIndex++) {
+//   for (Int_t moduleIndex=startSPD; moduleIndex<lastSPD+1; moduleIndex++) {
 //     treeD->GetEvent(moduleIndex);
 //     TClonesArray* digits = (TClonesArray*) (digDet->At(0)); // SPD only.
 

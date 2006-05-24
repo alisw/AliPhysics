@@ -20,7 +20,7 @@ createTriggerDescriptor_pp()
 
    // standalong ITS-SPD inputs
    descrip.AddCondition( "ITS_SPD_GFO_L0",  "ITS_SPD_GFO_L0",  "SPD global fast-or",        (ULong64_t)0x1 << 5 );
-   descrip.AddCondition( "ITS_SPD_HMULT_L0","ITS_SPD_HMULT_L0","SPD high mult. 100 ",       (ULong64_t)0x1 << 6 );
+   descrip.AddCondition( "ITS_SPD_HMULT_L0","ITS_SPD_HMULT_L0","SPD high mult. 150 ",       (ULong64_t)0x1 << 6 );
 
    // standalong MUON inputs
    descrip.AddCondition( "MUON_SPlus_LPt_L0",
