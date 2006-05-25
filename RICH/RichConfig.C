@@ -472,7 +472,7 @@ void RichConfig::GuiBatch(TGHorizontalFrame *pMainF)
   pRecF->AddFrame(fRecoBG=new TGButtonGroup(pRecF,""   ));                       fRecoBG->Connect("Pressed(Int_t)","RichConfig",this,"SlotBatch(Int_t)");
     new TGCheckButton(fRecoBG,  "Find ESD tracks" ,kTrack    ));  
     new TGCheckButton(fRecoBG,  "Find vertex"     ,kVertex   ));  
-    new TGCheckButton(fRecoBG,  "Add info ESD"    ,kEsd      ));
+    new TGCheckButton(fRecoBG,  "Fill ESD"        ,kEsd      ));
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichConfig::SlotBatch(Int_t id)
@@ -526,27 +526,20 @@ void RichConfig::WriteBatch()
 
 
 
-//reconstraction section  
+//reconstraction section - cluster finder
                                                        fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
-    if     (fClusBG->GetButton(kAll)   ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\");        //clusters created for these detectors\n");
-    else if(fClusBG->GetButton(kOnly)  ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"RICH\");       //clusters created for RICH only\n");
-    
-    if(fRecoBG->GetButton(kVertex)->GetState())
-                                                       fprintf(fp,"  pRec->SetRunVertexFinder(kTRUE);                 //vertex created\n");
-    else
-                                                       fprintf(fp,"  pRec->SetRunVertexFinder(kFALSE);                //no vertex creation\n");
-    
-    if(fRecoBG->GetButton(kTrack)->GetState())
-                                                       fprintf(fp,"  pRec->SetRunTracking(\"ITS TPC TRD TOF RICH\");  //tracks are created\n");
-    else
-                                                       fprintf(fp,"  pRec->SetRunTracking(\"\");                      //not run ESD track task\n");
-    
-    if(fRecoBG->GetButton(kEsd)->GetState())
-                                                       fprintf(fp,"  pRec->SetFillESD(\"ITS TPC TRD TOF RICH\");      //run ESD add info task\n");      
-    else
-                                                       fprintf(fp,"  pRec->SetFillESD(\"\");                          //not run ESD add info task\n");
-    
-    
+    if     (fClusBG->GetButton(kAll)   ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"ITS TPC TRD TOF RICH\"); //clusters created for these detectors\n");
+    else if(fClusBG->GetButton(kOnly)  ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"RICH\");                 //clusters created for RICH only\n");
+    else if(fClusBG->GetButton(kNo)    ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"\");                     //clusters are not created\n");
+//reconstraction section - vertex finder
+    if     (fRecoBG->GetButton(kVertex)->GetState())   fprintf(fp,"  pRec->SetRunVertexFinder(kTRUE);                           //run vertex finder\n");
+    else                                               fprintf(fp,"  pRec->SetRunVertexFinder(kFALSE);                          //do not run vertex finder\n");    
+//reconstraction section - tracks finder    
+    if     (fRecoBG->GetButton(kTrack) ->GetState())   fprintf(fp,"  pRec->SetRunTracking(\"ITS TPC TRD TOF RICH\");            //run tracking for these detectors\n");
+    else                                               fprintf(fp,"  pRec->SetRunTracking(\"\");                                //do not run tracking\n");    
+//reconstraction section - fill ESD (prob vector creator)    
+    if     (fRecoBG->GetButton(kEsd)   ->GetState())   fprintf(fp,"  pRec->SetFillESD(\"ITS TPC TRD TOF RICH\");                //run fill ESD (prob vect)\n");      
+    else                                               fprintf(fp,"  pRec->SetFillESD(\"\");                                    //do not run fill ESD (prob vect)\n");
                                                        fprintf(fp,"  pRec->Run();delete pRec;\n\n");         
 //benchmarks  
                                                        fprintf(fp,"  cout<<\"!!!!!!!!!!!!Info in <my/Batch.C>: Start time: \";time.Print();\n");
