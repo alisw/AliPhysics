@@ -212,18 +212,19 @@ void AliRICHTracker::EsdQA(Bool_t isPrint)
   Int_t iNevt=pTr->GetEntries();  Printf("This ESD contains %i events",iNevt);
    //AliRICHParam *pPar;
   
-  TH1D *pDx=0,*pDy=0,*pProbEl=0,*pProbMu=0,*pProbPi=0,*pProbKa=0,*pProbPr=0; TH2F *pThP=0; TProfile *pChiTh=0;
+  TH1D *pDx=0,*pDy=0,*pProbEl=0,*pProbMu=0,*pProbPi=0,*pProbKa=0,*pProbPr=0,*pMom=0; TH2F *pThP=0; TProfile *pChiTh=0;
   if(!isPrint){
     TH1::AddDirectory(kFALSE);    
     pDx    =new TH1D("dX"  ,"distance between Xmip and Xtrack;cm",300,-1.5,1.5);
     pDy    =new TH1D("dY"  ,"distance between Ymip and Ytrack;cm",300,-1.5,1.5);
-    pThP   =new TH2F("tvsp","#theta_{Ckov} radian;P GeV"              ,65 ,-0.5,6.0,75,0,0.75); pThP->SetStats(0);
     pProbPi=new TH1D("RichProbPion","HMPID PID probability for  e #mu #pi"   ,101,0.05,1.05); pProbPi->SetLineColor(kRed);
     pProbEl=new TH1D("RichProbEle" ,""   ,101,0.05,1.05);                                     pProbEl->SetLineColor(kGreen); 
     pProbMu=new TH1D("RichProbMuon" ,""  ,101,0.05,1.05);                                     pProbMu->SetLineColor(kBlue);
     pProbKa=new TH1D("RichProbKaon","HMPID PID probability for K"     ,101,0.05,1.05);
     pProbPr=new TH1D("RichProbProton","HMPID PID probability for p"   ,101,0.05,1.05);
+    pMom   =new TH1D("pMom","Momentum of tracks",200,0.,10.);
     pChiTh =new TProfile("RichChiTh","#chi^{2};#theta_{C}"            ,80 ,0,0.8 , -2,2);
+    pThP   =new TH2F("tvsp","#theta_{Ckov} radian;P GeV"              ,65 ,-0.5,6.0,75,0,0.75); pThP->SetStats(0);
     
     //if(!gGeoManager)TGeoManager::Import("geometry.root");
     //pPar = AliRICHParam::Instance();
@@ -247,7 +248,7 @@ void AliRICHTracker::EsdQA(Bool_t isPrint)
                      iTrk,pTrack->GetSign(),pTrack->GetP(),TMath::Sqrt(dx*dx+dy*dy),pTrack->GetRICHsignal(), 
                      pid[0],pid[1],pid[2],pid[3],pid[4], comment.Data());
       }else{//collect hists
-    
+        pMom->Fill(pTrack->GetP());
         pDx->Fill(dx);  pDy->Fill(dy);
         pThP->Fill(pTrack->GetP(),pTrack->GetRICHsignal());
         pChiTh->Fill(pTrack->GetRICHsignal(),pTrack->GetRICHchi2());
@@ -259,23 +260,22 @@ void AliRICHTracker::EsdQA(Bool_t isPrint)
   delete pEsd;  pFile->Close();//close AliESDs.root
   if(!isPrint){
     TCanvas *pC=new TCanvas("c","Quality",1200,1500); pC->Divide(2,2);
-    TF1 *pPion = new TF1("RICHtheor","acos(sqrt(x*x+[0]*[0])/(x*[1]))",1.2,6);  pPion->SetLineWidth(1);pPion->SetParameter(1,1.292);
-    AliPID ppp;                   pPion->SetParameter(0,AliPID::ParticleMass(AliPID::kPion))  ; pPion->SetLineColor(kRed);
-    TF1 *pKaon = (TF1*)pPion->Clone();  pKaon->SetParameter(0,AliPID::ParticleMass(AliPID::kKaon))  ; pKaon->SetLineColor(kGreen);
-    TF1 *pProt = (TF1*)pPion->Clone();  pProt->SetParameter(0,AliPID::ParticleMass(AliPID::kProton)); pProt->SetLineColor(kBlue);
-    
+    TF1 *pPion = new TF1("RICHtheor","acos(sqrt(x*x+[0]*[0])/(x*[1]))",1.2,6); pPion->SetLineWidth(1);
+                                                                    pPion->SetParameter(1,1.292);                                  //ref idx
+    AliPID ppp;                        pPion->SetLineColor(kRed);   pPion->SetParameter(0,AliPID::ParticleMass(AliPID::kPion));    //mass
+    TF1 *pKaon = (TF1*)pPion->Clone(); pKaon->SetLineColor(kGreen); pKaon->SetParameter(0,AliPID::ParticleMass(AliPID::kKaon)); 
+    TF1 *pProt = (TF1*)pPion->Clone(); pProt->SetLineColor(kBlue);  pProt->SetParameter(0,AliPID::ParticleMass(AliPID::kProton)); 
     
     pC->cd(1);        pDx->Draw();
     pC->cd(2);        pDy->Draw();
-    pC->cd(3);        pThP->Draw();       pPion->Draw("same"); pKaon->Draw("same"); pProt->Draw("same");
-    pC->cd(4);        pChiTh->Draw();
+    pC->cd(3);        pThP->Draw();       pPion->Draw("same"); pKaon->Draw("same"); pProt->Draw("same"); //Theta Ckov versus p + theoretical curves
+    pC->cd(4);        pChiTh->Draw();                                                                    //Theta Ckov error versus theta Ckov
     
     TCanvas *pC2=new TCanvas("c2","Quality 2",1200,1500); pC2->Divide(2,2);
     pC2->cd(1);        pProbPi->Draw(); pProbMu->Draw("same"); pProbEl->Draw("same");
     pC2->cd(2);        pProbKa->Draw();
     pC2->cd(3);        pProbPr->Draw();
-    
-    
+    pC2->cd(4);        pMom->Draw();
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
