@@ -110,13 +110,13 @@ AliRICHRecon::AliRICHRecon():
   }
 }
 //__________________________________________________________________________________________________
-Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t &iMipId)
+Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pClusters,Int_t &nphot)
 {
 // Pattern recognition method based on Hough transform
 // Return theta Cerenkov for a given track and list of clusters which are set in ctor  
 // Remeber that list of clusters must contain more then 1 cluster. This considiration implies that normally we have 1 mip cluster and few photon clusters per track.  
 // Argume
-//   Returns: Track theta ckov in rad, nPhot contains number of photon candidates accepted for reconstruction track theta ckov   
+//   Returns: Track theta ckov in rad, nphot is the number of photon candidates accepted for reconstruction track theta ckov   
   SetTrackTheta(pHelix->Ploc().Theta());  SetTrackPhi(pHelix->Ploc().Phi());
   SetShiftX(pHelix->PosRad().X());        SetShiftY(pHelix->PosRad().Y());
   fClusters = pClusters;
@@ -132,7 +132,7 @@ Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluster
   //
   
   for (Int_t iClu=0; iClu<fClusters->GetEntriesFast();iClu++){//clusters loop
-    if(iClu == iMipId) continue; // do not consider MIP cluster as a photon candidate
+    if(iClu == nphot) continue; // do not consider MIP cluster as a photon candidate
     SetPhotonIndex(iClu);
     SetPhotonFlag(0);
     SetPhotonEta(-999.);
@@ -151,7 +151,7 @@ Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluster
 
   SetPhotonsNumber(fClusters->GetEntries());
 
-  if((iMipId=FlagPhotons(HoughResponse()))<1) return -11; //flag photons according to individual theta ckov with respect to most probable track theta ckov
+  if((nphot=FlagPhotons(HoughResponse()))<1) return -11; //flag photons according to individual theta ckov with respect to most probable track theta ckov
 
 
 //  Float_t thetaCerenkov = GetThetaCerenkov();  
