@@ -254,7 +254,7 @@ void AliRICH::OccupancyPrint(Int_t iEvtNreq)const
     GetLoader()->TreeD()->GetEntry(0);
     for(Int_t iCh=0;iCh<fNcham;iCh++) {
       nDigCh[iCh]= ((TClonesArray*)fDig->At(iCh))->GetEntries();
-      Double_t occupancy = (Double_t)nDigCh[iCh-1]/(Double_t)totPadsPerChamber;
+      Double_t occupancy = (Double_t)nDigCh[iCh]/(Double_t)totPadsPerChamber;
       Info("Occupancy","for chamber %i = %4.2f %% and charged prim tracks %i and sec. tracks %i with total %i",
         iCh+1,occupancy*100.,nPrim[iCh],nSec[iCh],iChHits[iCh]);
     }
