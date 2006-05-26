@@ -1,3 +1,5 @@
+/* $Id$ */
+
 //
 // Script to test the dN/dEta analysis using the dNdEtaAnalysis and
 // dNdEtaCorrection classes. Note that there is a cut on the events,
@@ -8,12 +10,11 @@
 
 #include "../CreateESDChain.C"
 
-testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Bool_t aMC = kFALSE)
+testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE)
 {
   gSystem->Load("libPWG0base");
-  gSystem->SetIncludePath("-I$ALICE_ROOT/PWG0");
 
-  TChain* chain = CreateESDChainFromDir(dataDir, nRuns);
+  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset, kFALSE);
 
   // ########################################################
   // selection of esd tracks
@@ -34,12 +35,12 @@ testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Bool_t aMC = kFALSE)
   {
     dNdEtaCorrection* dNdEtaCorrection = new dNdEtaCorrection();
     dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
-    dNdEtaCorrection->RemoveEdges(2,0,2);
+    dNdEtaCorrection->RemoveEdges(2, 0, 2);
 
     chain->GetUserInfo()->Add(dNdEtaCorrection);
   }
 
-  TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisSelector" : "AlidNdEtaAnalysisMCSelector");
+  TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
 
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 

@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #ifndef ALISELECTORRL_H
 #define ALISELECTORRL_H
 

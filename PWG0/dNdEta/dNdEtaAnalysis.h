@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #ifndef DNDETANALYSIS_H
 #define DNDETANALYSIS_H
 

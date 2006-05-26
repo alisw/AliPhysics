@@ -1,5 +1,16 @@
-TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Bool_t aAddHeader = kTRUE)
+/* $Id$ */
+
+// Helper macros for creating chains
+
+TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Int_t offset = 0, Bool_t aAddHeader = kTRUE)
 {
+  // creates chain of files in a given directory. The structure is expected as:
+  // <aDataDir>/<dir0>/AliESDs.root
+  // <aDataDir>/<dir0>/galice.root (when <aAddHeader> flag is set)
+  // <aDataDir>/<dir1>/AliESDs.root
+  // <aDataDir>/<dir1>/galice.root (when <aAddHeader> flag is set)
+  // ...
+
   if (!aDataDir)
     return 0;
 
@@ -23,6 +34,12 @@ TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Bool_t aAd
     if (!presentDir || !presentDir->IsDirectory() || strcmp(presentDir->GetName(), ".") == 0 || strcmp(presentDir->GetName(), "..") == 0)
       continue;
 
+    if (offset > 0)
+    {
+      --offset;
+      continue;
+    }
+
     if (count++ == aRuns)
       break;
 
@@ -44,6 +61,10 @@ TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Bool_t aAd
 
 TChain* CreateESDChainFromList(const char* listFile, Int_t aRuns = 20, Bool_t aAddHeader = kTRUE)
 {
+  // Creates a chain from a file which contains a list of ESD files
+  // if <aAddHeader> is set, the filename of the galice.root file is created by replacing
+  // AliESDs to galice in the esd file name
+
   if (!listFile)
     return 0;
 

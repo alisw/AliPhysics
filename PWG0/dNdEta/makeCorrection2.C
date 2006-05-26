@@ -1,3 +1,5 @@
+/* $Id$ */
+
 //
 // Script to make correction maps for dndeta measurements using the
 // dNdEtaCorrection class.
@@ -7,12 +9,11 @@
 
 #include "../CreateESDChain.C"
 
-void makeCorrection2(Char_t* dataDir, Int_t nRuns=20)
+void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0)
 {
   gSystem->Load("libPWG0base");
-  gSystem->SetIncludePath("-I$ALICE_ROOT/PWG0");
 
-  TChain* chain = CreateESDChainFromDir(dataDir, nRuns);
+  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset, kFALSE);
 
   fEsdTrackCuts = new AliESDtrackCuts();
   fEsdTrackCuts->DefineHistograms(1);

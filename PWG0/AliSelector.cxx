@@ -1,3 +1,5 @@
+/* $Id$ */
+
 // The class definition in esdV0.h has been generated automatically
 // by the ROOT utility TTree::MakeSelector(). This class is derived
 // from the ROOT class TSelector. For more information on the TSelector
@@ -31,6 +33,7 @@
 #include <TTime.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TFriendElement.h>
 
 #include <AliLog.h>
 
@@ -40,8 +43,11 @@ AliSelector::AliSelector() :
   TSelector(),
   fChain(0),
   fESD(0),
-  fHeader(0),
-  fKineFile(0)
+  fCountFiles(0),
+  fKineFile(0),
+  fHeaderFile(0),
+  fHeaderTree(0),
+  fHeader(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -76,8 +82,6 @@ void AliSelector::SlaveBegin(TTree * tree)
   AliDebug(AliLog::kDebug, "=======SLAVEBEGIN========");
   AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
   AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
-  TFile *f = fChain->GetCurrentFile();
-  AliDebug(AliLog::kDebug, f->GetName());
 
   TString option = GetOption();
 }
@@ -110,9 +114,9 @@ void AliSelector::Init(TTree *tree)
   if (fESD != 0)
     AliDebug(AliLog::kInfo, "INFO: Found ESD branch in chain.");
 
-  fChain->SetBranchAddress("Header", &fHeader);
+  /*fChain->SetBranchAddress("Header", &fHeader);
   if (fHeader != 0)
-    AliDebug(AliLog::kInfo, "INFO: Found event header branch in chain.");
+    AliDebug(AliLog::kInfo, "INFO: Found event header branch in chain.");*/
 }
 
 Bool_t AliSelector::Notify()
@@ -128,10 +132,15 @@ Bool_t AliSelector::Notify()
   AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
   AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
 
+  ++fCountFiles;
   TFile *f = fChain->GetCurrentFile();
-  AliDebug(AliLog::kInfo, Form("Processing file %s", f->GetName()));
+  AliDebug(AliLog::kInfo, Form("Processing %d. file %s", fCountFiles, f->GetName()));
 
   DeleteKinematicsFile();
+  DeleteHeaderFile();
+
+  /*TChain* headerChain = dynamic_cast<TChain*> (((TFriendElement*) fChain->GetListOfFriends()->First())->GetTree());
+  AliDebug(AliLog::kInfo, Form("Header File: %s", headerChain->GetCurrentFile()->GetName()));*/
 
   return kTRUE;
 }
@@ -166,6 +175,8 @@ Bool_t AliSelector::Process(Long64_t entry)
 
   fChain->GetTree()->GetEntry(entry);
 
+  /*
+  // debugging
   if (fESD)
     AliDebug(AliLog::kDebug, Form("ESD: We have %d tracks.", fESD->GetNumberOfTracks()));
 
@@ -175,6 +186,7 @@ Bool_t AliSelector::Process(Long64_t entry)
   TTree* kinematics = GetKinematics();
   if (kinematics)
     AliDebug(AliLog::kDebug, Form("Kinematics: We have %lld particles.", kinematics->GetEntries()));
+  */
 
   return kTRUE;
 }
@@ -186,6 +198,7 @@ void AliSelector::SlaveTerminate()
   // on each slave server.
 
   DeleteKinematicsFile();
+  DeleteHeaderFile();
 }
 
 void AliSelector::Terminate()
@@ -210,6 +223,8 @@ TTree* AliSelector::GetKinematics()
 
     TString fileName(fChain->GetCurrentFile()->GetName());
     fileName.ReplaceAll("AliESDs", "Kinematics");
+
+    AliDebug(AliLog::kInfo, Form("Opening %s", fileName.Data()));
 
     fKineFile = TFile::Open(fileName);
     if (!fKineFile)
@@ -266,6 +281,53 @@ void AliSelector::DeleteKinematicsFile()
   }
 }
 
+AliHeader* AliSelector::GetHeader()
+{
+  // Returns header corresponding to current ESD active in fChain
+  // Loads the header from galice.root, the file is identified by replacing "AliESDs" to
+  // "galice" in the file path of the ESD file. This is a hack, to be changed!
+
+  if (!fHeaderFile || !fHeaderTree)
+  {
+    if (!fChain->GetCurrentFile())
+      return 0;
+
+    TString fileName(fChain->GetCurrentFile()->GetName());
+    fileName.ReplaceAll("AliESDs", "galice");
+
+    AliDebug(AliLog::kInfo, Form("Opening %s", fileName.Data()));
+
+    fHeaderFile = TFile::Open(fileName);
+    if (!fHeaderFile)
+      return 0;
+
+    fHeaderTree = dynamic_cast<TTree*> (fHeaderFile->Get("TE"));
+    if (!fHeaderTree)
+      return 0;
+
+    fHeaderTree->SetBranchAddress("Header", &fHeader);
+  }
+
+  fHeaderTree->GetEntry(fChain->GetTree()->GetReadEntry());
+
+  return fHeader;
+}
+
+void AliSelector::DeleteHeaderFile()
+{
+  //
+  // Closes the kinematics file and deletes the pointer.
+  //
+
+  if (fHeaderFile)
+  {
+    fHeaderFile->Close();
+    delete fHeaderFile;
+    fHeaderTree = 0;
+    fHeader = 0;
+  }
+}
+
 Bool_t AliSelector::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries) const
 {
   //
@@ -275,13 +337,19 @@ Bool_t AliSelector::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries
 
   // if the particle has a daughter primary, we do not want to count it
   if (aParticle->GetFirstDaughter() != -1 && aParticle->GetFirstDaughter() < aTotalPrimaries)
+  {
+    AliDebug(AliLog::kDebug+1, "Dropping particle because it has a daughter among the primaries.");
     return kFALSE;
+  }
 
   Int_t pdgCode = TMath::Abs(aParticle->GetPdgCode());
 
   // skip quarks and gluon
   if (pdgCode <= 10 || pdgCode == 21)
+  {
+    AliDebug(AliLog::kDebug+1, "Dropping particle because it is a quark or gluon.");
     return kFALSE;
+  }
 
   if (strcmp(aParticle->GetName(),"XXX") == 0)
   {
@@ -298,7 +366,10 @@ Bool_t AliSelector::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries
   }
 
   if (pdgPart->Charge() == 0)
+  {
     return kFALSE;
+    AliDebug(AliLog::kDebug+1, "Dropping particle because it is not charged.");
+  }
 
   return kTRUE;
 }
