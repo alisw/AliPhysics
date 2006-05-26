@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #include "dNdEtaCorrection.h"
 
 #include <TCanvas.h>
@@ -55,14 +57,14 @@ dNdEtaCorrection::Finish() {
 void
 dNdEtaCorrection::RemoveEdges(Float_t cut, Int_t nBinsVtx, Int_t nBinsEta) {
 
-  // remove edges of correction histogram by removing 
-  // - bins with content less than cut
+  // remove edges of correction histogram by removing
+  // - bins with content bigger than cut
   // - bins next to bins with zero bin content
-  
+
   Int_t nBinsX = hEtaVsVtx_corr->GetNbinsX();
   Int_t nBinsY = hEtaVsVtx_corr->GetNbinsY();
 
-  // set bin content to zero for bins with content smaller cut
+  // set bin content to zero for bins with content bigger than cut
   for (Int_t bx=0; bx<=nBinsX; bx++) {
     for (Int_t by=0; by<=nBinsY; by++) {
       if (hEtaVsVtx_corr->GetBinContent(bx,by)>cut) {
@@ -75,28 +77,28 @@ dNdEtaCorrection::RemoveEdges(Float_t cut, Int_t nBinsVtx, Int_t nBinsEta) {
   // set bin content to zero for bins next to bins with zero
   TH2F* tmp = (TH2F*)hEtaVsVtx_corr->Clone("tmp");
   tmp->Reset();
-  
+
   Bool_t done = kFALSE;
   Int_t nBinsVtxCount = 0;
   Int_t nBinsEtaCount = 0;
-  while (!done) {    
-    if (nBinsVtxCount<nBinsVtx) 
+  while (!done) {
+    if (nBinsVtxCount<nBinsVtx)
       for (Int_t bx=0; bx<=nBinsX; bx++) {
 	for (Int_t by=0; by<=nBinsY; by++) {
-	  if ((hEtaVsVtx_corr->GetBinContent(bx+1,by)==0)|| 
+	  if ((hEtaVsVtx_corr->GetBinContent(bx+1,by)==0)||
 	      (hEtaVsVtx_corr->GetBinContent(bx-1,by)==0))
-	    tmp->SetBinContent(bx,by,1);	
-	  
+	    tmp->SetBinContent(bx,by,1);
+
 	}
       }
-    if (nBinsEtaCount<nBinsEta) 
+    if (nBinsEtaCount<nBinsEta)
       for (Int_t bx=0; bx<=nBinsX; bx++) {
 	for (Int_t by=0; by<=nBinsY; by++) {
-	  if ((hEtaVsVtx_corr->GetBinContent(bx,by+1)==0)|| 
+	  if ((hEtaVsVtx_corr->GetBinContent(bx,by+1)==0)||
 	      (hEtaVsVtx_corr->GetBinContent(bx,by-1)==0))
-	    tmp->SetBinContent(bx,by,1);	
+	    tmp->SetBinContent(bx,by,1);
 	}
-      }    
+      }
     for (Int_t bx=0; bx<=nBinsX; bx++) {
       for (Int_t by=0; by<=nBinsY; by++) {
 	if (tmp->GetBinContent(bx,by)==1) {
@@ -109,7 +111,7 @@ dNdEtaCorrection::RemoveEdges(Float_t cut, Int_t nBinsVtx, Int_t nBinsEta) {
     nBinsEtaCount++;
     if ((nBinsVtxCount>=nBinsVtx)&&(nBinsEtaCount>=nBinsEta)) done=kTRUE;
   }
-  tmp->Delete();  
+  tmp->Delete();
 
 }
 

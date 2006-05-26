@@ -1,3 +1,5 @@
+# $Id$
+
 PACKAGE = PWG0base
 
 include $(ROOTSYS)/test/Makefile.arch

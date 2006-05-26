@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #ifndef ALISELECTOR_H
 #define ALISELECTOR_H
 
@@ -28,17 +30,24 @@ class AliSelector : public TSelector {
 
  protected:
     TTree*  GetKinematics();
+    AliHeader* GetHeader();
     Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries) const;
 
     TChain          *fChain;   //! pointer to the analyzed TTree or TChain
 
     AliESD*          fESD;     //! "ESD" branch in fChain
-    AliHeader*       fHeader;  //! "TE" branch in fChain, contains event header
+
+    Int_t fCountFiles;         // Nr. of current file
 
  private:
     void DeleteKinematicsFile();
+    void DeleteHeaderFile();
 
-    TFile*        fKineFile;  //! pointer to Kinematics.root if the file was opened
+    TFile*        fKineFile;   //! pointer to Kinematics.root if the file was opened
+
+    TFile*        fHeaderFile; //! pointer to galice.root, if the file was opened
+    TTree*        fHeaderTree; //!
+    AliHeader*    fHeader;     //!
 
   ClassDef(AliSelector,0);
 };

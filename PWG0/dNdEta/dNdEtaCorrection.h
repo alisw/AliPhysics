@@ -1,5 +1,8 @@
+/* $Id$ */
+
 #ifndef DNDETACORRECTION_H
 #define DNDETACORRECTION_H
+
 
 // ------------------------------------------------------
 //

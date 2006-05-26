@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #include "AliESDtrackCuts.h"
 
 #include <Riostream.h>
@@ -282,7 +284,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // 
   Float_t nSigmaToVertex = -1;
   if (bRes[0]!=0 && bRes[1]!=0)
-    nSigmaToVertex = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));  
+    nSigmaToVertex = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
 
   // getting the kinematic variables of the track 
   // (assuming the mass is known)

@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #include "AlidNdEtaCorrectionSelector.h"
 
 #include <TStyle.h>
@@ -107,9 +109,10 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
-  if (!fHeader)
+  AliHeader* header = GetHeader();
+  if (!header)
   {
-    AliDebug(AliLog::kError, "Header branch not available");
+    AliDebug(AliLog::kError, "Header not available");
     return kFALSE;
   }
 
@@ -138,7 +141,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 
   // ########################################################
   // get the MC vertex
-  AliGenEventHeader* genHeader = fHeader->GenEventHeader();
+  AliGenEventHeader* genHeader = header->GenEventHeader();
 
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
@@ -149,8 +152,8 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   TParticle* particle = 0;
   particleTree->SetBranchAddress("Particles", &particle);
 
-  Int_t nPrim  = fHeader->GetNprimary();
-  Int_t nTotal = fHeader->GetNtrack();
+  Int_t nPrim  = header->GetNprimary();
+  Int_t nTotal = header->GetNtrack();
 
   for (Int_t i_mc = nTotal - nPrim; i_mc < nTotal; ++i_mc)
   {

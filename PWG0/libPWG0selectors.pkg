@@ -1,0 +1,14 @@
+# $Id$
+
+# this library contains the selectors, which are loaded on the fly when one uses a given selector
+# thus this library is never used, it just exists for the build system to check if everything compiles
+
+HDRS = dNdEta/AlidNdEtaCorrectionSelector.h \
+       dNdEta/AlidNdEtaAnalysisMCSelector.h \
+       dNdEta/AlidNdEtaAnalysisESDSelector.h
+
+SRCS = $(HDRS:.h=.cxx)
+
+DHDR= PWG0selectorsLinkDef.h
+
+EINCLUDE=
