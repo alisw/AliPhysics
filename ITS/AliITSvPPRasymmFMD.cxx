@@ -84,7 +84,7 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD() {
     fIdSens       = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
+    fGeomDetIn    = kFALSE; // Read .det file
     fMajorVersion = IsVersion();
     fMinorVersion = -1;
     for(i=0;i<60;i++) fRead[i] = '\0';
@@ -120,7 +120,7 @@ AliITSvPPRasymmFMD::AliITSvPPRasymmFMD(const char *name, const char *title)
     fMinorVersion = 2;
     fEuclidOut    = kFALSE; // Don't write Euclide file
     fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
+    fGeomDetIn    = kFALSE; // Read .det file
     SetThicknessDet1();
     SetThicknessDet2();
     SetThicknessChip1();

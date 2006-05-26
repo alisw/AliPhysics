@@ -28,11 +28,11 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void   SetDefaults();
     virtual void   DrawModule() const;
     virtual void   StepManager();
-    virtual void   SetWriteDet(Bool_t det=kTRUE){ // set .det write
+    virtual void   SetWriteDet(Bool_t det=kFALSE){ // set .det write
 	                                         fGeomDetOut = det;}
     virtual void   SetWriteDet(const char *f){ // set write file
 	                             strncpy(fWrite,f,60);fGeomDetOut = kTRUE;}
-    virtual void   SetReadDet(Bool_t det=kTRUE){ //set .det read
+    virtual void   SetReadDet(Bool_t det=kFALSE){ //set .det read
 	                                        fGeomDetIn = det;}
     virtual void   SetReadDet(const char *f){ // set read file
 	                               strncpy(fRead,f,60);fGeomDetIn = kTRUE;}
