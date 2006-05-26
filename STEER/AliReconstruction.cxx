@@ -686,7 +686,7 @@ Bool_t AliReconstruction::Run(const char* input,
       }
     }
 
-    esd->SetPrimaryVertex(tVertexer.FindVertex(esd));
+    esd->SetPrimaryVertex(tVertexer.FindPrimaryVertex(esd));
 
     // write ESD
     tree->Fill();
@@ -1072,7 +1072,7 @@ Bool_t AliReconstruction::RunTracking(AliESD*& esd)
     AliESDtrack * track = esd->GetTrack(itrack);
     if (!track) continue;
     if (track->IsOn(AliESDtrack::kITSrefit)) continue;
-    track->PropagateTo(kRadius, track->GetMass(),kMaxStep,kTRUE);
+    track->PropagateTo(kRadius, fieldZ, track->GetMass(),kMaxStep,kTRUE);
     track->RelateToVertex(esd->GetVertex(),fieldZ, kMaxD);
   }
   
