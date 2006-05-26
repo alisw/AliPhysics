@@ -46,10 +46,10 @@ class AliITSvPPRasymmFMD : public AliITS {
     virtual void   SetThicknessDet2(Float_t v=200.){ 
 	 // Set detector thickness in layer 2
 	 fDet2 = v;}
-    virtual void   SetThicknessChip1(Float_t v=200.){ 
+    virtual void   SetThicknessChip1(Float_t v=150.){ 
 	 // Set chip thickness in layer 1
 	 fChip1 = v;}	 	 
-    virtual void   SetThicknessChip2(Float_t v=200.){ 
+    virtual void   SetThicknessChip2(Float_t v=150.){ 
 	 // Set chip thickness in layer 2
 	 fChip2 = v;}
     virtual void   SetRails(Int_t v=0){ 
