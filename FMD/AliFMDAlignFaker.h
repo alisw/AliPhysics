@@ -60,7 +60,7 @@ public:
       @param loc  Where to store the result */
   AliFMDAlignFaker(Int_t mask=kAll, 
 		   const char* geo="geometry.root",
-		   const char* loc="local://cdb");
+		   const char* loc="");
   /** Destructor */
   virtual ~AliFMDAlignFaker() {}
   /** Add something to make alignment for 
@@ -120,6 +120,8 @@ public:
   /** Set the file to read the geometry from. 
       @param file File name */
   void SetGeometryFile(const char* file) { SetName(file); }
+  /** Set the comment  */ 
+  void SetComment(const Char_t* comment="dummy data") { fComment = comment; }
   /** Make the alignment objects. 
       @param option Not used. */
   void Exec(Option_t* option="");
@@ -152,7 +154,6 @@ protected:
   void   WriteToCDB();
   /** Write to file */
   void   WriteToFile();
-  
   Long_t        fMask;            // What to write 
   TVector3      fSensorTransMin;  // Minimum translations of a sensor
   TVector3      fSensorTransMax;  // Maximum translations of a sensor
@@ -165,6 +166,7 @@ protected:
   Int_t         fRunMin;          // Run validity start 
   Int_t         fRunMax;          // Run validity end
   TClonesArray* fArray;           // Cache
+  TString       fComment;         // Comment on data
   
   ClassDef(AliFMDAlignFaker,0)
 };

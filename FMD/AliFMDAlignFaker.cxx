@@ -76,6 +76,7 @@ AliFMDAlignFaker::AliFMDAlignFaker(Int_t mask, const char* geo,
   SetSensorRotation();
   SetHalfDisplacement();
   SetHalfRotation();
+  SetComment();
 }
 
 //__________________________________________________________________
@@ -252,15 +253,12 @@ void
 AliFMDAlignFaker::WriteToCDB()
 {
   // Make the objects. 
-  AliCDBManager*     cdb      = AliCDBManager::Instance();
-  if (GetTitle() && GetTitle()[0] != '\0')    
-    cdb->SetDefaultStorage(GetTitle());
-    
-  AliCDBMetaData* meta = new AliCDBMetaData; 
+  AliCDBManager*     cdb  = AliCDBManager::Instance();
+  AliCDBMetaData*    meta = new AliCDBMetaData; 
   meta->SetResponsible(gSystem->GetUserInfo()->fRealName.Data()); 
   meta->SetAliRootVersion(gROOT->GetVersion()); 
   meta->SetBeamPeriod(1); 
-  meta->SetComment("Dummy data for testing");
+  meta->SetComment(fComment.Data());
 
   AliCDBId id("FMD/Align/Data", fRunMin, fRunMax);
   cdb->Put(fArray, id, meta);
@@ -279,8 +277,8 @@ AliFMDAlignFaker::WriteToFile()
   }
   file->cd();
   fArray->Write("FMDAlignment");
-  file->Close();
   file->Write();
+  file->Close();
 }
 
   
