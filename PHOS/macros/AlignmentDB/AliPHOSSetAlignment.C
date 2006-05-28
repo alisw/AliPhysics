@@ -2,17 +2,17 @@
 
 // Script to create alignment parameters and store them into CDB
 // Three sets of alignment parameters can be created:
-// 0) 1 PHOS module with ideal geometry
-// 1) 5 PHOS modules with small disalignments
-// 2) 5 PHOS modules with ideal geometry
+// 1) Ideal geometry
+// 2) Geometry with disalignments and disorientations
+// 3) Geometry small disalignments and disorientations
 
 #if !defined(__CINT__)
 #include "TControlBar.h"
 #include "TString.h"
 #include "TRandom.h"
+#include "TClonesArray.h"
 
-#include "AliRun.h"
-#include "AliPHOSAlignData.h"
+#include "AliAlignObjAngles.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliCDBEntry.h"
@@ -27,19 +27,12 @@ void AliPHOSSetAlignment()
   menu->AddButton("Help to run PHOS alignment control","Help()",
 		  "Explains how to use PHOS alignment control menus");
 
-  menu->AddButton("PHOS 2007","SetAlignment(0)",
-		  "Set PHOS alignment for the LHC run 2007");
-  menu->AddButton("Full misaligned PHOS","SetAlignment(1)",
-		  "Set all 5 modules with random displacement");
-  menu->AddButton("Full ideal PHOS","SetAlignment(2)",
-		  "Set all 5 modules with random displacement");
-
-  menu->AddButton("Read PHOS 2007","GetAlignment(0)",
-		  "Read PHOS geometry for the LHC run 2007");
-  menu->AddButton("Read full misaligned PHOS","GetAlignment(1)",
-		  "Read full PHOS geometry with random displacements");
-  menu->AddButton("Read full ideal PHOS","GetAlignment(2)",
-		  "Read full PHOS geometry with random displacements");
+  menu->AddButton("Ideal geometry","IdealAlignment()",
+		  "Set ideal PHOS geometry with zero displacement");
+  menu->AddButton("Misaligned geometry","FullMisalignment()",
+		  "Set PHOS geometry with large displacement");
+  menu->AddButton("Residual misaligned geometry","ResidualAlignment()",
+		  "Set PHOS geometry with small residual displacement");
 
   menu->Show();
 }
@@ -48,175 +41,176 @@ void AliPHOSSetAlignment()
 void Help()
 {
   char *string =
-    "\nSet PHOS alignment parameters and write them into ALICE CDB.
-Press button \"PHOS 2007\" to create PHOS geometry for the first LHC run in 2007.
-Press button \"Full PHOS\" to create full PHOS geometry with radnomly displaced modules\n";
+    "\n\n\nSet PHOS alignment parameters and write them into ALICE CDB.
+Press button \"Ideal geometry\" to create PHOS geometry with ideal geometry.
+Press button \"Misaligned geometry\" to create PHOS geometry with fully displaced and disorientated geometry.
+Press button \"Residual misaligned geometry\" to create PHOS geometry with infinitesimal displacement and disorientation\n\n\n";
   printf(string);
 }
 
 //------------------------------------------------------------------------
-void SetAlignment(Int_t flag=0)
+void IdealAlignment()
 {
-  // Write alignment parameters into CDB
-  // Arguments:
-  //   flag=0: ideal geometry with one module
-  //   flag=1: disligned geometry with 5 modules
-  // Author: Yuri Kharlov
+  // Create alignment objects for PHOS with ideally aligned geometry,
+  // i.e. with zero displacements and zero disorientations
 
-  TString DBFolder;
-  Int_t firstRun   =  0;
-  Int_t lastRun    = 10;
-  Int_t beamPeriod =  1;
-  char* objFormat  = "";
-  gRandom->SetSeed(0);
+  // *************************    1st step    ***************
+  // Create TClonesArray of alignment objects for PHOS
 
-  AliPHOSAlignData *alignda=new AliPHOSAlignData("PHOS");
-  
-  switch (flag) {
-  case 0:
-    DBFolder  ="local://InitAlignDB";
-    firstRun  =  0;
-    lastRun   =  0;
-    objFormat = "PHOS ideal geometry with 1 module";
+  TClonesArray *array = new TClonesArray("AliAlignObjAngles",11);
+  TClonesArray &alobj = *array;
+   
+  AliAlignObjAngles a;
 
-    alignda->SetNModules(1);
-    
-    alignda->SetModuleCenter(0,0,   0.);
-    alignda->SetModuleCenter(0,1,-460.);
-    alignda->SetModuleCenter(0,2,   0.);
-    
-    alignda->SetModuleAngle(0,0,0,  90.);
-    alignda->SetModuleAngle(0,0,1,   0.);
-    alignda->SetModuleAngle(0,1,0,   0.);
-    alignda->SetModuleAngle(0,1,1,   0.);
-    alignda->SetModuleAngle(0,2,0,  90.);
-    alignda->SetModuleAngle(0,2,1, 270.);
-    break;
-  case 1:
-    DBFolder  ="local://DisAlignDB";
-    firstRun  =  0;
-    lastRun   = 10;
-    objFormat = "PHOS disaligned geometry with 5 modules";
+  Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
+  // null shifts and rotations
 
-    Int_t nModules = 5;
-    alignda->SetNModules(nModules);
-    
-    Float_t dAngle= 20;
-    Float_t r0    = 460.;
-    Float_t theta, phi;
-    for (Int_t iModule=0; iModule<nModules; iModule++) {
-      Float_t r = r0 + gRandom->Uniform(0.,40.);
-      Float_t angle = dAngle * ( iModule - nModules / 2.0 + 0.5 ) ;
-      angle += gRandom->Uniform(-0.1,+0.1);
-      Float_t x = r * TMath::Sin(angle * TMath::DegToRad() );
-      Float_t y =-r * TMath::Cos(angle * TMath::DegToRad() );
-      Float_t z = gRandom->Uniform(-0.05,0.05);
+  UShort_t iIndex=0;
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
-      alignda->SetModuleCenter(iModule,0,x);
-      alignda->SetModuleCenter(iModule,1,y);
-      alignda->SetModuleCenter(iModule,2,z);
-    
-      theta = 90 + gRandom->Uniform(-1.,1.);
-      phi   = angle;
-      alignda->SetModuleAngle(iModule,0,0,theta);
-      alignda->SetModuleAngle(iModule,0,1,phi);
-      theta = 0;
-      phi   = 0;
-      alignda->SetModuleAngle(iModule,1,0,theta);
-      alignda->SetModuleAngle(iModule,1,1,phi);
-      theta = 90 + gRandom->Uniform(-1.,1.);
-      phi   = 270+angle;
-      alignda->SetModuleAngle(iModule,2,0,theta);
-      alignda->SetModuleAngle(iModule,2,1,phi);
-    }
-  case 2:
-    DBFolder  ="local://AlignDB";
-    firstRun  =  0;
-    lastRun   = 10;
-    objFormat = "PHOS disaligned geometry with 5 modules";
+  TString basePath = "/ALIC_1/PHOS_"; 
+  const Int_t nModules=5;
 
-    Int_t nModules = 5;
-    alignda->SetNModules(nModules);
-    
-    Float_t dAngle= 20;
-    Float_t r0    = 460.;
-    Float_t theta, phi;
-    for (Int_t iModule=0; iModule<nModules; iModule++) {
-      Float_t r = r0;
-      Float_t angle = dAngle * ( iModule - nModules / 2.0 + 0.5 ) ;
-      Float_t x = r * TMath::Sin(angle * TMath::DegToRad() );
-      Float_t y =-r * TMath::Cos(angle * TMath::DegToRad() );
-      Float_t z = 0.;
-
-      alignda->SetModuleCenter(iModule,0,x);
-      alignda->SetModuleCenter(iModule,1,y);
-      alignda->SetModuleCenter(iModule,2,z);
-    
-      theta = 90;
-      phi   = angle;
-      alignda->SetModuleAngle(iModule,0,0,theta);
-      alignda->SetModuleAngle(iModule,0,1,phi);
-      theta = 0;
-      phi   = 0;
-      alignda->SetModuleAngle(iModule,1,0,theta);
-      alignda->SetModuleAngle(iModule,1,1,phi);
-      theta = 90;
-      phi   = 270+angle;
-      alignda->SetModuleAngle(iModule,2,0,theta);
-      alignda->SetModuleAngle(iModule,2,1,phi);
-    }
-    break;
-  default:
-    printf("Unknown flag %d, can be 0 or 1 only\n",flag);
-    return;
+  for (Int_t iModule = 1; iModule<=nModules; iModule++) {
+    TString newPath = basePath;
+    newPath += iModule;
+    new(alobj[iModule-1]) AliAlignObjAngles(newPath.Data(),
+					    dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
   }
-  
 
-  //Store calibration data into database
+  // *************************    2nd step    ***************
+  // Make CDB storage and put TClonesArray in
+  // 
+  AliCDBManager *CDB = AliCDBManager::Instance();
+  CDB->SetDefaultStorage("local://$ALICE_ROOT");
   
-  AliCDBMetaData md;
-  md.SetComment(objFormat);
-  md.SetBeamPeriod(beamPeriod);
-  md.SetResponsible("Yuri Kharlov");
-  
-  AliCDBId id("PHOS/Alignment/Geometry",firstRun,lastRun);
-
-  AliCDBManager* man = AliCDBManager::Instance();  
-  AliCDBStorage* loc = man->GetStorage(DBFolder.Data());
-  loc->Put(alignda, id, &md);
-
+  AliCDBMetaData *md= new AliCDBMetaData();
+  md->SetResponsible("Yuri Kharlov");
+  md->SetComment("Alignment objects for ideal geometry, i.e. applying them to TGeo has to leave geometry unchanged");
+  AliCDBId id("PHOS/Align/Data",0,0);
+  CDB->Put(array,id, md);
 }
 
 //------------------------------------------------------------------------
-void GetAlignment(Int_t flag=0)
+void ResidualAlignment()
 {
-  // Read alignment parameters into CDB
-  // Arguments:
-  //   flag=0: ideal geometry with one module
-  //   flag=1: disligned geometry with 5 modules
-  // Author: Yuri Kharlov
+  // Create alignment objects for PHOS with residual alignment,
+  // i.e. with infinitesimal displacement and disorientation
 
-  TString DBFolder;
-  Int_t run   =  0;
-  AliPHOSAlignData *alignda=new AliPHOSAlignData("PHOS");
+  // *************************    1st step    ***************
+  // Create TClonesArray of alignment objects for PHOS
+
+  TClonesArray *array = new TClonesArray("AliAlignObjAngles",11);
+  TClonesArray &alobj = *array;
+   
+  AliAlignObjAngles a;
+
+  Double_t dpsi=0., dtheta=0., dphi=0.;
+  Double_t displacement = 0.2;
+
+  UShort_t iIndex=0;
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+
+  // Alignment for 5 PHOS modules
+  new(alobj[0]) AliAlignObjAngles("/ALIC_1/PHOS_1",
+				  dvoluid, -0.20, -0.1, +0.0, dpsi, dtheta, 0.2);
+  new(alobj[1]) AliAlignObjAngles("/ALIC_1/PHOS_2",
+				  dvoluid, -0.10, +0.0, -0.2, dpsi, dtheta, 0.2);
+  new(alobj[2]) AliAlignObjAngles("/ALIC_1/PHOS_3",
+				  dvoluid,  0.05, -0.1,  0.2, dpsi, dtheta, 0.0);
+  new(alobj[3]) AliAlignObjAngles("/ALIC_1/PHOS_4",
+				  dvoluid, +0.10, -0.0, -0.1, dpsi, dtheta, 0.1);
+  new(alobj[4]) AliAlignObjAngles("/ALIC_1/PHOS_5",
+				  dvoluid, +0.20, -0.1,  0.1, dpsi, dtheta, 0.2);
+
+  // Alignment for PHOS cradle
+  new(alobj[5]) AliAlignObjAngles("/ALIC_1/PCRA_0",
+				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
+  new(alobj[6]) AliAlignObjAngles("/ALIC_1/PCRA_1",
+				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+
+  // Alignment for cradle wheels
+  new(alobj[7])  AliAlignObjAngles("/ALIC_1/PWHE_0",
+				   dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
+  new(alobj[8])  AliAlignObjAngles("/ALIC_1/PWHE_1",
+				   dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
+  new(alobj[9])  AliAlignObjAngles("/ALIC_1/PWHE_2",
+				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+  new(alobj[10]) AliAlignObjAngles("/ALIC_1/PWHE_3",
+				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+
+  // *************************    2nd step    ***************
+  // Make CDB storage and put TClonesArray in
+  // 
+  AliCDBManager *CDB = AliCDBManager::Instance();
+  CDB->SetDefaultStorage("local://$ALICE_ROOT");
   
-  switch (flag) {
-  case 0:
-    DBFolder  ="local://InitAlignDB";
-    break;
-  case 1:
-    DBFolder  ="local://DisAlignDB";
-    break;
-  case 2:
-    DBFolder  ="local://AlignDB";
-    break;
-  default:
-    printf("Unknown flag %d, can be 0 or 1 only\n",flag);
-    return;
-  }
-  AliPHOSAlignData* alignda  = (AliPHOSAlignData*)
-    (AliCDBManager::Instance()
-     ->GetStorage(DBFolder.Data())
-     ->Get("PHOS/Alignment/Geometry",run)->GetObject());
-  alignda->Print();
+  AliCDBMetaData *md= new AliCDBMetaData();
+  md->SetResponsible("Yuri Kharlov");
+  md->SetComment("Alignment objects for slightly misaligned geometry, i.e. applying them to TGeo has to distirbes geometry very little (resisual misalignment");
+  AliCDBId id("PHOS/Align/Data",200,200);
+  CDB->Put(array,id, md);
+}
+
+//------------------------------------------------------------------------
+void FullMisalignment()
+{
+  // Create alignment objects for PHOS with fully misaligned geometry
+
+  // *************************    1st step    ***************
+  // Create TClonesArray of alignment objects for PHOS
+
+  TClonesArray *array = new TClonesArray("AliAlignObjAngles",11);
+  TClonesArray &alobj = *array;
+   
+  AliAlignObjAngles a;
+
+  Double_t dpsi=0., dtheta=0., dphi=0.;
+  Double_t displacement = 10;
+
+  UShort_t iIndex=0;
+  AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
+  UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+
+  // Alignment for 5 PHOS modules
+  new(alobj[0]) AliAlignObjAngles("/ALIC_1/PHOS_1",
+				  dvoluid, -20., -10.,   0., dpsi, dtheta, 5);
+  new(alobj[1]) AliAlignObjAngles("/ALIC_1/PHOS_2",
+				  dvoluid, -10.,   0., -10., dpsi, dtheta, 2);
+  new(alobj[2]) AliAlignObjAngles("/ALIC_1/PHOS_3",
+				  dvoluid,   5., -10.,  10., dpsi, dtheta, 0);
+  new(alobj[3]) AliAlignObjAngles("/ALIC_1/PHOS_4",
+				  dvoluid, +10.,  -0., -10., dpsi, dtheta, 2);
+  new(alobj[4]) AliAlignObjAngles("/ALIC_1/PHOS_5",
+				  dvoluid, +20., -10.,   0., dpsi, dtheta, 5);
+
+  // Alignment for PHOS cradle
+  new(alobj[5]) AliAlignObjAngles("/ALIC_1/PCRA_0",
+				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
+  new(alobj[6]) AliAlignObjAngles("/ALIC_1/PCRA_1",
+				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+
+  // Alignment for cradle wheels
+  new(alobj[7]) AliAlignObjAngles("/ALIC_1/PWHE_0",
+				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
+  new(alobj[8]) AliAlignObjAngles("/ALIC_1/PWHE_1",
+				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
+  new(alobj[9]) AliAlignObjAngles("/ALIC_1/PWHE_2",
+				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+  new(alobj[10]) AliAlignObjAngles("/ALIC_1/PWHE_3",
+				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+
+  // *************************    2nd step    ***************
+  // Make CDB storage and put TClonesArray in
+  // 
+  AliCDBManager *CDB = AliCDBManager::Instance();
+  CDB->SetDefaultStorage("local://$ALICE_ROOT");
+  
+  AliCDBMetaData *md= new AliCDBMetaData();
+  md->SetResponsible("Yuri Kharlov");
+  md->SetComment("Alignment objects for fully misaligned geometry, i.e. applying them to TGeo has to distirbes geometry very much");
+  AliCDBId id("PHOS/Align/Data",100,100);
+  CDB->Put(array,id, md);
 }
