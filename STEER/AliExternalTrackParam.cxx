@@ -237,7 +237,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   // Propagate this track to the plane X=xk (cm) in the field "b" (kG)
   //----------------------------------------------------------------
   Double_t dx=xk-fX;
-  if (TMath::Abs(dx)<=0)  return kTRUE;
+  if (TMath::Abs(dx)<=kAlmost0)  return kTRUE;
 
   Double_t crv=kB2C*b*fP[4];
   if (TMath::Abs(b) < kAlmost0Field) crv=0.;
@@ -598,7 +598,7 @@ Bool_t Local2GlobalMomentum(Double_t p[3],Double_t alpha) {
   //    p[2] = pz
   // Results for (nearly) straight tracks are meaningless !
   //----------------------------------------------------------------
-  if (TMath::Abs(p[0])<=0)        return kFALSE;
+  if (TMath::Abs(p[0])<=kAlmost0) return kFALSE;
   if (TMath::Abs(p[1])> kAlmost1) return kFALSE;
 
   Double_t pt=1./TMath::Abs(p[0]);
@@ -659,7 +659,7 @@ Bool_t AliExternalTrackParam::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
   //
   // Results for (nearly) straight tracks are meaningless !
   //---------------------------------------------------------------------
-  if (TMath::Abs(fP[4])<=0) {
+  if (TMath::Abs(fP[4])<=kAlmost0) {
      for (Int_t i=0; i<21; i++) cv[i]=0.;
      return kFALSE;
   }
@@ -721,8 +721,11 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   // the radial position "x" (cm) in the magnetic field "b" (kG)
   //---------------------------------------------------------------------
   Double_t dx=x-fX;
+  if(TMath::Abs(dx)<=kAlmost0) return GetXYZ(r);
+
   Double_t f1=fP[2], f2=f1 + dx*fP[4]*b*kB2C;
 
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
   Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
