@@ -9,7 +9,6 @@
 // - change the finish method (should not be called finish)
 // - add option in draw method
 // 
-//
 
 /* $Id$ */
 
@@ -17,21 +16,12 @@
 #define CORRECTIONMATRIX2D_H
 
 
-#ifndef ROOT_TNamed
-#include "TNamed.h"
-#endif
-#ifndef ROOT_TFile
-#include "TFile.h"
-#endif
-#ifndef ROOT_TH2
-#include "TH2.h"
-#endif
-#ifndef ROOT_TError
-#include "TError.h"
-#endif
-#ifndef ROOT_TCanvas
-#include "TCanvas.h"
-#endif
+#include <TNamed.h>
+#include <TH2.h>
+
+class TFile;
+class TCanvas;
+class AliLog;
 
 class CorrectionMatrix2D : public TNamed 
 {
@@ -58,9 +48,11 @@ public:
 
   void FillMeas(Float_t ax, Float_t ay) {fhMeas->Fill(ax,ay);}
   void FillGene(Float_t ax, Float_t ay) {fhGene->Fill(ax,ay);}
-
-  void Finish();  
-                  
+  
+  void Divide();  
+  
+  virtual Long64_t Merge(TCollection* list);
+                
   void SetAxisTitles(Char_t* titleX="", Char_t* titleY="");
   
   void SaveHistograms();
@@ -78,11 +70,9 @@ protected:
   TH2F*    fhMeas;  // histogram of measured particles (or tracks)
   TH2F*    fhGene;  // histogram of generated particles
 
-  TH2F*    fhRatio; // ratio measured/generated 
-  TH2F*    fhCorr;  // ratio generated/measured
+  TH2F*    fhCorr;  // correction histogram (ratio generated/measured)
 
-
-  ClassDef(CorrectionMatrix2D,0)
+  ClassDef(CorrectionMatrix2D,1)
 };
 
 #endif
