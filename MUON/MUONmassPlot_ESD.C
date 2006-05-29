@@ -84,7 +84,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
   TH2F *hInvMassAll_vs_Pt = new TH2F("hInvMassAll_vs_Pt","hInvMassAll_vs_Pt",480,0.,12.,80,0.,20.);
   TH2F *hInvMassBgk_vs_Pt = new TH2F("hInvMassBgk_vs_Pt","hInvMassBgk_vs_Pt",480,0.,12.,80,0.,20.);
   TH1F *hInvMassRes;
-  TH1F *hPrimaryVertex = new TH1F("hPrimaryVertex","SPD reconstructed Z vertex",120,-12,12);
+  TH1F *hPrimaryVertex = new TH1F("hPrimaryVertex","SPD reconstructed Z vertex",150,-15,15);
 
   if (ResType == 553) {
     hInvMassRes = new TH1F("hInvMassRes", "Mu+Mu- invariant mass (GeV/c2) around Upsilon", 60, 8., 11.);
@@ -154,7 +154,6 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
   tree->SetBranchAddress("ESD", &esd);
   
   
-  AliESDVertex* Vertex = (AliESDVertex*) esd->AliESD::GetVertex();
 
   runLoader->LoadHeader();
   nevents = runLoader->GetNumberOfEvents();
@@ -173,6 +172,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
     }
 
     // get the SPD reconstructed vertex (vertexer) and fill the histogram
+    AliESDVertex* Vertex = (AliESDVertex*) esd->AliESD::GetVertex();
     if (Vertex) fZVertex = Vertex->GetZv();
     hPrimaryVertex->Fill(fZVertex);
 
