@@ -1,13 +1,21 @@
+// ------------------------------------------------------
+//
+// Class to handle 2d-corrections. 
+//
+// ------------------------------------------------------
+//
+// TODO:
+//
+// - change the finish method (should not be called finish)
+// - add option in draw method
+// 
+//
+
 /* $Id$ */
 
 #ifndef CORRECTIONMATRIX2D_H
 #define CORRECTIONMATRIX2D_H
 
-// ------------------------------------------------------
-//
-// Class to handle 2d - corrections 
-//
-// ------------------------------------------------------
 
 #ifndef ROOT_TNamed
 #include "TNamed.h"
@@ -28,6 +36,7 @@
 class CorrectionMatrix2D : public TNamed 
 {
 public:
+  CorrectionMatrix2D(const CorrectionMatrix2D& c);
   CorrectionMatrix2D(Char_t* name="CorrectionMatrix", Char_t* title="",
 		     Int_t nBinX=10, Float_t Xmin=0., Float_t Xmax=10.,
 		     Int_t nBinY=10, Float_t Ymin=0., Float_t Ymax=10.);
@@ -37,11 +46,15 @@ public:
 
   virtual ~CorrectionMatrix2D(); 
 
+  CorrectionMatrix2D& operator=(const CorrectionMatrix2D& corrMatrix);
+
+  virtual void Copy(TObject& c) const;
+
   TH2F* GetGeneratedHistogram() { return fhGene; }
   TH2F* GetMeasuredHistogram()  { return fhMeas; }
 
   void SetGeneratedHistogram(TH2F* agene) { fhGene = agene; }
-  void SetMeasuredHistogram(TH2F* ameas)  { fhMeas  = ameas; }
+  void SetMeasuredHistogram(TH2F* ameas)  { fhMeas = ameas; }
 
   void FillMeas(Float_t ax, Float_t ay) {fhMeas->Fill(ax,ay);}
   void FillGene(Float_t ax, Float_t ay) {fhGene->Fill(ax,ay);}
@@ -62,11 +75,11 @@ public:
   
 protected:
   
-  TH2F*    fhMeas;
-  TH2F*    fhGene;
+  TH2F*    fhMeas;  // histogram of measured particles (or tracks)
+  TH2F*    fhGene;  // histogram of generated particles
 
-  TH2F*    fhCorr; 
-  TH2F*    fhRatio;
+  TH2F*    fhRatio; // ratio measured/generated 
+  TH2F*    fhCorr;  // ratio generated/measured
 
 
   ClassDef(CorrectionMatrix2D,0)
