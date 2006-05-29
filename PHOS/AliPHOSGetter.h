@@ -37,7 +37,6 @@ class TF1 ;
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSCalibData.h"
-#include "AliPHOSAlignData.h"
 
 class AliPHOS ;  
 class AliPHOSGeometry ;
