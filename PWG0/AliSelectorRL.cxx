@@ -3,8 +3,16 @@
 #include "AliSelectorRL.h"
 
 #include <AliLog.h>
-#include <AliRun.h>
 #include <AliRunLoader.h>
+
+#include <TChain.h>
+#include <TFile.h>
+
+//
+// This selector depends on the RunLoader, therefore to use it you have to have the whole AliRoot available
+// The benefit is that you can use the RunLoader to access everything in the data structure
+// If you only have the ESD library use AliSelector instead
+//
 
 ClassImp(AliSelectorRL)
 
@@ -49,7 +57,7 @@ void AliSelectorRL::SlaveTerminate()
   DeleteRunLoader();
 }
 
-AliRun* AliSelectorRL::GetAliRun()
+AliRunLoader* AliSelectorRL::GetAliRunLoader()
 {
   // Returns AliRun instance corresponding to current ESD active in fChain
   // Loads galice.root, the file is identified by replacing "AliESDs" to
@@ -70,7 +78,7 @@ AliRun* AliSelectorRL::GetAliRun()
     fRunLoader->LoadgAlice();
   }
 
-  return fRunLoader->GetAliRun();
+  return fRunLoader;
 }
 
 void AliSelectorRL::DeleteRunLoader()

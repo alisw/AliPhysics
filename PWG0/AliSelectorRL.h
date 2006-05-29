@@ -7,7 +7,6 @@
 
 #include "AliSelector.h"
 
-class AliRun;
 class AliRunLoader;
 
 class AliSelectorRL : public AliSelector {
@@ -19,7 +18,7 @@ class AliSelectorRL : public AliSelector {
     virtual void    SlaveTerminate();
 
  protected:
-    AliRun* GetAliRun();
+    AliRunLoader* GetAliRunLoader();
 
  private:
     void DeleteRunLoader();
