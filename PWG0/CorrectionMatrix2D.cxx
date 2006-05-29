@@ -3,7 +3,7 @@
 #include "CorrectionMatrix2D.h"
 
 //____________________________________________________________________
-ClassImp(CorrectionMatrix2D);
+ClassImp(CorrectionMatrix2D)
 
 //____________________________________________________________________
 CorrectionMatrix2D::CorrectionMatrix2D(Char_t* name, Char_t* title,
