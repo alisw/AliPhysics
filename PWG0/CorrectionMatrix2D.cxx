@@ -5,8 +5,12 @@
 // ------------------------------------------------------
 //
 
-
 /* $Id$ */
+
+#include <TFile.h>
+#include <TCanvas.h>
+
+#include <AliLog.h>
 
 #include "CorrectionMatrix2D.h"
 
@@ -32,10 +36,9 @@ CorrectionMatrix2D::CorrectionMatrix2D(Char_t* name, Char_t* title,
   //
 
 
-  fhMeas  = new TH2F(Form("meas",name), Form("meas_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
-  fhGene  = new TH2F(Form("gene",name), Form("gene_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
-  fhCorr  = new TH2F(Form("corr",name), Form("corr_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
-  fhRatio = new TH2F(Form("ratio",name),Form("ratio_%s",title), nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  fhMeas  = new TH2F(Form("meas_%s",name), Form("meas_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  fhGene  = new TH2F(Form("gene_%s",name), Form("gene_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+  fhCorr  = new TH2F(Form("corr_%s",name), Form("corr_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
 }
 
 //____________________________________________________________________
@@ -47,10 +50,9 @@ CorrectionMatrix2D::CorrectionMatrix2D(Char_t* name,Char_t* title,
   // constructor
   //
 
-  fhMeas  = new TH2F(Form("meas",name), Form("meas_%s",title),  nBinX, X, nBinY, Y);
-  fhGene  = new TH2F(Form("gene",name), Form("gene_%s",title),  nBinX, X, nBinY, Y);
-  fhCorr  = new TH2F(Form("corr",name), Form("corr_%s",title),  nBinX, X, nBinY, Y);
-  fhRatio = new TH2F(Form("ratio",name),Form("ratio_%s",title), nBinX, X, nBinY, Y);
+  fhMeas  = new TH2F(Form("meas_%s",name), Form("meas_%s",title),  nBinX, X, nBinY, Y);
+  fhGene  = new TH2F(Form("gene_%s",name), Form("gene_%s",title),  nBinX, X, nBinY, Y);
+  fhCorr  = new TH2F(Form("corr_%s",name), Form("corr_%s",title),  nBinX, X, nBinY, Y);
 }
 
 
@@ -62,7 +64,6 @@ CorrectionMatrix2D::~CorrectionMatrix2D() {
   if (fhMeas)  delete fhMeas;
   if (fhGene)  delete fhGene;
   if (fhCorr)  delete fhCorr;
-  if (fhRatio) delete fhRatio;
 }
 
 //____________________________________________________________________
@@ -87,8 +88,6 @@ CorrectionMatrix2D::Copy(TObject& c) const
   target.fhMeas  = fhMeas;
   target.fhGene  = fhGene;
   target.fhCorr  = fhCorr;
-  target.fhRatio = fhRatio;  
-
 }
 
 
@@ -102,21 +101,59 @@ void CorrectionMatrix2D::SetAxisTitles(Char_t* titleX, Char_t* titleY)
   fhMeas ->SetXTitle(titleX);  fhMeas ->SetYTitle(titleY);
   fhGene ->SetXTitle(titleX);  fhGene ->SetYTitle(titleY);
   fhCorr ->SetXTitle(titleX);  fhCorr ->SetYTitle(titleY);
-  fhRatio->SetXTitle(titleX);  fhRatio->SetYTitle(titleY);
+}
+
+//____________________________________________________________________
+Long64_t CorrectionMatrix2D::Merge(TCollection* list) {
+  // Merge a list of CorrectionMatrix2D objects with this (needed for
+  // PROOF). 
+  // Returns the number of merged objects (including this).
+
+  if (!list)
+    return 0;
+  
+  if (list->IsEmpty())
+    return 1;
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj;
+
+  // collections of measured and generated histograms
+  TList* collectionMeas = new TList;
+  TList* collectionGene = new TList;
+  
+  Int_t count = 0;
+  while ((obj = iter->Next())) {
+    
+    CorrectionMatrix2D* entry = dynamic_cast<CorrectionMatrix2D*> (obj);
+    if (entry == 0) 
+      continue;
+
+    collectionMeas->Add(entry->GetMeasuredHistogram());
+    collectionGene->Add(entry->GetGeneratedHistogram());
+
+    count++;
+  }
+  fhMeas->Merge(collectionMeas);
+  fhGene->Merge(collectionGene);
+
+  // is this really faster than just adding the histograms in the list???
+  delete collectionMeas;
+  delete collectionGene;
+
+
+  return count+1;
 }
 
 
 //____________________________________________________________________
-void CorrectionMatrix2D::Finish() {  
+void CorrectionMatrix2D::Divide() {  
   //
-  // finish method
-  //
-  // divide the histograms
+  // divide the histograms to get the correction
   // 
 
   if (!fhMeas || !fhGene)  return; 
 
-  fhRatio->Divide(fhMeas, fhGene, 1,1,"B");
   fhCorr->Divide(fhGene, fhMeas, 1,1,"B");
   
 }
@@ -198,16 +235,13 @@ Bool_t CorrectionMatrix2D::LoadHistograms(Char_t* fileName, Char_t* dir) {
   
   if(fhGene)  {delete fhGene;  fhGene=0;}
   if(fhCorr)  {delete fhCorr;  fhCorr=0;}
-  if(fhRatio) {delete fhRatio; fhRatio=0;}
   if(fhMeas)  {delete fhMeas;  fhMeas=0;}
   
-  fhMeas  = (TH2F*)fin->Get(Form("%s/meas",dir));
+  fhMeas  = (TH2F*)fin->Get(Form("%s/meas_%s",dir,fName.Data()));
       if(!fhMeas)  Info("LoadHistograms","No meas  hist available");
-  fhGene  = (TH2F*)fin->Get(Form("%s/gene",dir));
+  fhGene  = (TH2F*)fin->Get(Form("%s/gene_%s",dir,fName.Data()));
       if(!fhGene)  Info("LoadHistograms","No gene  hist available");
-  fhRatio = (TH2F*)fin->Get(Form("%s/ratio",dir));
-      if(!fhRatio) Info("LoadHistograms","No ratio hist available");
-  fhCorr  = (TH2F*)fin->Get(Form("%s/corr",dir));
+  fhCorr  = (TH2F*)fin->Get(Form("%s/corr_%s",dir,fName.Data()));
       if(!fhCorr) {Info("LoadHistograms","No corr  hist available");
       return kFALSE;}
       
@@ -231,9 +265,6 @@ CorrectionMatrix2D::SaveHistograms() {
   if (fhCorr)
     fhCorr->Write();
 
-  if (fhRatio)
-    fhRatio->Write();
-
   gDirectory->cd("../");
 }
 
@@ -256,12 +287,11 @@ void CorrectionMatrix2D::DrawHistograms()
     fhGene->Draw("COLZ");
 
   canvas->cd(3);
-  if (fhRatio)
-    fhRatio->Draw("COLZ");
-
-  canvas->cd(4);
   if (fhCorr)
     fhCorr->Draw("COLZ");
+
+  // add: draw here the stat. errors of the correction histogram
+  
 }
 
 
