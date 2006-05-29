@@ -14,7 +14,7 @@ testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFAL
 {
   gSystem->Load("libPWG0base");
 
-  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset, kFALSE);
+  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset);
 
   // ########################################################
   // selection of esd tracks
