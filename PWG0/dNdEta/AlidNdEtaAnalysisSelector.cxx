@@ -7,9 +7,12 @@
 #include <TCanvas.h>
 #include <TVector3.h>
 #include <TH2F.h>
+#include <TChain.h>
+#include <TFile.h>
 
 #include <AliLog.h>
 #include <AliGenEventHeader.h>
+#include <AliHeader.h>
 
 #include "dNdEtaAnalysis.h"
 
@@ -17,8 +20,7 @@ ClassImp(AlidNdEtaAnalysisSelector)
 
 AlidNdEtaAnalysisSelector::AlidNdEtaAnalysisSelector() :
   AliSelector(),
-  fdNdEtaAnalysis(0),
-  fdNdEtaAnalysisFinal(0)
+  fdNdEtaAnalysis(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -43,7 +45,7 @@ void AlidNdEtaAnalysisSelector::SlaveBegin(TTree * tree)
 
   AliSelector::SlaveBegin(tree);
 
-  fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta");
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
 }
 
 void AlidNdEtaAnalysisSelector::SlaveTerminate()
@@ -61,12 +63,7 @@ void AlidNdEtaAnalysisSelector::SlaveTerminate()
     return;
   }
 
-  fOutput->Add(fdNdEtaAnalysis->GetEtaVsVtxHistogram());
-  fOutput->Add(fdNdEtaAnalysis->GetEtaVsVtxUncorrectedHistogram());
-  fOutput->Add(fdNdEtaAnalysis->GetVtxHistogram());
-
-  fdNdEtaAnalysis->GetVtxHistogram()->Print();
-  fOutput->Print();
+  fOutput->Add(fdNdEtaAnalysis);
 }
 
 void AlidNdEtaAnalysisSelector::Terminate()
@@ -77,30 +74,22 @@ void AlidNdEtaAnalysisSelector::Terminate()
 
   AliSelector::Terminate();
 
-  TH2F* etaVsVtxHistogram = dynamic_cast<TH2F*> (fOutput->FindObject("eta_vs_vtx"));
-  TH2F* etaVsVtxUncorrectedHistogram = dynamic_cast<TH2F*> (fOutput->FindObject("eta_vs_vtx_uncorrected"));
-  TH1D* vtxHistogram = dynamic_cast<TH1D*> (fOutput->FindObject("vtx"));
+  fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
 
-  if (!etaVsVtxHistogram || !vtxHistogram || !etaVsVtxUncorrectedHistogram)
+  if (!fdNdEtaAnalysis)
   {
-     AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p %p %p", (void*) etaVsVtxHistogram, (void*) etaVsVtxUncorrectedHistogram, (void*) vtxHistogram));
+    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fdNdEtaAnalysis));
     return;
   }
 
-  fdNdEtaAnalysisFinal = new dNdEtaAnalysis("dNdEtaResult");
-
-  fdNdEtaAnalysisFinal->SetEtaVsVtxHistogram(etaVsVtxHistogram);
-  fdNdEtaAnalysisFinal->SetEtaVsVtxUncorrectedHistogram(etaVsVtxUncorrectedHistogram);
-  fdNdEtaAnalysisFinal->SetVtxHistogram(vtxHistogram);
-
-  fdNdEtaAnalysisFinal->Finish();
+  fdNdEtaAnalysis->Finish();
 
   TFile* fout = new TFile("out.root","RECREATE");
   WriteObjects();
   fout->Write();
   fout->Close();
 
-  fdNdEtaAnalysisFinal->DrawHistograms();
+  fdNdEtaAnalysis->DrawHistograms();
 }
 
 void AlidNdEtaAnalysisSelector::WriteObjects()
@@ -109,5 +98,5 @@ void AlidNdEtaAnalysisSelector::WriteObjects()
   // this is an extra function to be overloaded...
   //
 
-  fdNdEtaAnalysisFinal->SaveHistograms();
+  fdNdEtaAnalysis->SaveHistograms();
 }

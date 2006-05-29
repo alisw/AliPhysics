@@ -9,9 +9,11 @@
 #include <TParticlePDG.h>
 #include <TVector3.h>
 #include <TH3F.h>
+#include <TTree.h>
 
 #include <AliLog.h>
 #include <AliGenEventHeader.h>
+#include <AliHeader.h>
 
 #include "dNdEtaAnalysis.h"
 
