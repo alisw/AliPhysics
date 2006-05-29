@@ -13,7 +13,7 @@ void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0)
 {
   gSystem->Load("libPWG0base");
 
-  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset, kFALSE);
+  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset);
 
   fEsdTrackCuts = new AliESDtrackCuts();
   fEsdTrackCuts->DefineHistograms(1);

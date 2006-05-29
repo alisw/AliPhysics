@@ -2,13 +2,11 @@
 
 // Helper macros for creating chains
 
-TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Int_t offset = 0, Bool_t aAddHeader = kTRUE)
+TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Int_t offset = 0)
 {
   // creates chain of files in a given directory. The structure is expected as:
   // <aDataDir>/<dir0>/AliESDs.root
-  // <aDataDir>/<dir0>/galice.root (when <aAddHeader> flag is set)
   // <aDataDir>/<dir1>/AliESDs.root
-  // <aDataDir>/<dir1>/galice.root (when <aAddHeader> flag is set)
   // ...
 
   if (!aDataDir)
@@ -16,9 +14,6 @@ TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Int_t offs
 
   TChain* chain = new TChain("esdTree");
   TChain* chaingAlice = 0;
-
-  if (aAddHeader != kFALSE)
-    chaingAlice = new TChain("TE");
 
   TString execDir(gSystem->pwd());
   TSystemDirectory* baseDir = new TSystemDirectory(".", aDataDir);
@@ -48,31 +43,20 @@ TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Int_t offs
     presentDirName += presentDir->GetName();
 
     chain->Add(presentDirName + "/AliESDs.root/esdTree");
-
-    if (aAddHeader != kFALSE)
-      chaingAlice->Add(presentDirName + "/galice.root/TE");
   }
-
-  if (aAddHeader != kFALSE)
-    chain->AddFriend(chaingAlice);
 
   return chain;
 }
 
-TChain* CreateESDChainFromList(const char* listFile, Int_t aRuns = 20, Bool_t aAddHeader = kTRUE)
+TChain* CreateESDChainFromList(const char* listFile, Int_t aRuns = 20)
 {
   // Creates a chain from a file which contains a list of ESD files
-  // if <aAddHeader> is set, the filename of the galice.root file is created by replacing
-  // AliESDs to galice in the esd file name
 
   if (!listFile)
     return 0;
 
   TChain* chain = new TChain("esdTree");
   TChain* chaingAlice = 0;
-
-  if (aAddHeader != kFALSE)
-    chaingAlice = new TChain("TE");
 
   // Open the input stream
   ifstream in;
@@ -91,24 +75,11 @@ TChain* CreateESDChainFromList(const char* listFile, Int_t aRuns = 20, Bool_t aA
 
       // add esd file
     chain->Add(esdfile);
-
-      // add header
-    if (aAddHeader != kFALSE)
-    {
-      esdfile.ReplaceAll("AliESDs", "galice");
-      chaingAlice->Add(esdfile + "/TE");
-    }
   }
 
   in.close();
 
   chain->Lookup();
-
-  if (aAddHeader != kFALSE)
-  {
-    chaingAlice->Lookup();
-    chain->AddFriend(chaingAlice);
-  }
 
   return chain;
 }

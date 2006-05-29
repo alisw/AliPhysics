@@ -144,9 +144,6 @@ Bool_t AliSelector::Notify()
   DeleteKinematicsFile();
   DeleteHeaderFile();
 
-  /*TChain* headerChain = dynamic_cast<TChain*> (((TFriendElement*) fChain->GetListOfFriends()->First())->GetTree());
-  AliDebug(AliLog::kInfo, Form("Header File: %s", headerChain->GetCurrentFile()->GetName()));*/
-
   return kTRUE;
 }
 
@@ -237,39 +234,6 @@ TTree* AliSelector::GetKinematics()
   }
 
   return dynamic_cast<TTree*> (fKineFile->Get(Form("Event%d/TreeK", fChain->GetTree()->GetReadEntry())));
-
-  /* this is if we want to get it from a TChain
-
-  define it in the header:
-
-    TChain*          fKineChain;
-
-  this creates the chain:
-
-    TChain* chainKine = new TChain("TreeK");
-    for (Int_t i=0; i<20; ++i)
-      chainKine->Add(Form("test/Kinematics.root/Event%d/TreeK", i));
-    for (Int_t i=0; i<20; ++i)
-      chainKine->Add(Form("test2/Kinematics.root/Event%d/TreeK", i));
-
-    <mainChain>->GetUserInfo()->Add(chainKine);
-
-  we retrieve it in init:
-
-    fKineChain = dynamic_cast<TChain*> (fChain->GetUserInfo()->FindObject("TreeK"));
-
-  and use it in process:
-
-    if (fKineChain)
-    {
-      Long64_t entryK = fKineChain->GetTreeOffset()[fChain->GetChainEntryNumber(entry)];
-      cout << "Entry in fKineChain: " << entryK << endl;
-      fKineChain->LoadTree(entryK);
-      TTree* kineTree = fKineChain->GetTree();
-
-      printf("Kinematics from tree friend: We have %lld particles.\n", kineTree->GetEntries());
-    }
-  */
 }
 
 void AliSelector::DeleteKinematicsFile()
