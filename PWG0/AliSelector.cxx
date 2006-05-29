@@ -34,8 +34,13 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TFriendElement.h>
+#include <TTree.h>
+#include <TChain.h>
+#include <TFile.h>
 
 #include <AliLog.h>
+#include <AliESD.h>
+#include <AliHeader.h>
 
 ClassImp(AliSelector)
 

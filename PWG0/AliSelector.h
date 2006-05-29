@@ -5,14 +5,15 @@
 
 // This selector is only dependent on the ESD library, if you need the whole of AliROOT use AliSelectorRL
 
-#include <TFile.h>
 #include <TSelector.h>
-#include <TChain.h>
 
-#include <AliESD.h>
-#include <AliHeader.h>
-
+class TFile;
+class TChain;
+class TTree;
 class TParticle;
+
+class AliESD;
+class AliHeader;
 
 class AliSelector : public TSelector {
   public:
@@ -37,7 +38,7 @@ class AliSelector : public TSelector {
 
     AliESD*          fESD;     //! "ESD" branch in fChain
 
-    Int_t fCountFiles;         // Nr. of current file
+    Int_t fCountFiles;         // number of processed file
 
  private:
     void DeleteKinematicsFile();
@@ -46,8 +47,8 @@ class AliSelector : public TSelector {
     TFile*        fKineFile;   //! pointer to Kinematics.root if the file was opened
 
     TFile*        fHeaderFile; //! pointer to galice.root, if the file was opened
-    TTree*        fHeaderTree; //!
-    AliHeader*    fHeader;     //!
+    TTree*        fHeaderTree; //! holds TE tree of current galice.root
+    AliHeader*    fHeader;     //! holds pointer to current header
 
   ClassDef(AliSelector,0);
 };
