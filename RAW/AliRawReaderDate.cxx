@@ -247,14 +247,14 @@ UInt_t AliRawReaderDate::GetGDCId() const
 
 Int_t AliRawReaderDate::GetEquipmentSize() const
 {
-// get the size of the equipment (without header)
+// get the size of the equipment (including the header)
 
 #ifdef ALI_DATE
   if (!fEquipment) return 0;
   if (fSubEvent->eventVersion <= 0x00030001) {
-    return fEquipment->equipmentSize;
+    return fEquipment->equipmentSize + sizeof(equipmentHeaderStruct);
   } else {
-    return fEquipment->equipmentSize - sizeof(equipmentHeaderStruct);
+    return fEquipment->equipmentSize;
   }
 #else
   return 0;
@@ -309,6 +309,16 @@ Int_t AliRawReaderDate::GetEquipmentElementSize() const
 #endif
 }
 
+Int_t AliRawReaderDate::GetEquipmentHeaderSize() const
+{
+  // Get the equipment header size
+  // 28 bytes by default
+#ifdef ALI_DATE
+  return sizeof(equipmentHeaderStruct);
+#else
+  return 0;
+#endif
+}
 
 Bool_t AliRawReaderDate::ReadHeader()
 {
@@ -402,6 +412,12 @@ Bool_t AliRawReaderDate::ReadHeader()
 
       // "read" the data header
       fHeader = (AliRawDataHeader*) fPosition;
+      if ((fPosition + fHeader->fSize) != fEnd) {
+	Warning("ReadHeader",
+		"raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		fHeader->fSize, fEnd - fPosition);
+	fHeader->fSize = fEnd - fPosition;
+      }
       fPosition += sizeof(AliRawDataHeader);
     }
 
@@ -582,8 +598,12 @@ Int_t AliRawReaderDate::CheckData() const
 
       // check consistency of data size in the data header and in the sub event
       AliRawDataHeader* header = (AliRawDataHeader*) position;
-      if (header->fSize != 0xFFFFFFFF) {
-	if (position + header->fSize > end) result |= kErrSize;
+      if ((position + header->fSize) != end) {
+	Warning("ReadHeader",
+		"raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		header->fSize, end - position);
+	header->fSize = end - position;
+	result |= kErrSize;
       }
     }
     position = end;

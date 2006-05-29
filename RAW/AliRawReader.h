@@ -30,7 +30,7 @@ class AliRawReader: public TObject {
     void             SkipInvalid(Bool_t skip = kTRUE)
       {fSkipInvalid = skip;};
     void             SelectEvents(Int_t type);
-    void             RequireHeader(Bool_t required = kTRUE)
+    virtual void     RequireHeader(Bool_t required)
       {fRequireHeader = required;};
 
     virtual UInt_t   GetType() const = 0;
@@ -48,6 +48,7 @@ class AliRawReader: public TObject {
     virtual Int_t    GetEquipmentId() const = 0;
     virtual const UInt_t* GetEquipmentAttributes() const = 0;
     virtual Int_t    GetEquipmentElementSize() const = 0;
+    virtual Int_t    GetEquipmentHeaderSize() const = 0;
 
     Int_t            GetDetectorID() const 
       {if (GetEquipmentId() >= 0) return (GetEquipmentId() >> 8); else return -1;};
@@ -57,8 +58,8 @@ class AliRawReader: public TObject {
     Int_t            GetDataSize() const 
       {if (fHeader) {
 	if (fHeader->fSize != 0xFFFFFFFF) return fHeader->fSize - sizeof(AliRawDataHeader); 
-	else return GetEquipmentSize() - sizeof(AliRawDataHeader);
-      } else return GetEquipmentSize();};
+	else return GetEquipmentSize() - GetEquipmentHeaderSize() - sizeof(AliRawDataHeader);
+      } else return GetEquipmentSize() - GetEquipmentHeaderSize();};
 
     Int_t            GetVersion() const 
       {if (fHeader) return fHeader->fVersion; else return -1;};

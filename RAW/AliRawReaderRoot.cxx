@@ -300,6 +300,14 @@ Int_t AliRawReaderRoot::GetEquipmentElementSize() const
   return fEquipment->GetEquipmentHeader()->GetBasicSizeType();
 }
 
+Int_t AliRawReaderRoot::GetEquipmentHeaderSize() const
+{
+// get the size of the equipment header (28 bytes by default)
+
+  if (!fEvent || !fEquipment || !fEquipment->GetEquipmentHeader()) return 0;
+  return fEquipment->GetEquipmentHeader()->HeaderSize();
+}
+
 
 Bool_t AliRawReaderRoot::ReadHeader()
 {
@@ -366,6 +374,12 @@ Bool_t AliRawReaderRoot::ReadHeader()
 
       // "read" the data header
       fHeader = (AliRawDataHeader*) fPosition;
+      if ((fPosition + fHeader->fSize) != fEnd) {
+	Warning("ReadHeader",
+		"raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		fHeader->fSize, fEnd - fPosition);
+	fHeader->fSize = fEnd - fPosition;
+      }
       fPosition += sizeof(AliRawDataHeader);
     }
 
@@ -525,10 +539,15 @@ Int_t AliRawReaderRoot::CheckData() const
 
       // check consistency of data size in the header and in the equipment
       AliRawDataHeader* header = (AliRawDataHeader*) position;
-      if (header->fSize != 0xFFFFFFFF) {
-	if (position + header->fSize > end) result |= kErrSize;
+      if ((position + header->fSize) != end) {
+	Warning("ReadHeader",
+		"raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		header->fSize, end - position);
+	header->fSize = end - position;
+	result |= kErrSize;
       }
     }
+    position = end;
   };
 
   return result;

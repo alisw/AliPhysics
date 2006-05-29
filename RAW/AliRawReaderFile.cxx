@@ -100,6 +100,16 @@ AliRawReaderFile::~AliRawReaderFile()
   if (fBuffer) delete[] fBuffer;
 }
 
+void AliRawReaderFile::RequireHeader(Bool_t required)
+{
+  // Reading of raw data in case of missing
+  // raw data header is not implemented for
+  // this class
+  if (!required)
+    Fatal("AliRawReaderFile","Reading of raw data without raw data header is not implemented !");
+
+  AliRawReader::RequireHeader(required);
+}
 
 TString AliRawReaderFile::GetDirName() const
 {

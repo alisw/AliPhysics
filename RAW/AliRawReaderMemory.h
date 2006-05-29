@@ -28,6 +28,8 @@ class AliRawReaderMemory: public AliRawReader {
 /*     AliRawReaderMemory& operator = (const AliRawReaderMemory& rawReader); */
     virtual ~AliRawReaderMemory();
 
+    virtual void     RequireHeader(Bool_t required);
+
     virtual UInt_t   GetType() const {return 0;};
     virtual UInt_t   GetRunNumber() const {return 0;};
     virtual const UInt_t* GetEventId() const {return 0;};
@@ -43,6 +45,7 @@ class AliRawReaderMemory: public AliRawReader {
     virtual Int_t    GetEquipmentId() const {return fEquipmentId;};
     virtual const UInt_t* GetEquipmentAttributes() const {return NULL;};
     virtual Int_t    GetEquipmentElementSize() const {return 0;};
+    virtual Int_t    GetEquipmentHeaderSize() const {return 0;};
 
     virtual Bool_t   ReadHeader();
     virtual Bool_t   ReadNextData(UChar_t*& data);

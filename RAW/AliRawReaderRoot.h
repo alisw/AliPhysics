@@ -43,6 +43,7 @@ class AliRawReaderRoot: public AliRawReader {
     virtual Int_t    GetEquipmentId() const;
     virtual const UInt_t* GetEquipmentAttributes() const;
     virtual Int_t    GetEquipmentElementSize() const;
+    virtual Int_t    GetEquipmentHeaderSize() const;
 
     virtual Bool_t   ReadHeader();
     virtual Bool_t   ReadNextData(UChar_t*& data);

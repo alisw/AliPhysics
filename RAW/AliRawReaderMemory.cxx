@@ -70,6 +70,17 @@ AliRawReaderMemory& AliRawReaderMemory::operator = (const AliRawReaderMemory&
   return *this;
 }
 
+void AliRawReaderMemory::RequireHeader(Bool_t required)
+{
+  // Reading of raw data in case of missing
+  // raw data header is not implemented for
+  // this class
+  if (!required)
+    Fatal("AliRawReaderMemory","Reading of raw data without raw data header is not implemented !");
+
+  AliRawReader::RequireHeader(required);
+}
+
 Bool_t AliRawReaderMemory::ReadHeader()
 {
 // read a data header at the current buffer position
@@ -80,7 +91,13 @@ Bool_t AliRawReaderMemory::ReadHeader()
     if ( fPosition+fCount+sizeof(AliRawDataHeader) > fBufferSize ) return kFALSE;
 
     memcpy( fHeader, fBuffer+fPosition+fCount, sizeof(AliRawDataHeader) );
-    fPosition += fCount+sizeof(AliRawDataHeader);
+    if (fHeader->fSize == 0) {
+      Warning("ReadHeader",
+	      "Missing raw data header! Using the size of the memory buffer instead (%d) !",
+	      fBufferSize - fPosition - fCount);
+	fHeader->fSize = fBufferSize - fPosition - fCount;
+      }
+    fPosition += fCount + sizeof(AliRawDataHeader);
 
     if (fHeader->fSize != 0xFFFFFFFF) {
       // Check for fHeader->fSize < sizeof(AliRawDataHeader) ????
