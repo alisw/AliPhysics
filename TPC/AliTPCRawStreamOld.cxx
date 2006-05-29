@@ -48,9 +48,6 @@ AliTPCRawStreamOld::AliTPCRawStreamOld(AliRawReader* rawReader) :
   //  Do not select on the equipment Id, since the Id
   //  is wrong (it starts from 228 or so...)
   //  SelectRawData(0);
-  //  Skip the Common Data Header, since it is only 7
-  //  32-bit words
-  rawReader->RequireHeader(kFALSE);
 
   TString path = gSystem->Getenv("ALICE_ROOT");
   path += "/TPC/mapping/Patch";
