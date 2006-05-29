@@ -1,14 +1,10 @@
-/* $Id$ */
-
 #include "AliESDtrackCuts.h"
-
-#include <Riostream.h>
 
 //____________________________________________________________________
 ClassImp(AliESDtrackCuts)
 
 // Cut names
-const Char_t* AliESDtrackCuts::fCutNames[kNCuts] = {
+const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "require TPC refit",
  "require ITS refit",
  "n clusters TPC",
@@ -90,24 +86,24 @@ void AliESDtrackCuts::Init()
   // sets everything to zero
   //
 
-  fCut_MinNClusterTPC = 0;
-  fCut_MinNClusterITS = 0;
+  fCutMinNClusterTPC = 0;
+  fCutMinNClusterITS = 0;
 
-  fCut_MaxChi2PerClusterTPC = 0;
-  fCut_MaxChi2PerClusterITS = 0;
+  fCutMaxChi2PerClusterTPC = 0;
+  fCutMaxChi2PerClusterITS = 0;
 
-  fCut_MaxC11 = 0;
-  fCut_MaxC22 = 0;
-  fCut_MaxC33 = 0;
-  fCut_MaxC44 = 0;
-  fCut_MaxC55 = 0;
+  fCutMaxC11 = 0;
+  fCutMaxC22 = 0;
+  fCutMaxC33 = 0;
+  fCutMaxC44 = 0;
+  fCutMaxC55 = 0;
 
-  fCut_AcceptKinkDaughters = 0;
-  fCut_RequireTPCRefit = 0;
-  fCut_RequireITSRefit = 0;
+  fCutAcceptKinkDaughters = 0;
+  fCutRequireTPCRefit = 0;
+  fCutRequireITSRefit = 0;
 
-  fCut_NsigmaToVertex = 0;
-  fCut_SigmaToVertexRequired = 0;
+  fCutNsigmaToVertex = 0;
+  fCutSigmaToVertexRequired = 0;
 
   fPMin = 0;
   fPMax = 0;
@@ -175,24 +171,24 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   target.Init();
 
-  target.fCut_MinNClusterTPC = fCut_MinNClusterTPC;
-  target.fCut_MinNClusterITS = fCut_MinNClusterITS;
+  target.fCutMinNClusterTPC = fCutMinNClusterTPC;
+  target.fCutMinNClusterITS = fCutMinNClusterITS;
 
-  target.fCut_MaxChi2PerClusterTPC = fCut_MaxChi2PerClusterTPC;
-  target.fCut_MaxChi2PerClusterITS = fCut_MaxChi2PerClusterITS;
+  target.fCutMaxChi2PerClusterTPC = fCutMaxChi2PerClusterTPC;
+  target.fCutMaxChi2PerClusterITS = fCutMaxChi2PerClusterITS;
 
-  target.fCut_MaxC11 = fCut_MaxC11;
-  target.fCut_MaxC22 = fCut_MaxC22;
-  target.fCut_MaxC33 = fCut_MaxC33;
-  target.fCut_MaxC44 = fCut_MaxC44;
-  target.fCut_MaxC55 = fCut_MaxC55;
+  target.fCutMaxC11 = fCutMaxC11;
+  target.fCutMaxC22 = fCutMaxC22;
+  target.fCutMaxC33 = fCutMaxC33;
+  target.fCutMaxC44 = fCutMaxC44;
+  target.fCutMaxC55 = fCutMaxC55;
 
-  target.fCut_AcceptKinkDaughters = fCut_AcceptKinkDaughters;
-  target.fCut_RequireTPCRefit = fCut_RequireTPCRefit;
-  target.fCut_RequireITSRefit = fCut_RequireITSRefit;
+  target.fCutAcceptKinkDaughters = fCutAcceptKinkDaughters;
+  target.fCutRequireTPCRefit = fCutRequireTPCRefit;
+  target.fCutRequireITSRefit = fCutRequireITSRefit;
 
-  target.fCut_NsigmaToVertex = fCut_NsigmaToVertex;
-  target.fCut_SigmaToVertexRequired = fCut_SigmaToVertexRequired;
+  target.fCutNsigmaToVertex = fCutNsigmaToVertex;
+  target.fCutSigmaToVertexRequired = fCutSigmaToVertexRequired;
 
   target.fPMin = fPMin;
   target.fPMax = fPMax;
@@ -246,6 +242,9 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // 
   // figure out if the tracks survives all the track cuts defined
   //
+  // the different quality parameter and kinematic values are first
+  // retrieved from the track. then it is found out what cuts the
+  // track did not survive and finally the cuts are imposed.
 
   UInt_t status = esdTrack->GetStatus();
 
@@ -284,7 +283,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // 
   Float_t nSigmaToVertex = -1;
   if (bRes[0]!=0 && bRes[1]!=0)
-    nSigmaToVertex = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+    nSigmaToVertex = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));  
 
   // getting the kinematic variables of the track 
   // (assuming the mass is known)
@@ -310,34 +309,34 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   for (Int_t i=0; i<kNCuts; i++) cuts[i]=kFALSE;
   
   // track quality cuts
-  if (fCut_RequireTPCRefit && (status&AliESDtrack::kTPCrefit)==0)
+  if (fCutRequireTPCRefit && (status&AliESDtrack::kTPCrefit)==0)
     cuts[0]=kTRUE;
-  if (fCut_RequireITSRefit && (status&AliESDtrack::kITSrefit)==0)
+  if (fCutRequireITSRefit && (status&AliESDtrack::kITSrefit)==0)
     cuts[1]=kTRUE;
-  if (nClustersTPC<fCut_MinNClusterTPC) 
+  if (nClustersTPC<fCutMinNClusterTPC) 
     cuts[2]=kTRUE;
-  if (nClustersITS<fCut_MinNClusterITS) 
+  if (nClustersITS<fCutMinNClusterITS) 
     cuts[3]=kTRUE;
-  if (chi2PerClusterTPC>fCut_MaxChi2PerClusterTPC) 
+  if (chi2PerClusterTPC>fCutMaxChi2PerClusterTPC) 
     cuts[4]=kTRUE; 
-  if (chi2PerClusterITS>fCut_MaxChi2PerClusterITS) 
+  if (chi2PerClusterITS>fCutMaxChi2PerClusterITS) 
     cuts[5]=kTRUE;
-  if (extCov[0]  > fCut_MaxC11) 
+  if (extCov[0]  > fCutMaxC11) 
     cuts[6]=kTRUE;  
-  if (extCov[2]  > fCut_MaxC22) 
+  if (extCov[2]  > fCutMaxC22) 
     cuts[7]=kTRUE;  
-  if (extCov[5]  > fCut_MaxC33) 
+  if (extCov[5]  > fCutMaxC33) 
     cuts[8]=kTRUE;  
-  if (extCov[9]  > fCut_MaxC44) 
+  if (extCov[9]  > fCutMaxC44) 
     cuts[9]=kTRUE;  
-  if (extCov[14]  > fCut_MaxC55) 
+  if (extCov[14]  > fCutMaxC55) 
     cuts[10]=kTRUE;  
-  if (nSigmaToVertex > fCut_NsigmaToVertex) 
+  if (nSigmaToVertex > fCutNsigmaToVertex) 
     cuts[11] = kTRUE;
   // if n sigma could not be calculated
-  if (nSigmaToVertex<0 && fCut_SigmaToVertexRequired)   
+  if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)   
     cuts[12]=kTRUE;
-  if (!fCut_AcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) 
+  if (!fCutAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) 
     cuts[13]=kTRUE;
   // track kinematics cut
   if((momentum < fPMin) || (momentum > fPMax)) 
@@ -369,12 +368,12 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     
     for (Int_t i=0; i<kNCuts; i++) {
       if (cuts[i])
- 	fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fCutNames[i])));
+ 	fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i])));
       
       for (Int_t j=i; j<kNCuts; j++) {
  	if (cuts[i] && cuts[j]) {
- 	  Float_t x = fhCutCorrelation->GetXaxis()->GetBinCenter(fhCutCorrelation->GetXaxis()->FindBin(fCutNames[i]));
- 	  Float_t y = fhCutCorrelation->GetYaxis()->GetBinCenter(fhCutCorrelation->GetYaxis()->FindBin(fCutNames[j]));
+ 	  Float_t x = fhCutCorrelation->GetXaxis()->GetBinCenter(fhCutCorrelation->GetXaxis()->FindBin(fgkCutNames[i]));
+ 	  Float_t y = fhCutCorrelation->GetYaxis()->GetBinCenter(fhCutCorrelation->GetYaxis()->FindBin(fgkCutNames[j]));
  	  fhCutCorrelation->Fill(x,y);
  	}
       }
@@ -456,10 +455,13 @@ AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
 
 //____________________________________________________________________
  void AliESDtrackCuts::DefineHistograms(Int_t color) {
+   // 
+   // diagnostics histograms are defined
+   // 
 
    fHistogramsOn=kTRUE;
 
-//   //###################################################################################
+   //###################################################################################
    // defining histograms
 
    fhCutStatistics = new TH1F("cut_statistics","cut statistics",kNCuts+4,-0.5,kNCuts+3.5);
@@ -470,9 +472,9 @@ AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
    fhCutCorrelation = new TH2F("cut_correlation","cut correlation",kNCuts,-0.5,kNCuts-0.5,kNCuts,-0.5,kNCuts-0.5);;
   
    for (Int_t i=0; i<kNCuts; i++) {
-     fhCutStatistics->GetXaxis()->SetBinLabel(i+4,fCutNames[i]);
-     fhCutCorrelation->GetXaxis()->SetBinLabel(i+1,fCutNames[i]);
-     fhCutCorrelation->GetYaxis()->SetBinLabel(i+1,fCutNames[i]);
+     fhCutStatistics->GetXaxis()->SetBinLabel(i+4,fgkCutNames[i]);
+     fhCutCorrelation->GetXaxis()->SetBinLabel(i+1,fgkCutNames[i]);
+     fhCutCorrelation->GetYaxis()->SetBinLabel(i+1,fgkCutNames[i]);
    } 
 
   fhCutStatistics  ->SetLineColor(color);
@@ -548,6 +550,9 @@ AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
 //____________________________________________________________________
 void 
 AliESDtrackCuts::Print(const Option_t*) const {
+  //
+  // print method - still to be implemented
+  //
 
   AliInfo("AliESDtrackCuts...");
 }
@@ -555,6 +560,10 @@ AliESDtrackCuts::Print(const Option_t*) const {
 
 //____________________________________________________________________
 void AliESDtrackCuts::SaveHistograms(Char_t* dir) {
+  // 
+  // saves the histograms in a directory (dir)
+  // 
+
   
   if (!fHistogramsOn) {
     AliDebug(0, "Histograms not on - cannot save histograms!!!");
