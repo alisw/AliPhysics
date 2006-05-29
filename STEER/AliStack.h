@@ -81,14 +81,14 @@ class AliStack : public TVirtualMCStack
     void        SetEventFolderName(const char* foldname);
     TParticle*  ParticleFromTreeK(Int_t id) const;
     Int_t       TreeKEntry(Int_t id) const;
-    
+    Bool_t      IsPhysicalPrimary(Int_t i);
   protected:
     // methods
     void  CleanParents();
     void  ResetArrays(Int_t size);
     TParticle* GetNextParticle();
     Bool_t KeepPhysics(TParticle* part);
-    
+    Bool_t IsStable(Int_t pdg) const;
   private:
     void Copy(TObject &st) const;
 

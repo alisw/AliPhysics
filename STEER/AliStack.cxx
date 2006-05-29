@@ -29,6 +29,7 @@
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TPDGCode.h>
 #include <TTree.h>
 
 #include "AliLog.h"
@@ -308,8 +309,7 @@ void AliStack::PurifyKine()
   if(fHgwmk+1 == fNtrack) return;
 
   // First pass, invalid Daughter information
-
-  for(i=0; i<fNtrack; i++) {
+   for(i=0; i<fNtrack; i++) {
     // Preset map, to be removed later
     if(i<=fHgwmk) map[i]=i ; 
     else {
@@ -378,6 +378,7 @@ void AliStack::PurifyKine()
   while((hitList = dynamic_cast<TCollection*>(next()))) {
     TIter nexthit(hitList);
     AliHit *hit;
+    
     while((hit = dynamic_cast<AliHit*>(nexthit()))) {
 	hit->SetTrack(map[hit->GetTrack()]);
     }
@@ -1043,3 +1044,100 @@ void AliStack::SetEventFolderName(const char* foldname)
  //Sets event folder name
  fEventFolderName = foldname;
 }
+
+Bool_t AliStack::IsStable(Int_t pdg) const
+{
+//
+// Decide whether particle (pdg) is stable
+//
+
+    const Int_t kNstable = 14;
+    Int_t i;
+
+    Int_t pdgStable[kNstable] = {
+	kGamma,             // Photon
+	kElectron,          // Electron
+	kMuonPlus,          // Muon 
+	kPiPlus,            // Pion
+	kKPlus,             // Kaon
+	kProton,            // Proton 
+	kNeutron,           // Neutron
+	kLambda0,           // Lambda_0
+	kSigmaMinus,        // Sigma Minus
+	kSigma0,            // Sigma_0
+	kSigmaPlus,         // Sigma Plus
+	3312,               // Xsi Minus 
+	3322,               // Xsi 
+	3334,               // Omega
+    };
+    
+    Bool_t isStable = kFALSE;
+    for (i = 0; i < kNstable; i++) {
+	if (pdg == TMath::Abs(pdgStable[i])) {
+	    isStable = kTRUE;
+	    break;
+	}
+    }
+
+    return isStable;
+}
+
+Bool_t AliStack::IsPhysicalPrimary(Int_t index)
+{
+    //
+    // Test if a particle is a physical primary according to the following definition:
+    // Particles produced in the collision including products of strong and
+    // electromagnetic decay and excluding feed-down from weak decays of strange
+    // particles.
+    //
+    TParticle* p = Particle(index);
+    Int_t ist = p->GetStatusCode();
+    
+    //
+    // Initial state particle
+    if (ist > 20) return kFALSE;
+    
+    Int_t pdg = TMath::Abs(p->GetPdgCode());
+    
+    if (!IsStable(pdg)) return kFALSE;
+    
+    if (index < GetNprimary()) {
+//
+// Particle produced by generator
+	return kTRUE;
+    } else {
+//
+// Particle produced during transport
+//
+// Check if this is a heavy flavor decay product
+	Int_t imo =  p->GetFirstMother();
+	TParticle* pm  = Particle(imo);
+	Int_t mpdg = TMath::Abs(pm->GetPdgCode());
+	Int_t mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
+	//
+	// Light hadron
+	if (mfl < 4) return kFALSE;
+	
+	//
+	// Heavy flavor hadron produced by generator
+	if (imo <  GetNprimary()) {
+	    return kTRUE;
+	}
+	
+	// To be sure that heavy flavor has not been produced in a secondary interaction
+	// Loop back to the generated mother
+	while (imo >=  GetNprimary()) {
+	    imo = p->GetFirstMother();
+	    pm  =  Particle(imo);
+	}
+	mpdg = TMath::Abs(pm->GetPdgCode());
+	mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
+
+	if (mfl < 4) {
+	    return kFALSE;
+	} else {
+	    return kTRUE;
+	} 
+    } // produced by generator ?
+} 
+
