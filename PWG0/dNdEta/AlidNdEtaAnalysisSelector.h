@@ -20,7 +20,6 @@ class AlidNdEtaAnalysisSelector : public AliSelector {
     virtual void WriteObjects();
 
     dNdEtaAnalysis* fdNdEtaAnalysis;      // contains the intermediate histograms (on each slave)
-    dNdEtaAnalysis* fdNdEtaAnalysisFinal; // contains the final histograms
 
  private:
     ClassDef(AlidNdEtaAnalysisSelector, 0);

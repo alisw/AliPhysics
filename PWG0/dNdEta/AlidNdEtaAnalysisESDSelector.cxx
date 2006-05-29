@@ -6,9 +6,9 @@
 #include <TSystem.h>
 #include <TCanvas.h>
 #include <TVector3.h>
+#include <TChain.h>
 
 #include <AliLog.h>
-#include <AliGenEventHeader.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEtaCorrection.h"
