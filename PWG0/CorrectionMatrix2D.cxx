@@ -265,13 +265,18 @@ Bool_t CorrectionMatrix2D::LoadHistograms(Char_t* fileName, Char_t* dir) {
   if(fhCorr)  {delete fhCorr;  fhCorr=0;}
   if(fhMeas)  {delete fhMeas;  fhMeas=0;}
   
-  fhMeas  = (TH2F*)fin->Get(Form("%s/meas_%s",dir,fName.Data()));
-      if(!fhMeas)  Info("LoadHistograms","No meas  hist available");
-  fhGene  = (TH2F*)fin->Get(Form("%s/gene_%s",dir,fName.Data()));
-      if(!fhGene)  Info("LoadHistograms","No gene  hist available");
-  fhCorr  = (TH2F*)fin->Get(Form("%s/corr_%s",dir,fName.Data()));
-      if(!fhCorr) {Info("LoadHistograms","No corr  hist available");
-      return kFALSE;}
+  fhMeas  = (TH2F*)fin->Get(Form("%s/meas_%s", dir,GetName()));
+  if(!fhMeas)  Info("LoadHistograms","No meas  hist available");
+  
+  fhGene  = (TH2F*)fin->Get(Form("%s/gene_%s",dir, GetName()));
+  if(!fhGene)  Info("LoadHistograms","No gene  hist available");
+  
+  fhCorr  = (TH2F*)fin->Get(Form("%s/corr_%s",dir, GetName()));
+  if(!fhCorr) 
+  {
+    Info("LoadHistograms","No corr  hist available");
+    return kFALSE;
+  }
       
   return kTRUE;
 }
@@ -284,16 +289,11 @@ CorrectionMatrix2D::SaveHistograms() {
   // saves the histograms 
   //
   
-  gDirectory->mkdir(fName.Data());
-  gDirectory->cd(fName.Data());
-  
   fhMeas ->Write();
   fhGene ->Write();
 
   if (fhCorr)
     fhCorr->Write();
-
-  gDirectory->cd("../");
 }
 
 //____________________________________________________________________

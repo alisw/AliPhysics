@@ -60,8 +60,7 @@ public:
   void SaveHistograms();
   void DrawHistograms();  
 
-  Bool_t  LoadHistograms(Char_t* fileName, Char_t* dir);
-  Bool_t  LoadCorrection(Char_t* fileName, Char_t* dir) {return LoadHistograms(fileName, dir);}
+  Bool_t  LoadHistograms(Char_t* fileName, Char_t* dir = ".");
   
   void    RemoveEdges(Float_t cut=2, Int_t nBinsX=0, Int_t nBinsY=0);
   
