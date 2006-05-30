@@ -349,9 +349,9 @@ void AliSHILv2::CreateGeometry()
 
   // z = -1235.55
   par0[3] = z05;
-  par0[4] = nextRout - (z05 - nextZ) * TMath::Tan(kThetaOpenPbO) + delta ;
+  par0[4] = nextRin - (z05 - nextZ) * TMath::Tan(kThetaOpenPbO) + delta ;
   par0[5] = rst4;
-
+    
 // recess station 4
   // z = -1259.90
   par0[6] = zpos - ( -dz+kZch41 + delta );
@@ -399,7 +399,7 @@ void AliSHILv2::CreateGeometry()
 
   // z = -1466.00
   par0[30] = zpos - ( -dz+kZvac10 - delta );
-  par0[31] = par0[70];
+  par0[31] = par0[27];
   par0[32] = rst7;
 
   // z = -1466.00
