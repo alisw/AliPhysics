@@ -154,7 +154,7 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fDummyBoundary = 0;
    fFieldFlag = 1;
    fGeneratePemf = kFALSE;
-   fMCGeo = new TGeoMCGeometry("MCGeo", "TGeo Implementation of VirtualMCGeometry", kTRUE);
+   fMCGeo = new TGeoMCGeometry("MCGeo", "TGeo Implementation of VirtualMCGeometry", kFALSE);
    fGeom  = new TFlukaMCGeometry("geom", "FLUKA VMC Geometry");
    if (verbosity > 2) fGeom->SetDebugMode(kTRUE);
    fMaterials = 0;
