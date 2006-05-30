@@ -269,8 +269,8 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
 	meanTime=Int_t (((besttimeright+1000*timeDelayCFD[pmtBestLeft]+
 			  besttimeleft+1000*timeDelayCFD[pmtBestLeft])/2.)
 			/channelWidth);
-	AliDebug(10,Form(" time right& left %i %i  time diff && mean time in channels %i %i",bestRightTDC,bestLeftTDC, timeDiff, meanTime));
       }
+	AliDebug(10,Form(" time right& left %i %i  time diff && mean time in channels %i %i",bestRightTDC,bestLeftTDC, timeDiff, meanTime));
     for (Int_t i=0; i<24; i++)
       {
        	Float_t  al = countE[i]; 
@@ -307,12 +307,13 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
       AliDebug(10,Form("summult mv %i   mult  in chammens %i in ps %i ", 
 		      sumMult, fSumMult, fSumMult*channelWidth));
     }
-    if (  besttimeright<99999 || besttimeleft < 99999) {
+    //     if (  besttimeright<99999 || besttimeleft < 99999) {
+
       fSTART->AddDigit(bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult,
 		       ftimeCFD,fADC,ftimeLED,fADC0);
-      
+      //     } 
+     
       AliDebug(10,Form(" Digits wrote bestRightTDC %i bestLeftTDC %i  meanTime %i  timeDiff %i fSumMult %i ", bestRightTDC,bestLeftTDC,meanTime,timeDiff,fSumMult ));
-    }  
     pOutStartLoader->UnloadHits();
   } //input streams loop
   
