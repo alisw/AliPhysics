@@ -22,7 +22,11 @@
 // It contains the properties of the physics cluters found in the tracking chambers
 // RawCluster contains also the information from the both cathode of the chambers.
 
+
+#include "Riostream.h"
+
 #include <TArrayF.h>
+#include <TString.h>
 
 #include "AliMUONRawCluster.h"
 
@@ -167,6 +171,32 @@ Int_t AliMUONRawCluster::PhysicsContribution() const
     return 1;
   } else {
     return 0;
+  }
+}
+
+//____________________________________________________
+void AliMUONRawCluster::Print(Option_t* opt) const
+{
+  //
+  // Printing Raw Cluster (Rec Point) information 
+  // "full" option for printing all the information about the raw cluster
+  //
+  TString sopt(opt);
+  sopt.ToUpper();
+ 
+  if ( sopt.Contains("FULL") ) { 
+    cout << "<AliMUONRawCluster>: DetEle="        << setw(4)  << GetDetElemId() << 
+       ", (x,y,z)=(" << setw(8) << setprecision(5) << GetX() << "," << setw(8) << setprecision(5) << GetY() <<  "," << setw(8) << setprecision(5) << GetZ() << 
+      ") cm, Chi2=" << setw(8) << setprecision(3) << GetChi2() << 
+      ", Q=" << setw(4) << GetCharge() <<
+      ", Hit=" << setw(4)  << GetTrack(0) <<
+      ", Track1=" <<  setw(4)  << GetTrack(1) <<
+      ", Track2=" <<  setw(4)  << GetTrack(2) <<endl;
+  }
+  else {
+    cout << "<AliMUONRawCluster>: DetEle="        << setw(4)  << GetDetElemId() <<
+      ", (x,y,z)=(" << setw(8) << setprecision(5) << GetX() << "," << setw(8) << setprecision(5) << GetY() <<  "," << setw(8) << setprecision(5) << GetZ() 
+	 << endl;
   }
 }
 //____________________________________________________

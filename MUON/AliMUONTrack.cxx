@@ -987,3 +987,29 @@ L100:
     ifail = 1;
 } /* mnvertLocal */
 
+//_____________________________________________-
+void AliMUONTrack::Print(Option_t* opt) const
+{
+//
+  // Printing Track information 
+  // "full" option for printing all the information about the track
+  //
+  TString sopt(opt);
+  sopt.ToUpper();
+ 
+  if ( sopt.Contains("FULL") ) { 
+    cout << "<AliMUONTrack> No.Clusters=" << setw(2)   << GetNTrackHits() << 
+      //      ", Bending P="<< setw(8) << setprecision(5)      << 1./GetInverseBendingMomentum() << 
+      //", NonBendSlope=" << setw(8) << setprecision(5)  << GetNonBendingSlope()*180./TMath::Pi() <<
+      //", BendSlope=" << setw(8) << setprecision(5)     << GetBendingSlope()*180./TMath::Pi() <<
+      ", Match2Trig=" << setw(1) << GetMatchTrigger()  << 
+      ", Chi2-tracking-trigger=" << setw(8) << setprecision(5) <<  GetChi2MatchTrigger() << endl ;
+    GetTrackParamAtHit()->First()->Print("full");
+  }
+  else {
+    cout << "<AliMUONTrack>";
+    GetTrackParamAtHit()->First()->Print("");
+
+  }
+    
+}

@@ -41,45 +41,49 @@ class AliMUONTrack : public TObject
   void Remove(void);
 
   AliMUONTrackReconstructor* GetTrackReconstructor(void) const {return fTrackReconstructor;}
-  AliMUONTrackParam* GetTrackParamAtVertex(void) {return &fTrackParamAtVertex;}
-  void SetTrackParamAtVertex(void); // Set track parameters at vertex from last stations 4 & 5
-  void SetTrackParamAtVertex(AliMUONTrackParam* TrackParam) {fTrackParamAtVertex = *TrackParam;}
-  TClonesArray *GetTrackParamAtHit(void) const {return fTrackParamAtHit;}
-  TClonesArray *GetHitForRecAtHit(void) const {return fHitForRecAtHit;}
-  void ResetTrackParamAtHit(void) { fTrackParamAtHit->Delete(); }
-  void ResetHitForRecAtHit(void) { fHitForRecAtHit->Delete(); }
-  void AddTrackParamAtHit(const AliMUONTrackParam *trackParam); 
-  void AddHitForRecAtHit(const AliMUONHitForRec *hitForRec); 
+  AliMUONTrackParam*         GetTrackParamAtVertex(void) {return &fTrackParamAtVertex;}
+  void                       SetTrackParamAtVertex(void); // Set track parameters at vertex from last stations 4 & 5
+  void                       SetTrackParamAtVertex(AliMUONTrackParam* TrackParam) {fTrackParamAtVertex = *TrackParam;}
+  TClonesArray*              GetTrackParamAtHit(void) const {return fTrackParamAtHit;}
+  TClonesArray*              GetHitForRecAtHit(void) const {return fHitForRecAtHit;}
+  void                       ResetTrackParamAtHit(void) { fTrackParamAtHit->Delete(); }
+  void                       ResetHitForRecAtHit(void) { fHitForRecAtHit->Delete(); }
+  void                       AddTrackParamAtHit(const AliMUONTrackParam *trackParam); 
+  void                       AddHitForRecAtHit(const AliMUONHitForRec *hitForRec); 
 
-  TObjArray* GetTrackHitsPtr(void) const {return fTrackHitsPtr;}
-  Int_t GetNTrackHits(void) const {return fNTrackHits;}
-  void SetNTrackHits(Int_t nTrackHits) {fNTrackHits = nTrackHits;}
-  Int_t GetFitMCS(void) const {return fFitMCS;}
-  Int_t GetFitNParam(void) const {return fFitNParam;}
-  Int_t GetFitStart(void) const {return fFitStart;}
-  Double_t GetFitFMin(void) const {return fFitFMin;}
-  Bool_t GetMatchTrigger(void) const {return fMatchTrigger;}
-  Double_t GetChi2MatchTrigger(void) const {return fChi2MatchTrigger;}
-  void SetFitMCS(Int_t FitMCS);
-  void SetFitNParam(Int_t FitNParam);
-  void SetFitStart(Int_t FitStart);
-  void SetFitFMin(Double_t chi2) { fFitFMin = chi2; } // set Chi2
+  TObjArray*                 GetTrackHitsPtr(void) const {return fTrackHitsPtr;}
+  Int_t                      GetNTrackHits(void) const {return fNTrackHits;}
+  void                       SetNTrackHits(Int_t nTrackHits) {fNTrackHits = nTrackHits;}
+  Int_t                      GetFitMCS(void) const {return fFitMCS;}
+  Int_t                      GetFitNParam(void) const {return fFitNParam;}
+  Int_t                      GetFitStart(void) const {return fFitStart;}
+  Double_t                   GetFitFMin(void) const {return fFitFMin;}
+  Bool_t                     GetMatchTrigger(void) const {return fMatchTrigger;}
+  Double_t                   GetChi2MatchTrigger(void) const {return fChi2MatchTrigger;}
+  void                       SetFitMCS(Int_t FitMCS);
+  void                       SetFitNParam(Int_t FitNParam);
+  void                       SetFitStart(Int_t FitStart);
+  void                       SetFitFMin(Double_t chi2) { fFitFMin = chi2; } // set Chi2
 
-  AliMUONTrackParam* GetTrackParamAtFirstHit(void) const;
+  AliMUONTrackParam*         GetTrackParamAtFirstHit(void) const;
 
-  void RecursiveDump(void) const; // Recursive dump (with track hits)
-  void Fit(); // Fit
-  void AddSegment(AliMUONSegment* Segment); // Add Segment
-  void AddHitForRec(AliMUONHitForRec* HitForRec); // Add HitForRec
-  void SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam) const;
-  Int_t HitsInCommon(AliMUONTrack* Track) const;
-  void MatchTriggerTrack(TClonesArray* TriggerTrackArray);
-  Bool_t* CompatibleTrack(AliMUONTrack* Track, Double_t Sigma2Cut) const; // return array of compatible chamber
+  void                       RecursiveDump(void) const; // Recursive dump (with track hits)
+  void                       Fit(); // Fit
+  void                       AddSegment(AliMUONSegment* Segment); // Add Segment
+  void                       AddHitForRec(AliMUONHitForRec* HitForRec); // Add HitForRec
+  void                       SetTrackParamAtHit(Int_t indexHit, AliMUONTrackParam *TrackParam) const;
+  Int_t                      HitsInCommon(AliMUONTrack* Track) const;
+  void                       MatchTriggerTrack(TClonesArray* TriggerTrackArray);
+  Bool_t*                    CompatibleTrack(AliMUONTrack* Track, Double_t Sigma2Cut) const; // return array of compatible chamber
   
-  Int_t GetTrackID() const {return fTrackID;}
-  void SetTrackID(Int_t trackID) {fTrackID = trackID;}
+  Int_t                      GetTrackID() const {return fTrackID;}
+  void                       SetTrackID(Int_t trackID) {fTrackID = trackID;}
 
-  static TVirtualFitter* Fitter(void) {return fgFitter;}
+  virtual void               Print(Option_t* opt="") const;
+
+  static TVirtualFitter*     Fitter(void) {return fgFitter;}
+
+
 
  protected:
  private:

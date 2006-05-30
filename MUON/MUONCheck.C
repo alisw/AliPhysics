@@ -122,15 +122,7 @@ void MUONhits(Int_t event2Check=0, char * filename="galice.root")
       AliMUONHit* mHit;
       for(ihit=0; ihit<nhits; ihit++) {
 	mHit = static_cast<AliMUONHit*>(muondata.Hits()->At(ihit));
-	Int_t detele   = mHit-> DetElemId(); // Detection element if defined
-	Int_t hittrack = mHit->Track();
-	Float_t x      = mHit->X();
-  	Float_t y      = mHit->Y();
-  	Float_t z      = mHit->Z();
-  	Float_t elos   = mHit->Eloss();
-  	Float_t momentum = mHit->Momentum();
-  	printf(">>> >>>  Hit%4d DetEle %4d Track%4d (X,Y,Z)=(%7.2f,%7.2f,%8.2f)cm Elost=%7.2gGeV  P=%6.1fGeV/c\n",
-	       ihit, detele, hittrack,x,y,z,elos,momentum);
+	mHit->Print("full");
       }
       muondata.ResetHits();
     } // end track loop
@@ -138,7 +130,6 @@ void MUONhits(Int_t event2Check=0, char * filename="galice.root")
   }  // end event loop
   MUONLoader->UnloadHits();
 }
-
 
 
 void MUONdigits(Int_t event2Check=0, char * filename="galice.root")
@@ -425,24 +416,7 @@ void MUONrecpoints(Int_t event2Check=0, char * filename="galice.root") {
       // printf(">>> Chamber %2d, Number of recpoints = %6d \n",ichamber+1, nrecpoints);
       for(irecpoint=0; irecpoint<nrecpoints; irecpoint++) {
 	mRecPoint = static_cast<AliMUONRawCluster*>(muondata.RawClusters(ichamber)->At(irecpoint));
-	Int_t Track0 = mRecPoint->GetTrack(0);
-	Int_t Track1 = mRecPoint->GetTrack(1); 
-	Int_t Track2 = mRecPoint->GetTrack(2);
-	Int_t Q0 = mRecPoint->GetCharge(0);
-	Int_t Q1 = mRecPoint->GetCharge(1);
-	Float_t x0 = mRecPoint->GetX(0);
-	Float_t x1 = mRecPoint->GetX(1);
-	Float_t y0 = mRecPoint->GetY(0);
-	Float_t y1 = mRecPoint->GetY(1);
-	Float_t z0 = mRecPoint->GetZ(0);
-	Float_t z1 = mRecPoint->GetZ(1);
-	Float_t chi2_0 =  mRecPoint->GetChi2(0);
-	//Float_t chi2_1 =  mRecPoint->GetChi2(1);
-	Int_t de = mRecPoint->GetDetElemId();
-	printf(">>> >>> RecPoint %4d  DetEle %4d (X,Y,Z)=(%7.2f,%7.2f,%8.2f)cm  Q0=%4d  Q1=%4d Hit=%4d Track1=%4d Track2=%4d Chi2=%6.3f \n",
-	       irecpoint,de,x0,y0,z0,Q0,Q1,Track0, Track1, Track2, chi2_0);
-	if( (x0!=x1) || (y0!=y1) || (z0!=z1) )
-	  printf(">>> >>> Warning (X0,Y0,Z0)=(%7.2f, %7.2f, %8.2f)cm != (X1,Y1,Z1)=(%7.2f,%7.2f,%8.2f)cm \n",x0,y0,z0,x1,y1,z1); 
+	mRecPoint->Print("full");
       } // end recpoint loop
     } // end chamber loop
     muondata.ResetRawClusters();
@@ -681,45 +655,17 @@ void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
 
     printf(">>> Event %d, Number of Recconstructed tracks %d \n",ievent, nrectracks);
     // loop over tracks
- 
- 
-    Int_t nTrackHits;// nPrimary;
-    Double_t fitFmin;
-    Double_t bendingSlope, nonBendingSlope, inverseBendingMomentum;
-    Double_t xRec, yRec, zRec, chi2MatchTrigger;
-    Bool_t matchTrigger;
-    Double_t Pz,Px,Py,Pt,Ptot,Eta ;
 
-  // setting pointer for tracks, triggertracks & trackparam at vertex
+    // setting pointer for tracks, triggertracks & trackparam at vertex
     AliMUONTrack* recTrack = 0;
     AliMUONTrackParam* trackParam = 0;
 
     for (Int_t iRecTracks = 0; iRecTracks <  nrectracks;  iRecTracks++) {
-    // reading info from tracks
-      recTrack = (AliMUONTrack*) RecTracks->At(iRecTracks);
-      trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
-      trackParam->ExtrapToZ(0.0);
-      bendingSlope            = trackParam->GetBendingSlope();
-      nonBendingSlope         = trackParam->GetNonBendingSlope();
-      inverseBendingMomentum = trackParam->GetInverseBendingMomentum();
-      xRec  = trackParam->GetNonBendingCoor();
-      yRec  = trackParam->GetBendingCoor();
-      zRec  = trackParam->GetZ();
-
-      nTrackHits       = recTrack->GetNTrackHits();
-      fitFmin          = recTrack->GetFitFMin();
-      matchTrigger     = recTrack->GetMatchTrigger();
-      chi2MatchTrigger = recTrack->GetChi2MatchTrigger();
-      
-      Px = trackParam->Px();
-      Py = trackParam->Py(); 
-      Pz = trackParam->Pz(); 
-      Pt = TMath::Sqrt(Px*Px + Py*Py );
-      Ptot = TMath::Sqrt(Px*Px + Py*Py + Pz*Pz);
-      Eta =  (Pt!=0) ? 0.5*log( (Ptot+Pz)/(Ptot-Pz) ) : 999999999.999 ;
-       
-      printf(">>> RecTrack %4d  NofClusters=%2d BendMomentum=%7.2f NonBendSlope=%5.2f  BendSlope=%5.2f Match2Trig=%1d (vertex@z=0)=(%5.2f,%5.2f,%5.1f)cm \n", iRecTracks, nTrackHits, 1/inverseBendingMomentum , nonBendingSlope*180./TMath::Pi(), bendingSlope*180./TMath::Pi(),  matchTrigger, xRec,yRec,zRec);
-      printf("    Px=%f  Py =%f  Pz =%f   Pt=%f  Ptot=%f   PseudoRap=%f  \n",Px,Py,Pz,Pt,Ptot,Eta);
+   //  // reading info from tracks
+       recTrack = (AliMUONTrack*) RecTracks->At(iRecTracks);
+       trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
+       trackParam->ExtrapToZ(0.0);
+      recTrack->Print("full");
     } // end loop tracks
 
     muondata.ResetRecTracks();
@@ -727,8 +673,4 @@ void MUONrectracks (Int_t event2Check=0, char * filename="galice.root"){
   } // end loop on event  
   MUONLoader->UnloadTracks();
 }
-
-
-
-
 

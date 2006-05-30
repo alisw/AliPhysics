@@ -26,21 +26,21 @@ class AliMUONTrackParam : public TObject
   AliMUONTrackParam& operator=(const  AliMUONTrackParam& rhs);// (should be added per default !)
   // Get and Set methods for data
   Double_t GetInverseBendingMomentum(void) const {return fInverseBendingMomentum;}
-  void SetInverseBendingMomentum(Double_t InverseBendingMomentum) {fInverseBendingMomentum = InverseBendingMomentum;}
+  void     SetInverseBendingMomentum(Double_t InverseBendingMomentum) {fInverseBendingMomentum = InverseBendingMomentum;}
   Double_t GetBendingSlope(void) const {return fBendingSlope;}
-  void SetBendingSlope(Double_t BendingSlope) {fBendingSlope = BendingSlope;}
+  void     SetBendingSlope(Double_t BendingSlope) {fBendingSlope = BendingSlope;}
   Double_t GetNonBendingSlope(void) const {return fNonBendingSlope;}
-  void SetNonBendingSlope(Double_t NonBendingSlope) {fNonBendingSlope = NonBendingSlope;}
+  void     SetNonBendingSlope(Double_t NonBendingSlope) {fNonBendingSlope = NonBendingSlope;}
   Double_t GetZ(void) const {return fZ;}
-  void SetZ(Double_t Z) {fZ = Z;}
+  void     SetZ(Double_t Z) {fZ = Z;}
   Double_t GetBendingCoor(void) const {return fBendingCoor;}
-  void SetBendingCoor(Double_t BendingCoor) {fBendingCoor = BendingCoor;}
+  void     SetBendingCoor(Double_t BendingCoor) {fBendingCoor = BendingCoor;}
   Double_t GetNonBendingCoor(void) const {return fNonBendingCoor;}
-  void SetNonBendingCoor(Double_t NonBendingCoor) {fNonBendingCoor = NonBendingCoor;}
-  Double_t Px();  // return px
-  Double_t Py();  // return py
-  Double_t Pz();  // return pz
-  Double_t P();   // return total momentum
+  void     SetNonBendingCoor(Double_t NonBendingCoor) {fNonBendingCoor = NonBendingCoor;}
+  Double_t Px() const;  // return px
+  Double_t Py() const;  // return py
+  Double_t Pz() const;  // return pz
+  Double_t P()  const;  // return total momentum
 
   void ExtrapToZ(Double_t Z);
   void ExtrapToStation(Int_t Station, AliMUONTrackParam *TrackParam);
@@ -57,6 +57,10 @@ class AliMUONTrackParam : public TObject
 
   void ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
 			       Double_t* vect, Double_t* vout) const;
+  
+  
+  virtual void               Print(Option_t* opt="") const;
+
  protected:
  private:
   Double_t fInverseBendingMomentum; ///< Inverse bending momentum (GeV/c ** -1) times the charge (assumed forward motion)

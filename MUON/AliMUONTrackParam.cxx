@@ -497,7 +497,7 @@ void AliMUONTrackParam::FieldCorrection(Double_t Z)
  
 }
   //__________________________________________________________________________
-Double_t AliMUONTrackParam::Px()
+Double_t AliMUONTrackParam::Px() const
 {
   // return px from track paramaters
   Double_t pYZ, pZ, pX;
@@ -509,7 +509,7 @@ Double_t AliMUONTrackParam::Px()
   return pX;
 }
   //__________________________________________________________________________
-Double_t AliMUONTrackParam::Py()
+Double_t AliMUONTrackParam::Py() const
 {
   // return px from track paramaters
   Double_t pYZ, pZ, pY;
@@ -521,7 +521,7 @@ Double_t AliMUONTrackParam::Py()
   return pY;
 }
   //__________________________________________________________________________
-Double_t AliMUONTrackParam::Pz()
+Double_t AliMUONTrackParam::Pz() const
 {
   // return px from track paramaters
   Double_t pYZ, pZ;
@@ -532,7 +532,7 @@ Double_t AliMUONTrackParam::Pz()
   return pZ;
 }
   //__________________________________________________________________________
-Double_t AliMUONTrackParam::P()
+Double_t AliMUONTrackParam::P() const
 {
   // return p from track paramaters
   Double_t  pYZ, pZ, p;
@@ -1002,3 +1002,29 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 
     return;
   }
+//_____________________________________________-
+void AliMUONTrackParam::Print(Option_t* opt) const
+{
+//
+  // Printing TrackParam information 
+  // "full" option for printing all the information about the TrackParam
+  //
+  TString sopt(opt);
+  sopt.ToUpper();
+ 
+  if ( sopt.Contains("FULL") ) { 
+    cout << "<AliMUONTrackParam> Bending P=" << setw(5) << setprecision(3)  << 1./GetInverseBendingMomentum() << 
+      ", NonBendSlope=" << setw(5) << setprecision(3)  << GetNonBendingSlope()*180./TMath::Pi() <<
+      ", BendSlope=" << setw(5) << setprecision(3)     << GetBendingSlope()*180./TMath::Pi()  << 
+      ", (x,y,z)_IP=(" <<  setw(5) << setprecision(3) << GetNonBendingCoor() <<
+      "," <<  setw(5) << setprecision(3) << GetBendingCoor() <<
+      "," <<  setw(5) << setprecision(3) << GetZ() <<
+      ") cm, (px,py,pz)=(" << setw(5) << setprecision(3) << Px() <<
+      "," << setw(5) << setprecision(3) << Py() <<
+      "," << setw(5) << setprecision(3) << Pz() << ") GeV/c" << endl;
+  }
+  else {
+    cout << "<AliMUONTrackParam>"  << endl;
+  }
+    
+}

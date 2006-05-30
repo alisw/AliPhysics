@@ -28,6 +28,7 @@ public:
    Bool_t       IsSortable() const {return kTRUE;}
    Int_t        Compare(const TObject *obj) const;
    Int_t        PhysicsContribution() const;
+   virtual void Print(Option_t* opt="") const;
    static Int_t BinarySearch(Float_t r, TArrayF ccord, Int_t from, Int_t upto);
    static void  SortMin(Int_t *idx,Float_t *xdarray, Float_t *xarray, Float_t *yarray, Float_t *qarray,Int_t ntr);
    void         DumpIndex();
@@ -37,17 +38,17 @@ public:
    Int_t        AddY(Int_t i, Float_t Y);
    Int_t        AddZ(Int_t i, Float_t Z);
 
-   Int_t        GetCharge(Int_t i) const;
-   Float_t      GetX(Int_t i) const;
-   Float_t      GetY(Int_t i) const;
-   Float_t      GetZ(Int_t i) const;
-   Int_t        GetTrack(Int_t i) const;
-   Int_t        GetPeakSignal(Int_t i) const;
-   Int_t        GetMultiplicity(Int_t i) const;
+   Int_t        GetCharge(Int_t i=0) const;
+   Float_t      GetX(Int_t i=0) const;
+   Float_t      GetY(Int_t i=0) const;
+   Float_t      GetZ(Int_t i=0) const;
+   Int_t        GetTrack(Int_t i=0) const;
+   Int_t        GetPeakSignal(Int_t i=0) const;
+   Int_t        GetMultiplicity(Int_t i=0) const;
    Int_t        GetClusterType() const;
    Int_t        GetGhost() const;
-   Int_t        GetNcluster(Int_t i) const;
-   Float_t      GetChi2(Int_t i) const;
+   Int_t        GetNcluster(Int_t i=0) const;
+   Float_t      GetChi2(Int_t i=0) const;
    Int_t        GetIndex(Int_t i, Int_t j) const;
    Int_t        GetOffset(Int_t i, Int_t j) const;
    Float_t      GetContrib(Int_t i, Int_t j) const;

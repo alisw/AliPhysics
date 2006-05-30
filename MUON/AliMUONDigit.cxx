@@ -387,7 +387,7 @@ AliMUONDigit::Print(Option_t* opt) const
   // Dump to screen.
   // If opt=="tracks", info on tracks are printed too.
   //
-  cout << "DetEle " << setw(5) << DetElemId()
+  cout << "<AliMUONDigit>: DetEle " << setw(5) << DetElemId()
   << " Cath " << setw(2) << Cathode()
   << " (Ix,Iy)=(" << setw(3) << PadX() << "," << setw(3) << PadY()
   << ") "

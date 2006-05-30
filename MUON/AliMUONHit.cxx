@@ -23,12 +23,15 @@
 // Energy loss of the particle inside the gas active volume.
 // Incident fTheta and fPhi angle with respect of the wire plane of the chamber.
 //
+#include "Riostream.h"
 
 #include <TMath.h>
+#include <TString.h>
 
+#include "AliLog.h"
 #include "AliMUONHit.h"
 #include "AliMUONGeometryStore.h"
-#include "AliLog.h"
+
 
 ClassImp(AliMUONHit)
  
@@ -245,3 +248,25 @@ Int_t  AliMUONHit::Chamber()  const
     return AliMUONGeometryStore::GetModuleId(fDetElemId)+1;  
 }
 
+void AliMUONHit::Print(Option_t* opt) const
+{
+  //
+  // Printing hit information 
+  // "full" option for printing all the information about the hit
+  //
+  TString sopt(opt);
+  sopt.ToUpper();
+ 
+  if ( sopt.Contains("FULL") ) { 
+    cout <<"<AliMUONHit>: Geant track="   << setw(4)  << Track() <<
+      ", DetEle="        << setw(4)  << DetElemId() <<  
+      ", (x,y,z)=(" << setw(7) << setprecision(5) << X() << "," << setw(7) << setprecision(5) << Y() <<  "," << setw(7) << setprecision(5) << Z() << 
+      " )cm, Delta E=" << setw(8) << setprecision(3) << Eloss() << " GeV" << endl;
+  }
+  else {
+    cout << "<AliMUONHit>: DetEle="        << setw(4)  << DetElemId() << 
+      ", (x,y,z)=(" << setw(7) << setprecision(5) << X() << "," << setw(7) << setprecision(5) << Y() <<  "," << setw(7) << setprecision(5) << Z() << 
+      " ) cm" <<endl;
+  }
+    
+}

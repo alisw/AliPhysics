@@ -52,6 +52,8 @@ class AliMUONHit : public AliHit {
 
     Int_t   DetElemId()const;
     Int_t   Chamber()  const;
+    virtual void Print(Option_t* opt="") const;
+
     Float_t Particle() const {return fParticle;}    
     Float_t Theta()    const {return fTheta;}
     Float_t Phi()      const {return fPhi;}
@@ -72,6 +74,7 @@ class AliMUONHit : public AliHit {
     Float_t Xref()     const {return fXref;}
     Float_t Yref()     const {return fYref;}
     Float_t Zref()     const {return fZref;}
+
 
  private:  
     Bool_t    fIsDetElemId;   ///< False if fDetElemId contains Chamber Id (old code) 
