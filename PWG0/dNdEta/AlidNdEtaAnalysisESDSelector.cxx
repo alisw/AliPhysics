@@ -9,6 +9,8 @@
 #include <TChain.h>
 
 #include <AliLog.h>
+#include <AliESDVertex.h>
+#include <AliESD.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEtaCorrection.h"
@@ -18,8 +20,7 @@ ClassImp(AlidNdEtaAnalysisESDSelector)
 
 AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   AlidNdEtaAnalysisSelector(),
-  fEsdTrackCuts(0),
-  fdNdEtaCorrection(0)
+  fEsdTrackCuts(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -47,13 +48,13 @@ void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree * tree)
   if (fChain)
   {
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fChain->GetUserInfo()->FindObject("AliESDtrackCuts"));
-    fdNdEtaCorrection = dynamic_cast<dNdEtaCorrection*> (fChain->GetUserInfo()->FindObject("dNdEtaCorrection"));
+    fdNdEtaCorrection = dynamic_cast<dNdEtaCorrection*> (fChain->GetUserInfo()->FindObject("dndeta_correction"));
   }
 
   if (!fEsdTrackCuts)
      AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info.");
 
-  if (!fEsdTrackCuts)
+  if (!fdNdEtaCorrection)
      AliDebug(AliLog::kError, "ERROR: Could not read dNdEtaCorrection from user info.");
 }
 
@@ -90,6 +91,12 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   if (!fEsdTrackCuts)
   {
     AliDebug(AliLog::kError, "fESDTrackCuts not available");
+    return kFALSE;
+  }
+
+  if (!fdNdEtaCorrection)
+  {
+    AliDebug(AliLog::kError, "fdNdEtaCorrection not available");
     return kFALSE;
   }
 

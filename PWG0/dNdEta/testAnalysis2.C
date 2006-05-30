@@ -10,7 +10,7 @@
 
 #include "../CreateESDChain.C"
 
-testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE)
+testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE)
 {
   gSystem->Load("libPWG0base");
 
@@ -41,13 +41,16 @@ testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFAL
   }
 
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
-
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
+
+  selectorName += ".cxx++";
+  if (aDebug != kFALSE)
+    selectorName += "g";
 
   TStopwatch timer;
   timer.Start();
 
-  chain->Process(selectorName + ".cxx+");
+  chain->Process(selectorName);
 
   timer.Stop();
   timer.Print();

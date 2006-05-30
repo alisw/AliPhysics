@@ -23,18 +23,19 @@
 class TH2F;
 class TH1D;
 class TCollection;
+class dNdEtaCorrection;
 
 class dNdEtaAnalysis : public TNamed
 {
 public:
-  enum { kVertexBinning = 1 };
+  enum { kVertexBinning = 1+6 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis(Char_t* name, Char_t* title);
 
-  void FillTrack(Float_t vtx, Float_t eta, Float_t weight);
+  void FillTrack(Float_t vtx, Float_t eta, Float_t c);
   void FillEvent(Float_t vtx);
 
-  void Finish();
+  void Finish(dNdEtaCorrection* correction);
 
   void DrawHistograms();
   void SaveHistograms();
@@ -48,6 +49,7 @@ public:
 
 protected:
   TH2F* hEtaVsVtx;
+  TH2F* hEtaVsVtxCheck;
   TH2F* hEtaVsVtxUncorrected;
   TH1D* hVtx;
   TH1D* hdNdEta[kVertexBinning];

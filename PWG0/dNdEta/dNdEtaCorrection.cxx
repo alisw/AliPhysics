@@ -14,8 +14,8 @@ dNdEtaCorrection::dNdEtaCorrection(Char_t* name)
   // constructor
   //
 
-  fNtrackToNparticleCorrection = new CorrectionMatrix2D("nTrackToNPart","",80,-20,20,120,-6,6);
-  fEventBiasCorrection         = new CorrectionMatrix2D("EventBias",    "",80,-20,20,120,-6,6);
+  fNtrackToNparticleCorrection = new CorrectionMatrix2D("nTrackToNPart", "nTrackToNPart",80,-20,20,120,-6,6);
+  fEventBiasCorrection         = new CorrectionMatrix2D("EventBias",    "EventBias ",80,-20,20,120,-6,6);
 
   fNtrackToNparticleCorrection ->SetAxisTitles("vtx z [cm]", "#eta");
   fEventBiasCorrection         ->SetAxisTitles("vtx z [cm]", "#eta");

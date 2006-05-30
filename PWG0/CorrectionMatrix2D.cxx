@@ -83,8 +83,8 @@ TH1F* CorrectionMatrix2D::Get1DCorrection(Char_t* opt) {
   // integrate the correction over one variable 
   // 
 
-  TH1D* meas1D; 
-  TH1D* gene1D; 
+  TH1D* meas1D = 0;
+  TH1D* gene1D = 0; 
 
   if (strcmp(opt,"x")==0) {
     meas1D = fhMeas->ProjectionX();

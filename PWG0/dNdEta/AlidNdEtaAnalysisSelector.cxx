@@ -15,12 +15,14 @@
 #include <AliHeader.h>
 
 #include "dNdEtaAnalysis.h"
+#include "dNdEtaCorrection.h"
 
 ClassImp(AlidNdEtaAnalysisSelector)
 
 AlidNdEtaAnalysisSelector::AlidNdEtaAnalysisSelector() :
   AliSelector(),
-  fdNdEtaAnalysis(0)
+  fdNdEtaAnalysis(0),
+  fdNdEtaCorrection(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -82,7 +84,7 @@ void AlidNdEtaAnalysisSelector::Terminate()
     return;
   }
 
-  fdNdEtaAnalysis->Finish();
+  fdNdEtaAnalysis->Finish(fdNdEtaCorrection);
 
   TFile* fout = new TFile("out.root","RECREATE");
   WriteObjects();
