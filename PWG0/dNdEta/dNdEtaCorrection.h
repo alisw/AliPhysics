@@ -14,45 +14,35 @@
 // - add documentation
 // - add status: generate or use maps
 // - add functionality to set the bin sizes
-// - add histograms with errors (for error visualization)
 // 
 
-#ifndef ROOT_TObject
-#include "TObject.h"
-#endif
-#ifndef ROOT_TFile
-#include "TFile.h"
-#endif
-#ifndef ROOT_TH2
-#include "TH2.h"
-#endif
+#include <TNamed.h>
+#include <TFile.h>
+
+#include <CorrectionMatrix2D.h>
 
 
-class dNdEtaCorrection : public TObject
+class dNdEtaCorrection : public TNamed
 {
-protected:
+protected:  
   
-  TString  fName; 
-  
-  TH2F*    hEtaVsVtx_meas;
-  TH2F*    hEtaVsVtx_gene;
-
-  TH2F*    hEtaVsVtx_corr; 
-  TH2F*    hEtaVsVtx_ratio;
+  CorrectionMatrix2D* fNtrackToNparticleCorrection; // handles the track-to-vertex correction
+  CorrectionMatrix2D* fEventBiasCorrection;         // handles the event bias correction
 
 public:
   dNdEtaCorrection(Char_t* name="dndeta_correction");
 
-  TH2F* GetGeneratedHistogram() { return hEtaVsVtx_gene; }
-  TH2F* GetMeasuredHistogram() { return hEtaVsVtx_meas; }
-
-  void SetGeneratedHistogram(TH2F* aGeneratedHistogram) { hEtaVsVtx_gene = aGeneratedHistogram; }
-  void SetMeasuredHistogram(TH2F* aMeasuredHistogram) { hEtaVsVtx_meas = aMeasuredHistogram; }
-
-  void FillMeas(Float_t vtx, Float_t eta) {hEtaVsVtx_meas->Fill(vtx, eta);}
-  void FillGene(Float_t vtx, Float_t eta) {hEtaVsVtx_gene->Fill(vtx, eta);}
+  void FillParticleAllEvents(Float_t vtx, Float_t eta)         {fEventBiasCorrection->FillGene(vtx, eta);}
+  void FillParticleWhenGoodEvent(Float_t vtx, Float_t eta)     {fEventBiasCorrection->FillMeas(vtx, eta);
+                                                                fNtrackToNparticleCorrection->FillGene(vtx, eta);}
+  void FillParticleWhenMeasuredTrack(Float_t vtx, Float_t eta) {fNtrackToNparticleCorrection->FillMeas(vtx, eta);}
 
   void Finish();
+
+  CorrectionMatrix2D* GetNtrackToNpraticleCorrection() {return fNtrackToNparticleCorrection;}
+  CorrectionMatrix2D* GetEventBiasCorrection()         {return fEventBiasCorrection;}
+
+  virtual Long64_t Merge(TCollection* list);
 
   void    SaveHistograms();
   Bool_t  LoadHistograms(Char_t* fileName, Char_t* dir = "dndeta_correction");
@@ -61,10 +51,10 @@ public:
   
   void DrawHistograms();
   
-  void    RemoveEdges(Float_t cut=2, Int_t nBinsVtx=0, Int_t nBinsEta=0);
+  void RemoveEdges(Float_t cut=2, Int_t nBinsVtx=0, Int_t nBinsEta=0);
   
   Float_t GetCorrection(Float_t vtx, Float_t eta) 
-    {return hEtaVsVtx_corr->GetBinContent(hEtaVsVtx_corr->FindBin(vtx,eta));}
+    {return fNtrackToNparticleCorrection->GetCorrection(vtx, eta);}
   
   ClassDef(dNdEtaCorrection,0)
 };

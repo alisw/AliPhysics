@@ -7,12 +7,11 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
 
   Char_t str[256];
 
-  gSystem->Load("../esdTrackCuts/libESDtrackQuality.so");
-  gSystem->Load("libdNdEta.so");
+  gSystem->Load("../libPWG0base.so");
 
   // ########################################################
   // selection of esd tracks
-  ESDtrackQualityCuts* esdTrackCuts = new ESDtrackQualityCuts();    
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();    
   esdTrackCuts->DefineHistograms(1);
   
   esdTrackCuts->SetMinNClustersTPC(50);
@@ -23,7 +22,7 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
   esdTrackCuts->SetMinNsigmaToVertex(3);
   esdTrackCuts->SetAcceptKingDaughters(kFALSE);
 
-  AliLog::SetClassDebugLevel("ESDtrackQualityCuts",1);
+  AliLog::SetClassDebugLevel("AliESDtrackCuts",1);
 
   // ########################################################
   // definition of dNdEta correction object
@@ -137,14 +136,15 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
       vtx_res[1] = vtxESD->GetYRes();
       vtx_res[2] = vtxESD->GetZRes();
 
+      Bool_t goodEvent = kTRUE;
+
       // the vertex should be reconstructed
       if (strcmp(vtxESD->GetName(),"default")==0) 
-	continue;
+	goodEvent = kFALSE;
 
       // the resolution should be reasonable???
-      if (vtx_res[2]==0 || vtx_res[2]>0.1)
-	continue;
-
+      if (vtx_res[2]==0 || vtx_res[2]>0.01)
+	goodEvent = kFALSE;
 
       // ########################################################
       // get the MC vertex
@@ -157,7 +157,6 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
       vtx[0] = vtxMC[0];
       vtx[1] = vtxMC[1];
       vtx[2] = vtxMC[2];
-
 
       // ########################################################
       // loop over mc particles
@@ -186,10 +185,17 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
 
 	Float_t eta = part->Eta();
 
-	if (prim)
-	  dNdEtaMap->FillGene(vtx[2], eta);	
+	if (prim) {
+	  dNdEtaMap->FillParticleAllEvents(vtx[2], eta);	
+	  
+	  if (goodEvent)
+	    dNdEtaMap->FillParticleWhenGoodEvent(vtx[2], eta);	
+	}
 	
       }// end of mc particle
+
+      if (!goodEvent)
+	continue;
 
       // ########################################################
       // loop over esd tracks      
@@ -219,7 +225,7 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
 	TParticle* mcPart = particleStack->Particle(label);	
 	eta = mcPart->Eta();
 
-	dNdEtaMap->FillMeas(vtx[2], eta);	
+	dNdEtaMap->FillParticleWhenMeasuredTrack(vtx[2], eta);	
 
       } // end of track loop
     } // end  of event loop
