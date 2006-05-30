@@ -184,9 +184,6 @@ void AliEMCALGeometry::Init(void){
         fNPHIdiv = fNETAdiv  = 4;
       }
     }
-    fPhiTileSize = fPhiModuleSize/2. - fLateralSteelStrip; // 13-may-05 
-    fEtaTileSize = fEtaModuleSize/2. - fLateralSteelStrip; // 13-may-05 
-
     if(fGeoName.Contains("25")){
       fNECLayers     = 25;
       fECScintThick  = fECPbRadThickness = 0.5;
@@ -197,6 +194,9 @@ void AliEMCALGeometry::Init(void){
     }
 
     CheckAdditionalOptions();
+
+    fPhiTileSize = fPhiModuleSize/2. - fLateralSteelStrip; // 13-may-05 
+    fEtaTileSize = fEtaModuleSize/2. - fLateralSteelStrip; // 13-may-05 
 
     // constant for transition absid <--> indexes
     fNCellsInTower  = fNPHIdiv*fNETAdiv;
