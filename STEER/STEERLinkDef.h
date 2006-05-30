@@ -70,7 +70,6 @@
 #pragma link C++ class  AliSimulation+;
 #pragma link C++ class  AliReconstruction+;
 #pragma link C++ class  AliVertexGenFile+;
-#pragma link C++ class  AliTracker+;
 #pragma link C++ class  AliVertexer+;
 #pragma link C++ class  AliVertexerTracks+;
 #pragma link C++ class  AliStrLine+;
