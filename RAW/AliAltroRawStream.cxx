@@ -36,6 +36,7 @@ ClassImp(AliAltroRawStream)
 //_____________________________________________________________________________
 AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fNoAltroMapping(kTRUE),
+  fIsOldRCUFormat(kFALSE),
   fDDLNumber(-1),
   fPrevDDLNumber(-1),
   fRCUId(-1),
@@ -62,6 +63,7 @@ AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
 AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   TObject(stream),
   fNoAltroMapping(kTRUE),
+  fIsOldRCUFormat(kFALSE),
   fDDLNumber(-1),
   fPrevDDLNumber(-1),
   fRCUId(-1),
@@ -286,37 +288,63 @@ Int_t AliAltroRawStream::GetPosition()
   // The RCU trailer format is described
   // in details in the RCU manual.
 
-  // First read 32-bit word with the
-  // trailer size (22 bits) and RCU ID (the rest)
-  Int_t index = fRawReader->GetDataSize();
-  UInt_t word = Get32bitWord(index);
-  fRCUId = (Int_t)(word >> 22);
-  Int_t trailerSize = (word & 0x3FFFFF);
+  if (!fIsOldRCUFormat) {
+    // First read 32-bit word with the
+    // trailer size (22 bits) and RCU ID (the rest)
+    Int_t index = fRawReader->GetDataSize();
+    UInt_t word = Get32bitWord(index);
+    fRCUId = (Int_t)(word >> 22);
+    Int_t trailerSize = (word & 0x3FFFFF);
 
-  // Now read the beginning of the trailer
-  // where the payload size is written
-  if (trailerSize < 2)
-    AliFatal(Form("Invalid trailer size found (%d bytes) !",trailerSize*4));
-  fRCUTrailerSize = (trailerSize-2)*4;
-  index -= fRCUTrailerSize;
-  if (index < 4)
-    AliFatal(Form("Invalid trailer size found (%d bytes) ! The size is bigger than the raw data size (%d bytes)!",
-		  trailerSize*4,
-		  fRawReader->GetDataSize()));
-  fRCUTrailerData = fData + index;
-  Int_t position = Get32bitWord(index);
-  // The size is specified in a number of 40bits
-  // Therefore we need to transform it to number of bytes
-  position *= 5;
+    // Now read the beginning of the trailer
+    // where the payload size is written
+    if (trailerSize < 2)
+      AliFatal(Form("Invalid trailer size found (%d bytes) !",trailerSize*4));
+    fRCUTrailerSize = (trailerSize-2)*4;
+    index -= fRCUTrailerSize;
+    if (index < 4)
+      AliFatal(Form("Invalid trailer size found (%d bytes) ! The size is bigger than the raw data size (%d bytes)!",
+		    trailerSize*4,
+		    fRawReader->GetDataSize()));
+    fRCUTrailerData = fData + index;
+    Int_t position = Get32bitWord(index);
+    // The size is specified in a number of 40bits
+    // Therefore we need to transform it to number of bytes
+    position *= 5;
 
-  // Check the consistency of the header and trailer
-  if ((fRawReader->GetDataSize() - trailerSize*4) != position)
-    AliFatal(Form("Inconsistent raw data size ! Raw data size - %d bytes (from the header), RCU trailer - %d bytes, raw data paylod - %d bytes !",
-		  fRawReader->GetDataSize(),
-		  trailerSize*4,
-		  position));
+    // Check the consistency of the header and trailer
+    if ((fRawReader->GetDataSize() - trailerSize*4) != position)
+      AliFatal(Form("Inconsistent raw data size ! Raw data size - %d bytes (from the header), RCU trailer - %d bytes, raw data paylod - %d bytes !",
+		    fRawReader->GetDataSize(),
+		    trailerSize*4,
+		    position));
 
-  return position * 8 / 10;
+    return position * 8 / 10;
+  }
+  else {
+    // In case of the Old RCU trailer format
+    // we have to read just the size of altro payload
+    // in units of 40-bit words
+    Int_t index = fRawReader->GetDataSize();
+    Int_t position = Get32bitWord(index);
+
+    fRCUId = -1;
+    fRCUTrailerSize = 0;
+    fRCUTrailerData = NULL;
+
+    // The size is specified in a number of 40bits
+    // Therefore we need to transform it to number of bytes
+    position *= 5;
+
+    // Check the consistency of the header and trailer
+    if ((fRawReader->GetDataSize() - 4) != position)
+      AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
+		    fRawReader->GetDataSize()-4,
+		    position));
+
+    // Return the position in units of 10-bit words
+    return position*8/10;
+  }
 }
 
 //_____________________________________________________________________________

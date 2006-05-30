@@ -8,6 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// This is a base class for reading raw data digits in Altro format
+/// The class is able to read both old and new RCU trailer formats
+/// One can switch between formats using fIsOldRCUFormat flag
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -43,12 +45,17 @@ class AliAltroRawStream: public TObject {
 
     void SelectRawData(Int_t detId);                           // Select raw data for specific detector id
 
+    void  SetNoAltroMapping(Bool_t flag) { fNoAltroMapping = flag; }  // Specify whenever to use or not the altro mapping
+    void  SetOldRCUFormat(Bool_t flag)   { fIsOldRCUFormat = flag; }  // Specify whenever to use or not the old RCU trailer format
+
   protected:
     AliAltroRawStream(const AliAltroRawStream& stream);
     AliAltroRawStream& operator = (const AliAltroRawStream& stream);
 
     Bool_t           fNoAltroMapping;  // temporary flag in case of no altro mapping is provided
     Short_t          fSegmentation[3]; // temporary container for the dummy trailer, to be removed
+
+    Bool_t           fIsOldRCUFormat;  // flag used to select between old and new RCU trailer format
 
   private :
 
