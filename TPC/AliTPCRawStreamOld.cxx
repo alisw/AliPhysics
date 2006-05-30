@@ -45,9 +45,7 @@ AliTPCRawStreamOld::AliTPCRawStreamOld(AliRawReader* rawReader) :
 {
   // create an object to read TPC raw digits
 
-  //  Do not select on the equipment Id, since the Id
-  //  is wrong (it starts from 228 or so...)
-  //  SelectRawData(0);
+  SelectRawData(0);
 
   TString path = gSystem->Getenv("ALICE_ROOT");
   path += "/TPC/mapping/Patch";
@@ -124,28 +122,6 @@ void AliTPCRawStreamOld::ApplyAltroMapping()
   // the corresponding altro mapping
   // object and fill the sector,row and pad indeces
   Int_t ddlNumber = GetDDLNumber();
-  switch (ddlNumber) {
-    case 152:
-      ddlNumber = 74;
-      break;
-    case 153:
-      ddlNumber = 75;
-      break;
-    case 253:
-      ddlNumber = 0;
-      break;
-    case 0:
-      ddlNumber = 73;
-      break;
-    case 1:
-      ddlNumber = 1;
-      break;
-    case 5:
-      ddlNumber = 72;
-      break;
-    default:
-      break;
-  }
   Int_t patchIndex;
   if (ddlNumber < 72) {
     fSector = ddlNumber / 2;
