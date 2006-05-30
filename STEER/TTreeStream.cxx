@@ -144,6 +144,17 @@ TTreeSRedirector::~TTreeSRedirector()
   fFile->Close();
   delete fFile;
 }
+void TTreeSRedirector::StoreObject(TObject* object){
+  //
+  //
+  //
+  TFile * backup = gFile;
+  fFile->cd();
+  object->Write();
+  if (backup) backup->cd();
+}
+
+
 
 TTreeStream  & TTreeSRedirector::operator<<(Int_t id)
 {

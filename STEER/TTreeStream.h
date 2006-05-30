@@ -85,6 +85,8 @@ public:
   virtual ~TTreeSRedirector();
   void Close();
   static void Test();
+  void StoreObject(TObject* object);
+  TFile * GetFile() {return fFile;};
   virtual   TTreeStream  &operator<<(Int_t id);
   virtual   TTreeStream  &operator<<(const char *name);
  private:
