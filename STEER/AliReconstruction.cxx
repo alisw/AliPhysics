@@ -170,6 +170,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fFillESD("ALL"),
   fGAliceFileName(gAliceFilename),
   fInput(""),
+  fEquipIdMap(""),
   fFirstEvent(0),
   fLastEvent(-1),
   fCheckPointLevel(0),
@@ -212,6 +213,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fFillESD(rec.fFillESD),
   fGAliceFileName(rec.fGAliceFileName),
   fInput(rec.fInput),
+  fEquipIdMap(rec.fEquipIdMap),
   fFirstEvent(rec.fFirstEvent),
   fLastEvent(rec.fLastEvent),
   fCheckPointLevel(0),
@@ -485,6 +487,9 @@ Bool_t AliReconstruction::Run(const char* input,
     fRawReader = new AliRawReaderDate(fileName);
     fRawReader->SelectEvents(7);
   }
+  if (!fEquipIdMap.IsNull() && fRawReader)
+    fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
+
 
   // get the run loader
   if (!InitRunLoader()) return kFALSE;

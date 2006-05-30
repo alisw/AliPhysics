@@ -48,6 +48,7 @@ public:
 
   void           SetGAliceFile(const char* fileName);
   void           SetInput(const char* input) {fInput = input;};
+  void           SetEquipmentIdMap(const char *mapFile) {fEquipIdMap = mapFile;};
   void           SetEventRange(Int_t firstEvent = 0, Int_t lastEvent = -1) 
     {fFirstEvent = firstEvent; fLastEvent = lastEvent;};
   void           SetOption(const char* detector, const char* option);
@@ -142,6 +143,7 @@ private:
   TString        fFillESD;            // fill ESD for these detectors
   TString        fGAliceFileName;     // name of the galice file
   TString        fInput;              // name of input file or directory
+  TString        fEquipIdMap;         // name of file with equipment id map
   Int_t          fFirstEvent;         // index of first event to be reconstr.
   Int_t          fLastEvent;          // index of last event to be reconstr.
   Int_t          fCheckPointLevel;    // level of ESD check points
