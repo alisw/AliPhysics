@@ -8,9 +8,15 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 
+#include <TChain.h>
+#include <TSelector.h>
+
+
 #include <AliLog.h>
 #include <AliGenEventHeader.h>
 #include <AliTracker.h>
+#include <AliHeader.h>
+
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEtaCorrection.h"
@@ -126,18 +132,21 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   // get the EDS vertex
   const AliESDVertex* vtxESD = fESD->GetVertex();
 
+  Bool_t goodEvent = kTRUE;
+
   // the vertex should be reconstructed
-  if (strcmp(vtxESD->GetName(),"default")==0)
-    return kTRUE;
+  if (strcmp(vtxESD->GetName(),"default")==0) 
+    goodEvent = kFALSE;
 
   Double_t vtx_res[3];
   vtx_res[0] = vtxESD->GetXRes();
   vtx_res[1] = vtxESD->GetYRes();
   vtx_res[2] = vtxESD->GetZRes();
-
+  
   // the resolution should be reasonable???
   if (vtx_res[2]==0 || vtx_res[2]>0.1)
-    return kTRUE;
+    goodEvent = kFALSE;
+    
 
   // ########################################################
   // get the MC vertex
@@ -165,7 +174,13 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     if (IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
-    fdNdEtaCorrection->FillGene(vtxMC[2], particle->Eta());
+    Float_t eta = particle->Eta();
+    
+    fdNdEtaCorrection->FillParticleAllEvents(vtxMC[2], eta);	
+    
+    if (goodEvent)
+      fdNdEtaCorrection->FillParticleWhenGoodEvent(vtxMC[2], eta);	
+    
   }// end of mc particle
 
   // ########################################################
@@ -188,7 +203,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     }
     particleTree->GetEntry(nTotal - nPrim + label);
 
-    fdNdEtaCorrection->FillMeas(vtxMC[2], particle->Eta());
+    fdNdEtaCorrection->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta());
 
   } // end of track loop
 
@@ -210,8 +225,7 @@ void AlidNdEtaCorrectionSelector::SlaveTerminate()
     return;
   }
 
-  fOutput->Add(fdNdEtaCorrection->GetGeneratedHistogram());
-  fOutput->Add(fdNdEtaCorrection->GetMeasuredHistogram());
+  fOutput->Add(fdNdEtaCorrection);
 }
 
 void AlidNdEtaCorrectionSelector::Terminate()
@@ -222,16 +236,7 @@ void AlidNdEtaCorrectionSelector::Terminate()
 
   AliSelector::Terminate();
 
-  fdNdEtaCorrectionFinal = new dNdEtaCorrection();
-  TH2F* measuredHistogram = dynamic_cast<TH2F*> (fOutput->FindObject("etaVsVtx_meas"));
-  TH2F* generatedHistogram = dynamic_cast<TH2F*> (fOutput->FindObject("etaVsVtx_gene"));
-  if (!measuredHistogram || !generatedHistogram)
-  {
-     AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p %p", (void*) generatedHistogram, (void*) measuredHistogram));
-    return;
-  }
-  fdNdEtaCorrectionFinal->SetGeneratedHistogram(generatedHistogram);
-  fdNdEtaCorrectionFinal->SetMeasuredHistogram(measuredHistogram);
+  fdNdEtaCorrectionFinal = dynamic_cast<dNdEtaCorrection*> (fOutput->FindObject("dndeta_correction"));
 
   fdNdEtaCorrectionFinal->Finish();
 
