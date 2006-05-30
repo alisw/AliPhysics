@@ -6,6 +6,7 @@
 #include "AliSelector.h"
 
 class dNdEtaAnalysis;
+class dNdEtaCorrection;
 
 class AlidNdEtaAnalysisSelector : public AliSelector {
   public:
@@ -20,6 +21,7 @@ class AlidNdEtaAnalysisSelector : public AliSelector {
     virtual void WriteObjects();
 
     dNdEtaAnalysis* fdNdEtaAnalysis;      // contains the intermediate histograms (on each slave)
+    dNdEtaCorrection* fdNdEtaCorrection;  // correction map
 
  private:
     ClassDef(AlidNdEtaAnalysisSelector, 0);

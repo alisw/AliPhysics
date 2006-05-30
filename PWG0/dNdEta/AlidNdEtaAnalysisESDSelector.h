@@ -6,7 +6,6 @@
 #include "AlidNdEtaAnalysisSelector.h"
 
 class AliESDtrackCuts;
-class dNdEtaCorrection;
 
 class AlidNdEtaAnalysisESDSelector : public AlidNdEtaAnalysisSelector {
   public:
@@ -20,7 +19,6 @@ class AlidNdEtaAnalysisESDSelector : public AlidNdEtaAnalysisSelector {
     virtual void WriteObjects();
 
     AliESDtrackCuts*  fEsdTrackCuts;     // Object containing the parameters of the esd track cuts
-    dNdEtaCorrection* fdNdEtaCorrection; // correction map
 
  private:
 

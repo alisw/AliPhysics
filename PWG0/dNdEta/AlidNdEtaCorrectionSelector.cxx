@@ -11,19 +11,20 @@
 #include <TChain.h>
 #include <TSelector.h>
 
-
 #include <AliLog.h>
 #include <AliGenEventHeader.h>
 #include <AliTracker.h>
 #include <AliHeader.h>
-
+#include <AliESDVertex.h>
+#include <AliESD.h>
+#include <AliESDtrack.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEtaCorrection.h"
 
 ClassImp(AlidNdEtaCorrectionSelector)
 
-AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector(TTree *) :
+AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector() :
   AliSelector(),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0),
@@ -68,21 +69,6 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
 
   if (!fEsdTrackCuts)
     AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info");
-}
-
-Bool_t AlidNdEtaCorrectionSelector::Notify()
-{
-  // The Notify() function is called when a new file is opened. This
-  // can be either for a new TTree in a TChain or when when a new TTree
-  // is started when using PROOF. Typically here the branch pointers
-  // will be retrieved. It is normaly not necessary to make changes
-  // to the generated code, but the routine can be extended by the
-  // user if needed.
-
-  if (AliSelector::Notify() == kFALSE)
-    return kFALSE;
-
-  return kTRUE;
 }
 
 Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
