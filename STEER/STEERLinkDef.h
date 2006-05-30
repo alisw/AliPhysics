@@ -134,5 +134,6 @@
 #pragma link C++ class AliCentralTrigger+;
 #pragma link C++ class AliCTPRawData+;
 #pragma link C++ class AliCTPRawStream+;
+#pragma link C++ class AliMathBase+;
 
 #endif
