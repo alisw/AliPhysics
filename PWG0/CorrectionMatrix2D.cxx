@@ -78,6 +78,34 @@ CorrectionMatrix2D &CorrectionMatrix2D::operator=(const CorrectionMatrix2D &c)
 }
 
 //____________________________________________________________________
+TH1F* CorrectionMatrix2D::Get1DCorrection(Char_t* opt) {
+  //
+  // integrate the correction over one variable 
+  // 
+
+  TH1D* meas1D; 
+  TH1D* gene1D; 
+
+  if (strcmp(opt,"x")==0) {
+    meas1D = fhMeas->ProjectionX();
+    gene1D = fhGene->ProjectionX();      
+  }
+  if (strcmp(opt,"y")==0) {
+    meas1D = fhMeas->ProjectionY();
+    gene1D = fhGene->ProjectionY();      
+  }
+  gene1D->Sumw2();
+
+  gene1D->SetName(Form("corr_1D_%s",fName.Data()));
+  gene1D->SetTitle(Form("corr_1D_%s",fName.Data()));
+
+  gene1D->Divide(gene1D, meas1D, 1, 1, "B");
+  
+  return (TH1F*)gene1D;   
+}
+
+
+//____________________________________________________________________
 void
 CorrectionMatrix2D::Copy(TObject& c) const 
 {
@@ -255,7 +283,7 @@ CorrectionMatrix2D::SaveHistograms() {
   //
   // saves the histograms 
   //
-
+  
   gDirectory->mkdir(fName.Data());
   gDirectory->cd(fName.Data());
   
@@ -275,13 +303,14 @@ void CorrectionMatrix2D::DrawHistograms()
   // draws all the four histograms on one TCanvas
   //
 
-  TCanvas* canvas = new TCanvas("Correction", "Correction", 800, 800);
+  TCanvas* canvas = new TCanvas(Form("correction_%s",fName.Data()), 
+				Form("correction_%s",fName.Data()), 800, 800);
   canvas->Divide(2, 2);
-
+  
   canvas->cd(1);
   if (fhMeas)
     fhMeas->Draw("COLZ");
-
+  
   canvas->cd(2);
   if (fhGene)
     fhGene->Draw("COLZ");
@@ -289,6 +318,8 @@ void CorrectionMatrix2D::DrawHistograms()
   canvas->cd(3);
   if (fhCorr)
     fhCorr->Draw("COLZ");
+
+  canvas->cd(4);
 
   // add: draw here the stat. errors of the correction histogram
   
