@@ -2,8 +2,9 @@
 // Tuned for p+p min biais and quarkonia production (AliGenMUONCocktailpp)
 // Remember to define the directory and option
 // gAlice->SetConfigFunction("Config('$HOME','box');");
+// april 3rd: added L3 magnet 
 
-void Config(char directory[100]="", char option[6]="trg2mu")
+void Config(char directory[100]="", char option[6]="trg1mu")
 {
  
   static Int_t sseed = 0; // Set 0 to use the current time
@@ -29,7 +30,7 @@ void Config(char directory[100]="", char option[6]="trg2mu")
     return;
   }
   rl->SetCompressionLevel(2);
-  rl->SetNumberOfEventsPerFile(100);
+  rl->SetNumberOfEventsPerFile(1000);
   gAlice->SetRunLoader(rl);
   
   //=======================================================================
@@ -94,9 +95,9 @@ void Config(char directory[100]="", char option[6]="trg2mu")
     AliGenMUONCocktailpp *gener = new AliGenMUONCocktailpp();
       gener->SetPtRange(0.,100.);
       gener->SetYRange(-4.,-2.4);
-      gener->SetPhiRange(0., 360.);
+      gener->SetPhiRange(0.,360.);
       gener->SetMuonMultiplicity(2);  
-      gener->SetMuonPtCut(1.);
+      gener->SetMuonPtCut(0.5);
       gener->SetMuonThetaRange(171.,178.);      
       gener->SetOrigin(0.,0.,0.); 
       gener->SetSigma(0.,0.,5.);
@@ -108,9 +109,9 @@ void Config(char directory[100]="", char option[6]="trg2mu")
     AliGenMUONCocktailpp *gener = new AliGenMUONCocktailpp();
       gener->SetPtRange(0.,100.);
       gener->SetYRange(-4.,-2.4);
-      gener->SetPhiRange(0., 360.);
+      gener->SetPhiRange(0.,360.);
       gener->SetMuonMultiplicity(1);  
-      gener->SetMuonPtCut(1.);
+      gener->SetMuonPtCut(0.5);
       gener->SetMuonThetaRange(171.,178.);      
       gener->SetOrigin(0.,0.,0.); 
       gener->SetSigma(0.,0.,5.);
@@ -118,12 +119,19 @@ void Config(char directory[100]="", char option[6]="trg2mu")
       gener->Init(); 
   }
   //============================================================= 
-  // Field (L3 0.4 T)
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k4kG);
+  // Field (L3 0.5 T) outside dimuon spectrometer
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., AliMagFMaps::k5kG);
   field->SetL3ConstField(0); // Using const. field in the barrel 
   gAlice->SetField(field);
 
-  Int_t   iITS   =  1;
+  Int_t   iITS = 1;
+  Int_t   iZDC = 1;
+  Int_t   iFMD = 1;
+  Int_t   iPHOS = 1;
+  Int_t   iPMD = 1;
+  Int_t   iSTART = 1;
+  Int_t   iVZERO = 1;
+
   rl->CdGAFile();
 
   //=================== Alice BODY parameters =============================
@@ -144,7 +152,30 @@ void Config(char directory[100]="", char option[6]="trg2mu")
   if(iITS) {
       AliITSvPPRasymmFMD *ITS  = new AliITSvPPRasymmFMD("ITS","ITS PPR detailed version with asymmetric services");
   }
-
+ //=================== ZDC parameters =============================
+  if(iZDC) {
+      AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
+  }      
+ //=================== FMD parameters =============================
+  if(iFMD) {
+      AliFMD *FMD = new AliFMDv1("FMD", "normal FMD");
+  }
+ //=================== PHOS  parameters =============================
+  if(iPHOS) {
+      AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+  }
+ //=================== PMD parameters =============================
+  if(iPMD) {
+      AliPMD *PMD = new AliPMDv1("PMD", "normal PMD");
+  }
+ //=================== START parameters =============================  
+  if (iSTART) {
+      AliSTART *START = new AliSTARTv1("START", "START Detector");
+  }
+ //=================== VZERO parameters =============================
+  if (iVZERO) {
+      AliVZERO *VZERO = new AliVZEROv7("VZERO", "normal VZERO");
+  }
 
   //=================== MUON Subsystem ===========================
   cout << ">>> Config.C: Creating AliMUONv1 ..."<<endl;
