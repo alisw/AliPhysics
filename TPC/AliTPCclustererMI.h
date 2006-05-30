@@ -30,6 +30,8 @@ public:
   AliTPCclustererMI(const AliTPCParam* par);
   virtual void Digits2Clusters();
   virtual void Digits2Clusters(AliRawReader* rawReader);
+  virtual void SetPedSubtraction(Bool_t pedestalSub = kFALSE)
+    { fPedSubtraction = pedestalSub; };
   virtual void SetInput(TTree * tree);  // set input tree with digits    
   virtual void SetOutput(TTree * tree); //set output tree with 
 private:
@@ -61,6 +63,8 @@ private:
   Float_t fPadWidth;  // the width of the pad
   Float_t fPadLength;  // the width of the pad
   Float_t fZWidth;     //the z bin width
+
+  Bool_t  fPedSubtraction; // perform pedestal subtraction or not
 
   TTree * fInput;   //!input  tree with digits - object not owner
   TTree * fOutput;   //!output tree with digits - object not owner

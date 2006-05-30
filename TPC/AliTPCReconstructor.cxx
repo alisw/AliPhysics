@@ -101,6 +101,10 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
   }
   AliTPCclustererMI clusterer(param);
 
+  TString option = GetOption();
+  if (option.Contains("PedestalSubtraction"))
+    clusterer.SetPedSubtraction(kTRUE);
+ 
   Int_t iEvent = 0;
   while (rawReader->NextEvent()) {
     runLoader->GetEvent(iEvent++);
