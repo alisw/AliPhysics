@@ -114,8 +114,8 @@ void AliPIPEv0::CreateGeometry()
 //
 //    Float_t hlenQbt1 = 5.5/2.;
 //
-//  Pipe outside central region (non-absober side)
-    Float_t hlenQbab = 157.5;
+//  Pipe outside central region (non-absorber side)
+    Float_t hlenQbab = 157.5 + 23./2.;
 //
 //  Flange non-absorber side
     Float_t hlenQb29 = 11.5/2.+1.75 + 5.0;
