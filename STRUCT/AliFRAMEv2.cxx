@@ -500,7 +500,7 @@ void AliFRAMEv2::CreateGeometry()
       dy = -TMath::Cos(phi*kdeg2rad)*r;
       
       AliMatrix(idrotm[2034+i],  90.0, phi, 0., 0., 90., phi2);  
-      gMC->Gspos(name, 1, "B077", dx, dy, 0., idrotm[2034+i], "ONLY");
+      gMC->Gspos(name, i, "B077", dx, dy, 0., idrotm[2034+i], "ONLY");
 //
 //    Position elements of outer Frame
 //
@@ -916,18 +916,18 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gspos("BRS2", 1, "BRS1", 0., -27.5+3.75, 0., 0, "ONLY");
   gMC->Gspos("BRS2", 2, "BRS1", 0.,  27.5-3.75, 0., 0, "ONLY");
   gMC->Gspos("BRS3", 1, "BRS1", 0.,         0., 0., 0, "ONLY");
-  gMC->Gspos("BRS1", 1, "ALIC", -430.-3.,    -180., 0., 0, "ONLY");
-  gMC->Gspos("BRS1", 2, "ALIC",  430.+3.,    -180., 0., 0, "ONLY");
+  gMC->Gspos("BRS1", 1, "ALIC", -430.-3.,    -190., 0., 0, "ONLY");
+  gMC->Gspos("BRS1", 2, "ALIC",  430.+3.,    -190., 0., 0, "ONLY");
 
   rbox[0] =    3.0;
-  rbox[1] =  145./2.;
+  rbox[1] =  145./4.;
   rbox[2] =   25.0;
   gMC->Gsvolu("BRS4", "BOX", kSteel, rbox, 3);
 
-  gMC->Gspos("BRS4", 1, "ALIC",  430.+3.,    -180.+55./2.+rbox[1],  224., 0, "ONLY");
-  gMC->Gspos("BRS4", 2, "ALIC",  430.+3.,    -180.+55./2.+rbox[1], -224., 0, "ONLY");
-  gMC->Gspos("BRS4", 3, "ALIC", -430.-3.,    -180.+55./2.+rbox[1],  224., 0, "ONLY");
-  gMC->Gspos("BRS4", 4, "ALIC", -430.-3.,    -180.+55./2.+rbox[1], -224., 0, "ONLY");
+  gMC->Gspos("BRS4", 1, "ALIC",  430.+3.,    -190.+55./2.+rbox[1],  224., 0, "ONLY");
+  gMC->Gspos("BRS4", 2, "ALIC",  430.+3.,    -190.+55./2.+rbox[1], -224., 0, "ONLY");
+//  gMC->Gspos("BRS4", 3, "ALIC", -430.+3,    -180.+55./2.+rbox[1],  224., 0, "ONLY");
+//  gMC->Gspos("BRS4", 4, "ALIC", -430.+3,    -180.+55./2.+rbox[1], -224., 0, "ONLY");
 
 
 
