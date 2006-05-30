@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TArrayI.h>
 #include "AliRawDataHeader.h"
 
 
@@ -20,7 +21,7 @@ class AliRawReader: public TObject {
     AliRawReader();
     AliRawReader(const AliRawReader& rawReader);
     AliRawReader& operator = (const AliRawReader& rawReader);
-    virtual ~AliRawReader() {};
+    virtual ~AliRawReader();
 
     void             Select(Int_t detectorID, 
 			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
@@ -46,14 +47,14 @@ class AliRawReader: public TObject {
     virtual Int_t    GetEquipmentSize() const = 0;
     virtual Int_t    GetEquipmentType() const = 0;
     virtual Int_t    GetEquipmentId() const = 0;
+    Int_t            GetMappedEquipmentId() const;
+    Bool_t           LoadEquipmentIdsMap(const char *fileName);
     virtual const UInt_t* GetEquipmentAttributes() const = 0;
     virtual Int_t    GetEquipmentElementSize() const = 0;
     virtual Int_t    GetEquipmentHeaderSize() const = 0;
 
-    Int_t            GetDetectorID() const 
-      {if (GetEquipmentId() >= 0) return (GetEquipmentId() >> 8); else return -1;};
-    Int_t            GetDDLID() const 
-      {if (GetEquipmentId() >= 0) return (GetEquipmentId() & 0xFF); else return -1;};
+    Int_t            GetDetectorID() const;
+    Int_t            GetDDLID() const;
 
     Int_t            GetDataSize() const 
       {if (fHeader) {
@@ -104,18 +105,21 @@ class AliRawReader: public TObject {
     Bool_t           IsSelected() const;
     Bool_t           IsEventSelected() const;
 
-    Bool_t           fRequireHeader; // if false, data without header is accepted
+    TArrayI         *fEquipmentIdsIn;       // array of equipment Ids to be mapped
+    TArrayI         *fEquipmentIdsOut;      // array of mapped equipment Ids
 
-    AliRawDataHeader* fHeader;     // current data header
-    Int_t            fCount;       // counter of bytes to be read for current DDL
+    Bool_t           fRequireHeader;        // if false, data without header is accepted
+
+    AliRawDataHeader* fHeader;              // current data header
+    Int_t            fCount;                // counter of bytes to be read for current DDL
 
     Int_t            fSelectEquipmentType;  // type of selected equipment (<0 = no selection)
     Int_t            fSelectMinEquipmentId; // minimal index of selected equipment (<0 = no selection)
     Int_t            fSelectMaxEquipmentId; // maximal index of selected equipment (<0 = no selection)
-    Bool_t           fSkipInvalid;       // skip invalid data
-    Int_t            fSelectEventType;   // type of selected events (<0 = no selection)
+    Bool_t           fSkipInvalid;          // skip invalid data
+    Int_t            fSelectEventType;      // type of selected events (<0 = no selection)
 
-    Int_t            fErrorCode;         // code of last error
+    Int_t            fErrorCode;            // code of last error
 
     ClassDef(AliRawReader, 0) // base class for reading raw digits
 };

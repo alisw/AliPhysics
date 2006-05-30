@@ -36,6 +36,7 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
 #include "AliRawReader.h"
 
 
@@ -43,6 +44,8 @@ ClassImp(AliRawReader)
 
 
 AliRawReader::AliRawReader() :
+  fEquipmentIdsIn(NULL),
+  fEquipmentIdsOut(NULL),
   fRequireHeader(kTRUE),
   fHeader(NULL),
   fCount(0),
@@ -54,11 +57,44 @@ AliRawReader::AliRawReader() :
   fErrorCode(0)
 {
 // default constructor: initialize data members
+}
 
+Bool_t AliRawReader::LoadEquipmentIdsMap(const char *fileName)
+{
+  // Open the mapping file
+  // and load the mapping data
+  ifstream input(fileName);
+  if (input.is_open()) {
+    Warning("AliRawReader","Equipment ID mapping file is found !");
+    const Int_t kMaxDDL = 256;
+    fEquipmentIdsIn = new TArrayI(kMaxDDL);
+    fEquipmentIdsOut = new TArrayI(kMaxDDL);
+    Int_t equipIn, equipOut;
+    Int_t nIds = 0;
+    while (input >> equipIn >> equipOut) {
+      if (nIds >= kMaxDDL) {
+	Error("AliRawReader","Too many equipment Id mappings found ! Truncating the list !");
+	break;
+      }
+      fEquipmentIdsIn->AddAt(equipIn,nIds); 
+      fEquipmentIdsOut->AddAt(equipOut,nIds);
+      nIds++;
+    }
+    fEquipmentIdsIn->Set(nIds);
+    fEquipmentIdsOut->Set(nIds);
+    input.close();
+    return kTRUE;
+  }
+  else {
+    Error("AliRawReader","equipment id map file is not found ! Skipping the mapping !");
+    return kFALSE;
+  }
 }
 
 AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   TObject(rawReader),
+  fEquipmentIdsIn(rawReader.fEquipmentIdsIn),
+  fEquipmentIdsOut(rawReader.fEquipmentIdsOut),
   fRequireHeader(rawReader.fRequireHeader),
   fHeader(rawReader.fHeader),
   fCount(rawReader.fCount),
@@ -70,12 +106,13 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fErrorCode(0)
 {
 // copy constructor
-
 }
 
 AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
 {
 // assignment operator
+  fEquipmentIdsIn = rawReader.fEquipmentIdsIn;
+  fEquipmentIdsOut = rawReader.fEquipmentIdsOut;
 
   fHeader = rawReader.fHeader;
   fCount = rawReader.fCount;
@@ -91,6 +128,64 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   return *this;
 }
 
+AliRawReader::~AliRawReader()
+{
+  // destructor
+  // delete the mapping arrays if
+  // initialized
+  if (fEquipmentIdsIn) delete fEquipmentIdsIn;
+  if (fEquipmentIdsOut) delete fEquipmentIdsOut;
+}
+
+Int_t AliRawReader::GetMappedEquipmentId() const
+{
+  if (!fEquipmentIdsIn || !fEquipmentIdsOut) {
+    Error("AliRawReader","equipment Ids mapping is not initialized !");
+    return GetEquipmentId();
+  }
+  Int_t equipmentId = GetEquipmentId();
+  for(Int_t iId = 0; iId < fEquipmentIdsIn->GetSize(); iId++) {
+    if (equipmentId == fEquipmentIdsIn->At(iId)) {
+      equipmentId = fEquipmentIdsOut->At(iId);
+      break;
+    }
+  }
+  return equipmentId;
+}
+
+Int_t AliRawReader::GetDetectorID() const
+{
+  // Get the detector ID
+  // The list of detector IDs
+  // can be found in AliDAQConfig.h
+  Int_t equipmentId;
+  if (fEquipmentIdsIn && fEquipmentIdsIn)
+    equipmentId = GetMappedEquipmentId();
+  else
+    equipmentId = GetEquipmentId();
+
+  if (equipmentId >= 0)
+    return (equipmentId >> 8);
+  else
+    return -1;
+}
+
+Int_t AliRawReader::GetDDLID() const
+{
+  // Get the DDL ID (within one sub-detector)
+  // The list of detector IDs
+  // can be found in AliDAQConfig.h
+  Int_t equipmentId;
+  if (fEquipmentIdsIn && fEquipmentIdsIn)
+    equipmentId = GetMappedEquipmentId();
+  else
+    equipmentId = GetEquipmentId();
+
+  if (equipmentId >= 0)
+    return (equipmentId & 0xFF);
+  else
+    return -1;
+}
 
 void AliRawReader::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
 {
@@ -98,7 +193,7 @@ void AliRawReader::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
 // range of DDLs (minDDLID <= DDLID <= maxDDLID).
 // no selection is applied if a value < 0 is used.
 
-  fSelectEquipmentType = 0;
+  fSelectEquipmentType = -1;
   if (minDDLID < 0) minDDLID = 0;
   fSelectMinEquipmentId = (detectorID << 8) + minDDLID;
   if (maxDDLID < 0) maxDDLID = 0xFF;
@@ -131,15 +226,21 @@ Bool_t AliRawReader::IsSelected() const
 
   if (fSkipInvalid && !IsValid()) return kFALSE;
 
-  if (fSelectEquipmentType >= 0) {
+  if (fSelectEquipmentType >= 0)
     if (GetEquipmentType() != fSelectEquipmentType) return kFALSE;
-    if ((fSelectMinEquipmentId >= 0) && 
-	(GetEquipmentId() < fSelectMinEquipmentId))
-      return kFALSE;
-    if ((fSelectMaxEquipmentId >= 0) && 
-	(GetEquipmentId() > fSelectMaxEquipmentId))
-      return kFALSE;
-  }
+
+  Int_t equipmentId;
+  if (fEquipmentIdsIn && fEquipmentIdsIn)
+    equipmentId = GetMappedEquipmentId();
+  else
+    equipmentId = GetEquipmentId();
+
+  if ((fSelectMinEquipmentId >= 0) && 
+      (equipmentId < fSelectMinEquipmentId))
+    return kFALSE;
+  if ((fSelectMaxEquipmentId >= 0) && 
+      (equipmentId > fSelectMaxEquipmentId))
+    return kFALSE;
 
   return kTRUE;
 }
