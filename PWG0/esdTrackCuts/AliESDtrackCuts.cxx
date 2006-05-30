@@ -246,6 +246,8 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // retrieved from the track. then it is found out what cuts the
   // track did not survive and finally the cuts are imposed.
 
+
+
   UInt_t status = esdTrack->GetStatus();
 
   // dummy array
@@ -255,6 +257,8 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   Int_t nClustersITS = esdTrack->GetITSclusters(fIdxInt);
   Int_t nClustersTPC = esdTrack->GetTPCclusters(fIdxInt);
   
+
+
   Float_t chi2PerClusterITS = -1;
   Float_t chi2PerClusterTPC = -1;
   if (nClustersITS!=0)
@@ -271,9 +275,9 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   Float_t bCov[3];
   esdTrack->GetImpactParameters(b,bCov);    
   if (bCov[0]<=0 || bCov[2]<=0) {
-    AliDebug(1, "Estimated b resolution zero!");
-    bCov[0]=0; bCov[1]=0;
-  }
+    AliDebug(1, "Estimated b resolution lower or equal zero!");
+    bCov[0]=0; bCov[2]=0;
+  } 
   bRes[0] = TMath::Sqrt(bCov[0]);
   bRes[1] = TMath::Sqrt(bCov[2]);
 
@@ -292,6 +296,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   Float_t momentum = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2) + TMath::Power(p[2],2));
   Float_t pt       = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2));
   Float_t energy   = TMath::Sqrt(TMath::Power(esdTrack->GetMass(),2) + TMath::Power(momentum,2));
+
 
   //y-eta related calculations
   Float_t eta = -100.;
