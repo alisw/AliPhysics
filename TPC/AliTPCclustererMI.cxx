@@ -28,7 +28,6 @@
 #include <TFile.h>
 #include "AliTPCClustersArray.h"
 #include "AliTPCClustersRow.h"
-#include "AliTPCRawStream.h"
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
@@ -50,10 +49,13 @@ ClassImp(AliTPCclustererMI)
 
 AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par)
 {
+  fPedSubtraction = kFALSE;
+  fIsOldRCUFormat = kFALSE;
   fInput =0;
   fOutput=0;
   fParam = par;
 }
+
 void AliTPCclustererMI::SetInput(TTree * tree)
 {
   //
@@ -546,7 +548,10 @@ void AliTPCclustererMI::Digits2Clusters()
 void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 {
 //-----------------------------------------------------------------
-// This is a cluster finder for raw data.
+// This is a cluster finder for the TPC raw data.
+// The method assumes NO ordering of the altro channels.
+// The pedestal subtraction can be switched on and off
+// using an option of the TPC reconstructor
 //-----------------------------------------------------------------
 
   if (!fOutput) {
@@ -554,12 +559,9 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     return;
   }
 
-  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
-
-  rawReader->Reset();
-  AliTPCRawStream input(rawReader);
-
   fRowDig = NULL;
+
+  AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
 
   Int_t nclusters  = 0;
   
@@ -570,129 +572,159 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   fZWidth = fParam->GetZWidth();
   Int_t zeroSup = fParam->GetZeroSup();
 
-  fBins = NULL;
-  Float_t** splitRows = new Float_t* [kNS*2];
-  Float_t** splitRowsRes = new Float_t* [kNS*2];
-  for (Int_t iSector = 0; iSector < kNS*2; iSector++)
-    splitRows[iSector] = NULL;
-  Int_t iSplitRow = -1;
+  Float_t** allBins = NULL;
+  Float_t** allBinsRes = NULL;
 
-  Bool_t next = kTRUE;
-  while (next) {
-    next = input.Next();
+  // Loop over sectors
+  for(fSector = 0; fSector < kNS; fSector++) {
 
-    // when the sector or row number has changed ...
-    if (input.IsNewRow() || !next) {
+    AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
+ 
+    Int_t nRows = 0;
+    Int_t nDDLs = 0, indexDDL = 0;
+    if (fSector < kNIS) {
+      nRows = fParam->GetNRowLow();
+      fSign = (fSector < kNIS/2) ? 1 : -1;
+      nDDLs = 2;
+      indexDDL = fSector * 2;
+    }
+    else {
+      nRows = fParam->GetNRowUp();
+      fSign = ((fSector-kNIS) < kNOS/2) ? 1 : -1;
+      nDDLs = 4;
+      indexDDL = (fSector-kNIS) * 4 + kNIS * 2;
+    }
 
-      // ... find clusters in the previous pad row, and ...
-      if (fBins) {
-	if ((iSplitRow < 0) || splitRows[fSector + kNS*iSplitRow]) {
-	  fRowCl = new AliTPCClustersRow;
-	  fRowCl->SetClass("AliTPCclusterMI");
-	  fRowCl->SetArray(1);
-	  fRowCl->SetID(fParam->GetIndex(fSector, input.GetPrevRow()));
-	  fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
+    allBins = new Float_t*[nRows];
+    allBinsRes = new Float_t*[nRows];
 
-	  FindClusters();
+    for (Int_t iRow = 0; iRow < nRows; iRow++) {
+      Int_t maxPad;
+      if (fSector < kNIS)
+	maxPad = fParam->GetNPadsLow(iRow);
+      else
+	maxPad = fParam->GetNPadsUp(iRow);
+      
+      Int_t maxBin = fMaxTime*(maxPad+6);  // add 3 virtual pads  before and 3 after
+      allBins[iRow] = new Float_t[maxBin];
+      allBinsRes[iRow] = new Float_t[maxBin];
+      memset(allBins[iRow],0,sizeof(Float_t)*maxBin);
+      memset(allBinsRes[iRow],0,sizeof(Float_t)*maxBin);
+    }
+    
+    // Loas the raw data for corresponding DDLs
+    rawReader->Reset();
+    AliTPCRawStream input(rawReader);
+    input.SetOldRCUFormat(fIsOldRCUFormat);
+    rawReader->Select(0,indexDDL,indexDDL+nDDLs-1);
+    
+    // Begin loop over altro data
+    while (input.Next()) {
 
-	  fOutput->Fill();
-	  delete fRowCl;    
-	  nclusters += fNcluster;    
-	  delete[] fBins;
-	  delete[] fResBins;
-	  if (iSplitRow >= 0) splitRows[fSector + kNS*iSplitRow] = NULL;
+      if (input.GetSector() != fSector)
+	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
 
-	} else if (iSplitRow >= 0) {
-	  splitRows[fSector + kNS*iSplitRow] = fBins;
-	  splitRowsRes[fSector + kNS*iSplitRow] = fResBins;
-	}
-      }
-
-      if (!next) break;
-
-      // ... prepare for the next pad row
-      fSector = input.GetSector();
-      fRow    = input.GetRow();
+      if (input.GetTime() < 40) continue;
+      
       Int_t iRow = input.GetRow();
-      fRx = fParam->GetPadRowRadii(fSector, iRow);
-    
-      iSplitRow = -1;
-      if (fSector < kNIS) {
-	fMaxPad = fParam->GetNPadsLow(iRow);
-	fSign = (fSector < kNIS/2) ? 1 : -1;
-	if (iRow == 30) iSplitRow = 0;
-      } else {
-	fMaxPad = fParam->GetNPadsUp(iRow);
-	fSign = ((fSector-kNIS) < kNOS/2) ? 1 : -1;
-	if (iRow == 27) iSplitRow = 0;
-	else if (iRow == 76) iSplitRow = 1;
-      }
-      fPadLength = fParam->GetPadPitchLength(fSector, iRow);
-      fPadWidth  = fParam->GetPadPitchWidth();
-    
-      fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
-      if ((iSplitRow < 0) || !splitRows[fSector + kNS*iSplitRow]) {
-	fBins    = new Float_t[fMaxBin];
-	fResBins = new Float_t[fMaxBin];  //fBins with residuals after 1 finder loop 
-	memset(fBins, 0, sizeof(Float_t)*fMaxBin);
-	memset(fResBins, 0, sizeof(Float_t)*fMaxBin);
-      } else {
-	fBins    = splitRows[fSector + kNS*iSplitRow];
-	fResBins = splitRowsRes[fSector + kNS*iSplitRow];
+      if (iRow < 0 || iRow >= nRows)
+	AliFatal(Form("Pad-row index (%d) outside the range (%d -> %d) !",
+		      iRow, 0, nRows -1));
+
+      Int_t iPad = input.GetPad() + 3;
+
+      Int_t maxPad;
+      if (fSector < kNIS)
+	maxPad = fParam->GetNPadsLow(iRow);
+      else
+	maxPad = fParam->GetNPadsUp(iRow);
+
+      if (input.GetPad() < 0 || input.GetPad() >= maxPad)
+	AliFatal(Form("Pad index (%d) outside the range (%d -> %d) !",
+		      input.GetPad(), 0, maxPad -1));
+
+      Int_t iTimeBin = input.GetTime() + 3;
+      if ( input.GetTime() < 0 || input.GetTime() >= fParam->GetMaxTBin())
+	AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
+		      input.GetTime(), 0, fParam->GetMaxTBin() -1));
+
+      Int_t maxBin = fMaxTime*(maxPad+6);  // add 3 virtual pads  before and 3 after
+
+      if (((iPad*fMaxTime+iTimeBin) >= maxBin) ||
+	  ((iPad*fMaxTime+iTimeBin) < 0))
+	AliFatal(Form("Index outside the allowed range"
+		      " Sector=%d Row=%d Pad=%d Timebin=%d"
+		      " (Max.index=%d)",fSector,iRow,iPad,iTimeBin,maxBin));
+
+      Float_t signal = input.GetSignal();
+      if (!fPedSubtraction && signal <= zeroSup) continue;
+
+      Float_t gain = gainROC->GetValue(iRow,input.GetPad());
+      allBins[iRow][iPad*fMaxTime+iTimeBin] = signal/gain;
+
+    } // End of the loop over altro data
+
+    // Now loop over rows and perform pedestal subtraction
+    if (fPedSubtraction) {
+      for (Int_t iRow = 0; iRow < nRows; iRow++) {
+	Int_t maxPad;
+	if (fSector < kNIS)
+	  maxPad = fParam->GetNPadsLow(iRow);
+	else
+	  maxPad = fParam->GetNPadsUp(iRow);
+
+	for (Int_t iPad = 0; iPad < maxPad + 6; iPad++) {
+	  Float_t *p = &allBins[iRow][iPad*fMaxTime+3];
+	  Float_t pedestal = TMath::Median(fMaxTime, p);
+	  for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
+	    allBins[iRow][iPad*fMaxTime+iTimeBin] -= pedestal;
+	    if (allBins[iRow][iPad*fMaxTime+iTimeBin] < zeroSup)
+	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
+	  }
+	}
       }
     }
 
-    // fill fBins with digits data
-    if (input.GetSignal() <= zeroSup) continue;
-    Int_t i = input.GetPad() + 3;
-    Int_t j = input.GetTime() + 3;
-    AliTPCCalROC * gainROC = gainTPC->GetCalROC(fSector);  // pad gains per given sector
-    Float_t gain = gainROC->GetValue(fRow,input.GetPad());
-    fBins[i*fMaxTime+j] = input.GetSignal()/gain;
-  }
+    // Now loop over rows and find clusters
+    for (fRow = 0; fRow < nRows; fRow++) {
+      fRowCl = new AliTPCClustersRow;
+      fRowCl->SetClass("AliTPCclusterMI");
+      fRowCl->SetArray(1);
+      fRowCl->SetID(fParam->GetIndex(fSector, fRow));
+      fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
 
-  // find clusters in split rows that were skipped until now.
-  // this can happen if the rows were not splitted 
-  for (fSector = 0; fSector < kNS; fSector++)
-    for (Int_t iSplit = 0; iSplit < 2; iSplit++)
-      if (splitRows[fSector + kNS*iSplit]) {
+      fRx = fParam->GetPadRowRadii(fSector, fRow);
+      fPadLength = fParam->GetPadPitchLength(fSector, fRow);
+      fPadWidth  = fParam->GetPadPitchWidth();
+      if (fSector < kNIS)
+	fMaxPad = fParam->GetNPadsLow(fRow);
+      else
+	fMaxPad = fParam->GetNPadsUp(fRow);
+      fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
 
-	Int_t iRow = -1;
-	if (fSector < kNIS) {
-	  iRow = 30;
-	  fMaxPad = fParam->GetNPadsLow(iRow);
-	  fSign = (fSector < kNIS/2) ? 1 : -1;
-	} else {
-	  if (iSplit == 0) iRow = 27; else iRow = 76;
-	  fMaxPad = fParam->GetNPadsUp(iRow);
-	  fSign = ((fSector-kNIS) < kNOS/2) ? 1 : -1;
-	}
-	fRx = fParam->GetPadRowRadii(fSector, iRow);
-	fPadLength = fParam->GetPadPitchLength(fSector, iRow);
-	fPadWidth  = fParam->GetPadPitchWidth();
+      fBins = allBins[fRow];
+      fResBins = allBinsRes[fRow];
 
-    	fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
-	fBins    = splitRows[fSector + kNS*iSplit];
-	fResBins = splitRowsRes[fSector + kNS*iSplit];
+      FindClusters();
 
-	fRowCl = new AliTPCClustersRow;
-	fRowCl->SetClass("AliTPCclusterMI");
-	fRowCl->SetArray(1);
-	fRowCl->SetID(fParam->GetIndex(fSector, iRow));
-	fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
+      fOutput->Fill();
+      delete fRowCl;    
+      nclusters += fNcluster;    
+    } // End of loop to find clusters
 
-	FindClusters();
+ 
+    for (Int_t iRow = 0; iRow < nRows; iRow++) {
+      delete [] allBins[iRow];
+      delete [] allBinsRes[iRow];
+    }
 
-	fOutput->Fill();
-	delete fRowCl;    
-	nclusters += fNcluster;    
-	delete[] fBins;
-	delete[] fResBins;
-      }
+    delete [] allBins;
+    delete [] allBinsRes;
 
-  delete[] splitRows;
-  delete[] splitRowsRes;
+  } // End of loop over sectors
+
   Info("Digits2Clusters", "Number of found clusters : %d\n", nclusters);
+
 }
 
 void AliTPCclustererMI::FindClusters()
