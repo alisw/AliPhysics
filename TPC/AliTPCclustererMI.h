@@ -32,6 +32,8 @@ public:
   virtual void Digits2Clusters(AliRawReader* rawReader);
   virtual void SetPedSubtraction(Bool_t pedestalSub = kFALSE)
     { fPedSubtraction = pedestalSub; };
+  virtual void SetOldRCUFormat(Bool_t rcuFormat = kFALSE)
+    { fIsOldRCUFormat = rcuFormat; };
   virtual void SetInput(TTree * tree);  // set input tree with digits    
   virtual void SetOutput(TTree * tree); //set output tree with 
 private:
@@ -65,6 +67,7 @@ private:
   Float_t fZWidth;     //the z bin width
 
   Bool_t  fPedSubtraction; // perform pedestal subtraction or not
+  Bool_t  fIsOldRCUFormat; // assume old RCU raw data format
 
   TTree * fInput;   //!input  tree with digits - object not owner
   TTree * fOutput;   //!output tree with digits - object not owner

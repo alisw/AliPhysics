@@ -104,6 +104,8 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
   TString option = GetOption();
   if (option.Contains("PedestalSubtraction"))
     clusterer.SetPedSubtraction(kTRUE);
+  if (option.Contains("OldRCUFormat"))
+    clusterer.SetOldRCUFormat(kTRUE);
  
   Int_t iEvent = 0;
   while (rawReader->NextEvent()) {
