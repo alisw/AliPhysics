@@ -139,14 +139,14 @@ void dNdEtaAnalysis::Finish(dNdEtaCorrection* correction)
 
       for (Int_t iVtx=vertexBinBegin; iVtx<=vertexBinEnd; iVtx++) {
         if (hVtx->GetBinContent(iVtx)==0)             continue;
-        if (hEtaVsVtx->GetBinContent(iVtx, iEta)==0) continue;
+        if (hEtaVsVtxCheck->GetBinContent(iVtx, iEta)==0) continue;
 
         Float_t w = 1/TMath::Power(hEtaVsVtx->GetBinError(iVtx, iEta),2);
-        sumXw = sumXw + hEtaVsVtx->GetBinContent(iVtx, iEta)*w;
+        sumXw = sumXw + hEtaVsVtxCheck->GetBinContent(iVtx, iEta)*w;
         sumW  = sumW + w;
 
-        sum = sum + hEtaVsVtx->GetBinContent(iVtx, iEta);
-        sumError2 = sumError2 + TMath::Power(hEtaVsVtx->GetBinError(iVtx, iEta),2);      
+        sum = sum + hEtaVsVtxCheck->GetBinContent(iVtx, iEta);
+        sumError2 = sumError2 + TMath::Power(hEtaVsVtxCheck->GetBinError(iVtx, iEta),2);      
         nMeasurements++;
       }
       Float_t dndeta = 0;
@@ -188,8 +188,8 @@ dNdEtaAnalysis::SaveHistograms() {
 //____________________________________________________________________
 void dNdEtaAnalysis::DrawHistograms()
 {
-  TCanvas* canvas = new TCanvas("dNdEtaAnalysis", "dNdEtaAnalysis", 800, 800);
-  canvas->Divide(2, 2);
+  TCanvas* canvas = new TCanvas("dNdEtaAnalysis", "dNdEtaAnalysis", 1200, 800);
+  canvas->Divide(3, 2);
 
   canvas->cd(1);
   if (hEtaVsVtx)
@@ -203,11 +203,16 @@ void dNdEtaAnalysis::DrawHistograms()
   if (hEtaVsVtxUncorrected)
     hEtaVsVtxUncorrected->Draw("COLZ");
 
-  /*canvas->cd(3);
-  if (hVtx)
-    hVtx->Draw();*/
-
   canvas->cd(4);
+  TH2F* clone = (TH2F*) hEtaVsVtxCheck->Clone("clone");
+  clone->Divide(hEtaVsVtx);
+  clone->Draw("COLZ");
+
+  canvas->cd(5);
+  if (hVtx)
+    hVtx->Draw();
+
+  canvas->cd(6);
   if (hdNdEta[0])
     hdNdEta[0]->Draw();
 

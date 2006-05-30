@@ -54,7 +54,7 @@ public:
   void RemoveEdges(Float_t cut=2, Int_t nBinsVtx=0, Int_t nBinsEta=0);
   
   Float_t GetCorrection(Float_t vtx, Float_t eta) 
-    {return fNtrackToNparticleCorrection->GetCorrection(vtx, eta);}
+    {return fNtrackToNparticleCorrection->GetCorrection(vtx, eta) * fEventBiasCorrection->GetCorrection(vtx, eta);}
   
   ClassDef(dNdEtaCorrection,0)
 };
