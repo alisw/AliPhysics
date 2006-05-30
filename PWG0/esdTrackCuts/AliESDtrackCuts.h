@@ -12,42 +12,34 @@
 //
 //  TODO: 
 //  - add functionality to save and load cuts
-//  - fix the n sigma cut so it is really a n sigma cut
 //  - add different ways to make track to vertex cut
 //  - add histograms for kinematic cut variables?
 //  - upper and lower cuts for all (non-boolean) cuts
 //  - update print method
 //  - is there a smarter way to manage the cuts?
-//  - put comment to each variable
+//  - put comments to each variable
 //  - implement destructor !!!
-//
-//  NOTE: 
-//  - 
 //
 
 #ifndef ALIESDTRACKCUTS_H
 #define ALIESDTRACKCUTS_H
 
+#include <TObject.h>
+#include <TH2.h>
 
-#include "TObject.h"
-
-#include "TH1.h"
-#include "TH2.h"
-
-#include "AliESDtrack.h"
-#include "AliESD.h"
-#include "AliLog.h"
+class AliESD;
+class AliESDtrack;
+class AliLog;
 
 class AliESDtrackCuts : public TObject 
 {
 
 public:
   AliESDtrackCuts();
-  virtual ~AliESDtrackCuts();
   AliESDtrackCuts(const AliESDtrackCuts& pd);  // Copy Constructor
+  virtual ~AliESDtrackCuts();
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
-
   TObjArray* GetAcceptedTracks(AliESD* esd);
 
   AliESDtrackCuts &operator=(const AliESDtrackCuts &c);
