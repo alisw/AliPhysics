@@ -43,6 +43,8 @@ public:
   TH2F* GetGeneratedHistogram() { return fhGene; }
   TH2F* GetMeasuredHistogram()  { return fhMeas; }
 
+  TH1F* Get1DCorrection(Char_t* opt="x");
+
   void SetGeneratedHistogram(TH2F* agene) { fhGene = agene; }
   void SetMeasuredHistogram(TH2F* ameas)  { fhMeas = ameas; }
 
@@ -61,7 +63,7 @@ public:
   Bool_t  LoadHistograms(Char_t* fileName, Char_t* dir);
   Bool_t  LoadCorrection(Char_t* fileName, Char_t* dir) {return LoadHistograms(fileName, dir);}
   
-  void    RemoveEdges(Float_t cut=2, Int_t nBinsVtx=0, Int_t nBinsEta=0);
+  void    RemoveEdges(Float_t cut=2, Int_t nBinsX=0, Int_t nBinsY=0);
   
   Float_t GetCorrection(Float_t ax, Float_t ay) {return fhCorr->GetBinContent(fhCorr->FindBin(ax,ay));}
   
