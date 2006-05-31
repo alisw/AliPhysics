@@ -463,12 +463,11 @@ Bool_t AliRawReaderRoot::NextEvent()
   if (!fFile) return kFALSE;
 
   do {
-    if (fBranch->GetEntry(fEventIndex+1) <= 0) {
-      delete fEvent;
-      fEvent = new AliRawEvent;
-      fBranch->SetAddress(&fEvent);
+    delete fEvent;
+    fEvent = new AliRawEvent;
+    fBranch->SetAddress(&fEvent);
+    if (fBranch->GetEntry(fEventIndex+1) <= 0)
       return kFALSE;
-    }
     fEventIndex++;
   } while (!IsEventSelected());
   return Reset();
