@@ -6,6 +6,7 @@
 #include "AlidNdEtaAnalysisSelector.h"
 
 class TH3F;
+class TH1F;
 
 class AlidNdEtaAnalysisMCSelector : public AlidNdEtaAnalysisSelector {
   public:
@@ -19,9 +20,11 @@ class AlidNdEtaAnalysisMCSelector : public AlidNdEtaAnalysisSelector {
  protected:
 
  private:
-  TH3F* fVertex;
+    TH3F* fVertex;  //! vertex of counted particles
+    TH1F* fPartEta; //! counted particles as function of eta
+    Int_t fEvents;  //! number of processed events
 
-  ClassDef(AlidNdEtaAnalysisMCSelector, 0);
+    ClassDef(AlidNdEtaAnalysisMCSelector, 0);
 };
 
 #endif
