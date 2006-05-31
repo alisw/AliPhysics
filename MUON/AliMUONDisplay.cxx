@@ -1515,41 +1515,7 @@ void AliMUONDisplay::Trigger()
   globalTrig =  (AliMUONGlobalTrigger*)GetMUONData()->GlobalTrigger()->UncheckedAt(0);
   if (globalTrig == 0) return;
 
-  printf("===================================================\n");
-  printf(" Global Trigger output       Low pt  High pt   All\n");
-
-  printf(" number of Single Plus      :\t");
-  printf("%i\t",globalTrig->SinglePlusLpt());
-  printf("%i\t",globalTrig->SinglePlusHpt());
-  printf("%i\t",globalTrig->SinglePlusApt());
-  printf("\n");
-
-  printf(" number of Single Minus     :\t");
-  printf("%i\t",globalTrig->SingleMinusLpt());
-  printf("%i\t",globalTrig->SingleMinusHpt());
-  printf("%i\t",globalTrig->SingleMinusApt());
-  printf("\n");
-
-  printf(" number of Single Undefined :\t"); 
-  printf("%i\t",globalTrig->SingleUndefLpt());
-  printf("%i\t",globalTrig->SingleUndefHpt());
-  printf("%i\t",globalTrig->SingleUndefApt());
-  printf("\n");
-
-  printf(" number of UnlikeSign pair  :\t"); 
-  printf("%i\t",globalTrig->PairUnlikeLpt());
-  printf("%i\t",globalTrig->PairUnlikeHpt());
-  printf("%i\t",globalTrig->PairUnlikeApt());
-  printf("\n");
-
-  printf(" number of LikeSign pair    :\t");  
-  printf("%i\t",globalTrig->PairLikeLpt());
-  printf("%i\t",globalTrig->PairLikeHpt());
-  printf("%i\t",globalTrig->PairLikeApt());
-  printf("\n");
-  printf("===================================================\n");
-  printf("\n");
-  
+  globalTrig->Print("full");
 
  //  // returns Trigger Decision for current event
 //   AliMUONTriggerDecision* decision= new AliMUONTriggerDecision(GetLoader(),1);

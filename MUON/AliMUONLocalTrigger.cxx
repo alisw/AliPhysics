@@ -16,7 +16,6 @@
 /* $Id$ */
 
 
-
 #include "AliMUONLocalTrigger.h"
 #include <assert.h>
 #include "AliLog.h"
@@ -249,3 +248,20 @@ void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& lo
   SetY4Pattern(localStruct.GetY4());
 
 }
+
+//----------------------------------------------------------------------
+void AliMUONLocalTrigger::Print(Option_t* opt) const
+{
+  //
+  // Printing Local Trigger information
+  //
+  TString sopt(opt);
+  sopt.ToUpper();
+ 
+  if ( sopt.Contains("FULL") ) { 
+
+      printf("<AliMUONLocalTrigger> Circuit %d StripX %d Dev %d StripY %d Lpt %d Hpt %d Apt %d \n",LoCircuit(),LoStripX(),LoDev(),LoStripY(),LoLpt(),LoHpt(),LoApt());
+
+  }
+}
+

@@ -42,6 +42,8 @@ class AliMUONGlobalTrigger : public TObject {
   void  SetGlobalPattern(Int_t globalPattern);
   Int_t GetGlobalPattern() const;
 
+  virtual void Print(Option_t* opt="") const;
+  
 private:
   Int_t fSinglePlusLpt;  ///< Number of Single Plus Low pt 
   Int_t fSinglePlusHpt;  ///< Number of Single Plus High pt 

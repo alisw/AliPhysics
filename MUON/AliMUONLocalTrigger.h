@@ -76,6 +76,8 @@ class AliMUONLocalTrigger : public TObject {
   static Int_t EncodeDigitNumber(Int_t chamber, Int_t cathode, Int_t digit);
   static void  DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
 
+  virtual void Print(Option_t* opt="") const;
+  
 private:
   Int_t fLoCircuit; ///< Circuit number 
   Int_t fLoStripX;  ///< X strip in MT11 

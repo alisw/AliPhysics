@@ -18,6 +18,9 @@
 
 
 #include "AliMUONGlobalTrigger.h"
+#include <assert.h>
+#include "AliLog.h"
+#include "AliMUONLocalStruct.h"
 
 ClassImp(AliMUONGlobalTrigger)
 
@@ -217,5 +220,40 @@ Int_t AliMUONGlobalTrigger::GetGlobalPattern() const
 
 }
 
+//----------------------------------------------------------------------
+void AliMUONGlobalTrigger::Print(Option_t* opt) const
+{
+  //
+  // Printing Global Trigger information
+  //
+  TString sopt(opt);
+  sopt.ToUpper();
+  if ( sopt.Contains("FULL") ) { 
+
+      printf("===================================================\n");
+      printf(" Global Trigger output       Low pt  High pt   All\n");
+      printf(" number of Single Plus      :\t");
+      printf("%i\t%i\t%i\t",SinglePlusLpt(),SinglePlusHpt(),SinglePlusApt());
+      printf("\n");
+      
+      printf(" number of Single Minus     :\t");
+      printf("%i\t%i\t%i\t",SingleMinusLpt(),SingleMinusHpt(),SingleMinusApt());
+      printf("\n");
+      
+      printf(" number of Single Undefined :\t"); 
+      printf("%i\t%i\t%i\t",SingleUndefLpt(),SingleUndefHpt(),SingleUndefApt());
+      printf("\n");
+      
+      printf(" number of UnlikeSign pair  :\t"); 
+      printf("%i\t%i\t%i\t",PairUnlikeLpt(),PairUnlikeHpt(),PairUnlikeApt());
+      printf("\n");
+      
+      printf(" number of LikeSign pair    :\t");  
+      printf("%i\t%i\t%i\t",PairLikeLpt(),PairLikeHpt(),PairLikeApt());
+      printf("\n");
+      
+      printf("===================================================\n");
+  }  
+}
 
 

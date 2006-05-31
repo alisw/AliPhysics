@@ -484,9 +484,8 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
     Int_t nglobals = (Int_t) globalTrigger->GetEntriesFast(); // should be 1
     Int_t nlocals  = (Int_t) localTrigger->GetEntriesFast(); // up to 234
     if (PRINTOUT) printf("###################################################\n");
-    if (PRINTOUT) {cout << " event " << ievent 
-                        << " nglobals nlocals: " << nglobals << " " << nlocals << "\n"; }
-    
+    if (PRINTOUT) printf("event %d nglobal %d nlocal %d \n",ievent,nglobals,nlocals);
+
     for (Int_t iglobal=0; iglobal<nglobals; iglobal++) { // Global Trigger
       gloTrg = static_cast<AliMUONGlobalTrigger*>(globalTrigger->At(iglobal));
       
@@ -505,58 +504,14 @@ void MUONrectrigger (Int_t event2Check=0, char * filename="galice.root", Int_t W
       LSLowpt+=gloTrg->PairLikeLpt(); 
       LSHighpt+=gloTrg->PairLikeHpt();
       LSAllpt+=gloTrg->PairLikeApt();
-
-      if (PRINTOUT) {
-        printf("===================================================\n");
-        printf(" Global Trigger output       Low pt  High pt   All\n");
-        printf(" number of Single Plus      :\t");
-        printf("%i\t%i\t%i\t",gloTrg->SinglePlusLpt(),
-               gloTrg->SinglePlusHpt(),gloTrg->SinglePlusApt());
-        printf("\n");
-
-        printf(" number of Single Minus     :\t");
-        printf("%i\t%i\t%i\t",gloTrg->SingleMinusLpt(),
-               gloTrg->SingleMinusHpt(),gloTrg->SingleMinusApt());
-        printf("\n");
-
-        printf(" number of Single Undefined :\t"); 
-        printf("%i\t%i\t%i\t",gloTrg->SingleUndefLpt(),
-               gloTrg->SingleUndefHpt(),gloTrg->SingleUndefApt());
-        printf("\n");
-        
-        printf(" number of UnlikeSign pair  :\t"); 
-        printf("%i\t%i\t%i\t",gloTrg->PairUnlikeLpt(),
-               gloTrg->PairUnlikeHpt(),gloTrg->PairUnlikeApt());
-        printf("\n");
-        
-        printf(" number of LikeSign pair    :\t");  
-        printf("%i\t%i\t%i\t",gloTrg->PairLikeLpt(),
-               gloTrg->PairLikeHpt(),gloTrg->PairLikeApt());
-        printf("\n");
-        
-        printf("===================================================\n");
-      }
       
+      if (PRINTOUT) gloTrg->Print("full");
+
     } // end of loop on Global Trigger
     
     for (Int_t ilocal=0; ilocal<nlocals; ilocal++) { // Local Trigger
-      if (PRINTOUT) cout << " >>> Output for Local Trigger " << ilocal << "\n";
-      
       locTrg = static_cast<AliMUONLocalTrigger*>(localTrigger->At(ilocal));
-      
-      if (PRINTOUT){
-        cout << "Circuit StripX Dev StripY: " 
-             << locTrg->LoCircuit() << " " 
-             << locTrg->LoStripX() << " " 
-             << locTrg->LoDev() << " " 
-             << locTrg->LoStripY() 
-             << "\n";
-        cout << "Lpt Hpt Apt: "     
-             << locTrg->LoLpt() << " "   
-             << locTrg->LoHpt() << " "  
-             << locTrg->LoApt() << "\n";
-      }
-
+      if (PRINTOUT) locTrg->Print("full");
       
       if (!newTrigger) { // old trigger
 //	  printf("MUONCheck::rectrigger using OLD trigger \n");
