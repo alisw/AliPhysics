@@ -28,7 +28,7 @@ class dNdEtaCorrection;
 class dNdEtaAnalysis : public TNamed
 {
 public:
-  enum { kVertexBinning = 1+6 }; // the first is for the whole vertex range, the others divide the vertex range
+  enum { kVertexBinning = 1+4 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis(Char_t* name, Char_t* title);
 

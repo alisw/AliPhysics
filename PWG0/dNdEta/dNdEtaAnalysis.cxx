@@ -83,7 +83,7 @@ void dNdEtaAnalysis::Finish(dNdEtaCorrection* correction)
   }
 
   // normalize with n events (per vtx)
-  for (Int_t iVtx=0; iVtx<=hVtx->GetNbinsX(); iVtx++) {
+/*  for (Int_t iVtx=0; iVtx<=hVtx->GetNbinsX(); iVtx++) {
     Float_t nEvents      = hVtx->GetBinContent(iVtx);
     Float_t nEventsError = hVtx->GetBinError(iVtx);
 
@@ -111,60 +111,52 @@ void dNdEtaAnalysis::Finish(dNdEtaCorrection* correction)
       hEtaVsVtxCheck->SetBinContent(iVtx, iEta, value);
       hEtaVsVtxCheck->SetBinError(iVtx,   iEta, error);
     }
-  }
+  }*/
 
   // then take the wieghted average for each eta
   // is this the right way to do it???
-  for (Int_t iEta=0; iEta<=hEtaVsVtx->GetNbinsY(); iEta++) {
-    Float_t sum           = 0;
-    Float_t sumError2     = 0;
-    Int_t   nMeasurements = 0;    
-
-    Float_t sumXw = 0;
-    Float_t sumW  = 0;
-    
+  for (Int_t iEta=0; iEta<=hEtaVsVtx->GetNbinsY(); iEta++)
+  {
     // do we have several histograms for different vertex positions?
     Int_t vertexBinWidth = hVtx->GetNbinsX() / (kVertexBinning-1);
     for (Int_t vertexPos=0; vertexPos<kVertexBinning; ++vertexPos)
     {
-      Int_t vertexBinBegin = 0;
-      Int_t vertexBinEnd = hVtx->GetNbinsX();
+      Int_t vertexBinBegin = 1;
+      Int_t vertexBinEnd = hVtx->GetNbinsX() + 1;
 
       // the first histogram is always for the whole vertex range
       if (vertexPos > 0)
       {
-        vertexBinBegin = vertexBinWidth * (vertexPos-1);
+        vertexBinBegin = 1 + vertexBinWidth * (vertexPos-1);
         vertexBinEnd = vertexBinBegin + vertexBinWidth;
       }
 
-      for (Int_t iVtx=vertexBinBegin; iVtx<=vertexBinEnd; iVtx++) {
-        if (hVtx->GetBinContent(iVtx)==0)             continue;
-        if (hEtaVsVtxCheck->GetBinContent(iVtx, iEta)==0) continue;
-
-        Float_t w = 1/TMath::Power(hEtaVsVtx->GetBinError(iVtx, iEta),2);
-        sumXw = sumXw + hEtaVsVtxCheck->GetBinContent(iVtx, iEta)*w;
-        sumW  = sumW + w;
-
-        sum = sum + hEtaVsVtxCheck->GetBinContent(iVtx, iEta);
-        sumError2 = sumError2 + TMath::Power(hEtaVsVtxCheck->GetBinError(iVtx, iEta),2);      
-        nMeasurements++;
+      Float_t totalEvents = hVtx->Integral(vertexBinBegin, vertexBinEnd - 1);
+      if (totalEvents == 0)
+      {
+        printf("WARNING: No events for hist %d %d %d\n", vertexPos, vertexBinBegin, vertexBinEnd);
+        continue;
       }
-      Float_t dndeta = 0;
-      Float_t error  = 0;
 
-      if (nMeasurements!=0) {
-        dndeta = sum/Float_t(nMeasurements);
-        error  = TMath::Sqrt(sumError2)/Float_t(nMeasurements);
-
-        dndeta = sumXw/sumW;
-        error  = 1/TMath::Sqrt(sumW);
-
-        dndeta = dndeta/hdNdEta[vertexPos]->GetBinWidth(iEta);
-        error  = error/hdNdEta[vertexPos]->GetBinWidth(iEta);
-
-        hdNdEta[vertexPos]->SetBinContent(iEta, dndeta);
-        hdNdEta[vertexPos]->SetBinError(iEta, error);
+      Float_t sum = 0;
+      Float_t sumError2 = 0;
+      for (Int_t iVtx = vertexBinBegin; iVtx < vertexBinEnd; iVtx++)
+      {
+        if (hEtaVsVtx->GetBinContent(iVtx, iEta) != 0)
+        {
+          sum = sum + hEtaVsVtx->GetBinContent(iVtx, iEta);
+          sumError2 = sumError2 + TMath::Power(hEtaVsVtx->GetBinError(iVtx, iEta),2);
+        }
       }
+
+      Float_t dndeta = sum / totalEvents;
+      Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
+
+      dndeta = dndeta/hdNdEta[vertexPos]->GetBinWidth(iEta);
+      error  = error/hdNdEta[vertexPos]->GetBinWidth(iEta);
+
+      hdNdEta[vertexPos]->SetBinContent(iEta, dndeta);
+      hdNdEta[vertexPos]->SetBinError(iEta, error);
     }
   }
 }
@@ -227,15 +219,15 @@ void dNdEtaAnalysis::DrawHistograms()
 
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
 
-    for (Int_t i=1; i<kVertexBinning; ++i)
+    for (Int_t i=0; i<kVertexBinning; ++i)
     {
       //canvas2->cd(i-1);
       //printf("%d\n", i);
       if (hdNdEta[i])
       {
-        hdNdEta[i]->SetLineColor(i);
-        hdNdEta[i]->Draw((i == 1) ? "" : "SAME");
-        legend->AddEntry(hdNdEta[i], Form("Vtx Bin %d", i-1));
+        hdNdEta[i]->SetLineColor(i+1);
+        hdNdEta[i]->Draw((i == 0) ? "" : "SAME");
+        legend->AddEntry(hdNdEta[i], (i == 0) ? "Vtx All" : Form("Vtx Bin %d", i-1));
       }
     }
 
