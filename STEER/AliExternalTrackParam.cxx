@@ -171,7 +171,7 @@ CorrectForMaterial(Double_t d,  Double_t x0, Double_t mass) {
   }
 
   //Energy losses************************
-  if (x0!=0.) {
+  if (x0!=0. && beta2<1) {
      d*=x0;
      Double_t dE=0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2)*d;
      if (beta2/(1-beta2)>3.5*3.5)
