@@ -4601,6 +4601,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
     }
     if (Float_t(shared+1)/Float_t(nall+1)>0.5) {
       delete array->RemoveAt(i);
+      continue;
     }
     //
     if (track0->fKinkIndexes[0]!=0) continue;
