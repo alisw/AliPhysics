@@ -91,7 +91,7 @@ endif
 #                         else use all headers
 
 ifndef CINTHDRS
-@PACKAGE@CINTHDRS:=$(@PACKAGE@H) 
+@PACKAGE@CINTHDRS:=$(@PACKAGE@H)
 else
 @PACKAGE@CINTHDRS:=$(CINTHDRS)
 endif
@@ -251,11 +251,11 @@ endif
 
 $(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk @MODULE@/tgt_$(ALICE_TARGET)/@PACKAGE@_srcslist
 ifndef ALIQUIET
-	 @echo "***** Creating $@ *****";	
+	 @echo "***** Creating $@ *****";
 endif
 	 @(if [ ! -d '$(dir $@)' ]; then echo "***** Making directory $(dir $@) *****"; mkdir -p $(dir $@); fi;)
 	 @\rm -f $(patsubst %.cxx,%.d, $@)
-	 $(MUTE)rootcint -f $@ -c $(@PACKAGE@DEFINE) $(CINTFLAGS) $(@PACKAGE@INC) $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) 
+	 $(MUTE)rootcint -f $@ -c $(@PACKAGE@DEFINE) $(CINTFLAGS) $(@PACKAGE@INC) $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH)
 
 $(@PACKAGE@DO): $(@PACKAGE@DS) 
 ifndef ALIQUIET
@@ -376,3 +376,37 @@ check-@MODULE@: $(@PACKAGE@CHECKS)
 
 PACKREVENG += $(@PACKAGE@PREPROC)
 
+# targets to create .par archives (jgrosseo)
+@PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
+	@echo "Creating archive" $@ ...
+	@cd @MODULE@; tar cfzh ../$@ @PACKAGE@
+	@rm -rf @MODULE@/@PACKAGE@
+	@echo "done"
+
+@MODULE@/@PACKAGE@/Makefile: @MODULE@/Makefile
+	@echo Copying $< to $@ with transformations
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@sed 's/include \$$(ROOTSYS)\/test\/Makefile.arch/include Makefile.arch/' < $^ > $@
+	@sed 's/PACKAGE = .*/PACKAGE = @PACKAGE@/' < $^ > $@
+
+@MODULE@/@PACKAGE@/Makefile.arch: $(ROOTSYS)/test/Makefile.arch
+	@echo Copying $< to $@
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@cp $^ $@
+
+@MODULE@/@PACKAGE@/PROOF-INF: @MODULE@/PROOF-INF.@PACKAGE@
+	@echo Copying $< to $@
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@cp -r $^ $@
+
+@MODULE@/@PACKAGE@/%: @MODULE@/%
+	@echo Copying $< to $@
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@cp $< $@
+
+test-@PACKAGE@.par: @PACKAGE@.par
+	@echo "INFO: The file $< is now tested, in case of an error check in par-tmp/@PACKAGE@."
+	@mkdir -p par-tmp
+	@cd par-tmp; tar xfz ../$<;	cd $(subst .par,,$<); PROOF-INF/BUILD.sh
+	@rm -rf par-tmp/@PACKAGE@
+	@echo "INFO: Testing succeeded (already cleaned up)"
