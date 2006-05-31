@@ -249,13 +249,14 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	// Mother volume for each chamber in st3 are only defined if Dipole volue is there.
 	// Outer excess and inner recess for mother volume radius
 	// with respect to ROuter and RInner
-	Float_t dframepIn = kRframeHeight; 
-	Float_t dframepOut= kVframeLength + 37.0; // Additional 37 cm gap is needed to wrap the corners of the slats 
+	Float_t dMotherInner = AliMUONConstants::Rmin(2)-kRframeHeight; 
+	Float_t dMotherOutner= AliMUONConstants::Rmax(2)+kVframeLength + 37.0; 
+	// Additional 37 cm gap is needed to wrap the corners of the slats sin Rmax represent the maximum active radius of the chamber with 2pi phi acceptance 
 	Float_t tpar[3];
 	Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(5)) -
 	                       (-AliMUONConstants::DefaultChamberZ(4)) ) /2.1;
-	tpar[0] = AliMUONConstants::Rmin(2)-dframepIn; 
-	tpar[1] = AliMUONConstants::Rmax(2)+dframepOut;
+	tpar[0] = dMotherInner; 
+	tpar[1] = dMotherOutner;
 	tpar[2] = dstation;
 	gMC->Gsvolu("CH05", "TUBE", idAir, tpar, 3);
 	gMC->Gsvolu("CH06", "TUBE", idAir, tpar, 3);
@@ -647,13 +648,14 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     // Mother volume for each chamber
     // Outer excess and inner recess for mother volume radius
     // with respect to ROuter and RInner
-    Float_t dframepIn = kRframeHeight; 
-    Float_t dframepOut= kVframeLength + 40.0; // Additional 30 cm gap is needed to wrap the corners of the slats 
+    Float_t dMotherInner =  AliMUONConstants::Rmin(3)-kRframeHeight; 
+    // Additional 40 cm gap is needed to wrap the corners of the slats since Rmax represent the maximum active radius of the chamber with 2pi phi acceptance 
+    Float_t dMotherOutner= AliMUONConstants::Rmax(3)+kVframeLength + 40.0;
     Float_t tpar[3];
     Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(7)) - 
                            (-AliMUONConstants::DefaultChamberZ(6)) ) /2.2;
-    tpar[0] = AliMUONConstants::Rmin(3)-dframepIn; 
-    tpar[1] = AliMUONConstants::Rmax(3)+dframepOut;
+    tpar[0] = dMotherInner; 
+    tpar[1] = dMotherOutner;
     tpar[2] = dstation;
     gMC->Gsvolu("CH07", "TUBE", idAir, tpar, 3);
     gMC->Gsvolu("CH08", "TUBE", idAir, tpar, 3);
@@ -920,13 +922,14 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     // Mother volume for each chamber
     // Outer excess and inner recess for mother volume radius
     // with respect to ROuter and RInner
-    Float_t dframepIn = kRframeHeight; 
-    Float_t dframepOut= kVframeLength + 40.0; // Additional 40 cm gap is needed to wrap the corners of the slats 
+    Float_t dMotherInner =  AliMUONConstants::Rmin(4)-kRframeHeight; 
+    // Additional 40 cm gap is needed to wrap the corners of the slats since Rmax represent the maximum active radius of the chamber with 2pi phi acceptance 
+    Float_t dMotherOutner= AliMUONConstants::Rmax(4)+kVframeLength + 40.0;
     Float_t tpar[3];
     Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(9)) - 
                            (-AliMUONConstants::DefaultChamberZ(8)) ) /2.3;
-    tpar[0] = AliMUONConstants::Rmin(4)-dframepIn; 
-    tpar[1] = AliMUONConstants::Rmax(4)+dframepOut;
+    tpar[0] = dMotherInner; 
+    tpar[1] = dMotherOutner;
     tpar[2] = dstation;
     gMC->Gsvolu("CH09", "TUBE", idAir, tpar, 3);
     gMC->Gsvolu("CH10", "TUBE", idAir, tpar, 3);
