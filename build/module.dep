@@ -45,4 +45,4 @@ TPHIC/module.mk:	 TPHIC/libTPHIC.pkg
 TRD/module.mk:		 TRD/libTRDbase.pkg TRD/libTRDsim.pkg TRD/libTRDrec.pkg TRD/libTRDfast.pkg
 VZERO/module.mk:	 VZERO/libVZERObase.pkg VZERO/libVZEROsim.pkg VZERO/libVZEROrec.pkg
 ZDC/module.mk:		 ZDC/libZDCbase.pkg ZDC/libZDCrec.pkg ZDC/libZDCsim.pkg
-EVE/module.mk:		 EVE/libAlieve.pkg EVE/libReve.pkg EVE/binreve.pkg 
+EVE/module.mk:		 EVE/libReve.pkg EVE/binreve.pkg EVE/libAlieve.pkg EVE/binalieve.pkg
