@@ -15,12 +15,12 @@
 //
 // -----------------------------------------------------------------
 // 
-// TODO: 
+// NOTE: The cuts on phi and zeta depends on the interacting system (p-p  
+//  or Pb-Pb). Please, check the file AliITSMultReconstructor.h and be 
+//  sure that SetPhiWindow and SetZetaWindow are defined accordingly.
 // 
-// - Introduce a rough pt estimation from the difference in phi ? 
-// - Allow for a more refined selection criterium in case of multiple 
-//   candidates (for instance by introducing weights for the difference 
-//   in Phi and Zeta). 
+//  
+//  
 //
 //____________________________________________________________________
 
@@ -30,7 +30,6 @@
 #include "TH1F.h"
 #include "TH2F.h"
 
-
 #include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
 #include "AliLog.h"
@@ -38,8 +37,11 @@
 //____________________________________________________________________
 ClassImp(AliITSMultReconstructor)
 
+
 //____________________________________________________________________
 AliITSMultReconstructor::AliITSMultReconstructor() {
+  // Method to reconstruct the charged particles multiplicity with the 
+  // SPD (tracklets).
 
   fGeometry =0;
 
@@ -86,46 +88,55 @@ AliITSMultReconstructor::AliITSMultReconstructor() {
   fhDPhiVsDThetaAll->SetDirectory(0);
 
   fhetaTracklets  = new TH1F("etaTracklets",  "eta",  100,-2.,2.);
-  fhetaTracklets->SetDirectory(0);
   fhphiTracklets  = new TH1F("phiTracklets",  "phi",  100,-3.14159,3.14159);
-  fhphiTracklets->SetDirectory(0);
   fhetaClustersLay1  = new TH1F("etaClustersLay1",  "etaCl1",  100,-2.,2.);
-  fhetaClustersLay1->SetDirectory(0);
   fhphiClustersLay1  = new TH1F("phiClustersLay1", "phiCl1", 100,-3.141,3.141);
-  fhphiClustersLay1->SetDirectory(0);
+
 }
-//____________________________________________________________________
-AliITSMultReconstructor::~AliITSMultReconstructor() {
+
+//______________________________________________________________________
+AliITSMultReconstructor::AliITSMultReconstructor(const AliITSMultReconstructor &mr) : TObject(mr) {
+  // Copy constructor
+  // Copies are not allowed. The method is protected to avoid misuse.
+  Error("AliITSMultReconstructor","Copy constructor not allowed\n");
+}
+
+//______________________________________________________________________
+AliITSMultReconstructor& AliITSMultReconstructor::operator=(const AliITSMultReconstructor& /* mr */){
+  // Assignment operator
+  // Assignment is not allowed. The method is protected to avoid misuse.
+  Error("= operator","Assignment operator not allowed\n");
+  return *this;
+}
+
+//______________________________________________________________________
+AliITSMultReconstructor::~AliITSMultReconstructor(){
   // Destructor
-
-  fGeometry = 0x0;
-  for(Int_t i=0; i<300000; i++) {
-    delete [] fClustersLay1[i];
-    delete [] fClustersLay2[i];
-    delete [] fTracklets[i];
+  if(fhClustersDPhiAcc)delete fhClustersDPhiAcc;
+  if(fhClustersDThetaAcc)delete fhClustersDThetaAcc;
+  if(fhClustersDZetaAcc)delete fhClustersDZetaAcc;
+  if(fhClustersDPhiAll)delete fhClustersDPhiAll;
+  if(fhClustersDThetaAll)delete fhClustersDThetaAll;
+  if(fhClustersDZetaAll)delete fhClustersDZetaAll;
+  if(fhDPhiVsDThetaAll)delete fhDPhiVsDThetaAll;
+  if(fhDPhiVsDThetaAcc)delete fhDPhiVsDThetaAcc;
+  if(fhDPhiVsDZetaAll)delete fhDPhiVsDZetaAll;
+  if(fhDPhiVsDZetaAcc)delete fhDPhiVsDZetaAcc;
+  if(fhetaTracklets)delete fhetaTracklets;
+  if(fhphiTracklets)delete fhphiTracklets;
+  if(fhetaClustersLay1)delete fhetaClustersLay1;
+  if(fhphiClustersLay1)delete fhphiClustersLay1;
+  if(fClustersLay1){
+    for(Int_t i=0; i<300000; i++) {
+      delete [] fClustersLay1[i];
+      delete [] fClustersLay2[i];
+      delete [] fTracklets[i];
+    }
+    delete fClustersLay1;
+    delete  fClustersLay2;
+    delete fTracklets;
   }
-  
-  delete [] fClustersLay1;
-  delete [] fClustersLay2;
-  delete [] fTracklets;
-  delete [] fAssociationFlag;
-  
-  delete fhClustersDPhiAcc;
-  delete fhClustersDThetaAcc;
-  delete fhClustersDZetaAcc;
-  delete fhClustersDPhiAll;
-  delete fhClustersDThetaAll;
-  delete fhClustersDZetaAll;
- 
-  delete fhDPhiVsDThetaAll;
-  delete fhDPhiVsDThetaAcc;
-  delete fhDPhiVsDZetaAll;
-  delete fhDPhiVsDZetaAcc;
-
-  delete fhetaTracklets;
-  delete fhphiTracklets;
-  delete fhetaClustersLay1;
-  delete fhphiClustersLay1;
+  if(fAssociationFlag)delete fAssociationFlag;
 }
 
 //____________________________________________________________________
@@ -148,7 +159,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 
   // loading the clusters 
   LoadClusterArrays(clusterTree);
- 
+
   // find the tracklets
   AliDebug(1,"Looking for tracklets... ");  
 
@@ -199,7 +210,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 
     // reset of variables for multiple candidates
     Int_t  iC2WithBestDist = 0;     // reset 
-    Float_t Distmin        = 100.;  // just to put a huge number! 
+    Float_t distmin        = 100.;  // just to put a huge number! 
     Float_t dPhimin        = 0.;  // Used for histograms only! 
     Float_t dThetamin      = 0.;  // Used for histograms only! 
     Float_t dZetamin       = 0.;  // Used for histograms only! 
@@ -228,11 +239,12 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 	}
 	// make "elliptical" cut in Phi and Zeta! 
 	Float_t d = TMath::Sqrt(TMath::Power(dPhi/fPhiWindow,2) + TMath::Power(dZeta/fZetaWindow,2));
+
 	if (d>1) continue;      
 	
 	//look for the minimum distance: the minimum is in iC2WithBestDist
-       	if (TMath::Sqrt(dZeta*dZeta+(r2*dPhi*r2*dPhi)) < Distmin ) {
-	  Distmin=TMath::Sqrt(dZeta*dZeta + (r2*dPhi*r2*dPhi));
+       	if (TMath::Sqrt(dZeta*dZeta+(r2*dPhi*r2*dPhi)) < distmin ) {
+	  distmin=TMath::Sqrt(dZeta*dZeta + (r2*dPhi*r2*dPhi));
 	  dPhimin = dPhi;
 	  dThetamin = dTheta;
 	  dZetamin = dZeta; 
@@ -241,15 +253,15 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       } 
     } // end of loop over clusters in layer 2 
     
-    if (Distmin<100) { // This means that a cluster in layer 2 was found that mathes with iC1
+    if (distmin<100) { // This means that a cluster in layer 2 was found that mathes with iC1
 
-	if (fHistOn) {
-	  fhClustersDPhiAcc->Fill(dPhimin);    
-	  fhClustersDThetaAcc->Fill(dThetamin);    
-	  fhClustersDZetaAcc->Fill(dZetamin);    
-	  fhDPhiVsDThetaAcc->Fill(dThetamin, dPhimin);
-	  fhDPhiVsDZetaAcc->Fill(dZetamin, dPhimin);
-	}
+      if (fHistOn) {
+	fhClustersDPhiAcc->Fill(dPhimin);    
+	fhClustersDThetaAcc->Fill(dThetamin);    
+	fhClustersDZetaAcc->Fill(dZetamin);    
+	fhDPhiVsDThetaAcc->Fill(dThetamin, dPhimin);
+	fhDPhiVsDZetaAcc->Fill(dZetamin, dPhimin);
+      }
       
       if (fOnlyOneTrackletPerC2) fAssociationFlag[iC2WithBestDist] = kTRUE; // flag the association
       
@@ -262,17 +274,36 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       // Store the difference between phi1 and phi2
       fTracklets[fNTracklets][2] = fClustersLay1[iC1][1] - fClustersLay2[iC2WithBestDist][1];       
   
- 	if (fHistOn) {
-	  Float_t eta=fTracklets[fNTracklets][0];
-	  eta= TMath::Tan(eta/2.);
-	  eta=-TMath::Log(eta);
-	  fhetaTracklets->Fill(eta);    
-	  fhphiTracklets->Fill(fTracklets[fNTracklets][1]);    
-	}
-      fNTracklets++;
+      if (fHistOn) {
+	Float_t eta=fTracklets[fNTracklets][0];
+	eta= TMath::Tan(eta/2.);
+	eta=-TMath::Log(eta);
+	fhetaTracklets->Fill(eta);    
+	fhphiTracklets->Fill(fTracklets[fNTracklets][1]);    
+      }
       
-      AliDebug(1,Form(" Adding tracklet candidate %d (cluster %d  of layer 1 and %d  of layer 2)", fNTracklets, iC1));
+      AliDebug(1,Form(" Adding tracklet candidate %d ", fNTracklets));
+      AliDebug(1,Form(" Cl. %d of Layer 1 and %d of Layer 2", iC1, 
+		      iC2WithBestDist));
+      fNTracklets++;
     }
+
+    // Delete the following else if you do not want to save Clusters! 
+
+    else { // This means that the cluster has not been associated 
+
+      // store the cluster
+       
+      fTracklets[fNTracklets][0] = fClustersLay1[iC1][0];
+      fTracklets[fNTracklets][1] = fClustersLay1[iC1][1];
+      // Store a flag. This will indicate that the "tracklet" 
+      // was indeed a single cluster! 
+      fTracklets[fNTracklets][2] = -999999.;       
+      AliDebug(1,Form(" Adding a single cluster %d (cluster %d  of layer 1)", 
+		      fNTracklets, iC1));
+      fNTracklets++;
+    }
+
   } // end of loop over clusters in layer 1
   
   AliDebug(1,Form("%d tracklets found", fNTracklets));
@@ -356,6 +387,8 @@ AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree) {
 //____________________________________________________________________
 void
 AliITSMultReconstructor::SaveHists() {
+  // This method save the histograms on the output file
+  // (only if fHistOn is TRUE). 
   
   if (!fHistOn)
     return;

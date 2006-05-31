@@ -26,7 +26,8 @@
 
 class TTree;
 class TH1F;
-class TH2F;
+class TH2F; 
+
 class AliITSgeom;
 
 class AliITSMultReconstructor : public TObject 
@@ -40,8 +41,8 @@ public:
   void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes);
 
   void SetPhiWindow(Float_t w=0.08) {fPhiWindow=w;}
-  void SetZetaWindow(Float_t w=0.5) {fZetaWindow=w;}
-  void SetOnlyOneTrackletPerC2(Float_t b = kFALSE) {fOnlyOneTrackletPerC2 = b;}
+  void SetZetaWindow(Float_t w=1.) {fZetaWindow=w;}
+  void SetOnlyOneTrackletPerC2(Bool_t b = kFALSE) {fOnlyOneTrackletPerC2 = b;}
   
   Int_t GetNClustersLayer1() const {return fNClustersLay1;}
   Int_t GetNClustersLayer2() const {return fNClustersLay2;}
@@ -53,7 +54,10 @@ public:
 
   void SetHistOn(Bool_t b=kFALSE) {fHistOn=b;}
   void SaveHists();
+
 protected:
+  AliITSMultReconstructor(const AliITSMultReconstructor& mr);
+  AliITSMultReconstructor& operator=(const AliITSMultReconstructor& /* mr */);
 
   AliITSgeom*   fGeometry;            // ITS geometry
   
@@ -69,30 +73,32 @@ protected:
   Float_t       fPhiWindow;     // Search window in phi
   Float_t       fZetaWindow;    // SEarch window in eta
 
-  Bool_t        fOnlyOneTrackletPerC2; // only one tracklet per cluster in layer 2
+  Bool_t        fOnlyOneTrackletPerC2; // only one tracklet per cluster in L. 2
   
-  Bool_t        fHistOn;
+  Bool_t        fHistOn; // Option to define and fill the histograms 
 
-  TH1F*         fhClustersDPhiAcc;
-  TH1F*         fhClustersDThetaAcc;
-  TH1F*         fhClustersDZetaAcc;
-  TH1F*         fhClustersDPhiAll;
-  TH1F*         fhClustersDThetaAll;
-  TH1F*         fhClustersDZetaAll;
+
+  TH1F*         fhClustersDPhiAcc;   // Phi2 - Phi1 for tracklets 
+  TH1F*         fhClustersDThetaAcc; // Theta2 - Theta1 for tracklets 
+  TH1F*         fhClustersDZetaAcc;  // z2 - z1projected for tracklets 
+  TH1F*         fhClustersDPhiAll;   // Phi2 - Phi1 all the combinations 
+  TH1F*         fhClustersDThetaAll; // Theta2 - Theta1 all the combinations
+  TH1F*         fhClustersDZetaAll;  // z2 - z1projected all the combinations
  
-  TH2F*         fhDPhiVsDThetaAll;
-  TH2F*         fhDPhiVsDThetaAcc;
-  TH2F*         fhDPhiVsDZetaAll;
-  TH2F*         fhDPhiVsDZetaAcc;
+  TH2F*         fhDPhiVsDThetaAll; // 2D plot for all the combinations  
+  TH2F*         fhDPhiVsDThetaAcc; // same plot for tracklets 
+  TH2F*         fhDPhiVsDZetaAll;  // 2d plot for all the combination 
+  TH2F*         fhDPhiVsDZetaAcc;  // same plot for tracklets 
 
-  TH1F*         fhetaTracklets;
-  TH1F*         fhphiTracklets;
-  TH1F*         fhetaClustersLay1;
-  TH1F*         fhphiClustersLay1;
+  TH1F*         fhetaTracklets;    // Pseudorapidity distr. for tracklets 
+  TH1F*         fhphiTracklets;    // Azimuthal (Phi) distr. for tracklets  
+  TH1F*         fhetaClustersLay1; // Pseudorapidity distr. for Clusters L. 1
+  TH1F*         fhphiClustersLay1; // Azimuthal (Phi) distr. for Clusters L. 1 
+ 
 
   void LoadClusterArrays(TTree* tree);
 
-  ClassDef(AliITSMultReconstructor,0)
+  ClassDef(AliITSMultReconstructor,1)
 };
 
 #endif
