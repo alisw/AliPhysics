@@ -24,7 +24,7 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TString.h>
-
+#include <TGeoManager.h>
 #include "AliFRAMEv2.h"
 #include "AliMagF.h"
 #include "AliRun.h"
@@ -129,6 +129,7 @@ void AliFRAMEv2::CreateGeometry()
   ppgon[9] = ppgon[6];
   gMC->Gsvolu("BREF", "PGON", kAir, ppgon, 10);
   gMC->Gspos("BREF", 1, "B077", 0., 0., 0., 0, "ONLY");
+  gGeoManager->GetVolume("BREF")->SetVisibility(kFALSE);
 //
 //  The outer Frame
 //
@@ -481,15 +482,15 @@ void AliFRAMEv2::CreateGeometry()
   TString module[18];
 // Position of Holes for PHOS (P) and RICH (R) starting at 6h
 //                 P  P  P  -  -  R  R  R  -  -  -  -  -  -  -  -  P  P
-  Int_t mod[18] = {0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
+//  Int_t mod[18] = {0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
   
   for (i = 0; i < 18; i++) {
       // Create volume i 
       char name[16];
       sprintf(name, "BSEGMO%d", i);
       gMC->Gsvolu(name, "TRD1", kAir, ptrd1, 4);
+      gGeoManager->GetVolume(name)->SetVisibility(kFALSE);
 
-      
       module[i] = name;
       // Place volume i
       Float_t phi  = i * 20.;
@@ -500,7 +501,7 @@ void AliFRAMEv2::CreateGeometry()
       dy = -TMath::Cos(phi*kdeg2rad)*r;
       
       AliMatrix(idrotm[2034+i],  90.0, phi, 0., 0., 90., phi2);  
-      gMC->Gspos(name, i, "B077", dx, dy, 0., idrotm[2034+i], "ONLY");
+      gMC->Gspos(name, 1, "B077", dx, dy, 0., idrotm[2034+i], "ONLY");
 //
 //    Position elements of outer Frame
 //
@@ -718,19 +719,19 @@ void AliFRAMEv2::CreateGeometry()
 
   dz = -iFrH/2.+ringH/2.+kEps;
   
-  for (i = 0; i< 18; i++)
+  for (jmod = 0; jmod< 18; jmod++)
   {
 // ring bars
-      for (jmod = 0; jmod<3; jmod++) {
-	  gMC->Gspos("B072", 6*i+jmod+1, module[jmod], 0,  dymodL[mod[i]], dz, 0, "ONLY");
-	  gMC->Gspos("B072", 6*i+jmod+4, module[jmod], 0, -dymodL[mod[i]], dz, idrotm[2070], "ONLY");      
+      for (i = 0; i < 3; i++) {
+	  gMC->Gspos("B072", 6*jmod+i+1, module[jmod], 0,  dymodL[i], dz, 0, "ONLY");
+	  gMC->Gspos("B072", 6*jmod+i+4, module[jmod], 0, -dymodL[i], dz, idrotm[2070], "ONLY");      
 
 // 0-deg web
-	  if (mod[i] == 2) {
-	      gMC->Gspos("B263", 12*i+jmod+1,  module[jmod],  60.0732,  dymodU[2], 4.6669, idrotm[2072], "ONLY");
-	      gMC->Gspos("B263", 12*i+jmod+4,  module[jmod],  60.0732, -dymodU[2], 4.6669, idrotm[2071], "ONLY");      
-	      gMC->Gspos("B263", 12*i+jmod+7,  module[jmod], -60.0732,  dymodU[2], 4.6669, idrotm[2074], "ONLY");
-	      gMC->Gspos("B263", 12*i+jmod+10, module[jmod], -60.0732, -dymodU[2], 4.6669, idrotm[2073], "ONLY");      
+	  if (i == 2) {
+	      gMC->Gspos("B263", 4*jmod+1,  module[jmod],  60.0732,  dymodU[2], 4.6669, idrotm[2072], "ONLY");
+	      gMC->Gspos("B263", 4*jmod+2,  module[jmod],  60.0732, -dymodU[2], 4.6669, idrotm[2071], "ONLY");      
+	      gMC->Gspos("B263", 4*jmod+3,  module[jmod], -60.0732,  dymodU[2], 4.6669, idrotm[2074], "ONLY");
+	      gMC->Gspos("B263", 4*jmod+4,  module[jmod], -60.0732, -dymodU[2], 4.6669, idrotm[2073], "ONLY");      
 	  }
       }
   }
@@ -872,6 +873,8 @@ void AliFRAMEv2::CreateGeometry()
     char nameMo[16];
     sprintf(nameMo, "BSEGMO%d",i);
     gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
+    gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
+    
     gMC->Gspos(nameCh, 1, nameMo, 0., 0., -10.37, 0, "ONLY");
   }
 
@@ -888,6 +891,7 @@ void AliFRAMEv2::CreateGeometry()
     char nameMo[16];
     sprintf(nameMo, "BSEGMO%d",i);
     gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
+    gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
     gMC->Gspos(nameCh, 1, nameMo, 0., 0., 42.69, 0, "ONLY");
   }
 
