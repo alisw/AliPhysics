@@ -141,6 +141,13 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
 
+  fdNdEtaCorrection->FillEvent(vtxMC[2]);
+
+  if (goodEvent)
+    fdNdEtaCorrection->FillUsedEvent(vtxMC[2]);
+    
+
+
   // ########################################################
   // loop over mc particles
   TTree* particleTree = GetKinematics();
@@ -165,9 +172,12 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     fdNdEtaCorrection->FillParticleAllEvents(vtxMC[2], eta);	
     
     if (goodEvent)
-      fdNdEtaCorrection->FillParticleWhenGoodEvent(vtxMC[2], eta);	
+      fdNdEtaCorrection->FillParticleWhenUsedEvent(vtxMC[2], eta);	
     
   }// end of mc particle
+
+  if (!goodEvent)
+    return kTRUE;  
 
   // ########################################################
   // loop over esd tracks
