@@ -39,40 +39,55 @@ ClassImp(AliVertexerTracks)
 
 //----------------------------------------------------------------------------
 AliVertexerTracks::AliVertexerTracks():
- TObject(),fVert(),fCurrentVertex(0)
+TObject(),
+fVert(),
+fCurrentVertex(0),
+fMaxChi2PerTrack(1e33),
+fTrkArray(),
+fTrksToSkip(0),
+fNTrksToSkip(0),
+fDCAcut(0),
+fAlgo(1),
+fDebug(0)
 {
 //
 // Default constructor
 //
   SetVtxStart();
+  SetVtxStartSigma();
   SetMinTracks();
-  fDCAcut=0;
-  fTrksToSkip = 0;
-  fNTrksToSkip = 0;
-  fDebug=0;
-  fAlgo=1;
+  SetMinITSClusters();
+  SetNSigmad0(); 
 }
 //-----------------------------------------------------------------------------
 AliVertexerTracks::AliVertexerTracks(Double_t xStart, Double_t yStart):
- TObject(),fVert(),fCurrentVertex(0)
+TObject(),
+fVert(),
+fCurrentVertex(0),
+fMaxChi2PerTrack(1e33),
+fTrkArray(),
+fTrksToSkip(0),
+fNTrksToSkip(0),
+fDCAcut(0),
+fAlgo(1),
+fDebug(0)
 {
 //
 // Standard constructor
 //
   SetVtxStart(xStart,yStart);
+  SetVtxStartSigma();
   SetMinTracks();
-  fTrksToSkip = 0;
-  fNTrksToSkip = 0;
-  fDCAcut=0;
-  fDebug=0;
-  fAlgo=1;
+  SetMinITSClusters();
+  SetNSigmad0(); 
 }
 //-----------------------------------------------------------------------------
 AliVertexerTracks::~AliVertexerTracks() {
   // Default Destructor
-  // The objects poited by the following pointers are not owned
+  // The objects poited by the following pointer are not owned
   // by this class and are not deleted
   fCurrentVertex = 0;
+  delete[] fTrksToSkip;
 }
 //---------------------------------------------------------------------------
 void AliVertexerTracks::SetSkipTracks(Int_t n,Int_t *skipped) {
@@ -100,10 +115,15 @@ Int_t AliVertexerTracks::PrepareTracks(TTree &trkTree, Int_t OptImpParCut) {
 // Propagate tracks to initial vertex position and store them in a TObjArray
 //
   Double_t maxd0rphi = 3.;  
-  Double_t alpha,xlStart,d0rphi;
   Int_t    nTrks    = 0;
   Bool_t   skipThis;
+  Double_t sigmaCurr[3],sigmaVtx[3],posVtx[3];
+  Float_t  d0z0[2],covd0z0[3]; 
+  Double_t momentum[3],postrk[3];
+  Double_t pt,sigma,sigmavtxphi,phitrk;
   Double_t field=GetField();
+
+  AliESDVertex *initVertex = new AliESDVertex(fNominalPos,fNominalSigma);
 
   Int_t    nEntries = (Int_t)trkTree.GetEntries();
   if(!fTrkArray.IsEmpty()) fTrkArray.Clear();
@@ -128,6 +148,51 @@ Int_t AliVertexerTracks::PrepareTracks(TTree &trkTree, Int_t OptImpParCut) {
     trkTree.SetBranchAddress("tracks",&track);
     trkTree.GetEvent(i);
 
+
+
+    // propagate track to vertex
+    if(OptImpParCut==1) {
+      track->RelateToVertex(initVertex,field,100.);
+      initVertex->GetXYZ(posVtx);
+      initVertex->GetSigmaXYZ(sigmaVtx);
+    } else {
+      fCurrentVertex->GetSigmaXYZ(sigmaCurr);
+      if((sigmaCurr[0]+sigmaCurr[1])<(fNominalSigma[0]+fNominalSigma[1])) {
+	track->RelateToVertex(fCurrentVertex,field,100.);
+	fCurrentVertex->GetXYZ(posVtx);
+	fCurrentVertex->GetSigmaXYZ(sigmaVtx);
+      } else {
+	track->RelateToVertex(initVertex,field,100.);
+	initVertex->GetXYZ(posVtx);
+	initVertex->GetSigmaXYZ(sigmaVtx);
+      }
+    }
+
+    // select tracks with d0rphi < maxd0rphi
+    track->GetImpactParameters(d0z0,covd0z0);
+
+    if(OptImpParCut==1) {
+      maxd0rphi = 3.; // cm
+    } else {
+      track->GetXYZ(postrk);
+      track->GetPxPyPz(momentum);
+      pt = TMath::Sqrt(momentum[0]*momentum[0]+momentum[1]*momentum[1]);
+
+      phitrk = TMath::ATan2(postrk[1]-posVtx[1],postrk[0]-posVtx[0]);
+      sigmavtxphi = TMath::Sqrt(sigmaVtx[0]*sigmaVtx[0]*
+				TMath::Cos(phitrk)*TMath::Cos(phitrk)+
+				sigmaVtx[1]*sigmaVtx[1]*
+				TMath::Sin(phitrk)*TMath::Sin(phitrk));
+      sigma = TMath::Sqrt(Sigmad0rphi(pt)*Sigmad0rphi(pt)+
+			  sigmavtxphi*sigmavtxphi);
+      maxd0rphi = fNSigma*sigma;
+    }
+    if(TMath::Abs(d0z0[0]) > maxd0rphi) { 
+      delete track; continue; 
+    }
+
+    /*
+    //   PREVIOUS VERSION
     // propagate track to vtxSeed
     alpha  = track->GetAlpha();
     xlStart = fNominalPos[0]*TMath::Cos(alpha)+fNominalPos[1]*TMath::Sin(alpha);
@@ -142,13 +207,32 @@ Int_t AliVertexerTracks::PrepareTracks(TTree &trkTree, Int_t OptImpParCut) {
       }
       // end to be replaced by new Andrea's selection
     }
+    */
+
     fTrkArray.AddLast(track);
     nTrks++; 
-    if(fDebug) printf(" :-) nTrks=%d, d0rphi=%f\n",nTrks,d0rphi);
+    if(fDebug) printf(" :-) nTrks=%d, d0rphi=%f\n",nTrks,TMath::Abs(d0z0[0]));
   }
+
   if(fTrksToSkip) delete [] fTrksToSkip;
+  delete initVertex;
+
   return nTrks;
 } 
+//----------------------------------------------------------------------------
+Double_t AliVertexerTracks::Sigmad0rphi(Double_t pt) const {
+//
+// Impact parameter resolution in rphi [cm] vs pt [GeV/c]
+//
+  Double_t a_meas  = 11.6;
+  Double_t a_scatt = 65.8;
+  Double_t b       = 1.878;
+
+  Double_t sigma = a_meas*a_meas+a_scatt*a_scatt/TMath::Power(pt,b);
+  sigma = 0.0001*TMath::Sqrt(sigma);
+
+  return sigma;
+}
 //----------------------------------------------------------------------------
 AliVertex* AliVertexerTracks::VertexForSelectedTracks(TTree *trkTree) {
 //
@@ -174,12 +258,13 @@ AliVertex* AliVertexerTracks::VertexForSelectedTracks(TTree *trkTree) {
   if(fAlgo==5)  VertexFinder(0);
   return &fVert;
 }
-
 //----------------------------------------------------------------------------
 AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
 {
 //
 // Primary vertex for current ESD event
+// (Two iterations: 1st with |d0rphi|<3cm; 2nd with 
+// fNSigma*sigma(pt) cut w.r.t. to vertex found in 1st iteration) 
 //
   fCurrentVertex = 0;
 
@@ -194,14 +279,104 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
     if(!esdTrack->GetStatus()&AliESDtrack::kITSin) continue;
     if(!esdTrack->GetStatus()&AliESDtrack::kITSrefit) continue;
     Int_t nclus=esdTrack->GetNcls(0); // check number of clusters in ITS
-    if(nclus<6) continue;
+    if(nclus<fMinITSClusters) continue;
+
+    trkTree->Fill();
+  }
+  delete esdTrack;
+
+  // ITERATION 1
+  // propagate tracks to initVertex
+  // preselect them (reject only |d0|>3cm w.r.t. finitVertex) 
+  Int_t nTrks;
+  nTrks = PrepareTracks(*trkTree,1);
+  if(fDebug) printf(" tracks prepared - step 1: %d\n",nTrks);
+  if(nTrks < fMinTracks) {
+    printf("TooFewTracks\n");
+    fCurrentVertex = new AliESDVertex(0.,0.,-1);
+    return fCurrentVertex; 
+  }
+
+  // vertex finder
+  switch (fAlgo) {
+    case 1: StrLinVertexFinderMinDist(1); break;
+    case 2: StrLinVertexFinderMinDist(0); break;
+    case 3: HelixVertexFinder();          break;
+    case 4: VertexFinder(1);              break;
+    case 5: VertexFinder(0);              break;
+    default: printf("Wrong algorithm\n"); break;  
+  }
+  if(fDebug) printf(" vertex finding completed\n");
+
+  // vertex fitter
+  ComputeMaxChi2PerTrack(nTrks);
+  VertexFitter();
+  if(fDebug) printf(" vertex fit completed\n");
+
+  // ITERATION 2
+  // propagate tracks to best between initVertex and fCurrentVertex
+  // preselect tracks (reject for |d0|>fNSigma*sigma w.r.t. best 
+  //                   between initVertex and fCurrentVertex) 
+  nTrks = PrepareTracks(*trkTree,2);
+  delete trkTree;
+  if(fDebug) printf(" tracks prepared - step 2: %d\n",nTrks);
+  if(nTrks < fMinTracks) {
+    printf("TooFewTracks\n");
+    fCurrentVertex = new AliESDVertex(0.,0.,-1);
+    return fCurrentVertex; 
+  }
+
+  // vertex finder
+  switch (fAlgo) {
+    case 1: StrLinVertexFinderMinDist(1); break;
+    case 2: StrLinVertexFinderMinDist(0); break;
+    case 3: HelixVertexFinder();          break;
+    case 4: VertexFinder(1);              break;
+    case 5: VertexFinder(0);              break;
+    default: printf("Wrong algorithm\n"); break;  
+  }
+  if(fDebug) printf(" vertex finding completed\n");
+
+  // fitter
+  ComputeMaxChi2PerTrack(nTrks);
+  VertexFitter();
+  if(fDebug) printf(" vertex fit completed\n");
+
+  Double_t tp[3];
+  esdEvent->GetVertex()->GetTruePos(tp);
+  fCurrentVertex->SetTruePos(tp);
+  fCurrentVertex->SetTitle("VertexerTracks");
+
+  fTrkArray.Clear();
+  return fCurrentVertex;
+}
+//----------------------------------------------------------------------------
+AliESDVertex* AliVertexerTracks::FindPrimaryVertexOld(const AliESD *esdEvent)
+{
+//
+// Primary vertex for current ESD event (one iteration with |d0rphi|<3cm)
+//
+  fCurrentVertex = 0;
+
+  Int_t entr = (Int_t)esdEvent->GetNumberOfTracks();
+  TTree *trkTree = new TTree("TreeT","tracks");
+  AliESDtrack *esdTrack = 0;
+  trkTree->Branch("tracks","AliESDtrack",&esdTrack);
+
+  for(Int_t i=0; i<entr; i++) {
+    AliESDtrack *et = esdEvent->GetTrack(i);
+    esdTrack = new AliESDtrack(*et);
+    if(!esdTrack->GetStatus()&AliESDtrack::kITSin) continue;
+    if(!esdTrack->GetStatus()&AliESDtrack::kITSrefit) continue;
+    Int_t nclus=esdTrack->GetNcls(0); // check number of clusters in ITS
+    if(nclus<fMinITSClusters) continue;
 
     trkTree->Fill();
   }
   delete esdTrack;
 
   // preselect tracks and propagate them to initial vertex position
-  Int_t nTrks = PrepareTracks(*trkTree,2);
+  Int_t nTrks = PrepareTracks(*trkTree,1);
   delete trkTree;
   if(fDebug) printf(" tracks prepared: %d\n",nTrks);
   if(nTrks < fMinTracks) {
@@ -614,9 +789,8 @@ Double_t AliVertexerTracks::GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t 
   Double_t z10=p0[2]-x0[2];
   return ((x10*x10+y10*y10+z10*z10)*(x12*x12+y12*y12+z12*z12)-(x10*x12+y10*y12+z10*z12)*(x10*x12+y10*y12+z10*z12))/(x12*x12+y12*y12+z12*z12);
 }
-
 //---------------------------------------------------------------------------
-void AliVertexerTracks::VertexFitter() {
+void AliVertexerTracks::VertexFitter(Bool_t useNominalVtx) {
 //
 // The optimal estimate of the vertex position is given by a "weighted 
 // average of tracks positions"
@@ -629,6 +803,7 @@ void AliVertexerTracks::VertexFitter() {
     printf(" Number of tracks in array: %d\n",(Int_t)fTrkArray.GetEntriesFast());
     printf(" Minimum # tracks required in fit: %d\n",fMinTracks);
     printf("Vertex position after finder: %f,%f,%f\n",initPos[0],initPos[1],initPos[2]);
+    if(useNominalVtx) printf(" This vertex will be used in fit: (%f+-%f,%f+-%f) <- NOT IMPLEMENTED YET!n",fNominalPos[0],fNominalSigma[0],fNominalPos[1],fNominalSigma[1]); 
   }
 
   Int_t i,j,k,step=0;
@@ -665,6 +840,14 @@ void AliVertexerTracks::VertexFitter() {
       sumWiri(i,0) = 0.;
       for(j=0; j<3; j++) sumWi(j,i) = 0.;
     }
+
+    if(useNominalVtx) {
+      for(i=0; i<3; i++) {
+	sumWiri(i,0) += fNominalPos[i]/fNominalSigma[i]/fNominalSigma[i];
+	sumWi(i,i)   += 1./fNominalSigma[i]/fNominalSigma[i];
+      }
+    }
+
 
     // loop on tracks  
     for(k=0; k<arrEntries; k++) {
