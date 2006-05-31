@@ -1,3 +1,26 @@
+2006-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* LinkDef.h:
+	* RGValuators.cxx:
+	* RGValuators.h:
+	New valuator widget classes RGValuator and RGDoubleValuator.
+
+2006-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev branch
+
+	* BoxSet.h:
+	Added method ArrTrans().
+
+	* Reve.cxx:
+	Added setup of macro/include paths into function
+	SetupEnvironment().
+
+	* reve_main/reve_main.cxx:
+	Removed macro/include path setup.
+
 2006-05-23  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev branch

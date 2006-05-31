@@ -50,8 +50,7 @@ public:
   void   SetAutoPedestal(Bool_t ap)  { fAutoPedestal = ap; }
 
   void LoadDigits(TTree* tree, Bool_t spawnSectors=kTRUE);
-  void LoadRaw(AliTPCRawStream&    input, Bool_t spawnSectors=kTRUE);
-  void LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors=kTRUE, Bool_t warn=kFALSE);
+  void LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors=kTRUE, Bool_t warn=kFALSE);
 
   ClassDef(TPCData, 1); // Manages TPC data for an event.
 }; // endclass TPCData

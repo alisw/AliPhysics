@@ -20,46 +20,41 @@ TPCData*     x = 0;
 TPCSector2D* s = 0;
 TPCSector3D* t = 0;
 
-AliRawReaderRoot* reader = 0;
+AliRawReaderRoot* reader =  0;
 Int_t             event  = -1;
+Int_t     default_sector =  13;
 
 void tpc_sector_raw_test(const char *file = "", Int_t ievent = 0)
 {
-  // gROOT->Macro("alieve_loadlibs.C");
-  // Only sub-set of ALICE libraries is needed:
-  gSystem->Load("libESD");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libRAWData");
-  gSystem->Load("libTPCbase");
-  gSystem->Load("libTPCrec");
-  gSystem->Load("libTPCsim");
-  // ALICE visualization
-  gSystem->Load("libAlieve");
-
   gStyle->SetPalette(1, 0);
 
   reader = new AliRawReaderRoot(file);
-  reader->RequireHeader(kFALSE);
+  reader->LoadEquipmentIdsMap
+    (gSystem->ExpandPathName("$(ALICE_ROOT)/TPC/mapping/EquipmentIdMap.data"));
   reader->Reset();
-  for(Int_t i=0; i<ievent; ++i, ++event)
-    reader->NextEvennt();
+  for(Int_t i=0; i<ievent; ++i, ++event) {
+    if(reader->NextEvent() == kFALSE) {
+      printf("End of raw stream at event %d (reqired event %d).\n", i, ievent);
+      return;
+    }
+  }
 
   x = new TPCData;
-  //x->SetLoadPedestal(5);
+  // x->SetLoadPedestal(5);
   x->SetLoadThreshold(5);
   x->SetAutoPedestal(kTRUE);
 
   s = new TPCSector2D();
-  // s->SetSectorID(0);  // 0 is default
-  // s->SetTrans(kTRUE); // place on proper 3D coordinates
+  s->SetSectorID(default_sector);
+  s->SetTrans(kTRUE); // place on proper 3D coordinates
   s->SetDataSource(x);
   s->SetFrameColor(36);
   gReve->AddRenderElement(s);
   gReve->DrawRenderElement(s);
 
   t = new TPCSector3D();
-  // t->SetSectorID(0);
-  // t->SetTrans(kTRUE);
+  t->SetSectorID(default_sector);
+  t->SetTrans(kTRUE);
   t->SetDataSource(x);
   t->SetMaxTime(1023);
   t->SetDriftVel(2.273);
@@ -71,12 +66,22 @@ void tpc_sector_raw_test(const char *file = "", Int_t ievent = 0)
 
 void next_event()
 {
-  reader->NextEvent();
-  ++event;
+  if(reader->NextEvent() == kTRUE) {
+    ++event;
+  } else {
+    printf("Reached end of stream, rewinding to first event.\n");
+    event = 0;
+    reader->RewindEvents();
+    reader->NextEvent();
+  }
 
   printf("Now loading event %d\n", event);
-  AliTPCRawStreamOld input(reader);
-  reader->SelectEquipment(-1);
+  reader->Reset();
+  AliTPCRawStream input(reader);
+  input.SetOldRCUFormat(kTRUE);
+  // reader->Select(0, firstRCU, lastRCU);
+
+  x->DropAllSectors();
   x->LoadRaw(input, kTRUE, kTRUE);
 
   printf("Updating scene\n");
@@ -87,17 +92,15 @@ void next_event()
 
 void tpc_raw_pad_dump(Int_t s, Int_t r, Int_t p)
 {
-  reader->Reset();
-  reader->NextEvent();
-
   if(r >= TPCSectorData::GetInnSeg().GetNRows()) {
     r -=  TPCSectorData::GetInnSeg().GetNRows();
     s += 36;
   }
 
-  // AliTPCRawStream input(reader);
-  AliTPCRawStreamOld input(reader);
-  reader->SelectEquipment(-1);
+  reader->Reset();
+  AliTPCRawStream input(reader);
+  input.SetOldRCUFormat(kTRUE);
+  // reader->Select(0, firstRCU, lastRCU);
 
   Int_t sector = input.GetSector();
   Int_t row    = input.GetRow();

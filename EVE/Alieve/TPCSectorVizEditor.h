@@ -11,6 +11,10 @@ class TGColorSelect;
 class TGDoubleHSlider;
 class TGHSlider;
 
+namespace Reve {
+class RGValuator;
+class RGDoubleValuator;
+}
 
 namespace Alieve {
 
@@ -21,20 +25,16 @@ class TPCSectorVizEditor : public TGedFrame
 protected:
   TPCSectorViz* fM; // fModel dynamic-casted to TPCSectorVizEditor
 
-  TGNumberEntry*   fSectorID;
+  Reve::RGValuator* fSectorID;
 
-  TGCheckButton*   fRnrInn;
-  TGCheckButton*   fRnrOut1;
-  TGCheckButton*   fRnrOut2;
+  TGCheckButton*    fRnrInn;
+  TGCheckButton*    fRnrOut1;
+  TGCheckButton*    fRnrOut2;
 
-  TGLabel*         fThresholdLabel;
-  TGLabel*         fMaxValLabel;
-  TGHSlider*       fThreshold;
-  TGHSlider*       fMaxVal;
+  Reve::RGValuator* fThreshold;
+  Reve::RGValuator* fMaxVal;
 
-  TGNumberEntry*   fMinTime;
-  TGNumberEntry*   fMaxTime;
-  TGDoubleHSlider* fTime;
+  Reve::RGDoubleValuator* fTime;
 
 public:
   TPCSectorVizEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
@@ -51,8 +51,6 @@ public:
   void DoThreshold();
   void DoMaxVal();
 
-  void DoMinTime();
-  void DoMaxTime();
   void DoTime();
  
   ClassDef(TPCSectorVizEditor, 0); // Editor for TPCSectorViz

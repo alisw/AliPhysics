@@ -7,15 +7,8 @@ void alieve_init(const Text_t* path=".", Int_t event=0,
   // Set-up environment, load libraries.
 
   Reve::SetupEnvironment();
-
-  gROOT->SetMacroPath(Form("%s:%s/alice-macros:%s/macros",
-			   gROOT->GetMacroPath(),
-			   gSystem->Getenv("REVESYS"),
-			   gSystem->Getenv("ALICE_ROOT")));
-  gInterpreter->AddIncludePath(Form("%s/macros", gSystem->Getenv("ALICE_ROOT")));
-
-  Reve::AssertMacro("alieve_loadlibs.C");
-  gSystem->Load("libAlieve.so");
+  // alieve executable linked against ALICE nad EVE shared libraries.
+  // Reve::AssertMacro("alieve_loadlibs.C");
 
 
   // Put macros in the list of browsables, spawn a browser.

@@ -16,14 +16,14 @@ Usage
 
 1. Initialize ALICE environment.
 
-2. Spawn 'reve' executable and invoke the alieve_init.C macro, for example:
+2. Spawn 'alieve' executable and invoke the alieve_init.C macro, for example:
 
 To load first event from current directory:
-   # reve  alieve_init.C 
+   # alieve  alieve_init.C 
 To load 5th event from directory /data/my-pp-run:
-   # reve 'alieve_init.C("/data/my-pp-run", 5)' 
+   # alieve 'alieve_init.C("/data/my-pp-run", 5)' 
 Interactively:
-   # reve
+   # alieve
    root[0] .L alieve_init.C
    root[1] alieve_init("/somedir")
 

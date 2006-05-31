@@ -99,5 +99,7 @@ void alieve_loadlibs ()
   gSystem->Load("libAliL3Hough");
   gSystem->Load("libANALYSIS");
 
+  gSystem->Load("libAlieve.so");
+
   printf(" done.\n");
 }

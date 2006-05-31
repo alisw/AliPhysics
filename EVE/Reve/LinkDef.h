@@ -68,6 +68,11 @@
 // RGTopFrame
 #pragma link C++ class Reve::RGTopFrame+;
 
+// RGValuators
+#pragma link C++ class Reve::RGValuatorBase+;
+#pragma link C++ class Reve::RGValuator+;
+#pragma link C++ class Reve::RGDoubleValuator+;
+
 //================================
 // g3d/
 //================================

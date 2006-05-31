@@ -8,6 +8,7 @@
 #include <TColor.h>
 
 #include <TROOT.h>
+#include <TInterpreter.h>
 
 #include <list>
 
@@ -60,7 +61,8 @@ Color_t* FindColorVar(TObject* obj, const Text_t* varname)
 
 void SetupEnvironment()
 {
-  // Check REVESYS exists, try fallback to $ALICE_ROOT/EVE.
+  // Check if REVESYS exists, try fallback to $ALICE_ROOT/EVE.
+  // Setup Include and Macro paths.
 
   static const Exc_t eH("Reve::SetupEnvironment");
 
@@ -77,6 +79,16 @@ void SetupEnvironment()
     Error(eH.Data(), "REVESYS '%s' does not exist.", gSystem->Getenv("REVESYS"));
     gSystem->Exit(1);
   }
+
+  TString macPath(gROOT->GetMacroPath());
+  macPath += Form(":%s/macros", gSystem->Getenv("REVESYS"));
+  gInterpreter->AddIncludePath(gSystem->Getenv("REVESYS"));
+  if(gSystem->Getenv("ALICE_ROOT") != 0) {
+    macPath += Form(":%s/alice-macros", gSystem->Getenv("REVESYS"));
+    gInterpreter->AddIncludePath(Form("%s/include", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(gSystem->Getenv("ALICE_ROOT"));
+  }
+  gROOT->SetMacroPath(macPath);
 }
 
 /**************************************************************************/

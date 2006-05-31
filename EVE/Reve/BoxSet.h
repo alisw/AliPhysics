@@ -51,6 +51,7 @@ public:
 
   Bool_t GetTrans() const   { return fTrans; }
   void   SetTrans(Bool_t t) { fTrans = t; }
+  Double_t* ArrTrans()      { return fMatrix; }
 
   virtual void ComputeBBox();
   virtual void Paint(Option_t* option = "");

@@ -63,8 +63,11 @@ void TPCSector3D::ComputeBBox()
 
 void TPCSector3D::Paint(Option_t* option)
 {
-  if(fRnrElement)
+  if(fRnrElement) {
+    fBoxSet.SetTrans(fTrans);
+    memcpy(fBoxSet.ArrTrans(), fMatrix, 16*sizeof(Double_t));
     fBoxSet.Paint(option);
+  }
 }
 
 /**************************************************************************/

@@ -1,0 +1,43 @@
+SRCS  := Alieve/alieve_main/alieve_main.cxx
+CSRCS :=
+
+EINCLUDE :=
+ELIBSDIR :=
+ELIBS    := Reve Alieve \
+  MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
+  TPCbase TPCsim TPCrec TPCfast \
+  ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
+  TRDsim TRDrec TRDfast \
+  FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSbase PHOSsim PHOSrec CRT \
+  RICHbase RICHrec RICHsim \
+  ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
+  EMCALbase EMCALsim EMCALrec EMCALjet \
+  STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER \
+  pythia6 AliPythia6 pdf THijing \
+  hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
+  FASTSIM microcern RAWData AliL3Src AliL3Comp AliL3Misc AliL3MUON \
+  AliL3Hough AliL3ITS \
+# THerwig herwig TPHIC
+
+PACKBLIBS := $(ROOTCLIBS) $(ROOTPLIBS) -lTreePlayer -lGeomPainter -lGed -lRGL $(SYSLIBS)
+
+
+ifeq (macosx,$(ALICE_TARGET))
+
+# On Mac OS X gcc we need GL
+ELIBS+=GL
+ELIBSDIR+=/usr/X11R6/lib/
+# On Mac OS X gcc we need f2c
+ELIBS+=f2c
+ELIBSDIR+=$(dir $(shell find $(FINK_ROOT) -name 'libf2c.*'))
+
+ELIBSCPP:=$(filter-out microcern,$(ELIBS))
+ELIBSCPP:=$(filter-out pdf,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out mevsim,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
+ELIBSCPP:=$(filter-out EPEMGEN,$(ELIBSCPP))
+
+PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
+
+endif

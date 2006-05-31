@@ -140,65 +140,7 @@ void TPCData::LoadDigits(TTree* tree, Bool_t spawnSectors)
   }
 }
 
-void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors)
-{
-  // Load data from AliTPCRawStream.
-  // If spawnSectors is false only sectors that have been created previously
-  // via CreateSector() are loaded.
-  // If spawnSectors is true sectors are created if data for them is encountered.
-
-  Int_t   sector = -1, row = -1, pad = -1, rowOffset = 0;
-  Short_t time, signal;
-  Bool_t  inFill = kFALSE;
-  TPCSectorData* secData = 0;
-
-  while (input.Next()) {
-    if (input.IsNewSector()) {
-      if(inFill) {
-	secData->EndPad(fAutoPedestal, fLoadThreshold);
-	inFill = kFALSE;
-      }
-      sector = input.GetSector();
-      if(sector >= 36) {
-	sector -= 36;
-	rowOffset = TPCSectorData::GetInnSeg().GetNRows();
-      } else {
-	rowOffset = 0;
-      }
-      secData = GetSectorData(sector, spawnSectors);
-    }
-    if (secData == 0)
-      continue;
-
-    if (input.IsNewPad()) {
-      if(inFill) {
-	secData->EndPad(fAutoPedestal, fLoadThreshold);
-	inFill = kFALSE;
-      }
-      row = input.GetRow() + rowOffset;
-      pad = input.GetPad();
-
-      secData->BeginPad(row, pad, kTRUE);
-      inFill = kTRUE;
-    }
-
-    time   = input.GetTime();
-    signal = input.GetSignal();
-    if(fAutoPedestal) {
-      secData->RegisterData(time, signal);
-    } else {
-      if(signal > fLoadThreshold)
-	secData->RegisterData(time, signal - fLoadPedestal);
-    }
-  }
-
-  if(inFill) {
-    secData->EndPad(fAutoPedestal, fLoadThreshold);
-    inFill = kFALSE;
-  }
-}
-
-void TPCData::LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors, Bool_t warn)
+void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t warn)
 {
   // Load data from AliTPCRawStream.
   // If spawnSectors is false only sectors that have been created previously
@@ -257,8 +199,9 @@ void TPCData::LoadRaw(AliTPCRawStreamOld& input, Bool_t spawnSectors, Bool_t war
     signal = input.GetSignal();
     if(time >= lastTime) {
       if(lastTimeWarn == kFALSE) {
-        Warning(eH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).",
-                row, pad, time, lastTime);
+	if(warn)
+	  Warning(eH.Data(), "time out of order (row=%d, pad=%d, time=%d, lastTime=%d).",
+		  row, pad, time, lastTime);
         lastTimeWarn = kTRUE;
       }
       continue;

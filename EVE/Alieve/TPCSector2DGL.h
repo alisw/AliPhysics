@@ -43,8 +43,6 @@ public:
   virtual Bool_t SetModel(TObject* obj); 
   virtual void   SetBBox();
 
-  void SetCol(Float_t z, UChar_t* pixel) const;
-
   static void TraceStepsUp  (const TPCSectorData::SegmentInfo& s);
   static void TraceStepsDown(const TPCSectorData::SegmentInfo& s);
 
