@@ -52,10 +52,10 @@ Quad::Quad(TRandom& rnd, Float_t origin, Float_t size)
 ClassImp(Reve::QuadSet)
 
 
-void QuadSet::Init()
-{
-  fTrans = false;
-}
+QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
+  TNamed(n, t),
+  fTrans(false)
+{}
 
 void QuadSet::Test(Int_t nquads)
 {
@@ -141,18 +141,28 @@ void QuadSet::Paint(Option_t* )
 void QuadSet::ComputeBBox()
 {
   if(fQuads.empty()) {
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
     bbox_zero();
+#else
+    BBoxZero();
+#endif
     return;
   }
-
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   bbox_init();
-
+#else
+  BBoxInit();
+#endif
   for(std::vector<Quad>::iterator q=fQuads.begin(); q!=fQuads.end(); ++q) {
     Float_t* p = q->vertices;
     for(int i=0; i<4; ++i, p+=3)
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
       bbox_check_point(p);
+#else
+      BBoxCheckPoint(p);
+#endif
   }
 
   // printf("%s BBox is x(%f,%f), y(%f,%f), z(%f,%f)\n", GetName(),
-  //    fBBox[0], fBBox[1], fBBox[2], fBBox[3], fBBox[4], fBBox[5]);
+  //        fBBox[0], fBBox[1], fBBox[2], fBBox[3], fBBox[4], fBBox[5]);
 }

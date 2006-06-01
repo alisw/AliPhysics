@@ -40,7 +40,11 @@ TPCSector2DGL::~TPCSector2DGL()
 
 Bool_t TPCSector2DGL::SetModel(TObject* obj)
 {
-  if (set_model(obj, "Alieve::TPCSector2D")) {
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
+  if(set_model(obj, "Alieve::TPCSector2D")) {
+#else
+  if(SetModelCheckClass(obj, "Alieve::TPCSector2D")) {
+#endif
     fSector = (TPCSector2D*) fExternalObj;
     return true;
   }
@@ -49,7 +53,11 @@ Bool_t TPCSector2DGL::SetModel(TObject* obj)
 
 void TPCSector2DGL::SetBBox()
 {
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   set_axis_aligned_bbox(((TPCSector2D*)fExternalObj)->AssertBBox());
+#else
+  SetAxisAlignedBBox(((TPCSector2D*)fExternalObj)->AssertBBox());
+#endif
 }
 
 /**************************************************************************/

@@ -50,7 +50,11 @@ void TPCSector3D::ComputeBBox()
   const TPCSectorData::SegmentInfo&  iSeg = TPCSectorData::GetInnSeg();
   const TPCSectorData::SegmentInfo& o2Seg = TPCSectorData::GetOut2Seg();
 
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   bbox_init();
+#else
+  BBoxInit();
+#endif
   Float_t w = o2Seg.GetNMaxPads()*o2Seg.GetPadWidth()/2;
   fBBox[0] = -w;
   fBBox[1] =  w;

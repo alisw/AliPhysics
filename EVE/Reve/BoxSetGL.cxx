@@ -30,12 +30,20 @@ BoxSetGL::~BoxSetGL()
 
 Bool_t BoxSetGL::SetModel(TObject* obj)
 {
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   return set_model(obj, "Reve::BoxSet");
+#else
+  return SetModelCheckClass(obj, "Reve::BoxSet");
+#endif
 }
 
 void BoxSetGL::SetBBox()
 {
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   set_axis_aligned_bbox(((BoxSet*)fExternalObj)->AssertBBox());
+#else
+  SetAxisAlignedBBox(((BoxSet*)fExternalObj)->AssertBBox());
+#endif
 }
 
 /**************************************************************************/

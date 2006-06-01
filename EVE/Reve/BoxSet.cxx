@@ -53,17 +53,29 @@ BoxSet::BoxSet(const Text_t* n, const Text_t* t) :
 void BoxSet::ComputeBBox()
 {
   if(fBoxes.empty()) {
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
     bbox_zero();
+#else
+    BBoxZero();
+#endif
     return;
   }
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   bbox_init();
+#else
+  BBoxInit();
+#endif
   for(std::vector<Box>::iterator q=fBoxes.begin(); q!=fBoxes.end(); ++q) {
     Float_t* p = q->vertices;
     for(int i=0; i<8; ++i, p+=3)
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
       bbox_check_point(p);
+#else
+      BBoxCheckPoint(p);
+#endif
   }
-  printf("%s BBox is x(%f,%f), y(%f,%f), z(%f,%f)\n", GetName(),
-	 fBBox[0], fBBox[1], fBBox[2], fBBox[3], fBBox[4], fBBox[5]);
+  // printf("%s BBox is x(%f,%f), y(%f,%f), z(%f,%f)\n", GetName(),
+  //        fBBox[0], fBBox[1], fBBox[2], fBBox[3], fBBox[4], fBBox[5]);
 }
 
 void BoxSet::Paint(Option_t* /*option*/)

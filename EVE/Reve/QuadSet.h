@@ -42,16 +42,13 @@ class QuadSet : public TNamed, public TAtt3D, public TAttBBox
 {
   friend class QuadSetGL;
 
-  void Init();
-
 protected:
   std::vector<Quad> fQuads;
   Double_t          fMatrix[16];
   Bool_t            fTrans;
 
 public:
-  QuadSet(const Text_t* n="QuadSet", const Text_t* t="") : TNamed(n, t)
-  { Init(); }
+  QuadSet(const Text_t* n="QuadSet", const Text_t* t="");
   virtual ~QuadSet() {}
 
   Bool_t GetTrans() const { return fTrans; }

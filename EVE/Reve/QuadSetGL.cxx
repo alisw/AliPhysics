@@ -30,12 +30,20 @@ QuadSetGL::~QuadSetGL()
 
 Bool_t QuadSetGL::SetModel(TObject* obj)
 {
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   return set_model(obj, "Reve::QuadSet");
+#else
+  return SetModelCheckClass(obj, "Reve::QuadSet");
+#endif
 }
 
 void QuadSetGL::SetBBox()
 {
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   set_axis_aligned_bbox(((QuadSet*)fExternalObj)->AssertBBox());
+#else
+  SetAxisAlignedBBox(((QuadSet*)fExternalObj)->AssertBBox());
+#endif
 }
 
 /**************************************************************************/
