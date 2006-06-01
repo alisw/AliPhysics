@@ -15,12 +15,16 @@
 #pragma link C++ class Alieve::VSDCreator+;
 
 // ITS
-
 #pragma link C++ class Alieve::ITSDigitsInfo+;
 #pragma link C++ class Alieve::ITSModule+;
 
-// TPC
 
+// MUON
+#pragma link C++ class Alieve::MUONDigitsInfo+;
+#pragma link C++ class Alieve::MUONModule+;
+
+
+// TPC
 #pragma link C++ class Alieve::TPCData+;
 
 #pragma link C++ class Alieve::TPCSectorData+;
