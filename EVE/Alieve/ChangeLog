@@ -1,3 +1,14 @@
+2006-06-01  Bogdan Vulpescu  <vulpescu@clermont.in2p3.fr>
+
+	HEAD
+
+	* LinkDef.h:
+	* MUONDigitsInfo.cxx:
+	* MUONDigitsInfo.h:
+	* MUONModule.cxx:
+	* MUONModule.h:
+	New files for MUON visualization by Bogdan Vulpescu.
+
 2006-06-01  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	HEAD
