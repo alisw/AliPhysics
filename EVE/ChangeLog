@@ -1,5 +1,7 @@
 2006-06-01  Bogdan Vulpescu  <vulpescu@clermont.in2p3.fr>
 
+	HEAD
+
 	* alice-macros/muon_all.C:
 	* alice-macros/muon_chambers.C:
 	* alice-macros/muon_clusters.C:
@@ -17,10 +19,9 @@
 	Merged EVE-dev to HEAD. Re-tagged EVE-dev (EVE-dev-after-merge) and
 	EVE's HEAD (EVE-head-after-merge).
 
-	* README:
-	Replaced all mentions of the reve executable with alieve.
-
 2006-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
 
 	* binalieve.pkg:
 	New file; new executable linked against all ALICE libraries.
@@ -34,6 +35,9 @@
 
 	* test-macros/tpc_sector_raw_test.C:
 	Changes for new interface to raw-data reading.
+
+	* README:
+	Replaced all mentions of the reve executable with alieve.
 
 2006-05-23  Matevz Tadel  <matevz.tadel@cern.ch>
 
