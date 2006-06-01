@@ -63,14 +63,14 @@ class AliMUONDigitMaker : public TObject
   AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
 
-  AliMUONDigit*        fDigit;         //!< pointer to digits
+  AliMUONDigit*        fDigit;                 //!< pointer to digits
 
-  AliMUONLocalTrigger*  fLocalTrigger; //!< pointer to local trigger
-  AliMUONGlobalTrigger* fGlobalTrigger;//!< pointer to local trigger
+  AliMUONLocalTrigger*  fLocalTrigger;         //!< pointer to local trigger
+  AliMUONGlobalTrigger* fGlobalTrigger;        //!< pointer to local trigger
 
-  TStopwatch fTrackerTimer; //!< 
-  TStopwatch fTriggerTimer; //!< 
-  TStopwatch fMappingTimer; //!< 
+  TStopwatch fTrackerTimer;                    //!< time watcher for tracker part
+  TStopwatch fTriggerTimer;                    //!< time watcher for trigger part
+  TStopwatch fMappingTimer;                    //!< time watcher for mapping-tracker part
 
   ClassDef(AliMUONDigitMaker,1) // MUON digit maker from rawdata
 };

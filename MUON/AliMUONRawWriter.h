@@ -87,9 +87,9 @@ private:
   static Int_t fgManuPerBusSwp2B[12];   //!< array containing the first manuId for each buspatch st2, Bending
   static Int_t fgManuPerBusSwp2NB[12];  //!< array containing the first manuId for each buspatch st2, NBending
   
-  TStopwatch fTrackerTimer;             //!< 
-  TStopwatch fTriggerTimer;             //!< 
-  TStopwatch fMappingTimer;             //!< 
+  TStopwatch fTrackerTimer;             //!< time watcher for tracker part
+  TStopwatch fTriggerTimer;             //!< time watcher for trigger part
+  TStopwatch fMappingTimer;             //!< time watcher for mapping-tracker part
   
   AliMpSegFactory* fSegFactory;         //!< mapping segmentation factory
   
