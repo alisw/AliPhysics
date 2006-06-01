@@ -419,7 +419,7 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
 
   }
   //  if(fDebug>0)cout<<"Numer of Iterations "<<niter<<endl<<endl;
-  if(num!=0)fZsig/=TMath::Sqrt(num);
+  //  if(num!=0)fZsig/=TMath::Sqrt(num);
   if (fZsig<=0) fZsig=5.3; // Default error from the beam sigmoid
   fCurrentVertex = new AliESDVertex(fZFound,fZsig,num);
   fCurrentVertex->SetTitle("vertexer: B");
