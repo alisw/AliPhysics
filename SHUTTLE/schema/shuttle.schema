@@ -1,46 +1,44 @@
-attributetype ( 1.3.6.1.1.1.1.19 NAME 'ipHost'
-        DESC 'IP host'
-        EQUALITY caseIgnoreMatch
-        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE)
+objectidentifier SHUTTLE_BASE 1.1.1
 
-attributetype ( 1.3.6.1.1.1.1.15 NAME 'ipServicePort'
-        EQUALITY integerMatch
-        SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+objectidentifier DETECTOR_CONFIG SHUTTLE_BASE:1
 
-attributetype ( 1.1.1.2 NAME 'dt'
-	DESC 'Detector name'
-	EQUALITY caseIgnoreMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE )
+attributetype ( DETECTOR_CONFIG:1 NAME 'det'         DESC 'Detector name'         EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DETECTOR_CONFIG:2 NAME 'DCSHost'     DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DETECTOR_CONFIG:3 NAME 'DCSPort'     DESC ''                                                  SUP ipServicePort )
+attributetype ( DETECTOR_CONFIG:4 NAME 'DCSalias'    DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DETECTOR_CONFIG:5 NAME 'DAQFileIDs'  DESC 'IDs of files to get from DAQ' EQUALITY caseIgnoreMatch    SUP name )
 
-attributetype ( 1.1.1.3 NAME 'alias'
-        DESC 'DCS alias'
-        EQUALITY caseIgnoreMatch
-        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40})
-
-attributetype ( 1.1.2.1 NAME 'lbURI'
-        DESC 'DAQ Logbook URI'
-        EQUALITY caseIgnoreMatch
-        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE )
-
-attributetype ( 1.1.2.2 NAME 'lbUser'
-        DESC 'DAQ Logbook user name'
-        EQUALITY caseIgnoreMatch
-        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE )
-
-attributetype ( 1.1.2.3 NAME 'lbPassword'
-        DESC 'DAQ Logbook password'
-        EQUALITY caseIgnoreMatch
-        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} SINGLE-VALUE )
-
-objectclass ( 1.1.1
-        NAME 'shuttleConfig'
+objectclass ( DETECTOR_CONFIG
+        NAME 'AliShuttleDetector'
         DESC 'ALICE: Shuttle configuration object.'
         SUP top
-        MUST (dt $ ipHost $ ipServicePort $ alias) )
-	
-objectclass ( 1.1.2
-        NAME 'logbookConfig'
-        DESC 'ALICE: Logbook configuration object.'
-        SUP top AUXILIARY
-        MUST (lbURI $ lbUser $ lbPassword) )
+        MUST (det)
+        MAY  (DCSHost $ DCSPort $ DCSalias $ DAQFileIDs) )
 
+
+objectidentifier GLOBAL_CONFIG SHUTTLE_BASE:2
+
+attributetype ( GLOBAL_CONFIG:1 NAME 'DAQLogbookHost'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:2 NAME 'DAQLogbookUser'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:3 NAME 'DAQLogbookPassword'  DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:4 NAME 'DAQFileSystemHost'   DESC ''    EQUALITY caseIgnoreMatch    SUP name )
+
+objectclass ( GLOBAL_CONFIG
+        NAME 'AliShuttleGlobalConfig'
+        DESC 'ALICE: Global configuration of the Shuttle'
+        SUP top
+        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ DAQFileSystemHost) )
+
+
+objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:3
+
+attributetype ( INSTANCE_CONFIG:1 NAME 'ShuttleHost' DESC 'Host that is running the Shuttle'  EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( INSTANCE_CONFIG:2 NAME 'detectors'   DESC 'Detector list'                     EQUALITY caseIgnoreMatch    SUP name )
+
+objectclass ( INSTANCE_CONFIG
+        NAME 'AliShuttleInstance'
+        DESC 'ALICE: Shuttle instance configuration.'
+        SUP top
+        MUST (name $ ShuttleHost)
+        MAY (detectors)
+        )
