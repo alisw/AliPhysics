@@ -54,8 +54,9 @@ AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
   fNonBendingCoor = theGhit->X();
   fZ = theGhit->Z();
   // fTrack = theGhit->fTrack; ?????????
-  fChamberNumber = AliMUONConstants::ChamberNumber(fZ);
-  fDetElemId = 0;
+  fDetElemId = theGhit->UserId();
+  if (fDetElemId) fChamberNumber = fDetElemId / 100 - 1;
+  else fChamberNumber = AliMUONConstants::ChamberNumber(fZ);
   // other fields will be updated in
   // AliMUONEventReconstructor::NewHitForRecFromTrackRef,
   // except the following ones

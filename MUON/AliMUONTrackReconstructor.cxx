@@ -555,7 +555,9 @@ AliMUONHitForRec* AliMUONTrackReconstructor::NewHitForRecFromTrackRef(AliTrackRe
   // like in Fortran TRACKF_STAT.
   AliMUONHitForRec* hitForRec;
   Double_t bendCoor, nonBendCoor, radius;
-  Int_t chamber = AliMUONConstants::ChamberNumber(Hit->Z()); // chamber(0...)
+  Int_t detElemId = Hit->UserId(), chamber = 0;
+  if (detElemId) chamber = detElemId / 100 - 1;
+  else chamber = AliMUONConstants::ChamberNumber(Hit->Z()); // chamber(0...)
   if (chamber < 0) return NULL;
   // only in tracking chambers (fChamber starts at 1)
   if (chamber >= AliMUONConstants::NTrackingCh()) return NULL;

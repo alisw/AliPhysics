@@ -133,7 +133,7 @@ void AliMUONRecoCheck::MakeTrackRef()
  
   track = trackSave = -999;
   Bool_t isNewTrack;
-  Int_t iHitMin, iChamber;
+  Int_t iHitMin, iChamber, detElemId;
 
   trackParam = new AliMUONTrackParam();
   hitForRec = new AliMUONHitForRec();
@@ -195,8 +195,10 @@ void AliMUONRecoCheck::MakeTrackRef()
 	hitForRec->SetNonBendingCoor(x);
 	hitForRec->SetZ(z);
 	hitForRec->SetBendingReso2(0.0); 
-	hitForRec->SetNonBendingReso2(0.0);  
-	iChamber = AliMUONConstants::ChamberNumber(z);
+	hitForRec->SetNonBendingReso2(0.0);
+	detElemId = hitForRec->GetDetElemId();
+	if (detElemId) iChamber = detElemId / 100 - 1; 
+	else iChamber = AliMUONConstants::ChamberNumber(z);
 	hitForRec->SetChamberNumber(iChamber);
 
 	muonTrack->AddTrackParamAtHit(trackParam);
@@ -322,7 +324,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
   Float_t bendingSlope2,nonBendingSlope2,bendingMomentum2;
   TClonesArray *newMuonTrackRef = new TClonesArray("AliMUONTrack", 10);
   Int_t iHit1;
-  Int_t iChamber = 0;
+  Int_t iChamber = 0, detElemId = 0;
   Int_t nRec = 0;
   Int_t nTrackHits = 0;
 
@@ -391,7 +393,9 @@ void AliMUONRecoCheck::CleanMuonTrackRef()
       hitForRec->SetNonBendingCoor(xRec);
       hitForRec->SetBendingCoor(yRec);
       hitForRec->SetZ(zRec);
-      iChamber = AliMUONConstants::ChamberNumber(zRec);
+      detElemId = hitForRec->GetDetElemId();
+      if (detElemId) iChamber = detElemId / 100 - 1;
+      else iChamber = AliMUONConstants::ChamberNumber(zRec);
       hitForRec->SetChamberNumber(iChamber);
       hitForRec->SetBendingReso2(0.0); 
       hitForRec->SetNonBendingReso2(0.0); 
