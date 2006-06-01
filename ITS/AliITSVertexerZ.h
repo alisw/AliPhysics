@@ -21,10 +21,17 @@ class AliITSVertexerZ : public AliITSVertexer {
   AliITSVertexerZ();
   AliITSVertexerZ(TString filename,Float_t x0=0., Float_t y0=0.);
   virtual ~AliITSVertexerZ();
+  // The number of contributors set in the AliESDVertex object is the
+  // number of tracklets used to determine the vertex position
+  // If this number is <1, the procedure could not find a vertex position
+  // and by default the Z coordinate is set to 0
+  // Number of contributors = -1  --> No tracklets 
+  // Number of contributors = -2  --> No SPD recpoints
   virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb);
   virtual void FindVertices();
   virtual void PrintStatus() const;
   void SetDiffPhiMax(Float_t pm = 0.01){fDiffPhiMax = pm;}
+  void ConfigIterations(Int_t noiter=3,Float_t *ptr=0);
   void SetFirstLayerModules(Int_t m1 = 0, Int_t m2 = 79){fFirstL1 = m1; fLastL1 = m2;}
   void SetSecondLayerModules(Int_t m1 = 80, Int_t m2 = 239){fFirstL2 = m1; fLastL2 = m2;}
   void SetLowLimit(Float_t lim=-20.){fLowLim = lim;}
@@ -43,6 +50,8 @@ class AliITSVertexerZ : public AliITSVertexer {
   AliITSVertexerZ(const AliITSVertexerZ& vtxr);
   AliITSVertexerZ& operator=(const AliITSVertexerZ& /* vtxr */);
   void ResetHistograms();
+  void VertexZFinder(Int_t evnumber);
+  Float_t GetPhiMaxIter(Int_t i) const {return fPhiDiffIter[i];}
 
   Int_t fFirstL1;          // first module of the first pixel layer used
   Int_t fLastL1;           // last module of the first pixel layer used
@@ -62,8 +71,10 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t fStepFine;       // bin width for fZCombf
   Float_t fTolerance;      // tolerance on the symmetry of the Z interval 
   Float_t fPPsetting[2];   // [0] is the max. number of clusters on L2 to use [1] as fStepCoarse
+  Int_t fMaxIter;            // Maximum number of iterations (<=5)
+  Float_t fPhiDiffIter[5];   // Delta phi used in iterations
 
-  ClassDef(AliITSVertexerZ,3);
+  ClassDef(AliITSVertexerZ,4);
 };
 
 #endif

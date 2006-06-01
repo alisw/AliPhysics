@@ -54,6 +54,7 @@ AliITSVertexerZ::AliITSVertexerZ():AliITSVertexer() {
   SetBinWidthFine(0.);
   SetTolerance(0.);
   SetPPsetting(0.,0.);
+  ConfigIterations();
 }
 
 //______________________________________________________________________
@@ -75,6 +76,7 @@ AliITSVertexerZ::AliITSVertexerZ(TString fn, Float_t x0, Float_t y0):AliITSVerte
   SetBinWidthFine();
   SetTolerance();
   SetPPsetting();
+  ConfigIterations();
 
 }
 
@@ -102,9 +104,40 @@ AliITSVertexerZ::~AliITSVertexerZ() {
 }
 
 //______________________________________________________________________
+void AliITSVertexerZ::ConfigIterations(Int_t noiter,Float_t *ptr){
+  // configure the iterative procedure to gain efficiency for
+  // pp events with very low multiplicity
+  Float_t defaults[5]={0.05,0.1,0.2,0.3,0.5};
+  fMaxIter=noiter;
+  if(noiter>5){
+    Error("ConfigIterations","Maximum number of iterations is 5\n");
+    fMaxIter=5;
+  }
+  for(Int_t j=0;j<5;j++)fPhiDiffIter[j]=defaults[j];
+  if(ptr)for(Int_t j=0;j<fMaxIter;j++)fPhiDiffIter[j]=ptr[j];
+}
+
+//______________________________________________________________________
 AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   // Defines the AliESDVertex for the current event
-  
+  VertexZFinder(evnumber);
+  Int_t ntrackl=0;
+  for(Int_t iteraz=0;iteraz<fMaxIter;iteraz++){
+    if(fCurrentVertex) ntrackl=fCurrentVertex->GetNContributors();
+    if(!fCurrentVertex || ntrackl==0 || ntrackl==-1){
+      Float_t diffPhiMaxOrig=fDiffPhiMax;
+      fDiffPhiMax=GetPhiMaxIter(iteraz);
+      VertexZFinder(evnumber);
+      fDiffPhiMax=diffPhiMaxOrig;
+    }
+  }
+
+  return fCurrentVertex;
+}  
+
+//______________________________________________________________________
+void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
+  // Defines the AliESDVertex for the current event
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
@@ -154,7 +187,9 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   }
   if(nrpL1 == 0 || nrpL2 == 0){
     ResetHistograms();
-    return fCurrentVertex;
+    itsLoader->UnloadRecPoints();
+    fCurrentVertex = new AliESDVertex(0.,5.3,-2);
+    return;
   }
   // The vertex finding is attempted only if the number of RP is !=0 on
   // both layers
@@ -248,10 +283,13 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   delete [] yc2;
   delete [] zc2;
   delete [] phi2;
-  if(fZCombc->GetEntries()==0){
-    Warning("FindVertexForCurrentEvent","Insufficient number of rec. points\n");
+  Double_t contents = fZCombc->GetEntries()- fZCombc->GetBinContent(0)-fZCombc->GetBinContent(nbincoarse+1);
+  if(contents<1.){
+    //    Warning("FindVertexForCurrentEvent","Insufficient number of rec. points\n");
     ResetHistograms();
-    return fCurrentVertex;
+    itsLoader->UnloadRecPoints();
+    fCurrentVertex = new AliESDVertex(0.,5.3,-1);
+    return;
   }
   /*
   else {
@@ -286,7 +324,6 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
     centre+= hc->GetBinCenter(ii)*hc->GetBinContent(ii);
     nn+=static_cast<Int_t>(hc->GetBinContent(ii));
   }
-  // PH Sometimes nn is 0, so we need a protection
   if (nn) centre/=nn;
   /*
   if(fDebug>0){
@@ -337,21 +374,29 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       goon = TMath::Abs(TMath::Abs(fZFound-fZCombf->GetBinCenter(n1))-TMath::Abs(fZFound-fZCombf->GetBinCenter(n2)))>fTolerance;
       // a window in the fine grained histogram is centered aroung the found Z. The width is 2 bins of
       // the coarse grained histogram
-      n1 = static_cast<Int_t>((fZFound-hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
-      if(n1<1)n1=1;
-      n2 = static_cast<Int_t>((fZFound+hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
-      if(n2>nbinfine)n2=nbinfine;
-      /*
-      if(fDebug>0){
-	cout<<"Search restricted to n1 = "<<n1<<", n2= "<<n2<<endl;
-	cout<<"z1= "<<fZCombf->GetBinCenter(n1)<<", n2 = "<<fZCombf->GetBinCenter(n2)<<endl;
+      if(num>0){
+	n1 = static_cast<Int_t>((fZFound-hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+	if(n1<1)n1=1;
+	n2 = static_cast<Int_t>((fZFound+hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+	if(n2>nbinfine)n2=nbinfine;
+	/*
+	  if(fDebug>0){
+	  cout<<"Search restricted to n1 = "<<n1<<", n2= "<<n2<<endl;
+	  cout<<"z1= "<<fZCombf->GetBinCenter(n1)<<", n2 = "<<fZCombf->GetBinCenter(n2)<<endl;
+	  }
+	*/
       }
-      */
+      else {
+	n1 = static_cast<Int_t>((centre-(niter+2)*hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+	n2 = static_cast<Int_t>((centre+(niter+2)*hc->GetBinWidth(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+	if(n1<1)n1=1;
+	if(n2>nbinfine)n2=nbinfine;
+      }
       niter++;
       // no more than 10 adjusting iterations
       if(niter>=10){
 	goon = kFALSE;
-	Warning("FindVertexForCurrentEvent","The procedure dows not converge\n");
+	//	Warning("FindVertexForCurrentEvent","The procedure does not converge\n");
       }
 
       if((fZsig> 0.0001) && !goon && num>5){
@@ -379,7 +424,8 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
   fCurrentVertex = new AliESDVertex(fZFound,fZsig,num);
   fCurrentVertex->SetTitle("vertexer: B");
   ResetHistograms();
-  return fCurrentVertex;
+  itsLoader->UnloadRecPoints();
+  return;
 }
 
 //_____________________________________________________________________
@@ -400,7 +446,7 @@ void AliITSVertexerZ::FindVertices(){
   AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
   itsLoader->ReloadRecPoints();
   for(Int_t i=fFirstEvent;i<=fLastEvent;i++){
-    cout<<"Processing event "<<i<<endl;
+    //  cout<<"Processing event "<<i<<endl;
     rl->GetEvent(i);
     FindVertexForCurrentEvent(i);
     if(fCurrentVertex){
