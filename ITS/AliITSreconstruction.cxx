@@ -153,7 +153,7 @@ Bool_t AliITSreconstruction::Init(){
     // Now ready to init.
  
     fRunLoader->CdGAFile();
-    fITSgeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+    fITSgeom = fLoader->GetITSgeom();
 
     fDetTypeRec = new AliITSDetTypeRec(fLoader);
     fDetTypeRec->SetDefaults();
