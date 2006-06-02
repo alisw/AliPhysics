@@ -297,10 +297,13 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
   // Can this be expressed in a different way?
   //
+  //
+  // FIX: I don't think this is correct!!! Keeping d as n_sigma for now...
+
   Float_t nSigmaToVertex = -1;
   if (bRes[0]!=0 && bRes[1]!=0) {
     Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
-    nSigmaToVertex = TMath::Sqrt(2)*(TMath::ErfInverse(1 - TMath::Exp(0.5*(-d*d))));
+    nSigmaToVertex = d;//TMath::Sqrt(2)*(TMath::ErfInverse(1 - TMath::Exp(0.5*(-d*d))));
   }
 
   // getting the kinematic variables of the track 
