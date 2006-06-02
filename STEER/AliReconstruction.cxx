@@ -340,7 +340,7 @@ Bool_t AliReconstruction::ApplyAlignObjsToGeom(TObjArray* alObjArray)
     }
 
   if (AliDebugLevelClass() >= 1) {
-    gGeoManager->CheckOverlaps(20);
+    gGeoManager->GetTopNode()->CheckOverlaps(20);
     TObjArray* ovexlist = gGeoManager->GetListOfOverlaps();
     if(ovexlist->GetEntriesFast()){  
       AliError("The application of alignment objects to the geometry caused huge overlaps/extrusions!");
