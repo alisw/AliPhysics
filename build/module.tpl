@@ -386,8 +386,7 @@ PACKREVENG += $(@PACKAGE@PREPROC)
 @MODULE@/@PACKAGE@/Makefile: @MODULE@/Makefile
 	@echo Copying $< to $@ with transformations
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@sed 's/include \$$(ROOTSYS)\/test\/Makefile.arch/include Makefile.arch/' < $^ > $@
-	@sed 's/PACKAGE = .*/PACKAGE = @PACKAGE@/' < $^ > $@
+	@sed 's/include \$$(ROOTSYS)\/test\/Makefile.arch/include Makefile.arch/; s/PACKAGE = .*/PACKAGE = @PACKAGE@/' < $^ > $@
 
 @MODULE@/@PACKAGE@/Makefile.arch: $(ROOTSYS)/test/Makefile.arch
 	@echo Copying $< to $@
