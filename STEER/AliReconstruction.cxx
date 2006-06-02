@@ -1730,7 +1730,8 @@ void AliReconstruction::CreateTag(TFile* file)
 
     evTag->SetT0VertexZ(esd->GetT0zVertex());
     
-    evTag->SetTrigger(esd->GetTriggerMask());
+    evTag->SetTriggerMask(esd->GetTriggerMask());
+    evTag->SetTriggerCluster(esd->GetTriggerCluster());
     
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());

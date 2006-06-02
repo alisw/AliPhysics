@@ -40,7 +40,8 @@ ClassImp(AliEventTag)
     fPrimaryVertexY(-100.0),
     fPrimaryVertexZ(-100.0),
     fPrimaryVertexZError(-100.0),
-    fTriggerInfo(0),
+    fTriggerMask(0),
+    fTriggerCluster(0),
     fZDCNeutron1Energy(-10.0),
     fZDCProton1Energy(-10.0),
     fZDCNeutron2Energy(-10.0),
@@ -115,7 +116,8 @@ AliEventTag::AliEventTag(const AliEventTag & EvTag) : TObject(EvTag)
   SetVertexFlag(EvTag.GetVertexFlag());
   SetVertexZError(EvTag.GetVertexZError());
 
-  SetTrigger(EvTag.GetTrigger());
+  SetTriggerMask(EvTag.GetTriggerMask());
+  SetTriggerCluster(EvTag.GetTriggerCluster());
   
   SetZDCNeutron1Energy(EvTag.GetZDCNeutron1Energy());
   SetZDCProton1Energy(EvTag.GetZDCProton1Energy());
@@ -204,7 +206,8 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &EvTag)
     SetVertexFlag(EvTag.GetVertexFlag());
     SetVertexZError(EvTag.GetVertexZError());
     
-    SetTrigger(EvTag.GetTrigger());
+    SetTriggerMask(EvTag.GetTriggerMask());
+    SetTriggerCluster(EvTag.GetTriggerCluster());
     
     SetZDCNeutron1Energy(EvTag.GetZDCNeutron1Energy());
     SetZDCProton1Energy(EvTag.GetZDCProton1Energy());
