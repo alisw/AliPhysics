@@ -39,6 +39,10 @@ CorrectionMatrix2D::CorrectionMatrix2D(Char_t* name, Char_t* title,
   fhMeas  = new TH2F(Form("meas_%s",name), Form("meas_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
   fhGene  = new TH2F(Form("gene_%s",name), Form("gene_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
   fhCorr  = new TH2F(Form("corr_%s",name), Form("corr_%s",title),  nBinX, Xmin, Xmax, nBinY, Ymin, Ymax);
+
+  fhMeas->Sumw2();
+  fhGene->Sumw2();
+  fhCorr->Sumw2();
 }
 
 //____________________________________________________________________
@@ -53,6 +57,10 @@ CorrectionMatrix2D::CorrectionMatrix2D(Char_t* name,Char_t* title,
   fhMeas  = new TH2F(Form("meas_%s",name), Form("meas_%s",title),  nBinX, X, nBinY, Y);
   fhGene  = new TH2F(Form("gene_%s",name), Form("gene_%s",title),  nBinX, X, nBinY, Y);
   fhCorr  = new TH2F(Form("corr_%s",name), Form("corr_%s",title),  nBinX, X, nBinY, Y);
+
+  fhMeas->Sumw2();
+  fhGene->Sumw2();
+  fhCorr->Sumw2();
 }
 
 
