@@ -26,7 +26,6 @@ TNamed(name, title)
   hEtaVsVtx->SetYTitle("#eta");
 
   hEtaVsVtxUncorrected = dynamic_cast<TH2F*> (hEtaVsVtx->Clone(Form("%s_eta_vs_vtx_uncorrected", name)));
-  hEtaVsVtxCheck = dynamic_cast<TH2F*> (hEtaVsVtx->Clone(Form("%s_eta_vs_vtx_check", name)));
   hVtx       = hEtaVsVtx->ProjectionX(Form("%s_vtx", name));
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
@@ -40,9 +39,8 @@ TNamed(name, title)
 
 //____________________________________________________________________
 void
-dNdEtaAnalysis::FillTrack(Float_t vtx, Float_t eta, Float_t c) {
+dNdEtaAnalysis::FillTrack(Float_t vtx, Float_t eta) {
   hEtaVsVtxUncorrected->Fill(vtx,eta);
-  hEtaVsVtxCheck->Fill(vtx, eta, c);
 }
 
 //____________________________________________________________________
@@ -82,39 +80,6 @@ void dNdEtaAnalysis::Finish(dNdEtaCorrection* correction)
     }
   }
 
-  // normalize with n events (per vtx)
-/*  for (Int_t iVtx=0; iVtx<=hVtx->GetNbinsX(); iVtx++) {
-    Float_t nEvents      = hVtx->GetBinContent(iVtx);
-    Float_t nEventsError = hVtx->GetBinError(iVtx);
-
-    if (nEvents==0) continue;
-
-    for (Int_t iEta=0; iEta<=hEtaVsVtx->GetNbinsY(); iEta++) {
-      Float_t value = hEtaVsVtx->GetBinContent(iVtx, iEta) / nEvents;
-      if (value==0) continue;
-      Float_t error = hEtaVsVtx->GetBinError(iVtx, iEta)/nEvents;
-      error = TMath::Sqrt(TMath::Power(hEtaVsVtx->GetBinError(iVtx, iEta)/
-				       hEtaVsVtx->GetBinContent(iVtx, iEta),2) +
-      			  TMath::Power(nEventsError/nEvents,2));
-      hEtaVsVtx->SetBinContent(iVtx, iEta, value);
-      hEtaVsVtx->SetBinError(iVtx,   iEta, error);
-    }
-
-    //debug
-    for (Int_t iEta=0; iEta<=hEtaVsVtxCheck->GetNbinsY(); iEta++) {
-      Float_t value = hEtaVsVtxCheck->GetBinContent(iVtx, iEta) / nEvents;
-      if (value==0) continue;
-      Float_t error = hEtaVsVtxCheck->GetBinError(iVtx, iEta)/nEvents;
-      error = TMath::Sqrt(TMath::Power(hEtaVsVtxCheck->GetBinError(iVtx, iEta)/
-				       hEtaVsVtxCheck->GetBinContent(iVtx, iEta),2) +
-      			  TMath::Power(nEventsError/nEvents,2));
-      hEtaVsVtxCheck->SetBinContent(iVtx, iEta, value);
-      hEtaVsVtxCheck->SetBinError(iVtx,   iEta, error);
-    }
-  }*/
-
-  // then take the wieghted average for each eta
-  // is this the right way to do it???
   for (Int_t iEta=0; iEta<=hEtaVsVtx->GetNbinsY(); iEta++)
   {
     // do we have several histograms for different vertex positions?
@@ -167,7 +132,7 @@ dNdEtaAnalysis::SaveHistograms() {
 
   gDirectory->mkdir(GetName());
   gDirectory->cd(GetName());
-  
+
   hEtaVsVtx  ->Write();
   hEtaVsVtxUncorrected->Write();
   hVtx       ->Write();
@@ -177,34 +142,40 @@ dNdEtaAnalysis::SaveHistograms() {
   gDirectory->cd("../");
 }
 
+void dNdEtaAnalysis::LoadHistograms()
+{
+  gDirectory->cd(GetName());
+
+  hEtaVsVtx = dynamic_cast<TH2F*> (gDirectory->Get(hEtaVsVtx->GetName()));
+  hEtaVsVtxUncorrected = dynamic_cast<TH2F*> (gDirectory->Get(hEtaVsVtxUncorrected->GetName()));
+
+  hVtx = dynamic_cast<TH1D*> (gDirectory->Get(hVtx->GetName()));
+
+  for (Int_t i=0; i<kVertexBinning; ++i)
+    hdNdEta[i] = dynamic_cast<TH1D*> (gDirectory->Get(hdNdEta[i]->GetName()));
+
+  gDirectory->cd("../");
+}
+
 //____________________________________________________________________
 void dNdEtaAnalysis::DrawHistograms()
 {
-  TCanvas* canvas = new TCanvas("dNdEtaAnalysis", "dNdEtaAnalysis", 1200, 800);
-  canvas->Divide(3, 2);
+  TCanvas* canvas = new TCanvas("dNdEtaAnalysis", "dNdEtaAnalysis", 800, 800);
+  canvas->Divide(2, 2);
 
   canvas->cd(1);
   if (hEtaVsVtx)
     hEtaVsVtx->Draw("COLZ");
 
   canvas->cd(2);
-  if (hEtaVsVtxCheck)
-    hEtaVsVtxCheck->Draw("COLZ");
-
-  canvas->cd(3);
   if (hEtaVsVtxUncorrected)
     hEtaVsVtxUncorrected->Draw("COLZ");
 
-  canvas->cd(4);
-  TH2F* clone = (TH2F*) hEtaVsVtxCheck->Clone("clone");
-  clone->Divide(hEtaVsVtx);
-  clone->Draw("COLZ");
-
-  canvas->cd(5);
+  canvas->cd(3);
   if (hVtx)
     hVtx->Draw();
 
-  canvas->cd(6);
+  canvas->cd(4);
   if (hdNdEta[0])
     hdNdEta[0]->Draw();
 
