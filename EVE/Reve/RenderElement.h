@@ -52,7 +52,7 @@ protected:
 public:
   RenderElement();
   RenderElement(Color_t& main_color);
-  virtual ~RenderElement() {}
+  virtual ~RenderElement();
 
   virtual TObject* GetObject(Reve::Exc_t eh="RenderElement::GetObject ");
 
@@ -73,11 +73,11 @@ public:
   void SpawnEditor();                  // *MENU*
   void ExportToCINT(Text_t* var_name); // *MENU*
 
-  virtual Bool_t CanEditRnrElement()   { return true; }
+  virtual Bool_t CanEditRnrElement()   { return kTRUE; }
   virtual Bool_t GetRnrElement() const { return fRnrElement; }
   virtual void   SetRnrElement(Bool_t rnr);
 
-  virtual Bool_t CanEditMainColor()        { return false; }
+  virtual Bool_t CanEditMainColor()        { return kFALSE; }
   Color_t* GetMainColorPtr()               { return fMainColorPtr; }
   void     SetMainColorPtr(Color_t* color) { fMainColorPtr = color; }
 
@@ -150,7 +150,7 @@ public:
   {}
   virtual ~RenderElementList() {}
 
-  virtual Bool_t CanEditMainColor()  { return true; }
+  virtual Bool_t CanEditMainColor()  { return kTRUE; }
 
   virtual void Paint(Option_t* option = "") { PaintElements(option); }
 

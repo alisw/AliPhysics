@@ -19,13 +19,21 @@ ClassImp(RenderElement)
 
 RenderElement::RenderElement()
 {
-  fRnrElement    = true;
+  fRnrElement    = kTRUE;
   fMainColorPtr  = 0;
 }
 
 RenderElement::RenderElement(Color_t& main_color) : fMainColorPtr(&main_color)
 {
-  fRnrElement    = true;
+  fRnrElement    = kTRUE;
+}
+
+RenderElement::~RenderElement()
+{
+  for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
+    i->fTree->DeleteItem(i->fItem);
+    gClient->NeedRedraw(i->fTree);
+  }
 }
 
 /**************************************************************************/
@@ -46,11 +54,10 @@ TGListTreeItem* RenderElement::AddIntoListTree(TGListTree* ltree,
   static const Exc_t eH("RenderElement::AddIntoListTree ");
 
   TObject* tobj = GetObject(eH);
-  Bool_t colorp = fMainColorPtr != 0;
   TGListTreeItem* item = ltree->AddItem(parent, tobj->GetName(), this,
-					 0, 0, colorp);
+					0, 0, kTRUE);
   item->CheckItem(GetRnrElement());
-  if(colorp) item->SetColor(GetMainColor());
+  if(fMainColorPtr != 0) item->SetColor(GetMainColor());
   item->SetTipText(tobj->GetTitle());
 
   fItems.insert(ListTreeInfo(ltree, item));
@@ -65,7 +72,7 @@ void RenderElement::FullUpdate()
   for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
     // Setup name and title/tooltip? Need update calls from setname/title as well.
     i->fItem->CheckItem(fRnrElement);
-    i->fItem->SetColor(GetMainColor());
+    if(fMainColorPtr != 0) i->fItem->SetColor(GetMainColor());
   }
   gReve->Redraw3D();
   gReve->NotifyBrowser();
@@ -209,13 +216,13 @@ Int_t RenderElementListBase::ExpandIntoListTree(TGListTree* ltree,
 void RenderElementListBase::EnableListElements()
 {
   for(lpRE_i i=fList.begin(); i!=fList.end(); ++i)
-    (*i)->SetRnrElement(true);
+    (*i)->SetRnrElement(kTRUE);
 }
 
 void RenderElementListBase::DisableListElements()
 {
   for(lpRE_i i=fList.begin(); i!=fList.end(); ++i)
-    (*i)->SetRnrElement(false);
+    (*i)->SetRnrElement(kFALSE);
 }
 
 /**************************************************************************/
