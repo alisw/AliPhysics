@@ -236,6 +236,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
   Float_t maxPt = .0, meanPt = .0, totalP = .0;
   Int_t fVertexflag;
+  Int_t iRunNumber = 0;
   TString fVertexName;
 
   AliRunTag *tag = new AliRunTag();
@@ -252,8 +253,9 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
   AliESD *esd = 0;
   b->SetAddress(&esd);
   
-  tag->SetRunId(esd->GetRunNumber());
-  
+  b->GetEntry(0);
+  Int_t iInitRunNumber = esd->GetRunNumber();
+
   Int_t iNumberOfEvents = b->GetEntries();
   for (Int_t iEventNumber = 0; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
@@ -284,6 +286,8 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
     fVertexflag = 1;
     
     b->GetEntry(iEventNumber);
+    iRunNumber = esd->GetRunNumber();
+    if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD!!!");
     const AliESDVertex * vertexIn = esd->GetVertex();
     fVertexName = vertexIn->GetName();
     if(fVertexName == "default") fVertexflag = 0;
@@ -456,6 +460,7 @@ void AliTagCreator::CreateTag(TFile* file, const char *guid, const char *md5, co
     evTag->SetMeanPt(meanPt);
     evTag->SetMaxPt(maxPt);
     
+    tag->SetRunId(iInitRunNumber);
     tag->AddEventTag(*evTag);
   }//event loop
   lastEvent = iNumberOfEvents;
