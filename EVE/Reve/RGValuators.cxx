@@ -88,7 +88,7 @@ void RGValuator::Build()
   }
 
   // entry
-  TGLayoutHints*  elh =  new TGLayoutHints(kLHintsLeft, 1,0,0,0);
+  TGLayoutHints*  elh =  new TGLayoutHints(kLHintsLeft, 0,0,0,0);
   fEntry = new TGNumberEntry(hf1, 0, fNELength);
   fEntry->SetHeight(fNEHeight);
   fEntry->GetNumberEntry()->SetToolTipText("Enter Slider Value");
@@ -187,6 +187,17 @@ void RGValuator::SetToolTip(const Text_t* tip)
   fEntry->GetNumberEntry()->SetToolTipText(tip);
 }
 
+void RGValuator::SetEnabled(Bool_t state)
+{
+  fEntry->GetNumberEntry()->SetEnabled(state);
+  fEntry->GetButtonUp()->SetEnabled(state);
+  fEntry->GetButtonDown()->SetEnabled(state);
+  if(fSlider) {
+    if(state) fSlider->MapWindow();
+    else      fSlider->UnmapWindow();
+  }
+}
+
 /**************************************************************************/
 // RGDoubleValuator
 /**************************************************************************/
@@ -242,7 +253,7 @@ void RGDoubleValuator::Build()
   fMinEntry = new TGNumberEntry(this, 0, fNELength);
   fMinEntry->SetHeight(fNEHeight);
   fMinEntry->GetNumberEntry()->SetToolTipText("Enter Slider Min Value");
-  hf1->AddFrame(fMinEntry, new TGLayoutHints(kLHintsLeft, 1,0,0,0));
+  hf1->AddFrame(fMinEntry, new TGLayoutHints(kLHintsLeft, 0,0,0,0));
   fMinEntry->Connect("ValueSet(Long_t)",
 		     "Reve::RGDoubleValuator", this, "MinEntryCallback()");
   fMinEntry->Associate(this);   

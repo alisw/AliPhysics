@@ -77,6 +77,7 @@ public:
 		 TGNumberFormat::EStyle nef=TGNumberFormat::kNESRealTwo);
 
   void SetToolTip(const Text_t* tip);
+  void SetEnabled(Bool_t state);
 
   ClassDef(RGValuator, 0);
 }; // endclass RGValuator
