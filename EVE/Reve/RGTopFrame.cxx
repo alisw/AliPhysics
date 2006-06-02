@@ -335,6 +335,15 @@ void RGTopFrame::DrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad)
   Redraw3D();
 }
 
+void RGTopFrame::UndrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad)
+{
+  if(pad == 0) pad = GetCC();
+  { Reve::PadHolder pHolder(false, pad);
+    pad->GetListOfPrimitives()->Remove(rnr_element->GetObject());
+  }
+  Redraw3D();
+}
+
 /**************************************************************************/
 
 void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t state)
@@ -353,7 +362,7 @@ void RGTopFrame::NotifyBrowser(TGListTreeItem* parent)
   TGListTree* l_tree = GetListTree();
   if(parent)
     l_tree->OpenItem(parent);
-  l_tree->GetClient()->NeedRedraw(l_tree);
+  gClient->NeedRedraw(l_tree);
 }
 
 /**************************************************************************/

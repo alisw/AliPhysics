@@ -83,6 +83,7 @@ public:
   TGListTreeItem* AddGlobalRenderElement(TGListTreeItem* parent, RenderElement* rnr_element);
 
   void DrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad=0);
+  void UndrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad=0);
 
   void RenderElementChecked(TObject* obj, Bool_t state);
 
