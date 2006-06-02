@@ -1069,7 +1069,7 @@ void AliEMCALJetFinder::FillFromDigits(Int_t flag)
     {
 	Double_t pedestal = 0.;
 	Double_t channel  = 0.;
-	if (geom->IsInECA(sdg->GetId()))  {
+	if (geom->CheckAbsCellId(sdg->GetId()))  { // May 31, 2006; IsInECA(Int_t) -> CheckAbsCellId
 	  pedestal = ecADCped;
 	  channel  = ecADCcha; 
        	}

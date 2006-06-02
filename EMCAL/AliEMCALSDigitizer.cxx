@@ -130,7 +130,7 @@ void AliEMCALSDigitizer::Init(){
   //============================================================= YS
   //  The initialisation is now done by the getter
 
-  fInit = kTRUE ; 
+  fInit = kTRUE; 
    
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
 

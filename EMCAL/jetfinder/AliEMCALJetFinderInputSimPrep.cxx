@@ -156,7 +156,7 @@ if (fDebug > 1) Info("FillHits","Beginning FillHits");
 // Access hit information
 //  AliEMCAL* pEMCAL = (AliEMCAL*) gAlice->GetModule("EMCAL");
 //  Info("AliEMCALJetFinderInputSimPrep","Title of the geometry is %s",pEMCAL->GetTitle());
-    AliEMCALGeometry* geom =  AliEMCALGeometry::GetInstance();
+//    AliEMCALGeometry* geom =  AliEMCALGeometry::GetInstance();
     AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
 
     //    TTree *treeH = AliEMCALGetter::Instance()->TreeH();
@@ -184,11 +184,12 @@ if (fDebug > 1) Info("FillHits","Beginning FillHits");
 
             Float_t r      =    TMath::Sqrt(x*x+y*y);
             Float_t theta  =    TMath::ATan2(r,z);
-            Float_t eta    =   -TMath::Log(TMath::Tan(theta/2.));
-            Float_t phi    =    TMath::ATan2(y,x);
+            //Float_t eta    =   -TMath::Log(TMath::Tan(theta/2.));
+            //Float_t phi    =    TMath::ATan2(y,x);
             etH = eloss*TMath::Sin(theta);
 	    if (fDebug > 10) Info("FillHits","Values of hit energy %i",Int_t(1e7*etH));
-	    if (geom->TowerIndexFromEtaPhi(eta,180.0/TMath::Pi()*phi) == -1) 
+	    /*  have to be tune for TRD1; May 31,06 
+	    if (geom->TowerIndexFromEtaPhi(eta,180.0/TMath::Pi()*phi) == -1 )
 	    {
 		    if (fDebug >5)  
 		    {
@@ -198,6 +199,7 @@ if (fDebug > 1) Info("FillHits","Beginning FillHits");
 		    continue;
 	    }
             fInputObject.AddEnergyToDigit(geom->TowerIndexFromEtaPhi(eta,180.0/TMath::Pi()*phi)-1,Int_t(1e7*etH));
+	    */
         } // Hit Loop
 //    } // Track Loop
 

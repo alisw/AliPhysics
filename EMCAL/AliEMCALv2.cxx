@@ -42,7 +42,7 @@
 #include "AliHeader.h"
 #include "AliMC.h"
 #include "AliPoints.h"
-// for TRD1,2 case
+// for TRD1 case only; May 31,2006
 
 ClassImp(AliEMCALv2)
 
@@ -220,9 +220,9 @@ void AliEMCALv2::StepManager(void){
         else if(strcmp(gMC->CurrentVolOffName(5),"SMON")==0) supModuleNumber = nSMON[supModuleNumber-1];
         else   assert(0); // something wrong
       }
-      absid = fGeometry->GetAbsCellId(supModuleNumber, moduleNumber, yNumber, xNumber);
+      absid = fGeometry->GetAbsCellId(supModuleNumber-1, moduleNumber-1, yNumber-1, xNumber-1);
     
-      if (absid == -1) Fatal("StepManager()", "Wrong id ") ;
+      if (absid < 0) Fatal("StepManager()", "Wrong id ") ;
 
       Float_t lightYield =  depositedEnergy ;
       // Apply Birk's law (copied from G3BIRK)

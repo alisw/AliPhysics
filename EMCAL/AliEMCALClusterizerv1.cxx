@@ -251,11 +251,12 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * emcRP, AliEMCALDigit **
   for(iDigit = 0; iDigit < nDigits; iDigit++){
     digit = maxAt[iDigit]; 
 
-    Int_t relid[2] ;
     Float_t x = 0.;
     Float_t z = 0.;
-    fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
-    fGeom->PosInAlice(relid, x, z) ;
+    //   have to be tune for TRD1; May 31,06
+    //   Int_t relid[2] ;
+    //   fGeom->AbsToRelNumbering(digit->GetId(), relid) ; // obsolete method
+    //   fGeom->PosInAlice(relid, x, z) ;                  // obsolete method
 
     Float_t energy = maxAtEnergy[iDigit] ;
 

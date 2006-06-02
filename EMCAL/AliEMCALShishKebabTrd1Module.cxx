@@ -52,7 +52,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     }
   } else Warning("AliEMCALShishKebabTrd1Module(theta)","You should call this constractor just once !!");
   DefineName(fTheta);
-  cout<< " theta " << fTheta << " geometry " << g << endl;  
+  cout<< "AliEMCALShishKebabTrd1Module - first module:  theta " << fTheta << " geometry " << g << endl;  
 }
 
 AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor) : TNamed()
