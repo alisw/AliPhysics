@@ -1,4 +1,4 @@
- 
+
 ALIFAST/module.mk:	 ALIFAST/libALIFAST.pkg
 ALIROOT/module.mk:	 ALIROOT/binaliroot.pkg 
 ANALYSIS/module.mk:	 ANALYSIS/libANALYSIS.pkg 
@@ -31,7 +31,7 @@ RAW/module.mk:           RAW/libRAWData.pkg RAW/binalimdc.pkg RAW/bindateStream.
 RICH/module.mk:		 RICH/libRICHbase.pkg RICH/libRICHrec.pkg RICH/libRICHsim.pkg
 SHUTTLE/module.mk:	 SHUTTLE/libSHUTTLE.pkg
 START/module.mk:	 START/libSTARTbase.pkg START/libSTARTsim.pkg START/libSTARTrec.pkg
-STEER/module.mk:	 STEER/libESD.pkg STEER/libSTEER.pkg
+STEER/module.mk:	 STEER/libESD.pkg STEER/libCDB.pkg STEER/libSTEER.pkg
 STRUCT/module.mk:	 STRUCT/libSTRUCT.pkg
 TEPEMGEN/module.mk:      TEPEMGEN/libTEPEMGEN.pkg
 TFluka/module.mk:        TFluka/libTFluka.pkg

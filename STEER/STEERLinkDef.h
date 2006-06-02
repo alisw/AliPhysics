@@ -76,25 +76,6 @@
 #pragma link C++ class  AliV0vertexer+;
 #pragma link C++ class  AliCascadeVertexer+;
 
-#pragma link C++ class AliCDBPath;
-#pragma link C++ class AliCDBRunRange;
-#pragma link C++ class AliCDBId;
-#pragma link C++ class AliCDBMetaData;
-#pragma link C++ class AliCDBEntry;
-#pragma link C++ class AliCDBStorage;
-#pragma link C++ class AliCDBStorageFactory;
-#pragma link C++ class AliCDBManager;
-#pragma link C++ class AliCDBParam;
-#pragma link C++ class AliCDBLocal;
-#pragma link C++ class AliCDBLocalFactory;
-#pragma link C++ class AliCDBLocalParam;
-#pragma link C++ class AliCDBDump;
-#pragma link C++ class AliCDBDumpFactory;
-#pragma link C++ class AliCDBDumpParam; 
-#pragma link C++ class AliCDBGrid;
-#pragma link C++ class AliCDBGridFactory;
-#pragma link C++ class AliCDBGridParam;
-
 #pragma link C++ class AliExpression+;
 #pragma link C++ class AliVariableExpression+;
 #pragma link C++ class AliTriggerInput+;

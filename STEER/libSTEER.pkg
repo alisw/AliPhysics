@@ -19,9 +19,6 @@ AliMemoryWatcher.cxx \
 AliVertexer.cxx  AliVertexerTracks.cxx AliStrLine.cxx \
 AliV0vertexer.cxx AliCascadeVertexer.cxx\
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
-AliCDBEntry.cxx AliCDBId.cxx AliCDBMetaData.cxx \
-AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx\
-AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx\
 AliReconstructor.cxx AliDetectorEventHeader.cxx TTreeStream.cxx\
 AliAlignObj.cxx AliAlignObjAngles.cxx AliAlignObjMatrix.cxx \
 AliTriggerInput.cxx \

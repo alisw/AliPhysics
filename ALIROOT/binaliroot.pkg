@@ -13,7 +13,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         RICHbase RICHrec RICHsim \
         ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec \
         EMCALbase EMCALsim EMCALrec EMCALjet \
-        STRUCT STARTbase STARTsim STARTrec EVGEN ESD STEER \
+        STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
         pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
         FASTSIM microcern RAWData AliL3Src AliL3Comp AliL3Misc AliL3MUON \
