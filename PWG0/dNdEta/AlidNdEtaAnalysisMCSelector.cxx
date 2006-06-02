@@ -105,7 +105,7 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
 
     AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", i_mc, particle->GetUniqueID()));
 
-    fdNdEtaAnalysis->FillTrack(vtxMC[2], particle->Eta(), 1);
+    fdNdEtaAnalysis->FillTrack(vtxMC[2], particle->Eta());
     fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
 
     fPartEta->Fill(particle->Eta());

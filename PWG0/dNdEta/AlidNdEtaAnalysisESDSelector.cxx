@@ -13,7 +13,6 @@
 #include <AliESD.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
-#include "dNdEtaCorrection.h"
 #include "dNdEtaAnalysis.h"
 
 ClassImp(AlidNdEtaAnalysisESDSelector)
@@ -48,14 +47,10 @@ void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree * tree)
   if (fChain)
   {
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fChain->GetUserInfo()->FindObject("AliESDtrackCuts"));
-    fdNdEtaCorrection = dynamic_cast<dNdEtaCorrection*> (fChain->GetUserInfo()->FindObject("dndeta_correction"));
   }
 
   if (!fEsdTrackCuts)
      AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info.");
-
-  if (!fdNdEtaCorrection)
-     AliDebug(AliLog::kError, "ERROR: Could not read dNdEtaCorrection from user info.");
 }
 
 Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
@@ -91,12 +86,6 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   if (!fEsdTrackCuts)
   {
     AliDebug(AliLog::kError, "fESDTrackCuts not available");
-    return kFALSE;
-  }
-
-  if (!fdNdEtaCorrection)
-  {
-    AliDebug(AliLog::kError, "fdNdEtaCorrection not available");
     return kFALSE;
   }
 
@@ -143,9 +132,7 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
     Float_t theta = vector.Theta();
     Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
 
-    Float_t correction = fdNdEtaCorrection->GetCorrection(vtx[2], eta);
-
-    fdNdEtaAnalysis->FillTrack(vtx[2], eta, correction);
+    fdNdEtaAnalysis->FillTrack(vtx[2], eta);
 
   } // end of track loop
 
@@ -161,7 +148,4 @@ void AlidNdEtaAnalysisESDSelector::WriteObjects()
 
   if (fEsdTrackCuts)
     fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
-
-  if (fdNdEtaCorrection)
-    fdNdEtaCorrection->SaveHistograms();
 }

@@ -9,6 +9,7 @@
 //
 
 #include "../CreateESDChain.C"
+#include "CreatedNdEta.C"
 
 testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE)
 {
@@ -54,4 +55,6 @@ testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFAL
 
   timer.Stop();
   timer.Print();
+
+  CreatedNdEta(aMC ? kFALSE : kTRUE);
 }

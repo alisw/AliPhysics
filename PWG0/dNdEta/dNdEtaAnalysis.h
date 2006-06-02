@@ -32,12 +32,13 @@ public:
 
   dNdEtaAnalysis(Char_t* name, Char_t* title);
 
-  void FillTrack(Float_t vtx, Float_t eta, Float_t c);
+  void FillTrack(Float_t vtx, Float_t eta);
   void FillEvent(Float_t vtx);
 
   void Finish(dNdEtaCorrection* correction);
 
   void DrawHistograms();
+  void LoadHistograms();
   void SaveHistograms();
 
   virtual Long64_t Merge(TCollection* list);
@@ -49,7 +50,6 @@ public:
 
 protected:
   TH2F* hEtaVsVtx;
-  TH2F* hEtaVsVtxCheck;
   TH2F* hEtaVsVtxUncorrected;
   TH1D* hVtx;
   TH1D* hdNdEta[kVertexBinning];
