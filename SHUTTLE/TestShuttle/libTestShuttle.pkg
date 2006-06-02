@@ -1,0 +1,11 @@
+# $Id$
+
+HDRS = AliTestDataDCS.h \
+AliTestPreprocessor.h \
+AliTestShuttle.h
+
+SRCS = $(HDRS:.h=.cxx)
+
+DHDR= TestShuttleLinkDef.h
+
+EINCLUDE=
