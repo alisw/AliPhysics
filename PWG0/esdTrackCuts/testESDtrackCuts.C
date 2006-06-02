@@ -4,7 +4,7 @@ testESDtrackCuts(Char_t* dataDir=, Int_t nRuns=10) {
 
   Char_t str[256];
 
-  gSystem->Load("libESDtrackCuts.so");
+  gSystem->Load("libPWG0base.so");
 
   // ########################################################
   // definition of ESD track cuts
