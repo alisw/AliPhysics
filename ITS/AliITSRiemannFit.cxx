@@ -69,6 +69,7 @@
 #include "AliITSgeom.h"
 #include "AliMC.h"
 #include "AliITSDetTypeRec.h"
+#include "AliLog.h"
 
 ClassImp(AliITSRiemannFit)
 
@@ -232,7 +233,12 @@ void AliITSRiemannFit::InitPoints(Int_t ntracks,TTree *TR,Int_t nparticles){
 
   AliRunLoader* rl = AliRunLoader::Open("galice.root");
   rl->CdGAFile();
-  AliITSgeom* gm = (AliITSgeom*)gDirectory->Get("AliITSgeom");
+  AliITSLoader* loader = static_cast<AliITSLoader*>(rl->GetLoader("ITSLoader"));
+  if (!loader) {
+    Error("InitPoints", "ITS loader not found");
+    return;
+  }
+  AliITSgeom* gm = loader->GetITSgeom();
 
   //get pointer to modules array
   Int_t nmodules = gm->GetIndexMax();
