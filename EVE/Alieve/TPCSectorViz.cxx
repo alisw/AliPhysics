@@ -51,12 +51,6 @@ TPCSectorViz::~TPCSectorViz()
 
 /**************************************************************************/
 
-//UInt_t TPCSectorViz::IncRTS()
-//{
-//  return ++fRTS;
-//}
-
-
 void TPCSectorViz::SetDataSource(TPCData* data)
 {
   if(data == fTPCData) return;
