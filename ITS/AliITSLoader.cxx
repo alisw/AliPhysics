@@ -1,6 +1,7 @@
 #include "AliITSdigit.h"
 #include "AliITSLoader.h"
 #include "AliRunLoader.h"
+#include "AliLog.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Loader for ITS
@@ -335,7 +336,7 @@ AliITSgeom* AliITSLoader::GetITSgeom(Bool_t force) {
     Error("GetITSgeom","no ITS geometry available");
     return NULL;
   }
-  
+  AliWarning("AliITSgeom object has been fetched from galice.root file");
   return fGeom;
 }
 
