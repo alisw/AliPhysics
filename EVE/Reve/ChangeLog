@@ -1,3 +1,20 @@
+2006-06-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	HEAD
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Added method UndrawRenderElement().
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Implemented dtor for RenderElement removing all instances from
+	browsers.
+
+	* RGValuators.cxx:
+	* RGValuators.h:
+	Added method RGValuator::SetEnabled().
+
 2006-06-01  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	HEAD

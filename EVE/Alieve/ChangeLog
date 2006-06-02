@@ -1,3 +1,20 @@
+2006-06-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* LinkDef.h:
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	* TPCLoaderEditor.cxx:
+	* TPCLoaderEditor.h:
+	New class TPCLoader providing (graphical) interface for navigation
+	through the TPC sector data.
+
+	* TPCSector3D.cxx:
+	Proper initialization of bounding box for fBoxSet.
+
+	* TPCSector2DEditor.cxx:
+	* TPCSectorViz.cxx:
+	Removed some comment crap.
+
 2006-06-01  Bogdan Vulpescu  <vulpescu@clermont.in2p3.fr>
 
 	HEAD
