@@ -62,7 +62,9 @@ void TPCSector3D::ComputeBBox()
   fBBox[3] =  o2Seg.GetRLow() + o2Seg.GetNRows()*o2Seg.GetPadHeight();
   fBBox[4] = -0.5;
   fBBox[5] =  250.5;
-  dynamic_cast<TAttBBox&>(fBoxSet) = dynamic_cast<TAttBBox&>(*this);
+  Float_t* b = fBoxSet.AssertBBox();
+  for(Int_t i=0; i<6; ++i) { b[i] = fBBox[i]; }
+
 }
 
 void TPCSector3D::Paint(Option_t* option)
