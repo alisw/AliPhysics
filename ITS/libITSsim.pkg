@@ -32,6 +32,6 @@ HDRS:=  $(SRCS:.cxx=.h)
 
 DHDR=ITSsimLinkDef.h
 
-EINCLUDE:=$(GEANT3_ROOT)/TGeant3 TPC RAW
+EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC RAW
 
 
