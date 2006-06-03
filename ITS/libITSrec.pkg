@@ -56,7 +56,7 @@ HDRS:=  $(SRCS:.cxx=.h)
 
 DHDR=ITSrecLinkDef.h
 
-EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC RAW
+EINCLUDE:=TPC RAW
 
 EXPORT:=AliITStrackV2.h AliITSVertexerTracks.h \
         AliITSVertexer.h AliITSrecoV2.h
