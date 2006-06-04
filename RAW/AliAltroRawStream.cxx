@@ -37,6 +37,7 @@ ClassImp(AliAltroRawStream)
 AliAltroRawStream::AliAltroRawStream(AliRawReader* rawReader) :
   fNoAltroMapping(kTRUE),
   fIsOldRCUFormat(kFALSE),
+  fIsShortDataHeader(kFALSE),
   fDDLNumber(-1),
   fPrevDDLNumber(-1),
   fRCUId(-1),
@@ -64,6 +65,7 @@ AliAltroRawStream::AliAltroRawStream(const AliAltroRawStream& stream) :
   TObject(stream),
   fNoAltroMapping(kTRUE),
   fIsOldRCUFormat(kFALSE),
+  fIsShortDataHeader(kFALSE),
   fDDLNumber(-1),
   fPrevDDLNumber(-1),
   fRCUId(-1),
@@ -336,12 +338,28 @@ Int_t AliAltroRawStream::GetPosition()
     // Therefore we need to transform it to number of bytes
     position *= 5;
 
-    // Check the consistency of the header and trailer
-    if ((fRawReader->GetDataSize() - 4) != position)
-      AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
-		    fRawReader->GetDataSize()-4,
-		    position));
+    if (!fIsShortDataHeader) {
 
+      // Check the consistency of the header and trailer
+      if ((fRawReader->GetDataSize() - 4) != position)
+	AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
+		      fRawReader->GetDataSize()-4,
+		      position));
+    }
+    else {
+      // Check the consistency of the header and trailer
+      // In this case the header is shorter by 4 bytes
+      if (fRawReader->GetDataSize() != position)
+	AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
+		      fRawReader->GetDataSize(),
+		      position));
+
+      // 7 32-bit words Common Data Header
+      // therefore we have to shift back by 4 bytes
+      // the pointer to the raw data payload
+      fData -= 4;
+    }
+     
     // Return the position in units of 10-bit words
     return position*8/10;
   }
