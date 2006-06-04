@@ -752,8 +752,18 @@ void AliExternalTrackParam::Print(Option_t* /*option*/) const
 	 fC[10], fC[11], fC[12], fC[13], fC[14]);
 }
 
+Double_t AliExternalTrackParam::GetSnpAt(Double_t x,Double_t b) const {
+  //
+  // Get sinus at given x
+  //
+  Double_t crv=kB2C*b*fP[4];
+  if (TMath::Abs(b) < kAlmost0Field) crv=0.;
+  Double_t dx = x-fX;
+  Double_t res = fP[2]+dx*crv;
+  return res;
+}
 
-Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t mass, Double_t maxStep, Bool_t rotateTo){
+Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
   //----------------------------------------------------------------
   //
   // Very expensive function !  Don't abuse it !
@@ -772,13 +782,13 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t m
   Double_t dir      = (xpos<xToGo) ? 1.:-1.;
   //
   while ( (xToGo-xpos)*dir > kEpsilon){
-    if (TMath::Abs(fP[2]) >= kAlmost1) return kFALSE;
     Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
     Double_t x    = xpos+step;
     Double_t xyz0[3],xyz1[3],param[7];
     GetXYZ(xyz0);   //starting global position
     if (!GetXYZAt(x,b,xyz1)) return kFALSE;   // no prolongation
     AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
+    if (TMath::Abs(GetSnpAt(x,b)) >= maxSnp) return kFALSE;
     if (!PropagateTo(x,b))  return kFALSE;
 
     Double_t rho=param[0],x0=param[1],distance=param[4];
@@ -786,9 +796,14 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t m
 
     if (!CorrectForMaterial(d,x0,mass)) return kFALSE;
     if (rotateTo){
-      if (TMath::Abs(fP[2]) >= kAlmost1) return kFALSE;
+      if (TMath::Abs(fP[2]) >= maxSnp) return kFALSE;
       GetXYZ(xyz0);   // global position
-      Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]);
+      Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]); 
+      //
+      Double_t ca=TMath::Cos(alphan-fAlpha), sa=TMath::Sin(alphan-fAlpha);
+      Double_t sf=fP[2], cf=TMath::Sqrt(1.- fP[2]*fP[2]);
+      Double_t sinNew =  sf*ca - cf*sa;
+      if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
       if (!Rotate(alphan)) return kFALSE;
     }
     xpos = GetX();

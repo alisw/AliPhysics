@@ -79,8 +79,8 @@ class AliExternalTrackParam: public TObject {
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t r[3]) const;
   void Print(Option_t* option = "") const;
   // MI
-  virtual Bool_t   PropagateTo(Double_t x, Double_t b, Double_t mass, Double_t maxStep, Bool_t rotateTo=kTRUE);
-
+  virtual Bool_t   PropagateTo(Double_t x, Double_t b, Double_t mass, Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);
+  Double_t GetSnpAt(Double_t x,Double_t b) const;
 private:
   Double_t             fX;     // X coordinate for the point of parametrisation
   Double_t             fAlpha; // Local <-->global coor.system rotation angle
