@@ -54,7 +54,7 @@ public:
   void GetGlobal(const TVector3 &vloc, TVector3 &vglob, int nsm) const;
   void GetGlobal(Int_t absId, TVector3 &vglob) const;
   // for a given tower index it returns eta and phi of center of that tower.
-  void EtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi) const;
+  void EtaPhiFromIndex(Int_t absId,Float_t &eta,Float_t &phi) const;
 
   //  virtual void GetGlobal(const AliEMCALRecPoint *rp, TVector3 &vglob) const;
 

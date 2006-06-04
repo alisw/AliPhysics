@@ -810,9 +810,9 @@ void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int nsm)
 
 void AliEMCALGeometry::GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const
 {
-  //Figure out the global numbering
-  //of a given supermodule from the
-  //local numbering for RecPoints
+  // Figure out the global numbering
+  // of a given supermodule from the
+  // local numbering for RecPoints
 
   static TVector3 vloc;
   static Int_t nSupMod, nTower, nIphi, nIeta;
@@ -824,6 +824,15 @@ void AliEMCALGeometry::GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const
   GetCellIndex(rpEmc->GetAbsId(0), nSupMod, nTower, nIphi, nIeta);
   rpTmp->GetLocalPosition(vloc);
   GetGlobal(vloc, vglob, nSupMod);
+}
+
+void AliEMCALGeometry::EtaPhiFromIndex(Int_t absId,Float_t &eta,Float_t &phi) const
+{
+  // Jun 03, 2006 - version for TRD1
+  static TVector3 vglob;
+  GetGlobal(absId, vglob);
+  eta = vglob.Eta();
+  phi = vglob.Phi();
 }
 
 AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta=0)
