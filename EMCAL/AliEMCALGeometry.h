@@ -50,8 +50,9 @@ public:
   void GetCellPhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const ; // Tranforms Eta-Phi Cell index in TRU into Eta-Phi index in Super Module
   
   // Have to call GetTransformationForSM() before calculation global charachteristics 
-  void GetGlobal(const Double_t *loc, Double_t *glob, int nsm) const;
-  void GetGlobal(const TVector3 &vloc, TVector3 &vglob, int nsm) const;
+  void GetGlobal(const Double_t *loc, Double_t *glob, int ind) const;
+  void GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind) const;
+  void GetGlobal(Int_t absId, Double_t glob[3]) const;
   void GetGlobal(Int_t absId, TVector3 &vglob) const;
   // for a given tower index it returns eta and phi of center of that tower.
   void EtaPhiFromIndex(Int_t absId,Float_t &eta,Float_t &phi) const;
@@ -147,8 +148,10 @@ public:
   void    GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta,
                                       Int_t &iphi, Int_t &ieta) const ;
   Int_t   GetSuperModuleNumber(Int_t absId)  const; 
-  // Methods for AliEMCALRecPoint - Frb 19, 2006
-  Bool_t   RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr);
+  // Methods for AliEMCALRecPoint - Feb 19, 2006
+  Bool_t   RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr) const;
+  Bool_t   RelPosCellInSModule(Int_t absId, Double_t loc[3]) const;
+  Bool_t   RelPosCellInSModule(Int_t absId, TVector3 &vloc) const;
   // ---
   Float_t AngleFromEta(Float_t eta) const { // returns theta in radians for a given pseudorapidity
     return 2.0*TMath::ATan(TMath::Exp(-eta));

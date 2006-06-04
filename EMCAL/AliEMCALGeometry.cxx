@@ -651,7 +651,7 @@ Int_t  AliEMCALGeometry::GetSuperModuleNumber(Int_t absId)  const
 } 
 
 // Methods for AliEMCALRecPoint - Feb 19, 2006
-Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr)
+Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr) const
 {
   //Look to see what the relative
   //position inside a given cell is
@@ -671,6 +671,29 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   //  cout<<" absId "<<absId<<" iphi "<<iphi<<"ieta"<<ieta;
   // cout<< " xr " << xr << " yr " << yr << " zr " << zr <<endl;
   return kTRUE;
+}
+
+Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t loc[3]) const
+{
+  // Alice numbering scheme - Jun 03, 2006
+  loc[0] = loc[1] = loc[2]=0.0;
+  if(RelPosCellInSModule(absId, loc[0],loc[1],loc[2])) {
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, TVector3 &vloc) const
+{
+  static Double_t loc[3];
+  if(RelPosCellInSModule(absId,loc)) {
+    vloc.SetXYZ(loc[0], loc[1], loc[2]);
+    return kTRUE;
+  } else {
+    vloc.SetXYZ(0,0,0);
+    return kFALSE;
+  }
+  // Alice numbering scheme - Jun 03, 2006
 }
 
 void AliEMCALGeometry::CreateListOfTrd1Modules()
@@ -778,25 +801,43 @@ void  AliEMCALGeometry::GetTransformationForSM()
   transInit = kTRUE;
 }
 
-void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int nsm) const
+void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int ind) const
 {
-  //Figure out the global numbering
-  //of a given supermodule from the
-  //local numbering
-
+  // Figure out the global numbering
+  // of a given supermodule from the
+  // local numbering
+  // Alice numbering - Jun 03,2006
   //  if(fMatrixOfSM[0] == 0) GetTransformationForSM();
-  static int ind;
-  ind = nsm-1;
+
   if(ind>=0 && ind < GetNumberOfSuperModules()) {
     fMatrixOfSM[ind]->LocalToMaster(loc, glob);
   }
 }
 
-void AliEMCALGeometry::GetGlobal(Int_t /* absId */, TVector3 & /* vglob */) const
-{ // have to be defined  
+void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
+{ 
+  // Alice numbering scheme - Jun 03, 2006
+  static Int_t nSupMod, nModule, nIphi, nIeta;
+  static double loc[3];
+
+  glob[0]=glob[1]=glob[2]=0.0; // bad case
+  if(RelPosCellInSModule(absId, loc)) {
+    GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
+    fMatrixOfSM[nSupMod]->LocalToMaster(loc, glob);
+  }
 }
 
-void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int nsm) const
+void AliEMCALGeometry::GetGlobal(Int_t absId , TVector3 &vglob) const
+{ 
+  // Alice numbering scheme - Jun 03, 2006
+  static Double_t glob[3];
+
+  GetGlobal(absId, glob);
+  vglob.SetXYZ(glob[0], glob[1], glob[2]);
+
+}
+
+void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind) const
 {
   //Figure out the global numbering
   //of a given supermodule from the
@@ -804,7 +845,7 @@ void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int nsm)
 
   static Double_t tglob[3], tloc[3];
   vloc.GetXYZ(tloc);
-  GetGlobal(tloc, tglob, nsm);
+  GetGlobal(tloc, tglob, ind);
   vglob.SetXYZ(tglob[0], tglob[1], tglob[2]);
 }
 
@@ -815,13 +856,13 @@ void AliEMCALGeometry::GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const
   // local numbering for RecPoints
 
   static TVector3 vloc;
-  static Int_t nSupMod, nTower, nIphi, nIeta;
+  static Int_t nSupMod, nModule, nIphi, nIeta;
 
   AliRecPoint *rpTmp = (AliRecPoint*)rp; // const_cast ??
   if(!rpTmp) return;
   AliEMCALRecPoint *rpEmc = (AliEMCALRecPoint*)rpTmp;
 
-  GetCellIndex(rpEmc->GetAbsId(0), nSupMod, nTower, nIphi, nIeta);
+  GetCellIndex(rpEmc->GetAbsId(0), nSupMod, nModule, nIphi, nIeta);
   rpTmp->GetLocalPosition(vloc);
   GetGlobal(vloc, vglob, nSupMod);
 }
