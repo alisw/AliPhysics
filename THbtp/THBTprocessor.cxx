@@ -57,7 +57,11 @@ THBTprocessor::THBTprocessor()// it is better not to intialize it:TGenerator("TH
  }
 /*****************************************************************************************/
 
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
 void THBTprocessor::GenerateEvent() const
+#else
+void THBTprocessor::GenerateEvent()
+#endif
 {
 //Starts processing
 

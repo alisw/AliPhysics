@@ -26,6 +26,9 @@ public:
   virtual ~TEpEmGen();
 
   void Initialize    (Double_t ymin, Double_t ymax, Double_t ptmin, Double_t ptmax);
+#if ROOT_VERSION_CODE >= 330500 // Root 5.11/04
+  void GenerateEvent() {TGenerator::GenerateEvent();};
+#endif
   void GenerateEvent (Double_t ymin, Double_t ymax, Double_t ptmin, Double_t ptmax,
 	       	      Double_t &yElectron, Double_t &yPositron,
 		      Double_t &xElectron, Double_t &xPositron,

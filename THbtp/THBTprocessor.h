@@ -29,6 +29,7 @@
 // see there for more description
 //
 
+#include <RVersion.h>
 #include <TGenerator.h>
 
 class THBTprocessor: public TGenerator
@@ -38,7 +39,11 @@ class THBTprocessor: public TGenerator
       virtual ~THBTprocessor() {};
       
       virtual void  Initialize() const;
+#if ROOT_VERSION_CODE <= 330498 // Root 5.11/02
       virtual void  GenerateEvent() const;
+#else
+      virtual void  GenerateEvent();
+#endif
       virtual void  PrintEvent() const;
       virtual Int_t ImportParticles(TClonesArray *particles, Option_t *option="");
       virtual TObjArray      *ImportParticles(Option_t *option="");
