@@ -103,6 +103,10 @@ ifeq ($(findstring PWG0,$(MAKECMDGOALS)),PWG0)
 ALIROOTMODULES += PWG0
 endif
 
+ifeq ($(findstring PWG2,$(MAKECMDGOALS)),PWG2)
+ALIROOTMODULES += PWG2
+endif
+
 ifeq ($(findstring PWG3,$(MAKECMDGOALS)),PWG3)
 ALIROOTMODULES += PWG3
 endif
