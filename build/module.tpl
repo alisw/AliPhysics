@@ -376,6 +376,33 @@ check-@MODULE@: $(@PACKAGE@CHECKS)
 
 PACKREVENG += $(@PACKAGE@PREPROC)
 
+# IRST code smell checker
+
+@PACKAGE@SMELL := $(patsubst %.cxx,@MODULE@/smell/%.smell,$(SRCS))
+
+smell-@MODULE@: $(@PACKAGE@SMELL)
+
+@MODULE@/smell/%.occ : @MODULE@/%.cxx 
+	$(MUTE)echo smelling $@
+	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
+	@$(CXX) -E $(@PACKAGE@DEFINE) -D__opencxx $(@PACKAGE@INC) $(@PACKAGE@CXXFLAGS) $< -o $@ -x c++ $<
+
+@MODULE@/smell/%.smell : @MODULE@/smell/%.occ
+	@$(SMELL_DETECTOR_DIR)/patch-smell-detector.prl $<
+	@java -classpath $(SMELL_DETECTOR_DIR) Stripper $<
+	@$(SMELL_DETECTOR_DIR)/code-smell1 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) > $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell2 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell3 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell4 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell5 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell6 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell7 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell8 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell9 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@$(SMELL_DETECTOR_DIR)/code-smell10 -n -E -c $(patsubst %.occ, %.i, $<) -Mclass=$(patsubst $(dir $@)%.occ,%, $<) >> $(patsubst %.occ,%.smell, $<)
+	@mv $(patsubst $(dir $@)%.occ,%.ii, $<) $(dir $@)
+
+
 # targets to create .par archives (jgrosseo)
 @PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
 	@echo "Creating archive" $@ ...

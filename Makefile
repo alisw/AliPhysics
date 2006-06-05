@@ -23,6 +23,9 @@ export CLASSPATH IRST_INSTALLDIR IRST_CONFIG_DIR
 CODE_CHECK=java rules.ALICE.ALICERuleChecker
 REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 
+SMELL_DETECTOR_DIR=$(ALICE)/smell-detector
+
+
 #-------------------------------------------------------------------------------
 # Include machine dependent macros
 
@@ -312,6 +315,8 @@ check-all:    $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,check-%,$(C
 reveng-all:   $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,reveng-%,$(CHECKMODULES))
 
 revdisp-all:  $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,revdisp-%,$(CHECKMODULES))
+
+smell-all:    $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,smell-%,$(CHECKMODULES))
 
 clean-dicts:
 ifndef ALIQUIET
