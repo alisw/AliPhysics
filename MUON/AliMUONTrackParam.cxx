@@ -29,6 +29,7 @@
 #include "AliMUON.h"
 #include "AliMUONTrackParam.h" 
 #include "AliMUONConstants.h"
+#include "AliESDMuonTrack.h"
 #include "AliRun.h" 
 #include "AliMagF.h" 
 #include "AliLog.h" 
@@ -80,6 +81,30 @@ AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
   fZ                      =  theMUONTrackParam.fZ; 
   fBendingCoor            =  theMUONTrackParam.fBendingCoor; 
   fNonBendingCoor         =  theMUONTrackParam.fNonBendingCoor;
+}
+
+  //_________________________________________________________________________
+void AliMUONTrackParam::GetParamFrom(const AliESDMuonTrack& esdMuonTrack)
+{
+  // assigned value form ESD track.
+  fInverseBendingMomentum =  esdMuonTrack.GetInverseBendingMomentum();
+  fBendingSlope           =  TMath::Tan(esdMuonTrack.GetThetaY());
+  fNonBendingSlope        =  TMath::Tan(esdMuonTrack.GetThetaX());
+  fZ                      =  esdMuonTrack.GetZ(); 
+  fBendingCoor            =  esdMuonTrack.GetBendingCoor(); 
+  fNonBendingCoor         =  esdMuonTrack.GetNonBendingCoor();
+}
+
+  //_________________________________________________________________________
+void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack)
+{
+  // assigned value form ESD track.
+  esdMuonTrack.SetInverseBendingMomentum(fInverseBendingMomentum);
+  esdMuonTrack.SetThetaX(TMath::ATan(fNonBendingSlope));
+  esdMuonTrack.SetThetaY(TMath::ATan(fBendingSlope));
+  esdMuonTrack.SetZ(fZ); 
+  esdMuonTrack.SetBendingCoor(fBendingCoor); 
+  esdMuonTrack.SetNonBendingCoor(fNonBendingCoor);
 }
 
   //__________________________________________________________________________

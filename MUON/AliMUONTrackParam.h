@@ -16,6 +16,8 @@
 
 #include <TObject.h>
 
+class AliESDMuonTrack;
+
 class AliMUONTrackParam : public TObject 
 {
  public:
@@ -24,6 +26,11 @@ class AliMUONTrackParam : public TObject
   
   AliMUONTrackParam(const AliMUONTrackParam& rhs);// copy constructor (should be added per default !)
   AliMUONTrackParam& operator=(const  AliMUONTrackParam& rhs);// (should be added per default !)
+
+  void GetParamFrom(const AliESDMuonTrack& esdMuonTrack);
+  void SetParamFor(AliESDMuonTrack& esdMuonTrack);
+
+
   // Get and Set methods for data
   Double_t GetInverseBendingMomentum(void) const {return fInverseBendingMomentum;}
   void     SetInverseBendingMomentum(Double_t InverseBendingMomentum) {fInverseBendingMomentum = InverseBendingMomentum;}
