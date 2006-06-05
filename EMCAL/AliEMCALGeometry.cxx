@@ -210,6 +210,7 @@ void AliEMCALGeometry::Init(void){
     }
 
     CheckAdditionalOptions();
+    DefineSamplingFraction();
 
     fPhiTileSize = fPhiModuleSize/2. - fLateralSteelStrip; // 13-may-05 
     fEtaTileSize = fEtaModuleSize/2. - fLateralSteelStrip; // 13-may-05 
@@ -362,6 +363,25 @@ void AliEMCALGeometry::CheckAdditionalOptions()
         sscanf(addOpt.Data(),"LATSS=%f", &fLateralSteelStrip);
         AliDebug(2,Form(" fLateralSteelStrip %f (new) \n", fLateralSteelStrip));
       }
+    }
+  }
+}
+
+void AliEMCALGeometry::DefineSamplingFraction()
+{
+  // Jun 05,2006
+  // Look http://rhic.physics.wayne.edu/~pavlinov/ALICE/SHISHKEBAB/RES/linearityAndResolutionForTRD1.html
+  // Keep for compatibilty
+  //
+  if(fNECLayers == 69) {        // 10% layer reduction
+    fSampling = 12.55;
+  } else if(fNECLayers == 61) { // 20% layer reduction
+    fSampling = 12.80;
+  } else if(fNECLayers == 77) {
+    if       (fECScintThick>0.175 && fECScintThick<0.177) { // 10% Pb thicknes reduction
+      fSampling = 10.5; // fECScintThick = 0.176, fECPbRadThickness=0.144;
+    } else if(fECScintThick>0.191 && fECScintThick<0.193) { // 20% Pb thicknes reduction
+      fSampling = 8.93; // fECScintThick = 0.192, fECPbRadThickness=0.128;
     }
   }
 }
@@ -814,6 +834,18 @@ void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int ind) c
   }
 }
 
+void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind) const
+{
+  //Figure out the global numbering
+  //of a given supermodule from the
+  //local numbering given a 3-vector location
+
+  static Double_t tglob[3], tloc[3];
+  vloc.GetXYZ(tloc);
+  GetGlobal(tloc, tglob, ind);
+  vglob.SetXYZ(tglob[0], tglob[1], tglob[2]);
+}
+
 void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
 { 
   // Alice numbering scheme - Jun 03, 2006
@@ -835,18 +867,6 @@ void AliEMCALGeometry::GetGlobal(Int_t absId , TVector3 &vglob) const
   GetGlobal(absId, glob);
   vglob.SetXYZ(glob[0], glob[1], glob[2]);
 
-}
-
-void AliEMCALGeometry::GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind) const
-{
-  //Figure out the global numbering
-  //of a given supermodule from the
-  //local numbering given a 3-vector location
-
-  static Double_t tglob[3], tloc[3];
-  vloc.GetXYZ(tloc);
-  GetGlobal(tloc, tglob, ind);
-  vglob.SetXYZ(tglob[0], tglob[1], tglob[2]);
 }
 
 void AliEMCALGeometry::GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const

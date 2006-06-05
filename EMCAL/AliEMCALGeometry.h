@@ -133,7 +133,7 @@ public:
   void     GetTransformationForSM();
   Float_t *GetSuperModulesPars() {return fParSM;}
   TGeoMatrix *GetTransformationForSM(int i) {
-  if(i>=0 && GetNumberOfSuperModules()) return fMatrixOfSM[i]; 
+  if(i>=0 && i<GetNumberOfSuperModules()) return fMatrixOfSM[i]; 
                                         else return 0;}
   // abs id <-> indexes; Shish-kebab case, only TRD1 now.
   // EMCAL -> Super Module -> module -> tower(or cell) - logic tree of EMCAL
@@ -185,7 +185,8 @@ protected:
   };
 
   void Init(void);     			// initializes the parameters of EMCAL
-  void CheckAdditionalOptions();         //
+  void CheckAdditionalOptions();        //
+  void DefineSamplingFraction();        // Jun 5, 2006
   
 private:
   static AliEMCALGeometry * fgGeom;	// pointer to the unique instance of the singleton
