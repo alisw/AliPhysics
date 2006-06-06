@@ -28,13 +28,14 @@ protected:
   TGTextButton* fOpenFile;
 
   Reve::RGValuator* fEvent;
+  TGCheckButton*    fDoubleSR;
 
   TGTextButton* fUpdateSectors;
   TGTextButton* fCreateSectors3D;
   TGTextButton* fDeleteSectors3D;
 
 public:
-  TPCLoaderEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  TPCLoaderEditor(const TGWindow* p=0, Int_t id=-1, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
   ~TPCLoaderEditor();
 
   virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
@@ -44,6 +45,7 @@ public:
   void DoOpen();
 
   void DoEvent();
+  void DoDoubleSR();
 
   void DoUpdateSectors();
   void DoCreateSectors3D();
