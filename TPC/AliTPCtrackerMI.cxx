@@ -450,6 +450,7 @@ void AliTPCtrackerMI::FillESD(TObjArray* arr)
 	Int_t found,foundable,shared;
 	pt->GetClusterStatistic(138,158,found, foundable,shared,kFALSE);
 	if (found<15) continue;
+	if (foundable<=0) continue;
 	if (pt->fNShared/float(pt->GetNumberOfClusters())>0.2) continue;
 	if (float(found)/float(foundable)<0.8) continue;
 	//
@@ -1197,8 +1198,10 @@ void   AliTPCtrackerMI::Transform(AliCluster * cluster){
   //
   //if (!fParam->IsGeoRead()) fParam->ReadGeoMatrices();
   TGeoHMatrix  *mat = fParam->GetClusterMatrix(cluster->GetDetector());
+  //TGeoHMatrix  mat;
   Double_t pos[3]= {cluster->GetX(),cluster->GetY(),cluster->GetZ()};
   Double_t posC[3];
+  //mat.LocalToMaster(pos,posC);
   mat->LocalToMaster(pos,posC);
   cluster->SetX(posC[0]);
   cluster->SetY(posC[1]);
@@ -1309,6 +1312,7 @@ AliTPCclusterMI *AliTPCtrackerMI::GetClusterMI(Int_t index) const {
   //--------------------------------------------------------------------
   //       Return pointer to a given cluster
   //--------------------------------------------------------------------
+  if (index<0) return 0; // no cluster
   Int_t sec=(index&0xff000000)>>24; 
   Int_t row=(index&0x00ff0000)>>16; 
   Int_t ncl=(index&0x00007fff)>>00;
