@@ -54,6 +54,8 @@ public:
   TPCSectorViz(const Text_t* n="TPCSectorViz", const Text_t* t=0);
   virtual ~TPCSectorViz();
 
+  virtual void CopyVizParams(const TPCSectorViz& v);
+
   virtual UInt_t IncRTS()           { return ++fRTS; }
   virtual Bool_t CanEditMainColor() { return true; }
 

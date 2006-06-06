@@ -49,6 +49,18 @@ TPCSectorViz::~TPCSectorViz()
   if(fTPCData) fTPCData->DecRefCount();
 }
 
+void TPCSectorViz::CopyVizParams(const TPCSectorViz& v)
+{
+  fMinTime   = v.fMinTime;
+  fMaxTime   = v.fMaxTime;
+  fThreshold = v.fThreshold;
+  fMaxVal    = v.fMaxVal;
+
+  fRnrInn    = v.fRnrInn;
+  fRnrOut1   = v.fRnrOut1;
+  fRnrOut2   = v.fRnrOut2;
+}
+
 /**************************************************************************/
 
 void TPCSectorViz::SetDataSource(TPCData* data)
@@ -60,11 +72,13 @@ void TPCSectorViz::SetDataSource(TPCData* data)
   IncRTS();
 }
 
-void TPCSectorViz::SetSectorID(Int_t segment)
+void TPCSectorViz::SetSectorID(Int_t id)
 {
-  if(segment < 0 ) segment = 0;
-  if(segment > 35) segment = 35;
-  fSectorID = segment;
+  if(id < 0)  id = 0;
+  if(id > 35) id = 35;
+  fSectorID = id;
+  if(fTrans)
+    SetTrans(kTRUE); // Force repositioning.
   IncRTS();
 }
 
