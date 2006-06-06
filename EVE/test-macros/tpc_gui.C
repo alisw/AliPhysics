@@ -41,6 +41,7 @@ void tpc_gui(const char *file=0, Int_t ievent=0)
   d->SetLoadThreshold(5);
   d->SetAutoPedestal(kTRUE);
   l->SetData(d);
+  l->SetDoubleSR(kTRUE);
 
   TGListTreeItem* loader_item = gReve->AddRenderElement(l);
 
