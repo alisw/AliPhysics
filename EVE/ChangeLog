@@ -1,3 +1,20 @@
+2006-06-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/geom_ddip.C:
+	New file, display DDIP volume.
+
+	* alice-macros/primary_vertex.C:
+	New file, display reconstructed primary vertex.
+
+	* alice-macros/region_marker.C:
+	Added separate y, z box dimensions.
+
+	* macros/alieve_init.C:
+	Initialize event only if path is non-zero.
+	
+	* test-macros/tpc_gui.C:
+	Set double sampling-rate on by default.
+
 2006-06-02  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* test-macros/tpc_gui.C:

@@ -1,3 +1,26 @@
+2006-06-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	Added member for double sampling-rate fDoubleSR; copy
+	visualization parameter from 2D view when creating 3D view.
+
+	* TPCLoaderEditor.cxx:
+	* TPCLoaderEditor.h:
+	Added control for double sampling-rate fDoubleSR.
+
+	* TPCSector3DEditor.cxx:
+	Increased precision of drift velocity widget.
+
+	* TPCSectorViz.cxx:
+	* TPCSectorViz.h:
+	Added method CopyVizParams(); reset transformation on sector id
+	change.
+
+	* TPCSectorVizEditor.cxx:
+	* TPCSectorVizEditor.h:
+	Added button to control realistic positioning of the sector.
+
 2006-06-02  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* LinkDef.h:
