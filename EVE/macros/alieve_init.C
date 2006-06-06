@@ -1,7 +1,7 @@
 // $Header$
 
 void alieve_init(const Text_t* path=".", Int_t event=0,
-		  Bool_t use_runloader=true, Bool_t use_esd=true)
+		 Bool_t use_runloader=true, Bool_t use_esd=true)
 {
 
   // Set-up environment, load libraries.
@@ -39,11 +39,12 @@ void alieve_init(const Text_t* path=".", Int_t event=0,
   Reve::AssertMacro("region_marker.C");
 
   // Open event
+  if(path != 0) {
+    Alieve::Event::Initialize(use_runloader, use_esd);
 
-  Alieve::Event::Initialize(use_runloader, use_esd);
-
-  printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
-  Alieve::gEvent = new Alieve::Event(path, event);
-  printf(" done.\n");
-  gReve->AddEvent(Alieve::gEvent);
+    printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
+    Alieve::gEvent = new Alieve::Event(path, event);
+    printf(" done.\n");
+    gReve->AddEvent(Alieve::gEvent);
+  }
 }
