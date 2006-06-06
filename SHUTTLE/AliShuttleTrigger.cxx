@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.1  2006/03/07 07:52:34  hristov
+ New version (B.Yordanov)
+
  Revision 1.5  2005/11/21 09:03:48  byordano
  one more print added
 
@@ -28,7 +31,7 @@
 // This class is to deal with DAQ LogBook and DAQ "end of run" notification.
 // It has severeal two modes:
 // 	1) syncrhnized - Collect(), CollectNew() and CollectAll methods
-// 	2) asynchronized - Run() - starts listening for DAQ "end of run" 
+// 	2) asynchronized - Run() - starts listening for DAQ "end of run"
 // 		notification by DIM service.
 //
 
@@ -41,6 +44,7 @@
 #include <TSystem.h>
 
 #include "AliLog.h"
+#include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 
@@ -50,6 +54,8 @@
 #include "DATENotifier.h"
 
 ClassImp(TerminateSignalHandler)
+
+//______________________________________________________________________________________________
 Bool_t TerminateSignalHandler::Notify() {
 
 	AliInfo("Terminate signal received ...");
@@ -59,9 +65,11 @@ Bool_t TerminateSignalHandler::Notify() {
 }
 
 ClassImp(AliShuttleTrigger)
+
+//______________________________________________________________________________________________
 AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
-		AliCDBStorage* storage, UInt_t timeout, Int_t retries):
-	fConfig(config), fStorage(storage), fShuttle(NULL),
+		UInt_t timeout, Int_t retries):
+	fConfig(config), fShuttle(NULL),
 	fNotified(kFALSE), fTerminate(kFALSE), fCondition(&fMutex),
 	fQuitSignalHandler(this, kSigQuit), 
 	fInterruptSignalHandler(this, kSigInterrupt)
@@ -69,15 +77,17 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 	//
 	// config - pointer to the AliShuttleConfig object which represents
 	// the configuration
-	// storage - pointer to AliCDBStorage for the undelying CDBStorage
+	// mainStorage - pointer to AliCDBStorage for the undelying CDBStorage
+	// localStorage (local) CDB storage to be used if mainStorage is unavailable
 	//
 
-	fShuttle = new AliShuttle(config, storage, timeout, retries);
+	fShuttle = new AliShuttle(config, timeout, retries);
 
 	gSystem->AddSignalHandler(&fQuitSignalHandler);
 	gSystem->AddSignalHandler(&fInterruptSignalHandler);
 }
 
+//______________________________________________________________________________________________
 AliShuttleTrigger::~AliShuttleTrigger() {
 
 	gSystem->RemoveSignalHandler(&fQuitSignalHandler);
@@ -86,6 +96,7 @@ AliShuttleTrigger::~AliShuttleTrigger() {
 	delete fShuttle;
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::Notify() {
 	//
 	// Trigger CollectNew() methods in asynchronized (listen) mode.
@@ -103,6 +114,7 @@ Bool_t AliShuttleTrigger::Notify() {
 	return kTRUE;
 }
 
+//______________________________________________________________________________________________
 void AliShuttleTrigger::Terminate() {
 	//
 	// Stop triggers listen mode and exist from Run()
@@ -113,6 +125,7 @@ void AliShuttleTrigger::Terminate() {
 	fCondition.Signal();
 }
 
+//______________________________________________________________________________________________
 void AliShuttleTrigger::Run() {
 	//
 	// AliShuttleTrigger main loop for asynchronized (listen) mode.
@@ -147,6 +160,7 @@ void AliShuttleTrigger::Run() {
 	delete notifier;
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 		TObjArray& entries, Int_t& lastRun) {
 
@@ -156,13 +170,18 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 	sqlQuery += " order by run";
 
 	TSQLServer* aServer;
-	aServer = TSQLServer::Connect(fConfig->GetLogBookURI(),
-			fConfig->GetLogBookUser(),
-			fConfig->GetLogBookPassword());
+	TString logbookHost="mysql://";
+	logbookHost+=fConfig->GetDAQLogBookHost();
+	
+	aServer = TSQLServer::Connect(logbookHost,
+			fConfig->GetDAQLogBookUser(),
+			fConfig->GetDAQLogBookPassword());
 	if (!aServer) {
 		AliError("Can't establish connection to DAQ log book DB!");
 		return kFALSE;
 	}
+	
+	aServer->GetTables("REFSYSLOG");
 
 	TSQLResult* aResult;
 	aResult = aServer->Query(sqlQuery);
@@ -227,6 +246,7 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 	return kTRUE;
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries) {
 
 	Bool_t hasError = kFALSE;
@@ -234,16 +254,17 @@ Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries) {
 	TIter iter(&dateEntries);
 	DATEEntry* anEntry;
 	while ((anEntry = (DATEEntry*) iter.Next())) {
-		if(!fShuttle->Process(anEntry->GetRun(), 
+		if(!fShuttle->Process(anEntry->GetRun(),
 				anEntry->GetStartTime(),
 				anEntry->GetEndTime())) {
 			hasError = kTRUE;
-		}	
+		}
 	}
 
 	return !hasError;
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::Collect(Int_t run) {
 	//
 	// Collects conditions date for the given run.
@@ -280,6 +301,7 @@ Bool_t AliShuttleTrigger::Collect(Int_t run) {
 	return kTRUE;
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::CollectNew() {
 	//
 	// Collects conditions data for all new run written to DAQ LogBook.
@@ -289,10 +311,11 @@ Bool_t AliShuttleTrigger::CollectNew() {
 
 	Int_t lastRun;
 
-	AliCDBEntry* cdbEntry = fStorage->Get("/SHUTTLE/SYSTEM/LASTRUN", 0);
+	AliCDBEntry* cdbEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
+				->Get("/SHUTTLE/SYSTEM/LASTRUN", 0);
 	if (cdbEntry) {
 		TObject* anObject = cdbEntry->GetObject();
-		if (anObject == NULL || 
+		if (anObject == NULL ||
 			anObject->IsA() != AliSimpleValue::Class()) {
 			AliError("Invalid last run object stored to CDB!");
 			return kFALSE;
@@ -301,8 +324,8 @@ Bool_t AliShuttleTrigger::CollectNew() {
 		lastRun = simpleValue->GetInt();
 		delete cdbEntry;
 	} else {
-		AliWarning("There isn't last run stored! Starting from run 0");
-		lastRun = -1;
+		AliWarning("There isn't last run stored! Starting from run 21200");
+		lastRun = 21200;
 	}
 
 	AliInfo(Form("Last run number <%d>", lastRun));
@@ -322,7 +345,10 @@ Bool_t AliShuttleTrigger::CollectNew() {
 		AliCDBMetaData metaData;
 		AliCDBId cdbID(AliCDBPath("SHUTTLE", "SYSTEM", "LASTRUN"), 0, 0);
 
-		if (!fStorage->Put(&lastRunObj, cdbID, &metaData)) {
+		UInt_t result = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
+				->Put(&lastRunObj, cdbID, &metaData);
+
+		if (!result) {
 			AliError("Can't store last run to CDB!");
 			return kFALSE;
 		}
@@ -336,6 +362,7 @@ Bool_t AliShuttleTrigger::CollectNew() {
 	return kTRUE;
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::CollectAll() {
 	//
 	// Collects conditions data for all run written in DAQ LogBook.

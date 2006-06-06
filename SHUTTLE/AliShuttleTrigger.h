@@ -38,9 +38,7 @@ public:
 
 class AliShuttleTrigger: public TObject {
 public:
-	AliShuttleTrigger(const AliShuttleConfig* config,
-			AliCDBStorage* storage, UInt_t timeout = 5000,
-			Int_t retries = 5);
+	AliShuttleTrigger(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
 	~AliShuttleTrigger();
 
 	AliShuttle* GetShuttle() {return fShuttle;}
@@ -76,7 +74,7 @@ private:
 	Bool_t RetrieveConditionsData(const TObjArray& dateEntries);
 
 	const AliShuttleConfig* fConfig;
-	AliCDBStorage* fStorage;
+	//AliCDBStorage* fLocalStorage;
 
 	AliShuttle* fShuttle;
 

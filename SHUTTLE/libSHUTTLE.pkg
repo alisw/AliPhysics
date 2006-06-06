@@ -1,6 +1,6 @@
-SRCS = AliSimpleValue.cxx AliDCSValue.cxx AliDCSMessage.cxx\
+SRCS = AliDCSMessage.cxx\
 	AliDCSClient.cxx AliShuttle.cxx AliShuttleConfig.cxx\
-	AliCDBPreProcessor.cxx AliShuttleTrigger.cxx
+        AliShuttleTrigger.cxx
 
 CINTHDRS:= $(patsubst %,$(MODDIR)/%,$(SRCS:.cxx=.h))
 
@@ -11,10 +11,6 @@ EINCLUDE := $(DIMDIR)/dim
 ELIBS := dim
 ELIBSDIR := $(DIMDIR)/$(ODIR)
 
-
 DHDR= SHUTTLELinkDef.h
 
-
-EXPORT:= AliSimpleValue.h AliDCSValue.h AliDCSClient.h\
-	AliShuttle.h AliShuttleConfig.h AliCDBPreProcessor.h
-
+EXPORT:=

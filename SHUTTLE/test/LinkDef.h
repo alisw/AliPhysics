@@ -9,6 +9,7 @@
 #pragma link off all functions;
  
 #pragma link C++ class TestServer;
-#pragma link C++ class TestITSPreProcessor;
+#pragma link C++ class TestITSPreprocessor;
+#pragma link C++ class TestTPCPreprocessor;
 
 #endif

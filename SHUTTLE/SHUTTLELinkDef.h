@@ -12,20 +12,6 @@
 #pragma link C++ global gMC;
  
 // AliDCSClient classes ...
-#pragma link C++ class AliSimpleValue;
-#pragma link C++ class AliSimpleValue::BoolHolder;
-#pragma link C++ class AliSimpleValue::ByteHolder;
-#pragma link C++ class AliSimpleValue::IntHolder;
-#pragma link C++ class AliSimpleValue::UIntHolder;
-#pragma link C++ class AliSimpleValue::FloatHolder;
-#pragma link C++ class AliSimpleValue::DynHolder;
-#pragma link C++ class AliSimpleValue::DynBoolHolder;
-#pragma link C++ class AliSimpleValue::DynByteHolder;
-#pragma link C++ class AliSimpleValue::DynIntHolder;
-#pragma link C++ class AliSimpleValue::DynUIntHolder;
-#pragma link C++ class AliSimpleValue::DynFloatHolder;
-#pragma link C++ class AliDCSValue;
-
 #pragma link C++ class AliDCSMessage;
 #pragma link C++ class AliDCSClient;
 
@@ -33,7 +19,6 @@
 #pragma link C++ class  AliShuttleConfig;
 #pragma link C++ class  AliShuttleConfig::ConfigHolder;
 #pragma link C++ class  AliShuttle;
-#pragma link C++ class  AliCDBPreProcessor;
 #pragma link C++ class  AliShuttleTrigger;
 #pragma link C++ class  TerminateSignalHandler;
 #pragma link C++ class  AliShuttleTrigger::DATEEntry;

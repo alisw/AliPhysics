@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/03/07 07:52:34  hristov
+New version (B.Yordanov)
+
 Revision 1.6  2005/11/19 17:19:14  byordano
 RetrieveDATEEntries and RetrieveConditionsData added
 
@@ -44,12 +47,12 @@ some docs added
 //
 // This class is the main manager for AliShuttle. 
 // It organizes the data retrieval from DCS and call the 
-// interface methods of AliCDBPreProcessor.
+// interface methods of AliPreprocessor.
 // For every detector in AliShuttleConfgi (see AliShuttleConfig),
 // data for its set of aliases is retrieved. If there is registered
-// AliCDBPreProcessor for this detector than it will be used
-// accroding to the schema (see AliCDBPreProcessor).
-// If there isn't registered AliCDBPreProcessor than the retrieved
+// AliPreprocessor for this detector then it will be used
+// accroding to the schema (see AliPreprocessor).
+// If there isn't registered AliPreprocessor than the retrieved
 // data is stored automatically to the undelying AliCDBStorage.
 // For detSpec is used the alias name.
 //
@@ -59,68 +62,104 @@ some docs added
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBId.h"
-#include "AliCDBPreProcessor.h"
 #include "AliShuttleConfig.h"
 #include "AliDCSClient.h"
 #include "AliLog.h"
+#include "AliPreprocessor.h"
+#include "AliDefaultPreprocessor.h"
 
+#include <TString.h>
 #include <TObjString.h>
 
 ClassImp(AliShuttle)
 
-AliShuttle::AliShuttle(const AliShuttleConfig* config, 
-		AliCDBStorage* cdbStorage, UInt_t timeout, Int_t retries):
-	fConfig(config), fStorage(cdbStorage), fTimeout(timeout), 
-	fRetries(retries), fCurrentRun(-1), fCurrentStartTime(0), 
-	fCurrentEndTime(0)
+TString AliShuttle::fgkLocalUri("local://ShuttleCDB");
+
+//______________________________________________________________________________________________
+AliShuttle::AliShuttle(const AliShuttleConfig* config,
+		UInt_t timeout, Int_t retries):
+	fConfig(config),
+	fTimeout(timeout),
+	fRetries(retries), fCurrentRun(-1), fCurrentStartTime(0),
+	fCurrentEndTime(0),
+	fLog("")
 {
 	//
 	// config: AliShuttleConfig used
-	// cdbStorage: underlying AliCDBStorage
+	// mainStorage: underlying AliCDBStorage
+	// localStorage (local) CDB storage to be used if mainStorage is unavailable
 	// timeout: timeout used for AliDCSClient connection
 	// retries: the number of retries in case of connection error.
 	//
 
+	RegisterPreprocessor(new AliDefaultPreprocessor("DEFAULT", 0));
+
 }
 
+//______________________________________________________________________________________________
 AliShuttle::~AliShuttle() {
-	fPreProcessorMap.DeleteAll();
+	fPreprocessorMap.DeleteAll();
 }
 
-void AliShuttle::RegisterCDBPreProcessor(AliCDBPreProcessor* processor) {
+//______________________________________________________________________________________________
+void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor) {
 	//
-	// Registers new AliCDBPreProcessor.
+	// Registers new AliPreprocessor.
 	// It uses GetName() for indentificator of the pre processor.
 	// The pre processor is registered it there isn't any other
 	// with the same identificator (GetName()).
 	//
 
-	if (fPreProcessorMap.GetValue(processor->GetName())) {
-		AliWarning(Form("AliCDBPreProcessor %s is already registered!",
-			processor->GetName()));
+	if (fPreprocessorMap.GetValue(preprocessor->GetName())) {
+		AliWarning(Form("AliPreprocessor %s is already registered!",
+			preprocessor->GetName()));
 		return;
 	}
 
-	fPreProcessorMap.Add(new TObjString(processor->GetName()), processor);
-	processor->SetShuttle(this);
+	fPreprocessorMap.Add(new TObjString(preprocessor->GetName()), preprocessor);
 }
 
-Bool_t AliShuttle::Store(const char* detector, const char* specType,
+//______________________________________________________________________________________________
+UInt_t AliShuttle::Store(const char* detector,
 		TObject* object, AliCDBMetaData* metaData)
 {
-	if (!fStorage) {
-		AliError("Invalid storage object!");
-		return kFALSE;
+	// store data into CDB
+	// returns 0 if fail
+	// 	   1 if stored in main (Grid) storage
+	// 	   2 if stored in backup (Local) storage
+
+	if (!(AliCDBManager::Instance()->IsDefaultStorageSet())) {
+		AliError("No CDB storage set!");
+		return 0;
 	}
 
-	AliCDBId id(AliCDBPath(detector, "DCS", specType), 
+	AliCDBId id(AliCDBPath(detector, "DCS", "Data"),
 		GetCurrentRun(), GetCurrentRun());
-	return fStorage->Put(object, id, metaData);
+
+	UInt_t result = (UInt_t) AliCDBManager::Instance()->Put(object, id, metaData);
+	if(!result) {
+
+		Log(detector, "Error while storing object in main storage!");
+		AliError("local storage will be used!");
+
+//		result = fLocalStorage->Put(object, id, metaData);
+		result = AliCDBManager::Instance()->GetStorage(fgkLocalUri)
+					->Put(object, id, metaData);
+
+		if(result) {
+			result = 2;
+		}else{
+			Log(detector, "Can't store data!");
+		}
+	}
+	return result;
+
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime) {
 	//
-	// Makes data retrieval for all detectors in the configuration.	
+	// Makes data retrieval for all detectors in the configuration.
 	// run: is the run number used
 	// startTime: is the run start time
 	// endTime: is the run end time
@@ -129,22 +168,29 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime) {
 
 	Bool_t hasError = kFALSE;
 
-	TIter iter(fConfig->GetDetectors());	
+	TIter iter(fConfig->GetDetectors());
 	TObjString* aDetector;
+
+	ClearLog();
+
 	while ((aDetector = (TObjString*) iter.Next())) {
+		if(!fConfig->HostProcessDetector(aDetector->GetName())) continue;
 		if(!Process(run, startTime, endTime, aDetector->String())) {
 			hasError = kTRUE;
 		}
 	}
 
+	if(fLog != "") StoreLog(run);
+
 	return !hasError;
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 		const char* detector)
 {
 	//
-        // Makes data retrieval just for one specific detector. 
+        // Makes data retrieval just for one specific detector.
 	// Threre should be a configuration for this detector.
         // run: is the run number used
         // startTime: is the run start time
@@ -156,8 +202,7 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 	AliInfo(Form("Retrieving values for %s, run %d", detector, run));
 
 	if (!fConfig->HasDetector(detector)) {
-		AliError(Form("There isn't any configuration for %s",
-				detector));
+		Log(detector, "There isn't any configuration for %s !");
 		return kFALSE;
 	}
 
@@ -165,58 +210,41 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 	fCurrentStartTime = startTime;
 	fCurrentEndTime = endTime;
 
-	TString host(fConfig->GetHost(detector));
-	Int_t port = fConfig->GetPort(detector);
+	TString host(fConfig->GetDCSHost(detector));
+	Int_t port = fConfig->GetDCSPort(detector);
 
-	AliCDBPreProcessor* aPreProcessor = 
-		(AliCDBPreProcessor*) fPreProcessorMap.GetValue(detector);
-
-	TIter iter(fConfig->GetAliases(detector));
+	TIter iter(fConfig->GetDCSAliases(detector));
 	TObjString* anAlias;
+	TMap aliasMap;
 
 	Bool_t hasError = kFALSE;
+	Bool_t result=kFALSE;
 
-	if (aPreProcessor) {
-		aPreProcessor->Initialize(run, startTime, endTime);
-
+	while ((anAlias = (TObjString*) iter.Next())) {
 		TObjArray valueSet;
-		while ((anAlias = (TObjString*) iter.Next())) {
-			Bool_t result = GetValueSet(host, port, 
-					anAlias->String(), valueSet);
-			
-			aPreProcessor->Process(anAlias->String(), valueSet, 
-					!result);
-
-                        valueSet.Delete();
-                }
-
-		aPreProcessor->Finalize();	
-
-	} else {
-		AliCDBMetaData metaData;
-		metaData.SetProperty("StartTime", 
-				new AliSimpleValue(startTime));
-		metaData.SetProperty("EndTime",
-				new AliSimpleValue(endTime));
-		metaData.SetComment("Automatically stored by AliShuttle!");
-
-		TObjArray valueSet;
-		while ((anAlias = (TObjString*) iter.Next())) {
-			if (GetValueSet(host, port, anAlias->String(), 
-				valueSet)) {
-				if (!Store(detector, anAlias->String(),
-					&valueSet, &metaData)) {
-					AliError(Form("Can't store %s for %s!",
-						anAlias->String().Data(),
-						detector));
-					hasError = kTRUE;
-				}		
-			}
-
-			valueSet.Delete();
+		result = GetValueSet(host, port, anAlias->String(), valueSet);
+		if(result) {
+			aliasMap.Add(anAlias->Clone(), valueSet.Clone());
+		}else{
+			TString message = Form("Error while retrieving alias %s !", 
+					anAlias->GetName());
+			Log(detector, message.Data());
+			hasError = kTRUE;
 		}
 	}
-	
+
+	AliPreprocessor* aPreprocessor =
+		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(detector));
+	if(!aPreprocessor){
+		AliInfo(Form("No Preprocessor for %s: Using default Preprocessor!",detector));
+		aPreprocessor = dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue("DEFAULT"));
+	}
+
+	aPreprocessor->Initialize(run, startTime, endTime);
+	hasError = (Bool_t) !(aPreprocessor->Process(&aliasMap));
+
+  aliasMap.Delete();
+
 	fCurrentRun = -1;
 	fCurrentStartTime = 0;
 	fCurrentEndTime = 0;
@@ -224,12 +252,13 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 	return !hasError;
 }
 
+//______________________________________________________________________________________________
 Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* alias,
 				TObjArray& valueSet)
 {
 	AliDCSClient client(host, port, fTimeout, fRetries);
 	if (!client.IsConnected()) {
-		return kFALSE;	
+		return kFALSE;
 	}
 
 	Int_t result = client.GetAliasValues(alias, 
@@ -248,4 +277,50 @@ Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* alias,
 	}
 
 	return kTRUE;
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetFile(Int_t /*system*/, const char* /*detector*/,
+		const char* /*id*/, const char* /*source*/)
+{
+
+	AliInfo("You are in AliShuttle::GetFile!");
+	return 0;
+}
+
+
+//______________________________________________________________________________________________
+TList* AliShuttle::GetFileSources(Int_t /*system*/, const char* /*detector*/, const char* /*id*/)
+{
+
+	AliInfo("You are in AliShuttle::GetFileSources!");
+	return 0;
+}
+
+//______________________________________________________________________________________________
+void AliShuttle::Log(const char* detector, const char* message)
+{
+
+	TString toLog = Form("%s - %s", detector, message);
+	AliError(toLog.Data());
+
+	fLog += toLog;
+	fLog += "\n";
+
+}
+
+//______________________________________________________________________________________________
+void AliShuttle::StoreLog(Int_t run){
+
+	AliInfo("Printing fLog...");
+	AliInfo(fLog.Data());
+	// Storing log string for runs with errors in "SHUTTLE/SYSTEM/ERRORLOGS"
+	TObjString *logString = new TObjString(fLog);
+	AliCDBId badRunId("SHUTTLE/SYSTEM/ERRORLOGS",run,run);
+	AliCDBMetaData metaData;
+	AliCDBManager::Instance()->GetStorage(fgkLocalUri)
+					->Put(logString, badRunId,&metaData);
+	delete logString;
+
+
 }
