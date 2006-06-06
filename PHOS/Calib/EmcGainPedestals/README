@@ -1,0 +1,5 @@
+Calibration parameters for PHOS EMC:
+
+Run0_10_v0_s0.root    - ideal calibration, all equal to 1
+Run100_100_v0_s0.root - decalibration, from 0.5 to 1.5
+Run200_200_v0_s0.root - inverse to decalibration

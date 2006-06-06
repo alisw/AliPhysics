@@ -21,6 +21,9 @@
 #include "AliCDBStorage.h"
 #endif
 
+static const Int_t nMod =  5;
+static const Int_t nCol = 56;
+static const Int_t nRow = 64;
 
 void AliPHOSSetCDB()
 {
@@ -31,10 +34,14 @@ void AliPHOSSetCDB()
 		  "Set equal calibration coefficients");
   menu->AddButton("Decalibrate","SetCC(1)",
 		  "Set random decalibration calibration coefficients");
+  menu->AddButton("Set calibration equal to invers decalibration coefficients","SetCC(2)",
+		  "Set calibration coefficients inverse to decalibration ones");
   menu->AddButton("Read equal CC","GetCC(0)",
 		  "Read initial equal calibration coefficients");
   menu->AddButton("Read random CC","GetCC(1)",
 		  "Read random decalibration calibration coefficients");
+  menu->AddButton("Read inverse CC","GetCC(2)",
+		  "Read calibration coefficients inverse to decalibration ones");
   menu->Show();
 }
 
@@ -54,12 +61,13 @@ void SetCC(Int_t flag=0)
   // Writing calibration coefficients into the Calibration DB
   // Arguments:
   //   flag=0: all calibration coefficients are equal
-  //   flag=1: all calibration coefficients random (decalibration)
+  //   flag=1: decalibration coefficients
+  //   flag=2: calibration coefficients equal to inverse decalibration ones
   // Author: Boris Polishchuk (Boris.Polichtchouk at cern.ch)
 
   TString DBFolder;
   Int_t firstRun   =  0;
-  Int_t lastRun    = 10;
+  Int_t lastRun    =  0;
   Int_t beamPeriod =  1;
   char* objFormat  = "";
 
@@ -68,7 +76,7 @@ void SetCC(Int_t flag=0)
   if      (flag == 0) {
     DBFolder  ="local://InitCalibDB";
     firstRun  =  0;
-    lastRun   = 10;
+    lastRun   =  0;
     objFormat = "PHOS initial pedestals and ADC gain factors (5x64x56)";
     cdb = new AliPHOSCalibData();
     cdb->CreateNew();
@@ -76,13 +84,79 @@ void SetCC(Int_t flag=0)
 
   else if (flag == 1) {
     DBFolder  ="local://DeCalibDB";
-    firstRun  =  0;
-    lastRun   = 10;
-    objFormat = "PHOS random pedestals and ADC gain factors (5x64x56)";
+    firstRun  =  100;
+    lastRun   =  100;
+    objFormat = "PHOS decalibration pedestals and ADC gain factors (5x64x56)";
  
     cdb = new AliPHOSCalibData();    
     cdb->RandomEmc();
     cdb->RandomCpv();
+  }
+  
+  else if (flag == 2) {
+    // First read decalibration DB
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    AliCDBManager::Instance()->SetSpecificStorage("PHOS","local://DeCalibDB");
+    AliPHOSCalibData* cdbDecalib = new AliPHOSCalibData(100);
+
+    DBFolder  ="local://InverseCalibDB";
+    firstRun  = 200;
+    lastRun   = 200;
+    objFormat = "PHOS calibration parameters equal to inverse decalibration ones (5x64x56)";
+    cdb = new AliPHOSCalibData();    
+
+    // Read EMC decalibration parameters and put inverse values to a new artificial CDB
+
+    for (Int_t module=1; module<=nMod; module++) {
+      for (Int_t column=1; column<=nCol; column++) {
+	for (Int_t row=1; row<=nRow; row++) {
+	  Float_t valueGain = cdbDecalib->GetADCchannelEmc (module,column,row);
+	  Float_t valuePed  = cdbDecalib->GetADCpedestalEmc(module,column,row);
+	  cdb->SetADCchannelEmc(module,column,row,1./valueGain);
+	  cdb->SetADCpedestalEmc(module,column,row,valuePed);
+	}
+      }
+    }
+
+    // Read CPV decalibration parameters and put inverse values to a new artificial CDB
+
+    for (Int_t module=1; module<=nMod; module++) {
+      for (Int_t column=1; column<=nCol*2; column++) {
+	for (Int_t row=1; row<=nRow; row++) {
+	  Float_t valueGain = cdbDecalib->GetADCchannelCpv (module,column,row);
+	  Float_t valuePed  = cdbDecalib->GetADCpedestalCpv(module,column,row);
+	  cdb->SetADCchannelCpv(module,column,row,1./valueGain);
+	  cdb->SetADCpedestalCpv(module,column,row,valuePed);
+	}
+      }
+    }
+  }
+  else if (flag == 3) {
+    // First read decalibration DB
+    DBFolder  ="local://DeCalibDB";
+    firstRun  =  0;
+    lastRun   = 10;
+    objFormat = "PHOS decalibration pedestals and ADC gain factors (5x64x56)";
+ 
+    cdb = new AliPHOSCalibData();    
+
+    for (Int_t module=1; module<=nMod; module++) {
+      for (Int_t column=1; column<=nCol; column++) {
+	for (Int_t row=1; row<=nRow; row++) {
+	  cdb->SetADCchannelEmc(module,column,row,2.);
+	  cdb->SetADCpedestalEmc(module,column,row,0.5);
+	}
+      }
+    }
+
+    for (Int_t module=1; module<=nMod; module++) {
+      for (Int_t column=1; column<=nCol*2; column++) {
+	for (Int_t row=1; row<=nRow; row++) {
+	  cdb->SetADCchannelCpv(module,column,row,3.);
+	  cdb->SetADCpedestalCpv(module,column,row,1.5);
+	}
+      }
+    }
   }
   
   //Store calibration data into database
@@ -106,26 +180,30 @@ void GetCC(Int_t flag=0)
   // Read calibration coefficients into the Calibration DB
   // Arguments:
   //   flag=0: all calibration coefficients are equal
-  //   flag=1: all calibration coefficients random (decalibration)
+  //   flag=1: decalibration coefficients
+  //   flag=2: calibration coefficients equal to inverse decalibration ones
   // Author: Yuri.Kharlov at cern.ch
 
   TString DBFolder;
+  Int_t runNumber;
 
   if      (flag == 0) {
     DBFolder  ="local://InitCalibDB";
+    runNumber = 0;
   }
   else if (flag == 1) {
     DBFolder  ="local://DeCalibDB";
+    runNumber = 100;
+  }
+  else if (flag == 2) {
+    DBFolder  ="local://InverseCalibDB";
+    runNumber = 200;
   }
 
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-//   AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
+  AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
 
-  AliPHOSCalibData* clb  = new AliPHOSCalibData(gAlice->GetRunNumber());
-
-  static const Int_t nMod =  5;
-  static const Int_t nCol = 56;
-  static const Int_t nRow = 64;
+  AliPHOSCalibData* clb  = new AliPHOSCalibData(runNumber);
 
   TH2::AddDirectory(kFALSE);
 
@@ -137,7 +215,8 @@ void GetCC(Int_t flag=0)
   cPed ->Divide(1,5);
   cGain->Divide(1,5);
 
-  for (Int_t module=1; module<=nMod; module++) {
+//   for (Int_t module=1; module<=nMod; module++) {
+  for (Int_t module=1; module<=1; module++) {
     TString namePed="hPed";
     namePed+=module;
     TString titlePed="Pedestals in module ";
