@@ -39,7 +39,7 @@ TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p, Int_t id, Int_t width, I
     TGLabel *l = new TGLabel(f, "Drift Velocity factor:");
     f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 25, 2, 1, 1));
     fDriftVel = new TGNumberEntry(f, 0., 6, -1,
-                       TGNumberFormat::kNESRealOne, TGNumberFormat::kNEAPositive,
+                       TGNumberFormat::kNESRealThree, TGNumberFormat::kNEAPositive,
                        TGNumberFormat::kNELLimitMinMax, 0.001, 1000.0);
     fDriftVel->GetNumberEntry()->SetToolTipText("Drift velocity factor.");
     f->AddFrame(fDriftVel, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
