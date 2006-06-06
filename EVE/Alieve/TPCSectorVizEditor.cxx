@@ -42,6 +42,11 @@ TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p, Int_t id, Int_t width,
   fSectorID->SetToolTip("0-17 +z plate; 18-35 -z plate");
   fSectorID->Connect("ValueSet(Double_t)",
 		     "Alieve::TPCSectorVizEditor", this, "DoSectorID()");
+  // Reuse sectorID for transformation button
+  fTrans = new TGCheckButton(fSectorID, "Trans");
+  fTrans->SetToolTipText("Translate to true position");
+  fSectorID->AddFrame(fTrans, new TGLayoutHints(kLHintsLeft, 12, 0, 1, 0));
+  fTrans->Connect("Toggled(Bool_t)","Alieve::TPCSectorVizEditor", this, "DoTrans()");
   AddFrame(fSectorID, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 
   {
@@ -122,6 +127,7 @@ void TPCSectorVizEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*
   fM = dynamic_cast<TPCSectorViz*>(fModel);
 
   fSectorID->SetValue(fM->fSectorID);
+  fTrans->SetState(fM->fTrans  ? kButtonDown : kButtonUp);
 
   fRnrInn ->SetState(fM->fRnrInn  ? kButtonDown : kButtonUp);
   fRnrOut1->SetState(fM->fRnrOut1 ? kButtonDown : kButtonUp);
@@ -140,6 +146,12 @@ void TPCSectorVizEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*
 void TPCSectorVizEditor::DoSectorID()
 {
   fM->SetSectorID((Int_t) fSectorID->GetValue());
+  Update();
+}
+
+void TPCSectorVizEditor::DoTrans()
+{
+  fM->SetTrans(fTrans->IsOn());
   Update();
 }
 

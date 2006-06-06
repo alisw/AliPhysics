@@ -26,6 +26,7 @@ protected:
   TPCSectorViz* fM; // fModel dynamic-casted to TPCSectorVizEditor
 
   Reve::RGValuator* fSectorID;
+  TGCheckButton*    fTrans;
 
   TGCheckButton*    fRnrInn;
   TGCheckButton*    fRnrOut1;
@@ -43,6 +44,7 @@ public:
   virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
 
   void DoSectorID();
+  void DoTrans();
 
   void DoRnrInn();
   void DoRnrOut1();
