@@ -13,16 +13,19 @@
 
 ClassImp(AliDefaultPreprocessor)
 
+//______________________________________________________________________________________________
 AliDefaultPreprocessor::AliDefaultPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
 AliPreprocessor(detector, shuttle)
 {
 }
 
+//______________________________________________________________________________________________
 AliDefaultPreprocessor::~AliDefaultPreprocessor()
 {
 }
 
-Int_t AliDefaultPreprocessor::Process(TMap* dcsAliasMap)
+//______________________________________________________________________________________________
+UInt_t AliDefaultPreprocessor::Process(TMap* dcsAliasMap)
 {
   // store to default CDB object
 
@@ -33,7 +36,5 @@ Int_t AliDefaultPreprocessor::Process(TMap* dcsAliasMap)
       new AliSimpleValue(fEndTime));
   metaData.SetComment("Automatically stored by AliDefaultPreprocessor!");
 
-  Store(dcsAliasMap, &metaData);
-
-  return 0;
+  return Store(dcsAliasMap, &metaData);
 }

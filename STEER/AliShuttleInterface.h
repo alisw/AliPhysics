@@ -14,6 +14,7 @@
 
 class TList;
 class AliCDBMetaData;
+class AliPreprocessor;
 
 class AliShuttleInterface : public TObject
 {
@@ -21,10 +22,12 @@ class AliShuttleInterface : public TObject
     enum { kDAQ = 0, kDCS, kHLT };
     static const char* fkSystemNames[3];  // names of the systems providing data to the shuttle
 
-    virtual Int_t Store(const char* detector, TObject* object, AliCDBMetaData* metaData) = 0;
+    virtual UInt_t Store(const char* detector, TObject* object, AliCDBMetaData* metaData) = 0;
     virtual const char* GetFile(Int_t system, const char* detector, const char* id, const char* source) = 0;
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id) = 0;
     virtual void Log(const char* detector, const char* message) = 0;
+
+    virtual void RegisterPreprocessor(AliPreprocessor* preprocessor) = 0;
 
   private:
     ClassDef(AliShuttleInterface, 0);

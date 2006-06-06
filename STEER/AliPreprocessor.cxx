@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2006/06/02 14:14:36  hristov
+Separate library for CDB (Jan)
+
 Revision 1.2  2006/03/07 07:52:34  hristov
 New version (B.Yordanov)
 
@@ -78,7 +81,12 @@ AliPreprocessor::AliPreprocessor(const char* detector, AliShuttleInterface* shut
 	SetTitle(Form("AliPreprocessor for %s subdetector.", detector));
 
   if (!fShuttle)
+  {
     AliFatal("Initialized without Shuttle instance.");
+    return;
+  }
+
+  fShuttle->RegisterPreprocessor(this);
 }
 
 AliPreprocessor::~AliPreprocessor()
@@ -96,7 +104,7 @@ void AliPreprocessor::Initialize(Int_t run, UInt_t startTime,	UInt_t endTime)
   fEndTime = endTime;
 }
 
-Int_t AliPreprocessor::Store(TObject* object, AliCDBMetaData* metaData)
+UInt_t AliPreprocessor::Store(TObject* object, AliCDBMetaData* metaData)
 {
   // Stores the CDB object
   // This function should be called at the end of the preprocessor cycle

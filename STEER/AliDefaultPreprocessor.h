@@ -18,7 +18,7 @@ public:
 	AliDefaultPreprocessor(const char* detector, AliShuttleInterface* shuttle);
 	virtual ~AliDefaultPreprocessor();
 
-	virtual Int_t Process(TMap* dcsAliasMap);
+	virtual UInt_t Process(TMap* dcsAliasMap);
 
 private:
   ClassDef(AliDefaultPreprocessor, 0);
