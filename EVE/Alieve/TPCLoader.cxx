@@ -24,6 +24,7 @@ TPCLoader::TPCLoader(const Text_t* n, const Text_t* t) :
   RenderElementList(n, t),
 
   fEvent(-1),
+  fDoubleSR(kFALSE),
 
   fReader(0),
   fData(0),
@@ -153,8 +154,9 @@ void TPCLoader::UpdateSectors()
 	fSec2Ds[i] = s;
 	s->SetSectorID(i);
 	s->SetDataSource(fData);
-	s->SetMinTime(0);
-	s->SetMaxTime(1023);
+
+	if(fDoubleSR)
+	  s->SetMaxTime(1023);
 
 	s->SetTrans(kTRUE);
 	s->SetFrameColor(36);
@@ -181,8 +183,11 @@ void TPCLoader::CreateSectors3D()
       fSec3Ds[i] = s;
       s->SetSectorID(i);
       s->SetDataSource(fData);
-      s->SetMinTime(0);
-      s->SetMaxTime(1023);
+
+      if(fDoubleSR)
+	s->SetDriftVel(2.273);
+      if(fSec2Ds[i] != 0)
+	s->CopyVizParams(*fSec2Ds[i]);
 
       s->SetTrans(kTRUE);
       s->SetFrameColor(36);

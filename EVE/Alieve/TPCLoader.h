@@ -20,6 +20,7 @@ class TPCLoader : public Reve::RenderElementList
 protected:
   TString           fFile;
   Int_t             fEvent;
+  Bool_t            fDoubleSR;
 
   AliRawReaderRoot* fReader;
   TPCData*          fData;
@@ -34,6 +35,7 @@ public:
   virtual Bool_t CanEditMainColor() { return kFALSE; }
 
   void SetFile(const Text_t* f) { fFile = f; }
+  void SetDoubleSR(Bool_t d)    { fDoubleSR = d; }
 
   TPCData* GetData() const { return fData; }
   void     SetData(TPCData* d);
