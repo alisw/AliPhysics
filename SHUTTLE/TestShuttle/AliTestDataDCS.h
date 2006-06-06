@@ -10,7 +10,7 @@
 class AliTestDataDCS : public TObject {
 public:
 	enum {kNAliases=6, kNHistos=3, kNGraphs=3, kNFunctions=2};
-	enum {kHvMin=0, kHvMax=500};
+	enum {kHvMin=0, kHvMax=20};
 
 	AliTestDataDCS();
 	AliTestDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime);

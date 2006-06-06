@@ -82,6 +82,7 @@ void AliTestDataDCS::ProcessData(TMap& aliasMap){
 
 		UInt_t ne=0;
 		while ((aValue = (AliDCSValue*) iterarray.Next())) {
+
 		val[ne] = aValue->GetSimpleValue().GetFloat();
 		time[ne] = (Double_t) (aValue->GetTimeStamp());
 		// fill histos (alias 0-2)
@@ -119,13 +120,12 @@ void AliTestDataDCS::Init(){
 	fGraphs.SetOwner(1);
 
 	for(int i=0;i<kNAliases;i++){
-		fAliasNames[i] = "TpcHvSect0";
+		fAliasNames[i] = "DCSAlias";
 		fAliasNames[i] += i;
-		fAliasNames[i] += ".FloatValue";
 	}
 
 	for(int i=0;i<kNHistos;i++){
-		fHv[i] = new TH1F(fAliasNames[0].Data(),fAliasNames[0].Data(), 20, kHvMin, kHvMax);
+		fHv[i] = new TH1F(fAliasNames[i].Data(),fAliasNames[i].Data(), 20, kHvMin, kHvMax);
 		fHv[i]->GetXaxis()->SetTitle("Hv");
 	}
 }

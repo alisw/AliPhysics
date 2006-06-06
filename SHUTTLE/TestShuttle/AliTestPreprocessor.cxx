@@ -15,6 +15,7 @@
 
 ClassImp(AliTestPreprocessor)
 
+//______________________________________________________________________________________________
 AliTestPreprocessor::AliTestPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
   AliPreprocessor(detector, shuttle),
   fData(0)
@@ -22,11 +23,13 @@ AliTestPreprocessor::AliTestPreprocessor(const char* detector, AliShuttleInterfa
   // constructor
 }
 
+//______________________________________________________________________________________________
 AliTestPreprocessor::~AliTestPreprocessor()
 {
   // destructor
 }
 
+//______________________________________________________________________________________________
 void AliTestPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	UInt_t endTime)
 {
@@ -41,29 +44,41 @@ void AliTestPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	fData = new AliTestDataDCS(fRun, fStartTime, fEndTime);
 }
 
-Int_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
+//______________________________________________________________________________________________
+UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
 {
   // Fills data into a AliTestDataDCS object
 
   if (!dcsAliasMap)
-    return -1;
+    return 0;
 
+  // The processing of the DCS input data is forwarded to AliTestDataDCS
 	fData->ProcessData(*dcsAliasMap);
 
   const char* fileName = GetFile(kDAQ, "PEDESTALS", "GDC");
   if (fileName)
     AliInfo(Form("Got the file %s, now we can extract some values.", fileName));
-  // open file, extract some values, write them to fData
+  //TODO here the file could be opened, some values extracted and  written to e.g. fData
 
+  TList* list = GetFileSources(kDAQ, "DRIFTVELOCITY");
+  if (list)
+  {
+    AliInfo("The following sources produced files with the id DRIFTVELOCITY");
+    list->Print();
+    delete list;
+  }
+  //TODO here the files could be opened, some values extracted and  written to e.g. fData
+
+  //Now we have to store the final CDB file
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Alberto Colla");
 	metaData.SetComment("This preprocessor fills an AliTestDataDCS object.");
 
-	Store(fData, &metaData);
+	UInt_t result = Store(fData, &metaData);
 	delete fData;
 	fData = 0;
 
-  return 0;
+  return result;
 }
 

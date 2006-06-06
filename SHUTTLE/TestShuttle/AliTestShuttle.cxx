@@ -49,6 +49,7 @@ some docs added
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
+#include "AliPreprocessor.h"
 
 #include <TMap.h>
 #include <TList.h>
@@ -57,19 +58,35 @@ some docs added
 
 ClassImp(AliTestShuttle)
 
-AliTestShuttle::AliTestShuttle(TMap* inputFiles) : fInputFiles(inputFiles)
+//______________________________________________________________________________________________
+AliTestShuttle::AliTestShuttle() :
+  fInputFiles(0),
+  fPreprocessors(0),
+  fDcsAliasMap(0)
 {
   // constructor
-  // inputFiles contains the map of local files that can be retrieved by the preprocessor
-  // check TestPreprocessor.C for an example of its structure
+
+  fInputFiles = new TMap;
+  fPreprocessors = new TObjArray;
 }
 
+//______________________________________________________________________________________________
 AliTestShuttle::~AliTestShuttle()
 {
   // destructor
+
+  delete fInputFiles;
+  fInputFiles = 0;
+
+  delete fPreprocessors;
+  fPreprocessors = 0;
+
+  delete fDcsAliasMap;
+  fDcsAliasMap = 0;
 }
 
-Int_t AliTestShuttle::Store(const char* detector, TObject* object, AliCDBMetaData* metaData)
+//______________________________________________________________________________________________
+UInt_t AliTestShuttle::Store(const char* detector, TObject* object, AliCDBMetaData* metaData)
 {
   // Stores the CDB object
   // This function should be called at the end of the preprocessor cycle
@@ -79,11 +96,10 @@ Int_t AliTestShuttle::Store(const char* detector, TObject* object, AliCDBMetaDat
 
   AliCDBId id(Form("%s/SHUTTLE/Data", detector), 0, 0);
 
-  AliCDBManager::Instance()->Put(object, id, metaData);
-
-  return -1;
+  return AliCDBManager::Instance()->Put(object, id, metaData);
 }
 
+//______________________________________________________________________________________________
 const char* AliTestShuttle::GetFile(Int_t system, const char* detector, const char* id, const char* source)
 {
   // This function retrieves a file from the given system (kDAQ, kDCS, kHLT) with the given file id
@@ -109,13 +125,15 @@ const char* AliTestShuttle::GetFile(Int_t system, const char* detector, const ch
   TObjString* fileName = dynamic_cast<TObjString*> (fileNamePair->Value());
   if (!fileName)
   {
-    AliError(Form("Could not find files from source %s in %s with id %s", source, fkSystemNames[system], id));
+    AliError(Form("Could not find files from source %s in %s with id %s",
+			source, fkSystemNames[system], id));
     return 0;
   }
 
   return fileName->GetString().Data();
 }
 
+//______________________________________________________________________________________________
 TList* AliTestShuttle::GetFileSources(Int_t system, const char* detector, const char* id)
 {
   // Returns a list of sources in a given system that saved a file with the given id
@@ -150,6 +168,7 @@ TList* AliTestShuttle::GetFileSources(Int_t system, const char* detector, const 
   return list;
 }
 
+//______________________________________________________________________________________________
 void AliTestShuttle::Log(const char* detector, const char* message)
 {
   // test implementation of Log
@@ -158,3 +177,47 @@ void AliTestShuttle::Log(const char* detector, const char* message)
   AliInfo(Form("%s: %s", detector, message));
 }
 
+//______________________________________________________________________________________________
+void AliTestShuttle::AddInputFile(Int_t system, const char* detector, const char* id, const char* source, const char* fileName)
+{
+  // This function adds a file to the list of input files
+
+  TString key;
+  key.Form("%s-%s-%s", fkSystemNames[system], detector, id);
+  TPair* sourceListPair = dynamic_cast<TPair*> (fInputFiles->FindObject(key.Data()));
+  TMap* sourceList = 0;
+  if (sourceListPair)
+    sourceList = dynamic_cast<TMap*> (sourceListPair->Value());
+  if (!sourceList)
+  {
+    sourceList = new TMap;
+    fInputFiles->Add(new TObjString(key), sourceList);
+  }
+
+  sourceList->Add(new TObjString(source), new TObjString(fileName));
+}
+
+//______________________________________________________________________________________________
+void AliTestShuttle::Process()
+{
+  // This function tests all preprocessors that are registered to it
+  // All preprocessors get the same dcs alias map and have access to the same list of files.
+
+  for (Int_t i=0; i<fPreprocessors->GetEntries(); ++i)
+  {
+    AliPreprocessor* preprocessor = dynamic_cast<AliPreprocessor*> (fPreprocessors->At(i));
+    if (preprocessor)
+    {
+      preprocessor->Initialize(0, 1, 0);
+      preprocessor->Process(fDcsAliasMap);
+    }
+  }
+}
+
+//______________________________________________________________________________________________
+void AliTestShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor)
+{
+  // registers a preprocessor
+
+  fPreprocessors->Add(preprocessor);
+}
