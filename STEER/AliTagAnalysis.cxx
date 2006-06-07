@@ -120,16 +120,16 @@ void AliTagAnalysis::ChainGridTags(TGridResult *res)
 
 
 //______________________________________________________________________________
-TList *AliTagAnalysis::QueryTags(AliEventTagCuts *EvTagCuts)
+TChain *AliTagAnalysis::QueryTags(AliEventTagCuts *EvTagCuts)
 {
   //Queries the tag chain using the defined 
   //event tag cuts from the AliEventTagCuts object
   AliInfo(Form("Querying the tags........"));
   
-  //file info list
-  TList *list = new TList();
-  
-  Int_t iAccepted = 0, evCounter = 0;
+  //ESD file chain
+  TChain *fESDchain = new TChain("esdTree");
+  //Event list
+  TEventList *fEventList = new TEventList();
   
   //Defining tag objects
   AliRunTag *tag = new AliRunTag;
@@ -141,38 +141,27 @@ TList *AliTagAnalysis::QueryTags(AliEventTagCuts *EvTagCuts)
   const char* guid = 0;
   const char* turl = 0;
 
-  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++)
-    {
-      TEventList *fEventList = new TEventList();
-      evCounter = 0;
+  Int_t iAccepted = 0;
+  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
       fChain->GetEntry(iTagFiles);
       Int_t iEvents = tag->GetNEvents();
       const TClonesArray *tagList = tag->GetEventTags();
-      for(Int_t i = 0; i < iEvents; i++)
-	{
-	  evTag = (AliEventTag *) tagList->At(i);
-	  size = evTag->GetSize();
-	  md5 = evTag->GetMD5();
-	  guid = evTag->GetGUID(); 
-	  turl = evTag->GetTURL(); 
-	  if(EvTagCuts->IsAccepted(evTag))
-	    {
-	      fEventList->Enter(i);
-	      evCounter++;
-	    
-	      iAccepted++;
-	    }
-	}//event loop
+      for(Int_t i = 0; i < iEvents; i++) {
+	evTag = (AliEventTag *) tagList->At(i);
+	size = evTag->GetSize();
+	md5 = evTag->GetMD5();
+	guid = evTag->GetGUID(); 
+	turl = evTag->GetTURL(); 
+	if(EvTagCuts->IsAccepted(evTag)) fEventList->Enter(iAccepted+i);
+      }//event loop
+      iAccepted += iEvents;
 
-      //adding a TFileInfo object to the list
-      if(evCounter != 0)
-	list->Add(new TFileInfo(turl,size,guid,md5,-1,-1,-1,fEventList));
-      fEventList->Clear("");
-      delete fEventList;
+      fESDchain->Add(turl);
     }//tag file loop
-  AliInfo(Form("Accepted events: %d",iAccepted));
+  AliInfo(Form("Accepted events: %d",fEventList->GetN()));
+  fESDchain->SetEventList(fEventList);
    
-  return list;
+  return fESDchain;
 }
 
 
