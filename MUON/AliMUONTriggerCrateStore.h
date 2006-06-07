@@ -37,7 +37,8 @@ public:
   AliMUONLocalTriggerBoard* NextLocalBoard();
   AliMUONLocalTriggerBoard* LocalBoard(Int_t boardNumber) const;
   
-  void ReadFromFile(const char* crateFile = "$ALICE_ROOT/MUON/data/CRATE.TXT");
+  void ReadFromFile(const char* crateFile =
+                    "$ALICE_ROOT/MUON/mapping/data/stationTrigger/crate.dat");
 
 private:
   void AddCrate(const char* crateName); 

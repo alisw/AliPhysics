@@ -14,7 +14,7 @@
  **************************************************************************/
 
 // $Id$
-// $MpId: AliMpFiles.cxx,v 1.10 2006/03/17 11:34:46 ivana Exp $
+// $MpId: AliMpFiles.cxx,v 1.12 2006/05/23 13:09:54 ivana Exp $
 // Category: basic
 // ----------------
 // Class AliMpFiles
@@ -42,6 +42,8 @@ ClassImp(AliMpFiles)
 /// \endcond
 
 //
+// static
+
 // static data members
 
 const TString AliMpFiles::fgkDataDir = "/data";
@@ -57,7 +59,7 @@ const TString AliMpFiles::fgkMotifSpecialPrefix ="motifSpecial";
 const TString AliMpFiles::fgkPadPosPrefix  = "padPos"; 
 const TString AliMpFiles::fgkDataExt = ".dat";      
 const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
-const TString AliMpFiles::fgkTriggerLocalBoards = "CRATE.TXT";
+const TString AliMpFiles::fgkTriggerLocalBoards = "crate";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
 
 //______________________________________________________________________________
@@ -204,9 +206,10 @@ TString AliMpFiles::DENamesFilePath(AliMpStationType station)
 //______________________________________________________________________________
 TString AliMpFiles::LocalTriggerBoardMapping()
 {
-/// Return path to data file with DE names for given station.
+/// Return path to data file with local trigger board mapping.
 
-  return GetTop() + "/.." + fgkDataDir + "/" + fgkTriggerLocalBoards;
+  return GetTop() + fgkDataDir + StationDataDir(kStationTrigger) 
+          + fgkTriggerLocalBoards + fgkDataExt;;
 }
 
 //_____________________________________________________________________________
