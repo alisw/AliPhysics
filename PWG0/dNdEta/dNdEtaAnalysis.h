@@ -43,18 +43,18 @@ public:
 
   virtual Long64_t Merge(TCollection* list);
 
-  TH2F* GetEtaVsVtxHistogram() { return hEtaVsVtx; }
-  TH2F* GetEtaVsVtxUncorrectedHistogram() { return hEtaVsVtxUncorrected; }
-  TH1D* GetVtxHistogram() { return hVtx; }
-  TH1D* GetdNdEtaHistogram(Int_t i = 0) { return hdNdEta[i]; }
+  TH2F* GetEtaVsVtxHistogram() { return fEtaVsVtx; }
+  TH2F* GetEtaVsVtxUncorrectedHistogram() { return fEtaVsVtxUncorrected; }
+  TH1D* GetVtxHistogram() { return fVtx; }
+  TH1D* GetdNdEtaHistogram(Int_t i = 0) { return fdNdEta[i]; }
 
 protected:
-  TH2F* hEtaVsVtx;
-  TH2F* hEtaVsVtxUncorrected;
-  TH1D* hVtx;
-  TH1D* hdNdEta[kVertexBinning];
+  TH2F* fEtaVsVtx;              // histogram Eta vs vtx (track count)
+  TH2F* fEtaVsVtxUncorrected;   // uncorrected histograms Eta vs vtx (track count)
+  TH1D* fVtx;                   // vtx histogram (event count)
+  TH1D* fdNdEta[kVertexBinning];// dndeta results for different vertex bins (0 = full range)
 
-  ClassDef(dNdEtaAnalysis,0)
+  ClassDef(dNdEtaAnalysis, 0)
 };
 
 #endif
