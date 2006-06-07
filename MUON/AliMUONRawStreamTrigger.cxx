@@ -192,7 +192,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
   }
 
   if (buffer[index++] != darcHeader->GetEndOfDarc())
-    AliWarning(Form("Wrong end of Darc word %d instead of %d\n",buffer[index-1], darcHeader->GetEndOfDarc())); 
+    AliWarning(Form("Wrong end of Darc word %x instead of %x\n",buffer[index-1], darcHeader->GetEndOfDarc())); 
 
   // 4 words of global board input + Global board output
   memcpy(darcHeader->GetGlobalInput(), &buffer[index], (kDarcHeaderSize-1)*4); 
@@ -221,7 +221,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
     }
 
     if (buffer[index++] != fRegHeader->GetEndOfReg())
-      AliWarning(Form("Wrong end of Reg word %d instead of %d\n",buffer[index-1], fRegHeader->GetEndOfReg()));
+      AliWarning(Form("Wrong end of Reg word %x instead of %x\n",buffer[index-1], fRegHeader->GetEndOfReg()));
 
     // 16 local cards per regional board
     for (Int_t iLoc = 0; iLoc < fMaxLoc; iLoc++) {         //loop over local card
@@ -239,7 +239,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
       }
 
       if (buffer[index++] != fLocalStruct->GetEndOfLocal())
-	AliWarning(Form("Wrong end of local word %d instead of %d\n",buffer[index-1], fLocalStruct->GetEndOfLocal()));
+	AliWarning(Form("Wrong end of local word %x instead of %x\n",buffer[index-1], fLocalStruct->GetEndOfLocal()));
 	  
       fDDLTrigger->AddLocStruct(*fLocalStruct, iReg);
 

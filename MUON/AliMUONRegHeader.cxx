@@ -29,13 +29,14 @@
 ClassImp(AliMUONRegHeader)
 /// \endcond
  
- const Int_t  AliMUONRegHeader::fgkHeaderLength = 3;
+ const Int_t  AliMUONRegHeader::fgkHeaderLength = 4;
  const Int_t  AliMUONRegHeader::fgkScalerLength = 8;
  const UInt_t AliMUONRegHeader::fgkEndOfReg     = 0xBEEFFACE;
 
 //___________________________________________
 AliMUONRegHeader::AliMUONRegHeader()
   :  TObject(),
+     fDarcWord(0),
      fWord(0),
      fL0(0), 
      fClk(0),
@@ -71,10 +72,11 @@ AliMUONRegHeader::AliMUONRegHeader(const AliMUONRegHeader& event)
   //
   // copy ctor
   //
-  fWord = event.fWord;
-  fL0   = event.fL0;
-  fClk  = event.fClk;
-  fHold = event.fHold;
+  fDarcWord = event.fDarcWord;
+  fWord     = event.fWord;
+  fL0       = event.fL0;
+  fClk      = event.fClk;
+  fHold     = event.fHold;
 
   fInput[0] = event.fInput[0];
   fInput[1] = event.fInput[1];
@@ -98,10 +100,11 @@ AliMUONRegHeader& AliMUONRegHeader::operator=(const AliMUONRegHeader& event)
 
   if (this == &event) return *this;
 
-  fWord = event.fWord;
-  fL0   = event.fL0;
-  fClk  = event.fClk;
-  fHold = event.fHold;
+  fDarcWord = event.fDarcWord;
+  fWord     = event.fWord;
+  fL0       = event.fL0;
+  fClk      = event.fClk;
+  fHold     = event.fHold;
 
   fInput[0] = event.fInput[0];
   fInput[1] = event.fInput[1];

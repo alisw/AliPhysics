@@ -25,7 +25,7 @@ public:
 
    virtual ~AliMUONRegHeader();
 
-
+   UInt_t  GetDarcWord()      const {return fDarcWord;}
    UInt_t  GetWord()          const {return fWord;}
    UInt_t  GetInput(Int_t n)  const {return fInput[n];}
 
@@ -35,6 +35,7 @@ public:
    Char_t   GetId()        const {return (Char_t)(fWord >> 12) &  0x0F;}
    Char_t   GetOutput()    const {return (Char_t)(fWord)       &  0xFF;}
 
+   void    SetDarcWord(UInt_t w) {fDarcWord = w;}
    void    SetWord(UInt_t w) {fWord = w;}
    void    SetInput(UInt_t in, Int_t n) {fInput[n] = in;}
    
@@ -42,7 +43,7 @@ public:
    UInt_t  GetEndOfReg()     const {return fgkEndOfReg;}
 
 
-   UInt_t* GetHeader() {return &fWord;}
+   UInt_t* GetHeader() {return &fDarcWord;}
 
   // scalar methods
    UInt_t  GetL0()      const {return fL0;}
@@ -74,7 +75,8 @@ public:
  private:
    
    // regional header
-   UInt_t    fWord;          ///< first word
+   UInt_t    fDarcWord;      ///< darc word
+   UInt_t    fWord;          ///< first reg word
    UInt_t    fInput[2];      ///< regional input
 
    // regional card scalers   

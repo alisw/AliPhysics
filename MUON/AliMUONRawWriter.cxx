@@ -687,11 +687,11 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     AliInfo("No Trigger information available");
 
   if(fScalerEvent)
-    // [16(local)*51 words + 15 words]*8(reg) + 6 + 12 + 6 words scaler event 6672 words
-    buffer = new Int_t [6672];
+    // [16(local)*51 words + 16 words]*8(reg) + 6 + 12 + 6 words scaler event 6672 words
+    buffer = new Int_t [6680];
   else
-    // [16(local)*6 words + 4 words]*8(reg) + 10 words = 810 
-    buffer = new Int_t [810];
+    // [16(local)*6 words + 5 words]*8(reg) + 10 words = 818 
+    buffer = new Int_t [818];
 
 
   // open DDL file, on per 1/2 chamber
@@ -699,8 +699,8 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     
     index = 0; 
 
-    // DDL enhanced header
     word = 0;
+    // set darc status word
     AliBitPacking::PackWord((UInt_t)iDDL+1,word,28,31); //see AliMUONDDLTrigger.h for details
     AliBitPacking::PackWord((UInt_t)serialNb,word,24,27);
     AliBitPacking::PackWord((UInt_t)version,word,16,23);
@@ -713,7 +713,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
     AliBitPacking::PackWord((UInt_t)globalFlag,word,8,11);
     fDarcHeader->SetWord(word);
-    buffer[index++]= word;
+    buffer[index++] = word;
 
     if (iDDL == 0)
      fDarcHeader->SetGlobalOutput(gloTrigPat);// no global input for the moment....
@@ -746,6 +746,10 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
       // Regional card header
       word = 0;
+
+      // set darc status word
+      fRegHeader->SetDarcWord(word);
+
       regOut  = 0;
       AliBitPacking::PackWord((UInt_t)serialNb,word,24,28); //see  AliMUONLocalStruct.h for details
       AliBitPacking::PackWord((UInt_t)version,word,16,23);
