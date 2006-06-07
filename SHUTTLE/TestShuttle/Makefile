@@ -3,7 +3,7 @@
 PACKAGE = TestShuttle
 
 include $(ROOTSYS)/test/Makefile.arch
-include lib$(PACKAGE).pkg
+include $(PACKAGE).pkg
 
 ALICEINC      = -I.
 
