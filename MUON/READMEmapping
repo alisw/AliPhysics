@@ -190,8 +190,18 @@
 
   To generate this file, the macro MUONGenerateBusPatch.C could be used.
 
+  crate.dat
+  =========
+  
+  Muon trigger electronics configuration file (decoded in class 
+  AliMUONTriggerCrateStore) directly copy/paste from the ALICE PRR 
+  ALICE-EN-2003-010. Gives local board number, name, 
+  crate name it belongs to, slot number, and internal switches 
+  (used in the algorithm).
+
   Units used
   ============
  
   Lengths are in centimeters.
  
+  
