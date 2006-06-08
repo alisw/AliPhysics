@@ -4,11 +4,13 @@ SRCS:= AliMUONDDLTrigger.cxx \
        AliMUONDarcHeader.cxx \
        AliMUONRegHeader.cxx \
        AliMUONLocalStruct.cxx \
+       AliMUONPayloadTrigger.cxx \
        AliMUONRawStreamTrigger.cxx \
        AliMUONDDLTracker.cxx \
        AliMUONBlockHeader.cxx \
        AliMUONDspHeader.cxx \
        AliMUONBusStruct.cxx \
+       AliMUONPayloadTracker.cxx \
        AliMUONRawStreamTracker.cxx 
  
 

@@ -19,11 +19,11 @@
 
 #include <TObject.h>
 #include <TClonesArray.h>
+#include "AliMUONPayloadTrigger.h"
 
 class AliRawReader;
 class AliMUONDDLTrigger;
-class AliMUONLocalStruct;
-class AliMUONRegHeader;
+
 
 class AliMUONRawStreamTrigger: public TObject {
   public :
@@ -35,11 +35,10 @@ class AliMUONRawStreamTrigger: public TObject {
 
     virtual Bool_t   Next();
     virtual Bool_t   NextDDL();
-    virtual void     ResetDDL();
 
     Int_t GetMaxDDL() const {return fMaxDDL;}
-    Int_t GetMaxReg() const {return fMaxReg;}
-    Int_t GetMaxLoc() const {return fMaxLoc;}
+    Int_t GetMaxReg() const {return fPayload->GetMaxReg();}
+    Int_t GetMaxLoc() const {return fPayload->GetMaxLoc();}
 
 
     void SetMaxDDL(Int_t ddl);
@@ -49,27 +48,20 @@ class AliMUONRawStreamTrigger: public TObject {
 
     void SetReader(AliRawReader* rawReader) {fRawReader = rawReader;}
 
-    AliMUONLocalStruct*     GetLocalInfo()  const {return fLocalStruct;}
-    AliMUONDDLTrigger*      GetDDLTrigger() const {return fDDLTrigger;}
-    Int_t                   GetDDL()        const {return fDDL - 1;}
+    AliMUONDDLTrigger* GetDDLTrigger() const {return fPayload->GetDDLTrigger();}
+    Int_t              GetDDL()        const {return fDDL - 1;}
 
   protected :
 
-    AliRawReader*    fRawReader;    ///< object for reading the raw data
- 
+    AliRawReader*    fRawReader;     ///< object for reading the raw data
+    AliMUONPayloadTrigger* fPayload; ///< pointer to payload decoder
+
     Int_t  fDDL;          ///< number of DDL
     Int_t  fSubEntries;   ///< entries of buspatch structure
     Bool_t fNextDDL;      ///< flag for next DDL to be read
+    Int_t  fMaxDDL;       ///< maximum number of DDL in DATE file
 
-    Int_t fMaxDDL;        ///< maximum number of DDL in DATE file
-    Int_t fMaxReg;        ///< maximum number of regional cards in DATE file
-    Int_t fMaxLoc;        ///< maximum number of local cards in DATE file
-
-    AliMUONDDLTrigger*       fDDLTrigger;   //!< pointer for DDL structure
-    AliMUONRegHeader*        fRegHeader;    //!< pointer for regional structure
-    AliMUONLocalStruct*      fLocalStruct;  //!< pointer to local structure
-
-    ClassDef(AliMUONRawStreamTrigger, 2)    // base class for reading MUON trigger rawdata
+    ClassDef(AliMUONRawStreamTrigger, 3)    // base class for reading MUON trigger rawdata
 };
 
 #endif
