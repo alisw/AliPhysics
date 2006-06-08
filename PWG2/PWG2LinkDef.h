@@ -12,4 +12,6 @@
 #pragma link C++ class AliRsnReader+;
 #pragma link C++ class AliRsnAnalysis+;
 
+#pragma link C++ class AliBalance+;
+
 #endif
