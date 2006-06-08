@@ -34,6 +34,7 @@ class AliGenHIJINGpara : public AliGenerator
   
  protected:
   Int_t   fNt;          // CurrentTrack;
+  Int_t   fNpartProd;   // Total number of particles produced  
   Bool_t  fPi0Decays;   // Flag for pi0 decays
   Float_t fPtWgtPi;     // pt weight for pions
   Float_t fPtWgtKa;     // pt weight for kaons

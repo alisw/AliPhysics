@@ -175,6 +175,7 @@ AliGenHIJINGpara::AliGenHIJINGpara()
     fETAkac  =  0;
     fDecayer =  0;
     fNt      = -1;
+    fNpartProd = 0;
     SetCutVertexZ();
     SetPtRange();
     SetPi0Decays();
@@ -195,6 +196,7 @@ AliGenHIJINGpara::AliGenHIJINGpara(Int_t npart)
     fETAkac  =  0;
     fDecayer =  0;
     fNt      = -1;
+    fNpartProd = npart;
     SetCutVertexZ();
     SetPtRange();
     SetPi0Decays();
@@ -360,7 +362,7 @@ void AliGenHIJINGpara::Generate()
 			TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
 		}
 	    }
-	    
+
 	    if (fAnalog == 0) { 
 		wgt = fParentWeight;
 	    } else {
@@ -375,7 +377,9 @@ void AliGenHIJINGpara::Generate()
 		KeepTrack(fNt);
 		DecayPi0(origin, p);
 	    } else {
+      // printf("fNt %d", fNt);
 		PushTrack(fTrackIt,-1,part,p,origin,polar,0,kPPrimary,fNt,wgt);
+
 		KeepTrack(fNt);
 	    }
 
@@ -389,6 +393,7 @@ void AliGenHIJINGpara::Generate()
     AliGenEventHeader* header = new AliGenEventHeader("HIJINGparam");
 // Event Vertex
     header->SetPrimaryVertex(eventVertex);
+    header->SetNProduced(fNpartProd);
     gAlice->SetGenEventHeader(header); 
 }
 
@@ -417,6 +422,7 @@ void AliGenHIJINGpara::DecayPi0(Float_t* orig, Float_t * p)
 //
     Float_t polar[3] = {0., 0., 0.};
     Int_t np = fDecayer->ImportParticles(particles);
+    fNpartProd += (np-1);
     Int_t nt;    
     for (Int_t i = 1; i < np; i++)
     {
