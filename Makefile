@@ -23,7 +23,7 @@ export CLASSPATH IRST_INSTALLDIR IRST_CONFIG_DIR
 CODE_CHECK=java rules.ALICE.ALICERuleChecker
 REV_ENG=$(IRST_INSTALLDIR)/scripts/revEng.sh
 
-SMELL_DETECTOR_DIR=$(ALICE)/smell-detector
+SMELL_DETECTOR_DIR=$(IRST_INSTALLDIR)/smell-detector
 
 
 #-------------------------------------------------------------------------------
