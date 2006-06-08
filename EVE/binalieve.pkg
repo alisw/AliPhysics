@@ -28,16 +28,5 @@ ifeq (macosx,$(ALICE_TARGET))
 ELIBS+=GL
 ELIBSDIR+=/usr/X11R6/lib/
 # On Mac OS X gcc we need f2c
-ELIBS+=f2c
-ELIBSDIR+=$(dir $(shell find $(FINK_ROOT) -name 'libf2c.*'))
-
-ELIBSCPP:=$(filter-out microcern,$(ELIBS))
-ELIBSCPP:=$(filter-out pdf,$(ELIBSCPP))
-ELIBSCPP:=$(filter-out mevsim,$(ELIBSCPP))
-ELIBSCPP:=$(filter-out HBTP,$(ELIBSCPP))
-ELIBSCPP:=$(filter-out herwig,$(ELIBSCPP))
-ELIBSCPP:=$(filter-out EPEMGEN,$(ELIBSCPP))
-
-PACKLDFLAGS:=$(LDFLAGS) $(ELIBSCPP:%=-Wl,-u,_G__cpp_setupG__%)
 
 endif
