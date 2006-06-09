@@ -165,7 +165,6 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look)
   }
 
   case LT_GLViewer: {
-    printf("LT_GLViewer this option currently somewhat broken!\n");
     fBrowser->SetupGLViewerLook(fEditor, fCC);
     printf("Crap1 %d %d\n", GetWidth(), GetHeight());
     break;
@@ -251,7 +250,7 @@ void RGTopFrame::DoRedraw3D()
 int RGTopFrame::SpawnGuiAndRun(int argc, char **argv)
 {
   LookType_e revemode = LT_Editor;
-  if(argc >= 3 && strcmp(argv[1], "-revemode")==0) {
+  if(argc >= 3 && (strcmp(argv[1], "-revemode")==0 || strcmp(argv[1], "-mode")==0)) {
     LookType_e m = LookType_e(atoi(argv[2]));
     if(m >= LT_Classic && m <= LT_GLViewer)
       revemode = m;
