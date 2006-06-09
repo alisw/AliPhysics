@@ -673,11 +673,13 @@ Int_t  AliEMCALGeometry::GetSuperModuleNumber(Int_t absId)  const
 // Methods for AliEMCALRecPoint - Feb 19, 2006
 Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr) const
 {
-  //Look to see what the relative
-  //position inside a given cell is
-  //for a recpoint.
+  // Look to see what the relative
+  // position inside a given cell is
+  // for a recpoint.
+  // Alice numbering scheme - Jun 08, 2006
 
   static Int_t nSupMod, nTower, nIphi, nIeta, iphi, ieta;
+  static Int_t phiIndexShift=6;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
   GetCellIndex(absId, nSupMod, nTower, nIphi, nIeta);
@@ -686,10 +688,14 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   xr = fXCentersOfCells.At(ieta);
   zr = fEtaCentersOfCells.At(ieta);
 
-  yr = fPhiCentersOfCells.At(iphi);
+  if(nSupMod<10) {
+    yr = fPhiCentersOfCells.At(iphi);
+  } else {
+    yr = fPhiCentersOfCells.At(iphi + phiIndexShift);
+    cout<<" absId "<<absId<<" nSupMod "<<nSupMod << " iphi "<<iphi<<" ieta "<<ieta;
+    cout<< " xr " << xr << " yr " << yr << " zr " << zr <<endl;
+  }
 
-  //  cout<<" absId "<<absId<<" iphi "<<iphi<<"ieta"<<ieta;
-  // cout<< " xr " << xr << " yr " << yr << " zr " << zr <<endl;
   return kTRUE;
 }
 
