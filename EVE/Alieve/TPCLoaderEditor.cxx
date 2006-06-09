@@ -65,7 +65,8 @@ TPCLoaderEditor::TPCLoaderEditor(const TGWindow *p, Int_t id, Int_t width, Int_t
   fDoubleSR = new TGCheckButton(fEvent, "Double SR");
   fDoubleSR->SetToolTipText("Double sampling rate");
   fEvent->AddFrame(fDoubleSR, new TGLayoutHints(kLHintsLeft, 12, 0, 1, 0));
-  fDoubleSR->Connect("Toggled(Bool_t)","Alieve::TPCSectorVizEditor", this, "DoDoubleSR()");
+  fDoubleSR->Connect("Toggled(Bool_t)",
+                     "Alieve::TPCLoaderEditor", this, "DoDoubleSR()");
   AddFrame(fEvent);
 
   fUpdateSectors = new TGTextButton(this, "Update Sectors");
