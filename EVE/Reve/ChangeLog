@@ -1,3 +1,22 @@
+2006-06-09  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	HEAD
+
+	* PointSet.h:
+	Added friend PointSetArrayEditor.
+
+	* PointSetArrayEditor.cxx:
+	* PointSetArrayEditor.h:
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	Use RGDoubleValuator for range-selection widget.
+
+	* RGTopFrame.cxx:
+	Accept -mode cmd-line option as an alias for -revemode.
+
+	* RGValuators.cxx:
+	Added some padding for labels.
+
 2006-06-02  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	HEAD

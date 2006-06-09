@@ -1,4 +1,13 @@
+2006-06-09  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	HEAD
+
+	* TPCLoaderEditor.cxx:
+	Fixed target class for fDoubleSR signal connect.
+
 2006-06-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	HEAD
 
 	* TPCLoader.cxx:
 	* TPCLoader.h:
@@ -22,6 +31,8 @@
 	Added button to control realistic positioning of the sector.
 
 2006-06-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	HEAD
 
 	* LinkDef.h:
 	* TPCLoader.cxx:
@@ -60,11 +71,15 @@
 
 2006-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	EVE-dev
+
 	* TPCSectorVizEditor.cxx:
 	* TPCSectorVizEditor.h:
 	Replaced hand-woven widget-groups with RGValuators.
 
 2006-05-31  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
 
 	* TPCData.cxx:
 	* TPCData.h:
