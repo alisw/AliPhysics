@@ -70,9 +70,9 @@ void RGValuator::Build()
   // label
   TGLayoutHints* lh;
   if(fAlignRight)
-    lh = new TGLayoutHints(kLHintsRight | kLHintsBottom, 0,0,0,0);
+    lh = new TGLayoutHints(kLHintsRight | kLHintsBottom, 4,0,0,0);
   else
-    lh = new TGLayoutHints(kLHintsLeft  | kLHintsBottom, 0,0,0,0);
+    lh = new TGLayoutHints(kLHintsLeft  | kLHintsBottom, 0,4,0,0);
   
   if (fLabelWidth > 0) {
     // printf("fLabelWidth > 0 \n");
@@ -233,9 +233,9 @@ void RGDoubleValuator::Build()
   // label
   TGLayoutHints* lh;
   if(fAlignRight)
-    lh = new TGLayoutHints(kLHintsRight | kLHintsBottom, 0,2,0,0);
+    lh = new TGLayoutHints(kLHintsRight | kLHintsBottom, 4,0,0,0);
   else
-    lh = new TGLayoutHints(kLHintsLeft  | kLHintsBottom, 0,2,0,0);
+    lh = new TGLayoutHints(kLHintsLeft  | kLHintsBottom, 0,4,0,0);
   
   if(fLabelWidth > 0) {
     TGCompositeFrame *lf = new TGHorizontalFrame(hf1, fLabelWidth, fNEHeight, kFixedSize);
@@ -246,7 +246,7 @@ void RGDoubleValuator::Build()
     hf1->AddFrame(lf, lfh);
   } else {
     fLabel = new TGLabel(hf1, GetName());
-    hf1->AddFrame(fLabel);  
+    hf1->AddFrame(fLabel, lh);  
   }
 
   // entries
