@@ -8,9 +8,7 @@ makeCorrectionPtEta(Char_t* dataDir, Int_t nRuns=20) {
 
   Char_t str[256];
 
-  //gSystem->Load("/home/poghos/CERN2006/pp/esdTrackCuts/libESDtrackQuality.so");
-  gSystem->Load("libPWG0base");
-  gSystem->Load("libCorrectionMatrix2D.so");
+  gSystem->Load("../libPWG0base.so");
   // ########################################################
   // selection of esd tracks
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();    
@@ -26,12 +24,12 @@ makeCorrectionPtEta(Char_t* dataDir, Int_t nRuns=20) {
 
   // ########################################################
   // definition of PtEta correction object
-  CorrectionMatrix2D* PtEtaMap = new CorrectionMatrix2D("CorrectionMatrix2");
-  PtEtaMap->SetHist("PtEta",80,0.,10.,120,-2.,2.);
+  CorrectionMatrix2D* PtEtaMap = new CorrectionMatrix2D("PtvsEta","PtvsEta",80,0.,10.,120,-2.,2.);
+  //PtEtaMap->SetHist("PtEta",80,0.,10.,120,-2.,2.);
   //Float_t x[]={-20., -15., -5., 0., 6., 20.};
   //Float_t y[]={-6. , -3.,  -1., 2., 3., 6. };
   //PtEtaMap->SetHist("PtEta",5,x,5,y);
-  PtEtaMap->SetHistTitle("p_{t}","#eta");
+  //PtEtaMap->SetHistTitle("p_{t}","#eta");
 
 
   // ########################################################
@@ -199,7 +197,8 @@ makeCorrectionPtEta(Char_t* dataDir, Int_t nRuns=20) {
     } // end  of event loop
   } // end of run loop
 
-  PtEtaMap->Finish();  
+  PtEtaMap->Divide();  
+  PtEtaMap->RemoveEdges();  
 
   TFile* fout = new TFile("PtEtaCorrectionMap.root","RECREATE");
   
