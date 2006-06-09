@@ -2,6 +2,7 @@
 
 #include "PointSetArrayEditor.h"
 #include <Reve/PointSet.h>
+#include <Reve/RGValuators.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
@@ -27,11 +28,14 @@ PointSetArrayEditor::PointSetArrayEditor(const TGWindow *p, Int_t id, Int_t widt
   fM = 0;
   MakeTitle("PointSetArray");
 
-  fSlider = new TGDoubleHSlider(this);
-  fSlider->Resize(260, 20);
-  AddFrame(fSlider, new TGLayoutHints(kLHintsLeft, 0, 5));
-  fSlider->Connect("PositionChanged()", "Reve::PointSetArrayEditor",
-		   this, "DoScroll()");
+  fRange = new RGDoubleValuator(this,"Range", 200, 0);
+  fRange->SetNELength(6);
+  //fRange->SetLabelWidth(labelW);
+  fRange->Build();
+  fRange->GetSlider()->SetWidth(224);
+  fRange->Connect("ValueSet()",
+		 "Reve::PointSetArrayEditor", this, "DoRange()");
+  AddFrame(fRange, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
   // Register the editor.
   TClass *cl = PointSetArray::Class();
@@ -63,17 +67,16 @@ void PointSetArrayEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
 
   printf("FullRange(%f, %f) Selected(%f,%f)\n",
 	 fM->GetMin(), fM->GetMax(), fM->GetCurMin(), fM->GetCurMax());
-  fSlider->SetRange(fM->GetMin(), fM->GetMax());
-  fSlider->SetPosition(fM->GetCurMin(), fM->GetCurMax());
+
+  fRange->SetLimits(fM->fMin, fM->fMax, TGNumberFormat::kNESRealTwo);
+  fRange->SetValues(fM->fCurMin, fM->fCurMax);
 
   SetActive();
 }
 
 /**************************************************************************/
 
-void PointSetArrayEditor::DoScroll()
+void PointSetArrayEditor::DoRange()
 {
-  Double_t min = fSlider->GetMinPosition(), max = fSlider->GetMaxPosition();
-  printf("PointSet range: min=%f max=%f\n", min, max);
-  fM->SetRange(min, max);
+  fM->SetRange(fRange->GetMin(), fRange->GetMax());
 }

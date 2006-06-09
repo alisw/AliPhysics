@@ -3,6 +3,8 @@
 #include "TrackEditors.h"
 #include <Reve/Track.h>
 
+#include <Reve/RGValuators.h>
+
 #include <TVirtualPad.h>
 #include <TColor.h>
 
@@ -125,14 +127,14 @@ TrackListEditor::TrackListEditor(const TGWindow *p, Int_t id, Int_t width, Int_t
 
   // --- Selectors
 
-  TGDoubleHSlider* hs = new TGDoubleHSlider(this);
-  hs->SetRange(0.1, 10);
-  hs->SetPosition(0.1, 10);
-  hs->Resize(260, 20);
-  AddFrame(hs, new TGLayoutHints(kLHintsLeft, 0, 5));
-  hs->Connect("PositionChanged()", "Reve::TrackListEditor",
-	      this, "DoPtScroll()");
-
+  fPtRange = new RGDoubleValuator(this,"Pt Range", 200, 0);
+  fPtRange->SetNELength(6);
+  fPtRange->Build();
+  fPtRange->GetSlider()->SetWidth(224);
+  fPtRange->SetLimits(0.1, 10, TGNumberFormat::kNESRealTwo);
+  fPtRange->Connect("ValueSet()",
+                    "Reve::TrackListEditor", this, "DoPtRange()");
+  AddFrame(fPtRange, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
   // Register the editor.
   TClass *cl = TrackList::Class();
@@ -173,6 +175,8 @@ void TrackListEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
 
   fFitDaughters->SetState(fTC->GetFitDaughters() ? kButtonDown : kButtonUp);
   fFitDecay->SetState(fTC->GetFitDecay() ? kButtonDown : kButtonUp);
+
+  fPtRange->SetValues(0.1, 10);
 
   SetActive();
 }
@@ -240,11 +244,7 @@ void TrackListEditor::DoFitDecay()
 
 /**************************************************************************/
 
-void TrackListEditor::DoPtScroll()
+void TrackListEditor::DoPtRange()
 {
-  TGDoubleHSlider* hs = (TGDoubleHSlider*)gTQSender;
-
-  Double_t min = hs->GetMinPosition(), max = hs->GetMaxPosition();
-  printf("Track pt range: min=%f max=%f\n", min, max);
-  fTC->SelectByPt(min, max);
+  fTC->SelectByPt(fPtRange->GetMin(), fPtRange->GetMax());
 }

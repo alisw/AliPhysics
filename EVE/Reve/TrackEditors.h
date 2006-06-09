@@ -11,6 +11,9 @@ class TGColorSelect;
 
 namespace Reve {
 
+class RGValuator;
+class RGDoubleValuator;
+
 class TrackList;
 
 class TrackListEditor : public TGedFrame
@@ -30,6 +33,8 @@ protected:
   TGCheckButton*     fFitDaughters;
   TGCheckButton*     fFitDecay;
 
+  RGDoubleValuator*  fPtRange;
+
 public:
   TrackListEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
   ~TrackListEditor();
@@ -48,7 +53,7 @@ public:
   void DoFitDaughters();
   void DoFitDecay();
 
-  void DoPtScroll();
+  void DoPtRange();
 
   ClassDef(TrackListEditor, 1); // Editor for TrackList
 }; // endclass TrackListEditor
