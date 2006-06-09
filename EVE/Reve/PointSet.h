@@ -49,6 +49,8 @@ public:
 
 class PointSetArray : public TNamed, public RenderElementListBase
 {
+  friend class PointSetArrayEditor;
+
 protected:
   PointSet**   fBins;
   Int_t        fNBins;
