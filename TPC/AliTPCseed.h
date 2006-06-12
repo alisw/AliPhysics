@@ -43,6 +43,7 @@ class AliTPCseed : public AliTPCtrack {
      virtual Double_t GetPredictedChi2(const AliCluster *cluster2) const;
      virtual Int_t Update(const AliCluster* c2, Double_t chi2, UInt_t i);
      AliTPCTrackerPoint * GetTrackPoint(Int_t i);
+     AliTPCclusterMI * GetClusterFast(Int_t irow){ return fClusterPointer[irow];}
      void RebuildSeed(); // rebuild seed to be ready for storing
      Double_t GetDensityFirst(Int_t n);
      Double_t GetSigma2C() const {return fC44;};
