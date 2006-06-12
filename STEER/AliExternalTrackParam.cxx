@@ -787,6 +787,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t m
     Double_t xyz0[3],xyz1[3],param[7];
     GetXYZ(xyz0);   //starting global position
     if (!GetXYZAt(x,b,xyz1)) return kFALSE;   // no prolongation
+    xyz1[2]+=kEpsilon; // waiting for bug correction in geo
     AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
     if (TMath::Abs(GetSnpAt(x,b)) >= maxSnp) return kFALSE;
     if (!PropagateTo(x,b))  return kFALSE;
