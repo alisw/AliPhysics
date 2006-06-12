@@ -115,5 +115,6 @@
 #pragma link C++ class AliCTPRawData+;
 #pragma link C++ class AliCTPRawStream+;
 #pragma link C++ class AliMathBase+;
+#pragma link C++ class AliSignalProcesor+;
 
 #endif

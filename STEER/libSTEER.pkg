@@ -31,7 +31,7 @@ AliTrackResiduals.cxx AliTrackResidualsChi2.cxx AliTrackResidualsFast.cxx AliTra
 AliAlignmentTracks.cxx \
 AliExpression.cxx \
 AliCTPRawData.cxx AliCTPRawStream.cxx \
-AliMathBase.cxx
+AliMathBase.cxx AliSignalProcesor.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
