@@ -41,7 +41,8 @@ public:
    void    SetGlobalInput(Int_t in, Int_t n) {fGlobalInput[n] = in;}
    void    SetGlobalOutput(Int_t out) {fGlobalOutput = out;}
 
-   Int_t   GetHeaderLength() const {return fgkHeaderLength;}
+   Int_t   GetDarcHeaderLength()   const {return fgkDarcHeaderLength;}
+   Int_t   GetGlobalHeaderLength() const {return fgkGlobalHeaderLength;}
 
    UInt_t* GetHeader() {return &fWord;}
    Int_t*  GetGlobalInput()    {return &fGlobalInput[0];}
@@ -93,7 +94,8 @@ public:
    Int_t     fGlobalInput[4];    ///< global input
    Int_t     fGlobalOutput;      ///< global ouput
 
-   static const Int_t fgkHeaderLength; ///< header length
+   static const Int_t fgkDarcHeaderLength;   ///< darc header length
+   static const Int_t fgkGlobalHeaderLength; ///< global header length
 
 
  // global card scalers   

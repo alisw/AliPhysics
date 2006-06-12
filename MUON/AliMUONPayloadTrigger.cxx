@@ -89,20 +89,23 @@ AliMUONPayloadTrigger::~AliMUONPayloadTrigger()
 //______________________________________________________
 Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 {
-  // reading tracker DDL
-  // store buspatch info into Array
-  // store only non-empty structures (buspatch info with datalength !=0)
+  // decode trigger DDL
+  // store only non-empty structures (TrigY ==0)
 
  // reading DDL for trigger
 
   AliMUONDarcHeader* darcHeader = fDDLTrigger->GetDarcHeader();
 
-  Int_t kDarcHeaderSize = darcHeader->GetHeaderLength(); 
-  Int_t kRegHeaderSize  = fRegHeader->GetHeaderLength() ;
-  Bool_t scalerEvent    = kFALSE;
+  static Int_t kGlobalHeaderSize = darcHeader->GetGlobalHeaderLength(); 
+  static Int_t kDarcHeaderSize   = darcHeader->GetDarcHeaderLength(); 
+  static Int_t kRegHeaderSize    = fRegHeader->GetHeaderLength();
+
+  Bool_t scalerEvent = kFALSE;
   
   Int_t index = 0;
-  darcHeader->SetWord(buffer[index++]);
+
+  memcpy(darcHeader->GetHeader(), &buffer[index], (kDarcHeaderSize)*4); 
+  index += kDarcHeaderSize;
 
   if(darcHeader->GetEventType() == 2) {
     scalerEvent = kTRUE;
@@ -119,8 +122,8 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
     AliWarning(Form("Wrong end of Darc word %x instead of %x\n",buffer[index-1], darcHeader->GetEndOfDarc())); 
 
   // 4 words of global board input + Global board output
-  memcpy(darcHeader->GetGlobalInput(), &buffer[index], (kDarcHeaderSize-1)*4); 
-  index += kDarcHeaderSize- 1; // kind tricky cos scaler info in-between Darc header
+  memcpy(darcHeader->GetGlobalInput(), &buffer[index], (kGlobalHeaderSize)*4); 
+  index += kGlobalHeaderSize; 
 
   if(scalerEvent) {
     // 10 Global scaler words
@@ -129,7 +132,7 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
   }
 
   if (buffer[index++] != darcHeader->GetEndOfGlobal())
-    AliWarning(Form("Wrong end of Global word %d instead of %d\n",buffer[index-1], darcHeader->GetEndOfGlobal()));
+    AliWarning(Form("Wrong end of Global word %x instead of %x\n",buffer[index-1], darcHeader->GetEndOfGlobal()));
     
   // 8 regional boards
   for (Int_t iReg = 0; iReg < fMaxReg; iReg++) {           //loop over regeonal card

@@ -31,8 +31,9 @@
 ClassImp(AliMUONDarcHeader)
 /// \endcond
 
- const Int_t AliMUONDarcHeader::fgkHeaderLength = 8;
- const Int_t AliMUONDarcHeader::fgkDarcScalerLength   = 6;
+ const Int_t AliMUONDarcHeader::fgkDarcHeaderLength   =  1;
+ const Int_t AliMUONDarcHeader::fgkGlobalHeaderLength =  5;
+ const Int_t AliMUONDarcHeader::fgkDarcScalerLength   =  6;
  const Int_t AliMUONDarcHeader::fgkGlobalScalerLength = 10;
 
  const UInt_t AliMUONDarcHeader::fgkEndOfDarc   = 0xDEADFACE;

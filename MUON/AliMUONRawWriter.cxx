@@ -713,7 +713,9 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
     AliBitPacking::PackWord((UInt_t)globalFlag,word,8,11);
     fDarcHeader->SetWord(word);
-    buffer[index++] = word;
+
+    memcpy(&buffer[index], fDarcHeader->GetHeader(), (fDarcHeader->GetDarcHeaderLength())*4); 
+    index += fDarcHeader->GetDarcHeaderLength();
 
     if (iDDL == 0)
      fDarcHeader->SetGlobalOutput(gloTrigPat);// no global input for the moment....
@@ -729,8 +731,8 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     buffer[index++] = fDarcHeader->GetEndOfDarc();
 
     // 4 words of global board input + Global board output
-    memcpy(&buffer[index], fDarcHeader->GetGlobalInput(), (fDarcHeader->GetHeaderLength()-1)*4); 
-    index += fDarcHeader->GetHeaderLength() - 1; // kind tricky cos scaler info in-between Darc header
+    memcpy(&buffer[index], fDarcHeader->GetGlobalInput(), (fDarcHeader->GetGlobalHeaderLength())*4); 
+    index += fDarcHeader->GetGlobalHeaderLength(); 
 
     if (fScalerEvent) {
       // 10 Global scaler words
