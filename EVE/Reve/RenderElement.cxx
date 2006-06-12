@@ -137,7 +137,7 @@ void RenderElement::SetMainColor(Color_t color)
   }
 }
 
-void RenderElement::SetMainColorByPixel(Pixel_t pixel)
+void RenderElement::SetMainColor(Pixel_t pixel)
 {
   SetMainColor(Color_t(TColor::GetColor(pixel)));
 }

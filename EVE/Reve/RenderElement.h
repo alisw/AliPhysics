@@ -83,7 +83,7 @@ public:
 
   virtual Color_t GetMainColor() const { return fMainColorPtr ? *fMainColorPtr : 0; }
   virtual void    SetMainColor(Color_t color);
-          void    SetMainColorByPixel(Pixel_t pixel);
+          void    SetMainColor(Pixel_t pixel);
 
   ClassDef(RenderElement, 1);
 }; // endclass RenderElement
