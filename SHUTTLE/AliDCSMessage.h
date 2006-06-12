@@ -9,13 +9,13 @@
 //
 // This class is a wrapper of AliDCSMessage.
 // These are the messages which form AliDCSProtocol.
+// Used by AliDCSClient to communicate with the DCS Amanda server
 //
-
-
-#include "AliDCSValue.h"
 
 #include <TString.h>
 #include <TObjArray.h>
+#include "AliDCSValue.h"
+#include "AliSimpleValue.h"
 
 #define HEADER_SIZE 8
 #define ID_OFFSET 0
@@ -40,8 +40,6 @@
 
 #define ERROR_CODE_OFFSET HEADER_SIZE
 #define ERROR_STRING_OFFSET (HEADER_SIZE + 1)
-
-
 
 class AliDCSMessage: public TObject {
 public:
@@ -76,7 +74,7 @@ public:
 
         AliDCSMessage(const char* buffer, UInt_t size);
 
-        ~AliDCSMessage();
+        virtual ~AliDCSMessage();
 
 
         void CreateRequestMessage(RequestType type, 
@@ -159,37 +157,41 @@ public:
 
 private:
 
-	char* fMessage;
+	AliDCSMessage(const AliDCSMessage& other); 	
+	AliDCSMessage& operator= (const AliDCSMessage& other); 	
 
-	UInt_t fMessageSize;
+
+	char* fMessage; 	// Array of bytes building the message
+
+	UInt_t fMessageSize; 	// Size of the message array
 
 
-	Type fType;
+	Type fType; 		// Message type (request, count...)
 	
 	//Request message fields
-	RequestType fRequestType;
+	RequestType fRequestType; 	// Type of request message
 	
-	UInt_t fStartTime;
+	UInt_t fStartTime; 		// Start time of query
 
-	UInt_t fEndTime;
+	UInt_t fEndTime; 		// End time of query
 
-	TString fRequestString;
+	TString fRequestString; 	// Request string
 	
 	//Count message fields
-	UInt_t fCount;
+	UInt_t fCount; 			// count counter
 
 	//ResultSet message fields
-	AliSimpleValue::Type fSimpleValueType;
+	AliSimpleValue::Type fSimpleValueType; // Simple value type
 
-	TObjArray fValues;
+	TObjArray fValues; 		// array of received values
 	
 	//Error message fields
-	ErrorCode fErrorCode;
+	ErrorCode fErrorCode; 		// error code
 	
-	TString fErrorString;
+	TString fErrorString; 		// error string
 
 	//MultiRequest message fields
-	TObjArray fRequestStrings; 
+	TObjArray fRequestStrings; 	// multi request string array
 
 	
 	// Message setter helpers

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/03/07 07:52:34  hristov
+New version (B.Yordanov)
+
 Revision 1.3  2005/11/17 17:47:34  byordano
 TList changed to TObjArray
 
@@ -73,28 +76,56 @@ some more descriptions added
 
 ClassImp(AliDCSMessage)
 
+//______________________________________________________________________
 AliDCSMessage::AliDCSMessage():
 	fMessage(NULL), fMessageSize(0), fType(kInvalid)
 {
+// default constructor
 
 }
 
+//______________________________________________________________________
 AliDCSMessage::AliDCSMessage(const char* message, UInt_t size):
         fMessageSize(size), fType(kInvalid)
 {
+// default constructor
+
         fMessage = new char[size];
 
         memcpy(fMessage, message, size);
 }
 
-AliDCSMessage::~AliDCSMessage() {
+//______________________________________________________________________
+AliDCSMessage::AliDCSMessage(const AliDCSMessage& /*other*/):
+TObject()
+{
+// copy constructor (not implemented)
+
+}
+
+//______________________________________________________________________
+AliDCSMessage &AliDCSMessage::operator=(const AliDCSMessage& /*other*/)
+{
+// assignment operator (not implemented)
+
+return *this;
+}
+
+//______________________________________________________________________
+AliDCSMessage::~AliDCSMessage() 
+{
+// destructor
+
 	DestroyMessage();
         DestroyBuffer();
 }
 
+//______________________________________________________________________
 void AliDCSMessage::CreateRequestMessage(RequestType type, 
 	UInt_t startTime, UInt_t endTime, const char* request)
 {
+// Create request message
+
 	DestroyMessage();
 
 	fType = AliDCSMessage::kRequest;
@@ -104,9 +135,12 @@ void AliDCSMessage::CreateRequestMessage(RequestType type,
 	fRequestString = request;
 }
 
+//______________________________________________________________________
 void AliDCSMessage::CreateMultiRequestMessage(RequestType type, 
 	UInt_t startTime, UInt_t endTime)
 {
+// Create multi request message
+
 	DestroyMessage();
 
         fType = AliDCSMessage::kMultiRequest;
@@ -115,23 +149,34 @@ void AliDCSMessage::CreateMultiRequestMessage(RequestType type,
 	fEndTime = endTime;
 }
 	
-void AliDCSMessage::CreateCountMessage(UInt_t count) {
+//______________________________________________________________________
+void AliDCSMessage::CreateCountMessage(UInt_t count) 
+{
+// Create count request message
+
 	DestroyMessage();
 
 	fType = AliDCSMessage::kCount;
 	fCount = count;
 }
 
-void AliDCSMessage::CreateResultSetMessage(AliSimpleValue::Type type) {
+//______________________________________________________________________
+void AliDCSMessage::CreateResultSetMessage(AliSimpleValue::Type type) 
+{
+// Create result set message
+
 	DestroyMessage();
 
 	fType = AliDCSMessage::kResultSet;
 	fSimpleValueType = type; 
 }
 
+//______________________________________________________________________
 void AliDCSMessage::CreateErrorMessage(ErrorCode errorCode, 
 	const char* errorString)
 {
+// Create error message
+
 	DestroyMessage();
 
 	fType = AliDCSMessage::kError;
@@ -146,37 +191,69 @@ void AliDCSMessage::CreateNextMessage() {
 	fType = AliDCSMessage::kNext;
 } */
 
-void AliDCSMessage::DestroyMessage() {
+//______________________________________________________________________
+void AliDCSMessage::DestroyMessage() 
+{
+// Destroy message
+
 	fType = kInvalid;
         ClearValues();
         ClearRequestStrings();
 }
 
-void AliDCSMessage::SetBool(char* buf, Bool_t val) {
+//______________________________________________________________________
+void AliDCSMessage::SetBool(char* buf, Bool_t val) 
+{
+// Set bool value to buf 
+
 	tobuf(buf, val);
 }
 
-void AliDCSMessage::SetByte(char* buf, Char_t val) {
+//______________________________________________________________________
+void AliDCSMessage::SetByte(char* buf, Char_t val) 
+{
+// Set byte value to buf 
+
 	tobuf(buf, val);
 }
 
-void AliDCSMessage::SetUByte(char* buf, UChar_t val) {
+//______________________________________________________________________
+void AliDCSMessage::SetUByte(char* buf, UChar_t val) 
+{
+// Set ubyte value to buf
+
 	tobuf(buf, val);
 }
 
-void AliDCSMessage::SetInt(char* buf, Int_t val) {
+//______________________________________________________________________
+void AliDCSMessage::SetInt(char* buf, Int_t val) 
+{
+// Set int value to buf 
+
 	tobuf(buf, val);
 }
 
-void AliDCSMessage::SetUInt(char* buf, UInt_t val) {
+//______________________________________________________________________
+void AliDCSMessage::SetUInt(char* buf, UInt_t val) 
+{
+// Set uint value to buf 
+
 	tobuf(buf, val);
 }
 
-void AliDCSMessage::SetFloat(char* buf, Float_t val) {
+//______________________________________________________________________
+void AliDCSMessage::SetFloat(char* buf, Float_t val) 
+{
+// Set float value to buf 
+
 	tobuf(buf, val);
 }
 
-Bool_t AliDCSMessage::GetBool(const char* buf) {
+//______________________________________________________________________
+Bool_t AliDCSMessage::GetBool(const char* buf) 
+{
+// get bool value from buf 
+
 	Bool_t val;
 	char* aBuffer = (char*) buf;
 
@@ -185,7 +262,11 @@ Bool_t AliDCSMessage::GetBool(const char* buf) {
 	return val;
 }
 
-Char_t AliDCSMessage::GetByte(const char* buf) {
+//______________________________________________________________________
+Char_t AliDCSMessage::GetByte(const char* buf) 
+{
+// get byte value from buf 
+
 	Char_t val;
 	char* aBuffer = (char*) buf;
 
@@ -194,7 +275,11 @@ Char_t AliDCSMessage::GetByte(const char* buf) {
 	return val;
 }
 
-UChar_t AliDCSMessage::GetUByte(const char* buf) {
+//______________________________________________________________________
+UChar_t AliDCSMessage::GetUByte(const char* buf) 
+{
+// get ubyte value from buf 
+
 	UChar_t val;
 	char* aBuffer = (char*) buf;
 
@@ -203,7 +288,11 @@ UChar_t AliDCSMessage::GetUByte(const char* buf) {
 	return val;
 }
 
-Int_t AliDCSMessage::GetInt(const char* buf) {
+//______________________________________________________________________
+Int_t AliDCSMessage::GetInt(const char* buf) 
+{
+// get int value from buf 
+
 	Int_t val;
 	char* aBuffer = (char*) buf;
 
@@ -212,7 +301,11 @@ Int_t AliDCSMessage::GetInt(const char* buf) {
 	return val;
 }
 
-UInt_t AliDCSMessage::GetUInt(const char* buf) {
+//______________________________________________________________________
+UInt_t AliDCSMessage::GetUInt(const char* buf) 
+{
+// get uint value from buf 
+
 	UInt_t val;
 	char* aBuffer = (char*) buf;
 
@@ -221,7 +314,11 @@ UInt_t AliDCSMessage::GetUInt(const char* buf) {
 	return val;
 }
 
-Float_t AliDCSMessage::GetFloat(const char* buf) {
+//______________________________________________________________________
+Float_t AliDCSMessage::GetFloat(const char* buf) 
+{
+// get float value from buf 
+
 	Float_t val;
 	char* aBuffer = (char*) buf;
 
@@ -230,7 +327,10 @@ Float_t AliDCSMessage::GetFloat(const char* buf) {
 	return val;
 }
 
-TString AliDCSMessage::GetString(const char* buf, Int_t maxLen) {
+//______________________________________________________________________
+TString AliDCSMessage::GetString(const char* buf, Int_t maxLen) 
+{
+// get string from buf 
 
 	for (Int_t k = 0; k < maxLen; k ++) {
 		if (buf[k] == 0) {
@@ -241,7 +341,10 @@ TString AliDCSMessage::GetString(const char* buf, Int_t maxLen) {
 	return TString(buf, maxLen);
 }
 
-void AliDCSMessage::StoreHeader() {
+//______________________________________________________________________
+void AliDCSMessage::StoreHeader() 
+{
+// store header message
 	
 	SetUByte(fMessage + ID_OFFSET, 'A');
 	SetUByte(fMessage + ID_OFFSET + 1, 'D');
@@ -253,7 +356,10 @@ void AliDCSMessage::StoreHeader() {
 	SetUInt(fMessage + BODY_SIZE_OFFSET, fMessageSize - HEADER_SIZE);
 }
 
-void AliDCSMessage::StoreRequestMessage() {
+//______________________________________________________________________
+void AliDCSMessage::StoreRequestMessage() 
+{
+// store request message
 	
 	fMessageSize = REQUEST_STRING_OFFSET +
 		fRequestString.Length() + 1;
@@ -268,7 +374,10 @@ void AliDCSMessage::StoreRequestMessage() {
 	strcpy(fMessage + REQUEST_STRING_OFFSET, fRequestString.Data());
 }
 
-void AliDCSMessage::StoreCountMessage() {
+//______________________________________________________________________
+void AliDCSMessage::StoreCountMessage() 
+{
+// store count message
 
 	fMessageSize = COUNT_OFFSET + sizeof(UInt_t);
 
@@ -279,7 +388,10 @@ void AliDCSMessage::StoreCountMessage() {
 	SetUInt(fMessage + COUNT_OFFSET, fCount);
 }
 
-void AliDCSMessage::StoreResultSetMessage() {
+//______________________________________________________________________
+void AliDCSMessage::StoreResultSetMessage() 
+{
+// store result set message
 
 	TIter iter(&fValues);
 	AliDCSValue* aValue;
@@ -423,7 +535,10 @@ void AliDCSMessage::StoreResultSetMessage() {
 
 }
 
-void AliDCSMessage::StoreErrorMessage() {
+//______________________________________________________________________
+void AliDCSMessage::StoreErrorMessage() 
+{
+// store error message
 
 	fMessageSize = ERROR_STRING_OFFSET + fErrorString.Length() + 1;
 
@@ -435,7 +550,10 @@ void AliDCSMessage::StoreErrorMessage() {
 	strcpy(fMessage + ERROR_STRING_OFFSET, fErrorString.Data());
 }
 
-void AliDCSMessage::StoreMultiRequestMessage() {
+//______________________________________________________________________
+void AliDCSMessage::StoreMultiRequestMessage() 
+{
+// store multi request message
 	
 	UInt_t requestDataSize = 0;
 
@@ -471,6 +589,7 @@ void AliDCSMessage::StoreMultiRequestMessage() {
 	}
 }
 
+//______________________________________________________________________
 /*
 void AliDCSMessage::StoreNextMessage() {
 
@@ -481,7 +600,10 @@ void AliDCSMessage::StoreNextMessage() {
         StoreHeader(); 
 } */
 
-Bool_t AliDCSMessage::ValidateHeader(const char* buf) {
+//______________________________________________________________________
+Bool_t AliDCSMessage::ValidateHeader(const char* buf) 
+{
+// validate message header
 
 	if (!(buf[ID_OFFSET] == 'A' && buf[ID_OFFSET + 1] == 'D')) {
 		AliError("Bad message ID!");
@@ -515,7 +637,10 @@ Bool_t AliDCSMessage::ValidateHeader(const char* buf) {
 	return kTRUE;
 }
 
-void AliDCSMessage::LoadRequestMessage() {
+//______________________________________________________________________
+void AliDCSMessage::LoadRequestMessage() 
+{
+// load request message
 
 	if (fMessageSize < REQUEST_STRING_OFFSET) {
 		AliError("Body size is too small for request message!");
@@ -539,7 +664,10 @@ void AliDCSMessage::LoadRequestMessage() {
 	}
 }
 
-void AliDCSMessage::LoadCountMessage() {
+//______________________________________________________________________
+void AliDCSMessage::LoadCountMessage() 
+{
+// load count message
 
 	if (fMessageSize < HEADER_SIZE + sizeof(UInt_t)) {
 		AliError("Body size is too small for count message!");
@@ -551,7 +679,10 @@ void AliDCSMessage::LoadCountMessage() {
 	fType = kCount;
 }
 
-void AliDCSMessage::LoadResultSetMessage() {
+//______________________________________________________________________
+void AliDCSMessage::LoadResultSetMessage() 
+{
+// load result message
 
 	if (fMessageSize < VALUES_OFFSET) {
 		AliError("Body size is too small for result set message!");
@@ -643,7 +774,10 @@ void AliDCSMessage::LoadResultSetMessage() {
 	fType = kResultSet;
 }
 
-void AliDCSMessage::LoadErrorMessage() {
+//______________________________________________________________________
+void AliDCSMessage::LoadErrorMessage() 
+{
+// load error message
 	
 	if (fMessageSize < ERROR_STRING_OFFSET) {
 		AliError("Body size is too small for error message!");
@@ -668,7 +802,10 @@ void AliDCSMessage::LoadErrorMessage() {
 	}
 }
 
-void AliDCSMessage::LoadMultiRequestMessage() {
+//______________________________________________________________________
+void AliDCSMessage::LoadMultiRequestMessage() 
+{
+// load multi request message
 	
 	if (fMessageSize - HEADER_SIZE < REQUEST_STRINGS_OFFSET) {
 		AliError("Body size is too small for multi request message!");
@@ -711,17 +848,17 @@ void AliDCSMessage::LoadMultiRequestMessage() {
 	fType = kMultiRequest;
 }
 
+//______________________________________________________________________
 /*
 void AliDCSMessage::LoadNextMessage() {
 	
 	fType = kNext;
 } */
 
-void AliDCSMessage::StoreToBuffer() {
-	//
-	// Creates an underlying message buffer which can be sent to the
-	// socket.
-	//
+//______________________________________________________________________
+void AliDCSMessage::StoreToBuffer() 
+{
+	// Creates an underlying message buffer which can be sent to the socket.
 
 	DestroyBuffer();
 	
@@ -749,13 +886,13 @@ void AliDCSMessage::StoreToBuffer() {
 	}
 }
 
-void AliDCSMessage::LoadFromBuffer() {
-	//
+//______________________________________________________________________
+void AliDCSMessage::LoadFromBuffer() 
+{
 	// Reads the underlying message buffer and if it's valid message
 	// creates the corresponding message.  
 	// If not set the message type kInvalid.
 	// This buffer is read from the socket.
-	//
 	
 	DestroyMessage();
 
@@ -808,11 +945,11 @@ void AliDCSMessage::LoadFromBuffer() {
 	}	
 }
 
-AliDCSMessage::RequestType AliDCSMessage::GetRequestType() const {
-	//
+//______________________________________________________________________
+AliDCSMessage::RequestType AliDCSMessage::GetRequestType() const 
+{
 	// Request and MultiRequest.
 	// Returns the request type: alias or dp (Data Point)
-	//
 
 	if (!(fType == kRequest || fType == kMultiRequest)) {
 		AliError("Invalid AliDCSMessage type!");
@@ -822,11 +959,11 @@ AliDCSMessage::RequestType AliDCSMessage::GetRequestType() const {
 	return fRequestType;
 }
 
-UInt_t AliDCSMessage::GetStartTime() const {
-	//
+//______________________________________________________________________
+UInt_t AliDCSMessage::GetStartTime() const 
+{
 	// Request and MultiRequest.
 	// Returns the request start time. (begining of the time interval).
-	//
 
         if (!(fType == kRequest || fType == kMultiRequest)) {
                 AliError("Invalid AliDCSMessage type!");
@@ -836,11 +973,11 @@ UInt_t AliDCSMessage::GetStartTime() const {
 	return fStartTime;
 }
 
-UInt_t AliDCSMessage::GetEndTime() const {
-	//
+//______________________________________________________________________
+UInt_t AliDCSMessage::GetEndTime() const 
+{
         // Request and MultiRequest.
         // Returns the request start time. (end of the time interval).
-        //
 
 	
         if (!(fType == kRequest || fType == kMultiRequest)) {
@@ -851,11 +988,11 @@ UInt_t AliDCSMessage::GetEndTime() const {
         return  fEndTime;
 }
 
-TString AliDCSMessage::GetRequestString() const {
-	//
+//______________________________________________________________________
+TString AliDCSMessage::GetRequestString() const 
+{
         // Request.
         // Returns the request string. (alias or dp)
-        //
 
         if (fType != kRequest) {
                 AliError("Invalid AliDCSMessage type!");
@@ -865,14 +1002,14 @@ TString AliDCSMessage::GetRequestString() const {
 	return fRequestString;
 }
 
-Bool_t AliDCSMessage::AddRequestString(const char* request) {
-	//
+//______________________________________________________________________
+Bool_t AliDCSMessage::AddRequestString(const char* request) 
+{
         // MultRequest.
         // Add a request to the request set.
 	// Returns kFALSE in case of invalid request (too long request string).
 	// Otherwise returns kTRUE.
-        //
-
+ 
 	
 	if (fType != kMultiRequest) {
 		AliError("Invalid AliDCSMessage type!");
@@ -888,22 +1025,22 @@ Bool_t AliDCSMessage::AddRequestString(const char* request) {
 	return kTRUE;
 }
 
-void AliDCSMessage::ClearRequestStrings() {
-	//
+//______________________________________________________________________
+void AliDCSMessage::ClearRequestStrings() 
+{
         // MultRequest.
 	// Clears the request set.
-        //
-
+ 
 	fRequestStrings.Delete();
 }
 
-void AliDCSMessage::GetRequestStrings(TObjArray& result) const {
-	//
+//______________________________________________________________________
+void AliDCSMessage::GetRequestStrings(TObjArray& result) const 
+{
         // MultRequest.
         // Returns all request strings in this message.
 	// result: container where the requests are returned. Collection of
 	// TObjString.
-        //
 
 
 	if (fType != kMultiRequest) {
@@ -919,11 +1056,11 @@ void AliDCSMessage::GetRequestStrings(TObjArray& result) const {
 	}
 }
 
-UInt_t AliDCSMessage::GetCount() const {
-	//
+//______________________________________________________________________
+UInt_t AliDCSMessage::GetCount() const 
+{
         // Count.
         // Returns the total number of values.
-        //
 
 
         if (fType != kCount) {
@@ -934,13 +1071,13 @@ UInt_t AliDCSMessage::GetCount() const {
 	return fCount;
 }
 
-AliSimpleValue::Type AliDCSMessage::GetSimpleValueType() const {
-	//
+//______________________________________________________________________
+AliSimpleValue::Type AliDCSMessage::GetSimpleValueType() const 
+{
         // ResultSet.
         // Returns simple value type (see AliSimpleValue) for the values
 	// in this ResultSet.
-        //
-
+ 
 
         if (fType != kResultSet) {
                 AliError("Invalid AliDCSMessage type!");
@@ -950,11 +1087,11 @@ AliSimpleValue::Type AliDCSMessage::GetSimpleValueType() const {
 	return fSimpleValueType;
 }
 
-UInt_t AliDCSMessage::GetValueCount() const {
-	//
+//______________________________________________________________________
+UInt_t AliDCSMessage::GetValueCount() const 
+{
         // ResultSet.
         // Returns the count of values in this ResultSet.
-        //
 
 
         if (fType != kResultSet) {
@@ -965,12 +1102,12 @@ UInt_t AliDCSMessage::GetValueCount() const {
 	return fValues.GetEntriesFast();
 }
 
-UInt_t AliDCSMessage::GetValues(TObjArray& result) const {
-	//
+//______________________________________________________________________
+UInt_t AliDCSMessage::GetValues(TObjArray& result) const 
+{
         // ResultSet.
         // Returns the number of values got from the message.
 	// result: used to return the values. Collection of AliDCSValue.
-        //
 
 
 	if (fType != kResultSet) {
@@ -988,13 +1125,13 @@ UInt_t AliDCSMessage::GetValues(TObjArray& result) const {
 	return fValues.GetEntriesFast();
 }
 
-Bool_t AliDCSMessage::AddValue(const AliDCSValue& value) {
-	//
+//______________________________________________________________________
+Bool_t AliDCSMessage::AddValue(const AliDCSValue& value) 
+{
 	// ResultSet.
         // Adds value to the ResultSet value list.
 	// Returns kFALSE in case of error.
 	// Otherwise returns kTRUE;
-	//
 
 	if (fType != kResultSet) {
                 AliError("Invalid AliDCSMessage type!");
@@ -1013,11 +1150,17 @@ Bool_t AliDCSMessage::AddValue(const AliDCSValue& value) {
 	return kTRUE;
 }
 
-void AliDCSMessage::ClearValues() {
+//______________________________________________________________________
+void AliDCSMessage::ClearValues() 
+{
+// clear values array
+
 	fValues.Delete();
 }
 
-AliDCSMessage::ErrorCode AliDCSMessage::GetErrorCode() const {
+//______________________________________________________________________
+AliDCSMessage::ErrorCode AliDCSMessage::GetErrorCode() const 
+{
 	//
 	// Error.
 	// Returns the error code which has this error message.
@@ -1031,7 +1174,9 @@ AliDCSMessage::ErrorCode AliDCSMessage::GetErrorCode() const {
 	return fErrorCode;
 }
 
-TString AliDCSMessage::GetErrorString() const {
+//______________________________________________________________________
+TString AliDCSMessage::GetErrorString() const 
+{
 	//
 	// Error.
 	// Returns the error string (error description) which has this 
@@ -1047,7 +1192,10 @@ TString AliDCSMessage::GetErrorString() const {
 }
 
 
-void AliDCSMessage::Print(Option_t* /*option*/) const {
+//______________________________________________________________________
+void AliDCSMessage::Print(Option_t* /*option*/) const 
+{
+// print message
 
 	if (AliLog::GetGlobalDebugLevel() < 2) {
 		return;
@@ -1186,7 +1334,9 @@ void AliDCSMessage::Print(Option_t* /*option*/) const {
 	AliDebug(2, printString);
 } 
 
-Bool_t AliDCSMessage::SetRawHeader(const char* header) {
+//______________________________________________________________________
+Bool_t AliDCSMessage::SetRawHeader(const char* header) 
+{
 	//
 	// Checks if the header buffer represents a valid header message.
 	// If so it creates a message buffer with the appropriate body size
@@ -1213,7 +1363,9 @@ Bool_t AliDCSMessage::SetRawHeader(const char* header) {
 }
 
 
-void AliDCSMessage::DestroyBuffer() {
+//______________________________________________________________________
+void AliDCSMessage::DestroyBuffer() 
+{
 	//
 	// Destroy the underlying message buffer.
 	//
@@ -1226,9 +1378,11 @@ void AliDCSMessage::DestroyBuffer() {
 	fMessageSize = 0;
 }
 
+//______________________________________________________________________
 void AliDCSMessage::PrintBuffer(const char* buffer, UInt_t size, 
 		TString& output)
 {
+// print buffer
 
 	UInt_t index = 0;
 

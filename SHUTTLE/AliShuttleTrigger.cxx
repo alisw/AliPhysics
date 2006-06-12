@@ -15,6 +15,10 @@
 
 /*
  $Log$
+ Revision 1.2  2006/06/06 14:26:40  jgrosseo
+ o) removed files that were moved to STEER
+ o) shuttle updated to follow the new interface (Alberto)
+
  Revision 1.1  2006/03/07 07:52:34  hristov
  New version (B.Yordanov)
 
@@ -55,14 +59,35 @@
 
 ClassImp(TerminateSignalHandler)
 
+//______________________________________________________________________
+TerminateSignalHandler::TerminateSignalHandler(const TerminateSignalHandler& /*other*/):
+TSignalHandler()
+{
+// copy constructor (not implemented)
+
+}
+
+//______________________________________________________________________
+TerminateSignalHandler &TerminateSignalHandler::operator=(const TerminateSignalHandler& /*other*/)
+{
+// assignment operator (not implemented)
+
+return *this;
+}
+
 //______________________________________________________________________________________________
-Bool_t TerminateSignalHandler::Notify() {
+Bool_t TerminateSignalHandler::Notify() 
+{
+// Sentd terminate command to the Shuttle trigger
 
 	AliInfo("Terminate signal received ...");
 	fTrigger->Terminate();
 
 	return kTRUE;
 }
+
+//______________________________________________________________________________________________
+//______________________________________________________________________________________________
 
 ClassImp(AliShuttleTrigger)
 
@@ -87,8 +112,32 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 	gSystem->AddSignalHandler(&fInterruptSignalHandler);
 }
 
+
+
+//______________________________________________________________________
+AliShuttleTrigger::AliShuttleTrigger(const AliShuttleTrigger& /*other*/):
+TObject()
+{
+// copy constructor (not implemented)
+
+}
+
+//______________________________________________________________________
+AliShuttleTrigger &AliShuttleTrigger::operator=(const AliShuttleTrigger& /*other*/)
+{
+// assignment operator (not implemented)
+
+return *this;
+}
+
+
+
+
+
 //______________________________________________________________________________________________
-AliShuttleTrigger::~AliShuttleTrigger() {
+AliShuttleTrigger::~AliShuttleTrigger() 
+{
+// destructor
 
 	gSystem->RemoveSignalHandler(&fQuitSignalHandler);
 	gSystem->RemoveSignalHandler(&fInterruptSignalHandler);
@@ -162,7 +211,10 @@ void AliShuttleTrigger::Run() {
 
 //______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
-		TObjArray& entries, Int_t& lastRun) {
+		TObjArray& entries, Int_t& lastRun) 
+{
+// Retrieve start time and end time for all runs in the DAQ logbook
+// that aren't processed yet
 
 	TString sqlQuery;
 	sqlQuery += "select run, time_start, time_end from logbook ";
@@ -229,7 +281,7 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 			continue;
 		}
 
-		entries.AddLast(new DATEEntry(run, startTime, endTime));
+		entries.AddLast(new AliShuttleTriggerDATEEntry(run, startTime, endTime));
 		if (lastRun < run) {
 			lastRun = run;
 		}
@@ -247,13 +299,15 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries) {
+Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries) 
+{
+// Retrieve conditions data for all runs that aren't processed yet
 
 	Bool_t hasError = kFALSE;
 
 	TIter iter(&dateEntries);
-	DATEEntry* anEntry;
-	while ((anEntry = (DATEEntry*) iter.Next())) {
+	AliShuttleTriggerDATEEntry* anEntry;
+	while ((anEntry = (AliShuttleTriggerDATEEntry*) iter.Next())) {
 		if(!fShuttle->Process(anEntry->GetRun(),
 				anEntry->GetStartTime(),
 				anEntry->GetEndTime())) {
@@ -265,7 +319,8 @@ Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries) {
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::Collect(Int_t run) {
+Bool_t AliShuttleTrigger::Collect(Int_t run) 
+{
 	//
 	// Collects conditions date for the given run.
 	//
@@ -302,7 +357,8 @@ Bool_t AliShuttleTrigger::Collect(Int_t run) {
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::CollectNew() {
+Bool_t AliShuttleTrigger::CollectNew() 
+{
 	//
 	// Collects conditions data for all new run written to DAQ LogBook.
 	//
@@ -363,7 +419,8 @@ Bool_t AliShuttleTrigger::CollectNew() {
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::CollectAll() {
+Bool_t AliShuttleTrigger::CollectAll() 
+{
 	//
 	// Collects conditions data for all run written in DAQ LogBook.
 	//

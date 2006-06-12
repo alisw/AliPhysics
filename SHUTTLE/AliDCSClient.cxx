@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/03/07 07:52:34  hristov
+New version (B.Yordanov)
+
 Revision 1.3  2005/11/17 17:47:34  byordano
 TList changed to TObjArray
 
@@ -49,10 +52,10 @@ some more descriptions added
 //
 
 #include "AliDCSClient.h"
-
 #include "AliDCSValue.h"
 #include "AliLog.h"
 
+#include <TSocket.h>
 #include <TObjArray.h>
 #include <TMap.h>
 #include <TObjString.h>
@@ -61,29 +64,20 @@ some more descriptions added
 ClassImp(AliDCSClient)
 
 const Int_t AliDCSClient::fgkBadState;
-
 const Int_t AliDCSClient::fgkInvalidParameter;
-
 const Int_t AliDCSClient::fgkTimeout;
-
 const Int_t AliDCSClient::fgkBadMessage;
-
 const Int_t AliDCSClient::fgkCommError;
-
 const Int_t AliDCSClient::fgkServerError;
 
 const char* AliDCSClient::fgkBadStateString = "BadState";
-
 const char* AliDCSClient::fgkInvalidParameterString = "InvalidParameter";
-
 const char* AliDCSClient::fgkTimeoutString = "Timeout";
-
 const char* AliDCSClient::fgkBadMessageString = "BadMessage";
-
 const char* AliDCSClient::fgkCommErrorString = "CommunicationError";
-
 const char* AliDCSClient::fgkServerErrorString = "ServerError";
 
+//______________________________________________________________________
 AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
 	Int_t retries):
 	fSocket(NULL), fTimeout(timeout), fRetries(retries),
@@ -118,14 +112,37 @@ AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
 	}
 }
 
-AliDCSClient::~AliDCSClient() {
+//______________________________________________________________________
+AliDCSClient::AliDCSClient(const AliDCSClient& /*other*/):
+TObject()
+{
+// copy constructor (not implemented)
+
+}
+
+//______________________________________________________________________
+AliDCSClient &AliDCSClient::operator=(const AliDCSClient& /*other*/)
+{
+// assignment operator (not implemented)
+
+return *this;
+}
+
+//______________________________________________________________________
+AliDCSClient::~AliDCSClient() 
+{
+// destructor
+
 	if (fSocket) {
 		Close();
 		delete fSocket;
 	}
 }
 
-Int_t AliDCSClient::SendBuffer(const char* buffer, Int_t size) {
+//______________________________________________________________________
+Int_t AliDCSClient::SendBuffer(const char* buffer, Int_t size) 
+{
+// send buffer containing the message to the DCS server
 
 	Int_t sentSize = 0;
         Int_t tries = 0;
@@ -164,7 +181,10 @@ Int_t AliDCSClient::SendBuffer(const char* buffer, Int_t size) {
         return sentSize;
 }
 
-Int_t AliDCSClient::ReceiveBuffer(char* buffer, Int_t size) {
+//______________________________________________________________________
+Int_t AliDCSClient::ReceiveBuffer(char* buffer, Int_t size) 
+{
+// Receive message from the DCS server and fill buffer
 
 	Int_t receivedSize = 0;
         Int_t tries = 0;
@@ -203,7 +223,10 @@ Int_t AliDCSClient::ReceiveBuffer(char* buffer, Int_t size) {
         return receivedSize;
 }
 
-Int_t AliDCSClient::SendMessage(AliDCSMessage& message) {
+//______________________________________________________________________
+Int_t AliDCSClient::SendMessage(AliDCSMessage& message) 
+{
+// send message to the DCS server
 
 	message.StoreToBuffer();
 
@@ -213,7 +236,10 @@ Int_t AliDCSClient::SendMessage(AliDCSMessage& message) {
 	return SendBuffer(message.GetMessage(), message.GetMessageSize());
 }
 
-Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message) {
+//______________________________________________________________________
+Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message) 
+{
+// receive message from the DCS server
 	
 	char header[HEADER_SIZE];
 
@@ -245,9 +271,15 @@ Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message) {
 	return HEADER_SIZE + sResult;
 }
 
+//______________________________________________________________________
 Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	const char* reqString, UInt_t startTime, UInt_t endTime, TObjArray& result) 
 {
+// get array of DCS values from the DCS server
+// reqString: alias name
+// startTime, endTime: start time and end time of the query
+// result: contains the array of retrieved AliDCSValue's
+
 	if (!IsConnected()) {
 		AliError("Not connected!");
 		return AliDCSClient::fgkBadState;
@@ -272,9 +304,15 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	return sResult;
 }
 
+//______________________________________________________________________
 Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	UInt_t startTime, UInt_t endTime, TMap& result) 
 {
+// get array of DCS values from the DCS server
+// startTime, endTime: start time and end time of the query
+// result: map containing the array of alias names. It will be filled with
+// the values retrieved for each alias
+
 	if (!IsConnected()) {
 		AliError("Not connected!");
 		return AliDCSClient::fgkBadState;
@@ -340,7 +378,10 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	return sResult;
 }
 	
-Int_t AliDCSClient::ReceiveValueSet(TObjArray& result) {
+//______________________________________________________________________
+Int_t AliDCSClient::ReceiveValueSet(TObjArray& result) 
+{
+// receive set of values 
 
 	Int_t sResult;
 
@@ -414,6 +455,7 @@ Int_t AliDCSClient::ReceiveValueSet(TObjArray& result) {
 	return receivedValues;
 }
 		
+//______________________________________________________________________
 Int_t AliDCSClient::GetDPValues(const char* dpName, UInt_t startTime,
 				UInt_t endTime, TObjArray& result)
 {
@@ -431,6 +473,7 @@ Int_t AliDCSClient::GetDPValues(const char* dpName, UInt_t startTime,
 			dpName, startTime, endTime, result);
 }
 
+//______________________________________________________________________
 Int_t AliDCSClient::GetAliasValues(const char* alias, UInt_t startTime,
 				UInt_t endTime, TObjArray& result)
 {
@@ -448,6 +491,7 @@ Int_t AliDCSClient::GetAliasValues(const char* alias, UInt_t startTime,
 			alias, startTime, endTime, result);
 }
 
+//______________________________________________________________________
 Int_t AliDCSClient::GetDPValues(UInt_t startTime, UInt_t endTime, 
 				TMap& result) 
 {
@@ -467,6 +511,7 @@ Int_t AliDCSClient::GetDPValues(UInt_t startTime, UInt_t endTime,
 	return GetValues(AliDCSMessage::kDPName, startTime, endTime, result);
 }
 
+//______________________________________________________________________
 Int_t AliDCSClient::GetAliasValues(UInt_t startTime, UInt_t endTime,
 				TMap& result) 
 {
@@ -486,7 +531,9 @@ Int_t AliDCSClient::GetAliasValues(UInt_t startTime, UInt_t endTime,
 	return GetValues(AliDCSMessage::kAlias, startTime, endTime, result);
 }
 
-Bool_t AliDCSClient::IsConnected() {
+//______________________________________________________________________
+Bool_t AliDCSClient::IsConnected() 
+{
 	//
 	// Returns kTRUE if there is a valid connection to the server.
 	//
@@ -498,7 +545,9 @@ Bool_t AliDCSClient::IsConnected() {
 	return kFALSE;
 }
 
-void AliDCSClient::Close() {
+//______________________________________________________________________
+void AliDCSClient::Close() 
+{
 	//
 	// Close the connection.
 	//
@@ -508,7 +557,9 @@ void AliDCSClient::Close() {
 	}
 }
 
-const char* AliDCSClient::GetErrorString(Int_t code) {
+//______________________________________________________________________
+const char* AliDCSClient::GetErrorString(Int_t code) 
+{
 	//
 	// Returns a short string describing the error code.
 	// code: the error code.

@@ -14,12 +14,12 @@
 // AliCDBPreProcessor.
 //
 
-#include <TObject.h>
 #include <TMap.h>
 #include <TString.h>
 
 #include "AliShuttleInterface.h"
 
+class TObject;
 class AliShuttleConfig;
 class AliPreprocessor;
 class AliCDBMetaData;
@@ -50,7 +50,10 @@ public:
 
 private:
 
-	static TString fgkLocalUri;
+	AliShuttle(const AliShuttle& other); 	
+	AliShuttle& operator= (const AliShuttle& other); 	
+
+	static TString fgkLocalUri;	// URI of the local backup storage location 
 
 	void ClearLog() {fLog = "";}
 	void StoreLog(Int_t run);
@@ -58,16 +61,16 @@ private:
 
 //	AliCDBStorage* fLocalStorage;
 
-	UInt_t fTimeout;
-	Int_t fRetries;
+	UInt_t fTimeout; 	// DCS server connection timeout parameter
+	Int_t fRetries; 	// Number of DCS server connection retries
 
-	TMap fPreprocessorMap;
+	TMap fPreprocessorMap; 	// list of detector Preprocessors ("DET", "Preprocessor")
 
-	Int_t fCurrentRun;
-	UInt_t fCurrentStartTime;
-	UInt_t fCurrentEndTime;
+	Int_t fCurrentRun;  		// run currenty processed
+	UInt_t fCurrentStartTime; 	// Run Start time
+	UInt_t fCurrentEndTime; 	// Run end time
 
-	TString fLog;
+	TString fLog; 			// log message
 
 	Bool_t GetValueSet(const char* host, Int_t port, const char* alias,
 			TObjArray& result);

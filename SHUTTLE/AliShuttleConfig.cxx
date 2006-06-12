@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2006/06/06 14:26:40  jgrosseo
+o) removed files that were moved to STEER
+o) shuttle updated to follow the new interface (Alberto)
+
 Revision 1.7  2006/05/12 09:07:16  colla
 12/05/06
 New configuration complete
@@ -63,9 +67,11 @@ some docs added
 #include <TLDAPEntry.h>
 #include <TLDAPAttribute.h>
 
-AliShuttleConfig::ConfigHolder::ConfigHolder(const TLDAPEntry* entry):
+AliShuttleConfig::AliShuttleConfigHolder::AliShuttleConfigHolder(const TLDAPEntry* entry):
 	fIsValid(kFALSE)
 {
+// constructor of the shuttle configuration holder
+
 	TLDAPAttribute* anAttribute;
 	
 	anAttribute = entry->GetAttribute("det");
@@ -125,7 +131,10 @@ AliShuttleConfig::ConfigHolder::ConfigHolder(const TLDAPEntry* entry):
 	fIsValid = kTRUE;
 }
 
-AliShuttleConfig::ConfigHolder::~ConfigHolder() {
+AliShuttleConfig::AliShuttleConfigHolder::~AliShuttleConfigHolder() 
+{
+// destructor of the shuttle configuration holder
+
 	fDCSAliases.Delete();
 }
 
@@ -202,7 +211,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 
 	while ((anEntry = aResult->GetNext())) {
-		ConfigHolder* aHolder = new ConfigHolder(anEntry);
+		AliShuttleConfigHolder* aHolder = new AliShuttleConfigHolder(anEntry);
 		delete anEntry;
 
 		if (!aHolder->IsValid()) {
@@ -274,11 +283,15 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fIsValid = kTRUE;
 }
 
-AliShuttleConfig::~AliShuttleConfig() {
+AliShuttleConfig::~AliShuttleConfig() 
+{
+// destructor
+
 	fDetectorMap.DeleteAll();
 }
 
-const TObjArray* AliShuttleConfig::GetDetectors() const {
+const TObjArray* AliShuttleConfig::GetDetectors() const 
+{
 	//
 	// returns collection of TObjString which contains the name
 	// of every detector which is in the configuration.
@@ -287,19 +300,21 @@ const TObjArray* AliShuttleConfig::GetDetectors() const {
 	return &fDetectorList;
 }
 
-Bool_t AliShuttleConfig::HasDetector(const char* detector) const {
+Bool_t AliShuttleConfig::HasDetector(const char* detector) const 
+{
 	//
 	// checks for paricular detector in the configuration.
 	//
 	return fDetectorMap.GetValue(detector) != NULL;
 }
 
-const char* AliShuttleConfig::GetDCSHost(const char* detector) const {
+const char* AliShuttleConfig::GetDCSHost(const char* detector) const 
+{
 	//
 	// returns DCS server host used by particular detector
 	//
 	
-	ConfigHolder* aHolder = (ConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
 	if (!aHolder) {
 		AliError(Form("There isn't configuration for detector: %s",
 			detector));
@@ -309,13 +324,14 @@ const char* AliShuttleConfig::GetDCSHost(const char* detector) const {
 	return aHolder->GetDCSHost();
 }
 
-Int_t AliShuttleConfig::GetDCSPort(const char* detector) const {
+Int_t AliShuttleConfig::GetDCSPort(const char* detector) const 
+{
 	//
         // returns DCS server port used by particular detector
         //
 
 
-	ConfigHolder* aHolder = (ConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
         if (!aHolder) {
                 AliError(Form("There isn't configuration for detector: %s",
                         detector));
@@ -325,13 +341,14 @@ Int_t AliShuttleConfig::GetDCSPort(const char* detector) const {
 	return aHolder->GetDCSPort();
 }
 
-const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const {
+const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const 
+{
 	//
 	// returns collection of TObjString which represents the set of aliases
 	// which used for data retrieval for particular detector
 	//
 
-	ConfigHolder* aHolder = (ConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
         if (!aHolder) {
                 AliError(Form("There isn't configuration for detector: %s",
                         detector));
@@ -341,13 +358,14 @@ const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const {
 	return aHolder->GetDCSAliases();
 }
 
-const TObjArray* AliShuttleConfig::GetDAQFileIDs(const char* detector) const {
+const TObjArray* AliShuttleConfig::GetDAQFileIDs(const char* detector) const 
+{
 	//
 	// returns collection of TObjString which represents the set of DAQ file IDs
 	// which used for data retrieval for particular detector
 	//
 
-	ConfigHolder* aHolder = (ConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
         if (!aHolder) {
                 AliError(Form("There isn't configuration for detector: %s",
                         detector));
@@ -357,7 +375,8 @@ const TObjArray* AliShuttleConfig::GetDAQFileIDs(const char* detector) const {
 	return aHolder->GetDAQFileIDs();
 }
 
-Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const {
+Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const 
+{
 	// return TRUE if detector is handled by host or if fProcessAll is TRUE
 
 	if(fProcessAll) return kTRUE;
@@ -369,7 +388,9 @@ Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const {
 	return kFALSE;
 }
 
-void AliShuttleConfig::Print(Option_t* /*option*/) const {
+void AliShuttleConfig::Print(Option_t* /*option*/) const 
+{
+// print configuration
 	
 	TString result;
 	result += '\n';
@@ -407,7 +428,7 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const {
 	TIter iter(fDetectorMap.GetTable());
 	TPair* aPair;
 	while ((aPair = (TPair*) iter.Next())) {
-		ConfigHolder* aHolder = (ConfigHolder*) aPair->Value();
+		AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) aPair->Value();
 		result += '\n';
 		result += " Detector: ";
 		result += aHolder->GetDetector();

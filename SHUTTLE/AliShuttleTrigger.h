@@ -9,6 +9,7 @@
 //
 // This class is to deal with DAQ LogBook and DAQ end run notification.
 // It executes AliShuttle for retrieval of conditions data.
+// For more info see AliShuttleTrigger.cxx
 //
 
 #include <TObject.h>
@@ -26,12 +27,20 @@ class DATENotifier;
 
 class TerminateSignalHandler: public TSignalHandler {
 	
-	AliShuttleTrigger* fTrigger;
 public:
+	TerminateSignalHandler(): TSignalHandler((ESignals) 0,0), fTrigger(0) { }
 	TerminateSignalHandler(AliShuttleTrigger* trigger, ESignals signal):
 		TSignalHandler(signal, kFALSE), fTrigger(trigger) {}
 
+	virtual ~TerminateSignalHandler() { }
 	virtual Bool_t Notify();
+
+private:
+
+	TerminateSignalHandler(const TerminateSignalHandler& other); 	
+	TerminateSignalHandler& operator= (const TerminateSignalHandler& other); 	
+
+	AliShuttleTrigger* fTrigger;  // pointer to the current AliShuttleTrigger
 
 	ClassDef(TerminateSignalHandler, 0)
 };
@@ -54,19 +63,23 @@ public:
 
 private:
 
-	class DATEEntry: public TObject {
-		Int_t fRun;
-		UInt_t fStartTime;
-		UInt_t fEndTime;
+	AliShuttleTrigger(const AliShuttleTrigger& other);
+	AliShuttleTrigger& operator= (const AliShuttleTrigger& other);
+
+	class AliShuttleTriggerDATEEntry: public TObject {
 	public:
-		DATEEntry(Int_t run, UInt_t startTime, UInt_t endTime):
+		AliShuttleTriggerDATEEntry(Int_t run, UInt_t startTime, UInt_t endTime):
 			fRun(run), fStartTime(startTime), fEndTime(endTime) {}
 
-		Int_t GetRun() {return fRun;}
-		UInt_t GetStartTime() {return fStartTime;}
-		UInt_t GetEndTime() {return fEndTime;}
+		Int_t GetRun() const {return fRun;}
+		UInt_t GetStartTime() const  {return fStartTime;}
+		UInt_t GetEndTime() const {return fEndTime;}
 
-		ClassDef(DATEEntry, 0)
+	private:
+		Int_t fRun;   		// Run number
+		UInt_t fStartTime; 	// Run start time
+		UInt_t fEndTime; 	// Run end time
+		ClassDef(AliShuttleTriggerDATEEntry, 0)
 	};
 
 	Bool_t RetrieveDATEEntries(const char* whereClause, TObjArray& entries,
@@ -76,16 +89,16 @@ private:
 	const AliShuttleConfig* fConfig;
 	//AliCDBStorage* fLocalStorage;
 
-	AliShuttle* fShuttle;
+	AliShuttle* fShuttle; 		// Pointer to the actual Shuttle instance
 
-	Bool_t fNotified;
-	Bool_t fTerminate;
+	Bool_t fNotified;  		// Notified flag
+	Bool_t fTerminate; 		// Terminate flag
 
-	TMutex fMutex;
-	TCondition fCondition;
+	TMutex fMutex;  		// Mutex
+	TCondition fCondition;  	// Condition 
 
-	TerminateSignalHandler fQuitSignalHandler;
-	TerminateSignalHandler fInterruptSignalHandler;
+	TerminateSignalHandler fQuitSignalHandler; 		// Quit signal 
+	TerminateSignalHandler fInterruptSignalHandler;  	// Interrupt signal
 
 
 	ClassDef(AliShuttleTrigger, 0)

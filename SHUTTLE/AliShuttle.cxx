@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2006/06/06 14:26:40  jgrosseo
+o) removed files that were moved to STEER
+o) shuttle updated to follow the new interface (Alberto)
+
 Revision 1.2  2006/03/07 07:52:34  hristov
 New version (B.Yordanov)
 
@@ -68,6 +72,7 @@ some docs added
 #include "AliPreprocessor.h"
 #include "AliDefaultPreprocessor.h"
 
+#include <TObject.h>
 #include <TString.h>
 #include <TObjString.h>
 
@@ -96,13 +101,33 @@ AliShuttle::AliShuttle(const AliShuttleConfig* config,
 
 }
 
+//______________________________________________________________________
+AliShuttle::AliShuttle(const AliShuttle& /*other*/):
+AliShuttleInterface()
+{
+// copy constructor (not implemented)
+
+}
+
+//______________________________________________________________________
+AliShuttle &AliShuttle::operator=(const AliShuttle& /*other*/)
+{
+// assignment operator (not implemented)
+
+return *this;
+}
+
 //______________________________________________________________________________________________
-AliShuttle::~AliShuttle() {
+AliShuttle::~AliShuttle() 
+{
+// destructor
+
 	fPreprocessorMap.DeleteAll();
 }
 
 //______________________________________________________________________________________________
-void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor) {
+void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor) 
+{
 	//
 	// Registers new AliPreprocessor.
 	// It uses GetName() for indentificator of the pre processor.
@@ -157,7 +182,8 @@ UInt_t AliShuttle::Store(const char* detector,
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime) {
+Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime) 
+{
 	//
 	// Makes data retrieval for all detectors in the configuration.
 	// run: is the run number used
@@ -256,6 +282,11 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* alias,
 				TObjArray& valueSet)
 {
+// Retrieve all "alias" data points from the DCS server
+// host, port: TSocket connection parameters
+// alias: name of the alias
+// valueSet: array of retrieved AliDCSValue's 
+
 	AliDCSClient client(host, port, fTimeout, fRetries);
 	if (!client.IsConnected()) {
 		return kFALSE;
@@ -283,6 +314,7 @@ Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* alias,
 const char* AliShuttle::GetFile(Int_t /*system*/, const char* /*detector*/,
 		const char* /*id*/, const char* /*source*/)
 {
+// Get calibration file from DAQ transient file system
 
 	AliInfo("You are in AliShuttle::GetFile!");
 	return 0;
@@ -292,6 +324,7 @@ const char* AliShuttle::GetFile(Int_t /*system*/, const char* /*detector*/,
 //______________________________________________________________________________________________
 TList* AliShuttle::GetFileSources(Int_t /*system*/, const char* /*detector*/, const char* /*id*/)
 {
+// Get list of sources that provided the files to be retrieved from DAQ
 
 	AliInfo("You are in AliShuttle::GetFileSources!");
 	return 0;
@@ -300,6 +333,7 @@ TList* AliShuttle::GetFileSources(Int_t /*system*/, const char* /*detector*/, co
 //______________________________________________________________________________________________
 void AliShuttle::Log(const char* detector, const char* message)
 {
+// Fill log string with a message
 
 	TString toLog = Form("%s - %s", detector, message);
 	AliError(toLog.Data());
@@ -310,7 +344,9 @@ void AliShuttle::Log(const char* detector, const char* message)
 }
 
 //______________________________________________________________________________________________
-void AliShuttle::StoreLog(Int_t run){
+void AliShuttle::StoreLog(Int_t run)
+{
+// store error log string to SHUTTLE/SYSTEM/ERROR (on local storage)
 
 	AliInfo("Printing fLog...");
 	AliInfo(fLog.Data());

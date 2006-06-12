@@ -9,6 +9,7 @@
 //
 // This class keeps the AliShuttle configuration.
 // It reads the configuration for LDAP server.
+// For more info see AliShuttleConfig.cxx
 //
 
 #include <TObject.h>
@@ -41,7 +42,7 @@ public:
 	const TObjArray* GetDAQFileIDs(const char* detector) const;
 
 	void SetProcessAll(Bool_t flag=kTRUE) {fProcessAll=flag;}
-	Bool_t ProcessAll() {return fProcessAll;}
+	Bool_t ProcessAll() const {return fProcessAll;}
 
 	Bool_t HostProcessDetector(const char* detector) const;
 
@@ -49,17 +50,10 @@ public:
 
 private:
 
-	class ConfigHolder: public TObject {
-		TString fDetector;
-		TString fDCSHost;
-		Int_t 	fDCSPort;
-		TObjArray fDCSAliases;
-		TObjArray fDAQFileIDs;
-		Bool_t fIsValid;
-
+	class AliShuttleConfigHolder: public TObject {
 	public:
-		ConfigHolder(const TLDAPEntry* entry);
-		~ConfigHolder();
+		AliShuttleConfigHolder(const TLDAPEntry* entry);
+		~AliShuttleConfigHolder();
 
 		const char* GetDetector() const {return fDetector.Data();};
 		const char* GetDCSHost() const {return fDCSHost.Data();};
@@ -69,24 +63,33 @@ private:
 
 		Bool_t IsValid() const {return fIsValid;};
 
-		ClassDef(ConfigHolder, 0);
+	private:
+		TString fDetector;  	// Detector name
+		TString fDCSHost; 	// Host name of the DCS server
+		Int_t 	fDCSPort; 	// port of the DCS server
+		TObjArray fDCSAliases; 	// List of DCS aliases to be retrieved
+		TObjArray fDAQFileIDs; 	// list of IDs of the files to be retrived from DAQ
+		Bool_t fIsValid;  	// flag for the validity of the configuration
+
+
+		ClassDef(AliShuttleConfigHolder, 0);
 	};
 
 
-	Bool_t fIsValid;
+	Bool_t fIsValid;  		// flag for the validity of the configuration
 
-	TString fDAQLogBookHost;
-	TString fDAQLogBookUser;
-	TString fDAQLogBookPassword;
+	TString fDAQLogBookHost;	// Host of the DAQ logbook MySQL Server
+	TString fDAQLogBookUser;  	// username of the DAQ logbook MySQL Server
+	TString fDAQLogBookPassword; 	// password of the DAQ logbook MySQL Server
 
-	TString fDAQFSHost;
+	TString fDAQFSHost; 		// Host of the DAQ file system
 
-	TMap fDetectorMap;
-	TObjArray fDetectorList;
+	TMap fDetectorMap; 		// Map of the detector-by-detector configuration
+	TObjArray fDetectorList; 	// List of detectors with valid configuration
 
-	TString fShuttleInstanceHost;
-	TObjArray fProcessedDetectors;
-	Bool_t fProcessAll;
+	TString fShuttleInstanceHost; 	// Instance of the SHUTTLE
+	TObjArray fProcessedDetectors; 	// list of the detector to be processed by this machine
+	Bool_t fProcessAll; 		// flag indicating that all detectors will be processed
 
 	ClassDef(AliShuttleConfig, 0);
 };

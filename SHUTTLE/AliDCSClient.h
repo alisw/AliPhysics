@@ -9,44 +9,20 @@
 //
 // This class represents the AliDCSClient.
 // The client used for data retrieval from DCS server.
+// For more info see AliDCSClient.cxx
 //
 
 #include "AliDCSMessage.h"
 
-#include <TSocket.h>
-
-
 class TObjArray;
+class TSocket;
 class TMap;
 
 class AliDCSClient: public TObject {
 public:
 	
-	static const Int_t fgkBadState = -1;
-
-	static const Int_t fgkInvalidParameter = -2;
-
-	static const Int_t fgkTimeout = -3;
-
-	static const Int_t fgkBadMessage = -4;
-
-	static const Int_t fgkCommError = -5;
-
-	static const Int_t fgkServerError = -6;
-
-	static const char* fgkBadStateString;
-
-	static const char* fgkInvalidParameterString;
-
-	static const char* fgkTimeoutString;
-
-	static const char* fgkBadMessageString; 
-
-	static const char* fgkCommErrorString;
-
-	static const char* fgkServerErrorString;
-
-
+	friend class AliShuttle;
+	
 	AliDCSClient(const char* host, Int_t port, UInt_t timeout = 5000,
                         Int_t retries = 5);
         virtual ~AliDCSClient();
@@ -63,10 +39,10 @@ public:
         Int_t GetAliasValues(UInt_t startTime, UInt_t endTime, TMap& result);
 
 
-        AliDCSMessage::ErrorCode GetServerErrorCode()
+        AliDCSMessage::ErrorCode GetServerErrorCode() const
                 { return fServerErrorCode;};
 
-        const TString& GetServerError() {return fServerError;};
+        const TString& GetServerError() const {return fServerError;};
 
 
         Bool_t IsConnected();
@@ -78,15 +54,32 @@ public:
 
 private:
 
-	TSocket* fSocket;
-	
-	UInt_t fTimeout;
+	static const Int_t fgkBadState = -1;		// Bad state
+	static const Int_t fgkInvalidParameter = -2;	// Invalid parameter
+	static const Int_t fgkTimeout = -3;		// Timeout
+	static const Int_t fgkBadMessage = -4;		// Bad message
+	static const Int_t fgkCommError = -5;		// Communication error
+	static const Int_t fgkServerError = -6;		// Server error
 
-	Int_t fRetries;
+	static const char* fgkBadStateString;		// Bad state string
+	static const char* fgkInvalidParameterString;	// Invalid parameter string
+	static const char* fgkTimeoutString;    	// Timeout string
+	static const char* fgkBadMessageString; 	// Bad message string
+	static const char* fgkCommErrorString;  	// Communication error string
+	static const char* fgkServerErrorString;	// Server error string
+
+	AliDCSClient(const AliDCSClient& other); 	
+	AliDCSClient& operator= (const AliDCSClient& other); 	
+
+	TSocket* fSocket;	// Pointer to the TCP socket client
 	
-	AliDCSMessage::ErrorCode fServerErrorCode;
+	UInt_t fTimeout;	// timeout parameter
+
+	Int_t fRetries;		// number of retries
 	
-	TString fServerError;
+	AliDCSMessage::ErrorCode fServerErrorCode;	// error code
+	
+	TString fServerError;	// server error string
 
 
 	Int_t SendBuffer(const char* buffer, Int_t size);

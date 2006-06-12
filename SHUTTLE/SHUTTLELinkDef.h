@@ -17,10 +17,10 @@
 
 // Shuttle classes ...
 #pragma link C++ class  AliShuttleConfig;
-#pragma link C++ class  AliShuttleConfig::ConfigHolder;
+#pragma link C++ class  AliShuttleConfig::AliShuttleConfigHolder;
 #pragma link C++ class  AliShuttle;
 #pragma link C++ class  AliShuttleTrigger;
 #pragma link C++ class  TerminateSignalHandler;
-#pragma link C++ class  AliShuttleTrigger::DATEEntry;
+#pragma link C++ class  AliShuttleTrigger::AliShuttleTriggerDATEEntry;
 
 #endif
