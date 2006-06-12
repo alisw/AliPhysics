@@ -1,3 +1,10 @@
+2006-06-12  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	Added automatic loading of AliESDfriend (if found in event
+	directory); new function AssertESDfriend().
+
 2006-06-09  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	HEAD

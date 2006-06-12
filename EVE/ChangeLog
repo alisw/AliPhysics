@@ -1,3 +1,13 @@
+2006-06-12  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/clusters_from_label.C:
+	New macro, loads TrackPoints from ESDtrack for a given label.
+
+	* alice-macros/esd_tracks.C:
+	Take track-parameters at inner TPC radius if extrapolation to ITS
+	failed (controlled by global Bool_t gkFixFailedITSExtr); reformat
+	/ group common behaviour.
+
 2006-06-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/geom_ddip.C:

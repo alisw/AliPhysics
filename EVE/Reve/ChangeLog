@@ -1,3 +1,20 @@
+2006-06-12  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* MCHelixLine.hi:
+	Formatting changes.
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Renamed RenderElement::SetMainColorByPixel(Pixel_t) back to
+	RenderElement::SetMainColor(Pixel_t); there seemed to be a problem
+	when dependencies were not generated properly.
+
+	* Track.cxx:
+	* Track.h:
+	Added methods Track::ImportHits() and Track::ImportClusters();
+	fixed a charge value inconsistency yielding reconstructed
+	track charge to be 1/3.
+
 2006-06-09  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	HEAD
