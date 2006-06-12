@@ -303,10 +303,10 @@ const UInt_t* AliRawEventHeaderBase::GetP(const char *datamember)
     return 0;
   }
 
-  if (member->GetArrayDim() == 0) {
-    AliFatal(Form("Member %s is not an array! Use the Get() method!",buf));
-    return 0;
-  }
+  //  if (member->GetArrayDim() == 0) {
+  //    AliFatal(Form("Member %s is not an array! Use the Get() method!",buf));
+  //    return 0;
+  //  }
 
   if (strcmp(member->GetTypeName(),"UInt_t") != 0) {
     AliFatal(Form("Member %s is not of type UInt_t*!",buf));
