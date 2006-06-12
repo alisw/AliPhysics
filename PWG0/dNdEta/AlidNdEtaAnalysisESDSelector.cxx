@@ -7,23 +7,26 @@
 #include <TCanvas.h>
 #include <TVector3.h>
 #include <TChain.h>
+#include <TFile.h>
 
 #include <AliLog.h>
 #include <AliESDVertex.h>
 #include <AliESD.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
-#include "dNdEtaAnalysis.h"
+#include "dNdEta/dNdEtaAnalysis.h"
 
 ClassImp(AlidNdEtaAnalysisESDSelector)
 
 AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
-  AlidNdEtaAnalysisSelector(),
+  AliSelector(),
   fEsdTrackCuts(0)
 {
   //
   // Constructor. Initialization of pointers
   //
+
+  AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
 }
 
 AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
@@ -36,18 +39,37 @@ AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
   // list is deleted by the TSelector dtor
 }
 
-void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree * tree)
+void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree* tree)
 {
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
-  AlidNdEtaAnalysisSelector::SlaveBegin(tree);
+  AliSelector::SlaveBegin(tree);
 
-  if (fChain)
+  if (fInput)
   {
-    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fChain->GetUserInfo()->FindObject("AliESDtrackCuts"));
+    printf("Printing input list:\n");
+    fInput->Print();
   }
+
+  if (!fEsdTrackCuts && fInput)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("AliESDtrackCuts"));
+
+  if (!fEsdTrackCuts)
+     AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from input list.");
+
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+}
+
+void AlidNdEtaAnalysisESDSelector::Init(TTree* tree)
+{
+  // read the user objects
+
+  AliSelector::Init(tree);
+
+  if (!fEsdTrackCuts && fTree)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fTree->GetUserInfo()->FindObject("AliESDtrackCuts"));
 
   if (!fEsdTrackCuts)
      AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info.");
@@ -70,10 +92,10 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   // WARNING when a selector is used with a TChain, you must use
   //  the pointer to the current TTree to call GetEntry(entry).
   //  The entry is always the local entry number in the current tree.
-  //  Assuming that fChain is the pointer to the TChain being processed,
-  //  use fChain->GetTree()->GetEntry(entry).
+  //  Assuming that fTree is the pointer to the TChain being processed,
+  //  use fTree->GetTree()->GetEntry(entry).
 
-  if (AlidNdEtaAnalysisSelector::Process(entry) == kFALSE)
+  if (AliSelector::Process(entry) == kFALSE)
     return kFALSE;
 
   // Check prerequisites
@@ -142,10 +164,48 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   return kTRUE;
 }
 
-void AlidNdEtaAnalysisESDSelector::WriteObjects()
+void AlidNdEtaAnalysisESDSelector::SlaveTerminate()
 {
-  AlidNdEtaAnalysisSelector::WriteObjects();
+  // The SlaveTerminate() function is called after all entries or objects
+  // have been processed. When running with PROOF SlaveTerminate() is called
+  // on each slave server.
+
+  AliSelector::SlaveTerminate();
+
+  // Add the histograms to the output on each slave server
+  if (!fOutput)
+  {
+    AliDebug(AliLog::kError, Form("ERROR: Output list not initialized."));
+    return;
+  }
+
+  fOutput->Add(fdNdEtaAnalysis);
+}
+
+void AlidNdEtaAnalysisESDSelector::Terminate()
+{
+  // The Terminate() function is the last function to be called during
+  // a query. It always runs on the client, it can be used to present
+  // the results graphically or save the results to file.
+
+  AliSelector::Terminate();
+
+  fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
+
+  if (!fdNdEtaAnalysis)
+  {
+    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fdNdEtaAnalysis));
+    return;
+  }
+
+  TFile* fout = new TFile("analysis_esd.root","RECREATE");
+
+  if (fdNdEtaAnalysis)
+    fdNdEtaAnalysis->SaveHistograms();
 
   if (fEsdTrackCuts)
     fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
+
+  fout->Write();
+  fout->Close();
 }

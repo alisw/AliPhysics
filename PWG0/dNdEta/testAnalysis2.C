@@ -9,52 +9,97 @@
 //
 
 #include "../CreateESDChain.C"
-#include "CreatedNdEta.C"
 
-testAnalysis2(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE)
+void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
 {
+  gSystem->Load("libEG");
+  gSystem->Load("libGeom");
+  gSystem->Load("libESD");
   gSystem->Load("libPWG0base");
+  if (aMC != kFALSE)
+    gSystem->Load("libPWG0dep");
 
-  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset);
+  gROOT->ProcessLine(".L CreatedNdEta.C");
+  gROOT->ProcessLine(".L CreateCuts.C");
+
+  TChain* chain = 0;
+  TVirtualProof* proof = 0;
+  if (aProof == kFALSE)
+    chain = CreateESDChainFromDir(data, nRuns, offset);
+  else
+  {
+    chain = CreateESDChainFromList(data, nRuns, offset);
+    proof = gROOT->Proof("alicecaf@lxb6041");
+
+    if (!proof)
+    {
+      printf("ERROR: PROOF connection not established.\n");
+      return;
+    }
+
+    if (proof->EnablePackage("ESD"))
+    {
+      printf("ERROR: ESD package could not be enabled.\n");
+      return;
+    }
+
+    if (proof->EnablePackage("PWG0base"))
+    {
+      printf("ERROR: PWG0base package could not be enabled.\n");
+      return;
+    }
+
+    if (aMC != kFALSE)
+    {
+      if (proof->EnablePackage("PWG0dep"))
+      {
+        printf("ERROR: PWG0dep package could not be enabled.\n");
+        return;
+      }
+    }
+
+    chain->SetProof(proof);
+  }
 
   // ########################################################
   // selection of esd tracks
-  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
-  esdTrackCuts->DefineHistograms(1);
-
-  esdTrackCuts->SetMinNClustersTPC(50);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-  esdTrackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
-  esdTrackCuts->SetRequireTPCRefit(kTRUE);
-
-  esdTrackCuts->SetMinNsigmaToVertex(3);
-  esdTrackCuts->SetAcceptKingDaughters(kFALSE);
+  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
+  if (!esdTrackCuts)
+  {
+    printf("ERROR: esdTrackCuts could not be created\n");
+    return;
+  }
 
   chain->GetUserInfo()->Add(esdTrackCuts);
-
-  if (aMC == kFALSE)
-  {
-    dNdEtaCorrection* dNdEtaCorrection = new dNdEtaCorrection();
-    dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
-    dNdEtaCorrection->RemoveEdges(2, 0, 2);
-
-    chain->GetUserInfo()->Add(dNdEtaCorrection);
-  }
+  if (proof)
+    proof->AddInput(esdTrackCuts);
 
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 
-  selectorName += ".cxx++";
+  // workaround for a bug in PROOF that only allows header files for .C files
+  // please create symlink from <selector>.cxx to <selector>.C
+  if (proof != kFALSE)
+    selectorName += ".C+";
+  else
+    selectorName += ".cxx+";
+
   if (aDebug != kFALSE)
     selectorName += "g";
 
   TStopwatch timer;
   timer.Start();
 
-  chain->Process(selectorName);
+  Long64_t result = chain->Process(selectorName);
+  if (result != 0)
+  {
+    printf("ERROR: Executing process failed with %d.\n", result);
+    return;
+  }
 
   timer.Stop();
   timer.Print();
 
   CreatedNdEta(aMC ? kFALSE : kTRUE);
 }
+

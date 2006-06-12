@@ -31,6 +31,11 @@ public:
   enum { kVertexBinning = 1+4 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis(Char_t* name, Char_t* title);
+  virtual ~dNdEtaAnalysis();
+
+  dNdEtaAnalysis(const dNdEtaAnalysis &c);
+  dNdEtaAnalysis &operator=(const dNdEtaAnalysis &c);
+  virtual void Copy(TObject &c) const;
 
   void FillTrack(Float_t vtx, Float_t eta);
   void FillEvent(Float_t vtx);

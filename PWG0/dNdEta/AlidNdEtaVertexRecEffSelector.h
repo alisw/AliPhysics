@@ -5,11 +5,11 @@
 
 // This class plots the vertex reconstruction efficiency
 
-#include "AliSelector.h"
+#include "AliSelectorRL.h"
 
 class TH1F;
 
-class AlidNdEtaVertexRecEffSelector : public AliSelector {
+class AlidNdEtaVertexRecEffSelector : public AliSelectorRL {
   public:
     AlidNdEtaVertexRecEffSelector();
     virtual ~AlidNdEtaVertexRecEffSelector();

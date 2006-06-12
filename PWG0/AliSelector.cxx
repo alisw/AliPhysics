@@ -40,23 +40,21 @@
 
 #include <AliLog.h>
 #include <AliESD.h>
-#include <AliHeader.h>
 
 ClassImp(AliSelector)
 
 AliSelector::AliSelector() :
   TSelector(),
-  fChain(0),
+  fTree(0),
   fESD(0),
   fCountFiles(0),
-  fKineFile(0),
-  fHeaderFile(0),
-  fHeaderTree(0),
-  fHeader(0)
+  fKineFile(0)
 {
   //
   // Constructor. Initialization of pointers
   //
+
+  AliLog::SetClassDebugLevel("AliSelector", AliLog::kDebug);
 }
 
 AliSelector::~AliSelector()
@@ -69,26 +67,25 @@ AliSelector::~AliSelector()
   // list is deleted by the TSelector dtor
 }
 
-void AliSelector::Begin(TTree *)
+void AliSelector::Begin(TTree*)
 {
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
 }
 
-void AliSelector::SlaveBegin(TTree * tree)
+void AliSelector::SlaveBegin(TTree* tree)
 {
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
-  Init(tree);
-
   AliDebug(AliLog::kDebug, "=======SLAVEBEGIN========");
   AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
   AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
 
-  TString option = GetOption();
+  if (tree != 0)
+    Init(tree);
 }
 
 void AliSelector::Init(TTree *tree)
@@ -101,27 +98,18 @@ void AliSelector::Init(TTree *tree)
 
   AliDebug(AliLog::kDebug, "=========Init==========");
 
-  // Set branch addresses
-  if (tree == 0)
+  fTree = tree;
+
+  if (fTree == 0)
   {
     AliDebug(AliLog::kError, "ERROR: tree argument is 0.");
     return;
   }
 
-  fChain = dynamic_cast<TChain*> (tree);
-  if (fChain == 0)
-  {
-    AliDebug(AliLog::kDebug, "ERROR: tree argument could not be casted to TChain.");
-    return;
-  }
-
-  fChain->SetBranchAddress("ESD", &fESD);
+  // Set branch address
+  fTree->SetBranchAddress("ESD", &fESD);
   if (fESD != 0)
     AliDebug(AliLog::kInfo, "INFO: Found ESD branch in chain.");
-
-  /*fChain->SetBranchAddress("Header", &fHeader);
-  if (fHeader != 0)
-    AliDebug(AliLog::kInfo, "INFO: Found event header branch in chain.");*/
 }
 
 Bool_t AliSelector::Notify()
@@ -138,11 +126,17 @@ Bool_t AliSelector::Notify()
   AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
 
   ++fCountFiles;
-  TFile *f = fChain->GetCurrentFile();
-  AliDebug(AliLog::kInfo, Form("Processing %d. file %s", fCountFiles, f->GetName()));
+  if (fTree)
+  {
+    TFile *f = fTree->GetCurrentFile();
+    AliDebug(AliLog::kInfo, Form("Processing %d. file %s", fCountFiles, f->GetName()));
+  }
+  else
+  {
+    AliDebug(AliLog::kError, "fTree not available");
+  }
 
   DeleteKinematicsFile();
-  DeleteHeaderFile();
 
   return kTRUE;
 }
@@ -164,18 +158,18 @@ Bool_t AliSelector::Process(Long64_t entry)
   // WARNING when a selector is used with a TChain, you must use
   //  the pointer to the current TTree to call GetEntry(entry).
   //  The entry is always the local entry number in the current tree.
-  //  Assuming that fChain is the pointer to the TChain being processed,
-  //  use fChain->GetTree()->GetEntry(entry).
+  //  Assuming that fTree is the pointer to the TChain being processed,
+  //  use fTree->GetTree()->GetEntry(entry).
 
   AliDebug(AliLog::kDebug, Form("=========PROCESS========== Entry %lld", entry));
 
-  if (!fChain)
+  if (!fTree)
   {
-    AliDebug(AliLog::kError, "ERROR: fChain is 0.");
+    AliDebug(AliLog::kError, "ERROR: fTree is 0.");
     return kFALSE;
   }
 
-  fChain->GetTree()->GetEntry(entry);
+  fTree->GetTree()->GetEntry(entry);
 
   /*
   // debugging
@@ -200,7 +194,6 @@ void AliSelector::SlaveTerminate()
   // on each slave server.
 
   DeleteKinematicsFile();
-  DeleteHeaderFile();
 }
 
 void AliSelector::Terminate()
@@ -214,16 +207,16 @@ void AliSelector::Terminate()
 
 TTree* AliSelector::GetKinematics()
 {
-  // Returns kinematics tree corresponding to current ESD active in fChain
+  // Returns kinematics tree corresponding to current ESD active in fTree
   // Loads the kinematics from the kinematics file, the file is identified by replacing "AliESDs" to
   // "Kinematics" in the file path of the ESD file. This is a hack, to be changed!
 
   if (!fKineFile)
   {
-    if (!fChain->GetCurrentFile())
+    if (!fTree->GetCurrentFile())
       return 0;
 
-    TString fileName(fChain->GetCurrentFile()->GetName());
+    TString fileName(fTree->GetCurrentFile()->GetName());
     fileName.ReplaceAll("AliESDs", "Kinematics");
 
     AliDebug(AliLog::kInfo, Form("Opening %s", fileName.Data()));
@@ -233,7 +226,7 @@ TTree* AliSelector::GetKinematics()
       return 0;
   }
 
-  return dynamic_cast<TTree*> (fKineFile->Get(Form("Event%d/TreeK", fChain->GetTree()->GetReadEntry())));
+  return dynamic_cast<TTree*> (fKineFile->Get(Form("Event%d/TreeK", fTree->GetTree()->GetReadEntry())));
 }
 
 void AliSelector::DeleteKinematicsFile()
@@ -247,53 +240,6 @@ void AliSelector::DeleteKinematicsFile()
     fKineFile->Close();
     delete fKineFile;
     fKineFile = 0;
-  }
-}
-
-AliHeader* AliSelector::GetHeader()
-{
-  // Returns header corresponding to current ESD active in fChain
-  // Loads the header from galice.root, the file is identified by replacing "AliESDs" to
-  // "galice" in the file path of the ESD file. This is a hack, to be changed!
-
-  if (!fHeaderFile || !fHeaderTree)
-  {
-    if (!fChain->GetCurrentFile())
-      return 0;
-
-    TString fileName(fChain->GetCurrentFile()->GetName());
-    fileName.ReplaceAll("AliESDs", "galice");
-
-    AliDebug(AliLog::kInfo, Form("Opening %s", fileName.Data()));
-
-    fHeaderFile = TFile::Open(fileName);
-    if (!fHeaderFile)
-      return 0;
-
-    fHeaderTree = dynamic_cast<TTree*> (fHeaderFile->Get("TE"));
-    if (!fHeaderTree)
-      return 0;
-
-    fHeaderTree->SetBranchAddress("Header", &fHeader);
-  }
-
-  fHeaderTree->GetEntry(fChain->GetTree()->GetReadEntry());
-
-  return fHeader;
-}
-
-void AliSelector::DeleteHeaderFile()
-{
-  //
-  // Closes the kinematics file and deletes the pointer.
-  //
-
-  if (fHeaderFile)
-  {
-    fHeaderFile->Close();
-    delete fHeaderFile;
-    fHeaderTree = 0;
-    fHeader = 0;
   }
 }
 

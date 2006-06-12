@@ -14,7 +14,12 @@ void CreatedNdEta(Bool_t correct = kTRUE)
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
 
-  TFile::Open("out.root");
+  TFile* file = TFile::Open("out.root");
+  if (!file)
+  {
+    cout << "Error. File out.root not found" << endl;
+    return;
+  }
   fdNdEtaAnalysis->LoadHistograms();
 
   fdNdEtaAnalysis->Finish(dNdEtaCorrection);

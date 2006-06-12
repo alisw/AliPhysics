@@ -19,7 +19,10 @@ ClassImp(dNdEtaAnalysis)
 
 //____________________________________________________________________
 dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
-TNamed(name, title)
+  TNamed(name, title),
+  fEtaVsVtx(0),
+  fEtaVsVtxUncorrected(0),
+  fVtx(0)
 {
   // constructor
 
@@ -37,6 +40,71 @@ TNamed(name, title)
 
   fEtaVsVtx->Sumw2();
   fVtx->Sumw2();
+}
+
+//____________________________________________________________________
+dNdEtaAnalysis::~dNdEtaAnalysis()
+{
+  // destructor
+
+  delete fEtaVsVtx;
+  fEtaVsVtx = 0;
+
+  delete fEtaVsVtxUncorrected;
+  fEtaVsVtxUncorrected = 0;
+
+  delete fVtx;
+  fVtx = 0;
+
+  for (Int_t i=0; i<kVertexBinning; ++i)
+  {
+    delete fdNdEta[i];
+    fdNdEta[i] = 0;
+  }
+}
+
+//_____________________________________________________________________________
+dNdEtaAnalysis::dNdEtaAnalysis(const dNdEtaAnalysis &c) :
+  TNamed(c),
+  fEtaVsVtx(0),
+  fEtaVsVtxUncorrected(0),
+  fVtx(0)
+{
+  //
+  // dNdEtaAnalysis copy constructor
+  //
+
+  ((dNdEtaAnalysis &) c).Copy(*this);
+}
+
+//_____________________________________________________________________________
+dNdEtaAnalysis &dNdEtaAnalysis::operator=(const dNdEtaAnalysis &c)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &c) ((dNdEtaAnalysis &) c).Copy(*this);
+  return *this;
+}
+
+//_____________________________________________________________________________
+void dNdEtaAnalysis::Copy(TObject &c) const
+{
+  //
+  // Copy function
+  //
+
+  dNdEtaAnalysis& target = (dNdEtaAnalysis &) c;
+
+  target.fEtaVsVtx = dynamic_cast<TH2F*> (fEtaVsVtx->Clone());
+  target.fEtaVsVtxUncorrected = dynamic_cast<TH2F*> (fEtaVsVtxUncorrected->Clone());
+  target.fVtx = dynamic_cast<TH1D*> (fVtx->Clone());
+
+  for (Int_t i=0; i<kVertexBinning; ++i)
+    target.fdNdEta[i] = dynamic_cast<TH1D*> (fdNdEta[i]->Clone());
+
+  TNamed::Copy((TNamed &) c);
 }
 
 //____________________________________________________________________

@@ -11,18 +11,20 @@
 #include <TH1F.h>
 #include <TH3F.h>
 #include <TTree.h>
+#include <TFile.h>
 
 #include <AliLog.h>
 #include <AliGenEventHeader.h>
 #include <AliHeader.h>
 
-#include "dNdEtaAnalysis.h"
+#include "dNdEta/dNdEtaAnalysis.h"
 
 
 ClassImp(AlidNdEtaAnalysisMCSelector)
 
 AlidNdEtaAnalysisMCSelector::AlidNdEtaAnalysisMCSelector() :
-  AlidNdEtaAnalysisSelector(),
+  AliSelectorRL(),
+  fdNdEtaAnalysis(0),
   fVertex(0),
   fPartEta(0),
   fEvents(0)
@@ -39,9 +41,20 @@ AlidNdEtaAnalysisMCSelector::~AlidNdEtaAnalysisMCSelector()
   //
 }
 
+void AlidNdEtaAnalysisMCSelector::SlaveBegin(TTree * tree)
+{
+  // The SlaveBegin() function is called after the Begin() function.
+  // When running with PROOF SlaveBegin() is called on each slave server.
+  // The tree argument is deprecated (on PROOF 0 is passed).
+
+  AliSelectorRL::SlaveBegin(tree);
+
+  fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+}
+
 void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
 {
-   AlidNdEtaAnalysisSelector::Init(tree);
+  AliSelectorRL::Init(tree);
 
   tree->SetBranchStatus("ESD", 0);
 
@@ -52,9 +65,9 @@ void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
 
 Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
 {
-  //
+  // fill the dNdEtaAnalysis class from the monte carlo
 
-  if (AliSelector::Process(entry) == kFALSE)
+  if (AliSelectorRL::Process(entry) == kFALSE)
     return kFALSE;
 
   TTree* particleTree = GetKinematics();
@@ -117,9 +130,44 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
   return kTRUE;
 }
 
+void AlidNdEtaAnalysisMCSelector::SlaveTerminate()
+{
+  // The SlaveTerminate() function is called after all entries or objects
+  // have been processed. When running with PROOF SlaveTerminate() is called
+  // on each slave server.
+
+  AliSelectorRL::SlaveTerminate();
+
+  // Add the histograms to the output on each slave server
+  if (!fOutput)
+  {
+    AliDebug(AliLog::kError, Form("ERROR: Output list not initialized."));
+    return;
+  }
+
+  fOutput->Add(fdNdEtaAnalysis);
+}
+
 void AlidNdEtaAnalysisMCSelector::Terminate()
 {
-  AlidNdEtaAnalysisSelector::Terminate();
+  //
+
+  AliSelectorRL::Terminate();
+
+  fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
+
+  if (!fdNdEtaAnalysis)
+  {
+    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fdNdEtaAnalysis));
+    return;
+  }
+
+  TFile* fout = new TFile("analysis_mc.root","RECREATE");
+
+  fdNdEtaAnalysis->SaveHistograms();
+
+  fout->Write();
+  fout->Close();
 
   fPartEta->Scale(1.0/fEvents);
   fPartEta->Scale(1.0/fPartEta->GetBinWidth(1));

@@ -3,12 +3,12 @@
 #ifndef ALIDNDETACORRECTIONSELECTOR_H
 #define ALIDNDETACORRECTIONSELECTOR_H
 
-#include "AliSelector.h"
+#include "AliSelectorRL.h"
 
 class AliESDtrackCuts;
 class dNdEtaCorrection;
 
-class AlidNdEtaCorrectionSelector : public AliSelector {
+class AlidNdEtaCorrectionSelector : public AliSelectorRL {
   public:
     AlidNdEtaCorrectionSelector();
     virtual ~AlidNdEtaCorrectionSelector();

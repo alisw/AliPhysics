@@ -2,6 +2,8 @@
 
 PACKAGE = PWG0base
 
+default-target: libPWG0base.so
+
 include $(ROOTSYS)/test/Makefile.arch
 include lib$(PACKAGE).pkg
 
@@ -11,15 +13,12 @@ ALICEINC      = -I.
 ifneq ($(ALICE_ROOT),)
   ALICEINC += -I$(ALICE_ROOT)/include
 else
-  ifneq ($(STEER_INCLUDE),)
-    ALICEINC += -I../$(STEER_INCLUDE)
-  endif
   ifneq ($(ESD_INCLUDE),)
     ALICEINC += -I../$(ESD_INCLUDE)
   endif
 endif
 
-CXXFLAGS     += $(ALICEINC)
+CXXFLAGS     += $(ALICEINC) -g
 SRCS         += dict.cxx
 OBJS          = $(SRCS:.cxx=.o)
 PARFILE       = $(PACKAGE).par

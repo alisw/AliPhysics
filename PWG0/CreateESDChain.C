@@ -48,7 +48,7 @@ TChain* CreateESDChainFromDir(const char* aDataDir, Int_t aRuns = 20, Int_t offs
   return chain;
 }
 
-TChain* CreateESDChainFromList(const char* listFile, Int_t aRuns = 20)
+TChain* CreateESDChainFromList(const char* listFile, Int_t aRuns = 20, Int_t offset = 0)
 {
   // Creates a chain from a file which contains a list of ESD files
 
@@ -69,6 +69,12 @@ TChain* CreateESDChainFromList(const char* listFile, Int_t aRuns = 20)
   while(in.good()) {
     in >> esdfile;
     if (!esdfile.Contains("root")) continue; // protection
+
+    if (offset > 0)
+    {
+      --offset;
+      continue;
+    }
 
     if (count++ == aRuns)
       break;

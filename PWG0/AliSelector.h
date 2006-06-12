@@ -13,7 +13,6 @@ class TTree;
 class TParticle;
 
 class AliESD;
-class AliHeader;
 
 class AliSelector : public TSelector {
   public:
@@ -21,8 +20,8 @@ class AliSelector : public TSelector {
     virtual ~AliSelector();
 
     virtual Int_t   Version() const {return 1;}
-    virtual void    Begin(TTree *tree);
-    virtual void    SlaveBegin(TTree *tree);
+    virtual void    Begin(TTree*);
+    virtual void    SlaveBegin(TTree* tree);
     virtual void    Init(TTree *tree);
     virtual Bool_t  Notify();
     virtual Bool_t  Process(Long64_t entry);
@@ -31,24 +30,16 @@ class AliSelector : public TSelector {
 
  protected:
     TTree*  GetKinematics();
-    AliHeader* GetHeader();
     Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries) const;
 
-    TChain          *fChain;   //! pointer to the analyzed TTree or TChain
-
+    TTree          *fTree;     //! pointer to the TTree containing the events
     AliESD*          fESD;     //! "ESD" branch in fChain
-
     Int_t fCountFiles;         // number of processed file
 
  private:
     void DeleteKinematicsFile();
-    void DeleteHeaderFile();
 
     TFile*        fKineFile;   //! pointer to Kinematics.root if the file was opened
-
-    TFile*        fHeaderFile; //! pointer to galice.root, if the file was opened
-    TTree*        fHeaderTree; //! holds TE tree of current galice.root
-    AliHeader*    fHeader;     //! holds pointer to current header
 
   ClassDef(AliSelector,0);
 };
