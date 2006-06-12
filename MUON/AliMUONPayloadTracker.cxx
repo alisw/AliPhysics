@@ -100,9 +100,9 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t ddl)
 
 
   //Read Header Size of DDL,Block,DSP and BusPatch
-  Int_t kBlockHeaderSize    = fBlockHeader->GetHeaderLength();
-  Int_t kDspHeaderSize      = fDspHeader->GetHeaderLength();
-  Int_t kBusPatchHeaderSize = fBusStruct->GetHeaderLength();
+  static Int_t kBlockHeaderSize    = fBlockHeader->GetHeaderLength();
+  static Int_t kDspHeaderSize      = fDspHeader->GetHeaderLength();
+  static Int_t kBusPatchHeaderSize = fBusStruct->GetHeaderLength();
 
   //  Int_t totalDDLSize;
   Int_t totalBlockSize;
