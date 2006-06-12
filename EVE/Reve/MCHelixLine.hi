@@ -6,7 +6,8 @@
 
 namespace Reve {
 
-  struct MCVertex {
+  struct MCVertex
+  {
     Float_t x,y,z,t;
   };
 
@@ -28,7 +29,8 @@ namespace Reve {
     }
   };
 
-  struct MCHelix : public MCStruct {
+  struct MCHelix : public MCStruct
+  {
     // constant
     Float_t fA;       // contains charge and magnetic field data
 
@@ -44,10 +46,12 @@ namespace Reve {
     Float_t sin, cos;
     Bool_t  crosR;
 
-    MCHelix(TrackRnrStyle* rs, MCVertex* v0, Float_t vel, std::vector<MCVertex>* tpv, Float_t a):
-      MCStruct(rs, v0 , vel, tpv){
-	fA = a;
-      };
+    MCHelix(TrackRnrStyle* rs, MCVertex* v0, Float_t vel,
+	    std::vector<MCVertex>* tpv, Float_t a)
+      : MCStruct(rs, v0 , vel, tpv)
+    {
+      fA = a;
+    };
 
     void Init(Float_t pT, Float_t pZ)
     {
@@ -55,7 +59,7 @@ namespace Reve {
       crosR = false;
       x_off = 0; y_off = 0;
       fLam = pZ/pT;
-      fR =  pT/fA;
+      fR   = pT/fA;
 
       fPhiStep = fRnrMod->fMinAng *TMath::Pi()/180;
       if(fRnrMod->fDelta < TMath::Abs(fR)){
