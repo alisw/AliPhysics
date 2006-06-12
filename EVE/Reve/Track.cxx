@@ -43,7 +43,7 @@ Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs)
     t->ResetPdgCode(); pdgp = t->GetPDG();
   }
 
-  fCharge = (Int_t) pdgp->Charge();
+  fCharge = (Int_t) TMath::Nint(pdgp->Charge()/3);
   fLabel  = t->label;
 }
 
@@ -89,14 +89,14 @@ void Track::MakeTrack()
   mc_v0.t = 0;
 
   std::vector<MCVertex> track_points;
-  Bool_t decay = false;
+  Bool_t decay = kFALSE;
 
   if ((TMath::Abs(fV.z) > RS.fMaxZ) || (fV.x*fV.x + fV.y*fV.y > RS.fMaxR*RS.fMaxR)) 
     goto make_polyline;
   
   if (fCharge) { // Charged particle
 
-    Float_t a = 0.2998*RS.fMagField*fCharge/300; // m->cm
+    Float_t a = RS.fgkB2C * RS.fMagField * fCharge;
    
     MCHelix helix(fRnrStyle, &mc_v0, TMath::C()*fBeta, &track_points, a); //m->cm
     helix.Init(TMath::Sqrt(px*px+py*py), pz);
@@ -129,7 +129,7 @@ void Track::MakeTrack()
     }
   helix_bounds:
     //go to bounds
-    if(!decay || RS.fFitDecay == false){
+    if(!decay || RS.fFitDecay == kFALSE){
       helix.LoopToBounds(px,py,pz);
       // printf("%s loop to bounds  \n",fName.Data() );
     }
@@ -164,7 +164,7 @@ void Track::MakeTrack()
     }
 
   line_bounds:
-    if(!decay || RS.fFitDecay == false)
+    if(!decay || RS.fFitDecay == kFALSE)
       line.GotoBounds(px,py,pz);
 
   }
@@ -176,27 +176,44 @@ make_polyline:
 
 /**************************************************************************/
 
+void Track::ImportHits()
+{
+  Reve::LoadMacro("hits_from_label.C");
+  gROOT->ProcessLine(Form("hits_from_label(%d);", fLabel));
+}
+
+void Track::ImportClusters()
+{
+  Reve::LoadMacro("clusters_from_label.C");
+  gROOT->ProcessLine(Form("clusters_from_label(%d);", fLabel));
+}
+
+
+/**************************************************************************/
+/**************************************************************************/
+
 //______________________________________________________________________
 // TrackRnrStyle
 //
 
 ClassImp(Reve::TrackRnrStyle)
 
-Float_t       TrackRnrStyle::fgDefMagField = 0.5;
+Float_t       TrackRnrStyle::fgDefMagField = 5;
+const Float_t TrackRnrStyle::fgkB2C        = 0.299792458e-3;
 TrackRnrStyle TrackRnrStyle::fgDefStyle;
 
 void TrackRnrStyle::Init()
 {
   fMagField = fgDefMagField;
 
-  fMaxR  = 450;
-  fMaxZ  = 550;
+  fMaxR  = 350;
+  fMaxZ  = 450;
 
-  fMaxOrbs = 2;
+  fMaxOrbs = 0.5;
   fMinAng  = 45;
 
-  fFitDaughters = true;
-  fFitDecay     = true;
+  fFitDaughters = kTRUE;
+  fFitDecay     = kTRUE;
 
   fDelta  = 0.1; //calculate step size depending on helix radius
 }
@@ -216,8 +233,8 @@ void TrackList::Init()
   fMarkerColor = 5;
   // fMarker->SetMarkerSize(0.05);
 
-  fRnrMarkers = true;
-  fRnrTracks  = true;
+  fRnrMarkers = kTRUE;
+  fRnrTracks  = kTRUE;
 
   mRnrStyle = new TrackRnrStyle;
   SetMainColorPtr(&mRnrStyle->fColor);

@@ -50,7 +50,8 @@ public:
 
   void MakeTrack();
 
-  TrackRnrStyle* GetRnrStyle() const { return fRnrStyle; }
+  TrackRnrStyle* GetRnrStyle() const  { return fRnrStyle; }
+  void SetRnrStyle(TrackRnrStyle* rs) { fRnrStyle = rs; }
 
   virtual const Text_t* GetName() const    { return fName; }
   virtual void SetName(const Text_t* name) { fName = name; }
@@ -59,6 +60,11 @@ public:
   virtual void SetTitle(const Text_t* title) { fTitle = title; }
 
   Int_t GetLabel() const { return fLabel; }
+
+  //--------------------------------
+
+  void ImportHits();     // *MENU*
+  void ImportClusters(); // *MENU*
 
   ClassDef(Track, 1);
 }; // endclass Track
@@ -100,7 +106,11 @@ public:
   void    SetColor(Color_t c) { fColor = c; }
   Color_t GetColor() const    { return fColor; }
 
-  static Float_t          fgDefMagField;
+  Float_t GetMagField() const     { return fMagField; }
+  void    SetMagField(Float_t mf) { fMagField = mf; }
+
+  static Float_t       fgDefMagField;
+  static const Float_t fgkB2C;
   static TrackRnrStyle fgDefStyle;
 
   ClassDef(TrackRnrStyle, 1);
@@ -117,12 +127,12 @@ private:
   void  Init();
 
 protected:
-  TString                 fTitle;
+  TString              fTitle;
 
   TrackRnrStyle*       mRnrStyle;
 
-  Bool_t                  fRnrMarkers;
-  Bool_t                  fRnrTracks;
+  Bool_t               fRnrMarkers;
+  Bool_t               fRnrTracks;
 
 public:
   TrackList(Int_t n_tracks=0);
@@ -133,7 +143,7 @@ public:
   virtual const Text_t* GetTile() const  { return fTitle; }
   virtual void SetTitle(const Text_t* t) { fTitle = t; }
 
-  virtual Bool_t CanEditMainColor()  { return true; }
+  virtual Bool_t CanEditMainColor()  { return kTRUE; }
 
   virtual void Paint(Option_t* option="");
 
