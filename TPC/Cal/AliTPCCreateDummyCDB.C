@@ -96,7 +96,7 @@ void CDBAlignmentObjectCreation(const char *fileName, const char *arrayName, con
 
 
 
-void GenerateRndTPC(Float_t sigmatr=0., Float_t sigmarot = 0.){
+void GenerateRndTPC(Float_t sigmatrx=0., Float_t sigmatry=0, Float_t sigmatrz=0, Float_t sigmarot = 0.){
 
   TClonesArray *array = new TClonesArray("AliAlignObjAngles",10000);
   TClonesArray &alobj = *array;
@@ -109,9 +109,9 @@ void GenerateRndTPC(Float_t sigmatr=0., Float_t sigmarot = 0.){
   for (Int_t iLayer = AliAlignObj::kTPC1; iLayer <= AliAlignObj::kTPC2; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
 
-      Float_t dx = (rnd->Uniform()-0.5)*sigmatr;
-      Float_t dy = (rnd->Uniform()-0.5)*sigmatr;
-      Float_t dz = (rnd->Uniform()-0.5)*sigmatr;
+      Float_t dx = (rnd->Uniform()-0.5)*sigmatrx;
+      Float_t dy = (rnd->Uniform()-0.5)*sigmatry;
+      Float_t dz = (rnd->Uniform()-0.5)*sigmatrz;
       Float_t dpsi = (rnd->Uniform()-0.5)*sigmarot;
       Float_t dtheta = (rnd->Uniform()-0.5)*sigmarot;
       Float_t dphi = (rnd->Uniform()-0.5)*sigmarot;
@@ -145,31 +145,44 @@ void AliTPCCreateDummyCDB()
   AliCDBMetaData* metaData = 0;
   
   //
-  // Gain factor (relative) - normalized to 1  - spread 0.02
+  // Gain factor (relative) - normalized to 1 - spread 0
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
-  obj = CreatePadObject("PadGainFactor","TPC Gain Factor (local -pad- variations)", 1 , 0.05);
+  obj = CreatePadObject("PadGainFactor","TPC Gain Factor (local -pad- variations)", 1 , 0.0);
   StoreObject("TPC/Calib/PadGainFactor", obj, metaData);
   //
-  // Time0 fluctuation   - normalized to 0  - spread 0.001 mus
+  // Time0 fluctuation   - normalized to 0  - spread 0.00 mus
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
-  obj = CreatePadObject("PadTime0","TPC Time 0  (local -pad- variations)", 0 , 0.001);
+  obj = CreatePadObject("PadTime0","TPC Time 0  (local -pad- variations)", 0 , 0.000);
   StoreObject("TPC/Calib/PadTime0", obj, metaData);
   //
-  // Noise  fluctuation   - normalized to 0.8  - spread - 0.1 
+  // Noise  fluctuation   - normalized to 1.0  - spread - 0.0 
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
-  obj = CreatePadObject("PadNoise","TPC Noise  (local -pad- variations)", 0.8 , 0.1);
+  obj = CreatePadObject("PadNoise","TPC Noise  (local -pad- variations)", 1.0 , 0.0);
   StoreObject("TPC/Calib/PadNoise", obj, metaData);
   //
-  // PRF width fluctuation   - normalized to 0.8  - spread - 0.1 
+  // PRF width fluctuation   - normalized to 0.  - spread - 0.0 
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
   obj = CreatePadObject("PadPRF","TPC PRF  (local -pad- variations)", 0.0 , 0.0);
   StoreObject("TPC/Calib/PadPRF", obj, metaData);
   //
+  // Pedestals
+  //
+  metaData = CreateMetaObject("AliTPCCalPad");  
+  obj = CreatePadObject("PadPRF","TPC pedestals  (local -pad- variations)", 0.0 , 0.0);
+  StoreObject("TPC/Calib/Pedestals", obj, metaData);  
+  //
+  // Parameters 
+  //
+  metaData = CreateMetaObject("AliTPCParam");  
+  AliTPCParam * param = new AliTPCParamSR;
+  StoreObject("TPC/Calib/Parameters", param, metaData); 
+  //
+  //
   // generate random missalignemnt
   //
-  GenerateRndTPC(0.5,0.01);
+  GenerateRndTPC(0.0,0.0,0.0,0.00);
 }
