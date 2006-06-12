@@ -13,6 +13,7 @@
 #include "TObject.h"
 class AliTPCCalPad;
 class AliCDBEntry;
+class AliTPCParam;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -28,6 +29,8 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPadTime0() {return fPadTime0;}
   AliTPCCalPad* GetPadPRFWidth() {return fPadPRFWidth;}
   AliTPCCalPad* GetPadNoise() {return fPadNoise;}
+  AliTPCCalPad* GetPedestals() {return fPedestals;}
+  AliTPCParam*  GetParameters(){return fParam;}
   //
 protected:
   void         Update();  //update entries
@@ -41,6 +44,10 @@ protected:
   AliTPCCalPad* fPadTime0;
   AliTPCCalPad* fPadPRFWidth;
   AliTPCCalPad* fPadNoise;
+  AliTPCCalPad* fPedestals;
+  //
+  //
+  AliTPCParam * fParam;
   //
   static AliTPCcalibDB* fgInstance;
   static Bool_t       fgTerminated;

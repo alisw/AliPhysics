@@ -91,6 +91,8 @@ AliTPCcalibDB::AliTPCcalibDB()
   fPadTime0      = 0;
   fPadPRFWidth   = 0;
   fPadNoise      = 0;
+  fPedestals     = 0;
+  fParam         =0;
   Update();    // temporary
 }
 
@@ -177,6 +179,22 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fPadNoise = (AliTPCCalPad*)entry->GetObject();
   }
+
+  entry          = GetCDBEntry("TPC/Calib/Pedestals");
+  if (entry){
+    //if (fPedestals) delete fPedestals;
+    entry->SetOwner(kTRUE);
+    fPedestals = (AliTPCCalPad*)entry->GetObject();
+  }
+
+  entry          = GetCDBEntry("TPC/Calib/Parameters");
+  if (entry){
+    //if (fPadNoise) delete fPadNoise;
+    entry->SetOwner(kTRUE);
+    fParam = (AliTPCParam*)entry->GetObject();
+  }
+
+
   //
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
   
