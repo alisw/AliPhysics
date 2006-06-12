@@ -3,7 +3,7 @@
 #ifndef ALIDNDETAANALYSISESDSELECTOR_H
 #define ALIDNDETAANALYSISESDSELECTOR_H
 
-#include "AliSelectorRL.h"
+#include "AliSelector.h"
 
 class AliESDtrackCuts;
 class dNdEtaAnalysis;

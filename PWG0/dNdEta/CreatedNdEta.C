@@ -1,6 +1,6 @@
 // this macro combines the correction and the analysis and draws them
 
-void CreatedNdEta(Bool_t correct = kTRUE)
+void CreatedNdEta(Bool_t correct = kTRUE, const Char_t* filename = "analysis_esd.root")
 {
   gSystem->Load("libPWG0base");
 
@@ -14,7 +14,7 @@ void CreatedNdEta(Bool_t correct = kTRUE)
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
 
-  TFile* file = TFile::Open("out.root");
+  TFile* file = TFile::Open(filename);
   if (!file)
   {
     cout << "Error. File out.root not found" << endl;

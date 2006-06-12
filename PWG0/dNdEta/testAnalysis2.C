@@ -29,7 +29,7 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   else
   {
     chain = CreateESDChainFromList(data, nRuns, offset);
-    proof = gROOT->Proof("alicecaf@lxb6041");
+    proof = gROOT->Proof("jgrosseo@lxb6046");
 
     if (!proof)
     {
@@ -100,6 +100,6 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   timer.Stop();
   timer.Print();
 
-  CreatedNdEta(aMC ? kFALSE : kTRUE);
+  CreatedNdEta(aMC ? kFALSE : kTRUE, aMC ? "analysis_mc.root" : "analysis_esd.root");
 }
 
