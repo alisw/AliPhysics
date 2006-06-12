@@ -30,6 +30,7 @@ class AliTPCCalROC : public TObject {
   Float_t      GetValue(UInt_t channel) const { return  fData[channel]; };
   void         SetValue(UInt_t row, UInt_t pad, Float_t vd) { if ( row<fNRows && (fIndexes[row]+pad)<fNChannels)fData[fIndexes[row]+pad]= vd; };
   void         SetValue(UInt_t channel, Float_t vd) {fData[channel]= vd; };
+  virtual void Draw(Option_t* option = "");
   static void Test();
  protected:
   UInt_t     fSector;          // sector number

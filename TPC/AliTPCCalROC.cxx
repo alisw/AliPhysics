@@ -26,7 +26,7 @@
 #include "TMath.h"
 #include "TClass.h"
 #include "TFile.h"
-
+#include "TH2F.h"
 ClassImp(AliTPCCalROC)
 
 
@@ -96,6 +96,27 @@ void AliTPCCalROC::Streamer(TBuffer &R__b)
    }
 }
 
+
+
+void AliTPCCalROC::Draw(Option_t* option){
+  //
+  // create histogram with values and draw it
+  //
+  UInt_t maxPad = 0;
+  for (UInt_t irow=0; irow<fNRows; irow++){
+    if (GetNPads(irow)>maxPad) maxPad = GetNPads(irow);
+  }
+  char  name[1000];
+  sprintf(name,"%s ROC%d",GetTitle(),fSector);
+  TH2F * his = new TH2F(name,name,fNRows+10,-5, fNRows+5, maxPad+10, -(Int_t(maxPad/2))-5, maxPad/2+5);
+  for (UInt_t irow=0; irow<fNRows; irow++){
+    UInt_t npads = (Int_t)GetNPads(irow);
+    for (UInt_t ipad=0; ipad<=npads; ipad++){
+      his->Fill(irow+0.5,Int_t(ipad)-Int_t(npads/2)+0.5,GetValue(irow,ipad));
+    }
+  }
+  his->Draw(option);
+}
 
 
 void AliTPCCalROC::Test(){
