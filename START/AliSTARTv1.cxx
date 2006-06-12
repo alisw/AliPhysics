@@ -94,20 +94,20 @@ void AliSTARTv1::CreateGeometry()
   Int_t is;
   Int_t idrotm[999];
   Float_t x,y,z;
-
+  //C T0 mother volume
   Float_t pstartR[18]={0., 360., 5., 
-		       -76.5+0.00+69.7, 4.25, 10.,
-		       -76.5+6.05+69.7, 4.5, 10., 
-		       -76.5+8.05+69.7, 4.5, 10.,
-		       -76.5+8.05+69.7, 5.1, 10.,
-		       -62.9+0.00+69.7, 5.1, 10.};
+		       -6.8, 4.25, 10., //-76.5+0.00+69.7
+		       -0.75 , 4.5, 10.,  // -76.5+6.05+69.7
+		       1.25   , 4.5, 10.,  //-76.5+8.05+69.7
+		       1.25 , 5.1, 10., //-76.5+8.05+69.7 
+		       6.8 , 5.1, 10.};  //-62.9+0.00+69.7
   
-  Float_t pstart[3]={4.29, 12.5,6.95};
+  Float_t pstart[3]={4.29, 12.5,6.8};
   Float_t pinstart[3]={0.,1.6,6.5};
   Float_t ppmt[3]={0.,1.5,3.5};
   Float_t ptop[3]={0.,1.,1.0};
   Float_t preg[3]={0., 1.0, 0.005}; //photcathode dobavil bogdanov
-  Float_t ptopout[3]={1.,1.01,1.5}; 
+  Float_t ptopout[3]={1.,1.01, 1.};  //metal air around raiator for photos reflection 
   Float_t pbot[3]={0.6,1.2,0.1};
   Float_t pglass[3]={1.2,1.3,2.};
   Float_t pcer[3]={0.9,1.1,1.35};
@@ -126,7 +126,7 @@ void AliSTARTv1::CreateGeometry()
     ppcon[1]  = 360;
     ppcon[2]  =  13;
 //  1: 
-    ppcon[3]  =  14.1/2;
+    ppcon[3]  =  7.2; // 14.1/2;
     ppcon[4]  =   4.4;
     ppcon[5]  =   4.5;
 //  2
@@ -150,8 +150,8 @@ void AliSTARTv1::CreateGeometry()
     ppcon[17] =   5.1;
     
 //  6
-//    ppcon[18]  = ppcon[15]+7.05;
-    ppcon[18]  = ppcon[15]+6.9;
+//    ppcon[18]  = ppcon[15]+6.9;
+    ppcon[18]  = ppcon[15]+6.7;
     ppcon[19] =   4.9;
     ppcon[20] =   5.1;
     
@@ -164,32 +164,36 @@ void AliSTARTv1::CreateGeometry()
     ppcon[24]  = ppcon[21]+0.01;
     ppcon[25] =   3.15;
     ppcon[26] =   3.25;
+    //   ppcon[25] =   2.25;
+    // ppcon[26] =   2.33;
     
 /// 9
     ppcon[27]  = ppcon[24];
-    ppcon[28] =   3.15;
-    ppcon[29] =   3.25;
+    ppcon[28] =   ppcon[25];
+    ppcon[29] =  ppcon[26] ;
     
 //  10
-    ppcon[30]  = ppcon[27]+4.5;
-    ppcon[31] =   3.15;
-    ppcon[32] =   3.25;
+//    ppcon[30]  = ppcon[27]+4.5;
+    ppcon[30]  = ppcon[27]+4.7;
+    ppcon[31] =   2.3;
+    ppcon[32] =  ppcon[26] ;
 
 //  11
     ppcon[33] = ppcon[30];
-    ppcon[34] =   3.15;
-    ppcon[35] =   3.25;
-
+    //    ppcon[34] =   3.15;
+    ppcon[34] =   2.3;
+    ppcon[35] =  ppcon[26] ;
+    
 //  12
     ppcon[36]  = ppcon[33];
-    ppcon[37] =   3.15;
+    ppcon[37] =   ppcon[34] ;
     ppcon[38] =   7.6;
-
-//  13
-    ppcon[39]  = ppcon[33]+0.4;
-    ppcon[40] =   3.15;
+    
+    //  13
+    ppcon[39]  = ppcon[33]+0.2;
+    ppcon[40] =   ppcon[34] ;
     ppcon[41] =   7.6;
-
+    
 //  14
 //    ppcon[39]  = ppcon[36];
 //    ppcon[40] =   3.15;
@@ -198,6 +202,7 @@ void AliSTARTv1::CreateGeometry()
 
 
     gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
+    //    gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,38);
     z=-zdetC;
     gMC->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
 
@@ -208,7 +213,7 @@ void AliSTARTv1::CreateGeometry()
     
     gMC->Gsvolu("0STR","PCON",idtmed[kAir],pstartR,18);
     gMC->Gsvolu("0STL","TUBE",idtmed[kAir],pstart,3);
-    gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetC-pstart[2],idrotm[901],"ONLY");
+    gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetC+pstartR[3],idrotm[901],"ONLY");
     gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetA+pstart[2],0,"ONLY");
 
 //START interior
@@ -260,8 +265,8 @@ void AliSTARTv1::CreateGeometry()
    gMC->Gsvolu("0TOP","TUBE",idtmed[kOpGlass],ptop,3); //glass
    z=-ppmt[2]+ptop[2];
    gMC->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
-   //metal volume to simulate reclection  
-   gMC->Gsvolu("0TOO","TUBE",idtmed[kOpAir],ptopout,3); //glass
+   //"metal" air volume to simulate reclection  
+   gMC->Gsvolu("0TOO","TUBE",idtmed[kOpAir],ptopout,3); 
    gMC->Gspos("0TOO",1,"0PMT",0,0,z,0,"ONLY");
 
    //Fotokatod
@@ -317,7 +322,7 @@ void AliSTARTv1::CreateGeometry()
    z=z+par[2];
    par[0]=4.9;
    par[1]=5.0;
-   par[2]=6.9/2;
+   par[2]=6.7/2;
     gMC->Gsvolu("0SC2","TUBE",idtmed[kC],par,3);
     z += par[2];
     gMC->Gspos("0SC2",1,"0SUP",0,0,z,0,"ONLY"); 
@@ -333,14 +338,14 @@ void AliSTARTv1::CreateGeometry()
     z=z+par[2];
     par[0]=3.15;
     par[1]=3.16;
-    par[2]=4.5/2;
+    par[2]=4.7/2;
     gMC->Gsvolu("0SA2","TUBE",idtmed[kAl],par,3);
     z += par[2];
     gMC->Gspos("0SA2",1,"0SUP",0,0,z,0,"ONLY"); 
     z=z+par[2];
     par[0]=3.16; // eta chast' prikruchena k absorberu
     par[1]=7.5;
-    par[2]=0.2;
+    par[2]=0.1;
     gMC->Gsvolu("0SA3","TUBE",idtmed[kAl],par,3);
     z += par[2];
     gMC->Gspos("0SA3",1,"0SUP",0,0,z,0,"ONLY"); 
@@ -566,7 +571,8 @@ void AliSTARTv1::StepManager()
   
   if(!gMC->IsTrackAlive()) return; // particle has disappeared
   
-// If particles is photon then ...
+  
+    // If particles is photon then ...
   
  if (gMC->TrackPid() == 50000050)
   {
