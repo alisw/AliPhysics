@@ -5,6 +5,7 @@
 
 #include <AliRunLoader.h>
 #include <AliESD.h>
+#include <AliESDfriend.h>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -54,6 +55,9 @@ void Event::Init()
   fESDFile   = 0;
   fESDTree   = 0;
   fESD       = 0;
+  fESDfriendFile = 0;
+  fESDfriendTree = 0;
+  fESDfriend     = 0;
 }
 
 Event::Event() : TNamed(), fEventId(0)
@@ -99,6 +103,8 @@ void Event::Open()
 
   if(fgUseESDTree) {
     TString p(Form("%s/AliESDs.root", fPath.Data()));
+    if(gSystem->AccessPathName(p, kReadPermission))
+      throw(eH + "can not read '" + p + "'.");
     fESDFile = new TFile(p);
     if(fESDFile->IsZombie()) {
       delete fESDFile; fESDFile = 0;
@@ -110,7 +116,26 @@ void Event::Open()
       throw(eH + "failed getting the esdTree.");
     fESDTree->SetBranchAddress("ESD", &fESD);
     if(fESDTree->GetEntry(fEventId) <= 0)
-      throw(eH + "failed getting required event.");
+      throw(eH + "failed getting required event from ESD.");
+
+    // Check if ESDfriends exists and load it
+    p = Form("%s/AliESDfriends.root", fPath.Data());
+    if(gSystem->AccessPathName(p, kReadPermission) == kFALSE) {
+      fESDfriendFile = new TFile(p);
+      if(fESDfriendFile->IsZombie()) {
+	delete fESDfriendFile; fESDfriendFile = 0;
+	throw(eH + "failed opening ALICE ESDfriend from '" + p + "'.");
+      }
+
+      fESDfriendTree = (TTree*) fESDfriendFile->Get("esdFriendTree");
+      if(fESDfriendTree == 0)
+	throw(eH + "failed getting the esdFriendTree.");
+      fESDfriendTree->SetBranchAddress("ESDfriend", &fESDfriend);
+      if(fESDfriendTree->GetEntry(fEventId) <= 0)
+	throw(eH + "failed getting required event from ESDfriend.");
+
+      fESD->SetESDfriend(fESDfriend);
+    }
   }
 
   SetName(Form("Event%d", fEventId));
@@ -119,7 +144,7 @@ void Event::Open()
 
 void Event::Close()
 {
-
+  
 }
 
 /**************************************************************************/
@@ -147,4 +172,15 @@ AliESD* Event::AssertESD()
   if(gEvent->fESD == 0)
     throw(eH + "AliESD not initialised.");
   return gEvent->fESD;
+}
+
+AliESDfriend* Event::AssertESDfriend()
+{
+  static const Exc_t eH("Event::AssertESDfriend ");
+
+  if(gEvent == 0)
+    throw(eH + "ALICE event not ready.");
+  if(gEvent->fESDfriend == 0)
+    throw(eH + "AliESDfriend not initialised.");
+  return gEvent->fESDfriend;
 }
