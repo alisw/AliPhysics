@@ -31,6 +31,7 @@
 #include "AliTPCpidESD.h"
 #include "AliTPCParam.h"
 #include "AliTPCParamSR.h"
+#include "AliTPCcalibDB.h"
 
 ClassImp(AliTPCReconstructor)
 
@@ -108,7 +109,7 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
     clusterer.SetOldRCUFormat(kTRUE);
  
   Int_t iEvent = 0;
-  while (rawReader->NextEvent()) {
+  while (rawReader->NextEvent() && iEvent<35) {  
     runLoader->GetEvent(iEvent++);
 
     TTree* treeClusters = loader->TreeR();
@@ -153,16 +154,18 @@ void AliTPCReconstructor::FillESD(AliRunLoader* /*runLoader*/,
 
 
 //_____________________________________________________________________________
-AliTPCParam* AliTPCReconstructor::GetTPCParam(AliRunLoader* runLoader) const
+AliTPCParam* AliTPCReconstructor::GetTPCParam(AliRunLoader* /*runLoader*/) const
 {
 // get the TPC parameters
 
-  TDirectory* saveDir = gDirectory;
-  runLoader->CdGAFile();
+//  TDirectory* saveDir = gDirectory;
+//runLoader->CdGAFile();
 
-  AliTPCParam* param = (AliTPCParam*) gDirectory->Get("75x40_100x60_150x60");
-  if (!param) Error("GetTPCParam", "no TPC parameters found");
+  AliTPCParam* param =  AliTPCcalibDB::Instance()->GetParameters();
 
-  saveDir->cd();
+ //  AliTPCParam* param = (AliTPCParam*) gDirectory->Get("75x40_100x60_150x60");
+//   if (!param) Error("GetTPCParam", "no TPC parameters found");
+
+//  saveDir->cd();
   return param;
 }
