@@ -24,10 +24,12 @@ class AliTPCClustersRow;
 class AliRawReader;
 class AliSimDigits;
 class TTree;
+class TTreeSRedirector;
 
 class AliTPCclustererMI : public TObject{
 public:
   AliTPCclustererMI(const AliTPCParam* par);
+  virtual ~AliTPCclustererMI();
   virtual void Digits2Clusters();
   virtual void Digits2Clusters(AliRawReader* rawReader);
   virtual void SetPedSubtraction(Bool_t pedestalSub = kFALSE)
@@ -49,7 +51,8 @@ private:
   void UnfoldCluster(Float_t * matrix[7], Float_t recmatrix[5][5], 
 		     Float_t & meani, Float_t & meanj, Float_t & sum, Float_t &overlap );
   void FindClusters();
-
+  Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3]);
+  void DumpHistos();
 
 
   Float_t * fBins;       //!digits array
@@ -75,6 +78,9 @@ private:
   AliSimDigits * fRowDig;      //! current digits row
   const AliTPCParam * fParam;        //! tpc parameters
   Int_t fNcluster;             // number of clusters - for given row
+  TObjArray * fAmplitudeHisto;          //! array of histograms of amplitudes
+  TTreeSRedirector *fDebugStreamer;     //!debug streamer
+
   ClassDef(AliTPCclustererMI,1)  // Time Projection Chamber digits
 };
 

@@ -26,6 +26,11 @@
 #include "AliTPCclusterMI.h"
 #include <TObjArray.h>
 #include <TFile.h>
+#include "TGraph.h"
+#include "TF1.h"
+#include "TRandom.h"
+#include "AliMathBase.h"
+
 #include "AliTPCClustersArray.h"
 #include "AliTPCClustersRow.h"
 #include "AliDigits.h"
@@ -37,10 +42,11 @@
 #include "AliLoader.h"
 #include "Riostream.h"
 #include <TTree.h>
-
 #include "AliTPCcalibDB.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
+#include "TTreeStream.h"
+#include "AliLog.h"
 
 
 ClassImp(AliTPCclustererMI)
@@ -54,6 +60,14 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par)
   fInput =0;
   fOutput=0;
   fParam = par;
+  fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
+  fAmplitudeHisto = 0;
+}
+
+AliTPCclustererMI::~AliTPCclustererMI(){
+  DumpHistos();
+  if (fAmplitudeHisto) delete fAmplitudeHisto;
+  if (fDebugStreamer) delete fDebugStreamer;
 }
 
 void AliTPCclustererMI::SetInput(TTree * tree)
@@ -661,7 +675,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 
       Float_t gain = gainROC->GetValue(iRow,input.GetPad());
       allBins[iRow][iPad*fMaxTime+iTimeBin] = signal/gain;
-
+      allBins[iRow][iPad*fMaxTime+0] = 1;  // pad with signal
     } // End of the loop over altro data
 
     // Now loop over rows and perform pedestal subtraction
@@ -674,8 +688,11 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	  maxPad = fParam->GetNPadsUp(iRow);
 
 	for (Int_t iPad = 0; iPad < maxPad + 6; iPad++) {
+	  if (allBins[iRow][iPad*fMaxTime+0] !=1) continue;  // no data
 	  Float_t *p = &allBins[iRow][iPad*fMaxTime+3];
-	  Float_t pedestal = TMath::Median(fMaxTime, p);
+	  //Float_t pedestal = TMath::Median(fMaxTime, p);	
+	  Int_t id[3] = {fSector, iRow, iPad-3};
+	  Float_t pedestal = ProcesSignal(p, fMaxTime, id);
 	  for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
 	    allBins[iRow][iPad*fMaxTime+iTimeBin] -= pedestal;
 	    if (allBins[iRow][iPad*fMaxTime+iTimeBin] < zeroSup)
@@ -793,4 +810,191 @@ void AliTPCclustererMI::FindClusters()
     //}
   }
   */
+}
+
+
+Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t id[3]){
+  //
+  // process signal on given pad - + streaming of additional information in special mode
+  //
+  // id[0] - sector
+  // id[1] - row
+  // id[2] - pad  
+  Int_t offset =100;
+  Float_t kMin =50;
+  Float_t kMaxNoise = 3;
+  Double_t median = TMath::Median(nchannels-offset, &(signal[offset]));
+  if (AliLog::GetDebugLevel("","AliTPCclustererMI")==0) return median;
+  //
+
+  Double_t mean   = TMath::Mean(nchannels-offset, &(signal[offset]));
+  Double_t rms    = TMath::RMS(nchannels-offset, &(signal[offset]));
+  Double_t *dsignal = new Double_t[nchannels];
+  Double_t *dtime   = new Double_t[nchannels];
+  Float_t max    =  0;
+  Float_t maxPos =  0;
+  for (Int_t i=0; i<nchannels; i++){
+    dtime[i] = i;
+    dsignal[i] = signal[i];
+    if (signal[i]>max && i <fMaxTime-100) {  // temporary remove spike signals at the end
+      max = signal[i];
+      maxPos = i;
+    }    
+  }
+  
+  Double_t mean06=0,mean07=0, mean08=0, mean09=0;
+  Double_t rms06=0, rms07=0,  rms08, rms09=0; 
+  AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean06, rms06, int(0.6*(nchannels-offset)));
+  AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean07, rms07, int(0.7*(nchannels-offset)));
+  AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean08, rms08, int(0.8*(nchannels-offset)));
+  AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean09, rms09, int(0.9*(nchannels-offset)));
+  
+  //
+  UInt_t uid[3] = {UInt_t(id[0]),UInt_t(id[1]),UInt_t(id[2])};
+  if (uid[0]< AliTPCROC::Instance()->GetNSectors() 
+      && uid[1]<  AliTPCROC::Instance()->GetNRows(uid[0])  && 
+      uid[2] < AliTPCROC::Instance()->GetNPads(uid[0], uid[1])){
+    if (!fAmplitudeHisto){
+      fAmplitudeHisto = new TObjArray(72);
+    }
+    TObjArray  * sectorArray = (TObjArray*)fAmplitudeHisto->UncheckedAt(uid[0]);
+    if (!sectorArray){
+      Int_t npads = AliTPCROC::Instance()->GetNChannels(uid[0]);
+      sectorArray = new TObjArray(npads);
+      fAmplitudeHisto->AddAt(sectorArray, uid[0]);
+    }
+    Int_t position =  uid[2]+ AliTPCROC::Instance()->GetRowIndexes(uid[0])[uid[1]];
+    TH1F * histo = (TH1F*)sectorArray->UncheckedAt(position);
+    if (!histo){
+      char hname[100];
+      sprintf(hname,"Amp_%d_%d_%d",uid[0],uid[1],uid[2]);
+      TFile * backup = gFile;
+      fDebugStreamer->GetFile()->cd();
+      histo = new TH1F(hname, hname, 100, 1,100);
+      //histo->SetDirectory(0);     // histogram not connected to directory -(File)
+      sectorArray->AddAt(histo, position);
+      if (backup) backup->cd();
+    }
+    for (Int_t i=0; i<nchannels; i++){
+      if (signal[i]>0) histo->Fill(signal[i]);
+    }
+  }
+  //
+  TGraph * graph;
+  Bool_t random = (gRandom->Rndm()<0.0001);
+  if (max-median>kMin || rms06>2.*fParam->GetZeroSup() || random){
+    graph =new TGraph(nchannels, dtime, dsignal);
+    if (rms06>2.*fParam->GetZeroSup() || random)
+      (*fDebugStreamer)<<"SignalN"<<    //noise pads - or random sample of pads
+	"Sector="<<uid[0]<<
+	"Row="<<uid[1]<<
+	"Pad="<<uid[2]<<
+	"Graph.="<<graph<<
+	"Max="<<max<<
+	"MaxPos="<<maxPos<<
+	//
+	"Median="<<median<<
+	"Mean="<<mean<<
+	"RMS="<<rms<<      
+	"Mean06="<<mean06<<
+	"RMS06="<<rms06<<
+	"Mean07="<<mean07<<
+	"RMS07="<<rms07<<
+	"Mean08="<<mean08<<
+	"RMS08="<<rms08<<
+	"Mean09="<<mean09<<
+	"RMS09="<<rms09<<
+	"\n";
+    if (max-median>kMin) 
+      (*fDebugStreamer)<<"SignalB"<<     // pads with signal
+	"Sector="<<uid[0]<<
+	"Row="<<uid[1]<<
+	"Pad="<<uid[2]<<
+	"Graph.="<<graph<<
+	"Max="<<max<<
+	"MaxPos="<<maxPos<<	
+	//
+	"Median="<<median<<
+	"Mean="<<mean<<
+	"RMS="<<rms<<      
+	"Mean06="<<mean06<<
+	"RMS06="<<rms06<<
+	"Mean07="<<mean07<<
+	"RMS07="<<rms07<<
+	"Mean08="<<mean08<<
+	"RMS08="<<rms08<<
+	"Mean09="<<mean09<<
+	"RMS09="<<rms09<<
+	"\n";
+    delete graph;
+  }
+  
+  (*fDebugStreamer)<<"Signal"<<
+    "Sector="<<uid[0]<<
+    "Row="<<uid[1]<<
+    "Pad="<<uid[2]<<
+    "Max="<<max<<
+    "MaxPos="<<maxPos<<
+    //
+    "Median="<<median<<
+    "Mean="<<mean<<
+    "RMS="<<rms<<      
+    "Mean06="<<mean06<<
+    "RMS06="<<rms06<<
+    "Mean07="<<mean07<<
+    "RMS07="<<rms07<<
+    "Mean08="<<mean08<<
+    "RMS08="<<rms08<<
+    "Mean09="<<mean09<<
+    "RMS09="<<rms09<<
+    "\n";
+  delete [] dsignal;
+  delete [] dtime;
+  if (rms06>kMaxNoise) return 1024+median; // sign noisy channel in debug mode
+  return median;
+}
+
+
+
+void AliTPCclustererMI::DumpHistos(){
+  if (!fAmplitudeHisto) return;
+  for (UInt_t isector=0; isector<AliTPCROC::Instance()->GetNSectors(); isector++){
+    TObjArray * array = (TObjArray*)fAmplitudeHisto->UncheckedAt(isector);
+    if (!array) continue;
+    for (UInt_t ipad = 0; ipad <(UInt_t)array->GetEntriesFast(); ipad++){
+      TH1F * histo = (TH1F*) array->UncheckedAt(ipad);
+      if (!histo) continue;
+      if (histo->GetEntries()<100) continue;
+      histo->Fit("gaus","q");
+      Float_t mean =  histo->GetMean();
+      Float_t rms  =  histo->GetRMS();
+      Float_t gmean = histo->GetFunction("gaus")->GetParameter(1);
+      Float_t gsigma = histo->GetFunction("gaus")->GetParameter(2);
+      Float_t max = histo->GetFunction("gaus")->GetParameter(0);
+
+      // get pad number
+      UInt_t row=0, pad =0;
+      const UInt_t *indexes = AliTPCROC::Instance()->GetRowIndexes(isector);
+      for (UInt_t irow=0; irow< AliTPCROC::Instance()->GetNRows(isector); irow++){
+	if (indexes[irow]<ipad){
+	  row = irow;
+	  pad = ipad-indexes[irow];
+	}
+      }      
+      Int_t rpad = pad - (AliTPCROC::Instance()->GetNPads(isector,row))/2;
+      //
+      (*fDebugStreamer)<<"Fit"<<
+	"Sector="<<isector<<
+	"Row="<<row<<
+	"Pad="<<pad<<
+	"RPad="<<rpad<<
+	"Max="<<max<<
+	"Mean="<<mean<<
+	"RMS="<<rms<<      
+	"GMean="<<gmean<<
+	"GSigma="<<gsigma<<
+	"\n";
+      if (array->UncheckedAt(ipad)) fDebugStreamer->StoreObject(array->UncheckedAt(ipad));
+    }
+  }
 }
