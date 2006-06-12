@@ -485,7 +485,7 @@ void AliITSvSPD02::CreateMaterials(){
     // Monte Carlo simulations for the geometries AliITSv1, AliITSv3,
     // AliITSvSPD02.
     // In general it is automatically replaced by
-    // the CreatMaterials routine defined in AliITSv?. Should the function
+    // the CreateMaterials routine defined in AliITSv?. Should the function
     // CreateMaterials not exist for the geometry version you are using this
     // one is used. See the definition found in AliITSv5 or the other routine
     // for a complete definition.
@@ -516,7 +516,7 @@ void AliITSvSPD02::CreateMaterials2002(){
     // Monte Carlo simulations for the geometries AliITSv1, AliITSv3,
     // AliITSvSPD02.
     // In general it is automatically replaced by
-    // the CreatMaterials routine defined in AliITSv?. Should the function
+    // the CreateMaterials routine defined in AliITSv?. Should the function
     // CreateMaterials not exist for the geometry version you are using this
     // one is used. See the definition found in AliITSv5 or the other routine
     // for a complete definition.
@@ -593,7 +593,7 @@ void AliITSvSPD02::InitAliITSgeom(){
             lad = 1;
             det = mod+1;
             t[0] = tt[mod][0]; t[1] = tt[mod][1]; t[2] = tt[mod][2];
-            GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
+            GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSPD,t,r);
             npar=3;par[0]=0.64;par[1]=0.5*300.0E-4;par[2]=3.48;
             GetITSgeom()->ReSetShape(kSPD,new AliITSgeomSPD425Short(npar,par));
         } // end for det
@@ -644,7 +644,7 @@ void AliITSvSPD02::InitAliITSgeom(){
             mod = lay-1;
             ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
                             imat,imed);
-            GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
+            GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSPD,t,r);
             if(!(GetITSgeom()->IsShapeDefined((Int_t)kSPD)))
                 GetITSgeom()->ReSetShape(kSPD,
                                      new AliITSgeomSPD425Short(npar,par));
@@ -714,7 +714,7 @@ void AliITSvSPD02::SetDefaults(){
     resp0->SetDistanceOverVoltage();
     SetCalibrationModel(0,resp0); 
 	
-    AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(GetITSgeom());
+    AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD();
     seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
 		     s0->GetDz()*2.*kconv, // for now.
 		     s0->GetDy()*2.*kconv); // x,z,y full width in microns.

@@ -532,7 +532,7 @@ void AliITSvSDD03::CreateMaterials(){
     // Monte Carlo simulations for the geometries AliITSv1, AliITSv3,
     // AliITSvSDD03.
     // In general it is automatically replaced by
-    // the CreatMaterials routine defined in AliITSv?. Should the function
+    // the CreateMaterials routine defined in AliITSv?. Should the function
     // CreateMaterials not exist for the geometry version you are using this
     // one is used. See the definition found in AliITSv5 or the other routine
     // for a complete definition.
@@ -783,13 +783,13 @@ void AliITSvSDD03::InitAliITSgeom(){
 
       switch (typ){
       case 2:
-	GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
+	GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSDD,t,r);
 	if(!(GetITSgeom()->IsShapeDefined((Int_t)kSDD))){
 	  GetITSgeom()->ReSetShape(kSDD,new AliITSgeomSDD256(npar,par));
 	} // end if
 	break;
       case 1:
-	GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+	GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
 	if(!(GetITSgeom()->IsShapeDefined((Int_t)kSSD))){
 	  GetITSgeom()->ReSetShape(kSSD,new AliITSgeomSSD(box,0.0,0.0,
 						      knp+1,p,knp+1,n));
@@ -837,7 +837,7 @@ void AliITSvSDD03::SetDefaults(){
     // Return:
     //    none.
 
-    const Float_t kconv = 1.0e+04; // convert cm to microns
+  //    const Float_t kconv = 1.0e+04; // convert cm to microns
 
     if(!fDetTypeSim) fDetTypeSim = new AliITSDetTypeSim();
     fDetTypeSim->SetITSgeom(GetITSgeom());
@@ -847,7 +847,8 @@ void AliITSvSDD03::SetDefaults(){
     AliITSgeomSDD *s1;
     AliITSgeomSSD *s2;
     SetCalibrationModel(GetITSgeom()->GetStartSPD(),new AliITSCalibrationSPD());
-    SetSegmentationModel(kSPD,new AliITSsegmentationSPD());
+    SetSegmentationModel(kSPD,(AliITSsegmentationSPD*)
+			 (GetITSgeom()->GetShape(kSPD)));
     fDetTypeSim->SetDigitClassName(kSPD,"AliITSdigitSPD");
 
     // SDD
@@ -855,11 +856,9 @@ void AliITSvSDD03::SetDefaults(){
     AliITSCalibrationSDD *resp1=new AliITSCalibrationSDD("simulated");
     SetCalibrationModel(GetITSgeom()->GetStartSDD(),resp1);
 
-    AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(GetITSgeom(),resp1);
-    seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
-		     s1->GetDz()*2.*kconv, // for now.
-		     s1->GetDy()*2.*kconv); // x,z,y full width in microns.
-
+    AliITSsegmentationSDD *seg1 = (AliITSsegmentationSDD*)
+			 (GetITSgeom()->GetShape(kSDD));
+    seg1->SetDriftSpeed(resp1->GetDriftSpeed());
     seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
     SetSegmentationModel(kSDD,seg1);
     const char *kData1=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD()))->DataType();
@@ -875,10 +874,8 @@ void AliITSvSDD03::SetDefaults(){
     AliITSCalibration *resp2= new AliITSCalibrationSSD("simulated");
     SetCalibrationModel(GetITSgeom()->GetStartSSD(),resp2);
 
-    AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(GetITSgeom());
-    seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
-		     s2->GetDz()*2.*kconv, // for now.
-		     s2->GetDy()*2.*kconv); // x,z,y full width in microns.
+    AliITSsegmentationSSD *seg2 = (AliITSsegmentationSSD*)
+			 (GetITSgeom()->GetShape(kSSD));
     seg2->SetPadSize(50.,0.); // strip x pitch in microns
     seg2->SetNPads(384,0); // number of strips on each side.
     seg2->SetLayer(5);

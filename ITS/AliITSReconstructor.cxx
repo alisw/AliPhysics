@@ -40,6 +40,7 @@
 #include "AliITSpidESD2.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
+#include "AliITSInitGeometry.h"
 
 ClassImp(AliITSReconstructor)
 
@@ -67,7 +68,32 @@ AliITSReconstructor& AliITSReconstructor::operator=(const AliITSReconstructor& /
   Error("= operator","Assignment operator not allowed\n");
   return *this;
 }
+//______________________________________________________________________
+void AliITSReconstructor::Init(AliRunLoader *runLoader){
+    // Initalize this constructor bet getting/creating the objects
+    // nesseary for a proper ITS reconstruction.
+    // Inputs:
+    //    AliRunLoader *runLoader   Pointer to the run loader to allow
+    //                              the getting of files/folders data
+    //                              needed to do reconstruction
+    // Output:
+    //   none.
+    // Return:
+    //   none.
 
+    AliITSInitGeometry *initgeom = new AliITSInitGeometry("AliITSvPPRasymmFMD",
+							  2);
+    AliITSgeom *geom = initgeom->CreateAliITSgeom();
+    delete initgeom; // once created, do not need initgeom any more.
+    AliITSLoader* loader = static_cast<AliITSLoader*>
+	(runLoader->GetLoader("ITSLoader"));
+    if (!loader) {
+	Error("Init", "ITS loader not found");
+	return;
+    }
+    loader->SetITSgeom(geom);
+    return;
+}
 //_____________________________________________________________________________
 void AliITSReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
@@ -263,4 +289,3 @@ AliITSgeom* AliITSReconstructor::GetITSgeom(AliRunLoader* runLoader) const
   
   return geom;
 }
-

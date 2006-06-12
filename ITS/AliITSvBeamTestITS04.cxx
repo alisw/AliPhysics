@@ -325,7 +325,7 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
 	    Int_t iLad = 1;
 	    Int_t iLay = 1;
 	    if (i+1>2) iLay = 2;
-	    GetITSgeom()->CreatMatrix(startMod,iLay,iLad,iDet,kSPD,trans,rot);
+	    GetITSgeom()->CreateMatrix(startMod,iLay,iLad,iDet,kSPD,trans,rot);
 	    startMod++;
 	};
     };
@@ -344,7 +344,7 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
 	    Int_t iDet = 1;
 	    Int_t iLad = 1;
 	    Int_t iLay = fNspd-1+i;
-	    GetITSgeom()->CreatMatrix(startMod,iLay,iLad,iDet,kSDD,trans,rot);
+	    GetITSgeom()->CreateMatrix(startMod,iLay,iLad,iDet,kSDD,trans,rot);
 	    startMod++;
 	};
     };
@@ -365,7 +365,7 @@ void AliITSvBeamTestITS04::InitAliITSgeom()
 	    Int_t iLad = 1;
 	    Int_t iLay = 5;
 	    if (i+1>2) iLay = 6;
-	    GetITSgeom()->CreatMatrix(startMod,iLay,iLad,iDet,kSSD,trans,rot);
+	    GetITSgeom()->CreateMatrix(startMod,iLay,iLad,iDet,kSSD,trans,rot);
 	    startMod++;
 	};
     };
@@ -408,7 +408,7 @@ void AliITSvBeamTestITS04::SetDefaults()
 	AliITSCalibration *resp0=new AliITSCalibrationSPD();
 	SetCalibrationModel(kSPD,resp0);
 
-	AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD(GetITSgeom());
+	AliITSsegmentationSPD *seg0=new AliITSsegmentationSPD();
 	seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSPD
 			 s0->GetDz()*2.*kconv, // for now.
 			 s0->GetDy()*2.*kconv);// x,z,y full width in microns.
@@ -436,10 +436,11 @@ void AliITSvBeamTestITS04::SetDefaults()
     if (s1) {
       AliITSCalibrationSDD *resp1=new AliITSCalibrationSDD("simulated");
       SetCalibrationModel(kSDD,resp1);
-      AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD(GetITSgeom(),resp1);
+      AliITSsegmentationSDD *seg1=new AliITSsegmentationSDD();
       seg1->SetDetSize(s1->GetDx()*kconv, // base this on AliITSgeomSDD
 		       s1->GetDz()*4.*kconv, // for now.
 		       s1->GetDy()*4.*kconv); // x,z,y full width in microns.
+      seg1->SetDriftSpeed(resp1->GetDriftSpeed());
       seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
       SetSegmentationModel(kSDD,seg1);
       const char *kData1=(fDetTypeSim->GetCalibrationModel(kSDD))->DataType();
@@ -456,7 +457,7 @@ void AliITSvBeamTestITS04::SetDefaults()
       AliITSCalibration *resp2=new AliITSCalibrationSSD("simulated");
       SetCalibrationModel(kSSD,resp2);
 
-      AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD(GetITSgeom());
+      AliITSsegmentationSSD *seg2=new AliITSsegmentationSSD();
       seg2->SetDetSize(s2->GetDx()*2.*kconv, // base this on AliITSgeomSSD
 		       s2->GetDz()*2.*kconv, // for now.
 		       s2->GetDy()*2.*kconv); // x,z,y full width in microns.

@@ -96,8 +96,8 @@ class AliITS : public AliDetector {
     //=================== Hits =========================================
     virtual void StepManager() {} // See Step Manager for specific geometry.
     //------------ sort hits by module for Digitisation ----------------
-    virtual void FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules, Option_t *opt, const char *filename);
- 
+    virtual void FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
+			     Option_t *opt, const char *filename); 
     virtual void InitModules(Int_t size,Int_t &nmodules);  
     virtual void FillModules(TTree *treeH, Int_t mask = 0);
     virtual void ClearModules(){if(fITSmodules) fITSmodules->Delete();}
@@ -128,13 +128,13 @@ class AliITS : public AliDetector {
     virtual void ResetDigits(Int_t branch);
     virtual void AddSumDigit(AliITSpListItem &sdig);
     virtual void AddRealDigit(Int_t branch, Int_t *digits);
-
-    virtual void AddSimDigit(Int_t branch, AliITSdigit *d);			     
+    virtual void AddSimDigit(Int_t branch, AliITSdigit *d);
     virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,
 		     Int_t* tracks,Int_t *hits,Float_t* trkcharges);
     TObjArray* GetDigits()  const {return fDetTypeSim->GetDigits();}
     Int_t* GetNDigitArray() const {return fDetTypeSim->GetNDigitArray();}
-    TClonesArray *DigitsAddress(Int_t id) { return fDetTypeSim->DigitsAddress(id);}
+    TClonesArray *DigitsAddress(Int_t id) {
+	return fDetTypeSim->DigitsAddress(id);}
     //Fast simulation
     virtual void HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
                  Option_t *add, Option_t *det, const char *filename);

@@ -1287,7 +1287,7 @@ void AliITSv11::InitAliITSgeom(){
                     gMC->GetShape(path.Data(),shapeName,shapePar);
                     shapeParF.Set(shapePar.GetSize());
                     for(i=0;i<shapePar.GetSize();i++) shapeParF[i]=shapePar[i];
-                    geom->CreatMatrix(mod,lay,lad,det,idet[lay-1],trans,rot);
+                    geom->CreateMatrix(mod,lay,lad,det,idet[lay-1],trans,rot);
                     geom->SetTrans(mod,materix.GetTranslation());
                     geom->SetRotMatrix(mod,materix.GetRotationMatrix());
                     switch (lay){

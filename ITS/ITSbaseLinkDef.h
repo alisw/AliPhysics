@@ -20,21 +20,21 @@
 #pragma link C++ class  AliITSdigitSDD+;
 #pragma link C++ class  AliITSdigitSSD+;
 #pragma link C++ class  AliITSTransientDigit+;
+#pragma link C++ class  AliITSInitGeometry+;
 #pragma link C++ class  AliITSgeom+;
 #pragma link C++ class  AliITSgeomMatrix-;
 #pragma link C++ class  AliITSgeomSPD+;
 #pragma link C++ class  AliITSgeomSDD+;
 #pragma link C++ class  AliITSgeomSSD+;
 // Standard ITS detector class initilizers
-#pragma link C++ class AliITSgeomSPD300+;
-#pragma link C++ class AliITSgeomSPD425Short+;
-#pragma link C++ class AliITSgeomSPD425Long+;
-#pragma link C++ class AliITSgeomSDD256+;
-#pragma link C++ class AliITSgeomSDD300+;
-#pragma link C++ class AliITSgeomSSD175+;
-#pragma link C++ class AliITSgeomSSD275and75+;
-#pragma link C++ class AliITSgeomSSD75and275+;
-
+#pragma link C++ class  AliITSgeomSPD300+;
+#pragma link C++ class  AliITSgeomSPD425Short+;
+#pragma link C++ class  AliITSgeomSPD425Long+;
+#pragma link C++ class  AliITSgeomSDD256+;
+#pragma link C++ class  AliITSgeomSDD300+;
+#pragma link C++ class  AliITSgeomSSD175+;
+#pragma link C++ class  AliITSgeomSSD275and75+;
+#pragma link C++ class  AliITSgeomSSD75and275+;
 
 #pragma link C++ class  AliITSMap+;
 #pragma link C++ class  AliITSMapA1+;

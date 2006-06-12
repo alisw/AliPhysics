@@ -28,13 +28,11 @@ class AliITSgeomSSD : public TObject {
     virtual AliITSgeomSSD& operator=(const AliITSgeomSSD &source); // = opt.
     void ResetSSD(const Float_t *box,Float_t ap,Float_t an,
 		  Int_t np,Float_t *p,Int_t nn,Float_t *n); // Filler
-    virtual TShape *GetShape() const {return fShapeSSD;}// get shape
-    virtual Float_t GetDx() const {if(fShapeSSD!=0) return fShapeSSD->GetDx();
-                    else return 0.0;}// get Dx
-    virtual Float_t GetDy() const {if(fShapeSSD!=0) return fShapeSSD->GetDy();
-                    else return 0.0;}// get Dy
-    virtual Float_t GetDz() const {if(fShapeSSD!=0) return fShapeSSD->GetDz();
-                    else return 0.0;}// get Dz
+    virtual TShape *GetShape() const {return new TBRIK(fName.Data(),
+           fTitle.Data(),fMat.Data(),GetDx(),GetDy(),GetDz());}// get shape
+    virtual Float_t GetDx() const {return fDx;}// get Dx
+    virtual Float_t GetDy() const {return fDy;}// get Dy
+    virtual Float_t GetDz() const {return fDz;}// get Dz
     virtual Int_t GetNAnodes() const {return fNp-1;}//the number of Anodes "P"
     virtual Int_t GetNCathodess() const {return fNn-1;}//the number of Cathodes "N"
     virtual Float_t GetAnodePitch(Int_t i=0) const { //anode pitch for anode i
@@ -46,7 +44,7 @@ class AliITSgeomSSD : public TObject {
     virtual void SetShape(char *name,char *title,char *mat,
                           Float_t dx,Float_t dy,Float_t dz){
 	// defines TBRIK with given paramters
-        fShapeSSD = new TBRIK(name,title,mat,dx,dy,dz);};
+	fName = name;fTitle = title;fMat = mat; fDx=dx;fDy=dy;fDz=dz;};
     virtual void SetNAnodes(Int_t n) {// sets the number of Anodes "P" and
 	// allocates array of low edges.
 	fNp=n+1;delete fLowEdgeP;fLowEdgeP = new Float_t[fNp];}
@@ -73,7 +71,12 @@ class AliITSgeomSSD : public TObject {
     //  |
     //  V
     //  z
-    TBRIK *fShapeSSD; // comment
+    TString fName;  // Object name  Replacement for TBRIK
+    TString fTitle; // Ojbect title  Replacement for TBRIK
+    TString fMat;   // Object material name  Replacement for TBRIK
+    Float_t fDx;    // half length in z  Replacement for TBRIK
+    Float_t fDy;    // half length in y  Replacement for TBRIK
+    Float_t fDz;    // half length in z  Replacement for TBRIK
     Int_t   fNp;      // Number of Anode strips.
     Int_t   fNn;      // Number of Cathode strips.
     Float_t *fLowEdgeP;  //[fNp] Anode side strip pitch angle==0.
@@ -82,7 +85,7 @@ class AliITSgeomSSD : public TObject {
     Float_t fAngleN;  // Cathode side strip angle (rad).
     // or what other or different information that is needed.
     
-    ClassDef(AliITSgeomSSD,1) // ITS SSD detector geometry class
+    ClassDef(AliITSgeomSSD,2) // ITS SSD detector geometry class
 
 };
 // Input and output function for standard C++ input/output.

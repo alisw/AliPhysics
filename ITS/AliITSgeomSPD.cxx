@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TGeometry.h>
 #include <TShape.h>
 #include <TMath.h>
 
@@ -30,25 +31,36 @@
 
 ClassImp(AliITSgeomSPD)
 
-AliITSgeomSPD::AliITSgeomSPD(){
+AliITSgeomSPD::AliITSgeomSPD():
+TObject(),
+fName(),
+fTitle(),
+fMat(),
+fDx(0.0),
+fDy(0.0),
+fDz(0.0),
+fNbinx(0),
+fNbinz(0),
+fLowBinEdgeX(0),
+fLowBinEdgeZ(0){
 // Default Constructor. Set everthing to null.
-
-    fShapeSPD    = 0;
-    fNbinx       = 0;
-    fNbinz       = 0;
-    fLowBinEdgeX = 0;
-    fLowBinEdgeZ = 0;
 }
 //______________________________________________________________________
 AliITSgeomSPD::AliITSgeomSPD(Float_t dy,Int_t nx,Float_t *bx,
-			     Int_t nz,Float_t *bz){
+			     Int_t nz,Float_t *bz):
+TObject(),
+fName(),
+fTitle(),
+fMat(),
+fDx(0.0),
+fDy(0.0),
+fDz(0.0),
+fNbinx(0),
+fNbinz(0),
+fLowBinEdgeX(0),
+fLowBinEdgeZ(0){
 // Standard Constructor. Set everthing to null.
 
-    fShapeSPD    = 0;
-    fNbinx       = 0;
-    fNbinz       = 0;
-    fLowBinEdgeX = 0;
-    fLowBinEdgeZ = 0;
     ReSetBins(dy,nx,bx,nz,bz);
     return;
 }
@@ -65,9 +77,10 @@ void AliITSgeomSPD::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
     dx *= 0.5;
     dz *= 0.5;
 
-    delete fShapeSPD; // delete existing shape
-    if(this->fLowBinEdgeX) delete[] this->fLowBinEdgeX; // delete existing
-    if(this->fLowBinEdgeZ) delete[] this->fLowBinEdgeZ; // delete existing
+    if(fLowBinEdgeX) delete[] fLowBinEdgeX; // delete existing
+    if(fLowBinEdgeZ) delete[] fLowBinEdgeZ; // delete existing
+    fLowBinEdgeX = 0;
+    fLowBinEdgeZ = 0;
 
     SetNbinX(nx);
     SetNbinZ(nz);
@@ -77,7 +90,7 @@ void AliITSgeomSPD::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
     fLowBinEdgeZ[0] = -dz;
     for(i=0;i<nx;i++) fLowBinEdgeX[i+1] = fLowBinEdgeX[i] + bx[i];
     for(i=0;i<nz;i++) fLowBinEdgeZ[i+1] = fLowBinEdgeZ[i] + bz[i];
-    SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",dx,dy,dz);
+    SetShape("ActiveSPD","Active volume of SPD","",dx,dy,dz);
     return;
 }
 //______________________________________________________________________
@@ -93,9 +106,14 @@ AliITSgeomSPD& AliITSgeomSPD::operator=(AliITSgeomSPD &source){
     Int_t i;
 
     if(&source == this) return *this;
-    this->fShapeSPD = new TBRIK(*(source.fShapeSPD));
-    if(this->fLowBinEdgeX) delete[] this->fLowBinEdgeX;
-    if(this->fLowBinEdgeZ) delete[] this->fLowBinEdgeZ;
+    fName=source.fName;
+    fTitle=source.fTitle;
+    fMat=source.fMat;
+    fDx=source.fDx;
+    fDy=source.fDy;
+    fDz=source.fDz;
+    if(this->fLowBinEdgeX) delete[] (this->fLowBinEdgeX);
+    if(this->fLowBinEdgeZ) delete[] (this->fLowBinEdgeZ);
     this->fNbinx = source.fNbinx;
     this->fNbinz = source.fNbinz;
     this->InitLowBinEdgeX();
@@ -108,14 +126,36 @@ AliITSgeomSPD& AliITSgeomSPD::operator=(AliITSgeomSPD &source){
 AliITSgeomSPD::~AliITSgeomSPD(){
 // Destructor
 
-    delete fShapeSPD;
-    if(this->fLowBinEdgeX) delete[] this->fLowBinEdgeX;
-    if(this->fLowBinEdgeZ) delete[] this->fLowBinEdgeZ;
-    fShapeSPD    = 0;
+    if(fLowBinEdgeX) delete[] fLowBinEdgeX;
+    if(fLowBinEdgeZ) delete[] fLowBinEdgeZ;
     fNbinx       = 0;
     fNbinz       = 0;
     fLowBinEdgeX = 0;
     fLowBinEdgeZ = 0;
+}
+//______________________________________________________________________
+void AliITSgeomSPD::SetShape(const char *name,const char *title,
+			     const char *mat,Float_t dx,Float_t dy,Float_t dz){
+    // Delete any existing shape info and replace it with a new
+    // shape information.
+    // Inputs:
+    //   char * name  Name of the shape
+    //   char * title Title of the shape
+    //   char * mat   Material name for the shape
+    //   Float_t dx   half width of the shape [cm]
+    //   Float_t dy   half thickness of the shape [cm]
+    //   Float_t dz   half length of the shape [cm]
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+
+    fName  = name;
+    fTitle = title;
+    fDx    = dx;
+    fDy    = dy;
+    fDz    = dz;
+    return;
 }
 //______________________________________________________________________
 void AliITSgeomSPD::LToDet(Float_t xl,Float_t zl,Int_t &row,Int_t &col){
@@ -188,8 +228,7 @@ void AliITSgeomSPD::Read(istream *is){
     *is >> shape;
     if(strcmp(shape,"TBRIK")) Warning("::Read","Shape not a TBRIK");
     *is >> dx >> dy >> dz;
-    if(fShapeSPD!=0) delete fShapeSPD;
-    SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",dx,dy,dz);
+    SetShape("ActiveSPD","Active volume of SPD","",dx,dy,dz);
     *is >> i >> j;
     SetNbinX(i);
     SetNbinZ(j);
@@ -239,8 +278,6 @@ const Int_t   knbinz = 279;    // number of pixels along z direction.
     Int_t i;
     Float_t dx=0.0,dz=0.0;
 
-//    cout << "AliITSgeomSPD300 default creator called: start" << endl;
-
     SetNbinX(knbinx); // default number of bins in x.
     SetNbinZ(knbinz); // default number of bins in z.
 
@@ -260,8 +297,7 @@ const Int_t   knbinz = 279;    // number of pixels along z direction.
 
     if(TMath::Abs(dx-kdx)>1.0E-4 || TMath::Abs(dz-kdz)>1.0E-4) 
 	Warning("Default Creator","Detector size may not be write.");
-    SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",dx,kdy,dz);
-//    cout << "AliITSgeomSPD300 default creator called: end" << endl;
+    SetShape("ActiveSPD","Active volume of SPD","",dx,kdy,dz);
 }
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITSgeomSPD300 &p){
@@ -348,7 +384,7 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(Int_t npar,Float_t *par) :
               "npar=%d<3 array par must be at least [3] or larger",npar);
 	return;
     } // end if
-    SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",
+    SetShape("ActiveSPD","Active volume of SPD","",
 	     par[0],par[1],par[2]);
     if(TMath::Abs(dx-kdx)>1.0E-4 || TMath::Abs(dz-kdz)>1.0E-4) 
 	Warning("Default Creator","Detector size may not be write.");
@@ -433,7 +469,7 @@ AliITSgeomSPD425Long::AliITSgeomSPD425Long(){
     for(i=0;i<knbinz;i++) dz += binSizeZ[i];
     dz *= 0.5;
 
-    SetShape("ActiveSPD","Active volume of SPD","SPD SI DET",dx,kdy,dz);
+    SetShape("ActiveSPD","Active volume of SPD","",dx,kdy,dz);
     if(TMath::Abs(dx-kdx)>1.0E-4 || TMath::Abs(dz-kdz)>1.0E-4) 
 	Warning("Default Creator","Detector size may not be write.");
 

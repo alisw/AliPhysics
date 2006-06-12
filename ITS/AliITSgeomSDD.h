@@ -30,16 +30,11 @@ class AliITSgeomSDD: public TObject {
     void ResetSDD(const Float_t *box,Float_t per,Float_t vel,
 		  Float_t axL,Float_t axR,
 		  Int_t nA0,Float_t *le0,Int_t nA1,Float_t *le1);
-    virtual TShape *GetShape() const {return fShapeSDD;}
-    virtual Float_t GetDx() const { // Get TBRIK Dx
-	if(fShapeSDD!=0) return fShapeSDD->GetDx();
-	else return 0.0;}
-    virtual Float_t GetDy() const {// Get TBRIK Dy
-	if(fShapeSDD!=0) return fShapeSDD->GetDy();
-	else return 0.0;}
-    virtual Float_t GetDz() const {// Get TBRIK Dz
-	if(fShapeSDD!=0) return fShapeSDD->GetDz();
-	else return 0.0;}
+    virtual TShape *GetShape() const {return new TBRIK(fName.Data(),
+			   fTitle.Data(),fMat.Data(),GetDx(),GetDy(),GetDz());}
+    virtual Float_t GetDx() const {return fDx;} // Get TBRIK Dx
+    virtual Float_t GetDy() const {return fDy;}// Get TBRIK Dy
+    virtual Float_t GetDz() const {return fDz;}// Get TBRIK Dz
     virtual Float_t GetAnodeX(Int_t a,Int_t s) const {
 	// returns X position of anode
 	a = 0; if(s==0) return fAnodeXL; else return fAnodeXR;}
@@ -56,8 +51,8 @@ class AliITSgeomSDD: public TObject {
     virtual void SetDriftVelocity(Float_t s)
 	{fDvelocity = s;} // sets the SDD Drift velocity cm/s.
     virtual void SetShape(char *name,char *title,char *mat,
-			  Float_t dx,Float_t dy,Float_t dz)
-	                 {fShapeSDD = new TBRIK(name,title,mat,dx,dy,dz);}
+			  Float_t dx,Float_t dy,Float_t dz){fName=name;
+			  fTitle=title;fMat=mat;fDx=dx;fDy=dy;fDz=dz;}
     virtual void Local2Det(Float_t xl,Float_t zl,Int_t &a,Int_t &t,Int_t &s);
     virtual void Det2Local(Int_t a,Int_t t,Int_t s,Float_t &xl,Float_t &zl);
     virtual void Print(ostream *os) const; // Output streamer to standard out.
@@ -78,9 +73,14 @@ class AliITSgeomSDD: public TObject {
     Float_t fAnodeXR;   // Anode location in x Right side
     Float_t *fAnodeLowEdgeL; //[fNAnodesL] Anode spacing left edge
     Float_t *fAnodeLowEdgeR; //[fNAnodesR] Anode spacing right edge
-    TBRIK *fShapeSDD;     // shape of sensitive volume
+    TString fName;  // Object name
+    TString fTitle; // Ojbect title
+    TString fMat;   // Object material name  Replacement for TBRIK
+    Float_t fDx;    // half length in z  Replacement for TBRIK
+    Float_t fDy;    // half length in y  Replacement for TBRIK
+    Float_t fDz;    // half length in z  Replacement for TBRIK
 
-    ClassDef(AliITSgeomSDD,1) // ITS SDD detector geometry class
+    ClassDef(AliITSgeomSDD,2) // ITS SDD detector geometry class
 
 };
 // Input and output function for standard C++ input/output.
@@ -128,7 +128,6 @@ istream &operator>>(istream &os,AliITSgeomSDD256 &source);
 */
 
 //#include "AliITSgeomSDD.h"
-
 
 class AliITSgeomSDD300 : public AliITSgeomSDD {
 

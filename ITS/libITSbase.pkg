@@ -3,6 +3,7 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSgeomSPD.cxx \
 		AliITSgeomSDD.cxx \
 		AliITSgeomSSD.cxx \
+		AliITSInitGeometry.cxx \
 		AliITSLoader.cxx \
 		AliITSRecPoint.cxx \
 		AliITSclusterV2.cxx \
@@ -47,5 +48,5 @@ HDRS:=  $(SRCS:.cxx=.h)
 
 DHDR=ITSbaseLinkDef.h
 
-EINCLUDE:=$(ALICE)/geant3/TGeant3 TPC RAW
+EINCLUDE:=$(GEANT3_ROOT)/TGeant3 TPC RAW
 

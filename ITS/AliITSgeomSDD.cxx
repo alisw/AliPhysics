@@ -29,7 +29,22 @@
 #include "AliITSgeomSDD.h"
 
 ClassImp(AliITSgeomSDD)
-AliITSgeomSDD::AliITSgeomSDD(){
+AliITSgeomSDD::AliITSgeomSDD():
+TObject(),
+fPeriod(0.0),
+fDvelocity(0.0),
+fNAnodesL(0),
+fNAnodesR(0),
+fAnodeXL(0.0),
+fAnodeXR(0.0),
+fAnodeLowEdgeL(0),
+fAnodeLowEdgeR(0),
+fName(),
+fTitle(),
+fMat(),
+fDx(0.0),
+fDy(0.0),
+fDz(0.0){
 ////////////////////////////////////////////////////////////////////////
 //    default constructor
 ////////////////////////////////////////////////////////////////////////
@@ -37,7 +52,6 @@ AliITSgeomSDD::AliITSgeomSDD(){
 //    const Float_t kDy = 0.014;//cm. (Geant 3.12 units) Radialy from the Beam
 //    const Float_t kDz = 3.763;//cm. (Geant 3.12 units) Allong the Beam Pipe
 
-//    cout << "AliITSgeomSDD default creator called: start" << endl;
     fPeriod        = 0.0;
     fDvelocity     = 0.0;
     fNAnodesL      = 0;
@@ -46,14 +60,27 @@ AliITSgeomSDD::AliITSgeomSDD(){
     fAnodeXR       = 0.0;
     fAnodeLowEdgeL = 0;
     fAnodeLowEdgeR = 0;
-    fShapeSDD      = 0;
-//    cout << "AliITSgeomSDD default creator called: end" << endl;
 }
 //________________________________________________________________________
 AliITSgeomSDD::AliITSgeomSDD(const Float_t *box,Float_t per,Float_t vel,
 			     Float_t axL,Float_t axR,
 			     Int_t nAL,Float_t *leL,
-			     Int_t nAR,Float_t *leR){
+			     Int_t nAR,Float_t *leR):
+TObject(),
+fPeriod(0.0),
+fDvelocity(0.0),
+fNAnodesL(0),
+fNAnodesR(0),
+fAnodeXL(0.0),
+fAnodeXR(0.0),
+fAnodeLowEdgeL(0),
+fAnodeLowEdgeR(0),
+fName(),
+fTitle(),
+fMat(),
+fDx(0.0),
+fDy(0.0),
+fDz(0.0){
 ////////////////////////////////////////////////////////////////////////
 //    Standard constructor
 ////////////////////////////////////////////////////////////////////////
@@ -65,7 +92,6 @@ AliITSgeomSDD::AliITSgeomSDD(const Float_t *box,Float_t per,Float_t vel,
     fAnodeXR       = 0.0;
     fAnodeLowEdgeL = 0;
     fAnodeLowEdgeR = 0;
-    fShapeSDD      = 0;
     ResetSDD(box,per,vel,axL,axR,nAL,leL,nAR,leR);
 }
 //________________________________________________________________________
@@ -84,23 +110,25 @@ void AliITSgeomSDD::ResetSDD(const Float_t *box,Float_t per,Float_t vel,
     fNAnodesR      = nAR;
     fAnodeXL       = axL;
     fAnodeXR       = axR;
-//    if(fAnodeLowEdgeL!=0) delete fAnodeLowEdgeL;
+    if(fAnodeLowEdgeL!=0) delete fAnodeLowEdgeL;
     fAnodeLowEdgeL = new Float_t[fNAnodesL];
-//    if(fAnodeLowEdgeR!=0) delete fAnodeLowEdgeR;
+    if(fAnodeLowEdgeR!=0) delete fAnodeLowEdgeR;
     fAnodeLowEdgeR = new Float_t[fNAnodesR];
     for(i=0;i<fNAnodesL;i++) fAnodeLowEdgeL[i] = leL[i];
     for(i=0;i<fNAnodesR;i++) fAnodeLowEdgeR[i] = leR[i];
-    fShapeSDD = new TBRIK("ActiveSDD","Active volume of SDD","SDD SI DET",
-			       box[0],box[1],box[2]);
+    fName="ActiveSDD";
+    fTitle="Active volume of SDD";
+    fMat="SDD Si Det";
+    fDx=box[0];
+    fDy=box[1];
+    fDz=box[2];
 }
 //________________________________________________________________________
 AliITSgeomSDD::~AliITSgeomSDD(){
 // Destructor
 
-    if(fShapeSDD!=0) delete fShapeSDD;
     if(fAnodeLowEdgeL!=0) delete [] fAnodeLowEdgeL;
     if(fAnodeLowEdgeR!=0) delete [] fAnodeLowEdgeR;
-    fShapeSDD  = 0;
     fPeriod    = 0.0;
     fDvelocity = 0.0;
     fAnodeXL   = 0.0;
@@ -116,7 +144,12 @@ AliITSgeomSDD::AliITSgeomSDD(AliITSgeomSDD &source) : TObject(source){
     Int_t i;
 
     if(this==&source) return;
-    this->fShapeSDD  = new TBRIK(*(source.fShapeSDD));
+    fName=source.fName;
+    fTitle=source.fTitle;
+    fMat=source.fMat;
+    fDx=source.fDx;
+    fDy=source.fDy;
+    fDz=source.fDz;
     this->fPeriod    = source.fPeriod;
     this->fDvelocity = source.fDvelocity;
     this->fNAnodesL  = source.fNAnodesL;
@@ -137,7 +170,12 @@ AliITSgeomSDD& AliITSgeomSDD::operator=(AliITSgeomSDD &source){
     Int_t i;
 
     if(this==&source) return *this;
-    this->fShapeSDD  = new TBRIK(*(source.fShapeSDD));
+    fName=source.fName;
+    fTitle=source.fTitle;
+    fMat=source.fMat;
+    fDx=source.fDx;
+    fDy=source.fDy;
+    fDz=source.fDz;
     this->fPeriod    = source.fPeriod;
     this->fDvelocity = source.fDvelocity;
     this->fNAnodesL  = source.fNAnodesL;
@@ -236,14 +274,13 @@ void AliITSgeomSDD::Read(istream *is){
 // Standard input format for this class.
 ////////////////////////////////////////////////////////////////////////
     Int_t i;
-    Float_t dx,dy,dz;
     char shp[20];
 
     *is >> shp;
-    *is >> dx >> dy >> dz;
-    if(fShapeSDD!=0) delete fShapeSDD;
-    fShapeSDD = new TBRIK("ActiveSDD","Active volume of SDD","SDD SI DET",
-			    dx,dy,dz);
+    *is >> fDx >> fDy >> fDz;
+    fName="AcrtiveSDD";
+    fTitle="Active volulme of SDD";
+    fMat="SDD Si Det";
     *is >> fPeriod >> fDvelocity >> fNAnodesL >> fNAnodesR;
     *is >> fAnodeXL >> fAnodeXR;
     if(fAnodeLowEdgeL!=0) delete fAnodeLowEdgeL;
@@ -693,13 +730,11 @@ _____________________________________________
 	      npar);
 	return;
     } // end if
-//    cout << "AliITSgeomSDD256 default creator called: start" << end;
    anodeLowEdges[0] = kAnodesZ;
     for(i=0;i<kNAnodes;i++)anodeLowEdges[i+1] = kAnodePitch+anodeLowEdges[i];
     AliITSgeomSDD::ResetSDD(par,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
 			    kNAnodes+1,anodeLowEdges,
 			    kNAnodes+1,anodeLowEdges);
-//    cout << "AliITSgeomSDD256 default creator called: end" << endl;
 }
 //________________________________________________________________________
 ostream &operator<<(ostream &os,AliITSgeomSDD256 &p){
@@ -739,13 +774,11 @@ AliITSgeomSDD300::AliITSgeomSDD300() : AliITSgeomSDD(){
     const Float_t kanode = 0.0250;// cm anode separation.
     Int_t i;
 
-//    cout << "AliITSgeomSDD300 default creator called: start" << endl;
-   anodeLowEdges[0] = kAnodesZ;
+    anodeLowEdges[0] = kAnodesZ;
     for(i=0;i<kNAnodes;i++)anodeLowEdges[i+1] = kanode+anodeLowEdges[i];
     AliITSgeomSDD::ResetSDD(kDxyz,kPeriod,kVelocity,kAnodeXL,kAnodeXR,
 			    kNAnodes+1,anodeLowEdges,
 			    kNAnodes+1,anodeLowEdges);
-//    cout << "AliITSgeomSDD300 default creator called: end" << endl;
 }
 //________________________________________________________________________
 ostream &operator<<(ostream &os,AliITSgeomSDD300 &p){

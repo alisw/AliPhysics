@@ -381,7 +381,7 @@ void AliITSvSSD03::CreateMaterials(){
     // Monte Carlo simulations for the geometries AliITSv1, AliITSv3,
     // AliITSvSSD03.
     // In general it is automatically replaced by
-    // the CreatMaterials routine defined in AliITSv?. Should the function
+    // the CreateMaterials routine defined in AliITSv?. Should the function
     // CreateMaterials not exist for the geometry version you are using this
     // one is used. See the definition found in AliITSv5 or the other routine
     // for a complete definition.
@@ -412,7 +412,7 @@ void AliITSvSSD03::CreateMaterials2003(){
     // Monte Carlo simulations for the geometries AliITSv1, AliITSv3,
     // AliITSvSSD03.
     // In general it is automatically replaced by
-    // the CreatMaterials routine defined in AliITSv?. Should the function
+    // the CreateMaterials routine defined in AliITSv?. Should the function
     // CreateMaterials not exist for the geometry version you are using this
     // one is used. See the definition found in AliITSv5 or the other routine
     // for a complete definition.
@@ -528,7 +528,7 @@ void AliITSvSSD03::InitAliITSgeom(){
       lad = 1;
       det = mod+1;
       t[0] = tt[mod][0]; t[1] = tt[mod][1]; t[2] = tt[mod][2];
-      GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+      GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
       
       npar=3;par[0]=3.5;par[1]=0.5*300.0E-4;par[2]=2.0;
       
@@ -580,7 +580,7 @@ void AliITSvSSD03::InitAliITSgeom(){
       mod = lay-1;
       ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,par,att,
 		      imat,imed);
-      GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+      GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
       //cout<<mod<<" "<<lay<<" "<<lad<<" "<<det<<endl;
       //cout<<npar<<" "<<par[0]<<" "<<par[1]<<" "<<par[2]<<endl;
       if(!(GetITSgeom()->IsShapeDefined((Int_t)kSSD)))
@@ -648,7 +648,7 @@ void AliITSvSSD03::SetDefaults(){
     AliITSCalibration *resp0=new AliITSCalibrationSSD("simulated");
     SetCalibrationModel(GetITSgeom()->GetStartSSD(),resp0);	
 
-    AliITSsegmentationSSD *seg0=new AliITSsegmentationSSD(GetITSgeom());
+    AliITSsegmentationSSD *seg0=new AliITSsegmentationSSD();
     seg0->SetDetSize(s0->GetDx()*2.*kconv, // base this on AliITSgeomSSD
 		     s0->GetDz()*2.*kconv, // for now.
 		     s0->GetDy()*2.*kconv); // x,z,y full width in microns.

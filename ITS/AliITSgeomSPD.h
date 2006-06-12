@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
-
+#include <Riostream.h>
 #include <TObject.h>
 #include <TBRIK.h>
 
@@ -27,16 +27,11 @@ class AliITSgeomSPD : public TObject {
     virtual ~AliITSgeomSPD();
     virtual void ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
 			   Int_t nz,Float_t *bz);
-    virtual TShape *GetShape() const {return fShapeSPD;}
-    virtual Float_t GetDx() const { // Get TBRIK Dx
-        if(fShapeSPD!=0) return fShapeSPD->GetDx();
-        else return 0.0;}
-    virtual Float_t GetDy() const {// Get TBRIK Dy
-        if(fShapeSPD!=0) return fShapeSPD->GetDy();
-        else return 0.0;}
-    virtual Float_t GetDz() const {// Get TBRIK Dz
-        if(fShapeSPD!=0) return fShapeSPD->GetDz();
-        else return 0.0;}
+    virtual TShape *GetShape() const {return new TBRIK(fName.Data(),
+			  fTitle.Data(),fMat.Data(),GetDx(),GetDy(),GetDz());}
+    virtual Float_t GetDx() const {return fDx;} // Get TBRIK Dx
+    virtual Float_t GetDy() const {return fDy;}// Get TBRIK Dy
+    virtual Float_t GetDz() const {return fDz;}// Get TBRIK Dz
     virtual Int_t GetNbinsX() const {return fNbinx-1;} // returns the number of bins x
     virtual Int_t GetNbinsZ() const {return fNbinz-1;} // returns the number of bins z
     virtual Float_t GetBinSizeX(Int_t i) const
@@ -58,8 +53,7 @@ class AliITSgeomSPD : public TObject {
 	if(fLowBinEdgeZ!=0) delete[] fLowBinEdgeZ;
 	if(fNbinz>0) fLowBinEdgeZ = new Float_t[fNbinz];else fLowBinEdgeZ = 0;}
     virtual void SetShape(const char *name,const char *title,const char *mat,
-			  Float_t dx,Float_t dy,Float_t dz)
-	{fShapeSPD = new TBRIK(name,title,mat,dx,dy,dz);};
+			  Float_t dx,Float_t dy,Float_t dz);
     virtual void SetNbinX(Int_t i){fNbinx = i+1;} // Set nubmer of pixels in x
     virtual void SetNbinZ(Int_t i){fNbinz = i+1;} // Set nubmer of pixels in z
     virtual void SetLowBinEdgeX(Int_t i,Float_t s){//puts value in fLowbinEdgeX
@@ -74,13 +68,18 @@ class AliITSgeomSPD : public TObject {
     virtual Int_t Read(const char *name) {return TObject::Read(name);}
 
  protected:
-    TBRIK  *fShapeSPD; // SPD active area shape
+    TString fName;  // Object name  Replacement for TBRIK
+    TString fTitle; // Ojbect title  Replacement for TBRIK
+    TString fMat;   // Object material name  Replacement for TBRIK
+    Float_t fDx;   // half length in z  Replacement for TBRIK
+    Float_t fDy;   // half length in y  Replacement for TBRIK
+    Float_t fDz;   // half length in z  Replacement for TBRIK
     Int_t fNbinx;  // the number of elements in fLowBinEdgeX (#bins-1)
     Int_t fNbinz;  // the number of elements in fLowBinEdgeZ (#bins-1)
     Float_t *fLowBinEdgeX; //[fNbinx] Array of X lower bin edges for the pixels
     Float_t *fLowBinEdgeZ; //[fNbinz] Array of Z lower bin edges for the pixels
 
-    ClassDef(AliITSgeomSPD,1) // ITS SPD detector geometry class..
+    ClassDef(AliITSgeomSPD,2) // ITS SPD detector geometry class..
 
 };
 // Input and output function for standard C++ input/output.

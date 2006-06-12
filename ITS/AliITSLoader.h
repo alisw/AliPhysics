@@ -112,7 +112,7 @@ class AliITSLoader: public AliLoader{
     // Geometry. Geom is read from file, unless already loaded
     // readout from file can be forced if force=kTRUE
     AliITSgeom* GetITSgeom(Bool_t force=kFALSE); 
-    void SetITSgeom(AliITSgeom* g){fGeom=g;}
+    void SetITSgeom(AliITSgeom* g);
     // PID
     AliITSpidESD* GetITSpid() const {return fITSpid;}
     void  AdoptITSpid(AliITSpidESD* pid) {fITSpid=pid;}

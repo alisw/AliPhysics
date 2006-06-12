@@ -24,7 +24,8 @@ public:
   virtual ~AliITSReconstructor();
   AliITSReconstructor(const AliITSReconstructor &ob); // copy constructor
   AliITSReconstructor& operator=(const AliITSReconstructor & /* source */); // ass. op.
-
+  virtual void Init(AliRunLoader* runLoader);
+  
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
   virtual void         Reconstruct(AliRunLoader* runLoader,
 				   AliRawReader* rawReader) const;

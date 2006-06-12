@@ -2654,7 +2654,7 @@ Int_t AliITSv11GeometrySDD::ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD
 				    r[3],r[4],r[5],
 				    r[6],r[7],r[8], 1.0};
 		//rot[9]!=0.0 => not a unity matrix
-		geom->CreatMatrix(startMod,iLay+iLaySDD,iLadd+1,iDet+1,
+		geom->CreateMatrix(startMod,iLay+iLaySDD,iLadd+1,iDet+1,
 				  kSDD,trans,rot);
 		// iLadd+1, iDet+1 because ladd. and det. start at +1
 		// elsewhere

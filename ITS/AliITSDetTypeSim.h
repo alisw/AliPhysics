@@ -16,6 +16,7 @@ $Id$
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include "AliITSCalibration.h"
+#include "AliITSLoader.h"
 #include "AliITSgeom.h"
 
 class TTree;
@@ -26,7 +27,6 @@ class AliITSpListItem;
 class AliITSsimulation;
 class AliITSsegmentation;
 class AliITSresponse;
-class AliLoader;
 
 class AliITSDetTypeSim : public TObject {
  public:
@@ -35,8 +35,10 @@ class AliITSDetTypeSim : public TObject {
     virtual ~AliITSDetTypeSim(); 
     AliITSDetTypeSim(const AliITSDetTypeSim &source);
     AliITSDetTypeSim& operator=(const AliITSDetTypeSim &source);
-    AliITSgeom *GetITSgeom() const {return fGeom;}
-    void SetITSgeom(AliITSgeom *geom){fGeom=geom;}
+    AliITSgeom *GetITSgeom() const {
+        if(fLoader)return ((AliITSLoader*)fLoader)->GetITSgeom();
+	else return 0;}
+    void SetITSgeom(AliITSgeom *geom);
     
     virtual void SetSimulationModel(Int_t dettype,AliITSsimulation *sim);
     virtual AliITSsimulation* GetSimulationModel(Int_t dettype);        
@@ -48,15 +50,16 @@ class AliITSDetTypeSim : public TObject {
 
     virtual void SetCalibrationModel(Int_t iMod,AliITSCalibration *resp);
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod);
-    virtual AliITSresponse* GetResponse(Int_t dettype) {return GetCalibrationModel(GetITSgeom()->GetStartDet(dettype))->GetResponse();}
-
+    virtual AliITSresponse* GetResponse(Int_t dettype) {
+	return GetCalibrationModel(
+	    GetITSgeom()->GetStartDet(dettype))->GetResponse();}
     TObjArray* GetCalibrationArray() const {return fCalibration;}
     TObjArray* GetSegmentation() const {return fSegmentation;}
     void ResetCalibrationArray();
     void ResetSegmentation();
 
-    virtual void SetLoader(AliLoader* loader) {fLoader=loader;}
-    AliLoader* GetLoader() const {return fLoader;}
+    virtual void SetLoader(AliITSLoader* loader);
+    AliITSLoader* GetLoader() const {return fLoader;}
 
     virtual void SetDefaults();
     virtual void SetDefaultSimulation();
@@ -70,8 +73,8 @@ class AliITSDetTypeSim : public TObject {
     TClonesArray* GetSDigits() const {return fSDigits;}
     TObjArray*    GetDigits() const {return fDigits;}
     Int_t* GetNDigitArray() const {return fNDigits;}
-    TClonesArray *DigitsAddress(Int_t id) const { return ((TClonesArray*)(*fDigits)[id]);}
-
+    TClonesArray *DigitsAddress(Int_t id) const {
+	return ((TClonesArray*)(*fDigits)[id]);}
     virtual void ResetSDigits(){fNSDigits=0;if(fSDigits!=0) fSDigits->Clear();}
     virtual void ResetDigits();
     virtual void ResetDigits(Int_t branch);
@@ -82,19 +85,16 @@ class AliITSDetTypeSim : public TObject {
     virtual void AddSimDigit(Int_t branch, AliITSdigit *d);
     virtual void AddSimDigit(Int_t branch,Float_t phys,Int_t* digits,
 			     Int_t* tracks,Int_t *hits,Float_t* trkcharges);
-
-    virtual void SetDigitClassName(Int_t i, Char_t* name) {fDigClassName[i]=name;}
+    virtual void SetDigitClassName(Int_t i, Char_t* name) {
+	fDigClassName[i]=name;}
     Char_t* GetDigitClassName(Int_t i) const {return fDigClassName[i];}
-
     void StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMetaData &md);
 
  protected:
-
     virtual void CreateCalibrationArray(); 
     virtual Bool_t GetCalibration();
     
  private:
-
     void SetDefaultSegmentation(Int_t idet);  // creates def segm.
     static const Int_t fgkNdettypes;          // number of different det. types
     static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default
@@ -102,7 +102,6 @@ class AliITSDetTypeSim : public TObject {
     static const Int_t fgkDefaultNModulesSSD; // Total numbers of SSD modules by default
     Int_t fNMod[3];                           // numbers of modules from different types
 
-    AliITSgeom   *fGeom;         // pointer to ITS geom
     TObjArray    *fSimulation;   //! [NDet]
     TObjArray    *fSegmentation; //! [NDet]
     TObjArray    *fCalibration;  //! [NMod]
@@ -111,15 +110,15 @@ class AliITSDetTypeSim : public TObject {
     Int_t         fNSDigits;     //! number of SDigits
     TClonesArray *fSDigits;      //! [NMod][NSDigits]
     Int_t*        fNDigits;      //! [NDet] number of Digits for det.
-    Int_t      fRunNumber;    //! run number (to access DB)
-    TObjArray     *fDigits;       //! [NMod][NDigits]
+    Int_t         fRunNumber;    //! run number (to access DB)
+    TObjArray     *fDigits;      //! [NMod][NDigits]
     TString       fHitClassName; //! String with Hit class name
     TString       fSDigClassName;//! String with SDigit class name.
     Char_t*       fDigClassName[3]; //! String with digit class name.
-    AliLoader*    fLoader;          //! loader  
-    Bool_t fFirstcall;              //! flag
+    AliITSLoader* fLoader;          //! loader  
+    Bool_t        fFirstcall;       //! flag
     
-  ClassDef(AliITSDetTypeSim,4) // ITS Simulation structure
+    ClassDef(AliITSDetTypeSim,5) // ITS Simulation structure
  
 };
 

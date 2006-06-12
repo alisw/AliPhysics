@@ -248,7 +248,7 @@ void AliITSvtest::InitAliITSgeom(){
 			mod++;
 			ig->GetGeometry(kndeep,lnam,lnum,t,r,idshape,npar,natt,
 					par,att,imat,imed);
-			GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSPD,t,r);
+			GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSPD,t,r);
 			if(!(GetITSgeom()->IsShapeDefined((Int_t)kSPD)))
 			    if(fMinorVersion==1){
                              GetITSgeom()->ReSetShape(kSPD,
@@ -271,17 +271,17 @@ void AliITSvtest::InitAliITSgeom(){
 				    par,att,imat,imed);
 		    switch (lay){
 		    case 3: case 4:
-			GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSDD,t,r);
+			GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSDD,t,r);
 			if(!(GetITSgeom()->IsShapeDefined(kSDD))) 
 			    GetITSgeom()->ReSetShape(kSDD,new AliITSgeomSDD256());
 			    break;
 			case 5:
-			    GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+			    GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
 			    if(!(GetITSgeom()->IsShapeDefined(kSSD))) 
 				GetITSgeom()->ReSetShape(kSSD,new AliITSgeomSSD275and75());
 			    break;
 			case 6:
-			    GetITSgeom()->CreatMatrix(mod,lay,lad,det,kSSD,t,r);
+			    GetITSgeom()->CreateMatrix(mod,lay,lad,det,kSSD,t,r);
 			    if(!(GetITSgeom()->IsShapeDefined(kSSD))) 
 				GetITSgeom()->ReSetShape(kSSD,new AliITSgeomSSD75and275());
 			    break;

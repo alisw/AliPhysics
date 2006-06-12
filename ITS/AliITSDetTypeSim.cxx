@@ -64,7 +64,6 @@ ClassImp(AliITSDetTypeSim)
 //----------------------------------------------------------------------
 AliITSDetTypeSim::AliITSDetTypeSim():
 TObject(),
-fGeom(),         //
 fSimulation(),   // [NDet]
 fSegmentation(), // [NDet]
 fCalibration(),     // [NMod]
@@ -73,10 +72,13 @@ fPostProcess(),  // [] e.g. Wright Raw data
 fNSDigits(0),    //! number of SDigits
 fSDigits(),      //! [NMod][NSDigits]
 fNDigits(0),     //! number of Digits
+fRunNumber(0),   //! Run number (to access DB)
 fDigits(),       //! [NMod][NDigits]
 fHitClassName(), // String with Hit class name.
 fSDigClassName(),// String with SDigit class name.
-fDigClassName(){ // String with digit class name.
+fDigClassName(), // String with digit class name.
+fLoader(0),      // local pointer to loader
+fFirstcall(kTRUE){ // flag
     // Default Constructor
     // Inputs:
     //    none.
@@ -84,23 +86,17 @@ fDigClassName(){ // String with digit class name.
     //    none.
     // Return:
     //    A properly zero-ed AliITSDetTypeSim class.
-  fGeom = 0;
+
   fSimulation = new TObjArray(fgkNdettypes);
   fSegmentation = new TObjArray(fgkNdettypes);
   fSegmentation->SetOwner(kTRUE);
-  fCalibration = 0;
-  fPreProcess = 0;
-  fPostProcess = 0;
-  fNSDigits = 0;
   fSDigits = new TClonesArray("AliITSpListItem",1000);
   fDigits = new TObjArray(fgkNdettypes);
   fNDigits = new Int_t[fgkNdettypes];
-  fLoader = 0;
   fNMod[0] = fgkDefaultNModulesSPD;
   fNMod[1] = fgkDefaultNModulesSDD;
   fNMod[2] = fgkDefaultNModulesSSD;
   SetRunNumber();
-  fFirstcall = kTRUE;
 }
 //----------------------------------------------------------------------
 AliITSDetTypeSim::~AliITSDetTypeSim(){
@@ -111,85 +107,114 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     //    none.
     // Return:
     //    Nothing.
-  
+
     if(fSimulation){
-      fSimulation->Delete();
-      delete fSimulation;
-      fSimulation = 0;
+	fSimulation->Delete();
+	delete fSimulation;
     }
-    
+    fSimulation = 0;
     if(fSegmentation){
-      fSegmentation->Delete();
-      delete fSegmentation;
-      fSegmentation = 0;
+	fSegmentation->Delete();
+	delete fSegmentation;
     }
-    
+    fSegmentation = 0;
     if(fCalibration && fRunNumber<0){
-      AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSPD()))->GetResponse();
-      AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSDD()))->GetResponse();
-      AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSSD()))->GetResponse();
-      if(rspd) delete rspd;
-      if(rsdd) delete rsdd;
-      if(rssd) delete rssd;
-      fCalibration->Delete();
-      delete fCalibration;
-      fCalibration = 0;
+	AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(
+                               GetITSgeom()->GetStartSPD()))->GetResponse();
+	AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(
+                               GetITSgeom()->GetStartSDD()))->GetResponse();
+	AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(
+                               GetITSgeom()->GetStartSSD()))->GetResponse();
+	if(rspd) delete rspd;
+	if(rsdd) delete rsdd;
+	if(rssd) delete rssd;
+	fCalibration->Delete();
+	delete fCalibration;
     }
-
-    if(fGeom) delete fGeom;
-    
+    fCalibration = 0;
     if(fPreProcess){
-      fPreProcess->Delete();
-      delete fPreProcess;
-      fPreProcess = 0;
+	fPreProcess->Delete();
+	delete fPreProcess;
     }
-    
+    fPreProcess = 0;
     if(fPostProcess){
-      fPostProcess->Delete();
-      delete fPostProcess;
-      fPostProcess = 0;
+	fPostProcess->Delete();
+	delete fPostProcess;
     }
-
+    fPostProcess = 0;
     if(fNDigits) delete [] fNDigits;
-
-    if (fLoader)
-      {
-	fLoader->GetModulesFolder()->Remove(this);
-      }
-    
+    fNDigits = 0;
+    if (fLoader)fLoader->GetModulesFolder()->Remove(this);
+    fLoader = 0; // Not deleting it.
     if (fSDigits) {
-      fSDigits->Delete();
-      delete fSDigits;
-      fSDigits=0;
+	fSDigits->Delete();
+	delete fSDigits;
     }
+    fSDigits=0;
     if (fDigits) {
       fDigits->Delete();
       delete fDigits;
-      fDigits=0;
     }
-  
+    fDigits=0;
 }
 //----------------------------------------------------------------------
 AliITSDetTypeSim::AliITSDetTypeSim(const AliITSDetTypeSim &source) : TObject(source){
     // Copy Constructor for object AliITSDetTypeSim not allowed
-  if(this==&source) return;
-  Error("Copy constructor",
-	"You are not allowed to make a copy of the AliITSDetTypeSim");
-  exit(1);
 
-        
+    if(this==&source) return;
+    Error("Copy constructor",
+	  "You are not allowed to make a copy of the AliITSDetTypeSim");
+    exit(1);
 }
 //----------------------------------------------------------------------
 AliITSDetTypeSim& AliITSDetTypeSim::operator=(const AliITSDetTypeSim &source){
     // The = operator for object AliITSDetTypeSim
  
     if(&source==this) return *this;
-    Error("operator=","You are not allowed to make a copy of the AliITSDetTypeSIm");
+    Error("operator=",
+	  "You are not allowed to make a copy of the AliITSDetTypeSIm");
     exit(1);
     return *this;
 }
 
+//______________________________________________________________________
+void AliITSDetTypeSim::SetITSgeom(AliITSgeom *geom){
+    // Sets/replaces the existing AliITSgeom object kept in AliITSLoader
+    // 
+    // Inputs:
+    //   AliITSgoem   *geom  The AliITSgeom object to be used.
+    // Output:
+    //   none.
+    // Return:
+    //   none.
+  if(!fLoader){
+    Error("SetITSgeom","No pointer to loader - nothing done");
+    return;
+  }
+  else {
+    fLoader->SetITSgeom(geom);  // protections in AliITSLoader::SetITSgeom
+  }
+ 
+}
+//______________________________________________________________________
+void AliITSDetTypeSim::SetLoader(AliITSLoader *loader){
+    // Sets the local copy of the AliITSLoader, and passes on the
+    // AliITSgeom object as needed.
+    // Inputs
+    //   AliITSLoader  *loader pointer to AliITSLoader for local use
+    // Outputs:
+    //   none.
+    // Return:
+    //  none.
 
+    if(fLoader==loader) return; // Same do nothing
+    if(fLoader){ // alread have an existing loader
+	Error("SetLoader",
+		"Already have an exisiting loader ptr=%p Nothing done",
+		fLoader);
+    } // end if
+    fLoader = loader;
+}
 //______________________________________________________________________
 void AliITSDetTypeSim::SetSimulationModel(Int_t dettype,AliITSsimulation *sim){
 
@@ -212,37 +237,38 @@ AliITSsimulation* AliITSDetTypeSim::GetSimulationModel(Int_t dettype){
 AliITSsimulation* AliITSDetTypeSim::GetSimulationModelByModule(Int_t module){
 
   //Get simulation model by module number
-  if(fGeom==0) {
-    Warning("GetSimulationModelByModule","fGeom is 0!");
+  if(GetITSgeom()==0) {
+    Warning("GetSimulationModelByModule","GetITSgeom() is 0!");
     return 0;
   }
   
-  return GetSimulationModel(fGeom->GetModuleType(module));
+  return GetSimulationModel(GetITSgeom()->GetModuleType(module));
 }
 //_______________________________________________________________________
 void AliITSDetTypeSim::SetDefaultSegmentation(Int_t idet){
-  // Set default segmentation model objects
-  AliITSsegmentation *seg;
-  if(fSegmentation==0x0){
-    fSegmentation = new TObjArray(fgkNdettypes);
-    fSegmentation->SetOwner(kTRUE);
-  }
-  if(GetSegmentationModel(idet))delete (AliITSsegmentation*)fSegmentation->At(idet);
-  if(idet==0){
-    seg = new AliITSsegmentationSPD(fGeom);
-  }
-  else if(idet==1){
-    AliITSCalibration* res = GetCalibrationModel(fGeom->GetStartSDD());
-    seg = new AliITSsegmentationSDD(fGeom,res);
-  }
-  else {
-    seg = new AliITSsegmentationSSD(fGeom);
-  }
-  SetSegmentationModel(idet,seg);
-}
+    // Set default segmentation model objects
+    AliITSsegmentation *seg;
 
+    if(fSegmentation==0x0){
+	fSegmentation = new TObjArray(fgkNdettypes);
+	fSegmentation->SetOwner(kTRUE);
+    }
+    if(GetSegmentationModel(idet))
+	delete (AliITSsegmentation*)fSegmentation->At(idet);
+    if(idet==0){
+	seg = new AliITSsegmentationSPD(GetITSgeom());
+    }else if(idet==1){
+	AliITSCalibration* res=GetCalibrationModel(
+	    GetITSgeom()->GetStartSDD());
+	seg = new AliITSsegmentationSDD(GetITSgeom(),res);
+    }else {
+	seg = new AliITSsegmentationSSD(GetITSgeom());
+    }
+    SetSegmentationModel(idet,seg);
+}
 //______________________________________________________________________
-void AliITSDetTypeSim::SetSegmentationModel(Int_t dettype,AliITSsegmentation *seg){
+void AliITSDetTypeSim::SetSegmentationModel(Int_t dettype,
+					    AliITSsegmentation *seg){
    
   //Set segmentation model for detector type
   if(fSegmentation==0x0){
@@ -250,152 +276,136 @@ void AliITSDetTypeSim::SetSegmentationModel(Int_t dettype,AliITSsegmentation *se
     fSegmentation->SetOwner(kTRUE);
   }
   fSegmentation->AddAt(seg,dettype);
-
 }
 //______________________________________________________________________
 AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModel(Int_t dettype){
-
   //Get segmentation model for detector type
    
    if(fSegmentation==0) {
-     Warning("GetSegmentationModel","fSegmentation is 0!");
-     return 0; 
+       Warning("GetSegmentationModel","fSegmentation is 0!");
+       return 0; 
    } 
    return (AliITSsegmentation*)(fSegmentation->At(dettype));
-
 }
 //_______________________________________________________________________
 AliITSsegmentation* AliITSDetTypeSim::GetSegmentationModelByModule(Int_t module){
-  
-  //Get segmentation model by module number
-   if(fGeom==0){
-     Warning("GetSegmentationModelByModule","fGeom is 0!");
-     return 0;
-   }     
-   return GetSegmentationModel(fGeom->GetModuleType(module));
-
+    //Get segmentation model by module number
+    if(GetITSgeom()==0){
+	Warning("GetSegmentationModelByModule","GetITSgeom() is 0!");
+	return 0;
+    }     
+    return GetSegmentationModel(GetITSgeom()->GetModuleType(module));
 }
 //_______________________________________________________________________
 void AliITSDetTypeSim::CreateCalibrationArray() {
+    //Create the container of calibration functions with correct size
+    if (fCalibration) {
+	Warning("CreateCalibration","pointer to calibration object exists\n");
+	fCalibration->Delete();
+	delete fCalibration;
+    }
 
-  //Create the container of calibration functions with correct size
-  if (fCalibration) {
-    Warning("CreateCalibration","pointer to calibration object exists\n");
-    fCalibration->Delete();
-    delete fCalibration;
-  }
-
-  Int_t nModTot = fGeom->GetIndexMax();
-  fCalibration = new TObjArray(nModTot);
-  fCalibration->SetOwner(kTRUE);
-  fCalibration->Clear();
-
+    Int_t nModTot = GetITSgeom()->GetIndexMax();
+    fCalibration = new TObjArray(nModTot);
+    fCalibration->SetOwner(kTRUE);
+    fCalibration->Clear();
 }
 //_______________________________________________________________________
 void AliITSDetTypeSim::SetCalibrationModel(Int_t iMod, AliITSCalibration *resp){
+    //Set response model for modules
 
-  //Set response model for modules
-
-  if (fCalibration==0) CreateCalibrationArray();
+    if (fCalibration==0) CreateCalibrationArray();
  
-  if (fCalibration->At(iMod)!=0)
-    delete (AliITSCalibration*) fCalibration->At(iMod);
-  fCalibration->AddAt(resp, iMod);
-
+    if (fCalibration->At(iMod)!=0)
+	delete (AliITSCalibration*) fCalibration->At(iMod);
+    fCalibration->AddAt(resp, iMod);
 }
-
 //______________________________________________________________________
 void AliITSDetTypeSim::ResetCalibrationArray(){
-
-  //resets response array
-  if(fCalibration && fRunNumber<0){  // if fRunNumber<0 fCalibration is owner
-    AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSPD()))->GetResponse();
-    AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSDD()))->GetResponse();
-    AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(fGeom->GetStartSSD()))->GetResponse();
-    if(rspd) delete rspd;
-    if(rsdd) delete rsdd;
-    if(rssd) delete rssd;
-    fCalibration->Clear();
-  }
-  else if (fCalibration && fRunNumber>=0){
-    fCalibration->Clear();
-  }
+    //resets response array
+    if(fCalibration && fRunNumber<0){  // if fRunNumber<0 fCalibration is owner
+	AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(
+                                GetITSgeom()->GetStartSPD()))->GetResponse();
+	AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(
+                                GetITSgeom()->GetStartSDD()))->GetResponse();
+	AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(
+                                GetITSgeom()->GetStartSSD()))->GetResponse();
+	if(rspd) delete rspd;
+	if(rsdd) delete rsdd;
+	if(rssd) delete rssd;
+	fCalibration->Clear();
+    }else if (fCalibration && fRunNumber>=0){
+	fCalibration->Clear();
+    }
 }
 //______________________________________________________________________
 void AliITSDetTypeSim::ResetSegmentation(){
- 
- //Resets segmentation array
-  if(fSegmentation) fSegmentation->Clear();
+    //Resets segmentation array
+    if(fSegmentation) fSegmentation->Clear();
 }
-
 //_______________________________________________________________________
 AliITSCalibration* AliITSDetTypeSim::GetCalibrationModel(Int_t iMod){
-   //Get response model for module number iMod 
+    //Get response model for module number iMod 
  
-  if(fCalibration==0) {
-    AliError("fCalibration is 0!");
-    return 0; 
-  }
-
+    if(fCalibration==0) {
+	AliError("fCalibration is 0!");
+	return 0; 
+    }
   return (AliITSCalibration*)(fCalibration->At(iMod));
-
 }
 //_______________________________________________________________________
 void AliITSDetTypeSim::SetDefaults(){
+    //Set defaults for segmentation and response
 
-  //Set defaults for segmentation and response
+    if(GetITSgeom()==0){
+	Warning("SetDefaults","GetITSgeom() is 0!");
+	return;
+    } // end if
+    if (fCalibration==0) {
+	CreateCalibrationArray();
+    } // end if
 
-  if(fGeom==0){
-    Warning("SetDefaults","fGeom is 0!");
-    return;
-  }
-  if (fCalibration==0) {
-    CreateCalibrationArray();
-  }
+    ResetSegmentation();
+    if(!GetCalibration()){AliFatal("Exit"); exit(0);}
 
-  ResetSegmentation();
-  if(!GetCalibration()){AliFatal("Exit"); exit(0);}
-
-  for(Int_t idet=0;idet<fgkNdettypes;idet++){
-    //SPD
-    if(idet==0){
-      if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
-      const char *kData0=(GetCalibrationModel(fGeom->GetStartSPD()))->DataType();
-      if (strstr(kData0,"real")) {
-	SetDigitClassName(idet,"AliITSdigit");
-      }
-      else {
-	SetDigitClassName(idet,"AliITSdigitSPD");
-      }
-    }
-    //SDD
-    if(idet==1){
-      if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
-      AliITSCalibrationSDD* rsp = (AliITSCalibrationSDD*)GetCalibrationModel(fGeom->GetStartSDD());
-      const char *kopt = ((AliITSresponseSDD*)rsp->GetResponse())->ZeroSuppOption();
-      if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) {
-	SetDigitClassName(idet,"AliITSdigit");
-      }
-      else {
-	SetDigitClassName(idet,"AliITSdigitSDD");
-      }
-    
-    }
-    //SSD
-    if(idet==2){
-      if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
-
-      const char *kData2 = (GetCalibrationModel(fGeom->GetStartSSD())->DataType());
-      if (strstr(kData2,"real")) {
-	SetDigitClassName(idet,"AliITSdigit");
-      }
-      else {
-	SetDigitClassName(idet,"AliITSdigitSSD");
-      }
-    }
-  }
+    for(Int_t idet=0;idet<fgkNdettypes;idet++){
+	//SPD
+	if(idet==0){
+	    if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
+	    const char *kData0=(GetCalibrationModel(GetITSgeom()->GetStartSPD()))->DataType();
+	    if (strstr(kData0,"real")) {
+		SetDigitClassName(idet,"AliITSdigit");
+	    }else {
+		SetDigitClassName(idet,"AliITSdigitSPD");
+	    } // end if
+	} // end if idet==0
+	//SDD
+	if(idet==1){
+	    if(!GetSegmentationModel(idet)) SetDefaultSegmentation(idet);
+	    AliITSCalibrationSDD* rsp = 
+		(AliITSCalibrationSDD*)GetCalibrationModel(
+		    GetITSgeom()->GetStartSDD());
+	    const char *kopt = ((AliITSresponseSDD*)rsp->GetResponse())->
+		ZeroSuppOption();
+	    if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) {
+		SetDigitClassName(idet,"AliITSdigit");
+	    }else {
+		SetDigitClassName(idet,"AliITSdigitSDD");
+	    } // end if
+	} // end if idet==1
+	//SSD
+	if(idet==2){
+	    if(!GetSegmentationModel(idet))SetDefaultSegmentation(idet);
+	    const char *kData2 = (GetCalibrationModel(
+                                  GetITSgeom()->GetStartSSD())->DataType());
+	    if (strstr(kData2,"real")) {
+		SetDigitClassName(idet,"AliITSdigit");
+	    }else {
+		SetDigitClassName(idet,"AliITSdigitSSD");
+	    } // end if
+	} // end if idet==2
+    }// end for idet
 }
-
 //______________________________________________________________________
 Bool_t AliITSDetTypeSim::GetCalibration() {
   // Get Default calibration if a storage is not defined.
@@ -514,19 +524,14 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
     Int_t iMod = i + fNMod[0] + fNMod[1];
     SetCalibrationModel(iMod, cal);
  }
-
   return kTRUE;
 }
-
-
-
 //_______________________________________________________________________
 void AliITSDetTypeSim::SetDefaultSimulation(){
-
   //Set default simulation for detector type
 
-  if(fGeom==0){
-    Warning("SetDefaultSimulation","fGeom is 0!");
+  if(GetITSgeom()==0){
+    Warning("SetDefaultSimulation","GetITSgeom() is 0!");
     return;
   }
   if(fCalibration==0){
@@ -536,22 +541,17 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
   if(fSegmentation==0){
     Warning("SetDefaultSimulation","fSegmentation is 0!");
     for(Int_t i=0;i<fgkNdettypes;i++) SetDefaultSegmentation(i);
-  }
-  else{
-    for(Int_t i=0;i<fgkNdettypes;i++){
-      if(!GetSegmentationModel(i)){
-	Warning("SetDefaultSimulation","Segmentation not defined for det %d - Default taken\n!",i);
-	SetDefaultSegmentation(i);
-      }
-    }
+  }else for(Int_t i=0;i<fgkNdettypes;i++) if(!GetSegmentationModel(i)){
+      Warning("SetDefaultSimulation",
+	      "Segmentation not defined for det %d - Default taken\n!",i);
+      SetDefaultSegmentation(i);
   }
   AliITSsimulation* sim;
 
   for(Int_t idet=0;idet<fgkNdettypes;idet++){
    //SPD
     if(idet==0){
-      sim = GetSimulationModel(idet);
- 
+      sim = GetSimulationModel(idet); 
       if(!sim){
 	sim = new AliITSsimulationSPD(this);
 	SetSimulationModel(idet,sim);
@@ -563,8 +563,7 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
       if(!sim){
 	sim = new AliITSsimulationSDD(this);
 	SetSimulationModel(idet,sim);
-      }
-      
+      }      
     }
     //SSD
     if(idet==2){
@@ -573,19 +572,13 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
 	sim = new AliITSsimulationSSD(this);
 	SetSimulationModel(idet,sim);
       }
-
     }
 
   }
 }
-
-
-
-
 //___________________________________________________________________
 void AliITSDetTypeSim::SetTreeAddressS(TTree* treeS, Char_t* name){
-  // Set branch address for the ITS summable digits Trees.
-  
+  // Set branch address for the ITS summable digits Trees.  
   char branchname[30];
 
   if(!treeS){
@@ -641,8 +634,7 @@ void AliITSDetTypeSim::SetTreeAddressD(TTree* treeD, Char_t* name){
 }
 //___________________________________________________________________
 void AliITSDetTypeSim::ResetDigits(){
-  // Reset number of digits and the digits array for the ITS detector.
-  
+  // Reset number of digits and the digits array for the ITS detector.  
 
   if(!fDigits){
     Error("ResetDigits","fDigits is null!");
@@ -668,8 +660,8 @@ void AliITSDetTypeSim::ResetDigits(Int_t branch){
 //_______________________________________________________________________
 void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
   // Standard Summable digits to Digits function.
-  if(!fGeom){
-    Warning("SDigitsToDigits","fGeom is null!!");
+  if(!GetITSgeom()){
+    Warning("SDigitsToDigits","GetITSgeom() is null!!");
     return;
   }
   
@@ -692,15 +684,14 @@ void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
   TBranch* brchSDigits = trees->GetBranch(name);
   
   Int_t id;
-  for(Int_t module=0;module<fGeom->GetIndexMax();module++){
-     id = fGeom->GetModuleType(module);
+  for(Int_t module=0;module<GetITSgeom()->GetIndexMax();module++){
+     id = GetITSgeom()->GetModuleType(module);
     if (!all && !det[id]) continue;
     sim = (AliITSsimulation*)GetSimulationModel(id);
-    printf("module=%d name=%s\n",module,sim->ClassName());
     if(!sim){
       Error("SDigit2Digits","The simulation class was not "
 	    "instanciated for module %d type %s!",module,
-	    fGeom->GetModuleTypeName(module));
+	    GetITSgeom()->GetModuleTypeName(module));
       exit(1);
     }
     sim->InitSimulationModule(module,gAlice->GetEvNumber());
@@ -716,26 +707,24 @@ void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
   fLoader->TreeD()->AutoSave();
   fLoader->TreeD()->Reset();
 }
-
-
-
 //_________________________________________________________
-void AliITSDetTypeSim::AddSumDigit(AliITSpListItem &sdig){
-  
+void AliITSDetTypeSim::AddSumDigit(AliITSpListItem &sdig){  
   //Adds the module full of summable digits to the summable digits tree.
+
   TClonesArray &lsdig = *fSDigits;
   new(lsdig[fNSDigits++]) AliITSpListItem(sdig);
 }
 //__________________________________________________________
 void AliITSDetTypeSim::AddRealDigit(Int_t branch, Int_t *digits){
   //   Add a real digit - as coming from data.
+
   TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
   new(ldigits[fNDigits[branch]++]) AliITSdigit(digits); 
 }
 //__________________________________________________________
-void AliITSDetTypeSim::AddSimDigit(Int_t branch, AliITSdigit* d){
-  
+void AliITSDetTypeSim::AddSimDigit(Int_t branch, AliITSdigit* d){  
   //    Add a simulated digit.
+
   TClonesArray &ldigits = *((TClonesArray*)fDigits->At(branch));
   switch(branch){
   case 0:
@@ -747,10 +736,8 @@ void AliITSDetTypeSim::AddSimDigit(Int_t branch, AliITSdigit* d){
   case 2:
     new(ldigits[fNDigits[branch]++]) AliITSdigitSSD(*((AliITSdigitSSD*)d));
     break;
-  } 
-  
+  }  
 }
-
 //______________________________________________________________________
 void AliITSDetTypeSim::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,
 				   Int_t *tracks,Int_t *hits,Float_t *charges){
@@ -763,7 +750,8 @@ void AliITSDetTypeSim::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,
     new(ldigits[fNDigits[branch]++]) AliITSdigitSPD(digits,tracks,hits);
     break;
   case 1:
-    resp = (AliITSCalibrationSDD*)GetCalibrationModel(fGeom->GetStartSDD());
+    resp = (AliITSCalibrationSDD*)GetCalibrationModel(
+	GetITSgeom()->GetStartSDD());
     new(ldigits[fNDigits[branch]++]) AliITSdigitSDD(phys,digits,tracks,
 						   hits,charges,resp);
     break;
@@ -772,14 +760,10 @@ void AliITSDetTypeSim::AddSimDigit(Int_t branch,Float_t phys,Int_t *digits,
     break;
   } 
 }
-
-
-
 //______________________________________________________________________
-void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMetaData &md) {
-
+void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun,
+					AliCDBMetaData &md) {
   // Store calibration in the calibration database
-
   // The database must be created in an external piece of code (i.e. 
   // a configuration macro )
 
@@ -822,9 +806,6 @@ void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun, AliCDBMet
   AliCDBManager::Instance()->Put(&respSPD, idRespSPD, &md);
   AliCDBManager::Instance()->Put(&respSDD, idRespSDD, &md);
   AliCDBManager::Instance()->Put(&respSSD, idRespSSD, &md);
-
-
-
 }
 
 

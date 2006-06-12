@@ -13,44 +13,67 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
-////////////////////////////////////////////////////////////////////////
-// This is the implementation file for AliITSgeomMatrix class. It 
-// contains the routines to manipulate, setup, and queary the geometry 
-// of a given ITS module. An ITS module may be one of at least three
-// ITS detector technologies, Silicon Pixel, Drift, or Strip Detectors,
-// and variations of these in size and/or layout. These routines let
-// one go between ALICE global coordiantes (cm) to a given modules 
-// specific local coordinates (cm).
-////////////////////////////////////////////////////////////////////////
+/* 
+$Id$ 
+*/
+/*
+ This is the implementation file for AliITSgeomMatrix class. It 
+ contains the routines to manipulate, setup, and queary the geometry 
+ of a given ITS module. An ITS module may be one of at least three
+ ITS detector technologies, Silicon Pixel, Drift, or Strip Detectors,
+ and variations of these in size and/or layout. These routines let
+ one go between ALICE global coordiantes (cm) to a given modules 
+ specific local coordinates (cm).
+*/
 
 #include <Riostream.h>
 #include <TMath.h>
 #include <TBuffer.h>
 #include <TClass.h>
+#include <TCanvas.h>
+#include <TView.h>
+#include <TPolyLine3D.h>
+//#include <TPolyLineShape.h>
+#include <TNode.h>
+#include <TPCON.h>
+#include <TBRIK.h>
+#include <TXTRU.h>
 
 #include "AliITSgeomMatrix.h"
 
 ClassImp(AliITSgeomMatrix)
 //----------------------------------------------------------------------
-AliITSgeomMatrix::AliITSgeomMatrix(){
-////////////////////////////////////////////////////////////////////////
-// The Default constructor for the AliITSgeomMatrix class. By Default
-// the angles of rotations are set to zero, meaning that the rotation
-// matrix is the unit matrix. The translation vector is also set to zero
-// as are the module id number. The detector type is set to -1 (an undefined
-// value). The full rotation matrix is kept so that the evaluation 
-// of a coordinate transformation can be done quickly and with a minimum
-// of CPU overhead. The basic coordinate systems are the ALICE global
-// coordinate system and the detector local coordinate system. In general
-// this structure is not limited to just those two coordinate systems.
-//Begin_Html
-/*
-<img src="picts/ITS/AliISgeomMatrix_L1.gif">
-*/
-//End_Html
-////////////////////////////////////////////////////////////////////////
+AliITSgeomMatrix::AliITSgeomMatrix():
+TObject(),
+fDetectorIndex(0), // Detector type index (like fShapeIndex was)
+fid(),       // layer, ladder, detector numbers.
+frot(),      //! vector of rotations about x,y,z [radians].
+ftran(),     // Translation vector of module x,y,z.
+fCylR(0.0),  //! R Translation in Cylinderical coordinates
+fCylPhi(0.0),//! Phi Translation vector in Cylindrical coord.
+fm(),        // Rotation matrix based on frot.
+fPath(){     // Path in geometry to this module
+    // The Default constructor for the AliITSgeomMatrix class. By Default
+    // the angles of rotations are set to zero, meaning that the rotation
+    // matrix is the unit matrix. The translation vector is also set to 
+    // zero as are the module id number. The detector type is set to -1 
+    // (an undefined value). The full rotation matrix is kept so that 
+    // the evaluation  of a coordinate transformation can be done 
+    // quickly and with a minimum of CPU overhead. The basic coordinate 
+    // systems are the ALICE global coordinate system and the detector 
+    // local coordinate system. In general this structure is not limited 
+    // to just those two coordinate systems.
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_L1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //    A default constructes AliITSgeomMatrix class.
     Int_t i,j;
 
     fDetectorIndex = -1; // a value never defined.
@@ -65,10 +88,14 @@ AliITSgeomMatrix::AliITSgeomMatrix(){
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &sourse) : 
     TObject(sourse){
-////////////////////////////////////////////////////////////////////////
-// The standard Copy constructor. This make a full / proper copy of
-// this class.
-////////////////////////////////////////////////////////////////////////
+    // The standard Copy constructor. This make a full / proper copy of
+    // this class.
+    // Inputs:
+    //    AliITSgeomMatrix &source   The source of this copy
+    // Outputs:
+    //    none.
+    // Return:
+    //    A copy constructes AliITSgeomMatrix class.
 	Int_t i,j;
 
 	this->fDetectorIndex = sourse.fDetectorIndex;
@@ -80,13 +107,20 @@ AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &sourse) :
 		this->fCylPhi    = sourse.fCylPhi;
 		for(j=0;j<3;j++) this->fm[i][j] = sourse.fm[i][j];
 	}// end for i
+     this->fPath   = sourse.fPath;
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::operator=(const AliITSgeomMatrix &sourse){
-////////////////////////////////////////////////////////////////////////
-// The standard = operator. This make a full / proper copy of
-// this class.
-////////////////////////////////////////////////////////////////////////
+    // The standard = operator. This make a full / proper copy of
+    // this class.
+    // The standard Copy constructor. This make a full / proper copy of
+    // this class.
+    // Inputs:
+    //    AliITSgeomMatrix &source   The source of this copy
+    // Outputs:
+    //    none.
+    // Return:
+    //    A copy of the source AliITSgeomMatrix class.
 	Int_t i,j;
 
 	this->fDetectorIndex = sourse.fDetectorIndex;
@@ -98,26 +132,43 @@ void AliITSgeomMatrix::operator=(const AliITSgeomMatrix &sourse){
 		this->fCylPhi    = sourse.fCylPhi;
 		for(j=0;j<3;j++) this->fm[i][j] = sourse.fm[i][j];
 	}// end for i
+     this->fPath   = sourse.fPath;
 }
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt,const Int_t id[3],
-		   const Double_t rot[3],const Double_t tran[3]){
-////////////////////////////////////////////////////////////////////////
-// This is a constructor for the AliITSgeomMatrix class. The matrix is
-// defined by 3 standard rotation angles [radians], and the translation
-// vector tran [cm]. In addition the layer, ladder, and detector number
-// for this particular module and the type of module must be given.
-// The full rotation matrix is kept so that the evaluation 
-// of a coordinate transformation can be done quickly and with a minimum
-// of CPU overhead. The basic coordinate systems are the ALICE global
-// coordinate system and the detector local coordinate system. In general
-// this structure is not limited to just those two coordinate systems.
-//Begin_Html
-/*
-<img src="picts/ITS/AliISgeomMatrix_L1.gif">
-*/
-//End_Html
-////////////////////////////////////////////////////////////////////////
+                        const Double_t rot[3],const Double_t tran[3]):
+TObject(),
+fDetectorIndex(0), // Detector type index (like fShapeIndex was)
+fid(),       // layer, ladder, detector numbers.
+frot(),      //! vector of rotations about x,y,z [radians].
+ftran(),     // Translation vector of module x,y,z.
+fCylR(0.0),  //! R Translation in Cylinderical coordinates
+fCylPhi(0.0),//! Phi Translation vector in Cylindrical coord.
+fm(),        // Rotation matrix based on frot.
+fPath(){     // Path in geometry to this moduel
+    // This is a constructor for the AliITSgeomMatrix class. The matrix is
+    // defined by 3 standard rotation angles [radians], and the translation
+    // vector tran [cm]. In addition the layer, ladder, and detector number
+    // for this particular module and the type of module must be given.
+    // The full rotation matrix is kept so that the evaluation 
+    // of a coordinate transformation can be done quickly and with a minimum
+    // of CPU overhead. The basic coordinate systems are the ALICE global
+    // coordinate system and the detector local coordinate system. In general
+    // this structure is not limited to just those two coordinate systems.
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_L1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //    Int_t idt        The detector index value
+    //    Int_t id[3]      The layer, ladder, and detector numbers
+    //    Double_t rot[3]  The 3 Cartician rotaion angles [radians]
+    //    Double_t tran[3] The 3 Cartician translation distnaces
+    // Outputs:
+    //    none.
+    // Return:
+    //    A properly inilized AliITSgeomMatrix class.
     Int_t i;
 
     fDetectorIndex = idt; // a value never defined.
@@ -134,23 +185,40 @@ AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt,const Int_t id[3],
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt, const Int_t id[3],
                                    Double_t matrix[3][3],
-                                   const Double_t tran[3]){
-////////////////////////////////////////////////////////////////////////
-// This is a constructor for the AliITSgeomMatrix class. The rotation matrix
-// is given as one of the inputs, and the translation vector tran [cm]. In 
-// addition the layer, ladder, and detector number for this particular
-// module and the type of module must be given. The full rotation matrix
-// is kept so that the evaluation of a coordinate transformation can be
-// done quickly and with a minimum of CPU overhead. The basic coordinate
-// systems are the ALICE global coordinate system and the detector local
-// coordinate system. In general this structure is not limited to just
-// those two coordinate systems.
-//Begin_Html
-/*
-<img src="picts/ITS/AliISgeomMatrix_L1.gif">
-*/
-//End_Html
-////////////////////////////////////////////////////////////////////////
+                                   const Double_t tran[3]):
+TObject(),
+fDetectorIndex(0), // Detector type index (like fShapeIndex was)
+fid(),       // layer, ladder, detector numbers.
+frot(),      //! vector of rotations about x,y,z [radians].
+ftran(),     // Translation vector of module x,y,z.
+fCylR(0.0),  //! R Translation in Cylinderical coordinates
+fCylPhi(0.0),//! Phi Translation vector in Cylindrical coord.
+fm(),        // Rotation matrix based on frot.
+fPath(){     // Path in geometry to this module
+    // This is a constructor for the AliITSgeomMatrix class. The 
+    // rotation matrix is given as one of the inputs, and the 
+    // translation vector tran [cm]. In  addition the layer, ladder, 
+    // and detector number for this particular module and the type of 
+    // module must be given. The full rotation matrix is kept so that 
+    // the evaluation of a coordinate transformation can be done quickly 
+    // and with a minimum of CPU overhead. The basic coordinate systems 
+    // are the ALICE global coordinate system and the detector local
+    // coordinate system. In general this structure is not limited to just
+    // those two coordinate systems.
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_L1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //    Int_t idt          The detector index value
+    //    Int_t id[3]        The layer, ladder, and detector numbers
+    //    Double_t rot[3][3] The 3x3 Cartician rotaion matrix
+    //    Double_t tran[3]   The 3 Cartician translation distnaces
+    // Outputs:
+    //    none.
+    // Return:
+    //    A properly inilized AliITSgeomMatrix class.
     Int_t i,j;
 
     fDetectorIndex = idt; // a value never defined.
@@ -166,10 +234,14 @@ AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt, const Int_t id[3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::SixAnglesFromMatrix(Double_t *ang){
-////////////////////////////////////////////////////////////////////////
-// This function returns the 6 GEANT 3.21 rotation angles [degrees] in
-// the array ang which must be at least [6] long.
-////////////////////////////////////////////////////////////////////////
+    // This function returns the 6 GEANT 3.21 rotation angles [degrees] in
+    // the array ang which must be at least [6] long.
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   Double_t ang[6]  The 6 Geant3.21 rotation angles. [degrees]
+    // Return:
+    //   noting
     Double_t si,c=180./TMath::Pi();
 
     ang[1] = TMath::ATan2(fm[0][1],fm[0][0]);
@@ -191,12 +263,16 @@ void AliITSgeomMatrix::SixAnglesFromMatrix(Double_t *ang){
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::MatrixFromSixAngles(const Double_t *ang){
-////////////////////////////////////////////////////////////////////////
-// Given the 6 GEANT 3.21 rotation angles [degree], this will compute and
-// set the rotations matrix and 3 standard rotation angles [radians].
-// These angles and rotation matrix are overwrite the existing values in
-// this class.
-////////////////////////////////////////////////////////////////////////
+    // Given the 6 GEANT 3.21 rotation angles [degree], this will compute and
+    // set the rotations matrix and 3 standard rotation angles [radians].
+    // These angles and rotation matrix are overwrite the existing values in
+    // this class.
+    // Inputs:
+    //   Double_t ang[6]  The 6 Geant3.21 rotation angles. [degrees]
+    // Outputs:
+    //   none.
+    // Return:
+    //   noting
     Int_t    i,j;
     Double_t si,lr[9],c=TMath::Pi()/180.;
 
@@ -244,23 +320,27 @@ void AliITSgeomMatrix::MatrixFromSixAngles(const Double_t *ang){
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(const Double_t rotd[6]/*degrees*/,
                                    Int_t idt,const Int_t id[3],
-		                   const Double_t tran[3]){
-////////////////////////////////////////////////////////////////////////
-// This is a constructor for the AliITSgeomMatrix class. The matrix is
-// defined by the 6 GEANT 3.21 rotation angles [degrees], and the translation
-// vector tran [cm]. In addition the layer, ladder, and detector number
-// for this particular module and the type of module must be given.
-// The full rotation matrix is kept so that the evaluation 
-// of a coordinate transformation can be done quickly and with a minimum
-// of CPU overhead. The basic coordinate systems are the ALICE global
-// coordinate system and the detector local coordinate system. In general
-// this structure is not limited to just those two coordinate systems.
-//Begin_Html
-/*
-<img src="picts/ITS/AliISgeomMatrix_L1.gif">
-*/
-//End_Html
-////////////////////////////////////////////////////////////////////////
+                                   const Double_t tran[3]){
+    // This is a constructor for the AliITSgeomMatrix class. The matrix 
+    // is defined by the 6 GEANT 3.21 rotation angles [degrees], and 
+    // the translation vector tran [cm]. In addition the layer, ladder, 
+    // and detector number for this particular module and the type of 
+    // module must be given. The full rotation matrix is kept so that 
+    // the evaluation  of a coordinate transformation can be done 
+    // quickly and with a minimum of CPU overhead. The basic coordinate 
+    // systems are the ALICE global coordinate system and the detector 
+    // local coordinate system. In general this structure is not limited 
+    // to just those two coordinate systems.
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_L1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //    Double_t rotd[6]  The 6 Geant 3.21 rotation angles [degrees]
+    //    Int_t idt         The module Id number
+    //    Int_t id[3]       The layer, ladder and detector number
+    //    Double_t tran[3]  The translation vector
     Int_t i;
 
     fDetectorIndex = idt; // a value never defined.
@@ -275,9 +355,14 @@ AliITSgeomMatrix::AliITSgeomMatrix(const Double_t rotd[6]/*degrees*/,
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::AngleFromMatrix(){
-////////////////////////////////////////////////////////////////////////
-// Computes the angles from the rotation matrix up to a phase of 180 degrees.
-////////////////////////////////////////////////////////////////////////
+    // Computes the angles from the rotation matrix up to a phase of 
+    // 180 degrees.
+    // Inputs:
+    //   none
+    // Outputs:
+    //   none
+    // Return:
+    //   none
     Double_t rx,ry,rz;
     // get angles from matrix up to a phase of 180 degrees.
 
@@ -291,10 +376,14 @@ void AliITSgeomMatrix::AngleFromMatrix(){
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::MatrixFromAngle(){
-////////////////////////////////////////////////////////////////////////
-// Computes the Rotation matrix from the angles [radians] kept in this
-// class.
-////////////////////////////////////////////////////////////////////////
+    // Computes the Rotation matrix from the angles [radians] kept in this
+    // class.
+    // Inputs:
+    //   none
+    // Outputs:
+    //   none
+    // Return:
+    //   none
    Double_t sx,sy,sz,cx,cy,cz;
 
    sx = TMath::Sin(frot[0]); cx = TMath::Cos(frot[0]);
@@ -313,9 +402,15 @@ void AliITSgeomMatrix::MatrixFromAngle(){
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::GtoLPosition(const Double_t g0[3],Double_t l[3]) const {
-////////////////////////////////////////////////////////////////////////
-// Returns the local coordinates given the global coordinates [cm].
-////////////////////////////////////////////////////////////////////////
+    // Returns the local coordinates given the global coordinates [cm].
+    // Inputs:
+    //   Double_t g[3]   The position represented in the ALICE 
+    //                   global coordinate system
+    // Outputs:
+    //   Double_t l[3]  The poistion represented in the local
+    //                  detector coordiante system
+    // Return:
+    //   none
 	Int_t    i,j;
 	Double_t g[3];
 
@@ -329,9 +424,15 @@ void AliITSgeomMatrix::GtoLPosition(const Double_t g0[3],Double_t l[3]) const {
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGPosition(const Double_t l[3],Double_t g[3]) const {
-////////////////////////////////////////////////////////////////////////
-// Returns the global coordinates given the local coordinates [cm].
-////////////////////////////////////////////////////////////////////////
+    // Returns the global coordinates given the local coordinates [cm].
+    // Inputs:
+    //   Double_t l[3]   The poistion represented in the detector 
+    //                   local coordinate system
+    // Outputs:
+    //   Double_t g[3]   The poistion represented in the ALICE
+    //                   Global coordinate system
+    // Return:
+    //   none.
 	Int_t    i,j;
 
 	for(i=0;i<3;i++){
@@ -344,11 +445,17 @@ void AliITSgeomMatrix::LtoGPosition(const Double_t l[3],Double_t g[3]) const {
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::GtoLMomentum(const Double_t g[3],Double_t l[3]) const{
-////////////////////////////////////////////////////////////////////////
-// Returns the local coordinates of the momentum given the global
-// coordinates of the momentum. It transforms just like GtoLPosition
-// except that the translation vector is zero.
-////////////////////////////////////////////////////////////////////////
+    // Returns the local coordinates of the momentum given the global
+    // coordinates of the momentum. It transforms just like GtoLPosition
+    // except that the translation vector is zero.
+    // Inputs:
+    //   Double_t g[3] The momentum represented in the ALICE global 
+    //                 coordinate system
+    // Outputs:
+    //   Double_t l[3] the momentum represented in the detector 
+    //                 local coordinate system
+    // Return:
+    //   none.
 	Int_t    i,j;
 
 	for(i=0;i<3;i++){
@@ -360,11 +467,17 @@ void AliITSgeomMatrix::GtoLMomentum(const Double_t g[3],Double_t l[3]) const{
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGMomentum(const Double_t l[3],Double_t g[3]) const {
-////////////////////////////////////////////////////////////////////////
-// Returns the Global coordinates of the momentum given the local
-// coordinates of the momentum. It transforms just like LtoGPosition
-// except that the translation vector is zero.
-////////////////////////////////////////////////////////////////////////
+    // Returns the Global coordinates of the momentum given the local
+    // coordinates of the momentum. It transforms just like LtoGPosition
+    // except that the translation vector is zero.
+    // Inputs:
+    //   Double_t l[3] the momentum represented in the detector 
+    //                 local coordinate system
+    // Outputs:
+    //   Double_t g[3] The momentum represented in the ALICE global 
+    //                 coordinate system
+    // Return:
+    //   none.
 	Int_t    i,j;
 
 	for(i=0;i<3;i++){
@@ -375,13 +488,20 @@ void AliITSgeomMatrix::LtoGMomentum(const Double_t l[3],Double_t g[3]) const {
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionError(      Double_t g[3][3],
-                                               Double_t l[3][3]) const {
-////////////////////////////////////////////////////////////////////////
-// Given an Uncertainty matrix in Global coordinates it is rotated so that 
-// its representation in local coordinates can be returned. There is no
-// effect due to the translation vector or its uncertainty.
-////////////////////////////////////////////////////////////////////////
+void AliITSgeomMatrix::GtoLPositionError(const Double_t g[3][3],
+                                         Double_t l[3][3]) const {
+    // Given an Uncertainty matrix in Global coordinates it is 
+    // rotated so that  its representation in local coordinates can 
+    // be returned. There is no effect due to the translation vector 
+    // or its uncertainty.
+    // Inputs:
+    //   Double_t g[3][3] The error matrix represented in the ALICE global 
+    //                    coordinate system
+    // Outputs:
+    //   Double_t l[3][3] the error matrix represented in the detector 
+    //                    local coordinate system
+    // Return:
+    //   none.
 	Int_t    i,j,k,m;
 
 	for(i=0;i<3;i++)for(m=0;m<3;m++){
@@ -393,13 +513,19 @@ void AliITSgeomMatrix::GtoLPositionError(      Double_t g[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPositionError(      Double_t l[3][3],
+void AliITSgeomMatrix::LtoGPositionError(const Double_t l[3][3],
                                                Double_t g[3][3]) const {
-////////////////////////////////////////////////////////////////////////
-// Given an Uncertainty matrix in Local coordinates it is rotated so that 
-// its representation in global coordinates can be returned. There is no
-// effect due to the translation vector or its uncertainty.
-////////////////////////////////////////////////////////////////////////
+    // Given an Uncertainty matrix in Local coordinates it is rotated so that 
+    // its representation in global coordinates can be returned. There is no
+    // effect due to the translation vector or its uncertainty.
+    // Inputs:
+    //   Double_t l[3][3] the error matrix represented in the detector 
+    //                    local coordinate system
+    // Outputs:
+    //   Double_t g[3][3] The error matrix represented in the ALICE global 
+    //                    coordinate system
+    // Return:
+    //   none.
 	Int_t    i,j,k,m;
 
 	for(i=0;i<3;i++)for(m=0;m<3;m++){
@@ -411,24 +537,30 @@ void AliITSgeomMatrix::LtoGPositionError(      Double_t l[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionTracking(const Double_t g0[3],
-					    Double_t l[3]) const {
-////////////////////////////////////////////////////////////////////////
-// A slightly different coordinate system is used when tracking.
-// This coordinate system is only relevant when the geometry represents
-// the cylindrical ALICE ITS geometry. For tracking the Z axis is left
-// alone but X -> -Y and Y -> X such that X always points out of the
-// ITS Cylinder for every layer including layer 1 (where the detector 
-// are mounted upside down).
-//Begin_Html
-/*
-<img src="picts/ITS/AliITSgeomMatrix_T1.gif">
- */
-//End_Html
-////////////////////////////////////////////////////////////////////////
+void AliITSgeomMatrix::GtoLPositionTracking(const Double_t g[3],
+                                            Double_t l[3]) const {
+    // A slightly different coordinate system is used when tracking.
+    // This coordinate system is only relevant when the geometry represents
+    // the cylindrical ALICE ITS geometry. For tracking the Z axis is left
+    // alone but X -> -Y and Y -> X such that X always points out of the
+    // ITS Cylinder for every layer including layer 1 (where the detector 
+    // are mounted upside down).
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_T1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //   Double_t g[3]   The position represented in the ALICE 
+    //                   global coordinate system
+    // Outputs:
+    //   Double_t l[3]  The poistion represented in the local
+    //                  detector coordiante system
+    // Return:
+    //   none
     Double_t l0[3];
 
-    this->GtoLPosition(g0,l0);
+    this->GtoLPosition(g,l0);
     if(fid[0]==1){ // for layer 1 the detector are flipped upside down
 	           // with respect to the others.
 	l[0] = +l0[1];
@@ -443,20 +575,26 @@ void AliITSgeomMatrix::GtoLPositionTracking(const Double_t g0[3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGPositionTracking(const Double_t l[3],
-					    Double_t g[3]) const {
-////////////////////////////////////////////////////////////////////////
-// A slightly different coordinate system is used when tracking.
-// This coordinate system is only relevant when the geometry represents
-// the cylindrical ALICE ITS geometry. For tracking the Z axis is left
-// alone but X -> -Y and Y -> X such that X always points out of the
-// ITS Cylinder for every layer including layer 1 (where the detector 
-// are mounted upside down).
-//Begin_Html
-/*
-<img src="picts/ITS/AliITSgeomMatrix_T1.gif">
- */
-//End_Html
-////////////////////////////////////////////////////////////////////////
+                                            Double_t g[3]) const {
+    // A slightly different coordinate system is used when tracking.
+    // This coordinate system is only relevant when the geometry represents
+    // the cylindrical ALICE ITS geometry. For tracking the Z axis is left
+    // alone but X -> -Y and Y -> X such that X always points out of the
+    // ITS Cylinder for every layer including layer 1 (where the detector 
+    // are mounted upside down).
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_T1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //   Double_t l[3]   The poistion represented in the detector 
+    //                   local coordinate system
+    // Outputs:
+    //   Double_t g[3]   The poistion represented in the ALICE
+    //                   Global coordinate system
+    // Return:
+    //   none.
     Double_t l0[3];
 
     if(fid[0]==1){ // for layer 1 the detector are flipped upside down
@@ -474,20 +612,26 @@ void AliITSgeomMatrix::LtoGPositionTracking(const Double_t l[3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::GtoLMomentumTracking(const Double_t g[3],
-					    Double_t l[3]) const {
-////////////////////////////////////////////////////////////////////////
-// A slightly different coordinate system is used when tracking.
-// This coordinate system is only relevant when the geometry represents
-// the cylindrical ALICE ITS geometry. For tracking the Z axis is left
-// alone but X -> -Y and Y -> X such that X always points out of the
-// ITS Cylinder for every layer including layer 1 (where the detector 
-// are mounted upside down).
-//Begin_Html
-/*
-<img src="picts/ITS/AliITSgeomMatrix_T1.gif">
- */
-//End_Html
-////////////////////////////////////////////////////////////////////////
+                                            Double_t l[3]) const {
+    // A slightly different coordinate system is used when tracking.
+    // This coordinate system is only relevant when the geometry represents
+    // the cylindrical ALICE ITS geometry. For tracking the Z axis is left
+    // alone but X -> -Y and Y -> X such that X always points out of the
+    // ITS Cylinder for every layer including layer 1 (where the detector 
+    // are mounted upside down).
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_T1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //   Double_t g[3] The momentum represented in the ALICE global 
+    //                 coordinate system
+    // Outputs:
+    //   Double_t l[3] the momentum represented in the detector 
+    //                 local coordinate system
+    // Return:
+    //   none.
     Double_t l0[3];
 
     this->GtoLMomentum(g,l0);
@@ -505,20 +649,26 @@ void AliITSgeomMatrix::GtoLMomentumTracking(const Double_t g[3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::LtoGMomentumTracking(const Double_t l[3],
-					    Double_t g[3]) const {
-////////////////////////////////////////////////////////////////////////
-// A slightly different coordinate system is used when tracking.
-// This coordinate system is only relevant when the geometry represents
-// the cylindrical ALICE ITS geometry. For tracking the Z axis is left
-// alone but X -> -Y and Y -> X such that X always points out of the
-// ITS Cylinder for every layer including layer 1 (where the detector 
-// are mounted upside down).
-//Begin_Html
-/*
-<img src="picts/ITS/AliITSgeomMatrix_T1.gif">
- */
-//End_Html
-////////////////////////////////////////////////////////////////////////
+                                            Double_t g[3]) const {
+    // A slightly different coordinate system is used when tracking.
+    // This coordinate system is only relevant when the geometry represents
+    // the cylindrical ALICE ITS geometry. For tracking the Z axis is left
+    // alone but X -> -Y and Y -> X such that X always points out of the
+    // ITS Cylinder for every layer including layer 1 (where the detector 
+    // are mounted upside down).
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_T1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //   Double_t l[3] the momentum represented in the detector 
+    //                 local coordinate system
+    // Outputs:
+    //   Double_t g[3] The momentum represented in the ALICE global 
+    //                 coordinate system
+    // Return:
+    //   none.
     Double_t l0[3];
 
     if(fid[0]==1){ // for layer 1 the detector are flipped upside down
@@ -535,21 +685,26 @@ void AliITSgeomMatrix::LtoGMomentumTracking(const Double_t l[3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::GtoLPositionErrorTracking(     Double_t g[3][3],
-						 Double_t l[3][3]) const {
-////////////////////////////////////////////////////////////////////////
-// A slightly different coordinate system is used when tracking.
-// This coordinate system is only relevant when the geometry represents
-// the cylindrical ALICE ITS geometry. For tracking the Z axis is left
-// alone but X -> -Y and Y -> X such that X always points out of the
-// ITS Cylinder for every layer including layer 1 (where the detector 
-// are mounted upside down).
-//Begin_Html
-/*
-<img src="picts/ITS/AliITSgeomMatrix_T1.gif">
- */
-//End_Html
-////////////////////////////////////////////////////////////////////////
+void AliITSgeomMatrix::GtoLPositionErrorTracking(const Double_t g[3][3],
+                                                 Double_t l[3][3]) const {
+    // A slightly different coordinate system is used when tracking.
+    // This coordinate system is only relevant when the geometry represents
+    // the cylindrical ALICE ITS geometry. For tracking the Z axis is left
+    // alone but X -> -Y and Y -> X such that X always points out of the
+    // ITS Cylinder for every layer including layer 1 (where the detector 
+    // are mounted upside down).
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_TE1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //   Double_t g[3][3] The error matrix represented in the ALICE global 
+    //                    coordinate system
+    // Outputs:
+    //   Double_t l[3][3] the error matrix represented in the detector 
+    //                    local coordinate system
+    // Return:
 	Int_t    i,j,k,m;
 	Double_t rt[3][3];
 	Double_t a0[3][3] = {{0.,+1.,0.},{-1.,0.,0.},{0.,0.,+1.}};
@@ -568,21 +723,27 @@ void AliITSgeomMatrix::GtoLPositionErrorTracking(     Double_t g[3][3],
 	return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::LtoGPositionErrorTracking( Double_t l[3][3],
-						 Double_t g[3][3]) const {
-////////////////////////////////////////////////////////////////////////
-// A slightly different coordinate system is used when tracking.
-// This coordinate system is only relevant when the geometry represents
-// the cylindrical ALICE ITS geometry. For tracking the Z axis is left
-// alone but X -> -Y and Y -> X such that X always points out of the
-// ITS Cylinder for every layer including layer 1 (where the detector 
-// are mounted upside down).
-//Begin_Html
-/*
-<img src="picts/ITS/AliITSgeomMatrix_T1.gif">
- */
-//End_Html
-////////////////////////////////////////////////////////////////////////
+void AliITSgeomMatrix::LtoGPositionErrorTracking(const Double_t l[3][3],
+                                                 Double_t g[3][3]) const {
+    // A slightly different coordinate system is used when tracking.
+    // This coordinate system is only relevant when the geometry represents
+    // the cylindrical ALICE ITS geometry. For tracking the Z axis is left
+    // alone but X -> -Y and Y -> X such that X always points out of the
+    // ITS Cylinder for every layer including layer 1 (where the detector 
+    // are mounted upside down).
+    //Begin_Html
+    /*
+      <img src="picts/ITS/AliITSgeomMatrix_TE1.gif">
+    */
+    //End_Html
+    // Inputs:
+    //   Double_t l[3][3] the error matrix represented in the detector 
+    //                    local coordinate system
+    // Outputs:
+    //   Double_t g[3][3] The error matrix represented in the ALICE global 
+    //                    coordinate system
+    // Return:
+    //   none.
 	Int_t    i,j,k,m;
 	Double_t rt[3][3];
 	Double_t a0[3][3] = {{0.,+1.,0.},{-1.,0.,0.},{0.,0.,+1.}};
@@ -602,10 +763,14 @@ void AliITSgeomMatrix::LtoGPositionErrorTracking( Double_t l[3][3],
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::PrintTitles(ostream *os) const {
-////////////////////////////////////////////////////////////////////////
-// Standard output format for this class but it includes variable
-// names and formatting that makes it easer to read.
-////////////////////////////////////////////////////////////////////////
+    // Standard output format for this class but it includes variable
+    // names and formatting that makes it easer to read.
+    // Inputs:
+    //    ostream *os   The output stream to print the title on
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
     Int_t i,j;
 
     *os << "fDetectorIndex=" << fDetectorIndex << " fid[3]={";
@@ -621,9 +786,13 @@ void AliITSgeomMatrix::PrintTitles(ostream *os) const {
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::PrintComment(ostream *os) const {
-////////////////////////////////////////////////////////////////////////
-//  output format used by Print..
-////////////////////////////////////////////////////////////////////////
+    //  output format used by Print.
+    // Inputs:
+    //    ostream *os   The output stream to print the comments on
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
     *os << "fDetectorIndex fid[0] fid[1] fid[2] ftran[0] ftran[1] ftran[2] ";
     *os << "fm[0][0]  fm[0][1]  fm[0][2]  fm[1][0]  fm[1][1]  fm[1][2]  ";
     *os << "fm[2][0]  fm[2][1]  fm[2][2] ";
@@ -631,9 +800,13 @@ void AliITSgeomMatrix::PrintComment(ostream *os) const {
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::Print(ostream *os){
-////////////////////////////////////////////////////////////////////////
-// Standard output format for this class.
-////////////////////////////////////////////////////////////////////////
+    // Standard output format for this class.
+    // Inputs:
+    //    ostream *os   The output stream to print the class data on
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
     Int_t i,j;
 #if defined __GNUC__
 #if __GNUC__ > 2
@@ -656,15 +829,21 @@ void AliITSgeomMatrix::Print(ostream *os){
     for(i=0;i<3;i++) *os << setprecision(16) << ftran[i] << " ";
     for(i=0;i<3;i++)for(j=0;j<3;j++)  *os << setprecision(16) << 
 					  fm[i][j] << " ";
+    *os << fPath.Length()<< " ";
+    for(i=0;i<fPath.Length();i++) *os << fPath[i];
     *os << endl;
     os->flags(fmt); // reset back to old formating.
     return;
 }
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::Read(istream *is){
-////////////////////////////////////////////////////////////////////////
-// Standard input format for this class.
-////////////////////////////////////////////////////////////////////////
+    // Standard input format for this class.
+    // Inputs:
+    //    istream *is   The input stream to read on
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
     Int_t i,j;
 
     *is >> fDetectorIndex;
@@ -672,6 +851,9 @@ void AliITSgeomMatrix::Read(istream *is){
 //    for(i=0;i<3;i++) *is >> frot[i]; // Redundant with fm[][].
     for(i=0;i<3;i++) *is >> ftran[i];
     for(i=0;i<3;i++)for(j=0;j<3;j++)  *is >> fm[i][j];
+    *is >> j; // string length
+    fPath.Resize(j);
+    for(i=0;i<j;i++) {*is >> fPath[i];}
     AngleFromMatrix(); // compute angles frot[].
     fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
     fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
@@ -681,40 +863,281 @@ void AliITSgeomMatrix::Read(istream *is){
 //______________________________________________________________________
 void AliITSgeomMatrix::Streamer(TBuffer &R__b){
    // Stream an object of class AliITSgeomMatrix.
+    // Inputs:
+    //     TBuffer &R__b   The output buffer to stream data on.
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
 
-   if (R__b.IsReading()) {
-      AliITSgeomMatrix::Class()->ReadBuffer(R__b, this);
-      fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
-      fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
-      this->AngleFromMatrix();
-    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
-   } else {
-      AliITSgeomMatrix::Class()->WriteBuffer(R__b, this);
-   }
+    if (R__b.IsReading()) {
+        AliITSgeomMatrix::Class()->ReadBuffer(R__b, this);
+        fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
+        fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+        this->AngleFromMatrix();
+        if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    } else {
+        AliITSgeomMatrix::Class()->WriteBuffer(R__b, this);
+    } // end if
 }
 //______________________________________________________________________
 void AliITSgeomMatrix::SetTranslation(const Double_t tran[3]){
-  // Sets the translation vector and computes fCylR and fCylPhi.
-  for(Int_t i=0;i<3;i++) ftran[i] = tran[i];
-  fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
-  fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
-  if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    // Sets the translation vector and computes fCylR and fCylPhi.
+    // Inputs:
+    //   Double_t trans[3]   The translation vector to be used
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    for(Int_t i=0;i<3;i++) ftran[i] = tran[i];
+    fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
+    fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
+    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
 }
+//----------------------------------------------------------------------
+TPolyLine3D* AliITSgeomMatrix::CreateLocalAxis(){
+    // This class is used as part of the documentation of this class
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   A pointer to a new TPolyLine3D object showing the 3 line
+    //   segments that make up the this local axis in the global
+    //   reference system.
+    Float_t  gf[15];
+    Double_t g[5][3];
+    Double_t l[5][3]={{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,0.0},
+                      {0.0,0.0,1.0}};
+    Int_t i;
 
+    for(i=0;i<5;i++) {
+        LtoGPosition(l[i],g[i]);
+        gf[3*i]=(Float_t)g[i][0];
+        gf[3*i+1]=(Float_t)g[i][1];
+        gf[3*i+2]=(Float_t)g[i][2];
+    } // end for i
+    return new TPolyLine3D(5,gf);
+}
+//----------------------------------------------------------------------
+TPolyLine3D* AliITSgeomMatrix::CreateLocalAxisTracking(){
+    // This class is used as part of the documentation of this class
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   A pointer to a new TPolyLine3D object showing the 3 line
+    //   segments that make up the this local axis in the global
+    //   reference system.
+    Float_t gf[15];
+    Double_t g[5][3];
+    Double_t l[5][3]={{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,0.0},
+                      {0.0,0.0,1.0}};
+    Int_t i;
+
+    for(i=0;i<5;i++) {
+        LtoGPositionTracking(l[i],g[i]);
+        gf[3*i]=(Float_t)g[i][0];
+        gf[3*i+1]=(Float_t)g[i][1];
+        gf[3*i+2]=(Float_t)g[i][2];
+    } // end for i
+    return new TPolyLine3D(5,gf);
+}
+//----------------------------------------------------------------------
+TNode* AliITSgeomMatrix::CreateNode(const Char_t *nodeName,
+                                    const Char_t *nodeTitle,TNode *mother,
+                                    TShape *shape,Bool_t axis){
+    // Creates a node inside of the node mother out of the shape shape
+    // in the position, with respect to mother, indecated by "this". If axis
+    // is ture, it will insert an axis within this node/shape.
+    // Inputs:
+    //   Char_t *nodeName  This name of this node
+    //   Char_t *nodeTitle This node title
+    //   TNode  *mother    The node this node will be inside of/with respect to
+    //   TShape *shape     The shape of this node
+    //   Bool_t axis       If ture, a set of x,y,z axis will be included
+    // Outputs:
+    //   none.
+    // Return:
+    //   A pointer to "this" node.
+    Double_t trans[3],matrix[3][3],*matr;
+    TRotMatrix *rot = new TRotMatrix();
+    TString name,title;
+
+    matr = &(matrix[0][0]);
+    this->GetTranslation(trans);
+    this->GetMatrix(matrix);
+    rot->SetMatrix(matr);
+    //
+    name = nodeName;
+    title = nodeTitle;
+    //
+    mother->cd();
+    TNode *node1 = new TNode(name.Data(),title.Data(),shape,trans[0],trans[1],trans[2],rot);
+    if(axis){
+        Int_t i,j;
+        const Float_t scale=0.5,lw=0.2;
+        Float_t xchar[13][2]={{0.5*lw,1.},{0.,0.5*lw},{0.5-0.5*lw,0.5},
+                              {0.,0.5*lw},{0.5*lw,0.},{0.5,0.5-0.5*lw},
+                              {1-0.5*lw,0.},{1.,0.5*lw},{0.5+0.5*lw,0.5},
+                              {1.,1.-0.5*lw},{1.-0.5*lw,1.},{0.5,0.5+0.5*lw},
+                              {0.5*lw,1.}};
+        Float_t ychar[10][2]={{.5-0.5*lw,0.},{.5+0.5*lw,0.},{.5+0.5*lw,0.5-0.5*lw},
+                              {1.,1.-0.5*lw},{1.-0.5*lw,1.},{0.5+0.5*lw,0.5},
+                              {0.5*lw,1.}   ,{0.,1-0.5*lw} ,{0.5-0.5*lw,0.5},
+                              {.5-0.5*lw,0.}};
+        Float_t zchar[11][2]={{0.,1.},{0,1.-lw},{1.-lw,1.-lw},{0.,lw}   ,{0.,0.},
+                              {1.,0.},{1.,lw}  ,{lw,lw}      ,{1.,1.-lw},{1.,1.},
+                              {0.,1.}};
+        for(i=0;i<13;i++)for(j=0;j<2;j++){
+            if(i<13) xchar[i][j] = scale*xchar[i][j];
+            if(i<10) ychar[i][j] = scale*ychar[i][j];
+            if(i<11) zchar[i][j] = scale*zchar[i][j];
+        } // end for i,j
+        TXTRU *axisxl = new TXTRU("x","x","text",12,2);
+        for(i=0;i<12;i++) axisxl->DefineVertex(i,xchar[i][0],xchar[i][1]);
+        axisxl->DefineSection(0,-0.5*lw);axisxl->DefineSection(1,0.5*lw);
+        TXTRU *axisyl = new TXTRU("y","y","text",9,2);
+        for(i=0;i<9;i++) axisyl->DefineVertex(i,ychar[i][0],ychar[i][1]);
+        axisyl->DefineSection(0,-0.5*lw);axisyl->DefineSection(1,0.5*lw);
+        TXTRU *axiszl = new TXTRU("z","z","text",10,2);
+        for(i=0;i<10;i++) axiszl->DefineVertex(i,zchar[i][0],zchar[i][1]);
+        axiszl->DefineSection(0,-0.5*lw);axiszl->DefineSection(1,0.5*lw);
+        Float_t lxy[13][2]={{-0.5*lw,-0.5*lw},{0.8,-0.5*lw},{0.8,-0.1},{1.0,0.0},
+                            {0.8,0.1},{0.8,0.5*lw},{0.5*lw,0.5*lw},{0.5*lw,0.8},
+                            {0.1,0.8},{0.0,1.0},{-0.1,0.8},{-0.5*lw,0.8},
+                            {-0.5*lw,-0.5*lw}};
+        TXTRU *axisxy = new TXTRU("axisxy","axisxy","text",13,2);
+        for(i=0;i<13;i++) axisxy->DefineVertex(i,lxy[i][0],lxy[i][1]);
+        axisxy->DefineSection(0,-0.5*lw);axisxy->DefineSection(1,0.5*lw);
+        Float_t lz[8][2]={{0.5*lw,-0.5*lw},{0.8,-0.5*lw},{0.8,-0.1},{1.0,0.0},
+                           {0.8,0.1},{0.8,0.5*lw},{0.5*lw,0.5*lw},
+                           {0.5*lw,-0.5*lw}};
+        TXTRU *axisz = new TXTRU("axisz","axisz","text",8,2);
+        for(i=0;i<8;i++) axisz->DefineVertex(i,lz[i][0],lz[i][1]);
+        axisz->DefineSection(0,-0.5*lw);axisz->DefineSection(1,0.5*lw);
+        //TRotMatrix *xaxis90= new TRotMatrix("xaixis90","",90.0, 0.0, 0.0);
+        TRotMatrix *yaxis90= new TRotMatrix("yaixis90","", 0.0,90.0, 0.0);
+        TRotMatrix *zaxis90= new TRotMatrix("zaixis90","", 0.0, 0.0,90.0);
+        //
+        node1->cd();
+        title = name.Append("axisxy");
+        TNode *nodeaxy = new TNode(title.Data(),title.Data(),axisxy);
+        title = name.Append("axisz");
+        TNode *nodeaz = new TNode(title.Data(),title.Data(),axisz,0.,0.,0.,yaxis90);
+        TNode *textboxX0 = new TNode("textboxX0","textboxX0",axisxl,
+                                    lxy[3][0],lxy[3][1],0.0);
+        TNode *textboxX1 = new TNode("textboxX1","textboxX1",axisxl,
+                                    lxy[3][0],lxy[3][1],0.0,yaxis90);
+        TNode *textboxX2 = new TNode("textboxX2","textboxX2",axisxl,
+                                    lxy[3][0],lxy[3][1],0.0,zaxis90);
+        TNode *textboxY0 = new TNode("textboxY0","textboxY0",axisyl,
+                                    lxy[9][0],lxy[9][1],0.0);
+        TNode *textboxY1 = new TNode("textboxY1","textboxY1",axisyl,
+                                    lxy[9][0],lxy[9][1],0.0,yaxis90);
+        TNode *textboxY2 = new TNode("textboxY2","textboxY2",axisyl,
+                                    lxy[9][0],lxy[9][1],0.0,zaxis90);
+        TNode *textboxZ0 = new TNode("textboxZ0","textboxZ0",axiszl,
+                                    0.0,0.0,lz[3][0]);
+        TNode *textboxZ1 = new TNode("textboxZ1","textboxZ1",axiszl,
+                                    0.0,0.0,lz[3][0],yaxis90);
+        TNode *textboxZ2 = new TNode("textboxZ2","textboxZ2",axiszl,
+                                    0.0,0.0,lz[3][0],zaxis90);
+        nodeaxy->Draw();
+        nodeaz->Draw();
+        textboxX0->Draw();
+        textboxX1->Draw();
+        textboxX2->Draw();
+        textboxY0->Draw();
+        textboxY1->Draw();
+        textboxY2->Draw();
+        textboxZ0->Draw();
+        textboxZ1->Draw();
+        textboxZ2->Draw();
+    } // end if
+    mother->cd();
+    return node1;
+}
+//----------------------------------------------------------------------
+void AliITSgeomMatrix::MakeFigures(){
+    // make figures to help document this class
+    // Inputs:
+    //   none.
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+    const Double_t dx0=550.,dy0=550.,dz0=550.; // cm
+    const Double_t dx=1.0,dy=0.300,dz=3.0,rmax=0.1; // cm
+    Float_t l[5][3]={{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,0.0},
+                      {0.0,0.0,1.0}};
+    TCanvas *c = new TCanvas(kFALSE);// create a batch mode canvas.
+    TView   *view = new TView(1); // Create Cartesian coordiante view
+    TBRIK   *mother  = new TBRIK("Mother","Mother","void",dx0,dy0,dz0);
+    TBRIK   *det  = new TBRIK("Detector","","Si",dx,dy,dz);
+    TPolyLine3D *axis = new TPolyLine3D(5,&(l[0][0]));
+    TPCON *arrow      = new TPCON("arrow","","air",0.0,360.,2);
+    TRotMatrix *xarrow= new TRotMatrix("xarrow","",90.,0.0,0.0);
+    TRotMatrix *yarrow= new TRotMatrix("yarrow","",0.0,90.,0.0);
+
+    det->SetLineColor(0); // black
+    det->SetLineStyle(1); // solid line
+    det->SetLineWidth(2); // pixel units
+    det->SetFillColor(1); // black
+    det->SetFillStyle(4010); // window is 90% transparent
+    arrow->SetLineColor(det->GetLineColor());
+    arrow->SetLineWidth(det->GetLineWidth());
+    arrow->SetLineStyle(det->GetLineStyle());
+    arrow->SetFillColor(1); // black
+    arrow->SetFillStyle(4100); // window is 100% opaque
+    arrow->DefineSection(0,0.0,0.0,rmax);
+    arrow->DefineSection(1,2.*rmax,0.0,0.0);
+    view->SetRange(-dx0,-dy0,-dz0,dx0,dy0,dz0);
+    //
+    TNode *node0 = new TNode("NODE0","NODE0",mother);
+    node0->cd();
+    TNode *node1 = new TNode("NODE1","NODE1",det);
+    node1->cd();
+    TNode *nodex = new TNode("NODEx","NODEx",arrow,l[0][0],l[0][1],l[0][2],xarrow);
+    TNode *nodey = new TNode("NODEy","NODEy",arrow,l[2][0],l[2][1],l[2][2],yarrow);
+    TNode *nodez = new TNode("NODEz","NODEz",arrow,l[4][0],l[4][1],l[4][2]);
+    //
+    axis->Draw();
+    nodex->Draw();
+    nodey->Draw();
+    nodez->Draw();
+    
+    //
+    node0->cd();
+    node0->Draw();
+    c->Update();
+    c->SaveAs("AliITSgeomMatrix_L1.gif");
+}
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITSgeomMatrix &p){
-////////////////////////////////////////////////////////////////////////
-// Standard output streaming function.
-////////////////////////////////////////////////////////////////////////
+    // Standard output streaming function.
+    // Inputs:
+    //    ostream &os          The output stream to print the class data on
+    //    AliITSgeomMatrix &p  This class
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
 
     p.Print(&os);
     return os;
 }
 //----------------------------------------------------------------------
 istream &operator>>(istream &is,AliITSgeomMatrix &r){
-////////////////////////////////////////////////////////////////////////
-// Standard input streaming function.
-////////////////////////////////////////////////////////////////////////
+    // Standard input streaming function.
+    // Inputs:
+    //    ostream &os          The input stream to print the class data on
+    //    AliITSgeomMatrix &p  This class
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
 
     r.Read(&is);
     return is;

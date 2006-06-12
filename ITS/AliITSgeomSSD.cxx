@@ -32,9 +32,21 @@
 ClassImp(AliITSgeomSSD)
 
 
-AliITSgeomSSD::AliITSgeomSSD(){
+AliITSgeomSSD::AliITSgeomSSD():
+TObject(),
+fName(),
+fTitle(),
+fMat(),
+fDx(0.0),
+fDy(0.0),
+fDz(0.0),
+fNp(0),
+fNn(0),
+fLowEdgeP(0),
+fLowEdgeN(0),
+fAngleP(0.0),
+fAngleN(0.0){
 // Default constructor
-    fShapeSSD = 0;
     fNp       = 0;
     fNn       = 0;
     fLowEdgeP = 0;
@@ -44,13 +56,25 @@ AliITSgeomSSD::AliITSgeomSSD(){
 }
 //----------------------------------------------------------------------
 AliITSgeomSSD::AliITSgeomSSD(const Float_t *box,Float_t ap,Float_t an,
-			     Int_t np,Float_t *p,Int_t nn,Float_t *n){
+			     Int_t np,Float_t *p,Int_t nn,Float_t *n):
+TObject(),
+fName(),
+fTitle(),
+fMat(),
+fDx(0.0),
+fDy(0.0),
+fDz(0.0),
+fNp(0),
+fNn(0),
+fLowEdgeP(0),
+fLowEdgeN(0),
+fAngleP(0.0),
+fAngleN(0.0){
 ////////////////////////////////////////////////////////////////////////
 //    Standard Constructor. *box={dx,dy,dz}, ap=anode angle, an=cathode angle,
 // nn= number of cathodes+1,*n= array of cathode low edges+highest edge,
 // np= number of anodes+1, *p= array of anode low edges+lighest edge.
 ///////////////////////////////////////////////////////////////////////
-    fShapeSSD = 0;
     fNp       = 0;
     fNn       = 0;
     fLowEdgeP = 0;
@@ -69,10 +93,14 @@ void AliITSgeomSSD::ResetSSD(const Float_t *box,Float_t ap,Float_t an,
 ///////////////////////////////////////////////////////////////////////
     Int_t i;
 
-    fShapeSSD = new TBRIK("ActiveSSD","Active volume of SSD","SSD SI DET",
-			  box[0],box[1],box[2]);
-//    if(fLowEdgeP!=0) delete fLowEdgeP;
-//    if(fLowEdgeN!=0) delete fLowEdgeN;
+    fName = "ActiveSSD";
+    fTitle = "Active volume of SSD";
+    fMat = "SSD Si Det";
+    fDx  = box[0];
+    fDy  = box[1];
+    fDz  = box[2];
+    if(fLowEdgeP!=0) delete fLowEdgeP;
+    if(fLowEdgeN!=0) delete fLowEdgeN;
     fNp = np;
     fNn = nn;
     fAngleP = ap;
@@ -88,7 +116,6 @@ AliITSgeomSSD::~AliITSgeomSSD(){
 
     if(fLowEdgeP) delete [] fLowEdgeP; fLowEdgeP = 0;
     if(fLowEdgeN) delete [] fLowEdgeN; fLowEdgeN = 0;
-    if(fShapeSSD) delete  fShapeSSD; fShapeSSD = 0;
     fNp = 0;
     fNn = 0;
     fAngleP = 0.0;
@@ -102,7 +129,12 @@ AliITSgeomSSD::AliITSgeomSSD(const AliITSgeomSSD &source) : TObject(source){
     Int_t i;
 
     if(this == &source) return;
-    this->fShapeSSD = new TBRIK(*(source.fShapeSSD));
+    fName = source.fName;
+    fTitle = source.fTitle;
+    fMat = source.fMat;
+    fDx = source.fDx;
+    fDy = source.fDy;
+    fDz = source.fDz;
     this->fNp = source.fNp;
     this->fNn = source.fNn;
     delete fLowEdgeP;
@@ -123,7 +155,12 @@ AliITSgeomSSD& AliITSgeomSSD::operator=(const AliITSgeomSSD &source) {
     Int_t i;
 
     if(this == &source) return *this;
-    this->fShapeSSD = new TBRIK(*(source.fShapeSSD));
+    fName = source.fName;
+    fTitle = source.fTitle;
+    fMat = source.fMat;
+    fDx = source.fDx;
+    fDy = source.fDy;
+    fDz = source.fDz;
     this->fNp = source.fNp;
     this->fNn = source.fNn;
     delete fLowEdgeP;
@@ -214,15 +251,11 @@ void AliITSgeomSSD::Read(istream *is){
 ////////////////////////////////////////////////////////////////////////
 // Standard input format for this class.
 ////////////////////////////////////////////////////////////////////////
-    Float_t dx,dy,dz;
     Int_t i;
     char shp[20];
 
     *is >> shp;
-    *is >> dx >> dy >> dz;
-    if(fShapeSSD!=0) delete fShapeSSD;
-    fShapeSSD = new TBRIK("ActiveSSD","Active volume of SSD","SSD SI DET",
-			    dx,dy,dz);
+    *is >> fDx >> fDy >> fDz;
     *is >> fNp >> fNn;
     *is >> fAngleP >> fAngleN;
     if(fLowEdgeP !=0) delete fLowEdgeP;
@@ -279,12 +312,10 @@ AliITSgeomSSD175::AliITSgeomSSD175() : AliITSgeomSSD(){
     } // end for i
     leA[kNstrips] =  kDxyz[0];
     leC[kNstrips] = -kDxyz[0];
-//    cout << "AliITSgeomSSD175 default creator called: start" << endl;
     AliITSgeomSSD::ResetSSD(kDxyz,kangle,-kangle,
 				 kNstrips+1,leA,kNstrips+1,leC);
     delete leA;
     delete leC;
-//    cout << "AliITSgeomSSD175 default creator called: end" << endl;
 }
 //________________________________________________________________________
 ostream &operator<<(ostream &os,AliITSgeomSSD175 &p){
@@ -358,12 +389,10 @@ AliITSgeomSSD275and75::AliITSgeomSSD275and75(Int_t npar,Float_t *par) :
     } // end for i
     leA[kNstrips] =  kDxyz[0];
     leC[kNstrips] = -kDxyz[0];
-//    cout << "AliITSgeomSSD275and75 default creator called: start" << endl;
     AliITSgeomSSD::ResetSSD(par,kangleA,kangleC,
 				 kNstrips+1,leA,kNstrips+1,leC);
     delete [] leA;
     delete [] leC;
-//    cout << "AliITSgeomSSD275and75 default creator called: end" << endl;
 }
 //________________________________________________________________________
 ostream &operator<<(ostream &os,AliITSgeomSSD275and75 &p){
@@ -437,12 +466,10 @@ AliITSgeomSSD75and275::AliITSgeomSSD75and275(Int_t npar,Float_t *par) :
     } // end for i
     leA[kNstrips] =  kDxyz[0];
     leC[kNstrips] = -kDxyz[0];
-//    cout << "AliITSgeomSSD275and75 default creator called: start" << endl;
     AliITSgeomSSD::ResetSSD(par,kangleA,kangleC,
 				 kNstrips+1,leA,kNstrips+1,leC);
     delete leA;
     delete leC;
-//    cout << "AliITSgeomSSD275and75 default creator called: end" << endl;
 }
 //________________________________________________________________________
 ostream &operator<<(ostream &os,AliITSgeomSSD75and275 &p){

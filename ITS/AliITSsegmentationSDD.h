@@ -22,7 +22,10 @@ public AliITSsegmentation {
 
     // Set Detector Segmentation Parameters
     //
-
+    // get the drift speed used for this segmentation
+    virtual Float_t GetDriftSpeed()const{return fDriftSpeed;}
+    // Set the drift speed needed for this segmentation
+    virtual void SetDriftSpeed(Float_t ds){fDriftSpeed = ds;}
     // Cell size dz*dx  
     virtual void    SetPadSize(Float_t pitch, Float_t clock) 
                          {fPitch=pitch;fTimeStep=1000./clock;}

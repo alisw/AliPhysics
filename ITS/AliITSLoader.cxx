@@ -144,6 +144,7 @@ AliITSLoader::~AliITSLoader(){
     fDataLoaders->Remove(dl);
     if(fITSpid)delete fITSpid;
     if(fGeom)delete fGeom;
+    fGeom = 0;
 }
 /*
 //----------------------------------------------------------------------
@@ -338,5 +339,24 @@ AliITSgeom* AliITSLoader::GetITSgeom(Bool_t force) {
   }
   AliWarning("AliITSgeom object has been fetched from galice.root file");
   return fGeom;
+}
+//______________________________________________________________________
+void AliITSLoader::SetITSgeom(AliITSgeom *geom){
+    // Replaces the AliITSgeom object read from file with the one
+    // given.
+    // Inputs:
+    //   AliITSgeom *geom   The AliITSgeom object to replace the one
+    //                      read from the file
+    // Outputs:
+    //   none.
+    // Return:
+    //   none.
+
+    if(fGeom==geom) return; // Same do nothing
+    if(fGeom) {
+	delete fGeom;
+	fGeom=0;
+    }// end if
+    fGeom=geom;
 }
 

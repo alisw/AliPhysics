@@ -893,7 +893,7 @@ void AliITSvPPRcoarseasymm::CreateMaterials(){
   // Monte Carlo simulations for the geometries AliITSv1, AliITSv3,
   // AliITSvPPRcoarseasymm.
   // In general it is automatically replaced by
-  // the CreatMaterials routine defined in AliITSv?. Should the function
+  // the CreateMaterials routine defined in AliITSv?. Should the function
   // CreateMaterials not exist for the geometry version you are using this
   // one is used. See the definition found in AliITSv5 or the other routine
   // for a complete definition.

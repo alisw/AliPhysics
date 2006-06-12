@@ -146,6 +146,8 @@ AliITS::AliITS(const char *name, const char *title):AliDetector(name,title){
   fDetTypeSim   = new AliITSDetTypeSim();
   
   SetMarkerColor(kRed);
+  if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
 
 }
 //______________________________________________________________________
@@ -160,6 +162,7 @@ AliITS::~AliITS(){
     //      none.
     // Return:
     //      none.
+
     if (fHits) {
       fHits->Delete();
       delete fHits;
@@ -251,7 +254,7 @@ void AliITS::Init(){
 //______________________________________________________________________
 void AliITS::WriteGeometry(){
   
-  //Writes ITS geomtry on gAlice
+  //Writes ITS geometry on gAlice
 
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
   AliRunLoader* rl  = fLoader->GetRunLoader();
@@ -270,7 +273,7 @@ void AliITS::SetDefaults(){
     //      none.
     // Return:
     //      none.
-  AliInfoClass("Setting Defaults");
+    AliInfoClass("AliITS::Setting Defaults");
 
     if(!fDetTypeSim) { 
      Error("SetDefaults()","fDetTypeSim is 0!"); 
@@ -363,7 +366,7 @@ void AliITS::MakeBranchD(const char* file){
     Warning("MakeBranchD","fDetTypeSim is 0!");
     return;
   }
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
   MakeBranchInTreeD(fLoader->TreeD(),file);
 }
 
@@ -374,7 +377,7 @@ void AliITS:: MakeBranchInTreeD(TTree* treeD, const char* file){
   if(!fDetTypeSim){
     Error("MakeBranchS","fDetTypeSim is 0!");
   }
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
 
   const Char_t *det[3] = {"SPD","SDD","SSD"};
   Char_t* digclass;
@@ -407,13 +410,13 @@ void AliITS::SetTreeAddress(){
     //      none.
     // Return:
     //      none.
-
+    
   if(!fDetTypeSim) {
     Error("SetTreeAddress","fDetTypeSim is 0!");
     return;
   }
 
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
 
   TTree *treeS = fLoader->TreeS();
   TTree *treeD = fLoader->TreeD();
@@ -424,8 +427,6 @@ void AliITS::SetTreeAddress(){
 
   fDetTypeSim->SetTreeAddressS(treeS, (Char_t*)GetName());
   fDetTypeSim->SetTreeAddressD(treeD, (Char_t*)GetName());
-
-
 }
 //______________________________________________________________________
 void AliITS::AddHit(Int_t track, Int_t *vol, Float_t *hits){
@@ -608,7 +609,7 @@ void AliITS::Hits2SDigits(){
   fLoader->LoadHits("read");
   fLoader->LoadSDigits("recreate");
   AliRunLoader* rl = fLoader->GetRunLoader(); 
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
   for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
         // Do the Hits to Digits operation. Use Standard input values.
         // Event number from file, no background hit merging , use size from
@@ -633,7 +634,7 @@ void AliITS::Hits2Digits(){
     return;
   }
    
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
   SetDefaults();
 
   fLoader->LoadHits("read");
@@ -678,7 +679,7 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     Error("HitsToDigits","fDetTypeSim is null!");
     return;
   }
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
   if(!GetITSgeom()) return; // need transformations to do digitization.
   AliITSgeom *geom = GetITSgeom();
 
@@ -729,7 +730,7 @@ void AliITS::Hits2PreDigits(){
     return;
   }
    
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
   SetDefaults();
   
   HitsToPreDigits(fLoader->GetRunLoader()->GetEventNumber(),
@@ -763,7 +764,7 @@ void AliITS::HitsToPreDigits(Int_t evNumber,Int_t bgrev,Int_t size,
     Error("HitsToPreDigits","fDetTypeSim is null!");
     return;
   }
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
 
   if(!GetITSgeom()){
     Error("HitsToPreDigits","fGeom is null!");
@@ -866,8 +867,7 @@ void AliITS::HitsToFastRecPoints(Int_t evNumber,Int_t bgrev,Int_t size,
   TBranch* branch = (TBranch*)lTR->Branch("ITSRecPointsF",&ptarray);
   branch->SetAddress(&ptarray);
   //m.b. : this change is nothing but a nice way to make sure
-  //the CPU goes up !
-  AliDebug(1,Form("N mod = %d",geom->GetIndexMax()));    
+  //the CPU goes up !    
   for(module=0;module<geom->GetIndexMax();module++){
     id       = geom->GetModuleType(module);
     if (!all && !det[id]) continue;
@@ -965,7 +965,7 @@ void AliITS::SDigitsToDigits(Option_t *opt){
       return;
     }
    
-    fDetTypeSim->SetLoader(fLoader);
+    fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
     SetDefaults();
     fDetTypeSim->SDigitsToDigits(opt,(Char_t*)GetName());
 
@@ -1095,7 +1095,7 @@ void AliITS::Digits2Raw(){
     Error("Digits2Raw","fDetTypeSim is 0!");
     return;
   }
-  fDetTypeSim->SetLoader(fLoader);
+  fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
   SetDefaults();
   fDetTypeSim->GetLoader()->LoadDigits();
   TTree* digits = fDetTypeSim->GetLoader()->TreeD();
@@ -1129,15 +1129,7 @@ void AliITS::Digits2Raw(){
   rawWriter.RawDataSSD(digits->GetBranch("ITSDigitsSSD"));
 
   fLoader->UnloadDigits();
-  
-
-
-  
 }
-
-
-
-
 //______________________________________________________________________
 AliLoader* AliITS::MakeLoader(const char* topfoldername){ 
     //builds ITSgetter (AliLoader type)
