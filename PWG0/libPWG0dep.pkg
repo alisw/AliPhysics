@@ -1,0 +1,11 @@
+# $Id$
+
+# this library contains classed that depend on STEER
+
+HDRS = AliSelectorRL.h
+
+SRCS = $(HDRS:.h=.cxx)
+
+DHDR= PWG0depLinkDef.h
+
+EINCLUDE=

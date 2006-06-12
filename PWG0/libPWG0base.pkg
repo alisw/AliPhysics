@@ -1,8 +1,6 @@
 # $Id$
 
 HDRS = AliSelector.h \
-       AliSelectorRL.h \
-      dNdEta/AlidNdEtaAnalysisSelector.h \
       dNdEta/dNdEtaAnalysis.h \
       dNdEta/dNdEtaCorrection.h \
       esdTrackCuts/AliESDtrackCuts.h \
@@ -14,4 +12,4 @@ DHDR= PWG0baseLinkDef.h
 
 EINCLUDE=
 
-all-PWG0: all-PWG0base all-PWG0selectors
+all-PWG0: all-PWG0base all-PWG0selectors all-PWG0dep

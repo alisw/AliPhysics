@@ -25,7 +25,7 @@ ClassImp(AlidNdEtaVertexRecEffSelector)
 const Float_t AlidNdEtaVertexRecEffSelector::fkEtaRange = 0.9;
 
 AlidNdEtaVertexRecEffSelector::AlidNdEtaVertexRecEffSelector() :
-  AliSelector(),
+  AliSelectorRL(),
   fdNGen(0),
   fdNRec(0),
   fVtxGen(0),
@@ -50,7 +50,7 @@ void AlidNdEtaVertexRecEffSelector::SlaveBegin(TTree * tree)
 {
   // initializes the histograms
 
-  AliSelector::SlaveBegin(tree);
+  AliSelectorRL::SlaveBegin(tree);
 
   fdNGen = new TH1F("dNGen", "dNGen", 90, 0, 50);
   fdNRec = dynamic_cast<TH1F*>(fdNGen->Clone("dNRec"));
@@ -94,7 +94,7 @@ Bool_t AlidNdEtaVertexRecEffSelector::Process(Long64_t entry)
   // fills fdNGen and fdNRec
   //
 
-  if (AliSelector::Process(entry) == kFALSE)
+  if (AliSelectorRL::Process(entry) == kFALSE)
     return kFALSE;
 
   // check prerequisites
@@ -163,7 +163,7 @@ void AlidNdEtaVertexRecEffSelector::SlaveTerminate()
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
 
-  AliSelector::SlaveTerminate();
+  AliSelectorRL::SlaveTerminate();
 
   // Add the histograms to the output on each slave server
   if (!fOutput)
@@ -184,7 +184,7 @@ void AlidNdEtaVertexRecEffSelector::Terminate()
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
 
-  AliSelector::Terminate();
+  AliSelectorRL::Terminate();
 
   if (!fOutput)
   {

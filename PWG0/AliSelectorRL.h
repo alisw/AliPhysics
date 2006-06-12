@@ -8,6 +8,7 @@
 #include "AliSelector.h"
 
 class AliRunLoader;
+class AliHeader;
 
 class AliSelectorRL : public AliSelector {
   public:
@@ -19,10 +20,17 @@ class AliSelectorRL : public AliSelector {
 
  protected:
     AliRunLoader* GetAliRunLoader();
+    AliHeader* GetHeader();
 
  private:
     void DeleteRunLoader();
+    void DeleteHeaderFile();
+
     AliRunLoader* fRunLoader;    //! pointer to the RunLoader if galice.root was opened
+
+    TFile*        fHeaderFile; //! pointer to galice.root, if the file was opened
+    TTree*        fHeaderTree; //! holds TE tree of current galice.root
+    AliHeader*    fHeader;     //! holds pointer to current header
 
     ClassDef(AliSelectorRL,0);
 };

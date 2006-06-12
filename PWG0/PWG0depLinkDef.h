@@ -8,14 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliSelector+;
-
-#pragma link C++ class dNdEtaAnalysis+;
-#pragma link C++ class dNdEtaCorrection+;
-
-#pragma link C++ class AliESDtrackCuts+;
-
-#pragma link C++ class CorrectionMatrix2D+;
-
+#pragma link C++ class AliSelectorRL+;
 
 #endif

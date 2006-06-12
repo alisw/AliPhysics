@@ -25,7 +25,7 @@
 ClassImp(AlidNdEtaCorrectionSelector)
 
 AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector() :
-  AliSelector(),
+  AliSelectorRL(),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0),
   fdNdEtaCorrectionFinal(0)
@@ -51,7 +51,7 @@ void AlidNdEtaCorrectionSelector::Begin(TTree * tree)
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
-  AliSelector::Begin(tree);
+  AliSelectorRL::Begin(tree);
 }
 
 void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
@@ -60,12 +60,12 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
-  AliSelector::SlaveBegin(tree);
+  AliSelectorRL::SlaveBegin(tree);
 
   fdNdEtaCorrection = new dNdEtaCorrection();
 
-  if (fChain)
-    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fChain->GetUserInfo()->FindObject("AliESDtrackCuts"));
+  if (fTree)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fTree->GetUserInfo()->FindObject("AliESDtrackCuts"));
 
   if (!fEsdTrackCuts)
     AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info");
@@ -88,10 +88,10 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   // WARNING when a selector is used with a TChain, you must use
   //  the pointer to the current TTree to call GetEntry(entry).
   //  The entry is always the local entry number in the current tree.
-  //  Assuming that fChain is the pointer to the TChain being processed,
-  //  use fChain->GetTree()->GetEntry(entry).
+  //  Assuming that fTree is the pointer to the TChain being processed,
+  //  use fTree->GetTree()->GetEntry(entry).
 
-  if (AliSelector::Process(entry) == kFALSE)
+  if (AliSelectorRL::Process(entry) == kFALSE)
     return kFALSE;
 
   // check prerequesites
@@ -212,7 +212,7 @@ void AlidNdEtaCorrectionSelector::SlaveTerminate()
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
 
-  AliSelector::SlaveTerminate();
+  AliSelectorRL::SlaveTerminate();
 
   // Add the histograms to the output on each slave server
   if (!fOutput)
@@ -230,7 +230,7 @@ void AlidNdEtaCorrectionSelector::Terminate()
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
 
-  AliSelector::Terminate();
+  AliSelectorRL::Terminate();
 
   fdNdEtaCorrectionFinal = dynamic_cast<dNdEtaCorrection*> (fOutput->FindObject("dndeta_correction"));
 
