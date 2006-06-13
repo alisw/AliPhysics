@@ -1127,8 +1127,8 @@ void IceF2k::PutHits()
   }
   else
   {
-   if (tid == -2) s.SetNameTitle("N","Noise");
-   if (tid == -3) s.SetNameTitle("A","Afterpulse");
+   if (tid == -2) sx->SetNameTitle("N","Noise");
+   if (tid == -3) sx->SetNameTitle("A","Afterpulse");
   }
  }
 

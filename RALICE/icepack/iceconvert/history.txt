@@ -57,4 +57,7 @@
 22-mar-2006 NvE Support for selective MC track storage introduced in IceF2k.
 10-may-2006 NvE Compiler warnings activated for overloaded virtuals in installation
                 script for AMD Athlon in the /scripts sub-directory.
+13-jun-2006 NvE Correction in IceF2k::PutHits() for correct setting of name ad title
+                in case of Noise and Afterpulse hits in MC data.
+                (Thanks Michael Walter). 
 
