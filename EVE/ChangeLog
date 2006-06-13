@@ -1,3 +1,10 @@
+2006-06-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/tpc_hits.C:
+	* alice-macros/tpc_hits_eta_split.C:
+	Increased the number-of-entries estimate for TTree player by a
+	factor of two.
+
 2006-06-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/clusters_from_label.C:
