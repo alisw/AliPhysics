@@ -359,7 +359,7 @@ Int_t AliRICHParam::QdcTot(Int_t iPad,Double_t e)
 //   Returns:  charge parametrised in QDC channels.
   Int_t iNele=Int_t(e/IonPot()); if(iNele==0) iNele=1;//e < ion. pot. means it's photoelectron
   Double_t dQdc=0;
-  for(Int_t i=1;i<=iNele;i++) dQdc+=-QdcEle(iPad)*TMath::Log(gRandom->Rndm());
+  for(Int_t i=1;i<=iNele;i++) dQdc+=-QdcEle(iPad)*TMath::Log(gRandom->Rndm()+1e-6);//1e-6 is a protection against 0 from rndm
   return Int_t(dQdc);
 }//QdcTot()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -371,7 +371,7 @@ Int_t AliRICHParam::TotQdc(TVector2 x2,Double_t eloss)
   if(Loc2Sec(x2)==-1) return 0; //hit in the dead zone     
   Int_t iNelectrons=Int_t(eloss/IonisationPotential()); if(iNelectrons==0) iNelectrons=1;
   Double_t qdc=0;
-  for(Int_t i=1;i<=iNelectrons;i++) qdc+=-Gain(x2)*TMath::Log(gRandom->Rndm());
+  for(Int_t i=1;i<=iNelectrons;i++) qdc+=-Gain(x2)*TMath::Log(gRandom->Rndm()+1e-06);//ie-06 is a protection against 0 from rndm
   return Int_t(qdc);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
