@@ -28,17 +28,17 @@
 #pragma link C++ class AliCDBGridParam;
 
 #pragma link C++ class AliSimpleValue;
-#pragma link C++ class AliSimpleValue::BoolHolder;
-#pragma link C++ class AliSimpleValue::ByteHolder;
-#pragma link C++ class AliSimpleValue::IntHolder;
-#pragma link C++ class AliSimpleValue::UIntHolder;
-#pragma link C++ class AliSimpleValue::FloatHolder;
-#pragma link C++ class AliSimpleValue::DynHolder;
-#pragma link C++ class AliSimpleValue::DynBoolHolder;
-#pragma link C++ class AliSimpleValue::DynByteHolder;
-#pragma link C++ class AliSimpleValue::DynIntHolder;
-#pragma link C++ class AliSimpleValue::DynUIntHolder;
-#pragma link C++ class AliSimpleValue::DynFloatHolder;
+#pragma link C++ class AliSimpleValue::AliBoolHolder;
+#pragma link C++ class AliSimpleValue::AliByteHolder;
+#pragma link C++ class AliSimpleValue::AliIntHolder;
+#pragma link C++ class AliSimpleValue::AliUIntHolder;
+#pragma link C++ class AliSimpleValue::AliFloatHolder;
+#pragma link C++ class AliSimpleValue::AliDynHolder;
+#pragma link C++ class AliSimpleValue::AliDynBoolHolder;
+#pragma link C++ class AliSimpleValue::AliDynByteHolder;
+#pragma link C++ class AliSimpleValue::AliDynIntHolder;
+#pragma link C++ class AliSimpleValue::AliDynUIntHolder;
+#pragma link C++ class AliSimpleValue::AliDynFloatHolder;
 #pragma link C++ class AliDCSValue;
 
 #pragma link C++ class AliPreprocessor;

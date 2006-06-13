@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2006/06/02 14:14:36  hristov
+Separate library for CDB (Jan)
+
 Revision 1.2  2006/03/07 07:52:34  hristov
 New version (B.Yordanov)
 
@@ -43,106 +46,132 @@ some more descriptions added
 #include "AliLog.h"
 #include <TClass.h>
 
-TObject* AliSimpleValue::BoolHolder::Clone(const char* /*name*/) const {
-	return new BoolHolder(fValue);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliBoolHolder::Clone(const char* /*name*/) const {
+	return new AliBoolHolder(fValue);
+// Clone a value
+
 }
 
-Bool_t AliSimpleValue::BoolHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliBoolHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 	
 	if (this == obj) {
 		return kTRUE;
 	}
 
-	if (BoolHolder::Class() != obj->IsA()) {
+	if (AliBoolHolder::Class() != obj->IsA()) {
 		return kFALSE;
 	}
 
-	return fValue == ((const BoolHolder*) obj)->fValue;
+	return fValue == ((const AliBoolHolder*) obj)->fValue;
 }
 
-TObject* AliSimpleValue::ByteHolder::Clone(const char* /*name*/) const {
-        return new ByteHolder(fValue);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliByteHolder::Clone(const char* /*name*/) const {
+// Clone a value
+
+        return new AliByteHolder(fValue);
 }
 
-Bool_t AliSimpleValue::ByteHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliByteHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
         if (this == obj) {
                 return kTRUE;
         }
 
-        if (ByteHolder::Class() != obj->IsA()) {
+        if (AliByteHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-        return fValue == ((const ByteHolder*) obj)->fValue;
+        return fValue == ((const AliByteHolder*) obj)->fValue;
 }
 
-TObject* AliSimpleValue::IntHolder::Clone(const char* /*name*/) const {
-	return new IntHolder(fValue);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliIntHolder::Clone(const char* /*name*/) const {
+// Clone a value
+	return new AliIntHolder(fValue);
 }
 
-Bool_t AliSimpleValue::IntHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliIntHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
         if (this == obj) {
                 return kTRUE;
         }
 
-        if (IntHolder::Class() != obj->IsA()) {
+        if (AliIntHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-        return fValue == ((const IntHolder*) obj)->fValue;
+        return fValue == ((const AliIntHolder*) obj)->fValue;
 }
 
-TObject* AliSimpleValue::UIntHolder::Clone(const char* /*name*/) const {
-        return new UIntHolder(fValue);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliUIntHolder::Clone(const char* /*name*/) const {
+// Clone a value
+        return new AliUIntHolder(fValue);
 }
 
-Bool_t AliSimpleValue::UIntHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliUIntHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
         if (this == obj) {
                 return kTRUE;
         }
 
-        if (UIntHolder::Class() != obj->IsA()) {
+        if (AliUIntHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-        return fValue == ((const UIntHolder*) obj)->fValue;
+        return fValue == ((const AliUIntHolder*) obj)->fValue;
 }
 
-TObject* AliSimpleValue::FloatHolder::Clone(const char* /*name*/) const {
-        return new FloatHolder(fValue);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliFloatHolder::Clone(const char* /*name*/) const {
+ // Clone a value
+       return new AliFloatHolder(fValue);
 }
 
-Bool_t AliSimpleValue::FloatHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliFloatHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
         if (this == obj) {
                 return kTRUE;
         }
 
-        if (FloatHolder::Class() != obj->IsA()) {
+        if (AliFloatHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-        return fValue == ((const FloatHolder*) obj)->fValue;
+        return fValue == ((const AliFloatHolder*) obj)->fValue;
 }
 
-TObject* AliSimpleValue::DynBoolHolder::Clone(const char* /*name*/) const {
-        return new DynBoolHolder(fSize, fValues);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliDynBoolHolder::Clone(const char* /*name*/) const {
+ // Clone a value
+       return new AliDynBoolHolder(fSize, fValues);
 }
 
-Bool_t AliSimpleValue::DynBoolHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliDynBoolHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
         if (this == obj) {
                 return kTRUE;
         }
 
-        if (DynBoolHolder::Class() != obj->IsA()) {
+        if (AliDynBoolHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-	const DynBoolHolder* other = ((const DynBoolHolder*) obj);
+	const AliDynBoolHolder* other = ((const AliDynBoolHolder*) obj);
 	
 	if (fSize != other->fSize) {
 		return kFALSE;
@@ -151,21 +180,25 @@ Bool_t AliSimpleValue::DynBoolHolder::IsEqual(const TObject* obj) const {
         return !memcmp(fValues, other->fValues, fSize * sizeof(Bool_t));
 }
 
-TObject* AliSimpleValue::DynByteHolder::Clone(const char* /*name*/) const {
-        return new DynByteHolder(fSize, fValues);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliDynByteHolder::Clone(const char* /*name*/) const {
+// Clone a value
+        return new AliDynByteHolder(fSize, fValues);
 }
 
-Bool_t AliSimpleValue::DynByteHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliDynByteHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
         if (this == obj) {
                 return kTRUE;
         }
 
-        if (DynByteHolder::Class() != obj->IsA()) {
+        if (AliDynByteHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-        const DynByteHolder* other = ((const DynByteHolder*) obj);
+        const AliDynByteHolder* other = ((const AliDynByteHolder*) obj);
 
         if (fSize != other->fSize) {
                 return kFALSE;
@@ -174,21 +207,25 @@ Bool_t AliSimpleValue::DynByteHolder::IsEqual(const TObject* obj) const {
         return !memcmp(fValues, other->fValues, fSize * sizeof(Char_t));
 }
 
-TObject* AliSimpleValue::DynIntHolder::Clone(const char* /*name*/) const {
-        return new DynIntHolder(fSize, fValues);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliDynIntHolder::Clone(const char* /*name*/) const {
+// Clone a value
+        return new AliDynIntHolder(fSize, fValues);
 }
 
-Bool_t AliSimpleValue::DynIntHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliDynIntHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
-        if (this == obj) {
+       if (this == obj) {
                 return kTRUE;
         }
 
-        if (DynIntHolder::Class() != obj->IsA()) {
+        if (AliDynIntHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-        const DynIntHolder* other = ((const DynIntHolder*) obj);
+        const AliDynIntHolder* other = ((const AliDynIntHolder*) obj);
 
         if (fSize != other->fSize) {
                 return kFALSE;
@@ -197,21 +234,25 @@ Bool_t AliSimpleValue::DynIntHolder::IsEqual(const TObject* obj) const {
         return !memcmp(fValues, other->fValues, fSize * sizeof(Int_t));
 }
 
-TObject* AliSimpleValue::DynUIntHolder::Clone(const char* /*name*/) const {
-        return new DynUIntHolder(fSize, fValues);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliDynUIntHolder::Clone(const char* /*name*/) const {
+// Clone a value
+        return new AliDynUIntHolder(fSize, fValues);
 }
 
-Bool_t AliSimpleValue::DynUIntHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliDynUIntHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
         if (this == obj) {
                 return kTRUE;
         }
 
-        if (DynUIntHolder::Class() != obj->IsA()) {
+        if (AliDynUIntHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-        const DynUIntHolder* other = ((const DynUIntHolder*) obj);
+        const AliDynUIntHolder* other = ((const AliDynUIntHolder*) obj);
 
         if (fSize != other->fSize) {
                 return kFALSE;
@@ -220,21 +261,24 @@ Bool_t AliSimpleValue::DynUIntHolder::IsEqual(const TObject* obj) const {
         return !memcmp(fValues, other->fValues, fSize * sizeof(UInt_t));
 }
 
-TObject* AliSimpleValue::DynFloatHolder::Clone(const char* /*name*/) const {
-        return new DynFloatHolder(fSize, fValues);
+//______________________________________________________________________
+TObject* AliSimpleValue::AliDynFloatHolder::Clone(const char* /*name*/) const {
+        return new AliDynFloatHolder(fSize, fValues);
 }
 
-Bool_t AliSimpleValue::DynFloatHolder::IsEqual(const TObject* obj) const {
+//______________________________________________________________________
+Bool_t AliSimpleValue::AliDynFloatHolder::IsEqual(const TObject* obj) const {
+// check whether this is equal to obj
 
         if (this == obj) {
                 return kTRUE;
         }
 
-        if (DynFloatHolder::Class() != obj->IsA()) {
+        if (AliDynFloatHolder::Class() != obj->IsA()) {
                 return kFALSE;
         }
 
-        const DynFloatHolder* other = ((const DynFloatHolder*) obj);
+        const AliDynFloatHolder* other = ((const AliDynFloatHolder*) obj);
 
         if (fSize != other->fSize) {
                 return kFALSE;
@@ -243,131 +287,163 @@ Bool_t AliSimpleValue::DynFloatHolder::IsEqual(const TObject* obj) const {
         return !memcmp(fValues, other->fValues, fSize * sizeof(Float_t));
 }
 
+//______________________________________________________________________
+//______________________________________________________________________
+
 ClassImp(AliSimpleValue)
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue():
 	fHolder(NULL), fType(kInvalid)
 {
-
+// empty constructor
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(const AliSimpleValue& other):
 	TObject(other), fHolder(NULL), fType(other.fType)
 {
+// copy contructor
 	if (other.fHolder) {
 		fHolder = other.fHolder->Clone();
 	}
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(AliSimpleValue::Type type, Int_t size):
 	fHolder(NULL), fType(type)
 {
+// constructor
 	
 	switch (type) {
 		case kBool:
-			fHolder = new BoolHolder();
+			fHolder = new AliBoolHolder();
 			break;
 		case kByte:
-			fHolder = new ByteHolder();
+			fHolder = new AliByteHolder();
 			break;
 		case kInt:
-			fHolder = new IntHolder();
+			fHolder = new AliIntHolder();
 			break;
 		case kUInt:
-			fHolder = new UIntHolder();
+			fHolder = new AliUIntHolder();
 			break;
 		case kFloat:
-			fHolder = new FloatHolder();
+			fHolder = new AliFloatHolder();
 			break;
 		case kDynBool:
-			fHolder = new DynBoolHolder(size);
+			fHolder = new AliDynBoolHolder(size);
 			break;
 		case kDynByte:
-			fHolder = new DynByteHolder(size);
+			fHolder = new AliDynByteHolder(size);
 			break;
 		case kDynInt:
-			fHolder = new DynIntHolder(size);
+			fHolder = new AliDynIntHolder(size);
 			break;
 		case kDynUInt:
-			fHolder = new DynUIntHolder(size);
+			fHolder = new AliDynUIntHolder(size);
 			break;
 		case kDynFloat:
-			fHolder = new DynFloatHolder(size);
+			fHolder = new AliDynFloatHolder(size);
 			break;
 		default:	
 			break;
 	}
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Bool_t val) {
+// contructor
 
 	fType = kBool;
-	fHolder = new BoolHolder(val);
+	fHolder = new AliBoolHolder(val);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Char_t val) {
+// contructor
 	
 	fType = kByte;
-	fHolder = new ByteHolder(val);
+	fHolder = new AliByteHolder(val);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Int_t val) {
+// contructor
 	
 	fType = kInt;
-	fHolder = new IntHolder(val);
+	fHolder = new AliIntHolder(val);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(UInt_t val) {
+// contructor
 	
 	fType = kUInt;
-	fHolder = new UIntHolder(val);
+	fHolder = new AliUIntHolder(val);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Float_t val) {
+// contructor
 
 	fType = kFloat;
-	fHolder = new FloatHolder(val);
+	fHolder = new AliFloatHolder(val);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Int_t size, const Bool_t* buf) {
+// contructor
 	
 	fType = kDynBool;
-	fHolder = new DynBoolHolder(size, buf);
+	fHolder = new AliDynBoolHolder(size, buf);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Int_t size, const Char_t* buf) {
+// contructor
 
         fType = kDynByte;
-        fHolder = new DynByteHolder(size, buf);
+        fHolder = new AliDynByteHolder(size, buf);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Int_t size, const Int_t* buf) {
+// contructor
 
         fType = kDynInt;
-        fHolder = new DynIntHolder(size, buf);
+        fHolder = new AliDynIntHolder(size, buf);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Int_t size, const UInt_t* buf) {
+// contructor
 
         fType = kDynUInt;
-        fHolder = new DynUIntHolder(size, buf);
+        fHolder = new AliDynUIntHolder(size, buf);
 }
 
+//______________________________________________________________________
 AliSimpleValue::AliSimpleValue(Int_t size, const Float_t* buf) {
+// contructor
 
         fType = kDynFloat;
-        fHolder = new DynFloatHolder(size, buf);
+        fHolder = new AliDynFloatHolder(size, buf);
 }
 
+//______________________________________________________________________
 AliSimpleValue::~AliSimpleValue() {
+// destructor
 	
 	if (fHolder) {
 		delete fHolder;
 	}
 }
 
+//______________________________________________________________________
 AliSimpleValue& AliSimpleValue::operator=(const AliSimpleValue& other) {
-	
+// assignment op
+
 	if (fHolder) {
 		delete fHolder;
 	}
@@ -383,7 +459,9 @@ AliSimpleValue& AliSimpleValue::operator=(const AliSimpleValue& other) {
 	return *this;
 }
 
+//______________________________________________________________________
 Bool_t AliSimpleValue::operator==(const AliSimpleValue& other) const {
+// equality op
 
 	if (fType != other.fType) {
 		return kFALSE;
@@ -396,96 +474,118 @@ Bool_t AliSimpleValue::operator==(const AliSimpleValue& other) const {
 	return fHolder->IsEqual(other.fHolder);
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetBool(Bool_t val) {
+// set value
 
 	if (!TypeOk(kBool)) {
 		return;
 	}
 
-	((BoolHolder*) fHolder)->fValue = val;
+	((AliBoolHolder*) fHolder)->fValue = val;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetByte(Char_t val) {
+// set value
 
 	if (!TypeOk(kByte)) {
 		return;
 	}
 
-	((ByteHolder*) fHolder)->fValue = val;
+	((AliByteHolder*) fHolder)->fValue = val;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetInt(Int_t val) {
+// set value
 
 	if (!TypeOk(kInt)) {
 		return;
 	}
 
-	((IntHolder*) fHolder)->fValue = val;
+	((AliIntHolder*) fHolder)->fValue = val;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetUInt(UInt_t val) {
+// set value
 
 	if (!TypeOk(kUInt)) {
 		return;
 	}
 	
-	((UIntHolder*) fHolder)->fValue = val;
+	((AliUIntHolder*) fHolder)->fValue = val;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetFloat(Float_t val) {
+// set value
 
 	if (!TypeOk(kFloat)) {
 		return;
 	}
 
-	((FloatHolder*) fHolder)->fValue = val;
+	((AliFloatHolder*) fHolder)->fValue = val;
 }
 
+//______________________________________________________________________
 Bool_t AliSimpleValue::GetBool() const {
+// get value
 
 	if (!TypeOk(kBool)) {
 		return kFALSE;
 	}	
 
-	return ((BoolHolder*) fHolder)->fValue;
+	return ((AliBoolHolder*) fHolder)->fValue;
 }
 
+//______________________________________________________________________
 Char_t AliSimpleValue::GetByte() const {
+// get value
 
 	if (!TypeOk(kByte)) {
 		return 0;
 	}
 	
-        return ((ByteHolder*) fHolder)->fValue;
+        return ((AliByteHolder*) fHolder)->fValue;
 }
 
+//______________________________________________________________________
 Int_t AliSimpleValue::GetInt() const {
+// get value
 
 	if (!TypeOk(kInt)) {
 		return 0;
 	}
-        return ((IntHolder*) fHolder)->fValue;
+        return ((AliIntHolder*) fHolder)->fValue;
 }
 
+//______________________________________________________________________
 UInt_t AliSimpleValue::GetUInt() const {
+// get value
 
 	if (!TypeOk(kUInt)) {
 		return 0;
         }
 
-        return ((UIntHolder*) fHolder)->fValue;
+        return ((AliUIntHolder*) fHolder)->fValue;
 }
 
+//______________________________________________________________________
 Float_t AliSimpleValue::GetFloat() const {
+// get value
 
 	if (!TypeOk(kFloat)) {
 		return 0;
 	}
 
-        return ((FloatHolder*) fHolder)->fValue;
+        return ((AliFloatHolder*) fHolder)->fValue;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetDynBool(Int_t n, Bool_t val) {
+// set dyn value
 	
 	if (!TypeOk(kDynBool)) {
 		return;
@@ -495,10 +595,12 @@ void AliSimpleValue::SetDynBool(Int_t n, Bool_t val) {
 		return;
 	}
 
-	((DynBoolHolder*) fHolder)->fValues[n] = val;
+	((AliDynBoolHolder*) fHolder)->fValues[n] = val;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetDynByte(Int_t n, Char_t val) {
+// set dyn value
 
 	if (!TypeOk(kDynByte)) {
                 return;
@@ -508,10 +610,12 @@ void AliSimpleValue::SetDynByte(Int_t n, Char_t val) {
                 return;
         }
 
-        ((DynByteHolder*) fHolder)->fValues[n] = val;
+        ((AliDynByteHolder*) fHolder)->fValues[n] = val;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetDynInt(Int_t n, Int_t val) {
+// set dyn value
 
         if (!TypeOk(kDynInt)) {
                 return;
@@ -521,10 +625,12 @@ void AliSimpleValue::SetDynInt(Int_t n, Int_t val) {
                 return;
         }
 
-        ((DynIntHolder*) fHolder)->fValues[n] = val;
+        ((AliDynIntHolder*) fHolder)->fValues[n] = val;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetDynUInt(Int_t n, UInt_t val) {
+// set dyn value
 
         if (!TypeOk(kDynUInt)) {
                 return;
@@ -534,10 +640,12 @@ void AliSimpleValue::SetDynUInt(Int_t n, UInt_t val) {
                 return;
         }
 
-        ((DynUIntHolder*) fHolder)->fValues[n] = val;
+        ((AliDynUIntHolder*) fHolder)->fValues[n] = val;
 }
 
+//______________________________________________________________________
 void AliSimpleValue::SetDynFloat(Int_t n, Float_t val) {
+// set dyn value
 
         if (!TypeOk(kDynFloat)) {
                 return;
@@ -547,10 +655,12 @@ void AliSimpleValue::SetDynFloat(Int_t n, Float_t val) {
                 return;
         }
 
-        ((DynFloatHolder*) fHolder)->fValues[n] = val;
+        ((AliDynFloatHolder*) fHolder)->fValues[n] = val;
 }
 
+//______________________________________________________________________
 Bool_t AliSimpleValue::GetDynBool(Int_t n) const {
+// get dyn value
 
 	if (!TypeOk(kDynBool)) {
                 return kFALSE;
@@ -560,10 +670,12 @@ Bool_t AliSimpleValue::GetDynBool(Int_t n) const {
                 return kFALSE;
         }
 
-	return ((DynBoolHolder*) fHolder)->fValues[n];
+	return ((AliDynBoolHolder*) fHolder)->fValues[n];
 }
 
+//______________________________________________________________________
 Char_t AliSimpleValue::GetDynByte(Int_t n) const {
+// get dyn value
 
         if (!TypeOk(kDynByte)) {
                 return 0;
@@ -573,10 +685,12 @@ Char_t AliSimpleValue::GetDynByte(Int_t n) const {
                 return 0;
         }
 
-        return ((DynByteHolder*) fHolder)->fValues[n];
+        return ((AliDynByteHolder*) fHolder)->fValues[n];
 }
 
+//______________________________________________________________________
 Int_t AliSimpleValue::GetDynInt(Int_t n) const {
+// get dyn value
 
         if (!TypeOk(kDynInt)) {
                 return 0;
@@ -586,10 +700,12 @@ Int_t AliSimpleValue::GetDynInt(Int_t n) const {
                 return 0;
         }
 
-        return ((DynIntHolder*) fHolder)->fValues[n];
+        return ((AliDynIntHolder*) fHolder)->fValues[n];
 }
 
+//______________________________________________________________________
 UInt_t AliSimpleValue::GetDynUInt(Int_t n) const {
+// get dyn value
 
         if (!TypeOk(kDynUInt)) {
                 return 0;
@@ -599,10 +715,12 @@ UInt_t AliSimpleValue::GetDynUInt(Int_t n) const {
                 return 0;
         }
 
-        return ((DynUIntHolder*) fHolder)->fValues[n];
+        return ((AliDynUIntHolder*) fHolder)->fValues[n];
 }
 
+//______________________________________________________________________
 Float_t AliSimpleValue::GetDynFloat(Int_t n) const {
+// get dyn value
 
         if (!TypeOk(kDynFloat)) {
                 return 0;
@@ -612,10 +730,12 @@ Float_t AliSimpleValue::GetDynFloat(Int_t n) const {
                 return 0;
         }
 
-        return ((DynFloatHolder*) fHolder)->fValues[n];
+        return ((AliDynFloatHolder*) fHolder)->fValues[n];
 }
 
+//______________________________________________________________________
 Bool_t AliSimpleValue::TypeOk(AliSimpleValue::Type type) const {
+// check that AliSimpleValue is of type type
 
 	if (fType != type) {
 		AliError(Form("SimpleValue type is not %s!", 
@@ -626,7 +746,9 @@ Bool_t AliSimpleValue::TypeOk(AliSimpleValue::Type type) const {
 	return kTRUE;
 }
 
+//______________________________________________________________________
 Bool_t AliSimpleValue::BoundsOk(Int_t n) const {
+// Check that n is within bounds of dyn value
 
 	switch (fType) {
 		case kDynBool:
@@ -634,7 +756,7 @@ Bool_t AliSimpleValue::BoundsOk(Int_t n) const {
 		case kDynInt:
 		case kDynUInt:
 		case kDynFloat: {
-			Int_t size = ((DynHolder*) fHolder)->fSize;
+			Int_t size = ((AliDynHolder*) fHolder)->fSize;
 			if (n < 0 || n >= size) {
 				AliError(Form("Index %d out of bounds!", n));
 				return kFALSE;
@@ -655,6 +777,7 @@ Bool_t AliSimpleValue::BoundsOk(Int_t n) const {
 	}
 }
 
+//______________________________________________________________________
 Int_t AliSimpleValue::GetDynamicSize() const {
 	//
 	// returns the size of dynamic type or 0 in case of 
@@ -665,14 +788,16 @@ Int_t AliSimpleValue::GetDynamicSize() const {
 		return 0;
 	}
 
-	if (!fHolder->IsA()->InheritsFrom(DynHolder::Class())) {
+	if (!fHolder->IsA()->InheritsFrom(AliDynHolder::Class())) {
 		return 0;
 	}
 
-	return ((DynHolder*) fHolder)->fSize;
+	return ((AliDynHolder*) fHolder)->fSize;
 }
 
+//______________________________________________________________________
 TString AliSimpleValue::ToString() const {
+// Print value
 	
 	TString result;
 	
@@ -763,7 +888,9 @@ TString AliSimpleValue::ToString() const {
 	return result;
 }
 
+//______________________________________________________________________
 Bool_t AliSimpleValue::IsDynamic(AliSimpleValue::Type type) {
+// check that type is dynamic
 
 	 switch (type) {
                 case kDynBool:
@@ -777,6 +904,7 @@ Bool_t AliSimpleValue::IsDynamic(AliSimpleValue::Type type) {
 	}
 }
 
+//______________________________________________________________________
 Int_t AliSimpleValue::GetSize() const {
 	//
 	// return the number of bytes used by this value.
@@ -789,6 +917,7 @@ Int_t AliSimpleValue::GetSize() const {
 		AliSimpleValue::GetPrimitiveSize(fType);
 } 
 
+//______________________________________________________________________
 Int_t AliSimpleValue::GetPrimitiveSize(AliSimpleValue::Type type) {
 	//
 	// returns the number of bytes used by particular primitive type
@@ -813,7 +942,9 @@ Int_t AliSimpleValue::GetPrimitiveSize(AliSimpleValue::Type type) {
 	}
 } 
 
+//______________________________________________________________________
 const char* AliSimpleValue::GetTypeString(AliSimpleValue::Type type) {
+// return type name correspondyng to type
 
 	switch (type) {
 		case kBool: return "Bool";

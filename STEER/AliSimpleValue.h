@@ -9,6 +9,7 @@
 //
 // This class is a simple wrapper of
 // all primitive types used in PVSS SCADA system.
+// bool, char, byte, int ,uint, float, and arrays of these values
 //
 
 #include <TObject.h>
@@ -125,200 +126,274 @@ public:
 
 private:
 
-	class BoolHolder: public TObject {
+	class AliBoolHolder: public TObject {
+	
+	friend class AliSimpleValue;
+	
 	public:
-		Bool_t fValue;
+		AliBoolHolder() {}
+		virtual ~AliBoolHolder() {}
 
-		BoolHolder() {}
-
-		BoolHolder(Bool_t val):fValue(val) {}
+		AliBoolHolder(Bool_t val):fValue(val) {}
 		
 		virtual TObject* Clone(const char* name) const; 
 	
 		virtual Bool_t IsEqual(const TObject* object) const;
 
-		ClassDef(BoolHolder, 1);
+	private:
+		Bool_t fValue;		// The value
+
+		ClassDef(AliBoolHolder, 1);
 	};
 
-	class ByteHolder: public TObject {
+	class AliByteHolder: public TObject {
+	
+	friend class AliSimpleValue;
+	
 	public:
-		Char_t fValue;
 
-		ByteHolder() {};
+		AliByteHolder() {};
+		virtual ~AliByteHolder() {}
 
-		ByteHolder(Char_t val):fValue(val) {}
+		AliByteHolder(Char_t val):fValue(val) {}
 		
 		virtual TObject* Clone(const char* name) const;
 
 		virtual Bool_t IsEqual(const TObject* object) const;
 
-		ClassDef(ByteHolder, 1);
+	private:
+		Char_t fValue;		// The value
+
+		ClassDef(AliByteHolder, 1);
 	};
 
-	class IntHolder: public TObject {
+	class AliIntHolder: public TObject {
+	
+	friend class AliSimpleValue;
+	
 	public:
-		Int_t fValue;
 
-		IntHolder() {}
+		AliIntHolder() {}
+		virtual ~AliIntHolder() {}
 
-		IntHolder(Int_t val):fValue(val) {}
+		AliIntHolder(Int_t val):fValue(val) {}
 		
 		virtual TObject* Clone(const char* name) const; 
 
 		virtual Bool_t IsEqual(const TObject* object) const;
 
-		ClassDef(IntHolder, 1);
+
+	private:
+		Int_t fValue;		// The value
+
+		ClassDef(AliIntHolder, 1);
 	};
 
-	class UIntHolder: public TObject {
-	public:
-		UInt_t fValue;
-
-		UIntHolder() {}
-
-		UIntHolder(UInt_t val):fValue(val) {}
-		
-		virtual TObject* Clone(const char* name) const;
-
-		virtual Bool_t IsEqual(const TObject* object) const;
-
-		ClassDef(UIntHolder, 1);
-	};
-
-	class FloatHolder: public TObject {
-	public:
-		Float_t fValue;
-
-		FloatHolder() {}
+	class AliUIntHolder: public TObject {
 	
-		FloatHolder(Float_t val):fValue(val) {}
+	friend class AliSimpleValue;
+	
+	public:
+
+		AliUIntHolder() {}
+		virtual ~AliUIntHolder() {}
+
+		AliUIntHolder(UInt_t val):fValue(val) {}
 		
 		virtual TObject* Clone(const char* name) const;
 
 		virtual Bool_t IsEqual(const TObject* object) const;
 
-		ClassDef(FloatHolder, 1);
+
+	private:
+		UInt_t fValue;		// The value
+
+		ClassDef(AliUIntHolder, 1);
 	};
 
-	class DynHolder: public TObject {
+	class AliFloatHolder: public TObject {
+	
+	friend class AliSimpleValue;
+	
 	public:
-		Int_t fSize;
 
-		DynHolder(): fSize(0) {}
-		DynHolder(Int_t size): fSize(size){}
+		AliFloatHolder() {}
+		virtual ~AliFloatHolder() {}
+	
+		AliFloatHolder(Float_t val):fValue(val) {}
+		
+		virtual TObject* Clone(const char* name) const;
 
-		ClassDef(DynHolder, 0);
+		virtual Bool_t IsEqual(const TObject* object) const;
+
+	private:
+		Float_t fValue;		// The value
+
+		ClassDef(AliFloatHolder, 1);
 	};
 
-	class DynBoolHolder: public DynHolder {
+	class AliDynHolder: public TObject {
+	
+	friend class AliSimpleValue;
+	
 	public:
-		Bool_t* fValues; //[fSize]
 
-		DynBoolHolder(): fValues(NULL) {}
+		AliDynHolder(): fSize(0) {}
+		AliDynHolder(Int_t size): fSize(size){}
 
-		DynBoolHolder(Int_t size, const Bool_t* buf = NULL):
-			DynHolder(size) {
+		Int_t fSize;		// The size
+		ClassDef(AliDynHolder, 0);
+	};
+
+	class AliDynBoolHolder: public AliDynHolder {
+	
+	friend class AliSimpleValue;
+	
+	public:
+
+		AliDynBoolHolder(): fValues(NULL) {}
+
+		AliDynBoolHolder(Int_t size, const Bool_t* buf = NULL):
+			AliDynHolder(size) {
 			fValues = new Bool_t[size];
 			if (buf) memcpy(fValues, buf, size * sizeof(Bool_t));
 		}
 
-		virtual ~DynBoolHolder() {if (fValues) delete[] fValues;}
+		virtual ~AliDynBoolHolder() {if (fValues) delete[] fValues;}
 
 		virtual TObject* Clone(const char* name) const;
 
                 virtual Bool_t IsEqual(const TObject* object) const; 
 
-		ClassDef(DynBoolHolder, 1);
+
+	private:
+		AliDynBoolHolder(const AliDynBoolHolder& /*other*/): AliDynHolder() { }
+		AliDynBoolHolder& operator= (const AliDynBoolHolder& /*other*/) {return *this;}
+		Bool_t* fValues; //[fSize] 	 The value
+
+		ClassDef(AliDynBoolHolder, 1);
 	};
 
-	class DynByteHolder: public DynHolder {
-	public:
-		Char_t* fValues; //[fSize]
+	class AliDynByteHolder: public AliDynHolder {
 	
-		DynByteHolder(): fValues(NULL) {}
+	friend class AliSimpleValue;
+	
+	public:
+	
+		AliDynByteHolder(): fValues(NULL) {}
 
-		DynByteHolder(Int_t size, const Char_t* buf = NULL):
-			DynHolder(size) {
+		AliDynByteHolder(Int_t size, const Char_t* buf = NULL):
+			AliDynHolder(size) {
 			fValues = new Char_t[size];
 			if (buf) memcpy(fValues, buf, size * sizeof(Char_t));
 		}
 
-		virtual ~DynByteHolder() {if (fValues) delete[] fValues;}
+		virtual ~AliDynByteHolder() {if (fValues) delete[] fValues;}
 
 		virtual TObject* Clone(const char* name) const;
 
                 virtual Bool_t IsEqual(const TObject* object) const;
 
-		ClassDef(DynByteHolder, 1);
+
+	private:
+		AliDynByteHolder(const AliDynByteHolder& /*other*/): AliDynHolder() { }
+		AliDynByteHolder& operator= (const AliDynByteHolder& /*other*/) {return *this;}
+		Char_t* fValues; //[fSize] 	 The value
+
+		ClassDef(AliDynByteHolder, 1);
 	};
 
-	class DynIntHolder: public DynHolder {
+	class AliDynIntHolder: public AliDynHolder {
+	
+	friend class AliSimpleValue;
+	
 	public:
-		Int_t* fValues; //[fSize]
 
-		DynIntHolder(): fValues(NULL) {}
+		AliDynIntHolder(): fValues(NULL) {}
 
-		DynIntHolder(Int_t size, const Int_t* buf = NULL):
-			DynHolder(size) {
+		AliDynIntHolder(Int_t size, const Int_t* buf = NULL):
+			AliDynHolder(size) {
 			fValues = new Int_t[size];
 			if (buf) memcpy(fValues, buf, size * sizeof(Int_t));
 		}
 
-		virtual ~DynIntHolder() {if (fValues) delete[] fValues;}
+		virtual ~AliDynIntHolder() {if (fValues) delete[] fValues;}
 
 		virtual TObject* Clone(const char* name) const;
 
                 virtual Bool_t IsEqual(const TObject* object) const;
 
-		ClassDef(DynIntHolder, 1);
+
+	private:
+		AliDynIntHolder(const AliDynIntHolder& /*other*/): AliDynHolder() { }
+		AliDynIntHolder& operator= (const AliDynIntHolder& /*other*/) {return *this;}
+		Int_t* fValues; //[fSize] 	 The value
+
+		ClassDef(AliDynIntHolder, 1);
 	};
 
-	class DynUIntHolder: public DynHolder {
+	class AliDynUIntHolder: public AliDynHolder {
+	
+	friend class AliSimpleValue;
+	
 	public:
-		UInt_t* fValues; //[fSize]
 
-		DynUIntHolder(): fValues(NULL) {}
+		AliDynUIntHolder(): fValues(NULL) {}
 
-		DynUIntHolder(Int_t size, const UInt_t* buf = NULL):
-			DynHolder(size) {
+		AliDynUIntHolder(Int_t size, const UInt_t* buf = NULL):
+			AliDynHolder(size) {
 			fValues = new UInt_t[size];
 			if (buf) memcpy(fValues, buf, size * sizeof(UInt_t));	
 		} 
 
-		virtual ~DynUIntHolder() {if (fValues) delete[] fValues;}
+		virtual ~AliDynUIntHolder() {if (fValues) delete[] fValues;}
 
 		virtual TObject* Clone(const char* name) const;
 
                 virtual Bool_t IsEqual(const TObject* object) const;
 
-		ClassDef(DynUIntHolder, 1);
+
+	private:
+		AliDynUIntHolder(const AliDynUIntHolder& /*other*/): AliDynHolder() { }
+		AliDynUIntHolder& operator= (const AliDynUIntHolder& /*other*/) {return *this;}
+		UInt_t* fValues; //[fSize] 	 The value
+
+		ClassDef(AliDynUIntHolder, 1);
 	};
 
-	class DynFloatHolder: public DynHolder {
+	class AliDynFloatHolder: public AliDynHolder {
+	
+	friend class AliSimpleValue;
+	
 	public:
-		Float_t* fValues; //[fSize]
 
-		DynFloatHolder(): fValues(NULL) {}
+		AliDynFloatHolder(): fValues(NULL) {}
 
-		DynFloatHolder(Int_t size, const Float_t* buf = NULL):
-			DynHolder(size) {
+		AliDynFloatHolder(Int_t size, const Float_t* buf = NULL):
+			AliDynHolder(size) {
 			fValues = new Float_t[size];
 			if (buf) memcpy(fValues, buf, size * sizeof(Float_t));
 		}
 
-		virtual ~DynFloatHolder() {if (fValues) delete[] fValues;}
+		virtual ~AliDynFloatHolder() {if (fValues) delete[] fValues;}
 
 		virtual TObject* Clone(const char* name) const;
 
                 virtual Bool_t IsEqual(const TObject* object) const;
 
-		ClassDef(DynFloatHolder, 1);
+
+	private:
+		AliDynFloatHolder(const AliDynFloatHolder& /*other*/): AliDynHolder() { }
+		AliDynFloatHolder& operator= (const AliDynFloatHolder& /*other*/) {return *this;}
+		Float_t* fValues; //[fSize] 	 The value
+
+		ClassDef(AliDynFloatHolder, 1);
 	};
 
 
-	TObject* fHolder;
+	TObject* fHolder;  	// Holder of the basic type value
 
-	Type fType;
+	Type fType;  	// Type of the basic type value
 
 
 	Bool_t TypeOk(Type type) const;
