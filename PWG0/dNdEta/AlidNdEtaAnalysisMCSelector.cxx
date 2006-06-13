@@ -18,6 +18,7 @@
 #include <AliHeader.h>
 
 #include "dNdEta/dNdEtaAnalysis.h"
+#include "AliPWG0Helper.h"
 
 
 ClassImp(AlidNdEtaAnalysisMCSelector)
@@ -113,17 +114,17 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
     if (!particle)
       continue;
 
-    if (IsPrimaryCharged(particle, nPrim) == kFALSE)
+    if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
     AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", i_mc, particle->GetUniqueID()));
 
-    fdNdEtaAnalysis->FillTrack(vtxMC[2], particle->Eta());
+    fdNdEtaAnalysis->FillTrack(vtxMC[2], particle->Eta(), particle->Pt(), 1);
     fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
 
     fPartEta->Fill(particle->Eta());
   }
-  fdNdEtaAnalysis->FillEvent(vtxMC[2]);
+  fdNdEtaAnalysis->FillEvent(vtxMC[2], 1);
 
   ++fEvents;
 

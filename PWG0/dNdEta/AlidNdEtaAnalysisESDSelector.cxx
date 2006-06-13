@@ -15,12 +15,15 @@
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEta/dNdEtaAnalysis.h"
+#include "dNdEta/AlidNdEtaCorrection.h"
+#include "AliPWG0Helper.h"
 
 ClassImp(AlidNdEtaAnalysisESDSelector)
 
 AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   AliSelector(),
-  fEsdTrackCuts(0)
+  fEsdTrackCuts(0),
+  fdNdEtaCorrection(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -73,6 +76,9 @@ void AlidNdEtaAnalysisESDSelector::Init(TTree* tree)
 
   if (!fEsdTrackCuts)
      AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info.");
+
+  if (!fdNdEtaCorrection && fTree)
+    fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fTree->GetUserInfo()->FindObject("dndeta_correction"));
 }
 
 Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
@@ -111,41 +117,36 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
+  if (!fdNdEtaCorrection)
+  {
+    AliDebug(AliLog::kError, "fdNdEtaCorrection not available");
+    return kFALSE;
+  }
+
+  if (AliPWG0Helper::IsVertexReconstructed(fESD) == kFALSE)
+    return kTRUE;
+
   // ########################################################
   // get the EDS vertex
   const AliESDVertex* vtxESD = fESD->GetVertex();
-
-  // the vertex should be reconstructed
-  if (strcmp(vtxESD->GetName(),"default")==0)
-    return kTRUE;
-
-  Double_t vtx_res[3];
-  vtx_res[0] = vtxESD->GetXRes();
-  vtx_res[1] = vtxESD->GetYRes();
-  vtx_res[2] = vtxESD->GetZRes();
-
-  // the resolution should be reasonable???
-  if (vtx_res[2]==0 || vtx_res[2]>0.1)
-    return kTRUE;
-
   Double_t vtx[3];
   vtxESD->GetXYZ(vtx);
 
-  // ########################################################
+  // get number of "good" tracks
+  TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+  Int_t nGoodTracks = list->GetEntries();
+
+  Float_t vertexRecoCorr = fdNdEtaCorrection->GetVertexRecoCorrection(vtx[2], nGoodTracks);
+
   // loop over esd tracks
-  Int_t nTracks = fESD->GetNumberOfTracks();
-  for (Int_t t=0; t<nTracks; t++)
+  for (Int_t t=0; t<nGoodTracks; t++)
   {
-    AliESDtrack* esdTrack = fESD->GetTrack(t);
+    AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (list->At(t));
     if (!esdTrack)
     {
       AliDebug(AliLog::kError, Form("ERROR: Could not retrieve track %d.", t));
       continue;
     }
-
-    // cut the esd track?
-    if (!fEsdTrackCuts->AcceptTrack(esdTrack))
-      continue;
 
     Double_t p[3];
     esdTrack->GetConstrainedPxPyPz(p); // ### TODO or GetInnerPxPyPy / GetOuterPxPyPy
@@ -153,13 +154,21 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
 
     Float_t theta = vector.Theta();
     Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
+    Float_t pt = vector.Pt();
 
-    fdNdEtaAnalysis->FillTrack(vtx[2], eta);
+    // TODO pt cut
+
+    Float_t track2particleCorr = fdNdEtaCorrection->GetTrack2ParticleCorrection(vtx[2], eta, pt);
+
+    fdNdEtaAnalysis->FillTrack(vtx[2], eta, pt, vertexRecoCorr * track2particleCorr);
 
   } // end of track loop
 
+  delete list;
+  list = 0;
+
   // for event count per vertex
-  fdNdEtaAnalysis->FillEvent(vtx[2]);
+  fdNdEtaAnalysis->FillEvent(vtx[2], vertexRecoCorr);
 
   return kTRUE;
 }

@@ -6,7 +6,7 @@
 #include "AliSelectorRL.h"
 
 class AliESDtrackCuts;
-class dNdEtaCorrection;
+class AlidNdEtaCorrection;
 
 class AlidNdEtaCorrectionSelector : public AliSelectorRL {
   public:
@@ -24,8 +24,7 @@ class AlidNdEtaCorrectionSelector : public AliSelectorRL {
   
     AliESDtrackCuts*  fEsdTrackCuts;          // Object containing the parameters of the esd track cuts
 
-    dNdEtaCorrection* fdNdEtaCorrection;      // contains the intermediate histograms (on each slave)
-    dNdEtaCorrection* fdNdEtaCorrectionFinal; // contains the final histograms
+    AlidNdEtaCorrection* fdNdEtaCorrection;      // contains the intermediate histograms (on each slave)
 
  private:
 

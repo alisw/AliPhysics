@@ -20,10 +20,10 @@
 
 #include <TNamed.h>
 
-class TH2F;
+class TH3F;
 class TH1D;
 class TCollection;
-class dNdEtaCorrection;
+class AlidNdEtaCorrection;
 
 class dNdEtaAnalysis : public TNamed
 {
@@ -37,10 +37,10 @@ public:
   dNdEtaAnalysis &operator=(const dNdEtaAnalysis &c);
   virtual void Copy(TObject &c) const;
 
-  void FillTrack(Float_t vtx, Float_t eta);
-  void FillEvent(Float_t vtx);
+  void FillTrack(Float_t vtx, Float_t eta, Float_t pt, Float_t weight);
+  void FillEvent(Float_t vtx, Float_t weight);
 
-  void Finish(dNdEtaCorrection* correction);
+  void Finish(AlidNdEtaCorrection* correction);
 
   void DrawHistograms();
   void LoadHistograms();
@@ -48,14 +48,17 @@ public:
 
   virtual Long64_t Merge(TCollection* list);
 
-  TH2F* GetEtaVsVtxHistogram() { return fEtaVsVtx; }
-  TH2F* GetEtaVsVtxUncorrectedHistogram() { return fEtaVsVtxUncorrected; }
+  TH3F* GetHistogram() { return fData; }
+  TH3F* GetUncorrectedHistogram() { return fDataUncorrected; }
   TH1D* GetVtxHistogram() { return fVtx; }
   TH1D* GetdNdEtaHistogram(Int_t i = 0) { return fdNdEta[i]; }
 
 protected:
-  TH2F* fEtaVsVtx;              // histogram Eta vs vtx (track count)
-  TH2F* fEtaVsVtxUncorrected;   // uncorrected histograms Eta vs vtx (track count)
+  TH3F* fData;              // histogram Eta vs vtx (track count)
+  TH3F* fDataUncorrected;   // uncorrected histograms Eta vs vtx (track count)
+
+  Float_t fNEvents;             // number of events (float because corrected by weight)
+
   TH1D* fVtx;                   // vtx histogram (event count)
   TH1D* fdNdEta[kVertexBinning];// dndeta results for different vertex bins (0 = full range)
 

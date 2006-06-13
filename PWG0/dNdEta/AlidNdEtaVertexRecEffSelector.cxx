@@ -14,6 +14,8 @@
 #include <AliESD.h>
 #include <AliESDVertex.h>
 
+#include "AliPWG0Helper.h"
+
 //
 // This class plots the vertex reconstruction efficiency
 // If a vertex was reconstructed is decided by the function CheckVertex()
@@ -129,7 +131,7 @@ Bool_t AlidNdEtaVertexRecEffSelector::Process(Long64_t entry)
     if (!particle)
       continue;
 
-    if (IsPrimaryCharged(particle, nPrim) == kFALSE)
+    if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
     if (TMath::Abs(particle->Eta()) < fkEtaRange)
