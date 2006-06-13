@@ -27,7 +27,7 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
   // ########################################################
   // definition of dNdEta correction object
 
-  dNdEtaCorrection* dNdEtaMap = new dNdEtaCorrection();
+  AlidNdEtaCorrection* dNdEtaMap = new AlidNdEtaCorrection();
 
   // ########################################################
   // get the data dir  
@@ -111,12 +111,15 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
     // getting number of events
     Int_t nEvents = (Int_t)runLoader->GetNumberOfEvents();
     Int_t nESDEvents = esdBranch->GetEntries();
+
+    Int_t nEventsTriggered = 0;
+    Int_t nEventsAll       = 0;
     
     if (nEvents!=nESDEvents) {
       cout << " Different number of events from runloader and esdtree!!!" << nEvents << " / " << nESDEvents << endl;
       return;
     }
-    // ########################################################
+   // ########################################################
     // loop over number of events
     cout << " looping over events..." << endl;
     for(Int_t i=0; i<nEvents; i++) {
@@ -136,15 +139,34 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
       vtx_res[1] = vtxESD->GetYRes();
       vtx_res[2] = vtxESD->GetZRes();
 
-      Bool_t goodEvent = kTRUE;
+      Bool_t vertexReconstructed = kTRUE;
 
       // the vertex should be reconstructed
       if (strcmp(vtxESD->GetName(),"default")==0) 
-	goodEvent = kFALSE;
+	vertexReconstructed = kFALSE;
 
       // the resolution should be reasonable???
       if (vtx_res[2]==0 || vtx_res[2]>0.01)
-	goodEvent = kFALSE;
+	vertexReconstructed = kFALSE;
+
+      // ########################################################
+      // get the trigger info
+      
+      Bool_t triggered = kFALSE;
+
+      // MB should be 
+      // ITS_SPD_GFO_L0  : 32
+      // VZERO_OR_LEFT   : 1
+      // VZERO_OR_RIGHT  : 2
+
+      ULong64_t triggerMask = esd->GetTriggerMask();
+
+      nEventsAll++;      
+
+      if (triggerMask&32 && ((triggerMask&1) || (triggerMask&2))) {
+	triggered = kTRUE;       
+	nEventsTriggered++;
+      }
 
       // ########################################################
       // get the MC vertex
@@ -184,21 +206,25 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
 	  continue;	
 
 	Float_t eta = part->Eta();
+	Float_t pt  = part->Pt();
 
 	if (prim) {
-	  dNdEtaMap->FillParticleAllEvents(vtx[2], eta);	
+
+	  dNdEtaMap->FillParticleAllEvents(eta, pt);		  
+
+	  if (triggered)
+	    dNdEtaMap->FillParticleWhenEventTriggered(eta, pt);
 	  
-	  if (goodEvent)
-	    dNdEtaMap->FillParticleWhenGoodEvent(vtx[2], eta);	
+	  if (vertexReconstructed)
+	    dNdEtaMap->FillParticle(vtx[2], eta, 1.);	
 	}
 	
       }// end of mc particle
-
-      if (!goodEvent)
-	continue;
-
+      
       // ########################################################
       // loop over esd tracks      
+      Int_t nGoodTracks = 0;
+
       Int_t nTracks = esd->GetNumberOfTracks();            
       for (Int_t t=0; t<nTracks; t++) {
 	AliESDtrack* esdTrack = esd->GetTrack(t);      
@@ -207,15 +233,16 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
 	if (!esdTrackCuts->AcceptTrack(esdTrack))
 	  continue;
 	
-	AliTPCtrack* tpcTrack = new AliTPCtrack(*esdTrack);	
-	if (tpcTrack->GetAlpha()==0) {
-	  cout << " Warning esd track alpha = 0" << endl;
-	  continue;
-	}
-
-	Float_t theta = tpcTrack->Theta();
-	Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
-
+	nGoodTracks++;	
+	
+	Double_t p[3];
+	esdTrack->GetPxPyPz(p);
+	Float_t momentum = TMath::Sqrt(TMath::Power(p[0],2) + TMath::Power(p[1],2) + TMath::Power(p[2],2));
+	
+	Float_t eta = -100.;
+	if((momentum != TMath::Abs(p[2]))&&(momentum != 0))
+	  eta = 0.5*TMath::Log((momentum + p[2])/(momentum - p[2]));
+	
 	// using the eta of the mc particle
 	Int_t label = TMath::Abs(esdTrack->GetLabel());
 	if (label<0) {
@@ -224,14 +251,22 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
 	}
 	TParticle* mcPart = particleStack->Particle(label);	
 	eta = mcPart->Eta();
-
-	dNdEtaMap->FillParticleWhenMeasuredTrack(vtx[2], eta);	
-
+	Float_t pt = mcPart->Pt();
+	
+	if (vertexReconstructed)
+	  dNdEtaMap->FillParticleWhenMeasuredTrack(vtx[2], eta, pt);	
+	
       } // end of track loop
+      
+      dNdEtaMap->FillEvent(vtxMC[2], nGoodTracks);
+      
+      if (vertexReconstructed)
+	dNdEtaMap->FillEventWithReconstructedVertex(vtxMC[2], nGoodTracks);
+
     } // end  of event loop
   } // end of run loop
-
-  dNdEtaMap->Finish();  
+  
+  dNdEtaMap->Finish(nEventsAll, nEventsTriggered);  
 
   TFile* fout = new TFile("correction_map.root","RECREATE");
   
