@@ -304,6 +304,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   if (bRes[0]!=0 && bRes[1]!=0) {
     Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
     nSigmaToVertex = d;//TMath::Sqrt(2)*(TMath::ErfInverse(1 - TMath::Exp(0.5*(-d*d))));
+    // JF solution: nSigmaToVertex = TMath::ErfInverse(TMath::Sqrt(2.0/TMath::Pi()) * TMath::Erf(d / TMath::Sqrt(2))) * TMath::Sqrt(2);
   }
 
   // getting the kinematic variables of the track 
