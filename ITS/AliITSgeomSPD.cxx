@@ -135,7 +135,7 @@ AliITSgeomSPD::~AliITSgeomSPD(){
 }
 //______________________________________________________________________
 void AliITSgeomSPD::SetShape(const char *name,const char *title,
-			     const char *mat,Float_t dx,Float_t dy,Float_t dz){
+			     const char * /*mat*/,Float_t dx,Float_t dy,Float_t dz){
     // Delete any existing shape info and replace it with a new
     // shape information.
     // Inputs:

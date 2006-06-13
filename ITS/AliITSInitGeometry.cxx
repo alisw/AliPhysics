@@ -184,7 +184,7 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
     TString path,shapeName;
     TGeoHMatrix materix;
     Bool_t initSeg[3]={kFALSE,kFALSE,kFALSE};
-    TStopwatch *time;if(fTiming) time=new TStopwatch();
+    TStopwatch *time = 0x0;if(fTiming) time=new TStopwatch();
 
     if(fTiming) time->Start();
     for(mod=0;mod<klayers;mod++) nmods += kladders[mod]*kdetectors[mod];
@@ -662,7 +662,7 @@ void AliITSInitGeometry::DecodeDetector(Int_t &mod,Int_t layer,Int_t cpn0,
     const Int_t detPerLadderSPD[2]={2,4};
     const Int_t detPerLadder[6]={4,4,6,8,22,25};
     const Int_t ladPerLayer[6]={20,40,14,22,34,38};
-    Int_t lay,lad,det,i;
+    Int_t lay=-1,lad=-1,det=-1,i;
 
     if(fDecode){ // New decoding scheam
         switch (layer){
