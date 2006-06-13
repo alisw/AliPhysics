@@ -4,12 +4,12 @@ void CreatedNdEta(Bool_t correct = kTRUE, const Char_t* filename = "analysis_esd
 {
   gSystem->Load("libPWG0base");
 
-  dNdEtaCorrection* dNdEtaCorrection = 0;
+  AlidNdEtaCorrection* dNdEtaCorrection = 0;
   if (correct)
   {
-    dNdEtaCorrection = new dNdEtaCorrection();
+    dNdEtaCorrection = new AlidNdEtaCorrection();
     dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
-    dNdEtaCorrection->RemoveEdges(2, 0, 2);
+    //dNdEtaCorrection->RemoveEdges(2, 0, 2);
   }
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
@@ -22,7 +22,7 @@ void CreatedNdEta(Bool_t correct = kTRUE, const Char_t* filename = "analysis_esd
   }
   fdNdEtaAnalysis->LoadHistograms();
 
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection);
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3);
 
   fdNdEtaAnalysis->DrawHistograms();
 }

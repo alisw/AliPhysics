@@ -12,6 +12,7 @@
 #include <AliLog.h>
 
 #include "AliCorrectionMatrix3D.h"
+#include "AliPWG0Helper.h"
 
 //____________________________________________________________________
 ClassImp(AliCorrectionMatrix3D)
@@ -119,27 +120,9 @@ void AliCorrectionMatrix3D::SaveHistograms()
 
   AliCorrectionMatrix::SaveHistograms();
 
-  WriteProjections(GetMeasuredHistogram());
-  WriteProjections(GetGeneratedHistogram());
+  AliPWG0Helper::CreateProjections(GetMeasuredHistogram());
+  AliPWG0Helper::CreateProjections(GetGeneratedHistogram());
 
   if (GetCorrectionHistogram())
-    WriteProjections(GetCorrectionHistogram());
-}
-
-//____________________________________________________________________
-void AliCorrectionMatrix3D::WriteProjections(TH3F* hist)
-{
-  // write some projections to disk
-
-  TH1* proj = hist->Project3D("yx");
-  proj->SetXTitle(hist->GetXaxis()->GetTitle());
-  proj->SetYTitle(hist->GetYaxis()->GetTitle());
-
-  proj = hist->Project3D("zx");
-  proj->SetXTitle(hist->GetXaxis()->GetTitle());
-  proj->SetYTitle(hist->GetZaxis()->GetTitle());
-
-  proj = hist->Project3D("zy");
-  proj->SetXTitle(hist->GetYaxis()->GetTitle());
-  proj->SetYTitle(hist->GetZaxis()->GetTitle());
+    AliPWG0Helper::CreateProjections(GetCorrectionHistogram());
 }

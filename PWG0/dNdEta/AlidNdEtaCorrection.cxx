@@ -3,7 +3,8 @@
 #include "AlidNdEtaCorrection.h"
 
 #include <TCanvas.h>
-#include <TH2F.h>
+#include <TH3F.h>
+#include <TH1D.h>
 
 //____________________________________________________________________
 ClassImp(AlidNdEtaCorrection)
@@ -140,3 +141,49 @@ void AlidNdEtaCorrection::DrawHistograms()
   fTriggerBiasCorrection       ->DrawHistograms();
 
 }
+
+//____________________________________________________________________
+Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, Bool_t debug)
+{
+  // calculates the fraction of particles measured (some are missed due to the pt cut off)
+  // uses the generated particle histogram from fTrack2ParticleCorrection
+
+  TH3F* generated = fTrack2ParticleCorrection->GetGeneratedHistogram();
+
+  // find eta borders, if eta is negative assume -0.8 ... 0.8
+  Int_t etaBegin = 0;
+  Int_t etaEnd = 0;
+  if (eta < 0)
+  {
+    etaBegin = generated->GetYaxis()->FindBin(-0.8);
+    etaEnd = generated->GetYaxis()->FindBin(0.8);
+  }
+  else
+  {
+    etaBegin = generated->GetYaxis()->FindBin(eta);
+    etaEnd = etaBegin;
+  }
+
+  Int_t vertexBegin = generated->GetXaxis()->FindBin(-10);
+  Int_t vertexEnd = generated->GetXaxis()->FindBin(10);
+
+  TH1D* ptProj = dynamic_cast<TH1D*> (generated->ProjectionZ(Form("%s_pt", GetName()), vertexBegin, vertexEnd, etaBegin, etaEnd));
+
+  Int_t ptBin = ptProj->FindBin(ptCutOff);
+  Float_t abovePtCut = ptProj->Integral(ptBin, ptProj->GetNbinsX());
+  Float_t all = ptProj->Integral();
+
+  if (all == 0)
+    return -1;
+
+  Float_t fraction = abovePtCut / all;
+
+  if (debug)
+  {
+    new TCanvas;
+    ptProj->Draw();
+  }
+
+  return fraction;
+}
+

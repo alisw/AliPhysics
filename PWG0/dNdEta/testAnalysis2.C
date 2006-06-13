@@ -58,7 +58,7 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
       }
     }
 
-    chain->SetProof(proof);
+    //chain->SetProof(proof);
   }
 
   // ########################################################
@@ -73,6 +73,17 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   chain->GetUserInfo()->Add(esdTrackCuts);
   if (proof)
     proof->AddInput(esdTrackCuts);
+
+  if (aMC == kFALSE)
+  {
+    AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection();
+    dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
+    //dNdEtaCorrection->RemoveEdges(2, 0, 2);
+
+    chain->GetUserInfo()->Add(dNdEtaCorrection);
+    if (proof)
+      proof->AddInput(dNdEtaCorrection);
+  }
 
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
@@ -90,7 +101,13 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   TStopwatch timer;
   timer.Start();
 
-  Long64_t result = chain->Process(selectorName);
+  Long64_t result = -1;
+
+  if (proof != kFALSE)
+    result = chain->MakeTDSet()->Process(selectorName);
+  else
+    result = chain->Process(selectorName);
+
   if (result != 0)
   {
     printf("ERROR: Executing process failed with %d.\n", result);

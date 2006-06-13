@@ -4,6 +4,8 @@
 
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TH1.h>
+#include <TH3F.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
@@ -97,4 +99,23 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
   }
 
   return kTRUE;
+}
+
+//____________________________________________________________________
+void AliPWG0Helper::CreateProjections(TH3F* hist)
+{
+  // create projections of 3d hists to all 2d combinations
+  // the histograms are not returned, just use them from memory or use this to create them in a file
+
+  TH1* proj = hist->Project3D("yx");
+  proj->SetXTitle(hist->GetXaxis()->GetTitle());
+  proj->SetYTitle(hist->GetYaxis()->GetTitle());
+
+  proj = hist->Project3D("zx");
+  proj->SetXTitle(hist->GetXaxis()->GetTitle());
+  proj->SetYTitle(hist->GetZaxis()->GetTitle());
+
+  proj = hist->Project3D("zy");
+  proj->SetXTitle(hist->GetYaxis()->GetTitle());
+  proj->SetYTitle(hist->GetZaxis()->GetTitle());
 }

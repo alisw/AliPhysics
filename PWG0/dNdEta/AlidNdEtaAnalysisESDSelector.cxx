@@ -29,7 +29,7 @@ AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   // Constructor. Initialization of pointers
   //
 
-  AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
+  //AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
 }
 
 AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
@@ -123,6 +123,9 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
+  if (AliPWG0Helper::IsEventTriggered(fESD) == kFALSE)
+    return kTRUE;
+
   if (AliPWG0Helper::IsVertexReconstructed(fESD) == kFALSE)
     return kTRUE;
 
@@ -137,6 +140,12 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   Int_t nGoodTracks = list->GetEntries();
 
   Float_t vertexRecoCorr = fdNdEtaCorrection->GetVertexRecoCorrection(vtx[2], nGoodTracks);
+  if (vertexRecoCorr <= 0)
+  {
+    AliDebug(AliLog::kError, Form("INFO: Skipping event because vertexRecoCorr is <= 0 (%f)", vertexRecoCorr));
+    delete list;
+    return kTRUE;
+  }
 
   // loop over esd tracks
   for (Int_t t=0; t<nGoodTracks; t++)
@@ -156,12 +165,16 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
     Float_t eta   = -TMath::Log(TMath::Tan(theta/2.));
     Float_t pt = vector.Pt();
 
-    // TODO pt cut
-
     Float_t track2particleCorr = fdNdEtaCorrection->GetTrack2ParticleCorrection(vtx[2], eta, pt);
 
-    fdNdEtaAnalysis->FillTrack(vtx[2], eta, pt, vertexRecoCorr * track2particleCorr);
+    Float_t weight = vertexRecoCorr * track2particleCorr;
+    if (weight <= 0)
+    {
+      AliDebug(AliLog::kError, Form("INFO: Skipping track because weight is <= 0 (track %d, weight %f)", t, weight));
+      continue;
+    }
 
+    fdNdEtaAnalysis->FillTrack(vtx[2], eta, pt, weight);
   } // end of track loop
 
   delete list;
