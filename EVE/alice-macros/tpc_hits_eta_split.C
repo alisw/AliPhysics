@@ -11,7 +11,7 @@ void tpc_hits_eta_split(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:
   rl->LoadHits("TPC");
 
   TTree* ht = rl->GetTreeH("TPC", false);
-  ht->SetEstimate(400*ht->GetEntries());
+  ht->SetEstimate(800*ht->GetEntries());
   ht->Draw(varexp, selection, option);
 
   gReve->DisableRedraw();
