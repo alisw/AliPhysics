@@ -4,9 +4,8 @@
 
 #include <AliLog.h>
 #include <AliRunLoader.h>
-#include <AliHeader.h>
 
-#include <TChain.h>
+#include <TTree.h>
 #include <TFile.h>
 
 //
@@ -19,10 +18,7 @@ ClassImp(AliSelectorRL)
 
 AliSelectorRL::AliSelectorRL() :
   AliSelector(),
-  fRunLoader(0),
-  fHeaderFile(0),
-  fHeaderTree(0),
-  fHeader(0)
+  fRunLoader(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -48,7 +44,19 @@ Bool_t AliSelectorRL::Notify()
     return kFALSE;
 
   DeleteRunLoader();
-  DeleteHeaderFile();
+
+  return kTRUE;
+}
+
+Bool_t AliSelectorRL::Process(Long64_t entry)
+{
+  // Call the baseclass Process and set event number in runLoader (if loaded)
+
+  if (AliSelector::Process(entry) == kFALSE)
+    return kFALSE;
+
+  if (fRunLoader)
+    fRunLoader->GetEvent(entry);
 
   return kTRUE;
 }
@@ -60,10 +68,9 @@ void AliSelectorRL::SlaveTerminate()
   AliSelector::SlaveTerminate();
 
   DeleteRunLoader();
-  DeleteHeaderFile();
 }
 
-AliRunLoader* AliSelectorRL::GetAliRunLoader()
+AliRunLoader* AliSelectorRL::GetRunLoader()
 {
   // Returns AliRun instance corresponding to current ESD active in fTree
   // Loads galice.root, the file is identified by replacing "AliESDs" to
@@ -82,6 +89,7 @@ AliRunLoader* AliSelectorRL::GetAliRunLoader()
       return 0;
 
     fRunLoader->LoadgAlice();
+    fRunLoader->GetEvent(fTree->GetTree()->GetReadEntry());
   }
 
   return fRunLoader;
@@ -102,47 +110,28 @@ void AliSelectorRL::DeleteRunLoader()
 
 AliHeader* AliSelectorRL::GetHeader()
 {
-  // Returns header corresponding to current ESD active in fTree
-  // Loads the header from galice.root, the file is identified by replacing "AliESDs" to
-  // "galice" in the file path of the ESD file. This is a hack, to be changed!
+  // Returns header retrieved from RunLoader
 
-  if (!fHeaderFile || !fHeaderTree)
-  {
-    if (!fTree->GetCurrentFile())
-      return 0;
+  AliRunLoader* runLoader = GetRunLoader();
+  if (!runLoader)
+    return 0;
 
-    TString fileName(fTree->GetCurrentFile()->GetName());
-    fileName.ReplaceAll("AliESDs", "galice");
+  if (runLoader->GetHeader() == 0)
+    runLoader->LoadHeader();
 
-    AliDebug(AliLog::kInfo, Form("Opening %s", fileName.Data()));
-
-    fHeaderFile = TFile::Open(fileName);
-    if (!fHeaderFile)
-      return 0;
-
-    fHeaderTree = dynamic_cast<TTree*> (fHeaderFile->Get("TE"));
-    if (!fHeaderTree)
-      return 0;
-
-    fHeaderTree->SetBranchAddress("Header", &fHeader);
-  }
-
-  fHeaderTree->GetEntry(fTree->GetTree()->GetReadEntry());
-
-  return fHeader;
+  return runLoader->GetHeader();
 }
 
-void AliSelectorRL::DeleteHeaderFile()
+AliStack* AliSelectorRL::GetStack()
 {
-  //
-  // Closes the kinematics file and deletes the pointer.
-  //
+  // Returns stack retrieved from RunLoader
 
-  if (fHeaderFile)
-  {
-    fHeaderFile->Close();
-    delete fHeaderFile;
-    fHeaderTree = 0;
-    fHeader = 0;
-  }
+  AliRunLoader* runLoader = GetRunLoader();
+  if (!runLoader)
+    return 0;
+
+  if (runLoader->Stack() == 0)
+    runLoader->LoadKinematics();
+
+  return runLoader->Stack();
 }

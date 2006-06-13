@@ -9,6 +9,7 @@
 
 class AliRunLoader;
 class AliHeader;
+class AliStack;
 
 class AliSelectorRL : public AliSelector {
   public:
@@ -16,21 +17,18 @@ class AliSelectorRL : public AliSelector {
     virtual ~AliSelectorRL();
 
     virtual Bool_t  Notify();
+    virtual Bool_t  Process(Long64_t entry);
     virtual void    SlaveTerminate();
 
  protected:
-    AliRunLoader* GetAliRunLoader();
+    AliRunLoader* GetRunLoader();
     AliHeader* GetHeader();
+    AliStack* GetStack();
 
  private:
     void DeleteRunLoader();
-    void DeleteHeaderFile();
 
     AliRunLoader* fRunLoader;    //! pointer to the RunLoader if galice.root was opened
-
-    TFile*        fHeaderFile; //! pointer to galice.root, if the file was opened
-    TTree*        fHeaderTree; //! holds TE tree of current galice.root
-    AliHeader*    fHeader;     //! holds pointer to current header
 
     ClassDef(AliSelectorRL,0);
 };
