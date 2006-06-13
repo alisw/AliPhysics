@@ -7,7 +7,8 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx AliPxconeJetHeader.cxx \
 	AliLeading.cxx \
 	AliJetKineReader.cxx AliJetKineReaderHeader.cxx \
 	AliJetProductionData.cxx AliJetProductionDataPDC2004.cxx \
-	AliJetAnalysis.cxx AliJetDistributions.cxx
+	AliJetAnalysis.cxx AliJetDistributions.cxx \
+	AliUA1JetFinderV1.cxx AliUA1JetHeaderV1.cxx 
 
 FSRCS = pxcone.F ua1_jet_finder.F
 
