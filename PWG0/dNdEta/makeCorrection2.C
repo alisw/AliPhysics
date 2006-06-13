@@ -9,9 +9,10 @@
 
 #include "../CreateESDChain.C"
 
-void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0)
+void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t debug = kFALSE)
 {
   gSystem->Load("libPWG0base");
+  gSystem->Load("libPWG0dep");
 
   TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset);
 
@@ -29,5 +30,10 @@ void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0)
   chain->GetUserInfo()->Add(fEsdTrackCuts);
 
   AliLog::SetClassDebugLevel("AlidNdEtaCorrectionSelector", AliLog::kInfo);
-  chain->Process("AlidNdEtaCorrectionSelector.cxx+");
+
+  TString selector("AlidNdEtaCorrectionSelector.cxx+");
+  if (debug != kFALSE)
+    selector += "g";
+
+  chain->Process(selector);
 }

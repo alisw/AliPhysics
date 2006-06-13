@@ -10,6 +10,7 @@
 
 #include <TChain.h>
 #include <TSelector.h>
+#include <TFile.h>
 
 #include <AliLog.h>
 #include <AliGenEventHeader.h>
@@ -18,17 +19,19 @@
 #include <AliESDVertex.h>
 #include <AliESD.h>
 #include <AliESDtrack.h>
+#include <AliRunLoader.h>
+#include <AliStack.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
-#include "dNdEtaCorrection.h"
+#include "dNdEta/AlidNdEtaCorrection.h"
+#include "AliPWG0Helper.h"
 
 ClassImp(AlidNdEtaCorrectionSelector)
 
 AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector() :
   AliSelectorRL(),
   fEsdTrackCuts(0),
-  fdNdEtaCorrection(0),
-  fdNdEtaCorrectionFinal(0)
+  fdNdEtaCorrection(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -62,7 +65,7 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
 
   AliSelectorRL::SlaveBegin(tree);
 
-  fdNdEtaCorrection = new dNdEtaCorrection();
+  fdNdEtaCorrection = new AlidNdEtaCorrection();
 
   if (fTree)
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fTree->GetUserInfo()->FindObject("AliESDtrackCuts"));
@@ -108,100 +111,112 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
+  AliRunLoader* runLoader = GetRunLoader();
+  if (!runLoader)
+  {
+    AliDebug(AliLog::kError, "RunLoader not available");
+    return kFALSE;
+  }
+
+  runLoader->LoadKinematics();
+  AliStack* stack = runLoader->Stack();
+  if (!stack)
+  {
+    AliDebug(AliLog::kError, "Stack not available");
+    return kFALSE;
+  }
+
   if (!fEsdTrackCuts)
   {
     AliDebug(AliLog::kError, "fESDTrackCuts not available");
     return kFALSE;
   }
 
-  // ########################################################
-  // get the EDS vertex
-  const AliESDVertex* vtxESD = fESD->GetVertex();
+  Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
 
-  Bool_t goodEvent = kTRUE;
+  // check if the event was triggered
+  Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
 
-  // the vertex should be reconstructed
-  if (strcmp(vtxESD->GetName(),"default")==0) 
-    goodEvent = kFALSE;
+  fdNdEtaCorrection->IncreaseEventCount();
+  if (eventTriggered)
+    fdNdEtaCorrection->IncreaseTriggeredEventCount();
 
-  Double_t vtx_res[3];
-  vtx_res[0] = vtxESD->GetXRes();
-  vtx_res[1] = vtxESD->GetYRes();
-  vtx_res[2] = vtxESD->GetZRes();
-  
-  // the resolution should be reasonable???
-  if (vtx_res[2]==0 || vtx_res[2]>0.1)
-    goodEvent = kFALSE;
-    
-
-  // ########################################################
   // get the MC vertex
   AliGenEventHeader* genHeader = header->GenEventHeader();
 
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
 
-  fdNdEtaCorrection->FillEvent(vtxMC[2]);
-
-  if (goodEvent)
-    fdNdEtaCorrection->FillUsedEvent(vtxMC[2]);
-    
-
-
-  // ########################################################
   // loop over mc particles
-  TTree* particleTree = GetKinematics();
-  TParticle* particle = 0;
-  particleTree->SetBranchAddress("Particles", &particle);
+  Int_t nPrim  = stack->GetNprimary();
 
-  Int_t nPrim  = header->GetNprimary();
-  Int_t nTotal = header->GetNtrack();
-
-  for (Int_t i_mc = nTotal - nPrim; i_mc < nTotal; ++i_mc)
+  for (Int_t iMc = 0; iMc < nPrim; ++iMc)
   {
-    particleTree->GetEntry(i_mc);
+    AliDebug(AliLog::kDebug+1, Form("MC Loop: Processing particle %d.", iMc));
+
+    TParticle* particle = stack->Particle(iMc);
 
     if (!particle)
+    {
+      AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (mc loop).", iMc));
       continue;
+    }
 
-    if (IsPrimaryCharged(particle, nPrim) == kFALSE)
+    if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
     Float_t eta = particle->Eta();
-    
-    fdNdEtaCorrection->FillParticleAllEvents(vtxMC[2], eta);	
-    
-    if (goodEvent)
-      fdNdEtaCorrection->FillParticleWhenUsedEvent(vtxMC[2], eta);	
-    
-  }// end of mc particle
+    Float_t pt = particle->Pt();
 
-  if (!goodEvent)
-    return kTRUE;  
+    if (vertexReconstructed)
+      fdNdEtaCorrection->FillParticle(vtxMC[2], eta, pt);
+
+    fdNdEtaCorrection->FillParticleAllEvents(eta, pt);
+    if (eventTriggered)
+      fdNdEtaCorrection->FillParticleWhenEventTriggered(eta, pt);
+  }// end of mc particle
 
   // ########################################################
   // loop over esd tracks
   Int_t nTracks = fESD->GetNumberOfTracks();
+
+  // count the number of "good" tracks for vertex reconstruction efficiency
+  // TODO change to number of ITS clusters or similar
+  Int_t nGoodTracks = 0;
   for (Int_t t=0; t<nTracks; t++)
   {
+    AliDebug(AliLog::kDebug+1, Form("ESD Loop: Processing track %d.", t));
+
     AliESDtrack* esdTrack = fESD->GetTrack(t);
 
     // cut the esd track?
     if (!fEsdTrackCuts->AcceptTrack(esdTrack))
       continue;
 
-    // using the eta of the mc particle
+    nGoodTracks++;
+
+    // using the properties of the mc particle
     Int_t label = TMath::Abs(esdTrack->GetLabel());
     if (label == 0)
     {
       AliDebug(AliLog::kWarning, Form("WARNING: cannot find corresponding mc part for track %d.", t));
       continue;
     }
-    particleTree->GetEntry(nTotal - nPrim + label);
 
-    fdNdEtaCorrection->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta());
+    TParticle* particle = stack->Particle(label);
+    if (!particle)
+    {
+      AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (track loop).", label));
+      continue;
+    }
 
+    if (vertexReconstructed)
+      fdNdEtaCorrection->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
   } // end of track loop
+
+  fdNdEtaCorrection->FillEvent(vtxMC[2], nGoodTracks);
+  if (vertexReconstructed)
+    fdNdEtaCorrection->FillEventWithReconstructedVertex(vtxMC[2], nGoodTracks);
 
   return kTRUE;
 }
@@ -232,17 +247,17 @@ void AlidNdEtaCorrectionSelector::Terminate()
 
   AliSelectorRL::Terminate();
 
-  fdNdEtaCorrectionFinal = dynamic_cast<dNdEtaCorrection*> (fOutput->FindObject("dndeta_correction"));
+  fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("dndeta_correction"));
 
-  fdNdEtaCorrectionFinal->Finish();
+  fdNdEtaCorrection->Finish();
 
   TFile* fout = new TFile("correction_map.root","RECREATE");
 
   fEsdTrackCuts->SaveHistograms("esd_track_cuts");
-  fdNdEtaCorrectionFinal->SaveHistograms();
+  fdNdEtaCorrection->SaveHistograms();
 
   fout->Write();
   fout->Close();
 
-  fdNdEtaCorrectionFinal->DrawHistograms();
+  fdNdEtaCorrection->DrawHistograms();
 }

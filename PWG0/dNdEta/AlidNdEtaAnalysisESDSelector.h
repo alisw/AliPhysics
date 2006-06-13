@@ -7,6 +7,7 @@
 
 class AliESDtrackCuts;
 class dNdEtaAnalysis;
+class AlidNdEtaCorrection;
 
 class AlidNdEtaAnalysisESDSelector : public AliSelector {
   public:
@@ -22,6 +23,8 @@ class AlidNdEtaAnalysisESDSelector : public AliSelector {
  protected:
     dNdEtaAnalysis* fdNdEtaAnalysis;      // contains the target histograms
     AliESDtrackCuts*  fEsdTrackCuts;     // Object containing the parameters of the esd track cuts
+
+    AlidNdEtaCorrection* fdNdEtaCorrection; // correction maps
 
  private:
 
