@@ -94,7 +94,9 @@ void Track::MakeTrack()
   if ((TMath::Abs(fV.z) > RS.fMaxZ) || (fV.x*fV.x + fV.y*fV.y > RS.fMaxR*RS.fMaxR)) 
     goto make_polyline;
   
-  if (fCharge) { // Charged particle
+  if (fCharge != 0 && TMath::Abs(RS.fMagField) > 1e-5) {
+
+    // Charged particle in magnetic field
 
     Float_t a = RS.fgkB2C * RS.fMagField * fCharge;
    
@@ -134,7 +136,9 @@ void Track::MakeTrack()
       // printf("%s loop to bounds  \n",fName.Data() );
     }
 
-  } else { // Neutral particle
+  } else {
+
+    // Neutral particle or no field
 
     MCLine line(fRnrStyle, &mc_v0, TMath::C()*fBeta, &track_points);
    
