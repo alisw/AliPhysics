@@ -1,3 +1,9 @@
+2006-06-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	Draw charged tracks as straight lines when magnetic field is near
+	zero.
+
 2006-06-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* MCHelixLine.hi:
