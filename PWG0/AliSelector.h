@@ -30,7 +30,6 @@ class AliSelector : public TSelector {
 
  protected:
     TTree*  GetKinematics();
-    Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries) const;
 
     TTree          *fTree;     //! pointer to the TTree containing the events
     AliESD*          fESD;     //! "ESD" branch in fChain

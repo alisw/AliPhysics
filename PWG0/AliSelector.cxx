@@ -31,8 +31,6 @@
 #include <TCanvas.h>
 #include <TRegexp.h>
 #include <TTime.h>
-#include <TParticle.h>
-#include <TParticlePDG.h>
 #include <TFriendElement.h>
 #include <TTree.h>
 #include <TChain.h>
@@ -241,50 +239,4 @@ void AliSelector::DeleteKinematicsFile()
     delete fKineFile;
     fKineFile = 0;
   }
-}
-
-Bool_t AliSelector::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries) const
-{
-  //
-  // Returns if the given particle is a primary particle
-  // This function or a equivalent should be available in some common place of AliRoot
-  //
-
-  // if the particle has a daughter primary, we do not want to count it
-  if (aParticle->GetFirstDaughter() != -1 && aParticle->GetFirstDaughter() < aTotalPrimaries)
-  {
-    AliDebug(AliLog::kDebug+1, "Dropping particle because it has a daughter among the primaries.");
-    return kFALSE;
-  }
-
-  Int_t pdgCode = TMath::Abs(aParticle->GetPdgCode());
-
-  // skip quarks and gluon
-  if (pdgCode <= 10 || pdgCode == 21)
-  {
-    AliDebug(AliLog::kDebug+1, "Dropping particle because it is a quark or gluon.");
-    return kFALSE;
-  }
-
-  if (strcmp(aParticle->GetName(),"XXX") == 0)
-  {
-    AliDebug(AliLog::kDebug, Form("WARNING: There is a particle named XXX."));
-    return kFALSE;
-  }
-
-  TParticlePDG* pdgPart = aParticle->GetPDG();
-
-  if (strcmp(pdgPart->ParticleClass(),"Unknown") == 0)
-  {
-    AliDebug(AliLog::kDebug, Form("WARNING: There is a particle with an unknown particle class (pdg code %d).", pdgCode));
-    return kFALSE;
-  }
-
-  if (pdgPart->Charge() == 0)
-  {
-    return kFALSE;
-    AliDebug(AliLog::kDebug+1, "Dropping particle because it is not charged.");
-  }
-
-  return kTRUE;
 }
