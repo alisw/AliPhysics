@@ -9,6 +9,7 @@
 
 class AliESD;
 class TParticle;
+class TH3F;
 
 class AliPWG0Helper : public TObject
 {
@@ -16,6 +17,8 @@ class AliPWG0Helper : public TObject
     static Bool_t IsEventTriggered(AliESD* aEsd);
     static Bool_t IsVertexReconstructed(AliESD* aEsd);
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries);
+
+    static void CreateProjections(TH3F* hist);
 
   protected:
     ClassDef(AliPWG0Helper, 0)

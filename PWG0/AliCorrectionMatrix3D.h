@@ -37,7 +37,6 @@ public:
   void RemoveEdges(Float_t cut=2, Int_t nBinsXedge = 0, Int_t nBinsYedge = 0, Int_t nBinsZedge = 0);
 
   virtual void SaveHistograms();
-  void WriteProjections(TH3F* hist);
 
 protected:
   ClassDef(AliCorrectionMatrix3D,1)

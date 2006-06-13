@@ -61,10 +61,12 @@ public:
   
   Float_t GetTrack2ParticleCorrection(Float_t vtx, Float_t eta, Float_t pt) 
     {return fTrack2ParticleCorrection->GetCorrection(vtx, eta, pt);}
-  
+
   Float_t GetVertexRecoCorrection(Float_t vtx, Float_t n) {return fVertexRecoCorrection->GetCorrection(vtx, n);}
 
   Float_t GetTriggerBiasCorrection(Float_t eta, Float_t pt=0) {return fTriggerBiasCorrection->GetCorrection(eta, pt);}
+
+  Float_t GetMeasuredFraction(Float_t ptCutOff, Float_t eta = -1, Bool_t debug = kFALSE);
 
 protected:
   AliCorrectionMatrix3D* fTrack2ParticleCorrection; // handles the track-to-particle correction, function of vtx_z, eta, pt

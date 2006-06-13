@@ -4,6 +4,7 @@
 
 #include <TFile.h>
 #include <TH3F.h>
+#include <TH2D.h>
 #include <TH1D.h>
 #include <TMath.h>
 #include <TCanvas.h>
@@ -13,6 +14,7 @@
 #include <TLegend.h>
 
 #include "AlidNdEtaCorrection.h"
+#include "AliPWG0Helper.h"
 
 //____________________________________________________________________
 ClassImp(dNdEtaAnalysis)
@@ -27,7 +29,7 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
 {
   // constructor
 
-  fData  = new TH3F(Form("%s_analysis", name),"",80,-20,20,120,-6,6,100, 0, 10);
+  fData  = new TH3F(Form("%s_analysis", name),"dNdEtaAnalysis",80,-20,20,120,-6,6,100, 0, 10);
   fData->SetXTitle("vtx z [cm]");
   fData->SetYTitle("#eta");
   fData->SetZTitle("p_{T}");
@@ -128,13 +130,13 @@ void dNdEtaAnalysis::FillEvent(Float_t vtx, Float_t weight)
 {
   // fills an event into the histograms
 
-  fVtx->Fill(vtx, weight); // TODO vtx distribution with or without weight?
+  fVtx->Fill(vtx, weight);
 
   fNEvents += weight;
 }
 
 //____________________________________________________________________
-void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction)
+void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut)
 {
   // correct with correction values if available
 
@@ -142,30 +144,21 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction)
   if (!correction)
     printf("INFO: No correction applied\n");
 
-  // this can be replaced by TH2F::Divide if we agree that the binning will be always the same
- /* for (Int_t iVtx=0; iVtx<=fDataUncorrected->GetNbinsX(); iVtx++)
+  // In fData we have the track2particle and vertex reconstruction efficiency correction already applied
+
+  // integrate over pt (with pt cut)
+  fData->GetZaxis()->SetRange(fData->GetZaxis()->FindBin(ptCut), fData->GetZaxis()->GetNbins());
+  TH2D* vtxVsEta = dynamic_cast<TH2D*> (fData->Project3D("yx2"));
+  if (vtxVsEta == 0)
   {
-    for (Int_t iEta=0; iEta<=fDataUncorrected->GetNbinsY(); iEta++)
-    {
-      Float_t correctionValue = 1;
-      if (correction)
-        correctionValue = correction->GetTrack2ParticleCorrection(fDataUncorrected->GetXaxis()->GetBinCenter(iVtx), fDataUncorrected->GetYaxis()->GetBinCenter(iEta), 1.0);
-
-      Float_t value = fDataUncorrected->GetBinContent(iVtx, iEta);
-      Float_t error = fDataUncorrected->GetBinError(iVtx, iEta);
-
-      Float_t correctedValue = value * correctionValue;
-      Float_t correctedError = error * correctionValue;
-
-      if (correctedValue != 0)
-      {
-        fData->SetBinContent(iVtx, iEta, correctedValue);
-        fData->SetBinError(iVtx, iEta, correctedError);
-      }
-    }
+    printf("ERROR: pt integration failed\n");
+    return;
   }
 
-  for (Int_t iEta=0; iEta<=fData->GetNbinsY(); iEta++)
+  new TCanvas;
+  vtxVsEta->Draw("COLZ");
+
+  for (Int_t iEta=0; iEta<=vtxVsEta->GetNbinsY(); iEta++)
   {
     // do we have several histograms for different vertex positions?
     Int_t vertexBinWidth = fVtx->GetNbinsX() / (kVertexBinning-1);
@@ -192,15 +185,23 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction)
       Float_t sumError2 = 0;
       for (Int_t iVtx = vertexBinBegin; iVtx < vertexBinEnd; iVtx++)
       {
-        if (fData->GetBinContent(iVtx, iEta) != 0)
+        if (vtxVsEta->GetBinContent(iVtx, iEta) != 0)
         {
-          sum = sum + fData->GetBinContent(iVtx, iEta);
-          sumError2 = sumError2 + TMath::Power(fData->GetBinError(iVtx, iEta),2);
+          sum = sum + vtxVsEta->GetBinContent(iVtx, iEta);
+          sumError2 = sumError2 + TMath::Power(vtxVsEta->GetBinError(iVtx, iEta),2);
         }
       }
 
-      Float_t dndeta = sum / totalEvents;
-      Float_t error  = TMath::Sqrt(sumError2) / totalEvents;
+      Float_t ptCutOffCorrection = correction->GetMeasuredFraction(ptCut, vtxVsEta->GetYaxis()->GetBinCenter(iEta));
+      //ptCutOffCorrection = 1;
+      if (ptCutOffCorrection <= 0)
+      {
+        printf("UNEXPECTED: ptCutOffCorrection is %f for hist %d %d %d\n", ptCutOffCorrection, vertexPos, vertexBinBegin, vertexBinEnd);
+        continue;
+      }
+
+      Float_t dndeta = sum / totalEvents / ptCutOffCorrection;
+      Float_t error  = TMath::Sqrt(sumError2) / totalEvents / ptCutOffCorrection;
 
       dndeta = dndeta/fdNdEta[vertexPos]->GetBinWidth(iEta);
       error  = error/fdNdEta[vertexPos]->GetBinWidth(iEta);
@@ -208,7 +209,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction)
       fdNdEta[vertexPos]->SetBinContent(iEta, dndeta);
       fdNdEta[vertexPos]->SetBinError(iEta, error);
     }
-  }*/
+  }
 }
 
 //____________________________________________________________________
@@ -220,7 +221,10 @@ void dNdEtaAnalysis::SaveHistograms()
   gDirectory->cd(GetName());
 
   fData  ->Write();
+  AliPWG0Helper::CreateProjections(fData);
   fDataUncorrected->Write();
+  AliPWG0Helper::CreateProjections(fDataUncorrected);
+
   fVtx       ->Write();
   for (Int_t i=0; i<kVertexBinning; ++i)
     fdNdEta[i]    ->Write();

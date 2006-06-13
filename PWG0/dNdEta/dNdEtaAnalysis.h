@@ -40,7 +40,7 @@ public:
   void FillTrack(Float_t vtx, Float_t eta, Float_t pt, Float_t weight);
   void FillEvent(Float_t vtx, Float_t weight);
 
-  void Finish(AlidNdEtaCorrection* correction);
+  void Finish(AlidNdEtaCorrection* correction, Float_t ptCut);
 
   void DrawHistograms();
   void LoadHistograms();

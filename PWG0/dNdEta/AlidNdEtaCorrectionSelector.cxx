@@ -134,7 +134,6 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 
   Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
 
-  // check if the event was triggered
   Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
 
   fdNdEtaCorrection->IncreaseEventCount();
@@ -214,9 +213,13 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
       fdNdEtaCorrection->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
   } // end of track loop
 
-  fdNdEtaCorrection->FillEvent(vtxMC[2], nGoodTracks);
-  if (vertexReconstructed)
-    fdNdEtaCorrection->FillEventWithReconstructedVertex(vtxMC[2], nGoodTracks);
+
+  if (eventTriggered)
+  {
+    fdNdEtaCorrection->FillEvent(vtxMC[2], nGoodTracks);
+    if (vertexReconstructed)
+      fdNdEtaCorrection->FillEventWithReconstructedVertex(vtxMC[2], nGoodTracks);
+  }
 
   return kTRUE;
 }
