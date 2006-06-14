@@ -1,3 +1,19 @@
+2006-06-14  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* BoxSetGL.h:
+	Added non-protected wrapper Render() for DirectDraw().
+
+	* PointSet.cxx:
+	* PointSet.h:
+	Subclassed point-set-array from TAttMarker, propagate changes to
+	all children.
+
+	* PointSetArrayEditor.cxx:
+	Removed stale printout.
+
+	* RGTopFrame.cxx:
+	Print exceptions to terminal also.
+
 2006-06-13  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:
