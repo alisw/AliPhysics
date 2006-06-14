@@ -18,7 +18,10 @@ void tpc_hits_eta_split(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:
 
   Reve::PointSetArray* l = new Reve::PointSetArray
     ("TPC hits - Eta Slices", "");
-  l->SetMainColor((Color_t)3);
+  l->SetMarkerColor((Color_t)3);
+  l->SetMarkerStyle(20); // full circle
+  l->SetMarkerSize(1);
+  
   TGListTreeItem *ti = gReve->AddRenderElement(l);
 
   l->InitBins(ti, "Eta", 20, -2, 2);
@@ -36,7 +39,7 @@ void tpc_hits_eta_split(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:
     ++vr; ++vphi; ++vz;
   }
 
-  l->CloseBins(20, 1); // Full circle, size 1.
+  l->CloseBins();
 
   gReve->DrawRenderElement(l);
   gReve->EnableRedraw();
