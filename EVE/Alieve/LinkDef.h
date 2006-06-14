@@ -40,6 +40,7 @@
 #pragma link C++ class Alieve::TPCSector2DGL+;
 #pragma link C++ class Alieve::TPCSector3D+;
 #pragma link C++ class Alieve::TPCSector3DEditor+;
+#pragma link C++ class Alieve::TPCSector3DGL+;
 
 #pragma link C++ class Alieve::TPCLoader+;
 #pragma link C++ class Alieve::TPCLoaderEditor+;
