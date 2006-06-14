@@ -65,8 +65,8 @@ void PointSetArrayEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
 
   fM = dynamic_cast<PointSetArray*>(fModel);
 
-  printf("FullRange(%f, %f) Selected(%f,%f)\n",
-	 fM->GetMin(), fM->GetMax(), fM->GetCurMin(), fM->GetCurMax());
+  // printf("FullRange(%f, %f) Selected(%f,%f)\n",
+  //        fM->GetMin(), fM->GetMax(), fM->GetCurMin(), fM->GetCurMax());
 
   fRange->SetLimits(fM->fMin, fM->fMax, TGNumberFormat::kNESRealTwo);
   fRange->SetValues(fM->fCurMin, fM->fCurMax);
