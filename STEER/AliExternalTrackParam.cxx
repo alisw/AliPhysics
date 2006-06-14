@@ -715,6 +715,26 @@ AliExternalTrackParam::GetPxPyPzAt(Double_t x, Double_t b, Double_t *p) const {
 }
 
 Bool_t 
+AliExternalTrackParam::GetYAt(Double_t x, Double_t b, Double_t &y) const {
+  //---------------------------------------------------------------------
+  // This function returns the local Y-coordinate of the intersection 
+  // point between this track and the reference plane "x" (cm). 
+  // Magnetic field "b" (kG)
+  //---------------------------------------------------------------------
+  Double_t dx=x-fX;
+  if(TMath::Abs(dx)<=kAlmost0) {y=fP[0]; return kTRUE;}
+
+  Double_t f1=fP[2], f2=f1 + dx*fP[4]*b*kB2C;
+
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+  
+  Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
+  y = fP[0] + dx*(f1+f2)/(r1+r2);
+  return kTRUE;
+}
+
+Bool_t 
 AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   //---------------------------------------------------------------------
   // This function returns the global track position extrapolated to

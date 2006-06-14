@@ -77,6 +77,7 @@ class AliExternalTrackParam: public TObject {
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
   Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t r[3]) const;
+  Bool_t GetYAt(Double_t x,  Double_t b,  Double_t &y) const;
   void Print(Option_t* option = "") const;
   // MI
   virtual Bool_t   PropagateTo(Double_t x, Double_t b, Double_t mass, Double_t maxStep, Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);
