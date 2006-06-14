@@ -7,7 +7,9 @@
 
 namespace Alieve {
 
-class CLASS
+class STEM;
+
+class CLASS : public TGLObject
 {
 protected:
   STEM* fM; // fModel dynamic-casted to CLASS

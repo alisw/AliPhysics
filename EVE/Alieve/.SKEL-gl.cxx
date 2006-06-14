@@ -1,7 +1,7 @@
 // $Header$
 
 #include "CLASS.h"
-#include <Reve/STEM.h>
+#include <Alieve/STEM.h>
 
 #include <TGLDrawFlags.h>
 
@@ -32,13 +32,26 @@ CLASS::~CLASS()
 
 Bool_t CLASS::SetModel(TObject* obj)
 {
-  return set_model(obj, "Alieve::STEM");
+#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
+  if(set_model(obj, "Alieve::STEM")) {
+#else
+  if(SetModelCheckClass(obj, "Alieve::STEM")) {
+#endif
+    fSector = (TPCSector3D*) fExternalObj;
+    return kTRUE;
+  }
+  return kFALSE;
 }
 
 void CLASS::SetBBox()
 {
   // !! This ok if master sub-classed from TAttBBox
+  #if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   set_axis_aligned_bbox(((STEM*)fExternalObj)->AssertBBox());
+#else
+  SetAxisAlignedBBox(((STEM*)fExternalObj)->AssertBBox());
+#endif
+
 }
 
 /**************************************************************************/
