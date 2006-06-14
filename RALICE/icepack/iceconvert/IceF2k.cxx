@@ -1061,6 +1061,7 @@ void IceF2k::PutHits()
  Int_t tid=0;
  AliTrack* tx=0;
  Float_t adc=0;
+ Float_t adcfirst=0; // Adc value of the first hit of an OM
  for (Int_t i=0; i<fEvent.nhits; i++)
  {
   chan=fEvent.h[i].ch+1;
@@ -1086,9 +1087,22 @@ void IceF2k::PutHits()
 
   if (!omx) continue;
 
+  adc=fEvent.h[i].amp;
+
+  // Multiple hits in the same OM with the same ADC value
+  // are indicated by "*" in the F2K file.
+  // This corresponds to a value of -2 in the data structure.
+  if (int(adc) == -2)
+  {
+   adc=adcfirst;
+  }
+  else
+  {
+   adcfirst=adc;
+  }
   s.Reset();
   s.SetUniqueID(fEvent.h[i].id);
-  s.SetSignal(fEvent.h[i].amp,1);
+  s.SetSignal(adc,1);
   s.SetSignal((fEvent.h[i].t-fToffset),2);
   s.SetSignal(fEvent.h[i].tot,3);
 
@@ -1164,7 +1178,7 @@ void IceF2k::PutHits()
   if (!omx) continue;
 
   omx->SetSlotName("BASELINE",omx->GetNnames()+1);
-  omx->SetSignal(fEvent.wf[iwf].baseline,"BASELINE");
+  omx->SetSignal(-fEvent.wf[iwf].baseline,"BASELINE");
 
   // Fill the waveform histogram
   hname="OM";
@@ -1181,7 +1195,7 @@ void IceF2k::PutHits()
 
   for (Int_t jbin=1; jbin<=fEvent.wf[iwf].ndigi; jbin++)
   {
-   histo.SetBinContent(jbin,fEvent.wf[iwf].digi[jbin-1]);
+   histo.SetBinContent(jbin,-fEvent.wf[iwf].digi[jbin-1]);
   }
 
   omx->SetWaveform(&histo,omx->GetNwaveforms()+1);

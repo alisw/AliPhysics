@@ -60,4 +60,9 @@
 13-jun-2006 NvE Correction in IceF2k::PutHits() for correct setting of name ad title
                 in case of Noise and Afterpulse hits in MC data.
                 (Thanks Michael Walter). 
+14-jun-2006 NvE TWR polarity reversed in IceF2k::PutHits() to be compatible with
+                the ATWD histograms.
+                Also modification made in IceF2k::PutHits() to correctly obtain the ADC values
+                for secondary etc... hits in the same OM.
+                 
 
