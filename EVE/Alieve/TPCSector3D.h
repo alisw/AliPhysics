@@ -13,9 +13,9 @@ namespace Alieve {
 class TPCSector3D: public TPCSectorViz
 {
   friend class TPCSector3DEditor;
+  friend class TPCSector3DGL;
 
 protected:
-  void MakeFrameBox();
   void LoadPadrow(TPCSectorData::RowIterator& iter,
                   Float_t sx, Float_t sy, Float_t pw, Float_t ph);
   void UpdateBoxes();

@@ -3,6 +3,11 @@
 #include "TPCSector3D.h"
 #include <Alieve/TPCSectorData.h>
 
+#include <TBuffer3D.h>
+#include <TBuffer3DTypes.h>
+#include <TVirtualPad.h>
+#include <TVirtualViewer3D.h>
+
 using namespace Reve;
 using namespace Alieve;
 
@@ -19,8 +24,7 @@ TPCSector3D::TPCSector3D(const Text_t* n, const Text_t* t) :
   fDriftVel  (1),
   fZStep     (250.0/450)
 {
-  fRnrFrame = false;
-  MakeFrameBox();
+  fRnrFrame = kFALSE;
   ComputeBBox();
 }
 
@@ -55,7 +59,7 @@ void TPCSector3D::ComputeBBox()
 #else
   BBoxInit();
 #endif
-  Float_t w = o2Seg.GetNMaxPads()*o2Seg.GetPadWidth()/2;
+  Float_t w = 0.5*o2Seg.GetNMaxPads()*o2Seg.GetPadWidth();
   fBBox[0] = -w;
   fBBox[1] =  w;
   fBBox[2] =  iSeg.GetRLow();
@@ -67,41 +71,29 @@ void TPCSector3D::ComputeBBox()
 
 }
 
-void TPCSector3D::Paint(Option_t* option)
+void TPCSector3D::Paint(Option_t* /*option*/)
 {
-  if(fRnrElement) {
-    fBoxSet.SetTrans(fTrans);
-    memcpy(fBoxSet.ArrTrans(), fMatrix, 16*sizeof(Double_t));
-    fBoxSet.Paint(option);
+  if(fRnrElement == kFALSE)
+    return;
+
+  TBuffer3D buffer(TBuffer3DTypes::kGeneric);
+
+  // Section kCore
+  buffer.fID           = this;
+  buffer.fColor        = 1;
+  buffer.fTransparency = 0;
+  buffer.fLocalFrame   = fTrans; 
+  if (fTrans)
+    memcpy(buffer.fLocalMaster, fMatrix, 16*sizeof(Double_t));
+  buffer.SetSectionsValid(TBuffer3D::kCore);
+   
+  Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
+  if (reqSections == TBuffer3D::kNone) {
+    return;
   }
-}
 
-/**************************************************************************/
-
-void TPCSector3D::MakeFrameBox()
-{
-  const TPCSectorData::SegmentInfo&  iSeg = TPCSectorData::GetInnSeg();
-  const TPCSectorData::SegmentInfo& o2Seg = TPCSectorData::GetOut2Seg();
-
-  Float_t x1, x2, y1, y2, D;
-  x1 = 0.5*TPCSectorData::GetNPadsInRow(0)*iSeg.GetPadWidth();
-  x2 = 0.5*o2Seg.GetNMaxPads()*o2Seg.GetPadWidth();
-  y1 = iSeg.GetRLow();
-  y2 = o2Seg.GetRLow() + o2Seg.GetNRows()*o2Seg.GetPadHeight();
-  D  = 0.5*fZStep;
-
-  ColorFromIdx(fFrameColor, fFrameBox.color);
-  Float_t* p = fFrameBox.vertices;
-  // bottom
-  p[0] = -x1;  p[1] = y1;  p[2] = -D;  p += 3;
-  p[0] =  x1;  p[1] = y1;  p[2] = -D;  p += 3;
-  p[0] =  x2;  p[1] = y2;  p[2] = -D;  p += 3;
-  p[0] = -x2;  p[1] = y2;  p[2] = -D;  p += 3;
-  // top
-  p[0] = -x1;  p[1] = y1;  p[2] =  D;  p += 3;
-  p[0] =  x1;  p[1] = y1;  p[2] =  D;  p += 3;
-  p[0] =  x2;  p[1] = y2;  p[2] =  D;  p += 3;
-  p[0] = -x2;  p[1] = y2;  p[2] =  D;  p += 3;
+  printf("TPCSector3D::Paint only GL supported.\n");
+  return;
 }
 
 /**************************************************************************/
@@ -123,7 +115,7 @@ void TPCSector3D::LoadPadrow(TPCSectorData::RowIterator& iter,
 	continue;
 
       fBoxSet.fBoxes.push_back(Reve::Box());
-      SetupColor(val, fBoxSet.fBoxes.back().color);
+      ColorFromArray(val, fBoxSet.fBoxes.back().color);
       x0 = xs + pad*pw;
       x1 = x0 + pw;
       z0 = fZStep*time/fDriftVel;
@@ -159,6 +151,8 @@ void TPCSector3D::UpdateBoxes()
     isOn[1] = fRnrOut1;
     isOn[2] = fRnrOut2;
 
+    SetupColorArray();
+
     // Loop over 3 main segments
     for (Int_t sId = 0; sId <= 2; ++sId) {
       if(isOn[sId] == kFALSE)
@@ -173,7 +167,4 @@ void TPCSector3D::UpdateBoxes()
       }
     }
   }
-
-  if(fRnrFrame)
-    fBoxSet.fBoxes.push_back(fFrameBox);
 }
