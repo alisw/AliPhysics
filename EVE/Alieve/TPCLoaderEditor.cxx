@@ -14,6 +14,7 @@
 #include <TGTextEntry.h>
 #include <TGNumberEntry.h>
 #include <TGFileDialog.h>
+#include <TGToolTip.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -114,7 +115,9 @@ void TPCLoaderEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*/)
 
   fM = dynamic_cast<TPCLoader*>(fModel);
 
-  fFile->SetText(fM->fFile);
+  // !!!! order changed, need TGTextEntry::SetText NO BLOODY EMIT.
+  fFile->SetToolTipText(gSystem->DirName(fM->fFile));
+  fFile->SetText(gSystem->BaseName(fM->fFile));
   fEvent->SetValue(fM->fEvent);
   fEvent->SetEnabled(fM->fEvent >= 0);
   fDoubleSR->SetState(fM->fDoubleSR  ? kButtonDown : kButtonUp);
@@ -135,16 +138,25 @@ const char *tpcfiletypes[] = {
 
 void TPCLoaderEditor::FileSelect()
 {
+  TString dname = gSystem->DirName (fM->fFile);
+  TString fname = gSystem->BaseName(fM->fFile);
   TGFileInfo fi;
+  fi.fIniDir    = const_cast<char*>(dname.Data());
+  fi.fFilename  = const_cast<char*>(fname.Data());
   fi.fFileTypes = tpcfiletypes;
+
   new TGFileDialog(fClient->GetRoot(), gReve, kFDOpen, &fi);
-  if (!fi.fFilename) return;
-  fFile->SetText(gSystem->BaseName(fi.fFilename));
+  if (!fi.fFilename)
+    return;
+
+  fFile->SetToolTipText(gSystem->DirName (fi.fFilename));
+  fFile->SetText       (gSystem->BaseName(fi.fFilename));
 }
 
 void TPCLoaderEditor::FileChanged()
 {
-  fM->fFile = fFile->GetText();
+  fM->fFile = Form("%s/%s", fFile->GetToolTip()->GetText()->Data(),
+		   fFile->GetText());
 }
 
 void TPCLoaderEditor::DoOpen()
