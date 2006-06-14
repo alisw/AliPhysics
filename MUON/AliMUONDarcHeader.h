@@ -49,9 +49,10 @@ public:
 
   // DARC get methods
    UInt_t  GetDarcL0R()     const {return fDarcL0R;}
-   UInt_t  GetDarcL0U()     const {return fDarcL0U;}
-   UInt_t  GetDarcL0P()     const {return fDarcL0P;}
-   UInt_t  GetDarcL0S()     const {return fDarcL0S;}
+   UInt_t  GetDarcL1P()     const {return fDarcL1P;}
+   UInt_t  GetDarcL1S()     const {return fDarcL1S;}
+   UInt_t  GetDarcL2A()     const {return fDarcL2A;}
+   UInt_t  GetDarcL2R()     const {return fDarcL2R;}
    UInt_t  GetDarcClock()   const {return fDarcClk;}
    UInt_t  GetDarcHold()    const {return fDarcHold;}
    
@@ -108,9 +109,10 @@ public:
 
    // DARC Scalers
    UInt_t     fDarcL0R;       ///< DARC L0 received
-   UInt_t     fDarcL0U;       ///< DARC L0 used
-   UInt_t     fDarcL0P;       ///< DARC Physical L0
-   UInt_t     fDarcL0S;       ///< DARC Software (checking) L0
+   UInt_t     fDarcL1P;       ///< DARC L1 physics
+   UInt_t     fDarcL1S;       ///< DARC L1 software
+   UInt_t     fDarcL2A;       ///< DARC L2 accept
+   UInt_t     fDarcL2R;       ///< DARC L2 reject
    UInt_t     fDarcClk;       ///< DARC clock
    UInt_t     fDarcHold;      ///< DARC hold (dead time)
    static const Int_t      fgkDarcScalerLength;  ///< length of DARC scaler in word
