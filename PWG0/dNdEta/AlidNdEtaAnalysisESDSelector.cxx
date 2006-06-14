@@ -22,6 +22,9 @@ ClassImp(AlidNdEtaAnalysisESDSelector)
 
 AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   AliSelector(),
+  fdNdEtaAnalysisMBVtx(0),
+  fdNdEtaAnalysisMB(0),
+  fdNdEtaAnalysis(0),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0)
 {
@@ -29,7 +32,7 @@ AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   // Constructor. Initialization of pointers
   //
 
-  //AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
+  AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
 }
 
 AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
@@ -59,9 +62,25 @@ void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree* tree)
   if (!fEsdTrackCuts && fInput)
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("AliESDtrackCuts"));
 
+  if (!fEsdTrackCuts && tree)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (tree->GetUserInfo()->FindObject("AliESDtrackCuts"));
+
   if (!fEsdTrackCuts)
      AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from input list.");
 
+
+  if (!fdNdEtaCorrection && fInput)
+    fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fInput->FindObject("dndeta_correction"));
+
+  if (!fdNdEtaCorrection && fTree)
+    fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fTree->GetUserInfo()->FindObject("dndeta_correction"));
+
+  if (!fdNdEtaCorrection)
+     AliDebug(AliLog::kError, "ERROR: Could not read dndeta_correction from input list.");
+
+
+  fdNdEtaAnalysisMBVtx = new dNdEtaAnalysis("dndeta_mbvtx", "dndeta_mbvtx");
+  fdNdEtaAnalysisMB = new dNdEtaAnalysis("dndeta_mb", "dndeta_mb");
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
 }
 
@@ -70,15 +89,6 @@ void AlidNdEtaAnalysisESDSelector::Init(TTree* tree)
   // read the user objects
 
   AliSelector::Init(tree);
-
-  if (!fEsdTrackCuts && fTree)
-    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fTree->GetUserInfo()->FindObject("AliESDtrackCuts"));
-
-  if (!fEsdTrackCuts)
-     AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info.");
-
-  if (!fdNdEtaCorrection && fTree)
-    fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fTree->GetUserInfo()->FindObject("dndeta_correction"));
 }
 
 Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
@@ -147,6 +157,14 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
     return kTRUE;
   }
 
+  Float_t triggerCorr = fdNdEtaCorrection->GetTriggerCorrection(vtx[2], nGoodTracks);
+  if (triggerCorr <= 0)
+  {
+    AliDebug(AliLog::kError, Form("INFO: Skipping event because triggerCorr is <= 0 (%f)", triggerCorr));
+    delete list;
+    return kTRUE;
+  }
+
   // loop over esd tracks
   for (Int_t t=0; t<nGoodTracks; t++)
   {
@@ -167,13 +185,15 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
 
     Float_t track2particleCorr = fdNdEtaCorrection->GetTrack2ParticleCorrection(vtx[2], eta, pt);
 
-    Float_t weight = vertexRecoCorr * track2particleCorr;
+    Float_t weight = track2particleCorr * vertexRecoCorr * triggerCorr;
     if (weight <= 0)
     {
-      AliDebug(AliLog::kError, Form("INFO: Skipping track because weight is <= 0 (track %d, weight %f)", t, weight));
+      AliDebug(AliLog::kError, Form("INFO: Skipping track because weight is <= 0 (track %d, weight %f) (vtx %f, eta %f, pt %f)", t, weight, vtx[2], eta, pt));
       continue;
     }
 
+    fdNdEtaAnalysisMBVtx->FillTrack(vtx[2], eta, pt, track2particleCorr);
+    fdNdEtaAnalysisMB->FillTrack(vtx[2], eta, pt, track2particleCorr * vertexRecoCorr);
     fdNdEtaAnalysis->FillTrack(vtx[2], eta, pt, weight);
   } // end of track loop
 
@@ -181,7 +201,9 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   list = 0;
 
   // for event count per vertex
-  fdNdEtaAnalysis->FillEvent(vtx[2], vertexRecoCorr);
+  fdNdEtaAnalysisMBVtx->FillEvent(vtx[2], 1);
+  fdNdEtaAnalysisMB->FillEvent(vtx[2], vertexRecoCorr);
+  fdNdEtaAnalysis->FillEvent(vtx[2], vertexRecoCorr * triggerCorr);
 
   return kTRUE;
 }
@@ -224,6 +246,12 @@ void AlidNdEtaAnalysisESDSelector::Terminate()
 
   if (fdNdEtaAnalysis)
     fdNdEtaAnalysis->SaveHistograms();
+
+  if (fdNdEtaAnalysisMB)
+    fdNdEtaAnalysisMB->SaveHistograms();
+
+  if (fdNdEtaAnalysisMBVtx)
+    fdNdEtaAnalysisMBVtx->SaveHistograms();
 
   if (fEsdTrackCuts)
     fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");

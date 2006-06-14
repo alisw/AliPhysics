@@ -21,7 +21,10 @@ class AlidNdEtaAnalysisESDSelector : public AliSelector {
     virtual void    Terminate();
 
  protected:
-    dNdEtaAnalysis* fdNdEtaAnalysis;      // contains the target histograms
+    dNdEtaAnalysis* fdNdEtaAnalysisMBVtx;   // contains the histograms for the triggered events with vertex
+    dNdEtaAnalysis* fdNdEtaAnalysisMB;      // contains the histograms corrected with vtx recon eff
+    dNdEtaAnalysis* fdNdEtaAnalysis;        // contains the histograms corrected with vtx recon eff and trigger bias eff
+
     AliESDtrackCuts*  fEsdTrackCuts;     // Object containing the parameters of the esd track cuts
 
     AlidNdEtaCorrection* fdNdEtaCorrection; // correction maps

@@ -1,6 +1,6 @@
 // this macro combines the correction and the analysis and draws them
 
-void CreatedNdEta(Bool_t correct = kTRUE, const Char_t* filename = "analysis_esd.root")
+void CreatedNdEta(Bool_t correct = kTRUE, const Char_t* filename = "analysis_esd.root", const char* object = "dndeta")
 {
   gSystem->Load("libPWG0base");
 
@@ -12,7 +12,7 @@ void CreatedNdEta(Bool_t correct = kTRUE, const Char_t* filename = "analysis_esd
     //dNdEtaCorrection->RemoveEdges(2, 0, 2);
   }
 
-  fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  fdNdEtaAnalysis = new dNdEtaAnalysis(object, object);
 
   TFile* file = TFile::Open(filename);
   if (!file)
@@ -22,7 +22,7 @@ void CreatedNdEta(Bool_t correct = kTRUE, const Char_t* filename = "analysis_esd
   }
   fdNdEtaAnalysis->LoadHistograms();
 
-  fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3);
+  fdNdEtaAnalysis->Finish(dNdEtaCorrection, (correct) ? 0.3 : -1);
 
   fdNdEtaAnalysis->DrawHistograms();
 }

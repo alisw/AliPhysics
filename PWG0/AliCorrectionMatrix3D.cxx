@@ -52,6 +52,34 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* t
   fhCorr->Sumw2();
 }
 
+AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
+      Int_t nBinX, Float_t Xmin, Float_t Xmax,
+      Int_t nBinY, Float_t Ymin, Float_t Ymax,
+      Int_t nBinZ, const Float_t* zbins)
+  : AliCorrectionMatrix(name, title)
+{
+  // constructor with variable bin sizes
+
+  Float_t* binLimitsX = new Float_t[nBinX+1];
+  for (Int_t i=0; i<=nBinX; ++i)
+    binLimitsX[i] = Xmin + (Xmax - Xmin) / nBinX * i;
+
+  Float_t* binLimitsY = new Float_t[nBinY+1];
+  for (Int_t i=0; i<=nBinY; ++i)
+    binLimitsY[i] = Ymin + (Ymax - Ymin) / nBinY * i;
+
+  fhMeas  = new TH3F(Form("meas_%s",name), Form("meas_%s",title), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
+  fhGene  = new TH3F(Form("gene_%s",name), Form("gene_%s",title), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
+  fhCorr  = new TH3F(Form("corr_%s",name), Form("corr_%s",title), nBinX, binLimitsX, nBinY, binLimitsY, nBinZ, zbins);
+
+  delete[] binLimitsX;
+  delete[] binLimitsY;
+
+  fhMeas->Sumw2();
+  fhGene->Sumw2();
+  fhCorr->Sumw2();
+}
+
 //____________________________________________________________________
 AliCorrectionMatrix3D::~AliCorrectionMatrix3D()
 {
@@ -120,9 +148,9 @@ void AliCorrectionMatrix3D::SaveHistograms()
 
   AliCorrectionMatrix::SaveHistograms();
 
-  AliPWG0Helper::CreateProjections(GetMeasuredHistogram());
-  AliPWG0Helper::CreateProjections(GetGeneratedHistogram());
+  //AliPWG0Helper::CreateProjections(GetMeasuredHistogram());
+  //AliPWG0Helper::CreateProjections(GetGeneratedHistogram());
 
   if (GetCorrectionHistogram())
-    AliPWG0Helper::CreateProjections(GetCorrectionHistogram());
+    AliPWG0Helper::CreateDividedProjections(GetMeasuredHistogram(), GetGeneratedHistogram());
 }
