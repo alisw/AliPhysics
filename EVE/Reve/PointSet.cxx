@@ -94,11 +94,10 @@ void PointSet::Paint(Option_t* option)
 ClassImp(PointSetArray)
 
 PointSetArray::PointSetArray(const Text_t* name,
-					     const Text_t* title) :
-  TNamed(name, title), RenderElementListBase(fColor)
+			     const Text_t* title) :
+  TNamed(name, title), RenderElementListBase(fMarkerColor)
 {
   fBins  = 0;
-  fColor = 1;
 }
 
 PointSetArray::~PointSetArray()
@@ -107,6 +106,37 @@ PointSetArray::~PointSetArray()
 }
 
 /**************************************************************************/
+
+void PointSetArray::SetMarkerColor(Color_t tcolor)
+{
+  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+    TAttMarker* m = dynamic_cast<TAttMarker*>((*i)->GetObject());
+    if(m && m->GetMarkerColor() == fMarkerColor)
+      m->SetMarkerColor(tcolor);
+  }
+  TAttMarker::SetMarkerColor(tcolor);
+}
+
+void PointSetArray::SetMarkerStyle(Style_t mstyle)
+{
+  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+    TAttMarker* m = dynamic_cast<TAttMarker*>((*i)->GetObject());
+    if(m && m->GetMarkerStyle() == fMarkerStyle)
+      m->SetMarkerStyle(mstyle);
+  }
+  TAttMarker::SetMarkerStyle(mstyle);
+}
+
+void PointSetArray::SetMarkerSize(Size_t msize)
+{
+  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+    TAttMarker* m = dynamic_cast<TAttMarker*>((*i)->GetObject());
+    if(m && m->GetMarkerSize() == fMarkerSize)
+      m->SetMarkerSize(msize);
+  }
+  TAttMarker::SetMarkerSize(msize);
+}
+
 /**************************************************************************/
 
 void PointSetArray::InitBins(TGListTreeItem* tree_item, const Text_t* quant_name,
@@ -140,13 +170,12 @@ void PointSetArray::Fill(TF3* , TTree* , TreeVarType_e )
 
 }
 
-void PointSetArray::CloseBins(Int_t mark_stlye, Float_t mark_size)
+void PointSetArray::CloseBins()
 {
   for(Int_t i=0; i<fNBins; ++i) {
-    fBins[i]->SetMarkerColor(fColor);
-    fBins[i]->SetMarkerColor(fColor);
-    fBins[i]->SetMarkerStyle(mark_stlye);
-    fBins[i]->SetMarkerSize(mark_size);
+    fBins[i]->SetMarkerColor(fMarkerColor);
+    fBins[i]->SetMarkerStyle(fMarkerStyle);
+    fBins[i]->SetMarkerSize(fMarkerSize);
     fBins[i]->fN = fBins[i]->fLastPoint; // HACK! PolyMarker3D does half-management of array size.
     fBins[i]->ComputeBBox();
   }

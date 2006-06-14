@@ -47,7 +47,8 @@ public:
 
 /**************************************************************************/
 
-class PointSetArray : public TNamed, public RenderElementListBase
+class PointSetArray : public TNamed, public TAttMarker,
+		      public RenderElementListBase
 {
   friend class PointSetArrayEditor;
 
@@ -59,8 +60,6 @@ protected:
   Double_t     fBinWidth;
   TString      fQuantName;
 
-  Color_t      fColor;
-
 public:
   enum TreeVarType_e { TVT_XYZ, TVT_RPhiZ };
 
@@ -68,14 +67,17 @@ public:
 			const Text_t* title="");
   virtual ~PointSetArray();
 
-  virtual Bool_t CanEditMainColor()           { return true; }
-  virtual void   Paint(Option_t* option = "") { PaintElements(option); }
+  virtual void Paint(Option_t* option = "") { PaintElements(option); }
+
+  virtual void SetMarkerColor(Color_t tcolor=1);
+  virtual void SetMarkerStyle(Style_t mstyle=1);
+  virtual void SetMarkerSize(Size_t msize=1);
 
   void InitBins(TGListTreeItem* tree_item, const Text_t* quant_name,
 		Int_t nbins, Double_t min, Double_t max);
   void Fill(Double_t quant, Double_t x, Double_t y, Double_t z);
   void Fill(TF3* formula, TTree* tree, TreeVarType_e tv_type=TVT_XYZ);
-  void CloseBins(Int_t mark_style, Float_t mark_size);
+  void CloseBins();
 
   Double_t GetMin()    const { return fMin; }
   Double_t GetCurMin() const { return fCurMin; }
