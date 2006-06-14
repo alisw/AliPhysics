@@ -3,7 +3,7 @@ PACKAGE = invalid-only-for-proof
 include $(ROOTSYS)/test/Makefile.arch
 include lib$(PACKAGE).pkg
 
-SRCS         += dict.cxx
+SRCS         += G__$(PACKAGE).cxx
 OBJS          = $(SRCS:.cxx=.o)
 
 lib$(PACKAGE).so: $(OBJS)
@@ -12,7 +12,7 @@ lib$(PACKAGE).so: $(OBJS)
 ifeq ($(PLATFORM),macosx)
 	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
 else
-	@$(LD) $(SOFLAGS) $(LDFLAGS) $(OBJS) -o $@
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
 endif
 	@chmod a+x $@
 	@echo "done"
@@ -21,10 +21,9 @@ endif
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS) core *~ *.so dict.*
+	@rm -f $(OBJS) *.so G__$(PACKAGE).*
 
-dict.cxx dict.h: $(HDRS) $(DHDR)
+G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 	@echo "Generating dictionary ..."
-	@[ -f dict ] || rm -f $@
 	rootcint -f $@ -c $(ALICEINC) $^
 
