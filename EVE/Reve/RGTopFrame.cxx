@@ -268,6 +268,7 @@ int RGTopFrame::SpawnGuiAndRun(int argc, char **argv)
   }
   catch(std::string exc) {
     gReve->GetStatusBar()->SetText(exc.c_str());
+    fprintf(stderr, "Exception: %s\n", exc.c_str());
     goto run_loop;
   }
   return 0;
