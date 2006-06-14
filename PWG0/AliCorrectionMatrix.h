@@ -20,12 +20,13 @@ class TH1;
 
 class AliCorrectionMatrix : public TNamed
 {
-public:
+protected: // do not create this baseclass
   AliCorrectionMatrix();
   AliCorrectionMatrix(const Char_t* name, const Char_t* title);
   AliCorrectionMatrix(const AliCorrectionMatrix& c);
   virtual ~AliCorrectionMatrix();
 
+public:
   AliCorrectionMatrix& operator=(const AliCorrectionMatrix& corrMatrix);
   virtual void Copy(TObject& c) const;
   virtual Long64_t Merge(TCollection* list);

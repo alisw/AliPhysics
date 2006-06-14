@@ -18,18 +18,22 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(Char_t* name)
   // constructor
   //
 
-  fTrack2ParticleCorrection = new AliCorrectionMatrix3D("nTrackToNPart", "nTrackToNPart",80,-20,20,120,-6,6, 100, 0, 10);
+  Float_t binLimitsPt[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 10.0, 100.0};
 
-  Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 
+  fTrack2ParticleCorrection = new AliCorrectionMatrix3D("nTrackToNPart", "nTrackToNPart", 40, -20, 20, 60, -6, 6, 14, binLimitsPt);
+
+  Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
 			    10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 300.5};
   Float_t binLimitsVtx[] = {-20,-15,-10,-6,-3,0,3,6,10,15,20};
-  
+
   fVertexRecoCorrection        = new AliCorrectionMatrix2D("vtxReco",       "vtxReco",10,binLimitsVtx ,22,binLimitsN);
+  fTriggerCorrection           = new AliCorrectionMatrix2D("trigger",       "trigger",10,binLimitsVtx ,22,binLimitsN);
 
   fTriggerBiasCorrection       = new AliCorrectionMatrix2D("triggerBias",   "triggerBias",120,-6,6,100, 0, 10);
 
   fTrack2ParticleCorrection ->SetAxisTitles("vtx z [cm]", "#eta", "p_{T}");
   fVertexRecoCorrection        ->SetAxisTitles("vtx z [cm]", "n particles/tracks/tracklets?");
+  fTriggerCorrection        ->SetAxisTitles("vtx z [cm]", "n particles/tracks/tracklets?");
 
   fTriggerBiasCorrection       ->SetAxisTitles("#eta", "p_{T} [GeV/c]");
 }
@@ -42,14 +46,31 @@ AlidNdEtaCorrection::Finish() {
   //
   // divide the histograms in the AliCorrectionMatrix2D objects to get the corrections
 
-
   fTrack2ParticleCorrection->Divide();
 
-  fVertexRecoCorrection->Divide();
+  TH3F* hist = fTrack2ParticleCorrection->GetCorrectionHistogram();
+  Int_t emptyBins = 0;
+  for (Int_t x=hist->GetXaxis()->FindBin(-10); x<=hist->GetXaxis()->FindBin(10); ++x)
+    for (Int_t y=hist->GetYaxis()->FindBin(-0.8); y<=hist->GetYaxis()->FindBin(0.8); ++y)
+      for (Int_t z=hist->GetZaxis()->FindBin(0.3); z<=hist->GetZaxis()->FindBin(9.9); ++z)
+        if (hist->GetBinContent(x, y, z) == 0)
+        {
+          printf("Empty bin in fTrack2ParticleCorrection at vtx = %f, eta = %f, pt = %f\n", hist->GetXaxis()->GetBinCenter(x), hist->GetYaxis()->GetBinCenter(y), hist->GetZaxis()->GetBinCenter(z));
+          ++emptyBins;
+        }
 
+  printf("INFO: In the central region fTrack2ParticleCorrection has %d empty bins\n", emptyBins);
+
+  fVertexRecoCorrection->Divide();
+  fTriggerCorrection->Divide();
+
+  if (fNEvents == 0)
+  {
+    printf("ERROR: fNEvents is empty. Cannot scale histogram. Skipping processing of fTriggerBiasCorrection\n");
+    return;
+  }
   fTriggerBiasCorrection->GetMeasuredHistogram()->Scale(Double_t(fNTriggeredEvents)/Double_t(fNEvents));
   fTriggerBiasCorrection->Divide();
-
 }
 
 //____________________________________________________________________
@@ -107,8 +128,9 @@ AlidNdEtaCorrection::LoadHistograms(Char_t* fileName, Char_t* dir) {
 
   fTrack2ParticleCorrection ->LoadHistograms(fileName, dir);
   fVertexRecoCorrection        ->LoadHistograms(fileName, dir);
+  fTriggerCorrection        ->LoadHistograms(fileName, dir);
   fTriggerBiasCorrection       ->LoadHistograms(fileName, dir);
-  
+
   return kTRUE;
 }
 
@@ -123,9 +145,10 @@ AlidNdEtaCorrection::SaveHistograms() {
   gDirectory->mkdir(fName.Data());
   gDirectory->cd(fName.Data());
 
-  fTrack2ParticleCorrection ->SaveHistograms();
-  fVertexRecoCorrection        ->SaveHistograms();
-  fTriggerBiasCorrection       ->SaveHistograms();
+  fTrack2ParticleCorrection->SaveHistograms();
+  fVertexRecoCorrection->SaveHistograms();
+  fTriggerCorrection->SaveHistograms();
+  fTriggerBiasCorrection->SaveHistograms();
 
   gDirectory->cd("../");
 }
@@ -138,6 +161,7 @@ void AlidNdEtaCorrection::DrawHistograms()
 
   fTrack2ParticleCorrection ->DrawHistograms();
   fVertexRecoCorrection        ->DrawHistograms();
+  fTriggerCorrection        ->DrawHistograms();
   fTriggerBiasCorrection       ->DrawHistograms();
 
 }
@@ -148,7 +172,7 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, 
   // calculates the fraction of particles measured (some are missed due to the pt cut off)
   // uses the generated particle histogram from fTrack2ParticleCorrection
 
-  TH3F* generated = fTrack2ParticleCorrection->GetGeneratedHistogram();
+  const TH3F* generated = fTrack2ParticleCorrection->GetGeneratedHistogram();
 
   // find eta borders, if eta is negative assume -0.8 ... 0.8
   Int_t etaBegin = 0;
@@ -168,6 +192,7 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, 
   Int_t vertexEnd = generated->GetXaxis()->FindBin(10);
 
   TH1D* ptProj = dynamic_cast<TH1D*> (generated->ProjectionZ(Form("%s_pt", GetName()), vertexBegin, vertexEnd, etaBegin, etaEnd));
+  ptProj->GetXaxis()->SetTitle(generated->GetZaxis()->GetTitle());
 
   Int_t ptBin = ptProj->FindBin(ptCutOff);
   Float_t abovePtCut = ptProj->Integral(ptBin, ptProj->GetNbinsX());

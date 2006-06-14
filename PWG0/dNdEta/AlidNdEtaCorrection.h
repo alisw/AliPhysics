@@ -15,6 +15,7 @@
 // - add documentation
 // - add status: generate or use maps
 // - add functionality to set the bin sizes
+// - update MERge function
 //
 
 #include <TNamed.h>
@@ -27,9 +28,10 @@ class AlidNdEtaCorrection : public TNamed
 public:
   AlidNdEtaCorrection(Char_t* name="dndeta_correction");
 
-  // fVertexRecoCorrection
-  void FillEvent(Float_t vtx, Float_t n)                        {fVertexRecoCorrection->FillGene(vtx, n);}
-  void FillEventWithReconstructedVertex(Float_t vtx, Float_t n) {fVertexRecoCorrection->FillMeas(vtx, n);}
+  // fVertexRecoCorrection, fTriggerCorrection
+  void FillEvent(Float_t vtx, Float_t n)                        {fTriggerCorrection->FillGene(vtx, n);}
+  void FillEventWithTrigger(Float_t vtx, Float_t n)             {fVertexRecoCorrection->FillGene(vtx, n); fTriggerCorrection->FillMeas(vtx, n);}
+  void FillEventWithTriggerWithReconstructedVertex(Float_t vtx, Float_t n) {fVertexRecoCorrection->FillMeas(vtx, n);}
 
   // fTrack2ParticleCorrection
   void FillParticle(Float_t vtx, Float_t eta, Float_t pt)                  {fTrack2ParticleCorrection->FillGene(vtx, eta, pt);}
@@ -64,6 +66,8 @@ public:
 
   Float_t GetVertexRecoCorrection(Float_t vtx, Float_t n) {return fVertexRecoCorrection->GetCorrection(vtx, n);}
 
+  Float_t GetTriggerCorrection(Float_t vtx, Float_t n) {return fTriggerCorrection->GetCorrection(vtx, n);}
+
   Float_t GetTriggerBiasCorrection(Float_t eta, Float_t pt=0) {return fTriggerBiasCorrection->GetCorrection(eta, pt);}
 
   Float_t GetMeasuredFraction(Float_t ptCutOff, Float_t eta = -1, Bool_t debug = kFALSE);
@@ -71,6 +75,7 @@ public:
 protected:
   AliCorrectionMatrix3D* fTrack2ParticleCorrection; // handles the track-to-particle correction, function of vtx_z, eta, pt
   AliCorrectionMatrix2D* fVertexRecoCorrection;     // handles the vertex reconstruction efficiency, function of n_clustersITS and vtx_z
+  AliCorrectionMatrix2D* fTriggerCorrection;       // handles the trigger efficiency efficiency, function of n_clustersITS and vtx_z
 
   AliCorrectionMatrix2D* fTriggerBiasCorrection;          // MB to desired sample
 

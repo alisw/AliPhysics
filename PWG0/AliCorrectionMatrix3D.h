@@ -23,6 +23,11 @@ public:
 		     Int_t nBinY=10, Float_t Ymin=0., Float_t Ymax=10.,
 		     Int_t nBinZ=10, Float_t Zmin=0., Float_t Zmax=10.);
 
+  AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
+         Int_t nBinX, Float_t Xmin, Float_t Xmax,
+         Int_t nBinY, Float_t Ymin, Float_t Ymax,
+         Int_t nBinZ, const Float_t* zbins);
+
   virtual ~AliCorrectionMatrix3D();
 
   TH3F* GetGeneratedHistogram();

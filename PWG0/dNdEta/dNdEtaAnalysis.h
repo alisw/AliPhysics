@@ -16,7 +16,6 @@
 // - add functionality to set the bin sizes
 // - figure out correct way to treat the errors
 // - add functionality to make dn/deta for different mult classes?
-// - implement destructor
 
 #include <TNamed.h>
 
@@ -28,8 +27,9 @@ class AlidNdEtaCorrection;
 class dNdEtaAnalysis : public TNamed
 {
 public:
-  enum { kVertexBinning = 1+4 }; // the first is for the whole vertex range, the others divide the vertex range
+  enum { kVertexBinning = 1+3 }; // the first is for the whole vertex range, the others divide the vertex range
 
+  dNdEtaAnalysis();
   dNdEtaAnalysis(Char_t* name, Char_t* title);
   virtual ~dNdEtaAnalysis();
 
@@ -57,10 +57,12 @@ protected:
   TH3F* fData;              // histogram Eta vs vtx (track count)
   TH3F* fDataUncorrected;   // uncorrected histograms Eta vs vtx (track count)
 
-  Float_t fNEvents;             // number of events (float because corrected by weight)
-
   TH1D* fVtx;                   // vtx histogram (event count)
-  TH1D* fdNdEta[kVertexBinning];// dndeta results for different vertex bins (0 = full range)
+
+  TH1D* fPtDist; // pt distribution
+
+  TH1D* fdNdEta[kVertexBinning]; // dndeta results for different vertex bins (0 = full range)
+  TH1D* fdNdEtaPtCutOffCorrected[kVertexBinning];  // dndeta results for different vertex bins (0 = full range), pt cut off corrected
 
   ClassDef(dNdEtaAnalysis, 0)
 };

@@ -19,6 +19,7 @@ class AliPWG0Helper : public TObject
     static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries);
 
     static void CreateProjections(TH3F* hist);
+    static void CreateDividedProjections(TH3F* hist, TH3F* hist2, const char* axis = 0);
 
   protected:
     ClassDef(AliPWG0Helper, 0)

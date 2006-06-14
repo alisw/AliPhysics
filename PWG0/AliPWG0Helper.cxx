@@ -119,3 +119,32 @@ void AliPWG0Helper::CreateProjections(TH3F* hist)
   proj->SetXTitle(hist->GetYaxis()->GetTitle());
   proj->SetYTitle(hist->GetZaxis()->GetTitle());
 }
+
+//____________________________________________________________________
+void AliPWG0Helper::CreateDividedProjections(TH3F* hist, TH3F* hist2, const char* axis)
+{
+  // create projections of the 3d hists divides them
+  // axis decides to which plane, if axis is 0 to all planes
+  // the histograms are not returned, just use them from memory or use this to create them in a file
+
+  if (axis == 0)
+  {
+    CreateDividedProjections(hist, hist2, "yx");
+    CreateDividedProjections(hist, hist2, "zx");
+    CreateDividedProjections(hist, hist2, "zy");
+
+    return;
+  }
+
+  TH1* proj = hist->Project3D(axis);
+  proj->SetXTitle(hist->GetXaxis()->GetTitle());
+  proj->SetYTitle(hist->GetYaxis()->GetTitle());
+
+  TH1* proj2 = hist2->Project3D(axis);
+  proj2->SetXTitle(hist2->GetXaxis()->GetTitle());
+  proj2->SetYTitle(hist2->GetYaxis()->GetTitle());
+
+  TH1* division = dynamic_cast<TH1*> (proj->Clone(Form("%s_div_%s", proj->GetName(), proj2->GetName())));
+  division->Divide(proj2);
+}
+

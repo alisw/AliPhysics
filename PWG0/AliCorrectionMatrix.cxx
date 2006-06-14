@@ -162,6 +162,15 @@ void AliCorrectionMatrix::Divide()
 
   fhCorr->Divide(fhGene, fhMeas, 1, 1, "B");
 
+  Int_t emptyBins = 0;
+  for (Int_t x=1; x<=fhCorr->GetNbinsX(); ++x)
+    for (Int_t y=1; y<=fhCorr->GetNbinsY(); ++y)
+      for (Int_t z=1; z<=fhCorr->GetNbinsZ(); ++z)
+        if (fhCorr->GetBinContent(x, y, z) == 0)
+          ++emptyBins;
+
+  if (emptyBins > 0)
+    printf("INFO: In %s we have %d empty bins (of %d) in the correction map\n", GetName(), emptyBins, fhCorr->GetNbinsX() * fhCorr->GetNbinsY() * fhCorr->GetNbinsZ());
 }
 
 //____________________________________________________________________
@@ -170,9 +179,9 @@ Bool_t AliCorrectionMatrix::LoadHistograms(Char_t* fileName, Char_t* dir)
   //
   // loads the histograms from a file
   //
-  
-  TFile* fin = TFile::Open(fileName);  
-  
+
+  TFile* fin = TFile::Open(fileName);
+
   if(!fin) {
     //Info("LoadHistograms",Form(" %s file does not exist",fileName));
     return kFALSE;

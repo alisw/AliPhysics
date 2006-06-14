@@ -214,11 +214,12 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   } // end of track loop
 
 
+  fdNdEtaCorrection->FillEvent(vtxMC[2], nGoodTracks);
   if (eventTriggered)
   {
-    fdNdEtaCorrection->FillEvent(vtxMC[2], nGoodTracks);
+    fdNdEtaCorrection->FillEventWithTrigger(vtxMC[2], nGoodTracks);
     if (vertexReconstructed)
-      fdNdEtaCorrection->FillEventWithReconstructedVertex(vtxMC[2], nGoodTracks);
+      fdNdEtaCorrection->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
   }
 
   return kTRUE;
