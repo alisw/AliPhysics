@@ -46,9 +46,9 @@ Bool_t TPCSector2DGL::SetModel(TObject* obj)
   if(SetModelCheckClass(obj, "Alieve::TPCSector2D")) {
 #endif
     fSector = (TPCSector2D*) fExternalObj;
-    return true;
+    return kTRUE;
   }
-  return false;
+  return kFALSE;
 }
 
 void TPCSector2DGL::SetBBox()
@@ -185,7 +185,7 @@ void TPCSector2DGL::LoadPadrow(TPCSectorData::RowIterator& iter,
     }
     padVal = TMath::Min(padVal, fSector->fMaxVal);
     if(padVal > fSector->fThreshold)
-      fSector->SetupColor(padVal, img_pos);
+      fSector->ColorFromArray(padVal, img_pos);
     img_pos += 4;
   }
 }
@@ -209,6 +209,8 @@ void TPCSector2DGL::CreateTexture() const
   isOn[0] = fSector->fRnrInn;
   isOn[1] = fSector->fRnrOut1;
   isOn[2] = fSector->fRnrOut2;
+
+  fSector->SetupColorArray();
 
   // Loop over 3 main segments
   for (Int_t sId = 0; sId <= 2; ++sId) {
@@ -325,7 +327,6 @@ void TPCSector2DGL::DisplayFrame() const
   ColorFromIdx(fSector->fFrameColor, col);
   glColor4ubv(col);
 
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   if(fSector->fRnrInn) {
     glBegin(GL_POLYGON);
     TraceStepsUp  (TPCSectorData::GetInnSeg());
