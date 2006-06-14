@@ -19,6 +19,8 @@ public:
   virtual Bool_t SetModel(TObject* obj);
   virtual void   SetBBox();
 
+  virtual void Render(const TGLDrawFlags & flags) { DirectDraw(flags); }
+
   ClassDef(BoxSetGL, 0);
 }; // endclass BoxSetGL
 
