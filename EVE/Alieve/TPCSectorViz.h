@@ -50,6 +50,12 @@ protected:
 
   void SetupColor(Int_t val, UChar_t* pix) const;
 
+  mutable UChar_t* fColorArray;
+  void ClearColorArray();
+  void SetupColorArray() const;
+  UChar_t* ColorFromArray(Int_t val) const;
+  void     ColorFromArray(Int_t val, UChar_t* pix) const;
+
 public:
   TPCSectorViz(const Text_t* n="TPCSectorViz", const Text_t* t=0);
   virtual ~TPCSectorViz();
@@ -68,8 +74,8 @@ public:
 
   void SetMinTime(Int_t mt)    { fMinTime   = mt; IncRTS(); }
   void SetMaxTime(Int_t mt)    { fMaxTime   = mt; IncRTS(); }
-  void SetThreshold(Short_t t) { fThreshold =  t; IncRTS(); }
-  void SetMaxVal(Int_t mv)     { fMaxVal    = mv; IncRTS(); }
+  void SetThreshold(Short_t t);
+  void SetMaxVal(Int_t mv);
 
   void SetRnrInn(Bool_t r)     { fRnrInn  = r; IncRTS(); }
   void SetRnrOut1(Bool_t r)    { fRnrOut1 = r; IncRTS(); }
@@ -81,6 +87,20 @@ public:
 
   ClassDef(TPCSectorViz, 1); // Base-class for TPC raw-data visualization
 }; // endclass TPCSectorViz
+
+
+inline UChar_t* TPCSectorViz::ColorFromArray(Int_t val) const
+{
+  if(val < fThreshold) val = fThreshold;
+  if(val > fMaxVal)    val = fMaxVal;
+  return fColorArray + 4 * (val - fThreshold);
+}
+
+inline void TPCSectorViz::ColorFromArray(Int_t val, UChar_t* pix) const
+{
+  UChar_t* c = ColorFromArray(val);
+  pix[0] = c[0]; pix[1] = c[1]; pix[2] = c[2]; pix[3] = c[3];
+}
 
 }
 

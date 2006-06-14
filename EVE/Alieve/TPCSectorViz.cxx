@@ -41,12 +41,15 @@ TPCSectorViz::TPCSectorViz(const Text_t* n, const Text_t* t) :
   fFrameColor ((Color_t) 4),
   fRnrFrame (kTRUE),
   fTrans    (kFALSE),
-  fRTS      (1)
+  fRTS      (1),
+
+  fColorArray (0)
 {}
 
 TPCSectorViz::~TPCSectorViz()
 {
   if(fTPCData) fTPCData->DecRefCount();
+  delete [] fColorArray;
 }
 
 void TPCSectorViz::CopyVizParams(const TPCSectorViz& v)
@@ -89,6 +92,22 @@ TPCSectorData* TPCSectorViz::GetSectorData() const
 
 /**************************************************************************/
 
+void TPCSectorViz::SetThreshold(Short_t t)
+{
+  fThreshold = TMath::Min(t, (Short_t)(fMaxVal - 1));
+  ClearColorArray();
+  IncRTS();
+}
+
+void TPCSectorViz::SetMaxVal(Int_t mv)
+{
+  fMaxVal = TMath::Max(mv, (Int_t)(fThreshold + 1));
+  ClearColorArray();
+  IncRTS();
+}
+
+/**************************************************************************/
+
 void TPCSectorViz::SetTrans(Bool_t trans) 
 {
   fTrans = trans;
@@ -123,4 +142,23 @@ void TPCSectorViz::SetupColor(Int_t val, UChar_t* pixel) const
   Int_t   cBin = (Int_t) Nint(nCol*(val - fThreshold)/div);
 
   ColorFromIdx(gStyle->GetColorPalette(Min(nCol - 1, cBin)), pixel);
+}
+
+void TPCSectorViz::ClearColorArray()
+{
+  if(fColorArray) {
+    delete [] fColorArray;
+    fColorArray = 0;
+  }
+}
+
+void TPCSectorViz::SetupColorArray() const
+{
+  if(fColorArray)
+    return;
+
+  fColorArray = new UChar_t [4 * (fMaxVal - fThreshold + 1)];
+  UChar_t* p = fColorArray;
+  for(Int_t v=fThreshold; v<=fMaxVal; ++v, p+=4)
+    SetupColor(v, p);
 }
