@@ -180,12 +180,14 @@ void TPCSectorVizEditor::DoRnrOut2()
 void TPCSectorVizEditor::DoThreshold()
 {
   fM->SetThreshold((Short_t) fThreshold->GetValue());
+  fThreshold->SetValue(fM->fThreshold);
   Update();
 }
 
 void TPCSectorVizEditor::DoMaxVal()
 {
   fM->SetMaxVal((Int_t) fMaxVal->GetValue());
+  fMaxVal->SetValue(fM->fMaxVal);
   Update();
 }
 
