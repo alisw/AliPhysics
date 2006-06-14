@@ -1,3 +1,33 @@
+2006-06-14  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* .SKEL-gl.cxx:
+	* .SKEL-gl.h:
+	Added conventions for ROOT pre/post 5.11.02.
+
+	* LinkDef.h:
+	* TPCSector3DGL.cxx:
+	* TPCSector3DGL.h:
+	New class TPCSector3DGL, a direct renderer for TPCSector3D.
+
+	* TPCLoaderEditor.cxx:
+	Properly handle directory data, allows loading from non-current
+	directory.
+
+	* TPCSectorViz.cxx:
+	* TPCSectorViz.h:
+	Added optimised color lookup function/cache; do not alow threshold
+	to overrun maxval nad vice versa.
+
+	* TPCSectorVizEditor.cxx:
+	Reget threshold/maxval after setting it.
+	* TPCSector3D.cxx:
+	* TPCSector3D.h:
+	Changes for rendering via TPCSector3DGL; use optimised color
+	lookup from TPCSectorViz.
+
+	* TPCSector2DGL.cxx:
+	Use optimised color lookup from TPCSectorViz.
+
 2006-06-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:
