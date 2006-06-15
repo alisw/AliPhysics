@@ -634,12 +634,10 @@ Bool_t AliReconstruction::Run(const char* input,
     hltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     esd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
     hltesd->SetEventNumber(fRunLoader->GetHeader()->GetEventNrInRun());
-    if (gAlice) {
-      esd->SetMagneticField(AliTracker::GetBz());
-      hltesd->SetMagneticField(AliTracker::GetBz());
-    } else {
-      // ???
-    }
+
+    // Set magnetic field from the tracker
+    esd->SetMagneticField(AliTracker::GetBz());
+    hltesd->SetMagneticField(AliTracker::GetBz());
 
     // vertex finder
     if (fRunVertexFinder) {
