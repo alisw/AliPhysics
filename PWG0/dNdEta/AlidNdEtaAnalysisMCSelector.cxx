@@ -163,6 +163,8 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
     return;
   }
 
+  fdNdEtaAnalysis->Finish(0, -1);
+
   TFile* fout = new TFile("analysis_mc.root","RECREATE");
 
   fdNdEtaAnalysis->SaveHistograms();

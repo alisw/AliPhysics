@@ -32,7 +32,7 @@ AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   // Constructor. Initialization of pointers
   //
 
-  AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
+  //AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
 }
 
 AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
@@ -241,6 +241,10 @@ void AlidNdEtaAnalysisESDSelector::Terminate()
     AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fdNdEtaAnalysis));
     return;
   }
+
+  fdNdEtaAnalysis->Finish(fdNdEtaCorrection, 0.3);
+  fdNdEtaAnalysisMB->Finish(fdNdEtaCorrection, 0.3);
+  fdNdEtaAnalysisMBVtx->Finish(fdNdEtaCorrection, 0.3);
 
   TFile* fout = new TFile("analysis_esd.root","RECREATE");
 

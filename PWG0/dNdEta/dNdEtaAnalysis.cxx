@@ -74,9 +74,9 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
 
   fPtDist = dynamic_cast<TH1D*> (fData->Project3D("z"));
   fPtDist->SetName(Form("%s_pt", name));
-  fPtDist->SetTitle("p_{T}");
+  fPtDist->SetTitle("p_{T} [GeV/c]");
   fPtDist->GetXaxis()->SetTitle(fData->GetZaxis()->GetTitle());
-  fPtDist->SetYTitle("#frac{1}{p_{T}} #frac{dN}{d#eta dp_{T}}");
+  fPtDist->SetYTitle("#frac{dN}{d#eta dp_{T}} [c/GeV]");
 
   fData->Sumw2();
   fVtx->Sumw2();
@@ -237,8 +237,8 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut)
     return;
   }
 
-  new TCanvas;
-  vtxVsEta->Draw("COLZ");
+  //new TCanvas;
+  //vtxVsEta->Draw("COLZ");
 
   for (Int_t iEta=0; iEta<=vtxVsEta->GetNbinsY(); iEta++)
   {
@@ -326,10 +326,15 @@ void dNdEtaAnalysis::SaveHistograms()
   else
     printf("dNdEtaAnalysis::SaveHistograms: UNEXPECTED: fDataUncorrected is 0\n");
 
-  if (fData)
+  if (fVtx)
     fVtx       ->Write();
   else
     printf("dNdEtaAnalysis::SaveHistograms: UNEXPECTED: fVtx is 0\n");
+
+  if (fPtDist)
+    fPtDist       ->Write();
+  else
+    printf("dNdEtaAnalysis::SaveHistograms: UNEXPECTED: fPtDist is 0\n");
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
