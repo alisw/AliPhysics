@@ -1,5 +1,14 @@
 2006-06-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* LinkDef.h:
+	* TPCData.cxx:
+	* TPCLoader.cxx:
+	* TPCSectorData.cxx:
+	* TPCSectorData.h:
+	Added hacks to allow removal of noisy pads.
+
+2006-06-15  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* TPCLoaderEditor.cxx:
 	Use StrDup to feed TGFileInfo for brain-dead interface of
 	TGFileDialog.
