@@ -148,9 +148,6 @@ void AliCorrectionMatrix3D::SaveHistograms()
 
   AliCorrectionMatrix::SaveHistograms();
 
-  //AliPWG0Helper::CreateProjections(GetMeasuredHistogram());
-  //AliPWG0Helper::CreateProjections(GetGeneratedHistogram());
-
-  if (GetCorrectionHistogram())
-    AliPWG0Helper::CreateDividedProjections(GetMeasuredHistogram(), GetGeneratedHistogram());
+  if (GetGeneratedHistogram() && GetMeasuredHistogram())
+    AliPWG0Helper::CreateDividedProjections(GetGeneratedHistogram(), GetMeasuredHistogram());
 }

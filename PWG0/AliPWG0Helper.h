@@ -20,7 +20,8 @@ class AliPWG0Helper : public TObject
 
     static void CreateProjections(TH3F* hist);
     static void CreateDividedProjections(TH3F* hist, TH3F* hist2, const char* axis = 0);
-
+    static const char* GetAxisTitle(TH3F* hist, const char axis);
+    
   protected:
     ClassDef(AliPWG0Helper, 0)
 };

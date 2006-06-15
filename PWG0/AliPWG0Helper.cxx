@@ -137,14 +137,28 @@ void AliPWG0Helper::CreateDividedProjections(TH3F* hist, TH3F* hist2, const char
   }
 
   TH1* proj = hist->Project3D(axis);
-  proj->SetXTitle(hist->GetXaxis()->GetTitle());
-  proj->SetYTitle(hist->GetYaxis()->GetTitle());
+  proj->SetXTitle(GetAxisTitle(hist, axis[0]));
+  proj->SetYTitle(GetAxisTitle(hist, axis[1]));
 
   TH1* proj2 = hist2->Project3D(axis);
-  proj2->SetXTitle(hist2->GetXaxis()->GetTitle());
-  proj2->SetYTitle(hist2->GetYaxis()->GetTitle());
+  proj2->SetXTitle(GetAxisTitle(hist2, axis[0]));
+  proj2->SetYTitle(GetAxisTitle(hist2, axis[1]));
 
   TH1* division = dynamic_cast<TH1*> (proj->Clone(Form("%s_div_%s", proj->GetName(), proj2->GetName())));
   division->Divide(proj2);
 }
 
+//____________________________________________________________________
+const char* AliPWG0Helper::GetAxisTitle(TH3F* hist, const char axis)
+{
+  // returns the title of the axis given in axis (x, y, z)
+
+  if (axis == 'x')
+    return hist->GetXaxis()->GetTitle();
+  else if (axis == 'y')
+    return hist->GetYaxis()->GetTitle();
+  else if (axis == 'z')
+    return hist->GetZaxis()->GetTitle();
+
+  return 0;
+}
