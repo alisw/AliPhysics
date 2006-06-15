@@ -40,6 +40,8 @@ class AliHLTComponent : public AliHLTLogging {
 
   // Spawn function, return new class instance
   virtual AliHLTComponent* Spawn() = 0;
+
+  int FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponent_DataType>* tgtList);
  
   static int SetGlobalComponentHandler(AliHLTComponentHandler* pCH, int bOverwrite=0) {
     int iResult=0;

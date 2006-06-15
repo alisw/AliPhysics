@@ -23,7 +23,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#if __GNUC__== 3
+#if __GNUC__>= 3
 using namespace std;
 #endif
 
@@ -91,4 +91,25 @@ int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponent_Block
     *blockCount = count;
     return 0;
 
+}
+
+int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponent_DataType>* tgtList) 
+{
+  int iResult=0;
+  if (pConsumer) {
+    vector<AliHLTComponent_DataType> ctlist;
+    ((AliHLTComponent*)pConsumer)->GetInputDataTypes(ctlist);
+    vector<AliHLTComponent_DataType>::iterator type=ctlist.begin();
+    while (type!=ctlist.end() && iResult==0) {
+      if ((*type)==GetOutputDataType()) {
+	if (tgtList) tgtList->push_back(*type);
+	iResult++;
+	break;
+      }
+      type++;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
 }
