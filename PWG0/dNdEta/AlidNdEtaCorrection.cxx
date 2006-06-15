@@ -31,9 +31,9 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(Char_t* name)
 
   fTriggerBiasCorrection       = new AliCorrectionMatrix2D("triggerBias",   "triggerBias",120,-6,6,100, 0, 10);
 
-  fTrack2ParticleCorrection ->SetAxisTitles("vtx z [cm]", "#eta", "p_{T}");
-  fVertexRecoCorrection        ->SetAxisTitles("vtx z [cm]", "n particles/tracks/tracklets?");
-  fTriggerCorrection        ->SetAxisTitles("vtx z [cm]", "n particles/tracks/tracklets?");
+  fTrack2ParticleCorrection ->SetAxisTitles("vtx z [cm]", "#eta", "p_{T} [GeV/c]");
+  fVertexRecoCorrection        ->SetAxisTitles("vtx z [cm]", "Ntracks");
+  fTriggerCorrection        ->SetAxisTitles("vtx z [cm]", "Ntracks");
 
   fTriggerBiasCorrection       ->SetAxisTitles("#eta", "p_{T} [GeV/c]");
 }
@@ -191,7 +191,7 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, 
   Int_t vertexBegin = generated->GetXaxis()->FindBin(-10);
   Int_t vertexEnd = generated->GetXaxis()->FindBin(10);
 
-  TH1D* ptProj = dynamic_cast<TH1D*> (generated->ProjectionZ(Form("%s_pt", GetName()), vertexBegin, vertexEnd, etaBegin, etaEnd));
+  TH1D* ptProj = dynamic_cast<TH1D*> (generated->ProjectionZ(Form("%s_pt", generated->GetName()), vertexBegin, vertexEnd, etaBegin, etaEnd));
   ptProj->GetXaxis()->SetTitle(generated->GetZaxis()->GetTitle());
 
   Int_t ptBin = ptProj->FindBin(ptCutOff);
@@ -208,6 +208,8 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, 
     new TCanvas;
     ptProj->Draw();
   }
+  else
+    delete ptProj;
 
   return fraction;
 }
