@@ -1,5 +1,10 @@
 2006-06-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* TPCSectorData.h:
+	Fixed a type in PadRowHack ctor (unused parameter).
+
+2006-06-15  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* LinkDef.h:
 	* TPCData.cxx:
 	* TPCLoader.cxx:
