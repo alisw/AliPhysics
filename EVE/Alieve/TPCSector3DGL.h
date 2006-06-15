@@ -30,7 +30,8 @@ public:
   virtual Bool_t SetModel(TObject* obj);
   virtual void   SetBBox();
 
-  void DrawSegmentFrame(const TPCSectorData::SegmentInfo& s) const;
+  void DrawSegmentFrame(const TPCSectorData::SegmentInfo& s,
+                        Int_t botExtraPads=0, Int_t topExtraPads=0) const;
 
   ClassDef(TPCSector3DGL, 0);
 }; // endclass TPCSector3DGL

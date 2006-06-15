@@ -82,21 +82,22 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
     glColor4ubv(col);
 
     if(fSector->fRnrInn)
-      DrawSegmentFrame(TPCSectorData::GetInnSeg());
+      DrawSegmentFrame(TPCSectorData::GetInnSeg(),  0, 2);
     if(fSector->fRnrOut1)
-      DrawSegmentFrame(TPCSectorData::GetOut1Seg());
+      DrawSegmentFrame(TPCSectorData::GetOut1Seg(), 2, 1);
     if(fSector->fRnrOut2)
-      DrawSegmentFrame(TPCSectorData::GetOut2Seg());
+      DrawSegmentFrame(TPCSectorData::GetOut2Seg(), 2, 2);
 
     glPopAttrib();
   }
 }
 
-void TPCSector3DGL::DrawSegmentFrame(const TPCSectorData::SegmentInfo& s) const
+void TPCSector3DGL::DrawSegmentFrame(const TPCSectorData::SegmentInfo& s,
+                                     Int_t botExtraPads, Int_t topExtraPads) const
 {
   Float_t xl, xh, yl, yh, zl, zh;
-  xl = 0.5 * TPCSectorData::GetNPadsInRow(s.GetFirstRow()) * s.GetPadWidth();
-  xh = 0.5 * TPCSectorData::GetNPadsInRow(s.GetLastRow())  * s.GetPadWidth();
+  xl = 0.5*s.GetPadWidth()*(TPCSectorData::GetNPadsInRow(s.GetFirstRow()) + botExtraPads);
+  xh = 0.5*s.GetPadWidth()*(TPCSectorData::GetNPadsInRow(s.GetLastRow())  + topExtraPads);
   yl = s.GetRLow();
   yh = yl + s.GetNRows()*s.GetPadHeight();
   zl = -0.5;
