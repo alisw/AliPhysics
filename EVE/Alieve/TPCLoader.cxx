@@ -30,7 +30,9 @@ TPCLoader::TPCLoader(const Text_t* n, const Text_t* t) :
   fData(0),
 
   fSec2Ds(36),
-  fSec3Ds(36)
+  fSec3Ds(36),
+
+  fSetInitSectorParams(kFALSE)
 {
   SetMainColorPtr(0);
 }
@@ -158,10 +160,11 @@ void TPCLoader::UpdateSectors()
 	if(fDoubleSR)
 	  s->SetMaxTime(1023);
 
-	// Hack for front/back pulse
-	s->SetMinTime(50);
-	s->SetMaxTime(980);
-	s->SetThreshold(10);
+        if(fSetInitSectorParams) {
+          s->SetMinTime(fInitMinTime);
+          s->SetMaxTime(fInitMaxTime);
+          s->SetThreshold(fInitThreshold);
+        }
 
 	s->SetTrans(kTRUE);
 	s->SetFrameColor(36);
@@ -216,4 +219,14 @@ void TPCLoader::DeleteSectors3D()
     }
   }
   gReve->EnableRedraw();
+}
+
+/**************************************************************************/
+
+void TPCLoader::SetInitParams(Int_t mint, Int_t maxt, Int_t thr)
+{
+  fSetInitSectorParams = kTRUE;
+  fInitMinTime   = mint;
+  fInitMaxTime   = maxt;
+  fInitThreshold = thr;
 }

@@ -28,6 +28,11 @@ protected:
   std::vector<TPCSector2D*> fSec2Ds;
   std::vector<TPCSector3D*> fSec3Ds;
 
+  Bool_t   fSetInitSectorParams;
+  Int_t    fInitMinTime;
+  Int_t    fInitMaxTime;
+  Int_t    fInitThreshold;
+
 public:
   TPCLoader(const Text_t* n="TPCLoader", const Text_t* t=0);
   virtual ~TPCLoader();
@@ -48,6 +53,8 @@ public:
   void UpdateSectors();
   void CreateSectors3D();
   void DeleteSectors3D();
+
+  void SetInitParams(Int_t mint, Int_t maxt, Int_t thr);
 
   ClassDef(TPCLoader, 1);
 }; // endclass TPCLoader
