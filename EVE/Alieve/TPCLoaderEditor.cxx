@@ -138,11 +138,9 @@ const char *tpcfiletypes[] = {
 
 void TPCLoaderEditor::FileSelect()
 {
-  TString dname = gSystem->DirName (fM->fFile);
-  TString fname = gSystem->BaseName(fM->fFile);
   TGFileInfo fi;
-  fi.fIniDir    = const_cast<char*>(dname.Data());
-  fi.fFilename  = const_cast<char*>(fname.Data());
+  fi.fIniDir    = StrDup(gSystem->DirName (fM->fFile));
+  fi.fFilename  = StrDup(gSystem->BaseName(fM->fFile));
   fi.fFileTypes = tpcfiletypes;
 
   new TGFileDialog(fClient->GetRoot(), gReve, kFDOpen, &fi);
