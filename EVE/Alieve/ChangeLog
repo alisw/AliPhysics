@@ -1,5 +1,15 @@
 2006-06-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* TPCData.cxx:
+	Removed stale printout.
+
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	Added option to set inital min/max time and threshold for
+	TPCSector2D's created by the loader.
+
+2006-06-15  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* TPCSectorData.h:
 	Fixed a type in PadRowHack ctor (unused parameter).
 
