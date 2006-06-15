@@ -111,15 +111,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
-  AliRunLoader* runLoader = GetRunLoader();
-  if (!runLoader)
-  {
-    AliDebug(AliLog::kError, "RunLoader not available");
-    return kFALSE;
-  }
-
-  runLoader->LoadKinematics();
-  AliStack* stack = runLoader->Stack();
+  AliStack* stack = GetStack();
   if (!stack)
   {
     AliDebug(AliLog::kError, "Stack not available");
