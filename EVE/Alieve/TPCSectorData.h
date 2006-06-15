@@ -194,7 +194,7 @@ public:
     Float_t fThrFac; // Actual threshold = fThrExt + fThrFac*thr
 
     PadRowHack(Int_t r, Int_t p, Int_t te=0, Float_t tf=1) :
-      fRow(r), fPad(r), fThrExt(te), fThrFac(tf) {}
+      fRow(r), fPad(p), fThrExt(te), fThrFac(tf) {}
     bool operator<(const PadRowHack& a) const
     { return (fRow == a.fRow) ? fPad < a.fPad : fRow < a.fRow; }
   };
