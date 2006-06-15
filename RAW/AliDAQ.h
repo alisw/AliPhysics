@@ -54,6 +54,8 @@ class AliDAQ: public TObject {
   static Float_t     NumberOfLdcs(const char *detectorName);
   static Float_t     NumberOfLdcs(Int_t detectorID);
 
+  static void        PrintConfig();
+
   enum {
     kNDetectors = 20    // Number of detectors
   };

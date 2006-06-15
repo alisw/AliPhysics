@@ -90,10 +90,10 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
 };
 
 Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
+  4,
+  4,
+  4,
   36,
-  4,
-  4,
-  4,
   3,
   12,
   4,
@@ -108,7 +108,8 @@ Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
   1,
   1,
   1,
-  4
+  4,
+  5
 };
 
 AliDAQ::AliDAQ(const AliDAQ& source) :
@@ -282,4 +283,21 @@ Float_t AliDAQ::NumberOfLdcs(Int_t detectorID)
   }
 
   return fgkNumberOfLdcs[detectorID];
+}
+
+void AliDAQ::PrintConfig()
+{
+  // Print the DAQ configuration
+  // for all the detectors
+  printf("====================================================================\n"
+	 "|                ALICE Data Acquisition Configuration              |\n"
+	 "====================================================================\n"
+	 "| Detector ID | Detector Name | DDL Offset | # of DDLs | # of LDCs |\n"
+	 "====================================================================\n");
+  for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    printf("|%11d  |%13s  |%10d  |%9d  |%9.1f  |\n",
+	   iDet,DetectorName(iDet),DdlIDOffset(iDet),NumberOfDdls(iDet),NumberOfLdcs(iDet));
+  }
+  printf("====================================================================\n");
+
 }
