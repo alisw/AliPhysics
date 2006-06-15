@@ -194,7 +194,6 @@ void TPCData::LoadRaw(AliTPCRawStream& input, Bool_t spawnSectors, Bool_t warn)
 
       TPCSectorData::PadRowHack* prh = secData->GetPadRowHack(row, pad);
       if(prh != 0) {
-	printf ("hakahaka s=%d, r=%d, p=%d\n", sector, row, pad);
 	threshold = prh->fThrExt + Short_t(prh->fThrFac*fLoadThreshold);
       } else {
 	threshold = fLoadThreshold;
