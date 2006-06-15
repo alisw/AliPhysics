@@ -382,7 +382,7 @@ void AliRICHReconstructor::FillESD(AliRunLoader *, AliESD *pESD) const
       hTot    +=h[iPart]; //total height of all theoretical heights for normalization
     }//species loop
      
-    Double_t hMin=TMath::Gaus(5*TMath::Sqrt(pTrack->GetRICHchi2()),pTrack->GetRICHsignal(),TMath::Sqrt(pTrack->GetRICHchi2()),kTRUE);//5 sigma protection
+    Double_t hMin=TMath::Gaus(pTrack->GetRICHsignal()-4*TMath::Sqrt(pTrack->GetRICHchi2()),pTrack->GetRICHsignal(),TMath::Sqrt(pTrack->GetRICHchi2()),kTRUE);//5 sigma protection
     
     for(Int_t iPart=0;iPart<AliPID::kSPECIES;iPart++)//species loop to assign probabilities
       if(hTot>hMin)  
