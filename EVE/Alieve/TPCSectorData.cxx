@@ -154,7 +154,8 @@ void TPCSectorData::NewBlock()
 TPCSectorData::TPCSectorData(Int_t sector, Int_t bsize) :
   fSectorID(sector), fNPadsFilled(0),
   fBlockSize(bsize), fBlockPos(0),
-  fCurrentRow(0), fCurrentPad(0), fCurrentPos(0)
+  fCurrentRow(0), fCurrentPad(0), fCurrentPos(0),
+  fPadRowHackSet(0)
 {
   if(fgParam == 0) InitStatics();
 
@@ -168,6 +169,7 @@ TPCSectorData::~TPCSectorData()
 {
   for(std::vector<Short_t*>::iterator b=fBlocks.begin(); b!=fBlocks.end(); ++b)
     delete [] *b;
+  DeletePadRowHack();
 }
 
 void TPCSectorData::DropData()
@@ -445,4 +447,49 @@ ClassImp(TPCSectorData::SegmentInfo)
 TPCSectorData::SegmentInfo::SegmentInfo()
 {
   memset(this, sizeof(SegmentInfo), 0);
+}
+
+/**************************************************************************/
+// TPCSectorData::PadRowHack
+/**************************************************************************/
+
+#include <set>
+
+TPCSectorData::PadRowHack* TPCSectorData::GetPadRowHack(Int_t r, Int_t p)
+{
+  if(fPadRowHackSet == 0) return 0;
+  std::set<PadRowHack>* hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
+  std::set<PadRowHack>::iterator i = hs->find(PadRowHack(r,p));
+  return (i == hs->end()) ? 0 : const_cast<PadRowHack*>(&*i);
+}
+
+void TPCSectorData::AddPadRowHack(Int_t r, Int_t p, Int_t te, Float_t tf)
+{
+  if(fPadRowHackSet == 0) fPadRowHackSet = new std::set<PadRowHack>;
+
+  PadRowHack* prh = GetPadRowHack(r, p);
+  if(prh == 0) {
+    std::set<PadRowHack>* hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
+    hs->insert(PadRowHack(r, p, te, tf));
+  } else {
+    prh->fThrExt += te;
+    prh->fThrFac *= tf;
+  }
+}
+
+void TPCSectorData::RemovePadRowHack(Int_t r, Int_t p)
+{
+  if(fPadRowHackSet == 0) return;
+  std::set<PadRowHack>*hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
+  std::set<PadRowHack>::iterator i = hs->find(PadRowHack(r,p));
+  if(i != hs->end()) hs->erase(i);
+}
+
+void TPCSectorData::DeletePadRowHack()
+{
+  if(fPadRowHackSet != 0) {
+    std::set<PadRowHack>*hs = static_cast<std::set<PadRowHack>*>(fPadRowHackSet);
+    delete hs;
+    fPadRowHackSet = 0;
+  }
 }

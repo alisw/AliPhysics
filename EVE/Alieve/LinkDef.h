@@ -33,6 +33,8 @@
 #pragma link C++ class Alieve::TPCSectorData::RowIterator;
 #pragma link C++ class Alieve::TPCSectorData::SegmentInfo;
 
+#pragma link C++ class Alieve::TPCSectorData::PadRowHack;
+
 #pragma link C++ class Alieve::TPCSectorViz+;
 #pragma link C++ class Alieve::TPCSectorVizEditor+;
 #pragma link C++ class Alieve::TPCSector2D+;

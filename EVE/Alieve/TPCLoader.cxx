@@ -158,6 +158,11 @@ void TPCLoader::UpdateSectors()
 	if(fDoubleSR)
 	  s->SetMaxTime(1023);
 
+	// Hack for front/back pulse
+	s->SetMinTime(50);
+	s->SetMaxTime(980);
+	s->SetThreshold(10);
+
 	s->SetTrans(kTRUE);
 	s->SetFrameColor(36);
 

@@ -181,6 +181,33 @@ public:
   
   static void InitStatics();
 
+
+  //----------------------------------------------------------------
+  // Hack for noisy pad-row removal
+  //----------------------------------------------------------------
+
+  class PadRowHack
+  {
+  public:
+    Int_t   fRow, fPad;
+    Int_t   fThrExt;
+    Float_t fThrFac; // Actual threshold = fThrExt + fThrFac*thr
+
+    PadRowHack(Int_t r, Int_t p, Int_t te=0, Float_t tf=1) :
+      fRow(r), fPad(r), fThrExt(te), fThrFac(tf) {}
+    bool operator<(const PadRowHack& a) const
+    { return (fRow == a.fRow) ? fPad < a.fPad : fRow < a.fRow; }
+  };
+
+  PadRowHack* GetPadRowHack(Int_t r, Int_t p);
+  void AddPadRowHack(Int_t r, Int_t p, Int_t te=0, Float_t tf=1);
+  void RemovePadRowHack(Int_t r, Int_t p);
+  void DeletePadRowHack();
+
+protected:
+  void* fPadRowHackSet;
+  
+
   ClassDef(TPCSectorData, 0);
 }; // endclass TPCSectorData
 
