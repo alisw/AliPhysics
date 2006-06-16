@@ -145,11 +145,11 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
       indexDsp = index;
       index += kDspHeaderSize;
 
-      if (fDspHeader->GetPaddingWord() != fDspHeader->GetDefaultPaddingWord()) {
-	// copy the field of Padding word into ErrorWord field
-	fDspHeader->SetErrorWord(fDspHeader->GetPaddingWord());
-	index--;
-      }
+//       if (fDspHeader->GetPaddingWord() != fDspHeader->GetDefaultPaddingWord()) {
+// 	// copy the field of Padding word into ErrorWord field
+// 	fDspHeader->SetErrorWord(fDspHeader->GetPaddingWord());
+// 	index--;
+//       }
 
       // copy in TClonesArray
       fDDLTracker->AddDspHeader(*fDspHeader, iBlock);
@@ -196,7 +196,14 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 	}
 	iBusPatch++;
       }  // buspatch loop
-		
+
+      // skipping additionnal word if padding
+      if (fDspHeader->GetPaddingWord() == 1) {
+	if (buffer[index++] != fDspHeader->GetDefaultPaddingWord())
+	  AliWarning(Form("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", 
+			  iBlock, iDsp, iBusPatch));
+      }
+
       index = indexDsp + totalDspSize;
       if (index >= totalDDLSize) {
 	index = totalDDLSize - 1;

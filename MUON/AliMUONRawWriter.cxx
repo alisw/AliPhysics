@@ -101,9 +101,6 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
   fDspHeader->SetDataKey(fDspHeader->GetDefaultDataKey());
   fBusStruct->SetDataKey(fBusStruct->GetDefaultDataKey());
 
-  // set default paddind word (only for writting)
-  fDspHeader->SetPaddingWord(fDspHeader->GetDefaultPaddingWord());
-
   // ddl trigger pointers
   fDarcHeader      = new AliMUONDarcHeader();
   fRegHeader       = new AliMUONRegHeader();
@@ -520,22 +517,20 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
 	  }
 	} // bus patch
 
-	totalDspLength     = index - indexDsp;
+	// check if totalLength even
+	// set padding word in case
+	// Add one word 0xBEEFFACE at the end of DSP structure
+	totalDspLength  = index - indexDsp;
+	if ((totalDspLength % 2) == 1) { 
+	  buffer[indexDsp + fDspHeader->GetHeaderLength() - 2] = 1;
+	  buffer[index++] = fDspHeader->GetDefaultPaddingWord();
+	  totalDspLength++;
+	}
+
 	dspLength          = totalDspLength - fDspHeader->GetHeaderLength();
 
 	buffer[indexDsp+1] = totalDspLength; // dsp total length
 	buffer[indexDsp+2] = dspLength; // data length  
-
-	// remove padding word if necessary cos already in Dsp header length
-	// if total length is even, remove already placed padding word, else let it as it is.
-	if ((totalDspLength % 2) == 1) { 
-	  buffer[indexDsp+1] -= 1;
-	  buffer[indexDsp+2] -= 1;
-	  index--;
-	  Int_t indexCopy = indexDsp + fDspHeader->GetHeaderLength() - 2;
-	  memcpy(&buffer[indexCopy], &buffer[indexCopy+1], 
-		 (totalDspLength - fDspHeader->GetHeaderLength() + 2)*4);
-	}
 	   
       } // dsp
 
