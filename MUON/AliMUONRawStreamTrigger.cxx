@@ -32,6 +32,7 @@
 
 #include "AliRawReader.h"
 #include "AliRawDataHeader.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 
 
@@ -145,8 +146,9 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
     fDDL = 0;
     return kFALSE;
   }
+
   fRawReader->Reset();
-  fRawReader->Select(0XA,fDDL,fDDL);  //Select the DDL file to be read  
+  fRawReader->Select(AliDAQ::DetectorID("MUONTRG"),fDDL,fDDL);  //Select the DDL file to be read  
 
   fRawReader->ReadHeader();
 

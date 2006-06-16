@@ -40,6 +40,7 @@
 
 #include "AliBitPacking.h" 
 #include "AliRawReader.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
@@ -221,11 +222,11 @@ Int_t AliMUONRawWriter::Digits2Raw()
   for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) 
   {
     // open files
-    idDDL = ich * 2  + 0x900; // official number for MUON
+    idDDL = ich * 2  + AliDAQ::DdlIDOffset("MUONTRK");
     sprintf(name, "MUON_%d.ddl",idDDL);
     fFile[0] = fopen(name,"w");
 
-    idDDL = (ich * 2) + 1 + 0x900;
+    idDDL = (ich * 2) + 1 + AliDAQ::DdlIDOffset("MUONTRK");
     sprintf(name, "MUON_%d.ddl",idDDL);
     fFile[1] = fopen(name,"w");
     
@@ -239,11 +240,11 @@ Int_t AliMUONRawWriter::Digits2Raw()
   // trigger chambers
  
   // open files
-  idDDL = 0xA00;// official number for MUTR
+  idDDL = AliDAQ::DdlIDOffset("MUONTRG");
   sprintf(name, "MUTR_%d.ddl",idDDL);
   fFile[0] = fopen(name,"w");
 
-  idDDL = 0xA00 + 1;
+  idDDL = AliDAQ::DdlIDOffset("MUONTRG") + 1;
   sprintf(name, "MUTR_%d.ddl",idDDL);
   fFile[1] = fopen(name,"w");
 
