@@ -44,6 +44,7 @@
 #include "AliLog.h"
 #include "AliRun.h"
 
+#include "AliMpBusPatch.h"
 #include "AliMUON.h"
 #include "AliMUONDigitMaker.h"
 #include "AliMUONDigit.h"
@@ -268,8 +269,10 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 
 	    // Get Back the hits at pads
 	    Int_t error = GetMapping(buspatchId,manuId,channelId,fDigit); 
-	    if (error) continue;
-
+	    if (error) {
+	      printf("Mapping Error\n");
+	      continue;
+	    }
 	    // debugging 
 	    if (AliLog::GetGlobalDebugLevel() == 3) {
 	      Int_t padX  = fDigit->PadX();

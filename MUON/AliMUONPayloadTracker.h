@@ -19,7 +19,6 @@
 
 #include <TObject.h>
 #include <TClonesArray.h>
-#include "AliMpBusPatch.h"
 
 class AliMUONDDLTracker;
 class AliMUONBusStruct;
@@ -32,7 +31,6 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONPayloadTracker(const AliMUONPayloadTracker& stream);
     AliMUONPayloadTracker& operator = (const AliMUONPayloadTracker& stream);
     virtual ~AliMUONPayloadTracker();
-
 
     Int_t GetMaxBlock() const {return fMaxBlock;}
     Int_t GetMaxDsp()   const {return fMaxDsp;}
@@ -47,7 +45,7 @@ class AliMUONPayloadTracker: public TObject {
 
     void ResetDDL();
 
-    Bool_t Decode(UInt_t* buffer, Int_t ddl);
+    Bool_t Decode(UInt_t* buffer, Int_t datasize);
 
     AliMUONBusStruct*       GetBusPatchInfo() const {return fBusStruct;}
     AliMUONDDLTracker*      GetDDLTracker()   const {return fDDLTracker;}
@@ -63,9 +61,6 @@ class AliMUONPayloadTracker: public TObject {
     Int_t fMaxBlock;      ///< maximum number of block per DDL in DATE file
     Int_t fMaxDsp;        ///< maximum number of Dsp per block in DATE file
     Int_t fMaxBus;        ///< maximum number of Buspatch per Dsp in DATE file
-
-
-    AliMpBusPatch* fBusPatchManager; //!< buspatch versus DE's & DDL
 
     AliMUONDDLTracker*      fDDLTracker;      //!< pointer for buspatch structure
     AliMUONBusStruct*       fBusStruct;       //!< pointer for local structure

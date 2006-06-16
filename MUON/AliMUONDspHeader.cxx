@@ -30,21 +30,27 @@
 ClassImp(AliMUONDspHeader)
 /// \endcond
   
-  const Int_t AliMUONDspHeader::fgkHeaderLength = 8;
+  const Int_t  AliMUONDspHeader::fgkHeaderLength = 10;
+  const UInt_t AliMUONDspHeader::fgkDefaultDataKey = 0xF000000F;
+  const UInt_t AliMUONDspHeader::fgkDefaultPaddingWord = 0xBEEFFACE;
 
 //___________________________________________
 AliMUONDspHeader::AliMUONDspHeader()
   :  TObject(),
+     fDataKey(0),
      fTotalLength(0),
      fLength(0),
      fDspId(0),
-     fEventWord(0)
+     fBlkL1ATrigger(0),
+     fMiniEventId(0),
+     fL1ATrigger(0),
+     fL1RTrigger(0),
+     fPaddingWord(0),
+     fErrorWord(0)
 {
   //
   //ctor
   //
-  for (Int_t i = 0; i < 4; i++)
-    fTriggerWord[i] = 0;
 
   fBusPatchArray  = new TClonesArray("AliMUONBusStruct",5);
 
@@ -67,14 +73,15 @@ AliMUONDspHeader::AliMUONDspHeader(const AliMUONDspHeader& event)
   // 
   // copy constructor
   //
-  fTotalLength = event.fTotalLength;
-  fLength      = event.fLength;
-  fDspId       = event.fDspId;
-  fEventWord   = event.fEventWord;
-
-  //ctor
-  for (Int_t i = 0; i < 4; i++)
-    fTriggerWord[i] = event.fTriggerWord[i];
+  fTotalLength   = event.fTotalLength;
+  fLength        = event.fLength;
+  fDspId         = event.fDspId;
+  fBlkL1ATrigger = event.fBlkL1ATrigger;
+  fMiniEventId   = event.fMiniEventId;
+  fL1ATrigger    = event.fL1ATrigger;
+  fL1RTrigger    = event.fL1RTrigger;
+  fPaddingWord   = event.fPaddingWord;
+  fErrorWord     = event.fErrorWord;
 
   fBusPatchArray = new TClonesArray("AliMUONBusStruct", 5);
   for (Int_t index = 0; index < (event.fBusPatchArray)->GetEntriesFast(); index++) {
@@ -96,11 +103,13 @@ AliMUONDspHeader& AliMUONDspHeader::operator=(const AliMUONDspHeader& event)
   fTotalLength = event.fTotalLength;
   fLength      = event.fLength;
   fDspId       = event.fDspId;
-  fEventWord   = event.fEventWord;
+  fBlkL1ATrigger = event.fBlkL1ATrigger;
+  fMiniEventId   = event.fMiniEventId;
+  fL1ATrigger    = event.fL1ATrigger;
+  fL1RTrigger    = event.fL1RTrigger;
+  fPaddingWord   = event.fPaddingWord;
+  fErrorWord     = event.fErrorWord;
 
-  //ctor
-  for (Int_t i = 0; i < 4; i++)
-    fTriggerWord[i] = event.fTriggerWord[i];
 
   fBusPatchArray = new TClonesArray("AliMUONBusStruct", 5);
   for (Int_t index = 0; index < (event.fBusPatchArray)->GetEntriesFast(); index++) {

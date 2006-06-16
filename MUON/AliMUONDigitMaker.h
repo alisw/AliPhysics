@@ -14,7 +14,6 @@
 #include <TObject.h>
 #include "TStopwatch.h"
 
-
 class AliMpBusPatch;
 class AliMUONData;
 class AliMUONDigit;

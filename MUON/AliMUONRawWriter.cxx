@@ -91,20 +91,31 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
   fBusArray = new TClonesArray("AliMUONBusStruct",1000);
   fBusArray->SetOwner(kTRUE);
 
-  // ddl pointer
+  // ddl tracker pointers
   fBlockHeader     = new AliMUONBlockHeader();
   fDspHeader       = new AliMUONDspHeader();
   fBusStruct       = new AliMUONBusStruct();
 
+  // setting data key to default value (only for writting)
+  fBlockHeader->SetDataKey(fBlockHeader->GetDefaultDataKey());
+  fDspHeader->SetDataKey(fDspHeader->GetDefaultDataKey());
+  fBusStruct->SetDataKey(fBusStruct->GetDefaultDataKey());
+
+  // set default paddind word (only for writting)
+  fDspHeader->SetPaddingWord(fDspHeader->GetDefaultPaddingWord());
+
+  // ddl trigger pointers
   fDarcHeader      = new AliMUONDarcHeader();
   fRegHeader       = new AliMUONRegHeader();
   fLocalStruct     = new AliMUONLocalStruct();
 
+  // bus patch & Seg managers
   fBusPatchManager = new AliMpBusPatch();
   fBusPatchManager->ReadBusPatchFile();
 
   fSegFactory = new AliMpSegFactory();
 
+  // timers
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
   fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
@@ -289,6 +300,11 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
   Int_t busPatchId = 0;
   UInt_t word;
 
+
+  // Dsp length
+  Int_t totalDspLength;
+  Int_t dspLength;
+
   // block length
   Int_t totalBlkLength;
   Int_t blkLength; 
@@ -385,7 +401,6 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
     busPatchId = temp->GetBusPatchId();
 
     // add bus patch header, length and total length managed by subevent class
-    temp->SetTriggerWord(0xdeadbeef);
     for (Int_t j = 0; j < nbInBus[busPatchId]-1; j++) {
       AliMUONBusStruct* temp1 =  (AliMUONBusStruct*)fBusArray->At(++i);
       temp->AddData(temp1->GetData(0));
@@ -425,7 +440,8 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
   iBusPatch = iBus0AtCh - 1; // starting point for each chamber
 
   // nEntries = fBusArray->GetEntriesFast();
-  AliMUONBusStruct* temp = 0x0;
+
+  AliMUONBusStruct* busStructPtr = 0x0;
 
   // open DDL file, on per 1/2 chamber
   for (Int_t iDDL = 0; iDDL < 2; iDDL++) {
@@ -433,7 +449,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
     totalDDLLength = 0;
 
     // filling buffer
-    buffer = new Int_t [(2048+24)*50]; // 24 words in average for one buspatch and 2048 manu info at most
+    buffer = new Int_t [(2048+24)*50]; // 24 words at most for one buspatch and 2048 manu info at most
 
     indexBlk = 0;
     indexDsp = 0;
@@ -470,66 +486,65 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
 
 	  nEntries = fBusArray->GetEntriesFast();
 	  busPatchId = -1;
+
 	  for (Int_t iEntries = 0; iEntries < nEntries; iEntries++) { // method "bourrique"...
-	    temp = (AliMUONBusStruct*)fBusArray->At(iEntries);
-	    busPatchId = temp->GetBusPatchId();
+	    busStructPtr = (AliMUONBusStruct*)fBusArray->At(iEntries);
+	    busPatchId = busStructPtr->GetBusPatchId();
 	    if (busPatchId == iBusPatch) break;
 	    busPatchId = -1;
-	    AliDebug(3,Form("busPatchId %d", temp->GetBusPatchId()));
+	    AliDebug(3,Form("busPatchId %d", busStructPtr->GetBusPatchId()));
 	  } 
 	 
 	  // check if buspatchid has digit
 	  if (busPatchId != -1) {
-	    // add bus patch structure
-	    length = temp->GetHeaderLength();
-	    memcpy(&buffer[index],temp->GetBusPatchHeader(),length*4);
+	    // add bus patch structure header
+	    length = busStructPtr->GetHeaderLength();
+	    memcpy(&buffer[index],busStructPtr->GetHeader(),length*4);
 	    index += length;
-	    for (Int_t j = 0; j < temp->GetLength(); j++) {
-	      buffer[index++] =  temp->GetData(j);
-	      AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", temp->GetBusPatchId(), 
-			      temp->GetManuId(j), temp->GetChannelId(j) ));
+
+	    // add bus patch data
+	    for (Int_t j = 0; j < busStructPtr->GetLength(); j++) {
+	      buffer[index++] =  busStructPtr->GetData(j);
+	      AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", 
+			      busStructPtr->GetBusPatchId(), 
+			      busStructPtr->GetManuId(j), busStructPtr->GetChannelId(j) ));
 	    }
 	    //	      fBusArray->RemoveAt(iEntries);
 	    //	      fBusArray->Compress();
 	  } else {
 	    // writting anyhow buspatch structure (empty ones)
-	    buffer[index++] = 4; // total length
+	    buffer[index++] = busStructPtr->GetDefaultDataKey(); // fill it also for empty data size
+	    buffer[index++] = busStructPtr->GetHeaderLength(); // header length
 	    buffer[index++] = 0; // raw data length
 	    buffer[index++] = iBusPatch; // bus patch
-	    buffer[index++] = 0xdeadbeef; // trigger word
 	  }
 	} // bus patch
 
-	buffer[indexDsp]   = index - indexDsp; // dsp total length
-	buffer[indexDsp+1] = index - indexDsp - fDspHeader->GetHeaderLength();
-	if ((index - indexDsp) % 2 == 0) // event word
-	  buffer[indexDsp+7] = 0;
-	else
-	  buffer[indexDsp+7] = 1;
+	totalDspLength     = index - indexDsp;
+	dspLength          = totalDspLength - fDspHeader->GetHeaderLength();
 
+	buffer[indexDsp+1] = totalDspLength; // dsp total length
+	buffer[indexDsp+2] = dspLength; // data length  
+
+	// remove padding word if necessary cos already in Dsp header length
+	// if total length is even, remove already placed padding word, else let it as it is.
+	if ((totalDspLength % 2) == 1) { 
+	  buffer[indexDsp+1] -= 1;
+	  buffer[indexDsp+2] -= 1;
+	  index--;
+	  Int_t indexCopy = indexDsp + fDspHeader->GetHeaderLength() - 2;
+	  memcpy(&buffer[indexCopy], &buffer[indexCopy+1], 
+		 (totalDspLength - fDspHeader->GetHeaderLength() + 2)*4);
+	}
+	   
       } // dsp
 
       totalBlkLength  = index - indexBlk;
       blkLength       = totalBlkLength - fBlockHeader->GetHeaderLength();
       totalDDLLength += totalBlkLength;
 
-      buffer[indexBlk]   = totalBlkLength; // total block length
-      buffer[indexBlk+1] = blkLength;
-
-      if ((totalBlkLength % 2) == 1) { //add padding word for 64bits transfert
-	buffer[indexBlk]   +=  1; // correct length for padding word
-	buffer[indexBlk+1] +=  1;
-	totalDDLLength++;
-	index++;
-
-	Int_t indexCopy = indexBlk + fBlockHeader->GetHeaderLength();
-	Int_t *buf      = new Int_t [blkLength];
-
-	memcpy(&buf[0], &buffer[indexCopy], blkLength*4);// copy in tmp buffer
-	memcpy(&buffer[indexCopy+1], &buf[0], blkLength*4); // re-copy buffer one elt shifted 
-	delete [] buf;
-	buffer[indexCopy] = 0xDEAD; // mark padding word
-      } // padding condition
+      buffer[indexBlk+1] = totalBlkLength; // total block length
+      buffer[indexBlk+2] = blkLength;
 
     } // block
     
@@ -847,4 +862,17 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   fTriggerTimer.Stop();
   
   return kTRUE;
+}
+//____________________________________________________________________
+void AliMUONRawWriter::SetScalersNumbers()
+{
+  // set numbers for scaler events for trigger headers
+  // since this is provided by the experiment
+  // put dummy numbers to check the monitoring
+
+  fDarcHeader->SetScalersNumbers();
+  fRegHeader->SetScalersNumbers();
+  fLocalStruct->SetScalersNumbers();
+ 
+  fScalerEvent = kTRUE;
 }

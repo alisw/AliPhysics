@@ -555,7 +555,7 @@ void AliMUON::Digits2Raw()
     fRawWriter = new AliMUONRawWriter(fMUONData);
     if (fTriggerScalerEvent == kTRUE) 
     {
-      fRawWriter->SetScalerEvent();
+      fRawWriter->SetScalersNumbers();
     }
   }
   

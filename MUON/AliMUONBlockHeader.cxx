@@ -30,21 +30,23 @@
 ClassImp(AliMUONBlockHeader)
 /// \endcond
 
-const Int_t AliMUONBlockHeader::fgkHeaderLength = 7;
-
+const Int_t  AliMUONBlockHeader::fgkHeaderLength = 8;
+const UInt_t AliMUONBlockHeader::fgkDefaultDataKey = 0xFC0000FC;
 //___________________________________________
 AliMUONBlockHeader::AliMUONBlockHeader()
   :  TObject(),
+     fDataKey(0),
      fTotalLength(0),
      fLength(0),
      fDspId(0),
-     fPadding(0x0DEADDEAD)
+     fL0Trigger(0),
+     fMiniEventId(0),
+     fEventId1(0),
+     fEventId2(0)
 {
   //
   // ctor
   //
-  for (Int_t i = 0; i < 4; i++)
-    fTriggerWord[i] = 0;
 
   fDspHeaderArray = new TClonesArray("AliMUONDspHeader", 5);
 
@@ -67,13 +69,15 @@ AliMUONBlockHeader::AliMUONBlockHeader(const AliMUONBlockHeader& event)
   //
   // copy ctor
   //
+
+  fDataKey     = event.fDataKey;
   fTotalLength = event.fTotalLength;
   fLength      = event.fLength;
   fDspId       = event.fDspId;
-  fPadding     = event.fPadding;
-
-  for (Int_t i = 0; i < 4; i++)
-    fTriggerWord[i] = event.fTriggerWord[i];
+  fL0Trigger   = event.fL0Trigger;
+  fMiniEventId = event.fMiniEventId;
+  fEventId1    = event.fEventId1;
+  fEventId2    = event.fEventId2;
 
   fDspHeaderArray = new TClonesArray("AliMUONDspHeader", 5);
   for (Int_t index = 0; index < (event.fDspHeaderArray)->GetEntriesFast(); index++) {
@@ -95,12 +99,11 @@ AliMUONBlockHeader::operator=(const AliMUONBlockHeader &event)
   fTotalLength = event.fTotalLength;
   fLength      = event.fLength;
   fDspId       = event.fDspId;
-  fPadding     = event.fPadding;
-
-  //copy ctor
-  for (Int_t i = 0; i < 4; i++)
-    fTriggerWord[i] = event.fTriggerWord[i];
-
+ 
+  fL0Trigger   = event.fL0Trigger;
+  fMiniEventId = event.fMiniEventId;
+  fEventId1    = event.fEventId1;
+  fEventId2    = event.fEventId2;
 
   fDspHeaderArray = new TClonesArray("AliMUONDspHeader", 5);
   for (Int_t index = 0; index < (event.fDspHeaderArray)->GetEntriesFast(); index++) {

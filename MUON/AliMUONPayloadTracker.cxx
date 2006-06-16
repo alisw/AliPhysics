@@ -44,11 +44,8 @@ AliMUONPayloadTracker::AliMUONPayloadTracker()
     fMaxBus(5)
 {
   //
-  // create an object to read MUON raw digits
-  // Default ctor for monitoring purposes
+  // create an object to decode MUON payload
   //
-  fBusPatchManager = new AliMpBusPatch();
-  fBusPatchManager->ReadBusPatchFile();
 
   fDDLTracker      = new AliMUONDDLTracker();
   fBusStruct       = new AliMUONBusStruct();
@@ -84,7 +81,6 @@ AliMUONPayloadTracker::~AliMUONPayloadTracker()
   //
   // clean up
   //
-  delete fBusPatchManager;
   delete fDDLTracker;
   delete fBusStruct;
   delete fBlockHeader;
@@ -92,11 +88,14 @@ AliMUONPayloadTracker::~AliMUONPayloadTracker()
 }
 
 //______________________________________________________
-Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t ddl)
+Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 {
-  // reading tracker DDL
-  // store buspatch info into Array
-  // store only non-empty structures (buspatch info with datalength !=0)
+
+  // Each DDL is made with 2 Blocks each of which consists of 5 DSP's at most 
+  // and each of DSP has at most 5 buspatches.
+  // The different structures, Block (CRT), DSP (FRT) and Buspatch,
+  // are identified by a key word 0xFC0000FC, 0xF000000F and 0xB000000B respectively.
+  // (fBusPatchManager no more needed !)
 
 
   //Read Header Size of DDL,Block,DSP and BusPatch
@@ -104,126 +103,115 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t ddl)
   static Int_t kDspHeaderSize      = fDspHeader->GetHeaderLength();
   static Int_t kBusPatchHeaderSize = fBusStruct->GetHeaderLength();
 
-  //  Int_t totalDDLSize;
+  // size structures
   Int_t totalBlockSize;
   Int_t totalDspSize;
   Int_t totalBusPatchSize;
   Int_t dataSize; 
+  Int_t bufSize;
 
+  // indexes
+  Int_t indexBlk;
+  Int_t indexDsp;
+  Int_t indexBusPatch;
+  Int_t index = 0;
+  Int_t iBlock = 0;
 
-  Int_t iBusPerDSP[5]; // number of bus patches per DSP
-  Int_t iDspMax;       // number max of DSP per block
+  // CROCUS CRT
+  while (buffer[index] == fBlockHeader->GetDefaultDataKey()) {
 
-  // minimum data size (only header's)
-  //  Int_t blankDDLSize;
-  Int_t blankBlockSize;
-  Int_t blankDspSize; 
+    if (iBlock > fMaxBlock) break;
+     
+    // copy within padding words
+    memcpy(fBlockHeader->GetHeader(),&buffer[index], (kBlockHeaderSize)*4);
 
-  AliDebug(3, Form("DDL Number %d\n", ddl ));
+    totalBlockSize = fBlockHeader->GetTotalLength();
 
-  // getting DSP info
-  fBusPatchManager->GetDspInfo(ddl/2, iDspMax, iBusPerDSP);
+    indexBlk = index;
+    index += kBlockHeaderSize;
 
-  // Each DDL is made with 2 Blocks each of which consists of 5 DSP's at most 
-  // and each of DSP has at most 5 buspatches.
-  // This information is used to calculate the size of headers (Block and DSP) 
-  // which has empty data.
+    // copy in TClonesArray
+    fDDLTracker->AddBlkHeader(*fBlockHeader);
 
-  //  blankDDLSize   = 2*kBlockHeaderSize + 2*iDspMax*kDspHeaderSize;
-  blankBlockSize = kBlockHeaderSize + iDspMax*kDspHeaderSize;
-  // totalDDLSize   = sizeof(buffer)/4;
+    // Crocus FRT
+    Int_t iDsp = 0;
+    while (buffer[index] == fDspHeader->GetDefaultDataKey()) {
 
-  for (Int_t i = 0; i < iDspMax; i++) {
-    //  blankDDLSize   += 2*iBusPerDSP[i]*kBusPatchHeaderSize;
-    blankBlockSize +=   iBusPerDSP[i]*kBusPatchHeaderSize;
-  }
+      if (iDsp > fMaxDsp) break; // if ever...
+     		
+      memcpy(fDspHeader->GetHeader(),&buffer[index], kDspHeaderSize*4);
 
-  // Compare the DDL header with an empty DDL header size to read the file
-  //  if(totalDDLSize > blankDDLSize) {  //should not happen in real life    
- 
-    // indexes
-    Int_t indexDsp;
-    Int_t indexBusPatch;
-    Int_t index = 0;
+      totalDspSize = fDspHeader->GetTotalLength();
+      indexDsp = index;
+      index += kDspHeaderSize;
 
-    for(Int_t iBlock = 0; iBlock < 2 ;iBlock++){  // loop over 2 blocks
+      if (fDspHeader->GetPaddingWord() != fDspHeader->GetDefaultPaddingWord()) {
+	// copy the field of Padding word into ErrorWord field
+	fDspHeader->SetErrorWord(fDspHeader->GetPaddingWord());
+	index--;
+      }
 
-      // copy within padding words
-      memcpy(fBlockHeader->GetHeader(),&buffer[index], (kBlockHeaderSize+1)*4);
+      // copy in TClonesArray
+      fDDLTracker->AddDspHeader(*fDspHeader, iBlock);
 
-      totalBlockSize = fBlockHeader->GetTotalLength();
+      // buspatch structure
+      Int_t iBusPatch = 0;
+      while (buffer[index] == fBusStruct->GetDefaultDataKey()) {
 
-      fDDLTracker->AddBlkHeader(*fBlockHeader);
+	if (iBusPatch > fMaxBus) break; // if ever
+	
+	//copy buffer into header structure
+	memcpy(fBusStruct->GetHeader(), &buffer[index], kBusPatchHeaderSize*4);
 
-      if (fBlockHeader->GetPadding() == 0xDEAD) // skipping padding word
-	index++;
-
-      if(totalBlockSize > blankBlockSize) {        // compare block header
-	index += kBlockHeaderSize;
-
-	for(Int_t iDsp = 0; iDsp < iDspMax ;iDsp++){   //DSP loop
-
-	  if (iDsp > fMaxDsp) break;
-	  
-	  memcpy(fDspHeader->GetHeader(),&buffer[index], kDspHeaderSize*4);
-
-	  totalDspSize = fDspHeader->GetTotalLength();
-	  indexDsp = index;
-
-	  blankDspSize =  kDspHeaderSize + iBusPerDSP[iDsp]*kBusPatchHeaderSize; // no data just header
-
-	  fDDLTracker->AddDspHeader(*fDspHeader, iBlock);
-
-	  if(totalDspSize > blankDspSize) {       // Compare DSP Header
-	    index += kDspHeaderSize;
+	totalBusPatchSize = fBusStruct->GetTotalLength();
+	indexBusPatch     = index;
 		
-	    for(Int_t iBusPatch = 0; iBusPatch < iBusPerDSP[iDsp]; iBusPatch++) {  
+	//Check Buspatch header, not empty events
+	if(totalBusPatchSize > kBusPatchHeaderSize) {    
 
-	      if (iBusPatch > fMaxBus) break; 
+	  index   += kBusPatchHeaderSize;
+	  dataSize = fBusStruct->GetLength();
+	  bufSize  = fBusStruct->GetBufSize();
 
-	      //copy buffer into header structure
-	      memcpy(fBusStruct->GetBusPatchHeader(), &buffer[index], kBusPatchHeaderSize*4);
+	  if(dataSize > 0) { // check data present
+	    if (dataSize > bufSize) // check buffer size
+	      fBusStruct->SetAlloc(dataSize);
+	 
+	    //copy buffer into data structure
+	    memcpy(fBusStruct->GetData(), &buffer[index], dataSize*4);
+	    fBusStruct->SetBlockId(iBlock); // could be usefull in future applications ?
+	    fBusStruct->SetDspId(iDsp);
 
-	      totalBusPatchSize = fBusStruct->GetTotalLength();
-	      indexBusPatch     = index;
+	    // copy in TClonesArray
+	    fDDLTracker->AddBusPatch(*fBusStruct, iBlock, iDsp);
+
+	  } // dataSize test
+
+	} // testing buspatch
+
+	index = indexBusPatch + totalBusPatchSize;
+	if (index >= totalDDLSize) {// check the end of DDL
+	  index = totalDDLSize - 1; // point to the last element of buffer
+	  break;
+	}
+	iBusPatch++;
+      }  // buspatch loop
 		
-	      //Check Buspatch header, not empty events
-	      if(totalBusPatchSize > kBusPatchHeaderSize) {    
+      index = indexDsp + totalDspSize;
+      if (index >= totalDDLSize) {
+	index = totalDDLSize - 1;
+	break;
+      }
+      iDsp++;
+    }  // dsp loop
 
-		index   += kBusPatchHeaderSize;
-		dataSize = fBusStruct->GetLength();
-		Int_t bufSize = fBusStruct->GetBufSize();
-
-		if(dataSize > 0) { // check data present
-		  if (dataSize > bufSize) fBusStruct->SetAlloc(dataSize);
-
-		  //copy buffer into data structure
-		  memcpy(fBusStruct->GetData(), &buffer[index], dataSize*4);
-		  fBusStruct->SetBlockId(iBlock); // could be usefull in future applications ?
-		  fBusStruct->SetDspId(iDsp);
-		  fDDLTracker->AddBusPatch(*fBusStruct, iBlock, iDsp);
-
-		} // dataSize test
-
-	      } // testing buspatch
-
-	      index = indexBusPatch + totalBusPatchSize;
-
-	    }  //buspatch loop
-		
-	  }  // dsp test
-
-	  index = indexDsp + totalDspSize;
-	      
-	}  // dsp loop
-
-      }   //block test
-
-      index = totalBlockSize;
-
-    }  //block loop
-
-    //  } //loop checking the header size of DDL
+    index = indexBlk + totalBlockSize;
+    if (index >= totalDDLSize) {
+      index = totalDDLSize - 1;
+      break;
+    }
+    iBlock++;
+  }  // block loop
 
   return kTRUE;
 }

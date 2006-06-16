@@ -37,8 +37,8 @@ class AliMUONRawWriter : public TObject
   // write raw data
   Int_t Digits2Raw();
 
-  void  SetScalerEvent() {fScalerEvent = kTRUE;}
-  
+  void SetScalersNumbers();
+
 protected:
   AliMUONRawWriter();                  // Default constructor
   AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor

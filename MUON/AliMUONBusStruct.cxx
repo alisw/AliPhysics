@@ -32,15 +32,16 @@
 ClassImp(AliMUONBusStruct)
 /// \endcond
 
-const Int_t AliMUONBusStruct::fgkHeaderLength = 4;
+const Int_t  AliMUONBusStruct::fgkHeaderLength = 4;
+const UInt_t AliMUONBusStruct::fgkDefaultDataKey = 0xB000000B;
 
 //___________________________________________
 AliMUONBusStruct::AliMUONBusStruct()
   :  TObject(),
+     fDataKey(0),
      fTotalLength(0),
      fLength(0),
      fBusPatchId(0),
-     fTriggerWord(0),
      fBufSize(1024),
      fDspId(0),
      fBlkId(0)
@@ -106,10 +107,10 @@ AliMUONBusStruct(const AliMUONBusStruct& event): TObject(event)
   //
   // copy ctor
   //
+  fDataKey     = event.fDataKey;
   fTotalLength = event.fTotalLength;
   fLength      = event.fLength;
   fBusPatchId  = event.fBusPatchId;
-  fTriggerWord = event.fTriggerWord;
   fBufSize     = event.fBufSize;
 
   fBlkId = event.fBlkId;
@@ -127,10 +128,10 @@ AliMUONBusStruct::operator=(const AliMUONBusStruct& event)
   // assignment operator
   //
   if (this == &event) return *this;
+  fDataKey     = event.fDataKey;
   fTotalLength = event.fTotalLength;
   fLength      = event.fLength;
   fBusPatchId  = event.fBusPatchId;
-  fTriggerWord = event.fTriggerWord;
   fBufSize     = event.fBufSize;
 
   fBlkId = event.fBlkId;

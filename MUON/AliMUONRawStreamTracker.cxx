@@ -203,7 +203,7 @@ Bool_t AliMUONRawStreamTracker::NextDDL()
 
   fRawReader->ReadNext((UChar_t*)buffer, totalDataWord); 
 
-  fPayload->Decode(buffer, fDDL);
+  fPayload->Decode(buffer, totalDataWord/4);
 
   delete[] buffer;
 
