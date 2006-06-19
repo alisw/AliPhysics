@@ -50,9 +50,11 @@ protected:
   Float_t        fMax;
 
   Bool_t         fSliderNewLine;
-  Int_t          fSliderSteps;
+  Int_t          fSliderDivs;
   TGNumberEntry* fEntry;
   TGHSlider*     fSlider;
+
+  Int_t CalcSliderPos(Float_t v);
   
 public:
   RGValuator(const TGWindow *p, const char* title, UInt_t w, UInt_t h);
@@ -73,7 +75,7 @@ public:
   void SetSliderNewLine(Bool_t nl) { fSliderNewLine = nl; }
 
   void SetLimits(Int_t min, Int_t max);
-  void SetLimits(Float_t min, Float_t max, Int_t nsteps,
+  void SetLimits(Float_t min, Float_t max, Int_t npos,
 		 TGNumberFormat::EStyle nef=TGNumberFormat::kNESRealTwo);
 
   void SetToolTip(const Text_t* tip);

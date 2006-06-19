@@ -45,7 +45,7 @@ RGValuator::RGValuator(const TGWindow *p, const char* title,
   fMax   (0),
 
   fSliderNewLine (kFALSE),
-  fSliderSteps   (-1),
+  fSliderDivs    (-1),
   fEntry  (0),
   fSlider (0)
 {}
@@ -68,23 +68,21 @@ void RGValuator::Build()
   }
 
   // label
-  TGLayoutHints* lh;
-  if(fAlignRight)
-    lh = new TGLayoutHints(kLHintsRight | kLHintsBottom, 4,0,0,0);
-  else
-    lh = new TGLayoutHints(kLHintsLeft  | kLHintsBottom, 0,4,0,0);
-  
-  if (fLabelWidth > 0) {
-    // printf("fLabelWidth > 0 \n");
-    TGCompositeFrame *lf = new TGHorizontalFrame(hf1, fLabelWidth, fNEHeight, kFixedSize);
-    fLabel = new TGLabel(lf, GetName());
-    lf->AddFrame(fLabel, lh); 
-    // add label frame to top horizontal frame
-    TGLayoutHints* lfh = new TGLayoutHints(kLHintsLeft, 0,0,0,0);
-    hf1->AddFrame(lf, lfh);
-  } else {
-    fLabel = new TGLabel(hf1, GetName());
-    hf1->AddFrame(fLabel, lh);  
+  {
+    TGLayoutHints *labh, *labfrh;
+    if(fAlignRight) {
+      labh   = new TGLayoutHints(kLHintsRight | kLHintsBottom, 4,0,0,0);
+      labfrh = new TGLayoutHints(kLHintsRight);
+    } else {
+      labh   = new TGLayoutHints(kLHintsLeft  | kLHintsBottom, 0,4,0,0);
+      labfrh = new TGLayoutHints(kLHintsLeft);
+    }
+    TGCompositeFrame *labfr = 
+      new TGHorizontalFrame(hf1, fLabelWidth, fNEHeight,
+			    fLabelWidth != 0 ? kFixedSize : kFixedHeight);
+    fLabel = new TGLabel(labfr, GetName());
+    labfr->AddFrame(fLabel, labh);
+    hf1->AddFrame(labfr, labfrh);
   }
 
   // entry
@@ -98,11 +96,10 @@ void RGValuator::Build()
   fEntry->Connect("ValueSet(Long_t)",
 		  "Reve::RGValuator", this, "EntryCallback()");
   
-  
   // slider
   if(fShowSlider) {
     fSlider = new TGHSlider(hfs, GetWidth(), kSlider1 | kScaleBoth);
-    hfs->AddFrame(fSlider, new TGLayoutHints(kLHintsLeft, 1,1,0,0));
+    hfs->AddFrame(fSlider, new TGLayoutHints(kLHintsLeft|kLHintsTop, 1,1,0,0));
    
     fSlider->Associate(this);
     fSlider->Connect("PositionChanged(Int_t)",
@@ -110,14 +107,18 @@ void RGValuator::Build()
   }
 }
 
-void RGValuator::SetLimits(Float_t min, Float_t max, Int_t ndiv,
+void RGValuator::SetLimits(Float_t min, Float_t max, Int_t npos,
 			   TGNumberFormat::EStyle nef) 
 {
   fMin = Float_t(min);
   fMax = Float_t(max);
-  fSliderSteps = ndiv;
   fEntry->SetFormat(nef);
   fEntry->SetLimits(TGNumberFormat::kNELLimitMinMax, min, max);
+
+  if(fSlider) {
+    fSliderDivs = npos - 1;
+    fSlider->SetRange(0, fSliderDivs);
+  }
 }
 
 void RGValuator::SetLimits(Int_t min, Int_t max) 
@@ -127,38 +128,29 @@ void RGValuator::SetLimits(Int_t min, Int_t max)
   fEntry->SetFormat(TGNumberFormat::kNESInteger);
   fEntry->SetLimits(TGNumberFormat::kNELLimitMinMax, min, max);
 
-  if(fSlider){
-    fSlider->SetRange(min, max);
-    fSliderSteps = max - min;
+  if(fSlider) {
+    fSliderDivs = max - min;
+    fSlider->SetRange(0, fSliderDivs);
   }
+}
+
+Int_t RGValuator::CalcSliderPos(Float_t v)
+{
+  return (Int_t) TMath::Nint((v - fMin)*fSliderDivs/(fMax - fMin));
 }
 
 void RGValuator::EntryCallback()
 {
   fValue = fEntry->GetNumber();
   if(fSlider) {
-    Int_t pos;
-    if (fSliderSteps != -1) {
-      pos = Int_t( fSliderSteps*(fValue - fMin)/(fMax - fMin));
-    } else {
-      pos = Int_t(fValue - fMin);
-    }
-    pos += Int_t(fMin);
-    fSlider->SetPosition(pos);
-    // printf( "RGValuator::EntryCallback() slider pos %d n", pos);
+    fSlider->SetPosition(CalcSliderPos(fValue));
   }
   ValueSet(fValue);
 }
 
 void RGValuator::SliderCallback()
 {
-  Double_t val;
-  if(fSliderSteps != -1)
-    val = fMin + fSlider->GetPosition()*Double_t((fMax-fMin))/fSliderSteps;
-  else 
-    val = Double_t(fSlider->GetPosition());
-  
-  fValue = val;
+  fValue = fMin + fSlider->GetPosition()*(fMax-fMin)/fSliderDivs;
   fEntry->SetNumber(fValue);
   ValueSet(fValue);
 }
@@ -175,8 +167,7 @@ void RGValuator::SetValue(Float_t val, Bool_t emit)
   fEntry->SetNumber(fValue);
 
   if(fSlider){
-    fSlider->SetPosition(Int_t((val-fMin)*fSliderSteps/(fMax-fMin)));
-    // printf("RGValuator::ValueSet slider pos %d\n",fSlider->GetPosition() );
+    fSlider->SetPosition(CalcSliderPos(fValue));
   }
   if(emit)
     ValueSet(val);
