@@ -5,12 +5,14 @@
 
 #include <Alieve/TPCSectorViz.h>
 #include <Alieve/TPCSectorData.h>
+
 #include <Reve/BoxSet.h>
+#include <Reve/PointSet.h>
 
 
 namespace Alieve {
 
-class TPCSector3D: public TPCSectorViz
+class TPCSector3D : public TPCSectorViz, public TAttMarker
 {
   friend class TPCSector3DEditor;
   friend class TPCSector3DGL;
@@ -19,18 +21,24 @@ protected:
   void LoadPadrow(TPCSectorData::RowIterator& iter,
                   Float_t sx, Float_t sy, Float_t pw, Float_t ph);
   void UpdateBoxes();
+  void SetupPointSetArray();
 
+  Reve::BoxSet        fBoxSet;
+  Reve::PointSetArray fPointSetArray;
+  Float_t             fPointFrac;
+  Bool_t              fPointSetOn;
+  Int_t               fPointSetMaxVal;
 
-  Reve::BoxSet fBoxSet;
-  Reve::Box    fFrameBox;
-  Float_t      fDriftVel;
-  Float_t      fZStep;
+  Float_t             fDriftVel;
+  Float_t             fZStep;
 
 public:
   TPCSector3D(const Text_t* n="TPCSector3D", const Text_t* t=0);
   virtual ~TPCSector3D();
 
   virtual UInt_t IncRTS();
+
+  void SetPointFrac(Float_t f) { fPointFrac = f; IncRTS(); }
 
   void SetDriftVel(Float_t v) { fDriftVel = v; IncRTS(); }
   void SetZStep(Float_t step) { fZStep = step; IncRTS(); }

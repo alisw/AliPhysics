@@ -68,6 +68,32 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
 
   fBoxRnr->Render(flags);
 
+  if(fSector->fPointSetOn) {
+    UChar_t col[4];
+
+    glPushAttrib(GL_POINT_BIT | GL_ENABLE_BIT);
+    glDisable(GL_LIGHTING);
+    glEnable(GL_BLEND);
+    glEnable(GL_POINT_SMOOTH);
+    glPointSize(fSector->GetMarkerSize());
+
+    glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+    const Reve::PointSetArray& psa = fSector->fPointSetArray;
+    for(Int_t b=0; b<psa.GetNBins(); ++b) {
+      Reve::PointSet* ps = psa.GetBin(b);
+      ColorFromIdx(ps->GetMarkerColor(), col);
+      glColor4ubv(col);
+
+      glVertexPointer(3, GL_FLOAT, 0, ps->GetP());
+      glDrawArrays(GL_POINTS, 0, ps->GetN());
+    }
+
+    glPopClientAttrib();
+    glPopAttrib();
+  }
+
   if(fSector->fRnrFrame) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 

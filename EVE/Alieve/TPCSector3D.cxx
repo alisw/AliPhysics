@@ -8,6 +8,9 @@
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
 
+#include <TStyle.h>
+#include <TColor.h>
+
 using namespace Reve;
 using namespace Alieve;
 
@@ -19,8 +22,12 @@ ClassImp(TPCSector3D)
 
 TPCSector3D::TPCSector3D(const Text_t* n, const Text_t* t) :
   TPCSectorViz(n, t),
+  TAttMarker  (1, 20, 3),
 
-  fBoxSet    (n, t),
+  fBoxSet       (n, t),
+  fPointSetArray(n, t),
+  fPointFrac    (0.25),
+
   fDriftVel  (1),
   fZStep     (250.0/450)
 {
@@ -103,7 +110,9 @@ void TPCSector3D::LoadPadrow(TPCSectorData::RowIterator& iter,
 {
   Short_t pad, time, val;
   Float_t x0, x1, z0, z1;
+  Float_t ym = ys + 0.5*ph;
   Float_t ye = ys + ph;
+  Float_t zs = fZStep/fDriftVel;
 
   while (iter.NextPad()) {
     pad = iter.Pad();
@@ -114,24 +123,27 @@ void TPCSector3D::LoadPadrow(TPCSectorData::RowIterator& iter,
       if(val <= fThreshold || time < fMinTime || time > fMaxTime)
 	continue;
 
-      fBoxSet.fBoxes.push_back(Reve::Box());
-      ColorFromArray(val, fBoxSet.fBoxes.back().color);
-      x0 = xs + pad*pw;
-      x1 = x0 + pw;
-      z0 = fZStep*time/fDriftVel;
-      z1 = z0 + fZStep/fDriftVel;
-      Float_t* p = fBoxSet.fBoxes.back().vertices; 
-      // front
-      p[0] = x0;  p[1] = ys;  p[2] = z0;  p += 3;
-      p[0] = x1;  p[1] = ys;  p[2] = z0;  p += 3;
-      p[0] = x1;  p[1] = ye;  p[2] = z0;  p += 3;
-      p[0] = x0;  p[1] = ye;  p[2] = z0;  p += 3;
-      // back
-      z0 += fZStep;
-      p[0] = x0;  p[1] = ys;  p[2] = z0;  p += 3;
-      p[0] = x1;  p[1] = ys;  p[2] = z0;  p += 3;
-      p[0] = x1;  p[1] = ye;  p[2] = z0;  p += 3;
-      p[0] = x0;  p[1] = ye;  p[2] = z0;
+      if(fPointSetOn && val <= fPointSetMaxVal) {
+	fPointSetArray.Fill(val, xs + (pad+0.5)*pw, ym, (time+0.5)*zs);
+      } else {
+	fBoxSet.fBoxes.push_back(Reve::Box());
+	ColorFromArray(val, fBoxSet.fBoxes.back().color);
+	x0 = xs + pad*pw;
+	x1 = x0 + pw;
+	z0 = time*zs;
+	z1 = z0 + zs;
+	Float_t* p = fBoxSet.fBoxes.back().vertices; 
+	// front
+	p[0] = x0;  p[1] = ys;  p[2] = z0;  p += 3;
+	p[0] = x1;  p[1] = ys;  p[2] = z0;  p += 3;
+	p[0] = x1;  p[1] = ye;  p[2] = z0;  p += 3;
+	p[0] = x0;  p[1] = ye;  p[2] = z0;  p += 3;
+	// back
+	p[0] = x0;  p[1] = ys;  p[2] = z1;  p += 3;
+	p[0] = x1;  p[1] = ys;  p[2] = z1;  p += 3;
+	p[0] = x1;  p[1] = ye;  p[2] = z1;  p += 3;
+	p[0] = x0;  p[1] = ye;  p[2] = z1;
+      }
     }
   }
 }
@@ -143,6 +155,7 @@ void TPCSector3D::UpdateBoxes()
   // printf("TPCSector3D update boxes\n");
 
   fBoxSet.ClearSet();
+  fPointSetArray.DeleteBins();
 
   TPCSectorData* data = GetSectorData();
   if (data != 0) {
@@ -152,6 +165,7 @@ void TPCSector3D::UpdateBoxes()
     isOn[2] = fRnrOut2;
 
     SetupColorArray();
+    SetupPointSetArray();
 
     // Loop over 3 main segments
     for (Int_t sId = 0; sId <= 2; ++sId) {
@@ -166,5 +180,24 @@ void TPCSector3D::UpdateBoxes()
         sy += sInfo.GetPadHeight();
       }
     }
+
+    if(fPointSetOn)
+      fPointSetArray.CloseBins();
+  }
+}
+
+void TPCSector3D::SetupPointSetArray()
+{
+  Int_t   nBins = (Int_t) TMath::Nint(fPointFrac*gStyle->GetNumberOfColors());
+  if(nBins > 0) {
+    fPointSetOn = kTRUE;
+    fPointSetMaxVal = fThreshold + (Int_t) TMath::Nint(fPointFrac*(fMaxVal - fThreshold));
+    // printf("SetupPointSetArray frac=%f nbins=%d psmv=%d (%d,%d)\n", fPointFrac, nBins, fPointSetMaxVal, fThreshold, fMaxVal);
+    fPointSetArray.InitBins(0, "", nBins, fThreshold, fPointSetMaxVal);
+    for(Int_t b=0; b<nBins; ++b) {
+      fPointSetArray.GetBin(b)->SetMarkerColor(gStyle->GetColorPalette(b));
+    }
+  } else {
+    fPointSetOn = kFALSE;
   }
 }
