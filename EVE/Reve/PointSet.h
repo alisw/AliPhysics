@@ -29,8 +29,7 @@ public:
 
   PointSet(Int_t n_points=0);
   PointSet(const Text_t* name, Int_t n_points=0);
-  PointSet(const Text_t* name, TTree* tree,
-		    TreeVarType_e tv_type=TVT_XYZ);
+  PointSet(const Text_t* name, TTree* tree, TreeVarType_e tv_type=TVT_XYZ);
 
   void Reset(Int_t n_points=0);
 
@@ -54,6 +53,7 @@ class PointSetArray : public TNamed, public TAttMarker,
 
 protected:
   PointSet**   fBins;
+  Int_t        fDefPointSetCapacity;
   Int_t        fNBins;
   Double_t     fMin, fCurMin;
   Double_t     fMax, fCurMax;
@@ -63,11 +63,10 @@ protected:
 public:
   enum TreeVarType_e { TVT_XYZ, TVT_RPhiZ };
 
-  PointSetArray(const Text_t* name="PointSetArray",
-			const Text_t* title="");
+  PointSetArray(const Text_t* name="PointSetArray", const Text_t* title="");
   virtual ~PointSetArray();
 
-  virtual void Paint(Option_t* option = "") { PaintElements(option); }
+  virtual void Paint(Option_t* option="") { PaintElements(option); }
 
   virtual void SetMarkerColor(Color_t tcolor=1);
   virtual void SetMarkerStyle(Style_t mstyle=1);
@@ -75,9 +74,16 @@ public:
 
   void InitBins(TGListTreeItem* tree_item, const Text_t* quant_name,
 		Int_t nbins, Double_t min, Double_t max);
+  void DeleteBins();
   void Fill(Double_t quant, Double_t x, Double_t y, Double_t z);
   void Fill(TF3* formula, TTree* tree, TreeVarType_e tv_type=TVT_XYZ);
   void CloseBins();
+
+  Int_t GetDefPointSetCapacity() const  { return fDefPointSetCapacity; }
+  void  SetDefPointSetCapacity(Int_t c) { fDefPointSetCapacity = c; }
+
+  Int_t     GetNBins()        const { return fNBins; }
+  PointSet* GetBin(Int_t bin) const { return fBins[bin]; }
 
   Double_t GetMin()    const { return fMin; }
   Double_t GetCurMin() const { return fCurMin; }
