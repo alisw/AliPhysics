@@ -3,6 +3,16 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+// geometry 
+#pragma link C++ class AliMUONCommonGeometryBuilder+;
+#pragma link C++ class AliMUONSt1SpecialMotif+; 
+#pragma link C++ class AliMUONSt1GeometryBuilder+; 
+#pragma link C++ class AliMUONSt1GeometryBuilderV2+; 
+#pragma link C++ class AliMUONSt2GeometryBuilder+; 
+#pragma link C++ class AliMUONSt2GeometryBuilderV2+; 
+#pragma link C++ class AliMUONSlatGeometryBuilder+; 
+#pragma link C++ class AliMUONTriggerGeometryBuilder+; 
+
 // builder
 #pragma link C++ class AliMUONResponseFactory+;  
 

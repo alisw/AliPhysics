@@ -1,6 +1,14 @@
 # $Id$
 
-SRCS:= AliMUONResponseFactory.cxx \
+SRCS:= AliMUONCommonGeometryBuilder.cxx \
+       AliMUONSt1GeometryBuilder.cxx \
+       AliMUONSt1GeometryBuilderV2.cxx \
+       AliMUONSt1SpecialMotif.cxx \
+       AliMUONSt2GeometryBuilder.cxx \
+       AliMUONSt2GeometryBuilderV2.cxx \
+       AliMUONSlatGeometryBuilder.cxx \
+       AliMUONTriggerGeometryBuilder.cxx \
+       AliMUONResponseFactory.cxx \
        AliMUONHitMapA1.cxx \
        AliMUONDigitizer.cxx \
        AliMUONDigitizerv2.cxx \
