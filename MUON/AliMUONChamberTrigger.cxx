@@ -42,17 +42,14 @@ AliMUONChamberTrigger::AliMUONChamberTrigger()
   : AliMUONChamber(),
     fkGeomTransformer(0)
 {
-// Default constructor
+/// Default constructor
 }
 
 //-------------------------------------------
 
-AliMUONChamberTrigger::AliMUONChamberTrigger(const AliMUONChamberTrigger& right) 
-  : AliMUONChamber(right) 
-{  
-/// Protected copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
+AliMUONChamberTrigger:: ~AliMUONChamberTrigger()
+{
+/// Destructor
 }
 
 //-------------------------------------------
@@ -62,31 +59,16 @@ AliMUONChamberTrigger::AliMUONChamberTrigger(Int_t id,
   : AliMUONChamber(id),
     fkGeomTransformer(kGeometryTransformer)
 {
-// Constructor using chamber id
+/// Constructor using chamber id
 }
-
-//-------------------------------------------
-AliMUONChamberTrigger& 
-AliMUONChamberTrigger::operator=(const AliMUONChamberTrigger& right)
-{
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //-------------------------------------------
 void AliMUONChamberTrigger::DisIntegration(AliMUONHit* hit,
 					   Int_t& nnew,
 					   Float_t newclust[6][500]) 
 {
-//    
-//  Generates pad hits (simulated cluster) 
-//  using the segmentation and the response model
+///  Generates pad hits (simulated cluster) 
+///  using the segmentation and the response model
 
 
   Float_t   tof = hit->Age();

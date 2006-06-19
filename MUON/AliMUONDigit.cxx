@@ -20,7 +20,7 @@
 #include "Riostream.h"
 #include "TString.h"
 
-///
+/// \class AliMUONDigit
 /// A class representing a digit in the MUON spectrometer
 /// either in tracking or trigger chambers.
 ///
@@ -31,9 +31,10 @@
 /// with no electronic noise whatsoever) or digits (either real digits or
 /// simulated ones but including electronic noise and de-calibration, to 
 /// closely ressemble real ones).
-///
 
+/// \cond CLASSIMP
 ClassImp(AliMUONDigit)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONDigit::AliMUONDigit()
@@ -54,9 +55,7 @@ fTracks(0x0),
 fPhysics(0),
 fHit(0)
 {
-  //
-  // Default constructor
-  //
+  /// Default constructor
 }
 
 //_____________________________________________________________________________
@@ -77,9 +76,8 @@ fTracks(0x0),
 fPhysics(0),
 fHit(0)
 {
-  //
-  // copy constructor
-  //
+  /// Copy constructor
+
    (static_cast<const AliMUONDigit&>(digit)).Copy(*this);
 }
 
@@ -103,10 +101,9 @@ fPhysics(0),
 fHit(0)
 
 {
-  //
-  // Creates a MUON digit object to be updated
-  // \deprecated
-  //
+  /// Creates a MUON digit object to be updated
+  /// \deprecated
+
     fPadX        = digits[0];
     fPadY        = digits[1];
     fCathode     = digits[2];
@@ -138,10 +135,9 @@ fTracks(0x0),
 fPhysics(0),
 fHit(0)
 {
-  //
-  // Creates a MUON digit object
-  //
-  // \deprecated
+  /// Creates a MUON digit object
+  /// \deprecated
+
     fPadX        = digits[0];
     fPadY        = digits[1];
     fCathode     = digits[2];
@@ -169,9 +165,8 @@ fHit(0)
 //_____________________________________________________________________________
 AliMUONDigit::~AliMUONDigit()
 {
-  //
-  // Destructor 
-  //
+  /// Destructor 
+
   delete[] fTcharges;
   delete[] fTracks;
 }
@@ -180,10 +175,8 @@ AliMUONDigit::~AliMUONDigit()
 void
 AliMUONDigit::AddTrack(Int_t trackNumber, Int_t trackCharge)
 {
-  //
-  // Add 1 track information to the track list we keep.
-  // The implementation below is dumb, you've been warned !
-  //
+  /// Add 1 track information to the track list we keep.
+  /// The implementation below is dumb, you've been warned !
   
   // First check if track is already there, in which
   // case we simply increment its charge.
@@ -223,9 +216,8 @@ AliMUONDigit::AddTrack(Int_t trackNumber, Int_t trackCharge)
 void 
 AliMUONDigit::Clear(Option_t*)
 {
-  //
-  // Reset this digit, in particular the internal arrays are deleted.
-  //
+  /// Reset this digit, in particular the internal arrays are deleted.
+
   delete[] fTracks;
   delete[] fTcharges;
   fTracks=0x0;
@@ -236,10 +228,8 @@ AliMUONDigit::Clear(Option_t*)
 //_____________________________________________________________________________
 Int_t AliMUONDigit::Compare(const TObject *obj) const
 {
-  // 
-  // The order defined below is first by DE, then Signal, then 
-  // manuId, and then manuChannel, i.e. it should be a total ordering...
-  //
+  /// The order defined below is first by DE, then Signal, then 
+  /// manuId, and then manuChannel, i.e. it should be a total ordering...
 
   const AliMUONDigit* d = static_cast<const AliMUONDigit*>(obj);
   
@@ -283,9 +273,8 @@ Int_t AliMUONDigit::Compare(const TObject *obj) const
 void 
 AliMUONDigit::Copy(TObject& obj) const
 {
-  //
-  // Copy this line to line.
-  //
+  /// Copy this line to line.
+
   TObject::Copy(obj);
   AliMUONDigit& digit = static_cast<AliMUONDigit&>(obj);
   
@@ -325,7 +314,8 @@ AliMUONDigit::Copy(TObject& obj) const
 Bool_t
 AliMUONDigit::IsNoiseOnly() const
 {
-  // Whether this (simulated only) digit is only due to noise.
+  /// Whether this (simulated only) digit is only due to noise.
+
   return (fFlags & fgkNoiseOnlyMask );
 }
 
@@ -333,7 +323,8 @@ AliMUONDigit::IsNoiseOnly() const
 Bool_t
 AliMUONDigit::IsSaturated() const
 {
-  // Whether this digit is saturated or not.
+  /// Whether this digit is saturated or not.
+
   return (fFlags & fgkSaturatedMask );
 }
 
@@ -341,9 +332,8 @@ AliMUONDigit::IsSaturated() const
 void
 AliMUONDigit::NoiseOnly(Bool_t value)
 {
-  //
-  // Set the NoiseOnly status of this digit.
-  //
+  /// Set the NoiseOnly status of this digit.
+
   if ( value )
   {
     fFlags |= fgkNoiseOnlyMask;
@@ -358,9 +348,8 @@ AliMUONDigit::NoiseOnly(Bool_t value)
 AliMUONDigit& 
 AliMUONDigit::operator=(const AliMUONDigit& digit)
 {
-  //
-  // Assignement operator.
-  //
+  /// Assignement operator.
+
   AliMUONDigit a(digit);
   a.Copy(*this);
   return *this;
@@ -370,9 +359,8 @@ AliMUONDigit::operator=(const AliMUONDigit& digit)
 void
 AliMUONDigit::PatchTracks(Int_t mask)
 {
-  //
-  // Add mask to each track number.
-  //
+  /// Add mask to each track number.
+
   for ( Int_t i = 0; i < Ntracks(); ++i )
   {
     fTracks[i] += mask;
@@ -383,10 +371,9 @@ AliMUONDigit::PatchTracks(Int_t mask)
 void
 AliMUONDigit::Print(Option_t* opt) const
 {
-  //
-  // Dump to screen.
-  // If opt=="tracks", info on tracks are printed too.
-  //
+  /// Dump to screen.
+  /// If opt=="tracks", info on tracks are printed too.
+
   cout << "<AliMUONDigit>: DetEle " << setw(5) << DetElemId()
   << " Cath " << setw(2) << Cathode()
   << " (Ix,Iy)=(" << setw(3) << PadX() << "," << setw(3) << PadY()
@@ -433,9 +420,8 @@ AliMUONDigit::Print(Option_t* opt) const
 void
 AliMUONDigit::Saturated(Bool_t value)
 {
-  //
-  // Set the saturation status of this digit.
-  //
+  /// Set the saturation status of this digit.
+
   if ( value )
   {
     fFlags |= fgkSaturatedMask;
@@ -461,9 +447,8 @@ AliMUONDigit::SetElectronics(Int_t manuId, Int_t manuChannel)
 Int_t
 AliMUONDigit::Track(Int_t i) const
 {
-  //
-  // Return the i-th track number (if i is >=0 and < Ntracks()) or -1.
-  //
+  /// Return the i-th track number (if i is >=0 and < Ntracks()) or -1.
+
   if ( i >= 0 && i < fNtracks ) 
   {
     return fTracks[i];
@@ -476,9 +461,8 @@ AliMUONDigit::Track(Int_t i) const
 Int_t
 AliMUONDigit::TrackCharge(Int_t i) const
 {
-  //
-  // Return the i-th track charge (if i is >=0 and < Ntracjs()) or -1.
-  //
+  /// Return the i-th track charge (if i is >=0 and < Ntracjs()) or -1.
+
   if ( i >= 0 && i < fNtracks ) 
   {
     return fTcharges[i];

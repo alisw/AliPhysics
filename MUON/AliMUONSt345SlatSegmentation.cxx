@@ -15,25 +15,27 @@
 
 /* $Id$ */
 
-//*********************************************************
-//  Segmentation classes for slat modules          
-//  This class works with local coordinates
-//  of the slats via the class AliMUONGeometrySegmentation
-//  This class contains the size of the slats and the
-//  and the differents PCB densities. 
-//  (from old AliMUONSegmentationSlatModule)
-//  Gines, Subatech, Nov04
-//  Add electronics mapping
-//  Christian, Subatech, Mai 05
-//*********************************************************
+/// \class AliMUONSt345SlatSegmentation
+/// \brief Segmentation classes for slat modules          
+///
+/// This class works with local coordinates
+/// of the slats via the class AliMUONGeometrySegmentation
+/// This class contains the size of the slats and the
+/// and the differents PCB densities. 
+/// (from old AliMUONSegmentationSlatModule)
+///
+/// Add electronics mapping - Christian, Subatech, Mai 05
+///
+/// \author Gines Martinez, Subatech, Nov04
 
 #include <TArrayI.h>
 #include <TArrayF.h>
 #include "AliMUONSt345SlatSegmentation.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONSt345SlatSegmentation)
-
+/// \endcond
 
 AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation() 
   :     AliMUONVGeometryDESegmentation(),
@@ -60,7 +62,7 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation()
         fIymax(0),
 	fInitDone(kFALSE)
 {
-  // default constructor
+/// Default constructor
 	AliDebug(1,Form("this=%p default (empty) ctor",this));
 }
 
@@ -91,7 +93,8 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending)
 	fInitDone(kFALSE)
 
 {
-  // Non default constructor
+/// Standard constructor
+
   fNsec = 4;  // 4 sector densities at most per slat 
   fNDiv = new TArrayI(fNsec);      
   fDpxD = new TArrayF(fNsec);      
@@ -103,33 +106,9 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending)
 
 }
 //----------------------------------------------------------------------
-AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(const AliMUONSt345SlatSegmentation& rhs) 
-:       AliMUONVGeometryDESegmentation(rhs),
-	fBending(0),
- 	fId(0),
-	fDpx(0),
-	fDpy(0),
-	fNpx(999999),
-	fNpy(999999),
-	fWireD(0.25),
-	fXhit(0.),
-	fYhit(0.),
-	fIx(0),
-	fIy(0),
-	fX(0.),
-	fY(0.),
-	fIxmin(0),
-	fIxmax(0),
-	fIymin(0),
-	fIymax(0)
-{
-// Copy constructor
-		AliFatal("Not implemented");
-}
-//----------------------------------------------------------------------
 AliMUONSt345SlatSegmentation::~AliMUONSt345SlatSegmentation() 
 {
-  // Destructor
+/// Destructor
 
   AliDebug(1, Form("dtor this = %p", this));
 
@@ -137,21 +116,13 @@ AliMUONSt345SlatSegmentation::~AliMUONSt345SlatSegmentation()
   delete fDpxD;
   delete fDpyD;
 }
-//----------------------------------------------------------------------
-AliMUONSt345SlatSegmentation& AliMUONSt345SlatSegmentation::operator=(const AliMUONSt345SlatSegmentation& rhs)
-{
-  // Protected assignement operator
-  if (this == &rhs) return *this;
-  AliFatal("Not implemented.");
-  return *this;  
-}
-
 
 //------------------------------------------------------------------------
 Float_t AliMUONSt345SlatSegmentation::Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y, Int_t * /*dummy*/)
 {
-  // Returns the square of the distance between 1 pad
-  // labelled by its Channel numbers and a coordinate
+/// Returns the square of the distance between 1 pad
+/// labelled by its Channel numbers and a coordinate
+
   Float_t x,y;
   GetPadC(iX,iY,x,y);
   return (x-X)*(x-X) + (y-Y)*(y-Y);
@@ -159,20 +130,23 @@ Float_t AliMUONSt345SlatSegmentation::Distance2AndOffset(Int_t iX, Int_t iY, Flo
 //____________________________________________________________________________
 Float_t AliMUONSt345SlatSegmentation::Dpx(Int_t isec) const
 {
-  // Return x-strip width
+/// Return x-strip width
+
   return (*fDpxD)[isec];
 } 
 
 //____________________________________________________________________________
 Float_t AliMUONSt345SlatSegmentation::Dpy(Int_t  isec) const
 {
-  // Return y-strip width
+/// Return y-strip width
+
   return (*fDpyD)[isec];
 }
 //_____________________________________________________________________________
 Float_t AliMUONSt345SlatSegmentation::GetAnod(Float_t xhit) const
 {
-  // Returns for a hit position xhit the position of the nearest anode wire    
+/// Returns for a hit position xhit the position of the nearest anode wire    
+
   Float_t wire= (xhit>0)? Int_t(xhit/fWireD)+0.5:Int_t(xhit/fWireD)-0.5;
   return fWireD*wire;
 }
@@ -180,7 +154,7 @@ Float_t AliMUONSt345SlatSegmentation::GetAnod(Float_t xhit) const
 //_____________________________________________________________________________
 Bool_t AliMUONSt345SlatSegmentation::HasPad(Int_t ix, Int_t iy)
 {
-// Return true if pas with given indices exists
+/// Return true if pas with given indices exists
 
 	if ( ix < 1 || ix > Npx() || iy < 1 || iy > Npy() )
 	{
@@ -201,7 +175,7 @@ Bool_t AliMUONSt345SlatSegmentation::HasPad(Int_t ix, Int_t iy)
 //--------------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
 {
-    //  Returns real coordinates (x,y) for given pad coordinates (ix,iy)
+/// Returns real coordinates (x,y) for given pad coordinates (ix,iy)
 
   if (ix < 1 || ix > Npx() || iy < 1 || iy > Npy() ){
     AliWarning(Form("ix %d or iy %d out of boundaries: Npx=%d and Npy=%d",ix, iy, Npx(), Npy()));
@@ -230,7 +204,7 @@ void AliMUONSt345SlatSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float
 //_____________________________________________________________________________
 void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy) 
 {
-//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
+///  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 
   //  Find sector isec    
   Int_t isec=-1;
@@ -257,7 +231,7 @@ void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_
 //-------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy)
 {
-//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
+/// Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 
   GetPadI(x, y, ix, iy);
 }
@@ -266,10 +240,10 @@ void AliMUONSt345SlatSegmentation::GetPadI(Float_t x, Float_t y , Float_t /*z*/,
 //_______________________________________________________________
 void AliMUONSt345SlatSegmentation::SetPadDivision(Int_t ndiv[4])
 {
-  // Defines the pad size perp. to the anode wire (y) for different sectors. 
-  // Pad sizes are defined as integral fractions ndiv of a basis pad size
-  // fDpx
-  // 
+/// Defines the pad size perp. to the anode wire (y) for different sectors. 
+/// Pad sizes are defined as integral fractions ndiv of a basis pad size
+/// fDpx
+ 
   for (Int_t i=0; i<4; i++) {
     (*fNDiv)[i]=ndiv[i];
   }
@@ -278,17 +252,17 @@ void AliMUONSt345SlatSegmentation::SetPadDivision(Int_t ndiv[4])
 //____________________________________________________________________________
 void AliMUONSt345SlatSegmentation::SetPadSize(Float_t p1, Float_t p2)
 {
-  //  Sets the padsize 
+/// Sets the padsize 
+
   fDpx=p1;
   fDpy=p2;
 }
 //_______________________________________________________________          
 void AliMUONSt345SlatSegmentation::SetPcbBoards(Int_t n[4])
 {
-  //
-  // Set PcbBoard segmentation zones for each density
-  // n[0] slat type parameter
-  // n[1] PcbBoards for highest density sector fNDiv[1] etc ...
+/// Set PcbBoard segmentation zones for each density
+/// n[0] slat type parameter
+/// n[1] PcbBoards for highest density sector fNDiv[1] etc ...
 
   fRtype = n[0];
   n[0] = 0;
@@ -298,17 +272,17 @@ void AliMUONSt345SlatSegmentation::SetPcbBoards(Int_t n[4])
 //-------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::SetPad(Int_t ix, Int_t iy)
 {
-  //
-  // Sets virtual pad coordinates, needed for evaluating pad response 
-  // outside the tracking program 
+/// Sets virtual pad coordinates, needed for evaluating pad response 
+/// outside the tracking program 
+
   GetPadC(ix,iy,fX,fY);
   fSector=Sector(ix,iy);
 }
 //---------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::SetHit(Float_t x, Float_t y)
 {
-  // Set current hit 
-  //
+/// Set current hit 
+
   fXhit = x;
   fYhit = y;
     
@@ -322,7 +296,7 @@ void AliMUONSt345SlatSegmentation::SetHit(Float_t x, Float_t y)
 //----------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
 {
-  // Set current hit 
+/// Set current hit 
 
   SetHit(xhit, yhit);
 }
@@ -330,8 +304,8 @@ void AliMUONSt345SlatSegmentation::SetHit(Float_t xhit, Float_t yhit, Float_t /*
 //----------------------------------------------------------
 void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy)
 {
-// Initialises iteration over pads for charge distribution algorithm
-//
+/// Initialises iteration over pads for charge distribution algorithm
+
     //
     // Find the wire position (center of charge distribution)
     Float_t x0a = GetAnod(xhit);
@@ -395,15 +369,15 @@ void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t 
 //----------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, Float_t dx, Float_t dy)
 {
-// Initialises iteration over pads for charge distribution algorithm
+/// Initialises iteration over pads for charge distribution algorithm
 
   FirstPad(xhit, yhit, dx, dy);
 }
 //----------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::NextPad()
 {
-  // Stepper for the iteration over pads
-  //
+/// Stepper for the iteration over pads
+
   // Step to next pad in the integration region
   //  step from left to right    
   if (fIx != fIxmax) {
@@ -424,8 +398,8 @@ void AliMUONSt345SlatSegmentation::NextPad()
 //-------------------------------------------------------------------------
 Int_t AliMUONSt345SlatSegmentation::MorePads()
 {
-  // Stopping condition for the iterator over pads
-  //
+/// Stopping condition for the iterator over pads
+
   // Are there more pads in the integration region
     
   return  (fIx != -999  || fIy != -999);
@@ -433,9 +407,8 @@ Int_t AliMUONSt345SlatSegmentation::MorePads()
 //--------------------------------------------------------------------------
 Int_t AliMUONSt345SlatSegmentation::Sector(Int_t ix, Int_t iy) 
 {
-  //
-  // Determine segmentation zone from pad coordinates
-  //
+/// Determine segmentation zone from pad coordinates
+
   Int_t isec = -1;
   for (Int_t i = 0; i < fNsec; i++) {
     if (ix <= fNpxS[i]) {
@@ -453,8 +426,8 @@ Int_t AliMUONSt345SlatSegmentation::Sector(Int_t ix, Int_t iy)
 void AliMUONSt345SlatSegmentation::
 IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2) 
 {
-  //  Returns integration limits for current pad
-  //
+///  Returns integration limits for current pad
+
   x1=fXhit-fX-Dpx(fSector)/2.;
   x2=x1+Dpx(fSector);
   y1=fYhit-fY-Dpy(fSector)/2.;
@@ -467,7 +440,8 @@ IntegrationLimits(Float_t& x1,Float_t& x2,Float_t& y1, Float_t& y2)
 void AliMUONSt345SlatSegmentation::
 Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]) 
 {
-  // Returns list of next neighbours for given Pad (iX, iY)
+/// Returns list of next neighbours for given Pad (iX, iY)
+
   Int_t i=0;
   //  step right
   if (iX+1 <= fNpx) {
@@ -496,14 +470,13 @@ Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10])
 //--------------------------------------------------------------------------
 void AliMUONSt345SlatSegmentation::Init(Int_t detectionElementId)
 {
-  //
-  //  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
-  //  These arrays help in converting from real to pad co-ordinates and
-  //  vice versa
-  //   
-  //  Segmentation is defined by rectangular modules approximating
-  //  concentric circles as shown below
-  //
+///  Fill the arrays fCx (x-contour) and fNpxS (ix-contour) for each sector
+///  These arrays help in converting from real to pad co-ordinates and
+///  vice versa
+///   
+///  Segmentation is defined by rectangular modules approximating
+///  concentric circles as shown below
+
   //  PCB module size in cm
   //  printf("\n Initialise Segmentation SlatModule \n");
 

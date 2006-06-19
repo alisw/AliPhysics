@@ -31,11 +31,17 @@ class AliMUONv1 : public AliMUON
    virtual void   CreateGeometry();
    virtual void   CreateMaterials();
    virtual void   Init();
+   
+                  /// Return the version number of this detector
    virtual Int_t  IsVersion() const {return 1;}
+   
    virtual void   StepManager();
 
+        /// Set option to take into account angle effect
    void SetAngleEffect(Bool_t Opt) 
      { fAngleEffect = Opt; }
+        
+        /// Set max step max in active gas 
    void SetStepMaxInActiveGas(Float_t StepMax)
      {fStepMaxInActiveGas = StepMax; }
 

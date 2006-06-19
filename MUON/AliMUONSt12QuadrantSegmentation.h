@@ -9,14 +9,10 @@
 
 /// \ingroup base
 /// \class AliMUONSt12QuadrantSegmentation
-/// \brief Segmentation for MUON quadrants of stations 1 and 2
-
-// Class AliMUONSt12QuadrantSegmentation
-// -------------------------------------
-// Segmentation for MUON quadrants of stations 1 and 2 using 
-// the mapping package
-//
-// Author: Ivana Hrivnacova, IPN Orsay
+/// \brief Segmentation for MUON quadrants of stations 1 and 2 using 
+/// the mapping package
+///
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #include "AliMpStationType.h"
 #include "AliMpPlaneType.h"

@@ -24,10 +24,13 @@ public:
   AliMUONPoints();
   AliMUONPoints(Int_t npoints);
   virtual ~AliMUONPoints();
-
+                        
+			/// Return hit index
   Int_t                 GetHitIndex() const {return fHitIndex;}
   Int_t                 GetTrackIndex() const; // *MENU*
+			/// Return digit index
   Int_t                 GetDigitIndex() const {return fDigitIndex;}
+			/// Return associated 3D-marker
   TMarker3DBox         *GetMarker(Int_t i) const {return fMarker[i];}
   AliMUONHit           *GetHit() const;
   AliMUONDigit         *GetDigit() const;
@@ -35,10 +38,15 @@ public:
   virtual void          DumpHit() const; // *MENU*
   virtual void          InspectDigit(); // *MENU*
   virtual void          DumpDigit() const; // *MENU*
+                        /// Set hit index
   virtual void          SetHitIndex(Int_t hitindex) {fHitIndex = hitindex;}
+                        /// Set track index
   virtual void          SetTrackIndex(Int_t trackindex) {fTrackIndex = trackindex;}
+                        /// Set digit index
   virtual void          SetDigitIndex(Int_t digitindex) {fDigitIndex = digitindex;}
+                        /// Set associated 3D-marker
   virtual void          Set3DMarker(Int_t i,TMarker3DBox *marker) {fMarker[i] = marker;}
+                        /// Set matrix
   virtual void          SetMatrix(TMatrixF *matrix) {fMatrix = matrix;}
   
 protected:

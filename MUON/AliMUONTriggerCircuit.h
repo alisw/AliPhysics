@@ -21,7 +21,7 @@ class AliMUONTriggerCircuit : public TObject
 {
  public: 
   AliMUONTriggerCircuit();  
-  virtual ~AliMUONTriggerCircuit(){;} 
+  virtual ~AliMUONTriggerCircuit();
 
   // initializations
   void Init(Int_t iCircuit);    

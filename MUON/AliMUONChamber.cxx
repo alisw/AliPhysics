@@ -34,8 +34,11 @@
 #include "AliMUONHit.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONChamber)	
+/// \endcond
 
+//_______________________________________________________
 AliMUONChamber::AliMUONChamber()
   : TObject(), 
     fId(0),
@@ -69,33 +72,11 @@ AliMUONChamber::AliMUONChamber(Int_t id)
 }
 
 //_______________________________________________________
-AliMUONChamber::AliMUONChamber(const AliMUONChamber& rChamber)
-  : TObject(rChamber)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-  // Dummy copy constructor
-}
-
-//_______________________________________________________
 AliMUONChamber::~AliMUONChamber() 
 {
 /// Destructor
 
   AliDebug(1, Form("dtor this = %p", this));
-}
-
-//_______________________________________________________
-AliMUONChamber & AliMUONChamber::operator =(const AliMUONChamber& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }
 
 //_____________________________________________________

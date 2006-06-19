@@ -65,6 +65,10 @@
   #include "TArrayI.h"
 #endif
 
+/// \cond CLASSIMP
+ClassImp(AliMUONSt1GeometryBuilderV2)
+/// \endcond
+
 // Thickness Constants
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzPadPlane=0.0148/2.;     //Pad plane
 const GReal_t AliMUONSt1GeometryBuilderV2::fgkHzFoam = 2.503/2.;        //Foam of mechanicalplane
@@ -124,13 +128,13 @@ const Int_t AliMUONSt1GeometryBuilderV2::fgkFoamBoxNameOffset=200;
 const Int_t AliMUONSt1GeometryBuilderV2::fgkFR4BoxNameOffset=400; 
 const Int_t AliMUONSt1GeometryBuilderV2::fgkDaughterCopyNoOffset=1000;
 
-ClassImp(AliMUONSt1GeometryBuilderV2)
-
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
   : AliMUONVGeometryBuilder(0, 1),
     fMUON(muon)
 {
+/// Standard constructor
+
    // set path to mapping data files
    if (! gSystem->Getenv("MINSTALL")) {    
      TString dirPath = gSystem->Getenv("ALICE_ROOT");
@@ -148,15 +152,14 @@ AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2()
   : AliMUONVGeometryBuilder(),
     fMUON(0)
 {
-// Default Constructor
-// --
+/// Default Constructor
 }
  
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(const AliMUONSt1GeometryBuilderV2& rhs)
   : AliMUONVGeometryBuilder(rhs)
 {
-// Dummy copy constructor
+/// Dummy copy constructor
 
  AliFatal("Copy constructor is not implemented.");
 }
@@ -164,7 +167,7 @@ AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(const AliMUONSt1Geometr
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilderV2::~AliMUONSt1GeometryBuilderV2()
 {
-// Destructor
+/// Destructor
 }
 
 
@@ -172,6 +175,8 @@ AliMUONSt1GeometryBuilderV2::~AliMUONSt1GeometryBuilderV2()
 AliMUONSt1GeometryBuilderV2& 
 AliMUONSt1GeometryBuilderV2::operator = (const AliMUONSt1GeometryBuilderV2& rhs) 
 {
+/// Assignment operator
+
   // check assignement to self
   if (this == &rhs) return *this;
 
@@ -188,8 +193,7 @@ AliMUONSt1GeometryBuilderV2::operator = (const AliMUONSt1GeometryBuilderV2& rhs)
 TString 
 AliMUONSt1GeometryBuilderV2::QuadrantEnvelopeName(Int_t chamber, Int_t quadrant) const
 { 
-// Generate unique envelope name from chamber Id and quadrant number
-// ---
+/// Generate unique envelope name from chamber Id and quadrant number
 
   return Form("%s%d", Form("%s%d",fgkQuadrantEnvelopeName,chamber), quadrant); 
 }
@@ -197,8 +201,8 @@ AliMUONSt1GeometryBuilderV2::QuadrantEnvelopeName(Int_t chamber, Int_t quadrant)
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateHole()
 {
-// Create all the elements found inside a foam hole
-// --
+/// Create all the elements found inside a foam hole
+
   Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
   Int_t idAir  = idtmed[1100];      // medium 1
   //Int_t idCopper  = idtmed[1109]; // medium 10 = copper 
@@ -234,8 +238,8 @@ void AliMUONSt1GeometryBuilderV2::CreateHole()
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateDaughterBoard()
 {
-// Create all the elements in a daughter board
-// --
+/// Create all the elements in a daughter board
+
   Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
   Int_t idAir  = idtmed[1100]; // medium 1
   //Int_t idCopper  = idtmed[1109]; // medium 10 = copper
@@ -282,9 +286,8 @@ void AliMUONSt1GeometryBuilderV2::CreateDaughterBoard()
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateInnerLayers()
 {
-// Create the layer of sensitive volumes with gas
-// and the copper layer.
-// --
+/// Create the layer of sensitive volumes with gas
+/// and the copper layer.
 
 // Gas Medium
   Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099; 
@@ -500,9 +503,8 @@ void AliMUONSt1GeometryBuilderV2::CreateInnerLayers()
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 {
-// create the quadrant (bending and non-bending planes)
-// for the given chamber
-// --
+/// Create the quadrant (bending and non-bending planes)
+/// for the given chamber
 
   CreateFrame(chamber);
 
@@ -579,8 +581,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFoamBox(
                                         Int_t segNumber,
                                         const  TVector2& dimensions)
 {
-// create all the elements in the copper plane
-// --
+/// Create all the elements in the copper plane
 
   Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
   Int_t idAir  = idtmed[1100]; // medium 1
@@ -625,10 +626,9 @@ void AliMUONSt1GeometryBuilderV2::CreatePlaneSegment(Int_t segNumber,
                                     const  TVector2& dimensions,
       	      	      	      	    Int_t nofHoles)
 {
-// Create a segment of a plane (this includes a foam layer, 
-// holes in the foam to feed the kaptons through, kapton connectors
-// and the mother board.)
-// --
+/// Create a segment of a plane (this includes a foam layer, 
+/// holes in the foam to feed the kaptons through, kapton connectors
+/// and the mother board.)
   
   CreateFoamBox(segNumber,dimensions);
 
@@ -645,34 +645,32 @@ void AliMUONSt1GeometryBuilderV2::CreatePlaneSegment(Int_t segNumber,
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
 {
-// Create the non-sensitive elements of the frame for the  <chamber>
-//
-// 
-// Model and notation:
-//
-// The Quadrant volume name starts with SQ
-// The volume segments are numbered 00 to XX.
-//
-//                              OutTopFrame
-//                               (SQ02-16) 
-//                              ------------  
-//             OutEdgeFrame   /              |
-//             (SQ17-24)     /               |  InVFrame (SQ00-01) 
-//                          /                |
-//                          |                |   
-//               OutVFrame  |            _- - 
-//               (SQ25-39)  |           |   InArcFrame (SQ42-45)
-//                          |           |
-//                          -------------
-//                        InHFrame (SQ40-41)
-//                          
-//
-// 06 February 2003 - Overlapping volumes resolved.
-// One quarter chamber is comprised of three TUBS volumes: SQMx, SQNx, and SQFx,
-// where SQMx is the Quadrant Middle layer for chamber <x> ( posZ in [-3.25,3.25]),
-// SQNx is the Quadrant Near side layer for chamber <x> ( posZ in [-6.25,3-.25) ), and
-// SQFx is the Quadrant Far side layer for chamber <x> ( posZ in (3.25,6.25] ).
-//---
+/// Create the non-sensitive elements of the frame for the \a chamber
+///
+/// Model and notation:                                                     \n
+///                                                                         \n
+/// The Quadrant volume name starts with SQ                                 \n
+/// The volume segments are numbered 00 to XX                               \n
+///                                                                         \n
+///                              OutTopFrame                                \n
+///                               (SQ02-16)                                 \n 
+///                              ------------                               \n
+///             OutEdgeFrame   /              |                             \n
+///             (SQ17-24)     /               |  InVFrame (SQ00-01)         \n 
+///                          /                |                             \n
+///                          |                |                             \n 
+///               OutVFrame  |            _- -                              \n
+///               (SQ25-39)  |           |   InArcFrame (SQ42-45)           \n
+///                          |           |                                  \n 
+///                          -------------                                  \n 
+///                        InHFrame (SQ40-41)                               \n 
+///                                                                         \n                         
+///                                                                         \n
+/// 06 February 2003 - Overlapping volumes resolved.                        \n
+/// One quarter chamber is comprised of three TUBS volumes: SQMx, SQNx, and SQFx,
+/// where SQMx is the Quadrant Middle layer for chamber \a chamber ( posZ in [-3.25,3.25]),
+/// SQNx is the Quadrant Near side layer for chamber \a chamber ( posZ in [-6.25,3-.25) ), and
+/// SQFx is the Quadrant Far side layer for chamber \a chamber ( posZ in (3.25,6.25] ).
 
   const Float_t kNearFarLHC=2.4;    // Near and Far TUBS Origin wrt LHC Origin
 
@@ -2064,8 +2062,7 @@ void AliMUONSt1GeometryBuilderV2::CreateFrame(Int_t chamber)
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::PlaceInnerLayers(Int_t chamber)
 {
-// Place the gas and copper layers for the specified chamber.
-// --
+/// Place the gas and copper layers for the specified chamber.
 
 // Rotation Matrices 
   Int_t rot1, rot2, rot3, rot4;   
@@ -2164,9 +2161,10 @@ void AliMUONSt1GeometryBuilderV2::PlaceInnerLayers(Int_t chamber)
 void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap specialMap, 
                             const TVector3& where, Bool_t reflectZ, Int_t chamber)
 {
-// Place all the segments in the mother volume, at the position defined
-// by the sector's data.
-// --
+/// Place all the segments in the mother volume, at the position defined
+/// by the sector's data.
+
+/// \cond SKIP
 
   static Int_t segNum=1;
   Int_t sgn;
@@ -2303,13 +2301,13 @@ void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap spe
       }// end of special motif case
     }
   }
+/// \endcond
 } 
 
 //______________________________________________________________________________
 TString AliMUONSt1GeometryBuilderV2::GasVolumeName(const TString& name, Int_t chamber) const
 {
-// Inserts the chamber number into the name.
-// ---
+/// Insert the chamber number into the name.
 
   TString newString(name);
  
@@ -2321,43 +2319,6 @@ TString AliMUONSt1GeometryBuilderV2::GasVolumeName(const TString& name, Int_t ch
   return newString;
 }
 
-/*
-//______________________________________________________________________________
-Bool_t AliMUONSt1GeometryBuilderV2::IsInChamber(Int_t ich, Int_t volGid) const
-{
-// True if volume <volGid> is part of the sensitive 
-// volumes of chamber <ich> 
-// ---
-  for (Int_t i = 0; i < fChamberV2[ich]->GetSize(); i++) {
-      if (fChamberV2[ich]->At(i) == volGid) return kTRUE;
-  }
-  return kFALSE;
-}
-*/
-
-//
-// protected methods
-//
-
-/*
-//______________________________________________________________________________
-Int_t  AliMUONSt1GeometryBuilderV2::GetChamberId(Int_t volId) const
-{
-// Check if the volume with specified  volId is a sensitive volume (gas) 
-// of some chamber and returns the chamber number;
-// if not sensitive volume - return 0.
-// ---
-
-  for (Int_t i = 1; i <=2; i++) 
-     if (IsInChamber(i-1,volId)) return i;
-  
-  for (Int_t i = 3; i <= AliMUONConstants::NCh(); i++)
-    if (volId==((AliMUONChamber*)(*fChambers)[i-1])->GetGid()) return i;
-
-  return 0;
-}
-*/
-
 //
 // public methods
 //
@@ -2365,6 +2326,8 @@ Int_t  AliMUONSt1GeometryBuilderV2::GetChamberId(Int_t volId) const
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateMaterials()
 {
+/// Define materials specific to station 1
+
 // Materials and medias defined in MUONv1:
 //
 //  AliMaterial( 9, "ALUMINIUM$", 26.98, 13., 2.7, 8.9, 37.2);
@@ -2504,8 +2467,8 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateGeometry()
 {
-// Create the detailed GEANT geometry for the dimuon arm station1
-// --
+/// Create the detailed GEANT geometry for the dimuon arm station1
+
   AliDebug(1,"Called");
 
   // Define chamber volumes as virtual
@@ -2623,8 +2586,7 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::SetTransformations() 
 {
-// Defines the transformations for the station2 chambers.
-// ---
+/// Define the transformations for the station2 chambers.
 
   if (gAlice->GetModule("SHIL")) {
     SetMotherVolume(0, "YOUT1");
@@ -2644,8 +2606,7 @@ void AliMUONSt1GeometryBuilderV2::SetTransformations()
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::SetSensitiveVolumes()
 {
-// Defines the sensitive volumes for station2 chambers.
-// ---
+/// Define the sensitive volumes for station2 chambers.
 
   GetGeometry(0)->SetSensitiveVolume("SA1G");
   GetGeometry(0)->SetSensitiveVolume("SB1G");

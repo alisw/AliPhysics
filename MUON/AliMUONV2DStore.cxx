@@ -17,7 +17,7 @@
 
 #include "AliMUONV2DStore.h"
 
-///
+/// \class AliMUONV2DStore
 /// Defines an interface equivalent to a 2D array of TObject, indexed
 /// by a pair of integers (somehow a matrix, 
 /// except that indices are not necessarily sequential).
@@ -25,17 +25,22 @@
 /// It's extremely simple and hopefully allow many implementations.
 /// It also makes the object ownership self-evident.
 ///
+/// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUONV2DStore)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONV2DStore::AliMUONV2DStore()
 {
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMUONV2DStore::~AliMUONV2DStore()
 {
+/// Destructor
 }
 
 

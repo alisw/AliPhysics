@@ -7,7 +7,7 @@
 /// \class AliMUON1DArray
 /// \brief Implementation of AliMUONV1DStore
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUON1DARRAY_H
 #define ALIMUON1DARRAY_H

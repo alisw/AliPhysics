@@ -5,7 +5,7 @@
 /// \class AliMUONTriggerEfficiencyCells
 /// \brief Store and give access to the trigger chamber efficiency.
 ///
-/// \author: Diego Stocco; INFN Torino
+//  Author: Diego Stocco; INFN Torino
 
 #ifndef ALIMUONTRIGGEREFFICIENCYCELLS_H
 #define ALIMUONTRIGGEREFFICIENCYCELLS_H

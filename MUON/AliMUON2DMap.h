@@ -8,7 +8,7 @@
 /// \brief Basic implementation of AliMUONV2DStore container using
 /// AliMpExMap internally.
 ///
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef AliMUON2DMAP_H
 #define AliMUON2DMAP_H
@@ -25,7 +25,8 @@ public:
 
   virtual TObject* Get(Int_t i, Int_t j) const;
   virtual Bool_t Set(Int_t i, Int_t j, TObject* object, Bool_t replace);
-  virtual Bool_t IsOwner() const { return kTRUE; }
+  /// Whether or not this container is the owner of its contents.
+  virtual Bool_t IsOwner() const { return kTRUE; } 
 
   virtual void Print(Option_t* opt="") const;
 

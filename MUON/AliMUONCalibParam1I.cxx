@@ -22,6 +22,8 @@
 #include "TMath.h"
 #include "TString.h"
 
+/// \class AliMUONCalibParam1I
+///
 /// This class is implementing the AliMUONVCalibParam interface.
 /// 
 /// It stores a given number of integers.
@@ -31,8 +33,12 @@
 /// 
 /// You might consider just as it is, namely a C++ wrapper to 
 /// a plain int[] array.
+///
+/// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUONCalibParam1I)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONCalibParam1I::AliMUONCalibParam1I() 
@@ -40,9 +46,7 @@ AliMUONCalibParam1I::AliMUONCalibParam1I()
   fSize(0),
   fValues(0x0)
 {
-    //
-    // Default ctor.
-    // 
+/// Default constructor.
 }
 
 //_____________________________________________________________________________
@@ -50,11 +54,10 @@ AliMUONCalibParam1I::AliMUONCalibParam1I(Int_t theSize, Int_t fillWithValue)
 : AliMUONVCalibParam(),
   fSize(theSize)
 {
-  //
-  // Normal ctor, where theSize specifies the number of channels handled
-  // by this object, and fillWithValue the default value assigned to each
-  // channel.
-  //
+/// Normal constructor, where theSize specifies the number of channels handled
+/// by this object, and fillWithValue the default value assigned to each
+/// channel.
+
   if ( fSize > 0 )
   {
     fValues = new Int_t[fSize];
@@ -68,9 +71,8 @@ AliMUONCalibParam1I::AliMUONCalibParam1I(const AliMUONCalibParam1I& other)
 fSize(0),
 fValues(0x0)
 {
-  //
-  // Copy ctor
-  //
+/// Copy constructor
+
   other.CopyTo(*this);
 }
 
@@ -78,9 +80,8 @@ fValues(0x0)
 AliMUONCalibParam1I&
 AliMUONCalibParam1I::operator=(const AliMUONCalibParam1I& other) 
 {
-  //
-  // Assignment operator
-  //
+/// Assignment operator
+
   AliMUONVCalibParam::operator=(other);
   other.CopyTo(*this);
   return *this;
@@ -89,9 +90,8 @@ AliMUONCalibParam1I::operator=(const AliMUONCalibParam1I& other)
 //_____________________________________________________________________________
 AliMUONCalibParam1I::~AliMUONCalibParam1I()
 {
-  //
-  // dtor.
-  //
+/// Destructor.
+
   delete[] fValues;
 }
 
@@ -99,9 +99,8 @@ AliMUONCalibParam1I::~AliMUONCalibParam1I()
 void
 AliMUONCalibParam1I::CopyTo(AliMUONCalibParam1I& destination) const
 {
-  //
-  // Copy this into destination.
-  //
+/// Copy this into destination.
+
   delete[] destination.fValues;
   destination.fSize = fSize;
   if ( fSize > 0 )
@@ -118,11 +117,10 @@ AliMUONCalibParam1I::CopyTo(AliMUONCalibParam1I& destination) const
 void
 AliMUONCalibParam1I::Print(Option_t* opt) const
 {
-  //
-  // Output this object to stdout.
-  // If opt=="full", then all channels are printed, otherwise
-  // only the general characteristics are printed.
-  //
+/// Output this object to stdout.
+/// If opt=="full", then all channels are printed, otherwise
+/// only the general characteristics are printed.
+
   TString sopt(opt);
   sopt.ToUpper();
   cout << "AliMUONCalibParam1I - Size=" << Size()
@@ -141,9 +139,8 @@ AliMUONCalibParam1I::Print(Option_t* opt) const
 void
 AliMUONCalibParam1I::SetValueAsFloat(Int_t i, Int_t j, Float_t value)
 {
-  //
-  // Set the value as a float, which is casted to an int prior to storage.
-  //
+/// Set the value as a float, which is casted to an int prior to storage.
+
   SetValueAsInt(i,j,TMath::Nint(value));
 }
 
@@ -151,10 +148,9 @@ AliMUONCalibParam1I::SetValueAsFloat(Int_t i, Int_t j, Float_t value)
 void
 AliMUONCalibParam1I::SetValueAsInt(Int_t i, Int_t j, Int_t value)
 {
-  //
-  // Set the value for a given channel.
-  // (i,j) are checked for correctness before use.
-  //
+/// Set the value for a given channel.
+/// (i,j) are checked for correctness before use.
+
   if ( j != 0 || i >= fSize || i < 0 )
   {
     AliError(Form("Invalid (i,j)=(%d,%d) max allowed is (%d,%d)",
@@ -170,9 +166,8 @@ AliMUONCalibParam1I::SetValueAsInt(Int_t i, Int_t j, Int_t value)
 Float_t
 AliMUONCalibParam1I::ValueAsFloat(Int_t i, Int_t j) const
 {
-  //
-  // Return one value as a float.
-  //
+/// Return one value as a float.
+
   return 1.0*ValueAsInt(i,j);
 }
 
@@ -180,10 +175,9 @@ AliMUONCalibParam1I::ValueAsFloat(Int_t i, Int_t j) const
 Int_t
 AliMUONCalibParam1I::ValueAsInt(Int_t i, Int_t j) const
 {
-  //
-  // Return one value as an integer, after checking that (i,j)
-  // are valid indices.
-  //
+/// Return one value as an integer, after checking that (i,j)
+/// are valid indices.
+
   if ( j != 0 || i >= fSize || i < 0 )
   {
     AliError(Form("Invalid (i,j)=(%d,%d) max allowed is (%d,%d)",

@@ -23,20 +23,20 @@
 
 #include "AliMUONTriggerConstants.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerConstants)
+/// \endcond
 
 //----------------------------------------------------------------------
 AliMUONTriggerConstants::AliMUONTriggerConstants()
   : TNamed()
 {
-// constructor
-    ;
+/// Default constructor
 }
 //----------------------------------------------------------------------
 AliMUONTriggerConstants::~AliMUONTriggerConstants()
 {
-// destructor
-    ;
+/// Destructor
 }
 
 //----------------------------------------------------------------------
@@ -188,55 +188,55 @@ const Float_t AliMUONTriggerConstants::fgkStripLength[4]={17., 34., 51., 68.};
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::Nmodule()
 {
-// returns fgkNmodule
+/// returns fgkNmodule
     return fgkNmodule;    
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::ModuleId(Int_t imodule)
 {
-// returns fgkModuleId
+/// returns fgkModuleId
     return fgkModuleId[imodule];
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::NstripX(Int_t imodule) 
 {
-// returns fgkNstripX
+/// returns fgkNstripX
     return fgkNstripX[imodule];
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::NstripY(Int_t imodule)
 {
-// return fgkNstripY
+/// return fgkNstripY
     return fgkNstripY[imodule];
 }
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerConstants::XcMin(Int_t imodule)
 {
-// returns fgkXcMin
+/// returns fgkXcMin
     return fgkXcMin[imodule];
 }
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerConstants::XcMax(Int_t imodule)
 {
-// returns fgkXcMax
+/// returns fgkXcMax
     return fgkXcMax[imodule];
 }
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerConstants::CircuitId(Int_t icircuit)
 {
-// returns fgkCircuitId
+/// returns fgkCircuitId
     return fgkCircuitId[icircuit];
 }
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerConstants::StripWidth(Int_t istrip)
 {
-// returns fgkStripWidth
+/// returns fgkStripWidth
     return fgkStripWidth[istrip];
 }
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerConstants::StripLength(Int_t istrip)
 {
-// returns fgkStripLength
+/// returns fgkStripLength
     return fgkStripLength[istrip];
 }
 

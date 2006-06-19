@@ -6,11 +6,8 @@
 /// \ingroup base
 /// \class AliMUONCalibrationData
 /// \brief Single entry point to access MUON calibration data.
-///
-/// For the moment, this class stores pedestals, gains and deadchannels
-/// that are fetched from the CDB.
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONCALIBRATIONDATA_H
 #define ALIMUONCALIBRATIONDATA_H

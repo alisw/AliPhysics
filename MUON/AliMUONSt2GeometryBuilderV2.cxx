@@ -39,7 +39,10 @@
 #include "AliMUONConstants.h"
 
 #define PI 3.14159
+
+/// \cond CLASSIMP
 ClassImp(AliMUONSt2GeometryBuilderV2)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONSt2GeometryBuilderV2::AliMUONSt2GeometryBuilderV2(AliMUON* muon)

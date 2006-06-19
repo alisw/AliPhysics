@@ -30,11 +30,15 @@
 
 #include "AliMUONRawCluster.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONRawCluster)
-
+/// \endcond
 
 AliMUONRawCluster::AliMUONRawCluster() 
-  : TObject()
+  : TObject(),
+    fClusterType(0),
+    fGhost(0),
+    fDetElemId(0)   
 {
 /// Constructor
     fTracks[0]=fTracks[1]=fTracks[2]=-1; 
@@ -54,8 +58,6 @@ AliMUONRawCluster::AliMUONRawCluster()
 	}
     }
     fNcluster[0]=fNcluster[1]=-1;
-    fGhost=0;
-    fDetElemId = 0;
     fErrXY[0] = 0.144;
     fErrXY[1] = 0.01;
 }

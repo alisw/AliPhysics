@@ -66,7 +66,9 @@ class AliMUONConstants : public TObject {
     static Float_t PitchSt1() {return fgPitchSt1;}
 
  protected:
+    /// Default constructor
     AliMUONConstants() : TObject() {}
+    /// Destructor
     virtual ~AliMUONConstants(){}
 
  private:

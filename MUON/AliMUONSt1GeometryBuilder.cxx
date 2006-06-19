@@ -33,14 +33,16 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONSt1GeometryBuilder)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder(AliMUON* muon)
  : AliMUONVGeometryBuilder(0, 1),
    fMUON(muon)
 {
-// Standard constructor
+/// Standard constructor
 
 }
 
@@ -49,7 +51,7 @@ AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder()
  : AliMUONVGeometryBuilder(),
    fMUON(0)
 {
-// Default constructor
+/// Default constructor
 }
 
 
@@ -57,21 +59,22 @@ AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder()
 AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder(const AliMUONSt1GeometryBuilder& rhs)
   : AliMUONVGeometryBuilder(rhs)
 {
-// Protected copy constructor
+/// Protected copy constructor
 
   AliFatal("Copy constructor is not implemented.");
 }
 
 //______________________________________________________________________________
-AliMUONSt1GeometryBuilder::~AliMUONSt1GeometryBuilder() {
-//
+AliMUONSt1GeometryBuilder::~AliMUONSt1GeometryBuilder() 
+{
+/// Destructor
 }
 
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilder& 
 AliMUONSt1GeometryBuilder::operator = (const AliMUONSt1GeometryBuilder& rhs) 
 {
-// Protected assignement operator
+/// Protected assignement operator
 
   // check assignement to self
   if (this == &rhs) return *this;
@@ -88,8 +91,7 @@ AliMUONSt1GeometryBuilder::operator = (const AliMUONSt1GeometryBuilder& rhs)
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilder::CreateGeometry()
 {
-// From AliMUONv1::CreateGeometry()
-// ---
+/// From AliMUONv1::CreateGeometry()
 
 //********************************************************************
 //                            Station 1                             **
@@ -291,8 +293,7 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilder::SetTransformations()
 {
-// Defines the transformations for the station2 chambers.
-// ---
+/// Define the transformations for the station2 chambers.
 
   Double_t zpos1= - AliMUONConstants::DefaultChamberZ(0); 
   SetTranslation(0, TGeoTranslation(0., 0., zpos1));
@@ -304,8 +305,7 @@ void AliMUONSt1GeometryBuilder::SetTransformations()
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilder::SetSensitiveVolumes()
 {
-// Defines the sensitive volumes for station1 chambers.
-// ---
+/// Define the sensitive volumes for station1 chambers.
 
   GetGeometry(0)->SetSensitiveVolume("S01G");
   GetGeometry(1)->SetSensitiveVolume("S02G");

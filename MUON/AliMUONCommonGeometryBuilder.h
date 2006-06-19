@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup base
+/// \ingroup sim
 /// \class AliMUONCommonGeometryBuilder
 /// \brief Class to build common materials
 ///
@@ -26,9 +26,9 @@ class AliMUONCommonGeometryBuilder : public AliMUONVGeometryBuilder
     virtual  ~AliMUONCommonGeometryBuilder();
 
     virtual void  CreateMaterials();
-    virtual void  CreateGeometry()      {}
-    virtual void  SetSensitiveVolumes() {}
-    virtual void  SetTransformations()  {}
+    virtual void  CreateGeometry()      {}  ///< No geometry is created
+    virtual void  SetSensitiveVolumes() {}  ///< No sensitive volumes are set
+    virtual void  SetTransformations()  {}  ///< No transformations are set
 
   protected:
     AliMUONCommonGeometryBuilder(const AliMUONCommonGeometryBuilder& right);
@@ -37,9 +37,9 @@ class AliMUONCommonGeometryBuilder : public AliMUONVGeometryBuilder
  
   private:
     // data members
-    AliMUON*  fMUON; ///< Class to build common materials 
+    AliMUON*  fMUON; ///< the MUON detector class 
 
-  ClassDef(AliMUONCommonGeometryBuilder,1)  // Common MUON geometry definitions
+  ClassDef(AliMUONCommonGeometryBuilder,1)  // Class to build common materials 
 };
 
 #endif //ALI_MUON_COMMON_GEOMETRY_BUILDER_H

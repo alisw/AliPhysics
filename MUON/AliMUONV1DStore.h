@@ -7,7 +7,7 @@
 /// \class AliMUONV1DStore
 /// \brief Generic container indexed by a single integer.
 /// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef AliMUONV1DSTORE_H
 #define AliMUONV1DSTORE_H

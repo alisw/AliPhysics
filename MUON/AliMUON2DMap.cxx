@@ -20,20 +20,21 @@
 #include "AliLog.h"
 #include "AliMpExMap.h"
 
-/// 
-/// Basic implementation of AliMUONV2DStore container using
+/// \class AliMUON2DMap
+/// \brief Basic implementation of AliMUONV2DStore container using
 /// AliMpExMap internally.
 /// What we store is a "double" map : an AliMpExMap of AliMpExMaps
 ///
+/// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUON2DMap)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUON2DMap::AliMUON2DMap() : AliMUONV2DStore(), fMap(new AliMpExMap(true))
 {
-  //
-  // ctor.
-  //
+/// Default constructor.
 }
 
 //_____________________________________________________________________________
@@ -41,13 +42,17 @@ AliMUON2DMap::AliMUON2DMap(const AliMUON2DMap& other)
 : AliMUONV2DStore(),
 fMap(0x0)
 {
-  other.CopyTo(*this);
+ /// Copy constructor.
+
+ other.CopyTo(*this);
 }
 
 //_____________________________________________________________________________
 AliMUON2DMap&
 AliMUON2DMap::operator=(const AliMUON2DMap& other)
 {
+/// Assignment operator
+
   other.CopyTo(*this);
   return *this;
 }
@@ -55,9 +60,9 @@ AliMUON2DMap::operator=(const AliMUON2DMap& other)
 //_____________________________________________________________________________
 AliMUON2DMap::~AliMUON2DMap()
 {
-  //
-  // dtor. we delete the map, which will delete the objects, as we're owner.
-  //
+/// Destructor. 
+/// We delete the map, which will delete the objects, as we're owner.
+
   delete fMap;
 }
 
@@ -65,9 +70,8 @@ AliMUON2DMap::~AliMUON2DMap()
 void
 AliMUON2DMap::CopyTo(AliMUON2DMap&) const
 {
-  // 
-  // Copy this into dest.
-  //
+/// Copy this into dest.
+
   AliFatal("Implement me if needed");
 }
 
@@ -75,9 +79,8 @@ AliMUON2DMap::CopyTo(AliMUON2DMap&) const
 TObject* 
 AliMUON2DMap::Get(Int_t i, Int_t j) const
 {
-  //
-  // Return the value at position (i,j).
-  //
+/// Return the value at position (i,j).
+
   TObject* o = fMap->GetValue(i);
   if ( o )
   {
@@ -92,20 +95,17 @@ AliMUON2DMap::Get(Int_t i, Int_t j) const
 void
 AliMUON2DMap::Print(Option_t*) const
 {
-  //
-  // Not implemented (yet?)
-  //
+/// Not implemented (yet?)
 }
 
 //_____________________________________________________________________________
 Bool_t 
 AliMUON2DMap::Set(Int_t i, Int_t j, TObject* object, Bool_t replace)
 {
-  //
-  // Set the object at position (i,j).
-  // If replace==kTRUE, we don't care if there's an object there already,
-  // otherwise we might refuse to set if the (i,j) location is already
-  // filled (in which case we return kFALSE).
+/// Set the object at position (i,j).
+/// If replace==kTRUE, we don't care if there's an object there already,
+/// otherwise we might refuse to set if the (i,j) location is already
+/// filled (in which case we return kFALSE).
   
   TObject* o = fMap->GetValue(i);
   if ( !o )

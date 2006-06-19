@@ -30,6 +30,10 @@
 // Currently only implemented for digits, as a proof-of-principle.
 //
 
+/// \cond CLASSIMP
+ClassImp(AliMUONDataIterator)
+/// \endcond
+
 namespace
 {
   void GetChamberNumbers(AliMUONDataIterator::EIterationStyle type, 
@@ -55,8 +59,6 @@ namespace
     }
 }
 }
-
-ClassImp(AliMUONDataIterator)
 
 //_____________________________________________________________________________
 AliMUONDataIterator::AliMUONDataIterator() 

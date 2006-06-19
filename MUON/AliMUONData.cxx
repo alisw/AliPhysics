@@ -38,7 +38,9 @@
 #include "TArrayI.h"
 #include "TString.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONData)
+/// \endcond
  
 //_____________________________________________________________________________
   AliMUONData::AliMUONData():
@@ -88,21 +90,13 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
     fSplitLevel(0),
     fCurrentEvent(-1)
 {
-  // Constructor for AliMUONData
-}
-
-//_____________________________________________________________________________
-AliMUONData::AliMUONData(const AliMUONData& rMUONData):TNamed(rMUONData)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
+/// Standard constructor
 }
 
 //_____________________________________________________________________________
 AliMUONData::~AliMUONData()
 {
-  // Destructor for AliMUONData
+/// Destructor for AliMUONData
   if (fHits) {
     fHits->Delete();
     delete fHits;
@@ -139,51 +133,34 @@ AliMUONData::~AliMUONData()
 }
 
 //_____________________________________________________________________________
-AliMUONData& AliMUONData::operator=(const AliMUONData& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
-          
-
-//_____________________________________________________________________________
 void AliMUONData::AddDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
 {
-  //
-  // Add a MUON digit to the list of Digits of the detection plane id
-  //
+/// Add a MUON digit to the list of Digits of the detection plane id
+ 
   TClonesArray &ldigits = * Digits(id) ; 
   new(ldigits[fNdigits[id]++]) AliMUONDigit(tracks,charges,digits);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddDigit(Int_t id, const AliMUONDigit& digit)
 {
-  //
-  // Add a MUON digit to the list of Digits of the detection plane id
-  //
+/// Add a MUON digit to the list of Digits of the detection plane id
+
   TClonesArray &ldigits = * Digits(id) ; 
   new(ldigits[fNdigits[id]++]) AliMUONDigit(digit);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddSDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *sdigits)
 {
-  //
-  // Add a MUON Sdigit to the list of SDigits of the detection plane id
-  //
+/// Add a MUON Sdigit to the list of SDigits of the detection plane id
+
   TClonesArray &lSdigits = * SDigits(id) ; 
   new(lSdigits[fNSdigits[id]++]) AliMUONDigit(tracks,charges,sdigits);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddSDigit(Int_t id, const AliMUONDigit& Sdigit)
 {
-  //
-  // Add a MUON Sdigit to the list of SDigits of the detection plane id
-  //
+/// Add a MUON Sdigit to the list of SDigits of the detection plane id
+
   TClonesArray &lSdigits = * SDigits(id) ; 
   new(lSdigits[fNSdigits[id]++]) AliMUONDigit(Sdigit);
 }
@@ -191,7 +168,8 @@ void AliMUONData::AddSDigit(Int_t id, const AliMUONDigit& Sdigit)
 //_____________________________________________________________________________
 void AliMUONData::AddGlobalTrigger(const AliMUONGlobalTrigger& trigger )
 {
-  // add a MUON Global Trigger to the list (only one GlobalTrigger per event !);
+/// Add a MUON Global Trigger to the list (only one GlobalTrigger per event !);
+
   TClonesArray &globalTrigger = *fGlobalTrigger;
   new(globalTrigger[fNglobaltrigger++]) AliMUONGlobalTrigger(trigger);
 }
@@ -202,7 +180,8 @@ void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber,
 			 Float_t phi, Float_t length, Float_t destep,
 			 Float_t Xref,Float_t Yref,Float_t Zref)
 {
- // Add new hit to the hit list
+/// Add new hit to the hit list
+
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
 				  idpart, X, Y, Z, 
@@ -218,6 +197,7 @@ void AliMUONData::AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId,
 			 Float_t Xref,Float_t Yref,Float_t Zref)
 {
  // Add new hit to the hit list
+
   TClonesArray &lhits = *fHits;
   new(lhits[fNhits++]) AliMUONHit(fIshunt, track, detElemId, 
 				  idpart, X, Y, Z, 
@@ -228,41 +208,40 @@ void AliMUONData::AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId,
 //____________________________________________________________________________
 void AliMUONData::AddLocalTrigger(const  AliMUONLocalTrigger& trigger)
 {
-  // add a MUON Local Trigger to the list
+/// add a MUON Local Trigger to the list
+
   TClonesArray &localTrigger = *fLocalTrigger;
   new(localTrigger[fNlocaltrigger++]) AliMUONLocalTrigger(trigger);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddRawCluster(Int_t id, const AliMUONRawCluster& c)
 {
-  //
-  // Add a MUON rawcluster to the list in the detection plane id
-  //
+/// Add a MUON rawcluster to the list in the detection plane id
+
   TClonesArray &lrawcl = *((TClonesArray*) fRawClusters->At(id));
   new(lrawcl[fNrawclusters[id]++]) AliMUONRawCluster(c);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddRecTrack(const AliMUONTrack& track)
 {
-  //
-  // Add a MUON rectrack
-  //
+/// Add a MUON rectrack
+
   TClonesArray &lrectracks = *fRecTracks;
   new(lrectracks[fNrectracks++]) AliMUONTrack(track);
 }
 //_____________________________________________________________________________
 void AliMUONData::AddRecTriggerTrack(const AliMUONTriggerTrack& triggertrack)
 {
-  //
-  // Add a MUON triggerrectrack
-  //
+/// Add a MUON triggerrectrack
+
   TClonesArray &lrectriggertracks = *fRecTriggerTracks;  
   new(lrectriggertracks[fNrectriggertracks++]) AliMUONTriggerTrack(triggertrack);
 }
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::Digits(Int_t DetectionPlane) const
 {
-  //Getting List of Digits
+/// Getting List of Digits
+
   if (fDigits)
     return ( (TClonesArray*) fDigits->At(DetectionPlane) );
   else
@@ -271,7 +250,8 @@ TClonesArray*  AliMUONData::Digits(Int_t DetectionPlane) const
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::SDigits(Int_t DetectionPlane) const
 {
-  //Getting List of SDigits
+/// Getting List of SDigits
+
   if (fSDigits)
     return ( (TClonesArray*) fSDigits->At(DetectionPlane) );
   else
@@ -280,7 +260,8 @@ TClonesArray*  AliMUONData::SDigits(Int_t DetectionPlane) const
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsRawClusterBranchesInTree()
 {
-  // Checking if there are RawCluster Branches In TreeR
+/// Checking if there are RawCluster Branches In TreeR
+
   if (TreeR()==0x0) {
     AliError("No treeR in memory");
     return kFALSE;
@@ -297,7 +278,8 @@ Bool_t   AliMUONData::IsRawClusterBranchesInTree()
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsDigitsBranchesInTree()
 {
-  // Checking if there are RawCluster Branches In TreeR
+/// Checking if there are RawCluster Branches In TreeR
+
   if (TreeD()==0x0) {
     AliError("No treeD in memory");
     return kFALSE;
@@ -314,7 +296,7 @@ Bool_t   AliMUONData::IsDigitsBranchesInTree()
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsTriggerBranchesInTree()
 {
-  // Checking if there are Trigger Branches In TreeR
+/// Checking if there are Trigger Branches In TreeR
  if (TreeR()==0x0) {
     AliError("No treeR in memory");
     return kFALSE;
@@ -331,7 +313,7 @@ Bool_t   AliMUONData::IsTriggerBranchesInTree()
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsTriggerBranchesInTreeD()
 {
-  // Checking if there are Trigger Branches In TreeR
+/// Checking if there are Trigger Branches In TreeR
  if (TreeD()==0x0) {
     AliError("No treeD in memory");
     return kFALSE;
@@ -349,7 +331,7 @@ Bool_t   AliMUONData::IsTriggerBranchesInTreeD()
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsTrackBranchesInTree()
 {
-  // Checking if there are Track Branches In TreeT
+/// Checking if there are Track Branches In TreeT
   if (TreeT()==0x0) {
     AliError("No treeT in memory");
     return kFALSE;
@@ -366,7 +348,7 @@ Bool_t   AliMUONData::IsTrackBranchesInTree()
 //____________________________________________________________________________
 Bool_t   AliMUONData::IsTriggerTrackBranchesInTree()
 {
-  // Checking if there are TriggerTrack Branches In TreeT
+/// Checking if there are TriggerTrack Branches In TreeT
   if (TreeT()==0x0) {
     AliError("No treeT in memory");
     return kFALSE;
@@ -383,7 +365,7 @@ Bool_t   AliMUONData::IsTriggerTrackBranchesInTree()
 //____________________________________________________________________________
 void AliMUONData::Fill(Option_t* option)
 {
-  // Method to fill the trees
+/// Method to fill the trees
   const char *cH   = strstr(option,"H");
   const char *cD   = strstr(option,"D");   // Digits branches in TreeD
   const char *cS   = strstr(option,"S");   // SDigits branches in TreeS
@@ -540,9 +522,8 @@ void AliMUONData::Fill(Option_t* option)
 //_____________________________________________________________________________
 void AliMUONData::MakeBranch(Option_t* option)
 {
-  //
-  // Create Tree branches for the MUON.
-  //
+/// Create Tree branches for the MUON.
+
   const Int_t kBufferSize = 4000;
   char branchname[30];
   
@@ -792,7 +773,8 @@ void AliMUONData::MakeBranch(Option_t* option)
 //____________________________________________________________________________
 TClonesArray*  AliMUONData::RawClusters(Int_t DetectionPlane)
 {
-  // Getting Raw Clusters
+/// Getting Raw Clusters
+
   if (fRawClusters) 
     return ( (TClonesArray*) fRawClusters->At(DetectionPlane) );
   else
@@ -803,6 +785,8 @@ TClonesArray*  AliMUONData::RawClusters(Int_t DetectionPlane)
 TClonesArray*  
 AliMUONData::LocalTrigger() const
 {
+/// Getting local trigger
+
   return fLocalTrigger;
 }
 
@@ -810,7 +794,8 @@ AliMUONData::LocalTrigger() const
 void
 AliMUONData::GetDigits() const 
 {
-  // Load the digits from TreeD for the current event.
+/// Load the digits from TreeD for the current event.
+
   Int_t event = fLoader->GetRunLoader()->GetEventNumber();
   if ( fCurrentEvent != event )
   {
@@ -823,16 +808,16 @@ AliMUONData::GetDigits() const
 TClonesArray*  
 AliMUONData::GlobalTrigger() const
 {
-  // Return the global trigger 
+/// Return the global trigger 
+
   return fGlobalTrigger;
 }
 
 //____________________________________________________________________________
 void AliMUONData::ResetDigits()
 {
-    //
-    // Reset number of digits and the digits array for this detector
-    //
+/// Reset number of digits and the digits array for this detector
+
     if (fDigits == 0x0) return;
     for ( int i=0;i<AliMUONConstants::NCh();i++ ) {
       if ((*fDigits)[i])    ((TClonesArray*)fDigits->At(i))->Clear("C");
@@ -842,9 +827,8 @@ void AliMUONData::ResetDigits()
 //____________________________________________________________________________
 void AliMUONData::ResetSDigits()
 {
-    //
-    // Reset number of Sdigits and the Sdigits array for this detector
-    //
+/// Reset number of Sdigits and the Sdigits array for this detector
+
     if (fSDigits == 0x0) return;
     for ( int i=0;i<AliMUONConstants::NCh();i++ ) {
       if ((*fSDigits)[i])    ((TClonesArray*)fSDigits->At(i))->Clear();
@@ -854,15 +838,16 @@ void AliMUONData::ResetSDigits()
 //______________________________________________________________________________
 void AliMUONData::ResetHits()
 {
-  // Reset number of clusters and the cluster array for this detector
+/// Reset number of clusters and the cluster array for this detector
+
   fNhits   = 0;
   if (fHits) fHits->Clear();
 }
 //_______________________________________________________________________________
 void AliMUONData::ResetRawClusters()
 {
-    // Reset number of raw clusters and the raw clust array for this detector
-    //
+/// Reset number of raw clusters and the raw clust array for this detector
+
   for ( int i=0;i<AliMUONConstants::NTrackingCh();i++ ) {
     if ((*fRawClusters)[i])    ((TClonesArray*)fRawClusters->At(i))->Clear();
     if (fNrawclusters)  fNrawclusters[i]=0;
@@ -871,7 +856,8 @@ void AliMUONData::ResetRawClusters()
 //_______________________________________________________________________________
 void AliMUONData::ResetTrigger()
 {
-  //  Reset Local and Global Trigger 
+/// Reset Local and Global Trigger 
+
   fNglobaltrigger = 0;
   if (fGlobalTrigger) fGlobalTrigger->Clear();
   fNlocaltrigger = 0;
@@ -880,21 +866,24 @@ void AliMUONData::ResetTrigger()
 //____________________________________________________________________________
 void AliMUONData::ResetRecTracks()
 {
-  // Reset tracks information
+/// Reset tracks information
+
   fNrectracks = 0;
   if (fRecTracks) fRecTracks->Delete(); // necessary to delete in case of memory allocation
 }
 //____________________________________________________________________________
 void AliMUONData::ResetRecTriggerTracks()
 {
-  // Reset tracks information
+/// Reset tracks information
+
   fNrectriggertracks = 0;
   if (fRecTriggerTracks) fRecTriggerTracks->Delete(); // necessary to delete in case of memory allocation
 }
 //_____________________________________________________________________________
 void AliMUONData::SetTreeAddress(Option_t* option)
 {
-  //Setting Addresses to the events trees
+/// Setting Addresses to the events trees
+
   const char *cH   = strstr(option,"H");
   const char *cD   = strstr(option,"D");   // Digits branches in TreeD
   const char *cS   = strstr(option,"S");   // SDigits branches in TreeS
@@ -1090,7 +1079,8 @@ void AliMUONData::SetTreeAddress(Option_t* option)
 void
 AliMUONData::Print(Option_t* opt) const
 {
-  // Dump object on screen
+/// Dump object on screen
+
   TString options(opt);
   options.ToUpper();
   

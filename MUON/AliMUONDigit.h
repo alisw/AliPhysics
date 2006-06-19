@@ -17,36 +17,36 @@ class AliMUONDigit : public TObject
  public:
     AliMUONDigit();
     AliMUONDigit(const AliMUONDigit& rhs);
-    /// \deprecated
+    // deprecated
     AliMUONDigit(Int_t *digits);
-    /// \deprecated
+    // deprecated
     AliMUONDigit(Int_t *tracks, Int_t *charges, Int_t *digits);
     virtual ~AliMUONDigit();
 
     AliMUONDigit& operator=(const AliMUONDigit& rhs);
     
-    virtual Bool_t IsSortable() const {return kTRUE;}
+    virtual Bool_t IsSortable() const {return kTRUE;}        ///< Return true if sortable
     virtual int Compare(const TObject *obj) const;
 
-    virtual Int_t DetElemId()const     {return fDetElemId;}    
-    virtual Int_t PadX() const         {return fPadX;}
-    virtual Int_t PadY() const         {return fPadY;}
-    virtual Int_t Cathode() const      {return fCathode;}
+    virtual Int_t DetElemId()const     {return fDetElemId;}  ///< Return detection element ID  
+    virtual Int_t PadX() const         {return fPadX;}       ///< Return pad number along x
+    virtual Int_t PadY() const         {return fPadY;}       ///< Return pad number along y
+    virtual Int_t Cathode() const      {return fCathode;}    ///< Return cathode number
     
-    virtual Int_t Signal() const       {return fSignal;}
+    virtual Int_t Signal() const       {return fSignal;}     ///< Return signal amplitude
     
-    virtual Int_t Physics() const      {return fPhysics;}
+    virtual Int_t Physics() const      {return fPhysics;}    ///< Return MC physics contribution to signal
     
-    virtual Int_t Hit() const          {return fHit;}  
+    virtual Int_t Hit() const          {return fHit;}        ///< Return MC hit number
     
-    virtual Int_t Ntracks() const { return fNtracks; }
+    virtual Int_t Ntracks() const { return fNtracks; }       ///< Return MC tracks making to this digit
     virtual void AddTrack(Int_t trackNumber, Int_t trackCharge);
     virtual Int_t Track(Int_t i) const;
     virtual Int_t TrackCharge(Int_t i) const;
     
-    virtual Int_t ADC() const { return fADC; }
-    virtual Int_t ManuId() const { return fManuId; }
-    virtual Int_t ManuChannel() const { return fManuChannel; }
+    virtual Int_t ADC() const { return fADC; }                 ///< Return ADC value
+    virtual Int_t ManuId() const { return fManuId; }           ///< Return Id of the MANU chip
+    virtual Int_t ManuChannel() const { return fManuChannel; } ///< Return Channel within the MANU chip
     virtual Bool_t IsSaturated() const;
     virtual Bool_t IsNoiseOnly() const;
     
@@ -54,15 +54,15 @@ class AliMUONDigit : public TObject
     virtual void Saturated(Bool_t saturated=kTRUE);
     virtual void SetElectronics(Int_t manuId, Int_t manuChannel);
     virtual void SetADC(Int_t adc) { fADC=adc; }
-    virtual void SetDetElemId(Int_t id)    {fDetElemId = id;}
-    virtual void SetPadX(Int_t pad)        {fPadX = pad;}
-    virtual void SetPadY(Int_t pad)        {fPadY = pad;}
-    virtual void SetSignal(Int_t q)        {fSignal = q;}
-    virtual void AddSignal(Int_t q)        {fSignal += q;}
-    virtual void AddPhysicsSignal(Int_t q) {fPhysics += q;}
-    virtual void SetHit(Int_t n)           {fHit = n;}    
-    virtual void SetCathode(Int_t c)       {fCathode = c;}
-    virtual void SetPhysicsSignal(Int_t q) {fPhysics = q; }
+    virtual void SetDetElemId(Int_t id)    {fDetElemId = id;}  ///< Set detection element ID
+    virtual void SetPadX(Int_t pad)        {fPadX = pad;}      ///< Set pad number along x
+    virtual void SetPadY(Int_t pad)        {fPadY = pad;}      ///< Set pad number along y
+    virtual void SetSignal(Int_t q)        {fSignal = q;}      ///< Set signal amplitude
+    virtual void AddSignal(Int_t q)        {fSignal += q;}     ///< Add signal amplitude
+    virtual void AddPhysicsSignal(Int_t q) {fPhysics += q;}    ///< Add MC physics contribution to signal
+    virtual void SetHit(Int_t n)           {fHit = n;}         ///< Set MC hit number
+    virtual void SetCathode(Int_t c)       {fCathode = c;}     ///< Set cathode number
+    virtual void SetPhysicsSignal(Int_t q) {fPhysics = q; }    ///< Set MC physics contribution to signal
     
     virtual void Print(Option_t* opt="") const;
     
@@ -74,7 +74,7 @@ class AliMUONDigit : public TObject
       */
     virtual void Clear(Option_t*);
     
-    /// Add mask to the track numbers.
+    // Add mask to the track numbers.
     virtual void PatchTracks(Int_t mask);
     
 private:

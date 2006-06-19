@@ -5,11 +5,10 @@
 
 /// \ingroup base
 /// \class AliMUONCalibParam1I
-/// \brief Implementation of AliMUONVCalibParam.
-/// 
-/// Handle the case of 1 integer parameter per channel.
+/// \brief Implementation of AliMUONVCalibParam,
+/// handle the case of 1 integer parameter per channel.
 ///
-/// \author Laurent Aphecetche
+// Author Laurent Aphecetche
 
 #ifndef ALIMUONCALIBPARAM1I_H
 #define ALIMUONCALIBPARAM1I_H

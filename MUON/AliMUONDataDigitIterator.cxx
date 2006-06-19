@@ -31,6 +31,10 @@
 /// \author L. Aphecetche
 ///
 
+/// \cond CLASSIMP
+ClassImp(AliMUONDataDigitIterator)
+/// \endcond
+
 //_____________________________________________________________________________
 AliMUONDataDigitIterator::AliMUONDataDigitIterator(const AliMUONData* data,
                                                    Int_t firstChamber, 
@@ -41,9 +45,7 @@ fData(data),
 fFirstChamber(firstChamber),
 fLastChamber(lastChamber)
 {
-  // 
-  // Ctor
-  // 
+  /// Standard constructor
   Reset();
 }
 
@@ -52,13 +54,23 @@ AliMUONDataDigitIterator::AliMUONDataDigitIterator(const AliMUONDataDigitIterato
 : 
 AliMUONVDataIterator()
 {
+  /// Copy constructor
+
   rhs.CopyTo(*this);
+}
+
+//_____________________________________________________________________________
+AliMUONDataDigitIterator::~AliMUONDataDigitIterator()
+{
+  /// Destructor
 }
 
 //_____________________________________________________________________________
 AliMUONDataDigitIterator&
 AliMUONDataDigitIterator::operator=(const AliMUONDataDigitIterator& rhs)
 {
+  /// Assignment operator
+
   rhs.CopyTo(*this);
   return *this;
 }
@@ -67,7 +79,7 @@ AliMUONDataDigitIterator::operator=(const AliMUONDataDigitIterator& rhs)
 void
 AliMUONDataDigitIterator::CopyTo(AliMUONDataDigitIterator& destination) const
 {
-  // Copy *this to destination
+  /// Copy *this to destination
   destination.fData=fData;
   destination.fFirstChamber=fFirstChamber;
   destination.fLastChamber=fLastChamber;
@@ -80,7 +92,7 @@ AliMUONDataDigitIterator::CopyTo(AliMUONDataDigitIterator& destination) const
 TObject*
 AliMUONDataDigitIterator::Next()
 {
-  // Return current element and self-position to the next one.
+  /// Return current element and self-position to the next one.
   
   TObject* rv(0x0);
   
@@ -115,7 +127,7 @@ AliMUONDataDigitIterator::Next()
 Bool_t
 AliMUONDataDigitIterator::Remove()
 {
-  // Remove current element.
+  /// Remove current element.
   
   if ( fDigits ) 
   {
@@ -131,7 +143,7 @@ AliMUONDataDigitIterator::Remove()
 void
 AliMUONDataDigitIterator::Reset()
 {
-  // Resets the iterator
+  /// Reset the iterator
   fData->GetDigits();
   fCurrentDigit = 0;
   fCurrentChamber = fFirstChamber;

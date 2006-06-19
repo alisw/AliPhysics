@@ -76,7 +76,7 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
 
   void SetDAnod(float d);
 
-  void Init(int /*chamber*/) {}
+  void Init(int /*chamber*/) {}  ///< Not implemented
   void Draw(Option_t* opt = "");
 
   Float_t Dpx() const;
@@ -100,7 +100,7 @@ class AliMUONSt345SlatSegmentationV2 : public AliMUONVGeometryDESegmentation
 
   const AliMpVSegmentation* GetMpSegmentation() const;
 
-  /// to be deprecated. Use the one below w/o z instead.
+  /// \deprecated. Use the one below w/o z instead.
   void GetPadC(Int_t ix, Int_t iy, Float_t& x, Float_t& y, Float_t& z);
 
   /// From pad indices to coordinates (cm).

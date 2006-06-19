@@ -42,14 +42,16 @@
 #include "AliMpVSegmentation.h"
 #include "AliMUONGeometryTransformer.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerCircuitNew)
+/// \endcond
 
 //----------------------------------------------------------------------
 AliMUONTriggerCircuitNew::AliMUONTriggerCircuitNew()
 : TObject(),
 fILocalBoard(0)
 {
-  // Constructor
+/// Constructor
   
   Int_t i;  
   for (i=0; i<16; i++) { fXpos11[i]=0.; }
@@ -58,31 +60,15 @@ fILocalBoard(0)
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerCircuitNew::AliMUONTriggerCircuitNew(const AliMUONTriggerCircuitNew& theMUONTriggerCircuit)
-: TObject(theMUONTriggerCircuit)
+AliMUONTriggerCircuitNew::~AliMUONTriggerCircuitNew()
 {
-  // Protected copy constructor
-  
-  AliFatal("Not implemented.");
-}
-
-//----------------------------------------------------------------------
-AliMUONTriggerCircuitNew & 
-AliMUONTriggerCircuitNew::operator=(const AliMUONTriggerCircuitNew& rhs)
-{
-  // Protected assignement operator
-  
-  if (this == &rhs) return *this;
-  
-  AliFatal("Not implemented.");
-  
-  return *this;  
-}
+/// Destructor
+} 
 
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuitNew::Init(Int_t iCircuit, const AliMUONTriggerCrateStore& crates) 
 {
-  // initialize circuit characteristics
+/// initialize circuit characteristics
   fILocalBoard=iCircuit+1;//AliMUONTriggerConstants::CircuitId(iCircuit);
   
   LoadXPos(crates);
@@ -93,7 +79,7 @@ void AliMUONTriggerCircuitNew::Init(Int_t iCircuit, const AliMUONTriggerCrateSto
 //---------------------------------------------------------------------
 void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
 {
-  // fill fYpos11 and fYpos21 -> y position of X declusterized strips
+/// fill fYpos11 and fYpos21 -> y position of X declusterized strips
   
   const AliMUONLocalTriggerBoard* localBoard = crates.LocalBoard(fILocalBoard);
   
@@ -216,10 +202,10 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
 //----------------------------------------------------------------------
 void AliMUONTriggerCircuitNew::LoadXPos(const AliMUONTriggerCrateStore& crates)
 {
-  // fill fXpos11 -> x position of Y strips for the first plane only
-  // fXpos11 contains the x position of Y strip for the current circuit
-  // taking into account whether or nor not part(s) of the circuit
-  // (middle, up or down) has(have) 16 strips (handdled by means of switchs)
+/// fill fXpos11 -> x position of Y strips for the first plane only
+/// fXpos11 contains the x position of Y strip for the current circuit
+/// taking into account whether or nor not part(s) of the circuit
+/// (middle, up or down) has(have) 16 strips (handdled by means of switchs)
   
   const AliMUONLocalTriggerBoard* localBoard = crates.LocalBoard(fILocalBoard);
   
@@ -284,7 +270,7 @@ void AliMUONTriggerCircuitNew::FillYstrips(
                                            const Int_t iFirstStrip, const Int_t iLastStrip, Int_t liStripCircuit,
                                            const Bool_t doubling)
 {    
-  // fill
+/// fill
   Double_t xyGlobal[4]={0.,0.,0.,0.};
   for (Int_t istrip=iFirstStrip; istrip<iLastStrip; istrip++) {
     AliMpPad pad = seg->PadByIndices(AliMpIntPair(istrip,0),kTRUE);
@@ -317,7 +303,7 @@ void AliMUONTriggerCircuitNew::FillXstrips(
                                            const Int_t iFirstStrip, const Int_t iLastStrip, 
                                            Int_t liStripCircuit, Float_t *tab)
 {    
-  // fill 
+/// fill 
   Double_t xyGlobal[4]={0.,0.,0.,0.};
   for (Int_t istrip=iFirstStrip; istrip<iLastStrip; istrip++) {
     AliMpPad pad = seg->PadByIndices(AliMpIntPair(icol-1,istrip),kTRUE);
@@ -341,17 +327,17 @@ void AliMUONTriggerCircuitNew::FillXstrips(
 //--- methods which return member data related info
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerCircuitNew::GetY11Pos(Int_t istrip) const {
-  // returns Y position of X strip istrip in MC11
+/// returns Y position of X strip istrip in MC11
   return fYpos11[istrip];
 }
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerCircuitNew::GetY21Pos(Int_t istrip) const {
-  // returns Y position of X strip istrip in MC21
+/// returns Y position of X strip istrip in MC21
   return fYpos21[istrip];
 }
 //----------------------------------------------------------------------
 Float_t AliMUONTriggerCircuitNew::GetX11Pos(Int_t istrip) const {
-  // returns X position of Y strip istrip in MC11
+/// returns X position of Y strip istrip in MC11
   return fXpos11[istrip];
 }
 //----------------------------------------------------------------------
@@ -415,7 +401,7 @@ removed tmp*/
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerCircuitNew::DetElemId(Int_t ichamber, char side, Int_t iline)
 {
-  // returns detection element Id for chamber iChamber, side side and line iline
+/// returns detection element Id for chamber iChamber, side side and line iline
   Int_t itmp=0;    
   if ( side == 'R' ) {	       // right side 
     switch (iline) // (from 1 to 9, from bottom to top)
@@ -487,7 +473,7 @@ Int_t AliMUONTriggerCircuitNew::DetElemId(Int_t ichamber, char side, Int_t iline
 Int_t
 AliMUONTriggerCircuitNew::DetElemId(Int_t iChamber, const char* boardName)
 {
-  // returns detection element Id for chamber iChamber and board boardName
+/// returns detection element Id for chamber iChamber and board boardName
   char side = boardName[5];
   Int_t iline = boardName[4] - '0';
   return DetElemId(iChamber,side,iline);
@@ -500,8 +486,8 @@ AliMUONTriggerCircuitNew::DecodeBoardName(const char* boardName,
                                           Int_t& iLine,
                                           Int_t& iCol)
 {
-  // get side, line and col from board boardName
-  // note: icol = icol -1 for iline = 5 w.r.t other ilines
+/// get side, line and col from board boardName
+/// note: icol = icol -1 for iline = 5 w.r.t other ilines
   side = boardName[0];
   iLine = boardName[4] - '0';
   iCol = boardName[2] - '0';
@@ -512,8 +498,8 @@ AliMUONTriggerCircuitNew::DecodeBoardName(const char* boardName,
 Int_t
 AliMUONTriggerCircuitNew::FirstStrip(const char* boardName)
 {
-  // returns the first strip from mapping for board boardName
-  // take care of special case for boards RC1L6B12 & LC1L6B12
+/// returns the first strip from mapping for board boardName
+/// take care of special case for boards RC1L6B12 & LC1L6B12
   Int_t iFirstStrip = -1;
   Int_t boardNumber = atoi(boardName+6);
   char side;
@@ -544,8 +530,8 @@ void AliMUONTriggerCircuitNew::XYGlobal(
                                         Int_t detElemId, const AliMpPad& pad,
                                         Double_t xyGlobal[4])
 {
-  // returns pad x & y positions and x & y pad dimensions in global coordinates
-  // note: no need for transformation for pad dimensions
+/// returns pad x & y positions and x & y pad dimensions in global coordinates
+/// note: no need for transformation for pad dimensions
   
   // get the pad position and dimensions
   Double_t xl1 = pad.Position().X();

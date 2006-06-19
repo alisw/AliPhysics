@@ -32,7 +32,9 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONSt2GeometryBuilder)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONSt2GeometryBuilder::AliMUONSt2GeometryBuilder(AliMUON* muon)

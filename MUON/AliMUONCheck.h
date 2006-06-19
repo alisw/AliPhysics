@@ -10,10 +10,7 @@
 /// \class AliMUONCheck
 /// \brief A helper class to dump data from AliRoot-generated root files.
 /// 
-/// Only implemented for digits so far, it is meant as a replacement
-/// of the MUONCheck.C macro, or to be used by this macro to simplify it.
-///
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ROOT_TObject
 #  include "TObject.h"
@@ -31,6 +28,7 @@ public:
   AliMUONCheck(const char* galiceFile, Int_t firstEvent=0, Int_t lastEvent=-1);
   virtual ~AliMUONCheck();
   
+  /// Return true if contains valid data
   Bool_t IsValid() const { return (fData!=0); }
   
   void DumpDigits(Option_t* opt="") const;

@@ -22,19 +22,17 @@
 #include "AliLog.h"
 #include "AliMUONLocalStruct.h"
 
+/// \class AliMUONGlobalTrigger
+/// Global Trigger algorithm data output.
+/// Built from Local and Regional algorithms.                          \n 
+/// Update for copy & assigment operator,
+/// add SetGlobalPattern and GetGlobalPattern method for rawdata 
+/// (Ch. Finck)
+/// \author Ph. Crochet
+
+/// \cond CLASSIMP
 ClassImp(AliMUONGlobalTrigger)
-
-/// ------------------
-/// Class AliMUONGlobalTrigger
-/// ------------------
-// Global Trigger algorithm data output
-// built from Local and Regional algorithms 
-/// Ph. Crochet
-///
-/// update for copy & assigment operator
-/// add SetGlobalPattern and GetGlobalPattern method for rawdata
-/// Ch. Finck
-
+/// \endcond
 
 //----------------------------------------------------------------------
 AliMUONGlobalTrigger::AliMUONGlobalTrigger()
@@ -59,44 +57,47 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger()
     fPairLikeHpt(0),
     fPairLikeApt(0)
 { 
-  //
-  // constructor 
-  //
+  /// Default constructor 
 }
+
 //----------------------------------------------------------------------
 AliMUONGlobalTrigger::AliMUONGlobalTrigger(const AliMUONGlobalTrigger& theMUONGlobalTrig)
-  : TObject(theMUONGlobalTrig)
+  : TObject(theMUONGlobalTrig),
+  
+    fSinglePlusLpt(theMUONGlobalTrig.fSinglePlusLpt),
+    fSinglePlusHpt(theMUONGlobalTrig.fSinglePlusHpt),
+    fSinglePlusApt(theMUONGlobalTrig.fSinglePlusApt),
+    
+    fSingleMinusLpt(theMUONGlobalTrig.fSingleMinusLpt),
+    fSingleMinusHpt(theMUONGlobalTrig.fSingleMinusHpt),
+    fSingleMinusApt(theMUONGlobalTrig.fSingleMinusApt),
+    
+    fSingleUndefLpt(theMUONGlobalTrig.fSingleUndefLpt),
+    fSingleUndefHpt(theMUONGlobalTrig.fSingleUndefHpt),
+    fSingleUndefApt(theMUONGlobalTrig.fSingleUndefApt),
+    
+    fPairUnlikeLpt(theMUONGlobalTrig.fPairUnlikeLpt),
+    fPairUnlikeHpt(theMUONGlobalTrig.fPairUnlikeHpt),
+    fPairUnlikeApt(theMUONGlobalTrig.fPairUnlikeApt),
+    
+    fPairLikeLpt(theMUONGlobalTrig.fPairLikeLpt),
+    fPairLikeHpt(theMUONGlobalTrig.fPairLikeHpt),
+    fPairLikeApt(theMUONGlobalTrig.fPairLikeApt)
 {
-  //
-  // copy constructor
-  //
-  fSinglePlusLpt  = theMUONGlobalTrig.fSinglePlusLpt;
-  fSinglePlusHpt  = theMUONGlobalTrig.fSinglePlusHpt;
-  fSinglePlusApt  = theMUONGlobalTrig.fSinglePlusApt;
-  
-  fSingleMinusLpt = theMUONGlobalTrig.fSingleMinusLpt;
-  fSingleMinusHpt = theMUONGlobalTrig.fSingleMinusHpt;
-  fSingleMinusApt = theMUONGlobalTrig.fSingleMinusApt;
-  
-  fSingleUndefLpt = theMUONGlobalTrig.fSingleUndefLpt;
-  fSingleUndefHpt = theMUONGlobalTrig.fSingleUndefHpt;
-  fSingleUndefApt = theMUONGlobalTrig.fSingleUndefApt;
-  
-  fPairUnlikeLpt  = theMUONGlobalTrig.fPairUnlikeLpt;
-  fPairUnlikeHpt  = theMUONGlobalTrig.fPairUnlikeHpt;
-  fPairUnlikeApt  = theMUONGlobalTrig.fPairUnlikeApt;
-  
-  fPairLikeLpt    = theMUONGlobalTrig.fPairLikeLpt;
-  fPairLikeHpt    = theMUONGlobalTrig.fPairLikeHpt;
-  fPairLikeApt    = theMUONGlobalTrig.fPairLikeApt;
+  /// Copy constructor
+}
+
+//----------------------------------------------------------------------
+AliMUONGlobalTrigger::~AliMUONGlobalTrigger()
+{
+  /// Destructor
 }
 
 //----------------------------------------------------------------------
 AliMUONGlobalTrigger& AliMUONGlobalTrigger::operator=(const AliMUONGlobalTrigger& theMUONGlobalTrig)
 {
-  // assignement operator
-  //
-  // equal operator (useful for non-pointer member in TClonesArray)
+  /// Assignement operator;
+  /// equal operator (useful for non-pointer member in TClonesArray)
 
   if (this == &theMUONGlobalTrig)
     return *this;
@@ -132,38 +133,38 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger(Int_t *singlePlus,
 					   Int_t *singleMinus,
 					   Int_t *singleUndef,
 					   Int_t *pairUnlike, Int_t *pairLike)
+  : TObject(),
+  
+    fSinglePlusLpt(singlePlus[0]),
+    fSinglePlusHpt(singlePlus[1]),
+    fSinglePlusApt(singlePlus[2]),
+
+    fSingleMinusLpt(singleMinus[0]),
+    fSingleMinusHpt(singleMinus[1]),
+    fSingleMinusApt(singleMinus[2]),
+
+    fSingleUndefLpt(singleUndef[0]),
+    fSingleUndefHpt(singleUndef[1]),
+    fSingleUndefApt(singleUndef[2]),
+
+    fPairUnlikeLpt(pairUnlike[0]),
+    fPairUnlikeHpt(pairUnlike[1]),
+    fPairUnlikeApt(pairUnlike[2]),
+
+    fPairLikeLpt(pairLike[0]),    
+    fPairLikeHpt(pairLike[1]),  
+    fPairLikeApt(pairLike[2])
+  
 {
-  //
-  // Set the Global Trigger object
-  //
-  fSinglePlusLpt = singlePlus[0];
-  fSinglePlusHpt = singlePlus[1];
-  fSinglePlusApt = singlePlus[2];
-
-  fSingleMinusLpt = singleMinus[0];
-  fSingleMinusHpt = singleMinus[1];
-  fSingleMinusApt = singleMinus[2];
-
-  fSingleUndefLpt = singleUndef[0];
-  fSingleUndefHpt = singleUndef[1];
-  fSingleUndefApt = singleUndef[2];
-
-  fPairUnlikeLpt = pairUnlike[0];
-  fPairUnlikeHpt = pairUnlike[1];
-  fPairUnlikeApt = pairUnlike[2];
-
-  fPairLikeLpt   = pairLike[0];  
-  fPairLikeHpt   = pairLike[1];  
-  fPairLikeApt   = pairLike[2];  
+  /// Set the Global Trigger object
 }
 
 //-----------------------------------------------------------
 void AliMUONGlobalTrigger:: SetGlobalPattern(Int_t gloTrigPat)
 {
-  //
-  // set class member from global pattern
-  // coming from rawdata
-  //
+  /// Set class member from global pattern
+  /// coming from rawdata
+
   fSinglePlusLpt = (gloTrigPat     ) & 0x1;
   fSinglePlusHpt = (gloTrigPat >> 1) & 0x1; 
   fSinglePlusApt = (gloTrigPat >> 2) & 0x1;
@@ -189,11 +190,9 @@ void AliMUONGlobalTrigger:: SetGlobalPattern(Int_t gloTrigPat)
 //-----------------------------------------------------------
 Int_t AliMUONGlobalTrigger::GetGlobalPattern() const
 {
+  /// Global trigger pattern calculation
+  /// from class member values
 
-  //
-  // global trigger pattern calculation
-  // from class member values
-  //
   Int_t gloTrigPat = 0;
 
   if (SinglePlusLpt())  gloTrigPat|= 0x1;

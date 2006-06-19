@@ -24,18 +24,25 @@ public:
   AliMUONRecoCheck(Char_t *chLoader);
   virtual          ~AliMUONRecoCheck();
 
+                /// Return MUON data 
   AliMUONData*  GetMUONData() {return fMUONData;}
   void MakeTrackRef();
+                /// Add track reference
   void AddMuonTrackReference(const AliMUONTrack *muonTrack) 
     {new ((*fMuonTrackRef)[fMuonTrackRef->GetEntriesFast()]) AliMUONTrack(*muonTrack);}
+
   void PrintEvent() const;
   void ResetTracks() const;
+                /// Return run loader
   AliRunLoader* GetRunLoader() {return fRunLoader;}
   void CleanMuonTrackRef();
   void ReconstructibleTracks();
+                /// Return number of reconstructible tracks
   Int_t GetNumberOfReconstuctibleTracks() {return fReconstructibleTracks;}
+                /// Return number of reconstructed tracks
   Int_t GetNumberOfRecoTracks() {return fRecoTracks;}
   TClonesArray *GetTrackReco();
+                /// Return reference muon tracks
   TClonesArray *GetMuonTrackRef() {return fMuonTrackRef;}
 
 protected:

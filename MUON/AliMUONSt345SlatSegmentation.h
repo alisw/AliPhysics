@@ -8,14 +8,6 @@
 /// \ingroup base
 /// \class AliMUONSt345SlatSegmentation
 /// \brief Segmentation for slat modules
-///
-///*********************************************************
-///  Segmentation classes for slat modules          
-///  This class works with local coordinates
-///  of the slats via the class AliMUONGeometrySegmentation
-///  This class contains the size of the slats and the
-///  and the differents PCB densities. 
-///*********************************************************
 
 #include  "AliMUONVGeometryDESegmentation.h"
 
@@ -31,55 +23,56 @@ class AliMUONSt345SlatSegmentation : public AliMUONVGeometryDESegmentation
     virtual ~AliMUONSt345SlatSegmentation();
       
     virtual Float_t  Distance2AndOffset(Int_t iX, Int_t iY, Float_t X, Float_t Y, Int_t * dummy);  // Distance between 1 pad and a position
-    virtual Float_t  Dpx() const {return fDpx;}  // Pad size in x   
-    virtual Float_t  Dpy() const {return fDpy;}  // Pad size in y   
+    virtual Float_t  Dpx() const {return fDpx;}  ///< Pad size in x   
+    virtual Float_t  Dpy() const {return fDpy;}  ///< Pad size in y   
     virtual Float_t  Dpx(Int_t isec) const;       // Pad size in x by Sector
     virtual Float_t  Dpy(Int_t isec) const;       // Pad size in y by Sector
-    virtual void     Draw(const char */*opt*/ = "") {}  // Not implemented
+    virtual void     Draw(const char */*opt*/ = "") {}  ///< Not implemented
     virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t dx, Float_t dy);  // Initialisation for pad iteration
     virtual void     FirstPad(Float_t xhit, Float_t yhit, Float_t zhit, Float_t dx, Float_t dy);
 
-    virtual Bool_t   HasPad(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/) { return true; }
+    virtual Bool_t   HasPad(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/) { return true; }  ///< Not implemented
     virtual Bool_t   HasPad(Int_t ix, Int_t iy);
-    virtual AliMUONGeometryDirection  GetDirection() { return kDirUndefined; } 
-    virtual const AliMpVSegmentation* GetMpSegmentation() const { return 0; } 		       
+    virtual AliMUONGeometryDirection  GetDirection() { return kDirUndefined; } ///< Not implemented
+    virtual const AliMpVSegmentation* GetMpSegmentation() const { return 0; }  ///< Not implemented		       
 
     virtual Float_t  GetAnod(Float_t xhit) const;  // Anod wire coordinate closest to xhit
     virtual void     GetPadI(Float_t x ,Float_t y ,Int_t   &ix,Int_t &iy);  // Transform from pad to real coordinates
     virtual void     GetPadI(Float_t x, Float_t y , Float_t z, Int_t &ix, Int_t &iy);
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y);
+                     /// Returns real coordinates (x,y,z) for given pad coordinates (ix,iy)
     virtual void     GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y, Float_t &z) {z=0; GetPadC(ix, iy, x , y);}
 
     virtual void     IntegrationLimits(Float_t& x1, Float_t& x2, Float_t& y1, Float_t& y2); //Current integration limits
-    virtual Int_t    ISector()  {return fSector;} // Current Pad during Integration (current sector)
-    virtual Int_t    Ix() {return fIx;} // x-coordinate
-    virtual Int_t    Iy() {return fIy;} // y-coordinate
+    virtual Int_t    ISector()  {return fSector;} ///< Current Pad during Integration (current sector)
+    virtual Int_t    Ix() {return fIx;} ///< x-coordinate
+    virtual Int_t    Iy() {return fIy;} ///< y-coordinate
   
     virtual Int_t    MorePads();  // Condition
  
     virtual void     Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]);  // Get next neighbours
     virtual void     NextPad(); // Stepper
-    virtual Int_t    Npx() const {return fNpx;} // Maximum number of Pads in x
-    virtual Int_t    Npy() const {return fNpy;} // Maximum number of Pads in y
+    virtual Int_t    Npx() const {return fNpx;} ///< Maximum number of Pads in x
+    virtual Int_t    Npy() const {return fNpy;} ///< Maximum number of Pads in y
 
-    virtual void     SetDAnod(Float_t D) {fWireD = D;};  // Anod pitch
-    virtual Int_t    Sector(Int_t ix, Int_t iy);         // Calculate sector from pad coordinates
-    virtual void     SetHit(Float_t xhit, Float_t yhit); // Set hit position
+    virtual void     SetDAnod(Float_t D) {fWireD = D;};  ///< Anod pitch
+    virtual Int_t    Sector(Int_t ix, Int_t iy);         //   Calculate sector from pad coordinates
+    virtual void     SetHit(Float_t xhit, Float_t yhit); //   Set hit position
     virtual void     SetHit(Float_t xhit, Float_t yhit, Float_t zhit);
-    virtual void     SetId(Int_t id) {fId=id;}  // Setting detection element
+    virtual void     SetId(Int_t id) {fId=id;}  ///< Setting detection element
     virtual void     SetPad(Int_t ix, Int_t iy);         // Set pad position
     virtual void     SetPadDivision(Int_t ndiv[4]);      // Set Slat Segmentation Parameters
     virtual void     SetPadSize(Float_t p1, Float_t p2); // Pad size Dx*Dy 
     virtual void     SetPcbBoards(Int_t n[4]);           // Set Segmentation Zones (PCB Boards)
  
     // The following function could be obsolet for this class, but they are pure virtual in AliSegmentation
-    virtual void     GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/, Int_t */*Nparallel*/, Int_t */*Offset*/) {};
-    virtual Int_t    SigGenCond(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/){return 0;} ;  // Signal Generation Condition during Stepping
-    virtual void     SigGenInit(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/){};  // Initialise signal gneration at coord (x,y,z)
-    virtual void     GiveTestPoints(Int_t &/*n*/, Float_t * /*x*/, Float_t */*y*/) const{};   // Test points for auto calibration
-    virtual void     SetCorrFunc(Int_t /*dum*/, TF1* /*func*/){}; // Function for systematic corrections, Set the correction function
-    virtual TF1*     CorrFunc(Int_t) const {return 0x0;} // Get the correction Function
-    virtual Int_t    Sector(Float_t /*x*/, Float_t /*y*/) {return 1;}
+    virtual void     GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/, Int_t */*Nparallel*/, Int_t */*Offset*/) {}; ///< Not implemented
+    virtual Int_t    SigGenCond(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/){return 0;} ;  ///< Signal Generation Condition during Stepping
+    virtual void     SigGenInit(Float_t /*x*/, Float_t /*y*/, Float_t /*z*/){};  ///< Initialise signal gneration at coord (x,y,z)
+    virtual void     GiveTestPoints(Int_t &/*n*/, Float_t * /*x*/, Float_t */*y*/) const{};   ///< Test points for auto calibration
+    virtual void     SetCorrFunc(Int_t /*dum*/, TF1* /*func*/){}; ///< Function for systematic corrections, Set the correction function
+    virtual TF1*     CorrFunc(Int_t) const {return 0x0;} ///< Get the correction Function
+    virtual Int_t    Sector(Float_t /*x*/, Float_t /*y*/) {return 1;} ///< Current sector
 
     virtual void     Init(Int_t detectionElementId); // Initialisation
     // Current integration limits

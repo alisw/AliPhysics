@@ -27,47 +27,51 @@
 #include "AliMpTrigger.h"
 #include "AliLog.h"
 
-//
-// A class to store and give access to the trigger chamber efficiency.
-//
-// Efficiency is stored per cathode, on "cells" of a given size.
-//
-// The main method of this class is IsTriggered().
-//
-// $ALICE_ROOT/MUON/data/TriggerChamberefficiencyCells.dat contains efficiency 
-// for each chamber (i.e. DetElement). 
-// The efficiency cells goes from right to left and 
-// from bottom to top of the chamber, namely, the efficiencies tabulated in the 
-// file refers to the following reference frame:
-//
-//x
-//<----------------------------------|
-//                                   |
-//   ---------------------------     |
-//  | 0.97 | 0.97 | 0.97 | 0.97 |    |
-//   ---------------------------     |
-//  | 0.97 | 0.97 | 0.97 | 0.97 |    |
-//   ---------------------------     |
-//  | 0.97 | 0.97 | 0.97 | 0.97 |    |
-//   ---------------------------     |
-//                                   |
-//                                  \/ y
-//
-//  The file can be edited in order to change efficiency in a chosen region
-//  of the chamber.
-//
-// But please note that this object is also available from the CDB 
-// (generated using the MUONCDB.C macro)
-//
+/// \class AliMUONTriggerEfficiencyCells
+/// A class to store and give access to the trigger chamber efficiency.
+///
+/// Efficiency is stored per cathode, on "cells" of a given size.
+///
+/// The main method of this class is IsTriggered().
+///
+/// $ALICE_ROOT/MUON/data/TriggerChamberefficiencyCells.dat contains efficiency 
+/// for each chamber (i.e. DetElement). 
+/// The efficiency cells goes from right to left and 
+/// from bottom to top of the chamber, namely, the efficiencies tabulated in the 
+/// file refers to the following reference frame:
+///
+/// <pre>
+/// x
+/// <----------------------------------|
+///                                    |
+///    ---------------------------     |
+///   | 0.97 | 0.97 | 0.97 | 0.97 |    |
+///    ---------------------------     |
+///   | 0.97 | 0.97 | 0.97 | 0.97 |    |
+///    ---------------------------     |
+///   | 0.97 | 0.97 | 0.97 | 0.97 |    |
+///    ---------------------------     |
+///                                    |
+///                                   \/ y
+/// </pre>
+///  The file can be edited in order to change efficiency in a chosen region
+///  of the chamber.
+///
+/// But please note that this object is also available from the CDB 
+/// (generated using the MUONCDB.C macro)
+///
+/// \author Diego Stocco; INFN Torino
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerEfficiencyCells)
+/// \endcond
 
 //__________________________________________________________________________
 AliMUONTriggerEfficiencyCells::AliMUONTriggerEfficiencyCells()
 :
 TObject()
 {
-  // Default ctor.
+///  Default constructor.
   Reset();
 }
 
@@ -76,7 +80,7 @@ AliMUONTriggerEfficiencyCells::AliMUONTriggerEfficiencyCells(const char* filenam
 :
 TObject()
 {
-  // Ctor using an ASCII file.
+///  Constructor using an ASCII file.
   Reset();
   ReadFile(filename);
 }
@@ -85,13 +89,13 @@ TObject()
 //__________________________________________________________________________
 AliMUONTriggerEfficiencyCells::~AliMUONTriggerEfficiencyCells()
 {
-  // dtor. Does nothing ;-)
+///  Destructor. Does nothing ;-)
 }
     
 //__________________________________________________________________________
 Float_t AliMUONTriggerEfficiencyCells::GetCellEfficiency(Int_t detElemId, Int_t cathode, Float_t x, Float_t y)
 {
-  // Get the efficiency at a given position (x,y) for a given cathode
+///  Get the efficiency at a given position (x,y) for a given cathode
   
   Int_t chamber = FindChamberIndex(detElemId);
   Int_t slat = FindSlatIndex(detElemId);
@@ -108,7 +112,8 @@ Float_t AliMUONTriggerEfficiencyCells::GetCellEfficiency(Int_t detElemId, Int_t 
 //__________________________________________________________________________
 void AliMUONTriggerEfficiencyCells::GetCellEfficiency(Int_t detElemId, Float_t x, Float_t y, Float_t &eff1, Float_t &eff2)
 {
-  // Get the efficiencies of the 2 cathode at a given location (x,y)
+///  Get the efficiencies of the 2 cathode at a given location (x,y)
+
   Int_t chamber = FindChamberIndex(detElemId);
   Int_t slat = FindSlatIndex(detElemId);
   TArrayI cell = CellByCoord(detElemId,x,y);
@@ -126,7 +131,8 @@ void AliMUONTriggerEfficiencyCells::GetCellEfficiency(Int_t detElemId, Float_t x
 Bool_t 
 AliMUONTriggerEfficiencyCells::IsTriggered(Int_t detElemId, Int_t cathode, Float_t x, Float_t y)
 {
-  // Random decision of whether a given "location" (x,y) trigs or not.
+///  Random decision of whether a given "location" (x,y) trigs or not.
+
   Float_t efficiency = GetCellEfficiency(detElemId, cathode, x, y);
   Bool_t trigger = kTRUE;
   if(gRandom->Rndm()>efficiency)
@@ -141,7 +147,8 @@ AliMUONTriggerEfficiencyCells::IsTriggered(Int_t detElemId, Int_t cathode, Float
 void 
 AliMUONTriggerEfficiencyCells::IsTriggered(Int_t detElemId, Float_t x, Float_t y, Bool_t &trig1, Bool_t &trig2)
 {
-  // Whether or not a given location (x,y) has a chance to trig, on each cathode.
+///  Whether or not a given location (x,y) has a chance to trig, on each cathode.
+
   Float_t eff1 = 0.0;
   Float_t eff2 = 0.0;
   GetCellEfficiency(detElemId, x, y, eff1, eff2);
@@ -155,7 +162,8 @@ AliMUONTriggerEfficiencyCells::IsTriggered(Int_t detElemId, Float_t x, Float_t y
 //__________________________________________________________________________
 TArrayI AliMUONTriggerEfficiencyCells::CellByCoord(Int_t detElemId, Float_t x, Float_t y)
 {
-  // Get the efficiencies at a given location.
+///  Get the efficiencies at a given location.
+
   Int_t chamber = FindChamberIndex(detElemId);
   Int_t slat = FindSlatIndex(detElemId);
   Int_t cell[2]={-1,-1};
@@ -172,7 +180,8 @@ TArrayI AliMUONTriggerEfficiencyCells::CellByCoord(Int_t detElemId, Float_t x, F
 //__________________________________________________________________________
 void AliMUONTriggerEfficiencyCells::ReadFile(const char* filename)
 {
-  // Reads a file containing the efficiency map.
+///  Reads a file containing the efficiency map.
+
   TString fileName = gSystem->ExpandPathName(filename);
   ifstream file(fileName.Data());
   Int_t datInt=0, detEl=0, chamber=0, rpc=0;
@@ -215,7 +224,8 @@ void AliMUONTriggerEfficiencyCells::ReadFile(const char* filename)
 //__________________________________________________________________________
 Int_t AliMUONTriggerEfficiencyCells::FindChamberIndex(Int_t detElemId)
 {
-  // From detElemId to chamber number
+///  From detElemId to chamber number
+
   Int_t offset = 100*(AliMUONConstants::NTrackingCh()+1);
   Int_t chamber = (detElemId-offset)/100;
   return chamber;
@@ -225,7 +235,8 @@ Int_t AliMUONTriggerEfficiencyCells::FindChamberIndex(Int_t detElemId)
 //__________________________________________________________________________
 Int_t AliMUONTriggerEfficiencyCells::FindSlatIndex(Int_t detElemId)
 {
-  // From detElemId to slat index.
+///  From detElemId to slat index.
+
   Int_t offset = 100*(AliMUONConstants::NTrackingCh()+1);
   Int_t chamber = FindChamberIndex(detElemId);
   Int_t slat = detElemId-offset-(chamber*100);
@@ -236,7 +247,8 @@ Int_t AliMUONTriggerEfficiencyCells::FindSlatIndex(Int_t detElemId)
 //__________________________________________________________________________
 TVector2 AliMUONTriggerEfficiencyCells::ChangeReferenceFrame(Float_t x, Float_t y, Float_t x0, Float_t y0)
 {
-    //(x0,y0) position of the local reference frame (center of the chamber)
+/// (x0,y0) position of the local reference frame (center of the chamber)
+
     Float_t x1 = x0-x;//reflection of axis
     Float_t y1 = y+y0;
     return TVector2(x1,y1);
@@ -246,9 +258,8 @@ TVector2 AliMUONTriggerEfficiencyCells::ChangeReferenceFrame(Float_t x, Float_t 
 void
 AliMUONTriggerEfficiencyCells::Reset()
 {
-  //
-  // Sets our internal array contents to zero.
-  //
+///  Sets our internal array contents to zero.
+
   for(Int_t chamber=0; chamber<4; chamber++)
   {
     for(Int_t slat=0; slat<18; slat++)
@@ -264,7 +275,7 @@ AliMUONTriggerEfficiencyCells::Reset()
             fCellContent[chamber][slat][cath][ix][iy]=0.0;
           }
         }
-	    }
+      }
     }
   }
 }

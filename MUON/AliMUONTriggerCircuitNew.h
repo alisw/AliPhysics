@@ -25,7 +25,7 @@ class AliMUONTriggerCircuitNew : public TObject
 {
 public: 
   AliMUONTriggerCircuitNew();  
-  virtual ~AliMUONTriggerCircuitNew(){;} 
+  virtual ~AliMUONTriggerCircuitNew();
   
   // initializations
   void Init(Int_t iCircuit, const AliMUONTriggerCrateStore& crates);    

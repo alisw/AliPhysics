@@ -31,10 +31,12 @@
 #include <TMath.h>
 #include <TRandom.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONMathieson)
+/// \endcond
 	
 //__________________________________________________________________________
-  AliMUONMathieson::AliMUONMathieson() :
+AliMUONMathieson::AliMUONMathieson() :
     fSqrtKx3(0.),
     fKx2(0.),
     fKx4(0.),
@@ -46,6 +48,12 @@ ClassImp(AliMUONMathieson)
 {
 /// Default constructor
 
+}
+
+//__________________________________________________________________________
+AliMUONMathieson::~AliMUONMathieson()
+{
+/// Destructor
 }
 
   //__________________________________________________________________________

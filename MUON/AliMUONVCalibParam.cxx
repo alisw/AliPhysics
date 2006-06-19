@@ -24,18 +24,18 @@
 ///
 /// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUONVCalibParam)
+/// \endcond
 
 //_____________________________________________________________________________
   AliMUONVCalibParam::AliMUONVCalibParam() : TObject()
 {
-  // ctor
+///  Default constructor
 }
 
 //_____________________________________________________________________________
 AliMUONVCalibParam::~AliMUONVCalibParam()
 {
-  // 
-  // dtor (virtual).
-  //
+/// Destructor.
 }

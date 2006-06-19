@@ -27,7 +27,9 @@
 #include "AliMUONTransientDigit.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTransientDigit)
+/// \endcond
 
 //____________________________________________________________________________
 AliMUONTransientDigit::AliMUONTransientDigit() :
@@ -38,16 +40,6 @@ AliMUONTransientDigit::AliMUONTransientDigit() :
 /// Default constructor
 }
  
-//____________________________________________________________________________
-AliMUONTransientDigit::AliMUONTransientDigit(const AliMUONTransientDigit& digit) :
-  AliMUONDigit(digit)
-{
-/// Protected copy constructor
-
-  AliFatal( "Not implemented.");
-}
-
-
 AliMUONTransientDigit::AliMUONTransientDigit(Int_t ich, Int_t *digits) : 
   AliMUONDigit(digits),
   fChamber(ich),
@@ -67,21 +59,10 @@ AliMUONTransientDigit::~AliMUONTransientDigit()
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliMUONTransientDigit& 
-AliMUONTransientDigit::operator =(const AliMUONTransientDigit& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}
-
-////////////////////////////////////////////////////////////////////////
 void AliMUONTransientDigit::AddToTrackList(Int_t track, Int_t charge)
 {
+/// Add track to the track list
+
   TVector *pTrInfo = new TVector(3);
   TVector &trInfo = *pTrInfo;
   trInfo(0) = track;
@@ -92,6 +73,9 @@ void AliMUONTransientDigit::AddToTrackList(Int_t track, Int_t charge)
 ////////////////////////////////////////////////////////////////////////
 void AliMUONTransientDigit::UpdateTrackList(Int_t track, Int_t charge)
 {
+/// Update track charge if track already in the track list,
+/// or add the track to the list
+
   Int_t lastEntry = fTrackList->GetLast();
   TVector *pVect = static_cast<TVector*>(fTrackList->At(lastEntry));
   if ( static_cast<Int_t>((*pVect)(0)) == track) {
@@ -104,6 +88,8 @@ void AliMUONTransientDigit::UpdateTrackList(Int_t track, Int_t charge)
 ////////////////////////////////////////////////////////////////////////
 Int_t AliMUONTransientDigit::GetTrack(Int_t i) const
 {
+/// Return \a i th track from the list
+
   if (i > fTrackList->GetEntriesFast()) return 0;
   TVector *pVect = static_cast<TVector*>(fTrackList->At(i));
   return static_cast<Int_t>((*pVect)(0));
@@ -113,6 +99,8 @@ Int_t AliMUONTransientDigit::GetTrack(Int_t i) const
 ////////////////////////////////////////////////////////////////////////
 Int_t AliMUONTransientDigit::GetCharge(Int_t i) const
 {
+/// Return the charge of \a i th track in the list
+
   if (i > fTrackList->GetEntriesFast()) return 0;
   TVector *pVect = static_cast<TVector*>(fTrackList->At(i));
   return static_cast<Int_t>((*pVect)(1));

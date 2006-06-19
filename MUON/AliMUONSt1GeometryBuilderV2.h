@@ -4,7 +4,7 @@
 // $Id$
 // Revision of includes 07/05/2004
 //
-/// \ingroup base
+/// \ingroup sim
 /// \class AliMUONSt1GeometryBuilderV2
 /// \brief MUON Station1 detailed geometry construction class
 ///
@@ -145,12 +145,9 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     TString FR4BoxName(Int_t segNumber) const;
     TString GasVolumeName(const TString& name, Int_t chamber) const;
 
-    void   AddChamberGid(Int_t id,Int_t volName,Int_t idx);
-    //Bool_t IsInChamber(Int_t ich, Int_t volGid) const;   
-
-    GReal_t TotalHzPlane() const ;         // Total mechanical plane half Size
-    GReal_t TotalHzDaughter() const ;      // Total daughter plane half Size
-    GReal_t TotalHz() const ;              // Total plane half Size
+    GReal_t TotalHzPlane() const ; 
+    GReal_t TotalHzDaughter() const ;
+    GReal_t TotalHz() const ;
        
     // Data members
     //
@@ -164,31 +161,40 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
 
 // inline functions
 
+/// Return total mechanical plane half Size
 inline GReal_t AliMUONSt1GeometryBuilderV2::TotalHzPlane() const 
 //{ return fgkHzPadPlane + fgkHzFoam + fgkHzFR4; }
 { return fgkHzFoam + fgkHzFR4; }
 
+/// Return total daughter plane half Size
 inline GReal_t AliMUONSt1GeometryBuilderV2::TotalHzDaughter() const 
 { return fgkHzBergPlastic + fgkHzDaughter; }
 
+/// Return total plane half Size
 inline GReal_t AliMUONSt1GeometryBuilderV2::TotalHz() const 
 { return TotalHzPlane() + TotalHzDaughter(); }
 
+/// Return middle quadrant layer name for chamber \a chamber
 inline TString AliMUONSt1GeometryBuilderV2::QuadrantMLayerName(Int_t chamber) const
 { return Form("%s%d",fgkQuadrantMLayerName,chamber); }
 
+/// Return nearer quadrant layer name for chamber \a chamber
 inline TString AliMUONSt1GeometryBuilderV2::QuadrantNLayerName(Int_t chamber) const
 { return Form("%s%d",fgkQuadrantNLayerName,chamber); }
 
+/// Return farther quadrant layer name for chamber \a chamber
 inline TString AliMUONSt1GeometryBuilderV2::QuadrantFLayerName(Int_t chamber) const
 { return Form("%s%d",fgkQuadrantFLayerName,chamber); }
 
+/// Return plane segment name for segment \a segNumber
 inline TString AliMUONSt1GeometryBuilderV2::PlaneSegmentName(Int_t segNumber) const
 { return Form("S%.3d", segNumber); }
 
+/// Return foam box name for segment \a segNumber
 inline TString AliMUONSt1GeometryBuilderV2::FoamBoxName(Int_t segNumber) const
 { return Form("S%.3d", segNumber + fgkFoamBoxNameOffset); }
 
+/// Return FR4 box name for segment \a segNumber
 inline TString AliMUONSt1GeometryBuilderV2::FR4BoxName(Int_t segNumber) const
 { return Form("S%.3d", segNumber + fgkFR4BoxNameOffset); }
 

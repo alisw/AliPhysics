@@ -32,7 +32,7 @@ AliMUONSt1SpecialMotif::AliMUONSt1SpecialMotif(const TVector2& delta,
   :fDelta(delta),
    fRotAngle(rotAngle)
 {
-// normal constructor
+/// Standard constructor
 }
 
 //__________________________________________________________________________
@@ -40,7 +40,7 @@ AliMUONSt1SpecialMotif::AliMUONSt1SpecialMotif()
   :fDelta(TVector2(0.,0.)),
    fRotAngle(0.)
 {
-// default constructor
+/// Default constructor
 }
 
 //__________________________________________________________________________
@@ -49,12 +49,12 @@ AliMUONSt1SpecialMotif::AliMUONSt1SpecialMotif(const AliMUONSt1SpecialMotif& src
    fRotAngle(src.fRotAngle)
   
 {
-// copy constructor
+/// Copy constructor
 }
 
 //__________________________________________________________________________
 AliMUONSt1SpecialMotif::~AliMUONSt1SpecialMotif()
 {
-// destructor
+/// Destructor
 }
 

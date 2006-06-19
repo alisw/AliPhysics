@@ -3,7 +3,7 @@
 
 /* $Id$ */
 
-/// \ingroup sim
+/// \ingroup base
 /// \class AliMUONSegFactory
 /// \brief New factory for building segmentations at all levels
 ///
@@ -106,6 +106,7 @@ class AliMUONSegFactory : public  TObject {
   ClassDef(AliMUONSegFactory,0)  // MUON Factory for Chambers and Segmentation
 };
 
+/// Return segmentation
 inline AliMUONSegmentation* AliMUONSegFactory::GetSegmentation() const
 { return fSegmentation; }
 

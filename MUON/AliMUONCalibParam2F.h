@@ -5,12 +5,9 @@
 
 /// \ingroup base
 /// \class AliMUONCalibParam2F
-/// \brief Implementation of AliMUONVCalibParam.
+/// \brief Implementation of AliMUONVCalibParam for pair of floats
 /// 
-/// Handle the case of 2 floating point parameters per channel.
-///
-/// 
-/// \author Laurent Aphecetche
+//  Author Laurent Aphecetche
 
 #ifndef ALIMUONCALIBPARAM2F_H
 #define ALIMUONCALIBPARAM2F_H
@@ -29,14 +26,16 @@ public:
   
   virtual ~AliMUONCalibParam2F();
 
-  virtual Int_t Dimension() const { return 2; }
+  /// Return dimension (here 2)
+  virtual Int_t Dimension() const { return 2; } 
   
   virtual void Print(Option_t* opt="") const;
   
   virtual void SetValueAsFloat(Int_t i, Int_t j, Float_t value);
   virtual void SetValueAsInt(Int_t i, Int_t j, Int_t value);
   
-  virtual Int_t Size() const { return fSize; }
+  /// Return size - the number of float pair we hold
+  virtual Int_t Size() const { return fSize; } 
 
   virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const;
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const;

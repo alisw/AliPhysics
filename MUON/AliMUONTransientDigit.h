@@ -10,6 +10,8 @@
 /// \ingroup base
 /// \class AliMUONTransientDigit
 /// \brief MUON transient digit
+///
+/// Extends AliMUONDigit with a list of contributing tracks
 
 #include "AliMUONDigit.h"
 
@@ -22,7 +24,9 @@ class AliMUONTransientDigit : public AliMUONDigit
     AliMUONTransientDigit(Int_t rpad, Int_t *digits);
     virtual ~AliMUONTransientDigit();
 
+          /// Return chamber number
     Int_t Chamber() const {return fChamber;}
+          /// Return number of tracks in the list
     Int_t GetNTracks() const {return fTrackList->GetEntriesFast();}
     Int_t GetTrack(Int_t i) const;
     Int_t GetCharge(Int_t i) const;

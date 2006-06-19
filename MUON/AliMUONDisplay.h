@@ -11,14 +11,6 @@
 /// \class AliMUONDisplay
 /// \brief Utility class to display MUON events
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// AliDisplay                                                           //
-//                                                                      //
-// Utility class to display ALice outline, tracks, hits,..              //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
 #include "AliDisplay.h"
 
 class AliLoader;
@@ -56,23 +48,24 @@ public:
    virtual void      DrawTitle(Option_t *option="");
    virtual void      DrawView(Float_t theta, Float_t phi, Float_t psi=0);
    virtual void      DrawGlobalView(Float_t theta, Float_t phi, Float_t psi=0);
+                     /// Not implemented function
    virtual void      DrawP(Float_t,Float_t,Float_t,Float_t,Float_t,Int_t){}
    virtual void      ExecuteEvent(Int_t event, Int_t px, Int_t py);
-   Int_t             GetZoomMode() const {return fZoomMode;}
-   Int_t             GetChamber() const {return fChamber;}
-   Int_t             GetCathode() const {return fCathode;}
+   Int_t             GetZoomMode() const {return fZoomMode;}  ///< Return zoom mode
+   Int_t             GetChamber() const {return fChamber;}    ///< Return current chamber
+   Int_t             GetCathode() const {return fCathode;}    ///< Return current cathode
 
-   AliMUONData*      GetMUONData() {return fMUONData;}
-   AliLoader*        GetLoader()  {return fLoader;}
+   AliMUONData*      GetMUONData() {return fMUONData;}        ///< Return MUON data
+   AliLoader*        GetLoader()  {return fLoader;}           ///< Return loader
 
    virtual void      LoadDigits(Int_t chamber, Int_t cathode);
    virtual void      LoadHits(Int_t chamber);
    virtual void      LoadCoG(Int_t chamber, Int_t cathode);
    virtual void      LoadTracks();
-   TPad             *Pad() {return fPad;}
-   TObjArray        *Points() {return fPoints;}
-   TObjArray        *Phits() {return fPhits;}
-   TObjArray        *Rpoints() {return fRpoints;}
+   TPad             *Pad() {return fPad;}         ///< Return pad
+   TObjArray        *Points() {return fPoints;}   ///< Return points for each cathode
+   TObjArray        *Phits() {return fPhits;}     ///< Return hit points for each chamber
+   TObjArray        *Rpoints() {return fRpoints;} ///< Return cog points for each cathode
    virtual void      Paint(Option_t *option="");
    virtual void      SetDrawClusters(Bool_t draw=kTRUE) {fDrawClusters=draw;}   // *MENU*
    virtual void      SetChamberAndCathode(Int_t chamber=1, Int_t cathode=1);    // *MENU*

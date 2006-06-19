@@ -10,7 +10,7 @@
 /// \class AliMUONHit
 /// \brief MonteCarlo hit
 ///
-/// MUON classe for MonteCarlo Hits, inherited from AliHit for the 
+/// MUON class for MonteCarlo Hits, inherited from AliHit for the 
 /// In addition to the ALiHit data member fX, fY, fZ and fTrack, AliMUONHit contains some info about the particle crossing the chamber:
 /// Impulsion: fPtot, fPx, fPy and fPz
 /// Reference position at the center of the chamber (wire plane) fXref, fYref and fZref
@@ -48,33 +48,33 @@ class AliMUONHit : public AliHit {
                Float_t X, Float_t Y, Float_t Z, Float_t tof, Float_t momentum, 
                Float_t theta, Float_t phi, Float_t length, Float_t destep,
                Float_t Xref, Float_t Yref, Float_t Zref, Bool_t isNew);
-    virtual ~AliMUONHit() {}
+    virtual ~AliMUONHit();
 
     Int_t   DetElemId()const;
     Int_t   Chamber()  const;
+
     virtual void Print(Option_t* opt="") const;
 
-    Float_t Particle() const {return fParticle;}    
-    Float_t Theta()    const {return fTheta;}
-    Float_t Phi()      const {return fPhi;}
-    Float_t Tlength()  const {return fTlength;}
-    Float_t Eloss()    const {return fEloss;}
-    Float_t Age()      const {return fAge;}
-    Int_t   PHfirst()  const {return fPHfirst;}
-    Int_t   PHlast()   const {return fPHlast;}
+    Float_t Particle() const {return fParticle;}  ///< Return particle id   
+    Float_t Theta()    const {return fTheta;}     ///< Return incident theta angle in degrees
+    Float_t Phi()      const {return fPhi;}       ///< Return incident phi angle in degrees
+    Float_t Tlength()  const {return fTlength;}   ///< Return track length inside the chamber
+    Float_t Eloss()    const {return fEloss;}     ///< Return Ionisation energy loss in gas
+    Float_t Age()      const {return fAge;}       ///< Return Particle Age
+    Int_t   PHfirst()  const {return fPHfirst;}   ///< Return First padhit
+    Int_t   PHlast()   const {return fPHlast;}    ///< Return Last padhit
 
-    Float_t Momentum() const {return fPTot;}
-    Float_t Px()       const {return fPx;}
-    Float_t Py()       const {return fPy;}
-    Float_t Pz()       const {return fPz;}
-    Float_t Cx()       const {return fPx/fPTot;} 
-    Float_t Cy()       const {return fPy/fPTot;}
-    Float_t Cz()       const {return fPz/fPTot;}
+    Float_t Momentum() const {return fPTot;}      ///< Return local momentum P of the entering track
+    Float_t Px()       const {return fPx;}        ///< Return Px
+    Float_t Py()       const {return fPy;}        ///< Return Py
+    Float_t Pz()       const {return fPz;}        ///< Return Pz
+    Float_t Cx()       const {return fPx/fPTot;}  ///< Return Px/PTot 
+    Float_t Cy()       const {return fPy/fPTot;}  ///< Return Py/PTot 
+    Float_t Cz()       const {return fPz/fPTot;}  ///< Return Pz/PTot 
 
-    Float_t Xref()     const {return fXref;}
-    Float_t Yref()     const {return fYref;}
-    Float_t Zref()     const {return fZref;}
-
+    Float_t Xref()     const {return fXref;}      ///< Return X position of hit in the center of the chamber (without angle effect)
+    Float_t Yref()     const {return fYref;}      ///< Return Y position of hit in the center of the chamber (without angle effect)
+    Float_t Zref()     const {return fZref;}      ///< Return Z position of hit in the center of the chamber (without angle effect)
 
  private:  
     Bool_t    fIsDetElemId;   ///< False if fDetElemId contains Chamber Id (old code) 
@@ -83,7 +83,7 @@ class AliMUONHit : public AliHit {
     Float_t   fTheta ;        ///< Incident theta angle in degrees      
     Float_t   fPhi   ;        ///< Incident phi angle in degrees
     Float_t   fTlength;       ///< Track length inside the chamber
-    Float_t   fEloss;         ///< ionisation energy loss in gas
+    Float_t   fEloss;         ///< Ionisation energy loss in gas
     Float_t   fAge;           ///< Particle Age
     Int_t     fPHfirst;       ///< First padhit
     Int_t     fPHlast;        ///< Last padhit

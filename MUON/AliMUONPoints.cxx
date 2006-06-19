@@ -42,51 +42,42 @@
 #include "AliMUONDigit.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONPoints)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONPoints::AliMUONPoints()
-  : AliPoints()
+  : AliPoints(),
+    fHitIndex(0),
+    fTrackIndex(0),
+    fDigitIndex(0),
+    fMatrix(0)
+
 {
-  //
-  // Default constructor
-  //
-  fHitIndex = 0;
-  fTrackIndex = 0;
-  fDigitIndex = 0;
+  /// Default constructor
+
   fMarker[0] = fMarker[1] = fMarker[2]=0;
-  fMatrix = 0;
 }
 
 //_____________________________________________________________________________
 AliMUONPoints::AliMUONPoints(Int_t npoints)
-  :AliPoints(npoints)
+  : AliPoints(npoints),
+    fHitIndex(0),
+    fTrackIndex(0),
+    fDigitIndex(0),
+    fMatrix(0)
 {
-  //
-  // Standard constructor
-  //
-  fHitIndex = 0;
-  fTrackIndex = 0;
-  fDigitIndex = 0;
+  /// Standard constructor
+
   fMarker[0] = fMarker[1] = fMarker[2]=0;
-  fMatrix = 0;
 }
 
-//_____________________________________________________________________________
-AliMUONPoints::AliMUONPoints(const AliMUONPoints& points)
-  : AliPoints(points)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-	 
 //_____________________________________________________________________________
 AliMUONPoints::~AliMUONPoints()
 {
-  //
-  // Default destructor
-  //
+  /// Destructor
+
   fHitIndex = 0;
   fTrackIndex = 0;
   fDigitIndex = 0;
@@ -99,9 +90,8 @@ AliMUONPoints::~AliMUONPoints()
 //_____________________________________________________________________________
 void AliMUONPoints::DumpHit() const
 {
-  //
-  //   Dump hit corresponding to this point
-  //
+  /// Dump hit corresponding to this point
+ 
   AliMUONHit *hit = GetHit();
   if (hit) hit->Dump();
 }
@@ -109,9 +99,8 @@ void AliMUONPoints::DumpHit() const
 //_____________________________________________________________________________
 void AliMUONPoints::DumpDigit() const
 {
-  //
-  //   Dump digit corresponding to this point
-  //
+  /// Dump digit corresponding to this point
+
   AliMUONDigit *digit = GetDigit();
   if (digit) digit->Dump();
 }
@@ -119,9 +108,7 @@ void AliMUONPoints::DumpDigit() const
 //_____________________________________________________________________________
 void AliMUONPoints::InspectHit()
 {
-  //
-  //   Inspect hit corresponding to this point
-  //
+  /// Inspect hit corresponding to this point
 
   if (fHitIndex < 0 ) return;
   TVirtualPad *padsav = gPad;
@@ -151,9 +138,8 @@ void AliMUONPoints::InspectHit()
 //_____________________________________________________________________________
 void AliMUONPoints::InspectDigit()
 {
-  //
-  //   Inspect digit corresponding to this point
-  //
+  /// Inspect digit corresponding to this point
+
   if (fDigitIndex < 0) return;
   TVirtualPad *padsav = gPad;
   AliMUONDigit *digit = GetDigit();
@@ -188,9 +174,7 @@ void AliMUONPoints::InspectDigit()
 //_____________________________________________________________________________
 Int_t AliMUONPoints::GetTrackIndex() const
 {
-  //
-  //   Dump digit corresponding to this point
-  //
+  /// Dump digit corresponding to this point
 
   Inspect();
   /*
@@ -207,9 +191,8 @@ Int_t AliMUONPoints::GetTrackIndex() const
 //_____________________________________________________________________________
 AliMUONHit *AliMUONPoints::GetHit() const
 {
-  //
-  //   Returns pointer to hit index in AliRun::fParticles
-  //
+  /// Returns pointer to hit index in AliRun::fParticles
+
   AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
   
   pMUON->TreeH()->GetEvent(fTrackIndex);
@@ -222,9 +205,7 @@ AliMUONHit *AliMUONPoints::GetHit() const
 //_____________________________________________________________________________
 AliMUONDigit *AliMUONPoints::GetDigit() const
 {
-  //
-  //   Returns pointer to digit index in AliRun::fParticles
-  //
+  /// Returns pointer to digit index in AliRun::fParticles
 
   AliMUONDisplay *display=(AliMUONDisplay*)gAlice->Display();
   Int_t chamber=display->GetChamber();
@@ -236,16 +217,4 @@ AliMUONDigit *AliMUONPoints::GetDigit() const
   Int_t ndigits = muonDigits->GetEntriesFast();
   if (fDigitIndex < 0 || fDigitIndex >= ndigits) return 0;
   return (AliMUONDigit*)muonDigits->UncheckedAt(fDigitIndex);
-}
-//_____________________________________________________________________________
-
-AliMUONPoints& AliMUONPoints::operator= (const AliMUONPoints& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }

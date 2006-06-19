@@ -53,7 +53,9 @@
 
 #include <string>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONv1)
+/// \endcond
  
 //___________________________________________
 AliMUONv1::AliMUONv1() 
@@ -122,15 +124,6 @@ AliMUONv1::AliMUONv1(const char *name, const char *title,
     fAngleEffectNorma->SetParameter(3,-1.490e-03);
 }
 
-//_____________________________________________________________________________
-AliMUONv1::AliMUONv1(const AliMUONv1& right) 
-  : AliMUON(right) 
-{  
-/// Copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
 //___________________________________________
 AliMUONv1::~AliMUONv1()
 {
@@ -143,19 +136,6 @@ AliMUONv1::~AliMUONv1()
   delete fAngleEffect10;
   delete fAngleEffectNorma; 
 }
-
-//_____________________________________________________________________________
-AliMUONv1& AliMUONv1::operator=(const AliMUONv1& right)
-{
-/// Assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //__________________________________________________
 void AliMUONv1::CreateGeometry()
@@ -227,7 +207,7 @@ void AliMUONv1::Init()
 Int_t  AliMUONv1::GetChamberId(Int_t volId) const
 {
 /// Check if the volume with specified  volId is a sensitive volume (gas) 
-/// of some chamber and returns the chamber number;
+/// of some chamber and return the chamber number;
 /// if not sensitive volume - return 0.
 
   for (Int_t i = 0; i < AliMUONConstants::NCh(); i++) {

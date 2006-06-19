@@ -215,15 +215,6 @@ AliMUON::AliMUON(const char *name, const char *title,
 }
 
 //____________________________________________________________________
-AliMUON::AliMUON(const AliMUON& rMUON)
- : AliDetector(rMUON)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//____________________________________________________________________
 AliMUON::~AliMUON()
 {
 /// Destructor
@@ -248,18 +239,6 @@ AliMUON::~AliMUON()
   delete fGeometryBuilder;
   delete fSegmentation;
   delete fRawWriter;
-}
-
-//________________________________________________________________________
-AliMUON& AliMUON::operator = (const AliMUON& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }
 
 //_____________________________________________________________________________

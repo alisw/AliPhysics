@@ -15,13 +15,55 @@
 
 /* $Id$ */
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// AliDisplay                                                           //
-//                                                                      //
-// Utility class to display ALICE outline, tracks, hits,..              //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
+/// \class AliMUONDisplay
+/// Create an event display object.
+/// A canvas named "edisplay" is created with a vertical size in pixels  \n
+///
+///    A QUICK Overview of the Event Display functions                   \n
+///    ===============================================                   \n
+///
+/// The event display can ve invoked by executing the macro "display.C"  \n
+/// A canvas like in the picture below will appear.
+///
+///  On the left side of the canvas, the following buttons appear:
+///  - *Next*       to move to the next event
+///  - *Previous*   to move to the previous event
+///  - *Pick*       Select this option to be able to point on a track with the
+///                 mouse. Once on the track, use the right button to select
+///                 an action. For example, select SetMarkerAttributes to
+///                 change the marker type/color/size for the track.
+///  - *Zoom*       Select this option (default) if you want to zoom.
+///                 To zoom, simply select the selected area with the left button.
+///  - *UnZoom*     To revert to the previous picture size.
+///
+///  - slider R     On the left side, the vertical slider can be used to
+///                 set the default picture size.
+///
+///  When you are in Zoom mode, you can click on the black part of the canvas
+///  to select special options with the right mouse button.
+///
+/// When you are in pick mode, you can "Inspect" the object pointed by the mouse.
+/// When you are on a track, select the menu item "InspectParticle"
+/// to display the current particle attributes.
+///
+/// You can activate the Root browser by selecting the Inspect menu
+/// in the canvas tool bar menu. Then select "Start Browser"
+/// This will open a new canvas with the browser. At this point, you may want
+/// to display some histograms (from the Trees). Go to the "File" menu
+/// of the browser and click on "New canvas".
+/// In the browser, click on item "ROOT files" in the left pane.
+/// Click on galice.root.
+/// Click on TH
+/// Click on TPC for example
+/// Click on any variable (eg TPC.fX) to histogram the variable.
+///
+/// If you are lost, you can click on HELP in any Root canvas or browser.
+
+//Begin_Html
+/*
+<img src="gif/AliMUONDisplay.gif">
+*/
+//End_Html
 
 #include "AliMUONDisplay.h"
 #include "AliMUON.h"
@@ -73,78 +115,51 @@
 #include <TPolyLine3D.h>
 #include <TBox.h>
 
-
-
+/// \cond CLASSIMP
 ClassImp(AliMUONDisplay)
-
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONDisplay::AliMUONDisplay()
-  : AliDisplay()
+  : AliDisplay(),
+    fEvent(0),
+    fChamber(0),
+    fCathode(0),
+    fDrawClusters(kTRUE),
+    fDrawCoG(kTRUE),
+    fDrawTracks(kFALSE),
+    fClustersCuts(0),
+    fColPad(0),
+    fPoints(0),
+    fPhits(0),
+    fRpoints(0),
+    fNextCathode(0),
+    fLoader(0), 
+    fMUONData(0)
 {
-// Constructor
-    fPoints = 0;
-    fPhits = 0;
-    fRpoints = 0;
-    fCanvas = 0;
-    fNextCathode = kFALSE; 
-    fColPad = 0;
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
-  : AliDisplay()
+  : AliDisplay(),
+    fEvent(0),
+    fChamber(1),
+    fCathode(1),
+    fDrawClusters(kTRUE),
+    fDrawCoG(kTRUE),
+    fDrawTracks(kFALSE),
+    fClustersCuts(0),
+    fColPad(0),
+    fPoints(0),
+    fPhits(0),
+    fRpoints(0),
+    fNextCathode(kFALSE),
+    fLoader(loader), 
+    fMUONData(0)
+  
 {
-// Create an event display object.
-// A canvas named "edisplay" is created with a vertical size in pixels
-//
-//    A QUICK Overview of the Event Display functions
-//    ===============================================
-//
-//  The event display can ve invoked by executing the macro "display.C"
-// A canvas like in the picture below will appear.
-//
-//  On the left side of the canvas, the following buttons appear:
-//   *Next*       to move to the next event
-//   *Previous*   to move to the previous event
-
-//   *Pick*       Select this option to be able to point on a track with the
-//                mouse. Once on the track, use the right button to select
-//                an action. For example, select SetMarkerAttributes to
-//                change the marker type/color/size for the track.
-//   *Zoom*       Select this option (default) if you want to zoom.
-//                To zoom, simply select the selected area with the left button.
-//   *UnZoom*     To revert to the previous picture size.
-//
-//   slider R     On the left side, the vertical slider can be used to
-//                set the default picture size.
-//
-//    When you are in Zoom mode, you can click on the black part of the canvas
-//  to select special options with the right mouse button.
-
-//
-//  When you are in pick mode, you can "Inspect" the object pointed by the mouse.
-//  When you are on a track, select the menu item "InspectParticle"
-//  to display the current particle attributes.
-//
-//  You can activate the Root browser by selecting the Inspect menu
-//  in the canvas tool bar menu. Then select "Start Browser"
-//  This will open a new canvas with the browser. At this point, you may want
-//  to display some histograms (from the Trees). Go to the "File" menu
-//  of the browser and click on "New canvas".
-//  In the browser, click on item "ROOT files" in the left pane.
-//  Click on galice.root.
-//  Click on TH
-//  Click on TPC for example
-//  Click on any variable (eg TPC.fX) to histogram the variable.
-//
-//   If you are lost, you can click on HELP in any Root canvas or browser.
-//Begin_Html
-/*
-<img src="gif/AliMUONDisplay.gif">
-*/
-//End_Html
-
+/// Standard constructor to create an event display object.
 
     fPad = 0;
     
@@ -152,22 +167,14 @@ AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
    
    // Initialize display default parameters
     SetRange(200,2000);
+
    // Set front view by default
     fTheta =   0;
     fPhi   = -90;
     fPsi   =   0;
-    fChamber = 1;
-    fCathode = 1;
-    //   fRzone   = 1.e10;
-    fDrawClusters  = kTRUE;
-    fDrawCoG       = kTRUE;
-    fDrawTracks    = kFALSE;
     fZoomMode      = 1;
     fZooms         = 0;
-    fClustersCuts  = 0;
-    fPoints        = 0;
-    fPhits         = 0;
-    fRpoints       = 0;
+
     // Create colors
     CreateColors();
     // Create display canvas
@@ -231,8 +238,7 @@ AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
     fTrigPad->SetEditable(kFALSE);
     fButtons->SetEditable(kFALSE);
     fCanvas->Update();
-    fNextCathode = kFALSE; 
-    fLoader = loader;
+ 
     // initialize container
     if(fLoader) 
       fMUONData = new AliMUONData(fLoader,"MUON","MUON");
@@ -240,19 +246,11 @@ AliMUONDisplay::AliMUONDisplay(Int_t size, AliLoader * loader)
       fMUONData =0x0;
 }
 
-AliMUONDisplay::AliMUONDisplay(const AliMUONDisplay & display)
-  : AliDisplay(display)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-
-
 //_____________________________________________________________________________
 AliMUONDisplay::~AliMUONDisplay()
 {
+/// Destructor
+
   // Delete space point structure
     if (fPoints) fPoints->Delete();
     delete fPoints;
@@ -270,13 +268,13 @@ AliMUONDisplay::~AliMUONDisplay()
 //_____________________________________________________________________________
 void AliMUONDisplay::Clear(Option_t *)
 {
-//    Delete graphics temporary objects
+/// Delete graphics temporary objects
 }
 
 //_____________________________________________________________________________
 void AliMUONDisplay::DisplayButtons()
 {
-//    Create the user interface buttons
+/// Create the user interface buttons
 
 
     fButtons = new TPad("buttons", "newpad",0,0.45,0.15,1);
@@ -357,7 +355,7 @@ void AliMUONDisplay::DisplayButtons()
 //_____________________________________________________________________________
 void AliMUONDisplay::CreateColors() const
 {
-//    Create the colors palette used to display clusters
+/// Create the colors palette used to display clusters
 
     Int_t k,i;
     Int_t color;
@@ -422,7 +420,8 @@ void AliMUONDisplay::CreateColors() const
 //_____________________________________________________________________________
 void AliMUONDisplay::DisplayColorScale()
 {
-// Display pulse height color scale
+/// Display pulse height color scale
+
     Int_t i;
     Int_t color;
     Float_t xlow, ylow, xup, yup, hs;
@@ -463,7 +462,7 @@ void AliMUONDisplay::DisplayColorScale()
 //______________________________________________________________________________
 Int_t AliMUONDisplay::DistancetoPrimitive(Int_t px, Int_t)
 {
-// Compute distance from point px,py to objects in event
+/// Compute distance from point px,py to objects in event
 
     gPad->SetCursor(kCross);
     
@@ -484,7 +483,7 @@ Int_t AliMUONDisplay::DistancetoPrimitive(Int_t px, Int_t)
 //_____________________________________________________________________________
 void AliMUONDisplay::Draw(Option_t *)
 {
-//    Display current event
+/// Display current event
 
     if (!fDrawTracks) 
       DrawChamber();   
@@ -495,6 +494,7 @@ void AliMUONDisplay::Draw(Option_t *)
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawChamber()
 {
+/// Display current event
 
   fDrawTracks = kFALSE;
   fPad->cd();
@@ -507,7 +507,7 @@ void AliMUONDisplay::DrawChamber()
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawReco(Option_t *)
 {
-//    Display current event
+/// Display current event
 
   fDrawTracks = kTRUE;
   // print kinematics of generated particles
@@ -524,6 +524,8 @@ void AliMUONDisplay::DrawReco(Option_t *)
 //_____________________________________________________________________________
 void AliMUONDisplay::PrintKinematics()
 {
+/// Print kinematic tree
+
   AliRunLoader * runLoader;
   TParticle *particle = new TParticle();
   Int_t nPart;
@@ -555,11 +557,12 @@ void AliMUONDisplay::PrintKinematics()
   delete particle;    
 }
 
+//_____________________________________________________________________________
 void AliMUONDisplay::DrawSegmentation()
 {
-  // to be re-written for new seg
-// Draw graphical representation of segmenatation
-// Attention: still experimental code
+/// \todo to be re-written for new seg
+/// Draw graphical representation of segmenatation
+/// Attention: still experimental code
 //     Int_t icat=1;
     
 //     AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
@@ -621,7 +624,7 @@ void AliMUONDisplay::DrawSegmentation()
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawClusters()
 {
-//    Draw clusters for MUON chambers
+/// Draw clusters for MUON chambers
 
     Int_t ndigits, digit;
     TObjArray *points;
@@ -650,7 +653,7 @@ void AliMUONDisplay::DrawClusters()
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawHits()
 {
-//    Draw hits for MUON chambers
+/// Draw hits for MUON chambers
 
     LoadHits(fChamber);
 
@@ -674,7 +677,8 @@ void AliMUONDisplay::DrawHits()
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawCoG()
 {
-//    Draw hits for MUON chambers
+/// Draw hits for MUON chambers
+
     if (!fDrawCoG) return;
     if (fChamber > 10) return;
     LoadCoG(fChamber,fCathode);
@@ -695,7 +699,8 @@ void AliMUONDisplay::DrawCoG()
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawTracks()
 {
-//    Draw tracks
+/// Draw tracks
+
     if (!fDrawTracks) return;
     LoadTracks();
     
@@ -716,7 +721,7 @@ void AliMUONDisplay::DrawTracks()
 
 void AliMUONDisplay::DrawTitle(Option_t *option)
 {
-//    Draw the event title
+/// Draw the event title
 
     Float_t xmin = gPad->GetX1();
     Float_t xmax = gPad->GetX2();
@@ -761,7 +766,8 @@ void AliMUONDisplay::DrawTitle(Option_t *option)
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 {
-  //    Draw a view of MUON clusters
+/// Draw a view of MUON clusters
+
   AliInfo(" Draw View");
   
   gPad->SetCursor(kWatch);
@@ -921,7 +927,7 @@ void AliMUONDisplay::DrawView(Float_t theta, Float_t phi, Float_t psi)
 //_____________________________________________________________________________
 void AliMUONDisplay::DrawGlobalView(Float_t theta, Float_t phi, Float_t psi)
 {
-//    Draw a view of muons chambers with tracks
+/// Draw a view of muons chambers with tracks
     
     gPad->SetCursor(kWatch);
     // gPad->SetFillColor(39);
@@ -971,7 +977,7 @@ void AliMUONDisplay::DrawGlobalView(Float_t theta, Float_t phi, Float_t psi)
 //______________________________________________________________________________
 void AliMUONDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 {
-//  Execute action corresponding to the mouse event
+/// Execute action corresponding to the mouse event
 
     static Float_t x0, y0, x1, y1;
     
@@ -1039,8 +1045,8 @@ void AliMUONDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 //___________________________________________
 void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 {
-// Read digits info and store x,y,z info in arrays fPoints
-// Loop on all detectors
+/// Read digits info and store x,y,z info in arrays fPoints.
+/// Loop on all detectors
 
     if (chamber > 14) return;
     fChamber = chamber;
@@ -1242,8 +1248,8 @@ void AliMUONDisplay::LoadDigits(Int_t chamber, Int_t cathode)
 //___________________________________________
 void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
 {
-// Read raw clusters info and store x,y,z info in arrays fRpoints
-// Loop on all detectors
+/// Read raw clusters info and store x,y,z info in arrays fRpoints.
+/// Loop on all detectors
 
     if (chamber > 10) return;
     
@@ -1288,7 +1294,8 @@ void AliMUONDisplay::LoadCoG(Int_t chamber, Int_t /*cathode*/)
 //___________________________________________
 void AliMUONDisplay::LoadTracks()
 {
-// Load tracks
+/// Load tracks
+
   AliMUONTrack* recTrack = 0;
   AliMUONTrackParam* trackParam = 0;
   TClonesArray *  trackParamAtHit = 0;   
@@ -1347,8 +1354,11 @@ void AliMUONDisplay::LoadTracks()
 
 }
 
+//___________________________________________
 void AliMUONDisplay::PrintTrack(Int_t iRecTracks, AliMUONTrack *recTrack)
 {
+/// Print reconstructed track
+
   AliMUONTrackParam *trackParam;
   Float_t vertex[3], momentum[3];
   Float_t pYZ, bendingSlope, nonBendingSlope, chi2dof;
@@ -1379,8 +1389,8 @@ void AliMUONDisplay::PrintTrack(Int_t iRecTracks, AliMUONTrack *recTrack)
 //___________________________________________
 void AliMUONDisplay::LoadHits(Int_t chamber)
 {
-  // Read hits info and store x,y,z info in arrays fPhits
-  // Loop on all detectors
+/// Read hits info and store x,y,z info in arrays fPhits.
+/// Loop on all detectors
 
     if (chamber > 14) return;
     Int_t track;
@@ -1441,14 +1451,14 @@ void AliMUONDisplay::LoadHits(Int_t chamber)
 //_____________________________________________________________________________
 void AliMUONDisplay::Paint(Option_t *)
 {
-//    Paint miscellaneous items
+/// Paint miscellaneous items
 }
 
 //_____________________________________________________________________________
 void AliMUONDisplay::SetPickMode()
 {
-// Set parameters for pick mode.
-// 
+/// Set parameters for pick mode.
+ 
     fZoomMode = 0;
 
     fArcButton->SetY1(fPickButton->GetYlowNDC()+0.5*fPickButton->GetHNDC());
@@ -1458,7 +1468,8 @@ void AliMUONDisplay::SetPickMode()
 //_____________________________________________________________________________
 void AliMUONDisplay::SetZoomMode()
 {
-//  Set parameters for zoom mode
+/// Set parameters for zoom mode
+
     fZoomMode = 1;
     
     fArcButton->SetY1(fZoomButton->GetYlowNDC()+0.5*fZoomButton->GetHNDC());
@@ -1468,8 +1479,8 @@ void AliMUONDisplay::SetZoomMode()
 //_____________________________________________________________________________
 void AliMUONDisplay::NextChamber(Int_t delta)
 {
-  // to go from chamber to next chamber if delta = 1
-  // or previous chamber otherwise
+/// To go from chamber to next chamber if delta = 1
+/// or previous chamber otherwise
     if (delta == 1) {
 	if (fChamber < AliMUONConstants::NCh()) fChamber++;
     } else {
@@ -1484,7 +1495,8 @@ void AliMUONDisplay::NextChamber(Int_t delta)
 //_____________________________________________________________________________
 void AliMUONDisplay::NextCathode()
 {
-    // to switch to other cathode plane
+/// To switch to other cathode plane
+
     if (!fPad) return;
     fPad->Clear();
     if (fCathode == 1) {
@@ -1506,6 +1518,7 @@ void AliMUONDisplay::NextCathode()
 //_____________________________________________________________________________
 void AliMUONDisplay::Trigger()
 {
+/// Print global trigger output
 
   AliMUONGlobalTrigger* globalTrig;
 
@@ -1528,7 +1541,8 @@ void AliMUONDisplay::Trigger()
 //_____________________________________________________________________________
 void AliMUONDisplay::SetChamberAndCathode(Int_t chamber, Int_t cathode)
 {
-// Set chamber and cathode number
+/// Set chamber and cathode number
+
    fChamber = chamber;
    fCathode = cathode;
 
@@ -1538,9 +1552,11 @@ void AliMUONDisplay::SetChamberAndCathode(Int_t chamber, Int_t cathode)
    DrawChamber();
 }
 
+//_____________________________________________________________________________
 void AliMUONDisplay::SetEvent(Int_t newevent)
 {
-// Chose event 
+/// Chose event 
+
     gAlice->GetEvent(newevent);
     fEvent=newevent;
     if (!gAlice->TreeD()) return; 
@@ -1553,7 +1569,8 @@ void AliMUONDisplay::SetEvent(Int_t newevent)
 //_____________________________________________________________________________
 void AliMUONDisplay::SetRange(Float_t rrange, Float_t zrange)
 {
-// Set view range along R and Z
+/// Set view range along R and Z
+
     fRrange = rrange;
     fZrange = zrange;
 
@@ -1565,7 +1582,7 @@ void AliMUONDisplay::SetRange(Float_t rrange, Float_t zrange)
 //_____________________________________________________________________________
 void AliMUONDisplay::SetView(Float_t theta, Float_t phi, Float_t psi)
 {
-//  change viewing angles for current event
+/// Change viewing angles for current event
 
     fPad->cd();
     fPhi   = phi;
@@ -1582,15 +1599,16 @@ void AliMUONDisplay::SetView(Float_t theta, Float_t phi, Float_t psi)
 //_____________________________________________________________________________
 void AliMUONDisplay::ShowNextEvent(Int_t delta)
 {
+/// Display (current event_number + delta)
+///  -  delta =  1  shown next event
+///  -  delta = -1 show previous event
+
   AliRunLoader * runLoader;
   if (fLoader)
     runLoader = fLoader->GetRunLoader();
   else
     runLoader = 0x0;
     
-//  Display (current event_number + delta)
-//    delta =  1  shown next event
-//    delta = -1 show previous event
     if (delta) {
       //runLoader->CleanDetectors();
       //runLoader->CleanKinematics();
@@ -1607,7 +1625,8 @@ void AliMUONDisplay::ShowNextEvent(Int_t delta)
 //______________________________________________________________________________
 void AliMUONDisplay::UnZoom()
 {
-// Unzoom 
+/// Unzoom 
+
     if (fZooms <= 0) return;
     fZooms--;
     TPad *pad = (TPad*)gPad->GetPadSave();
@@ -1618,9 +1637,8 @@ void AliMUONDisplay::UnZoom()
 //_____________________________________________________________________________
 void AliMUONDisplay::ResetPoints()
 {
-    //
-    // Reset array of points
-    //
+/// Reset array of points
+
     if (fPoints) {
 	fPoints->Delete();
 	delete fPoints;
@@ -1630,9 +1648,8 @@ void AliMUONDisplay::ResetPoints()
 //_____________________________________________________________________________
 void AliMUONDisplay::ResetPhits()
 {
-    //
-    // Reset array of points
-    //
+/// Reset array of points
+
     if (fPhits) {
 	fPhits->Delete();
 	delete fPhits;
@@ -1642,32 +1659,11 @@ void AliMUONDisplay::ResetPhits()
 //_____________________________________________________________________________
 void AliMUONDisplay::ResetRpoints()
 {
-  //
-  // Reset array of points
-  //
+/// Reset array of points
+
     if (fRpoints) {
 	fRpoints->Clear();
 	//	delete fRpoints;
 	fRpoints = 0;
     }
 }
-
-AliMUONDisplay & AliMUONDisplay::operator = (const AliMUONDisplay & rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}
-
-
-
-
-
-
-
-
-

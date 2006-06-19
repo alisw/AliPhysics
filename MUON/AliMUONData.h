@@ -79,24 +79,36 @@ class AliMUONData : public TNamed
     virtual void   AddRecTrack(const AliMUONTrack& track);
     virtual void   AddRecTriggerTrack(const AliMUONTriggerTrack& triggertrack);
 
-    TClonesArray*  Hits() {return fHits;}
+    TClonesArray*  Hits() {return fHits;} ///< Return hits
     TClonesArray*  Digits(Int_t DetectionPlane) const;
     TClonesArray*  SDigits(Int_t DetectionPlane) const;
     TClonesArray*  LocalTrigger() const;
     TClonesArray*  GlobalTrigger() const;    
     TClonesArray*  RawClusters(Int_t DetectionPlane);
-    TClonesArray*  RecTracks() {return fRecTracks;}
+    
+                    /// Return reconstructed tracks
+    TClonesArray*  RecTracks() {return fRecTracks;} 
+                   /// Return reconstructed trigger tracks
     TClonesArray*  RecTriggerTracks() {return fRecTriggerTracks;}
 
+                    /// Load hits for \a i th entry in hits three
     void           GetTrack(Int_t it) const  {fLoader->TreeH()->GetEvent(it);}
+                   /// Get number of entries in hits three
     Int_t          GetNtracks() const      {return (Int_t) fLoader->TreeH()->GetEntries();}
     void           GetDigits() const;
+                   /// Load sdigits tree
     void           GetSDigits() const {fLoader->TreeS()->GetEvent(0);}
+                   /// Load raw clusters tree
     void           GetRawClusters() const {fLoader->TreeR()->GetEvent(0);}
+                   /// Load trigger tree
     void           GetTrigger() const {fLoader->TreeR()->GetEvent(0);}
+                   /// Load trigger D tree
     void           GetTriggerD() const {fLoader->TreeD()->GetEvent(0);}
+                   /// Return split level
     Int_t          GetSplitLevel() const {return fSplitLevel;}
+                   /// Return reconstructed tracks
     void           GetRecTracks() const {fLoader->TreeT()->GetEvent(0);}
+                   /// Return reconstructed trigger tracks
     void           GetRecTriggerTracks() const {fLoader->TreeT()->GetEvent(0);}
 
     Bool_t        IsRawClusterBranchesInTree();
@@ -106,13 +118,16 @@ class AliMUONData : public TNamed
     Bool_t        IsTrackBranchesInTree();
     Bool_t        IsTriggerTrackBranchesInTree();
 
+                       /// Get loader
     virtual AliLoader* GetLoader() const { return fLoader; }
+                       /// Set loader
     virtual void       SetLoader(AliLoader * loader) {fLoader=loader;}    
     
     virtual void   Fill(Option_t* opt=" ");
     virtual void   MakeBranch(Option_t *opt=" ");
     virtual void   SetTreeAddress(Option_t *opt=" ");
     
+                   /// Set split level
     void           SetSplitLevel(Int_t SplitLevel) {fSplitLevel=SplitLevel;}
     
     virtual void Print(Option_t* opt="") const;
@@ -125,11 +140,17 @@ class AliMUONData : public TNamed
     virtual void   ResetRecTracks();
     virtual void   ResetRecTriggerTracks();
   
+                   /// Return tree with hits
     TTree*         TreeH() {return fLoader->TreeH(); }
+                   /// Return tree with digits
     TTree*         TreeD() {return fLoader->TreeD(); }
+                   /// Return tree with summable digits
     TTree*         TreeS() {return fLoader->TreeS(); }
+                   /// Return tree with raw clusters
     TTree*         TreeR() {return fLoader->TreeR(); }
+                   /// Return tree with tracks
     TTree*         TreeT() {return fLoader->TreeT(); }
+                   /// Return tree with particles
     TTree*         TreeP() {return fLoader->TreeP(); }
 
     //    TIterator* CreateDigitIterator(AliMUONData::EChamberIteration type);

@@ -15,20 +15,21 @@
 
 /* $Id$ */
 
-//**********************************************************************
-// Segmentation classe for trigger chambers.
-// In the present version the method use global strip coordinates except
-// HasPad. The conversion is made via GetPadLoc2Glo.
-// To be improved in the future.
-//**********************************************************************
+/// \class AliMUONTriggerSegmentation
+/// \brief Segmentation classe for trigger chambers.
+/// In the present version the method use global strip coordinates except
+/// HasPad. The conversion is made via GetPadLoc2Glo.
+/// To be improved in the future.
 
 #include "AliMUONTriggerSegmentation.h"
 #include "AliLog.h"
 #include "Riostream.h"
 
-//___________________________________________
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerSegmentation)
+/// \endcond
 
+//___________________________________________
 AliMUONTriggerSegmentation::AliMUONTriggerSegmentation() 
   : AliMUONVGeometryDESegmentation(),
     fBending(0),
@@ -47,7 +48,7 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation()
     fRpcHalfXsize(0),
     fRpcHalfYsize(0)
 {
-// Default constructor
+/// Default constructor
 
 // add to St345SlatSegmentation
   for (Int_t i=0; i<7; i++) {
@@ -81,7 +82,8 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(Bool_t bending)
     fRpcHalfXsize(0),
     fRpcHalfYsize(0)
 {
-  // Non default constructor
+/// Standard constructor
+
   fNsec = 7;  
 // add to St345SlatSegmentation
   for (Int_t i=0; i<7; i++) {
@@ -97,38 +99,25 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(Bool_t bending)
 }
 
 //----------------------------------------------------------------------
-AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(const AliMUONTriggerSegmentation& rhs) : AliMUONVGeometryDESegmentation(rhs)
-{
-// Copy constructor
-
-  AliFatal("Not implemented.");
-}
-//----------------------------------------------------------------------
 AliMUONTriggerSegmentation::~AliMUONTriggerSegmentation() 
 {
-  // Destructor
+/// Destructor
 
   AliDebug(1, Form("dtor this = %p", this) ); 
 }
 //----------------------------------------------------------------------
-AliMUONTriggerSegmentation& AliMUONTriggerSegmentation::operator=(const AliMUONTriggerSegmentation& rhs)
-{
-// Protected assignement operator
-  if (this == &rhs) return *this;
-  AliFatal("Not implemented.");
-  return *this;  
-}
-//----------------------------------------------------------------------
 Int_t AliMUONTriggerSegmentation::ModuleColNum(Int_t ix)
 {
-// returns column number (from 0 to 6) in which the (global) module 
-// ix is sitting (could return 7 if ix=isec)
+/// returns column number (from 0 to 6) in which the (global) module 
+/// ix is sitting (could return 7 if ix=isec)
+
     return TMath::Abs(ix)-Int_t(TMath::Abs(ix)/10)*10-1;
 }
 //----------------------------------------------------------------------
 Bool_t AliMUONTriggerSegmentation::HasPad(Int_t ix, Int_t iy)
 {
-// check if steping outside the limits (iy=1,2... iy=0,1...)
+/// check if steping outside the limits (iy=1,2... iy=0,1...)
+
     Bool_t hasPad = true;    
     Int_t ixGlo = 0;
     Int_t iyGlo = 0; 
@@ -139,14 +128,16 @@ Bool_t AliMUONTriggerSegmentation::HasPad(Int_t ix, Int_t iy)
 //____________________________________________________________________________
 Float_t AliMUONTriggerSegmentation::Dpx(Int_t isec) const
 {
-// return x-strip width in sector isec
+/// return x-strip width in sector isec
+
     Float_t size = (isec<8) ? fStripXsize[isec-1] : fStripXsize[isec-2]/2.;
     return size;
 }
 //____________________________________________________________________________
 Float_t AliMUONTriggerSegmentation::Dpy(Int_t  isec) const
 {
-// return y-strip width in sector isec
+/// return y-strip width in sector isec
+
     Float_t size = (isec<8) ? fStripYsize[isec-1] : fStripYsize[isec-2];
     return size;
 }
@@ -154,7 +145,8 @@ Float_t AliMUONTriggerSegmentation::Dpy(Int_t  isec) const
 void AliMUONTriggerSegmentation::GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc, 
 					       Int_t &ixGlo, Int_t &iyGlo)
 {    
-// converts ixLoc & iyLoc into ixGlo & iyGLo (module,strip number)
+/// converts ixLoc & iyLoc into ixGlo & iyGLo (module,strip number)
+
     ixGlo = 0; // see AliMUONTriggerConstants::fgkModuleI
     iyGlo = 0; // from 0 to (fNtrip-1) in module   
     if (fBending) { 
@@ -179,7 +171,8 @@ void AliMUONTriggerSegmentation::GetPadLoc2Glo(Int_t ixLoc, Int_t iyLoc,
 void AliMUONTriggerSegmentation::GetPadGlo2Loc(Int_t ixGlo, Int_t iyGlo, 
 					       Int_t &ixLoc, Int_t &iyLoc)
 {    
-// converts ixGlo & iyGlo into ixLoc & iyLoc 
+/// converts ixGlo & iyGlo into ixLoc & iyLoc 
+
     ixLoc = 0; 
     iyLoc = 0; 
     if (fBending) { 
@@ -203,7 +196,7 @@ void AliMUONTriggerSegmentation::GetPadGlo2Loc(Int_t ixGlo, Int_t iyGlo,
 //----------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t &y) 
 {
-// Returns local real coordinates (x,y) for local pad coordinates (ix,iy)
+/// Returns local real coordinates (x,y) for local pad coordinates (ix,iy)
 
     x = 0.;
     y = 0.;
@@ -235,7 +228,8 @@ void AliMUONTriggerSegmentation::GetPadC(Int_t ix, Int_t iy, Float_t &x, Float_t
 //_____________________________________________________________________________
 void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t &iy) 
 {
-//  Returns global pad coordinates (ix,iy) for local real coordinates (x,y)
+///  Returns global pad coordinates (ix,iy) for local real coordinates (x,y)
+
     ix = -1;
     iy = -1;
 
@@ -277,20 +271,23 @@ void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y, Int_t &ix, Int_t 
 //-------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::GetPadI(Float_t x, Float_t y , Float_t /*z*/, Int_t &ix, Int_t &iy)
 {
-//  Returns global pad coordinates (ix,iy) for local real coordinates (x,y)
+///  Returns global pad coordinates (ix,iy) for local real coordinates (x,y)
+
   GetPadI(x, y, ix, iy);
 }
 
 //-------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::SetLineNumber(Int_t iLineNumber){
-// Set line number
+/// Set line number
+
     fLineNumber = iLineNumber;    
 }
 //-------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::SetPad(Int_t ix, Int_t iy)
 {
-  // Sets virtual pad coordinates, needed for evaluating pad response 
-  // outside the tracking program 
+/// Sets virtual pad coordinates, needed for evaluating pad response 
+/// outside the tracking program 
+
   GetPadC(ix,iy,fX,fY);
   fIx = ix; // used in IntegrationLimits
   fIy = iy;    
@@ -299,21 +296,24 @@ void AliMUONTriggerSegmentation::SetPad(Int_t ix, Int_t iy)
 //---------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::SetHit(Float_t x, Float_t y)
 {
-  // Set current hit 
+/// Set current hit 
+
   fXhit = x;
   fYhit = y;
 }
 //----------------------------------------------------------------------------
 void AliMUONTriggerSegmentation::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
 {
-  // Set current hit 
+/// Set current hit 
+
   SetHit(xhit, yhit);
 }
 
 //--------------------------------------------------------------------------
 Int_t AliMUONTriggerSegmentation::Sector(Int_t ix, Int_t iy) 
 {
-// determine segmentation zone from pad coordinates (from 1 to 8)
+/// determine segmentation zone from pad coordinates (from 1 to 8)
+
     if (!fBending && ModuleColNum(ix)==6 && iy>7) {
 	return 8; // sector 8: diff. strip width within same module
     } else {
@@ -325,8 +325,8 @@ Int_t AliMUONTriggerSegmentation::Sector(Int_t ix, Int_t iy)
 void AliMUONTriggerSegmentation::IntegrationLimits(Float_t& x1,Float_t& x2,
                                                    Float_t& x3, Float_t& x4) 
 {
-// need to return (only) x4 = dist. betwwen the hit and the closest border of
-// the current strip
+/// need to return (only) x4 = dist. betwwen the hit and the closest border of
+/// the current strip
 
     Int_t ix,iy;
     Float_t xstrip,ystrip;
@@ -366,25 +366,26 @@ void AliMUONTriggerSegmentation::IntegrationLimits(Float_t& x1,Float_t& x2,
 void AliMUONTriggerSegmentation::
 Neighbours(Int_t iX, Int_t iY, Int_t* Nlist, Int_t Xlist[10], Int_t Ylist[10]) 
 {
-//-----------------BENDING-----------------------------------------
-// Returns list of 10 next neighbours for given X strip (ix, iy)  
-// neighbour number 4 in the list -                     
-// neighbour number 3 in the list  |                    
-// neighbour number 2 in the list  |_ Upper part             
-// neighbour number 1 in the list  |            
-// neighbour number 0 in the list -           
-//      X strip (ix, iy) 
-// neighbour number 5 in the list -       
-// neighbour number 6 in the list  | _ Lower part
-// neighbour number 7 in the list  |
-// neighbour number 8 in the list  | 
-// neighbour number 9 in the list -
-
-//-----------------NON-BENDING-------------------------------------
-// Returns list of 10 next neighbours for given Y strip (ix, iy)  
-// neighbour number 9 8 7 6 5 (Y strip (ix, iy)) 0 1 2 3 4 in the list
-//                  \_______/                    \_______/
-//                    left                         right
+/// <pre>
+///-----------------BENDING-----------------------------------------
+/// Returns list of 10 next neighbours for given X strip (ix, iy)  
+/// neighbour number 4 in the list -                     
+/// neighbour number 3 in the list  |                    
+/// neighbour number 2 in the list  |_ Upper part             
+/// neighbour number 1 in the list  |            
+/// neighbour number 0 in the list -           
+///      X strip (ix, iy) 
+/// neighbour number 5 in the list -       
+/// neighbour number 6 in the list  | _ Lower part
+/// neighbour number 7 in the list  |
+/// neighbour number 8 in the list  | 
+/// neighbour number 9 in the list -
+///
+///-----------------NON-BENDING-------------------------------------
+/// Returns list of 10 next neighbours for given Y strip (ix, iy)  
+/// neighbour number 9 8 7 6 5 (Y strip (ix, iy)) 0 1 2 3 4 in the list
+///                 \\_______/                    \\_______/
+///                    left                         right
 
     Int_t absiX = TMath::Abs(iX); 
     Int_t modNum = ModuleColNum(absiX); // from 0 to 6
@@ -472,6 +473,8 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
 				      Float_t stripXsize[7],
 				      Float_t offset)
 {
+/// Initialize
+
 //    printf(" fBending: %d \n",fBending);
     
     Int_t nStripMax = 0;
@@ -561,7 +564,7 @@ void AliMUONTriggerSegmentation::Init(Int_t detectionElementId,
 void
 AliMUONTriggerSegmentation::Print(Option_t*) const
 {
-// Printing
+/// Printing
 
   cout << "fId=" << fId << " fBending=" << fBending << " fNsec=" 
   << fNsec << " Nx,Ny=" << fNpx << "," << fNpy 

@@ -24,13 +24,17 @@
 #include "AliMUONDataIterator.h"
 #include "AliMUONDigit.h"
 
-/// A helper class to dump data from AliRoot-generated root files.
+/// \class AliMUONCheck
+/// \brief A helper class to dump data from AliRoot-generated root files.
 /// 
 /// Only implemented for digits so far, it is meant as a replacement
 /// of the MUONCheck.C macro, or to be used by this macro to simplify it.
 ///
+/// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUONCheck)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONCheck::AliMUONCheck(const char* galiceFile, 
@@ -42,7 +46,7 @@ fLastEvent(lastEvent),
 fRunLoader(0x0),
 fData(0x0)
 {
-  // ctor
+/// Standard constructor
   
   fRunLoader = AliRunLoader::Open(fFileName.Data(),"MUONFolder","READ");
   if (!fRunLoader) 
@@ -64,25 +68,10 @@ fData(0x0)
 }
 
 //_____________________________________________________________________________
-AliMUONCheck::AliMUONCheck(const AliMUONCheck& rhs) : TObject(rhs)
-{
-  // copy ctor
-  AliFatal("Implement me if needed");
-}
-
-//_____________________________________________________________________________
-AliMUONCheck& 
-AliMUONCheck::operator=(const AliMUONCheck&)
-{
-  // assignement operator
-  AliFatal("Implement me if needed")
-  return *this;
-}
-
-//_____________________________________________________________________________
 AliMUONCheck::~AliMUONCheck()
 {
-  // dtor
+/// Destructor
+
   delete fData;
 }
 
@@ -90,7 +79,8 @@ AliMUONCheck::~AliMUONCheck()
 void
 AliMUONCheck::DumpDigits(Option_t* opt) const
 {
-  // Dump the digits to screen
+/// Dump the digits to screen
+
   if ( !IsValid() ) return;
   
   Int_t nevents = fRunLoader->GetNumberOfEvents();

@@ -34,7 +34,9 @@
 ///
 /// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerCrateStore)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONTriggerCrateStore::AliMUONTriggerCrateStore()
@@ -46,13 +48,13 @@ fLBIterator(0x0),
 fCurrentCrate(0x0),
 fCurrentLocalBoard(-1)
 {
-  // ctor
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMUONTriggerCrateStore::~AliMUONTriggerCrateStore()
 {
-    // dtor
+/// Destructor
   delete fCrateIterator;
   delete fLBIterator;
   delete fCrates;

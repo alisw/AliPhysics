@@ -25,7 +25,7 @@ public:
   AliMUONDataDigitIterator(const AliMUONData* data, Int_t firstChamber, Int_t lastChamber);
   AliMUONDataDigitIterator(const AliMUONDataDigitIterator& rhs);
   AliMUONDataDigitIterator& operator=(const AliMUONDataDigitIterator& rhs);
-  virtual ~AliMUONDataDigitIterator() {}
+  virtual ~AliMUONDataDigitIterator();
     
   TObject* Next();
   

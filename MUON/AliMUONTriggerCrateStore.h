@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup sim
+/// \ingroup base
 /// \class AliMUONTriggerCrateStore
 /// \brief A container for AliMUONTriggerCrate objects.
 /// 
@@ -39,6 +39,10 @@ public:
   
   void ReadFromFile(const char* crateFile =
                     "$ALICE_ROOT/MUON/mapping/data/stationTrigger/crate.dat");
+
+protected:
+  AliMUONTriggerCrateStore(const AliMUONTriggerCrateStore& rhs);
+  AliMUONTriggerCrateStore& operator = (const AliMUONTriggerCrateStore& rhs);
 
 private:
   void AddCrate(const char* crateName); 

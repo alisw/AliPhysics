@@ -23,13 +23,18 @@
 #include "TString.h"
 
 ///
-/// Implementation of AliMUONVCalibParam for pair of floats.
+/// \class AliMUONCalibParam2F
+/// \brief Implementation of AliMUONVCalibParam for pair of floats.
 ///
+/// Handle the case of 2 floating point parameters per channel.
 /// Conceptually, this class is the equivalent of a vector or float pairs,
 /// but it is implemented using bare Float_t[] array.
 ///
+/// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUONCalibParam2F)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONCalibParam2F::AliMUONCalibParam2F() 
@@ -38,9 +43,7 @@ AliMUONCalibParam2F::AliMUONCalibParam2F()
   fN(0),
   fValues(0x0)
 {
-  //
-  // Default ctor.
-  // 
+/// Default constructor.
 }
 
 //_____________________________________________________________________________
@@ -49,11 +52,10 @@ AliMUONCalibParam2F::AliMUONCalibParam2F(Int_t theSize, Int_t fillWithValue)
   fSize(theSize),
   fN(fSize*Dimension())
 {
-  //
-  // Normal ctor, where theSize specifies the number of channels handled
-  // by this object, and fillWithValue the default value assigned to each
-  // channel.
-  //
+/// Normal constructor, where theSize specifies the number of channels handled
+/// by this object, and fillWithValue the default value assigned to each
+/// channel.
+
   if ( fN > 0 )
   {
     fValues = new Float_t[fN];
@@ -69,6 +71,8 @@ fSize(0),
 fN(0),
 fValues(0x0)
 {
+/// Copy constructor.
+
   other.CopyTo(*this);
 }
 
@@ -76,6 +80,8 @@ fValues(0x0)
 AliMUONCalibParam2F&
 AliMUONCalibParam2F::operator=(const AliMUONCalibParam2F& other) 
 {
+/// Assignment operator
+
   other.CopyTo(*this);
   return *this;
 }
@@ -83,9 +89,8 @@ AliMUONCalibParam2F::operator=(const AliMUONCalibParam2F& other)
 //_____________________________________________________________________________
 AliMUONCalibParam2F::~AliMUONCalibParam2F()
 {
-  //
-  // dtor
-  //
+/// Destructor
+
   delete[] fValues;
 }
 
@@ -93,9 +98,8 @@ AliMUONCalibParam2F::~AliMUONCalibParam2F()
 void
 AliMUONCalibParam2F::CopyTo(AliMUONCalibParam2F& destination) const
 {
-  //
-  // Copy *this to destination
-  //
+/// Copy *this to destination
+
   delete[] destination.fValues;
   destination.fN = fN;
   destination.fSize = fSize;
@@ -114,10 +118,9 @@ AliMUONCalibParam2F::CopyTo(AliMUONCalibParam2F& destination) const
 Int_t
 AliMUONCalibParam2F::Index(Int_t i, Int_t j) const
 {
-  //
-  // Compute the 1D index of the internal storage from the pair (i,j)
-  // Returns -1 if the (i,j) pair is invalid
-  //
+/// Compute the 1D index of the internal storage from the pair (i,j)
+/// Returns -1 if the (i,j) pair is invalid
+
   if ( i >= 0 && i < Size() && j >= 0 && j < Dimension() )
   {
     return i + Size()*j;
@@ -129,11 +132,10 @@ AliMUONCalibParam2F::Index(Int_t i, Int_t j) const
 void
 AliMUONCalibParam2F::Print(Option_t* opt) const
 {
-  //
-  // Output this object to stdout.
-  // If opt=="full", then all channels are printed, otherwise
-  // only the general characteristics are printed.
-  //
+/// Output this object to stdout.
+/// If opt=="full", then all channels are printed, otherwise
+/// only the general characteristics are printed.
+
   TString sopt(opt);
   sopt.ToUpper();
   cout << "AliMUONCalibParam2F - Size=" << Size()
@@ -152,9 +154,8 @@ AliMUONCalibParam2F::Print(Option_t* opt) const
 void
 AliMUONCalibParam2F::SetValueAsFloat(Int_t i, Int_t j, Float_t value)
 {
-  //
-  // Set one value as a float, after checking that the indices are correct.
-  //
+/// Set one value as a float, after checking that the indices are correct.
+
   Int_t ix = Index(i,j);
   
   if ( ix < 0 )
@@ -172,9 +173,8 @@ AliMUONCalibParam2F::SetValueAsFloat(Int_t i, Int_t j, Float_t value)
 void
 AliMUONCalibParam2F::SetValueAsInt(Int_t i, Int_t j, Int_t value)
 {
-  //
-  // Set one value as an int.
-  //
+/// Set one value as an int.
+
   SetValueAsFloat(i,j,static_cast<Float_t>(value));
 }
 
@@ -182,9 +182,8 @@ AliMUONCalibParam2F::SetValueAsInt(Int_t i, Int_t j, Int_t value)
 Float_t
 AliMUONCalibParam2F::ValueAsFloat(Int_t i, Int_t j) const
 {
-  //
-  // Return the value as a float (which it is), after checking indices.
-  //
+/// Return the value as a float (which it is), after checking indices.
+
   Int_t ix = Index(i,j);
   
   if ( ix < 0 )
@@ -203,9 +202,8 @@ AliMUONCalibParam2F::ValueAsFloat(Int_t i, Int_t j) const
 Int_t
 AliMUONCalibParam2F::ValueAsInt(Int_t i, Int_t j) const
 {
-  //
-  // Return the value as an int, by rounding the internal float value.
-  //
+/// Return the value as an int, by rounding the internal float value.
+
   Float_t v = ValueAsFloat(i,j);
   return TMath::Nint(v);
 }

@@ -21,17 +21,15 @@
 #include "AliLog.h"
 #include "AliMUONLocalStruct.h"
 
-ClassImp(AliMUONLocalTrigger)
-
-/// ------------------
-/// Class AliMUONLocalTrigger
-/// ------------------
+/// \class AliMUONLocalTrigger
 /// Local Trigger algorithm data outputs
-/// (contains local trigger decision and bit patterns)
-/// Ph. Crochet
-///
-/// add SetLocalStruct method for rawdata
-/// Ch. Finck
+/// (contains local trigger decision and bit patterns)                \n
+/// Add SetLocalStruct method for rawdata  (Ch. Finck)
+/// \author Ph. Crochet
+
+/// \cond CLASSIMP
+ClassImp(AliMUONLocalTrigger)
+/// \endcond
 
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger()
@@ -57,17 +55,14 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
     fLoDecision(0),
     fDigits(0)
 {
-  //
-  // constructor
-  //
+/// Default constructor
 }
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocalTrig)
   : TObject(theMUONLocalTrig)
 {
-  //
-  // copy constructor (useful for TClonesArray)
-  //
+/// Copy constructor (useful for TClonesArray)
+
   fLoCircuit = theMUONLocalTrig.fLoCircuit;
   fLoStripX  = theMUONLocalTrig.fLoStripX;         
   fLoDev     = theMUONLocalTrig.fLoDev;           
@@ -93,9 +88,8 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocal
 //----------------------------------------------------------------------
 AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& theMUONLocalTrig)
 {
-  // assigment operator
-  //
-  // equal operator (useful for non-pointer member in TClonesArray)
+/// Assigment operator;
+/// equal operator (useful for non-pointer member in TClonesArray)
 
   if (this == &theMUONLocalTrig)
     return *this;
@@ -131,9 +125,8 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& digits)
 {
-  //
-  // add a local trigger object 
-  //
+/// Add a local trigger object 
+
   fLoCircuit = localtr[0];
   fLoStripX  = localtr[1];         
   fLoDev     = localtr[2];           
@@ -158,9 +151,9 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& di
 //----------------------------------------------------------------------
 Char_t AliMUONLocalTrigger::GetLoDecision()
 {
-  // get local decision 
-  // from H(L)pt
-  // returns local trigger decision
+/// Get local decision 
+/// from H(L)pt;
+/// returns local trigger decision
 
   fLoDecision  = (fLoLpt & 0x3);
   fLoDecision |= (fLoHpt << 2) & 0xC;
@@ -172,9 +165,9 @@ Char_t AliMUONLocalTrigger::GetLoDecision()
 void AliMUONLocalTrigger::GetDigit(
 		Int_t i, Int_t& chamber, Int_t& cathode, Int_t& digit) const
 {
-// Returns the i'th digit that fired this circuit.
-// The number of digits can be found with NumberOfDigits(), that is 
-// i is valid in the range [ 0 , NumberOfDigits() - 1 ]
+/// Returns the i'th digit that fired this circuit.
+/// The number of digits can be found with NumberOfDigits(), that is 
+/// i is valid in the range [ 0 , NumberOfDigits() - 1 ]
 
 	Int_t digitnumber = fDigits[i];
 	DecodeDigitNumber(digitnumber, chamber, cathode, digit);
@@ -184,9 +177,9 @@ void AliMUONLocalTrigger::GetDigit(
 Int_t AliMUONLocalTrigger::EncodeDigitNumber(Int_t chamber, Int_t cathode, 
 					     Int_t digit)
 {
-// Encodes a 32-bit digit number from digit information to be stored
-// in internal integer arrays. Note that the value of the digit parameter
-// can not be larger than 0x07FFFFFF.
+/// Encodes a 32-bit digit number from digit information to be stored
+/// in internal integer arrays. Note that the value of the digit parameter
+/// can not be larger than 0x07FFFFFF.
 
 	assert( 0 <= cathode && cathode <= 1 );
 	assert( 0 <= chamber && chamber <= 13 );
@@ -207,9 +200,9 @@ Int_t AliMUONLocalTrigger::EncodeDigitNumber(Int_t chamber, Int_t cathode,
 void AliMUONLocalTrigger::DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, 
 					    Int_t& cathode, Int_t& digit)
 {
-// Decodes a digit number into information about the digit.
-// One can subsequently fetch the digit with
-// AliMUONDataInterface::Digit(chamber, cathode, digit)
+/// Decodes a digit number into information about the digit.
+/// One can subsequently fetch the digit with
+/// AliMUONDataInterface::Digit(chamber, cathode, digit)
 
 	cathode = (digitnumber >> 31) & 0x1;
 	chamber = (digitnumber >> 27) & 0xF;
@@ -219,9 +212,7 @@ void AliMUONLocalTrigger::DecodeDigitNumber(Int_t digitnumber, Int_t& chamber,
 //----------------------------------------------------------------------
 void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& localStruct)
 {
-  //
-  // Set local trigger info from rawdata localStruct
-  //
+/// Set local trigger info from rawdata localStruct
 
   // set id'
   SetLoCircuit(loCircuit);

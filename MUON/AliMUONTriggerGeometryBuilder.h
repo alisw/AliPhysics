@@ -4,7 +4,7 @@
 // $Id$
 // Revision of includes 07/05/2004
 //
-/// \ingroup base
+/// \ingroup sim
 /// \class AliMUONTriggerGeometryBuilder
 /// \brief MUON Trigger stations geometry construction class
 ///

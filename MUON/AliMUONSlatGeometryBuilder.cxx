@@ -46,8 +46,9 @@
 #include "AliMUONGeometryEnvelopeStore.h"
 #include "AliMUONConstants.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONSlatGeometryBuilder)
-
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONSlatGeometryBuilder::AliMUONSlatGeometryBuilder(AliMUON* muon)

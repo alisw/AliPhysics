@@ -30,14 +30,16 @@
 #include "AliRun.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONCommonGeometryBuilder)
+/// \endcond
  
 //______________________________________________________________________________//___________________________________________
 AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder(AliMUON* muon)
   : AliMUONVGeometryBuilder(-1),
     fMUON(muon)
 {
-/// Standars constructor
+/// Standard constructor
 }
 
 //______________________________________________________________________________//___________________________________________
@@ -53,7 +55,7 @@ AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder(
                                  const AliMUONCommonGeometryBuilder& right) 
   : AliMUONVGeometryBuilder(right) 
 {  
-  /// copy constructor (not implemented)
+/// Copy constructor (not implemented)
 
   AliFatal("Copy constructor not provided.");
 }
@@ -68,7 +70,7 @@ AliMUONCommonGeometryBuilder::~AliMUONCommonGeometryBuilder()
 AliMUONCommonGeometryBuilder& 
 AliMUONCommonGeometryBuilder::operator=(const AliMUONCommonGeometryBuilder& right)
 {
-  /// assignement operator (not implemented)
+/// Assignement operator (not implemented)
 
   // check assignement to self
   if (this == &right) return *this;

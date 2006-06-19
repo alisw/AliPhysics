@@ -25,8 +25,11 @@ class AliMUONSt1SpecialMotif
     AliMUONSt1SpecialMotif(const TVector2& delta,Double_t rotAngle=0.);
     AliMUONSt1SpecialMotif(const AliMUONSt1SpecialMotif& src);
     virtual ~AliMUONSt1SpecialMotif();
-    
+             
+	     /// Return offset
     TVector2 GetDelta()    const {return fDelta;}
+    
+             /// Return rotation angle in degrees (0 = vertical) 
     Double_t GetRotAngle() const {return fRotAngle;}
 
   private:

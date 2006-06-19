@@ -49,7 +49,9 @@
 #include <TObjString.h>
 #include <TMap.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONSegFactory)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONSegFactory::AliMUONSegFactory(const AliMUONGeometryTransformer* geometry)
@@ -92,15 +94,6 @@ AliMUONSegFactory::AliMUONSegFactory(const TString& volPathsFileName,
 }
 
 //______________________________________________________________________________
-AliMUONSegFactory::AliMUONSegFactory(const AliMUONSegFactory& rhs)
- : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//______________________________________________________________________________
 
 AliMUONSegFactory::~AliMUONSegFactory()
 {
@@ -110,18 +103,6 @@ AliMUONSegFactory::~AliMUONSegFactory()
         // The segmentation is supposed to be deleted in the client code
 }
 
-//______________________________________________________________________________
-AliMUONSegFactory&  AliMUONSegFactory::operator=(const AliMUONSegFactory& rhs)
-{
-  // Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
-          
 //
 // Private methods
 //
@@ -129,8 +110,8 @@ AliMUONSegFactory&  AliMUONSegFactory::operator=(const AliMUONSegFactory& rhs)
 //______________________________________________________________________________
 Bool_t AliMUONSegFactory::IsGeometryDefined(Int_t ichamber)
 {
-// Return true, if det elements for the chamber with the given ichamber Id
-// are defined in geometry (the geometry builder for this chamber was activated)
+/// Return true, if det elements for the chamber with the given ichamber Id
+/// are defined in geometry (the geometry builder for this chamber was activated)
 
   if ( ! fkTransformer ||
        ! fkTransformer->GetModuleTransformer(ichamber, false) )
@@ -174,7 +155,7 @@ AliMUONSegFactory::CreateMpSegmentation(Int_t detElemId, Int_t cath)
 AliMUONVGeometryDESegmentation*  
 AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
 { 
-// Create DE segmentation, operating in local DE reference frame
+/// Create DE segmentation, operating in local DE reference frame
 
   // Check detElemId & cath  
   if ( ! AliMpDEManager::IsValid(detElemId, cath, true) ) return 0;
@@ -271,8 +252,8 @@ AliMUONSegFactory::CreateDESegmentation(Int_t detElemId, Int_t cath)
 AliMUONGeometrySegmentation*  
 AliMUONSegFactory::CreateModuleSegmentation(Int_t moduleId, Int_t cath)
 { 
-// Create module segmentation, operating in global reference frame
-// Detection elements are defined via DE names map.
+/// Create module segmentation, operating in global reference frame
+/// Detection elements are defined via DE names map.
 
   // Check cathod & module Id 
   if ( ! AliMpDEManager::IsValidCathod(cath, true) || 
@@ -343,9 +324,7 @@ AliMUONSegFactory::CreateSegmentation(const TString& option)
 //__________________________________________________________________________
 void AliMUONSegFactory::BuildStation3() 
 {
-  //--------------------------------------------------------
-  // Configuration for Chamber TC5/6  (Station 3) ----------          
-  //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/// Configuration for Chamber TC5/6  (Station 3) ----------          
 
   AliMUONGeometrySegmentation* segmentation[2];
 
@@ -476,10 +455,7 @@ void AliMUONSegFactory::BuildStation3()
 //__________________________________________________________________________
 void AliMUONSegFactory::BuildStation4() 
 {
-  //--------------------------------------------------------
-  // Configuration for Chamber TC7/8  (Station 4) ----------           
-  //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+/// Configuration for Chamber TC7/8  (Station 4) ----------           
 
   AliMUONGeometrySegmentation* segmentation[2];
 
@@ -682,9 +658,7 @@ void AliMUONSegFactory::BuildStation4()
 //__________________________________________________________________________
 void AliMUONSegFactory::BuildStation5() 
 {       
-  //--------------------------------------------------------
-  // Configuration for Chamber TC9/10  (Station 5) ---------           
-  //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/// Configuration for Chamber TC9/10  (Station 5) ---------           
 
   AliMUONGeometrySegmentation* segmentation[2];
 
@@ -868,9 +842,7 @@ void AliMUONSegFactory::BuildStation5()
 //__________________________________________________________________________
 void AliMUONSegFactory::BuildStation6() 
 { 
-  //--------------------------------------------------------
-  // Configuration for Trigger stations
-  //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/// Configuration for Trigger stations
 
  
     AliMUONGeometrySegmentation *chamberSeg[2];

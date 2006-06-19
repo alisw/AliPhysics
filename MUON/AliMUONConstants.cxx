@@ -32,6 +32,10 @@
 /// by the way).
 ///
 
+/// \cond CLASSIMP
+ClassImp(AliMUONConstants)
+/// \endcond
+
 Int_t   AliMUONConstants::fgNCh = 14;
 Int_t   AliMUONConstants::fgNTrackingCh = 10;
 Int_t   AliMUONConstants::fgNTriggerCh = 4;
@@ -74,8 +78,6 @@ Float_t  AliMUONConstants::fgDmin[7]  = {   36.4,  46.2,  63.0,   79.0,   79.0, 
 Float_t  AliMUONConstants::fgDmax[7]  = {  176.6, 229.0, 308.84, 418.2,  522.0, 850.0, 900.0};   // cm
  
 Int_t    AliMUONConstants::fgMaxZoom = 20;
-
-ClassImp(AliMUONConstants)
 
 //______________________________________________________________________________
 Int_t AliMUONConstants::ChamberNumber(Float_t z) 

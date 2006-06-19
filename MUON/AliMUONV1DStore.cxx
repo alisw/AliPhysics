@@ -17,7 +17,7 @@
 
 #include "AliMUONV1DStore.h"
 
-///
+/// \class AliMUONV1DStore
 /// Defines an interface equivalent to a list of TObject, indexed
 /// by integer (somehow a vector, except that indices are not necessarily
 /// sequential).
@@ -25,17 +25,22 @@
 /// It's extremely simple and hopefully allow many implementations.
 /// It also makes the object ownership self-evident.
 ///
+/// \author Laurent Aphecetche
 
+/// \cond CLASSIMP
 ClassImp(AliMUONV1DStore)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONV1DStore::AliMUONV1DStore()
 {
+/// Default constructor
 }
 
 //_____________________________________________________________________________
 AliMUONV1DStore::~AliMUONV1DStore()
 {
+/// Destructor
 }
 
 

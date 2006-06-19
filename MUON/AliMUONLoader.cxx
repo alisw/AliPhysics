@@ -25,7 +25,10 @@
 #include "AliMUONConstants.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONLoader)
+/// \endcond
+
 //___________________________________________________________________
 AliMUONLoader::AliMUONLoader()
   : AliLoader(),
@@ -38,21 +41,14 @@ AliMUONLoader::AliMUONLoader(const Char_t* detname,const Char_t* eventfoldername
   : AliLoader(detname,eventfoldername),
     fMUONData(0)
 {
+/// Standard contructor with name of the top folder of the tree
 }
 //_______________________________________________________________________________
 AliMUONLoader::AliMUONLoader(const Char_t * detname,TFolder* eventfolder)
   : AliLoader(detname,eventfolder),
-  fMUONData(0)
+    fMUONData(0)
 {
 /// Constructor
-}
-//___________________________________________
-AliMUONLoader::AliMUONLoader(const AliMUONLoader& rhs)
-  : AliLoader(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
 }
 
 //_______________________________________________________________________________
@@ -60,19 +56,7 @@ AliMUONLoader::~AliMUONLoader()
 {
 /// Destructor 
 }
-//-------------------------------------------------------------------
-AliMUONLoader&  
-AliMUONLoader::operator=(const AliMUONLoader& rhs)
-{
-/// Protected assignement operator
 
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
-          
 //_______________________________________________________________________________
 void AliMUONLoader::SetMUONData(AliMUONData * MUONData)
 {

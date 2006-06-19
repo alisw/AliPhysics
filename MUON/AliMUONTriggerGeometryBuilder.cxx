@@ -34,7 +34,9 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerGeometryBuilder)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONTriggerGeometryBuilder::AliMUONTriggerGeometryBuilder(AliMUON* muon)

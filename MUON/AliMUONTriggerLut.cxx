@@ -15,12 +15,10 @@
 
 /* $Id$ */
 
-// -----------------------------------
-// Class AliMUONTriggerLut
-// -----------------------------------
-// Local Trigger Look Up Table - reading interface
-// LUT data is stored into TH3S histograms and readout 
-// from the Local Trigger algorithm.
+/// \class AliMUONTriggerLut
+/// Local Trigger Look Up Table - reading interface
+/// LUT data is stored into TH3S histograms and readout 
+/// from the Local Trigger algorithm.
 
 #include "AliMUONTriggerLut.h"
 
@@ -29,13 +27,16 @@
 #include "TFile.h"
 #include "TH3.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONTriggerLut)
+/// \endcond
 
 //----------------------------------------------------------------------
 AliMUONTriggerLut::AliMUONTriggerLut() 
   : TNamed()
 {
-// constructor
+/// Default constructor
+
   fLptPlus = fLptMinu = fLptUnde = 0;
   fHptPlus = fHptMinu = fHptUnde = 0;
   fAptPlus = fAptMinu = fAptUnde = 0;
@@ -43,7 +44,8 @@ AliMUONTriggerLut::AliMUONTriggerLut()
 //----------------------------------------------------------------------
 AliMUONTriggerLut::~AliMUONTriggerLut() 
 {
-  // destructor
+/// Destructor
+  
   delete fLptPlus;  
   delete fLptMinu;
   delete fLptUnde;
@@ -55,32 +57,11 @@ AliMUONTriggerLut::~AliMUONTriggerLut()
   delete fAptUnde;
 }
 
-//----------------------------------------------------------------------
-AliMUONTriggerLut::AliMUONTriggerLut (const AliMUONTriggerLut& theMUONTriggerLut)
-  : TNamed(theMUONTriggerLut)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//----------------------------------------------------------------------
-AliMUONTriggerLut & 
-AliMUONTriggerLut::operator=(const AliMUONTriggerLut& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal( "Not implemented.");
-    
-  return *this;  
-}
-
 void
 AliMUONTriggerLut::ReadFromFile(const char* filename)
 {
-// return output of LuT for corresponding TH3S  
+/// Return output of LuT for corresponding TH3S  
+
   TFile f(filename);
   
   if ( f.IsZombie() )
@@ -115,7 +96,7 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
 				     Int_t ystrip, Int_t lutLpt[2], 
 				     Int_t lutHpt[2], Int_t lutApt[2])
 {
-  // return output of LuT for corresponding TH3S  
+/// Return output of LuT for corresponding TH3S  
 
   if ( !fLptPlus )
   {
@@ -170,7 +151,8 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
 //----------------------------------------------------------------------
 Int_t AliMUONTriggerLut::GetMask(Int_t ystrip)
 {
-  // returns the mask corresponding to ystrip
+/// Return the mask corresponding to ystrip
+
   Int_t tabMask[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   Int_t mask=0;
   tabMask[ystrip]=1;

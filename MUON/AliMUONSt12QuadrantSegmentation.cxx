@@ -42,7 +42,9 @@
 #include "AliMUONSt12QuadrantSegmentation.h"
 #include "AliMUONConstants.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONSt12QuadrantSegmentation)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
@@ -75,7 +77,7 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(
   fYt(0.),
   fCorrA(0)
 {
-// Normal constructor
+/// Standard constructor
 
   fSectorSegmentation = dynamic_cast<AliMpSectorSegmentation*>(segmentation);
   if (fSectorSegmentation)
@@ -125,23 +127,17 @@ AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation()
   fIwt(0),
   fXt(0.),
   fYt(0.),
-  fCorrA(0) {
-// Default Constructor
+  fCorrA(0) 
+{
+/// Default Constructor
 
   AliDebug(1, Form("default (empty) ctor this = %p", this));
 }
 
 //______________________________________________________________________________
-AliMUONSt12QuadrantSegmentation::AliMUONSt12QuadrantSegmentation(const AliMUONSt12QuadrantSegmentation& rhs) 
-  : AliMUONVGeometryDESegmentation(rhs)
+AliMUONSt12QuadrantSegmentation::~AliMUONSt12QuadrantSegmentation() 
 {
-// Copy constructor
-  AliFatal("Copy constructor is not implemented.");
-}
-
-//______________________________________________________________________________
-AliMUONSt12QuadrantSegmentation::~AliMUONSt12QuadrantSegmentation() {
-// Destructor
+/// Destructor
 
   AliDebug(1, Form("dtor this = %p", this));
 
@@ -151,32 +147,13 @@ AliMUONSt12QuadrantSegmentation::~AliMUONSt12QuadrantSegmentation() {
 } 
 
 //
-// operators
-//
-
-//______________________________________________________________________________
-AliMUONSt12QuadrantSegmentation& 
-AliMUONSt12QuadrantSegmentation::operator=(const AliMUONSt12QuadrantSegmentation& rhs)
-{
-// Copy operator 
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
-}
-
-//
 // private methods
 //
 
 //______________________________________________________________________________
 void AliMUONSt12QuadrantSegmentation::UpdateCurrentPadValues(const AliMpPad& pad)
 {
-// Updates current pad values.
-// ---
+/// Updates current pad values.
 
   fIx = pad.GetIndices().GetFirst();
   fIy = pad.GetIndices().GetSecond();
@@ -193,8 +170,7 @@ void AliMUONSt12QuadrantSegmentation::UpdateCurrentPadValues(const AliMpPad& pad
 //______________________________________________________________________________
 void AliMUONSt12QuadrantSegmentation::SetPadSize(Float_t /*p1*/, Float_t /*p2*/)
 {
-// Set pad size Dx*Dy 
-// ---
+/// Set pad size Dx*Dy 
 
   AliFatal("Not uniform pad size.");
 }
@@ -202,8 +178,7 @@ void AliMUONSt12QuadrantSegmentation::SetPadSize(Float_t /*p1*/, Float_t /*p2*/)
 //______________________________________________________________________________
 void AliMUONSt12QuadrantSegmentation::SetDAnod(Float_t d)
 {
-// Set anod pitch
-// ---
+/// Set anod pitch
 
   fWireD = d;
 }
@@ -212,7 +187,7 @@ void AliMUONSt12QuadrantSegmentation::SetDAnod(Float_t d)
 //______________________________________________________________________________
 Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Float_t x, Float_t y, Float_t /*z*/)
 { 
-// Returns true if a pad exists in the given position
+/// Returns true if a pad exists in the given position
 
   // fSector->GetMotifMap()->Print();
 
@@ -226,7 +201,7 @@ Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Float_t x, Float_t y, Float_t /*
 //______________________________________________________________________________
 Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Int_t ix, Int_t iy)
 {
-// Returns true if a pad with given indices exists
+/// Returns true if a pad with given indices exists
 
   AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(ix,iy), false);
 
@@ -237,8 +212,8 @@ Bool_t  AliMUONSt12QuadrantSegmentation::HasPad(Int_t ix, Int_t iy)
 //______________________________________________________________________________
 AliMUONGeometryDirection  AliMUONSt12QuadrantSegmentation::GetDirection()
 {
-// Returns the direction with a constant pad size  
-// (Direction or coordinate where the resolution is the best)
+/// Returns the direction with a constant pad size  
+/// (Direction or coordinate where the resolution is the best)
 
   switch ( fSector->GetDirection() ) {
     case kX: return kDirX;
@@ -251,8 +226,8 @@ AliMUONGeometryDirection  AliMUONSt12QuadrantSegmentation::GetDirection()
 const AliMpVSegmentation*  
 AliMUONSt12QuadrantSegmentation::GetMpSegmentation() const
 {
-// Returns the mapping segmentation
-// (provides access to electronics info)
+/// Returns the mapping segmentation
+/// (provides access to electronics info)
 
   return fSectorSegmentation;
 }  
@@ -260,10 +235,9 @@ AliMUONSt12QuadrantSegmentation::GetMpSegmentation() const
 //______________________________________________________________________________
 Float_t AliMUONSt12QuadrantSegmentation::GetAnod(Float_t xhit) const
 {
-// Anod wire coordinate closest to xhit
-// Returns for a hit position xhit the position of the nearest anode wire    
-// From AliMUONSegmentationV01.
-// ---
+/// Anod wire coordinate closest to xhit
+/// Returns for a hit position xhit the position of the nearest anode wire    
+/// From AliMUONSegmentationV01.
 
   Float_t wire= (xhit>0) ? Int_t(xhit/fWireD) + 0.5
                          : Int_t(xhit/fWireD) - 0.5;
@@ -275,8 +249,7 @@ Float_t AliMUONSt12QuadrantSegmentation::GetAnod(Float_t xhit) const
 void  AliMUONSt12QuadrantSegmentation::GetPadI(Float_t x, Float_t y, Float_t /*z*/, 
                                       Int_t& ix, Int_t& iy)
 {					
-//  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
-// ---
+///  Returns pad coordinates (ix,iy) for given real coordinates (x,y)
 
   GetPadI(x, y, ix, iy);
 }
@@ -285,9 +258,8 @@ void  AliMUONSt12QuadrantSegmentation::GetPadI(Float_t x, Float_t y, Float_t /*z
 void  AliMUONSt12QuadrantSegmentation::GetPadI(Float_t x, Float_t y,
                                       Int_t& ix, Int_t& iy)
 {					
-// Returns pad coordinates (ix,iy) for given real coordinates (x,y)
-// If there is no pad, ix = 0, iy = 0 are returned.
-// ---
+/// Returns pad coordinates (ix,iy) for given real coordinates (x,y)
+/// If there is no pad, ix = 0, iy = 0 are returned.
 
   AliMpPad pad = fSectorSegmentation->PadByPosition(TVector2(x,y), true);
 
@@ -299,8 +271,7 @@ void  AliMUONSt12QuadrantSegmentation::GetPadI(Float_t x, Float_t y,
 void  AliMUONSt12QuadrantSegmentation::GetPadC(Int_t ix, Int_t iy, 
                                       Float_t& x, Float_t& y, Float_t& z)
 {					
-// Transform from pad to real coordinates
-// ---
+/// Transform from pad to real coordinates
 
   z = fZ;
   GetPadC(ix, iy, x , y);
@@ -310,9 +281,8 @@ void  AliMUONSt12QuadrantSegmentation::GetPadC(Int_t ix, Int_t iy,
 void  AliMUONSt12QuadrantSegmentation::GetPadC(Int_t ix, Int_t iy, 
                                       Float_t& x, Float_t& y)
 {					
-// Transform from pad to real coordinates
-// If there is no pad, x = 0., y = 0. are returned.
-// ---
+/// Transform from pad to real coordinates
+/// If there is no pad, x = 0., y = 0. are returned.
 
   AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(ix,iy), true);
 
@@ -324,8 +294,7 @@ void  AliMUONSt12QuadrantSegmentation::GetPadC(Int_t ix, Int_t iy,
 //______________________________________________________________________________
 void AliMUONSt12QuadrantSegmentation::Init(Int_t chamber)
 {
-// Initialize segmentation
-// ---
+/// Initialize segmentation
 
  // find Npx, Npy and save this info
   
@@ -339,8 +308,7 @@ void AliMUONSt12QuadrantSegmentation::Init(Int_t chamber)
 //______________________________________________________________________________
 Float_t AliMUONSt12QuadrantSegmentation::Dpx() const
 {
-// Get pad size in x
-// ---
+/// Get pad size in x
 
   AliFatal( "Not uniform pad size.");
   return 0.;
@@ -349,8 +317,7 @@ Float_t AliMUONSt12QuadrantSegmentation::Dpx() const
 //______________________________________________________________________________
 Float_t AliMUONSt12QuadrantSegmentation::Dpy() const
 {
-// Get pad size in y
-// ---
+/// Get pad size in y
 
   AliFatal("Not uniform pad size.");
   return 0.;
@@ -359,8 +326,7 @@ Float_t AliMUONSt12QuadrantSegmentation::Dpy() const
 //______________________________________________________________________________
 Float_t AliMUONSt12QuadrantSegmentation::Dpx(Int_t isector) const
 {
-// Pad size in x by sector
-// ---
+/// Pad size in x by sector
 
   return fSectorSegmentation->PadDimensions(isector).X()*2.0;
 } 
@@ -368,8 +334,7 @@ Float_t AliMUONSt12QuadrantSegmentation::Dpx(Int_t isector) const
 //______________________________________________________________________________
 Float_t AliMUONSt12QuadrantSegmentation::Dpy(Int_t isector) const
 {
-// Pad size in x, y by Sector 
-// ---
+/// Pad size in x, y by Sector 
 
   return fSectorSegmentation->PadDimensions(isector).Y()*2.0;
 }
@@ -377,9 +342,8 @@ Float_t AliMUONSt12QuadrantSegmentation::Dpy(Int_t isector) const
 //______________________________________________________________________________
 Int_t AliMUONSt12QuadrantSegmentation::Npx() const
 {
-// Maximum number of Pads in x
-// hard coded for the time being
-// ---
+/// Maximum number of Pads in x
+/// hard coded for the time being
 
   return fSectorSegmentation->MaxPadIndexX();
 }
@@ -387,9 +351,8 @@ Int_t AliMUONSt12QuadrantSegmentation::Npx() const
 //______________________________________________________________________________
 Int_t AliMUONSt12QuadrantSegmentation::Npy() const
 {
-// Maximum number of Pads in y
-// hard coded for the time being
-// ---
+/// Maximum number of Pads in y
+/// hard coded for the time being
 
   return fSectorSegmentation->MaxPadIndexY();
 }
@@ -397,11 +360,10 @@ Int_t AliMUONSt12QuadrantSegmentation::Npy() const
 //______________________________________________________________________________
 void  AliMUONSt12QuadrantSegmentation::SetPad(Int_t ix, Int_t iy)
 {
-// Set pad position.
-// Sets virtual pad coordinates, needed for evaluating pad response 
-// outside the tracking program.
-// From AliMUONSegmentationV01.
-// ---
+/// Set pad position.
+/// Sets virtual pad coordinates, needed for evaluating pad response 
+/// outside the tracking program.
+/// From AliMUONSegmentationV01.
 
   GetPadC(ix, iy, fX, fY);
   fZone = Sector(ix, iy);
@@ -410,10 +372,10 @@ void  AliMUONSt12QuadrantSegmentation::SetPad(Int_t ix, Int_t iy)
 //______________________________________________________________________________
 void  AliMUONSt12QuadrantSegmentation::SetHit(Float_t xhit, Float_t yhit, Float_t /*zhit*/)
 {
-// Set hit position
-// Sets virtual hit position, needed for evaluating pad response 
-// outside the tracking program 
-// From AliMUONSegmentationV01.
+/// Set hit position
+/// Sets virtual hit position, needed for evaluating pad response 
+/// outside the tracking program 
+/// From AliMUONSegmentationV01.
 
   fXhit = xhit;
   fYhit = yhit;
@@ -423,8 +385,7 @@ void  AliMUONSt12QuadrantSegmentation::SetHit(Float_t xhit, Float_t yhit, Float_
 void  AliMUONSt12QuadrantSegmentation::FirstPad(Float_t xhit, Float_t yhit, Float_t /*zhit*/, 
                                        Float_t dx, Float_t dy) 
 {					 
-// Iterate over pads - initialiser
-// ---
+/// Iterate over pads - initialiser
 
   // Sets the current pad to that located in the hit position
  
@@ -453,8 +414,7 @@ void  AliMUONSt12QuadrantSegmentation::FirstPad(Float_t xhit, Float_t yhit, Floa
 //______________________________________________________________________________
 void  AliMUONSt12QuadrantSegmentation::NextPad()
 {
-// Iterate over pads - stepper
-// ---
+/// Iterate over pads - stepper
 
   fSectorIterator->Next();				
 
@@ -465,8 +425,7 @@ void  AliMUONSt12QuadrantSegmentation::NextPad()
 //______________________________________________________________________________
 Int_t AliMUONSt12QuadrantSegmentation::MorePads()
 {
-// Iterate over pads - condition
-// ---
+/// Iterate over pads - condition
 
   if (fSectorIterator->IsDone())
     return 0;
@@ -478,9 +437,8 @@ Int_t AliMUONSt12QuadrantSegmentation::MorePads()
 Float_t AliMUONSt12QuadrantSegmentation::Distance2AndOffset(Int_t iX, Int_t iY, 
 						   Float_t x, Float_t y, Int_t* /*dummy*/)
 {					   
-// Returns the square of the distance between 1 pad
-// labelled by its channel numbers and a coordinate
-// ---
+/// Returns the square of the distance between 1 pad
+/// labelled by its channel numbers and a coordinate
 
   AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(iX, iY));
   
@@ -494,9 +452,8 @@ Float_t AliMUONSt12QuadrantSegmentation::Distance2AndOffset(Int_t iX, Int_t iY,
 void AliMUONSt12QuadrantSegmentation::GetNParallelAndOffset(Int_t /*iX*/, Int_t /*iY*/,
 						   Int_t* /*Nparallel*/, Int_t* /*Offset*/)
 {					   
-// Number of pads read in parallel and offset to add to x 
-// (specific to LYON, but mandatory for display)
-// ---
+/// Number of pads read in parallel and offset to add to x 
+/// (specific to LYON, but mandatory for display)
 
   AliFatal( "Not yet implemented.");
 }
@@ -507,8 +464,7 @@ void AliMUONSt12QuadrantSegmentation::Neighbours(Int_t iX, Int_t iY,
                                         Int_t* Nlist, 
 					Int_t Xlist[10], Int_t Ylist[10])
 {					  
-// Get next neighbours 
-// ---
+/// Get next neighbours 
 
   AliMpPad pad = fSectorSegmentation->PadByIndices(AliMpIntPair(iX,iY));
   Int_t &i = *Nlist;
@@ -525,9 +481,8 @@ void AliMUONSt12QuadrantSegmentation::Neighbours(Int_t iX, Int_t iY,
 //______________________________________________________________________________
 Int_t  AliMUONSt12QuadrantSegmentation::Ix()
 {
-// Current pad cursor during disintegration
-// x, y-coordinate
-// ---
+/// Current pad cursor during disintegration
+/// x, y-coordinate
 
   return fSectorIterator->CurrentItem().GetIndices().GetFirst();
 }
@@ -535,9 +490,8 @@ Int_t  AliMUONSt12QuadrantSegmentation::Ix()
 //______________________________________________________________________________
 Int_t  AliMUONSt12QuadrantSegmentation::Iy()
 {
-// Current pad cursor during disintegration
-// x, y-coordinate
-// ---
+/// Current pad cursor during disintegration
+/// x, y-coordinate
 
   return fSectorIterator->CurrentItem().GetIndices().GetSecond();
 }
@@ -545,8 +499,7 @@ Int_t  AliMUONSt12QuadrantSegmentation::Iy()
 //______________________________________________________________________________
 Int_t  AliMUONSt12QuadrantSegmentation::ISector()
 {
-// Current sector
-// ---
+/// Current sector
 
   return fZone;
 }
@@ -554,8 +507,7 @@ Int_t  AliMUONSt12QuadrantSegmentation::ISector()
 //______________________________________________________________________________
 Int_t AliMUONSt12QuadrantSegmentation::Sector(Int_t ix, Int_t iy)
 {
-// Calculate sector from pad coordinates
-// ---
+/// Calculate sector from pad coordinates
 
   return fSectorSegmentation
            ->Zone(fSectorSegmentation->PadByIndices(AliMpIntPair(ix, iy)));
@@ -564,8 +516,7 @@ Int_t AliMUONSt12QuadrantSegmentation::Sector(Int_t ix, Int_t iy)
 //______________________________________________________________________________
 Int_t AliMUONSt12QuadrantSegmentation::Sector(Float_t x, Float_t y)
 {
-// Calculate sector from pad coordinates
-// ---
+/// Calculate sector from pad coordinates
 
   return fSectorSegmentation
            ->Zone(fSectorSegmentation
@@ -576,8 +527,7 @@ Int_t AliMUONSt12QuadrantSegmentation::Sector(Float_t x, Float_t y)
 void  AliMUONSt12QuadrantSegmentation::IntegrationLimits(Float_t& x1, Float_t& x2,
                                                 Float_t& y1, Float_t& y2)
 {						  
-// Current integration limits 
-// ---
+/// Current integration limits 
  
   x1 = fXhit - fX - Dpx(fZone)/2.;
   x2 = x1 + Dpx(fZone);
@@ -589,21 +539,21 @@ void  AliMUONSt12QuadrantSegmentation::IntegrationLimits(Float_t& x1, Float_t& x
 //______________________________________________________________________________
 Int_t AliMUONSt12QuadrantSegmentation::SigGenCond(Float_t x, Float_t y, Float_t /*z*/)
 {
-// Signal Generation Condition during Stepping
-//  0: don't generate signal
-//  1: generate signal 
-//  Comments: 
-//
-//  Crossing of pad boundary and mid plane between neighbouring wires is checked.
-//  To correctly simulate the dependence of the spatial resolution on the angle 
-//  of incidence signal must be generated for constant steps on 
-//  the projection of the trajectory along the anode wire.
-//
-//  Signal will be generated if particle crosses pad boundary or
-//  boundary between two wires. 
-//
-// From AliMUONSegmentationV01
-// ---
+/// Signal Generation Condition during Stepping
+/// -  0: don't generate signal
+/// -  1: generate signal 
+///
+///  Comments:                                                                  \n 
+///
+///  Crossing of pad boundary and mid plane between neighbouring wires is checked.
+///  To correctly simulate the dependence of the spatial resolution on the angle 
+///  of incidence signal must be generated for constant steps on 
+///  the projection of the trajectory along the anode wire.
+///
+///  Signal will be generated if particle crosses pad boundary or
+///  boundary between two wires. 
+///
+/// From AliMUONSegmentationV01
 
   Int_t ixt, iyt;
   GetPadI(x, y, ixt, iyt);
@@ -620,10 +570,9 @@ Int_t AliMUONSt12QuadrantSegmentation::SigGenCond(Float_t x, Float_t y, Float_t 
 //______________________________________________________________________________
 void  AliMUONSt12QuadrantSegmentation::SigGenInit(Float_t x, Float_t y, Float_t /*z*/)
 {
-// Initialise signal generation at coord (x,y,z)
-// Initialises pad and wire position during stepping.
-// From AliMUONSegmentationV01
-// ---
+/// Initialise signal generation at coord (x,y,z)
+/// Initialises pad and wire position during stepping.
+/// From AliMUONSegmentationV01
 
   fXt = x;
   fYt = y;
@@ -634,11 +583,10 @@ void  AliMUONSt12QuadrantSegmentation::SigGenInit(Float_t x, Float_t y, Float_t 
 //______________________________________________________________________________
 void AliMUONSt12QuadrantSegmentation::GiveTestPoints(Int_t& n, Float_t* x, Float_t* y) const
 {					      
-// Test points for auto calibration
-// Returns test point on the pad plane.
-// Used during determination of the segmoid correction of the COG-method
-// From AliMUONSegmentationV01
-// ---
+/// Test points for auto calibration
+/// Returns test point on the pad plane.
+/// Used during determination of the segmoid correction of the COG-method
+/// From AliMUONSegmentationV01
 
   n=1;
   x[0] = (fRmax+fRmin)/2/TMath::Sqrt(2.);
@@ -648,9 +596,8 @@ void AliMUONSt12QuadrantSegmentation::GiveTestPoints(Int_t& n, Float_t* x, Float
 //______________________________________________________________________________
 void AliMUONSt12QuadrantSegmentation::Draw(const char * /*opt*/)
 {
-// Draw the segmentation zones.
-// (Called from AliMUON::BuildGeometry)
-// ---
+/// Draw the segmentation zones.
+/// (Called from AliMUON::BuildGeometry)
 
   AliWarning("Not yet implemented.");
 }
@@ -658,9 +605,8 @@ void AliMUONSt12QuadrantSegmentation::Draw(const char * /*opt*/)
 //______________________________________________________________________________
 void AliMUONSt12QuadrantSegmentation::SetCorrFunc(Int_t isec, TF1* func)
 {
-// Set the correction function.
-// From AliMUONSegmentationV01
-// ---
+/// Set the correction function.
+/// From AliMUONSegmentationV01
 
   fCorrA->AddAt(func, isec);
 }
@@ -668,9 +614,8 @@ void AliMUONSt12QuadrantSegmentation::SetCorrFunc(Int_t isec, TF1* func)
 //______________________________________________________________________________
 TF1* AliMUONSt12QuadrantSegmentation::CorrFunc(Int_t isec) const
 {
-// Get the correction Function.
-// From AliMUONSegmentationV01
-// ---
+/// Get the correction Function.
+/// From AliMUONSegmentationV01
 
   return (TF1*) fCorrA->At(isec);
 } 

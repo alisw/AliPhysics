@@ -15,12 +15,11 @@
 
 /* $Id$ */
 
-// -----------------------
-// Class AliMUONRecoCheck
-// -----------------------
-// Utility class to check the muon reconstruction. Reconstructed tracks are compared
-// to reference tracks. The reference tracks are built from AliTrackReference for the
-// hit in chamber (0..9) and from kinematics for the vertex parameters.     
+/// \class AliMUONRecoCheck
+/// \brief Utility class to check reconstruction
+/// Reconstructed tracks are compared to reference tracks. 
+/// The reference tracks are built from AliTrackReference for the
+/// hit in chamber (0..9) and from kinematics for the vertex parameters.     
 
 #include "AliMUON.h"
 #include "AliMUONRecoCheck.h"
@@ -38,12 +37,15 @@
 
 #include <TParticle.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONRecoCheck)
+/// \endcond
 
 //_____________________________________________________________________________
 AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
 {
 /// Constructor
+
   fMuonTrackRef = new TClonesArray("AliMUONTrack", 10);
 
   // open the run loader
@@ -69,15 +71,6 @@ AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
   fRecoTracks = 0;
 }
 
-//____________________________________________________________________
-AliMUONRecoCheck::AliMUONRecoCheck(const AliMUONRecoCheck& rhs)
- : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
 //_____________________________________________________________________________
 AliMUONRecoCheck::~AliMUONRecoCheck()
 {
@@ -89,18 +82,6 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
   fMuonTrackRef->Delete();
   delete fMuonTrackRef;
   delete fMUONData;
-}
-
-//________________________________________________________________________
-AliMUONRecoCheck& AliMUONRecoCheck::operator = (const AliMUONRecoCheck& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }
 
 //_____________________________________________________________________________

@@ -69,47 +69,26 @@ ClassImp(AliMUONDataInterface)
 AliMUONDataInterface::AliMUONDataInterface()
 	: TObject(), fData(NULL, "MUON", "MUON")
 {
-// Set all internal pointers to NULL and indices to -1.
+/// Set all internal pointers to NULL and indices to -1.
 
 	Reset();
 }
 
-AliMUONDataInterface::AliMUONDataInterface(const AliMUONDataInterface& rhs)
-  : TObject(rhs)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
 AliMUONDataInterface::~AliMUONDataInterface()
 {
-// Delete the runloader if we created it.
-// If the runloader is not to be deleted then call Reset just before 
-// the destructor is called.
+/// Delete the runloader if we created it.
+/// If the runloader is not to be deleted then call Reset just before 
+/// the destructor is called.
 
 	if (fRunloader != NULL && fCreatedRunLoader)
 		delete fRunloader;
 }
 
-AliMUONDataInterface&  
-AliMUONDataInterface::operator=(const AliMUONDataInterface& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
-          
-
 void AliMUONDataInterface::Reset()
 {
-// Sets all internal pointers to NULL and indices to -1.
-// Note: No resources are released!
-// Specificaly AliRunLoader is not deleted.
+/// Sets all internal pointers to NULL and indices to -1.
+/// Note: No resources are released!
+/// Specificaly AliRunLoader is not deleted.
 
 	fCreatedRunLoader = kFALSE;
 	fRunloader = NULL;
@@ -129,8 +108,8 @@ void AliMUONDataInterface::Reset()
 
 Bool_t AliMUONDataInterface::UseCurrentRunLoader()
 {
-// Tries to fetch the current runloader with AliRunLoader::GetRunLoader. If nothing is
-// currently loaded then kFALSE is returned and AliMUONDataInterface is reset.
+/// Tries to fetch the current runloader with AliRunLoader::GetRunLoader. If nothing is
+/// currently loaded then kFALSE is returned and AliMUONDataInterface is reset.
 
 	Reset();
 	fRunloader = AliRunLoader::GetRunLoader();
@@ -152,7 +131,7 @@ Bool_t AliMUONDataInterface::UseCurrentRunLoader()
 
 Bool_t AliMUONDataInterface::FetchMuonLoader(TString filename, TString foldername)
 {
-  // fetches the muon loader for the given filename/foldername
+/// Fetches the muon loader for the given filename/foldername
 
 	fMuonloader = fRunloader->GetLoader("MUONLoader");
 	if (fMuonloader == NULL)
@@ -171,8 +150,8 @@ Bool_t AliMUONDataInterface::FetchMuonLoader(TString filename, TString foldernam
 
 Bool_t AliMUONDataInterface::LoadLoaders(TString filename, TString foldername)
 {
-// Load the run and muon loaders from the specified file and folder.
-// kTRUE is returned on success and kFALSE on failure.
+/// Load the run and muon loaders from the specified file and folder.
+/// kTRUE is returned on success and kFALSE on failure.
 
 	fRunloader = AliRunLoader::Open(filename, foldername, "READ");
 	if (fRunloader == NULL)
@@ -197,11 +176,11 @@ Bool_t AliMUONDataInterface::LoadLoaders(TString filename, TString foldername)
 
 Bool_t AliMUONDataInterface::FetchLoaders(TString filename, TString foldername)
 {
-// Fetch the run loader and muon loader objects from memory if they already exist,
-// or from memory if they do not. 
-// If the currently loaded run loader (if any) is not refering to the file and folder
-// we are interested in then it is deleted and reopened with the required file and
-// folder names.
+/// Fetch the run loader and muon loader objects from memory if they already exist,
+/// or from memory if they do not. 
+/// If the currently loaded run loader (if any) is not refering to the file and folder
+/// we are interested in then it is deleted and reopened with the required file and
+/// folder names.
 
 	if (fRunloader == NULL)
 	{
@@ -238,10 +217,10 @@ Bool_t AliMUONDataInterface::FetchLoaders(TString filename, TString foldername)
 
 Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
 {
-// Fetch the specified event from the runloader and reset all the track, cathode
-// and address flags to force them to be reloaded.
-// If a negative event number is specified then the current runloader event
-// number is used.
+/// Fetch the specified event from the runloader and reset all the track, cathode
+/// and address flags to force them to be reloaded.
+/// If a negative event number is specified then the current runloader event
+/// number is used.
 
 	if (fEventnumber < 0)
 	{
@@ -276,7 +255,7 @@ Bool_t AliMUONDataInterface::FetchEvent(Int_t event)
 
 Bool_t AliMUONDataInterface::FetchTreeK()
 {
-// Fetch the Kine tree from the current run loader.
+/// Fetch the Kine tree from the current run loader.
 
 	if (fRunloader->TreeK() == NULL)
 	{
@@ -293,8 +272,8 @@ Bool_t AliMUONDataInterface::FetchTreeK()
 
 Bool_t AliMUONDataInterface::FetchTreeH()
 {
-// Fetch the Hits tree from the current muon loader.
-// Set all the required addresses etc...
+/// Fetch the Hits tree from the current muon loader.
+/// Set all the required addresses etc...
 
 	if (fMuonloader->TreeH() == NULL)
 	{
@@ -318,8 +297,8 @@ Bool_t AliMUONDataInterface::FetchTreeH()
 
 Bool_t AliMUONDataInterface::FetchTreeS()
 {
-// Fetch the S-Digits tree from the current muon loader.
-// Set all the required addresses etc...
+/// Fetch the S-Digits tree from the current muon loader.
+/// Set all the required addresses etc...
 
 	if (fMuonloader->TreeS() == NULL)
 	{
@@ -343,8 +322,8 @@ Bool_t AliMUONDataInterface::FetchTreeS()
 
 Bool_t AliMUONDataInterface::FetchTreeD()
 {
-// Fetch the digits tree from the current muon loader.
-// Set all the required addresses etc...
+/// Fetch the digits tree from the current muon loader.
+/// Set all the required addresses etc...
 
 	if (fMuonloader->TreeD() == NULL)
 	{
@@ -368,8 +347,8 @@ Bool_t AliMUONDataInterface::FetchTreeD()
 
 Bool_t AliMUONDataInterface::FetchTreeR()
 {
-  // Fetch the reconstructed objects tree from the current muon loader.
-  // Note: The addresses must still be set. 
+/// Fetch the reconstructed objects tree from the current muon loader.
+/// Note: The addresses must still be set. 
   
   if (fMuonloader->TreeR() == NULL)
     {
@@ -390,8 +369,8 @@ Bool_t AliMUONDataInterface::FetchTreeR()
 
 Bool_t AliMUONDataInterface::FetchTreeT()
 {
-  // fetch the reconstructed tracks tree from the current muon loader
-  // note : the addresses must still be set.
+/// fetch the reconstructed tracks tree from the current muon loader
+/// note : the addresses must still be set.
   if (fMuonloader->TreeT() == NULL)
     {
       fMuonloader->LoadTracks("READ");
@@ -410,7 +389,7 @@ Bool_t AliMUONDataInterface::FetchTreeT()
   
 Int_t AliMUONDataInterface::NumberOfEvents(TString filename, TString foldername)
 {
-// Returns the number of events in the specified file/folder, and -1 on error.
+/// Returns the number of events in the specified file/folder, and -1 on error.
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	return fRunloader->GetNumberOfEvents();
@@ -419,7 +398,7 @@ Int_t AliMUONDataInterface::NumberOfEvents(TString filename, TString foldername)
 
 Int_t AliMUONDataInterface::NumberOfParticles(TString filename, TString foldername, Int_t event)
 {
-// Returns the number of events in the specified file/folder, and -1 on error.
+/// Returns the number of events in the specified file/folder, and -1 on error.
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	if ( ! FetchEvent(event) ) return -1;
@@ -432,8 +411,8 @@ TParticle* AliMUONDataInterface::Particle(
 		TString filename, TString foldername, Int_t event, Int_t particle
 	)
 {
-// Returns the specified particle in the given file, folder and event.
-// NULL is returned on error.
+/// Returns the specified particle in the given file, folder and event.
+/// NULL is returned on error.
 
 	if ( ! FetchLoaders(filename, foldername) ) return NULL;
 	if ( ! FetchEvent(event) ) return NULL;
@@ -449,8 +428,8 @@ TParticle* AliMUONDataInterface::Particle(
 
 Int_t AliMUONDataInterface::NumberOfTracks(TString filename, TString foldername, Int_t event)
 {
-// Returns the number of tracks in the specified file/folder and event.
-// -1 is returned on error.
+/// Returns the number of tracks in the specified file/folder and event.
+/// -1 is returned on error.
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	if ( ! FetchEvent(event) ) return -1;
@@ -463,8 +442,8 @@ Int_t AliMUONDataInterface::NumberOfHits(
 		TString filename, TString foldername, Int_t event, Int_t track
 	)
 {
-// Returns the number of hits in the specified file/folder, event and track.
-// -1 is returned on error.
+/// Returns the number of hits in the specified file/folder, event and track.
+/// -1 is returned on error.
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	if ( ! FetchEvent(event) ) return -1;
@@ -485,8 +464,8 @@ AliMUONHit* AliMUONDataInterface::Hit(
 		Int_t track, Int_t hit
 	)
 {
-// Returns the specified hit in the given file, folder, event and track.
-// NULL is returned on error.
+/// Returns the specified hit in the given file, folder, event and track.
+/// NULL is returned on error.
 
 	if ( ! FetchLoaders(filename, foldername) ) return NULL;
 	if ( ! FetchEvent(event) ) return NULL;
@@ -507,8 +486,8 @@ Int_t AliMUONDataInterface::NumberOfSDigits(
 		Int_t chamber, Int_t cathode
 	)
 {
-// Returns the number of s-digits in the given file, folder, event,
-// chamber and cathode. -1 is returned on error.
+/// Returns the number of s-digits in the given file, folder, event,
+/// chamber and cathode. -1 is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	Assert( 0 <= cathode && cathode <= 1 );
@@ -532,8 +511,8 @@ AliMUONDigit* AliMUONDataInterface::SDigit(
 		Int_t chamber, Int_t cathode, Int_t sdigit
 	)
 {
-// Returns the specified s-digit in the given file, folder, event,
-// chamber and cathode. NULL is returned on error.
+/// Returns the specified s-digit in the given file, folder, event,
+/// chamber and cathode. NULL is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	Assert( 0 <= cathode && cathode <= 1 );
@@ -557,8 +536,8 @@ Int_t AliMUONDataInterface::NumberOfDigits(
 		Int_t chamber, Int_t cathode
 	)
 {
-// Returns the number of digits in the given file, folder, event,
-// chamber and cathode. -1 is returned on error.
+/// Returns the number of digits in the given file, folder, event,
+/// chamber and cathode. -1 is returned on error.
 	Assert( 0 <= chamber && chamber <= 13 );
 	Assert( 0 <= cathode && cathode <= 1 );
 	
@@ -581,8 +560,8 @@ AliMUONDigit* AliMUONDataInterface::Digit(
 		Int_t chamber, Int_t cathode, Int_t digit
 	)
 {
-// Returns the specified digit in the given file, folder, event,
-// chamber and cathode. NULL is returned on error.
+/// Returns the specified digit in the given file, folder, event,
+/// chamber and cathode. NULL is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	Assert( 0 <= cathode && cathode <= 1 );
@@ -605,8 +584,8 @@ Int_t AliMUONDataInterface::NumberOfRawClusters(
 		TString filename, TString foldername, Int_t event, Int_t chamber
 	)
 {
-// Returns the number of raw clusters in the specified file, folder, event and chamber.
-// -1 is returned or error.
+/// Returns the number of raw clusters in the specified file, folder, event and chamber.
+/// -1 is returned or error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
@@ -629,8 +608,8 @@ AliMUONRawCluster* AliMUONDataInterface::RawCluster(
 		Int_t chamber, Int_t cluster
 	)
 {
-// Fetch the specified raw cluster from the given file, folder, event and chamber number.
-// NULL is returned on error.
+/// Fetch the specified raw cluster from the given file, folder, event and chamber number.
+/// NULL is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	if ( ! FetchLoaders(filename, foldername) ) return NULL;
@@ -650,8 +629,8 @@ AliMUONRawCluster* AliMUONDataInterface::RawCluster(
 
 Int_t AliMUONDataInterface::NumberOfLocalTriggers(TString filename, TString foldername, Int_t event)
 {
-// Return the number of local trigger objects in the specified file, folder and
-// event number. -1 is returned on error.
+/// Return the number of local trigger objects in the specified file, folder and
+/// event number. -1 is returned on error.
 
 	if ( ! FetchLoaders(filename, foldername) ) return -1;
 	if ( ! FetchEvent(event) ) return -1;
@@ -672,8 +651,8 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
 		TString filename, TString foldername, Int_t event, Int_t trigger
 	)
 {
-// Fetch the specified local trigger object from the given file, folder and event number.
-// NULL is returned on error.
+/// Fetch the specified local trigger object from the given file, folder and event number.
+/// NULL is returned on error.
 
 	if ( ! FetchLoaders(filename, foldername) ) return NULL;
 	if ( ! FetchEvent(event) ) return NULL;
@@ -691,8 +670,8 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(
 
 Bool_t AliMUONDataInterface::SetFile(TString filename, TString foldername)
 {
-// Set the current file and folder from which to fetch data.
-// kTRUE is returned if the run and muon loaders were found, else kFALSE. 
+/// Set the current file and folder from which to fetch data.
+/// kTRUE is returned if the run and muon loaders were found, else kFALSE. 
 
 	return FetchLoaders(filename, foldername);
 }
@@ -700,8 +679,8 @@ Bool_t AliMUONDataInterface::SetFile(TString filename, TString foldername)
 
 Bool_t AliMUONDataInterface::GetEvent(Int_t event)
 {
-// Select the current event from which to fetch data.
-// kTRUE is returned if the event was found, else kFALSE is returned.
+/// Select the current event from which to fetch data.
+/// kTRUE is returned if the event was found, else kFALSE is returned.
 
 	if (fRunloader == NULL)
 	{
@@ -715,8 +694,8 @@ Bool_t AliMUONDataInterface::GetEvent(Int_t event)
 
 Int_t AliMUONDataInterface::NumberOfEvents()
 {
-// Get the number of events in the currently selected file.
-// -1 is returned on error.
+/// Get the number of events in the currently selected file.
+/// -1 is returned on error.
 
 	if (fRunloader == NULL)
 	{
@@ -729,8 +708,8 @@ Int_t AliMUONDataInterface::NumberOfEvents()
 
 Int_t AliMUONDataInterface::NumberOfParticles()
 {
-// Get the number of particles in the current event.
-// -1 is returned on error.
+/// Get the number of particles in the current event.
+/// -1 is returned on error.
 
 	if (fRunloader == NULL)
 	{
@@ -744,8 +723,8 @@ Int_t AliMUONDataInterface::NumberOfParticles()
 
 TParticle* AliMUONDataInterface::Particle(Int_t particle)
 {
-// Fetch the specified particle from the current event.
-// NULL is returned on error.
+/// Fetch the specified particle from the current event.
+/// NULL is returned on error.
 
 	if (fRunloader == NULL)
 	{
@@ -768,8 +747,8 @@ TParticle* AliMUONDataInterface::Particle(Int_t particle)
 
 Int_t AliMUONDataInterface::NumberOfTracks()
 {
-// Get the number of tracks in the current event.
-// -1 is returned on error.
+/// Get the number of tracks in the current event.
+/// -1 is returned on error.
 
 	if (fRunloader == NULL)
 	{
@@ -788,8 +767,8 @@ Int_t AliMUONDataInterface::NumberOfTracks()
 
 Int_t AliMUONDataInterface::NumberOfHits(Int_t track)
 {
-// Get the number of hits for the given track in the current event.
-// -1 is returned on error.
+/// Get the number of hits for the given track in the current event.
+/// -1 is returned on error.
 
 	if (fRunloader == NULL)
 	{
@@ -814,8 +793,8 @@ Int_t AliMUONDataInterface::NumberOfHits(Int_t track)
 
 AliMUONHit* AliMUONDataInterface::Hit(Int_t track, Int_t hit)
 {
-// Fetch the specified hit from the current event.
-// NULL is returned on error.
+/// Fetch the specified hit from the current event.
+/// NULL is returned on error.
 
 	if (fRunloader == NULL)
 	{
@@ -840,8 +819,8 @@ AliMUONHit* AliMUONDataInterface::Hit(Int_t track, Int_t hit)
 
 Int_t AliMUONDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
 {
-// Get the number of s-digits on the chamber, cathode in the current event.
-// -1 is returned on error.
+/// Get the number of s-digits on the chamber, cathode in the current event.
+/// -1 is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	Assert( 0 <= cathode && cathode <= 1 );
@@ -870,8 +849,8 @@ Int_t AliMUONDataInterface::NumberOfSDigits(Int_t chamber, Int_t cathode)
 
 AliMUONDigit* AliMUONDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t sdigit)
 {
-// Fetch the specified s-digits on the chamber, cathode from the current event.
-// NULL is returned on error.
+/// Fetch the specified s-digits on the chamber, cathode from the current event.
+/// NULL is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	Assert( 0 <= cathode && cathode <= 1 );
@@ -900,8 +879,8 @@ AliMUONDigit* AliMUONDataInterface::SDigit(Int_t chamber, Int_t cathode, Int_t s
 
 Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
 {
-// Get the number of digits on the chamber, cathode in the current event.
-// -1 is returned on error.
+/// Get the number of digits on the chamber, cathode in the current event.
+/// -1 is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	Assert( 0 <= cathode && cathode <= 1 );
@@ -930,8 +909,8 @@ Int_t AliMUONDataInterface::NumberOfDigits(Int_t chamber, Int_t cathode)
 
 AliMUONDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t digit)
 {
-// Fetch the specified digits on the chamber, cathode from the current event.
-// NULL is returned on error.
+/// Fetch the specified digits on the chamber, cathode from the current event.
+/// NULL is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 	Assert( 0 <= cathode && cathode <= 1 );
@@ -960,8 +939,8 @@ AliMUONDigit* AliMUONDataInterface::Digit(Int_t chamber, Int_t cathode, Int_t di
 
 Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
 {
-// Get the number of raw clusters on the given chamber in the current event.
-// -1 is returned on error.
+/// Get the number of raw clusters on the given chamber in the current event.
+/// -1 is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 
@@ -990,8 +969,8 @@ Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
 
 AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t cluster)
 {
-// Fetch the specified raw cluster on the given chamber from the current event.
-// NULL is returned on error.
+/// Fetch the specified raw cluster on the given chamber from the current event.
+/// NULL is returned on error.
 
 	Assert( 0 <= chamber && chamber <= 13 );
 
@@ -1020,8 +999,8 @@ AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t cluster
 
 Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 {
-// Get the number of local trigger objects in the current event.
-// -1 is returned on error.
+/// Get the number of local trigger objects in the current event.
+/// -1 is returned on error.
 
 	if (fRunloader == NULL)
 	{
@@ -1048,8 +1027,8 @@ Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 
 AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 {
-// Fetch the specified local trigger object from the current event.
-// NULL is returned on error.
+/// Fetch the specified local trigger object from the current event.
+/// NULL is returned on error.
 
 	if (fRunloader == NULL)
 	{
@@ -1075,9 +1054,8 @@ AliMUONLocalTrigger* AliMUONDataInterface::LocalTrigger(Int_t trigger)
 
 Int_t AliMUONDataInterface::NumberOfGlobalTriggers()
 {
-  
-  // Get the number of local trigger objects in the current event.
-  // -1 is returned on error.
+/// Get the number of local trigger objects in the current event.
+/// -1 is returned on error.
   
   if (fRunloader == NULL)
     {
@@ -1103,8 +1081,8 @@ Int_t AliMUONDataInterface::NumberOfGlobalTriggers()
 
 AliMUONGlobalTrigger* AliMUONDataInterface::GlobalTrigger(Int_t trigger)
 {
-  // Fetch the specified local trigger object from the current event.
-  // NULL is returned on error.
+/// Fetch the specified local trigger object from the current event.
+/// NULL is returned on error.
   
   if (fRunloader == NULL)
     {
@@ -1130,8 +1108,8 @@ AliMUONGlobalTrigger* AliMUONDataInterface::GlobalTrigger(Int_t trigger)
 
 Int_t AliMUONDataInterface::NumberOfRecTracks()
 {
-  // Fetch the number of reconstructed tracks from the current event.
-  // NULL is returned on error.
+/// Fetch the number of reconstructed tracks from the current event.
+/// NULL is returned on error.
   
   if (fRunloader == NULL)
     {
@@ -1157,8 +1135,8 @@ Int_t AliMUONDataInterface::NumberOfRecTracks()
 
 AliMUONTrack* AliMUONDataInterface::RecTrack(Int_t rectrack)
 {
-  // Fetch the specified reconstructed track object from the current event.
-  // NULL is returned on error.
+/// Fetch the specified reconstructed track object from the current event.
+/// NULL is returned on error.
   
   if (fRunloader == NULL)
     {
