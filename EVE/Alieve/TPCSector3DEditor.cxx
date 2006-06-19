@@ -3,6 +3,8 @@
 #include "TPCSector3DEditor.h"
 #include <Alieve/TPCSector3D.h>
 
+#include <Reve/RGValuators.h>
+
 #include <TVirtualPad.h>
 #include <TColor.h>
 
@@ -29,24 +31,34 @@ TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p, Int_t id, Int_t width, I
   fM = 0;
   MakeTitle("TPCSector3D");
 
+  Int_t labelW = 60;
+
   fRnrFrame = new TGCheckButton(this, "ShowFrame");
   AddFrame(fRnrFrame, new TGLayoutHints(kLHintsTop, 3, 1, 1, 0));
   fRnrFrame->Connect
     ("Toggled(Bool_t)","Alieve::TPCSector3DEditor", this, "DoRnrFrame()");
 
-  {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "Drift Velocity factor:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 25, 2, 1, 1));
-    fDriftVel = new TGNumberEntry(f, 0., 6, -1,
-                       TGNumberFormat::kNESRealThree, TGNumberFormat::kNEAPositive,
-                       TGNumberFormat::kNELLimitMinMax, 0.001, 1000.0);
-    fDriftVel->GetNumberEntry()->SetToolTipText("Drift velocity factor.");
-    f->AddFrame(fDriftVel, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fDriftVel->Associate(f);
-    fDriftVel->Connect("ValueSet(Long_t)", "Alieve::TPCSector3DEditor", this, "DoDriftVel()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  }
+  fDriftVel = new RGValuator(this, "Vdrift fac", 110, 0);
+  fDriftVel->SetLabelWidth(labelW);
+  fDriftVel->SetShowSlider(kFALSE);
+  fDriftVel->SetNELength(6);
+  fDriftVel->Build();
+  fDriftVel->SetLimits(0.1, 10, 1, TGNumberFormat::kNESRealThree);
+  fDriftVel->SetToolTip("Drift velocity factor");
+  fDriftVel->Connect("ValueSet(Double_t)",
+		     "Alieve::TPCSector3DEditor", this, "DoDriftVel()");
+  AddFrame(fDriftVel, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
+
+  fPointFrac = new RGValuator(this,"Point frac", 200, 0);
+  fPointFrac->SetLabelWidth(labelW);
+  fPointFrac->SetNELength(4);
+  fPointFrac->Build();
+  fPointFrac->GetSlider()->SetWidth(101 + 16);
+  fPointFrac->SetLimits(0.0, 1.0, 101);
+  fPointFrac->SetToolTip("Fraction of signal range displayed as points");
+  fPointFrac->Connect("ValueSet(Double_t)",
+		      "Alieve::TPCSector3DEditor", this, "DoPointFrac()");
+  AddFrame(fPointFrac, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
   // Register the editor.
   TClass *cl = TPCSector3D::Class();
@@ -77,7 +89,9 @@ void TPCSector3DEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*/
   fM = dynamic_cast<TPCSector3D*>(fModel);
 
   fRnrFrame->SetState(fM->fRnrFrame ? kButtonDown : kButtonUp);
-  fDriftVel->SetNumber(fM->fDriftVel);
+  fDriftVel->SetValue(fM->fDriftVel);
+
+  fPointFrac->SetValue(fM->fPointFrac);
 
   SetActive();
 }
@@ -92,6 +106,13 @@ void TPCSector3DEditor::DoRnrFrame()
 
 void TPCSector3DEditor::DoDriftVel()
 {
-  fM->SetDriftVel((Float_t) fDriftVel->GetNumber());
+  fM->SetDriftVel(fDriftVel->GetValue());
   Update();
 }
+
+void TPCSector3DEditor::DoPointFrac()
+{
+  fM->SetPointFrac(fPointFrac->GetValue());
+  Update();
+}
+

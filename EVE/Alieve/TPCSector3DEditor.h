@@ -9,6 +9,11 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
+namespace Reve {
+class RGValuator;
+class RGDoubleValuator;
+}
+
 namespace Alieve {
 
 class TPCSector3D;
@@ -16,11 +21,12 @@ class TPCSector3D;
 class TPCSector3DEditor : public TGedFrame
 {
 protected:
-  TPCSector3D* fM; // fModel dynamic-casted to TPCSector3DEditor
+  TPCSector3D*      fM; // fModel dynamic-casted to TPCSector3DEditor
 
-  TGCheckButton*   fRnrFrame;
-  TGNumberEntry*   fDriftVel;
+  TGCheckButton*    fRnrFrame;
+  Reve::RGValuator* fDriftVel;
 
+  Reve::RGValuator* fPointFrac;
 
 public:
   TPCSector3DEditor(const TGWindow* p, Int_t id, Int_t width=170, Int_t height=30,
@@ -31,6 +37,8 @@ public:
 
   void DoRnrFrame();
   void DoDriftVel();
+
+  void DoPointFrac();
 
   ClassDef(TPCSector3DEditor, 0); // Editor for TPCSector3D
 }; // endclass TPCSector3DEditor
