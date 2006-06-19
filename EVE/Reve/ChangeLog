@@ -1,3 +1,18 @@
+2006-06-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* PointSet.cxx:
+	* PointSet.h:
+	In PointSetArray: added member for default daughter PointSet
+	capacity (fDefPointSetCapacity) and method DeleteBins(). Set
+	daughter polymarker stuff in InitBins() instead of CloseBins().
+
+	* RGValuators.cxx:
+	* RGValuators.h:
+	Consistently use nuber of slider positions in RGValuator.
+
+	* RenderElement.h:
+	Added method RenderElementListBase::RemoveElements().
+
 2006-06-14  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* BoxSetGL.h:
@@ -39,8 +54,6 @@
 
 2006-06-09  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	HEAD
-
 	* PointSet.h:
 	Added friend PointSetArrayEditor.
 
@@ -58,8 +71,6 @@
 
 2006-06-02  Matevz Tadel  <matevz.tadel@cern.ch>
 
-	HEAD
-
 	* RGTopFrame.cxx:
 	* RGTopFrame.h:
 	Added method UndrawRenderElement().
@@ -74,8 +85,6 @@
 	Added method RGValuator::SetEnabled().
 
 2006-06-01  Matevz Tadel  <matevz.tadel@cern.ch>
-
-	HEAD
 
 	* BoxSet.cxx:
 	* BoxSetGL.cxx:
