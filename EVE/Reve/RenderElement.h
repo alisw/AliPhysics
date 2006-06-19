@@ -125,6 +125,7 @@ public:
   virtual ~RenderElementListBase() {}
 
   virtual void AddElement(RenderElement* el) { fList.push_back(el); }
+  virtual void RemoveElements()              { fList.clear(); }
 
   virtual Int_t ExpandIntoListTree(TGListTree* ltree, TGListTreeItem* parent);
 
