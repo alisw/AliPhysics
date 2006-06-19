@@ -1,3 +1,17 @@
+2006-06-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCSector3D.cxx:
+	* TPCSector3D.h:
+	* TPCSector3DGL.cxx:
+	Added support for rendering a fraction of 3D digits as points: the
+	fraction of the fThreshold->fMaxVal interval that is rendered a
+	spoints is controlled via the fPointFrac member. Subclassed
+	TPCSector3D from TAttMarker to allow point-size control.
+
+	* TPCSector3DEditor.cxx:
+	* TPCSector3DEditor.h:
+	Added control for fPointFrac; use RGValuator for fDriftVel.
+
 2006-06-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCData.cxx:
