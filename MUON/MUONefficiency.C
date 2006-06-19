@@ -61,6 +61,7 @@
 #include "AliESD.h"
 
 // MUON includes
+#include "AliMUONTrackParam.h"
 #include "AliESDMuonTrack.h"
 #endif
 
@@ -116,7 +117,6 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
   
   // Printing Level 
   Int_t PRINTLEVEL = 0 ;
-  Int_t SELECT =  0 ; // not used
   
   //for kinematic, i.e. reference tracks
   TNtuple *Ktuple = new TNtuple("Ktuple","Kinematics NTuple","ev:npart:id:idmo:idgdmo:p:pt:y:theta:pseudorap:vx:vy:vz");
@@ -141,7 +141,7 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
   
   hInvMassRes = new TH1F("hInvMassRes", "Mu+Mu- invariant mass (GeV/c2) around Resonance",(Int_t) (nBinsPerGev*3*countingRange*2),massResonance-3*countingRange,massResonance+3*countingRange);
 
-  
+  TH1F *hPrimaryVertex = new TH1F("hPrimaryVertex","SPD reconstructed Z vertex",150,-15,15);
   TH1F *hChi2PerDof = new TH1F("hChi2PerDof", "Muon track chi2/d.o.f.", 100, 0., 20.);
   TH1F *hNumberOfTrack = new TH1F("hNumberOfTrack","nb of track /evt ",20,-0.5,19.5);
   TH1F *hRapMuon = new TH1F("hRapMuon"," Muon Rapidity",50,-4.5,-2);
@@ -159,6 +159,10 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
   Int_t EventInMassMatch = 0;
   Int_t NbTrigger = 0;
   Int_t ptTrig = 0;
+
+  Double_t fXVertex=0;
+  Double_t fYVertex=0;
+  Double_t fZVertex=0;
 
   Double_t thetaX, thetaY, pYZ;
   Double_t fPxRec1, fPyRec1, fPzRec1, fE1;
@@ -205,7 +209,8 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 
   runLoader->LoadHeader();
   nevents = runLoader->GetNumberOfEvents();
-  
+  AliMUONTrackParam trackParam;
+
   // to access the particle  Stack
   runLoader->LoadKinematics("READ");
 
@@ -213,16 +218,8 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 
   TParticle *particle; 
   
-  Int_t track1Id = 0 ;
-  Int_t track1PDGId = 0 ;
-  Int_t track1MotherId = 0 ;
-  Int_t track1MotherPDGId = 0 ;
   Int_t track1Trigger = 0 ;
   Float_t track1TriggerChi2 = 0 ;
-  Int_t track2Id = 0 ;
-  Int_t track2PDGId = 0 ;
-  Int_t track2MotherId = 0 ;
-  Int_t track2MotherPDGId = 0 ;
   Int_t track2Trigger = 0 ;
   Float_t track2TriggerChi2 = 0 ;
 
@@ -246,8 +243,7 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
     Int_t ntracks = theStack->GetNtrack();
   
     if (PRINTLEVEL || (iEvent%100==0)) printf("\n  >>> Event %d \n",iEvent);
-    if (PRINTLEVEL) cout << nprimarypart << " Particles generated (total is " << ntracks << ")"<< endl ;
-    
+    if (PRINTLEVEL) cout << nprimarypart << " Particles generated (total is " << ntracks << ")"<< endl ;    
     
     for(Int_t iparticle=0; iparticle<nparticles; iparticle++) { // Start loop over particles
       particle = theStack->Particle(iparticle);
@@ -296,7 +292,16 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
       Error("CheckESD", "no ESD object found for event %d", iEvent);
       return kFALSE;
     }
-
+    
+    // get the SPD reconstructed vertex (vertexer) and fill the histogram
+    AliESDVertex* Vertex = (AliESDVertex*) esd->AliESD::GetVertex();
+    if (Vertex) {
+      fZVertex = Vertex->GetZv();
+      fYVertex = Vertex->GetYv();
+      fXVertex = Vertex->GetXv();      
+    }
+    hPrimaryVertex->Fill(fZVertex);
+    
     Int_t triggerWord = esd->GetTriggerMask();
     Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks() ; 
 
@@ -310,15 +315,11 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 
       AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
 
-      //if (PRINTLEVEL > 5) cout << "1st muonTrack->GetTrackID() : " << track1Id << endl; 
-
-      if(SELECT && track1Id) {
-	particle = theStack->Particle(track1Id);
-	track1PDGId = particle->GetPdgCode() ;
-	track1MotherId = particle->GetFirstMother();
-	if (track1MotherId >=0 )
-	  track1MotherPDGId = ((TParticle*) theStack->Particle(track1MotherId))->GetPdgCode();
-	if (PRINTLEVEL > 0) cout << "track1MotherPDGId = " << track1MotherPDGId << endl ;
+      if (!Vertex) {
+	//re-extrapolate to vertex, if not kown before.
+	trackParam.GetParamFrom(*muonTrack);
+	trackParam.ExtrapToVertex(fXVertex, fYVertex, fZVertex);
+	trackParam.SetParamFor(*muonTrack);
       }
 
       // Trigger
@@ -380,15 +381,11 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 	for (Int_t iTrack2 = iTrack + 1; iTrack2 < nTracks; iTrack2++) {
 	  
 	  AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack2);
-	  //Int_t track2Id = muonTrack->GetTrackID();
-	  //if (PRINTLEVEL > 5) cout << "2nd muonTrack->GetTrackID() : " << track2Id << endl;
-
-	  if(SELECT && track2Id) {
-	    particle = theStack->Particle(track2Id);
-	    track2PDGId = particle->GetPdgCode();
-	    track2MotherId = particle->GetFirstMother();
-	    if (track2MotherId >=0 ) 
-	      track2MotherPDGId = ((TParticle*) theStack->Particle(track2MotherId))->GetPdgCode();
+          
+	  if (!Vertex) {
+	    trackParam.GetParamFrom(*muonTrack);
+	    trackParam.ExtrapToVertex(fXVertex, fYVertex, fZVertex);
+	    trackParam.SetParamFor(*muonTrack);
 	  }
 
 	  track2Trigger = muonTrack->GetMatchTrigger();
@@ -418,62 +415,56 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 	  // chi2 per d.o.f.
 	  Float_t ch2 = fitfmin  / (2.0 * ntrackhits - 5);
 
-	  if (PRINTLEVEL > 5)  cout << "track1MotherId : "<< track1MotherId << "    track2MotherId : " << track2MotherId << endl ;
-	  if (PRINTLEVEL > 5) cout << "track1MotherPDGId : " << track1MotherPDGId << "    track2MotherPDGId : "  << track2MotherPDGId << endl ;
 
-	  // Select Condition
-	  if (!SELECT || (track2MotherId == track1MotherId && track2MotherPDGId == ResType && TMath::Abs(track1PDGId)==13 && TMath::Abs(track2PDGId)==13 )) {
-
-	    // condition for good track (Chi2Cut and PtCut)
-	    if ((ch2 < Chi2Cut) && (pt2 > PtCutMin)  && (pt2 < PtCutMax)) {
+	  // condition for good track (Chi2Cut and PtCut)
+	  if ((ch2 < Chi2Cut) && (pt2 > PtCutMin)  && (pt2 < PtCutMax)) {
 	    
-	      // condition for opposite charges
-	      if ((fCharge1 * fCharge2) == -1) {
-
-		if (PRINTLEVEL > 8) cout << "---------> Now filling the Ntuple "  <<  endl ;
+	    // condition for opposite charges
+	    if ((fCharge1 * fCharge2) == -1) {
+	      
+	      if (PRINTLEVEL > 8) cout << "---------> Now filling the Ntuple "  <<  endl ;
+	      
+	      // invariant mass
+	      fVtot = fV1 + fV2;
+	      Float_t invMass = fVtot.M();
+	      
+	      if (fCharge1 < 0){ //mu_minus is index 1 in the ntuple
+		Float_t ESDFill[16] = {iEvent,triggerWord,fVtot.Pt(),fVtot.Rapidity(),fVtot.Theta()/TMath::Pi()*180,invMass,fV1.Pt(),fV1.Rapidity(),fV1.Theta()/TMath::Pi()*180,fCharge1,track1TriggerChi2,fV2.Pt(),fV2.Rapidity(),fV2.Theta()/TMath::Pi()*180,fCharge2,track2TriggerChi2};
+		ESDtuple->Fill(ESDFill);
+	      }
+	      else{
+		Float_t ESDFill[16] = {iEvent,triggerWord,fVtot.Pt(),fVtot.Rapidity(),fVtot.Theta()/TMath::Pi()*180,invMass,fV2.Pt(),fV2.Rapidity(),fV2.Theta()/TMath::Pi()*180,fCharge2,track2TriggerChi2,fV1.Pt(),fV1.Rapidity(),fV1.Theta()/TMath::Pi()*180,fCharge1,track1TriggerChi2};
+		ESDtuple->Fill(ESDFill);
+	      }
+	      
+	      // fill histos hInvMassAll and hInvMassRes
+	      hInvMassAll->Fill(invMass);
+	      hInvMassRes->Fill(invMass);
+	      hInvMassAll_vs_Pt->Fill(invMass,fVtot.Pt());
+	      
+	      //trigger info 
+	      if (ResType == 553)
+		ptTrig = 0x400;// mask for Hpt unlike sign pair
+	      else if (ResType == 443)
+		ptTrig = 0x800;// mask for Apt unlike sign pair
+	      else 
+		ptTrig = 0x200;// mask for Lpt unlike sign pair
+	      
+	      
+	      if (esd->GetTriggerMask() &  ptTrig) NbTrigger++;
+	      
+	      if (invMass > invMassMinInPeak && invMass < invMassMaxInPeak) {
+		EventInMass++;
+		hRapResonance->Fill(fVtot.Rapidity());
+		hPtResonance->Fill(fVtot.Pt());
 		
-		// invariant mass
-		fVtot = fV1 + fV2;
-		Float_t invMass = fVtot.M();
+		// match with trigger
+		if (muonTrack->GetMatchTrigger() && (esd->GetTriggerMask() & ptTrig))  EventInMassMatch++;
 		
-		if (fCharge1 < 0){ //mu_minus is index 1 in the ntuple
-		  Float_t ESDFill[16] = {iEvent,triggerWord,fVtot.Pt(),fVtot.Rapidity(),fVtot.Theta()/TMath::Pi()*180,invMass,fV1.Pt(),fV1.Rapidity(),fV1.Theta()/TMath::Pi()*180,fCharge1,track1TriggerChi2,fV2.Pt(),fV2.Rapidity(),fV2.Theta()/TMath::Pi()*180,fCharge2,track2TriggerChi2};
-		  ESDtuple->Fill(ESDFill);
-		}
-		else{
-		  Float_t ESDFill[16] = {iEvent,triggerWord,fVtot.Pt(),fVtot.Rapidity(),fVtot.Theta()/TMath::Pi()*180,invMass,fV2.Pt(),fV2.Rapidity(),fV2.Theta()/TMath::Pi()*180,fCharge2,track2TriggerChi2,fV1.Pt(),fV1.Rapidity(),fV1.Theta()/TMath::Pi()*180,fCharge1,track1TriggerChi2};
-		  ESDtuple->Fill(ESDFill);
-		}
-		
-		// fill histos hInvMassAll and hInvMassRes
-		hInvMassAll->Fill(invMass);
-		hInvMassRes->Fill(invMass);
-		hInvMassAll_vs_Pt->Fill(invMass,fVtot.Pt());
-
-		//trigger info 
-		if (ResType == 553)
-		  ptTrig = 0x400;// mask for Hpt unlike sign pair
-		else if (ResType == 443)
-		  ptTrig = 0x800;// mask for Apt unlike sign pair
-		else 
-		  ptTrig = 0x200;// mask for Lpt unlike sign pair
-		
-
-		if (esd->GetTriggerMask() &  ptTrig) NbTrigger++;
-		
-		if (invMass > invMassMinInPeak && invMass < invMassMaxInPeak) {
-		  EventInMass++;
-		  hRapResonance->Fill(fVtot.Rapidity());
-		  hPtResonance->Fill(fVtot.Pt());
-
-		  // match with trigger
-		  if (muonTrack->GetMatchTrigger() && (esd->GetTriggerMask() & ptTrig))  EventInMassMatch++;
-
-		}
-		
-	      } // if (fCharge1 * fCharge2) == -1)
-	    } // if ((ch2 < Chi2Cut) && (pt2 > PtCutMin) && (pt2 < PtCutMax))
-	  } // if (track2MotherId == track1MotherId && track2MotherPDGId == ResType)
+	      }
+	      
+	    } // if (fCharge1 * fCharge2) == -1)
+	  } // if ((ch2 < Chi2Cut) && (pt2 > PtCutMin) && (pt2 < PtCutMax))
 	} //  for (Int_t iTrack2 = iTrack + 1; iTrack2 < iTrack; iTrack2++)
       } // if (ch1 < Chi2Cut) && (pt1 > PtCutMin)&& (pt1 < PtCutMax) )
     } // for (Int_t iTrack = 0; iTrack < nrectracks; iTrack++)
@@ -537,6 +528,7 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
   ntupleFile->Close();
   
   TFile *histoFile = new TFile("MUONhistos.root", "RECREATE");  
+  hPrimaryVertex->Write();
   hPtMuon->Write();
   hPtMuonPlus->Write();
   hPtMuonMinus->Write();
@@ -577,4 +569,3 @@ Bool_t MUONefficiency( Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEven
 
   return kTRUE;
 }
-
