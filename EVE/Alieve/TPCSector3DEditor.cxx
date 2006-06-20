@@ -60,6 +60,18 @@ TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p, Int_t id, Int_t width, I
 		      "Alieve::TPCSector3DEditor", this, "DoPointFrac()");
   AddFrame(fPointFrac, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 
+  fPointSize = new RGValuator(this,"Point size", 200, 0);
+  fPointSize->SetLabelWidth(labelW);
+  fPointSize->SetShowSlider(kFALSE);
+  fPointSize->SetNELength(4);
+  fPointSize->Build();
+  //fPointSize->GetSlider()->SetWidth(101 + 16);
+  fPointSize->SetLimits(0.1, 32.0, 1, TGNumberFormat::kNESRealOne);
+  fPointSize->SetToolTip("Size of displayed points");
+  fPointSize->Connect("ValueSet(Double_t)",
+		      "Alieve::TPCSector3DEditor", this, "DoPointSize()");
+  AddFrame(fPointSize, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
+
   // Register the editor.
   TClass *cl = TPCSector3D::Class();
   TGedElement *ge = new TGedElement;
@@ -92,6 +104,7 @@ void TPCSector3DEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*/
   fDriftVel->SetValue(fM->fDriftVel);
 
   fPointFrac->SetValue(fM->fPointFrac);
+  fPointSize->SetValue(fM->fPointSize);
 
   SetActive();
 }
@@ -113,6 +126,12 @@ void TPCSector3DEditor::DoDriftVel()
 void TPCSector3DEditor::DoPointFrac()
 {
   fM->SetPointFrac(fPointFrac->GetValue());
+  Update();
+}
+
+void TPCSector3DEditor::DoPointSize()
+{
+  fM->SetPointSize(fPointSize->GetValue());
   Update();
 }
 

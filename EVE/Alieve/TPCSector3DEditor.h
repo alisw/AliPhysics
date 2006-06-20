@@ -27,6 +27,7 @@ protected:
   Reve::RGValuator* fDriftVel;
 
   Reve::RGValuator* fPointFrac;
+  Reve::RGValuator* fPointSize;
 
 public:
   TPCSector3DEditor(const TGWindow* p, Int_t id, Int_t width=170, Int_t height=30,
@@ -39,6 +40,7 @@ public:
   void DoDriftVel();
 
   void DoPointFrac();
+  void DoPointSize();
 
   ClassDef(TPCSector3DEditor, 0); // Editor for TPCSector3D
 }; // endclass TPCSector3DEditor
