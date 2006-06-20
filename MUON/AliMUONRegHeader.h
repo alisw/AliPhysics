@@ -29,11 +29,28 @@ public:
    UInt_t  GetWord()          const {return fWord;}
    UInt_t  GetInput(Int_t n)  const {return fInput[n];}
 
-   //MBZ:3,serialNb:5,Version:8,Id:4,MBZ:4,Out:8
-   Char_t   GetSerialNb()  const {return (Char_t)(fWord >> 24) &  0x1F;}
-   Char_t   GetVersion()   const {return (Char_t)(fWord >> 16) &  0xFF;}
-   Char_t   GetId()        const {return (Char_t)(fWord >> 12) &  0x0F;}
-   Char_t   GetOutput()    const {return (Char_t)(fWord)       &  0xFF;}
+   //word: phys type:1, MBZ: 6, serialNb:5, Id:4, version: 8, regional output:8
+   //true for phys, false for soft
+   Bool_t   GetRegPhysFlag() const {return (fWord & 0x80000000);} 
+   Char_t   GetSerialNb()    const {return (Char_t)(fWord >> 25) &  0x1F;}
+   Char_t   GetId()          const {return (Char_t)(fWord >> 12) &  0x0F;}
+   Char_t   GetVersion()     const {return (Char_t)(fWord >> 16) &  0xFF;}
+   Char_t   GetOutput()      const {return (Char_t)(fWord)       &  0xFF;}
+
+   //Darc Status: error:10, #fpag:3, MBZ:3, phys type:1, present:1, not_full:1
+   // not_empty:1, L2Rej:1, L2Acc:1, L1:1, L0:1, #evt:4, busy:4
+   UShort_t GetErrorBits()       const {return (UShort_t)(fDarcWord >> 21) &  0x3FF;}
+   Char_t   GetFPGANumber()      const {return (Char_t)  (fDarcWord >> 18) &  0x7;}
+   Bool_t   GetDarcPhysFlag()    const {return (fDarcWord  &  0x1000);}
+   Bool_t   GetPresentFlag()     const {return (fDarcWord  &  0x800);}
+   Bool_t   GetRamNotFullFlag()  const {return (fDarcWord  &  0x400);}
+   Bool_t   GetRamNotEmptyFlag() const {return (fDarcWord  &  0x200);}
+   Bool_t   GetL2RejStatus()     const {return (fDarcWord  &  0x100);}
+   Bool_t   GetL2AccStatus()     const {return (fDarcWord  &  0x80);}
+   Bool_t   GetL1Status()        const {return (fDarcWord  &  0x40);}
+   Bool_t   GetL0Status()        const {return (fDarcWord  &  0x20);}
+   Char_t   GetEventInRam()      const {return (Char_t)  (fDarcWord >> 4)  &  0x4;}
+   Char_t   GetBusy()            const {return (Char_t)  (fDarcWord)       &  0x4;}
 
    void    SetDarcWord(UInt_t w) {fDarcWord = w;}
    void    SetWord(UInt_t w) {fWord = w;}
