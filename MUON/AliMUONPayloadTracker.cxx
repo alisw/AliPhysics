@@ -239,3 +239,35 @@ void AliMUONPayloadTracker::SetMaxBlock(Int_t blk)
   if (blk > 2) blk = 2;
   fMaxBlock = blk;
 }
+
+Bool_t AliMUONPayloadTracker::CheckDataParity()
+{
+  // parity check
+  // taken from MuTrkBusPatch.cxx (sotfware test for CROCUS)
+  // A. Baldisseri
+
+  Int_t  parity, bit;
+  UInt_t data;
+  
+  Int_t dataSize = fBusStruct->GetLength();
+  for (int idata = 0; idata < dataSize; idata++) {
+
+    data  = fBusStruct->GetData(idata);
+    // Compute the parity for each data word
+    parity = data & 0x1;
+
+    for (Int_t i = 1; i <= 30; i++) {
+      bit = ((data >> i) & 0x1);
+      parity = (parity || bit) && (!(parity && bit));
+    } 
+
+    // Check
+    if (parity != fBusStruct->GetParity(idata)) {
+      AliWarning(Form("Parity error in word %d for manuId %d and channel %d\n", 
+		      idata, fBusStruct->GetManuId(idata), fBusStruct->GetChannelId(idata)));
+      return kFALSE;
+		     
+    }
+  }
+  return kTRUE;
+}

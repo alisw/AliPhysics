@@ -67,6 +67,8 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONBlockHeader*     fBlockHeader;     //!< pointer for block structure 
     AliMUONDspHeader*       fDspHeader;       //!< pointer for dsp structure 
 
+    Bool_t CheckDataParity();
+
     ClassDef(AliMUONPayloadTracker, 1)    // base class for reading MUON raw digits
 };
 
