@@ -66,7 +66,7 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fPrimaryIndex(clus.fPrimaryIndex),
   fM20(clus.fM20),
   fM02(clus.fM02),
-  fM11(clus.fNExMax),
+  fM11(clus.fM11),
   fNExMax(clus.fNExMax),
   fEmcCpvDistance(clus.fEmcCpvDistance),
   fNumberOfDigits(clus.fNumberOfDigits)
@@ -80,10 +80,27 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
 
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = clus.fPID[i];
 
-  fDigitAmplitude = clus.fDigitAmplitude;
-  fDigitTime = clus.fDigitTime;
-  fDigitIndex = clus.fDigitIndex;
+  fDigitAmplitude = 0x0;
+  fDigitTime = 0x0;
+  fDigitIndex = 0x0;
 
+  if (clus.fNumberOfDigits > 0) {
+    if (clus.fDigitAmplitude) {
+      fDigitAmplitude = new UShort_t[clus.fNumberOfDigits];
+      for (Int_t i=0; i<clus.fNumberOfDigits; i++)
+	fDigitAmplitude[i]=clus.fDigitAmplitude[i];
+    }
+    if (clus.fDigitTime) {
+      fDigitTime = new UShort_t[clus.fNumberOfDigits];
+      for (Int_t i=0; i<clus.fNumberOfDigits; i++)
+	fDigitTime[i]=clus.fDigitTime[i];
+    }
+    if (clus.fDigitIndex) {
+      fDigitIndex = new UShort_t[clus.fNumberOfDigits];
+      for (Int_t i=0; i<clus.fNumberOfDigits; i++)
+	fDigitIndex[i]=clus.fDigitIndex[i];
+    }
+  }
 }
 
 
@@ -92,20 +109,13 @@ AliESDCaloCluster::~AliESDCaloCluster(){
   //
   // This is destructor according Coding Conventrions 
   //
-  //printf("Delete cluster\n");
+  // AliESDCaloCluster is the owner of the arrays
+  // even if they are created outside
 
-  //Not sure why but it won't let me delete these in the dtor here.
-  //The Reconstruction gives me the error
-  //*** glibc detected *** double free or corruption (!prev):
-  //0x0c1550b0 ***
-  /*
-  if(fDigitAmplitude)
-    delete[] fDigitAmplitude;
-  if(fDigitTime)
-    delete[] fDigitTime;
-  if(fDigitIndex)
-    delete[] fDigitIndex;
-  */
+  delete[] fDigitAmplitude;
+  delete[] fDigitTime;
+  delete[] fDigitIndex;
+
 }
 
 //_______________________________________________________________________
