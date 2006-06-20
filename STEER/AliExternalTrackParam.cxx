@@ -188,6 +188,11 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   // Transform this track to the local coord. system rotated
   // by angle "alpha" (rad) with respect to the global coord. system. 
   //------------------------------------------------------------------
+  if (TMath::Abs(fP[2]) >= kAlmost1) {
+     AliError(Form("Precondition is not satisfied: |sin(phi)|>1 ! %f",fP[2])); 
+     return kFALSE;
+  }
+ 
   if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
   else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
 
@@ -207,10 +212,13 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   Double_t ca=TMath::Cos(alpha-fAlpha), sa=TMath::Sin(alpha-fAlpha);
   Double_t sf=fP2, cf=TMath::Sqrt(1.- fP2*fP2);
 
+  Double_t tmp=sf*ca - cf*sa;
+  if (TMath::Abs(tmp) >= kAlmost1) return kFALSE;
+
   fAlpha = alpha;
   fX =  x*ca + fP0*sa;
   fP0= -x*sa + fP0*ca;
-  fP2=  sf*ca - cf*sa;
+  fP2=  tmp;
 
   if (TMath::Abs(cf)<kAlmost0) {
     AliError(Form("Too small cosine value %f",cf)); 
