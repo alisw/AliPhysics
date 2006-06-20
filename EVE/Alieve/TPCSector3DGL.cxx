@@ -68,14 +68,14 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
 
   fBoxRnr->Render(flags);
 
-  if(fSector->fPointSetOn) {
-    UChar_t col[4];
+  glPushAttrib(GL_CURRENT_BIT | GL_POINT_BIT | GL_ENABLE_BIT);
+  glDisable(GL_LIGHTING);
+  UChar_t col[4];
 
-    glPushAttrib(GL_POINT_BIT | GL_ENABLE_BIT);
-    glDisable(GL_LIGHTING);
+  if(fSector->fPointSetOn) {
     glEnable(GL_BLEND);
     glEnable(GL_POINT_SMOOTH);
-    glPointSize(fSector->GetMarkerSize());
+    glPointSize(fSector->fPointSize);
 
     glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -91,19 +91,9 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
     }
 
     glPopClientAttrib();
-    glPopAttrib();
   }
 
   if(fSector->fRnrFrame) {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
-
-    glDisable(GL_LIGHTING);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
-
-    UChar_t col[4];
     ColorFromIdx(fSector->fFrameColor, col);
     glColor4ubv(col);
 
@@ -113,9 +103,9 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
       DrawSegmentFrame(TPCSectorData::GetOut1Seg(), 2, 1);
     if(fSector->fRnrOut2)
       DrawSegmentFrame(TPCSectorData::GetOut2Seg(), 2, 2);
-
-    glPopAttrib();
   }
+
+  glPopAttrib();
 }
 
 void TPCSector3DGL::DrawSegmentFrame(const TPCSectorData::SegmentInfo& s,
@@ -126,8 +116,8 @@ void TPCSector3DGL::DrawSegmentFrame(const TPCSectorData::SegmentInfo& s,
   xh = 0.5*s.GetPadWidth()*(TPCSectorData::GetNPadsInRow(s.GetLastRow())  + topExtraPads);
   yl = s.GetRLow();
   yh = yl + s.GetNRows()*s.GetPadHeight();
-  zl = -0.5;
-  zh = 250.5;
+  zl = 0;
+  zh = TPCSectorData::GetZLength();
 
   glBegin(GL_LINE_LOOP);
   glVertex3f( xl, yl, zl);  glVertex3f( xh, yh, zl);
