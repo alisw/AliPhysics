@@ -1,0 +1,75 @@
+# Makefile for AliRoot for MacOS X with gcc
+
+XARGS = xargs
+
+# fink directories
+FINK_ROOT := $(shell which fink | sed -e 's?/bin/fink??')
+ifeq (,$(FINK_ROOT))
+# No fink, build will probably fail, but we try a guess
+FINK_ROOT=/usr/local
+endif
+
+# The compilers
+CXX           = icc 
+CC	      = icc
+
+F77	      = ifort
+
+# Global optimisation
+OPT           = -O -g
+NOOPT         = -g
+
+CXXOPT        = $(OPT) 
+CXXNOOPT      = $(NOOPT) 
+COPT	      = $(OPT)
+FOPT	      = $(OPT)
+
+# CERNLIB defines
+CLIBDEFS      = -DCERNLIB_LINUX -DCERNLIB_BLDLIB -DCERNLIB_CZ -DCERNLIB_PPC
+CLIBCXXOPTS   =
+CLIBCOPT      =
+CLIBFOPT      = $(CLIBDEFS)
+
+# Compiler flags
+CXXFLAGS      = $(CXXOPT) -fPIC -wd1476 -I/usr/X11R6/include -I$(FINK_ROOT)/include 
+
+CXXFLAGSNO    = $(CXXNOOPT) 
+
+CFLAGS	      = $(COPT) -fPIC -restrict -I$(FINK_ROOT)/include
+
+FFLAGS        = $(CLIBFOPT) $(FOPT)
+# rmkdepend flags for building dependencies of FORTRAN files
+DEPENDFFLAGS  = $(FFLAGS)
+
+# rootcint flags
+CINTFLAGS     = 
+
+LD            = icpc
+LDFLAGS       = $(OPT) $(DICTLOAD)
+
+SHLD	     := $(LD)
+SOFLAGS      := $(OPT) -dynamiclib -undefined dynamic_lookup -single_module
+SHLIB        := 
+SOEXT 	     := so
+
+DYLD	     := $(LD)
+DYFLAGS       = -dynamiclib -undefined dynamic_lookup -single_module
+DYLIB        := 
+DYEXT        := dylib
+
+ALLD	      = ar
+ALFLAGS       = cr
+ALLIB         = 
+AEXT 	      = a
+
+DEPENDCXXFLAGS = $(CXXFLAGS) -I/usr/include/sys
+
+EXEFLAGS     := -bind_at_load 
+
+#System libraries
+
+SYSLIBS      := -L/usr/X11R6/lib -lX11 -lGL $(LIBNOVER) -L/usr/local/lib \
+                -lXt -L$(shell which ifort | sed -e 's|bin/ifort|lib|') \
+                -lifcore -lifport
+
+
