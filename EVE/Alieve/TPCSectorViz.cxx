@@ -118,15 +118,19 @@ void TPCSectorViz::SetTrans(Bool_t trans)
     using namespace TMath;
     Float_t c = Cos((fSectorID + 0.5)*20*Pi()/180 - PiOver2());
     Float_t s = Sin((fSectorID + 0.5)*20*Pi()/180 - PiOver2());
-    Float_t z = TPCSectorData::GetParam().GetZLength();
-    if(fSectorID >= 18) z = -z;
+    Float_t z = TPCSectorData::GetZLength();
+    Float_t d = -1;
+    if(fSectorID >= 18) {
+      z = -z;
+      d = -d;
+    }
   
     // column major
     fMatrix[0]  = -c;
     fMatrix[1]  = -s;
     fMatrix[4]  = -s;
     fMatrix[5]  =  c;
-    fMatrix[10] = -1;
+    fMatrix[10] =  d;
     fMatrix[14] =  z;
     fMatrix[15] =  1;
   }
