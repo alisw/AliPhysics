@@ -538,7 +538,7 @@ void AliABSOv0::CreateGeometry()
   TGeoVolume* voFassAlRing = new TGeoVolume("FassAlRing", new TGeoTube(100., 180., 10.), kMedAlu);
   voFass->AddNode(voFassAlRing, 1, new TGeoTranslation(0., 0., -11.));
   TGeoRotation* rotxz = new TGeoRotation("rotxz",  90., 0., 90., 90., 180., 0.);
-  gGeoManager->GetVolume("ALIC")->AddNode(voFass, 1, new TGeoCombiTrans(0., 0., -394. - 90., rotxz));
+  gGeoManager->GetVolume("ALIC")->AddNode(voFass, 1, new TGeoCombiTrans(0., 0., -388.45 - 90., rotxz));
 }
 
 //_____________________________________________________________________________
