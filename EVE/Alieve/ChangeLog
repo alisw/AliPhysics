@@ -1,3 +1,23 @@
+2006-06-20  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCSector3D.cxx:
+	* TPCSector3D.h:
+	Removed TAttMarker as base-class, added fPointSize member.
+
+	* TPCSector3DEditor.cxx:
+	* TPCSector3DEditor.h:
+	Added control for fPointSize.
+
+	* TPCSector3DGL.cxx:
+	After frame-box rendering GL remained in wire-frame mode.
+
+	* TPCSectorData.cxx:
+	* TPCSectorData.h:
+	Added internal static member for z-length of the sector.
+
+	* TPCSectorViz.cxx:
+	From Cvetan: fix orientation for C-side sectors.
+
 2006-06-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCSector3D.cxx:

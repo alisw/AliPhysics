@@ -1,3 +1,10 @@
+2006-06-20  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	* Track.h:
+	In TrackList: added ImportHits/Clusters(); removed obsolete
+	MkPtScrollBar().
+
 2006-06-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* PointSet.cxx:
