@@ -130,15 +130,15 @@ public:
     return fCaloClusters.GetEntriesFast()-1;
   }
     
-  void SetVertex(const AliESDVertex* vertex) {
-     fSPDVertex=new AliESDVertex(*vertex);
+  void SetVertex(const AliESDVertex *vertex) {
+     new (&fSPDVertex) AliESDVertex(*vertex);
   }
-  const AliESDVertex* GetVertex() const {return fSPDVertex;};
+  const AliESDVertex *GetVertex() const {return &fSPDVertex;}
 
-  void SetPrimaryVertex(const AliESDVertex* vertex) {
-     fPrimaryVertex=new AliESDVertex(*vertex);
+  void SetPrimaryVertex(const AliESDVertex *vertex) {
+     new (&fPrimaryVertex) AliESDVertex(*vertex);
   }
-  const AliESDVertex* GetPrimaryVertex() const {return fPrimaryVertex;};
+  const AliESDVertex *GetPrimaryVertex() const {return &fPrimaryVertex;}
 
   Int_t  GetEventNumber() const {return fEventNumber;}
   Int_t  GetRunNumber() const {return fRunNumber;}
@@ -221,8 +221,8 @@ protected:
   Int_t        fZDCParticipants; // number of participants estimated by the ZDC
 
   Float_t      fT0zVertex;       // vertex z position estimated by the START
-  AliESDVertex *fSPDVertex;      // Primary vertex estimated by the SPD
-  AliESDVertex *fPrimaryVertex;  // Primary vertex estimated using ESD tracks
+  AliESDVertex fSPDVertex;       // Primary vertex estimated by the SPD
+  AliESDVertex fPrimaryVertex;   // Primary vertex estimated using ESD tracks
 
   Float_t      fT0timeStart;     // interaction time estimated by the START
   Float_t      fT0time[24];      // best TOF on each START PMT
@@ -247,7 +247,7 @@ protected:
  
   AliESDFMD *  fESDFMD; // FMD object containing rough multiplicity
 
-  ClassDef(AliESD,11)  //ESD class 
+  ClassDef(AliESD,12)  //ESD class 
 };
 #endif 
 
