@@ -183,8 +183,10 @@ public:
 
   void SelectByPt(Float_t min_pt=0.2, Float_t max_pt=10); // *MENU*
 
-  void MakePtScrollbar(); // *MENU*
-  void HandlePtScrollEvent();
+  //--------------------------------
+
+  void ImportHits();     // *MENU*
+  void ImportClusters(); // *MENU*
 
   ClassDef(TrackList, 1);
 };

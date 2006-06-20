@@ -396,34 +396,16 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 
 /**************************************************************************/
 
-#include <TGFrame.h>
-#include <TGDoubleSlider.h>
-#include <TGXYLayout.h>
-
-void TrackList::MakePtScrollbar()
+void TrackList::ImportHits()
 {
-  TGMainFrame* mf = new TGMainFrame(gClient->GetRoot(), 320, 60);
-
-  TGDoubleHSlider* hs = new TGDoubleHSlider(mf);
-  hs->SetRange(0.2, 10);
-  hs->SetPosition(0.2, 10);
-  hs->Resize(300, 25);
-  mf->AddFrame(hs, new TGLayoutHints(kLHintsCenterX, 10, 10, 10, 10));
-
-  hs->Connect("PositionChanged()", "Reve::TrackList",
-	      this, "HandlePtScrollEvent()");
-
-  mf->SetWindowName("Pt Selector");
-  mf->MapSubwindows();
-  mf->Resize(mf->GetDefaultSize()); // this is used here to init layout algorithm
-  mf->MapWindow();
+  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+    ((Track*)(*i))->ImportHits();
+  }
 }
 
-void TrackList::HandlePtScrollEvent()
+void TrackList::ImportClusters()
 {
-  TGDoubleHSlider* hs = (TGDoubleHSlider*)gTQSender;
-
-  Float_t min = hs->GetMinPosition(), max = hs->GetMaxPosition();
-  printf("hslidor min=%f max=%f\n", min, max);
-  SelectByPt(min, max);
+  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+    ((Track*)(*i))->ImportClusters();
+  }
 }
