@@ -26,6 +26,7 @@ using namespace Alieve;
 ClassImp(TPCSectorData)
 
 AliTPCParam* TPCSectorData::fgParam    = 0;
+Float_t      TPCSectorData::fgZLength  = 0;
 Int_t        TPCSectorData::fgNAllRows = 0;
 Int_t        TPCSectorData::fgNAllPads = 0;
 Int_t*       TPCSectorData::fgRowBegs  = 0;
@@ -43,6 +44,7 @@ void TPCSectorData::InitStatics()
   if(fgParam != 0) return;
 
   fgParam    = new AliTPCParamSR;
+  fgZLength  = fgParam->GetZLength();
   fgNAllRows = fgParam->GetNRowLow() + fgParam->GetNRowUp();
   fgNAllPads = 0;
   fgRowBegs  = new Int_t[fgNAllRows + 1];

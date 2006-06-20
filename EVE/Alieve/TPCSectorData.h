@@ -117,6 +117,7 @@ public:
 
 private:
   static AliTPCParam *fgParam;
+  static Float_t      fgZLength;
   static Int_t        fgNAllRows;
   static Int_t        fgNAllPads;
   static Int_t       *fgRowBegs;
@@ -168,8 +169,9 @@ public:
   // --- Static functions
 
   static const AliTPCParam& GetParam() { return *fgParam; }
-  static Int_t GetNAllRows() { return fgNAllRows; }
-  static Int_t GetNAllPads() { return fgNAllPads; }
+  static Float_t GetZLength()  { return fgZLength;  }
+  static Int_t   GetNAllRows() { return fgNAllRows; }
+  static Int_t   GetNAllPads() { return fgNAllPads; }
 
   static Int_t GetNPadsInRow(Int_t row);
 
