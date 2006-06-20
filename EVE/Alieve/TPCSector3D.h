@@ -12,7 +12,7 @@
 
 namespace Alieve {
 
-class TPCSector3D : public TPCSectorViz, public TAttMarker
+class TPCSector3D : public TPCSectorViz
 {
   friend class TPCSector3DEditor;
   friend class TPCSector3DGL;
@@ -26,6 +26,7 @@ protected:
   Reve::BoxSet        fBoxSet;
   Reve::PointSetArray fPointSetArray;
   Float_t             fPointFrac;
+  Float_t             fPointSize;
   Bool_t              fPointSetOn;
   Int_t               fPointSetMaxVal;
 
@@ -39,6 +40,7 @@ public:
   virtual UInt_t IncRTS();
 
   void SetPointFrac(Float_t f) { fPointFrac = f; IncRTS(); }
+  void SetPointSize(Float_t s) { fPointSize = s; }
 
   void SetDriftVel(Float_t v) { fDriftVel = v; IncRTS(); }
   void SetZStep(Float_t step) { fZStep = step; IncRTS(); }

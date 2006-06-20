@@ -22,11 +22,11 @@ ClassImp(TPCSector3D)
 
 TPCSector3D::TPCSector3D(const Text_t* n, const Text_t* t) :
   TPCSectorViz(n, t),
-  TAttMarker  (1, 20, 3),
 
   fBoxSet       (n, t),
   fPointSetArray(n, t),
   fPointFrac    (0.25),
+  fPointSize    (3),
 
   fDriftVel  (1),
   fZStep     (250.0/450)
@@ -71,8 +71,8 @@ void TPCSector3D::ComputeBBox()
   fBBox[1] =  w;
   fBBox[2] =  iSeg.GetRLow();
   fBBox[3] =  o2Seg.GetRLow() + o2Seg.GetNRows()*o2Seg.GetPadHeight();
-  fBBox[4] = -0.5;
-  fBBox[5] =  250.5;
+  fBBox[4] =  0;
+  fBBox[5] =  TPCSectorData::GetZLength();
   Float_t* b = fBoxSet.AssertBBox();
   for(Int_t i=0; i<6; ++i) { b[i] = fBBox[i]; }
 
