@@ -12,9 +12,12 @@
 // Reve
 #pragma link C++ function Reve::ColorFromIdx;
 #pragma link C++ function Reve::SetupEnvironment;
+
+#pragma link C++ function Reve::CheckMacro;
 #pragma link C++ function Reve::AssertMacro;
 #pragma link C++ function Reve::Macro;
 #pragma link C++ function Reve::LoadMacro;
+
 #pragma link C++ function Reve::PushPad;
 #pragma link C++ function Reve::PopPad;
 #pragma link C++ class Reve::Exc_t+;
@@ -64,6 +67,9 @@
 
 // RGEditor
 #pragma link C++ class Reve::RGEditor+;
+
+// RMacro
+#pragma link C++ class Reve::RMacro+;
 
 // RGTopFrame
 #pragma link C++ class Reve::RGTopFrame+;
