@@ -13,6 +13,7 @@
 #include <TGTextEntry.h>
 #include <TGSplitter.h>
 #include <TRootEmbeddedCanvas.h>
+#include <TGMimeTypes.h>
 
 #include <TGLSAViewer.h>
 #include <TH1F.h>
@@ -20,6 +21,8 @@
 
 #include <TROOT.h>
 #include <TFile.h>
+#include <TMacro.h>
+#include <TFolder.h>
 #include <TStyle.h>
 #include <TPad.h>
 #include <TCanvas.h>
@@ -75,6 +78,12 @@ void RGTopFrame::Init(){
   fBrowser     = 0;
   fStatusBar   = 0;
   fVSDFile     = "";
+
+  fMacroFolder = new TFolder("EVE", "Visualization macros");
+  gROOT->GetListOfBrowsables()->Add(fMacroFolder);
+
+  fClient->GetMimeTypeList()->AddType("root/tmacro", "Reve::RMacro",
+                                      "tmacro_s.xpm", "tmacro_t.xpm", "");
 
   fEditor = 0;
 
@@ -212,6 +221,15 @@ TGListTreeItem* RGTopFrame::GetEventTreeItem()
 TGListTreeItem* RGTopFrame::GetGlobalTreeItem()
 {
   return fGeometryLTI;
+}
+
+/**************************************************************************/
+// Macro management
+/**************************************************************************/
+
+TMacro* RGTopFrame::GetMacro(const Text_t* name) const
+{
+  return dynamic_cast<TMacro*>(fMacroFolder->FindObject(name));
 }
 
 /**************************************************************************/
