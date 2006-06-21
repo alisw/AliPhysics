@@ -372,10 +372,17 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
     AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", busPatchId, manuId, channelId ));
 
     //packing word
-    AliBitPacking::PackWord((UInt_t)parity,word,29,31);
+    word = 0;
     AliBitPacking::PackWord((UInt_t)manuId,word,18,28);
     AliBitPacking::PackWord((UInt_t)channelId,word,12,17);
     AliBitPacking::PackWord((UInt_t)charge,word,0,11);
+
+    // parity word
+    parity = word & 0x1;
+    for (Int_t i = 1; i <= 30; i++) 
+      parity ^=  ((word >> i) & 0x1);
+    AliBitPacking::PackWord((UInt_t)parity,word,31,31);
+    printf("parity %x word %x\n", parity, word);
 
     // set sub Event
     fBusStruct->SetLength(0);

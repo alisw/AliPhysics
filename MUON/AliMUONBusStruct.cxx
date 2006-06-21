@@ -182,7 +182,7 @@ Char_t AliMUONBusStruct::GetParity(Int_t n) const
   //
   // get parity
   //
-  if ( n>=0 && n<fLength ) return (Char_t)(fData[n] >> 29) &  0x7;
+  if ( n>=0 && n<fLength ) return (Char_t)(fData[n] >> 31) &  0x1;
 
   AliError("Index outside limits."); 
   return 0; 

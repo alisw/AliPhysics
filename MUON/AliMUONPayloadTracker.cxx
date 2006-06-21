@@ -182,6 +182,9 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 	    fBusStruct->SetBlockId(iBlock); // could be usefull in future applications ?
 	    fBusStruct->SetDspId(iDsp);
 
+	    // check parity
+	    CheckDataParity();
+
 	    // copy in TClonesArray
 	    fDDLTracker->AddBusPatch(*fBusStruct, iBlock, iDsp);
 
@@ -240,26 +243,25 @@ void AliMUONPayloadTracker::SetMaxBlock(Int_t blk)
   fMaxBlock = blk;
 }
 
+//______________________________________________________
 Bool_t AliMUONPayloadTracker::CheckDataParity()
 {
   // parity check
   // taken from MuTrkBusPatch.cxx (sotfware test for CROCUS)
   // A. Baldisseri
 
-  Int_t  parity, bit;
+  Int_t  parity;
   UInt_t data;
   
   Int_t dataSize = fBusStruct->GetLength();
   for (int idata = 0; idata < dataSize; idata++) {
 
     data  = fBusStruct->GetData(idata);
-    // Compute the parity for each data word
-    parity = data & 0x1;
 
-    for (Int_t i = 1; i <= 30; i++) {
-      bit = ((data >> i) & 0x1);
-      parity = (parity || bit) && (!(parity && bit));
-    } 
+    // Compute the parity for each data word
+    parity  = data & 0x1;
+    for (Int_t i = 1; i <= 30; i++) 
+      parity ^= ((data >> i) & 0x1);
 
     // Check
     if (parity != fBusStruct->GetParity(idata)) {
