@@ -482,8 +482,8 @@ void AliPMDClusteringV1::RefClust(int incr)
       }
       if(ig > 0){
 	for(j=0; j<=ncl[i]; j++){
-	  lev1[0]=0;
-	  lev2[0]=0;
+	  lev1[j]=0;
+	  lev2[j]=0;
 	  for(k=0; k<=ig; k++){
 	    dist=Distance(x[j], y[j], xc[k], yc[k]);
 	    if(dist < sqrt(3.) ){
