@@ -19,6 +19,7 @@ tpc_hits(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ"
     new Reve::PointSet(Form("TPC Hits '%s'", selection), ht,
 		       Reve::PointSet::TVT_RPhiZ);
   points->SetTitle(Form("N=%d", points->GetN()));
+  points->SetMarkerSize(2);
   points->SetMarkerColor((Color_t)3);
 
   gReve->AddRenderElement(points);

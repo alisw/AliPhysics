@@ -14,6 +14,7 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   Reve::PointSet* points =
     new Reve::PointSet(Form("ITS Hits '%s'", selection), ht);
   points->SetTitle(Form("N=%d", points->GetN()));
+  points->SetMarkerSize(2);
   points->SetMarkerColor((Color_t)2);
 
   gReve->AddRenderElement(points);
