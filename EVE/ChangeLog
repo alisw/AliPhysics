@@ -1,3 +1,13 @@
+2006-06-21  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* macros/alieve_init.C:
+	Use macro-folder from gReve; instantiate macros from alice-macros/
+	as Reve::RMacro.
+
+	* alice-macros/its_hits.C:
+	* alice-macros/tpc_hits.C:
+	Set default point-size to 2.
+
 2006-06-15  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* test-macros/tpc_gui_hack.C:

@@ -1,3 +1,20 @@
+2006-06-21  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* LinkDef.h:
+	* RMacro.cxx:
+	* RMacro.h:
+	New class Reve::RMacro: a sub-class of TMacro that tries to unload
+	the macros properly before/after the operation.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Provide TFoler fMacroFolder to all consumers, register
+	Reve::RMacro mime type on start-up.
+
+	* Reve.cxx:
+	* Reve.h:
+	Added global function Bool_t Reve:CheckMacro().
+
 2006-06-20  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:
