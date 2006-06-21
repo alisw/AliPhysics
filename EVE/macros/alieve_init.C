@@ -13,10 +13,10 @@ void alieve_init(const Text_t* path=".", Int_t event=0,
 
   // Put macros in the list of browsables, spawn a browser.
 
-  TFolder* f = new TFolder("ALICE EVE", "Visualization macros");
   TString macdir("$(REVESYS)/alice-macros");
   gSystem->ExpandPathName(macdir);
 
+  TFolder* f = gReve->GetMacroFolder();
   void* dirhandle = gSystem->OpenDirectory(macdir.Data());
   if(dirhandle != 0) {
     char* filename;
@@ -24,14 +24,14 @@ void alieve_init(const Text_t* path=".", Int_t event=0,
     while((filename = gSystem->GetDirEntry(dirhandle)) != 0) {
       if(re.Match(filename)) {
 	printf("Adding macro '%s'\n", filename);
-	f->Add(new TMacro(Form("%s/%s", macdir.Data(), filename)));
+	f->Add(new Reve::RMacro(Form("%s/%s", macdir.Data(), filename)));
       }
     }
   }
   gSystem->FreeDirectory(dirhandle);
 
-  gROOT->GetListOfBrowsables()->Add(f);
   gROOT->GetListOfBrowsables()->Add
+    // (new TSystemDirectory("alice-macros", macdir.Data())); // !!!! this spits blood, but then works
     (new TSystemDirectory(macdir.Data(), macdir.Data()));
 
   new TBrowser;
