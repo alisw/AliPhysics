@@ -46,9 +46,10 @@ Color_t* FindColorVar(TObject* obj, const Text_t* varname);
 
 void SetupEnvironment();
 
-void AssertMacro(const Text_t* mac);
-void Macro(const Text_t* mac);
-void LoadMacro(const Text_t* mac);
+Bool_t CheckMacro(const Text_t* mac);
+void   AssertMacro(const Text_t* mac);
+void   Macro(const Text_t* mac);
+void   LoadMacro(const Text_t* mac);
 
 /**************************************************************************/
 /**************************************************************************/

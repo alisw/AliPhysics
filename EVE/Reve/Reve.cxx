@@ -101,12 +101,19 @@ namespace {
   }
 }
 
+Bool_t CheckMacro(const Text_t* mac)
+{
+  // Checks if macro 'mac' is loaded, (expect function with same name).
+
+  TString foo(mac); ChompTail(foo);
+  return (gROOT->GetGlobalFunction(foo.Data(), 0, kTRUE) != 0);
+}
+
 void AssertMacro(const Text_t* mac)
 {
   // Load and execute macro 'mac' if it has not been loaded yet.
 
-  TString foo(mac); ChompTail(foo);
-  if(gROOT->GetGlobalFunction(foo.Data(), 0, true) == 0) {
+  if(CheckMacro(mac) == kFALSE) {
     gROOT->Macro(mac);
   }
 }
@@ -116,9 +123,9 @@ void Macro(const Text_t* mac)
   // Execute macro 'mac'. Do not reload the macro.
 
   TString foo(mac); ChompTail(foo);
-  if(gROOT->GetGlobalFunction(foo.Data(), 0, true) == 0)
+  if(gROOT->GetGlobalFunction(foo.Data(), 0, kTRUE) == 0) {
     gROOT->LoadMacro(mac);
-
+  }
   foo += "()";
   gROOT->ProcessLine(foo.Data());
 }
@@ -127,9 +134,9 @@ void LoadMacro(const Text_t* mac)
 {
   // Makes sure that macro 'mac' is loaded, but do not reload it.
 
-  TString foo(mac); ChompTail(foo);
-  if(gROOT->GetGlobalFunction(foo.Data(), 0, true) == 0)
+  if(CheckMacro(mac) == kFALSE) {
     gROOT->LoadMacro(mac);
+  }
 }
 
 /**************************************************************************/
