@@ -382,7 +382,6 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
     for (Int_t i = 1; i <= 30; i++) 
       parity ^=  ((word >> i) & 0x1);
     AliBitPacking::PackWord((UInt_t)parity,word,31,31);
-    printf("parity %x word %x\n", parity, word);
 
     // set sub Event
     fBusStruct->SetLength(0);
