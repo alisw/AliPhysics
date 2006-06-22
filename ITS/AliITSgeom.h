@@ -49,7 +49,7 @@ class AliITSgeom : public TObject {
                       AliITSDetector idet,const Double_t tran[3],
                       const Double_t rot[10]);
     void ReadNewFile(const char *filename);  // Constructor for new format.
-    void WriteNewFile(const char *filename); // Output for new format.
+    void WriteNewFile(const char *filename)const; // Output for new format.
     // Getters
     Int_t GetTransformationType() const {return fTrans;}
     //
@@ -77,14 +77,16 @@ class AliITSgeom : public TObject {
     // class for a specific module index.
     AliITSgeomMatrix *GetGeomMatrix(Int_t index){if(index<fGm.GetSize()&&index>=0)
         return (AliITSgeomMatrix*)(fGm.At(index));else Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",index,fGm.GetSize());return 0;}
+    AliITSgeomMatrix *GetGeomMatrix(Int_t index)const{if(index<fGm.GetSize()&&index>=0)
+        return (AliITSgeomMatrix*)(fGm.At(index));else Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",index,fGm.GetSize());return 0;}
     // This function find and return the number of detector types only.
-    Int_t GetNDetTypes(){Int_t max;return GetNDetTypes(max);};
+    Int_t GetNDetTypes()const{Int_t max;return GetNDetTypes(max);};
     // This function find and return the number of detector types and the
     // maximum det type value.
-    Int_t GetNDetTypes(Int_t &max);
+    Int_t GetNDetTypes(Int_t &max)const;
     // This function finds and return the number of detector types and the
     // and the number of each type in the TArrayI and their types.
-    Int_t GetNDetTypes(TArrayI &maxs,AliITSDetector *types);
+    Int_t GetNDetTypes(TArrayI &maxs,AliITSDetector *types)const;
     //     This function returns the number of detectors/ladder for a give 
     // layer. In particular it returns fNdet[layer-1].
     Int_t GetNdetectors(Int_t lay) const {return fNdet[lay-1];}
@@ -94,143 +96,145 @@ class AliITSgeom : public TObject {
     //     This function returns the number of layers defined in the ITS
     // geometry. In particular it returns fNlayers.
     Int_t GetNlayers()                   const {return fNlayers;}
-    Int_t GetModuleIndex(Int_t lay,Int_t lad,Int_t det);
+    Int_t GetModuleIndex(Int_t lay,Int_t lad,Int_t det)const;
     //     This function returns the module index number given the layer,
     // ladder and detector numbers put into the array id[3].
-    Int_t GetModuleIndex(const Int_t *id){
+    Int_t GetModuleIndex(const Int_t *id)const{
         return GetModuleIndex(id[0],id[1],id[2]);}
-    void  GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det);
+    void  GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det)const;
     // Returns the detector type
-    Int_t GetModuleType(Int_t index){
-        return GetGeomMatrix(index)->GetDetectorIndex();}
+    //Int_t GetModuleType(Int_t index)const{
+    //    return GetGeomMatrix(index)->GetDetectorIndex();}
+    AliITSDetector GetModuleType(Int_t index)const{
+        return (AliITSDetector)(GetGeomMatrix(index)->GetDetectorIndex());}
     // Returns the detector type as a string
-    const char * GetModuleTypeName(Int_t index){
+    const char * GetModuleTypeName(Int_t index)const{
         return GetDetectorTypeName(GetModuleType(index));} 
     // Returns the detector type as a string
-    const char * GetDetectorTypeName(Int_t index){switch(index) {
+    const char * GetDetectorTypeName(Int_t index)const{switch(index) {
     case kSPD : return "kSPD" ; case kSDD : return "kSDD" ;
     case kSSD : return "kSSD" ; case kSSDp: return "kSSDp";
     case kSDDp: return "kSDDp"; default   : return "Undefined";};}
     //
-    Int_t GetStartDet(Int_t dtype );
-    Int_t GetLastDet(Int_t dtype);
+    Int_t GetStartDet(Int_t dtype )const;
+    Int_t GetLastDet(Int_t dtype)const;
     //     Returns the starting module index number for SPD detector,
     // assuming the modules are placed in the "standard" cylindrical
     // ITS structure.
-    Int_t GetStartSPD() {return GetModuleIndex(1,1,1);}
+    Int_t GetStartSPD()const{return GetStartDet(kSPD);}
     //     Returns the ending module index number for SPD detector,
     // assuming the modules are placed in the "standard" cylindrical
     // ITS structure.
-    Int_t GetLastSPD()  {return GetModuleIndex(2,fNlad[1],fNdet[1]);}
+    Int_t GetLastSPD()const{return GetLastDet(kSPD);}
     //     Returns the starting module index number for SDD detector,
     // assuming the modules are placed in the "standard" cylindrical
     // ITS structure.
-    Int_t GetStartSDD() {return GetModuleIndex(3,1,1);}
+    Int_t GetStartSDD()const{return GetStartDet(kSDD);}
     //     Returns the ending module index number for SDD detector,
     // assuming the modules are placed in the "standard" cylindrical
     // ITS structure.
-    Int_t GetLastSDD()  {return GetModuleIndex(4,fNlad[3],fNdet[3]);}
+    Int_t GetLastSDD()const{return GetLastDet(kSDD);}
     //     Returns the starting module index number for SSD detector,
     // assuming the modules are placed in the "standard" cylindrical
     // ITS structure.
-    Int_t GetStartSSD() {return GetModuleIndex(5,1,1);}
+    Int_t GetStartSSD()const{return GetStartDet(kSSD);}
     //     Returns the ending module index number for SSD detector,
     // assuming the modules are placed in the "standard" cylindrical
     // ITS structure.
-    Int_t GetLastSSD()  {return GetModuleIndex(6,fNlad[5],fNdet[5]);}
+    Int_t GetLastSSD()const{return GetLastDet(kSSD);}
     //     Returns the last module index number.
     Int_t GetIndexMax() const {return fNmodules;}
     //
     //     This function returns the rotation angles for a give module 
     // in the Double point array ang[3]. The angles are in radians
-    void  GetAngles(Int_t index,Double_t *ang) {
+    void  GetAngles(Int_t index,Double_t *ang)const{
         GetGeomMatrix(index)->GetAngles(ang);}
     //     This function returns the rotation angles for a give module
     // in the three floating point variables provided. rx = frx,
     // fy = fry, rz = frz. The angles are in radians
-    void  GetAngles(Int_t index,Float_t &rx,Float_t &ry,Float_t &rz) {
+    void  GetAngles(Int_t index,Float_t &rx,Float_t &ry,Float_t &rz)const{
         Double_t a[3];GetAngles(index,a);rx = a[0];ry = a[1];rz = a[2];}
     //     This function returns the rotation angles for a give detector on
     // a give ladder in a give layer in the three floating point variables
     // provided. rx = frx, fy = fry, rz = frz. The angles are in radians
     void  GetAngles(Int_t lay,Int_t lad,Int_t det,
-                    Float_t &rx,Float_t &ry,Float_t &rz) {
+                    Float_t &rx,Float_t &ry,Float_t &rz)const{
         GetAngles(GetModuleIndex(lay,lad,det),rx,ry,rz);}
     //
     //     This function returns the 6 GEANT rotation angles for a give 
     // module in the double point array ang[3]. The angles are in degrees
-    void  GetGeantAngles(Int_t index,Double_t *ang){
+    void  GetGeantAngles(Int_t index,Double_t *ang)const{
 	GetGeomMatrix(index)->SixAnglesFromMatrix(ang);}
     //
     //     This function returns the Cartesian translation for a give
     // module in the Double array t[3]. The units are
     // those of the Monte Carlo, generally cm.
-    void  GetTrans(Int_t index,Double_t *t) {
+    void  GetTrans(Int_t index,Double_t *t)const{
         GetGeomMatrix(index)->GetTranslation(t);}
     //     This function returns the Cartesian translation for a give
     // module index in the three floating point variables provided.
     // x = fx0, y = fy0, z = fz0. The units are those of the Mont
     // Carlo, generally cm.
-    void  GetTrans(Int_t index,Float_t &x,Float_t &y,Float_t &z) {
+    void  GetTrans(Int_t index,Float_t &x,Float_t &y,Float_t &z)const{
         Double_t t[3];GetTrans(index,t);x = t[0];y = t[1];z = t[2];}
     //     This function returns the Cartesian translation for a give
     // detector on a give ladder in a give layer in the three floating
     // point variables provided. x = fx0, y = fy0, z = fz0. The units are
     // those of the Monte Carlo, generally cm.
     void  GetTrans(Int_t lay,Int_t lad,Int_t det,
-                   Float_t &x,Float_t &y,Float_t &z) {
+                   Float_t &x,Float_t &y,Float_t &z)const{
         GetTrans(GetModuleIndex(lay,lad,det),x,y,z);}
     //
     //     This function returns the Cartesian translation for a give
     // module in the Double array t[3]. The units are
     // those of the Monte Carlo, generally cm.
-    void  GetTransCyln(Int_t index,Double_t *t) {
+    void  GetTransCyln(Int_t index,Double_t *t)const{
         GetGeomMatrix(index)->GetTranslationCylinderical(t);}
     //     This function returns the Cartesian translation for a give
     // module index in the three floating point variables provided.
     // x = fx0, y = fy0, z = fz0. The units are those of the Mont
     // Carlo, generally cm.
-    void  GetTransCyln(Int_t index,Float_t &x,Float_t &y,Float_t &z) {
+    void  GetTransCyln(Int_t index,Float_t &x,Float_t &y,Float_t &z)const{
         Double_t t[3];GetTransCyln(index,t);x = t[0];y = t[1];z = t[2];}
     //     This function returns the Cartesian translation for a give
     // detector on a give ladder in a give layer in the three floating
     // point variables provided. x = fx0, y = fy0, z = fz0. The units are
     // those of the Monte Carlo, generally cm.
     void  GetTransCyln(Int_t lay,Int_t lad,Int_t det,
-                       Float_t &x,Float_t &y,Float_t &z) {
+                       Float_t &x,Float_t &y,Float_t &z)const{
         GetTransCyln(GetModuleIndex(lay,lad,det),x,y,z);}
     //
     //      This function returns the Cartesian translation [cm] and the
     // 6 GEANT rotation angles [degrees]for a given layer ladder and
     // detector number, in the TVector x (at least 9 elements large).
     // This function is required to be in-lined for speed.
-    void  GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,TVector &x){
+    void  GetCenterThetaPhi(Int_t lay,Int_t lad,Int_t det,TVector &x)const{
         Double_t t[3],a[6];Int_t i=GetModuleIndex(lay,lad,det);GetTrans(i,t);
         GetGeantAngles(i,a);x(0)=t[0];x(1)=t[1];x(2)=t[2];x(3)=a[0];x(4)=a[1];
         x(5)=a[2];x(6)=a[3];x(7)=a[4];x(8)=a[5];}
     //
     //     This function returns the rotation matrix in Double
     // precision for a given module.
-    void  GetRotMatrix(Int_t index,Double_t mat[3][3]){
+    void  GetRotMatrix(Int_t index,Double_t mat[3][3])const{
         GetGeomMatrix(index)->GetMatrix(mat);}
     //     This function returns the rotation matrix in a Double
     // precision pointer for a given module. mat[i][j] => mat[3*i+j].
-    void  GetRotMatrix(Int_t index,Double_t *mat){
+    void  GetRotMatrix(Int_t index,Double_t *mat)const{
         Double_t rot[3][3];GetRotMatrix(index,rot);
         for(Int_t i=0;i<3;i++)for(Int_t j=0;j<3;j++) mat[3*i+j] = rot[i][j];}
     //     This function returns the rotation matrix in a floating 
     // precision pointer for a given layer ladder and detector module.
     // mat[i][j] => mat[3*i+j].
-    void  GetRotMatrix(Int_t lay,Int_t lad,Int_t det,Float_t *mat){
+    void  GetRotMatrix(Int_t lay,Int_t lad,Int_t det,Float_t *mat)const{
         GetRotMatrix(GetModuleIndex(lay,lad,det),mat);}
     //     This function returns the rotation matrix in a Double
     // precision pointer for a given layer ladder and detector module.
     // mat[i][j] => mat[3*i+j].
-    void  GetRotMatrix(Int_t lay,Int_t lad,Int_t det,Double_t *mat){
+    void  GetRotMatrix(Int_t lay,Int_t lad,Int_t det,Double_t *mat)const{
         GetRotMatrix(GetModuleIndex(lay,lad,det),mat);}
     //     This function returns the rotation matrix in a floating
     // precision pointer for a given module. mat[i][j] => mat[3*i+j].
-    void  GetRotMatrix(Int_t index,Float_t *mat){
+    void  GetRotMatrix(Int_t index,Float_t *mat)const{
           Double_t rot[3][3];
           GetGeomMatrix(index)->GetMatrix(rot);
           for(Int_t i=0;i<3;i++)for(Int_t j=0;j<3;j++) mat[3*i+j] = rot[i][j];}
@@ -251,11 +255,15 @@ class AliITSgeom : public TObject {
     // AliITSgeomSSD, for example.
     virtual TObject *GetShape(AliITSDetector idet){
         return fShape.At((Int_t)idet);};
+    virtual TObject *GetShape(AliITSDetector idet)const{
+        return fShape.At((Int_t)idet);};
     //     This function returns a pointer to the class describing the
     // detector for a particular module index. This will return a pointer
     // to one of the classes AliITSgeomSPD, AliITSgeomSDD, 
     // or AliITSgeomSSD, for example.
     virtual TObject *GetShape(Int_t index){
+        return fShape.At(GetGeomMatrix(index)->GetDetectorIndex());}
+    virtual TObject *GetShape(Int_t index)const{
         return fShape.At(GetGeomMatrix(index)->GetDetectorIndex());}
     //     This function returns a pointer to the class describing the
     // detector for a particular layer ladder and detector numbers. This
@@ -331,20 +339,20 @@ class AliITSgeom : public TObject {
     // global and local coordinate are given in two floating point
     // arrays g[3], and l[3].
     void GtoL(Int_t lay,Int_t lad,Int_t det,
-              const Float_t *g,Float_t *l){
+              const Float_t *g,Float_t *l)const{
         GtoL(GetModuleIndex(lay,lad,det),g,l);}
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system for the detector
     // defined by the id[0], id[1], and id[2] numbers. The
     // global and local coordinate are given in two floating point
     // arrays g[3], and l[3].
-    void GtoL(const Int_t *id,const Float_t *g,Float_t *l){
+    void GtoL(const Int_t *id,const Float_t *g,Float_t *l)const{
         GtoL(GetModuleIndex(id),g,l);}
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system for the detector
     // module index number. The global and local coordinate are
     // given in two floating point arrays g[3], and l[3].
-    void GtoL(Int_t index,const Float_t *g,Float_t *l){
+    void GtoL(Int_t index,const Float_t *g,Float_t *l)const{
         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dg[i] = g[i];
         GetGeomMatrix(index)->GtoLPosition(dg,dl);
         for(i=0;i<3;i++) l[i] =dl[i];}
@@ -354,36 +362,34 @@ class AliITSgeom : public TObject {
     // global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
     void GtoL(Int_t lay,Int_t lad,Int_t det,
-              const Double_t *g,Double_t *l){
+              const Double_t *g,Double_t *l)const{
         GtoL(GetModuleIndex(lay,lad,det),g,l);}
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system for the detector
     // defined by the id[0], id[1], and id[2] numbers. The
     // global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
-    void GtoL(const Int_t *id,const Double_t *g,Double_t *l){
+    void GtoL(const Int_t *id,const Double_t *g,Double_t *l)const{
         GtoL(GetModuleIndex(id),g,l);}
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system for the detector
     // module index number. The global and local coordinate are
     // given in two Double point arrays g[3], and l[3].
-    void GtoL(Int_t index,const Double_t *g,Double_t *l){
-        Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dg[i] = g[i];
-        GetGeomMatrix(index)->GtoLPosition(dg,dl);
-        for(i=0;i<3;i++) l[i] =dl[i];}
+    void GtoL(Int_t index,const Double_t g[3],Double_t l[3])const{
+        GetGeomMatrix(index)->GtoLPosition(g,l);}
     //
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system (used for ITS tracking)
     // for the detector module index number. The global and local
     // coordinate are given in two Double point arrays g[3], and l[3].
-    void GtoLtracking(Int_t index,const Double_t *g,Double_t *l){
+    void GtoLtracking(Int_t index,const Double_t *g,Double_t *l)const{
         if(IsGeantToTracking()) GtoL(index,g,l);
         else GetGeomMatrix(index)->GtoLPositionTracking(g,l);}
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system (used for ITS tracking)
     // for the detector id[3]. The global and local
     // coordinate are given in two Double point arrays g[3], and l[3].
-    void GtoLtracking(const Int_t *id,const Double_t *g,Double_t *l){
+    void GtoLtracking(const Int_t *id,const Double_t *g,Double_t *l)const{
         GtoLtracking(GetModuleIndex(id),g,l);}
     //     Transforms from the ALICE Global coordinate system
     // to the detector local coordinate system (used for ITS tracking)
@@ -391,7 +397,7 @@ class AliITSgeom : public TObject {
     // and local coordinate are given in two Double point arrays g[3],
     // and l[3].
     void GtoLtracking(Int_t lay,Int_t lad,Int_t det,
-                      const Double_t *g,Double_t *l){
+                      const Double_t *g,Double_t *l)const{
         GtoLtracking(GetModuleIndex(lay,lad,det),g,l);}
     //
     //     Transforms of momentum types of quantities from the ALICE
@@ -400,13 +406,13 @@ class AliITSgeom : public TObject {
     // and local coordinate are given in two float point arrays g[3],
     // and l[3].
     void GtoLMomentum(Int_t lay,Int_t lad,Int_t det,
-                      const Float_t *g,Float_t *l){
+                      const Float_t *g,Float_t *l)const{
         GtoLMomentum(GetModuleIndex(lay,lad,det),g,l);}
     //     Transforms of momentum types of quantities from the ALICE
     // Global coordinate system to the detector local coordinate system
     // for the detector module index number. The global and local
     // coordinate are given in two float point arrays g[3], and l[3].
-    void GtoLMomentum(Int_t index,const Float_t *g,Float_t *l){
+    void GtoLMomentum(Int_t index,const Float_t *g,Float_t *l)const{
         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dg[i] = g[i];
         GetGeomMatrix(index)->GtoLMomentum(dg,dl);
         for(i=0;i<3;i++) l[i] =dl[i];}
@@ -416,13 +422,13 @@ class AliITSgeom : public TObject {
     // and local coordinate are given in two Double point arrays g[3],
     // and l[3].
     void GtoLMomentum(Int_t lay,Int_t lad,Int_t det,
-                      const Double_t *g,Double_t *l){
+                      const Double_t *g,Double_t *l)const{
         GtoLMomentum(GetModuleIndex(lay,lad,det),g,l);}
     //     Transforms of momentum types of quantities from the ALICE
     // Global coordinate system to the detector local coordinate system
     // for the detector module index number. The global and local
     // coordinate are given in two Double point arrays g[3], and l[3].
-    void GtoLMomentum(Int_t index,const Double_t *g,Double_t *l){
+    void GtoLMomentum(Int_t index,const Double_t *g,Double_t *l)const{
         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dg[i] = g[i];
         GetGeomMatrix(index)->GtoLMomentum(dg,dl);
         for(i=0;i<3;i++) l[i] =dl[i];}
@@ -432,7 +438,7 @@ class AliITSgeom : public TObject {
     // (used for ITS tracking) for the detector module index number.
     // The global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
-    void GtoLMomentumTracking(Int_t index,const Double_t *g,Double_t *l){
+    void GtoLMomentumTracking(Int_t index,const Double_t *g,Double_t *l)const{
         if(IsGeantToTracking()) GtoLMomentum(index,g,l);
         else GetGeomMatrix(index)->GtoLMomentumTracking(g,l);}
     //     Transforms of momentum types of quantities from the ALICE
@@ -440,7 +446,8 @@ class AliITSgeom : public TObject {
     // (used for ITS tracking) for the detector id[3].
     // The global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
-    void GtoLMomentumTracking(const Int_t *id,const Double_t *g,Double_t *l){
+    void GtoLMomentumTracking(const Int_t *id,
+			      const Double_t *g,Double_t *l)const{
         GtoLMomentumTracking(GetModuleIndex(id),g,l);}
     //     Transforms of momentum types of quantities from the ALICE
     // Global coordinate system to the detector local coordinate system
@@ -448,7 +455,7 @@ class AliITSgeom : public TObject {
     // numbers. The global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
     void GtoLMomentumTracking(Int_t lay,Int_t lad,Int_t det,
-                              const Double_t *g,Double_t *l){
+                              const Double_t *g,Double_t *l)const{
         GtoLMomentumTracking(GetModuleIndex(lay,lad,det),g,l);}
     //
     //     Transforms from the detector local coordinate system
@@ -457,20 +464,20 @@ class AliITSgeom : public TObject {
     // global and local coordinate are given in two floating point
     // arrays g[3], and l[3].
     void LtoG(Int_t lay,Int_t lad,Int_t det,
-              const Float_t *l,Float_t *g){
+              const Float_t *l,Float_t *g)const{
         LtoG(GetModuleIndex(lay,lad,det),l,g);}
     //     Transforms from the detector local coordinate system
     // to the ALICE Global coordinate system for the detector
     // defined by the id[0], id[1], and id[2] numbers. The
     // global and local coordinate are given in two floating point
     // arrays g[3], and l[3].
-    void LtoG(const Int_t *id,const Float_t *l,Float_t *g){
+    void LtoG(const Int_t *id,const Float_t *l,Float_t *g)const{
         LtoG(GetModuleIndex(id),l,g);}
     //     Transforms from the detector local coordinate system
     // to the ALICE Global coordinate system for the detector
     // module index number. The global and local coordinate are
     // given in two floating point arrays g[3], and l[3].
-    void LtoG(Int_t index,const Float_t *l,Float_t *g){
+    void LtoG(Int_t index,const Float_t *l,Float_t *g)const{
         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dl[i] = l[i];
         GetGeomMatrix(index)->LtoGPosition(dl,dg);
         for(i=0;i<3;i++) g[i] =dg[i];}
@@ -480,36 +487,34 @@ class AliITSgeom : public TObject {
     // global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
     void LtoG(Int_t lay,Int_t lad,Int_t det,
-              const Double_t *l,Double_t *g){
+              const Double_t *l,Double_t *g)const{
         LtoG(GetModuleIndex(lay,lad,det),l,g);}
     //     Transforms from the detector local coordinate system
     // to the ALICE Global coordinate system for the detector
     // defined by the id[0], id[1], and id[2] numbers. The
     // global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
-    void LtoG(const Int_t *id,const Double_t *l,Double_t *g){
+    void LtoG(const Int_t *id,const Double_t *l,Double_t *g)const{
         LtoG(GetModuleIndex(id),l,g);}
     //     Transforms from the detector local coordinate system
     // to the ALICE Global coordinate system for the detector
     // module index number. The global and local coordinate are
     // given in two Double point arrays g[3], and l[3].
-    void LtoG(Int_t index,const Double_t *l,Double_t *g){
-        Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dl[i] = l[i];
-        GetGeomMatrix(index)->LtoGPosition(dl,dg);
-        for(i=0;i<3;i++) g[i] =dg[i];}
+    void LtoG(Int_t index,const Double_t *l,Double_t *g)const{
+        GetGeomMatrix(index)->LtoGPosition(l,g);}
     //
     //     Transforms from the detector local coordinate system (used
     // for ITS tracking) to the ALICE Global coordinate system 
     // for the detector module index number. The global and local
     // coordinate are given in two Double point arrays g[3], and l[3].
-    void LtoGtracking(Int_t index,const Double_t *l,Double_t *g){
+    void LtoGtracking(Int_t index,const Double_t *l,Double_t *g)const{
         if(IsGeantToTracking()) LtoG(index,l,g);
         else GetGeomMatrix(index)->LtoGPositionTracking(l,g);}
     //     Transforms from the detector local coordinate system (used
     // for ITS tracking) to the ALICE Global coordinate system 
     // for the detector id[3]. The global and local
     // coordinate are given in two Double point arrays g[3], and l[3].
-    void LtoGtracking(const Int_t *id,const Double_t *l,Double_t *g){
+    void LtoGtracking(const Int_t *id,const Double_t *l,Double_t *g)const{
         LtoGtracking(GetModuleIndex(id),l,g);}
     //     Transforms from the detector local coordinate system (used
     // for ITS tracking) to the detector local coordinate system
@@ -517,7 +522,7 @@ class AliITSgeom : public TObject {
     // and local coordinate are given in two Double point arrays g[3],
     // and l[3].
     void LtoGtracking(Int_t lay,Int_t lad,Int_t det,
-                      const Double_t *l,Double_t *g){
+                      const Double_t *l,Double_t *g)const{
         LtoGtracking(GetModuleIndex(lay,lad,det),l,g);}
     //
     //     Transforms of momentum types of quantities from the detector
@@ -526,13 +531,13 @@ class AliITSgeom : public TObject {
     // and local coordinate are given in two float point arrays g[3],
     // and l[3].
     void LtoGMomentum(Int_t lay,Int_t lad,Int_t det,
-                      const Float_t *l,Float_t *g){
+                      const Float_t *l,Float_t *g)const{
         LtoGMomentum(GetModuleIndex(lay,lad,det),l,g);}
     //     Transforms of momentum types of quantities from the detector
     // local coordinate system to the ALICE Global coordinate system
     // for the detector module index number. The global and local
     // coordinate are given in two float point arrays g[3], and l[3].
-    void LtoGMomentum(Int_t index,const Float_t *l,Float_t *g){
+    void LtoGMomentum(Int_t index,const Float_t *l,Float_t *g)const{
         Double_t dg[3],dl[3];Int_t i;for(i=0;i<3;i++) dl[i] = l[i];
         GetGeomMatrix(index)->LtoGMomentum(dl,dg);
         for(i=0;i<3;i++) g[i] =dg[i];}
@@ -542,13 +547,13 @@ class AliITSgeom : public TObject {
     // and local coordinate are given in two Double point arrays g[3],
     // and l[3].
     void LtoGMomentum(Int_t lay,Int_t lad,Int_t det,
-                      const Double_t *l,Double_t *g){
+                      const Double_t *l,Double_t *g)const{
         LtoGMomentum(GetModuleIndex(lay,lad,det),l,g);}
     //     Transforms of momentum types of quantities from the detector
     // local coordinate system to the ALICE Global coordinate system
     // for the detector module index number. The global and local
     // coordinate are given in two Double point arrays g[3], and l[3].
-    void LtoGMomentum(Int_t index,const Double_t *l,Double_t *g){
+    void LtoGMomentum(Int_t index,const Double_t *l,Double_t *g)const{
         GetGeomMatrix(index)->LtoGMomentum(l,g);}
     //
     //     Transforms of momentum types of quantities from the detector 
@@ -556,7 +561,7 @@ class AliITSgeom : public TObject {
     // system ALICE Global for the detector module index number.
     // The global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
-    void LtoGMomentumTracking(Int_t index,const Double_t *l,Double_t *g){
+    void LtoGMomentumTracking(Int_t index,const Double_t *l,Double_t *g)const{
         if(IsGeantToTracking()) LtoGMomentum(index,l,g);
         else GetGeomMatrix(index)->LtoGMomentumTracking(l,g);}
     //     Transforms of momentum types of quantities from the detector
@@ -564,7 +569,7 @@ class AliITSgeom : public TObject {
     // Global coordinate system for the detector id[3].
     // The global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
-    void LtoGMomentumTracking(const Int_t *id,const Double_t *l,Double_t *g){
+    void LtoGMomentumTracking(const Int_t *id,const Double_t *l,Double_t *g)const{
         LtoGMomentumTracking(GetModuleIndex(id),l,g);}
     //     Transforms of momentum types of quantities from the detector
     // local coordinate system (used for ITS tracking) to the ALICE
@@ -572,7 +577,7 @@ class AliITSgeom : public TObject {
     // numbers. The global and local coordinate are given in two Double point
     // arrays g[3], and l[3].
     void LtoGMomentumTracking(Int_t lay,Int_t lad,Int_t det,
-                              const Double_t *l,Double_t *g){
+                              const Double_t *l,Double_t *g)const{
                         LtoGMomentumTracking(GetModuleIndex(lay,lad,det),l,g);}
     //
     //     Transforms from one detector local coordinate system
@@ -580,13 +585,13 @@ class AliITSgeom : public TObject {
     // module index1 number to the detector module index2 number. The
     //  local coordinates are given in two Double point arrays l1[3],
     // and l2[3].
-    void LtoL(Int_t index1,Int_t index2,Double_t *l1,Double_t *l2){
+    void LtoL(Int_t index1,Int_t index2,Double_t *l1,Double_t *l2)const{
         Double_t g[3]; LtoG(index1,l1,g);GtoL(index2,g,l2);}
     //     Transforms from one detector local coordinate system
     // to another detector local coordinate system for the detector
     // id1[3] to the detector id2[3]. The local coordinates are given
     // in two Double point arrays l1[3], and l2[3].
-    void LtoL(const Int_t *id1,const Int_t *id2,Double_t *l1,Double_t *l2){
+    void LtoL(const Int_t *id1,const Int_t *id2,Double_t *l1,Double_t *l2)const{
         LtoL(GetModuleIndex(id1[0],id1[1],id1[2]),
               GetModuleIndex(id2[0],id2[1],id2[2]),l1,l2);}
     //
@@ -596,7 +601,7 @@ class AliITSgeom : public TObject {
     // detector module index2 number. The local coordinates are given
     // in two Double point arrays l1[3], and l2[3].
     void LtoLtracking(Int_t index1,Int_t index2,
-                      Double_t *l1,Double_t *l2){
+                      Double_t *l1,Double_t *l2)const{
         Double_t g[3]; LtoGtracking(index1,l1,g);GtoLtracking(index2,g,l2);}
     //     Transforms from one detector local coordinate system (used for
     // ITS tracking) to another detector local coordinate system (used
@@ -604,7 +609,7 @@ class AliITSgeom : public TObject {
     // The local coordinates are given in two Double point arrays l1[3],
     // and l2[3].
     void LtoLtracking(const Int_t *id1,const Int_t *id2,
-                      Double_t *l1,Double_t *l2){
+                      Double_t *l1,Double_t *l2)const{
         LtoLtracking(GetModuleIndex(id1[0],id1[1],id1[2]),
                      GetModuleIndex(id2[0],id2[1],id2[2]),l1,l2);}
     //
@@ -614,14 +619,14 @@ class AliITSgeom : public TObject {
     // module index2 number. The local coordinates are given in two
     // Double point arrays l1[3], and l2[3].
     void LtoLMomentum(Int_t index1,Int_t index2,
-                      const Double_t *l1,Double_t *l2){
+                      const Double_t *l1,Double_t *l2)const{
         Double_t g[3]; LtoGMomentum(index1,l1,g);GtoLMomentum(index2,g,l2);}
     //     Transforms of momentum types of quantities from one detector
     // local coordinate system to another detector local coordinate
     // system for the detector id1[3] to the detector id2[3]. The local
     // coordinates are given in two Double point arrays l1[3], and l2[3].
     void LtoLMomentum(const Int_t *id1,const Int_t *id2,
-                      const Double_t *l1,Double_t *l2){
+                      const Double_t *l1,Double_t *l2)const{
         LtoLMomentum(GetModuleIndex(id1[0],id1[1],id1[2]),
                      GetModuleIndex(id2[0],id2[1],id2[2]),l1,l2);}
     //
@@ -632,7 +637,7 @@ class AliITSgeom : public TObject {
     // local coordinates are given in two Double point arrays l1[3],
     // and l2[3].
     void LtoLMomentumTracking(Int_t index1,Int_t index2,
-                              Double_t *l1,Double_t *l2){
+                              Double_t *l1,Double_t *l2)const{
         Double_t g[3]; LtoGMomentumTracking(index1,l1,g);
         GtoLMomentumTracking(index2,g,l2);}
     //     Transforms of momentum types of quantities from one detector
@@ -641,7 +646,7 @@ class AliITSgeom : public TObject {
     // id1[3] to the detector id2[3]. The local coordinates are given in
     // two Double point arrays l1[3], and l2[3].
     void LtoLMomentumTracking(const Int_t *id1,const Int_t *id2,
-                              Double_t *l1,Double_t *l2){
+                              Double_t *l1,Double_t *l2)const{
         LtoLMomentumTracking(GetModuleIndex(id1[0],id1[1],id1[2]),
                               GetModuleIndex(id2[0],id2[1],id2[2]),l1,l2);}
     //
@@ -649,7 +654,7 @@ class AliITSgeom : public TObject {
     // the ALICE Global coordinate system to a detector local coordinate
     // system. The specific detector is determined by the module index
     // number.
-    void GtoLErrorMatrix(Int_t index,const Double_t **g,Double_t **l){
+    void GtoLErrorMatrix(Int_t index,const Double_t **g,Double_t **l)const{
         GetGeomMatrix(index)->GtoLPositionError((Double_t (*)[3])g,(Double_t (*)[3])l);}
     //
     //     Transforms a matrix, like an Uncertainty or Error matrix from
@@ -657,7 +662,7 @@ class AliITSgeom : public TObject {
     // system (used by ITS tracking). The specific detector is determined
     // by the module index number.
     void GtoLErrorMatrixTracking(Int_t index,const Double_t **g,
-                                 Double_t **l){
+                                 Double_t **l)const{
         if(IsGeantToTracking()) GetGeomMatrix(index)->GtoLPositionError((
                                     Double_t (*)[3])g,(Double_t (*)[3])l);
         else GetGeomMatrix(index)->GtoLPositionErrorTracking(
@@ -667,7 +672,7 @@ class AliITSgeom : public TObject {
     // the detector local coordinate system to a ALICE Global coordinate
     // system. The specific detector is determined by the module index
     // number.
-    void LtoGErrorMatrix(Int_t index,const Double_t **l,Double_t **g){
+    void LtoGErrorMatrix(Int_t index,const Double_t **l,Double_t **g)const{
         GetGeomMatrix(index)->LtoGPositionError((Double_t (*)[3])l,(Double_t (*)[3])g);}
     //
     //     Transforms a matrix, like an Uncertainty or Error matrix from
@@ -675,7 +680,7 @@ class AliITSgeom : public TObject {
     // ALICE Global coordinate system. The specific detector is determined
     // by the module index number.
     void LtoGErrorMatrixTracking(Int_t index,const Double_t **l,
-                                 Double_t **g){
+                                 Double_t **g)const{
         if(IsGeantToTracking()) GetGeomMatrix(index)->LtoGPositionError((
                                    Double_t (*)[3])g,(Double_t (*)[3])l);
         else GetGeomMatrix(index)->LtoGPositionErrorTracking((Double_t (*)[3])l,
@@ -686,7 +691,7 @@ class AliITSgeom : public TObject {
     // coordinate system. The specific detector is determined by the
     // two module index number index1 and index2.
     void LtoLErrorMatrix(Int_t index1,Int_t index2,
-                         const Double_t **l1,Double_t **l2){
+                         const Double_t **l1,Double_t **l2)const{
         Double_t g[3][3];
         LtoGErrorMatrix(index1,l1,(Double_t **)g);
         GtoLErrorMatrix(index2,(const Double_t **)g,l2);}
@@ -697,7 +702,7 @@ class AliITSgeom : public TObject {
     // The specific detector is determined by the two module index number
     // index1 and index2.
     void LtoLErrorMatrixTraking(Int_t index1,Int_t index2,
-                                const Double_t **l1,Double_t **l2){
+                                const Double_t **l1,Double_t **l2)const{
         Double_t g[3][3];
         LtoGErrorMatrixTracking(index1,l1,(Double_t **)g);
         GtoLErrorMatrixTracking(index2,(const Double_t **)g,l2);}
@@ -705,19 +710,19 @@ class AliITSgeom : public TObject {
     // Locate the nearest module to the point g, in ALICE global Cartesian
     // coordinates [cm] in a give layer. If layer = 0 then it search in
     // all layers.
-    Int_t    GetNearest(const Double_t g[3],Int_t lay=0);
+    Int_t    GetNearest(const Double_t g[3],Int_t lay=0)const;
     // Locates the nearest 27 modules, in nearest order, to the point g, in
     // ALICE global Cartesian coordinates [cm] in a give layer. If layer = 0
     // then it searches in all layers. (there are 27 elements in a 3x3x3
     // cube.
-    void     GetNearest27(const Double_t g[3],Int_t n[27],Int_t lay=0);
+    void     GetNearest27(const Double_t g[3],Int_t n[27],Int_t lay=0)const;
     // Returns the distance [cm] between the point g[3] and the center of
     // the detector/module specified by the the module index number.
-    Double_t Distance(Int_t index,const Double_t g[3]){
+    Double_t Distance(Int_t index,const Double_t g[3])const{
         return  TMath::Sqrt(GetGeomMatrix(index)->Distance2(g));}
     // loops over modules and computes the average cylindrical
     // radius to a given layer and the range.
-    Double_t GetAverageRadiusOfLayer(Int_t layer,Double_t &range);
+    Double_t GetAverageRadiusOfLayer(Int_t layer,Double_t &range)const;
     //  Geometry manipulation
     // This function performs a Cartesian translation and rotation of
     // the full ITS from its default position by an amount determined by
@@ -738,16 +743,16 @@ class AliITSgeom : public TObject {
     void RandomCylindericalChange(const Float_t *stran,const Float_t *srot);
     // This function converts these transformations from Alice global and
     // local to Tracking global and local.
-    void GeantToTracking(AliITSgeom &source); // This converts the geometry
+    void GeantToTracking(const AliITSgeom &source); // This converts the geometry
     //  Other routines.
     // This routine prints, to a file, the difference between this class
     // and "other".
-    void PrintComparison(FILE *fp,AliITSgeom *other);
+    void PrintComparison(FILE *fp,AliITSgeom *other)const;
     // This routine prints, to a file, the contents of this class.
-    void PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det);
+    void PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det)const;
     // This function prints out this class in a single stream. This steam
     // can be read by ReadGeom.
-    ofstream &PrintGeom(ofstream &out);
+    ofstream &PrintGeom(ofstream &out)const;
     // This function reads in that single steam printed out by PrintGeom.
     ifstream &ReadGeom(ifstream &in);
 

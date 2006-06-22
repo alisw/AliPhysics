@@ -935,7 +935,7 @@ void AliITSvPPRasymmFMD::CreateGeometry(){
     dgh[46] = 62;     
     dgh[47] = 85.;
     dgh[48] = ztpc+4.+0.1;
-    dgh[49] = 62.4;
+    dgh[49] = 62.0;//62.4;
     dgh[50] = 85.;
     gMC->Gsvolu("ITSV", "PCON", idtmed[205], dgh, 51);
 
@@ -5308,6 +5308,7 @@ void AliITSvPPRasymmFMD::InitAliITSgeom(){
                     geom->CreateMatrix(mod,lay,lad,det,idet[lay-1],trans,rot);
                     geom->SetTrans(mod,materix.GetTranslation());
                     geom->SetRotMatrix(mod,materix.GetRotationMatrix());
+		    geom->GetGeomMatrix(mod)->SetPath(path.Data());
                     switch (lay){
                     case 1: case 2:
 			if(!shapeDefined[kSPD]){

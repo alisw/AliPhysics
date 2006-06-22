@@ -125,6 +125,7 @@ pixel coordinate system.
 // example.
 ////////////////////////////////////////////////////////////////////////
 #include <Riostream.h>
+#include <ctype.h>
 
 #include <TRandom.h>
 #include <TSystem.h>
@@ -347,9 +348,15 @@ void AliITSgeom::ReadNewFile(const char *filename){
         for(i=0;i<ncmd;i++) if(strcmp(cmd,cmda[i])==0) break;
         switch (i){
         case 0:   // Version
-            *fp >> j;
-            fVersion.Resize(j);
-            for(j=0;j<fVersion.Length();j++) *fp >> fVersion[j];
+	    while(isspace(fp->peek())) fp->get(); // skip spaces
+	    if(isdigit(fp->peek())){ // new TString
+		*fp >> j;
+		fVersion.Resize(j);
+		for(j=0;j<fVersion.Length();j++) *fp >> fVersion[j];
+	    }else{
+		fVersion.Resize(20);
+		for(j=0;isprint(fp->peek())&&j<20;j++) *fp >> fVersion[j];
+	    } // end if isdigit
             break;
         case 1:  // fTrans
             *fp >> fTrans;
@@ -434,7 +441,7 @@ void AliITSgeom::ReadNewFile(const char *filename){
     return;
 }
 //______________________________________________________________________
-void AliITSgeom::WriteNewFile(const char *filename){
+void AliITSgeom::WriteNewFile(const char *filename)const{
     // Writes AliITSgeom, AliITSgeomMatrix, and the defined 
     // AliITSgeomS*D classes to a file in a format that 
     // is more readable and commendable.
@@ -555,9 +562,12 @@ fShape(0,0)      // TObjArray of detector geom.
                &l,&a,&d,&x,&y,&z,&o,&p,&q,&r,&s,&t);
         if(l>lm) lm = l;
         if(l<1 || l>fNlayers) {
-            printf("error in file %s layer=%d min. is 1 max is %d\n",
+            printf("error in file %s layer=%d min. is 1 max is %d Trying new format\n",
                    filename,l,fNlayers);
-            continue;
+            fclose(pf);
+            ReadNewFile(filename);
+            return;
+            //continue;
         }// end if l
         fNmodules++;
         if(l<=fNlayers&&fNlad[l-1]<a) fNlad[l-1] = a;
@@ -677,7 +687,7 @@ AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
     return *this;
 }
 //______________________________________________________________________
-Int_t AliITSgeom::GetModuleIndex(Int_t lay,Int_t lad,Int_t det){
+Int_t AliITSgeom::GetModuleIndex(Int_t lay,Int_t lad,Int_t det)const{
     //      This routine computes the module index number from the layer,
     // ladder, and detector numbers. The number of ladders and detectors
     // per layer is determined when this geometry package is constructed,
@@ -708,7 +718,7 @@ Int_t AliITSgeom::GetModuleIndex(Int_t lay,Int_t lad,Int_t det){
     return -1;
 }
 //______________________________________________________________________
-void AliITSgeom::GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det){
+void AliITSgeom::GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det)const{
     //      This routine computes the layer, ladder and detector number 
     // given the module index number. The number of ladders and detectors
     // per layer is determined when this geometry package is constructed,
@@ -753,7 +763,7 @@ void AliITSgeom::GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det){
 */
 }
 //______________________________________________________________________
-Int_t AliITSgeom::GetNDetTypes(Int_t &max){
+Int_t AliITSgeom::GetNDetTypes(Int_t &max)const{
     // Finds and returns the number of detector types used and the
     // maximum detector type value. Only counts id >=0 (no undefined
     // values. See AliITSgeom.h for list of AliITSDetecor enumerated types.
@@ -782,7 +792,7 @@ Int_t AliITSgeom::GetNDetTypes(Int_t &max){
     return id+1;
 }
 //______________________________________________________________________
-Int_t AliITSgeom::GetNDetTypes(TArrayI &maxs,AliITSDetector *types){
+Int_t AliITSgeom::GetNDetTypes(TArrayI &maxs,AliITSDetector *types)const{
     // Finds and returns the number of detector types used and the
     // number of each detector type. Only counts id >=0 (no undefined
     // values. See AliITSgeom.h for list of AliITSDetecor enumerated types.
@@ -817,7 +827,7 @@ Int_t AliITSgeom::GetNDetTypes(TArrayI &maxs,AliITSDetector *types){
     return id;
 }
 //______________________________________________________________________
-Int_t AliITSgeom::GetStartDet(Int_t dtype){
+Int_t AliITSgeom::GetStartDet(Int_t dtype)const{
     // returns the starting module index value for a give type of detector id.
     // This assumes that the detector types are different on different layers
     // and that they are not mixed up.
@@ -847,7 +857,7 @@ Int_t AliITSgeom::GetStartDet(Int_t dtype){
     return 0;
 }
 //______________________________________________________________________
-Int_t AliITSgeom::GetLastDet(Int_t dtype){
+Int_t AliITSgeom::GetLastDet(Int_t dtype)const{
     // returns the last module index value for a give type of detector id.
     // This assumes that the detector types are different on different layers
     // and that they are not mixed up.
@@ -876,7 +886,7 @@ Int_t AliITSgeom::GetLastDet(Int_t dtype){
     return 0;
 }
 //______________________________________________________________________
-void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other){
+void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other)const{
     //     This function was primarily created for diagnostic reasons. It
     // print to a file pointed to by the file pointer fp the difference
     // between two AliITSgeom classes. The format of the file is basically,
@@ -946,7 +956,7 @@ void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other){
     return;
 }
 //______________________________________________________________________
-void AliITSgeom::PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det){
+void AliITSgeom::PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det)const{
     //     This function prints out the coordinate transformations for
     // the particular detector defined by layer, ladder, and detector
     // to the file pointed to by the File pointer fp. fprintf statements
@@ -985,7 +995,7 @@ void AliITSgeom::PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det){
     return;
 }
 //______________________________________________________________________
-ofstream & AliITSgeom::PrintGeom(ofstream &rb){
+ofstream & AliITSgeom::PrintGeom(ofstream &rb)const{
     //     Stream out an object of class AliITSgeom to standard output.
     // Intputs:
     //     ofstream &rb    The output streaming buffer.
@@ -1277,7 +1287,7 @@ void AliITSgeom::RandomCylindericalChange(const Float_t *stran,
     return;
 }
 //______________________________________________________________________
-void AliITSgeom::GeantToTracking(AliITSgeom &source){
+void AliITSgeom::GeantToTracking(const AliITSgeom &source){
     //     Copy the geometry data but change it to go between the ALICE
     // Global coordinate system to that used by the ITS tracking. A slightly
     // different coordinate system is used when tracking. This coordinate 
@@ -1323,7 +1333,7 @@ void AliITSgeom::GeantToTracking(AliITSgeom &source){
     return;
 }
 //______________________________________________________________________
-Int_t AliITSgeom::GetNearest(const Double_t g[3],Int_t lay){
+Int_t AliITSgeom::GetNearest(const Double_t g[3],Int_t lay)const{
     //      Finds the Detector (Module) that is nearest the point g [cm] in
     // ALICE Global coordinates. If layer !=0 then the search is restricted
     // to Detectors (Modules) in that particular layer.
@@ -1350,7 +1360,7 @@ Int_t AliITSgeom::GetNearest(const Double_t g[3],Int_t lay){
     return in;
 }
 //______________________________________________________________________
-void AliITSgeom::GetNearest27(const Double_t g[3],Int_t n[27],Int_t lay){
+void AliITSgeom::GetNearest27(const Double_t g[3],Int_t n[27],Int_t lay)const{
     //      Finds 27 Detectors (Modules) that are nearest the point g [cm] in
     // ALICE Global coordinates. If layer !=0 then the search is restricted
     // to Detectors (Modules) in that particular layer. The number 27 comes 
@@ -1389,7 +1399,7 @@ void AliITSgeom::GetNearest27(const Double_t g[3],Int_t n[27],Int_t lay){
     for(i=0;i<27;i++) n[i] = in[i];
 }
 //----------------------------------------------------------------------
-Double_t AliITSgeom::GetAverageRadiusOfLayer(Int_t layer,Double_t &range){
+Double_t AliITSgeom::GetAverageRadiusOfLayer(Int_t layer,Double_t &range)const{
     // Loops over all modules for a given layer and computes the
     // average cylindrical radius (about the z axis) and the range of
     // radii covered by this layer. Units, [cm] the Alice default unit.
@@ -1401,27 +1411,29 @@ Double_t AliITSgeom::GetAverageRadiusOfLayer(Int_t layer,Double_t &range){
     //    The average radii for this layer.
     Double_t r=0.0,rmin=1.0e6,rmax=-1.0,rp,t[3],l[3],dl[3];
     Int_t    n=0,i,j,lay,lad,det;
+    AliITSDetector idet;
 
     for(i=0;i<GetIndexMax();i++) {
         GetModuleId(i,lay,lad,det);
+	idet = GetModuleType(i);
         if(lay!=layer) continue;
         dl[0] = dl[1] = dl[2] = 0.0;
-        if(GetShape(i)!=0) {
-	    switch(i){
-	    case 0:{
-		dl[0] = ((AliITSgeomSPD*)GetShape(i))->GetDx();
-		dl[1] = ((AliITSgeomSPD*)GetShape(i))->GetDy();
-		dl[2] = ((AliITSgeomSPD*)GetShape(i))->GetDz();
+        if(IsShapeDefined((Int_t)idet)) {
+	    switch(idet){
+	    case kSPD:{
+		dl[0] = ((AliITSgeomSPD*)GetShape(idet))->GetDx();
+		dl[1] = ((AliITSgeomSPD*)GetShape(idet))->GetDy();
+		dl[2] = ((AliITSgeomSPD*)GetShape(idet))->GetDz();
 	    } break;
-	    case 1: case 4:{
-		dl[0] = ((AliITSgeomSDD*)GetShape(i))->GetDx();
-		dl[1] = ((AliITSgeomSDD*)GetShape(i))->GetDy();
-		dl[2] = ((AliITSgeomSDD*)GetShape(i))->GetDz();
+	    case kSDD: case kSDDp:{
+		dl[0] = ((AliITSgeomSDD*)GetShape(idet))->GetDx();
+		dl[1] = ((AliITSgeomSDD*)GetShape(idet))->GetDy();
+		dl[2] = ((AliITSgeomSDD*)GetShape(idet))->GetDz();
 	    } break;
-	    case 2: case 3:{
-		dl[0] = ((AliITSgeomSSD*)GetShape(i))->GetDx();
-		dl[1] = ((AliITSgeomSSD*)GetShape(i))->GetDy();
-		dl[2] = ((AliITSgeomSSD*)GetShape(i))->GetDz();
+	    case kSSD: case kSSDp:{
+		dl[0] = ((AliITSgeomSSD*)GetShape(idet))->GetDx();
+		dl[1] = ((AliITSgeomSSD*)GetShape(idet))->GetDy();
+		dl[2] = ((AliITSgeomSSD*)GetShape(idet))->GetDz();
 	    } break;
 	    }// end switch.
         } // end of

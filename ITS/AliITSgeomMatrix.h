@@ -39,7 +39,7 @@ class AliITSgeomMatrix : public TObject {
 	// Prints a line describing the output format of the function Print.
 	void PrintComment(ostream *os) const;
 	// Prints out the content of this class in ASCII format.
-	void Print(ostream *os);
+	void Print(ostream *os)const;
 	// Prints out the content of this class in ASCII format but includes
 	// formating and strings that make it more humanly readable.
 	void PrintTitles(ostream *os) const;
@@ -92,7 +92,7 @@ class AliITSgeomMatrix : public TObject {
 	void  MatrixFromSixAngles(const Double_t *ang);
 	// Returns the 6 GEANT rotation angles [radians] from the
 	// existing rotation matrix.
-	void  SixAnglesFromMatrix(Double_t *ang);
+	void  SixAnglesFromMatrix(Double_t *ang)const;
 
 	// Given a position in Cartesian ALICE global coordinates [cm]
 	// returns the position in Cartesian detector/module local
@@ -165,7 +165,7 @@ class AliITSgeomMatrix : public TObject {
 	Double_t ftran[3];       // Translation vector of module x,y,z.
 	Double_t fCylR,fCylPhi;  //! Translation vector in Cylindrical coord.
 	Double_t fm[3][3];       // Rotation matrix based on frot.
-     TString  fPath;          // Path within Geometry to this volume
+	TString  fPath;          // Path within Geometry to this volume
 
 	// Note, fCylR and fCylPhi are added as data members because it costs
 	// about a factor of 10 to compute them over looking them up. Since

@@ -25,7 +25,7 @@ $Id$
  one go between ALICE global coordiantes (cm) to a given modules 
  specific local coordinates (cm).
 */
-
+#include <ctype.h>
 #include <Riostream.h>
 #include <TMath.h>
 #include <TBuffer.h>
@@ -233,7 +233,7 @@ fPath(){     // Path in geometry to this module
     this->AngleFromMatrix();
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::SixAnglesFromMatrix(Double_t *ang){
+void AliITSgeomMatrix::SixAnglesFromMatrix(Double_t *ang)const{
     // This function returns the 6 GEANT 3.21 rotation angles [degrees] in
     // the array ang which must be at least [6] long.
     // Inputs:
@@ -799,7 +799,7 @@ void AliITSgeomMatrix::PrintComment(ostream *os) const {
     return;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::Print(ostream *os){
+void AliITSgeomMatrix::Print(ostream *os)const{
     // Standard output format for this class.
     // Inputs:
     //    ostream *os   The output stream to print the class data on
@@ -851,9 +851,12 @@ void AliITSgeomMatrix::Read(istream *is){
 //    for(i=0;i<3;i++) *is >> frot[i]; // Redundant with fm[][].
     for(i=0;i<3;i++) *is >> ftran[i];
     for(i=0;i<3;i++)for(j=0;j<3;j++)  *is >> fm[i][j];
-    *is >> j; // string length
-    fPath.Resize(j);
-    for(i=0;i<j;i++) {*is >> fPath[i];}
+    while(is->peek()==' ')is->get(); // skip white spaces
+    if(isprint(is->peek())){ // old format did not have path.
+	*is >> j; // string length
+	fPath.Resize(j);
+	for(i=0;i<j;i++) {*is >> fPath[i];}
+    } // end if
     AngleFromMatrix(); // compute angles frot[].
     fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
     fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
