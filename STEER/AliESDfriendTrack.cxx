@@ -20,7 +20,6 @@
 //-------------------------------------------------------------------------
 #include "AliTrackPointArray.h"
 #include "AliESDfriendTrack.h"
-#include "AliKalmanTrack.h"
 #include "TObjArray.h"
 
 ClassImp(AliESDfriendTrack)

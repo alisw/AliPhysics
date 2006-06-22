@@ -21,7 +21,7 @@ public:
     kMaxTRDcluster=180
   };
   AliESDfriendTrack();
-  AliESDfriendTrack(const AliESDfriendTrack &);
+  AliESDfriendTrack(const AliESDfriendTrack &t);
   virtual ~AliESDfriendTrack();
 
   void Set1P(Float_t p) {f1P=p;}
@@ -40,6 +40,7 @@ public:
   AliKalmanTrack *GetITStrack() {return fITStrack;}
   void AddCalibObject(TObject * calibObject); 
   TObject * GetCalibObject(Int_t index);
+
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
   Int_t fITSindex[kMaxITScluster]; // indices of the ITS clusters 
@@ -49,6 +50,9 @@ protected:
   TObjArray      *fCalibContainer; //Array of objects for calibration    
   AliKalmanTrack *fITStrack; //! pointer to the ITS track (debug purposes) 
   AliKalmanTrack *fTRDtrack; //! pointer to the TRD track (debug purposes) 
+
+private:
+  AliESDfriendTrack &operator=(const AliESDfriendTrack &t) {return *this;}
 
   ClassDef(AliESDfriendTrack,2) //ESD friend track
 };
