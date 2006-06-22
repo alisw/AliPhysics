@@ -52,7 +52,7 @@ protected:
   AliKalmanTrack *fTRDtrack; //! pointer to the TRD track (debug purposes) 
 
 private:
-  AliESDfriendTrack &operator=(const AliESDfriendTrack &t) {return *this;}
+  AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 
   ClassDef(AliESDfriendTrack,2) //ESD friend track
 };
