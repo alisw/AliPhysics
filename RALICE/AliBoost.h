@@ -28,11 +28,11 @@ class AliBoost : public TObject
   Double_t GetResultError() const;        // Provide error on scalar result
  
  protected:
-  Ali3Vector fBeta;  // The beta 3-vector
-  Double_t fGamma;   // The gamma factor
-  Double_t fDgamma;  // Error on the gamma value
-  Double_t fDresult; // Error on scalar result
+  Ali3Vector fBeta;    // The beta 3-vector
+  Double32_t fGamma;   // The gamma factor
+  Double32_t fDgamma;  // Error on the gamma value
+  Double32_t fDresult; //! Error on scalar result
  
- ClassDef(AliBoost,4) // Perform various Lorentz transformations.
+ ClassDef(AliBoost,5) // Perform various Lorentz transformations.
 };
 #endif

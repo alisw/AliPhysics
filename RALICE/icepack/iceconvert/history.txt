@@ -64,5 +64,10 @@
                 the ATWD histograms.
                 Also modification made in IceF2k::PutHits() to correctly obtain the ADC values
                 for secondary etc... hits in the same OM.
+22-jun-2006 NvE Bi-directional links for signals <-> tracks set via the new lightweight
+                AliSignal::AddTrack facility instead of AddLink in IceF2k. 
+                Also default split level set to 0 in IceF2k to minimise file size and
+                I/O time.
                  
+
 

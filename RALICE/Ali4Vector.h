@@ -59,16 +59,16 @@ class Ali4Vector
   virtual Double_t GetOpeningAngle(Ali3Vector& q,TString u="rad"); // Opening angle with 3-vector q in units u
 
  protected:
-  Double_t fV2;      // The Lorentz invariant (v^i*v_i)
-  Double_t fV0;      // The scalar part
-  Ali3Vector fV;     // The 3-vector part
-  Double_t fDv2;     // The error on the Lorentz invariant
-  Double_t fDv0;     // The error on the scalar part
-  Double_t fDresult; // The error on the scalar result of an operation (e.g. dotproduct) 
-  Int_t fScalar;     // Flag denoting scalar mode
+  Double32_t fV2;      // The Lorentz invariant (v^i*v_i)
+  Double32_t fV0;      // The scalar part
+  Ali3Vector fV;       // The 3-vector part
+  Double32_t fDv2;     // The error on the Lorentz invariant
+  Double32_t fDv0;     // The error on the scalar part
+  Double32_t fDresult; //! The error on the scalar result of an operation (e.g. dotproduct) 
+  Int_t fScalar;       // Flag denoting scalar mode
   Double_t GetScaTrans(); // Provide "transverse value" of scalar part w.r.t. z-axis
   Double_t GetScaLong();  // Provide "longitudinal value" of scalar part w.r.t. z-axis
 
- ClassDef(Ali4Vector,10) // Handling of Lorentz 4-vectors in various reference frames.
+ ClassDef(Ali4Vector,11) // Handling of Lorentz 4-vectors in various reference frames.
 };
 #endif

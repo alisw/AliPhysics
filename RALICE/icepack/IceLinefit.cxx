@@ -227,7 +227,7 @@ void IceLinefit::Exec(Option_t* opt)
  for (Int_t i=0; i<nused; i++)
  {
   sx=(AliSignal*)hits.At(i);
-  if (sx) sx->AddLink(trk);
+  if (sx) sx->AddTrack(*trk);
  } 
 }
 ///////////////////////////////////////////////////////////////////////////

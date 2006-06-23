@@ -77,7 +77,7 @@
 // q.SetPrintFreq(1);
 //
 // // Split level for the output structures
-// q.SetSplitLevel(2);
+// q.SetSplitLevel(0);
 //
 // // Buffer size for the output structures
 // q.SetBufferSize(32000);
@@ -143,9 +143,9 @@ ClassImp(IceF2k) // Class implementation to enable ROOT I/O
 IceF2k::IceF2k(const char* name,const char* title) : AliJob(name,title)
 {
 // Default constructor.
-// By default maxevent=-1, split=99, bsize=32000, printfreq=1.
+// By default maxevent=-1, split=0, bsize=32000, printfreq=1.
 
- fSplit=99;
+ fSplit=0;
  fBsize=32000;
  fMaxevt=-1;
  fPrintfreq=1;
@@ -214,7 +214,7 @@ void IceF2k::SetPrintFreq(Int_t f)
 void IceF2k::SetSplitLevel(Int_t split)
 {
 // Set the split level for the ROOT data file.
-// split=99 is the default initialisation in the constructor.
+// split=0 is the default initialisation in the constructor.
  if (split>=0) fSplit=split;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -1137,7 +1137,7 @@ void IceF2k::PutHits()
   {
    tx=evt->GetIdTrack(tid); // Reco tracks
    if (!tx) tx=evt->GetIdTrack(-tid); // MC tracks
-   if (tx) sx->AddLink(tx);
+   if (tx) sx->AddTrack(*tx);
   }
   else
   {
@@ -1221,7 +1221,7 @@ void IceF2k::PutHits()
     if (fEvent.fit_uses[k].useid != hypx->GetId()) continue;
     hid=fEvent.fit_uses[k].hitid;
     sx=evt->GetIdHit(hid,"IceAOM");
-    if (sx) sx->AddLink(hypx);
+    if (sx) sx->AddTrack(*hypx);
    }
   }
  }

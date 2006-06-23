@@ -16,6 +16,7 @@
 #include "AliObjMatrix.h"
 
 class AliDevice;
+class AliTrack;
 
 class AliSignal : public TNamed,public AliPosition,public AliAttrib
 {
@@ -41,6 +42,7 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   virtual void List(Int_t j=0) const;                           // Print signal info for the j-th (all) slot(s)
   virtual void List(TString name) const;                        // Print signal info for the name-specified slot
   void ListWaveform(Int_t j=0) const;                           // Print info for the j-th (all) waveform(s)
+  void ListTrack(Int_t j=0) const;                              // Print info for the j-th (all) assoc. track(s)
   Int_t GetNvalues() const;                                     // Provide the number of signal values
   Int_t GetNerrors() const;                                     // Provide the number of specified errors
   Int_t GetNwaveforms() const;                                  // Provide the number of specified waveforms
@@ -72,6 +74,12 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   Int_t GetSwapMode() const;                                    // Provide swapmode flag for the link storage
   void SetDevice(TObject* dev);                                 // Store pointer to the device that owns this signal
   AliDevice* GetDevice() const;                                 // Provide pointer to the owning device 
+  void AddTrack(AliTrack& t,Int_t mode=1);                      // Relate an AliTrack to this signal
+  void RemoveTrack(AliTrack& t,Int_t mode=1);                   // Remove related AliTrack from this signal
+  void RemoveTracks(Int_t mode=1);                              // Remove all related AliTracks from this signal
+  Int_t GetNtracks(AliTrack* t=0) const;                        // Provide number of related AliTracks
+  AliTrack* GetTrack(Int_t j) const;                            // Access to the related AliTrack number j
+  AliTrack* GetIdTrack(Int_t id) const;                         // Access to the related AliTrack with ID=id
 
  protected:
   TArrayF* fSignals;                           // Signal values
@@ -79,7 +87,8 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   TObjArray* fWaveforms;                       // The 1D histograms containing the signal waveforms
   AliObjMatrix* fLinks;                        // Pointers of objects related to the various slots
   TObject* fDevice;                            // Pointer to the device that owns this signal
+  TObjArray* fTracks;                          // Pointers to associated tracks
 
- ClassDef(AliSignal,14) // Generic handling of (extrapolated) detector signals.
+ ClassDef(AliSignal,15) // Generic handling of (extrapolated) detector signals.
 };
 #endif

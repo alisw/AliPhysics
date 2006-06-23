@@ -42,9 +42,9 @@ class AliTrack : public TNamed,public Ali4Vector
   Int_t GetNdecay() const;                // Provide number of decay products
   AliTrack* GetDecayTrack(Int_t j) const; // Access to decay produced track number j
   void RemoveDecays();                    // Remove all the decay products of this track
-  void AddSignal(AliSignal& s);           // Relate an AliSignal to this track
-  void RemoveSignal(AliSignal& s);        // Remove related AliSignal from this track
-  void RemoveSignals();                   // Remove all related AliSignals from this track
+  void AddSignal(AliSignal& s,Int_t mode=0);    // Relate an AliSignal to this track
+  void RemoveSignal(AliSignal& s,Int_t mode=1); // Remove related AliSignal from this track
+  void RemoveSignals(Int_t mode=1);             // Remove all related AliSignals from this track
   Int_t GetNsignals() const;              // Provide number of related AliSignals
   AliSignal* GetSignal(Int_t j) const;    // Access to the related AliSignal number j
   void SetBeginPoint(AliPosition& p);     // Set the track begin-point
@@ -117,6 +117,6 @@ class AliTrack : public TNamed,public Ali4Vector
  private:
   void Dumps(AliTrack* t,Int_t n,TString f,TString u); // Recursively print all decay levels
  
- ClassDef(AliTrack,17) // Handling of the attributes of a reconstructed particle track.
+ ClassDef(AliTrack,18) // Handling of the attributes of a reconstructed particle track.
 };
 #endif

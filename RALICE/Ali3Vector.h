@@ -49,10 +49,10 @@ class Ali3Vector
   virtual Double_t GetOpeningAngle(Ali3Vector& q,TString u="rad"); // Provide opening angle with q in units u
 
  protected:
-  Double_t fV,fTheta,fPhi;    // Vector in spherical coordinates
-  Double_t fDx,fDy,fDz;       // Errors on Cartesian coordinates
-  Double_t fDresult;          // Error on scalar result (e.g. norm or dotproduct)
+  Double32_t fV,fTheta,fPhi;    // Vector in spherical coordinates
+  Double32_t fDx,fDy,fDz;       // Errors on Cartesian coordinates
+  Double32_t fDresult;          //! Error on scalar result (e.g. norm or dotproduct)
 
- ClassDef(Ali3Vector,10) // Handling of 3-vectors in various reference frames.
+ ClassDef(Ali3Vector,11) // Handling of 3-vectors in various reference frames.
 };
 #endif

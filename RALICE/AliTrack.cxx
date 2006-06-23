@@ -123,13 +123,13 @@ void AliTrack::Init()
 AliTrack::~AliTrack()
 {
 // Destructor to delete memory allocated for decay tracks array.
-// This destructor automatically cleares the pointer of this AliTrack
-// from all the link slots of the related AliSignal objects.
+// This destructor automatically cleares all references to this AliTrack
+// from all the related AliSignal objects.
  Int_t nsig=GetNsignals();
  for (Int_t i=1; i<=nsig; i++)
  {
   AliSignal* s=GetSignal(i);
-  if (s) s->ResetLinks(this);
+  if (s) s->RemoveTrack(*this,0);
  }
  
  if (fDecays)
@@ -139,7 +139,6 @@ AliTrack::~AliTrack()
  }
  if (fSignals)
  {
-  fSignals->Clear();
   delete fSignals;
   fSignals=0;
  }
@@ -272,7 +271,6 @@ void AliTrack::Reset()
  }
  if (fSignals)
  {
-  fSignals->Clear();
   delete fSignals;
   fSignals=0;
  }
@@ -718,9 +716,19 @@ void AliTrack::RemoveDecays()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::AddSignal(AliSignal& s)
+void AliTrack::AddSignal(AliSignal& s,Int_t mode)
 {
 // Relate an AliSignal object to this track.
+//
+// mode = 0 : Only the reference to the specified signal is stored in
+//            the current track, without storing the (backward) reference
+//            to this track into the AliSignal structure. 
+//        1 : The (backward) reference to the current track is also automatically
+//            stored into the AliSignal (or derived) object specified in the
+//            input argument.
+//
+// The default is mode=0.
+
  if (!fSignals) fSignals=new TObjArray(1);
 
  // Check if this signal is already stored for this track
@@ -731,27 +739,53 @@ void AliTrack::AddSignal(AliSignal& s)
  }
 
  fSignals->Add(&s);
+ if (mode==1) s.AddTrack(*this,0);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::RemoveSignal(AliSignal& s)
+void AliTrack::RemoveSignal(AliSignal& s,Int_t mode)
 {
 // Remove related AliSignal object from this track.
+//
+// mode = 0 : Only the reference to the specified signal is removed from
+//            the current track, without removing the (backward) reference(s)
+//            to this track from the AliSignal structure. 
+//        1 : The (backward) reference(s) to the current track are also automatically
+//            removed from the AliSignal (or derived) object specified in the
+//            input argument.
+//
+// The default is mode=1.
+
  if (fSignals)
  {
   AliSignal* test=(AliSignal*)fSignals->Remove(&s);
   if (test) fSignals->Compress();
  }
+ if (mode==1) s.RemoveTrack(*this,0);
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliTrack::RemoveSignals()
+void AliTrack::RemoveSignals(Int_t mode)
 {
 // Remove all related AliSignal objects from this track.
- if (fSignals)
+//
+// mode = 0 : All signal references are removed from the current track,
+//            without removing the (backward) references to this track from
+//            the corresponding AliSignal objects.
+//        1 : The (backward) references to the current track are also automatically
+//            removed from the corresponding AliSignal (or derived) objects.
+//
+// The default is mode=1.
+
+ if (!fSignals) return;
+
+ Int_t ns=GetNsignals();
+ for (Int_t i=0; i<ns; i++)
  {
-  fSignals->Clear();
-  delete fSignals;
-  fSignals=0;
+  AliSignal* sx=(AliSignal*)fSignals->At(i);
+  if (sx && mode==1) sx->RemoveTrack(*this,0);
  }
+
+ delete fSignals;
+ fSignals=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliTrack::GetNsignals() const

@@ -126,6 +126,7 @@ AliSignal::AliSignal() : TNamed(),AliPosition(),AliAttrib()
  fWaveforms=0;
  fLinks=0;
  fDevice=0;
+ fTracks=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSignal::~AliSignal()
@@ -148,19 +149,19 @@ AliSignal::~AliSignal()
  }
  if (fLinks)
  {
-  // Remove this signal from all related tracks
-  for (Int_t i=1; i<=fLinks->GetNobjects(); i++)
-  {
-   TObject* obj=fLinks->GetObject(i);
-   if (!obj) continue;
-   if (obj->InheritsFrom("AliTrack"))
-   {
-    AliTrack* tx=(AliTrack*)obj;
-    tx->RemoveSignal(*this);
-   }
-  }
   delete fLinks;
   fLinks=0;
+ }
+ if (fTracks)
+ {
+  // Remove this signal from all related tracks
+  for (Int_t i=1; i<=GetNtracks(); i++)
+  {
+   AliTrack* tx=GetTrack(i);
+   if (tx) tx->RemoveSignal(*this,0);
+  }
+  delete fTracks;
+  fTracks=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -171,6 +172,7 @@ AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
  fDsignals=0;
  fWaveforms=0;
  fLinks=0;
+ fTracks=0;
 
  // Don't copy the owning device pointer for the copy
  fDevice=0;
@@ -208,6 +210,17 @@ AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
   pos=posarr.At(idx);
   TObject* obj=s.GetLink(slot,pos);
   if (obj) SetLink(obj,slot,pos); 
+ }
+
+ Int_t ntk=s.GetNtracks();
+ if (ntk)
+ {
+  fTracks=new TObjArray(ntk);
+  for (Int_t it=1; it<=ntk; it++)
+  {
+   AliTrack* tx=s.GetTrack(it);
+   fTracks->Add(tx);
+  }
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -261,6 +274,12 @@ void AliSignal::Reset(Int_t mode)
 
  if (fLinks) fLinks->Reset();
  fDevice=0;
+
+ if (fTracks)
+ {
+  delete fTracks;
+  fTracks=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetSignals(Int_t mode)
@@ -704,6 +723,9 @@ void AliSignal::Data(TString f,TString u) const
  // Provide an overview of the stored waveforms
  ListWaveform(-1);
 
+ // Provide an overview of the associated tracks
+ ListTrack(-1);
+
  // Provide an overview of all the data and attribute slots
  List(-1);
 } 
@@ -745,7 +767,7 @@ void AliSignal::List(Int_t j) const
  Int_t nvalues=GetNvalues();
  Int_t nerrors=GetNerrors();
  Int_t nlinkslots=0;
- if (fLinks) nlinkslots=fLinks->GetMaxColumn();
+ if (GetNlinks()) nlinkslots=fLinks->GetMaxColumn();
  Int_t ncalibs=GetNcalflags();
  Int_t ncalfuncs=GetNcalfuncs();
  Int_t ndecalfuncs=GetNdecalfuncs();
@@ -906,6 +928,77 @@ void AliSignal::ListWaveform(Int_t j) const
     cout << "    Waveform " << j << " : " << obj->ClassName();
     if (strlen(wfnamej))  cout << " Name : " << wfnamej;
     if (strlen(wftitlej)) cout << " Title : " << wftitlej;
+    cout << endl;
+   }
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::ListTrack(Int_t j) const
+{
+// Provide information for the j-th associated track.
+// The first associated track is at j=1.
+// In case j=0 (default) the info of all associated tracks will be listed.
+// In case j=-1 the info of all tracks will be listed, but the header
+// information will be suppressed.
+
+ if (j<-1) 
+ {
+  cout << " *AliSignal::ListTrack* Invalid argument j = " << j << endl;
+  return;
+ }
+
+ if (j != -1)
+ {
+  const char* name=GetName();
+  const char* title=GetTitle();
+
+  cout << " *" << ClassName() << "::Data* Id :" << GetUniqueID();
+  if (strlen(name))  cout << " Name : " << name;
+  if (strlen(title)) cout << " Title : " << title;
+  cout << endl;
+  if (fDevice)
+  {
+   const char* devname=fDevice->GetName();
+   const char* devtitle=fDevice->GetTitle();
+   cout << "   Owned by device : " << fDevice->ClassName();
+   if (strlen(devname))  cout << " Name : " << devname;
+   if (strlen(devtitle)) cout << " Title : " << devtitle;
+   cout << endl;
+  }
+ }
+
+ Int_t n=GetNtracks();
+ AliTrack* tx=0;
+
+ if (j<=0)
+ {
+  for (Int_t i=1; i<=n; i++)
+  {
+   tx=GetTrack(i);
+   if (tx)
+   {
+    const char* txname=tx->GetName();
+    const char* txtitle=tx->GetTitle();
+    cout << "    Track " << i << " : " << tx->ClassName() << " Id : " << tx->GetId();
+    if (strlen(txname))  cout << " Name : " << txname;
+    if (strlen(txtitle)) cout << " Title : " << txtitle;
+    cout << endl;
+   }
+  }
+ }
+ else
+ {
+  if (j<=n)
+  {
+   tx=GetTrack(j);
+   if (tx)
+   {
+    const char* txnamej=tx->GetName();
+    const char* txtitlej=tx->GetTitle();
+    cout << "    Track " << j << " : " << tx->ClassName() << " Id : " << tx->GetId();
+    if (strlen(txnamej))  cout << " Name : " << txnamej;
+    if (strlen(txtitlej)) cout << " Title : " << txtitlej;
     cout << endl;
    }
   }
@@ -1137,10 +1230,12 @@ Int_t AliSignal::GetNlinks(TObject* obj,Int_t j) const
   return 0;
  }
 
+ if (!fLinks) return 0;
+
  Int_t n=0;
  if (!j)
  {
-  if (fLinks) n=fLinks->GetNrefs(obj);
+  n=fLinks->GetNrefs(obj);
  }
  else
  {
@@ -1217,6 +1312,14 @@ void AliSignal::SetLink(TObject* obj,Int_t j,Int_t k)
 // Therefore, in case the input argument "obj" points to an AliTrack (or derived)
 // object, the current signal is automatically related to this AliTrack
 // (or derived) object.
+// Also a global link to this AliTrack (or derived) object will be stored
+// via the AddTrack() facility.
+//
+// IMPORTANT NOTE :
+// ----------------
+// In case one just wants to relate the current AliSignal to a certain AliTrack
+// without a specific signal slot association, it is much more efficient
+// (both memory and CPU wise) to use the memberfunction AddTrack() instead.
 // 
 // Please also have a look at the docs of the memberfunction ResetLink()
 // to prevent the situation of stored pointers to non-existent object. 
@@ -1232,7 +1335,7 @@ void AliSignal::SetLink(TObject* obj,Int_t j,Int_t k)
   if (obj->InheritsFrom("AliTrack"))
   {
    AliTrack* t=(AliTrack*)obj;
-   t->AddSignal(*this);
+   AddTrack(*t,1);
   }
  }
 }
@@ -1249,6 +1352,29 @@ void AliSignal::SetLink(TObject* obj,TString name,Int_t k)
 // defined and/or when this procedure is invoked many times.
 // In such cases it is preferable to use indexed addressing in the user code
 // either directly or via a few invokations of GetSlotIndex().
+//
+// In case the pointer argument is zero, indeed a value of zero will be
+// stored at the specified position (k) for the specified slotname.
+//
+// In principle any object derived from TObject can be referred to by this
+// mechanism.
+// However, this "linking back" facility was introduced to enable AliSignal slots
+// to refer directly to the various AliTracks to which the AliSignal object itself
+// is related (see AliTrack::AddSignal).
+// Therefore, in case the input argument "obj" points to an AliTrack (or derived)
+// object, the current signal is automatically related to this AliTrack
+// (or derived) object.
+// Also a global link to this AliTrack (or derived) object will be stored
+// via the AddTrack() facility.
+//
+// IMPORTANT NOTE :
+// ----------------
+// In case one just wants to relate the current AliSignal to a certain AliTrack
+// without a specific signal slot association, it is much more efficient
+// (both memory and CPU wise) to use the memberfunction AddTrack() instead.
+// 
+// Please also have a look at the docs of the memberfunction ResetLink()
+// to prevent the situation of stored pointers to non-existent object. 
 
  Int_t j=GetSlotIndex(name);
  if (j>0) SetLink(obj,j,k);
@@ -1278,6 +1404,14 @@ void AliSignal::AddLink(TObject* obj,Int_t j)
 // Therefore, in case the input argument "obj" points to an AliTrack (or derived)
 // object, the current signal is automatically related to this AliTrack
 // (or derived) object.
+// Also a global link to this AliTrack (or derived) object will be stored
+// via the AddTrack() facility.
+//
+// IMPORTANT NOTE :
+// ----------------
+// In case one just wants to relate the current AliSignal to a certain AliTrack
+// without a specific signal slot association, it is much more efficient
+// (both memory and CPU wise) to use the memberfunction AddTrack() instead.
 // 
 // Please also have a look at the docs of the memberfunction ResetLink()
 // to prevent the situation of stored pointers to non-existent object. 
@@ -1312,6 +1446,29 @@ void AliSignal::AddLink(TObject* obj,TString name)
 // defined and/or when this procedure is invoked many times.
 // In such cases it is preferable to use indexed addressing in the user code
 // either directly or via a few invokations of GetSlotIndex().
+//
+// In case the pointer argument is zero, indeed a value of zero will be
+// stored at the first free position of the specified slotname.
+//
+// In principle any object derived from TObject can be referred to by this
+// mechanism.
+// However, this "linking back" facility was introduced to enable AliSignal slots
+// to refer directly to the various AliTracks to which the AliSignal object itself
+// is related (see AliTrack::AddSignal).
+// Therefore, in case the input argument "obj" points to an AliTrack (or derived)
+// object, the current signal is automatically related to this AliTrack
+// (or derived) object.
+// Also a global link to this AliTrack (or derived) object will be stored
+// via the AddTrack() facility.
+//
+// IMPORTANT NOTE :
+// ----------------
+// In case one just wants to relate the current AliSignal to a certain AliTrack
+// without a specific signal slot association, it is much more efficient
+// (both memory and CPU wise) to use the memberfunction AddTrack() instead.
+// 
+// Please also have a look at the docs of the memberfunction ResetLink()
+// to prevent the situation of stored pointers to non-existent object. 
 
  Int_t j=GetSlotIndex(name);
  if (j>0) AddLink(obj,j);
@@ -1363,7 +1520,14 @@ void AliSignal::ResetLink(TString name,Int_t k)
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetLinks(TObject* obj,Int_t j,Int_t k)
 {
-// Reset single or multiple link(s) according to user specified selections.
+// Reset single or multiple slot link(s) according to user specified selections.
+//
+// IMPORTANT NOTE :
+// ----------------
+// This facility only acts on the slot related links.
+// The global track reference list will not be affected.
+// To remove all references to AliTrack (or derived) objects, please
+// use the RemoveTrack() of RemoveTracks() memberfunctions.
 //
 // A link is only reset if the stored reference matches the argument "obj".
 // In case obj=0 no check on the matching of the stored reference is performed
@@ -1419,7 +1583,14 @@ void AliSignal::ResetLinks(TObject* obj,Int_t j,Int_t k)
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::ResetLinks(TObject* obj,TString name,Int_t k)
 {
-// Reset single or multiple link(s) according to user specified selections.
+// Reset single or multiple slot link(s) according to user specified selections.
+//
+// IMPORTANT NOTE :
+// ----------------
+// This facility only acts on the slot related links.
+// The global track reference list will not be affected.
+// To remove all references to AliTrack (or derived) objects, please
+// use the RemoveTrack() of RemoveTracks() memberfunctions.
 //
 // A link is only reset if the stored reference matches the argument "obj".
 // In case obj=0 no check on the matching of the stored reference is performed
@@ -1435,6 +1606,18 @@ void AliSignal::ResetLinks(TObject* obj,TString name,Int_t k)
 // defined and/or when this procedure is invoked many times.
 // In such cases it is preferable to use indexed addressing in the user code
 // either directly or via a few invokations of GetSlotIndex().
+//
+// In general the user should take care of properly clearing the corresponding
+// pointer here when the referred object is deleted.
+// However, this "linking back" facility was introduced to enable AliSignal slots
+// to refer directly to the various AliTracks to which the AliSignal object itself
+// is related (see AliTrack::AddSignal).
+// As such, the AliTrack destructor already takes care of clearing the corresponding
+// links from the various AliSignal slots for all the AliSignal objects that were
+// related to that AliTrack. 
+// So, in case the link introduced via SetLink() is the pointer of an AliTrack object,
+// the user doesn't have to worry about clearing the corresponding AliTrack link from
+// the AliSignal object when the corresponding AliTrack object is deleted.
 
  Int_t j=GetSlotIndex(name);
  if (j>0) ResetLinks(obj,j,k);
@@ -1607,6 +1790,149 @@ AliDevice* AliSignal::GetDevice() const
 {
 // Provide the pointer to the device which owns this AliSignal object.
  return (AliDevice*)fDevice;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::AddTrack(AliTrack& t,Int_t mode)
+{
+// Relate an AliTrack object to this signal.
+// Only the pointer values are stored for (backward) reference, meaning
+// that the tracks of which the pointers are stored are NOT owned
+// by the AliSignal object.
+//
+// mode = 0 : Only the reference to the specified track is stored in
+//            the current signal, without storing the (backward) reference
+//            to this signal into the AliTrack structure. 
+//        1 : The (backward) reference to the current signal is also automatically
+//            stored into the AliTrack (or derived) object specified in the
+//            input argument.
+//
+// The default is mode=1.
+
+ if (!fTracks) fTracks=new TObjArray(1);
+
+ // Check if this track is already stored for this signal
+ Int_t ntk=GetNtracks();
+ for (Int_t i=0; i<ntk; i++)
+ {
+  if (&t==fTracks->At(i)) return; 
+ }
+
+ fTracks->Add(&t);
+ if (mode==1) t.AddSignal(*this,0);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::RemoveTrack(AliTrack& t,Int_t mode)
+{
+// Remove related AliTrack object from this signal.
+// Also all references (if any) to this track in the slot links area
+// are removed.
+//
+// mode = 0 : All references to the specified track are removed from
+//            the current signal, without removing the (backward) reference
+//            to this signal from the AliTrack structure. 
+//        1 : The (backward) reference to the current signal is also automatically
+//            removed from the AliTrack (or derived) object specified in the
+//            input argument.
+//
+// The default is mode=1.
+
+ if (fTracks)
+ {
+  AliTrack* test=(AliTrack*)fTracks->Remove(&t);
+  if (test) fTracks->Compress();
+ }
+
+ ResetLinks(&t);
+
+ if (mode==1) t.RemoveSignal(*this,0);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::RemoveTracks(Int_t mode)
+{
+// Remove all related AliTrack objects from this signal.
+// Also all references (if any) to the related tracks in the slot links area
+// are removed.
+//
+// mode = 0 : All track references are removed from the current signal,
+//            without removing the (backward) references to this signal from
+//            the corresponding AliTrack objects. 
+//        1 : The (backward) references to the current signal are also automatically
+//            removed from the corresponding AliTrack (or derived) objects.
+//
+// The default is mode=1.
+ 
+ if (!fTracks) return;
+
+ Int_t ntk=GetNtracks();
+ for (Int_t i=0; i<ntk; i++)
+ {
+  AliTrack* tx=(AliTrack*)fTracks->At(i);
+  if (tx)
+  {
+   ResetLinks(tx);
+   if (mode==1) tx->RemoveSignal(*this,0);
+  }
+ }
+
+ delete fTracks;
+ fTracks=0;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetNtracks(AliTrack* t) const
+{
+// Provide the number of related AliTracks.
+// In case an AliTrack pointer is specified as input argument,
+// the number returned will be the number of occurrences (i.e. 0 or 1)
+// for that specified track.
+// By default t=0, which implies that just the number of all associated
+// tracks will be returned.
+
+ if (!fTracks) return 0;
+
+ Int_t ntk=fTracks->GetEntries();
+
+ if (!t) return ntk;
+
+ for (Int_t i=0; i<ntk; i++)
+ {
+  AliTrack* tx=(AliTrack*)fTracks->At(i);
+  if (tx==t) return 1;
+ }
+
+ return 0;
+}
+///////////////////////////////////////////////////////////////////////////
+AliTrack* AliSignal::GetTrack(Int_t j) const
+{
+// Provide the related AliTrack number j.
+// Note : j=1 denotes the first track.
+
+ if (!fTracks) return 0;
+
+ if ((j >= 1) && (j <= GetNtracks()))
+ {
+  return (AliTrack*)fTracks->At(j-1);
+ }
+ else
+ {
+  cout << " *AliSignal* track number : " << j << " out of range."
+       << " Ntk = " << GetNtracks() << endl;
+  return 0;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+AliTrack* AliSignal::GetIdTrack(Int_t id) const
+{
+// Return the track with user identifier "id" of this signal
+ if (!fTracks) return 0;
+
+ AliTrack* tx=0;
+ for (Int_t i=0; i<GetNtracks(); i++)
+ {
+  tx=(AliTrack*)fTracks->At(i);
+  if (id == tx->GetId()) return tx;
+ }
+ return 0; // No matching id found
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliSignal::Clone(const char* name) const

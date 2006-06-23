@@ -801,7 +801,7 @@ void IceDwalk::Exec(Option_t* opt)
    for (Int_t is=1; is<=tx->GetNsignals(); is++)
    {
     sx1=tx->GetSignal(is);
-    if (sx1) sx1->AddLink(trk);
+    if (sx1) sx1->AddTrack(*trk);
    }
   }
 
