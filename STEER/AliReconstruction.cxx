@@ -293,10 +293,12 @@ void AliReconstruction::InitCDBStorage()
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     TString detName = fgkDetectorName[iDet];
     TObject* obj = fSpecCDBUri.FindObject(detName.Data());
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning(Form("Specific CDB storage for %s is set to: %s",detName.Data(),obj->GetTitle()));
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    if (obj) man->SetSpecificStorage(detName.Data(),obj->GetTitle());
+    if (obj) {
+      AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      AliWarning(Form("Specific CDB storage for %s is set to: %s",detName.Data(),obj->GetTitle()));
+      AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      man->SetSpecificStorage(detName.Data(),obj->GetTitle());
+    }
   }
   
 }
