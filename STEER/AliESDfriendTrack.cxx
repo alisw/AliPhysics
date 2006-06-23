@@ -66,10 +66,7 @@ AliESDfriendTrack::~AliESDfriendTrack() {
   // Simple destructor
   //
    delete fPoints;
-   if (fCalibContainer) {
-     fCalibContainer->Delete();
-     delete fCalibContainer;
-   }
+   delete fCalibContainer;
    delete fITStrack;
    delete fTRDtrack;
 }
