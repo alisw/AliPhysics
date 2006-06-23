@@ -1435,6 +1435,16 @@ Double_t AliITSgeom::GetAverageRadiusOfLayer(Int_t layer,Double_t &range)const{
 		dl[1] = ((AliITSgeomSSD*)GetShape(idet))->GetDy();
 		dl[2] = ((AliITSgeomSSD*)GetShape(idet))->GetDz();
 	    } break;
+	    case kND:{
+		Warning("GetAverageRadiusOfLayer",
+			"idet=kND undefined detector type");
+		continue;
+	    }break;
+	    default:{
+		Warning("GetAverageRadiusOfLayer",
+			"idet=%d not a defined value",(Int_t)idet);
+		continue;
+	    }break;
 	    }// end switch.
         } // end of
         n++;
