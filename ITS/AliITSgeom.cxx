@@ -867,16 +867,17 @@ Int_t AliITSgeom::GetLastDet(Int_t dtype)const{
     // Return:
     //     the module index for the last occurrence of that detector type.
 
-    switch(dtype){
-    case 0:
-        return GetLastSPD();
+    switch((AliITSDetector)dtype){
+    case kSPD:
+        return GetModuleIndex(3,1,1)-1;
         break;
-    case 1:
-        return GetLastSDD();
+    case kSDD:
+        return GetModuleIndex(5,1,1)-1;
         break;
-    case 2:
-        return GetLastSSD();
+    case kSSD:
+        return GetIndexMax();
         break;
+    case kSSDp: case kSDDp: case kND:
     default:
         Warning("GetLastDet","undefined detector type %d",dtype);
         return 0;
