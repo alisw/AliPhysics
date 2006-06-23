@@ -158,7 +158,8 @@ AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
   fAlignObjArray(NULL),
   fUseBkgrdVertex(kTRUE),
   fRegionOfInterest(kFALSE),
-  fCDBUri(cdbUri)
+  fCDBUri(cdbUri),
+  fSpecCDBUri()
 {
 // create simulation object with default parameters
 
@@ -190,7 +191,8 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fAlignObjArray(NULL),
   fUseBkgrdVertex(sim.fUseBkgrdVertex),
   fRegionOfInterest(sim.fRegionOfInterest),
-  fCDBUri(sim.fCDBUri)
+  fCDBUri(sim.fCDBUri),
+  fSpecCDBUri()
 {
 // copy constructor
 
@@ -204,6 +206,11 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
     if (!sim.fBkgrdFileNames->At(i)) continue;
     fBkgrdFileNames->Add(sim.fBkgrdFileNames->At(i)->Clone());
   }
+
+  for (Int_t i = 0; i < sim.fSpecCDBUri.GetEntriesFast(); i++) {
+    if (sim.fSpecCDBUri[i]) fSpecCDBUri.Add(sim.fSpecCDBUri[i]->Clone());
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -229,6 +236,8 @@ AliSimulation::~AliSimulation()
     fBkgrdFileNames->Delete();
     delete fBkgrdFileNames;
   }
+
+  fSpecCDBUri.Delete();
 }
 
 
@@ -241,37 +250,57 @@ void AliSimulation::SetNumberOfEvents(Int_t nEvents)
 }
 
 //_____________________________________________________________________________
-void AliSimulation::InitCDBStorage(const char* uri)
+void AliSimulation::InitCDBStorage()
 {
 // activate a default CDB storage
 // First check if we have any CDB storage set, because it is used 
 // to retrieve the calibration and alignment constants
 
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet())
+  if (man->IsDefaultStorageSet())
   {
-    AliWarningClass("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarningClass("Default CDB storage not yet set");
-    AliWarningClass(Form("Using default storage declared in AliSimulation: %s",uri));
-    AliWarningClass("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    SetDefaultStorage(uri);
-  }  
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("Default CDB storage has been already set !");
+    AliWarning(Form("Ignoring the default storage declared in AliReconstruction: %s",fCDBUri.Data()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    fCDBUri = "";
+  }
+  else {
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning(Form("Default CDB storage is set to: %s",fCDBUri.Data()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    man->SetDefaultStorage(fCDBUri);
+  }
+
+  // Now activate the detector specific CDB storage locations
+  for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {
+    TObject* obj = fSpecCDBUri[i];
+    if (!obj) continue;
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning(Form("Specific CDB storage for %s is set to: %s",obj->GetName(),obj->GetTitle()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    man->SetSpecificStorage(obj->GetName(),obj->GetTitle());
+  }
   
 }
 
 //_____________________________________________________________________________
 void AliSimulation::SetDefaultStorage(const char* uri) {
-// activate a default CDB storage 
+// Store the desired default CDB storage location
+// Activate it later within the Run() method
 
-   AliCDBManager::Instance()->SetDefaultStorage(uri);
+  fCDBUri = uri;
 
 }
 
 //_____________________________________________________________________________
 void AliSimulation::SetSpecificStorage(const char* detName, const char* uri) {
-// activate a detector-specific CDB storage 
+// Store a detector-specific CDB storage location
+// Activate it later within the Run() method
 
-   AliCDBManager::Instance()->SetSpecificStorage(detName, uri);
+  TObject* obj = fSpecCDBUri.FindObject(detName);
+  if (obj) fSpecCDBUri.Remove(obj);
+  fSpecCDBUri.Add(new TNamed(detName, uri));
 
 }
 
@@ -409,7 +438,6 @@ Bool_t AliSimulation::ApplyAlignObjsToGeom(const char* detName, Int_t runnum, In
   // to the TGeo geometry passed as argument
   //
 
-  InitCDBStorage("local://$ALICE_ROOT");
   AliCDBPath path(detName,"Align","Data");
   AliCDBEntry* entry = AliCDBManager::Instance()->Get(path.GetPath(),runnum,version,sversion);
 
@@ -568,7 +596,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 {
 // run the generation, simulation and digitization
 
-  InitCDBStorage(fCDBUri);
+  InitCDBStorage();
 
   if (nEvents > 0) fNEvents = nEvents;
 

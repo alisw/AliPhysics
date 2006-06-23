@@ -184,7 +184,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fVertexer(NULL),
 
   fAlignObjArray(NULL),
-  fCDBUri(cdbUri)
+  fCDBUri(cdbUri),
+  fSpecCDBUri()
 {
 // create reconstruction object with default parameters
   
@@ -227,17 +228,21 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fVertexer(NULL),
 
   fAlignObjArray(rec.fAlignObjArray),
-  fCDBUri(rec.fCDBUri)
+  fCDBUri(rec.fCDBUri),
+  fSpecCDBUri()
 {
 // copy constructor
 
-  for (Int_t i = 0; i < fOptions.GetEntriesFast(); i++) {
+  for (Int_t i = 0; i < rec.fOptions.GetEntriesFast(); i++) {
     if (rec.fOptions[i]) fOptions.Add(rec.fOptions[i]->Clone());
   }
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
+  }
+  for (Int_t i = 0; i < rec.fSpecCDBUri.GetEntriesFast(); i++) {
+    if (rec.fSpecCDBUri[i]) fSpecCDBUri.Add(rec.fSpecCDBUri[i]->Clone());
   }
 }
 
@@ -258,6 +263,7 @@ AliReconstruction::~AliReconstruction()
 
   CleanUp();
   fOptions.Delete();
+  fSpecCDBUri.Delete();
 }
 
 //_____________________________________________________________________________
@@ -268,36 +274,50 @@ void AliReconstruction::InitCDBStorage()
 // to retrieve the calibration and alignment constants
 
   AliCDBManager* man = AliCDBManager::Instance();
-  if (!man->IsDefaultStorageSet())
+  if (man->IsDefaultStorageSet())
   {
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning("Default CDB storage not yet set");
-    AliWarning(Form("Using default storage declared in AliSimulation: %s",fCDBUri.Data()));
+    AliWarning("Default CDB storage has been already set !");
+    AliWarning(Form("Ignoring the default storage declared in AliReconstruction: %s",fCDBUri.Data()));
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    SetDefaultStorage(fCDBUri);
-    
-    Int_t cdbRun = AliCDBManager::Instance()->GetRun();
-    if(cdbRun == -1){
-    	AliWarning("AliCDBManager's run number temporarily set to 0!!");
-    	AliCDBManager::Instance()->SetRun(0);
-    }
-  }  
+    fCDBUri = "";
+  }
+  else {
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning(Form("Default CDB storage is set to: %s",fCDBUri.Data()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    man->SetDefaultStorage(fCDBUri);
+  }
+
+  // Now activate the detector specific CDB storage locations
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    TString detName = fgkDetectorName[iDet];
+    TObject* obj = fSpecCDBUri.FindObject(detName.Data());
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning(Form("Specific CDB storage for %s is set to: %s",detName.Data(),obj->GetTitle()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    if (obj) man->SetSpecificStorage(detName.Data(),obj->GetTitle());
+  }
   
 }
 
 //_____________________________________________________________________________
 void AliReconstruction::SetDefaultStorage(const char* uri) {
-// activate a default CDB storage 
+// Store the desired default CDB storage location
+// Activate it later within the Run() method
 
-   AliCDBManager::Instance()->SetDefaultStorage(uri);
+  fCDBUri = uri;
 
 }
 
 //_____________________________________________________________________________
 void AliReconstruction::SetSpecificStorage(const char* detName, const char* uri) {
-// activate a detector-specific CDB storage 
+// Store a detector-specific CDB storage location
+// Activate it later within the Run() method
 
-   AliCDBManager::Instance()->SetSpecificStorage(detName, uri);
+  TObject* obj = fSpecCDBUri.FindObject(detName);
+  if (obj) fSpecCDBUri.Remove(obj);
+  fSpecCDBUri.Add(new TNamed(detName, uri));
 
 }
 
@@ -315,8 +335,25 @@ Bool_t AliReconstruction::SetRunNumber()
       return kFALSE;
     }
     // read run number from gAlice
-    AliCDBManager::Instance()->SetRun(fRunLoader->GetAliRun()->GetRunNumber());
-    AliInfo(Form("Run number: %d",AliCDBManager::Instance()->GetRun()));
+    if(fRunLoader->GetAliRun())
+      AliCDBManager::Instance()->SetRun(fRunLoader->GetAliRun()->GetRunNumber());
+    else {
+      if(fRawReader) {
+	if(fRawReader->NextEvent()) {
+	  AliCDBManager::Instance()->SetRun(fRawReader->GetRunNumber());
+	  fRawReader->RewindEvents();
+	}
+	else {
+	  AliError("No raw-data events found !");
+	  return kFALSE;
+	}
+      }
+      else {
+	AliError("Neither gAlice nor RawReader objects are found !");
+	return kFALSE;
+      }
+    }
+    AliInfo(Form("CDB Run number: %d",AliCDBManager::Instance()->GetRun()));
   }
   return kTRUE;
 }
@@ -474,8 +511,6 @@ Bool_t AliReconstruction::Run(const char* input,
 {
 // run the reconstruction
 
-  InitCDBStorage();
-
   // set the input
   if (!input) input = fInput.Data();
   TString fileName(input);
@@ -493,6 +528,9 @@ Bool_t AliReconstruction::Run(const char* input,
 
   // get the run loader
   if (!InitRunLoader()) return kFALSE;
+
+  // Initialize the CDB storage
+  InitCDBStorage();
 
   // Set run number in CDBManager (if it is not already set by the user)
   if (!SetRunNumber()) if (fStopOnError) return kFALSE;

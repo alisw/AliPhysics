@@ -164,8 +164,9 @@ private:
   TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
 
   TString	 fCDBUri;	      // Uri of the default CDB storage
+  TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
-  ClassDef(AliReconstruction, 7)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 8)      // class for running the reconstruction
 };
 
 #endif

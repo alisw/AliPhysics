@@ -82,9 +82,9 @@ public:
   Bool_t         SetRunNumber();
 		   
   // CDB storage activation
-  static void InitCDBStorage(const char *uri);
-  static void SetDefaultStorage(const char* uri);
-  static void SetSpecificStorage(const char* detName, const char* uri);    
+  void InitCDBStorage();
+  void SetDefaultStorage(const char* uri);
+  void SetSpecificStorage(const char* detName, const char* uri);    
 
   virtual Bool_t Run(Int_t nEvents = 0);
 
@@ -132,8 +132,9 @@ private:
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 
   TString 	 fCDBUri;	      // Uri of the default CDB storage
+  TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
-  ClassDef(AliSimulation, 2)  // class for running generation, simulation and digitization
+  ClassDef(AliSimulation, 3)  // class for running generation, simulation and digitization
 };
 
 #endif
