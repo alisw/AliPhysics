@@ -35,7 +35,9 @@
 
 #include <iostream>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometry)
+/// \endcond
  
 //______________________________________________________________________________
 AliMUONGeometry::AliMUONGeometry(Bool_t isOwner)
@@ -64,15 +66,6 @@ AliMUONGeometry::AliMUONGeometry()
 } 
 
 //______________________________________________________________________________
-AliMUONGeometry::AliMUONGeometry(const AliMUONGeometry& right) 
-  : TObject(right) 
-{  
-/// Copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
-//______________________________________________________________________________
 AliMUONGeometry::~AliMUONGeometry()
 {
 /// Destructor
@@ -80,20 +73,6 @@ AliMUONGeometry::~AliMUONGeometry()
   delete fModules;
   delete fTransformer;
 }
-
-//______________________________________________________________________________
-AliMUONGeometry& 
-AliMUONGeometry::operator=(const AliMUONGeometry& right)
-{
-/// Assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // private methods
@@ -103,8 +82,7 @@ AliMUONGeometry::operator=(const AliMUONGeometry& right)
 TString  AliMUONGeometry::ComposePath(const TString& volName, 
                                        Int_t copyNo) const
 {
-// Compose path from given volName and copyNo
-// ---
+/// Compose path from given volName and copyNo
 
   TString path(volName);
   path += ".";
@@ -117,8 +95,7 @@ TString  AliMUONGeometry::ComposePath(const TString& volName,
 void AliMUONGeometry::FillData3(const TString& sensVolumePath, 
                                 Int_t detElemId)
 {
-// Fill the mapping of the sensitive volume path to the detection element.
-// ---
+/// Fill the mapping of the sensitive volume path to the detection element.
 
   // Module Id
   Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
@@ -144,9 +121,8 @@ void AliMUONGeometry::FillData3(const TString& sensVolumePath,
 //______________________________________________________________________________
 TString  AliMUONGeometry::ReadData3(ifstream& in)
 {
-// Reads SV maps from a file
-// Returns true, if reading finished correctly.
-// ---
+/// Read SV maps from a file.
+/// Return true, if reading finished correctly.
 
   TString key("SV");
   while ( key == TString("SV") ) {
@@ -175,9 +151,8 @@ TString  AliMUONGeometry::ReadData3(ifstream& in)
 //______________________________________________________________________________
 void AliMUONGeometry::WriteData3(ofstream& out) const
 {
-// Writes association of sensitive volumes and detection elements
-// from the sensitive volume map
-// ---
+/// Write association of sensitive volumes and detection elements
+/// from the sensitive volume map
 
   for (Int_t i=0; i<fModules->GetEntriesFast(); i++) {
     AliMUONGeometryModule* geometry 
@@ -197,7 +172,7 @@ void AliMUONGeometry::WriteData3(ofstream& out) const
 //_____________________________________________________________________________
 void AliMUONGeometry::AddModule(AliMUONGeometryModule* module)
 {
-/// Add the geometrymodule to the array
+/// Add the geometry module to the array
 
   fModules->Add(module);
 
@@ -209,9 +184,8 @@ void AliMUONGeometry::AddModule(AliMUONGeometryModule* module)
 Bool_t  
 AliMUONGeometry::ReadSVMap(const TString& fileName)
 {
-// Reads the sensitive volume maps from a file
-// Returns true, if reading finished correctly.
-// ---
+/// Read the sensitive volume maps from a file.
+/// Return true, if reading finished correctly.
 
   // No reading
   // if builder is not associated with any geometry module
@@ -248,9 +222,8 @@ AliMUONGeometry::ReadSVMap(const TString& fileName)
 Bool_t  
 AliMUONGeometry::WriteSVMap(const TString& fileName) const
 {
-// Writes sensitive volume map into a file
-// Returns true, if writing finished correctly.
-// ---
+/// Write sensitive volume map into a file.
+/// Return true, if writing finished correctly.
 
   // No writing
   // if builder is not associated with any geometry module
@@ -297,7 +270,7 @@ AliMUONGeometry::GetModule(Int_t index, Bool_t warn) const
 const AliMUONGeometryModule* 
 AliMUONGeometry::GetModuleByDEId(Int_t detElemId, Bool_t warn) const
 {
-/// Return the geometry module specified by index
+/// Return the geometry module specified by detElemId
 
   // Get module index
   Int_t index = AliMUONGeometryStore::GetModuleId(detElemId);

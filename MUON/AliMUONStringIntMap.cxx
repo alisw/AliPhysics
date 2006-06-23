@@ -28,7 +28,9 @@
 #include "AliMUONStringIntMap.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONStringIntMap)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONStringIntMap::AliMUONStringIntMap()
@@ -43,36 +45,12 @@ AliMUONStringIntMap::AliMUONStringIntMap()
 }
 
 //______________________________________________________________________________
-AliMUONStringIntMap::AliMUONStringIntMap(const AliMUONStringIntMap& rhs)
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
-//______________________________________________________________________________
 AliMUONStringIntMap::~AliMUONStringIntMap()
 {
 /// Destructor
 
   fFirstArray.Delete();
 }
-
-//______________________________________________________________________________
-AliMUONStringIntMap& 
-AliMUONStringIntMap::operator = (const AliMUONStringIntMap& rhs) 
-{
-/// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
-}
-
 
 //
 // public methods
@@ -149,7 +127,7 @@ void AliMUONStringIntMap::Print(const char* /*option*/) const
 //______________________________________________________________________________
 void AliMUONStringIntMap::Print(const TString& key, ofstream& out) const
 {
-// Prints the map elements
+/// Print the map elements preceded by a key word
 
   for (Int_t i=0; i<fNofItems; i++) {
     out  << key << "  "

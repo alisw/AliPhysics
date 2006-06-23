@@ -35,7 +35,9 @@
 #include <Riostream.h>
 #include <TString.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryEnvelopeStore)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(
@@ -67,13 +69,6 @@ AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore()
 
 
 //______________________________________________________________________________
-AliMUONGeometryEnvelopeStore::AliMUONGeometryEnvelopeStore(const AliMUONGeometryEnvelopeStore& rhs)
-  : TObject(rhs)
-{
-  AliFatal("Copy constructor is not implemented.");
-}
-
-//______________________________________________________________________________
 AliMUONGeometryEnvelopeStore::~AliMUONGeometryEnvelopeStore() 
 {
 /// Destructor
@@ -86,20 +81,6 @@ AliMUONGeometryEnvelopeStore::~AliMUONGeometryEnvelopeStore()
   }  
 }
 
-//______________________________________________________________________________
-AliMUONGeometryEnvelopeStore& 
-AliMUONGeometryEnvelopeStore::operator = (const AliMUONGeometryEnvelopeStore& rhs) 
-{
-/// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
-}
-
 //
 // private methods
 //
@@ -108,7 +89,7 @@ AliMUONGeometryEnvelopeStore::operator = (const AliMUONGeometryEnvelopeStore& rh
 TGeoHMatrix 
 AliMUONGeometryEnvelopeStore::ConvertDETransform(const TGeoHMatrix& transform) const
 {
-// Convert transformation into the reference frame
+/// Convert transformation into the reference frame
 
   if ( fReferenceFrame.IsIdentity() )
     return transform;
@@ -423,7 +404,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituent(const TString& name,
                                          const TString& envName, Int_t copyNo) 
 {
 /// Add the volume with the specified name and transformation
-/// to the list of envelopes.
+/// as a constituent of the envelope envName.
 
   if (fDebug) {
     cout << "... Adding constituent " << name
@@ -447,7 +428,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituent(const TString& name,
                                           const TGeoTranslation& translation)
 {
 /// Add the volume with the specified name and transformation
-/// to the list of envelopes.
+/// as a constituent of the envelope envName.
 
   if (fDebug) {
     cout << "... Adding constituent " << name
@@ -473,7 +454,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituent(const TString& name,
 		                          const TGeoRotation& rotation)
 {
 /// Add the volume with the specified name and transformation
-/// to the list of envelopes.
+/// as a constituent of the envelope envName.
 
   if (fDebug) {
     cout << "... Adding constituent " << name
@@ -498,7 +479,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituent(const TString& name,
                                           const TGeoCombiTrans& transform)
 {
 /// Add the volume with the specified name and transformation
-/// to the list of envelopes.
+/// as a constituent of the envelope envName.
 
   if (fDebug) {
     cout << "... Adding constituent " << name
@@ -523,7 +504,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
 					 Int_t npar, Double_t* param) 
 {
 /// Add the volume with the specified name and transformation
-/// to the list of envelopes.
+/// as a constituent of the envelope envName.
 
   if (fDebug) {
     cout << "... Adding parameterised constituent " << name
@@ -548,7 +529,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
 					  Int_t npar, Double_t* param)
 {
 /// Add the volume with the specified name and transformation
-/// to the list of envelopes.
+/// as a constituent of the envelope envName.
 
   if (fDebug) {
     cout << "... Adding parameterised constituent " << name
@@ -575,7 +556,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
 					  Int_t npar, Double_t* param)
 {
 /// Add the volume with the specified name and transformation
-/// to the list of envelopes.
+/// as a constituent of the envelope envName.
 
   if (fDebug) {
     cout << "... Adding parameterised constituent " << name
@@ -601,7 +582,7 @@ void  AliMUONGeometryEnvelopeStore::AddEnvelopeConstituentParam(const TString& n
 					  Int_t npar, Double_t* param)
 {
 /// Add the volume with the specified name and transformation
-/// to the list of envelopes.
+/// as a constituent of the envelope envName.
 
   if (fDebug) {
     cout << "... Adding parameterised constituent " << name

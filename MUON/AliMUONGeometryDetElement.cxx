@@ -30,7 +30,9 @@
 
 #include <sstream>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryDetElement)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONGeometryDetElement::AliMUONGeometryDetElement(
@@ -57,36 +59,12 @@ AliMUONGeometryDetElement::AliMUONGeometryDetElement()
 }
 
 //______________________________________________________________________________
-AliMUONGeometryDetElement::AliMUONGeometryDetElement(
-                                   const AliMUONGeometryDetElement& rhs)
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
-//______________________________________________________________________________
 AliMUONGeometryDetElement::~AliMUONGeometryDetElement() 
 {
 /// Destructor
 
   delete fLocalTransformation;
   delete fGlobalTransformation;
-}
-
-//______________________________________________________________________________
-AliMUONGeometryDetElement& 
-AliMUONGeometryDetElement::operator = (const AliMUONGeometryDetElement& rhs) 
-{
-/// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //
@@ -97,7 +75,7 @@ AliMUONGeometryDetElement::operator = (const AliMUONGeometryDetElement& rhs)
 void  AliMUONGeometryDetElement::PrintTransform(
                                             const TGeoHMatrix* transform) const
 {
-/// Prints the detection element transformation
+/// Print the detection element transformation
 
   cout << "DetElemId: " << GetUniqueID();
   cout << "  name: " << fVolumePath << endl;
@@ -148,9 +126,8 @@ void  AliMUONGeometryDetElement::Global2Local(
                                   Float_t xg, Float_t yg, Float_t zg, 
                                   Float_t& xl, Float_t& yl, Float_t& zl) const
 {
-/// Transforms point from the global reference frame (ALIC)
-/// to the local reference frame of the detection element specified
-/// by detElemId.
+/// Transform point from the global reference frame (ALIC)
+/// to the local reference frame of this detection element.
 
   Double_t dxg = xg;
   Double_t dyg = yg;
@@ -169,9 +146,8 @@ void  AliMUONGeometryDetElement::Global2Local(
                                   Double_t xg, Double_t yg, Double_t zg, 
                                   Double_t& xl, Double_t& yl, Double_t& zl) const
 {
-/// Transforms point from the global reference frame (ALIC)
-/// to the local reference frame of the detection element specified
-/// by detElemId.
+/// Transform point from the global reference frame (ALIC)
+/// to the local reference frame of this detection element
 
    // Check transformation
    if (!fGlobalTransformation) {
@@ -196,8 +172,8 @@ void  AliMUONGeometryDetElement::Local2Global(
                  Float_t xl, Float_t yl, Float_t zl, 
                  Float_t& xg, Float_t& yg, Float_t& zg) const
 {
-/// Transforms point from the local reference frame of the detection element 
-/// specified by detElemId to the global reference frame (ALIC).
+/// Transform point from the local reference frame of this detection element 
+/// to the global reference frame (ALIC).
 
   Double_t dxl = xl;
   Double_t dyl = yl;
@@ -216,8 +192,8 @@ void  AliMUONGeometryDetElement::Local2Global(
                  Double_t xl, Double_t yl, Double_t zl, 
                  Double_t& xg, Double_t& yg, Double_t& zg) const
 {
-/// Transforms point from the local reference frame of the detection element 
-/// specified by detElemId to the global reference frame (ALIC).
+/// Transform point from the local reference frame of this detection element 
+/// to the global reference frame (ALIC).
 
    // Check transformation
    if (!fGlobalTransformation) {
@@ -241,8 +217,8 @@ void  AliMUONGeometryDetElement::Local2Global(
 void AliMUONGeometryDetElement::SetLocalTransformation(
                                                 const TGeoHMatrix& transform)
 { 
-/// Sets global transformation;
-/// gives warning if the global transformation is already defined.
+/// Set local transformation;
+/// give warning if the global transformation is already defined.
  
   if (fLocalTransformation) {
     delete fLocalTransformation;
@@ -256,8 +232,8 @@ void AliMUONGeometryDetElement::SetLocalTransformation(
 void AliMUONGeometryDetElement::SetGlobalTransformation(
                                                 const TGeoHMatrix& transform)
 { 
-/// Sets global transformation;
-/// gives warning if the global transformation is already defined.
+/// Set global transformation;
+/// give warning if the global transformation is already defined.
  
   if (fGlobalTransformation) {
     delete fGlobalTransformation;
@@ -270,7 +246,7 @@ void AliMUONGeometryDetElement::SetGlobalTransformation(
 //______________________________________________________________________________
 void AliMUONGeometryDetElement::PrintLocalTransform() const
 {
-/// Prints detection element relative transformation
+/// Print detection element relative transformation
 /// (the transformation wrt module frame)
 
   PrintTransform(fLocalTransformation);
@@ -279,7 +255,7 @@ void AliMUONGeometryDetElement::PrintLocalTransform() const
 //______________________________________________________________________________
 void AliMUONGeometryDetElement::PrintGlobalTransform() const
 {
-/// Prints detection element global transformation
+/// Print detection element global transformation
 /// (the transformation wrt global frame)
 
   PrintTransform(fGlobalTransformation);

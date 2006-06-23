@@ -8,7 +8,7 @@
 /// \class AliMUONVGeometryBuilder
 /// \brief Abstract base class for geometry construction per module(s)
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_V_GEOMETRY_BUILDER_H
 #define ALI_MUON_V_GEOMETRY_BUILDER_H
@@ -45,39 +45,39 @@ class AliMUONVGeometryBuilder : public TObject
     void  RebuildSVMaps(Bool_t withEnvelopes = true) const;
     void  CreateDetElements() const;
 
+                  /// Function to be overriden in a concrete chamber/station
+		  /// geometry builder class.
+		  /// Only materials that are not defined in the common
+		  /// functions should be defined here.
     virtual void CreateMaterials() {}  // make = 0; ?
-                  // Function to be overriden in a concrete chamber/station
-		  // geometry builder class.
-		  // Only materials that are not defined in the common
-		  // functions should be defined here.
 
+                  /// Function to be overriden in a concrete chamber/station
+		  /// geometry builder class. \n
+		  /// The geometry built there should not be placed
+		  /// in ALIC; but all volumes going to ALIC
+		  /// have to be added as envelopes to the chamber
+		  /// geometries
+		  /// (They will be then placed automatically 
+		  /// usind the provided transformation.
     virtual void CreateGeometry() = 0;
-                  // Function to be overriden in a concrete chamber/station
-		  // geometry builder class.
-		  // The geometry built there should not be placed
-		  // in ALIC; but all volumes going to ALIC
-		  // have to be added as envelopes to the chamber
-		  // geometries
-		  // (They will be then placed automatically 
-		  // usind the provided transformation.
 
+                  /// Function to be overriden in a concrete chamber/station
+		  /// geometry class. \n
+		  /// The transformation of each chamber(s) wrt ALICE
+		  /// should be defined and set to its geometry class. 
     virtual void SetTransformations() = 0;
-                  // Function to be overriden in a concrete chamber/station
-		  // geometry class.
-		  // The transformation of each chamber(s) wrt ALICE
-		  // should be defined and set to its geometry class. 
 
+                  /// Function to be overriden in a concrete chamber/station
+		  /// geometry class. \n
+		  /// The sensitive volumes Ids for each chamber
+		  /// should be defined and set to its geometry class. 
     virtual void SetSensitiveVolumes() = 0;
-                  // Function to be overriden in a concrete chamber/station
-		  // geometry class.
-		  // The sensitive volumes Ids for each chamber
-		  // should be defined and set to its geometry class. 
 
+                  /// Function to be overriden (and return false) 
+		  /// in the concrete geometry builder classes 
+		  /// which are already defined in the new ALICE
+		  /// coordinate frame
     virtual bool ApplyGlobalTransformation() { return true; }
-                  // Function to be overriden (and return false) 
-		  // in the concrete geometry builder classes 
-		  // which are already defined in the new ALICE
-		  // coordinate frame
 
     // access to module geometries
     Int_t  NofGeometries() const;
@@ -88,8 +88,6 @@ class AliMUONVGeometryBuilder : public TObject
 
   protected:
     AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs);
-
-    // operators  
     AliMUONVGeometryBuilder& operator = (const AliMUONVGeometryBuilder& rhs);
 
     // methods
@@ -129,9 +127,11 @@ class AliMUONVGeometryBuilder : public TObject
 
 // inline functions
 
+/// Return the number of geometry modules
 inline Int_t  AliMUONVGeometryBuilder::NofGeometries() const
 { return fGeometryModules->GetEntriesFast(); }
 
+/// Return the \a i th geometry module
 inline AliMUONGeometryModule* AliMUONVGeometryBuilder::Geometry(Int_t i) const
 { return (AliMUONGeometryModule*)fGeometryModules->At(i); }
 

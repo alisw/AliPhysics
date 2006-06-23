@@ -6,13 +6,12 @@
 
 /// \ingroup geometry
 /// \class AliMUONGeometryModuleTransformer
-/// \brief Geometry transformationer for detector module
+/// \brief Geometry transformer for a detector module
 ///
-/// Class for definition of the detector module parameters
-/// (the transformations of detection elements, mapping between
-///  sensitive volumes and detection elements).
+/// Class for definition of the trasformation for adetector module
+/// and its detection elements
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_MODULE_TRANSFORMER_H
 #define ALI_MUON_GEOMETRY_MODULE_TRANSFORMER_H
@@ -69,7 +68,6 @@ class AliMUONGeometryModuleTransformer : public TObject
 
   protected:
     AliMUONGeometryModuleTransformer(const AliMUONGeometryModuleTransformer& rhs);
-    // operators  
     AliMUONGeometryModuleTransformer& 
       operator = (const AliMUONGeometryModuleTransformer& rhs);
 
@@ -79,7 +77,7 @@ class AliMUONGeometryModuleTransformer : public TObject
     TString               fVolumePath; ///< \brief the full path of aligned module volume
                                        /// or envelope in geometry
     TGeoHMatrix*          fTransformation;///< \brief the module transformation wrt to top
-                                          /// volume
+                                          /// volume (world)
     AliMUONGeometryStore* fDetElements;   ///< detection elements
  
   ClassDef(AliMUONGeometryModuleTransformer,3) // MUON geometry module class
@@ -87,22 +85,27 @@ class AliMUONGeometryModuleTransformer : public TObject
 
 // inline functions
 
+/// Set the full path of aligned module volume or envelope in geometry
 inline void 
 AliMUONGeometryModuleTransformer::SetVolumePath(const TString& volumePath)
 { fVolumePath = volumePath; }
 
+/// Return module ID
 inline Int_t  
 AliMUONGeometryModuleTransformer::GetModuleId() const
 { return fModuleId; }
 
+/// Return the full path of aligned module volume or envelope in geometry
 inline TString 
 AliMUONGeometryModuleTransformer::GetVolumePath() const
 { return fVolumePath; }
 
+/// Return the module transformation wrt to the top volume (world)
 inline const TGeoHMatrix* 
 AliMUONGeometryModuleTransformer::GetTransformation() const 
 { return fTransformation; }
 
+/// Return detection elements associated with this module
 inline  AliMUONGeometryStore* 
 AliMUONGeometryModuleTransformer::GetDetElementStore() const
 { return fDetElements; }

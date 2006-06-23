@@ -33,7 +33,9 @@
 #include <TArrayI.h>
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryModuleTransformer)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(Int_t moduleId)
@@ -66,37 +68,12 @@ AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer()
 
 
 //______________________________________________________________________________
-AliMUONGeometryModuleTransformer::AliMUONGeometryModuleTransformer(
-                                    const AliMUONGeometryModuleTransformer& rhs)
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
-//______________________________________________________________________________
 AliMUONGeometryModuleTransformer::~AliMUONGeometryModuleTransformer() 
 {
 /// Destructor
 
   delete fTransformation;
   delete fDetElements;
-}
-
-//______________________________________________________________________________
-AliMUONGeometryModuleTransformer& 
-AliMUONGeometryModuleTransformer::operator = (
-                                    const AliMUONGeometryModuleTransformer& rhs) 
-{
-/// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //
@@ -193,7 +170,7 @@ TString AliMUONGeometryModuleTransformer::GetVolumeName() const
 //______________________________________________________________________________
 TString AliMUONGeometryModuleTransformer::GetMotherVolumeName() const
 { 
-/// Extract volume name from the path
+/// Extract mother volume name from the path
   
   std::string volPath = fVolumePath.Data();
   std::string::size_type first = volPath.rfind('/');
@@ -210,7 +187,7 @@ AliMUONGeometryDetElement*
 AliMUONGeometryModuleTransformer::GetDetElement(Int_t detElemId, Bool_t warn) const
 {
 /// Return the detection element specified by detElemId.
-/// Give error if detection element is not defined.
+/// Give error if detection element is not defined and warn is true.
 
    // Get detection element
    AliMUONGeometryDetElement* detElement

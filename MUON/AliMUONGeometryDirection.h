@@ -14,9 +14,9 @@
 
 enum AliMUONGeometryDirection 
 {
-  kDirX,          // direction in x
-  kDirY,          // direction in y
-  kDirUndefined   // undefined direction
+  kDirX,          ///< direction in x
+  kDirY,          ///< direction in y
+  kDirUndefined   ///< undefined direction
 };
 
 #endif //ALI_MUON_GEOMETRY_DIRECTION_H

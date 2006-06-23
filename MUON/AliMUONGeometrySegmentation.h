@@ -11,7 +11,7 @@
 /// composed of the segmentations of detection elements.
 /// Applies transformations defined in geometry.
 ///
-/// Author:Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_SEGMENTATION_H
 #define ALI_MUON_GEOMETRY_SEGMENTATION_H
@@ -183,8 +183,6 @@ class AliMUONGeometrySegmentation : public TObject
 	
   protected:
     AliMUONGeometrySegmentation(const AliMUONGeometrySegmentation& rhs);
-  
-    // operators
     AliMUONGeometrySegmentation& operator=(const AliMUONGeometrySegmentation & rhs);
 
   private:
@@ -210,6 +208,7 @@ class AliMUONGeometrySegmentation : public TObject
 
 // inline functions
 
+/// Return associated geometry transformer
 inline 
 const AliMUONGeometryModuleTransformer* 
 AliMUONGeometrySegmentation::GetTransformer() const

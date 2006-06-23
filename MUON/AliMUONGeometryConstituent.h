@@ -8,7 +8,7 @@
 /// \class AliMUONGeometryConstituent
 /// \brief Helper class for definititon of an assembly of volumes.
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_CONSTITUENT_H
 #define ALI_MUON_GEOMETRY_CONSTITUENT_H
@@ -46,8 +46,6 @@ class AliMUONGeometryConstituent : public TNamed
 
   protected:
     AliMUONGeometryConstituent(const AliMUONGeometryConstituent& rhs);
-
-    // operators  
     AliMUONGeometryConstituent& operator = (const AliMUONGeometryConstituent& rhs);
 
   private:
@@ -65,15 +63,19 @@ class AliMUONGeometryConstituent : public TNamed
 
 // inline functions
 
+/// Return copy number
 inline Int_t AliMUONGeometryConstituent::GetCopyNo() const
 { return fCopyNo; }  
 
+/// Return number of shape parameters
 inline Int_t AliMUONGeometryConstituent::GetNpar() const
 { return fNpar; }
 
+/// Return the array of shape parameters
 inline Double_t* AliMUONGeometryConstituent::GetParam() const
 { return fParam; }
 
+/// Return the constituent transformation wrt to the envelope
 inline const TGeoCombiTrans* AliMUONGeometryConstituent::GetTransformation() const 
 { return fTransformation; }
 

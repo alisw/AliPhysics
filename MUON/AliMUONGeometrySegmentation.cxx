@@ -38,7 +38,9 @@
 
 const Float_t  AliMUONGeometrySegmentation::fgkMaxDistance = 1.0e6;
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometrySegmentation)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
@@ -78,17 +80,6 @@ AliMUONGeometrySegmentation::AliMUONGeometrySegmentation()
 }
 
 //______________________________________________________________________________
-AliMUONGeometrySegmentation::AliMUONGeometrySegmentation(
-                                  const AliMUONGeometrySegmentation& rhs) 
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
-#include <Riostream.h>
-//______________________________________________________________________________
 AliMUONGeometrySegmentation::~AliMUONGeometrySegmentation() 
 {
 /// Destructor
@@ -98,24 +89,6 @@ AliMUONGeometrySegmentation::~AliMUONGeometrySegmentation()
   delete fDESegmentations;
   delete fDENames;
 } 
-
-//
-// operators
-//
-
-//______________________________________________________________________________
-AliMUONGeometrySegmentation& 
-AliMUONGeometrySegmentation::operator=(const AliMUONGeometrySegmentation& rhs)
-{
-/// Protected assignment operator 
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
-}
 
 //
 // private methods
@@ -186,7 +159,7 @@ AliMUONGeometrySegmentation::GetDESegmentation(Int_t detElemId, Bool_t warn) con
 AliMUONGeometryDirection 
 AliMUONGeometrySegmentation::GetDirection(Int_t detElemId) const
 {
-/// Return direction with a constant pad size 
+/// Return direction with a constant pad size. 
 /// (Direction or coordinate where the resolution is the best)
 
   if (!OwnNotify(detElemId)) return kDirUndefined;
@@ -213,7 +186,7 @@ TString AliMUONGeometrySegmentation::GetDEName(Int_t detElemId) const
 //______________________________________________________________________________
 void AliMUONGeometrySegmentation::Print(Option_t* opt) const
 {
-// Print DE segmentations
+/// Print DE segmentations
 
   std::cout << "fDESegmentations (class " 
 	    << fDESegmentations->Class()->GetName() << ") entries=" 
@@ -281,7 +254,7 @@ Bool_t  AliMUONGeometrySegmentation::GetPadI(Int_t detElemId,
 Bool_t
 AliMUONGeometrySegmentation::HasPad(Int_t detElemId, Int_t ix, Int_t iy)
 {
-// Tells if a given pad exists in a given detector element
+/// Tell if a given pad exists in a given detector element
 
   if (!OwnNotify(detElemId)) return false;
 	
@@ -293,7 +266,7 @@ Bool_t
 AliMUONGeometrySegmentation::HasPad(Int_t detElemId, 
                                     Float_t& xg, Float_t& yg, Float_t& zg)
 {
-// Tells if a given pad exists in a given detector element
+/// Tell if a given pad exists in a given detector element
 
   if (!OwnNotify(detElemId)) return false;
 	
@@ -384,7 +357,7 @@ Float_t AliMUONGeometrySegmentation::Dpx(Int_t detElemId, Int_t isector) const
 //______________________________________________________________________________
 Float_t AliMUONGeometrySegmentation::Dpy(Int_t detElemId, Int_t isector) const
 {
-/// Pad size in x, y by Sector 
+/// Pad size in y by Sector 
 
   if (!OwnNotify(detElemId)) return 0.;
 
@@ -428,7 +401,7 @@ void  AliMUONGeometrySegmentation::SetPad(Int_t detElemId, Int_t ix, Int_t iy)
 void  AliMUONGeometrySegmentation::SetHit(Int_t detElemId, 
                                         Float_t xghit, Float_t yghit, Float_t zghit)
 {
-/// Set hit position
+/// Set hit position.
 /// Sets virtual hit position, needed for evaluating pad response 
 /// outside the tracking program 
 /// From AliMUONGeometrySegmentationV01.
@@ -562,7 +535,7 @@ Int_t  AliMUONGeometrySegmentation::ISector()
 //______________________________________________________________________________
 Int_t AliMUONGeometrySegmentation::Sector(Int_t detElemId, Int_t ix, Int_t iy)
 {
-/// Calculate sector from pad coordinates
+/// Calculate sector from pad indices
 
   if (!OwnNotify(detElemId)) return 0;
 

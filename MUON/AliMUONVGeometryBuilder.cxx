@@ -38,7 +38,9 @@
 #include "AliMUONStringIntMap.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONVGeometryBuilder)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(
@@ -49,7 +51,7 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(
    fGeometryModules(0),
    fReferenceFrame()
  {
-// Standard constructor
+/// Standard constructor
 
   // Create the module geometries array
   fGeometryModules = new TObjArray();
@@ -79,40 +81,18 @@ AliMUONVGeometryBuilder::AliMUONVGeometryBuilder()
    fGeometryModules(0),
    fReferenceFrame()
 {
-// Default constructor
+/// Default constructor
 }
 
-
 //______________________________________________________________________________
-AliMUONVGeometryBuilder::AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs)
-  : TObject(rhs)
+AliMUONVGeometryBuilder::~AliMUONVGeometryBuilder() 
 {
-// Protected copy constructor
+/// Destructor
 
-  AliFatal("Copy constructor is not implemented.");
-}
-
-//______________________________________________________________________________
-AliMUONVGeometryBuilder::~AliMUONVGeometryBuilder() {
-//
   if (fGeometryModules) {
     fGeometryModules->Clear(); // Sets pointers to 0 since it is not the owner
     delete fGeometryModules;
   }
-}
-
-//______________________________________________________________________________
-AliMUONVGeometryBuilder& 
-AliMUONVGeometryBuilder::operator = (const AliMUONVGeometryBuilder& rhs) 
-{
-// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //
@@ -123,7 +103,7 @@ AliMUONVGeometryBuilder::operator = (const AliMUONVGeometryBuilder& rhs)
 TGeoHMatrix 
 AliMUONVGeometryBuilder::ConvertTransform(const TGeoHMatrix& transform) const
 {
-// Convert transformation into the reference frame
+/// Convert transformation into the reference frame
 
   if ( fReferenceFrame.IsIdentity() )
     return transform;
@@ -138,7 +118,7 @@ AliMUONVGeometryBuilder::ConvertTransform(const TGeoHMatrix& transform) const
 TGeoHMatrix 
 AliMUONVGeometryBuilder::ConvertDETransform(const TGeoHMatrix& transform) const
 {
-// Convert transformation into the reference frame
+/// Convert DE transformation into the reference frame
 
   if ( fReferenceFrame.IsIdentity() )
     return transform;
@@ -152,8 +132,7 @@ AliMUONVGeometryBuilder::ConvertDETransform(const TGeoHMatrix& transform) const
 TString  AliMUONVGeometryBuilder::ComposePath(const TString& volName,
                                               Int_t copyNo) const
 {
-// Compose path from given volName and copyNo
-// ---
+/// Compose path from given volName and copyNo
 
   TString path = "/";
   path += volName;
@@ -167,9 +146,8 @@ TString  AliMUONVGeometryBuilder::ComposePath(const TString& volName,
 void AliMUONVGeometryBuilder::MapSV(const TString& path0, 
                                     const TString& volName, Int_t detElemId) const
 {
-// Update the path with all daughters volumes recursively
-// and map it to the detection element Id if it is a sensitive volume
-// ---
+/// Update the path with all daughters volumes recursively
+/// and map it to the detection element Id if it is a sensitive volume
 
   // Get module sensitive volumes map
   Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
@@ -216,8 +194,7 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
 AliMUONGeometryModule*  
 AliMUONVGeometryBuilder::GetGeometry(Int_t moduleId) const
 {
-// Returns the module geometry specified by moduleId
-// ---
+/// Return the module geometry specified by moduleId
 
   for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
 
@@ -234,8 +211,7 @@ AliMUONVGeometryBuilder::GetGeometry(Int_t moduleId) const
 AliMUONGeometryEnvelopeStore*  
 AliMUONVGeometryBuilder::GetEnvelopes(Int_t moduleId) const
 {
-// Returns the envelope store of the module geometry specified by moduleId
-// ---
+/// Return the envelope store of the module geometry specified by moduleId
 
   AliMUONGeometryModule* geometry = GetGeometry(moduleId);
   
@@ -251,8 +227,7 @@ AliMUONVGeometryBuilder::GetEnvelopes(Int_t moduleId) const
 AliMUONStringIntMap*  
 AliMUONVGeometryBuilder::GetSVMap(Int_t moduleId) const
 {
-// Returns the transformation store of the module geometry specified by moduleId
-// ---
+/// Return the transformation store of the module geometry specified by moduleId
 
   AliMUONGeometryModule* geometry = GetGeometry(moduleId);
   
@@ -268,9 +243,8 @@ AliMUONVGeometryBuilder::GetSVMap(Int_t moduleId) const
 void AliMUONVGeometryBuilder::SetTranslation(Int_t moduleId, 
                                   const TGeoTranslation& translation)
 {
-// Sets the translation to the geometry module given by moduleId,
-// applies reference frame transformation 
-// ---
+/// Set the translation to the geometry module given by moduleId,
+/// apply reference frame transformation 
 
   AliMUONGeometryModule* geometry = GetGeometry(moduleId);
   
@@ -292,9 +266,8 @@ void AliMUONVGeometryBuilder::SetTransformation(Int_t moduleId,
                                   const TGeoTranslation& translation,
 				  const TGeoRotation& rotation)
 {
-// Sets the translation to the geometry module given by moduleId,
-// applies reference frame transformation 
-// ---
+/// Set the transformation to the geometry module given by moduleId,
+/// apply reference frame transformation 
 
   AliMUONGeometryModule* geometry = GetGeometry(moduleId);
   
@@ -373,7 +346,7 @@ void  AliMUONVGeometryBuilder::SetReferenceFrame(
 //______________________________________________________________________________
 void  AliMUONVGeometryBuilder::CreateDetElements() const
 {
-/// Create detection element and fill their global and
+/// Create detection elements and fill their global and
 /// local transformations from geometry.
 
   for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
@@ -426,8 +399,7 @@ void  AliMUONVGeometryBuilder::CreateDetElements() const
 //_____ _________________________________________________________________________
 void  AliMUONVGeometryBuilder::RebuildSVMaps(Bool_t withEnvelopes) const
 {
-// Clear the SV maps in memory and fill them from defined geometry.
-// ---
+/// Clear the SV maps in memory and fill them from defined geometry.
 
   for (Int_t i=0; i<fGeometryModules->GetEntriesFast(); i++) {
     AliMUONGeometryModule* geometry 

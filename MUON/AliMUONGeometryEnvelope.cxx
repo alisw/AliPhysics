@@ -29,7 +29,9 @@
 #include "AliMUONGeometryConstituent.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryEnvelope)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(const TString& name, 
@@ -94,17 +96,6 @@ AliMUONGeometryEnvelope::AliMUONGeometryEnvelope()
 /// Default constructor
 }
 
-
-//______________________________________________________________________________
-AliMUONGeometryEnvelope::AliMUONGeometryEnvelope(
-                                        const AliMUONGeometryEnvelope& rhs)
-  : TNamed(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
 //______________________________________________________________________________
 AliMUONGeometryEnvelope::~AliMUONGeometryEnvelope() 
 {
@@ -118,20 +109,6 @@ AliMUONGeometryEnvelope::~AliMUONGeometryEnvelope()
     fConstituents->Delete();
     delete fConstituents;
   }  
-}
-
-//______________________________________________________________________________
-AliMUONGeometryEnvelope& 
-AliMUONGeometryEnvelope::operator = (const AliMUONGeometryEnvelope& rhs) 
-{
-/// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //
@@ -247,7 +224,7 @@ void  AliMUONGeometryEnvelope::SetTranslation(const TGeoTranslation& translation
 //______________________________________________________________________________
 void  AliMUONGeometryEnvelope::SetRotation(const TGeoRotation& rotation)
 {
-/// Set the enevlope rotation
+/// Set the envelope rotation
 
   TGeoRotation* rot = new TGeoRotation();
   rot->SetMatrix(const_cast<Double_t*>(rotation.GetRotationMatrix()));
@@ -258,8 +235,7 @@ void  AliMUONGeometryEnvelope::SetRotation(const TGeoRotation& rotation)
 //______________________________________________________________________________
 void  AliMUONGeometryEnvelope::SetTransform(const TGeoCombiTrans& transform)
 {
-// Sets the enevlope transformation
-// ---
+/// Set the envelope transformation
 
   fTransformation
     ->SetTranslation(const_cast<Double_t*>(transform.GetTranslation()));

@@ -27,43 +27,20 @@
 
 #include "AliMUONVGeometryDESegmentation.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONVGeometryDESegmentation)
+/// \endcond
 
 
 //______________________________________________________________________________
 AliMUONVGeometryDESegmentation::AliMUONVGeometryDESegmentation() 
 : AliSegmentation()
 {
-// Normal/default constructor
+/// Normal/default constructor
 }
 
 //______________________________________________________________________________
-AliMUONVGeometryDESegmentation::AliMUONVGeometryDESegmentation(
-                                  const AliMUONVGeometryDESegmentation& rhs) 
-  : AliSegmentation(rhs)
+AliMUONVGeometryDESegmentation::~AliMUONVGeometryDESegmentation() 
 {
-// Copy constructor
-}
-
-//______________________________________________________________________________
-AliMUONVGeometryDESegmentation::~AliMUONVGeometryDESegmentation() {
-// Destructor
+/// Destructor
 } 
-
-//
-// operators
-//
-
-//______________________________________________________________________________
-AliMUONVGeometryDESegmentation& 
-AliMUONVGeometryDESegmentation::operator=(const AliMUONVGeometryDESegmentation& rhs)
-{
-// Copy operator 
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
-}

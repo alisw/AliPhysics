@@ -34,8 +34,9 @@
 
 #include "AliLog.h"
 
-
+/// \cond CLASSIMP
 ClassImp(AliMUONSegmentation)
+/// \endcond
  
 //______________________________________________________________________________
 AliMUONSegmentation::AliMUONSegmentation(Int_t nofModules)
@@ -80,15 +81,6 @@ AliMUONSegmentation::AliMUONSegmentation()
 } 
 
 //______________________________________________________________________________
-AliMUONSegmentation::AliMUONSegmentation(const AliMUONSegmentation& right) 
-  : TObject(right) 
-{  
-/// Protected copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
-//______________________________________________________________________________
 AliMUONSegmentation::~AliMUONSegmentation()
 {
 /// Destructor
@@ -100,20 +92,6 @@ AliMUONSegmentation::~AliMUONSegmentation()
   delete fModuleSegmentations[0];
   delete fModuleSegmentations[1];
 }
-
-//______________________________________________________________________________
-AliMUONSegmentation& 
-AliMUONSegmentation::operator=(const AliMUONSegmentation& right)
-{
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // public functions
@@ -195,7 +173,7 @@ AliMUONGeometrySegmentation*
 AliMUONSegmentation::GetModuleSegmentation(
                         Int_t moduleId, Int_t cathod, Bool_t warn) const
 {
-/// Return the geometry module specified by moduleId
+/// Return the geometry module segmentation specified by moduleId
 
   if (cathod < 0 || cathod >= 2) {
     if (warn) {
@@ -267,7 +245,8 @@ AliMUONSegmentation::GetMpSegmentation(
 Bool_t 
 AliMUONSegmentation::HasDE(Int_t detElemId, Int_t cathod) const
 {
-  // Get DE segmentation 
+/// Return true if segmentation for detElemId and cathod is defined.
+
   const AliMUONVGeometryDESegmentation* kdeSegmentation
     = GetDESegmentation(detElemId, cathod, false);
     
@@ -279,8 +258,8 @@ AliMUONSegmentation::HasDE(Int_t detElemId, Int_t cathod) const
 TString 
 AliMUONSegmentation::GetDEName(Int_t detElemId, Int_t cathod) const
 {
+/// Get detection element name 
 
-  // Get geometry segmentation 
   AliMUONGeometrySegmentation* moduleSegmentation
     = GetModuleSegmentationByDEId(detElemId, cathod, true);
     

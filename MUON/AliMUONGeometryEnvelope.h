@@ -10,7 +10,7 @@
 ///
 /// Helper class for definititon of an assembly of volumes.
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_ENVELOPE_H
 #define ALI_MUON_GEOMETRY_ENVELOPE_H
@@ -68,8 +68,6 @@ class AliMUONGeometryEnvelope : public TNamed
 
   protected:
     AliMUONGeometryEnvelope(const AliMUONGeometryEnvelope& rhs);
-
-    // operators  
     AliMUONGeometryEnvelope& operator = (const AliMUONGeometryEnvelope& rhs);
 
   private:
@@ -90,18 +88,25 @@ class AliMUONGeometryEnvelope : public TNamed
 
 // inline functions
 
+/// Return true if envelope is virtual
 inline Bool_t AliMUONGeometryEnvelope::IsVirtual() const
 { return fIsVirtual; }  
 
+/// Return true if envelope is placed with MANY option
 inline Bool_t AliMUONGeometryEnvelope::IsMANY() const
 { return fIsMANY; }  
 
+/// Return copy number
 inline Int_t AliMUONGeometryEnvelope::GetCopyNo() const
 { return fCopyNo; }  
 
+/// Return the envelope transformation wrt to the mother frame 
+/// (the chamber position)
 inline const TGeoCombiTrans* AliMUONGeometryEnvelope::GetTransformation() const 
 { return fTransformation; }
 
+/// Return the array of constituents names and transformations 
+/// wrt to the envelope position
 inline const TObjArray* AliMUONGeometryEnvelope::GetConstituents() const
 { return fConstituents; }
 

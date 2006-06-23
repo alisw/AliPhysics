@@ -7,7 +7,7 @@
 /// \class AliMUONGeometryBuilder
 /// \brief Manager class for geometry construction via geometry builders.
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_BUILDER_H
 #define ALI_MUON_GEOMETRY_BUILDER_H
@@ -92,20 +92,25 @@ class AliMUONGeometryBuilder : public TObject
 
 // inline functions
 
+/// Initialize geometry
 inline void  AliMUONGeometryBuilder::InitGeometry()
 { InitGeometry(fSVMapFileName); }
 
+/// Write sensitive volume maps
 inline void  AliMUONGeometryBuilder::WriteSVMaps()
 { WriteSVMaps(fSVMapFileName + fgkOutFileNameExtension); }
 
+/// Return geometry parametrisation
 inline 
 const AliMUONGeometry* AliMUONGeometryBuilder::GetGeometry() const
 { return fGeometry; }
 
+/// Return geometry transformer
 inline 
 const AliMUONGeometryTransformer* AliMUONGeometryBuilder::GetTransformer() const
 { return fGeometry->GetTransformer(); }
 
+/// Return option for reading transformations from a file
 inline Bool_t  AliMUONGeometryBuilder::GetAlign() const
 { return fAlign; }
 

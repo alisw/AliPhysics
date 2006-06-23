@@ -7,12 +7,9 @@
 /// \class AliMUONVGeometryDESegmentation
 /// \brief Extension for AliSegmentation interface for detection elements
 ///
-/// Extension for AliSegmentation interface,
-/// added functions:                                                         \n
-/// Bool_t  HasPad(Float_t x, Float_t y, Float_t z);                         \n
-/// Bool_t  HasPad(Int_t ix, Int_t iy);                                      \n
+/// \deprecated - To be removed with passing to maping segmentation interface
 ///
-/// Author:Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_V_GEOMETRY_DE_SEGMENTATION_H
 #define ALI_MUON_V_GEOMETRY_DE_SEGMENTATION_H
@@ -29,28 +26,26 @@ class AliMUONVGeometryDESegmentation : public AliSegmentation
     virtual ~AliMUONVGeometryDESegmentation();
 
     // methods
+                       /// Return true if a pad exists in the given position
     virtual Bool_t  HasPad(Float_t x, Float_t y, Float_t z) = 0; 
-                       // Returns true if a pad exists in the given position
+                       /// Return true if a pad with given indices exists
     virtual Bool_t  HasPad(Int_t ix, Int_t iy) = 0;
-                       // Returns true if a pad with given indices exists
 
+                       /// Return the direction with a constant pad size  
+		       /// (Direction or coordinate where the spatial resolution 
+		       /// is the best) \n
+                       /// Normally kDirY will correspond with cathode segmentation 
+		       /// for the bending plane and kDirX with cathode segmentation 
+		       /// for the non bending plane
     virtual AliMUONGeometryDirection  GetDirection() = 0;
-                       // Returns the direction with a constant pad size  
-		       // (Direction or coordinate where the spatial resolution 
-		       // is the best)
-                       // Normally kDirY will correspond with cathode segmentation 
-		       // for the bending plane and kDirX with cathode segmentation 
-		       // for the non bending plane
 		       
+                       /// Access to mapping
     virtual const AliMpVSegmentation* GetMpSegmentation() const = 0; 		       
-                       // Access to mapping
 
   protected:
     AliMUONVGeometryDESegmentation(const AliMUONVGeometryDESegmentation& rhs);
-  
-    // operators
     AliMUONVGeometryDESegmentation& operator=(
-      const AliMUONVGeometryDESegmentation & rhs);
+      const AliMUONVGeometryDESegmentation& rhs);
 
    ClassDef(AliMUONVGeometryDESegmentation,1) // Det element segmentation interface
 };

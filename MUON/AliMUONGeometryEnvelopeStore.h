@@ -10,7 +10,7 @@
 /// Class for definititon of the temporary volume envelopes
 /// used in geometry construction
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_ENVELOPE_STORE_H
 #define ALI_MUON_GEOMETRY_ENVELOPE_STORE_H
@@ -34,13 +34,8 @@ class AliMUONGeometryEnvelopeStore : public TObject
   public:
     AliMUONGeometryEnvelopeStore(AliMUONGeometryStore* detElements);
     AliMUONGeometryEnvelopeStore();
-    AliMUONGeometryEnvelopeStore(const AliMUONGeometryEnvelopeStore& rhs);
     virtual ~AliMUONGeometryEnvelopeStore();
 
-    // operators  
-    AliMUONGeometryEnvelopeStore& 
-    operator = (const AliMUONGeometryEnvelopeStore& rhs);
-  
     // methods
         
           // adding virtual envelopes 	
@@ -124,6 +119,10 @@ class AliMUONGeometryEnvelopeStore : public TObject
     const TObjArray*  GetEnvelopes() const;
     Int_t             GetNofDetElements() const;
 
+  protected:
+    AliMUONGeometryEnvelopeStore(const AliMUONGeometryEnvelopeStore& rhs);
+    AliMUONGeometryEnvelopeStore& operator = (const AliMUONGeometryEnvelopeStore& rhs);
+
   private:
     // methods
     TGeoHMatrix ConvertDETransform(const TGeoHMatrix& transform) const;
@@ -134,11 +133,11 @@ class AliMUONGeometryEnvelopeStore : public TObject
     TObjArray*  fEnvelopes; ///< \brief the envelopes names and transformations
 		            /// wrt to the chamber position in mother volume                                 
     AliMUONGeometryStore*  fDetElements; ///< \brief detection elements
-                            /// used for alignement of enevelopes
+                                         /// used for alignement of envelopes
     TGeoCombiTrans fReferenceFrame; ///< \brief the transformation from the builder 
                                     /// reference frame to that of the transform 
 				    /// data files
-    Bool_t      fDebug;     ///< Switch for debugging  
+    Bool_t      fDebug;     ///< Switch for debugging  \deprecated - use AliLog instead
     Bool_t      fAlign;     ///< option to read transformations from a file
  
   ClassDef(AliMUONGeometryEnvelopeStore,2) // Geometry envelope store
@@ -146,18 +145,26 @@ class AliMUONGeometryEnvelopeStore : public TObject
 
 // inline functions
 
+/// Set debug option
+/// \deprecated - use AliLog instead
 inline void  AliMUONGeometryEnvelopeStore::SetDebug(Bool_t debug)
 { fDebug = debug; }
 
+/// Return align option - if true, transformations are read from a file
 inline Bool_t  AliMUONGeometryEnvelopeStore::GetAlign() const
 { return fAlign; }
 
+/// Set align option - if true, transformations are read from a file
 inline void AliMUONGeometryEnvelopeStore::SetAlign(Bool_t align)
 { fAlign = align; }
 
+/// Return the array of the envelopes names and transformations
+/// wrt to the chamber position in mother volume
 inline const TObjArray* AliMUONGeometryEnvelopeStore::GetEnvelopes() const
 { return fEnvelopes; }
 
+/// Set the transformation from the builder reference frame to that of the transform 
+/// data files
 inline void 
 AliMUONGeometryEnvelopeStore::SetReferenceFrame(const TGeoCombiTrans& referenceFrame)
 { fReferenceFrame = referenceFrame; }

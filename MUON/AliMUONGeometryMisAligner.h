@@ -6,8 +6,8 @@
 /// \ingroup geometry
 /// \class AliMUONGeometryMisAligner
 /// \brief Class for misalignment of geometry transformations
-///
-/// Authors: Bruce Becker, Javier Castillo
+//
+//  Authors: Bruce Becker, Javier Castillo
 
 
 #ifndef ALI_MUON_GEOMETRY_MIS_ALIGNER_H
@@ -36,28 +36,35 @@ class AliMUONGeometryMisAligner:public TObject
   AliMUONGeometryTransformer* MisAlign(const AliMUONGeometryTransformer* transformer, 
                                        Bool_t verbose = kFALSE);
   
+  /// Set cartesian displacement parameters different along x, y
   void SetCartMisAlig(Double_t xmean, Double_t xwidth, Double_t ymean, Double_t ywidth)
     {fCartXMisAligM = xmean; fCartXMisAligW = xwidth; fCartYMisAligM = ymean; fCartYMisAligW = ywidth;}
 
+  /// Set cartesian displacement parameters, the same along x, y
   void SetCartMisAlig(Double_t mean, Double_t width)
     {fCartXMisAligM = mean; fCartXMisAligW = width; fCartYMisAligM = mean; fCartYMisAligW = width;}
   
+  /// Set angular displacement
   void SetAngMisAlig(Double_t mean, Double_t width)
     {fAngMisAligM = mean; fAngMisAligW = width;}
   
-  void SetMaxCartMisAlig(Double_t width) // Kept for backward compatibility
+  /// Set cartesian displacement (Kept for backward compatibility)
+  void SetMaxCartMisAlig(Double_t width) 
     {fCartXMisAligM = 0.0; fCartXMisAligW = width; fCartYMisAligM = 0.0; fCartYMisAligW = width;}
   
-  void SetMaxAngMisAlig(Double_t width) // Kept for backward compatibility
+  /// Set angular displacement (Kept for backward compatibility)
+  void SetMaxAngMisAlig(Double_t width) 
     {fAngMisAligM = 0.0; fAngMisAligW = width;}
 
   void SetXYAngMisAligFactor(Double_t factor);
 
   void SetZCartMisAligFactor(Double_t factor);
 
+  /// Set option for gaussian distribution 
   void SetUseGaus(Bool_t usegaus)
     {fUseGaus=usegaus; fUseUni=!usegaus;}
 
+  /// Set option for uniform distribution 
   void SetUseUni(Bool_t useuni)
     {fUseGaus=!useuni; fUseUni=useuni;}
   

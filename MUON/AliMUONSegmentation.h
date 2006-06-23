@@ -11,12 +11,13 @@
 /// - mapping segmentation
 /// - DE segmentation (operating in local DE reference frame)
 /// - module segmentation (operating in global reference frame)
-/// As some detection element are sharing the same objects
+///
+/// As some detection elements are sharing the same objects
 /// (AliMpVSegmentation, AliMUONVGeometryDESegmentation),
 /// all segmentations objects have to be always deleted
 /// altogether via deleting this container object. 
 /// 
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_SEGMENTATION_H
 #define ALI_MUON_SEGMENTATION_H
@@ -68,7 +69,7 @@ class AliMUONSegmentation : public TObject
 
     /** Mapping segmentations access by cathode number.
       cathod can be 0 or 1. Note that there's no trivial relationship
-      between the cathode number and whether the corresponding plane
+      between the cathod number and whether the corresponding plane
       is a Bending or NonBending one.
       **/
     const AliMpVSegmentation* GetMpSegmentation(

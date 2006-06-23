@@ -7,7 +7,7 @@
 /// \class AliMUONGeometryDetElement
 /// \brief Class for storing detection element transformations 
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_DET_ELEMENT_H
 #define ALI_MUON_GEOMETRY_DET_ELEMENT_H
@@ -57,8 +57,6 @@ class AliMUONGeometryDetElement : public TObject
 
   protected:
     AliMUONGeometryDetElement(const AliMUONGeometryDetElement& rhs);
-
-    // operators  
     AliMUONGeometryDetElement& operator = (const AliMUONGeometryDetElement& rhs);
   
   private:
@@ -76,19 +74,24 @@ class AliMUONGeometryDetElement : public TObject
 
 // inline functions
 
+/// Set the full path of the aligned volume or envelope in geometry
 inline void AliMUONGeometryDetElement::SetVolumePath(const TString& volumePath)
 { fVolumePath = volumePath; }
 
+/// Return detection element ID
 inline Int_t AliMUONGeometryDetElement::GetId() const
 { return GetUniqueID(); }
 
+/// Return the full path of the aligned volume or envelope in geometry
 inline TString AliMUONGeometryDetElement::GetVolumePath() const
 { return fVolumePath; }
 
+/// Return the detection element transformation wrt module
 inline const TGeoHMatrix* 
 AliMUONGeometryDetElement::GetLocalTransformation() const
 { return fLocalTransformation; }
 
+/// Return the detection element transformation wrt world
 inline const TGeoHMatrix* 
 AliMUONGeometryDetElement::GetGlobalTransformation() const
 { return fGlobalTransformation; }

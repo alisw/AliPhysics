@@ -14,7 +14,7 @@
 /// If geometry is loaded from a file, the list of aligned volume paths
 /// has to be read first from volpaths.dat file.
 /// 
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_TRANSFORMER_H
 #define ALI_MUON_GEOMETRY_TRANSFORMER_H
@@ -139,9 +139,12 @@ class AliMUONGeometryTransformer : public TObject
 };
 
 // inline methods
+
+/// Return the number of contained module transformers
 inline Int_t AliMUONGeometryTransformer::GetNofModuleTransformers() const
 { return fModuleTransformers->GetEntriesFast(); }
 
+/// Return the array of misalignment data
 inline const TClonesArray* AliMUONGeometryTransformer::GetMisAlignmentData() const	
 { return fMisAlignArray; }		       
 

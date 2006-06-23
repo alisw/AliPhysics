@@ -7,7 +7,7 @@
 /// \class AliMUONGeometry
 /// \brief Container class for geometry modules
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_H
 #define ALI_MUON_GEOMETRY_H
@@ -62,6 +62,7 @@ class AliMUONGeometry : public TObject
   ClassDef(AliMUONGeometry,1)  // Geometry parametrisation
 };
 
+/// Return geometry transformer
 inline AliMUONGeometryTransformer* AliMUONGeometry::GetTransformer() const
 { return fTransformer; }
 

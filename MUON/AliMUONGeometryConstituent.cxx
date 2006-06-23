@@ -26,7 +26,9 @@
 #include "AliMUONGeometryConstituent.h"
 #include "AliLog.h"
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryConstituent)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONGeometryConstituent::AliMUONGeometryConstituent(const TString& name, 
@@ -34,7 +36,8 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent(const TString& name,
   : TNamed(name, name),
     fCopyNo(copyNo),
     fNpar(npar),
-    fParam(0)				   
+    fParam(0), 
+    fTransformation(0)				   
 {				    
 /// Standard constructor for a constituent without translation & rotation
 
@@ -134,17 +137,6 @@ AliMUONGeometryConstituent::AliMUONGeometryConstituent()
 /// Default constructor
 }
 
-
-//______________________________________________________________________________
-AliMUONGeometryConstituent::AliMUONGeometryConstituent(
-                                        const AliMUONGeometryConstituent& rhs)
-  : TNamed(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
 //______________________________________________________________________________
 AliMUONGeometryConstituent::~AliMUONGeometryConstituent() 
 {
@@ -153,18 +145,3 @@ AliMUONGeometryConstituent::~AliMUONGeometryConstituent()
   delete fTransformation;
   delete [] fParam;
 }
-
-//______________________________________________________________________________
-AliMUONGeometryConstituent& 
-AliMUONGeometryConstituent::operator = (const AliMUONGeometryConstituent& rhs) 
-{
-/// Protected assignment operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
-}
-

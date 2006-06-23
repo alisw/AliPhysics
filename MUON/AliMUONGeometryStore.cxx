@@ -33,7 +33,9 @@
 const Int_t AliMUONGeometryStore::fgkInitSize = 100;
 const Int_t AliMUONGeometryStore::fgkCoefficient = 100;
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryStore)
+/// \endcond
 
 //
 // static methods
@@ -42,8 +44,7 @@ ClassImp(AliMUONGeometryStore)
 //______________________________________________________________________________
 Int_t AliMUONGeometryStore::GetModuleId(Int_t detElemId)
 {
-// Get module Id from detection element Id
-// ---
+/// Get module Id from detection element Id
 
   return detElemId/fgkCoefficient - 1;
 }  
@@ -72,33 +73,10 @@ AliMUONGeometryStore::AliMUONGeometryStore()
 }
 
 //______________________________________________________________________________
-AliMUONGeometryStore::AliMUONGeometryStore(const AliMUONGeometryStore& rhs)
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
-//______________________________________________________________________________
 AliMUONGeometryStore::~AliMUONGeometryStore() 
 {
 /// Destructor
 
-}
-
-//______________________________________________________________________________
-AliMUONGeometryStore& 
-AliMUONGeometryStore::operator = (const AliMUONGeometryStore& rhs) 
-{
-/// Protected assignment operator 
-
- // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //
@@ -108,7 +86,7 @@ AliMUONGeometryStore::operator = (const AliMUONGeometryStore& rhs)
 //______________________________________________________________________________
 Int_t AliMUONGeometryStore::GetDEIndex(Int_t detElemId) const
 {
-/// Returns the index of detector element specified by detElemId
+/// Return the index of detector element specified by detElemId
 
   return detElemId - detElemId/fgkCoefficient*fgkCoefficient;
  }  
@@ -142,7 +120,7 @@ void AliMUONGeometryStore::Add(Int_t objectId, TObject* object)
 TObject* 
 AliMUONGeometryStore::Get(Int_t objectId, Bool_t warn) const
 {
-/// Returns the object for the specified detector element Id
+/// Return the object for the specified detector element Id
 
   Int_t index = GetDEIndex(objectId);
   
@@ -157,8 +135,8 @@ AliMUONGeometryStore::Get(Int_t objectId, Bool_t warn) const
 //______________________________________________________________________________
 Int_t  AliMUONGeometryStore::GetNofEntries() const
 {
-/// Return number of entries
-/// Add check if the array is already filled
+/// Return number of entries.
+/// \todo Add check if the array is already filled
 
   return fObjects.GetEntriesFast();
 }  
@@ -169,7 +147,7 @@ TObject*
 AliMUONGeometryStore::GetEntry(Int_t index) const
 {
 /// Return entry at specified index.
-/// Add check if the array is already filled
+/// \todo Add check if the array is already filled
   
   return (TObject*) fObjects.At(index);
 }  

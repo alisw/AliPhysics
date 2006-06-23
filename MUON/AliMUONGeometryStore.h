@@ -11,7 +11,7 @@
 /// which are sorted using the AliMUONVGeometryDEIndexing class.
 /// The class provides fast access to detection element via detElemId.
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_STORE_H
 #define ALI_MUON_GEOMETRY_STORE_H
@@ -41,8 +41,6 @@ class AliMUONGeometryStore : public TObject
 
   protected:
     AliMUONGeometryStore(const AliMUONGeometryStore& rhs);
-
-    // operators  
     AliMUONGeometryStore& operator = (const AliMUONGeometryStore& rhs);
   
   private:

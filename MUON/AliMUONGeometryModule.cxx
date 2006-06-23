@@ -39,7 +39,9 @@
 #include <TArrayI.h>
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryModule)
+/// \endcond
 
 //______________________________________________________________________________
 AliMUONGeometryModule::AliMUONGeometryModule(Int_t moduleId)
@@ -81,16 +83,6 @@ AliMUONGeometryModule::AliMUONGeometryModule()
 /// Default constructor
 }
 
-
-//______________________________________________________________________________
-AliMUONGeometryModule::AliMUONGeometryModule(const AliMUONGeometryModule& rhs)
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
 //______________________________________________________________________________
 AliMUONGeometryModule::~AliMUONGeometryModule() 
 {
@@ -100,20 +92,6 @@ AliMUONGeometryModule::~AliMUONGeometryModule()
   delete fEnvelopes;
   delete fSVMap;
   delete fTransformer;
-}
-
-//______________________________________________________________________________
-AliMUONGeometryModule& 
-AliMUONGeometryModule::operator = (const AliMUONGeometryModule& rhs) 
-{
-/// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //
@@ -186,7 +164,7 @@ void  AliMUONGeometryModule::SetAlign(Bool_t align)
 AliMUONGeometryDetElement* 
 AliMUONGeometryModule::FindBySensitiveVolume(const TString& sensVolume) const
 {
-/// Find TGeoCombiTrans for the detector element Id specified by aligned volume 
+/// Find detection element which the sensitive volume specified by name belongs to
 
   Int_t detElemId = fSVMap->Get(sensVolume);
 

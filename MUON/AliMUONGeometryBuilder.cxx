@@ -48,7 +48,9 @@ const TString  AliMUONGeometryBuilder::fgkDefaultTransformFileName = "transform.
 const TString  AliMUONGeometryBuilder::fgkDefaultSVMapFileName = "svmap.dat";    
 const TString  AliMUONGeometryBuilder::fgkOutFileNameExtension = ".out";    
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryBuilder)
+/// \endcond
 
 // static functions
 
@@ -149,15 +151,6 @@ AliMUONGeometryBuilder::AliMUONGeometryBuilder()
 } 
 
 //______________________________________________________________________________
-AliMUONGeometryBuilder::AliMUONGeometryBuilder(const AliMUONGeometryBuilder& right) 
-  : TObject(right) 
-{  
-/// Copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
-//______________________________________________________________________________
 AliMUONGeometryBuilder::~AliMUONGeometryBuilder()
 {
 /// Destructor
@@ -165,20 +158,6 @@ AliMUONGeometryBuilder::~AliMUONGeometryBuilder()
   delete fGeometryBuilders;
   delete fGeometry;
 }
-
-//______________________________________________________________________________
-AliMUONGeometryBuilder& 
-AliMUONGeometryBuilder::operator=(const AliMUONGeometryBuilder& right)
-{
-/// Assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // private functions
@@ -351,7 +330,7 @@ void AliMUONGeometryBuilder::CreateGeometryWithTGeo()
 void AliMUONGeometryBuilder::CreateGeometryWithoutTGeo()
 {
 /// Construct geometry using geometry builders.
-/// Virtual modules/enevlopes are not placed
+/// Virtual modules/envelopes are not placed
 
   if (fAlign) {
     // Read transformations from ASCII data file  
@@ -624,7 +603,7 @@ void AliMUONGeometryBuilder::SetAlign(Bool_t align)
 //_____________________________________________________________________________
 void AliMUONGeometryBuilder::SetAlign(const TString& fileName, Bool_t align)
 { 
-/// Set the option for alignement
+/// Set the option for alignement and the transformations file name
 
   fTransformFileName = fileName;
   fAlign = align; 

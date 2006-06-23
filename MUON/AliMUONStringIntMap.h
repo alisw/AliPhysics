@@ -7,7 +7,7 @@
 /// \class AliMUONStringIntMap
 /// \brief Substitutes map <string, int> which ALICE does not allow to use 
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_STRING_INT_MAP_H
 #define ALI_MUON_STRING_INT_MAP_H
@@ -32,8 +32,6 @@ class AliMUONStringIntMap : public TObject
     
   protected:
     AliMUONStringIntMap(const AliMUONStringIntMap& rhs);
-
-    // operators  
     AliMUONStringIntMap& operator = (const AliMUONStringIntMap& rhs);
  
   private:

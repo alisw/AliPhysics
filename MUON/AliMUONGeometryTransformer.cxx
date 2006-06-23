@@ -40,7 +40,9 @@
 
 #include <sstream>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryTransformer)
+/// \endcond
  
 //______________________________________________________________________________
 AliMUONGeometryTransformer::AliMUONGeometryTransformer(Bool_t isOwner)
@@ -65,16 +67,6 @@ AliMUONGeometryTransformer::AliMUONGeometryTransformer()
 } 
 
 //______________________________________________________________________________
-AliMUONGeometryTransformer::AliMUONGeometryTransformer(
-                                   const AliMUONGeometryTransformer& right) 
-  : TObject(right) 
-{  
-/// Copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
-//______________________________________________________________________________
 AliMUONGeometryTransformer::~AliMUONGeometryTransformer()
 {
 /// Destructor
@@ -82,20 +74,6 @@ AliMUONGeometryTransformer::~AliMUONGeometryTransformer()
   delete fModuleTransformers;
   delete fMisAlignArray;
 }
-
-//______________________________________________________________________________
-AliMUONGeometryTransformer& 
-AliMUONGeometryTransformer::operator=(const AliMUONGeometryTransformer& right)
-{
-/// Assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // private methods
@@ -125,8 +103,7 @@ TGeoHMatrix AliMUONGeometryTransformer::GetTransform(
 		  Double_t a1, Double_t a2, Double_t a3, 
  		  Double_t a4, Double_t a5, Double_t a6) const
 {		  
-// Builds the transformation from the given parameters
-// ---
+/// Build the transformation from the given parameters
 
   // Compose transform
   return TGeoCombiTrans(TGeoTranslation(x, y, z), 
@@ -138,8 +115,7 @@ TGeoHMatrix AliMUONGeometryTransformer::GetTransform(
 void AliMUONGeometryTransformer::FillModuleVolPath(Int_t moduleId,
                                            const TString& volPath) 
 {
-// Create module with the given moduleId and volPath
-// ---
+/// Create module with the given moduleId and volPath
 
   // Get/Create geometry module transformer
   AliMUONGeometryModuleTransformer* moduleTransformer
@@ -156,7 +132,7 @@ void AliMUONGeometryTransformer::FillModuleVolPath(Int_t moduleId,
 void AliMUONGeometryTransformer::FillDetElemVolPath(Int_t detElemId, 
                                            const TString& volPath) 
 {
-// Create detection element with the given detElemId and volPath
+/// Create detection element with the given detElemId and volPath
 
   // Module Id
   Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
@@ -178,8 +154,7 @@ void AliMUONGeometryTransformer::FillModuleTransform(Int_t moduleId,
 		  Double_t a1, Double_t a2, Double_t a3,
  		  Double_t a4, Double_t a5, Double_t a6) 
 {
-// Fill the transformation of the module.
-// ---
+/// Fill the transformation of the module.
 
   // Get/Create geometry module transformer
   moduleId--;
@@ -207,8 +182,7 @@ void AliMUONGeometryTransformer::FillDetElemTransform(
 		  Double_t a1, Double_t a2, Double_t a3,
  		  Double_t a4, Double_t a5, Double_t a6) 
 {
-// Fill the transformation of the detection element.
-// ---
+/// Fill the transformation of the detection element.
 
   // Module Id
   Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
@@ -248,8 +222,7 @@ void AliMUONGeometryTransformer::FillDetElemTransform(
 Bool_t  
 AliMUONGeometryTransformer::ReadVolPaths(ifstream& in)
 {
-// Reads modules and detection element volume paths from stream
-// ---
+/// Read modules and detection element volume paths from stream
 
   Int_t id;
   TString key, volumePath;
@@ -282,9 +255,8 @@ AliMUONGeometryTransformer::ReadVolPaths(ifstream& in)
 //______________________________________________________________________________
 TString  AliMUONGeometryTransformer::ReadModuleTransforms(ifstream& in)
 {
-// Reads and fills modules transformations from a file
-// Returns true, if reading finished correctly.
-// ---
+/// Read and fill modules transformations from the stream.
+/// Return true, if reading finished correctly.
 
   TString key("CH");
   while ( key == TString("CH") ) {
@@ -325,9 +297,8 @@ TString  AliMUONGeometryTransformer::ReadModuleTransforms(ifstream& in)
 //______________________________________________________________________________
 TString  AliMUONGeometryTransformer::ReadDetElemTransforms(ifstream& in)
 {
-// Reads detection elements transformations from a file
-// Returns true, if reading finished correctly.
-// ---
+/// Read detection elements transformations from the stream.
+/// Return true, if reading finished correctly.
 
   TString key("DE");
   while ( key == TString("DE") ) {
@@ -371,7 +342,7 @@ TString  AliMUONGeometryTransformer::ReadDetElemTransforms(ifstream& in)
 Bool_t  
 AliMUONGeometryTransformer::LoadTransforms(TGeoManager* tgeoManager)
 {
-/// Loads transformations for defined modules and detection elements
+/// Load transformations for defined modules and detection elements
 /// from the root file
 
   if ( !tgeoManager) {
@@ -437,9 +408,8 @@ AliMUONGeometryTransformer::LoadTransforms(TGeoManager* tgeoManager)
 Bool_t  
 AliMUONGeometryTransformer::ReadVolPaths(const TString& fileName)
 {
-// Reads detection element volume paths from a file
-// Returns true, if reading finished correctly.
-// ---
+/// Read detection element volume paths from a file.
+/// Return true, if reading finished correctly.
 
   // File path
   TString filePath = gSystem->Getenv("ALICE_ROOT");
@@ -462,9 +432,8 @@ AliMUONGeometryTransformer::ReadVolPaths(const TString& fileName)
 Bool_t  
 AliMUONGeometryTransformer::ReadTransformations(const TString& fileName)
 {
-// Reads transformations from a file
-// Returns true, if reading finished correctly.
-// ---
+/// Read transformations from a file.
+/// Return true, if reading finished correctly.
 
   // File path
   TString filePath = gSystem->Getenv("ALICE_ROOT");
@@ -499,9 +468,8 @@ AliMUONGeometryTransformer::ReadTransformations(const TString& fileName)
 Bool_t  
 AliMUONGeometryTransformer::ReadTransformations2(const TString& fileName)
 {
-// Reads transformations from root geometry file
-// Returns true, if reading finished correctly.
-// ---
+/// Read transformations from root geometry file.
+/// Return true, if reading finished correctly.
 
   // File path
   TString filePath = gSystem->Getenv("ALICE_ROOT");
@@ -521,8 +489,7 @@ AliMUONGeometryTransformer::ReadTransformations2(const TString& fileName)
 void AliMUONGeometryTransformer::WriteTransform(ofstream& out,
                                    const TGeoMatrix* transform) const
 {
-// Writes the transformations 
-// ---
+/// Write given transformation 
 
   out << "   pos: ";
   const Double_t* xyz = transform->GetTranslation();
@@ -548,7 +515,7 @@ void AliMUONGeometryTransformer::WriteTransform(ofstream& out,
 //______________________________________________________________________________
 void AliMUONGeometryTransformer::WriteModuleVolPaths(ofstream& out) const
 {
-// Write modules volume paths
+/// Write module volume paths for all module transformers
 
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
@@ -565,7 +532,8 @@ void AliMUONGeometryTransformer::WriteModuleVolPaths(ofstream& out) const
 //______________________________________________________________________________
 void AliMUONGeometryTransformer::WriteDetElemVolPaths(ofstream& out) const
 {
-// Write detection elements volume paths
+/// Write detection element volume paths for all detection elements in all 
+/// module transformers
 
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
@@ -589,7 +557,7 @@ void AliMUONGeometryTransformer::WriteDetElemVolPaths(ofstream& out) const
 //______________________________________________________________________________
 void AliMUONGeometryTransformer::WriteModuleTransforms(ofstream& out) const
 {
-// Write modules transformations
+/// Write module transformations for all module transformers
 
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
@@ -609,8 +577,8 @@ void AliMUONGeometryTransformer::WriteModuleTransforms(ofstream& out) const
 //______________________________________________________________________________
 void AliMUONGeometryTransformer::WriteDetElemTransforms(ofstream& out) const
 {
-// Writes detection elements transformations
-// ---
+/// Write detection element transformations for all detection elements in all 
+/// module transformers
 
   for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
     AliMUONGeometryModuleTransformer* moduleTransformer 
@@ -669,7 +637,7 @@ AliMUONGeometryTransformer::ReadGeometryData(
                                 TGeoManager* tgeoManager)
 {
 /// Load geometry data from root geometry using defined
-/// voluem paths from file
+/// volume paths from file
 
   Bool_t result1 = ReadVolPaths(volPathFileName);
 
@@ -701,9 +669,8 @@ AliMUONGeometryTransformer::WriteGeometryData(
 Bool_t  
 AliMUONGeometryTransformer::WriteVolumePaths(const TString& fileName) const
 {
-// Writes volume paths for modules and detection element volumes into a file
-// Returns true, if writing finished correctly.
-// ---
+/// Write volume paths for modules and detection element volumes into a file.
+/// Return true, if writing finished correctly.
 
   // No writing
   // if builder is not associated with any geometry module
@@ -734,9 +701,8 @@ AliMUONGeometryTransformer::WriteVolumePaths(const TString& fileName) const
 Bool_t  
 AliMUONGeometryTransformer::WriteTransformations(const TString& fileName) const
 {
-// Writes transformations into a file
-// Returns true, if writing finished correctly.
-// ---
+/// Write transformations into a file.
+/// Return true, if writing finished correctly.
 
   // No writing
   // if builder is not associated with any geometry module
@@ -767,9 +733,8 @@ AliMUONGeometryTransformer::WriteTransformations(const TString& fileName) const
 Bool_t  
 AliMUONGeometryTransformer::WriteMisAlignmentData(const TString& fileName) const
 {
-// Writes misalignment data into a file
-// Returns true, if writing finished correctly.
-// ---
+/// Write misalignment data into a file
+/// Return true, if writing finished correctly.
 
   // No writing
   // if builder is not associated with any geometry module
@@ -802,7 +767,7 @@ AliMUONGeometryTransformer::WriteMisAlignmentData(const TString& fileName) const
 void AliMUONGeometryTransformer::AddModuleTransformer(
                           AliMUONGeometryModuleTransformer* moduleTransformer)
 {
-/// Add the geometrymodule to the array
+/// Add the module transformer to the array
 
   fModuleTransformers->AddAt(moduleTransformer, 
                              moduleTransformer->GetModuleId());
@@ -812,7 +777,7 @@ void AliMUONGeometryTransformer::AddModuleTransformer(
 void  AliMUONGeometryTransformer::AddMisAlignModule(Int_t moduleId, 
                                               const TGeoHMatrix& matrix)
 {
-/// Build AliAlignObjMatrix with module ID, its volumePaths
+/// Build AliAlignObjMatrix with module ID, its volumePath
 /// and the given delta transformation matrix					      
 
   if ( ! fMisAlignArray )
@@ -842,7 +807,7 @@ void  AliMUONGeometryTransformer::AddMisAlignModule(Int_t moduleId,
 void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId, 
                                               const TGeoHMatrix& matrix)
 {
-/// Build AliAlignObjMatrix with detection element ID, its volumePaths
+/// Build AliAlignObjMatrix with detection element ID, its volumePath
 /// and the given delta transformation matrix					      
 
   if ( ! fMisAlignArray )
@@ -990,7 +955,7 @@ void AliMUONGeometryTransformer::Local2Global(Int_t detElemId,
 const AliMUONGeometryModuleTransformer* 
 AliMUONGeometryTransformer::GetModuleTransformer(Int_t index, Bool_t warn) const
 {
-/// Return the geometry module specified by index
+/// Return the geometry module transformer specified by index
 
   return GetModuleTransformerNonConst(index, warn);
 }    
@@ -1000,7 +965,7 @@ const AliMUONGeometryModuleTransformer*
 AliMUONGeometryTransformer::GetModuleTransformerByDEId(Int_t detElemId, 
                                                        Bool_t warn) const
 {
-/// Return the geometry module specified by index
+/// Return the geometry module transformer specified by detection element ID
 
   // Get module index
   Int_t index = AliMUONGeometryStore::GetModuleId(detElemId);
@@ -1012,7 +977,7 @@ AliMUONGeometryTransformer::GetModuleTransformerByDEId(Int_t detElemId,
 const AliMUONGeometryDetElement* 
 AliMUONGeometryTransformer::GetDetElement(Int_t detElemId, Bool_t warn) const
 {
-/// Return detection ellemnt with given detElemId			       
+/// Return detection element with given detElemId			       
 
   const AliMUONGeometryModuleTransformer* kTransformer 
     = GetModuleTransformerByDEId(detElemId, warn);

@@ -15,36 +15,33 @@
 
 // $Id$
 //
-// Class AliMUONGeometryMisAligner 
-// ----------------------------
-// Class for misalignment of geometry transformations
-//
-// Authors: Bruce Becker, Javier Castillo
-
 //__________________________________________________________________
-//
-/////////////////////////////////////////////////////////////////////
-//This performs the misalignment on an existing muon arm geometry
-//  based on the standard definition of the detector elements in 
-//  $ALICE_ROOT/MUON/data
-//
-//  --> User has to specify the magnitude of the alignments, in the Cartesian 
-//  co-ordiantes (which are used to apply translation misalignments) and in the
-//  spherical co-ordinates (which are used to apply angular displacements)
-//  --> If the constructor is used with no arguments, user has to set 
-//  misalignment ranges by hand using the methods : 
-//  SetApplyMisAlig, SetMaxCartMisAlig, SetMaxAngMisAlig, SetXYAngMisAligFactor
-//  (last method takes account of the fact that the misalingment is greatest in 
-//  the XY plane, since the detection elements are fixed to a support structure
-//  in this plane. Misalignments in the XZ and YZ plane will be very small 
-//  compared to those in the XY plane, which are small already - of the order 
-//  of microns)
-
-//  Note : If the detection elements are allowed to be misaligned in all
-//  directions, this has consequences for the alignment algorithm
-//  (AliMUONAlignment), which needs to know the number of free parameters. 
-//  Eric only allowed 3 :  x,y,theta_xy, but in principle z and the other 
-//  two angles are alignable as well.
+/// \class AliMUONGeometryMisAligner
+///
+/// This performs the misalignment on an existing muon arm geometry
+/// based on the standard definition of the detector elements in 
+/// $ALICE_ROOT/MUON/data
+///
+/// --> User has to specify the magnitude of the alignments, in the Cartesian 
+/// co-ordiantes (which are used to apply translation misalignments) and in the
+/// spherical co-ordinates (which are used to apply angular displacements)
+///
+/// --> If the constructor is used with no arguments, user has to set 
+/// misalignment ranges by hand using the methods : 
+/// SetApplyMisAlig, SetMaxCartMisAlig, SetMaxAngMisAlig, SetXYAngMisAligFactor
+/// (last method takes account of the fact that the misalingment is greatest in 
+/// the XY plane, since the detection elements are fixed to a support structure
+/// in this plane. Misalignments in the XZ and YZ plane will be very small 
+/// compared to those in the XY plane, which are small already - of the order 
+/// of microns)
+///
+/// Note : If the detection elements are allowed to be misaligned in all
+/// directions, this has consequences for the alignment algorithm
+/// (AliMUONAlignment), which needs to know the number of free parameters. 
+/// Eric only allowed 3 :  x,y,theta_xy, but in principle z and the other 
+/// two angles are alignable as well.
+///
+/// \authors Bruce Becker, Javier Castillo
 
 #include "AliMUONGeometryMisAligner.h"
 #include "AliMUONGeometryTransformer.h"
@@ -59,7 +56,10 @@
 #include <TMath.h>
 #include <TRandom.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGeometryMisAligner)
+/// \endcond
+
 //______________________________________________________________________________
 AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartXMisAligM, Double_t cartXMisAligW, Double_t cartYMisAligM, Double_t cartYMisAligW, Double_t angMisAligM, Double_t angMisAligW)
 :TObject(), fDisplacementGenerator(0)
@@ -122,36 +122,11 @@ AliMUONGeometryMisAligner::AliMUONGeometryMisAligner()
 }
 
 //______________________________________________________________________________
-AliMUONGeometryMisAligner::
-AliMUONGeometryMisAligner(const AliMUONGeometryMisAligner & right):
-TObject(right)
-{
-  /// Copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
-//______________________________________________________________________________
 AliMUONGeometryMisAligner::~AliMUONGeometryMisAligner()
 {
 /// Destructor
 
   delete fDisplacementGenerator;
-}
-
-//______________________________________________________________________________
-AliMUONGeometryMisAligner & AliMUONGeometryMisAligner::
-operator=(const AliMUONGeometryMisAligner & right)
-{
-  /// Assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right)
-    return *this;
-
-  AliFatal("Assignement operator not provided.");
-
-  return *this;
 }
 
 //_________________________________________________________________________
@@ -177,10 +152,10 @@ void AliMUONGeometryMisAligner::SetZCartMisAligFactor(Double_t factor)
 }
 
 //_________________________________________________________________________
-void AliMUONGeometryMisAligner::GetUniMisAlign(Double_t *cartMisAlig, Double_t *angMisAlig) const
+void AliMUONGeometryMisAligner::GetUniMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3]) const
 {
   /// Misalign using uniform distribution
-  /*
+  /**
     misalign the centre of the local transformation
     rotation axes : 
     fAngMisAlig[1,2,3] = [x,y,z]
@@ -202,7 +177,7 @@ void AliMUONGeometryMisAligner::GetUniMisAlign(Double_t *cartMisAlig, Double_t *
 void AliMUONGeometryMisAligner::GetGausMisAlign(Double_t cartMisAlig[3], Double_t angMisAlig[3]) const
 {
   /// Misalign using gaussian distribution
-  /*
+  /**
     misalign the centre of the local transformation
     rotation axes : 
     fAngMisAlig[1,2,3] = [x,y,z]
@@ -264,17 +239,16 @@ AliMUONGeometryTransformer *
 AliMUONGeometryMisAligner::MisAlign(const AliMUONGeometryTransformer *
 				 transformer, Bool_t verbose)
 {
-  /////////////////////////////////////////////////////////////////////
-  //   Takes the internal geometry module transformers, copies them
-  // and gets the Detection Elements from them.
-  // Calculates misalignment parameters and applies these
-  // to the local transform of the Detection Element
-  // Obtains the global transform by multiplying the module transformer
-  // transformation with the local transformation 
-  // Applies the global transform to a new detection element
-  // Adds the new detection element to a new module transformer
-  // Adds the new module transformer to a new geometry transformer
-  // Returns the new geometry transformer
+  /// Takes the internal geometry module transformers, copies them
+  /// and gets the Detection Elements from them.
+  /// Calculates misalignment parameters and applies these
+  /// to the local transform of the Detection Element
+  /// Obtains the global transform by multiplying the module transformer
+  /// transformation with the local transformation 
+  /// Applies the global transform to a new detection element
+  /// Adds the new detection element to a new module transformer
+  /// Adds the new module transformer to a new geometry transformer
+  /// Returns the new geometry transformer
 
 
   AliMUONGeometryTransformer *newGeometryTransformer =

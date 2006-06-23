@@ -12,7 +12,7 @@
 /// (the transformations of detection elements, mapping between
 ///  sensitive volumes and detection elements).
 ///
-/// Author: Ivana Hrivnacova, IPN Orsay
+/// \author Ivana Hrivnacova, IPN Orsay
 
 #ifndef ALI_MUON_GEOMETRY_MODULE_H
 #define ALI_MUON_GEOMETRY_MODULE_H
@@ -89,26 +89,33 @@ class AliMUONGeometryModule : public TObject
 
 // inline functions
 
+/// Set virtuality (true if module is not represented by a real volume)
 inline void  AliMUONGeometryModule::SetIsVirtual(Bool_t isVirtual)
 { fIsVirtual = isVirtual; }
 
+/// Return true if module is not represented by a real volume
 inline Bool_t AliMUONGeometryModule::IsVirtual() const
 { return fIsVirtual; }  
 
+/// Return module ID
 inline Int_t  AliMUONGeometryModule::GetModuleId() const
 { return fTransformer->GetModuleId(); }
 
+/// Return the full path of aligned module volume or envelope in geometry
 inline TString AliMUONGeometryModule::GetVolumePath() const
 { return fTransformer->GetVolumePath(); }
 
+/// Return envelopes associated with this module
 inline  
 AliMUONGeometryEnvelopeStore* AliMUONGeometryModule::GetEnvelopeStore() const
 { return fEnvelopes; }
 
+/// Return sensitive volume map
 inline 
 AliMUONStringIntMap* AliMUONGeometryModule::GetSVMap() const
 { return fSVMap; }
 
+/// Return transformer
 inline 
 AliMUONGeometryModuleTransformer* AliMUONGeometryModule::GetTransformer() const
 { return fTransformer; }
