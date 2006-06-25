@@ -38,6 +38,7 @@ class AliExternalTrackParam: public TObject {
   AliExternalTrackParam(Double_t x, Double_t alpha, 
 			const Double_t param[5], const Double_t covar[15]);
   AliExternalTrackParam(const AliKalmanTrack& track);
+  virtual ~AliExternalTrackParam(){}
 
   void Reset();
   void Set(const AliKalmanTrack& track);
@@ -53,6 +54,8 @@ class AliExternalTrackParam: public TObject {
   Double_t GetSign() const {return (fP[4]>0) ? 1 : -1;}
   Double_t GetP() const;
   Double_t Get1P() const;
+  Double_t GetC(Double_t b) const {return fP[4]*b*kB2C;}
+  void GetDZ(Double_t x,Double_t y,Double_t z,Double_t b,Float_t dz[2]) const; 
   Double_t GetD(Double_t xv, Double_t yv, Double_t b) const; 
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
   Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass);

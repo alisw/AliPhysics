@@ -79,6 +79,9 @@ void AliExternalTrackParam::Set(const AliKalmanTrack& track) {
 
 //_____________________________________________________________________________
 void AliExternalTrackParam::Reset() {
+  //
+  // Resets all the parameters to 0 
+  //
   fX=fAlpha=0.;
   for (Int_t i = 0; i < 5; i++) fP[i] = 0;
   for (Int_t i = 0; i < 15; i++) fC[i] = 0;
@@ -108,7 +111,7 @@ Double_t AliExternalTrackParam::GetD(Double_t x,Double_t y,Double_t b) const {
   // in the magnetic field "b" (kG)
   //------------------------------------------------------------------
   if (TMath::Abs(b) < kAlmost0Field) return GetLinearD(x,y);
-  Double_t rp4=kB2C*b*fP[4];
+  Double_t rp4=GetC(b);
 
   Double_t xt=fX, yt=fP[0];
 
@@ -119,8 +122,41 @@ Double_t AliExternalTrackParam::GetD(Double_t x,Double_t y,Double_t b) const {
 
   sn=rp4*xt - fP[2]; cs=rp4*yt + TMath::Sqrt(1.- fP[2]*fP[2]);
   a=2*(xt*fP[2] - yt*TMath::Sqrt(1.- fP[2]*fP[2]))-rp4*(xt*xt + yt*yt);
-  if (rp4<0) a=-a;
-  return a/(1 + TMath::Sqrt(sn*sn + cs*cs));
+  return  -a/(1 + TMath::Sqrt(sn*sn + cs*cs));
+}
+
+//_______________________________________________________________________
+void AliExternalTrackParam::
+GetDZ(Double_t x, Double_t y, Double_t z, Double_t b, Float_t dz[2]) const {
+  //------------------------------------------------------------------
+  // This function calculates the transverse and longitudinal impact parameters
+  // with respect to a point with global coordinates (x,y)
+  // in the magnetic field "b" (kG)
+  //------------------------------------------------------------------
+  Double_t f1 = fP[2], r1 = TMath::Sqrt(1. - f1*f1);
+  Double_t xt=fX, yt=fP[0];
+  Double_t sn=TMath::Sin(fAlpha), cs=TMath::Cos(fAlpha);
+  Double_t a = x*cs + y*sn;
+  y = -x*sn + y*cs; x=a;
+  xt-=x; yt-=y;
+
+  Double_t rp4=GetC(b);
+  if ((TMath::Abs(b) < kAlmost0Field) || (TMath::Abs(rp4) < kAlmost0)) {
+     dz[0] = -(xt*f1 - yt*r1);
+     dz[1] = fP[1] + (dz[0]*f1 - xt)/r1*fP[3] - z;
+     return;
+  }
+
+  sn=rp4*xt - f1; cs=rp4*yt + r1;
+  a=2*(xt*f1 - yt*r1)-rp4*(xt*xt + yt*yt);
+  Double_t rr=TMath::Sqrt(sn*sn + cs*cs);
+  dz[0] = -a/(1 + rr);
+  Double_t f2 = -sn/rr, r2 = TMath::Sqrt(1. - f2*f2);
+  dz[1] = fP[1] + fP[3]/rp4*TMath::ASin(f2*r1 - f1*r2) - z;
+  dz[1] = fP[1] + fP[3]*(dz[0]*f1 - xt)*(f2+f1)/(f2*r1 + f1*r2) - z;
+
+  printf("%e %e %e\n",f1,f2,f2*r1 - f1*r2);
+
 }
 
 //_______________________________________________________________________
@@ -136,7 +172,7 @@ Double_t AliExternalTrackParam::GetLinearD(Double_t xv,Double_t yv) const {
 
   Double_t d = (fX-x)*fP[2] - (fP[0]-y)*TMath::Sqrt(1.- fP[2]*fP[2]);
 
-  return d;
+  return -d;
 }
 
 Bool_t AliExternalTrackParam::
@@ -247,7 +283,7 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   Double_t dx=xk-fX;
   if (TMath::Abs(dx)<=kAlmost0)  return kTRUE;
 
-  Double_t crv=kB2C*b*fP[4];
+  Double_t crv=GetC(b);
   if (TMath::Abs(b) < kAlmost0Field) crv=0.;
 
   Double_t f1=fP[2], f2=f1 + crv*dx;
@@ -398,14 +434,14 @@ AliExternalTrackParam::GetHelixParameters(Double_t hlx[6], Double_t b) const {
   //--------------------------------------------------------------------
   Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
   
-  hlx[0]=fP[0]; hlx[1]=fP[1]; hlx[2]=fP[2]; hlx[3]=fP[3]; hlx[4]=fP[4];
+  hlx[0]=fP[0]; hlx[1]=fP[1]; hlx[2]=fP[2]; hlx[3]=fP[3];
 
   hlx[5]=fX*cs - hlx[0]*sn;               // x0
   hlx[0]=fX*sn + hlx[0]*cs;               // y0
 //hlx[1]=                                 // z0
   hlx[2]=TMath::ASin(hlx[2]) + fAlpha;    // phi0
 //hlx[3]=                                 // tgl
-  hlx[4]=hlx[4]*kB2C*b;                   // C
+  hlx[4]=GetC(b);                         // C
 }
 
 
@@ -717,7 +753,7 @@ AliExternalTrackParam::GetPxPyPzAt(Double_t x, Double_t b, Double_t *p) const {
   // the radial position "x" (cm) in the magnetic field "b" (kG)
   //---------------------------------------------------------------------
   p[0]=fP[4]; 
-  p[1]=fP[2]+(x-fX)*fP[4]*b*kB2C; 
+  p[1]=fP[2]+(x-fX)*GetC(b); 
   p[2]=fP[3];
   return Local2GlobalMomentum(p,fAlpha);
 }
@@ -732,7 +768,7 @@ AliExternalTrackParam::GetYAt(Double_t x, Double_t b, Double_t &y) const {
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) {y=fP[0]; return kTRUE;}
 
-  Double_t f1=fP[2], f2=f1 + dx*fP[4]*b*kB2C;
+  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
 
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
@@ -751,7 +787,7 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) return GetXYZ(r);
 
-  Double_t f1=fP[2], f2=f1 + dx*fP[4]*b*kB2C;
+  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
 
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
@@ -784,7 +820,7 @@ Double_t AliExternalTrackParam::GetSnpAt(Double_t x,Double_t b) const {
   //
   // Get sinus at given x
   //
-  Double_t crv=kB2C*b*fP[4];
+  Double_t crv=GetC(b);
   if (TMath::Abs(b) < kAlmost0Field) crv=0.;
   Double_t dx = x-fX;
   Double_t res = fP[2]+dx*crv;
