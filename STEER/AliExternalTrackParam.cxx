@@ -153,10 +153,6 @@ GetDZ(Double_t x, Double_t y, Double_t z, Double_t b, Float_t dz[2]) const {
   dz[0] = -a/(1 + rr);
   Double_t f2 = -sn/rr, r2 = TMath::Sqrt(1. - f2*f2);
   dz[1] = fP[1] + fP[3]/rp4*TMath::ASin(f2*r1 - f1*r2) - z;
-  dz[1] = fP[1] + fP[3]*(dz[0]*f1 - xt)*(f2+f1)/(f2*r1 + f1*r2) - z;
-
-  printf("%e %e %e\n",f1,f2,f2*r1 - f1*r2);
-
 }
 
 //_______________________________________________________________________
