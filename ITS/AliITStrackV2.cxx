@@ -24,7 +24,6 @@
 #include "AliCluster.h"
 #include "AliESDtrack.h"
 #include "AliITStrackV2.h"
-#include "AliStrLine.h"
 
 ClassImp(AliITStrackV2)
 
@@ -210,24 +209,6 @@ GetGlobalXYZat(Double_t xk, Double_t &x, Double_t &y, Double_t &z) const {
   return 1;
 }
 
-//_____________________________________________________________________________
-void AliITStrackV2::ApproximateHelixWithLine(Double_t xk, AliStrLine *line)
-{
-  //------------------------------------------------------------
-  // Approximate the track (helix) with a straight line tangent to the
-  // helix in the point defined by r (F. Prino, prino@to.infn.it)
-  //------------------------------------------------------------
-  Double_t mom[3];
-  Double_t azim = TMath::ASin(fP2)+fAlpha;
-  Double_t theta = TMath::Pi()/2. - TMath::ATan(fP3);
-  mom[0] = TMath::Sin(theta)*TMath::Cos(azim);
-  mom[1] = TMath::Sin(theta)*TMath::Sin(azim);
-  mom[2] = TMath::Cos(theta);
-  Double_t pos[3];
-  GetGlobalXYZat(xk,pos[0],pos[1],pos[2]);
-  line->SetP0(pos);
-  line->SetCd(mom);
-}
 //_____________________________________________________________________________
 Double_t AliITStrackV2::GetPredictedChi2(const AliCluster *c) const 
 {
@@ -618,8 +599,35 @@ Double_t AliITStrackV2::GetD(Double_t x, Double_t y) const {
 
   sn=fP4*xt - fP2; cs=fP4*yt + TMath::Sqrt(1.- fP2*fP2);
   a=2*(xt*fP2 - yt*TMath::Sqrt(1.- fP2*fP2))-fP4*(xt*xt + yt*yt);
-  if (fP4<0) a=-a;
-  return a/(1 + TMath::Sqrt(sn*sn + cs*cs));
+  return -a/(1 + TMath::Sqrt(sn*sn + cs*cs));
+}
+
+void 
+AliITStrackV2::GetDZ(Double_t x, Double_t y, Double_t z, Float_t dz[2]) const {
+  //------------------------------------------------------------------
+  // This function calculates the transverse and longitudinal impact parameters
+  // with respect to a point with global coordinates (x,y,z)
+  //------------------------------------------------------------------
+  Double_t f1 = fP2, r1 = TMath::Sqrt(1. - f1*f1);
+  Double_t xt=fX, yt=fP0;
+  Double_t sn=TMath::Sin(fAlpha), cs=TMath::Cos(fAlpha);
+  Double_t a = x*cs + y*sn;
+  y = -x*sn + y*cs; x=a;
+  xt-=x; yt-=y;
+
+  Double_t rp4=fP4;
+  if (TMath::Abs(rp4) < kAlmost0) {
+     dz[0] = -(xt*f1 - yt*r1);
+     dz[1] = fP1 + (dz[0]*f1 - xt)/r1*fP3 - z;
+     return;
+  }
+
+  sn=rp4*xt - f1; cs=rp4*yt + r1;
+  a=2*(xt*f1 - yt*r1)-rp4*(xt*xt + yt*yt);
+  Double_t rr=TMath::Sqrt(sn*sn + cs*cs);
+  dz[0] = -a/(1 + rr);
+  Double_t f2 = -sn/rr, r2 = TMath::Sqrt(1. - f2*f2);
+  dz[1] = fP1 + fP3/rp4*TMath::ASin(f2*r1 - f1*r2) - z;
 }
 
 Double_t AliITStrackV2::GetZat(Double_t x) const {

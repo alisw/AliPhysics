@@ -260,8 +260,9 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
         delete t;
         continue;
       }
-      t->fD[0] = t->GetD(GetX(),GetY());
-      t->fD[1] = t->GetZat(GetX())-GetZ(); 
+      //t->fD[0] = t->GetD(GetX(),GetY());
+      //t->fD[1] = t->GetZat(GetX())-GetZ();
+      t->GetDZ(GetX(),GetY(),GetZ(),t->fD);              //I.B.
       Double_t vdist = TMath::Sqrt(t->fD[0]*t->fD[0]+t->fD[1]*t->fD[1]);
       if (t->GetMass()<0.13) t->SetMass(0.13957); // MI look to the esd - mass hypothesys  !!!!!!!!!!!
       // write expected q
@@ -313,8 +314,11 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESD *event) {
        AliITStrackMI *t=(AliITStrackMI*)itsTracks.UncheckedAt(i);
        if (t==0) continue;              //this track has been already tracked
        if (t->fReconstructed&&(t->fNUsed<1.5)) continue;  //this track was  already  "succesfully" reconstructed
-       if ( (TMath::Abs(t->GetD(GetX(),GetY()))  >3.) && fConstraint[fPass]) continue;
-       if ( (TMath::Abs(t->GetZat(GetX())-GetZ())>3.) && fConstraint[fPass]) continue;
+       //if ( (TMath::Abs(t->GetD(GetX(),GetY()))  >3.) && fConstraint[fPass]) continue;
+       //if ( (TMath::Abs(t->GetZat(GetX())-GetZ())>3.) && fConstraint[fPass]) continue;
+       Float_t dz[2]; t->GetDZ(GetX(),GetY(),GetZ(),dz);              //I.B.
+       if ( (TMath::Abs(dz[0])>3.) && fConstraint[fPass]) continue;
+       if ( (TMath::Abs(dz[1])>3.) && fConstraint[fPass]) continue;
 
        Int_t tpcLabel=t->GetLabel(); //save the TPC track label       
        fI = 6;
@@ -767,8 +771,9 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	    Double_t ers[]={GetSigmaX()*ptfactor,GetSigmaY()*ptfactor,GetSigmaZ()};
 	    Bool_t isPrim = kTRUE;
 	    if (ilayer<4){
-	      updatetrack->fD[0] = updatetrack->GetD(GetX(),GetY());
-	      updatetrack->fD[1] = updatetrack->GetZat(GetX())-GetZ();
+	      //updatetrack->fD[0] = updatetrack->GetD(GetX(),GetY());
+	      //updatetrack->fD[1] = updatetrack->GetZat(GetX())-GetZ();
+              updatetrack->GetDZ(GetX(),GetY(),GetZ(),updatetrack->fD); //I.B.
 	      if ( TMath::Abs(updatetrack->fD[0]/(1.+ilayer))>0.4 ||  TMath::Abs(updatetrack->fD[1]/(1.+ilayer))>0.4) isPrim=kFALSE;
 	    }
 	    if (isPrim) updatetrack->Improve(d,xyz,ers);
@@ -2714,8 +2719,9 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
     if  (track->fChi2MIP[2]>kMaxChi2PerCluster[2]*6.0)  continue;
     if  (!(track->fConstrain)&&track->fChi2MIP[2]>kMaxChi2PerCluster[2])  continue;
     
-    track->fD[0] = forwardtrack->GetD(GetX(),GetY());
-    track->fD[1] = forwardtrack->GetZat(GetX())-GetZ();
+    //track->fD[0] = forwardtrack->GetD(GetX(),GetY());
+    //track->fD[1] = forwardtrack->GetZat(GetX())-GetZ();
+    forwardtrack->GetDZ(GetX(),GetY(),GetZ(),track->fD);   //I.B.
     forwardtrack->fD[0] = track->fD[0];
     forwardtrack->fD[1] = track->fD[1];    
     {
@@ -2742,8 +2748,9 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
       besttrack->SetLabel(track->GetLabel());
       besttrack->fFakeRatio = track->fFakeRatio;
       minchi2   = chi2;
-      original->fD[0] = forwardtrack->GetD(GetX(),GetY());
-      original->fD[1] = forwardtrack->GetZat(GetX())-GetZ();
+      //original->fD[0] = forwardtrack->GetD(GetX(),GetY());
+      //original->fD[1] = forwardtrack->GetZat(GetX())-GetZ();
+      forwardtrack->GetDZ(GetX(),GetY(),GetZ(),original->fD);    //I.B.
     }    
   }
   delete backtrack;
@@ -3562,8 +3569,9 @@ void  AliITStrackerMI::FindV02(AliESD *event)
   for (Int_t itrack=0;itrack<ntracks;itrack++){
     if (itsmap[itrack]>=0) continue;
     AliITStrackMI * tpctrack = new AliITStrackMI(*(event->GetTrack(itrack)));
-    tpctrack->fD[0] = tpctrack->GetD(GetX(),GetY());
-    tpctrack->fD[1] = tpctrack->GetZat(GetX())-GetZ(); 
+    //tpctrack->fD[0] = tpctrack->GetD(GetX(),GetY());
+    //tpctrack->fD[1] = tpctrack->GetZat(GetX())-GetZ(); 
+    tpctrack->GetDZ(GetX(),GetY(),GetZ(),tpctrack->fD);   //I.B.
     if (tpctrack->fD[0]<20 && tpctrack->fD[1]<20){
       // tracks which can reach inner part of ITS
       // propagate track to outer its volume - with correction for material
