@@ -54,34 +54,10 @@ AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder()
 /// Default constructor
 }
 
-
-//______________________________________________________________________________
-AliMUONSt1GeometryBuilder::AliMUONSt1GeometryBuilder(const AliMUONSt1GeometryBuilder& rhs)
-  : AliMUONVGeometryBuilder(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
 //______________________________________________________________________________
 AliMUONSt1GeometryBuilder::~AliMUONSt1GeometryBuilder() 
 {
 /// Destructor
-}
-
-//______________________________________________________________________________
-AliMUONSt1GeometryBuilder& 
-AliMUONSt1GeometryBuilder::operator = (const AliMUONSt1GeometryBuilder& rhs) 
-{
-/// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //

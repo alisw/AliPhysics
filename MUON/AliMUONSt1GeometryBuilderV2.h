@@ -48,7 +48,6 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
 {
   public:
     AliMUONSt1GeometryBuilderV2(AliMUON* muon);
-    AliMUONSt1GeometryBuilderV2(const AliMUONSt1GeometryBuilderV2& rMUON);
     AliMUONSt1GeometryBuilderV2();
     virtual ~AliMUONSt1GeometryBuilderV2();
 
@@ -58,9 +57,10 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     virtual void SetSensitiveVolumes();
    
   protected:
-    AliMUONSt1GeometryBuilderV2& operator = (const AliMUONSt1GeometryBuilderV2& rhs);    
  
   private:
+    AliMUONSt1GeometryBuilderV2(const AliMUONSt1GeometryBuilderV2& rMUON);
+    AliMUONSt1GeometryBuilderV2& operator = (const AliMUONSt1GeometryBuilderV2& rhs);    
     // Constants
     //
     static const GReal_t fgkHzPadPlane;    ///< Pad plane

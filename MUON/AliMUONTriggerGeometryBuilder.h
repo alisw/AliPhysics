@@ -31,12 +31,12 @@ class AliMUONTriggerGeometryBuilder : public AliMUONVGeometryBuilder
     virtual bool ApplyGlobalTransformation() { return false; }
     
   protected:  
+    
+  private:
     AliMUONTriggerGeometryBuilder(const AliMUONTriggerGeometryBuilder& rhs);
 
     // operators  
     AliMUONTriggerGeometryBuilder& operator = (const AliMUONTriggerGeometryBuilder& rhs);
-    
-  private:
      AliMUON*  fMUON; ///< the MUON detector class 
         
   ClassDef(AliMUONTriggerGeometryBuilder,1) // MUON Trigger stations geometry construction class

@@ -31,12 +31,12 @@ class AliMUONSlatGeometryBuilder : public AliMUONVGeometryBuilder
     virtual void SetSensitiveVolumes();
 
   protected:
+    
+  private:
     AliMUONSlatGeometryBuilder(const AliMUONSlatGeometryBuilder& rhs);
 
     // operators  
     AliMUONSlatGeometryBuilder& operator = (const AliMUONSlatGeometryBuilder& rhs);
-    
-  private:
     Int_t  ConvertSlatNum(Int_t numslat, Int_t quadnum, Int_t fspq) const;
 
     AliMUON*  fMUON; ///< the MUON detector class 

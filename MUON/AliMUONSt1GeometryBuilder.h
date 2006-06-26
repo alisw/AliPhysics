@@ -31,12 +31,12 @@ class AliMUONSt1GeometryBuilder : public AliMUONVGeometryBuilder
     virtual void SetSensitiveVolumes();
     
   protected:
+    
+  private:
     AliMUONSt1GeometryBuilder(const AliMUONSt1GeometryBuilder& rhs);
 
     // operators  
     AliMUONSt1GeometryBuilder& operator = (const AliMUONSt1GeometryBuilder& rhs);
-    
-  private:
      AliMUON*  fMUON; ///< the MUON detector class 
         
   ClassDef(AliMUONSt1GeometryBuilder,1) //MUON Station1 coarse geometry construction class 

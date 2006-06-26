@@ -67,29 +67,9 @@ AliMUONSlatGeometryBuilder::AliMUONSlatGeometryBuilder()
 // Default constructor
 }
 
-
-//______________________________________________________________________________
-AliMUONSlatGeometryBuilder::AliMUONSlatGeometryBuilder(const AliMUONSlatGeometryBuilder& rhs)
-  : AliMUONVGeometryBuilder(rhs)
-{
-  AliFatal("Copy constructor is not implemented.");
-}
-
 //______________________________________________________________________________
 AliMUONSlatGeometryBuilder::~AliMUONSlatGeometryBuilder() {
 //
-}
-
-//______________________________________________________________________________
-AliMUONSlatGeometryBuilder& 
-AliMUONSlatGeometryBuilder::operator = (const AliMUONSlatGeometryBuilder& rhs) 
-{
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //

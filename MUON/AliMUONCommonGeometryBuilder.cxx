@@ -51,34 +51,10 @@ AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder()
 } 
 
 //______________________________________________________________________________
-AliMUONCommonGeometryBuilder::AliMUONCommonGeometryBuilder(
-                                 const AliMUONCommonGeometryBuilder& right) 
-  : AliMUONVGeometryBuilder(right) 
-{  
-/// Copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
-//______________________________________________________________________________
 AliMUONCommonGeometryBuilder::~AliMUONCommonGeometryBuilder()
 {
 /// Destructor
 }
-
-//______________________________________________________________________________
-AliMUONCommonGeometryBuilder& 
-AliMUONCommonGeometryBuilder::operator=(const AliMUONCommonGeometryBuilder& right)
-{
-/// Assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // public functions

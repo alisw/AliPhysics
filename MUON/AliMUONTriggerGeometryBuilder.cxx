@@ -55,33 +55,9 @@ AliMUONTriggerGeometryBuilder::AliMUONTriggerGeometryBuilder()
 // Default constructor
 }
 
-
-//______________________________________________________________________________
-AliMUONTriggerGeometryBuilder::AliMUONTriggerGeometryBuilder(const AliMUONTriggerGeometryBuilder& rhs)
-  : AliMUONVGeometryBuilder(rhs)
-{
-// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
 //______________________________________________________________________________
 AliMUONTriggerGeometryBuilder::~AliMUONTriggerGeometryBuilder() {
 //
-}
-
-//______________________________________________________________________________
-AliMUONTriggerGeometryBuilder& 
-AliMUONTriggerGeometryBuilder::operator = (const AliMUONTriggerGeometryBuilder& rhs) 
-{
-// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
 }
 
 //

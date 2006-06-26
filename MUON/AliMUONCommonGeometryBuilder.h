@@ -31,11 +31,11 @@ class AliMUONCommonGeometryBuilder : public AliMUONVGeometryBuilder
     virtual void  SetTransformations()  {}  ///< No transformations are set
 
   protected:
+ 
+  private:
     AliMUONCommonGeometryBuilder(const AliMUONCommonGeometryBuilder& right);
     AliMUONCommonGeometryBuilder&  
                      operator = (const AliMUONCommonGeometryBuilder& right);
- 
-  private:
     // data members
     AliMUON*  fMUON; ///< the MUON detector class 
 

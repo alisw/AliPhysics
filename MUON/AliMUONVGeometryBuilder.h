@@ -87,9 +87,6 @@ class AliMUONVGeometryBuilder : public TObject
 		  // via moduleId
 
   protected:
-    AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs);
-    AliMUONVGeometryBuilder& operator = (const AliMUONVGeometryBuilder& rhs);
-
     // methods
     AliMUONGeometryModule*         GetGeometry(Int_t moduleId) const;
     AliMUONGeometryEnvelopeStore*  GetEnvelopes(Int_t moduleId) const;
@@ -109,6 +106,9 @@ class AliMUONVGeometryBuilder : public TObject
     
   private:
     //methods
+    AliMUONVGeometryBuilder(const AliMUONVGeometryBuilder& rhs);
+    AliMUONVGeometryBuilder& operator = (const AliMUONVGeometryBuilder& rhs);
+
     TGeoHMatrix ConvertTransform(const TGeoHMatrix& transform) const;
     TGeoHMatrix ConvertDETransform(const TGeoHMatrix& transform) const;
     TString     ComposePath(const TString& volName, Int_t copyNo) const; 
