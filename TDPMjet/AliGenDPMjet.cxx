@@ -530,15 +530,9 @@ void AliGenDPMjet::MakeHeader()
     ((AliGenDPMjetEventHeader*) header)->SetNProduced(fDPMjet->GetNumStablePc());
     ((AliGenDPMjetEventHeader*) header)->SetImpactParameter(fDPMjet->GetBImpac());
     ((AliGenDPMjetEventHeader*) header)->SetTotalEnergy(fDPMjet->GetTotEnergy());
-//    ((AliGenDPMjetEventHeader*) header)->SetWounded(fDPMjet->GetProjWounded(),
-//    						    fDPMjet->GetTargWounded());
     ((AliGenDPMjetEventHeader*) header)->SetParticipants(fDPMjet->GetfIp(), 
     							 fDPMjet->GetfIt());
-    /*((AliGenDPMjetEventHeader*) header)->SetCollisions(fDPMjet->GetN0(),
-						       fDPMjet->GetN01(),
-						       fDPMjet->GetN10(),
-						       fDPMjet->GetN11());*/
-    ((AliGenDPMjetEventHeader*) header)->SetSpectators(fSpecn, fSpecp);
+//    ((AliGenDPMjetEventHeader*) header)->SetSpectators(fSpecn, fSpecp);
 
 // Bookkeeping for kinematic bias
     ((AliGenDPMjetEventHeader*) header)->SetTrials(fTrials);

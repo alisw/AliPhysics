@@ -31,7 +31,7 @@ public:
    virtual void  GenerateEvent();
 
    virtual Int_t ImportParticles(TClonesArray *particles, Option_t *option="");
-
+   virtual TObjArray      *ImportParticles(Option_t * /*option*/) {return 0;}
    
    // Parameters for the generation:
    virtual void  SetNEvent(Int_t iev)    {fNEvent = iev;}

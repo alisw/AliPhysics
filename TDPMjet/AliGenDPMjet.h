@@ -29,10 +29,6 @@ class AliGenDPMjet : public AliGenMC
 
     virtual void    SetBeamEnergy(Float_t energy=5400.) {fBeamEn=energy;}
     virtual void    SetEnergyCMS(Float_t energy=5400.)   {fEnergyCMS=energy;}
-    virtual void    SetProjectile(Int_t a=208, Int_t z=82)
-			{fAProjectile = a; fZProjectile = z;}    
-    virtual void    SetTarget(Int_t a=208, Int_t z=82)
-			{fATarget = a; fZTarget = z;}    
     virtual void    SetImpactParameterRange(Float_t bmin=0., Float_t bmax=16.)
 			{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
     virtual void    SetCentral(Int_t icentr=-2) {fICentr = icentr;}
