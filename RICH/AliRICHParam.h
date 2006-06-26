@@ -37,7 +37,7 @@ public:
 //test methodes  
          void     Print(Option_t *opt="") const;                                         //print current parametrization
   static void     DrawAxis();
-  static void     DrawSectors();
+  static void     DrawSectors(Bool_t isInfo=kFALSE);                     //draw sectors contour and print on top some info
 //flags staff         
   static inline AliRICHParam* Instance();                                //pointer to AliRICHParam singleton
   static        Int_t      Stack(Int_t evt=-1,Int_t tid=-1);              //Print stack info for event and tid

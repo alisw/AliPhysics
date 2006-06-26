@@ -33,6 +33,9 @@
 #include <AliStack.h>      //Stack()
 #include <TParticle.h>     //Stack()    
 #include "AliRICHHelix.h"  //TestTrans()
+#include <TLine.h>
+
+
 
 ClassImp(AliRICHParam)
 AliRICHParam * AliRICHParam::fgInstance             =0x0;     //singleton pointer               
@@ -101,58 +104,61 @@ void AliRICHParam::TestSeg()
 // Provides a set of pictures to test segementation currently in use.    
 // Arguments: none
 //   Returns: none    
-  new TCanvas("pads","PC segmentation - pads display",700,600);
-  gPad->Range(-5,-5,PcSizeX()+5,PcSizeY()+15);
-  TVector p(2);   TVector2 c;    TVector2 b;   //current: pad, pad center, pad boundary
+  new TCanvas("pads","View from electronics side, IP is behind the picture.");
+  gPad->Range(-5,-5,PcSizeX()+5,PcSizeY()+5);
 // list of corners:
-  Double_t x0=0,x1=SecSizeX(),x2=SecSizeX()+DeadZone()                                                      ,x3=PcSizeX();  
-  Double_t y0=0,y1=SecSizeY(),y2=SecSizeY()+DeadZone(),y3=2*SecSizeY()+DeadZone(),y4=PcSizeY()-SecSizeY(),y5=PcSizeY();  
-  DrawSectors();
-//header 
+  DrawSectors(kTRUE);
   TLatex t;
-  t.SetTextSize(0.02); t.SetTextColor(kBlack); t.SetTextAlign(11);
-  t.DrawLatex(0,PcSizeY()+10,Form("IP in front of this page. pad size %.2fx%.2fcm   dead zone %.2fcm",PadSizeX(),PadSizeY(),DeadZone()));
-  t.DrawLatex(0,PcSizeY()+ 5,Form("Pc  %.2fx%.2f cm %ix%i pads               Sec %.2fx%.2f cm %ix%i pads",
-                                         PcSizeX()     , PcSizeY()     , NpadsX()    , NpadsY()                                 ,
-                                         SecSizeX() , SecSizeY() , NpadsXsec() , NpadsYsec()                              ));
-//sectors  
-  t.SetTextSize(0.015); t.SetTextColor(kRed); t.SetTextAlign(22);
-  c=Pad2Loc( 40, 24); t.DrawText(c.X(),c.Y(),Form("sec 1 (%.2f,%.2f)",c.X(),c.Y()  ));  
-  c=Pad2Loc( 40, 75); t.DrawText(c.X(),c.Y(),Form("sec 3 (%.2f,%.2f)",c.X(),c.Y()  ));  
-  c=Pad2Loc( 40,121); t.DrawText(c.X(),c.Y(),Form("sec 5 (%.2f,%.2f)",c.X(),c.Y()  ));  
-  c=Pad2Loc(120, 24); t.DrawText(c.X(),c.Y(),Form("sec 2 (%.2f,%.2f)",c.X(),c.Y()  ));  
-  c=Pad2Loc(120, 75); t.DrawText(c.X(),c.Y(),Form("sec 4 (%.2f,%.2f)",c.X(),c.Y()  ));  
-  c=Pad2Loc(120,121); t.DrawText(c.X(),c.Y(),Form("sec 6 (%.2f,%.2f)",c.X(),c.Y()  ));  
-//coners  
+  t.SetTextSize(0.02);  
+  t.SetTextColor(kRed)    ;t.SetTextAlign(11); t.DrawLatex(0         ,PcSizeY(),Form("Pad size %.2fx%.2fcm dead zone %.2fcm",PadSizeX(),PadSizeY(),DeadZone())); 
+  t.SetTextColor(kBlue)   ;t.SetTextAlign(21); t.DrawLatex(SecSizeX(),PcSizeY(),Form("Pc  size %.2fx%.2fcm %ix%i pads"      ,PcSizeX() ,PcSizeY() ,NpadsX()    ,NpadsY()));
+  t.SetTextColor(kMagenta);t.SetTextAlign(31); t.DrawLatex(PcSizeX() ,PcSizeY(),Form("Sec size %.2fx%.2fcm %ix%i pads"      ,SecSizeX(),SecSizeY(),NpadsXsec() ,NpadsYsec()));
+  
+
+//  TVector p(2);   TVector2 c;    TVector2 b;   //current: pad, pad center, pad boundary
+//  Double_t x0=0,x1=SecSizeX(),x2=SecSizeX()+DeadZone()                                                      ,x3=PcSizeX();  
+//  Double_t y0=0,y1=SecSizeY(),y2=SecSizeY()+DeadZone(),y3=2*SecSizeY()+DeadZone(),y4=PcSizeY()-SecSizeY(),y5=PcSizeY();  
   t.SetTextSize(0.015); t.SetTextColor(kBlue);
 
-  b.Set(x0,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x0,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x0,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x0,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x0,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x0,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  
-  b.Set(x1,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x1,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x1,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x1,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x1,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x1,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  
-  b.Set(x2,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x2,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x2,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x2,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x2,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x2,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  
-  b.Set(x3,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x3,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x3,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x3,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x3,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
-  b.Set(x3,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x0,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x0,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x0,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x0,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x0,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x0,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   
+//   b.Set(x1,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x1,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x1,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x1,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x1,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x1,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   
+//   b.Set(x2,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x2,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x2,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x2,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x2,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(11);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x2,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(13);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   
+//   b.Set(x3,y0);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x3,y1);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x3,y2);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x3,y3);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x3,y4);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(31);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+//   b.Set(x3,y5);p=Loc2Pad(b);c=Pad2Loc(p);t.SetTextAlign(33);t.DrawText(c.X(),c.Y(),Form("(%.2f,%.2f)-(%.0f,%.0f)-(%.2f,%.2f)",b.X(),b.Y(),p(0),p(1),c.X(),c.Y()));
+
+//Now all chambers view    
+  TCanvas *pC=new TCanvas("cc","Chambers view from electronics side - IP is behind the picture"); pC->Divide(3,3);
+  t.SetTextSize(0.05);   
+  for(Int_t i=1;i<=7;i++){
+    if(i==1) pC->cd(9); if(i==2) pC->cd(8); if(i==3) pC->cd(6); if(i==4) pC->cd(5); if(i==5) pC->cd(4); if(i==6) pC->cd(2); if(i==7) pC->cd(1);   
+    gPad->Range(-5,-5,PcSizeX()+5,PcSizeY()+10); 
+    DrawSectors(kTRUE); 
+    t.SetTextColor(kBlack);   t.SetTextAlign(21); t.DrawText(SecSizeX(),PcSizeY(),Form("Cham %i",i)); 
+    t.SetTextColor(41);       t.SetTextAlign(11); t.DrawText(0         ,PcSizeY(),Form("DDL ID %i",1536+2*i-2)); //left half of chamber
+    t.SetTextColor(29);       t.SetTextAlign(31); t.DrawText(PcSizeX() ,PcSizeY(),Form("DDL ID %i",1536+2*i-1)); //right half of chamber
+  }
 }//TestSeg()
 //__________________________________________________________________________________________________
 void AliRICHParam::TestResp()
@@ -238,7 +244,7 @@ void AliRICHParam::DrawAxis()
   TPolyLine3D *pZaxis=new TPolyLine3D(2,z);pZaxis->SetLineColor(kBlue);  pZaxis->Draw();  
 }
 //__________________________________________________________________________________________________
-void AliRICHParam::DrawSectors() 
+void AliRICHParam::DrawSectors(Bool_t isInfo) 
 { 
 // Utility methode draws RICH chamber sectors on event display.
 // Arguments: none
@@ -251,12 +257,64 @@ void AliRICHParam::DrawSectors()
                            SecSizeY()+DeadZone(),SecSizeY()+DeadZone()};  
   Double_t yUp[5]     = {2*SecSizeY()+2*DeadZone(),PcSizeY(),PcSizeY(),2*SecSizeY()+2*DeadZone(),2*SecSizeY()+2*DeadZone()};
   
-  TPolyLine *sec1 = new TPolyLine(5,xLeft ,yDown);    sec1->SetLineColor(21);  sec1->Draw();
-  TPolyLine *sec2 = new TPolyLine(5,xRight,yDown);    sec2->SetLineColor(21);  sec2->Draw();
-  TPolyLine *sec3 = new TPolyLine(5,xLeft ,yCenter);  sec3->SetLineColor(21);  sec3->Draw();
-  TPolyLine *sec4 = new TPolyLine(5,xRight,yCenter);  sec4->SetLineColor(21);  sec4->Draw();
-  TPolyLine *sec5 = new TPolyLine(5,xLeft, yUp);      sec5->SetLineColor(21);  sec5->Draw();
-  TPolyLine *sec6 = new TPolyLine(5,xRight,yUp);      sec6->SetLineColor(21);  sec6->Draw();
+  Int_t iColorLeft=29,iColorRight=41;
+  TPolyLine *sec[6];
+  
+  sec[0]= new TPolyLine(5,xLeft ,yDown);    
+  sec[1]= new TPolyLine(5,xRight,yDown);    
+  sec[2]= new TPolyLine(5,xLeft ,yCenter);  
+  sec[3]= new TPolyLine(5,xRight,yCenter);  
+  sec[4]= new TPolyLine(5,xLeft, yUp);      
+  sec[5]= new TPolyLine(5,xRight,yUp);      
+
+  for(Int_t iSec=0;iSec<6;iSec++){
+    if(isInfo){
+      (iSec%2)? sec[iSec]->SetFillColor(iColorLeft): sec[iSec]->SetFillColor(iColorRight);
+      sec[iSec]->Draw("f");
+    }else  
+      sec[iSec]->Draw();
+  }
+    
+  if(!isInfo) return;
+  
+  TText t; t.SetTextSize(0.02);
+  t.DrawText(32,20,"Sec 1");
+  t.DrawText(98,20,"Sec 2"); 
+  t.DrawText(32,65,"Sec 3");
+  t.DrawText(98,65,"Sec 4");
+  t.DrawText(32,106,"Sec 5");
+  t.DrawText(98,106,"Sec 6");
+  
+  Double_t x246=SecSizeX()+DeadZone();
+  Double_t y34=SecSizeY()+DeadZone();
+  Double_t y56=2*y34;
+  
+  for(Int_t iRow=1;iRow<=8;iRow++){//dilogic chip serves 8x6 pads
+    Double_t y=(iRow-1)*6*PadSizeY();
+    TLine *pL1=new TLine(0   ,y    ,SecSizeX(),y    ); pL1->Draw(); t.SetTextAlign(31); t.DrawText(0        ,y    ,Form("r%i",iRow)   );//sec1
+    TLine *pL2=new TLine(x246,y    ,PcSizeX() ,y    ); pL2->Draw(); t.SetTextAlign(11); t.DrawText(PcSizeX(),y    ,Form("r%i",25-iRow));//sec2
+    
+    TLine *pL3=new TLine(0   ,y+y34,SecSizeX(),y+y34); pL3->Draw(); t.SetTextAlign(31); t.DrawText(0        ,y+y34,Form("r%i",iRow+8) );//sec3
+    TLine *pL4=new TLine(x246,y+y34,PcSizeX() ,y+y34); pL4->Draw(); t.SetTextAlign(11); t.DrawText(PcSizeX(),y+y34,Form("r%i",17-iRow));//sec4
+    
+    TLine *pL5=new TLine(0   ,y+y56,SecSizeX(),y+y56); pL5->Draw(); t.SetTextAlign(31); t.DrawText(0        ,y+y56,Form("r%i",iRow+16));//sec5
+    TLine *pL6=new TLine(x246,y+y56,PcSizeX() ,y+y56); pL6->Draw(); t.SetTextAlign(11); t.DrawText(PcSizeX(),y+y56,Form("r%i",9-iRow) );//sec4
+  }  
+
+  for(Int_t iDilogic=1;iDilogic<=10;iDilogic++){
+    Double_t x=(iDilogic-1)*8*PadSizeX();
+    TLine *pL1=new TLine(x     ,0,x     ,SecSizeY()); pL1->Draw(); t.DrawText(x     ,0,Form("d%i",11-iDilogic));
+    TLine *pL2=new TLine(x+x246,0,x+x246,SecSizeY()); pL2->Draw(); t.DrawText(x+x246,0,Form("d%i",11-iDilogic));
+    
+    TLine *pL3=new TLine(x     ,y34,x     ,y34+SecSizeY()); pL3->Draw(); t.DrawText(x     ,y34,Form("d%i",11-iDilogic));
+    TLine *pL4=new TLine(x+x246,y34,x+x246,y34+SecSizeY()); pL4->Draw(); t.DrawText(x+x246,y34,Form("d%i",11-iDilogic));
+    
+    TLine *pL5=new TLine(x     ,y56,x     ,y56+SecSizeY()); pL5->Draw(); t.DrawText(x     ,y56,Form("d%i",11-iDilogic));
+    TLine *pL6=new TLine(x+x246,y56,x+x246,y56+SecSizeY()); pL6->Draw(); t.DrawText(x+x246,y56,Form("d%i",11-iDilogic));
+  }
+  
+  t.SetTextAlign(13); t.DrawText(0         ,0,"pad1");  t.DrawText(x246     ,0,"pad81");  
+  t.SetTextAlign(33); t.DrawText(SecSizeX(),0,"pad80"); t.DrawText(PcSizeX(),0,"pad160");  
 }//DrawSectors()
 //__________________________________________________________________________________________________
 TVector3 AliRICHParam::ForwardTracing(TVector3 entranceTrackPoint, TVector3 vectorTrack, Double_t thetaC, Double_t phiC)
