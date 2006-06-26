@@ -30,6 +30,8 @@
 #include "Riostream.h"
 #include "AliMC.h"
 
+#include "driver.h"
+
 ClassImp(AliGenHerwig)
 
 
@@ -55,7 +57,9 @@ ClassImp(AliGenHerwig)
     fPtRMS(0),
     fMaxPr(10),
     fMaxErrors(1000),
-    fEnSoft(1)
+    fEnSoft(1),
+    fEv1Pr(0),
+    fEv2Pr(0)
 {
 // Constructor
 }
@@ -77,6 +81,8 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fEnSoft=1.0;
     fMaxPr=10;
     fMaxErrors=1000;
+    fEv1Pr=0;
+    fEv2Pr=0;
     // Set random number generator   
     AliHerwigRndm::SetHerwigRandom(GetRandom());
 }
@@ -92,6 +98,13 @@ AliGenHerwig::AliGenHerwig(const AliGenHerwig & Herwig)
 AliGenHerwig::~AliGenHerwig()
 {
 // Destructor
+}
+
+void AliGenHerwig::SetEventListRange(Int_t eventFirst, Int_t eventLast)
+{
+  fEv1Pr = ++eventFirst;
+  fEv2Pr = ++eventLast;
+  if ( fEv2Pr == -1 ) fEv2Pr = fEv2Pr;
 }
 
 void AliGenHerwig::Init()
@@ -110,6 +123,26 @@ void AliGenHerwig::Init()
   fHerwig->SetMAXPR(fMaxPr);
   fHerwig->SetMAXER(fMaxErrors);
   fHerwig->SetENSOF(fEnSoft);
+  
+  fHerwig->SetEV1PR(fEv1Pr);
+  fHerwig->SetEV2PR(fEv2Pr);
+
+// C---D,U,S,C,B,T QUARK AND GLUON MASSES (IN THAT ORDER)
+//       RMASS(1)=0.32
+//       RMASS(2)=0.32
+//       RMASS(3)=0.5
+//       RMASS(4)=1.55
+//       RMASS(5)=4.95
+//       RMASS(6)=174.3
+//       RMASS(13)=0.75
+
+  fHerwig->SetRMASS(4,1.2);
+  fHerwig->SetRMASS(5,4.75);
+  
+  if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(),50);
+
+  fHerwig->Hwusta("PI0     ");
+
   // compute parameter dependent constants
   fHerwig->PrepareRun();
 }
@@ -152,6 +185,10 @@ void AliGenHerwig::InitPDF()
       break;
     case kCTEQ5L:
       fModPDF=46;
+      fAutPDF="CTEQ";
+      break;
+    case kCTEQ5M:
+      fModPDF=48;
       fAutPDF="CTEQ";
       break;
     default:
@@ -232,7 +269,7 @@ void AliGenHerwig::Generate()
 			  origin[0], origin[1], origin[2], 
 			  tof,
 			  polar[0], polar[1], polar[2],
-			  kPPrimary, nt, 1., ks);
+			  kPPrimary, nt, fHerwig->GetEVWGT(), ks);
 		KeepTrack(nt);
 		newPos[i]=nt;
 	    } // end of if: selection of particle

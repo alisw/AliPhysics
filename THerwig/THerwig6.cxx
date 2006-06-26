@@ -100,6 +100,23 @@ THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6") {
   fHwrpar = (Hwrpar_t*) herwig6_common_block_address_((char*)"HWRPAR",6);
   fHwminb = (Hwminb_t*) herwig6_common_block_address_((char*)"HWMINB",6);
   fHwclus = (Hwclus_t*) herwig6_common_block_address_((char*)"HWCLUS",6);
+  fHwgrav = (Hwgrav_t*) herwig6_common_block_address_((char*)"HWGRAV",6);
+  fHw6202 = (Hw6202_t*) herwig6_common_block_address_((char*)"HW6202",6);
+  fHw6203 = (Hw6203_t*) herwig6_common_block_address_((char*)"HW6203",6);
+  fHw6300 = (Hw6300_t*) herwig6_common_block_address_((char*)"HW6300",6);
+  fHwpmrs = (Hwpmrs_t*) herwig6_common_block_address_((char*)"HWPMRS",6);
+  fHwcirc = (Hwcirc_t*) herwig6_common_block_address_((char*)"HWCIRC",6);
+  fHwdspb = (Hwdspb_t*) herwig6_common_block_address_((char*)"HWDSPB",6);
+  fHwdsp2 = (Hwdsp2_t*) herwig6_common_block_address_((char*)"HWDSP2",6);
+  fHwdsp3 = (Hwdsp3_t*) herwig6_common_block_address_((char*)"HWDSP3",6);
+  fHwdsp4 = (Hwdsp4_t*) herwig6_common_block_address_((char*)"HWDSP4",6);
+  fHwdspn = (Hwdspn_t*) herwig6_common_block_address_((char*)"HWDSPN",6);
+  fHwspin = (Hwspin_t*) herwig6_common_block_address_((char*)"HWSPIN",6);
+  fHwstau = (Hwstau_t*) herwig6_common_block_address_((char*)"HWSTAU",6);
+  fHwgupr = (Hwgupr_t*) herwig6_common_block_address_((char*)"HWGUPR",6);
+  fHw6500 = (Hw6500_t*) herwig6_common_block_address_((char*)"HW6500",6);
+  fHw6504 = (Hw6504_t*) herwig6_common_block_address_((char*)"HW6504",6);
+  fHw6506 = (Hw6506_t*) herwig6_common_block_address_((char*)"HW6506",6);
  }
 
 //------------------------------------------------------------------------------
@@ -450,6 +467,12 @@ void THerwig6::Hwefin()
 
 {
   hwefin_();
+}
+
+void THerwig6::Hwiodk(int iopt)
+
+{
+  hwiodk_(iopt);
 }
 
 void THerwig6::SetupTest()

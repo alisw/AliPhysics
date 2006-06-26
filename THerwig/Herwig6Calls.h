@@ -8,7 +8,9 @@
 // author: j. g. contreras jgcn@moni.mda.cinvestav.mx
 // date: december 22, 2000
 
-int const NMXHEP = 2000;
+struct dcpx {double dr,di;};
+
+int const NMXHEP = 4000;
 
 struct Hepevt_t {
   int NEVHEP;
@@ -151,7 +153,7 @@ struct Hwparp_t {
   int TMPAR[NMXPAR];
 };
 
-int const MODMAX = 5;
+int const MODMAX = 50;
 
 struct Hwbosc_t {
   double  ALPFAC;
@@ -339,7 +341,7 @@ struct Hwdist_t {
   double HBAR;
   double PLTCUT;
   double VMIN2;
-  double VTXPIP[4];
+  double VTXPIP[5];
   double XMIX[2];
   double XMRCT[2];
   double YMIX[2];
@@ -411,7 +413,7 @@ struct Hwsusy_t {
   double GHSQSS[2][2][6][4];
   double XLMNSS;
   double RMMNSS;
-  double IMSSM;
+  double DMSSM;
   double SENHNC[24];
   double SSPARITY;
   int    SUSYIN;
@@ -446,6 +448,181 @@ struct Hwclus_t {
   int    IDCL[NMXCL];
   int    NCL;
 };
+
+// herwig 6.507
+
+struct Hwgrav_t {
+  double GRVLAM;
+  double EMGRV;
+  double GAMGRV;
+};
+
+struct Hw6202_t {
+  double VIPWID[3];
+  double DXRCYL;
+  double DXZMAX;
+  double DXRSPH;
+  int    WZRFR;
+  int    FIX4JT;
+  int    IMSSM;
+  int    IHIGGS;
+  int    PARITY;
+  int    LRSUSY;
+};
+
+struct Hw6203_t {
+  double ABWGT;
+  double ABWSUM;
+  double AVABW;
+  int    NNEGWT;
+  int    NNEGEV;
+  int    NEGWTS;
+};
+
+int const IMAXCH = 20;
+
+struct Hw6300_t {
+  double MJJMIN;
+  double CHNPRB[IMAXCH];
+  int    IOPSTP;
+  int    IOPSH;
+  int    OPTM;
+  int    CHON[IMAXCH];
+};
+
+
+int const NXMRS = 49;
+int const NQMRS = 37;
+int const NPMRS = 8;
+
+struct Hwpmrs_t {
+  double FMRS[NQMRS+1][NXMRS][NPMRS][3];
+};
+
+struct Hwcirc_t {
+  int	   CIRCOP;
+  int	   CIRCAC;
+  int	   CIRCVR;
+  int	   CIRCRV;
+  int	   CIRCCH;
+};
+
+int const NCFMAX = 3;
+int const NMODE2 = 500;
+int const NMODE3 = 500;
+int const NDIAGR = 8;
+int const NMODEB = 50;
+int const NMODE4 = 4;
+
+struct Hwdspb_t {
+  double ABMODE[NMODEB][2];
+  double BBMODE[NMODEB][12][2];
+  double PBMODE[NMODEB][12];
+  double WTBMAX[NMODEB][12];
+  int    IDBPRT[NMODEB];
+  int    IBDRTP[NMODEB];
+  int    IBMODE[NMODEB];
+  int    NBMODE;
+};
+
+struct Hwdsp2_t {
+  double A2MODE[NMODE2][2];
+  double P2MODE[NMODE2];
+  double WT2MAX[NMODE2];
+  int    ID2PRT[NMODE2];
+  int    I2DRTP[NMODE2];
+  int    N2MODE;
+};
+
+struct Hwdsp3_t {
+  double A3MODE[NMODE3][NDIAGR][2];
+  double B3MODE[NMODE3][NDIAGR][2];
+  double P3MODE[NMODE3];
+  double WT3MAX[NMODE3];
+  double SPN3CF[NMODE3][NCFMAX][NCFMAX];
+  int    ID3PRT[NMODE3];
+  int    I3MODE[NDIAGR][NMODE3];
+  int    I3DRTP[NDIAGR][NMODE3];
+  int    N3MODE;
+  int    NDI3BY[NMODE3];
+  int    N3NCFL[NMODE3];
+  int    I3DRCF[NDIAGR][NMODE3];
+};
+
+struct Hwdsp4_t {
+  double A4MODE[NMODE4][12][2];
+  double B4MODE[NMODE4][12][2];
+  double P4MODE[NMODE4][12][12];
+  double WT4MAX[NMODE4][12][12];
+  int    ID4PRT[NMODE4];
+  int    I4MODE[NMODE4][2];
+  int    N4MODE;
+};
+
+struct Hwdspn_t {
+  int    NDECSY;
+  int    NSEARCH;
+  int    LRDEC;
+  int    LWDEC;
+  int    SYSPIN;
+  int    THREEB;
+  int    FOURB;
+  char   TAUDEC[6];
+};
+
+int const NMXSPN = 50;
+
+struct Hwspin_t {
+  dcpx   MESPN[NMXSPN][NCFMAX][2][2][2][2];
+  dcpx   RHOSPN[NMXSPN][2][2];
+  double SPNCFC[NMXSPN][NCFMAX][NCFMAX];
+  int    IDSPN[NMXSPN];
+  int    JMOSPN[NMXSPN];
+  int    JDASPN[NMXSPN][2];
+  int    NSPN;
+  int    ISNHEP[NMXHEP];
+  int    NSNTRY;
+  int    DECSPN[NMXSPN];
+  int    NCFL[NMXSPN];
+  int    SPCOPT;
+};
+
+struct Hwstau_t {
+  int    JAK1;
+  int    JAK2;
+  int    ITDKRC;
+  int    IFPHOT;
+};
+
+int const MAXHRP = 100;
+
+struct Hwgupr_t {
+  double LHWGT[MAXHRP];
+  double LHWGTS[MAXHRP];
+  double LHXSCT[MAXHRP];
+  double LHXERR[MAXHRP];
+  double LHXMAX[MAXHRP];
+  double LHMXSM;
+  int    LHIWGT[MAXHRP];
+  int    LHNEVT[MAXHRP];
+  int    ITYPLH;
+  int    LHSOFT;
+  int    LHGLSF;    
+};
+
+struct Hw6500_t {
+  int    PRESPL;
+};
+
+struct Hw6504_t {
+  int    ITOPRD;
+};
+
+struct Hw6506_t {
+  double PDFX0;
+  double PDFPOW;
+};
+
 
 
 extern "C" {

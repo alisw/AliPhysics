@@ -52,6 +52,10 @@ class AliGenHerwig : public AliGenMC
     virtual void    SetMaxErrors(Int_t i) {fMaxErrors=i;}
     virtual void    FinishRun();
     virtual void    SetEnSoft(Double_t e) {fEnSoft=e;}
+    
+    virtual void    SetHardProcessFile(TString filename) {fFileName=TString(filename);};
+    virtual void    SetEventListRange(Int_t eventFirst=-1, Int_t eventLast=-1);
+
  protected:
     Bool_t SelectFlavor(Int_t pid);
 
@@ -77,6 +81,9 @@ class AliGenHerwig : public AliGenMC
     Int_t       fMaxPr;          // maximum number of events to print out
     Int_t       fMaxErrors;      // maximum number of errors allowed
     Double_t    fEnSoft;          // change on soft energy distribution
+    Int_t       fEv1Pr;          // first event to be printed
+    Int_t       fEv2Pr;          // last event to be printed
+    TString     fFileName;       //!Name of file to read from hard scattering
       
  private:
     // check if particle is selected as parent particle

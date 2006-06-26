@@ -57,6 +57,15 @@ C-----------------------------------------------------------------------
 
 /* declarations from ROOT */
 #include "TGenerator.h"
+
+typedef enum
+{
+   kHwCharm         =  1704, 
+   kHwBeauty        =  1705,
+   kHwCharmMCATNLO  = -1704,
+   kHwBeautyMCATNLO = -1705
+} Process_t;
+
 class TObjArray;
 
 // Translation of Fortran commons from the Herwig6
@@ -66,7 +75,9 @@ class TObjArray;
 // author: j. g. contreras jgcn@moni.mda.cinvestav.mx
 // date: december 22, 2000
 
-int const NMXHEP = 2000;
+typedef struct {double dr,di;} dcpx;
+
+int const NMXHEP = 4000;
 
 typedef struct {
   int NEVHEP;
@@ -209,7 +220,7 @@ typedef struct {
   int TMPAR[NMXPAR];
 } Hwparp_t;
 
-int const MODMAX = 5;
+int const MODMAX = 50;
 
 typedef struct {
   double  ALPFAC;
@@ -260,6 +271,8 @@ typedef struct {
   int    NUMERU;
   int    NWGTS;
   int    GENSOF;
+  int    EV1PR;
+  int    EV2PR;
 } Hwevnt_t;
 
 typedef struct {
@@ -397,7 +410,7 @@ typedef struct {
   double HBAR;
   double PLTCUT;
   double VMIN2;
-  double VTXPIP[4];
+  double VTXPIP[5];
   double XMIX[2];
   double XMRCT[2];
   double YMIX[2];
@@ -469,7 +482,7 @@ typedef struct {
   double GHSQSS[2][2][6][4];
   double XLMNSS;
   double RMMNSS;
-  double IMSSM;
+  double DMSSM;
   double SENHNC[24];
   double SSPARITY;
   int    SUSYIN;
@@ -505,6 +518,182 @@ typedef struct {
   int    NCL;
 } Hwclus_t;
 
+// herwig 6.507
+
+typedef struct {
+  double GRVLAM;
+  double EMGRV;
+  double GAMGRV;
+} Hwgrav_t;
+
+typedef struct {
+  double VIPWID[3];
+  double DXRCYL;
+  double DXZMAX;
+  double DXRSPH;
+  int	   WZRFR;
+  int	   FIX4JT;
+  int	   IMSSM;
+  int	   IHIGGS;
+  int	   PARITY;
+  int	   LRSUSY;
+} Hw6202_t;
+
+typedef struct {
+  double ABWGT;
+  double ABWSUM;
+  double AVABW;
+  int	   NNEGWT;
+  int	   NNEGEV;
+  int	   NEGWTS;
+} Hw6203_t;
+
+int const IMAXCH = 20;
+
+typedef struct {
+  double MJJMIN;
+  double CHNPRB[IMAXCH];
+  int	   IOPSTP;
+  int	   IOPSH;
+  int	   OPTM;
+  int	   CHON[IMAXCH];
+} Hw6300_t;
+
+
+int const NXMRS = 49;
+int const NQMRS = 37;
+int const NPMRS = 8;
+
+typedef struct {
+  double FMRS[NQMRS+1][NXMRS][NPMRS][3];
+} Hwpmrs_t;
+
+typedef struct {
+  int	   CIRCOP;
+  int	   CIRCAC;
+  int	   CIRCVR;
+  int	   CIRCRV;
+  int	   CIRCCH;
+} Hwcirc_t;
+
+int const NCFMAX = 3;
+int const NMODE2 = 500;
+int const NMODE3 = 500;
+int const NDIAGR = 8;
+int const NMODEB = 50;
+int const NMODE4 = 4;
+
+typedef struct {
+  double ABMODE[NMODEB][2];
+  double BBMODE[NMODEB][12][2];
+  double PBMODE[NMODEB][12];
+  double WTBMAX[NMODEB][12];
+  int	   IDBPRT[NMODEB];
+  int	   IBDRTP[NMODEB];
+  int	   IBMODE[NMODEB];
+  int	   NBMODE;
+} Hwdspb_t;
+
+typedef struct {
+  double A2MODE[NMODE2][2];
+  double P2MODE[NMODE2];
+  double WT2MAX[NMODE2];
+  int	   ID2PRT[NMODE2];
+  int	   I2DRTP[NMODE2];
+  int	   N2MODE;
+} Hwdsp2_t;
+
+typedef struct {
+  double A3MODE[NMODE3][NDIAGR][2];
+  double B3MODE[NMODE3][NDIAGR][2];
+  double P3MODE[NMODE3];
+  double WT3MAX[NMODE3];
+  double SPN3CF[NMODE3][NCFMAX][NCFMAX];
+  int	   ID3PRT[NMODE3];
+  int	   I3MODE[NMODE3][NDIAGR];
+  int	   I3DRTP[NMODE3][NDIAGR];
+  int	   N3MODE;
+  int	   NDI3BY[NMODE3];
+  int	   N3NCFL[NMODE3];
+  int	   I3DRCF[NMODE3][NDIAGR];
+} Hwdsp3_t;
+
+typedef struct {
+  double A4MODE[NMODE4][12][2];
+  double B4MODE[NMODE4][12][2];
+  double P4MODE[NMODE4][12][12];
+  double WT4MAX[NMODE4][12][12];
+  int	   ID4PRT[NMODE4];
+  int	   I4MODE[NMODE4][2];
+  int	   N4MODE;
+} Hwdsp4_t;
+
+typedef struct {
+  int	   NDECSY;
+  int	   NSEARCH;
+  int	   LRDEC;
+  int	   LWDEC;
+  int	   SYSPIN;
+  int	   THREEB;
+  int	   FOURB;
+  char   TAUDEC[6];
+} Hwdspn_t;
+
+int const NMXSPN = 50;
+
+typedef struct {
+  dcpx   MESPN[NMXSPN][NCFMAX][2][2][2][2];
+  dcpx   RHOSPN[NMXSPN][2][2];
+  double SPNCFC[NMXSPN][NCFMAX][NCFMAX];
+  int	   IDSPN[NMXSPN];
+  int	   JMOSPN[NMXSPN];
+  int	   JDASPN[NMXSPN][2];
+  int	   NSPN;
+  int	   ISNHEP[NMXHEP];
+  int	   NSNTRY;
+  int	   DECSPN[NMXSPN];
+  int	   NCFL[NMXSPN];
+  int	   SPCOPT;
+} Hwspin_t;
+
+typedef struct {
+  int	   JAK1;
+  int	   JAK2;
+  int	   ITDKRC;
+  int	   IFPHOT;
+} Hwstau_t;
+
+int const MAXHRP = 100;
+
+typedef struct {
+  double LHWGT[MAXHRP];
+  double LHWGTS[MAXHRP];
+  double LHXSCT[MAXHRP];
+  double LHXERR[MAXHRP];
+  double LHXMAX[MAXHRP];
+  double LHMXSM;
+  int	   LHIWGT[MAXHRP];
+  int	   LHNEVT[MAXHRP];
+  int	   ITYPLH;
+  int	   LHSOFT;
+  int	   LHGLSF;    
+} Hwgupr_t;
+
+typedef struct {
+  int    PRESPL;
+} Hw6500_t;
+
+typedef struct {
+  int    ITOPRD;
+} Hw6504_t;
+
+typedef struct {
+  double PDFX0;
+  double PDFPOW;
+} Hw6506_t;
+
+
+
 
 extern "C" {
   void  hwigin_();
@@ -522,6 +711,7 @@ extern "C" {
   void  hwmevt_();
   void  hwufne_();
   void  hwefin_();
+  void  hwiodk_(int);
 }
 
 
@@ -548,7 +738,7 @@ public:
 
   // acces to hep common block
   Hepevt_t*   GetHepevt        () const     { return fHepevt; }
-  int         GetNevhep        () const     { return fHepevt->NEVHEP; }
+  int         GetNEVHEP        () const     { return fHepevt->NEVHEP; }
   int         GetNhep          () const     { return fHepevt->NHEP; }
   int         GetISTHEP    (int i)const     { return fHepevt->ISTHEP[i-1]; }
   int         GetIDHEP     (int i)const     { return fHepevt->IDHEP[i-1]; }
@@ -644,11 +834,20 @@ public:
   double      GetAVWGT         () const     { return fHwevnt->AVWGT; }
   int         GetMAXPR         () const     { return fHwevnt->MAXPR; }
   void        SetMAXPR    (int i)           { fHwevnt->MAXPR = i; }
+  
+  void        SetEV1PR    (int i)           { fHwevnt->EV1PR = i; }
+  void        SetEV2PR    (int i)           { fHwevnt->EV2PR = i; }
+  
   int         GetMAXER         () const     { return fHwevnt->MAXER; }
   void        SetMAXER    (int i)           { fHwevnt->MAXER = i; }
   int         GetNRN      (int i) const     { return fHwevnt->NRN[i-1]; }
   void        SetNRN    (int i, int j)      { fHwevnt->NRN[i-1] = j; }
+  double      GetEVWGT         () const     { return fHwevnt->EVWGT; }
 
+  int         GetIDHW     (int i) const     { return fHwevnt->IDHW[i]; }
+  
+  int         GetIERROR        () const     { return fHwevnt->IERROR; }
+  
   // /HWHARD/
   Hwhard_t*   GetHwhard        ()           { return fHwhard; }
   double      GetPTMIN         () const     { return fHwhard->PTMIN; }
@@ -678,6 +877,9 @@ public:
   // /HWUNAM/
   Hwunam_t*   GetHwunam        ()           { return fHwunam; }
 
+  void        GetRNAME (int i, char a[9])   { for (int j=0;j<8;j++) a[j] = fHwunam->RNAME[i][j]; a[8] = '\0';}
+/*  char*       GetRNAME(int i) { return fHwunam->RNAME[i]; }*/
+  
   // /HWUPDT/
   Hwupdt_t*   GetHwupdt        ()           { return fHwupdt; }
 
@@ -740,6 +942,7 @@ public:
   void             Hwmevt();
   void             Hwufne();
   void             Hwefin();
+  void             Hwiodk(int iopt);
   void             SetupTest();
 protected:
 
@@ -769,6 +972,23 @@ protected:
   Hwrpar_t* fHwrpar; // R-Parity violating parameters and colours
   Hwminb_t* fHwminb; // Parameters for minimum bias/soft underlying event
   Hwclus_t* fHwclus; // Cluster common used by soft event routines
+  Hwgrav_t* fHwgrav;
+  Hw6202_t* fHw6202;
+  Hw6203_t* fHw6203;
+  Hw6300_t* fHw6300;
+  Hwpmrs_t* fHwpmrs;
+  Hwcirc_t* fHwcirc;
+  Hwdspb_t* fHwdspb;
+  Hwdsp2_t* fHwdsp2;
+  Hwdsp3_t* fHwdsp3;
+  Hwdsp4_t* fHwdsp4;
+  Hwdspn_t* fHwdspn;
+  Hwspin_t* fHwspin;
+  Hwstau_t* fHwstau;
+  Hwgupr_t* fHwgupr;
+  Hw6500_t* fHw6500;
+  Hw6504_t* fHw6504;
+  Hw6506_t* fHw6506;
 
   ClassDef(THerwig6,0)  //Interface to Herwig6.1 Event Generator
 };
