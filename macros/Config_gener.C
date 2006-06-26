@@ -28,11 +28,11 @@
 #include "STRUCT/AliMAG.h"
 #endif
 
-enum gentype_t {hijing, hijingParam, gun, box, pythia, herwig, 
+enum gentype_t {hijing, hijingParam, gun, box, pythia, herwig, mcatnlo, 
 		param1, param2, param3, param4, 
 		cocktail, fluka, halo, ntuple, scan};
 
-gentype_t gentype = herwig;
+gentype_t gentype = mcatnlo;
 
 Int_t ntracks=1;
 
@@ -290,6 +290,29 @@ void Config()
       }
       break;              
 
+    case mcatnlo:
+    {
+      AliGenHerwig *gener = new AliGenHerwig(-1);
+      gener->SetMomentumRange(0,7000);
+      gener->SetPhiRange(0. ,360.);
+      gener->SetThetaRange(0., 180.);
+      gener->SetYRange(-10,10);
+      gener->SetPtRange(0,7000);
+      gener->SetOrigin(0,0,0);       // vertex position
+      gener->SetVertexSmear(kPerEvent);
+      gener->SetSigma(0,0,5.6);      // Sigma in (X,Y,Z) (cm) on IP position
+      gener->SetBeamMomenta(7000,7000);
+      gener->SetProjectile("P");
+      gener->SetTarget("P");
+      gener->SetStrucFunc(kCTEQ5M);
+      gener->SetProcess(-1705);
+      gener->SetHardProcessFile("sb.events");
+      gener->SetEventListRange(0,1);
+      gener->SetTrackingFlag(0);
+      gGener = gener;
+    }
+    break;  
+      
     case param1:
 //*******************************************************
 // Example for J/psi  Production from  Parameterisation 
