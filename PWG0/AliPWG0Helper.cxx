@@ -5,7 +5,7 @@
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TH1.h>
-#include <TH3F.h>
+#include <TH3.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
@@ -55,17 +55,20 @@ Bool_t AliPWG0Helper::IsVertexReconstructed(AliESD* aEsd)
 }
 
 //____________________________________________________________________
-Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries)
+Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t debug)
 {
   //
-  // Returns if the given particle is a primary particle
+  // this function checks if a particle from the event generator (i.e. among the nPrim particles in the stack)
+  // shall be counted as a primary particle
+  //
   // This function or a equivalent should be available in some common place of AliRoot
   //
 
   // if the particle has a daughter primary, we do not want to count it
   if (aParticle->GetFirstDaughter() != -1 && aParticle->GetFirstDaughter() < aTotalPrimaries)
   {
-    //AliDebug(AliLog::kDebug+1, "Dropping particle because it has a daughter among the primaries.");
+    if (debug)
+      printf("Dropping particle because it has a daughter among the primaries.\n");
     return kFALSE;
   }
 
@@ -74,13 +77,15 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
   // skip quarks and gluon
   if (pdgCode <= 10 || pdgCode == 21)
   {
-    //AliDebug(AliLog::kDebug+1, "Dropping particle because it is a quark or gluon.");
+    if (debug)
+      printf("Dropping particle because it is a quark or gluon.\n");
     return kFALSE;
   }
 
   if (strcmp(aParticle->GetName(),"XXX") == 0)
   {
-    //AliDebug(AliLog::kDebug, Form("WARNING: There is a particle named XXX."));
+    if (debug)
+      printf("WARNING: There is a particle named XXX.\n");
     return kFALSE;
   }
 
@@ -88,13 +93,15 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
 
   if (strcmp(pdgPart->ParticleClass(),"Unknown") == 0)
   {
-    //AliDebug(AliLog::kDebug, Form("WARNING: There is a particle with an unknown particle class (pdg code %d).", pdgCode));
+    if (debug)
+      printf("WARNING: There is a particle with an unknown particle class (pdg code %d).\n", pdgCode);
     return kFALSE;
   }
 
   if (pdgPart->Charge() == 0)
   {
-    //AliDebug(AliLog::kDebug+1, "Dropping particle because it is not charged.");
+    if (debug)
+      printf("Dropping particle because it is not charged.\n");
     return kFALSE;
   }
 
@@ -102,7 +109,7 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
 }
 
 //____________________________________________________________________
-void AliPWG0Helper::CreateProjections(TH3F* hist)
+void AliPWG0Helper::CreateProjections(TH3* hist)
 {
   // create projections of 3d hists to all 2d combinations
   // the histograms are not returned, just use them from memory or use this to create them in a file
@@ -121,7 +128,7 @@ void AliPWG0Helper::CreateProjections(TH3F* hist)
 }
 
 //____________________________________________________________________
-void AliPWG0Helper::CreateDividedProjections(TH3F* hist, TH3F* hist2, const char* axis)
+void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis)
 {
   // create projections of the 3d hists divides them
   // axis decides to which plane, if axis is 0 to all planes
@@ -137,19 +144,19 @@ void AliPWG0Helper::CreateDividedProjections(TH3F* hist, TH3F* hist2, const char
   }
 
   TH1* proj = hist->Project3D(axis);
-  proj->SetXTitle(GetAxisTitle(hist, axis[0]));
-  proj->SetYTitle(GetAxisTitle(hist, axis[1]));
+  proj->SetYTitle(GetAxisTitle(hist, axis[0]));
+  proj->SetXTitle(GetAxisTitle(hist, axis[1]));
 
   TH1* proj2 = hist2->Project3D(axis);
-  proj2->SetXTitle(GetAxisTitle(hist2, axis[0]));
-  proj2->SetYTitle(GetAxisTitle(hist2, axis[1]));
+  proj2->SetYTitle(GetAxisTitle(hist2, axis[0]));
+  proj2->SetXTitle(GetAxisTitle(hist2, axis[1]));
 
   TH1* division = dynamic_cast<TH1*> (proj->Clone(Form("%s_div_%s", proj->GetName(), proj2->GetName())));
   division->Divide(proj2);
 }
 
 //____________________________________________________________________
-const char* AliPWG0Helper::GetAxisTitle(TH3F* hist, const char axis)
+const char* AliPWG0Helper::GetAxisTitle(TH3* hist, const char axis)
 {
   // returns the title of the axis given in axis (x, y, z)
 

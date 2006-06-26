@@ -1,7 +1,17 @@
 /* $Id$ */
 
+Int_t gMax = 5;
+
 void drawPlots()
 {
+  drawPlots(5);
+  drawPlots(2);
+}
+
+void drawPlots(Int_t max)
+{
+  gMax = max;
+
   ptCutoff();
   TriggerBias();
   VtxRecon();
@@ -94,6 +104,8 @@ void ptSpectrum()
   Prepare1DPlot(histESD);
 
   histESD->SetTitle("");
+  histESD->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  histESD->GetYaxis()->SetTitle("#frac{dN}{d#eta dp_{T}} [c/GeV]");
 
   histMC->SetLineColor(kBlue);
   histESD->SetLineColor(kRed);
@@ -150,7 +162,7 @@ void TriggerBias()
   InitPadCOLZ();
   corr->DrawCopy("COLZ");
 
-  canvas->SaveAs("TriggerBias.gif");
+  canvas->SaveAs(Form("TriggerBias_%d.gif", gMax));
 
   corr->GetYaxis()->SetRangeUser(0, 5);
 
@@ -158,7 +170,7 @@ void TriggerBias()
   InitPadCOLZ();
   corr->DrawCopy("COLZ");
 
-  canvas->SaveAs("TriggerBiasZoom.gif");
+  canvas->SaveAs(Form("TriggerBiasZoom_%d.gif", gMax));
 }
 
 void VtxRecon()
@@ -172,18 +184,57 @@ void VtxRecon()
 
   TCanvas* canvas = new TCanvas("VtxRecon", "VtxRecon", 500, 500);
   InitPadCOLZ();
-  corr->Draw("COLZ");
+  corr->DrawCopy("COLZ");
 
-  canvas->SaveAs("VtxRecon.gif");
+  canvas->SaveAs(Form("VtxRecon_%d.gif", gMax));
+
+
+  corr->GetYaxis()->SetRangeUser(0, 5);
+
+  TCanvas* canvas = new TCanvas("VtxReconZoom", "VtxReconZoom", 500, 500);
+  InitPadCOLZ();
+  corr->DrawCopy("COLZ");
+
+  canvas->SaveAs(Form("VtxReconZoom_%d.gif", gMax));
 }
 
 void Track2Particle2D()
 {
-  TFile* file = TFile::Open("correction_map.root");
+  gSystem->Load("libPWG0base");
 
+  TFile* file = TFile::Open("correction_map.root");
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection();
+  dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
+
+  TH3* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
+  TH3* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
+
+  gene->GetZaxis()->SetRangeUser(0.3, 10);
+  meas->GetZaxis()->SetRangeUser(0.3, 10);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "yx");
+  gene->GetZaxis()->UnZoom();
+  meas->GetZaxis()->UnZoom();
+
+  gene->GetYaxis()->SetRangeUser(-0.8, 0.8);
+  meas->GetYaxis()->SetRangeUser(-0.8, 0.8);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "zx");
+  gene->GetYaxis()->UnZoom();
+  meas->GetYaxis()->UnZoom();
+
+  gene->GetXaxis()->SetRangeUser(-10, 10);
+  meas->GetXaxis()->SetRangeUser(-10, 10);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "zy");
+  gene->GetXaxis()->UnZoom();
+  meas->GetXaxis()->UnZoom();
+
+  TH2* corrYX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx"));
+  TH2* corrZX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx"));
+  TH2* corrZY = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy"));
+
+  /* this reads them from the file
   TH2* corrYX = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx"));
   TH2* corrZX = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx"));
-  TH2* corrZY = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy"));
+  TH2* corrZY = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy"));*/
 
   Prepare2DPlot(corrYX);
   Prepare2DPlot(corrZX);
@@ -209,7 +260,7 @@ void Track2Particle2D()
   InitPadCOLZ();
   corrZY->Draw("COLZ");
 
-  canvas->SaveAs("Track2Particle2D.gif");
+  canvas->SaveAs(Form("Track2Particle2D_%d.gif", gMax));
 }
 
 void Track2Particle3D()
@@ -236,8 +287,6 @@ void Track2Particle3D()
 
 void Track2Particle3DAll()
 {
-  // get left margin proper
-
   TFile* file = TFile::Open("correction_map.root");
 
   TH3* gene = dynamic_cast<TH3*> (file->Get("dndeta_correction/gene_nTrackToNPart"));
@@ -302,7 +351,7 @@ void Prepare2DPlot(TH2* hist)
   hist->GetYaxis()->SetTitleOffset(1.4);
 
   hist->SetMinimum(0);
-  hist->SetMaximum(10);
+  hist->SetMaximum(gMax);
 
   SetRanges(hist);
 }

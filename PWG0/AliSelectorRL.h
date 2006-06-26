@@ -29,6 +29,8 @@ class AliSelectorRL : public AliSelector {
     void DeleteRunLoader();
 
     AliRunLoader* fRunLoader;    //! pointer to the RunLoader if galice.root was opened
+    Bool_t fKinematicsLoaded;    // determines if the stack is properly loaded (AliRunLoader::LoadKinematics() succeeded), this is needed because the GetStack returnes a invalid stack object when the function failed
+    Bool_t fHeaderLoaded;        // determines if the header is properly loaded
 
     ClassDef(AliSelectorRL,0);
 };
