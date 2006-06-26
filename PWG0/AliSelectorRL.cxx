@@ -18,7 +18,9 @@ ClassImp(AliSelectorRL)
 
 AliSelectorRL::AliSelectorRL() :
   AliSelector(),
-  fRunLoader(0)
+  fRunLoader(0),
+  fKinematicsLoaded(kFALSE),
+  fHeaderLoaded(kFALSE)
 {
   //
   // Constructor. Initialization of pointers
@@ -88,7 +90,12 @@ AliRunLoader* AliSelectorRL::GetRunLoader()
     if (!fRunLoader)
       return 0;
 
-    fRunLoader->LoadgAlice();
+    if (fRunLoader->LoadgAlice() != 0)
+    {
+      delete fRunLoader;
+      fRunLoader = 0;
+      return 0;
+    }
     fRunLoader->GetEvent(fTree->GetTree()->GetReadEntry());
   }
 
@@ -106,6 +113,9 @@ void AliSelectorRL::DeleteRunLoader()
     fRunLoader->Delete();
     fRunLoader = 0;
   }
+
+  fKinematicsLoaded = kFALSE;
+  fHeaderLoaded = kFALSE;
 }
 
 AliHeader* AliSelectorRL::GetHeader()
@@ -116,8 +126,11 @@ AliHeader* AliSelectorRL::GetHeader()
   if (!runLoader)
     return 0;
 
-  if (runLoader->GetHeader() == 0)
-    runLoader->LoadHeader();
+  if (fHeaderLoaded == kFALSE)
+    if (runLoader->LoadHeader() != 0)
+      return 0;
+
+  fHeaderLoaded = kTRUE;
 
   return runLoader->GetHeader();
 }
@@ -130,8 +143,11 @@ AliStack* AliSelectorRL::GetStack()
   if (!runLoader)
     return 0;
 
-  if (runLoader->Stack() == 0)
-    runLoader->LoadKinematics();
+  if (fKinematicsLoaded == kFALSE)
+    if (runLoader->LoadKinematics() != 0)
+      return 0;
+
+  fKinematicsLoaded = kTRUE;
 
   return runLoader->Stack();
 }

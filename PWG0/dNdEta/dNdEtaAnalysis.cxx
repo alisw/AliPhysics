@@ -60,9 +60,9 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
 
   fdNdEta[0] = dynamic_cast<TH1D*> (fData->Project3D("y"));
   fdNdEta[0]->SetName(Form("%s_dNdEta", name));
-  fdNdEta[0]->SetTitle("dN/d#eta");
+  fdNdEta[0]->SetTitle("dN_{ch}/d#eta");
   fdNdEta[0]->GetXaxis()->SetTitle(fData->GetYaxis()->GetTitle());
-  fdNdEta[0]->SetYTitle("dN/d#eta");
+  fdNdEta[0]->SetYTitle("dN_{ch}/d#eta");
 
   fdNdEtaPtCutOffCorrected[0] = dynamic_cast<TH1D*> (fdNdEta[0]->Clone(Form("%s_corrected", fdNdEta[0]->GetName())));
 

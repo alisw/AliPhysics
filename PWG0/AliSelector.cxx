@@ -70,6 +70,8 @@ void AliSelector::Begin(TTree*)
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
+
+  AliDebug(AliLog::kDebug, "============BEGIN===========");
 }
 
 void AliSelector::SlaveBegin(TTree* tree)
@@ -169,18 +171,8 @@ Bool_t AliSelector::Process(Long64_t entry)
 
   fTree->GetTree()->GetEntry(entry);
 
-  /*
-  // debugging
   if (fESD)
     AliDebug(AliLog::kDebug, Form("ESD: We have %d tracks.", fESD->GetNumberOfTracks()));
-
-  if (fHeader)
-    AliDebug(AliLog::kDebug, Form("Header: We have %d primaries.", fHeader->GetNprimary()));
-
-  TTree* kinematics = GetKinematics();
-  if (kinematics)
-    AliDebug(AliLog::kDebug, Form("Kinematics: We have %lld particles.", kinematics->GetEntries()));
-  */
 
   return kTRUE;
 }
@@ -190,6 +182,8 @@ void AliSelector::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
+
+  AliDebug(AliLog::kDebug, "=======SLAVETERMINATE=======");
 
   DeleteKinematicsFile();
 }

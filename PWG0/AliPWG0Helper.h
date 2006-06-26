@@ -9,18 +9,18 @@
 
 class AliESD;
 class TParticle;
-class TH3F;
+class TH3;
 
 class AliPWG0Helper : public TObject
 {
   public:
     static Bool_t IsEventTriggered(AliESD* aEsd);
     static Bool_t IsVertexReconstructed(AliESD* aEsd);
-    static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries);
+    static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t debug = kFALSE);
 
-    static void CreateProjections(TH3F* hist);
-    static void CreateDividedProjections(TH3F* hist, TH3F* hist2, const char* axis = 0);
-    static const char* GetAxisTitle(TH3F* hist, const char axis);
+    static void CreateProjections(TH3* hist);
+    static void CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis = 0);
+    static const char* GetAxisTitle(TH3* hist, const char axis);
     
   protected:
     ClassDef(AliPWG0Helper, 0)
