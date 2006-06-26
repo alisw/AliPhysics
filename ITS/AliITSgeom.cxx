@@ -875,7 +875,7 @@ Int_t AliITSgeom::GetLastDet(Int_t dtype)const{
         return GetModuleIndex(5,1,1)-1;
         break;
     case kSSD:
-        return GetIndexMax();
+        return GetIndexMax()-1;
         break;
     case kSSDp: case kSDDp: case kND:
     default:
