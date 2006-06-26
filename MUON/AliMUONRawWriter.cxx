@@ -222,11 +222,13 @@ Int_t AliMUONRawWriter::Digits2Raw()
   for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) 
   {
     // open files
-    idDDL = ich * 2  + AliDAQ::DdlIDOffset("MUONTRK");
+    //   idDDL = ich * 2  + AliDAQ::DdlIDOffset("MUONTRK"); // waiting update in STEER
+    idDDL = ich * 2  + 0x900; // official number for MUON
     sprintf(name, "MUON_%d.ddl",idDDL);
     fFile[0] = fopen(name,"w");
 
-    idDDL = (ich * 2) + 1 + AliDAQ::DdlIDOffset("MUONTRK");
+    //    idDDL = (ich * 2) + 1 + AliDAQ::DdlIDOffset("MUONTRK");
+    idDDL = (ich * 2) + 1 + 0x900;
     sprintf(name, "MUON_%d.ddl",idDDL);
     fFile[1] = fopen(name,"w");
     
@@ -240,11 +242,13 @@ Int_t AliMUONRawWriter::Digits2Raw()
   // trigger chambers
  
   // open files
-  idDDL = AliDAQ::DdlIDOffset("MUONTRG");
+  //  idDDL = AliDAQ::DdlIDOffset("MUONTRG");
+  idDDL = 0xA00;// official number for MUTR
   sprintf(name, "MUTR_%d.ddl",idDDL);
   fFile[0] = fopen(name,"w");
 
-  idDDL = AliDAQ::DdlIDOffset("MUONTRG") + 1;
+  //  idDDL = AliDAQ::DdlIDOffset("MUONTRG") + 1;
+  idDDL = 0xA00 + 1;// official number for MUTR
   sprintf(name, "MUTR_%d.ddl",idDDL);
   fFile[1] = fopen(name,"w");
 
@@ -438,7 +442,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
   TArrayI* vec = fBusPatchManager->GetBusfromDE((iCh+1)*100);
 
   Int_t iBus0AtCh = vec->At(0); //get first bus patch id for a given ich
-	
+
   AliDebug(3,Form("iBus0AtCh %d", iBus0AtCh));
 
   iBusPatch = iBus0AtCh - 1; // starting point for each chamber
