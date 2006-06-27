@@ -52,6 +52,8 @@ void BoxSetGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
 {
   BoxSet& mB = * (BoxSet*) fExternalObj;
   // printf("BoxSetGL::DirectDraw N boxes %d\n", mB.fBoxes.size());
+  if(mB.fBoxes.size() == 0)
+    return;
 
   glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
   glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
