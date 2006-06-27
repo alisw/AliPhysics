@@ -26,6 +26,7 @@ TPCLoader::TPCLoader(const Text_t* n, const Text_t* t) :
   fEvent(-1),
   fDoubleSR(kFALSE),
 
+  fTPCEquipementMap("$(ALICE_ROOT)/TPC/mapping/EquipmentIdMap.data"),
   fReader(0),
   fData(0),
 
@@ -70,7 +71,7 @@ void TPCLoader::OpenFile()
 
   fReader = new AliRawReaderRoot(fFile);
   fReader->LoadEquipmentIdsMap
-    (gSystem->ExpandPathName("$(ALICE_ROOT)/TPC/mapping/EquipmentIdMap.data"));
+    (gSystem->ExpandPathName(fTPCEquipementMap.Data()));
 
   NextEvent();
   LoadEvent();

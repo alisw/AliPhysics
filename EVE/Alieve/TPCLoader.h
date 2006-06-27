@@ -22,6 +22,7 @@ protected:
   Int_t             fEvent;
   Bool_t            fDoubleSR;
 
+  TString           fTPCEquipementMap;
   AliRawReaderRoot* fReader;
   TPCData*          fData;
 
@@ -42,6 +43,8 @@ public:
   void SetFile(const Text_t* f) { fFile = f; }
   void SetDoubleSR(Bool_t d)    { fDoubleSR = d; }
 
+  const Text_t* GetTPCEquipementMap() const  { return fTPCEquipementMap; }
+  void SetTPCEquipementMap(const Text_t* em) { fTPCEquipementMap = em; }
   TPCData* GetData() const { return fData; }
   void     SetData(TPCData* d);
 
