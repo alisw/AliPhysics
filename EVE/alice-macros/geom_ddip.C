@@ -9,6 +9,7 @@ void geom_ddip()
 
   Reve::GeoTopNodeRnrEl* its_re = 
     new Reve::GeoTopNodeRnrEl(gGeoManager, node);
+  re->SetUseNodeTrans(kTRUE);
   gReve->AddGlobalRenderElement(its_re);
   gReve->DrawRenderElement(its_re);
 }
