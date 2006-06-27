@@ -1,3 +1,20 @@
+2006-06-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	Added member TString fTPCEquipementMap to allow override of
+	default file location.
+
+	* TPCSector2DGL.cxx:
+	Added ClassImp.
+
+	* TPCSector3DGL.cxx:
+	Added control statements for cases when some visualization data
+	are not present (GL optimization).
+
+	* VSDCreator.cxx:
+	Small fixes to revive basic VSD functionality.
+
 2006-06-20  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCSector3D.cxx:

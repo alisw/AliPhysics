@@ -1,3 +1,31 @@
+2006-06-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* BoxSetGL.cxx:
+	Skip render-state initialization if no boxes present.
+
+	* GeoNode.cxx:
+	* GeoNode.h:
+	Added option to render GeoTopNodeRnrEl at a given global position
+	(requires ROOT > 5.11.7).
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	* RGTopFrame.cxx:
+	Fixed creation of editor frame so that it uses X client's
+	SetRoot() functionality. This should (finally) close the issue.
+
+	* RMacro.cxx:
+	Check for macro via full-path (fTitle); save macro as '.C' not
+	'.Cexec'.
+
+	* Reve.cxx:
+	In CheckMacro() use TInterpreter::IsLoaded(mac) instead of
+	searching the list of global functions.
+
+	* VSDSelector.cxx:
+	Fixed code for hit and cluster import to work with 'new' render
+	element registration mechanism.
+
 2006-06-21  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* LinkDef.h:
