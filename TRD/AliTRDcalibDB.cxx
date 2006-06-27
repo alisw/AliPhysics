@@ -36,10 +36,6 @@
 
 #include "Cal/AliTRDCalROC.h"
 
-#include "Cal/AliTRDCalChamberPos.h"
-#include "Cal/AliTRDCalStackPos.h"
-#include "Cal/AliTRDCalSuperModulePos.h"
-
 #include "Cal/AliTRDCalPad.h"
 #include "Cal/AliTRDCalDet.h"
 #include "Cal/AliTRDCalGlobals.h"

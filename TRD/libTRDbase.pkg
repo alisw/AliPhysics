@@ -18,9 +18,6 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalPad.cxx \
       Cal/AliTRDCalDet.cxx \
       Cal/AliTRDCalGlobals.cxx \
-      Cal/AliTRDCalChamberPos.cxx \
-      Cal/AliTRDCalStackPos.cxx \
-      Cal/AliTRDCalSuperModulePos.cxx \
       Cal/AliTRDCalPIDLQ.cxx \
       Cal/AliTRDCalMonitoring.cxx \
       Cal/AliTRDCalSuperModuleStatus.cxx \
