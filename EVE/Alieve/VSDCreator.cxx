@@ -135,7 +135,7 @@ void VSDCreator::CreateVSD(const Text_t* data_dir, Int_t event,
   if(mDebugLevel > 0)
     printf("%s trees created, closing files.\n", eH.Data());
 
-  // file->Write();
+  file->Write();
   file->Close();
   delete file; 
   mDirectory =0;
@@ -188,11 +188,6 @@ void VSDCreator::CreateTrees()
     ConvertClusters();
   } catch(Exc_t& exc) { WarnCaller(exc); }
 
-
-  printf("############# EXITING, had incompatible ESDTrack class #####\n");
-  goto end_geninfo_processing;
-
-
   try {
     if(mDebugLevel > 1)
       printf("%s ConvertRecTracks.\n", eH.Data());
@@ -222,7 +217,6 @@ end_esd_processing:
     ConvertGenInfo();
   } catch(Exc_t& exc) { WarnCaller(exc); }
 
-end_geninfo_processing:
   return;
 }
 
