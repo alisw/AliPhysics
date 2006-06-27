@@ -110,7 +110,7 @@ VSDSelector::VSDSelector(TGListTree* lt, TGCompositeFrame *tFrame)
     gframe->AddFrame(label,lh);
     x += labelw;
   
-    mClusterSelection = new TGTextEntry(gframe, "R()< 70");
+    mClusterSelection = new TGTextEntry(gframe, "C.V.R() > 70");
     mClusterSelection->Resize(entryw, wH);
     lh = new TGXYLayoutHints(x, y, entryw, wH,0);  lh->SetPadLeft(2); lh->SetPadRight(2);
     gframe->AddFrame(mClusterSelection,lh);
@@ -278,7 +278,7 @@ void VSDSelector::SelectHits()
   if(mHitSelection)
     selection  = mHitSelection->GetText();
   else 
-    selection  ="det_id == 0";
+    selection  ="1";
 
   TTreeQuery evl;
   Int_t n = evl.Select(mTreeH, selection);
@@ -295,23 +295,12 @@ void VSDSelector::SelectHits()
     container->SetPoint(i, mH.V.x, mH.V.y, mH.V.z);
   }
 
-  container->SetMarkerColor((Color_t)2);
-  container->SetMarkerStyle((Style_t)6);
+  container->SetTitle(Form("N=%d", container->GetN()));
+  container->SetMarkerColor(2);
+  container->SetMarkerStyle(20);
+  container->SetMarkerSize(2);
   gReve->AddRenderElement(container);
-
-  return; //!!!! this is commenting-out old impl below
-
-  {
-    Reve::PadHolder pHolder(true, gReve->GetCC());
-    container->SetMarkerColor((Color_t)2);
-    container->SetMarkerStyle((Style_t)6);
-    container->Draw();
-  }
-
-  TGListTreeItem*  parent = fListTree->FindItemByPathname("Event0");
-  TGListTreeItem* iholder = fListTree->AddItem(parent, Form("Hits %s", selection) ,container);
-  iholder->SetUserData(container);
-  NotifyBrowser(parent);
+  gReve->DrawRenderElement(container);
 }
 
 /**************************************************************************/
@@ -327,7 +316,7 @@ void VSDSelector::SelectClusters()
   if (mClusterSelection)
     selection = mClusterSelection->GetText();
   else 
-    selection  ="V.R()<70";
+    selection  ="1";
 
   TTreeQuery evl;
   Int_t n = evl.Select(mTreeC, selection);
@@ -344,18 +333,14 @@ void VSDSelector::SelectClusters()
     container->SetPoint(i, mC.V.x, mC.V.y, mC.V.z);
   }
 
-  {
-    Reve::PadHolder pHolder(true, gReve->GetCC());
-    container->SetMarkerColor((Color_t)9);
-    container->SetMarkerStyle((Style_t)7);
-    container->Draw();
-  }
-
-  TGListTreeItem*  parent = fListTree->FindItemByPathname("Event0");
-  TGListTreeItem* iholder = fListTree->AddItem(parent, Form("Clusters %s", selection) ,container);
-  iholder->SetUserData(container);
-  NotifyBrowser(parent);
+  container->SetTitle(Form("N=%d", container->GetN()));
+  container->SetMarkerColor(9);
+  container->SetMarkerStyle(20);
+  container->SetMarkerSize(2);
+  gReve->AddRenderElement(container);
+  gReve->DrawRenderElement(container);
 }
+
 /**************************************************************************/
 
 void VSDSelector::SelectRecTracks()
