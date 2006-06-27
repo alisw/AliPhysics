@@ -26,7 +26,7 @@ RMacro::RMacro(const char* name, const char* /*title*/) : TMacro(name, "") {}
 
 void RMacro::Exec(const char* params)
 {
-  if(Reve::CheckMacro(fName))
+  if(Reve::CheckMacro(fTitle.Data()))
     G__unloadfile(fTitle.Data());
 
   // Copy from TMacro::Exec. Difference is that the file is really placed
@@ -36,7 +36,7 @@ void RMacro::Exec(const char* params)
     //the current implementation uses a file in the current directory.
     //should be replaced by a direct execution from memory by CINT
     fname += GetName();
-    fname += ".Cexec";
+    fname += ".C";
     SaveSource(fname);
     //disable a possible call to gROOT->Reset from the executed script
     gROOT->SetExecutingMacro(kTRUE);
