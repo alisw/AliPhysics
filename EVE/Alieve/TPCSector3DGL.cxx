@@ -22,7 +22,7 @@ using namespace Alieve;
 
 ClassImp(TPCSector3DGL)
 
-  TPCSector3DGL::TPCSector3DGL() : fSector(0), fBoxRnr(0)
+TPCSector3DGL::TPCSector3DGL() : fSector(0), fBoxRnr(0)
 {
   // fCached = false; // Disable display list.
 }
@@ -66,13 +66,14 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
 {
   // printf("TPCSector3DGL::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
 
-  fBoxRnr->Render(flags);
+  if(fSector->fTPCData != 0)
+    fBoxRnr->Render(flags);
 
   glPushAttrib(GL_CURRENT_BIT | GL_POINT_BIT | GL_ENABLE_BIT);
   glDisable(GL_LIGHTING);
   UChar_t col[4];
 
-  if(fSector->fPointSetOn) {
+  if(fSector->fTPCData != 0 && fSector->fPointSetOn) {
     glEnable(GL_BLEND);
     glEnable(GL_POINT_SMOOTH);
     glPointSize(fSector->fPointSize);
@@ -86,8 +87,10 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
       ColorFromIdx(ps->GetMarkerColor(), col);
       glColor4ubv(col);
 
-      glVertexPointer(3, GL_FLOAT, 0, ps->GetP());
-      glDrawArrays(GL_POINTS, 0, ps->GetN());
+      if(ps->GetN() > 0) {
+	glVertexPointer(3, GL_FLOAT, 0, ps->GetP());
+	glDrawArrays(GL_POINTS, 0, ps->GetN());
+      }
     }
 
     glPopClientAttrib();
