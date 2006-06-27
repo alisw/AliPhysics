@@ -16,6 +16,13 @@
 /*
 $Id$
 */
+////////////////////////////////////////////////////////////////
+//  This class initializes the class AliITSgeom
+//  The initialization is done starting from 
+//  a geometry coded by means of the ROOT geometrical modeler
+//  This initialization can be used both for simulation and reconstruction
+///////////////////////////////////////////////////////////////
+
 #include <TArrayD.h>
 #include <TArrayF.h>
 #include <TStopwatch.h>
@@ -40,9 +47,7 @@ $Id$
 #include <TGeoPcon.h>
 #include <TGeoEltu.h>
 #include <TGeoHype.h>
-#include <TClass.h>
 
-#include <AliLog.h>
 #include "AliITSgeom.h"
 #include "AliITSInitGeometry.h"
 
@@ -155,9 +160,9 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
     const Int_t klayers = 6; // number of layers in the ITS
     const Int_t kladders[klayers]   = {20,40,14,22,34,38}; // Number of ladders
     const Int_t kdetectors[klayers] = {4,4,6,8,22,25};// number of detector/lad
-    const AliITSDetector idet[6]   = {kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
-    const TString pathbase = "/ALIC_1/ITSV_1/ITSD_1/";
-    const TString names[2][klayers] = {
+    const AliITSDetector kIdet[6]   = {kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
+    const TString kPathbase = "/ALIC_1/ITSV_1/ITSD_1/";
+    const TString kNames[2][klayers] = {
 	{"%sIT12_1/I12A_%d/I10A_%d/I103_%d/I101_1/ITS1_1", // lay=1
 	 "%sIT12_1/I12A_%d/I20A_%d/I1D3_%d/I1D1_1/ITS2_1", // lay=2
 	 "%sIT34_1/I004_%d/I302_%d/ITS3_%d/", // lay=3
@@ -191,22 +196,22 @@ Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
     geom->Init(kItype,klayers,kladders,kdetectors,nmods);
     for(mod=0;mod<nmods;mod++){
         DecodeDetectorLayers(mod,lay,lad,det); // Write
-        geom->CreateMatrix(mod,lay,lad,det,idet[lay-1],tran,rot);
+        geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
         RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
-        path.Form(names[fMinorVersion-1][lay-1].Data(),
-                  pathbase.Data(),cpn0,cpn1,cpn2);
+        path.Form(kNames[fMinorVersion-1][lay-1].Data(),
+                  kPathbase.Data(),cpn0,cpn1,cpn2);
         geom->GetGeomMatrix(mod)->SetPath(path);
         GetTransformation(path.Data(),materix);
         geom->SetTrans(mod,materix.GetTranslation());
         geom->SetRotMatrix(mod,materix.GetRotationMatrix());
-        if(initSeg[idet[lay-1]]) continue;
+        if(initSeg[kIdet[lay-1]]) continue;
         GetShape(path,shapeName,shapePar);
         if(shapeName.CompareTo("BOX")){
             Error("InitITSgeom","Geometry changed without proper code update"
                   "or error in reading geometry. Shape is not BOX.");
             return kFALSE;
         } // end if
-	InitGeomShapePPRasymmFMD(idet[lay-1],initSeg,shapePar,geom);
+	InitGeomShapePPRasymmFMD(kIdet[lay-1],initSeg,shapePar,geom);
     } // end for module
     if(fTiming){
         time->Stop();
@@ -409,8 +414,8 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
     gGeoManager->PopPath();
     if (!vol) return kFALSE;
     TGeoShape *shape = vol->GetShape();
-    TClass *class_type = shape->IsA();
-    if (class_type==TGeoBBox::Class()) {
+    TClass *classType = shape->IsA();
+    if (classType==TGeoBBox::Class()) {
 	shapeType = "BOX";
 	npar = 3;
 	par.Set(npar);
@@ -420,7 +425,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(box->GetDZ(),2);
 	return kTRUE;
     }
-    if (class_type==TGeoTrd1::Class()) {
+    if (classType==TGeoTrd1::Class()) {
 	shapeType = "TRD1";
 	npar = 4;
 	par.Set(npar);
@@ -431,7 +436,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(trd1->GetDz(), 3);
 	return kTRUE;
     }
-    if (class_type==TGeoTrd2::Class()) {
+    if (classType==TGeoTrd2::Class()) {
 	shapeType = "TRD2";
 	npar = 5;
 	par.Set(npar);
@@ -443,7 +448,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(trd2->GetDz(), 4);
 	return kTRUE;
     }
-    if (class_type==TGeoTrap::Class()) {
+    if (classType==TGeoTrap::Class()) {
 	shapeType = "TRAP";
 	npar = 11;
 	par.Set(npar);
@@ -462,7 +467,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(TMath::Tan(trap->GetAlpha2()*TMath::DegToRad()),10);
 	return kTRUE;
     }
-    if (class_type==TGeoTube::Class()) {
+    if (classType==TGeoTube::Class()) {
 	shapeType = "TUBE";
 	npar = 3;
 	par.Set(npar);
@@ -472,7 +477,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(tube->GetDz(),2);
 	return kTRUE;
     }
-    if (class_type==TGeoTubeSeg::Class()) {
+    if (classType==TGeoTubeSeg::Class()) {
 	shapeType = "TUBS";
 	npar = 5;
 	par.Set(npar);
@@ -484,7 +489,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(tubs->GetPhi2(),4);
 	return kTRUE;
     }
-    if (class_type==TGeoCone::Class()) {
+    if (classType==TGeoCone::Class()) {
 	shapeType = "CONE";
 	npar = 5;
 	par.Set(npar);
@@ -496,7 +501,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(cone->GetRmax2(),4);
 	return kTRUE;
     }
-    if (class_type==TGeoConeSeg::Class()) {
+    if (classType==TGeoConeSeg::Class()) {
 	shapeType = "CONS";
 	npar = 7;
 	par.Set(npar);
@@ -510,7 +515,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(cons->GetPhi2(),6);
 	return kTRUE;
     }
-    if (class_type==TGeoSphere::Class()) {
+    if (classType==TGeoSphere::Class()) {
 	shapeType = "SPHE";
 	npar = 6;
 	par.Set(npar);
@@ -524,7 +529,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(sphe->GetPhi2(),5);
 	return kTRUE;
     }
-    if (class_type==TGeoPara::Class()) {
+    if (classType==TGeoPara::Class()) {
 	shapeType = "PARA";
 	npar = 6;
 	par.Set(npar);
@@ -537,7 +542,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(para->GetTyz(),5);
 	return kTRUE;
     }
-    if (class_type==TGeoPgon::Class()) {
+    if (classType==TGeoPgon::Class()) {
 	shapeType = "PGON";
 	TGeoPgon *pgon = (TGeoPgon*)shape;
 	Int_t nz = pgon->GetNz();
@@ -557,7 +562,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	}
 	return kTRUE;
     }
-    if (class_type==TGeoPcon::Class()) {
+    if (classType==TGeoPcon::Class()) {
 	shapeType = "PCON";
 	TGeoPcon *pcon = (TGeoPcon*)shape;
 	Int_t nz = pcon->GetNz();
@@ -577,7 +582,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	}
 	return kTRUE;
     }
-    if (class_type==TGeoEltu::Class()) {
+    if (classType==TGeoEltu::Class()) {
 	shapeType = "ELTU";
 	npar = 3;
 	par.Set(npar);
@@ -587,7 +592,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(eltu->GetDz(),2);
 	return kTRUE;
     }
-    if (class_type==TGeoHype::Class()) {
+    if (classType==TGeoHype::Class()) {
 	shapeType = "HYPE";
 	npar = 5;
 	par.Set(npar);
@@ -599,7 +604,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(hype->GetStOut(),4);
 	return kTRUE;
     }
-    if (class_type==TGeoGtra::Class()) {
+    if (classType==TGeoGtra::Class()) {
 	shapeType = "GTRA";
 	npar = 12;
 	par.Set(npar);
@@ -619,7 +624,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 	par.AddAt(trap->GetTwistAngle(),11);
 	return kTRUE;
     }
-    if (class_type==TGeoCtub::Class()) {
+    if (classType==TGeoCtub::Class()) {
 	shapeType = "CTUB";
 	npar = 11;
 	par.Set(npar);
@@ -645,7 +650,7 @@ Bool_t AliITSInitGeometry::GetShape(const TString &volumePath,
 }
 //______________________________________________________________________
 void AliITSInitGeometry::DecodeDetector(Int_t &mod,Int_t layer,Int_t cpn0,
-                                        Int_t cpn1,Int_t cpn2){
+                                        Int_t cpn1,Int_t cpn2) const {
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose.
@@ -659,9 +664,9 @@ void AliITSInitGeometry::DecodeDetector(Int_t &mod,Int_t layer,Int_t cpn0,
     //                   of copy numbers.
     // Return:
     //    none.
-    const Int_t detPerLadderSPD[2]={2,4};
-    const Int_t detPerLadder[6]={4,4,6,8,22,25};
-    const Int_t ladPerLayer[6]={20,40,14,22,34,38};
+    const Int_t kDetPerLadderSPD[2]={2,4};
+    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
+    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
     Int_t lay=-1,lad=-1,det=-1,i;
 
     if(fDecode){ // New decoding scheam
@@ -672,9 +677,9 @@ void AliITSInitGeometry::DecodeDetector(Int_t &mod,Int_t layer,Int_t cpn0,
             if(cpn0==4&&cpn1==1) lad=1;
             else if(cpn0==4&&cpn1==2) lad=20;
             else if(cpn0<4){
-                lad = 8-cpn1-detPerLadderSPD[layer-1]*(cpn0-1);
+                lad = 8-cpn1-kDetPerLadderSPD[layer-1]*(cpn0-1);
             }else{ // cpn0>4
-                lad = 28-cpn1-detPerLadderSPD[layer-1]*(cpn0-1);
+                lad = 28-cpn1-kDetPerLadderSPD[layer-1]*(cpn0-1);
             } // end if
         } break;
         case 2:{
@@ -682,9 +687,9 @@ void AliITSInitGeometry::DecodeDetector(Int_t &mod,Int_t layer,Int_t cpn0,
             det = 5-cpn2;
             if(cpn0==4&&cpn1==1) lad=1;
             else if(cpn0<4){
-                lad = 14-cpn1-detPerLadderSPD[layer-1]*(cpn0-1);
+                lad = 14-cpn1-kDetPerLadderSPD[layer-1]*(cpn0-1);
             }else{ // cpn0>4
-                lad = 54-cpn1-detPerLadderSPD[layer-1]*(cpn0-1);
+                lad = 54-cpn1-kDetPerLadderSPD[layer-1]*(cpn0-1);
             } // end if
         } break;
         case 3:{
@@ -713,15 +718,15 @@ void AliITSInitGeometry::DecodeDetector(Int_t &mod,Int_t layer,Int_t cpn0,
         } break;
         } // end switch
         mod = 0;
-        for(i=0;i<layer-1;i++) mod += ladPerLayer[i]*detPerLadder[i];
-        mod += detPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
+        for(i=0;i<layer-1;i++) mod += kLadPerLayer[i]*kDetPerLadder[i];
+        mod += kDetPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
         return;
     } // end if
     // Old decoding scheam
     switch(layer){
     case 1: case 2:{
         lay = layer;
-        lad = cpn1+detPerLadderSPD[layer-1]*(cpn0-1);
+        lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1);
         det = cpn2;
         }break;
     case 3: case 4:{
@@ -738,8 +743,8 @@ void AliITSInitGeometry::DecodeDetector(Int_t &mod,Int_t layer,Int_t cpn0,
         }break;
     } // end switch
     mod = 0;
-    for(i=0;i<layer-1;i++) mod += ladPerLayer[i]*detPerLadder[i];
-    mod += detPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
+    for(i=0;i<layer-1;i++) mod += kLadPerLayer[i]*kDetPerLadder[i];
+    mod += kDetPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
     return;
 }
 //______________________________________________________________________
@@ -757,15 +762,15 @@ void AliITSInitGeometry::RecodeDetector(Int_t mod,Int_t &cpn0,
     //    Int_t cpn2     the highest copy number
     // Return:
     //    none.
-    const Int_t itsGeomTreeCopys[6][3]= {{10, 2, 4},// lay=1
+    const Int_t kITSgeoTreeCopys[6][3]= {{10, 2, 4},// lay=1
                                          {10, 4, 4},// lay=2
                                          {14, 6, 1},// lay=3
                                          {22, 8, 1},// lay=4
                                          {34,22, 1},// lay=5
                                          {38,25, 1}};//lay=6
-    const Int_t detPerLadderSPD[2]={2,4};
-    //    const Int_t detPerLadder[6]={4,4,6,8,22,25};
-    //    const Int_t ladPerLayer[6]={20,40,14,22,34,38};
+    const Int_t kDetPerLadderSPD[2]={2,4};
+    //    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
+    //    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
     Int_t lay,lad,det;
 
     cpn0 = cpn1 = cpn2 = 0;
@@ -774,16 +779,16 @@ void AliITSInitGeometry::RecodeDetector(Int_t mod,Int_t &cpn0,
         switch (lay){
         case 1:{
             cpn2 = 5-det;     // Detector 1-4
-            cpn1 = 1+(lad-1)%detPerLadderSPD[lay-1];
-            cpn0 = 5-(lad+detPerLadderSPD[lay-1])/detPerLadderSPD[lay-1];
-            if(mod>27) cpn0 = 15-(lad+detPerLadderSPD[lay-1])/
-			   detPerLadderSPD[lay-1];
+            cpn1 = 1+(lad-1)%kDetPerLadderSPD[lay-1];
+            cpn0 = 5-(lad+kDetPerLadderSPD[lay-1])/kDetPerLadderSPD[lay-1];
+            if(mod>27) cpn0 = 15-(lad+kDetPerLadderSPD[lay-1])/
+			   kDetPerLadderSPD[lay-1];
         } break;
         case 2:{
             cpn2 = 5-det;     // Detector 1-4
-            cpn1 = 4-(lad+2)%detPerLadderSPD[lay-1];
-            cpn0 = 1+(14-cpn1-lad)/detPerLadderSPD[lay-1];
-            if(mod>131) cpn0 = 1+(54-lad-cpn1)/detPerLadderSPD[lay-1];
+            cpn1 = 4-(lad+2)%kDetPerLadderSPD[lay-1];
+            cpn0 = 1+(14-cpn1-lad)/kDetPerLadderSPD[lay-1];
+            if(mod>131) cpn0 = 1+(54-lad-cpn1)/kDetPerLadderSPD[lay-1];
         } break;
         case 3:{
             cpn2 = 1;
@@ -815,9 +820,9 @@ void AliITSInitGeometry::RecodeDetector(Int_t mod,Int_t &cpn0,
         } break;
         } // end switch
         if(cpn0<1||cpn1<1||cpn2<1||
-           cpn0>itsGeomTreeCopys[lay-1][0]||
-           cpn1>itsGeomTreeCopys[lay-1][1]||
-           cpn2>itsGeomTreeCopys[lay-1][2])
+           cpn0>kITSgeoTreeCopys[lay-1][0]||
+           cpn1>kITSgeoTreeCopys[lay-1][1]||
+           cpn2>kITSgeoTreeCopys[lay-1][2])
             Error("RecodeDetector",
                   "cpn0=%d cpn1=%d cpn2=%d mod=%d lay=%d lad=%d det=%d",
                   cpn0,cpn1,cpn2,mod,lay,lad,det);
@@ -827,8 +832,8 @@ void AliITSInitGeometry::RecodeDetector(Int_t mod,Int_t &cpn0,
     switch (lay){
     case 1: case 2:{
         cpn2 = det;     // Detector 1-4
-        cpn0 = (lad+detPerLadderSPD[lay-1]-1)/detPerLadderSPD[lay-1];
-        cpn1 = (lad+detPerLadderSPD[lay-1]-1)%detPerLadderSPD[lay-1] + 1;
+        cpn0 = (lad+kDetPerLadderSPD[lay-1]-1)/kDetPerLadderSPD[lay-1];
+        cpn1 = (lad+kDetPerLadderSPD[lay-1]-1)%kDetPerLadderSPD[lay-1] + 1;
     } break;
     case 3: case 4: case 5 : case 6:{
         cpn2 = 1;
@@ -841,9 +846,9 @@ void AliITSInitGeometry::RecodeDetector(Int_t mod,Int_t &cpn0,
     } break;
     } // end switch
     if(cpn0<1||cpn1<1||cpn2<1||
-       cpn0>itsGeomTreeCopys[lay-1][0]||
-       cpn1>itsGeomTreeCopys[lay-1][1]||
-       cpn2>itsGeomTreeCopys[lay-1][2])
+       cpn0>kITSgeoTreeCopys[lay-1][0]||
+       cpn1>kITSgeoTreeCopys[lay-1][1]||
+       cpn2>kITSgeoTreeCopys[lay-1][2])
         Error("RecodeDetector",
               "cpn0=%d cpn1=%d cpn2=%d mod=%d lay=%d lad=%d det=%d",
               cpn0,cpn1,cpn2,mod,lay,lad,det);
@@ -867,9 +872,9 @@ void AliITSInitGeometry::DecodeDetectorLayers(Int_t mod,Int_t &lay,
     //    Int_t det     the dettector number
     // Return:
     //    none.
-  //    const Int_t detPerLadderSPD[2]={2,4};
-    const Int_t detPerLadder[6]={4,4,6,8,22,25};
-    const Int_t ladPerLayer[6]={20,40,14,22,34,38};
+  //    const Int_t kDetPerLadderSPD[2]={2,4};
+    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
+    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
     Int_t mod2;
 
     det  = 0;
@@ -877,23 +882,23 @@ void AliITSInitGeometry::DecodeDetectorLayers(Int_t mod,Int_t &lay,
     lay  = 0;
     mod2 = 0;
     do{
-        mod2 += ladPerLayer[lay]*detPerLadder[lay];
+        mod2 += kLadPerLayer[lay]*kDetPerLadder[lay];
         lay++;
     }while(mod2<=mod); // end while
     if(lay>6||lay<1) Error("DecodeDetectorLayers","0<lay=%d>6",lay);
-    mod2 -= ladPerLayer[lay-1]*detPerLadder[lay-1];
+    mod2 -= kLadPerLayer[lay-1]*kDetPerLadder[lay-1];
     do{
         lad++;
-        mod2 += detPerLadder[lay-1];
+        mod2 += kDetPerLadder[lay-1];
     }while(mod2<=mod); // end while
-    if(lad>ladPerLayer[lay-1]||lad<1) Error("DecodeDetectorLayera",
-            "lad=%d>ladPerLayer[lay-1=%d]=%d mod=%d mod2=%d",lad,lay-1,
-                                            ladPerLayer[lay-1],mod,mod2);
-    mod2 -= detPerLadder[lay-1];
+    if(lad>kLadPerLayer[lay-1]||lad<1) Error("DecodeDetectorLayera",
+            "lad=%d>kLadPerLayer[lay-1=%d]=%d mod=%d mod2=%d",lad,lay-1,
+                                            kLadPerLayer[lay-1],mod,mod2);
+    mod2 -= kDetPerLadder[lay-1];
     det = mod-mod2+1;
-    if(det>detPerLadder[lay-1]||det<1) Error("DecodeDetectorLayers",
+    if(det>kDetPerLadder[lay-1]||det<1) Error("DecodeDetectorLayers",
            "det=%d>detPerLayer[lay-1=%d]=%d mod=%d mod2=%d lad=%d",det,
-                                  lay-1,detPerLadder[lay-1],mod,mod2,lad);
+                                  lay-1,kDetPerLadder[lay-1],mod,mod2,lad);
     return;
 }
 

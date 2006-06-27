@@ -16,24 +16,22 @@
 /* 
 $Id$ 
 */
-/*
- This is the implementation file for AliITSgeomMatrix class. It 
- contains the routines to manipulate, setup, and queary the geometry 
- of a given ITS module. An ITS module may be one of at least three
- ITS detector technologies, Silicon Pixel, Drift, or Strip Detectors,
- and variations of these in size and/or layout. These routines let
- one go between ALICE global coordiantes (cm) to a given modules 
- specific local coordinates (cm).
-*/
-#include <ctype.h>
+////////////////////////////////////////////////////////////////////////
+// This is the implementation file for AliITSgeomMatrix class. It 
+// contains the routines to manipulate, setup, and queary the geometry 
+// of a given ITS module. An ITS module may be one of at least three
+// ITS detector technologies, Silicon Pixel, Drift, or Strip Detectors,
+// and variations of these in size and/or layout. These routines let
+// one go between ALICE global coordiantes (cm) to a given modules 
+// specific local coordinates (cm).
+////////////////////////////////////////////////////////////////////////
+
 #include <Riostream.h>
 #include <TMath.h>
 #include <TBuffer.h>
-#include <TClass.h>
 #include <TCanvas.h>
 #include <TView.h>
 #include <TPolyLine3D.h>
-//#include <TPolyLineShape.h>
 #include <TNode.h>
 #include <TPCON.h>
 #include <TBRIK.h>
@@ -898,7 +896,7 @@ void AliITSgeomMatrix::SetTranslation(const Double_t tran[3]){
     if(fCylPhi<0.0) fCylPhi += TMath::Pi();
 }
 //----------------------------------------------------------------------
-TPolyLine3D* AliITSgeomMatrix::CreateLocalAxis(){
+TPolyLine3D* AliITSgeomMatrix::CreateLocalAxis() const {
     // This class is used as part of the documentation of this class
     // Inputs:
     //   none.
@@ -923,7 +921,7 @@ TPolyLine3D* AliITSgeomMatrix::CreateLocalAxis(){
     return new TPolyLine3D(5,gf);
 }
 //----------------------------------------------------------------------
-TPolyLine3D* AliITSgeomMatrix::CreateLocalAxisTracking(){
+TPolyLine3D* AliITSgeomMatrix::CreateLocalAxisTracking() const {
     // This class is used as part of the documentation of this class
     // Inputs:
     //   none.
@@ -950,7 +948,7 @@ TPolyLine3D* AliITSgeomMatrix::CreateLocalAxisTracking(){
 //----------------------------------------------------------------------
 TNode* AliITSgeomMatrix::CreateNode(const Char_t *nodeName,
                                     const Char_t *nodeTitle,TNode *mother,
-                                    TShape *shape,Bool_t axis){
+                                    TShape *shape,Bool_t axis) const {
     // Creates a node inside of the node mother out of the shape shape
     // in the position, with respect to mother, indecated by "this". If axis
     // is ture, it will insert an axis within this node/shape.
@@ -980,46 +978,46 @@ TNode* AliITSgeomMatrix::CreateNode(const Char_t *nodeName,
     TNode *node1 = new TNode(name.Data(),title.Data(),shape,trans[0],trans[1],trans[2],rot);
     if(axis){
         Int_t i,j;
-        const Float_t scale=0.5,lw=0.2;
-        Float_t xchar[13][2]={{0.5*lw,1.},{0.,0.5*lw},{0.5-0.5*lw,0.5},
-                              {0.,0.5*lw},{0.5*lw,0.},{0.5,0.5-0.5*lw},
-                              {1-0.5*lw,0.},{1.,0.5*lw},{0.5+0.5*lw,0.5},
-                              {1.,1.-0.5*lw},{1.-0.5*lw,1.},{0.5,0.5+0.5*lw},
-                              {0.5*lw,1.}};
-        Float_t ychar[10][2]={{.5-0.5*lw,0.},{.5+0.5*lw,0.},{.5+0.5*lw,0.5-0.5*lw},
-                              {1.,1.-0.5*lw},{1.-0.5*lw,1.},{0.5+0.5*lw,0.5},
-                              {0.5*lw,1.}   ,{0.,1-0.5*lw} ,{0.5-0.5*lw,0.5},
-                              {.5-0.5*lw,0.}};
-        Float_t zchar[11][2]={{0.,1.},{0,1.-lw},{1.-lw,1.-lw},{0.,lw}   ,{0.,0.},
-                              {1.,0.},{1.,lw}  ,{lw,lw}      ,{1.,1.-lw},{1.,1.},
+        const Float_t kScale=0.5,kLw=0.2;
+        Float_t xchar[13][2]={{0.5*kLw,1.},{0.,0.5*kLw},{0.5-0.5*kLw,0.5},
+                              {0.,0.5*kLw},{0.5*kLw,0.},{0.5,0.5-0.5*kLw},
+                              {1-0.5*kLw,0.},{1.,0.5*kLw},{0.5+0.5*kLw,0.5},
+                              {1.,1.-0.5*kLw},{1.-0.5*kLw,1.},{0.5,0.5+0.5*kLw},
+                              {0.5*kLw,1.}};
+        Float_t ychar[10][2]={{.5-0.5*kLw,0.},{.5+0.5*kLw,0.},{.5+0.5*kLw,0.5-0.5*kLw},
+                              {1.,1.-0.5*kLw},{1.-0.5*kLw,1.},{0.5+0.5*kLw,0.5},
+                              {0.5*kLw,1.}   ,{0.,1-0.5*kLw} ,{0.5-0.5*kLw,0.5},
+                              {.5-0.5*kLw,0.}};
+        Float_t zchar[11][2]={{0.,1.},{0,1.-kLw},{1.-kLw,1.-kLw},{0.,kLw}   ,{0.,0.},
+                              {1.,0.},{1.,kLw}  ,{kLw,kLw}      ,{1.,1.-kLw},{1.,1.},
                               {0.,1.}};
         for(i=0;i<13;i++)for(j=0;j<2;j++){
-            if(i<13) xchar[i][j] = scale*xchar[i][j];
-            if(i<10) ychar[i][j] = scale*ychar[i][j];
-            if(i<11) zchar[i][j] = scale*zchar[i][j];
+            if(i<13) xchar[i][j] = kScale*xchar[i][j];
+            if(i<10) ychar[i][j] = kScale*ychar[i][j];
+            if(i<11) zchar[i][j] = kScale*zchar[i][j];
         } // end for i,j
         TXTRU *axisxl = new TXTRU("x","x","text",12,2);
         for(i=0;i<12;i++) axisxl->DefineVertex(i,xchar[i][0],xchar[i][1]);
-        axisxl->DefineSection(0,-0.5*lw);axisxl->DefineSection(1,0.5*lw);
+        axisxl->DefineSection(0,-0.5*kLw);axisxl->DefineSection(1,0.5*kLw);
         TXTRU *axisyl = new TXTRU("y","y","text",9,2);
         for(i=0;i<9;i++) axisyl->DefineVertex(i,ychar[i][0],ychar[i][1]);
-        axisyl->DefineSection(0,-0.5*lw);axisyl->DefineSection(1,0.5*lw);
+        axisyl->DefineSection(0,-0.5*kLw);axisyl->DefineSection(1,0.5*kLw);
         TXTRU *axiszl = new TXTRU("z","z","text",10,2);
         for(i=0;i<10;i++) axiszl->DefineVertex(i,zchar[i][0],zchar[i][1]);
-        axiszl->DefineSection(0,-0.5*lw);axiszl->DefineSection(1,0.5*lw);
-        Float_t lxy[13][2]={{-0.5*lw,-0.5*lw},{0.8,-0.5*lw},{0.8,-0.1},{1.0,0.0},
-                            {0.8,0.1},{0.8,0.5*lw},{0.5*lw,0.5*lw},{0.5*lw,0.8},
-                            {0.1,0.8},{0.0,1.0},{-0.1,0.8},{-0.5*lw,0.8},
-                            {-0.5*lw,-0.5*lw}};
+        axiszl->DefineSection(0,-0.5*kLw);axiszl->DefineSection(1,0.5*kLw);
+        Float_t lxy[13][2]={{-0.5*kLw,-0.5*kLw},{0.8,-0.5*kLw},{0.8,-0.1},{1.0,0.0},
+                            {0.8,0.1},{0.8,0.5*kLw},{0.5*kLw,0.5*kLw},{0.5*kLw,0.8},
+                            {0.1,0.8},{0.0,1.0},{-0.1,0.8},{-0.5*kLw,0.8},
+                            {-0.5*kLw,-0.5*kLw}};
         TXTRU *axisxy = new TXTRU("axisxy","axisxy","text",13,2);
         for(i=0;i<13;i++) axisxy->DefineVertex(i,lxy[i][0],lxy[i][1]);
-        axisxy->DefineSection(0,-0.5*lw);axisxy->DefineSection(1,0.5*lw);
-        Float_t lz[8][2]={{0.5*lw,-0.5*lw},{0.8,-0.5*lw},{0.8,-0.1},{1.0,0.0},
-                           {0.8,0.1},{0.8,0.5*lw},{0.5*lw,0.5*lw},
-                           {0.5*lw,-0.5*lw}};
+        axisxy->DefineSection(0,-0.5*kLw);axisxy->DefineSection(1,0.5*kLw);
+        Float_t lz[8][2]={{0.5*kLw,-0.5*kLw},{0.8,-0.5*kLw},{0.8,-0.1},{1.0,0.0},
+                           {0.8,0.1},{0.8,0.5*kLw},{0.5*kLw,0.5*kLw},
+                           {0.5*kLw,-0.5*kLw}};
         TXTRU *axisz = new TXTRU("axisz","axisz","text",8,2);
         for(i=0;i<8;i++) axisz->DefineVertex(i,lz[i][0],lz[i][1]);
-        axisz->DefineSection(0,-0.5*lw);axisz->DefineSection(1,0.5*lw);
+        axisz->DefineSection(0,-0.5*kLw);axisz->DefineSection(1,0.5*kLw);
         //TRotMatrix *xaxis90= new TRotMatrix("xaixis90","",90.0, 0.0, 0.0);
         TRotMatrix *yaxis90= new TRotMatrix("yaixis90","", 0.0,90.0, 0.0);
         TRotMatrix *zaxis90= new TRotMatrix("zaixis90","", 0.0, 0.0,90.0);
@@ -1063,7 +1061,7 @@ TNode* AliITSgeomMatrix::CreateNode(const Char_t *nodeName,
     return node1;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::MakeFigures(){
+void AliITSgeomMatrix::MakeFigures() const {
     // make figures to help document this class
     // Inputs:
     //   none.
@@ -1071,14 +1069,14 @@ void AliITSgeomMatrix::MakeFigures(){
     //   none.
     // Return:
     //   none.
-    const Double_t dx0=550.,dy0=550.,dz0=550.; // cm
-    const Double_t dx=1.0,dy=0.300,dz=3.0,rmax=0.1; // cm
+    const Double_t kDx0=550.,kDy0=550.,kDz0=550.; // cm
+    const Double_t kDx=1.0,kDy=0.300,kDz=3.0,kRmax=0.1; // cm
     Float_t l[5][3]={{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,0.0},
                       {0.0,0.0,1.0}};
     TCanvas *c = new TCanvas(kFALSE);// create a batch mode canvas.
     TView   *view = new TView(1); // Create Cartesian coordiante view
-    TBRIK   *mother  = new TBRIK("Mother","Mother","void",dx0,dy0,dz0);
-    TBRIK   *det  = new TBRIK("Detector","","Si",dx,dy,dz);
+    TBRIK   *mother  = new TBRIK("Mother","Mother","void",kDx0,kDy0,kDz0);
+    TBRIK   *det  = new TBRIK("Detector","","Si",kDx,kDy,kDz);
     TPolyLine3D *axis = new TPolyLine3D(5,&(l[0][0]));
     TPCON *arrow      = new TPCON("arrow","","air",0.0,360.,2);
     TRotMatrix *xarrow= new TRotMatrix("xarrow","",90.,0.0,0.0);
@@ -1094,9 +1092,9 @@ void AliITSgeomMatrix::MakeFigures(){
     arrow->SetLineStyle(det->GetLineStyle());
     arrow->SetFillColor(1); // black
     arrow->SetFillStyle(4100); // window is 100% opaque
-    arrow->DefineSection(0,0.0,0.0,rmax);
-    arrow->DefineSection(1,2.*rmax,0.0,0.0);
-    view->SetRange(-dx0,-dy0,-dz0,dx0,dy0,dz0);
+    arrow->DefineSection(0,0.0,0.0,kRmax);
+    arrow->DefineSection(1,2.*kRmax,0.0,0.0);
+    view->SetRange(-kDx0,-kDy0,-kDz0,kDx0,kDy0,kDz0);
     //
     TNode *node0 = new TNode("NODE0","NODE0",mother);
     node0->cd();

@@ -2,16 +2,14 @@
 #define ALIITSGEOMMATRIX_H
 /* Copyright(c) 2000, ALICE Experiment at CERN, All rights reserved. *
  * see cxx source for full Copyright notice.                         */
-/* 
-$Id:
-*/
-/*
- ITS geometry manipulation routines on the module level. This class is
- to replace the structure ITS_geom in the class AliITSgeom.
- Created May 30 2000.
- version 0.0.0
- By Bjorn S. Nilsen
-*/
+
+//////////////////////////////////////////////////////////////////////////
+//  ITS geometry manipulation routines on the module level. This class is
+//  to replace the structure ITS_geom in the class AliITSgeom.
+//  Created May 30 2000.
+//   version 0.0.0
+// By Bjorn S. Nilsen
+////////////////////////////////////////////////////////////////////////////
 #include <TObject.h>
 #include <TString.h>
 class TPolyLine3D;
@@ -147,11 +145,11 @@ class AliITSgeomMatrix : public TObject {
                  return d;}
      //
      // Documentation related Class
-     TPolyLine3D* CreateLocalAxis();
-     TPolyLine3D* CreateLocalAxisTracking();
+     TPolyLine3D* CreateLocalAxis() const;
+     TPolyLine3D* CreateLocalAxisTracking() const;
      TNode* CreateNode(const Char_t *nodeName,const Char_t *nodeTitle,
-                       TNode *mother,TShape *shape,Bool_t axis=kTRUE);
-     void MakeFigures();
+                       TNode *mother,TShape *shape,Bool_t axis=kTRUE) const;
+     void MakeFigures() const;
      //
  private: // private functions
 	// Given the rotation matrix fm it fills the rotation angles frot

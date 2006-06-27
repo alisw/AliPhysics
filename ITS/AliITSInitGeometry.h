@@ -7,16 +7,18 @@
 $Id$
 */
 
-/*
-  Class to inilize AliITSgeom and the like for both simulation
-  and reconstriction.
- */
-#include <TObject.h>
-#include <TArrayD.h>
-#include <TString.h>
-#include <TGeoMatrix.h>
+////////////////////////////////////////////////////////////////
+// Class to inilize AliITSgeom and the like for both simulation
+//  and reconstriction.
+/////////////////////////////////////////////////////////////////////
 
-#include "AliITSgeom.h"
+#include <TObject.h>
+#include <TString.h>
+
+
+class AliITSgeom;
+class TArrayD;
+class TGeoHMatrix;
 
 class AliITSInitGeometry : public TObject{
  public:
@@ -50,7 +52,8 @@ class AliITSInitGeometry : public TObject{
     Bool_t GetTransformation(const TString &volumePath,TGeoHMatrix &mat);
     Bool_t GetShape(const TString &volumePath,TString &shapeType,TArrayD &par);
     void DecodeDetectorLayers(Int_t mod,Int_t &lay,Int_t &lad,Int_t &det);
-    void DecodeDetector(Int_t &mod,Int_t lay,Int_t cpn0,Int_t cpn1,Int_t cpn2);
+    void DecodeDetector(Int_t &mod,Int_t lay,Int_t cpn0,
+                        Int_t cpn1,Int_t cpn2) const;
     void RecodeDetector(Int_t mod,Int_t &cpn0,Int_t &cpn1,Int_t &cpn2);
 
     TString   fName;          // Geometry name
