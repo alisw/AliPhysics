@@ -34,15 +34,6 @@ public:
   void SetRun(Long64_t run);
   Long64_t GetRun() { return fRun; }
 
-  Bool_t GetChamberPos(Int_t det, Float_t* xyz);
-  Bool_t GetChamberRot(Int_t det, Float_t* xyz);
-
-  Bool_t GetStackPos(Int_t chamber, Int_t sector, Float_t* xyz);
-  Bool_t GetStackRot(Int_t chamber, Int_t sector, Float_t* xyz);
-
-  Bool_t GetSuperModulePos(Int_t sm, Float_t* xyz);
-  Bool_t GetSuperModuleRot(Int_t sm, Float_t* xyz);
-
   Float_t GetVdrift(Int_t det, Int_t col, Int_t row);
   Float_t GetVdriftAverage(Int_t det);
 
