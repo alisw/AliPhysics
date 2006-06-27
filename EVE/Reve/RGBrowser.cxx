@@ -143,7 +143,7 @@ RGBrowser::RGBrowser(const TGWindow *p, UInt_t w, UInt_t h)
 
 /**************************************************************************/
 
-void RGBrowser::SetupClassicLook()
+void RGBrowser::SetupClassicLook(RGEditor*& editor, TCanvas* glpad)
 {
   fCanvasWindow = new TGCanvas(fV2, 25, 250);
   fDisplayFrame = new TGCompositeFrame(fCanvasWindow->GetViewPort(), 0, 0,kVerticalFrame, TGFrame::GetWhitePixel() );
@@ -152,22 +152,33 @@ void RGBrowser::SetupClassicLook()
 
   fV2->AddFrame(fCanvasWindow, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
   fV2->MapSubwindows();
+
+  editor = new RGEditor(glpad);
+  editor->GetCan()->ChangeOptions(0);
+  editor->SetWindowName("Reve Editor");
 }
 
-
-
-void RGBrowser::SetupEditorLook(RGEditor* editor)
+void RGBrowser::SetupEditorLook(RGEditor*& editor, TCanvas* glpad)
 {
-  editor->UnmapWindow();
-  fV2->AddFrame(editor, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
-  Int_t x, y;
-  CalculateReparentXY(fV2, x, y);
-  editor->ReparentWindow(fV2, x, y);
+  fClient->SetRoot(fV2);
+  editor = new RGEditor(glpad);
+  editor->GetCan()->ChangeOptions(0);
+  fV2->RemoveFrame(editor);
+  fV2->AddFrame(editor, new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
+  fClient->SetRoot();
+
+  /*
+    editor->UnmapWindow();
+    fV2->AddFrame(editor, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
+    Int_t x, y;
+    CalculateReparentXY(fV2, x, y);
+    editor->ReparentWindow(fV2, x, y);
+  */
 
   fV2->MapSubwindows();
 }
 
-void RGBrowser::SetupGLViewerLook(RGEditor* editor, TVirtualPad* glpad)
+void RGBrowser::SetupGLViewerLook(RGEditor*& editor, TCanvas* glpad)
 {
   TGLayoutHints *lo;
 
@@ -182,14 +193,24 @@ void RGBrowser::SetupGLViewerLook(RGEditor* editor, TVirtualPad* glpad)
   TGHSplitter *splitter = new TGHSplitter(fV1);
   lo = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 4, 2, 2, 0);
   fSelectionFrame->AddFrame(splitter, lo);
-   
-  editor->UnmapWindow();
+
+  fClient->SetRoot(fV1);
+  editor = new RGEditor(glpad);
+  editor->GetCan()->ChangeOptions(0);
   editor->ChangeOptions(editor->GetOptions() | kFixedHeight);
-  lo = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,2,2,2);
-  fV1->AddFrame(editor, lo);
-  Int_t x, y;
-  CalculateReparentXY(fV1, x, y);
-  editor->ReparentWindow(fV1, x, y);
+  fV1->RemoveFrame(editor);
+  fV1->AddFrame(editor, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,2,2,2));
+  fClient->SetRoot();
+
+  /*
+    editor->UnmapWindow();
+    editor->ChangeOptions(editor->GetOptions() | kFixedHeight);
+    lo = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,2,2,2);
+    fV1->AddFrame(editor, lo);
+    Int_t x, y;
+    CalculateReparentXY(fV1, x, y);
+    editor->ReparentWindow(fV1, x, y);
+  */
 
   splitter->SetFrame(editor, kFALSE);
 
@@ -242,7 +263,7 @@ void RGBrowser::DbClickListItem(TGListTreeItem* item, Int_t btn)
 {
   static const Exc_t eH("RGBrowser::DbClickListItem ");
 
-  printf("dbclick item %s\n", item->GetText());
+  // printf("dbclick item %s\n", item->GetText());
   RenderElement* re = (RenderElement*)item->GetUserData();
   if(re == 0) return;
   TObject* obj = re->GetObject();
@@ -280,13 +301,18 @@ void RGBrowser::ExportToCINT(Text_t* var_name, TObject* obj)
 
 void RGBrowser::DisplayChildren(TGListTreeItem *item, Int_t btn)
 {
+  // Display widgets for children of clicked item in a tabular format.
   // Only classic mode provides direct children editing.
+
   if(fDisplayFrame == 0)
+    return;
+
+  if(btn > 1)
     return;
 
   fDisplayFrame->DestroySubwindows();
   fDisplayFrame->Cleanup();
-  printf("DisplayChildren item %s List %d btn=%d\n", item->GetText(),fDisplayFrame->GetList()->GetEntries(), btn);
+  // printf("DisplayChildren item %s List %d btn=%d\n", item->GetText(),fDisplayFrame->GetList()->GetEntries(), btn);
 
   if(item->GetFirstChild() == 0) return;
 

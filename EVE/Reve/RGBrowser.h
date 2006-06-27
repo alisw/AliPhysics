@@ -86,9 +86,9 @@ protected:
   RGBrowser(const TGWindow *p, UInt_t w, UInt_t h);
   virtual ~RGBrowser() {}
 
-  void SetupClassicLook();
-  void SetupEditorLook(RGEditor* editor);
-  void SetupGLViewerLook(RGEditor* editor, TVirtualPad* glpad);
+  void SetupClassicLook(RGEditor*& editor, TCanvas* glpad);
+  void SetupEditorLook(RGEditor*& editor, TCanvas* glpad);
+  void SetupGLViewerLook(RGEditor*& editor, TCanvas* glpad);
 
   void RedrawListTree();
 

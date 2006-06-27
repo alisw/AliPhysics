@@ -71,7 +71,10 @@ ToolBarData_t tb_data[] = {
 /**************************************************************************/
 
 
-void RGTopFrame::Init(){
+void RGTopFrame::Init()
+{
+  gReve = this;
+
   fCC          = 0;
   fHistoCanvas = 0;
   fSelector    = 0;
@@ -156,26 +159,22 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look)
   /**************************************************************************/
   /**************************************************************************/
   
-  fEditor = new RGEditor(fCC);
-  fEditor->GetCan()->ChangeOptions(0);
 
   switch(look) {
   case LT_Classic: {
-    fBrowser->SetupClassicLook();
-    // Need push/pop pad around here? Not.
+    fBrowser->SetupClassicLook(fEditor, fCC);
     fCC->GetViewer3D("ogl");
     break;
   }
 
   case LT_Editor: {
-    fBrowser->SetupEditorLook(fEditor);
+    fBrowser->SetupEditorLook(fEditor, fCC);
     fCC->GetViewer3D("ogl");
     break;
   }
 
   case LT_GLViewer: {
     fBrowser->SetupGLViewerLook(fEditor, fCC);
-    printf("Crap1 %d %d\n", GetWidth(), GetHeight());
     break;
   }
 
@@ -268,18 +267,21 @@ void RGTopFrame::DoRedraw3D()
 int RGTopFrame::SpawnGuiAndRun(int argc, char **argv)
 {
   LookType_e revemode = LT_Editor;
+  Int_t w = 540;
+  Int_t h = 500;
   if(argc >= 3 && (strcmp(argv[1], "-revemode")==0 || strcmp(argv[1], "-mode")==0)) {
     LookType_e m = LookType_e(atoi(argv[2]));
     if(m >= LT_Classic && m <= LT_GLViewer)
       revemode = m;
     printf("revemode = %d\n", revemode);
+    if(revemode == LT_GLViewer) {
+      w = 1024; h = 768;
+    }
   }
 
   TRint theApp("App", &argc, argv);
-  Int_t w = 800;
-  Int_t h = 600;
 
-  gReve = new RGTopFrame(gClient->GetRoot(), w, h, revemode);
+  /* gReve = */ new RGTopFrame(gClient->GetRoot(), w, h, revemode);
  run_loop:
   try {
     theApp.Run();
