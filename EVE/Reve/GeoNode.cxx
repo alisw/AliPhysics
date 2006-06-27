@@ -9,6 +9,7 @@
 #include <TGeoVolume.h>
 #include <TGeoNode.h>
 #include <TGeoManager.h>
+#include <TVirtualGeoPainter.h>
 
 using namespace Reve;
 
@@ -140,6 +141,8 @@ void GeoNodeRnrEl::Draw(Option_t* option)
 //______________________________________________________________________
 // GeoTopNodeRnrEl
 //
+// A wrapper over a TGeoNode, possibly displaced with a global
+// trasformation fGlobalTrans (the matrix is owned by this class).
 /**************************************************************************/
 
 ClassImp(GeoTopNodeRnrEl)
@@ -148,9 +151,29 @@ GeoTopNodeRnrEl::GeoTopNodeRnrEl(TGeoManager* manager, TGeoNode* node,
 				 Int_t visopt, Int_t vislvl) :
   GeoNodeRnrEl(node),
   fManager(manager),
+  fGlobalTrans(0),
+  fUseNodeTrans(kFALSE),
   fVisOption(visopt), fVisLevel(vislvl)
 {
   fRnrElement = true;
+}
+
+GeoTopNodeRnrEl::~GeoTopNodeRnrEl()
+{
+  delete fGlobalTrans;
+}
+
+/**************************************************************************/
+
+void GeoTopNodeRnrEl::SetGlobalTrans(TGeoHMatrix* m)
+{
+  delete fGlobalTrans;
+  fGlobalTrans = m;
+}
+
+void GeoTopNodeRnrEl::SetUseNodeTrans(Bool_t u)
+{
+  fUseNodeTrans = u;
 }
 
 /**************************************************************************/
@@ -200,7 +223,14 @@ void GeoTopNodeRnrEl::Paint(Option_t* option)
     fManager->SetVisLevel(fVisLevel);
     fManager->SetTopVolume(fNode->GetVolume());
     gPad = pad;
-    fNode->Paint(option);
+    TVirtualGeoPainter* vgp = fManager->GetGeomPainter();
+    if(vgp != 0) {
+#if ROOT_VERSION_CODE > ROOT_VERSION(5,11,7)
+      vgp->PaintNode(fNode, option, fUseNodeTrans ? fNode->GetMatrix() : fGlobalTrans);
+#else
+      vgp->PaintNode(fNode, option);
+#endif
+    }
     fManager->SetTopVolume(top_volume);
   }
 }

@@ -7,6 +7,7 @@
 
 class TGeoVolume;
 class TGeoNode;
+class TGeoHMatrix;
 class TGeoManager;
 
 namespace Reve {
@@ -16,7 +17,7 @@ class GeoNodeRnrEl : public TObject, public RenderElementListBase
   friend class GeoNodeRnrElEditor;
 
 protected:
-  TGeoNode* fNode;
+  TGeoNode *fNode;
 
 public:
   GeoNodeRnrEl(TGeoNode* node);
@@ -51,11 +52,19 @@ class GeoTopNodeRnrEl : public GeoNodeRnrEl
 {
 protected:
   TGeoManager* fManager;
+  TGeoHMatrix* fGlobalTrans;
+  Bool_t       fUseNodeTrans;
   Int_t        fVisOption;
   Int_t        fVisLevel;  
 
 public:
   GeoTopNodeRnrEl(TGeoManager* manager, TGeoNode* node, Int_t visopt=1, Int_t vislvl=3);
+  virtual ~GeoTopNodeRnrEl();
+
+  TGeoHMatrix *GetGlobalTrans()  const { return fGlobalTrans; }
+  void         SetGlobalTrans(TGeoHMatrix* m);
+  Bool_t       GetUseNodeTrans() const { return fUseNodeTrans; }
+  void         SetUseNodeTrans(Bool_t u=kTRUE);
 
   Int_t GetVisOption() const { return fVisOption; }
   void  SetVisOption(Int_t visopt);
