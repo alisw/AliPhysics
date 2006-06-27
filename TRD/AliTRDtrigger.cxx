@@ -272,6 +272,8 @@ Bool_t AliTRDtrigger::ReadDigits()
   AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
   if (!loader->TreeD()) loader->LoadDigits();
 
+  if (!loader->TreeD()) return kFALSE;
+
   return (fDigitsManager->ReadDigits(loader->TreeD()));
 
 }
@@ -414,12 +416,16 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 
         // Get the digits
         fDigits = fDigitsManager->GetDigits(idet);
+	if (!fDigits) return kFALSE;
         fDigits->Expand();
         fTrack0 = fDigitsManager->GetDictionary(idet,0);
+	if (!fTrack0) return kFALSE;
         fTrack0->Expand();
         fTrack1 = fDigitsManager->GetDictionary(idet,1);
+	if (!fTrack1) return kFALSE;
         fTrack1->Expand();
         fTrack2 = fDigitsManager->GetDictionary(idet,2); 
+	if (!fTrack2) return kFALSE;
         fTrack2->Expand();
 
 	for (Int_t iRob = 0; iRob < fNROB; iRob++) {

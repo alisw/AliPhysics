@@ -157,8 +157,8 @@ void AliTRDdigitsManager::SetRaw()
   //
 
   fIsRaw = kTRUE;
-
-  fDigits->SetBit(AliTRDdigit::RawDigit());
+  if (fDigits)
+    fDigits->SetBit(AliTRDdigit::RawDigit());
   
 }
 
@@ -170,6 +170,7 @@ Short_t AliTRDdigitsManager::GetDigitAmp(Int_t row, Int_t col,Int_t time
   // Returns the amplitude of a digit
   //
 
+  if (!GetDigits(det)) return 0;
   return ((Short_t) GetDigits(det)->GetData(row,col,time));
 
 }
@@ -363,6 +364,7 @@ AliTRDdataArrayI *AliTRDdigitsManager::GetDigits(Int_t det) const
   // Returns the digits array for one detector
   //
 
+  if (!fDigits) return 0x0;
   return (AliTRDdataArrayI *) fDigits->At(det);
 
 }

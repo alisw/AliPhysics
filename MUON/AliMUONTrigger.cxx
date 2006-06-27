@@ -95,6 +95,10 @@ void AliMUONTrigger::Trigger()
    muonData->SetTreeAddress("GLT");
    muonData->GetTriggerD();
    globalTriggerArray = muonData->GlobalTrigger(); 
+   if (globalTriggerArray == 0x0) { 
+     AliWarning("No Global Trigger Array available");
+     return;
+   }
    globalTrigger = (AliMUONGlobalTrigger*)globalTriggerArray->UncheckedAt(0);
 
    if (globalTrigger == 0x0) { 

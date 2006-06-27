@@ -79,6 +79,7 @@ void AliITSTrigger::Trigger()
   AliITSgeom* geom = loader->GetITSgeom();
   loader->LoadDigits("READ");
   TTree *treeD = loader->TreeD();
+  if (!treeD) return;
 
   TObjArray *digDet = 0;
   digDet = new TObjArray(3);

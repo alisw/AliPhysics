@@ -50,6 +50,7 @@ void AliVZEROTrigger::Trigger()
 
   loader->LoadDigits("READ");
   TTree* vzeroDigitsTree = loader->TreeD();
+  if (!vzeroDigitsTree) return;
 
   TClonesArray* vzeroDigits = new TClonesArray("AliVZEROdigit",1000);
   TBranch* digitBranch = vzeroDigitsTree->GetBranch("VZERODigit");

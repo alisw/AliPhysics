@@ -81,7 +81,10 @@ void AliZDCTrigger::Trigger()
    AliZDCDigit digit;
    AliZDCDigit* pdigit = &digit;
    TTree* tD = aZDCLoader->TreeD();
-   if (!tD) cerr<<"AliZDCTrigger: digits tree not found\n";
+   if (!tD) {
+     cerr<<"AliZDCTrigger: digits tree not found\n";
+     return;
+   }
    tD->SetBranchAddress("ZDC", &pdigit);
    //
    Float_t signalZNLeft[2], signalZPLeft[2], signalZDCLeftSum[2];

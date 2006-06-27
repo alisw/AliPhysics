@@ -799,8 +799,10 @@ AliMUONData::GetDigits() const
   Int_t event = fLoader->GetRunLoader()->GetEventNumber();
   if ( fCurrentEvent != event )
   {
-    fLoader->TreeD()->GetEvent(0);
-    fCurrentEvent = event;
+    if (fLoader->TreeD()) {
+      fLoader->TreeD()->GetEvent(0);
+      fCurrentEvent = event;
+    }
   }
 }
 
