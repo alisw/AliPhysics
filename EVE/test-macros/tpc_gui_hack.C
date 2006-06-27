@@ -48,6 +48,7 @@ void tpc_gui_hack(const char *file=0, Int_t ievent=0)
   l->SetData(d);
   l->SetDoubleSR(kTRUE);
   l->SetInitParams(50, 980, 15);
+  // l->SetTPCEquipementMap("EquipmentIdMap.data");
 
   su = d->GetSectorData( 4, kTRUE);
   sl = d->GetSectorData(13, kTRUE);

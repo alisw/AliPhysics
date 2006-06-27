@@ -42,6 +42,8 @@ void tpc_gui(const char *file=0, Int_t ievent=0)
   d->SetAutoPedestal(kTRUE);
   l->SetData(d);
   l->SetDoubleSR(kTRUE);
+  // l->SetInitParams(40, 980, 10); // min-time, max-time, threshold
+  // l->SetTPCEquipementMap("EquipmentIdMap.data");
 
   TGListTreeItem* loader_item = gReve->AddRenderElement(l);
 
