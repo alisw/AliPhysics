@@ -28,13 +28,16 @@ public:
    UInt_t  GetDarcWord()      const {return fDarcWord;}
    UInt_t  GetWord()          const {return fWord;}
    UInt_t  GetInput(Int_t n)  const {return fInput[n];}
+   UInt_t  GetL0()            const {return ((fL0Mask >> 16) & 0xFFFF);}
+   UInt_t  GetMask()          const {return (fL0Mask & 0xFFFF);}
 
-   //word: phys type:1, MBZ: 6, serialNb:5, Id:4, version: 8, regional output:8
+   //word: phys type:1, reset: 6, serialNb:5, Id:4, version: 8, regional output:8
    //true for phys, false for soft
    Bool_t   GetRegPhysFlag() const {return (fWord & 0x80000000);} 
-   Char_t   GetSerialNb()    const {return (Char_t)(fWord >> 25) &  0x1F;}
-   Char_t   GetId()          const {return (Char_t)(fWord >> 12) &  0x0F;}
-   Char_t   GetVersion()     const {return (Char_t)(fWord >> 16) &  0xFF;}
+   Char_t   GetResetNb()     const {return (Char_t)(fWord >> 25) &  0x20;}
+   Char_t   GetSerialNb()    const {return (Char_t)(fWord >> 20) &  0x1F;}
+   Char_t   GetId()          const {return (Char_t)(fWord >> 16) &  0x0F;}
+   Char_t   GetVersion()     const {return (Char_t)(fWord >> 8)  &  0xFF;}
    Char_t   GetOutput()      const {return (Char_t)(fWord)       &  0xFF;}
 
    //Darc Status: error:10, #fpag:3, MBZ:3, phys type:1, present:1, not_full:1
@@ -63,12 +66,11 @@ public:
    UInt_t* GetHeader() {return &fDarcWord;}
 
   // scalar methods
-   UInt_t  GetL0()      const {return fL0;}
    UInt_t  GetClock()   const {return fClk;}
    const UInt_t* GetScaler()  const {return fScaler;}
    UInt_t  GetHold()    const {return fHold;}
 
-   UInt_t* GetScalers()    {return &fL0;}   
+   UInt_t* GetScalers()    {return &fClk;}   
 
    // get scaler length
    Int_t GetScalerLength()  const {return fgkScalerLength;} 
@@ -95,9 +97,9 @@ public:
    UInt_t    fDarcWord;      ///< darc word
    UInt_t    fWord;          ///< first reg word
    UInt_t    fInput[2];      ///< regional input
+   UInt_t    fL0Mask;        ///< L0 counter (16 bits) and local mask (16 bits)
 
    // regional card scalers   
-   UInt_t     fL0;         ///< regional L0
    UInt_t     fClk;        ///< regional clock
    UInt_t     fScaler[8];  ///< regional ouput
    UInt_t     fHold;       ///< regional hold (dead time)

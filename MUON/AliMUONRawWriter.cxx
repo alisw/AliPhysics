@@ -690,12 +690,31 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   Char_t locDec, trigY, posY, posX,regOut;
   Int_t devX;
   Int_t version = 1; // software version
-  Int_t eventType = 1; // trigger type: 1 for physics ?
+  Int_t eventPhys = 1; // trigger type: 1 for physics, 0 for software
   Int_t serialNb = 0xF; // serial nb of card: all bits on for the moment
-  Int_t globalFlag = 1; // set to 2 if global info present in DDL else set to 1
+  Int_t globalFlag = 0; // set to 1 if global info present in DDL else set to 0
 
+  // size of headers
+  static const Int_t kDarcHeaderLength   = fDarcHeader->GetDarcHeaderLength();
+  static const Int_t kGlobalHeaderLength = fDarcHeader->GetGlobalHeaderLength();
+  static const Int_t kDarcScalerLength   = fDarcHeader->GetDarcScalerLength();
+  static const Int_t kGlobalScalerLength = fDarcHeader->GetGlobalScalerLength();
+  static const Int_t kRegHeaderLength    = fRegHeader->GetHeaderLength();
+  static const Int_t kRegScalerLength    = fRegHeader->GetScalerLength();
+  static const Int_t kLocHeaderLength    = fLocalStruct->GetLength();
+  static const Int_t kLocScalerLength    = fLocalStruct->GetScalerLength();
+
+  // [16(local)*6 words + 6 words]*8(reg) + 8 words = 824 
+  static const Int_t kBufferSize = (16 * (kLocHeaderLength+1) +  (kRegHeaderLength+1))* 8 
+      +  kDarcHeaderLength + kGlobalHeaderLength + 2;
+
+  // [16(local)*51 words + 16 words]*8(reg) + 8 + 10 + 8 words scaler event 6682 words
+  static const Int_t kScalerBufferSize = (16 * (kLocHeaderLength +  kLocScalerLength +1) +  
+					 (kRegHeaderLength + kRegScalerLength +1))* 8 +
+                                         (kDarcHeaderLength + kDarcScalerLength + 
+					  kGlobalHeaderLength + kGlobalScalerLength + 2);
   if(fScalerEvent)
-    eventType = 2; //set to generate scaler events
+    eventPhys = 0; //set to generate scaler events
 
   Int_t nEntries = (Int_t) (localTrigger->GetEntries());// 234 local cards
   // stored the local card id that's fired
@@ -708,11 +727,9 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     AliInfo("No Trigger information available");
 
   if(fScalerEvent)
-    // [16(local)*51 words + 16 words]*8(reg) + 6 + 12 + 6 words scaler event 6672 words
-    buffer = new Int_t [6680];
+    buffer = new Int_t [kScalerBufferSize];
   else
-    // [16(local)*6 words + 5 words]*8(reg) + 10 words = 818 
-    buffer = new Int_t [818];
+    buffer = new Int_t [kBufferSize];
 
 
   // open DDL file, on per 1/2 chamber
@@ -720,22 +737,21 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     
     index = 0; 
 
+    if (iDDL == 0) // suppose global info in DDL one
+      globalFlag = 1;
+    else 
+      globalFlag = 0;
+
     word = 0;
     // set darc status word
-    AliBitPacking::PackWord((UInt_t)iDDL+1,word,28,31); //see AliMUONDDLTrigger.h for details
-    AliBitPacking::PackWord((UInt_t)serialNb,word,24,27);
-    AliBitPacking::PackWord((UInt_t)version,word,16,23);
-    AliBitPacking::PackWord((UInt_t)eventType,word,12,15);
-
-    if (iDDL == 0) // suppose global info in DDL one
-      globalFlag = 2;
-    else 
-      globalFlag = 1;
-
-    AliBitPacking::PackWord((UInt_t)globalFlag,word,8,11);
+    // see AliMUONDarcHeader.h for details
+    AliBitPacking::PackWord((UInt_t)eventPhys,word,30,30);
+    AliBitPacking::PackWord((UInt_t)serialNb,word,20,23);
+    AliBitPacking::PackWord((UInt_t)globalFlag,word,10,10);
+    AliBitPacking::PackWord((UInt_t)version,word,12,19);
     fDarcHeader->SetWord(word);
 
-    memcpy(&buffer[index], fDarcHeader->GetHeader(), (fDarcHeader->GetDarcHeaderLength())*4); 
+    memcpy(&buffer[index], fDarcHeader->GetHeader(), (kDarcHeaderLength)*4); 
     index += fDarcHeader->GetDarcHeaderLength();
 
     if (iDDL == 0)
@@ -745,19 +761,19 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
     if (fScalerEvent) {
       // 6 DARC scaler words
-      memcpy(&buffer[index], fDarcHeader->GetDarcScalers(),fDarcHeader->GetDarcScalerLength()*4);
+      memcpy(&buffer[index], fDarcHeader->GetDarcScalers(),kDarcScalerLength*4);
       index += fDarcHeader->GetDarcScalerLength();
     }
     // end of darc word
     buffer[index++] = fDarcHeader->GetEndOfDarc();
 
     // 4 words of global board input + Global board output
-    memcpy(&buffer[index], fDarcHeader->GetGlobalInput(), (fDarcHeader->GetGlobalHeaderLength())*4); 
+    memcpy(&buffer[index], fDarcHeader->GetGlobalInput(), (kGlobalHeaderLength)*4); 
     index += fDarcHeader->GetGlobalHeaderLength(); 
 
     if (fScalerEvent) {
       // 10 Global scaler words
-      memcpy(fDarcHeader->GetGlobalScalers(), &buffer[index], fDarcHeader->GetGlobalScalerLength()*4);
+      memcpy(fDarcHeader->GetGlobalScalers(), &buffer[index], kGlobalScalerLength*4);
       index += fDarcHeader->GetGlobalScalerLength();
     }
 
@@ -774,12 +790,15 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
       fRegHeader->SetDarcWord(word);
 
       regOut  = 0;
-      AliBitPacking::PackWord((UInt_t)serialNb,word,24,28); //see  AliMUONLocalStruct.h for details
+      // fill darc word, not darc status for the moment (empty)
+      //see  AliMUONRegHeader.h for details
+      AliBitPacking::PackWord((UInt_t)eventPhys,word,31,31); 
+      AliBitPacking::PackWord((UInt_t)serialNb,word,19,24); 
       AliBitPacking::PackWord((UInt_t)version,word,16,23);
-      AliBitPacking::PackWord((UInt_t)iReg,word,12,15);
+      AliBitPacking::PackWord((UInt_t)iReg,word,15,18);
       AliBitPacking::PackWord((UInt_t)regOut,word,0,7); // whenever regional output will be implemented
-
       fRegHeader->SetWord(word);
+
       memcpy(&buffer[index],fRegHeader->GetHeader(),fRegHeader->GetHeaderLength()*4);
       index += fRegHeader->GetHeaderLength();
 

@@ -107,7 +107,7 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
   memcpy(darcHeader->GetHeader(), &buffer[index], (kDarcHeaderSize)*4); 
   index += kDarcHeaderSize;
 
-  if(darcHeader->GetEventType() == 2) {
+  if(darcHeader->GetEventType() == 0) {
     scalerEvent = kTRUE;
   } else
     scalerEvent = kFALSE;

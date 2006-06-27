@@ -29,8 +29,8 @@
 ClassImp(AliMUONRegHeader)
 /// \endcond
  
- const Int_t  AliMUONRegHeader::fgkHeaderLength = 4;
- const Int_t  AliMUONRegHeader::fgkScalerLength = 8;
+ const Int_t  AliMUONRegHeader::fgkHeaderLength = 5;
+ const Int_t  AliMUONRegHeader::fgkScalerLength = 10;
  const UInt_t AliMUONRegHeader::fgkEndOfReg     = 0xBEEFFACE;
 
 //___________________________________________
@@ -38,7 +38,7 @@ AliMUONRegHeader::AliMUONRegHeader()
   :  TObject(),
      fDarcWord(0),
      fWord(0),
-     fL0(0), 
+     fL0Mask(0),
      fClk(0),
      fHold(0)
 
@@ -74,9 +74,9 @@ AliMUONRegHeader::AliMUONRegHeader(const AliMUONRegHeader& event)
   //
   fDarcWord = event.fDarcWord;
   fWord     = event.fWord;
-  fL0       = event.fL0;
   fClk      = event.fClk;
   fHold     = event.fHold;
+  fL0Mask   = event.fL0Mask;
 
   fInput[0] = event.fInput[0];
   fInput[1] = event.fInput[1];
@@ -102,9 +102,9 @@ AliMUONRegHeader& AliMUONRegHeader::operator=(const AliMUONRegHeader& event)
 
   fDarcWord = event.fDarcWord;
   fWord     = event.fWord;
-  fL0       = event.fL0;
   fClk      = event.fClk;
   fHold     = event.fHold;
+  fL0Mask   = event.fL0Mask;
 
   fInput[0] = event.fInput[0];
   fInput[1] = event.fInput[1];
@@ -128,7 +128,6 @@ void AliMUONRegHeader::SetScalersNumbers()
   // since this is provided by the experiment
   // put dummy numbers to check the monitoring
   
-  fL0   = 1000;
   fClk  = 10000;
   fHold = 100; 
   

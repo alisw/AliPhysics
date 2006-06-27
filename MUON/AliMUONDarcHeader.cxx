@@ -33,8 +33,8 @@ ClassImp(AliMUONDarcHeader)
 
  const Int_t AliMUONDarcHeader::fgkDarcHeaderLength   =  1;
  const Int_t AliMUONDarcHeader::fgkGlobalHeaderLength =  5;
- const Int_t AliMUONDarcHeader::fgkDarcScalerLength   =  7;
- const Int_t AliMUONDarcHeader::fgkGlobalScalerLength = 10;
+ const Int_t AliMUONDarcHeader::fgkDarcScalerLength   =  8;
+ const Int_t AliMUONDarcHeader::fgkGlobalScalerLength =  10;
 
  const UInt_t AliMUONDarcHeader::fgkEndOfDarc   = 0xDEADFACE;
  const UInt_t AliMUONDarcHeader::fgkEndOfGlobal = 0xDEADBEEF;
@@ -56,7 +56,9 @@ AliMUONDarcHeader::AliMUONDarcHeader()
      fDarcL2A(0),
      fDarcL2R(0),
      fDarcClk(0),
-     fDarcHold(0)
+     fDarcHold(0),
+     fDarcSpare(0)     
+
 {
   //
   // ctor
@@ -84,13 +86,14 @@ AliMUONDarcHeader::AliMUONDarcHeader(const AliMUONDarcHeader& event)
   fGlobalHold   = event.fGlobalHold;   
   fGlobalSpare  = event.fGlobalSpare;
 
-  fDarcL0R  = event.fDarcL0R;
-  fDarcL1P  = event.fDarcL1P;
-  fDarcL1S  = event.fDarcL1S;
-  fDarcL2A  = event.fDarcL2A;
-  fDarcL2R  = event.fDarcL2R;
-  fDarcClk  = event.fDarcClk;
-  fDarcHold = event.fDarcHold;
+  fDarcL0R   = event.fDarcL0R;
+  fDarcL1P   = event.fDarcL1P;
+  fDarcL1S   = event.fDarcL1S;
+  fDarcL2A   = event.fDarcL2A;
+  fDarcL2R   = event.fDarcL2R;
+  fDarcClk   = event.fDarcClk;
+  fDarcHold  = event.fDarcHold;
+  fDarcSpare = event.fDarcSpare;
 
  
  for (Int_t i = 0; i < 4; i++)
@@ -121,13 +124,14 @@ AliMUONDarcHeader& AliMUONDarcHeader::operator=(const AliMUONDarcHeader& event)
   fGlobalHold   = event.fGlobalHold;   
   fGlobalSpare  = event.fGlobalSpare;
 
-  fDarcL0R  = event.fDarcL0R;
-  fDarcL1P  = event.fDarcL1P;
-  fDarcL1S  = event.fDarcL1S;
-  fDarcL2A  = event.fDarcL2A;
-  fDarcL2R  = event.fDarcL2R;
-  fDarcClk  = event.fDarcClk;
-  fDarcHold = event.fDarcHold;
+  fDarcL0R   = event.fDarcL0R;
+  fDarcL1P   = event.fDarcL1P;
+  fDarcL1S   = event.fDarcL1S;
+  fDarcL2A   = event.fDarcL2A;
+  fDarcL2R   = event.fDarcL2R;
+  fDarcClk   = event.fDarcClk;
+  fDarcHold  = event.fDarcHold;
+  fDarcSpare = event.fDarcSpare;
 
   for (Int_t i = 0; i < 4; i++)
     fGlobalInput[i] = event.fGlobalInput[i];
@@ -166,13 +170,14 @@ void AliMUONDarcHeader::SetScalersNumbers()
   fGlobalHold  = 100;    
   fGlobalSpare = 1;    
 
-  fDarcL0R  = 1000;
-  fDarcL1P  = 900;
-  fDarcL1S  = 800;
-  fDarcL2A  = 700;
-  fDarcL2R  = 700;
-  fDarcClk  = 10000;
-  fDarcHold = 100;
+  fDarcL0R   = 1000;
+  fDarcL1P   = 900;
+  fDarcL1S   = 800;
+  fDarcL2A   = 700;
+  fDarcL2R   = 700;
+  fDarcClk   = 10000;
+  fDarcHold  = 100;
+  fDarcSpare = 0;
 
    for (Int_t i = 0; i < 6; i++)
     fGlobalScaler[i] = i;

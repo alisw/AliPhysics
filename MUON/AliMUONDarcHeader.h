@@ -28,14 +28,21 @@ public:
 
    UInt_t  GetWord()               const {return fWord;}
    Int_t   GetGlobalInput(Int_t n) const {return fGlobalInput[n];}
-   Int_t   GetGlobalOutput()       const {return fGlobalOutput;}
+   Int_t   GetGlobalOutput()       const {return (fGlobalOutput & 0xFFFF);}
+   Int_t   GetGlobalConfig()       const {return ((fGlobalOutput >> 16) & 0xFFFF);}
 
-   //DarcId:4,SerialNb:4,Version:8,EventType:4,GlobalFlag:4,MBZ:8;
-   Char_t  GetDarcId()     const {return (Char_t)(fWord >> 28) &  0xF;}
-   Char_t  GetSerialNb()   const {return (Char_t)(fWord >> 24) &  0xF;}
-   Char_t  GetVersion()    const {return (Char_t)(fWord >> 16) &  0xFF;}
-   Char_t  GetEventType()  const {return (Char_t)(fWord >> 12) &  0xF;}
-   Char_t  GetGlobalFlag() const {return (Char_t)(fWord >>  8) &  0xF;}
+   //MBZ:1, phys trig:1, type:3, ,SerialNb:4,Version:8,VME trig:1, 
+   //GlobalFlag:1, CTP trig:1, DAQ:1, Reg pattern:8;
+
+   Bool_t  GetEventType()  const {return (fWord &  0x40000000);}
+   Char_t  GetDarcType()   const {return (Char_t)(fWord >> 27) &  0x7;}
+   Char_t  GetSerialNb()   const {return (Char_t)(fWord >> 23) &  0xF;}
+   Char_t  GetVersion()    const {return (Char_t)(fWord >> 15) &  0xFF;}
+   Bool_t  GetVMETrig()    const {return (fWord &  0x800);}
+   Bool_t  GetGlobalFlag() const {return (fWord &  0x400);}
+   Bool_t  GetCTPTrig()    const {return (fWord &  0x200);}
+   Bool_t  GetDAQFlag()    const {return (fWord &  0x100);}
+   Char_t  GetRegPattern() const {return (Char_t)(fWord &  0xFF);}
 
    void    SetWord(UInt_t w) {fWord = w;}
    void    SetGlobalInput(Int_t in, Int_t n) {fGlobalInput[n] = in;}
@@ -108,13 +115,15 @@ public:
    static const Int_t      fgkGlobalScalerLength;  ///< length of global scaler in word
 
    // DARC Scalers
-   UInt_t     fDarcL0R;       ///< DARC L0 received
+   UInt_t     fDarcL0R;       ///< DARC L0 received and used
    UInt_t     fDarcL1P;       ///< DARC L1 physics
    UInt_t     fDarcL1S;       ///< DARC L1 software
    UInt_t     fDarcL2A;       ///< DARC L2 accept
    UInt_t     fDarcL2R;       ///< DARC L2 reject
    UInt_t     fDarcClk;       ///< DARC clock
    UInt_t     fDarcHold;      ///< DARC hold (dead time)
+   UInt_t     fDarcSpare;     ///< DARC Empty slot (for the moment)
+
    static const Int_t      fgkDarcScalerLength;  ///< length of DARC scaler in word
 
    static const UInt_t     fgkEndOfDarc;         ///< end of darc info word
