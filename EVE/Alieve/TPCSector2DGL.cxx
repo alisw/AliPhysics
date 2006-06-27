@@ -12,7 +12,13 @@ using namespace Reve;
 using namespace Alieve;
 using namespace std;
 
-  // This can be optimized to non-pow-2 values once everybody has GL 1.4.
+//______________________________________________________________________
+// TPCSector2DGL
+//
+
+ClassImp(TPCSector2DGL)
+
+// This can be optimized to non-pow-2 values once everybody has GL 1.4.
 
 const Int_t TPCSector2DGL::fgkTextureWidth    = 256;
 const Int_t TPCSector2DGL::fgkTextureHeight   = 128;
