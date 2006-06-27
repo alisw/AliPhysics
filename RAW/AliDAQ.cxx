@@ -239,6 +239,43 @@ Int_t AliDAQ::DdlID(Int_t detectorID, Int_t ddlIndex)
   return ddlID;
 }
 
+const char *AliDAQ::DdlFileName(const char *detectorName, Int_t ddlIndex)
+{
+  // Returns the DDL file name
+  // (used in the simulation) starting from
+  // the detector name and the DDL
+  // index inside the detector
+  Int_t detectorID = DetectorID(detectorName);
+  if (detectorID < 0)
+    return "";
+
+  return DdlFileName(detectorID,ddlIndex);
+}
+
+const char *AliDAQ::DdlFileName(Int_t detectorID, Int_t ddlIndex)
+{
+  // Returns the DDL file name
+  // (used in the simulation) starting from
+  // the detector ID and the DDL
+  // index inside the detector
+  Int_t ddlID = DdlIDOffset(detectorID);
+  if (ddlID < 0)
+    return "";
+  
+  if (ddlIndex >= fgkNumberOfDdls[detectorID]) {
+    AliErrorClass(Form("Invalid DDL index %d (%d -> %d) for detector %d",
+		       ddlIndex,0,fgkNumberOfDdls[detectorID],detectorID));
+    return "";
+  }
+
+  ddlID += ddlIndex;
+  TString fileName = DetectorName(detectorID);
+  fileName += "_";
+  fileName += ddlID;
+  fileName += ".ddl";
+  return fileName.Data();
+}
+
 Int_t AliDAQ::NumberOfDdls(const char *detectorName)
 {
   // Returns the number of DDLs for

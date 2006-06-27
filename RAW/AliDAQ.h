@@ -47,6 +47,8 @@ class AliDAQ: public TObject {
 
   static Int_t       DdlID(const char *detectorName, Int_t ddlIndex);
   static Int_t       DdlID(Int_t detectorID, Int_t ddlIndex);
+  static const char *DdlFileName(const char *detectorName, Int_t ddlIndex);
+  static const char *DdlFileName(Int_t detectorID, Int_t ddlIndex);
 
   static Int_t       NumberOfDdls(const char *detectorName);
   static Int_t       NumberOfDdls(Int_t detectorID);
