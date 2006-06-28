@@ -125,6 +125,7 @@
 #include "AliESD.h"
 #include "AliESDfriend.h"
 #include "AliESDVertex.h"
+#include "AliMultiplicity.h"
 #include "AliTracker.h"
 #include "AliVertexer.h"
 #include "AliVertexerTracks.h"
@@ -930,6 +931,10 @@ Bool_t AliReconstruction::RunVertexFinder(AliESD*& esd)
     vertex = new AliESDVertex(vtxPos, vtxErr);
   }
   esd->SetVertex(vertex);
+  // if SPD multiplicity has been determined, it is stored in the ESD
+  AliMultiplicity *mult= fVertexer->GetMultiplicity();
+  if(mult)esd->SetMultiplicity(mult);
+
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     if (fTracker[iDet]) fTracker[iDet]->SetVertex(vtxPos, vtxErr);
   }  

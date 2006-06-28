@@ -44,6 +44,7 @@ AliESD::AliESD():
   fT0zVertex(0),
   fSPDVertex(),
   fPrimaryVertex(),
+  fSPDMult(),
   fT0timeStart(0),
   fTracks("AliESDtrack",15000),
   fHLTConfMapTracks("AliESDHLTtrack",25000),
@@ -127,6 +128,7 @@ void AliESD::Reset()
   fT0timeStart = 0;
   new (&fSPDVertex) AliESDVertex();
   new (&fPrimaryVertex) AliESDVertex();
+  new (&fSPDMult) AliMultiplicity();
   fTracks.Clear();
   fHLTConfMapTracks.Clear();
   fHLTHoughTracks.Clear();
@@ -159,6 +161,8 @@ void AliESD::Print(Option_t *) const
 	   fPrimaryVertex.GetXv(), fPrimaryVertex.GetXRes(),
 	   fPrimaryVertex.GetYv(), fPrimaryVertex.GetYRes(),
 	   fPrimaryVertex.GetZv(), fPrimaryVertex.GetZRes());
+    printf("SPD Multiplicity. Number of tracklets %d \n",
+           fSPDMult.GetNumberOfTracklets());
   printf("Event from reconstruction version %d \n",fRecoVersion);
   printf("Number of tracks: \n");
   printf("                 charged   %d\n", GetNumberOfTracks());

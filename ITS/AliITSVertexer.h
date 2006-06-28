@@ -21,6 +21,7 @@ class AliITSVertexer : public AliVertexer {
     // standard constructor     
     AliITSVertexer(TString filename); 
     virtual ~AliITSVertexer(){;}
+    virtual void FindMultiplicity(Int_t evnumber);
     virtual void WriteCurrentVertex();
  
 

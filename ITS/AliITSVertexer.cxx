@@ -2,6 +2,8 @@
 #include <AliITSVertexer.h>
 #include <AliRunLoader.h>
 #include <AliITSLoader.h>
+#include <AliMultiplicity.h>
+#include <AliITSMultReconstructor.h>
 
 ClassImp(AliITSVertexer)
 
@@ -57,6 +59,57 @@ AliITSVertexer& AliITSVertexer::operator=(const AliITSVertexer& /* vtxr */){
   return *this;
 }
 
+//______________________________________________________________________
+void AliITSVertexer::FindMultiplicity(Int_t evnumber){
+  // Invokes AliITSMultReconstructor to determine the
+  // charged multiplicity in the pixel layers
+  if(fMult){delete fMult; fMult = 0;}
+  Bool_t success=kTRUE;
+  if(!fCurrentVertex)success=kFALSE;
+  if(fCurrentVertex && fCurrentVertex->GetNContributors()<1)success=kFALSE;
+  if(!success){
+    AliWarning("Tracklets multiplicity not determined because the primary vertex was not found");
+    return;
+  }
+  AliITSMultReconstructor* multReco = new AliITSMultReconstructor();
+  AliRunLoader *rl =AliRunLoader::GetRunLoader();
+  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
+  multReco->SetGeometry(itsLoader->GetITSgeom());
+  itsLoader->LoadRecPoints();
+  rl->GetEvent(evnumber);
+  TTree* itsClusterTree = itsLoader->TreeR();
+  if (!itsClusterTree) {
+    AliError(" Can't get the ITS cluster tree !\n");
+    return;
+  }
+  Double_t vtx[3];
+  fCurrentVertex->GetXYZ(vtx);
+  Float_t vtxf[3];
+  for(Int_t i=0;i<3;i++)vtxf[i]=vtx[i];
+  multReco->SetHistOn(kFALSE);
+  multReco->Reconstruct(itsClusterTree,vtxf,vtxf);
+  cout<<"======================================================="<<endl;
+  cout<<"Event number "<<evnumber<<"; tracklets= "<<multReco->GetNTracklets()<<endl;
+  Int_t notracks=multReco->GetNTracklets();
+  Float_t *trk = new Float_t [notracks];
+  Float_t *phi = new Float_t [notracks];
+  Float_t *dphi = new Float_t [notracks];
+  for(Int_t i=0;i<multReco->GetNTracklets();i++){
+    trk[i] = multReco->GetTracklet(i)[0];
+    phi[i] =  multReco->GetTracklet(i)[1];
+    dphi[i] = multReco->GetTracklet(i)[2];
+  }
+  fMult = new AliMultiplicity(notracks,trk,phi, dphi);
+  delete [] trk;
+  delete [] phi;
+  delete [] dphi;
+  for(Int_t i=0;i<multReco->GetNTracklets();i++){
+    cout<<i<<") theta= "<<fMult->GetTheta(i)<<", phi= "<<fMult->GetPhi(i)<<", DeltaPhi= "<<fMult->GetDeltaPhi(i)<<endl;
+  }
+  itsLoader->UnloadRecPoints();
+  delete multReco;
+  return;
+}
 
 //______________________________________________________________________
 void AliITSVertexer::WriteCurrentVertex(){

@@ -31,7 +31,9 @@ ClassImp(AliVertexer)
 AliVertexer::AliVertexer() :
   fCurrentVertex(0),
   fFirstEvent(0),
-  fLastEvent(0)
+  fLastEvent(0),
+  fDebug(0),
+  fMult()
 {
   //
   // Default Constructor
@@ -62,10 +64,13 @@ AliVertexer& AliVertexer::operator=(const AliVertexer& /* vtxr */){
 //______________________________________________________________________
 AliVertexer::~AliVertexer() {
   // Default Destructor
+
+  if(fMult) delete fMult;
   // The objects pointed by the following pointers are not owned
   // by this class and are not deleted
 
     fCurrentVertex  = 0;
+
 }
 
 //______________________________________________________________________

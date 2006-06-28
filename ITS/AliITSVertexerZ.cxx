@@ -14,9 +14,8 @@
  **************************************************************************/
 #include <AliITSVertexerZ.h>
 #include <TString.h>
-#include "AliITSLoader.h"
+#include <AliITSLoader.h>
 #include<TBranch.h>
-#include<TClonesArray.h>
 #include<TH1.h>
 #include<TTree.h>
 #include <AliITSgeom.h>
@@ -131,9 +130,12 @@ AliESDVertex* AliITSVertexerZ::FindVertexForCurrentEvent(Int_t evnumber){
       fDiffPhiMax=diffPhiMaxOrig;
     }
   }
-
+  FindMultiplicity(evnumber);
   return fCurrentVertex;
 }  
+
+
+
 
 //______________________________________________________________________
 void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
@@ -141,11 +143,7 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
   fCurrentVertex = 0;
   AliRunLoader *rl =AliRunLoader::GetRunLoader();
   AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
-  TDirectory * olddir = gDirectory;
-  rl->CdGAFile();
-  AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
-  olddir->cd();
-
+  AliITSgeom* geom = itsLoader->GetITSgeom();
   itsLoader->LoadRecPoints();
   rl->GetEvent(evnumber);
 
@@ -261,6 +259,8 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
     }
     detTypeRec.ResetRecPoints();
   }
+ 
+  Int_t nolines=0;
   for(Int_t i=0;i<nrpL1;i++){ // loop on L1 RP
     Float_t r1=TMath::Sqrt(xc1[i]*xc1[i]+yc1[i]*yc1[i]); // radius L1 RP
     for(Int_t j=0;j<nrpL2;j++){ // loop on L2 RP
@@ -272,6 +272,15 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
 	fZCombf->Fill(zr0);
 	fZCombc->Fill(zr0);
 	fZCombv->Fill(zr0);
+	Double_t pA[3];
+	Double_t pB[3];
+	pA[0]=xc1[i];
+	pA[1]=yc1[i];
+	pA[2]=zc1[i];
+	pB[0]=xc2[j];
+	pB[1]=yc2[j];
+	pB[2]=zc2[j];
+	MakeTracklet(pA,pB,nolines);
       }
     }
   }

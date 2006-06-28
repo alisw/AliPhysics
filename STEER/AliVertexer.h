@@ -2,6 +2,7 @@
 #define ALIVERTEXER_H
 
 #include<TObject.h>
+#include<AliMultiplicity.h>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -25,8 +26,9 @@ class AliVertexer : public TObject {
     virtual ~AliVertexer(); 
     // computes the vertex for the current event
     virtual AliESDVertex* FindVertexForCurrentEvent(Int_t evnumb)=0; 
-    // computes the vetex for each event and stores it on file
+    // computes the vertex for each event and stores it on file
     virtual void FindVertices()= 0;
+    virtual AliMultiplicity* GetMultiplicity() const {return fMult;}
     virtual void PrintStatus() const = 0;
     virtual void SetDebug(Int_t debug = 0);
     virtual void SetFirstEvent(Int_t ev){fFirstEvent = ev;}
@@ -46,8 +48,9 @@ class AliVertexer : public TObject {
     Int_t fFirstEvent;          // First event to be processed by FindVertices
     Int_t fLastEvent;           // Last event to be processed by FindVertices 
     Int_t fDebug;               //! debug flag - verbose printing if >0
+    AliMultiplicity *fMult;     //! Multiplicity object
 
-  ClassDef(AliVertexer,1);
+  ClassDef(AliVertexer,2);
 };
 
 #endif

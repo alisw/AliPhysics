@@ -29,6 +29,7 @@
 #include "AliESDv0.h"
 #include "AliESDV0MI.h"
 #include "AliESDFMD.h"
+#include "AliMultiplicity.h"
 
 class AliESDfriend;
 
@@ -135,6 +136,11 @@ public:
   }
   const AliESDVertex *GetVertex() const {return &fSPDVertex;}
 
+  void SetMultiplicity(const AliMultiplicity *mul) {
+     new (&fSPDMult) AliMultiplicity(*mul);
+  }
+  const AliMultiplicity *GetMultiplicity() const {return &fSPDMult;}
+
   void SetPrimaryVertex(const AliESDVertex *vertex) {
      new (&fPrimaryVertex) AliESDVertex(*vertex);
   }
@@ -223,6 +229,7 @@ protected:
   Float_t      fT0zVertex;       // vertex z position estimated by the START
   AliESDVertex fSPDVertex;       // Primary vertex estimated by the SPD
   AliESDVertex fPrimaryVertex;   // Primary vertex estimated using ESD tracks
+  AliMultiplicity fSPDMult;      // SPD tracklet multiplicity
 
   Float_t      fT0timeStart;     // interaction time estimated by the START
   Float_t      fT0time[24];      // best TOF on each START PMT
@@ -247,7 +254,7 @@ protected:
  
   AliESDFMD *  fESDFMD; // FMD object containing rough multiplicity
 
-  ClassDef(AliESD,12)  //ESD class 
+  ClassDef(AliESD,13)  //ESD class 
 };
 #endif 
 

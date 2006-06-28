@@ -45,6 +45,7 @@ class AliITSVertexerZ : public AliITSVertexer {
   Float_t GetBinWidthFine() const {return fStepFine;}
   void SetTolerance(Float_t tol = 20./10000.){fTolerance = tol;}
   Float_t GetTolerance() const {return fTolerance;}
+  virtual void MakeTracklet(Double_t * /* pA */, Double_t * /*pB */, Int_t & /* nolines */) {} // implemented in a derived class
 
  protected:
   AliITSVertexerZ(const AliITSVertexerZ& vtxr);
@@ -52,6 +53,7 @@ class AliITSVertexerZ : public AliITSVertexer {
   void ResetHistograms();
   void VertexZFinder(Int_t evnumber);
   Float_t GetPhiMaxIter(Int_t i) const {return fPhiDiffIter[i];}
+
 
   Int_t fFirstL1;          // first module of the first pixel layer used
   Int_t fLastL1;           // last module of the first pixel layer used
