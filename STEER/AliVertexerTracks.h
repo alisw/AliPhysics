@@ -60,6 +60,10 @@ class AliVertexerTracks : public TObject {
     { fAlgo=opt; return;}
   void  SetNSigmad0(Double_t n=1) 
     { fNSigma=n; return; }
+  static Double_t GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t *x0);
+  static Double_t GetDeterminant3X3(Double_t matr[][3]);
+  static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d);
+  static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t (*m)[3],Double_t *d);
 
  protected:
   Double_t   GetField() const { return AliTracker::GetBz();} 
@@ -69,12 +73,8 @@ class AliVertexerTracks : public TObject {
   void     VertexFinder(Int_t optUseWeights=0);
   void     HelixVertexFinder();
   void     StrLinVertexFinderMinDist(Int_t OptUseWeights=0);
-  static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t m[][3],Double_t *d);
-  static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t m[][3],Double_t *d);
-  static Double_t GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t *x0);
-  static Double_t GetDeterminant3X3(Double_t matr[][3]);
   void     VertexFitter(Bool_t useNominaVtx=kFALSE);
-
+   
   AliVertex fVert;         // vertex after vertex finder
   AliESDVertex *fCurrentVertex;  // ESD vertex after fitter
   Double_t  fNominalPos[3];   // initial knowledge on vertex position
@@ -107,6 +107,3 @@ class AliVertexerTracks : public TObject {
 };
 
 #endif
-
-
-

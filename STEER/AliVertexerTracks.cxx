@@ -715,7 +715,7 @@ Double_t AliVertexerTracks::GetDeterminant3X3(Double_t matr[][3]){
  return det;
 }
 //____________________________________________________________________________
-void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t m[][3],Double_t *d){
+void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t (*m)[3],Double_t *d){
 
   //
   Double_t x12=p0[0]-p1[0];
@@ -737,7 +737,7 @@ void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t 
 
 }
 //____________________________________________________________________________
-void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t m[][3],Double_t *d){
+void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t (*m)[3],Double_t *d){
   //
   Double_t x12=p1[0]-p0[0];
   Double_t y12=p1[1]-p0[1];
@@ -777,7 +777,7 @@ void AliVertexerTracks::GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t 
   d[1]=-ww*(aa[1]*kk+2*cc[1])-2*ss*aa[1]+2*p0[1]/sigmasq[1];
   d[2]=-ww*(aa[2]*kk+2*cc[2])-2*ss*aa[2]+2*p0[2]/sigmasq[2];
 
-}
+  }
 //_____________________________________________________________________________
 Double_t AliVertexerTracks::GetStrLinMinDist(Double_t *p0,Double_t *p1,Double_t *x0){
   //
