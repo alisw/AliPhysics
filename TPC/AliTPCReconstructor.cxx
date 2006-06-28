@@ -109,7 +109,7 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
     clusterer.SetOldRCUFormat(kTRUE);
  
   Int_t iEvent = 0;
-  while (rawReader->NextEvent() && iEvent<35) {  
+  while (rawReader->NextEvent()) {  
     runLoader->GetEvent(iEvent++);
 
     TTree* treeClusters = loader->TreeR();
