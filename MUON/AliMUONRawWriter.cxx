@@ -223,13 +223,13 @@ Int_t AliMUONRawWriter::Digits2Raw()
   {
     // open files
     //   idDDL = ich * 2  + AliDAQ::DdlIDOffset("MUONTRK"); // waiting update in STEER
-    idDDL = ich * 2  + 0x900; // official number for MUON
-    sprintf(name, "MUON_%d.ddl",idDDL);
+    idDDL = ich * 2;
+    strcpy(name,AliDAQ::DdlFileName("MUONTRK",idDDL));
     fFile[0] = fopen(name,"w");
 
     //    idDDL = (ich * 2) + 1 + AliDAQ::DdlIDOffset("MUONTRK");
-    idDDL = (ich * 2) + 1 + 0x900;
-    sprintf(name, "MUON_%d.ddl",idDDL);
+    idDDL = (ich * 2) + 1;
+    strcpy(name,AliDAQ::DdlFileName("MUONTRK",idDDL));
     fFile[1] = fopen(name,"w");
     
     WriteTrackerDDL(ich);
@@ -242,14 +242,12 @@ Int_t AliMUONRawWriter::Digits2Raw()
   // trigger chambers
  
   // open files
-  //  idDDL = AliDAQ::DdlIDOffset("MUONTRG");
-  idDDL = 0xA00;// official number for MUTR
-  sprintf(name, "MUTR_%d.ddl",idDDL);
+  idDDL = 0;// MUTR
+  strcpy(name,AliDAQ::DdlFileName("MUONTRG",idDDL));
   fFile[0] = fopen(name,"w");
 
-  //  idDDL = AliDAQ::DdlIDOffset("MUONTRG") + 1;
-  idDDL = 0xA00 + 1;// official number for MUTR
-  sprintf(name, "MUTR_%d.ddl",idDDL);
+  idDDL = 1;// MUTR
+  strcpy(name,AliDAQ::DdlFileName("MUONTRG",idDDL));
   fFile[1] = fopen(name,"w");
 
   WriteTriggerDDL();

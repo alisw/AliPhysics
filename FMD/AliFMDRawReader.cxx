@@ -174,7 +174,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   AliFMDParameters* pars = AliFMDParameters::Instance();
 
   // Select FMD DDL's 
-  fReader->Select(AliFMDParameters::kBaseDDL>>8);
+  fReader->Select("FMD");
 
   UShort_t stripMin = 0;
   UShort_t stripMax = 127;
@@ -184,7 +184,7 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
     UChar_t* cdata;
     if (!fReader->ReadNextData(cdata)) break;
     size_t   nchar = fReader->GetDataSize();
-    UShort_t ddl   = AliFMDParameters::kBaseDDL + fReader->GetDDLID();
+    UShort_t ddl   = fReader->GetDDLID();
     UShort_t rate  = 0;
     AliDebug(1, Form("Reading %d bytes (%d 10bit words) from %d", 
 		     nchar, nchar * 8 / 10, ddl));
@@ -253,13 +253,13 @@ AliFMDRawReader::Exec(Option_t*)
 
   // Get sample rate 
   AliFMDParameters* pars = AliFMDParameters::Instance();
-  fSampleRate = pars->GetSampleRate(AliFMDParameters::kBaseDDL);
+  fSampleRate = pars->GetSampleRate(0);
 
   // Use AliAltroRawStream to read the ALTRO format.  No need to
   // reinvent the wheel :-) 
   AliFMDRawStream input(fReader, fSampleRate);
   // Select FMD DDL's 
-  fReader->Select(AliFMDParameters::kBaseDDL);
+  fReader->Select("FMD");
   
   Int_t    oldDDL      = -1;
   Int_t    count       = 0;
@@ -319,9 +319,9 @@ AliFMDRawReader::Exec(Option_t*)
 	oldDDL      = ddl;
 	// Check that we're processing a FMD detector 
 	Int_t detId = fReader->GetDetectorID();
-	if (detId != (AliFMDParameters::kBaseDDL >> 8)) {
+	if (detId != (AliDAQ::DetectorID("FMD"))) {
 	  AliError(Form("Detector ID %d != %d",
-			detId, (AliFMDParameters::kBaseDDL >> 8)));
+			detId, (AliDAQ::DetectorID("FMD"))));
 	  break;
 	}
 	// Figure out what detector we're deling with 

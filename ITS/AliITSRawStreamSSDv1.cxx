@@ -34,7 +34,6 @@ AliITSRawStreamSSDv1::AliITSRawStreamSSDv1(AliRawReader* rawReader) :
 
   fADC =0;
   fADModule=0;
-  fRawReader->Select(3);
   fRawReader->SelectEquipment(17,102,102);
 }
 

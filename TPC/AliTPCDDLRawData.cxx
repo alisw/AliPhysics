@@ -31,6 +31,7 @@
 #include "AliTPCAltroMapping.h"
 #include "AliTPCDDLRawData.h"
 #include "AliRawDataHeader.h"
+#include "AliDAQ.h"
 
 ClassImp(AliTPCDDLRawData)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +111,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
 	ddlNumber=data.Sec*2+data.SubSec;
       else
 	ddlNumber=72+(data.Sec-36)*4+data.SubSec;
-      sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
+      strcpy(filename,AliDAQ::DdlFileName("TPC",ddlNumber));
       Int_t patchIndex = data.SubSec;
       if(data.Sec>=36) patchIndex += 2;
       buffer=new AliAltroBuffer(filename,mapping[patchIndex]);
@@ -148,7 +149,7 @@ void AliTPCDDLRawData::RawData(const char* inputFileName){
 	      ddlNumber=data.Sec*2+data.SubSec;
 	    else
 	      ddlNumber=72+(data.Sec-36)*4+data.SubSec;
-	    sprintf(filename,"TPC_%d.ddl",ddlNumber+kDDLOffset); 
+	    strcpy(filename,AliDAQ::DdlFileName("TPC",ddlNumber));
 	    Int_t patchIndex = data.SubSec;
 	    if(data.Sec>=36) patchIndex += 2;
 	    buffer=new AliAltroBuffer(filename,mapping[patchIndex]);

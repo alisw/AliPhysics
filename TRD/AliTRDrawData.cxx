@@ -32,6 +32,7 @@
 #include "AliRawReader.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDcalibDB.h"
+#include "AliDAQ.h"
 
 ClassImp(AliTRDrawData)
 
@@ -110,7 +111,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   //          Data bank
   //
 
-  const Int_t kNumberOfDDLs         = 18;
+  const Int_t kNumberOfDDLs         = AliDAQ::NumberOfDdls("TRD");
   const Int_t kSubeventHeaderLength = 8;
   const Int_t kSubeventDummyFlag    = 0xBB;
   Int_t       headerSubevent[3];
@@ -157,7 +158,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   // Open the output files
   for (Int_t iDDL = 0; iDDL < kNumberOfDDLs; iDDL++) {
     char name[20];
-    sprintf(name, "TRD_%d.ddl", iDDL + AliTRDRawStream::kDDLOffset);
+    strcpy(name,AliDAQ::DdlFileName("TRD",iDDL));
 #ifndef __DECCXX
     outputFile[iDDL] = new ofstream(name, ios::binary);
 #else

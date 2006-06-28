@@ -47,7 +47,7 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader) :
 {
   // create an object to read TPC raw digits
 
-  SelectRawData(0);
+  SelectRawData("TPC");
 
   TString path = gSystem->Getenv("ALICE_ROOT");
   path += "/TPC/mapping/Patch";

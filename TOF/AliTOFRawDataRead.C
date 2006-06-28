@@ -12,7 +12,7 @@ void AliTOFRawDataRead(Int_t iEvent=0)
 
     reader.Reset();
     AliTOFRawStream stream(&reader);
-    reader.Select(5, indexDDL, indexDDL);
+    reader.Select("TOF", indexDDL, indexDDL);
 
     //FILE *fpw = fopen("TOFrawDataRead.txt","w");
 

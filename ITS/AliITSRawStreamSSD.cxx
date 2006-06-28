@@ -212,7 +212,7 @@ AliITSRawStreamSSD::AliITSRawStreamSSD(AliRawReader* rawReader) :
 {
 // create an object to read ITS SSD raw digits
 
-  fRawReader->Select(3);
+  fRawReader->Select("ITSSSD");
 }
 
 

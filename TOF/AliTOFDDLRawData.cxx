@@ -47,6 +47,7 @@ Revision 0.01  2004/6/11 A.De Caro, S.B.Sellitto, R.Silvestri
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFRawStream.h"
+#include "AliDAQ.h"
 
 ClassImp(AliTOFDDLRawData)
 
@@ -232,7 +233,7 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch){
   //loop over TOF DDL files
   for(Int_t i = 0; i<AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors(); i++){
 
-    sprintf(fileName,"TOF_%d.ddl",i+AliTOFRawStream::kDDLOffset); //The name of the output file
+    strcpy(fileName,AliDAQ::DdlFileName("TOF",i)); //The name of the output file
 #ifndef __DECCXX
     outfile.open(fileName,ios::binary);
 #else

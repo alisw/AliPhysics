@@ -53,7 +53,7 @@
 #include "AliMC.h"
 #include "AliRawDataHeader.h"
 
-#include "AliDAQConfig.h"
+#include "AliDAQ.h"
 
 ClassImp(AliModule)
  
@@ -868,14 +868,7 @@ void AliModule::Digits2Raw()
 
   AliWarning(Form("Dummy version called for %s", GetName()));
 
-  Int_t nDDLs = 1;
-  Int_t ddlOffset = 0;
-  for (Int_t i = 0; i < kNDetectors; i++) {
-    if (strcmp(GetName(), kDetectors[i]) == 0) {
-      nDDLs = kDetectorDDLs[i];
-      ddlOffset = 0x100 * i;
-    }
-  }
+  Int_t nDDLs = AliDAQ::NumberOfDdls(GetName());
 
   if (!GetLoader()) return;
   fstream digitsFile(GetLoader()->GetDigitsFileName(), ios::in);
@@ -888,7 +881,7 @@ void AliModule::Digits2Raw()
 
   for (Int_t iDDL = 0; iDDL < nDDLs; iDDL++) {
     char fileName[20];
-    sprintf(fileName, "%s_%d.ddl", GetName(), iDDL + ddlOffset);
+    strcpy(fileName,AliDAQ::DdlFileName(GetName(),iDDL));
     fstream rawFile(fileName, ios::out);
     if (!rawFile) return;
 

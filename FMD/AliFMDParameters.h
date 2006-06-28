@@ -259,9 +259,6 @@ public:
   AliFMDAltroMapping* GetAltroMap() const;
   /** @} */
 
-  enum { 
-    kBaseDDL = 0x1000 // DDL offset for the FMD
-  };
   static const char* PulseGainPath()       { return fgkPulseGain; }
   static const char* PedestalPath()        { return fgkPedestal; }
   static const char* DeadPath()            { return fgkDead; }

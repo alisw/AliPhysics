@@ -25,9 +25,9 @@
 #include "AliCTPRawData.h"
 #include "AliRunLoader.h"
 #include "AliCentralTrigger.h"
-#include "AliDAQConfig.h"
 #include "AliRawDataHeader.h"
 #include "AliLog.h"
+#include "AliDAQ.h"
 
 ClassImp(AliCTPRawData)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ void AliCTPRawData::RawData()
   AliDebug(1,Form("CTP detector cluster = 0x%x",l2cluster));
 
   char  fileName[15];
-  sprintf(fileName,"%s_%d.ddl",kDetectors[kCTPIndex],kCTPIndex*0x100);
+  strcpy(fileName,AliDAQ::DdlFileName("TRG",0));
   AliInfo(Form("Storing CTP raw data in %s",fileName));
   ofstream outfile;         // logical name of the output file 
  #ifndef __DECCXX

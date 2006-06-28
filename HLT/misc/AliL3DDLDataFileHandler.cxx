@@ -223,7 +223,7 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
   }
 #ifdef use_newio
     fReader->Reset();
-    fReader->Select(0,ddls[0],ddls[ddlsToSearch-1]);
+    fReader->Select("TPC",ddls[0],ddls[ddlsToSearch-1]);
     fTPCStream->Reset();
 #else
     fTPCStream->SetDDLID(ddls[i]); //ddl to read out
@@ -391,7 +391,7 @@ AliL3DigitRowData * AliL3DDLDataFileHandler::DDLData2Memory(UInt_t &nrow,Int_t e
 
 #ifdef use_newio
   fReader->Reset();
-  fReader->Select(0,ddls[0],ddls[ddlsToSearch-1]);
+  fReader->Select("TPC",ddls[0],ddls[ddlsToSearch-1]);
   fTPCStream->Reset();
 #else
   fTPCStream->SetDDLID(ddls[i]); //ddl to read out

@@ -25,7 +25,7 @@
 #include "AliPMDdigit.h"
 #include "AliPMDRawStream.h"
 #include "AliPMDDDLRawData.h"
-
+#include "AliDAQ.h"
 
 ClassImp(AliPMDDDLRawData)
 
@@ -64,7 +64,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
   AliDebug(1,Form("Number of modules inside treeD = %d",nmodules));
 
   const Int_t kSize         = 4608;
-  const Int_t kDDL          = 6;
+  const Int_t kDDL          = AliDAQ::NumberOfDdls("PMD");
   Int_t modulePerDDL        = 0;
 
 
@@ -79,7 +79,7 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
   Int_t mmodule = 0;
   for(Int_t iddl = 0; iddl < kDDL; iddl++)
     {
-      sprintf(filename,"PMD_%d.ddl",AliPMDRawStream::kDDLOffset+iddl);
+      strcpy(filename,AliDAQ::DdlFileName("PMD",iddl));
 #ifndef __DECCXX
       outfile.open(filename,ios::binary);
 #else

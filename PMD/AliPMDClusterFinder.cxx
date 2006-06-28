@@ -289,7 +289,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       ResetCellADC();
       rawReader->Reset();
       AliPMDRawStream pmdinput(rawReader);
-      rawReader->Select(12, indexDDL, indexDDL);
+      rawReader->Select("PMD", indexDDL, indexDDL);
       while(pmdinput.Next())
 	{
 	  Int_t det = pmdinput.GetDetector();
@@ -513,7 +513,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
       ResetCellADC();
       rawReader->Reset();
       AliPMDRawStream pmdinput(rawReader);
-      rawReader->Select(12, indexDDL, indexDDL);
+      rawReader->Select("PMD", indexDDL, indexDDL);
       while(pmdinput.Next())
 	{
 	  Int_t det = pmdinput.GetDetector();

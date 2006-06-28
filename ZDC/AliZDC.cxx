@@ -47,7 +47,7 @@
 #include "AliRun.h"
 #include "AliMC.h"
 #include "AliLog.h"
-
+#include "AliDAQ.h"
  
 ClassImp(AliZDC)
 
@@ -455,7 +455,7 @@ void AliZDC::Digits2Raw()
 
   // open the output file
   char fileName[30];
-  sprintf(fileName, "ZDC_%d.ddl", AliZDCRawStream::kDDLOffset);
+  strcpy(fileName,AliDAQ::DdlFileName("ZDC",0));
 #ifndef __DECCXX
   ofstream file(fileName, ios::binary);
 #else

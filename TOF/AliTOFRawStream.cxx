@@ -65,7 +65,7 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader)
 
   fTOFGeometry = new AliTOFGeometryV5();
 
-  fRawReader->Select(5);
+  fRawReader->Select("TOF");
 
 }
 

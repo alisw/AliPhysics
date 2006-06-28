@@ -48,7 +48,7 @@ AliPMDRawStream::AliPMDRawStream(AliRawReader* rawReader) :
 {
 // create an object to read PMD raw digits
 
-  fRawReader->Select(12);
+  fRawReader->Select("PMD");
 }
 
 //_____________________________________________________________________________

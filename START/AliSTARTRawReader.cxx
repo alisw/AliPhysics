@@ -25,7 +25,7 @@ ClassImp(AliSTARTRawReader)
   fTree->Branch("START","AliSTARTdigit",&fDigits,405,1);
  
   fRawReader->Reset();
-  fRawReader->Select(13,0,1);
+  fRawReader->Select("START");
  
  
 }

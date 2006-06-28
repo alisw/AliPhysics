@@ -16,8 +16,6 @@ class AliCTPRawData:public TObject{
   AliCTPRawData(const AliCTPRawData &source);            // copy constructor
   AliCTPRawData& operator=(const AliCTPRawData &source); // assignment operator
   void  RawData();  //This method is used to create the slides (sequence of files)
- private:
-  enum {kCTPIndex = 17};       //CTP detector index (AliDAQConfig.h)
 
   ClassDef(AliCTPRawData,1)
 };

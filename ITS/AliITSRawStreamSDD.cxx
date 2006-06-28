@@ -63,7 +63,7 @@ AliITSRawStreamSDD::AliITSRawStreamSDD(AliRawReader* rawReader) :
     fAnode[i]=0;
     fLowThreshold[i]=0;
   }
-  fRawReader->Select(2);
+  fRawReader->Select("ITSSDD");
 
 }
 

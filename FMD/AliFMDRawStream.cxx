@@ -45,7 +45,7 @@ AliFMDRawStream::AliFMDRawStream(AliRawReader* reader)
   // CTOR 
   fNoAltroMapping = kFALSE;
   // Select FMD DDL's 
-  SelectRawData(AliFMDParameters::kBaseDDL>>8);
+  SelectRawData("FMD");
 }
 
 //_____________________________________________________________________________
@@ -69,7 +69,7 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
 	AliDebug(15, Form("New hardware address, was 0x%x, now 0x%x", 
 			  GetPrevHWAddress(), GetHWAddress()));
 	addr = GetPrevHWAddress();
-	ddl  = AliFMDParameters::kBaseDDL + GetPrevDDLNumber();
+	ddl  = GetPrevDDLNumber();
 	len  = l+1; // Need to add one - l points to last valid index
 	last = signal;
 	break;

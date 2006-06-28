@@ -270,7 +270,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
     rawReader->Reset();
     AliTOFRawStream tofInput(rawReader);
-    rawReader->Select(5, indexDDL, indexDDL);
+    rawReader->Select("TOF", indexDDL, indexDDL);
 
     while(tofInput.Next()) {
 
@@ -347,7 +347,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
     rawReader->Reset();
     AliTOFRawStream tofInput(rawReader);
-    rawReader->Select(5, indexDDL, indexDDL);
+    rawReader->Select("TOF", indexDDL, indexDDL);
 
     while(tofInput.Next()) {
 
@@ -439,7 +439,7 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
     rawReader->Reset();
     AliTOFRawStream tofInput(rawReader);
-    rawReader->Select(5, indexDDL, indexDDL);
+    rawReader->Select("TOF", indexDDL, indexDDL);
 
     while(tofInput.Next()) {
 

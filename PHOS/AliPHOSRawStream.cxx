@@ -47,7 +47,7 @@ AliPHOSRawStream::AliPHOSRawStream(AliRawReader* rawReader) :
 {
 // create an object to read PHOS raw digits
 
-  SelectRawData(6);
+  SelectRawData("PHOS");
 
   fNoAltroMapping = kTRUE;
 }

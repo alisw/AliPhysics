@@ -116,7 +116,7 @@
 #include "AliCDBManager.h"
 #include "AliAlignObj.h"
 #include "AliCentralTrigger.h"
-#include "AliDAQConfig.h"
+#include "AliDAQ.h"
 #include "AliDigitizer.h"
 #include "AliGenerator.h"
 #include "AliLog.h"
@@ -1128,16 +1128,16 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
     Int_t prevLDC = -1;
 
     // loop over detectors and DDLs
-    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-      for (Int_t iDDL = 0; iDDL < kDetectorDDLs[iDet]; iDDL++) {
+    for (Int_t iDet = 0; iDet < AliDAQ::kNDetectors; iDet++) {
+      for (Int_t iDDL = 0; iDDL < AliDAQ::NumberOfDdls(iDet); iDDL++) {
 
-        Int_t ddlID = 0x100*iDet + iDDL;
+        Int_t ddlID = AliDAQ::DdlID(iDet,iDDL);
         Int_t ldcID = Int_t(ldc + 0.0001);
-        ldc += kDetectorLDCs[iDet] / kDetectorDDLs[iDet];
+        ldc += AliDAQ::NumberOfLdcs(iDet) / AliDAQ::NumberOfDdls(iDet);
 
         char rawFileName[256];
-        sprintf(rawFileName, "raw%d/%s_%d.ddl", 
-                iEvent, kDetectors[iDet], ddlID);
+        sprintf(rawFileName, "raw%d/%s", 
+                iEvent, AliDAQ::DdlFileName(iDet,iDDL));
 
 	// check existence and size of raw data file
         FILE* file = fopen(rawFileName, "rb");

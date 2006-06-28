@@ -53,7 +53,7 @@ public:
   enum EAbsPad {kChamAbs=10000000,kSecAbs=1000000,kPadAbsX=1000,kPadAbsY=1};                //absolute pad number structure
   enum ERawData{kDiloX=8,kDiloY=6,kNdilo=10};                                               //DILOGIC structure, see description above 
   enum EPadData{kFirstPad=1,kPadsSecX=80,kPadsSecY=48,kPadsChamX=160,kPadsChamY=144,kSecX=2,kSecY=3};   //Segmentation structure 
-  enum EDdlData{kNddls=14,kDdlOffset=0x700,kRichRawId=7};                                   //Common DDL structure, see description above
+  enum EDdlData{kNddls=14}; //Common DDL structure, see description above
 //ctor&dtor    
   AliRICHDigit()                                                :AliDigit(),fCFM(-1) ,fChamber(-1  )     ,fPadX(-1)      ,fPadY(-1)      ,fQdc(-1)  {}
   AliRICHDigit(Int_t pad,Double_t qdc,Int_t cfm=-1,Int_t tid=-1):AliDigit(),fCFM(cfm),fChamber(P2C(pad)) ,fPadX(P2X(pad)),fPadY(P2Y(pad)),fQdc(qdc) {fTracks[0]=tid;}

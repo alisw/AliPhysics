@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.98  2006/05/11 11:30:48  cvetan
+ * Major changes in AliAltroBuffer. Now it can be used only for writing of raw data. All the corresponding read method are removed. It is based now on AliFstream in order to avoid endianess problems. The altro raw data is written always with little endian
+ *
  * Revision 1.97  2006/04/22 10:30:17  hristov
  * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
  *
@@ -81,6 +84,7 @@ class TFile;
 #include "AliCDBEntry.h"
 #include "AliCDBStorage.h"
 #include "AliPHOSCalibData.h"
+#include "AliDAQ.h"
 
 ClassImp(AliPHOS)
 
@@ -438,7 +442,6 @@ void AliPHOS::Digits2Raw()
   }
 
   // some digitization constants
-  const Int_t    kDDLOffset = 0x600; // assigned to PHOS
 //   const Int_t    kThreshold = 1; // skip digits below this threshold // YVK
   const Float_t    kThreshold = 0.001; // skip digits below 1 MeV
   const Int_t      kAdcThreshold = 1;  // Lower ADC threshold to write to raw data
@@ -475,9 +478,7 @@ void AliPHOS::Digits2Raw()
       }
 
       // open new file and write dummy header
-      TString fileName("PHOS_") ;
-      fileName += (iDDL + kDDLOffset) ; 
-      fileName += ".ddl" ; 
+      TString fileName = AliDAQ::DdlFileName("PHOS",iDDL);
       buffer = new AliAltroBuffer(fileName.Data());
       buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
 

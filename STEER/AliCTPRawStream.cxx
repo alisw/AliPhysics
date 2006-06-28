@@ -27,6 +27,7 @@
 #include "AliCTPRawStream.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
+#include "AliDAQ.h"
 
 ClassImp(AliCTPRawStream)
 
@@ -41,8 +42,8 @@ AliCTPRawStream::AliCTPRawStream(AliRawReader* rawReader) :
   // select the raw data corresponding to
   // the CTP detector id
   fRawReader->Reset();
-  AliDebug(1,Form("Selecting raw data for detector %d",kCTPIndex));
-  fRawReader->Select(kCTPIndex);
+  AliDebug(1,Form("Selecting raw data for detector %d",AliDAQ::DetectorID("TRG")));
+  fRawReader->Select("TRG");
 }
 
 //_____________________________________________________________________________

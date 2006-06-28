@@ -46,6 +46,7 @@ class AliAltroRawStream: public TObject {
     Int_t   GetRCUTrailerSize() const { return fRCUTrailerSize; } // Provide size of RCU trailer
 
     void SelectRawData(Int_t detId);                           // Select raw data for specific detector id
+    void SelectRawData(const char *detName);                   // Select raw data for specific detector name
 
     void  SetNoAltroMapping(Bool_t flag) { fNoAltroMapping = flag; }  // Specify whenever to use or not the altro mapping
     void  SetOldRCUFormat(Bool_t flag)   { fIsOldRCUFormat = flag; }  // Specify whenever to use or not the old RCU trailer format

@@ -630,7 +630,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     rawReader->Reset();
     AliTPCRawStream input(rawReader);
     input.SetOldRCUFormat(fIsOldRCUFormat);
-    rawReader->Select(0,indexDDL,indexDDL+nDDLs-1);
+    rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
     
     // Begin loop over altro data
     while (input.Next()) {

@@ -75,7 +75,6 @@ class AliEMCAL : public AliDetector {
   Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
   Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
-  Int_t GetRawFormatDDLOffset() const { return fgDDLOffset ; }       
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatChannelsPerDDL() const { return fgChannelsPerDDL ; }       
   static Double_t RawResponseFunctionMax(Double_t charge, Double_t gain) ;
@@ -105,7 +104,6 @@ protected:
   static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
-  static Int_t fgDDLOffset;             // DDL offset
   static Int_t fgThreshold;             // threshold
   static Int_t fgChannelsPerDDL;        // number of channels per DDL
 

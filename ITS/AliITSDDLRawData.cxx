@@ -32,6 +32,7 @@
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliBitPacking.h"
+#include "AliDAQ.h"
 
 ClassImp(AliITSDDLRawData)
 
@@ -287,8 +288,8 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
   AliRawDataHeader header;
 
   //loop over DDLs
-  for(Int_t i=0;i<AliITSRawStreamSPD::kDDLsNumber;i++){
-    sprintf(fileName,"ITSSPD_%d.ddl",i+AliITSRawStreamSPD::kDDLOffset); //The name of the output file.
+  for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSPD");i++){
+    strcpy(fileName,AliDAQ::DdlFileName("ITSSPD",i)); //The name of the output file.
 #ifndef __DECCXX
     outfile.open(fileName,ios::binary);
 #else
@@ -337,8 +338,8 @@ Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
   AliRawDataHeader header;
 
   //loop over DDLs  
-  for(Int_t i=0;i<AliITSRawStreamSSD::kDDLsNumber;i++){
-    sprintf(fileName,"ITSSSD_%d.ddl",i+AliITSRawStreamSSD::kDDLOffset); //The name of the output file
+  for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSSD");i++){
+    strcpy(fileName,AliDAQ::DdlFileName("ITSSSD",i)); //The name of the output file.
 #ifndef __DECCXX
     outfile.open(fileName,ios::binary);
 #else
@@ -388,8 +389,8 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
   AliRawDataHeader header;
 
   //loop over DDLs  
-  for(Int_t i=0;i<AliITSRawStreamSDD::kDDLsNumber;i++){
-    sprintf(fileName,"ITSSDD_%d.ddl",i+AliITSRawStreamSDD::kDDLOffset); //The name of the output file
+  for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSDD");i++){
+    strcpy(fileName,AliDAQ::DdlFileName("ITSSDD",i)); //The name of the output file.
 #ifndef __DECCXX
     outfile.open(fileName,ios::binary);
 #else

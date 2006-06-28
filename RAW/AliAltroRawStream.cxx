@@ -165,6 +165,15 @@ void AliAltroRawStream::SelectRawData(Int_t detId)
 }
 
 //_____________________________________________________________________________
+void AliAltroRawStream::SelectRawData(const char *detName)
+{
+  // Select the raw data for specific
+  // detector name
+  AliDebug(1,Form("Selecting raw data for detector %s",detName));
+  fRawReader->Select(detName);
+}
+
+//_____________________________________________________________________________
 UShort_t AliAltroRawStream::GetNextWord()
 {
   // Read the next 10 bit word in backward direction

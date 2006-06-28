@@ -41,7 +41,7 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
 
   fSector[0] = 1;
   fSector[1] = -1;
-  fRawReader->Select(kDDLOffset / 0x100);
+  fRawReader->Select("ZDC");
 }
 
 //_____________________________________________________________________________

@@ -42,8 +42,8 @@ class AliDAQ: public TObject {
   static Int_t       DdlIDOffset(const char *detectorName);
   static Int_t       DdlIDOffset(Int_t detectorID);
 
-  static const char *DetectorNameFromDdlID(Int_t ddlID);
-  static Int_t       DetectorIDFromDdlID(Int_t ddlID);
+  static const char *DetectorNameFromDdlID(Int_t ddlID, Int_t &ddlIndex);
+  static Int_t       DetectorIDFromDdlID(Int_t ddlID, Int_t &ddlIndex);
 
   static Int_t       DdlID(const char *detectorName, Int_t ddlIndex);
   static Int_t       DdlID(Int_t detectorID, Int_t ddlIndex);

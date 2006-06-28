@@ -36,8 +36,6 @@ class AliCTPRawStream: public TObject {
 
     AliRawReader*    fRawReader;   // object for reading the raw data
 
-    enum {kCTPIndex = 17};         //CTP detector index (AliDAQConfig.h)
-
     ClassDef(AliCTPRawStream, 0)   // class for reading CTP DDL raw data
 };
 

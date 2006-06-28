@@ -48,6 +48,7 @@ class TFile;
 #include "AliAltroBuffer.h"
 #include "AliRawReader.h"
 #include "AliEMCALRawStream.h"
+#include "AliDAQ.h"
 
 ClassImp(AliEMCAL)
 Double_t AliEMCAL::fgCapa        = 1.;        // 1pF 
@@ -56,7 +57,6 @@ Double_t AliEMCAL::fgTimeMax     = 2.56E-5 ;  // each sample is over 100 ns fTim
 Double_t AliEMCAL::fgTimePeak    = 4.1E-6 ;   // 4 micro seconds
 Double_t AliEMCAL::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
 // some digitization constants
-Int_t    AliEMCAL::fgDDLOffset = 0x800;
 Int_t    AliEMCAL::fgThreshold = 1;
 // 24*48=1152 towers per SM; divided up on 3 DDLs, 
 // each DDL with 12FEC *32towers or 12*32*2 channels (high&low gain) 
@@ -278,9 +278,7 @@ void AliEMCAL::Digits2Raw()
       }
 
       // open new file and write dummy header
-      TString fileName("EMCAL_") ;
-      fileName += (iDDL + fgDDLOffset) ; 
-      fileName += ".ddl" ; 
+      TString fileName(AliDAQ::DdlFileName("EMCAL",iDDL));
       buffer = new AliAltroBuffer(fileName.Data());
       buffer->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
 
@@ -350,8 +348,8 @@ void AliEMCAL::Raw2Digits(AliRawReader* reader)
   // Use AliAltroRawStream to read the ALTRO format.  No need to
   // reinvent the wheel :-) 
   AliEMCALRawStream in(reader);
-  // Select EMCAL DDL's; lowest 8 bits of DDL offser is used for something else.. 
-  reader->Select(fgDDLOffset >> 8);
+  // Select EMCAL DDL's;
+  reader->Select("EMCAL");
 
   // reading is from previously existing AliEMCALGetter.cxx
   // ReadRaw method

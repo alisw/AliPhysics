@@ -30,6 +30,7 @@
 #include "AliBitPacking.h"
 #include "AliRawDataHeader.h"
 #include "AliBitPacking.h"
+#include "AliDAQ.h"
 
 ClassImp(AliSTARTRawData)
 
@@ -408,8 +409,7 @@ Int_t AliSTARTRawData::RawDataSTART(AliSTARTdigit *fDigits)
   ofstream outfile;         // logical name of the output file 
   AliRawDataHeader header;
   //loop over TOF DDL files
-  sprintf(fileName,"START_%d.ddl", 0xd00);
-  //   sprintf(fileName,"START_0xd00.ddl"); //The name of the output file
+  strcpy(fileName,AliDAQ::DdlFileName("START",0)); //The name of the output file
 #ifndef __DECCXX
     outfile.open(fileName,ios::binary);
 #else

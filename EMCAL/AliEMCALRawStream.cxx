@@ -46,7 +46,7 @@ AliEMCALRawStream::AliEMCALRawStream(AliRawReader* rawReader) :
 {
 // create an object to read EMCAL raw digits
 
-  SelectRawData(8);
+  SelectRawData("EMCAL");
 
   fNoAltroMapping = kTRUE;
 }

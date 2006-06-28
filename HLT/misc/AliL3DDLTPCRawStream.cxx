@@ -49,7 +49,7 @@ AliL3DDLTPCRawStream::AliL3DDLTPCRawStream(AliL3DDLRawReader* rawReader)
   // create an object to read TPC raw digits
 
   fRawReader = rawReader;
-  fRawReader->Select(0);
+  fRawReader->Select(3);
   fData = new UShort_t[fgkDataMax];
   fDataSize = fPosition = 0;
   fCount = fBunchLength = 0;
@@ -81,7 +81,7 @@ Bool_t AliL3DDLTPCRawStream::SetDDLID(Int_t d)
   fSector = fPrevSector = fRow = fPrevRow = fPad = fPrevPad = fTime = fSignal = -1;
 
   fRawReader->Reset();
-  fRawReader->Select(0,d,d+1);
+  fRawReader->Select(3,d,d+1);
 	
   return kTRUE;
 }

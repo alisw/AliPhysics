@@ -148,8 +148,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
   }
 
   fRawReader->Reset();
-  //  fRawReader->Select(AliDAQ::DetectorID("MUONTRG"),fDDL,fDDL);  //Select the DDL file to be read  
-  fRawReader->Select(0XA, fDDL, fDDL);  //Select the DDL file to be read  
+  fRawReader->Select("MUONTRG", fDDL, fDDL);  //Select the DDL file to be read  
 
   fRawReader->ReadHeader();
 

@@ -192,7 +192,7 @@ void AliRICHReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)const
     pRL->MakeTree("R");  pRich->MakeBranch("R");
     
     for(Int_t iChN=1;iChN<=7;iChN++){//chambers loop
-      pRR->Select(AliRICHDigit::kRichRawId,2*iChN-2,2*iChN-1);//select only DDL files for the current chamber      
+      pRR->Select("RICH",2*iChN-2,2*iChN-1);//select only DDL files for the current chamber      
       UInt_t w32=0;
       while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
         UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13

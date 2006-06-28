@@ -27,6 +27,7 @@
 #include <AliPDG.h>
 #include <AliMC.h>            //StepManager()      
 #include <AliRawDataHeader.h> //Digits2Raw()
+#include <AliDAQ.h>           //Digits2Raw()
 #include <AliRun.h>           //CreateMaterials()    
 #include <AliMagF.h>          //CreateMaterials()
 #include <TGeoManager.h>      //CreateGeometry()
@@ -481,7 +482,7 @@ void AliRICHv1::Digits2Raw()
   UInt_t w32=0;            //32 bits data word 
   
   for(Int_t i=0;i<AliRICHDigit::kNddls;i++){//open all 14 DDL in parallel
-    file[i].open(Form("RICH_%4i.ddl",AliRICHDigit::kDdlOffset+i));  //first is 0x700
+    file[i].open(AliDAQ::DdlFileName("RICH",i));
     file[i].write((char*)&header,sizeof(header));                //write dummy header as place holder, actual will be written later when total size of DDL is known
     cnt[i]=0; //reset counters
   }

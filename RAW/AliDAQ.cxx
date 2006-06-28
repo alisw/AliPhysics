@@ -179,30 +179,34 @@ Int_t AliDAQ::DdlIDOffset(Int_t detectorID)
   return (detectorID << 8);
 }
 
-const char *AliDAQ::DetectorNameFromDdlID(Int_t ddlID)
+const char *AliDAQ::DetectorNameFromDdlID(Int_t ddlID,Int_t &ddlIndex)
 {
   // Returns the detector name for
   // a given DDL ID
-  Int_t detectorID = DetectorIDFromDdlID(ddlID);
+  ddlIndex = -1;
+  Int_t detectorID = DetectorIDFromDdlID(ddlID,ddlIndex);
   if (detectorID < 0)
     return "";
 
   return DetectorName(detectorID);
 }
 
-Int_t AliDAQ::DetectorIDFromDdlID(Int_t ddlID)
+Int_t AliDAQ::DetectorIDFromDdlID(Int_t ddlID,Int_t &ddlIndex)
 {
-  // Returns the detector ID for
-  // a given DDL ID
+  // Returns the detector ID and
+  // the ddl index within the
+  // detector range for
+  // a given input DDL ID
   Int_t detectorID = ddlID >> 8;
   if (detectorID < 0 || detectorID >= kNDetectors) {
     AliErrorClass(Form("Invalid detector index: %d (%d -> %d) !",detectorID,0,kNDetectors-1));
     return -1;
   }
-  Int_t ddlIndex = ddlID & 0xFF;
+  ddlIndex = ddlID & 0xFF;
   if (ddlIndex >= fgkNumberOfDdls[detectorID]) {
     AliErrorClass(Form("Invalid DDL index %d (%d -> %d) for detector %d",
 		       ddlIndex,0,fgkNumberOfDdls[detectorID],detectorID));
+    ddlIndex = -1;
     return -1;
   }
   return detectorID;

@@ -48,7 +48,7 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader) :
 {
 // create an object to read TRD raw digits
 
-  fRawReader->Select(4);
+  fRawReader->Select("TRD");
 }
 
 AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream) :

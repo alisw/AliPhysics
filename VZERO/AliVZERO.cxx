@@ -52,6 +52,7 @@
 #include "AliVZEROBuffer.h"
 #include "AliRunDigitizer.h"
 #include "AliVZEROdigit.h"
+#include "AliDAQ.h"
 
 ClassImp(AliVZERO)
  
@@ -252,7 +253,7 @@ void AliVZERO::Digits2Raw()
   fVZERO->SetTreeAddress();  		
   digits->GetBranch("VZERODigit")->SetAddress(&VZEROdigits); 
   
-  const char *fileName    = "VZERO_3584.ddl";
+  const char *fileName    = AliDAQ::DdlFileName("VZERO",0);
   AliVZEROBuffer* buffer  = new AliVZEROBuffer(fileName);
   
   //  Verbose level

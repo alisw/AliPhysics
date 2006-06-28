@@ -28,7 +28,6 @@ class AliZDCRawStream: public TObject {
     UInt_t           GetADCRaw() const {return fRawADC;};
     Int_t            GetADCGain() const {return fADCGain;};
     Bool_t           IsADCDataWord() const {return fIsADCDataWord;};
-    enum {kDDLOffset = 0xB00};      // offset for DDL numbers
 
   private :
     AliZDCRawStream(const AliZDCRawStream& stream);

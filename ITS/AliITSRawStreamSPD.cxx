@@ -62,7 +62,7 @@ AliITSRawStreamSPD::AliITSRawStreamSPD(AliRawReader* rawReader) :
 {
 // create an object to read ITS SPD raw digits
 
-  fRawReader->Select(1);
+  fRawReader->Select("ITSSPD");
 }
 
 

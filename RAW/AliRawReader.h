@@ -25,6 +25,8 @@ class AliRawReader: public TObject {
 
     void             Select(Int_t detectorID, 
 			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
+    void             Select(const char *detectorName, 
+			    Int_t minDDLID = -1, Int_t maxDDLID = -1);
     void             SelectEquipment(Int_t equipmentType, 
 				     Int_t minEquipmentId = -1, 
 				     Int_t maxEquipmentId = -1);

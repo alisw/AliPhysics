@@ -38,7 +38,7 @@
 
 #include <Riostream.h>
 #include "AliRawReader.h"
-
+#include "AliDAQ.h"
 
 ClassImp(AliRawReader)
 
@@ -157,15 +157,17 @@ Int_t AliRawReader::GetDetectorID() const
 {
   // Get the detector ID
   // The list of detector IDs
-  // can be found in AliDAQConfig.h
+  // can be found in AliDAQ.h
   Int_t equipmentId;
   if (fEquipmentIdsIn && fEquipmentIdsIn)
     equipmentId = GetMappedEquipmentId();
   else
     equipmentId = GetEquipmentId();
 
-  if (equipmentId >= 0)
-    return (equipmentId >> 8);
+  if (equipmentId >= 0) {
+    Int_t ddlIndex;
+    return AliDAQ::DetectorIDFromDdlID(equipmentId,ddlIndex);
+  }
   else
     return -1;
 }
@@ -174,17 +176,30 @@ Int_t AliRawReader::GetDDLID() const
 {
   // Get the DDL ID (within one sub-detector)
   // The list of detector IDs
-  // can be found in AliDAQConfig.h
+  // can be found in AliDAQ.h
   Int_t equipmentId;
   if (fEquipmentIdsIn && fEquipmentIdsIn)
     equipmentId = GetMappedEquipmentId();
   else
     equipmentId = GetEquipmentId();
 
-  if (equipmentId >= 0)
-    return (equipmentId & 0xFF);
+  if (equipmentId >= 0) {
+    Int_t ddlIndex;
+    AliDAQ::DetectorIDFromDdlID(equipmentId,ddlIndex);
+    return ddlIndex;
+  }
   else
     return -1;
+}
+
+void AliRawReader::Select(const char *detectorName, Int_t minDDLID, Int_t maxDDLID)
+{
+// read only data of the detector with the given name and in the given
+// range of DDLs (minDDLID <= DDLID <= maxDDLID).
+// no selection is applied if a value < 0 is used.
+  Int_t detectorID = AliDAQ::DetectorID(detectorName);
+  if(detectorID >= 0)
+    Select(detectorID,minDDLID,maxDDLID);
 }
 
 void AliRawReader::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
@@ -194,10 +209,16 @@ void AliRawReader::Select(Int_t detectorID, Int_t minDDLID, Int_t maxDDLID)
 // no selection is applied if a value < 0 is used.
 
   fSelectEquipmentType = -1;
-  if (minDDLID < 0) minDDLID = 0;
-  fSelectMinEquipmentId = (detectorID << 8) + minDDLID;
-  if (maxDDLID < 0) maxDDLID = 0xFF;
-  fSelectMaxEquipmentId = (detectorID << 8) + maxDDLID;
+
+  if (minDDLID < 0)
+    fSelectMinEquipmentId = AliDAQ::DdlIDOffset(detectorID);
+  else
+    fSelectMinEquipmentId = AliDAQ::DdlID(detectorID,minDDLID);
+
+  if (maxDDLID < 0)
+    fSelectMaxEquipmentId = AliDAQ::DdlID(detectorID,AliDAQ::NumberOfDdls(detectorID)-1);
+  else
+    fSelectMaxEquipmentId = AliDAQ::DdlID(detectorID,maxDDLID);
 }
 
 void AliRawReader::SelectEquipment(Int_t equipmentType, 

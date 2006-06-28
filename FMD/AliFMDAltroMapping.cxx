@@ -75,7 +75,7 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr,
   // Translate a hardware address to detector coordinates. 
   // The detector is simply 
   // 
-  //    ddl - kBaseDDL + 1
+  //    ddl + 1
   // 
   // The ring number, sector, and strip number is given by the addr
   // argument.  The address argument, has the following format 
@@ -141,7 +141,7 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr,
   // us detector coordinates, unique at least up a 128 strips.  We
   // return the first strip in the given range. 
   //
-  det          =  (ddl - AliFMDParameters::kBaseDDL) + 1;
+  det          =  ddl + 1;
   UInt_t board =  (addr >> 7) & 0x1F;
   UInt_t altro =  (addr >> 4) & 0x7;
   UInt_t chan  =  (addr & 0xf);
@@ -175,7 +175,7 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring,
   // Translate detector coordinates to a hardware address.
   // The ddl is simply 
   // 
-  //    kBaseDDL + (det - 1)
+  //    (det - 1)
   // 
   // The ring number, sector, and strip number must be encoded into a
   // hardware address.  The address argument, will have the following
@@ -252,7 +252,7 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring,
   // With this information, we can decode the detector coordinates to
   // give us a unique hardware address 
   //
-  ddl          =  AliFMDParameters::kBaseDDL + (det - 1);
+  ddl          =  (det - 1);
   UInt_t nsen  =  (ring == 'I' ? 10 : 20);
   UInt_t nsa   =  (ring == 'I' ? 2 : 4);   // Sensors per ALTRO
   UInt_t ncs   =  (ring == 'I' ? 8 : 4);   // Channels per sensor 
@@ -310,7 +310,7 @@ AliFMDAltroMapping::GetPadRow(Int_t hwaddr) const
   Char_t   ring;
   UShort_t sec;
   UShort_t str;
-  Int_t    ddl = AliFMDParameters::kBaseDDL;
+  Int_t    ddl = 0;
   if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
   return Int_t(sec);
 }
@@ -332,7 +332,7 @@ AliFMDAltroMapping::GetPad(Int_t hwaddr) const
   Char_t   ring;
   UShort_t sec;
   UShort_t str;
-  Int_t    ddl = AliFMDParameters::kBaseDDL;
+  Int_t    ddl = 0;
   if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
   return Int_t(str);
 }
@@ -354,7 +354,7 @@ AliFMDAltroMapping::GetSector(Int_t hwaddr) const
   Char_t   ring;
   UShort_t sec;
   UShort_t str;
-  Int_t    ddl = AliFMDParameters::kBaseDDL;
+  Int_t    ddl = 0;
   if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
   return Int_t(ring);
 }

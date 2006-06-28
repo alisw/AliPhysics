@@ -48,6 +48,7 @@
 #include <TArrayI.h>		// ROOT_TArrayI
 #include <TClonesArray.h>	// ROOT_TClonesArray
 // #include <fstream>
+#include "AliDAQ.h"
 
 //____________________________________________________________________
 ClassImp(AliFMDRawWriter)
@@ -229,7 +230,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
       }
       prevddl = ddl;
       // Need to open a new DDL! 
-      TString filename(Form("%s_%d.ddl", fFMD->GetName(),  ddl));
+      TString filename(AliDAQ::DdlFileName(fFMD->GetName(),  ddl));
       AliDebug(15, Form("New altro buffer with DDL file %s", filename.Data()));
       // Create a new altro buffer - a `1' as the second argument
       // means `write mode' 
@@ -316,10 +317,10 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     // If we haven't got a writer (either because none were made so
     // far, or because we've switch DDL), make one. 
     if (!writer) {
-      AliDebug(1, Form("Opening new ALTRO writer w/file FMD_%d.ddl", ddl));
-      file   = new std::ofstream(Form("FMD_%d.ddl", ddl));
+      AliDebug(1, Form("Opening new ALTRO writer w/file %s", AliDAQ::DdlFileName("FMD",ddl)));
+      file   = new std::ofstream(AliDAQ::DdlFileName("FMD",ddl));
       if (!file || !*file) {
-	AliFatal(Form("Failed to open file FMD_%d.ddl", ddl));
+	AliFatal(Form("Failed to open file %s", AliDAQ::DdlFileName("FMD",ddl)));
 	return;
       }
       writer  = new AliFMDAltroWriter(*file);
