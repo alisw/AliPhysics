@@ -36,8 +36,25 @@ AliStrLine::AliStrLine() {
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Double_t *point, Double_t *cd) {
+AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) {
   // Standard constructor
+  // if twopoints is true:  point and cd are the 3D coordinates of
+  //                        two points defininig the straight line
+  // if twopoint is false: point represents the 3D coordinates of a point
+  //                       belonging to the straight line and cd is the
+  //                       direction in space
+  if(twopoints){
+    InitTwoPoints(point,cd);
+  }
+  else {
+    InitDirection(point,cd);
+  }
+}
+
+
+//________________________________________________________
+void AliStrLine::InitDirection(Double_t *point, Double_t *cd){
+  // Initialization from a point and a direction
   Double_t norm = 0.;
   for(Int_t i=0;i<3;i++)norm+=cd[i]*cd[i];
   if(norm) {
@@ -51,6 +68,15 @@ AliStrLine::AliStrLine(Double_t *point, Double_t *cd) {
   SetCd(cd);
   fTpar = 0.;
   SetDebug();
+}
+
+//________________________________________________________
+void AliStrLine::InitTwoPoints(Double_t *pA, Double_t *pB){
+  // Initialization from the coordinates of two
+  // points in the space
+  Double_t cd[3];
+  for(Int_t i=0;i<3;i++)cd[i] = pB[i]-pA[i];
+  InitDirection(pA,cd);
 }
 
 //________________________________________________________

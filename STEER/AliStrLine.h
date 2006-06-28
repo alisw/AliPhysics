@@ -15,7 +15,7 @@ class AliStrLine : public TObject {
 
  public:
     AliStrLine();        // default constructor
-    AliStrLine(Double_t *point, Double_t *cd);  // standard constructor
+    AliStrLine(Double_t *point, Double_t *cd, Bool_t twopoints=kFALSE);  // standard constructor
     virtual ~AliStrLine(); // destructor
     void PrintStatus() const;
     void SetP0(Double_t *point) {for(Int_t i=0;i<3;i++)fP0[i]=point[i];}
@@ -30,6 +30,8 @@ class AliStrLine : public TObject {
     Int_t Cross(AliStrLine *line, Double_t *point);
     Double_t GetDCA(AliStrLine *line);
  protected:
+    void InitDirection(Double_t *point, Double_t *cd);
+    void InitTwoPoints(Double_t *pA, Double_t *pB);
     Double_t fP0[3];           // given point
     Double_t fCd[3];           // direction cosines
     Double_t fTpar;            //! parameter 
