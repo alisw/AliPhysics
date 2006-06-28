@@ -1,3 +1,9 @@
+2006-06-28  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCLoader.cxx:
+	Use built-in equipment maps; the override option is still present
+	for reading early sector-test 2006 data.
+
 2006-06-27  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCLoader.cxx:
