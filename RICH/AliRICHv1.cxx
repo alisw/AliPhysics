@@ -41,6 +41,7 @@
  
 ClassImp(AliRICHv1)    
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::CreateMaterials()
 {
 // Definition of available RICH materials  
@@ -76,31 +77,22 @@ void AliRICHv1::CreateMaterials()
   Float_t                                                                            aQe1[kNbins]  ;    //QE for all but PC
   Float_t aEckov[kNbins];  //Ckov energy in GeV
                             
-//Read all the staff from CDB                          
-  TF2 *pIdxC6F14;
-  AliCDBEntry *pEntry=AliCDBManager::Instance()->Get("RICH/RICHConfig/RefIdxC6F14",0,0,0); //0-0-0 is for simulation
-  if(pEntry){
-    pIdxC6F14=(TF2*)pEntry->GetObject(); // delete pEntry; // do not delete, entry is cached in CDB!
-  }else{
-    AliWarning("No valid calibarion, the hardcoded will be used!");
-    pIdxC6F14=new TF2("RidxC4F14","sqrt(1+0.554*(1239.84e-9/x)^2/((1239.84e-9/x)^2-5796)-0.0005*(y-20))",5.5e-9,8.5e-9,0,50); //DiMauro mail
-  }
   
   Double_t eCkovMin=5.5e-9,eCkovMax=8.5e-9; //in GeV
-  TF1 idxSiO2("RidxSiO2" ,"sqrt(1+46.411/(10.666*10.666-x*x*1e18)+228.71/(18.125*18.125-x*x*1e18))",eCkovMin,eCkovMax);  //TDR p.35
+  TF2 idxC6F14("RidxC4F14","sqrt(1+0.554*(1239.84e-9/x)^2/((1239.84e-9/x)^2-5796)-0.0005*(y-20))"   ,eCkovMin,eCkovMax,0,50); //DiMauro mail temp 0-50 degrees C
+  TF1 idxSiO2( "RidxSiO2" ,"sqrt(1+46.411/(10.666*10.666-x*x*1e18)+228.71/(18.125*18.125-x*x*1e18))",eCkovMin,eCkovMax);  //TDR p.35
   
   
   for(Int_t i=0;i<kNbins;i++){
-    aEckov     [i] =AliRICHParam::EckovMin()+0.1e-9*i;//Ckov energy in GeV
+    aEckov     [i] =eCkovMin+0.1e-9*i;//Ckov energy in GeV
     
-    aIdxC6F14  [i] =pIdxC6F14->Eval(aEckov[i],pIdxC6F14->GetUniqueID());       
-    aIdxSiO2   [i] =idxSiO2   .Eval(aEckov[i]);
+    aIdxC6F14  [i] =idxC6F14.Eval(aEckov[i],20);      //Simulation for 20 degress C       
+    aIdxSiO2   [i] =idxSiO2 .Eval(aEckov[i]);
     aIdxCH4    [i] =AliRICHParam::IdxCH4   (aEckov[i]); aAbsCH4 [i]  =AliRICHParam::AbsCH4     (aEckov[i]); 
     aAbsMet    [i] =0.0001;                              //metal has absorption probability
     aIdx0      [i] =0;                                   //metal ref idx must be 0 in order to reflect photon
     aIdx1      [i] =1;                                   //metal ref idx must be 1 in order to apply photon to QE conversion 
-//    aQeCsI[i]     /= (1.0-Fresnel(aEckov[i]*1e9,1.0,0)) ; //FRESNEL LOSS CORRECTION ?????????????
-    aQe1       [i] =1                                   ; //QE for all other materials except for PC must be 1.
+    aQe1       [i] =1;                                   //QE for all other materials except for PC must be 1.
   }
   
 //data from PDG booklet 2002     density [gr/cm^3] rad len [cm] abs len [cm]    
@@ -201,7 +193,7 @@ void AliRICHv1::CreateMaterials()
   pC->cd(4);                    pTrMG  ->Draw("AP");  pTrLe  ->Draw();      //transmission
   }
 }//void AliRICH::CreateMaterials()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::CreateGeometry()
 {
 //Creates detailed geometry simulation (currently GEANT volumes tree)         
@@ -309,7 +301,7 @@ void AliRICHv1::CreateGeometry()
     gMC->Gspos("RsbCover",2,"Rsb", 0*mm, 0*mm,    -25*mm, 0,"ONLY"); //cover to sandbox
   AliDebug(1,"Stop v1. HMPID option");  
 }//CreateGeometry()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::Init()
 {
 // This methode defines ID for sensitive volumes, i.e. such geometry volumes for which there are if(gMC->CurrentVolID()==XXX) statements in StepManager()
@@ -323,7 +315,7 @@ void AliRICHv1::Init()
   fIdProxGap = gMC->VolId("Rgap");
   AliDebug(1,"Stop v1 HMPID.");    
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliRICHv1::IsLostByFresnel()
 {
 // Calculate probability for the photon to be lost by Fresnel reflection.
@@ -341,7 +333,7 @@ Bool_t AliRICHv1::IsLostByFresnel()
   }else
     return kFALSE;
 }//IsLostByFresnel()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::GenFee(Int_t iChamber,Float_t eloss)
 {
 // Generate FeedBack photons for the current particle. To be invoked from StepManager().
@@ -418,7 +410,7 @@ void AliRICHv1::GenFee(Int_t iChamber,Float_t eloss)
   }//feedbacks loop
   AliDebug(1,"Stop.");
 }//GenerateFeedbacks()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::Hits2SDigits()
 {
 // Create a list of sdigits corresponding to list of hits. Every hit generates one or more sdigits.
@@ -465,7 +457,7 @@ void AliRICHv1::Hits2SDigits()
   GetLoader()->UnloadSDigits();  
   AliDebug(1,"Stop.");
 }//Hits2SDigits()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::Digits2Raw()
 {
 //Creates raw data files in DDL format. Invoked by AliSimulation
@@ -504,7 +496,7 @@ void AliRICHv1::Digits2Raw()
   GetLoader()->UnloadDigits();
   AliDebug(1,"Stop.");      
 }//Digits2Raw()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Float_t AliRICHv1::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
 {
 // Correction for Fresnel   ???????????
@@ -562,7 +554,7 @@ Float_t AliRICHv1::Fresnel(Float_t ene,Float_t pdoti, Bool_t pola)
     fresn = fresn*rO;
     return fresn;
 }//Fresnel()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::Print(Option_t *option)const
 {
 // Debug printout
@@ -576,7 +568,7 @@ void AliRICHv1::Print(Option_t *option)const
   Printf("number of Ckov reached PC                   %9i",fCounters(kCkovEnterPc));
   Printf("number of photelectrons                     %9i",fCounters(kPhotoEle));
 }//void AliRICH::Print(Option_t *option)const
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::StepCount()
 {
 // Count number of ckovs created  
@@ -590,7 +582,7 @@ void AliRICHv1::StepCount()
   if(gMC->TrackPid()==kCerenkov&&gMC->CurrentVolID(copy)==fIdPc     &&gMC->IsTrackEntering()                ) fCounters(kCkovEnterPc)++;  
   if(gMC->TrackPid()==kCerenkov&&gMC->CurrentVolID(copy)==fIdPc     &&gMC->IsTrackEntering() &&gMC->Edep()>0) fCounters(kPhotoEle)++;       
 }
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::StepHistory()
 {
 // This methode is invoked from StepManager() in order to print out 
@@ -633,7 +625,7 @@ void AliRICHv1::StepHistory()
   Printf("Step %i: id=%i a=%7.2f z=%7.2f den=%9.4f rad=%9.2f abs=%9.2f\n\n",iStepN,mid,a,z,den,rad,abs);
   iStepN++;
 }//StepHistory()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHv1::StepManager()
 {
 // Full Step Manager.
@@ -672,4 +664,4 @@ void AliRICHv1::StepManager()
       eloss   += gMC->Edep();
   }//MIP in GAP
 }//StepManager()
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
