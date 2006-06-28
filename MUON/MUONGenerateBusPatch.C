@@ -104,8 +104,10 @@ void MUONGenerateBusPatch()
     if (i == 6) nbBB += 8;
 
     nbTB += nbBusPatch;
-    if (nameSlat[len-1] == '1')
-      nbBB += 4;
+    if (nameSlat[len-1] == '1') {
+        nbTB += 2;
+	nbBusPatch+=2;
+    }
     if (nameSlat[len-1] == '2' || nameSlat[len-1] == '3') {
       nbTB += 1;
       nbBusPatch++;
