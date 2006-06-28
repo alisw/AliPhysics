@@ -116,9 +116,9 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   const Int_t kSubeventDummyFlag    = 0xBB;
   Int_t       headerSubevent[3];
 
-  ofstream      *outputFile[kNumberOfDDLs];
-  UInt_t         bHPosition[kNumberOfDDLs];
-  Int_t          ntotalbyte[kNumberOfDDLs];
+  ofstream     **outputFile = new ofstream* [kNumberOfDDLs];
+  UInt_t        *bHPosition = new UInt_t    [kNumberOfDDLs];
+  Int_t         *ntotalbyte = new Int_t     [kNumberOfDDLs];
   Int_t          nbyte = 0;
   Int_t          npads = 0;
   unsigned char *bytePtr;
@@ -306,6 +306,13 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
 
   delete geo;
   delete digitsManager;
+
+  delete [] outputFile;
+  delete [] bHPosition;
+  delete [] ntotalbyte;
+
+
+
 
   return kTRUE;
 
