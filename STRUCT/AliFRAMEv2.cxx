@@ -857,15 +857,21 @@ void AliFRAMEv2::CreateGeometry()
   // TRD mother volumes
   //
 
-  ptrd1[0] = 49.8065;
-  ptrd1[1] = 63.0060;
-  ptrd1[2] = 375.5;
-  ptrd1[3] = 37.43;
-
 //  ptrd1[0] = 49.8065;
 //  ptrd1[1] = 62.8535;
 //  ptrd1[2] = 375.5;
 //  ptrd1[3] = 37.;
+// ptrd1[0] = 49.8065;
+// ptrd1[1] = 63.0060;
+// ptrd1[2] = 375.5;
+// ptrd1[3] = 37.43;
+
+  ptrd1[0] = 47.4405;   // CBL 28/6/2006
+  ptrd1[1] = 61.1765;   // CBL
+  ptrd1[2] = 375.5;     // CBL
+  ptrd1[3] = 38.95;     // CBL
+
+
 
   for (i = 0; i < 18; i++) {
     char nameCh[16];
@@ -875,7 +881,8 @@ void AliFRAMEv2::CreateGeometry()
     gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
     
-    gMC->Gspos(nameCh, 1, nameMo, 0., 0., -10.37, 0, "ONLY");
+//    gMC->Gspos(nameCh, 1, nameMo, 0., 0., -10.37, 0, "ONLY");
+    gMC->Gspos(nameCh, 1, nameMo, 0., 0., -11.75, 0, "ONLY"); // CBL 28/6/2006
   }
 
 //
