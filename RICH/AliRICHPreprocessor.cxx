@@ -50,7 +50,7 @@ UInt_t AliRICHPreprocessor::Process(TMap* pDcsMap)
     TGraph *pGr=new TGraph; pGr->GetXaxis()->SetTimeDisplay(kTRUE);       //tmp graph of sensor data versus time 
 
     TIter next(pOA);  AliDCSValue *pDcsVal; Int_t i=0;
-    while(pDcsVal=(AliDCSValue*)next())                           //loop over data points for this sensor and fill the graph
+    while((pDcsVal=(AliDCSValue*)next()))                           //loop over data points for this sensor and fill the graph
       pGr->SetPoint(i++,pDcsVal->GetTimeStamp(),pDcsVal->GetSimpleValue().GetFloat());
     
     
