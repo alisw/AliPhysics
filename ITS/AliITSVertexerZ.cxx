@@ -12,15 +12,15 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <AliITSVertexerZ.h>
-#include <TString.h>
-#include <AliITSLoader.h>
+#include "AliITSVertexerZ.h"
 #include<TBranch.h>
 #include<TH1.h>
+#include <TString.h>
 #include<TTree.h>
-#include <AliITSgeom.h>
+#include "AliITSLoader.h"
+#include "AliITSgeom.h"
 #include "AliITSDetTypeRec.h"
-#include <AliITSRecPoint.h>
+#include "AliITSRecPoint.h"
 
 /////////////////////////////////////////////////////////////////
 // this class implements a fast method to determine
@@ -324,14 +324,16 @@ void AliITSVertexerZ::VertexZFinder(Int_t evnumber){
 
   Float_t centre = hc->GetBinCenter(bi);  // z value of the bin with maximal content
   
+  Int_t bifine=static_cast<Int_t>((hc->GetBinCenter(bi)-fZCombf->GetBinLowEdge(0))/fStepFine);
+  Int_t nbinsfine=static_cast<Int_t>(3*hc->GetBinWidth(bi)/fStepFine);
   // evaluation of the centroid
-  Int_t ii1=TMath::Max(bi-3,1);
-  Int_t ii2=TMath::Min(bi+3,hc->GetNbinsX());
+  Int_t ii1=TMath::Max(bifine-nbinsfine,1);
+  Int_t ii2=TMath::Min(bifine+nbinsfine,fZCombf->GetNbinsX());
   centre = 0.;
   Int_t nn=0;
   for(Int_t ii=ii1;ii<ii2;ii++){
-    centre+= hc->GetBinCenter(ii)*hc->GetBinContent(ii);
-    nn+=static_cast<Int_t>(hc->GetBinContent(ii));
+    centre+= fZCombf->GetBinCenter(ii)*fZCombf->GetBinContent(ii);
+    nn+=static_cast<Int_t>(fZCombf->GetBinContent(ii));
   }
   if (nn) centre/=nn;
   /*
