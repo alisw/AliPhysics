@@ -6,7 +6,7 @@
 #include <TObjString.h>       //Test()
 #include <AliCDBManager.h>    //Test()
 #include <AliCDBEntry.h>      //Test()
-#include <AliTestShuttle.h>   //Test()
+//#include <AliTestShuttle.h>   //Test()
 #include <TRandom.h>          //Test()
 #include <TF1.h>              //Process()
 #include <TGraph.h>           //Process()
@@ -70,19 +70,19 @@ void AliRICHPreprocessor::Test()
   
   AliCDBManager::Instance()->SetDefaultStorage("local://$HOME/TestCDB"); // initialize location of CDB
 
-  AliTestShuttle* pShuttle = new AliTestShuttle();   
-  pShuttle->SetDCSInput(SimulateDcsMap());                                           //DCS map format alias->TObjArray of AliDCSValue    
-  pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC1", "map1.root");  //????? real gain map
-  pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC2", "map2.root");  //how to crrespond LDC id and staff from AliRICHDigit ????
-  pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC3", "map3.root");
-  pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC4", "map4.root");
-  pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC5", "map5.root");
-  pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC6", "map6.root");
-  pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC7", "map7.root");
-  
-  AliPreprocessor* pp = new AliRICHPreprocessor(pShuttle);                           //start test, actual invocation of Process will be done from shuttle
-  pShuttle->Process();                                    
-  delete pp;
+//   AliTestShuttle* pShuttle = new AliTestShuttle();   
+//   pShuttle->SetDCSInput(SimulateDcsMap());                                           //DCS map format alias->TObjArray of AliDCSValue    
+//   pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC1", "map1.root");  //????? real gain map
+//   pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC2", "map2.root");  //how to crrespond LDC id and staff from AliRICHDigit ????
+//   pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC3", "map3.root");
+//   pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC4", "map4.root");
+//   pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC5", "map5.root");
+//   pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC6", "map6.root");
+//   pShuttle->AddInputFile(AliTestShuttle::kDAQ, "RICH", "MAP", "LDC7", "map7.root");
+//   
+//   AliPreprocessor* pp = new AliRICHPreprocessor(pShuttle);                           //start test, actual invocation of Process will be done from shuttle
+//   pShuttle->Process();                                    
+//   delete pp;
   
   
   
