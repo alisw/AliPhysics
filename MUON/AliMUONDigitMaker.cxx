@@ -368,7 +368,7 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
     darcHeader = ddlTrigger->GetDarcHeader();
 
     // fill global trigger information
-    if (darcHeader->GetGlobalFlag() == 2) {
+    if (darcHeader->GetGlobalFlag()) {
       fGlobalTrigger->SetGlobalPattern(darcHeader->GetGlobalOutput());
       fMUONData->AddGlobalTrigger(*fGlobalTrigger);
     }
