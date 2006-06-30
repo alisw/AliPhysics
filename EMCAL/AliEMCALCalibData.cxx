@@ -15,6 +15,9 @@
 
 /* $Id$ */
 
+//_________________________________________________________________________
+///*-- Author: Yves Schutz (SUBATECH)
+//           : Aleksei Pavlinov (WSU); Jun 30, 2006 - ALICE numbering scheme
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // class for EMCAL calibration                                               //
@@ -159,29 +162,30 @@ void  AliEMCALCalibData::Print(Option_t *option) const
 Float_t AliEMCALCalibData::GetADCchannel(Int_t supermodule, Int_t column, Int_t row) const
 {
   // Set ADC channel witdth values
-  //supermodule, column,raw should follow the internal EMCAL convention:
-  //supermodule 1:12, column 1:48, row 1:24
+  // All indexes start from 0!
+  // Supermodule, column,raw should follow the ALICE convention:
+  // supermodule 0:11, column 0:47, row 0:23
 
-  return fADCchannel[supermodule-1][column-1][row-1];
+  return fADCchannel[supermodule][column][row];
 }
 
 //________________________________________________________________
 Float_t AliEMCALCalibData::GetADCpedestal(Int_t supermodule, Int_t column, Int_t row) const
 {
   // Get ADC pedestal values
- return fADCpedestal[supermodule-1][column-1][row-1];
+ return fADCpedestal[supermodule][column][row];
 }
 
 //________________________________________________________________
 void AliEMCALCalibData::SetADCchannel(Int_t supermodule, Int_t column, Int_t row, Float_t value)
 { 
   // Set ADC channel width values
-  fADCchannel[supermodule-1][column-1][row-1] = value;
+  fADCchannel[supermodule][column][row] = value;
 }
 
 //________________________________________________________________
 void AliEMCALCalibData::SetADCpedestal(Int_t supermodule, Int_t column, Int_t row, Float_t value)
 {
   // Set ADC pedestal values
-  fADCpedestal[supermodule-1][column-1][row-1] = value;
+  fADCpedestal[supermodule][column][row] = value;
 }

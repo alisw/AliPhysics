@@ -23,7 +23,7 @@ class AliEMCALCalibData: public TNamed {
   virtual ~AliEMCALCalibData();
   void Reset();
   virtual void Print(Option_t *option = "") const; 
-  //
+  // All indexes start from 0!
   Float_t GetADCchannel(Int_t module, Int_t column, Int_t row) const;
   Float_t GetADCpedestal(Int_t module, Int_t column, Int_t row) const;
   //
