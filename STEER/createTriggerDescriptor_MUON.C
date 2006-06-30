@@ -12,69 +12,74 @@ createTriggerDescriptor_MUON()
    // 1
    descrip.AddCondition( "MUON_SPlus_LPt_L0", 
                          "MUON_SPlus_LPt_L0",    "Muon Plus Low Pt",
-                         (ULong64_t)0x1 << 1 );
+                         (ULong64_t)0x1 );
 
-   // 2
+   // 10
    descrip.AddCondition( "MUON_SPlus_HPt_L0", 
                          "MUON_SPlus_HPt_L0",    "Muon Plus High Pt",
-                         (ULong64_t)0x1 << 2 );
+                         (ULong64_t)0x1 << 1 );
 
-   // 3
+   // 100
    descrip.AddCondition( "MUON_SPlus_All_L0", 
                          "MUON_SPlus_All_L0",    "Muon Plus All Pt",
-                         (ULong64_t)0x1 << 3 );
+                         (ULong64_t)0x1 << 2 );
 
-   // 4
+   // 1000
    descrip.AddCondition( "MUON_SMinus_LPt_L0", 
                          "MUON_SMinus_LPt_L0",    "Muon Minus Low Pt",
-                         (ULong64_t)0x1 << 4 );
+                         (ULong64_t)0x1 << 3 );
 
-   // 5
+   // 10000
    descrip.AddCondition( "MUON_SMinus_HPt_L0", 
                          "MUON_SMinus_HPt_L0",    "Muon Minus High Pt",
+                         (ULong64_t)0x1 << 4 );
+
+   // 100000
+   descrip.AddCondition( "MUON_SMinus_All_L0", 
+                         "MUON_SMinus_All_L0",    "Muon Minus All Pt",
                          (ULong64_t)0x1 << 5 );
 
-   // 6
+   // 1000000
    descrip.AddCondition( "MUON_SUndef_LPt_L0", 
                          "MUON_SUndef_LPt_L0",    "Muon Undefined sign Low Pt",
                          (ULong64_t)0x1 << 6 );
 
-   // 7
+   // 10000000
    descrip.AddCondition( "MUON_SUndef_HPt_L0", 
                          "MUON_SUndef_HPt_L0",    "Muon Undefined sign High Pt",
                          (ULong64_t)0x1 << 7 );
 
-   // 8
+   // 100000000
    descrip.AddCondition( "MUON_SUndef_All_L0", 
                          "MUON_SUndef_All_L0",    "Muon Undefined sign All Pt",
                          (ULong64_t)0x1 << 8 );
 
-   // 9
+   // 1000000000
    descrip.AddCondition( "MUON_Unlike_LPt_L0", 
                          "MUON_Unlike_LPt_L0",    "Di Muon Unlike sign Low Pt",
                          (ULong64_t)0x1 << 9 );
 
-   // 10
+   // 10000000000
    descrip.AddCondition( "MUON_Unlike_HPt_L0", 
                          "MUON_Unlike_HPt_L0",    "Di Muon Unlike sign High Pt",
                          (ULong64_t)0x1 << 10 );
 
-   // 11
+   // 100000000000
    descrip.AddCondition( "MUON_Unlike_All_L0", 
                          "MUON_Unlike_All_L0",    "Di Muon Unlike sign All Pt",
                          (ULong64_t)0x1 << 11 );
 
-   // 12
+   // 1000000000000
    descrip.AddCondition( "MUON_Like_LPt_L0", 
                          "MUON_Like_LPt_L0",    "Di Muon Like sign Low Pt",
                          (ULong64_t)0x1 << 12 );
 
-   // 13
+   // 10000000000000
    descrip.AddCondition( "MUON_Like_HPt_L0", 
                          "MUON_Like_HPt_L0",    "Di Muon Like sign High Pt",
                          (ULong64_t)0x1 << 13 );
 
-   // 14
+   // 100000000000000
    descrip.AddCondition( "MUON_Like_All_L0", 
                          "MUON_Like_All_L0",    "Di Muon Like sign All Pt",
                          (ULong64_t)0x1 << 14 );
@@ -115,4 +120,5 @@ createTriggerDescriptor_MUON()
    }
 
 }
+
 
