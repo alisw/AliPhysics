@@ -22,7 +22,8 @@ void testGraphics(AliMpStationType station = kStation1,
     
   AliMpVPainter *painter=AliMpVPainter::CreatePainter(sector);
 
-  TCanvas* canvas = new TCanvas();
+  TCanvas* canvas  = new TCanvas();
+  TCanvas* canvas2 = new TCanvas();
   TCanvas* c[4];
   for (int i=0;i<4;++i) {
     c[i] = new TCanvas();
@@ -92,4 +93,9 @@ void testGraphics(AliMpStationType station = kStation1,
   motifPainter = AliMpVPainter::CreatePainter(motifPos);
   TCanvas* onepad = new TCanvas("onepad","One motif");
   motifPainter->Draw("PT");
+  
+  //////////////////////////////  
+  //now paint motifs with their real contours and mani Ids
+  canvas2->cd();
+  painter->Draw("RSMCI");
 }
