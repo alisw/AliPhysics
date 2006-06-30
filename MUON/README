@@ -370,6 +370,32 @@ MuonSim.Run(10);
 EOF
 
 ==========================================================
+How to check the alignment software
+==========================================================
+
+The script AlirootRun_MUONtestAlign.sh  allows you to check the software for
+the alignment with physics tracks. The script will:
+- Generate a misaligned geometry in a local CDB (default FullMisAlignCDB)
+- Simulate 1000 events using previously misaligned geometry
+- Reconstruct the events using perfect geometry
+- Run the alignment code over the above events using MUONAlignment.C
+
+To run you need to type:
+$ALICE_ROOT/MUON/AlirootRun_MUONtestAlign.sh
+
+The results of the test are saved in test_align/ directory. The file measShifts.root
+contains useful graphs for studying the alignment performances. A local CDB
+containing the realigned geometry is also created (default is ReAlignCDB). The
+file $ALICE_ROOT/MUON/data/transform2ReAlign.dat contains the
+transformations describing the realigned geometry to be compared with the
+used misaligned geometry $ALICE_ROOT/MUON/data/transform2.dat.
+
+IMPORTANT NOTE: For a useful test of the alignment performances, the
+order of 100 000 tracks is needed, it is then advisable to generate and
+reconstruct enough events separately and run MUONAlignment.C providing a file list
+afterwards.
+
+==========================================================
  How to Merge events
 ==========================================================
 
