@@ -193,8 +193,95 @@ void AliMpMotifPainter::Paint(Option_t *option)
 	    }
           }
       }
+
     }
     break;
+
+ case 'C':
+   {
+     // drawing real motif (not envelop) the real contour
+     Float_t xl = 0;
+     Float_t yl = 0;
+     Int_t manuId = 0;
+     TVector2 bl0 = TVector2(999, 999);
+     TVector2 ur0 = TVector2(0,0); 
+     TVector2 padPadPos,padPadDim;
+
+     AliMpMotifType *motifType = fMotifPos->GetMotif()->GetMotifType();
+     manuId = fMotifPos->GetID();
+
+     if (manuId % 5 == 0) 
+        gVirtualX->SetFillColor(0);
+     if (manuId % 5 == 1) 
+        gVirtualX->SetFillColor(38);
+     if (manuId % 5 == 2) 
+        gVirtualX->SetFillColor(33);
+     if (manuId % 5 == 3) 
+        gVirtualX->SetFillColor(16);
+     if (manuId % 5 == 4) 
+        gVirtualX->SetFillColor(44);
+
+     for (Int_t i = 0; i < motifType->GetNofPadsX(); i++){
+
+       for (Int_t j = 0; j < motifType->GetNofPadsY(); j++){
+
+	 AliMpIntPair indices = AliMpIntPair(i,j);
+	 AliMpConnection* connect =  motifType->FindConnectionByLocalIndices(indices);
+	 if (connect){
+	   TVector2 realPadPos = 
+	     GetPosition()+fMotifPos->GetMotif()->PadPositionLocal(indices);
+	   gr->RealToPad(realPadPos, fMotifPos->GetMotif()->GetPadDimensions(indices),
+	     		 padPadPos, padPadDim);
+
+	   TVector2 bl = padPadPos - padPadDim;
+	   TVector2 ur = padPadPos + padPadDim;
+	   if (bl0.X() > bl.X())
+	     bl0 = bl;
+
+	   if (ur0.Y() < ur.Y())
+	     ur0 = ur;
+	  
+	   Style_t sty = gVirtualX->GetFillStyle();
+	   gVirtualX->SetFillStyle(1);
+	   gPad->PaintBox(bl.X(),bl.Y(),ur.X(),ur.Y());
+	   gVirtualX->SetFillStyle(0);
+
+	   if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j-1)))
+	       gPad->PaintLine(bl.X(), bl.Y(), bl.X()+ padPadDim.X()*2, bl.Y());
+
+	   if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i,j+1)))
+	       gPad->PaintLine(bl.X(), bl.Y() + padPadDim.Y()*2, bl.X()+ padPadDim.X()*2, bl.Y() +  padPadDim.Y()*2);
+	     
+	   if (!motifType->FindConnectionByLocalIndices(AliMpIntPair(i-1,j)))
+	     gPad->PaintLine(bl.X(), bl.Y(), bl.X(), bl.Y()+ padPadDim.Y()*2);
+
+	   gVirtualX->SetFillStyle(sty);
+
+	 }
+       }
+     }
+
+     switch (option[1]) {
+       // add manudId indexes
+     case 'I' :
+       xl = bl0.X()+ padPadDim.X()/2.;
+  
+       yl = bl0.Y() + 1.5*padPadDim.Y();
+     
+       Float_t textSize =   gVirtualX->GetTextSize();
+       gVirtualX->SetTextSize(12);
+       gVirtualX->SetTextAlign(13);
+       gVirtualX->SetTextAngle(90.);
+       
+       gPad->PaintText(xl, yl, Form("%d", manuId));
+       
+       gVirtualX->SetTextAngle(0.);
+       gVirtualX->SetTextSize(textSize);
+       break;
+     }
+   }
+   break;
+
   default:
     PaintWholeBox(kFALSE);
   }
