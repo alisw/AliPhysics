@@ -61,15 +61,21 @@ ClassImp(AliITSv11)
  
 
 
-AliITSv11::AliITSv11() {
+//______________________________________________________________________
+AliITSv11::AliITSv11() : AliITS(),
+  fGeomDetOut(kFALSE), // Don't write .det file
+  fGeomDetIn(kTRUE),   // Read .det file
+  fByThick(kTRUE),
+  fMajorVersion(0),
+  fMinorVersion(0),
+  fSDDgeom(0)
+{
   //    Standard default constructor for the ITS version 11.
 
     fIdN          = 0;
     fIdName       = 0;
     fIdSens       = 0;
     fEuclidOut    = kFALSE; // Don't write Euclide file
-    fGeomDetOut   = kFALSE; // Don't write .det file
-    fGeomDetIn    = kTRUE; // Read .det file
     Int_t i;
     for(i=0;i<60;i++) fRead[i] = '\0';
     for(i=0;i<60;i++) fWrite[i] = '\0';
@@ -80,7 +86,14 @@ AliITSv11::AliITSv11() {
 
 //______________________________________________________________________
 AliITSv11::AliITSv11(const char *name, const char *title)
-  : AliITS("ITS", title) {
+  : AliITS("ITS", title),
+    fGeomDetOut(kFALSE), // Don't write .det file
+    fGeomDetIn(kTRUE),   // Read .det file
+    fByThick(kTRUE),
+    fMajorVersion(0),
+    fMinorVersion(0),
+    fSDDgeom(0)
+{
   //    Standard constructor for the ITS version 11.
 
   fSDDgeom = new AliITSv11GeometrySDD(0);
@@ -98,10 +111,10 @@ AliITSv11::AliITSv11(const char *name, const char *title)
   fIdSens    = new Int_t[fIdN];
   for(i=0;i<fIdN;i++) fIdSens[i] = 0;
   fEuclidOut    = kFALSE; // Don't write Euclide file
-  fGeomDetOut   = kFALSE; // Don't write .det file
-  fGeomDetIn    = kTRUE; // Read .det file
-  SetDensityServicesByThickness();
+  //SetDensityServicesByThickness();
+  // not needed, fByThick set to kTRUE in in the member initialization lis
   
+
   fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.euc";
   strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det",60);
   strncpy(fRead,fEuclidGeomDet,60);
@@ -113,7 +126,14 @@ AliITSv11::AliITSv11(const char *name, const char *title)
 //______________________________________________________________________
 AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
 		   Int_t debugSSD,Int_t debugSUP) :
-  AliITS("ITS","ITS geometry v11") {
+  AliITS("ITS","ITS geometry v11"),
+    fGeomDetOut(kFALSE), // Don't write .det file
+    fGeomDetIn(kTRUE),   // Read .det file
+    fByThick(kTRUE),
+    fMajorVersion(0),
+    fMinorVersion(0),
+    fSDDgeom(0)
+ {
   // Standard default constructor for the ITS version 11.
 
 
@@ -134,9 +154,7 @@ AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
   fIdSens    = new Int_t[fIdN];
   for(i=0;i<fIdN;i++) fIdSens[i] = 0;
   fEuclidOut    = kFALSE; // Don't write Euclide file
-  fGeomDetOut   = kFALSE; // Don't write .det file
-  fGeomDetIn    = kTRUE; // Read .det file
-  SetDensityServicesByThickness();
+  //SetDensityServicesByThickness();
   
   fEuclidGeometry="$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.euc";
   strncpy(fEuclidGeomDet,"$ALICE_ROOT/ITS/ITSgeometry_vPPRasymm2.det",60);
@@ -150,7 +168,14 @@ AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
 
 //______________________________________________________________________
 AliITSv11::AliITSv11(const AliITSv11 &source) :
- AliITS(source){
+  AliITS(source),
+  fGeomDetOut(kFALSE), // Don't write .det file
+  fGeomDetIn(kTRUE),   // Read .det file
+  fByThick(kTRUE),
+  fMajorVersion(0),
+  fMinorVersion(0),
+  fSDDgeom(0)
+{
     //     Copy Constructor for ITS version 11. This function is not to be
     // used. If any other instance of this function, other than "this" is
     // passed, an error message is returned.

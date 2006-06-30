@@ -40,12 +40,13 @@
 ClassImp(AliITSv11GeomCableFlat)
 
 //________________________________________________________________________
-AliITSv11GeomCableFlat::AliITSv11GeomCableFlat() : AliITSv11GeomCable()
+AliITSv11GeomCableFlat::AliITSv11GeomCableFlat():
+  AliITSv11GeomCable(),
+  fWidth(0),
+  fThick(0),
+  fNlayer(0)
 {
   // constructor
-  fWidth = 0;
-  fThick = 0;
-  fNlayer = 0;
   for (Int_t i=0; i<fgkCableMaxLayer ; i++) {
     fLayThickness[i] = 0;
     fTranslation[i]  = 0;
@@ -57,11 +58,12 @@ AliITSv11GeomCableFlat::AliITSv11GeomCableFlat() : AliITSv11GeomCable()
 //________________________________________________________________________
 AliITSv11GeomCableFlat::
 AliITSv11GeomCableFlat(const char* name, Double_t width, Double_t thick) :
-AliITSv11GeomCable(name) {
+  AliITSv11GeomCable(name),
+  fWidth(width),
+  fThick(thick),
+  fNlayer(0)
+ {
   // standard constructor
-  fWidth = width;
-  fThick = thick;
-  fNlayer = 0;
   for (Int_t i=0; i<fgkCableMaxLayer ; i++) {
     fLayThickness[i] = 0;
     fTranslation[i]  = 0;

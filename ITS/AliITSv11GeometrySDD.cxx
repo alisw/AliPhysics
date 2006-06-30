@@ -221,55 +221,139 @@ const Double_t AliITSv11GeometrySDD::fgkLongHVcableSeparation = 600*fgkmicron;
 ClassImp(AliITSv11GeometrySDD)
 
 //________________________________________________________________________
- AliITSv11GeometrySDD::AliITSv11GeometrySDD(): 
-   AliITSv11Geometry(), fMotherVol(0), fAddHybrids(kTRUE), fAddSensors(kTRUE),
-   fAddHVcables(kTRUE), fAddCables(kTRUE), fAddCoolingSyst(kTRUE),
-   fCoolingOn(kTRUE),
-   fAddOnlyLadder3min(-1), fAddOnlyLadder3max(-1),
-   fAddOnlyLadder4min(-1), fAddOnlyLadder4max(-1)
+AliITSv11GeometrySDD::AliITSv11GeometrySDD(): 
+  AliITSv11Geometry(),
+  fPinSupport(0),
+  fCoolPipeSupportL(0),
+  fCoolPipeSupportR(0),
+  fSDDsensor(0),
+  fBaseThermalBridge(0),
+  fHybrid(0),
+  fDigitCableLay3A(0),
+  fDigitCableLay3B(0),
+  fDigitCableLay4A(0),
+  fDigitCableLay4B(0),
+  fMotherVol(0),
+  fAddHybrids(kTRUE), 
+  fAddSensors(kTRUE),
+  fAddHVcables(kTRUE),
+  fAddCables(kTRUE), 
+  fAddCoolingSyst(kTRUE),
+  fCoolingOn(kTRUE),
+  fAddOnlyLadder3min(-1),
+  fAddOnlyLadder3max(-1),
+  fAddOnlyLadder4min(-1),
+  fAddOnlyLadder4max(-1),
+  fColorCarbonFiber(2),
+  fColorRyton(2),
+  fColorPhynox(2),
+  fColorSilicon(2),
+  fColorAl(2),
+  fColorPolyhamide(2),
+  fColorGlass(2),
+  fColorSMD(2),
+  fColorSMDweld(2),
+  fLay3LadderUnderSegDH(0),
+  fLay4LadderUnderSegDH(0),
+  fLay3LaddShortRadius(0),
+  fLay3LaddLongRadius(0),
+  fLay4LaddShortRadius(0),
+  fLay4LaddLongRadius(0)
 {
   //
   // Standard constructor
   //
-  fDigitCableLay3A = 0;
-  fDigitCableLay3B = 0;
-  fDigitCableLay4A = 0;
-  fDigitCableLay4B = 0;
   SetParameters();
 }
 
 //________________________________________________________________________
 AliITSv11GeometrySDD::AliITSv11GeometrySDD(Int_t debug) :
-  AliITSv11Geometry(debug),fMotherVol(0),fAddHybrids(kTRUE),fAddSensors(kTRUE),
-  fAddHVcables(kTRUE), fAddCables(kTRUE), fAddCoolingSyst(kTRUE),
+  AliITSv11Geometry(debug),
+  fPinSupport(0),
+  fCoolPipeSupportL(0),
+  fCoolPipeSupportR(0),
+  fSDDsensor(0),
+  fBaseThermalBridge(0),
+  fHybrid(0),
+  fDigitCableLay3A(0),
+  fDigitCableLay3B(0),
+  fDigitCableLay4A(0),
+  fDigitCableLay4B(0),
+  fMotherVol(0),
+  fAddHybrids(kTRUE), 
+  fAddSensors(kTRUE),
+  fAddHVcables(kTRUE),
+  fAddCables(kTRUE), 
+  fAddCoolingSyst(kTRUE),
   fCoolingOn(kTRUE),
-  fAddOnlyLadder3min(-1), fAddOnlyLadder3max(-1),
-  fAddOnlyLadder4min(-1), fAddOnlyLadder4max(-1)
+  fAddOnlyLadder3min(-1),
+  fAddOnlyLadder3max(-1),
+  fAddOnlyLadder4min(-1),
+  fAddOnlyLadder4max(-1),
+  fColorCarbonFiber(2),
+  fColorRyton(2),
+  fColorPhynox(2),
+  fColorSilicon(2),
+  fColorAl(2),
+  fColorPolyhamide(2),
+  fColorGlass(2),
+  fColorSMD(2),
+  fColorSMDweld(2),
+  fLay3LadderUnderSegDH(0),
+  fLay4LadderUnderSegDH(0),
+  fLay3LaddShortRadius(0),
+  fLay3LaddLongRadius(0),
+  fLay4LaddShortRadius(0),
+  fLay4LaddLongRadius(0)
 {
   //
   // Constructor setting debugging level
   //
-  fDigitCableLay3A = 0;
-  fDigitCableLay3B = 0;
-  fDigitCableLay4A = 0;
-  fDigitCableLay4B = 0;
   SetParameters();
 }
 
 //________________________________________________________________________
 AliITSv11GeometrySDD::AliITSv11GeometrySDD(const AliITSv11GeometrySDD &s) :
- AliITSv11Geometry(s.GetDebug()),fMotherVol(s.fMotherVol),
- fAddHybrids(s.fAddHybrids),fAddSensors(s.fAddSensors),
- fAddHVcables(s.fAddHVcables), fAddCables(s.fAddCables),
- fAddCoolingSyst(s.fAddCoolingSyst),fCoolingOn(s.fCoolingOn),
- fAddOnlyLadder3min(s.fAddOnlyLadder3min),fAddOnlyLadder3max(s.fAddOnlyLadder3max),
- fAddOnlyLadder4min(s.fAddOnlyLadder4min), fAddOnlyLadder4max(s.fAddOnlyLadder4max)
+ AliITSv11Geometry(s.GetDebug()),
+  fPinSupport(s.fPinSupport),
+  fCoolPipeSupportL(s.fCoolPipeSupportL),
+  fCoolPipeSupportR(s.fCoolPipeSupportR),
+  fSDDsensor(s.fSDDsensor),
+  fBaseThermalBridge(s.fBaseThermalBridge),
+  fHybrid(s.fHybrid),
+  fDigitCableLay3A(s.fDigitCableLay3A),
+  fDigitCableLay3B(s.fDigitCableLay3B),
+  fDigitCableLay4A(s.fDigitCableLay4A),
+  fDigitCableLay4B(s.fDigitCableLay4B),
+  fMotherVol(s.fMotherVol),
+  fAddHybrids(s.fAddHybrids), 
+  fAddSensors(s.fAddSensors),
+  fAddHVcables(s.fAddHVcables),
+  fAddCables(s.fAddCables), 
+  fAddCoolingSyst(s.fAddCoolingSyst),
+  fCoolingOn(s.fCoolingOn),
+  fAddOnlyLadder3min(s.fAddOnlyLadder3min),
+  fAddOnlyLadder3max(s.fAddOnlyLadder3max),
+  fAddOnlyLadder4min(s.fAddOnlyLadder4min),
+ fAddOnlyLadder4max(s.fAddOnlyLadder4max),
+  fColorCarbonFiber(s.fColorCarbonFiber),
+  fColorRyton(s.fColorRyton),
+  fColorPhynox(s.fColorPhynox),
+  fColorSilicon(s.fColorSilicon),
+  fColorAl(s.fColorAl),
+  fColorPolyhamide(s.fColorPolyhamide),
+  fColorGlass(s.fColorGlass),
+  fColorSMD(s.fColorSMD),
+  fColorSMDweld(s.fColorSMDweld),
+  fLay3LadderUnderSegDH(s.fLay3LadderUnderSegDH),
+  fLay4LadderUnderSegDH(s.fLay4LadderUnderSegDH),
+  fLay3LaddShortRadius(s.fLay3LaddShortRadius),
+  fLay3LaddLongRadius(s.fLay3LaddLongRadius),
+  fLay4LaddShortRadius(s.fLay4LaddShortRadius),
+  fLay4LaddLongRadius(s.fLay4LaddLongRadius)
 {
-  //     Copy Constructor 
-  fDigitCableLay3A = 0;
-  fDigitCableLay3B = 0;
-  fDigitCableLay4A = 0;
-  fDigitCableLay4B = 0;
+  //     Copy Constructor
+  // do only a "shallow copy" ...
   SetParameters();
 }
 

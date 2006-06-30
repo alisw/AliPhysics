@@ -161,17 +161,18 @@ ClassImp(AliITSv11GeomCableRound)
 //________________________________________________________________________
 AliITSv11GeomCableRound::
 AliITSv11GeomCableRound(const char* name, Double_t radius) :
-AliITSv11GeomCable(name) {
+  AliITSv11GeomCable(name),
+  fRadius(radius),
+  fNlayer(0),
+  fPhiMin(0),
+  fPhiMax(360)
+ {
   // Constructor
-  fRadius = radius;
-  fNlayer = 0;
   for (Int_t i=0; i<fgkCableMaxLayer ; i++) {
     fLayThickness[i] = 0;
     fLayColor[i] = 0;
     fLayMedia[i] = 0;
   };
-  fPhiMin = 0;
-  fPhiMax = 360;
 }
 
 //________________________________________________________________________

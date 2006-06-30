@@ -21,8 +21,7 @@ class TGeoNode;
 class AliITSv11GeomCable : public TNamed {
 
  public:
-  AliITSv11GeomCable()
-    { fInitialNode = 0; fPointArray.SetOwner(); fDebug=0; };
+  AliITSv11GeomCable();
   AliITSv11GeomCable(const char* name);
   AliITSv11GeomCable(const AliITSv11GeomCable &source);
   AliITSv11GeomCable& operator=(const AliITSv11GeomCable &source);

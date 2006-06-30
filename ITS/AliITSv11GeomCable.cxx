@@ -38,20 +38,35 @@
 
 ClassImp(AliITSv11GeomCable)
 
+
 //________________________________________________________________________
-AliITSv11GeomCable::AliITSv11GeomCable(const char* name) { 
+AliITSv11GeomCable::AliITSv11GeomCable(): TNamed(),
+  fDebug(0),
+  fPointArray(),
+  fVolumeArray(),
+  fCurrentVol(0),
+  fInitialNode(0)
+{ 
   // constructor
-  fDebug = 0;
-  fInitialNode = 0;
+  fPointArray.SetOwner();
+};
+
+//________________________________________________________________________
+AliITSv11GeomCable::AliITSv11GeomCable(const char* name): TNamed(name,""),
+  fDebug(0),
+  fPointArray(),
+  fVolumeArray(),
+  fCurrentVol(0),
+  fInitialNode(0) { 
+  // constructor
   fPointArray.SetOwner(); 
-  SetName(name);
 }
 
 
 //________________________________________________________________________
 AliITSv11GeomCable::AliITSv11GeomCable(const AliITSv11GeomCable &s) :
   TNamed(s.GetName(),s.GetTitle()),fDebug(s.fDebug),fPointArray(s.fPointArray),
-  fVolumeArray(s.fVolumeArray),fInitialNode(s.fInitialNode)
+  fVolumeArray(s.fVolumeArray),fCurrentVol(s.fCurrentVol),fInitialNode(s.fInitialNode)
 {
   //     Copy Constructor 
   printf("Copy Constructor of AliITSv11GeomCable ???\n");  

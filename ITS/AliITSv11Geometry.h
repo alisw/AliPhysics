@@ -20,8 +20,8 @@ class TGeoBBox;
 
 class AliITSv11Geometry : public TObject {
   public:
-    AliITSv11Geometry(){fDebug=kTRUE;};
-    AliITSv11Geometry(Bool_t debug){fDebug=debug;};
+    AliITSv11Geometry():fDebug(kTRUE) {};
+    AliITSv11Geometry(Bool_t debug):fDebug(debug) {};
     virtual ~AliITSv11Geometry(){};
     //
     // Sets the debug flag for debugging output
