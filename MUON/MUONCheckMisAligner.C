@@ -53,12 +53,14 @@
 
 void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 0.004, 
 			 Double_t ycartmisaligm = 0.0, Double_t ycartmisaligw = 0.003, 
-			 Double_t angmisaligm = 0.0, Double_t angmisaligw = 0.0023)
+			 Double_t angmisaligm = 0.0, Double_t angmisaligw = 0.0023,
+			 TString nameCDB = "ResMisAlignCDB")
 {
   
   AliMUONGeometryTransformer *transform = new AliMUONGeometryTransformer(true);
   transform->ReadGeometryData("volpath.dat", "transform.dat");
-
+  if (gSystem->AccessPathName("geometry.root",kFileExists))
+    gGeoManager->Export("geometry.root");
   AliMUONGeometryMisAligner misAligner(xcartmisaligm,xcartmisaligw,
                                        ycartmisaligm,ycartmisaligw,
 				       angmisaligm,angmisaligw);
@@ -70,7 +72,7 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
 
   // Apply misAlignment via AliRoot framework
   TGeoManager::Import("geometry.root");
-  AliRun::ApplyAlignObjsToGeom(
+  AliSimulation::ApplyAlignObjsToGeom(
      const_cast<TClonesArray*>(newTransform->GetMisAlignmentData()));
   // Save new geometry file
   gGeoManager->Export("geometry2.root");
@@ -84,9 +86,11 @@ void MUONCheckMisAligner(Double_t xcartmisaligm = 0.0, Double_t xcartmisaligw = 
   // Generate misaligned data in local cdb
   TClonesArray* array = newTransform->GetMisAlignmentData();
    
+  TString sLocCDB("local://");
+  sLocCDB += nameCDB;
   // CDB manager
   AliCDBManager* cdbManager = AliCDBManager::Instance();
-  cdbManager->SetDefaultStorage("local://ResMisAlignCDB");
+  cdbManager->SetDefaultStorage(sLocCDB.Data());
   
   AliCDBMetaData* cdbData = new AliCDBMetaData();
   cdbData->SetResponsible("Dimuon Offline project");
