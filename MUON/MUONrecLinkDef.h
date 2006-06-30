@@ -23,6 +23,8 @@
 #pragma link C++ class AliMUONClusterDrawAZ+;
 #pragma link C++ class AliMUONDetElement+; 
 #pragma link C++ class AliMUONEventRecoCombi+; 
+#pragma link C++ class AliMillepede+;
+#pragma link C++ class AliMUONAlignment+;
 
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
