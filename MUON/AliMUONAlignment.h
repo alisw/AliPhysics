@@ -33,7 +33,6 @@ public:
     fTransform = transformer;
   }
 
-  void FixLeft();
   void FixStation(Int_t iSt);
   void AllowVariations(Bool_t *bStOnOff);
   void SetNonLinear(Bool_t *bStOnOff, Bool_t *bVarXYT);
