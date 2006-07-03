@@ -692,8 +692,8 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
     yr = fPhiCentersOfCells.At(iphi);
   } else {
     yr = fPhiCentersOfCells.At(iphi + phiIndexShift);
-    cout<<" absId "<<absId<<" nSupMod "<<nSupMod << " iphi "<<iphi<<" ieta "<<ieta;
-    cout<< " xr " << xr << " yr " << yr << " zr " << zr <<endl;
+    //    cout<<" absId "<<absId<<" nSupMod "<<nSupMod << " iphi "<<iphi<<" ieta "<<ieta;
+    //    cout<< " xr " << xr << " yr " << yr << " zr " << zr <<endl;
   }
 
   return kTRUE;
