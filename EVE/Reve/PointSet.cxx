@@ -5,6 +5,7 @@
 #include <Reve/RGTopFrame.h>
 
 #include <TTree.h>
+#include <TTreePlayer.h>
 #include <TF3.h>
 
 #include <TColor.h>
@@ -18,49 +19,35 @@ using namespace Reve;
 
 ClassImp(PointSet)
 
-PointSet::PointSet(Int_t n_points) :
+PointSet::PointSet(Int_t n_points, TreeVarType_e tv_type) :
   TPointSet3D(n_points),
-  RenderElement(fMarkerColor)
+  RenderElement(fMarkerColor),
+  TPointSelectorConsumer(tv_type)  
 {
   fMarkerStyle = 20;
 }
 
-PointSet::PointSet(const Text_t* name, Int_t n_points) :
+PointSet::PointSet(const Text_t* name, Int_t n_points, TreeVarType_e tv_type) :
   TPointSet3D(n_points),
-  RenderElement(fMarkerColor)
+  RenderElement(fMarkerColor),
+  TPointSelectorConsumer(tv_type)
 {
   fMarkerStyle = 20;
   SetName(name);
 }
 
-PointSet::PointSet(const Text_t* name, TTree* tree,
-		   TreeVarType_e tv_type) :
+PointSet::PointSet(const Text_t* name, TTree* tree, TreeVarType_e tv_type) :
   TPointSet3D(tree->GetSelectedRows()),
-  RenderElement(fMarkerColor)
+  RenderElement(fMarkerColor),
+  TPointSelectorConsumer(tv_type)
 {
   static const Exc_t eH("PointSet::PointSet ");
 
   fMarkerStyle = 20;
   SetName(name);
-  Double_t *vx = tree->GetV1(), *vy = tree->GetV2(), *vz = tree->GetV3();
-  Long64_t nr = tree->GetSelectedRows();
 
-  switch(tv_type) {
-  case TVT_XYZ:
-    while(nr-- > 0) {
-      SetNextPoint(*vx, *vy, *vz);
-      ++vx; ++vy; ++vz;
-    }
-    break;
-  case TVT_RPhiZ:
-    while(nr-- > 0) {
-      SetNextPoint(*vx * TMath::Cos(*vy), *vx * TMath::Sin(*vy), *vz);
-      ++vx; ++vy; ++vz;
-    }
-    break;
-  default:
-    throw(eH + "unknown tree variable type.");
-  }
+  TTreePlayer* tp = dynamic_cast<TTreePlayer*>(tree->GetPlayer());
+  TakeAction(dynamic_cast<TSelectorDraw*>(tp->GetSelector()));
 }
 
 /**************************************************************************/
@@ -75,13 +62,63 @@ void PointSet::Reset(Int_t n_points)
   ResetBBox();
 }
 
+Int_t PointSet::GrowFor(Int_t n_points)
+{
+  // Resizes internal array to allow additional n_points to be stored.
+  // Returns the old size which is also the location where one can
+  // start storing new data.
+  // The caller is *obliged* to fill the new point slots.
+
+  Int_t old_size = Size();
+  Int_t new_size = old_size + n_points;
+  SetPoint(new_size - 1, 0, 0, 0);
+  return old_size;
+}
+
 /**************************************************************************/
 
 void PointSet::Paint(Option_t* option)
 {
-  if(fRnrElement == false) return;
+  if(fRnrElement == kFALSE) return;
 
   TPointSet3D::Paint(option);
+}
+
+/**************************************************************************/
+
+void PointSet::TakeAction(TSelectorDraw* sel)
+{
+  static const Exc_t eH("PointSet::TakeAction ");
+
+  if(sel == 0)
+    throw(eH + "selector is <null>.");
+
+  Int_t    n = sel->GetNfill();
+  Int_t  beg = GrowFor(n);
+  Float_t *p = fP + 3*beg;
+
+  // printf("PointSet::TakeAction beg=%d n=%d size=%d\n", beg, n, Size());
+
+  Double_t *vx = sel->GetV1(), *vy = sel->GetV2(), *vz = sel->GetV3();
+
+  switch(fSourceCS) {
+  case TVT_XYZ:
+    while(n-- > 0) {
+      p[0] = *vx; p[1] = *vy; p[2] = *vz;
+      p += 3;
+      ++vx; ++vy; ++vz;
+    }
+    break;
+  case TVT_RPhiZ:
+    while(n-- > 0) {
+      p[0] = *vx * TMath::Cos(*vy); p[1] = *vx * TMath::Sin(*vy); p[2] = *vz;
+      p += 3;
+      ++vx; ++vy; ++vz;
+    }
+    break;
+  default:
+    throw(eH + "unknown tree variable type.");
+  }
 }
 
 /**************************************************************************/
@@ -138,6 +175,43 @@ void PointSetArray::SetMarkerSize(Size_t msize)
 
 /**************************************************************************/
 
+void PointSetArray::TakeAction(TSelectorDraw* sel)
+{
+  static const Exc_t eH("PointSetArray::TakeAction ");
+
+  if(sel == 0)
+    throw(eH + "selector is <null>.");
+
+  Int_t n = sel->GetNfill();
+
+  // printf("PointSetArray::TakeAction n=%d\n", n);
+
+  Double_t *vx = sel->GetV1(), *vy = sel->GetV2(), *vz = sel->GetV3();
+  Double_t *qq = sel->GetV4();
+
+  if(qq == 0)
+    throw(eH + "requires 4-d varexp.");
+
+  switch(fSourceCS) {
+  case TVT_XYZ:
+    while(n-- > 0) {
+      Fill(*vx, *vy, *vz, *qq);
+      ++vx; ++vy; ++vz; ++qq;
+    }
+    break;
+  case TVT_RPhiZ:
+    while(n-- > 0) {
+      Fill(*vx * TMath::Cos(*vy), *vx * TMath::Sin(*vy), *vz, *qq);
+      ++vx; ++vy; ++vz; ++qq;
+    }
+    break;
+  default:
+    throw(eH + "unknown tree variable type.");
+  }
+}
+
+/**************************************************************************/
+
 void PointSetArray::InitBins(TGListTreeItem* tree_item, const Text_t* quant_name,
 			     Int_t nbins, Double_t min, Double_t max)
 {
@@ -179,22 +253,20 @@ void PointSetArray::DeleteBins()
   RemoveElements();
 }
 
-void PointSetArray::Fill(Double_t quant, Double_t x, Double_t y, Double_t z)
+void PointSetArray::Fill(Double_t x, Double_t y, Double_t z, Double_t quant)
 {
   Int_t bin    = Int_t( (quant - fMin)/fBinWidth );
   if(bin >= 0 && bin < fNBins)
     fBins[bin]->SetNextPoint(x, y, z);
 }
 
-void PointSetArray::Fill(TF3* , TTree* , TreeVarType_e )
-{
-
-}
-
 void PointSetArray::CloseBins()
 {
   for(Int_t i=0; i<fNBins; ++i) {
-    fBins[i]->fN = fBins[i]->fLastPoint; // HACK! PolyMarker3D does half-management of array size.
+    // HACK! PolyMarker3D does half-management of array size.
+    // In fact, the error is mine, in pointset3d(gl) i use fN instead of Size().
+    // Fixed in my root, but not elsewhere.
+    fBins[i]->fN = fBins[i]->fLastPoint;
     fBins[i]->ComputeBBox();
   }
 }
@@ -211,38 +283,4 @@ void PointSetArray::SetRange(Double_t min, Double_t max)
   for(Int_t i=0; i<fNBins; ++i) {
     fBins[i]->SetRnrElement(i>=low_b && i<=high_b);
   }
-}
-
-/**************************************************************************/
-
-#include <TGFrame.h>
-#include <TGDoubleSlider.h>
-#include <TGXYLayout.h>
-
-void PointSetArray::MakeScrollbar()
-{
-  TGMainFrame* mf = new TGMainFrame(gClient->GetRoot(), 320, 60);
-
-  TGDoubleHSlider* hs = new TGDoubleHSlider(mf);
-  hs->SetRange(fMin, fMax);
-  hs->SetPosition(fMin, fMax);
-  hs->Resize(300, 25);
-  mf->AddFrame(hs, new TGLayoutHints(kLHintsCenterX, 10, 10, 10, 10));
-
-  hs->Connect("PositionChanged()", "Reve::PointSetArray",
-	      this, "HandleScrollEvent()");
-
-  mf->SetWindowName(fQuantName + " Selector");
-  mf->MapSubwindows();
-  mf->Resize(mf->GetDefaultSize()); // this is used here to init layout algorithm
-  mf->MapWindow();
-}
-
-void PointSetArray::HandleScrollEvent()
-{
-  TGDoubleHSlider* hs = (TGDoubleHSlider*)gTQSender;
-
-  Float_t min = hs->GetMinPosition(), max = hs->GetMaxPosition();
-  printf("hslidor min=%f max=%f\n", min, max);
-  SetRange(min, max);
 }

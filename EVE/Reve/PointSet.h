@@ -5,6 +5,7 @@
 
 #include <Reve/PODs.h>
 #include <Reve/RenderElement.h>
+#include <Reve/TTreeTools.h>
 
 #include <TPointSet3D.h>
 
@@ -14,10 +15,11 @@ class TGListTreeItem;
 
 namespace Reve {
 
-class PointSet : public TPointSet3D, public RenderElement
+class PointSet : public TPointSet3D,
+                 public RenderElement,
+                 public TPointSelectorConsumer
 {
   friend class PointSetArray;
-
 private:
   void Init();
 
@@ -25,13 +27,12 @@ protected:
   TString fTitle;
 
 public:
-  enum TreeVarType_e { TVT_XYZ, TVT_RPhiZ };
-
-  PointSet(Int_t n_points=0);
-  PointSet(const Text_t* name, Int_t n_points=0);
+  PointSet(Int_t n_points=0, TreeVarType_e tv_type=TVT_XYZ);
+  PointSet(const Text_t* name, Int_t n_points=0, TreeVarType_e tv_type=TVT_XYZ);
   PointSet(const Text_t* name, TTree* tree, TreeVarType_e tv_type=TVT_XYZ);
 
-  void Reset(Int_t n_points=0);
+  void  Reset(Int_t n_points=0);
+  Int_t GrowFor(Int_t n_points);
 
   virtual const Text_t* GetTitle() const          { return fTitle; }
   virtual void          SetTitle(const Text_t* t) { fTitle = t; }
@@ -41,13 +42,16 @@ public:
 
   virtual void Paint(Option_t* option="");
 
+  virtual void TakeAction(TSelectorDraw*);
+
   ClassDef(PointSet, 1);
 }; // endclass GuiPointSet
 
 /**************************************************************************/
 
 class PointSetArray : public TNamed, public TAttMarker,
-		      public RenderElementListBase
+		      public RenderElementListBase,
+		      public TPointSelectorConsumer
 {
   friend class PointSetArrayEditor;
 
@@ -61,8 +65,6 @@ protected:
   TString      fQuantName;
 
 public:
-  enum TreeVarType_e { TVT_XYZ, TVT_RPhiZ };
-
   PointSetArray(const Text_t* name="PointSetArray", const Text_t* title="");
   virtual ~PointSetArray();
 
@@ -72,11 +74,14 @@ public:
   virtual void SetMarkerStyle(Style_t mstyle=1);
   virtual void SetMarkerSize(Size_t msize=1);
 
+  virtual void TakeAction(TSelectorDraw*);
+
+
   void InitBins(TGListTreeItem* tree_item, const Text_t* quant_name,
 		Int_t nbins, Double_t min, Double_t max);
   void DeleteBins();
-  void Fill(Double_t quant, Double_t x, Double_t y, Double_t z);
-  void Fill(TF3* formula, TTree* tree, TreeVarType_e tv_type=TVT_XYZ);
+  void Fill(Double_t x, Double_t y, Double_t z, Double_t quant);
+
   void CloseBins();
 
   Int_t GetDefPointSetCapacity() const  { return fDefPointSetCapacity; }
@@ -91,9 +96,6 @@ public:
   Double_t GetCurMax() const { return fCurMax; }
 
   void SetRange(Double_t min, Double_t max);
-
-  void MakeScrollbar(); // *MENU*
-  void HandleScrollEvent();
 
   ClassDef(PointSetArray, 1);
 };
