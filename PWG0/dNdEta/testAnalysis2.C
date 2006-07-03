@@ -29,7 +29,7 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   else
   {
     chain = CreateESDChainFromList(data, nRuns, offset);
-    proof = gROOT->Proof("jgrosseo@lxb6046");
+    proof = TProof::Open("jgrosseo@lxb6046");
 
     if (!proof)
     {
@@ -70,19 +70,19 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
     return;
   }
 
-  chain->GetUserInfo()->Add(esdTrackCuts);
-  if (proof)
-    proof->AddInput(esdTrackCuts);
+  //chain->GetUserInfo()->Add(esdTrackCuts);
+  //if (proof)
+  //  proof->AddInput(esdTrackCuts);
 
   if (aMC == kFALSE)
   {
-    AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection();
+    AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
     dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
     //dNdEtaCorrection->RemoveEdges(2, 0, 2);
 
-    chain->GetUserInfo()->Add(dNdEtaCorrection);
-    if (proof)
-      proof->AddInput(dNdEtaCorrection);
+    //chain->GetUserInfo()->Add(dNdEtaCorrection);
+    //if (proof)
+    //  proof->AddInput(dNdEtaCorrection);
   }
 
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
@@ -91,9 +91,9 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   // workaround for a bug in PROOF that only allows header files for .C files
   // please create symlink from <selector>.cxx to <selector>.C
   if (proof != kFALSE)
-    selectorName += ".C+";
+    selectorName += ".C++";
   else
-    selectorName += ".cxx+";
+    selectorName += ".cxx++";
 
   if (aDebug != kFALSE)
     selectorName += "g";

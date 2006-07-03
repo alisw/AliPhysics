@@ -26,7 +26,8 @@
 class AlidNdEtaCorrection : public TNamed
 {
 public:
-  AlidNdEtaCorrection(Char_t* name="dndeta_correction");
+  AlidNdEtaCorrection();
+  AlidNdEtaCorrection(const Char_t* name, const Char_t* title);
 
   // fVertexRecoCorrection, fTriggerCorrection
   void FillEvent(Float_t vtx, Float_t n)                        {fTriggerCorrection->FillGene(vtx, n);}
@@ -54,7 +55,7 @@ public:
 
   void    SaveHistograms();
   Bool_t  LoadHistograms(Char_t* fileName, Char_t* dir = "dndeta_correction");
-  Bool_t  LoadCorrection(Char_t* fileName, Char_t* dir = "dndeta_correction") 
+  Bool_t  LoadCorrection(Char_t* fileName, Char_t* dir = "dndeta_correction")
     {return LoadHistograms(fileName, dir);}
   
   void DrawHistograms();
@@ -72,17 +73,19 @@ public:
 
   Float_t GetMeasuredFraction(Float_t ptCutOff, Float_t eta = -1, Bool_t debug = kFALSE);
 
-protected:
-  AliCorrectionMatrix3D* fTrack2ParticleCorrection; // handles the track-to-particle correction, function of vtx_z, eta, pt
-  AliCorrectionMatrix2D* fVertexRecoCorrection;     // handles the vertex reconstruction efficiency, function of n_clustersITS and vtx_z
-  AliCorrectionMatrix2D* fTriggerCorrection;       // handles the trigger efficiency efficiency, function of n_clustersITS and vtx_z
+  void SetNEvents(Long64_t events) { fNEvents = events; }
 
-  AliCorrectionMatrix2D* fTriggerBiasCorrection;          // MB to desired sample
+protected:
+  AliCorrectionMatrix3D* fTrack2ParticleCorrection; //-> handles the track-to-particle correction, function of vtx_z, eta, pt
+  AliCorrectionMatrix2D* fVertexRecoCorrection;     //-> handles the vertex reconstruction efficiency, function of n_clustersITS and vtx_z
+  AliCorrectionMatrix2D* fTriggerCorrection;       //-> handles the trigger efficiency efficiency, function of n_clustersITS and vtx_z
+
+  AliCorrectionMatrix2D* fTriggerBiasCorrection;          //-> MB to desired sample
 
   Long64_t fNEvents;
   Long64_t fNTriggeredEvents;
 
-  ClassDef(AlidNdEtaCorrection,0)
+  ClassDef(AlidNdEtaCorrection, 1)
 };
 
 #endif

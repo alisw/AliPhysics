@@ -87,7 +87,7 @@ protected:
 
   //######################################################
   // esd track quality cuts
-  static const Char_t* fgkCutNames[kNCuts]; // names of cuts (for internal use)
+  static const Char_t* fgkCutNames[kNCuts]; //! names of cuts (for internal use)
 
   Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
   Int_t   fCutMinNClusterITS;         // min number of its clusters  
@@ -122,30 +122,30 @@ protected:
   // diagnostics histograms
   Bool_t fHistogramsOn;               // histograms on/off
 
-  TH1F* fhNClustersITS[2];            //[2]
-  TH1F* fhNClustersTPC[2];            //[2]
+  TH1F* fhNClustersITS[2];            //->
+  TH1F* fhNClustersTPC[2];            //->
+
+  TH1F* fhChi2PerClusterITS[2];       //->
+  TH1F* fhChi2PerClusterTPC[2];       //->
+
+  TH1F* fhC11[2];                     //->
+  TH1F* fhC22[2];                     //->
+  TH1F* fhC33[2];                     //->
+  TH1F* fhC44[2];                     //->
+  TH1F* fhC55[2];                     //->
+
+  TH1F* fhDXY[2];                     //->
+  TH1F* fhDZ[2];                      //->
+  TH2F* fhDXYvsDZ[2];                 //->
+
+  TH1F* fhDXYNormalized[2];           //->
+  TH1F* fhDZNormalized[2];            //->
+  TH2F* fhDXYvsDZNormalized[2];       //->
+
+  TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
+  TH2F*  fhCutCorrelation;            //-> 2d statistics plot
   
-  TH1F* fhChi2PerClusterITS[2];       //[2]
-  TH1F* fhChi2PerClusterTPC[2];       //[2]
-
-  TH1F* fhC11[2];                     //[2]
-  TH1F* fhC22[2];                     //[2]
-  TH1F* fhC33[2];                     //[2]
-  TH1F* fhC44[2];                     //[2]
-  TH1F* fhC55[2];                     //[2]
-
-  TH1F* fhDXY[2];                     //[2]
-  TH1F* fhDZ[2];                      //[2]
-  TH2F* fhDXYvsDZ[2];                 //[2]
-
-  TH1F* fhDXYNormalized[2];           //[2]
-  TH1F* fhDZNormalized[2];            //[2]
-  TH2F* fhDXYvsDZNormalized[2];       //[2]
-
-  TH1F*  fhCutStatistics;             // statistics of what cuts the tracks did not survive
-  TH2F*  fhCutCorrelation;            // 2d statistics plot
-  
-  ClassDef(AliESDtrackCuts,0)
+  ClassDef(AliESDtrackCuts, 1)
 };
 
 

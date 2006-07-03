@@ -10,11 +10,24 @@
 ClassImp(AlidNdEtaCorrection)
 
 //____________________________________________________________________
-AlidNdEtaCorrection::AlidNdEtaCorrection(Char_t* name) 
-  : TNamed(name, name),
+AlidNdEtaCorrection::AlidNdEtaCorrection()
+  : TNamed(),
+  fTrack2ParticleCorrection(0),
+  fVertexRecoCorrection(0),
+  fTriggerCorrection(0),
+  fTriggerBiasCorrection(0),
   fNEvents(0),
   fNTriggeredEvents(0)
-{  
+{
+  // default constructor
+}
+
+//____________________________________________________________________
+AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title)
+  : TNamed(name, title),
+  fNEvents(0),
+  fNTriggeredEvents(0)
+{
   // constructor
   //
 
