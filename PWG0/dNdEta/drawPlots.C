@@ -125,7 +125,7 @@ void ptCutoff()
 {
   gSystem->Load("libPWG0base");
 
-  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection();
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
   dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
 
   dNdEtaCorrection->GetMeasuredFraction(0.3, -1, kTRUE);
@@ -203,7 +203,7 @@ void Track2Particle2D()
   gSystem->Load("libPWG0base");
 
   TFile* file = TFile::Open("correction_map.root");
-  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection();
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
   dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
 
   TH3* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();

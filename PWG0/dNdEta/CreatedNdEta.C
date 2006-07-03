@@ -7,7 +7,7 @@ void CreatedNdEta(Bool_t correct = kTRUE, const Char_t* filename = "analysis_esd
   AlidNdEtaCorrection* dNdEtaCorrection = 0;
   if (correct)
   {
-    dNdEtaCorrection = new AlidNdEtaCorrection();
+    dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
     dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
     //dNdEtaCorrection->RemoveEdges(2, 0, 2);
   }

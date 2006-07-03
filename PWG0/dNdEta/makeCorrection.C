@@ -27,7 +27,7 @@ makeCorrection(Char_t* dataDir, Int_t nRuns=20) {
   // ########################################################
   // definition of dNdEta correction object
 
-  AlidNdEtaCorrection* dNdEtaMap = new AlidNdEtaCorrection();
+  AlidNdEtaCorrection* dNdEtaMap = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
 
   // ########################################################
   // get the data dir  

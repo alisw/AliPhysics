@@ -65,7 +65,7 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
 
   AliSelectorRL::SlaveBegin(tree);
 
-  fdNdEtaCorrection = new AlidNdEtaCorrection();
+  fdNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
 
   if (fTree)
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fTree->GetUserInfo()->FindObject("AliESDtrackCuts"));
