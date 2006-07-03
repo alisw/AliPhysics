@@ -1,3 +1,10 @@
+2006-07-03  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/its_hits.C:
+	* alice-macros/tpc_hits.C:
+	* alice-macros/tpc_hits_eta_split.C:
+	Use TPointSelector for point extraction.
+
 2006-06-28  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* test-macros/tpc_sector_raw_test.C:

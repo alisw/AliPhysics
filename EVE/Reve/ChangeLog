@@ -1,3 +1,17 @@
+2006-07-03  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TTreeTools.cxx:
+	* TTreeTools.h:
+	* LinkDef.h:
+	Added new classes TPointSelector and TPointSelectorConsumer
+	allowing more natural extraction of point-data from trees.
+
+	* PointSet.cxx:
+	* PointSet.h:
+	Implemented the TPointSelectorConsumer interface for PointSet and
+	PointSetArray; in PointSetArray removed obsolete methods
+	MakeScrollbar() and HandleScrollEvent().
+
 2006-06-27  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* BoxSetGL.cxx:
