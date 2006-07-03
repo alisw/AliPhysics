@@ -46,6 +46,8 @@
 // TTreeTools
 #pragma link C++ class TSelectorToEventList+;
 #pragma link C++ class TTreeQuery+;
+#pragma link C++ class TPointSelectorConsumer+;
+#pragma link C++ class TPointSelector+;
 
 // RenderElement
 #pragma link C++ class Reve::RenderElement+;
