@@ -58,6 +58,7 @@ chaincl.Add("TPC.RecPoints3.root/Event3/TreeR")
 #include "TObject.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TChain.h"
 #include "TBranch.h"
 #include "TTreeStream.h"
 #include "TEventList.h"
@@ -81,7 +82,7 @@ chaincl.Add("TPC.RecPoints3.root/Event3/TreeR")
 #include  "TCanvas.h"
 
 
-void AnalyzESDtracks(Int_t run){
+void AnalyzeESDtracks(Int_t run){
   //
   // output redirect 
   TTreeSRedirector  cstream("TPCtracks.root");
@@ -131,6 +132,7 @@ void AnalyzESDtracks(Int_t run){
       Int_t ncl = seed->GetNumberOfClusters();
       cstream<<"Tracks"<<
 	"Run="<<run<<
+	"Ncl="<<ncl<<
 	"Event="<<ievent<<
 	"dEdx="<<dEdx<<
 	"dEdxI="<<dEdxI<<
@@ -141,6 +143,12 @@ void AnalyzESDtracks(Int_t run){
 	"\n";
     }  
   }
+  //
+  // Fit signal part
+  //
+  TFile fs("TPCsignal.root");
+  TTree *treeB =(TTree*)fs.Get("SignalB");
+  FitSignals(treeB,"Max-Median>150&&RMS06<2.5");
 }
 
 
@@ -261,5 +269,31 @@ void FitSignals(TTree * treeB, TCut cut="Max-Median>150&&RMS06<2&&abs(Median-Mea
       "\n";
     //    delete his;
   }
+
+}
+
+
+
+TChain *MakeChainCL(Int_t first, Int_t last){
+  TChain *chaincl = new TChain("TreeR","TreeR");
+  //
+  char fname[100];
+  for (Int_t i=first;i<last; i++){
+    if (i>0) sprintf(fname,"TPC.RecPoints%d.root/Event%d/TreeR",i,i);
+    if (i==0) sprintf(fname,"TPC.RecPoints.root/Event%d/TreeR",i);
+    chaincl->Add(fname);
+  }
+  return chaincl;
+}
+
+TTree* GetTree(Int_t ievent){
+  char fname[100];
+  char tname[100];
+  if (ievent>0) sprintf(fname,"TPC.RecPoints%d.root",ievent);
+  if (ievent==0) sprintf(fname,"TPC.RecPoints.root");
+  sprintf(tname,"Event%d/TreeR",ievent);
+  TFile * f  = new TFile(fname);
+  TTree * tree = (TTree*)f->Get(tname);
+  return tree;
 
 }
