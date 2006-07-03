@@ -82,6 +82,9 @@ chaincl.Add("TPC.RecPoints3.root/Event3/TreeR")
 #include  "TCanvas.h"
 
 
+void FitSignals(TTree * treeB, TCut cut="Max-Median>150&&RMS06<2&&abs(Median-Mean09)<0.5");
+
+
 void AnalyzeESDtracks(Int_t run){
   //
   // output redirect 
@@ -152,7 +155,7 @@ void AnalyzeESDtracks(Int_t run){
 }
 
 
-void FitSignals(TTree * treeB, TCut cut="Max-Median>150&&RMS06<2&&abs(Median-Mean09)<0.5"){
+void FitSignals(TTree * treeB, TCut cut){
   AliSignalProcesor proc;
   TF1 * f1 = proc.GetAsymGauss();
   TTreeSRedirector cstream("FitSignal.root");
