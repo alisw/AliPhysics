@@ -456,22 +456,22 @@ void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampma
 
     //First calculate the row and column in the supermodule 
     //of the TRU to which the cell belongs.
-    Int_t col   = (ieta-1)/nCellsEta+1; 
-    Int_t row   = (iphi-1)/nCellsPhi+1; 
-    if(iSupMod > 10)
-      row   = (iphi-1)/nCellsPhi2+1; 
+    Int_t col   = ieta/nCellsEta; 
+    Int_t row   = iphi/nCellsPhi; 
+    if(iSupMod > 9)
+      row   = iphi/nCellsPhi2; 
     //Calculate label number of the TRU
-    Int_t itru  = (row-1) + (col-1)*fNTRUPhi + (iSupMod-1)*fNTRU ;  
+    Int_t itru  = row + col*fNTRUPhi + iSupMod*fNTRU ;  
  
     //Fill TRU matrix with cell values
     TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(ampmatrix->At(itru)) ;
     TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(timeRmatrix->At(itru)) ;
 
     //Calculate row and column of the cell inside the TRU with number itru
-    Int_t irow = (iphi-1) - (row-1) *  nCellsPhi;
-    if(iSupMod > 10)
-      irow = (iphi-1) - (row-1) *  nCellsPhi2;
-    Int_t icol = (ieta-1) - (col-1) *  nCellsEta;
+    Int_t irow = iphi - row *  nCellsPhi;
+    if(iSupMod > 9)
+      irow = iphi - row *  nCellsPhi2;
+    Int_t icol = ieta - col *  nCellsEta;
     
     (*amptrus)(irow,icol) = amp ;
     (*timeRtrus)(irow,icol) = timeR ;
@@ -483,21 +483,21 @@ void AliEMCALGeometry::FillTRU(const TClonesArray * digits, TClonesArray * ampma
 void AliEMCALGeometry::GetCellPhiEtaIndexInSModuleFromTRUIndex(const Int_t itru, const Int_t iphitru, const Int_t ietatru, Int_t &iphiSM, Int_t &ietaSM) const 
 {
   
-  // This method transforms the (eta,phi) index of a cells in a 
+  // This method transforms the (eta,phi) index of cells in a 
   // TRU matrix into Super Module (eta,phi) index.
   
-  // Calculate in which row and column in which the TRU are 
+  // Calculate in which row and column where the TRU are 
   // ordered in the SM
 
-  Int_t col = itru/ fNTRUPhi + 1;
-  Int_t row = itru - (col-1)*fNTRUPhi + 1;
+  Int_t col = itru/ fNTRUPhi ;
+  Int_t row = itru - col*fNTRUPhi ;
    
   //Calculate the (eta,phi) index in SM
   Int_t nCellsPhi = fNPhi*2/fNTRUPhi;
   Int_t nCellsEta = fNZ*2/fNTRUEta;
   
-  iphiSM = nCellsPhi*(row-1) + iphitru + 1 ;
-  ietaSM = nCellsEta*(col-1) + ietatru + 1 ; 
+  iphiSM = nCellsPhi*row + iphitru  ;
+  ietaSM = nCellsEta*col + ietatru  ; 
 }
 
 //______________________________________________________________________

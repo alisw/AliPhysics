@@ -133,10 +133,10 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
   //Sums energy of all possible 2x2 (L0) and 4x4 (L1) cells per each TRU. 
   //Fast signal in the experiment is given by 2x2 cells, 
   //for this reason we loop inside the TRU cells by 2. 
-  
+
   //Declare and initialize variables
   Int_t nCellsPhi  = geom->GetNPhi()*2/geom->GetNTRUPhi() ;
-  if(isupermod > 10)
+  if(isupermod > 9)
     nCellsPhi =  nCellsPhi / 2 ; //Half size SM. Not Final.
   // 12(tow)*2(cell)/1 TRU, cells in Phi in one TRU
   Int_t nCellsEta  = geom->GetNEta()*2/geom->GetNTRUEta() ;
@@ -145,7 +145,7 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
 
   Float_t amp2 = 0 ;
   Float_t amp4 = 0 ; 
-  for(Int_t i = 0; i < 3; i++){
+  for(Int_t i = 0; i < 4; i++){
     for(Int_t j = 0; j < nTRU; j++){
       (*ampmax2)(i,j) = -1;
       (*ampmax4)(i,j) = -1;
@@ -160,16 +160,17 @@ void AliEMCALTrigger::MakeSlidingCell(const TClonesArray * amptrus, const TClone
       (*tru2x2)(i,j) = -1;
   
   //Loop over all TRUS in a supermodule
-  for(Int_t itru = 0 + (isupermod - 1) * nTRU ; itru < isupermod*nTRU ; itru++) {
+  for(Int_t itru = 0 + isupermod * nTRU ; itru < (isupermod+1)*nTRU ; itru++) {
     TMatrixD * amptru   = dynamic_cast<TMatrixD *>(amptrus->At(itru)) ;
     TMatrixD * timeRtru = dynamic_cast<TMatrixD *>(timeRtrus->At(itru)) ;
-    Int_t mtru = itru-(isupermod-1)*nTRU ; //Number of TRU in Supermodule
-    
+    Int_t mtru = itru-isupermod*nTRU ; //Number of TRU in Supermodule
+   
     //Sliding 2x2, add 2x2 amplitudes (NOT OVERLAP)
     for(Int_t irow = 0 ; irow <  nCellsPhi; irow += 2){ 
       for(Int_t icol = 0 ; icol < nCellsEta ; icol += 2){
 	amp2 = (*amptru)(irow,icol)+(*amptru)(irow+1,icol)+
 	  (*amptru)(irow,icol+1)+(*amptru)(irow+1,icol+1);
+
 	//Fill matrix with added 2x2 crystals for use in 4x4 sums
 	(*tru2x2)(irow/2,icol/2) = amp2 ;
 	//Select 2x2 maximum sums to select L0 
@@ -330,11 +331,6 @@ void AliEMCALTrigger::SetTriggers(const Int_t iSM, const TMatrixD *ampmax2,
 	break;
       }
     }
-    //    for(Int_t i = 0 ; i < nTimeBins ; i++)
-    //       if(fADCValuesLow2x2[i]!=0||fADCValuesHigh2x2[i]!=0)
-    // 	cout<< "2x2 Time Bin "<<i
-    // 	    <<"; 2x2 Low Gain  "<<fADCValuesLow2x2[i]
-    // 	  <<"; 2x2 High Gain "<<fADCValuesHigh2x2[i]<<endl;
   }
   
   //------------Set max of 4x4 amplitudes and select L1 trigger---------
@@ -375,11 +371,6 @@ void AliEMCALTrigger::SetTriggers(const Int_t iSM, const TMatrixD *ampmax2,
 	break;
       }
     }
- //    for(Int_t i = 0 ; i < nTimeBins ; i++)
-//       if(fADCValuesLow4x4[i]!= 100||fADCValuesHigh4x4[i] != 100)
-//     	cout<< "4x4 Time Bin "<<i
-//     	    <<"; 4x4 Low Gain  "<<fADCValuesLow4x4[i]
-//     	    <<"; 4x4 High Gain "<<fADCValuesHigh4x4[i]<<endl;
   } 
 }
 
@@ -414,7 +405,6 @@ void AliEMCALTrigger::Trigger()
     rl->LoadDigits("EMCAL");
     fDigitsList = emcalLoader->Digits() ;
   }
-  cout<<"Simulation "<<fSimulation<<endl;
   if(!fDigitsList)
     AliFatal("Digits not found !") ;
   
@@ -423,6 +413,7 @@ void AliEMCALTrigger::Trigger()
   //Fill TRU Matrix  
   TClonesArray * amptrus   = new TClonesArray("TMatrixD",1000);
   TClonesArray * timeRtrus = new TClonesArray("TMatrixD",1000);
+
   geom->FillTRU(fDigitsList, amptrus, timeRtrus) ;
 
   //Do Cell Sliding and select Trigger
@@ -431,9 +422,10 @@ void AliEMCALTrigger::Trigger()
   TMatrixD  * ampmax2 = new TMatrixD(4,nTRU) ;
   TMatrixD  * ampmax4 = new TMatrixD(4,nTRU) ;
 
-  for(Int_t iSM = 1 ; iSM <= nSuperModules ; iSM++) {
+  for(Int_t iSM = 0 ; iSM < nSuperModules ; iSM++) {
     //Do 2x2 and 4x4 sums, select maximums. 
     MakeSlidingCell(amptrus, timeRtrus, iSM, ampmax2, ampmax4, geom);
+  
     //Set the trigger
     SetTriggers(iSM, ampmax2, ampmax4, geom) ;
   }
