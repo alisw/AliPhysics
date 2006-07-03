@@ -313,6 +313,14 @@ AliTrackHitsParamV2::~AliTrackHitsParamV2()
   }
 }
 
+Float_t AliTrackHitsParamV2::Eta() const
+{
+  Float_t ctg = fZ / fR;
+  Float_t eta = -TMath::Log(TMath::Hypot(1,ctg)-TMath::Abs(ctg));
+  if(ctg < 0) eta = -eta;
+  return eta;
+}
+
 
 AliTPCTrackHitsV2::AliTPCTrackHitsV2()
 {

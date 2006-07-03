@@ -32,6 +32,8 @@ public:
      {hit.Copy(*this); return (*this);}
   ~AliTrackHitsParamV2();
 
+  Float_t Eta() const;
+
  private:
   Int_t fTrackID; // ID of the track
   Short_t fVolumeID;// volume ID
