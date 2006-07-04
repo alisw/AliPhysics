@@ -1,7 +1,7 @@
 SRCS          = AliCDBEntry.cxx AliCDBId.cxx AliCDBMetaData.cxx \
 AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx \
 AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx \
-AliSimpleValue.cxx AliDCSValue.cxx \
+AliDCSValue.cxx \
 AliPreprocessor.cxx AliDefaultPreprocessor.cxx \
 AliShuttleInterface.cxx 
 
@@ -12,7 +12,7 @@ DHDR= CDBLinkDef.h
 EXPORT:= AliCDBEntry.h AliCDBId.h AliCDBMetaData.h \
 AliCDBPath.h AliCDBRunRange.h AliCDBManager.h \
 AliCDBStorage.h AliCDBLocal.h AliCDBDump.h AliCDBGrid.h \
-AliSimpleValue.h AliDCSValue.h \
+AliDCSValue.h \
 AliPreprocessor.h AliDefaultPreprocessor.h \
 AliShuttleInterface.h 
 

@@ -113,7 +113,7 @@ void AliTPCDataDCS::ProcessData(TMap& aliasMap)
 
 		UInt_t ne=0;
 		while ((aValue = (AliDCSValue*) iterarray.Next())) {
-		val[ne] = aValue->GetSimpleValue().GetFloat();
+		val[ne] = aValue->GetFloat();
 		time[ne] = (Double_t) (aValue->GetTimeStamp());
 		// fill histos (alias 0-2)
 		if(j < 3) fHv[j]->Fill(val[ne]);

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/06/12 09:11:16  jgrosseo
+coding conventions (Alberto)
+
 Revision 1.2  2006/03/07 07:52:34  hristov
 New version (B.Yordanov)
 
@@ -379,7 +382,7 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 }
 	
 //______________________________________________________________________
-Int_t AliDCSClient::ReceiveValueSet(TObjArray& result) 
+Int_t AliDCSClient::ReceiveValueSet(TObjArray& result)
 {
 // receive set of values 
 
@@ -410,7 +413,7 @@ Int_t AliDCSClient::ReceiveValueSet(TObjArray& result)
 
 	UInt_t receivedValues = 0;
 
-	AliSimpleValue::Type valueType = AliSimpleValue::kInvalid;
+	AliDCSValue::Type valueType = AliDCSValue::kInvalid;
 
 	while (receivedValues < valueCount) {
 
@@ -424,10 +427,10 @@ Int_t AliDCSClient::ReceiveValueSet(TObjArray& result)
 
                 if (message.GetType() == AliDCSMessage::kResultSet) {
 
-			if (valueType == AliSimpleValue::kInvalid) {
-				valueType = message.GetSimpleValueType();
+			if (valueType == AliDCSValue::kInvalid) {
+				valueType = message.GetValueType();
 			} else {
-				if (valueType != message.GetSimpleValueType()) {
+				if (valueType != message.GetValueType()) {
 					AliError("Unexpected value type!");
 					return AliDCSClient::fgkBadMessage;
 				}

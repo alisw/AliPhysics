@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.3  2006/06/12 09:11:16  jgrosseo
+ coding conventions (Alberto)
+
  Revision 1.2  2006/06/06 14:26:40  jgrosseo
  o) removed files that were moved to STEER
  o) shuttle updated to follow the new interface (Alberto)
@@ -52,7 +55,7 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 
-#include "AliSimpleValue.h"
+#include "AliDCSValue.h"
 #include "AliShuttleConfig.h"
 #include "AliShuttle.h"
 #include "DATENotifier.h"
@@ -299,7 +302,7 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries) 
+Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries)
 {
 // Retrieve conditions data for all runs that aren't processed yet
 
@@ -363,6 +366,8 @@ Bool_t AliShuttleTrigger::CollectNew()
 	// Collects conditions data for all new run written to DAQ LogBook.
 	//
 
+  // TODO revise this! last run number is ONLY allowed to be written when run was processed successfully!!!
+
 	AliInfo("Collecting conditions data for new runs ...");
 
 	Int_t lastRun;
@@ -372,16 +377,16 @@ Bool_t AliShuttleTrigger::CollectNew()
 	if (cdbEntry) {
 		TObject* anObject = cdbEntry->GetObject();
 		if (anObject == NULL ||
-			anObject->IsA() != AliSimpleValue::Class()) {
+			anObject->IsA() != AliDCSValue::Class()) {
 			AliError("Invalid last run object stored to CDB!");
 			return kFALSE;
 		}
-		AliSimpleValue* simpleValue = (AliSimpleValue*) anObject;
+		AliDCSValue* simpleValue = (AliDCSValue*) anObject;
 		lastRun = simpleValue->GetInt();
 		delete cdbEntry;
 	} else {
 		AliWarning("There isn't last run stored! Starting from run 21200");
-		lastRun = 21200;
+		lastRun = 21200; // TODO maybe exit here
 	}
 
 	AliInfo(Form("Last run number <%d>", lastRun));
@@ -397,7 +402,7 @@ Bool_t AliShuttleTrigger::CollectNew()
 	}
 
 	if (newLastRun > lastRun) {
-		AliSimpleValue lastRunObj(newLastRun);
+		AliDCSValue lastRunObj(newLastRun, 0);
 		AliCDBMetaData metaData;
 		AliCDBId cdbID(AliCDBPath("SHUTTLE", "SYSTEM", "LASTRUN"), 0, 0);
 

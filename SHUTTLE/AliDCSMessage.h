@@ -15,7 +15,6 @@
 #include <TString.h>
 #include <TObjArray.h>
 #include "AliDCSValue.h"
-#include "AliSimpleValue.h"
 
 #define HEADER_SIZE 8
 #define ID_OFFSET 0
@@ -85,7 +84,7 @@ public:
 
         void CreateCountMessage(UInt_t count);
 
-        void CreateResultSetMessage(AliSimpleValue::Type type); 
+        void CreateResultSetMessage(AliDCSValue::Type type);
 
         void CreateErrorMessage(ErrorCode code, const char* errorString);
 	
@@ -135,7 +134,7 @@ public:
         UInt_t GetCount() const;
 
         // ResultSetType Message getters ans setters       
-        AliSimpleValue::Type GetSimpleValueType() const;
+        AliDCSValue::Type GetValueType() const;
 
         UInt_t GetValueCount() const;
 
@@ -181,7 +180,7 @@ private:
 	UInt_t fCount; 			// count counter
 
 	//ResultSet message fields
-	AliSimpleValue::Type fSimpleValueType; // Simple value type
+	AliDCSValue::Type fValueType; // Simple value type
 
 	TObjArray fValues; 		// array of received values
 	

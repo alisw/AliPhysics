@@ -111,8 +111,7 @@ TMap* CreateDCSAliasMap()
 
     for (int timeStamp=0;timeStamp<1000;timeStamp+=10)
     {
-      AliSimpleValue* simVal = new AliSimpleValue((Float_t) (random.Gaus()+5*nAlias));
-      AliDCSValue* dcsVal = new AliDCSValue(*simVal, timeStamp);
+      AliDCSValue* dcsVal = new AliDCSValue((Float_t) (random.Gaus()+5*nAlias), timeStamp);
       //printf("%s\n",dcsVal->ToString().Data());
       valueSet->Add(dcsVal);
     }

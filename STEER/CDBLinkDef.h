@@ -27,18 +27,6 @@
 #pragma link C++ class AliCDBGridFactory;
 #pragma link C++ class AliCDBGridParam;
 
-#pragma link C++ class AliSimpleValue;
-#pragma link C++ class AliSimpleValue::AliBoolHolder;
-#pragma link C++ class AliSimpleValue::AliByteHolder;
-#pragma link C++ class AliSimpleValue::AliIntHolder;
-#pragma link C++ class AliSimpleValue::AliUIntHolder;
-#pragma link C++ class AliSimpleValue::AliFloatHolder;
-#pragma link C++ class AliSimpleValue::AliDynHolder;
-#pragma link C++ class AliSimpleValue::AliDynBoolHolder;
-#pragma link C++ class AliSimpleValue::AliDynByteHolder;
-#pragma link C++ class AliSimpleValue::AliDynIntHolder;
-#pragma link C++ class AliSimpleValue::AliDynUIntHolder;
-#pragma link C++ class AliSimpleValue::AliDynFloatHolder;
 #pragma link C++ class AliDCSValue;
 
 #pragma link C++ class AliPreprocessor;

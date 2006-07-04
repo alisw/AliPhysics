@@ -202,7 +202,7 @@ void TestServer::Run(Int_t count, Int_t rsSize) {
 
 			TTimeStamp currentTime;
 			AliDCSMessage rsMessage;
-			rsMessage.CreateResultSetMessage(AliSimpleValue::kInt);
+			rsMessage.CreateResultSetMessage(AliDCSValue::kInt);
 				
 			for (Int_t k = 0; k < pSize; k ++) {
 				AliDCSValue aValue(k, currentTime.GetSec() + k);

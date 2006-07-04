@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/06/12 09:11:16  jgrosseo
+coding conventions (Alberto)
+
 Revision 1.2  2006/03/07 07:52:34  hristov
 New version (B.Yordanov)
 
@@ -161,14 +164,14 @@ void AliDCSMessage::CreateCountMessage(UInt_t count)
 }
 
 //______________________________________________________________________
-void AliDCSMessage::CreateResultSetMessage(AliSimpleValue::Type type) 
+void AliDCSMessage::CreateResultSetMessage(AliDCSValue::Type type)
 {
-// Create result set message
+  // Create result set message
 
 	DestroyMessage();
 
 	fType = AliDCSMessage::kResultSet;
-	fSimpleValueType = type; 
+	fValueType = type;
 }
 
 //______________________________________________________________________
@@ -389,95 +392,90 @@ void AliDCSMessage::StoreCountMessage()
 }
 
 //______________________________________________________________________
-void AliDCSMessage::StoreResultSetMessage() 
+void AliDCSMessage::StoreResultSetMessage()
 {
 // store result set message
 
-	TIter iter(&fValues);
-	AliDCSValue* aValue;
+  TIter iter(&fValues);
+  AliDCSValue* aValue;
 
-	UInt_t valueDataSize = 0;
-	while ((aValue = (AliDCSValue*) iter.Next())) {
-		if (AliSimpleValue::IsDynamic(fSimpleValueType)) {
-			valueDataSize +=  1;
-		}	
-	
-		valueDataSize += aValue->GetSize();
-	}
-	
-	fMessageSize = VALUES_OFFSET + valueDataSize;
-	
-	fMessage = new char[fMessageSize];
+  UInt_t valueDataSize = 0;
+  while ((aValue = (AliDCSValue*) iter.Next())) {
+    if (AliDCSValue::IsDynamic(fValueType)) {
+      valueDataSize +=  1;
+    }	
 
-	StoreHeader();
+    valueDataSize += aValue->GetSize();
+  }
 
-	SetUByte(fMessage + SVT_OFFSET, fSimpleValueType);
-	SetUInt(fMessage + VALUE_COUNT_OFFSET, GetValueCount());
+  fMessageSize = VALUES_OFFSET + valueDataSize;
 
-	UInt_t cursor = VALUES_OFFSET;
-	
-	iter.Reset();
+  fMessage = new char[fMessageSize];
 
-	if (fSimpleValueType == AliSimpleValue::kBool) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
-			SetBool(fMessage + cursor, aValue->
-				GetSimpleValue().GetBool());
-			cursor += 1;
-			SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-        		cursor += sizeof(UInt_t);
-		}
-	} else if (fSimpleValueType == AliSimpleValue::kByte) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
-			SetByte(fMessage + cursor, aValue->
-				GetSimpleValue().GetByte());
-			cursor += sizeof(Char_t);
-			SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-			cursor += sizeof(UInt_t);
-		}
-	} else if (fSimpleValueType == AliSimpleValue::kInt) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
-                        SetInt(fMessage + cursor, aValue->
-                                GetSimpleValue().GetInt());
-                        cursor += sizeof(Int_t);
+  StoreHeader();
+
+  SetUByte(fMessage + SVT_OFFSET, fValueType);
+  SetUInt(fMessage + VALUE_COUNT_OFFSET, GetValueCount());
+
+  UInt_t cursor = VALUES_OFFSET;
+
+  iter.Reset();
+
+  if (fValueType == AliDCSValue::kBool) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
+      SetBool(fMessage + cursor, aValue->GetBool());
+      cursor += 1;
+      SetUInt(fMessage + cursor, aValue->GetTimeStamp());
+            cursor += sizeof(UInt_t);
+    }
+  } else if (fValueType == AliDCSValue::kChar) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
+      SetByte(fMessage + cursor, aValue->GetChar());
+      cursor += sizeof(Char_t);
+      SetUInt(fMessage + cursor, aValue->GetTimeStamp());
+      cursor += sizeof(UInt_t);
+    }
+  } else if (fValueType == AliDCSValue::kInt) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
+      SetInt(fMessage + cursor, aValue->GetInt());
+      cursor += sizeof(Int_t);
+      SetUInt(fMessage + cursor, aValue->GetTimeStamp());
+      cursor += sizeof(UInt_t);
+    }
+  } else if (fValueType == AliDCSValue::kUInt) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
+      SetUInt(fMessage + cursor, aValue->GetUInt());
+      cursor += sizeof(UInt_t);
+      SetUInt(fMessage + cursor, aValue->GetTimeStamp());
+      cursor += sizeof(UInt_t);
+    }
+  } else if (fValueType == AliDCSValue::kFloat) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
+      SetFloat(fMessage + cursor, aValue->GetFloat());
+      cursor += sizeof(Float_t);
+      SetUInt(fMessage + cursor, aValue->GetTimeStamp());
+      cursor += sizeof(UInt_t);
+    }
+/*	} else if (fValueType == AliSimpleValue::kDynBool) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
+      Int_t dynSize = aValue->GetSimpleValue().
+        GetDynamicSize();
+      SetUByte(fMessage + cursor, dynSize);
+      cursor += 1;
+      for (Int_t k = 0; k < dynSize; k ++) {
+                          SetBool(fMessage + cursor, aValue->
+                                  GetSimpleValue().GetDynBool(k));
+                          cursor += 1;
+      }
                         SetUInt(fMessage + cursor, aValue->GetTimeStamp());
                         cursor += sizeof(UInt_t);
                 }
-	} else if (fSimpleValueType == AliSimpleValue::kUInt) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
-                        SetUInt(fMessage + cursor, aValue->
-                                GetSimpleValue().GetUInt());
-                        cursor += sizeof(UInt_t);
-                        SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-                        cursor += sizeof(UInt_t);
-                }
-	} else if (fSimpleValueType == AliSimpleValue::kFloat) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
-                        SetFloat(fMessage + cursor, aValue->
-                                GetSimpleValue().GetFloat());
-                        cursor += sizeof(Float_t);
-                        SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-                        cursor += sizeof(UInt_t);
-                }
-/*	} else if (fSimpleValueType == AliSimpleValue::kDynBool) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
-			Int_t dynSize = aValue->GetSimpleValue().
-				GetDynamicSize();
-			SetUByte(fMessage + cursor, dynSize);
-			cursor += 1;
-			for (Int_t k = 0; k < dynSize; k ++) {
-                        	SetBool(fMessage + cursor, aValue->
-                                	GetSimpleValue().GetDynBool(k));
-                        	cursor += 1;
-			}
-                        SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-                        cursor += sizeof(UInt_t);
-                }
-	} else if (fSimpleValueType == AliSimpleValue::kDynByte) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
+  } else if (fValueType == AliSimpleValue::kDynByte) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
                         Int_t dynSize = aValue->GetSimpleValue().
                                 GetDynamicSize();
                         SetUByte(fMessage + cursor, dynSize);
-			cursor += 1;	
+      cursor += 1;	
                         for (Int_t k = 0; k < dynSize; k ++) {
                                 SetByte(fMessage + cursor, aValue->
                                         GetSimpleValue().GetDynByte(k));
@@ -486,8 +484,8 @@ void AliDCSMessage::StoreResultSetMessage()
                         SetUInt(fMessage + cursor, aValue->GetTimeStamp());
                         cursor += sizeof(UInt_t);
                 }
-	} else if (fSimpleValueType == AliSimpleValue::kDynInt) {
-		 while ((aValue = (AliDCSValue*) iter.Next())) {
+  } else if (fValueType == AliSimpleValue::kDynInt) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
                         Int_t dynSize = aValue->GetSimpleValue().
                                 GetDynamicSize();
                         SetUByte(fMessage + cursor, dynSize);
@@ -500,8 +498,8 @@ void AliDCSMessage::StoreResultSetMessage()
                         SetUInt(fMessage + cursor, aValue->GetTimeStamp());
                         cursor += sizeof(UInt_t);
                 }
-	} else if (fSimpleValueType == AliSimpleValue::kDynUInt) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
+  } else if (fValueType == AliSimpleValue::kDynUInt) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
                         Int_t dynSize = aValue->GetSimpleValue().
                                 GetDynamicSize();
                         SetUByte(fMessage + cursor, dynSize);
@@ -514,8 +512,8 @@ void AliDCSMessage::StoreResultSetMessage()
                         SetUInt(fMessage + cursor, aValue->GetTimeStamp());
                         cursor += sizeof(UInt_t);
                 }
-	} else if (fSimpleValueType == AliSimpleValue::kDynFloat) {
-		while ((aValue = (AliDCSValue*) iter.Next())) {
+  } else if (fValueType == AliSimpleValue::kDynFloat) {
+    while ((aValue = (AliDCSValue*) iter.Next())) {
                         Int_t dynSize = aValue->GetSimpleValue().
                                 GetDynamicSize();
                         SetUByte(fMessage + cursor, dynSize);
@@ -528,10 +526,10 @@ void AliDCSMessage::StoreResultSetMessage()
                         SetUInt(fMessage + cursor, aValue->GetTimeStamp());
                         cursor += sizeof(UInt_t);
                 } */
-	} else {
-		AliError("Invalid or unknown SimpleValueType!");
-		return;
-	}	
+  } else {
+    AliError("Invalid or unknown ValueType!");
+    return;
+  }	
 
 }
 
@@ -680,98 +678,97 @@ void AliDCSMessage::LoadCountMessage()
 }
 
 //______________________________________________________________________
-void AliDCSMessage::LoadResultSetMessage() 
+void AliDCSMessage::LoadResultSetMessage()
 {
-// load result message
+  // load result message
 
-	if (fMessageSize < VALUES_OFFSET) {
-		AliError("Body size is too small for result set message!");
-		return;
-	}	
+  if (fMessageSize < VALUES_OFFSET) {
+    AliError("Body size is too small for result set message!");
+    return;
+  }
 
-	fSimpleValueType = (AliSimpleValue::Type) GetUByte(
-				fMessage + SVT_OFFSET);
-	UInt_t count = GetUInt(fMessage + VALUE_COUNT_OFFSET);
+  fValueType = (AliDCSValue::Type) GetUByte(fMessage + SVT_OFFSET);
+  UInt_t count = GetUInt(fMessage + VALUE_COUNT_OFFSET);
 
-	UInt_t cursor = VALUES_OFFSET;
+  UInt_t cursor = VALUES_OFFSET;
 
-	if (fSimpleValueType == AliSimpleValue::kBool) {
-		if (VALUES_OFFSET + count + count * sizeof(UInt_t) > 
-			fMessageSize) {
-			AliError("Too many bool values for this buffer size!");
-			return;
-		}	
-	
-		for (UInt_t k = 0; k < count; k ++) {
-			Bool_t aBool = GetBool(fMessage + cursor);
-			cursor += 1;
-			UInt_t timeStamp = GetUInt(fMessage + cursor);
-			cursor += sizeof(UInt_t);
-			fValues.Add(new AliDCSValue(aBool, timeStamp));
-		}
-	} else if (fSimpleValueType == AliSimpleValue::kByte) {
-		if (VALUES_OFFSET + count + count * sizeof(UInt_t) > 
-                        fMessageSize) {
-                        AliError("Too many byte values for this buffer size!");
-                        return;
-                }       
-        
-                for (UInt_t k = 0; k < count; k ++) {
-                        Char_t aByte = GetByte(fMessage + cursor);
-                        cursor += sizeof(Char_t);
-                        UInt_t timeStamp = GetUInt(fMessage + cursor);
-                        cursor += sizeof(UInt_t);
-                        fValues.Add(new AliDCSValue(aByte, timeStamp));
-                }
-	} else if (fSimpleValueType == AliSimpleValue::kInt) {
-		if (VALUES_OFFSET + count * sizeof(Int_t) + 
-			count * sizeof(UInt_t) > fMessageSize) {
-                        AliError("Too many int values for this buffer size!");
-                        return;
-                }
+  if (fValueType == AliDCSValue::kBool) {
+    if (VALUES_OFFSET + count + count * sizeof(UInt_t) >
+      fMessageSize) {
+      AliError("Too many bool values for this buffer size!");
+      return;
+    }
 
-                for (UInt_t k = 0; k < count; k ++) {
-                        Int_t aInt = GetInt(fMessage + cursor);
-                        cursor += sizeof(Int_t);
-                        UInt_t timeStamp = GetUInt(fMessage + cursor);
-                        cursor += sizeof(UInt_t);
-                        fValues.Add(new AliDCSValue(aInt, timeStamp));
-                }
+    for (UInt_t k = 0; k < count; k ++) {
+      Bool_t aBool = GetBool(fMessage + cursor);
+      cursor += 1;
+      UInt_t timeStamp = GetUInt(fMessage + cursor);
+      cursor += sizeof(UInt_t);
+      fValues.Add(new AliDCSValue(aBool, timeStamp));
+    }
+  } else if (fValueType == AliDCSValue::kChar) {
+    if (VALUES_OFFSET + count + count * sizeof(UInt_t) >
+      fMessageSize) {
+      AliError("Too many byte values for this buffer size!");
+      return;
+    }
 
-	} else if (fSimpleValueType == AliSimpleValue::kUInt) {
-		if (VALUES_OFFSET + count * sizeof(UInt_t) +  
-                        count * sizeof(UInt_t) > fMessageSize) {
-                        AliError("Too many uint values for this buffer size!");
-                        return;
-                }
+    for (UInt_t k = 0; k < count; k ++) {
+      Char_t aByte = GetByte(fMessage + cursor);
+      cursor += sizeof(Char_t);
+      UInt_t timeStamp = GetUInt(fMessage + cursor);
+      cursor += sizeof(UInt_t);
+      fValues.Add(new AliDCSValue(aByte, timeStamp));
+    }
+  } else if (fValueType == AliDCSValue::kInt) {
+    if (VALUES_OFFSET + count * sizeof(Int_t) +
+      count * sizeof(UInt_t) > fMessageSize) {
+            AliError("Too many int values for this buffer size!");
+            return;
+    }
 
-                for (UInt_t k = 0; k < count; k ++) {
-                        UInt_t aUInt = GetUInt(fMessage + cursor);
-                        cursor += sizeof(UInt_t);
-                        UInt_t timeStamp = GetUInt(fMessage + cursor);
-                        cursor += sizeof(UInt_t);
-                        fValues.Add(new AliDCSValue(aUInt, timeStamp));
-                }
-	} else if (fSimpleValueType == AliSimpleValue::kFloat) {
-		if (VALUES_OFFSET + count * sizeof(Float_t) +
-                        count * sizeof(UInt_t) > fMessageSize) {
-                        AliError("Too many float values for this buffer size!");
-                        return;
-                }
+    for (UInt_t k = 0; k < count; k ++) {
+            Int_t aInt = GetInt(fMessage + cursor);
+            cursor += sizeof(Int_t);
+            UInt_t timeStamp = GetUInt(fMessage + cursor);
+            cursor += sizeof(UInt_t);
+            fValues.Add(new AliDCSValue(aInt, timeStamp));
+    }
 
-                for (UInt_t k = 0; k < count; k ++) {
-                        Float_t aFloat = GetFloat(fMessage + cursor);
-                        cursor += sizeof(Float_t);
-                        UInt_t timeStamp = GetUInt(fMessage + cursor);
-                        cursor += sizeof(UInt_t);
-                        fValues.Add(new AliDCSValue(aFloat, timeStamp));
-                }
+  } else if (fValueType == AliDCSValue::kUInt) {
+    if (VALUES_OFFSET + count * sizeof(UInt_t) +
+      count * sizeof(UInt_t) > fMessageSize) {
+      AliError("Too many uint values for this buffer size!");
+      return;
+    }
 
-	} else {
-		AliError("Unknown or invalid simple value type!");
-	}
+    for (UInt_t k = 0; k < count; k ++) {
+      UInt_t aUInt = GetUInt(fMessage + cursor);
+      cursor += sizeof(UInt_t);
+      UInt_t timeStamp = GetUInt(fMessage + cursor);
+      cursor += sizeof(UInt_t);
+      fValues.Add(new AliDCSValue(aUInt, timeStamp));
+    }
+  } else if (fValueType == AliDCSValue::kFloat) {
+    if (VALUES_OFFSET + count * sizeof(Float_t) +
+      count * sizeof(UInt_t) > fMessageSize) {
+      AliError("Too many float values for this buffer size!");
+      return;
+    }
 
-	fType = kResultSet;
+    for (UInt_t k = 0; k < count; k ++) {
+      Float_t aFloat = GetFloat(fMessage + cursor);
+      cursor += sizeof(Float_t);
+      UInt_t timeStamp = GetUInt(fMessage + cursor);
+      cursor += sizeof(UInt_t);
+      fValues.Add(new AliDCSValue(aFloat, timeStamp));
+    }
+
+  } else {
+    AliError("Unknown or invalid value type!");
+  }
+
+  fType = kResultSet;
 }
 
 //______________________________________________________________________
@@ -1072,43 +1069,43 @@ UInt_t AliDCSMessage::GetCount() const
 }
 
 //______________________________________________________________________
-AliSimpleValue::Type AliDCSMessage::GetSimpleValueType() const 
+AliDCSValue::Type AliDCSMessage::GetValueType() const
 {
-        // ResultSet.
-        // Returns simple value type (see AliSimpleValue) for the values
-	// in this ResultSet.
- 
+  // ResultSet.
+  // Returns simple value type (see AliDCSValue) for the values
+  // in this ResultSet.
 
-        if (fType != kResultSet) {
-                AliError("Invalid AliDCSMessage type!");
-                return AliSimpleValue::kInvalid;
-        }
+  if (fType != kResultSet) {
+          AliError("Invalid AliDCSMessage type!");
+          return AliDCSValue::kInvalid;
+  }
 
-	return fSimpleValueType;
+  return fValueType;
 }
 
 //______________________________________________________________________
 UInt_t AliDCSMessage::GetValueCount() const 
 {
-        // ResultSet.
-        // Returns the count of values in this ResultSet.
+  // ResultSet.
+  // Returns the count of values in this ResultSet.
 
 
-        if (fType != kResultSet) {
-                AliError("Invalid AliDCSMessage type!");
-                return 0;
-        }
+  if (fType != kResultSet) {
+          AliError("Invalid AliDCSMessage type!");
+          return 0;
+  }
 
-	return fValues.GetEntriesFast();
+  return fValues.GetEntriesFast();
 }
 
 //______________________________________________________________________
-UInt_t AliDCSMessage::GetValues(TObjArray& result) const 
+UInt_t AliDCSMessage::GetValues(TObjArray& result) const
 {
-        // ResultSet.
-        // Returns the number of values got from the message.
-	// result: used to return the values. Collection of AliDCSValue.
+  // ResultSet.
+  // Returns the number of values got from the message.
+  // result: used to return the values. Collection of AliDCSValue.
 
+  // TODO do not copy
 
 	if (fType != kResultSet) {
                 AliError("Invalid AliDCSMessage type!");
@@ -1128,26 +1125,23 @@ UInt_t AliDCSMessage::GetValues(TObjArray& result) const
 //______________________________________________________________________
 Bool_t AliDCSMessage::AddValue(const AliDCSValue& value) 
 {
-	// ResultSet.
-        // Adds value to the ResultSet value list.
-	// Returns kFALSE in case of error.
-	// Otherwise returns kTRUE;
+  // Adds value to the ResultSet value list.
+  // Returns kFALSE in case of error.
+  // Otherwise returns kTRUE;
 
-	if (fType != kResultSet) {
-                AliError("Invalid AliDCSMessage type!");
-                return kFALSE;
-        }
-	
-	if (value.GetSimpleValue().GetType() != fSimpleValueType) {
-		AliError(Form("Can't add value with type %s to this message!",
-			AliSimpleValue::GetTypeString(
-				value.GetSimpleValue().GetType())));
-		return kFALSE;
-	}
+  if (fType != kResultSet) {
+    AliError("Invalid AliDCSMessage type!");
+    return kFALSE;
+  }
 
-	fValues.Add(new AliDCSValue(value));
+  if (value.GetType() != fValueType) {
+    AliError(Form("Can't add value with type %d to this message!", value.GetType()));
+    return kFALSE;
+  }
 
-	return kTRUE;
+  fValues.Add(new AliDCSValue(value));
+
+  return kTRUE;
 }
 
 //______________________________________________________________________
@@ -1244,8 +1238,7 @@ void AliDCSMessage::Print(Option_t* /*option*/) const
 		case kResultSet: {
 			printString += "ResultSet\n";
 			printString += " SimpleValueType: ";
-			printString += AliSimpleValue::GetTypeString(
-				fSimpleValueType);
+			printString += fValueType;
 			printString += '\n';
 			printString += " ValueCount: ";
 			printString += GetValueCount();

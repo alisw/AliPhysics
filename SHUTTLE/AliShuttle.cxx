@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/06/12 09:11:16  jgrosseo
+coding conventions (Alberto)
+
 Revision 1.3  2006/06/06 14:26:40  jgrosseo
 o) removed files that were moved to STEER
 o) shuttle updated to follow the new interface (Alberto)
@@ -97,8 +100,8 @@ AliShuttle::AliShuttle(const AliShuttleConfig* config,
 	// retries: the number of retries in case of connection error.
 	//
 
-	RegisterPreprocessor(new AliDefaultPreprocessor("DEFAULT", 0));
-
+	/*AliDefaultPreprocessor* pp = *///new AliDefaultPreprocessor("DEFAULT", this);
+  // TODO
 }
 
 //______________________________________________________________________
@@ -261,13 +264,18 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 
 	AliPreprocessor* aPreprocessor =
 		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(detector));
-	if(!aPreprocessor){
+	if(!aPreprocessor) {
 		AliInfo(Form("No Preprocessor for %s: Using default Preprocessor!",detector));
 		aPreprocessor = dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue("DEFAULT"));
 	}
 
-	aPreprocessor->Initialize(run, startTime, endTime);
-	hasError = (Bool_t) !(aPreprocessor->Process(&aliasMap));
+  if (aPreprocessor)
+  {
+    aPreprocessor->Initialize(run, startTime, endTime);
+    hasError = (aPreprocessor->Process(&aliasMap) != 0);
+  }
+  else
+    AliWarning(Form("No preprocessor for %s available", detector));
 
   aliasMap.Delete();
 
