@@ -2,22 +2,17 @@ void TestShuttle() {
 
 	gSystem->Load("libSHUTTLE");
         gSystem->Load("libRLDAP");
-
 	gSystem->Load("libTest");
 
 	AliLog::SetGlobalDebugLevel(1);
 
-        AliShuttleConfig config("pcepalice60.cern.ch", 389,
-			"cn=Shuttle,dc=alice,dc=cern,dc=ch", "passhuttle");
+ 	AliShuttleConfig config("pcalice290.cern.ch", 389, "o=alice,dc=cern,dc=ch");
         config.Print();
 
-	AliCDBStorage* cdbStorage = AliCDBManager::Instance()->
-			GetStorage("local://~/temp/DCS");
-
-	AliShuttleTrigger trigger(&config, cdbStorage);
+	AliShuttleTrigger trigger(&config);
 
 	AliShuttle* shuttle = trigger.GetShuttle();
-	shuttle->RegisterCDBPreProcessor(new TestITSPreProcessor());
+	TestITSPreprocessor *itsPrep = new AliITSPreprocessor("ITS",shuttle);
 
 	trigger.CollectNew();
 	

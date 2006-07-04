@@ -11,5 +11,6 @@
 #pragma link C++ class TestServer;
 #pragma link C++ class TestITSPreprocessor;
 #pragma link C++ class TestTPCPreprocessor;
+#pragma link C++ class AliTPCDataDCS;
 
 #endif

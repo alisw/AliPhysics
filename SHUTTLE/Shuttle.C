@@ -3,21 +3,25 @@ void Shuttle(const char* param = "listen") {
 	gSystem->Load("libSHUTTLE");
         gSystem->Load("$ROOTSYS/lib/libRLDAP");
 	gSystem->Load("$ROOTSYS/lib/libThread");
+	gSystem->Load("test/libTest.so");
 
 //	AliLog::SetGlobalDebugLevel(1);
 
-        AliShuttleConfig config("pcepalice60.cern.ch", 389,
-			"cn=Shuttle,dc=alice,dc=cern,dc=ch", "passhuttle");
+	AliCDBManager *man = AliCDBManager::Instance();
+	man->SetDefaultStorage("local://MainCDB");
+
+	AliShuttleConfig config("pcalice290.cern.ch", 389,
+			"o=alice,dc=cern,dc=ch");
+	config.SetProcessAll(kTRUE);
         config.Print();
 
-	AliCDBStorage* cdbStorage = AliCDBManager::Instance()->
-			GetStorage("local://~/temp/DCS");
-
-	AliShuttleTrigger trigger(&config, cdbStorage);
+	AliShuttleTrigger trigger(&config);
 
 	AliShuttle* shuttle = trigger.GetShuttle();
+
 	// Add here detectors preprocessor ...
-	//shuttle->RegisterCDBPreProcessor(new TestITSPreProcessor());
+	TestTPCPreprocessor *tpcPrep = new TestTPCPreprocessor("TPC",shuttle);
+	TestITSPreprocessor *itsPrep = new TestITSPreprocessor("ITS",shuttle);
 
 	TString paramStr(param);
 	

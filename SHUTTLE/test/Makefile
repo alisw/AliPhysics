@@ -2,8 +2,7 @@
 include ../../build/Makefile.$(ALICE_TARGET)
 
 
-CLASSES = TestServer.cxx TestITSPreprocessor.cxx TestTPCPreprocessor.cxx
-
+CLASSES = TestServer.cxx TestITSPreprocessor.cxx TestTPCPreprocessor.cxx AliTPCDataDCS.cxx
 DICT = DictTest.cxx
 
 HEADERS := $(patsubst %.cxx,%.h,$(CLASSES))
@@ -13,10 +12,10 @@ SRCS = $(CLASSES) $(DICT)
 OBJS := $(patsubst %.cxx,.obj/%.o,$(SRCS))
 DEPS := $(patsubst .obj/%.o,.dep/%.d,$(OBJS))
 
-INCDIR = -I$(shell root-config --incdir) -I../ -I../../include -I../../TPC
+INCDIR = -I$(shell root-config --incdir) -I../ -I../../include 
 CXXFLAGS += $(INCDIR)
 LIBDIR = $(shell root-config --libdir)
-LIBS = $(shell root-config --libs)
+
 
 SHARED = -shared
 
