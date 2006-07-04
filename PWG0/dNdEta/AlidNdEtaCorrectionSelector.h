@@ -20,11 +20,13 @@ class AlidNdEtaCorrectionSelector : public AliSelectorRL {
     virtual void    Terminate();
 
  protected:
-    Bool_t  CheckVertex();
-  
+    Bool_t SignOK(Double_t charge);
+
     AliESDtrackCuts*  fEsdTrackCuts;          // Object containing the parameters of the esd track cuts
 
     AlidNdEtaCorrection* fdNdEtaCorrection;      // contains the intermediate histograms (on each slave)
+
+    Int_t fSignMode;  // if 0 process all particles, if +-1 process only particles with that sign
 
  private:
 

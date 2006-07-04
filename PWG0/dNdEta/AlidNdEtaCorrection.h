@@ -78,7 +78,7 @@ public:
 protected:
   AliCorrectionMatrix3D* fTrack2ParticleCorrection; //-> handles the track-to-particle correction, function of vtx_z, eta, pt
   AliCorrectionMatrix2D* fVertexRecoCorrection;     //-> handles the vertex reconstruction efficiency, function of n_clustersITS and vtx_z
-  AliCorrectionMatrix2D* fTriggerCorrection;       //-> handles the trigger efficiency efficiency, function of n_clustersITS and vtx_z
+  AliCorrectionMatrix2D* fTriggerCorrection;       //-> handles the trigger efficiency, function of n_clustersITS and vtx_z
 
   AliCorrectionMatrix2D* fTriggerBiasCorrection;          //-> MB to desired sample
 
