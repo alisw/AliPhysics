@@ -31,7 +31,8 @@ ClassImp(AlidNdEtaCorrectionSelector)
 AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector() :
   AliSelectorRL(),
   fEsdTrackCuts(0),
-  fdNdEtaCorrection(0)
+  fdNdEtaCorrection(0),
+  fSignMode(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -48,6 +49,24 @@ AlidNdEtaCorrectionSelector::~AlidNdEtaCorrectionSelector()
   // list is deleted by the TSelector dtor
 }
 
+Bool_t AlidNdEtaCorrectionSelector::SignOK(Double_t charge)
+{
+  // returns if a particle with this sign should be counted
+  // this is determined by the value of fSignMode, which should have the same sign
+  // as the charge
+  // if fSignMode is 0 all particles are counted
+
+  if (fSignMode > 0)
+    if (charge < 0)
+      return kFALSE;
+
+  if (fSignMode < 0)
+    if (charge > 0)
+      return kFALSE;
+
+  return kTRUE;
+}
+
 void AlidNdEtaCorrectionSelector::Begin(TTree * tree)
 {
   // The Begin() function is called at the start of the query.
@@ -55,6 +74,20 @@ void AlidNdEtaCorrectionSelector::Begin(TTree * tree)
   // The tree argument is deprecated (on PROOF 0 is passed).
 
   AliSelectorRL::Begin(tree);
+
+  TString option = GetOption();
+  AliInfo(Form("Called with option %s.", option.Data()));
+
+  if (option.Contains("only-positive"))
+  {
+    AliInfo("Processing only positive particles.");
+    fSignMode = 1;
+  }
+  else if (option.Contains("only-negative"))
+  {
+    AliInfo("Processing only negative particles.");
+    fSignMode = -1;
+  }
 }
 
 void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
@@ -156,6 +189,9 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
+    if (SignOK(particle->GetPDG()->Charge()) == kFALSE)
+        continue;
+
     Float_t eta = particle->Eta();
     Float_t pt = particle->Pt();
 
@@ -171,8 +207,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   // loop over esd tracks
   Int_t nTracks = fESD->GetNumberOfTracks();
 
-  // count the number of "good" tracks for vertex reconstruction efficiency
-  // TODO change to number of ITS clusters or similar
+  // count the number of "good" tracks as parameter for vertex reconstruction efficiency
   Int_t nGoodTracks = 0;
   for (Int_t t=0; t<nTracks; t++)
   {
@@ -201,10 +236,12 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
       continue;
     }
 
+    if (SignOK(particle->GetPDG()->Charge()) == kFALSE)
+        continue;
+
     if (vertexReconstructed)
       fdNdEtaCorrection->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
   } // end of track loop
-
 
   fdNdEtaCorrection->FillEvent(vtxMC[2], nGoodTracks);
   if (eventTriggered)
@@ -247,7 +284,7 @@ void AlidNdEtaCorrectionSelector::Terminate()
 
   fdNdEtaCorrection->Finish();
 
-  TFile* fout = new TFile("correction_map.root","RECREATE");
+  TFile* fout = new TFile(Form("correction_map%s.root", GetOption()), "RECREATE");
 
   fEsdTrackCuts->SaveHistograms("esd_track_cuts");
   fdNdEtaCorrection->SaveHistograms();

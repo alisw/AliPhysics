@@ -64,7 +64,7 @@ protected:
   TH1D* fdNdEta[kVertexBinning]; // dndeta results for different vertex bins (0 = full range)
   TH1D* fdNdEtaPtCutOffCorrected[kVertexBinning];  // dndeta results for different vertex bins (0 = full range), pt cut off corrected
 
-  ClassDef(dNdEtaAnalysis, 0)
+  ClassDef(dNdEtaAnalysis, 1)
 };
 
 #endif

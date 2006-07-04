@@ -9,7 +9,7 @@
 
 #include "../CreateESDChain.C"
 
-void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t debug = kFALSE)
+void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t debug = kFALSE, const Char_t* option = "")
 {
   gSystem->Load("libPWG0base");
   gSystem->Load("libPWG0dep");
@@ -36,5 +36,5 @@ void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t d
   if (debug != kFALSE)
     selector += "g";
 
-  chain->Process(selector);
+  chain->Process(selector, option);
 }
