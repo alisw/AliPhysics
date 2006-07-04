@@ -3,7 +3,7 @@
 #include <TMap.h>
 
 #include "AliCDBMetaData.h"
-#include "AliSimpleValue.h"
+#include "AliDCSValue.h"
 
 //
 // This class is used for all subdectectors that dont have an own
@@ -30,10 +30,8 @@ UInt_t AliDefaultPreprocessor::Process(TMap* dcsAliasMap)
   // store to default CDB object
 
   AliCDBMetaData metaData;
-  metaData.SetProperty("StartTime",
-      new AliSimpleValue(fStartTime));
-  metaData.SetProperty("EndTime",
-      new AliSimpleValue(fEndTime));
+  metaData.SetProperty("StartEndTime",
+      new AliDCSValue(fStartTime, fEndTime));
   metaData.SetComment("Automatically stored by AliDefaultPreprocessor!");
 
   return Store(dcsAliasMap, &metaData);
