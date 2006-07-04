@@ -18,6 +18,8 @@
 #include <TTree.h>
 #include <TBranch.h>
 #include <TMath.h>
+#include <TString.h>
+#include <TSystem.h>
 
 #include "AliLog.h"
 #include "AliRawDataHeader.h"
@@ -63,18 +65,22 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
   Int_t   nmodules = (Int_t) treeD->GetEntries();
   AliDebug(1,Form("Number of modules inside treeD = %d",nmodules));
 
-  const Int_t kSize         = 4608;
   const Int_t kDDL          = AliDAQ::NumberOfDdls("PMD");
   Int_t modulePerDDL        = 0;
 
 
   AliRawDataHeader header;
   UInt_t sizeRawData = 0;
-  Int_t  totword     = 0;
-
+  
+  const Int_t kSize = 1536;
   UInt_t buffer[kSize];
 
+  UInt_t busPatch[50][1536];
+
+  Int_t contentsBus[50];
+
   Char_t filename[80];
+
 
   Int_t mmodule = 0;
   for(Int_t iddl = 0; iddl < kDDL; iddl++)
@@ -103,39 +109,176 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	}
 
 
+
       // Write the Dummy Data Header into the file
       Int_t bHPosition = outfile.tellp();
       outfile.write((char*)(&header),sizeof(header));
 
+      for (Int_t ibus = 0; ibus < 50; ibus++)
+	{
+	  contentsBus[ibus] = 0;
+	  for (Int_t ich = 0; ich < 1536; ich++)
+	    {
+	      busPatch[ibus][ich] = 0;
+	    }
+	}
 
       for(Int_t ium = 0; ium < modulePerDDL; ium++)
 	{
-	  
-	  if (iddl == 4 && ium == 6) mmodule = 36;
-	  if (iddl == 5 && ium == 6) mmodule = 42;
+	  if (iddl == 4 && ium == 6) mmodule = 42;
 
-	  for (Int_t i = 0; i < kSize; i++)
-	    {
-	      buffer[i] = 0;
-	    }
 	  // Extract energy deposition per cell and pack it
 	  // in a 32-bit word and returns all the total words
 	  // per one unit-module
 	  
-	  GetUMDigitsData(treeD, mmodule, ium, iddl, totword, buffer);
-	  
-	  outfile.write((char*)buffer,totword*sizeof(UInt_t));
-
+	  GetUMDigitsData(treeD, mmodule, iddl, contentsBus, busPatch);
 	  mmodule++;
-
 	}
 
+      
+
+      Int_t ij = 0;
+      Int_t dsp[10];
+      Int_t dspBus[10];
+      for (Int_t i = 0; i < 10; i++)
+	{
+	  dsp[i] = 0;
+	  dspBus[i] = 0;
+	  for (Int_t ibus=0; ibus < 5; ibus++)
+	    {
+	      if (contentsBus[ij] > 0)
+		{
+		  dsp[i] += contentsBus[ij];
+		  dspBus[i]++;
+		}
+	      ij++;
+	    }
+	  // Add the patch Bus header to the DSP contents
+	  dsp[i] += 4*dspBus[i];
+	}
+
+      Int_t dspBlockARDL = 0;
+      Int_t dspBlockBRDL = 0;
+      
+      for (Int_t i = 0; i < 5; i++)
+	{
+	  Int_t ieven = 2*i;
+	  Int_t iodd  = 2*i + 1;
+	  if (dsp[ieven] > 0)
+	    {
+	      dspBlockARDL += dsp[ieven];
+	      dspBlockARDL += 8;
+	    }
+	  if (dsp[iodd] > 0)
+	    {
+	      dspBlockBRDL += dsp[iodd];
+	      dspBlockBRDL += 8;
+	    }
+	}
+      
+      // Start writing the DDL file
+      UInt_t dspRDL = 0;
+      UInt_t dspBlockHeader[8];
+      UInt_t dspHeader[8];
+      UInt_t patchBusHeader[4];
+      Int_t iskip[5];
+
+      for (Int_t iblock = 0; iblock < 2; iblock++)
+	{
+	  // DSP Block Header
+	  
+	  for (Int_t i=0; i<8; i++)
+	    {
+	      dspBlockHeader[i] = 0;
+	      if (i == 1)
+		{
+		  if (iblock == 0)
+		    {
+		      dspBlockHeader[1] = (UInt_t) dspBlockARDL;
+		    }
+		  else if (iblock == 1)
+		    {
+		      dspBlockHeader[1] = (UInt_t) dspBlockBRDL;
+		    }
+		}
+	    }
+
+	  outfile.write((char*)(&dspBlockHeader),8*sizeof(UInt_t));
+
+	  if (iblock == 0)
+	    {
+	      iskip[0] = 0;
+	      iskip[1] = 10;
+	      iskip[2] = 20;
+	      iskip[3] = 30;
+	      iskip[4] = 40;
+	    }
+	  else if (iblock == 1)
+	    {
+	      iskip[0] = 5;
+	      iskip[1] = 15;
+	      iskip[2] = 25;
+	      iskip[3] = 35;
+	      iskip[4] = 45;
+	    }
+
+	  for (Int_t idsp = 0; idsp < 5; idsp++)
+	    {
+	      // DSP Header
+	      Int_t dspno = 0;
+	      if (iblock == 0)
+		{
+		  dspno = 2*idsp;
+		  dspRDL = (UInt_t) dsp[dspno];
+		}
+	      else if (iblock == 1)
+		{
+		  dspno = 2*idsp + 1;
+		  dspRDL = (UInt_t) dsp[dspno];
+		}
+
+	      for (Int_t i=0; i<8; i++)
+		{
+		  dspHeader[i] = 0;
+		}
+	      dspHeader[1] = dspRDL;
+	      dspHeader[6] = dspno;
+	      outfile.write((char*)(&dspHeader),8*sizeof(UInt_t));
+	      
+	      for (Int_t ibus = 0; ibus < 5; ibus++)
+		{
+		  // Patch Bus Header
+		  Int_t busno = iskip[idsp] + ibus;
+		  Int_t patchbusRDL = contentsBus[busno];
+		  
+		  for (Int_t i=0; i<4; i++)
+		    {
+		      patchBusHeader[i] = 0;
+		    }
+		  patchBusHeader[1] = (UInt_t) patchbusRDL;
+		  patchBusHeader[2] = (UInt_t) busno;
+
+		  outfile.write((char*)(&patchBusHeader),4*sizeof(UInt_t));
+
+		  for (Int_t iword = 0; iword < patchbusRDL; iword++)
+		    {
+		      buffer[iword] = busPatch[busno][iword];
+		    }
+		  
+		  outfile.write((char*)buffer,patchbusRDL*sizeof(UInt_t));
+		  
+		}
+	    }
+	}
+      
+      
       // Write real data header
       // take the pointer to the beginning of the data header
       // write the total number of words per ddl and bring the
       // pointer to the current file position and close it
       UInt_t cFPosition = outfile.tellp();
       sizeRawData = cFPosition - bHPosition - sizeof(header);
+
       header.fSize = cFPosition - bHPosition;
       header.SetAttribute(0);  // valid data
       outfile.seekp(bHPosition);
@@ -148,9 +291,9 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 
 }
 //____________________________________________________________________________
-void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
-				       Int_t ddlno, Int_t & totword,
-				       UInt_t *buffer)
+void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
+				       Int_t ddlno, Int_t *contentsBus,
+				       UInt_t busPatch[][1536])
 {
   // Retrives digits data UnitModule by UnitModule
   UInt_t baseword;
@@ -158,9 +301,105 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
   UInt_t adc;
   Int_t  det, smn, irow, icol;
 
+  const Int_t kMaxBus = 50;
+  Int_t totPatchBus, bPatchBus, ePatchBus;
+  Int_t ibus, totmcm, rows, cols, rowe, cole;
+  Int_t moduleno;
+  Int_t busno = 0;
+  Int_t patchBusNo[kMaxBus], mcmperBus[kMaxBus];
+  Int_t startRowBus[kMaxBus], startColBus[kMaxBus];
+  Int_t endRowBus[kMaxBus], endColBus[kMaxBus];
+
+  Int_t beginPatchBus = -1;
+  Int_t endPatchBus   = -1;
+  for(Int_t i = 0; i < kMaxBus; i++)
+    {
+      patchBusNo[i]  = -1;
+      mcmperBus[i]   = -1;
+      startRowBus[i] = -1;
+      startColBus[i] = -1;
+      endRowBus[i]   = -1;
+      endColBus[i]   = -1;
+    }
+  Int_t modulePerDDL = 0;
+  if (ddlno < 4)
+    {
+      modulePerDDL = 6;
+    }
+  else if (ddlno == 4 || ddlno == 5)
+    {
+      modulePerDDL = 12;
+    }
+
+
+
+
+
+  TString fileName(gSystem->Getenv("ALICE_ROOT"));
+
+  if(ddlno == 0)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl0.dat";
+    }
+  else if(ddlno == 1)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl1.dat";
+    }
+  else if(ddlno == 2)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl2.dat";
+    }
+  else if(ddlno == 3)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl3.dat";
+    }
+  else if(ddlno == 4)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl4.dat";
+    }
+  else if(ddlno == 5)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl5.dat";
+    }
+
+  ifstream infile;
+  infile.open(fileName.Data(), ios::in); // ascii file
+  if(!infile)
+    AliError(Form("Could not read the mapping file for DDL No = %d",ddlno));
+
+  for (Int_t im = 0; im < modulePerDDL; im++)
+    {
+      infile >> moduleno;
+      infile >> totPatchBus >> bPatchBus >> ePatchBus;
+
+      if (moduleno == imodule)
+	{
+	  beginPatchBus = bPatchBus;
+	  endPatchBus   = ePatchBus;
+	}
+      
+      for(Int_t i=0; i<totPatchBus; i++)
+	{
+	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
+
+	  if (moduleno == imodule)
+	    {
+	      patchBusNo[ibus]   = ibus;
+	      mcmperBus[ibus]    = totmcm;
+	      startRowBus[ibus]  = rows;
+	      startColBus[ibus]  = cols;
+	      endRowBus[ibus]    = rowe;
+	      endColBus[ibus]    = cole;
+	    }
+	}
+
+    }
+
+  infile.close();
+
   treeD->GetEntry(imodule); 
   Int_t nentries = fDigits->GetLast();
-  totword = nentries+1;
+  Int_t totword = nentries+1;
 
   for (Int_t ient = 0; ient < totword; ient++)
     {
@@ -173,7 +412,10 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
       adc    = (UInt_t) fPMDdigit->GetADC();
 
       TransformS2H(smn,irow,icol);
-      GetMCMCh(ddlno, ium, irow, icol, mcmno, chno);
+
+      GetMCMCh(ddlno, irow, icol, beginPatchBus, endPatchBus,
+	       mcmperBus, startRowBus, startColBus,
+	       endRowBus, endColBus, busno, mcmno, chno);
 
       baseword = 0;
       AliBitPacking::PackWord(adc,baseword,0,11);
@@ -181,59 +423,41 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium,
       AliBitPacking::PackWord(mcmno,baseword,18,28);
       AliBitPacking::PackWord(0,baseword,29,30);
       AliBitPacking::PackWord(1,baseword,31,31);
-      
-      buffer[ient] = baseword;
-      
+
+      Int_t jj = contentsBus[busno];
+      busPatch[busno][jj] = baseword;
+
+      contentsBus[busno]++;
     }
 
 }
+
 //____________________________________________________________________________
 void AliPMDDDLRawData::TransformS2H(Int_t smn, Int_t &irow, Int_t &icol)
 {
   // Does the Software to Hardware coordinate transformation
   //
+
   Int_t  irownew = 0;
   Int_t  icolnew = 0;
-  Int_t  irownew1 = 0;
-  Int_t  icolnew1 = 0;
 
   // First in digits we have all dimension 48x96
-  // Transform into the realistic one, i.e, For SM 1&2 96x48
-  // and for SM 3&4 48x96
+  // Transform into the realistic one, i.e, For SM 0&1 96(row)x48(col)
+  // and for SM 2&3 48(row)x96(col)
   // 
   if(smn < 12)
     {
-      irownew1 = icol;
-      icolnew1 = irow;
+      irownew = icol;
+      icolnew = irow;
     }
   else if( smn >= 12 && smn < 24)
     {
-      irownew1 = irow;
-      icolnew1 = icol;
+      irownew = irow;
+      icolnew = icol;
     }
-  // This is the transformation of Geant (0,0) to the Hardware (0,0)
-  // which is always at the top left corner. This may change in future.
-  // Then accordingly we have to transform it.
-  if(smn < 6)
-    {
-      irownew = 95 - irownew1;
-      icolnew = icolnew1;
-    }
-  else if(smn >= 6 && smn < 12)
-    {
-      irownew = irownew1;
-      icolnew = 47 - icolnew1;
-    }
-  else if(smn >= 12 && smn < 18)
-    {
-      irownew = 47 - irownew1;
-      icolnew = icolnew1;
-    }
-  else if(smn >= 18 && smn < 24)
-    {
-      irownew = irownew1;
-      icolnew = 95 - icolnew1;
-    }
+
+  // In the new geometry always Geant (0,0) and Hardware (0,0) start
+  // from the top left corner
 
   irow = irownew;
   icol = icolnew;
@@ -243,9 +467,12 @@ void AliPMDDDLRawData::TransformS2H(Int_t smn, Int_t &irow, Int_t &icol)
 
 //____________________________________________________________________________
 
-void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t um,
-				Int_t row, Int_t col,
-				UInt_t &mcmno, UInt_t &chno)
+void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
+				Int_t beginPatchBus, Int_t endPatchBus,
+				Int_t *mcmperBus,
+				Int_t *startRowBus, Int_t *startColBus,
+				Int_t *endRowBus, Int_t *endColBus,
+				Int_t & busno, UInt_t &mcmno, UInt_t &chno)
 {
   // This part will be modified once the final track layout on the PCB is
   // designed. This will only change the coordinate of the individual cell
@@ -267,49 +494,124 @@ void AliPMDDDLRawData::GetMCMCh(Int_t ddlno, Int_t um,
 				     {37, 33, 63, 59},
 				     {35, 34, 61, 60} };
   
-  if (ddlno == 0 || ddlno == 1)
-    {
-      // PRE plane, SU Mod = 1, 2
-      Int_t irownew = row%16;
-      Int_t icolnew = col%4;
-      Int_t irowdiv = row/16;
-      Int_t icoldiv = col/4;
+  Int_t irownew = row%16;
+  Int_t icolnew = col%4;
+  
+  chno  = kCh[irownew][icolnew];
 
-      mcmno = 72*um + 12*irowdiv + icoldiv;
-      chno  = kCh[irownew][icolnew];
-    }
-  else if (ddlno == 2 || ddlno == 3)
-    {
-      // PRE plane,  SU Mod = 3, 4
-      Int_t irownew = row%16;
-      Int_t icolnew = col%4;
-      Int_t irowdiv = row/16;
-      Int_t icoldiv = col/4;
-      
-      mcmno = 72*um + 24*irowdiv + icoldiv;
-      chno  = kCh[irownew][icolnew];
-    }
-  else if (ddlno == 4 || ddlno == 5)
-    {
-      // CPV plane,  SU Mod = 1, 3 : ddl = 4
-      // CPV plane,  SU Mod = 2, 4 : ddl = 5
 
-      Int_t irownew = row%16;
-      Int_t icolnew = col%4;
-      Int_t irowdiv = row/16;
-      Int_t icoldiv = col/4;
-
-      if(um < 6)
+  for (Int_t ibus = beginPatchBus; ibus <= endPatchBus; ibus++)
+    {
+      Int_t srow = startRowBus[ibus];
+      Int_t erow = endRowBus[ibus];
+      Int_t scol = startColBus[ibus];
+      Int_t ecol = endColBus[ibus];
+      Int_t tmcm = mcmperBus[ibus];
+      if ((row >= srow && row <= erow) && (col >= scol && col <= ecol))
 	{
-	  mcmno = 72*um + 12*irowdiv + icoldiv;
-	}
-      else if(um >= 6)
-	{
-	  mcmno = 72*um + 24*irowdiv + icoldiv;
-	}
-      chno  = kCh[irownew][icolnew];
-    }
+	  busno = ibus;
 
+	  // Find out the MCM Number
+	  //
+
+	  if (ddlno == 0 || ddlno == 1)
+	    {
+	      // PRE plane, SU Mod = 0, 1
+	      Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
+	      if(rowdiff > 16)
+		{
+		  Int_t midrow = srow + 16;
+		  if(row >= srow && row < midrow)
+		    {
+		      mcmno = 12 + (col-scol)/4;
+		    }
+		  else if(row >= midrow && row < erow)
+		    {
+		      mcmno = (col-scol)/4;
+		    }
+		}
+	      else
+		{
+		  mcmno = (col-scol)/4;
+		}
+	    } // end of ddl 0 and 1
+	  else if (ddlno == 2)
+	    {
+	      // PRE plane,  SU Mod = 2
+	      
+	      Int_t icolnew = (col - scol)/4;
+	      mcmno = tmcm - 1 - icolnew;
+	    }
+	  else if (ddlno == 3)
+	    {
+	      // PRE plane,  SU Mod = 3
+	      
+	      Int_t icolnew = (col - scol)/4;
+	      mcmno = tmcm - 1 - icolnew;
+	    }
+	  else if (ddlno == 4)
+	    {
+	      // CPV plane,  SU Mod = 0, 3 : ddl = 4
+	      
+	      if(ibus <= 20)
+		{
+		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
+		  if(rowdiff > 16)
+		    {
+		      Int_t midrow = srow + 16;
+		      if(row >= srow && row < midrow)
+			{
+			  mcmno = 12 + (col-scol)/4;
+			}
+		      else if(row >= midrow && row < erow)
+			{
+			  mcmno = (col-scol)/4;
+			}
+		    }
+		  else
+		    {
+		      mcmno = (col-scol)/4;
+		    }
+		}
+	      else if (ibus > 20)
+		{
+		  Int_t icolnew = (col - scol)/4;
+		  mcmno = tmcm - 1 - icolnew;
+		}
+	    }
+	  else if (ddlno == 5)
+	    {
+	      // CPV plane,  SU Mod = 2, 1 : ddl = 5
+	      
+	      if(ibus <= 20)
+		{
+		  Int_t rowdiff = endRowBus[ibus] - startRowBus[ibus];
+		  if(rowdiff > 16)
+		    {
+		      Int_t midrow = srow + 16;
+		      if(row >= srow && row < midrow)
+			{
+			  mcmno = 12 + (col-scol)/4;
+			}
+		      else if(row >= midrow && row < erow)
+			{
+			  mcmno = (col-scol)/4;
+			}
+		    }
+		  else
+		    {
+		      mcmno = (col-scol)/4;
+		    }
+		}
+	      else if (ibus > 20)
+		{
+		  Int_t icolnew = (col - scol)/4;
+		  mcmno = tmcm - 1 - icolnew;
+		}
+	    }
+	}  
+    }
+  
 }
 //____________________________________________________________________________
 

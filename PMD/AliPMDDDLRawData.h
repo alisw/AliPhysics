@@ -4,9 +4,9 @@
  * See cxx source for full Copyright notice                               */
 //-----------------------------------------------------//
 //                                                     //
-//  Header File : PMDDigitization.h, Version 00        //
+//  Header File : AliPMDDDLRawData.h, Version 01       //
 //                                                     //
-//  Date   : September 20 2002                         //
+//  Date   : June 20 2006                              //
 //                                                     //
 //-----------------------------------------------------//
 
@@ -25,19 +25,22 @@ class AliPMDDDLRawData:public TObject
   virtual ~AliPMDDDLRawData();
 
   void WritePMDRawData(TTree *treeD);
-  void GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ium, Int_t ddlno,
-		       Int_t & totword, UInt_t *buffer);
+  void GetUMDigitsData(TTree *treeD, Int_t imodule, Int_t ddlno,
+		       Int_t *contentsBus, UInt_t busPatch[][1536]);
   void TransformS2H(Int_t smn, Int_t &irow, Int_t &icol);
-  void GetMCMCh(Int_t ddlno, Int_t um, Int_t row, Int_t col,
-		UInt_t &mcmno, UInt_t &chno);
-
+  void GetMCMCh(Int_t ddlno, Int_t row, Int_t col,
+		Int_t beginPatchBus, Int_t endPatchBus,
+		Int_t *mcmperBus,
+		Int_t *startRowBus, Int_t *startColBus,
+		Int_t *endRowBus, Int_t *endColBus,
+		Int_t & busno, UInt_t &mcmno, UInt_t &chno);
 
  protected:
 
   TClonesArray *fDigits;    //! List of digits
   AliPMDdigit  *fPMDdigit;  //! Pointer to digits
 
-  ClassDef(AliPMDDDLRawData,3)    // To make RAW Data
+  ClassDef(AliPMDDDLRawData,4)    // To make RAW Data
 };
 #endif
 
