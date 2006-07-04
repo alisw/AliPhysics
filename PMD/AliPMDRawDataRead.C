@@ -3,28 +3,38 @@ void AliPMDRawDataRead()
 {
   // To read PMD raw data
 
+  TObjArray pmdddlcont;
+
   Int_t ievt = 0;
   AliRawReaderFile reader(ievt);
   AliPMDRawStream stream(&reader);
 
-  //  FILE *fpw2 = fopen("rawread2.txt","w");
+  Int_t indexDDL = 0;
 
-  while(stream.Next())
+
+  for (Int_t iddl = 0; iddl < 6; iddl++)
     {
-      printf("%d %d %d %d\n",stream.GetModule(),stream.GetRow(),
-	     stream.GetColumn(),stream.GetSignal());
+      
+      reader.Select("PMD", iddl, iddl);
+      //cout << reader.GetDataSize() << endl;
+      stream.DdlData(&pmdddlcont);
+      Int_t ientries = pmdddlcont.GetEntries();
+      for (Int_t ient = 0; ient < ientries; ient++)
+	{
+	  AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
+	  
+	  Int_t det = pmdddl->GetDetector();
+	  Int_t smn = pmdddl->GetSMN();
+	  //Int_t mcm = pmdddl->GetMCM();
+	  //Int_t chno = pmdddl->GetChannel();
+	  Int_t row = pmdddl->GetRow();
+	  Int_t col = pmdddl->GetColumn();
+	  Int_t sig = pmdddl->GetSignal();
 
-      Int_t det = stream.GetDetector();
-      Int_t smn = stream.GetSMN();
-      Int_t mcm = stream.GetMCM();
-      Int_t chno = stream.GetChannel();
-      Int_t row = stream.GetRow();
-      Int_t col = stream.GetColumn();
-      Int_t sig = stream.GetSignal();
-
-      //  fprintf(fpw2,"%d %d %d %d %d %d %d\n",det, smn, row, col,
-      //      mcm, chno, sig);
+	}
+      pmdddlcont.Clear();
 
     }
+
 
 }

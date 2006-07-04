@@ -23,19 +23,22 @@
 #include "TROOT.h"
 #include "TClonesArray.h"
 #include "TH1F.h"
+#include "TObjArray.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliLog.h"
+#include "AliRawReaderFile.h"
 #include "AliPMDCalibrator.h"
 #include "AliRawReaderDate.h"
 #include "AliPMDRawStream.h"
-#include "AliRawReaderFile.h"
 #include "AliPMDCalibData.h"
+#include "AliPMDddldata.h"
 #include "AliCDBManager.h"
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
+#include "AliDAQ.h"
 
 ClassImp(AliPMDCalibrator)
 
@@ -121,6 +124,8 @@ void AliPMDCalibrator::CalculateIsoCell()
 {
   // Calculates the ADC of isolated cell
 
+  TObjArray pmdddlcont;
+  const Int_t kDDL           = AliDAQ::NumberOfDdls("PMD");
   const Int_t kMaxHit        = 60000;
   const Int_t kCellNeighbour = 6;
 
@@ -159,6 +164,7 @@ void AliPMDCalibrator::CalculateIsoCell()
     {
       // printf("In CalculateIsoCell before while(stream.Next()), ...\n");
       
+      /*
       while(stream.Next())
 	{
 	  Int_t idet = stream.GetDetector();
@@ -174,7 +180,37 @@ void AliPMDCalibrator::CalculateIsoCell()
 	      ch[idet][ismn][irow][icol] = ichno;
 	    }
 	}
+      */
+      // New PMD Reader is plugged in
       
+      for (Int_t iddl = 0; iddl < kDDL; iddl++)
+	{
+	  reader.Select("PMD", iddl, iddl);
+	  stream.DdlData(&pmdddlcont);
+	  
+	  Int_t ientries = pmdddlcont.GetEntries();
+	  for (Int_t ient = 0; ient < ientries; ient++)
+	    {
+	      AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
+	      
+	      Int_t idet = pmdddl->GetDetector();
+	      Int_t ismn = pmdddl->GetSMN();
+	      //Int_t mcm = pmdddl->GetMCM();
+	      Int_t ichno = pmdddl->GetChannel();
+	      Int_t irow = pmdddl->GetRow();
+	      Int_t icol = pmdddl->GetColumn();
+	      Int_t isig = pmdddl->GetSignal();
+	      
+	      if (isig>0)
+		{
+		  d1[idet][ismn][irow][icol] = isig;
+		  ch[idet][ismn][irow][icol] = ichno;
+		}
+	    }
+	  pmdddlcont.Clear();
+	}
+
+
       maxhit = 0;
       
       for(Int_t idet=0; idet < kDet; idet++)

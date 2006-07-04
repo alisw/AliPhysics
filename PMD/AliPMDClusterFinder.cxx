@@ -41,6 +41,7 @@
 #include "AliPMDrechit.h"
 #include "AliPMDRawStream.h"
 #include "AliPMDCalibData.h"
+#include "AliPMDddldata.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -239,6 +240,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   //
 
   Float_t  clusdata[6];
+  TObjArray pmdddlcont;
 
   TObjArray *pmdcont = new TObjArray();
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
@@ -290,26 +292,26 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       rawReader->Reset();
       AliPMDRawStream pmdinput(rawReader);
       rawReader->Select("PMD", indexDDL, indexDDL);
-      while(pmdinput.Next())
+      pmdinput.DdlData(&pmdddlcont);
+      Int_t indexsmn = 0;
+      Int_t ientries = pmdddlcont.GetEntries();
+      for (Int_t ient = 0; ient < ientries; ient++)
 	{
-	  Int_t det = pmdinput.GetDetector();
-	  Int_t smn = pmdinput.GetSMN();
-	  //Int_t mcm = pmdinput.GetMCM();
-	  //Int_t chno = pmdinput.GetChannel();
-	  Int_t row = pmdinput.GetRow();
-	  Int_t col = pmdinput.GetColumn();
-	  Int_t sig = pmdinput.GetSignal();
+	  AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
 	  
-	  Float_t sig1 = (Float_t) sig;
+	  Int_t det = pmdddl->GetDetector();
+	  Int_t smn = pmdddl->GetSMN();
+	  //Int_t mcm = pmdddl->GetMCM();
+	  //Int_t chno = pmdddl->GetChannel();
+	  Int_t row = pmdddl->GetRow();
+	  Int_t col = pmdddl->GetColumn();
+	  Int_t sig = pmdddl->GetSignal();
 
+	  Float_t sig1 = (Float_t) sig;
 	  // CALIBRATION
 	  Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
-	  
-	//  printf("sig = %d gain = %f\n",sig,gain);
-	  
+	  //printf("sig = %d gain = %f\n",sig,gain);
 	  sig = (Int_t) (sig1*gain);
-	  
-	  Int_t indexsmn = 0;
 
 	  if (indexDDL < 4)
 	    {
@@ -327,9 +329,9 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 		{
 		  indexsmn = smn;
 		}
-	      else if (smn >= 12 && smn < 18)
+	      else if (smn >= 18 && smn < 24)
 		{
-		  indexsmn = smn - 6;
+		  indexsmn = smn - 12;
 		}
 	    }
 	  else if (indexDDL == 5)
@@ -341,13 +343,15 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 		{
 		  indexsmn = smn - 6;
 		}
-	      else if (smn >= 18 && smn < 24)
+	      else if (smn >= 12 && smn < 18)
 		{
-		  indexsmn = smn - 12;
+		  indexsmn = smn - 6;
 		}
 	    }	      
 	  precpvADC[indexsmn][row][col] = sig;
-	} // while loop
+	}
+      
+      pmdddlcont.Clear();
 
       Int_t ismn = 0;
       for (Int_t indexsmn = 0; indexsmn < iSMN; indexsmn++)
@@ -361,6 +365,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 		    (Double_t) precpvADC[indexsmn][irow][icol];
 		} // row
 	    }     // col
+	  
 	  if (indexDDL < 4)
 	    {
 	      ismn = indexsmn + indexDDL * 6;
@@ -374,7 +379,7 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 		}
 	      else if (indexsmn >= 6 && indexsmn < 12)
 		{
-		  ismn = indexsmn + 6;
+		  ismn = indexsmn + 12;
 		}
 	      idet = 1;
 	    }
@@ -386,11 +391,10 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 		}
 	      else if (indexsmn >= 6 && indexsmn < 12)
 		{
-		  ismn = indexsmn + 12;
+		  ismn = indexsmn + 6;
 		}
 	      idet = 1;
 	    }
-
 
 	  pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
 	  Int_t nentries1 = pmdcont->GetEntries();
@@ -455,7 +459,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
   //
 
   Float_t  clusdata[6];
-
+  TObjArray pmdddlcont;
   TObjArray *pmdcont = new TObjArray();
 
   AliPMDClustering *pmdclust = new AliPMDClusteringV1();
@@ -514,25 +518,29 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
       rawReader->Reset();
       AliPMDRawStream pmdinput(rawReader);
       rawReader->Select("PMD", indexDDL, indexDDL);
-      while(pmdinput.Next())
+      
+      pmdinput.DdlData(&pmdddlcont);
+    
+      Int_t indexsmn = 0;
+      Int_t ientries = pmdddlcont.GetEntries();
+      for (Int_t ient = 0; ient < ientries; ient++)
 	{
-	  Int_t det = pmdinput.GetDetector();
-	  Int_t smn = pmdinput.GetSMN();
-	  //Int_t mcm = pmdinput.GetMCM();
-	  //Int_t chno = pmdinput.GetChannel();
-	  Int_t row = pmdinput.GetRow();
-	  Int_t col = pmdinput.GetColumn();
-	  Int_t sig = pmdinput.GetSignal();
+	  AliPMDddldata *pmdddl = (AliPMDddldata*)pmdddlcont.UncheckedAt(ient);
+	  
+	  Int_t det = pmdddl->GetDetector();
+	  Int_t smn = pmdddl->GetSMN();
+	  //Int_t mcm = pmdddl->GetMCM();
+	  //Int_t chno = pmdddl->GetChannel();
+	  Int_t row = pmdddl->GetRow();
+	  Int_t col = pmdddl->GetColumn();
+	  Int_t sig = pmdddl->GetSignal();
 
 	  Float_t sig1 = (Float_t) sig;
 	  // CALIBRATION
 	  Float_t gain = fCalibData->GetGainFact(det,smn,row,col);
-	  
-	 // printf("sig = %d gain = %f\n",sig,gain);
-	  
+	  //printf("sig = %d gain = %f\n",sig,gain);
 	  sig = (Int_t) (sig1*gain);
-	  
-	  Int_t indexsmn = 0;
+
 
 	  if (indexDDL < 4)
 	    {
@@ -550,9 +558,9 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 		{
 		  indexsmn = smn;
 		}
-	      else if (smn >= 12 && smn < 18)
+	      else if (smn >= 18 && smn < 24)
 		{
-		  indexsmn = smn - 6;
+		  indexsmn = smn - 12;
 		}
 	    }
 	  else if (indexDDL == 5)
@@ -564,13 +572,16 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 		{
 		  indexsmn = smn - 6;
 		}
-	      else if (smn >= 18 && smn < 24)
+	      else if (smn >= 12 && smn < 18)
 		{
-		  indexsmn = smn - 12;
+		  indexsmn = smn - 6;
 		}
 	    }	      
 	  precpvADC[indexsmn][row][col] = sig;
-	} // while loop
+
+	}
+      
+      pmdddlcont.Clear();
 
       Int_t ismn = 0;
       for (Int_t indexsmn = 0; indexsmn < iSMN; indexsmn++)
@@ -584,6 +595,8 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 		    (Double_t) precpvADC[indexsmn][irow][icol];
 		} // row
 	    }     // col
+
+	  
 	  if (indexDDL < 4)
 	    {
 	      ismn = indexsmn + indexDDL * 6;
@@ -597,7 +610,7 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 		}
 	      else if (indexsmn >= 6 && indexsmn < 12)
 		{
-		  ismn = indexsmn + 6;
+		  ismn = indexsmn + 12;
 		}
 	      idet = 1;
 	    }
@@ -609,11 +622,10 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt, AliRawReader *rawReader)
 		}
 	      else if (indexsmn >= 6 && indexsmn < 12)
 		{
-		  ismn = indexsmn + 12;
+		  ismn = indexsmn + 6;
 		}
 	      idet = 1;
 	    }
-
 
 	  pmdclust->DoClust(idet,ismn,fCellADC,pmdcont);
 	  Int_t nentries1 = pmdcont->GetEntries();
