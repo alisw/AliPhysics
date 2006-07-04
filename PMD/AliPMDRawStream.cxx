@@ -26,7 +26,16 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
+#include <TObjArray.h>
+#include <TString.h>
+#include <TSystem.h>
+
 #include "AliLog.h"
+#include "AliPMDBlockHeader.h"
+#include "AliPMDDspHeader.h"
+#include "AliPMDPatchBusHeader.h"
+#include "AliPMDddldata.h"
 #include "AliPMDRawStream.h"
 #include "AliRawReader.h"
 
@@ -35,16 +44,7 @@ ClassImp(AliPMDRawStream)
 
 //_____________________________________________________________________________
 AliPMDRawStream::AliPMDRawStream(AliRawReader* rawReader) :
-  fRawReader(rawReader),
-  fModule(-1),
-  fPrevModule(-1),
-  fMCM(-1),
-  fChannel(-1),
-  fRow(-1),
-  fColumn(-1),
-  fSignal(-1),
-  fDetector(-1),
-  fSMN(-1)
+  fRawReader(rawReader)
 {
 // create an object to read PMD raw digits
 
@@ -54,16 +54,7 @@ AliPMDRawStream::AliPMDRawStream(AliRawReader* rawReader) :
 //_____________________________________________________________________________
 AliPMDRawStream::AliPMDRawStream(const AliPMDRawStream& stream) :
   TObject(stream),
-  fRawReader(NULL),
-  fModule(-1),
-  fPrevModule(-1),
-  fMCM(-1),
-  fChannel(-1),
-  fRow(-1),
-  fColumn(-1),
-  fSignal(-1),
-  fDetector(-1),
-  fSMN(-1)
+  fRawReader(NULL)
 {
 // copy constructor
 
@@ -89,38 +80,221 @@ AliPMDRawStream::~AliPMDRawStream()
 
 
 //_____________________________________________________________________________
-Bool_t AliPMDRawStream::Next()
+
+void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
 
-  fPrevModule = fModule;
+  AliPMDddldata *pmdddldata;
 
-  UInt_t data;
-  if (!fRawReader->ReadNextInt(data)) return kFALSE;
-
-  fSignal  = data & 0x0FFF;
-  fChannel = (data >> 12) & 0x003F;
-  fMCM     = (data >> 18) & 0x07FF;
-
+  //  Int_t indexDDL = 0;
+  //  fRawReader->Select(12, indexDDL, indexDDL);
+  fRawReader->ReadHeader();
   Int_t  iddl  = fRawReader->GetDDLID();
-  Int_t  ium;
+  Int_t dataSize = fRawReader->GetDataSize();
+  Int_t totaldataword = dataSize/4;
 
-  GetRowCol(iddl, fMCM, fChannel, ium, fRow, fColumn);
-  ConvertDDL2SMN(iddl, ium, fSMN, fModule, fDetector);
-  TransformH2S(fSMN, fRow, fColumn);
+  UInt_t *buffer;
+  buffer = new UInt_t[totaldataword];
+  UInt_t data;
+  for (Int_t i = 0; i < totaldataword; i++)
+    {
+      fRawReader->ReadNextInt(data);
+      buffer[i] = data;
+    }
 
-  return kTRUE;
+  // --- Open the mapping file
+
+
+  TString fileName(gSystem->Getenv("ALICE_ROOT"));
+  if(iddl == 0)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl0.dat";
+    }
+  else if(iddl == 1)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl1.dat";
+    }
+  else if(iddl == 2)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl2.dat";
+    }
+  else if(iddl == 3)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl3.dat";
+    }
+  else if(iddl == 4)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl4.dat";
+    }
+  else if(iddl == 5)
+    {
+      fileName += "/PMD/PMD_Mapping_ddl5.dat";
+    }
+
+  ifstream infile;
+  infile.open(fileName.Data(), ios::in); // ascii file
+  if(!infile)
+    AliError(Form("Could not read the mapping file for DDL No = %d",iddl));
+  
+  Int_t modulePerDDL = 0;
+  if (iddl < 4)
+    {
+      modulePerDDL = 6;
+    }
+  else if (iddl == 4 || iddl == 5)
+    {
+      modulePerDDL = 12;
+    }
+
+  const Int_t kNPatchBus = 50;
+  
+  Int_t modno, totPatchBus, bPatchBus, ePatchBus;
+  Int_t ibus, totmcm, rows, rowe, cols, cole;
+  Int_t moduleNo[kNPatchBus], mcmperBus[kNPatchBus];
+  Int_t startRowBus[kNPatchBus], endRowBus[kNPatchBus];
+  Int_t startColBus[kNPatchBus], endColBus[kNPatchBus];
+
+
+  for (Int_t ibus = 0; ibus < kNPatchBus; ibus++)
+    {
+      mcmperBus[ibus]   = -1;
+      startRowBus[ibus] = -1;
+      endRowBus[ibus]   = -1;
+      startColBus[ibus] = -1;
+      endColBus[ibus]   = -1;
+    }
+
+
+  for (Int_t im = 0; im < modulePerDDL; im++)
+    {
+      infile >> modno;
+      infile >> totPatchBus >> bPatchBus >> ePatchBus;
+
+      for(Int_t i=0; i<totPatchBus; i++)
+	{
+	  infile >> ibus >> totmcm >> rows >> rowe >> cols >> cole;
+
+	  moduleNo[ibus]     = modno;
+	  mcmperBus[ibus]    = totmcm;
+	  startRowBus[ibus]  = rows;
+	  endRowBus[ibus]    = rowe;
+	  startColBus[ibus]  = cols;
+	  endColBus[ibus]    = cole;
+	}
+    }
+
+  infile.close();
+
+
+  AliPMDBlockHeader    blockHeader;
+  AliPMDDspHeader      dspHeader;
+  AliPMDPatchBusHeader pbusHeader;
+
+  Int_t idet, ismn;
+  Int_t irow = -1;
+  Int_t icol = -1;
+
+  Int_t block[8];
+  Int_t pbus[4];
+
+  Int_t ilowLimit = 0;
+  Int_t iuppLimit = 0;
+  for (Int_t iblock = 0; iblock < 2; iblock++)
+    {
+      ilowLimit = iuppLimit;
+      iuppLimit = ilowLimit + 8;
+
+      for (Int_t i = ilowLimit; i < iuppLimit; i++)
+	{
+	  block[i-ilowLimit] = (Int_t) buffer[i];
+	}
+      blockHeader.SetHeader(block);
+      for (Int_t idsp = 0; idsp < 5; idsp++)
+	{
+	  ilowLimit = iuppLimit;
+	  iuppLimit = ilowLimit + 8;
+
+	  for (Int_t i = ilowLimit; i < iuppLimit; i++)
+	    {
+	      block[i-ilowLimit] = (Int_t) buffer[i];
+	    }
+	  dspHeader.SetHeader(block);
+
+	  for (Int_t ibus = 0; ibus < 5; ibus++)
+	    {
+
+	      ilowLimit = iuppLimit;
+	      iuppLimit = ilowLimit + 4;
+
+	      for (Int_t i = ilowLimit; i < iuppLimit; i++)
+		{
+		  pbus[i-ilowLimit] = (Int_t) buffer[i];
+		}
+	      pbusHeader.SetHeader(pbus);
+	      Int_t rawdatalength = pbusHeader.GetRawDataLength();
+	      Int_t pbusid = pbusHeader.GetPatchBusId();
+
+	      ilowLimit = iuppLimit;
+	      iuppLimit = ilowLimit + rawdatalength;
+
+	      Int_t imodule = moduleNo[pbusid];
+
+
+	      for (Int_t iword = ilowLimit; iword < iuppLimit; iword++)
+		{
+		  data = buffer[iword];
+
+		  Int_t isig =  data & 0x0FFF;
+		  Int_t ich  = (data >> 12) & 0x003F;
+		  Int_t imcm = (data >> 18) & 0x07FF;
+		  Int_t ibit = (data >> 31) & 0x0001;
+
+		  GetRowCol(iddl, pbusid, imcm, ich, 
+			    startRowBus, endRowBus,
+			    startColBus, endColBus,
+			    irow, icol);
+
+		  ConvertDDL2SMN(iddl, imodule, ismn, idet);
+		  TransformH2S(ismn, irow, icol);
+
+		  pmdddldata = new AliPMDddldata();
+
+		  pmdddldata->SetDetector(idet);
+		  pmdddldata->SetSMN(ismn);
+		  pmdddldata->SetModule(imodule);
+		  pmdddldata->SetPatchBusId(pbusid);
+		  pmdddldata->SetMCM(imcm);
+		  pmdddldata->SetChannel(ich);
+		  pmdddldata->SetRow(irow);
+		  pmdddldata->SetColumn(icol);
+		  pmdddldata->SetSignal(isig);
+		  pmdddldata->SetParityBit(ibit);
+		  
+		  pmdddlcont->Add(pmdddldata);
+		  
+		}
+
+	    }
+	} // end of DSP
+
+
+    } // end of BLOCK
+
+  
+  delete [] buffer;
+
 }
 //_____________________________________________________________________________
-void AliPMDRawStream::GetRowCol(Int_t ddlno, UInt_t mcmno, UInt_t chno,
-				Int_t &um, Int_t &row, Int_t &col) const
+void AliPMDRawStream::GetRowCol(Int_t ddlno, Int_t pbusid,
+				UInt_t mcmno, UInt_t chno,
+				Int_t startRowBus[], Int_t endRowBus[],
+				Int_t startColBus[], Int_t endColBus[],
+				Int_t &row, Int_t &col) const
 {
-// decode: ddlno, mcmno, chno -> um, row, col
+// decode: ddlno, patchbusid, mcmno, chno -> um, row, col
 
-
-  Int_t remmcm = 0;
-  Int_t divmcm = 0;
 
   static const UInt_t kCh[64] = { 21, 25, 29, 28, 17, 24, 20, 16,
 				  12, 13, 8, 4, 0, 1, 9, 5,
@@ -131,162 +305,160 @@ void AliPMDRawStream::GetRowCol(Int_t ddlno, UInt_t mcmno, UInt_t chno,
 				  42, 38, 34, 35, 46, 39, 43, 47,
 				  51, 50, 55, 59, 63, 62, 54, 58 };
 
-  if (ddlno == 0 || ddlno == 1)
-    {
-      um  = mcmno/72;
-      Int_t mcmnonew = mcmno - 72*um;
-      Int_t rowcol  = kCh[chno];
-      Int_t irownew = rowcol/4;
-      Int_t icolnew = rowcol%4;
-      
-      remmcm  = mcmnonew%12;
-      divmcm  = mcmnonew/12;
-      
-      row = 16*divmcm + irownew;
-      col =  4*remmcm + icolnew;
-      // This obtatined row and col (0,0) are the top left corner.
-      // Needs transformation to get the Geant (0,0)
+  Int_t rowcol  = kCh[chno];
+  Int_t irownew = rowcol/4;
+  Int_t icolnew = rowcol%4;
 
-    }
-  else   if (ddlno == 2 || ddlno == 3)
+  if (ddlno == 0)
     {
-      um  = mcmno/72;
-      Int_t mcmnonew = mcmno - 72*um;
-      Int_t rowcol  = kCh[chno];
-      Int_t irownew = rowcol/4;
-      Int_t icolnew = rowcol%4;
-      
-      remmcm  = mcmnonew%24;
-      divmcm  = mcmnonew/24;
-      
-      row = 16*divmcm + irownew;
-      col =  4*remmcm + icolnew;
-      // This obtatined row and col (0,0) are the top left corner.
-      // Needs transformation to get the Geant (0,0)
-
-    }
-  else if (ddlno == 4 || ddlno == 5)
-    {
-      um  = mcmno/72;
-      Int_t mcmnonew = mcmno - 72*um;
-      Int_t rowcol  = kCh[chno];
-      Int_t irownew = rowcol/4;
-      Int_t icolnew = rowcol%4;
-      
-      if (um < 6)
+      if (pbusid  <= 2)
 	{
-	  remmcm  = mcmnonew%12;
-	  divmcm  = mcmnonew/12;
+	  if (mcmno >= 12)
+	    {
+	      row = startRowBus[pbusid] + irownew;
+	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
+	    }
+	  else
+	    {
+	      // Add 16 to skip the 1st 15 rows
+	      row = startRowBus[pbusid] + irownew + 16;
+	      col = startColBus[pbusid] + mcmno*4 + icolnew;
+	    }
 	}
-      else if (um >= 6)
+      else if (pbusid > 2)
 	{
-	  remmcm  = mcmnonew%24;
-	  divmcm  = mcmnonew/24;
+	  row = startRowBus[pbusid] + irownew;
+	  col = startColBus[pbusid] + mcmno*4 + icolnew;
+	  
 	}
-
-      row = 16*divmcm + irownew;
-      col =  4*remmcm + icolnew;
-      // This obtatined row and col (0,0) are the top left corner.
-      // Needs transformation to get the Geant (0,0)
-
     }
-
+  else if (ddlno == 1)
+    {
+      if (pbusid  <= 2)
+	{
+	  if (mcmno >= 12)
+	    {
+	      row = endRowBus[pbusid] - (15 - irownew);
+	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
+	    }
+	  else
+	    {
+	      // Subtract 16 to skip the 1st 15 rows
+	      row = endRowBus[pbusid] - 16 - (15 - irownew) ;
+	      col = startColBus[pbusid] + mcmno*4 + icolnew;
+	    }
+	}
+      else if (pbusid > 2)
+	{
+	  row = endRowBus[pbusid] - (15 - irownew);
+	  col = startColBus[pbusid] + mcmno*4 + icolnew;
+	}
+    }
+  else if (ddlno == 2)
+    {
+      row = startRowBus[pbusid] + irownew;
+      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+    }
+  else if (ddlno == 3)
+    {
+      row = endRowBus[pbusid] - (15 - irownew);
+      col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+    }
+  else if (ddlno == 4)
+    {
+      if (pbusid  <= 16)
+	{
+	  if (mcmno >= 12)
+	    {
+	      row = startRowBus[pbusid] + irownew;
+	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
+	    }
+	  else
+	    {
+	      // Add 16 to skip the 1st 15 rows
+	      row = startRowBus[pbusid] + irownew + 16;
+	      col = startColBus[pbusid] + mcmno*4 + icolnew;
+	    }
+	}
+      else if (pbusid > 16 && pbusid <= 20)
+	{
+	  row = startRowBus[pbusid] + irownew;
+	  col = startColBus[pbusid] + mcmno*4 + icolnew;
+	  
+	}
+      else if(pbusid > 20)
+	{
+	  row = endRowBus[pbusid] - (15 - irownew);
+	  col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+	}
+    }
+  else if (ddlno == 5)
+    {
+      if (pbusid  <= 16)
+	{
+	  if (mcmno >= 12)
+	    {
+	      row = endRowBus[pbusid] - (15 - irownew);
+	      col = startColBus[pbusid] + (mcmno-12)*4 + icolnew;
+	    }
+	  else
+	    {
+	      // Subtract 16 to skip the 1st 15 rows
+	      row = endRowBus[pbusid] - 16 - (15 - irownew) ;
+	      col = startColBus[pbusid] + mcmno*4 + icolnew;
+	    }
+	}
+      else if (pbusid > 16 && pbusid <= 20)
+	{
+	  row = endRowBus[pbusid] - (15 - irownew);
+	  col = startColBus[pbusid] + mcmno*4 + icolnew;
+	}
+      else if (pbusid > 20)
+	{
+	  row = startRowBus[pbusid] + irownew;
+	  col = endColBus[pbusid] - mcmno*4 - (3 - icolnew);
+	}
+    }
 }
 //_____________________________________________________________________________
-void AliPMDRawStream::ConvertDDL2SMN(Int_t iddl, Int_t ium, Int_t &smn,
-				    Int_t &module, Int_t &detector) const
+void AliPMDRawStream::ConvertDDL2SMN(Int_t iddl, Int_t imodule,
+				     Int_t &smn, Int_t &detector) const
 {
-  // This converts the DDL number to Module Number which runs from 0-47
-  // Serial module number in one detector which runs from 0-23
-  // Also gives the detector number (0:PRE plane, 1:CPV plane)
+  // This converts the DDL number (0 to 5), Module Number (0-47)
+  // to Serial module number in one detector (SMN : 0-23) and
+  // detector number (0:PRE plane, 1:CPV plane)
   if (iddl < 4)
     {
-      module = iddl*6 + ium;
+      smn = imodule;
       detector = 0;
-      smn = iddl*6 + ium;
     }
-  else if (iddl == 4)
+  else
     {
-      if (ium < 6)
-	{
-	  module = 24 + ium;
-	  smn    = ium;
-	}
-      else if (ium >= 6)
-	{
-	  module = 30 + ium;
-	  smn    = 6 + ium;
-	}
-      detector = 1;
-    }
-  else if (iddl == 5)
-    {
-      
-      if (ium < 6)
-	{
-	  module = 30 + ium;
-	  smn    = 6 + ium;
-	}
-      else if (ium >= 6)
-	{
-	  module = 36 + ium;
-	  smn    = 12 + ium;
-	}
+      smn = imodule - 24;
       detector = 1;
     }
 }
 //_____________________________________________________________________________
 void AliPMDRawStream::TransformH2S(Int_t smn, Int_t &row, Int_t &col) const
 {
-  // Transform the Hardware (0,0) coordinate to Software (0,0) coordinate
-  // and also writes in the digit form
-  // i.e., For SuperModule 1 &2, instead of 96x48 it is 48x96
+  // This does the transformation of the hardware coordinate to
+  // software 
+  // i.e., For SuperModule 0 &1, instead of 96x48(hardware),
+  // it is 48x96 (software)
   // For Supermodule 3 & 4, 48x96
 
-  Int_t irownew1 = 0;
-  Int_t icolnew1 = 0;
   Int_t irownew  = 0;
   Int_t icolnew  = 0;
-  // Transform all the (0,0) coordinates to the geant frame
-  if(smn < 6)
-    {
-      irownew1 = 95 - row;
-      icolnew1 = col;
-    }
-  else if(smn >= 6 && smn < 12)
-    {
-      irownew1 = row;
-      icolnew1 = 47 - col;
-    }
-  else if(smn >= 12 && smn < 18)
-    {
-      irownew1 = 47 - row;
-      icolnew1 = col;
-    }
-  else if(smn >= 18 && smn < 24)
-    {
-      irownew1 = row;
-      icolnew1 = 95 - col;
-    }
-  
-  // for smn < 12          : row = 96, column = 48
-  // for smn>= 12 and < 24 : row = 48, column = 96
-  // In order to make it uniform dimension, smn < 12 are inverted
-  // i.e., row becomes column and column becomes row
-  // for others it remains same
-  // This is further inverted back while calculating eta and phi
+
   if(smn < 12)
     {
-      // SupeModule 1 and 2 : Rows are inverted to columns and vice versa
-      // and at the time of calculating the eta,phi it is again reverted
-      // back
-      irownew = icolnew1;
-      icolnew = irownew1;
+      irownew = col;
+      icolnew = row;
     }
-  else if( smn >= 12 && smn < 24)
+  else if(smn >= 12 && smn < 24)
     {
-      irownew = irownew1;
-      icolnew = icolnew1;
+      irownew = row;
+      icolnew = col;
     }
 
   row = irownew;

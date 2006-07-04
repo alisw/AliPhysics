@@ -21,19 +21,7 @@ class AliPMDRawStream: public TObject {
     AliPMDRawStream(AliRawReader* rawReader);
     virtual ~AliPMDRawStream();
 
-    virtual Bool_t   Next();
-
-    Int_t            GetModule() const {return fModule;};
-    Int_t            GetPrevModule() const {return fPrevModule;};
-    Bool_t           IsNewModule() const {return fModule != fPrevModule;};
-    Int_t            GetMCM() const {return fMCM;};
-    Int_t            GetChannel() const {return fChannel;};
-    Int_t            GetRow() const {return fRow;};
-    Int_t            GetColumn() const {return fColumn;};
-    Int_t            GetSignal() const {return fSignal;};
-    Int_t            GetDetector() const {return fDetector;};
-    Int_t            GetSMN() const {return fSMN;};
-
+    void DdlData(TObjArray *pmdddlcont);
 
     enum {kDDLOffset = 0xC00};      // offset for DDL numbers
 
@@ -41,25 +29,19 @@ class AliPMDRawStream: public TObject {
     AliPMDRawStream(const AliPMDRawStream& stream);
     AliPMDRawStream& operator = (const AliPMDRawStream& stream);
 
-    void             GetRowCol(Int_t ddlno, UInt_t mcmno, UInt_t chno,
-			       Int_t &um, Int_t &row, Int_t &col) const;
-    void             ConvertDDL2SMN(Int_t iddl, Int_t ium, Int_t &smn,
-				   Int_t &module, Int_t &detector) const;
+    void             GetRowCol(Int_t ddlno, Int_t pbusid, 
+			       UInt_t mcmno, UInt_t chno,
+			       Int_t startRowBus[], Int_t endRowBus[],
+			       Int_t startColBus[], Int_t endColBus[],
+			       Int_t &row, Int_t &col) const;
+    void             ConvertDDL2SMN(Int_t iddl, Int_t imodule,
+				    Int_t &smn, Int_t &detector) const;
     void             TransformH2S(Int_t smn, Int_t &row, Int_t &col) const;
 
     AliRawReader*    fRawReader;    // object for reading the raw data
 
-    Int_t            fModule;       // index of current module
-    Int_t            fPrevModule;   // index of previous module
-    Int_t            fMCM;          // index of current MCM
-    Int_t            fChannel;      // index of current channel
-    Int_t            fRow;          // index of current row
-    Int_t            fColumn;       // index of current column
-    Int_t            fSignal;       // signal in ADC counts
-    Int_t            fDetector;     // PRE = 0, CPV = 1
-    Int_t            fSMN;          // serial module number (0-23)
 
-    ClassDef(AliPMDRawStream, 1)    // class for reading PMD raw digits
+    ClassDef(AliPMDRawStream, 2)    // class for reading PMD raw digits
 };
 
 #endif
