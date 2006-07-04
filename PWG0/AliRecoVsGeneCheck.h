@@ -63,6 +63,6 @@ protected:
 
 
 
-  ClassDef(AliRecoVsGeneCheck,0)
+  ClassDef(AliRecoVsGeneCheck, 1)
 };
 
