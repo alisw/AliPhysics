@@ -27,6 +27,8 @@ using namespace std;
 
 #include <cerrno>
 #include "AliHLTConfiguration.h"
+#include "AliHLTConfigurationHandler.h"
+#include "AliHLTTask.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
 #include <iostream>

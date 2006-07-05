@@ -34,6 +34,8 @@ using namespace std;
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTConfiguration.h"
+#include "AliHLTConfigurationHandler.h"
+#include "AliHLTTask.h"
 
 ClassImp(AliHLTSystem)
 
