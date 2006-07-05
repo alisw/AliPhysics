@@ -51,7 +51,7 @@ UInt_t AliRICHPreprocessor::Process(TMap* pDcsMap)
 
     TIter next(pOA);  AliDCSValue *pDcsVal; Int_t i=0;
     while((pDcsVal=(AliDCSValue*)next()))                           //loop over data points for this sensor and fill the graph
-      pGr->SetPoint(i++,pDcsVal->GetTimeStamp(),pDcsVal->GetSimpleValue().GetFloat());
+      pGr->SetPoint(i++,pDcsVal->GetTimeStamp(),pDcsVal->GetFloat());
     
     
     pGr->Fit(pF1);                                                        //do fit
@@ -98,8 +98,8 @@ TMap* AliRICHPreprocessor::SimulateDcsMap()
   for(Int_t iAlias=0;iAlias<fgkNalias;iAlias++){//loop on aliases
     TObjArray* pOA  = new TObjArray;  pOA->SetOwner(1); //values are supposed to be arranged in TObjArray
     for (Int_t timeStamp=0;timeStamp<1000;timeStamp+=10) {
-      AliSimpleValue* pSimVal = new AliSimpleValue(Float_t(20*gRandom->Gaus()));                    //T sensor provides floats
-      AliDCSValue*    pDcsVal = new AliDCSValue(*pSimVal, timeStamp);      
+      Float_t simVal = Float_t(20*gRandom->Gaus());                    //T sensor provides floats
+      AliDCSValue*    pDcsVal = new AliDCSValue(simVal, timeStamp);
       pOA->Add(pDcsVal);                                                                            //add new data point to array
     }
     pDcsMap->Add(new TObjString(fgkAliasName[iAlias]),pOA);                                         //add new array of data points to the map
