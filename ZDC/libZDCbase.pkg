@@ -1,7 +1,8 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliZDCDigit.cxx AliZDCRawStream.cxx AliZDCCalibData.cxx
+SRCS= AliZDCDigit.cxx AliZDCRawStream.cxx \
+      AliZDCCalibData.cxx AliZDCDataDCS.cxx AliZDCPreprocessor.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
