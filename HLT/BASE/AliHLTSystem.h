@@ -19,29 +19,51 @@ class AliHLTConfiguration;
 class AliHLTConfigurationHandler;
 class AliHLTTask;
 
+/**
+ * @class AliHLTSystem
+ * Main class for the HLT integration into AliRoot.
+ * The class handles a list of configurations. Configurations are translated
+ * into task lists which can be executed. 
+ *
+ */
 class AliHLTSystem : public AliHLTLogging {
  public:
+  /** default constructor */
   AliHLTSystem();
+  /** destructor */
   virtual ~AliHLTSystem();
 
-  /* this will change later
+  /**
+   * Pointer to an instance of @ref AliHLTComponentHandler.
    */
   AliHLTComponentHandler* fpComponentHandler;
+
+  /**
+   * Pointer to an instance of @ref AliHLTConfigurationHandler.
+   */
   AliHLTConfigurationHandler* fpConfigurationHandler;
 
-  /* add a configuration to the end of the list
+  /**
+   * Add a configuration to the end of the list.
+   * @param pConf    pointer to configuration to add
    */
   int AddConfiguration(AliHLTConfiguration* pConf);
 
-  /* add a configuration to the list after the specified configuration
+  /**
+   * Insert a configuration to the end of the list after the specified configuration.
+   * @param pConf    pointer to configuration to insert
+   * @param pPrec    pointer to configuration to insert the new one after
    */
   int InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec);
 
-  /* remove a configuration from the list
+  /**
+   * Remove a configuration from the list.
+   * @param pConf    pointer to configuration to delete
    */
   int DeleteConfiguration(AliHLTConfiguration* pConf);
 
-  /* build a task list from a configuration object
+  /**
+   * Build a task list from a configuration object.
    * This method is used to build the tasks from the 'master' configuration
    * objects which are added to the HLT system handler. This is an iterative
    * process since the task might depend upon other configurations. For each
@@ -49,27 +71,33 @@ class AliHLTSystem : public AliHLTLogging {
    * method will be called iteratively. Finally, after building all tasks which
    * the current one depends on have been created, the task is inserted to the
    * list of tasks with the InsertTask method.
+   * @param pConf    pointer to configuration to build the task list from
    */
   int BuildTaskList(AliHLTConfiguration* pConf);
 
-  /* clean the list of tasks and delete all the task objects
+  /**
+   * Clean the list of tasks and delete all the task objects.
    */
   int CleanTaskList();
 
-  /* insert a task to the task list
-   * the method first checks whether all dependencies are resolved (i.e. exist 
+  /**
+   * Insert a task to the task list.
+   * The method first checks whether all dependencies are resolved (i.e. exist 
    * already in the task list). During this iteration the cross links between the 
    * tasks are set as well. If all dependencies are resolved, the task is added
    * at the end of the list.
+   * @param pTask    pointer to task to add
    */
   int InsertTask(AliHLTTask* pTask);
 
-  /* find a task with an id
-   * NOTE: 'id' denotes a CONFIGURATION, not a COMPONENT
+  /**
+   * Find a task with an id.
+   * @param id       CONFIGURATION id (not a COMPONENT id!)
    */
   AliHLTTask* FindTask(const char* id);
 
-  /* print the task list
+  /**
+   * Print the task list.
    */
   void PrintTaskList();
 

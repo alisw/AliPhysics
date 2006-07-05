@@ -22,6 +22,8 @@ class AliHLTConfigurationHandler;
 
 /**
  * @class AliHLTConfiguration
+ * @brief Description of HLT processing chains.
+ * @note Definition:
  * This class describes a certain configuration af an HLT processing step
  * by the following parameters:
  * - a unique id string/name
@@ -30,12 +32,12 @@ class AliHLTConfigurationHandler;
  * - the arguments, which are passed to the component when it is initialized
  *
  * The setup of a configuration requires simply the creation of a global object
- * of @class AliHLTConfiguration. The Configuration is automatically registered
- * in the list of available configurations maintained by the @class
+ * of @ref AliHLTConfiguration. The Configuration is automatically registered
+ * in the list of available configurations maintained by the @ref
  * AliHLTConfigurationHandler. The list is used by to resolve the dependencies
  * on other configurations. Hierarchies can be built up in an easy way.
  *
- * A configuration is interpreted by the @class AliHLTConfigurationHandler and
+ * A configuration is interpreted by the @ref AliHLTConfigurationHandler and
  * transformed into a Task List.
  * @ingroup AliHLTbase
  */
@@ -267,7 +269,7 @@ class AliHLTTask : public TObject, public AliHLTLogging {
   AliHLTComponent* GetComponent() const;
 
   /**
-   * Find a dependency with a certain <i>name/id<i>. 
+   * Find a dependency with a certain <i>name id</i>. 
    * Searches in the list of dependencies for a task.
    * @param id      the id of the <b>CONFIGURATION</b><br>
    *                <b>NOTE:</b> the id does NOT specify a COMPONENT

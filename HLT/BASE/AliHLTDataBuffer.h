@@ -81,7 +81,8 @@ class AliHLTConsumerDescriptor : public AliHLTLogging, public TObject {
   /**
    * Set an active data segment
    * the pointer will be handled in a container, not allocation, copy or cleanup
-   * @param pSegment pointer to the segment instance
+   * @param offset  offset of the segment in the buffer
+   * @param size    size of the segment in the buffer
    * @return >=0 if succeeded
    */
   int SetActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
@@ -115,7 +116,8 @@ class AliHLTConsumerDescriptor : public AliHLTLogging, public TObject {
 };
 
 /**
- * @class AliHLTDataBuffer handling of data buffers for the HLT
+ * @class AliHLTDataBuffer
+ * @brief  Handling of data buffers for the HLT.
  * @note Definition:
  * The class provides handling of data buffers for HLT components. Each component gets its
  * own Data Buffer instance. The buffer is grouped into different data segments according
@@ -145,7 +147,6 @@ class AliHLTDataBuffer : public AliHLTLogging, public TObject {
   /**
    * Add component to the list of consumers
    * @param pConsumer - a consumer of type AliHLTComponent
-   * @param datatype - data type of the segement, the consumer is registered for
    */
   int SetConsumer(AliHLTComponent* pConsumer);
 
@@ -167,7 +168,7 @@ class AliHLTDataBuffer : public AliHLTLogging, public TObject {
   /**
    * Subscribe to a segment of the data buffer.
    * The function prepares the block descriptor for subsequent use with the AliHLTComponent::ProcessEvent
-   * method, the method can prepare several block descriptors up to the array size specified by @param
+   * method, the method can prepare several block descriptors up to the array size specified by
    * iArraySize. The return value is independent from the array size the number of block descriptors 
    * which would have been prepared if there was enough space in the array<br>
    * The method is used by the consumer component.
