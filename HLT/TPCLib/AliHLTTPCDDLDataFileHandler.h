@@ -4,9 +4,9 @@
 #define ALIHLTTPCDDLDATAFILEHANDLER_H
 
 #ifdef use_newio
-#include "../RAW/AliRawEvent.h"
-#include "../RAW/AliRawReader.h"
-#include "../RAW/AliTPCRawStream.h"
+#include "AliRawEvent.h"
+#include "AliRawReader.h"
+#include "AliTPCRawStream.h"
 #include <TString.h>
 #else
 #include "AliHLTTPCDDLRawReaderFile.h"
