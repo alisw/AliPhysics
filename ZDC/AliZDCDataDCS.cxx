@@ -97,12 +97,16 @@ void AliZDCDataDCS::Init(){
 	fGraphs.SetOwner(1);
 
 	for(int i=0;i<kNAliases;i++){
-		/*if(i<4){
+		if(i<4){
 		  fAliasNames[i] = "ZDC.Position";
+		  fAliasNames[i] += i;
 		}
-		else fAliasNames[i] = "ZDC.HVValue";*/
-		fAliasNames[i] = "DCSAlias";
-		fAliasNames[i] += i;
+		else{
+		  fAliasNames[i] = "ZDC.HVValue";
+		  fAliasNames[i] += i-4;
+		}
+		/*fAliasNames[i] = "DCSAlias";
+		fAliasNames[i] += i;*/
 	}
 
 }
@@ -142,17 +146,38 @@ void AliZDCDataDCS::Draw(const Option_t* /*option*/)
   if(fGraphs.GetEntries()==0)  return;
   
   TCanvas *cg1;
-  TString canvas1Name="Graphs1";
+  TString canvas1Name="ZN1_HVs";
   cg1=new TCanvas(canvas1Name,canvas1Name,40,40,600,600);
   cg1->Divide(2,2);
   cg1->cd(1);
-  ((TGraph*) fGraphs.UncheckedAt(0))->Draw("AP");
+  ((TGraph*) fGraphs.UncheckedAt(0))->SetMarkerStyle(20);
+  ((TGraph*) fGraphs.UncheckedAt(0))->Draw("ALP");
   cg1->cd(2);
-  ((TGraph*) fGraphs.UncheckedAt(1))->Draw("AP");
+  ((TGraph*) fGraphs.UncheckedAt(1))->SetMarkerStyle(20);
+  ((TGraph*) fGraphs.UncheckedAt(1))->Draw("ALP");
   cg1->cd(3);
-  ((TGraph*) fGraphs.UncheckedAt(2))->Draw("AP");
+  ((TGraph*) fGraphs.UncheckedAt(2))->SetMarkerStyle(20);
+  ((TGraph*) fGraphs.UncheckedAt(2))->Draw("ALP");
   cg1->cd(4);
-  ((TGraph*) fGraphs.UncheckedAt(3))->Draw("AP");
+  ((TGraph*) fGraphs.UncheckedAt(3))->SetMarkerStyle(20);
+  ((TGraph*) fGraphs.UncheckedAt(3))->Draw("ALP");
+  
+  TCanvas *cg2;
+  TString canvas2Name="ZP1_HVs";
+  cg2=new TCanvas(canvas2Name,canvas2Name,80,80,600,600);
+  cg2->Divide(2,2);
+  cg2->cd(1);
+  ((TGraph*) fGraphs.UncheckedAt(5))->SetMarkerStyle(20);
+  ((TGraph*) fGraphs.UncheckedAt(5))->Draw("ALP");
+  cg2->cd(2);
+  ((TGraph*) fGraphs.UncheckedAt(6))->SetMarkerStyle(20);
+  ((TGraph*) fGraphs.UncheckedAt(6))->Draw("ALP");
+  cg2->cd(3);
+  ((TGraph*) fGraphs.UncheckedAt(7))->SetMarkerStyle(20);
+  ((TGraph*) fGraphs.UncheckedAt(7))->Draw("ALP");
+  cg2->cd(4);
+  ((TGraph*) fGraphs.UncheckedAt(8))->SetMarkerStyle(20);
+  ((TGraph*) fGraphs.UncheckedAt(8))->Draw("ALP");
  
 }
 
