@@ -578,7 +578,7 @@ Int_t AliMillepede::LocalFit(int iFit, double localParams[], bool bSingleFit)
   AliDebug(1," Result of local fit :      (index/parameter/error)");
   
   for (i=0; i<fNLocalPar; i++) {
-    AliDebug(1,Form("%d   /   %.6f   /   %.6f", i, fVecBLoc[i], sqrt(fMatCLoc[i][i])));	
+    AliDebug(1,Form("%d   /   %.6f   /   %.6f", i, fVecBLoc[i], TMath::Sqrt(fMatCLoc[i][i])));	
   }
   
 
@@ -586,7 +586,7 @@ Int_t AliMillepede::LocalFit(int iFit, double localParams[], bool bSingleFit)
 
   for (i=0; i<fNLocalPar; i++) {
     localParams[2*i] = fVecBLoc[i];
-    localParams[2*i+1] = sqrt(fabs(fMatCLoc[i][i]));
+    localParams[2*i+1] = TMath::Sqrt(TMath::Abs(fMatCLoc[i][i]));
   }
 
     
@@ -620,7 +620,7 @@ Int_t AliMillepede::LocalFit(int iFit, double localParams[], bool bSingleFit)
 // 	int nDerGlo = iGloLast-iGloFirst+1;   // Number of global derivatives involved
 
 // 	AliDebug(2,"");
-// 	AliDebug(2,Form(". equation:  measured value %.6f +/- %.6f", lMeas, 1.0/sqrt(lWeight)));
+// 	AliDebug(2,Form(". equation:  measured value %.6f +/- %.6f", lMeas, 1.0/TMath::Sqrt(lWeight)));
 // 	AliDebug(2,Form("Number of derivatives (global, local): %d, %d",nDerGlo,nDerLoc));
 // 	AliDebug(2,"Global derivatives are: (index/derivative/parvalue) ");
 	
@@ -652,7 +652,7 @@ Int_t AliMillepede::LocalFit(int iFit, double localParams[], bool bSingleFit)
 	AliDebug(2,Form("Residual value : %.6f", lMeas));
 
 	// reject the track if lMeas is too important (outlier)
-	if (fabs(lMeas) >= fResCutInit && fIter <= 1) {
+	if (TMath::Abs(lMeas) >= fResCutInit && fIter <= 1) {
 	  AliDebug(2,"Rejected track !!!!!");
     	  fNLocalFitsRejected++;      
 	  fIndexLocEq.Reset();  fNIndexLocEq=0; // reset stores and go to the next track 
@@ -660,7 +660,7 @@ Int_t AliMillepede::LocalFit(int iFit, double localParams[], bool bSingleFit)
 	  return 0;
 	}
 
-	if (fabs(lMeas) >= fResCut && fIter > 1) {
+	if (TMath::Abs(lMeas) >= fResCut && fIter > 1) {
 	  AliDebug(2,"Rejected track !!!!!");
     	  fNLocalFitsRejected++;      
 	  fIndexLocEq.Reset();  fNIndexLocEq=0; // reset stores and go to the next track 
@@ -919,7 +919,7 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
       fDeltaPar[i] += fVecBGlo[i];    // Update global parameters values (for iterations)
       AliDebug(1,Form("fDeltaPar[%d] = %.6f", i, fDeltaPar[i]));
       AliDebug(1,Form("fMatCGlo[%d][%d] = %.6f", i, i, fMatCGlo[i][i]));
-      AliDebug(1,Form("err = %.6f", sqrt(fabs(fMatCGlo[i][i]))));
+      AliDebug(1,Form("err = %.6f", TMath::Sqrt(TMath::Abs(fMatCGlo[i][i]))));
 
       step[i] = fVecBGlo[i];
 
@@ -942,7 +942,7 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
     fNLocalFitsRejected = 0;
 
     if (fChi2CutFactor != fChi2CutRef) {    
-      fChi2CutFactor = sqrt(fChi2CutFactor);
+      fChi2CutFactor = TMath::Sqrt(fChi2CutFactor);
       if (fChi2CutFactor < 1.2*fChi2CutRef) {
 	fChi2CutFactor = fChi2CutRef;
 	fIter = fMaxIter - 1;     // Last iteration
@@ -1008,8 +1008,8 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
 
   for (j=0; j<fNGlobalPar; j++) {  
     par[j]   = fInitPar[j]+fDeltaPar[j];
-    pull[j]  = (fSigmaPar[j] <= 0.) ? 0. : fDeltaPar[j]/sqrt(fSigmaPar[j]*fSigmaPar[j]-fMatCGlo[j][j]);
-    error[j] = sqrt(fabs(fMatCGlo[j][j]));
+    pull[j]  = (fSigmaPar[j] <= 0.) ? 0. : fDeltaPar[j]/TMath::Sqrt(fSigmaPar[j]*fSigmaPar[j]-fMatCGlo[j][j]);
+    error[j] = TMath::Sqrt(TMath::Abs(fMatCGlo[j][j]));
   }
 
   AliInfo(" ");
@@ -1040,7 +1040,7 @@ Double_t AliMillepede::GetParError(Int_t iPar) const
   /// return error for parameter iPar
   Double_t lErr = -1.;
   if (iPar>=0 && iPar<fNGlobalPar) {
-    lErr = sqrt(fabs(fMatCGlo[iPar][iPar]));
+    lErr = TMath::Sqrt(TMath::Abs(fMatCGlo[iPar][iPar]));
   }
   return lErr;
 }
@@ -1090,8 +1090,8 @@ int AliMillepede::SpmInv(double matV[][fgkMaxGloPC], double vecB[], int nGlo)
 
   for (Int_t i=0; i<nGlo; i++) {
     for (Int_t j=0; j<nGlo; j++) { 
-      if (fabs(matV[i][j]) >= rowMax[i]) rowMax[i] = fabs(matV[i][j]); // Max elemt of row i
-      if (fabs(matV[j][i]) >= colMax[i]) colMax[i] = fabs(matV[j][i]); // Max elemt of column i
+      if (TMath::Abs(matV[i][j]) >= rowMax[i]) rowMax[i] = TMath::Abs(matV[i][j]); // Max elemt of row i
+      if (TMath::Abs(matV[j][i]) >= colMax[i]) colMax[i] = TMath::Abs(matV[j][i]); // Max elemt of column i
     }
   }
 
@@ -1102,9 +1102,9 @@ int AliMillepede::SpmInv(double matV[][fgkMaxGloPC], double vecB[], int nGlo)
 
   for (Int_t i=0; i<nGlo; i++) {
     for (Int_t j=0; j<nGlo; j++) {
-      matV[i][j] = sqrt(rowMax[i])*matV[i][j]*sqrt(colMax[j]); // Equilibrate the V matrix
+      matV[i][j] = TMath::Sqrt(rowMax[i])*matV[i][j]*TMath::Sqrt(colMax[j]); // Equilibrate the V matrix
     }
-    diagV[i] = fabs(matV[i][i]); // save diagonal elem absolute values 	
+    diagV[i] = TMath::Abs(matV[i][i]); // save diagonal elem absolute values 	
   }
 
 
@@ -1113,7 +1113,7 @@ int AliMillepede::SpmInv(double matV[][fgkMaxGloPC], double vecB[], int nGlo)
     iPivot = -1;
     
     for (Int_t j=0; j<nGlo; j++) { // First look for the pivot, ie max unused diagonal element       
-      if (bUnUsed[j] && (fabs(matV[j][j])>std::max(fabs(vPivot),eps*diagV[j]))) {    
+      if (bUnUsed[j] && (TMath::Abs(matV[j][j])>std::max(TMath::Abs(vPivot),eps*diagV[j]))) {    
 	vPivot = matV[j][j];
 	iPivot = j;
       }
@@ -1157,7 +1157,7 @@ int AliMillepede::SpmInv(double matV[][fgkMaxGloPC], double vecB[], int nGlo)
   
   for (Int_t i=0; i<nGlo; i++) {
     for (Int_t j=0; j<nGlo; j++) {
-      matV[i][j] = sqrt(colMax[i])*matV[i][j]*sqrt(rowMax[j]); // Correct matrix V
+      matV[i][j] = TMath::Sqrt(colMax[i])*matV[i][j]*TMath::Sqrt(rowMax[j]); // Correct matrix V
     }
   }
   
@@ -1202,7 +1202,7 @@ int AliMillepede::SpmInv(double matV[][fgkMaxLocalPar], double vecB[], int nLoc)
   
   for (Int_t i=0; i<nLoc; i++) {
     bUnUsed[i] = true;
-    diagV[i] = fabs(matV[i][i]);     // save diagonal elem absolute values
+    diagV[i] = TMath::Abs(matV[i][i]);     // save diagonal elem absolute values
     for (Int_t j=0; j<i; j++) {
       matV[j][i] = matV[i][j] ;
     }
@@ -1213,7 +1213,7 @@ int AliMillepede::SpmInv(double matV[][fgkMaxLocalPar], double vecB[], int nLoc)
     iPivot = -1;
 		
     for (Int_t j=0; j<nLoc; j++) { // First look for the pivot, ie max unused diagonal element 
-      if (bUnUsed[j] && (fabs(matV[j][j])>TMath::Max(fabs(vPivot),eps*diagV[j]))) {
+      if (bUnUsed[j] && (TMath::Abs(matV[j][j])>TMath::Max(TMath::Abs(vPivot),eps*diagV[j]))) {
 	vPivot = matV[j][j];
 	iPivot = j;
       }
@@ -1374,12 +1374,12 @@ Int_t AliMillepede::PrintGlobalParameters() const
   AliInfo("-----------------------------------------------------------------------------------");
 	
   for (int i=0; i<fNGlobalPar; i++) {
-    lError = sqrt(fabs(fMatCGlo[i][i]));
+    lError = TMath::Sqrt(TMath::Abs(fMatCGlo[i][i]));
     if (fMatCGlo[i][i] < 0.0) lError = -lError;
     lGlobalCor = 0.0;
 		
-    if (fabs(fMatCGlo[i][i]*fDiagCGlo[i]) > 0) {    
-      lGlobalCor = sqrt(fabs(1.0-1.0/(fMatCGlo[i][i]*fDiagCGlo[i])));
+    if (TMath::Abs(fMatCGlo[i][i]*fDiagCGlo[i]) > 0) {    
+      lGlobalCor = TMath::Sqrt(TMath::Abs(1.0-1.0/(fMatCGlo[i][i]*fDiagCGlo[i])));
       AliInfo(Form("%d\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f\t %.6f",
 		   i,fInitPar[i],fInitPar[i]+fDeltaPar[i],fDeltaPar[i],fVecBGlo[i],lError,lGlobalCor));
     }
@@ -1427,8 +1427,8 @@ double AliMillepede::Chi2DoFLim(int nSig, int nDoF)
       return table[lNSig-1][nDoF-1];
     }
     else { // approximation
-      return ((sn[lNSig-1]+sqrt(float(2*nDoF-3)))*
-	      (sn[lNSig-1]+sqrt(float(2*nDoF-3))))/float(2*nDoF-2);
+      return ((sn[lNSig-1]+TMath::Sqrt(float(2*nDoF-3)))*
+	      (sn[lNSig-1]+TMath::Sqrt(float(2*nDoF-3))))/float(2*nDoF-2);
     }
   }
 }
