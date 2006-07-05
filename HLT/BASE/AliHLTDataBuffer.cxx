@@ -104,6 +104,7 @@ int AliHLTDataBuffer::fNofInstances=0;
 vector<AliHLTRawBuffer*> AliHLTDataBuffer::fFreeBuffers;
 vector<AliHLTRawBuffer*> AliHLTDataBuffer::fActiveBuffers;
 AliHLTUInt32_t AliHLTDataBuffer::fMargin=1024;
+AliHLTLogging AliHLTDataBuffer::fgLogging;
 
 
 AliHLTDataBuffer::AliHLTDataBuffer()
