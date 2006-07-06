@@ -92,7 +92,8 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   Double_t x1=x*cs - par[0]*sn;
   Double_t y1=x*sn + par[0]*cs;
   Double_t z1=par[1];
-  Double_t sx1=sn*sn*t1.GetSigmaY2(), sy1=cs*cs*t1.GetSigmaY2(); 
+  const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
+  Double_t sx1=sn*sn*t1.GetSigmaY2()+ss, sy1=cs*cs*t1.GetSigmaY2()+ss; 
 
 
 
@@ -105,12 +106,11 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   Double_t x2=x*cs - par[0]*sn;
   Double_t y2=x*sn + par[0]*cs;
   Double_t z2=par[1];
-  Double_t sx2=sn*sn*t2.GetSigmaY2(), sy2=cs*cs*t2.GetSigmaY2(); 
+  Double_t sx2=sn*sn*t2.GetSigmaY2()+ss, sy2=cs*cs*t2.GetSigmaY2()+ss; 
     
   Double_t sz1=t1.GetSigmaZ2(), sz2=t2.GetSigmaZ2();
-  const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
-  Double_t wx1=sx2/(sx1+sx2+ss), wx2=1.- wx1;
-  Double_t wy1=sy2/(sy1+sy2+ss), wy2=1.- wy1;
+  Double_t wx1=sx2/(sx1+sx2), wx2=1.- wx1;
+  Double_t wy1=sy2/(sy1+sy2), wy2=1.- wy1;
   Double_t wz1=sz2/(sz1+sz2), wz2=1.- wz1;
   fPos[0]=wx1*x1 + wx2*x2; fPos[1]=wy1*y1 + wy2*y2; fPos[2]=wz1*z1 + wz2*z2;
 
