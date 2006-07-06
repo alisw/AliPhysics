@@ -1,0 +1,77 @@
+Package: ALICE HLT
+
+This package implements the ALICE High Level Trigger framework.
+All contributions are under the terms of the 
+GNU General Public License as published by the Free Software 
+Foundation. Also see files AUTHORS and THANKS.
+
+This packages is maintained by Matthias.Richter@ift.uib.no
+Comments, bug reports, suggestions welcome! 
+
+Overview
+========
+This package provides is a compilation of shared libraries of the ALICE
+HLT project. 
+- BASE: The base library (libHLTbase.so) provides the common interface for HLT 
+processing components, the binding into the ALICE offline project AliRoot
+and a pure C interface to the HLT on-line framework (Publisher/Subscriber
+framework)
+- SampleLib: The sample library contains examples for component 
+implementation and a tutorial.
+- TPCLib: The HLT code for the TPC
+
+Setting up a version retrieved from CVS
+=======================================
+Skip this section if you have started from the tar ball.
+
+A version checked out from CVS requires a few steps to set up the Makefiles
+and to set some links which are related to the CVS structure at the IFT.
+Go to the directory and run
+autoreconf -i -f
+
+Then continue with the package configuration described in the 'Installation'
+section.
+
+Modifying a distributed package
+===============================
+If you are going the modify a distributed package you might need to re-make 
+the GNU build system by running
+ autoreconf -f -i
+
+Please notify the authors about bug fixes/corrections/extensions you made if
+you consider them worth to be merged into the project.
+
+Then continue with the package configuration described in the 'Installation'
+section.
+
+Installation
+============
+Package build relies on the GNU triplet configure, make and make install.
+It is suggested to use a separate build directory, e.g. from the
+top directory do
+
+  mkdir build
+  cd build
+  ../configure
+  make
+  make install
+
+The default install directories are set to the current directory ($PWD). Try
+
+To override the default prefix use
+--prefix=<dir>           
+
+Some important options:
+--enable-logging  # Enable/Disable logging (default enabled)
+--enable-sample   # Compile the sample library
+--enable-tpc      # Compile the TPC library
+
+If you need further information on the GNU build system, execute from the 
+top directory:
+./configure --help | less
+
+
+Further information
+===================
+A wiki with detailed information is set up at
+http://www.kip.uni-heidelberg.de/wiki/HLT
