@@ -11,14 +11,31 @@ Comments, bug reports, suggestions welcome!
 Overview
 ========
 This package provides is a compilation of shared libraries of the ALICE
-HLT project. 
+HLT project and is intended for stand-alone compilation, i.e. not as part 
+of the AliRoot compilation. 
+
 - BASE: The base library (libHLTbase.so) provides the common interface for HLT 
 processing components, the binding into the ALICE offline project AliRoot
 and a pure C interface to the HLT on-line framework (Publisher/Subscriber
 framework)
+
 - SampleLib: The sample library contains examples for component 
 implementation and a tutorial.
+
 - TPCLib: The HLT code for the TPC
+
+Currently, the the package is not included to the standard AliRoot
+compilation, but will be part of it.
+
+The old stand-alone build system is still available. Check the README
+file in the doc folder.
+
+Requirements
+============
+The package needs both ROOT and AliRoot. Both must be set up in the
+usual way (ROOTSYS, ALICE_ROOT, library locations evtl. specified in
+LD_LIBRARY_PATH, ...). Actually, the BASE and SampleLib modules are
+not dependend on AliRoot. The TPCLib does.
 
 Setting up a version retrieved from CVS
 =======================================
@@ -56,7 +73,7 @@ top directory do
   make
   make install
 
-The default install directories are set to the current directory ($PWD). Try
+The default install directories are set to the current directory ($PWD).
 
 To override the default prefix use
 --prefix=<dir>           
@@ -66,10 +83,19 @@ Some important options:
 --enable-sample   # Compile the sample library
 --enable-tpc      # Compile the TPC library
 
+Note: You can have several build directories with different configure options,
+but using the same source code. 
+
 If you need further information on the GNU build system, execute from the 
 top directory:
 ./configure --help | less
 
+
+Documentation
+=============
+Documentation is generated from the source code at compile time if 
+doxygen is installed on the machine. From the build directory, open
+doc/html/index.html with a web browser.
 
 Further information
 ===================
