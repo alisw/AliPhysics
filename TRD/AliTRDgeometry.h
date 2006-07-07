@@ -119,7 +119,7 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkSlenTR3;                          // Length of the TRD-volume in spaceframe (BTR3)
 
   static const Float_t fgkSMpltT;                           // Thickness of the super module side plates
-  static const Float_t fgkSMgapT;                           // Thickness of the gap between side plates and space frame
+  //static const Float_t fgkSMgapT;                           // Thickness of the gap between side plates and space frame
 
   static const Float_t fgkCraH;                             // Height of the radiator part of the chambers
   static const Float_t fgkCdrH;                             // Height of the drift region of the chambers
@@ -129,7 +129,7 @@ class AliTRDgeometry : public AliGeometry {
 
   static const Float_t fgkVspace;                           // Vertical spacing of the chambers
   static const Float_t fgkHspace;                           // Horizontal spacing of the chambers
-
+  static const Float_t fgkVrocsm;                           // Radial distance of the first ROC to the outer plates of the SM
   static const Float_t fgkCalT;                             // Thickness of the lower aluminum frame
   static const Float_t fgkCclsT;                            // Thickness of the lower G10 frame sides
   static const Float_t fgkCclfT;                            // Thickness of the lower G10 frame front
@@ -151,6 +151,8 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkFeThick;                          // Thickness of the FEE + signal lines
   static const Float_t fgkCoThick;                          // Thickness of the PE of the cooling device
   static const Float_t fgkWaThick;                          // Thickness of the cooling water
+  static const Float_t fgkRpThick;                          // Thickness of the PCB readout boards
+  static const Float_t fgkRcThick;                          // Thickness of the PCB copper layers
 
   static const Float_t fgkRaZpos;                           // Position of the radiator
   static const Float_t fgkMyZpos;                           // Position of the mylar-layer
@@ -160,7 +162,9 @@ class AliTRDgeometry : public AliGeometry {
   static const Float_t fgkSuZpos;                           // Position of the HEXCEL+G10 support structure
   static const Float_t fgkFeZpos;                           // Position of the FEE + signal lines
   static const Float_t fgkCoZpos;                           // Position of the PE of the cooling device
-  static const Float_t fgkWaZpos;                           // Position of the colling water
+  static const Float_t fgkWaZpos;                           // Position of the cooling water
+  static const Float_t fgkRpZpos;                           // Position of the PCB readout boards
+  static const Float_t fgkRcZpos;                           // Position of the PCB copper layers
 
   Char_t               fSMstatus[kNsect];                   // Super module status byte
 
@@ -194,7 +198,7 @@ class AliTRDgeometry : public AliGeometry {
   TObjArray *          fMatrixCorrectionArray;              //! array of Matrix - Transformation Cluster to  Tracking systerm
   TObjArray *          fMatrixGeo;                          //! geo matrices
 
-  ClassDef(AliTRDgeometry,8)                                // TRD geometry class
+  ClassDef(AliTRDgeometry,10)                               // TRD geometry class
 
 };
 
