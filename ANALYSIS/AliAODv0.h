@@ -20,6 +20,7 @@
 class AliESD;
 class AliESDVertex;
 class AliESDv0;
+class AliESDV0MI;
 class AliESDtrack;
 
 
@@ -28,19 +29,29 @@ class AliAODv0 : public TObject {
 public:
   AliAODv0();
   AliAODv0(AliESDv0 *rV0Vertex, AliESD *rEvent);
+  AliAODv0(AliESDV0MI *rV0Vertex, AliESD *rEvent);
+  AliAODv0(const AliAODv0& rAliAODv0);
+  virtual ~AliAODv0();
+
+  AliAODv0& operator=(const AliAODv0& rAliAODv0);
+
   void     Fill(AliESDv0 *rV0Vertex, AliESD *rEvent);
+  void     Fill(AliESDV0MI *rV0Vertex, AliESD *rEvent);
   void     ResetV0();
 
   Double_t DecayVertexV0X() const;
   Double_t DecayVertexV0Y() const;
   Double_t DecayVertexV0Z() const;
 
-  Double_t DecayLengthV0() const;
+  Double_t DecayLengthV0(double*) const;
                      
   Double_t DcaV0Daughters() const;
   Double_t DcaV0ToPrimVertex() const;
   Double_t DcaPosToPrimVertex() const; 
   Double_t DcaNegToPrimVertex() const; 
+  Double_t CosPointAngle(Double_t&, Double_t&, Double_t&) const;
+  Double_t RadiusV0()           const;
+  Double_t OpenAngleV0()        const;
 
   Double_t MomPosX() const;
   Double_t MomPosY() const;
@@ -77,6 +88,9 @@ public:
   Double_t MassK0Short() const;
   Double_t RapK0Short() const;
   Double_t RapLambda() const;
+  Double_t PseudoRapV0()    const;
+  Double_t PseudoRapPos()   const;
+  Double_t PseudoRapNeg()   const;
 
 
 protected:
@@ -94,11 +108,10 @@ protected:
   Double_t fMomNegY;              // momemtum of neg daughter along Y
   Double_t fMomNegZ;              // momemtum of neg daughter along Z
 
-  Int_t   fKeyPos;                // track key/index to pos daughter 
-  Int_t   fKeyNeg;                // track key/index to neg daughter 
+  UInt_t   fKeyPos;               // track key/index to pos daughter 
+  UInt_t   fKeyNeg;               // track key/index to neg daughter 
 
   Double_t fChi2;                 // main quality variable of V0
-  AliESD  *fEvent;                // pointer to current event
 
   ClassDef(AliAODv0,1)
 };
@@ -107,15 +120,10 @@ inline Double_t AliAODv0::DecayVertexV0X() const {return fDecayVertexV0X;}
 inline Double_t AliAODv0::DecayVertexV0Y() const {return fDecayVertexV0Y;}
 inline Double_t AliAODv0::DecayVertexV0Z() const {return fDecayVertexV0Z;}
 
-inline Double_t AliAODv0::DecayLengthV0() const {
-  if (fEvent&&fEvent->GetVertex()){
-    Double_t tPrimaryVertexPosition[3];
-    fEvent->GetVertex()->GetXYZ(tPrimaryVertexPosition);
-    return ::sqrt(::pow(DecayVertexV0X() - tPrimaryVertexPosition[0],2) +
-		  ::pow(DecayVertexV0Y() - tPrimaryVertexPosition[1],2) +
-		  ::pow(DecayVertexV0Z() - tPrimaryVertexPosition[2],2));
-  }
-  return 0.;
+inline Double_t AliAODv0::DecayLengthV0(double *tParentVertexPosition) const {
+  return ::sqrt(::pow(DecayVertexV0X() - tParentVertexPosition[0],2) +
+		::pow(DecayVertexV0Y() - tParentVertexPosition[1],2) +
+		::pow(DecayVertexV0Z() - tParentVertexPosition[2],2));
 }
 
 inline Double_t AliAODv0::DcaV0Daughters() const {return fDcaV0Daughters;}
@@ -134,6 +142,22 @@ inline Int_t AliAODv0::KeyPos() const {return fKeyPos;}
 inline Int_t AliAODv0::KeyNeg() const {return fKeyNeg;}
 
 inline Double_t AliAODv0::Chi2V0() const {return fChi2;}
+
+inline Double_t AliAODv0::CosPointAngle(Double_t& refPointX, Double_t& refPointY, Double_t& refPointZ) const {
+  
+  Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
+  deltaPos[0] = fDecayVertexV0X - refPointX;
+  deltaPos[1] = fDecayVertexV0Y - refPointY;
+  deltaPos[2] = fDecayVertexV0Z - refPointZ;
+
+  Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
+  
+  Double_t cosinePointingAngle = (deltaPos[0]*MomV0X() +
+				  deltaPos[1]*MomV0Y() +
+				  deltaPos[2]*MomV0Z() ) /
+    TMath::Sqrt(Ptot2V0() * deltaPos2);
+  return cosinePointingAngle;
+}
 
 inline Double_t AliAODv0::MomV0X() const {return MomPosX()+MomNegX();}
 inline Double_t AliAODv0::MomV0Y() const {return MomPosY()+MomNegY();}
@@ -224,6 +248,30 @@ inline Double_t AliAODv0::RapLambda() const {
   return 0.5*::log((eLambda+mMomV0Z)/(eLambda-mMomV0Z));
 }
 
+inline Double_t AliAODv0::RadiusV0() const {
+  return ::sqrt( fDecayVertexV0X*fDecayVertexV0X
+		 + fDecayVertexV0Y*fDecayVertexV0Y );
+}
+
+inline Double_t AliAODv0::PseudoRapV0() const {
+  Double_t lTheta = ::acos( MomV0Z()/::sqrt(Ptot2V0()) );
+  return ( -::log(TMath::Tan(lTheta/2.)) );
+}
+
+inline Double_t AliAODv0::PseudoRapPos()   const {
+  Double_t lTheta = ::acos( MomPosZ()/::sqrt(Ptot2Pos()) );
+  return ( -::log(TMath::Tan(lTheta/2.)) );
+}
+
+inline Double_t AliAODv0::PseudoRapNeg()   const {
+  Double_t lTheta = ::acos( MomNegZ()/::sqrt(Ptot2Neg()) );
+  return ( -::log(TMath::Tan(lTheta/2.)) );
+}
+
+inline Double_t AliAODv0::OpenAngleV0() const {
+  Double_t lPtot1xPtot2 = fMomPosX*fMomNegX+fMomPosY*fMomNegY+fMomPosZ*fMomNegZ;
+  Double_t lPtot1Ptot2_2 = Ptot2Pos()*Ptot2Neg();
+  return ::acos(lPtot1xPtot2/::sqrt(lPtot1Ptot2_2) );
+}
+
 #endif
-
-

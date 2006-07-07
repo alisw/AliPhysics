@@ -39,8 +39,8 @@ AliESDv0::AliESDv0() :
   TObject(),
   fPdgCode(kK0Short),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
-  fDcaDaughters(0),
-  fChi2(1.e+33),
+  fDcaV0Daughters(0),
+  fChi2V0(1.e+33),
   fNidx(0),
   fPidx(0)
 {
@@ -61,13 +61,61 @@ AliESDv0::AliESDv0() :
   }
 }
 
+AliESDv0::AliESDv0(const AliESDv0& rAliESDv0) :
+  TObject(rAliESDv0)
+{
+  fPdgCode        = rAliESDv0.fPdgCode;
+  fEffMass        = rAliESDv0.fEffMass;
+  fDcaV0Daughters = rAliESDv0.fDcaV0Daughters;
+  fChi2V0         = rAliESDv0.fChi2V0;
+  fNidx           = rAliESDv0.fNidx;
+  fPidx           = rAliESDv0.fPidx;
+
+  for (int i=0; i<3; i++) {
+    fPos[i]  = rAliESDv0.fPos[i];
+    fNmom[i] = rAliESDv0.fNmom[i];
+    fPmom[i] = rAliESDv0.fPmom[i];
+  }
+  for (int i=0; i<6; i++) {
+    fPosCov[i]  = rAliESDv0.fPosCov[i];
+    fNmomCov[i] = rAliESDv0.fNmomCov[i];
+    fPmomCov[i] = rAliESDv0.fPmomCov[i];
+  }
+}
+
+
+AliESDv0& AliESDv0::operator=(const AliESDv0& rAliESDv0)
+{
+  if (this!=&rAliESDv0) {
+    TObject::operator=(rAliESDv0);
+    fPdgCode        = rAliESDv0.fPdgCode;
+    fEffMass        = rAliESDv0.fEffMass;
+    fDcaV0Daughters = rAliESDv0.fDcaV0Daughters;
+    fChi2V0         = rAliESDv0.fChi2V0;
+    fNidx           = rAliESDv0.fNidx;
+    fPidx           = rAliESDv0.fPidx;
+
+    for (int i=0; i<3; i++) {
+      fPos[i]  = rAliESDv0.fPos[i];
+      fNmom[i] = rAliESDv0.fNmom[i];
+      fPmom[i] = rAliESDv0.fPmom[i];
+    }
+    for (int i=0; i<6; i++) {
+      fPosCov[i]  = rAliESDv0.fPosCov[i];
+      fNmomCov[i] = rAliESDv0.fNmomCov[i];
+      fPmomCov[i] = rAliESDv0.fPmomCov[i];
+    }
+  }
+  return *this;
+}
+
 AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
                    const AliExternalTrackParam &t2, Int_t i2) :
   TObject(),
   fPdgCode(kK0Short),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
-  fDcaDaughters(0),
-  fChi2(1.e+33),
+  fDcaV0Daughters(0),
+  fChi2V0(1.e+33),
   fNidx(i1),
   fPidx(i2)
 {
@@ -123,9 +171,17 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   fEffMass=TMath::Sqrt((e1+e2)*(e1+e2)-
     (px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
 
-  fChi2=7.;   
+  fChi2V0=7.;   
 
 }
+
+AliESDv0::~AliESDv0(){
+  //--------------------------------------------------------------------
+  // Empty destructor
+  //--------------------------------------------------------------------
+}
+
+
 
 Double_t AliESDv0::ChangeMassHypothesis(Int_t code) {
   //--------------------------------------------------------------------
@@ -205,4 +261,27 @@ Double_t AliESDv0::GetD(Double_t x0, Double_t y0, Double_t z0) const {
   Double_t dz=(x0-x)*py - (y0-y)*px;
   Double_t d=TMath::Sqrt((dx*dx+dy*dy+dz*dz)/(px*px+py*py+pz*pz));
   return d;
+}
+
+
+Double_t AliESDv0::GetV0CosineOfPointingAngle(Double_t& refPointX, Double_t& refPointY, Double_t& refPointZ) const {
+  // calculates the pointing angle of the V0 wrt a reference point
+
+  Double_t momV0[3]; //momentum of the V0
+  GetPxPyPz(momV0[0],momV0[1],momV0[2]);
+
+  Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
+  deltaPos[0] = fPos[0] - refPointX;
+  deltaPos[1] = fPos[1] - refPointY;
+  deltaPos[2] = fPos[2] - refPointZ;
+
+  Double_t momV02    = momV0[0]*momV0[0] + momV0[1]*momV0[1] + momV0[2]*momV0[2];
+  Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
+
+  Double_t cosinePointingAngle = (deltaPos[0]*momV0[0] +
+				  deltaPos[1]*momV0[1] +
+				  deltaPos[2]*momV0[2] ) /
+    TMath::Sqrt(momV02 * deltaPos2);
+  
+  return cosinePointingAngle;
 }

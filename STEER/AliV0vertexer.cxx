@@ -19,6 +19,8 @@
 //                      fills the ESD with the V0s       
 //     Origin: Iouri Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
+
+
 #include <TObjArray.h>
 #include <TTree.h>
 
@@ -99,23 +101,10 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESD *event) {
          nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
 
          AliESDv0 vertex(nt,nidx,pt,pidx);
-         if (vertex.GetChi2() > fChi2max) continue;
+         if (vertex.GetChi2V0() > fChi2max) continue;
 	 
-         /*  Think of something better here ! 
-         nt.PropagateToVertex(); if (TMath::Abs(nt.GetZ())<0.04) continue;
-         pt.PropagateToVertex(); if (TMath::Abs(pt.GetZ())<0.04) continue;
-	 */
-
-         Double_t x,y,z; vertex.GetXYZ(x,y,z); 
-         Double_t px,py,pz; vertex.GetPxPyPz(px,py,pz);
-         Double_t p2=px*px+py*py+pz*pz;
-         Double_t cost=((x-fX)*px + (y-fY)*py + (z-fZ)*pz)/
-               TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
-
-        //if (cost < (5*fCPAmax-0.9-TMath::Sqrt(r2)*(fCPAmax-1))/4.1) continue;
-         if (cost < fCPAmax) continue;
-	 vertex.SetDcaDaughters(dca);
-         //vertex.ChangeMassHypothesis(); //default is Lambda0 
+	 if (vertex.GetV0CosineOfPointingAngle(fX,fY,fZ) < fCPAmax) continue;
+	 vertex.SetDcaV0Daughters(dca);
 
          event->AddV0(&vertex);
 

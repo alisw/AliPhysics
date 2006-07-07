@@ -210,6 +210,7 @@ public:
   AliESDFMD * GetFMDData(){ return fESDFMD;}
    
 protected:
+  AliESD(const AliESD&);
 
   // Event Identification
   Int_t        fEventNumber;     // Event Number

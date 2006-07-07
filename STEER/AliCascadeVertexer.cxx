@@ -19,6 +19,11 @@
 //                     Fills the ESD with the cascades 
 //    Origin: Christian Kuhn, IReS, Strasbourg, christian.kuhn@ires.in2p3.fr
 //-------------------------------------------------------------------------
+
+//modified by R. Vernet 30/6/2006 : daughter label
+//modified by R. Vernet  3/7/2006 : causality
+
+
 #include <TObjArray.h>
 #include <TTree.h>
 
@@ -36,6 +41,8 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
   //--------------------------------------------------------------------
    Double_t b=event->GetMagneticField();
    Int_t nV0=(Int_t)event->GetNumberOfV0s();
+
+   //stores relevant V0s in an array
    TObjArray vtcs(nV0);
    Int_t i;
    for (i=0; i<nV0; i++) {
@@ -45,6 +52,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
    }
    nV0=vtcs.GetEntriesFast();
 
+   // stores relevant tracks in another array
    Int_t nentr=(Int_t)event->GetNumberOfTracks();
    TArrayI trk(nentr); Int_t ntr=0;
    for (i=0; i<nentr; i++) {
@@ -65,59 +73,58 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
    Int_t ncasc=0;
 
    // Looking for the cascades...
-   for (i=0; i<nV0; i++) {
+
+   for (i=0; i<nV0; i++) { //loop on V0s
+
       AliESDv0 *v=(AliESDv0*)vtcs.UncheckedAt(i);
       v->ChangeMassHypothesis(kLambda0); // the v0 must be Lambda 
       if (TMath::Abs(v->GetEffMass()-massLambda)>fMassWin) continue; 
-      for (Int_t j=0; j<ntr; j++) {
-	 Int_t bidx=trk[j];
-	 AliESDtrack *btrk=event->GetTrack(bidx);
 
+      for (Int_t j=0; j<ntr; j++) {//loop on tracks
+	 Int_t bidx=trk[j];
+ 	 if (bidx==v->GetNindex()) continue; //bachelor and v0's negative tracks must be different
+	 AliESDtrack *btrk=event->GetTrack(bidx);
          if (btrk->GetSign()>0) continue;  // bachelor's charge 
           
-	 AliESDv0 v0(*v), *pv0=&v0;
+    	 AliESDv0 v0(*v), *pv0=&v0;
          AliExternalTrackParam bt(*btrk), *pbt=&bt;
 
          Double_t dca=PropagateToDCA(pv0,pbt,b);
          if (dca > fDCAmax) continue;
 
-         AliESDcascade cascade(*pv0,*pbt,bidx);
-         if (cascade.GetChi2() > fChi2max) continue;
+         AliESDcascade cascade(*pv0,*pbt,bidx);//constucts a cascade candidate
+         if (cascade.GetChi2Xi() > fChi2max) continue;
 
 	 Double_t x,y,z; cascade.GetXYZ(x,y,z); 
          Double_t r2=x*x + y*y; 
          if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
          if (r2 < fRmin*fRmin) continue;
 
-         {
+	 Double_t pxV0,pyV0,pzV0;
+	 pv0->GetPxPyPz(pxV0,pyV0,pzV0);
+	 if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
+
          Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
          if (r2 > (x1*x1+y1*y1)) continue;
-         //if ((z-fZ)*(z-fZ) > (z1-fZ)*(z1-fZ)) continue;
-         }
 
-	 Double_t px,py,pz; cascade.GetPxPyPz(px,py,pz);
-         Double_t p2=px*px+py*py+pz*pz;
-         Double_t cost=((x-fX)*px + (y-fY)*py + (z-fZ)*pz)/
-               TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
-        if (cost<fCPAmax) continue; //condition on the cascade pointing angle 
-         //cascade.ChangeMassHypothesis(); //default is Xi
-
-         event->AddCascade(&cascade);
-
+  	 if (cascade.GetCascadeCosineOfPointingAngle(fX,fY,fZ) <fCPAmax) continue; //condition on the cascade pointing angle 
+	 
+	 event->AddCascade(&cascade);
          ncasc++;
-
-      }
-   }
+      } // end loop tracks
+   } // end loop V0s
 
    // Looking for the anti-cascades...
-   for (i=0; i<nV0; i++) {
+
+   for (i=0; i<nV0; i++) { //loop on V0s
       AliESDv0 *v=(AliESDv0*)vtcs.UncheckedAt(i);
       v->ChangeMassHypothesis(kLambda0Bar); //the v0 must be anti-Lambda 
       if (TMath::Abs(v->GetEffMass()-massLambda)>fMassWin) continue; 
-      for (Int_t j=0; j<ntr; j++) {
-	 Int_t bidx=trk[j];
-	 AliESDtrack *btrk=event->GetTrack(bidx);
 
+      for (Int_t j=0; j<ntr; j++) {//loop on tracks
+	 Int_t bidx=trk[j];
+ 	 if (bidx==v->GetPindex()) continue; //bachelor and v0's positive tracks must be different
+	 AliESDtrack *btrk=event->GetTrack(bidx);
          if (btrk->GetSign()<0) continue;  // bachelor's charge 
           
 	 AliESDv0 v0(*v), *pv0=&v0;
@@ -126,34 +133,28 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
          Double_t dca=PropagateToDCA(pv0,pbt,b);
          if (dca > fDCAmax) continue;
 
-         AliESDcascade cascade(*pv0,*pbt,bidx);
-         if (cascade.GetChi2() > fChi2max) continue;
+         AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
+         if (cascade.GetChi2Xi() > fChi2max) continue;
 
 	 Double_t x,y,z; cascade.GetXYZ(x,y,z); 
          Double_t r2=x*x + y*y; 
          if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
          if (r2 < fRmin*fRmin) continue;
 
-         {
+	 Double_t pxV0,pyV0,pzV0;
+	 pv0->GetPxPyPz(pxV0,pyV0,pzV0);
+	 if (x*pxV0+y*pyV0+z*pzV0 < 0) continue; //causality
+
          Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
          if (r2 > (x1*x1+y1*y1)) continue;
          if (z*z > z1*z1) continue;
-         }
 
-	 Double_t px,py,pz; cascade.GetPxPyPz(px,py,pz);
-         Double_t p2=px*px+py*py+pz*pz;
-         Double_t cost=((x-fX)*px + (y-fY)*py + (z-fZ)*pz)/
-               TMath::Sqrt(p2*((x-fX)*(x-fX) + (y-fY)*(y-fY) + (z-fZ)*(z-fZ)));
-
-         if (cost<fCPAmax) continue; //condition on the cascade pointing angle 
-         //cascade.ChangeMassHypothesis(); //default is Xi
-
-         event->AddCascade(&cascade);
-
+	 if (cascade.GetCascadeCosineOfPointingAngle(fX,fY,fZ) < fCPAmax) continue; //condition on the cascade pointing angle 
+	 event->AddCascade(&cascade);
          ncasc++;
 
-      }
-   }
+      } // end loop tracks
+   } // end loop V0s
 
 Info("V0sTracks2CascadeVertices","Number of reconstructed cascades: %d",ncasc);
 

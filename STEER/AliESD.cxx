@@ -68,6 +68,48 @@ AliESD::AliESD():
     fT0amplitude[i] = 0;
   }
 }
+//______________________________________________________________________________
+AliESD::AliESD(const AliESD& esd):
+  TObject(esd),
+  fEventNumber(esd.fEventNumber),
+  fRunNumber(esd.fRunNumber),
+  fTriggerMask(esd.fTriggerMask),
+  fTriggerCluster(esd.fTriggerCluster),
+  fRecoVersion(esd.fRecoVersion),
+  fMagneticField(esd.fMagneticField),
+  fZDCN1Energy(esd.fZDCN1Energy),
+  fZDCP1Energy(esd.fZDCP1Energy),
+  fZDCN2Energy(esd.fZDCN2Energy),
+  fZDCP2Energy(esd.fZDCP2Energy),
+  fZDCEMEnergy(esd.fZDCEMEnergy),
+  fZDCParticipants(esd.fZDCParticipants),
+  fT0zVertex(esd.fT0zVertex),
+  fSPDVertex(esd.fSPDVertex),
+  fPrimaryVertex(esd.fPrimaryVertex),
+  fT0timeStart(esd.fT0timeStart),
+  fTracks(*((TClonesArray*)esd.fTracks.Clone())),
+  fHLTConfMapTracks(*((TClonesArray*)esd.fHLTConfMapTracks.Clone())),
+  fHLTHoughTracks(*((TClonesArray*)esd.fHLTHoughTracks.Clone())),
+  fMuonTracks(*((TClonesArray*)esd.fMuonTracks.Clone())),
+  fPmdTracks(*((TClonesArray*)esd.fPmdTracks.Clone())),
+  fTrdTracks(*((TClonesArray*)esd.fTrdTracks.Clone())),
+  fV0s(*((TClonesArray*)esd.fV0s.Clone())),  
+  fCascades(*((TClonesArray*)esd.fCascades.Clone())),
+  fKinks(*((TClonesArray*)esd.fKinks.Clone())),
+  fV0MIs(*((TClonesArray*)esd.fV0MIs.Clone())),
+  fCaloClusters(*((TClonesArray*)esd.fCaloClusters.Clone())),
+  fEMCALClusters(esd.fEMCALClusters), 
+  fFirstEMCALCluster(esd.fFirstEMCALCluster),
+  fPHOSClusters(esd.fPHOSClusters), 
+  fFirstPHOSCluster(esd.fFirstPHOSCluster),
+  fESDFMD(esd.fESDFMD)
+{
+  for (Int_t i=0; i<24; i++) {
+    fT0time[i] = esd.fT0time[i];
+    fT0amplitude[i] = esd.fT0amplitude[i];
+  }
+}
+
 
 //______________________________________________________________________________
 AliESD::~AliESD()

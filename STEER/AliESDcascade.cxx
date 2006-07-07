@@ -34,37 +34,26 @@
 ClassImp(AliESDcascade)
 
 AliESDcascade::AliESDcascade() : 
-  TObject(),
+  AliESDv0(),
   fPdgCode(kXiMinus),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
-  fChi2(1.e+33),
+  fChi2Xi(1.e+33),
+  fDcaXiDaughters(999),
   fBachIdx(-1)
 {
   //--------------------------------------------------------------------
   // Default constructor  (Xi-)
   //--------------------------------------------------------------------
   for (Int_t j=0; j<3; j++) {
-    fPos[j]=0.;
+    fPosXi[j]=0.;
     fBachMom[j]=0.;
   }
 
-  for (Int_t i=0; i<2; i++)
-    for (Int_t j=0; j<3; j++)
-      fV0mom[i][j]=0.;
-
-  fV0idx[0]=fV0idx[1]=-1;
-
-  fPosCov[0]=1e10;
-  fPosCov[1]=fPosCov[2]=0.;
-  fPosCov[3]=1e10;
-  fPosCov[4]=0.;
-  fPosCov[5]=1e10;
-
-  fV0momCov[0]=1e10;
-  fV0momCov[1]=fV0momCov[2]=0.;
-  fV0momCov[3]=1e10;
-  fV0momCov[4]=0.;
-  fV0momCov[5]=1e10;
+  fPosCovXi[0]=1e10;
+  fPosCovXi[1]=fPosCovXi[2]=0.;
+  fPosCovXi[3]=1e10;
+  fPosCovXi[4]=0.;
+  fPosCovXi[5]=1e10;
 
   fBachMomCov[0]=1e10;
   fBachMomCov[1]=fBachMomCov[2]=0.;
@@ -73,19 +62,19 @@ AliESDcascade::AliESDcascade() :
   fBachMomCov[5]=1e10;
 }
 
+AliESDcascade::~AliESDcascade() {
+}
+
 AliESDcascade::AliESDcascade(const AliESDv0 &v,
 			     const AliExternalTrackParam &t, Int_t i) : 
-  TObject(),
+  AliESDv0(v),
   fPdgCode(kXiMinus),
-  fEffMass(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
-  fChi2(1.e+33),
+  fChi2Xi(1.e+33),
   fBachIdx(i)
 {
-  //--------------------------------------------------------------------
+  //---------------------------------------------------------------------------------------------
   // Main constructor  (Xi-)
-  //--------------------------------------------------------------------
-
-  fV0idx[0]=v.GetNindex(); fV0idx[1]=v.GetPindex();
+  //---------------------------------------------------------------------------------------------
 
   Double_t r[3]; t.GetXYZ(r);
   Double_t x1=r[0], y1=r[1], z1=r[2]; // position of the bachelor
@@ -103,9 +92,13 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   Double_t ym=y2+a2*py2;
   Double_t zm=z2+a2*pz2;
 
+  //dca between V0 and bachelor
+  
+  fDcaXiDaughters = TMath::Sqrt((x1-xm)*(x1-xm) + (y1-ym)*(y1-ym) + (z1-zm)*(z1-zm));
+
   // position of the cascade decay
   
-  fPos[0]=0.5*(x1+xm); fPos[1]=0.5*(y1+ym); fPos[2]=0.5*(z1+zm);
+  fPosXi[0]=0.5*(x1+xm); fPosXi[1]=0.5*(y1+ym); fPosXi[2]=0.5*(z1+zm);
     
 
   // invariant mass of the cascade (default is Ximinus)
@@ -120,23 +113,13 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   // momenta of the bachelor and the V0
   
   fBachMom[0]=px1; fBachMom[1]=py1; fBachMom[2]=pz1; 
-  v.GetNPxPyPz(px2,py2,pz2);
-  fV0mom[0][0]=px2; fV0mom[0][1]=py2; fV0mom[0][2]=pz2;
-  v.GetPPxPyPz(px2,py2,pz2);
-  fV0mom[1][0]=px2; fV0mom[1][1]=py2; fV0mom[1][2]=pz2;
 
   //PH Covariance matrices: to be calculated correctly in the future
-  fPosCov[0]=1e10;
-  fPosCov[1]=fPosCov[2]=0.;
-  fPosCov[3]=1e10;
-  fPosCov[4]=0.;
-  fPosCov[5]=1e10;
-
-  fV0momCov[0]=1e10;
-  fV0momCov[1]=fV0momCov[2]=0.;
-  fV0momCov[3]=1e10;
-  fV0momCov[4]=0.;
-  fV0momCov[5]=1e10;
+  fPosCovXi[0]=1e10;
+  fPosCovXi[1]=fPosCovXi[2]=0.;
+  fPosCovXi[3]=1e10;
+  fPosCovXi[4]=0.;
+  fPosCovXi[5]=1e10;
 
   fBachMomCov[0]=1e10;
   fBachMomCov[1]=fBachMomCov[2]=0.;
@@ -144,8 +127,48 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   fBachMomCov[4]=0.;
   fBachMomCov[5]=1e10;
 
-  fChi2=7.;   
+  fChi2Xi=7.;   
 
+}
+
+AliESDcascade::AliESDcascade(const AliESDcascade& cas) :
+  AliESDv0(cas)
+{
+  //copy constructor
+  fPdgCode = cas.fPdgCode;
+  fEffMass = cas.fEffMass;
+  fChi2Xi  = cas.fChi2Xi;
+  fDcaXiDaughters = cas.fDcaXiDaughters;
+  fBachIdx = cas.fBachIdx;
+  for (int i=0; i<3; i++) {
+    fPosXi[i]     = cas.fPosXi[i];
+    fBachMom[i] = cas.fBachMom[i];
+  }
+  for (int i=0; i<6; i++) {
+    fPosCovXi[i]   = cas.fPosCovXi[i];
+    fBachMomCov[i] = cas.fBachMomCov[i];
+  }
+}
+
+AliESDcascade& AliESDcascade::operator=(const AliESDcascade& cas) {
+  //assignment operator
+  if (this != &cas) {
+    AliESDv0::operator=(cas);
+    fPdgCode = cas.fPdgCode;
+    fEffMass = cas.fEffMass;
+    fChi2Xi  = cas.fChi2Xi;
+    fDcaXiDaughters = cas.fDcaXiDaughters;
+    fBachIdx = cas.fBachIdx;
+    for (int i=0; i<3; i++) {
+      fPosXi[i]   = cas.fPosXi[i];
+      fBachMom[i] = cas.fBachMom[i];
+    }
+    for (int i=0; i<6; i++) {
+      fPosCovXi[i]   = cas.fPosCovXi[i];
+      fBachMomCov[i] = cas.fBachMomCov[i];
+    }
+  }
+  return *this;
 }
 
 Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
@@ -181,8 +204,8 @@ Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
     break;
   }
 
-  Double_t pxn=fV0mom[0][0], pyn=fV0mom[0][1], pzn=fV0mom[0][2];
-  Double_t pxp=fV0mom[1][0], pyp=fV0mom[1][1], pzp=fV0mom[1][2];
+  Double_t pxn=fNmom[0], pyn=fNmom[1], pzn=fNmom[2];
+  Double_t pxp=fPmom[0], pyp=fPmom[1], pzp=fPmom[2];
   Double_t px0=pxn+pxp, py0=pyn+pyp, pz0=pzn+pzp;
   Double_t p0=TMath::Sqrt(px0*px0 + py0*py0 + pz0*pz0);
 
@@ -225,29 +248,29 @@ AliESDcascade::GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
   //--------------------------------------------------------------------
   // This function returns the cascade momentum (global)
   //--------------------------------------------------------------------
-  px=fV0mom[0][0]+fV0mom[1][0]+fBachMom[0]; 
-  py=fV0mom[0][1]+fV0mom[1][1]+fBachMom[1]; 
-  pz=fV0mom[0][2]+fV0mom[1][2]+fBachMom[2]; 
+  px=fNmom[0]+fPmom[0]+fBachMom[0]; 
+  py=fNmom[1]+fPmom[1]+fBachMom[1]; 
+  pz=fNmom[2]+fPmom[2]+fBachMom[2]; 
 }
 
-void AliESDcascade::GetXYZ(Double_t &x, Double_t &y, Double_t &z) const {
+void AliESDcascade::GetXYZcascade(Double_t &x, Double_t &y, Double_t &z) const {
   //--------------------------------------------------------------------
   // This function returns cascade position (global)
   //--------------------------------------------------------------------
-  x=fPos[0]; 
-  y=fPos[1]; 
-  z=fPos[2]; 
+  x=fPosXi[0];
+  y=fPosXi[1];
+  z=fPosXi[2];
 }
 
-Double_t AliESDcascade::GetD(Double_t x0, Double_t y0, Double_t z0) const {
+Double_t AliESDcascade::GetDcascade(Double_t x0, Double_t y0, Double_t z0) const {
   //--------------------------------------------------------------------
   // This function returns the cascade impact parameter
   //--------------------------------------------------------------------
 
-  Double_t x=fPos[0],y=fPos[1],z=fPos[2];
-  Double_t px=fV0mom[0][0]+fV0mom[1][0]+fBachMom[0];
-  Double_t py=fV0mom[0][1]+fV0mom[1][1]+fBachMom[1];
-  Double_t pz=fV0mom[0][2]+fV0mom[1][2]+fBachMom[2];
+  Double_t x=fPosXi[0],y=fPosXi[1],z=fPosXi[2];
+  Double_t px=fNmom[0]+fPmom[0]+fBachMom[0];
+  Double_t py=fNmom[1]+fPmom[1]+fBachMom[1];
+  Double_t pz=fNmom[2]+fPmom[2]+fBachMom[2];
 
   Double_t dx=(y0-y)*pz - (z0-z)*py; 
   Double_t dy=(x0-x)*pz - (z0-z)*px;
@@ -257,3 +280,24 @@ Double_t AliESDcascade::GetD(Double_t x0, Double_t y0, Double_t z0) const {
   return d;
 }
 
+Double_t AliESDcascade::GetCascadeCosineOfPointingAngle(Double_t& refPointX, Double_t& refPointY, Double_t& refPointZ) const {
+  // calculates the pointing angle of the cascade wrt a reference point
+
+  Double_t momCas[3]; //momentum of the cascade
+  GetPxPyPz(momCas[0],momCas[1],momCas[2]);
+
+  Double_t deltaPos[3]; //vector between the reference point and the cascade vertex
+  deltaPos[0] = fPosXi[0] - refPointX;
+  deltaPos[1] = fPosXi[1] - refPointY;
+  deltaPos[2] = fPosXi[2] - refPointZ;
+
+  Double_t momCas2    = momCas[0]*momCas[0] + momCas[1]*momCas[1] + momCas[2]*momCas[2];
+  Double_t deltaPos2 = deltaPos[0]*deltaPos[0] + deltaPos[1]*deltaPos[1] + deltaPos[2]*deltaPos[2];
+
+  Double_t cosinePointingAngle = (deltaPos[0]*momCas[0] +
+				  deltaPos[1]*momCas[1] +
+				  deltaPos[2]*momCas[2] ) /
+    TMath::Sqrt(momCas2 * deltaPos2);
+  
+  return cosinePointingAngle;
+}
