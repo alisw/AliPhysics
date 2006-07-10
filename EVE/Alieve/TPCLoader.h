@@ -38,7 +38,8 @@ public:
   TPCLoader(const Text_t* n="TPCLoader", const Text_t* t=0);
   virtual ~TPCLoader();
 
-  virtual Bool_t CanEditMainColor() { return kFALSE; }
+  virtual void RemoveElementLocal(Reve::RenderElement* el);
+  virtual void RemoveElements();
 
   void SetFile(const Text_t* f) { fFile = f; }
   void SetDoubleSR(Bool_t d)    { fDoubleSR = d; }

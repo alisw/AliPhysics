@@ -34,9 +34,7 @@ TPCLoader::TPCLoader(const Text_t* n, const Text_t* t) :
   fSec3Ds(36),
 
   fSetInitSectorParams(kFALSE)
-{
-  SetMainColorPtr(0);
-}
+{}
 
 TPCLoader::~TPCLoader()
 {
@@ -46,6 +44,27 @@ TPCLoader::~TPCLoader()
 
 /**************************************************************************/
 
+void TPCLoader::RemoveElementLocal(RenderElement* el)
+{
+  for(Int_t i=0; i<36; ++i) {
+    if(fSec2Ds[i] == el) fSec2Ds[i] = 0;
+    if(fSec3Ds[i] == el) fSec3Ds[i] = 0;
+  }
+
+  RenderElementList::RemoveElementLocal(el);
+}
+
+void TPCLoader::RemoveElements()
+{
+  for(Int_t i=0; i<36; ++i) {
+    fSec2Ds[i] = 0;
+    fSec3Ds[i] = 0;
+  }
+
+  RenderElementList::RemoveElements();
+}
+
+/**************************************************************************/
 
 void TPCLoader::SetData(TPCData* d)
 {
@@ -171,8 +190,7 @@ void TPCLoader::UpdateSectors()
 	s->SetTrans(kTRUE);
 	s->SetFrameColor(36);
 
-	gReve->AddRenderElement(s);
-	gReve->DrawRenderElement(s);
+	gReve->AddRenderElement(this, s);
       }
     }
 
@@ -202,8 +220,7 @@ void TPCLoader::CreateSectors3D()
       s->SetTrans(kTRUE);
       s->SetFrameColor(36);
 
-      gReve->AddRenderElement(s);
-      gReve->DrawRenderElement(s);
+      gReve->AddRenderElement(this, s);
     }
   }
   gReve->EnableRedraw();
@@ -215,8 +232,8 @@ void TPCLoader::DeleteSectors3D()
   for(Int_t i=0; i<=35; ++i) {
     RenderElement* re = fSec3Ds[i];
     if(re != 0) {
-      gReve->UndrawRenderElement(re);
-      delete re;
+      gReve->RemoveRenderElement(this, re);
+      // delete re; // Done automatically.
       fSec3Ds[i] = 0;
     }
   }
