@@ -41,10 +41,12 @@ public:
 
   void SetAxisTitles(const Char_t* titleX="", const Char_t* titleY="", const Char_t* titleZ="");
 
-  virtual Bool_t LoadHistograms(Char_t* fileName, Char_t* dir = ".");
+  virtual Bool_t LoadHistograms(const Char_t* fileName, const Char_t* dir = ".");
   virtual void SaveHistograms();
 
   virtual void DrawHistograms();
+
+  virtual void ReduceInformation();
 
 protected:
   TH1*    fhMeas;  // histogram of measured particles (or tracks)

@@ -50,6 +50,7 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
   fData->SetXTitle("vtx z [cm]");
   fData->SetYTitle("#eta");
   fData->SetZTitle("p_{T}");
+  fData->Sumw2();
 
   fDataUncorrected = dynamic_cast<TH3F*> (fData->Clone(Form("%s_analysis_uncorrected", name)));
   fDataUncorrected->SetTitle(Form("%s uncorrected", fData->GetTitle()));
@@ -57,6 +58,7 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
   fVtx->SetName(Form("%s_vtx", name));
   fVtx->SetTitle("Vertex distribution");
   fVtx->GetXaxis()->SetTitle(fData->GetXaxis()->GetTitle());
+  //fVtx->Sumw2();
 
   fdNdEta[0] = dynamic_cast<TH1D*> (fData->Project3D("y"));
   fdNdEta[0]->SetName(Form("%s_dNdEta", name));
@@ -77,9 +79,6 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
   fPtDist->SetTitle("p_{T} [GeV/c]");
   fPtDist->GetXaxis()->SetTitle(fData->GetZaxis()->GetTitle());
   fPtDist->SetYTitle("#frac{dN}{d#eta dp_{T}} [c/GeV]");
-
-  fData->Sumw2();
-  fVtx->Sumw2();
 }
 
 //____________________________________________________________________
@@ -87,25 +86,43 @@ dNdEtaAnalysis::~dNdEtaAnalysis()
 {
   // destructor
 
-  delete fData;
-  fData = 0;
+  if (fData)
+  {
+    delete fData;
+    fData = 0;
+  }
 
-  delete fDataUncorrected;
-  fDataUncorrected = 0;
+  if (fDataUncorrected)
+  {
+    delete fDataUncorrected;
+    fDataUncorrected = 0;
+  }
 
-  delete fVtx;
-  fVtx = 0;
+  if (fVtx)
+  {
+    delete fVtx;
+    fVtx = 0;
+  }
 
   for (Int_t i=0; i<kVertexBinning; ++i)
   {
-    delete fdNdEta[i];
-    fdNdEta[i] = 0;
-    delete fdNdEtaPtCutOffCorrected[i];
-    fdNdEtaPtCutOffCorrected[i] = 0;
+    if (fdNdEta[i])
+    {
+      delete fdNdEta[i];
+      fdNdEta[i] = 0;
+    }
+    if (fdNdEtaPtCutOffCorrected[i])
+    {
+      delete fdNdEtaPtCutOffCorrected[i];
+      fdNdEtaPtCutOffCorrected[i] = 0;
+    }
   }
 
-  delete fPtDist;
-  fPtDist = 0;
+  if (fPtDist)
+  {
+    delete fPtDist;
+    fPtDist = 0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -185,7 +202,6 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut)
     printf("INFO: No correction applied\n");
 
   // In fData we have the track2particle and vertex reconstruction efficiency correction already applied
-
 
   // create pt hist
   {
@@ -369,6 +385,8 @@ void dNdEtaAnalysis::LoadHistograms()
     fdNdEtaPtCutOffCorrected[i] = dynamic_cast<TH1D*> (gDirectory->Get(fdNdEtaPtCutOffCorrected[i]->GetName()));
   }
 
+  fPtDist = dynamic_cast<TH1D*> (gDirectory->Get(fPtDist->GetName()));
+
   gDirectory->cd("../");
 }
 
@@ -462,7 +480,8 @@ Long64_t dNdEtaAnalysis::Merge(TCollection* list)
       continue;
 
     collections[0]->Add(entry->fData);
-    collections[1]->Add(entry->fDataUncorrected);
+    if (fDataUncorrected)
+      collections[1]->Add(entry->fDataUncorrected);
     collections[2]->Add(entry->fVtx);
     collections[3]->Add(entry->fPtDist);
 
@@ -476,7 +495,8 @@ Long64_t dNdEtaAnalysis::Merge(TCollection* list)
   }
 
   fData->Merge(collections[0]);
-  fDataUncorrected->Merge(collections[1]);
+  if (fDataUncorrected)
+    fDataUncorrected->Merge(collections[1]);
   fVtx->Merge(collections[2]);
   fPtDist->Merge(collections[3]);
   for (Int_t i=0; i<kVertexBinning; ++i)

@@ -14,6 +14,7 @@ class AlidNdEtaAnalysisESDSelector : public AliSelector {
     AlidNdEtaAnalysisESDSelector();
     virtual ~AlidNdEtaAnalysisESDSelector();
 
+    virtual void    Begin(TTree* tree);
     virtual void    SlaveBegin(TTree *tree);
     virtual void    Init(TTree *tree);
     virtual Bool_t  Process(Long64_t entry);
@@ -21,6 +22,8 @@ class AlidNdEtaAnalysisESDSelector : public AliSelector {
     virtual void    Terminate();
 
  protected:
+    void ReadUserObjects(TTree* tree);
+
     dNdEtaAnalysis* fdNdEtaAnalysisMBVtx;   // contains the histograms for the triggered events with vertex
     dNdEtaAnalysis* fdNdEtaAnalysisMB;      // contains the histograms corrected with vtx recon eff
     dNdEtaAnalysis* fdNdEtaAnalysis;        // contains the histograms corrected with vtx recon eff and trigger bias eff

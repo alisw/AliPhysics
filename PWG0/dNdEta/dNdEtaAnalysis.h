@@ -51,7 +51,9 @@ public:
   TH3F* GetHistogram() { return fData; }
   TH3F* GetUncorrectedHistogram() { return fDataUncorrected; }
   TH1D* GetVtxHistogram() { return fVtx; }
+  TH1D* GetPtHistogram() { return fPtDist; }
   TH1D* GetdNdEtaHistogram(Int_t i = 0) { return fdNdEta[i]; }
+  TH1D* GetdNdEtaPtCutOffCorrectedHistogram(Int_t i = 0) { return fdNdEtaPtCutOffCorrected[i]; }
 
 protected:
   TH3F* fData;              // histogram Eta vs vtx (track count)

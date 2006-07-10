@@ -54,8 +54,8 @@ public:
   virtual Long64_t Merge(TCollection* list);
 
   void    SaveHistograms();
-  Bool_t  LoadHistograms(Char_t* fileName, Char_t* dir = "dndeta_correction");
-  Bool_t  LoadCorrection(Char_t* fileName, Char_t* dir = "dndeta_correction")
+  Bool_t  LoadHistograms(const Char_t* fileName, const Char_t* dir = "dndeta_correction");
+  Bool_t  LoadCorrection(const Char_t* fileName, const Char_t* dir = "dndeta_correction")
     {return LoadHistograms(fileName, dir);}
   
   void DrawHistograms();
@@ -74,6 +74,8 @@ public:
   Float_t GetMeasuredFraction(Float_t ptCutOff, Float_t eta = -1, Bool_t debug = kFALSE);
 
   void SetNEvents(Long64_t events) { fNEvents = events; }
+
+  void ReduceInformation();
 
 protected:
   AliCorrectionMatrix3D* fTrack2ParticleCorrection; //-> handles the track-to-particle correction, function of vtx_z, eta, pt

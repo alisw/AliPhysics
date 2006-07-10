@@ -134,7 +134,7 @@ AlidNdEtaCorrection::Merge(TCollection* list) {
 
 //____________________________________________________________________
 Bool_t
-AlidNdEtaCorrection::LoadHistograms(Char_t* fileName, Char_t* dir) {
+AlidNdEtaCorrection::LoadHistograms(const Char_t* fileName, const Char_t* dir) {
   //
   // loads the histograms
   //
@@ -227,3 +227,13 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, 
   return fraction;
 }
 
+void AlidNdEtaCorrection::ReduceInformation()
+{
+  // this function deletes the measured and generated histograms from the corrections to reduce the amount of data
+  // in memory
+
+  // these are needed for GetMeasuredFraction(): fTrack2ParticleCorrection->ReduceInformation();
+  fVertexRecoCorrection->ReduceInformation();
+  fTriggerCorrection->ReduceInformation();
+  fTriggerBiasCorrection->ReduceInformation();
+}
