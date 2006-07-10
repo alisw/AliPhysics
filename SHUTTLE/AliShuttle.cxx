@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/07/10 13:01:41  jgrosseo
+enhanced storing of last sucessfully processed run (alberto)
+
 Revision 1.5  2006/07/04 14:59:57  jgrosseo
 revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
 
@@ -275,11 +278,12 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 		aPreprocessor->Initialize(run, startTime, endTime);
 		hasError = (aPreprocessor->Process(&aliasMap) == 0);
 	}else{
+    // TODO default behaviour?
 		AliInfo(Form("No Preprocessor for %s: storing TMap of DP arrays into CDB!",detector));
 		AliCDBMetaData metaData;
+    AliDCSValue dcsValue(startTime, endTime);
 		metaData.SetResponsible(Form("Duck, Donald"));
-  		metaData.SetProperty("StartEndTime",
-      			new AliDCSValue(startTime, endTime));
+  	metaData.SetProperty("StartEndTime", &dcsValue);
   		metaData.SetComment("Automatically stored by Shuttle!");
 		hasError = (Store(detector, &aliasMap, &metaData) == 0);
 	}

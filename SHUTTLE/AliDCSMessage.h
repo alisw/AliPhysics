@@ -182,6 +182,7 @@ private:
 	//ResultSet message fields
 	AliDCSValue::Type fValueType; // Simple value type
 
+  // TODO this has to be a pointer
 	TObjArray fValues; 		// array of received values
 	
 	//Error message fields
