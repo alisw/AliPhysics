@@ -74,10 +74,7 @@ void TPCSector2DGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
 
   // printf("TPCSector2DGL::DirectDraw \n");
 
-  if(fSector->fTPCData == 0)
-    fSectorData = 0;
-  else
-    fSectorData = fSector->fTPCData->GetSectorData(fSector->fSectorID);
+  fSectorData = fSector->GetSectorData();
 
   if(fRTS < fSector->fRTS && fSectorData != 0) {
     CreateTexture();
