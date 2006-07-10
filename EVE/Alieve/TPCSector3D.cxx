@@ -40,12 +40,6 @@ TPCSector3D::~TPCSector3D()
 
 /**************************************************************************/
 
-UInt_t TPCSector3D::IncRTS()
-{
-  UpdateBoxes();
-  return ++fRTS;
-}
-
 void TPCSector3D::SetRnrFrame(Bool_t rf)
 {
   if(fRnrFrame != rf) {
@@ -124,7 +118,7 @@ void TPCSector3D::LoadPadrow(TPCSectorData::RowIterator& iter,
 	continue;
 
       if(fPointSetOn && val <= fPointSetMaxVal) {
-	fPointSetArray.Fill(val, xs + (pad+0.5)*pw, ym, (time+0.5)*zs);
+	fPointSetArray.Fill(xs + (pad+0.5)*pw, ym, (time+0.5)*zs, val);
       } else {
 	fBoxSet.fBoxes.push_back(Reve::Box());
 	ColorFromArray(val, fBoxSet.fBoxes.back().color);
@@ -155,7 +149,7 @@ void TPCSector3D::UpdateBoxes()
   // printf("TPCSector3D update boxes\n");
 
   fBoxSet.ClearSet();
-  fPointSetArray.DeleteBins();
+  fPointSetArray.RemoveElements();
 
   TPCSectorData* data = GetSectorData();
   if (data != 0) {
@@ -193,7 +187,7 @@ void TPCSector3D::SetupPointSetArray()
     fPointSetOn = kTRUE;
     fPointSetMaxVal = fThreshold + (Int_t) TMath::Nint(fPointFrac*(fMaxVal - fThreshold));
     // printf("SetupPointSetArray frac=%f nbins=%d psmv=%d (%d,%d)\n", fPointFrac, nBins, fPointSetMaxVal, fThreshold, fMaxVal);
-    fPointSetArray.InitBins(0, "", nBins, fThreshold, fPointSetMaxVal);
+    fPointSetArray.InitBins("", nBins, fThreshold, fPointSetMaxVal, kFALSE);
     for(Int_t b=0; b<nBins; ++b) {
       fPointSetArray.GetBin(b)->SetMarkerColor(gStyle->GetColorPalette(b));
     }

@@ -37,8 +37,6 @@ public:
   TPCSector3D(const Text_t* n="TPCSector3D", const Text_t* t=0);
   virtual ~TPCSector3D();
 
-  virtual UInt_t IncRTS();
-
   void SetPointFrac(Float_t f) { fPointFrac = f; IncRTS(); }
   void SetPointSize(Float_t s) { fPointSize = s; }
 
