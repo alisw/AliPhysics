@@ -1,3 +1,32 @@
+2006-07-10  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/clusters_from_label.C:
+	* alice-macros/esd_tracks.C:
+	* alice-macros/geom_ddip.C:
+	* alice-macros/geom_its.C:
+	* alice-macros/geom_phos.C:
+	* alice-macros/geom_rich.C:
+	* alice-macros/geom_simple.C:
+	* alice-macros/geom_tpc.C:
+	* alice-macros/its_digits.C:
+	* alice-macros/its_hits.C:
+	* alice-macros/muon_all.C:
+	* alice-macros/muon_chambers.C:
+	* alice-macros/muon_clusters.C:
+	* alice-macros/muon_cpads.C:
+	* alice-macros/muon_digits.C:
+	* alice-macros/muon_hits.C:
+	* alice-macros/muon_tracks.C:
+	* alice-macros/primary_vertex.C:
+	* alice-macros/region_marker.C:
+	* alice-macros/tpc_digits.C:
+	* alice-macros/tpc_hits.C:
+	* alice-macros/tpc_hits_eta_split.C:
+	* test-macros/tpc_gui.C:
+	* test-macros/tpc_gui_hack.C:
+	Use new / simpler method of render-element registration; the
+	'gReve->DrawRenderElement()' is no longer needed.
+
 2006-07-03  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/its_hits.C:
