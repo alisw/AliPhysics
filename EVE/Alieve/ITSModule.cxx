@@ -19,22 +19,22 @@ ClassImp(ITSModule)
 
 /**************************************************************************/
 
-void ITSModule::Init()
-{
-  fTrans = false;
-  fID   = -1;
-  fInfo = 0;
-}
-
-/**************************************************************************/
+ITSModule::ITSModule(const Text_t* n, const Text_t* t, Color_t col) :
+  Reve::RenderElement(fFrameColor),
+  QuadSet(n, t),
+  fInfo  (0),
+  fDetID (-1),
+  fFrameColor(col)
+{}
 
 ITSModule::ITSModule(Int_t id, ITSDigitsInfo* info, Color_t col) :
-  QuadSet(Form("ITS module %d", id)), Reve::RenderElement(fFrameColor),
+  Reve::RenderElement(fFrameColor),
+  QuadSet(Form("ITS module %d", id)),
+  fInfo  (0),
+  fDetID (-1),
   fFrameColor(col)
 {
-  Init();
-  
-  fInfo = info;
+  SetDigitsInfo(info);
   SetID(id);
 }
 
@@ -54,6 +54,13 @@ void ITSModule::SetMainColor(Color_t col)
 }
 
 /**************************************************************************/
+
+void ITSModule::SetDigitsInfo(ITSDigitsInfo* info)
+{
+  if(fInfo) fInfo->DecRefCount();
+  fInfo = info;
+  if(fInfo) fInfo->IncRefCount();
+}
 
 void ITSModule::SetID(Int_t id)
 {

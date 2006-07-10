@@ -18,8 +18,10 @@ class TPCSectorVizEditor;
 class TPCSector2D;  class TPCSector2DEditor;  class TPCSector2DGL;
 class TPCSector3D;  class TPCSector3DEditor;  class TPCSector3DGL;
 
-class TPCSectorViz : public TNamed, public TAtt3D, public TAttBBox,
-                     public Reve::RenderElement
+class TPCSectorViz : public Reve::RenderElement,
+                     public TNamed,
+                     public TAtt3D,
+                     public TAttBBox
 {
   friend class TPCSectorVizEditor;
   friend class TPCSector2D;

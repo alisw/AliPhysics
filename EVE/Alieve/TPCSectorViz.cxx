@@ -23,8 +23,8 @@ ClassImp(TPCSectorViz)
 /**************************************************************************/
 
 TPCSectorViz::TPCSectorViz(const Text_t* n, const Text_t* t) :
-  TNamed(n, t),
   Reve::RenderElement(fFrameColor),
+  TNamed(n, t),
 
   fTPCData  (0),
   fSectorID (0),

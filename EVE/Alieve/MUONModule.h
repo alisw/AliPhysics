@@ -8,13 +8,13 @@
 
 namespace Alieve {
 
-class MUONModule : public Reve::QuadSet, public Reve::RenderElement
+class MUONModule : public Reve::RenderElement,
+                   public Reve::QuadSet
 {
 
 public:
 
-  MUONModule(const Text_t* n="MUONModule", const Text_t* t=0, Color_t col=2) : QuadSet(n, t), Reve::RenderElement(fFrameCol), fFrameCol(col)
-	{ Init(); }
+  MUONModule(const Text_t* n="MUONModule", const Text_t* t=0, Color_t col=2);
   MUONModule(Int_t id, Int_t cath, MUONDigitsInfo* info, Bool_t dig, Bool_t clus, Color_t col=2);
   virtual ~MUONModule();
 

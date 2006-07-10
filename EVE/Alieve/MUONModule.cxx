@@ -48,8 +48,18 @@ void MUONModule::Init()
 }
 
 /**************************************************************************/
+
+MUONModule::MUONModule(const Text_t* n, const Text_t* t, Color_t col) :
+  Reve::RenderElement(fFrameCol),
+  QuadSet(n, t),
+  fFrameCol(col)
+{
+  Init();
+}
+
 MUONModule::MUONModule(Int_t id, Int_t cath, MUONDigitsInfo* info, Bool_t dig, Bool_t clus, Color_t col ) :
-  QuadSet(Form("M-DetElemId %d C%1d",id,cath)), Reve::RenderElement(fFrameCol),
+  Reve::RenderElement(fFrameCol),
+  QuadSet(Form("M-DetElemId %d C%1d",id,cath)),
   fFrameCol(col)
 {
 

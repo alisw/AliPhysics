@@ -8,10 +8,10 @@
 
 namespace Alieve {
 
-class ITSModule : public Reve::QuadSet, public Reve::RenderElement
+class ITSModule : public Reve::RenderElement,
+                  public Reve::QuadSet
 {
 private:
-  void Init();
   void LoadQuads();
 
 protected:
@@ -34,15 +34,14 @@ protected:
   Color_t     fFrameColor;
 
 public:
-  ITSModule(const Text_t* n="ITSModule", const Text_t* t=0, Color_t col=2) :
-    QuadSet(n, t), Reve::RenderElement(fFrameColor), fFrameColor(col)
-  { Init(); }
+  ITSModule(const Text_t* n="ITSModule", const Text_t* t=0, Color_t col=2);
   ITSModule(Int_t id, ITSDigitsInfo* info, Color_t col=2);
   virtual ~ITSModule();
 
   virtual Bool_t CanEditMainColor()  { return true; }
   virtual void SetMainColor(Color_t col);
 
+  virtual void SetDigitsInfo(ITSDigitsInfo* info);
   virtual void SetID(Int_t id);
   virtual void Print(Option_t* opt="") const;
 
