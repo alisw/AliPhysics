@@ -51,8 +51,6 @@ AliSelector::AliSelector() :
   //
   // Constructor. Initialization of pointers
   //
-
-  AliLog::SetClassDebugLevel("AliSelector", AliLog::kDebug);
 }
 
 AliSelector::~AliSelector()
@@ -70,6 +68,14 @@ void AliSelector::Begin(TTree*)
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
+
+  TString option = GetOption();
+
+  if (option.Contains("debug"))
+  {
+    AliLog::SetClassDebugLevel("AliSelector", AliLog::kDebug);
+    AliInfo(Form("Called with option %s.", option.Data()));
+  }
 
   AliDebug(AliLog::kDebug, "============BEGIN===========");
 }

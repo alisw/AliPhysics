@@ -32,7 +32,7 @@ AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   // Constructor. Initialization of pointers
   //
 
-  //AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
+  AliLog::SetClassDebugLevel("AlidNdEtaAnalysisESDSelector", AliLog::kDebug);
 }
 
 AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
@@ -45,19 +45,16 @@ AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
   // list is deleted by the TSelector dtor
 }
 
-void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree* tree)
+void AlidNdEtaAnalysisESDSelector::Begin(TTree* tree)
 {
-  // The SlaveBegin() function is called after the Begin() function.
-  // When running with PROOF SlaveBegin() is called on each slave server.
-  // The tree argument is deprecated (on PROOF 0 is passed).
+  // Begin function
 
-  AliSelector::SlaveBegin(tree);
+  ReadUserObjects(tree);
+}
 
-  if (fInput)
-  {
-    printf("Printing input list:\n");
-    fInput->Print();
-  }
+void AlidNdEtaAnalysisESDSelector::ReadUserObjects(TTree* tree)
+{
+  // read the user objects, called from slavebegin and begin
 
   if (!fEsdTrackCuts && fInput)
     fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("AliESDtrackCuts"));
@@ -72,12 +69,22 @@ void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree* tree)
   if (!fdNdEtaCorrection && fInput)
     fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fInput->FindObject("dndeta_correction"));
 
-  if (!fdNdEtaCorrection && fTree)
-    fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fTree->GetUserInfo()->FindObject("dndeta_correction"));
+  if (!fdNdEtaCorrection && tree)
+    fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (tree->GetUserInfo()->FindObject("dndeta_correction"));
 
   if (!fdNdEtaCorrection)
      AliDebug(AliLog::kError, "ERROR: Could not read dndeta_correction from input list.");
+}
 
+void AlidNdEtaAnalysisESDSelector::SlaveBegin(TTree* tree)
+{
+  // The SlaveBegin() function is called after the Begin() function.
+  // When running with PROOF SlaveBegin() is called on each slave server.
+  // The tree argument is deprecated (on PROOF 0 is passed).
+
+  AliSelector::SlaveBegin(tree);
+
+  ReadUserObjects(tree);
 
   fdNdEtaAnalysisMBVtx = new dNdEtaAnalysis("dndeta_mbvtx", "dndeta_mbvtx");
   fdNdEtaAnalysisMB = new dNdEtaAnalysis("dndeta_mb", "dndeta_mb");
@@ -224,6 +231,8 @@ void AlidNdEtaAnalysisESDSelector::SlaveTerminate()
   }
 
   fOutput->Add(fdNdEtaAnalysis);
+  fOutput->Add(fdNdEtaAnalysisMB);
+  fOutput->Add(fdNdEtaAnalysisMBVtx);
 }
 
 void AlidNdEtaAnalysisESDSelector::Terminate()
@@ -235,16 +244,23 @@ void AlidNdEtaAnalysisESDSelector::Terminate()
   AliSelector::Terminate();
 
   fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
+  fdNdEtaAnalysisMB = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta_mb"));
+  fdNdEtaAnalysisMBVtx = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta_mbvtx"));
 
-  if (!fdNdEtaAnalysis)
+  if (!fdNdEtaAnalysis || !fdNdEtaAnalysisMB || !fdNdEtaAnalysisMBVtx)
   {
-    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fdNdEtaAnalysis));
+    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p %p %p", (void*) fdNdEtaAnalysis, (void*) fdNdEtaAnalysisMB, (void*) fdNdEtaAnalysisMBVtx));
     return;
   }
 
-  fdNdEtaAnalysis->Finish(fdNdEtaCorrection, 0.3);
-  fdNdEtaAnalysisMB->Finish(fdNdEtaCorrection, 0.3);
-  fdNdEtaAnalysisMBVtx->Finish(fdNdEtaCorrection, 0.3);
+  if (fdNdEtaAnalysis)
+    fdNdEtaAnalysis->Finish(fdNdEtaCorrection, 0.3);
+
+  if (fdNdEtaAnalysisMB)
+    fdNdEtaAnalysisMB->Finish(fdNdEtaCorrection, 0.3);
+
+  if (fdNdEtaAnalysisMBVtx)
+    fdNdEtaAnalysisMBVtx->Finish(fdNdEtaCorrection, 0.3);
 
   TFile* fout = new TFile("analysis_esd.root","RECREATE");
 

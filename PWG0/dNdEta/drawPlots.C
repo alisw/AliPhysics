@@ -1,33 +1,102 @@
 /* $Id$ */
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include "AliPWG0Helper.h"
+#include "dNdEtaAnalysis.h"
+#include "AlidNdEtaCorrection.h"
+
+#include <TCanvas.h>
+#include <TFile.h>
+#include <TH1.h>
+#include <TH2F.h>
+#include <TH3F.h>
+#include <TLine.h>
+#include <TSystem.h>
+
+#endif
+
 Int_t gMax = 5;
 
-void drawPlots()
+extern TSystem* gSystem;
+
+void SetRanges(TAxis* axis)
 {
-  drawPlots(5);
-  drawPlots(2);
+  if (strcmp(axis->GetTitle(), "#eta") == 0)
+    axis->SetRangeUser(-1.7999, 1.7999);
+  if (strcmp(axis->GetTitle(), "p_{T} [GeV/c]") == 0)
+    axis->SetRangeUser(0, 9.9999);
+  if (strcmp(axis->GetTitle(), "vtx z [cm]") == 0)
+    axis->SetRangeUser(-15, 14.9999);
+  if (strcmp(axis->GetTitle(), "Ntracks") == 0)
+    axis->SetRangeUser(0, 99.9999);
 }
 
-void drawPlots(Int_t max)
+void SetRanges(TH1* hist)
 {
-  gMax = max;
-
-  ptCutoff();
-  TriggerBias();
-  VtxRecon();
-  Track2Particle2D();
-  Track2Particle3D();
-  ptSpectrum();
-  dNdEta();
+  SetRanges(hist->GetXaxis());
+  SetRanges(hist->GetYaxis());
+  SetRanges(hist->GetZaxis());
 }
 
-void dNdEta()
+
+void Prepare3DPlot(TH3* hist)
+{
+  hist->GetXaxis()->SetTitleOffset(1.5);
+  hist->GetYaxis()->SetTitleOffset(1.5);
+  hist->GetZaxis()->SetTitleOffset(1.5);
+
+  hist->SetStats(kFALSE);
+}
+
+void Prepare2DPlot(TH2* hist)
+{
+  hist->SetStats(kFALSE);
+  hist->GetYaxis()->SetTitleOffset(1.4);
+
+  hist->SetMinimum(0);
+  hist->SetMaximum(gMax);
+
+  SetRanges(hist);
+}
+
+void Prepare1DPlot(TH1* hist)
+{
+  hist->SetLineWidth(2);
+  hist->SetStats(kFALSE);
+
+  SetRanges(hist);
+}
+
+void InitPad()
+{
+  gPad->Range(0, 0, 1, 1);
+  gPad->SetLeftMargin(0.15);
+  //gPad->SetRightMargin(0.05);
+  //gPad->SetTopMargin(0.13);
+  //gPad->SetBottomMargin(0.1);
+
+  //gPad->SetGridx();
+  //gPad->SetGridy();
+}
+
+void InitPadCOLZ()
+{
+  gPad->Range(0, 0, 1, 1);
+  gPad->SetRightMargin(0.15);
+  gPad->SetLeftMargin(0.12);
+
+  gPad->SetGridx();
+  gPad->SetGridy();
+}
+
+void dNdEta(Bool_t onlyESD = kFALSE)
 {
   TFile* file = TFile::Open("analysis_esd.root");
-  TH1* histESD = file->Get("dndeta/dndeta_dNdEta_corrected_2");
-  TH1* histESDNoPt = file->Get("dndeta/dndeta_dNdEta_2");
-  TH1* histESDMB = file->Get("dndeta_mb/dndeta_mb_dNdEta_corrected_2");
-  TH1* histESDMBVtx = file->Get("dndeta_mbvtx/dndeta_mbvtx_dNdEta_corrected_2");
+  TH1* histESD = (TH1*) file->Get("dndeta/dndeta_dNdEta_corrected_2");
+  TH1* histESDNoPt = (TH1*) file->Get("dndeta/dndeta_dNdEta_2");
+  TH1* histESDMB = (TH1*) file->Get("dndeta_mb/dndeta_mb_dNdEta_corrected_2");
+  TH1* histESDMBVtx = (TH1*) file->Get("dndeta_mbvtx/dndeta_mbvtx_dNdEta_corrected_2");
 
   TCanvas* canvas = new TCanvas("dNdEta1", "dNdEta1", 500, 500);
 
@@ -50,18 +119,22 @@ void dNdEta()
   histESD->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
   histESDNoPt->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
 
-  dummy->Draw();
+  dummy->DrawCopy();
   histESDMBVtx->Draw("SAME");
   histESDMB->Draw("SAME");
   histESD->Draw("SAME");
 
   canvas->SaveAs("dNdEta1.gif");
+  canvas->SaveAs("dNdEta1.eps");
+
+  if (onlyESD)
+    return;
 
   TFile* file2 = TFile::Open("analysis_mc.root");
-  TH1* histMC = file2->Get("dndeta/dndeta_dNdEta_corrected_2")->Clone("cloned");
+  TH1* histMC = (TH1*) file2->Get("dndeta/dndeta_dNdEta_corrected_2")->Clone("cloned");
 
   gSystem->Load("libPWG0base");
-  fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
   fdNdEtaAnalysis->LoadHistograms();
   fdNdEtaAnalysis->Finish(0, 0.3);
   TH1* histMCPtCut = fdNdEtaAnalysis->GetdNdEtaHistogram(2);
@@ -75,10 +148,10 @@ void dNdEta()
   histMCPtCut->SetLineColor(104);
   histESDNoPt->SetLineColor(102);
 
-  TH2* dummy2 = dummy->Clone("dummy2");
+  TH2* dummy2 = (TH2F*) dummy->Clone("dummy2");
   dummy2->GetYaxis()->SetRangeUser(0, histESD->GetMaximum() * 1.1);
 
-  dummy2->Draw();
+  dummy2->DrawCopy();
   histMC->Draw("SAME");
 //  histMC->Draw();
   histESD->Draw("SAME");
@@ -86,15 +159,38 @@ void dNdEta()
   histMCPtCut->Draw("SAME");
 
   canvas2->SaveAs("dNdEta2.gif");
+  canvas2->SaveAs("dNdEta2.eps");
+
+  TCanvas* canvas3 = new TCanvas("dNdEta", "dNdEta", 1000, 500);
+  canvas3->Divide(2, 1);
+
+  dummy->SetTitle("a)");
+  dummy2->SetTitle("b)");
+
+  canvas3->cd(1);
+  dummy->Draw();
+  histESDMBVtx->Draw("SAME");
+  histESDMB->Draw("SAME");
+  histESD->Draw("SAME");
+
+  canvas3->cd(2);
+  dummy2->Draw();
+  histMC->Draw("SAME");
+  histESD->Draw("SAME");
+  histESDNoPt->Draw("SAME");
+  histMCPtCut->Draw("SAME");
+
+  canvas3->SaveAs("dNdEta.gif");
+  canvas3->SaveAs("dNdEta.eps");
 }
 
 void ptSpectrum()
 {
   TFile* file = TFile::Open("analysis_esd.root");
-  TH1* histESD = file->Get("dndeta/dndeta_pt");
+  TH1* histESD = (TH1*) file->Get("dndeta/dndeta_pt");
 
   TFile* file2 = TFile::Open("analysis_mc.root");
-  TH1* histMC = file2->Get("dndeta/dndeta_pt");
+  TH1* histMC = (TH1*) file2->Get("dndeta/dndeta_pt");
 
   TCanvas* canvas = new TCanvas("ptSpectrum", "ptSpectrum", 500, 500);
   InitPad();
@@ -119,6 +215,7 @@ void ptSpectrum()
   histMC->Draw("SAME");
 
   canvas->SaveAs("ptSpectrum.gif");
+  canvas->SaveAs("ptSpectrum.eps");
 }
 
 void ptCutoff()
@@ -147,11 +244,57 @@ void ptCutoff()
   line->Draw();
 
   canvas->SaveAs("ptCutoff.gif");
+  canvas->SaveAs("ptCutoff.eps");
 }
 
-void TriggerBias()
+void TriggerBiasVtxRecon(const char* fileName = "correction_map.root")
 {
-  TFile* file = TFile::Open("correction_map.root");
+  TFile* file = TFile::Open(fileName);
+
+  TH2* corrTrigger = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_trigger"));
+  TH2* corrVtx = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_vtxReco"));
+
+  Prepare2DPlot(corrTrigger);
+  corrTrigger->SetTitle("a) Trigger bias correction");
+
+  Prepare2DPlot(corrVtx);
+  corrVtx->SetTitle("b) Vertex reconstruction correction");
+
+  TCanvas* canvas = new TCanvas("TriggerBiasVtxRecon", "TriggerBiasVtxRecon", 1000, 500);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+  InitPadCOLZ();
+  corrTrigger->DrawCopy("COLZ");
+
+  canvas->cd(2);
+  InitPadCOLZ();
+  corrVtx->DrawCopy("COLZ");
+
+  canvas->SaveAs(Form("TriggerBiasVtxRecon_%d.gif", gMax));
+  canvas->SaveAs(Form("TriggerBiasVtxRecon_%d.eps", gMax));
+
+  canvas = new TCanvas("TriggerBiasVtxReconZoom", "TriggerBiasVtxReconZoom", 1000, 500);
+  canvas->Divide(2, 1);
+
+  corrTrigger->GetYaxis()->SetRangeUser(0, 5);
+  corrVtx->GetYaxis()->SetRangeUser(0, 5);
+
+  canvas->cd(1);
+  InitPadCOLZ();
+  corrTrigger->DrawCopy("COLZ");
+
+  canvas->cd(2);
+  InitPadCOLZ();
+  corrVtx->DrawCopy("COLZ");
+
+  canvas->SaveAs(Form("TriggerBiasVtxReconZoom_%d.gif", gMax));
+  canvas->SaveAs(Form("TriggerBiasVtxReconZoom_%d.eps", gMax));
+}
+
+void TriggerBias(const char* fileName = "correction_map.root")
+{
+  TFile* file = TFile::Open(fileName);
 
   TH2* corr = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_trigger"));
 
@@ -163,6 +306,7 @@ void TriggerBias()
   corr->DrawCopy("COLZ");
 
   canvas->SaveAs(Form("TriggerBias_%d.gif", gMax));
+  canvas->SaveAs(Form("TriggerBias_%d.eps", gMax));
 
   corr->GetYaxis()->SetRangeUser(0, 5);
 
@@ -171,6 +315,7 @@ void TriggerBias()
   corr->DrawCopy("COLZ");
 
   canvas->SaveAs(Form("TriggerBiasZoom_%d.gif", gMax));
+  canvas->SaveAs(Form("TriggerBiasZoom_%d.eps", gMax));
 }
 
 void VtxRecon()
@@ -186,46 +331,227 @@ void VtxRecon()
   InitPadCOLZ();
   corr->DrawCopy("COLZ");
 
-  canvas->SaveAs(Form("VtxRecon_%d.gif", gMax));
-
+  canvas->SaveAs(Form("VtxRecon_%d.eps", gMax));
+  canvas->SaveAs(Form("VtxRecon_%d.eps", gMax));
 
   corr->GetYaxis()->SetRangeUser(0, 5);
 
-  TCanvas* canvas = new TCanvas("VtxReconZoom", "VtxReconZoom", 500, 500);
+  canvas = new TCanvas("VtxReconZoom", "VtxReconZoom", 500, 500);
   InitPadCOLZ();
   corr->DrawCopy("COLZ");
 
   canvas->SaveAs(Form("VtxReconZoom_%d.gif", gMax));
+  canvas->SaveAs(Form("VtxReconZoom_%d.eps", gMax));
 }
 
-void Track2Particle2D()
+void Track2ParticleAsNumber(const char* fileName = "correction_map.root")
 {
   gSystem->Load("libPWG0base");
 
-  TFile* file = TFile::Open("correction_map.root");
+  TFile::Open(fileName);
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
-  dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
+  dNdEtaCorrection->LoadHistograms(fileName, "dndeta_correction");
 
-  TH3* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
-  TH3* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
+  TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
+  TH3F* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
+
+  TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
+  TH3F* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
+
+  gene->GetYaxis()->SetRangeUser(-0.8, 0.8);
+  meas->GetYaxis()->SetRangeUser(-0.8, 0.8);
+  gene->GetXaxis()->SetRangeUser(-10, 10);
+  meas->GetXaxis()->SetRangeUser(-10, 10);
+
+  Float_t eff1 = gene->Integral() / meas->Integral();
+  Float_t error1 = TMath::Sqrt(gene->Integral()) / meas->Integral();
+
+  printf("Correction without pT cut: %f +- %f\n", eff1, error1);
+
+  gene->GetZaxis()->SetRangeUser(0.3, 10);
+  meas->GetZaxis()->SetRangeUser(0.3, 10);
+
+  Float_t eff2 = gene->Integral() / meas->Integral();
+  Float_t error2 = TMath::Sqrt(gene->Integral()) / meas->Integral();
+
+  printf("Correction with pT cut: %f +- %f\n", eff2, error2);
+
+  gene->GetZaxis()->SetRangeUser(0.3, 1);
+  meas->GetZaxis()->SetRangeUser(0.3, 1);
+
+  Float_t eff3 = gene->Integral() / meas->Integral();
+  Float_t error3 = TMath::Sqrt(gene->Integral()) / meas->Integral();
+
+  printf("Correction with 0.3 < pT < 0.5: %f +- %f\n", eff3, error3);
+}
+
+void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", Float_t upperPtLimit = 10)
+{
+  TFile::Open(fileName);
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
+  dNdEtaCorrection->LoadHistograms(fileName, "dndeta_correction");
+
+  TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
+  TH3F* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
+
+  gene->GetZaxis()->SetRangeUser(0.3, upperPtLimit);
+  meas->GetZaxis()->SetRangeUser(0.3, upperPtLimit);
+  gene->GetYaxis()->SetRangeUser(-0.8, 0.8);
+  meas->GetYaxis()->SetRangeUser(-0.8, 0.8);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "x", kTRUE);
+  gene->GetYaxis()->SetRange(0, 0);
+  meas->GetYaxis()->SetRange(0, 0);
+
+  gene->GetXaxis()->SetRangeUser(-10, 10);
+  meas->GetXaxis()->SetRangeUser(-10, 10);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "y", kTRUE);
+  gene->GetZaxis()->SetRange(0, 0);
+  meas->GetZaxis()->SetRange(0, 0);
+
+  gene->GetYaxis()->SetRangeUser(-0.8, 0.8);
+  meas->GetYaxis()->SetRangeUser(-0.8, 0.8);
+  AliPWG0Helper::CreateDividedProjections(gene, meas, "z", kTRUE);
+}
+
+void Track2Particle1D(const char* fileName = "correction_map.root", Float_t upperPtLimit = 9.9)
+{
+  gSystem->Load("libPWG0base");
+
+  Track2Particle1DCreatePlots(fileName, upperPtLimit);
+
+  TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_x_div_meas_nTrackToNPart_x"));
+  TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_y_div_meas_nTrackToNPart_y"));
+  TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_z_div_meas_nTrackToNPart_z"));
+
+  Prepare1DPlot(corrX);
+  Prepare1DPlot(corrY);
+  Prepare1DPlot(corrZ);
+
+  const char* title = "Track2Particle Correction";
+  corrX->SetTitle(title);
+  corrY->SetTitle(title);
+  corrZ->SetTitle(title);
+
+  corrZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
+
+  TCanvas* canvas = new TCanvas("Track2Particle2D", "Track2Particle2D", 1200, 400);
+  canvas->Divide(3, 1);
+
+  canvas->cd(1);
+  InitPad();
+  corrX->Draw();
+
+  canvas->cd(2);
+  InitPad();
+  corrY->Draw();
+
+  canvas->cd(3);
+  InitPad();
+  corrZ->Draw();
+
+  canvas->SaveAs(Form("Track2Particle1D_%s_%d_%f.gif", fileName, gMax, upperPtLimit));
+  canvas->SaveAs(Form("Track2Particle1D_%s_%d_%f.eps", fileName, gMax, upperPtLimit));
+}
+
+void CompareTrack2Particle1D(Float_t upperPtLimit = 9.9)
+{
+  gSystem->Load("libPWG0base");
+
+  Track2Particle1DCreatePlots("correction_maponly-positive.root", upperPtLimit);
+
+  TH1* posX = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_x_div_meas_nTrackToNPart_x")->Clone("pos_x"));
+  TH1* posY = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_y_div_meas_nTrackToNPart_y")->Clone("pos_y"));
+  TH1* posZ = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_z_div_meas_nTrackToNPart_z")->Clone("pos_z"));
+
+  Track2Particle1DCreatePlots("correction_maponly-negative.root", upperPtLimit);
+
+  TH1* negX = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_x_div_meas_nTrackToNPart_x")->Clone("neg_x"));
+  TH1* negY = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_y_div_meas_nTrackToNPart_y")->Clone("neg_y"));
+  TH1* negZ = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_z_div_meas_nTrackToNPart_z")->Clone("neg_z"));
+
+  //printf("%f %f %f %f\n", posX->GetBinContent(20), posX->GetBinError(20), negX->GetBinContent(20), negX->GetBinError(20));
+
+  posX->Divide(negX);
+  posY->Divide(negY);
+  posZ->Divide(negZ);
+
+  //printf("%f %f\n", posX->GetBinContent(20), posX->GetBinError(20));
+
+  Prepare1DPlot(posX);
+  Prepare1DPlot(posY);
+  Prepare1DPlot(posZ);
+
+  Float_t min = 0.8;
+  Float_t max = 1.2;
+
+  posX->SetMinimum(min);
+  posX->SetMaximum(max);
+  posY->SetMinimum(min);
+  posY->SetMaximum(max);
+  posZ->SetMinimum(min);
+  posZ->SetMaximum(max);
+
+  posZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
+
+  posX->GetYaxis()->SetTitleOffset(1.7);
+  posX->GetYaxis()->SetTitle("C_{+} / C_{-}");
+  posY->GetYaxis()->SetTitleOffset(1.7);
+  posY->GetYaxis()->SetTitle("C_{+} / C_{-}");
+  posZ->GetYaxis()->SetTitleOffset(1.7);
+  posZ->GetYaxis()->SetTitle("C_{+} / C_{-}");
+
+  TCanvas* canvas = new TCanvas("CompareTrack2Particle1D", "CompareTrack2Particle1D", 1200, 400);
+  canvas->Divide(3, 1);
+
+  canvas->cd(1);
+  InitPad();
+  posX->Draw();
+
+  canvas->cd(2);
+  InitPad();
+  posY->Draw();
+
+  canvas->cd(3);
+  InitPad();
+  posZ->Draw();
+
+  canvas->SaveAs(Form("CompareTrack2Particle1D_%f.gif", upperPtLimit));
+  canvas->SaveAs(Form("CompareTrack2Particle1D_%f.eps", upperPtLimit));
+}
+
+void Track2Particle2DCreatePlots(const char* fileName = "correction_map.root")
+{
+  TFile::Open(fileName);
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
+  dNdEtaCorrection->LoadHistograms(fileName, "dndeta_correction");
+
+  TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
+  TH3F* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
 
   gene->GetZaxis()->SetRangeUser(0.3, 10);
   meas->GetZaxis()->SetRangeUser(0.3, 10);
   AliPWG0Helper::CreateDividedProjections(gene, meas, "yx");
-  gene->GetZaxis()->UnZoom();
-  meas->GetZaxis()->UnZoom();
+  gene->GetZaxis()->SetRange(0, 0);
+  meas->GetZaxis()->SetRange(0, 0);
 
   gene->GetYaxis()->SetRangeUser(-0.8, 0.8);
   meas->GetYaxis()->SetRangeUser(-0.8, 0.8);
   AliPWG0Helper::CreateDividedProjections(gene, meas, "zx");
-  gene->GetYaxis()->UnZoom();
-  meas->GetYaxis()->UnZoom();
+  gene->GetYaxis()->SetRange(0, 0);
+  meas->GetYaxis()->SetRange(0, 0);
 
   gene->GetXaxis()->SetRangeUser(-10, 10);
   meas->GetXaxis()->SetRangeUser(-10, 10);
   AliPWG0Helper::CreateDividedProjections(gene, meas, "zy");
-  gene->GetXaxis()->UnZoom();
-  meas->GetXaxis()->UnZoom();
+  gene->GetXaxis()->SetRange(0, 0);
+  meas->GetXaxis()->SetRange(0, 0);
+}
+
+void Track2Particle2D(const char* fileName = "correction_map.root")
+{
+  gSystem->Load("libPWG0base");
+
+  Track2Particle2DCreatePlots(fileName);
 
   TH2* corrYX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx"));
   TH2* corrZX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx"));
@@ -240,7 +566,7 @@ void Track2Particle2D()
   Prepare2DPlot(corrZX);
   Prepare2DPlot(corrZY);
 
-  const char* title = "Track2Particle Correction";
+  const char* title = "";
   corrYX->SetTitle(title);
   corrZX->SetTitle(title);
   corrZY->SetTitle(title);
@@ -261,6 +587,60 @@ void Track2Particle2D()
   corrZY->Draw("COLZ");
 
   canvas->SaveAs(Form("Track2Particle2D_%d.gif", gMax));
+  canvas->SaveAs(Form("Track2Particle2D_%d.eps", gMax));
+}
+
+void CompareTrack2Particle2D()
+{
+  gSystem->Load("libPWG0base");
+
+  Track2Particle2DCreatePlots("correction_maponly-positive.root");
+
+  TH2* posYX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx")->Clone("pos_yx"));
+  TH2* posZX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx")->Clone("pos_zx"));
+  TH2* posZY = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy")->Clone("pos_zy"));
+
+  Track2Particle2DCreatePlots("correction_maponly-negative.root");
+
+  TH2* negYX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx")->Clone("neg_yx"));
+  TH2* negZX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx")->Clone("neg_zx"));
+  TH2* negZY = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy")->Clone("neg_zy"));
+
+  posYX->Divide(negYX);
+  posZX->Divide(negZX);
+  posZY->Divide(negZY);
+
+  Prepare2DPlot(posYX);
+  Prepare2DPlot(posZX);
+  Prepare2DPlot(posZY);
+
+  Float_t min = 0.8;
+  Float_t max = 1.2;
+
+  posYX->SetMinimum(min);
+  posYX->SetMaximum(max);
+  posZX->SetMinimum(min);
+  posZX->SetMaximum(max);
+  posZY->SetMinimum(min);
+  posZY->SetMaximum(max);
+
+  TCanvas* canvas = new TCanvas("CompareTrack2Particle2D", "CompareTrack2Particle2D", 1200, 400);
+  canvas->Divide(3, 1);
+
+  canvas->cd(1);
+  InitPadCOLZ();
+  posYX->Draw("COLZ");
+
+  canvas->cd(2);
+  InitPadCOLZ();
+  posZX->Draw("COLZ");
+
+  canvas->cd(3);
+  InitPadCOLZ();
+  posZY->Draw("COLZ");
+
+  canvas->SaveAs("CompareTrack2Particle2D.gif");
+  canvas->SaveAs("CompareTrack2Particle2D.eps");
 }
 
 void Track2Particle3D()
@@ -283,6 +663,7 @@ void Track2Particle3D()
   corr->Draw();
 
   canvas->SaveAs("Track2Particle3D.gif");
+  canvas->SaveAs("Track2Particle3D.eps");
 }
 
 void Track2Particle3DAll()
@@ -315,71 +696,24 @@ void Track2Particle3DAll()
   corr->Draw();
 
   canvas->SaveAs("Track2Particle3DAll.gif");
+  canvas->SaveAs("Track2Particle3DAll.eps");
 }
 
-void SetRanges(TH1* hist)
+void drawPlots(Int_t max)
 {
-  SetRanges(hist->GetXaxis());
-  SetRanges(hist->GetYaxis());
-  SetRanges(hist->GetZaxis());
+  gMax = max;
+
+  ptCutoff();
+  TriggerBias();
+  VtxRecon();
+  Track2Particle2D();
+  Track2Particle3D();
+  ptSpectrum();
+  dNdEta();
 }
 
-void SetRanges(TAxis* axis)
+void drawPlots()
 {
-  if (strcmp(axis->GetTitle(), "#eta") == 0)
-    axis->SetRangeUser(-1.7999, 1.7999);
-  if (strcmp(axis->GetTitle(), "p_{T} [GeV/c]") == 0)
-    axis->SetRangeUser(0, 9.9999);
-  if (strcmp(axis->GetTitle(), "vtx z [cm]") == 0)
-    axis->SetRangeUser(-15, 14.9999);
-  if (strcmp(axis->GetTitle(), "Ntracks") == 0)
-    axis->SetRangeUser(0, 99.9999);
-}
-
-void Prepare3DPlot(TH3* hist)
-{
-  hist->GetXaxis()->SetTitleOffset(1.5);
-  hist->GetYaxis()->SetTitleOffset(1.5);
-  hist->GetZaxis()->SetTitleOffset(1.5);
-
-  hist->SetStats(kFALSE);
-}
-
-void Prepare2DPlot(TH2* hist)
-{
-  hist->SetStats(kFALSE);
-  hist->GetYaxis()->SetTitleOffset(1.4);
-
-  hist->SetMinimum(0);
-  hist->SetMaximum(gMax);
-
-  SetRanges(hist);
-}
-
-void Prepare1DPlot(TH1* hist)
-{
-  hist->SetLineWidth(2);
-  hist->SetStats(kFALSE);
-}
-
-void InitPad()
-{
-  gPad->Range(0, 0, 1, 1);
-  gPad->SetLeftMargin(0.15);
-  //gPad->SetRightMargin(0.05);
-  //gPad->SetTopMargin(0.13);
-  //gPad->SetBottomMargin(0.1);
-
-  //gPad->SetGridx();
-  //gPad->SetGridy();
-}
-
-void InitPadCOLZ()
-{
-  gPad->Range(0, 0, 1, 1);
-  gPad->SetRightMargin(0.15);
-  gPad->SetLeftMargin(0.12);
-
-  gPad->SetGridx();
-  gPad->SetGridy();
+  drawPlots(5);
+  drawPlots(2);
 }

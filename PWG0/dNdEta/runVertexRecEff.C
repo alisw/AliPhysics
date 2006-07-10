@@ -14,7 +14,7 @@ runVertexRecEff(Char_t* dataDir, Int_t nRuns=20, Int_t offset=0)
   gSystem->Load("libPWG0base");
   gSystem->Load("libPWG0dep");
 
-  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset);
+  TChain* chain = CreateESDChain(dataDir, nRuns, offset);
 
   TString selectorName = "AlidNdEtaVertexRecEffSelector";
 

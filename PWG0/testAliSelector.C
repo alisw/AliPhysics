@@ -21,8 +21,8 @@ void testAliSelector(const Char_t* dataDir, Int_t nRuns = 5, Int_t offset = 0)
   gSystem->Load("libESD");
   gSystem->Load("libPWG0base");
 
-  // create chain, CreateESDChainFromDir() is defined in CreateESDChain.C
-  TChain* chain = CreateESDChainFromDir(dataDir, nRuns, offset);
+  // create chain, CreateESDChain() is defined in CreateESDChain.C
+  TChain* chain = CreateESDChain(dataDir, nRuns, offset);
 
   // enable debugging
   AliLog::SetClassDebugLevel("AliSelector", AliLog::kInfo);

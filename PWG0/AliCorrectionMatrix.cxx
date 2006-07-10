@@ -99,7 +99,7 @@ void AliCorrectionMatrix::Copy(TObject& c) const
 
 //________________________________________________________________________
 void AliCorrectionMatrix::SetAxisTitles(const Char_t* titleX, const Char_t* titleY, const Char_t* titleZ)
-{ 
+{
   //
   // method for setting the axis titles of the histograms
   //
@@ -174,7 +174,7 @@ void AliCorrectionMatrix::Divide()
 }
 
 //____________________________________________________________________
-Bool_t AliCorrectionMatrix::LoadHistograms(Char_t* fileName, Char_t* dir)
+Bool_t AliCorrectionMatrix::LoadHistograms(const Char_t* fileName, const Char_t* dir)
 {
   //
   // loads the histograms from a file
@@ -191,13 +191,13 @@ Bool_t AliCorrectionMatrix::LoadHistograms(Char_t* fileName, Char_t* dir)
   if(fhCorr)  {delete fhCorr;  fhCorr=0;}
   if(fhMeas)  {delete fhMeas;  fhMeas=0;}
   
-  fhMeas  = (TH2F*)fin->Get(Form("%s/meas_%s", dir,GetName()));
+  fhMeas  = dynamic_cast<TH1*> (fin->Get(Form("%s/meas_%s", dir,GetName())));
   if(!fhMeas)  Info("LoadHistograms","No meas  hist available");
-  
-  fhGene  = (TH2F*)fin->Get(Form("%s/gene_%s",dir, GetName()));
+
+  fhGene  = dynamic_cast<TH1*> (fin->Get(Form("%s/gene_%s",dir, GetName())));
   if(!fhGene)  Info("LoadHistograms","No gene  hist available");
-  
-  fhCorr  = (TH2F*)fin->Get(Form("%s/corr_%s",dir, GetName()));
+
+  fhCorr  = dynamic_cast<TH1*> (fin->Get(Form("%s/corr_%s",dir, GetName())));
   if(!fhCorr) 
   {
     Info("LoadHistograms","No corr  hist available");
@@ -247,4 +247,23 @@ void AliCorrectionMatrix::DrawHistograms()
   canvas->cd(4);
 
   // add: draw here the stat. errors of the correction histogram
+}
+
+//____________________________________________________________________
+void AliCorrectionMatrix::ReduceInformation()
+{
+  // this function deletes the measured and generated histograms to reduce the amount of data
+  // in memory
+
+  if (fhMeas)
+  {
+    delete fhMeas;
+    fhMeas = 0;
+  }
+
+  if (fhGene)
+  {
+    delete fhGene;
+    fhGene = 0;
+  }
 }

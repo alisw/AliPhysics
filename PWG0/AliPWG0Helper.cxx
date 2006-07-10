@@ -128,7 +128,7 @@ void AliPWG0Helper::CreateProjections(TH3* hist)
 }
 
 //____________________________________________________________________
-void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis)
+void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis, Bool_t putErrors)
 {
   // create projections of the 3d hists divides them
   // axis decides to which plane, if axis is 0 to all planes
@@ -136,23 +136,55 @@ void AliPWG0Helper::CreateDividedProjections(TH3* hist, TH3* hist2, const char* 
 
   if (axis == 0)
   {
-    CreateDividedProjections(hist, hist2, "yx");
-    CreateDividedProjections(hist, hist2, "zx");
-    CreateDividedProjections(hist, hist2, "zy");
+    CreateDividedProjections(hist, hist2, "yx", putErrors);
+    CreateDividedProjections(hist, hist2, "zx", putErrors);
+    CreateDividedProjections(hist, hist2, "zy", putErrors);
 
     return;
   }
 
   TH1* proj = hist->Project3D(axis);
-  proj->SetYTitle(GetAxisTitle(hist, axis[0]));
-  proj->SetXTitle(GetAxisTitle(hist, axis[1]));
+
+  if (strlen(axis) == 2)
+  {
+    proj->SetYTitle(GetAxisTitle(hist, axis[0]));
+    proj->SetXTitle(GetAxisTitle(hist, axis[1]));
+  }
+  else if (strlen(axis) == 1)
+    proj->SetXTitle(GetAxisTitle(hist, axis[0]));
 
   TH1* proj2 = hist2->Project3D(axis);
-  proj2->SetYTitle(GetAxisTitle(hist2, axis[0]));
-  proj2->SetXTitle(GetAxisTitle(hist2, axis[1]));
+  if (strlen(axis) == 2)
+  {
+    proj2->SetYTitle(GetAxisTitle(hist2, axis[0]));
+    proj2->SetXTitle(GetAxisTitle(hist2, axis[1]));
+  }
+  else if (strlen(axis) == 1)
+    proj2->SetXTitle(GetAxisTitle(hist2, axis[0]));
 
   TH1* division = dynamic_cast<TH1*> (proj->Clone(Form("%s_div_%s", proj->GetName(), proj2->GetName())));
   division->Divide(proj2);
+
+  if (putErrors)
+  {
+    division->Sumw2();
+    if (division->GetDimension() == 1)
+    {
+      Int_t nBins = division->GetNbinsX();
+      for (Int_t i = 0; i <= nBins; ++i)
+        if (proj2->GetBinContent(i) != 0)
+          division->SetBinError(i, TMath::Sqrt(proj->GetBinContent(i)) / proj2->GetBinContent(i));
+    }
+    else if (division->GetDimension() == 2)
+    {
+      Int_t nBinsX = division->GetNbinsX();
+      Int_t nBinsY = division->GetNbinsY();
+      for (Int_t i = 0; i <= nBinsX; ++i)
+        for (Int_t j = 0; j <= nBinsY; ++j)
+          if (proj2->GetBinContent(i, j) != 0)
+            division->SetBinError(i, j, TMath::Sqrt(proj->GetBinContent(i, j)) / proj2->GetBinContent(i, j));
+    }
+  }
 }
 
 //____________________________________________________________________
