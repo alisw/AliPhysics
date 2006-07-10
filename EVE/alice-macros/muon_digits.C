@@ -36,7 +36,7 @@ void muon_digits()
       
       l->SetTitle(title);
       l->SetMainColor((Color_t)4);
-      TGListTreeItem *ti = gReve->AddRenderElement(l);
+      gReve->AddRenderElement(l);
     
       Int_t iChamber = (iSta-1) * 2 + iCha; 
 
@@ -48,15 +48,12 @@ void muon_digits()
 	for (Int_t iCat = 1; iCat <=2; iCat++) {
 
 	  Alieve::MUONModule* m = new Alieve::MUONModule(detElemId, iCat, di, 1, 0, (Color_t)2);
-	  l->AddElement(m);
-	  gReve->AddRenderElement(ti,m);      
+	  gReve->AddRenderElement(l, m);      
 	
 	}
 
       }
 
-      gReve->DrawRenderElement(l);
-      
     }
     
   }

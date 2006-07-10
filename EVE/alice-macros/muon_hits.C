@@ -34,7 +34,7 @@ void muon_hits(Int_t iShowCha = 1)
   
   l->SetTitle(title);
   l->SetMainColor((Color_t)4);
-  TGListTreeItem *ti = gReve->AddRenderElement(l);
+  gReve->AddRenderElement(l);
       
   AliMpDEIterator ite;
   for ( ite.First(iChamber-1); ! ite.IsDone(); ite.Next() ) {
@@ -89,21 +89,20 @@ void muon_hits(Int_t iShowCha = 1)
     }
     
     if (np > 0) {
-      gReve->AddRenderElement(ti,points);      
-      gReve->DrawRenderElement(points);
+      gReve->AddRenderElement(l, points);      
+    } else {
+      delete points;
     }
-    //gReve->AddRenderElement(points);
-    //gReve->DrawRenderElement(points);
 
   }
-
-  gReve->DrawRenderElement(l);
 
   }  // end detElemId loop
 
   }  // end chamber loop
 
   }  // end station loop
+
+  gReve->Redraw3D();
 
   return;
 }

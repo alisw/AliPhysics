@@ -21,5 +21,5 @@ void region_marker(Float_t a=10, Float_t b=10, Float_t c=20,
   Color_t* colp = FindColorVar(mark, "fMarkerColor");
   RenderElementObjPtr* rnrEl = new RenderElementObjPtr(mark, *colp);
   gReve->AddGlobalRenderElement(rnrEl);
-  gReve->DrawRenderElement(rnrEl);
+  gReve->Redraw3D();
 }

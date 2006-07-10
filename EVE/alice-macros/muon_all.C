@@ -25,19 +25,20 @@ void muon_all() {
   char name[128];
   char title[128];
 
+  gReve->DisableRedraw();
+
   /* CHAMBERS */
 
   sprintf(name,"M-Chambers");
   Reve::RenderElementList* lch = new Reve::RenderElementList(name);
   lch->SetTitle(title);
   lch->SetMainColor((Color_t)2);
-  TGListTreeItem *tich = gReve->AddRenderElement(lch);
+  gReve->AddRenderElement(lch);
 
   for (Int_t i = 1; i <= 14; i++) {
 
     Alieve::MUONModule* mch = new Alieve::MUONModule(i, -2, di, 0, 0, (Color_t)2);
-    lch->AddElement(mch);
-    gReve->AddRenderElement(tich,mch);      
+    gReve->AddRenderElement(lch, mch);      
        
   }
   /*
@@ -45,20 +46,15 @@ void muon_all() {
   for (Int_t i = 11; i <= 14; i++) {
 
     Alieve::MUONModule* mch1 = new Alieve::MUONModule(i, -3, di, 0, 0, (Color_t)2);
-    lch->AddElement(mch1);
-    gReve->AddRenderElement(tich,mch1);      
+    gReve->AddRenderElement(lch, mch1);      
        
     Alieve::MUONModule* mch2 = new Alieve::MUONModule(i, -4, di, 0, 0, (Color_t)2);
-    lch->AddElement(mch2);
-    gReve->AddRenderElement(tich,mch2);      
+    gReve->AddRenderElement(lch, mch2);      
        
   }
   */
-  gReve->DrawRenderElement(lch);
 
   /* DIGITS */
-
-  gReve->DisableRedraw();
 
   for (Int_t iSta = 1; iSta <= 7; iSta++) {
 
@@ -76,7 +72,7 @@ void muon_all() {
       
       ld->SetTitle(title);
       ld->SetMainColor((Color_t)4);
-      TGListTreeItem *tid = gReve->AddRenderElement(ld);
+      gReve->AddRenderElement(ld);
     
       Int_t iChamber = (iSta-1) * 2 + iCha; 
 
@@ -88,14 +84,11 @@ void muon_all() {
 	for (Int_t iCat = 1; iCat <=2; iCat++) {
 
 	  Alieve::MUONModule* md = new Alieve::MUONModule(detElemId, iCat, di, 1, 0, (Color_t)2);
-	  ld->AddElement(md);
-	  gReve->AddRenderElement(tid,md);      
+	  gReve->AddRenderElement(ld, md);      
 	
 	}
 
       }
-
-      gReve->DrawRenderElement(ld);
       
     }
     
@@ -119,7 +112,7 @@ void muon_all() {
       
       lc->SetTitle(title);
       lc->SetMainColor((Color_t)4);
-      TGListTreeItem *tic = gReve->AddRenderElement(lc);
+      gReve->AddRenderElement(lc);
     
       Int_t iChamber = (iSta-1) * 2 + iCha; 
 
@@ -129,19 +122,14 @@ void muon_all() {
 	Int_t detElemId = itc.CurrentDE();
 	
 	Alieve::MUONModule* mc = new Alieve::MUONModule(detElemId, 0, di, 0, 1, (Color_t)2);
-	lc->AddElement(mc);
-	gReve->AddRenderElement(tic,mc);      
+	gReve->AddRenderElement(lc, mc);      
 	
       }
 
-      gReve->DrawRenderElement(lc);
-      
     }
     
   }
   
-  gReve->EnableRedraw();
-
   /* TRACKS */
 
   /* Get the z positions of the trigger chambers */
@@ -174,7 +162,7 @@ void muon_all() {
   Reve::TrackList* lt = new Reve::TrackList("M-Tracks"); 
   lt->SetMainColor(Color_t(6));
   
-  TGListTreeItem *tit = gReve->AddRenderElement(lt);
+  gReve->AddRenderElement(lt);
 
   Float_t xRec, xRec0;
   Float_t yRec, yRec0;
@@ -301,12 +289,10 @@ void muon_all() {
 
     }
 
-    lt->AddElement(track);
-
-    gReve->AddRenderElement(tit, track);
+    gReve->AddRenderElement(lt, track);
 
   }
 
-  gReve->DrawRenderElement(lt);
+  gReve->EnableRedraw();
   
 }

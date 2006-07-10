@@ -9,10 +9,10 @@ void geom_phos()
   for(Int_t i=1; i<=5; ++i) {
     TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(Form("PHOS_%d", i));
 
-    Reve::GeoTopNodeRnrEl* re = 
-      new Reve::GeoTopNodeRnrEl(gGeoManager, node);
-    re->SetGlobalTrans(new TGeoHMatrix(node->GetMatrix()));
+    Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
+    re->SetUseNodeTrans(kTRUE);
     gReve->AddGlobalRenderElement(re);
-    gReve->DrawRenderElement(re);
   }
+
+  gReve->Redraw3D();
 }

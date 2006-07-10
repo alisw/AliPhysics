@@ -10,5 +10,5 @@ void geom_tpc()
   Reve::GeoTopNodeRnrEl* tpc_re = 
     new Reve::GeoTopNodeRnrEl(gGeoManager, node);
   gReve->AddGlobalRenderElement(tpc_re);
-  gReve->DrawRenderElement(tpc_re);
+  gReve->Redraw3D();
 }

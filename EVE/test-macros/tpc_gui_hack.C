@@ -53,7 +53,9 @@ void tpc_gui_hack(const char *file=0, Int_t ievent=0)
   su = d->GetSectorData( 4, kTRUE);
   sl = d->GetSectorData(13, kTRUE);
 
-  TGListTreeItem* loader_item = gReve->AddRenderElement(l);
+  gReve->AddRenderElement(l);
+  gReve->NotifyBrowser(l);
+  gReve->DrawRenderElement(l);
 
   if(file != 0) {
     l->SetFile(file);

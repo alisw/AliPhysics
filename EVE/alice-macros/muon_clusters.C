@@ -36,7 +36,7 @@ void muon_clusters()
       
       l->SetTitle(title);
       l->SetMainColor((Color_t)4);
-      TGListTreeItem *ti = gReve->AddRenderElement(l);
+      gReve->AddRenderElement(l);
     
       Int_t iChamber = (iSta-1) * 2 + iCha; 
 
@@ -46,13 +46,10 @@ void muon_clusters()
 	Int_t detElemId = it.CurrentDE();
 	
 	Alieve::MUONModule* m = new Alieve::MUONModule(detElemId, 0, di, 0, 1, (Color_t)2);
-	l->AddElement(m);
-	gReve->AddRenderElement(ti,m);      
+	gReve->AddRenderElement(l, m);      
 	
       }
 
-      gReve->DrawRenderElement(l);
-      
     }
     
   }

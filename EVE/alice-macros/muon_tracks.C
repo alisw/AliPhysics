@@ -52,7 +52,7 @@ void muon_tracks()
   Reve::TrackList* cont = new Reve::TrackList("M-Tracks"); 
   cont->SetMainColor(Color_t(6));
   
-  TGListTreeItem *holder = gReve->AddRenderElement(cont);
+  gReve->AddRenderElement(cont);
 
   Float_t xRec, xRec0;
   Float_t yRec, yRec0;
@@ -179,12 +179,10 @@ void muon_tracks()
 
     }
 
-    cont->AddElement(track);
-
-    gReve->AddRenderElement(holder, track);
+    gReve->AddRenderElement(cont, track);
 
   }
 
-  gReve->DrawRenderElement(cont);
+  gReve->Redraw3D();
   
 }

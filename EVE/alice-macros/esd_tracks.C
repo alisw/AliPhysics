@@ -38,15 +38,12 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
   Double_t maxptsq = max_pt*max_pt;
   Double_t ptsq;
 
-  TGListTree*     l_tree = gReve->GetListTree();
-  TGListTreeItem* parent = gReve->GetEventTreeItem();
-
   Reve::TrackList* cont = new Reve::TrackList("ESD Tracks"); 
   cont->SetMainColor(Color_t(6));
   Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
   rnrStyle->SetMagField( esd->GetMagneticField() );
 
-  TGListTreeItem *holder = gReve->AddRenderElement(cont);
+  gReve->AddRenderElement(cont);
 
   Int_t    count = 0;
   Double_t pbuf[3];
@@ -68,17 +65,16 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
     }
 
     Reve::Track* track = esd_make_track(rnrStyle, at, tp);
-    cont->AddElement(track);
-    gReve->AddRenderElement(holder, track);
+    gReve->AddRenderElement(cont, track);
   }
 
   const Text_t* tooltip = Form("pT ~ (%.2lf, %.2lf), N=%d", min_pt, max_pt, count);
   cont->SetTitle(tooltip); // Not broadcasted automatically ...
-  holder->SetTipText(tooltip);
+  cont->UpdateItems();
 
   cont->MakeTracks();
   cont->MakeMarkers();
-  gReve->DrawRenderElement(cont);
+  gReve->Redraw3D();
 
   return cont;
 }
@@ -91,15 +87,12 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESD* esd=0)
   if(esd == 0) esd = Alieve::Event::AssertESD();
   AliPID  pid;
 
-  TGListTree*     l_tree = gReve->GetListTree();
-  TGListTreeItem* parent = gReve->GetEventTreeItem();
-
   Reve::TrackList* cont = new Reve::TrackList("ESD Tracks"); 
   cont->SetMainColor(Color_t(6));
   Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
   rnrStyle->SetMagField( esd->GetMagneticField() );
 
-  TGListTreeItem *holder = gReve->AddRenderElement(cont);
+  gReve->AddRenderElement(cont);
 
   Int_t    count = 0;
   TIter    next(col);
@@ -115,17 +108,16 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESD* esd=0)
     AliESDtrack* at = (AliESDtrack*) obj;
 
     Reve::Track* track = esd_make_track(rnrStyle, at);
-    cont->AddElement(track);
-    gReve->AddRenderElement(holder, track);
+    gReve->AddRenderElement(cont, track);
   }
 
   const Text_t* tooltip = Form("N=%d", count);
   cont->SetTitle(tooltip); // Not broadcasted automatically ...
-  holder->SetTipText(tooltip);
+  cont->UpdateItems();
 
   cont->MakeTracks();
   cont->MakeMarkers();
-  gReve->DrawRenderElement(cont);
+  gReve->Redraw3D();
 
   return cont;
 }

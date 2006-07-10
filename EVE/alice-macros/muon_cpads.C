@@ -27,13 +27,12 @@ void muon_cpads()
   Reve::RenderElementList* lc = new Reve::RenderElementList(name);
   lc->SetTitle(title);
   lc->SetMainColor((Color_t)2);
-  TGListTreeItem *tic = gReve->AddRenderElement(lc);
+  gReve->AddRenderElement(lc);
   /*
   for (Int_t i = 1; i <= 14; i++) {
 
     Alieve::MUONModule* m = new Alieve::MUONModule(i, -2, di, 0, 0, (Color_t)2);
-    lc->AddElement(m);
-    gReve->AddRenderElement(tic,m);      
+    gReve->AddRenderElement(lc, m);      
        
   }
   */
@@ -41,17 +40,13 @@ void muon_cpads()
   for (Int_t i = 11; i <= 14; i++) {
 
     Alieve::MUONModule* m1 = new Alieve::MUONModule(i, -3, di, 0, 0, (Color_t)2);
-    lc->AddElement(m1);
-    gReve->AddRenderElement(tic,m1);      
+    gReve->AddRenderElement(lc, m1);      
        
     Alieve::MUONModule* m2 = new Alieve::MUONModule(i, -4, di, 0, 0, (Color_t)2);
-    lc->AddElement(m2);
-    gReve->AddRenderElement(tic,m2);      
+    gReve->AddRenderElement(lc, m2);      
        
   }
   
-  gReve->DrawRenderElement(lc);
-
   gReve->EnableRedraw();
 
 }

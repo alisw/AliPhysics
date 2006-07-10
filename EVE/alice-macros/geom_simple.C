@@ -9,5 +9,5 @@ void geom_simple()
   Reve::GeoTopNodeRnrEl* topn_re = new Reve::GeoTopNodeRnrEl
     (gGeoManager, gGeoManager->GetTopNode());
   gReve->AddGlobalRenderElement(topn_re);
-  gReve->DrawRenderElement(topn_re);
+  gReve->Redraw3D();
 }

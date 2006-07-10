@@ -35,7 +35,7 @@ void register_vertex_marker(TPolyMarker3D* m)
   Color_t* colp = FindColorVar(m, "fMarkerColor");
   RenderElementObjPtr* rnrEl = new RenderElementObjPtr(m, *colp);
   gReve->AddRenderElement(rnrEl);
-  gReve->DrawRenderElement(rnrEl);
+  gReve->Redraw3D();
 }
 
 void primary_vertex(Bool_t showSPD=kTRUE)
@@ -44,7 +44,7 @@ void primary_vertex(Bool_t showSPD=kTRUE)
 
   AliESDVertex*  pv  = esd->GetPrimaryVertex();
   TPolyMarker3D* pvm = make_vertex_marker(pv, "Primary Vertex");
-  pvm->SetMarkerStyle(3);
+  pvm->SetMarkerStyle(5);
   pvm->SetMarkerColor(3);
   register_vertex_marker(pvm);
 

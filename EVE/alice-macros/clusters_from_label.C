@@ -31,5 +31,5 @@ void clusters_from_label(Int_t label=0)
   Color_t* colp = FindColorVar(clusters, "fMarkerColor");
   RenderElementObjPtr* rnrEl = new RenderElementObjPtr(clusters, *colp);
   gReve->AddRenderElement(rnrEl);
-  gReve->DrawRenderElement(rnrEl);
+  gReve->Redraw3D();
 }

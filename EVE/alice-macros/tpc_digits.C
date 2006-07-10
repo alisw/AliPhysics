@@ -43,7 +43,7 @@ void tpc_digits(Int_t mode=0)
     s->SetFrameColor(col);
     s->SetDataSource(g_tpc_data);
     gReve->AddRenderElement(s);
-    gReve->DrawRenderElement(s);
+    gReve->Redraw3D();
 
     TGLViewer* cam = dynamic_cast<TGLViewer*>(gReve->GetCC()->GetViewer3D());
     //cam->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
@@ -59,7 +59,7 @@ void tpc_digits(Int_t mode=0)
       Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 1");
       l->SetTitle("TPC Plate");
       l->SetMainColor(Color_t(col));
-      TGListTreeItem *ti = gReve->AddRenderElement(l);
+      gReve->AddRenderElement(l);
       
       for(Int_t i = 0; i<18; i++) {
 	Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
@@ -67,27 +67,23 @@ void tpc_digits(Int_t mode=0)
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetTrans(true);
-	l->AddElement(s);
-	gReve->AddRenderElement(ti, s);
+	gReve->AddRenderElement(l, s);
       }
-      gReve->DrawRenderElement(l);
     }
     {
       Reve::RenderElementList* l = new Reve::RenderElementList("TPC plate 2");
       l->SetTitle("TPC Plate");
       l->SetMainColor(Color_t(col));
 
-      TGListTreeItem *ti = gReve->AddRenderElement(l);
+      gReve->AddRenderElement(l);
       for(Int_t i = 18; i<36; i++) {
 	Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetTrans(true);
-	l->AddElement(s);
-	gReve->AddRenderElement(ti, s);
+	gReve->AddRenderElement(l, s);
       }
-      gReve->DrawRenderElement(l);
     }
     gReve->EnableRedraw();
 
@@ -99,7 +95,7 @@ void tpc_digits(Int_t mode=0)
     s->SetFrameColor(col);
     s->SetDataSource(g_tpc_data);
     gReve->AddRenderElement(s);
-    gReve->DrawRenderElement(s);
+    gReve->Redraw3D();
     break;
   }
 

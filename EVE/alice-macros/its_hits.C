@@ -19,7 +19,7 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   points->SetMarkerColor((Color_t)2);
 
   gReve->AddRenderElement(points);
-  gReve->DrawRenderElement(points);
+  gReve->Redraw3D();
 
   return points;
 }

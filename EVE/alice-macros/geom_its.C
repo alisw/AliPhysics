@@ -10,5 +10,5 @@ void geom_its()
   Reve::GeoTopNodeRnrEl* its_re = 
     new Reve::GeoTopNodeRnrEl(gGeoManager, node);
   gReve->AddGlobalRenderElement(its_re);
-  gReve->DrawRenderElement(its_re);
+  gReve->Redraw3D();
 }

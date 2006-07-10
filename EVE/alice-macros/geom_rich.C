@@ -9,10 +9,10 @@ void geom_rich()
   for(Int_t i=1; i<=7; ++i) {
     TGeoNode* node = gGeoManager->GetTopVolume()->FindNode(Form("RICH_%d", i));
 
-    Reve::GeoTopNodeRnrEl* re = 
-      new Reve::GeoTopNodeRnrEl(gGeoManager, node);
-    re->SetGlobalTrans(new TGeoHMatrix(node->GetMatrix()));
+    Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
+    re->SetUseNodeTrans(kTRUE);
     gReve->AddGlobalRenderElement(re);
-    gReve->DrawRenderElement(re);
   }
+
+  gReve->Redraw3D();
 }
