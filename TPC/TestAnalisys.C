@@ -48,6 +48,9 @@ void SysZX(TCut cut0,  char * description);
 //
 TProfile * ProfileMaxRow(TCut cut0, char *name, Int_t max);
 TProfile * ProfileMaxPhi(TCut cut0, char *name, Int_t max);
+TProfile * ProfileMaxZ(TCut cut0, char *name, Int_t max);
+TProfile * ProfileQRow(TCut cut0, char *name, Int_t max);
+TProfile * ProfileQPhi(TCut cut0, char *name, Int_t max);
 TProfile * ProfileQZ(TCut cut0, char *name, Int_t max);
 TCanvas *  NoiseSector(TCut cut0,  char * description, Int_t maxrow, Int_t maxpad);
 
@@ -109,16 +112,26 @@ void MakePictures(char *dirname){
     c.cd();
     sprintf(chdesc,"%s Sector %d IROC",runDesc.Data(), isector);
     sprintf(chcut1,"Cl.fDetector==%d", isector);
-    prof = ProfileMaxRow(chcut1, chdesc, 70);
+    prof = ProfileQRow(chcut1, chdesc, 70);
     sprintf(chshell,"%s/qrow_sec%dIROC.eps", dirname,isector);
+    prof->Draw();
+    c.Update();
+    c.Print(chshell);
+    prof = ProfileMaxRow(chcut1, chdesc, 70);
+    sprintf(chshell,"%s/maxrow_sec%dIROC.eps", dirname,isector);
     prof->Draw();
     c.Update();
     c.Print(chshell);
     //
     sprintf(chdesc,"%s Sector %d OROC",runDesc.Data(), isector);
     sprintf(chcut1,"Cl.fDetector==%d", isector+36);
-    prof = ProfileMaxRow(chcut1, chdesc, 100);
+    prof = ProfileQRow(chcut1, chdesc, 100);
     sprintf(chshell,"%s/qrow_sec%dOROC.eps", dirname,isector);
+    prof->Draw();
+    c.Update();
+    c.Print(chshell);
+    prof = ProfileMaxRow(chcut1, chdesc, 100);
+    sprintf(chshell,"%s/maxrow_sec%dOROC.eps", dirname,isector);
     prof->Draw();
     c.Update();
     c.Print(chshell);
@@ -180,6 +193,7 @@ void MakePictures(char *dirname){
     SysYX(chcut1,chdesc);
     sprintf(chshell,"%s/deltayx_sec%d.eps", dirname,isector);
     c.Print(chshell);
+    c.cd();
     SysZX(chcut1,chdesc);
     sprintf(chshell,"%s/deltazx_sec%d.eps", dirname,isector);
     c.Print(chshell);
@@ -468,7 +482,7 @@ TProfile * ProfileMaxRow(TCut cut0, char *name, Int_t max){
   sprintf(expr,"Cl.fMax:Cl.fRow>>%s",name);
   comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Pad Row");
-  profA->SetYTitle("Amplitude (ADC)");
+  profA->SetYTitle("Amplitude at maxima (ADC)");
   return profA;
 }
 
@@ -481,7 +495,33 @@ TProfile * ProfileMaxPhi(TCut cut0, char *name, Int_t max){
   sprintf(expr,"Cl.fMax:Cl.fY/Cl.fX>>%s",name);
   comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Local #phi(rad)");
-  profA->SetYTitle("Amplitude (ADC)");
+  profA->SetYTitle("Amplitude at maxima (ADC)");
+  return profA;
+}
+
+TProfile * ProfileQRow(TCut cut0, char *name, Int_t max){ 
+  //
+  // make profile histrogram of amplitudes
+  //
+  TProfile *profA = new TProfile(name,name,max,0,max-1);
+  char expr[100];
+  sprintf(expr,"Cl.fQ:Cl.fRow>>%s",name);
+  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  profA->SetXTitle("Pad Row");
+  profA->SetYTitle("Total charge(ADC)");
+  return profA;
+}
+
+TProfile * ProfileQPhi(TCut cut0, char *name, Int_t max){ 
+  //
+  // make profile histrogram of amplitudes
+  //
+  TProfile *profA = new TProfile(name,name,max,-0.14,0.14);
+  char expr[100];
+  sprintf(expr,"Cl.fQ:Cl.fY/Cl.fX>>%s",name);
+  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  profA->SetXTitle("Local #phi(rad)");
+  profA->SetYTitle("Total charge (ADC)");
   return profA;
 }
 
@@ -496,6 +536,25 @@ TProfile * ProfileQZ(TCut cut0, char *name, Int_t max){
   comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Z position (cm)"); 
   profA->SetYTitle("Amplitude (ADC)");
+  char chc[100];
+  profA->Fit(f1);
+  sprintf(chc,"p_{0} = %f  p_{1} = %f",f1->GetParameter(0),f1->GetParameter(1));
+  TLegend *legend = new TLegend(0.25,0.12,0.85,0.35, chc);
+  legend->Draw();
+  return profA;
+}
+
+TProfile * ProfileMaxZ(TCut cut0, char *name, Int_t max){ 
+  //
+  // make profile histrogram of amplitudes
+  // 
+  TF1 * f1 = new TF1("f1","[0]+[1]*[0]*(250-x)");
+  TProfile *profA = new TProfile(name,name,max,0,250);
+  char expr[100];
+  sprintf(expr,"Cl.fMax:Cl.fZ>>%s",name);
+  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  profA->SetXTitle("Z position (cm)"); 
+  profA->SetYTitle("Amplitude at maxima (ADC)");
   char chc[100];
   profA->Fit(f1);
   sprintf(chc,"p_{0} = %f  p_{1} = %f",f1->GetParameter(0),f1->GetParameter(1));
