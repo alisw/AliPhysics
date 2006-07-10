@@ -21,7 +21,12 @@ namespace Reve {
 class VSDSelector;
 class RGBrowser;
 class RGEditor;
+
 class RenderElement;
+class RenderElementList;
+
+class EventBase;
+
 
 class RGTopFrame : public TGMainFrame
 {
@@ -41,12 +46,10 @@ private:
 
   RGEditor            *fEditor;
 
-  TObject             *fCurrentEvent;
-  TGListTreeItem      *fCurrentEventLTI;
+  EventBase           *fCurrentEvent;
+  RenderElementList   *fGlobalStore;
 
-  TGListTreeItem      *fGeometryLTI;
-
-  Bool_t               fRedrawDisabled;
+  Int_t                fRedrawDisabled;
   Bool_t               fTimerActive;
   TTimer               fRedrawTimer;
 
@@ -63,9 +66,9 @@ public:
   RGBrowser*   GetBrowser()    { return fBrowser; }
   TGStatusBar* GetStatusBar()  { return fStatusBar; }
 
-  TGListTree*     GetListTree();
-  TGListTreeItem* GetEventTreeItem();
-  TGListTreeItem* GetGlobalTreeItem();
+  TGListTree*        GetListTree() const;
+  EventBase*         GetCurrentEvent() const { return fCurrentEvent; }
+  RenderElementList* GetGlobalStore()  const { return fGlobalStore; }
 
   TFolder* GetMacroFolder() const { return fMacroFolder; }
   TMacro*  GetMacro(const Text_t* name) const;
@@ -73,28 +76,31 @@ public:
   RGEditor* GetEditor() const { return fEditor; }
   void EditRenderElement(RenderElement* rnr_element);
 
-  void DisableRedraw() { fRedrawDisabled = true; }
-  void EnableRedraw()  { fRedrawDisabled = false; Redraw3D(); }
+  void DisableRedraw() { ++fRedrawDisabled; }
+  void EnableRedraw()  { --fRedrawDisabled; if(fRedrawDisabled <= 0) Redraw3D(); }
 
-  void Redraw3D() { if(!fRedrawDisabled && !fTimerActive) RegisterRedraw3D(); }
+  void Redraw3D() { if(fRedrawDisabled <= 0 && !fTimerActive) RegisterRedraw3D(); }
   void RegisterRedraw3D();
   void DoRedraw3D();
 
   static int SpawnGuiAndRun(int argc, char **argv);
 
   // These are more like ReveManager stuff.
-  TGListTreeItem* AddEvent(TObject* event); // Could have Reve::Event ...
+  TGListTreeItem* AddEvent(EventBase* event); // Could have Reve::Event ...
   TGListTreeItem* AddRenderElement(RenderElement* rnr_element);
-  TGListTreeItem* AddRenderElement(TGListTreeItem* parent, RenderElement* rnr_element);
+  TGListTreeItem* AddRenderElement(RenderElement* parent, RenderElement* rnr_element);
   TGListTreeItem* AddGlobalRenderElement(RenderElement* rnr_element);
-  TGListTreeItem* AddGlobalRenderElement(TGListTreeItem* parent, RenderElement* rnr_element);
+  TGListTreeItem* AddGlobalRenderElement(RenderElement* parent, RenderElement* rnr_element);
+
+  void RemoveRenderElement(RenderElement* parent, RenderElement* rnr_element);
 
   void DrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad=0);
   void UndrawRenderElement(RenderElement* rnr_element, TVirtualPad* pad=0);
 
   void RenderElementChecked(TObject* obj, Bool_t state);
 
-  void NotifyBrowser(TGListTreeItem* parent=0);
+  void NotifyBrowser(TGListTreeItem* parent_lti=0);
+  void NotifyBrowser(RenderElement* parent);
 
   // Hmmph ... geometry management?
   TGeoManager* GetGeometry(const TString& filename);

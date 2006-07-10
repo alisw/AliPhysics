@@ -2,9 +2,9 @@
 
 #include "RGBrowser.h"
 #include "RGEditor.h"
-#include "VSDSelector.h"
 
-#include <Reve/RenderElement.h>
+#include <Reve/EventBase.h>
+#include "VSDSelector.h"
 
 #include <TGMenu.h>
 #include <TGTab.h>
@@ -90,11 +90,10 @@ void RGTopFrame::Init()
 
   fEditor = 0;
 
-  fCurrentEvent    = 0;
-  fCurrentEventLTI = 0;
-  fGeometryLTI     = 0;
+  fCurrentEvent   = 0;
+  fGlobalStore    = 0;
 
-  fRedrawDisabled = false;
+  fRedrawDisabled = 0;
   fTimerActive    = false;
   fRedrawTimer.Connect("Timeout()", "Reve::RGTopFrame", this, "DoRedraw3D()");
 }
@@ -192,8 +191,11 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look)
   /**************************************************************************/
   /**************************************************************************/
 
-  fGeometryLTI = GetListTree()->AddItem(0, "Geometry");
-  GetListTree()->OpenItem(fGeometryLTI);
+  fGlobalStore = new RenderElementList("Geometry", "");
+  fGlobalStore->SetDenyDestroy(kTRUE);
+  TGListTreeItem* glti = fGlobalStore->AddIntoListTree(GetListTree(), (TGListTreeItem*)0);
+  GetListTree()->OpenItem(glti);
+  DrawRenderElement(fGlobalStore);
 
   Resize(GetDefaultSize()); // this is used here to init layout algorithm
   SetWindowName("Reve");
@@ -206,20 +208,9 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look)
 
 /**************************************************************************/
 
-TGListTree* RGTopFrame::GetListTree()
+TGListTree* RGTopFrame::GetListTree() const
 {
   return fBrowser->GetListTree();
-}
-
-TGListTreeItem* RGTopFrame::GetEventTreeItem()
-{
-  // return fBrowser->GetListTree()->FindItemByPathname("Event");
-  return fCurrentEventLTI;
-}
-
-TGListTreeItem* RGTopFrame::GetGlobalTreeItem()
-{
-  return fGeometryLTI;
 }
 
 /**************************************************************************/
@@ -297,51 +288,70 @@ int RGTopFrame::SpawnGuiAndRun(int argc, char **argv)
 /**************************************************************************/
 /**************************************************************************/
 
-TGListTreeItem* RGTopFrame::AddEvent(TObject* event)
+TGListTreeItem* RGTopFrame::AddEvent(EventBase* event)
 {
   fCurrentEvent = event;
-  RenderElementObjPtr* rnrEv = new RenderElementObjPtr(event);
-  fCurrentEventLTI = rnrEv->AddIntoListTree(GetListTree(), 0);
-  GetListTree()->OpenItem(fCurrentEventLTI);
-  return fCurrentEventLTI;
+  fCurrentEvent->SetDenyDestroy(kTRUE);
+  TGListTreeItem* elti = event->AddIntoListTree(GetListTree(), (TGListTreeItem*)0);
+  GetListTree()->OpenItem(elti);
+  DrawRenderElement(event);
+  return elti;
 }
 
 TGListTreeItem* RGTopFrame::AddRenderElement(RenderElement* rnr_element)
 {
-  return AddRenderElement(GetEventTreeItem(), rnr_element);
+  return AddRenderElement(fCurrentEvent, rnr_element);
 }
 
-TGListTreeItem* RGTopFrame::AddRenderElement(TGListTreeItem* parent,
+TGListTreeItem* RGTopFrame::AddRenderElement(RenderElement* parent,
 					     RenderElement* rnr_element)
 {
   static const Exc_t eH("RGTopFrame::AddRenderElement ");
 
   // Here could route rnr-element to several browsers/pads.
 
+  RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(parent);
+  if(rel)
+    rel->AddElement(rnr_element);
+
   TGListTreeItem* newitem =
     rnr_element->AddIntoListTree(GetListTree(), parent);
-  NotifyBrowser();
 
   return newitem;
 }
 
 TGListTreeItem* RGTopFrame::AddGlobalRenderElement(RenderElement* rnr_element)
 {
-  return AddGlobalRenderElement(GetGlobalTreeItem(), rnr_element);
+  return AddGlobalRenderElement(fGlobalStore, rnr_element);
 }
 
-TGListTreeItem* RGTopFrame::AddGlobalRenderElement(TGListTreeItem* parent,
+TGListTreeItem* RGTopFrame::AddGlobalRenderElement(RenderElement* parent,
 						   RenderElement* rnr_element)
 {
   static const Exc_t eH("RGTopFrame::AddGlobalRenderElement ");
 
   // Here could route rnr-element to several browsers/pads.
 
+  RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(parent);
+  if(rel)
+    rel->AddElement(rnr_element);
+
   TGListTreeItem* newitem =
     rnr_element->AddIntoListTree(GetListTree(), parent);
-  NotifyBrowser();
 
   return newitem;
+}
+
+/**************************************************************************/
+
+void RGTopFrame::RemoveRenderElement(RenderElement* parent,
+				     RenderElement* rnr_element)
+{
+  rnr_element->RemoveFromListTree(GetListTree());
+
+  RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(parent);
+  if(rel)
+    rel->RemoveElement(rnr_element);
 }
 
 /**************************************************************************/
@@ -377,12 +387,18 @@ void RGTopFrame::RenderElementChecked(TObject* obj, Bool_t state)
 
 /**************************************************************************/
 
-void RGTopFrame::NotifyBrowser(TGListTreeItem* parent)
+void RGTopFrame::NotifyBrowser(TGListTreeItem* parent_lti)
 {
   TGListTree* l_tree = GetListTree();
-  if(parent)
-    l_tree->OpenItem(parent);
+  if(parent_lti)
+    l_tree->OpenItem(parent_lti);
   gClient->NeedRedraw(l_tree);
+}
+
+void RGTopFrame::NotifyBrowser(RenderElement* parent)
+{
+  TGListTreeItem* parent_lti = parent ? parent->FindListTreeItem(GetListTree()) : 0;
+  NotifyBrowser(parent_lti);
 }
 
 /**************************************************************************/
