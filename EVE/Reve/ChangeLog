@@ -1,3 +1,49 @@
+2006-07-10  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Event.cxx:
+	* Event.h:
+	Removed files: the contents moved to VSDEvent and renamed
+	accordingly.
+
+	* EventBase.cxx:
+	* EventBase.h:
+	New files: common base class for an event object (VSDEvent and
+	Alieve::Event).
+
+	* VSDEvent.cxx:
+	* VSDEvent.h:
+	New files: rename of class Reve::Event, now subclassed from
+	EventBase.
+
+	* LinkDef.h:
+	Reflect changes in event classes.
+
+	* Reve.h:
+	Added include TError.h.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Changed current-event pointer from TObject to EventBase; made
+	global-store and event-stores render elements; improved interface
+	for adding/removing render-elements.
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Implemented proper reference management accross render-elements,
+	render-element-lists and tree-items; implemented methods for
+	removal and destruction of render-elements.
+
+	* GeoNode.cxx:
+	* GeoNode.h:
+	* PointSet.cxx:
+	* PointSet.h:
+	* RGeoNodeEditors.cxx:
+	* Track.cxx:
+	* Track.h:
+	Proper management of dependent render-elements, renamed
+	FullUpdate() to UpdateItems() and changed inheritance order
+	(derive RenderElement first).
+
 2006-07-03  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TTreeTools.cxx:
