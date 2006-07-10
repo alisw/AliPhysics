@@ -1,3 +1,35 @@
+2006-07-10  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	Now derived from Reve::EventBase.
+
+	* ITSModule.cxx:
+	* ITSModule.h:
+	* MUONModule.cxx:
+	* MUONModule.h:
+	* TPCSectorViz.cxx:
+	* TPCSectorViz.h:
+	Changed inheritance order (RenderElement base comes first).
+
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	Implemented list-management virtuals; use new functionality of
+	RGTopFrame.
+	
+	* TPCSector2DGL.cxx:
+	Cosmetic changes.
+
+	* TPCSector3D.cxx:
+	Do not recompute visual representation on every triangulation
+	change (let the GL renderer do it); conform to new syntax of
+	PointSetArray.
+
+	* TPCSector3DGL.cxx:
+	* TPCSector3DGL.h:
+	Added triangulation time-stamp: update model state when needed;
+	use PointSet::Size() instead of GetN().
+
 2006-06-28  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TPCLoader.cxx:
