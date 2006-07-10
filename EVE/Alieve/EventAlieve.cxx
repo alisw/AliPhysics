@@ -60,12 +60,15 @@ void Event::Init()
   fESDfriend     = 0;
 }
 
-Event::Event() : TNamed(), fEventId(0)
+Event::Event() :
+  EventBase(), fEventId(0)
 {
   Init();
 }
 
-Event::Event(TString path, Int_t ev) : fPath(path), fEventId(ev)
+Event::Event(TString path, Int_t ev) :
+  EventBase("AliEVE Event"),
+  fPath(path), fEventId(ev)
 {
   Init();
   Open();

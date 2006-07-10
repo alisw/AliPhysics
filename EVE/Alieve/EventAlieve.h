@@ -3,8 +3,7 @@
 #ifndef ALIEVE_Event_H
 #define ALIEVE_Event_H
 
-#include <TNamed.h>
-#include <TString.h>
+#include <Reve/EventBase.h>
 
 class AliRunLoader;
 class AliESD;
@@ -15,7 +14,7 @@ class TTree;
 
 namespace Alieve {
 
-class Event : public TNamed
+class Event : public Reve::EventBase
 {
 private:
   void Init();
