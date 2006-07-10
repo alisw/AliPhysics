@@ -235,7 +235,7 @@ Bool_t aodV0::Process(Long64_t entry)
     dcaPosToPrimVertex = myAODv0->DcaPosToPrimVertex();
     dcaNegToPrimVertex = myAODv0->DcaNegToPrimVertex();
     dcaV0Daughters     = myAODv0->DcaV0Daughters();
-    decayLengthV0      = myAODv0->DecayLengthV0();
+    decayLengthV0      = myAODv0->DecayLengthV0(tPositionPrimaryVertex);
     alphaV0            = myAODv0->AlphaV0();
     ptArmV0            = myAODv0->PtArmV0();
     rapK0Short         = myAODv0->RapK0Short();
