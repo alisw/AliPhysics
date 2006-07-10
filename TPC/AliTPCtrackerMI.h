@@ -195,6 +195,7 @@ private:
 
 private:
    inline AliTPCRow &GetRow(Int_t sec, Int_t row);
+   inline Bool_t     IsActive(Int_t sec, Int_t row);
    inline Double_t  GetXrow(Int_t row) const;
    inline Double_t  GetMaxY(Int_t row) const;
    inline Int_t GetRowNumber(Double_t x) const;
@@ -272,6 +273,15 @@ AliTPCtrackerMI::AliTPCRow & AliTPCtrackerMI::GetRow(Int_t sec, Int_t row)
   //
   return (row>=fInnerSec->GetNRows()) ? fOuterSec[sec][row-fInnerSec->GetNRows()]:fInnerSec[sec][row];
 }
+
+Bool_t   AliTPCtrackerMI::IsActive(Int_t sec, Int_t row)
+{
+  //
+  // check if the given sector row is active 
+  //
+  return (row>=fInnerSec->GetNRows()) ? fOuterSec[sec][row-fInnerSec->GetNRows()].GetN()>0:fInnerSec[sec][row].GetN()>0;
+}
+
 
 Double_t  AliTPCtrackerMI::GetXrow(Int_t row) const {
   //  return (row>=fInnerSec->GetNRows()) ? fOuterSec->GetX(row-fInnerSec->GetNRows()):fInnerSec->GetX(row);

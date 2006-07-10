@@ -1442,6 +1442,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   y=t.GetY(); 
   Double_t z=t.GetZ();
   //
+  if (!IsActive(t.fRelativeSector,nr)) return 0;
   const AliTPCRow &krow=GetRow(t.fRelativeSector,nr);
   if ( (t.GetSigmaY2()<0) || t.GetSigmaZ2()<0) return 0;
   Double_t  roady  =1.;
@@ -1673,6 +1674,7 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   }
   //
   if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()) return 0;
+  if (!IsActive(t.fRelativeSector,nr)) return 0;
   AliTPCRow &krow=GetRow(t.fRelativeSector,nr);
 
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.fDeadZone){
