@@ -20,6 +20,7 @@
 	* TPCSector2DGL.cxx:
 	Cosmetic changes.
 
+	* TPCSector3D.h:
 	* TPCSector3D.cxx:
 	Do not recompute visual representation on every triangulation
 	change (let the GL renderer do it); conform to new syntax of
