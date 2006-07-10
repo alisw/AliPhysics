@@ -1081,7 +1081,7 @@ void AliFRAMEv2::CreateGeometry()
 
  }
 
-  gMC->Gspos("BFMO", i + 19, "ALIC", 0, 0, 376. + kBFMdz/2. + 0.5 , 0, "ONLY");       
+  gMC->Gspos("BFMO", i + 19, "ALIC", 0, 0, - 376. - kBFMdz/2. - 0.5 , 0, "ONLY");       
 
 
 
@@ -1258,7 +1258,7 @@ void AliFRAMEv2::CreateGeometry()
   gMC->Gspos("BBD2", 1, "BBCE", dx, dy,   -dz/2. - kBBBdz/2., idrotm[2052], "ONLY");  
 
 
-  gMC->Gspos("BBMO", 1, "ALIC", 0., 0., - 376. - kBBMdz / 2. - 0.5, 0, "ONLY");  
+  gMC->Gspos("BBMO", 1, "ALIC", 0., 0., + 376. + kBBMdz / 2. + 0.5, 0, "ONLY");  
 
 
 }
