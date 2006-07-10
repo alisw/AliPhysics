@@ -5,6 +5,7 @@
 
 #include <string>
 #include <TString.h>
+#include <TError.h>
 #include <Gtypes.h>
 
 inline bool operator==(const TString& t, const std::string& s)
