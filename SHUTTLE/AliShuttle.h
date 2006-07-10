@@ -11,7 +11,7 @@
 // This class is the main manager for 
 // AliShuttle. It organizes the data retrieval
 // from DCS and call the interface methods of
-// AliCDBPreProcessor.
+// AliPreprocessor.
 //
 
 #include <TMap.h>

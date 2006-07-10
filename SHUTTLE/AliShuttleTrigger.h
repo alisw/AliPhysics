@@ -82,9 +82,8 @@ private:
 		ClassDef(AliShuttleTriggerDATEEntry, 0)
 	};
 
-	Bool_t RetrieveDATEEntries(const char* whereClause, TObjArray& entries,
-			Int_t& lastRun);
-	Bool_t RetrieveConditionsData(const TObjArray& dateEntries);
+	Bool_t RetrieveDATEEntries(const char* whereClause, TObjArray& entries);
+	Bool_t RetrieveConditionsData(const TObjArray& dateEntries, Int_t& lastRun);
 
 	const AliShuttleConfig* fConfig;
 	//AliCDBStorage* fLocalStorage;

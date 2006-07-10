@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/06/12 09:11:16  jgrosseo
+coding conventions (Alberto)
+
 Revision 1.3  2006/06/06 14:26:40  jgrosseo
 o) removed files that were moved to STEER
 o) shuttle updated to follow the new interface (Alberto)
@@ -131,7 +134,8 @@ AliShuttleConfig::AliShuttleConfigHolder::AliShuttleConfigHolder(const TLDAPEntr
 	fIsValid = kTRUE;
 }
 
-AliShuttleConfig::AliShuttleConfigHolder::~AliShuttleConfigHolder() 
+//______________________________________________________________________________________________
+AliShuttleConfig::AliShuttleConfigHolder::~AliShuttleConfigHolder()
 {
 // destructor of the shuttle configuration holder
 
@@ -140,7 +144,8 @@ AliShuttleConfig::AliShuttleConfigHolder::~AliShuttleConfigHolder()
 
 ClassImp(AliShuttleConfig)
 
-AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port, 
+//______________________________________________________________________________________________
+AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
 	fIsValid(kFALSE),
 	fProcessAll(kFALSE)
@@ -283,14 +288,16 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fIsValid = kTRUE;
 }
 
-AliShuttleConfig::~AliShuttleConfig() 
+//______________________________________________________________________________________________
+AliShuttleConfig::~AliShuttleConfig()
 {
 // destructor
 
 	fDetectorMap.DeleteAll();
 }
 
-const TObjArray* AliShuttleConfig::GetDetectors() const 
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::GetDetectors() const
 {
 	//
 	// returns collection of TObjString which contains the name
@@ -300,7 +307,8 @@ const TObjArray* AliShuttleConfig::GetDetectors() const
 	return &fDetectorList;
 }
 
-Bool_t AliShuttleConfig::HasDetector(const char* detector) const 
+//______________________________________________________________________________________________
+Bool_t AliShuttleConfig::HasDetector(const char* detector) const
 {
 	//
 	// checks for paricular detector in the configuration.
@@ -308,7 +316,8 @@ Bool_t AliShuttleConfig::HasDetector(const char* detector) const
 	return fDetectorMap.GetValue(detector) != NULL;
 }
 
-const char* AliShuttleConfig::GetDCSHost(const char* detector) const 
+//______________________________________________________________________________________________
+const char* AliShuttleConfig::GetDCSHost(const char* detector) const
 {
 	//
 	// returns DCS server host used by particular detector
@@ -324,7 +333,8 @@ const char* AliShuttleConfig::GetDCSHost(const char* detector) const
 	return aHolder->GetDCSHost();
 }
 
-Int_t AliShuttleConfig::GetDCSPort(const char* detector) const 
+//______________________________________________________________________________________________
+Int_t AliShuttleConfig::GetDCSPort(const char* detector) const
 {
 	//
         // returns DCS server port used by particular detector
@@ -341,7 +351,8 @@ Int_t AliShuttleConfig::GetDCSPort(const char* detector) const
 	return aHolder->GetDCSPort();
 }
 
-const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const 
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const
 {
 	//
 	// returns collection of TObjString which represents the set of aliases
@@ -358,7 +369,8 @@ const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const
 	return aHolder->GetDCSAliases();
 }
 
-const TObjArray* AliShuttleConfig::GetDAQFileIDs(const char* detector) const 
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::GetDAQFileIDs(const char* detector) const
 {
 	//
 	// returns collection of TObjString which represents the set of DAQ file IDs
@@ -375,7 +387,8 @@ const TObjArray* AliShuttleConfig::GetDAQFileIDs(const char* detector) const
 	return aHolder->GetDAQFileIDs();
 }
 
-Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const 
+//______________________________________________________________________________________________
+Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const
 {
 	// return TRUE if detector is handled by host or if fProcessAll is TRUE
 
@@ -388,6 +401,7 @@ Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const
 	return kFALSE;
 }
 
+//______________________________________________________________________________________________
 void AliShuttleConfig::Print(Option_t* /*option*/) const 
 {
 // print configuration

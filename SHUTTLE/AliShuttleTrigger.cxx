@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.4  2006/07/04 14:59:57  jgrosseo
+ revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
+
  Revision 1.3  2006/06/12 09:11:16  jgrosseo
  coding conventions (Alberto)
 
@@ -214,7 +217,7 @@ void AliShuttleTrigger::Run() {
 
 //______________________________________________________________________________________________
 Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
-		TObjArray& entries, Int_t& lastRun) 
+		TObjArray& entries)
 {
 // Retrieve start time and end time for all runs in the DAQ logbook
 // that aren't processed yet
@@ -253,8 +256,6 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 		return kFALSE;
 	}
 
-	lastRun = 0;
-
 	TSQLRow* aRow;
 	while ((aRow = aResult->Next())) {
 		TString runString(aRow->GetField(0), aRow->GetFieldLength(0));
@@ -285,15 +286,12 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 		}
 
 		entries.AddLast(new AliShuttleTriggerDATEEntry(run, startTime, endTime));
-		if (lastRun < run) {
-			lastRun = run;
-		}
 		delete aRow;
 	}
 
 	delete aResult;
 	
-	aServer->Shutdown();
+	aServer->Close();
 	delete aServer;
 
 	entries.SetOwner(1);
@@ -302,7 +300,7 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries)
+Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries, Int_t &lastRun)
 {
 // Retrieve conditions data for all runs that aren't processed yet
 
@@ -310,19 +308,24 @@ Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries)
 
 	TIter iter(&dateEntries);
 	AliShuttleTriggerDATEEntry* anEntry;
+	lastRun=-1;
 	while ((anEntry = (AliShuttleTriggerDATEEntry*) iter.Next())) {
+		Bool_t processError = kFALSE;
+		if(lastRun == -1) lastRun = anEntry->GetRun();
 		if(!fShuttle->Process(anEntry->GetRun(),
 				anEntry->GetStartTime(),
 				anEntry->GetEndTime())) {
-			hasError = kTRUE;
+					processError = kTRUE;
+					hasError = kTRUE;
 		}
+		if(!processError) lastRun = anEntry->GetRun();
 	}
 
-	return !hasError;
+	return hasError == kFALSE;
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::Collect(Int_t run) 
+Bool_t AliShuttleTrigger::Collect(Int_t run)
 {
 	//
 	// Collects conditions date for the given run.
@@ -333,9 +336,8 @@ Bool_t AliShuttleTrigger::Collect(Int_t run)
 	TString whereClause("where run = ");
 	whereClause += run;
 
-	Int_t lastRun;
 	TObjArray dateEntries;
-	if (!RetrieveDATEEntries(whereClause, dateEntries, lastRun)) {
+	if (!RetrieveDATEEntries(whereClause, dateEntries)) {
 		AliError("Can't retrieve entries from DAQ log book.");
 		return kFALSE;
         }
@@ -351,7 +353,8 @@ Bool_t AliShuttleTrigger::Collect(Int_t run)
 		return kFALSE;
 	}
 
-	if (!RetrieveConditionsData(dateEntries)) {
+	Int_t lastRun;
+	if (!RetrieveConditionsData(dateEntries, lastRun)) {
 		AliError("An error occured during conditions data retrieval!");
 		return kFALSE;
 	}
@@ -383,10 +386,11 @@ Bool_t AliShuttleTrigger::CollectNew()
 		}
 		AliDCSValue* simpleValue = (AliDCSValue*) anObject;
 		lastRun = simpleValue->GetInt();
+		AliInfo(Form("Last run successfully stored: %d",lastRun));
 		delete cdbEntry;
 	} else {
-		AliWarning("There isn't last run stored! Starting from run 21200");
-		lastRun = 21200; // TODO maybe exit here
+		AliWarning("There isn't last run stored! Starting from run 21240");
+		lastRun = 21240; // TODO maybe exit here
 	}
 
 	AliInfo(Form("Last run number <%d>", lastRun));
@@ -396,11 +400,16 @@ Bool_t AliShuttleTrigger::CollectNew()
 
 	Int_t newLastRun;
 	TObjArray dateEntries;
-	if (!RetrieveDATEEntries(whereClause, dateEntries, newLastRun)) {
+	if (!RetrieveDATEEntries(whereClause, dateEntries)) {
 		AliError("Can't retrieve entries from DAQ log book.");
 		return kFALSE;
 	}
 
+	if (!RetrieveConditionsData(dateEntries, newLastRun)) {
+		AliError("Process of at least one run failed!");
+		// return kFALSE;
+	}
+	
 	if (newLastRun > lastRun) {
 		AliDCSValue lastRunObj(newLastRun, 0);
 		AliCDBMetaData metaData;
@@ -415,11 +424,7 @@ Bool_t AliShuttleTrigger::CollectNew()
 		}
 	}
 
-	if (!RetrieveConditionsData(dateEntries)) {
-		AliError("An error occured during conditions data retrieval!");
-		return kFALSE;
-	}
-
+	
 	return kTRUE;
 }
 
@@ -434,12 +439,12 @@ Bool_t AliShuttleTrigger::CollectAll()
 
 	Int_t lastRun;
 	TObjArray dateEntries;
-	if (!RetrieveDATEEntries("", dateEntries, lastRun)) {
+	if (!RetrieveDATEEntries("", dateEntries)) {
 		AliError("Can't retrieve entries from DAQ log book.");
 		return kFALSE;
 	}
 
-	if (!RetrieveConditionsData(dateEntries)) {
+	if (!RetrieveConditionsData(dateEntries, lastRun)) {
 		AliError("An error occured during conditions data retrieval!");
 		return kFALSE;
 	}

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/07/04 14:59:57  jgrosseo
+revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
+
 Revision 1.4  2006/06/12 09:11:16  jgrosseo
 coding conventions (Alberto)
 
@@ -94,14 +97,12 @@ AliShuttle::AliShuttle(const AliShuttleConfig* config,
 {
 	//
 	// config: AliShuttleConfig used
-	// mainStorage: underlying AliCDBStorage
-	// localStorage (local) CDB storage to be used if mainStorage is unavailable
 	// timeout: timeout used for AliDCSClient connection
 	// retries: the number of retries in case of connection error.
 	//
 
-	/*AliDefaultPreprocessor* pp = *///new AliDefaultPreprocessor("DEFAULT", this);
-  // TODO
+	//new AliDefaultPreprocessor("DEFAULT", this);
+
 }
 
 //______________________________________________________________________
@@ -156,15 +157,16 @@ UInt_t AliShuttle::Store(const char* detector,
 	// 	   1 if stored in main (Grid) storage
 	// 	   2 if stored in backup (Local) storage
 
-	if (!(AliCDBManager::Instance()->IsDefaultStorageSet())) {
-		AliError("No CDB storage set!");
-		return 0;
-	}
 
 	AliCDBId id(AliCDBPath(detector, "DCS", "Data"),
 		GetCurrentRun(), GetCurrentRun());
 
-	UInt_t result = (UInt_t) AliCDBManager::Instance()->Put(object, id, metaData);
+	UInt_t result = 0;
+	if (!(AliCDBManager::Instance()->IsDefaultStorageSet())) {
+		Log(detector, "No CDB storage set!");
+	} else {
+		result = (UInt_t) AliCDBManager::Instance()->Put(object, id, metaData);
+	}
 	if(!result) {
 
 		Log(detector, "Error while storing object in main storage!");
@@ -211,7 +213,7 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime)
 
 	if(fLog != "") StoreLog(run);
 
-	return !hasError;
+	return hasError == kFALSE;
 }
 
 //______________________________________________________________________________________________
@@ -252,6 +254,8 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 	while ((anAlias = (TObjString*) iter.Next())) {
 		TObjArray valueSet;
 		result = GetValueSet(host, port, anAlias->String(), valueSet);
+		//AliInfo(Form("Port = %d",port));
+		//result = kTRUE;
 		if(result) {
 			aliasMap.Add(anAlias->Clone(), valueSet.Clone());
 		}else{
@@ -262,28 +266,32 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 		}
 	}
 
+	if(hasError) return kFALSE;
+
 	AliPreprocessor* aPreprocessor =
 		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(detector));
-	if(!aPreprocessor) {
-		AliInfo(Form("No Preprocessor for %s: Using default Preprocessor!",detector));
-		aPreprocessor = dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue("DEFAULT"));
+	if(aPreprocessor)
+	{
+		aPreprocessor->Initialize(run, startTime, endTime);
+		hasError = (aPreprocessor->Process(&aliasMap) == 0);
+	}else{
+		AliInfo(Form("No Preprocessor for %s: storing TMap of DP arrays into CDB!",detector));
+		AliCDBMetaData metaData;
+		metaData.SetResponsible(Form("Duck, Donald"));
+  		metaData.SetProperty("StartEndTime",
+      			new AliDCSValue(startTime, endTime));
+  		metaData.SetComment("Automatically stored by Shuttle!");
+		hasError = (Store(detector, &aliasMap, &metaData) == 0);
 	}
 
-  if (aPreprocessor)
-  {
-    aPreprocessor->Initialize(run, startTime, endTime);
-    hasError = (aPreprocessor->Process(&aliasMap) != 0);
-  }
-  else
-    AliWarning(Form("No preprocessor for %s available", detector));
 
-  aliasMap.Delete();
+  	aliasMap.Delete();
 
 	fCurrentRun = -1;
 	fCurrentStartTime = 0;
 	fCurrentEndTime = 0;
 
-	return !hasError;
+	return hasError == kFALSE;
 }
 
 //______________________________________________________________________________________________
@@ -368,3 +376,4 @@ void AliShuttle::StoreLog(Int_t run)
 
 
 }
+
