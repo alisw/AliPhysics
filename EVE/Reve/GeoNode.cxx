@@ -20,7 +20,8 @@ using namespace Reve;
 ClassImp(GeoNodeRnrEl)
 
 GeoNodeRnrEl::GeoNodeRnrEl(TGeoNode* node) :
-  RenderElementListBase(), 
+  RenderElementListBase(),
+  TObject(),
   fNode(node)
 {
   // Hack!! Should use cint to retrieve TAttLine::fLineColor offset.
@@ -41,7 +42,7 @@ Int_t GeoNodeRnrEl::ExpandIntoListTree(TGListTree* ltree,
   // Checks if child-nodes have been imported ... imports them if not.
   // Then calls RenderElementListBase::ExpandIntoListTree.
 
-  if(fList.empty() && fNode->GetVolume()->GetNdaughters() > 0) {
+  if(fChildren.empty() && fNode->GetVolume()->GetNdaughters() > 0) {
     TIter next(fNode->GetVolume()->GetNodes());
     TGeoNode* dnode;
     while((dnode = (TGeoNode*) next()) != 0) {
@@ -54,10 +55,10 @@ Int_t GeoNodeRnrEl::ExpandIntoListTree(TGListTree* ltree,
 
 /**************************************************************************/
 
-void GeoNodeRnrEl::FullUpdate()
+void GeoNodeRnrEl::UpdateItems()
 {
   fRnrElement      = fNode->TGeoAtt::IsVisible(); 
-  RenderElementListBase::FullUpdate();
+  RenderElementListBase::UpdateItems();
 }
 
 /**************************************************************************/
@@ -65,7 +66,7 @@ void GeoNodeRnrEl::FullUpdate()
 void GeoNodeRnrEl::SetRnrElement(Bool_t rnr)
 {
   fNode->SetVisibility(rnr);
-  FullUpdate();
+  UpdateItems();
 }
 
 /**************************************************************************/
@@ -73,7 +74,7 @@ void GeoNodeRnrEl::SetRnrElement(Bool_t rnr)
 void GeoNodeRnrEl::SetMainColor(Color_t color)
 {
   fNode->GetVolume()->SetLineColor(color);
-  FullUpdate();
+  UpdateItems();
 }
 
 void GeoNodeRnrEl::SetMainColor(Pixel_t pixel)
@@ -99,9 +100,9 @@ void GeoNodeRnrEl::UpdateNode(TGeoNode* node)
   // printf("%s node %s %p\n", eH.Data(), node->GetName(), node);
 
   if(fNode == node)
-    FullUpdate();
+    UpdateItems();
 
-  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((GeoNodeRnrEl*)(*i))->UpdateNode(node);
   }
 
@@ -121,9 +122,9 @@ void GeoNodeRnrEl::UpdateVolume(TGeoVolume* volume)
   // printf("%s volume %s %p\n", eH.Data(), volume->GetName(), volume);
 
   if(fNode->GetVolume() == volume)
-    FullUpdate();
+    UpdateItems();
 
-  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((GeoNodeRnrEl*)(*i))->UpdateVolume(volume);
   }
 }
@@ -192,9 +193,9 @@ void GeoTopNodeRnrEl::SetVisLevel(Int_t vislvl)
 
 /**************************************************************************/
 
-void GeoTopNodeRnrEl::FullUpdate()
+void GeoTopNodeRnrEl::UpdateItems()
 {
-  RenderElementListBase::FullUpdate();
+  RenderElementListBase::UpdateItems();
 }
 
 /**************************************************************************/
@@ -225,7 +226,7 @@ void GeoTopNodeRnrEl::Paint(Option_t* option)
     gPad = pad;
     TVirtualGeoPainter* vgp = fManager->GetGeomPainter();
     if(vgp != 0) {
-#if ROOT_VERSION_CODE > ROOT_VERSION(5,11,7)
+#if ROOT_VERSION_CODE > ROOT_VERSION(5,11,6)
       vgp->PaintNode(fNode, option, fUseNodeTrans ? fNode->GetMatrix() : fGlobalTrans);
 #else
       vgp->PaintNode(fNode, option);

@@ -15,8 +15,8 @@ class TGListTreeItem;
 
 namespace Reve {
 
-class PointSet : public TPointSet3D,
-                 public RenderElement,
+class PointSet : public RenderElement,
+                 public TPointSet3D,
                  public TPointSelectorConsumer
 {
   friend class PointSetArray;
@@ -49,9 +49,10 @@ public:
 
 /**************************************************************************/
 
-class PointSetArray : public TNamed, public TAttMarker,
-		      public RenderElementListBase,
-		      public TPointSelectorConsumer
+class PointSetArray : public RenderElementListBase,
+                      public TNamed,
+                      public TAttMarker,
+                      public TPointSelectorConsumer
 {
   friend class PointSetArrayEditor;
 
@@ -68,6 +69,9 @@ public:
   PointSetArray(const Text_t* name="PointSetArray", const Text_t* title="");
   virtual ~PointSetArray();
 
+  virtual void RemoveElementLocal(RenderElement* el);
+  virtual void RemoveElements();
+
   virtual void Paint(Option_t* option="") { PaintElements(option); }
 
   virtual void SetMarkerColor(Color_t tcolor=1);
@@ -77,9 +81,8 @@ public:
   virtual void TakeAction(TSelectorDraw*);
 
 
-  void InitBins(TGListTreeItem* tree_item, const Text_t* quant_name,
-		Int_t nbins, Double_t min, Double_t max);
-  void DeleteBins();
+  void InitBins(const Text_t* quant_name, Int_t nbins, Double_t min, Double_t max,
+		Bool_t addRe=kTRUE);
   void Fill(Double_t x, Double_t y, Double_t z, Double_t quant);
 
   void CloseBins();

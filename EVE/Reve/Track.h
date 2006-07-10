@@ -14,7 +14,8 @@ namespace Reve {
 class TrackRnrStyle;
 class TrackList;
 
-class Track : public TPolyLine3D, public RenderElement
+class Track : public RenderElement,
+	      public TPolyLine3D
 {
   friend class TrackList;
 
@@ -121,7 +122,8 @@ public:
 // TrackList
 /**************************************************************************/
 
-class TrackList : public TPolyMarker3D, public RenderElementListBase
+class TrackList : public RenderElementListBase,
+		  public TPolyMarker3D
 {
 private:
   void  Init();

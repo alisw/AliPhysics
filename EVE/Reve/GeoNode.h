@@ -12,7 +12,8 @@ class TGeoManager;
 
 namespace Reve {
 
-class GeoNodeRnrEl : public TObject, public RenderElementListBase
+class GeoNodeRnrEl : public RenderElementListBase,
+                     public TObject
 {
   friend class GeoNodeRnrElEditor;
 
@@ -29,7 +30,7 @@ public:
 
   virtual Int_t ExpandIntoListTree(TGListTree* ltree, TGListTreeItem* parent);
 
-  virtual void FullUpdate();
+  virtual void UpdateItems();
 
   virtual Bool_t CanEditRnrElement() { return false; }
   virtual void SetRnrElement(Bool_t rnr);
@@ -71,7 +72,7 @@ public:
   Int_t GetVisLevel()  const { return fVisLevel; }
   void  SetVisLevel(Int_t vislvl);
 
-  virtual void FullUpdate();
+  virtual void UpdateItems();
 
   virtual Bool_t CanEditRnrElement() { return true; }
   virtual void SetRnrElement(Bool_t rnr);

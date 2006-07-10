@@ -245,15 +245,15 @@ void TrackList::Init()
 }
 
 TrackList::TrackList(Int_t n_tracks) :
-  TPolyMarker3D(n_tracks),
-  RenderElementListBase()
+  RenderElementListBase(),
+  TPolyMarker3D(n_tracks)
 {
   Init();
 }
 
 TrackList::TrackList(const Text_t* name, Int_t n_tracks) :
-  TPolyMarker3D(n_tracks),
-  RenderElementListBase()
+  RenderElementListBase(),
+  TPolyMarker3D(n_tracks)
 {
   Init();
   SetName(name);
@@ -277,7 +277,7 @@ void TrackList::Paint(Option_t* option)
       TPolyMarker3D::Paint(option);
     }
     if(fRnrTracks) {
-      for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+      for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
 	if((*i)->GetRnrElement())
 	  (*i)->GetObject()->Paint(option);
       }
@@ -314,7 +314,7 @@ void TrackList::SetRnrTracks(Bool_t rnr)
 
 void TrackList::MakeTracks()
 {
-  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->MakeTrack();
   }
   gReve->Redraw3D();
@@ -323,8 +323,8 @@ void TrackList::MakeTracks()
 
 void TrackList::MakeMarkers()
 {
-  Reset(fList.size());
-  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+  Reset(fChildren.size());
+  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     Track& t = *((Track*)(*i));
     if(t.GetN() > 0)
       SetNextPoint(t.fV.x, t.fV.y, t.fV.z);
@@ -388,7 +388,7 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
   Float_t maxptsq = max_pt*max_pt;
   Float_t ptsq;
 
-  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ptsq = ((Track*)(*i))->fP.Perp2();
     (*i)->SetRnrElement(ptsq >= minptsq && ptsq <= maxptsq);
   }
@@ -398,14 +398,14 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 
 void TrackList::ImportHits()
 {
-  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->ImportHits();
   }
 }
 
 void TrackList::ImportClusters()
 {
-  for(lpRE_i i=fList.begin(); i!=fList.end(); ++i) {
+  for(lpRE_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->ImportClusters();
   }
 }

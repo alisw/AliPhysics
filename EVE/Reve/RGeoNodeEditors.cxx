@@ -116,7 +116,7 @@ void GeoNodeRnrElEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
 void GeoNodeRnrElEditor::DoVizNode()
 {
   fNodeRE->fNode->SetVisibility(fVizNode->IsOn());
-  fNodeRE->FullUpdate();
+  fNodeRE->UpdateItems();
 }
 
 void GeoNodeRnrElEditor::DoVizNodeDaughters()
