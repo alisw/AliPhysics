@@ -37,9 +37,10 @@
 #pragma link C++ class Reve::RecV0+;
 #pragma link C++ class Reve::GenInfo+;
 
-// Event
+// EventBase, VSDEvent, VSD
+#pragma link C++ class Reve::EventBase+;
 #pragma link C++ class Reve::EvTree+;
-#pragma link C++ class Reve::Event+;
+#pragma link C++ class Reve::VSDEvent+;
 #pragma link C++ class Reve::VSDTree+;
 #pragma link C++ class Reve::VSD+;
 
