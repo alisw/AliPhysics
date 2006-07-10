@@ -21,6 +21,8 @@ protected:
   TPCSector3D*    fSector; // fModel dynamic-casted to TPCSector3DGL
   Reve::BoxSetGL* fBoxRnr;
 
+  mutable UInt_t  fRTS;
+
   virtual void DirectDraw(const TGLDrawFlags & flags) const;
 
 public:

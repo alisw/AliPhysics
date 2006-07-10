@@ -25,6 +25,7 @@ ClassImp(TPCSector3DGL)
 TPCSector3DGL::TPCSector3DGL() : fSector(0), fBoxRnr(0)
 {
   // fCached = false; // Disable display list.
+  fRTS = 0;
 }
 
 TPCSector3DGL::~TPCSector3DGL()
@@ -66,14 +67,21 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
 {
   // printf("TPCSector3DGL::DirectDraw Style %d, LOD %d\n", flags.Style(), flags.LOD());
 
-  if(fSector->fTPCData != 0)
+  if(fRTS < fSector->fRTS) {
+    fSector->UpdateBoxes();
+    fRTS = fSector->fRTS;
+  }  
+
+  Bool_t hasData = (fSector->GetSectorData() != 0);
+
+  if(hasData)
     fBoxRnr->Render(flags);
 
   glPushAttrib(GL_CURRENT_BIT | GL_POINT_BIT | GL_ENABLE_BIT);
   glDisable(GL_LIGHTING);
   UChar_t col[4];
 
-  if(fSector->fTPCData != 0 && fSector->fPointSetOn) {
+  if(hasData && fSector->fPointSetOn) {
     glEnable(GL_BLEND);
     glEnable(GL_POINT_SMOOTH);
     glPointSize(fSector->fPointSize);
@@ -84,12 +92,12 @@ void TPCSector3DGL::DirectDraw(const TGLDrawFlags & flags) const
     const Reve::PointSetArray& psa = fSector->fPointSetArray;
     for(Int_t b=0; b<psa.GetNBins(); ++b) {
       Reve::PointSet* ps = psa.GetBin(b);
-      ColorFromIdx(ps->GetMarkerColor(), col);
-      glColor4ubv(col);
+      if(ps->Size() > 0) {
+	ColorFromIdx(ps->GetMarkerColor(), col);
+	glColor4ubv(col);
 
-      if(ps->GetN() > 0) {
 	glVertexPointer(3, GL_FLOAT, 0, ps->GetP());
-	glDrawArrays(GL_POINTS, 0, ps->GetN());
+	glDrawArrays(GL_POINTS, 0, ps->Size());
       }
     }
 
