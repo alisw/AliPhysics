@@ -94,21 +94,21 @@ class AliTRDdigitizer : public AliDigitizer {
   
   struct
   {
-    Float_t fLastVdrift;                                      //  the structures are valid for fLastVdrift (caching)
-    Float_t fDiffusionT;
-    Float_t fDiffusionL;
-    Float_t              fOmegaTau;                           //  Tangens of the Lorentz angle
-    Float_t              fLorentzFactor;                      //  Factor due to Lorentz force
-  } fDiffusionInfo;
+    Float_t fLastVdrift;                                      //! The structures are valid for fLastVdrift (caching)
+    Float_t fDiffusionT;                                      //! Transverse drift coefficient
+    Float_t fDiffusionL;                                      //! Longitudinal drift coefficient
+    Float_t              fOmegaTau;                           //! Tangens of the Lorentz angle
+    Float_t              fLorentzFactor;                      //! Factor due to Lorentz force
+  } fDiffusionInfo;                                           //! Do not write the structures
     
   struct 
   {
-    Float_t fLastVdrift;                                      //  the structures are valid for fLastVdrift (caching)
+    Float_t fLastVdrift;                                      //! The structures are valid for fLastVdrift (caching)
     Float_t             *fTimeStruct1;                        //! Time Structure of Drift Cells
     Float_t             *fTimeStruct2;                        //! Time Structure of Drift Cells
-    Float_t              fVDlo;                               //  Lower drift velocity, for interpolation
-    Float_t              fVDhi;                               //  Higher drift velocity, for interpolation
-  } fTimeStructInfo;
+    Float_t              fVDlo;                               //! Lower drift velocity, for interpolation
+    Float_t              fVDhi;                               //! Higher drift velocity, for interpolation
+  } fTimeStructInfo;                                          //! Do not write the structures
   
  private:
     
@@ -116,7 +116,7 @@ class AliTRDdigitizer : public AliDigitizer {
     
   virtual Bool_t       CheckDetector(Int_t plane, Int_t chamber, Int_t sector);
 
-  ClassDef(AliTRDdigitizer, 10)               //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,11)               //  Produces TRD-Digits
 
 };
 
