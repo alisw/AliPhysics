@@ -6,14 +6,15 @@
 /* $Id$ */
 
 #include "AliReconstructor.h"
+#include "AliTPCRecoParam.h"
 
 class AliTPCParam;
 
 
 class AliTPCReconstructor: public AliReconstructor {
 public:
-  AliTPCReconstructor(): AliReconstructor() {};
-  virtual ~AliTPCReconstructor() {};
+  AliTPCReconstructor();
+  virtual ~AliTPCReconstructor() {if (fgkRecoParam) delete fgkRecoParam;};
 
   virtual void         Reconstruct(AliRunLoader* runLoader) const;
   virtual void         Reconstruct(AliRunLoader* runLoader,
@@ -39,24 +40,20 @@ public:
     AliReconstructor::FillESD(runLoader,rawReader,esd);
   }
 
-  static void SetCtgRange(Double_t ctgRange = 1.05) {fgCtgRange = ctgRange;}
-  static Double_t GetCtgRange(){ return fgCtgRange;}
-
-  static void SetMaxSnpTracker(Double_t maxSnp) {fgMaxSnpTracker = maxSnp;}
-  static Double_t GetMaxSnpTracker(){ return fgMaxSnpTracker;}
-  static void SetMaxSnpTrack(Double_t maxSnp) {fgMaxSnpTrack = maxSnp;}
-  static Double_t GetMaxSnpTrack(){ return fgMaxSnpTrack;}
+  void SetRecoParam(AliTPCRecoParam * param){ fgkRecoParam = param;}
+  static const AliTPCRecoParam* GetRecoParam(){ return fgkRecoParam;}
+  //
+  static Double_t GetCtgRange()     { return fgkRecoParam->GetCtgRange();}
+  static Double_t GetMaxSnpTracker(){ return fgkRecoParam->GetMaxSnpTracker();}
+  static Double_t GetMaxSnpTrack()  { return fgkRecoParam->GetMaxSnpTrack();}
 
   static Int_t StreamLevel()               { return fgStreamLevel;}
   static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
 
 private:
   AliTPCParam*         GetTPCParam(AliRunLoader* runLoader) const;
-
-  static Double_t fgCtgRange; //! +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
-  static Double_t fgMaxSnpTracker;   // max sin of local angle  - for TPC tracker
-  static Double_t fgMaxSnpTrack;     // max sin of local angle  - for track 
-  static Int_t    fgStreamLevel;     // flag for streaming      - for TPC reconstruction
+  static AliTPCRecoParam *   fgkRecoParam; // reconstruction parameters
+  static Int_t               fgStreamLevel; // flag for streaming      - for TPC reconstruction
 
   ClassDef(AliTPCReconstructor, 0)   // class for the TPC reconstruction
 };

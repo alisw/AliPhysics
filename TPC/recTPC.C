@@ -6,15 +6,25 @@
 //
 //
 
-void recTPC(const char *filename="../dataroot/run385.001.root")
+void recTPC(const char *filename="data.root")
 {
-  AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
+  //
+  // Set path to calibration data
+  //
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetRun(0);
-
   man->SetSpecificStorage("TPC","local:///afs/cern.ch/user/m/mivanov/public/Calib");
-
+  //
+  // Set reconstruction parameters
+  //
+  AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
+  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLaserTestParam(kTRUE);
+  AliTPCReconstructor::SetRecoParam(tpcRecoParam);
+  AliTPCReconstructor::SetStreamLevel(1);
+  //
+  //
+  //
   AliReconstruction rec;  
   rec.SetSpecificStorage("TPC","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   rec.SetLoadAlignData("");
@@ -30,19 +40,30 @@ void recTPC(const char *filename="../dataroot/run385.001.root")
   rec.SetRunVertexFinder(kFALSE);
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
   AliTracker::SetFieldMap(field,1);
-  AliTPCReconstructor::SetCtgRange(100.);
-  AliTPCReconstructor::SetStreamLevel(1);
   rec.SetWriteAlignmentData(kTRUE);
   rec.Run();
 }
 
-void recTracking(const char *filename="../run439.001.root", Int_t nevents=1)
+void recTracking(const char *filename="data.root", Int_t nevents=1)
 {
+  //
+  // Set path to calibration data
+  //
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetRun(0);
-
   man->SetSpecificStorage("TPC","local:///afs/cern.ch/user/m/mivanov/public/Calib");
+  //
+  // Set reconstruction parameters
+  //
+  AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
+  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLaserTestParam(kTRUE);
+  AliTPCReconstructor::SetRecoParam(tpcRecoParam);
+  AliTPCReconstructor::SetStreamLevel(1);
+
+  //
+  //
+  //
   AliReconstruction rec;
   //rec.SetSpecificStorage("TPC","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   rec.SetLoadAlignData("");
@@ -58,8 +79,6 @@ void recTracking(const char *filename="../run439.001.root", Int_t nevents=1)
   rec.SetRunVertexFinder(kFALSE);
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
   AliTracker::SetFieldMap(field,1);
-  AliTPCReconstructor::SetCtgRange(100.);
-  AliTPCReconstructor::SetStreamLevel(1);
   rec.SetWriteAlignmentData(kTRUE);
   rec.Run(0,nevents);
 }

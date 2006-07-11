@@ -35,10 +35,22 @@
 
 ClassImp(AliTPCReconstructor)
 
-Double_t AliTPCReconstructor::fgCtgRange = 1.05;
-Double_t AliTPCReconstructor::fgMaxSnpTracker   = 0.95;   // max tangent in tracker - correspond to 3    
-Double_t AliTPCReconstructor::fgMaxSnpTrack     = 0.999;  // tangent    
-Int_t    AliTPCReconstructor::fgStreamLevel     = 0;      // stream (debug) level
+
+AliTPCRecoParam *    AliTPCReconstructor::fgkRecoParam =0;  // reconstruction parameters
+Int_t    AliTPCReconstructor::fgStreamLevel     = 0;        // stream (debug) level
+
+
+AliTPCReconstructor::AliTPCReconstructor(): AliReconstructor() {
+  //
+  // default constructor
+  //
+  if (!fgkRecoParam) {
+    AliError("The Reconstruction parameters nonitialized - Used default one");
+    fgkRecoParam = AliTPCRecoParam::GetHighFluxParam();
+  }
+}
+
+
 //_____________________________________________________________________________
 void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
@@ -103,8 +115,8 @@ void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
   AliTPCclustererMI clusterer(param);
 
   TString option = GetOption();
-  if (option.Contains("PedestalSubtraction"))
-    clusterer.SetPedSubtraction(kTRUE);
+  //  if (option.Contains("PedestalSubtraction"))
+  //  clusterer.SetPedSubtraction(kTRUE);
   if (option.Contains("OldRCUFormat"))
     clusterer.SetOldRCUFormat(kTRUE);
  

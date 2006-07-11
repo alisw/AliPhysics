@@ -19,6 +19,7 @@
 
 class TFile;
 class AliTPCParam;
+class AliTPCRecoParam;
 class AliTPCclusterMI;
 class AliTPCClustersRow;
 class AliRawReader;
@@ -28,12 +29,10 @@ class TTreeSRedirector;
 
 class AliTPCclustererMI : public TObject{
 public:
-  AliTPCclustererMI(const AliTPCParam* par);
+  AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam = 0);
   virtual ~AliTPCclustererMI();
   virtual void Digits2Clusters();
   virtual void Digits2Clusters(AliRawReader* rawReader);
-  virtual void SetPedSubtraction(Bool_t pedestalSub = kFALSE)
-    { fPedSubtraction = pedestalSub; };
   virtual void SetOldRCUFormat(Bool_t rcuFormat = kFALSE)
     { fIsOldRCUFormat = rcuFormat; };
   virtual void SetInput(TTree * tree);  // set input tree with digits    
@@ -80,7 +79,7 @@ private:
   Int_t fNcluster;             // number of clusters - for given row
   TObjArray * fAmplitudeHisto;          //! array of histograms of amplitudes
   TTreeSRedirector *fDebugStreamer;     //!debug streamer
-
+  const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
   ClassDef(AliTPCclustererMI,1)  // Time Projection Chamber digits
 };
 

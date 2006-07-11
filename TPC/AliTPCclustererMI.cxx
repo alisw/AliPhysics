@@ -36,6 +36,7 @@
 #include "AliDigits.h"
 #include "AliSimDigits.h"
 #include "AliTPCParam.h"
+#include "AliTPCRecoParam.h"
 #include "AliRawReader.h"
 #include "AliTPCRawStream.h"
 #include "AliRunLoader.h"
@@ -53,13 +54,19 @@ ClassImp(AliTPCclustererMI)
 
 
 
-AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par)
+  AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam)
 {
-  fPedSubtraction = kFALSE;
   fIsOldRCUFormat = kFALSE;
   fInput =0;
   fOutput=0;
   fParam = par;
+  if (recoParam) {
+    fRecoParam = recoParam;
+  }else{
+    //set default parameters if not specified
+    fRecoParam = AliTPCReconstructor::GetRecoParam();
+    if (!fRecoParam)  fRecoParam = AliTPCRecoParam::GetLowFluxParam();
+  }
   fDebugStreamer = new TTreeSRedirector("TPCsignal.root");
   fAmplitudeHisto = 0;
 }
@@ -209,8 +216,10 @@ AliTPCclusterMI &c)
   
   //
   if ( ( (ry<0.6) || (rz<0.6) ) && fLoop==2) return;
-  if ( (ry <1.2) && (rz<1.2) ) {
-    //if cluster looks like expected 
+  if ( (ry <1.2) && (rz<1.2) || (!fRecoParam->GetDoUnfold())) {
+    //
+    //if cluster looks like expected or Unfolding not switched on
+    //standard COG is used
     //+1.2 deviation from expected sigma accepted
     //    c.fMax = FitMax(vmatrix,meani,meanj,TMath::Sqrt(sigmay2),TMath::Sqrt(sigmaz2));
 
@@ -638,7 +647,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       if (input.GetSector() != fSector)
 	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
 
-      if (input.GetTime() < 40) continue;
+      if (input.GetTime() < AliTPCReconstructor::GetRecoParam()->GetFirstBin()) continue;
+      if (input.GetTime() > AliTPCReconstructor::GetRecoParam()->GetLastBin()) continue;
       
       Int_t iRow = input.GetRow();
       if (iRow < 0 || iRow >= nRows)
@@ -671,7 +681,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 		      " (Max.index=%d)",fSector,iRow,iPad,iTimeBin,maxBin));
 
       Float_t signal = input.GetSignal();
-      if (!fPedSubtraction && signal <= zeroSup) continue;
+      //      if (!fPedSubtraction && signal <= zeroSup) continue;
+      if (!fRecoParam->GetCalcPedestal() && signal <= zeroSup) continue;
 
       Float_t gain = gainROC->GetValue(iRow,input.GetPad());
       allBins[iRow][iPad*fMaxTime+iTimeBin] = signal/gain;
@@ -679,7 +690,8 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     } // End of the loop over altro data
 
     // Now loop over rows and perform pedestal subtraction
-    if (fPedSubtraction) {
+    //    if (fPedSubtraction) {
+    if (fRecoParam->GetCalcPedestal()) {
       for (Int_t iRow = 0; iRow < nRows; iRow++) {
 	Int_t maxPad;
 	if (fSector < kNIS)
@@ -777,7 +789,7 @@ void AliTPCclustererMI::FindClusters()
   //first loop - for "gold cluster" 
   fLoop=1;
   Float_t *b=&fBins[-1]+2*fMaxTime;
-  Int_t crtime = Int_t((fParam->GetZLength()-AliTPCReconstructor::GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);
+  Int_t crtime = Int_t((fParam->GetZLength()-fRecoParam->GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);
 
   for (Int_t i=2*fMaxTime; i<fMaxBin-2*fMaxTime; i++) {
     b++;
@@ -821,8 +833,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   // id[1] - row
   // id[2] - pad  
   Int_t offset =100;
-  Float_t kMin =50;
-  Float_t kMaxNoise = 3;
+  Float_t kMin =fRecoParam->GetDumpAmplitudeMin();   // minimal signal to be dumped
   Double_t median = TMath::Median(nchannels-offset, &(signal[offset]));
   if (AliLog::GetDebugLevel("","AliTPCclustererMI")==0) return median;
   //
@@ -842,11 +853,9 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     }    
   }
   
-  Double_t mean06=0,mean07=0, mean08=0, mean09=0;
-  Double_t rms06=0, rms07=0,  rms08, rms09=0; 
+  Double_t mean06=0, mean09=0;
+  Double_t rms06=0, rms09=0; 
   AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean06, rms06, int(0.6*(nchannels-offset)));
-  AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean07, rms07, int(0.7*(nchannels-offset)));
-  AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean08, rms08, int(0.8*(nchannels-offset)));
   AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean09, rms09, int(0.9*(nchannels-offset)));
   
   //
@@ -870,7 +879,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
       sprintf(hname,"Amp_%d_%d_%d",uid[0],uid[1],uid[2]);
       TFile * backup = gFile;
       fDebugStreamer->GetFile()->cd();
-      histo = new TH1F(hname, hname, 100, 1,100);
+      histo = new TH1F(hname, hname, 100, 5,100);
       //histo->SetDirectory(0);     // histogram not connected to directory -(File)
       sectorArray->AddAt(histo, position);
       if (backup) backup->cd();
@@ -898,10 +907,6 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	"RMS="<<rms<<      
 	"Mean06="<<mean06<<
 	"RMS06="<<rms06<<
-	"Mean07="<<mean07<<
-	"RMS07="<<rms07<<
-	"Mean08="<<mean08<<
-	"RMS08="<<rms08<<
 	"Mean09="<<mean09<<
 	"RMS09="<<rms09<<
 	"\n";
@@ -919,10 +924,6 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	"RMS="<<rms<<      
 	"Mean06="<<mean06<<
 	"RMS06="<<rms06<<
-	"Mean07="<<mean07<<
-	"RMS07="<<rms07<<
-	"Mean08="<<mean08<<
-	"RMS08="<<rms08<<
 	"Mean09="<<mean09<<
 	"RMS09="<<rms09<<
 	"\n";
@@ -941,16 +942,12 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     "RMS="<<rms<<      
     "Mean06="<<mean06<<
     "RMS06="<<rms06<<
-    "Mean07="<<mean07<<
-    "RMS07="<<rms07<<
-    "Mean08="<<mean08<<
-    "RMS08="<<rms08<<
     "Mean09="<<mean09<<
     "RMS09="<<rms09<<
     "\n";
   delete [] dsignal;
   delete [] dtime;
-  if (rms06>kMaxNoise) return 1024+median; // sign noisy channel in debug mode
+  if (rms06>fRecoParam->GetMaxNoise()) return 1024+median; // sign noisy channel in debug mode
   return median;
 }
 
