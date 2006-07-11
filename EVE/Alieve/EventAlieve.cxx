@@ -95,13 +95,11 @@ void Event::Open()
       TString alice_path = fPath + "/";
       fRunLoader->SetDirName(alice_path);
     }
-    if(fRunLoader->LoadgAlice() != 0) {
+    if(fRunLoader->LoadgAlice() != 0)
       throw(eH + "failed loading gAlice.");
-    }
 
-    if(fRunLoader->GetEvent(fEventId) != 0) {
+    if(fRunLoader->GetEvent(fEventId) != 0)
       throw(eH + "failed getting required event.");
-    }
   }
 
   if(fgUseESDTree) {
@@ -141,8 +139,51 @@ void Event::Open()
     }
   }
 
-  SetName(Form("Event%d", fEventId));
+  SetName(Form("Event %d", fEventId));
   SetTitle(fPath);
+}
+
+void Event::GotoEvent(Int_t event)
+{
+  static const Exc_t eH("Event::GotoEvent ");
+
+  if(fgUseRunLoader && fRunLoader == 0)
+    throw(eH + "RunLoader not initialized.");
+
+  if(fgUseESDTree && fESDTree == 0)
+    throw(eH + "ESDTree not initialized.");
+
+  Int_t maxEvent = 0;
+  if(fgUseRunLoader)
+    maxEvent = fRunLoader->GetNumberOfEvents() - 1;
+  else if(fgUseESDTree)
+    maxEvent = fESDTree->GetEntries() - 1;
+
+  if(event < 0 || event > maxEvent)
+    throw(eH + Form("event %d not present, available range [%d, %d].",
+		    event, 0, maxEvent));
+
+  DestroyElements();
+  fEventId = event;
+  SetName(Form("Event %d", fEventId));
+  UpdateItems();
+
+  if(fgUseRunLoader) {
+    if(fRunLoader->GetEvent(fEventId) != 0)
+      throw(eH + "failed getting required event.");
+  }
+
+  if(fgUseESDTree) {
+    if(fESDTree->GetEntry(fEventId) <= 0)
+      throw(eH + "failed getting required event from ESD.");
+
+    if(fESDfriendTree != 0) {
+      if(fESDfriendTree->GetEntry(fEventId) <= 0)
+	throw(eH + "failed getting required event from ESDfriend.");
+
+      fESD->SetESDfriend(fESDfriend);
+    }
+  }
 }
 
 void Event::Close()

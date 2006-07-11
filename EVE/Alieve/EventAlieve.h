@@ -42,6 +42,9 @@ public:
   Event(TString path, Int_t ev=0);
 
   void Open();
+  void GotoEvent(Int_t event);
+  void NextEvent() { GotoEvent(fEventId + 1); }
+  void PrevEvent() { GotoEvent(fEventId - 1); }
   void Close();
 
   Int_t         GetEventId()   const { return fEventId; }
