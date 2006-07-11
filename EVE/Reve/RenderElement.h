@@ -160,6 +160,8 @@ public:
   virtual void RemoveElementLocal(RenderElement* el);
   virtual void RemoveElements();
 
+  virtual void DestroyElements();
+
   virtual Int_t ExpandIntoListTree(TGListTree* ltree, TGListTreeItem* parent);
   virtual Int_t DestroyListSubTree(TGListTree* ltree, TGListTreeItem* parent);
 

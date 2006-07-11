@@ -198,7 +198,6 @@ void RenderElement::UpdateItems()
 
 void RenderElement::SpawnEditor()
 {
-  // Here spawn a sub-class of TGedFrame with special UpdateMethod.
   gReve->EditRenderElement(this);
 }
 
@@ -330,6 +329,24 @@ void RenderElementListBase::RemoveElements()
     (*i)->RemoveParent(this);
   }
   fChildren.clear();
+}
+
+/**************************************************************************/
+
+void RenderElementListBase::DestroyElements()
+{
+  static const Exc_t eH("RenderElementListBase::DestroyElements ");
+
+  while( ! fChildren.empty()) {
+    RenderElement* c = fChildren.front();
+    try {
+      c->Destroy();
+    }
+    catch(Exc_t exc) {
+      Warning(eH.Data(), Form("element destruction failed: '%s'.", exc.Data()));
+      RemoveElement(c);
+    }
+  }
 }
 
 /**************************************************************************/
