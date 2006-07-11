@@ -20,7 +20,21 @@ RMacro::RMacro() : TMacro() {}
 
 RMacro::RMacro(const RMacro& m) : TMacro(m) {}
 
-RMacro::RMacro(const char* name, const char* /*title*/) : TMacro(name, "") {}
+RMacro::RMacro(const char* name) :
+  TMacro()
+{
+  if (!name) return;
+
+  fTitle = name;
+
+  char *dot   = (char*)strrchr(name, '.');
+  char *slash = (char*)strrchr(name, '/');
+  if (dot) *dot = 0;
+  if (slash) fName = slash + 1;
+  else       fName = name;
+
+  ReadFile(fTitle);
+}
 
 /**************************************************************************/
 

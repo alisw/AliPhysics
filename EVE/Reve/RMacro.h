@@ -16,7 +16,7 @@ protected:
 public:
   RMacro();
   RMacro(const RMacro&);
-  RMacro(const char* name, const char* title="");
+  RMacro(const char* name);
   virtual ~RMacro() {}
 
   virtual void Exec(const char* params = "0");
