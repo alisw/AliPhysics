@@ -301,7 +301,7 @@ void AliReconstruction::InitCDBStorage()
       man->SetSpecificStorage(detName.Data(),obj->GetTitle());
     }
   }
-  
+  man->Print();
 }
 
 //_____________________________________________________________________________

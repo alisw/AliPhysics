@@ -281,7 +281,7 @@ void AliSimulation::InitCDBStorage()
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     man->SetSpecificStorage(obj->GetName(),obj->GetTitle());
   }
-  
+  man->Print();
 }
 
 //_____________________________________________________________________________
