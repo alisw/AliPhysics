@@ -480,14 +480,13 @@ void AliFRAMEv2::CreateGeometry()
   Float_t rout1  = 410.564;
   Float_t rout2  = 415.2;
   TString module[18];
-// Position of Holes for PHOS (P) and RICH (R) starting at 6h
-//                 P  P  P  -  -  R  R  R  -  -  -  -  -  -  -  -  P  P
-//  Int_t mod[18] = {0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
   
   for (i = 0; i < 18; i++) {
       // Create volume i 
       char name[16];
-      sprintf(name, "BSEGMO%d", i);
+      Int_t mod = i + 13;
+      if (mod > 17) mod -= 18;
+      sprintf(name, "BSEGMO%d", mod);
       gMC->Gsvolu(name, "TRD1", kAir, ptrd1, 4);
       gGeoManager->GetVolume(name)->SetVisibility(kFALSE);
 
