@@ -19,7 +19,7 @@ class AliCDBMetaData;
 class AliTestShuttle : public AliShuttleInterface
 {
   public:
-    AliTestShuttle();
+    AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual ~AliTestShuttle();
 
     void AddInputFile(Int_t system, const char* detector, const char* id, const char* source, const char* fileName);
@@ -28,7 +28,7 @@ class AliTestShuttle : public AliShuttleInterface
     void Process();
 
     // AliShuttleInterface functions
-    virtual UInt_t Store(const char* detector, TObject* object, AliCDBMetaData* metaData);
+    virtual UInt_t Store(const char* detector, TObject* object, AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
     virtual const char* GetFile(Int_t system, const char* detector, const char* id, const char* source);
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
     virtual void Log(const char* detector, const char* message);
@@ -36,6 +36,10 @@ class AliTestShuttle : public AliShuttleInterface
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
 
   protected:
+    Int_t fRun;         // run that is simulated with the AliTestShuttle
+    UInt_t fStartTime;  // starttime that is simulated with the AliTestShuttle
+    UInt_t fEndTime;    // endtime that is simulated with the AliTestShuttle
+
     TMap* fInputFiles;   // files for GetFile, GetFileSources
     TObjArray* fPreprocessors; // list of preprocessors that are to be tested
     TMap* fDcsAliasMap; // DCS data for testing

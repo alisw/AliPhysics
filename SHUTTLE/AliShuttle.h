@@ -39,7 +39,7 @@ public:
 	UInt_t GetCurrentStartTime() const {return fCurrentStartTime;};
 	UInt_t GetCurrentEndTime() const {return fCurrentEndTime;};
 
-	virtual UInt_t Store(const char* detector, TObject* object, AliCDBMetaData* metaData);
+	virtual UInt_t Store(const char* detector, TObject* object, AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
 	virtual const char* GetFile(Int_t system, const char* detector,
 		const char* id, const char* source);
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);

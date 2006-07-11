@@ -33,7 +33,7 @@ class AliPreprocessor : public TNamed
     virtual UInt_t Process(TMap* dcsAliasMap) = 0;
 
   protected:
-    UInt_t Store(TObject* object, AliCDBMetaData* metaData);
+    UInt_t Store(TObject* object, AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id);
     void Log(const char* message);

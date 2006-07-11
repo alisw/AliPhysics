@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.2  2006/06/06 14:20:05  jgrosseo
+o) updated test preprocessor (alberto)
+o) added comments to example macro
+o) test shuttle implements new interface
+
 Revision 1.2  2006/03/07 07:52:34  hristov
 New version (B.Yordanov)
 
@@ -59,7 +64,10 @@ some docs added
 ClassImp(AliTestShuttle)
 
 //______________________________________________________________________________________________
-AliTestShuttle::AliTestShuttle() :
+AliTestShuttle::AliTestShuttle(Int_t run, UInt_t startTime, UInt_t endTime) :
+  fRun(run),
+  fStartTime(startTime),
+  fEndTime(endTime),
   fInputFiles(0),
   fPreprocessors(0),
   fDcsAliasMap(0)
@@ -86,7 +94,7 @@ AliTestShuttle::~AliTestShuttle()
 }
 
 //______________________________________________________________________________________________
-UInt_t AliTestShuttle::Store(const char* detector, TObject* object, AliCDBMetaData* metaData)
+UInt_t AliTestShuttle::Store(const char* detector, TObject* object, AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
 {
   // Stores the CDB object
   // This function should be called at the end of the preprocessor cycle
@@ -94,7 +102,18 @@ UInt_t AliTestShuttle::Store(const char* detector, TObject* object, AliCDBMetaDa
   // This implementation just stores it on the local disk, the full AliShuttle
   // puts it to the Grid FileCatalog
 
-  AliCDBId id(Form("%s/SHUTTLE/Data", detector), 0, 0);
+
+  Int_t startRun = fRun;
+  Int_t endRun = fRun;
+
+  if (validityStart > 0)
+    startRun -= validityStart;
+
+  // TODO put define for infinite
+  if (validityInfinite != kFALSE)
+    endRun = 999999999;
+
+  AliCDBId id(Form("%s/SHUTTLE/Data", detector), startRun, endRun);
 
   return AliCDBManager::Instance()->Put(object, id, metaData);
 }
@@ -208,7 +227,7 @@ void AliTestShuttle::Process()
     AliPreprocessor* preprocessor = dynamic_cast<AliPreprocessor*> (fPreprocessors->At(i));
     if (preprocessor)
     {
-      preprocessor->Initialize(0, 1, 0);
+      preprocessor->Initialize(fRun, fStartTime, fEndTime);
       preprocessor->Process(fDcsAliasMap);
     }
   }

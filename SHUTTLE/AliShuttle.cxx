@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2006/07/10 14:37:09  jgrosseo
+small fix + todo comment
+
 Revision 1.6  2006/07/10 13:01:41  jgrosseo
 enhanced storing of last sucessfully processed run (alberto)
 
@@ -153,14 +156,20 @@ void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor)
 
 //______________________________________________________________________________________________
 UInt_t AliShuttle::Store(const char* detector,
-		TObject* object, AliCDBMetaData* metaData)
+		TObject* object, AliCDBMetaData* metaData, Int_t /*validityStart*/, Bool_t /*validityInfinite*/)
 {
 	// store data into CDB
+  //
+  // validityStart is the start validity of the data, if not 0 GetCurrentRun() - validityStart is taken
+  // validityInfinite defines if the data is valid until new data arrives (e.g. for calibration runs)
+  //
 	// returns 0 if fail
 	// 	   1 if stored in main (Grid) storage
 	// 	   2 if stored in backup (Local) storage
 
+  // TODO implement use of two parameters
 
+  // TODO shouldn't the path be given by the preprocessor???
 	AliCDBId id(AliCDBPath(detector, "DCS", "Data"),
 		GetCurrentRun(), GetCurrentRun());
 

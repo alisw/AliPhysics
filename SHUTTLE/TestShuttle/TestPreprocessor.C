@@ -17,7 +17,8 @@ void TestPreprocessor()
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
 
   // create AliTestShuttle instance
-  AliTestShuttle* shuttle = new AliTestShuttle();
+  // The parameters are run, startTime, endTime
+  AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);
 
   // TODO(1)
   //

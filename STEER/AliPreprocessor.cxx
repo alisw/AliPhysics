@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/06/06 16:36:49  jgrosseo
+minor changes in AliShuttleInterface and AliPreprocessor
+
 Revision 1.1  2006/06/02 14:14:36  hristov
 Separate library for CDB (Jan)
 
@@ -104,14 +107,20 @@ void AliPreprocessor::Initialize(Int_t run, UInt_t startTime,	UInt_t endTime)
   fEndTime = endTime;
 }
 
-UInt_t AliPreprocessor::Store(TObject* object, AliCDBMetaData* metaData)
+UInt_t AliPreprocessor::Store(TObject* object, AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
 {
   // Stores the CDB object
   // This function should be called at the end of the preprocessor cycle
   //
+  // The parameters are
+  //   1) the object to be stored
+  //   2) the metaData to be associated with the object
+  //   3) the validity start run number w.r.t. the current run, if the data is valid only for this run leave the default 0
+  //   4) specifies if the calibration data is valid for infinity (this means until updated), typical for calibration runs, the default is kFALSE
+  //
   // The call is delegated to AliShuttleInterface
 
-  return fShuttle->Store(GetName(), object, metaData);
+  return fShuttle->Store(GetName(), object, metaData, validityStart, validityInfinite);
 }
 
 const char* AliPreprocessor::GetFile(Int_t system, const char* id, const char* source)
