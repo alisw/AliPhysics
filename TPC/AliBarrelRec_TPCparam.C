@@ -13,8 +13,8 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
   // A. Dainese - LNL
   //
 
-
-   /**** Initialization of the NewIO *******/
+   Int_t  collcode = 1; // pp collisions
+   Bool_t useMeanVtx = kTRUE;
 
    if (gAlice) {
       delete gAlice->GetRunLoader();
@@ -52,7 +52,6 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
 
    /**** The TPC corner ********************/
 
-   Int_t collcode = 1; // pp collisions
    AliTPCtrackerParam tpcTrackerPar(collcode,fieval);
    tpcTrackerPar.Init();
 
@@ -80,8 +79,24 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
    Int_t ITSclusters[6] = {1,1,1,1,1,1};
    itsTracker.SetLayersNotToSkip(ITSclusters);
 
-   /***** The TREE is born *****/
-   
+   // Primary vertex reconstruction in pp
+   AliESDVertex *initVertex = 0;
+   if(collcode==1 && useMeanVtx) {
+     // open the mean vertex
+     TFile *invtx = new TFile("AliESDVertexMean.root");
+     initVertex = (AliESDVertex*)invtx->Get("vtxmean");
+     invtx->Close();
+     delete invtx;
+   } else {
+     Double_t pos[3]={0.5,0.5,0.}; 
+     Double_t err[3]={3.,3.,5.};
+     initVertex = new AliESDVertex(pos,err);
+   }
+   AliVertexerTracks *vertexer = new AliVertexerTracks;
+   vertexer->SetVtxStart(initVertex);
+
+
+   /***** The TREE for ESD is born *****/
    TTree *esdTree=new TTree("esdTree","Tree with ESD objects");
    AliESD *event=0;
    esdTree->Branch("ESD","AliESD",&event);
@@ -91,13 +106,13 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
    cout<<" Number of events: "<<1+lastEvent-firstEvent<<endl;
    
    TFile *ppZ = TFile::Open("ITS.Vertex.root"); // z vertices from SPD
-   AliESDVertex *myvertex = new AliESDVertex();
+   AliESDVertex *vertexSPD = new AliESDVertex();
    Char_t zver[100];
    Double_t vtx[3];
    Double_t cvtx[6];
 
 
-   //<----------------------------------The Loop over events begins
+   //<---------------------------------- The Loop over events begins
    TStopwatch timer;
    Int_t trc;
    for(Int_t i=firstEvent; i<=lastEvent; i++) { 
@@ -109,16 +124,16 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
      event->SetMagneticField(gAlice->Field()->SolenoidField());
      rl->GetEvent(i);
 
-    //***** Primary vertex 
+     //***** Primary vertex from SPD from file 
      sprintf(zver,"Event%d/Vertex",i);
-     myvertex = (AliESDVertex*)ppZ->Get(zver);
-     if(!myvertex) {
+     vertexSPD = (AliESDVertex*)ppZ->Get(zver);
+     if(!vertexSPD) {
        esdTree->Fill(); delete event;
        continue;
      }      
-     event->SetVertex(myvertex);
-     myvertex->GetXYZ(vtx);
-     myvertex->GetCovMatrix(cvtx);
+     event->SetVertex(vertexSPD);
+     vertexSPD->GetXYZ(vtx);
+     vertexSPD->GetCovMatrix(cvtx);
 
      //***** TPC tracking
      if ( (trc=tpcTrackerPar.BuildTPCtracks(event)) ) {
@@ -143,6 +158,16 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
        continue;
      }
 
+     //***** Propagate kITSin tracks to local x = 0 (through beam pipe)
+     ToLocalX0(event);
+
+
+     //***** Vertex from ESD tracks
+     if(collcode==1) { // pp
+       AliESDVertex *vertexTrks = 
+	 (AliESDVertex*)vertexer->FindPrimaryVertex(event);
+       event->SetPrimaryVertex(vertexTrks); 
+     }
 
      esdTree->Fill();
      delete event;
@@ -150,15 +175,49 @@ void AliBarrelRec_TPCparam(Int_t firstEvent=0,Int_t lastEvent=0) {
    }//<-----------------------------------The Loop over events ends here
    timer.Stop(); timer.Print();
 
-   //        The AliESDs.root is born
+   // The AliESDs.root is born
    TFile *ef = TFile::Open("AliESDs.root","RECREATE"); 
    if (!ef || !ef->IsOpen()) {cerr<<"Can't open AliESDs.root !\n"; return;}
 
-   esdTree->Write(); //Write the TREE and close everything
+   //Write the TREE and close everything
+   esdTree->Write();
    delete esdTree;
    ef->Close();
 
+   delete vertexer;
+   delete initVertex;
    delete rl;
 
    return;
+}
+//--------------------------------------------------------------------------
+Int_t ToLocalX0(AliESD *esd) {
+
+  Int_t ntracks = esd->GetNumberOfTracks();
+  AliESDtrack *esdTrack = 0;
+
+  // loop on tracks
+  for(Int_t tr = 0; tr<ntracks; tr++) {
+    esdTrack = (AliESDtrack*)esd->GetTrack(tr);
+    // ask for kITSin
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) continue;
+    AliITStrackV2 *itsTrack = 0;
+    try {
+      itsTrack = new AliITStrackV2(*esdTrack);
+      esdTrack = 0;
+    }
+    catch (const Char_t *msg) {
+        Warning("FindPrimaryVertexForCurrentEvent",msg);
+        continue;
+    }
+    // propagate track to beam pipe (0.8 mm of Be) 
+    if(itsTrack->GetX()>3.) itsTrack->PropagateTo(3.,0.0023,65.19);
+    // propagate track to (0,0)
+    itsTrack->PropagateTo(0.,0.,0.);
+    itsTrack->UpdateESDtrack(AliESDtrack::kITSin);
+    esdTrack = new AliESDtrack(*(itsTrack->GetESDtrack()));
+    delete itsTrack;
+  } // end loop on tracks
+
+  return 0;
 }
