@@ -24,6 +24,9 @@ class AliCDBStorage: public TObject {
 public:
 	AliCDBStorage();
 
+	void SetURI(const TString& uri) {fURI = uri;}
+	const TString& GetURI() const {return fURI;}
+
 	void ReadSelectionFromFile(const char *fileName);
 	
 	void AddSelection(const AliCDBId& selection);
@@ -63,7 +66,7 @@ public:
 	TList* GetAll(const AliCDBPath& path, Int_t runNumber, 
 				Int_t version = -1, Int_t subVersion = -1);
 	TList* GetAll(const AliCDBPath& path, const AliCDBRunRange& runRange,
-				 Int_t version = -1, Int_t subVersion = -1); 
+				 Int_t version = -1, Int_t subVersion = -1);
 	
 	Bool_t Put(TObject* object, AliCDBId& id,  AliCDBMetaData* metaData);
 	Bool_t Put(AliCDBEntry* entry);
@@ -85,7 +88,8 @@ protected:
 
 private:
 
-	TList fSelections; // list of selection criteria
+	TList fSelections; 	// list of selection criteria
+	TString fURI;		//! storage URI;
 
 	ClassDef(AliCDBStorage, 0);
 };
