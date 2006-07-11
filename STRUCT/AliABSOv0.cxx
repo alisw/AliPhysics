@@ -125,7 +125,7 @@ void AliABSOv0::CreateGeometry()
     fMLayers[1][2] = fMLayers[0][1];      fZLayers[1][2] = fZLayers[0][1];
     fMLayers[1][3] = fMLayers[0][2];      fZLayers[1][3] = fZLayers[0][2];
     fMLayers[1][4] = fMLayers[0][3];      fZLayers[1][4] = fZLayers[0][3];
-    fMLayers[1][5] = kNiCuW+40;           fZLayers[1][5] = fZLayers[0][4];
+    fMLayers[1][5] = kNiCuW;              fZLayers[1][5] = fZLayers[0][4];
 //    
 
     Float_t dTube = 0.1;                     // tube thickness
@@ -348,7 +348,7 @@ void AliABSOv0::CreateGeometry()
   cpar[1] = cpar[3] + TMath::Tan(kAccMin) * (kDRear - epsi);
   cpar[2] = cpar[4] + TMath::Tan(kThetaR * repsi) * (kDRear - epsi);
 
-  gMC->Gsvolu("ARW0", "CONE", idtmed[fMLayers[1][4]+40], cpar, 5);
+  gMC->Gsvolu("ARW0", "CONE", idtmed[fMLayers[1][5]+40], cpar, 5);
   dz= - (kZRear - kZAbsStart) / 2. + cpar[0];
   gMC->Gspos("ARW0", 1, "AITR", 0., 0., dz, 0, "ONLY");
   //
@@ -360,7 +360,7 @@ void AliABSOv0::CreateGeometry()
   cpar[1] = cpar[3] + TMath::Tan(kAccMin) * 5.;
   cpar[2] = cpar[4] + TMath::Tan(kThetaR*repsi) * 5.;
 
-  gMC->Gsvolu("ARW1", "CONE", idtmed[fMLayers[1][4]+20], cpar, 5);
+  gMC->Gsvolu("ARW1", "CONE", idtmed[fMLayers[1][5]+20], cpar, 5);
   dz = - (kDRear-epsi) / 2. + cpar[0];
   gMC->Gspos("ARW1", 1, "ARW0", 0., 0., dz, 0, "ONLY");
   //
