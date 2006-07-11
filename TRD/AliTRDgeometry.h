@@ -74,8 +74,9 @@ class AliTRDgeometry : public AliGeometry {
   static  Float_t  RpadW()   { return fgkRpadW;   };
   static  Float_t  CpadW()   { return fgkCpadW;   };
 
-          void     SetSMstatus(Int_t sm, Char_t status)     { sm += 5; if (sm > 17) sm -= 18;
-                                                              fSMstatus[sm] = status; };
+  //void     SetSMstatus(Int_t sm, Char_t status)     { sm += 5; if (sm > 17) sm -= 18;
+  //                                                          fSMstatus[sm] = status; };
+          void     SetSMstatus(Int_t sm, Char_t status)     { fSMstatus[sm] = status; };
 
   virtual Bool_t   IsHole(Int_t /*iplan*/, Int_t /*icham*/, Int_t /*isect*/) const { return kFALSE; };
   static  Int_t    GetDetectorSec(Int_t p, Int_t c);
@@ -84,8 +85,9 @@ class AliTRDgeometry : public AliGeometry {
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d)  const;
 
-          Char_t   GetSMstatus(Int_t sm) const              { sm += 5; if (sm > 17) sm -= 18;
-                                                              return fSMstatus[sm];  };
+  //Char_t   GetSMstatus(Int_t sm) const              { sm += 5; if (sm > 17) sm -= 18;
+  //                                                          return fSMstatus[sm];  };
+          Char_t   GetSMstatus(Int_t sm) const              { return fSMstatus[sm];  };
           Float_t  GetChamberWidth(Int_t p) const           { return fCwidth[p];     };
           Float_t  GetChamberLength(Int_t p, Int_t c) const { return fClength[p][c]; }; 
 
