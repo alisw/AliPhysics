@@ -231,6 +231,7 @@ private:
    void Tracking(TObjArray * arr);
    TObjArray * Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t cuts[4], Float_t dy=-1, Int_t dsec=0);
    TObjArray * Tracking();
+   TObjArray * TrackingSpecial();
    void SumTracks(TObjArray *arr1,TObjArray *arr2) const;
    void PrepareForBackProlongation(TObjArray * arr, Float_t fac) const;
    void PrepareForProlongation(TObjArray * arr, Float_t fac) const;

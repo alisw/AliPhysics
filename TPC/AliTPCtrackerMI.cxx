@@ -30,6 +30,7 @@
 #include <TFile.h>
 #include <TObjArray.h>
 #include <TTree.h>
+#include "AliLog.h"
 
 #include "AliComplexCluster.h"
 #include "AliESD.h"
@@ -1442,7 +1443,16 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   y=t.GetY(); 
   Double_t z=t.GetZ();
   //
-  if (!IsActive(t.fRelativeSector,nr)) return 0;
+  if (!IsActive(t.fRelativeSector,nr)) {
+    t.fInDead = kTRUE;
+    t.SetClusterIndex2(nr,-1); 
+    return 0;
+  }
+  //AliInfo(Form("A - Sector%d phi %f - alpha %f", t.fRelativeSector,y/x, t.GetAlpha()));
+  Bool_t isActive  = IsActive(t.fRelativeSector,nr);
+  Bool_t isActive2 = (nr>=fInnerSec->GetNRows()) ? fOuterSec[t.fRelativeSector][nr-fInnerSec->GetNRows()].GetN()>0:fInnerSec[t.fRelativeSector][nr].GetN()>0;
+  
+  if (!isActive || !isActive2) return 0;
   const AliTPCRow &krow=GetRow(t.fRelativeSector,nr);
   if ( (t.GetSigmaY2()<0) || t.GetSigmaZ2()<0) return 0;
   Double_t  roady  =1.;
@@ -1674,7 +1684,12 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   }
   //
   if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()) return 0;
-  if (!IsActive(t.fRelativeSector,nr)) return 0;
+  if (!IsActive(t.fRelativeSector,nr)) {
+    t.fInDead = kTRUE;
+    t.SetClusterIndex2(nr,-1); 
+    return 0;
+  }
+  //AliInfo(Form("A - Sector%d phi %f - alpha %f", t.fRelativeSector,y/x, t.GetAlpha()));
   AliTPCRow &krow=GetRow(t.fRelativeSector,nr);
 
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.fDeadZone){
@@ -5444,7 +5459,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
   }
   //
   RemoveUsed2(fSeeds,0.85,0.85,0);
-  FindKinks(fSeeds,fEvent);
+  if (AliTPCReconstructor::GetRecoParam()->GetDoKinks()) FindKinks(fSeeds,fEvent);
   RemoveUsed2(fSeeds,0.5,0.4,20);
  //  //
 //   // refit short tracks
@@ -5642,6 +5657,7 @@ TObjArray * AliTPCtrackerMI::Tracking()
 {
   //
   //
+  if (AliTPCReconstructor::GetRecoParam()->GetSpecialSeeding()) return TrackingSpecial();
   TStopwatch timer;
   timer.Start();
   Int_t nup=fOuterSec->GetNRows()+fInnerSec->GetNRows();
@@ -5792,6 +5808,49 @@ TObjArray * AliTPCtrackerMI::Tracking()
 }
 
 
+TObjArray * AliTPCtrackerMI::TrackingSpecial()
+{
+  //
+  // seeding adjusted for laser and cosmic tests - short tracks with big inclination angle
+  // no primary vertex seeding tried
+  //
+  TStopwatch timer;
+  timer.Start();
+  Int_t nup=fOuterSec->GetNRows()+fInnerSec->GetNRows();
+
+  TObjArray * seeds = new TObjArray;
+  TObjArray * arr=0;
+  
+  Int_t   gap  = 15;
+  Float_t cuts[4];
+  Float_t fnumber  = 3.0;
+  Float_t fdensity = 3.0;
+  
+  // find secondaries
+  cuts[0] = AliTPCReconstructor::GetRecoParam()->GetMaxC();   // max curvature
+  cuts[1] = 3.5;    // max tan(phi) angle for seeding
+  cuts[2] = 3.;     // not used (cut on z primary vertex)     
+  cuts[3] = 3.5;    // max tan(theta) angle for seeding
+
+  for (Int_t delta = 0; nup-delta-gap-1>0; delta+=3){
+    //
+    arr = Tracking(4,nup-1-delta,nup-1-delta-gap,cuts,-1);
+    SumTracks(seeds,arr);   
+    SignClusters(seeds,fnumber,fdensity);   
+  } 
+ 
+  if (fDebug>0){
+    Info("Tracking()","\n\nSecondary seeding\t%d\n\n",seeds->GetEntriesFast());
+    timer.Print();
+    timer.Start();
+  }
+
+  return seeds;
+  //
+      
+}
+
+
 void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
 {
   //
@@ -5801,6 +5860,13 @@ void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed *pt=(AliTPCseed*)arr2->UncheckedAt(i);    
     if (pt){
+      //
+      // remove tracks with too big curvature
+      //
+      if (TMath::Abs(pt->GetC())>AliTPCReconstructor::GetRecoParam()->GetMaxC()){
+	delete arr2->RemoveAt(i);
+	continue;
+      }
        // REMOVE VERY SHORT  TRACKS
       if (pt->GetNumberOfClusters()<20){ 
 	delete arr2->RemoveAt(i);
