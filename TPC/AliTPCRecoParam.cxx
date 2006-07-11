@@ -40,6 +40,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fBDoUnfold(kTRUE),
   fDumpAmplitudeMin(100),
   fMaxNoise(3.),
+  fMaxC(0.3),
+  fBSpecialSeeding(kFALSE),
   fBKinkFinder(kTRUE)
 {
   //
@@ -91,6 +93,9 @@ AliTPCRecoParam *AliTPCRecoParam::GetLaserTestParam(Bool_t bPedestal){
   param->fBCalcPedestal = bPedestal;
   param->fBDoUnfold     = kFALSE;
   param->fBKinkFinder   = kFALSE;
+  param->fMaxSnpTracker = 0.98;
+  param->fMaxC          = 0.02;
+  param->fBSpecialSeeding = kTRUE;
   return param;
 }
 
@@ -104,6 +109,8 @@ AliTPCRecoParam *AliTPCRecoParam::GetCosmicTestParam(Bool_t bPedestal){
   param->fLastBin  = 1000;
   param->fBCalcPedestal = bPedestal;
   param->fBDoUnfold     = kFALSE;
+  param->fBSpecialSeeding = kTRUE;
+  param->fMaxC          = 0.07;
   param->fBKinkFinder   = kFALSE;
   return param;
 }

@@ -27,9 +27,11 @@ class AliTPCRecoParam : public TObject
   Bool_t   GetCalcPedestal() const { return fBCalcPedestal;}
   Bool_t   GetDoUnfold() const     { return fBDoUnfold;}
   Float_t  GetDumpAmplitudeMin() const  { return fDumpAmplitudeMin;}
-  Float_t  GetMaxNoise() const     { return fMaxNoise;}
+  Float_t  GetMaxNoise() const     { return fMaxNoise;}  
   //
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
+  Float_t  GetMaxC()    const      { return fMaxC;}
+  Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env. 
   static   AliTPCRecoParam *GetLaserTestParam(Bool_t bPedestal);  // special setting for laser 
@@ -50,6 +52,8 @@ class AliTPCRecoParam : public TObject
   Float_t  fMaxNoise;        // maximal noise sigma on pad to be used in cluster finder
   //
   //
+  Float_t  fMaxC;            // maximal curvature for tracking
+  Bool_t   fBSpecialSeeding; // special seeding with big inclination angles allowed (for Cosmic and laser)
   Bool_t   fBKinkFinder;     // do kink finder reconstruction
   ClassDef(AliTPCRecoParam, 1)
 };
