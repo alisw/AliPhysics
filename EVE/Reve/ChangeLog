@@ -1,5 +1,12 @@
 2006-07-11  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* RMacro.cxx:
+	* RMacro.h:
+	Bypass buggy TMacro ctor (caused problems on paths including '.',
+	like /afs/cern.ch/).
+
+2006-07-11  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* RenderElement.cxx:
 	* RenderElement.h:
 	Added method RenderElementListBase::DestroyElements().
