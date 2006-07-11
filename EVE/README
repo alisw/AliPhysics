@@ -28,7 +28,15 @@ Interactively:
    root[1] alieve_init("/somedir")
 
 3. Use GUI or CINT command-line to invoke further visualization macros.
-  
+
+4. To navigate the events use macros 'event_next.C' and 'event_prev.C'.
+   These are equivalent to the command-line invocations:
+   root[x] Alieve::gEvent->NextEvent()
+or
+   root[x] Alieve::gEvent->PrevEvent()
+The general form to go to event via its number is:
+   root[x] Alieve::gEvent->GotoEvent(<event-number>)
+
 See files in EVE/alice-macros/. For specific uses these should be
 edited to suit your needs.
 
