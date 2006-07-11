@@ -1,3 +1,12 @@
+2006-07-11  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* README:
+	Added description of event navigation.
+
+	* alice-macros/event_next.C:
+	* alice-macros/event_prev.C:
+	New files: macros to go to next/previous event in the run.
+
 2006-07-10  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/clusters_from_label.C:
