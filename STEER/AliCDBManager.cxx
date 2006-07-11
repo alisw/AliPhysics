@@ -181,7 +181,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 	TIter iter(&fFactories);
 
         AliCDBStorageFactory* factory;
-        
+
 	// loop on the list of registered factories
 	while ((factory = (AliCDBStorageFactory*) iter.Next())) {
 
@@ -194,6 +194,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 				fDefaultStorage=aStorage;
 				AliInfo(Form("Default storage set to: %s",(param->GetURI()).Data()));
 			}
+			aStorage->SetURI(param->GetURI());
 			return aStorage;
 		}
         }
@@ -207,7 +208,7 @@ TList* AliCDBManager::GetActiveStorages() {
 
 	TList* result = new TList();
 
-	TIter iter(fActiveStorages.GetTable());	
+	TIter iter(fActiveStorages.GetTable());
 	TPair* aPair;
 	while ((aPair = (TPair*) iter.Next())) {
 		result->Add(aPair->Value());
@@ -560,9 +561,47 @@ void AliCDBManager::CacheEntry(const char* path, AliCDBEntry* entry)
 }
 
 //_____________________________________________________________________________
+void AliCDBManager::Print(Option_t* /*option*/) const
+{
+// Print list of active storages and their URIs
+	AliInfo(Form("Run number: %d\n",fRun));
+
+	TString output;
+	output = "Cache is ";
+	if(!fCache) output += "NOT ";
+	output += "ACTIVE\n";
+	AliInfo(output.Data());
+
+	if(fDefaultStorage) {
+		AliInfo("*** Default Storage: ***");
+		output = Form("%s\n",fDefaultStorage->GetURI().Data());
+		AliInfo(output.Data());
+	}
+	if(fSpecificStorages.GetEntries()>0) {
+		AliInfo("*** Specific Storages: ***");
+		TIter iter(fSpecificStorages.GetTable());
+		TPair *aPair;
+		while((aPair = (TPair*) iter.Next())){
+			output = Form("Key: %s - Storage: %s",
+				((TObjString*) aPair->Key())->GetName(),
+				((AliCDBParam*) aPair->Value())->GetURI().Data());
+			AliInfo(output.Data());
+		}
+		printf("\n");
+	}
+	if(fDrainStorage) {
+		AliInfo("*** Drain Storage: ***");
+		output = Form("%s\n",fDrainStorage->GetURI().Data());
+		AliInfo(output.Data());
+	}
+	AliInfo(Form("Total number of active storages: %d",fActiveStorages.GetEntries()));
+
+}
+
+//_____________________________________________________________________________
 void AliCDBManager::SetRun(Long64_t run)
 {
-// Sets current run number.  
+// Sets current run number.
 // When the run number changes the caching is cleared.
   
 	if (fRun == run)
@@ -595,7 +634,7 @@ void AliCDBManager::DestroyActiveStorage(AliCDBStorage* /*storage*/) {
 // destroys active storage
 
 /*
-	TIter iter(fActiveStorages.GetTable());	
+	TIter iter(fActiveStorages.GetTable());
 	TPair* aPair;
 	while ((aPair = (TPair*) iter.Next())) {
 		if(storage == (AliCDBStorage*) aPair->Value())

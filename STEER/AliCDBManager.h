@@ -86,7 +86,9 @@ class AliCDBManager: public TObject {
 
 	void DestroyActiveStorages();
 	void DestroyActiveStorage(AliCDBStorage* storage);
-	
+
+	void Print(Option_t* option="") const;
+
 	static void Destroy();
 	~AliCDBManager();
 
@@ -99,7 +101,7 @@ class AliCDBManager: public TObject {
 	
 	AliCDBStorage* GetActiveStorage(const AliCDBParam* param);
 	void PutActiveStorage(AliCDBParam* param, AliCDBStorage* storage);
-	
+
   	void ClearCache();
   	void CacheEntry(const char* path, AliCDBEntry* entry);
 	
@@ -170,8 +172,8 @@ protected:
 
 private:
 
-	TString fType; // CDB type
-	TString fURI;  // CDB URI
+	TString fType; //! CDB type
+	TString fURI;  //! CDB URI
 
 	ClassDef(AliCDBParam, 0);
 };
