@@ -43,12 +43,8 @@ AliZDCDigit::AliZDCDigit(Int_t *Sector, Int_t *ADCValue)
   // Constructor 
  
   Int_t i;
-  for(i=0; i<2; i++) {
-     fSector[i] = Sector[i];
-  }
-  for(i=0; i<2; i++) {
-    fADCValue[i] = ADCValue[i];  
-  }
+  for(i=0; i<2; i++) fSector[i] = Sector[i];
+  for(i=0; i<2; i++) fADCValue[i] = ADCValue[i];  
 }
 
 //____________________________________________________________________________

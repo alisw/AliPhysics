@@ -37,10 +37,11 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fRawReader(rawReader),
   fADCValue(-1)
 {
-// create an object to read ZDC raw digits
+  // Create an object to read ZDC raw digits
 
-  fSector[0] = 1;
+  fSector[0] = 0;
   fSector[1] = -1;
+  fADCModule = 0;
   fRawReader->Select("ZDC");
 }
 
@@ -49,8 +50,7 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   TObject(stream),
   fADCValue(-1)
 {
-// copy constructor
-
+  // Copy constructor
   Fatal("AliZDCRawStream", "copy constructor not implemented");
 }
 
@@ -58,8 +58,7 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
 AliZDCRawStream& AliZDCRawStream::operator = (const AliZDCRawStream& 
 					      /* stream */)
 {
-// assignment operator
-
+  // Assignment operator
   Fatal("operator =", "assignment operator not implemented");
   return *this;
 }
@@ -67,7 +66,7 @@ AliZDCRawStream& AliZDCRawStream::operator = (const AliZDCRawStream&
 //_____________________________________________________________________________
 AliZDCRawStream::~AliZDCRawStream()
 {
-// destructor
+// Destructor
 
 }
 
@@ -75,43 +74,64 @@ AliZDCRawStream::~AliZDCRawStream()
 //_____________________________________________________________________________
 Bool_t AliZDCRawStream::Next()
 {
-// read the next raw digit
-// returns kFALSE if there is no digit left
+  // Read the next raw digit
+  // Returns kFALSE if there is no digit left
 
-  if (!fRawReader->ReadNextInt((UInt_t&) fRawADC)) return kFALSE;
+  if(!fRawReader->ReadNextInt((UInt_t&) fRawADC)) return kFALSE;
   fIsADCDataWord = kFALSE;
   
   //ADC Header
-  if (fRawADC & 0x2000000) {
-    //printf("This is the ADC Header\n");
-    //printf("%d data words will follow \n",2*((fRawADC & 0x3f00) >> 8));
+  if(fRawADC & 0x2000000){
+      if(((fRawADC & 0x3f00) >> 8) == 24)      fADCModule=1; //fRawADC=2001800 -> 24 words -> 1st ADC module
+      else if(((fRawADC & 0x3f00) >> 8) == 20) fADCModule=2; //fRawADC=2001400 -> 20 words -> 2nd ADC module
+      //
+      //printf(" **** This is the ADC Header - %d data words will follow \n",((fRawADC & 0x3f00) >> 8));
+      //printf("  fRawADC = %x, fADCModule = %d\n",fRawADC, fADCModule);
+  }
+  else if((fRawADC & 0x4000000) || (fRawADC & 0x3000000)){
+    fSector[0] = 0;
+    //ADC EOB
+    /*if(fRawADC & 0x4000000){
+      printf(" **** This is the ADC End Of Block - event number %d\n",(fRawADC & 0xffffff));
+    }*/
   } 
-  //ADC EOB
-  else if (fRawADC & 0x4000000) {
-    //printf("This is the ADC End Of Block\n");
-    //printf("This was event number %d\n",(fRawADC & 0xffffff));
-  } 
-  else 
   //ADC Data Words
-  {
-    //printf("This is an ADC Data Word\n");
-    //printf("Channel %d range %d\n",(fRawADC & 0x1e0000) >> 17, (fRawADC & 0x10000) >> 16);
-    //if(fRawADC & 0x1000) printf("Data = overflow\n");
+  else{
+    //printf("This is an ADC Data Word -> channel %d range %d\n",(fRawADC & 0x1e0000) >> 17, (fRawADC & 0x10000) >> 16);
+    if(fRawADC & 0x1000) printf("Data overflow\n");
+    if(fRawADC & 0x2000) printf("Data underflow\n");
+    //
     fADCGain = (fRawADC & 0x10000) >> 16;
     fADCValue = (fRawADC & 0xfff);   
     fIsADCDataWord = kTRUE;
-
+    //
     Int_t vADCChannel = (fRawADC & 0x1e0000) >> 17;
-    if (vADCChannel >= 0 && vADCChannel <= 4) { 
-      fSector[0] = 1;
-      fSector[1] = vADCChannel;
-    } else if (vADCChannel >= 8 && vADCChannel <= 12) {
-      fSector[0] = 2;
-      fSector[1] = vADCChannel-8;
-    } else if (vADCChannel == 5 || vADCChannel == 13){
-      fSector[0] = 3;
-      fSector[1] = (vADCChannel-5)/8;
+    if(fADCModule==1){  //1st ADC module
+      if(vADCChannel >= 0 && vADCChannel <= 4){ 
+        fSector[0] = 1;
+        fSector[1] = vADCChannel;
+      } 
+      else if(vADCChannel >= 8 && vADCChannel <= 12){
+        fSector[0] = 2;
+        fSector[1] = vADCChannel-8;
+      } 
+      else if(vADCChannel == 5 || vADCChannel == 13){
+        fSector[0] = 3;
+        fSector[1] = (vADCChannel-5)/8;
+      }
     }
+    else if(fADCModule==2){  //2nd ADC module
+      if(vADCChannel >= 0 && vADCChannel <= 4){ 
+        fSector[0] = 4;
+        fSector[1] = vADCChannel;
+      } 
+      else if(vADCChannel >= 8 && vADCChannel <= 12){
+        fSector[0] = 5;
+        fSector[1] = vADCChannel-8;
+      } 
+    }
+    else printf("\t AliZDCRawStreamer -> ERROR! No valid ADC module!\n");
+    
   }
   return kTRUE;
 }

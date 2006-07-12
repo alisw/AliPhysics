@@ -60,7 +60,7 @@ AliZDCDigitizer::AliZDCDigitizer()
 AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   AliDigitizer(manager)
 {
-
+  fIsCalibration=0; //By default the simulation doesn't create calib. data
   // Get calibration data
   fCalibData = GetCalibData(); 
 
@@ -109,7 +109,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   // --- pm[4][...] = light in ZP left [C, Q1, Q2, Q3, Q4] ->NEW!
   
   for (Int_t iSector1=0; iSector1<5; iSector1++) 
-    for (Int_t iSector2=0; iSector2<5; iSector2++) {
+    for (Int_t iSector2=0; iSector2<5; iSector2++){
       pm[iSector1][iSector2] = 0;
     }
 
@@ -119,7 +119,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   Int_t specP = 0;
 
   // loop over input streams
-  for (Int_t iInput = 0; iInput<fManager->GetNinputs(); iInput++) {
+  for (Int_t iInput = 0; iInput<fManager->GetNinputs(); iInput++){
 
     // get run loader and ZDC loader
     AliRunLoader* runLoader = 
@@ -136,11 +136,11 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     treeS->SetBranchAddress("ZDC", &psdigit);
 
     // loop over sdigits
-    for (Int_t iSDigit=0; iSDigit<treeS->GetEntries(); iSDigit++) {
+    for (Int_t iSDigit=0; iSDigit<treeS->GetEntries(); iSDigit++){
       treeS->GetEntry(iSDigit);
       //
       if (!psdigit) continue;
-      if ((sdigit.GetSector(1) < 0) || (sdigit.GetSector(1) > 4)) {
+      if ((sdigit.GetSector(1) < 0) || (sdigit.GetSector(1) > 4)){
 	AliError(Form("\nsector[0] = %d, sector[1] = %d\n", 
                       sdigit.GetSector(0), sdigit.GetSector(1)));
 	continue;
@@ -150,7 +150,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
       /*printf("\n\t Detector %d, Tower %d -> pm[%d][%d] = %.0f \n",
       	  sdigit.GetSector(0), sdigit.GetSector(1),sdigit.GetSector(0)-1,
       	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]); // Chiara debugging!
-	  */
+      */
     }
 
     loader->UnloadSDigits();
@@ -203,18 +203,21 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   treeD->Branch("ZDC", "AliZDCDigit", &pdigit, kBufferSize);
 
   // Create digits
+  if(fIsCalibration!=0) printf("\t **** AliZDCDigitizer -> Creating calibration data (pedestals)\n");
   Int_t sector[2], sectorL[2];
   Int_t digi[2], digiL[2];
-  for (sector[0]=1; sector[0]<=3; sector[0]++)
-    for (sector[1]=0; sector[1]<5; sector[1]++)  {
-        if ((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
+  for(sector[0]=1; sector[0]<=3; sector[0]++){
+    for(sector[1]=0; sector[1]<5; sector[1]++){
+        if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
         for (Int_t res=0; res<2; res++){
-          digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res) 
+           digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res) 
 	            + Pedestal(sector[0], sector[1], res);
       	}
-	//printf("\t DIGIT added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
-	//      sector[0], sector[1], digi[0], digi[1]); // Chiara debugging!
-        new(pdigit) AliZDCDigit(sector, digi);
+	/*printf("\t DIGIT added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+	     sector[0], sector[1], digi[0], digi[1]); // Chiara debugging!
+        */
+	//
+	new(pdigit) AliZDCDigit(sector, digi);
         treeD->Fill();
 	//
 	// --- Adding digits for 2nd ZDC set (left side w.r.t. IP) ---
@@ -226,14 +229,17 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
              digiL[res] = Phe2ADCch(sectorL[0], sectorL[1], pm[sector[0]-1][sector[1]], res) 
 	            + Pedestal(sectorL[0], sectorL[1], res);
       	   }
-	   //printf("\t DIGIT added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
-	   //      sectorL[0], sectorL[1], digiL[0], digiL[1]); // Chiara debugging!
-	  new(pdigit) AliZDCDigit(sectorL, digiL);
+	   /*printf("\t DIGIT added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+	         sectorL[0], sectorL[1], digiL[0], digiL[1]); // Chiara debugging!
+	   */
+	   //
+	   new(pdigit) AliZDCDigit(sectorL, digiL);
+           treeD->Fill();
 	}
 	//
-        treeD->Fill();
+        //printf("\t AliZDCDigitizer -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
     }
-
+  }
   // write the output tree
   loader->WriteDigits("OVERWRITE");
   loader->UnloadDigits();
@@ -356,19 +362,29 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 {
   // Returns a pedestal for detector det, PM quad, channel with res.
   //
-  Float_t meanPed;
-  if(Det != 3) meanPed = fCalibData->GetMeanPed(10*(Det-1)+Quad+5*Res);
-  else         meanPed = fCalibData->GetMeanPed(10*(Det-1)+Quad+1*Res);
+  Float_t PedValue;
   
-  //printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
-  //	Det, Quad, Res,10*(Det-1)+Quad+5*Res,(Int_t) meanPed); // Chiara debugging!
+  // Normal run
+  if(fIsCalibration == 0){
+    Float_t meanPed, Pedwidth;
+    Int_t index=0;
+    if(Det==1|| Det==2)		index = 10*(Det-1)+Quad+5*Res;	 // ZN1, ZP1
+    else if(Det==3)		index = 10*(Det-1)+(Quad-1)+Res; // ZEM
+    else if(Det==4|| Det==5)	index = 10*(Det-2)+Quad+5*Res+4; // ZN2, ZP2
+    meanPed = fCalibData->GetMeanPed(index);
+    Pedwidth = fCalibData->GetMeanPedWidth(index);
+    PedValue = gRandom->Gaus(meanPed,Pedwidth);
+    //
+    /*printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
+  	Det, Quad, index,(Int_t) PedValue); // Chiara debugging!
+    */
+  }
   
   // To create calibration object
-  /*Float_t meanPed;
-  meanPed = gRandom->Gaus((40.+10.*gRandom->Rndm()),5.);
-  */
+  else PedValue = gRandom->Gaus((40.+10.*gRandom->Rndm()),5.);
+  
 
-  return (Int_t) meanPed;
+  return (Int_t) PedValue;
 }
 
 //_____________________________________________________________________________

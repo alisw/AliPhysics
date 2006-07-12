@@ -38,11 +38,11 @@ public:
     {return fPMGain[det][pmDet];}
   //  Conversion factor from charge to ADC channels
   //	      F = 1.6E-19 / Resolution [Coulomb/ch]
-  void    SetADCRes(Int_t *adcRes)
+  void    SetADCRes(Int_t *adcRes) {for (Int_t i=0;i<2;i++) fADCRes[i] = adcRes[i];}
   //  Two conversion factor are needed for ADC CAEN V965 
-    {for (Int_t i=0;i<2;i++) fADCRes[i] = adcRes[i];}
   Float_t GetADCRes(Int_t i) const {return fADCRes[i];}
   
+  void	  SetCalibrationOn() {fIsCalibration=1;}  
   AliCDBStorage   *SetStorage(const char* uri);
   AliZDCCalibData *GetCalibData() const; 
 
@@ -59,8 +59,9 @@ private:
   Float_t fPMGain[6][5];      	// PM gain
   Float_t fADCRes[2];	      	// ADC conversion factors
   
+  Int_t   fIsCalibration; 	// !=0 if simulation creates calibration data
   AliZDCCalibData *fCalibData; 	//! calibration data
        
-  ClassDef(AliZDCDigitizer, 3)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 5)     // digitizer for ZDC
 };    
 #endif

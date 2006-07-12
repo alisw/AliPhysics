@@ -24,6 +24,7 @@ class AliZDCRawStream: public TObject {
     virtual Bool_t   Next();
 
     Int_t            GetSector(Int_t i) const {return fSector[i];};
+    Int_t            GetADCModule() const {return fADCModule;};
     Int_t            GetADCValue() const {return fADCValue;};
     UInt_t           GetADCRaw() const {return fRawADC;};
     Int_t            GetADCGain() const {return fADCGain;};
@@ -37,11 +38,12 @@ class AliZDCRawStream: public TObject {
 
     UInt_t           fRawADC;       // raw ADC
     Int_t            fSector[2];    // index of current sector
+    Int_t            fADCModule;    // ADC module;
     Int_t            fADCValue;     // ADC value;
     Int_t            fADCGain;      // ADC gain (0=high range; 1=low range)
     Bool_t           fIsADCDataWord; //True when data word
 
-    ClassDef(AliZDCRawStream, 1)    // class for reading ZDC raw digits
+    ClassDef(AliZDCRawStream, 2)    // class for reading ZDC raw digits
 };
 
 #endif

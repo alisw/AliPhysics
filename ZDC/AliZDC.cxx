@@ -338,9 +338,10 @@ void AliZDC::Digits2Raw()
 {
   // Convert ZDC digits to raw data
 
-  // preliminary format: 12 interger values (ZNC, ZNQ1-4, ZPC, ZPQ1-4, ZEM1,2)
+  // Format: 22 interger values -> ZN1 (C+Q1-4), ZP1 (C+Q1-4), ZEM1, 2, ZN (C+Q1-4), ZP2 (C+Q1-4))
   // For the CAEN module V965 we have an header, the Data Words and an End Of Block
-  const int knADCData1=24, knADCData2=20;
+  // 24 channels read on 1st ADC module, 20 channels read on 2nd ADC module
+  const int knADCData1=24, knADCData2=20; 
   UInt_t lADCHeader1; 
   UInt_t lADCData1[knADCData1];
   //
@@ -356,6 +357,9 @@ void AliZDC::Digits2Raw()
   TTree* treeD = fLoader->TreeD();
   if (!treeD) return;
   treeD->SetBranchAddress("ZDC", &pdigit);
+  //printf("\t AliZDC::Digits2raw -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
+  //digit.Print(""); // Ch. debug
+
 
   // Fill data array
   // ADC header
@@ -366,11 +370,11 @@ void AliZDC::Digits2Raw()
     
   lADCHeader1 = lADCHeaderGEO << 27 | 0x1 << 25 | lADCHeaderCRATE << 16 |
                lADCHeaderCNT1 << 8 ;
-//	       
+  //	       
   lADCHeader2 = lADCHeaderGEO << 27 | 0x1 << 25 | lADCHeaderCRATE << 16 |
                lADCHeaderCNT2 << 8 ;
 
-  //printf("lADCHeader = %d\n",lADCHeader);
+  //printf("\t lADCHeader1 = %x, lADCHeader2 = %x\n",lADCHeader1, lADCHeader2);
       
   // ADC data word
   UInt_t lADCDataGEO = lADCHeaderGEO;
@@ -389,35 +393,46 @@ void AliZDC::Digits2Raw()
   UInt_t lADCDataChannel = 0;
   
   // loop over digits
-  for (Int_t iDigit = 0; iDigit < treeD->GetEntries(); iDigit++) {
+  for (Int_t iDigit = 0; iDigit<treeD->GetEntries(); iDigit++) {
     treeD->GetEntry(iDigit);
     if (!pdigit) continue;
-
+    
     //ADC data
     Int_t index1 = 0, index2 = 0;
+    // ADC #1 (ZN1, ZP1, ZEM1,2)
     if(digit.GetSector(0)==1 || digit.GetSector(0)==2 || digit.GetSector(0)==3){
       if(digit.GetSector(0)==1 || digit.GetSector(0)==2){
-        index1 = (digit.GetSector(0)-1) + digit.GetSector(1)*4;
+        index1 = (digit.GetSector(0)-1) + digit.GetSector(1)*4; // ZN1 or ZP1
         lADCDataChannel = (digit.GetSector(0)-1)*8 + digit.GetSector(1);
       }
-      else if(digit.GetSector(0)==3){
-        index1 = 19 + digit.GetSector(1);
-        lADCDataChannel = 5 + digit.GetSector(1)*8;
+      else if(digit.GetSector(0)==3){ // ZEM 1,2
+        index1 = 20 + (digit.GetSector(1)-1);
+        lADCDataChannel = 5 + (digit.GetSector(1)-1)*8;
       }
-      lADCDataValue1[index1] = digit.GetADCValue(0);
-      if (lADCDataValue1[index1] > 2047) lADCDataOvFlw1[index1] = 1; 
-      lADCDataValue1[index1+2] = digit.GetADCValue(1);
-      if (lADCDataValue1[index1+2] > 2047) lADCDataOvFlw1[index1+2] = 1; 
+      //
+      /*printf("\t AliZDC::Digits2raw -> det %d, quad %d, index = %d, ADCch = %d\n",
+		digit.GetSector(0),digit.GetSector(1),index1,lADCDataChannel);// Ch. debug
+      */
+      //
+      lADCDataValue1[index1] = digit.GetADCValue(0); 	// High gain ADC ch.	
+      if(lADCDataValue1[index1] > 2047) lADCDataOvFlw1[index1] = 1; 
+      lADCDataValue1[index1+2] = digit.GetADCValue(1); // Low gain ADC ch.
+      if(lADCDataValue1[index1+2] > 2047) lADCDataOvFlw1[index1+2] = 1; 
     
-      lADCData1[index1] =   lADCDataGEO << 27 | lADCDataChannel << 17 | 
+      lADCData1[index1] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
                         lADCDataOvFlw1[index1] << 12 | (lADCDataValue1[index1] & 0xfff); 
       lADCData1[index1+2] = lADCDataGEO << 27 | lADCDataChannel << 17 | 0x1 << 16 |
                         lADCDataOvFlw1[index1+2] << 12 | (lADCDataValue1[index1+2] & 0xfff);                    
     }
+    // ADC #2 (ZN2, ZP2)
     else if(digit.GetSector(0)==4 || digit.GetSector(0)==5){
-      index2 = (digit.GetSector(0)-4) + digit.GetSector(1)*4;
+      index2 = (digit.GetSector(0)-4) + digit.GetSector(1)*4; // ZN2 or ZP2
       lADCDataChannel = (digit.GetSector(0)-4)*8 + digit.GetSector(1);
-
+      //
+      /*printf("\t AliZDC::Digits2raw -> det %d, quad %d, index = %d, ADCch = %d\n",
+		digit.GetSector(0),digit.GetSector(1),index1,lADCDataChannel); // Ch. debug
+      */
+      //
       lADCDataValue2[index2] = digit.GetADCValue(0);
       if (lADCDataValue2[index2] > 2047) lADCDataOvFlw2[index2] = 1; 
       lADCDataValue2[index2+2] = digit.GetADCValue(1);
@@ -428,12 +443,12 @@ void AliZDC::Digits2Raw()
       lADCData2[index2+2] = lADCDataGEO << 27 | lADCDataChannel << 17 | 0x1 << 16 |
                         lADCDataOvFlw2[index2+2] << 12 | (lADCDataValue2[index2+2] & 0xfff);                    
     } 
-    if ((index1 < 0) || (index1 >= 22)) {
+    if((index1<0) || (index1>23)) {
       Error("Digits2Raw", "sector[0] = %d, sector[1] = %d", 
 	    digit.GetSector(0), digit.GetSector(1));
       continue;
     }
-    if ((index2 < 0) || (index2 >= 18)) {
+    if((index2<0) || (index2>19)) {
       Error("Digits2Raw", "sector[0] = %d, sector[1] = %d", 
 	    digit.GetSector(0), digit.GetSector(1));
       continue;
@@ -441,8 +456,8 @@ void AliZDC::Digits2Raw()
     
     
   }
-  //for (Int_t i=0;i<24;i++)printf("ADCData1[%d] = %d\n",i,lADCData1[i]);
-  //for (Int_t i=0;i<20;i++)printf("ADCData2[%d] = %d\n",i,lADCData2[i]);
+  //for(Int_t i=0;i<24;i++) printf("\t ADCData1[%d] = %x\n",i,lADCData1[i]);
+  //for(Int_t i=0;i<20;i++) printf("\t ADCData2[%d] = %x\n",i,lADCData2[i]);
  
   // End of Block
   UInt_t lADCEndBlockGEO = lADCHeaderGEO;
@@ -450,7 +465,7 @@ void AliZDC::Digits2Raw()
   
   lADCEndBlock = lADCEndBlockGEO << 27 | 0x1 << 26 | lADCEndBlockEvCount;
   
-  //printf("ADCEndBlock = %d\n",lADCEndBlock);
+  //printf("\t ADCEndBlock = %d\n",lADCEndBlock);
 
 
   // open the output file
@@ -466,8 +481,10 @@ void AliZDC::Digits2Raw()
   AliRawDataHeader header;
   header.fSize = sizeof(header) + sizeof(lADCHeader1) + sizeof(lADCData1) + 
   		sizeof(lADCEndBlock)+ sizeof(lADCHeader2) + sizeof(lADCData2) + sizeof(lADCEndBlock);
-  //printf("sizeof header = %d, ADCHeader = %d, ADCData = %d, ADCEndBlock = %d\n",
-  //        sizeof(header),sizeof(lADCHeader),sizeof(lADCData),sizeof(lADCEndBlock));
+  /*printf("sizeof header = %d, ADCHeader1 = %d, ADCData1 = %d, ADCEndBlock = %d\n",
+          sizeof(header),sizeof(lADCHeader1),sizeof(lADCData1),sizeof(lADCEndBlock));
+  printf("sizeof header = %d, ADCHeader2 = %d, ADCData2 = %d, ADCEndBlock = %d\n",
+          sizeof(header),sizeof(lADCHeader2),sizeof(lADCData2),sizeof(lADCEndBlock));*/
   header.SetAttribute(0);  // valid data
   file.write((char*)(&header), sizeof(header));
 

@@ -24,7 +24,7 @@ class AliZDCDigit : public TObject {
 
   // Getters 
   Int_t   GetSector(Int_t i)	  {return fSector[i];}
-  Int_t   GetADCValue(Int_t i)      {return fADCValue[i];}
+  Int_t   GetADCValue(Int_t i)    {return fADCValue[i];}
 
   // Operators
   // Two digits are equal if they refers to the detector
@@ -39,18 +39,18 @@ class AliZDCDigit : public TObject {
     for(Int_t i = 0; i < 2; i++) fADCValue[i] += digit.fADCValue[i];
     return *this ;
   }
+
+  // Print method
+  virtual void Print(Option_t *) const {
+     printf("\t AliZDCDigit -> Detector %d Quadrant %d: ADC HighGain=  %d ADC LowGain=  %d\n ",
+     fSector[0], fSector[1], fADCValue[0], fADCValue[1]);
+  }
   
  protected:
 
   //Data members
   Int_t  fSector[2];         // Detector and tower in which light is produced
   Int_t  fADCValue[2];       // ADC channel value (0 = high gain, 1 = low gain)
-
-  // Print method
-  virtual void Print(Option_t *) const {
-     printf(" -> DIGIT: Detector =  %d Quadrant =  %d ADCCh high gain=  %d ADCCh low gain=  %d\n ",
-     fSector[0], fSector[1], fADCValue[0], fADCValue[1]);
-  }
     
   ClassDef(AliZDCDigit,4)   // Digits in ZDC 
 
