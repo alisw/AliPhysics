@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2006/05/10 18:40:17  hristov
+Larger strings for the names
+
 Revision 1.9  2006/05/04 19:41:42  hristov
 Possibility for partial TOF geometry (S.Arcelli)
 
@@ -310,7 +313,8 @@ void AliTOFv5T0::TOFpc(Float_t xtof,  Float_t ytof, Float_t zlenA,
     if(fTOFSectors[isec]==-1)continue;
     char name[16];
     sprintf(name, "BTOF%d",isec);
-    if (fTOFHoles && (isec==16||isec==17)) {
+    if (fTOFHoles && (isec==11||isec==12)) {
+    //    if (fTOFHoles && (isec==16||isec==17)) { \\Old 6h convention
       xcoor = 0.;
       ycoor = (zlenA*0.5 + kInterCentrModBorder1)*0.5;
       zcoor = 0.;
@@ -1466,13 +1470,15 @@ void AliTOFv5T0::StepManager()
     volpath=gMC->CurrentVolOffName(7);
     index=atoi(&volpath[4]);
     sector=-1;
-  
-    if(index<5){
-      sector=index+13;
-	}
-    else{
-      sector=index-5;
-    } 
+    sector=index;
+
+    //Old 6h convention
+    // if(index<5){
+    //   sector=index+13;
+    //	}
+    // else{
+    //   sector=index-5;
+    // } 
  
     for(i=0;i<3;++i) {
       hits[i]   = pos[i];

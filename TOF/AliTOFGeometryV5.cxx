@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/05/04 19:41:42  hristov
+Possibility for partial TOF geometry (S.Arcelli)
+
 Revision 1.5  2006/04/20 22:30:50  hristov
 Coding conventions (Annalisa)
 
@@ -1566,10 +1569,11 @@ void AliTOFGeometryV5::GetVolumePath(Int_t *ind, Char_t *path ) {
   Char_t  string3[100];
   
   Int_t icopy=-1;
-
-  if(sector<13){
-    icopy=sector+5;}  
-  else{ icopy=sector-13;}
+  icopy=sector;
+  // Old 6h convention
+  // if(sector<13){
+  //    icopy=sector+5;}  
+  // else{ icopy=sector-13;}
   sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0/FLTA_0",icopy,icopy);
   
   Int_t iplate=ind[1];
