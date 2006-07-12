@@ -6,11 +6,13 @@
 //
 //
 
-void recTPC(const char *filename="data.root")
+void recTPC(const char *filename="data.root", Int_t type=0)
 {
   //
   // Set path to calibration data
   //
+  // type variable = 0 - cosmic test
+  //               = 1 - laser test   
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetRun(0);
@@ -19,7 +21,8 @@ void recTPC(const char *filename="data.root")
   // Set reconstruction parameters
   //
   AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
-  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLaserTestParam(kTRUE);
+  AliTPCRecoParam * tpcRecoParam = (type==0)? AliTPCRecoParam::GetCosmicTestParam(kTRUE):
+    AliTPCRecoParam::GetLaserTestParam(kTRUE);
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   AliTPCReconstructor::SetStreamLevel(1);
   //
@@ -44,7 +47,7 @@ void recTPC(const char *filename="data.root")
   rec.Run();
 }
 
-void recTracking(const char *filename="data.root", Int_t nevents=1)
+void recTracking(const char *filename="data.root", Int_t type=0, Int_t nevents=1)
 {
   //
   // Set path to calibration data
@@ -57,7 +60,9 @@ void recTracking(const char *filename="data.root", Int_t nevents=1)
   // Set reconstruction parameters
   //
   AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
-  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetLaserTestParam(kTRUE);
+  AliTPCRecoParam * tpcRecoParam = (type==0)? AliTPCRecoParam::GetCosmicTestParam(kTRUE):
+    AliTPCRecoParam::GetLaserTestParam(kTRUE);
+
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   AliTPCReconstructor::SetStreamLevel(1);
 
