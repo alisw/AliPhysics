@@ -117,7 +117,7 @@ Bool_t AliZDCRawStream::Next()
       } 
       else if(vADCChannel == 5 || vADCChannel == 13){
         fSector[0] = 3;
-        fSector[1] = (vADCChannel-5)/8;
+        fSector[1] = ((vADCChannel-5)/8)+1;
       }
     }
     else if(fADCModule==2){  //2nd ADC module
