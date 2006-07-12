@@ -6,7 +6,7 @@
 //
 //
 
-void recTPC(const char *filename="data.root", Int_t type=0)
+void recTPC(Int_t type, const char *filename="data.root")
 {
   //
   // Set path to calibration data
@@ -47,7 +47,7 @@ void recTPC(const char *filename="data.root", Int_t type=0)
   rec.Run();
 }
 
-void recTracking(const char *filename="data.root", Int_t type=0, Int_t nevents=1)
+void recTracking(Int_t type, const char *filename="data.root", Int_t nevents=1)
 {
   //
   // Set path to calibration data
