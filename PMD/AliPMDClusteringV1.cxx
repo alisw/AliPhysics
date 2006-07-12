@@ -15,7 +15,7 @@
 
 //-----------------------------------------------------//
 //                                                     //
-//  Source File : PMDClustering.cxx, Version 00        //
+//  Source File : PMDClusteringV1.cxx, Version 00      //
 //                                                     //
 //  Date   : September 26 2002                         //
 //                                                     //
@@ -82,6 +82,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96
     It is assumed that for data we have 0 <= id <= 48
     and 0 <= jd <=96
   */
+
   int i, i1, i2, j, nmx1, incr, id, jd;
   Int_t   celldataX[15], celldataY[15];
   Float_t clusdata[7];
@@ -90,13 +91,49 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96
 
   const float ktwobysqrt3 = 1.1547; // 2./sqrt(3.)
 
-  for (id = 0; id < kNDIMXr; id++)
+  // ndimXr and ndimYr are different because of different module size
+
+  Int_t ndimXr =0;
+  Int_t ndimYr =0;
+
+  if (ismn < 12)
     {
-      for (jd = 0; jd < kNDIMYr; jd++)
+      ndimXr = 96;
+      ndimYr = 48;
+    }
+  else if (ismn >= 12 && ismn <= 23)
+    {
+      ndimXr = 48;
+      ndimYr = 96;
+    }
+
+  for (Int_t i =0; i < kNDIMX; i++)
+    {
+      for (Int_t j =0; j < kNDIMY; j++)
+	{
+	  fEdepCell[i][j] = 0;
+	  fCellTrNo[i][j] = -1;
+	}
+    }
+
+  for (id = 0; id < ndimXr; id++)
+    {
+      for (jd = 0; jd < ndimYr; jd++)
 	{
 	  j=jd;
-	  i=id+(kNDIMYr/2-1)-(jd/2);
-	  fEdepCell[i][j] = celladc[id][jd];
+	  i=id+(ndimYr/2-1)-(jd/2);
+
+	  if (ismn < 12)
+	    {
+	      fEdepCell[i][j] = celladc[jd][id];
+	      fCellTrNo[i][j] = jd*10000+id; /* for association */
+	    }
+	  else if (ismn >= 12 && ismn <= 23)
+	    {
+	      fEdepCell[i][j] = celladc[id][jd];
+	      fCellTrNo[i][j] = id*10000+jd; /* for association */
+	    }
+
 	}
     }
   Order(); // order the data
@@ -111,11 +148,8 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96
       if (fEdepCell[i1][i2] > 0.) {ave = ave + fEdepCell[i1][i2];}
       if (fEdepCell[i1][i2] > cutoff ) nmx1 = nmx1 + 1;
     }
-  // nmx1 --- number of cells having ener dep >= cutoff
 
   AliDebug(1,Form("Number of cells having energy >= %f are %d",cutoff,nmx1));
-
-  //  if (nmx1 == 0 | nmx1 == -1) return;
 
   if (nmx1 == 0) nmx1 = 1;
   ave=ave/nmx1;
@@ -127,6 +161,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96
   RefClust(incr);
 
   AliDebug(1,Form("Detector Plane = %d  Serial Module No = %d Number of clusters = %d",idet, ismn, fClno));
+
   
   for(i1=0; i1<=fClno; i1++)
     {
@@ -137,23 +172,42 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96
       Float_t cluRAD   = (Float_t) fClusters[4][i1];
       Float_t cluY0    = ktwobysqrt3*cluYC;
       Float_t cluX0    = cluXC - cluY0/2.;
+
+
       // 
       // Cluster X centroid is back transformed
       //
-      clusdata[0]      = cluX0 - (48-1) + cluY0/2.;
-      clusdata[1]      = cluY0;
-      clusdata[2]      = cluADC;
-      clusdata[3]      = cluCELLS;
-      clusdata[4]      = cluRAD;
-      clusdata[5]      = 0.;
+      if (ismn < 12)
+	{
+	  clusdata[0] = cluX0 - (24-1) + cluY0/2.;
+	}
+      else if (ismn >= 12 && ismn <= 23)
+	{
+	  clusdata[0] = cluX0 - (48-1) + cluY0/2.;
+	}	  
+
+      clusdata[1]     = cluY0;
+      clusdata[2]     = cluADC;
+      clusdata[3]     = cluCELLS;
+      clusdata[4]     = cluRAD;
+      clusdata[5]     = 0.;
 
       //
       // Cells associated with a cluster
       //
       for (Int_t ihit = 0; ihit < 15; ihit++)
 	{
-	  celldataX[ihit] = 2;
-	  celldataY[ihit] = 5;
+
+	  if (ismn < 12)
+	    {
+	      celldataX[ihit] = fClTr[ihit][i1]%10000;
+	      celldataY[ihit] = fClTr[ihit][i1]/10000;
+	    }
+	  else if (ismn >= 12 && ismn <= 23)
+	    {
+	      celldataX[ihit] = fClTr[ihit][i1]/10000;
+	      celldataY[ihit] = fClTr[ihit][i1]%10000;
+	    }
 	}
 
       pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY);
@@ -319,6 +373,17 @@ void AliPMDClusteringV1::RefClust(int incr)
   int ig, nsupcl, lev1[20], lev2[20];
   double x[4500], y[4500], z[4500], x1, y1, z1, x2, y2, z2, dist;
   double xc[4500], yc[4500], zc[4500], cells[4500], sum, rc[4500], rr;
+
+
+  //asso
+  Int_t t[4500],cellCount[4500];
+  for(i=0; i<4500; i++)
+    {
+      t[i]=-1;
+      cellCount[i]=0;
+    }
+
+
   // fClno counts the final clusters
   // nsupcl =  # of superclusters; ncl[i]= # of cells in supercluster i
   // x, y and z store (x,y) coordinates of and energy deposited in a cell
@@ -365,7 +430,16 @@ void AliPMDClusteringV1::RefClust(int incr)
       fClusters[3][fClno] = 1.;
       fClusters[4][fClno] = 0.5;
 
-       //ofl1 << icl << " " << fCoord[0][i1][i2] << " " << fCoord[1][i1][i2] <<
+
+      //asso
+
+      fClTr[0][fClno]=fCellTrNo[i1][i2];
+      for(Int_t icltr=1;icltr<14;icltr++)
+	{
+	  fClTr[icltr][fClno]=-1;
+	}
+      
+      //ofl1 << icl << " " << fCoord[0][i1][i2] << " " << fCoord[1][i1][i2] <<
       //" " << fEdepCell[i1][i2] << " " << fClusters[3][fClno] <<endl;
     }else if(ncl[i] == 1){
       // two cell super-cluster --> single cluster
@@ -384,6 +458,9 @@ void AliPMDClusteringV1::RefClust(int incr)
       y1   = fCoord[1][i1][i2];
       z1   = fEdepCell[i1][i2];
 
+      //asso
+      fClTr[0][fClno]=fCellTrNo[i1][i2];
+      //
 
       id   = id+1;
       i1   = fInfcl[1][id];
@@ -391,6 +468,15 @@ void AliPMDClusteringV1::RefClust(int incr)
       x2   = fCoord[0][i1][i2];
       y2   = fCoord[1][i1][i2];
       z2   = fEdepCell[i1][i2];
+
+      //asso
+
+      fClTr[1][fClno]=fCellTrNo[i1][i2];
+      for(Int_t icltr=2;icltr<14;icltr++)
+	{
+	  fClTr[icltr][fClno] = -1;
+	}
+      //
 
       fClusters[0][fClno] = (x1*z1+x2*z2)/(z1+z2);
       fClusters[1][fClno] = (y1*z1+y2*z2)/(z1+z2);
@@ -403,6 +489,14 @@ void AliPMDClusteringV1::RefClust(int incr)
       //   << " " << fClusters[2][fClno] << " " <<fClusters[3][fClno] <<endl;
     }
     else{
+      
+      //asso
+      for(Int_t icg=0;icg<4500;icg++)
+	{
+	  cellCount[icg]=0;
+	}
+      //
+
       id      = id + 1;
       iord[0] = 0;
       // super-cluster of more than two cells - broken up into smaller
@@ -414,6 +508,11 @@ void AliPMDClusteringV1::RefClust(int incr)
       x[0]    = fCoord[0][i1][i2];
       y[0]    = fCoord[1][i1][i2];
       z[0]    = fEdepCell[i1][i2];
+      
+      //asso
+      t[0]=fCellTrNo[i1][i2];
+      //
+
       iord[0] = 0;
       for(j=1;j<=ncl[i];j++){
 
@@ -424,6 +523,12 @@ void AliPMDClusteringV1::RefClust(int incr)
 	x[j]    = fCoord[0][i1][i2];
 	y[j]    = fCoord[1][i1][i2];
 	z[j]    = fEdepCell[i1][i2];
+
+	//asso
+	t[j]=fCellTrNo[i1][i2];
+	//
+
+
       }
       // arranging cells within supercluster in decreasing order
       for(j=1;j<=ncl[i];j++){
@@ -487,6 +592,12 @@ void AliPMDClusteringV1::RefClust(int incr)
 	  for(k=0; k<=ig; k++){
 	    dist=Distance(x[j], y[j], xc[k], yc[k]);
 	    if(dist < sqrt(3.) ){
+
+	      //asso
+	      fClTr[cellCount[k]][fClno+k+1]=t[j];
+	      cellCount[k]++;
+	      //
+
 	      lev1[0]++;
 	      i1=lev1[0];
 	      lev1[i1]=k;
@@ -523,6 +634,20 @@ void AliPMDClusteringV1::RefClust(int incr)
 	  }
 	}
       }
+
+      // zero rest of the cell array
+      //asso
+      for(k=0; k<=ig; k++)
+	{
+	  for(Int_t icltr=cellCount[k];icltr<14;icltr++)
+	    {
+	      fClTr[icltr][fClno]=-1;
+	    }
+	}
+      //
+
+
+
       for(j=0; j<=ig; j++){
 	if (fClno >= 5000) {
 	  AliWarning("RefClust: Too many clusters! more than 5000");

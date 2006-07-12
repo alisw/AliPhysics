@@ -58,8 +58,7 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
       branch1->SetAddress(&fRecpoints);
       /**********************************************************************
        *    det   : Detector, 0: PRE & 1:CPV                                *
-       *    smn   : Serial Module Number from which Super Module Number     *
-       *            and Unit Module Numbers are extracted                   *
+       *    smn   : Serial Module Number from 0 to 23 for both detector     *
        *    xpos  : x-position of the cluster                               *
        *    ypos  : y-position of the cluster                               *
        *            THESE xpos & ypos are not the true xpos and ypos        *
@@ -67,12 +66,10 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
        *    adc   : ADC contained in the cluster                            *
        *    ncell : Number of cells contained in the cluster                *
        *    rad   : radius of the cluster (1d fit)                          *
-       *    ism   : Supermodule number extracted from smn                   *
-       *    ium   : Unit module number extracted from smn                   *
        *    xpad  : TRUE x-position of the cluster                          *
        *    ypad  : TRUE y-position of the cluster                          *
        **********************************************************************/
-      Int_t   ism, ium;
+
       Int_t   det,smn;
       Float_t xpos,ypos, xpad, ypad;
       Float_t adc, ncell, sigx, sigy;
@@ -94,42 +91,22 @@ Int_t AliPMDRecpointRead(Int_t nevent = 1)
 	      ncell = pmdrecpoint->GetClusCells();
 	      sigx  = pmdrecpoint->GetClusSigmaX();
 	      sigy  = pmdrecpoint->GetClusSigmaY();
-	      //
-	      // Now change the xpos and ypos to its original values
-	      // for the unit modules which are earlier changed.
-	      // xpad and ypad are the real positions.
-	      //
-	      if(det == 0 || det == 1)
-		{
-		  if(smn < 12)
-		    {
-		      ism  = smn/6;
-		      ium  = smn - ism*6;
-		      xpad = ypos;
-		      ypad = xpos;
-		    }
-		  else if( smn >= 12 && smn < 24)
-		    {
-		      ism  = smn/6;
-		      ium  = smn - ism*6;
-		      xpad = xpos;
-		      ypad = ypos;
-		    }
-		}
+
 	      //
 	      // User has to plug in his analysis code here
 	      //
 
-	      fprintf(fpw,"%d %d %d %d %f %f %f %f %f %f\n",
-		      det,smn,ism,ium,xpad,ypad,adc,ncell,sigx,sigy);
+	      fprintf(fpw,"%d %d %d %d\n",
+		      det,smn,xpos,ypos);
 	      //
 	      // Plot the cluster centroid to see the PMD geometry
 	      // using the PMD Utility class
 	      //
-	      if (det == 1)
+	      if (det == 0)
 		{
 		  // Draw only for PRE plane
-		  cc->RectGeomCellPos(ism,ium,xpad,ypad,xx,yy);
+		  //cc->RectGeomCellPos(ism,xpad,ypad,xx,yy);
+		  cc->RectGeomCellPos(smn,xpos,ypos,xx,yy);
 		  h2->Fill(xx,yy);
 		}
 

@@ -57,30 +57,22 @@ AliPMDUtility::~AliPMDUtility()
   // Default destructor
 }
 
-void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Int_t xpad, Int_t ypad, Float_t &xpos, Float_t &ypos)
+void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad, Float_t &xpos, Float_t &ypos)
 {
   // This routine finds the cell eta,phi for the new PMD rectangular 
   // geometry in ALICE
   // Authors : Bedanga Mohanty and Dipak Mishra - 29.4.2003
-  // modified by B. K. Nnadi for change of coordinate sys
+  // modified by B. K. Nandi for change of coordinate sys
   //
   // SMA  ---> Supermodule Type A           ( SM - 0)
   // SMAR ---> Supermodule Type A ROTATED   ( SM - 1)
   // SMB  ---> Supermodule Type B           ( SM - 2)
   // SMBR ---> Supermodule Type B ROTATED   ( SM - 3)
   //
-  // ism   : number of supermodules in one plane = 4
-  // ium   : number of unitmodules  in one SM    = 6
-  // gbum  : (global) unit module numbering in a supermodule
-  //
+  // ism   : Serial module number from 0 to 23 for each plane
 
-  Int_t gbum = ism*6 + ium;
-  Int_t irow  = xpad;
-  Int_t icol  = ypad;
-
+ 
   // Corner positions (x,y) of the 24 unit moudles in ALICE PMD
-
-
 
   double xcorner[24] =
     {
@@ -121,7 +113,7 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Int_t xpad, Int_t ypad
   //
   Float_t cellRadius = 0.25;
   Float_t shift = 0.0;
-  if(irow%2 == 0)
+  if(xpad%2 == 0)
     {
       shift = -cellRadius/2.0;
     }
@@ -130,30 +122,31 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Int_t xpad, Int_t ypad
       shift = 0.0;
     }
 
-  if(ism == 0)
+
+  if(ism < 6)
     {
-      ypos = ycorner[gbum] - irow*kCellRadius*2.0 + shift;
-      xpos = xcorner[gbum] - icol*kSqroot3*kCellRadius;
+      ypos = ycorner[ism] - (Float_t) xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] - (Float_t) ypad*kSqroot3*kCellRadius;
     }
-  else if(ism == 1)
+  else if(ism >=6 && ism < 12)
     {
-      ypos = ycorner[gbum] + irow*kCellRadius*2.0 + shift;
-      xpos = xcorner[gbum] + icol*kSqroot3*kCellRadius;
+      ypos = ycorner[ism] + (Float_t) xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] + (Float_t) ypad*kSqroot3*kCellRadius;
     }
-  else if(ism == 2)
+  else if(ism >= 12 && ism < 18)
     {
-      ypos = ycorner[gbum] - irow*kCellRadius*2.0 + shift;
-      xpos = xcorner[gbum] - icol*kSqroot3*kCellRadius;
+      ypos = ycorner[ism] - (Float_t) xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] - (Float_t) ypad*kSqroot3*kCellRadius;
     }
-  else if(ism == 3)
+  else if(ism >= 18 && ism < 24)
     {
-      ypos = ycorner[gbum] + irow*kCellRadius*2.0 + shift;
-      xpos = xcorner[gbum] + icol*kSqroot3*kCellRadius;
+      ypos = ycorner[ism] + (Float_t) xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] + (Float_t) ypad*kSqroot3*kCellRadius;
     }
 
 }
 
-void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t ypad, Float_t &xpos, Float_t &ypos)
+void AliPMDUtility::RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad, Float_t &xpos, Float_t &ypos)
 {
   // If the xpad and ypad inputs are float, then 0.5 is added to it
   // to find the layer which is shifted.
@@ -167,17 +160,9 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t 
   // SMB  ---> Supermodule Type B           ( SM - 2)
   // SMBR ---> Supermodule Type B ROTATED   ( SM - 3)
   //
-  // ism   : number of supermodules in one plane = 4
-  // ium   : number of unitmodules  in one SM    = 6
-  // gbum  : (global) unit module numbering in a supermodule
-  //
-
-  Int_t gbum    = ism*6 + ium;
-  Float_t irow  = xpad;
-  Float_t icol  = ypad;
+  // ism   : Serial Module number from 0 to 23 for each plane
 
   // Corner positions (x,y) of the 24 unit moudles in ALICE PMD
-
 
   double xcorner[24] =
     {
@@ -219,7 +204,7 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t 
   //
   Float_t cellRadius = 0.25;
   Float_t shift = 0.0;
-  Int_t iirow = (Int_t) (irow+0.5);
+  Int_t iirow = (Int_t) (xpad+0.5);
   if(iirow%2 == 0)
     {
       shift = -cellRadius/2.0;
@@ -229,29 +214,26 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Int_t ium, Float_t xpad, Float_t 
       shift = 0.0;
     }
 
-
-  if(ism == 0)
+  if(ism < 6)
     {
-      ypos = ycorner[gbum] - irow*kCellRadius*2.0 + shift;
-      xpos = xcorner[gbum] - icol*kSqroot3*kCellRadius;
+      ypos = ycorner[ism] - xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] - ypad*kSqroot3*kCellRadius;
     }
-  else if(ism == 1)
+  else if(ism >=6 && ism < 12)
     {
-      ypos = ycorner[gbum] + irow*kCellRadius*2.0 + shift;
-      xpos = xcorner[gbum] + icol*kSqroot3*kCellRadius;
+      ypos = ycorner[ism] + xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] + ypad*kSqroot3*kCellRadius;
     }
-  else if(ism == 2)
+  else if(ism >= 12 && ism < 18)
     {
-      ypos = ycorner[gbum] - irow*kCellRadius*2.0 + shift;
-      xpos = xcorner[gbum] - icol*kSqroot3*kCellRadius;
+      ypos = ycorner[ism] - xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] - ypad*kSqroot3*kCellRadius;
     }
-  else if(ism == 3)
+  else if(ism >= 18 && ism < 24)
     {
-      ypos = ycorner[gbum] + irow*kCellRadius*2.0 + shift;
-      xpos = xcorner[gbum] + icol*kSqroot3*kCellRadius;
+      ypos = ycorner[ism] + xpad*kCellRadius*2.0 + shift;
+      xpos = xcorner[ism] + ypad*kSqroot3*kCellRadius;
     }
-
-
 
 }
 

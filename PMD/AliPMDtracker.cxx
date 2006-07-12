@@ -147,12 +147,11 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
   pmddiscriminator->Discrimination(fPMDcontin,fPMDcontout);
 
   const Float_t kzpos = 361.5;    // middle of the PMD
-  Int_t   ism =0, ium=0;
+
   Int_t   det,smn;
   Float_t xpos,ypos;
-  Float_t xpad = 0, ypad = 0;
   Float_t adc, ncell, rad;
-  Float_t xglobal, yglobal, zglobal = 0;
+  Float_t xglobal = 0., yglobal = 0., zglobal = 0;
   Float_t pid;
 
 
@@ -173,14 +172,9 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
       pid   = fPMDclout->GetClusPID();
       
       //
-      // Now change the xpos and ypos to its original values
-      // for the unit modules which are earlier changed.
-      // xpad and ypad are the real positions.
-      //
       /**********************************************************************
        *    det   : Detector, 0: PRE & 1:CPV                                *
-       *    smn   : Serial Module Number from which Super Module Number     *
-       *            and Unit Module Numbers are extracted                   *
+       *    smn   : Serial Module Number 0 to 23 for each plane             *
        *    xpos  : x-position of the cluster                               *
        *    ypos  : y-position of the cluster                               *
        *            THESE xpos & ypos are not the true xpos and ypos        *
@@ -188,31 +182,10 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
        *    adc   : ADC contained in the cluster                            *
        *    ncell : Number of cells contained in the cluster                *
        *    rad   : radius of the cluster (1d fit)                          *
-       *    ism   : Supermodule number extracted from smn                   *
-       *    ium   : Unit module number extracted from smn                   *
-       *    xpad  : TRUE x-position of the cluster                          *
-       *    ypad  : TRUE y-position of the cluster                          *
        **********************************************************************/
       //
-      if(det == 0 || det == 1)
-	{
-	  if(smn < 12)
-	    {
-	      ism  = smn/6;
-	      ium  = smn - ism*6;
-	      xpad = ypos;
-	      ypad = xpos;
-	    }
-	  else if( smn >= 12 && smn < 24)
-	    {
-	      ism  = smn/6;
-	      ium  = smn - ism*6;
-	      xpad = xpos;
-	      ypad = ypos;
-	    }
-	}
-     
-      fPMDutil->RectGeomCellPos(ism,ium,xpad,ypad,xglobal,yglobal);
+
+      fPMDutil->RectGeomCellPos(smn,xpos,ypos,xglobal,yglobal);
 
       if (det == 0)
 	{
@@ -222,7 +195,6 @@ void AliPMDtracker::Clusters2Tracks(AliESD *event)
 	{
 	  zglobal = kzpos - 1.7; // CPV plane
 	}
-
 
       // Fill ESD
 

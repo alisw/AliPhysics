@@ -18,11 +18,9 @@ class AliPMDUtility
   AliPMDUtility(Float_t px, Float_t py, Float_t pz);
   virtual ~AliPMDUtility();
 
-  void RectGeomCellPos(Int_t ism, Int_t ium, 
-		       Int_t xpad, Int_t ypad,
+  void RectGeomCellPos(Int_t ism, Int_t xpad, Int_t ypad,
 		       Float_t & xpos, Float_t & ypos);
-  void RectGeomCellPos(Int_t ism, Int_t ium, 
-		       Float_t xpad, Float_t ypad,
+  void RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad,
 		       Float_t & xpos, Float_t & ypos);
   void SetPxPyPz(Float_t px, Float_t py, Float_t pz);
   void SetXYZ(Float_t xpos, Float_t ypos, Float_t zpos);
@@ -41,7 +39,7 @@ class AliPMDUtility
   Float_t fEta;    // Pseudo-rapidity
   Float_t fPhi;    // Azimuthal angle in radian
   
-  ClassDef(AliPMDUtility,2) // Utility class for the detector set:PMD
+  ClassDef(AliPMDUtility,3) // Utility class for the detector set:PMD
 };
 
 #endif
