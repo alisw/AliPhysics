@@ -243,6 +243,7 @@ void AliEMCAL::Digits2Raw()
 
   // get the digits
   loader->LoadDigits("EMCAL");
+  loader->GetEvent();
   TClonesArray* digits = loader->Digits() ;
 
   if (!digits) {
