@@ -22,9 +22,9 @@ void recTPC(Int_t type, const char *filename="data.root")
   //
   AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
   AliTPCRecoParam * tpcRecoParam = 0;
-  if (type=0) AliTPCRecoParam::GetCosmicTestParam(kTRUE);
-  if (type>0)  AliTPCRecoParam::GetLaserTestParam(kTRUE);
-
+  if (type==0)  tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kTRUE);
+  if (type>0)  tpcRecoParam = AliTPCRecoParam::GetLaserTestParam(kTRUE);
+  tpcRecoParam->Dump();
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   AliTPCReconstructor::SetStreamLevel(1);
   //
@@ -64,8 +64,8 @@ void recTracking(Int_t type, const char *filename="data.root", Int_t nevents=1)
   AliLog::SetClassDebugLevel("AliTPCclustererMI",2);
 
   AliTPCRecoParam * tpcRecoParam = 0;
-  if (type=0) AliTPCRecoParam::GetCosmicTestParam(kTRUE);
-  if (type>0)  AliTPCRecoParam::GetLaserTestParam(kTRUE);
+  if (type==0)  tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kTRUE);
+  if (type>0)  tpcRecoParam = AliTPCRecoParam::GetLaserTestParam(kTRUE);
 
   AliTPCReconstructor::SetRecoParam(tpcRecoParam);
   AliTPCReconstructor::SetStreamLevel(1);
