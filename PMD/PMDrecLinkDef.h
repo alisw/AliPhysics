@@ -15,6 +15,7 @@
 #pragma link C++ class  AliPMDcluster+;
 #pragma link C++ class  AliPMDClustering+;
 #pragma link C++ class  AliPMDClusteringV1+;
+#pragma link C++ class  AliPMDClusteringV2+;
 #pragma link C++ class  AliPMDclupid+;
 #pragma link C++ class  AliPMDDiscriminator+;
 #pragma link C++ class  AliPMDEmpDiscriminator+;
