@@ -49,11 +49,13 @@ class AliGenMUONlib :
 // J/Psi     
     static Double_t PtJpsi( Double_t *px, Double_t *dummy);
     static Double_t PtJpsiCDFscaled( Double_t *px, Double_t *dummy);
+    static Double_t PtJpsiCDFscaledPP( Double_t *px, Double_t *dummy);
     static Double_t YJpsi(Double_t *py, Double_t *dummy);
     static Double_t PtJpsiPbPb( Double_t *px, Double_t *dummy);
     static Double_t PtJpsiBPbPb( Double_t *px, Double_t *dummy);
     static Double_t YJpsiPbPb(Double_t *py, Double_t *dummy);
     static Double_t YJpsiCDFscaled(Double_t *py, Double_t *dummy);
+    static Double_t YJpsiCDFscaledPP( Double_t *px, Double_t *dummy);
     static Double_t PtJpsiPP( Double_t *px, Double_t *dummy);
     static Double_t YJpsiPP(Double_t *py, Double_t *dummy);
     static Double_t YJpsiBPbPb(Double_t *py, Double_t *dummy);
@@ -66,8 +68,10 @@ class AliGenMUONlib :
 // Upsilon    
     static Double_t PtUpsilon( Double_t *px, Double_t *dummy );
     static Double_t PtUpsilonCDFscaled( Double_t *px, Double_t *dummy );
+    static Double_t PtUpsilonCDFscaledPP( Double_t *px, Double_t *dummy );
     static Double_t YUpsilon(Double_t *py, Double_t *dummy);
     static Double_t YUpsilonCDFscaled(Double_t *py, Double_t *dummy);
+    static Double_t YUpsilonCDFscaledPP( Double_t *px, Double_t *dummy );
     static Double_t PtUpsilonPbPb( Double_t *px, Double_t *dummy );
     static Double_t YUpsilonPbPb(Double_t *py, Double_t *dummy);
     static Double_t PtUpsilonPP( Double_t *px, Double_t *dummy );

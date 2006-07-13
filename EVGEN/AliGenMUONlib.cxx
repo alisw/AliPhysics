@@ -173,6 +173,22 @@ Double_t AliGenMUONlib::PtJpsiCDFscaled( Double_t *px, Double_t */*dummy*/)
   return x/TMath::Power(pass1,kxn);
 }
 
+Double_t AliGenMUONlib::PtJpsiCDFscaledPP( Double_t *px, Double_t */*dummy*/)
+{
+// J/Psi pT
+//
+// pp 14 TeV
+//
+// scaled from CDF data at 2 TeV
+
+  const Double_t kpt0 = 5.355;
+  const Double_t kxn  = 3.821;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
 Double_t AliGenMUONlib::PtJpsiFlat( Double_t */*px*/, Double_t */*dummy*/ )
 {
   return 1.;
@@ -302,6 +318,11 @@ Double_t AliGenMUONlib::YJpsiCDFscaled( Double_t *px, Double_t* dummy)
     return AliGenMUONlib::YJpsiPbPb(px, dummy);
 }
 
+Double_t AliGenMUONlib::YJpsiCDFscaledPP( Double_t *px, Double_t* dummy)
+{
+    // J/Psi y 
+    return AliGenMUONlib::YJpsiPP(px, dummy);
+}
 
 Double_t AliGenMUONlib::YJpsiPP( Double_t *px, Double_t */*dummy*/)
 {
@@ -408,6 +429,22 @@ Double_t AliGenMUONlib::PtUpsilonCDFscaled( Double_t *px, Double_t */*dummy*/ )
 // Upsilon pT
   const Double_t kpt0 = 7.753;
   const Double_t kxn  = 3.042;
+  Double_t x=*px;
+  //
+  Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
+  return x/TMath::Power(pass1,kxn);
+}
+
+Double_t AliGenMUONlib::PtUpsilonCDFscaledPP( Double_t *px, Double_t */*dummy*/ )
+{
+// Upsilon pT
+//
+// pp 14 TeV
+//
+// scaled from CDF data at 2 TeV
+
+  const Double_t kpt0 = 8.610;
+  const Double_t kxn  = 3.051;
   Double_t x=*px;
   //
   Double_t pass1 = 1.+(x/kpt0)*(x/kpt0);
@@ -526,6 +563,14 @@ Double_t AliGenMUONlib::YUpsilonCDFscaled( Double_t *px, Double_t *dummy)
     return AliGenMUONlib::YUpsilonPbPb(px, dummy);
     
 }
+
+Double_t AliGenMUONlib::YUpsilonCDFscaledPP( Double_t *px, Double_t *dummy)
+{
+    // Upsilon y
+    return AliGenMUONlib::YUpsilonPP(px, dummy);
+    
+}
+
 Double_t AliGenMUONlib::YUpsilonFlat( Double_t */*px*/, Double_t */*dummy*/)
 {
     // Upsilon y
@@ -860,6 +905,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtJpsiPP;
 	} else if (sname == "CDF scaled") {
 	    func=PtJpsiCDFscaled;
+	} else if (sname == "CDF pp") {
+	    func=PtJpsiCDFscaledPP;
 	} else if (sname == "Flat") {
 	    func=PtJpsiFlat;
 	} else {
@@ -879,6 +926,8 @@ GenFunc AliGenMUONlib::GetPt(Int_t param,  const char* tname) const
 	    func=PtUpsilonPP;
 	} else if (sname == "CDF scaled") {
 	    func=PtUpsilonCDFscaled;
+	} else if (sname == "CDF pp") {
+	    func=PtUpsilonCDFscaledPP;
 	} else if (sname == "Flat") {
 	    func=PtUpsilonFlat;
 	} else {
@@ -939,6 +988,8 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func=YJpsiPP;
 	} else if (sname == "CDF scaled") {
 	    func=YJpsiCDFscaled;
+	} else if (sname == "CDF pp") {
+	    func=YJpsiCDFscaledPP;
 	} else if (sname == "Flat") {
 	    func=YJpsiFlat;
 	} else {
@@ -958,6 +1009,8 @@ GenFunc AliGenMUONlib::GetY(Int_t param, const char* tname) const
 	    func = YUpsilonPP;
 	} else if (sname == "CDF scaled") {
 	    func=YUpsilonCDFscaled;
+	} else if (sname == "CDF pp") {
+	    func=YUpsilonCDFscaledPP;
 	} else if (sname == "Flat") {
 	    func=YUpsilonFlat;
 	} else {
