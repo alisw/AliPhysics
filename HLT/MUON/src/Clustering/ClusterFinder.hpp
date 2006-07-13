@@ -21,6 +21,8 @@ class AliHLTMUONCoreClusterFinderCallback
 {
 public:
 
+	virtual ~AliHLTMUONCoreClusterFinderCallback() {};
+
 	/* Called when the cluster finder has found all clusters in the ADC stream.
 	   At this point the ADC stream is no longer is use by the cluster finder and
 	   the stream can be released.
@@ -45,6 +47,9 @@ public:
 	{
 		fCallback = NULL;
 	};
+
+	virtual ~AliHLTMUONCoreClusterFinder() {};
+
 
 	/* This is the starting point of the cluster finding algorithm.
 	   Deriving cluster finders should implement all processing in this method
