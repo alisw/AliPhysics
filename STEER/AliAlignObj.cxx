@@ -807,9 +807,12 @@ void AliAlignObj::InitVolPaths()
       Char_t  string1[100];
       Char_t  string2[100];
       Int_t icopy=-1;
-      if(sector<13){
-	icopy=sector+5;}  
-      else{ icopy=sector-13;}
+      icopy=sector; 
+
+      // Old 6h convention
+      // if(sector<13){
+      //	icopy=sector+5;}  
+      // else{ icopy=sector-13;}
 
       sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1/FTOA_0/FLTA_0",sector,sector);
       
@@ -838,7 +841,12 @@ void AliAlignObj::InitVolPaths()
 
   /*********************      TRD layers 0-6   *******************/
   {
-    TString strSM[18]={"ALIC_1/B077_1/BSEGMO5_1/BTRD5_1/UTR1_1/UTS1_1/UTI1_1/UT",
+    TString strSM[18]={"ALIC_1/B077_1/BSEGMO0_1/BTRD0_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/BSEGMO1_1/BTRD1_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/BSEGMO2_1/BTRD2_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/BSEGMO3_1/BTRD3_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/BSEGMO4_1/BTRD4_1/UTR1_1/UTS1_1/UTI1_1/UT",
+		       "ALIC_1/B077_1/BSEGMO5_1/BTRD5_1/UTR1_1/UTS1_1/UTI1_1/UT",
 		       "ALIC_1/B077_1/BSEGMO6_1/BTRD6_1/UTR1_1/UTS1_1/UTI1_1/UT",
 		       "ALIC_1/B077_1/BSEGMO7_1/BTRD7_1/UTR1_1/UTS1_1/UTI1_1/UT",
 		       "ALIC_1/B077_1/BSEGMO8_1/BTRD8_1/UTR1_1/UTS1_1/UTI1_1/UT",
@@ -850,12 +858,7 @@ void AliAlignObj::InitVolPaths()
 		       "ALIC_1/B077_1/BSEGMO14_1/BTRD14_1/UTR1_1/UTS1_1/UTI1_1/UT",
 		       "ALIC_1/B077_1/BSEGMO15_1/BTRD15_1/UTR1_1/UTS1_1/UTI1_1/UT",
 		       "ALIC_1/B077_1/BSEGMO16_1/BTRD16_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO17_1/BTRD17_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO0_1/BTRD0_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO1_1/BTRD1_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO2_1/BTRD2_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO3_1/BTRD3_1/UTR1_1/UTS1_1/UTI1_1/UT",
-		       "ALIC_1/B077_1/BSEGMO4_1/BTRD4_1/UTR1_1/UTS1_1/UTI1_1/UT"};
+		       "ALIC_1/B077_1/BSEGMO17_1/BTRD17_1/UTR1_1/UTS1_1/UTI1_1/UT"};
     TString strPost = "_1";
     TString zeroStr = "0";
     TString volpath;
