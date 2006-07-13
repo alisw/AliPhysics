@@ -492,7 +492,10 @@ void Config()
 	AliTOF *TOF = new AliTOFv5T0("TOF", "normal TOF");
 	// Partial geometry: modules at 2,3,4,6,7,11,12,14,15,16
 	// starting at 6h in positive direction
-	Int_t TOFSectors[18]={-1,-1,0,0,0,-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0};
+	//	Int_t TOFSectors[18]={-1,-1,0,0,0,-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0};
+	// Partial geometry: modules at 1,2,6,7,9,10,11,12,15,16,17
+	// (ALICE numbering convention)
+       	Int_t TOFSectors[18]={-1,0,0,-1,-1,-1,0,0,-1,0,0,0,0,-1,-1,0,0,0};
 	TOF->SetTOFSectors(TOFSectors);
     }
 
