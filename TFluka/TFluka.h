@@ -27,6 +27,7 @@ class TFluka : public TVirtualMC {
   TFluka(const char *title, Int_t verbosity = 0,  Bool_t isRootGeometrySupported = 0);
   TFluka();
   virtual ~TFluka();
+  virtual Bool_t IsRootGeometrySupported() const { return kTRUE;}
   
   //
   // Methods for building/management of geometry
