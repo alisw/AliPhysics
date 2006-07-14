@@ -58,7 +58,6 @@ AliGenDPMjet::AliGenDPMjet(Int_t npart)
     fName = "DPMJET";
     fTitle= "Particle Generator using DPMJET";
 
-    SetBeamEnergy();
     SetEnergyCMS();
     SetTarget();
     SetProjectile();
@@ -101,7 +100,7 @@ void AliGenDPMjet::Init()
 {
 // Initialization
     
-    SetMC(new TDPMjet(fAProjectile, fZProjectile, fATarget, fZTarget, 
+    SetMC(new TDPMjet(fProcess, fAProjectile, fZProjectile, fATarget, fZTarget, 
 		      fBeamEn,fEnergyCMS));
 
     fDPMjet=(TDPMjet*) fMCEvGen;
@@ -115,18 +114,12 @@ void AliGenDPMjet::Init()
     if (fAProjectile == 1 && fZProjectile == 1) fDPMjet->SetfIdp(1);
     
     fDPMjet->SetfFCentr(fICentr);  
-    fDPMjet->SetbRange(fMinImpactParam,fMaxImpactParam); 
+    fDPMjet->SetbRange(fMinImpactParam, fMaxImpactParam); 
     
 //
 //  Initialize DPMjet  
 //    
     fDPMjet->Initialize();
-    //if (fEvaluate) EvaluateCrossSections();
-
-    //  Initialize AliIonPDGCodes to define ion PDG codes
-    /*AliIonPDGCodes *PDGcodes = new AliIonPDGCodes();
-    PDGcodes->AddParticlesToPdgDataBase();
-    PDGcodes->MapPDGGEant3Codes();*/
 }
 
 
@@ -138,30 +131,18 @@ void AliGenDPMjet::Generate()
   Float_t polar[3]    =   {0,0,0};
   Float_t origin[3]   =   {0,0,0};
   Float_t origin0[3]  =   {0,0,0};
-  Float_t p[3], random[6];
+  Float_t p[3];
   Float_t tof;
 
 //  converts from mm/c to s
   const Float_t kconv = 0.001/2.999792458e8;
   Int_t nt  = 0;
   Int_t jev = 0;
-  Int_t j, kf, ks, imo;
+  Int_t kf, ks, imo;
   kf = 0;
-        
   fTrials = 0;
-  for (j = 0;j < 3; j++) origin0[j] = fOrigin[j];
-  if(fVertexSmear == kPerEvent) {
-      Float_t dv[3];
-      dv[2] = 1.e10;
-      while(TMath::Abs(dv[2])>fCutVertexZ*fOsigma[2]) {
-	  Rndm(random,6);
-	  for (j=0; j < 3; j++) {
-	      dv[j] = fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-		  TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-	  }
-      }
-      for (j=0; j < 3; j++) origin0[j] += dv[j];
-  }
+  //  Set collision vertex position 
+  if (fVertexSmear == kPerEvent) Vertex();
   
   while(1)
   {
@@ -194,17 +175,14 @@ void AliGenDPMjet::Generate()
       
 //      Get event vertex
       
-      //TParticle *iparticle = (TParticle*) fParticles->At(0);
       fVertex[0] = origin0[0];
       fVertex[1] = origin0[1];	
       fVertex[2] = origin0[2];
-      //for(int jj=0; jj<3; jj++) printf("	fEventVertex[%d] = %f\n",jj,fEventVertex[jj]);
       
 //      First select parent particles
 
       for (i = 0; i<np; i++) {
 	  TParticle *iparticle = (TParticle *) fParticles->At(i);
-          //if(!iparticle) iparticle->Print("");
 
 // Is this a parent particle ?
 
@@ -237,7 +215,6 @@ void AliGenDPMjet::Generate()
 
       for (i=0; i<np; i++) {
 	  TParticle *iparticle = (TParticle *) fParticles->At(i);
-	  //if(!iparticle) printf("	i = %d -> iparticle==0\n",i);
 
 // Is this a final state particle ?
 
@@ -273,20 +250,18 @@ void AliGenDPMjet::Generate()
       for (i = 0; i<np; i++) {
 	  TParticle *  iparticle = (TParticle *) fParticles->At(i);
 	  Bool_t  hasMother   = (iparticle->GetFirstMother()>=0);
-//	  Bool_t  hasDaughter = (iparticle->GetFirstDaughter()>=0);
-
 	  if (pSelected[i]) {
 	      
 	      kf   = iparticle->GetPdgCode();	      
-	      if(kf==99999) continue;
 	      ks   = iparticle->GetStatusCode();	      
 	      
 	      p[0] = iparticle->Px();
 	      p[1] = iparticle->Py();
 	      p[2] = iparticle->Pz();
-	      origin[0] = origin0[0]+iparticle->Vx()/10;
-	      origin[1] = origin0[1]+iparticle->Vy()/10;
-	      origin[2] = origin0[2]+iparticle->Vz()/10;
+	      origin[0] = fVertex[0]+iparticle->Vx()/10; // [cm]
+	      origin[1] = fVertex[1]+iparticle->Vy()/10; // [cm]
+	      origin[2] = fVertex[2]+iparticle->Vz()/10; // [cm]
+		    
 	      tof = kconv*iparticle->T();
 	      
 	      imo = -1;
@@ -297,31 +272,8 @@ void AliGenDPMjet::Generate()
 		  imo = (mother->GetPdgCode() != 92) ? imo = newPos[imo] : -1;
 	      } // if has mother   
 
-	      // --- Nucleons and photons from nucleus evaporation
-	      //if(ks==-1 && (kf==2212 || kf==2112 || kf==22)) imo=-1;
-	      
-	      // --- Offset added to nuclei, alpha particles, deuteron 
-	      // --- and triton PDG codes (according to TGeant3 PDG codes)
-	      //if(ks==1000 || ks==1001) kf += 10000000;
-	      if(kf>10000) kf += 10000000;
-	      
-	      if(kf>10000 || ks==1000 || ks==1001) printf(" kf = %d, ks = %d imo = %d \n", kf,ks,imo);
-	     
-
 	      Bool_t tFlag = (fTrackIt && (ks == 1));
 	      
-/*	      // --- Particle NOT to be tracked:
-	      // --- (1) chains from valence quark system (idhkk=99999)
-	      // --- (2) quark, diquarks and gluons (idhkk=1->8,...,idhkk=21)
-	      if(kf==99999 || kf==1 || kf==2 || kf==3 || kf==4 || kf==5 ||
-	         kf==6 || kf==7 || kf==8 || kf==21 || 
-		 kf==1103 || kf==2101 || kf==2103 || kf==2203 || kf==3101 || 
-		 kf==3103 || kf==3201 || kf==3203 || kf==3303 || kf==4101 || 
-		 kf==4103 || kf==4201 || kf==4203 || kf==4301 || kf==4303 || 
-		 kf==4403 || kf==5101 || kf==5103 || kf==5201 || kf==5203 || 
-		 kf==5301 || kf==5303 || kf==5401 || kf==5403 || kf==5503) 
-		 tFlag=kFALSE;
-*/	      
 	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
 	      KeepTrack(nt);
 	      newPos[i] = nt;
@@ -329,15 +281,11 @@ void AliGenDPMjet::Generate()
       } // particle loop
       delete[] newPos;
       delete[] pSelected;
-      
-      printf("\n I've put %i particles on the stack \n",nc);
       if (nc>0) {
 	  jev += nc;
 	  if (jev >= fNpart || fNpart == -1) {
-	      printf("\n Trials: %i %i %i\n",fTrials, fNpart, jev);
 	      break;
 	  }
-	  printf("\n Not breaking ### Trials: %i %i %i\n",fTrials, fNpart, jev);
       }
   } // event loop
   MakeHeader();
@@ -486,42 +434,6 @@ Bool_t AliGenDPMjet::Stable(TParticle*  particle)
 
 }
 
-
-
-//______________________________________________________________________________
-/*void AliGenDPMjet::Boost(TClonesArray* particles)
-{
-//
-// Boost cms into LHC lab frame
-//
-    Double_t dy    = - 0.5 * TMath::Log(Double_t(fZProjectile) * Double_t(fATarget) / 
-				      (Double_t(fZTarget)    * Double_t(fAProjectile)));
-    Double_t beta  = TMath::TanH(dy);
-    Double_t gamma = 1./TMath::Sqrt(1.-beta*beta);
-    Double_t gb    = gamma * beta;
-
-    printf("\n Boosting particles to lab frame %f %f %f", dy, beta, gamma);
-    
-    Int_t i;
-    Int_t np = particles->GetEntriesFast();
-    for (i = 0; i < np; i++) 
-    {
-	TParticle* iparticle = (TParticle*) fParticles->At(i);
-
-	Double_t e   = iparticle->Energy();
-	Double_t px  = iparticle->Px();
-	Double_t py  = iparticle->Py();
-	Double_t pz  = iparticle->Pz();
-
-	Double_t eb  = gamma * e -      gb * pz;
-	Double_t pzb =   -gb * e +   gamma * pz;
-
-	iparticle->SetMomentum(px, py, pzb, eb);
-    }
-}*/
-
-
-
 //______________________________________________________________________________
 void AliGenDPMjet::MakeHeader()
 {
@@ -532,7 +444,6 @@ void AliGenDPMjet::MakeHeader()
     ((AliGenDPMjetEventHeader*) header)->SetTotalEnergy(fDPMjet->GetTotEnergy());
     ((AliGenDPMjetEventHeader*) header)->SetParticipants(fDPMjet->GetfIp(), 
     							 fDPMjet->GetfIt());
-//    ((AliGenDPMjetEventHeader*) header)->SetSpectators(fSpecn, fSpecp);
 
 // Bookkeeping for kinematic bias
     ((AliGenDPMjetEventHeader*) header)->SetTrials(fTrials);

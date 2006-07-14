@@ -7,6 +7,7 @@
 // The main DPMJET options are accessable for the user through this interface.
 
 #include "AliGenMC.h"
+#include "TDPMjet.h"
 #include <TString.h>
 #include <TArrayI.h>
 
@@ -26,11 +27,10 @@ class AliGenDPMjet : public AliGenMC
     virtual ~AliGenDPMjet(); 
     virtual void    Generate();
     virtual void    Init();
-
-    virtual void    SetBeamEnergy(Float_t energy=5400.) {fBeamEn=energy;}
-    virtual void    SetEnergyCMS(Float_t energy=5400.)   {fEnergyCMS=energy;}
+    virtual void    SetEnergyCMS(Float_t energy = 14000.) {fEnergyCMS = energy; fBeamEn = energy / 2.;}
     virtual void    SetImpactParameterRange(Float_t bmin=0., Float_t bmax=16.)
 			{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
+    virtual void    SetProcess(DpmProcess_t iproc) {fProcess = iproc;}
     virtual void    SetCentral(Int_t icentr=-2) {fICentr = icentr;}
     virtual void    KeepFullEvent();
     virtual void    SetDecaysOff(Int_t flag=1)        {fDecaysOff  = flag;}
@@ -54,12 +54,6 @@ class AliGenDPMjet : public AliGenMC
     virtual void    SetGenImpPar(Float_t bValue) {fGenImpPar=bValue;}
     virtual Float_t GetGenImpPar() {return fGenImpPar;}
     
-    /*virtual void EvaluateCrossSections();
-    virtual void Boost();
-    virtual TGraph* CrossSection()     {return fDsigmaDb;}
-    virtual TGraph* BinaryCollisions() {return fDnDb;}
-    */
-
     AliGenDPMjet &  operator=(const AliGenDPMjet & rhs);
 
  protected:
@@ -67,11 +61,6 @@ class AliGenDPMjet : public AliGenMC
     void   MakeHeader();
 
  protected:
-
-    Int_t         fAProjectile;    // Projectile A
-    Int_t         fZProjectile;    // Projectile Z
-    Int_t         fATarget;        // Target A
-    Int_t         fZTarget;        // Target Z
     Float_t       fBeamEn; 	   // beam energy
     Float_t       fEnergyCMS;      // Centre of mass energy
     Float_t       fMinImpactParam; // minimum impact parameter
@@ -98,6 +87,7 @@ class AliGenDPMjet : public AliGenMC
     Int_t         fLHC;            // Assume LHC as lab frame
     // Temporaneo!
     Float_t	  fGenImpPar;	   // GeneratedImpactParameter
+    DpmProcess_t  fProcess;        // Process type
     
  private:
     // adjust the weight from kinematic cuts
