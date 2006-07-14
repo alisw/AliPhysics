@@ -93,22 +93,33 @@ ClassImp(TDPMjet)
 //______________________________________________________________________________
 TDPMjet::TDPMjet() : TGenerator("dpmjet","dpmjet")
 {
-
+    fNEvent  = 0;
+    fIp      = 0;
+    fIpz     = 0;
+    fIt      = 0;
+    fItz     = 0;
+    fEpn     = 0;
+    fCMEn    = 0;
+    fIdp     = 0;
+    fProcess = kDpmMb;
 }
 
 //______________________________________________________________________________
-TDPMjet::TDPMjet(Int_t Ip=208, Int_t Ipz=82, Int_t It=208, Int_t Itz=82, 
+TDPMjet::TDPMjet(DpmProcess_t  iproc, Int_t Ip=208, Int_t Ipz=82, Int_t It=208, Int_t Itz=82, 
 	Double_t Epn=2700., Double_t CMEn=5400.) 
 	: TGenerator("dpmjet","dpmjet")
 {  
-   fNEvent = 0;
-   fIp     = Ip;
-   fIpz    = Ipz;
-   fIt     = It;
-   fItz    = Itz;
-   fEpn    = Epn;
-   fCMEn   = CMEn;
-   fIdp    = 0;
+    printf("TDPMJet Constructor %d %d %d %d \n", Ip, Ipz, It, Itz);
+    
+   fNEvent  = 0;
+   fIp      = Ip;
+   fIpz     = Ipz;
+   fIt      = It;
+   fItz     = Itz;
+   fEpn     = Epn;
+   fCMEn    = CMEn;
+   fIdp     = 0;
+   fProcess = iproc;
 }
 
 
@@ -140,9 +151,9 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 	entot += DTEVT1.phkk[i][3]; // PHKK[i][3] <-> PHKK(4,i)
      } 
   }
-  printf("\n TDPMjet: DPMJET stack contains %d particles", numpart);
-  printf("\n TDPMjet: Final not decayed particles: %d", numStabpart);
-  printf("\n TDPMjet: Total energy: %f GeV          \n", entot);
+  //printf("\n TDPMjet: DPMJET stack contains %d particles", numpart);
+  // printf("\n TDPMjet: Final not decayed particles: %d",    numStabpart);
+  //printf("\n TDPMjet: Total energy: %f GeV          \n",   entot);
   Int_t nump = 0;
   
   if(!strcmp(option,"") || !strcmp(option,"Final")){
@@ -152,7 +163,6 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 	   //
 	   //  Use the common block values for the TParticle constructor
 	   //
-	   //printf("	DTEVT1.isthkk[i]=1 -> i = %d, nump = %d\n",i,nump);
 	      new(Particles[nump]) TParticle(
 		  DTEVT1.idhkk[i],
 		  DTEVT1.isthkk[i],
@@ -182,9 +192,6 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 	     
 	  if(iParent >= 0){
 	      TParticle *mother = (TParticle*) (Particles.UncheckedAt(iParent));
-              //printf("	i = %d, iParent = %d ", i, iParent);
-	      //mother->Print();
-	      //printf("\n");
 	      mother->SetLastDaughter(i);
 	      if(mother->GetFirstDaughter() == -1) mother->SetFirstDaughter(i);
 	  } 
@@ -193,10 +200,11 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 	  // --- DPMJET -> idres = mass #, idxres = charge
 	  if(DTEVT1.idhkk[i] == 80000) 
 	      DTEVT1.idhkk[i] = 10000*DTEVT2.idxres[i]+10*DTEVT2.idres[i];
+/*
 	  if(DTEVT2.idxres[i] != 0) 
 	      printf("\n	pc#%d -> A = %d, Z = %d -> PDGcode = %d\n",
 		     i,DTEVT2.idres[i],DTEVT2.idxres[i],DTEVT1.idhkk[i]);
-	  
+*/	  
 	  new(Particles[i]) TParticle(
 	      DTEVT1.idhkk[i],
 	      DTEVT1.isthkk[i],
@@ -224,20 +232,39 @@ Int_t TDPMjet::ImportParticles(TClonesArray *particles, Option_t *option)
 //______________________________________________________________________________
 void TDPMjet::Initialize()
 {
-//********************************************************************************
-//*Calls DT_DTUINI with the either default parameters or the ones set by the user*
-//********************************************************************************
+//
+//  Write standard DPMJET input cards 
+//
+    FILE* out = fopen("dpmjet.inp","w");
+//  Projectile and Target definition 
+    fprintf(out, "PROJPAR   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", (Float_t) fIp, (Float_t) fIpz,  0., 0., 0., 0.);
+    fprintf(out, "TARPAR    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", (Float_t) fIt, (Float_t) fItz,  0., 0., 0., 0.);
+//  Beam energy and crossing-angle
+    fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.);
+//  Centrality
+    fprintf(out, "CENTRAL   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1., fBmin, fBmax, 0., 0., 0.);
 
-//   printf("\n-------------------------------------------\n");
-//   printf("\n		TDPMjet initialized with:\n\n");
-//   printf(" Projectile	-> A = %d, Z = %d \n",fIp, fIpz);
-//   printf(" Target    	-> A = %d, Z = %d \n",fIt, fItz);
-//   printf(" Proj. LAB E	-> E = %f GeV \n",fEpn);
-//   printf(" CM energy	-> Ecm = %f GeV \n",fCMEn);
-//   printf("\n-------------------------------------------\n");
-
-   Int_t iemu = 0; // No emulsion (default)
-   Dt_Dtuini(1, fEpn, fIp, fIpz, fIt, fItz, fIdp, iemu);
+//
+//  PHOJET specific
+    fprintf(out, "PHOINPUT\n");
+    fprintf(out, "DEBUG      0 0 0 \n");
+    
+    if (fProcess == kDpmMb) {
+	fprintf(out, "PROCESS           1 0 1 1 1 1 1 1\n");
+    } else if (fProcess == kDpmMbNonDiffr) {
+	fprintf(out, "PROCESS           1 0 1 1 0 0 0 1\n");
+    }
+    
+    fprintf(out, "ENDINPUT\n");
+//
+//  START card
+    fprintf(out, "START            1.0       0.0\n");
+    fprintf(out, "STOP\n");
+    fclose(out);
+//
+//  Call DPMJET initialisation
+    Int_t iemu = 0; // No emulsion (default)
+    Dt_Dtuini(1, fEpn, fIp, fIpz, fIt, fItz, fIdp, iemu);
 
 }
 
@@ -248,18 +275,11 @@ void TDPMjet::GenerateEvent()
    // Generates one event;
    fNEvent++;
    DTEVNO.nevent=fNEvent;
-   //printf("\n	fNEvent = %d\n",fNEvent);
    Int_t kkmat=-1;
    Float_t Elab = fEpn;
    Int_t irej=0;
    Dt_Kkinc(fIp, fIpz, fIt, fItz, fIdp, Elab, kkmat, irej);
    if(irej!=0) return;
-   //
-   Int_t imode=2000;
-   Double_t weight=1.;
-   Pho_Phist(imode, weight);
-   Dt_Dtuout();
-   
 }
 //______________________________________________________________________________
 void TDPMjet::Dt_Dtuini(int nevts, double epn, int npmass, int npchar, 
@@ -268,14 +288,14 @@ void TDPMjet::Dt_Dtuini(int nevts, double epn, int npmass, int npchar,
   // Call dmpjet routine DT_DTUINI passing the parameters 
   // in a way accepted by Fortran routines				   
      
-   
-   /*printf("\n-------------------------------------------\n");
+
+   printf("\n-------------------------------------------\n");
    printf("\n		Dt_Dtuini called with:\n\n");
    printf(" Projectile	-> A = %d, Z = %d \n",npmass, npchar);
    printf(" Target    	-> A = %d, Z = %d \n",ntmass, ntchar);
    printf(" Proj. LAB E	-> E = %f GeV \n",epn);
    printf(" nevts = %d, idp = %d, iemu = %d \n",nevts,idp,iemu);
-   printf("\n-------------------------------------------\n");*/
+   printf("\n-------------------------------------------\n");
 
    dt_dtuini(nevts, epn, npmass, npchar, ntmass, ntchar, idp, iemu);
     
@@ -287,17 +307,7 @@ void TDPMjet::Dt_Kkinc(int npmass, int npchar, int ntmass, int ntchar,
 {
   // Call dmpjet routine DT_KKINC passing the parameters 
   // in a way accepted by Fortran routines				   
-  
-   /*printf("\n-------------------------------------------\n");
-   printf("\n		Dt_Kkinc called with:\n\n");
-   printf(" Projectile	-> A = %d, Z = %d \n",npmass, npchar);
-   printf(" Target    	-> A = %d, Z = %d \n",ntmass, ntchar);
-   printf(" LAB Energy	-> E = %f GeV \n",elab);
-   printf(" idp = %d,  kkmat = %d, irej = %d \n",idp,kkmat,irej);
-   printf("\n-------------------------------------------\n");*/
-
   dt_kkinc(npmass, npchar, ntmass, ntchar, idp, elab, kkmat, irej);
-
 }
 
 //______________________________________________________________________________

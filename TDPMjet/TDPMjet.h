@@ -16,13 +16,14 @@
 #include "TGenerator.h"
 //*KEND.
 #endif
+typedef enum {kDpmMb, kDpmMbNonDiffr} DpmProcess_t;
 
 class TDPMjet : public TGenerator {
 
 public:
    
    TDPMjet();
-   TDPMjet(Int_t Ip, Int_t Ipz, Int_t It, Int_t Itz, Double_t Epn, Double_t CMEn);
+   TDPMjet(DpmProcess_t ip, Int_t Ip, Int_t Ipz, Int_t It, Int_t Itz, Double_t Epn, Double_t CMEn);
 
    virtual       ~TDPMjet() {;}
 
@@ -110,20 +111,21 @@ public:
 
 protected:
 
-   Int_t    fNEvent;	// Event number to be generated 
-   Int_t    fIp;	// Projectile mass
-   Int_t    fIpz;	// Projectile charge
-   Int_t    fIt;	// Target mass
-   Int_t    fItz;	// Target charge
-   Double_t fEpn;	// Beam energy
-   Double_t fPpn;	// Beam momentum
-   Double_t fCMEn;	// Energy in CM 
-   Int_t    fIdp;	// Internal particle code
-   Double_t fBmin;	// Minimum impact parameter
-   Double_t fBmax;	// Maximum impact parameter
-   Int_t    fFCentr;	// Flag to force central collisions
-
-   ClassDef(TDPMjet,1)  //Interface to DPMJET Event Generator
+   Int_t        fNEvent;  // Event number to be generated 
+   Int_t        fIp;	  // Projectile mass
+   Int_t        fIpz;	  // Projectile charge
+   Int_t        fIt;	  // Target mass
+   Int_t        fItz;	  // Target charge
+   Float_t      fEpn;	  // Beam energy
+   Float_t      fPpn;	  // Beam momentum
+   Float_t      fCMEn;	  // Energy in CM 
+   Int_t        fIdp;	  // Internal particle code
+   Float_t      fBmin;	  // Minimum impact parameter
+   Float_t      fBmax;	  // Maximum impact parameter
+   Int_t        fFCentr;  // Flag to force central collisions
+   DpmProcess_t fProcess; // Process type
+   
+   ClassDef(TDPMjet,2)  //Interface to DPMJET Event Generator
 };
 
 #endif
