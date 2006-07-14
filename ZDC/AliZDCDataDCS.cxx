@@ -47,43 +47,45 @@ AliZDCDataDCS::~AliZDCDataDCS() {
 }
 
 //---------------------------------------------------------------
-void AliZDCDataDCS::ProcessData(TMap& aliasMap){
+void AliZDCDataDCS::ProcessData(TMap& aliasMap, Float_t *fCalibData){
 
 	TObjArray *aliasArr;
 	AliDCSValue* aValue;
-	for(int j=4; j<kNAliases; j++){
-		aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
-		if(!aliasArr){
-			AliError(Form("Alias %s not found!", fAliasNames[j].Data()));
-			continue;
-		}
-		Introduce(j, aliasArr);
+	for(int j=0; j<kNAliases; j++){
+	   aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
+	   if(!aliasArr){
+	     AliError(Form("Alias %s not found!", fAliasNames[j].Data()));
+	     continue;
+	   }
+	   Introduce(j, aliasArr);
 
-		if(aliasArr->GetEntries()<2){
-			AliError(Form("Alias %s has just %d entries!",
-					fAliasNames[j].Data(),aliasArr->GetEntries()));
-			continue;
-		}
+	   if(aliasArr->GetEntries()<2){
+	     AliError(Form("Alias %s has just %d entries!",
+	   	  	     fAliasNames[j].Data(),aliasArr->GetEntries()));
+	     continue;
+	   }
 
-		TIter iterarray(aliasArr);
+	   TIter iterarray(aliasArr);
 
-		Double_t *time = new Double_t[aliasArr->GetEntries()];
-		Double_t *val = new Double_t[aliasArr->GetEntries()];
+	   Double_t *time = new Double_t[aliasArr->GetEntries()];
+	   Double_t *val = new Double_t[aliasArr->GetEntries()];
 
-		UInt_t ne=0;
-		while((aValue = (AliDCSValue*) iterarray.Next())) {
-		  val[ne] = aValue->GetFloat();
-		  time[ne] = (Double_t) (aValue->GetTimeStamp());
-		  ne++;
-		}
-
-		// fill graphs 
-		CreateGraph(j, aliasArr->GetEntries(), time, val);
-		delete[] val;
-		delete[] time;
+	   UInt_t ne=0;
+	   while((aValue = (AliDCSValue*) iterarray.Next())) {
+	     val[ne] = aValue->GetFloat();
+	     time[ne] = (Double_t) (aValue->GetTimeStamp());
+	     fCalibData[ne] = val[ne];
+	     ne++;
+	   }
+	   //
+	   
+	   //
+	   if(j>=4) CreateGraph(j, aliasArr->GetEntries(), time, val); // fill graphs 
+	   //
+	   delete[] val;
+	   delete[] time;	   
 	}
-
-
+	//
 	fIsProcessed=kTRUE;
 
 
@@ -105,8 +107,6 @@ void AliZDCDataDCS::Init(){
 		  fAliasNames[i] = "ZDC.HVValue";
 		  fAliasNames[i] += i-4;
 		}
-		/*fAliasNames[i] = "DCSAlias";
-		fAliasNames[i] += i;*/
 	}
 
 }

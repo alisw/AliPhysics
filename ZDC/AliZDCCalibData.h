@@ -40,6 +40,13 @@ class AliZDCCalibData: public TNamed {
   Float_t  GetEnCalib(Int_t channel)	const {return fEnCalibration[channel];}
   Float_t* GetEnCalib()   		const {return (float*)fEnCalibration;}
   //
+  Float_t  GetPMTHVVal(Int_t channel)   const {return fPMTHVVal[channel];}
+  Float_t* GetPMTHVVal()		  const {return (float*)fPMTHVVal;}
+   //
+  Float_t  GetZDCTablePos(Int_t channel) const {return fZDCTablePos[channel];}
+  Float_t* GetZDCTablePos()	         const {return (float*)fZDCTablePos;}
+ 
+  //
   void  SetMeanPed(Int_t channel, Float_t val) {fMeanPedestal[channel]=val;}
   void  SetMeanPed(Float_t* MeanPed);
   void  SetMeanPedWidth(Int_t channel, Float_t val) {fMeanPedWidth[channel]=val;}
@@ -50,14 +57,19 @@ class AliZDCCalibData: public TNamed {
   void  SetOOTPedWidth(Float_t* OOTPedWidth);
   void  SetPedCorrCoeff(Int_t channel, Float_t valCoeff0, Float_t valCoeff1)
   	{fPedCorrCoeff[0][channel]=valCoeff0; fPedCorrCoeff[1][channel]=valCoeff1;}
+  void  SetPedCorrCoeff(Float_t* PedCorrCoeff);
   void  SetPedCorrCoeff(Float_t* PedCorrCoeff0, Float_t* PedCorrCoeff1);
   //
   void 	SetEnCalib(Int_t channel, Float_t val) {fEnCalibration[channel]=val;}
   void 	SetEnCalib(Float_t* EnCalib);
   //
-//  void     PrepHistos();
-//  TH1F*    GetHistMeanPed() const {return fHistMeanPed;}
-//  void     CleanHistos();
+  void 	SetPMTHVVal(Int_t channel, Float_t val) {fPMTHVVal[channel]=val;}
+  void 	SetPMTHVVal(Float_t* HVVal);
+  //
+  void 	SetZDCTablePos(Int_t channel, Float_t val) {fZDCTablePos[channel]=val;}
+  void 	SetZDCTablePos(Float_t* ZDCTablePos);
+  //
+  void  SetDCSCalibData(Float_t* DCSData);
 
  protected:
   // --- Pedestals
@@ -68,9 +80,12 @@ class AliZDCCalibData: public TNamed {
   Float_t  fPedCorrCoeff[2][44]; // Fit of correlation in-time vs. out-of-time
   // --- E calibration
   Float_t  fEnCalibration[6];	 // Coeff. for energy calibration
-  //TH1F*    fHistMeanPed;        //! histos for drawing mean pedestals
+  // --- PMTs HV values
+  Float_t  fPMTHVVal[22];	 // PMTs HV values
+  // --- Values for alignement
+  Float_t  fZDCTablePos[4];	 // Vertical value for ZDC tables
   //
-  ClassDef(AliZDCCalibData,3)    // ZDC  Calibration data
+  ClassDef(AliZDCCalibData,4)    // ZDC  Calibration data
 };
 
 #endif

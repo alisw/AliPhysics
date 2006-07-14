@@ -130,35 +130,47 @@ void  AliZDCCalibData::Print(Option_t *) const
    // Printing of calibration object
    printf("\n	#######	Mean pedestal values	####### \n");
    for(int t=0; t<47; t++){
-     if(t==0 || t==24) printf("\n\t -------- ZN HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n\t -------- ZN LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n\t -------- ZP HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n\t -------- ZP LowRes -------- \n");
-     else if(t==20) printf("\n\t -------- ZEM1 HighRes -------- ");
-     else if(t==21) printf("\n\t -------- ZEM1 LowRes -------- ");
-     else if(t==22) printf("\n\t -------- ZEM2 HighRes -------- ");
-     else if(t==23) printf("\n\t -------- ZEM2 LowRes -------- ");
+     if(t==0 || t==24) printf("\n\t  ZN HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n\t  ZN LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n\t  ZP HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n\t  ZP LowRes -------- \n");
+     else if(t==20) printf("\n\t  ZEM1 HighRes -------- ");
+     else if(t==21) printf("\n\t  ZEM1 LowRes -------- ");
+     else if(t==22) printf("\n\t  ZEM2 HighRes -------- ");
+     else if(t==23) printf("\n\t  ZEM2 LowRes -------- ");
      printf("   MeanPed[ADC%d] = %.1f   ",t,fMeanPedestal[t]);
+   }
+   printf("\n\n\n	#######	Pedestal width values	####### \n");
+   for(int t=0; t<47; t++){
+     if(t==0 || t==24) printf("\n\t  ZN HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n\t  ZN LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n\t  ZP HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n\t  ZP LowRes -------- \n");
+     else if(t==20) printf("\n\t  ZEM1 HighRes -------- ");
+     else if(t==21) printf("\n\t  ZEM1 LowRes -------- ");
+     else if(t==22) printf("\n\t  ZEM2 HighRes -------- ");
+     else if(t==23) printf("\n\t  ZEM2 LowRes -------- ");
+     printf("   MeanPed[ADC%d] = %.1f   ",t,fMeanPedWidth[t]);
    }
    
    printf("\n\n\n	#######	Out Of Time pedestal values	####### \n");
    for(int t=0; t<44; t++){
-     if(t==0 || t==24) printf("\n\t -------- ZN HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n\t -------- ZN LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n\t -------- ZP HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n\t -------- ZP LowRes -------- \n");
-     else if(t==20) printf("\n\t -------- ZEM1 HighRes -------- ");
-     else if(t==21) printf("\n\t -------- ZEM1 LowRes -------- ");
-     else if(t==22) printf("\n\t -------- ZEM2 HighRes -------- ");
-     else if(t==23) printf("\n\t -------- ZEM2 LowRes -------- ");
+     if(t==0 || t==24) printf("\n\t  ZN HighRes -------- \n");
+     else if(t==5 || t==29) printf("\n\t  ZN LowRes -------- \n");
+     else if(t==10 || t==34) printf("\n\t  ZP HighRes -------- \n");
+     else if(t==15 || t==39) printf("\n\t  ZP LowRes -------- \n");
+     else if(t==20) printf("\n\t  ZEM1 HighRes -------- ");
+     else if(t==21) printf("\n\t  ZEM1 LowRes -------- ");
+     else if(t==22) printf("\n\t  ZEM2 HighRes -------- ");
+     else if(t==23) printf("\n\t  ZEM2 LowRes -------- ");
      printf("   OOTPed[ADC%d] = %.1f   ",t,fOOTPedestal[t]);
    }
  
    printf("\n\n\n	#######	Energy calibration coefficients #######	\n");
-   printf("	ZN1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
-   printf("	ZP1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
-   printf("	ZN2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
-   printf("	ZP2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[3]);
+   printf("	ZN1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
+   printf("	ZP1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
+   printf("	ZN2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
+   printf("	ZP2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[3]);
    printf("	ZEM1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[4]);
    printf("	ZEM2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[5]);
 } 
@@ -191,24 +203,77 @@ void AliZDCCalibData::SetOOTPedWidth(Float_t* OOTPedWidth)
 }
 
 //________________________________________________________________
-void AliZDCCalibData:: SetPedCorrCoeff(Float_t* PedCorrCoeff0, 
-	Float_t* PedCorrCoeff1)
+void AliZDCCalibData:: SetPedCorrCoeff(Float_t* PedCorrCoeff)
 {
   // Set coefficients for pedestal correlations
-  if(PedCorrCoeff0 && PedCorrCoeff1) for(int t=0; t<44; t++){
-    fPedCorrCoeff[0][t] = PedCorrCoeff0[t];
-    fPedCorrCoeff[1][t] = PedCorrCoeff1[t];
+  if(PedCorrCoeff){
+    for(Int_t j=0; j<2; j++){
+     for(int t=0; t<44; t++)
+       fPedCorrCoeff[j][t] = PedCorrCoeff[t];
+    }
   }
-  else for(int t=0; t<44; t++){
-    fPedCorrCoeff[0][t] = 0.;
-    fPedCorrCoeff[1][t] = 0.;
+  else{
+    for(Int_t j=0; j<2; j++){
+     for(int t=0; t<44; t++)
+       fPedCorrCoeff[j][t] = 0.;
+    }
   }
+ 
+}
+
+//________________________________________________________________
+void AliZDCCalibData:: SetPedCorrCoeff(Float_t* PedCorrCoeff0, Float_t* PedCorrCoeff1)
+{
+  // Set coefficients for pedestal correlations
+  if(PedCorrCoeff0 && PedCorrCoeff1){
+    for(int t=0; t<44; t++){
+       fPedCorrCoeff[0][t] = PedCorrCoeff0[t];
+       fPedCorrCoeff[0][t] = PedCorrCoeff1[t];
+    }
+  }
+  else{
+     for(int t=0; t<44; t++){
+       fPedCorrCoeff[0][t] = 0.;
+       fPedCorrCoeff[1][t] = 0.;
+    }
+  }
+ 
 }
 
 //________________________________________________________________
 void AliZDCCalibData::SetEnCalib(Float_t* EnCalib) 
 {
+  // Set energy calibration coefficients
   if(EnCalib) for(int t=0; t<6; t++) fEnCalibration[t] = EnCalib[t];
   else for(int t=0; t<6; t++) fEnCalibration[t] = 0.;
 }
 
+//________________________________________________________________
+void AliZDCCalibData::SetPMTHVVal(Float_t* HVVal)
+{
+  // Set PMTs HV values
+  if(HVVal) for(int t=0; t<22; t++) fPMTHVVal[t] = HVVal[t];
+  else for(int t=0; t<22; t++) fPMTHVVal[t] = 0.;
+}
+ 
+//________________________________________________________________
+void AliZDCCalibData::SetZDCTablePos(Float_t* ZDCTablePos)
+{
+  // Set ZDC table vertical positions
+  if(ZDCTablePos) for(int t=0; t<4; t++) fZDCTablePos[t] = ZDCTablePos[t];
+  else for(int t=0; t<4; t++) fZDCTablePos[t] = 0.;
+}
+
+//________________________________________________________________
+void  AliZDCCalibData::SetDCSCalibData(Float_t* DCSData)
+{
+  // Set all DCS data simultaneously
+  if(DCSData){
+    for(int t=0; t<4; t++) fZDCTablePos[t] = DCSData[t];
+    for(int t=4; t<26; t++) fPMTHVVal[t] = DCSData[t]; 
+  }
+  else{
+    for(int t=0; t<4; t++) fZDCTablePos[t] = 0.;
+    for(int t=4; t<26; t++) fPMTHVVal[t] = 0.; 
+  }
+}

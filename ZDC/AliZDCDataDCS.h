@@ -20,7 +20,7 @@ public:
 	Int_t GetStartTime() {return fStartTime;}
 	Int_t GetEndTime() {return fEndTime;}
 
-	void ProcessData(TMap& aliasMap);
+	void ProcessData(TMap& aliasMap, Float_t *CalibData);
 
 	const char* GetAliasName(UInt_t pos)
 			{return pos<kNAliases ? fAliasNames[pos].Data() : 0;}
@@ -45,10 +45,12 @@ private:
 
 	TString fAliasNames[kNAliases];
 	TClonesArray fGraphs;
+	
+	Float_t fCalibData[kNAliases];
 
 	Bool_t fIsProcessed;
 
-	ClassDef(AliZDCDataDCS, 1);
+	ClassDef(AliZDCDataDCS, 2);
 };
 
 #endif

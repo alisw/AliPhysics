@@ -98,8 +98,8 @@ Bool_t AliZDCRawStream::Next()
   //ADC Data Words
   else{
     //printf("This is an ADC Data Word -> channel %d range %d\n",(fRawADC & 0x1e0000) >> 17, (fRawADC & 0x10000) >> 16);
-    if(fRawADC & 0x1000) printf("Data overflow\n");
-    if(fRawADC & 0x2000) printf("Data underflow\n");
+    if(fRawADC & 0x1000) printf("ZDCRawStream -> ADC overflow\n");
+    if(fRawADC & 0x2000) printf("ZDCRawStream -> ADC underflow\n");
     //
     fADCGain = (fRawADC & 0x10000) >> 16;
     fADCValue = (fRawADC & 0xfff);   

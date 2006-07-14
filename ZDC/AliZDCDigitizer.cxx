@@ -63,6 +63,7 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   fIsCalibration=0; //By default the simulation doesn't create calib. data
   // Get calibration data
   fCalibData = GetCalibData(); 
+  if(fIsCalibration!=0) printf("\t **** AliZDCDigitizer -> Creating calibration data (pedestals)\n");
 
 }
 
@@ -203,7 +204,6 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   treeD->Branch("ZDC", "AliZDCDigit", &pdigit, kBufferSize);
 
   // Create digits
-  if(fIsCalibration!=0) printf("\t **** AliZDCDigitizer -> Creating calibration data (pedestals)\n");
   Int_t sector[2], sectorL[2];
   Int_t digi[2], digiL[2];
   for(sector[0]=1; sector[0]<=3; sector[0]++){
