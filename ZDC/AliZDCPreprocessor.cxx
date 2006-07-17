@@ -59,7 +59,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   fData->ProcessData(*dcsAliasMap, DCSValues);
   dcsAliasMap->Print("");
   //
-  AliZDCCalibData *calibdata;
+  AliZDCCalibData *calibdata = new AliZDCCalibData();
   calibdata->SetDCSCalibData(DCSValues);
 
   const char* PedfileName = GetFile(kDAQ, "PEDESTALS", "LDC0");
@@ -99,6 +99,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   delete fData;
   fData = 0;
 
+  delete calibdata;
   return result;
 }
 
