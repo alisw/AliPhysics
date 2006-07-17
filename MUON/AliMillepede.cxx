@@ -62,7 +62,7 @@ AliMillepede::AliMillepede(): TObject()
 AliMillepede::~AliMillepede() {
   /// Destructor
 
-}; 
+}
 
 //=============================================================================
 Int_t AliMillepede::InitMille(int nGlo, int nLoc, int lNStdDev,
