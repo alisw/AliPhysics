@@ -6,7 +6,7 @@ void AliPMDHitsRead(Int_t nevt = 1)
   
   TStopwatch timer;
   timer.Start();
-  
+  TH2F *h2 = new TH2F("h2"," Y vs. X",200,-100.,100.,200,-100.,100.); 
   //  FILE *fpw = fopen("alipmdhits.dat","w");
 
   AliRunLoader *fRunLoader = AliRunLoader::Open("galice.root");
@@ -47,17 +47,19 @@ void AliPMDHitsRead(Int_t nevt = 1)
 
   const Int_t kPi0 = 111;
   const Int_t kGamma = 22;
-  Int_t npmd;
-  Int_t trackno;
-  Int_t smnumber;
-  Int_t trackpid;
-  Int_t mtrackno;
-  Int_t mtrackpid;
-
-  Float_t xPos, yPos, zPos;
-  Int_t xpad = -1, ypad = -1;
+  Int_t   npmd;
+  Int_t   trackno;
+  Int_t   smnumber;
+  Int_t   trackpid;
+  Int_t   mtrackno;
+  Int_t   mtrackpid;
+  Int_t   xpad = -1, ypad = -1;
   Float_t edep;
   Float_t vx = -999.0, vy = -999.0, vz = -999.0;
+  Float_t xPos, yPos, zPos;
+  Float_t xx, yy;
+
+  AliPMDUtility cc;
 
   for (Int_t ievt = 0; ievt < nevt; ievt++)
     {
@@ -176,8 +178,8 @@ void AliPMDHitsRead(Int_t nevt = 1)
 		  edep       = fPMDHit->GetEnergy();
 		  Int_t vol1 = fPMDHit->GetVolume(1); // Column
 		  Int_t vol2 = fPMDHit->GetVolume(2); // Row
-		  Int_t vol3 = fPMDHit->GetVolume(3); // UnitModule
-		  Int_t vol6 = fPMDHit->GetVolume(6); // SuperModule
+		  Int_t vol3 = fPMDHit->GetVolume(7); // UnitModule
+		  Int_t vol6 = fPMDHit->GetVolume(8); // SuperModule
 		  
 		  // -----------------------------------------//
 		  // For Super Module 1 & 2                   //
@@ -186,31 +188,28 @@ void AliPMDHitsRead(Int_t nevt = 1)
 		  //  nrow = 48, ncol = 96                    //
 		  // -----------------------------------------//
 		  
-		  smnumber = (vol6-1)*6 + vol3;
+		  smnumber = (vol6-1)*6 + (vol3-1);
 		  
-		  if (vol6 == 1 || vol6 == 2)
-		    {
-		      xpad = vol2;
-		      ypad = vol1;
-		    }
-		  else if (vol6 == 3 || vol6 == 4)
-		    {
-		      xpad = vol1;
-		      ypad = vol2;
-		    }
+		  xpad = vol1 - 1;
+		  ypad = vol2 - 1;
 		  
-		  //printf("Zposition = %f Edeposition = %f",zPos,edep);
-		  Float_t zposition = TMath::Abs(zPos);
+		  if(zPos > 361.5)
+		    {
+		      cc.RectGeomCellPos(smnumber,xpad,ypad,xx,yy);
+		      h2->Fill(xx,yy);
+		    }
 		  
 		}
 	    }
 	} // Track Loop ended
       
     }
+
+  h2->Draw();
+
   fRunLoader->UnloadgAlice();
   fRunLoader->UnloadHeader();
   fRunLoader->UnloadKinematics();
-  
   fPMDLoader->UnloadHits();
 
   timer.Stop();

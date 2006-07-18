@@ -4,24 +4,11 @@
 //                                                     //
 // ----------------------------------------------------//
 
-#include "Riostream.h"
-#include "TROOT.h"
-#include "TFile.h"
-#include "TNetFile.h"
-#include "TRandom.h"
-#include "TTree.h"
-#include "TBranch.h"
-#include "TClonesArray.h"
-#include "TStopwatch.h"
-#include <stdlib.h>
-
 void AliPMDDigitsRead(Int_t nevt = 1) 
 {
   TStopwatch timer;
   timer.Start();
   
-  //  FILE *fp = fopen("junk.dat","w");
-
   AliRunLoader *fRunLoader = AliRunLoader::Open("galice.root");
 				  
   if (!fRunLoader)
@@ -50,16 +37,17 @@ void AliPMDDigitsRead(Int_t nevt = 1)
   
   fPMDLoader->LoadDigits("READ");
   TClonesArray *fDigits; 
+  AliPMDUtility cc;
+
+  TH2F *h2 = new TH2F("h2","Y vs. X",200,-100.,100.,200,-100.,100.);
 
   // -------------------------------------------------------------- //
 
   Int_t    det = 0,smn = 0;
-  Int_t    xpos,ypos;
+  Int_t    xpos, ypos, xpad, ypad;
   Float_t  adc;
-  Int_t    isup;
-  Int_t    idet;
-  Float_t  clusdata[7];
-  
+  Float_t  xx,yy;
+
   for (Int_t ievt = 2; ievt <nevt; ievt++)
     {
       fRunLoader->GetEvent(ievt);
@@ -92,13 +80,27 @@ void AliPMDDigitsRead(Int_t nevt = 1)
 	      ypos   = pmddigit->GetColumn();
 	      adc    = pmddigit->GetADC();
 	      Int_t trno   = pmddigit->GetTrackNumber();
+	      if(smn <12)
+		{
+		  xpad = ypos;
+		  ypad = xpos;
+		}
+	      else if(smn >=12 && smn < 24)
+		{
+		  xpad = xpos;
+		  ypad = ypos;
+		}
 	      
-	      //fprintf(fp,"%d %d %d %d %f \n ",ievt,smn,xpos,ypos,adc);
-	      
+	      if(det==1)
+		{
+		  cc.RectGeomCellPos(smn,xpad,ypad,xx,yy);
+		  h2->Fill(xx,yy); 
+		}
 	    }
 	} // modules
     }
 
+  h2->Draw();
   timer.Stop();
   timer.Print();
 }
