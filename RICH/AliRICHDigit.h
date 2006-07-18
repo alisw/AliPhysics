@@ -32,7 +32,7 @@ public:
                 Int_t    Chamber     (                               )const{return fChamber;}                                                 //chamber number
                 Int_t    C           (                               )const{return fChamber;}                                                 //chamber number 
                 Int_t    D           (                               )const{return 1+(PadX()-1)/kDiloX;}                                      //DILOGIC chip number 1..10
-                Int_t    Ddl         (                               )const{return (PadX()<=kPadsSecX) ? 2*C()-1 : 2*C();}                    //DDL number 0..13
+                Int_t    Ddl         (                               )const{return (PadX()<=kPadsSecX) ? 2*C()-2 : 2*C()-1;}                  //DDL number 0..13
          inline Int_t    Dig2Raw     (        UInt_t &w              )const;                                                                  //returns DDL ID and fill raw word
                 Int_t    PadX        (                               )const{return fPadX;}                                                    //x position of the pad
                 Int_t    PadY        (                               )const{return fPadY;}                                                    //y postion of the pad     
