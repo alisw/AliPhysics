@@ -162,12 +162,12 @@ Info("V0sTracks2CascadeVertices","Number of reconstructed cascades: %d",ncasc);
 }
 
 
-inline Double_t det(Double_t a00, Double_t a01, Double_t a10, Double_t a11){
+Double_t det(Double_t a00, Double_t a01, Double_t a10, Double_t a11){
   // determinant 2x2
   return a00*a11 - a01*a10;
 }
 
-inline Double_t det (Double_t a00,Double_t a01,Double_t a02,
+Double_t det (Double_t a00,Double_t a01,Double_t a02,
                      Double_t a10,Double_t a11,Double_t a12,
                      Double_t a20,Double_t a21,Double_t a22) {
   // determinant 3x3
