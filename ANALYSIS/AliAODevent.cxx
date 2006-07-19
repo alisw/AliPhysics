@@ -25,7 +25,7 @@
 #include "AliAODv0.h"
 #include "AliAODxi.h"
 
-ClassImp(AliAODevent);
+ClassImp(AliAODevent)
 
 AliAODevent::AliAODevent() {
   fV0s      = new TClonesArray("AliAODv0");
