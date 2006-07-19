@@ -41,6 +41,7 @@ public:
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESD* esd);
+  Int_t CountAcceptedTracks(AliESD* esd);
 
   AliESDtrackCuts &operator=(const AliESDtrackCuts &c);
   virtual void Copy(TObject &c) const;
