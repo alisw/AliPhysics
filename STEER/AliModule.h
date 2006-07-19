@@ -33,6 +33,7 @@ class AliVertexer;
 class AliTracker;
 class AliESD;
 class AliRunLoader;
+class AliRawReader;
 
 
 class AliModule : public TNamed , public TAttLine, public TAttMarker,
@@ -99,7 +100,8 @@ public:
   virtual void        Hits2Digits() {}
   virtual void        Digits2Reco() {}
   virtual void        Digits2Raw();
-  virtual void        Raw2Digits() {}
+  virtual void        Raw2Digits()  {}
+  virtual Bool_t      Raw2SDigits(AliRawReader*) {return kFALSE;}
   virtual void        Browse(TBrowser *) {}
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}
