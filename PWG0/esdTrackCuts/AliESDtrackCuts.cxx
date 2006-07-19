@@ -464,16 +464,37 @@ AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
   //
 
   TObjArray* acceptedTracks = new TObjArray();
-  
+
   // loop over esd tracks
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack* track = esd->GetTrack(iTrack);
-    
+
     if (AcceptTrack(track))
       acceptedTracks->Add(track);
   }
 
   return acceptedTracks;
+}
+
+//____________________________________________________________________
+Int_t
+AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
+{
+  //
+  // returns an the number of tracks that pass the cuts
+  //
+
+  Int_t count = 0;
+
+  // loop over esd tracks
+  for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
+    AliESDtrack* track = esd->GetTrack(iTrack);
+
+    if (AcceptTrack(track))
+      count++;
+  }
+
+  return count;
 }
 
 //____________________________________________________________________
