@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/07/10 13:01:41  jgrosseo
+enhanced storing of last sucessfully processed run (alberto)
+
 Revision 1.4  2006/06/12 09:11:16  jgrosseo
 coding conventions (Alberto)
 
@@ -61,6 +64,7 @@ some docs added
 
 
 #include "AliShuttleConfig.h"
+#include "AliShuttleInterface.h"
 
 #include "AliLog.h"
 
@@ -70,68 +74,58 @@ some docs added
 #include <TLDAPEntry.h>
 #include <TLDAPAttribute.h>
 
+
 AliShuttleConfig::AliShuttleConfigHolder::AliShuttleConfigHolder(const TLDAPEntry* entry):
-	fIsValid(kFALSE)
+fDetector(""),
+fDCSHost(""),
+fDCSPort(0),
+fDCSAliases(),
+fIsValid(kFALSE),
+fSkipDCSQuery(kFALSE)
 {
 // constructor of the shuttle configuration holder
 
 	TLDAPAttribute* anAttribute;
-	
-	anAttribute = entry->GetAttribute("det");
-	if (!anAttribute) {
-		AliError("Invalid configuration! Can't get detector name.");
-		return;
-	}
+
+	anAttribute = entry->GetAttribute("det"); // MUST
 	fDetector = anAttribute->GetValue();
-	if (!fDetector.Length()) {
-		AliError("Detector name can't be an empty string!")
-		return;
-	}
 
-	anAttribute = entry->GetAttribute("DCSHost");
+	anAttribute = entry->GetAttribute("DCSHost"); // MAY
 	if (!anAttribute) {
-		AliError("Invalid configuration! Can't get DCSHost.");
-		return;
-	}
-	fDCSHost = anAttribute->GetValue();
-	if (!fDCSHost.Length()) {
-		AliError("Host can't be an empty string!")
+		AliWarning(
+			Form("%s has not DCS host entry - Shuttle will skip DCS data query!",
+				fDetector.Data()));
+		fIsValid = kTRUE;
+		fSkipDCSQuery = kTRUE;
 		return;
 	}
 
-	anAttribute = entry->GetAttribute("DCSPort");
+	fDCSHost = anAttribute->GetValue();
+
+	anAttribute = entry->GetAttribute("DCSPort"); // MAY
         if (!anAttribute) {
-		AliError("Invalid configuration! Can't get DCSPort.");
+		AliError(Form("Invalid configuration! %s has DCS Host but no port number!",
+				fDetector.Data()));
 		return;
         }
 	TString portStr = anAttribute->GetValue();
-	if (!portStr.Length()) {
-		AliError("port can't be an empty string!")
-		return;
-	}
 	fDCSPort = portStr.Atoi();
 
-	anAttribute = entry->GetAttribute("DCSAlias");
+	anAttribute = entry->GetAttribute("DCSAlias"); // MAY
         if (!anAttribute) {
-		AliError("Invalid configuration! Can't get alias attribute.");
+		AliError(Form("Invalid configuration! %s has DCS host settings but no DCSAlias entries!",
+				fDetector.Data()));
 		return;
 	}
+
 	const char* anAlias;
 	while ((anAlias	= anAttribute->GetValue())) {
 		fDCSAliases.AddLast(new TObjString(anAlias));
 	}
 
-	anAttribute = entry->GetAttribute("DAQFileIDs");
-        if (!anAttribute) {
-		AliError("Invalid configuration! Can't get DAQFileIDs attribute.");
-		return;
-	}
-	const char* aFileID;
-	while ((aFileID	= anAttribute->GetValue())) {
-		fDAQFileIDs.AddLast(new TObjString(aFileID));
-	}
-		
 	fIsValid = kTRUE;
+
+
 }
 
 //______________________________________________________________________________________________
@@ -160,7 +154,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	//
 
 	TLDAPServer aServer(host, port, binddn, password, 3);
-	
+
 	if (!aServer.IsConnected()) {
 		AliError(Form("Can't connect to ldap server %s:%d", 
 				host, port));
@@ -184,16 +178,18 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 
 	if (aResult->GetCount() == 0) {
-		AliError(Form("No Shuttle instance for host = %s!",fShuttleInstanceHost.Data()));
+		AliError(Form("No Shuttle instance for host = %s!",
+					fShuttleInstanceHost.Data()));
 		AliError(Form("All detectors will be processed."));
 		fProcessAll=kTRUE;
 	}
 
 	if (aResult->GetCount() > 1) {
-		AliError(Form("More than one Shuttle instance for host %s!",fShuttleInstanceHost.Data()));
+		AliError(Form("More than one Shuttle instance for host %s!",
+					fShuttleInstanceHost.Data()));
 		return;
 	}
-	
+
 	TLDAPEntry* anEntry;
 	TLDAPAttribute* anAttribute;
 
@@ -207,6 +203,8 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		}
 	}
 
+	// Detector configuration (DCS Archive DB settings)
+
 	aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL,
 			"(objectClass=AliShuttleDetector)");
 	if (!aResult) {
@@ -215,24 +213,25 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		return;
 	}
 
+
 	while ((anEntry = aResult->GetNext())) {
 		AliShuttleConfigHolder* aHolder = new AliShuttleConfigHolder(anEntry);
 		delete anEntry;
 
 		if (!aHolder->IsValid()) {
-			AliError("This entry is going to be skipped!");
+			AliError("Detector configuration error!");
 			delete aHolder;
-
-			continue;
+			return;
 		}
 
 		TObjString* detStr = new TObjString(aHolder->GetDetector());
 		fDetectorMap.Add(detStr, aHolder);
 		fDetectorList.AddLast(detStr);
-	}	
-	
+	}
+
 	delete aResult;
 
+	// Global configuration (DAQ logbook)
 
 	aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL,
 			"(objectClass=AliShuttleGlobalConfig)");
@@ -253,38 +252,97 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 
 	anEntry = aResult->GetNext();
-	
+
 	anAttribute = anEntry->GetAttribute("DAQLogbookHost");
 	if (!anAttribute) {
 		AliError("Can't find DAQLogbookHost attribute!");
 		return;
 	}
-	fDAQLogBookHost = anAttribute->GetValue();
+	fDAQlbHost = anAttribute->GetValue();
 
 	anAttribute = anEntry->GetAttribute("DAQLogbookUser");
 	if (!anAttribute) {
 		AliError("Can't find DAQLogbookUser attribute!");
 		return;
 	}
-	fDAQLogBookUser = anAttribute->GetValue();
-	
+	fDAQlbUser = anAttribute->GetValue();
+
 	anAttribute = anEntry->GetAttribute("DAQLogbookPassword");
 	if (!anAttribute) {
 		AliError("Can't find DAQLogbookPassword attribute!");
 		return;
 	}
-	fDAQLogBookPassword = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("DAQFileSystemHost");
-	if (!anAttribute) {
-		AliError("Can't find DAQFileSystemHost attribute!");
-		return;
-	}
-	fDAQFSHost = anAttribute->GetValue();
+	fDAQlbPass = anAttribute->GetValue();
 
 	delete anEntry;
 	delete aResult;
-	
+
+	// FES configuration (FES logbook and hosts)
+
+
+	for(int iSys=0;iSys<3;iSys++){
+		queryFilter = Form("(system=%s)", AliShuttleInterface::fkSystemNames[iSys]);
+		aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL, queryFilter.Data());
+		if (!aResult) {
+			AliError(Form("Can't find configuration for system: %s",
+					AliShuttleInterface::fkSystemNames[iSys]));
+			return;
+		}
+
+		if (aResult->GetCount() != 1 ) {
+			AliError("Error in FES configuration!");
+			return;
+		}
+
+		anEntry = aResult->GetNext();
+
+		anAttribute = anEntry->GetAttribute("LogbookHost");
+		if (!anAttribute) {
+			AliError(Form ("Can't find LogbookHost attribute for %s!!",
+						AliShuttleInterface::fkSystemNames[iSys]));
+			return;
+		}
+		fFESlbHost[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("LogbookUser");
+		if (!anAttribute) {
+			AliError(Form ("Can't find LogbookUser attribute for %s!!",
+						AliShuttleInterface::fkSystemNames[iSys]));
+			return;
+		}
+		fFESlbUser[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("LogbookPassword");
+		if (!anAttribute) {
+			AliError(Form ("Can't find LogbookPassword attribute for %s!!",
+						AliShuttleInterface::fkSystemNames[iSys]));
+			return;
+		}
+		fFESlbPass[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("FSHost");
+		if (!anAttribute) {
+			AliError(Form ("Can't find FSHost attribute for %s!!",
+						AliShuttleInterface::fkSystemNames[iSys]));
+			return;
+		}
+		fFESHost[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("FSUser");
+		if (!anAttribute) {
+			AliError(Form ("Can't find FSUser attribute for %s!!",
+						AliShuttleInterface::fkSystemNames[iSys]));
+			return;
+		}
+		fFESUser[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("FSPassword");
+		if (anAttribute) fFESPass[iSys] = anAttribute->GetValue();
+
+		delete anEntry;
+		delete aResult;
+	}
+
 	fIsValid = kTRUE;
 }
 
@@ -370,24 +428,6 @@ const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const
 }
 
 //______________________________________________________________________________________________
-const TObjArray* AliShuttleConfig::GetDAQFileIDs(const char* detector) const
-{
-	//
-	// returns collection of TObjString which represents the set of DAQ file IDs
-	// which used for data retrieval for particular detector
-	//
-
-	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
-        if (!aHolder) {
-                AliError(Form("There isn't configuration for detector: %s",
-                        detector));
-                return NULL;
-        }
-
-	return aHolder->GetDAQFileIDs();
-}
-
-//______________________________________________________________________________________________
 Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const
 {
 	// return TRUE if detector is handled by host or if fProcessAll is TRUE
@@ -402,79 +442,64 @@ Bool_t AliShuttleConfig::HostProcessDetector(const char* detector) const
 }
 
 //______________________________________________________________________________________________
-void AliShuttleConfig::Print(Option_t* /*option*/) const 
+void AliShuttleConfig::Print(Option_t* /*option*/) const
 {
 // print configuration
 	
 	TString result;
 	result += '\n';
 
-	result += "Shuttle running on host: ";
-	result += fShuttleInstanceHost;
-	result += '\n';
-	result += "Detectors handled by this host: ";
-	TIter it(&fProcessedDetectors);
-	TObjString* aDet;
-	while ((aDet = (TObjString*) it.Next())) {
-		result += aDet->String();
-		result += ' ';
+	result += Form("\nShuttle running on %s \n\n", fShuttleInstanceHost.Data());
+
+	if(fProcessAll) {
+		result += Form("All detectors will be processed! \n\n");
+	} else {
+		result += "Detectors processed by this host: ";
+		TIter it(&fProcessedDetectors);
+		TObjString* aDet;
+		while ((aDet = (TObjString*) it.Next())) {
+			result += Form("%s ", aDet->String().Data());
+		}
+		result += "\n\n";
 	}
-	result += '\n';
-	if(fProcessAll) result += "ProcessAll is ON";
 
-	result += '\n';
-	result += '\n';
+	result += Form("DAQ Logbook Configuration \n \tHost: %s - User: %s - ",
+		fDAQlbHost.Data(), fDAQlbUser.Data());
 
-	result += "DAQ LogBook Host: ";
-	result += fDAQLogBookHost;
-	result += '\n';
-	result += "DAQ LogBook User: ";
-	result += fDAQLogBookUser;
-	result += '\n';
-	result += "DAQ LogBook Password: ";
-	result.Append('*', fDAQLogBookPassword.Length());
-	result += '\n';
-	result += '\n';
-	result += "DAQ File System Host: ";
-	result += fDAQFSHost;
-	result += '\n';
+	result += "Password: ";
+	result.Append('*', fDAQlbPass.Length());
+	result += "\n\n";
+
+	for(int iSys=0;iSys<3;iSys++){
+		result += Form("FES Configuration for %s system\n", AliShuttleInterface::fkSystemNames[iSys]);
+		result += Form("\tLogbook host: \t%s - \tUser: %s\n",
+						fFESlbHost[iSys].Data(), fFESlbUser[iSys].Data());
+		// result += Form("Logbook Password:",fFESlbPass[iSys].Data());
+		result += Form("\tFES host: \t%s - \tUser: %s\n\n", fFESHost[iSys].Data(), fFESUser[iSys].Data());
+		// result += Form("FES Password:",fFESPass[iSys].Data());
+	}
 
 	TIter iter(fDetectorMap.GetTable());
 	TPair* aPair;
 	while ((aPair = (TPair*) iter.Next())) {
 		AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) aPair->Value();
-		result += '\n';
-		result += " Detector: ";
-		result += aHolder->GetDetector();
-		result += '\n';	
-		result += " DCS Host: ";
-		result += aHolder->GetDCSHost();
-		result += '\n';
-		result += " DCS Port: ";
-		result += aHolder->GetDCSPort();
-		result += '\n';
+		if(aHolder->SkipDCSQuery()) continue;
+		result += Form("DCS archive DB configuration for *** %s *** \n", aHolder->GetDetector());
+		result += Form("\tAmanda server: %s:%d \n", aHolder->GetDCSHost(), aHolder->GetDCSPort());
 
-		result += " DCS Aliases: ";
-		const TObjArray* aliases = aHolder->GetDCSAliases(); 	
+		result += "\tDCS Aliases: ";
+		const TObjArray* aliases = aHolder->GetDCSAliases();
 		TIter it(aliases);
-		TObjString* anAlias;	
+		TObjString* anAlias;
 		while ((anAlias = (TObjString*) it.Next())) {
-			result += anAlias->String();
-			result += ' ';
-		}	
-		
-		result += '\n';
+			result += Form("%s ", anAlias->String().Data());
+		}
 
-		result += " DAQ File IDs: ";
-		const TObjArray* fileIDs = aHolder->GetDAQFileIDs(); 	
-		TIter it2(fileIDs);		
-		TObjString* aFileID;	
-		while ((aFileID = (TObjString*) it2.Next())) {
-			result += aFileID->String();
-			result += ' ';
-		}	
-		result += '\n';
+		result += "\n\n";
+
 	}
+
+	if(!fIsValid) result += "\n\n********** !!!!! Configuration is INVALID !!!!! **********\n";
 
 	AliInfo(result);
 }

@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.5  2006/07/10 13:01:41  jgrosseo
+ enhanced storing of last sucessfully processed run (alberto)
+
  Revision 1.4  2006/07/04 14:59:57  jgrosseo
  revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
 
@@ -223,22 +226,20 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 // that aren't processed yet
 
 	TString sqlQuery;
-	sqlQuery += "select run, time_start, time_end from logbook ";
-	sqlQuery += whereClause;
-	sqlQuery += " order by run";
+	sqlQuery = Form("select run, time_start, time_end from logbook %s order by run",
+		whereClause);
 
 	TSQLServer* aServer;
-	TString logbookHost="mysql://";
-	logbookHost+=fConfig->GetDAQLogBookHost();
-	
+	TString logbookHost=Form("mysql://%s", fConfig->GetDAQlbHost());
+
 	aServer = TSQLServer::Connect(logbookHost,
-			fConfig->GetDAQLogBookUser(),
-			fConfig->GetDAQLogBookPassword());
+			fConfig->GetDAQlbUser(),
+			fConfig->GetDAQlbPass());
 	if (!aServer) {
 		AliError("Can't establish connection to DAQ log book DB!");
 		return kFALSE;
 	}
-	
+
 	aServer->GetTables("REFSYSLOG");
 
 	TSQLResult* aResult;
@@ -290,7 +291,7 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 	}
 
 	delete aResult;
-	
+
 	aServer->Close();
 	delete aServer;
 
@@ -318,7 +319,8 @@ Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries, I
 					processError = kTRUE;
 					hasError = kTRUE;
 		}
-		if(!processError) lastRun = anEntry->GetRun();
+		// Only the last SUCCESSFUL run must be stored!
+		if(!hasError && !processError) lastRun = anEntry->GetRun();
 	}
 
 	return hasError == kFALSE;

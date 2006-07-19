@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2006/07/11 12:44:36  jgrosseo
+adding parameters for extended validity range of data produced by preprocessor
+
 Revision 1.7  2006/07/10 14:37:09  jgrosseo
 small fix + todo comment
 
@@ -84,13 +87,25 @@ some docs added
 #include "AliPreprocessor.h"
 #include "AliDefaultPreprocessor.h"
 
+#include <TSystem.h>
 #include <TObject.h>
 #include <TString.h>
+#include <TTimeStamp.h>
 #include <TObjString.h>
+#include <TSQLServer.h>
+#include <TSQLResult.h>
+#include <TSQLRow.h>
 
 ClassImp(AliShuttle)
 
-TString AliShuttle::fgkLocalUri("local://ShuttleCDB");
+TString AliShuttle::fgkLocalUri("local://$ALICE_ROOT/SHUTTLE/ShuttleCDB");
+const char* AliShuttle::fgkShuttleTempDir = "$ALICE_ROOT/SHUTTLE/temp";
+
+const char* AliShuttle::fgkDetectorName[AliShuttle::fgkNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",
+	"PHOS", "CPV", "RICH", "EMCAL", "MUON_TRK", "MUON_TRG", "FMD", "ZDC", "PMD", "START", "VZERO"};
+
+const char* AliShuttle::fgkDetectorCode[AliShuttle::fgkNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",
+	"PHS", "CPV", "HMP", "EMC", "MCH", "MTR", "FMD", "ZDC", "PMD", "T00", "V00"};
 
 //______________________________________________________________________________________________
 AliShuttle::AliShuttle(const AliShuttleConfig* config,
@@ -107,8 +122,11 @@ AliShuttle::AliShuttle(const AliShuttleConfig* config,
 	// retries: the number of retries in case of connection error.
 	//
 
-	//new AliDefaultPreprocessor("DEFAULT", this);
-
+	if (!fConfig->IsValid()) AliFatal("********** !!!!! Invalid configuration !!!!! **********");
+	for(int iSys=0;iSys<3;iSys++) {
+		fServer[iSys]=0;
+		fFESlist[iSys].SetOwner(kTRUE);
+	}
 }
 
 //______________________________________________________________________
@@ -128,15 +146,20 @@ return *this;
 }
 
 //______________________________________________________________________________________________
-AliShuttle::~AliShuttle() 
+AliShuttle::~AliShuttle()
 {
 // destructor
 
 	fPreprocessorMap.DeleteAll();
+	for(int iSys=0;iSys<3;iSys++)
+		if(fServer[iSys]) {
+			fServer[iSys]->Close();
+			delete fServer[iSys];
+		}
 }
 
 //______________________________________________________________________________________________
-void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor) 
+void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor)
 {
 	//
 	// Registers new AliPreprocessor.
@@ -184,9 +207,12 @@ UInt_t AliShuttle::Store(const char* detector,
 		Log(detector, "Error while storing object in main storage!");
 		AliError("local storage will be used!");
 
-//		result = fLocalStorage->Put(object, id, metaData);
+		AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+
 		result = AliCDBManager::Instance()->GetStorage(fgkLocalUri)
 					->Put(object, id, metaData);
+
+		AliCDBManager::Instance()->SetDefaultStorage(origStorage);
 
 		if(result) {
 			result = 2;
@@ -209,21 +235,49 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime)
 	// Returns kFALSE in case of error occured and kTRUE otherwise
 	//
 
-	Bool_t hasError = kFALSE;
+	AliInfo(Form("\n\n ^*^*^*^*^*^* Processing run %d ^*^*^*^*^*^*", run));
 
+	// Initialization
+	ClearLog();
+	Bool_t hasError = kFALSE;
+	for(Int_t iSys=0;iSys<3;iSys++) fFESCalled[iSys]=kFALSE;
+	fCurrentRun = run;
+	fCurrentStartTime = startTime;
+	fCurrentEndTime = endTime;
+
+	// Loop on detectors in the configuration
 	TIter iter(fConfig->GetDetectors());
 	TObjString* aDetector;
 
-	ClearLog();
-
 	while ((aDetector = (TObjString*) iter.Next())) {
+		Bool_t detectorError=kFALSE;
 		if(!fConfig->HostProcessDetector(aDetector->GetName())) continue;
 		if(!Process(run, startTime, endTime, aDetector->String())) {
 			hasError = kTRUE;
+			detectorError=kTRUE;
+			continue;
 		}
+		AliInfo(Form("Process ended successfully for detector %s!",aDetector->GetName()));
+
+		// Process successful: Update time_processed field in FES logbooks!
+		if(fFESCalled[kDAQ]) {
+			hasError = (UpdateDAQTable(aDetector->GetName()) == kFALSE);
+			fFESlist[kDAQ].Clear();
+		}
+		//if(fFESCalled[kDCS]) {
+		//	hasError = UpdateDCSTable(aDetector->GetName());
+		//	fFESlist[kDCS].Clear();
+		//}
+		//if(fFESCalled[kHLT]) {
+		//	hasError = UpdateHLTTable(aDetector->GetName());
+		//	fFESlist[kHLT].Clear();
+		//}
 	}
 
 	if(fLog != "") StoreLog(run);
+	fCurrentRun = -1;
+	fCurrentStartTime = 0;
+	fCurrentEndTime = 0;
 
 	return hasError == kFALSE;
 }
@@ -249,10 +303,6 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 		return kFALSE;
 	}
 
-	fCurrentRun = run;
-	fCurrentStartTime = startTime;
-	fCurrentEndTime = endTime;
-
 	TString host(fConfig->GetDCSHost(detector));
 	Int_t port = fConfig->GetDCSPort(detector);
 
@@ -271,14 +321,17 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
 		if(result) {
 			aliasMap.Add(anAlias->Clone(), valueSet.Clone());
 		}else{
-			TString message = Form("Error while retrieving alias %s !", 
+			TString message = Form("Error while retrieving alias %s !",
 					anAlias->GetName());
 			Log(detector, message.Data());
 			hasError = kTRUE;
 		}
 	}
 
+	// even if hasError is TRUE the Shuttle should keep on processing the detector (calib files!)
+
 	if(hasError) return kFALSE;
+	// TODO if(hasError) mark DCS error
 
 	AliPreprocessor* aPreprocessor =
 		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(detector));
@@ -290,19 +343,15 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime,
     // TODO default behaviour?
 		AliInfo(Form("No Preprocessor for %s: storing TMap of DP arrays into CDB!",detector));
 		AliCDBMetaData metaData;
-    AliDCSValue dcsValue(startTime, endTime);
+		AliDCSValue dcsValue(startTime, endTime);
 		metaData.SetResponsible(Form("Duck, Donald"));
-  	metaData.SetProperty("StartEndTime", &dcsValue);
+  		metaData.SetProperty("StartEndTime", &dcsValue);
   		metaData.SetComment("Automatically stored by Shuttle!");
 		hasError = (Store(detector, &aliasMap, &metaData) == 0);
 	}
 
 
   	aliasMap.Delete();
-
-	fCurrentRun = -1;
-	fCurrentStartTime = 0;
-	fCurrentEndTime = 0;
 
 	return hasError == kFALSE;
 }
@@ -321,7 +370,7 @@ Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* alias,
 		return kFALSE;
 	}
 
-	Int_t result = client.GetAliasValues(alias, 
+	Int_t result = client.GetAliasValues(alias,
 		GetCurrentStartTime(), GetCurrentEndTime(), valueSet);
 
 	if (result < 0) {
@@ -340,22 +389,387 @@ Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* alias,
 }
 
 //______________________________________________________________________________________________
-const char* AliShuttle::GetFile(Int_t /*system*/, const char* /*detector*/,
-		const char* /*id*/, const char* /*source*/)
+const char* AliShuttle::GetFile(Int_t system, const char* detector,
+		const char* id, const char* source)
 {
-// Get calibration file from DAQ transient file system
+// Get calibration file from file exchange servers
+// calls specific getter according to system index (kDAQ, kDCS, kHLT)
 
-	AliInfo("You are in AliShuttle::GetFile!");
+	switch(system){
+		case kDAQ:
+			return GetDAQFileName(detector, id, source);
+			break;
+		case kDCS:
+			return GetDCSFileName(detector, id, source);
+			break;
+		case kHLT:
+			return GetHLTFileName(detector, id, source);
+			break;
+		default:
+			AliError(Form("No valid system index: %d",system));
+	}
+
 	return 0;
 }
 
+//______________________________________________________________________________________________
+TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char* id)
+{
+// Get sources producing the condition file Id from file exchange servers
+// calls specific getter according to system index (kDAQ, kDCS, kHLT)
+
+	switch(system){
+		case kDAQ:
+			return GetDAQFileSources(detector, id);
+			break;
+		case kDCS:
+			return GetDCSFileSources(detector, id);
+			break;
+		case kHLT:
+			return GetHLTFileSources(detector, id);
+			break;
+		default:
+			AliError(Form("No valid system index: %d",system));
+	}
+
+	return NULL;
+}
 
 //______________________________________________________________________________________________
-TList* AliShuttle::GetFileSources(Int_t /*system*/, const char* /*detector*/, const char* /*id*/)
-{
-// Get list of sources that provided the files to be retrieved from DAQ
+Bool_t AliShuttle::Connect(Int_t system){
+// Connect to MySQL Server of the system's FES logbook
 
-	AliInfo("You are in AliShuttle::GetFileSources!");
+	// check connection: if already connected return
+	if(fServer[system] && fServer[system]->IsConnected()) return kTRUE;
+
+	TString aFESlbHost= Form("mysql://%s", fConfig->GetFESlbHost(system));
+
+	fServer[system] = TSQLServer::Connect(aFESlbHost,
+			fConfig->GetFESlbUser(system),
+			fConfig->GetFESlbPass(system));
+	if (!fServer[system] || !fServer[system]->IsConnected()) {
+		AliError(Form("Can't establish connection to FES logbook for %s !",fkSystemNames[system]));
+		return kFALSE;
+	}
+
+	// Get tables
+	// TODO in the configuration should the table name be there too?
+	switch(system){
+		case kDAQ:
+			fServer[kDAQ]->GetTables("REFSYSLOG");
+			break;
+		case kDCS:
+			//fServer[kDCS]->GetTables("REFSYSLOG");
+			break;
+		case kHLT:
+			//fServer[kHLT]->GetTables("REFSYSLOG");
+			break;
+		default:
+			break;
+	}
+
+	return kTRUE;
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, const char* source){
+// Retrieves a file from the DAQ FES.
+// First queris the DAQ logbook_fs for the DAQ file name, using the run, detector, id and source info
+// then calls RetrieveDAQFile(DAQfilename) for actual copy to local disk
+// run: current run being processed (fCurrentRun)
+// detector: comes from the Preprocessor name (must be converted into detector code with GetDetCode)
+// id: provided as a parameter by the Preprocessor
+// source: provided by the Preprocessor through GetFileSources function
+
+	// check connection, in case connect
+	if(!Connect(kDAQ)){
+		Log(detector, "GetDAQFileName: Couldn't connect to DAQ Logbook !");
+		return 0;
+	}
+
+	// Query preparation
+	TString sqlQueryStart = "select filePath from logbook_fs where";
+	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\"",
+				fCurrentRun, GetDetCode(detector), id, source);
+	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
+
+	AliInfo(Form("SQL query: \n%s",sqlQuery.Data()));
+
+	// Query execution
+	TSQLResult* aResult;
+	aResult = fServer[kDAQ]->Query(sqlQuery);
+	if (!aResult) {
+		Log(detector, Form("Can't execute query <%s>!", sqlQuery.Data()));
+		return 0;
+	}
+
+	if (aResult->GetRowCount() == 0) {
+		Log(detector,
+			Form("GetDAQFileName: No result from SQL query <%s>!", sqlQuery.Data()));
+		delete aResult;
+		return 0;
+	}
+
+	if (aResult->GetRowCount() >1) {
+		Log(detector,
+			Form("GetDAQFileName: More than one row resulting from SQL query <%s>!", sqlQuery.Data()));
+		delete aResult;
+		return 0;
+	}
+
+	TSQLRow* aRow = aResult->Next();
+
+	if(!aRow){
+		Log(detector, Form("GetDAQFileName: Empty set result from query <%s>!", sqlQuery.Data()));
+		delete aResult;
+		return 0;
+	}
+
+	TString filePath(aRow->GetField(0), aRow->GetFieldLength(0));
+
+	delete aResult;
+
+	AliInfo(Form("filePath = %s",filePath.Data()));
+
+	// retrieved file is renamed to make it unique
+	TString localFileName = Form("%s_%d_%s_%s.shuttle",
+					detector, fCurrentRun, id, source);
+
+	// file retrieval from DAQ FES
+	Bool_t result = RetrieveDAQFile(filePath.Data(), localFileName.Data());
+	if(!result) {
+		Log(detector, Form("copying file %s from DAQ FES failed!", filePath.Data()));
+		return 0;
+	} else {
+		AliInfo(Form("File %s copied from DAQ FES into %s/%s !",
+			filePath.Data(), fgkShuttleTempDir, localFileName.Data()));
+	}
+
+
+	fFESCalled[kDAQ]=kTRUE;
+	TObjString *fileParams = new TObjString(Form("%s_!?!_%s", id, source));
+	fFESlist[kDAQ].Add(fileParams);
+
+	return localFileName.Data();
+
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttle::RetrieveDAQFile(const char* daqFileName, const char* localFileName){
+
+	// check temp directory: trying to cd to temp; if it does not exist, create it
+	AliInfo(Form("Copy file %s from DAQ FES into folder %s and rename it as %s",
+			daqFileName,fgkShuttleTempDir, localFileName));
+
+	void* dir = gSystem->OpenDirectory(fgkShuttleTempDir);
+	if (dir == NULL) {
+		if (gSystem->mkdir(fgkShuttleTempDir, kTRUE)) {
+			AliError(Form("Can't open directory <%s>!", fgkShuttleTempDir));
+			return kFALSE;
+		}
+
+	} else {
+		gSystem->FreeDirectory(dir);
+	}
+
+	TString baseDAQFESFolder = "DAQ";
+	TString command = Form("scp %s@%s:%s/%s %s/%s",
+		fConfig->GetFESUser(kDAQ),
+		fConfig->GetFESHost(kDAQ),
+		baseDAQFESFolder.Data(),
+		daqFileName,
+		fgkShuttleTempDir,
+		localFileName);
+
+	AliInfo(Form("%s",command.Data()));
+
+	UInt_t nRetries = 0;
+	UInt_t maxRetries = 3;
+
+	// copy!! if successful TSystem::Exec returns 0
+	while(nRetries++ < maxRetries) {
+		AliInfo(Form("Trying to copy file. Retry # %d", nRetries));
+		if(gSystem->Exec(command.Data()) == 0) return kTRUE;
+	}
+
+	return kFALSE;
+
+}
+
+//______________________________________________________________________________________________
+TList* AliShuttle::GetDAQFileSources(const char* detector, const char* id){
+// Retrieves a file from the DCS FES.
+
+	// check connection, in case connect
+	if(!Connect(kDAQ)){
+		Log(detector, "GetDAQFileName: Couldn't connect to DAQ Logbook !");
+		return 0;
+	}
+
+	// Query preparation
+	TString sqlQueryStart = "select DAQsource from logbook_fs where";
+	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
+				fCurrentRun, GetDetCode(detector), id);
+	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
+
+	AliInfo(Form("SQL query: \n%s",sqlQuery.Data()));
+
+	// Query execution
+	TSQLResult* aResult;
+	aResult = fServer[kDAQ]->Query(sqlQuery);
+	if (!aResult) {
+		Log(detector, Form("GetDAQFileSources: Can't execute query <%s>!", sqlQuery.Data()));
+		return 0;
+	}
+
+	if (aResult->GetRowCount() == 0) {
+		Log(detector,
+			Form("GetDAQFileSources: No result from SQL query <%s>!", sqlQuery.Data()));
+		delete aResult;
+		return 0;
+	}
+
+	TSQLRow* aRow;
+	TList *list = new TList();
+	list->SetOwner(1);
+
+	while((aRow = aResult->Next())){
+
+		TString daqSource(aRow->GetField(0), aRow->GetFieldLength(0));
+		AliInfo(Form("daqSource = %s", daqSource.Data()));
+		list->Add(new TObjString(daqSource));
+	}
+	delete aResult;
+
+	return list;
+
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttle::UpdateDAQTable(const char* detector){
+// Update DAQ table filling time_processed field in all rows corresponding to current run and detector
+
+	// check connection, in case connect
+	if(!Connect(kDAQ)){
+		Log(detector, "UpdateDAQTable: Couldn't connect to DAQ Logbook !");
+		return kFALSE;
+	}
+
+	TTimeStamp now; // now
+
+	// Loop on FES list entries
+	TIter iter(&fFESlist[kDAQ]);
+	TObjString *aFESentry=0;
+	while((aFESentry = dynamic_cast<TObjString*> (iter.Next()))){
+		TString aFESentrystr = aFESentry->String();
+		TObjArray *aFESarray = aFESentrystr.Tokenize("_!?!_");
+		if(!aFESarray || aFESarray->GetEntries() != 2 ) {
+			Log(detector,Form("UpdateDAQTable: error updating FES entry! string = %s",
+				aFESentrystr.Data()));
+			if(aFESarray) delete aFESarray;
+			return kFALSE;
+		}
+		const char* fileId = ((TObjString*) aFESarray->At(0))->GetName();
+		const char* daqSource = ((TObjString*) aFESarray->At(1))->GetName();
+		TString whereClause = Form("where run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\";",
+			fCurrentRun,GetDetCode(detector), fileId, daqSource);
+
+		delete aFESarray;
+
+		TString sqlQuery = Form("update logbook_fs set time_processed=%d %s", now.GetSec(), whereClause.Data());
+
+		AliInfo(Form("SQL query: \n%s",sqlQuery.Data()));
+
+		// Query execution
+		TSQLResult* aResult;
+		aResult = dynamic_cast<TSQLResult*> (fServer[kDAQ]->Query(sqlQuery));
+		if (!aResult) {
+			Log(detector, Form("UpdateDAQTable: Can't execute query <%s>!", sqlQuery.Data()));
+			return kFALSE;
+		}
+		delete aResult;
+
+		// check result - TODO Is it necessary?
+		sqlQuery = Form("select time_processed from logbook_fs %s", whereClause.Data());
+		AliInfo(Form(" CHECK - SQL query: \n%s",sqlQuery.Data()));
+
+		aResult = dynamic_cast<TSQLResult*> (fServer[kDAQ]->Query(sqlQuery));
+		if (!aResult) {
+			AliWarning("Can't check result!");
+			continue;
+		}
+
+	if (aResult->GetRowCount() == 0) {
+		Log(detector,
+			Form("GetDAQFileName: No result from SQL query <%s>!", sqlQuery.Data()));
+		delete aResult;
+		//return 0;
+	}
+
+	if (aResult->GetRowCount() >1) {
+		Log(detector,
+			Form("GetDAQFileName: More than one row resulting from SQL query <%s>!", sqlQuery.Data()));
+		delete aResult;
+		//return 0;
+	}
+
+		TSQLRow *row = dynamic_cast<TSQLRow*> (aResult->Next());
+		TString processedTimeString(row->GetField(0), row->GetFieldLength(0));
+		Int_t processedTime = processedTimeString.Atoi();
+		if(processedTime != now.GetSec()){
+			Log(detector, Form("UpdateDAQTable: Update table error: processed_time=%d, now=%d !",
+				processedTime, now.GetSec()));
+			delete aResult;
+			return kFALSE;
+		}
+
+		delete aResult;
+
+	}
+
+	return kTRUE;
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetDCSFileName(const char* /*detector*/, const char* /*id*/, const char* /*source*/){
+// Retrieves a file from the DCS FES.
+
+return "You're in DCS";
+
+}
+
+//______________________________________________________________________________________________
+TList* AliShuttle::GetDCSFileSources(const char* /*detector*/, const char* /*id*/){
+// Retrieves a file from the DCS FES.
+
+return NULL;
+
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetHLTFileName(const char* /*detector*/, const char* /*id*/, const char* /*source*/){
+// Retrieves a file from the HLT FES.
+
+return "You're in HLT";
+
+}
+
+//______________________________________________________________________________________________
+TList* AliShuttle::GetHLTFileSources(const char* /*detector*/, const char* /*id*/){
+// Retrieves a file from the HLT FES.
+
+return NULL;
+
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetDetCode(const char* detector){
+// Return detector code
+
+	for(int iDet=0; iDet < fgkNDetectors; iDet++){
+		if(!strcmp(fgkDetectorName[iDet], detector)) return fgkDetectorCode[iDet];
+	}
+
 	return 0;
 }
 
