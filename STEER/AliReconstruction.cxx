@@ -547,21 +547,6 @@ Bool_t AliReconstruction::Run(const char* input,
   }
   if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
 
-  // Temporary fix by A.Gheata
-  // Could be removed with the next Root version (>5.11)
-  if (gGeoManager) {
-    TIter next(gGeoManager->GetListOfVolumes());
-    TGeoVolume *vol;
-    while ((vol = (TGeoVolume *)next())) {
-      if (vol->GetVoxels()) {
-	if (vol->GetVoxels()->NeedRebuild()) {
-	  vol->GetVoxels()->Voxelize();
-	  vol->FindOverlaps();
-	}
-      }
-    }
-  }
-
   // local reconstruction
   if (!fRunLocalReconstruction.IsNull()) {
     if (!RunLocalReconstruction(fRunLocalReconstruction)) {
