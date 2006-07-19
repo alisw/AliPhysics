@@ -128,6 +128,10 @@
 #include "AliVertexGenFile.h"
 #include "AliCentralTrigger.h"
 #include "AliCTPRawData.h"
+#include "AliRawReaderFile.h"
+#include "AliESD.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliSimulation)
 
@@ -159,7 +163,8 @@ AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
   fUseBkgrdVertex(kTRUE),
   fRegionOfInterest(kFALSE),
   fCDBUri(cdbUri),
-  fSpecCDBUri()
+  fSpecCDBUri(),
+  fEmbeddingFlag(kFALSE)
 {
 // create simulation object with default parameters
 
@@ -192,7 +197,8 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fUseBkgrdVertex(sim.fUseBkgrdVertex),
   fRegionOfInterest(sim.fRegionOfInterest),
   fCDBUri(sim.fCDBUri),
-  fSpecCDBUri()
+  fSpecCDBUri(),
+  fEmbeddingFlag(sim.fEmbeddingFlag)
 {
 // copy constructor
 
@@ -590,6 +596,12 @@ void AliSimulation::MergeWith(const char* fileName, Int_t nSignalPerBkgrd)
   fBkgrdFileNames->Add(fileNameStr);
 }
 
+void AliSimulation::EmbedInto(const char* fileName, Int_t nSignalPerBkgrd)
+{
+// add a file with background events for embeddin
+  MergeWith(fileName, nSignalPerBkgrd);
+  fEmbeddingFlag = kTRUE;
+}
 
 //_____________________________________________________________________________
 Bool_t AliSimulation::Run(Int_t nEvents)
@@ -614,7 +626,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     if (!gGeoManager) if (fStopOnError) return kFALSE;
     if (!MisalignGeometry()) if (fStopOnError) return kFALSE;
   }
-
+  
   // hits -> summable digits
   if (!fMakeSDigits.IsNull()) {
     if (!RunSDigitization(fMakeSDigits)) if (fStopOnError) return kFALSE;
@@ -914,6 +926,7 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
   if (fBkgrdFileNames) nStreams = fBkgrdFileNames->GetEntriesFast() + 1;
   Int_t signalPerBkgrd = GetNSignalPerBkgrd();
   AliRunDigitizer* manager = new AliRunDigitizer(nStreams, signalPerBkgrd);
+  // manager->SetEmbeddingFlag(fEmbeddingFlag);
   manager->SetInputStream(0, fGAliceFileName.Data());
   for (Int_t iStream = 1; iStream < nStreams; iStream++) {
     const char* fileName = ((TObjString*)
@@ -933,6 +946,7 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
     if (IsSelected(det->GetName(), detStr) && 
 	!IsSelected(det->GetName(), detExcl)) {
       AliDigitizer* digitizer = det->CreateDigitizer(manager);
+      
       if (!digitizer) {
 	AliError(Form("no digitizer for %s", det->GetName()));
 	if (fStopOnError) return kFALSE;
@@ -1257,8 +1271,9 @@ Int_t AliSimulation::GetNSignalPerBkgrd(Int_t nEvents) const
   // get the number of signal events
   if (nEvents <= 0) {
     AliRunLoader* runLoader = 
-      AliRunLoader::Open(fGAliceFileName.Data(), "SIGNAL");
+	AliRunLoader::Open(fGAliceFileName.Data(), "SIGNAL");
     if (!runLoader) return 1;
+    
     nEvents = runLoader->GetNumberOfEvents();
     delete runLoader;
   }
@@ -1268,12 +1283,12 @@ Int_t AliSimulation::GetNSignalPerBkgrd(Int_t nEvents) const
     // get the number of background events
     const char* fileName = ((TObjString*)
 			    (fBkgrdFileNames->At(iBkgrdFile)))->GetName();
-    AliRunLoader* runLoader = 
+    AliRunLoader* runLoader =
       AliRunLoader::Open(fileName, "BKGRD");
     if (!runLoader) continue;
     Int_t nBkgrdEvents = runLoader->GetNumberOfEvents();
     delete runLoader;
-
+  
     // get or calculate the number of signal per background events
     Int_t nSignalPerBkgrd = fBkgrdFileNames->At(iBkgrdFile)->GetUniqueID();
     if (nSignalPerBkgrd <= 0) {
@@ -1327,4 +1342,105 @@ Bool_t AliSimulation::IsSelected(TString detName, TString& detectors) const
   while (detectors.EndsWith(" ")) detectors.Remove(detectors.Length()-1, 1);
 
   return result;
+}
+
+Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* esdFileName) 
+{
+//
+// Steering routine  to convert raw data in directory rawDirectory/ to fake SDigits. 
+// These can be used for embedding of MC tracks into RAW data using the standard 
+// merging procedure.
+//
+// If an ESD file is given the reconstructed vertex is taken from it and stored in the event header.
+//
+    if (!gAlice) {
+	AliError("no gAlice object. Restart aliroot and try again.");
+	return kFALSE;
+    }
+    if (gAlice->Modules()->GetEntries() > 0) {
+	AliError("gAlice was already run. Restart aliroot and try again.");
+	return kFALSE;
+    }
+    
+    AliInfo(Form("initializing gAlice with config file %s",fConfigFileName.Data()));
+    StdoutToAliInfo(StderrToAliError(gAlice->Init(fConfigFileName.Data());););
+//
+//  Initialize CDB     
+    InitCDBStorage();
+    AliCDBManager* man = AliCDBManager::Instance();
+    man->SetRun(0); // Should this come from rawdata header ?
+    
+    Int_t iDet;
+    //
+    // Get the runloader
+    AliRunLoader* runLoader = gAlice->GetRunLoader();
+    //
+    // Open esd file if available
+    TFile* esdFile = TFile::Open(esdFileName);
+    Bool_t esdOK = (esdFile != 0);
+    AliESD* esd = new AliESD;
+    TTree* treeESD = 0;
+    if (esdOK) {
+	treeESD = (TTree*) esdFile->Get("esdTree");
+	if (!treeESD) {
+	    AliWarning("No ESD tree found");
+	    esdOK = kFALSE;
+	} else {
+	    treeESD->SetBranchAddress("ESD", &esd);
+	}
+    }
+    //
+    // Create the RawReader
+    AliRawReaderFile* rawReader = new AliRawReaderFile(rawDirectory);
+    //
+    // Get list of detectors
+    TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+    //
+    // Get Header
+    AliHeader* header = runLoader->GetHeader();
+    //
+    // Event loop
+    Int_t nev = 0;
+    while(kTRUE) {
+	if (!(rawReader->NextEvent())) break;
+	//
+	// Detector loop
+	for (iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
+	    AliModule* det = (AliModule*) detArray->At(iDet);
+	    AliInfo(Form("Calling Raw2SDigits for %s\n", det->GetName()));
+	    det->Raw2SDigits(rawReader);
+	    rawReader->Reset();
+	} // detectors
+
+	//
+	//  If ESD information available obtain reconstructed vertex and store in header.
+	if (esdOK) {
+	    treeESD->GetEvent(nev);
+	    const AliESDVertex* esdVertex = esd->GetPrimaryVertex();
+	    Double_t position[3];
+	    esdVertex->GetXYZ(position);
+	    AliGenEventHeader* mcHeader = new  AliGenEventHeader("ESD");
+	    TArrayF mcV;
+	    mcV.Set(3);
+	    for (Int_t i = 0; i < 3; i++) mcV[i] = position[i];
+	    mcHeader->SetPrimaryVertex(mcV);
+	    header->Reset(0,nev);
+	    header->SetGenEventHeader(mcHeader);
+	    printf("***** Saved vertex %f %f %f \n", position[0], position[1], position[2]);
+	}
+	nev++;
+//
+//      Finish the event
+	runLoader->TreeE()->Fill();
+	runLoader->SetNextEvent();
+    } // events
+ 
+    delete rawReader;
+//
+//  Finish the run 
+    runLoader->CdGAFile();
+    runLoader->WriteHeader("OVERWRITE");
+    runLoader->WriteRunLoader();
+
+    return kTRUE;
 }

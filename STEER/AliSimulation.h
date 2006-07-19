@@ -45,6 +45,7 @@ public:
   void           SetMakeSDigits(const char* detectors) 
                    {fMakeSDigits = detectors;};
   void           MergeWith(const char* fileName, Int_t nSignalPerBkgrd = 0);
+  void           EmbedInto(const char* fileName, Int_t nSignalPerBkgrd = 0);
   void           SetUseBkgrdVertex(Bool_t useBkgrdVertex)
                    {fUseBkgrdVertex = useBkgrdVertex;};
   void           SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
@@ -102,7 +103,8 @@ public:
   virtual Bool_t ConvertRawFilesToDate(const char* dateFileName = "raw.date");
   virtual Bool_t ConvertDateToRoot(const char* dateFileName = "raw.date",
 				   const char* rootFileName = "raw.root");
-
+  virtual Bool_t ConvertRaw2SDigits(const char* rawDirectory, const char* esdFile = "");
+  
 private:
   AliRunLoader*  LoadRun(const char* mode = "UPDATE") const;
   Int_t          GetNSignalPerBkgrd(Int_t nEvents = 0) const;
@@ -133,7 +135,7 @@ private:
 
   TString 	 fCDBUri;	      // Uri of the default CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
-
+  Bool_t         fEmbeddingFlag;      // Flag for embedding
   ClassDef(AliSimulation, 3)  // class for running generation, simulation and digitization
 };
 
