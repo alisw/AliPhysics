@@ -2,7 +2,7 @@
 
 // Helper macros for creating chains
 
-TChain* CreateESDChain(const char* aDataDir, Int_t aRuns = 20, Int_t offset = 0)
+TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, Int_t offset = 0)
 {
   // creates chain of files in a given directory or file containing a list.
   // In case of directory the structure is expected as:
@@ -83,8 +83,6 @@ TChain* CreateESDChain(const char* aDataDir, Int_t aRuns = 20, Int_t offset = 0)
     }
 
     in.close();
-
-    chain->Lookup();
   }
 
   return chain;
