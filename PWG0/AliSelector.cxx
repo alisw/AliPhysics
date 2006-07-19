@@ -86,6 +86,14 @@ void AliSelector::SlaveBegin(TTree* tree)
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
+  TString option = GetOption();
+
+  if (option.Contains("debug"))
+  {
+    AliLog::SetClassDebugLevel("AliSelector", AliLog::kDebug);
+    AliInfo(Form("Called with option %s.", option.Data()));
+  }
+
   AliDebug(AliLog::kDebug, "=======SLAVEBEGIN========");
   AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
   AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
