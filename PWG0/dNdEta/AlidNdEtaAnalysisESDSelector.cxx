@@ -43,6 +43,36 @@ AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
 
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
+
+  if (fdNdEtaAnalysis)
+  {
+    delete fdNdEtaAnalysis;
+    fdNdEtaAnalysis = 0;
+  }
+
+  if (fdNdEtaAnalysisMB)
+  {
+    delete fdNdEtaAnalysisMB;
+    fdNdEtaAnalysisMB = 0;
+  }
+
+  if (fdNdEtaAnalysisMBVtx)
+  {
+    delete fdNdEtaAnalysisMBVtx;
+    fdNdEtaAnalysisMBVtx = 0;
+  }
+
+  if (fEsdTrackCuts)
+  {
+    delete fEsdTrackCuts;
+    fEsdTrackCuts = 0;
+  }
+
+  if (fdNdEtaCorrection)
+  {
+    delete fdNdEtaCorrection;
+    fdNdEtaCorrection = 0;
+  }
 }
 
 void AlidNdEtaAnalysisESDSelector::Begin(TTree* tree)
@@ -183,7 +213,7 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
     }
 
     Double_t p[3];
-    esdTrack->GetConstrainedPxPyPz(p); // ### TODO or GetInnerPxPyPy / GetOuterPxPyPy
+    esdTrack->GetConstrainedPxPyPz(p); // ### TODO should be okay because we have a vertex, however GetInnerPxPyPy / GetOuterPxPyPy also exist
     TVector3 vector(p);
 
     Float_t theta = vector.Theta();
@@ -230,9 +260,16 @@ void AlidNdEtaAnalysisESDSelector::SlaveTerminate()
     return;
   }
 
+  // Add the objects to the output list and set them to 0, so that the destructor does not delete them.
+
   fOutput->Add(fdNdEtaAnalysis);
+  fdNdEtaAnalysis = 0;
+
   fOutput->Add(fdNdEtaAnalysisMB);
+  fdNdEtaAnalysisMB = 0;
+
   fOutput->Add(fdNdEtaAnalysisMBVtx);
+  fdNdEtaAnalysisMBVtx = 0;
 }
 
 void AlidNdEtaAnalysisESDSelector::Terminate()

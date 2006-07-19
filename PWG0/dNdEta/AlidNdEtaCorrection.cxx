@@ -25,6 +25,10 @@ AlidNdEtaCorrection::AlidNdEtaCorrection()
 //____________________________________________________________________
 AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title)
   : TNamed(name, title),
+  fTrack2ParticleCorrection(0),
+  fVertexRecoCorrection(0),
+  fTriggerCorrection(0),
+  fTriggerBiasCorrection(0),
   fNEvents(0),
   fNTriggeredEvents(0)
 {
@@ -49,6 +53,36 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   fTriggerCorrection        ->SetAxisTitles("vtx z [cm]", "Ntracks");
 
   fTriggerBiasCorrection       ->SetAxisTitles("#eta", "p_{T} [GeV/c]");
+}
+
+//____________________________________________________________________
+AlidNdEtaCorrection::~AlidNdEtaCorrection()
+{
+  // destructor
+
+  if (fTrack2ParticleCorrection)
+  {
+    delete fTrack2ParticleCorrection;
+    fTrack2ParticleCorrection = 0;
+  }
+
+  if (fVertexRecoCorrection)
+  {
+    delete fVertexRecoCorrection;
+    fVertexRecoCorrection = 0;
+  }
+
+  if (fTriggerCorrection)
+  {
+    delete fTriggerCorrection;
+    fTriggerCorrection = 0;
+  }
+
+  if (fTriggerBiasCorrection)
+  {
+    delete fTriggerBiasCorrection;
+    fTriggerBiasCorrection = 0;
+  }
 }
 
 //____________________________________________________________________

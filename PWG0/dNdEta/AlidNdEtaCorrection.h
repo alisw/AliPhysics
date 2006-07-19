@@ -29,6 +29,8 @@ public:
   AlidNdEtaCorrection();
   AlidNdEtaCorrection(const Char_t* name, const Char_t* title);
 
+  ~AlidNdEtaCorrection();
+
   // fVertexRecoCorrection, fTriggerCorrection
   void FillEvent(Float_t vtx, Float_t n)                        {fTriggerCorrection->FillGene(vtx, n);}
   void FillEventWithTrigger(Float_t vtx, Float_t n)             {fVertexRecoCorrection->FillGene(vtx, n); fTriggerCorrection->FillMeas(vtx, n);}
