@@ -26,8 +26,6 @@ AliMultiplicityESDSelector::AliMultiplicityESDSelector() :
   //
   // Constructor. Initialization of pointers
   //
-
-  AliLog::SetClassDebugLevel("AliMultiplicityESDSelector", AliLog::kDebug);
 }
 
 AliMultiplicityESDSelector::~AliMultiplicityESDSelector()
@@ -117,13 +115,9 @@ Bool_t AliMultiplicityESDSelector::Process(Long64_t entry)
     return kTRUE;
 
   // get number of "good" tracks
-  TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
-  Int_t nGoodTracks = list->GetEntries();
-  delete list;
-  list = 0;
+  Int_t nGoodTracks = fEsdTrackCuts->CountAcceptedTracks(fESD);
 
   fMultiplicity->Fill(nGoodTracks);
-
 
   return kTRUE;
 }
