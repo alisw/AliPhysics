@@ -18,7 +18,7 @@
 // Event generator that using an instance of type AliGenReader
 // reads particles from a file and applies cuts.
 // Example: In your Config.C you can include the following lines
-//   AliGenExtFile *gener = new AliGenExtFile(-1);
+//  AliGenExtFile *gener = new AliGenExtFile(-1);
 //  gener->SetMomentumRange(0,999);
 //  gener->SetPhiRange(-180.,180.);
 //  gener->SetThetaRange(0,180);
@@ -32,7 +32,7 @@
 #include <Riostream.h>
 
 #include "AliGenExtFile.h"
-#include "AliRun.h"
+#include "AliRunLoader.h"
 
 #include <TParticle.h>
 #include <TFile.h>
@@ -92,14 +92,8 @@ void AliGenExtFile::Generate()
   Float_t random[6];
   Int_t i = 0, j, nt;
   //
-  for (j=0;j<3;j++) origin[j]=fOrigin[j];
-  if(fVertexSmear == kPerTrack) {
-    Rndm(random,6);
-    for (j = 0; j < 3; j++) {
-	origin[j] += fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-	    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-    }
-  }
+  //
+  if (fVertexSmear == kPerEvent) Vertex();
 
   while(1) {
     Int_t nTracks = fReader->NextEvent(); 	
@@ -112,9 +106,9 @@ void AliGenExtFile::Generate()
     //
     // Particle selection loop
     //
-    // The selction criterium for the external file generator is as follows:
+    // The selection criterium for the external file generator is as follows:
     //
-    // 1) All tracks are subjects to the cuts defined by AliGenerator, i.e.
+    // 1) All tracks are subject to the cuts defined by AliGenerator, i.e.
     //    fThetaMin, fThetaMax, fPhiMin, fPhiMax, fPMin, fPMax, fPtMin, fPtMax,
     //    fYMin, fYMax.
     //    If the particle does not satisfy these cuts, it is not put on the
@@ -127,13 +121,12 @@ void AliGenExtFile::Generate()
     if(fCutOnChild) {
       // Count the selected children
       Int_t nSelected = 0;
-      while ( (iparticle=fReader->NextParticle()) ) {
-	 ;
-	Int_t kf = CheckPDGCode(iparticle->GetPdgCode());
-	kf = TMath::Abs(kf);
-	if (ChildSelected(kf) && KinematicSelection(iparticle, 1)) {
-	  nSelected++;
-	}
+      while ((iparticle=fReader->NextParticle()) ) {
+	  Int_t kf = CheckPDGCode(iparticle->GetPdgCode());
+	  kf = TMath::Abs(kf);
+	  if (ChildSelected(kf) && KinematicSelection(iparticle, 1)) {
+	      nSelected++;
+	  }
       }
       if (!nSelected) continue;    // No particle selected:  Go to next event
       fReader->RewindEvent();
@@ -143,57 +136,39 @@ void AliGenExtFile::Generate()
     // Stack filling loop
     //
     for (i = 0; i < nTracks; i++) {
-
-      TParticle* iparticle = fReader->NextParticle();
-      Bool_t selected = KinematicSelection(iparticle,0); 
-      if (!selected) {
-	Double_t  pz   = iparticle->Pz();
-	Double_t  e    = iparticle->Energy();
-	Double_t  y;
-	if ((e-pz) == 0) {
-	  y = 20.;
-	} else if ((e+pz) == 0.) {
-	  y = -20.;
+	TParticle* iparticle = fReader->NextParticle();
+	Bool_t selected = KinematicSelection(iparticle,0); 
+	if (!selected) continue;
+	p[0] = iparticle->Px();
+	p[1] = iparticle->Py();
+	p[2] = iparticle->Pz();
+	Int_t idpart = iparticle->GetPdgCode();
+	if(fVertexSmear==kPerTrack) 
+	{
+	    Rndm(random,6);
+	    for (j = 0; j < 3; j++) {
+		origin[j]=fOrigin[j]+
+		    fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
+		    TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
+	    }
 	} else {
-	  y = 0.5*TMath::Log((e+pz)/(e-pz));	  
+	    origin[0] = fVertex[0] + iparticle->Vx();
+	    origin[1] = fVertex[1] + iparticle->Vy();
+	    origin[2] = fVertex[2] + iparticle->Vz();
 	}
-	printf("\n Not selected %d %f %f %f %f %f", i,
-	       iparticle->Theta(),
-	       iparticle->Phi(),
-	       iparticle->P(),
-	       iparticle->Pt(),
-	       y);
-	//PH	delete iparticle;
-	//	continue;
-      }
-      p[0] = iparticle->Px();
-      p[1] = iparticle->Py();
-      p[2] = iparticle->Pz();
-      Int_t idpart = iparticle->GetPdgCode();
-      if(fVertexSmear==kPerTrack) 
-       {
-         Rndm(random,6);
-         for (j = 0; j < 3; j++) {
-            origin[j]=fOrigin[j]+
-                      fOsigma[j]*TMath::Cos(2*random[2*j]*TMath::Pi())*
-                        TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
-         }
-      }
-      Int_t decayed = iparticle->GetFirstDaughter();
-      Int_t doTracking = fTrackIt && (decayed < 0) &&
-	                 (TMath::Abs(idpart) > 10) && selected;
-      // printf("*** pdg, first daughter, trk = %d, %d, %d\n",
-      //   idpart,decayed, doTracking);
-      //PH      PushTrack(doTracking,-1,idpart,p,origin,polar,0,kPPrimary,nt);
-      Int_t parent = iparticle->GetFirstMother();
-      PushTrack(doTracking,parent,idpart,p,origin,polar,0,kPPrimary,nt);
-      KeepTrack(nt);
+	
+	Int_t decayed    = iparticle->GetFirstDaughter();
+	Int_t doTracking = fTrackIt && (decayed < 0) && (TMath::Abs(idpart) > 10) && selected;
+	Int_t parent     = iparticle->GetFirstMother();
+	
+	PushTrack(doTracking,parent,idpart,p,origin,polar,0,kPPrimary,nt);
+	KeepTrack(nt);
     } // track loop
-
+    
     break;
-
+    
   } // event loop
-
+  
   SetHighWaterMark(nt);
   CdEventFile();
 }
@@ -201,15 +176,7 @@ void AliGenExtFile::Generate()
 void AliGenExtFile::CdEventFile()
 {
 // CD back to the event file
-  TFile *pFile=0;
-  if (!gAlice) {
-      gAlice = (AliRun*)pFile->Get("gAlice");
-      if (gAlice) printf("AliRun object found on file\n");
-      if (!gAlice) gAlice = new AliRun("gAlice","Alice test program");
-  }
-  TTree *fAli=gAlice->TreeK();
-  if (fAli) pFile =fAli->GetCurrentFile();
-  pFile->cd();    
+    (AliRunLoader::GetRunLoader())->CdGAFile();
 }
 
 

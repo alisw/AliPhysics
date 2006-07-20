@@ -6,8 +6,8 @@
 /* $Id$ */
 
 
-// Event generator that can read the old ALICE event format based on CW-ntuples
-// http://consult.cern.ch/alice/Internal_Notes/1995/32/abstract
+// Event generator that can read events from a files.
+// The reading is performed by a realisation of AliGenReader specific to the file format.
 // Author: andreas.morsch@cern.ch
 
 #include "AliGenMC.h"
