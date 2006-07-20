@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/07/04 14:58:11  jgrosseo
+revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
+
 Revision 1.1  2006/06/02 14:14:36  hristov
 Separate library for CDB (Jan)
 
@@ -120,71 +123,6 @@ AliDCSValue::AliDCSValue(Float_t value, UInt_t timeStamp) : TObject()
   fFloat = value;
 }
 
-AliDCSValue::AliDCSValue(Int_t size, Bool_t* vals, UInt_t timeStamp) : TObject()
-{
-  // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kDynBool;
-  fBoolPtr = vals;
-  fLength = size;
-}
-
-AliDCSValue::AliDCSValue(Int_t size, Char_t* vals, UInt_t timeStamp) : TObject()
-{
-  // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kDynChar;
-  fCharPtr = vals;
-  fLength = size;
-}
-
-AliDCSValue::AliDCSValue(Int_t size, Int_t* vals, UInt_t timeStamp) : TObject()
-{
-  // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kDynInt;
-  fIntPtr = vals;
-  fLength = size;
-}
-
-AliDCSValue::AliDCSValue(Int_t size, UInt_t* vals, UInt_t timeStamp) : TObject()
-{
-  // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kDynUInt;
-  fUIntPtr = vals;
-  fLength = size;
-}
-
-AliDCSValue::AliDCSValue(Int_t size, Float_t* vals, UInt_t timeStamp) : TObject()
-{
-  // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kDynFloat;
-  fFloatPtr = vals;
-  fLength = size;
-}
-
 AliDCSValue::AliDCSValue(const AliDCSValue& c) : TObject(c)
 {
   // copy constructor
@@ -204,50 +142,12 @@ void AliDCSValue::Init()
   fUInt = 0;
   fFloat = 0;
 
-  fLength = 0;
-
-  fBoolPtr = 0;
-  fCharPtr = 0;
-  fIntPtr = 0;
-  fUIntPtr = 0;
-  fFloatPtr = 0;
-
   fTimeStamp = 0;
 }
 
 AliDCSValue::~AliDCSValue()
 {
   // destructor
-
-  if (fBoolPtr)
-  {
-    delete[] fBoolPtr;
-    fBoolPtr = 0;
-  }
-
-  if (fCharPtr)
-  {
-    delete[] fCharPtr;
-    fCharPtr = 0;
-  }
-
-  if (fIntPtr)
-  {
-    delete[] fIntPtr;
-    fIntPtr = 0;
-  }
-
-  if (fUIntPtr)
-  {
-    delete[] fUIntPtr;
-    fUIntPtr = 0;
-  }
-
-  if (fFloatPtr)
-  {
-    delete[] fFloatPtr;
-    fFloatPtr = 0;
-  }
 }
 
 AliDCSValue &AliDCSValue::operator=(const AliDCSValue &c)
@@ -276,42 +176,6 @@ void AliDCSValue::Copy(TObject& c) const
   target.fUInt = fUInt;
   target.fFloat = fFloat;
 
-  target.fLength = fLength;
-
-  if (fLength > 0)
-  {
-    if (fBoolPtr)
-    {
-      target.fBoolPtr = new Bool_t[fLength];
-      for (UInt_t i=0; i<fLength; ++i)
-        target.fBoolPtr[i] = fBoolPtr[i];
-    }
-    if (fCharPtr)
-    {
-      target.fCharPtr = new Char_t[fLength];
-      for (UInt_t i=0; i<fLength; ++i)
-        target.fCharPtr[i] = fCharPtr[i];
-    }
-    if (fIntPtr)
-    {
-      target.fIntPtr = new Int_t[fLength];
-      for (UInt_t i=0; i<fLength; ++i)
-        target.fIntPtr[i] = fIntPtr[i];
-    }
-    if (fUIntPtr)
-    {
-      target.fUIntPtr = new UInt_t[fLength];
-      for (UInt_t i=0; i<fLength; ++i)
-        target.fUIntPtr[i] = fUIntPtr[i];
-    }
-    if (fFloatPtr)
-    {
-      target.fFloatPtr = new Float_t[fLength];
-      for (UInt_t i=0; i<fLength; ++i)
-        target.fFloatPtr[i] = fFloatPtr[i];
-    }
-  }
-
   target.fTimeStamp = fTimeStamp;
 }
 
@@ -329,32 +193,10 @@ Int_t AliDCSValue::GetSize() const
     case kUInt:  size += sizeof(UInt_t);  break;
     case kFloat: size += sizeof(Float_t); break;
 
-    case kDynBool:  size += fLength * sizeof(Bool_t);   break;
-    case kDynChar:  size += fLength * sizeof(Char_t);   break;
-    case kDynInt:   size += fLength * sizeof(Int_t);    break;
-    case kDynUInt:  size += fLength * sizeof(UInt_t);   break;
-    case kDynFloat: size += fLength * sizeof(Float_t);  break;
-
     case kInvalid: break;
   }
 
   return size;
-}
-
-Bool_t AliDCSValue::IsDynamic(Type type)
-{
-  // return if the given type is dynamic
-
-  switch (type)
-  {
-    case kDynBool:
-    case kDynChar:
-    case kDynInt:
-    case kDynUInt:
-    case kDynFloat: return kTRUE; break;
-
-    default: return kFALSE; break;
-  }
 }
 
 const Char_t* AliDCSValue::ToString() const
@@ -368,12 +210,6 @@ const Char_t* AliDCSValue::ToString() const
     case kInt:   str.Form("%d", fInt);  break;
     case kUInt:  str.Form("%d", fUInt);  break;
     case kFloat: str.Form("%f", fFloat);  break;
-
-    case kDynBool:  for (UInt_t i=0; i<fLength; ++i) str += Form("%d ", fBoolPtr[i]); break;
-    case kDynChar:  for (UInt_t i=0; i<fLength; ++i) str += Form("%d ", fCharPtr[i]); break;
-    case kDynInt:   for (UInt_t i=0; i<fLength; ++i) str += Form("%d ", fIntPtr[i]); break;
-    case kDynUInt:  for (UInt_t i=0; i<fLength; ++i) str += Form("%d ", fUIntPtr[i]); break;
-    case kDynFloat: for (UInt_t i=0; i<fLength; ++i) str += Form("%f ", fFloatPtr[i]); break;
 
     case kInvalid: break;
   }
