@@ -76,7 +76,8 @@
 #include "AliTPCBuffer.h"
 #include "AliTPCDDLRawData.h"
 #include "AliLog.h"
-
+#include "AliRawReader.h"
+#include "AliTPCRawStream.h"
 
 ClassImp(AliTPC) 
 //_____________________________________________________________________________
@@ -871,6 +872,142 @@ void AliTPC::Digits2Raw()
 }
 
 
+//_____________________________________________________________________________
+Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
+  // Converts the TPC raw data into summable digits
+  // The method is used for merging simulated and
+  // real data events
+  if (fLoader->TreeS() == 0x0 ) {
+    fLoader->MakeTree("S");
+  }
+
+  if(fDefaults == 0) SetDefaults();  // check if the parameters are set
+
+  //setup TPCDigitsArray 
+  if(GetDigitsArray()) delete GetDigitsArray();
+
+  AliTPCDigitsArray *arr = new AliTPCDigitsArray; 
+  arr->SetClass("AliSimDigits");
+  arr->Setup(fTPCParam);
+  arr->MakeTree(fLoader->TreeS());
+
+  SetDigitsArray(arr);
+
+  // set zero suppression to "0"
+  fTPCParam->SetZeroSup(0);
+
+  // Loop over sectors
+  const Int_t maxTime = fTPCParam->GetMaxTBin();
+  const Int_t kNIS = fTPCParam->GetNInnerSector();
+  const Int_t kNOS = fTPCParam->GetNOuterSector();
+  const Int_t kNS = kNIS + kNOS;
+
+  Short_t** allBins = NULL; //array which contains the data for one sector
+  
+  for(Int_t iSector = 0; iSector < kNS; iSector++) {
+    
+    Int_t nRows = fTPCParam->GetNRow(iSector);
+    Int_t nDDLs = 0, indexDDL = 0;
+    if (iSector < kNIS) {
+      nDDLs = 2;
+      indexDDL = iSector * 2;
+    }
+    else {
+      nDDLs = 4;
+      indexDDL = (iSector-kNIS) * 4 + kNIS * 2;
+    }
+
+    // Loas the raw data for corresponding DDLs
+    rawReader->Reset();
+    AliTPCRawStream input(rawReader);
+    rawReader->Select("TPC",indexDDL,indexDDL+nDDLs-1);
+
+    // Alocate and init the array with the sector data
+    allBins = new Short_t*[nRows];
+    for (Int_t iRow = 0; iRow < nRows; iRow++) {
+      Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
+      Int_t maxBin = maxTime*maxPad;
+      allBins[iRow] = new Short_t[maxBin];
+      memset(allBins[iRow],0,sizeof(Short_t)*maxBin);
+    }
+
+    // Begin loop over altro data
+    while (input.Next()) {
+
+      if (input.GetSector() != iSector)
+	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",iSector,input.GetSector()));
+
+      Int_t iRow = input.GetRow();
+      if (iRow < 0 || iRow >= nRows)
+	AliFatal(Form("Pad-row index (%d) outside the range (%d -> %d) !",
+		      iRow, 0, nRows -1));
+      Int_t iPad = input.GetPad();
+
+      Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
+
+      if (iPad < 0 || iPad >= maxPad)
+	AliFatal(Form("Pad index (%d) outside the range (%d -> %d) !",
+		      iPad, 0, maxPad -1));
+
+      Int_t iTimeBin = input.GetTime();
+      if ( iTimeBin < 0 || iTimeBin >= maxTime)
+	AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
+		      iTimeBin, 0, maxTime -1));
+      
+      Int_t maxBin = maxTime*maxPad;
+
+      if (((iPad*maxTime+iTimeBin) >= maxBin) ||
+	  ((iPad*maxTime+iTimeBin) < 0))
+	AliFatal(Form("Index outside the allowed range"
+		      " Sector=%d Row=%d Pad=%d Timebin=%d"
+		      " (Max.index=%d)",iSector,iRow,iPad,iTimeBin,maxBin));
+
+      allBins[iRow][iPad*maxTime+iTimeBin] = input.GetSignal();
+
+    } // End loop over altro data
+    
+    // Now fill the digits array
+    if (fDigitsArray->GetTree()==0) {
+      AliFatal("Tree not set in fDigitsArray");
+    }
+
+    for (Int_t iRow = 0; iRow < nRows; iRow++) {
+      AliDigits * dig = fDigitsArray->CreateRow(iSector,iRow);
+
+      Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
+      for(Int_t iPad = 0; iPad < maxPad; iPad++) {
+	for(Int_t iTimeBin = 0; iTimeBin < maxTime; iTimeBin++) {
+	  Short_t q = allBins[iRow][iPad*maxTime + iTimeBin];
+	  if (q <= 0) continue;
+	  q *= 16;
+	  dig->SetDigitFast((Short_t)q,iTimeBin,iPad);
+	}
+      }
+      fDigitsArray->StoreRow(iSector,iRow);
+      Int_t ndig = dig->GetDigitSize(); 
+	
+      AliDebug(10,
+	       Form("*** Sector, row, compressed digits %d %d %d ***\n",
+		    iSector,iRow,ndig));        
+ 	
+      fDigitsArray->ClearRow(iSector,iRow);  
+
+    } // end of the sector digitization
+
+    for (Int_t iRow = 0; iRow < nRows; iRow++)
+      delete [] allBins[iRow];
+
+    delete [] allBins;
+
+  }
+
+  fLoader->WriteSDigits("OVERWRITE");
+
+  if(GetDigitsArray()) delete GetDigitsArray();
+  SetDigitsArray(0x0);
+
+  return kTRUE;
+}
 
 //______________________________________________________________________
 AliDigitizer* AliTPC::CreateDigitizer(AliRunDigitizer* manager) const

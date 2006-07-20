@@ -19,6 +19,7 @@ class AliTPCLoader;
 class AliTPCParam;
 class AliTPCTrackHits; // M.I.  -MI4 old hits - to be removed later
 class AliTPCTrackHitsV2; // M.I.
+class AliRawReader;
 #include "AliDetector.h"
 #include "AliDigit.h" 
 #include "AliHit.h" 
@@ -52,6 +53,7 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const =0;
   virtual void  Digits2Raw();
+  virtual Bool_t Raw2SDigits(AliRawReader* rawReader);
   Int_t         GetNsectors() const  {return fNsectors;}
   virtual void  MakeBranch(Option_t *opt=" ");
   virtual void  ResetDigits();
