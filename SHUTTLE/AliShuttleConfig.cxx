@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/07/19 10:09:55  jgrosseo
+new configuration, accesst to DAQ FES (Alberto)
+
 Revision 1.5  2006/07/10 13:01:41  jgrosseo
 enhanced storing of last sucessfully processed run (alberto)
 
@@ -274,7 +277,23 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 	fDAQlbPass = anAttribute->GetValue();
 
-	delete anEntry;
+	anAttribute = anEntry->GetAttribute("MaxPPRetries");
+	if (!anAttribute) {
+		AliError("Can't find MaxPPRetries attribute!");
+		return;
+	}
+	TString tmpStr = anAttribute->GetValue();
+  fMaxPPRetries = tmpStr.Atoi();
+
+	anAttribute = anEntry->GetAttribute("MaxRetries");
+	if (!anAttribute) {
+		AliError("Can't find MaxRetries attribute!");
+		return;
+	}
+	tmpStr = anAttribute->GetValue();
+  fMaxRetries = tmpStr.Atoi();
+
+  delete anEntry;
 	delete aResult;
 
 	// FES configuration (FES logbook and hosts)

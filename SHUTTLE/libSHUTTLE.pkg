@@ -1,6 +1,6 @@
 SRCS = AliDCSMessage.cxx\
 	AliDCSClient.cxx AliShuttle.cxx AliShuttleConfig.cxx\
-        AliShuttleTrigger.cxx
+        AliShuttleTrigger.cxx AliShuttleStatus.cxx
 
 CINTHDRS:= $(patsubst %,$(MODDIR)/%,$(SRCS:.cxx=.h))
 

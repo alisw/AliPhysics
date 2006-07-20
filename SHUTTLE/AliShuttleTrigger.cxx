@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.6  2006/07/19 10:09:55  jgrosseo
+ new configuration, accesst to DAQ FES (Alberto)
+
  Revision 1.5  2006/07/10 13:01:41  jgrosseo
  enhanced storing of last sucessfully processed run (alberto)
 
@@ -370,8 +373,6 @@ Bool_t AliShuttleTrigger::CollectNew()
 	//
 	// Collects conditions data for all new run written to DAQ LogBook.
 	//
-
-  // TODO revise this! last run number is ONLY allowed to be written when run was processed successfully!!!
 
 	AliInfo("Collecting conditions data for new runs ...");
 

@@ -19,12 +19,14 @@
 #include <TList.h>
 
 #include "AliShuttleInterface.h"
+#include "AliShuttleStatus.h"
 
 class TObject;
 class AliShuttleConfig;
 class AliPreprocessor;
 class AliCDBMetaData;
 class TSQLServer;
+class AliCDBEntry;
 
 class AliShuttle: public AliShuttleInterface {
 public:
@@ -34,8 +36,7 @@ public:
 	virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
 
 	Bool_t Process(Int_t run, UInt_t startTime, UInt_t endTime);
-	Bool_t Process(Int_t run, UInt_t startTime, UInt_t endTime,
-		const char* detector);
+	Bool_t Process();
 
 	Int_t GetCurrentRun() const {return fCurrentRun;};
 	UInt_t GetCurrentStartTime() const {return fCurrentStartTime;};
@@ -60,8 +61,6 @@ public:
 
 
 private:
-
-
 	AliShuttle(const AliShuttle& other);
 	AliShuttle& operator= (const AliShuttle& other);
 
@@ -71,7 +70,7 @@ private:
 	const char* GetDAQFileName(const char* detector, const char* id, const char* source);
 	Bool_t RetrieveDAQFile(const char* daqFileName, const char* localFileName);
 	TList* GetDAQFileSources(const char* detector, const char* id);
-	Bool_t UpdateDAQTable(const char* detector);
+	Bool_t UpdateDAQTable();
 
 	const char* GetDCSFileName(const char* detector, const char* id, const char* source);
 //	Bool_t RetrieveDCSFile(const char* daqFileName const char* localFileName);
@@ -81,9 +80,10 @@ private:
 //	Bool_t RetrieveHLTFile(const char* daqFileName, const char* localFileName;
 	TList* GetHLTFileSources(const char* detector, const char* id);
 
-
-	void ClearLog() {fLog = "";}
-	void StoreLog(Int_t run);
+  AliShuttleStatus* ReadShuttleStatus();
+  void WriteShuttleStatus(AliShuttleStatus* status);
+  Bool_t ContinueProcessing();
+  void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
 
 	const AliShuttleConfig* fConfig; 	//! pointer to configuration object
 
@@ -92,6 +92,7 @@ private:
 	static const char* fgkDetectorCode[fgkNDetectors]; 	//! codes of detectors
 	static TString 	   fgkLocalUri;		//! URI of the local backup storage location
 	static const char* fgkShuttleTempDir;	//! base path of SHUTTLE temp folder
+	static const char* fgkShuttleLogDir;	//! path of SHUTTLE log folder
 
 	UInt_t fTimeout; 	//! DCS server connection timeout parameter
 	Int_t fRetries; 	//! Number of DCS server connection retries
@@ -102,12 +103,14 @@ private:
 	UInt_t fCurrentStartTime; 	//! Run Start time
 	UInt_t fCurrentEndTime; 	//! Run end time
 
+  TString fCurrentDetector; // current detector
+
 	TSQLServer *fServer[3]; 	//! pointer to the three FS logbook servers
 
 	Bool_t fFESCalled[3];		//! FES call status
 	TList  fFESlist[3];		//! List of files retrieved from each FES
 
-	TString fLog; 			//! log message
+  AliCDBEntry* fStatusEntry; //! last CDB entry containing a AliShuttleStatus retrieved
 
 	ClassDef(AliShuttle, 0);
 };

@@ -39,6 +39,9 @@ public:
 	const char* GetFESlbUser(Int_t system) const {return fFESlbUser[system].Data();}
 	const char* GetFESlbPass(Int_t system) const {return fFESlbPass[system].Data();}
 
+  Int_t GetMaxPPRetries() const { return fMaxPPRetries; }
+  Int_t GetMaxRetries() const { return fMaxRetries; }
+
 	const TObjArray* GetDetectors() const;
 
 	Bool_t HasDetector(const char* detector) const;
@@ -95,6 +98,8 @@ private:
 	TString fFESlbUser[3];  	//! username of the [DAQ, DCS, HLT] FES logbook
 	TString fFESlbPass[3]; 		//! password of the [DAQ, DCS, HLT] FES logbook
 
+  Int_t fMaxPPRetries;      // number of retries of a crashed preprocessor
+  Int_t fMaxRetries;        // number of retries for all other failures
 
 	TMap fDetectorMap; 		//! Map of the detector-by-detector configuration
 	TObjArray fDetectorList; 	//! List of detectors with valid configuration

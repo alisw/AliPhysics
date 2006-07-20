@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/07/04 14:59:57  jgrosseo
+revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
+
 Revision 1.3  2006/06/12 09:11:16  jgrosseo
 coding conventions (Alberto)
 
@@ -401,10 +404,6 @@ void AliDCSMessage::StoreResultSetMessage()
 
   UInt_t valueDataSize = 0;
   while ((aValue = (AliDCSValue*) iter.Next())) {
-    if (AliDCSValue::IsDynamic(fValueType)) {
-      valueDataSize +=  1;
-    }	
-
     valueDataSize += aValue->GetSize();
   }
 
@@ -456,76 +455,6 @@ void AliDCSMessage::StoreResultSetMessage()
       SetUInt(fMessage + cursor, aValue->GetTimeStamp());
       cursor += sizeof(UInt_t);
     }
-/*	} else if (fValueType == AliSimpleValue::kDynBool) {
-    while ((aValue = (AliDCSValue*) iter.Next())) {
-      Int_t dynSize = aValue->GetSimpleValue().
-        GetDynamicSize();
-      SetUByte(fMessage + cursor, dynSize);
-      cursor += 1;
-      for (Int_t k = 0; k < dynSize; k ++) {
-                          SetBool(fMessage + cursor, aValue->
-                                  GetSimpleValue().GetDynBool(k));
-                          cursor += 1;
-      }
-                        SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-                        cursor += sizeof(UInt_t);
-                }
-  } else if (fValueType == AliSimpleValue::kDynByte) {
-    while ((aValue = (AliDCSValue*) iter.Next())) {
-                        Int_t dynSize = aValue->GetSimpleValue().
-                                GetDynamicSize();
-                        SetUByte(fMessage + cursor, dynSize);
-      cursor += 1;	
-                        for (Int_t k = 0; k < dynSize; k ++) {
-                                SetByte(fMessage + cursor, aValue->
-                                        GetSimpleValue().GetDynByte(k));
-                                cursor += sizeof(Char_t);
-                        }
-                        SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-                        cursor += sizeof(UInt_t);
-                }
-  } else if (fValueType == AliSimpleValue::kDynInt) {
-    while ((aValue = (AliDCSValue*) iter.Next())) {
-                        Int_t dynSize = aValue->GetSimpleValue().
-                                GetDynamicSize();
-                        SetUByte(fMessage + cursor, dynSize);
-                        cursor += 1;
-                        for (Int_t k = 0; k < dynSize; k ++) {
-                                SetInt(fMessage + cursor, aValue->
-                                        GetSimpleValue().GetDynInt(k));
-                                cursor += sizeof(Int_t);
-                        }
-                        SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-                        cursor += sizeof(UInt_t);
-                }
-  } else if (fValueType == AliSimpleValue::kDynUInt) {
-    while ((aValue = (AliDCSValue*) iter.Next())) {
-                        Int_t dynSize = aValue->GetSimpleValue().
-                                GetDynamicSize();
-                        SetUByte(fMessage + cursor, dynSize);
-                        cursor += 1;
-                        for (Int_t k = 0; k < dynSize; k ++) {
-                                SetUInt(fMessage + cursor, aValue->
-                                        GetSimpleValue().GetDynUInt(k));
-                                cursor += sizeof(UInt_t);
-                        }
-                        SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-                        cursor += sizeof(UInt_t);
-                }
-  } else if (fValueType == AliSimpleValue::kDynFloat) {
-    while ((aValue = (AliDCSValue*) iter.Next())) {
-                        Int_t dynSize = aValue->GetSimpleValue().
-                                GetDynamicSize();
-                        SetUByte(fMessage + cursor, dynSize);
-                        cursor += 1;
-                        for (Int_t k = 0; k < dynSize; k ++) {
-                                SetFloat(fMessage + cursor, aValue->
-                                        GetSimpleValue().GetDynFloat(k));
-                                cursor += sizeof(Float_t);
-                        }
-                        SetUInt(fMessage + cursor, aValue->GetTimeStamp());
-                        cursor += sizeof(UInt_t);
-                } */
   } else {
     AliError("Invalid or unknown ValueType!");
     return;
