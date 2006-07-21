@@ -55,7 +55,9 @@ public:
 	Bool_t Collect(Int_t run);
 	Bool_t CollectNew();
 	Bool_t CollectAll();
-	
+
+  Bool_t SetNewLastRun(Int_t run);
+
 	virtual Bool_t Notify();
 	void Terminate();
 
@@ -83,7 +85,10 @@ private:
 	};
 
 	Bool_t RetrieveDATEEntries(const char* whereClause, TObjArray& entries);
-	Bool_t RetrieveConditionsData(const TObjArray& dateEntries, Int_t& lastRun);
+	Bool_t RetrieveConditionsData(const TObjArray& dateEntries, Bool_t updateLastRun);
+
+  Bool_t ReadLastRun();
+  Bool_t WriteLastRun();
 
 	const AliShuttleConfig* fConfig;
 	//AliCDBStorage* fLocalStorage;
@@ -92,6 +97,8 @@ private:
 
 	Bool_t fNotified;  		// Notified flag
 	Bool_t fTerminate; 		// Terminate flag
+
+	Int_t fLastRun;	// last sucessfully processed run
 
 	TMutex fMutex;  		// Mutex
 	TCondition fCondition;  	// Condition 

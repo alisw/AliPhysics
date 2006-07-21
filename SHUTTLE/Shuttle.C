@@ -35,6 +35,10 @@ void Shuttle(const char* param = "listen") {
 		trigger.CollectAll();
 	} else if (paramStr == "listen") {
 		trigger.Run();
+  } else if (paramStr.BeginsWith("lastrun=")) {
+    Int_t run = TString(paramStr(8, paramStr.Length()-7).Data()).Atoi();
+    cout << run << endl;
+    trigger.SetNewLastRun(run);
 	} else {
 		cout<<"Bad parameter: "<<param<<endl;
 		cout<<"Parameter options: "<<endl;
@@ -42,6 +46,7 @@ void Shuttle(const char* param = "listen") {
 		cout<<"new - collect data only for the new runs"<<endl;
 		cout<<"all - collect data for all runs"<<endl;
 		cout<<"listen - start listening for DAQ notification"<<endl;
+    cout<<"lastrun=<run> - sets last run manually. use with caution!" << endl
 		cout<<"<empty parameter> - the same as 'listen'"<<endl;
 	}
 

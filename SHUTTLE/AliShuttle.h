@@ -81,7 +81,7 @@ private:
 	TList* GetHLTFileSources(const char* detector, const char* id);
 
   AliShuttleStatus* ReadShuttleStatus();
-  void WriteShuttleStatus(AliShuttleStatus* status);
+  Bool_t WriteShuttleStatus(AliShuttleStatus* status);
   Bool_t ContinueProcessing();
   void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
 

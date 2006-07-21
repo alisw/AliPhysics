@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.10  2006/07/20 09:54:40  jgrosseo
+introducing status management: The processing per subdetector is divided into several steps,
+after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
+can keep track of the number of failures and skips further processing after a certain threshold is
+exceeded. These thresholds can be configured in LDAP.
+
 Revision 1.9  2006/07/19 10:09:55  jgrosseo
 new configuration, accesst to DAQ FES (Alberto)
 
@@ -215,12 +221,8 @@ UInt_t AliShuttle::Store(const char* detector,
 		Log(detector, "Error while storing object in main storage!");
 		AliError("local storage will be used!");
 
-		AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
-
 		result = AliCDBManager::Instance()->GetStorage(fgkLocalUri)
 					->Put(object, id, metaData);
-
-		AliCDBManager::Instance()->SetDefaultStorage(origStorage);
 
 		if(result) {
 			result = 2;
@@ -243,12 +245,8 @@ AliShuttleStatus* AliShuttle::ReadShuttleStatus()
     fStatusEntry = 0;
   }
 
-  AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
-
   fStatusEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
       ->Get(Form("/SHUTTLE/STATUS/%s", fCurrentDetector.Data()), fCurrentRun);
-
-  AliCDBManager::Instance()->SetDefaultStorage(origStorage);
 
   if (!fStatusEntry)
     return 0;
@@ -265,7 +263,7 @@ AliShuttleStatus* AliShuttle::ReadShuttleStatus()
 }
 
 //______________________________________________________________________________________________
-void AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
+Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 {
   // writes the status for one subdetector
 
@@ -279,9 +277,15 @@ void AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 
   fStatusEntry = new AliCDBEntry(status, id, new AliCDBMetaData);
 
-  AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
-  AliCDBManager::Instance()->GetStorage(fgkLocalUri)->Put(fStatusEntry);
-  AliCDBManager::Instance()->SetDefaultStorage(origStorage);
+  UInt_t result = AliCDBManager::Instance()->GetStorage(fgkLocalUri)->Put(fStatusEntry);
+
+  if (!result)
+  {
+    AliError(Form("WriteShuttleStatus for %s, run %d failed", fCurrentDetector.Data(), fCurrentRun));
+    return kFALSE;
+  }
+
+  return kTRUE;
 }
 
 //______________________________________________________________________________________________
@@ -304,15 +308,14 @@ void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t 
     return;
   }
 
-  Log("SHUTTLE", Form("%s: Changing state from %s to %s", fCurrentDetector.Data(), status->GetStatusName(), status->GetStatusName(newStatus)));
+  Log("SHUTTLE", Form("%s: Changing state from %s to %s", fCurrentDetector.Data(),
+  				status->GetStatusName(), status->GetStatusName(newStatus)));
 
   status->SetStatus(newStatus);
   if (increaseCount)
     status->IncreaseCount();
 
-  AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
   AliCDBManager::Instance()->GetStorage(fgkLocalUri)->Put(fStatusEntry);
-  AliCDBManager::Instance()->SetDefaultStorage(origStorage);
 }
 
 //______________________________________________________________________________________________
@@ -329,9 +332,7 @@ Bool_t AliShuttle::ContinueProcessing()
 
     Log("SHUTTLE", Form("%s: Processing first time.", fCurrentDetector.Data()));
     status = new AliShuttleStatus(AliShuttleStatus::kStarted);
-    WriteShuttleStatus(status);
-
-    return kTRUE;
+    return WriteShuttleStatus(status);
   }
 
   if (status->GetStatus() == AliShuttleStatus::kDone)
@@ -349,15 +350,17 @@ Bool_t AliShuttle::ContinueProcessing()
   // if we get here, there is a restart
 
   // abort conditions
-  if (status->GetStatus() == AliShuttleStatus::kPPStarted && status->GetCount() > fConfig->GetMaxPPRetries() ||
-      status->GetCount() > fConfig->GetMaxRetries())
+  if (status->GetStatus() == AliShuttleStatus::kPPStarted && status->GetCount() >= fConfig->GetMaxPPRetries() ||
+      status->GetCount() >= fConfig->GetMaxRetries())
   {
-    Log("SHUTTLE", Form("%s, run %d failed to often, %d times, status %s. Skipping processing.", fCurrentDetector.Data(), fCurrentRun, status->GetCount(), status->GetStatusName()));
+    Log("SHUTTLE", Form("%s, run %d failed too often, %d times, status %s. Skipping processing.",
+    		fCurrentDetector.Data(), fCurrentRun, status->GetCount(), status->GetStatusName()));
 
     return kFALSE;
   }
 
-  Log("SHUTTLE", Form("Restart of %s, run %d. Got stuck before in %s, count %d", fCurrentDetector.Data(), fCurrentRun, status->GetStatusName(), status->GetCount()));
+  Log("SHUTTLE", Form("Restart of %s, run %d. Got stuck before in %s, count %d",
+  		fCurrentDetector.Data(), fCurrentRun, status->GetStatusName(), status->GetCount()));
 
   UpdateShuttleStatus(AliShuttleStatus::kStarted, kTRUE);
 
@@ -381,7 +384,7 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime)
 	Bool_t hasError = kFALSE;
 	for(Int_t iSys=0;iSys<3;iSys++) fFESCalled[iSys]=kFALSE;
 
-  fCurrentRun = run;
+	fCurrentRun = run;
 	fCurrentStartTime = startTime;
 	fCurrentEndTime = endTime;
 
@@ -390,13 +393,12 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime)
 	TObjString* aDetector;
 
 	while ((aDetector = (TObjString*) iter.Next())) {
-    fCurrentDetector = aDetector->String();
+		fCurrentDetector = aDetector->String();
 
 		Bool_t detectorError=kFALSE;
 		if (!fConfig->HostProcessDetector(fCurrentDetector)) continue;
 
-    if (ContinueProcessing() == kFALSE)
-      continue;
+		if (ContinueProcessing() == kFALSE) continue;
 
 		if(!Process()) {
 			hasError = kTRUE;
@@ -419,8 +421,8 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime)
 		//	fFESlist[kHLT].Clear();
 		//}
 
-    UpdateShuttleStatus(AliShuttleStatus::kDone);
-  }
+		UpdateShuttleStatus(AliShuttleStatus::kDone);
+	}
 
 	fCurrentRun = -1;
 	fCurrentStartTime = 0;
@@ -446,13 +448,13 @@ Bool_t AliShuttle::Process()
 
 	if (!fConfig->HasDetector(fCurrentDetector)) {
 		Log(fCurrentDetector, "There isn't any configuration for %s !");
-    UpdateShuttleStatus(AliShuttleStatus::kFailed);
+		UpdateShuttleStatus(AliShuttleStatus::kFailed);
 		return kFALSE;
 	}
 
-  UpdateShuttleStatus(AliShuttleStatus::kDCSStarted);
+	UpdateShuttleStatus(AliShuttleStatus::kDCSStarted);
 
-  TString host(fConfig->GetDCSHost(fCurrentDetector));
+	TString host(fConfig->GetDCSHost(fCurrentDetector));
 	Int_t port = fConfig->GetDCSPort(fCurrentDetector);
 
 	TIter iter(fConfig->GetDCSAliases(fCurrentDetector));
@@ -477,13 +479,11 @@ Bool_t AliShuttle::Process()
 		}
 	}
 
-	// even if hasError is TRUE the Shuttle should keep on processing the detector (calib files!)
-
 	if (hasError)
-  {
-    UpdateShuttleStatus(AliShuttleStatus::kDCSError);
-    return kFALSE;
-  }
+	{
+		UpdateShuttleStatus(AliShuttleStatus::kDCSError);
+		return kFALSE;
+	}
 
   UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
 
@@ -936,17 +936,22 @@ void AliShuttle::Log(const char* detector, const char* message)
 {
 // Fill log string with a message
 
-	TString toLog = Form("%s, run %d - %s", detector, GetCurrentRun(), message);
-	AliInfo(toLog.Data());
+  TString toLog = Form("%s: %s, run %d - %s", TTimeStamp(time(0)).AsString(),
+    detector, GetCurrentRun(), message);
+  AliInfo(toLog.Data());
 
   TString fileName;
   fileName.Form("%s/%s.log", fgkShuttleLogDir, detector);
   gSystem->ExpandPathName(fileName);
 
-  AliInfo(fileName.Data());
-
   ofstream logFile;
   logFile.open(fileName, ofstream::out | ofstream::app);
+
+  if (!logFile.is_open())
+  {
+    AliError(Form("Could not open file %s", fileName.Data()));
+    return;
+  }
 
   logFile << toLog.Data() << "\n";
 

@@ -15,6 +15,12 @@
 
 /*
  $Log$
+ Revision 1.7  2006/07/20 09:54:40  jgrosseo
+ introducing status management: The processing per subdetector is divided into several steps,
+ after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
+ can keep track of the number of failures and skips further processing after a certain threshold is
+ exceeded. These thresholds can be configured in LDAP.
+
  Revision 1.6  2006/07/19 10:09:55  jgrosseo
  new configuration, accesst to DAQ FES (Alberto)
 
@@ -107,7 +113,7 @@ ClassImp(AliShuttleTrigger)
 AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 		UInt_t timeout, Int_t retries):
 	fConfig(config), fShuttle(NULL),
-	fNotified(kFALSE), fTerminate(kFALSE), fCondition(&fMutex),
+	fNotified(kFALSE), fTerminate(kFALSE), fLastRun(0), fCondition(&fMutex),
 	fQuitSignalHandler(this, kSigQuit), 
 	fInterruptSignalHandler(this, kSigInterrupt)
 {
@@ -304,29 +310,95 @@ Bool_t AliShuttleTrigger::RetrieveDATEEntries(const char* whereClause,
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries, Int_t &lastRun)
+Bool_t AliShuttleTrigger::RetrieveConditionsData(const TObjArray& dateEntries, Bool_t updateLastRun)
 {
-// Retrieve conditions data for all runs that aren't processed yet
+  // Retrieve conditions data for all runs that aren't processed yet
 
-	Bool_t hasError = kFALSE;
+  Bool_t hasError = kFALSE;
 
-	TIter iter(&dateEntries);
-	AliShuttleTriggerDATEEntry* anEntry;
-	lastRun=-1;
-	while ((anEntry = (AliShuttleTriggerDATEEntry*) iter.Next())) {
-		Bool_t processError = kFALSE;
-		if(lastRun == -1) lastRun = anEntry->GetRun();
-		if(!fShuttle->Process(anEntry->GetRun(),
-				anEntry->GetStartTime(),
-				anEntry->GetEndTime())) {
-					processError = kTRUE;
-					hasError = kTRUE;
-		}
-		// Only the last SUCCESSFUL run must be stored!
-		if(!hasError && !processError) lastRun = anEntry->GetRun();
-	}
+  TIter iter(&dateEntries);
+  AliShuttleTriggerDATEEntry* anEntry;
 
-	return hasError == kFALSE;
+  while ((anEntry = (AliShuttleTriggerDATEEntry*) iter.Next()))
+  {
+    if (!fShuttle->Process(anEntry->GetRun(),
+        anEntry->GetStartTime(),
+        anEntry->GetEndTime()))
+    {
+        hasError = kTRUE;
+    }
+
+    if (!hasError && updateLastRun && fLastRun < anEntry->GetRun())
+    {
+      fLastRun = anEntry->GetRun();
+      WriteLastRun();
+    }
+  }
+
+  return hasError == kFALSE;
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttleTrigger::ReadLastRun()
+{
+  // reads the last processed run from local CDB
+
+  AliCDBEntry* cdbEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
+        ->Get("/SHUTTLE/SYSTEM/LASTRUN", 0);
+
+  if (cdbEntry)
+  {
+    TObject* anObject = cdbEntry->GetObject();
+    if (anObject == NULL || anObject->IsA() != AliDCSValue::Class())
+    {
+      AliError("Invalid last run object stored to CDB!");
+      return kFALSE;
+    }
+    AliDCSValue* dcsValue = (AliDCSValue*) anObject;
+    fLastRun = dcsValue->GetInt();
+
+    delete cdbEntry;
+  }
+  else
+  {
+    AliFatal("No last run number stored. Please set first. Aborting");
+    return kFALSE;
+  }
+
+  AliInfo(Form("Last run number <%d>", fLastRun));
+
+  return kTRUE;
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttleTrigger::WriteLastRun()
+{
+  // writes the last succesfully processed run to local CDB
+
+  AliDCSValue lastRunObj(fLastRun, 0);
+  AliCDBMetaData metaData;
+  AliCDBId cdbID(AliCDBPath("SHUTTLE", "SYSTEM", "LASTRUN"), 0, 0);
+
+  UInt_t result = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
+      ->Put(&lastRunObj, cdbID, &metaData);
+
+  if (!result) {
+    AliError("Can't store last run to CDB!");
+    return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttleTrigger::SetNewLastRun(Int_t run)
+{
+  // sets a new run manually, use with caution!
+
+  fShuttle->Log("SHUTTLE", Form("Setting last run manually to %d", run));
+
+  fLastRun = run;
+  return WriteLastRun();
 }
 
 //______________________________________________________________________________________________
@@ -358,8 +430,7 @@ Bool_t AliShuttleTrigger::Collect(Int_t run)
 		return kFALSE;
 	}
 
-	Int_t lastRun;
-	if (!RetrieveConditionsData(dateEntries, lastRun)) {
+	if (!RetrieveConditionsData(dateEntries, kFALSE)) {
 		AliError("An error occured during conditions data retrieval!");
 		return kFALSE;
 	}
@@ -368,7 +439,7 @@ Bool_t AliShuttleTrigger::Collect(Int_t run)
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::CollectNew() 
+Bool_t AliShuttleTrigger::CollectNew()
 {
 	//
 	// Collects conditions data for all new run written to DAQ LogBook.
@@ -376,78 +447,51 @@ Bool_t AliShuttleTrigger::CollectNew()
 
 	AliInfo("Collecting conditions data for new runs ...");
 
-	Int_t lastRun;
-
-	AliCDBEntry* cdbEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
-				->Get("/SHUTTLE/SYSTEM/LASTRUN", 0);
-	if (cdbEntry) {
-		TObject* anObject = cdbEntry->GetObject();
-		if (anObject == NULL ||
-			anObject->IsA() != AliDCSValue::Class()) {
-			AliError("Invalid last run object stored to CDB!");
-			return kFALSE;
-		}
-		AliDCSValue* simpleValue = (AliDCSValue*) anObject;
-		lastRun = simpleValue->GetInt();
-		AliInfo(Form("Last run successfully stored: %d",lastRun));
-		delete cdbEntry;
-	} else {
-		AliWarning("There isn't last run stored! Starting from run 21240");
-		lastRun = 21240; // TODO maybe exit here
-	}
-
-	AliInfo(Form("Last run number <%d>", lastRun));
+  if (!ReadLastRun())
+  {
+    AliError("Retrieving of last run failed");
+    return kFALSE;
+  }
 
 	TString whereClause("where run > ");
-	whereClause += lastRun;
+	whereClause += fLastRun;
 
-	Int_t newLastRun;
 	TObjArray dateEntries;
 	if (!RetrieveDATEEntries(whereClause, dateEntries)) {
 		AliError("Can't retrieve entries from DAQ log book.");
 		return kFALSE;
 	}
 
-	if (!RetrieveConditionsData(dateEntries, newLastRun)) {
+	if (!RetrieveConditionsData(dateEntries, kTRUE)) {
 		AliError("Process of at least one run failed!");
 		// return kFALSE;
 	}
-	
-	if (newLastRun > lastRun) {
-		AliDCSValue lastRunObj(newLastRun, 0);
-		AliCDBMetaData metaData;
-		AliCDBId cdbID(AliCDBPath("SHUTTLE", "SYSTEM", "LASTRUN"), 0, 0);
 
-		UInt_t result = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
-				->Put(&lastRunObj, cdbID, &metaData);
-
-		if (!result) {
-			AliError("Can't store last run to CDB!");
-			return kFALSE;
-		}
-	}
-
-	
 	return kTRUE;
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttleTrigger::CollectAll() 
+Bool_t AliShuttleTrigger::CollectAll()
 {
 	//
 	// Collects conditions data for all run written in DAQ LogBook.
 	//
 
+  if (!ReadLastRun())
+  {
+    AliError("Retrieving of last run failed");
+    return kFALSE;
+  }
+
 	AliInfo("Collecting conditions data for all runs ...");
 
-	Int_t lastRun;
 	TObjArray dateEntries;
 	if (!RetrieveDATEEntries("", dateEntries)) {
 		AliError("Can't retrieve entries from DAQ log book.");
 		return kFALSE;
 	}
 
-	if (!RetrieveConditionsData(dateEntries, lastRun)) {
+	if (!RetrieveConditionsData(dateEntries, kTRUE)) {
 		AliError("An error occured during conditions data retrieval!");
 		return kFALSE;
 	}
