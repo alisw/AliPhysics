@@ -64,8 +64,10 @@ class AliITSresponseSDD : public AliITSresponse {
     virtual void SetNLookUp(Int_t p1);
     // Get number of intervals in which the gaussian lookup table is divided
     virtual Int_t GausNLookUp() const {return fNcomps;}
-    virtual Double_t GausLookUp(Int_t i) const  {
-	if(i<0 || i>=fNcomps) return 0.;return fGaus->At(i);}
+    virtual Double_t GausLookUp(Int_t i)  {
+      if (!fGaus) SetNLookUp(fgkNcompsDefault);
+      if(i<0 || i>=fNcomps) return 0.;return fGaus->At(i);
+    }
    
     Int_t Convert8to10(Int_t signal) const; //undo 10 to 8 bit SDD compresion
 

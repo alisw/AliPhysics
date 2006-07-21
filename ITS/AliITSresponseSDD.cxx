@@ -46,7 +46,7 @@ AliITSresponseSDD::AliITSresponseSDD():AliITSresponse(){
   SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
   SetDriftSpeed(fgkDriftSpeedDefault);
   SetNSigmaIntegration(fgkNsigmasDefault);
-  SetNLookUp(fgkNcompsDefault);
+  //  SetNLookUp(fgkNcompsDefault);
 
   SetJitterError();
   SetElectronics();
@@ -112,6 +112,7 @@ Int_t AliITSresponseSDD::Convert8to10(Int_t signal) const {
 void AliITSresponseSDD::SetNLookUp(Int_t p1){
   // Set number of sigmas over which cluster disintegration is performed
   fNcomps=p1;
+  if (fGaus) delete fGaus;
   fGaus = new TArrayF(fNcomps+1);
   for(Int_t i=0; i<=fNcomps; i++) {
     Double_t x = -fNsigmas + (2.*i*fNsigmas)/(fNcomps-1);
