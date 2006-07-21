@@ -32,7 +32,7 @@ class AliTRDtracker : public AliTracker {
 
   enum { kMaxLayersPerSector   = 1000
        , kMaxTimeBinIndex      = 216
-       , kMaxClusterPerTimeBin = 7000
+       , kMaxClusterPerTimeBin = 2300
        , kZones                = 5
        , kTrackingSectors      = 18   };
 
