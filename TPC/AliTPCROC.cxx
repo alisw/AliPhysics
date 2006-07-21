@@ -260,6 +260,7 @@ AliTPCROC::~AliTPCROC()
   delete [] fNPads[1];
   delete [] fRowPosIndex[0];
   delete [] fRowPosIndex[1];
+  fgInstance = 0x0;
   
 }
 

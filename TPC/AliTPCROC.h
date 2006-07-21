@@ -119,8 +119,8 @@ class AliTPCROC : public TObject {
   Float_t   fYInner[600];     //Inner sector, wire-length
   Float_t   fYOuter[600];     //Outer sector, wire-length   
  protected:
-  static AliTPCROC*   fgInstance; // Instance of this class (singleton implementation)
-  ClassDef(AliTPCROC,1)    //  TPC ROC class
+  static AliTPCROC*   fgInstance; //! Instance of this class (singleton implementation)
+  ClassDef(AliTPCROC,0)    //  TPC ROC class
 };
 
 #endif
