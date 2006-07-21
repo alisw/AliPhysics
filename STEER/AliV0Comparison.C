@@ -474,9 +474,13 @@ Int_t GoodV0s(const Char_t *dir) {
          if (nlab<0) continue;
          if (plab<0) continue;
          Int_t i;
-         if (stack->Particle(plab)->GetPDG()->Charge() < 0.) {
-            i=plab; plab=nlab; nlab=i;
-         }
+	 TParticle * part = stack->Particle(plab);
+	 if (part) {
+	   TParticlePDG * partPDG = part->GetPDG();
+	     if (partPDG && partPDG->Charge() < 0.) {
+	       i=plab; plab=nlab; nlab=i;
+	     }
+	 }
 
          for (i=0; i<nk; i++) {
 	     nref=(AliTrackReference*)itsRefs->UncheckedAt(i);
