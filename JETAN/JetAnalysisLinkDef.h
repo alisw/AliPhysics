@@ -15,6 +15,7 @@
 #pragma link C++ class AliJetESDReaderHeader+;
 #pragma link C++ class AliJetReader+;
 #pragma link C++ class AliJetESDReader+;
+#pragma link C++ class AliJetESDmcReader+;
 #pragma link C++ class AliJetKineReader+;
 #pragma link C++ class AliJetKineReaderHeader+;
 #pragma link C++ class AliJetControlPlots+;
