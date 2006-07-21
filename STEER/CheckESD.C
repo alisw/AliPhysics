@@ -221,7 +221,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
 
   // calorimeters
   TH1F* hEPHOS = CreateHisto("hEPHOS", "PHOS", 100, 0, 5, "E [GeV]", "N");
-  TH1F* hEEMCAL = CreateHisto("hEEMCAL", "EMCAL", 100, 0, 2, "E [GeV]", "N");
+  TH1F* hEEMCAL = CreateHisto("hEEMCAL", "EMCAL", 100, 0, 50, "E [GeV]", "N");
 
   // muons
   TH1F* hPtMUON = CreateHisto("hPtMUON", "MUON", 100, 0, 20, 
@@ -434,6 +434,22 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       if (!selCascades.Contains(particle)) continue;
       selCascades.Remove(particle);
       nRecCascades++;
+    }
+
+    // loop over the PHOS clusters
+    {
+    Int_t firstPHOSCluster = esd->GetFirstPHOSCluster();
+    Int_t lastPHOSCluster  = firstPHOSCluster + esd->GetNumberOfPHOSClusters();
+    for (Int_t iCluster=firstPHOSCluster; iCluster<lastPHOSCluster; iCluster++)
+      hEPHOS->Fill(esd->GetCaloCluster(iCluster)->GetClusterEnergy());
+    }
+
+    // loop over the EMCAL clusters
+    {
+    Int_t firstEMCALCluster = esd->GetFirstEMCALCluster();
+    Int_t lastEMCALCluster  = firstEMCALCluster + esd->GetNumberOfEMCALClusters();
+    for (Int_t iCluster=firstEMCALCluster; iCluster<lastEMCALCluster; iCluster++)
+      hEEMCAL->Fill(esd->GetCaloCluster(iCluster)->GetClusterEnergy());
     }
   }
 
