@@ -30,6 +30,7 @@ class AliSelector : public TSelector {
 
  protected:
     TTree*  GetKinematics();
+    void CheckOptions();
 
     TTree          *fTree;     //! pointer to the TTree containing the events
     AliESD*          fESD;     //! "ESD" branch in fChain
