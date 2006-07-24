@@ -7,6 +7,8 @@
 
 class AliESDtrackCuts;
 class AlidNdEtaCorrection;
+class TH1F;
+class TParticlePDG;
 
 class AlidNdEtaCorrectionSelector : public AliSelectorRL {
   public:
@@ -20,11 +22,20 @@ class AlidNdEtaCorrectionSelector : public AliSelectorRL {
     virtual void    Terminate();
 
  protected:
-    Bool_t SignOK(Double_t charge);
+    Bool_t SignOK(TParticlePDG* particle);
 
     AliESDtrackCuts*  fEsdTrackCuts;          // Object containing the parameters of the esd track cuts
 
     AlidNdEtaCorrection* fdNdEtaCorrection;      // contains the intermediate histograms (on each slave)
+
+    TH1F* fPIDParticles; // pid of primary particles
+    TH1F* fPIDTracks; // pid of reconstructed tracks
+
+    TH1F* fClustersITSPos; //
+    TH1F* fClustersTPCPos; //
+
+    TH1F* fClustersITSNeg; //
+    TH1F* fClustersTPCNeg; //
 
     Int_t fSignMode;  // if 0 process all particles, if +-1 process only particles with that sign
 
