@@ -153,14 +153,18 @@ AlidNdEtaCorrection::Merge(TCollection* list) {
     collectionTriggerBias        ->Add(entry->GetTriggerBiasCorrection());
 
     count++;
+
+    fNEvents += entry->fNEvents;
+    fNTriggeredEvents += entry->fNTriggeredEvents;
   }
   fTrack2ParticleCorrection ->Merge(collectionNtrackToNparticle);
   fVertexRecoCorrection        ->Merge(collectionVertexReco);
   fTriggerBiasCorrection        ->Merge(collectionTriggerBias);
-  
+
   delete collectionNtrackToNparticle;
   delete collectionVertexReco;
   delete collectionTriggerBias;
+
 
   return count+1;
 }

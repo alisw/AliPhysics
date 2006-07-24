@@ -21,14 +21,13 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
 
   gROOT->ProcessLine(".L CreatedNdEta.C");
   gROOT->ProcessLine(".L CreateCuts.C");
+  gROOT->ProcessLine(".L drawPlots.C");
 
-  TChain* chain = 0;
+  TChain* chain = CreateESDChain(data, nRuns, offset);;
   TVirtualProof* proof = 0;
-  if (aProof == kFALSE)
-    chain = CreateESDChainFromDir(data, nRuns, offset);
-  else
+
+  if (aProof != kFALSE)
   {
-    chain = CreateESDChainFromList(data, nRuns, offset);
     proof = TProof::Open("jgrosseo@lxb6046");
 
     if (!proof)
@@ -70,30 +69,26 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
     return;
   }
 
-  //chain->GetUserInfo()->Add(esdTrackCuts);
-  //if (proof)
-  //  proof->AddInput(esdTrackCuts);
+  chain->GetUserInfo()->Add(esdTrackCuts);
+  if (proof)
+    proof->AddInput(esdTrackCuts);
 
   if (aMC == kFALSE)
   {
     AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
     dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
+    dNdEtaCorrection->ReduceInformation();
     //dNdEtaCorrection->RemoveEdges(2, 0, 2);
 
-    //chain->GetUserInfo()->Add(dNdEtaCorrection);
-    //if (proof)
-    //  proof->AddInput(dNdEtaCorrection);
+    chain->GetUserInfo()->Add(dNdEtaCorrection);
+    if (proof)
+      proof->AddInput(dNdEtaCorrection);
   }
 
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 
-  // workaround for a bug in PROOF that only allows header files for .C files
-  // please create symlink from <selector>.cxx to <selector>.C
-  if (proof != kFALSE)
-    selectorName += ".C++";
-  else
-    selectorName += ".cxx++";
+  selectorName += ".cxx++";
 
   if (aDebug != kFALSE)
     selectorName += "g";
@@ -117,6 +112,17 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   timer.Stop();
   timer.Print();
 
-  CreatedNdEta(aMC ? kFALSE : kTRUE, aMC ? "analysis_mc.root" : "analysis_esd.root");
+  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+
+  TFile* file = TFile::Open(aMC ? "analysis_mc.root" : "analysis_esd.root");
+  if (!file)
+  {
+    cout << "Error. File not found" << endl;
+    return;
+  }
+  fdNdEtaAnalysis->LoadHistograms();
+  fdNdEtaAnalysis->DrawHistograms();
+
+  dNdEta(kTRUE);
 }
 

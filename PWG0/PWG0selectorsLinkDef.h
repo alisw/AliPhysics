@@ -13,5 +13,6 @@
 #pragma link C++ class AlidNdEtaAnalysisESDSelector+;
 #pragma link C++ class AlidNdEtaVertexRecEffSelector+;
 #pragma link C++ class AliMultiplicityESDSelector+;
+#pragma link C++ class AlidNdEtaSystematicsSelector+;
 
 #endif

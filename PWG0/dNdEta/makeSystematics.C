@@ -1,15 +1,12 @@
 /* $Id$ */
 
 //
-// Script to make correction maps for dndeta measurements using the
-// dNdEtaCorrection class.
-//
-// implementation with TSelector
+// Script to run the creation of input for systematics
 //
 
 #include "../CreateESDChain.C"
 
-void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t debug = kFALSE, const Char_t* option = "")
+void makeSystematics(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t debug = kFALSE, const Char_t* option = "")
 {
   gSystem->Load("libPWG0base");
   gSystem->Load("libPWG0dep");
@@ -26,7 +23,7 @@ void makeCorrection2(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t d
   TChain* chain = CreateESDChain(dataDir, nRuns, offset);
   chain->GetUserInfo()->Add(esdTrackCuts);
 
-  TString selector("AlidNdEtaCorrectionSelector.cxx++");
+  TString selector("AlidNdEtaSystematicsSelector.cxx+");
   if (debug != kFALSE)
     selector += "g";
 

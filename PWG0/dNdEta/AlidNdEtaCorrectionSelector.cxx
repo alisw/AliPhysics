@@ -213,9 +213,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
       continue;
 
     if (SignOK(particle->GetPDG()) == kFALSE)
-        continue;
-
-    //if (TMath::Abs(particle->GetPdgCode()) == 2212)      continue;
+      continue;
 
     Float_t eta = particle->Eta();
     Float_t pt = particle->Pt();
@@ -267,8 +265,6 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 
     if (SignOK(particle->GetPDG()) == kFALSE)
         continue;
-
-    //if (TMath::Abs(particle->GetPdgCode()) == 2212)      continue;
 
     if (vertexReconstructed)
     {

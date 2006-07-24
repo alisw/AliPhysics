@@ -434,7 +434,7 @@ void Track2Particle1D(const char* fileName = "correction_map.root", Float_t uppe
 
   corrZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
 
-  TCanvas* canvas = new TCanvas("Track2Particle2D", "Track2Particle2D", 1200, 400);
+  TCanvas* canvas = new TCanvas("Track2Particle1D", "Track2Particle1D", 1200, 400);
   canvas->Divide(3, 1);
 
   canvas->cd(1);
