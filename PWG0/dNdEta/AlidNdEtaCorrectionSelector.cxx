@@ -7,6 +7,7 @@
 #include <TCanvas.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TH1F.h>
 
 #include <TChain.h>
 #include <TSelector.h>
@@ -32,6 +33,8 @@ AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector() :
   AliSelectorRL(),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0),
+  fPIDParticles(0),
+  fPIDTracks(0),
   fSignMode(0)
 {
   //
@@ -49,12 +52,23 @@ AlidNdEtaCorrectionSelector::~AlidNdEtaCorrectionSelector()
   // list is deleted by the TSelector dtor
 }
 
-Bool_t AlidNdEtaCorrectionSelector::SignOK(Double_t charge)
+Bool_t AlidNdEtaCorrectionSelector::SignOK(TParticlePDG* particle)
 {
   // returns if a particle with this sign should be counted
   // this is determined by the value of fSignMode, which should have the same sign
   // as the charge
   // if fSignMode is 0 all particles are counted
+
+  if (fSignMode == 0)
+    return kTRUE;
+
+  if (!particle)
+  {
+    printf("WARNING: not counting a particle that does not have a pdg particle\n");
+    return kFALSE;
+  }
+
+  Double_t charge = particle->Charge();
 
   if (fSignMode > 0)
     if (charge < 0)
@@ -105,6 +119,15 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
 
   if (!fEsdTrackCuts)
     AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info");
+
+  fPIDParticles = new TH1F("pid_particles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
+  fPIDTracks = new TH1F("pid_tracks", "MC PID of reconstructed tracks", 10001, -5000.5, 5000.5);
+
+  fClustersITSPos = new TH1F("clusters_its_pos", "clusters_its_pos", 7, -0.5, 6.5);
+  fClustersTPCPos = new TH1F("clusters_tpc_pos", "clusters_tpc_pos", 160, -0.5, 159.5);
+
+  fClustersITSNeg = new TH1F("clusters_its_neg", "clusters_its_neg", 7, -0.5, 6.5);
+  fClustersTPCNeg = new TH1F("clusters_tpc_neg", "clusters_tpc_neg", 160, -0.5, 159.5);
 }
 
 Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
@@ -189,14 +212,20 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
-    if (SignOK(particle->GetPDG()->Charge()) == kFALSE)
+    if (SignOK(particle->GetPDG()) == kFALSE)
         continue;
+
+    //if (TMath::Abs(particle->GetPdgCode()) == 2212)      continue;
 
     Float_t eta = particle->Eta();
     Float_t pt = particle->Pt();
 
     if (vertexReconstructed)
+    {
       fdNdEtaCorrection->FillParticle(vtxMC[2], eta, pt);
+      if (pt > 0.1 && pt < 0.2)
+        fPIDParticles->Fill(particle->GetPdgCode());
+    }
 
     fdNdEtaCorrection->FillParticleAllEvents(eta, pt);
     if (eventTriggered)
@@ -236,11 +265,29 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
       continue;
     }
 
-    if (SignOK(particle->GetPDG()->Charge()) == kFALSE)
+    if (SignOK(particle->GetPDG()) == kFALSE)
         continue;
 
+    //if (TMath::Abs(particle->GetPdgCode()) == 2212)      continue;
+
     if (vertexReconstructed)
+    {
       fdNdEtaCorrection->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
+      if (particle->Pt() > 0.1 && particle->Pt() < 0.2)
+      {
+        fPIDTracks->Fill(particle->GetPdgCode());
+        if (particle->GetPDG()->Charge() > 0)
+        {
+          fClustersITSPos->Fill(esdTrack->GetITSclusters(0));
+          fClustersTPCPos->Fill(esdTrack->GetTPCclusters(0));
+        }
+        else
+        {
+          fClustersITSNeg->Fill(esdTrack->GetITSclusters(0));
+          fClustersTPCNeg->Fill(esdTrack->GetTPCclusters(0));
+        }
+      }
+    }
   } // end of track loop
 
   fdNdEtaCorrection->FillEvent(vtxMC[2], nGoodTracks);
@@ -281,6 +328,11 @@ void AlidNdEtaCorrectionSelector::Terminate()
   AliSelectorRL::Terminate();
 
   fdNdEtaCorrection = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("dndeta_correction"));
+  if (!fdNdEtaCorrection)
+  {
+    AliDebug(AliLog::kError, "Could not read object from output list");
+    return;
+  }
 
   fdNdEtaCorrection->Finish();
 
@@ -293,4 +345,32 @@ void AlidNdEtaCorrectionSelector::Terminate()
   fout->Close();
 
   fdNdEtaCorrection->DrawHistograms();
+
+  new TCanvas("pidcanvas", "pidcanvas", 500, 500);
+
+  fPIDParticles->Draw();
+  fPIDTracks->SetLineColor(2);
+  fPIDTracks->Draw("SAME");
+
+  TDatabasePDG* pdgDB = new TDatabasePDG;
+
+  for (Int_t i=0; i <= fPIDParticles->GetNbinsX()+1; ++i)
+    if (fPIDParticles->GetBinContent(i) > 0)
+      printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
+
+  delete pdgDB;
+  pdgDB = 0;
+
+  TCanvas* canvas = new TCanvas("clusters", "clusters", 1000, 500);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+  fClustersITSPos->Draw();
+  fClustersITSNeg->SetLineColor(kRed);
+  fClustersITSNeg->Draw("SAME");
+
+  canvas->cd(2);
+  fClustersTPCPos->Draw();
+  fClustersTPCNeg->SetLineColor(kRed);
+  fClustersTPCNeg->Draw("SAME");
 }
