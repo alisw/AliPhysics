@@ -85,7 +85,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96
 
   int i, i1, i2, j, nmx1, incr, id, jd;
   Int_t   celldataX[15], celldataY[15];
-  Float_t clusdata[7];
+  Float_t clusdata[6];
 
   Double_t  cutoff, ave;
 
@@ -209,7 +209,7 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn, Double_t celladc[48][96
 	      celldataY[ihit] = fClTr[ihit][i1]%10000;
 	    }
 	}
-
+      //printf("%d %f %f\n",idet,cluXC,cluYC );
       pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY);
       pmdcont->Add(pmdcl);
     }
@@ -355,10 +355,12 @@ int AliPMDClusteringV1::CrClust(double ave, double cutoff, int nmx1)
       }
     }
   }
+
   //  for(icell=0; icell<=cellcount; icell++){
   //    ofl0 << fInfcl[0][icell] << " " << fInfcl[1][icell] << " " <<
   //      fInfcl[2][icell] << endl;
-  //  }
+  //}
+
   return cellcount;
 }
 // ------------------------------------------------------------------------ //
@@ -373,8 +375,8 @@ void AliPMDClusteringV1::RefClust(int incr)
   int ig, nsupcl, lev1[20], lev2[20];
   double x[4500], y[4500], z[4500], x1, y1, z1, x2, y2, z2, dist;
   double xc[4500], yc[4500], zc[4500], cells[4500], sum, rc[4500], rr;
-
-
+  
+  
   //asso
   Int_t t[4500],cellCount[4500];
   for(i=0; i<4500; i++)
@@ -382,8 +384,8 @@ void AliPMDClusteringV1::RefClust(int incr)
       t[i]=-1;
       cellCount[i]=0;
     }
-
-
+  
+  
   // fClno counts the final clusters
   // nsupcl =  # of superclusters; ncl[i]= # of cells in supercluster i
   // x, y and z store (x,y) coordinates of and energy deposited in a cell
@@ -391,26 +393,26 @@ void AliPMDClusteringV1::RefClust(int incr)
   // zc stores the energy deposited in a cluster
   // rc is cluster radius
   // finally the cluster information is put in 2-dimensional array clusters
-  // ofstream ofl1("checking.5",ios::app);
+  //ofstream ofl1("checking.5",ios::app);
   fClno  = -1;
   nsupcl = -1;
   for(i=0; i<4500; i++){ncl[i]=-1;}
-  for(i=0; i<incr; i++){
+  for(i=0; i<= incr; i++){
     if(fInfcl[0][i] != nsupcl){ nsupcl=nsupcl+1; }
     if (nsupcl > 4500) {
       AliWarning("RefClust: Too many superclusters!");
       nsupcl = 4500;
       break;
     }
+     
     ncl[nsupcl]=ncl[nsupcl]+1;
   }
 
   AliDebug(1,Form("Number of cells = %d Number of Superclusters = %d",
 		  incr+1,nsupcl+1));
-
   id=-1;
   icl=-1;
-  for(i=0; i<nsupcl; i++){
+  for(i=0; i<=nsupcl; i++) {
     if(ncl[i] == 0){
       id=id+1;
       icl=icl+1;
@@ -430,8 +432,7 @@ void AliPMDClusteringV1::RefClust(int incr)
       fClusters[3][fClno] = 1.;
       fClusters[4][fClno] = 0.5;
 
-
-      //asso
+      //association
 
       fClTr[0][fClno]=fCellTrNo[i1][i2];
       for(Int_t icltr=1;icltr<14;icltr++)
@@ -441,6 +442,7 @@ void AliPMDClusteringV1::RefClust(int incr)
       
       //ofl1 << icl << " " << fCoord[0][i1][i2] << " " << fCoord[1][i1][i2] <<
       //" " << fEdepCell[i1][i2] << " " << fClusters[3][fClno] <<endl;
+      
     }else if(ncl[i] == 1){
       // two cell super-cluster --> single cluster
       // cluster center is at ener. dep.-weighted mean of two cells
@@ -486,7 +488,7 @@ void AliPMDClusteringV1::RefClust(int incr)
 
 
       //ofl1 << icl << " " << fClusters[0][fClno] << " " << fClusters[1][fClno]
-      //   << " " << fClusters[2][fClno] << " " <<fClusters[3][fClno] <<endl;
+      //  << " " << fClusters[2][fClno] << " " <<fClusters[3][fClno] <<endl;
     }
     else{
       
