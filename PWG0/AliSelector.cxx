@@ -69,19 +69,29 @@ AliSelector::~AliSelector()
  }
 }
 
+void AliSelector::CheckOptions()
+{
+  // checks the option string for the debug flag
+
+  AliLog::SetClassDebugLevel(ClassName(), AliLog::kInfo);
+
+  TString option = GetOption();
+
+  if (option.Contains("debug"))
+  {
+    printf("Enabling debug more for %s\n", ClassName());
+    AliLog::SetClassDebugLevel(ClassName(), AliLog::kDebug);
+    AliInfo(Form("Called with option %s.", option.Data()));
+  }
+}
+
 void AliSelector::Begin(TTree*)
 {
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
-  TString option = GetOption();
-
-  if (option.Contains("debug"))
-  {
-    AliLog::SetClassDebugLevel("AliSelector", AliLog::kDebug);
-    AliInfo(Form("Called with option %s.", option.Data()));
-  }
+  CheckOptions();
 
   AliDebug(AliLog::kDebug, "============BEGIN===========");
 }
@@ -92,13 +102,7 @@ void AliSelector::SlaveBegin(TTree* tree)
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
-  TString option = GetOption();
-
-  if (option.Contains("debug"))
-  {
-    AliLog::SetClassDebugLevel("AliSelector", AliLog::kDebug);
-    AliInfo(Form("Called with option %s.", option.Data()));
-  }
+  CheckOptions();
 
   AliDebug(AliLog::kDebug, "=======SLAVEBEGIN========");
   AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
