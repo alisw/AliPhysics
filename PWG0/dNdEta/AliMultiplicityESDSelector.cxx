@@ -42,6 +42,8 @@ void AliMultiplicityESDSelector::Begin(TTree* tree)
 {
   // Begin function
 
+  AliSelector::Begin(tree);
+
   ReadUserObjects(tree);
 }
 

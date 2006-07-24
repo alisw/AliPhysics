@@ -303,8 +303,12 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   Float_t nSigmaToVertex = -1;
   if (bRes[0]!=0 && bRes[1]!=0) {
     Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
-    nSigmaToVertex = d;//TMath::Sqrt(2)*(TMath::ErfInverse(1 - TMath::Exp(0.5*(-d*d))));
-    // JF solution: nSigmaToVertex = TMath::ErfInverse(TMath::Sqrt(2.0/TMath::Pi()) * TMath::Erf(d / TMath::Sqrt(2))) * TMath::Sqrt(2);
+    nSigmaToVertex = d;
+
+    // JF solution:
+    //nSigmaToVertex = TMath::ErfInverse(TMath::Sqrt(2.0/TMath::Pi()) * TMath::Erf(d / TMath::Sqrt(2))) * TMath::Sqrt(2);
+    // Claus solution:
+    //nSigmaToVertex = TMath::Sqrt(2)*(TMath::ErfInverse(1 - TMath::Exp(0.5*(-d*d))));
   }
 
   // getting the kinematic variables of the track 
@@ -357,7 +361,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   if (nSigmaToVertex > fCutNsigmaToVertex) 
     cuts[11] = kTRUE;
   // if n sigma could not be calculated
-  if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)   
+  if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)
     cuts[12]=kTRUE;
   if (!fCutAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) 
     cuts[13]=kTRUE;
@@ -419,7 +423,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     fhDXYvsDZ[0]->Fill(b[1],b[0]);
 
     if (bRes[0]!=0 && bRes[1]!=0) {
-      fhDZNormalized[0]->Fill(b[1]/bRes[1]);     
+      fhDZNormalized[0]->Fill(b[1]/bRes[1]);
       fhDXYNormalized[0]->Fill(b[0]/bRes[0]);    
       fhDXYvsDZNormalized[0]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
     }
@@ -439,7 +443,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     
     fhC11[1]->Fill(extCov[0]);                 
     fhC22[1]->Fill(extCov[2]);                 
-    fhC33[1]->Fill(extCov[5]);                 
+    fhC33[1]->Fill(extCov[5]);
     fhC44[1]->Fill(extCov[9]);                                  
     fhC55[1]->Fill(extCov[14]);                                  
     
@@ -447,9 +451,12 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     fhDXY[1]->Fill(b[0]);    
     fhDXYvsDZ[1]->Fill(b[1],b[0]);
 
-    fhDZNormalized[1]->Fill(b[1]/bRes[1]);     
-    fhDXYNormalized[1]->Fill(b[0]/bRes[0]);    
-    fhDXYvsDZNormalized[1]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+    if (bRes[0]!=0 && bRes[1]!=0)
+    {
+      fhDZNormalized[1]->Fill(b[1]/bRes[1]);
+      fhDXYNormalized[1]->Fill(b[0]/bRes[0]);
+      fhDXYvsDZNormalized[1]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+    }
   }
   
   return kTRUE;

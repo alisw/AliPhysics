@@ -8,16 +8,13 @@
 
 void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
 {
-  /*gSystem->Load("libEG");
+  TStopwatch timer;
+  timer.Start();
+
+  gSystem->Load("libEG");
   gSystem->Load("libGeom");
-  gSystem->Load("libESD");*/
-  gSystem->cd("ESD");
-  gROOT->ProcessLine(".x PROOF-INF/SETUP.C");
-  gSystem->cd("..");
-  gSystem->cd("PWG0base");
-  gROOT->ProcessLine(".x PROOF-INF/SETUP.C");
-  gSystem->cd("..");
-  //gSystem->Load("libPWG0base");
+  gSystem->Load("libESD");
+  gSystem->Load("libPWG0base");
   if (aMC != kFALSE)
     gSystem->Load("libPWG0dep");
 
@@ -30,7 +27,7 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
 
   if (aProof != kFALSE)
   {
-    proof = TProof::Open("jgrosseo@lxb6043");
+    proof = TProof::Open("jgrosseo@lxb6046");
 
     if (!proof)
     {
@@ -82,9 +79,6 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
 
   if (aDebug != kFALSE)
     selectorName += "g";
-
-  TStopwatch timer;
-  timer.Start();
 
   Long64_t result = -1;
 
