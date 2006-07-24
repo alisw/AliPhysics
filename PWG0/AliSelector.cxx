@@ -59,8 +59,14 @@ AliSelector::~AliSelector()
   // Destructor
   //
 
-  // histograms are in the output list and deleted when the output
-  // list is deleted by the TSelector dtor
+ if (fTree)
+   fTree->ResetBranchAddresses();
+
+ if (fESD)
+ {
+   delete fESD;
+   fESD = 0;
+ }
 }
 
 void AliSelector::Begin(TTree*)
