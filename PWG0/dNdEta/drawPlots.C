@@ -385,11 +385,11 @@ void Track2ParticleAsNumber(const char* fileName = "correction_map.root")
   printf("Correction with 0.3 < pT < 0.5: %f +- %f\n", eff3, error3);
 }
 
-void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", Float_t upperPtLimit = 10)
+void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", const char* folderName = "dndeta_correction", Float_t upperPtLimit = 10)
 {
   TFile::Open(fileName);
-  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
-  dNdEtaCorrection->LoadHistograms(fileName, "dndeta_correction");
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(folderName, folderName);
+  dNdEtaCorrection->LoadHistograms(fileName, folderName);
 
   TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
   TH3F* meas = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetMeasuredHistogram();
@@ -413,11 +413,11 @@ void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", F
   AliPWG0Helper::CreateDividedProjections(gene, meas, "z", kTRUE);
 }
 
-void Track2Particle1D(const char* fileName = "correction_map.root", Float_t upperPtLimit = 9.9)
+void Track2Particle1D(const char* fileName = "correction_map.root", const char* folderName = "dndeta_correction", Float_t upperPtLimit = 9.9)
 {
   gSystem->Load("libPWG0base");
 
-  Track2Particle1DCreatePlots(fileName, upperPtLimit);
+  Track2Particle1DCreatePlots(fileName, folderName, upperPtLimit);
 
   TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_x_div_meas_nTrackToNPart_x"));
   TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_y_div_meas_nTrackToNPart_y"));
@@ -434,20 +434,22 @@ void Track2Particle1D(const char* fileName = "correction_map.root", Float_t uppe
 
   corrZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
 
-  TCanvas* canvas = new TCanvas("Track2Particle1D", "Track2Particle1D", 1200, 400);
+  TString canvasName;
+  canvasName.Form("Track2Particle1D_%s", folderName);
+  TCanvas* canvas = new TCanvas(canvasName, canvasName, 1200, 400);
   canvas->Divide(3, 1);
 
   canvas->cd(1);
   InitPad();
-  corrX->Draw();
+  corrX->DrawCopy();
 
   canvas->cd(2);
   InitPad();
-  corrY->Draw();
+  corrY->DrawCopy();
 
   canvas->cd(3);
   InitPad();
-  corrZ->Draw();
+  corrZ->DrawCopy();
 
   canvas->SaveAs(Form("Track2Particle1D_%s_%d_%f.gif", fileName, gMax, upperPtLimit));
   canvas->SaveAs(Form("Track2Particle1D_%s_%d_%f.eps", fileName, gMax, upperPtLimit));
@@ -457,13 +459,13 @@ void CompareTrack2Particle1D(Float_t upperPtLimit = 9.9)
 {
   gSystem->Load("libPWG0base");
 
-  Track2Particle1DCreatePlots("correction_maponly-positive.root", upperPtLimit);
+  Track2Particle1DCreatePlots("correction_maponly-positive.root", "dndeta_correction", upperPtLimit);
 
   TH1* posX = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_x_div_meas_nTrackToNPart_x")->Clone("pos_x"));
   TH1* posY = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_y_div_meas_nTrackToNPart_y")->Clone("pos_y"));
   TH1* posZ = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_z_div_meas_nTrackToNPart_z")->Clone("pos_z"));
 
-  Track2Particle1DCreatePlots("correction_maponly-negative.root", upperPtLimit);
+  Track2Particle1DCreatePlots("correction_maponly-negative.root", "dndeta_correction", upperPtLimit);
 
   TH1* negX = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_x_div_meas_nTrackToNPart_x")->Clone("neg_x"));
   TH1* negY = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_y_div_meas_nTrackToNPart_y")->Clone("neg_y"));

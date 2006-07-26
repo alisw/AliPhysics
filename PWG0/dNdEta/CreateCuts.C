@@ -2,10 +2,12 @@
 
 // this macro creates the track and event cuts used in this analysis
 
-AliESDtrackCuts* CreateTrackCuts()
+AliESDtrackCuts* CreateTrackCuts(Bool_t hists = kTRUE)
 {
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
-  esdTrackCuts->DefineHistograms(1);
+
+  if (hists)
+    esdTrackCuts->DefineHistograms(1);
 
   esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetMaxChi2PerClusterTPC(3.5);
@@ -13,6 +15,7 @@ AliESDtrackCuts* CreateTrackCuts()
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
 
   esdTrackCuts->SetMinNsigmaToVertex(3);
+  esdTrackCuts->SetRequireSigmaToVertex(kTRUE);
   esdTrackCuts->SetAcceptKingDaughters(kFALSE);
 
   return esdTrackCuts;
