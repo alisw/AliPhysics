@@ -27,6 +27,7 @@ ClassImp(AlidNdEtaSystematicsSelector)
 AlidNdEtaSystematicsSelector::AlidNdEtaSystematicsSelector() :
   AliSelectorRL(),
   fSecondaries(0),
+  fSigmaVertex(0),
   fEsdTrackCuts(0)
 {
   //
@@ -83,7 +84,7 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
 
   if (option.Contains("secondaries"))
   {
-    fSecondaries = new TH3F("fSecondaries", "fSecondaries;NacceptedTracks;CratioSecondaries;p_{T}", 201, -0.5, 205.5, 16, 0.45, 2.05, 10, 0, 10);
+    fSecondaries = new TH3F("fSecondaries", "fSecondaries;NacceptedTracks;CratioSecondaries;p_{T}", 2000, -0.5, 205.5, 16, 0.45, 2.05, 10, 0, 10);
   }
 
   if (option.Contains("particle-composition"))
@@ -94,6 +95,12 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
       name.Form("correction_%d", i);
       fdNdEtaCorrection[i] = new AlidNdEtaCorrection(name, name);
     }
+  }
+
+  if (option.Contains("sigma-vertex"))
+  {
+    fSigmaVertex = new TH1F("fSigmaVertex", "fSigmaVertex;Nsigma2vertex;NacceptedTracks", 10, 0.25, 5.25);
+    printf("WARNING: sigma-vertex analysis enabled. This will produce weird results in the AliESDtrackCuts histograms\n");
   }
 }
 
@@ -147,6 +154,9 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
 
   if (fSecondaries)
     FillSecondaries(list);
+
+  if (fSigmaVertex)
+    FillSigmaVertex();
 
   delete list;
   list = 0;
@@ -240,10 +250,10 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
     Int_t id = -1;
     switch (TMath::Abs(particle->GetPdgCode()))
     {
-      case 211: id = 0; break;
-      case 321: id = 1; break;
+      case 211:  id = 0; break;
+      case 321:  id = 1; break;
       case 2212: id = 2; break;
-      default: id = 3; break;
+      default:   id = 3; break;
     }
 
     if (vertexReconstructed)
@@ -302,7 +312,11 @@ void AlidNdEtaSystematicsSelector::FillSecondaries(TObjArray* listOfTracks)
       AliDebug(AliLog::kDebug, Form("The ratio between primaries and secondaries is %d:%d = %f", primaries, secondaries, ((secondaries > 0) ? (Double_t) primaries / secondaries : -1)));
 
       for (Double_t factor = 0.5; factor < 2.01; factor += 0.1)
-        fSecondaries->Fill((Double_t) primaries + (Double_t) secondaries * factor, factor, nPrimaries->GetBinCenter(i));
+      {
+        Double_t nTracks = (Double_t) primaries + (Double_t) secondaries * factor;
+        fSecondaries->Fill(nTracks, factor, nPrimaries->GetBinCenter(i));
+        //if (secondaries > 0) printf("We fill: %f %f %f\n", nTracks, factor, nPrimaries->GetBinCenter(i));
+      }
     }
   }
 
@@ -314,6 +328,45 @@ void AlidNdEtaSystematicsSelector::FillSecondaries(TObjArray* listOfTracks)
 
   delete iter;
   iter = 0;
+}
+
+void AlidNdEtaSystematicsSelector::FillSigmaVertex()
+{
+  // fills the fSigmaVertex histogram
+
+  // save the old value
+  Float_t oldSigmaVertex = fEsdTrackCuts->GetMinNsigmaToVertex();
+
+  // set to maximum
+  fEsdTrackCuts->SetMinNsigmaToVertex(5);
+
+  TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj = 0;
+  while ((obj = iter->Next()) != 0)
+  {
+    AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (obj);
+    if (!esdTrack)
+      continue;
+
+    Float_t sigma2Vertex = fEsdTrackCuts->GetSigmaToVertex(esdTrack);
+
+    for (Double_t nSigma = 0.5; nSigma < 5.1; nSigma += 0.5)
+    {
+      if (sigma2Vertex < nSigma)
+        fSigmaVertex->Fill(nSigma);
+    }
+  }
+
+  delete iter;
+  iter = 0;
+
+  delete list;
+  list = 0;
+
+  // set back the old value
+  fEsdTrackCuts->SetMinNsigmaToVertex(oldSigmaVertex);
 }
 
 void AlidNdEtaSystematicsSelector::SlaveTerminate()
@@ -337,6 +390,9 @@ void AlidNdEtaSystematicsSelector::SlaveTerminate()
   for (Int_t i=0; i<4; ++i)
     if (fdNdEtaCorrection[i])
       fOutput->Add(fdNdEtaCorrection[i]);
+
+  if (fSigmaVertex)
+    fOutput->Add(fSigmaVertex);
 }
 
 void AlidNdEtaSystematicsSelector::Terminate()
@@ -350,6 +406,7 @@ void AlidNdEtaSystematicsSelector::Terminate()
   fSecondaries = dynamic_cast<TH3F*> (fOutput->FindObject("fSecondaries"));
   for (Int_t i=0; i<4; ++i)
     fdNdEtaCorrection[i] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
+  fSigmaVertex = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertex"));
 
   TFile* fout = TFile::Open("systematics.root", "RECREATE");
 
@@ -358,6 +415,9 @@ void AlidNdEtaSystematicsSelector::Terminate()
 
   if (fSecondaries)
     fSecondaries->Write();
+
+  if (fSigmaVertex)
+    fSigmaVertex->Write();
 
   for (Int_t i=0; i<4; ++i)
     if (fdNdEtaCorrection[i])
@@ -370,5 +430,11 @@ void AlidNdEtaSystematicsSelector::Terminate()
   {
     new TCanvas;
     fSecondaries->Draw();
+  }
+
+  if (fSigmaVertex)
+  {
+    new TCanvas;
+    fSigmaVertex->Draw();
   }
 }
