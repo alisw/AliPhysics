@@ -3,6 +3,7 @@
  .L TestAnalisys.C+
  AddChains(868);    // AddChains(runNumber);
   Select();          // make default selection of data
+  MakePictures("pic868");
 */
 
 #include "TFile.h"
@@ -10,6 +11,7 @@
 #include "TChain.h"
 #include "TString.h"
 #include "TLegend.h"
+#include "TStyle.h"
 #include "TCut.h"
 #include "TF1.h"
 #include "TProfile.h"
@@ -35,6 +37,8 @@
 
 
 void Select();                // make default selection 
+void SelectLaser();           // make default selection  for laser tracks
+
 void AddChains(Int_t run);    // add all the trees with selected run number to the chain
 void MakePictures(char *dirname);           // make default pictures
 
@@ -83,6 +87,16 @@ TEventList * listFitPed    = new TEventList("listFitPed","listFitPed");
 void MakePictures(char *dirname){
   //
   //
+  //
+  // Define Uli Style
+  gROOT->SetStyle("Plain");
+  gStyle->SetFillColor(10);
+  gStyle->SetPadColor(10);
+  gStyle->SetCanvasColor(10);
+  gStyle->SetStatColor(10);
+  
+  gStyle->SetPalette(1,0);
+  gStyle->SetNumberContours(50);
   //
   const Int_t kMinCl = 200;
   char chshell[100];
@@ -293,7 +307,7 @@ void AddChains(Int_t run){
     //    chainPed.Add(sfile.Data());
   }
   //
-  // Fitted pedestal
+  // Random signals
   sprintf(strcl,"ls  run%d*/TPCsignal.root > /tmp/files.txt", run);
   gSystem->Exec(strcl);
   in4.open("/tmp/files.txt");
@@ -304,7 +318,7 @@ void AddChains(Int_t run){
     TTree * tree =(TTree*)f.Get("SignalB");
     if (tree){      
       f.Close();
-      chainPed.Add(sfile.Data());
+      chainSignal.Add(sfile.Data());
     }
     //    chainPed.Add(sfile.Data());
   }
@@ -334,11 +348,31 @@ void Select(){
   //
   // base cut on the tracks
   //
-  comp.fTree->Draw(">>listTracks","Track.fN>50&&abs(Track.fP4)<0.001");
+  comp.fTree->Draw(">>listTracks","Track.fN>30&&abs(Track.fP4)<0.002");
   comp.fTree->SetEventList(listTracks);
   //
   compF.fTree->Draw(">>listFitS","p2>0&&p2<5&&p1<900&&p0<10000&&p4<1&&p4>0&&p5<p3&&chi2<150");
   compF.fTree->SetEventList(listFitS);
+}
+
+void SelectLaser(){
+  //
+  // base cut on the tracks
+  //
+  comp.fTree->Draw(">>listTracks","Track.fN>20&&abs(Track.fP4)<0.001&&abs(Etrack.fP[3])<0.01");
+  comp.fTree->SetEventList(listTracks);
+  //
+  compF.fTree->Draw(">>listFitS","p2>0&&p2<5&&p1<900&&p0<10000&&p4<1&&p4>0&&p5<p3&&chi2<150");
+  compF.fTree->SetEventList(listFitS);
+  //
+  // make default aliases
+  //
+  //  laser z beam
+  comp.fTree->SetAlias("lz0","abs(Etrack.fP[1]-20)<5");
+  comp.fTree->SetAlias("lz1","abs(Etrack.fP[1]-70)<20");
+  comp.fTree->SetAlias("lz2","abs(Etrack.fP[1]-150)<20");
+  comp.fTree->SetAlias("lz3","abs(Etrack.fP[1]-210)<20");
+
 }
 
 
@@ -351,10 +385,10 @@ void PRFYZ(TCut cut0, TCut cut1,  char * description){
   TF1 * f1 = new TF1("fdiff","sqrt([0]*[0]+(250-x)*[1]*[1])");
   f1->SetParameter(1,0.2);
   f1->SetParameter(0,0.2);
-  comp.DrawXY("Cl.fZ","sqrt(Cl.fSigmaY2)","Track.fTrackPoints.GetAngleY()<0.05","Track.fTrackPoints.fTX>0"+cut0,5,10,240,-0,1);
+  comp.DrawXY("Cl.fZ","sqrt(Cl.fSigmaY2)","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut0,5,10,240,-0,1);
   TH1F * prfInnerY = (TH1F*)comp.fMean->Clone();
 
-  comp.DrawXY("Cl.fZ","sqrt(Cl.fSigmaY2)","Track.fTrackPoints.GetAngleY()<0.05","Track.fTrackPoints.fTX>0"+cut1,5,10,240,-0,1);
+  comp.DrawXY("Cl.fZ","sqrt(Cl.fSigmaY2)","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut1,5,10,240,-0,1);
   TH1F * prfOuterY = (TH1F*)comp.fMean->Clone();
   //
   //
@@ -420,10 +454,10 @@ void ResYZ(TCut cut0, TCut cut1,  char * description){
   TF1 * f1 = new TF1("fdiff","sqrt([0]*[0]+(250-x)*[1]*[1])");
   f1->SetParameter(1,0.2);
   f1->SetParameter(0,0.2);
-  comp.DrawXY("Cl.fZ","Track.fTrackPoints.GetY()-Cl.GetY()","Track.fTrackPoints.GetAngleY()<0.05","Track.fTrackPoints.fTX>0"+cut0,5,10,240,-0.5,0.5);
+  comp.DrawXY("Cl.fZ","Track.fTrackPoints.GetY()-Cl.GetY()","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut0,5,10,240,-0.5,0.5);
   TH1F * prfInnerY = (TH1F*)comp.fRes->Clone();
 
-  comp.DrawXY("Cl.fZ","Track.fTrackPoints.GetY()-Cl.GetY()","Track.fTrackPoints.GetAngleY()<0.05","Track.fTrackPoints.fTX>0"+cut1,5,10,240,-0.5,0.5);
+  comp.DrawXY("Cl.fZ","Track.fTrackPoints.GetY()-Cl.GetY()","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut1,5,10,240,-0.5,0.5);
   TH1F * prfOuterY = (TH1F*)comp.fRes->Clone();
   //
   //
@@ -661,3 +695,5 @@ TCanvas *  NoiseSector(TCut cut0,  char * description, Int_t maxrow, Int_t maxpa
   
   return c;
 }
+
+
