@@ -16,7 +16,7 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
   Long_t id, size, flags, modtime;
   if (gSystem->GetPathInfo(aDataDir, &id, &size, &flags, &modtime))
   {
-    print("%s not found.\n", aDataDir);
+    printf("%s not found.\n", aDataDir);
     return 0;
   }
 
