@@ -522,7 +522,7 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   	TObjArray* detArray = runLoader->GetAliRun()->Detectors();
   	for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
   		AliModule* det = (AliModule*) detArray->At(iDet);
-  		if (!det || !det->IsActive()) continue;
+  		if (!det) continue;
   		if (IsSelected(det->GetName(), detStr)) {
   			if(!SetAlignObjArraySingleDet(det->GetName())){
   				dataNotLoaded += det->GetName();
