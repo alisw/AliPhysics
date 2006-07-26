@@ -71,10 +71,14 @@ public:
   void SetEtaRange(Float_t r1=-1e99, Float_t r2=1e99) {fEtaMin=r1; fEtaMax=r2;}
   void SetRapRange(Float_t r1=-1e99, Float_t r2=1e99) {fRapMin=r1; fRapMax=r2;}
 
+  Float_t GetMinNsigmaToVertex() { return fCutNsigmaToVertex; } 
+
   //######################################################
   void SetHistogramsOn(Bool_t b=kFALSE) {fHistogramsOn = b;}
   void DefineHistograms(Int_t color=1);
   void SaveHistograms(Char_t* dir="track_selection");
+
+  Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
   
   virtual void Print(const Option_t* = "") const;
 

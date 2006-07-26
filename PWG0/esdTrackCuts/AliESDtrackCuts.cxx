@@ -242,7 +242,51 @@ void AliESDtrackCuts::Copy(TObject &c) const
 }
 
 //____________________________________________________________________
-Bool_t 
+Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
+{
+  //
+
+  Float_t b[2];
+  Float_t bRes[2];
+  Float_t bCov[3];
+  esdTrack->GetImpactParameters(b,bCov);
+  if (bCov[0]<=0 || bCov[2]<=0) {
+    AliDebug(1, "Estimated b resolution lower or equal zero!");
+    bCov[0]=0; bCov[2]=0;
+  }
+  bRes[0] = TMath::Sqrt(bCov[0]);
+  bRes[1] = TMath::Sqrt(bCov[2]);
+
+  // -----------------------------------
+  // How to get to a n-sigma cut?
+  //
+  // The accumulated statistics from 0 to d is
+  //
+  // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
+  // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
+  //
+  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
+  // Can this be expressed in a different way?
+  //
+  //
+  // FIX: I don't think this is correct!!! Keeping d as n_sigma for now...
+
+  if (bRes[0] == 0 || bRes[1] ==0)
+    return -1;
+
+  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+
+  // stupid rounding problem screws up everything:
+  // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
+  if (TMath::Exp(-d * d / 2) < 1e-10)
+    return 1000;
+
+  d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  return d;
+}
+
+//____________________________________________________________________
+Bool_t
 AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // 
   // figure out if the tracks survives all the track cuts defined
@@ -275,43 +319,9 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   esdTrack->GetExternalCovariance(extCov);
 
   // getting the track to vertex parameters
-  Float_t b[2];
-  Float_t bRes[2];
-  Float_t bCov[3];
-  esdTrack->GetImpactParameters(b,bCov);    
-  if (bCov[0]<=0 || bCov[2]<=0) {
-    AliDebug(1, "Estimated b resolution lower or equal zero!");
-    bCov[0]=0; bCov[2]=0;
-  } 
-  bRes[0] = TMath::Sqrt(bCov[0]);
-  bRes[1] = TMath::Sqrt(bCov[2]);
+  Float_t nSigmaToVertex = GetSigmaToVertex(esdTrack);
 
-  // -----------------------------------
-  // How to get to a n-sigma cut?
-  //
-  // The accumulated statistics from 0 to d is
-  //
-  // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
-  // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
-  //
-  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
-  // Can this be expressed in a different way?
-  //
-  //
-  // FIX: I don't think this is correct!!! Keeping d as n_sigma for now...
-
-  Float_t nSigmaToVertex = -1;
-  if (bRes[0]!=0 && bRes[1]!=0) {
-    Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
-    nSigmaToVertex = d;
-
-    // JF solution:
-    //nSigmaToVertex = TMath::ErfInverse(TMath::Sqrt(2.0/TMath::Pi()) * TMath::Erf(d / TMath::Sqrt(2))) * TMath::Sqrt(2);
-    // Claus solution:
-    //nSigmaToVertex = TMath::Sqrt(2)*(TMath::ErfInverse(1 - TMath::Exp(0.5*(-d*d))));
-  }
-
-  // getting the kinematic variables of the track 
+  // getting the kinematic variables of the track
   // (assuming the mass is known)
   Double_t p[3];
   esdTrack->GetPxPyPz(p);
@@ -340,7 +350,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[0]=kTRUE;
   if (fCutRequireITSRefit && (status&AliESDtrack::kITSrefit)==0)
     cuts[1]=kTRUE;
-  if (nClustersTPC<fCutMinNClusterTPC) 
+  if (nClustersTPC<fCutMinNClusterTPC)
     cuts[2]=kTRUE;
   if (nClustersITS<fCutMinNClusterITS) 
     cuts[3]=kTRUE;
@@ -358,7 +368,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[9]=kTRUE;  
   if (extCov[14]  > fCutMaxC55) 
     cuts[10]=kTRUE;  
-  if (nSigmaToVertex > fCutNsigmaToVertex) 
+  if (nSigmaToVertex > fCutNsigmaToVertex)
     cuts[11] = kTRUE;
   // if n sigma could not be calculated
   if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)
@@ -374,7 +384,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[16] = kTRUE;
   if((p[1] < fPyMin) || (p[1] > fPyMax)) 
     cuts[17] = kTRUE;
-  if((p[2] < fPzMin) || (p[2] > fPzMax)) 
+  if((p[2] < fPzMin) || (p[2] > fPzMax))
     cuts[18] = kTRUE;
   if((eta < fEtaMin) || (eta > fEtaMax)) 
     cuts[19] = kTRUE;
@@ -407,48 +417,70 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     }
     
 
-    fhNClustersITS[0]->Fill(nClustersITS);        
-    fhNClustersTPC[0]->Fill(nClustersTPC);        
+    fhNClustersITS[0]->Fill(nClustersITS);
+    fhNClustersTPC[0]->Fill(nClustersTPC);
     fhChi2PerClusterITS[0]->Fill(chi2PerClusterITS);
-    fhChi2PerClusterTPC[0]->Fill(chi2PerClusterTPC);   
-    
-    fhC11[0]->Fill(extCov[0]);                 
-    fhC22[0]->Fill(extCov[2]);                 
-    fhC33[0]->Fill(extCov[5]);                 
-    fhC44[0]->Fill(extCov[9]);                                  
-    fhC55[0]->Fill(extCov[14]);                                  
-    
-    fhDZ[0]->Fill(b[1]);     
-    fhDXY[0]->Fill(b[0]);    
+    fhChi2PerClusterTPC[0]->Fill(chi2PerClusterTPC);
+
+    fhC11[0]->Fill(extCov[0]);
+    fhC22[0]->Fill(extCov[2]);
+    fhC33[0]->Fill(extCov[5]);
+    fhC44[0]->Fill(extCov[9]);
+    fhC55[0]->Fill(extCov[14]);
+
+    Float_t b[2];
+    Float_t bRes[2];
+    Float_t bCov[3];
+    esdTrack->GetImpactParameters(b,bCov);
+    if (bCov[0]<=0 || bCov[2]<=0) {
+      AliDebug(1, "Estimated b resolution lower or equal zero!");
+      bCov[0]=0; bCov[2]=0;
+    }
+    bRes[0] = TMath::Sqrt(bCov[0]);
+    bRes[1] = TMath::Sqrt(bCov[2]);
+
+    fhDZ[0]->Fill(b[1]);
+    fhDXY[0]->Fill(b[0]);
     fhDXYvsDZ[0]->Fill(b[1],b[0]);
 
     if (bRes[0]!=0 && bRes[1]!=0) {
       fhDZNormalized[0]->Fill(b[1]/bRes[1]);
-      fhDXYNormalized[0]->Fill(b[0]/bRes[0]);    
+      fhDXYNormalized[0]->Fill(b[0]/bRes[0]);
       fhDXYvsDZNormalized[0]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
     }
   }
 
-  //########################################################################  
+  //########################################################################
   // cut the track!
   if (cut) return kFALSE;
 
-  //########################################################################  
+  //########################################################################
   // filling histograms after cut
   if (fHistogramsOn) {
-    fhNClustersITS[1]->Fill(nClustersITS);        
-    fhNClustersTPC[1]->Fill(nClustersTPC);        
+    fhNClustersITS[1]->Fill(nClustersITS);
+    fhNClustersTPC[1]->Fill(nClustersTPC);
     fhChi2PerClusterITS[1]->Fill(chi2PerClusterITS);
-    fhChi2PerClusterTPC[1]->Fill(chi2PerClusterTPC);   
-    
-    fhC11[1]->Fill(extCov[0]);                 
-    fhC22[1]->Fill(extCov[2]);                 
+    fhChi2PerClusterTPC[1]->Fill(chi2PerClusterTPC);
+
+    fhC11[1]->Fill(extCov[0]);
+    fhC22[1]->Fill(extCov[2]);
     fhC33[1]->Fill(extCov[5]);
-    fhC44[1]->Fill(extCov[9]);                                  
-    fhC55[1]->Fill(extCov[14]);                                  
-    
-    fhDZ[1]->Fill(b[1]);     
-    fhDXY[1]->Fill(b[0]);    
+    fhC44[1]->Fill(extCov[9]);
+    fhC55[1]->Fill(extCov[14]);
+
+    Float_t b[2];
+    Float_t bRes[2];
+    Float_t bCov[3];
+    esdTrack->GetImpactParameters(b,bCov);
+    if (bCov[0]<=0 || bCov[2]<=0) {
+      AliDebug(1, "Estimated b resolution lower or equal zero!");
+      bCov[0]=0; bCov[2]=0;
+    }
+    bRes[0] = TMath::Sqrt(bCov[0]);
+    bRes[1] = TMath::Sqrt(bCov[2]);
+
+    fhDZ[1]->Fill(b[1]);
+    fhDXY[1]->Fill(b[0]);
     fhDXYvsDZ[1]->Fill(b[1],b[0]);
 
     if (bRes[0]!=0 && bRes[1]!=0)
@@ -458,7 +490,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
       fhDXYvsDZNormalized[1]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
     }
   }
-  
+
   return kTRUE;
 }
 
