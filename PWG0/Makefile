@@ -15,6 +15,11 @@ else
   endif
 endif
 
+# for building of PWG0dep.par
+ifneq ($(PWG0base_INCLUDE),)
+  ALICEINC += -I../$(PWG0base_INCLUDE)
+endif
+
 CXXFLAGS     += $(ALICEINC) -g
 
 PACKAGE = PWG0base
