@@ -6,8 +6,9 @@ void loadSteeringLibs ()
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
 
-  gSystem->Load("libRAWData");
   gSystem->Load("libESD");
   gSystem->Load("libSTEER");
-  gSystem->Load("libCONTAINERS");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libRAWDatarec");
+  gSystem->Load("libRAWDatasim");
 }

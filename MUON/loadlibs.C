@@ -32,7 +32,9 @@ void loadlibs ()
 
   gSystem->Load("libESD");
   gSystem->Load("libSTEER");
-  gSystem->Load("libRAWData");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libRAWDatarec");
+  gSystem->Load("libRAWDatasim");
   gSystem->Load("libEVGEN");
   gSystem->Load("libFASTSIM");
   gSystem->Load("libAliPythia6");

@@ -1,0 +1,20 @@
+#-*- Mode: Makefile -*-
+
+SRCS:=  AliBitPacking.cxx AliAltroBuffer.cxx \
+	AliFstream.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+HDRS +=
+
+EHDRS:=$(shell root-config --incdir)/TH1F.h
+
+EINCLUDE+=
+
+DHDR:= RAWsimLinkDef.h 
+
+ifdef DATE_ROOT
+EINCLUDE+= ${DATE_COMMON_DEFS}
+endif
+
+EXPORT:= AliAltroBuffer.h AliBitPacking.h AliFstream.h

@@ -15,7 +15,9 @@ ELIBS    := Reve Alieve \
   STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
   pythia6 AliPythia6 pdf THijing \
   hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
-  FASTSIM microcern RAWData AliL3Src AliL3Comp AliL3Misc AliL3MUON \
+  FASTSIM microcern \
+  RAWDatabase RAWDatarec RAWDatasim \
+  AliL3Src AliL3Comp AliL3Misc AliL3MUON \
   AliL3Hough AliL3ITS \
 # THerwig herwig TPHIC
 

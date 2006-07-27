@@ -98,7 +98,8 @@ int ODH_Init( char* path_to_geom_file, char* path_to_homer_lib = NULL ) {
     cout << "Loading ALICE TPC libraries (ALICE_ROOT & ALICE_TARGET have to be set)" << endl;
     gSystem->Load("libESD");
     gSystem->Load("libSTEER");
-    gSystem->Load("libRAWData");
+    gSystem->Load("libRAWDatabase");
+    gSystem->Load("libRAWDatarec");
 //     gSystem->Load("libCONTAINERS");
 //     if(gSystem->Load("libTPC")!=0) {
     gSystem->Load("libTPCbase");

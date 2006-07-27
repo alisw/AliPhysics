@@ -1,0 +1,25 @@
+#-*- Mode: Makefile -*-
+
+SRCS:=  AliFilter.cxx \
+	AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx \
+	AliRawReaderDate.cxx AliRawReaderDateV3.cxx \
+	AliRawReaderMemory.cxx \
+	AliAltroRawStream.cxx \
+	AliAltroRawStreamOld.cxx \
+	AliVMERawStream.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+HDRS +=
+
+EHDRS:=$(shell root-config --incdir)/TH1F.h
+
+EINCLUDE+=
+
+DHDR:= RAWrecLinkDef.h 
+
+ifdef DATE_ROOT
+EINCLUDE+= ${DATE_COMMON_DEFS}
+endif
+
+EXPORT:=AliRawReader.h AliAltroRawStream.h AliFilter.h

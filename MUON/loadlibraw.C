@@ -27,7 +27,9 @@ void loadlibraw ()
 
   gSystem->Load("libESD");
   gSystem->Load("libSTEER");
-  gSystem->Load("libRAWData");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libRAWDatarec");
+  gSystem->Load("libRAWDatasim");
 
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONraw");

@@ -1,0 +1,23 @@
+#-*- Mode: Makefile -*-
+
+SRCS:=  AliRawEventHeaderBase.cxx AliRawEquipmentHeader.cxx \
+	AliRawData.cxx AliRawEquipment.cxx AliRawEvent.cxx \
+	AliStats.cxx \
+	AliAltroMapping.cxx \
+	AliDAQ.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+
+HDRS += AliRawEventHeaderVersions.h
+
+EHDRS:=$(shell root-config --incdir)/TH1F.h
+
+EINCLUDE+=
+
+DHDR:= RAWbaseLinkDef.h 
+
+ifdef DATE_ROOT
+EINCLUDE+= ${DATE_COMMON_DEFS}
+endif
+
+EXPORT:=AliRawDataHeader.h AliAltroMapping.h AliDAQ.h

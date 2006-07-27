@@ -24,10 +24,12 @@ void loadlibs ()
 
   gSystem->Load("libEGPythia6");
 
-  gSystem->Load("libRAWData");
-
   gSystem->Load("libESD");
+  gSystem->Load("libCDB");
   gSystem->Load("libSTEER");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libRAWDatarec");
+  gSystem->Load("libRAWDatasim");
   gSystem->Load("libEVGEN");
   gSystem->Load("libFASTSIM");
   gSystem->Load("libAliPythia6");
@@ -42,6 +44,7 @@ void loadlibs ()
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONbase");
+  gSystem->Load("libMUONraw");
   gSystem->Load("libMUONsim");
   gSystem->Load("libMUONrec");
   gSystem->Load("libFMDbase");

@@ -16,7 +16,9 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONraw MUONmapping \
         STRUCT STARTbase STARTsim STARTrec EVGEN ESD CDB STEER \
         pythia6 AliPythia6 pdf THijing \
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
-        FASTSIM microcern RAWData AliL3Src AliL3Comp AliL3Misc AliL3MUON \
+        FASTSIM microcern \
+	RAWDatabase RAWDatarec RAWDatasim \
+	AliL3Src AliL3Comp AliL3Misc AliL3MUON \
 	AliL3Hough AliL3ITS \
 #	THerwig herwig TPHIC
 
@@ -90,7 +92,9 @@ ARLIBS:= \
    TPC/tgt_$(ALICE_TARGET)/G__TPCfast.o $(LIBPATH)/libTPCfast.a \
    STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
    STEER/tgt_$(ALICE_TARGET)/G__ESD.o $(LIBPATH)/libESD.a \
-   RAW/tgt_$(ALICE_TARGET)/G__RAW.o $(LIBPATH)/libRAWData.a
+   RAW/tgt_$(ALICE_TARGET)/G__RAWDatabase.o $(LIBPATH)/libRAWDatabase.a \
+   RAW/tgt_$(ALICE_TARGET)/G__RAWDatasim.o $(LIBPATH)/libRAWDatasim.a \
+   RAW/tgt_$(ALICE_TARGET)/G__RAWDatarec.o $(LIBPATH)/libRAWDatarec.a
 
 SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
 

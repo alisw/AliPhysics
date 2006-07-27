@@ -36,7 +36,7 @@ ifeq ($(ALIHLT_USEPACKAGE),ALIROOT)
 DEFSTR = -Duse_aliroot -Duse_root
 ifeq ($(USENEWIO),1)
 DEFSTR += -Duse_newio
-ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lTPC -lITS -lCONTAINERS -lSTEER -lRAWData -lVMC -lGeom
+ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lTPC -lITS -lCONTAINERS -lSTEER -lRAWDatabase -lRAWDatarec -lRAWDatasim -lVMC -lGeom
 else
 ALICELIBS = -L$(ALICE_ROOT)/lib/tgt_Linux -lTPC -lITS -lCONTAINERS -lSTEER -lMC
 endif
