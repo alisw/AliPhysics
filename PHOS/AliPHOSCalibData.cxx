@@ -178,7 +178,7 @@ Float_t AliPHOSCalibData::GetADCchannelEmc(Int_t module, Int_t column, Int_t row
   if(fCalibDataEmc) 
     return fCalibDataEmc->GetADCchannelEmc(module,column,row);
   else
-    return 0.0015; // default width of one EMC ADC channel in GeV
+    return 1.0; // default width of one EMC ADC channel in GeV
 }
 
 //________________________________________________________________
@@ -193,7 +193,7 @@ Float_t AliPHOSCalibData::GetADCpedestalEmc(Int_t module, Int_t column, Int_t ro
   if(fCalibDataEmc) 
     return fCalibDataEmc->GetADCpedestalEmc(module,column,row);
   else
-    return 0.005; // default EMC ADC pedestal
+    return 0.0; // default EMC ADC pedestal
 }
 
 //________________________________________________________________
@@ -231,7 +231,7 @@ Float_t AliPHOSCalibData::GetADCchannelCpv(Int_t module, Int_t column, Int_t row
   if(fCalibDataCpv) 
     return fCalibDataCpv->GetADCchannelCpv(module,column,row);
   else
-    return 0.0012; // default width of one ADC channel in CPV 'popugais'
+    return 0.0012; // default width of one ADC channel in CPV arbitrary units
 }
 
 //________________________________________________________________
@@ -289,8 +289,8 @@ void AliPHOSCalibData::RandomEmc()
   for(Int_t module=1; module<6; module++) {
     for(Int_t column=1; column<57; column++) {
       for(Int_t row=1; row<65; row++) {
-        adcChannelEmc=rn.Uniform(0.00075,0.00375); // Cmax/Cmin = 5, (Cmax-Cmin)/2 = 0.0015
-        adcPedestalEmc=rn.Uniform(0.0045,0.0055); //+-10% spread of pedestals from 0.005
+        adcChannelEmc =rn.Uniform(0.5,1.5); // Cmax/Cmin = 4, (Cmax-Cmin)/2 = 1
+        adcPedestalEmc=rn.Uniform(0.0,0.0); // 0 spread of pedestals
         fCalibDataEmc->SetADCchannelEmc(module,column,row,adcChannelEmc);
         fCalibDataEmc->SetADCpedestalEmc(module,column,row,adcPedestalEmc);
       }
@@ -314,7 +314,7 @@ void AliPHOSCalibData::RandomCpv()
   Float_t adcChannelCpv,adcPedestalCpv;
 
   for(Int_t module=1; module<6; module++) {
-    for(Int_t column=1; column<65; column++) {
+    for(Int_t column=1; column<57; column++) {
       for(Int_t row=1; row<129; row++) {
 	adcChannelCpv =rn.Uniform(0.0009,0.0015); // 0.0012 +- 25%
         adcPedestalCpv=rn.Uniform(0.0048,0.0192); // Ped[max]/Ped[min] = 4, <Ped> = 0.012
