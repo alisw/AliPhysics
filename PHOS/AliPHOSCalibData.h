@@ -28,8 +28,8 @@ class AliPHOSCalibData: public TNamed {
   virtual void Print(Option_t *option = "") const; 
   
   void CreateNew();
-  void RandomEmc();
-  void RandomCpv();
+  void RandomEmc(Float_t ccMin=0.5   , Float_t ccMax=1.5);
+  void RandomCpv(Float_t ccMin=0.0009, Float_t ccMax=0.0015);
 
   Float_t GetADCchannelEmc(Int_t module, Int_t column, Int_t row) const;
   Float_t GetADCpedestalEmc(Int_t module, Int_t column, Int_t row) const;

@@ -36,12 +36,17 @@ void AliPHOSSetCDB()
 		  "Set random decalibration calibration coefficients");
   menu->AddButton("Set calibration equal to invers decalibration coefficients","SetCC(2)",
 		  "Set calibration coefficients inverse to decalibration ones");
+  menu->AddButton("Residual calibration","SetCC(3)",
+		  "Set residual decalibration calibration coefficients");
+
   menu->AddButton("Read equal CC","GetCC(0)",
 		  "Read initial equal calibration coefficients");
   menu->AddButton("Read random CC","GetCC(1)",
 		  "Read random decalibration calibration coefficients");
   menu->AddButton("Read inverse CC","GetCC(2)",
 		  "Read calibration coefficients inverse to decalibration ones");
+  menu->AddButton("Read residual CC","GetCC(3)",
+		  "Read residial calibration coefficients");
   menu->Show();
 }
 
@@ -132,31 +137,14 @@ void SetCC(Int_t flag=0)
     }
   }
   else if (flag == 3) {
-    // First read decalibration DB
-    DBFolder  ="local://DeCalibDB";
+    DBFolder  ="local://ResidualCalibDB";
     firstRun  =  0;
-    lastRun   = 10;
-    objFormat = "PHOS decalibration pedestals and ADC gain factors (5x64x56)";
- 
+    lastRun   =  999999;
+    objFormat = "PHOS residual ADC gain factors (5x64x56)";
+    
     cdb = new AliPHOSCalibData();    
-
-    for (Int_t module=1; module<=nMod; module++) {
-      for (Int_t column=1; column<=nCol; column++) {
-	for (Int_t row=1; row<=nRow; row++) {
-	  cdb->SetADCchannelEmc(module,column,row,2.);
-	  cdb->SetADCpedestalEmc(module,column,row,0.5);
-	}
-      }
-    }
-
-    for (Int_t module=1; module<=nMod; module++) {
-      for (Int_t column=1; column<=nCol*2; column++) {
-	for (Int_t row=1; row<=nRow; row++) {
-	  cdb->SetADCchannelCpv(module,column,row,3.);
-	  cdb->SetADCpedestalCpv(module,column,row,1.5);
-	}
-      }
-    }
+    cdb->RandomEmc(0.98,1.02);
+    cdb->RandomCpv(0.00115,0.00125);
   }
   
   //Store calibration data into database
@@ -199,6 +187,10 @@ void GetCC(Int_t flag=0)
     DBFolder  ="local://InverseCalibDB";
     runNumber = 200;
   }
+  else if (flag == 2) {
+    DBFolder  ="local://ResidualCalibDB";
+    runNumber = 0;
+  }
 
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBManager::Instance()->SetSpecificStorage("PHOS",DBFolder.Data());
@@ -215,8 +207,7 @@ void GetCC(Int_t flag=0)
   cPed ->Divide(1,5);
   cGain->Divide(1,5);
 
-//   for (Int_t module=1; module<=nMod; module++) {
-  for (Int_t module=1; module<=1; module++) {
+  for (Int_t module=1; module<=nMod; module++) {
     TString namePed="hPed";
     namePed+=module;
     TString titlePed="Pedestals in module ";

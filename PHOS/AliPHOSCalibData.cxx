@@ -273,10 +273,11 @@ void AliPHOSCalibData::SetADCpedestalCpv(Int_t module, Int_t column, Int_t row, 
 }
 
 //________________________________________________________________
-void AliPHOSCalibData::RandomEmc()
+void AliPHOSCalibData::RandomEmc(Float_t ccMin, Float_t ccMax)
 {
   // Create decalibrated EMC with calibration coefficients and pedestals
   // randomly distributed within hard-coded limits
+  // Default spread of calibration parameters is Cmax/Cmin = 4, (Cmax-Cmin)/2 = 1
 
   if(fCalibDataEmc) delete fCalibDataEmc;
   fCalibDataEmc = new AliPHOSEmcCalibData("PHOS-EMC");
@@ -289,7 +290,7 @@ void AliPHOSCalibData::RandomEmc()
   for(Int_t module=1; module<6; module++) {
     for(Int_t column=1; column<57; column++) {
       for(Int_t row=1; row<65; row++) {
-        adcChannelEmc =rn.Uniform(0.5,1.5); // Cmax/Cmin = 4, (Cmax-Cmin)/2 = 1
+        adcChannelEmc =rn.Uniform(ccMin,ccMax);
         adcPedestalEmc=rn.Uniform(0.0,0.0); // 0 spread of pedestals
         fCalibDataEmc->SetADCchannelEmc(module,column,row,adcChannelEmc);
         fCalibDataEmc->SetADCpedestalEmc(module,column,row,adcPedestalEmc);
@@ -300,10 +301,11 @@ void AliPHOSCalibData::RandomEmc()
 }
 
 //________________________________________________________________
-void AliPHOSCalibData::RandomCpv()
+void AliPHOSCalibData::RandomCpv(Float_t ccMin, Float_t ccMax)
 {
   // Create decalibrated CPV with calibration coefficients and pedestals
   // randomly distributed within hard-coded limits
+  // Default spread of calibration parameters is  0.0012 +- 25%
 
   if(fCalibDataCpv) delete fCalibDataCpv;
   fCalibDataCpv = new AliPHOSCpvCalibData("PHOS-CPV");
@@ -316,7 +318,7 @@ void AliPHOSCalibData::RandomCpv()
   for(Int_t module=1; module<6; module++) {
     for(Int_t column=1; column<57; column++) {
       for(Int_t row=1; row<129; row++) {
-	adcChannelCpv =rn.Uniform(0.0009,0.0015); // 0.0012 +- 25%
+	adcChannelCpv =rn.Uniform(ccMin,ccMax);
         adcPedestalCpv=rn.Uniform(0.0048,0.0192); // Ped[max]/Ped[min] = 4, <Ped> = 0.012
         fCalibDataCpv->SetADCchannelCpv(module,column,row,adcChannelCpv);
         fCalibDataCpv->SetADCpedestalCpv(module,column,row,adcPedestalCpv);
