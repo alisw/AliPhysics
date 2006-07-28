@@ -207,6 +207,8 @@ void IceLinefit::Exec(Option_t* opt)
  AliTrack* trk=evt->GetTrack(evt->GetNtracks());
  if (!trk) return;
 
+ trk->SetId(evt->GetNtracks(1)+1);
+
  Ali3Vector p;
  Float_t vec[3];
  v.GetVector(vec,"sph");

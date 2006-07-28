@@ -68,3 +68,6 @@
 10-may-2006 NvE Compiler warnings activated for overloaded virtuals in installation
                 script for AMD Athlon in the /scripts sub-directory.
 23-jun-2006 NvE New lightweight AliSignal::AddTrack facility used in IceLinefit and IceDwalk.
+07-jul-2006 NvE Track Id correctly set in IceLinefit.
+28-jul-2006 NvE New class IceChi2 introduced and example macro icechi2.cc added.
+                Also IcePandel updated to use a Convoluted Pandel pdf.

@@ -697,3 +697,4 @@
                 Double_t replaced by Double32_t in Ali3Vector.h, Ali4Vector.h and AliBoost.h
                 and fDresult suppressed for I/O streaming. This will reduce the produced
                 output filesize.
+21-jul-2006 NvE AliSample extended for computation of median.

@@ -25,5 +25,6 @@
  #pragma link C++ class IceDwalk+;
  #pragma link C++ class IcePandel+;
  #pragma link C++ class IceLinefit+;
+ #pragma link C++ class IceChi2+;
 #endif
  

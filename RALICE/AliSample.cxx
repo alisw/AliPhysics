@@ -56,18 +56,43 @@ AliSample::AliSample()
  fNames[1]='Y';
  fNames[2]='Z';
  fN=0;
+ fStore=0;
+ fX=0;
+ fY=0;
+ fZ=0;
+ fArr=0;
  Reset();
 }
 ///////////////////////////////////////////////////////////////////////////
 AliSample::~AliSample()
 {
 // Default destructor
+ if (fX)
+ {
+  delete fX;
+  fX=0;
+ }
+ if (fY)
+ {
+  delete fY;
+  fY=0;
+ }
+ if (fZ)
+ {
+  delete fZ;
+  fZ=0;
+ }
+ if (fArr)
+ {
+  delete fArr;
+  fArr=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSample::Reset()
 {
 // Resetting the statistics values for a certain Sample object
-// Dimension is NOT changed
+// Dimension and storage flag are NOT changed
  fN=0;
  for (Int_t i=0; i<fDim; i++)
  {
@@ -82,6 +107,11 @@ void AliSample::Reset()
    fCor[i][j]=0.;
   }
  }
+
+ // Set storage arrays to initial size
+ if (fX) fX->Set(10);
+ if (fY) fY->Set(10);
+ if (fZ) fZ->Set(10);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSample::Enter(Float_t x)
@@ -104,6 +134,16 @@ void AliSample::Enter(Float_t x)
   fN+=1;
   fSum[0]+=x;
   fSum2[0][0]+=x*x;
+
+  // Store all entered data when storage mode has been selected 
+  if (fStore)
+  {
+   if (!fX) fX=new TArrayF(10);
+   if (fX->GetSize() < fN) fX->Set(fN+10);
+   fX->AddAt(x,fN-1);
+  }
+
+  // Compute the various statistics
   Compute();
  }
 }
@@ -111,6 +151,9 @@ void AliSample::Enter(Float_t x)
 void AliSample::Remove(Float_t x)
 {
 // Removing a value from a 1-dim. sample
+
+ if (!fN) return;
+
  if (fDim != 1)
  {
   cout << " *AliSample::remove* Error : Not a 1-dim sample." << endl;
@@ -120,6 +163,25 @@ void AliSample::Remove(Float_t x)
   fN-=1;
   fSum[0]-=x;
   fSum2[0][0]-=x*x;
+
+  // Remove data entry from the storage
+  if (fStore && fX)
+  {
+   Float_t val=0;
+   for (Int_t i=0; i<=fN; i++)
+   {
+    val=fX->At(i);
+    if (fabs(x-val)>1.e-10) continue;
+
+    for (Int_t j=i+1; j<=fN; j++)
+    {
+     val=fX->At(j);
+     fX->AddAt(val,j-1);
+    }
+   }
+  }
+
+  // Compute the various statistics
   Compute();
  }
 }
@@ -148,6 +210,19 @@ void AliSample::Enter(Float_t x,Float_t y)
   fSum2[0][1]+=x*y;
   fSum2[1][0]+=y*x;
   fSum2[1][1]+=y*y;
+
+  // Store all entered data when storage mode has been selected 
+  if (fStore)
+  {
+   if (!fX) fX=new TArrayF(10);
+   if (fX->GetSize() < fN) fX->Set(fN+10);
+   fX->AddAt(x,fN-1);
+   if (!fY) fY=new TArrayF(10);
+   if (fY->GetSize() < fN) fY->Set(fN+10);
+   fY->AddAt(y,fN-1);
+  }
+
+  // Compute the various statistics
   Compute();
  }
 }
@@ -155,6 +230,9 @@ void AliSample::Enter(Float_t x,Float_t y)
 void AliSample::Remove(Float_t x,Float_t y)
 {
 // Removing a pair (x,y) from a 2-dim. sample
+
+ if (!fN) return;
+
  if (fDim != 2)
  {
   cout << " *AliSample::remove* Error : Not a 2-dim sample." << endl;
@@ -168,6 +246,29 @@ void AliSample::Remove(Float_t x,Float_t y)
   fSum2[0][1]-=x*y;
   fSum2[1][0]-=y*x;
   fSum2[1][1]-=y*y;
+
+  // Remove data entry from the storage
+  if (fStore && fX && fY)
+  {
+   Float_t val=0;
+   for (Int_t i=0; i<=fN; i++)
+   {
+    val=fX->At(i);
+    if (fabs(x-val)>1.e-10) continue;
+    val=fY->At(i);
+    if (fabs(y-val)>1.e-10) continue;
+
+    for (Int_t j=i+1; j<=fN; j++)
+    {
+     val=fX->At(j);
+     fX->AddAt(val,j-1);
+     val=fY->At(j);
+     fY->AddAt(val,j-1);
+    }
+   }
+  }
+
+  // Compute the various statistics
   Compute();
  }
 }
@@ -202,6 +303,22 @@ void AliSample::Enter(Float_t x,Float_t y,Float_t z)
   fSum2[2][0]+=z*x;
   fSum2[2][1]+=z*y;
   fSum2[2][2]+=z*z;
+
+  // Store all entered data when storage mode has been selected 
+  if (fStore)
+  {
+   if (!fX) fX=new TArrayF(10);
+   if (fX->GetSize() < fN) fX->Set(fN+10);
+   fX->AddAt(x,fN-1);
+   if (!fY) fY=new TArrayF(10);
+   if (fY->GetSize() < fN) fY->Set(fN+10);
+   fY->AddAt(y,fN-1);
+   if (!fZ) fZ=new TArrayF(10);
+   if (fZ->GetSize() < fN) fZ->Set(fN+10);
+   fZ->AddAt(z,fN-1);
+  }
+
+  // Compute the various statistics
   Compute();
  }
 }
@@ -209,6 +326,9 @@ void AliSample::Enter(Float_t x,Float_t y,Float_t z)
 void AliSample::Remove(Float_t x,Float_t y,Float_t z)
 {
 // Removing a set (x,y,z) from a 3-dim. sample
+
+ if (!fN) return;
+
  if (fDim != 3)
  {
   cout << " *AliSample::remove* Error : Not a 3-dim sample." << endl;
@@ -228,6 +348,33 @@ void AliSample::Remove(Float_t x,Float_t y,Float_t z)
   fSum2[2][0]-=z*x;
   fSum2[2][1]-=z*y;
   fSum2[2][2]-=z*z;
+
+  // Remove data entry from the storage
+  if (fStore && fX && fY && fZ)
+  {
+   Float_t val=0;
+   for (Int_t i=0; i<=fN; i++)
+   {
+    val=fX->At(i);
+    if (fabs(x-val)>1.e-10) continue;
+    val=fY->At(i);
+    if (fabs(y-val)>1.e-10) continue;
+    val=fZ->At(i);
+    if (fabs(z-val)>1.e-10) continue;
+
+    for (Int_t j=i+1; j<=fN; j++)
+    {
+     val=fX->At(j);
+     fX->AddAt(val,j-1);
+     val=fY->At(j);
+     fY->AddAt(val,j-1);
+     val=fZ->At(j);
+     fZ->AddAt(val,j-1);
+    }
+   }
+  }
+
+  // Compute the various statistics
   Compute();
  }
 }
@@ -355,18 +502,20 @@ Float_t AliSample::GetCor(Int_t i,Int_t j) const
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSample::Data() const
+void AliSample::Data()
 {
 // Printing of statistics of all variables
  for (Int_t i=0; i<fDim; i++)
  {
  cout << " " << fNames[i] << " : N = " << fN;
  cout << " Sum = " << fSum[i] << " Mean = " << fMean[i];
- cout << " Var = " << fVar[i] << " Sigma = " << fSigma[i] << endl;
+ cout << " Var = " << fVar[i] << " Sigma = " << fSigma[i];
+ if (fStore) cout << " Median = " << GetMedian(i+1);
+ cout << endl;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void AliSample::Data(Int_t i) const
+void AliSample::Data(Int_t i)
 {
 // Printing of statistics of ith variable
  if (fDim < i)
@@ -377,7 +526,9 @@ void AliSample::Data(Int_t i) const
  {
   cout << " " << fNames[i-1] << " : N = " << fN;
   cout << " Sum = " << fSum[i-1] << " Mean = " << fMean[i-1];
-  cout << " Var = " << fVar[i-1] << " Sigma = " << fSigma[i-1] << endl;
+  cout << " Var = " << fVar[i-1] << " Sigma = " << fSigma[i-1];
+  if (fStore) cout << " Median = " << GetMedian(i);
+  cout << endl;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -395,5 +546,116 @@ void AliSample::Data(Int_t i,Int_t j) const
   cout << " " << fNames[i-1] << "-" << fNames[j-1] << " correlation :";
   cout << " Cov. = " << fCov[i-1][j-1] << " Cor. = " << fCor[i-1][j-1] << endl;
  }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSample::SetStoreMode(Int_t mode)
+{
+// Set storage mode for all entered data.
+//
+// mode = 0 : Entered data will not be stored
+//        1 : All data will be stored as entered
+//
+// By default the storage mode is set to 0 in the constructor of this class.
+// The default at invokation of this memberfunction is mode=1.
+//
+// For normal statistics evaluation (e.g. mean, sigma, covariance etc...)
+// storage of entered data is not needed. This is the default mode
+// of operation and is the most efficient w.r.t. cpu time and memory.
+// However, when calculation of a median is required, then the data
+// storage mode has be activated.
+//
+// Note : Activation of storage mode can only be performed before the
+//        first data item is entered. 
+
+ if (fN)
+ {
+  cout << " *AliSample::SetStore* Storage mode can only be set before first data." << endl;
+ }
+ else
+ {
+  if (mode==0 || mode==1) fStore=mode;
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSample::GetStoreMode() const
+{
+// Provide the storage mode
+ return fStore;
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliSample::GetMedian(Int_t i)
+{
+// Provide the median of a certain variable
+
+ if (fDim < i)
+ {
+  cout << " *AliSample::mean* Error : Dimension less than " << i << endl;
+  return 0;
+ }
+
+ if (!fStore)
+ {
+  cout << " *AliSample::GetMedian* Error : Storage of data entries was not activated." << endl;
+  return 0;
+ }
+
+ // Prepare temp. array to hold the ordered values
+ if (!fArr)
+ {
+  fArr=new TArrayF(fN);
+ }
+ else
+ {
+  if (fArr->GetSize() < fN) fArr->Set(fN);
+ }
+
+ // Order the values of the specified variable
+ Float_t val=0;
+ Int_t iadd=0;
+ for (Int_t j=0; j<fN; j++)
+ {
+  if (i==1) val=fX->At(j);
+  if (i==2) val=fY->At(j);
+  if (i==3) val=fZ->At(j);
+
+  iadd=0;
+  if (j==0)
+  {
+   fArr->AddAt(val,j);
+   iadd=1;
+  }
+  else
+  {
+   for (Int_t k=0; k<j; k++)
+   {
+    if (val>=fArr->At(k)) continue;
+    // Put value in between the existing ones
+    for (Int_t m=j-1; m>=k; m--)
+    {
+     fArr->AddAt(fArr->At(m),m+1);
+    }
+    fArr->AddAt(val,k);
+    iadd=1;
+    break;
+   }
+
+   if (!iadd)
+   {
+    fArr->AddAt(val,j);
+   }
+  }
+ }
+
+ Float_t median=0;
+ Int_t index=fN/2;
+ if (fN%2) // Odd number of entries
+ {
+  median=fArr->At(index);
+ }
+ else // Even number of entries
+ {
+  median=(fArr->At(index-1)+fArr->At(index))/2.;
+ }
+ return median;
 }
 ///////////////////////////////////////////////////////////////////////////
