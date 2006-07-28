@@ -420,7 +420,7 @@ void IcePandel::Exec(Option_t* opt)
 
    t0=fFitter->GetParameter(5);
    AliTimestamp t0fit((AliTimestamp)(*fEvt));
-   t0fit.Add(0,0,t0);
+   t0fit.Add(0,0,int(t0));
 
    // Enter the fit result as a track in the event structure
    ntkreco++;
