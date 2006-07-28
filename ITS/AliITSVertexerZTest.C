@@ -45,14 +45,12 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
   }
   //  ITSloader->LoadRecPoints("read");
   //  TFile *fo = new TFile("vertici.root","recreate");
-  AliITSVertexerPPZ *dovert = new AliITSVertexerPPZ("default",initx,inity);
+  //  AliITSVertexerPPZ *dovert = new AliITSVertexerPPZ("default",initx,inity);
+  AliITSVertexerZ *dovert = new AliITSVertexerZ("default",initx,inity);
   dovert->SetDebug(0);
-  dovert->SetDiffPhiMax(delphi);
-  dovert->SetWindow(window);
+  //  dovert->SetDiffPhiMax(delphi);
+  //  dovert->SetWindow(window);
   dovert->PrintStatus();
-  Int_t meno100=0;
-  Int_t meno200=0;
-  Int_t meno110=0;
   Int_t sigmazero=0;
   AliESDVertex *vert = 0;
   for(Int_t i=0; i<rl->TreeE()->GetEntries(); i++){
@@ -70,16 +68,11 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
       if(vert){
 	cout<<"FOUND: "<<vert->GetZv()<<"; ";
 	cout<<vert->GetZRes()<<"; "<<vert->GetNContributors()<<endl;
+	cout <<" True Z position "<<primaryVertex[2]<<", diff= ";
+	cout<<(primaryVertex[2]-vert->GetZv())*10000.<<endl;
+      } else {
+	cout<<"NOT FOUND"<<endl;
       }
-      else {
-	cout<<"NOT FOUND - fZFound= "<<dovert->GetZFound();
-	cout<<" fZsig= "<<dovert->GetZsig()<<endl;
-	if(dovert->GetZFound() == -100) meno100++;
-	if(dovert->GetZFound() == -200) meno200++;
-	if(dovert->GetZFound() == -110) meno110++;
-      }
-      cout <<" True Z position "<<primaryVertex[2]<<", diff= ";
-      cout<<(primaryVertex[2]-dovert->GetZFound())*10000.<<endl;
     }
     if(vert){
       Double_t pos[3];
@@ -90,18 +83,14 @@ void AliITSVertexerZTest(Float_t delphi=0.05,Float_t window=3.,Float_t initx=0.,
       found = 10000.*(found-primaryVertex[2]);
       if(vert->GetZRes()!=0){
 	diff1->Fill(found);
-      }
-      else {
+      } else {
 	sigmazero++;
       }
       dovert->WriteCurrentVertex();
     }
   }
   if(kDebug>0){
-    cout<<"Number of bad vertices with code  -100: "<<meno100<<endl;
-    cout<<"Number of bad vertices with code  -110: "<<meno110<<endl;
-    cout<<"Number of bad vertices with code  -200: "<<meno200<<endl;
     cout<<"Only one tracklet (sigma = 0) "<<sigmazero<<endl;
   }
-
+  
 }
