@@ -211,24 +211,7 @@ void AliMultiplicityMCSelector::Terminate()
     return;
   }
 
-  TCanvas* canvas = new TCanvas("AliMultiplicityMCSelector", "AliMultiplicityMCSelector", 1000, 1000);
-  canvas->Divide(2, 2);
-
-  canvas->cd(1);
-  fMultiplicityESD->Draw();
-  fMultiplicityMC->SetLineColor(2);
-  fMultiplicityMC->Draw("SAME");
-
-  canvas->cd(2);
-  TH1F* ratio = dynamic_cast<TH1F*> (fMultiplicityESD->Clone("multiplicity_ratio"));
-  ratio->SetTitle("ratio;Ntracks;Nreco/Ngene");
-  ratio->Divide(fMultiplicityMC);
-  ratio->Draw();
-
-  canvas->cd(3);
-  fCorrelation->Draw("COLZ");
-
-  TFile* file = TFile::Open("multiplicity.root", "RECREATE");
+  TFile* file = TFile::Open("multiplicityMC.root", "RECREATE");
 
   fMultiplicityMC->Write();
   fMultiplicityESD->Write();

@@ -71,7 +71,7 @@ void AliMultiplicityESDSelector::SlaveBegin(TTree* tree)
 
   ReadUserObjects(tree);
 
-  fMultiplicity = new TH1F("multiplicity", "multiplicity", 100, 0, 100);
+  fMultiplicity = new TH1F("fMultiplicity", "multiplicity", 201, 0.5, 200.5);
 }
 
 Bool_t AliMultiplicityESDSelector::Process(Long64_t entry)
@@ -150,7 +150,7 @@ void AliMultiplicityESDSelector::Terminate()
 
   AliSelector::Terminate();
 
-  fMultiplicity = dynamic_cast<TH1F*> (fOutput->FindObject("multiplicity"));
+  fMultiplicity = dynamic_cast<TH1F*> (fOutput->FindObject("fMultiplicity"));
 
   if (!fMultiplicity)
   {
@@ -158,6 +158,7 @@ void AliMultiplicityESDSelector::Terminate()
     return;
   }
 
-  new TCanvas;
-  fMultiplicity->Draw();
+  TFile* file = TFile::Open("multiplicityESD.root", "RECREATE");
+  fMultiplicity->Write();
+  file->Close();
 }
