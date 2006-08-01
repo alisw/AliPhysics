@@ -34,6 +34,7 @@ class AliGenReaderTreeK : public AliGenReader
     AliGenReaderTreeK & operator=(const AliGenReaderTreeK & rhs);
     void SetDirs(TObjArray* dirs){fDirs = dirs;} //sets array directories names
     void AddDir(const char* dirname);
+    AliRunLoader * GetRunLoader() const {return fInRunLoader;}
 
  protected:
     Int_t             fNcurrent;          // points to the next entry

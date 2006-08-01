@@ -33,6 +33,8 @@
 
 #include "AliGenExtFile.h"
 #include "AliRunLoader.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
 
 #include <TParticle.h>
 #include <TFile.h>
@@ -103,6 +105,16 @@ void AliGenExtFile::Generate()
       return;
     }
 
+    // Generated event header
+
+    AliRunLoader * inRunLoader = fReader->GetRunLoader();
+    if(inRunLoader) {
+      AliGenEventHeader * inHeader = inRunLoader->GetHeader()->GenEventHeader();
+      if (inHeader) {
+	AliGenEventHeader * header = new AliGenEventHeader(*inHeader);
+	AliRunLoader::GetRunLoader()->GetHeader()->SetGenEventHeader(header);
+      }
+    }
     //
     // Particle selection loop
     //

@@ -12,6 +12,7 @@
 #include "TObject.h"
 
 class TParticle;
+class AliRunLoader;
 
 class AliGenReader : public TObject
 {
@@ -21,6 +22,7 @@ class AliGenReader : public TObject
 	:TObject(reader), fFileName(NULL), fCode(kPDG){reader.Copy(*this);}
     virtual ~AliGenReader(){;}
     virtual void SetFileName(const Text_t *filname) {fFileName=filname;}
+    virtual AliRunLoader * GetRunLoader() const {return 0x0;}
     virtual void Init()                                                    = 0;
     virtual Int_t NextEvent()                                              = 0;
     virtual TParticle* NextParticle()                                      = 0;
