@@ -86,6 +86,9 @@ AliRunLoader* AliSelectorRL::GetRunLoader()
     TString fileName(fTree->GetCurrentFile()->GetName());
     fileName.ReplaceAll("AliESDs", "galice");
 
+    // temporary workaround for PROOF bug #18505
+    fileName.ReplaceAll("#galice.root#galice.root", "#galice.root");
+
     fRunLoader = AliRunLoader::Open(fileName);
     if (!fRunLoader)
       return 0;
