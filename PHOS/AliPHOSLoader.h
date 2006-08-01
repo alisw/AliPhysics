@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.10  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -60,6 +63,7 @@ public:
   AliPHOSLoader();
   AliPHOSLoader(const AliPHOSLoader & obj) : AliLoader(obj) {}
   AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername); 
+  AliPHOSLoader(const Char_t *detname,TFolder *topfolder);
   
   virtual ~AliPHOSLoader() ; 
 

@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.15  2005/07/12 20:07:35  hristov
+ * Changes needed to run simulation and reconstrruction in the same AliRoot session
+ *
  * Revision 1.14  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -86,6 +89,12 @@ AliPHOSLoader::AliPHOSLoader()
 //____________________________________________________________________________ 
 AliPHOSLoader::AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername):
       AliLoader(detname,eventfoldername)
+{
+  fDebug=0;
+}
+//____________________________________________________________________________ 
+AliPHOSLoader::AliPHOSLoader(const Char_t *detname,TFolder *topfolder):
+      AliLoader(detname,topfolder)
 {
   fDebug=0;
 }
