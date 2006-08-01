@@ -701,6 +701,117 @@ void Track2Particle3DAll()
   canvas->SaveAs("Track2Particle3DAll.eps");
 }
 
+void MultiplicityMC()
+{
+  TFile* file = TFile::Open("multiplicityMC.root");
+
+  if (!file)
+  {
+    printf("multiplicityMC.root could not be opened.\n");
+    return;
+  }
+
+  TH1F* fMultiplicityESD = dynamic_cast<TH1F*> (file->Get("fMultiplicityESD"));
+  TH1F* fMultiplicityMC = dynamic_cast<TH1F*> (file->Get("fMultiplicityMC"));
+  TH2F* fCorrelation = dynamic_cast<TH2F*> (file->Get("fCorrelation"));
+
+  TH1F* correction = new TH1F("MultiplicityMC_correction", "MultiplicityMC_correction;Ntracks;Npart", 76, -0.5, 75.5);
+  TH1F* correctionWidth = new TH1F("MultiplicityMC_correctionwidth", "MultiplicityMC_correctionwidth;Ntracks;Npart", 76, -0.5, 75.5);
+  //fMultiplicityMC->GetNbinsX(), fMultiplicityMC->GetXaxis()->GetXmin(), fMultiplicityMC->GetXaxis()->GetXmax());
+  for (Int_t i=1; i<=correction->GetNbinsX(); ++i)
+  {
+    TH1D* proj = fCorrelation->ProjectionX("_px", i, i+1);
+    proj->Fit("gaus", "0");
+    correction->SetBinContent(i, proj->GetFunction("gaus")->GetParameter(1));
+    correctionWidth->SetBinContent(i, proj->GetFunction("gaus")->GetParameter(2));
+
+    continue;
+
+    // draw for debugging
+    new TCanvas;
+    proj->DrawCopy();
+    proj->GetFunction("gaus")->DrawCopy("SAME");
+  }
+
+  TH1F* fMultiplicityESDCorrected = new TH1F("fMultiplicityESDCorrected", "fMultiplicityESDCorrected", 2010, -0.5, 200.5);
+
+  for (Int_t i=1; i<=correction->GetNbinsX(); ++i)
+  {
+    Float_t mean = correction->GetBinContent(i);
+    Float_t width = correctionWidth->GetBinContent(i);
+
+    Int_t fillBegin = fMultiplicityESDCorrected->FindBin(mean - width * 3);
+    Int_t fillEnd   = fMultiplicityESDCorrected->FindBin(mean + width * 3);
+    printf("bin %d mean %f width %f, filling from %d to %d\n", i, mean, width, fillBegin, fillEnd);
+
+    for (Int_t j=fillBegin; j <= fillEnd; ++j)
+    {
+      fMultiplicityESDCorrected->AddBinContent(j, TMath::Gaus(fMultiplicityESDCorrected->GetXaxis()->GetBinCenter(j), mean, width, kTRUE) * fMultiplicityESD->GetBinContent(i));
+    }
+  }
+
+  TH1F* fMultiplicityESDCorrectedRebinned = dynamic_cast<TH1F*> (fMultiplicityESDCorrected->Clone("fMultiplicityESDCorrectedRebinned"));
+  fMultiplicityESDCorrectedRebinned->Rebin(10);
+  fMultiplicityESDCorrectedRebinned->Scale(0.1);
+
+  TH1F* ratio2 = dynamic_cast<TH1F*> (fMultiplicityESDCorrectedRebinned->Clone("multiplicity_ratio_corrected"));
+  ratio2->Divide(fMultiplicityMC);
+
+  TCanvas* canvas = new TCanvas("MultiplicityMC", "MultiplicityMC", 1500, 1000);
+  canvas->Divide(3, 2);
+
+  canvas->cd(1);
+  fMultiplicityESD->Draw();
+  fMultiplicityMC->SetLineColor(2);
+  fMultiplicityMC->Draw("SAME");
+
+  canvas->cd(2);
+  TH1F* ratio = dynamic_cast<TH1F*> (fMultiplicityESD->Clone("multiplicity_ratio"));
+  ratio->SetTitle("ratio;Ntracks;Nreco/Ngene");
+  ratio->Divide(fMultiplicityMC);
+  ratio->Draw();
+
+  ratio2->SetLineColor(2);
+  ratio2->Draw("SAME");
+
+  canvas->cd(3);
+  fCorrelation->Draw("COLZ");
+
+  canvas->cd(4);
+  correction->Draw();
+  //correction->Fit("pol1");
+  correctionWidth->SetLineColor(2);
+  correctionWidth->Draw("SAME");
+
+  canvas->cd(5);
+  fMultiplicityESDCorrected->SetLineColor(3);
+  fMultiplicityESDCorrected->Draw();
+  fMultiplicityMC->Draw("SAME");
+  fMultiplicityESD->Draw("SAME");
+
+  canvas->cd(6);
+  fMultiplicityESDCorrectedRebinned->SetLineColor(3);
+  fMultiplicityESDCorrectedRebinned->Draw();
+  fMultiplicityMC->Draw("SAME");
+}
+
+void MultiplicityESD()
+{
+  TFile* file = TFile::Open("multiplicityESD.root");
+
+  if (!file)
+  {
+    printf("multiplicityESD.root could not be opened.\n");
+    return;
+  }
+
+  TH1F* fMultiplicityESD = dynamic_cast<TH1F*> (file->Get("fMultiplicity"));
+
+  TCanvas* canvas = new TCanvas("MultiplicityESD", "MultiplicityESD", 500, 500);
+
+  fMultiplicityESD->Draw();
+}
+
 void drawPlots(Int_t max)
 {
   gMax = max;

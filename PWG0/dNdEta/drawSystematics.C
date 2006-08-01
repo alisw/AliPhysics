@@ -361,7 +361,7 @@ TH2F* Sigma2VertexGaussianTracksHist()
   return tracks;
 }
 
-void Sigma2VertexGaussian()
+TH1F* Sigma2VertexGaussian()
 {
   TH2F* tracks = Sigma2VertexGaussianTracksHist();
 
@@ -377,7 +377,7 @@ void Sigma2VertexGaussian()
   ratio->SetMarkerStyle(21);
 
   canvas->cd(2);
-  ratio->Draw("P");
+  ratio->DrawCopy("P");
 
   TH1F* ratio2 = new TH1F("Sigma2Vertex_ratio2", "Sigma2Vertex_ratio2;nSigma;% included 3 sigma / % included n sigma", 10, 0.25, 5.25);
   Double_t sigma3 = Sigma2VertexCount(tracks, 3);
@@ -386,12 +386,14 @@ void Sigma2VertexGaussian()
   ratio2->SetMarkerStyle(21);
 
   canvas->cd(3);
-  ratio2->Draw("P");
+  ratio2->DrawCopy("P");
 
   canvas->SaveAs("Sigma2Vertex.eps");
+
+  return ratio2;
 }
 
-void Sigma2VertexSimulation()
+TH1F* Sigma2VertexSimulation()
 {
   TFile* file = TFile::Open("systematics.root");
 
@@ -402,7 +404,7 @@ void Sigma2VertexSimulation()
     return;
   }
 
-  TH1F* ratio = new TH1F("sigmavertex_ratio", "sigmavertex_ratio;Nsigma;% included 3 sigma / % included n sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
+  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;Nsigma;% included 3 sigma / % included n sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
 
   for (Int_t i=1; i<=sigmavertex->GetNbinsX(); ++i)
     ratio->SetBinContent(i, sigmavertex->GetBinContent(sigmavertex->GetXaxis()->FindBin(3)) / sigmavertex->GetBinContent(i));
@@ -416,9 +418,37 @@ void Sigma2VertexSimulation()
 
   canvas->cd(2);
   ratio->SetMarkerStyle(21);
-  ratio->Draw("P");
+  ratio->DrawCopy("P");
+
+  return ratio;
 }
 
+void Sigma2VertexCompare()
+{
+  TH1F* ratio1 = Sigma2VertexGaussian();
+  TH1F* ratio2 = Sigma2VertexSimulation();
+
+  ratio1->SetStats(kFALSE);
+  ratio2->SetStats(kFALSE);
+
+  ratio1->SetMarkerStyle(0);
+  ratio2->SetMarkerStyle(0);
+
+  TLegend* legend = new TLegend(0.647177,0.775424,0.961694,0.966102);
+  legend->AddEntry(ratio1, "Gaussian");
+  legend->AddEntry(ratio2, "Simulation");
+
+  ratio1->GetXaxis()->SetTitleOffset(1.5);
+
+  TCanvas* canvas = new TCanvas("Sigma2VertexCompare", "Sigma2VertexCompare", 500, 500);
+  InitPad();
+
+  ratio1->Draw();
+  ratio2->SetLineColor(kRed);
+  ratio2->Draw("SAME");
+
+  legend->Draw();
+}
 
 void drawSystematics()
 {
