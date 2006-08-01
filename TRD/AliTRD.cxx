@@ -529,7 +529,9 @@ void AliTRD::CreateMaterials()
   // For Xe/CO2-gas-mixture 
   Float_t aXeCO2[3] = { 131.29   ,  12.0107 ,  15.9994  };
   Float_t zXeCO2[3] = {  54.0    ,   6.0    ,   8.0     };
-  Float_t wXeCO2[3] = {   0.85   ,   0.0375 ,   0.1125  };
+  // Move to number of atoms
+  Float_t wXeCO2[3] = {   8.5    ,   1.5    ,   3.0     }; 
+  //Float_t wXeCO2[3] = {   0.85   ,   0.0375 ,   0.1125  };
   // Xe-content of the Xe/CO2-mixture (85% / 15%) 
   Float_t fxc       = 0.85;
   Float_t dxe       = 0.00549;
@@ -559,7 +561,9 @@ void AliTRD::CreateMaterials()
   AliMixture(7, "Mylar",        amy,    zmy,    dmy,    -3, wmy   );
   AliMixture(8, "CO2",          aco,    zco,    dco,    -2, wco   );
   AliMixture(9, "Isobutane",    ais,    zis,    dis,    -2, wis   );
-  AliMixture(10,"Gas mixture",  aXeCO2, zXeCO2, dgm,     3, wXeCO2);
+  // Move to number of atoms
+  AliMixture(10,"Gas mixture",  aXeCO2, zXeCO2, dgm,    -3, wXeCO2);
+  //AliMixture(10,"Gas mixture",  aXeCO2, zXeCO2, dgm,     3, wXeCO2);
   AliMixture(12,"G10",          aG10,   zG10,   dG10,    4, wG10  );
   AliMixture(13,"Water",        awa,    zwa,    dwa,    -2, wwa   );
   AliMixture(14,"Plexiglas",    apg,    zpg,    dpg,    -3, wpg   );
@@ -585,7 +589,7 @@ void AliTRD::CreateMaterials()
   AliMedium(5, "Padplane",   5, 1, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // Fee + cables 
-  AliMedium(6, "Readout",    1, 0, isxfld, sxmgmx
+  AliMedium(6, "Readout",    5, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
   // C frame 
   AliMedium(7, "C Frame",    6, 0, isxfld, sxmgmx
