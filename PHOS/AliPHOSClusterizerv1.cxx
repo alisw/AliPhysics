@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.92  2006/04/29 20:26:46  hristov
+ * Separate EMC and CPV calibration (Yu.Kharlov)
+ *
  * Revision 1.91  2006/04/22 10:30:17  hristov
  * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
  *
@@ -231,8 +234,9 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
     if (fRawReader == 0)
       gime->Event(ievent    ,"D"); // Read digits from simulated data
-    else
-      gime->Event(fRawReader,"W"); // Read digits from raw data
+    else {
+      gime->Event(fRawReader,"W",fIsOldRCUFormat); // Read digits from raw data
+    }
     fNumberOfEmcClusters  = fNumberOfCpvClusters  = 0 ;
     
     MakeClusters() ;
@@ -399,6 +403,10 @@ void AliPHOSClusterizerv1::Init()
     gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());
 
   AliPHOSGeometry * geom = gime->PHOSGeometry();
+  if (!geom) {
+    AliError("Could not find PHOS geometry! Loading the default one !");
+    geom = AliPHOSGeometry::GetInstance("IHEP","");
+  }
 
   fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
 
@@ -440,6 +448,8 @@ void AliPHOSClusterizerv1::InitParameters()
   fCalibData               = 0 ;
 
   SetEventRange(0,-1) ;
+
+  fIsOldRCUFormat          = kFALSE;
 }
 
 //____________________________________________________________________________

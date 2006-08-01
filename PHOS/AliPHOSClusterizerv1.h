@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.45  2006/04/29 20:26:46  hristov
+ * Separate EMC and CPV calibration (Yu.Kharlov)
+ *
  * Revision 1.44  2005/09/02 14:32:07  kharlov
  * Calibration of raw data
  *
@@ -93,6 +96,9 @@ public:
   void Unload() ; 
   virtual const char * Version() const { return "clu-v1"; }  
 
+  virtual void SetOldRCUFormat(Bool_t rcuFormat = kFALSE)
+    { fIsOldRCUFormat = rcuFormat; };
+
 protected:
 
   void           WriteRecPoints() ;
@@ -145,8 +151,10 @@ private:
   Float_t fW0CPV ;                   // logarithmic weight for the CPV cluster center of gravity calculation
   Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
+
+  Bool_t  fIsOldRCUFormat;           // assume old RCU raw data format
     
-  ClassDef(AliPHOSClusterizerv1,3)   // Clusterizer implementation version 1
+  ClassDef(AliPHOSClusterizerv1,4)   // Clusterizer implementation version 1
 
 };
 

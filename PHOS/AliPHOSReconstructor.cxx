@@ -90,6 +90,11 @@ void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   AliPHOSClusterizerv1 clu(headerFile, branchName);
   clu.SetEventRange(0, -1) ; // do all the events
   clu.SetRawReader(rawreader);
+
+  TString option = GetOption();
+  if (option.Contains("OldRCUFormat"))
+    clu.SetOldRCUFormat(kTRUE);
+
   if ( Debug() ) 
     clu.ExecuteTask("deb all") ; 
   else 

@@ -92,7 +92,7 @@ public:
   
   //========== Methods to read something from file ==========
   virtual void   Event(Int_t event, const char * opt = "HSDRTP") ;    
-  void   Event(AliRawReader *rawReader, const char * opt = "W") ;    
+  void   Event(AliRawReader *rawReader, const char * opt = "W",Bool_t isOldRCUFormat = kFALSE) ;    
   virtual void   Track(Int_t itrack) ;
  
   
@@ -187,7 +187,7 @@ public:
     return  PhosLoader()->WritePID(opt) ; }
 
   //========== Raw ===========
-  virtual Int_t ReadRaw(AliRawReader *rawReader) ; 
+  virtual Int_t ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat) ; 
 
   void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
   virtual void PostClusterizer(AliPHOSClusterizer * clu) 

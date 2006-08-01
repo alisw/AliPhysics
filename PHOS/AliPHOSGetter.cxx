@@ -336,9 +336,11 @@ void AliPHOSGetter::Event(Int_t event, const char* opt)
 
 
 //____________________________________________________________________________ 
-void AliPHOSGetter::Event(AliRawReader *rawReader, const char* opt) 
+void AliPHOSGetter::Event(AliRawReader *rawReader, const char* opt, Bool_t isOldRCUFormat) 
 {
   // Reads the raw event from rawReader
+  // isOldRCUFormat defines whenever to assume
+  // the old RCU format or not
 
   AliRunLoader * rl = AliRunLoader::GetRunLoader(PhosLoader()->GetTitle());
   
@@ -346,7 +348,7 @@ void AliPHOSGetter::Event(AliRawReader *rawReader, const char* opt)
     rawReader->NextEvent(); 
     Int_t iEvent = rl->GetEventNumber();
     rl->GetEvent(iEvent);
-    ReadRaw(rawReader) ;
+    ReadRaw(rawReader,isOldRCUFormat) ;
   }    
  
 }
@@ -658,12 +660,15 @@ Int_t AliPHOSGetter::CalibrateRaw(Double_t energy, Int_t *relId)
   return amp;
 }
 //____________________________________________________________________________ 
-Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader)
+Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 {
   // reads the raw format data, converts it into digits format and store digits in Digits()
   // container.
+  // isOldRCUFormat = kTRUE in case of the old RCU
+  // format used in the raw data readout
 
   AliPHOSRawStream in(rawReader);
+  in.SetOldRCUFormat(isOldRCUFormat);
  
   Bool_t first = kTRUE ;
   
