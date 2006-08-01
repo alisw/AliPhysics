@@ -11,15 +11,11 @@
 #pragma link C++ class  AliTRDhit+;
 #pragma link C++ class  AliTRDtrackHits+;
 #pragma link C++ class  AliTRDpoints+;
-
 #pragma link C++ class  AliTRDsim+;
 #pragma link C++ class  AliTRD+;
 #pragma link C++ class  AliTRDv0+;
 #pragma link C++ class  AliTRDv1+;
-#pragma link C++ class  AliTRDv2+;
-
 #pragma link C++ class  AliTRDmcTrack+;
-
 #pragma link C++ class  AliTRDdigitizer+;
 #pragma link C++ class  AliTRDSimParam+;
 

@@ -5,7 +5,6 @@ SRCS= AliTRDhit.cxx \
       AliTRD.cxx \
       AliTRDv0.cxx \
       AliTRDv1.cxx \
-      AliTRDv2.cxx \
       AliTRDmcTrack.cxx \
       AliTRDSimParam.cxx \
       AliTRDdigitizer.cxx
