@@ -105,16 +105,6 @@ void AliGenExtFile::Generate()
       return;
     }
 
-    // Generated event header
-
-    AliRunLoader * inRunLoader = fReader->GetRunLoader();
-    if(inRunLoader) {
-      AliGenEventHeader * inHeader = inRunLoader->GetHeader()->GenEventHeader();
-      if (inHeader) {
-	AliGenEventHeader * header = new AliGenEventHeader(*inHeader);
-	AliRunLoader::GetRunLoader()->GetHeader()->SetGenEventHeader(header);
-      }
-    }
     //
     // Particle selection loop
     //
@@ -176,7 +166,14 @@ void AliGenExtFile::Generate()
 	PushTrack(doTracking,parent,idpart,p,origin,polar,0,kPPrimary,nt);
 	KeepTrack(nt);
     } // track loop
+
+    // Generated event header
     
+    AliGenEventHeader * header = new AliGenEventHeader();
+    header->SetNProduced(nt+1);
+    header->SetPrimaryVertex(fVertex);
+    AliRunLoader::GetRunLoader()->GetHeader()->SetGenEventHeader(header);
+
     break;
     
   } // event loop
