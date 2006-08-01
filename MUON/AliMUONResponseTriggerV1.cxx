@@ -26,8 +26,42 @@
 
 #include "AliMUONResponseTriggerV1.h"
 #include "AliMUONGeometrySegmentation.h"
+#include "AliMpPad.h"
+#include "AliMUON.h"
+#include "AliMUONDigit.h"
+#include "AliMUONGeometryTransformer.h"
+#include "AliMpVSegmentation.h"
+#include "AliRun.h"
+#include "AliMUONSegmentation.h"
 
 ClassImp(AliMUONResponseTriggerV1)
+
+namespace
+{
+  AliMUON* muon()
+  {
+    return static_cast<AliMUON*>(gAlice->GetModule("MUON"));
+  }
+
+  void Global2Local(Int_t detElemId, Double_t xg, Double_t yg, Double_t zg,
+                  Double_t& xl, Double_t& yl, Double_t& zl)
+  {  
+  // ideally should be : 
+  // Double_t x,y,z;
+  // AliMUONGeometry::Global2Local(detElemId,xg,yg,zg,x,y,z);
+  // but while waiting for this geometry singleton, let's go through
+  // AliMUON still.
+  
+    const AliMUONGeometryTransformer* transformer = muon()->GetGeometryTransformer();
+    transformer->Global2Local(detElemId,xg,yg,zg,xl,yl,zl);
+  }
+
+  AliMUONSegmentation* Segmentation()
+  {
+    static AliMUONSegmentation* segmentation = muon()->GetSegmentation();
+    return segmentation;
+  }
+}
 
 //------------------------------------------------------------------   
 AliMUONResponseTriggerV1::AliMUONResponseTriggerV1()
@@ -60,23 +94,6 @@ Int_t AliMUONResponseTriggerV1::SetGenerCluster(){
 // Set the GenerCluster parameter and return 1
   fGenerCluster = gRandom->Rndm();
   return 1;
-} 
-
-//------------------------------------------------------------------   
-Float_t AliMUONResponseTriggerV1::IntXY(Int_t idDE, AliMUONGeometrySegmentation * segmentation) const
-{
-// Returns 1 or 0 if the current strip is fired or not 
-// get the "parameters" needed to evaluate the strip response
-// x1 : hit x(y) position
-// x2 : x(y) coordinate of the main strip
-// x3 : current strip real x(y) coordinate  
-// x4 : dist. between x(y) hit pos. and the closest border of the current strip
-
-  Float_t x1,x2,x3,x4;  
-  segmentation->IntegrationLimits(idDE, x1,x2,x3,x4);    
-  Float_t theta = 0.; // incident angle to be implemented
-
-  return (fGenerCluster < FireStripProb(x4,theta)) ? 1:0; 
 }
 
 //------------------------------------------------------------------   
@@ -84,11 +101,162 @@ Float_t AliMUONResponseTriggerV1::FireStripProb(Float_t x4, Float_t theta)
 const
 {
 // parametrisation of the probability that a strip neighbour of the main 
-// strip is fired (V.Barret B.Espagnon and P.Rosnet Alice/note xxx)
+// strip is fired (V.Barret B.Espagnon and P.Rosnet INT/DIM/01-04 (2001)
 // WARNING : need to convert x4 from cm to mm
 
-  return 
-    (TMath::Cos(theta)*fA/(fA+TMath::Cos(theta)*TMath::Power(x4*10.,fB))+fC)/
-    (TMath::Cos(theta)+fC);
+ return 
+     (TMath::Cos(theta)*fA/(fA+TMath::Cos(theta)*TMath::Power(x4*10.,fB))+fC)/
+     (TMath::Cos(theta)+fC);
+}
+
+//------------------------------------------------------------------  
+void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits)
+{
+  //
+  // Generate digits (on each cathode) from 1 hit, with cluster-size
+  // generation.
+  //
+  
+  digits.Clear();
+  
+  Float_t xhit = hit.X();
+  Float_t yhit = hit.Y();
+  Float_t zhit = 0; // FIXME : should it be hit.Z() ?
+  Int_t detElemId = hit.DetElemId();  
+  
+  Double_t x,y,z;
+  Global2Local(detElemId,xhit,yhit,zhit,x,y,z);
+  
+  Float_t tof = hit.Age();
+  Int_t twentyNano(100);
+  if (tof<fgkTofLimit)
+  {
+    twentyNano=1;
+  }
+
+  for ( Int_t cath = 0; cath < 2; ++cath )
+  {
+    const AliMpVSegmentation* seg = Segmentation()->GetMpSegmentation(detElemId,cath);
+
+    AliMpPad pad = seg->PadByPosition(TVector2(x,y),kFALSE);
+    Int_t ix = pad.GetIndices().GetFirst();
+    Int_t iy = pad.GetIndices().GetSecond();
+    
+    AliMUONDigit* d = new AliMUONDigit;
+    d->SetDetElemId(detElemId);
+
+    d->SetPadX(ix);
+    d->SetPadY(iy);
+
+    d->SetSignal(twentyNano);
+    d->AddPhysicsSignal(d->Signal());
+    d->SetCathode(cath);
+    digits.Add(d);
+
+    SetGenerCluster(); // 1 randum number per cathode (to be checked)
+
+    Int_t xList[10], yList[10];
+    Neighbours(cath,ix,iy,xList,yList);
+    
+//    cout << " detElemId cath ix iy = " << detElemId << " " << cath 
+//	 << " " << ix << " " << iy << "\n";
+//    for (Int_t i=0; i<10; i++) cout << " " << xList[i] << " " << yList[i];
+//    cout << "\n";
+
+    Int_t qp = 0; // fired/no-fired strip = 1/0
+    for (Int_t i=0; i<10; i++) { // loop on neighbors
+	if (i==0||i==5||qp!=0) { // built-up cluster
+	    
+	    // need to iterate in iy/ix for bending/non-bending plane
+	    Int_t ixNeigh = ( cath == 0 ) ? ix : xList[i];
+	    Int_t iyNeigh = ( cath == 0 ) ? yList[i] : iy;
+	    
+	    AliMpIntPair pairNeigh = AliMpIntPair(ixNeigh,iyNeigh);
+	    AliMpPad padNeigh = seg->PadByIndices(pairNeigh,kFALSE);
+	    if(padNeigh.IsValid()){ // existing neighbourg		
+		
+		Int_t dix=-(ixNeigh-ix);
+		Int_t diy=-(iyNeigh-iy);
+		Float_t xlocalNeigh = padNeigh.Position().X();
+		Float_t ylocalNeigh = padNeigh.Position().Y();
+		Float_t dpx = padNeigh.Dimensions().X();
+		Float_t dpy = padNeigh.Dimensions().Y();
+		Float_t distX = TMath::Abs((Float_t)dix) * ((Float_t)dix * dpx + xlocalNeigh - x);
+		Float_t distY = TMath::Abs((Float_t)diy) * ((Float_t)diy * dpy + ylocalNeigh - y);
+		Float_t dist = TMath::Sqrt(distX*distX+distY*distY);
+		
+//		cout << " here " << dist << " " << fGenerCluster << " " << FireStripProb(dist,0) << "\n";
+		
+		if (fGenerCluster<FireStripProb(dist,0)) qp = 1;
+		else qp = 0;
+		
+		if (qp == 1) { // this digit is fired    
+		    AliMUONDigit* dNeigh = new AliMUONDigit;
+		    dNeigh->SetDetElemId(detElemId);
+		    
+		    dNeigh->SetPadX(ixNeigh);
+		    dNeigh->SetPadY(iyNeigh);
+		    
+		    dNeigh->SetSignal(twentyNano);
+		    dNeigh->AddPhysicsSignal(dNeigh->Signal());
+		    dNeigh->SetCathode(cath);
+		    digits.Add(dNeigh);
+		} // digit fired		
+	    } // pad is valid
+	} // built-up cluster
+    } // loop on neighbors
+  } // loop on cathode
+}
+
+//------------------------------------------------------------------  
+void AliMUONResponseTriggerV1::Neighbours(const Int_t cath, 
+					  const Int_t ix, const Int_t iy, 
+					  Int_t Xlist[10], Int_t Ylist[10]) 
+{
+
+    //-----------------BENDING-----------------------------------------
+    // Returns list of 10 next neighbours for given X strip (ix, iy)  
+    // neighbour number 4 in the list -                     
+    // neighbour number 3 in the list  |                    
+    // neighbour number 2 in the list  |_ Upper part             
+    // neighbour number 1 in the list  |            
+    // neighbour number 0 in the list -           
+    //      X strip (ix, iy) 
+    // neighbour number 5 in the list -       
+    // neighbour number 6 in the list  | _ Lower part
+    // neighbour number 7 in the list  |
+    // neighbour number 8 in the list  | 
+    // neighbour number 9 in the list -
+    
+    //-----------------NON-BENDING-------------------------------------
+    // Returns list of 10 next neighbours for given Y strip (ix, iy)  
+    // neighbour number 9 8 7 6 5 (Y strip (ix, iy)) 0 1 2 3 4 in the list
+    //                  \_______/                    \_______/
+    //                    left                         right
+    
+    for (Int_t i=0; i<10; i++) {
+	Xlist[i]=-1;
+	Ylist[i]=-1;
+    }
+    
+    Int_t iList[10]={9,8,7,6,5, 0,1,2,3,4};
+
+    // need to iterate in iy/ix for bending/non-bending plane
+    Int_t iNeigh = ( cath == 0 ) ? iy : ix;
+    
+    Int_t i=0;
+    for (Int_t j=iNeigh-5; j<=iNeigh+5; j++){
+	if (j == iNeigh) continue;
+	// need to iterate in iy/ix for bending/non-bending plane
+	Int_t ixNeigh = ( cath == 0 ) ? ix : j;
+	Int_t iyNeigh = ( cath == 0 ) ? j : iy;
+	
+//	cout << " " << cath << " " << ix << " " << iy 
+//	     << " "  << ixNeigh << " " << iyNeigh << "\n";
+	
+	Xlist[iList[i]]=ixNeigh;	
+	Ylist[iList[i]]=iyNeigh;	
+	i++;
+    } 
 }
 
