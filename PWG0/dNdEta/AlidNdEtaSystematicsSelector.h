@@ -34,6 +34,9 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
 
     AliESDtrackCuts* fEsdTrackCuts;     // Object containing the parameters of the esd track cuts
 
+    Long64_t fOverallPrimaries; // count of all primaries
+    Long64_t fOverallSecondaries; // count of all secondaries
+
  private:
 
   ClassDef(AlidNdEtaSystematicsSelector, 0);

@@ -28,7 +28,9 @@ AlidNdEtaSystematicsSelector::AlidNdEtaSystematicsSelector() :
   AliSelectorRL(),
   fSecondaries(0),
   fSigmaVertex(0),
-  fEsdTrackCuts(0)
+  fEsdTrackCuts(0),
+  fOverallPrimaries(0),
+  fOverallSecondaries(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -234,12 +236,6 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
 
     // using the properties of the mc particle
     Int_t label = TMath::Abs(esdTrack->GetLabel());
-    if (label == 0)
-    {
-      AliDebug(AliLog::kWarning, Form("WARNING: cannot find corresponding mc part for track %d.", label));
-      continue;
-    }
-
     TParticle* particle = stack->Particle(label);
     if (!particle)
     {
@@ -282,12 +278,6 @@ void AlidNdEtaSystematicsSelector::FillSecondaries(TObjArray* listOfTracks)
       continue;
 
     Int_t label = TMath::Abs(esdTrack->GetLabel());
-    if (label == 0)
-    {
-      AliDebug(AliLog::kWarning, Form("WARNING: cannot find corresponding mc part for track %d.", label));
-      continue;
-    }
-
     TParticle* particle = stack->Particle(label);
     if (!particle)
     {
@@ -319,6 +309,9 @@ void AlidNdEtaSystematicsSelector::FillSecondaries(TObjArray* listOfTracks)
       }
     }
   }
+
+  fOverallPrimaries += (Int_t) nPrimaries->Integral();
+  fOverallSecondaries += (Int_t) nSecondaries->Integral();
 
   delete nPrimaries;
   nPrimaries = 0;
@@ -414,7 +407,10 @@ void AlidNdEtaSystematicsSelector::Terminate()
     fEsdTrackCuts->SaveHistograms("esd_track_cuts");
 
   if (fSecondaries)
+  {
     fSecondaries->Write();
+    printf("We had %d primaries and %d secondaries.\n", (Int_t) fOverallPrimaries, (Int_t) fOverallSecondaries);
+  }
 
   if (fSigmaVertex)
     fSigmaVertex->Write();
