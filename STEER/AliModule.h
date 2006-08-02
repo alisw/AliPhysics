@@ -114,6 +114,7 @@ public:
   virtual void        FinishPrimary() {}
   virtual void        Init() {}
   virtual void        LoadPoints(Int_t ) {}
+  virtual void        UpdateInternalGeometry() {}
 
 
 

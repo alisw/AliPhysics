@@ -561,6 +561,20 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
     }
   }
 
+
+  // Update the internal geometry of modules (ITS needs it)
+  TString detStr = fLoadAlignData;
+  TObjArray* detArray = runLoader->GetAliRun()->Detectors();
+  for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
+
+    AliModule* det = (AliModule*) detArray->At(iDet);
+    if (!det || !det->IsActive()) continue;
+    if (IsSelected(det->GetName(), detStr)) {
+      det->UpdateInternalGeometry();
+    }
+  } // end loop over detectors
+
+
   if (delRunLoader) delete runLoader;
 
   return kTRUE;

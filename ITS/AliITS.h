@@ -109,6 +109,7 @@ class AliITS : public AliDetector {
     TClonesArray* GetSDigits() const { return fDetTypeSim->GetSDigits();}
 
     AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+    virtual void UpdateInternalGeometry();
     virtual void SDigitsToDigits(Option_t *opt="All");
     virtual void SDigits2Digits(){SDigitsToDigits("All");}
     virtual void Hits2Digits(); 

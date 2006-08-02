@@ -87,6 +87,7 @@ the AliITS class.
 #include "AliITSRecPoint.h"
 #include "AliRun.h"
 #include "AliLog.h"
+#include "AliITSInitGeometry.h"
 
 ClassImp(AliITS)
 
@@ -1139,4 +1140,19 @@ AliLoader* AliITS::MakeLoader(const char* topfoldername){
          topfoldername);
     fLoader = new AliITSLoader(GetName(),topfoldername);
     return fLoader;
+}
+
+//______________________________________________________________________
+void AliITS::UpdateInternalGeometry(){
+
+  Info("UpdateInternalGeometry", "Delete ITSgeom and create a new one reading TGeo");
+  AliITSInitGeometry *initgeom = new AliITSInitGeometry("AliITSvPPRasymmFMD",2);
+  AliITSgeom* geom = initgeom->CreateAliITSgeom();
+  SetITSgeom(geom);
+
+  if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
+  AliRunLoader* rl  = fLoader->GetRunLoader();
+  rl->CdGAFile();
+  geom->Write(0,kOverwrite);
+
 }
