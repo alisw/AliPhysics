@@ -207,21 +207,29 @@ Bool_t AliAltroRawStream::ReadTrailer()
   UShort_t temp;
   Int_t nFillWords = 0;
   while ((temp = GetNextWord()) == 0x2AA) nFillWords++;
-  if (nFillWords == 0)
+  if (nFillWords == 0) {
+    PrintDebug();
     AliFatal("Incorrect trailer found ! Expected 0x2AA not found !");
+  }
 
   //Then read the trailer
-  if (fPosition <= 4)
+  if (fPosition <= 4) {
+    PrintDebug();
     AliFatal(Form("Incorrect raw data size ! Expected at lest 4 words but found %d !",fPosition));
+  }
 
   fCount = (temp << 4) & 0x3FF;
-  if ((temp >> 6) != 0xA)
+  if ((temp >> 6) != 0xA) {
+    PrintDebug();
     AliFatal(Form("Incorrect trailer found ! Expecting 0xA but found %x !",temp >> 6));
+  }
 
   temp = GetNextWord();
   fHWAddress = (temp & 0x3) << 10;
-  if (((temp >> 2) & 0xF) != 0xA)
+  if (((temp >> 2) & 0xF) != 0xA) {
+    PrintDebug();
     AliFatal(Form("Incorrect trailer found ! Expecting second 0xA but found %x !",(temp >> 2) & 0xF));
+  }
   fCount |= ((temp & 0x3FF) >> 6);
   if (fCount == 0) return kFALSE;
 
@@ -258,15 +266,19 @@ void AliAltroRawStream::ReadBunch()
 {
   // Read altro payload in 
   // backward direction
-  if (fPosition <= 0)
+  if (fPosition <= 0) {
+    PrintDebug();
     AliFatal("Could not read bunch length !");
+  }
 
   fBunchLength = GetNextWord() - 2;
   fTimeBunch = fBunchLength;
   fCount--;
 
-  if (fPosition <= 0)
+  if (fPosition <= 0) {
+    PrintDebug();
     AliFatal("Could not read time bin !");
+  }
 
   fTime = GetNextWord();
   fCount--;
@@ -278,8 +290,10 @@ void AliAltroRawStream::ReadBunch()
 void AliAltroRawStream::ReadAmplitude()
 {
   // Read next time bin amplitude
-  if (fPosition <= 0)
+  if (fPosition <= 0) {
+    PrintDebug();
     AliFatal("Could not read sample amplitude !");
+  }
 
   fSignal = GetNextWord();
   fCount--;
@@ -309,14 +323,18 @@ Int_t AliAltroRawStream::GetPosition()
 
     // Now read the beginning of the trailer
     // where the payload size is written
-    if (trailerSize < 2)
+    if (trailerSize < 2) {
+      PrintDebug();
       AliFatal(Form("Invalid trailer size found (%d bytes) !",trailerSize*4));
+    }
     fRCUTrailerSize = (trailerSize-2)*4;
     index -= fRCUTrailerSize;
-    if (index < 4)
+    if (index < 4) {
+      PrintDebug();
       AliFatal(Form("Invalid trailer size found (%d bytes) ! The size is bigger than the raw data size (%d bytes)!",
 		    trailerSize*4,
 		    fRawReader->GetDataSize()));
+    }
     fRCUTrailerData = fData + index;
     Int_t position = Get32bitWord(index);
     // The size is specified in a number of 40bits
@@ -324,11 +342,13 @@ Int_t AliAltroRawStream::GetPosition()
     position *= 5;
 
     // Check the consistency of the header and trailer
-    if ((fRawReader->GetDataSize() - trailerSize*4) != position)
+    if ((fRawReader->GetDataSize() - trailerSize*4) != position) {
+      PrintDebug();
       AliFatal(Form("Inconsistent raw data size ! Raw data size - %d bytes (from the header), RCU trailer - %d bytes, raw data paylod - %d bytes !",
 		    fRawReader->GetDataSize(),
 		    trailerSize*4,
 		    position));
+    }
 
     return position * 8 / 10;
   }
@@ -350,18 +370,22 @@ Int_t AliAltroRawStream::GetPosition()
     if (!fIsShortDataHeader) {
 
       // Check the consistency of the header and trailer
-      if ((fRawReader->GetDataSize() - 4) != position)
+      if ((fRawReader->GetDataSize() - 4) != position) {
+	PrintDebug();
 	AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
 		      fRawReader->GetDataSize()-4,
 		      position));
+      }
     }
     else {
       // Check the consistency of the header and trailer
       // In this case the header is shorter by 4 bytes
-      if (fRawReader->GetDataSize() != position)
+      if (fRawReader->GetDataSize() != position) {
+	PrintDebug();
 	AliFatal(Form("Inconsistent raw data size ! Expected %d bytes (from the header), found %d bytes (in the RCU trailer)!",
 		      fRawReader->GetDataSize(),
 		      position));
+      }
 
       // 7 32-bit words Common Data Header
       // therefore we have to shift back by 4 bytes
@@ -382,10 +406,15 @@ UInt_t AliAltroRawStream::Get32bitWord(Int_t &index)
   // The 'index' points to the beginning of the next word.
   // The method is supposed to be endian (platform)
   // independent.
-  if (!fData)
+  if (!fData) {
+    PrintDebug();
     AliFatal("Raw data paylod buffer is not yet initialized !");
-  if (index < 4)
+  }
+
+  if (index < 4) {
+    PrintDebug();
     AliFatal(Form("Invalid raw data payload index (%d) !",index));
+  }
 
   UInt_t word = 0;
   word  = fData[--index] << 24;
@@ -412,4 +441,19 @@ Bool_t AliAltroRawStream::GetRCUTrailerData(UChar_t*& data) const
   data = fRCUTrailerData;
 
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliAltroRawStream::PrintDebug() const
+{
+  // The method prints all the available
+  // debug information.
+  // Its is used in case of decoding errors.
+
+  AliError("Start of debug printout\n--------------------");
+
+  Dump();
+  if (fRawReader) fRawReader->Dump();
+
+  AliError("End of debug printout\n--------------------");
 }

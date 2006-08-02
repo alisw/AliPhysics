@@ -52,6 +52,8 @@ class AliAltroRawStream: public TObject {
     void  SetOldRCUFormat(Bool_t flag)   { fIsOldRCUFormat = flag; }  // Specify whenever to use or not the old RCU trailer format
     void  SetShortDataHeader(Bool_t flag) { fIsShortDataHeader = flag; } // Specify whenever to assume or not a short CDH format
 
+    void PrintDebug() const; // Print debug information in case of decoding errors
+
   protected:
     AliAltroRawStream(const AliAltroRawStream& stream);
     AliAltroRawStream& operator = (const AliAltroRawStream& stream);
