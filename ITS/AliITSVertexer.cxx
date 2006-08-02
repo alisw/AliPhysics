@@ -103,9 +103,6 @@ void AliITSVertexer::FindMultiplicity(Int_t evnumber){
   delete [] trk;
   delete [] phi;
   delete [] dphi;
-  for(Int_t i=0;i<multReco->GetNTracklets();i++){
-    cout<<i<<") theta= "<<fMult->GetTheta(i)<<", phi= "<<fMult->GetPhi(i)<<", DeltaPhi= "<<fMult->GetDeltaPhi(i)<<endl;
-  }
   itsLoader->UnloadRecPoints();
   delete multReco;
   return;
