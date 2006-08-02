@@ -129,6 +129,18 @@ const char *AliRawEventHeaderBase::GetTypeName()
       case kFormatError:
          return "EVENT_FORMAT_ERROR";
          break;
+      case kStartOfData:
+	 return "START_OF_DATA";
+	 break;
+      case kEndOfData:
+	 return "END_OF_DATA";
+	 break;
+      case kSystemSoftwareTriggerEvent:
+	 return "SYSTEM_SOFTWARE_TRIGGER_EVENT";
+	 break;
+      case kDetectorSoftwareTriggerEvent:
+	 return "DETECTOR_SOFTWARE_TRIGGER_EVENT";
+	 break;
       default:
 	 return "UNKNOWN EVENT TYPE NUMBER";
          break;

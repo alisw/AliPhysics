@@ -257,106 +257,106 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
   // Check event type and skip "Start of Run", "End of Run",
   // "Start of Run Files" and "End of Run Files"
   Int_t size = header->GetEventSize() - header->GetHeadSize();
-  switch (header->Get("Type")) {
-  case AliRawEventHeaderBase::kStartOfRun:
-  case AliRawEventHeaderBase::kEndOfRun:
-  case AliRawEventHeaderBase::kStartOfRunFiles:
-  case AliRawEventHeaderBase::kEndOfRunFiles:
-    {
-      AliDebug(1, Form("Skipping %s (%d bytes)", header->GetTypeName(), size));
-      return kErrStartEndRun;
-    }
-  default:
-    {
-      AliDebug(1, Form("Processing %s (%d bytes)", header->GetTypeName(), size));
-    }
-  }
+  
+  AliDebug(1, Form("Processing %s (%d bytes)", header->GetTypeName(), size));
 
   // Amount of data left to read for this event
   Int_t toRead = size;
 
-  // If there is less data for this event than the next sub-event
-  // header, something is wrong. Skip to next event...
-  if (toRead < (Int_t)header->GetHeadSize()) {
-    Error("ProcessEvent", "header size (%d) exceeds number of bytes "
-	  "to read (%d)", header->GetHeadSize(), toRead);
-    if (AliDebugLevel() > 0) ToAliDebug(1, header->Dump(););
-    return kErrHeaderSize;
-  }
+  // StartOfRun, EndOfRun etc. events have no payload
+  // Nevertheless, store the event headers in the tree
+  if (toRead > 0) {
+
+    // If there is less data for this event than the next sub-event
+    // header, something is wrong. Skip to next event...
+    if (toRead < (Int_t)header->GetHeadSize()) {
+      Error("ProcessEvent", "header size (%d) exceeds number of bytes "
+	    "to read (%d)", header->GetHeadSize(), toRead);
+      if (AliDebugLevel() > 0) ToAliDebug(1, header->Dump(););
+      return kErrHeaderSize;
+    }
   
-  // Loop over all sub-events... (LDCs)
-  Int_t nsub = 1;
-  while (toRead > 0) {
-    if (isIovecArray) data = (char*) ((iovec*) event)[nsub].iov_base;
+    // Loop over all sub-events... (LDCs)
+    Int_t nsub = 1;
+    while (toRead > 0) {
+      if (isIovecArray) data = (char*) ((iovec*) event)[nsub].iov_base;
 
-    AliDebug(1, Form("reading LDC %d", nsub));
+      AliDebug(1, Form("reading LDC %d", nsub));
 
-    AliRawEvent *subEvent = fEvent->NextSubEvent();
+      AliRawEvent *subEvent = fEvent->NextSubEvent();
 
-    // Read sub-event header
-    AliRawEventHeaderBase *subHeader = subEvent->GetHeader(data);
-    if ((status = subHeader->ReadHeader(data)) != (Int_t)subHeader->GetHeadSize()) {
-      return kErrSubHeader;
-    }
+      // Read sub-event header
+      AliRawEventHeaderBase *subHeader = subEvent->GetHeader(data);
+      if ((status = subHeader->ReadHeader(data)) != (Int_t)subHeader->GetHeadSize()) {
+	return kErrSubHeader;
+      }
 
-    if (AliDebugLevel() > 2) ToAliDebug(3, subHeader->Dump(););
+      if (AliDebugLevel() > 2) ToAliDebug(3, subHeader->Dump(););
 
-    toRead -= subHeader->GetHeadSize();
+      toRead -= subHeader->GetHeadSize();
 
-    Int_t rawSize = subHeader->GetEventSize() - subHeader->GetHeadSize();
+      Int_t rawSize = subHeader->GetEventSize() - subHeader->GetHeadSize();
 
-    // Make sure raw data less than left over bytes for current event
-    if (rawSize > toRead) {
-      Warning("ProcessEvent", "raw data size (%d) exceeds number of "
-	      "bytes to read (%d)\n", rawSize, toRead);
-      if (AliDebugLevel() > 0) ToAliDebug(1, subHeader->Dump(););
-      return kErrDataSize;
-    }
+      // Make sure raw data less than left over bytes for current event
+      if (rawSize > toRead) {
+	Warning("ProcessEvent", "raw data size (%d) exceeds number of "
+		"bytes to read (%d)\n", rawSize, toRead);
+	if (AliDebugLevel() > 0) ToAliDebug(1, subHeader->Dump(););
+	return kErrDataSize;
+      }
 
-    // Read Equipment Headers (in case of physics or calibration event)
-    if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
-	header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent) {
-      while (rawSize > 0) {
-	AliRawEquipment &equipment = *subEvent->NextEquipment();
-	AliRawEquipmentHeader &equipmentHeader = 
-	  *equipment.GetEquipmentHeader();
-	Int_t equipHeaderSize = equipmentHeader.HeaderSize();
-	if ((status = ReadEquipmentHeader(equipmentHeader, header->DataIsSwapped(),
-					  data)) != equipHeaderSize) {
-	  return kErrEquipmentHeader;
+      // Read Equipment Headers (in case of physics or calibration event)
+      if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
+	  header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent ||
+	  header->Get("Type") == AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
+	  header->Get("Type") == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent) {
+	while (rawSize > 0) {
+	  AliRawEquipment &equipment = *subEvent->NextEquipment();
+	  AliRawEquipmentHeader &equipmentHeader = 
+	    *equipment.GetEquipmentHeader();
+	  Int_t equipHeaderSize = equipmentHeader.HeaderSize();
+	  if ((status = ReadEquipmentHeader(equipmentHeader, header->DataIsSwapped(),
+					    data)) != equipHeaderSize) {
+	    return kErrEquipmentHeader;
+	  }
+
+	  if (AliDebugLevel() > 2) ToAliDebug(3, equipmentHeader.Dump(););
+
+	  toRead  -= equipHeaderSize;
+	  rawSize -= equipHeaderSize;
+
+	  // Read equipment raw data
+	  AliRawData &subRaw = *equipment.GetRawData();
+
+	  Int_t eqSize = equipmentHeader.GetEquipmentSize() - equipHeaderSize;
+	  if ((status = ReadRawData(subRaw, eqSize, data)) != eqSize) {
+	    return kErrEquipment;
+	  }
+	  toRead  -= eqSize;
+	  rawSize -= eqSize;
+
 	}
-	toRead  -= equipHeaderSize;
-	rawSize -= equipHeaderSize;
 
-	// Read equipment raw data
+      } else {  // Read only raw data but no equipment header
+	AliRawEquipment &equipment = *subEvent->NextEquipment();
 	AliRawData &subRaw = *equipment.GetRawData();
-
-	Int_t eqSize = equipmentHeader.GetEquipmentSize() - equipHeaderSize;
-	if ((status = ReadRawData(subRaw, eqSize, data)) != eqSize) {
+	if ((status = ReadRawData(subRaw, rawSize, data)) != rawSize) {
 	  return kErrEquipment;
 	}
-	toRead  -= eqSize;
-	rawSize -= eqSize;
+	toRead  -= rawSize;
 
       }
 
-    } else {  // Read only raw data but no equipment header
-      AliRawEquipment &equipment = *subEvent->NextEquipment();
-      AliRawData &subRaw = *equipment.GetRawData();
-      if ((status = ReadRawData(subRaw, rawSize, data)) != rawSize) {
-	return kErrEquipment;
-      }
-      toRead  -= rawSize;
-
+      nsub++;
     }
-
-    nsub++;
   }
 
   // High Level Event Filter
   if (fFilterMode != kFilterOff) {
     if (header->Get("Type") == AliRawEventHeaderBase::kPhysicsEvent ||
-	header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent) {
+	header->Get("Type") == AliRawEventHeaderBase::kCalibrationEvent ||
+	header->Get("Type") == AliRawEventHeaderBase::kSystemSoftwareTriggerEvent ||
+	header->Get("Type") == AliRawEventHeaderBase::kDetectorSoftwareTriggerEvent) {
       Bool_t result = kFALSE;
       for (Int_t iFilter = 0; iFilter < fFilters.GetEntriesFast(); iFilter++) {
 	AliFilter* filter = (AliFilter*) fFilters[iFilter];

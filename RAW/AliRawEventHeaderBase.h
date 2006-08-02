@@ -61,7 +61,7 @@ public:
      kPhysicsEvent =     7,    // PHYSICS_EVENT
      kCalibrationEvent = 8,    // CALIBRATION_EVENT
      kFormatError =      9,    // EVENT_FORMAT_ERROR
-     kStartOfDdata =     10,   // START_OF_DATA
+     kStartOfData =      10,   // START_OF_DATA
      kEndOfData =        11,   // END_OF_DATA
      kSystemSoftwareTriggerEvent   = 12, // SYSTEM_SOFTWARE_TRIGGER_EVENT
      kDetectorSoftwareTriggerEvent = 13  // DETECTOR_SOFTWARE_TRIGGER_EVENT
