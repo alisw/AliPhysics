@@ -402,55 +402,7 @@ void AliRICHParam::AnglesInDRS(Double_t trackTheta,Double_t trackPhi,Double_t th
   tout=photonInRadiator.Theta();
   pout=photonInRadiator.Phi();
 }//AnglesInDRS
-/*
-void DrawRing()
-{
-
-  //  Float_t xGraph[1000],yGraph[1000];
-
-  Float_t type;
-  Float_t MassOfParticle;
-  Float_t beta;
-  Float_t nfreon;
-
-  Float_t ThetaCerenkov;
-
-  Float_t Xtoentr = GetEntranceX();
-  Float_t Ytoentr = GetEntranceY();
-
-  Float_t pmod = GetTrackMomentum();
-  Float_t TrackTheta = GetTrackTheta();
-  Float_t TrackPhi = GetTrackPhi();
-
-  SetPhotonEnergy(AliRICHParam::MeanCkovEnergy());
-  SetFreonRefractiveIndex();
-
-  SetEmissionPoint(RadiatorWidth/2.);
-
-  ThetaCerenkov = GetThetaCerenkov();
-  FindBetaFromTheta(ThetaCerenkov);
-  nfreon = GetFreonRefractiveIndex();
-  
-  Int_t nPoints = 100;
-
-  Int_t nPointsToDraw = 0;
-  for(Int_t i=0;i<nPoints;i++)
-    {
-      Float_t phpad = 2*TMath::Pi()*i/nPoints;
-      SetThetaPhotonInTRS(thetacer);
-      SetPhiPhotonInTRS(phpad);
-      FindPhotonAnglesInDRS();
-      Float_t Radius = FromEmissionToCathode();
-      if (Radius == 999.) continue;
-      xGraph[nPointsToDraw] = GetXPointOnCathode() + GetShiftX();
-      yGraph[nPointsToDraw] = GetYPointOnCathode() + GetShiftY();
-      nPointsToDraw++;
-    }
-  gra = new TGraph(nPointsToDraw,xGraph,yGraph);
-  gra->Draw("AC"); 
-}
-//__________________________________________________________________________________________________
-*/
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliRICHParam::TestHit2SDigs(Double_t x,Double_t y,Double_t e,Bool_t isNew)
 {
 //Test  hit->sdigits procedures

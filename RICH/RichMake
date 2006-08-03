@@ -10,7 +10,7 @@ include	lib$(Module)rec.pkg
 SrcRec   	:=$(SRCS)
 
 RootTarget      :=$(shell root-config --arch)
-DirOut	        :=/tmp/$(Module)_$(USER)
+DirOut	        :=/tmp/$(USER)_$(Module)_obj
 LibBase		:=$(LIB_MY)/lib$(Module)base.so
 LibSim		:=$(LIB_MY)/lib$(Module)sim.so
 LibRec		:=$(LIB_MY)/lib$(Module)rec.so

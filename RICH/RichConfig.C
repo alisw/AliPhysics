@@ -522,7 +522,6 @@ void RichConfig::WriteBatch()
   else if(fRawBG->GetButton(kRawRoot)->GetState())     fprintf(fp,"  pSim->SetWriteRawData(\"ITS TPC TRD TOF RICH\",\".root\");//raw data in ROOT format for these detectors\n");
   
                                                        fprintf(fp,"  pSim->Run(iNevents);\n  delete pSim;\n\n");
-                                                       fprintf(fp,"  delete AliRICHParam::Instance();\n\n");
 
 
 

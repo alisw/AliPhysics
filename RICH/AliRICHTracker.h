@@ -25,7 +25,7 @@ public:
   static void EsdQA       (Bool_t isPrint=kFALSE                                            );   //print QA info
   static void MatrixPrint (Double_t probCut=0.7                                             );   //print prob matrix with cut on probability    
   Double_t fErrPar[5];                                                                       //Temporary stored for debug purpose
-  enum ETrackingFlags {kMipDistCut=-990,kMipQdcCut=-999};
+  enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5};
 protected:
   ClassDef(AliRICHTracker,0)
 };//class AliRICHTracker

@@ -2,120 +2,105 @@ AliRun *a;    AliStack *s;  AliRunLoader *al; //globals for easy manual manipula
 AliRICH   *r; AliLoader    *rl;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliceRead()
-{
-  Info("ReadAlice","Tring to read ALICE from SIMULATED FILE...");
-  if(gAlice){
-    delete gAlice->GetRunLoader();
-    delete gAlice;
-  }      
-  
-  if(gSystem->Exec("ls galice.root>/dev/null")==256){//there is no galice.root in current directory
-    AliceNew();
-    RichGet();
-    return kFALSE; //new session
-  }else{
-    if(!(al=AliRunLoader::Open())){//if not possible to read from galice.root, then remove grabage and reinvoke AliceRead()
-      gSystem->Exec("rm -rf *.root *.dat");
-      AliceRead();
-    }
-    al->LoadgAlice();//before this gAlice is 0;
-    if(!gAlice) Fatal("menu.C::ReadAlice","No gAlice in file");
-    a=al->GetAliRun();//provides pointer to AliRun object
-    Info("AliceRead","Run contains %i event(s)",a->GetEventsPerRun());      
-    GeomAlign(kTRUE);
-    RichGet();
-    return kTRUE;   //old session opened from file
-  }        
-}//AliceRead()
-//__________________________________________________________________________________________________
 void GeomAlign(Bool_t isAlign)
 {
   if(gGeoManager) delete gGeoManager;
   if(AliRICHParam::Instance()) delete AliRICHParam::Instance();
-  if(isAlign) 
-    TGeoManager::Import("geometry.root");
-  else
-    TGeoManager::Import("misaligned_geometry.root");
+  if(isAlign) TGeoManager::Import("geometry.root");
+  else        TGeoManager::Import("misaligned_geometry.root");
   AliRICHParam::Instance();
 }
-//__________________________________________________________________________________________________
-void AliceNew()
-{
-  Info("AliceNew","Init new session");
-  new AliRun("gAlice","Alice experiment system");  gAlice->Init(); a=gAlice; al=gAlice->GetRunLoader();
-}//AliceNew()    
-//__________________________________________________________________________________________________
-void RichGet()
-{
-  if(!(r=(AliRICH*)al->GetAliRun()->GetDetector("RICH")))     Warning("RICH/menu.C::ReadAlice","No RICH in file");
-  if(!(rl=al->GetDetectorLoader("RICH")))           Warning("RICH/menu.C::ReadAlice","No RICH loader in file");        
-}
-
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RichMenu()
 {   
-  TControlBar *pMenu = new TControlBar("vertical","MAIN");
-       
-  if(AliceRead()){//it's from file, show some info
-    pMenu->AddButton("Geometry Align OK      "         ,"GeomAlign(kTRUE);"  , "Ideal Geometry Aligned");
-    pMenu->AddButton("Geometry MisAligned SET"         ,"GeomAlign(kFALSE);"  , "Misaligned Geometry SET");
+  TString status="Status: ";
+  if(gSystem->IsFileInIncludePath("galice.root")){
+    status+="galice.root found";
+    al=AliRunLoader::Open();                                                //try to open galice.root from current dir 
+    if(gAlice) delete gAlice;                                               //in case we execute this in aliroot delete default AliRun object 
+    al->LoadgAlice(); a=al->GetAliRun();                                    //take new AliRun object from galice.root   
+    rl=al->GetDetectorLoader("RICH");  r=(AliRICH*)a->GetDetector("RICH");  //get RICH object from galice.root
+    
+    status+=Form(" with %i event(s)",al->GetNumberOfEvents()); status+=(r)? " with RICH": " without RICH";
+  }else  
+    status+="No galice.root";
+  
+  TControlBar *pMenu = new TControlBar("horizontal",status.Data(),0,0);
+    pMenu->AddButton("                     ","","");
+    pMenu->AddButton(" General  "         ,"General()"  ,"general items which do not depend on any files");
+    pMenu->AddButton("                     ","","");
+    pMenu->AddButton(" Sim data "        ,"SimData()"  ,"items which expect to have simulated files"    );
+    pMenu->AddButton("                     ","","");
+    pMenu->AddButton(" Raw data "        ,"RawData()"  ,"items which expect to have raw files"          );
+    pMenu->AddButton("                     ","","");
+    pMenu->AddButton("Quit"            ,".q"         ,"close session"                                 );
+  pMenu->Show();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void General()
+{         
+  TControlBar *pMenu = new TControlBar("vertical","Sim data",60,50);  
+    pMenu->AddButton("Debug ON"           ,"don();"                    ,"Switch debug on-off"                        );   
+    pMenu->AddButton("Debug OFF"          ,"doff();"                   ,"Switch debug on-off"                        );   
+    pMenu->AddButton("Test segmentation"  ,"AliRICHParam::TestSeg();"  ,"Test AliRICHParam segmentation methods"     );
+    pMenu->AddButton("Test response"      ,"AliRICHParam::TestResp();" ,"Test AliRICHParam response methods"         );
+    pMenu->AddButton("Test transformation","AliRICHParam::TestTrans();","Test AliRICHParam transformation methods"   );
+    pMenu->AddButton("Geo GUI"            ,"geo();"                    ,"Shows geometry"                             ); 
+    pMenu->AddButton("Browser"            ,"new TBrowser;"             ,"Start ROOT TBrowser"                        );
+  pMenu->Show();  
+}//menu()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SimData()
+{
+  TControlBar *pMenu = new TControlBar("vertical","Sim",190,50);  
     pMenu->AddButton("Display single chambers"         ,"r->Display();"  , "Display Fast");
     pMenu->AddButton("Display ALL chambers"            ,"r->DisplayEvent(0,0);"  , "Display Fast");
-    pMenu->AddButton("Recon with stack"                ,"AliRICHReconstructor::CheckPR(        )","Create RSR.root with ntuple hn");    
-    pMenu->AddButton("RichAna no Recon"                ,"AliRICHReconstructor::RichAna(0,0,kFALSE)","Create RichAna.root with ntuple hn without PatRec");    
-    pMenu->AddButton("RichAna with Recon"              ,"AliRICHReconstructor::RichAna(0,0,kTRUE )","Create RichAna.root with ntuple hn with PatRec");    
     pMenu->AddButton("HITS Print"                      ,"h();"      ,"To print hits: h()");
     pMenu->AddButton("HITS QA"                         ,"hqa()"     ,"QA plots for hits: hqa()");
     pMenu->AddButton("Print sdigits"                   ,"s();"      ,"To print sdigits: s()");
     pMenu->AddButton("Print digits"                    ,"d();"      ,"To print digits: d()");
-    pMenu->AddButton("Clusters print"                  ,"c();"      ,"To print clusters: c()");  
-    pMenu->AddButton("Clusters QA"                     ,"cqa();"    ,"Clusters QA: cqa() or AliRICHReconstructor::CluQA(al)");  
-    pMenu->AddButton("Print ESD"                       ,"e();"      ,"To print ESD status");  
-    pMenu->AddButton("Print Matrix"                    ,"m();"      ,"To print probability matrix");  
-    pMenu->AddButton("Print occupancy"                 ,"r->OccupancyPrint(-1);" ,"To print occupancy");  
-    pMenu->AddButton("Print event summary  "           ,"r->SummaryOfEvent();"   ,"To print a summary of the event");  
-  }else{//it's aliroot, simulate
-    pMenu->AddButton("Debug ON",     "DebugON();",   "Switch debug on-off");   
-    pMenu->AddButton("Debug OFF",    "DebugOFF();",  "Switch debug on-off");   
-    pMenu->AddButton("Run",          "a->Run(1)",  "Process!");
-  }
-  pMenu->AddButton("Test segmentation"  ,"rp->TestSeg()"  ,"Test AliRICHParam segmentation methods"     );
-  pMenu->AddButton("Test response"      ,"rp->TestResp()" ,"Test AliRICHParam response methods"         );
-  pMenu->AddButton("Test transformation","rp->TestTrans()","Test AliRICHParam transformation methods"   );
-  pMenu->AddButton("Geo GUI"            ,"geo();"                                                          ,"Shows geometry"                             ); 
-  pMenu->AddButton("Debug ON"           ,"AliLog::SetGlobalDebugLevel(AliLog::kDebug);"                    ,"Switch debug on"                            );   
-  pMenu->AddButton("Debug OFF"          ,"AliLog::SetGlobalDebugLevel(0);"                                 ,"Switch debug off"                           );   
-  pMenu->AddButton("Browser"            ,"new TBrowser;"                                                   ,"Start ROOT TBrowser"                        );
-  pMenu->AddButton("Quit"               ,".q"                                                              ,"Close session"                              );
-  pMenu->Show();
-}//menu()
-//__________________________________________________________________________________________________
-void DebugOFF(){  Info("DebugOFF","");  AliLog::SetGlobalDebugLevel(0);}
-void DebugON() {  Info("DebugON","");   AliLog::SetGlobalDebugLevel(AliLog::kDebug);}
-//void geo (            )   { gGeoManager->SetVisOption(0);gGeoManager->GetTopVolume()->Draw(); AliRICHParam::DrawAxis();}
-void geo()                  {  if(!gGeoManager) TGeoManager::Import("geometry.root");gGeoManager->GetTopVolume()->Draw();AliRICHParam::DrawAxis();}
+  pMenu->Show();         
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void RawData()
+{
+  TControlBar *pMenu = new TControlBar("vertical","Raw",350,50);  
+    pMenu->AddButton("ESD print"                       ,"ep();"                  ,"To print ESD info: ep()"         );  
+    pMenu->AddButton("ESD QA"                          ,"eq();"                  ,"To draw ESD hists: eq()"         );  
+    pMenu->AddButton("Clusters print"                  ,"cp();"                  ,"To print clusters: cp()"         );  
+    pMenu->AddButton("Clusters QA"                     ,"cq();"                  ,"To draw clusters hists: cq()"    );  
+    pMenu->AddButton("Print Matrix"                    ,"mp();"                  ,"To print prob matrix: mp()"      );  
+    pMenu->AddButton("Print occupancy"                 ,"r->OccupancyPrint(-1);" ,"To print occupancy"              );  
+    pMenu->AddButton("Print event summary  "           ,"r->SummaryOfEvent();"   ,"To print a summary of the event" );  
+  pMenu->Show();         
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+void doff(){  Printf("DebugOFF");  AliLog::SetGlobalDebugLevel(0);}
+void don() {  Printf("DebugON");   AliLog::SetGlobalDebugLevel(AliLog::kDebug);}
+
+void geo()                {  if(!gGeoManager) TGeoManager::Import("geometry.root");gGeoManager->GetTopVolume()->Draw();AliRICHParam::DrawAxis();}
   
-void dis (Int_t evt=-1)   {r->Display      (evt);}                //utility display 
-void dum (            )   {r->Dump         (   );}                //utility display 
+void di  (Int_t evt=-1         )   {r->Display      (evt);}                //utility display 
+void du  (                     )   {r->Dump         (   );}                //utility display 
 
-void h   (Int_t evt=0 )   {r->HitPrint  (evt);}   //print hits for requested event
-void hqa (            )   {r->HitQA     (   );}   //hits QA plots for all events 
+void hp  (Int_t evt=0          )   {r->HitPrint  (evt);}   //print hits for requested event
+void hq  (                     )   {r->HitQA     (   );}   //hits QA plots for all events 
+void sp  (Int_t evt=0          )   {r->SDigPrint (evt);}   //print sdigits for requested event
+void sq  (Int_t evt=0          )   {r->SDigPrint (evt);}   //print sdigits for requested event
+void dp  (Int_t evt=0          )   {r->DigPrint  (evt);}   //print digits for requested event
+void dq  (                     )   {AliRICHReconstructor::DigQA     (al );}   //digits QA plots for all events
+void cp  (Int_t evt=0          )   {r->CluPrint  (evt);}                      //print clusters for requested event
+void cq  (                     )   {AliRICHReconstructor::CluQA     (al );}   //clusters QA plots for all events
+void ep  (                     )   {AliRICHTracker::EsdQA(1);} 
+void eq  (                     )   {AliRICHTracker::EsdQA();}                   
+void mp  (Double_t probCut=0.7 )   {AliRICHTracker::MatrixPrint(probCut);}                   
 
-void s   (Int_t evt=0 )   {r->SDigPrint (evt);}   //print sdigits for requested event
-
-void d   (Int_t evt=0 )   {r->DigPrint  (evt);}   //print digits for requested event
-void dqa (            )   {AliRICHReconstructor::DigQA     (al );}   //digits QA plots for all events
-
-
-void c   (Int_t evt=0 )   {r->CluPrint  (evt);}   //print clusters for requested event
-void cqa (            )   {AliRICHReconstructor::CluQA     (al );}   //clusters QA plots for all events
-void ct  (            )   {AliRICHReconstructor::Test      (   );}   //test clusters by predifined list of digits
 
 void t   (Int_t evt=0          )   {AliRICHParam::Stack(evt);}    
 void tid (Int_t tid,Int_t evt=0)   {AliRICHParam::Stack(evt,tid);} 
-void e   (                     )   {AliRICHTracker::EsdPrint();}                   
-void m   (Double_t probCut=0.7 )   {AliRICHTracker::MatrixPrint(probCut);}                   
+
 
 Int_t nem (Int_t evt=0) {AliRICHParam::StackCount(kElectron  ,evt);} //utility number of electrons
 Int_t nep (Int_t evt=0) {AliRICHParam::StackCount(kPositron  ,evt);} //utility number of positrons

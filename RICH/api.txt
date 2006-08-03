@@ -1,7 +1,10 @@
 How to open session:
-	use static method  AliRunLoader::Open("galice.root","AlicE","update")
+	use static method  AliRunLoader::Open("galice.root","AlicE","update") or just AliRunLoader::Open() for defaults. 
+        Returns pointer to AliRunLoader on success or fatal termination on error
 How to get total number of events in galice.root:
-	use AliRun::GetEventsPerRun()  or AliRunLoader::GetNumberOfEvents()      
+	AliRunLoader::GetNumberOfEvents()  (or AliRun::GetEventsPerRun() using f.e. gAlice depricated)
+How to get pointer to RICH:
+        AliRunLoader()->GetAliRun()->GetDetector("RICH") but before one needs to AliRunLoade()->Set
 How to avoid using gAlice:
 	detector->GetLoader()->GetRunLoader()->GetAliRun() returns gAlice global pointer.
 How to retrieve pointer to alice run loader:
