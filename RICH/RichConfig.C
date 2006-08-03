@@ -415,9 +415,9 @@ void RichConfig::WriteDet(FILE *pF)
   if(fDetBG->GetButton(kSHILD)->GetState()) fprintf(pF,"\n  new AliSHILv2(\"SHIL\",\"Shielding Version 2\");\n");  
   if(fDetBG->GetButton(kITS  )->GetState()){
     fprintf(pF,"\n  AliITSvPPRasymmFMD *pIts =new AliITSvPPRasymmFMD(\"ITS\",\"ITS PPR detailed version\");\n");
-    fprintf(pF,"  pIts->SetMinorVersion(2); pIts->SetReadDet(kTRUE);\n");
+    fprintf(pF,"  pIts->SetMinorVersion(2); pIts->SetReadDet(kFALSE);\n");
     fprintf(pF,"  pIts->SetThicknessDet1(200.); pIts->SetThicknessDet2(200.);\n");
-    fprintf(pF,"  pIts->SetThicknessChip1(200.); pIts->SetThicknessChip2(200.);\n");
+    fprintf(pF,"  pIts->SetThicknessChip1(150.); pIts->SetThicknessChip2(150.);\n");
     fprintf(pF,"  pIts->SetRails(0); pIts->SetCoolingFluid(1);\n");
     fprintf(pF,"  pIts->SetEUCLID(0);\n");
   }  
