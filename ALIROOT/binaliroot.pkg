@@ -53,14 +53,16 @@ ARLIBS:= \
    RICH/tgt_$(ALICE_TARGET)/G__RICHbase.o $(LIBPATH)/libRICHbase.a \
    RICH/tgt_$(ALICE_TARGET)/G__RICHsim.o $(LIBPATH)/libRICHsim.a \
    RICH/tgt_$(ALICE_TARGET)/G__RICHrec.o $(LIBPATH)/libRICHrec.a \
-   ZDC/tgt_$(ALICE_TARGET)/G__ZDC.o $(LIBPATH)/libZDC.a \
    ZDC/tgt_$(ALICE_TARGET)/G__ZDCbase.o $(LIBPATH)/libZDCbase.a \
    ZDC/tgt_$(ALICE_TARGET)/G__ZDCsim.o $(LIBPATH)/libZDCsim.a \
    ZDC/tgt_$(ALICE_TARGET)/G__ZDCrec.o $(LIBPATH)/libZDCrec.a \
    VZERO/tgt_$(ALICE_TARGET)/G__VZERObase.o $(LIBPATH)/libVZERObase.a \
    VZERO/tgt_$(ALICE_TARGET)/G__VZEROsim.o $(LIBPATH)/libVZEROsim.a \
    VZERO/tgt_$(ALICE_TARGET)/G__VZEROrec.o $(LIBPATH)/libVZEROrec.a \
-   EMCAL/tgt_$(ALICE_TARGET)/G__EMCAL.o $(LIBPATH)/libEMCAL.a \
+   EMCAL/tgt_$(ALICE_TARGET)/G__EMCALbase.o $(LIBPATH)/libEMCALbase.a \
+   EMCAL/tgt_$(ALICE_TARGET)/G__EMCALsim.o $(LIBPATH)/libEMCALsim.a \
+   EMCAL/tgt_$(ALICE_TARGET)/G__EMCALrec.o $(LIBPATH)/libEMCALrec.a \
+   EMCAL/tgt_$(ALICE_TARGET)/G__EMCALjet.o $(LIBPATH)/libEMCALjet.a \
    START/tgt_$(ALICE_TARGET)/G__STARTbase.o $(LIBPATH)/libSTARTbase.a \
    START/tgt_$(ALICE_TARGET)/G__STARTsim.o $(LIBPATH)/libSTARTsim.a \
    START/tgt_$(ALICE_TARGET)/G__STARTrec.o $(LIBPATH)/libSTARTrec.a \
@@ -79,6 +81,7 @@ ARLIBS:= \
    MUON/tgt_$(ALICE_TARGET)/G__MUONbase.o $(LIBPATH)/libMUONbase.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONsim.o $(LIBPATH)/libMUONsim.a \
    MUON/tgt_$(ALICE_TARGET)/G__MUONrec.o $(LIBPATH)/libMUONrec.a \
+   MUON/tgt_$(ALICE_TARGET)/G__MUONraw.o $(LIBPATH)/libMUONraw.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSbase.o $(LIBPATH)/libPHOSbase.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSsim.o $(LIBPATH)/libPHOSsim.a \
    PHOS/tgt_$(ALICE_TARGET)/G__PHOSrec.o $(LIBPATH)/libPHOSrec.a \
@@ -92,9 +95,11 @@ ARLIBS:= \
    TPC/tgt_$(ALICE_TARGET)/G__TPCfast.o $(LIBPATH)/libTPCfast.a \
    STEER/tgt_$(ALICE_TARGET)/G__STEER.o $(LIBPATH)/libSTEER.a \
    STEER/tgt_$(ALICE_TARGET)/G__ESD.o $(LIBPATH)/libESD.a \
+   STEER/tgt_$(ALICE_TARGET)/G__CDB.o $(LIBPATH)/libCDB.a \
    RAW/tgt_$(ALICE_TARGET)/G__RAWDatabase.o $(LIBPATH)/libRAWDatabase.a \
    RAW/tgt_$(ALICE_TARGET)/G__RAWDatasim.o $(LIBPATH)/libRAWDatasim.a \
-   RAW/tgt_$(ALICE_TARGET)/G__RAWDatarec.o $(LIBPATH)/libRAWDatarec.a
+   RAW/tgt_$(ALICE_TARGET)/G__RAWDatarec.o $(LIBPATH)/libRAWDatarec.a \
+   RAW/tgt_$(ALICE_TARGET)/G__MDC.o $(LIBPATH)/libMDC.a
 
-SHLIBS:= $(BINLIBDIRS) -lEVGEN -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
+SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -lpdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
 
