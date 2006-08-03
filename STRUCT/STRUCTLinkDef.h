@@ -25,6 +25,7 @@
 #pragma link C++ class  AliSHIL+;
 #pragma link C++ class  AliSHILv0+;
 #pragma link C++ class  AliSHILv2+;
+#pragma link C++ class  AliSHILv3+;
 #pragma link C++ class  AliSHILvF+;
 #pragma link C++ class  AliALIFE+;
 #pragma link C++ class  AliFieldReader+;
