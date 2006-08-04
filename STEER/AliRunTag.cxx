@@ -27,17 +27,19 @@
 
 ClassImp(AliRunTag)
 
-//______________________________________________________________________________
+//___________________________________________________________________________
   AliRunTag::AliRunTag() :
     TObject(),
     fAliceRunId(-1),
     fAliceMagneticField(0.0),
     fAliceRunStartTime(0),
     fAliceRunStopTime(0),
-    fAliceReconstructionVersion(0),
+    fAlirootVersion(0),
+    fRootVersion(0),
+    fGeant3Version(0),
     fAliceRunQuality(0),
     fAliceBeamEnergy(0.0),
-    fAliceBeamType(""),
+    fAliceBeamType(0),
     fAliceCalibrationVersion(0),
     fAliceDataType(0),
     fNumEvents(0),
@@ -49,39 +51,36 @@ ClassImp(AliRunTag)
   //Default constructor
 }
 
-//______________________________________________________________________________
-AliRunTag::~AliRunTag()
-{
+//___________________________________________________________________________
+AliRunTag::~AliRunTag() {
   //Destructor
   fEventTag.Delete();
   fDetectorTag.Delete();
 }
 
-//______________________________________________________________________________
-void AliRunTag::SetLHCTag(Float_t lumin, char *type)
-{
+//___________________________________________________________________________
+void AliRunTag::SetLHCTag(Float_t lumin, char *type) {
   //Setter for the LHC tags
   fLHCTag.SetLHCTag(lumin,type);
 }
 
-//______________________________________________________________________________
-void AliRunTag::SetDetectorTag(const AliDetectorTag &DetTag)
-{
+//___________________________________________________________________________
+void AliRunTag::SetDetectorTag(const AliDetectorTag &DetTag) {
   //Setter for the detector tags
   new(fDetectorTag[fNumDetectors++]) AliDetectorTag(DetTag);
 }
 
-//______________________________________________________________________________
-void AliRunTag::AddEventTag(const AliEventTag & EvTag)
-{
+//___________________________________________________________________________
+void AliRunTag::AddEventTag(const AliEventTag & EvTag) {
   //Adds an entry to the event tag TClonesArray
   new(fEventTag[fNumEvents++]) AliEventTag(EvTag);
 }
 
-//______________________________________________________________________________
-void AliRunTag::Clear(const char *)
-{
+//___________________________________________________________________________
+void AliRunTag::Clear(const char *) {
   //Resets the number of events and detectors
+  fEventTag.Clear();
   fNumEvents = 0;
+  fDetectorTag.Clear();
   fNumDetectors = 0;
 }

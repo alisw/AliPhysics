@@ -30,6 +30,7 @@ ClassImp(AliEventTag)
     TObject(),
     fAliceEventId(0),
     fGUID(0),
+    fPath(0),
     fsize(0),
     fmd5(0),
     fturl(0),
@@ -95,58 +96,45 @@ ClassImp(AliEventTag)
 }
 
 
-//______________________________________________________________________________
-AliEventTag::AliEventTag(const AliEventTag & EvTag) : TObject(EvTag)
-{
+//___________________________________________________________________________
+AliEventTag::AliEventTag(const AliEventTag & EvTag) : TObject(EvTag) {
   // EventTag copy constructor
   SetEventId(EvTag.GetEventId());
   SetGUID(EvTag.GetGUID());
-  
+  SetPath(EvTag.GetPath());
   SetMD5(EvTag.GetMD5());
   SetTURL(EvTag.GetTURL());
   SetSize(EvTag.GetSize());
- 
   SetNumOfParticipants(EvTag.GetNumOfParticipants());
   SetImpactParameter(EvTag.GetImpactParameter());
-  
   SetVertexX(EvTag.GetVertexX());
   SetVertexY(EvTag.GetVertexY());
   SetVertexZ(EvTag.GetVertexZ());
-
   SetVertexFlag(EvTag.GetVertexFlag());
   SetVertexZError(EvTag.GetVertexZError());
-
   SetTriggerMask(EvTag.GetTriggerMask());
   SetTriggerCluster(EvTag.GetTriggerCluster());
-  
   SetZDCNeutron1Energy(EvTag.GetZDCNeutron1Energy());
   SetZDCProton1Energy(EvTag.GetZDCProton1Energy());
   SetZDCEMEnergy(EvTag.GetZDCEMEnergy());
   SetZDCNeutron2Energy(EvTag.GetZDCNeutron2Energy());
   SetZDCProton2Energy(EvTag.GetZDCProton2Energy());
-  
   SetT0VertexZ(EvTag.GetT0VertexZ());
-  
   SetNumOfTracks(EvTag.GetNumOfTracks());
   SetNumOfPosTracks(EvTag.GetNumOfPosTracks());
   SetNumOfNegTracks(EvTag.GetNumOfNegTracks());
   SetNumOfNeutrTracks(EvTag.GetNumOfNeutrTracks());
-  
   SetNumOfV0s(EvTag.GetNumOfV0s());
   SetNumOfCascades(EvTag.GetNumOfCascades());
   SetNumOfKinks(EvTag.GetNumOfKinks());
-  
   SetNumOfPMDTracks(EvTag.GetNumOfPMDTracks());
   SetNumOfFMDTracks(EvTag.GetNumOfFMDTracks());
   SetNumOfPHOSClusters(EvTag.GetNumOfPHOSClusters());
   SetNumOfEMCALClusters(EvTag.GetNumOfEMCALClusters());
-
   SetNumOfJetCandidates(EvTag.GetNumOfJetCandidates());
   SetNumOfHardPhotonsCandidates(EvTag.GetNumOfHardPhotonsCandidates());
-
   SetMaxJetEnergy(EvTag.GetMaxJetEnergy());
   SetMaxNeutralEnergy(EvTag.GetMaxNeutralEnergy());
-  
   SetNumOfChargedAbove1GeV(EvTag.GetNumOfChargedAbove1GeV());
   SetNumOfChargedAbove3GeV(EvTag.GetNumOfChargedAbove3GeV());
   SetNumOfChargedAbove10GeV(EvTag.GetNumOfChargedAbove10GeV());
@@ -156,87 +144,68 @@ AliEventTag::AliEventTag(const AliEventTag & EvTag) : TObject(EvTag)
   SetNumOfElectronsAbove1GeV(EvTag.GetNumOfElectronsAbove1GeV());
   SetNumOfElectronsAbove3GeV(EvTag.GetNumOfElectronsAbove3GeV());
   SetNumOfElectronsAbove10GeV(EvTag.GetNumOfElectronsAbove10GeV());
-
   SetNumOfElectrons(EvTag.GetNumOfElectrons());
   SetNumOfMuons(EvTag.GetNumOfMuons());
   SetNumOfPions(EvTag.GetNumOfPions());
   SetNumOfKaons(EvTag.GetNumOfKaons());
   SetNumOfProtons(EvTag.GetNumOfProtons());
   SetNumOfLambdas(EvTag.GetNumOfLambdas());
- 
-
   SetNumOfPhotons(EvTag.GetNumOfPhotons());
   SetNumOfPi0s(EvTag.GetNumOfPi0s());
   SetNumOfNeutrons(EvTag.GetNumOfNeutrons());
   SetNumOfKaon0s(EvTag.GetNumOfKaon0s());
-  
   SetTotalMomentum(EvTag.GetTotalMomentum());
   SetMeanPt(EvTag.GetMeanPt());
   SetMaxPt(EvTag.GetMaxPt());
-
   SetNeutralTotalMomentum(EvTag.GetNeutralTotalMomentum());
   SetNeutralMeanPt(EvTag.GetNeutralMeanPt());
   SetNeutralMaxPt(EvTag.GetNeutralMaxPt());
-  
   SetEventPlaneAngle(EvTag.GetEventPlaneAngle());
   SetHBTRadii(EvTag.GetHBTRadii());
 }
 
-//______________________________________________________________________________
-AliEventTag & AliEventTag::operator=(const AliEventTag &EvTag)
-{
+//___________________________________________________________________________
+AliEventTag & AliEventTag::operator=(const AliEventTag &EvTag) {
   // EventTag assignment operator
   if (this != &EvTag) {
     TObject::operator=(EvTag);
-
+    
     SetEventId(EvTag.GetEventId());
     SetGUID(EvTag.GetGUID());
-    
+    SetPath(EvTag.GetPath());
     SetMD5(EvTag.GetMD5());
     SetTURL(EvTag.GetTURL());
     SetSize(EvTag.GetSize());
-
     SetNumOfParticipants(EvTag.GetNumOfParticipants());
     SetImpactParameter(EvTag.GetImpactParameter());
-    
     SetVertexX(EvTag.GetVertexX());
     SetVertexY(EvTag.GetVertexY());
     SetVertexZ(EvTag.GetVertexZ());
-    
     SetVertexFlag(EvTag.GetVertexFlag());
     SetVertexZError(EvTag.GetVertexZError());
-    
     SetTriggerMask(EvTag.GetTriggerMask());
     SetTriggerCluster(EvTag.GetTriggerCluster());
-    
     SetZDCNeutron1Energy(EvTag.GetZDCNeutron1Energy());
     SetZDCProton1Energy(EvTag.GetZDCProton1Energy());
     SetZDCNeutron2Energy(EvTag.GetZDCNeutron2Energy());
     SetZDCProton2Energy(EvTag.GetZDCProton2Energy());
     SetZDCEMEnergy(EvTag.GetZDCEMEnergy());
-    
     SetT0VertexZ(EvTag.GetT0VertexZ());
-    
     SetNumOfTracks(EvTag.GetNumOfTracks());
     SetNumOfPosTracks(EvTag.GetNumOfPosTracks());
     SetNumOfNegTracks(EvTag.GetNumOfNegTracks());
     SetNumOfNeutrTracks(EvTag.GetNumOfNeutrTracks());
-    
     SetNumOfV0s(EvTag.GetNumOfV0s());
     SetNumOfCascades(EvTag.GetNumOfCascades());
     SetNumOfKinks(EvTag.GetNumOfKinks());
-    
     SetNumOfPMDTracks(EvTag.GetNumOfPMDTracks());
     SetNumOfFMDTracks(EvTag.GetNumOfFMDTracks());
     SetNumOfPHOSClusters(EvTag.GetNumOfPHOSClusters());
     SetNumOfEMCALClusters(EvTag.GetNumOfEMCALClusters());
-    
     SetNumOfJetCandidates(EvTag.GetNumOfJetCandidates());
     SetNumOfHardPhotonsCandidates(EvTag.GetNumOfHardPhotonsCandidates());
-    
     SetMaxJetEnergy(EvTag.GetMaxJetEnergy());
     SetMaxNeutralEnergy(EvTag.GetMaxNeutralEnergy());
-    
     SetNumOfChargedAbove1GeV(EvTag.GetNumOfChargedAbove1GeV());
     SetNumOfChargedAbove3GeV(EvTag.GetNumOfChargedAbove3GeV());
     SetNumOfChargedAbove10GeV(EvTag.GetNumOfChargedAbove10GeV());
@@ -246,36 +215,29 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &EvTag)
     SetNumOfElectronsAbove1GeV(EvTag.GetNumOfElectronsAbove1GeV());
     SetNumOfElectronsAbove3GeV(EvTag.GetNumOfElectronsAbove3GeV());
     SetNumOfElectronsAbove10GeV(EvTag.GetNumOfElectronsAbove10GeV());
-    
     SetNumOfElectrons(EvTag.GetNumOfElectrons());
     SetNumOfMuons(EvTag.GetNumOfMuons());
     SetNumOfPions(EvTag.GetNumOfPions());
     SetNumOfKaons(EvTag.GetNumOfKaons());
     SetNumOfProtons(EvTag.GetNumOfProtons());
     SetNumOfLambdas(EvTag.GetNumOfLambdas());
-    
-    
     SetNumOfPhotons(EvTag.GetNumOfPhotons());
     SetNumOfPi0s(EvTag.GetNumOfPi0s());
     SetNumOfNeutrons(EvTag.GetNumOfNeutrons());
     SetNumOfKaon0s(EvTag.GetNumOfKaon0s());
-    
     SetTotalMomentum(EvTag.GetTotalMomentum());
     SetMeanPt(EvTag.GetMeanPt());
     SetMaxPt(EvTag.GetMaxPt());
-    
     SetNeutralTotalMomentum(EvTag.GetNeutralTotalMomentum());
     SetNeutralMeanPt(EvTag.GetNeutralMeanPt());
     SetNeutralMaxPt(EvTag.GetNeutralMaxPt());
-    
     SetEventPlaneAngle(EvTag.GetEventPlaneAngle());
     SetHBTRadii(EvTag.GetHBTRadii());
   }
   return *this;
 }
 
-//______________________________________________________________________________
-AliEventTag::~AliEventTag()
-{
+//___________________________________________________________________________
+AliEventTag::~AliEventTag() {
   // AliEventTag destructor
 }
