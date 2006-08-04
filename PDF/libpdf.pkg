@@ -1,3 +1,8 @@
+SRCS:=AliStructFuncType.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+DHDR:=PDFLinkDef.h
+
 FSRCS= \
 spdf/abfkw1.F \
 spdf/abfkw2.F \
@@ -385,6 +390,8 @@ npdf/eks98.F \
 npdf/eksarp.F \
 npdf/sfeks98.F 
 
+EXPORT:=AliStructFuncType.h
+
 ifeq (,$(findstring macosx,$(ALICE_TARGET)))
 
 FSRCS+=npdf/structa.F \
@@ -433,3 +440,4 @@ ifeq ($(ALICE_TARGET),linux)
       PACKFFLAGS      := $(filter-out -O%,$(FFLAGS))
    endif
 endif
+
