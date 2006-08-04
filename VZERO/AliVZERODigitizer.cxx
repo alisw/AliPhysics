@@ -32,6 +32,11 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliRunDigitizer.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#include "AliVZEROCalibData.h"
+
 #include "AliVZEROdigit.h"
 #include "AliVZERODigitizer.h"
 
@@ -42,11 +47,13 @@ ClassImp(AliVZERODigitizer)
   // default constructor
 
    fNdigits = 0;
-   fDigits = 0 ;
+   fDigits  = 0;
   
    fPhotoCathodeEfficiency =   0.18;
    fPMVoltage              =  768.0;
-   fPMGain = TMath::Power((fPMVoltage / 112.5) ,7.04277);     
+   fPMGain = TMath::Power((fPMVoltage / 112.5) ,7.04277); 
+   
+   fCalibData = GetCalibData();
 }
 
 //____________________________________________________________________________ 
@@ -62,6 +69,9 @@ ClassImp(AliVZERODigitizer)
   fPhotoCathodeEfficiency =   0.18;
   fPMVoltage              =  768.0;
   fPMGain = TMath::Power( (fPMVoltage / 112.5) ,7.04277 );
+  
+  fCalibData = GetCalibData();
+  
 }
            
 //____________________________________________________________________________ 
@@ -89,32 +99,47 @@ Bool_t AliVZERODigitizer::Init()
 
 //____________________________________________________________________________
 void AliVZERODigitizer::Exec(Option_t* /*option*/) 
-{ 
-  //
+{   
   // Creates digits from hits
-  //
+     
+  Int_t       adc[80];    // 48 values on V0C + 32 on V0A
+  Float_t    time[80], adc_gain[80];    
+  fNdigits     =    0;  
+  Float_t cPM  = fPhotoCathodeEfficiency * fPMGain;
+
+  // Retrieval of ADC gain values from local CDB 
+  // I use only the first 64th values of the calibration array in CDB 
+  // as I have no beam burst structure - odd or even beam burst number
   
-  Int_t      adc[96]; 
-  Float_t   time[96];    
-  fNdigits      =    0;  
-  Float_t cPM   = fPhotoCathodeEfficiency * fPMGain;
-             
+  // Reminder : We have 16 scintillating cells mounted on 8 PMs 
+  // on Ring 3 and Ring 4 in V0C - in principle I should add ADC outputs 
+  // on these rings... I do not do it...
+   
+  for(Int_t i=0; i<16; i++) { adc_gain[i]  = fCalibData->GetGain(i) ; };
+  
+  for(Int_t j=16; j<48; j=j+2) { 
+            Int_t i=(j+17)/2;
+            adc_gain[j]   = fCalibData->GetGain(i) ; 
+	    adc_gain[j+1] = fCalibData->GetGain(i) ; }
+  for(Int_t i=48; i<80; i++) { adc_gain[i]  = fCalibData->GetGain(i-16) ; }
+  
+//  for(Int_t i=0; i<80; i++) { printf(" i = %d gain = %f\n\n", i, adc_gain[i] );} 
+            
   AliRunLoader* outRunLoader = 
     AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    
   if (!outRunLoader) {
     Error("Exec", "Can not get output Run Loader");
-    return;
-  }
+    return;}
+    
   AliLoader* outLoader = outRunLoader->GetLoader("VZEROLoader");
   if (!outLoader) {
     Error("Exec", "Can not get output VZERO Loader");
-    return;
-  }
+    return;}
 
   outLoader->LoadDigits("update");
   if (!outLoader->TreeD()) outLoader->MakeTree("D");
   outLoader->MakeDigitsContainer();
-  TTree* treeD = outLoader->TreeD();
+  TTree* treeD  = outLoader->TreeD();
   Int_t bufsize = 16000;
   treeD->Branch("VZERODigit", &fDigits, bufsize); 
 
@@ -124,25 +149,23 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
     AliLoader* loader = runLoader->GetLoader("VZEROLoader");
     if (!loader) {
       Error("Exec", "Can not get VZERO Loader for input %d", iInput);
-      continue;
-    }
+      continue;}
+      
     if (!runLoader->GetAliRun()) runLoader->LoadgAlice();
 
     AliVZERO* vzero = (AliVZERO*) runLoader->GetAliRun()->GetDetector("VZERO");
     if (!vzero) {
       Error("Exec", "No VZERO detector for input %d", iInput);
-      continue;
-    }
+      continue;}
       
     loader->LoadHits();
     TTree* treeH = loader->TreeH();
     if (!treeH) {
       Error("Exec", "Cannot get TreeH for input %d", iInput);
-      continue; 
-    }
+      continue; }
     
     Float_t timeV0 = 1e12;      
-    for(Int_t i=0; i<96; i++) { adc[i]  = 0; time[i] = 0.0; }
+    for(Int_t i=0; i<80; i++) { adc[i]  = 0; time[i] = 0.0; }
 	      
     TClonesArray* hits = vzero->Hits();
              
@@ -168,12 +191,12 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
 
   }               // input loop
          
-  for (Int_t i=0; i<96; i++) {    
+  for (Int_t i=0; i<80; i++) {    
      Float_t q1 = Float_t ( adc[i] )* cPM * kQe;
      Float_t noise = gRandom->Gaus(10.5,3.22);
      Float_t pmResponse  =  q1/kC*TMath::Power(ktheta/kthau,1/(1-ktheta/kthau)) 
       + noise*1e-3;
-     adc[i] = Int_t( pmResponse * 50.0);
+     adc[i] = Int_t( pmResponse * adc_gain[i]);
      if(adc[i] > 0) {
 //         printf(" Event, cell, adc, tof = %d %d %d %f\n", 
 //                  outRunLoader->GetEventNumber(),i, adc[i], time[i]*100.0);
@@ -207,3 +230,28 @@ void AliVZERODigitizer::ResetDigit()
   fNdigits = 0;
   if (fDigits) fDigits->Delete();
 }
+
+//____________________________________________________________________________
+AliVZEROCalibData* AliVZERODigitizer::GetCalibData() const
+
+{
+AliCDBManager *man = AliCDBManager::Instance();
+
+AliCDBStorage *storLoc;
+storLoc = man->GetStorage("local://$ALICE_ROOT");
+
+// Retrieval of data in directory VZERO/Calib/Data:
+
+AliCDBEntry *entry=0;
+entry = storLoc->Get("VZERO/Calib/Data",1);
+
+AliVZEROCalibData *calibdata = 0;
+
+if (entry) calibdata = (AliVZEROCalibData*) entry->GetObject();
+if (!calibdata)  AliError("No calibration data from calibration database !");
+
+return calibdata;
+delete entry;
+
+}
+

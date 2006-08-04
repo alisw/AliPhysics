@@ -24,7 +24,73 @@
 
 #include "AliVZEROReconstructor.h"
 
-
 ClassImp(AliVZEROReconstructor)
 
-  // Not implemented !!!
+//_____________________________________________________________________________
+AliVZEROReconstructor:: AliVZEROReconstructor()
+{
+  // Default constructor  
+  
+  // Get calibration data
+  
+  fCalibData = GetCalibData(); 
+}
+
+
+//_____________________________________________________________________________
+AliVZEROReconstructor& AliVZEROReconstructor::operator = 
+  (const AliVZEROReconstructor& /*reconstructor*/)
+{
+// assignment operator
+
+  Fatal("operator =", "assignment operator not implemented");
+  return *this;
+}
+
+//_____________________________________________________________________________
+AliVZEROReconstructor::~AliVZEROReconstructor()
+{
+// destructor
+
+}
+
+  
+//_____________________________________________________________________________
+AliCDBStorage* AliVZEROReconstructor::SetStorage(const char *uri) 
+{
+  
+  Bool_t deleteManager = kFALSE;
+  
+  AliCDBManager *manager = AliCDBManager::Instance();
+  AliCDBStorage *defstorage = manager->GetDefaultStorage();
+  
+  if(!defstorage || !(defstorage->Contains("VZERO"))){ 
+     AliWarning("No default storage set or default storage doesn't contain VZERO!");
+     manager->SetDefaultStorage(uri);
+     deleteManager = kTRUE;
+  }
+ 
+  AliCDBStorage *storage = manager->GetDefaultStorage();
+
+  if(deleteManager){
+    AliCDBManager::Instance()->UnsetDefaultStorage();
+    defstorage = 0;   // the storage is killed by AliCDBManager::Instance()->Destroy()
+  }
+
+  return storage; 
+}
+
+//_____________________________________________________________________________
+AliVZEROCalibData* AliVZEROReconstructor::GetCalibData() const
+{
+
+  // Getting calibration object for VZERO set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("VZERO/Calib/Data");
+  AliVZEROCalibData *calibdata = (AliVZEROCalibData*) entry->GetObject();
+
+  if (!calibdata)  AliWarning("No calibration data from calibration database !");
+
+  return calibdata;
+}
+
