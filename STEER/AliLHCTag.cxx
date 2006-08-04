@@ -21,20 +21,20 @@
 //   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-----------------------------------------------------------------
 
-#include <stdlib.h>
-#include <Riostream.h>
-
 #include "AliLHCTag.h"
 
 ClassImp(AliLHCTag)
 
-//______________________________________________________________________________
-AliLHCTag::AliLHCTag()
+//___________________________________________________________________________
+  AliLHCTag::AliLHCTag() : 
+    TObject(),  
+    fLHCState(0),
+    fLHCLuminosity(-10.)
 {
-  fLHCLuminosity = -1.0;
+  // AliLHCTag default constructor
 }
 
-//______________________________________________________________________________
-AliLHCTag::~AliLHCTag()
-{
+//___________________________________________________________________________
+AliLHCTag::~AliLHCTag() {
+  // AliEventTag destructor
 }
