@@ -60,7 +60,6 @@ void muon_tracks()
   
   AliMUONTrack *mt;  
   Reve::RecTrack  rt;
-  Int_t count = 0;
   for (Int_t n = 0; n < ntracks; n++) {
     
     mt = (AliMUONTrack*) tracks->At(n);
@@ -69,6 +68,7 @@ void muon_tracks()
 
     rt.label = n;
 
+    Int_t count = 0;
     Reve::Track* track = new Reve::Track(&rt, cont->GetRnrStyle());
 
     if (mt->GetMatchTrigger()) {
