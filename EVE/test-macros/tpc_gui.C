@@ -31,11 +31,13 @@ class TPCSector3D;
 
 using namespace Alieve;
 
+TPCLoader* tpc_loader = 0;
+
 void tpc_gui(const char *file=0, Int_t ievent=0)
 {
   gStyle->SetPalette(1, 0);
 
-  TPCLoader* l = new TPCLoader;
+  TPCLoader* l = tpc_loader = new TPCLoader;
   TPCData*   d = new TPCData;
   // d->SetLoadPedestal(5);
   d->SetLoadThreshold(5);
