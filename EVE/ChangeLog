@@ -1,3 +1,11 @@
+2006-08-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/muon_tracks.C:
+	Moved point-count variable declaration within the track loop.
+
+	* test-macros/tpc_gui.C:
+	Added global TPCLoader* tpc_loader.
+
 2006-07-11  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* README:

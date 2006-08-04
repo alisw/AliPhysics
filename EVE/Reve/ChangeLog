@@ -1,3 +1,9 @@
+2006-08-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* PointSet.cxx:
+	* RGBrowser.cxx:
+	Commented-out info print statements.
+
 2006-07-11  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RMacro.cxx:
