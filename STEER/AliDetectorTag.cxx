@@ -25,49 +25,66 @@
 
 ClassImp(AliDetectorTag)
 
-//______________________________________________________________________________
-AliDetectorTag::AliDetectorTag()
+//___________________________________________________________________________
+  AliDetectorTag::AliDetectorTag() :
+    TObject(),
+    fITS(kFALSE),
+    fTPC(kFALSE),
+    fTRD(kFALSE),
+    fTOF(kFALSE),
+    fHMPID(kFALSE),
+    fPHOS(kFALSE),
+    fZDC(kFALSE),
+    fMUON(kFALSE),
+    fPMD(kFALSE),
+    fEMCAL(kFALSE),
+    fVZERO(kFALSE),
+    fTZERO(kFALSE)
 {
   // Default constructor
-  fITS = 0;
-  fTPC = 0;
-  fTRD = 0;
-  fTOF = 0;
-  fHMPID = 0;
-  fPHOS = 0;
-  fZDC = 0;
-  fMUON = 0;
-  fABSORBER = 0;
-  fPMD = 0;
-  fRICH = 0;
-  fEMCAL = 0;
-  fVZERO = 0;
-  fTZERO = 0;
 }
 
-//______________________________________________________________________________
-AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
-  TObject(detTag)
-{
+//___________________________________________________________________________
+AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) : TObject(detTag) {
   // DetectorTag copy constructor
-  SetITS(detTag.GetITS());
-  SetTPC(detTag.GetTPC());
-  SetTRD(detTag.GetTRD());
-  SetTOF(detTag.GetTOF());
-  SetHMPID(detTag.GetHMPID());
-  SetPHOS(detTag.GetPHOS());
-  SetZDC(detTag.GetZDC());
-  SetMUON(detTag.GetMUON());
-  SetABSORBER(detTag.GetABSORBER());
-  SetPMD(detTag.GetPMD());
-  SetRICH(detTag.GetRICH());
-  SetEMCAL(detTag.GetEMCAL());
-  SetVZERO(detTag.GetVZERO());
-  SetTZERO(detTag.GetTZERO());
+  SetITS();
+  SetTPC();
+  SetTRD();
+  SetTOF();
+  SetHMPID();
+  SetPHOS();
+  SetZDC();
+  SetMUON();
+  SetPMD();
+  SetEMCAL();
+  SetVZERO();
+  SetTZERO();
 }
 
-//______________________________________________________________________________
-AliDetectorTag::~AliDetectorTag()
-{
+//___________________________________________________________________________
+AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
+  //DetectorTag assignment operator
+  if (this != &detTag) {
+    TObject::operator=(detTag);
+    
+    SetITS();
+    SetTPC();
+    SetTRD();
+    SetTOF();
+    SetHMPID();
+    SetPHOS();
+    SetZDC();
+    SetMUON();
+    SetPMD();
+    SetEMCAL();
+    SetVZERO();
+    SetTZERO();
+  }
+  return *this;
+}
+
+
+//___________________________________________________________________________
+AliDetectorTag::~AliDetectorTag() {
   // Destructor
 }
