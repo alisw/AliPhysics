@@ -1,3 +1,8 @@
+2006-08-04  Matevz TADEL  <matevz.tadel@cern.ch>
+
+	Merged HEAD to EVE-dev. Re-tagged EVE-dev (EVE-dev-after-merge) and
+	EVE's HEAD (EVE-head-after-merge).
+
 2006-08-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/muon_tracks.C:
@@ -132,8 +137,6 @@
 	New macro file demonstrating use of TPCLoader.
 
 2006-06-01  Bogdan Vulpescu  <vulpescu@clermont.in2p3.fr>
-
-	HEAD
 
 	* alice-macros/muon_all.C:
 	* alice-macros/muon_chambers.C:
