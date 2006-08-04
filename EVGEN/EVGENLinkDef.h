@@ -11,7 +11,6 @@
 #pragma link C++ typedef AliDecayer;
 
 #pragma link C++ enum   Decay_t;
-#pragma link C++ enum   StrucFunc_t;
 #pragma link C++ enum   Weighting_t;
 #pragma link C++ class  AliGenHIJINGpara+;
 #pragma link C++ class  AliGenHIJINGparaBa+;
@@ -49,7 +48,6 @@
 #pragma link C++ class  AliGeVSimParticle+;
 #pragma link C++ class  AliGenBeamGas+;
 #pragma link C++ class  AliGenAfterBurnerFlow+;
-#pragma link C++ class  AliStructFuncType+;
 #pragma link C++ class  AliGenSlowNucleons+;
 #pragma link C++ class  AliSlowNucleonModel+;
 #pragma link C++ class  AliSlowNucleonModelExp+;
