@@ -1,5 +1,5 @@
-#ifndef ALISHILVTGEO_H
-#define ALISHILVTGEO_H
+#ifndef ALISHILV3_H
+#define ALISHILV3_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -25,7 +25,7 @@ public:
   virtual void InvertPcon(TGeoPcon* pcon);
   virtual TGeoPcon* MakeShapeFromTemplate(TGeoPcon* pcon, Float_t drIn, Float_t drOut);  
  protected:
-  ClassDef(AliSHILv3,1)  // Muon Shield Class (Open Geometry)
+  ClassDef(AliSHILv3,1)  // Small angle absorber as built
 };
 
 #endif
