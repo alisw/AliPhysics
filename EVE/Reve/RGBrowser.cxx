@@ -274,8 +274,9 @@ void RGBrowser::DbClickListItem(TGListTreeItem* item, Int_t btn)
     {
       RenderElementListBase* rel = dynamic_cast<RenderElementListBase*>(re);
       if(rel != 0) {
-	Int_t ni = rel->ExpandIntoListTree(fListTree, item);
-	printf("%s expanded by %d\n", eH.Data(), ni);
+	//Int_t ni = 
+	rel->ExpandIntoListTree(fListTree, item);
+	// printf("%s expanded by %d\n", eH.Data(), ni);
       }
     }
     

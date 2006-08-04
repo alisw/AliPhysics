@@ -139,7 +139,10 @@ PointSetArray::PointSetArray(const Text_t* name,
 
 PointSetArray::~PointSetArray()
 {
-  printf("PointSetArray::~PointSetArray()\n");
+  // Destructor: deletes the fBins array. Actual removal of
+  // elements done by RenderElementListBase.
+
+  // printf("PointSetArray::~PointSetArray()\n");
   delete [] fBins; fBins = 0;
 }
 
