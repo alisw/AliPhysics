@@ -220,6 +220,8 @@ Int_t AliPHOSRecParticle::GetPrimaryIndex() const
 
   AliPHOSHit *hit = 0;
   TClonesArray *hits = gime->Hits();
+  if (hits==0) return -12345;
+
   Double_t maxedep  =  0;
   Int_t    maxtrack = -1;
   Int_t    nHits    = hits ->GetEntries();
