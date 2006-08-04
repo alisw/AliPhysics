@@ -399,7 +399,7 @@ void AliSHILv2::CreateGeometry()
 
   // z = -1466.00
   par0[30] = zpos - ( -dz+kZvac10 - delta );
-  par0[31] = par0[27];
+  par0[31] = par0[28];
   par0[32] = rst7;
 
   // z = -1466.00
