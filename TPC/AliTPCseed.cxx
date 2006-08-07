@@ -452,7 +452,7 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
   // This function compares tracks according to the sector - for given sector according z
   //-----------------------------------------------------------------
   AliTPCseed *t=(AliTPCseed*)o;
-
+  const Double_t kfC44mean = 0.0001; 
   if (fSort == 0){
     if (t->fRelativeSector>fRelativeSector) return -1;
     if (t->fRelativeSector<fRelativeSector) return 1;
@@ -463,12 +463,23 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
     return 0;
   }
   else {
+    if (t->fC44<0){
+      AliError("Non positive covariance");
+      t->Dump();
+      return -1;
+    }
+    if (fC44<0){
+      AliError("Non positive covariance");
+      Dump();
+      return 1;
+    }
+    //
     Float_t f2 =1;
-    f2 = 1-20*TMath::Sqrt(t->fC44)/(TMath::Abs(t->GetC())+0.0066);
+    f2 = 1./(kfC44mean+TMath::Sqrt(TMath::Abs(t->fC44)));
     if (t->fBConstrain) f2=1.2;
 
     Float_t f1 =1;
-    f1 = 1-20*TMath::Sqrt(fC44)/(TMath::Abs(GetC())+0.0066);
+    f1 = 1./(kfC44mean+TMath::Sqrt(TMath::Abs(fC44)));
 
     if (fBConstrain)   f1=1.2;
  
