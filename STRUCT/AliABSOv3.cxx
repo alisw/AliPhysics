@@ -315,7 +315,7 @@ void AliABSOv3::CreateGeometry()
       // Inner region with higher transport cuts
       TGeoPcon* shFaWPlateAI = new TGeoPcon(0., 360., 6);
       z = 3.;
-      shFaWPlateAI->DefineSection(0, z, rInFaQPlateF + z * angle24, rInFaQPlateC1 + (z - dzFaWPlateF) * angle10);
+      shFaWPlateAI->DefineSection(0, z, rInFaQPlateF + z * angle10, rOuFaQPlateC1 + (z - dzFaWPlateF) * angle24);
       for (Int_t i = 1; i < 5; i++) {
 	  Float_t rmin = shFaWPlateA->GetRmin(i+2);
 	  Float_t rmax = shFaWPlateA->GetRmax(i+2) - 3.;	
