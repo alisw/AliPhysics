@@ -1,0 +1,46 @@
+SRCS:=AliStructFuncType.cxx
+HDRS= $(SRCS:.cxx=.h) 
+DHDR:=LHAPDFLinkDef.h
+
+FSRCS:= \
+lhapdf5.2.2/alphas.f \
+lhapdf5.2.2/description.f \
+lhapdf5.2.2/eks98.f \
+lhapdf5.2.2/eksarp.f \
+lhapdf5.2.2/EVLCTEQ.f \
+lhapdf5.2.2/evolution.f \
+lhapdf5.2.2/inputPDF.f \
+lhapdf5.2.2/lhaglue.f \
+lhapdf5.2.2/LHpdflib.f \
+lhapdf5.2.2/parameter.f \
+lhapdf5.2.2/QCDNUM.f \
+lhapdf5.2.2/QCDparams.f \
+lhapdf5.2.2/Sqcdnum.f \
+lhapdf5.2.2/wrapa02.f \
+lhapdf5.2.2/wrapa02m.f \
+lhapdf5.2.2/wrapabfkwpi.f \
+lhapdf5.2.2/wrapacfgpg.f \
+lhapdf5.2.2/wrapcteq5.f \
+lhapdf5.2.2/wrapcteq6.f \
+lhapdf5.2.2/wrapdgg.f \
+lhapdf5.2.2/wrapdog.f \
+lhapdf5.2.2/wrapEVLCTEQ.f \
+lhapdf5.2.2/wrapevolve.f \
+lhapdf5.2.2/wrapgrv.f \
+lhapdf5.2.2/wrapgrvg.f \
+lhapdf5.2.2/wrapgrvpi.f \
+lhapdf5.2.2/wrapgsg96.f \
+lhapdf5.2.2/wrapgsg.f \
+lhapdf5.2.2/wraph1.f \
+lhapdf5.2.2/wraplacg.f \
+lhapdf5.2.2/wrapmrst98.f \
+lhapdf5.2.2/wrapmrst.f \
+lhapdf5.2.2/wrapowpi.f \
+lhapdf5.2.2/wrapQCDNUM3.f \
+lhapdf5.2.2/wrapQCDNUM4.f \
+lhapdf5.2.2/wrapQCDNUM.f \
+lhapdf5.2.2/wrapsasg.f \
+lhapdf5.2.2/wrapsmrspi.f \
+lhapdf5.2.2/wrapwhitg.f \
+lhapdf5.2.2/wrapzeus.f
+EXPORT:=AliStructFuncType.h
