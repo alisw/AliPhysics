@@ -158,7 +158,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const char* dbString) {
 	AliCDBParam* param = CreateParameter(dbString);
 	if (!param) {
 		return NULL;
-	}	
+	}
 
 	AliCDBStorage* aStorage = GetStorage(param);
 
@@ -171,7 +171,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const char* dbString) {
 AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 // get storage object from AliCDBParam object
 
-	// if the list of active storages already contains 
+	// if the list of active storages already contains
 	// the requested storage, return it
 	AliCDBStorage* aStorage = GetActiveStorage(param);
 	if (aStorage) {
@@ -189,11 +189,6 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 		aStorage = factory->Create(param);
 		if (aStorage) {
 			PutActiveStorage(param->CloneParam(), aStorage);
-			// if default storage is not set, set to this storage
-			if(!fDefaultStorage){
-				fDefaultStorage=aStorage;
-				AliInfo(Form("Default storage set to: %s",(param->GetURI()).Data()));
-			}
 			aStorage->SetURI(param->GetURI());
 			return aStorage;
 		}
@@ -250,7 +245,8 @@ Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 void AliCDBManager::SetDefaultStorage(const char* dbString) {
 // sets default storage from URI string
 
-	fDefaultStorage = GetStorage(dbString);	
+	AliInfo(Form("Setting Default storage to: %s",dbString));
+	fDefaultStorage = GetStorage(dbString);
 }
 
 //_____________________________________________________________________________
@@ -316,7 +312,7 @@ AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* calibType) {
 
 //_____________________________________________________________________________
 AliCDBParam* AliCDBManager::SelectSpecificStorage(const TString& path) {
-// select storage valid for path from the list of specific storages 
+// select storage valid for path from the list of specific storages
 
 	TIter iter(&fSpecificStorages);
 	TObjString *aCalibType;
