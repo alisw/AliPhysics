@@ -13,128 +13,185 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-----------------------------------------------------------------
-//           Implementation of the TRD PID class
-// Assigns the electron and pion liklihoods for each ESD track.
-// The function MakePID(AliESD *event) calculates the probability
-// of having dedx and the probability of having timbin at a given 
-// momentum (mom) and particle type k (0 for e) and (2 for pi)
-// from the precalculated timbin distributions. 
-// Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de>
-//-----------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// Implementation of the TRD PID class                                    //
+//                                                                        //
+// Assigns the electron and pion likelihoods to each ESD track.           //
+// The function MakePID(AliESD *event) calculates the probability         //
+// of having dedx and a maximum timbin at a given                         //
+// momentum (mom) and particle type k                                     //
+// from the precalculated distributions.                                  //
+//                                                                        //
+// Original version:                                                      //
+// Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de>                   //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDpidESD.h"
+#include "AliLog.h"
 #include "AliESD.h"
 #include "AliESDtrack.h"
+
+#include "AliTRDpidESD.h"
+#include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "Cal/AliTRDCalPIDLQ.h"
 
 ClassImp(AliTRDpidESD)
 
-//_________________________________________________________________________
-AliTRDpidESD::AliTRDpidESD(Double_t *param)
+//_____________________________________________________________________________
+AliTRDpidESD::AliTRDpidESD():TObject()
 {
   //
-  //  The main constructor
-  //
-  fMIP=param[0];   // MIP signal
-  fRes=param[1];   // relative resolution
-  fRange=param[2]; // PID "range" (in sigmas)
-}
-
-Double_t AliTRDpidESD::Bethe(Double_t bg) 
-{
-  //
-  // Parametrization of the Bethe-Bloch-curve
-  // The parametrization is the same as for the TPC and is taken from Lehrhaus.
+  // Default constructor
   //
 
-  // This parameters have been adjusted to averaged values from GEANT
-  const Double_t kP1 = 7.17960e-02;
-  const Double_t kP2 = 8.54196;
-  const Double_t kP3 = 1.38065e-06;
-  const Double_t kP4 = 5.30972;
-  const Double_t kP5 = 2.83798;
-
-  // This parameters have been adjusted to Xe-data found in:
-  // Allison & Cobb, Ann. Rev. Nucl. Sci. (1980), 30, 253
-  //const Double_t kP1 = 0.76176E-1;
-  //const Double_t kP2 = 10.632;
-  //const Double_t kP3 = 3.17983E-6;
-  //const Double_t kP4 = 1.8631;
-  //const Double_t kP5 = 1.9479;
-
-  // Lower cutoff of the Bethe-Bloch-curve to limit step sizes
-  const Double_t kBgMin = 0.8;
-  const Double_t kBBMax = 6.83298;
-  //const Double_t kBgMin = 0.6;
-  //const Double_t kBBMax = 17.2809;
-  //const Double_t kBgMin = 0.4;
-  //const Double_t kBBMax = 82.0;
-
-  if (bg > kBgMin) {
-    Double_t yy = bg / TMath::Sqrt(1. + bg*bg);
-    Double_t aa = TMath::Power(yy,kP4);
-    Double_t bb = TMath::Power((1./bg),kP5);
-             bb = TMath::Log(kP3 + bb);
-    return ((kP2 - aa - bb)*kP1 / aa);
-  }
-  else {
-    return kBBMax;
-  }
+  fCheckTrackStatus = kTRUE;
+  fCheckKinkStatus  = kFALSE;
+  fMinPlane         = 0;
 
 }
 
-//_________________________________________________________________________
+//_____________________________________________________________________________
+AliTRDpidESD::AliTRDpidESD(const AliTRDpidESD &p):TObject(p)
+{
+  //
+  // AliTRDpidESD copy constructor
+  //
+
+  ((AliTRDpidESD &) p).Copy(*this);
+
+}
+
+//_____________________________________________________________________________
+AliTRDpidESD &AliTRDpidESD::operator=(const AliTRDpidESD &p)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &p) ((AliTRDpidESD &) p).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDpidESD::Copy(TObject &p) const
+{
+  //
+  // Copy function
+  //
+
+ ((AliTRDpidESD &) p).fCheckTrackStatus          = fCheckTrackStatus;
+ ((AliTRDpidESD &) p).fCheckKinkStatus           = fCheckKinkStatus;
+ ((AliTRDpidESD &) p).fMinPlane                  = fMinPlane;
+
+}
+
+//_____________________________________________________________________________
 Int_t AliTRDpidESD::MakePID(AliESD *event)
 {
   //
-  //  This function calculates the "detector response" PID probabilities 
+  // This function calculates the PID probabilities based on TRD signals
   //
-  
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
+  // So far this method produces probabilities based on the total charge
+  // in each layer and the position of the maximum time bin in each layer.
+  // In a final version this should also exploit the charge measurement in
+  // the different slices of a given layer.
+  //  
+
+  Double_t p[10];
+  Int_t    nSpecies  = AliPID::kSPECIES;
+  Int_t    nPlanePID = 0;
+  Double_t mom       = 0.0;
+  Double_t probTotal = 0.0;
+
+  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    //AliError("No access to calibration data\n");
     return -1;
-  
-  // The class AliTRDCalPIDLQ contains precalculated prob dis.
+  }  
+
+  // Retrieve the CDB container class with the probability distributions
   const AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
-  if (!pd) return -1;
+  if (!pd) {
+    //AliError("No access to AliTRDCalPIDLQ\n");
+    return -1;
+  }
 
-  //  Example to get mean for particle 2 (pi) and momentum number 4 (2 GeV)
-  //  printf("%.2f \n", pd->GetMean(2, 4));
-  //  Example of use of Copy Constructor 
-  //  AliTRDCalPIDLQ *pd1 = new AliTRDCalPIDLQ(*pd);
+  // Loop through all ESD tracks
+  Int_t ntrk = event->GetNumberOfTracks();
+  for (Int_t i = 0; i < ntrk; i++) {
 
-  Int_t ntrk=event->GetNumberOfTracks();
-  for (Int_t i=0; i<ntrk; i++) {
-    AliESDtrack *t=event->GetTrack(i);
-    if ((t->GetStatus()&AliESDtrack::kTRDin)==0)
-      if ((t->GetStatus()&AliESDtrack::kTRDout)==0)
-	if ((t->GetStatus()&AliESDtrack::kTRDrefit)==0) continue;
-    if(t->GetTRDsignal()==0) continue;
-    //    Int_t ns=AliESDtrack::kSPECIES;
-    Int_t ns=AliPID::kSPECIES;
-    Double_t p[10];
-    Double_t mom=t->GetP();
-    Double_t probTotal=0.0;
-    for (Int_t j=0; j<ns; j++) {
-      p[j]=1.;
-      for (Int_t ilayer=0; ilayer <6; ilayer++) {
-        Double_t dedx=t->GetTRDsignals(ilayer,1);
-        Int_t timbin=t->GetTRDTimBin(ilayer);
-	p[j]*= pd->GetProbability(j,mom,dedx);
-	p[j]*= pd->GetProbabilityT(j,mom,timbin);
-	p[j]*= 100;
-      } // loop over layers
-      probTotal+=p[j];
-    } //loop over particle species
-    //  printf(" %f  %d  %f  %f  %f \n", mom, timbin, p[0], p[1], p[2]);
-    for (Int_t j=0; j<ns; j++) {
-      if(probTotal) p[j]/= probTotal;
-      else p[j]=1.0;
-      //      p[j]=1.;
-    } //loop over particle species
+    AliESDtrack *t = event->GetTrack(i);
+
+    // Check the ESD track status
+    if (fCheckTrackStatus) {
+      if (((t->GetStatus() & AliESDtrack::kTRDout  ) == 0) &&
+	  ((t->GetStatus() & AliESDtrack::kTRDrefit) == 0)) {
+        continue;
+      }
+    }
+
+    // Check for ESD kink tracks
+    if (fCheckKinkStatus) {
+      if (t->GetKinkIndex(0) != 0) {
+        continue;
+      }
+    }
+
+    // Skip tracks that have no TRD signal at all
+    if (t->GetTRDsignal() == 0) {
+      continue;
+    }
+
+    mom       = t->GetP();
+    probTotal = 0.0;
+    nPlanePID = 0;
+    for (Int_t iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+      p[iSpecies] = 1.0;
+    }
+
+    // Check the different detector layers
+    for (Int_t iPlan = 0; iPlan < AliTRDgeometry::kNplan; iPlan++) {
+
+      // Use the total charge in a given plane
+      Double_t dedx    = t->GetTRDsignals(iPlan,-1);
+      Int_t    timebin = t->GetTRDTimBin(iPlan);
+      if ((dedx    >  0.0) && 
+          (timebin > -1.0)) {
+
+        nPlanePID++;
+
+        // Get the probabilities for the different particle species
+        for (Int_t iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+
+	  p[iSpecies] *= pd->GetProbability(iSpecies,mom,dedx);
+	  p[iSpecies] *= pd->GetProbabilityT(iSpecies,mom,timebin);
+  	  p[iSpecies] *= 100.0; // ??????????????
+
+          probTotal   += p[iSpecies];
+
+	}
+
+      }
+
+    } 
+
+    for (Int_t iSpecies = 0; iSpecies < nSpecies; iSpecies++) {
+      if ((probTotal >       0.0) &&
+          (nPlanePID > fMinPlane)) {
+        p[iSpecies] /= probTotal;
+      }
+      else {
+        p[iSpecies] = 1.0;
+      }
+    }
+
     t->SetTRDpid(p);
-  } //loop over tracks
+
+  }
+
   return 0;
+
 }

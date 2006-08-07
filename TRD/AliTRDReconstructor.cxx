@@ -175,12 +175,12 @@ void AliTRDReconstructor::FillESD(AliRunLoader* runLoader,
 {
 // make PID
 
-  Double_t parTRD[] = {
-    280., // Min. Ionizing Particle signal.  Check it !!!
-    0.23, // relative resolution             Check it !!!
-    10.   // PID range (in sigmas)
-  };
-  AliTRDpidESD trdPID(parTRD);
+  //Double_t parTRD[] = {
+  //  280., // Min. Ionizing Particle signal.  Check it !!!
+  //  0.23, // relative resolution             Check it !!!
+  //  10.   // PID range (in sigmas)
+  //};
+  AliTRDpidESD trdPID;
   trdPID.MakePID(esd);
 
   // Trigger (tracks, GTU)
