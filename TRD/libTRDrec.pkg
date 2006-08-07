@@ -1,6 +1,4 @@
-SRCS= AliTRDpixel.cxx \
-      AliTRDmatrix.cxx \
-      AliTRDrecPoint.cxx \
+SRCS= AliTRDrecPoint.cxx \
       AliTRDcluster.cxx \
       AliTRDclusterMI.cxx \
       AliTRDclusterizer.cxx \

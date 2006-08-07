@@ -7,9 +7,6 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
- 
-#pragma link C++ class  AliTRDpixel+;
-#pragma link C++ class  AliTRDmatrix+;
 
 #pragma link C++ class  AliTRDrecPoint+;
 #pragma link C++ class  AliTRDcluster+;

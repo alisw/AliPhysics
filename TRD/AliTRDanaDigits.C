@@ -54,8 +54,7 @@ void AliTRDanaDigits()
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
   digitsManager->SetDebug(1);
 
-  // Read the digits from the file
-  
+  // Read the digits from the file  
   digitsManager->ReadDigits(loader->TreeD());
 
   // Get the detector number
@@ -72,7 +71,6 @@ void AliTRDanaDigits()
   cout << "Geometry: rowMax = "  <<  rowMax
                 << " colMax = "  <<  colMax
                 << " timeMax = " << timeMax << endl;
-  AliTRDmatrix *matrix = new AliTRDmatrix(rowMax,colMax,timeMax,iSec,iCha,iPla);
 
   // Loop through the detector pixel
   for (Int_t time = 0; time < timeMax; time++) {
@@ -82,18 +80,12 @@ void AliTRDanaDigits()
         digit = digitsManager->GetDigit(row,col,time,iDet);
         track = digitsManager->GetTrack(0,row,col,time,iDet);
         
-        matrix->SetSignal(row,col,time,digit->GetAmp());
-
         delete digit;
 
       }
     }
   }
 
-  // Display the detector matrix
-  matrix->Draw();
-  matrix->ProjRow();
-  matrix->ProjCol();
-  matrix->ProjTime();
   delete rl;
+
 }

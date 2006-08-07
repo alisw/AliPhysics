@@ -342,8 +342,6 @@ Int_t AliTRDanalyzeDigits()
     return rc;
   }
 
-  AliTRDmatrix *matrix;
-
   Int_t countDigits = 0;
   Int_t iSec        = trd->GetSensSector();
   Int_t iCha        = trd->GetSensChamber();
@@ -361,10 +359,6 @@ Int_t AliTRDanalyzeDigits()
     Int_t rowMax = parCom->GetRowMax(iPla,iCha,iSec);
     Int_t colMax = parCom->GetColMax(iPla);
   
-    if (iPla == 0) {
-      matrix = new AliTRDmatrix(rowMax,colMax,timeMax,iSec,iCha,iPla);
-    }
-
     // Loop through the detector pixel
     for (Int_t time = 0; time < timeMax; time++) {
       for (Int_t  col = 0;  col <  colMax;  col++) {
@@ -381,9 +375,6 @@ Int_t AliTRDanalyzeDigits()
 
           if (amp > 0) {
             countDigits++;
-            if (iPla == 0) {
-              matrix->SetSignal(row,col,time,amp);
-	    }
 	  }
 
 	  // Total spectrum
@@ -415,9 +406,6 @@ Int_t AliTRDanalyzeDigits()
   }
 
   cout << "<AliTRDanalyzeDigits> Found " << countDigits << " digits in total" << endl;
-
-  // Display the detector matrix
-  matrix->Draw();
 
   TCanvas *cDigits = new TCanvas("cDigits","AliTRDanalyzeDigits",50,50,600,800);
   cDigits->Divide(2,3);
