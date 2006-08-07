@@ -44,7 +44,7 @@ class AliGenHerwig : public AliGenMC
     virtual void    SetFlavor(Int_t flag=0)           {fFlavor    = flag;}    
     virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll = flag;}    
     AliGenHerwig &  operator=(const AliGenHerwig & rhs);
-    virtual void    SetStrucFunc(StrucFunc_t func = kGRVHO) 
+    virtual void    SetStrucFunc(StrucFunc_t func = kCTEQ5L) 
       {fStrucFunc = func;}
     virtual void    SetPtHardMin(Double_t pt) {fPtHardMin=pt;}
     virtual void    SetPtRMS(Double_t pt) {fPtRMS=pt;}

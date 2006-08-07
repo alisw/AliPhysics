@@ -39,7 +39,7 @@ ClassImp(AliGenHerwig)
     AliGenMC(),
     fAutPDF("GRV"),
     fModPDF(5),
-    fStrucFunc(kGRVHO),
+    fStrucFunc(kCTEQ5L),
     fKeep(0),
     fDecaysOff(1),
     fTrigger(0),
@@ -70,7 +70,7 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     SetBeamMomenta();
     SetTarget();
     SetProjectile();
-    SetStrucFunc(kGRVLO98);
+    SetStrucFunc(kCTEQ5L);
     fKeep=0;
     fTrigger=0;
     fDecaysOff=1;
@@ -151,33 +151,9 @@ void AliGenHerwig::InitPDF()
 {
   switch(fStrucFunc)
     {
-    case kGRVLO:
-      fModPDF=5;
-      fAutPDF="GRV";
-      break;
-    case kGRVHO:
-      fModPDF=6;
-      fAutPDF="GRV";
-      break;
     case kGRVLO98:
       fModPDF=12;
       fAutPDF="GRV";
-      break;
-    case kMRSDminus:
-      fModPDF=31;
-      fAutPDF="MRS";
-      break;
-    case kMRSD0:
-      fModPDF=30;
-      fAutPDF="MRS";
-      break;
-    case kMRSG:
-      fModPDF=41;
-      fAutPDF="MRS";
-      break;
-    case kMRSTcgLO:
-      fModPDF=72;
-      fAutPDF="MRS";
       break;
     case kCTEQ4M:
       fModPDF=34;
