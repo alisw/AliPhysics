@@ -29,7 +29,14 @@
 ClassImp(AliCDBMetaData)
 
 //_____________________________________________________________________________
-AliCDBMetaData::AliCDBMetaData() {
+AliCDBMetaData::AliCDBMetaData() :
+TObject(),
+fObjectClassName(""),
+fResponsible(""), 	
+fBeamPeriod(0),	
+fAliRootVersion(""),
+fComment("")	
+{
 // default constructor
 
 	fProperties.SetOwner(1);
