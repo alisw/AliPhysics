@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.93  2006/08/01 12:20:17  cvetan
+ * 1. Adding a possibility to read and reconstruct an old rcu formatted raw data. This is controlled by an option of AliReconstruction and AliPHOSReconstructor. 2. In case of raw data processing (without galice.root) create the default AliPHOSGeometry object. Most likely this should be moved to the CDB
+ *
  * Revision 1.92  2006/04/29 20:26:46  hristov
  * Separate EMC and CPV calibration (Yu.Kharlov)
  *
@@ -252,11 +255,6 @@ void AliPHOSClusterizerv1::Exec(Option_t *option)
     //increment the total number of recpoints per run 
     fRecPointsInRun += gime->EmcRecPoints()->GetEntriesFast() ;  
     fRecPointsInRun += gime->CpvRecPoints()->GetEntriesFast() ;  
-    if (fRawReader != 0) {
-      AliRunLoader * rl = AliRunLoader::GetRunLoader(gime->PhosLoader()->GetTitle());
-      Int_t iEvent = ievent;
-      rl->SetEventNumber(++iEvent);
-    }
   }
   
   if(fWrite) //do not unload in "on flight" mode
