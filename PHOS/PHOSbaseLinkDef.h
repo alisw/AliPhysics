@@ -16,6 +16,7 @@
 #pragma link C++ class AliPHOSHit+;
 #pragma link C++ class AliPHOSTrackSegmentMaker+;
 #pragma link C++ class AliPHOSPID+;
+#pragma link C++ class AliPHOSAltroMapping+;
 #pragma link C++ class AliPHOSRawStream+;
 #pragma link C++ class AliPHOSClusterizer+;
 #pragma link C++ class AliPHOSCalibrationDB+;
