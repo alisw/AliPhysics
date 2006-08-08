@@ -769,24 +769,3 @@ void AliMDC::Stop()
 }
 
 
-//______________________________________________________________________________
-AliMDC::AliMDCInterruptHandler::AliMDCInterruptHandler(const 
-						       AliMDCInterruptHandler&
-						       handler): 
-  TSignalHandler(handler) 
-{
-// copy constructor
-
-  Fatal("AliMDCInterruptHandler", "copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliMDC::AliMDCInterruptHandler& 
-  AliMDC::AliMDCInterruptHandler::operator = (const AliMDCInterruptHandler& 
-					      /*handler*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}

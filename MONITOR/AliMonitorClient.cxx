@@ -457,21 +457,6 @@ AliMonitorClient::AliMonitorClient():
 }
 
 //_____________________________________________________________________________
-AliMonitorClient::AliMonitorClient(const AliMonitorClient& client) :
-  TGMainFrame(client)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorClient& AliMonitorClient::operator = (const AliMonitorClient& 
-						/*client*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
-
-//_____________________________________________________________________________
 AliMonitorClient::~AliMonitorClient()
 {
 // clean up

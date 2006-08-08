@@ -80,8 +80,8 @@ private:
    private:
      AliMDC *fMDC;   // alimdc to signal
 
-     AliMDCInterruptHandler(const AliMDCInterruptHandler& handler);
-     AliMDCInterruptHandler& operator=(const AliMDCInterruptHandler& handler);
+     AliMDCInterruptHandler(const AliMDCInterruptHandler& handler); // Not implemented
+     AliMDCInterruptHandler& operator=(const AliMDCInterruptHandler& handler); // Not implemented
    };
 
    AliRawEvent *fEvent;       // produced AliRawEvent

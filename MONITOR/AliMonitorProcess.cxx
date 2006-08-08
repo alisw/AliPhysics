@@ -1095,27 +1095,6 @@ AliMonitorProcess::AliMonitorInterruptHandler::AliMonitorInterruptHandler
 }
 
 //_____________________________________________________________________________
-AliMonitorProcess::AliMonitorInterruptHandler::AliMonitorInterruptHandler
-  (const AliMonitorInterruptHandler& handler):
-  TSignalHandler(handler)
-{
-// copy constructor
-
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorProcess::AliMonitorInterruptHandler&
-  AliMonitorProcess::AliMonitorInterruptHandler::operator =
-  (const AliMonitorInterruptHandler& /*handler*/)
-{
-// assignment operator
-
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
-
-//_____________________________________________________________________________
 Bool_t AliMonitorProcess::AliMonitorInterruptHandler::Notify()
 {
 // interrupt signal -> stop process
