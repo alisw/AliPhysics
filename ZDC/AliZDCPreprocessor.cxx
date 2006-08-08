@@ -95,7 +95,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   metaData.SetResponsible("Chiara");
   metaData.SetComment("This preprocessor fills an AliZDCDataDCS object.");
 
-  UInt_t result = Store(fData, &metaData);
+  UInt_t result = Store("DCS", "Data", fData, &metaData);
   delete fData;
   fData = 0;
 

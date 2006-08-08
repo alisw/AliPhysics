@@ -61,7 +61,7 @@ UInt_t AliRICHPreprocessor::Process(TMap* pDcsMap)
   
   AliCDBMetaData metaData; metaData.SetBeamPeriod(0); metaData.SetResponsible("AliRICHPreprocessor"); metaData.SetComment("SIMULATED");
 
-  return Store(&result, &metaData); //use AliPreprocessor::Store(), not allowed to use AliCDBManager directly
+  return Store("DCS", "Data", &result, &metaData); //use AliPreprocessor::Store(), not allowed to use AliCDBManager directly
 
 }//Process()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
