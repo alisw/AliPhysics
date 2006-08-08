@@ -295,7 +295,7 @@ void AliTRDv1::Init()
   AliDebug(1,"Slow simulator\n");
   if (fSensSelect) {
     if (fSensPlane   >= 0)
-      AliInfo(Form("Only plane %d is sensitive"));
+      AliInfo(Form("Only plane %d is sensitive",fSensPlane));
     if (fSensChamber >= 0)   
       AliInfo(Form("Only chamber %d is sensitive",fSensChamber));
     if (fSensSector  >= 0) {
