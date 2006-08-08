@@ -119,10 +119,10 @@ Bool_t AliTagCreator::ReadLocalCollection(const char *localpath) {
   const char * pattern = "AliESDs.root"; 
 
   Int_t counter = 0;
-  while(dirname = gSystem->GetDirEntry(dira)) {
+  while((dirname = gSystem->GetDirEntry(dira))) {
     sprintf(fPath,"%s/%s",localpath,dirname);
     void *dirb =  gSystem->OpenDirectory(fPath);
-    while(filename = gSystem->GetDirEntry(dirb)) {
+    while((filename = gSystem->GetDirEntry(dirb))) {
       if(strstr(filename,pattern)) {
 	TString fESDFileName;
 	fESDFileName = fPath;
