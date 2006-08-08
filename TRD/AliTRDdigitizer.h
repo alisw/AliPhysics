@@ -49,7 +49,6 @@ class AliTRDdigitizer : public AliDigitizer {
           void         InitOutput(Int_t iEvent);
  
   virtual void         SetCompress(Int_t c = 1)             { fCompress        = c;   };
-  virtual void         SetDebug(Int_t v = 1)                { fDebug           = v;   };
   virtual void         SetSDigits(Int_t v = 1)              { fSDigits         = v;   };
   virtual void         SetSDigitsScale(Float_t s)           { fSDigitsScale    = s;   };
   virtual void         SetEvent(Int_t v = 0)                { fEvent           = v;   };
@@ -83,11 +82,9 @@ class AliTRDdigitizer : public AliDigitizer {
   Int_t                fEvent;              //! Event number
   Int_t               *fMasks;              //! Masks for the merging
   Bool_t               fCompress;           //  Switch to keep only compressed data in memory
-  Int_t                fDebug;              //  Sets the debug level
   Bool_t               fSDigits;            //  Switch for the summable digits
   Float_t              fSDigitsScale;       //  Scale factor for the summable digits 
   Bool_t               fMergeSignalOnly;    //  Merge only detectors that contain a signal
-  Bool_t               fFixedGeometry;      //  Switch for the fixed geometry, i.e. without alignment
 
           void         SampleTimeStruct(Float_t vdrift);
           void         RecalcDiffusion(Float_t vdrift);
@@ -116,7 +113,7 @@ class AliTRDdigitizer : public AliDigitizer {
     
   virtual Bool_t       CheckDetector(Int_t plane, Int_t chamber, Int_t sector);
 
-  ClassDef(AliTRDdigitizer,11)               //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,12)               //  Produces TRD-Digits
 
 };
 

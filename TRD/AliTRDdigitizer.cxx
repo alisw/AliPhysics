@@ -95,11 +95,9 @@ AliTRDdigitizer::AliTRDdigitizer()
   fEvent              = 0;
   fMasks              = 0;
   fCompress           = kTRUE;
-  fDebug              = 0;
   fSDigits            = kFALSE;
   fSDigitsScale       = 0.0;
   fMergeSignalOnly    = kFALSE;
-  fFixedGeometry      = kFALSE;
  
   fTimeStructInfo.fLastVdrift   = 0;
   fTimeStructInfo.fTimeStruct1  = 0;
@@ -173,11 +171,9 @@ Bool_t AliTRDdigitizer::Init()
   fEvent              = 0;
   fMasks              = 0;
   fCompress           = kTRUE;
-  fDebug              = 0;
   fSDigits            = kFALSE;
   fSDigitsScale       = 100.; // For the summable digits
   fMergeSignalOnly    = kFALSE;
-  fFixedGeometry      = kFALSE;
  
   fTimeStructInfo.fLastVdrift   = -1;
   fTimeStructInfo.fTimeStruct1  = 0;
@@ -272,11 +268,9 @@ void AliTRDdigitizer::Copy(TObject &d) const
   ((AliTRDdigitizer &) d).fEvent              = 0;
   ((AliTRDdigitizer &) d).fMasks              = 0;
   ((AliTRDdigitizer &) d).fCompress           = fCompress;
-  ((AliTRDdigitizer &) d).fDebug              = fDebug  ;
   ((AliTRDdigitizer &) d).fSDigits            = fSDigits;
   ((AliTRDdigitizer &) d).fSDigitsScale       = fSDigitsScale;
   ((AliTRDdigitizer &) d).fMergeSignalOnly    = fMergeSignalOnly;
-  ((AliTRDdigitizer &) d).fFixedGeometry      = fFixedGeometry;
                                        
   AliTRDdigitizer& target = (AliTRDdigitizer &) d;
   
@@ -311,34 +305,24 @@ void AliTRDdigitizer::Exec(Option_t* option)
 
   TString optionString = option;
   if (optionString.Contains("deb")) {
-    fDebug = 1;
-    if (optionString.Contains("2")) {
-      fDebug = 2;
-    }
-    printf("<AliTRDdigitizer::Exec> ");
-    printf("Called with debug option %d\n",fDebug);
+    AliLog::SetClassDebugLevel("AliTRDdigitizer",1);
+    AliInfo("Called with debug option\n");
   }
 
   // The AliRoot file is already connected by the manager
   AliRunLoader* inrl;
   
-  if (gAlice) 
-   {
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::Exec> ");
-      printf("AliRun object found on file.\n");
-    }
-   }
+  if (gAlice) {
+    AliDebug(1,"AliRun object found on file.\n");
+  }
   else {
     inrl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
     inrl->LoadgAlice();
     gAlice = inrl->GetAliRun();
-    if (!gAlice)
-     {
-       printf("<AliTRDdigitizer::Exec> ");
-       printf("Could not find AliRun object.\n");
-       return;
-     }
+    if (!gAlice) {
+      AliError("Could not find AliRun object.\n")
+      return;
+    }
   }
                                                                            
   Int_t nInput = fManager->GetNinputs();
@@ -347,66 +331,61 @@ void AliTRDdigitizer::Exec(Option_t* option)
     fMasks[iInput] = fManager->GetMask(iInput);
   }
 
+  //
   // Initialization
+  //
 
   AliRunLoader* orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   if (InitDetector()) {
+
     AliLoader* ogime = orl->GetLoader("TRDLoader");
 
     TTree* tree = 0;
-    if (fSDigits)
-      { 
-	//if we produce SDigits
+    if (fSDigits) { 
+      // If we produce SDigits
+      tree = ogime->TreeS();
+      if (!tree) {
+	ogime->MakeTree("S");
 	tree = ogime->TreeS();
-	if (!tree)
-	  {
-	    ogime->MakeTree("S");
-	    tree = ogime->TreeS();
-	  }
       }
-    else
-      {//if we produce Digits
-	tree = ogime->TreeD();
-	if (!tree)
-	  {
-	    ogime->MakeTree("D");
-	    tree = ogime->TreeD();
-	  }
+    }
+    else {
+      // If we produce Digits
+      tree = ogime->TreeD();
+      if (!tree) {
+	ogime->MakeTree("D");
+        tree = ogime->TreeD();
       }
+    }
+
     MakeBranch(tree);
+
   }
  
   for (iInput = 0; iInput < nInput; iInput++) {
 
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::Exec> ");
-      printf("Add input stream %d\n",iInput);
-    }
+    AliDebug(1,Form("Add input stream %d\n",iInput));
 
-    // check if the input tree exists
+    // Check if the input tree exists
     inrl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
     AliLoader* gime = inrl->GetLoader("TRDLoader");
 
     TTree * treees =  gime->TreeS();
-    if (treees == 0x0) 
-     {
-      if (gime->LoadSDigits())
-       {
-         Error("Exec","Error Occured while loading S. Digits for input %d.",iInput);
-         return;
-       }
+    if (treees == 0x0) {
+      if (gime->LoadSDigits()) {
+        AliError(Form("Error Occured while loading S. Digits for input %d.",iInput));
+        return;
+      }
       treees =  gime->TreeS();
-     }
+    }
     
     if (treees == 0x0) {
-      printf("<AliTRDdigitizer::Exec> ");
-      printf("Input stream %d does not exist\n",iInput);
+      AliError(Form("Input stream %d does not exist\n",iInput));
       return;
     } 
 
     // Read the s-digits via digits manager
     sdigitsManager = new AliTRDdigitsManager();
-    sdigitsManager->SetDebug(fDebug);
     sdigitsManager->SetSDigits(kTRUE);
     
     AliRunLoader* rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
@@ -420,27 +399,17 @@ void AliTRDdigitizer::Exec(Option_t* option)
   }
 
   // Convert the s-digits to normal digits
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::Exec> ");
-    printf("Do the conversion\n");
-  }
+  AliDebug(1,"Do the conversion\n");
   SDigits2Digits();
 
   // Store the digits
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::Exec> ");
-    printf("Write the digits\n");
-  }
-  
+  AliDebug(1,"Write the digits\n");
   fDigitsManager->WriteDigits();
 
-  //Write parameters
+  // Write parameters
   orl->CdGAFile();
 
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::Exec> ");
-    printf("Done\n");
-  }
+  AliDebug(1,"Done\n");
 
   DeleteSDigitsManager();
 
@@ -456,29 +425,27 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
   //  
 
   TString evfoldname = AliConfig::GetDefaultEventFolderName();
+
   fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
-  if (!fRunLoader)
-    fRunLoader = AliRunLoader::Open(file,AliConfig::GetDefaultEventFolderName(),
-				    "UPDATE");
-  
-  if (!fRunLoader)
-   {
-     Error("Open","Can not open session for file %s.",file);
+  if (!fRunLoader) {
+    fRunLoader = AliRunLoader::Open(file,evfoldname,"UPDATE");
+  }  
+
+  if (!fRunLoader) {
+     AliError(Form("Can not open session for file %s.",file));
      return kFALSE;
    }
    
-  if (!fRunLoader->GetAliRun()) fRunLoader->LoadgAlice();
+  if (!fRunLoader->GetAliRun()) {
+    fRunLoader->LoadgAlice();
+  }
   gAlice = fRunLoader->GetAliRun();
   
   if (gAlice) {
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::Open> ");
-      printf("AliRun object found on file.\n");
-    }
+    AliDebug(1,"AliRun object found on file.\n");
   }
   else {
-    printf("<AliTRDdigitizer::Open> ");
-    printf("Could not find AliRun object.\n");
+    AliError("Could not find AliRun object.\n");
     return kFALSE;
   }
 
@@ -488,32 +455,28 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
   fRunLoader->GetEvent(fEvent);
   
   AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
-  if (!loader)
-   {
-     Error("Open","Can not get TRD loader from Run Loader");
-     return kFALSE;
-   }
+  if (!loader) {
+    AliError("Can not get TRD loader from Run Loader");
+    return kFALSE;
+  }
   
   if (InitDetector()) {
     TTree* tree = 0;
-    if (fSDigits)
-     { 
-     //if we produce SDigits
-       tree = loader->TreeS();
-       if (!tree)
-        {
-         loader->MakeTree("S");
-         tree = loader->TreeS();
-        }
-     }
-    else
-     {//if we produce Digits
-       if (!tree)
-        {
-         loader->MakeTree("D");
-         tree = loader->TreeD();
-        }
-     }
+    if (fSDigits) { 
+      // If we produce SDigits
+      tree = loader->TreeS();
+      if (!tree) {
+        loader->MakeTree("S");
+        tree = loader->TreeS();
+       }
+    }
+    else {
+      // If we produce Digits
+      if (!tree) {
+        loader->MakeTree("D");
+        tree = loader->TreeD();
+       }
+    }
     return MakeBranch(tree);
   }
   else {
@@ -532,22 +495,17 @@ Bool_t AliTRDdigitizer::InitDetector()
   // Get the pointer to the detector class and check for version 1
   fTRD = (AliTRD *) gAlice->GetDetector("TRD");
   if (!fTRD) {
-    printf("<AliTRDdigitizer::InitDetector> ");
-    printf("No TRD module found\n");
+    AliFatal("No TRD module found\n");
     exit(1);
   }
   if (fTRD->IsVersion() != 1) {
-    printf("<AliTRDdigitizer::InitDetector> ");
-    printf("TRD must be version 1 (slow simulator).\n");
+    AliFatal("TRD must be version 1 (slow simulator)\n");
     exit(1);
   }
 
   // Get the geometry
   fGeo = fTRD->GetGeometry();
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::InitDetector> ");
-    printf("Geometry version %d\n",fGeo->IsVersion());
-  }
+  AliDebug(1,Form("Geometry version %d\n",fGeo->IsVersion()));
 
   // Create a digits manager
   delete fDigitsManager;
@@ -555,7 +513,6 @@ Bool_t AliTRDdigitizer::InitDetector()
   fDigitsManager->SetSDigits(fSDigits);
   fDigitsManager->CreateArrays();
   fDigitsManager->SetEvent(fEvent);
-  fDigitsManager->SetDebug(fDebug);
 
   // The list for the input s-digits manager to be merged
   if (fSDigitsManagerList) {
@@ -630,95 +587,75 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   AliTRDpadPlane   *padPlane = 0;
 
-  if (!gGeoManager) AliFatal("No geometry!");
+  if (!gGeoManager) {
+    AliFatal("No geometry manager!");
+  }
 
-
-  AliTRDSimParam* simParam = AliTRDSimParam::Instance();
+  AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
   if (!simParam) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Could not get simulation params\n");
+    AliError("Could not get simulation parameters\n");
     return kFALSE;
   }
   
-  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
+  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Could not get common params\n");
+    AliError("Could not get common params\n");
     return kFALSE;
   }
   
   // Create a container for the amplitudes
-  AliTRDsegmentArray *signalsArray 
-                     = new AliTRDsegmentArray("AliTRDdataArrayF"
-                                             ,AliTRDgeometry::Ndet());
+  AliTRDsegmentArray *signalsArray = new AliTRDsegmentArray("AliTRDdataArrayF"
+                                                           ,AliTRDgeometry::Ndet());
 
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Could not get calibration object\n");
+    AliError("Could not get calibration object\n");  
     return kFALSE;
   }
 
-  if (!gGeoManager) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("No TGeoManager available. Switch to fixed geometry.\n");
-    fFixedGeometry = kTRUE;
-  }
-
   if (simParam->TRFOn()) {
-    timeBinTRFend = ((Int_t) ( simParam->GetTRFhi() * calibration->GetSamplingFrequency())) - 1;
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Sample the TRF up to bin %d\n",timeBinTRFend);
-    }
+    timeBinTRFend = ((Int_t) (simParam->GetTRFhi() 
+                            * calibration->GetSamplingFrequency())) - 1;
+    AliDebug(1,Form("Sample the TRF up to bin %d\n",timeBinTRFend));
   }
 
   Float_t elAttachProp = simParam->GetElAttachProp() / 100.; 
 
   if (!fGeo) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("No geometry defined\n");
+    AliError("No geometry defined\n");
     return kFALSE;
   }
 
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Start creating digits.\n");
-  }
+  AliDebug(1,"Start creating digits.\n");
 
   AliLoader* gimme = fRunLoader->GetLoader("TRDLoader");
-  if (!gimme->TreeH()) gimme->LoadHits();
+  if (!gimme->TreeH()) {
+    gimme->LoadHits();
+  }
   TTree* hitTree = gimme->TreeH();
   if (hitTree == 0x0) {
-      Error("MakeDigits","Can not get TreeH");
-      return kFALSE;
+    AliError("Can not get TreeH");
+    return kFALSE;
   }
   fTRD->SetTreeAddress();
   
   // Get the number of entries in the hit tree
   // (Number of primary particles creating a hit somewhere)
   Int_t nTrack = (Int_t) hitTree->GetEntries();
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Found %d primary particles\n",nTrack);
-  }
-
-  Int_t detectorOld = -1;
-  Int_t countHits   =  0; 
-
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::MakeDigits> Sampling = %.0fMHz\n", calibration->GetSamplingFrequency());
-    printf("<AliTRDdigitizer::MakeDigits> Gain = %d\n",(Int_t)simParam->GetGasGain());
-    printf("<AliTRDdigitizer::MakeDigits> Noise = %d\n",(Int_t)simParam->GetNoise());
-    if (simParam->TimeStructOn()) {
-      printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Time Structure of drift cells implemented.\n");
-    } else {
-      printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Constant drift velocity in drift cells.\n");      
-    }
+  AliDebug(1,Form("Found %d primary particles\n",nTrack));
+  AliDebug(1,Form("Sampling = %.0fMHz\n"        ,calibration->GetSamplingFrequency()));
+  AliDebug(1,Form("Gain     = %d\n"             ,((Int_t) simParam->GetGasGain())));
+  AliDebug(1,Form("Noise     = %d\n"            ,((Int_t) simParam->GetNoise())));
+  if (simParam->TimeStructOn()) {
+    AliDebug(1,"Time Structure of drift cells implemented.\n");
+  } 
+  else {
+    AliDebug(1,"Constant drift velocity in drift cells.\n");
   }
   
+  Int_t   detectorOld  = -1;
+  Int_t   countHits    =  0;
+ 
   Int_t   nTimeTotal   = calibration->GetNumberOfTimeBins();
   Float_t samplingRate = calibration->GetSamplingFrequency();
 
@@ -749,34 +686,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
       padPlane              = commonParam->GetPadPlane(plane,chamber);
       Float_t row0          = padPlane->GetRow0();
-      Float_t col0          = padPlane->GetCol0();
       Int_t   nRowMax       = padPlane->GetNrows();
       Int_t   nColMax       = padPlane->GetNcols();
-
       Int_t   inDrift       = 1;
-      if (!fFixedGeometry) {
-        gGeoManager->SetCurrentPoint(pos);
-        gGeoManager->FindNode();
-        if (strstr(gGeoManager->GetPath(),"/UK")) {
-          inDrift = 0;
-	}
-      }
-
-      if (fDebug > 1) {
-        printf("Analyze hit no. %d ",iHit);
-        printf("-----------------------------------------------------------\n");
-        hit->Dump();
-        printf("plane = %d, sector = %d, chamber = %d\n"
-              ,plane,sector,chamber);
-        printf("nRowMax = %d, nColMax = %d\n" 
-              ,nRowMax,nColMax);
-        printf("nTimeTotal = %d\n"
-	      ,nTimeTotal);
-        printf("row0 = %f, col0 = %f, time0 = %f\n"
-              ,row0,col0,time0);
-        printf("samplingRate = %f\n"
-              ,samplingRate); 
-      }
        
       // Don't analyze test hits and switched off detectors
       if ((CheckDetector(plane,chamber,sector)) &&
@@ -784,40 +696,23 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
         if (detector != detectorOld) {
 
-          if (fDebug > 1) {
-            printf("<AliTRDdigitizer::MakeDigits> ");
-            printf("Get new container. New det = %d, Old det = %d\n"
-                  ,detector,detectorOld);
-	  }
           // Compress the old one if enabled
           if ((fCompress) && (detectorOld > -1)) {
-            if (fDebug > 1) {
-              printf("<AliTRDdigitizer::MakeDigits> ");
-              printf("Compress the old container ...");
-	    }
+            AliDebug(1,"Compress the old container ...");
             signals->Compress(1,0);
             for (iDict = 0; iDict < kNDict; iDict++) {
               dictionary[iDict]->Compress(1,0);
 	    }
-            if (fDebug > 1) printf("done\n");
 	  }
 	  // Get the new container
           signals = (AliTRDdataArrayF *) signalsArray->At(detector);
           if (signals->GetNtime() == 0) {
             // Allocate a new one if not yet existing
-            if (fDebug > 1) {
-              printf("<AliTRDdigitizer::MakeDigits> ");
-              printf("Allocate a new container ... ");
-	    }
             signals->Allocate(nRowMax,nColMax,nTimeTotal);
 	  }
           else {
 	    // Expand an existing one
             if (fCompress) {
-              if (fDebug > 1) {
-                printf("<AliTRDdigitizer::MakeDigits> ");
-                printf("Expand an existing container ... ");
-	      }
               signals->Expand();
 	    }
 	  }
@@ -831,31 +726,25 @@ Bool_t AliTRDdigitizer::MakeDigits()
               if (fCompress) dictionary[iDict]->Expand();
             }
           }      
-          if (fDebug > 1) printf("done\n");
           detectorOld = detector;
         }
 
-        if (fFixedGeometry) {
-          // Rotate the sectors on top of each other       
-          fGeo->Rotate(detector,pos,rot);
-	}
+        // Rotate the sectors on top of each other       
+	// by using the geoManager
+        Double_t aaa[3];
+        gGeoManager->MasterToLocal(pos,aaa);
+        if (inDrift) {
+          aaa[2] = time0 - (kDrWidth / 2.0 + kAmWidth) + aaa[2];
+	} 
         else {
-	  // Use the geoManager
-          Double_t aaa[3];
-          gGeoManager->MasterToLocal(pos,aaa);
-          if (inDrift) {
-            aaa[2] = time0 - (kDrWidth / 2.0 + kAmWidth) + aaa[2];
-	  } 
-          else {
-            aaa[2] = time0 + aaa[2];
-	  }
-          aaa[1] = row0 + padPlane->GetLengthRim() + fGeo->RpadW() 
-                 - 0.5 * fGeo->GetChamberLength(plane,chamber) 
-	         + aaa[1];
-          rot[0] = aaa[2];
-          rot[1] = aaa[0];
-          rot[2] = aaa[1];
+          aaa[2] = time0 + aaa[2];
 	}
+        aaa[1] = row0 + padPlane->GetLengthRim() + fGeo->RpadW() 
+               - 0.5 * fGeo->GetChamberLength(plane,chamber) 
+	       + aaa[1];
+        rot[0] = aaa[2];
+        rot[1] = aaa[0];
+        rot[2] = aaa[1];
 
         // The driftlength. It is negative if the hit is between pad plane and anode wires.
         Double_t driftlength = time0 - rot[0];
@@ -876,17 +765,16 @@ Bool_t AliTRDdigitizer::MakeDigits()
 	    if ((xyz[2] < padPlane->GetRowEnd()) ||
                 (xyz[2] > padPlane->GetRow0())) {
               if (iEl == 0) {
-                printf("<AliTRDdigitizer::MakeDigits> ");
-                printf("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
-                      ,xyz[2],padPlane->GetRow0(),padPlane->GetRowEnd());
+                AliDebug(2,Form("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
+                               ,xyz[2],padPlane->GetRow0(),padPlane->GetRowEnd()));
 	      }
               continue;
 	    }
             Float_t tt = driftlength + kAmWidth;
             if (tt < 0.0 || tt > kDrWidth + 2.*kAmWidth) {
               if (iEl == 0) {
-                printf("<AliTRDdigitizer::MakeDigits> ");
-                printf("Hit outside of sensitive volume, time (Q = %d)\n",((Int_t) q));
+                AliDebug(2,Form("Hit outside of sensitive volume, time (Q = %d)\n"
+                               ,((Int_t) q)));
 	      }
               continue;
 	    }
@@ -894,22 +782,23 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // Get row and col of unsmeared electron to retrieve drift velocity
           // The pad row (z-direction)
-          Int_t    rowE      = padPlane->GetPadRowNumber(xyz[2]);
+          Int_t    rowE       = padPlane->GetPadRowNumber(xyz[2]);
           if (rowE < 0) continue;
-          Double_t rowOffset = padPlane->GetPadRowOffset(rowE,xyz[2]);
+          Double_t rowOffset  = padPlane->GetPadRowOffset(rowE,xyz[2]);
 
           // The pad column (rphi-direction)
-	  Float_t offsetTilt     = padPlane->GetTiltOffset(rowOffset);   // MI change
-          Int_t    colE      = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
+	  Double_t offsetTilt = padPlane->GetTiltOffset(rowOffset);
+          Int_t    colE       = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
           if (colE < 0) continue;	  
-          Double_t colOffset = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
+          Double_t colOffset  = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
 
-          Float_t driftvelocity = calibration->GetVdrift(detector, colE, rowE);
+          Float_t driftvelocity = calibration->GetVdrift(detector,colE,rowE);
                     
           // Normalised drift length
           Double_t absdriftlength = TMath::Abs(driftlength);
-          if (commonParam->ExBOn()) 
+          if (commonParam->ExBOn()) {
             absdriftlength /= TMath::Sqrt(GetLorentzFactor(driftvelocity));
+	  }
 
           // Electron attachment
           if (simParam->ElAttachOn()) {
@@ -933,26 +822,27 @@ Bool_t AliTRDdigitizer::MakeDigits()
           rowOffset  = padPlane->GetPadRowOffset(rowE,xyz[2]);
 
           // The pad column (rphi-direction)
-          offsetTilt = padPlane->GetTiltOffset(rowOffset);   // MI change
+          offsetTilt = padPlane->GetTiltOffset(rowOffset);
           colE       = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
           if (colE < 0) continue;         
           colOffset  = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
 	  
           // Also re-retrieve drift velocity because col and row may have changed
-          driftvelocity = calibration->GetVdrift(detector, colE, rowE);
-          Float_t t0 = calibration->GetT0(detector, colE, rowE);
+          driftvelocity = calibration->GetVdrift(detector,colE,rowE);
+          Float_t t0    = calibration->GetT0(detector,colE,rowE);
           
           // Convert the position to drift time, using either constant drift velocity or
           // time structure of drift cells (non-isochronity, GARFIELD calculation).
 	  Double_t drifttime;
           if (simParam->TimeStructOn()) {
 	    // Get z-position with respect to anode wire:
-	    //Double_t Z  =  xyz[2] - row0 + simParam->GetAnodeWireOffset();
             Double_t Z  =  row0 - xyz[2] + simParam->GetAnodeWireOffset();
-	    Z -= ((Int_t)(2*Z))/2.;
-	    if (Z>0.25)   Z  = 0.5-Z;
-	    // use drift time map (GARFIELD)
-            drifttime = TimeStruct(driftvelocity, time0 - xyz[0] + kAmWidth, Z);
+	    Z -= ((Int_t)(2*Z))/2.0;
+	    if (Z > 0.25) {
+              Z  = 0.5 - Z;
+	    }
+	    // Use drift time map (GARFIELD)
+            drifttime = TimeStruct(driftvelocity,time0-xyz[0]+kAmWidth,Z);
 	  } 
           else {
 	    // use constant drift velocity
@@ -970,10 +860,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
           if (simParam->PRFOn()) {
   	    // The distance of the electron to the center of the pad 
 	    // in units of pad width
-            //Double_t dist = - colOffset / padPlane->GetColSize(colE);
 	    Double_t dist = (colOffset - 0.5*padPlane->GetColSize(colE))
                           / padPlane->GetColSize(colE);
-
             if (!(calibration->PadResponse(signal,dist,plane,padSignal))) continue;
 	  }
 	  else {
@@ -984,13 +872,14 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
           // The time bin (always positive), with t0 correction
           Double_t timeBinIdeal = drifttime * samplingRate + t0;
-	  // Protection according to MI
+	  // Protection 
           if (TMath::Abs(timeBinIdeal) > 2*nTimeTotal) {
             timeBinIdeal = 2 * nTimeTotal;
 	  }
           Int_t    timeBinTruncated = (Int_t) timeBinIdeal;
           // The distance of the position to the middle of the timebin
-          Double_t timeOffset = ((Float_t) timeBinTruncated + 0.5 - timeBinIdeal) / samplingRate;
+          Double_t timeOffset       = ((Float_t) timeBinTruncated 
+                                    + 0.5 - timeBinIdeal) / samplingRate;
           
 	  // Sample the time response inside the drift region
 	  // + additional time bins before and after.
@@ -1061,18 +950,15 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   } // Loop: primary tracks
 
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Finished analyzing %d hits\n",countHits);
-  }
+  AliDebug(1,Form("Finished analyzing %d hits\n",countHits));
 
   // The coupling factor
   Double_t coupling = simParam->GetPadCoupling() 
-      * simParam->GetTimeCoupling();
+                    * simParam->GetTimeCoupling();
 
   // The conversion factor
-  Double_t convert  = kEl2fC
-      * simParam->GetChipGain();
+  Double_t convert  = kEl2fC 
+                    * simParam->GetChipGain();
 
   // Loop through all chambers to finalize the digits
   Int_t iDetBeg = 0;
@@ -1085,13 +971,10 @@ Bool_t AliTRDdigitizer::MakeDigits()
     Int_t nRowMax     = commonParam->GetRowMax(plane,chamber,sector);
     Int_t nColMax     = commonParam->GetColMax(plane);
 
-    Double_t *inADC  = new Double_t[nTimeTotal];
-    Double_t *outADC = new Double_t[nTimeTotal];
+    Double_t *inADC   = new Double_t[nTimeTotal];
+    Double_t *outADC  = new Double_t[nTimeTotal];
 
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Digitization for chamber %d\n",iDet);
-    }
+    AliDebug(1,Form("Digitization for chamber %d\n",iDet));
 
     // Add a container for the digits of this detector
     digits = fDigitsManager->GetDigits(iDet);        
@@ -1120,12 +1003,18 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
     Int_t nDigits = 0;
 
-    // Don't create noise in detectors that are switched off
-    if (CheckDetector(plane,chamber,sector)) {
+    // Don't create noise in detectors that are switched off / not installed, etc.
+    if ((CheckDetector(plane,chamber,sector)) &&
+        (!calibration->GetChamberStatus(iDet))) {
 
       // Create the digits for this chamber
       for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
         for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
+
+	  // Check whether pad is active / installed / whatever ...
+          if (calibration->GetPadStatus(iDet,iCol,iRow)) continue;
+	  // Check whether MCM is active / installed / whatever ...
+          if (calibration->GetMCMStatus(iDet,iCol,iRow)) continue;
 
 	  // Create summable digits
           if (fSDigits) {
@@ -1150,10 +1039,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
               signalAmp *= coupling;
 
               Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
-              if (padgain<=0) {
-                TString error;
-                error.Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow);
-                AliError(error);
+              if (padgain <= 0) {
+                AliError(Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow));
               }
 	      signalAmp *= padgain;
 
@@ -1186,10 +1073,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
             for (iTime = 0; iTime < nTimeTotal; iTime++) {   
               // Store the amplitude of the digit if above threshold
               if (outADC[iTime] > simParam->GetADCthreshold()) {
-                if (fDebug > 2) {
-                  printf("  iRow = %d, iCol = %d, iTime = %d, adc = %f\n"
-                        ,iRow,iCol,iTime,outADC[iTime]);
-	        }
                 nDigits++;
                 digits->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
   	      }
@@ -1214,14 +1097,13 @@ Bool_t AliTRDdigitizer::MakeDigits()
     totalSizeDict2  += dictionary[2]->GetSize();
 
     Float_t nPixel = nRowMax * nColMax * nTimeTotal;
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::MakeDigits> ");
-      printf("Found %d digits in detector %d (%3.0f).\n"
-            ,nDigits,iDet
-            ,100.0 * ((Float_t) nDigits) / nPixel);
-    } 
+    AliDebug(1,Form("Found %d digits in detector %d (%3.0f).\n"
+              ,nDigits,iDet
+              ,100.0 * ((Float_t) nDigits) / nPixel));
 
-    if (fCompress) signals->Compress(1,0);
+    if (fCompress) {
+      signals->Compress(1,0);
+    }
 
     delete [] inADC;
     delete [] outADC;
@@ -1233,15 +1115,11 @@ Bool_t AliTRDdigitizer::MakeDigits()
     signalsArray = 0;
   }
 
-  if (fDebug > 0) {
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Total number of analyzed hits = %d\n",countHits);
-    printf("<AliTRDdigitizer::MakeDigits> ");
-    printf("Total digits data size = %d, %d, %d, %d\n",totalSizeDigits
-                                                      ,totalSizeDict0
-                                                      ,totalSizeDict1
-                                                      ,totalSizeDict2);        
-  }
+  AliDebug(1,Form("Total number of analyzed hits = %d\n",countHits));
+  AliDebug(1,Form("Total digits data size = %d, %d, %d, %d\n",totalSizeDigits
+                                                             ,totalSizeDict0
+                                                             ,totalSizeDict1
+                                                             ,totalSizeDict2));
 
   return kTRUE;
 
@@ -1288,27 +1166,20 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   Int_t iTime;
 
   AliTRDSimParam* simParam = AliTRDSimParam::Instance();
-  if (!simParam)
-  {
-    printf("<AliTRDdigitizer::ConvertSDigits> ");
-    printf("Could not get simulation params\n");
+  if (!simParam) {
+    AliError("Could not get simulation parameters\n");
     return kFALSE;
   }
   
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    printf("<AliTRDdigitizer::ConvertSDigits> ");
-    printf("Could not get common params\n");
+  if (!commonParam) {
+    AliError("Could not get common parameters\n");
     return kFALSE;
   }
   
-  
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
-    printf("<AliTRDdigitizer::ConvertSDigits> ");
-    printf("Could not get calibration object\n");
+  if (!calibration) {
+    AliError("Could not get calibration object\n");
     return kFALSE;
   }
     
@@ -1324,20 +1195,17 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   Int_t    adcThreshold = simParam->GetADCthreshold();
   Int_t    adcBaseline  = simParam->GetADCbaseline();   
 
+  Int_t    nTimeTotal   = calibration->GetNumberOfTimeBins();
+
   AliTRDdataArrayI *digitsIn;
   AliTRDdataArrayI *digitsOut;
   AliTRDdataArrayI *dictionaryIn[kNDict];
   AliTRDdataArrayI *dictionaryOut[kNDict];
-
-  Int_t nTimeTotal = calibration->GetNumberOfTimeBins();
   
   // Loop through the detectors
   for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) {
 
-    if (fDebug > 0) {
-      printf("<AliTRDdigitizer::ConvertSDigits> ");
-      printf("Convert detector %d to digits.\n",iDet);
-    }
+    AliDebug(1,Form("Convert detector %d to digits.\n",iDet));
 
     Int_t plane      = fGeo->GetPlane(iDet);
     Int_t sector     = fGeo->GetSector(iDet);
@@ -1363,13 +1231,12 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
       for (iCol  = 0; iCol  <  nColMax;   iCol++ ) {
 
         for (iTime = 0; iTime < nTimeTotal; iTime++) {
+
           Double_t signal = (Double_t) digitsIn->GetDataUnchecked(iRow,iCol,iTime);
           signal *= sDigitsScale;
-          Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
-          if (padgain<=0) {
-                  TString error;
-                  error.Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow);
-                  AliError(error);
+          Float_t padgain = calibration->GetGainFactor(iDet,iCol,iRow);
+          if (padgain <= 0.0) {
+            AliError(Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow));
           }
 
           signal *= padgain;
@@ -1393,6 +1260,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
 	  }
           inADC[iTime]  = adc;
           outADC[iTime] = adc;
+
 	}
 
         for (iTime = 0; iTime < nTimeTotal; iTime++) {
@@ -1441,27 +1309,21 @@ Bool_t AliTRDdigitizer::MergeSDigits()
   // Number of track dictionary arrays
   const Int_t kNDict = AliTRDdigitsManager::kNDict;
 
-  AliTRDSimParam* simParam = AliTRDSimParam::Instance();
-  if (!simParam)
-  {
-    printf("<AliTRDdigitizer::MergeSDigits> ");
-    printf("Could not get simulation params\n");
+  AliTRDSimParam*    simParam    = AliTRDSimParam::Instance();
+  if (!simParam) {
+    AliError("Could not get simulation parameters\n");
     return kFALSE;
   }
   
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    printf("<AliTRDdigitizer::MergeSDigits> ");
-    printf("Could not get common params\n");
+  if (!commonParam) {
+    AliError("Could not get common parameters\n");
     return kFALSE;
   }
   
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
-    printf("<AliTRDdigitizer::MergeSDigits> ");
-    printf("Could not get calibration object\n");
+  AliTRDcalibDB*     calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    AliError("Could not get calibration object\n");
     return kFALSE;
   }
   
@@ -1475,22 +1337,20 @@ Bool_t AliTRDdigitizer::MergeSDigits()
 
   // Get the first s-digits
   fSDigitsManager = (AliTRDdigitsManager *) fSDigitsManagerList->First();
-  if (!fSDigitsManager) return kFALSE;
+  if (!fSDigitsManager) { 
+    AliError("No SDigits manager\n");
+    return kFALSE;
+  }
 
   // Loop through the other sets of s-digits
   AliTRDdigitsManager *mergeSDigitsManager;
-  mergeSDigitsManager = (AliTRDdigitsManager *) 
-                        fSDigitsManagerList->After(fSDigitsManager);
+  mergeSDigitsManager = (AliTRDdigitsManager *) fSDigitsManagerList->After(fSDigitsManager);
 
-  if (fDebug > 0) {
-    if (mergeSDigitsManager) {
-      printf("<AliTRDdigitizer::MergeSDigits> ");
-      printf("Merge %d input files.\n",fSDigitsManagerList->GetSize());
-    }
-    else {
-      printf("<AliTRDdigitizer::MergeSDigits> ");
-      printf("Only one input file.\n");
-    }
+  if (mergeSDigitsManager) {
+    AliDebug(1,Form("Merge %d input files.\n",fSDigitsManagerList->GetSize()));
+  }
+  else {
+    AliDebug(1,"Only one input file.\n");
   }
 
   Int_t nTimeTotal = calibration->GetNumberOfTimeBins();
@@ -1531,10 +1391,7 @@ Bool_t AliTRDdigitizer::MergeSDigits()
 
       if (doMerge) {
 
-        if (fDebug > 0) {
-          printf("<AliTRDdigitizer::MergeSDigits> ");
-          printf("Merge detector %d of input no.%d\n",iDet,iMerge+1);
-        }
+        AliDebug(1,Form("Merge detector %d of input no.%d\n",iDet,iMerge+1));
 
         for (Int_t iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
           for (Int_t iCol  = 0; iCol  <  nColMax;   iCol++ ) {
@@ -1546,7 +1403,7 @@ Bool_t AliTRDdigitizer::MergeSDigits()
               ampA += ampB;
               digitsA->SetDataUnchecked(iRow,iCol,iTime,ampA);
 
-	     // Add the mask to the track id if defined.
+ 	      // Add the mask to the track id if defined.
               for (iDict = 0; iDict < kNDict; iDict++) {
                 Int_t trackB = dictionaryB[iDict]->GetDataUnchecked(iRow,iCol,iTime);
                 if ((fMasks) && (trackB > 0)) {
@@ -1578,8 +1435,7 @@ Bool_t AliTRDdigitizer::MergeSDigits()
     }    
 
     // The next set of s-digits
-    mergeSDigitsManager = (AliTRDdigitsManager *) 
-                          fSDigitsManagerList->After(mergeSDigitsManager);
+    mergeSDigitsManager = (AliTRDdigitsManager *) fSDigitsManagerList->After(mergeSDigitsManager);
 
   }
 
@@ -1652,39 +1508,36 @@ void AliTRDdigitizer::InitOutput(Int_t iEvent)
 
   fEvent = iEvent;
    
-  if (!fRunLoader)
-   {
-     Error("InitOutput","Run Loader is NULL");
-     return;  
-   }
+  if (!fRunLoader) {
+    AliError("Run Loader is NULL");
+    return;  
+  }
+
   AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
-  if (!loader)
-   {
-     Error("Open","Can not get TRD loader from Run Loader");
-     return;
-   }
+  if (!loader) {
+    AliError("Can not get TRD loader from Run Loader");
+    return;
+  }
 
   TTree* tree = 0;
   
-  if (fSDigits)
-   { 
-   //if we produce SDigits
+  if (fSDigits) { 
+    // If we produce SDigits
     tree = loader->TreeS();
-    if (!tree)
-     {
+    if (!tree) {
       loader->MakeTree("S");
       tree = loader->TreeS();
-     }
-   }
-  else
-   {//if we produce Digits
-     tree = loader->TreeD();
-     if (!tree)
-      {
-       loader->MakeTree("D");
-       tree = loader->TreeD();
-      }
-   }
+    }
+  }
+  else {
+    // If we produce Digits
+    tree = loader->TreeD();
+    if (!tree) {
+      loader->MakeTree("D");
+      tree = loader->TreeD();
+    }
+  }
+
   fDigitsManager->SetEvent(iEvent);
   fDigitsManager->MakeBranch(tree);
 
@@ -1715,32 +1568,44 @@ Double_t AliTRDdigitizer::TimeStruct(Float_t vdrift, Double_t dist, Double_t z)
   
   // indices:
   Int_t r1 = (Int_t)(10*dist);
-  if (r1<0)  r1 = 0;
-  if (r1>37) r1 = 37;
-  Int_t r2 = r1+1;
-  if (r2<0)  r2 = 0;
-  if (r2>37) r2 = 37;
-  const Int_t kz1 = (Int_t)(100*z/2.5);
-  const Int_t kz2 = kz1+1;
+  if (r1 <  0) r1 =  0;
+  if (r1 > 37) r1 = 37;
+  Int_t r2 = r1 + 1;
+  if (r2 <  0) r2 =  0;
+  if (r2 > 37) r2 = 37;
+  const Int_t kz1 = ((Int_t)(100 * z / 2.5));
+  const Int_t kz2 = kz1 + 1;
 
-  if (r1<0 || r1>37 || kz1<0 || kz1>10) {
-    printf("<AliTRDdigitizer::TimeStruct> Warning. Indices out of range: ");
-    printf("dist=%.2f, z=%.2f, r1=%d, kz1=%d\n",dist,z,r1,kz1);
+  if ((r1 <  0) || (r1 > 37) || (kz1 <  0) || (kz1 > 10)) {
+    AliWarning(Form("Indices out of range: dist=%.2f, z=%.2f, r1=%d, kz1=%d\n"
+                   ,dist,z,r1,kz1));
   }
 
   const Float_t ky111 = fTimeStructInfo.fTimeStruct1[r1+38*kz1];
-  const Float_t ky221 = (r2 <= 37 && kz2 <= 10) ? fTimeStructInfo.fTimeStruct1[r2+38*kz2] : fTimeStructInfo.fTimeStruct1[37+38*10];
-  const Float_t ky121 = (kz2 <= 10)             ? fTimeStructInfo.fTimeStruct1[r1+38*kz2] : fTimeStructInfo.fTimeStruct1[r1+38*10];
-  const Float_t ky211 = (r2 <= 37)             ? fTimeStructInfo.fTimeStruct1[r2+38*kz1] : fTimeStructInfo.fTimeStruct1[37+38*kz1];
+  const Float_t ky221 = ((r2 <= 37) && (kz2 <= 10)) 
+                      ? fTimeStructInfo.fTimeStruct1[r2+38*kz2] 
+                      : fTimeStructInfo.fTimeStruct1[37+38*10];
+  const Float_t ky121 = (kz2 <= 10)             
+                      ? fTimeStructInfo.fTimeStruct1[r1+38*kz2] 
+                      : fTimeStructInfo.fTimeStruct1[r1+38*10];
+  const Float_t ky211 = (r2 <= 37)              
+                      ? fTimeStructInfo.fTimeStruct1[r2+38*kz1] 
+                      : fTimeStructInfo.fTimeStruct1[37+38*kz1];
 
   // 2D Interpolation, lower drift time map
   const Float_t ky11  = (ky211-ky111)*10*dist + ky111 - (ky211-ky111)*r1;
   const Float_t ky21  = (ky221-ky121)*10*dist + ky121 - (ky221-ky121)*r1;
 
   const Float_t ky112 = fTimeStructInfo.fTimeStruct2[r1+38*kz1];
-  const Float_t ky222 = (r2 <= 37 && kz2 <= 10) ? fTimeStructInfo.fTimeStruct2[r2+38*kz2] : fTimeStructInfo.fTimeStruct2[37+38*10];
-  const Float_t ky122 = (kz2 <= 10)             ? fTimeStructInfo.fTimeStruct2[r1+38*kz2] : fTimeStructInfo.fTimeStruct2[r1+38*10];
-  const Float_t ky212 = (r2 <= 37)             ? fTimeStructInfo.fTimeStruct2[r2+38*kz1] : fTimeStructInfo.fTimeStruct2[37+38*kz1];
+  const Float_t ky222 = ((r2 <= 37) && (kz2 <= 10)) 
+                      ? fTimeStructInfo.fTimeStruct2[r2+38*kz2] 
+                      : fTimeStructInfo.fTimeStruct2[37+38*10];
+  const Float_t ky122 = (kz2 <= 10)             
+                      ? fTimeStructInfo.fTimeStruct2[r1+38*kz2] 
+                      : fTimeStructInfo.fTimeStruct2[r1+38*10];
+  const Float_t ky212 = (r2 <= 37)              
+                      ? fTimeStructInfo.fTimeStruct2[r2+38*kz1] 
+                      : fTimeStructInfo.fTimeStruct2[37+38*kz1];
 
   // 2D Interpolation, larger drift time map
   const Float_t ky12  = (ky212-ky112)*10*dist + ky112 - (ky212-ky112)*r1;
@@ -1748,21 +1613,19 @@ Double_t AliTRDdigitizer::TimeStruct(Float_t vdrift, Double_t dist, Double_t z)
 
   // dist now is the drift distance to the anode wires (negative if electrons are
   // between anode wire plane and cathode pad plane)
-  dist -= AliTRDgeometry::AmThick()/2.0;
+  dist -= AliTRDgeometry::AmThick() / 2.0;
 
   // Get the drift times for the drift velocities fVDlo and fVDhi
-  const Float_t ktdrift1 =
-      ( TMath::Abs(dist)>0.005 || z>0.005 ) ? (ky21-ky11)*100*z/2.5+ky11-(ky21-ky11)*kz1 : 0.0;
-  const Float_t ktdrift2 =
-      ( TMath::Abs(dist)>0.005 || z>0.005 ) ? (ky22-ky12)*100*z/2.5+ky12-(ky22-ky12)*kz1 : 0.0;
+  const Float_t ktdrift1 = ((TMath::Abs(dist) > 0.005) || (z > 0.005)) 
+                         ? (ky21 - ky11) * 100 * z / 2.5 + ky11 - (ky21 - ky11) * kz1 
+                         : 0.0;
+  const Float_t ktdrift2 = ((TMath::Abs(dist) > 0.005) || (z > 0.005)) 
+                         ? (ky22 - ky12) * 100 * z / 2.5 + ky12 - (ky22 - ky12) * kz1 
+                         : 0.0;
 
   // 1D Interpolation between the values at fVDlo and fVDhi
   Float_t a = (ktdrift2 - ktdrift1) / (fTimeStructInfo.fVDhi - fTimeStructInfo.fVDlo);
   Float_t b = ktdrift2 - a * fTimeStructInfo.fVDhi;
-
-
-  //printf("(%.2f, %.2f): %f, %f -> %f\n",
-  //     dist+AliTRDgeometry::AmThick()/2.0, z, ktdrift1, ktdrift2, a*fDriftVelocity+b);
 
   return a * vdrift + b;
 
@@ -1776,14 +1639,16 @@ void AliTRDdigitizer::SampleTimeStruct(Float_t vdrift)
   // Drift Time data calculated with Garfield (by C.Lippmann)
   //
   
-  //TODO make caching proper, if same timing structure is selected: do not update timestructs!
+  // TODO make caching proper, if same timing structure is selected: do not update timestructs!
   
-  if (vdrift == fTimeStructInfo.fLastVdrift)
+  // Noting to do
+  if (vdrift == fTimeStructInfo.fLastVdrift) {
     return;
+  }
 
   fTimeStructInfo.fLastVdrift = vdrift;
   
-  // drift time maps are saved for some drift velocity values (in drift region):
+  // Drift time maps are saved for some drift velocity values (in drift region):
   Float_t  fVDsmp[8];
   fVDsmp[0] = 1.032;
   fVDsmp[1] = 1.158;
@@ -1794,22 +1659,17 @@ void AliTRDdigitizer::SampleTimeStruct(Float_t vdrift)
   fVDsmp[6] = 1.959;
   fVDsmp[7] = 2.134;
 
-  if ( vdrift < fVDsmp[0] ) {
-    printf("<AliTRDdigitizer::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("<AliTRDdigitizer::SampleTimeStruct> Drift Velocity too small (%.3f<%.3f)\n"
-          , vdrift, fVDsmp[0]);
-    printf("<AliTRDdigitizer::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  if      (vdrift < fVDsmp[0]) {
+    AliWarning(Form("Drift Velocity too small (%.3f<%.3f)\n",vdrift,fVDsmp[0]));
     vdrift = fVDsmp[0];
-  } else if ( vdrift > fVDsmp[7] ) {
-    printf("<AliTRDdigitizer::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    printf("<AliTRDdigitizer::SampleTimeStruct> Drift Velocity too large (%.3f>%.3f)\n"
-          , vdrift,fVDsmp[6]);
-    printf("<AliTRDdigitizer::SampleTimeStruct> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  } 
+  else if (vdrift > fVDsmp[7]) {
+    AliWarning(Form("Drift Velocity too large (%.3f>%.3f)\n",vdrift,fVDsmp[6]));
     vdrift = fVDsmp[7];
   }
 
   const Int_t ktimebin  = 38;
-  const Int_t kZbin = 11;
+  const Int_t kZbin     = 11;
 
   // Garfield simulation at UD = -1500V; vd = 1.032cm/microsec, <driftfield> = 525V/cm
   Float_t time1500[ktimebin][kZbin] =
@@ -2497,34 +2357,28 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
   if (vdrift == fDiffusionInfo.fLastVdrift)
     return;
 
-  AliTRDSimParam* simParam = AliTRDSimParam::Instance();
-  if (!simParam)
-  {
-    printf("<AliTRDdigitizer::RecalcDiffusion> ");
-    printf("Could not get simulation params\n");
+  AliTRDSimParam*    simParam    = AliTRDSimParam::Instance();
+  if (!simParam) {
+    AliError("Could not get simulation parameters\n");
     return;
   }
   
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    printf("<AliTRDdigitizer::RecalcDiffusion> ");
-    printf("Could not get common params\n");
+  if (!commonParam) {
+    AliError("Could not get common parameters\n");
     return;
   }
   
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
-    printf("<AliTRDdigitizer::RecalcDiffusion> ");
-    printf("Could not get calibration object\n");
+  AliTRDcalibDB*     calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    AliError("Could not get calibration object\n");
     return;
   }
   
   Float_t field = commonParam->GetField();
   fDiffusionInfo.fLastVdrift = vdrift;
   
-  //DiffusionL
+  // DiffusionL
   {
     const Int_t kNb = 5;
     Float_t p0[kNb] = {  0.007440,  0.007493,  0.007513,  0.007672,  0.007831 };
@@ -2537,12 +2391,12 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
     ib       = TMath::Min(kNb,ib);
 
     fDiffusionInfo.fDiffusionL = p0[ib] 
-        + p1[ib] * vdrift
-        + p2[ib] * vdrift*vdrift
-        + p3[ib] * vdrift*vdrift*vdrift;
+                               + p1[ib] * vdrift
+                               + p2[ib] * vdrift*vdrift
+                               + p3[ib] * vdrift*vdrift*vdrift;
   }
   
-  //DiffusionT
+  // DiffusionT
   {
     const Int_t kNb = 5;
     Float_t p0[kNb] = {  0.009550,  0.009599,  0.009674,  0.009757,  0.009850 };
@@ -2555,15 +2409,15 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
     ib       = TMath::Min(kNb,ib);
 
     fDiffusionInfo.fDiffusionT = p0[ib] 
-        + p1[ib] * vdrift
-        + p2[ib] * vdrift*vdrift
-        + p3[ib] * vdrift*vdrift*vdrift;
+                               + p1[ib] * vdrift
+                               + p2[ib] * vdrift*vdrift
+                               + p3[ib] * vdrift*vdrift*vdrift;
   }    
 
-  //OmegaTau
+  // OmegaTau
   fDiffusionInfo.fOmegaTau = calibration->GetOmegaTau(vdrift);
   
-  //Lorentzfactor
+  // Lorentzfactor
   {
     if (commonParam->ExBOn()) {
       fDiffusionInfo.fLorentzFactor = 1.0 / (1.0 + fDiffusionInfo.fOmegaTau*fDiffusionInfo.fOmegaTau);
@@ -2572,6 +2426,7 @@ void AliTRDdigitizer::RecalcDiffusion(Float_t vdrift)
       fDiffusionInfo.fLorentzFactor = 1.0;
     }
   }
+
 }
   
 //_____________________________________________________________________________
@@ -2585,6 +2440,7 @@ Float_t AliTRDdigitizer::GetDiffusionL(Float_t vdrift)
 
   RecalcDiffusion(vdrift);
   return fDiffusionInfo.fDiffusionL;
+
 }
 
 //_____________________________________________________________________________
@@ -2598,6 +2454,7 @@ Float_t AliTRDdigitizer::GetDiffusionT(Float_t vdrift)
 
   RecalcDiffusion(vdrift);
   return fDiffusionInfo.fDiffusionT;
+
 }
 
 //_____________________________________________________________________________
@@ -2610,20 +2467,26 @@ Int_t AliTRDdigitizer::Diffusion(Float_t vdrift, Double_t driftlength, Double_t 
   RecalcDiffusion(vdrift);
 
   Float_t driftSqrt = TMath::Sqrt(driftlength);
-  Float_t sigmaT = driftSqrt * fDiffusionInfo.fDiffusionT;
-  Float_t sigmaL = driftSqrt * fDiffusionInfo.fDiffusionL;
+  Float_t sigmaT    = driftSqrt * fDiffusionInfo.fDiffusionT;
+  Float_t sigmaL    = driftSqrt * fDiffusionInfo.fDiffusionL;
   xyz[0] = gRandom->Gaus(xyz[0], sigmaL * GetLorentzFactor(vdrift));
   xyz[1] = gRandom->Gaus(xyz[1], sigmaT * GetLorentzFactor(vdrift));
   xyz[2] = gRandom->Gaus(xyz[2], sigmaT);
 
   return 1;
+
 }
 
 //_____________________________________________________________________________
 Float_t AliTRDdigitizer::GetLorentzFactor(Float_t vd)
 {
+  //
+  // Returns the recalculated Lorentz factor
+  //
+
   RecalcDiffusion(vd);
   return fDiffusionInfo.fLorentzFactor;
+
 }
   
 //_____________________________________________________________________________
@@ -2640,4 +2503,5 @@ Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t *xyz)
   xyz[2] = xyz[2];
 
   return 1;
+
 }
