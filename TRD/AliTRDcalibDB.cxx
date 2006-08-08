@@ -427,6 +427,8 @@ Char_t AliTRDcalibDB::GetMCMStatus(Int_t det, Int_t col, Int_t row)
   // Returns the status of the given MCM
   //
 
+  Int_t mcm = ((Int_t) col / 18);
+
   const AliTRDCalMCMStatus* cal = dynamic_cast<const AliTRDCalMCMStatus*> (GetCachedCDBObject(kIDMCMStatus));
   if (!cal)
     return -1;
@@ -435,7 +437,7 @@ Char_t AliTRDcalibDB::GetMCMStatus(Int_t det, Int_t col, Int_t row)
   if (!roc)
     return -1;
 
-  return roc->GetStatus(col, row);
+  return roc->GetStatus(mcm, row);
 }
 
 //_____________________________________________________________________________
