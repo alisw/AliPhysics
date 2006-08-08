@@ -16,7 +16,7 @@
 // --- AliRoot header files ---
 #include "AliAltroRawStream.h"
 class AliRawReader;
-
+class AliAltroMapping;
 
 class AliPHOSRawStream: public AliAltroRawStream {
 
@@ -27,31 +27,37 @@ public :
   virtual void             Reset();
   virtual Bool_t           Next();
   
-  Int_t            GetColumn() const {return fColumn;}
-  Int_t            GetModule() const {return fModule;}
-  Int_t            GetPrevColumn() const {return fPrevColumn;}
+  Int_t            GetModule()     const {return fModule;}
+  Int_t            GetRow()        const {return fRow;}
+  Int_t            GetColumn()     const {return fColumn;}
   Int_t            GetPrevModule() const {return fPrevModule;}
-  Int_t            GetPrevRow() const {return fPrevRow;}
-  Int_t            GetRow() const {return fRow;}
-  Bool_t           IsNewColumn() const {return (GetColumn() != GetPrevColumn()) || IsNewRow();}
-  Bool_t           IsNewModule() const {return GetModule() != GetPrevModule();}
-  Bool_t           IsNewRow() const {return (GetRow() != GetPrevRow()) || IsNewModule();}
+  Int_t            GetPrevRow()    const {return fPrevRow;}
+  Int_t            GetPrevColumn() const {return fPrevColumn;}
+  Bool_t           IsNewModule()   const {return GetModule() != GetPrevModule();}
+  Bool_t           IsNewRow()      const {return (GetRow() != GetPrevRow()) || IsNewModule();}
+  Bool_t           IsNewColumn()   const {return (GetColumn() != GetPrevColumn()) || IsNewRow();}
+  Bool_t           IsLowGain()     const {return (!fGain);} 
 
 protected:
-    AliPHOSRawStream(const AliPHOSRawStream& stream);
-    AliPHOSRawStream& operator = (const AliPHOSRawStream& stream);
 
-    virtual void ApplyAltroMapping();
+  AliPHOSRawStream(const AliPHOSRawStream& stream);
+  AliPHOSRawStream& operator = (const AliPHOSRawStream& stream);
 
-    Int_t            fModule;       // index of current module
-    Int_t            fPrevModule;   // index of previous module
-    Int_t            fRow;          // index of current row
-    Int_t            fPrevRow;      // index of previous row
-    Int_t            fColumn;       // index of current column
-    Int_t            fPrevColumn;   // index of previous column
+  virtual void ApplyAltroMapping();
+
+  Int_t            fModule;       // index of current module
+  Int_t            fPrevModule;   // index of previous module
+  Int_t            fRow;          // index of current row
+  Int_t            fPrevRow;      // index of previous row
+  Int_t            fColumn;       // index of current column
+  Int_t            fPrevColumn;   // index of previous column
+  Bool_t           fGain;         // low (0) or (1) high gain
   
+  AliAltroMapping *fMapping[4];   // pointers to ALTRO mapping
+
   ClassDef(AliPHOSRawStream, 0)   // class for reading PHOS raw digits
-    };
+
+};
 
 #endif
 

@@ -29,8 +29,12 @@
 /// root > while (input.Next()) ..... 
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TString.h>
+#include <TSystem.h>
+
 #include "AliPHOSRawStream.h"
 #include "AliRawReader.h"
+#include "AliPHOSAltroMapping.h"
 
 ClassImp(AliPHOSRawStream)
 
@@ -43,13 +47,24 @@ AliPHOSRawStream::AliPHOSRawStream(AliRawReader* rawReader) :
   fRow(-1),
   fPrevRow(-1),
   fColumn(-1),
-  fPrevColumn(-1)
+  fPrevColumn(-1),
+  fGain(0)
 {
 // create an object to read PHOS raw digits
 
   SelectRawData("PHOS");
 
-  fNoAltroMapping = kTRUE;
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/PHOS/mapping/RCU";
+  TString path2;
+  for(Int_t i = 0; i < 4; i++) {
+    path2 = path;
+    path2 += i;
+    path2 += ".data";
+    fMapping[i] = new AliPHOSAltroMapping(path2.Data());
+  }
+
+  SetNoAltroMapping(kFALSE);
 }
 
 //_____________________________________________________________________________
@@ -60,7 +75,8 @@ AliPHOSRawStream::AliPHOSRawStream(const AliPHOSRawStream& stream) :
   fRow(-1),
   fPrevRow(-1),
   fColumn(-1),
-  fPrevColumn(-1)
+  fPrevColumn(-1),
+  fGain(0)
 {  
   Fatal("AliPHOSRawStream", "copy constructor not implemented");
 }
@@ -77,6 +93,8 @@ AliPHOSRawStream& AliPHOSRawStream::operator = (const AliPHOSRawStream&
 AliPHOSRawStream::~AliPHOSRawStream()
 {
 // destructor
+
+  for(Int_t i = 0; i < 4; i++) delete fMapping[i];
 }
 
 //_____________________________________________________________________________
@@ -85,6 +103,7 @@ void AliPHOSRawStream::Reset()
   // reset phos raw stream params
   AliAltroRawStream::Reset();
   fModule = fPrevModule = fRow = fPrevRow = fColumn = fPrevColumn = -1;
+  fGain = 0;
 }
 
 //_____________________________________________________________________________
@@ -97,8 +116,8 @@ Bool_t AliPHOSRawStream::Next()
   fPrevRow = fRow;
   fPrevColumn = fColumn;
   if (AliAltroRawStream::Next()) {
-    //    if (IsNewHWAddress())
-    ApplyAltroMapping();
+    if (IsNewHWAddress())
+      ApplyAltroMapping();
     return kTRUE;
   }
   else
@@ -111,7 +130,14 @@ void AliPHOSRawStream::ApplyAltroMapping()
   // Take the DDL index, load
   // the corresponding altro mapping
   // object and fill the sector,row and pad indeces
-  fModule = fSegmentation[0];
-  fRow = fSegmentation[1];
-  fColumn = fSegmentation[2];
+  Int_t ddlNumber = GetDDLNumber();
+  fModule = ddlNumber / 4;
+
+  Int_t rcuIndex = ddlNumber % 4;
+
+  Short_t hwAddress = GetHWAddress();
+  fRow = fMapping[rcuIndex]->GetPadRow(hwAddress);
+  fColumn = fMapping[rcuIndex]->GetPad(hwAddress);
+  fGain = fMapping[rcuIndex]->GetSector(hwAddress);
+
 }
