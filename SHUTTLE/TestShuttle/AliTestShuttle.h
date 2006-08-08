@@ -15,6 +15,7 @@
 class TMap;
 class TList;
 class AliCDBMetaData;
+class AliCDBPath;
 
 class AliTestShuttle : public AliShuttleInterface
 {
@@ -28,7 +29,10 @@ class AliTestShuttle : public AliShuttleInterface
     void Process();
 
     // AliShuttleInterface functions
-    virtual UInt_t Store(const char* detector, TObject* object, AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+    virtual UInt_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
+        				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+    virtual UInt_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
+        				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
     virtual const char* GetFile(Int_t system, const char* detector, const char* id, const char* source);
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
     virtual void Log(const char* detector, const char* message);

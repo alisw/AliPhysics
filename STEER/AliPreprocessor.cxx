@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/07/11 12:42:43  jgrosseo
+adding parameters for extended validity range of data produced by preprocessor
+
 Revision 1.2  2006/06/06 16:36:49  jgrosseo
 minor changes in AliShuttleInterface and AliPreprocessor
 
@@ -77,6 +80,7 @@ some docs added
 
 ClassImp(AliPreprocessor)
 
+//______________________________________________________________________________________________
 AliPreprocessor::AliPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
   TNamed(detector, ""),
   fShuttle(shuttle)
@@ -92,10 +96,12 @@ AliPreprocessor::AliPreprocessor(const char* detector, AliShuttleInterface* shut
   fShuttle->RegisterPreprocessor(this);
 }
 
+//______________________________________________________________________________________________
 AliPreprocessor::~AliPreprocessor()
 {
 }
 
+//______________________________________________________________________________________________
 void AliPreprocessor::Initialize(Int_t run, UInt_t startTime,	UInt_t endTime)
 {
   // Sets the information of the run which is currently processed
@@ -107,22 +113,58 @@ void AliPreprocessor::Initialize(Int_t run, UInt_t startTime,	UInt_t endTime)
   fEndTime = endTime;
 }
 
-UInt_t AliPreprocessor::Store(TObject* object, AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
+//______________________________________________________________________________________________
+UInt_t AliPreprocessor::Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
+		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
 {
-  // Stores the CDB object
+  // Stores a CDB object in the storage for offline reconstruction. Objects that are not needed for
+  // offline reconstruction, but should be stored anyway (e.g. for debugging) should NOT be stored
+  // using this function. Use StoreReferenceData instead!
+  //
   // This function should be called at the end of the preprocessor cycle
   //
   // The parameters are
-  //   1) the object to be stored
-  //   2) the metaData to be associated with the object
-  //   3) the validity start run number w.r.t. the current run, if the data is valid only for this run leave the default 0
-  //   4) specifies if the calibration data is valid for infinity (this means until updated), typical for calibration runs, the default is kFALSE
+  //   1, 2) the 2nd and 3rd level of the object's path. The first level is the detector name which is provided
+  //         by the Preprocessor. Thus the object's path is "DET/level2/level3"
+  //   3) the object to be stored
+  //   4) the metaData to be associated with the object
+  //   5) the validity start run number w.r.t. the current run,
+  //      if the data is valid only for this run leave the default 0
+  //   6) specifies if the calibration data is valid for infinity (this means until updated),
+  //      typical for calibration runs, the default is kFALSE
   //
   // The call is delegated to AliShuttleInterface
 
-  return fShuttle->Store(GetName(), object, metaData, validityStart, validityInfinite);
+  return fShuttle->Store(AliCDBPath(GetName(), pathLevel2, pathLevel3), object,
+  		metaData, validityStart, validityInfinite);
 }
 
+//______________________________________________________________________________________________
+UInt_t AliPreprocessor::StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
+		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
+{
+  // Stores a CDB object in the storage for reference data. This objects will not be available during
+  // offline reconstrunction. Use this function for reference data only!
+  //
+  // This function should be called at the end of the preprocessor cycle
+  //
+  // The parameters are
+  //   1, 2) the 2nd and 3rd level of the object's path. The first level is the detector name which is provided
+  //         by the Preprocessor. Thus the object's path is "DET/level2/level3"
+  //   3) the object to be stored
+  //   4) the metaData to be associated with the object
+  //   5) the validity start run number w.r.t. the current run,
+  //      if the data is valid only for this run leave the default 0
+  //   6) specifies if the calibration data is valid for infinity (this means until updated),
+  //      typical for calibration runs, the default is kFALSE
+  //
+  // The call is delegated to AliShuttleInterface
+
+  return fShuttle->StoreReferenceData(AliCDBPath(GetName(), pathLevel2, pathLevel3), object,
+  		metaData, validityStart, validityInfinite);
+}
+
+//______________________________________________________________________________________________
 const char* AliPreprocessor::GetFile(Int_t system, const char* id, const char* source)
 {
   // This function retrieves a file from the given system (kDAQ, kDCS, kHLT) with the given file id
@@ -134,6 +176,7 @@ const char* AliPreprocessor::GetFile(Int_t system, const char* id, const char* s
   return fShuttle->GetFile(system, GetName(), id, source);
 }
 
+//______________________________________________________________________________________________
 TList* AliPreprocessor::GetFileSources(Int_t system, const char* id)
 {
   // Returns a list of sources in a given system that saved a file with the given id
@@ -143,6 +186,7 @@ TList* AliPreprocessor::GetFileSources(Int_t system, const char* id)
   return fShuttle->GetFileSources(system, GetName(), id);
 }
 
+//______________________________________________________________________________________________
 void AliPreprocessor::Log(const char* message)
 {
   // Adds a log message to the Shuttle log of this preprocessor

@@ -15,6 +15,9 @@
 
 /*
  $Log$
+ Revision 1.8  2006/07/21 07:37:20  jgrosseo
+ last run is stored after each run
+
  Revision 1.7  2006/07/20 09:54:40  jgrosseo
  introducing status management: The processing per subdetector is divided into several steps,
  after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
@@ -343,7 +346,7 @@ Bool_t AliShuttleTrigger::ReadLastRun()
 {
   // reads the last processed run from local CDB
 
-  AliCDBEntry* cdbEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
+  AliCDBEntry* cdbEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalCDB())
         ->Get("/SHUTTLE/SYSTEM/LASTRUN", 0);
 
   if (cdbEntry)
@@ -379,7 +382,7 @@ Bool_t AliShuttleTrigger::WriteLastRun()
   AliCDBMetaData metaData;
   AliCDBId cdbID(AliCDBPath("SHUTTLE", "SYSTEM", "LASTRUN"), 0, 0);
 
-  UInt_t result = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
+  UInt_t result = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalCDB())
       ->Put(&lastRunObj, cdbID, &metaData);
 
   if (!result) {

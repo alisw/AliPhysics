@@ -75,7 +75,7 @@ UInt_t AliTestPreprocessor::Process(TMap* dcsAliasMap)
 	metaData.SetResponsible("Alberto Colla");
 	metaData.SetComment("This preprocessor fills an AliTestDataDCS object.");
 
-	UInt_t result = Store(fData, &metaData);
+	UInt_t result = Store("SHUTTLE", "Data", fData, &metaData, 0, 0);
 	delete fData;
 	fData = 0;
 

@@ -19,7 +19,7 @@ class AliCDBRunRange: public TObject {
 public:
 	AliCDBRunRange();
 	AliCDBRunRange(Int_t firstRun, Int_t lastRun);
-	
+
 	virtual ~AliCDBRunRange();
 
 	
@@ -42,12 +42,15 @@ public:
 	Bool_t Comprises(const AliCDBRunRange& other) const;
 
 	virtual Bool_t IsEqual(const TObject *obj) const;
+
+	static const UInt_t Infinity() {return fgkInfinity;}
 	
 private:
 
 	Int_t fFirstRun;	// first valid run
 	Int_t fLastRun;		// last valid run	
 
+	static const UInt_t fgkInfinity = 999999999; 	 //! Flag for "infinity"
 
 	ClassDef(AliCDBRunRange, 1);	
 };

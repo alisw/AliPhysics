@@ -29,11 +29,14 @@ class AliPreprocessor : public TNamed
     AliPreprocessor(const char* detector, AliShuttleInterface* shuttle);
     virtual ~AliPreprocessor();
 
-    virtual void Initialize(Int_t run, UInt_t startTime,	UInt_t endTime);
+    virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual UInt_t Process(TMap* dcsAliasMap) = 0;
 
   protected:
-    UInt_t Store(TObject* object, AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+    UInt_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
+    		AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+    UInt_t StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
+    		AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id);
     void Log(const char* message);

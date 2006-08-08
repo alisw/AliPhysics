@@ -30,7 +30,6 @@
 #pragma link C++ class AliDCSValue;
 
 #pragma link C++ class AliPreprocessor;
-#pragma link C++ class AliDefaultPreprocessor;
 
 #pragma link C++ class AliShuttleInterface;
 

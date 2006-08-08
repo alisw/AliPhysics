@@ -27,6 +27,7 @@ class AliPreprocessor;
 class AliCDBMetaData;
 class TSQLServer;
 class AliCDBEntry;
+class AliCDBPath;
 
 class AliShuttle: public AliShuttleInterface {
 public:
@@ -42,14 +43,23 @@ public:
 	UInt_t GetCurrentStartTime() const {return fCurrentStartTime;};
 	UInt_t GetCurrentEndTime() const {return fCurrentEndTime;};
 
-	virtual UInt_t Store(const char* detector, TObject* object, AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+	virtual UInt_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
+			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+	virtual UInt_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
+			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
 	virtual const char* GetFile(Int_t system, const char* detector,
 		const char* id, const char* source);
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);
 	virtual void Log(const char* detector, const char* message);
 
-	static TString GetLocalURI () {return fgkLocalUri;}
-	static void SetLocalURI (TString localUri) {fgkLocalUri = localUri;}
+	static TString GetLocalCDB () {return fgkLocalCDB;}
+	static void SetLocalCDB (TString localCDB) {fgkLocalCDB = localCDB;}
+
+	static TString GetMainRefStorage() {return fgkMainRefStorage;}
+	static void SetMainRefStorage (TString mainRefStorage) {fgkMainRefStorage = mainRefStorage;}
+
+	static TString GetLocalRefStorage() {return fgkLocalRefStorage;}
+	static void SetLocalRefStorage (TString localRefStorage) {fgkLocalRefStorage = localRefStorage;}
 
 	// TODO Test only, remove later!
 	void SetCurrentRun(int run) {fCurrentRun=run;}
@@ -90,7 +100,9 @@ private:
 	static const Int_t fgkNDetectors = 17;		   	//! number of detectors
 	static const char* fgkDetectorName[fgkNDetectors]; 	//! names of detectors
 	static const char* fgkDetectorCode[fgkNDetectors]; 	//! codes of detectors
-	static TString 	   fgkLocalUri;		//! URI of the local backup storage location
+	static TString 	   fgkLocalCDB;		//! URI of the local backup storage
+	static TString 	   fgkMainRefStorage;	//! URI of the main (Grid) REFERENCE storage
+	static TString 	   fgkLocalRefStorage;	//! URI of the local REFERENCE storage
 	static const char* fgkShuttleTempDir;	//! base path of SHUTTLE temp folder
 	static const char* fgkShuttleLogDir;	//! path of SHUTTLE log folder
 

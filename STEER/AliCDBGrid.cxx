@@ -207,9 +207,9 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 
 	TString lastStorage = id.GetLastStorage();
 	if(lastStorage.Contains(TString("new"), TString::kIgnoreCase) && id.GetVersion() > 1 ){
-		AliWarning(Form("A NEW object is being stored with version %d",
+		AliDebug(2, Form("A NEW object is being stored with version %d",
 					id.GetVersion()));
-		AliWarning(Form("and it will hide previously stored object with version %d!",
+		AliDebug(2, Form("and it will hide previously stored object with version %d!",
 					id.GetVersion()-1));
 	}
 

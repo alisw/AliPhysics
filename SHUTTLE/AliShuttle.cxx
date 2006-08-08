@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2006/07/21 07:37:20  jgrosseo
+last run is stored after each run
+
 Revision 1.10  2006/07/20 09:54:40  jgrosseo
 introducing status management: The processing per subdetector is divided into several steps,
 after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
@@ -90,12 +93,13 @@ some docs added
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBId.h"
+#include "AliCDBRunRange.h"
+#include "AliCDBPath.h"
 #include "AliCDBEntry.h"
 #include "AliShuttleConfig.h"
 #include "AliDCSClient.h"
 #include "AliLog.h"
 #include "AliPreprocessor.h"
-#include "AliDefaultPreprocessor.h"
 #include "AliShuttleStatus.h"
 
 #include <TSystem.h>
@@ -111,9 +115,12 @@ some docs added
 
 ClassImp(AliShuttle)
 
-TString AliShuttle::fgkLocalUri("local://$ALICE_ROOT/SHUTTLE/ShuttleCDB");
-const char* AliShuttle::fgkShuttleTempDir = "$ALICE_ROOT/SHUTTLE/temp";
-const char* AliShuttle::fgkShuttleLogDir = "$ALICE_ROOT/SHUTTLE/log";
+TString AliShuttle::fgkLocalCDB("local://LocalShuttleCDB");
+TString AliShuttle::fgkMainRefStorage("alien://DBFolder=ShuttleReference");
+TString AliShuttle::fgkLocalRefStorage("local://LocalReferenceStorage");
+
+const char* AliShuttle::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/temp");
+const char* AliShuttle::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/log");
 
 const char* AliShuttle::fgkDetectorName[AliShuttle::fgkNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",
 	"PHOS", "CPV", "RICH", "EMCAL", "MUON_TRK", "MUON_TRG", "FMD", "ZDC", "PMD", "START", "VZERO"};
@@ -127,8 +134,7 @@ AliShuttle::AliShuttle(const AliShuttleConfig* config,
 	fConfig(config),
 	fTimeout(timeout),
 	fRetries(retries), fCurrentRun(-1), fCurrentStartTime(0),
-	fCurrentEndTime(0),
-  fStatusEntry(0)
+	fCurrentEndTime(0), fStatusEntry(0)
 {
 	//
 	// config: AliShuttleConfig used
@@ -192,42 +198,127 @@ void AliShuttle::RegisterPreprocessor(AliPreprocessor* preprocessor)
 }
 
 //______________________________________________________________________________________________
-UInt_t AliShuttle::Store(const char* detector,
-		TObject* object, AliCDBMetaData* metaData, Int_t /*validityStart*/, Bool_t /*validityInfinite*/)
+UInt_t AliShuttle::Store(const AliCDBPath& path, TObject* object,
+		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
 {
-	// store data into CDB
+  // Stores a CDB object in the storage for offline reconstruction. Objects that are not needed for
+  // offline reconstruction, but should be stored anyway (e.g. for debugging) should NOT be stored
+  // using this function. Use StoreReferenceData instead!
   //
-  // validityStart is the start validity of the data, if not 0 GetCurrentRun() - validityStart is taken
-  // validityInfinite defines if the data is valid until new data arrives (e.g. for calibration runs)
+
+  // The parameters are
+  //   1) the object's path.
+  //   2) the object to be stored
+  //   3) the metaData to be associated with the object
+  //   4) the validity start run number w.r.t. the current run,
+  //      if the data is valid only for this run leave the default 0
+  //   5) specifies if the calibration data is valid for infinity (this means until updated),
+  //      typical for calibration runs, the default is kFALSE
   //
-	// returns 0 if fail
-	// 	   1 if stored in main (Grid) storage
-	// 	   2 if stored in backup (Local) storage
+  //
+  // returns 0 if fail
+  // 	     1 if stored in main (Grid) CDB storage
+  // 	     2 if stored in backup (Local) CDB storage
 
-  // TODO implement use of two parameters
 
-  // TODO shouldn't the path be given by the preprocessor???
-	AliCDBId id(AliCDBPath(detector, "DCS", "Data"),
-		GetCurrentRun(), GetCurrentRun());
+	Int_t firstRun = GetCurrentRun() - validityStart;
+  	if(firstRun < 0) {
+		AliError("First valid run happens to be less than 0! Setting it to 0...");
+		firstRun=0;
+  	}
+
+	Int_t lastRun = -1;
+	if(validityInfinite) {
+		lastRun = AliCDBRunRange::Infinity();
+	} else {
+		lastRun = GetCurrentRun();
+	}
+
+	AliCDBId id(path, firstRun, lastRun);
 
 	UInt_t result = 0;
+
 	if (!(AliCDBManager::Instance()->IsDefaultStorageSet())) {
-		Log(detector, "No CDB storage set!");
+		Log(fCurrentDetector, "No CDB storage set!");
 	} else {
 		result = (UInt_t) AliCDBManager::Instance()->Put(object, id, metaData);
 	}
 	if(!result) {
 
-		Log(detector, "Error while storing object in main storage!");
-		AliError("local storage will be used!");
+		Log(fCurrentDetector,
+			"Error while storing object in main storage: it will go to local storage!");
 
-		result = AliCDBManager::Instance()->GetStorage(fgkLocalUri)
+		result = AliCDBManager::Instance()->GetStorage(fgkLocalCDB)
 					->Put(object, id, metaData);
 
 		if(result) {
 			result = 2;
 		}else{
-			Log(detector, "Can't store data!");
+			Log(fCurrentDetector, "Can't store data!");
+		}
+	}
+	return result;
+
+}
+
+//______________________________________________________________________________________________
+UInt_t AliShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object,
+		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
+{
+  // Stores a CDB object in the storage for reference data. This objects will not be available during
+  // offline reconstrunction. Use this function for reference data only!
+  //
+
+  // The parameters are
+  //   1) the object's path.
+  //   2) the object to be stored
+  //   3) the metaData to be associated with the object
+  //   4) the validity start run number w.r.t. the current run,
+  //      if the data is valid only for this run leave the default 0
+  //   5) specifies if the calibration data is valid for infinity (this means until updated),
+  //      typical for calibration runs, the default is kFALSE
+  //
+  //
+  // returns 0 if fail
+  // 	     1 if stored in main (Grid) reference storage
+  // 	     2 if stored in backup (Local) reference storage
+
+ 	Int_t firstRun = GetCurrentRun() - validityStart;
+  	if(firstRun < 0) {
+		AliError("First valid run happens to be less than 0! Setting it to 0...");
+		firstRun=0;
+  	}
+
+	Int_t lastRun = -1;
+	if(validityInfinite) {
+		lastRun = AliCDBRunRange::Infinity();
+	} else {
+		lastRun = GetCurrentRun();
+	}
+
+ 	AliCDBId id(path, firstRun, lastRun);
+
+	UInt_t result = 0;
+
+	if (!(AliCDBManager::Instance()->GetStorage(fgkMainRefStorage))) {
+		Log(fCurrentDetector, "Cannot activate main reference storage!");
+	} else {
+		result = (UInt_t) AliCDBManager::Instance()->GetStorage(fgkMainRefStorage)
+					->Put(object, id, metaData);
+	}
+
+	if(!result) {
+
+		Log(fCurrentDetector,
+			"Error while storing object in main reference storage: it will go to local ref storage!");
+
+		result = AliCDBManager::Instance()->GetStorage(fgkLocalRefStorage)
+					->Put(object, id, metaData);
+
+		if(result) {
+			result = 2;
+		}else{
+			Log(fCurrentDetector, "Can't store reference data!");
 		}
 	}
 	return result;
@@ -245,7 +336,7 @@ AliShuttleStatus* AliShuttle::ReadShuttleStatus()
     fStatusEntry = 0;
   }
 
-  fStatusEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalURI())
+  fStatusEntry = AliCDBManager::Instance()->GetStorage(AliShuttle::GetLocalCDB())
       ->Get(Form("/SHUTTLE/STATUS/%s", fCurrentDetector.Data()), fCurrentRun);
 
   if (!fStatusEntry)
@@ -277,7 +368,7 @@ Bool_t AliShuttle::WriteShuttleStatus(AliShuttleStatus* status)
 
   fStatusEntry = new AliCDBEntry(status, id, new AliCDBMetaData);
 
-  UInt_t result = AliCDBManager::Instance()->GetStorage(fgkLocalUri)->Put(fStatusEntry);
+  UInt_t result = AliCDBManager::Instance()->GetStorage(fgkLocalCDB)->Put(fStatusEntry);
 
   if (!result)
   {
@@ -315,7 +406,7 @@ void AliShuttle::UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t 
   if (increaseCount)
     status->IncreaseCount();
 
-  AliCDBManager::Instance()->GetStorage(fgkLocalUri)->Put(fStatusEntry);
+  AliCDBManager::Instance()->GetStorage(fgkLocalCDB)->Put(fStatusEntry);
 }
 
 //______________________________________________________________________________________________
@@ -466,9 +557,9 @@ Bool_t AliShuttle::Process()
 
 	while ((anAlias = (TObjString*) iter.Next())) {
 		TObjArray valueSet;
-		result = GetValueSet(host, port, anAlias->String(), valueSet);
-		//AliInfo(Form("Port = %d",port));
-		//result = kTRUE;
+		//result = GetValueSet(host, port, anAlias->String(), valueSet);
+		AliInfo(Form("Port = %d",port));
+		result = kTRUE;
 		if(result) {
 			aliasMap.Add(anAlias->Clone(), valueSet.Clone());
 		}else{
@@ -476,6 +567,7 @@ Bool_t AliShuttle::Process()
 					anAlias->GetName());
 			Log(fCurrentDetector, message.Data());
 			hasError = kTRUE;
+			break;
 		}
 	}
 
@@ -501,7 +593,8 @@ Bool_t AliShuttle::Process()
 		metaData.SetResponsible(Form("Duck, Donald"));
   		metaData.SetProperty("StartEndTime", &dcsValue);
   		metaData.SetComment("Automatically stored by Shuttle!");
-		hasError = (Store(fCurrentDetector, &aliasMap, &metaData) == 0);
+		AliCDBPath path(fCurrentDetector,"DCS","Data");
+		hasError = (Store(path, &aliasMap, &metaData) == 0);
 	}
 
   if (hasError)
@@ -651,7 +744,7 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 				fCurrentRun, GetDetCode(detector), id, source);
 	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
 
-	AliInfo(Form("SQL query: \n%s",sqlQuery.Data()));
+	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
 
 	// Query execution
 	TSQLResult* aResult;
@@ -687,7 +780,7 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 
 	delete aResult;
 
-	AliInfo(Form("filePath = %s",filePath.Data()));
+	AliDebug(2, Form("filePath = %s",filePath.Data()));
 
 	// retrieved file is renamed to make it unique
 	TString localFileName = Form("%s_%d_%s_%s.shuttle",
@@ -716,7 +809,7 @@ const char* AliShuttle::GetDAQFileName(const char* detector, const char* id, con
 Bool_t AliShuttle::RetrieveDAQFile(const char* daqFileName, const char* localFileName){
 
 	// check temp directory: trying to cd to temp; if it does not exist, create it
-	AliInfo(Form("Copy file %s from DAQ FES into folder %s and rename it as %s",
+	AliDebug(2, Form("Copy file %s from DAQ FES into folder %s and rename it as %s",
 			daqFileName,fgkShuttleTempDir, localFileName));
 
 	void* dir = gSystem->OpenDirectory(fgkShuttleTempDir);
@@ -739,14 +832,14 @@ Bool_t AliShuttle::RetrieveDAQFile(const char* daqFileName, const char* localFil
 		fgkShuttleTempDir,
 		localFileName);
 
-	AliInfo(Form("%s",command.Data()));
+	AliDebug(2, Form("%s",command.Data()));
 
 	UInt_t nRetries = 0;
 	UInt_t maxRetries = 3;
 
 	// copy!! if successful TSystem::Exec returns 0
 	while(nRetries++ < maxRetries) {
-		AliInfo(Form("Trying to copy file. Retry # %d", nRetries));
+		AliDebug(2, Form("Trying to copy file. Retry # %d", nRetries));
 		if(gSystem->Exec(command.Data()) == 0) return kTRUE;
 	}
 
@@ -770,7 +863,7 @@ TList* AliShuttle::GetDAQFileSources(const char* detector, const char* id){
 				fCurrentRun, GetDetCode(detector), id);
 	TString sqlQuery = Form("%s %s", sqlQueryStart.Data(), whereClause.Data());
 
-	AliInfo(Form("SQL query: \n%s",sqlQuery.Data()));
+	AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
 
 	// Query execution
 	TSQLResult* aResult;
@@ -794,7 +887,7 @@ TList* AliShuttle::GetDAQFileSources(const char* detector, const char* id){
 	while((aRow = aResult->Next())){
 
 		TString daqSource(aRow->GetField(0), aRow->GetFieldLength(0));
-		AliInfo(Form("daqSource = %s", daqSource.Data()));
+		AliDebug(2, Form("daqSource = %s", daqSource.Data()));
 		list->Add(new TObjString(daqSource));
 	}
 	delete aResult;
@@ -836,7 +929,7 @@ Bool_t AliShuttle::UpdateDAQTable(){
 
 		TString sqlQuery = Form("update logbook_fs set time_processed=%d %s", now.GetSec(), whereClause.Data());
 
-		AliInfo(Form("SQL query: \n%s",sqlQuery.Data()));
+		AliDebug(2, Form("SQL query: \n%s",sqlQuery.Data()));
 
 		// Query execution
 		TSQLResult* aResult;
@@ -849,7 +942,7 @@ Bool_t AliShuttle::UpdateDAQTable(){
 
 		// check result - TODO Is it necessary?
 		sqlQuery = Form("select time_processed from logbook_fs %s", whereClause.Data());
-		AliInfo(Form(" CHECK - SQL query: \n%s",sqlQuery.Data()));
+		AliDebug(2, Form(" CHECK - SQL query: \n%s",sqlQuery.Data()));
 
 		aResult = dynamic_cast<TSQLResult*> (fServer[kDAQ]->Query(sqlQuery));
 		if (!aResult) {
@@ -936,24 +1029,34 @@ void AliShuttle::Log(const char* detector, const char* message)
 {
 // Fill log string with a message
 
-  TString toLog = Form("%s: %s, run %d - %s", TTimeStamp(time(0)).AsString(),
-    detector, GetCurrentRun(), message);
-  AliInfo(toLog.Data());
+	void* dir = gSystem->OpenDirectory(fgkShuttleLogDir);
+	if (dir == NULL) {
+		if (gSystem->mkdir(fgkShuttleLogDir, kTRUE)) {
+			AliError(Form("Can't open directory <%s>!", fgkShuttleTempDir));
+			return;
+		}
 
-  TString fileName;
-  fileName.Form("%s/%s.log", fgkShuttleLogDir, detector);
-  gSystem->ExpandPathName(fileName);
+	} else {
+		gSystem->FreeDirectory(dir);
+	}
 
-  ofstream logFile;
-  logFile.open(fileName, ofstream::out | ofstream::app);
+  	TString toLog = Form("%s: %s, run %d - %s", TTimeStamp(time(0)).AsString(),
+	detector, GetCurrentRun(), message);
+  	AliInfo(toLog.Data());
 
-  if (!logFile.is_open())
-  {
-    AliError(Form("Could not open file %s", fileName.Data()));
-    return;
-  }
+  	TString fileName;
+  	fileName.Form("%s/%s.log", fgkShuttleLogDir, detector);
+  	gSystem->ExpandPathName(fileName);
 
-  logFile << toLog.Data() << "\n";
+  	ofstream logFile;
+  	logFile.open(fileName, ofstream::out | ofstream::app);
 
-  logFile.close();
+  	if (!logFile.is_open()) {
+    		AliError(Form("Could not open file %s", fileName.Data()));
+    		return;
+  	}
+
+  	logFile << toLog.Data() << "\n";
+
+  	logFile.close();
 }

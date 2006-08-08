@@ -70,7 +70,7 @@ void TestPreprocessor()
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
-  AliCDBEntry* entry = AliCDBManager::Instance()->Get("DET/SHUTTLE/Data", 0);
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("DET/SHUTTLE/Data", 7);
   if (!entry)
   {
     printf("The file is not there. Something went wrong.\n");

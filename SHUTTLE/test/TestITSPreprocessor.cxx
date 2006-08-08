@@ -69,6 +69,6 @@ UInt_t TestITSPreprocessor::Process(TMap* valueMap)
 	AliCDBMetaData metaData;
 	metaData.SetComment("This is a test!");
 
-	return Store(valueMap, &metaData);
+	return Store("Calib", "ITSData", valueMap, &metaData);
 }
 

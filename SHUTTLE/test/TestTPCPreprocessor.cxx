@@ -85,7 +85,7 @@ UInt_t TestTPCPreprocessor::Process(TMap* aliasMap)
 	metaData.SetResponsible("Alberto Colla");
 	metaData.SetComment("This preprocessor fills an AliTPCDataDCS object.");
 
-	return Store(fData, &metaData);
+	return Store("Calib", "TPCData", fData, &metaData);
 	delete fData;
 	fData = 0;
 }
