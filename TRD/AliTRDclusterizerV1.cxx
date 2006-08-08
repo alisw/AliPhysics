@@ -33,7 +33,6 @@
 #include "AliRawReader.h"
 
 #include "AliTRDclusterizerV1.h"
-#include "AliTRDmatrix.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayF.h"
 #include "AliTRDdataArrayI.h"
