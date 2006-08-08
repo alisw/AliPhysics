@@ -44,3 +44,4 @@ lhapdf5.2.2/wrapsmrspi.f \
 lhapdf5.2.2/wrapwhitg.f \
 lhapdf5.2.2/wrapzeus.f
 EXPORT:=AliStructFuncType.h
+EINCLUDE:= LHAPDF/lhapdf
