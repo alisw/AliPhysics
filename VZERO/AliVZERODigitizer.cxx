@@ -235,23 +235,30 @@ void AliVZERODigitizer::ResetDigit()
 AliVZEROCalibData* AliVZERODigitizer::GetCalibData() const
 
 {
-AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBManager *man = AliCDBManager::Instance();
 
-AliCDBStorage *storLoc;
-storLoc = man->GetStorage("local://$ALICE_ROOT");
+  AliCDBEntry *entry=0;
 
-// Retrieval of data in directory VZERO/Calib/Data:
+  entry = man->Get("VZERO/Calib/Data");
 
-AliCDBEntry *entry=0;
-entry = storLoc->Get("VZERO/Calib/Data",1);
+  if(!entry){
+    AliWarning("Load of calibration data from default storage failed!");
+    AliWarning("Calibration data will be loaded from local storage ($ALICE_ROOT)");
+    Int_t runNumber = man->GetRun();
+    entry = man->GetStorage("local://$ALICE_ROOT")
+      ->Get("VZERO/Calib/Data",runNumber);
+	
+  }
 
-AliVZEROCalibData *calibdata = 0;
+  // Retrieval of data in directory VZERO/Calib/Data:
 
-if (entry) calibdata = (AliVZEROCalibData*) entry->GetObject();
-if (!calibdata)  AliError("No calibration data from calibration database !");
 
-return calibdata;
-delete entry;
+  AliVZEROCalibData *calibdata = 0;
+
+  if (entry) calibdata = (AliVZEROCalibData*) entry->GetObject();
+  if (!calibdata)  AliError("No calibration data from calibration database !");
+
+  return calibdata;
 
 }
 
