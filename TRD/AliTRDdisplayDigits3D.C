@@ -64,6 +64,11 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
     return 1;
   }
 
+  AliCDBManager *cdbManager  = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
+  calibration->SetRun(0);
+
   TCanvas *c1 = new TCanvas("digits","TRD digits display",0,0,700,730);
   TView   *v  = new TView(1);
   v->SetRange(-430,-560,-430,430,560,1710);
@@ -79,7 +84,6 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
 
   // Create the digits manager
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
-  digitsManager->SetDebug(1);
   digitsManager->SetSDigits(sdigits);
 
   // Read the digits from the file
@@ -97,9 +101,8 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
   Int_t totalsignal = 0;
   Int_t totalbgnd   = 0;
   Int_t totalmerged = 0;
+  Int_t timeMax     = calibration->GetNumberOfTimeBins();
 
-  AliTRDparameter *par = new AliTRDparameter("TRDparameter","TRD parameter class");
- 
   // Loop through all detectors
   for (Int_t idet = 0; idet < geo->Ndet(); idet++) {
 
@@ -115,9 +118,9 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
     Int_t isec    = geo->GetSector(idet);
     Int_t icha    = geo->GetChamber(idet);
     Int_t ipla    = geo->GetPlane(idet);
-    Int_t  rowMax = par->GetRowMax(ipla,icha,isec);
-    Int_t  colMax = par->GetColMax(ipla);
-    Int_t timeMax = par->GetTimeMax();
+    AliTRDpadPlane *padPlane = new AliTRDpadPlane(ipla,icha);
+    Int_t  rowMax = padPlane->GetNrows();
+    Int_t  colMax = padPlane->GetNcols();
 
     Int_t ndigits = digits->GetOverThreshold(thresh);
 
@@ -156,7 +159,7 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
               loc[0] = row;
               loc[1] = col;
               loc[2] = time;
-              geo->Local2Global(idet,loc,glb,par);
+              geo->Local2Global(idet,loc,glb);
               Double_t x = glb[0];
               Double_t y = glb[1];
               Double_t z = glb[2];
@@ -206,6 +209,8 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
     }
 
   }
+
+  delete padPlane;
 
   TGeometry *geoAlice = gAlice->GetGeometry();
   TNode     *main     = (TNode *) ((geoAlice->GetListOfNodes())->First());
