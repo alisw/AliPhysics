@@ -64,7 +64,7 @@ private:
 
   AliMUONData*  fMUONData;           //!< Data container for MUON subsystem 
  
-  FILE*         fFile[2];            //!< DDL binary file pointer one per 1/2 chamber
+  FILE*         fFile[4];            //!< DDL binary file pointer one per 1/2 chamber, 4 for one station
 
   TClonesArray* fBusArray;           //!< array to sub event tracker
    

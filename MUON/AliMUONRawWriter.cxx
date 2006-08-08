@@ -33,6 +33,9 @@
 // Introducing variable DSP numbers, real manu numbers per buspatch for st12
 // Implemented scaler event for Trigger
 // Ch. Finck, Jan. 06
+// Using bus itr in DDL instead of simple incrementation
+// treat correctly the DDL & buspatch for station 3.
+// Ch. Finck, August 06.
 // 
 ////////////////////////////////////
 
@@ -139,6 +142,8 @@ AliMUONRawWriter::AliMUONRawWriter()
   //
   AliDebug(1,"Default ctor");   
   fFile[0] = fFile[1] = 0x0;  
+  fFile[2] = fFile[3] = 0x0;  
+
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
   fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
@@ -205,7 +210,7 @@ Int_t AliMUONRawWriter::Digits2Raw()
   // convert digits of the current event to raw data
   //
   Int_t idDDL;
-  Char_t name[20];
+  Char_t name[255];
 
   fMUONData->GetLoader()->LoadDigits("READ");
 
@@ -219,24 +224,34 @@ Int_t AliMUONRawWriter::Digits2Raw()
   
   // tracking chambers
 
-  for (Int_t ich = 0; ich < AliMUONConstants::NTrackingCh(); ich++) 
-  {
-    // open files
-    //   idDDL = ich * 2  + AliDAQ::DdlIDOffset("MUONTRK"); // waiting update in STEER
-    idDDL = ich * 2;
+  for (Int_t iSt = 0; iSt < AliMUONConstants::NTrackingCh()/2; iSt++) {
+
+    // open files for one station
+    // cos station 3, 1/4 of DE's from 2 chambers has same DDL number 
+    idDDL = iSt * 4;
     strcpy(name,AliDAQ::DdlFileName("MUONTRK",idDDL));
     fFile[0] = fopen(name,"w");
 
-    //    idDDL = (ich * 2) + 1 + AliDAQ::DdlIDOffset("MUONTRK");
-    idDDL = (ich * 2) + 1;
+    idDDL = (iSt * 4) + 1;
     strcpy(name,AliDAQ::DdlFileName("MUONTRK",idDDL));
     fFile[1] = fopen(name,"w");
-    
-    WriteTrackerDDL(ich);
+
+    idDDL =  (iSt * 4) + 2;;
+    strcpy(name,AliDAQ::DdlFileName("MUONTRK",idDDL));
+    fFile[2] = fopen(name,"w");
+
+    idDDL =  (iSt * 4) + 3;
+    strcpy(name,AliDAQ::DdlFileName("MUONTRK",idDDL));
+    fFile[3] = fopen(name,"w");
+
+    WriteTrackerDDL(iSt);
   
-    // reset and close
+    // reset and close when station has been processed
     fclose(fFile[0]);
     fclose(fFile[1]);
+    fclose(fFile[2]);
+    fclose(fFile[3]);
+     
   }
  
   // trigger chambers
@@ -264,7 +279,7 @@ Int_t AliMUONRawWriter::Digits2Raw()
 }
 
 //____________________________________________________________________
-Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
+Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 {
   // writing DDL for tracker
   // used inverse mapping
@@ -328,73 +343,75 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
 
   const AliMUONDigit* digit;
 
-  AliDebug(3, Form("WriteDDL chamber %d\n", iCh+1));
+  for (Int_t iCh = iSt*2; iCh <= iSt*2 + 1; iCh++) {
 
-  muonDigits = fMUONData->Digits(iCh);
+    muonDigits = fMUONData->Digits(iCh);
 
-  nDigits = muonDigits->GetEntriesFast();
-  AliDebug(3,Form("ndigits = %d\n",nDigits));
+    nDigits = muonDigits->GetEntriesFast();
+    AliDebug(3,Form("ndigits = %d\n",nDigits));
  
-  // loop over digit
-  for (Int_t idig = 0; idig < nDigits; idig++) {
+    // loop over digit
+    for (Int_t idig = 0; idig < nDigits; idig++) {
 
-    digit = (AliMUONDigit*) muonDigits->UncheckedAt(idig);
+      digit = (AliMUONDigit*) muonDigits->UncheckedAt(idig);
 
-    padX = digit->PadX();
-    padY = digit->PadY();
-    charge = digit->ADC();
-    if ( charge > kMAXADC )
-    {
-      // This is most probably an error in the digitizer (which should insure
-      // the adc is below kMAXADC), so make it a (non-fatal) error indeed.
-      AliError(Form("adc value %d above %x. Setting to %x",
-                      charge,kMAXADC,kMAXADC));
-      charge = kMAXADC;
-    }
-    cathode = digit->Cathode();
-    detElemId = digit->DetElemId();
+      padX = digit->PadX();
+      padY = digit->PadY();
+      charge = digit->ADC();
+      if ( charge > kMAXADC )
+	{
+	  // This is most probably an error in the digitizer (which should insure
+	  // the adc is below kMAXADC), so make it a (non-fatal) error indeed.
+	  AliError(Form("adc value %d above %x. Setting to %x",
+			charge,kMAXADC,kMAXADC));
+	  charge = kMAXADC;
+	}
+      cathode = digit->Cathode();
+      detElemId = digit->DetElemId();
 
-    // inverse mapping
-    busPatchId = GetBusPatch(*digit);
-    if (busPatchId<0) continue;
+      // inverse mapping
+      busPatchId = GetBusPatch(*digit);
+      if (busPatchId<0) continue;
 
-    if ( digit->ManuId() > 0x7FF || digit->ManuId() < 0 ||
-         digit->ManuChannel() > 0x3F || digit->ManuChannel() < 0 )
-    {
-      StdoutToAliError(digit->Print(););
-      AliFatal("ManuId,ManuChannel are invalid for the digit above.");
-    }
+      if ( digit->ManuId() > 0x7FF || digit->ManuId() < 0 ||
+	   digit->ManuChannel() > 0x3F || digit->ManuChannel() < 0 )
+	{
+	  StdoutToAliError(digit->Print(););
+	  AliFatal("ManuId,ManuChannel are invalid for the digit above.");
+	}
     
-    manuId = ( digit->ManuId() & 0x7FF ); // 11 bits
-    channelId = ( digit->ManuChannel() & 0x3F ); // 6 bits
+      manuId = ( digit->ManuId() & 0x7FF ); // 11 bits
+      channelId = ( digit->ManuChannel() & 0x3F ); // 6 bits
 
-    AliDebug(3,Form("input  IdDE %d busPatchId %d PadX %d PadY %d iCath %d \n", 
-		    detElemId, busPatchId, padX, padY, cathode));
+      AliDebug(3,Form("input  IdDE %d busPatchId %d PadX %d PadY %d iCath %d \n", 
+		      detElemId, busPatchId, padX, padY, cathode));
 
-    AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", busPatchId, manuId, channelId ));
+      AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", busPatchId, manuId, 
+		      channelId ));
 
-    //packing word
-    word = 0;
-    AliBitPacking::PackWord((UInt_t)manuId,word,18,28);
-    AliBitPacking::PackWord((UInt_t)channelId,word,12,17);
-    AliBitPacking::PackWord((UInt_t)charge,word,0,11);
+      //packing word
+      word = 0;
+      AliBitPacking::PackWord((UInt_t)manuId,word,18,28);
+      AliBitPacking::PackWord((UInt_t)channelId,word,12,17);
+      AliBitPacking::PackWord((UInt_t)charge,word,0,11);
 
-    // parity word
-    parity = word & 0x1;
-    for (Int_t i = 1; i <= 30; i++) 
-      parity ^=  ((word >> i) & 0x1);
-    AliBitPacking::PackWord((UInt_t)parity,word,31,31);
+      // parity word
+      parity = word & 0x1;
+      for (Int_t i = 1; i <= 30; i++) 
+	parity ^=  ((word >> i) & 0x1);
+      AliBitPacking::PackWord((UInt_t)parity,word,31,31);
 
-    // set sub Event
-    fBusStruct->SetLength(0);
-    fBusStruct->AddData(word);
-    fBusStruct->SetBusPatchId(busPatchId);
+      // set sub Event
+      fBusStruct->SetLength(0);
+      fBusStruct->AddData(word);
+      fBusStruct->SetBusPatchId(busPatchId);
        
-    // storing the number of identical buspatches
-    nbInBus[busPatchId]++;
-    AddData(*fBusStruct);
+      // storing the number of identical buspatches
+      nbInBus[busPatchId]++;
+      AddData(*fBusStruct);
    
-  }
+    }
+  } // loop over chamber in station
 
   // sorting by buspatch
   fBusArray->Sort();
@@ -428,6 +445,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
     }
     printf("\n");
   }
+  // end of TreeD reading and storing in TClonesArray
   
   // getting info for the number of buspatches
   Int_t iBusPatch;
@@ -435,27 +453,23 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
   Int_t iBusPerDSP[5];//number of bus patches per DSP
   Int_t iDspMax; //number max of DSP per block
   Int_t iFile = 0;
-  fBusPatchManager->GetDspInfo(iCh, iDspMax, iBusPerDSP);
-
-  TArrayI* vec = fBusPatchManager->GetBusfromDE((iCh+1)*100);
-
-  Int_t iBus0AtCh = vec->At(0); //get first bus patch id for a given ich
-
-  AliDebug(3,Form("iBus0AtCh %d", iBus0AtCh));
-
-  iBusPatch = iBus0AtCh - 1; // starting point for each chamber
-
-  // nEntries = fBusArray->GetEntriesFast();
 
   AliMUONBusStruct* busStructPtr = 0x0;
 
-  // open DDL file, on per 1/2 chamber
-  for (Int_t iDDL = 0; iDDL < 2; iDDL++) {
-    
+  // open DDL files, 4 per station
+  for (Int_t iDDL = iSt*4; iDDL < 4 + iSt*4; iDDL++) {
+
+    fBusPatchManager->ResetBusItr(iDDL);
+    fBusPatchManager->GetDspInfo(iDDL, iDspMax, iBusPerDSP);
+
     totalDDLLength = 0;
 
-    // filling buffer
-    buffer = new Int_t [(2048+24)*50]; // 24 words at most for one buspatch and 2048 manu info at most
+    // buffer size
+    // ((43 manus max*64 ch + 4 bus word) * 5 DSPs + 10 DSP word) * 2 blocks + 8 block words = 27588
+    static const Int_t kBufferSize = ((43*64 + 4)*5 + 10)*2 + 8;
+
+    // buffer allocation
+    buffer = new Int_t [kBufferSize];
 
     indexBlk = 0;
     indexDsp = 0;
@@ -482,17 +496,22 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
 	// 5 buspatches max per DSP
 	for (Int_t i = 0; i < iBusPerDSP[iDsp]; i++) {
 
-	  iBusPatch++;
-	  if ((fBusPatchManager->GetDDLfromBus(iBusPatch) % 2) == 0) // comparing to DDL file
-	    iFile = 1;
-	  else
-	    iFile = 0;
+	  // iteration over bus patch in DDL
+	  if ((iBusPatch = fBusPatchManager->NextBusInDDL(iDDL)) == -1) {
+	    AliWarning(Form("Error in bus itr in DDL %d\n", iDDL));
+	    continue;
+	  }
 
-	  AliDebug(3,Form("iCh %d iDDL %d iBlock %d iDsp %d busPatchId %d", iCh, iDDL, iBlock, iDsp, iBusPatch));
+	  // 4 DDL's per station, condition needed for station 3
+	  iFile = iDDL - iSt*4; // works only if DDL begins at zero (as it should be) !!!
+
+	  AliDebug(3,Form("iSt %d iDDL %d iBlock %d iDsp %d busPatchId %d", iSt, iDDL, iBlock, 
+			  iDsp, iBusPatch));
 
 	  nEntries = fBusArray->GetEntriesFast();
 	  busPatchId = -1;
 
+	  // checking buspatch structure not empty
 	  for (Int_t iEntries = 0; iEntries < nEntries; iEntries++) { // method "bourrique"...
 	    busStructPtr = (AliMUONBusStruct*)fBusArray->At(iEntries);
 	    busPatchId = busStructPtr->GetBusPatchId();
@@ -553,7 +572,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iCh)
     } // block
     
     //writting onto disk
-    // write DDL 1 & 2
+    // write DDL 1 - 4
     fHeader.fSize = (totalDDLLength + headerSize) * 4;// total length in bytes
     fwrite((char*)(&fHeader),headerSize*4,1,fFile[iFile]);
     fwrite(buffer,sizeof(int),index,fFile[iFile]);
