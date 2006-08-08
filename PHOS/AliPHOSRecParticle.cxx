@@ -178,6 +178,8 @@ Int_t AliPHOSRecParticle::GetPrimaryIndex() const
     }
   }
   digit = gime->Digit(digitList[bestDigitIndex]);
+  if (digit==0) return -12345;
+
   
   // Get the list of primary tracks producing this digit
   // and find which track has more track energy.
