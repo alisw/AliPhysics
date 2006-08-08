@@ -1131,7 +1131,9 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
 
   AliInfo(Form("converting raw data DDL files to DATE file %s", dateFileName));
   char command[256];
-  sprintf(command, "dateStream -D -o %s -# %d -C", 
+  // Note the option -s. It is used in order to avoid
+  // the generation of SOR/EOR events.
+  sprintf(command, "dateStream -s -D -o %s -# %d -C", 
 	  dateFileName, runLoader->GetNumberOfEvents());
   FILE* pipe = gSystem->OpenPipe(command, "w");
 
@@ -1182,10 +1184,10 @@ Bool_t AliSimulation::ConvertDateToRoot(const char* dateFileName,
 // convert a DATE file to a root file with the program "alimdc"
 
   // ALIMDC setup
-  const Int_t kDBSize = 1000000000;
+  const Int_t kDBSize = 2000000000;
   const Int_t kTagDBSize = 1000000000;
   const Bool_t kFilter = kFALSE;
-  const Int_t kCompression = 1;
+  const Int_t kCompression = 0;
 
   char* path = gSystem->Which(gSystem->Getenv("PATH"), "alimdc");
   if (!path) {
