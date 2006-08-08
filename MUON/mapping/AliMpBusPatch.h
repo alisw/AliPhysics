@@ -18,8 +18,7 @@
 #include <TObject.h>
 
 #include <TExMap.h>
-
-class TArrayI;
+#include <TArrayI.h>
 
 class AliMpBusPatch : public TObject
 {
@@ -35,11 +34,16 @@ class AliMpBusPatch : public TObject
   
   // methods
   void ReadBusPatchFile();
-  void GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP) const;
+  void GetDspInfo(Int_t iDDL, Int_t& iDspMax, Int_t* iBusPerDSP) const;
 
   Int_t    GetDEfromBus(Int_t busPatchId);
   TArrayI* GetBusfromDE(Int_t idDE);
   Int_t    GetDDLfromBus(Int_t busPatchId);
+  void     AddBus(Int_t nDDL, Int_t busPatch);
+  void     Sort();
+  TArrayI  GetBusInDDL(Int_t nDDL) {return fBusInDDL[nDDL];}
+  Int_t    NextBusInDDL(Int_t iDDL);
+  void     ResetBusItr(Int_t iDDL);
 
  private:
 
@@ -47,7 +51,11 @@ class AliMpBusPatch : public TObject
   TExMap fBusPatchToDetElem;         //!< Map from BusPatch to idDE
   TExMap fBusPatchToDDL;             //!< Map from BusPatch to iDDL
 
-  Int_t fMaxBusPerCh[10];            //!< max buspatch number per chamber
+  TArrayI fBusInDDL[20];             //!< buspatch array per DDL
+  Int_t fBusItr[20];                 //!< buspatch in DDL iterator
+
+  void Sort(TArrayI& arr, Int_t start, Int_t end);
+
 
   ClassDef(AliMpBusPatch,1) //utility class for the motif type
 };

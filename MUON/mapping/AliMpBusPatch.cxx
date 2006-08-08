@@ -21,14 +21,16 @@
 // ---------------
 // Class that manages the maps buspatch<>DDL<>DE 
 // for the mapping
-// Calculates also the maximum DSP and buspatch numbers for a given DE
+// Calculates also the maximum DSP and buspatch numbers for a given DDL
+// Create a bus Iterator for DDL, needed especially for station 3
+// Implementing a Sort method for Iterator, not really needed for the moment
 //
 // Author: Ch. Finck; Subatech Nantes
 
 #include "AliMpBusPatch.h"
 #include "AliMpFiles.h"
 #include "AliMpHelper.h"
-
+#include "AliDAQ.h"
 #include "AliLog.h"
 
 #include "TArrayI.h"
@@ -46,12 +48,7 @@ AliMpBusPatch::AliMpBusPatch()
     fBusPatchToDDL(300)
 {
 /// Default constructor
-
-  for (Int_t i = 0; i < 10; i++)
-    fMaxBusPerCh[i] = 0;
-
 }
-
 
 //_____________________________________________________________________________
 AliMpBusPatch::AliMpBusPatch(const AliMpBusPatch& rhs)
@@ -70,6 +67,7 @@ AliMpBusPatch::~AliMpBusPatch()
   fDetElemIdToBusPatch.Delete();
   fBusPatchToDetElem.Delete();
   fBusPatchToDDL.Delete();
+
 }
 
 //_____________________________________________________________________________
@@ -114,12 +112,12 @@ Int_t AliMpBusPatch::GetDDLfromBus(Int_t busPatchId)
 }
 
 //____________________________________________________________________
-void AliMpBusPatch::GetDspInfo(Int_t iCh, Int_t& iDspMax, Int_t* iBusPerDSP) 
+void AliMpBusPatch::GetDspInfo(Int_t iDDL, Int_t& iDspMax, Int_t* iBusPerDSP) 
 const
 {
 /// calculates the number of DSP & buspatch per block
 
-  Int_t iBusPerBlk = fMaxBusPerCh[iCh]/4; //per half chamber; per block
+  Int_t iBusPerBlk = fBusInDDL[iDDL].GetSize()/2; //per block
 
   iDspMax =  iBusPerBlk/5; //number max of DSP per block
   if (iBusPerBlk % 5 != 0)
@@ -145,9 +143,6 @@ void AliMpBusPatch::ReadBusPatchFile()
        
    char line[80];
 
-   Int_t iChprev = 1;
-   Int_t maxBusPatch = 0;
-
    while ( in.getline(line,80) ) {
 
       if ( line[0] == '#' ) continue;
@@ -160,15 +155,14 @@ void AliMpBusPatch::ReadBusPatchFile()
       TString sDE(tmp(0, blankPos));
 
       Int_t idDE = atoi(sDE.Data());
-      
-      if (idDE/100 != iChprev) {
-	fMaxBusPerCh[iChprev-1] = maxBusPatch-iChprev*100+1;
-	iChprev = idDE/100;
-      }
 
       TString sDDL(tmp(blankPos1 + 1, tmp.Length()-blankPos1));
 
       Int_t iDDL = atoi(sDDL.Data());
+
+      // always working local DDL number... for the moment.
+      if (iDDL >= AliDAQ::DdlIDOffset("MUONTRK"))
+	iDDL -= AliDAQ::DdlIDOffset("MUONTRK");
 
       TString busPatch(tmp(blankPos + 1,blankPos1-blankPos-1));
       AliDebug(3,Form("idDE %d buspatch %s iDDL %d\n", idDE, busPatch.Data(), iDDL));
@@ -178,10 +172,11 @@ void AliMpBusPatch::ReadBusPatchFile()
       AliMpHelper::DecodeName(busPatch,';',busPatchList);
       
       // filling buspatch -> idDE
+
       for (Int_t i = 0; i < busPatchList.GetSize(); i++) {
 	fBusPatchToDetElem.Add((Long_t)busPatchList[i],(Long_t)idDE);
 	fBusPatchToDDL.Add((Long_t)busPatchList[i],(Long_t)iDDL);
-	maxBusPatch = busPatchList[i];
+	AddBus(iDDL, busPatchList[i]);
       }
    
       // filling idDE -> buspatch list (vector)
@@ -189,8 +184,98 @@ void AliMpBusPatch::ReadBusPatchFile()
 
     }
    
-   fMaxBusPerCh[iChprev-1] = maxBusPatch-iChprev*100+1;
-
   in.close();
+
+}
+//____________________________________________________________________
+void AliMpBusPatch::AddBus(Int_t iDDL, Int_t busPatch)
+{
+/// add bus patch number per DDL
+
+  fBusInDDL[iDDL].Set(fBusInDDL[iDDL].GetSize() + 1);
+  fBusInDDL[iDDL].AddAt(busPatch, fBusInDDL[iDDL].GetSize() - 1);
+
+}
+
+
+//____________________________________________________________________
+Int_t AliMpBusPatch::NextBusInDDL(Int_t iDDL)
+{
+/// Next bus patch number in DDL
+
+  if (fBusItr[iDDL] >= fBusInDDL[iDDL].GetSize())
+    return -1;
+
+  return fBusInDDL[iDDL].At(fBusItr[iDDL]++);
+
+}
+
+//____________________________________________________________________
+void AliMpBusPatch::ResetBusItr(Int_t iDDL)
+{
+/// reset bus iterator for the given DDL
+
+  fBusItr[iDDL] = 0;
+}
+
+//____________________________________________________________________
+void AliMpBusPatch::Sort()
+{
+/// sort bus patch number for all DDL
+
+  for (Int_t j = 0; j < AliDAQ:: NumberOfDdls("MUONTRK"); j++) {
+    Sort(fBusInDDL[j], 0, fBusInDDL[j].GetSize() - 1);
+
+    if (AliLog::GetGlobalDebugLevel() == 1) {
+      printf("DDL %d\n",j);
+      for (Int_t i = 0; i <  fBusInDDL[j].GetSize(); i++)
+	printf("buspatch %d index %d\n",fBusInDDL[j].At(i), i);
+    }
+  } 
+
+}
+
+//____________________________________________________________________
+void AliMpBusPatch::Sort(TArrayI& arr, Int_t start, Int_t end)
+{
+/// sort bus patch number per DDL
+/// not really needed, but for future developments ?
+/// quicksort method, not in Root ?
+
+  Int_t pivot;
+  Int_t starth;
+  Int_t endh; // store pivot # keep start & end in memory for split
+
+  starth = start;
+  endh = end;
+  pivot = arr[start];
+
+  while(start < end) {
+      while((arr[end] >= pivot) && (start < end))
+	end--;
+
+      if (start != end) {
+	  arr[start] = arr[end];
+	  start++;
+      }
+      while ((arr[start] <= pivot) && (start < end))
+	start++;
+
+      if (start != end) {
+	  arr[end] = arr[start];
+	  end--;
+      }
+  }
+
+  arr[start] = pivot;
+  pivot = start;
+  start = starth;
+  end   = endh;
+
+  if(start < pivot)
+    Sort(arr, start, pivot-1);
+
+  if(end > pivot)
+    Sort(arr, pivot+1, end);
 
 }
