@@ -13,10 +13,16 @@
 #include <TH3F.h>
 #include <TLine.h>
 #include <TSystem.h>
+#include <TLegend.h>
+#include <TPad.h>
+#include <TF1.h>
+
+extern TPad* gPad;
+
+void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", const char* folderName = "dndeta_correction", Float_t upperPtLimit = 10);
 
 #endif
 
-extern TPad* gPad;
 
 void SetRanges(TAxis* axis)
 {
@@ -139,7 +145,7 @@ void Secondaries()
   }
 }
 
-void Track2Particle1DComposition(const char* fileName = "correction_map.root", Int_t folderCount, const char** folderNames, Float_t upperPtLimit = 9.9)
+void Track2Particle1DComposition(const char** fileNames, Int_t folderCount, const char** folderNames, Float_t upperPtLimit = 9.9)
 {
   gSystem->Load("libPWG0base");
 
@@ -152,11 +158,11 @@ void Track2Particle1DComposition(const char* fileName = "correction_map.root", I
 
   for (Int_t i=0; i<folderCount; ++i)
   {
-    Track2Particle1DCreatePlots(fileName, folderNames[i], upperPtLimit);
+    Track2Particle1DCreatePlots(fileNames[i], folderNames[i], upperPtLimit);
 
-    TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_x_div_meas_nTrackToNPart_x"));
-    TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_y_div_meas_nTrackToNPart_y"));
-    TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_z_div_meas_nTrackToNPart_z"));
+    TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_x_div_meas_%s_nTrackToNPart_x", folderNames[i], folderNames[i])));
+    TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_y_div_meas_%s_nTrackToNPart_y", folderNames[i], folderNames[i])));
+    TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_z_div_meas_%s_nTrackToNPart_z", folderNames[i], folderNames[i])));
 
     Prepare1DPlot(corrX);
     Prepare1DPlot(corrY);
@@ -194,14 +200,167 @@ void Track2Particle1DComposition(const char* fileName = "correction_map.root", I
   //canvas->SaveAs(Form("Track2Particle1D_%s_%d_%f.eps", fileName, gMax, upperPtLimit));
 }
 
+TH1** DrawRatios(const char* fileName = "systematics.root")
+{
+  gSystem->Load("libPWG0base");
+
+  TFile* file = TFile::Open(fileName);
+
+  TString canvasName;
+  canvasName.Form("DrawRatios");
+  TCanvas* canvas = new TCanvas(canvasName, canvasName, 800, 400);
+  canvas->Divide(2, 1);
+  canvas->cd(1);
+
+  TH1** ptDists = new TH1*[4];
+
+  TLegend* legend = new TLegend(0.7, 0.7, 0.95, 0.95);
+
+  const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "correction_3" };
+  const char* particleNames[] = { "#pi", "K", "p", "other" };
+  for (Int_t i=0; i<4; ++i)
+  {
+    AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(folderNames[i], folderNames[i]);
+    dNdEtaCorrection->LoadHistograms(fileName, folderNames[i]);
+
+    TH3F* gene = dNdEtaCorrection->GetTrack2ParticleCorrection()->GetGeneratedHistogram();
+
+    gene->GetYaxis()->SetRangeUser(-0.8, 0.8);
+    gene->GetXaxis()->SetRangeUser(-10, 10);
+
+    ptDists[i] = dynamic_cast<TH1*> (gene->Project3D("z")->Clone(Form("%s_z", folderNames[i])));
+    ptDists[i]->SetTitle(";p_{T};Count");
+    if (!ptDists[i])
+    {
+      printf("Problem getting distribution %d.\n", i);
+      return 0;
+    }
+
+    ptDists[i]->GetYaxis()->SetRangeUser(1, ptDists[i]->GetMaximum()*1.1);
+    ptDists[i]->GetXaxis()->SetRangeUser(0, 9.9);
+    ptDists[i]->SetLineColor(i+1);
+    ptDists[i]->DrawCopy((i == 0) ? "" : "SAME");
+    ptDists[i]->GetYaxis()->SetRange(0, 0);
+
+    legend->AddEntry(ptDists[i], particleNames[i]);
+  }
+  gPad->SetLogy();
+
+  TH1* total = dynamic_cast<TH1*> (ptDists[0]->Clone("total"));
+
+  for (Int_t i=1; i<4; ++i)
+    total->Add(ptDists[i]);
+
+  canvas->cd(2);
+  for (Int_t i=0; i<4; ++i)
+  {
+    ptDists[i]->Divide(total);
+    ptDists[i]->SetTitle(";p_{T};Ratio");
+    ptDists[i]->GetYaxis()->SetRangeUser(0, 1);
+    ptDists[i]->Draw((i == 0) ? "" : "SAME");
+  }
+  legend->Draw();
+
+  canvas->SaveAs("DrawRatios.gif");
+
+  file->Close();
+
+  return ptDists;
+}
+
 void DrawDifferentSpecies()
 {
   gROOT->ProcessLine(".L drawPlots.C");
 
+  const char* fileNames[] = { "systematics.root", "systematics.root", "systematics.root", "systematics.root" };
   const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "correction_3" };
 
-  Track2Particle1DComposition("systematics.root", 4, folderNames);
+  Track2Particle1DComposition(fileNames, 4, folderNames);
 }
+
+void DrawSpeciesAndCombination()
+{
+  gROOT->ProcessLine(".L drawPlots.C");
+
+  const char* fileNames[] = { "systematics.root", "systematics.root", "systematics.root", "new_compositions.root" };
+  const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "PythiaRatios" };
+
+  Track2Particle1DComposition(fileNames, 4, folderNames);
+}
+
+void DrawSimulatedVsCombined()
+{
+  gROOT->ProcessLine(".L drawPlots.C");
+
+  const char* fileNames[] = { "new_compositions.root", "new_compositions.root" };
+  const char* folderNames[] = { "Pythia", "PythiaRatios" };
+
+  Track2Particle1DComposition(fileNames, 2, folderNames);
+}
+
+void DrawBoosts()
+{
+  gROOT->ProcessLine(".L drawPlots.C");
+
+  const char* fileNames[] = { "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root" };
+  const char* folderNames[] = { "PythiaRatios", "PiBoosted", "KBoosted", "pBoosted" };
+
+  Track2Particle1DComposition(fileNames, 4, folderNames);
+}
+
+TH1F* HistogramDifferences(const char* filename, const char* folder1, const char* folder2)
+{
+  gSystem->Load("libPWG0base");
+
+  AlidNdEtaCorrection* fdNdEtaCorrection[2];
+
+  TFile::Open(filename);
+
+  fdNdEtaCorrection[0] = new AlidNdEtaCorrection(folder1, folder1);
+  fdNdEtaCorrection[0]->LoadHistograms(filename, folder1);
+
+  fdNdEtaCorrection[1] = new AlidNdEtaCorrection(folder2, folder2);
+  fdNdEtaCorrection[1]->LoadHistograms(filename, folder2);
+
+  TH1F* difference = new TH1F("difference", Form(";#DeltaC_{pT, z, #eta} %s - %s;Count", folder2, folder1), 1000, -0.5, 0.5);
+
+  TH3F* hist1 = fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetCorrectionHistogram();
+  TH3F* hist2 = fdNdEtaCorrection[1]->GetTrack2ParticleCorrection()->GetCorrectionHistogram();
+
+  for (Int_t x=hist1->GetXaxis()->FindBin(-10); x<=hist1->GetXaxis()->FindBin(10); ++x)
+    for (Int_t y=hist1->GetYaxis()->FindBin(-0.8); y<=hist1->GetYaxis()->FindBin(0.8); ++y)
+      for (Int_t z=hist1->GetZaxis()->FindBin(0.3); z<=hist1->GetZaxis()->FindBin(9.9); ++z)
+        difference->Fill(hist2->GetBinContent(x, y, z) - hist1->GetBinContent(x, y, z));
+
+  printf("Over-/Underflow bins: %d %d\n", difference->GetBinContent(0), difference->GetBinContent(difference->GetNbinsX()+1));
+
+  return difference;
+}
+
+void HistogramDifferences()
+{
+  TH1F* PiBoosted = HistogramDifferences("new_compositions.root", "PythiaRatios", "PiBoosted");
+  TH1F* KBoosted = HistogramDifferences("new_compositions.root", "PythiaRatios", "KBoosted");
+  TH1F* pBoosted = HistogramDifferences("new_compositions.root", "PythiaRatios", "pBoosted");
+
+  TCanvas* canvas = new TCanvas("HistogramDifferences", "HistogramDifferences", 1200, 400);
+  canvas->Divide(3, 1);
+
+  canvas->cd(1);
+  PiBoosted->GetXaxis()->SetRangeUser(-0.01, 0.01);
+  PiBoosted->Draw();
+
+  canvas->cd(2);
+  KBoosted->GetXaxis()->SetRangeUser(-0.01, 0.01);
+  KBoosted->Draw();
+
+  canvas->cd(3);
+  pBoosted->GetXaxis()->SetRangeUser(-0.01, 0.01);
+  pBoosted->Draw();
+
+  canvas->SaveAs("HistogramDifferences.gif");
+}
+
 
 void ScalePtDependent(TH3F* hist, TF1* function)
 {
@@ -219,27 +378,85 @@ void ScalePtDependent(TH3F* hist, TF1* function)
   }
 }
 
-void ChangeComposition(void** correctionPointer, Int_t index)
+void ScalePtDependent(TH3F* hist, TH1* function)
+{
+  // assumes that pt is the third dimension of hist
+  // scales with histogram(pt)
+
+  for (Int_t z=1; z<=hist->GetNbinsZ(); ++z)
+  {
+    Double_t factor = function->GetBinContent(function->GetXaxis()->FindBin(hist->GetZaxis()->GetBinCenter(z)));
+    printf("z = %d, pt = %f, scaling with %f\n", z, hist->GetZaxis()->GetBinCenter(z), factor);
+
+    for (Int_t x=1; x<=hist->GetNbinsX(); ++x)
+      for (Int_t y=1; y<=hist->GetNbinsY(); ++y)
+        hist->SetBinContent(x, y, z, hist->GetBinContent(x, y, z) * factor);
+  }
+}
+
+const char* ChangeComposition(void** correctionPointer, Int_t index)
 {
   AlidNdEtaCorrection** fdNdEtaCorrection = (AlidNdEtaCorrection**) correctionPointer;
 
   switch (index)
   {
-    case 0:
+    case 0: // result from pp events
+      {
+        TFile::Open("pythiaratios.root");
+
+        for (Int_t i=0; i<4; ++i)
+        {
+          TString name;
+          name.Form("correction_%d", i);
+          fdNdEtaCorrection[i] = new AlidNdEtaCorrection(name, name);
+          fdNdEtaCorrection[i]->LoadHistograms("pythiaratios.root", name);
+        }
+      }
+      return "Pythia";
       break;
 
-    case 1:
-      fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetMeasuredHistogram()->Scale(10);
-      fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetGeneratedHistogram()->Scale(10);
+    case 1: // each species rated with pythia ratios
+      TH1** ptDists = DrawRatios("pythiaratios.root");
+
+      for (Int_t i=0; i<3; ++i)
+      {
+        ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetMeasuredHistogram(), ptDists[i]);
+        ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetGeneratedHistogram(), ptDists[i]);
+      }
+      return "PythiaRatios";
       break;
 
-    case 2:
+      // each species rated with pythia ratios
+    case 2: // + 10% pions
+    case 3: // - 10% pions
+    case 4: // + 10% kaons
+    case 5: // - 10% kaons
+    case 6: // + 10% protons
+    case 7: // - 10% protons
+      TH1** ptDists = DrawRatios("pythiaratios.root");
+      Int_t functionIndex = (index - 2) / 2;
+      Double_t scaleFactor = (index % 2 == 0) ? 1.1 : 0.9;
+      ptDists[functionIndex]->Scale(scaleFactor);
+
+      for (Int_t i=0; i<3; ++i)
+      {
+        ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetMeasuredHistogram(), ptDists[i]);
+        ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetGeneratedHistogram(), ptDists[i]);
+      }
+      TString* str = new TString;
+      str->Form("%s%s", (functionIndex == 0) ? "Pi" : ((functionIndex == 1) ? "K" : "p"), (index % 2 == 0) ? "Boosted" : "Reduced");
+      return str->Data();
+      break;
+
+    case 999:
       TF1* ptDependence = new TF1("simple", "x", 0, 100);
       ScalePtDependent(fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetGeneratedHistogram(), ptDependence);
       ScalePtDependent(fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetMeasuredHistogram(), ptDependence);
       break;
 
   }
+
+  return "noname";
 }
 
 void Composition()
@@ -248,7 +465,8 @@ void Composition()
 
   gSystem->Unlink("new_compositions.root");
 
-  for (Int_t comp = 0; comp < 3; ++comp)
+  Int_t nCompositions = 8;
+  for (Int_t comp = 0; comp < nCompositions; ++comp)
   {
     AlidNdEtaCorrection* fdNdEtaCorrection[4];
 
@@ -262,7 +480,7 @@ void Composition()
       fdNdEtaCorrection[i]->LoadHistograms("systematics.root", name);
     }
 
-    ChangeComposition(fdNdEtaCorrection, comp);
+    const char* newName = ChangeComposition(fdNdEtaCorrection, comp);
 
     Double_t geneCount[5];
     Double_t measCount[5];
@@ -289,10 +507,7 @@ void Composition()
     for (Int_t i=0; i<4; ++i)
       collection->Add(fdNdEtaCorrection[i]);
 
-    TString correctionName;
-    correctionName.Form("new_composition_%d", comp);
-
-    AlidNdEtaCorrection* newComposition = new AlidNdEtaCorrection(correctionName, correctionName);
+    AlidNdEtaCorrection* newComposition = new AlidNdEtaCorrection(newName, newName);
     newComposition->Merge(collection);
     newComposition->Finish();
 
@@ -306,9 +521,10 @@ void Composition()
 
   gROOT->ProcessLine(".L drawPlots.C");
 
-  const char* folderNames[] = { "new_composition_0", "new_composition_1", "new_composition_2" };
+  const char* fileNames[] = {"new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root", "new_compositions.root" };
+  const char* folderNames[] = { "Pythia", "PythiaRatios", "PiBoosted", "PiReduced", "KBoosted", "KReduced", "pBoosted", "pReduced" };
 
-  Track2Particle1DComposition("new_compositions.root", 3, folderNames);
+  Track2Particle1DComposition(fileNames, nCompositions, folderNames);
 }
 
 Double_t ConvSigma1To2D(Double_t sigma)
