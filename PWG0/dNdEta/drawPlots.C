@@ -701,7 +701,7 @@ void Track2Particle3DAll()
   canvas->SaveAs("Track2Particle3DAll.eps");
 }
 
-void MultiplicityMC()
+void MultiplicityMC(Int_t xRangeMax = 50)
 {
   TFile* file = TFile::Open("multiplicityMC.root");
 
@@ -754,45 +754,82 @@ void MultiplicityMC()
   fMultiplicityESDCorrectedRebinned->Rebin(10);
   fMultiplicityESDCorrectedRebinned->Scale(0.1);
 
+  TH1F* ratio = dynamic_cast<TH1F*> (fMultiplicityESD->Clone("multiplicity_ratio"));
+  ratio->SetTitle("ratio;Ntracks;Nreco/Ngene");
+  ratio->Divide(fMultiplicityMC);
+
   TH1F* ratio2 = dynamic_cast<TH1F*> (fMultiplicityESDCorrectedRebinned->Clone("multiplicity_ratio_corrected"));
   ratio2->Divide(fMultiplicityMC);
 
   TCanvas* canvas = new TCanvas("MultiplicityMC", "MultiplicityMC", 1500, 1000);
   canvas->Divide(3, 2);
 
-  canvas->cd(1);
+  fMultiplicityESD->GetXaxis()->SetRangeUser(0, xRangeMax);
+  ratio->GetXaxis()->SetRangeUser(0, xRangeMax);
+  fCorrelation->GetXaxis()->SetRangeUser(0, xRangeMax);
+  fCorrelation->GetYaxis()->SetRangeUser(0, xRangeMax);
+  correction->GetXaxis()->SetRangeUser(0, xRangeMax);
+  fMultiplicityESDCorrected->GetXaxis()->SetRangeUser(0, xRangeMax);
+  fMultiplicityESDCorrectedRebinned->GetXaxis()->SetRangeUser(0, xRangeMax);
+
+  canvas->cd(1); //InitPad();
   fMultiplicityESD->Draw();
   fMultiplicityMC->SetLineColor(2);
   fMultiplicityMC->Draw("SAME");
 
+  TLegend* legend = new TLegend(0.6, 0.7, 0.85, 0.85);
+  legend->AddEntry(fMultiplicityESD, "ESD");
+  legend->AddEntry(fMultiplicityMC, "MC");
+  legend->Draw();
+
   canvas->cd(2);
-  TH1F* ratio = dynamic_cast<TH1F*> (fMultiplicityESD->Clone("multiplicity_ratio"));
-  ratio->SetTitle("ratio;Ntracks;Nreco/Ngene");
-  ratio->Divide(fMultiplicityMC);
-  ratio->Draw();
-
-  ratio2->SetLineColor(2);
-  ratio2->Draw("SAME");
-
-  canvas->cd(3);
   fCorrelation->Draw("COLZ");
 
-  canvas->cd(4);
+  canvas->cd(3);
   correction->Draw();
   //correction->Fit("pol1");
   correctionWidth->SetLineColor(2);
   correctionWidth->Draw("SAME");
 
+  legend = new TLegend(0.2, 0.7, 0.45, 0.85);
+  legend->AddEntry(correction, "#bar{x}");
+  legend->AddEntry(correctionWidth, "#sigma");
+  legend->Draw();
+
+  canvas->cd(4);
+  ratio->Draw();
+
+  ratio2->SetLineColor(2);
+  ratio2->Draw("SAME");
+
+  legend = new TLegend(0.6, 0.7, 0.85, 0.85);
+  legend->AddEntry(ratio, "uncorrected");
+  legend->AddEntry(ratio2, "corrected");
+  legend->Draw();
+
   canvas->cd(5);
-  fMultiplicityESDCorrected->SetLineColor(3);
+  fMultiplicityESDCorrected->SetLineColor(kBlue);
   fMultiplicityESDCorrected->Draw();
   fMultiplicityMC->Draw("SAME");
   fMultiplicityESD->Draw("SAME");
 
+  legend = new TLegend(0.6, 0.7, 0.85, 0.85);
+  legend->AddEntry(fMultiplicityESDCorrected, "ESD corrected");
+  legend->AddEntry(fMultiplicityMC, "MC");
+  legend->AddEntry(fMultiplicityESD, "ESD");
+  legend->Draw();
+
   canvas->cd(6);
-  fMultiplicityESDCorrectedRebinned->SetLineColor(3);
+  fMultiplicityESDCorrectedRebinned->SetLineColor(kBlue);
   fMultiplicityESDCorrectedRebinned->Draw();
   fMultiplicityMC->Draw("SAME");
+
+  legend = new TLegend(0.6, 0.7, 0.85, 0.85);
+  legend->AddEntry(fMultiplicityESDCorrectedRebinned, "ESD corrected");
+  legend->AddEntry(fMultiplicityMC, "MC");
+  legend->Draw();
+
+  canvas->SaveAs("MultiplicityMC.gif");
 }
 
 void MultiplicityESD()

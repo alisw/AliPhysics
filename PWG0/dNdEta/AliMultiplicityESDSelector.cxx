@@ -154,7 +154,7 @@ void AliMultiplicityESDSelector::Terminate()
 
   if (!fMultiplicity)
   {
-    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fMultiplicity));
+    AliDebug(AliLog::kError, Form("ERROR: Histogram not available %p", (void*) fMultiplicity));
     return;
   }
 
