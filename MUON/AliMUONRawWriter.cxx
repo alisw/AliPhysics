@@ -468,6 +468,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   Int_t iDspMax; //number max of DSP per block
   Int_t iFile = 0;
 
+  Int_t rEntry = -1;
   AliMUONBusStruct* busStructPtr = 0x0;
 
   // open DDL files, 4 per station
@@ -526,10 +527,13 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 	  busPatchId = -1;
 
 	  // checking buspatch structure not empty
-	  for (Int_t iEntries = 0; iEntries < nEntries; iEntries++) { // method "bourrique"...
-	    busStructPtr = (AliMUONBusStruct*)fBusArray->At(iEntries);
+	  for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) { // method "bourrique"...
+	    busStructPtr = (AliMUONBusStruct*)fBusArray->At(iEntry);
 	    busPatchId = busStructPtr->GetBusPatchId();
-	    if (busPatchId == iBusPatch) break;
+	    if (busPatchId == iBusPatch) {
+	      rEntry = iEntry;
+	      break;
+	    }
 	    busPatchId = -1;
 	    AliDebug(3,Form("busPatchId %d", busStructPtr->GetBusPatchId()));
 	  } 
@@ -542,14 +546,19 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 	    index += length;
 
 	    // add bus patch data
-	    for (Int_t j = 0; j < busStructPtr->GetLength(); j++) {
-	      buffer[index++] =  busStructPtr->GetData(j);
-	      AliDebug(3,Form("busPatchId %d, manuId %d channelId %d\n", 
-			      busStructPtr->GetBusPatchId(), 
-			      busStructPtr->GetManuId(j), busStructPtr->GetChannelId(j) ));
+	    length = busStructPtr->GetLength();
+	    memcpy(&buffer[index],busStructPtr->GetData(),length*4);
+	    index += length;
+
+	    if (AliLog::GetGlobalDebugLevel() == 3) {
+	      for (Int_t j = 0; j < busStructPtr->GetLength(); j++) {
+		printf("busPatchId %d, manuId %d channelId %d\n", busStructPtr->GetBusPatchId(), 
+		       busStructPtr->GetManuId(j), busStructPtr->GetChannelId(j));
+	      }
 	    }
-	    //	      fBusArray->RemoveAt(iEntries);
-	    //	      fBusArray->Compress();
+	    
+	    fBusArray->RemoveAt(rEntry);
+	    fBusArray->Compress();
 	  } else {
 	    // writting anyhow buspatch structure (empty ones)
 	    buffer[index++] = busStructPtr->GetDefaultDataKey(); // fill it also for empty data size
