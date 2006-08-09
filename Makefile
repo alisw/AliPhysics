@@ -236,6 +236,11 @@ endif
 
 aliroot: alilibs $(BINPATH) $(ALLEXECS) 
 
+alimdc-static: $(LIBPATH) $(RAWDatabaseALIB) $(MDCALIB) $(ESDALIB)
+	 $(MUTE)rm -rf $(LIBPATH)/libAliMDC.a
+	 $(MUTE)rm -rf junk
+	 mkdir junk && cd junk && ar x ../$(RAWDatabaseALIB) && ar x ../$(MDCALIB) && ar x ../$(ESDALIB) && ar r ../$(LIBPATH)/libAliMDC.a *.o && cd .. && rm -rf junk
+
 #-------------------------------------------------------------------------------
 # Single Makefile "distribution": Makefile + modules + mkdepend scripts
 makedistr: $(MODULES)
