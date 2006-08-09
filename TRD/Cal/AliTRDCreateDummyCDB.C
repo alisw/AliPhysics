@@ -10,9 +10,6 @@
 #include "AliTRDgeometry.h"
 
 #include "AliTRDCalROC.h"
-#include "AliTRDCalChamberPos.h"
-#include "AliTRDCalStackPos.h"
-#include "AliTRDCalSuperModulePos.h"
 #include "AliTRDCalPad.h"
 #include "AliTRDCalDet.h"
 #include "AliTRDCalGlobals.h"
@@ -61,49 +58,6 @@ TObject* CreateGlobalsObject()
   
   return object;
 }
-
-TObject* CreateChamberObject()
-{
-  AliTRDCalChamberPos *object = new AliTRDCalChamberPos("Chamber", "TRD chamber positions");
-  
-  for (Int_t det=0; det<AliTRDgeometry::kNdet; ++det)
-  {
-    object->SetPos(det, 0, 0, 0);
-    object->SetRot(det, 0, 0, 0);
-  }
-  
-  return object;
-}
-
-TObject* CreateStackObject()
-{
-  AliTRDCalStackPos *object = new AliTRDCalStackPos("Stack", "TRD stack positions");
-
-  for (Int_t sect=0; sect<AliTRDgeometry::kNsect; ++sect)
-  {
-    for (Int_t chamber=0; chamber<AliTRDgeometry::kNcham; ++chamber)
-    {
-      object->SetPos(chamber, sect, 0, 0, 0);
-      object->SetRot(chamber, sect, 0, 0, 0);
-    }
-  }
-
-  return object;
-}
-
-TObject* CreateSuperModuleObject()
-{
-  AliTRDCalSuperModulePos *object = new AliTRDCalSuperModulePos("Stack", "TRD supermodule positions");
-
-  for (Int_t sect=0; sect<AliTRDgeometry::kNsect; ++sect)
-  {
-    object->SetPos(sect, 0, 0, 0);
-    object->SetRot(sect, 0, 0, 0);
-  }
-
-  return object;
-}
-
 
 TObject* CreatePRFWidthObject()
 {
@@ -247,18 +201,6 @@ void AliTRDCreateDummyCDB()
   obj = CreateGlobalsObject();
   StoreObject("TRD/Calib/Globals", obj, metaData);
   
-  metaData = CreateMetaObject("AliTRDCalChamberPos");
-  obj = CreateChamberObject();
-  StoreObject("TRD/Calib/ChamberPos", obj, metaData);
-
-  metaData = CreateMetaObject("AliTRDCalStackPos");
-  obj = CreateStackObject();
-  StoreObject("TRD/Calib/StackPos", obj, metaData);
-
-  metaData = CreateMetaObject("AliTRDCalSuperModulePos");
-  obj = CreateSuperModuleObject();
-  StoreObject("TRD/Calib/SuperModulePos", obj, metaData);
-
   metaData = CreateMetaObject("AliTRDCalSuperModuleStatus");
   obj = CreateSuperModuleStatusObject();
   StoreObject("TRD/Calib/SuperModuleStatus", obj, metaData);
