@@ -26,6 +26,7 @@ class AliMUONRegHeader;
 class AliMUONLocalStruct;
 class AliMUONGlobalTrigger;
 class AliMpBusPatch;
+class AliMUONTriggerCrateStore;
 class AliMpSegFactory;
 
 class AliMUONRawWriter : public TObject 
@@ -57,7 +58,8 @@ private:
   }
 
   Int_t GetBusPatch(const AliMUONDigit& digit);
-  
+  void  GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg);
+
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
 
 private:
@@ -75,7 +77,8 @@ private:
   AliMUONRegHeader*   fRegHeader;    //!< DDL regional header class pointers
   AliMUONLocalStruct* fLocalStruct;  //!< DDL local structure class pointers
 
-  AliMpBusPatch* fBusPatchManager;   //!< buspatch versus DE's & DDL
+  AliMpBusPatch*            fBusPatchManager; //!< buspatch versus DE's & DDL
+  AliMUONTriggerCrateStore* fCrateManager;    //!< Crate array
 
   Bool_t fScalerEvent;               ///< flag to generates scaler event
 
