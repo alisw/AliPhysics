@@ -170,19 +170,21 @@ void MakePictures(char *dirname){
     //
     //   charge z
     //
+    c.cd();
     sprintf(chdesc,"%s Sector %d IROC",runDesc.Data(), isector);
     sprintf(chcut1,"Cl.fDetector==%d", isector);
     prof = ProfileQZ(chcut1, chdesc,20);
     sprintf(chshell,"%s/qz_sec%dIROC.eps", dirname,isector);
-    prof->Draw();
+    //    prof->Draw();
     c.Update();
     c.Print(chshell);
     //
+    c.cd();
     sprintf(chdesc,"%s Sector %d OROC",runDesc.Data(), isector);
     sprintf(chcut1,"Cl.fDetector==%d", isector+36);
     prof = ProfileQZ(chcut1, chdesc,20);
     sprintf(chshell,"%s/qz_sec%dOROC.eps", dirname,isector);
-    prof->Draw();
+    //prof->Draw();
     c.Update();
     c.Print(chshell);
     //
@@ -563,7 +565,8 @@ TProfile * ProfileQZ(TCut cut0, char *name, Int_t max){
   //
   // make profile histrogram of amplitudes
   // 
-  TF1 * f1 = new TF1("f1","[0]+[1]*[0]*(250-x)");
+  TF1 * fline = new TF1("fline","[0]+[1]*[0]*(250-x)");
+  TF1 * f1 = new TF1("f1","[0]*exp(-[1]*(250-x))");
   TProfile *profA = new TProfile(name,name,max,0,250);
   char expr[100];
   sprintf(expr,"Cl.fQ:Cl.fZ>>%s",name);
@@ -571,9 +574,13 @@ TProfile * ProfileQZ(TCut cut0, char *name, Int_t max){
   profA->SetXTitle("Z position (cm)"); 
   profA->SetYTitle("Amplitude (ADC)");
   char chc[100];
+  profA->Fit(fline);
+  f1->SetParameter(0,fline->GetParameter(0));
+  f1->SetParameter(1,fline->GetParameter(1));
   profA->Fit(f1);
-  sprintf(chc,"p_{0} = %f  p_{1} = %f",f1->GetParameter(0),f1->GetParameter(1));
-  TLegend *legend = new TLegend(0.25,0.12,0.85,0.35, chc);
+  sprintf(chc,"Exponential fit params: p_{0} = %f  p_{1} = %f",f1->GetParameter(0),f1->GetParameter(1));
+  printf("%s",chc);
+  TLegend *legend = new TLegend(0.25,0.12,0.85,0.25, chc);
   legend->Draw();
   return profA;
 }
