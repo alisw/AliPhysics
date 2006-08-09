@@ -32,7 +32,7 @@ ClassImp(AliMUONLocalStruct)
  const Int_t  AliMUONLocalStruct::fgkLength = 5;
  const Int_t  AliMUONLocalStruct::fgkScalerLength = 45;
  const UInt_t AliMUONLocalStruct::fgkEndOfLocal   = 0xCAFEFADE;
- 
+ const UInt_t AliMUONLocalStruct::fgkDisableWord  = 0x010CDEAD;
 //___________________________________________
 AliMUONLocalStruct::AliMUONLocalStruct()
   :  TObject(),

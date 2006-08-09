@@ -72,6 +72,7 @@ public:
    Int_t  GetScalerLength()  const {return fgkScalerLength;} 
    Int_t  GetLength()        const {return fgkLength;} 
    UInt_t GetEndOfLocal()    const {return fgkEndOfLocal;}
+   UInt_t GetDisableWord()   const {return fgkDisableWord;}
 
   // set random numbers to fill variable
    void SetScalersNumbers();
@@ -105,6 +106,7 @@ public:
    static const Int_t  fgkLength;       ///< local info length in word
    static const Int_t  fgkScalerLength; ///< scaler length in word
    static const UInt_t fgkEndOfLocal;   ///< end of local info word
+   static const UInt_t fgkDisableWord; ///< Word for "empty" slots
 
    ClassDef(AliMUONLocalStruct,3)
 };
