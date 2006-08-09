@@ -87,3 +87,24 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
 
   return chain;
 }
+
+void LookupWrite(TChain* chain, const char* target)
+{
+  // looks up the chain and writes the remaining files to the text file target
+
+  chain->Lookup();
+
+  TObjArray* list = chain->GetListOfFiles();
+  TIterator* iter = list->MakeIterator();
+  TObject* obj = 0;
+
+  ofstream outfile;
+  outfile.open(target);
+
+  while ((obj = iter->Next()))
+    outfile << obj->GetTitle() << "#AliESDs.root" << endl;
+
+  outfile.close();
+
+  delete iter;
+}
