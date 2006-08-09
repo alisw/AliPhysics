@@ -264,7 +264,7 @@ void AddChains(Int_t run){
   runDesc+=run;
   // TPC tracks
   //
-  sprintf(strcl,"ls  run%d*/TPCtracks.root > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/TPCtracks.root > /tmp/files.txt", run);
   gSystem->Exec(strcl);
   in0.open("/tmp/files.txt");
   for (;in0>>sfile;){
@@ -279,7 +279,7 @@ void AddChains(Int_t run){
   }
   //
   // Fitted signals
-  sprintf(strcl,"ls  run%d*/FitSignal.root > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/FitSignal.root > /tmp/files.txt", run);
   gSystem->Exec(strcl);
   in1.open("/tmp/files.txt");
   for (;in1>>sfile;){
@@ -294,7 +294,7 @@ void AddChains(Int_t run){
   }
   //
   // Fitted pedestal
-  sprintf(strcl,"ls  run%d*/TPCsignal.root > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/TPCsignal.root > /tmp/files.txt", run);
   gSystem->Exec(strcl);
   in2.open("/tmp/files.txt");
   for (;in2>>sfile;){
@@ -310,7 +310,7 @@ void AddChains(Int_t run){
   }
   //
   // Random signals
-  sprintf(strcl,"ls  run%d*/TPCsignal.root > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/TPCsignal.root > /tmp/files.txt", run);
   gSystem->Exec(strcl);
   in4.open("/tmp/files.txt");
   for (;in4>>sfile;){
@@ -328,7 +328,7 @@ void AddChains(Int_t run){
   // Rec points trees
   //
   printf("\n IMPORT REC points");
-  sprintf(strcl,"ls  run%d*/*RecPoints* > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/*RecPoints* > /tmp/files.txt", run);
   gSystem->Exec(strcl);
   in3.open("/tmp/files.txt");
   for (;in3>>sfile;){
