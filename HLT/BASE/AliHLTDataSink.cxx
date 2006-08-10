@@ -26,6 +26,7 @@ using namespace std;
 
 #include "AliHLTDataSink.h"
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataSink)
 
 AliHLTDataSink::AliHLTDataSink()

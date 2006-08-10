@@ -28,6 +28,7 @@ using namespace std;
 #include "AliHLTProcessor.h"
 #include <string.h>
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTProcessor)
 
 AliHLTProcessor::AliHLTProcessor()

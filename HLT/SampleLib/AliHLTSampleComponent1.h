@@ -5,11 +5,18 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTSampleComponent1
- */
+/** @file   AliHLTSampleComponent1.h
+    @author Matthias Richter, Timm Steinbeck
+    @date   
+    @brief  A sample processing component for the HLT. */
 
 #include "AliHLTProcessor.h"
 
+/**
+ * @class AliHLTSampleComponent1
+ * @brief An HLT sample component
+ * @ingroup alihlt_tutorial
+ */
 class AliHLTSampleComponent1 : public AliHLTProcessor {
 public:
   AliHLTSampleComponent1();

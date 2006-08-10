@@ -8,7 +8,7 @@
 /** @file   AliHLTConfigurationHandler.h
     @author Matthias Richter
     @date   
-    @brief  global handling of HLT configurations.
+    @brief  Global handling of HLT configurations.
 */
 
 /* #include <cerrno> */
@@ -18,36 +18,77 @@
 /* #include "AliHLTLogging.h" */
 /* #include "AliHLTDataBuffer.h" */
 
+/**
+ * @class AliHLTConfigurationHandler
+ * @brief Global Handling of HLT configurations.
+ *
+ * This class implements the global handling of @ref AliHLTConfiguration objects.
+ * It is a list of all configuartion descriptor currently available in the system.
+ * Each @ref AliHLTConfiguration object is registerd automatically with the
+ * handler and put into the list.
+ *
+ * @note This class is only used for the @ref alihlt_system.
+ *
+ * @ingroup alihlt_system
+ */
 class AliHLTConfigurationHandler : public AliHLTLogging {
  public:
+  /** standard constructor */
   AliHLTConfigurationHandler();
+  
   //AliHLTConfigurationHandler(AliHLTConfiguration* pConf);
+
+  /** destructor */
   virtual ~AliHLTConfigurationHandler();
 
   /*****************************************************************************
    * registration
    */
 
-  // register a configuration to the global list of configurations
+  /**
+   * Register a configuration to the global list of configurations.
+   * @param pConf     The configuration to register
+   */
   int RegisterConfiguration(AliHLTConfiguration* pConf);
 
-  // create a configuration and register it
+  /**
+   * Create a configuration and register it.
+   * @param id
+   * @param component
+   * @param sources
+   * @param arguments
+   */
   int CreateConfiguration(const char* id, const char* component, const char* sources, const char* arguments);
 
-  // remove a configuration from the global list
+  /**
+   * Remove a configuration from the global list.
+   * @param pConf     The configuration to remove
+   */
   int RemoveConfiguration(AliHLTConfiguration* pConf);
+
+  /**
+   * Remove a configuration from the global list.
+   * @param id     The configuration to remove
+   */
   int RemoveConfiguration(const char* id);
 
-  // find a configuration from the global list
+  /**
+   * Find a configuration from the global list.
+   * @param id     Id of the configuration to find
+   */
   AliHLTConfiguration* FindConfiguration(const char* id);
 
-  // print the registered configurations to the logging function
+  /**
+   * Print the registered configurations to the logging function.
+   */
   void PrintConfigurations();
 
 
  private:
-  static TList fListConfigurations; // the list of registered configurations
-  static TList fListDynamicConfigurations; // the list of dynamic configurations (for proper cleanup)
+  /** the list of registered configurations */
+  static TList fListConfigurations;
+  /** the list of dynamic configurations (for proper cleanup) */
+  static TList fListDynamicConfigurations;
 
   ClassDef(AliHLTConfigurationHandler, 0);
 };

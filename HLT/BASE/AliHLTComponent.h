@@ -8,8 +8,14 @@
 /** @file   AliHLTComponent.h
     @author Matthias Richter, Timm Steinbeck
     @date   
-    @brief  Base class declaration for HLT components. */
-
+    @brief  Base class declaration for HLT components. 
+    @note   The class is both used in Online (PubSub) and Offline (AliRoot)
+            context
+                                                                          */
+/**
+ * @defgroup alihlt_component Component handling of the HLT module
+ * This section describes the the component handling for the HLT module.
+ */
 #include <cerrno>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
@@ -36,7 +42,7 @@ class AliHLTComponentHandler;
  * member functions for those environment dependend functions. The member 
  * functions are used by the component implementation and are re-mapped to the
  * corresponding functions.
- * @ingroup AliHLTbase
+ * @ingroup alihlt_component
  */
 class AliHLTComponent : public AliHLTLogging {
  public:

@@ -1,18 +1,26 @@
-// XEMacs -*-C++-*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTDUMMYCOMPONENT_H
 #define ALIHLTDUMMYCOMPONENT_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTDummyComponent
-** An implementiation of a dummy component that just copies its input data
-** as a test, demonstration, and example of the new HLT component system.
- */
+/** @file   AliHLTDummyComponent.h
+    @author Timm Steinbeck, Matthias Richter
+    @date   
+    @brief  Declaration of a dummy component. */
+
 
 #include "AliHLTProcessor.h"
 
+/**
+ * @class AliHLTDummyComponent
+ * @brief A dummy HLT processing component. 
+ *
+ * An implementiation of a dummy component that just copies its input data
+ * as a test, demonstration, and example of the HLT component scheme.
+ * @ingroup alihlt_tutorial
+ */
 class AliHLTDummyComponent : public AliHLTProcessor
     {
     public:

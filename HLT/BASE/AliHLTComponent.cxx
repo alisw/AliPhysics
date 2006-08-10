@@ -30,9 +30,8 @@ using namespace std;
 #include <string>
 #include "AliHLTSystem.h"
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent)
-
-AliHLTComponentHandler* AliHLTComponent::fpComponentHandler=NULL;
 
 AliHLTComponent::AliHLTComponent()
 { 
@@ -44,6 +43,8 @@ AliHLTComponent::AliHLTComponent()
 AliHLTComponent::~AliHLTComponent()
 {
 }
+
+AliHLTComponentHandler* AliHLTComponent::fpComponentHandler=NULL;
 
 int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv )
 {

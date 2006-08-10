@@ -5,10 +5,11 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTLogging
-   the HLT logging methods
- */
-
+/** @file   AliHLTLogging.h
+    @author Matthias Richter, Timm Steinbeck
+    @date   
+    @brief  HLT module logging primitives.
+*/
 
 #include "AliHLTDataTypes.h"
 #include <TObject.h>

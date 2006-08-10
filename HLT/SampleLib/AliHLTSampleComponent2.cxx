@@ -16,11 +16,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// a sample processing component for the HLT                                 //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTSampleComponent2.cxx
+    @author Matthias Richter, Timm Steinbeck
+    @date   
+    @brief  Another sample processing component for the HLT. */
 
 #if __GNUC__== 3
 using namespace std;
@@ -29,7 +28,10 @@ using namespace std;
 #include "AliL3StandardIncludes.h"
 #include "AliHLTSampleComponent2.h"
 
-// this is a global object used for automatic component registration, do not use this
+/**
+ * The global object used for automatic component registration, 
+ * @note DO NOT use this component for calculation!
+ */
 AliHLTSampleComponent2 gAliHLTSampleComponent2;
 
 ClassImp(AliHLTSampleComponent2)

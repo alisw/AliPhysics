@@ -1,6 +1,8 @@
 # $Id$
 # Makefile template for the Alice HLT sample library
 
+EXTRA_DIST			= tutorial.c
+
 MODULE 				= AliHLTSample
 
 AM_CPPFLAGS			= -I$(top_srcdir)/src        \

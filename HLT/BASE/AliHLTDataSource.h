@@ -8,7 +8,9 @@
 /** @file   AliHLTDataSource.h
     @author Matthias Richter
     @date   
-    @brief  Base class declaration for HLT data source components. */
+    @brief  Base class declaration for HLT data source components.
+    @note   The class is used in Offline (AliRoot) context
+*/
 
 #include "AliHLTComponent.h"
 
@@ -17,16 +19,16 @@
  * Base class of HLT data source components.
  * The class provides a common interface for the implementation of HLT data
  * source components. The child class must implement the functions:
- * - DoInit (optional)
- * - DoDeinit (optional)
- * - GetEvent
- * - GetComponentID
- * - GetInputDataTypes
- * - GetOutputDataType
- * - GetOutputDataSize
- * - Spawn
+ * - @ref DoInit (optional)
+ * - @ref DoDeinit (optional)
+ * - @ref GetEvent
+ * - @ref GetComponentID
+ * - @ref GetInputDataTypes
+ * - @ref GetOutputDataType
+ * - @ref GetOutputDataSize
+ * - @ref Spawn
  *
- * @ingroup AliHLTbase
+ * @ingroup alihlt_component
  */
 class AliHLTDataSource : public AliHLTComponent {
  public:

@@ -5,7 +5,6 @@
  *                                                                        *
  * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
  *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          Artur Szostak <artursz@iafrica.com>                           *
  *          for The ALICE Off-line Project.                               *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -17,11 +16,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// handler class for HLT analysis components                                 //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTComponentHandler.cxx
+    @author Matthias Richter, Timm Steinbeck
+    @date   
+    @brief  Implementation of HLT component handler. */
 
 #if __GNUC__>= 3
 using namespace std;
@@ -36,6 +34,7 @@ using namespace std;
 #include "AliHLTDataTypes.h"
 #include "AliHLTSystem.h"
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponentHandler)
 
 AliHLTComponentHandler::AliHLTComponentHandler()
@@ -84,7 +83,7 @@ Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
   return iResult;
 }
 
-int AliHLTComponentHandler::CreateComponent(const Char_t* componentID, void* environ_param, int argc, const char** argv, AliHLTComponent*& component )
+int AliHLTComponentHandler::CreateComponent(const char* componentID, void* environ_param, int argc, const char** argv, AliHLTComponent*& component )
 {
   int iResult=0;
   if (componentID) {

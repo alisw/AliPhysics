@@ -5,7 +5,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTConfiguration.h
+/** @file   AliHLTTask.h
     @author Matthias Richter
     @date   
     @brief  base class for HLT tasks
@@ -24,17 +24,21 @@ class AliHLTComponentHandler;
 
 /******************************************************************************/
 
- /**
-  * @class AliHLTTask
-  * A task collects all the information which is necessary to process a certain
-  * step in the HLT data processing chain:
-  * - the instance of the component
-  * - the data buffer which receives the result of the component and provides
-  *   the data to other tasks/components
-  * - a list of all dependencies
-  * - a list of consumers
-  * - the task object holds the configuration object 
-  */
+/**
+ * @class AliHLTTask
+ * A task collects all the information which is necessary to process a certain
+ * step in the HLT data processing chain.
+ * - the instance of the component
+ * - the data buffer which receives the result of the component and provides
+ *   the data to other tasks/components
+ * - a list of all dependencies
+ * - a list of consumers
+ * - the task object holds the configuration object 
+ *
+ * @note This class is only used for the @ref alihlt_system.
+ *
+ * @ingroup alihlt_system
+ */
 class AliHLTTask : public TObject, public AliHLTLogging {
  public:
   /** standard constructor */

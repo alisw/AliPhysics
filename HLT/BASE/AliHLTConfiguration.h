@@ -8,7 +8,8 @@
 /** @file   AliHLTConfiguration.h
     @author Matthias Richter
     @date   
-    @brief  base class and handling of HLT configurations.
+    @brief  Base class and handling of HLT configurations.
+    @note   The class is used in Offline (AliRoot) context
 */
 
 #include <cerrno>
@@ -23,7 +24,7 @@ class AliHLTConfigurationHandler;
 /**
  * @class AliHLTConfiguration
  * @brief Description of HLT processing chains.
- * @note Definition:
+ *
  * This class describes a certain configuration af an HLT processing step
  * by the following parameters:
  * - a unique id string/name
@@ -39,7 +40,10 @@ class AliHLTConfigurationHandler;
  *
  * A configuration is interpreted by the @ref AliHLTConfigurationHandler and
  * transformed into a Task List.
- * @ingroup AliHLTbase
+ *
+ * @note This class is only used for the @ref alihlt_system.
+ *
+ * @ingroup alihlt_system
  */
 class AliHLTConfiguration : public TObject, public AliHLTLogging {
  public:

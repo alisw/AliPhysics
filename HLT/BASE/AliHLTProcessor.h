@@ -17,16 +17,16 @@
  * Base class of HLT data analysis components.
  * The class provides a common interface for the implementation of HLT data
  * analysis components. The child class must implement the functions:
- * - DoInit (optional)
- * - DoDeinit (optional)
- * - DoEvent
- * - GetComponentID
- * - GetInputDataTypes
- * - GetOutputDataType
- * - GetOutputDataSize
- * - Spawn
+ * - @ref DoInit (optional)
+ * - @ref DoDeinit (optional)
+ * - @ref DoEvent
+ * - @ref GetComponentID
+ * - @ref GetInputDataTypes
+ * - @ref GetOutputDataType
+ * - @ref GetOutputDataSize
+ * - @ref Spawn
  *
- * @ingroup AliHLTbase
+ * @ingroup alihlt_component
  */
 class AliHLTProcessor : public AliHLTComponent {
  public:

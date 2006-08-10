@@ -5,9 +5,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHltcomponentHandler
-   handler of HLT processing components
- */
+/** @file   AliHLTComponentHandler.h
+    @author Matthias Richter, Timm Steinbeck
+    @date   
+    @brief  Global handling of HLT processing components
+    @note   The handler is part of the interface and both used in the
+            Online (PubSub) and Offline (AliRoot) context.
+                                                                          */
+   
 
 #include "TObject.h"
 #include "AliHLTDataTypes.h"

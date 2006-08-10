@@ -5,10 +5,17 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTComponentHandler
-   global HLT module management 
- */
+/** @file   AliHLTSystem.h
+    @author Matthias Richter
+    @date   
+    @brief  Global HLT module management and AliRoot integration.
+    @note   The class is used in Offline (AliRoot) context
+*/
 
+/**
+ * @defgroup alihlt_system HLT integration into AliRoot
+ * This section describes the HLT integration into AliRoot.
+ */
 
 #include "AliL3RootTypes.h"
 #include "AliHLTLogging.h"
@@ -25,6 +32,9 @@ class AliHLTTask;
  * The class handles a list of configurations. Configurations are translated
  * into task lists which can be executed. 
  *
+ * @note This class is only used for the @ref alihlt_system.
+ *
+ * @ingroup alihlt_system
  */
 class AliHLTSystem : public AliHLTLogging {
  public:

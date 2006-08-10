@@ -15,11 +15,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// HLT configuration handling                                             //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTConfiguration.cxx
+    @author Matthias Richter
+    @date   
+    @brief  Implementation of HLT configuration handler.
+*/
 
 #if __GNUC__>= 3
 using namespace std;
@@ -34,11 +34,8 @@ using namespace std;
 #include <iostream>
 #include <string>
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTConfiguration)
-
-/* the global configuration handler which is used to automatically register the configuration
- */
-AliHLTConfigurationHandler* AliHLTConfiguration::fConfigurationHandler=NULL;
 
 AliHLTConfiguration::AliHLTConfiguration()
 { 
@@ -89,6 +86,10 @@ AliHLTConfiguration::~AliHLTConfiguration()
     fArgv=NULL;
   }
 }
+
+/* the global configuration handler which is used to automatically register the configuration
+ */
+AliHLTConfigurationHandler* AliHLTConfiguration::fConfigurationHandler=NULL;
 
 int AliHLTConfiguration::GlobalInit(AliHLTConfigurationHandler* pHandler)
 {
@@ -331,6 +332,7 @@ int AliHLTConfiguration::FollowDependency(const char* id, TList* pTgtList)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTask)
 
 AliHLTTask::AliHLTTask()
@@ -827,6 +829,7 @@ void AliHLTTask::PrintStatus()
 TList AliHLTConfigurationHandler::fListConfigurations;
 TList AliHLTConfigurationHandler::fListDynamicConfigurations;
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTConfigurationHandler)
 
 AliHLTConfigurationHandler::AliHLTConfigurationHandler()

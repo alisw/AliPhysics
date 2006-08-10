@@ -4,8 +4,6 @@
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
- *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          Artur Szostak <artursz@iafrica.com>                           *
  *          for The ALICE Off-line Project.                               *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -17,11 +15,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// global HLT module management                                              //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTSystem.cxx
+    @author Matthias Richter
+    @date   
+    @brief  Implementation of HLT module management.
+*/
 
 #if __GNUC__>= 3
 using namespace std;
@@ -37,6 +35,7 @@ using namespace std;
 #include "AliHLTConfigurationHandler.h"
 #include "AliHLTTask.h"
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
 
 AliHLTSystem::AliHLTSystem()

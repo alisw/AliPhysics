@@ -5,7 +5,6 @@
  *                                                                        *
  * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
  *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          Artur Szostak <artursz@iafrica.com>                           *
  *          for The ALICE Off-line Project.                               *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -17,11 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// HLT logging tools                                                         //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTLogging.cxx
+    @author Matthias Richter, Timm Steinbeck
+    @date   
+    @brief  Implementation of HLT logging primitives.
+*/
 
 #if __GNUC__>= 3
 using namespace std;
@@ -33,13 +32,8 @@ using namespace std;
 #include <cstdarg>
 #include <string>
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTLogging)
-
-char AliHLTLogging::fLogBuffer[LOG_BUFFER_SIZE]="";
-char AliHLTLogging::fOriginBuffer[LOG_BUFFER_SIZE]="";
-
-AliHLTComponent_LogSeverity AliHLTLogging::fGlobalLogFilter=kHLTLogAll;
-AliHLTfctLogging AliHLTLogging::fLoggingFunc=NULL;
 
 AliHLTLogging::AliHLTLogging()
 {
@@ -49,6 +43,10 @@ AliHLTLogging::AliHLTLogging()
   fLocalLogFilter=kHLTLogAll;
 }
 
+char AliHLTLogging::fLogBuffer[LOG_BUFFER_SIZE]="";
+char AliHLTLogging::fOriginBuffer[LOG_BUFFER_SIZE]="";
+AliHLTComponent_LogSeverity AliHLTLogging::fGlobalLogFilter=kHLTLogAll;
+AliHLTfctLogging AliHLTLogging::fLoggingFunc=NULL;
 
 AliHLTLogging::~AliHLTLogging()
 {

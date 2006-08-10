@@ -15,17 +15,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// handling of HLT data buffers                                              //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTDataBuffer.cxx
+    @author Matthias Richter
+    @date   
+    @brief  Handling of Data Buffers for HLT components.
+*/
 
 #if __GNUC__>= 3
 using namespace std;
 #endif
 
 #include "AliHLTDataBuffer.h"
+#include "AliHLTComponent.h"
 #include <string>
 #include "AliHLTSystem.h"
 
@@ -98,14 +99,8 @@ int AliHLTConsumerDescriptor::ReleaseActiveDataSegment(AliHLTUInt32_t offset, Al
   return iResult;
 }
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataBuffer)
-
-int AliHLTDataBuffer::fNofInstances=0;
-vector<AliHLTRawBuffer*> AliHLTDataBuffer::fFreeBuffers;
-vector<AliHLTRawBuffer*> AliHLTDataBuffer::fActiveBuffers;
-AliHLTUInt32_t AliHLTDataBuffer::fMargin=1024;
-AliHLTLogging AliHLTDataBuffer::fgLogging;
-
 
 AliHLTDataBuffer::AliHLTDataBuffer()
 {
@@ -118,6 +113,12 @@ AliHLTDataBuffer::AliHLTDataBuffer()
   fFlags=0;
   fNofInstances++;
 }
+
+int AliHLTDataBuffer::fNofInstances=0;
+vector<AliHLTRawBuffer*> AliHLTDataBuffer::fFreeBuffers;
+vector<AliHLTRawBuffer*> AliHLTDataBuffer::fActiveBuffers;
+AliHLTUInt32_t AliHLTDataBuffer::fMargin=1024;
+AliHLTLogging AliHLTDataBuffer::fgLogging;
 
 AliHLTDataBuffer::~AliHLTDataBuffer()
 {

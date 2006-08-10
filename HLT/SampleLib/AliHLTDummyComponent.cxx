@@ -16,11 +16,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// a dummy processing component for the HLT                                 //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTDummyComponent.cxx
+    @author Timm Steinbeck, Matthias Richter
+    @date   
+    @brief  A dummy processing component for the HLT. */
 
 #if __GNUC__ >= 3
 using namespace std;

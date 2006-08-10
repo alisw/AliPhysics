@@ -5,7 +5,6 @@
  *                                                                        *
  * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
  *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
- *          Artur Szostak <artursz@iafrica.com>                           *
  *          for The ALICE Off-line Project.                               *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
@@ -17,11 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// pure C interface to the AliRoot HLT component handler                     //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLT_C_Component_WrapperInterface.cxx
+    @author Matthias Richter, Timm Steinbeck
+    @date   
+    @brief  Pure C interface to the AliRoot HLT component handler
+*/
 
 #if __GNUC__>= 3
 using namespace std;

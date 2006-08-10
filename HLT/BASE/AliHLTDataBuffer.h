@@ -5,21 +5,28 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/** @file   AliHLTDataBuffer.h
+    @author Matthias Richter
+    @date   
+    @brief  Handling of Data Buffers for HLT components.
+    @note   The class is used in Offline (AliRoot) context
+*/
 
 #include <cerrno>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTDefinitions.h"
-#include "AliHLTComponent.h"
 #include "TObject.h"
 #include "TList.h"
 
+class AliHLTComponent;
 /* @name internal data structures
  */
 
-/* @struct AliHLTDataSegment
- * @brief  descriptor of a data segment within the buffer
- * @ingroup AliHLTbase
+/**
+ * @struct AliHLTDataSegment
+ * @brief  Descriptor of a data segment within the buffer.
+ * @ingroup alihlt_system
  */
 struct AliHLTDataSegment {
   AliHLTDataSegment()
@@ -36,27 +43,41 @@ struct AliHLTDataSegment {
    fSegmentSize=size;
    fSpecification=0;
   }
-  AliHLTComponent_DataType fDataType; // the data type of this buffer
-  AliHLTUInt32_t fSegmentOffset;      // offset in byte within the data buffer
-  AliHLTUInt32_t fSegmentSize;        // size of the actual content
-  AliHLTUInt32_t fSpecification;      // data specification
+  /** the data type of this segment */
+  AliHLTComponent_DataType fDataType;
+  /** offset in byte within the data buffer */
+  AliHLTUInt32_t fSegmentOffset;
+  /** size of the actual content */
+  AliHLTUInt32_t fSegmentSize;
+  /** data specification */
+  AliHLTUInt32_t fSpecification;
 };
 
-/* @struct AliHLTRawBuffer
- * @brief  descriptor of the raw data buffer which can host several segments
- * @ingroup AliHLTbase
+/**
+ * @struct AliHLTRawBuffer
+ * @brief  Descriptor of the raw data buffer which can host several segments.
+ * @ingroup alihlt_system
  */
 struct AliHLTRawBuffer {
-  AliHLTUInt32_t fSize;               // size of the buffer
-  AliHLTUInt32_t fTotalSize;          // total size of the buffer, including safety margin
-  void* fPtr;                         // the buffer
+  /** size of the currently occupied partition of the buffer */
+  AliHLTUInt32_t fSize;
+  /** total size of the buffer, including safety margin */
+  AliHLTUInt32_t fTotalSize;
+  /** the buffer */
+  void* fPtr;
 };
 
-/* @struct AliHLTConsumerDescriptor
- * @brief there is unfortunately no unique determination of the data type from the component
+/**
+ * @class AliHLTConsumerDescriptor
+ * @brief Helper class to describe a consumer component.
+ *
+ * There is unfortunately no unique determination of the data type from the component
  * itself possible, thats why both component and data type have to be initialized
- * and are stored in a compound. The class is intended to make bookkeeping easier
- * @ingroup AliHLTbase
+ * and are stored in a compound. The class is intended to make bookkeeping easier.
+ *
+ * @note This class is only used for the @ref alihlt_system.
+ *
+ * @ingroup alihlt_system
  */
 class AliHLTConsumerDescriptor : public AliHLTLogging, public TObject {
  private:
@@ -118,7 +139,7 @@ class AliHLTConsumerDescriptor : public AliHLTLogging, public TObject {
 /**
  * @class AliHLTDataBuffer
  * @brief  Handling of data buffers for the HLT.
- * @note Definition:
+ * 
  * The class provides handling of data buffers for HLT components. Each component gets its
  * own Data Buffer instance. The buffer is grouped into different data segments according
  * to the output of the component.<br>
@@ -128,7 +149,10 @@ class AliHLTConsumerDescriptor : public AliHLTLogging, public TObject {
  * release the segment and it's state is set to 'processed'.
  * If all components have requested and released their data, the Raw Buffer is released
  * and pushed back in the list of available buffers. 
- * @ingroup AliHLTbase
+ *
+ * @note This class is only used for the @ref alihlt_system.
+ *
+ * @ingroup alihlt_system
  */
 class AliHLTDataBuffer : public AliHLTLogging, public TObject {
  public:

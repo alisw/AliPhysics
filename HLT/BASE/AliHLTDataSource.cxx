@@ -26,6 +26,7 @@ using namespace std;
 
 #include "AliHLTDataSource.h"
 
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataSource)
 
 AliHLTDataSource::AliHLTDataSource()
