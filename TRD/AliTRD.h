@@ -67,16 +67,6 @@ class AliTRD : public AliDetector {
 
   virtual void       SetTR(Bool_t ) = 0;
 
-  virtual void       SetSensChamber(Int_t ichamber)              = 0;
-  virtual void       SetSensPlane(Int_t iplane)                  = 0;
-  virtual void       SetSensSector(Int_t isector)                = 0;
-  virtual void       SetSensSector(Int_t isector, Int_t nsector) = 0;
-
-  virtual Int_t      GetSensChamber() const     = 0;
-  virtual Int_t      GetSensPlane() const       = 0;
-  virtual Int_t      GetSensSector() const      = 0;
-  virtual Int_t      GetSensSectorRange() const = 0; 
- 
   virtual void       Hits2Digits();
   virtual void       Hits2SDigits();
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const; 
@@ -97,7 +87,7 @@ class AliTRD : public AliDetector {
   Int_t                fDrawTR;             //  Switches marking the TR photons in the display
   Int_t                fDisplayType;        //  Display type (0: normal, 1: detailed) 
 
-  ClassDef(AliTRD,8)                        //  Transition Radiation Detector base class
+  ClassDef(AliTRD,9)                        //  Transition Radiation Detector base class
 
 };
 

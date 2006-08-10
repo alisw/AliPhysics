@@ -110,8 +110,6 @@ class AliTRDdigitizer : public AliDigitizer {
  private:
     
   virtual Bool_t       Init();
-    
-  virtual Bool_t       CheckDetector(Int_t plane, Int_t chamber, Int_t sector);
 
   ClassDef(AliTRDdigitizer,12)               //  Produces TRD-Digits
 

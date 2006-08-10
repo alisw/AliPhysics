@@ -18,7 +18,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Creates and handles digits from TRD hits                                 //
-//  Author: C. Blume (C.Blume@gsi.de)                                        //
+//  Authors: C. Blume (blume@ikf.uni-frankfurt.de)                           //
+//           C. Lippmann                                                     //
+//           B. Vulpescu                                                     //
 //                                                                           //
 //  The following effects are included:                                      //
 //      - Diffusion                                                          //
@@ -33,11 +35,6 @@
 //  The corresponding parameter can be adjusted via the various              //
 //  Set-functions. If these parameters are not explicitly set, default       //
 //  values are used (see Init-function).                                     //
-//  As an example on how to use this class to produce digits from hits       //
-//  have a look at the macro hits2digits.C                                   //
-//  The production of summable digits is demonstrated in hits2sdigits.C      //
-//  and the subsequent conversion of the s-digits into normal digits is      //
-//  explained in sdigits2digits.C.                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -452,7 +449,7 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
   fEvent = nEvent;
 
   // Import the Trees for the event nEvent in the file
-  fRunLoader->GetEvent(fEvent);
+  //fRunLoader->GetEvent(fEvent);
   
   AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
   if (!loader) {
@@ -680,7 +677,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Int_t   track         = hit->Track();
       Int_t   detector      = hit->GetDetector();
       Int_t   plane         = fGeo->GetPlane(detector);
-      Int_t   sector        = fGeo->GetSector(detector);
       Int_t   chamber       = fGeo->GetChamber(detector);
       Float_t time0         = AliTRDgeometry::GetTime0(plane);
 
@@ -690,9 +686,8 @@ Bool_t AliTRDdigitizer::MakeDigits()
       Int_t   nColMax       = padPlane->GetNcols();
       Int_t   inDrift       = 1;
        
-      // Don't analyze test hits and switched off detectors
-      if ((CheckDetector(plane,chamber,sector)) &&
-          (((Int_t) q) != 0)) {
+      // Don't analyze test hits
+      if (((Int_t) q) != 0) {
 
         if (detector != detectorOld) {
 
@@ -1004,8 +999,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
     Int_t nDigits = 0;
 
     // Don't create noise in detectors that are switched off / not installed, etc.
-    if ((CheckDetector(plane,chamber,sector)) &&
-        (!calibration->GetChamberStatus(iDet))) {
+    if (!calibration->GetChamberStatus(iDet)) {
 
       // Create the digits for this chamber
       for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
@@ -1453,34 +1447,6 @@ Bool_t AliTRDdigitizer::SDigits2Digits()
   if (!MergeSDigits()) return kFALSE;
 
   return ConvertSDigits();
-
-}
-
-//_____________________________________________________________________________
-Bool_t AliTRDdigitizer::CheckDetector(Int_t plane, Int_t chamber, Int_t sector)
-{
-  //
-  // Checks whether a detector is enabled
-  //
-
-  if ((fTRD->GetSensChamber() >=       0) &&
-      (fTRD->GetSensChamber() != chamber)) return kFALSE;
-  if ((fTRD->GetSensPlane()   >=       0) &&
-      (fTRD->GetSensPlane()   !=   plane)) return kFALSE;
-  if ( fTRD->GetSensSector()  >=       0) {
-    Int_t sens1 = fTRD->GetSensSector();
-    Int_t sens2 = sens1 + fTRD->GetSensSectorRange();
-    sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
-           * AliTRDgeometry::Nsect();
-    if (sens1 < sens2) {
-      if ((sector < sens1) || (sector >= sens2)) return kFALSE;
-    }
-    else {
-      if ((sector < sens1) && (sector >= sens2)) return kFALSE;
-    }
-  }
-
-  return kTRUE;
 
 }
 

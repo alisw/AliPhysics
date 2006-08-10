@@ -30,16 +30,8 @@ class AliTRDv0 : public AliTRD {
 
   virtual void       SetHits()                   { fHitsOn = 1; };
 
-          void       SetSensChamber(Int_t )      { };
-          void       SetSensPlane(Int_t )        { };
-          void       SetSensSector(Int_t )       { };
-          void       SetSensSector(Int_t ,Int_t) { };
           void       SetTR(Bool_t )              { };
 
-          Int_t      GetSensChamber() const      { return 0; };
-          Int_t      GetSensPlane() const        { return 0; };
-          Int_t      GetSensSector() const       { return 0; };
-          Int_t      GetSensSectorRange() const  { return 0; };
           Bool_t     GetTR() const               { return 0; };
 
  protected:

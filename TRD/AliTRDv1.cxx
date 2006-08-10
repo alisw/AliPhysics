@@ -55,12 +55,6 @@ AliTRDv1::AliTRDv1():AliTRD()
   // Default constructor
   //
 
-  fSensSelect        =  0;
-  fSensPlane         = -1;
-  fSensChamber       = -1;
-  fSensSector        = -1;
-  fSensSectorRange   =  0;
-
   fDeltaE            = NULL;
   fDeltaG            = NULL;
   fTR                = NULL;
@@ -78,12 +72,6 @@ AliTRDv1::AliTRDv1(const char *name, const char *title)
   //
   // Standard constructor for Transition Radiation Detector version 1
   //
-
-  fSensSelect        =  0;
-  fSensPlane         = -1;
-  fSensChamber       = -1;
-  fSensSector        = -1;
-  fSensSectorRange   =  0;
 
   fDeltaE            = NULL;
   fDeltaG            = NULL;
@@ -139,12 +127,6 @@ void AliTRDv1::Copy(TObject &trd) const
   //
   // Copy function
   //
-
-  ((AliTRDv1 &) trd).fSensSelect        = fSensSelect;
-  ((AliTRDv1 &) trd).fSensPlane         = fSensPlane;
-  ((AliTRDv1 &) trd).fSensChamber       = fSensChamber;
-  ((AliTRDv1 &) trd).fSensSector        = fSensSector;
-  ((AliTRDv1 &) trd).fSensSectorRange   = fSensSectorRange;
 
   ((AliTRDv1 &) trd).fTypeOfStepManager = fTypeOfStepManager;
   ((AliTRDv1 &) trd).fStepSize          = fStepSize;
@@ -293,19 +275,6 @@ void AliTRDv1::Init()
   AliTRD::Init();
 
   AliDebug(1,"Slow simulator\n");
-  if (fSensSelect) {
-    if (fSensPlane   >= 0)
-      AliInfo(Form("Only plane %d is sensitive",fSensPlane));
-    if (fSensChamber >= 0)   
-      AliInfo(Form("Only chamber %d is sensitive",fSensChamber));
-    if (fSensSector  >= 0) {
-      Int_t sens1  = fSensSector;
-      Int_t sens2  = fSensSector + fSensSectorRange;
-            sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
-                   * AliTRDgeometry::Nsect();
-	    AliInfo(Form("Only sectors %d - %d are sensitive\n",sens1,sens2-1));
-    }
-  }
 
   // Switch on TR simulation as default
   if (!fTRon) {
@@ -330,90 +299,6 @@ void AliTRDv1::Init()
   fDeltaG = new TF1("deltag",IntSpecGeant,2.421257,28.536469,0);
 
   AliDebug(1,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-}
-
-//_____________________________________________________________________________
-void AliTRDv1::SetSensPlane(Int_t iplane)
-{
-  //
-  // Defines the hit-sensitive plane (0-5)
-  //
-
-  if ((iplane < 0) || (iplane > 5)) {
-    AliWarning(Form("Wrong input value:%d",iplane));
-    AliWarning("Use standard setting");
-    fSensPlane  = -1;
-    fSensSelect =  0;
-    return;
-  }
-
-  fSensSelect = 1;
-  fSensPlane  = iplane;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDv1::SetSensChamber(Int_t ichamber)
-{
-  //
-  // Defines the hit-sensitive chamber (0-4)
-  //
-
-  if ((ichamber < 0) || (ichamber > 4)) {
-    AliWarning(Form("Wrong input value: %d",ichamber));
-    AliWarning("Use standard setting");
-    fSensChamber = -1;
-    fSensSelect  =  0;
-    return;
-  }
-
-  fSensSelect  = 1;
-  fSensChamber = ichamber;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDv1::SetSensSector(Int_t isector)
-{
-  //
-  // Defines the hit-sensitive sector (0-17)
-  //
-
-  SetSensSector(isector,1);
-
-}
-
-//_____________________________________________________________________________
-void AliTRDv1::SetSensSector(Int_t isector, Int_t nsector)
-{
-  //
-  // Defines a range of hit-sensitive sectors. The range is defined by
-  // <isector> (0-17) as the starting point and <nsector> as the number 
-  // of sectors to be included.
-  //
-
-  if ((isector < 0) || (isector > 17)) {
-    AliWarning(Form("Wrong input value <isector>: %d",isector));
-    AliWarning("Use standard setting");
-    fSensSector      = -1;
-    fSensSectorRange =  0;
-    fSensSelect      =  0;
-    return;
-  }
-
-  if ((nsector < 1) || (nsector > 18)) {
-    AliWarning(Form("Wrong input value <nsector>: %d",nsector));
-    AliWarning("Use standard setting");
-    fSensSector      = -1;
-    fSensSectorRange =  0;
-    fSensSelect      =  0;
-    return;
-  }
-
-  fSensSelect      = 1;
-  fSensSector      = isector;
-  fSensSectorRange = nsector;
 
 }
 
@@ -565,22 +450,6 @@ void AliTRDv1::StepManagerGeant()
 
       // Check on selected volumes
       Int_t addthishit = 1;
-      if (fSensSelect) {
-        if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
-        if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
-        if (fSensSector  >= 0) {
-          Int_t sens1  = fSensSector;
-          Int_t sens2  = fSensSector + fSensSectorRange;
-                sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect()))
-                       * AliTRDgeometry::Nsect();
-          if (sens1 < sens2) {
-            if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
-	  }
-          else {
-            if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
-	  }
-	}
-      }
 
       // Add this hit
       if (addthishit) {
@@ -828,22 +697,6 @@ void AliTRDv1::StepManagerErmilova()
 
       // Check on selected volumes
       Int_t addthishit = 1;
-      if (fSensSelect) {
-        if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
-        if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
-        if (fSensSector  >= 0) {
-          Int_t sens1  = fSensSector;
-          Int_t sens2  = fSensSector + fSensSectorRange;
-                sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) 
-                       * AliTRDgeometry::Nsect();
-          if (sens1 < sens2) {
-            if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
-	  			}
-          else {
-            if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
-	  			}
-				}
-      }
 
       // Add this hit
       if (addthishit) {
@@ -992,21 +845,6 @@ void AliTRDv1::StepManagerFixedStep()
 
   // Check on selected volumes
   Int_t addthishit = 1;
-  if(fSensSelect) {
-    if ((fSensPlane   >= 0) && (pla != fSensPlane  )) addthishit = 0;
-    if ((fSensChamber >= 0) && (cha != fSensChamber)) addthishit = 0;
-    if (fSensSector  >= 0) {
-      Int_t sens1  = fSensSector;
-      Int_t sens2  = fSensSector + fSensSectorRange;
-      sens2 -= ((Int_t) (sens2 / AliTRDgeometry::Nsect())) * AliTRDgeometry::Nsect();
-      if (sens1 < sens2) {
-        if ((sec < sens1) || (sec >= sens2)) addthishit = 0;
-      }
-      else {
-        if ((sec < sens1) && (sec >= sens2)) addthishit = 0;
-      }
-    }
-  }
 
   if (!addthishit) return;
 

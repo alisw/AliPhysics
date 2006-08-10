@@ -45,17 +45,7 @@ class AliTRDv1 : public AliTRD {
           void       SelectStepManager(Int_t t);
           void       SetStepSize(Double_t s)    { fStepSize = s; };
 
-          void       SetSensPlane(Int_t iplane = 0);
-          void       SetSensChamber(Int_t ichamber = 0);
-          void       SetSensSector(Int_t isector);
-          void       SetSensSector(Int_t isector, Int_t nsector);
-
           void       SetTR(Bool_t kTRUE)        { fTRon = kTRUE; };
-
-          Int_t      GetSensPlane() const       { return fSensPlane;       };
-          Int_t      GetSensChamber() const     { return fSensChamber;     };
-          Int_t      GetSensSector() const      { return fSensSector;      };
-          Int_t      GetSensSectorRange() const { return fSensSectorRange; };
 
           Bool_t     GetTR() const              { return fTRon;            };
           AliTRDsim *GetTRDsim() const          { return fTR;              };
@@ -63,12 +53,6 @@ class AliTRDv1 : public AliTRD {
  protected:
 
   void        *StepManagerEntity();
-
-  Int_t        fSensSelect;             // Switch to select only parts of the detector
-  Int_t        fSensPlane;              // Sensitive detector plane
-  Int_t        fSensChamber;            // Sensitive detector chamber
-  Int_t        fSensSector;             // Sensitive detector sector 
-  Int_t        fSensSectorRange;        // Sensitive detector range
 
   Bool_t       fTRon;                   // Switch for TR simulation
   AliTRDsim   *fTR;                     // TR simulator
@@ -88,7 +72,7 @@ class AliTRDv1 : public AliTRD {
   Float_t      fTrackLength0;         	// Save the track length at chamber entrance  
   Int_t	       fPrimaryTrackPid;        // Save the id of the primary track  
 
-  ClassDef(AliTRDv1,4)                  // Transition Radiation Detector version 1 (slow simulator)
+  ClassDef(AliTRDv1,5)                  // Transition Radiation Detector version 1 (slow simulator)
 
 };
 
