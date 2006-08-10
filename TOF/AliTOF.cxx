@@ -158,13 +158,18 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
 }
 
 //____________________________________________________________________________
-void AliTOF::SetTOFSectors(Int_t *sectors){
+void AliTOF::SetTOFSectors(Int_t *sectors)
+{
+  // Setter for partial/full TOF configuration
+
   for(Int_t isec=0;isec<18;isec++){
     fTOFSectors[isec]=sectors[isec];
   }
 }
 //____________________________________________________________________________
-void AliTOF::GetTOFSectors(Int_t *sectors) const {
+void AliTOF::GetTOFSectors(Int_t *sectors) const
+{
+  // Getter for partial/full TOF configuration
 
   for(Int_t isec=0;isec<18;isec++){
     sectors[isec]=fTOFSectors[isec];

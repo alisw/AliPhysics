@@ -54,6 +54,7 @@ Revision 0.01  2005/07/25 A. De Caro
 #include "TFile.h"
 #include "TTree.h"
 
+#include "AliDAQ.h"
 #include "AliLoader.h"
 #include "AliLog.h"
 #include "AliRawReader.h"
@@ -124,7 +125,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
 }
 
 //------------------------------------------------------------------------
-  AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &source)
+AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &source)
 {
   // ass. op.
   this->fDigits=source.fDigits;
@@ -213,6 +214,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
     dig[3]=d->GetPadz();
     dig[4]=d->GetPadx();
 
+    //AliInfo(Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
+
     for (jj=0; jj<3; jj++) g[jj] = 0.;
     fTOFGeometry->GetPos(dig,g);
 
@@ -250,7 +253,8 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   // Converts RAW data to recpoints for TOF
   //
 
-  const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
+  //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
+  const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
 
   ResetRecpoint();
 
@@ -274,12 +278,22 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
     while(tofInput.Next()) {
 
+      for (ii=0; ii<5; ii++) detectorIndex[ii] = -1;
+
       detectorIndex[0] = tofInput.GetSector();
       detectorIndex[1] = tofInput.GetPlate();
       detectorIndex[2] = tofInput.GetStrip();
       detectorIndex[3] = tofInput.GetPadZ();
       detectorIndex[4] = tofInput.GetPadX();
       
+      //AliInfo(Form("  %2i  %1i  %2i  %1i  %2i ",detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
+
+      if (detectorIndex[0]==-1 ||
+	  detectorIndex[1]==-1 ||
+	  detectorIndex[2]==-1 ||
+	  detectorIndex[3]==-1 ||
+	  detectorIndex[4]==-1) continue;
+
       for (ii=0; ii<3; ii++) position[ii] =  0.;
 
       fTOFGeometry->GetPos(detectorIndex, position);
@@ -288,8 +302,8 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
       cylindricalPosition[1] = TMath::ATan2(position[1], position[0]);
       cylindricalPosition[2] = position[2];
       cylindricalPosition[3] = tofInput.GetTofBin();
-      cylindricalPosition[4] = tofInput.GetADCbin();
-      tToT = tofInput.GetADCbin();
+      cylindricalPosition[4] = tofInput.GetToTbin();
+      tToT = tofInput.GetToTbin();
       tTdcND = -1.;
       AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
       tofCluster->SetToT(tToT);
@@ -318,7 +332,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   // Converts RAW data to recpoints for TOF
   //
 
-  const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
+  //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
+  const Int_t kDDL = AliDAQ::NumberOfDdls("TOF");
 
   fRunLoader->GetEvent(iEvent);
 
@@ -337,7 +352,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   Int_t ii = 0;
   Int_t indexDDL = 0;
 
-  Int_t detectorIndex[5];
+  Int_t detectorIndex[5] = {-1, -1, -1, -1, -1};
   Float_t position[3];
   Double_t cylindricalPosition[5];
   Float_t tToT;
@@ -351,11 +366,21 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
     while(tofInput.Next()) {
 
+      for (ii=0; ii<5; ii++) detectorIndex[ii] = -1;
+
       detectorIndex[0] = (Int_t)tofInput.GetSector();
       detectorIndex[1] = (Int_t)tofInput.GetPlate();
       detectorIndex[2] = (Int_t)tofInput.GetStrip();
       detectorIndex[3] = (Int_t)tofInput.GetPadZ();
       detectorIndex[4] = (Int_t)tofInput.GetPadX();
+
+      if (detectorIndex[0]==-1 ||
+	  detectorIndex[1]==-1 ||
+	  detectorIndex[2]==-1 ||
+	  detectorIndex[3]==-1 ||
+	  detectorIndex[4]==-1) continue;
+
+      //AliInfo(Form("  %2i  %1i  %2i  %1i  %2i ",detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
 
       for (ii=0; ii<3; ii++) position[ii] =  0.;
 
@@ -365,8 +390,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
       cylindricalPosition[1] = (Double_t)TMath::ATan2(position[1], position[0]);
       cylindricalPosition[2] = (Double_t)position[2];
       cylindricalPosition[3] = (Double_t)tofInput.GetTofBin();
-      cylindricalPosition[4] = (Double_t)tofInput.GetADCbin();
-      tToT = tofInput.GetADCbin();
+      cylindricalPosition[4] = (Double_t)tofInput.GetToTbin();
+      tToT = tofInput.GetToTbin();
       tTdcND = -1.;
     
       AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex);
@@ -405,18 +430,10 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   fTreeD = fTOFLoader->TreeD();
   if (fTreeD)
     {
-    AliInfo("AliTOFClusterFinder: TreeD re-creation");
+    AliInfo("TreeD re-creation");
     fTreeD = 0x0;
     fTOFLoader->MakeTree("D");
     fTreeD = fTOFLoader->TreeD();
-    }
-
-
-  fTreeR = fTOFLoader->TreeD();
-  if (fTreeD == 0x0)
-    {
-      fTOFLoader->MakeTree("D");
-      fTreeD = fTOFLoader->TreeD();
     }
 
   TClonesArray dummy("AliTOFdigit",10000), *tofDigits=&dummy;
@@ -430,10 +447,11 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
   AliDebug(2,Form(" Event number %2i ", iEvent));
 
+  Int_t ii = 0;
   Int_t indexDDL = 0;
 
   Int_t detectorIndex[5];
-  Float_t digit[2];
+  Float_t digit[4];
 
   for (indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
@@ -443,14 +461,26 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
     while(tofInput.Next()) {
 
+      for (ii=0; ii<5; ii++) detectorIndex[ii] = -1;
+
       detectorIndex[0] = tofInput.GetSector();
       detectorIndex[1] = tofInput.GetPlate();
       detectorIndex[2] = tofInput.GetStrip();
       detectorIndex[3] = tofInput.GetPadX();
       detectorIndex[4] = tofInput.GetPadZ();
       
+      //AliInfo(Form("  %2i  %1i  %2i  %1i  %2i ",detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
+
+      if (detectorIndex[0]==-1 ||
+	  detectorIndex[1]==-1 ||
+	  detectorIndex[2]==-1 ||
+	  detectorIndex[3]==-1 ||
+	  detectorIndex[4]==-1) continue;
+
       digit[0] = (Float_t)tofInput.GetTofBin();
-      digit[1] = (Float_t)tofInput.GetADCbin();
+      digit[1] = (Float_t)tofInput.GetToTbin();
+      digit[2] = (Float_t)tofInput.GetToTbin();
+      digit[3] = -1.;
 
       Int_t tracknum[3]={-1,-1,-1};
 

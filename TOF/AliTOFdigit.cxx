@@ -46,15 +46,17 @@ AliTOFdigit::AliTOFdigit(Int_t *tracks, Int_t *vol,Float_t *digit)
 //
 // Constructor of digit object
 //
+
   fSector = vol[0];
   fPlate  = vol[1];
   fStrip  = vol[2];
   fPadx   = vol[3];
   fPadz   = vol[4];
   fTdc    = digit[0];
-  fTdcND  =0;
+  fTdcND  = digit[3];
   fAdc    = digit[1];
-  fToT = 0;
+  fToT    = digit[2];
+
 }
 
 //____________________________________________________________________________
@@ -209,11 +211,13 @@ if  (fSector==digit.fSector &&
 //______________________________________________________________________________
 ostream& operator << (ostream& out, const AliTOFdigit &digit)
 {
-//
-// Output streamer: output of the digit data
-//
-out << "Sector " << digit.fSector << ", Plate " << digit.fPlate << ", Strip " << digit.fStrip << endl;
-out << "Padx" << digit.fPadx << ", Padz " << digit.fPadz << endl;
-out << "TDC " << digit.fTdc << ", ADC "<< digit.fAdc << endl;
-return out;
+  //
+  // Output streamer: output of the digit data
+  //
+
+  out << "Sector " << digit.fSector << ", Plate " << digit.fPlate << ", Strip " << digit.fStrip << endl;
+  out << "Padx" << digit.fPadx << ", Padz " << digit.fPadz << endl;
+  out << "TDC " << digit.fTdc << ", ADC "<< digit.fAdc << endl;
+
+  return out;
 }

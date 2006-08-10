@@ -257,7 +257,7 @@ void AliTOFDigitizer::CreateDigits()
     
     // start loop on number of slots for current sdigit
     for (Int_t islot = 0; islot < nslot; islot++) {
-      Float_t  digit[2];     // TOF digit variables
+      Float_t  digit[4] = {-1.,-1.,-1.,-1.};     // TOF digit variables
       Int_t tracknum[AliTOFSDigit::kMAXDIGITS];     // contributing tracks for the current slot
       
       Float_t tdc=tofsdigit->GetTdc(islot); digit[0]=tdc;

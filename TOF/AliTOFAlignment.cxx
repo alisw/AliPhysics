@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2006/05/04 19:41:42  hristov
+Possibility for partial TOF geometry (S.Arcelli)
+
 Revision 1.7  2006/04/27 13:13:29  hristov
 Moving the destructor to the implementation file
 
@@ -50,7 +53,6 @@ author: Silvia Arcelli, arcelli@bo.infn.it
 #include <Rtypes.h>
 
 #include "TRandom.h"
-#include "TString.h"
 
 #include "AliLog.h"
 #include "AliAlignObj.h"

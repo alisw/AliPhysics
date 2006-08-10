@@ -65,7 +65,7 @@ AliTOFHitMap::AliTOFHitMap(TClonesArray *dig, AliTOFGeometry *tofGeom)
 
   fNSector = AliTOFGeometry::NSectors();
   fNplate = AliTOFGeometry::NPlates();
-  fNstrip = fTOFGeometry->NMaxNstrip();
+  fNstrip = fTOFGeometry->NStripC();//fTOFGeometry->NMaxNstrip();
   fNpx  = AliTOFGeometry::NpadX();
   fNpz  = AliTOFGeometry::NpadZ();
   fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;

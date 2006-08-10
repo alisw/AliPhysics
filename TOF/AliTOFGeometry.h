@@ -48,8 +48,9 @@ class AliTOFGeometry: public TObject{
   static  Int_t NDDL()        { return kNDDL;};
   static  Int_t NTRM()        { return kNTRM;}
   static  Int_t NTdc()        { return kNTdc;};
+  static  Int_t NChain()      { return kNChain;};
   static  Int_t NCh()         { return kNCh;};
-  static  Int_t NPadXTRM()    { return kNCh*kNTdc;};
+  static  Int_t NPadXTRM()    { return kNCh*kNTdc*kNChain;};
 
   virtual  Float_t ZlenA() const      { return fZlenA;};
   virtual  Float_t ZlenB() const      { return fZlenB;};
@@ -108,8 +109,9 @@ class AliTOFGeometry: public TObject{
   // TARODA : TOF-ALICE Read Out and Data Acquisition system
   enum {
     kNDDL        =    4, // Number of DDL (Detector Data Link) per sector
-    kNTRM        =   10, // Number of TRM ( Readout Module) per DDL
-    kNTdc        =   30, // Number of Tdc (Time to Digital Converter) per TRM
+    kNTRM        =   12, // Number of TRM ( Readout Module) per DDL
+    kNTdc        =   15, // Number of Tdc (Time to Digital Converter) per TRM
+    kNChain      =    2, // Number of chains per TRM
     kNCh         =    8  // Number of channels per Tdc
   };
 
