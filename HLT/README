@@ -63,9 +63,13 @@ section.
 
 Installation
 ============
+NOTE: The Makefiles which are in repository are port of the old build system.
+Now, the Makefile.am templates are valid.
+
 Package build relies on the GNU triplet configure, make and make install.
-It is suggested to use a separate build directory, e.g. from the
-top directory do
+For historical reasons there are Makefiles around from the old build system.
+In order to avoid messing up the two build strategies, it is recommended to
+use a separate build directory, e.g. from the top directory do
 
   mkdir build
   cd build
