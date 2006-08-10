@@ -53,8 +53,8 @@ class AliTRDdataArrayI : public AliTRDdataArray {
 
  protected:
 
-  void   SetDataFast(Int_t idx1, Int_t idx2, Int_t value);
-  Int_t  GetDataFast(Int_t idx1, Int_t idx2) const;
+          void   SetDataFast(Int_t idx1, Int_t idx2, Int_t value);
+          Int_t  GetDataFast(Int_t idx1, Int_t idx2) const;
 
   Int_t          GetData1(Int_t idx1, Int_t idx2) const; 
   void           Expand1(); 

@@ -21,7 +21,6 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDsegmentArrayBase.h"
 #include <TROOT.h>
 #include <TTree.h>
 #include <TClonesArray.h>
@@ -29,42 +28,45 @@
 #include <TError.h>
 #include <TClass.h>
 
+#include "AliLog.h"
+
+#include "AliTRDsegmentArrayBase.h"
 #include "AliTRDarrayI.h"
 #include "AliTRDsegmentID.h"
 
 ClassImp(AliTRDsegmentArrayBase)
   
 //_____________________________________________________________________________
-AliTRDsegmentArrayBase::AliTRDsegmentArrayBase():TNamed()
+AliTRDsegmentArrayBase::AliTRDsegmentArrayBase()
+  :TNamed()
+  ,fSegment(0) 
+  ,fTreeIndex(0)
+  ,fNSegment(0)
+  ,fTree(0)
+  ,fBranch(0)
+  ,fClass(0)
 {
   //
   // AliTRDsegmentArrayBase default constructor
   //
 
-  fNSegment  = 0;
-  fSegment   = 0; 
-  fTreeIndex = 0;
-  fTree      = 0;
-  fClass     = 0;
-  fBranch    = 0;
-
 }
 
 //_____________________________________________________________________________
 AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(const char *classname, Int_t n)
+  :TNamed()
+  ,fSegment(0) 
+  ,fTreeIndex(0)
+  ,fNSegment(0)
+  ,fTree(0)
+  ,fBranch(0)
+  ,fClass(0)
 {
   //
   //  Create an array of objects of <classname>. The class must inherit from
   //  AliTRDsegmentID. The second argument sets the number of entries in 
   //  the array.
   //
-
-  fNSegment  = 0;
-  fSegment   = 0; 
-  fTreeIndex = 0;
-  fTree      = 0;
-  fClass     = 0;
-  fBranch    = 0;
 
   SetClass(classname);
 
@@ -77,13 +79,17 @@ AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(const char *classname, Int_t n)
 
 //_____________________________________________________________________________
 AliTRDsegmentArrayBase::AliTRDsegmentArrayBase(const AliTRDsegmentArrayBase &a)
-:TNamed(a)
+  :TNamed(a)
+  ,fSegment(a.fSegment) 
+  ,fTreeIndex(a.fTreeIndex)
+  ,fNSegment(a.fNSegment)
+  ,fTree(a.fTree)
+  ,fBranch(a.fBranch)
+  ,fClass(a.fClass)
 {
   //
   // AliTRDsegmentArrayBase copy constructor
   //
-  
-  ((AliTRDsegmentArrayBase &) a).Copy(*this);
 
 }
 
@@ -94,13 +100,14 @@ AliTRDsegmentArrayBase::~AliTRDsegmentArrayBase()
   // AliTRDsegmentArrayBase destructor
   //
 
-  if (fNSegment){
+  if (fNSegment) {
     fSegment->Delete();
     delete fSegment;
   }
 
-  //if (fTree)      delete fTree;
-  if (fTreeIndex) delete fTreeIndex;
+  if (fTreeIndex) {
+    delete fTreeIndex;
+  }
 
 }
 
@@ -154,21 +161,22 @@ Bool_t AliTRDsegmentArrayBase::SetClass(const char *classname)
     fSegment   = 0;
   }
 
-  if (!gROOT) ::Fatal("AliTRDsegmentArrayBase::AliTRDsegmentArrayBase"
-                     ,"ROOT system not initialized");
-   
-   fClass = gROOT->GetClass(classname);
-   if (!fClass) {
-     Error("AliTRDsegmentArrayBase","%s is not a valid class name",classname);
-     return kFALSE;
-   }
-   if (!fClass->InheritsFrom(AliTRDsegmentID::Class())) {
-     Error("AliTRDsegmentArrayBase"
-          ,"%s does not inherit from AliTRDsegmentID",classname);
-     return kFALSE;
-   }
+  if (!gROOT) {
+    AliFatal("ROOT system not initialized");
+    exit(1);
+  }   
+
+  fClass = gROOT->GetClass(classname);
+  if (!fClass) {
+    AliError(Form("%s is not a valid class name",classname));
+    return kFALSE;
+  }
+  if (!fClass->InheritsFrom(AliTRDsegmentID::Class())) {
+    AliError(Form("%s does not inherit from AliTRDsegmentID",classname));
+    return kFALSE;
+  }
   
-   return kTRUE;
+  return kTRUE;
 
 }
 
@@ -182,9 +190,13 @@ AliTRDsegmentID *AliTRDsegmentArrayBase::NewSegment()
   if (fClass  == 0) return 0;
 
   AliTRDsegmentID *segment = (AliTRDsegmentID *) fClass->New();
-  if (segment == 0) return 0;
 
-  return segment;
+  if (segment == 0) {
+    return 0;
+  }
+  else {
+    return segment;
+  }
 
 }
 
@@ -200,8 +212,8 @@ Bool_t AliTRDsegmentArrayBase::AddSegment(AliTRDsegmentID *segment)
   if (fClass   == 0) return kFALSE;
 
   if (!(segment->IsA()->InheritsFrom(fClass))) {
-    Error("AliTRDsegmentArrayBase","added class %s is not of proper type",
-	  segment->IsA()->GetName());
+    AliError(Form("added class %s is not of proper type"
+                 ,segment->IsA()->GetName()));
     return kFALSE;
   }
 
@@ -250,10 +262,12 @@ Bool_t AliTRDsegmentArrayBase::MakeArray(Int_t n)
   fTreeIndex = new AliTRDarrayI();
   fTreeIndex->Set(n);
   fNSegment  = n;
-  if ((fSegment) && (fTreeIndex)) 
+  if ((fSegment) && (fTreeIndex)) {
     return kTRUE;
-  else 
+  }
+  else { 
     return kFALSE;
+  }
 		  
 }
 
@@ -264,11 +278,7 @@ void AliTRDsegmentArrayBase::ClearSegment(Int_t index)
   // Remove a segment from the active memory    
   //
 
-  //PH  if ((*fSegment)[index]){
-  //PH    delete (*fSegment)[index]; // because problem with deleting TClonesArray
-  //PH    fSegment->RemoveAt(index);
-  //PH  }
-  if (fSegment->At(index)){
+  if (fSegment->At(index)) {
     delete fSegment->RemoveAt(index);
   }
 
@@ -287,8 +297,9 @@ void AliTRDsegmentArrayBase::MakeTree(char *file)
   fTree   = new TTree("Segment Tree","Tree with segments");
 
   fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
-  if (file) 
-      fBranch->SetFile(file);      
+  if (file) {
+    fBranch->SetFile(file);      
+  }
 
   delete psegment;
 
@@ -301,7 +312,7 @@ Bool_t AliTRDsegmentArrayBase::ConnectTree(const char * treeName)
   // Connect a tree from current directory  
   //
 
-  if (fTree){
+  if (fTree) {
     delete fTree;
     fTree   = 0;
     fBranch = 0;
@@ -331,24 +342,26 @@ AliTRDsegmentID *AliTRDsegmentArrayBase::LoadSegment(Int_t index)
   if (fTreeIndex == 0)        return 0;
   if (fBranch    == 0)        return 0;
   if (index > fTreeIndex->fN) return 0;
-  //PH  AliTRDsegmentID *s = (AliTRDsegmentID*) (*fSegment)[index];
+
   AliTRDsegmentID *s = (AliTRDsegmentID*) fSegment->At(index);
   if (s == 0) s = NewSegment();
   s->SetID(index);
   
   if (s != 0) {
     Int_t treeIndex = (*fTreeIndex)[index];
-    if (treeIndex < 1) 
+    if (treeIndex < 1) {
       return 0;
-    else 
-      treeIndex--;   
+    }
+    else { 
+      treeIndex--;
+    }   
     fBranch->SetAddress(&s);
     fTree->GetEvent(treeIndex);
-    //PH    (*fSegment)[index] = (TObject*) s;
     fSegment->AddAt((TObject*) s, index);
   }
-  else 
+  else { 
     return 0;
+  }
 
   return s;
 
@@ -369,12 +382,12 @@ AliTRDsegmentID *AliTRDsegmentArrayBase::LoadEntry(Int_t index)
     fBranch->SetAddress(&s);
     fTree->GetEvent(index);
   }
-  else 
+  else {
     return 0;
+  }
 
   Int_t nindex = s->GetID();
   ClearSegment(nindex);
-  //PH  (*fSegment)[nindex] = (TObject *) s;
   fSegment->AddAt((TObject *) s, nindex);
 
   return s;
@@ -448,7 +461,6 @@ const AliTRDsegmentID *AliTRDsegmentArrayBase::At(Int_t i) const
   //
 
   if ((i < 0) || (i >= fNSegment)) return 0; 
-  //PH  return (AliTRDsegmentID *)((*fSegment)[i]);
   return (AliTRDsegmentID *) fSegment->At(i);
 
 }

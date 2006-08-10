@@ -18,7 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  Calibration base class for a single ROC                                  //
-//  Contains one char value per pad                                         //
+//  Contains one char value per pad                                          //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -27,33 +27,34 @@
 ClassImp(AliTRDCalSingleChamberStatus)
 
 //_____________________________________________________________________________
-AliTRDCalSingleChamberStatus::AliTRDCalSingleChamberStatus():TObject()
+AliTRDCalSingleChamberStatus::AliTRDCalSingleChamberStatus()
+  :TObject()
+  ,fPla(0)
+  ,fCha(0)
+  ,fNrows(0)
+  ,fNcols(0)
+  ,fNchannels(0)
+  ,fData(0)
 {
   //
   // Default constructor
   //
 
-  fPla          = 0;
-  fCha          = 0;
-
-  fNrows        = 0;
-  fNcols        = 0;
-
-  fNchannels    = 0;
-  fData         = 0;
 }
 
 //_____________________________________________________________________________
-AliTRDCalSingleChamberStatus::AliTRDCalSingleChamberStatus(Int_t p, Int_t c, Int_t cols):TObject()
+AliTRDCalSingleChamberStatus::AliTRDCalSingleChamberStatus(Int_t p, Int_t c, Int_t cols)
+  :TObject()
+  ,fPla(p)
+  ,fCha(c)
+  ,fNrows(0)
+  ,fNcols(cols)
+  ,fNchannels(0)
+  ,fData(0)
 {
   //
   // Constructor that initializes a given pad plane type
   //
-
-  fPla = p;
-  fCha = c;
-
-  fNcols      = cols;
 
   //
   // The pad plane parameter
@@ -122,21 +123,38 @@ AliTRDCalSingleChamberStatus::AliTRDCalSingleChamberStatus(Int_t p, Int_t c, Int
   };
 
   fNchannels = fNrows * fNcols;
-  if (fNchannels != 0)
+  if (fNchannels != 0) {
     fData = new Char_t[fNchannels];
-
-  for (Int_t i=0; i<fNchannels; ++i)
+  }
+  for (Int_t i=0; i<fNchannels; ++i) {
     fData[i] = 0;
+  }
+
 }
 
 //_____________________________________________________________________________
-AliTRDCalSingleChamberStatus::AliTRDCalSingleChamberStatus(const AliTRDCalSingleChamberStatus &c):TObject(c)
+AliTRDCalSingleChamberStatus::AliTRDCalSingleChamberStatus(const AliTRDCalSingleChamberStatus &c)
+  :TObject(c)
+  ,fPla(c.fPla)
+  ,fCha(c.fCha)
+  ,fNrows(c.fNrows)
+  ,fNcols(c.fNcols)
+  ,fNchannels(c.fNchannels)
+  ,fData(0)
 {
   //
   // AliTRDCalSingleChamberStatus copy constructor
   //
 
-  ((AliTRDCalSingleChamberStatus &) c).Copy(*this);
+  Int_t iBin = 0;
+
+  if (((AliTRDCalSingleChamberStatus &) c).fData) {
+    delete [] ((AliTRDCalSingleChamberStatus &) c).fData;
+  }
+  ((AliTRDCalSingleChamberStatus &) c).fData = new Char_t[fNchannels];
+  for (iBin = 0; iBin < fNchannels; iBin++) {
+    ((AliTRDCalSingleChamberStatus &) c).fData[iBin] = fData[iBin];
+  }
 
 }
 
@@ -151,6 +169,7 @@ AliTRDCalSingleChamberStatus::~AliTRDCalSingleChamberStatus()
     delete [] fData;
     fData = 0;
   }
+
 }
 
 //_____________________________________________________________________________
@@ -172,17 +191,19 @@ void AliTRDCalSingleChamberStatus::Copy(TObject &c) const
   // Copy function
   //
 
-  ((AliTRDCalSingleChamberStatus &) c).fPla          = fPla;
-  ((AliTRDCalSingleChamberStatus &) c).fCha          = fCha;
-
-  ((AliTRDCalSingleChamberStatus &) c).fNrows        = fNrows;
-  ((AliTRDCalSingleChamberStatus &) c).fNcols        = fNcols;
-
   Int_t iBin = 0;
+
+  ((AliTRDCalSingleChamberStatus &) c).fPla       = fPla;
+  ((AliTRDCalSingleChamberStatus &) c).fCha       = fCha;
+
+  ((AliTRDCalSingleChamberStatus &) c).fNrows     = fNrows;
+  ((AliTRDCalSingleChamberStatus &) c).fNcols     = fNcols;
 
   ((AliTRDCalSingleChamberStatus &) c).fNchannels = fNchannels;
 
-  if (((AliTRDCalSingleChamberStatus &) c).fData) delete [] ((AliTRDCalSingleChamberStatus &) c).fData;
+  if (((AliTRDCalSingleChamberStatus &) c).fData) {
+    delete [] ((AliTRDCalSingleChamberStatus &) c).fData;
+  }
   ((AliTRDCalSingleChamberStatus &) c).fData = new Char_t[fNchannels];
   for (iBin = 0; iBin < fNchannels; iBin++) {
     ((AliTRDCalSingleChamberStatus &) c).fData[iBin] = fData[iBin];

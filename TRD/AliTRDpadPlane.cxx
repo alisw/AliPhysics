@@ -32,42 +32,56 @@
 ClassImp(AliTRDpadPlane)
 
 //_____________________________________________________________________________
-AliTRDpadPlane::AliTRDpadPlane():TObject()
+AliTRDpadPlane::AliTRDpadPlane()
+  :TObject()
+  ,fGeo(0)
+  ,fPla(0)
+  ,fCha(0)
+  ,fLength(0)
+  ,fWidth(0)
+  ,fLengthRim(0)
+  ,fWidthRim(0)
+  ,fLengthOPad(0)
+  ,fWidthOPad(0)
+  ,fLengthIPad(0)
+  ,fWidthIPad(0)
+  ,fRowSpacing(0)
+  ,fColSpacing(0)
+  ,fNrows(0)
+  ,fNcols(0)
+  ,fTiltingAngle(0)
+  ,fTiltingTan(0)
+  ,fPadRow(0)
+  ,fPadCol(0)
 {
   //
   // Default constructor
   //
 
-  fGeo          = 0;
-
-  fPla          = 0;
-  fCha          = 0;
-
-  fLength       = 0.0;
-  fWidth        = 0.0;
-  fLengthRim    = 0.0;
-  fWidthRim     = 0.0;
-  fLengthOPad   = 0.0;
-  fWidthOPad    = 0.0;
-  fLengthIPad   = 0.0;
-  fWidthIPad    = 0.0;
-
-  fRowSpacing   = 0.0;
-  fColSpacing   = 0.0;
-
-  fNrows        = 0;
-  fNcols        = 0;
-
-  fPadRow       = 0;
-  fPadCol       = 0;
-
-  fTiltingAngle = 0.0;
-  fTiltingTan   = 0.0;
-
 }
 
 //_____________________________________________________________________________
-AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject(),fPadRow(0),fPadCol(0)
+AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c)
+  :TObject()
+  ,fGeo(0)
+  ,fPla(0)
+  ,fCha(0)
+  ,fLength(0)
+  ,fWidth(0)
+  ,fLengthRim(0)
+  ,fWidthRim(0)
+  ,fLengthOPad(0)
+  ,fWidthOPad(0)
+  ,fLengthIPad(0)
+  ,fWidthIPad(0)
+  ,fRowSpacing(0)
+  ,fColSpacing(0)
+  ,fNrows(0)
+  ,fNcols(0)
+  ,fTiltingAngle(0)
+  ,fTiltingTan(0)
+  ,fPadRow(0)
+  ,fPadCol(0)
 {
   //
   // Constructor that initializes a given pad plane type
@@ -286,13 +300,45 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c):TObject(),fPadRow(0),fPadCol(0)
 }
 
 //_____________________________________________________________________________
-AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p):TObject(p)
+AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
+  :TObject(p)
+  ,fGeo(0)
+  ,fPla(p.fPla)
+  ,fCha(p.fCha)
+  ,fLength(p.fLength)
+  ,fWidth(p.fWidth)
+  ,fLengthRim(p.fLengthRim)
+  ,fWidthRim(p.fLengthRim)
+  ,fLengthOPad(p.fLengthOPad)
+  ,fWidthOPad(p.fWidthOPad)
+  ,fLengthIPad(p.fLengthIPad)
+  ,fWidthIPad(p.fWidthIPad)
+  ,fRowSpacing(p.fRowSpacing)
+  ,fColSpacing(p.fColSpacing)
+  ,fNrows(p.fNrows)
+  ,fNcols(p.fNcols)
+  ,fTiltingAngle(p.fTiltingAngle)
+  ,fTiltingTan(p.fTiltingTan)
+  ,fPadRow(0)
+  ,fPadCol(0)
 {
   //
   // AliTRDpadPlane copy constructor
   //
 
-  ((AliTRDpadPlane &) p).Copy(*this);
+  Int_t iBin = 0;
+
+  if (((AliTRDpadPlane &) p).fPadRow) delete [] ((AliTRDpadPlane &) p).fPadRow;
+  ((AliTRDpadPlane &) p).fPadRow = new Double_t[fNrows];
+  for (iBin = 0; iBin < fNrows; iBin++) {
+    ((AliTRDpadPlane &) p).fPadRow[iBin] = fPadRow[iBin];
+  }                                                                             
+
+  if (((AliTRDpadPlane &) p).fPadCol) delete [] ((AliTRDpadPlane &) p).fPadCol;
+  ((AliTRDpadPlane &) p).fPadCol = new Double_t[fNrows];
+  for (iBin = 0; iBin < fNrows; iBin++) {
+    ((AliTRDpadPlane &) p).fPadCol[iBin] = fPadCol[iBin];
+  }                                                                             
 
 }
 
@@ -417,7 +463,7 @@ Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 
 //_____________________________________________________________________________
 Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi
-				      , Double_t /*rowOffset*/) const
+				     , Double_t /*rowOffset*/) const
 {
   //
   // Finds the pad column number for a given global rphi-position
@@ -433,7 +479,6 @@ Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi
   // Take the tilting angle into account by shifting the hit position
   // into the opposite direction
   // 
-
 
   rphiShift = rphi ;
 

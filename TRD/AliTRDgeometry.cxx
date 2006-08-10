@@ -22,16 +22,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include <TError.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TGeoMatrix.h>
 
-
+#include "AliLog.h"
 #include "AliRunLoader.h"
-#include "AliTRDgeometry.h"
-#include "AliTRDpadPlane.h"
-
 #include "AliAlignObj.h"
 #include "AliAlignObjAngles.h"
 
@@ -39,6 +35,8 @@
 #include "AliTRD.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDpadPlane.h"
 
 ClassImp(AliTRDgeometry)
 
@@ -161,14 +159,32 @@ ClassImp(AliTRDgeometry)
                                                   fgkTime0Base + 5 * (Cheight() + Cspace()) };
 
 //_____________________________________________________________________________
-AliTRDgeometry::AliTRDgeometry():AliGeometry()
+AliTRDgeometry::AliTRDgeometry()
+  :AliGeometry()
+  ,fMatrixArray(0)
+  ,fMatrixCorrectionArray(0)
+  ,fMatrixGeo(0)
+
 {
   //
   // AliTRDgeometry default constructor
   //
 
-  fMatrixArray           = 0;
-  fMatrixCorrectionArray = 0;
+  Init();
+
+}
+
+//_____________________________________________________________________________
+AliTRDgeometry::AliTRDgeometry(const AliTRDgeometry &g)
+  :AliGeometry(g)
+   ,fMatrixArray(g.fMatrixArray)
+   ,fMatrixCorrectionArray(g.fMatrixCorrectionArray)
+   ,fMatrixGeo(g.fMatrixGeo)
+
+{
+  //
+  // AliTRDgeometry copy constructor
+  //
 
   Init();
 
@@ -183,6 +199,18 @@ AliTRDgeometry::~AliTRDgeometry()
 
   delete fMatrixArray;
   delete fMatrixCorrectionArray;
+
+}
+
+//_____________________________________________________________________________
+AliTRDgeometry &AliTRDgeometry::operator=(const AliTRDgeometry &g)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &g) Init();
+  return *this;
 
 }
 
@@ -714,9 +742,8 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Matrix(matrix[2],  0.0,  0.0, 90.0, 90.0, 90.0,  0.0);
 
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    AliError("Could not get common params\n");
+  if (!commonParam) {
+    AliError("Could not get common parameters\n");
     return;
   }
     
@@ -1084,12 +1111,16 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
   //
 
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
+  if (!commonParam) {
+    AliError("Could not get common parameters\n");
     return kFALSE;
+  }
 
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
+  if (!calibration) {
+    AliError("Could not get calibration data\n");
     return kFALSE;  
+  }
   
   AliTRDpadPlane *padPlane = commonParam->GetPadPlane(iplan,icham);
 
@@ -1297,7 +1328,7 @@ AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader* runLoader)
 
   if (!runLoader) runLoader = AliRunLoader::GetRunLoader();
   if (!runLoader) {
-    ::Error("AliTRDgeometry::GetGeometry", "No run loader");
+    //AliError("No run loader");
     return NULL;
   }
 
@@ -1313,7 +1344,10 @@ AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader* runLoader)
     AliTRD * trd = (AliTRD*)runLoader->GetAliRun()->GetDetector("TRD");
     geom = trd->GetGeometry();
   }
-  if (!geom) ::Error("AliTRDgeometry::GetGeometry", "Geometry not found");
+  if (!geom) {
+    //AliError("Geometry not found");
+    return NULL;
+  }
 
   saveDir->cd();
   return geom;
@@ -1345,7 +1379,7 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
       Int_t     lid          = GetDetector(iLayerTRD,ichamber,isector);    
 
       //
-      // local geo system z-x-y  to x-y--z 
+      // Local geo system z-x-y  to x-y--z 
       //
       fMatrixGeo->AddAt(new TGeoHMatrix(*m),lid);
       

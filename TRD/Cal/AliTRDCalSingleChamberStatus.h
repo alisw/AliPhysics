@@ -5,11 +5,11 @@
 
 /* $Id: AliTRDCalSingleChamberStatus.h,v */
 
-//////////////////////////////////////////////////
-//                                              //
-//  TRD calibration base class containing status values for one ROC      //
-//                                              //
-//////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  TRD calibration base class containing status values for one ROC       //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
@@ -21,34 +21,35 @@ class AliTRDCalSingleChamberStatus : public TObject {
   AliTRDCalSingleChamberStatus();
   AliTRDCalSingleChamberStatus(Int_t p, Int_t c, Int_t cols);
   AliTRDCalSingleChamberStatus(const AliTRDCalSingleChamberStatus &c);
-  virtual           ~AliTRDCalSingleChamberStatus();
-  AliTRDCalSingleChamberStatus      &operator=(const AliTRDCalSingleChamberStatus &c);
-  virtual void       Copy(TObject &c) const;
+  virtual                      ~AliTRDCalSingleChamberStatus();
+  AliTRDCalSingleChamberStatus &operator=(const AliTRDCalSingleChamberStatus &c);
 
-  Int_t    GetNrows() const                  { return fNrows; };
-  Int_t    GetNcols() const                  { return fNcols; };
+  virtual void    Copy(TObject &c) const;
 
-  Int_t        GetChannel(Int_t c, Int_t r) const    { return r+c*fNrows; };
-  Int_t        GetNchannels()       const       { return fNchannels;   };
-  Char_t       GetStatus(Int_t ich) const       { return fData[ich]; };
-  Char_t       GetStatus(Int_t col, Int_t row) const { return fData[GetChannel(col,row)]; };
+          Int_t   GetNrows() const                      { return fNrows; };
+          Int_t   GetNcols() const                      { return fNcols; };
 
-  void         SetStatus(Int_t ich, Char_t vd) { fData[ich] = vd;   };
-  void         SetStatus(Int_t col, Int_t row, Char_t vd)
-                                                { fData[GetChannel(col,row)] = vd; };
+          Int_t   GetChannel(Int_t c, Int_t r) const    { return r+c*fNrows;                 };
+          Int_t   GetNchannels() const                  { return fNchannels;                 };
+          Char_t  GetStatus(Int_t ich) const            { return fData[ich];                 };
+          Char_t  GetStatus(Int_t col, Int_t row) const { return fData[GetChannel(col,row)]; };
+
+          void    SetStatus(Int_t ich, Char_t vd)       { fData[ich] = vd;                   };
+          void    SetStatus(Int_t col, Int_t row, Char_t vd)
+                                                        { fData[GetChannel(col,row)] = vd;   };
 
  protected:
 
-  Int_t     fPla;             //  Plane number
-  Int_t     fCha;             //  Chamber number
+          Int_t   fPla;                    //  Plane number
+          Int_t   fCha;                    //  Chamber number
 
-  Int_t     fNrows;           //  Number of rows
-  Int_t     fNcols;           //  Number of columns
+          Int_t   fNrows;                  //  Number of rows
+          Int_t   fNcols;                  //  Number of columns
 
-  Int_t     fNchannels;             //  Number of channels
-  Char_t   *fData;                //[fNchannels] Data
+          Int_t   fNchannels;              //  Number of channels
+          Char_t *fData;                   //[fNchannels] Data
 
-  ClassDef(AliTRDCalSingleChamberStatus,1)    //  TRD ROC calibration class
+  ClassDef(AliTRDCalSingleChamberStatus,1) //  TRD ROC calibration class
 
 };
 

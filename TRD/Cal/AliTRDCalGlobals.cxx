@@ -26,34 +26,25 @@
 ClassImp(AliTRDCalGlobals)
 
 //_____________________________________________________________________________
-AliTRDCalGlobals::AliTRDCalGlobals():TNamed()
+AliTRDCalGlobals::AliTRDCalGlobals()
+  :TNamed()
+  ,fSamplingFrequency(0)
+  ,fNumberOfTimeBins(0)
 {
   //
   // AliTRDCalGlobals default constructor
   //
-  
-  
-  Init();
+
 }
 
 //_____________________________________________________________________________
 AliTRDCalGlobals::AliTRDCalGlobals(const Text_t *name, const Text_t *title)
-                :TNamed(name,title)
+  :TNamed(name,title)
+  ,fSamplingFrequency(0)
+  ,fNumberOfTimeBins(0)
 {
   //
   // AliTRDCalGlobals constructor
   //
 
-  Init();
-}
-
-//_____________________________________________________________________________
-void AliTRDCalGlobals::Init()
-{
-  //
-  // default initialization
-  //
-  
-  fSamplingFrequency = 0;
-  fNumberOfTimeBins = 0;
 }

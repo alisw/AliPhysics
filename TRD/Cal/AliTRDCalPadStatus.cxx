@@ -17,18 +17,19 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD calibration class for MCM status                                     //
+//  TRD calibration class for the single pad status                          //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDCalPadStatus.h"
-
+#include "AliTRDgeometry.h"
 #include "AliTRDCalSingleChamberStatus.h"
 
 ClassImp(AliTRDCalPadStatus)
 
 //_____________________________________________________________________________
-AliTRDCalPadStatus::AliTRDCalPadStatus():TNamed()
+AliTRDCalPadStatus::AliTRDCalPadStatus()
+  :TNamed()
 {
   //
   // AliTRDCalPadStatus default constructor
@@ -42,7 +43,7 @@ AliTRDCalPadStatus::AliTRDCalPadStatus():TNamed()
 
 //_____________________________________________________________________________
 AliTRDCalPadStatus::AliTRDCalPadStatus(const Text_t *name, const Text_t *title)
-                :TNamed(name,title)
+  :TNamed(name,title)
 {
   //
   // AliTRDCalPadStatus constructor
@@ -59,9 +60,9 @@ AliTRDCalPadStatus::AliTRDCalPadStatus(const Text_t *name, const Text_t *title)
 
 }
 
-
 //_____________________________________________________________________________
-AliTRDCalPadStatus::AliTRDCalPadStatus(const AliTRDCalPadStatus &c):TNamed(c)
+AliTRDCalPadStatus::AliTRDCalPadStatus(const AliTRDCalPadStatus &c)
+  :TNamed(c)
 {
   //
   // AliTRDCalPadStatus copy constructor
@@ -113,5 +114,33 @@ void AliTRDCalPadStatus::Copy(TObject &c) const
   }
 
   TObject::Copy(c);
+
 }
 
+//_____________________________________________________________________________
+Bool_t AliTRDCalPadStatus::CheckStatus(Int_t d, Int_t col, Int_t row, Int_t bitMask) const
+{
+  //
+  // Checks the pad status
+  //
+
+  AliTRDCalSingleChamberStatus *roc = GetCalROC(d);
+  if (!roc) {
+    return kFALSE;
+  }
+  else {
+    return (roc->GetStatus(col, row) & bitMask) ? kTRUE : kFALSE;
+  }
+
+}
+
+//_____________________________________________________________________________
+AliTRDCalSingleChamberStatus* AliTRDCalPadStatus::GetCalROC(Int_t p, Int_t c, Int_t s) const
+{ 
+  //
+  // Returns the readout chamber of this pad
+  //
+
+  return fROC[AliTRDgeometry::GetDetector(p,c,s)];   
+
+}

@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliTRDCalMCMStatus.h"
+#include "AliTRDgeometry.h"
 #include "AliTRDCalSingleChamberStatus.h"
 
 ClassImp(AliTRDCalMCMStatus)
@@ -57,7 +58,6 @@ AliTRDCalMCMStatus::AliTRDCalMCMStatus(const Text_t *name, const Text_t *title)
   }
 
 }
-
 
 //_____________________________________________________________________________
 AliTRDCalMCMStatus::AliTRDCalMCMStatus(const AliTRDCalMCMStatus &c):TNamed(c)
@@ -112,5 +112,34 @@ void AliTRDCalMCMStatus::Copy(TObject &c) const
   }
 
   TObject::Copy(c);
+
 }
 
+//_____________________________________________________________________________
+Bool_t AliTRDCalMCMStatus::CheckStatus(Int_t d, Int_t col, Int_t row, Int_t bitMask) const
+{
+  //
+  // Checks the MCM status byte
+  //
+
+  AliTRDCalSingleChamberStatus* roc = GetCalROC(d);
+
+  if (!roc) {
+    return kFALSE;
+  }
+  else {
+    return (roc->GetStatus(col, row) & bitMask) ? kTRUE : kFALSE;
+  }
+
+}
+
+//_____________________________________________________________________________
+AliTRDCalSingleChamberStatus* AliTRDCalMCMStatus::GetCalROC(Int_t p, Int_t c, Int_t s) const
+{
+  //
+  // Returns the readout chamber of this MCM
+  //
+ 
+  return GetCalROC(AliTRDgeometry::GetDetector(p,c,s)); 
+
+}

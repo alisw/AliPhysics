@@ -17,9 +17,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Class containing constant common parameters                           //
+// Class containing constant common parameters                               //
 //                                                                           //
-// Request an instance with AliTRDCommonParam::Instance()                 //
+// Request an instance with AliTRDCommonParam::Instance()                    //
 // Then request the needed values                                            //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,7 +28,6 @@
 
 #include "AliTRDCommonParam.h"
 #include "AliTRDpadPlane.h"
-
 
 ClassImp(AliTRDCommonParam)
 
@@ -50,8 +49,10 @@ AliTRDCommonParam* AliTRDCommonParam::Instance()
     fgInstance = new AliTRDCommonParam();
   
   return fgInstance;
+
 }
 
+//_____________________________________________________________________________
 void AliTRDCommonParam::Terminate()
 {
   //
@@ -67,29 +68,29 @@ void AliTRDCommonParam::Terminate()
     delete fgInstance;
     fgInstance = 0;
   }
+
 }
 
 //_____________________________________________________________________________
 AliTRDCommonParam::AliTRDCommonParam()
+  :TObject()
+  ,fField(0)
+  ,fExBOn(kFALSE)
+  ,fPadPlaneArray(0)
 {
   //
-  // constructor
+  // Default constructor
   //
   
-  fField              = 0.0;
-
-  fExBOn              = kFALSE;
-  
-  fPadPlaneArray      = 0;
-  
   Init();
+
 }
 
 //_____________________________________________________________________________
 void AliTRDCommonParam::Init()
 {
   //
-  // constructor helper
+  // Initialization
   //
   
   // E x B effects
@@ -113,13 +114,14 @@ void AliTRDCommonParam::Init()
       fPadPlaneArray->AddAt(new AliTRDpadPlane(iplan,icham),ipp);
     }
   }
+
 }
 
 //_____________________________________________________________________________
 AliTRDCommonParam::~AliTRDCommonParam() 
 {
   //
-  // destructor
+  // Destructor
   //
   
   if (fPadPlaneArray) {
@@ -127,18 +129,21 @@ AliTRDCommonParam::~AliTRDCommonParam()
     delete fPadPlaneArray;
     fPadPlaneArray = 0;
   }
+
 }
 
 //_____________________________________________________________________________
-AliTRDCommonParam::AliTRDCommonParam(const AliTRDCommonParam &p):TObject(p)
+AliTRDCommonParam::AliTRDCommonParam(const AliTRDCommonParam &p)
+  :TObject(p)
+  ,fField(p.fField)
+  ,fExBOn(p.fExBOn)
+  ,fPadPlaneArray(0)
 {
   //
-  // copy constructor
+  // Copy constructor
   //
 
-  ((AliTRDCommonParam &) p).Copy(*this);
 }
-
 
 //_____________________________________________________________________________
 AliTRDCommonParam &AliTRDCommonParam::operator=(const AliTRDCommonParam &p)
@@ -149,6 +154,7 @@ AliTRDCommonParam &AliTRDCommonParam::operator=(const AliTRDCommonParam &p)
 
   if (this != &p) ((AliTRDCommonParam &) p).Copy(*this);
   return *this;
+
 }
 
 //_____________________________________________________________________________
@@ -159,11 +165,13 @@ void AliTRDCommonParam::Copy(TObject &p) const
   //
   
   AliTRDCommonParam* target = dynamic_cast<AliTRDCommonParam*> (&p);
-  if (!target)
+  if (!target) {
     return;
-  
-  target->fExBOn              = fExBOn;
-  target->fField              = fField;
+  }  
+
+  target->fExBOn = fExBOn;
+  target->fField = fField;
+
 }
 
 //_____________________________________________________________________________

@@ -286,7 +286,6 @@ Bool_t AliTRDtrigger::ReadDigits(AliRawReader* rawReader)
   //
 
   AliTRDrawData *raw = new AliTRDrawData();
-  raw->SetDebug(1);
 
   fDigitsManager = raw->Raw2Digits(rawReader);
 

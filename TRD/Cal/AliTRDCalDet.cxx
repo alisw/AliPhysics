@@ -52,7 +52,6 @@ AliTRDCalDet::AliTRDCalDet(const Text_t *name, const Text_t *title)
 
 }
 
-
 //_____________________________________________________________________________
 AliTRDCalDet::AliTRDCalDet(const AliTRDCalDet &c):TNamed(c)
 {

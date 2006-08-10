@@ -13,18 +13,22 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-----------------------------------------------------------------
-// Class for dE/dx and Time Bin of Max. Cluster for Electrons and 
-// pions in TRD. 
-// It is instantiated in class AliTRDpidESD for particle identification
-// in TRD
-// Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de>
-//-----------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Container for the distributions of dE/dx and the time bin of the          //
+// max. cluster for electrons and pions                                      //
+//                                                                           //
+// Author:                                                                   //
+//   Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de>                    //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 #include <TH1F.h>
 #include <TFile.h>
 
 #include "AliLog.h"
+#include "AliPID.h"
 
 #include "AliTRDCalPIDLQ.h"
 
@@ -33,15 +37,15 @@ ClassImp(AliTRDCalPIDLQ)
 Char_t* AliTRDCalPIDLQ::fpartName[AliPID::kSPECIES] = {"electron", "muon", "pion", "kaon", "proton"};
     
 //_________________________________________________________________________
-AliTRDCalPIDLQ::AliTRDCalPIDLQ():
-  TNamed(),
-  fNMom(0),
-  fTrackMomentum(0),
-  fMeanChargeRatio(0),
-  fNbins(0),
-  fBinSize(0),
-  fHistdEdx(0),
-  fHistTimeBin(0)
+AliTRDCalPIDLQ::AliTRDCalPIDLQ()
+  :TNamed()
+  ,fNMom(0)
+  ,fTrackMomentum(0)
+  ,fMeanChargeRatio(0)
+  ,fNbins(0)
+  ,fBinSize(0)
+  ,fHistdEdx(0)
+  ,fHistTimeBin(0)
 {
   //
   //  The Default constructor
@@ -50,7 +54,15 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ():
 }
 
 //_________________________________________________________________________
-AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title) : TNamed(name, title)
+AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title) 
+  :TNamed(name,title)
+  ,fNMom(0)
+  ,fTrackMomentum(0)
+  ,fMeanChargeRatio(0)
+  ,fNbins(0)
+  ,fBinSize(0)
+  ,fHistdEdx(0)
+  ,fHistTimeBin(0)
 {
   //
   //  The main constructor
@@ -61,15 +73,33 @@ AliTRDCalPIDLQ::AliTRDCalPIDLQ(const Text_t *name, const Text_t *title) : TNamed
 }
 
 //_____________________________________________________________________________
-AliTRDCalPIDLQ::AliTRDCalPIDLQ(const AliTRDCalPIDLQ &c) : TNamed(c)
+AliTRDCalPIDLQ::AliTRDCalPIDLQ(const AliTRDCalPIDLQ &c) 
+  :TNamed(c)
+  ,fNMom(c.fNMom)
+  ,fTrackMomentum(0)
+  ,fMeanChargeRatio(c.fMeanChargeRatio)
+  ,fNbins(c.fNbins)
+  ,fBinSize(c.fBinSize)
+  ,fHistdEdx(0)
+  ,fHistTimeBin(0)
 {
   //
   // Copy constructor
   //
 
-  Init();
+  AliTRDCalPIDLQ& target = (AliTRDCalPIDLQ &) c;
   
-  ((AliTRDCalPIDLQ &) c).Copy(*this);
+  target.fTrackMomentum = new Double_t[fNMom];
+  for (Int_t i=0; i<fNMom; ++i) {
+    target.fTrackMomentum[i] = fTrackMomentum[i];
+  }
+  if (fHistdEdx) {
+    target.fHistdEdx = (TObjArray*) fHistdEdx->Clone();
+  }  
+
+  if (fHistTimeBin) {
+    target.fHistTimeBin = (TObjArray*) fHistTimeBin->Clone();
+  }
 
 }
 
@@ -91,20 +121,17 @@ void AliTRDCalPIDLQ::CleanUp()
   // Delets all newly created objects
   //
 
-  if (fHistdEdx)
-  {
+  if (fHistdEdx) {
     delete fHistdEdx;
     fHistdEdx = 0;
   }
   
-  if (fHistTimeBin)
-  {
+  if (fHistTimeBin) {
     delete fHistTimeBin;
     fHistTimeBin = 0;
   }
 
-  if (fTrackMomentum)
-  {
+  if (fTrackMomentum) {
     delete[] fTrackMomentum;
     fTrackMomentum = 0;
   }
@@ -134,23 +161,23 @@ void AliTRDCalPIDLQ::Copy(TObject &c) const
   
   target.CleanUp();
   
-  target.fNMom = fNMom;
+  target.fNMom            = fNMom;
+  target.fNbins           = fNbins;
+  target.fBinSize         = fBinSize;
+  target.fMeanChargeRatio = fMeanChargeRatio;
   
   target.fTrackMomentum = new Double_t[fNMom];
-  for (Int_t i=0; i<fNMom; ++i)
+  for (Int_t i=0; i<fNMom; ++i) {
     target.fTrackMomentum[i] = fTrackMomentum[i];
-      
-  target.fMeanChargeRatio = fMeanChargeRatio;
+  }
 
-  target.fNbins = fNbins;
-  target.fBinSize = fBinSize;
-
-  if (fHistdEdx)
+  if (fHistdEdx) {
     target.fHistdEdx = (TObjArray*) fHistdEdx->Clone();
-  
-  if (fHistTimeBin)
+  }
+  if (fHistTimeBin) {
     target.fHistTimeBin = (TObjArray*) fHistTimeBin->Clone();
-    
+  }
+
   TObject::Copy(c);
 
 }
@@ -197,9 +224,7 @@ Bool_t AliTRDCalPIDLQ::ReadData(Char_t *responseFile)
   // Read histogram Root file  
   TFile *histFile = new TFile(responseFile, "READ");
   if (!histFile || !histFile->IsOpen()) {
-    TString error;
-    error.Form("Opening TRD histgram file %s failed", responseFile);
-    AliError(error);    
+    AliError(Form("Opening TRD histgram file %s failed", responseFile));    
     return kFALSE;
   }
   gROOT->cd();
@@ -254,12 +279,13 @@ Double_t  AliTRDCalPIDLQ::GetMean(Int_t k, Int_t ip) const
   // Gets mean of de/dx dist. of e
   //
 
-  printf("Mean for particle = %s and momentum = %.2f is:\n"
-        ,fpartName[k]
-        ,fTrackMomentum[ip]);
-  if (k < 0 || k > AliPID::kSPECIES)
+  AliInfo(Form("Mean for particle = %s and momentum = %.2f is:\n"
+              ,fpartName[k]
+              ,fTrackMomentum[ip]));
+  if (k < 0 || k > AliPID::kSPECIES) {
     return 0;
-  
+  }
+
   return ((TH1F*) fHistdEdx->At(GetHistID(k,ip)))->GetMean();
 
 }
@@ -271,11 +297,12 @@ Double_t  AliTRDCalPIDLQ::GetNormalization(Int_t k, Int_t ip) const
   // Gets Normalization of de/dx dist. of e
   //
 
-  printf("Normalization for particle = %s and momentum = %.2f is:\n"
-        ,fpartName[k]
-        ,fTrackMomentum[ip]);
-  if (k < 0 || k > AliPID::kSPECIES)
+  AliInfo(Form("Normalization for particle = %s and momentum = %.2f is:\n"
+              ,fpartName[k]
+              ,fTrackMomentum[ip]));
+  if (k < 0 || k > AliPID::kSPECIES) {
     return 0;
+  }
   
   return ((TH1F*) fHistdEdx->At(GetHistID(k,ip)))->Integral();
 
@@ -288,11 +315,12 @@ TH1F* AliTRDCalPIDLQ::GetHistogram(Int_t k, Int_t ip) const
   // Returns one selected dEdx histogram
   //
 
-  printf("Histogram for particle = %s and momentum = %.2f is:\n"
-        ,fpartName[k]
-        ,fTrackMomentum[ip]);
-  if (k < 0 || k > AliPID::kSPECIES)
+  AliInfo(Form("Histogram for particle = %s and momentum = %.2f is:\n"
+              ,fpartName[k]
+              ,fTrackMomentum[ip]));
+  if (k < 0 || k > AliPID::kSPECIES) {
     return 0;
+  }
   
   return (TH1F*) fHistdEdx->At(GetHistID(k,ip));
 
@@ -305,9 +333,9 @@ TH1F* AliTRDCalPIDLQ::GetHistogramT(Int_t k, Int_t ip) const
   // Returns one selected time bin max histogram
   //
 
-  printf("Histogram for particle = %s and momentum = %.2f is:\n"
-        ,fpartName[k]
-        ,fTrackMomentum[ip]);
+  AliInfo(Form("Histogram for particle = %s and momentum = %.2f is:\n"
+              ,fpartName[k]
+              ,fTrackMomentum[ip]));
   if (k < 0 || k > AliPID::kSPECIES)
     return 0;
   
@@ -324,12 +352,13 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t k, Double_t mom, Double_t dedx1) c
   // from the precalculated de/dx distributions 
   //
   
-  Double_t dedx = dedx1/fMeanChargeRatio;
-  Int_t iEnBin= ((Int_t) (dedx/fBinSize+1));
+  Double_t dedx   = dedx1/fMeanChargeRatio;
+  Int_t    iEnBin = ((Int_t) (dedx/fBinSize+1));
   if(iEnBin > fNbins) iEnBin = fNbins;
 
-  if (k < 0 || k > AliPID::kSPECIES)
+  if (k < 0 || k > AliPID::kSPECIES) {
     return 1;
+  }
   
   TH1F* hist1 = 0;
   TH1F* hist2 = 0;
@@ -337,8 +366,7 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t k, Double_t mom, Double_t dedx1) c
   Double_t mom2 = 0;
   
   // Lower limit
-  if (mom<=fTrackMomentum[0]) 
-  {
+  if (mom<=fTrackMomentum[0])  {
     hist1 = (TH1F*) fHistdEdx->At(GetHistID(k,1));
     hist2 = (TH1F*) fHistdEdx->At(GetHistID(k,0));
     mom1 = fTrackMomentum[1];
@@ -346,8 +374,7 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t k, Double_t mom, Double_t dedx1) c
   }
     
   // Upper Limit
-  if(mom>=fTrackMomentum[fNMom-1]) 
-  {
+  if(mom>=fTrackMomentum[fNMom-1]) {
     hist2 = (TH1F*) fHistdEdx->At(GetHistID(k,fNMom-1));
     hist1 = (TH1F*) fHistdEdx->At(GetHistID(k,fNMom-2));
     mom2 = fTrackMomentum[fNMom-1];
@@ -355,10 +382,8 @@ Double_t AliTRDCalPIDLQ::GetProbability(Int_t k, Double_t mom, Double_t dedx1) c
   }
     
   // In the range
-  for (Int_t ip=1; ip<fNMom; ip++) 
-  {
-    if ((fTrackMomentum[ip-1]<= mom) && (mom<fTrackMomentum[ip])) 
-    {
+  for (Int_t ip=1; ip<fNMom; ip++) {
+    if ((fTrackMomentum[ip-1]<= mom) && (mom<fTrackMomentum[ip])) {
       hist1 = (TH1F*) fHistdEdx->At(GetHistID(k,ip));
       hist2 = (TH1F*) fHistdEdx->At(GetHistID(k,ip-1));
       mom1 = fTrackMomentum[ip];
@@ -381,28 +406,30 @@ Double_t AliTRDCalPIDLQ::GetProbabilityT(Int_t k, Double_t mom, Int_t timbin) co
   // from the precalculated timbin distributions 
   //
   
-  if (timbin<=0) 
-    return 0.;
-  Int_t iTBin=timbin+1;
-  
-  // everything which is not electron counts as pion for time bin
-  if (k != AliPID::kElectron)
-    k = AliPID::kPion;
+  if (timbin<=0) {
+    return 0.0;
+  }
 
-  if (mom<=fTrackMomentum[0]) 
+  Int_t iTBin = timbin+1;
+  
+  // Everything which is not an electron counts as a pion for time bin max
+  if (k != AliPID::kElectron) {
+    k = AliPID::kPion;
+  }
+
+  if (mom<=fTrackMomentum[0]) {
     return ((TH1F*) fHistTimeBin->At(GetHistID(k,0)))->GetBinContent(iTBin);
-  
-  if (mom>=fTrackMomentum[fNMom-1]) 
+  }
+  if (mom>=fTrackMomentum[fNMom-1]) { 
     return ((TH1F*) fHistTimeBin->At(GetHistID(k,fNMom-1)))->GetBinContent(iTBin);
-  
-  for (Int_t ip=1; ip<fNMom; ip++)
-  {
-    if ((fTrackMomentum[ip-1]<= mom) && (mom<fTrackMomentum[ip])) 
-    {
+  }
+
+  for (Int_t ip=1; ip<fNMom; ip++) {
+    if ((fTrackMomentum[ip-1]<= mom) && (mom<fTrackMomentum[ip])) {
       Double_t slop = (((TH1F*) fHistTimeBin->At(GetHistID(k,ip)))->GetBinContent(iTBin) 
                      - ((TH1F*) fHistTimeBin->At(GetHistID(k,ip-1)))->GetBinContent(iTBin)) 
                     / (fTrackMomentum[ip] - fTrackMomentum[ip-1]);
-      // Linear Interpolation
+      // Linear interpolation
       return ((TH1F*) fHistTimeBin->At(GetHistID(k,ip-1)))->GetBinContent(iTBin) 
               + slop * (mom - fTrackMomentum[ip-1]);
     }

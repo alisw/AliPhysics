@@ -12,8 +12,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
-#include "AliTRDgeometry.h"
-#include "AliTRDCalSingleChamberStatus.h"
+
+class AliTRDCalSingleChamberStatus;
 
 class AliTRDCalMCMStatus : public TNamed {
 
@@ -28,14 +28,16 @@ class AliTRDCalMCMStatus : public TNamed {
   virtual ~AliTRDCalMCMStatus();
   AliTRDCalMCMStatus &operator=(const AliTRDCalMCMStatus &c);
 
-  virtual void     Copy(TObject &c) const;
+  virtual void  Copy(TObject &c) const;
 
-  AliTRDCalSingleChamberStatus *GetCalROC(Int_t d) const { return fROC[d]; };
-  AliTRDCalSingleChamberStatus *GetCalROC(Int_t p, Int_t c, Int_t s) const
-                                               { return GetCalROC(AliTRDgeometry::GetDetector(p,c,s)); };
 
-  Bool_t IsMasked(Int_t d, Int_t col, Int_t row) const { return CheckStatus(d, col, row, kMasked); };
-  inline Bool_t CheckStatus(Int_t d, Int_t col, Int_t row, Int_t bitMask) const;
+         Bool_t IsMasked(Int_t d, Int_t col, Int_t row) const 
+                                                         { return CheckStatus(d, col, row, kMasked); };
+         Bool_t CheckStatus(Int_t d, Int_t col, Int_t row, Int_t bitMask) const;
+
+         AliTRDCalSingleChamberStatus *GetCalROC(Int_t p, Int_t c, Int_t s) const;
+         AliTRDCalSingleChamberStatus *GetCalROC(Int_t d) const 
+                                                         { return fROC[d]; };
 
  protected:
 
@@ -44,14 +46,5 @@ class AliTRDCalMCMStatus : public TNamed {
   ClassDef(AliTRDCalMCMStatus,1)                      //  TRD calibration class for MCM status
 
 };
-
-Bool_t AliTRDCalMCMStatus::CheckStatus(Int_t d, Int_t col, Int_t row, Int_t bitMask) const
-{
-  AliTRDCalSingleChamberStatus* roc = GetCalROC(d);
-  if (!roc)
-    return kFALSE;
-    
-  return (roc->GetStatus(col, row) & bitMask) ? kTRUE : kFALSE;
-}
 
 #endif

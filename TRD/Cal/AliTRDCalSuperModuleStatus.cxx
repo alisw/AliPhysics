@@ -26,7 +26,8 @@
 ClassImp(AliTRDCalSuperModuleStatus)
 
 //_____________________________________________________________________________
-AliTRDCalSuperModuleStatus::AliTRDCalSuperModuleStatus():TNamed()
+AliTRDCalSuperModuleStatus::AliTRDCalSuperModuleStatus()
+  :TNamed()
 {
   //
   // AliTRDCalSuperModuleStatus default constructor
@@ -35,11 +36,12 @@ AliTRDCalSuperModuleStatus::AliTRDCalSuperModuleStatus():TNamed()
   for (Int_t idet = 0; idet < kNsect; idet++) {
     fStatus[idet] = 0;
   }
+
 }
 
 //_____________________________________________________________________________
 AliTRDCalSuperModuleStatus::AliTRDCalSuperModuleStatus(const Text_t *name, const Text_t *title)
-                :TNamed(name,title)
+  :TNamed(name,title)
 {
   //
   // AliTRDCalSuperModuleStatus constructor
@@ -48,5 +50,6 @@ AliTRDCalSuperModuleStatus::AliTRDCalSuperModuleStatus(const Text_t *name, const
   for (Int_t idet = 0; idet < kNsect; idet++) {
     fStatus[idet] = 0;
   }
+
 }
 

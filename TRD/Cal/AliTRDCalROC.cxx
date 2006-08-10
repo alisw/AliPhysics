@@ -29,33 +29,34 @@
 ClassImp(AliTRDCalROC)
 
 //_____________________________________________________________________________
-AliTRDCalROC::AliTRDCalROC():TObject()
+AliTRDCalROC::AliTRDCalROC()
+  :TObject()
+  ,fPla(0)
+  ,fCha(0)
+  ,fNrows(0)
+  ,fNcols(0)
+  ,fNchannels(0)
+  ,fData(0)
 {
   //
   // Default constructor
   //
 
-  fPla          = 0;
-  fCha          = 0;
-
-  fNrows        = 0;
-  fNcols        = 0;
-
-  fNchannels    = 0;
-  fData         = 0;
 }
 
 //_____________________________________________________________________________
-AliTRDCalROC::AliTRDCalROC(Int_t p, Int_t c):TObject()
+AliTRDCalROC::AliTRDCalROC(Int_t p, Int_t c)
+  :TObject()
+  ,fPla(p)
+  ,fCha(c)
+  ,fNrows(0)
+  ,fNcols(144)
+  ,fNchannels(0)
+  ,fData(0)
 {
   //
   // Constructor that initializes a given pad plane type
   //
-
-  fPla = p;
-  fCha = c;
-
-  fNcols      = 144;
 
   //
   // The pad plane parameter
@@ -124,21 +125,37 @@ AliTRDCalROC::AliTRDCalROC(Int_t p, Int_t c):TObject()
   };
 
   fNchannels = fNrows * fNcols;
-  if (fNchannels != 0)
+  if (fNchannels != 0) {
     fData = new UShort_t[fNchannels];
+  }
 
-  for (Int_t i=0; i<fNchannels; ++i)
+  for (Int_t i=0; i<fNchannels; ++i) {
     fData[i] = 0;
+  }
+
 }
 
 //_____________________________________________________________________________
-AliTRDCalROC::AliTRDCalROC(const AliTRDCalROC &c):TObject(c)
+AliTRDCalROC::AliTRDCalROC(const AliTRDCalROC &c)
+  :TObject(c)
+  ,fPla(c.fPla)
+  ,fCha(c.fCha)
+  ,fNrows(c.fNrows)
+  ,fNcols(c.fNcols)
+  ,fNchannels(c.fNchannels)
+  ,fData(0)
 {
   //
   // AliTRDCalROC copy constructor
   //
 
-  ((AliTRDCalROC &) c).Copy(*this);
+  Int_t iBin = 0;
+
+  if (((AliTRDCalROC &) c).fData) delete [] ((AliTRDCalROC &) c).fData;
+  ((AliTRDCalROC &) c).fData = new UShort_t[fNchannels];
+  for (iBin = 0; iBin < fNchannels; iBin++) {
+    ((AliTRDCalROC &) c).fData[iBin] = fData[iBin];
+  }
 
 }
 
@@ -153,6 +170,7 @@ AliTRDCalROC::~AliTRDCalROC()
     delete [] fData;
     fData = 0;
   }
+
 }
 
 //_____________________________________________________________________________
@@ -205,4 +223,5 @@ void AliTRDCalROC::Scale(Float_t value)
   for (Int_t iBin = 0; iBin < fNchannels; iBin++) {
     fData[iBin] = (UShort_t) (value * fData[iBin]);
   }
+
 }

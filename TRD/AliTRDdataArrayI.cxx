@@ -22,45 +22,49 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliLog.h"
+
 #include "AliTRDdataArrayI.h"
 #include "AliTRDarrayI.h"
 
 ClassImp(AliTRDdataArrayI)
 
 //_____________________________________________________________________________
-AliTRDdataArrayI::AliTRDdataArrayI():AliTRDdataArray()
+AliTRDdataArrayI::AliTRDdataArrayI()
+   :AliTRDdataArray()
+   ,fElements(0)
+   ,fThreshold(0)
 {
   //
   // Default constructor
   //
 
-  fElements = 0;
-
 }
 
 //_____________________________________________________________________________
 AliTRDdataArrayI::AliTRDdataArrayI(Int_t nrow, Int_t ncol, Int_t ntime)
-                 :AliTRDdataArray(nrow,ncol,ntime)
+   :AliTRDdataArray(nrow,ncol,ntime)
+   ,fElements(0)
+   ,fThreshold(0)
 {
   //
   // Creates a AliTRDdataArrayI with the dimensions <nrow>, <ncol>, and <ntime>.
   // The row- and column dimensions are compressible.
   //
 
-  fElements = 0;
-
   Allocate(nrow,ncol,ntime);
   
 }
 
 //_____________________________________________________________________________
-AliTRDdataArrayI::AliTRDdataArrayI(const AliTRDdataArrayI &a):AliTRDdataArray(a)
+AliTRDdataArrayI::AliTRDdataArrayI(const AliTRDdataArrayI &a)
+   :AliTRDdataArray(a)
+   ,fElements(a.fElements)
+   ,fThreshold(a.fThreshold)
 {
   //
   // AliTRDdataArrayI copy constructor
   //
-
-  ((AliTRDdataArrayI &) a).Copy(*this);
 
 }
 
@@ -192,9 +196,8 @@ Int_t AliTRDdataArrayI::GetData(Int_t row, Int_t col, Int_t time) const
     }
     else {
       if (idx1 >= 0) {
-        TObject::Error("GetData"
-                      ,"time %d out of bounds (size: %d, this: 0x%08x)"
-                      ,time,fNdim2,this);
+        AliError(Form("time %d out of bounds (size: %d, this: 0x%08x)"
+                     ,time,fNdim2,this));
       }
     }
   }
@@ -235,7 +238,7 @@ void AliTRDdataArrayI::Compress(Int_t bufferType)
   //
 
   if (fBufType  < 0) {
-    Error("AliTRDdataArrayI::Compress","Buffer does not exist");
+    AliError("Buffer does not exist");
     return;
   }
   if (fBufType == bufferType) {
@@ -245,7 +248,7 @@ void AliTRDdataArrayI::Compress(Int_t bufferType)
     Expand();
   }
   if (fBufType !=0)  {
-    Error("AliTRDdataArrayI::Compress","Buffer does not exist");
+    AliError("Buffer does not exist");
     return;
   }
 
@@ -264,7 +267,7 @@ void AliTRDdataArrayI::Expand()
   //
 
   if (fBufType  < 0) {
-    Error("AliTRDdataArrayI::Expand","Buffer does not exist");
+    AliError("Buffer does not exist");
     return;
   }
   if (fBufType == 0) {  
@@ -632,9 +635,8 @@ void AliTRDdataArrayI::SetData(Int_t row, Int_t col, Int_t time, Int_t value)
     }
     else {
       if (idx1 >= 0) {
-        TObject::Error("SetData"
-                      ,"time %d out of bounds (size: %d, this: 0x%08x)"
-                      ,time,fNdim2,this);
+        AliError(Form("time %d out of bounds (size: %d, this: 0x%08x)"
+                     ,time,fNdim2,this));
       }
     }
   }

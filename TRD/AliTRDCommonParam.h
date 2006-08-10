@@ -5,7 +5,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Class containing constant common parameters                           //
+// Class containing constant common parameters                               //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -17,48 +17,49 @@ class AliTRDpadPlane;
 
 class AliTRDCommonParam : public TObject
 {
+
   public:
-    static AliTRDCommonParam* Instance();
-    static void Terminate();
   
     enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
     
     AliTRDCommonParam(const AliTRDCommonParam &p);   
     AliTRDCommonParam &operator=(const AliTRDCommonParam &p); 
-    virtual void Copy(TObject &p) const;
+    static AliTRDCommonParam *Instance();
+    static void     Terminate();
+    virtual void    Copy(TObject &p) const;
     
-    void SetField(Float_t field)                        { fField          = field;    };
+    void            SetField(Float_t field)                        { fField = field; };
+    void            SetExB(Int_t exbOn = 1)                        { fExBOn = exbOn; };
     
-    void     SetExB(Int_t exbOn = 1)                        { fExBOn          = exbOn;    };
-    
-    Float_t  GetField()                               const { return fField; };
-    
-    Bool_t   ExBOn()                                  const { return fExBOn;         };
+    Float_t         GetField()                               const { return fField;  };
+    Bool_t          ExBOn()                                  const { return fExBOn;  };
     
     AliTRDpadPlane *GetPadPlane(Int_t p, Int_t c) const;
-    Int_t    GetRowMax(Int_t p, Int_t c, Int_t /*s*/) const;
-    Int_t    GetColMax(Int_t p) const;
-    Double_t GetRow0(Int_t p, Int_t c, Int_t /*s*/) const;
-    Double_t GetCol0(Int_t p) const;
+    Int_t           GetRowMax(Int_t p, Int_t c, Int_t /*s*/) const;
+    Int_t           GetColMax(Int_t p) const;
+    Double_t        GetRow0(Int_t p, Int_t c, Int_t /*s*/) const;
+    Double_t        GetCol0(Int_t p) const;
   
   protected:
-    static AliTRDCommonParam* fgInstance;     // Instance of this class (singleton implementation)
-    static Bool_t fgTerminated;               // Defines if this class has already been terminated and therefore does not return instances in GetInstance anymore
+
+    static AliTRDCommonParam *fgInstance;     //  Instance of this class (singleton implementation)
+    static Bool_t             fgTerminated;   //  Defines if this class has already been terminated
     
     void Init();
     
-    Float_t              fField;                              //  Magnetic field
-    
-    Int_t                fExBOn;                              //  Switch for the ExB effects
+    Float_t                   fField;         //  Magnetic field
+    Int_t                     fExBOn;         //  Switch for the ExB effects
   
-    TObjArray  *fPadPlaneArray;                               //!  Array of pad plane objects
+    TObjArray                *fPadPlaneArray; //! Array of pad plane objects
   
   private:
-    // this is a singleton, constructor is private!  
+
+    // This is a singleton, constructor is private!  
     AliTRDCommonParam();
     virtual ~AliTRDCommonParam();
   
-    ClassDef(AliTRDCommonParam, 1)
+    ClassDef(AliTRDCommonParam,1)             // The constant parameters common to simulation and reconstruction       
+
 };
 
 #endif

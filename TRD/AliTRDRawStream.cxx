@@ -16,41 +16,69 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
-///
-/// This class provides access to TRD digits in raw data.
-///
-/// It loops over all TRD digits in the raw data given by the AliRawReader.
-/// The Next method goes to the next digit. If there are no digits left
-/// it returns kFALSE.
-/// Several getters provide information about the current digit.
-///
+//                                                                           //
+// This class provides access to TRD digits in raw data.                     //
+//                                                                           //
+// It loops over all TRD digits in the raw data given by the AliRawReader.   //
+// The Next method goes to the next digit. If there are no digits left       //
+// it returns kFALSE.                                                        //
+// Several getters provide information about the current digit.              //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDRawStream.h"
+#include "AliLog.h"
 #include "AliRawReader.h"
+
+#include "AliTRDRawStream.h"
 #include "AliTRDcalibDB.h"
 
 ClassImp(AliTRDRawStream)
 
-
-AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader) :
-  fRawReader(rawReader),
-  fCount(0),
-  fDetector(-1),
-  fPrevDetector(-1),
-  fNPads(-1),
-  fRow(-1),
-  fPrevRow(-1),
-  fColumn(-1),
-  fPrevColumn(-1),
-  fTime(-1),
-  fSignal(-1)
+//_____________________________________________________________________________
+AliTRDRawStream::AliTRDRawStream() 
+  :TObject()
+  ,fRawReader(0)
+  ,fCount(0)
+  ,fDetector(-1)
+  ,fPrevDetector(-1)
+  ,fNPads(-1)
+  ,fRow(-1)
+  ,fPrevRow(-1)
+  ,fColumn(-1)
+  ,fPrevColumn(-1)
+  ,fTime(-1)
+  ,fSignal(-1)
 {
-// create an object to read TRD raw digits
+  //
+  // Default constructor
+  //
 
-  fRawReader->Select("TRD");
 }
 
+//_____________________________________________________________________________
+AliTRDRawStream::AliTRDRawStream(AliRawReader* rawReader) 
+  :TObject()
+  ,fRawReader(rawReader)
+  ,fCount(0)
+  ,fDetector(-1)
+  ,fPrevDetector(-1)
+  ,fNPads(-1)
+  ,fRow(-1)
+  ,fPrevRow(-1)
+  ,fColumn(-1)
+  ,fPrevColumn(-1)
+  ,fTime(-1)
+  ,fSignal(-1)
+{
+  //
+  // Create an object to read TRD raw digits
+  //
+
+  fRawReader->Select("TRD");
+
+}
+
+//_____________________________________________________________________________
 AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream) :
   TObject(stream),
   fRawReader(NULL),
@@ -65,31 +93,47 @@ AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream) :
   fTime(-1),
   fSignal(-1)
 {
-  Fatal("AliTRDRawStream", "copy constructor not implemented");
+  //
+  // Copy constructor
+  //
+
+  AliFatal("Copy constructor not implemented");
+
 }
 
+//_____________________________________________________________________________
 AliTRDRawStream& AliTRDRawStream::operator = (const AliTRDRawStream& 
 					      /* stream */)
 {
+  //
+  // Assigment operator
+  //
+
   Fatal("operator =", "assignment operator not implemented");
   return *this;
+
 }
 
+//_____________________________________________________________________________
 AliTRDRawStream::~AliTRDRawStream()
 {
-// clean up
+  //
+  // Destructor
+  //
 
 }
 
-
+//_____________________________________________________________________________
 Bool_t AliTRDRawStream::Next()
 {
-// read the next raw digit
-// returns kFALSE if there is no digit left
+  //
+  // Read the next raw digit
+  // Returns kFALSE if there is no digit left
+  //
 
   fPrevDetector = fDetector;
-  fPrevRow = fRow;
-  fPrevColumn = fColumn;
+  fPrevRow      = fRow;
+  fPrevColumn   = fColumn;
   UChar_t data;
 
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
@@ -104,20 +148,20 @@ Bool_t AliTRDRawStream::Next()
       // read the flag
       if (!fRawReader->ReadNextChar(data)) return kFALSE;
       if (data != 0xBB) {
-	Error("Next", "wrong flag: %x", data);
+	AliError(Form("wrong flag: %x", data));
 	fCount = -1;
 	return kFALSE;
       }
 
       // read the detector number
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read detector number");
+	AliError("Could not read detector number");
 	fCount = -1;
 	return kFALSE;
       }
       fDetector = data;
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read detector number");
+	AliError("Could not read detector number");
 	fCount = -1;
 	return kFALSE;
       }
@@ -125,19 +169,19 @@ Bool_t AliTRDRawStream::Next()
 
       // read the number of byts
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read number of bytes");
+	AliError("Could not read number of bytes");
 	fCount = -1;
 	return kFALSE;
       }
       fCount = data;
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read number of bytes");
+	AliError("Could not read number of bytes");
 	fCount = -1;
 	return kFALSE;
       }
       fCount += (UInt_t(data) << 8);
       if (!fRawReader->ReadNextChar(data)) {
-        Error("Next", "could not read number of bytes");
+        AliError("Could not read number of bytes");
         fCount = -1;
         return kFALSE;
       }
@@ -145,13 +189,13 @@ Bool_t AliTRDRawStream::Next()
 
       // read the number of active pads
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read number of active pads");
+	AliError("Could not read number of active pads");
 	fCount = -1;
 	return kFALSE;
       }
       fNPads = data;
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read number of active pads");
+	AliError("Could not read number of active pads");
 	fCount = -1;
 	return kFALSE;
       }
@@ -164,14 +208,14 @@ Bool_t AliTRDRawStream::Next()
     // read the pad row and column number
     if ((fTime >= timeBins) && (fCount > 2)) {
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read row number");
+	AliError("Could not read row number");
 	fCount = -1;
 	return kFALSE;
       }
       fCount--;
       fRow = data - 1;
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read column number");
+	AliError("Could not read column number");
 	fCount = -1;
 	return kFALSE;
       }
@@ -182,7 +226,7 @@ Bool_t AliTRDRawStream::Next()
 
     // read the next data byte
     if (!fRawReader->ReadNextChar(data)) {
-      Error("Next", "could not read data");
+      AliError("Could not read data");
       fCount = -1;
       return kFALSE;
     }
@@ -190,17 +234,18 @@ Bool_t AliTRDRawStream::Next()
 
     if (data == 0) {  // zeros
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read time value");
+	AliError("Could not read time value");
 	fCount = -1;
 	return kFALSE;
       }
       fCount--;
       fTime += data + 1;
 
-    } else {          // signal
+    } 
+    else {          // signal
       fSignal = (UInt_t(data & 0x7F) << 8);
       if (!fRawReader->ReadNextChar(data)) {
-	Error("Next", "could not read ADC value");
+	AliError("Could not read ADC value");
 	fCount = -1;
 	return kFALSE;
       }
@@ -212,4 +257,5 @@ Bool_t AliTRDRawStream::Next()
   }
 
   return kFALSE;
+
 }

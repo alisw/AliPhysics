@@ -150,7 +150,6 @@ Bool_t AliTRDclusterizerV1::ReadDigits(AliRawReader* rawReader)
   //
 
   AliTRDrawData raw;
-  raw.SetDebug(1);
 
   fDigitsManager = raw.Raw2Digits(rawReader);
 

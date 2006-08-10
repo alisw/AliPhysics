@@ -22,21 +22,14 @@ class AliTRDrawData : public TObject {
  public:
 
   AliTRDrawData();
-  AliTRDrawData(const AliTRDrawData &r);
   virtual ~AliTRDrawData();
-  AliTRDrawData &operator=(const AliTRDrawData &r);
-
-  virtual void                 Copy(TObject &r) const;
 
   virtual Bool_t               Digits2Raw(TTree *digits);
   virtual AliTRDdigitsManager* Raw2Digits(AliRawReader* rawReader);
-  virtual void                 SetDebug(Int_t v = 1) { fDebug = v; };
 
  protected:
 
-  Int_t                fDebug;          //  Debug level
-
-  ClassDef(AliTRDrawData,1)             //  TRD raw data class
+  ClassDef(AliTRDrawData,2)             //  TRD raw data class
 
 };
 #endif

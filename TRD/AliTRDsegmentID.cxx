@@ -26,24 +26,22 @@
 ClassImp(AliTRDsegmentID)
 
 //_____________________________________________________________________________
-AliTRDsegmentID::AliTRDsegmentID():TObject()
+AliTRDsegmentID::AliTRDsegmentID()
+                :fSegmentID(0)
 {
   //
   // AliTRDsegmentID default constructor
   //
 
-  fSegmentID = 0;
-
 }
 
 //_____________________________________________________________________________
-AliTRDsegmentID::AliTRDsegmentID(Int_t index):TObject()
+AliTRDsegmentID::AliTRDsegmentID(Int_t index)
+                :fSegmentID(index)
 {
   //
   // Defines a detector segment
   //
-
-  fSegmentID = index;
 
 }
 

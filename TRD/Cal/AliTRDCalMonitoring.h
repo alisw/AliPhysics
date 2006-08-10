@@ -14,37 +14,34 @@
 #include "TNamed.h"
 
 class AliTRDCalMonitoring : public TNamed {
-  public:
-    AliTRDCalMonitoring();
-    AliTRDCalMonitoring(const Text_t* name, const Text_t* title);
-    virtual ~AliTRDCalMonitoring() {};
 
-    //void SetSamplingFrequency(Float_t freq)                { fSamplingFrequency = freq; };
-    //Float_t GetSamplingFrequency()                   const { return fSamplingFrequency; };
+ public:
 
-  protected:
-    Int_t fADCTresholds[6700];
-    Float_t fDriftVelocity;                      // Drift velocity from the monitor
-    TString fGasComposition;			 // Gas composition
-    Float_t fEnvironmentTemperature;
+  AliTRDCalMonitoring();
+  AliTRDCalMonitoring(const Text_t* name, const Text_t* title);
+  virtual ~AliTRDCalMonitoring() {};
 
-    //Float_t fMCMTemperature[6700];
+ protected:
 
-    Float_t fAnodeCurrentsMin[540];
-    Float_t fAnodeCurrentsMax[540];
-    Float_t fDriftCurrentsMin[540];
-    Float_t fDriftCurrentsMax[540];
-    Float_t fAnodeVoltagesMin[540];
-    Float_t fAnodeVoltagesMax[540];
-    Float_t fDriftVoltagesMin[540];
-    Float_t fDriftVoltagesMax[540];
+  Int_t   fADCTresholds[6700];                 //  Threshold voltage for ADCs
+  Float_t fDriftVelocity;                      //  Drift velocity from the monitor
+  TString fGasComposition;		       //  Gas composition
+  Float_t fEnvironmentTemperature;             //  Environment temperature
 
-    Float_t fLVVoltage[360];
-    Float_t fLVCurrent[360];
+  Float_t fAnodeCurrentsMin[540];              //  Minimum anode current
+  Float_t fAnodeCurrentsMax[540];              //  Maximum anode current
+  Float_t fDriftCurrentsMin[540];              //  Minimum drift current
+  Float_t fDriftCurrentsMax[540];              //  Maximum drift current
+  Float_t fAnodeVoltagesMin[540];              //  Minimum anode voltage
+  Float_t fAnodeVoltagesMax[540];              //  Maximum anode voltage
+  Float_t fDriftVoltagesMin[540];              //  Minimum drift voltage
+  Float_t fDriftVoltagesMax[540];              //  Maximum drift voltage
 
-    void Init();
+  Float_t fLVVoltage[360];                     //  Low voltage
+  Float_t fLVCurrent[360];                     //  Low voltage current
 
-    ClassDef(AliTRDCalMonitoring,1)                      //  TRD calibration class for global TRD parameters
+  ClassDef(AliTRDCalMonitoring,1)              //  TRD calibration class for global TRD parameters
+
 };
 
 #endif

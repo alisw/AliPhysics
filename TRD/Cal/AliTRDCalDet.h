@@ -23,22 +23,24 @@ class AliTRDCalDet : public TNamed {
   AliTRDCalDet();
   AliTRDCalDet(const Text_t* name, const Text_t* title);
   AliTRDCalDet(const AliTRDCalDet &c);   
-  virtual ~AliTRDCalDet();
+  virtual      ~AliTRDCalDet();
   AliTRDCalDet &operator=(const AliTRDCalDet &c);
 
-  virtual void     Copy(TObject &c) const;
+  virtual void  Copy(TObject &c) const;
 
-  Float_t GetValue(Int_t d) const { return fData[d]; };
-  Float_t GetValue(Int_t p, Int_t c, Int_t s) const { return fData[AliTRDgeometry::GetDetector(p,c,s)]; };
+  Float_t       GetValue(Int_t d) const          { return fData[d];  };
+  Float_t       GetValue(Int_t p, Int_t c, Int_t s) const 
+                                                 { return fData[AliTRDgeometry::GetDetector(p,c,s)];  };
 
-  void SetValue(Int_t d, Float_t value) { fData[d] = value; };
-  void SetValue(Int_t p, Int_t c, Int_t s, Float_t value) { fData[AliTRDgeometry::GetDetector(p,c,s)] = value; };
+  void          SetValue(Int_t d, Float_t value) { fData[d] = value; };
+  void          SetValue(Int_t p, Int_t c, Int_t s, Float_t value) 
+                                                 { fData[AliTRDgeometry::GetDetector(p,c,s)] = value; };
   
-  protected:
+ protected:
 
-  Float_t  fData[kNdet];                          //[kNdet] Data
+  Float_t  fData[kNdet];       //[kNdet] Data
 
-  ClassDef(AliTRDCalDet,1)                      //  TRD calibration class for parameters which are saved per detector
+  ClassDef(AliTRDCalDet,1)     //  TRD calibration class for parameters which are saved per detector
 
 };
 

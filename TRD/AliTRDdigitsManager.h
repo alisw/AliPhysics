@@ -41,7 +41,6 @@ class AliTRDdigitsManager : public TObject {
 
   virtual void                SetRaw();
   virtual void                SetEvent(Int_t evt)          { fEvent   = evt; };
-  virtual void                SetDebug(Int_t v = 1)        { fDebug   = v;   };
   virtual void                SetSDigits(Int_t v = 1)      { fSDigits = v;   };
 
   virtual Bool_t              IsRaw() const                { return fIsRaw;         };
@@ -72,9 +71,8 @@ class AliTRDdigitsManager : public TObject {
 
   Bool_t              fIsRaw;              //  Flag indicating raw digits
   Bool_t              fSDigits;            //  Switch for the summable digits
-  Int_t               fDebug;              //  Debug flag
 
-  ClassDef(AliTRDdigitsManager,4)          //  Manages the TRD digits
+  ClassDef(AliTRDdigitsManager,5)          //  Manages the TRD digits
 
 };
 

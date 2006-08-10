@@ -23,16 +23,18 @@
 
 #include <Riostream.h>
 
+#include "AliDAQ.h"
+#include "AliRawDataHeader.h"
+#include "AliRawReader.h"
+#include "AliLog.h"
+
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDRawStream.h"
-#include "AliRawDataHeader.h"
-#include "AliRawReader.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDcalibDB.h"
-#include "AliDAQ.h"
 
 ClassImp(AliTRDrawData)
 
@@ -43,19 +45,6 @@ AliTRDrawData::AliTRDrawData():TObject()
   // Default constructor
   //
 
-  fDebug         = 0;
-
-}
-
-//_____________________________________________________________________________
-AliTRDrawData::AliTRDrawData(const AliTRDrawData &r):TObject()
-{
-  //
-  // AliTRDrawData copy constructor
-  //
-
-  ((AliTRDrawData &) r).Copy(*this);
-
 }
 
 //_____________________________________________________________________________
@@ -64,29 +53,6 @@ AliTRDrawData::~AliTRDrawData()
   //
   // Destructor
   //
-
-}
-
-//_____________________________________________________________________________
-AliTRDrawData &AliTRDrawData::operator=(const AliTRDrawData &r)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &r) ((AliTRDrawData &) r).Copy(*this);
-  return *this;
-
-}
-
-//_____________________________________________________________________________
-void AliTRDrawData::Copy(TObject &r) const
-{
-  //
-  // Copy function
-  //
-
-  ((AliTRDrawData &) r).fDebug         = fDebug;
 
 }
 
@@ -125,7 +91,6 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   unsigned char *headerPtr;
 
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
-  digitsManager->SetDebug(fDebug);
 
   // Read in the digit arrays
   if (!digitsManager->ReadDigits(digitsTree)) {
@@ -137,18 +102,15 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   AliTRDdataArrayI *digits;
 
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    printf("<AliTRDrawData::Digits2Raw> ");
-    printf("Could not get common params\n");
+  if (!commonParam) {
+    AliError("Could not get common parameters\n");
     return 0;
   }
   
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   if (!calibration)
   {
-    printf("<AliTRDdigitizer::Digits2Raw> ");
-    printf("Could not get calibration object\n");
+    AliError("Could not get calibration object\n");
     return kFALSE;
   }
     
@@ -260,9 +222,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
       nbyte++;
     }
 
-    if (fDebug > 1) {
-      Info("Digits2Raw","det = %d, nbyte = %d (%d)",det,nbyte,bufferMax);
-    }
+    AliDebug(1,Form("det = %d, nbyte = %d (%d)",det,nbyte,bufferMax));
 
     // Write the subevent header
     bytePtr    = (unsigned char *) headerSubevent;
@@ -287,14 +247,9 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
 
   }
 
-  if (fDebug) {
-    for (Int_t iDDL = 0; iDDL < kNumberOfDDLs; iDDL++) {
-      Info("Digits2Raw","Total size: DDL %d = %d",iDDL,ntotalbyte[iDDL]);
-    }
-  }
-
   // Update the data headers and close the output files
   for (Int_t iDDL = 0; iDDL < kNumberOfDDLs; iDDL++) {
+
     header.fSize = UInt_t(outputFile[iDDL]->tellp()) - bHPosition[iDDL];
     header.SetAttribute(0);  // valid data
     outputFile[iDDL]->seekp(bHPosition[iDDL]);
@@ -302,6 +257,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
 
     outputFile[iDDL]->close();
     delete outputFile[iDDL];
+
   }
 
   delete geo;
@@ -310,9 +266,6 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   delete [] outputFile;
   delete [] bHPosition;
   delete [] ntotalbyte;
-
-
-
 
   return kTRUE;
 
@@ -333,24 +286,19 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
   AliTRDgeometry *geo = new AliTRDgeometry();
 
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    printf("<AliTRDrawData::Raw2Digits> ");
-    printf("Could not get common params\n");
+  if (!commonParam) {
+    AliError("Could not get common parameters\n");
     return 0;
   }
     
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
-    printf("<AliTRDdigitizer::Raw2Digits> ");
-    printf("Could not get calibration object\n");
+  if (!calibration) {
+    AliError("Could not get calibration object\n");
     return 0;
   }
 
   // Create the digits manager
   AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
-  digitsManager->SetDebug(fDebug);
   digitsManager->CreateArrays();
 
   AliTRDRawStream input(rawReader);
@@ -368,11 +316,9 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
       if (track1) track1->Compress(1,0);
       if (track2) track2->Compress(1,0);
 
-      if (fDebug > 2) {
-	Info("Raw2Digits","Subevent header:");
-	Info("Raw2Digits","\tdet   = %d",det);
-	Info("Raw2Digits","\tnpads = %d",npads);
-      }      
+      AliDebug(2,"Subevent header:");
+      AliDebug(2,Form("\tdet   = %d",det));
+      AliDebug(2,Form("\tnpads = %d",npads));
 
       // Create the data buffer
       Int_t cham      = geo->GetChamber(det);

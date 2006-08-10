@@ -25,24 +25,24 @@ class AliTRDCalPad : public TNamed {
   AliTRDCalPad();
   AliTRDCalPad(const Text_t* name, const Text_t* title);
   AliTRDCalPad(const AliTRDCalPad &c);   
-  virtual ~AliTRDCalPad();
-  AliTRDCalPad &operator=(const AliTRDCalPad &c);
+  virtual            ~AliTRDCalPad();
+  AliTRDCalPad        &operator=(const AliTRDCalPad &c);
 
-  virtual void     Copy(TObject &c) const;
+  virtual void        Copy(TObject &c) const;
 
-  static inline Int_t               GetDet(Int_t p, Int_t c, Int_t s) { return p+c*kNplan+s*kNplan*kNcham; };
+  static inline Int_t GetDet(Int_t p, Int_t c, Int_t s) { return p+c*kNplan+s*kNplan*kNcham; };
 
-  AliTRDCalROC *GetCalROC(Int_t d) const { return fROC[d]; };
-  AliTRDCalROC *GetCalROC(Int_t p, Int_t c, Int_t s) const
-                                               { return fROC[GetDet(p,c,s)]; };
+  AliTRDCalROC       *GetCalROC(Int_t d) const          { return fROC[d]; };
+  AliTRDCalROC       *GetCalROC(Int_t p, Int_t c, Int_t s) const
+                                                        { return fROC[GetDet(p,c,s)]; };
   
-  void ScaleROCs(AliTRDCalDet* values);
+  void                ScaleROCs(AliTRDCalDet* values);
 
  protected:
 
-  AliTRDCalROC *fROC[kNdet];                    //  Array of ROC objects which contain the values per pad
+  AliTRDCalROC *fROC[kNdet];  //  Array of ROC objects which contain the values per pad
 
-  ClassDef(AliTRDCalPad,1)                      //  TRD calibration class for parameters which are saved per pad
+  ClassDef(AliTRDCalPad,1)    //  TRD calibration class for parameters which are saved per pad
 
 };
 

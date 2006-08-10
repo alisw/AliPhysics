@@ -26,7 +26,8 @@
 ClassImp(AliTRDCalChamberStatus)
 
 //_____________________________________________________________________________
-AliTRDCalChamberStatus::AliTRDCalChamberStatus():TNamed()
+AliTRDCalChamberStatus::AliTRDCalChamberStatus()
+  :TNamed()
 {
   //
   // AliTRDCalChamberStatus default constructor
@@ -35,11 +36,12 @@ AliTRDCalChamberStatus::AliTRDCalChamberStatus():TNamed()
   for (Int_t idet = 0; idet < kNdet; idet++) {
     fStatus[idet] = 0;
   }
+
 }
 
 //_____________________________________________________________________________
 AliTRDCalChamberStatus::AliTRDCalChamberStatus(const Text_t *name, const Text_t *title)
-                :TNamed(name,title)
+  :TNamed(name,title)
 {
   //
   // AliTRDCalChamberStatus constructor
@@ -48,5 +50,6 @@ AliTRDCalChamberStatus::AliTRDCalChamberStatus(const Text_t *name, const Text_t 
   for (Int_t idet = 0; idet < kNdet; idet++) {
     fStatus[idet] = 0;
   }
+
 }
 

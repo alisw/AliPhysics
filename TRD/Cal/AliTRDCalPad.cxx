@@ -59,7 +59,6 @@ AliTRDCalPad::AliTRDCalPad(const Text_t *name, const Text_t *title)
 
 }
 
-
 //_____________________________________________________________________________
 AliTRDCalPad::AliTRDCalPad(const AliTRDCalPad &c):TNamed(c)
 {
@@ -113,6 +112,7 @@ void AliTRDCalPad::Copy(TObject &c) const
   }
 
   TObject::Copy(c);
+
 }
 
 //_____________________________________________________________________________
@@ -132,5 +132,6 @@ void AliTRDCalPad::ScaleROCs(AliTRDCalDet* values)
       fROC[idet]->Scale(values->GetValue(idet));
     }
   }
+
 }
 

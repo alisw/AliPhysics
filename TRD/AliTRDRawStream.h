@@ -6,9 +6,9 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
-///
-/// This class provides access to TRD digits in raw data.
-///
+//                                                                           //
+// This class provides access to TRD digits in raw data.                     //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
@@ -17,46 +17,51 @@ class AliRawReader;
 class AliTRDparameter;
 
 class AliTRDRawStream: public TObject {
+
   public :
+
+    AliTRDRawStream();
     AliTRDRawStream(AliRawReader* rawReader);
     virtual ~AliTRDRawStream();
 
     virtual Bool_t   Next();
 
-    Int_t            GetDetector() const {return fDetector;};
-    Int_t            GetPrevDetector() const {return fPrevDetector;};
-    Bool_t           IsNewDetector() const {return fDetector != fPrevDetector;};
-    Int_t            GetNPads() const {return fNPads;};
-    Int_t            GetRow() const {return fRow;};
-    Int_t            GetPrevRow() const {return fPrevRow;};
-    Bool_t           IsNewRow() const {return (fRow != fPrevRow) || IsNewDetector();};
-    Int_t            GetColumn() const {return fColumn;};
-    Int_t            GetPrevColumn() const {return fPrevColumn;};
-    Bool_t           IsNewColumn() const {return (fColumn != fPrevColumn) || IsNewRow();};
-    Int_t            GetTime() const {return fTime-1;};
-    Int_t            GetSignal() const {return fSignal;};
+    Int_t            GetDetector() const     { return fDetector;     };
+    Int_t            GetPrevDetector() const { return fPrevDetector; };
+    Bool_t           IsNewDetector() const   { return fDetector != fPrevDetector; };
+    Int_t            GetNPads() const        { return fNPads;        };
+    Int_t            GetRow() const          { return fRow;          };
+    Int_t            GetPrevRow() const      { return fPrevRow;      };
+    Bool_t           IsNewRow() const        { return (fRow != fPrevRow) || IsNewDetector();  };
+    Int_t            GetColumn() const       { return fColumn;       };
+    Int_t            GetPrevColumn() const   { return fPrevColumn;   };
+    Bool_t           IsNewColumn() const     { return (fColumn != fPrevColumn) || IsNewRow(); };
+    Int_t            GetTime() const         { return fTime-1;       };
+    Int_t            GetSignal() const       { return fSignal;       };
 
     enum {kDDLOffset = 0x400};    // offset for DDL numbers
 
   private :
-    AliTRDRawStream(const AliTRDRawStream& stream);
-    AliTRDRawStream& operator = (const AliTRDRawStream& stream);
 
-    AliRawReader*    fRawReader;    // object for reading the raw data
+    AliTRDRawStream(const AliTRDRawStream &stream);
+    AliTRDRawStream &operator=(const AliTRDRawStream &stream);
 
-    Int_t            fCount;        // counter of bytes to be read for current detector
+    AliRawReader*    fRawReader;    // Object for reading the raw data
 
-    Int_t            fDetector;     // index of current detector
-    Int_t            fPrevDetector; // index of previous detector
-    Int_t            fNPads;        // number of active pads
-    Int_t            fRow;          // index of current pad row
-    Int_t            fPrevRow;      // index of previous pad row
-    Int_t            fColumn;       // index of current pad column
-    Int_t            fPrevColumn;   // index of previous pad column
-    Int_t            fTime;         // index of current time bin
-    Int_t            fSignal;       // signal in ADC counts
+    Int_t            fCount;        // Counter of bytes to be read for current detector
 
-    ClassDef(AliTRDRawStream, 1)    // class for reading TRD raw digits
+    Int_t            fDetector;     // Index of current detector
+    Int_t            fPrevDetector; // Index of previous detector
+    Int_t            fNPads;        // Number of active pads
+    Int_t            fRow;          // Index of current pad row
+    Int_t            fPrevRow;      // Index of previous pad row
+    Int_t            fColumn;       // Index of current pad column
+    Int_t            fPrevColumn;   // Index of previous pad column
+    Int_t            fTime;         // Index of current time bin
+    Int_t            fSignal;       // Signal in ADC counts
+
+    ClassDef(AliTRDRawStream, 1)    // Class for reading TRD raw digits
+
 };
 
 #endif

@@ -33,20 +33,24 @@ ClassImp(AliTRDdigit)
   const UInt_t AliTRDdigit::fgkRawDigit = 0x00000001; 
 
 //_____________________________________________________________________________
-AliTRDdigit::AliTRDdigit():AliDigitNew()
+AliTRDdigit::AliTRDdigit()
+  :AliDigitNew()
+  ,fRow(0)
+  ,fCol(0)
+  ,fTime(0)
 {
   //
   // Default constructor
   //
 
-  fRow  = 0;
-  fCol  = 0;
-  fTime = 0;
-
 }
 
 //_____________________________________________________________________________
-AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp):AliDigitNew()
+AliTRDdigit::AliTRDdigit(Bool_t isRaw, Int_t *digits, Int_t *amp)
+  :AliDigitNew()
+  ,fRow(0)
+  ,fCol(0)
+  ,fTime(0)
 {
   //
   // Create a TRD digit

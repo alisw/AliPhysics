@@ -37,13 +37,13 @@ class AliTRDdigit : public AliDigitNew {
 
  protected:
 
-  static const UInt_t fgkRawDigit; // Marks a raw digit
+  static const UInt_t   fgkRawDigit; // Marks a raw digit
 
-  UShort_t     fRow;               // Pad row number
-  UShort_t     fCol;               // Pad col number
-  UShort_t     fTime;              // Time bucket
+               UShort_t fRow;        // Pad row number
+               UShort_t fCol;        // Pad col number
+               UShort_t fTime;       // Time bucket
 
-  ClassDef(AliTRDdigit,2)          // Digit for the TRD
+  ClassDef(AliTRDdigit,2)            // Digit for the TRD
 
 };
 

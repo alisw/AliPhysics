@@ -43,8 +43,8 @@ class AliTRDdataArray : public AliTRDsegmentID {
           Int_t  GetIdx1(Int_t row, Int_t col) const;
   inline  Int_t  GetIdx1Unchecked(Int_t row, Int_t col) const
                                                { return row + col * fNrow; };
-  inline  Bool_t CheckBounds(const char *where, Int_t idx1, Int_t idx2);
-  inline  Bool_t OutOfBoundsError(const char *where, Int_t idx1, Int_t idx2);
+  inline  Bool_t CheckBounds(Int_t idx1, Int_t idx2);
+  inline  Bool_t OutOfBoundsError(Int_t idx1, Int_t idx2);
  
   Int_t          fNrow;            // Number of rows of the detector segement
   Int_t          fNcol;            // Number of columns of the detector segment

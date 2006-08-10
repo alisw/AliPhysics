@@ -26,6 +26,9 @@
 
 #include "TClass.h"
 #include "TError.h"
+
+#include "AliLog.h"
+
 #include "AliTRDsegmentID.h"
 #include "AliTRDarrayI.h"
 #include "AliTRDdataArray.h"
@@ -34,47 +37,65 @@ ClassImp(AliTRDdataArray)
 
 //_____________________________________________________________________________
 AliTRDdataArray::AliTRDdataArray()
+   :fNrow(0)
+   ,fNcol(0)
+   ,fNtime(0)
+   ,fNdim1(-1)
+   ,fNdim2(-1)
+   ,fIndex(0)
+   ,fBufType(-1)
+   ,fNelems(-1)
+   ,fCurrentIdx1(0)
+   ,fCurrentIdx2(0)
+   ,fCurrentIndex(0)
 {
   //
   // Default constructor
   //
 
-  fIndex   =  0;
-
-  fNdim1   = -1;
-  fNdim2   = -1;
-  fNelems  = -1; 
-
-  fBufType = -1;
-
-  fNrow    =  0;
-  fNcol    =  0;
-  fNtime   =  0;
-
 }
 
 //_____________________________________________________________________________
 AliTRDdataArray::AliTRDdataArray(Int_t nrow, Int_t ncol, Int_t ntime)
+   :fNrow(0)
+   ,fNcol(0)
+   ,fNtime(0)
+   ,fNdim1(-1)
+   ,fNdim2(-1)
+   ,fIndex(0)
+   ,fBufType(-1)
+   ,fNelems(-1)
+   ,fCurrentIdx1(0)
+   ,fCurrentIdx2(0)
+   ,fCurrentIndex(0)
 {
   //
   // Creates a AliTRDdataArray with the dimensions <nrow>, <ncol>, and <ntime>.
   // The row- and column dimensions are compressible.
   //
 
-  fIndex   = 0;
-
   Allocate(nrow,ncol,ntime);
 
 }
 
 //_____________________________________________________________________________
-AliTRDdataArray::AliTRDdataArray(const AliTRDdataArray &d):AliTRDsegmentID(d)
+AliTRDdataArray::AliTRDdataArray(const AliTRDdataArray &d)
+   :AliTRDsegmentID(d)
+   ,fNrow(d.fNrow)
+   ,fNcol(d.fNcol)
+   ,fNtime(d.fNtime)
+   ,fNdim1(d.fNdim1)
+   ,fNdim2(d.fNdim2)
+   ,fIndex(d.fIndex)
+   ,fBufType(d.fBufType)
+   ,fNelems(d.fNelems)
+   ,fCurrentIdx1(0)
+   ,fCurrentIdx2(0)
+   ,fCurrentIndex(0)
 {
   //
   // AliTRDdataArray copy constructor
   //
-
-  ((AliTRDdataArray &) d).Copy(*this);
 
 }
 
@@ -127,7 +148,7 @@ void AliTRDdataArray::Copy(TObject &d) const
 }
 
 //_____________________________________________________________________________
-void AliTRDdataArray::Allocate(Int_t nrow, Int_t ncol,Int_t ntime)
+void AliTRDdataArray::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
 {
   //
   // Allocates memory for a AliTRDdataArray with the dimensions 
@@ -136,15 +157,15 @@ void AliTRDdataArray::Allocate(Int_t nrow, Int_t ncol,Int_t ntime)
   //
 
   if (nrow  <= 0) {
-    Error("AliTRDdataArray::Allocate","The number of rows has to be positive");
+    AliError("The number of rows has to be positive");
     exit(1);
   }
   if (ncol  <= 0) {
-    Error("AliTRDdataArray::Allocate","The number of columns has to be positive");
+    AliError("The number of columns has to be positive");
     exit(1);
   }
   if (ntime <= 0) {
-    Error("AliTRDdataArray::Allocate","The number of timebins has to be positive");
+    AliError("The number of timebins has to be positive");
     exit(1);
   }
 
@@ -171,32 +192,32 @@ void AliTRDdataArray::Allocate(Int_t nrow, Int_t ncol,Int_t ntime)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArray::CheckBounds(const char *where, Int_t idx1, Int_t idx2) 
+Bool_t AliTRDdataArray::CheckBounds(Int_t idx1, Int_t idx2) 
 {
   //
   // Does the boundary checking
   //
 
   if ((idx2 >= fNdim2) || (idx2 < 0)) 
-    return OutOfBoundsError(where,idx1,idx2);
+    return OutOfBoundsError(idx1,idx2);
 
   Int_t index = (*fIndex).At(idx2) + idx1;
   if ((index < 0) || (index > fNelems)) 
-    return OutOfBoundsError(where,idx1,idx2);
+    return OutOfBoundsError(idx1,idx2);
 
   return kTRUE;  
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdataArray::OutOfBoundsError(const char *where, Int_t idx1, Int_t idx2) 
+Bool_t AliTRDdataArray::OutOfBoundsError(Int_t idx1, Int_t idx2) 
 {
   //
   // Generate an out-of-bounds error. Always returns false.
   //
 
-  TObject::Error(where, "idx1 %d  idx2 %d out of bounds (size: %d x %d, this: 0x%08x)"
-	   ,idx1,idx2,fNdim1,fNdim2,this);
+  AliError(Form("idx1 %d  idx2 %d out of bounds (size: %d x %d, this: 0x%08x)"
+	       ,idx1,idx2,fNdim1,fNdim2,this));
 
   return kFALSE;
 
@@ -233,16 +254,12 @@ Int_t AliTRDdataArray::GetIdx1(Int_t row, Int_t col) const
   //
 
   if (row >= fNrow) {
-    TObject::Error("GetIdx1"
-                  ,"row %d out of bounds (size: %d, this: 0x%08x)"
-                  ,row,fNrow,this);
+    AliError(Form("row %d out of bounds (size: %d, this: 0x%08x)",row,fNrow,this));
     return -1;
   }  
 
   if (col >= fNcol) {
-    TObject::Error("GetIdx1"
-                  ,"col %d out of bounds (size: %d, this: 0x%08x)"
-                  ,col,fNcol,this);
+    AliError(Form("col %d out of bounds (size: %d, this: 0x%08x)",col,fNcol,this));
     return -1;
   }  
 
@@ -258,9 +275,7 @@ Int_t AliTRDdataArray::GetIndex(Int_t row, Int_t col, Int_t time) const
   // 
 
   if (time > fNtime) {
-    TObject::Error("GetIdx1"
-                  ,"time %d out of bounds (size: %d, this: 0x%08x)"
-                  ,time,fNtime,this);
+    AliError(Form("time %d out of bounds (size: %d, this: 0x%08x)",time,fNtime,this));
     return -1;
   }  
   

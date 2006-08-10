@@ -17,7 +17,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD calibration class for global TRD parameters //
+//  TRD calibration class for monitoring data                                //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -26,32 +26,28 @@
 ClassImp(AliTRDCalMonitoring)
 
 //_____________________________________________________________________________
-AliTRDCalMonitoring::AliTRDCalMonitoring():TNamed()
+AliTRDCalMonitoring::AliTRDCalMonitoring()
+  :TNamed()
+  ,fDriftVelocity(0)
+  ,fGasComposition(0)
+  ,fEnvironmentTemperature(0)
 {
   //
   // AliTRDCalMonitoring default constructor
   //
-  
-  
-  Init();
+
 }
 
 //_____________________________________________________________________________
 AliTRDCalMonitoring::AliTRDCalMonitoring(const Text_t *name, const Text_t *title)
-                :TNamed(name,title)
+  :TNamed(name,title)
+  ,fDriftVelocity(0)
+  ,fGasComposition(0)
+  ,fEnvironmentTemperature(0)
 {
   //
   // AliTRDCalMonitoring constructor
   //
 
-  Init();
 }
 
-//_____________________________________________________________________________
-void AliTRDCalMonitoring::Init()
-{
-  //
-  // default initialization
-  //
-  
-}

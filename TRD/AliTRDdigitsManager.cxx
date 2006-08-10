@@ -29,6 +29,7 @@
 #include <TFile.h>
 
 #include "AliRun.h"
+#include "AliLog.h"
 
 #include "AliTRDdigitsManager.h"
 #include "AliTRDsegmentArray.h"
@@ -44,19 +45,18 @@ ClassImp(AliTRDdigitsManager)
   const Int_t AliTRDdigitsManager::fgkNDict = kNDict;
 
 //_____________________________________________________________________________
-AliTRDdigitsManager::AliTRDdigitsManager():TObject()
+AliTRDdigitsManager::AliTRDdigitsManager()
+  :TObject()
+  ,fEvent(0)
+  ,fTree(0)
+  ,fDigits(0)
+  ,fIsRaw(0)
+  ,fSDigits(0)
 {
   //
   // Default constructor
   //
 
-  fIsRaw   = kFALSE;
-  fEvent   = 0;
-  fDebug   = 0;
-  fSDigits = 0;
-
-  fTree    = NULL;
-  fDigits  = NULL;
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
     fDictionary[iDict] = NULL;
   }
@@ -65,13 +65,16 @@ AliTRDdigitsManager::AliTRDdigitsManager():TObject()
 
 //_____________________________________________________________________________
 AliTRDdigitsManager::AliTRDdigitsManager(const AliTRDdigitsManager &m)
-:TObject(m)
+  :TObject(m)
+  ,fEvent(m.fEvent)
+  ,fTree(0)
+  ,fDigits(0)
+  ,fIsRaw(m.fIsRaw)
+  ,fSDigits(m.fSDigits)
 {
   //
   // AliTRDdigitsManager copy constructor
   //
-
-  ((AliTRDdigitsManager &) m).Copy(*this);
 
 }
 
@@ -97,6 +100,18 @@ AliTRDdigitsManager::~AliTRDdigitsManager()
 }
 
 //_____________________________________________________________________________
+AliTRDdigitsManager &AliTRDdigitsManager::operator=(const AliTRDdigitsManager &m)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &m) ((AliTRDdigitsManager &) m).Copy(*this);
+  return *this;
+
+}
+
+//_____________________________________________________________________________
 void AliTRDdigitsManager::Copy(TObject &m) const
 {
   //
@@ -105,7 +120,6 @@ void AliTRDdigitsManager::Copy(TObject &m) const
 
   ((AliTRDdigitsManager &) m).fIsRaw   = fIsRaw;
   ((AliTRDdigitsManager &) m).fEvent   = fEvent;
-  ((AliTRDdigitsManager &) m).fDebug   = fDebug;
   ((AliTRDdigitsManager &) m).fSDigits = fSDigits;
 
   TObject::Copy(m);
@@ -198,10 +212,7 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
       TBranch* branch = fTree->GetBranch("TRDdigits");
       if (!branch) fTree->Branch("TRDdigits",kDigits->IsA()->GetName(),
                                  &kDigits,buffersize,99);
-      if (fDebug > 0) {
-        printf("<AliTRDdigitsManager::MakeBranch> ");
-        printf("Making branch TRDdigits\n");
-      }
+      AliDebug(1,"Making branch TRDdigits\n");
     }
     else {
       status = kFALSE;
@@ -223,10 +234,7 @@ Bool_t AliTRDdigitsManager::MakeBranch(TTree *tree)
 	TBranch* branch = fTree->GetBranch(branchname);
 	if (!branch) fTree->Branch(branchname,kDictionary->IsA()->GetName(),
 				   &kDictionary,buffersize,99);
-        if (fDebug > 0) {
-          printf("<AliTRDdigitsManager::MakeBranch> ");
-          printf("Making branch %s\n",branchname);
-	}
+        AliDebug(1,Form("Making branch %s\n",branchname));
       }
       else {
         status = kFALSE;
@@ -257,10 +265,7 @@ Bool_t AliTRDdigitsManager::ReadDigits(TTree *tree)
   }
 
   if (!fDigits) {
-    if (fDebug > 0) {
-      printf("<AliTRDdigitsManager::ReadDigits> ");
-      printf("Create the data arrays.\n");
-    }
+    AliDebug(1,"Create the data arrays.\n");
     CreateArrays();
   }
 
@@ -292,22 +297,19 @@ Bool_t AliTRDdigitsManager::WriteDigits()
 
   // Store the contents of the segment array in the tree
   if (!fDigits->StoreArray("TRDdigits",fTree)) {
-    printf("<AliTRDdigitsManager::WriteDigits> ");
-    printf("Error while storing digits in branch TRDdigits\n");
+    AliError("Error while storing digits in branch TRDdigits\n");
     return kFALSE;
   }
   for (Int_t iDict = 0; iDict < kNDict; iDict++) {
     Char_t branchname[15];
     sprintf(branchname,"TRDdictionary%d",iDict);
     if (!fDictionary[iDict]->StoreArray(branchname,fTree)) {
-      printf("<AliTRDdigitsManager::WriteDigits> ");
-      printf("Error while storing dictionary in branch %s\n",branchname);
+      AliError(Form("Error while storing dictionary in branch %s\n",branchname));
       return kFALSE;
     }
   }
 
   // Write the new tree to the output file
-  //fTree->Write();
   fTree->AutoSave();  // Modification by Jiri
 
   return kTRUE;
@@ -346,9 +348,8 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track
   //
 
   if ((track < 0) || (track >= kNDict)) {
-    TObject::Error("GetTracks"
-                  ,"track %d out of bounds (size: %d, this: 0x%08x)"
-                  ,track,kNDict,this);
+    AliError(Form("track %d out of bounds (size: %d, this: 0x%08x)"
+                 ,track,kNDict,this));
     return -1;
   }
 
@@ -393,17 +394,5 @@ Int_t AliTRDdigitsManager::GetTrack(Int_t track, AliTRDdigit *Digit) const
   Int_t det  = Digit->GetDetector();
 
   return GetTrack(track,row,col,time,det);
-
-}
-
-//_____________________________________________________________________________
-AliTRDdigitsManager &AliTRDdigitsManager::operator=(const AliTRDdigitsManager &m)
-{
-  //
-  // Assignment operator
-  //
-
-  if (this != &m) ((AliTRDdigitsManager &) m).Copy(*this);
-  return *this;
 
 }
