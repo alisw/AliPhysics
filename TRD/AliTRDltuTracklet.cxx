@@ -18,6 +18,8 @@
 //                                                                           //
 //  TRD chamber local track (LTU, tracklet)                                  //
 //                                                                           //
+//  Author:                                                                  //
+//    Bogdan Vulpescu                                                        //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -28,29 +30,41 @@
 ClassImp(AliTRDltuTracklet)
 
 //_____________________________________________________________________________
-AliTRDltuTracklet::AliTRDltuTracklet(Int_t det, 
-				     Int_t row, 
-				     Float_t rowz,
-				     Float_t slope, 
-				     Float_t offset, 
-				     Float_t time, 
-				     Int_t ncl,
-				     Int_t label,
-				     Float_t q) 
+AliTRDltuTracklet::AliTRDltuTracklet()
+  :TObject()
+  ,fX(0)
+  ,fY(0)
+  ,fSlope(0)
+  ,fRowz(0)
+  ,fDetector(0)
+  ,fRow(0)
+  ,fNclusters(0)
+  ,fLabel(0)
+  ,fQ(0)
+{
+  //
+  // AliTRDltuTracklet default constructor
+  //
+}
+
+//_____________________________________________________________________________
+AliTRDltuTracklet::AliTRDltuTracklet(Int_t det, Int_t row, Float_t rowz
+				   , Float_t slope, Float_t offset, Float_t time
+				   , Int_t ncl, Int_t label, Float_t q) 
+  :TObject()
+  ,fX(time)
+  ,fY(offset)
+  ,fSlope(slope)
+  ,fRowz(rowz)
+  ,fDetector(det)
+  ,fRow(row)
+  ,fNclusters(ncl)
+  ,fLabel(label)
+  ,fQ(q)
 {
   //
   // AliTRDltuTracklet constructor
   //
-
-  fDetector  = det;
-  fRow       = row;
-  fRowz      = rowz;
-  fSlope     = slope;
-  fX         = time;
-  fY         = offset;
-  fNclusters = ncl;
-  fLabel     = label;
-  fQ         = q;
 
 }
 
@@ -66,17 +80,20 @@ AliTRDltuTracklet::~AliTRDltuTracklet()
 //_____________________________________________________________________________
 Float_t AliTRDltuTracklet::GetPt(Float_t field) const
 {
-  // transverse momentum calculation
-  // curvature R = (fX*fX + fY*fY) / (2 * sin(alpha))
+  //
+  // Transverse momentum calculation
+  // Curvature R = (fX*fX + fY*fY) / (2 * sin(alpha))
   // alpha = angle deviation from "infinite momentum"
   //
-  // consistent with AliTRDmcmTracklet::GetPt(...)
+  // Consistent with AliTRDmcmTracklet::GetPt(...)
+  //
 
   Float_t infSlope = TMath::ATan(fY/fX)/TMath::Pi()*180.0;    
-  Float_t alpha = fSlope - infSlope;
-  Float_t r = TMath::Sqrt(fX*fX + fY*fY)/(2.0*TMath::Sin(alpha/180.0*TMath::Pi()));
+  Float_t alpha    = fSlope - infSlope;
+  Float_t r        = TMath::Sqrt(fX*fX + fY*fY)
+                   / (2.0*TMath::Sin(alpha/180.0*TMath::Pi()));
   
-  Float_t pt = 0.3 * field * 0.01 * r;
+  Float_t pt       = 0.3 * field * 0.01 * r;
  
   return pt;
  
@@ -108,9 +125,7 @@ Float_t AliTRDltuTracklet::GetYproj(Float_t xpl) const
   // y-projection (bending plane) onto the median plane
   //
 
-  Float_t yproj;
-
-  yproj = fY + TMath::Tan(fSlope/180.0*TMath::Pi()) * (xpl - fX);
+  Float_t yproj = fY + TMath::Tan(fSlope/180.0*TMath::Pi()) * (xpl - fX);
 
   return yproj;
 
@@ -123,9 +138,7 @@ Float_t AliTRDltuTracklet::GetZproj(Float_t xpl) const
   // z-projection (using pad row center) onto the median plane
   //
 
-  Float_t zproj;
-
-  zproj = fRowz * xpl / fX;
+  Float_t zproj = fRowz * xpl / fX;
 
   return zproj;
 

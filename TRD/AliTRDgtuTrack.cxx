@@ -24,61 +24,60 @@
 #include <TMatrixD.h>
 #include <TObjArray.h>
 
+#include "AliLog.h"
+
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
-#include "Cal/AliTRDCalPIDLQ.h"
-
 #include "AliTRDltuTracklet.h"
-
 #include "AliTRDgtuTrack.h"
+#include "Cal/AliTRDCalPIDLQ.h"
 
 ClassImp(AliTRDgtuTrack)
 
 //_____________________________________________________________________________
 AliTRDgtuTrack::AliTRDgtuTrack()
+  :TObject()
+  ,fTracklets(new TObjArray(400))
+  ,fYproj(0)
+  ,fZproj(0)
+  ,fSlope(0)
+  ,fDetector(-1)
+  ,fNtracklets(0)
+  ,fNplanes(0)
+  ,fNclusters(0)
+  ,fPt(0)
+  ,fPhi(0)
+  ,fEta(0)
+  ,fLabel(-1)
+  ,fPID(0)
+  ,fIsElectron(kFALSE)
 {
   //
   // Default constructor
   //
 
-  fYproj = 0.0;
-  fZproj = 0.0;
-  fSlope = 0.0;
-  fDetector = -1;
-  fNtracklets = 0;
-  fNplanes = 0;
-  fNclusters = 0;
-  fPt = 0.0;
-  fPhi = 0.0;
-  fEta = 0.0;
-  fLabel = -1;
-  fPID = 0.0;
-  fIsElectron = kFALSE;
-
-  fTracklets = new TObjArray(400);
-
 }
 
 //_____________________________________________________________________________
-AliTRDgtuTrack::AliTRDgtuTrack(const AliTRDgtuTrack& track):
-  TObject(track),
-  fTracklets(NULL),
-  fYproj(track.fYproj),
-  fZproj(track.fZproj),
-  fSlope(track.fSlope),
-  fDetector(track.fDetector),
-  fNtracklets(track.fNtracklets),
-  fNplanes(track.fNplanes),
-  fNclusters(track.fNclusters),
-  fPt(track.fPt),
-  fPhi(track.fPhi),
-  fEta(track.fEta),
-  fLabel(track.fLabel),
-  fPID(track.fPID),
-  fIsElectron(track.fIsElectron)
+AliTRDgtuTrack::AliTRDgtuTrack(const AliTRDgtuTrack& t)
+  :TObject(t)
+  ,fTracklets(NULL)
+  ,fYproj(t.fYproj)
+  ,fZproj(t.fZproj)
+  ,fSlope(t.fSlope)
+  ,fDetector(t.fDetector)
+  ,fNtracklets(t.fNtracklets)
+  ,fNplanes(t.fNplanes)
+  ,fNclusters(t.fNclusters)
+  ,fPt(t.fPt)
+  ,fPhi(t.fPhi)
+  ,fEta(t.fEta)
+  ,fLabel(t.fLabel)
+  ,fPID(t.fPID)
+  ,fIsElectron(t.fIsElectron)
 {
   //
-  // copy contructor
+  // Copy contructor
   //
 
 }
@@ -87,19 +86,19 @@ AliTRDgtuTrack::AliTRDgtuTrack(const AliTRDgtuTrack& track):
 AliTRDgtuTrack &AliTRDgtuTrack::operator=(const AliTRDgtuTrack &t)
 {
   //
-  // assignment operator
+  // Assignment operator
   //
 
   if (this != &t) ((AliTRDgtuTrack &) t).Copy(*this); 
   return *this;
 
-}
+} 
 
 //_____________________________________________________________________________
 void AliTRDgtuTrack::Copy(TObject &t) const
 {
   //
-  // copy function
+  // Copy function
   //
 
   ((AliTRDgtuTrack &) t).fTracklets  = NULL;
@@ -123,8 +122,13 @@ void AliTRDgtuTrack::Copy(TObject &t) const
 AliTRDgtuTrack::~AliTRDgtuTrack()
 {
   //
-  // destructor
+  // Destructor
   //
+
+  if (fTracklets) {
+    fTracklets->Delete();
+    delete fTracklets;
+  }
 
 }
 
@@ -146,11 +150,15 @@ AliTRDltuTracklet* AliTRDgtuTrack::GetTracklet(Int_t pos) const
   // Return LTU tracklet at position "pos"
   //
 
-  if (fTracklets == 0) return 0;
-  void * trk = fTracklets->UncheckedAt(pos);
-  if (trk == 0) return 0;
+  if (fTracklets == 0) {
+    return 0;
+  }
+  void *trk = fTracklets->UncheckedAt(pos);
+  if (trk == 0) {
+    return 0;
+  }
 
-  return (AliTRDltuTracklet*)trk;
+  return (AliTRDltuTracklet *) trk;
 
 }
 
@@ -177,18 +185,18 @@ void AliTRDgtuTrack::Reset()
   // Reset the track information
   //
 
-  fYproj = 0.0;
-  fZproj = 0.0;
-  fSlope = 0.0;
-  fDetector = -1;
+  fYproj      = 0.0;
+  fZproj      = 0.0;
+  fSlope      = 0.0;
+  fDetector   = -1;
   fNtracklets = 0;
-  fNplanes = 0;
-  fNclusters = 0;
-  fPt = 0.0;
-  fPhi = 0.0;
-  fEta = 0.0;
-  fLabel = -1;
-  fPID = 0.0;
+  fNplanes    = 0;
+  fNclusters  = 0;
+  fPt         = 0.0;
+  fPhi        = 0.0;
+  fEta        = 0.0;
+  fLabel      = -1;
+  fPID        = 0.0;
   fIsElectron = kFALSE;
   
 }
@@ -200,21 +208,27 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
   // Calculate the kinematics of the found track
   //
 
+  Int_t  i    = 0;
+  Int_t  iDet = 0;
+  Int_t  nDet = 0;
+  Bool_t newDetector;
+
   AliTRDltuTracklet *trk;
   Int_t nTracklets = GetNtracklets();
   Float_t fC[kNmaxTrk][3];            // X, Y, Z  coordinates of segments
 
-  fYproj = 0.0;
-  fZproj = 0.0;
-  fSlope = 0.0;
-  fNclusters = 0;
-  fNplanes = 0;
+  fYproj      = 0.0;
+  fZproj      = 0.0;
+  fSlope      = 0.0;
+  fNclusters  = 0;
+  fNplanes    = 0;
   fNtracklets = GetNtracklets();
   Int_t inDetector[kNplan];
-  for (Int_t i = 0; i < kNplan; i++) inDetector[i] = -1;
-  Int_t iDet, nDet = 0;
-  Bool_t newDetector;
-  for (Int_t i = 0; i < nTracklets; i++) {
+  for (i = 0; i < kNplan; i++) {
+    inDetector[i] = -1;
+  }
+
+  for (i = 0; i < nTracklets; i++) {
 
     trk = GetTracklet(i);
     fYproj += trk->GetYproj(xpl);
@@ -276,7 +290,7 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
 
   smatrix.Zero();
   sums.Zero();
-  for (Int_t i = 0; i < nTracklets; i++) {
+  for (i = 0; i < nTracklets; i++) {
     xv = (Double_t)x[i+1];
     yv = (Double_t)y[i+1];
     smatrix(0,0) += 1.0;
@@ -290,15 +304,14 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
   a = res(0,0);
   b = res(1,0);
 
-  Float_t dist = AliTRDgeometry::GetTime0(1) - AliTRDgeometry::GetTime0(0);
-
-  Float_t fx1 = x[1]          + dist * (Float_t)(nTracklets-1)/6.0;
-  Float_t fy1 = a + b * fx1;
-  Float_t fx2 = x[nTracklets] - dist * (Float_t)(nTracklets-1)/6.0;
-  Float_t fy2 = a + b * fx2;
-  Float_t d12 = TMath::Sqrt((fx2-fx1)*(fx2-fx1)+(fy2-fy1)*(fy2-fy1));
+  Float_t dist  = AliTRDgeometry::GetTime0(1) - AliTRDgeometry::GetTime0(0);
+  Float_t fx1   = x[1]          + dist * (Float_t)(nTracklets-1)/6.0;
+  Float_t fy1   = a + b * fx1;
+  Float_t fx2   = x[nTracklets] - dist * (Float_t)(nTracklets-1)/6.0;
+  Float_t fy2   = a + b * fx2;
+  Float_t d12   = TMath::Sqrt((fx2-fx1)*(fx2-fx1)+(fy2-fy1)*(fy2-fy1));
   Float_t alpha = TMath::ATan(fy2/fx2) - TMath::ATan(fy1/fx1);
-  Float_t r = (d12/2.0)/TMath::Sin(alpha);
+  Float_t r     = (d12/2.0)/TMath::Sin(alpha);
 
   fPt = 0.3 * field * 0.01 * r;
 
@@ -311,7 +324,8 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
 
   if (yc != 0.0) {
     fPhi = TMath::ATan(xc/yc);
-  } else {
+  } 
+  else {
     fPhi = TMath::PiOver2();
   }
 
@@ -319,7 +333,7 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
 
   smatrix.Zero();
   sums.Zero();
-  for (Int_t i = 0; i < nTracklets+1; i++) {
+  for (i = 0; i < nTracklets+1; i++) {
     xv = (Double_t)z[i];
     yv = (Double_t)x[i];
     smatrix(0,0) += 1.0;
@@ -334,11 +348,13 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
   b = res(1,0);
   Float_t theta = TMath::ATan(b);
   
-  if (theta < 0.0) theta = TMath::Pi() + theta;
-  
+  if (theta < 0.0) {
+    theta = TMath::Pi() + theta;
+  }
   if (theta == 0.0) {
     fEta = 0.0;
-  } else {
+  } 
+  else {
     fEta = -TMath::Log(TMath::Tan(theta/2.0));
   }
   
@@ -351,10 +367,12 @@ void AliTRDgtuTrack::MakePID()
   // Electron likelihood signal
   //
 
+  Int_t i = 0;
+
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
   if (!calibration)
   {
-    Error("MakePID","No instance of AliTRDcalibDB.");
+    AliError("No instance of AliTRDcalibDB.");
     return;  
   }
   const AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
@@ -363,7 +381,7 @@ void AliTRDgtuTrack::MakePID()
   Int_t nTracklets = GetNtracklets();
   Int_t det, pla;
   Float_t sl, th, q, probPio = 1.0, probEle = 1.0;
-  for (Int_t i = 0; i < nTracklets; i++) {
+  for (i = 0; i < nTracklets; i++) {
 
     trk = GetTracklet(i);
 
@@ -417,7 +435,8 @@ void AliTRDgtuTrack::MakePID()
 
   if ((probEle+probPio) > 0.0) {
     fPID = probEle/(probEle+probPio);
-  } else {
+  } 
+  else {
     fPID = 0.0;
   }
 
@@ -507,3 +526,45 @@ void AliTRDgtuTrack::CookLabel()
 
 }
 
+//_____________________________________________________________________________
+void AliTRDgtuTrack::ResetTracklets() 
+{ 
+  //
+  // Resets the list of tracklets
+  //
+
+  if (fTracklets) {
+    fTracklets->Delete(); 
+  }
+
+}
+
+//_____________________________________________________________________________
+TObjArray* AliTRDgtuTrack::Tracklets() 
+{ 
+  //
+  // Returns the list of tracklets
+  //
+
+  if (!fTracklets) {
+    fTracklets = new TObjArray(400); 
+  }
+
+  return fTracklets; 
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDgtuTrack::GetNtracklets() const 
+{
+  //
+  // Returns the number of tracklets
+  //
+
+  if (fTracklets) {
+    return fTracklets->GetEntriesFast();
+  }
+
+  return 0;
+
+}

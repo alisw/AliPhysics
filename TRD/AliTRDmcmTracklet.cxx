@@ -25,24 +25,36 @@
 #include <TMath.h>
 #include <TF1.h>
 
+#include "AliLog.h"
+
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDpadPlane.h"
 #include "AliTRDgeometry.h"
-
 #include "AliTRDmcmTracklet.h"
 
 ClassImp(AliTRDmcmTracklet)
 
 //_____________________________________________________________________________
 AliTRDmcmTracklet::AliTRDmcmTracklet() 
+  :TObject()
+  ,fDetector(-1)
+  ,fRow(-1)
+  ,fTrackLabel(-1)
+  ,fNclusters(0)
+  ,fN(0)
+  ,fGPos(0)
+  ,fGAmp(0)
+  ,fTime0(0)
+  ,fRowz(0)
+  ,fSlope(0)
+  ,fOffset(0)
+  ,fPt(0)
+  ,fdQdl(0)
 {
   //
   // AliTRDmcmTracklet default constructor
   //
-
-  fDetector = -1;
-  fRow      = -1;
 
   for (Int_t time = 0; time < kNtimeBins; time++) {
     for (Int_t icl = 0; icl < kNclsPads; icl++) {
@@ -54,32 +66,29 @@ AliTRDmcmTracklet::AliTRDmcmTracklet()
     fTime[time]   = 0;
     fCol[time]    = 0;
   }
-
-  fNclusters  =  0;
-  fN          =  0;
-  fTrackLabel = -1;
-
-  fGPos = 0;
-  fGAmp = 0;
-
-  fSlope  = 0.0;
-  fOffset = 0.0;
-  fTime0  = 0.0;
-  fRowz   = 0.0;
-  fPt     = 0.0;
-  fdQdl   = 0.0;
 
 }
 
 //_____________________________________________________________________________
 AliTRDmcmTracklet::AliTRDmcmTracklet(Int_t det, Int_t row, Int_t n) 
+  :TObject()
+  ,fDetector(det)
+  ,fRow(row)
+  ,fTrackLabel(-1)
+  ,fNclusters(0)
+  ,fN(n)
+  ,fGPos(0)
+  ,fGAmp(0)
+  ,fTime0(0)
+  ,fRowz(0)
+  ,fSlope(0)
+  ,fOffset(0)
+  ,fPt(0)
+  ,fdQdl(0)
 {
   //
   // AliTRDmcmTracklet default constructor
   //
-
-  fDetector = det;
-  fRow      = row;
 
   for (Int_t time = 0; time < kNtimeBins; time++) {
     for (Int_t icl = 0; icl < kNclsPads; icl++) {
@@ -92,21 +101,42 @@ AliTRDmcmTracklet::AliTRDmcmTracklet(Int_t det, Int_t row, Int_t n)
     fCol[time]    = 0;
   }
 
-  fNclusters = 0;
-
-  fN = n;
-
-  fTrackLabel = -1;
-
   fGPos = new TGraph(0);
   fGAmp = new TGraph(0);
 
-  fSlope  = 0.0;
-  fOffset = 0.0;
-  fTime0  = 0.0;
-  fRowz   = 0.0;
-  fPt     = 0.0;
-  fdQdl   = 0.0;
+}
+
+//_____________________________________________________________________________
+AliTRDmcmTracklet::AliTRDmcmTracklet(const AliTRDmcmTracklet &t) 
+  :TObject(t)
+  ,fDetector(t.fDetector)
+  ,fRow(t.fRow)
+  ,fTrackLabel(t.fTrackLabel)
+  ,fNclusters(t.fNclusters)
+  ,fN(t.fN)
+  ,fGPos(NULL)
+  ,fGAmp(NULL)
+  ,fTime0(t.fTime0)
+  ,fRowz(t.fRowz)
+  ,fSlope(t.fSlope)
+  ,fOffset(t.fOffset)
+  ,fPt(t.fPt)
+  ,fdQdl(t.fdQdl)
+{
+  //
+  // AliTRDmcmTracklet copy constructor
+  //
+
+  for (Int_t time = 0; time < kNtimeBins; time++) {
+    for (Int_t icl = 0; icl < kNclsPads; icl++) {
+      ((AliTRDmcmTracklet &) t).fADC[time][icl] = 0;
+    }
+    for (Int_t it = 0; it < kNdict; it++) {
+      ((AliTRDmcmTracklet &) t).fTrack[time][it] = -1;
+    }
+    ((AliTRDmcmTracklet &) t).fTime[time]   = 0;
+    ((AliTRDmcmTracklet &) t).fCol[time]    = 0;
+  }
 
 }
 
@@ -126,7 +156,7 @@ AliTRDmcmTracklet::~AliTRDmcmTracklet()
 AliTRDmcmTracklet &AliTRDmcmTracklet::operator=(const AliTRDmcmTracklet &t)
 {
   //
-  // assignment operator
+  // Assignment operator
   //
 
   if (this != &t) ((AliTRDmcmTracklet &) t).Copy(*this); 
@@ -138,7 +168,7 @@ AliTRDmcmTracklet &AliTRDmcmTracklet::operator=(const AliTRDmcmTracklet &t)
 void AliTRDmcmTracklet::Copy(TObject &t) const
 {
   //
-  // copy function
+  // Copy function
   //
 
   ((AliTRDmcmTracklet &) t).fDetector    = fDetector;
@@ -215,7 +245,6 @@ void AliTRDmcmTracklet::AddCluster(Int_t icol, Int_t itb, Float_t *adc, Int_t *t
   if (fNclusters >= kNtimeBins) return;
 
   for (Int_t icl = 0; icl < kNclsPads; icl++) {
-    //fADC[fNclusters][icl] = (Int_t)adc[icl]; 
     fADC[fNclusters][icl] = adc[icl]; 
   }
 
@@ -237,21 +266,19 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
   //
   
   if (!geo) {
-    Error("MakeTrackletGraph","No geometry.");
+    AliError("No geometry.");
     return;
   }
   
   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
-  if (!commonParam)
-  {
-    Error("MakeTrackletGraph","No common params.");
+  if (!commonParam) {
+    AliError("No common parameters.");
     return;
   }
 
   AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
-    Error("MakeTrackletGraph","No instance of AliTRDcalibDB.");
+  if (!calibration) {
+    AliError("No instance of AliTRDcalibDB.");
     return;
   }
 
@@ -291,7 +318,7 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
     
     // From v4-03-Release to HEAD28Mar06 the sign has changed from "-" to "+" 
     // due to a change in the digitizer
-    omegaTau = +TMath::Sign(1.0,(Double_t)field)*GetOmegaTau(vDrift,TMath::Abs(field));
+    omegaTau     = TMath::Sign(1.0,(Double_t)field)*GetOmegaTau(vDrift,TMath::Abs(field));
     lorentzAngle = TMath::ATan(omegaTau)*180.0/TMath::Pi();
     
     xpos = (time+0.5) * timeBinSize;
@@ -318,9 +345,13 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
   fTime0 = geo->GetTime0(iplan) - AliTRDgeometry::CdrHght() - 0.5*AliTRDgeometry::CamHght();
   fRowz = padPlane->GetRowPos(fRow) - padPlane->GetRowSize(fRow)/2.0;
 
-  Double_t xMin = 0, xMax = 0, x, y;
-  fGPos->GetPoint(0    ,x,y); xMax = x + 0.1;
-  fGPos->GetPoint(npg-1,x,y); xMin = x - 0.1;
+  Double_t xMin = 0;
+  Double_t xMax = 0;
+  Double_t x, y;
+  fGPos->GetPoint(0    ,x,y); 
+  xMax = x + 0.1;
+  fGPos->GetPoint(npg-1,x,y); 
+  xMin = x - 0.1;
   
   TF1 *line = new TF1("line","[0]+x*[1]",xMin,xMax);
   fGPos->Fit(line,"WRQ0");
@@ -334,8 +365,8 @@ void AliTRDmcmTracklet::MakeTrackletGraph(AliTRDgeometry *geo, Float_t field)
   Float_t fy = fOffset;
   
   Float_t infSlope = TMath::ATan(fy/fx)/TMath::Pi()*180.0;    
-  Float_t alpha = fSlope - infSlope;
-  Float_t r = TMath::Sqrt(fx*fx + fy*fy)/(2.0*TMath::Sin(alpha/180.0*TMath::Pi()));
+  Float_t alpha    = fSlope - infSlope;
+  Float_t r        = TMath::Sqrt(fx*fx + fy*fy)/(2.0*TMath::Sin(alpha/180.0*TMath::Pi()));
 
   fPt = 0.3 * field * 0.01 * r;
   
@@ -350,9 +381,10 @@ void AliTRDmcmTracklet::MakeClusAmpGraph()
   // Tracklet graph of cluster charges
   //
 
-  Int_t time;
+  Int_t   time;
   Float_t amp[3];
-  Int_t npg = 0;
+  Int_t   npg = 0;
+
   fdQdl = 0.0;
   for (Int_t icl = 0; icl < fNclusters; icl++) {
 
@@ -410,7 +442,7 @@ Float_t AliTRDmcmTracklet::GetClusY(Float_t *adc, Int_t pla) const
   case 5:
     sigma = 0.463; break;
   default:
-    Error("GetClusY","Wrong plane number.");
+    AliError("Wrong plane number.");
     return 0.0;
   }
 
@@ -475,7 +507,7 @@ void AliTRDmcmTracklet::CookLabel(Float_t frac)
 	trackCount[nTracks]++;
 	nTracks++;
 	if (nTracks == kMaxTracks) {
-	  Warning("CookLabel","Too many tracks for this tracklet.");
+	  AliWarning("Too many tracks for this tracklet.");
 	  nTracks--;
 	  break;
 	}
@@ -518,9 +550,9 @@ Float_t AliTRDmcmTracklet::GetOmegaTau(Float_t vdrift, Float_t field) const
   ib       = TMath::Min(kNb,ib);
 
   Float_t alphaL = p0[ib] 
-      + p1[ib] * vdrift
-      + p2[ib] * vdrift*vdrift
-      + p3[ib] * vdrift*vdrift*vdrift;
+                 + p1[ib] * vdrift
+                 + p2[ib] * vdrift*vdrift
+                 + p3[ib] * vdrift*vdrift*vdrift;
 
   return TMath::Tan(alphaL);
 

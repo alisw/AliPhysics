@@ -14,8 +14,8 @@ class AliTRDTriggerL1 : public AliTriggerDetector
 
  public:
 
-  AliTRDTriggerL1();  // constructor
-  virtual ~AliTRDTriggerL1(){}  // destructor
+  AliTRDTriggerL1();
+  virtual        ~AliTRDTriggerL1() {} 
   virtual void    CreateInputs();
   virtual void    Trigger();
 

@@ -91,20 +91,18 @@ class AliTRDcalibDB : public TObject {
 
   static AliTRDcalibDB *fgInstance;                 //  Instance of this class (singleton implementation)
   static Bool_t         fgTerminated;               //  Defines if this class has already been terminated
+
   AliCDBEntry          *fCDBEntries[kCDBCacheSize]; //  Cache for CDB entries
   TObject              *fCDBCache[kCDBCacheSize];   //  Cache for calibration objects.
 
   Long64_t              fRun;                       //  Run Number
   
-  struct 
-  {
-    Float_t             *fPRFsmp;                   //! Sampled pad response
-    Int_t                fPRFbin;                   //  Number of bins for the PRF
-    Float_t              fPRFlo;                    //  Lower boundary of the PRF
-    Float_t              fPRFhi;                    //  Higher boundary of the PRF
-    Float_t              fPRFwid;                   //  Bin width of the sampled PRF
-    Int_t                fPRFpad;                   //  Distance to next pad in PRF
-  } fPadResponse;
+  Float_t              *fPRFsmp;                    //! Sampled pad response
+  Int_t                 fPRFbin;                    //  Number of bins for the PRF
+  Float_t               fPRFlo;                     //  Lower boundary of the PRF
+  Float_t               fPRFhi;                     //  Higher boundary of the PRF
+  Float_t               fPRFwid;                    //  Bin width of the sampled PRF
+  Int_t                 fPRFpad;                    //  Distance to next pad in PRF
   
  private:
 
@@ -113,7 +111,7 @@ class AliTRDcalibDB : public TObject {
   AliTRDcalibDB &operator=(const AliTRDcalibDB &c); 
   virtual ~AliTRDcalibDB();
 
-  ClassDef(AliTRDcalibDB, 2)                        //  Provides central access to the CDB
+  ClassDef(AliTRDcalibDB,3)                        //  Provides central access to the CDB
 
 };
 

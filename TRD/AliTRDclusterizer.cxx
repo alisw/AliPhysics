@@ -24,10 +24,12 @@
 #include <TROOT.h>
 #include <TTree.h>
 #include <TFile.h>
+#include <TObjArray.h>
 
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
+#include "AliLog.h"
 
 #include "AliTRDclusterizer.h"
 #include "AliTRDcluster.h"
@@ -38,40 +40,41 @@
 ClassImp(AliTRDclusterizer)
 
 //_____________________________________________________________________________
-AliTRDclusterizer::AliTRDclusterizer():TNamed()
+AliTRDclusterizer::AliTRDclusterizer()
+  :TNamed()
+  ,fRunLoader(NULL)
+  ,fClusterTree(NULL)
+  ,fRecPoints(NULL)
 {
   //
   // AliTRDclusterizer default constructor
   //
-
-  fClusterTree = NULL;
-  fRecPoints   = 0;
-  fVerbose     = 0;
 
 }
 
 //_____________________________________________________________________________
 AliTRDclusterizer::AliTRDclusterizer(const Text_t* name, const Text_t* title)
-                  :TNamed(name, title)
+  :TNamed(name,title)
+  ,fRunLoader(NULL)
+  ,fClusterTree(NULL)
+  ,fRecPoints(NULL)
 {
   //
-  // AliTRDclusterizer default constructor
+  // AliTRDclusterizer constructor
   //
-
-  fClusterTree = NULL;
-  fRecPoints   = 0;
-  fVerbose     = 0;
 
 }
 
 //_____________________________________________________________________________
-AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c):TNamed(c)
+AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
+  :TNamed(c)
+  ,fRunLoader(NULL)
+  ,fClusterTree(NULL)
+  ,fRecPoints(NULL)
 {
   //
   // AliTRDclusterizer copy constructor
   //
-
-  ((AliTRDclusterizer &) c).Copy(*this);
 
 }
 
@@ -86,6 +89,7 @@ AliTRDclusterizer::~AliTRDclusterizer()
     fRecPoints->Delete();
     delete fRecPoints;
   }
+
 }
 
 //_____________________________________________________________________________
@@ -109,7 +113,6 @@ void AliTRDclusterizer::Copy(TObject &c) const
 
   ((AliTRDclusterizer &) c).fClusterTree = NULL;
   ((AliTRDclusterizer &) c).fRecPoints   = NULL;  
-  ((AliTRDclusterizer &) c).fVerbose     = fVerbose;  
 
 }
 
@@ -119,21 +122,25 @@ Bool_t AliTRDclusterizer::Open(const Char_t *name, Int_t nEvent)
   //
   // Opens the AliROOT file. Output and input are in the same file
   //
+
   TString evfoldname = AliConfig::GetDefaultEventFolderName();
-  fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
-  if (!fRunLoader)
+  fRunLoader         = AliRunLoader::GetRunLoader(evfoldname);
+
+  if (!fRunLoader) {
     fRunLoader = AliRunLoader::Open(name);
-  if (!fRunLoader)
-   {
-     Error("Open","Can not open session for file %s.",name);
-     return kFALSE;
-   }
+  }
+
+  if (!fRunLoader) {
+    AliError(Form("Can not open session for file %s.",name));
+    return kFALSE;
+  }
 
   OpenInput(nEvent);
   OpenOutput();
-  return kTRUE;
-}
 
+  return kTRUE;
+
+}
 
 //_____________________________________________________________________________
 Bool_t AliTRDclusterizer::OpenOutput()
@@ -146,9 +153,9 @@ Bool_t AliTRDclusterizer::OpenOutput()
 
   AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
   loader->MakeTree("R");
+
   fClusterTree = loader->TreeR();
   fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
-
 
   return kTRUE;
 
@@ -162,17 +169,18 @@ Bool_t AliTRDclusterizer::OpenInput(Int_t nEvent)
   //
 
   // Connect the AliRoot file containing Geometry, Kine, and Hits
-  if (fRunLoader->GetAliRun() == 0x0) fRunLoader->LoadgAlice();
+  if (fRunLoader->GetAliRun() == 0x0) {
+    fRunLoader->LoadgAlice();
+  }
   gAlice = fRunLoader->GetAliRun();
 
   if (!(gAlice)) {
     fRunLoader->LoadgAlice();
     gAlice = fRunLoader->GetAliRun();
-      if (!(gAlice)) {
-        printf("AliTRDclusterizer::OpenInput -- ");
-        printf("Could not find AliRun object.\n");
-        return kFALSE;
-      }
+    if (!(gAlice)) {
+      AliError("Could not find AliRun object.\n");
+      return kFALSE;
+    }
   }
 
   // Import the Trees for the event nEvent in the file
@@ -190,20 +198,20 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
   // found in detector = det. For det=-1 writes the tree. 
   //
 
-  if ((det < -1) || (det >= AliTRDgeometry::Ndet())) {
-    printf("AliTRDclusterizer::WriteClusters -- ");
-    printf("Unexpected detector index %d.\n",det);
+  if ((det <                      -1) || 
+      (det >= AliTRDgeometry::Ndet())) {
+    AliError(Form("Unexpected detector index %d.\n",det));
     return kFALSE;
   }
  
-
   TBranch *branch = fClusterTree->GetBranch("TRDcluster");
   if (!branch) {
     TObjArray *ioArray = 0;
     branch = fClusterTree->Branch("TRDcluster","TObjArray",&ioArray,32000,0);
   }
 
-  if ((det >= 0) && (det < AliTRDgeometry::Ndet())) {
+  if ((det >=                      0) && 
+      (det <  AliTRDgeometry::Ndet())) {
 
     Int_t nRecPoints = RecPoints()->GetEntriesFast();
     TObjArray *detRecPoints = new TObjArray(400);
@@ -214,8 +222,7 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
         detRecPoints->AddLast(c);
       }
       else {
-        printf("AliTRDclusterizer::WriteClusters --");
-        printf("Attempt to write a cluster with unexpected detector index\n");
+        AliError("Attempt to write a cluster with unexpected detector index\n");
       }
     }
 
@@ -230,26 +237,17 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 
   if (det == -1) {
 
-    Info("WriteClusters","Writing the cluster tree %s for event %d."
-	 ,fClusterTree->GetName(),fRunLoader->GetEventNumber());
-    /*
-    fClusterTree->Write();
-    AliTRDgeometry *geo = fTRD->GetGeometry();
-    geo->SetName("TRDgeometry");
-    geo->Write();
-    */
-    AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
+    AliInfo(Form("Writing the cluster tree %s for event %d."
+	        ,fClusterTree->GetName(),fRunLoader->GetEventNumber()));
+
+    AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
     loader->WriteRecPoints("OVERWRITE");
   
     return kTRUE;  
 
   }
-  /*
-  AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
-  loader->WriteDigits("OVERWRITE");
-  */
-  printf("AliTRDclusterizer::WriteClusters -- ");
-  printf("Unexpected detector index %d.\n",det);
+
+  AliError(Form("Unexpected detector index %d.\n",det));
  
   return kFALSE;  
   
@@ -257,8 +255,10 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 
 
 //_____________________________________________________________________________
-AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin, Int_t det, Double_t amp
-				   , Int_t *tracks, Double_t *sig, Int_t iType, Float_t center)
+AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin
+                                           , Int_t det, Double_t amp
+				           , Int_t *tracks, Double_t *sig
+                                           , Int_t iType, Float_t center)
 {
   //
   // Add a cluster for the TRD
@@ -276,6 +276,7 @@ AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin, Int_t
   c->SetSigmaZ2(sig[1]);
   c->SetLocalTimeBin(timebin);
   c->SetCenter(center);
+
   switch (iType) {
   case 0:
     c->Set2pad();
@@ -296,25 +297,58 @@ AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin, Int_t
 
   RecPoints()->Add(c);
   return c;
+
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDclusterizer::CalcXposFromTimebin(Float_t timebin, Int_t idet, Int_t col, Int_t row)
+Double_t AliTRDclusterizer::CalcXposFromTimebin(Float_t timebin, Int_t idet
+                                              , Int_t col, Int_t row)
 {
   //
-  // Calculates the local x position in the detector from the timebin, depends on the drift velocity
-  // and t0
+  // Calculates the local x position in the detector from the timebin, 
+  // depends on the drift velocity and t0
   //
   
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
+  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    AliError("Cannot calibration object");
     return -1;
+  }
 
-  Float_t vdrift = calibration->GetVdrift(idet, col, row);  
-  Float_t t0 = calibration->GetT0(idet, col, row);
+  Float_t vdrift            = calibration->GetVdrift(idet,col,row);  
+  Float_t t0                = calibration->GetT0(idet,col,row);
   Float_t samplingFrequency = calibration->GetSamplingFrequency();
 
   timebin -= t0;
 
   return timebin / samplingFrequency * vdrift;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDclusterizer::ResetRecPoints() 
+{
+  //
+  // Resets the list of rec points
+  //
+
+  if (fRecPoints) {
+    fRecPoints->Delete();
+  }
+
+}
+
+//_____________________________________________________________________________
+TObjArray* AliTRDclusterizer::RecPoints() 
+{
+  //
+  // Returns the list of rec points
+  //
+
+  if (!fRecPoints) {
+    fRecPoints = new TObjArray(400);
+  }
+ 
+  return fRecPoints;
+
 }

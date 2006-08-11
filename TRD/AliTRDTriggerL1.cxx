@@ -48,19 +48,32 @@ AliTRDTriggerL1::AliTRDTriggerL1():AliTriggerDetector()
 //_____________________________________________________________________________
 void AliTRDTriggerL1::CreateInputs()
 {
-
   //
-  // See TRIGGER/DAQ/HLT/DCS Techical Design Report, p. 58, Table 4.1 for the proposed inputs
+  // See TRIGGER/DAQ/HLT/DCS Techical Design Report,
+  // p. 58, Table 4.1 for the proposed inputs
   //
 
-  fInputs.AddLast(new AliTriggerInput( "TRD_Unlike_EPair_L1",     "Unlike electron pair",         0x01 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Like_EPair_L1",       "Like electron pair",           0x02 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Jet_LPt_L1",          "Jet low pt",                   0x04 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Jet_HPt_L1",          "Jet high pt",                  0x08 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_Electron_L1",         "Single electron",              0x10 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_HadrLPt_L1",          "Single hadron low pt ",        0x20 ));
-  fInputs.AddLast(new AliTriggerInput( "TRD_HadrHPt_L1",          "Single hadron high pt",        0x40 ));
-
+  fInputs.AddLast(new AliTriggerInput("TRD_Unlike_EPair_L1"
+                                     ,"Unlike electron pair"
+                                     ,0x01 ));
+  fInputs.AddLast(new AliTriggerInput("TRD_Like_EPair_L1"
+                                     ,"Like electron pair"
+                                     ,0x02 ));
+  fInputs.AddLast(new AliTriggerInput("TRD_Jet_LPt_L1"
+                                     ,"Jet low pt"
+                                     ,0x04 ));
+  fInputs.AddLast(new AliTriggerInput("TRD_Jet_HPt_L1"
+                                     ,"Jet high pt"
+                                     ,0x08 ));
+  fInputs.AddLast(new AliTriggerInput("TRD_Electron_L1"
+                                     ,"Single electron"
+                                     ,0x10 ));
+  fInputs.AddLast(new AliTriggerInput("TRD_HadrLPt_L1"
+                                     ,"Single hadron low pt "
+                                     ,0x20 ));
+  fInputs.AddLast(new AliTriggerInput("TRD_HadrHPt_L1"
+                                     ,"Single hadron high pt"
+                                     ,0x40 ));
 
 }
 
@@ -103,7 +116,7 @@ void AliTRDTriggerL1::Trigger()
 
   // Trigger (tracks, GTU)
 
-  Float_t highPt = trigp->GetHighPt();
+  Float_t highPt    = trigp->GetHighPt();
   Float_t jetLowPt  = trigp->GetJetLowPt();
   Float_t jetHighPt = trigp->GetJetHighPt();
 

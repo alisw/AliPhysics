@@ -21,6 +21,10 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <TObject.h>
+
+#include "AliLog.h"
+
 #include "AliTRDgeometry.h"
 #include "AliTRDmodule.h"
 #include "AliTRDltuTracklet.h"
@@ -31,21 +35,38 @@
 ClassImp(AliTRDmodule)
 
 //_____________________________________________________________________________
-AliTRDmodule::AliTRDmodule(AliTRDtrigParam *trigp) 
+AliTRDmodule::AliTRDmodule()
+  :TObject() 
+  ,fXprojPlane(0)
+  ,fField(0)
+  ,fTracklets(NULL)
+  ,fTracks(NULL)
+  ,fDeltaY(0)
+  ,fDeltaS(0)
+  ,fLTUtrk(0)
+  ,fGTUtrk(0)
 {
-
   //
   // AliTRDmodule default constructor
   //
 
-  fDeltaY     = trigp->GetDeltaY();
-  fDeltaS     = trigp->GetDeltaS();
-  fXprojPlane = trigp->GetXprojPlane();
-  fField      = trigp->GetField();
-  fLTUtrk     = 0;
-  fGTUtrk     = 0;
-  fTracklets  = new TObjArray(400);
-  fTracks     = new TObjArray(400);
+}
+
+//_____________________________________________________________________________
+AliTRDmodule::AliTRDmodule(AliTRDtrigParam *trigp) 
+  :TObject()
+  ,fXprojPlane(trigp->GetXprojPlane())
+  ,fField(trigp->GetField())
+  ,fTracklets(new TObjArray(400))
+  ,fTracks(new TObjArray(400))
+  ,fDeltaY(trigp->GetDeltaY())
+  ,fDeltaS(trigp->GetDeltaS())
+  ,fLTUtrk(0)
+  ,fGTUtrk(0)
+{
+  //
+  // AliTRDmodule constructor
+  //
 
   for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
     for (Int_t i = 0; i < kNsubZchan; i++) {
@@ -59,10 +80,37 @@ AliTRDmodule::AliTRDmodule(AliTRDtrigParam *trigp)
 }
 
 //_____________________________________________________________________________
+AliTRDmodule::AliTRDmodule(const AliTRDmodule &m)
+  :TObject(m)
+  ,fXprojPlane(m.fXprojPlane)
+  ,fField(m.fField)
+  ,fTracklets(NULL)
+  ,fTracks(NULL)
+  ,fDeltaY(m.fDeltaY)
+  ,fDeltaS(m.fDeltaS)
+  ,fLTUtrk(NULL)
+  ,fGTUtrk(NULL)
+{
+  //
+  // AliTRDmodule copy constructor
+  //
+
+  for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
+    for (Int_t i = 0; i < kNsubZchan; i++) {
+      ((AliTRDmodule &) m).fZnchan[iPlan][i] = 0;
+      for (Int_t j = 0; j < kNmaxZchan; j++) {
+        ((AliTRDmodule &) m).fZtrkid[iPlan][j][i] = -1;
+      }
+    }
+  }
+
+}
+
+//_____________________________________________________________________________
 AliTRDmodule::~AliTRDmodule()
 {
   //
-  // destructor
+  // Destructor
   //
 
 }
@@ -71,7 +119,7 @@ AliTRDmodule::~AliTRDmodule()
 AliTRDmodule &AliTRDmodule::operator=(const AliTRDmodule &m)
 {
   //
-  // assignment operator
+  // Assignment operator
   //
 
   if (this != &m) ((AliTRDmodule &) m).Copy(*this); 
@@ -86,14 +134,14 @@ void AliTRDmodule::Copy(TObject &m) const
   // copy function
   //
 
-  ((AliTRDmodule &) m).fXprojPlane  = fXprojPlane;
-  ((AliTRDmodule &) m).fField       = fField;
-  ((AliTRDmodule &) m).fTracklets   = NULL;
-  ((AliTRDmodule &) m).fTracks      = NULL;
-  ((AliTRDmodule &) m).fDeltaY      = fDeltaY;
-  ((AliTRDmodule &) m).fDeltaS      = fDeltaS;
-  ((AliTRDmodule &) m).fLTUtrk      = NULL;
-  ((AliTRDmodule &) m).fGTUtrk      = NULL;
+  ((AliTRDmodule &) m).fXprojPlane = fXprojPlane;
+  ((AliTRDmodule &) m).fField      = fField;
+  ((AliTRDmodule &) m).fTracklets  = NULL;
+  ((AliTRDmodule &) m).fTracks     = NULL;
+  ((AliTRDmodule &) m).fDeltaY     = fDeltaY;
+  ((AliTRDmodule &) m).fDeltaS     = fDeltaS;
+  ((AliTRDmodule &) m).fLTUtrk     = NULL;
+  ((AliTRDmodule &) m).fGTUtrk     = NULL;
 
   for (Int_t iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
     for (Int_t i = 0; i < kNsubZchan; i++) {
@@ -116,10 +164,10 @@ void AliTRDmodule::Reset()
   ResetTracklets();
   ResetTracks();
 
-  fLTUtrk     = 0;
-  fGTUtrk     = 0;
-  fTracklets  = new TObjArray(400);
-  fTracks     = new TObjArray(400);
+  fLTUtrk    = 0;
+  fGTUtrk    = 0;
+  fTracklets = new TObjArray(400);
+  fTracks    = new TObjArray(400);
 
 }
 
@@ -153,11 +201,16 @@ AliTRDgtuTrack* AliTRDmodule::GetTrack(Int_t pos) const
   // Return track at position "pos"
   //
 
-  if (fTracks == 0) return 0;
-  void * trk = fTracks->UncheckedAt(pos);
-  if (trk == 0) return 0;
+  if (fTracks == 0) {
+    return 0;
+  }
 
-  return (AliTRDgtuTrack*)trk;
+  void *trk = fTracks->UncheckedAt(pos);
+  if (trk == 0) {
+    return 0;
+  }
+
+  return (AliTRDgtuTrack *) trk;
 
 }
 
@@ -168,29 +221,25 @@ void AliTRDmodule::RemoveTrack(Int_t pos)
   // Remove the track at position "pos"
   //
 
-  if (fTracks == 0) return;
+  if (fTracks == 0) {
+    return;
+  }
+
   fTracks->RemoveAt(pos);
   fTracks->Compress();
 
 }
 
 //_____________________________________________________________________________
-void AliTRDmodule::AddTracklet(Int_t det, 
-			       Int_t row, 
-			       Float_t rowz,
-			       Float_t slope, 
-			       Float_t offset, 
-			       Float_t time, 
-			       Int_t ncl,
-			       Int_t label,
-			       Float_t q) 
+void AliTRDmodule::AddTracklet(Int_t det, Int_t row, Float_t rowz, Float_t slope 
+			     , Float_t offset, Float_t time, Int_t ncl
+                             , Int_t label, Float_t q) 
 {
   // 
   // Add a tracklet to this track
   //
   
   fLTUtrk = new AliTRDltuTracklet(det,row,rowz,slope,offset,time,ncl,label,q);
-  
   Tracklets()->Add(fLTUtrk);
 
 }
@@ -202,11 +251,16 @@ AliTRDltuTracklet* AliTRDmodule::GetTracklet(Int_t pos) const
   // Get the tracklet at position "pos"
   //
 
-  if (fTracklets == 0) return 0;
-  void * trk = fTracklets->UncheckedAt(pos);
-  if (trk == 0) return 0;
+  if (fTracklets == 0) {
+    return 0;
+  }
 
-  return (AliTRDltuTracklet*)trk;
+  void *trk = fTracklets->UncheckedAt(pos);
+  if (trk == 0) {
+    return 0;
+  }
+
+  return (AliTRDltuTracklet *) trk;
 
 }
 
@@ -217,7 +271,10 @@ void AliTRDmodule::RemoveTracklet(Int_t pos)
   // Remove the tracklet at position "pos"
   //
 
-  if (fTracklets == 0) return;
+  if (fTracklets == 0) {
+    return;
+  }
+
   fTracklets->RemoveAt(pos);
   fTracklets->Compress();
 
@@ -233,32 +290,31 @@ void AliTRDmodule::RemoveMultipleTracklets()
   Float_t offDiffMin = 0.5;  // [cm]
 
   AliTRDltuTracklet *trk;
-  Int_t det1, det2, row1, row2, ncl1, ncl2, label1, label2;
+  Int_t   det1, det2, row1, row2, ncl1, ncl2, label1, label2;
   Float_t off1, off2;
-  Int_t itrk = 0;
-  while (itrk < (GetNtracklets()-1)) {
+  Int_t   itrk = 0;
+  while (itrk < (GetNtracklets() - 1)) {
 
-    trk = GetTracklet(itrk  );
-
-    det1 = trk->GetDetector();
-    row1 = trk->GetRow();
-    off1 = trk->GetOffset();
-    ncl1 = trk->GetNclusters();
+    trk    = GetTracklet(itrk);
+    det1   = trk->GetDetector();
+    row1   = trk->GetRow();
+    off1   = trk->GetOffset();
+    ncl1   = trk->GetNclusters();
     label1 = trk->GetLabel();
 
-    trk = GetTracklet(itrk+1);
-
-    det2 = trk->GetDetector();
-    row2 = trk->GetRow();
-    off2 = trk->GetOffset();
-    ncl2 = trk->GetNclusters();
+    trk    = GetTracklet(itrk+1);
+    det2   = trk->GetDetector();
+    row2   = trk->GetRow();
+    off2   = trk->GetOffset();
+    ncl2   = trk->GetNclusters();
     label2 = trk->GetLabel();
 
-    if (det1 == det2 && row1 == row2) {
-      if ((off2-off1) < offDiffMin) {
+    if ((det1 == det2) && (row1 == row2)) {
+      if ((off2 - off1) < offDiffMin) {
 	if (ncl1 < ncl2) {
 	  RemoveTracklet(itrk  );
-	} else {
+	}    
+        else {
 	  RemoveTracklet(itrk+1);
 	}
       }
@@ -281,10 +337,10 @@ void AliTRDmodule::SortZ(Int_t cha)
 
   AliTRDltuTracklet *trk;
   Int_t row, pla, det;
+
   for (Int_t iTrk = 0; iTrk < GetNtracklets(); iTrk++) {
 
     trk = GetTracklet(iTrk);
-
     row = trk->GetRow();
     det = trk->GetDetector();
     pla = trk->GetPlane(det);
@@ -335,13 +391,13 @@ void AliTRDmodule::FindTracks()
 void AliTRDmodule::FindTracksCombi(Int_t zchan) 
 {
   //
-  // find tracks by pure combinatorics...
+  // Find tracks by pure combinatorics...
   //
   
   static Int_t trkTrack[12];
   
-  Int_t nTracklets, nPlanes;
-  Int_t ntrk1, trkId1, ntrk2, trkId2;
+  Int_t   nTracklets, nPlanes;
+  Int_t   ntrk1, trkId1, ntrk2, trkId2;
   Float_t y1, y1min, y1max, s1, z1, s1min, s1max, y2, s2, z2;
   AliTRDltuTracklet *trk1;
   AliTRDltuTracklet *trk2;
@@ -355,7 +411,9 @@ void AliTRDmodule::FindTracksCombi(Int_t zchan)
 
     for (Int_t iTrk1 = 0; iTrk1 < ntrk1; iTrk1++) {
 
-      for (Int_t iPlan = 0; iPlan < kNplan; iPlan++) isPlane[iPlan] = kFALSE;
+      for (Int_t iPlan = 0; iPlan < kNplan; iPlan++) {
+        isPlane[iPlan] = kFALSE;
+      }
 
       trkId1 = fZtrkid[iPlan1][iTrk1][zchan];
 
@@ -363,13 +421,11 @@ void AliTRDmodule::FindTracksCombi(Int_t zchan)
       for (Int_t iList = 0; iList < kNmaxTrk; iList++) {
 	trkTrack[iList] = -1;
       }
-
       trkTrack[nTracklets++] = trkId1;
 
       isPlane[iPlan1] = kTRUE;
 
-      trk1 = GetTracklet(trkId1);
-
+      trk1  = GetTracklet(trkId1);
       y1    = trk1->GetYproj(fXprojPlane);
       y1min = y1 - fDeltaY;
       y1max = y1 + fDeltaY;
@@ -391,17 +447,17 @@ void AliTRDmodule::FindTracksCombi(Int_t zchan)
 	  if (trkId2 == trkId1) continue;
 
 	  trk2 = GetTracklet(trkId2);
-
-	  y2 = trk2->GetYproj(fXprojPlane);
-	  s2 = trk2->GetSlope();
-	  z2 = trk2->GetZproj(fXprojPlane);
+	  y2   = trk2->GetYproj(fXprojPlane);
+	  s2   = trk2->GetSlope();
+	  z2   = trk2->GetZproj(fXprojPlane);
 
 	  if ((y1min < y2 && y2 < y1max) && 
 	      (s1min < s2 && s2 < s1max)) {
 
 	    if (nTracklets >= kNmaxTrk) {
-	      Warning("FindTracksCombi","Too many tracklets for this track.");
-	    } else {
+	      AliWarning("Too many tracklets for this track.");
+	    }    
+            else {
 	      trkTrack[nTracklets++] = trkId2;
 	      isPlane[iPlan2] = kTRUE;
 	    }
@@ -414,13 +470,13 @@ void AliTRDmodule::FindTracksCombi(Int_t zchan)
 
       nPlanes = 0;
       for (Int_t iPlan = 0; iPlan < kNplan; iPlan++) {
-	nPlanes += (Int_t)isPlane[iPlan];
+	nPlanes += (Int_t) isPlane[iPlan];
       }
       
       if (nPlanes >= 4) {
 
 	Int_t cha1, cha2, npoints1, npoints2;
-	for (Int_t iList = 0; iList < (nTracklets-1); iList++) {
+	for (Int_t iList = 0; iList < (nTracklets - 1); iList++) {
 
 	  if (trkTrack[iList] == -1 || trkTrack[iList+1] == -1) continue;
 	  trk1 = GetTracklet(trkTrack[iList  ]);
@@ -435,7 +491,8 @@ void AliTRDmodule::FindTracksCombi(Int_t zchan)
 
 	  if (npoints1 == npoints2) {
 	    trkTrack[iList] = -1;
-	  } else {
+	  } 
+          else {
 	    if (npoints1 > npoints2) trkTrack[iList+1] = -1;
 	    if (npoints1 < npoints2) trkTrack[iList  ] = -1;
 	  }
@@ -450,6 +507,7 @@ void AliTRDmodule::FindTracksCombi(Int_t zchan)
 	}
 	fGTUtrk->Track(fXprojPlane,fField);
 	AddTrack();
+
       }
            
     }  // end trk 1
@@ -480,13 +538,13 @@ void AliTRDmodule::RemoveMultipleTracks()
   AliTRDgtuTrack *trk2;
 
   Float_t yproj1, yproj2, alpha1, alpha2;
-  Int_t ntrk1, ntrk2;
-  Int_t iTrack = 0;
+  Int_t   ntrk1, ntrk2;
+  Int_t   iTrack = 0;
 
   while (iTrack < (GetNtracks()-1)) {
 
-    trk1 = GetTrack(iTrack  );
-    trk2 = GetTrack(iTrack+1);
+    trk1   = GetTrack(iTrack  );
+    trk2   = GetTrack(iTrack+1);
 
     ntrk1  = trk1->GetNtracklets();
     yproj1 = trk1->GetYproj();
@@ -495,13 +553,16 @@ void AliTRDmodule::RemoveMultipleTracks()
     yproj2 = trk2->GetYproj();
     alpha2 = trk2->GetSlope();
 
-    if (TMath::Abs(yproj1-yproj2) < fDeltaY && TMath::Abs(alpha1-alpha2) < fDeltaS) {
+    if ((TMath::Abs(yproj1-yproj2) < fDeltaY) && 
+        (TMath::Abs(alpha1-alpha2) < fDeltaS)) {
       if (ntrk1 < ntrk2) {
 	RemoveTrack(iTrack  );
-      } else {
+      } 
+      else {
 	RemoveTrack(iTrack+1);
       }
-    } else {
+    } 
+    else {
       iTrack++;
     }
     
@@ -509,3 +570,101 @@ void AliTRDmodule::RemoveMultipleTracks()
 
 }
 
+//_____________________________________________________________________________
+TObjArray* AliTRDmodule::Tracklets() 
+{ 
+  //
+  // Returns the list of tracklets
+  //
+
+  if (!fTracklets) {
+    fTracklets = new TObjArray(400); 
+  }
+
+  return fTracklets; 
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmodule::ResetTracklets() 
+{
+  //
+  // Resets the list of tracklets
+  //
+ 
+  if (fTracklets) {
+    fTracklets->Delete();
+  } 
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmodule::SortTracklets()  
+{
+  //
+  // Sorts the list of tracklets
+  //
+
+  if (fTracklets) {
+    fTracklets->Sort();
+  }
+ 
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDmodule::GetNtracklets() const 
+{
+  //
+  // Returns the number of tracklets
+  //
+
+  if (fTracklets) {
+    return fTracklets->GetEntriesFast();
+  }
+
+  return 0;
+
+}
+
+//_____________________________________________________________________________
+TObjArray* AliTRDmodule::Tracks() 
+{
+  //
+  // Returns the list of tracks
+  //
+ 
+  if (!fTracks) {
+    fTracks = new TObjArray(400);
+  }
+ 
+  return fTracks; 
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmodule::SortTracks()  
+{ 
+  //
+  // Sort the list of tracks
+  //
+
+  if (fTracks) {
+    fTracks->Sort();
+  } 
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDmodule::GetNtracks() const 
+{
+  //
+  // Returns the number of tracks
+  //
+
+  if (fTracks) {
+    return fTracks->GetEntriesFast();
+  }
+
+  return 0;
+
+}

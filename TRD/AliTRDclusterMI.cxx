@@ -15,10 +15,9 @@
 
 /* $Id$ */
 
- 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TRD cluster                                                              //
+//  TRD cluster, alternative version                                         //
 //                                                                           //
 /////////////////////////////////////////////////////////////////////////////// 
 
@@ -27,29 +26,42 @@
 
 ClassImp(AliTRDclusterMI)
 
-  //___________________________________________________________________________
-
-AliTRDclusterMI::AliTRDclusterMI() : AliTRDcluster() 
+//___________________________________________________________________________
+AliTRDclusterMI::AliTRDclusterMI() 
+  :AliTRDcluster() 
+  ,fRmsY(0)
+  ,fNPads(0)
+  ,fRelPos(0)
 { 
-  fNPads  = 0;
-  fRelPos = 0;
-  fRmsY   = 0;
+  //
+  // Default constructor
+  //
+
 }
 
-AliTRDclusterMI::AliTRDclusterMI(AliTRDcluster & cl): AliTRDcluster(cl)
+//___________________________________________________________________________
+AliTRDclusterMI::AliTRDclusterMI(const AliTRDcluster &c)
+  :AliTRDcluster(c)
+  ,fRmsY(0)
+  ,fNPads(0)
+  ,fRelPos(0)
 {
-  fNPads  = 0;
-  fRelPos = 0;
-  fRmsY   = 0;
+  //
+  // Copy constructor
+  //
+
 }
+
 //_____________________________________________________________________________
-  AliTRDclusterMI::AliTRDclusterMI(const AliTRDrecPoint &p):AliTRDcluster(p)
+AliTRDclusterMI::AliTRDclusterMI(const AliTRDrecPoint &p)
+  :AliTRDcluster(p)
+  ,fRmsY(0)
+  ,fNPads(0)
+  ,fRelPos(0)
 {
   //
   // Constructor from AliTRDrecPoint
   //
-  fNPads = 0;
-  fRelPos =0;
   
 }
 

@@ -15,15 +15,18 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//                                                                           //
 //  TRD trigger class                                                        //
 //                                                                           //
+//  Author:                                                                  //
+//    Bogdan Vulpescu                                                        //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TTree.h>
 #include <TBranch.h>
 #include <TMatrixD.h>
+#include <TClonesArray.h>
+#include <TObjArray.h>
 
 #include "AliLog.h"
 #include "AliRun.h"
@@ -34,104 +37,111 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
-#include "Cal/AliTRDCalPIDLQ.h"
 #include "AliTRDrawData.h"
-
 #include "AliTRDtrigger.h"
 #include "AliTRDmodule.h"
 #include "AliTRDmcmTracklet.h"
+#include "AliTRDgtuTrack.h"
 #include "AliTRDtrigParam.h"
 #include "AliTRDmcm.h"
 #include "AliTRDzmaps.h"
-
-//#include "AliHeader.h"
+#include "Cal/AliTRDCalPIDLQ.h"
 
 ClassImp(AliTRDtrigger)
 
 //_____________________________________________________________________________
-AliTRDtrigger::AliTRDtrigger():
-  TNamed(),
-  fTracks("AliTRDgtuTrack",0)
+AliTRDtrigger::AliTRDtrigger()
+  :TNamed()
+  ,fField(0)
+  ,fGeo(NULL)
+  ,fCalib(NULL)
+  ,fCParam(NULL)
+  ,fTrigParam(NULL)
+  ,fRunLoader(NULL)
+  ,fDigitsManager(NULL)
+  ,fTrackletTree(NULL)
+  ,fTracklets(NULL)
+  ,fNROB(0)
+  ,fMCM(NULL)
+  ,fTrk(NULL)
+  ,fTrkTest(NULL)
+  ,fModule(NULL)
+  ,fGTUtrk(NULL)
+  ,fNtracklets(0)
+  ,fDigits(NULL)
+  ,fTrack0(NULL)
+  ,fTrack1(NULL)
+  ,fTrack2(NULL)
+  ,fNPrimary(0)
+  ,fTracks(NULL)
 {
   //
   // AliTRDtrigger default constructor
   //
 
-  fDigitsManager = NULL;
-  fTrackletTree = NULL;
-  fTracklets     = NULL;
-
-  fNROB = 0;
-  fTrigParam = NULL;
-  fMCM = NULL;
-  fTrk = NULL;
-  fTrkTest = NULL;
-  fGTUtrk = NULL;
-
-  fNtracklets = 0;
-
-  fDigits = NULL;
-  fTrack0 = NULL;
-  fTrack1 = NULL;
-  fTrack2 = NULL;
-
-  fModule = NULL;
-
-  fNPrimary = 0;
-
-  fField  = 0.0;
-  fGeo    = NULL;
-  fCalib  = NULL;
-  fCParam = NULL;
-
 }
 
 //_____________________________________________________________________________
-AliTRDtrigger::AliTRDtrigger(const Text_t *name, const Text_t *title):
-  TNamed(name,title),
-  fTracks("AliTRDgtuTrack",1000)
+AliTRDtrigger::AliTRDtrigger(const Text_t *name, const Text_t *title)
+  :TNamed(name,title)
+  ,fField(0)
+  ,fGeo(NULL)
+  ,fCalib(NULL)
+  ,fCParam(NULL)
+  ,fTrigParam(NULL)
+  ,fRunLoader(NULL)
+  ,fDigitsManager(new AliTRDdigitsManager())
+  ,fTrackletTree(NULL)
+  ,fTracklets(new TObjArray(400))
+  ,fNROB(0)
+  ,fMCM(NULL)
+  ,fTrk(NULL)
+  ,fTrkTest(NULL)
+  ,fModule(NULL)
+  ,fGTUtrk(NULL)
+  ,fNtracklets(0)
+  ,fDigits(NULL)
+  ,fTrack0(NULL)
+  ,fTrack1(NULL)
+  ,fTrack2(NULL)
+  ,fNPrimary(0)
+  ,fTracks(new TClonesArray("AliTRDgtuTrack",1000))
 {
   //
   // AliTRDtrigger constructor
   //
 
-  fDigitsManager = new AliTRDdigitsManager();
-  fTrackletTree = NULL;
-  fTracklets = new TObjArray(400);
-
-  fNROB = 0;
-  fTrigParam = NULL;
-  fMCM = NULL;
-  fTrk = NULL;
-  fTrkTest = NULL;
-  fGTUtrk = NULL;
-
-  fNtracklets = 0;
-
-  fDigits = NULL;
-  fTrack0 = NULL;
-  fTrack1 = NULL;
-  fTrack2 = NULL;
-
-  fModule = NULL;
-
-  fNPrimary = 0;
-
-  fField  = 0.0;
-  fGeo    = NULL;
-  fCalib  = NULL;
-  fCParam = NULL;
-
 }
 
 //_____________________________________________________________________________
-AliTRDtrigger::AliTRDtrigger(const AliTRDtrigger &p):TNamed(p)
+AliTRDtrigger::AliTRDtrigger(const AliTRDtrigger &p)
+  :TNamed(p)
+  ,fField(p.fField)
+  ,fGeo(NULL)
+  ,fCalib(NULL)
+  ,fCParam(NULL)
+  ,fTrigParam(NULL)
+  ,fRunLoader(NULL)
+  ,fDigitsManager(NULL)
+  ,fTrackletTree(NULL)
+  ,fTracklets(NULL)
+  ,fNROB(p.fNROB)
+  ,fMCM(NULL)
+  ,fTrk(NULL)
+  ,fTrkTest(NULL)
+  ,fModule(NULL)
+  ,fGTUtrk(NULL)
+  ,fNtracklets(p.fNtracklets)
+  ,fDigits(NULL)
+  ,fTrack0(NULL)
+  ,fTrack1(NULL)
+  ,fTrack2(NULL)
+  ,fNPrimary(p.fNPrimary)
+  ,fTracks(NULL)
 {
   //
   // AliTRDtrigger copy constructor
   //
-
-  ((AliTRDtrigger &) p).Copy(*this);
 
 }
 
@@ -147,7 +157,10 @@ AliTRDtrigger::~AliTRDtrigger()
     delete fTracklets;
   }
 
-  fTracks.Delete();
+  if (fTracks) {
+    fTracks->Delete();
+    delete fTracks;
+  }
 
 }
 
@@ -179,26 +192,20 @@ void AliTRDtrigger::Init()
 {
 
   fModule = new AliTRDmodule(fTrigParam); 
-  /*
-  AliHeader *header = fRunLoader->GetHeader();
-  fNPrimary = header->GetNprimary();
-  */
-  fTracks.Clear();
+  fTracks->Clear();
 
-  fField = fTrigParam->GetField();
-  fGeo = (AliTRDgeometry*)AliTRDgeometry::GetGeometry(fRunLoader);
+  fField  = fTrigParam->GetField();
+  fGeo    = (AliTRDgeometry*)AliTRDgeometry::GetGeometry(fRunLoader);
 
-  fCalib = AliTRDcalibDB::Instance();
-  if (!fCalib)
-  {
-    Error("Init","No instance of AliTRDcalibDB.");
+  fCalib  = AliTRDcalibDB::Instance();
+  if (!fCalib) {
+    AliError("No instance of AliTRDcalibDB.");
     return;  
   }
 
   fCParam = AliTRDCommonParam::Instance();
-  if (!fCParam)
-  {
-    Error("Init","No common params.");
+  if (!fCParam) {
+    AliError("No common parameters.");
     return;
   }
 
@@ -212,26 +219,26 @@ Bool_t AliTRDtrigger::Open(const Char_t *name, Int_t nEvent)
   //
 
   TString evfoldname = AliConfig::GetDefaultEventFolderName();
-  fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
-
-  if (!fRunLoader)
-    fRunLoader = AliRunLoader::Open(name);
+  fRunLoader         = AliRunLoader::GetRunLoader(evfoldname);
 
   if (!fRunLoader) {
-    Error("Open","Can not open session for file %s.",name);
+    fRunLoader = AliRunLoader::Open(name);
+  }
+  if (!fRunLoader) {
+    AliError(Form("Can not open session for file %s.",name));
     return kFALSE;
   }
 
   // Open input
-
-  if (fRunLoader->GetAliRun() == 0x0) fRunLoader->LoadgAlice();
+  if (fRunLoader->GetAliRun() == 0x0) {
+    fRunLoader->LoadgAlice();
+  }
   gAlice = fRunLoader->GetAliRun();
-
   if (!(gAlice)) {
     fRunLoader->LoadgAlice();
     gAlice = fRunLoader->GetAliRun();
     if (!(gAlice)) {
-      Error("Open","Could not find AliRun object.");
+      AliError("Could not find AliRun object.");
       return kFALSE;
     }
   }
@@ -240,22 +247,16 @@ Bool_t AliTRDtrigger::Open(const Char_t *name, Int_t nEvent)
   fRunLoader->GetEvent(nEvent);
 
   // Open output
-
   TObjArray *ioArray = 0;
-
-  AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
+  AliLoader* loader  = fRunLoader->GetLoader("TRDLoader");
   loader->MakeTree("T");
   fTrackletTree = loader->TreeT();
   fTrackletTree->Branch("TRDmcmTracklet","TObjArray",&ioArray,32000,0);
-  /*
-  fRunLoader->LoadHeader();
-  */
   Init();
 
   return kTRUE;
 
 }
-
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrigger::ReadDigits() 
@@ -265,14 +266,17 @@ Bool_t AliTRDtrigger::ReadDigits()
   //
 
   if (!fRunLoader) {
-    Error("ReadDigits","Can not find the Run Loader");
+    AliError("Can not find the Run Loader");
     return kFALSE;
   }
 
   AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
-  if (!loader->TreeD()) loader->LoadDigits();
-
-  if (!loader->TreeD()) return kFALSE;
+  if (!loader->TreeD()) {
+    loader->LoadDigits();
+  }
+  if (!loader->TreeD()) {
+     return kFALSE;
+  }
 
   return (fDigitsManager->ReadDigits(loader->TreeD()));
 
@@ -286,8 +290,7 @@ Bool_t AliTRDtrigger::ReadDigits(AliRawReader* rawReader)
   //
 
   AliTRDrawData *raw = new AliTRDrawData();
-
-  fDigitsManager = raw->Raw2Digits(rawReader);
+  fDigitsManager     = raw->Raw2Digits(rawReader);
 
   return kTRUE;
 
@@ -304,35 +307,38 @@ Bool_t AliTRDtrigger::ReadTracklets(AliRunLoader *rl)
 
   AliLoader *loader = rl->GetLoader("TRDLoader");
   loader->LoadTracks();
-  fTrackletTree = loader->TreeT();
+  fTrackletTree     = loader->TreeT();
 
-  TBranch *branch = fTrackletTree->GetBranch("TRDmcmTracklet");
+  TBranch *branch   = fTrackletTree->GetBranch("TRDmcmTracklet");
   if (!branch) {
-    Error("ReadTracklets","Can't get the branch !");
+    AliError("Can't get the branch !");
     return kFALSE;
   }
   TObjArray *tracklets = new TObjArray(400);
   branch->SetAddress(&tracklets);
 
-  Int_t nEntries = (Int_t) fTrackletTree->GetEntries();
-  Int_t iEntry, itrk;
-  Int_t iStack, iStackPrev = -1;
+  Int_t nEntries   = (Int_t) fTrackletTree->GetEntries();
+  Int_t iEntry;
+  Int_t itrk;
+  Int_t iStack;
+  Int_t iStackPrev = -1;
   
   for (iEntry = 0; iEntry < nEntries; iEntry++) {    
+
     fTrackletTree->GetEvent(iEntry);
     
-    for (itrk = 0; itrk < tracklets->GetEntriesFast(); itrk++){
+    for (itrk = 0; itrk < tracklets->GetEntriesFast(); itrk++) {
 
-      fTrk = (AliTRDmcmTracklet*)tracklets->UncheckedAt(itrk);
-      
-      idet = fTrk->GetDetector();
-
+      fTrk   = (AliTRDmcmTracklet*)tracklets->UncheckedAt(itrk);
+      idet   = fTrk->GetDetector();
       iStack = idet / (AliTRDgeometry::Nplan());
+
       if (iStackPrev != iStack) {
 	if (iStackPrev == -1) {
 	  iStackPrev = iStack;
-	} else {
-	  MakeTracks(idet-AliTRDgeometry::Nplan());
+	} 
+        else {
+	  MakeTracks(idet - AliTRDgeometry::Nplan());
 	  ResetTracklets();
 	  iStackPrev = iStack;
 	}
@@ -340,7 +346,8 @@ Bool_t AliTRDtrigger::ReadTracklets(AliRunLoader *rl)
       
       Tracklets()->Add(fTrk);
 
-      if (iEntry == (nEntries-1) && itrk == (tracklets->GetEntriesFast()-1)) {
+      if ((iEntry == (nEntries-1)) && 
+          (itrk   == (tracklets->GetEntriesFast() - 1))) {
 	idet++;
 	MakeTracks(idet-AliTRDgeometry::Nplan());
 	ResetTracklets();
@@ -363,31 +370,35 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
   // Create tracklets from digits
   //
 
-  Int_t    chamBeg = 0;
-  Int_t    chamEnd = AliTRDgeometry::Ncham();
-  Int_t    planBeg = 0;
-  Int_t    planEnd = AliTRDgeometry::Nplan();
-  Int_t    sectBeg = 0;
-  Int_t    sectEnd = AliTRDgeometry::Nsect();
+  Int_t chamBeg = 0;
+  Int_t chamEnd = AliTRDgeometry::Ncham();
+  Int_t planBeg = 0;
+  Int_t planEnd = AliTRDgeometry::Nplan();
+  Int_t sectBeg = 0;
+  Int_t sectEnd = AliTRDgeometry::Nsect();
 
   fTrkTest = new AliTRDmcmTracklet(0,0,0);
+  fMCM     = new AliTRDmcm(fTrigParam,0);
 
-  fMCM = new AliTRDmcm(fTrigParam,0);
-
-  Int_t time, col, row, col1, col2;
+  Int_t   time;
+  Int_t   col;
+  Int_t   row;
+  Int_t   col1;
+  Int_t   col2;
+  Int_t   idet       = -1;
+  Int_t   iStack     = -1;
+  Int_t   iStackPrev = -1;
   Float_t amp;
-  Int_t idet, iStack, iStackPrev;
-  idet       = -1;
-  iStack     = -1;
-  iStackPrev = -1;
+
   for (Int_t isect = sectBeg; isect < sectEnd; isect++) {
 
     for (Int_t icham = chamBeg; icham < chamEnd; icham++) {
 
-      // number of ROBs in the chamber
-      if( icham == 2 ) {
+      // Number of ROBs in the chamber
+      if(icham == 2) {
 	fNROB = 6;
-      } else {
+      } 
+      else {
 	fNROB = 8;
       }
 
@@ -401,7 +412,8 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 	  if (iStackPrev != iStack) {
 	    if (iStackPrev == -1) {
 	      iStackPrev = iStack;
-	    } else {
+	    } 
+            else {
 	      MakeTracks(idet-AliTRDgeometry::Nplan());
 	      ResetTracklets();
 	      iStackPrev = iStack;
@@ -409,9 +421,9 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 	  }
 	}
 
-        Int_t    nRowMax     = fCParam->GetRowMax(iplan,icham,isect);
-	Int_t    nColMax     = fCParam->GetColMax(iplan);
-        Int_t    nTimeTotal  = fCalib->GetNumberOfTimeBins();
+        Int_t nRowMax    = fCParam->GetRowMax(iplan,icham,isect);
+	Int_t nColMax    = fCParam->GetColMax(iplan);
+        Int_t nTimeTotal = fCalib->GetNumberOfTimeBins();
 
         // Get the digits
         fDigits = fDigitsManager->GetDigits(idet);
@@ -432,7 +444,6 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 	  for (Int_t iMcm = 0; iMcm < kNMCM; iMcm++) {
 
 	    fMCM->Reset();
-
 	    fMCM->SetRobId(iRob);
 	    fMCM->SetChaId(idet);
 
@@ -440,8 +451,8 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 
 	    row = fMCM->GetRow();
 
-	    if (row < 0 || row >= nRowMax) {
-	      Error("MakeTracklets","MCM row number out of range.");
+	    if ((row < 0) || (row >= nRowMax)) {
+	      AliError("MCM row number out of range.");
 	      continue;
 	    }
 
@@ -449,13 +460,13 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 	    
             for (time = 0; time < nTimeTotal; time++) {
 	      for (col = col1; col < col2; col++) {
-		if (col >= 0 && col < nColMax) {
+		if ((col >= 0) && (col < nColMax)) {
 		  amp = TMath::Abs(fDigits->GetDataUnchecked(row,col,time));
-		} else {
+		} 
+                else {
 		  amp = 0.0;
 		}
 		fMCM->SetADC(col-col1,time,amp);
-
 	      }
 	    }
 
@@ -467,13 +478,16 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 
 	      for (Int_t iSeed = 0; iSeed < kMaxTrackletsPerMCM; iSeed++) {
 		
-		if (fMCM->GetSeedCol()[iSeed] < 0) continue;
+		if (fMCM->GetSeedCol()[iSeed] < 0) {
+                  continue;
+		}
 
-		if ( fTrigParam->GetDebugLevel() > 1 ) 
-		  printf("Add tracklet %d in col %02d \n",fNtracklets,fMCM->GetSeedCol()[iSeed]);
+		if (fTrigParam->GetDebugLevel()   > 1) { 
+		  AliInfo(Form("Add tracklet %d in col %02d \n",fNtracklets,fMCM->GetSeedCol()[iSeed]));
+		}
 
-		if ( fTrigParam->GetDebugLevel() == -1 ) {
-		  printf("Add tracklet %d in col %02d \n",fNtracklets,fMCM->GetSeedCol()[iSeed]);
+		if (fTrigParam->GetDebugLevel() == -1) {
+		  AliInfo(Form("Add tracklet %d in col %02d \n",fNtracklets,fMCM->GetSeedCol()[iSeed]));
 		  for (time = 0; time < nTimeTotal; time++) {
 		    for (col = 0; col < kMcmCol; col++) {		    
 		      printf("%03.0f  ",fMCM->GetADC(col,time));
@@ -509,7 +523,7 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 
   if (makeTracks) {
     idet++;
-    MakeTracks(idet-AliTRDgeometry::Nplan());
+    MakeTracks(idet - AliTRDgeometry::Nplan());
     ResetTracklets();
   }
 
@@ -535,31 +549,32 @@ void AliTRDtrigger::SetMCMcoordinates(Int_t imcm)
 
   if (robid%kNcolRob == 0) {
 
-    if ( mcmid%kNmcmRob == 0 ) {
+    if (mcmid%kNmcmRob == 0) {
       fMCM->SetColRange(18*0-1,18*1-1+2+1);
     }
-    if ( mcmid%kNmcmRob == 1 ) {
+    if (mcmid%kNmcmRob == 1) {
       fMCM->SetColRange(18*1-1,18*2-1+2+1);
     }
-    if ( mcmid%kNmcmRob == 2 ) {
+    if (mcmid%kNmcmRob == 2) {
       fMCM->SetColRange(18*2-1,18*3-1+2+1);
     }
-    if ( mcmid%kNmcmRob == 3 ) {
+    if (mcmid%kNmcmRob == 3) {
       fMCM->SetColRange(18*3-1,18*4-1+2+1);
     }
 
-  } else {
+  } 
+  else {
 
-    if ( mcmid%kNmcmRob == 0 ) {
+    if (mcmid%kNmcmRob == 0) {
       fMCM->SetColRange(18*4-1,18*5-1+2+1);
     }
-    if ( mcmid%kNmcmRob == 1 ) {
+    if (mcmid%kNmcmRob == 1) {
       fMCM->SetColRange(18*5-1,18*6-1+2+1);
     }
-    if ( mcmid%kNmcmRob == 2 ) {
+    if (mcmid%kNmcmRob == 2) {
       fMCM->SetColRange(18*6-1,18*7-1+2+1);
     }
-    if ( mcmid%kNmcmRob == 3 ) {
+    if (mcmid%kNmcmRob == 3) {
       fMCM->SetColRange(18*7-1,18*8-1+2+1);
     }
 
@@ -600,11 +615,12 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
     track[1] = fTrack1->GetDataUnchecked(row,iCol+iCol1,iTime);
     track[2] = fTrack2->GetDataUnchecked(row,iCol+iCol1,iTime);
 
-    if (fMCM->IsCluster(iCol,iTime)) {
+    if      (fMCM->IsCluster(iCol,iTime)) {
 
       fTrkTest->AddCluster(iCol+iCol1,iTime,amp,track);
 
-    } else if ((iCol+1+1) < kMcmCol) {
+    } 
+    else if ((iCol+1+1) < kMcmCol) {
 
       amp[0] = fMCM->GetADC(iCol-1+1,iTime);
       amp[1] = fMCM->GetADC(iCol  +1,iTime);
@@ -621,8 +637,7 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
 
       }
 
-    } else {
-    }
+    } 
 
   }
 
@@ -672,11 +687,12 @@ void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
     track[1] = fTrack1->GetDataUnchecked(row,iCol+iCol1,iTime);
     track[2] = fTrack2->GetDataUnchecked(row,iCol+iCol1,iTime);
 
-    if (fMCM->IsCluster(iCol,iTime)) {
+    if      (fMCM->IsCluster(iCol,iTime)) {
 
       fTrk->AddCluster(iCol+iCol1,iTime,amp,track);
 
-    } else if ((iCol+1+1) < kMcmCol) {
+    } 
+    else if ((iCol+1+1) < kMcmCol) {
 
       amp[0] = fMCM->GetADC(iCol-1+1,iTime);
       amp[1] = fMCM->GetADC(iCol  +1,iTime);
@@ -693,7 +709,6 @@ void AliTRDtrigger::AddTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
 
       }
 
-    } else {
     }
 
   }
@@ -725,7 +740,7 @@ Bool_t AliTRDtrigger::WriteTracklets(Int_t det)
   //
 
   if ((det < -1) || (det >= AliTRDgeometry::Ndet())) {
-    Error("WriteTracklets","Unexpected detector index %d.",det);
+    AliError(Form("Unexpected detector index %d.",det));
     return kFALSE;
   }
 
@@ -741,13 +756,13 @@ Bool_t AliTRDtrigger::WriteTracklets(Int_t det)
     TObjArray *detTracklets = new TObjArray(400);
 
     for (Int_t i = 0; i < nTracklets; i++) {
+
       AliTRDmcmTracklet *trk = (AliTRDmcmTracklet *) Tracklets()->UncheckedAt(i);
       
       if (det == trk->GetDetector()) {
         detTracklets->AddLast(trk);
       }
-      else {
-      }
+
     }
 
     branch->SetAddress(&detTracklets);
@@ -761,8 +776,8 @@ Bool_t AliTRDtrigger::WriteTracklets(Int_t det)
 
   if (det == -1) {
 
-    Info("WriteTracklets","Writing the Tracklet tree %s for event %d."
-	 ,fTrackletTree->GetName(),fRunLoader->GetEventNumber());
+    AliInfo(Form("Writing the Tracklet tree %s for event %d."
+	        ,fTrackletTree->GetName(),fRunLoader->GetEventNumber()));
 
     AliLoader* loader = fRunLoader->GetLoader("TRDLoader");
     loader->WriteTracks("OVERWRITE");
@@ -787,7 +802,7 @@ void AliTRDtrigger::MakeTracks(Int_t det)
   Int_t nRowMax, iplan, icham, isect, row;
 
   if ((det < 0) || (det >= AliTRDgeometry::Ndet())) {
-    Error("MakeTracks","Unexpected detector index %d.",det);
+    AliError(Form("Unexpected detector index %d.",det));
     return;
   }
   
@@ -836,4 +851,64 @@ void AliTRDtrigger::MakeTracks(Int_t det)
   
 }
 
+//_____________________________________________________________________________
+void AliTRDtrigger::AddTrack(const AliTRDgtuTrack *t, Int_t det)  
+{ 
+  //
+  // Add a track to the list
+  //
 
+  AliTRDgtuTrack *track = new(fTracks->operator[](fTracks->GetEntriesFast())) 
+                          AliTRDgtuTrack(*t);
+  track->SetDetector(det); 
+
+}
+
+//_____________________________________________________________________________
+TObjArray* AliTRDtrigger::Tracklets()
+{ 
+  //
+  // Returns list of tracklets
+  //
+
+  if (!fTracklets) {
+    fTracklets = new TObjArray(400); 
+  }
+  return fTracklets;       
+
+}
+
+//_____________________________________________________________________________
+void AliTRDtrigger::ResetTracklets()                              
+{
+  //
+  // Resets the list of tracklets
+  //
+ 
+  if (fTracklets) {
+    fTracklets->Delete();             
+  }
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDtrigger::GetNumberOfTracks() const                     
+{ 
+  //
+  // Returns number of tracks
+  //
+
+  return fTracks->GetEntriesFast(); 
+                
+}
+
+//_____________________________________________________________________________
+AliTRDgtuTrack* AliTRDtrigger::GetTrack(Int_t i) const               
+{ 
+  //
+  // Returns a given track from the list
+  //
+
+  return (AliTRDgtuTrack *) fTracks->UncheckedAt(i); 
+
+}

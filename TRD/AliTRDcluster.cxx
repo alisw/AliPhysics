@@ -27,70 +27,81 @@
 
 ClassImp(AliTRDcluster)
 
-
-  //___________________________________________________________________________
-
-  AliTRDcluster::AliTRDcluster() : AliCluster() { 
+//___________________________________________________________________________
+AliTRDcluster::AliTRDcluster() 
+  :AliCluster() 
+  ,fDetector(0)
+  ,fX(0)
+  ,fTimeBin(0)
+  ,fQ(0)
+  ,fNPads(0)
+  ,fCenter(0)
+{ 
   //
   // default constructor
   //
-  fQ=0; 
-  fTimeBin=0; 
-  fDetector=0; 
-  fNPads=0; 
-  fX    =0;
-  for (Int_t i = 0;i<7; i++) fSignals[i]=0;
+
+  for (Int_t i = 0; i < 7; i++) {
+    fSignals[i] = 0;
+  }
+
 }
+
 //_____________________________________________________________________________
-  AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p):AliCluster()
+AliTRDcluster::AliTRDcluster(const AliTRDrecPoint &p)
+  :AliCluster()
+  ,fDetector(p.GetDetector())
+  ,fX(0)
+  ,fTimeBin(p.GetLocalTimeBin())
+  ,fQ(p.GetEnergy())
+  ,fNPads(0)
+  ,fCenter(0)
 {
   //
   // Constructor from AliTRDrecPoint
   //
 
-  fDetector   = p.GetDetector();
-  fTimeBin    = p.GetLocalTimeBin();
+  fTracks[0] = p.GetTrackIndex(0);
+  fTracks[1] = p.GetTrackIndex(1);
+  fTracks[2] = p.GetTrackIndex(2);
+  fY         = p.GetY();
+  fZ         = p.GetZ();
 
-  fTracks[0]  = p.GetTrackIndex(0);
-  fTracks[1]  = p.GetTrackIndex(1);
-  fTracks[2]  = p.GetTrackIndex(2);
+  //fSigmaY2   = p.GetSigmaY2();
+  //fSigmaZ2   = p.GetSigmaZ2();  
+  // Why is this ????
+  fSigmaY2   = 0.2;
+  fSigmaZ2   = 5.0;  
 
-  fQ          = p.GetEnergy();
-
-  fY          = p.GetY();
-  fZ          = p.GetZ();
-  fSigmaY2    = p.GetSigmaY2();
-  fSigmaZ2    = p.GetSigmaZ2();  
-
-  fSigmaY2    = 0.2;
-  fSigmaZ2    = 5.;  
-  fNPads      =0;
-  fCenter     = 0;
 }
 
 //_____________________________________________________________________________
-AliTRDcluster::AliTRDcluster(const AliTRDcluster &c):AliCluster()
+AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
+  :AliCluster()
+  ,fDetector(c.fDetector)
+  ,fX(c.fX)
+  ,fTimeBin(c.fTimeBin)
+  ,fQ(c.fQ)
+  ,fNPads(c.fNPads)
+  ,fCenter(c.fCenter)
 {
   //
   // Copy constructor 
   //
 
-  fTracks[0]  = c.GetLabel(0);
-  fTracks[1]  = c.GetLabel(1);
-  fTracks[2]  = c.GetLabel(2);
+  fTracks[0] = c.GetLabel(0);
+  fTracks[1] = c.GetLabel(1);
+  fTracks[2] = c.GetLabel(2);
 
-  fX          = c.GetX();
-  fY          = c.GetY();
-  fZ          = c.GetZ();
-  fSigmaY2    = c.GetSigmaY2();
-  fSigmaZ2    = c.GetSigmaZ2();  
+  fY         = c.GetY();
+  fZ         = c.GetZ();
+  fSigmaY2   = c.GetSigmaY2();
+  fSigmaZ2   = c.GetSigmaZ2();  
 
-  fDetector   = c.GetDetector();
-  fTimeBin    = c.GetLocalTimeBin();
-  fQ          = c.GetQ();
-  fNPads      = c.fNPads;
-  fCenter     = c.fCenter;
-  for (Int_t i=0;i<7;i++) fSignals[i] = c.fSignals[i];
+  for (Int_t i = 0; i < 7; i++) {
+    fSignals[i] = c.fSignals[i];
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -106,88 +117,97 @@ void AliTRDcluster::AddTrackIndex(Int_t *track)
   //
 
   const Int_t kSize = 9;
+  Int_t  entries[kSize][2];
 
-  Int_t entries[kSize][2], i, j, index;
-
+  Int_t  i = 0;
+  Int_t  j = 0;
+  Int_t  k = 0;
+  Int_t  index;
   Bool_t indexAdded;
 
-  for (i=0; i<kSize; i++) {
-    entries[i][0]=-1;
-    entries[i][1]=0;
+  for (i = 0; i < kSize; i++) {
+    entries[i][0] = -1;
+    entries[i][1] =  0;
   }                                 
 
-  for (Int_t k=0; k<kSize; k++) {
-    index=track[k];
-    indexAdded=kFALSE; 
-    j=0;
+  for (k = 0; k < kSize; k++) {
+
+    index      = track[k];
+    indexAdded = kFALSE; 
+
+    j = 0;
     if (index >= 0) {
-      while ( (!indexAdded) && ( j < kSize ) ) {
-        if ((entries[j][0]==index) || (entries[j][1]==0)) {
-          entries[j][0]=index;
-          entries[j][1]=entries[j][1]+1;
-          indexAdded=kTRUE;
+      while ((!indexAdded) && (j < kSize)) {
+        if ((entries[j][0] == index) || 
+            (entries[j][1] ==     0)) {
+          entries[j][0] = index;
+          entries[j][1] = entries[j][1] + 1;
+          indexAdded    = kTRUE;
         }
         j++;
       }
     }
-  }             
 
-  // sort by number of appearances and index value
-  Int_t swap=1, tmp0, tmp1;
-  while ( swap > 0) {
-    swap=0;
-    for(i=0; i<(kSize-1); i++) {
-      if ((entries[i][0] >= 0) && (entries[i+1][0] >= 0)) {
+  }
+
+  // Sort by number of appearances and index value
+  Int_t swap = 1;
+  Int_t tmp0;
+  Int_t tmp1;
+  while (swap > 0) {
+    swap = 0;
+    for (i = 0; i < (kSize - 1); i++) {
+      if ((entries[i][0]   >= 0) && 
+          (entries[i+1][0] >= 0)) {
         if ((entries[i][1] < entries[i+1][1]) ||
             ((entries[i][1] == entries[i+1][1]) &&
-             (entries[i][0] > entries[i+1][0]))) {
-               tmp0=entries[i][0];
-               tmp1=entries[i][1];
-               entries[i][0]=entries[i+1][0];
-               entries[i][1]=entries[i+1][1];
-               entries[i+1][0]=tmp0;
-               entries[i+1][1]=tmp1;
-               swap++;
+             (entries[i][0] >  entries[i+1][0]))) {
+          tmp0            = entries[i][0];
+          tmp1            = entries[i][1];
+          entries[i][0]   = entries[i+1][0];
+          entries[i][1]   = entries[i+1][1];
+          entries[i+1][0] = tmp0;
+          entries[i+1][1] = tmp1;
+          swap++;
         }
       }
     }
   }               
 
-  // set track indexes
-  for(i=0; i<3; i++) SetLabel(entries[i][0],i);
+  // Set track indexes
+  for (i = 0; i < 3; i++) {
+    SetLabel(entries[i][0],i);
+  }
 
   return;
 
 }          
 
-void AliTRDcluster::SetSignals(Short_t*signals){
+//_____________________________________________________________________________
+void AliTRDcluster::SetSignals(Short_t *signals)
+{
   //
-  // write signals in the cluster
+  // Write signals in the cluster
   //
-  for (Int_t i = 0;i<7;i++) fSignals[i]=signals[i];
+
+  for (Int_t i = 0; i < 7; i++) {
+    fSignals[i] = signals[i];
+  }
+
 }
 
+//_____________________________________________________________________________
 Float_t AliTRDcluster::GetSumS() const
 {
   //
-  // return total charge in non unfolded cluster
+  // Returns the total charge from a not unfolded cluster
   //
-  Float_t sum=0;
-  for (Int_t i = 0;i<7;i++) sum+=fSignals[i];
-  return sum;
-}
-Float_t AliTRDcluster::GetCenterS() const
-{
-  //
-  //
-  //
-  Float_t sum=0;
-  Float_t sum2=0;
-  for (Int_t i = 0;i<7;i++) {    
-    sum+=fSignals[i];
-    sum2+=i*fSignals[i];
+
+  Float_t sum = 0.0;
+  for (Int_t i = 0; i < 7; i++) {
+    sum += fSignals[i];
   }
-  if (sum>0) return sum2/sum-2;
-  return 0;
+
+  return sum;
 
 }
