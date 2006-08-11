@@ -24,8 +24,11 @@ class AliTRDCommonParam : public TObject
     
     AliTRDCommonParam(const AliTRDCommonParam &p);   
     AliTRDCommonParam &operator=(const AliTRDCommonParam &p); 
+    virtual        ~AliTRDCommonParam();
+
     static AliTRDCommonParam *Instance();
-    static void     Terminate();
+    static  void    Terminate();
+
     virtual void    Copy(TObject &p) const;
     
     void            SetField(Float_t field)                        { fField = field; };
@@ -56,7 +59,6 @@ class AliTRDCommonParam : public TObject
 
     // This is a singleton, constructor is private!  
     AliTRDCommonParam();
-    virtual ~AliTRDCommonParam();
   
     ClassDef(AliTRDCommonParam,1)             // The constant parameters common to simulation and reconstruction       
 
