@@ -493,6 +493,13 @@ AliPHOSGeometry * AliPHOSGetter::PHOSGeometry() const
   AliPHOSGeometry * rv = 0 ; 
   if (PHOS() )
     rv =  PHOS()->GetGeometry() ;
+  else {
+    rv = AliPHOSGeometry::GetInstance();
+    if (!rv) {
+      AliError("Could not find PHOS geometry! Loading the default one !");
+      rv = AliPHOSGeometry::GetInstance("IHEP","");
+    }
+  }
   return rv ; 
 } 
 
@@ -711,8 +718,9 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
       }
       first = kFALSE ; 
       relId[0] = in.GetModule() ;
-      if ( relId[0] >= PHOS()->GetRawFormatLowGainOffset() ) { 
-	relId[0] -=  PHOS()->GetRawFormatLowGainOffset() ;
+      Int_t lowGainOffset = PHOSGeometry()->GetNModules() + 1;
+      if ( relId[0] >= lowGainOffset ) { 
+	relId[0] -=  lowGainOffset ;
 	lowGainFlag = kTRUE ;
       } else
 	lowGainFlag = kFALSE ;

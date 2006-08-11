@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.94  2006/08/07 12:27:49  hristov
+ * Removing obsolete code which affected the event numbering scheme
+ *
  * Revision 1.93  2006/08/01 12:20:17  cvetan
  * 1. Adding a possibility to read and reconstruct an old rcu formatted raw data. This is controlled by an option of AliReconstruction and AliPHOSReconstructor. 2. In case of raw data processing (without galice.root) create the default AliPHOSGeometry object. Most likely this should be moved to the CDB
  *
@@ -401,10 +404,6 @@ void AliPHOSClusterizerv1::Init()
     gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());
 
   AliPHOSGeometry * geom = gime->PHOSGeometry();
-  if (!geom) {
-    AliError("Could not find PHOS geometry! Loading the default one !");
-    geom = AliPHOSGeometry::GetInstance("IHEP","");
-  }
 
   fEmcCrystals = geom->GetNModules() *  geom->GetNCristalsInModule() ;
 

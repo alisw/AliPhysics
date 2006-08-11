@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.67  2006/04/07 08:42:00  hristov
+ * Follow AliAlignObj framework and remove AliPHOSAlignData (Yu.Kharlov)
+ *
  * Revision 1.66  2006/03/24 21:39:33  schutz
  * Modification needed to include PHOS in the global trigger framework
  *
@@ -81,14 +84,13 @@ public:
 
   // Raw Read Out
   Double_t GetRawFormatCapa() const { return fgCapa ; }   
-  Double_t GetRawFormatHighCharge() const { return fHighCharge ; }  
-  Double_t GetRawFormatHighGain() const { return fHighGain ; }  
-  Double_t GetRawFormatHighLowGainFactor() const { return fHighLowGainFactor ; }  
-  Double_t GetRawFormatLowCharge() const { return ( fHighCharge *  fHighLowGainFactor ) ; }  
-  Double_t GetRawFormatLowGain() const { return ( fHighGain / fHighLowGainFactor ) ; }  
-  Int_t GetRawFormatLowGainOffset() const { return fLowGainOffset ; }  
+  static Double_t GetRawFormatHighCharge() { return fgHighCharge ; }  
+  static Double_t GetRawFormatHighGain() { return fgHighGain ; }  
+  static Double_t GetRawFormatHighLowGainFactor() { return fgHighLowGainFactor ; }  
+  static Double_t GetRawFormatLowCharge() { return ( fgHighCharge *  fgHighLowGainFactor ) ; }  
+  static Double_t GetRawFormatLowGain() { return ( fgHighGain / fgHighLowGainFactor ) ; }  
   Int_t GetRawFormatOrder() const { return fgOrder ; }   
-  Int_t GetRawFormatTimeBins() const { return fkTimeBins ; }    
+  static Int_t GetRawFormatTimeBins() { return fkTimeBins ; }    
   Double_t GetRawFormatTimeMax() const { return fgTimeMax ; }   
   Double_t GetRawFormatTimePeak() const { return fgTimePeak ; }    
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }   
@@ -108,10 +110,9 @@ protected:
   
   
   static Double_t fgCapa ;              // capacitor of the preamplifier for the raw RO signal
-  Double_t fHighCharge ;                // high charge (to convert energy to charge) for the raw RO signal
-  Double_t fHighGain ;                  // high gain for the raw RO signal
-  Double_t fHighLowGainFactor ;         // high to low gain factor for the raw RO signal
-  Int_t    fLowGainOffset ;             // to separate high from low gain in the DDL
+  static Double_t fgHighCharge ;                // high charge (to convert energy to charge) for the raw RO signal
+  static Double_t fgHighGain ;                  // high gain for the raw RO signal
+  static Double_t fgHighLowGainFactor ;         // high to low gain factor for the raw RO signal
   static Int_t fgOrder ;                // order of the gamma function for the RO signal
 //   static const Int_t fkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
   static const Int_t fkTimeBins = 64 ; // number of sampling bins of the raw RO signal  
@@ -119,7 +120,7 @@ protected:
   static Double_t fgTimePeak ;          // peaking time of the raw RO signal                                    
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
                                         
-  ClassDef(AliPHOS,5) // Photon Spectrometer Detector (base class)
+  ClassDef(AliPHOS,6) // Photon Spectrometer Detector (base class)
 } ;
 
 #endif // ALIPHOS_H

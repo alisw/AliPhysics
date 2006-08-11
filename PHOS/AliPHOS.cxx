@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.99  2006/06/28 11:36:09  cvetan
+ * New detector numbering scheme (common for DAQ/HLT/Offline). All the subdetectors shall use the AliDAQ class for the sim and rec of the raw data. The AliDAQ and raw reader classes now provide all the necessary interfaces to write and select the detector specific raw-data payload. Look into the AliDAQ.h and AliRawReader.h for more details.
+ *
  * Revision 1.98  2006/05/11 11:30:48  cvetan
  * Major changes in AliAltroBuffer. Now it can be used only for writing of raw data. All the corresponding read method are removed. It is based now on AliFstream in order to avoid endianess problems. The altro raw data is written always with little endian
  *
@@ -94,6 +97,10 @@ Double_t AliPHOS::fgTimeMax     = 2.56E-5 ;  // each sample is over 100 ns fTime
 Double_t AliPHOS::fgTimePeak    = 4.1E-6 ;   // 4 micro seconds
 Double_t AliPHOS::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
 
+Double_t AliPHOS::fgHighCharge  = 8.2;       // adjusted for a high gain range of 5.12 GeV (10 bits)
+Double_t AliPHOS::fgHighGain    = 6.64;
+Double_t AliPHOS::fgHighLowGainFactor = 16.; // adjusted for a low gain range of 82 GeV (10 bits) 
+
 //____________________________________________________________________________
   AliPHOS:: AliPHOS() : AliDetector()
 {
@@ -106,12 +113,6 @@ Double_t AliPHOS::fgTimeTrigger = 100E-9 ;      // 100ns, just for a reference
 AliPHOS::AliPHOS(const char* name, const char* title): AliDetector(name, title)
 {
   //   ctor : title is used to identify the layout
-
-  fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
-  fHighGain          = 6.64 ; 
-  fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
-  fLowGainOffset     = GetGeometry()->GetNModules() + 1 ;   
-    // offset added to the module id to distinguish high and low gain data
 }
 
 //____________________________________________________________________________
@@ -124,13 +125,6 @@ void AliPHOS::Copy(TObject &obj)const
 {
   // copy method to be used by the cpy ctor
   TObject::Copy(obj);
-  
-  AliPHOS &phos = static_cast<AliPHOS &>(obj); 
-  
-  phos.fHighCharge        = fHighCharge ;
-  phos.fHighGain          = fHighGain ; 
-  phos.fHighLowGainFactor = fHighLowGainFactor ;  
-  phos.fLowGainOffset     = fLowGainOffset;   
 }
 
 //____________________________________________________________________________
@@ -506,7 +500,7 @@ void AliPHOS::Digits2Raw()
       Bool_t lowgain = RawSampledResponse(digit->GetTimeR(), energy, adcValuesHigh, adcValuesLow) ; 
       
       if (lowgain) 
-	buffer->WriteChannel(relId[3], relId[2], module + fLowGainOffset, 
+	buffer->WriteChannel(relId[3], relId[2], module + GetGeometry()->GetNModules() + 1, 
 			     GetRawFormatTimeBins(), adcValuesLow , kAdcThreshold);
       else 
 	buffer->WriteChannel(relId[3], relId[2], module, 
