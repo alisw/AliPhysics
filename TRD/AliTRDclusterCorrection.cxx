@@ -16,7 +16,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 //  TRD clusterCorrection                                                    //
-//  marian.ivanov@cern.ch                                                    //
+//  Author:                                                                  //
+//    Marian Ivanov (marian.ivanov@cern.ch)                                  //
 //                                                                           //
 /////////////////////////////////////////////////////////////////////////////// 
 
@@ -25,39 +26,48 @@
 
 ClassImp(AliTRDclusterCorrection)
 
-AliTRDclusterCorrection * gAliTRDclusterCorrection=0;
+AliTRDclusterCorrection *gAliTRDclusterCorrection = 0;
 
 //_____________________________________________________________________________
 AliTRDclusterCorrection::AliTRDclusterCorrection()
+  :TObject()
+  ,fOffsetAngle(0)
 {
   //
-  //default constructor for correction
+  // Default constructor for AliTRDclusterCorrection
   //
 
-  for (Int_t iplane=0;iplane<6;iplane++) {
-    for (Int_t itime=0;itime<30;itime++) {
-      for(Int_t iangle=0;iangle<20;iangle++){	
-	fCorrections[iplane][itime][iangle][0]=0;
-	fCorrections[iplane][itime][iangle][1]=0;
+  for (Int_t iplane = 0; iplane <  6; iplane++) {
+    for (Int_t itime  = 0; itime  < 30; itime++) {
+      for (Int_t iangle = 0; iangle < 20; iangle++) {	
+	fCorrections[iplane][itime][iangle][0] = 0.0;
+	fCorrections[iplane][itime][iangle][1] = 0.0;
       }
     }
   }
 
-  fOffsetAngle =0;
+}
+
+//_____________________________________________________________________________
+AliTRDclusterCorrection::~AliTRDclusterCorrection()
+{
+  //
+  // Destructor
+  //
 
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterCorrection::SetCorrection(Int_t plane,Int_t timebin, Float_t angle, 
-					    Float_t value, Float_t sigma)
+void AliTRDclusterCorrection::SetCorrection(Int_t plane,Int_t timebin, Float_t angle
+					  , Float_t value, Float_t sigma)
 {
   //
   // Set the correction factors
   //
 
-  Int_t iangle = int( (angle-fOffsetAngle+1.)*10.+0.5);
-  if (iangle<0) return;
-  if (iangle>=20) return;
+  Int_t iangle = Int_t((angle - fOffsetAngle + 1.0) * 10.0 + 0.5);
+  if (iangle <   0) return;
+  if (iangle >= 20) return;
   fCorrections[plane][timebin][iangle][0] = value;
   fCorrections[plane][timebin][iangle][1] = sigma;
 
@@ -70,9 +80,10 @@ Float_t AliTRDclusterCorrection::GetCorrection(Int_t plane, Int_t timebin, Float
   // Get the correction factors
   //
 
-  Int_t iangle = int( (angle-fOffsetAngle+1.)*10.+0.5);
-  if (iangle<0) return 0.;
-  if (iangle>=20) return 0.;
+  Int_t iangle = Int_t((angle - fOffsetAngle + 1.0) * 10.0 + 0.5);
+  if (iangle <   0) return 0.0;
+  if (iangle >= 20) return 0.0;
+
   return fCorrections[plane][timebin][iangle][0];
 
 }
@@ -84,31 +95,37 @@ Float_t AliTRDclusterCorrection::GetSigma(Int_t plane, Int_t timebin, Float_t an
   // Returns the sigma
   //
 
-  Int_t iangle = int( (angle-fOffsetAngle+1.)*10.+0.5);
-  if (iangle<0) return 1.;
-  if (iangle>=20) return 1.;
+  Int_t iangle = Int_t((angle - fOffsetAngle + 1.0) * 10.0 + 0.5);
+  if (iangle <   0) return 1.0;
+  if (iangle >= 20) return 1.0;
+
   return fCorrections[plane][timebin][iangle][1];
 
 }
 
 //_____________________________________________________________________________
-AliTRDclusterCorrection *  AliTRDclusterCorrection::GetCorrection()
+AliTRDclusterCorrection *AliTRDclusterCorrection::GetCorrection()
 {
   //
-  // Return an instance of AliTRDclusterCorrection
+  // Return an instance of AliTRDclusterCorrection and sets the global
+  // pointer gAliTRDclusterCorrection (Is this needed somewhere ????)
   //
 
-  if (gAliTRDclusterCorrection!=0) return gAliTRDclusterCorrection;
-  //
-  TFile * f  = new TFile("$ALICE_ROOT/TRD/TRDcorrection.root");
-  if (!f){
-    ////
+  if (gAliTRDclusterCorrection != 0) {
+    return gAliTRDclusterCorrection;
+  }
+
+  TFile *fileIn = new TFile("$ALICE_ROOT/TRD/TRDcorrection.root");
+  if (!fileIn){
     gAliTRDclusterCorrection = new AliTRDclusterCorrection();
     return gAliTRDclusterCorrection;
   }
-  gAliTRDclusterCorrection = (AliTRDclusterCorrection*) f->Get("TRDcorrection");
-  if (gAliTRDclusterCorrection==0)  
+
+  gAliTRDclusterCorrection = (AliTRDclusterCorrection *) 
+                             fileIn->Get("TRDcorrection");
+  if (gAliTRDclusterCorrection == 0) {  
     gAliTRDclusterCorrection = new AliTRDclusterCorrection();
+  }
 
   return gAliTRDclusterCorrection;
   
