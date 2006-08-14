@@ -338,13 +338,14 @@ Int_t AliMDC::ProcessEvent(void* event, Bool_t isIovecArray)
 	}
 
       } else {  // Read only raw data but no equipment header
-	AliRawEquipment &equipment = *subEvent->NextEquipment();
-	AliRawData &subRaw = *equipment.GetRawData();
-	if ((status = ReadRawData(subRaw, rawSize, data)) != rawSize) {
-	  return kErrEquipment;
+	if (rawSize) {
+	  AliRawEquipment &equipment = *subEvent->NextEquipment();
+	  AliRawData &subRaw = *equipment.GetRawData();
+	  if ((status = ReadRawData(subRaw, rawSize, data)) != rawSize) {
+	    return kErrEquipment;
+	  }
+	  toRead  -= rawSize;
 	}
-	toRead  -= rawSize;
-
       }
 
       nsub++;
