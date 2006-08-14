@@ -21,7 +21,12 @@ class AliTRDtracklet : public TObject {
   AliTRDtracklet();
   virtual          ~AliTRDtracklet();
 
-           void     Set(Float_t x, Float_t y, Float_t z, Float_t alpha, Float_t error2);
+           void     Set(Float_t x, Float_t y, Float_t z, Float_t alpha, Float_t error2)
+	                                                   { fX              = x;
+                                                             fY              = y;
+                                                             fZ              = z;
+                                                             fAlpha          = alpha;
+                                                             fSigma2         = error2; }
            void     SetP0(Float_t p0)                      { fP0             = p0;     }
            void     SetP1(Float_t p1)                      { fP1             = p1;     }
            void     SetN(Int_t n)                          { fNFound         = n;      }
