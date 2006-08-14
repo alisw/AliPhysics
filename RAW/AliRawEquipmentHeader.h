@@ -33,6 +33,8 @@ public:
    const UInt_t *GetTypeAttribute() const { return fTypeAttribute; }
    UInt_t        GetBasicSizeType() const { return fBasicElementSizeType; }
 
+   void          Reset();
+
    enum {
      kAttributeWords = 3
    };

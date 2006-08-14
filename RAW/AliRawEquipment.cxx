@@ -104,6 +104,7 @@ void AliRawEquipment::Reset()
    // new/delete cycle). We reset the size marker for the AliRawData
    // object.
 
+   if (fEqpHdr) fEqpHdr->Reset();
    GetRawData()->SetSize(0);
 }
 

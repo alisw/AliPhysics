@@ -53,3 +53,14 @@ void AliRawEquipmentHeader::Swap()
    for (int i = 0; i < kAttributeWords; i++)
       fTypeAttribute[i] = net2host(fTypeAttribute[i]);
 }
+
+//______________________________________________________________________________
+void AliRawEquipmentHeader::Reset()
+{
+  // Reset the contents of the equipment
+  // header data
+  fSize = fEquipmentType = fEquipmentID = fBasicElementSizeType = 0;
+
+  for(Int_t i = 0; i < kAttributeWords; i++)
+    fTypeAttribute[i] = 0;
+}
