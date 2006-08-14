@@ -32,8 +32,6 @@ enum EAnalysisTaskFlags {
    kTaskChecked = BIT(16)
 };   
 protected:
-   AliAnalysisTask& operator=(const AliAnalysisTask &task);
-
    // Define the input/output slots (called by user in the ctor of the derived class)
    //=== CALL IN THE CONSTRUCTOR OF DERIVED CLASS TO DEFINE INPUTS/OUTPUTS ===
    void                      DefineInput(Int_t islot, TClass *type);
@@ -51,6 +49,8 @@ public:
    AliAnalysisTask(const AliAnalysisTask &task); 
    virtual ~AliAnalysisTask();
    
+   // Assignment
+   AliAnalysisTask& operator=(const AliAnalysisTask &task);
    // Conect inputs/outputs to data containers (by AliAnalysisModule)
    Bool_t                    ConnectInput(Int_t islot, AliAnalysisDataContainer *cont);
    Bool_t                    ConnectOutput(Int_t islot, AliAnalysisDataContainer *cont);

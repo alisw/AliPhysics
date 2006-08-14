@@ -58,39 +58,45 @@ ClassImp(AliAnalysisTask)
 
 //______________________________________________________________________________
 AliAnalysisTask::AliAnalysisTask()
+                :fReady(kFALSE),
+                 fNinputs(0),
+                 fNoutputs(0),
+                 fOutputReady(NULL),
+                 fPublishedData(NULL),
+                 fInputs(NULL),
+                 fOutputs(NULL)
 {
 // Default constructor.
-   fReady       = kFALSE;
-   fNinputs     = 0;
-   fNoutputs    = 0;
-   fOutputReady = 0;
-   fPublishedData = 0;
-   fInputs      = 0;
-   fOutputs     = 0;
 }
 
 //______________________________________________________________________________
 AliAnalysisTask::AliAnalysisTask(const char *name, const char *title)
-                :TTask(name,title)
+                :TTask(name,title),
+                 fReady(kFALSE),
+                 fNinputs(0),
+                 fNoutputs(0),
+                 fOutputReady(NULL),
+                 fPublishedData(NULL),
+                 fInputs(NULL),
+                 fOutputs(NULL)                 
 {
-// Named constructor.
-   fReady       = kFALSE;
-   fNinputs     = 0;
-   fNoutputs    = 0;
-   fOutputReady = 0;
-   fPublishedData = 0;
+// Constructor.
    fInputs      = new TObjArray(2);
    fOutputs     = new TObjArray(2);
 }
 
 //______________________________________________________________________________
 AliAnalysisTask::AliAnalysisTask(const AliAnalysisTask &task)
-                :TTask(task)
+                :TTask(task),
+                 fReady(task.fReady),
+                 fNinputs(task.fNinputs),
+                 fNoutputs(task.fNoutputs),                 
+                 fOutputReady(NULL),
+                 fPublishedData(NULL),
+                 fInputs(NULL),
+                 fOutputs(NULL)                 
 {
 // Copy ctor.
-   fReady       = task.IsReady();
-   fNinputs     = task.GetNinputs();
-   fNoutputs    = task.GetNoutputs();
    fInputs      = new TObjArray((fNinputs)?fNinputs:2);
    fOutputs     = new TObjArray((fNoutputs)?fNoutputs:2);
    fPublishedData = 0;
@@ -115,22 +121,21 @@ AliAnalysisTask::~AliAnalysisTask()
 AliAnalysisTask& AliAnalysisTask::operator=(const AliAnalysisTask& task)
 {
 // Assignment
-   if (&task != this) {
-      TTask::operator=(task);
-      fReady       = task.IsReady();
-      fNinputs     = task.GetNinputs();
-      fNoutputs    = task.GetNoutputs();
-      fInputs      = new TObjArray((fNinputs)?fNinputs:2);
-      fOutputs     = new TObjArray((fNoutputs)?fNoutputs:2);
-      fPublishedData = 0;
-      Int_t i;
-      for (i=0; i<fNinputs; i++) fInputs->AddAt(task.GetInputSlot(i),i);
-      fOutputReady = new Bool_t[(fNoutputs)?fNoutputs:2];
-      for (i=0; i<fNoutputs; i++) {
-         fOutputReady[i] = IsOutputReady(i);
-         fOutputs->AddAt(task.GetOutputSlot(i),i);
-      }         
-   }
+   if (&task == this) return *this;
+   TTask::operator=(task);
+   fReady       = task.IsReady();
+   fNinputs     = task.GetNinputs();
+   fNoutputs    = task.GetNoutputs();
+   fInputs      = new TObjArray((fNinputs)?fNinputs:2);
+   fOutputs     = new TObjArray((fNoutputs)?fNoutputs:2);
+   fPublishedData = 0;
+   Int_t i;
+   for (i=0; i<fNinputs; i++) fInputs->AddAt(new AliAnalysisDataSlot(*task.GetInputSlot(i)),i);
+   fOutputReady = new Bool_t[(fNoutputs)?fNoutputs:2];
+   for (i=0; i<fNoutputs; i++) {
+      fOutputReady[i] = IsOutputReady(i);
+      fOutputs->AddAt(new AliAnalysisDataSlot(*task.GetOutputSlot(i)),i);
+   }         
    return *this;
 }
 

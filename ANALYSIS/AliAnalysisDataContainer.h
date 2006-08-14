@@ -34,9 +34,12 @@ enum ENotifyMessage {
    kFileChange
 };   
    AliAnalysisDataContainer();
+   AliAnalysisDataContainer(const AliAnalysisDataContainer &cont);
    AliAnalysisDataContainer(const char *name, TClass *type);
    virtual ~AliAnalysisDataContainer();
 
+   // Assignment
+   AliAnalysisDataContainer &operator=(const AliAnalysisDataContainer &cont);
    // Getters
    TObject                  *GetData() const      {return fData;}
    TClass                   *GetType() const      {return fType;}

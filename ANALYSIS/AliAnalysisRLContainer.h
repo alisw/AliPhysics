@@ -26,9 +26,10 @@ class AliAnalysisRLContainer : public AliAnalysisDataContainer {
 public:
    AliAnalysisRLContainer();
    AliAnalysisRLContainer(const char *name);
+   AliAnalysisRLContainer(const AliAnalysisRLContainer &rlc);
    virtual ~AliAnalysisRLContainer();
    
-//protected:
+   AliAnalysisRLContainer &operator=(const AliAnalysisRLContainer &rlc);
    AliRunLoader             *GetRunLoader();
    AliHeader                *GetHeader();
    AliStack                 *GetStack();

@@ -24,10 +24,13 @@ class AliAnalysisTask;
 class AliAnalysisDataSlot : public TObject {
 
 public:
-   AliAnalysisDataSlot() : fType(NULL), fParent(NULL), fContainer(NULL) { }
-   AliAnalysisDataSlot(TClass *type, AliAnalysisTask *task) : fType(type), fParent(task), fContainer(NULL) { }
-   virtual ~AliAnalysisDataSlot() { }
-   
+   AliAnalysisDataSlot() : fType(NULL), fParent(NULL), fContainer(NULL) {}
+   AliAnalysisDataSlot(TClass *type, AliAnalysisTask *task) : fType(type), fParent(task), fContainer(NULL) {}
+   AliAnalysisDataSlot(const AliAnalysisDataSlot &slot) : TObject(), fType(slot.fType), fParent(slot.fParent), fContainer(slot.fContainer) {}
+   virtual ~AliAnalysisDataSlot() {}
+
+   // Assignment
+   AliAnalysisDataSlot &operator=(const AliAnalysisDataSlot &slot);
    // Connect some container to the slot
    Bool_t                    ConnectContainer(AliAnalysisDataContainer *cont);
    // Getters

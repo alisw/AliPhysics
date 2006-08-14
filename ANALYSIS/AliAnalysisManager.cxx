@@ -36,20 +36,17 @@
 ClassImp(AliAnalysisManager)
 
 //______________________________________________________________________________
-AliAnalysisManager::AliAnalysisManager() : TSelector()
+AliAnalysisManager::AliAnalysisManager() : TSelector(),
+                    fInitOK(kFALSE),
+                    fContainers(NULL),
+                    fInputs(NULL),
+                    fOutputs(NULL),
+                    fTasks(NULL),
+                    fTopTasks(NULL),
+                    fZombies(NULL)
 {
 // Default constructor.
-   if (TClass::IsCallingNew() == TClass::kDummyNew) {
-      fInitOK     = kFALSE;
-      fContainers = 0;
-      fInputs     = 0;
-      fOutputs    = 0;  
-      fTasks      = 0;
-      fTopTasks   = 0;
-      fZombies    = 0;
-      fStatus     = 0;
-   } else {    
-      fInitOK     = kFALSE;
+   if (TClass::IsCallingNew() != TClass::kDummyNew) {
       fContainers = new TObjArray();
       fInputs     = new TObjArray();
       fOutputs    = new TObjArray();  
@@ -62,16 +59,23 @@ AliAnalysisManager::AliAnalysisManager() : TSelector()
 
 //______________________________________________________________________________
 AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
-                   :TSelector(other)
+                   :TSelector(other),
+                    fInitOK(kFALSE),
+                    fContainers(NULL),
+                    fInputs(NULL),
+                    fOutputs(NULL),
+                    fTasks(NULL),
+                    fTopTasks(NULL),
+                    fZombies(NULL)
 {
 // Copy constructor.
-   fInitOK     = other.IsInitialized();
-   fContainers = new TObjArray(*other.GetContainers());
-   fInputs     = new TObjArray(*other.GetInputs());
-   fOutputs    = new TObjArray(*other.GetOutputs());
-   fTasks      = new TObjArray(*other.GetTasks());
-   fTopTasks   = new TObjArray(*other.GetTopTasks());
-   fZombies    = new TObjArray(*other.GetZombieTasks());
+   fInitOK     = other.fInitOK;
+   fContainers = new TObjArray(*other.fContainers);
+   fInputs     = new TObjArray(*other.fInputs);
+   fOutputs    = new TObjArray(*other.fOutputs);
+   fTasks      = new TObjArray(*other.fTasks);
+   fTopTasks   = new TObjArray(*other.fTopTasks);
+   fZombies    = new TObjArray(*other.fZombies);
 //   fStatus     = new AliAnalysisInfo(this);
 }
    
@@ -81,13 +85,13 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
 // Assignment
    if (&other != this) {
       TSelector::operator=(other);
-      fInitOK     = other.IsInitialized();
-      fContainers = new TObjArray(*other.GetContainers());
-      fInputs     = new TObjArray(*other.GetInputs());
-      fOutputs    = new TObjArray(*other.GetOutputs());
-      fTasks      = new TObjArray(*other.GetTasks());
-      fTopTasks   = new TObjArray(*other.GetTopTasks());
-      fZombies    = new TObjArray(*other.GetZombieTasks());
+      fInitOK     = other.fInitOK;
+      fContainers = new TObjArray(*other.fContainers);
+      fInputs     = new TObjArray(*other.fInputs);
+      fOutputs    = new TObjArray(*other.fOutputs);
+      fTasks      = new TObjArray(*other.fTasks);
+      fTopTasks   = new TObjArray(*other.fTopTasks);
+      fZombies    = new TObjArray(*other.fZombies);
 //      fStatus     = new AliAnalysisInfo(this);
    }
    return *this;

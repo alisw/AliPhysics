@@ -37,31 +37,59 @@ ClassImp(AliAnalysisRLContainer)
 
 //______________________________________________________________________________
 AliAnalysisRLContainer::AliAnalysisRLContainer()
+                       :AliAnalysisDataContainer(),
+                        fRunLoader(NULL),
+                        fESD(NULL),
+                        fKineFile(NULL),
+                        fKinematicsLoaded(kFALSE),
+                        fHeaderLoaded(kFALSE)
 {
 // Dummy ctor.
-   fRunLoader = 0;
-   fESD = 0;
-   fKineFile = 0;
-   fKinematicsLoaded = kFALSE;
-   fHeaderLoaded = kFALSE;
 }
 
 //______________________________________________________________________________
 AliAnalysisRLContainer::AliAnalysisRLContainer(const char *name)
-                       :AliAnalysisDataContainer(name, TTree::Class())
+                       :AliAnalysisDataContainer(name, TTree::Class()),
+                        fRunLoader(NULL),
+                        fESD(NULL),
+                        fKineFile(NULL),
+                        fKinematicsLoaded(kFALSE),
+                        fHeaderLoaded(kFALSE)
 {
 // Normal constructor.
-   fRunLoader = 0;
-   fESD = 0;
-   fKineFile = 0;
-   fKinematicsLoaded = kFALSE;
-   fHeaderLoaded = kFALSE;
 }
+
+//______________________________________________________________________________
+AliAnalysisRLContainer::AliAnalysisRLContainer(const AliAnalysisRLContainer &rlc)
+                       :AliAnalysisDataContainer(rlc),
+                        fRunLoader(rlc.fRunLoader),
+                        fESD(rlc.fESD),
+                        fKineFile(rlc.fKineFile),
+                        fKinematicsLoaded(rlc.fKinematicsLoaded),
+                        fHeaderLoaded(rlc.fHeaderLoaded)
+{
+// Copy constructor.
+}   
 
 //______________________________________________________________________________
 AliAnalysisRLContainer::~AliAnalysisRLContainer()
 {
 // Destructor. Deletes data ! (What happens if data is a container ???)
+}
+
+//______________________________________________________________________________
+AliAnalysisRLContainer &AliAnalysisRLContainer::operator=(const AliAnalysisRLContainer &rlc)
+{
+// Assignment.
+   if (&rlc != this) {
+      AliAnalysisDataContainer::operator=(rlc);
+      fRunLoader = rlc.fRunLoader;
+      fESD = rlc.fESD;
+      fKineFile = rlc.fKineFile;
+      fKinematicsLoaded = rlc.fKinematicsLoaded;
+      fHeaderLoaded = rlc.fHeaderLoaded;
+   }
+   return *this;   
 }
 
 //______________________________________________________________________________

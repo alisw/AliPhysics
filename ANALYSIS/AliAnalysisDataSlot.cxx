@@ -49,6 +49,18 @@
 ClassImp(AliAnalysisDataSlot)
 
 //______________________________________________________________________________
+AliAnalysisDataSlot& AliAnalysisDataSlot::operator=(const AliAnalysisDataSlot &slot)
+{
+// Assignment
+   if (&slot == this) return *this;
+   TObject::operator=(slot);
+   fType = slot.fType;
+   fParent = slot.fParent;
+   fContainer = slot.fContainer;   
+   return *this;
+}
+
+//______________________________________________________________________________
 Bool_t AliAnalysisDataSlot::ConnectContainer(AliAnalysisDataContainer *cont)
 {
 // Connect the data slot with a given container. The operation will succeed only

@@ -54,29 +54,49 @@
 ClassImp(AliAnalysisDataContainer)
 
 //______________________________________________________________________________
-AliAnalysisDataContainer::AliAnalysisDataContainer()
+AliAnalysisDataContainer::AliAnalysisDataContainer() : TNamed(),
+                          fDataReady(kFALSE),
+                          fOwnedData(kFALSE),
+                          fFileName(),
+                          fData(NULL),
+                          fType(NULL),
+                          fProducer(NULL),
+                          fConsumers(NULL)
 {
 // Default ctor.
-   fDataReady = kFALSE;
-   fOwnedData  = kFALSE;
-   fFileName = "";
-   fData  = 0;
-   fType  = 0;
-   fProducer  = 0; 
-   fConsumers = 0;
 }
+
 //______________________________________________________________________________
 AliAnalysisDataContainer::AliAnalysisDataContainer(const char *name, TClass *type)
-                         :TNamed(name,"")
+                         :TNamed(name,""),
+                          fDataReady(kFALSE),
+                          fOwnedData(kTRUE),
+                          fFileName(),
+                          fData(NULL),
+                          fType(type),
+                          fProducer(NULL),
+                          fConsumers(NULL)
 {
 // Normal constructor.
-   fDataReady = kFALSE;
-   fOwnedData = kTRUE;
-   fFileName = "";
-   fData  = 0;
-   fType  = type;
-   fProducer  = 0; 
-   fConsumers = 0;
+}
+
+//______________________________________________________________________________
+AliAnalysisDataContainer::AliAnalysisDataContainer(const AliAnalysisDataContainer &cont)
+                         :TNamed(cont),
+                          fDataReady(cont.fDataReady),
+                          fOwnedData(kFALSE),
+                          fFileName(cont.fFileName),
+                          fData(cont.fData),
+                          fType(cont.fType),
+                          fProducer(cont.fProducer),
+                          fConsumers(NULL)
+{
+// Copy ctor.
+   if (cont.fConsumers) {
+      fConsumers = new TObjArray(2);
+      Int_t ncons = cont.fConsumers->GetEntriesFast();
+      for (Int_t i=0; i<ncons; i++) fConsumers->Add(cont.fConsumers->At(i));
+   }   
 }
 
 //______________________________________________________________________________
@@ -86,6 +106,27 @@ AliAnalysisDataContainer::~AliAnalysisDataContainer()
    if (fData && fOwnedData) delete fData;
    if (fConsumers) delete fConsumers;
 }
+
+//______________________________________________________________________________
+AliAnalysisDataContainer &AliAnalysisDataContainer::operator=(const AliAnalysisDataContainer &cont)
+{
+// Assignment.
+   if (&cont != this) {
+      TNamed::operator=(cont);
+      fDataReady = cont.fDataReady;
+      fOwnedData = kFALSE;  // !!! Data owned by cont.
+      fFileName = cont.fFileName;
+      fData = cont.fData;
+      fType = cont.fType;
+      fProducer = cont.fProducer;
+      if (cont.fConsumers) {
+         fConsumers = new TObjArray(2);
+         Int_t ncons = cont.fConsumers->GetEntriesFast();
+         for (Int_t i=0; i<ncons; i++) fConsumers->Add(cont.fConsumers->At(i));
+      }   
+   }   
+   return *this;
+}      
 
 //______________________________________________________________________________
 Bool_t AliAnalysisDataContainer::SetData(TObject *data, Option_t *option)
