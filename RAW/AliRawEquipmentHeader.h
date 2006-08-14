@@ -20,7 +20,7 @@
 class AliRawEquipmentHeader : public TObject {
 
 public:
-   AliRawEquipmentHeader() { fSize = 0; }
+   AliRawEquipmentHeader();
    ~AliRawEquipmentHeader() { }
 
    void         *HeaderBegin() { return (void *) &fSize; }

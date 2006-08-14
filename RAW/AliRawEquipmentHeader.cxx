@@ -27,6 +27,17 @@
 
 ClassImp(AliRawEquipmentHeader)
 
+//______________________________________________________________________________
+AliRawEquipmentHeader::AliRawEquipmentHeader():
+  fSize(0),
+  fEquipmentType(0),
+  fEquipmentID(0),
+  fBasicElementSizeType(0)
+{
+  // Default constructor
+  for(Int_t i = 0; i < kAttributeWords; i++)
+    fTypeAttribute[i] = 0;
+}
 
 //______________________________________________________________________________
 void AliRawEquipmentHeader::Swap()
