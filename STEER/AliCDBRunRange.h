@@ -43,7 +43,7 @@ public:
 
 	virtual Bool_t IsEqual(const TObject *obj) const;
 
-	static const UInt_t Infinity() {return fgkInfinity;}
+	static UInt_t Infinity() {return fgkInfinity;}
 	
 private:
 
