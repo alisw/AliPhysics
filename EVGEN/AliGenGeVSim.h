@@ -87,10 +87,9 @@ class AliGenGeVSim : public AliGenerator {
   
  private:
 
-  AliGenGeVSim(const AliGenGeVSim & ggs): AliGenerator(ggs)
-    {Fatal("copy ctor","Not implemented\n");}
+  AliGenGeVSim(const AliGenGeVSim & ggs);
   AliGenGeVSim & operator=(const AliGenGeVSim & /*ggs*/)
-    {Fatal("= operator","Not implemented\n"); return *this;}
+      {Fatal("= operator","Not implemented\n"); return *this;}
 
   Int_t   fModel;            // Selected model (1-7)
   Float_t fPsi;              // Reaction Plane angle (0-2pi)

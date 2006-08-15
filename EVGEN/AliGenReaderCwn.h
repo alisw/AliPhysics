@@ -18,9 +18,7 @@ class AliGenReaderCwn : public AliGenReader
 {
  public:
     AliGenReaderCwn();
-    
-    AliGenReaderCwn(const AliGenReaderCwn &reader):AliGenReader(reader)
-	{reader.Copy(*this);}
+    AliGenReaderCwn(const AliGenReaderCwn &reader);
     virtual ~AliGenReaderCwn();
         // Initialise 
     virtual void Init();

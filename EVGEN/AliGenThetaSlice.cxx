@@ -37,25 +37,24 @@ ClassImp(AliGenThetaSlice)
 
 //_____________________________________________________________________________
 AliGenThetaSlice::AliGenThetaSlice()
-    :AliGenerator()
+    :AliGenerator(),
+     fIpart(0)
 {
   //
   // Default constructor
   //
-  fIpart=0;
 }
 
 //_____________________________________________________________________________
 AliGenThetaSlice::AliGenThetaSlice(Int_t npart)
-  :AliGenerator(npart)
+    :AliGenerator(npart),
+     fIpart(kProton)
 {
   //
   // Standard constructor
   //
   fName  = "ThetaSlice";
   fTitle = "Particle generator - const. phi, slices in theta";
-  // Generate Proton by default
-  fIpart=kProton;
 }
 
 //_____________________________________________________________________________

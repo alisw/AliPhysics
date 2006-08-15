@@ -1,4 +1,4 @@
-/**************************************************************************
+ /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -35,27 +35,43 @@
 
 //
 ClassImp(AliDimuCombinator)
-    AliDimuCombinator::AliDimuCombinator() 
+
+AliDimuCombinator::AliDimuCombinator():
+    fNParticle((Int_t) (gAlice->TreeK())->GetEntries()),
+    fImuon1(0),
+    fImuon2(0),
+    fImin1(0),
+    fImin2(0),
+    fImax1(fNParticle),
+    fImax2(fNParticle),
+    fRate1(1.),
+    fRate2(1.),
+    fMuon1(0),
+    fMuon2(0),
+    fPtMin(0.),
+    fEtaMin(-10.),
+    fEtaMax(10.)
 {
 // Constructor
     fNParticle = (Int_t) (gAlice->TreeK())->GetEntries();
-    fImuon1 = 0;
-    fImuon2 = 0;
-    fMuon1  = 0;
-    fMuon2  = 0;
-    fImin1  = 0;
-    fImin2  = 0;
-    fImax1  = fNParticle;
-    fImax2  = fNParticle;
-    fPtMin  = 0;
-    fEtaMin = -10;
-    fEtaMax = -10;
-    fRate1  = 1.;
-    fRate2  = 1.;
 }
 
 AliDimuCombinator::AliDimuCombinator(const AliDimuCombinator & combinator)
-    :TObject(combinator)
+    :TObject(combinator),
+     fNParticle(0),
+     fImuon1(0),
+     fImuon2(0),
+     fImin1(0),
+     fImin2(0),
+     fImax1(0),
+     fImax2(0),
+     fRate1(0),
+     fRate2(0),
+     fMuon1(0),
+     fMuon2(0),
+     fPtMin(0.),
+     fEtaMin(0.),
+     fEtaMax(0.)
 {
 // Dummy copy constructor
     combinator.Copy(*this);

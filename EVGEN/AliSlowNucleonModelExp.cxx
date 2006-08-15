@@ -27,17 +27,18 @@
 #include "AliCollisionGeometry.h"
 #include <TRandom.h>
 
-ClassImp(AliSlowNucleonModelExp)
+ClassImp(AliSlowNucleonModelExp);
 
-AliSlowNucleonModelExp::AliSlowNucleonModelExp()
+
+AliSlowNucleonModelExp::AliSlowNucleonModelExp():
+    fP(82),
+    fN (208 - 82),
+    fAlphaGray(2.),
+    fAlphaBlack(4.)
 {
   //
   // Default constructor
   //
-    fP = 82;
-    fN = 208 - 82;
-    fAlphaGray  = 2.;
-    fAlphaBlack = 4.;
 }
 
 

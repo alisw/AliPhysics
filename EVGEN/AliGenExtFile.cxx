@@ -44,26 +44,30 @@
 ClassImp(AliGenExtFile)
 
 AliGenExtFile::AliGenExtFile()
-  :AliGenMC()
+    :AliGenMC(),
+     fFileName(0),
+     fReader(0)
 {
 //  Constructor
 //
 //  Read all particles
     fNpart  =- 1;
-    fReader =  0;
 }
 
 AliGenExtFile::AliGenExtFile(Int_t npart)
-    :AliGenMC(npart)
+    :AliGenMC(npart),
+     fFileName(0),
+     fReader(0)
 {
 //  Constructor
     fName   = "ExtFile";
     fTitle  = "Primaries from ext. File";
-    fReader = 0;
 }
 
 AliGenExtFile::AliGenExtFile(const AliGenExtFile & ExtFile):
-    AliGenMC(ExtFile)
+    AliGenMC(ExtFile),
+     fFileName(0),
+     fReader(0)
 {
 // Copy constructor
     ExtFile.Copy(*this);

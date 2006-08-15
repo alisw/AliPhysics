@@ -27,14 +27,30 @@
 
 #include "AliGenReaderEcalHijing.h"
 
-ClassImp(AliGenReaderEcalHijing)
+ClassImp(AliGenReaderEcalHijing);
 
-
-AliGenReaderEcalHijing::AliGenReaderEcalHijing() 
+AliGenReaderEcalHijing::AliGenReaderEcalHijing():
+    fNcurrent(0),
+    fNparticle(0),
+    fTreeNtuple(0),
+    fNjatt(0),
+    fNahij(0),
+    fNphij(0)
 {
 // Default constructor
-    fNcurrent   = 0;
-    fTreeNtuple = 0;
+}
+
+AliGenReaderEcalHijing::AliGenReaderEcalHijing(const AliGenReaderEcalHijing &reader):
+    AliGenReader(reader),
+    fNcurrent(0),
+    fNparticle(0),
+    fTreeNtuple(0),
+    fNjatt(0),
+    fNahij(0),
+    fNphij(0)
+{
+    // Copy constructor
+    reader.Copy(*this);
 }
 
 void AliGenReaderEcalHijing::Init() 

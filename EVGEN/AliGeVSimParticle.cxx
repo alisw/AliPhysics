@@ -48,10 +48,38 @@
 
 ClassImp(AliGeVSimParticle)
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+AliGeVSimParticle::AliGeVSimParticle():
+    fPDG(0),
+    fModel(0),
+    fN(0),
+    fMultTotal(kTRUE),
+    fIsSetMult(kFALSE),
+    fT(0.),
+    fSigmaY(0.),
+    fExpansion(0.),
+    fIsDirectedSimple(kTRUE),
+    fIsEllipticSimple(kTRUE),
+    fIsEllipticOld(kFALSE)
+{
+    // Default constructor
+}
 
 AliGeVSimParticle::AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicity,
-				     Float_t T, Float_t dY, Float_t exp) {
+				     Float_t T, Float_t dY, Float_t exp):
+    fPDG(pdg),
+    fModel(model),
+    fN(multiplicity),
+    fMultTotal(kTRUE),
+    fIsSetMult(kFALSE),
+    fT(T),
+    fSigmaY(dY),
+    fExpansion(exp),
+    fIsDirectedSimple(kTRUE),
+    fIsEllipticSimple(kTRUE),
+    fIsEllipticOld(kFALSE)
+{
   //
   //  pdg          - Particle type code in PDG standard (see: http://pdg.lbl.gov)
   //  model        - momentum distribution model (1 - 7)
@@ -59,51 +87,33 @@ AliGeVSimParticle::AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicit
   //  T            - Inverse slope parameter ("temperature")
   //  dY           - Raridity Width (only for model 1)
   //  exp          - expansion velocity (only for model 4) 
-  
-  fPDG = pdg;
-  fT = T;
-  fSigmaY = dY;
-  fExpansion = exp;
-
-  fN = multiplicity;
-  fMultTotal = kTRUE;
-  fIsSetMult = kFALSE;
-
-  SetModel(model);
-
   fV1[0] = fV1[1] = fV1[2] = fV1[3] = 0.;
   fV2[0] = fV2[1] = fV2[2] = 0.;
-
-  fIsEllipticSimple = fIsDirectedSimple = kTRUE;
-  fIsEllipticOld = kFALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AliGeVSimParticle::AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicity) {
+AliGeVSimParticle::AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicity):
+    fPDG(pdg),
+    fModel(model),
+    fN(multiplicity),
+    fMultTotal(kTRUE),
+    fIsSetMult(kFALSE),
+    fT(0.),
+    fSigmaY(0.),
+    fExpansion(0.),
+    fIsDirectedSimple(kTRUE),
+    fIsEllipticSimple(kTRUE),
+    fIsEllipticOld(kFALSE)
+ {
   //
   // pdg - Particle type code in PDG standard (see: http://pdg.lbl.gov)
   //  
   // Note that multiplicity can be interpreted by GeVSim 
   // either as Total multiplicity in the acceptance or dN/dY
   // 
- 
-  fPDG = pdg;
-  fN = multiplicity; 
-  fMultTotal = kTRUE;
-  fIsSetMult = kFALSE;
-  
-  SetModel(model);
-
-  fT = 0.;
-  fSigmaY = 0.;
-  fExpansion = 0.;
-  
   fV1[0] = fV1[1] = fV1[2] = fV1[3] = 0.;
   fV2[0] = fV2[1] = fV2[2] = 0.; 
-
-  fIsEllipticSimple = fIsDirectedSimple = kTRUE;
-  fIsEllipticOld = kFALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

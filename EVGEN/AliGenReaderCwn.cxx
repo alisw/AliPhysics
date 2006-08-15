@@ -29,15 +29,42 @@
 
 #include "AliGenReaderCwn.h"
 
-ClassImp(AliGenReaderCwn)
+ClassImp(AliGenReaderCwn);
 
-
-AliGenReaderCwn::AliGenReaderCwn() 
+AliGenReaderCwn::AliGenReaderCwn():
+    fNcurrent(0),
+    fNparticle(0),
+    fNparticleMax(0),
+    fTreeNtuple(0),
+    fNihead(0),
+    fNrhead(0),
+    fIdpart(0),
+    fTheta(0.),
+    fPhi(0.),
+    fP(0.),
+    fE(0.)
 {
 // Default constructor
-    fNcurrent   = 0;
-    fTreeNtuple = 0;
 }
+
+AliGenReaderCwn::AliGenReaderCwn(const AliGenReaderCwn &reader):
+    AliGenReader(reader),
+    fNcurrent(0),
+    fNparticle(0),
+    fNparticleMax(0),
+    fTreeNtuple(0),
+    fNihead(0),
+    fNrhead(0),
+    fIdpart(0),
+    fTheta(0.),
+    fPhi(0.),
+    fP(0.),
+    fE(0.)
+{
+    // Copy constructor
+    reader.Copy(*this);
+}
+
 
 AliGenReaderCwn::~AliGenReaderCwn()
 {

@@ -63,6 +63,7 @@ class AliGenHBTosl: public AliGenerator
  public:
    AliGenHBTosl();
    AliGenHBTosl(Int_t n,Int_t pid = 211);
+   AliGenHBTosl(const AliGenHBTosl& hbt);
    virtual ~AliGenHBTosl();
 
    void      Init();
@@ -103,6 +104,8 @@ class AliGenHBTosl: public AliGenerator
    void     TestCoarseSignal();
    
    Bool_t CheckParticle(TParticle* p, TParticle* aupair,AliStack* stack);
+   void Copy(TObject&) const;
+   AliGenHBTosl & operator=(const AliGenHBTosl & rhs);
  private:
   TH3D*    fQCoarseBackground;//Initial Background
   TH3D*    fQCoarseSignal;//signal calculated by multiplying coarse background and model function

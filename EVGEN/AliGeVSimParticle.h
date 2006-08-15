@@ -41,13 +41,13 @@ class AliGeVSimParticle : public TObject {
  public:
   
   ////////////////////////////////////////////////////////////////////////////
-  
-  AliGeVSimParticle() {}
-  AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicity); 
-  AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicity, 
+
+    AliGeVSimParticle();
+    AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicity); 
+    AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicity, 
 		    Float_t T, Float_t dY = 1., Float_t exp=0.);
   
-  ~AliGeVSimParticle() {}
+    ~AliGeVSimParticle() {}
   
   ////////////////////////////////////////////////////////////////////////////
   

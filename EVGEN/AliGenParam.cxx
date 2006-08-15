@@ -49,53 +49,73 @@ ClassImp(AliGenParam)
   //End_Html
 
 //____________________________________________________________
-AliGenParam::AliGenParam()
+    AliGenParam::AliGenParam():
+	fPtParaFunc(0),
+	fYParaFunc(0),
+	fIpParaFunc(0),
+	fPtPara(0),
+	fYPara(0),
+	fParam(0),
+	fdNdy0(0.),
+	fYWgt(0.),
+	fPtWgt(0.),
+	fBias(0.),
+	fTrials(0),
+	fDeltaPt(0.01),
+	fDecayer(0)
 {
-// Deafault constructor
-    fPtPara = 0;
-    fYPara  = 0;
-    fParam  = 0;
-    fAnalog = kAnalog;
-    SetDeltaPt();
-    fDecayer = 0;
-
-
+// Default constructor
 }
 //____________________________________________________________
-AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, char* tname):AliGenMC(npart)
+AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, char* tname)
+    :AliGenMC(npart),
+     fPtParaFunc(Library->GetPt(param, tname)),
+     fYParaFunc (Library->GetY (param, tname)),
+     fIpParaFunc(Library->GetIp(param, tname)),
+     fPtPara(0),
+     fYPara(0),
+     fParam(param),
+     fdNdy0(0.),
+     fYWgt(0.),
+     fPtWgt(0.),
+     fBias(0.),
+     fTrials(0),
+     fDeltaPt(0.01),
+     fDecayer(0)
 {
 // Constructor using number of particles parameterisation id and library
     fName = "Param";
     fTitle= "Particle Generator using pT and y parameterisation";
-    
-    fPtParaFunc = Library->GetPt(param, tname);
-    fYParaFunc  = Library->GetY (param, tname);
-    fIpParaFunc = Library->GetIp(param, tname);
-    
-    fPtPara = 0;
-    fYPara  = 0;
-    fParam  = param;
     fAnalog = kAnalog;
     SetForceDecay();
-    SetDeltaPt(); 
 }
 //____________________________________________________________
-AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char* name):AliGenMC(npart)
+AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char* name):
+    AliGenMC(npart),
+    fPtParaFunc(0),
+    fYParaFunc (0),
+    fIpParaFunc(0),
+    fPtPara(0),
+    fYPara(0),
+    fParam(param),
+    fdNdy0(0.),
+    fYWgt(0.),
+    fPtWgt(0.),
+    fBias(0.),
+    fTrials(0),
+    fDeltaPt(0.01),
+    fDecayer(0)
 {
 // Constructor using parameterisation id and number of particles
 //
-  fName = name;
-  fTitle= "Particle Generator using pT and y parameterisation";
+    fName = name;
+    fTitle= "Particle Generator using pT and y parameterisation";
       
     AliGenLib* pLibrary = new AliGenMUONlib();
- 
     fPtParaFunc = pLibrary->GetPt(param, tname);
     fYParaFunc  = pLibrary->GetY (param, tname);
     fIpParaFunc = pLibrary->GetIp(param, tname);
     
-    fPtPara = 0;
-    fYPara  = 0;
-    fParam  = param;
     fAnalog = kAnalog;
     fChildSelect.Set(5);
     for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
@@ -105,7 +125,6 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char
     SetChildPtRange();
     SetChildPhiRange();
     SetChildThetaRange(); 
-    SetDeltaPt(); 
 }
 //____________________________________________________________
 
@@ -113,20 +132,27 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
                          Double_t (*PtPara) (Double_t*, Double_t*),
                          Double_t (*YPara ) (Double_t* ,Double_t*),
 		         Int_t    (*IpPara) (TRandom *))		 
-    :AliGenMC(npart)
+    :AliGenMC(npart),
+     
+     fPtParaFunc(PtPara),
+     fYParaFunc(YPara),
+     fIpParaFunc(IpPara),
+     fPtPara(0),
+     fYPara(0),
+     fParam(param),
+     fdNdy0(0.),
+     fYWgt(0.),
+     fPtWgt(0.),
+     fBias(0.),
+     fTrials(0),
+     fDeltaPt(0.01),
+     fDecayer(0)
 {
 // Constructor
 // Gines Martinez 1/10/99 
     fName = "Param";
     fTitle= "Particle Generator using pT and y parameterisation";
 
-    fPtParaFunc = PtPara; 
-    fYParaFunc  = YPara;  
-    fIpParaFunc = IpPara;
-//  
-    fPtPara = 0;
-    fYPara  = 0;
-    fParam  = param;
     fAnalog = kAnalog;
     fChildSelect.Set(5);
     for (Int_t i=0; i<5; i++) fChildSelect[i]=0;
@@ -136,12 +162,24 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
     SetChildPtRange();
     SetChildPhiRange();
     SetChildThetaRange();  
-    SetDeltaPt();
 }
 
 
 AliGenParam::AliGenParam(const AliGenParam & Param)
-    :AliGenMC(Param)
+    :AliGenMC(Param),	
+     fPtParaFunc(0),
+     fYParaFunc(0),
+     fIpParaFunc(0),
+     fPtPara(0),
+     fYPara(0),
+     fParam(0),
+     fdNdy0(0.),
+     fYWgt(0.),
+     fPtWgt(0.),
+     fBias(0.),
+     fTrials(0),
+     fDeltaPt(0.01),
+     fDecayer(0)
 {
 // Copy constructor
     Param.Copy(*this);

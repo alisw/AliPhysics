@@ -30,27 +30,26 @@ ClassImp(AliGenFixed)
 
 //_____________________________________________________________________________
 AliGenFixed::AliGenFixed()
-  :AliGenerator()
+    :AliGenerator(), 
+     fIpart(0),
+     fExplicit(kFALSE)
 {
   //
   // Default constructor
   //
-  fIpart = 0;
-  fExplicit = kFALSE;
 }
 
 //_____________________________________________________________________________
 AliGenFixed::AliGenFixed(Int_t npart)
-  :AliGenerator(npart)
+    :AliGenerator(npart),
+     fIpart(kProton),
+     fExplicit(kFALSE)
 {
   //
   // Standard constructor
   //
   fName="Fixed";
   fTitle="Fixed Particle Generator";
-  // Generate Proton by default
-  fIpart=kProton;
-  fExplicit = kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -67,8 +66,16 @@ void AliGenFixed::Generate()
   }
   Int_t i, nt;
   //
+  Float_t o[3];
+  o[0] = fOrigin[0];
+  o[1] = fOrigin[1];
+  o[2] = fOrigin[2];
+
+  printf("Origin %f %f %f \n", o[0], o[1], o[2]);
+  
+  
   for(i=0;i<fNpart;i++) 
-    PushTrack(fTrackIt,-1,fIpart,fP,fOrigin.GetArray(),polar,0,kPPrimary,nt);
+    PushTrack(fTrackIt,-1,fIpart,fP,o ,polar,0,kPPrimary,nt);
 }
   
 //_____________________________________________________________________________

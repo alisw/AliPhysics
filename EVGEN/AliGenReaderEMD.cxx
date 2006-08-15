@@ -27,19 +27,47 @@
 
 #include "AliGenReaderEMD.h"
 
-ClassImp(AliGenReaderEMD)
+ClassImp(AliGenReaderEMD);
 
-
-  // -----------------------------------------------------------------------------------
-AliGenReaderEMD::AliGenReaderEMD() 
+AliGenReaderEMD::AliGenReaderEMD():
+    fStartEvent(0),
+    fNcurrent(0),  
+    fNparticle(0), 
+    fTreeNtuple(0),
+    fIPSide(0),
+    fPcToTrack(0),
+    fNnLeft(0),
+    fEnLeft(0),
+    fNnRight(0),
+    fEnRight(0),
+    fNpLeft(0),
+    fEtapLeft(0),
+    fNpRight(0),
+    fEtapRight(0)
 {
 // Default constructor
-    fStartEvent  = 0;
-    fTreeNtuple  = 0;
-    fIPSide      = 0;
-    fPcToTrack = 0;
 }
 
+AliGenReaderEMD::AliGenReaderEMD(const AliGenReaderEMD &reader):
+    AliGenReader(reader),
+    fStartEvent(0),
+    fNcurrent(0),  
+    fNparticle(0), 
+    fTreeNtuple(0),
+    fIPSide(0),
+    fPcToTrack(0),
+    fNnLeft(0),
+    fEnLeft(0),
+    fNnRight(0),
+    fEnRight(0),
+    fNpLeft(0),
+    fEtapLeft(0),
+    fNpRight(0),
+    fEtapRight(0)
+{
+    // Copy Constructor
+    reader.Copy(*this);
+}
   // -----------------------------------------------------------------------------------
 AliGenReaderEMD::~AliGenReaderEMD()
 {

@@ -26,38 +26,43 @@
 #include "AliGenerator.h"
 
 
-ClassImp(AliGenCocktailEntry)
+ClassImp(AliGenCocktailEntry);
 
-
-
-AliGenCocktailEntry::AliGenCocktailEntry()
+AliGenCocktailEntry::AliGenCocktailEntry():
+    fGenerator(0),
+    fNGenerated(0),
+    fFirst(-1),
+    fLast(-1),
+    fRate(0),
+    fKineBias(1),
+    fBias(1)
 {
 // Default constructor
-    fGenerator =0;
-    fNGenerated=0;
-    fFirst=-1;
-    fLast=-1;
-    fRate=0;
-    fKineBias=1;
-    fBias=1;
+
 }
 
 AliGenCocktailEntry:: AliGenCocktailEntry
-(AliGenerator* Generator, const char * Name, Float_t RateExp):TNamed(Name, "Generator Cocktail Entry")
+(AliGenerator* Generator, const char * Name, Float_t RateExp):TNamed(Name, "Generator Cocktail Entry"),
+    fGenerator(Generator),
+    fNGenerated(0),
+    fFirst(-1),
+    fLast(-1),
+    fRate(RateExp),
+    fKineBias(1),
+    fBias(1)
 {
-// Constructor using generator type, name and rate per event
-    fGenerator=Generator;
-    fNGenerated=0;
-    fFirst=-1;
-    fLast=-1;
-    fRate=RateExp;
-// 	    
-    fKineBias=1;
-    fBias=1;
+    // Constructor
 }
 
 AliGenCocktailEntry::AliGenCocktailEntry(const AliGenCocktailEntry &entry):
-    TNamed(entry)
+    TNamed(entry),
+    fGenerator(0),
+    fNGenerated(0),
+    fFirst(-1),
+    fLast(-1),
+    fRate(0),
+    fKineBias(1),
+    fBias(1)
 {
 // Dummy copy constructor
     entry.Copy(*this);

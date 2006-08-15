@@ -50,18 +50,21 @@ ClassImp(AliGenAfterBurnerFlow)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AliGenAfterBurnerFlow::AliGenAfterBurnerFlow() {
-  //
-  // Deafult Construction
-  //
-
-  fReactionPlane = 0;
-  fCounter = 0;
+    AliGenAfterBurnerFlow::AliGenAfterBurnerFlow(): 
+	fReactionPlane(0),
+	fCounter(0)
+{
+    //
+    // Default Construction
+    //
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AliGenAfterBurnerFlow::AliGenAfterBurnerFlow(Float_t reactionPlane) {
+AliGenAfterBurnerFlow::AliGenAfterBurnerFlow(Float_t reactionPlane):
+	fReactionPlane(reactionPlane),
+	fCounter(0) 
+{
   //
   // Standard Construction
   // 

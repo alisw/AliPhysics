@@ -97,7 +97,8 @@ AliGenGeVSim::AliGenGeVSim() :
   fPhiFormula(0),
   fCurrentForm(0),
   fPtYHist(0),
-  fPartTypes(0) {
+  fPartTypes(0) 
+{
   //
   //  Default constructor
   // 
@@ -110,7 +111,18 @@ AliGenGeVSim::AliGenGeVSim() :
 
 //////////////////////////////////////////////////////////////////////////////////
 
-AliGenGeVSim::AliGenGeVSim(Float_t psi, Bool_t isMultTotal) : AliGenerator(-1) {
+AliGenGeVSim::AliGenGeVSim(Float_t psi, Bool_t isMultTotal) 
+    : AliGenerator(-1),
+      fModel(0),
+      fPsi(psi),
+      fIsMultTotal(isMultTotal),
+      fPtFormula(0),
+      fYFormula(0),
+      fPhiFormula(0),
+      fCurrentForm(0),
+      fPtYHist(0),
+      fPartTypes(0) 
+ {
   //
   //  Standard Constructor.
   //  
@@ -136,11 +148,27 @@ AliGenGeVSim::AliGenGeVSim(Float_t psi, Bool_t isMultTotal) : AliGenerator(-1) {
   fPsi = psi * TMath::Pi() / 180. ;
   fIsMultTotal = isMultTotal;
 
-  // initialization 
+  // Initialization 
 
   fPartTypes = new TObjArray();
   InitFormula();
 }
+
+AliGenGeVSim::AliGenGeVSim(const AliGenGeVSim & ggs)
+    : AliGenerator(ggs),
+      fModel(0),
+      fPsi(0),
+      fIsMultTotal(0),
+      fPtFormula(0),
+      fYFormula(0),
+      fPhiFormula(0),
+      fCurrentForm(0),
+      fPtYHist(0),
+      fPartTypes(0) 
+{
+    Fatal("copy ctor","Not implemented\n");
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////
 

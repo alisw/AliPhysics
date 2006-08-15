@@ -25,36 +25,52 @@
 #include "AliDecayerPolarized.h"
 #include "AliLog.h"
 
-ClassImp(AliDecayerPolarized)
+ClassImp(AliDecayerPolarized);
+
+
 
 //____________________________________________________________
-AliDecayerPolarized::AliDecayerPolarized()
+AliDecayerPolarized::AliDecayerPolarized():
+    fAlpha(0),
+    fSystRef(kHelicity),
+    fDecProd(kMuon),
+    fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)),
+    fMother(0),
+    fDaughter1(0),
+    fDaughter2(0)
 {
 // Default constructor
-    fAlpha=0;
-    fSystRef=kHelicity;
-    fDecProd=kMuon;
-    fMother=0;
-    fDaughter1=0;
-    fDaughter2=0;
-    fPol = new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.);
     fPol->SetParameter(0,fAlpha);
 }
 
 //____________________________________________________________
-AliDecayerPolarized::AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod)
+AliDecayerPolarized::AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod):
+    fAlpha(alpha),
+    fSystRef(systref),
+    fDecProd(decprod),
+    fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)),
+    fMother(0),
+    fDaughter1(0),
+    fDaughter2(0)
 {
 // Another constructor
-    fAlpha=alpha;
-    fSystRef=systref;
-    fDecProd=decprod;
-    fMother=0;
-    fDaughter1=0;
-    fDaughter2=0;
-    fPol = new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.);
     fPol->SetParameter(0,fAlpha);
     if(fDecProd!=kMuon && fDecProd!=kElectron)
-    AliFatal("Only polarized decay into muons or electrons is implemented!");
+	AliFatal("Only polarized decay into muons or electrons is implemented!");
+}
+
+AliDecayerPolarized::AliDecayerPolarized(const AliDecayerPolarized &decayer):
+    AliDecayer(decayer),
+    fAlpha(0),
+    fSystRef(kHelicity),
+    fDecProd(kMuon),
+    fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)),
+    fMother(0),
+    fDaughter1(0),
+    fDaughter2(0)   
+{
+    // Copy Constructor
+    decayer.Copy(*this);
 }
 
 //____________________________________________________________

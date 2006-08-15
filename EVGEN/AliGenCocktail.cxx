@@ -36,22 +36,31 @@
 ClassImp(AliGenCocktail)
 
 AliGenCocktail::AliGenCocktail()
-                 :AliGenerator()
+    :AliGenerator(), 
+     fNGenerators(0),
+     fRandom(kFALSE),
+     fUsePerEventRate(kFALSE),
+     fProb(0),
+     fEntries(0),
+     flnk1(0),
+     flnk2(0), 
+     fHeader(0)
 {
 // Constructor
     fName = "Cocktail";
     fTitle= "Particle Generator using cocktail of generators";
-    flnk1            = 0;
-    flnk2            = 0;
-    fNGenerators     = 0;
-    fEntries         = 0;
-    fHeader          = 0;
-    fRandom          = kFALSE;
-    fUsePerEventRate = kFALSE;
 }
 
 AliGenCocktail::AliGenCocktail(const AliGenCocktail & cocktail):
-    AliGenerator(cocktail)
+    AliGenerator(cocktail), 
+    fNGenerators(0),
+    fRandom(kFALSE),
+    fUsePerEventRate(kFALSE),
+    fProb(0),
+    fEntries(0),
+    flnk1(0),
+    flnk2(0), 
+    fHeader(0)
 {
 // Copy constructor
     cocktail.Copy(*this);
@@ -188,7 +197,6 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 	// Loop over generators and generate events
 	Int_t igen=0;
 	while((entry = (AliGenCocktailEntry*)next())) {
-
 	    if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
 	    
 	    igen++;

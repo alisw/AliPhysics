@@ -26,40 +26,40 @@
  ClassImp(AliGenScan)
     
  AliGenScan::AliGenScan()
-	 :AliGenerator(-1)
+     :AliGenerator(-1), 
+      fXCmin(0),
+      fXCmax(0),
+      fNx(1),
+      fYCmin(0),
+      fYCmax(0),
+      fNy(1),
+      fZmin(0),
+      fZmax(0),
+      fNz(1),
+      fIpart(0)
 {
 // Constructor
-    fXCmin=0;
-    fXCmax=0;
-    fNx=1;
-    fYCmin=0;
-    fYCmax=0;
-    fNy=1;
-    fZmin=0;
-    fZmax=0;
-    fNz=1;
 //
 //  Read all particles
     fNpart=-1;
 }
 
 AliGenScan::AliGenScan(Int_t npart)
-    :AliGenerator(npart)
+    :AliGenerator(npart), 
+      fXCmin(0),
+      fXCmax(0),
+      fNx(1),
+      fYCmin(0),
+      fYCmax(0),
+      fNy(1),
+      fZmin(0),
+      fZmax(0),
+      fNz(1),
+      fIpart(0)
 {
 // Constructor
     fName  = "Scan";
     fTitle = "Generator for particles on a grid";
-
-
-    fXCmin=0;
-    fXCmax=0;
-    fNx=1;
-    fYCmin=0;
-    fYCmax=0;
-    fNy=1;
-    fZmin=0;
-    fZmax=0;
-    fNz=1;
 }
 
 //____________________________________________________________

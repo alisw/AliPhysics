@@ -30,11 +30,32 @@
 ClassImp(AliGenReaderEcalJets)
 
 
-AliGenReaderEcalJets::AliGenReaderEcalJets() 
+AliGenReaderEcalJets::AliGenReaderEcalJets():
+    fNcurrent(0),
+    fNparticle(0),
+    fNev(0),
+    fNpart(0),
+    fNjet(0),     
+    fNsjet(0),
+    fNpjet(0),
+    fTreeNtuple(0) 
 {
 // Default constructor
-    fNcurrent   = 0;
-    fTreeNtuple = 0;
+}
+
+ AliGenReaderEcalJets::AliGenReaderEcalJets(const AliGenReaderEcalJets &reader)
+     :AliGenReader(reader),
+      fNcurrent(0),
+      fNparticle(0),
+      fNev(0),
+      fNpart(0),
+      fNjet(0),     
+      fNsjet(0),
+      fNpjet(0),
+      fTreeNtuple(0) 
+{
+    // Copy Constructor
+    reader.Copy(*this);
 }
 
 void AliGenReaderEcalJets::Init() 

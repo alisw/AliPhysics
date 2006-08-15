@@ -58,12 +58,6 @@
 ClassImp(AliGenHIJINGpara)
 
 
-AliGenHIJINGpara::AliGenHIJINGpara(const AliGenHIJINGpara & para):
-    AliGenerator(para)
-{
-// Copy constructor
-    para.Copy(*this);
-}
 
 //_____________________________________________________________________________
 static Double_t ptpi(Double_t *px, Double_t *)
@@ -164,42 +158,63 @@ static Double_t etakac( Double_t *py, Double_t *)
 
 //_____________________________________________________________________________
 AliGenHIJINGpara::AliGenHIJINGpara()
-  :AliGenerator()
+    :AliGenerator(),
+	fNt(-1),
+	fNpartProd(0),
+	fPi0Decays(kFALSE),
+	fPtWgtPi(0.),
+	fPtWgtKa(0.),
+	fPtpi(0),
+	fPtka(0),
+	fETApic(0),
+	fETAkac(0),
+	fDecayer(0)
 {
     //
     // Default constructor
     //
-    fPtpi    =  0;
-    fPtka    =  0;
-    fETApic  =  0;
-    fETAkac  =  0;
-    fDecayer =  0;
-    fNt      = -1;
-    fNpartProd = 0;
     SetCutVertexZ();
     SetPtRange();
-    SetPi0Decays();
 }
 
 //_____________________________________________________________________________
 AliGenHIJINGpara::AliGenHIJINGpara(Int_t npart)
-  :AliGenerator(npart)
+    :AliGenerator(npart),
+	fNt(-1),
+	fNpartProd(npart),
+	fPi0Decays(kFALSE),
+	fPtWgtPi(0.),
+	fPtWgtKa(0.),
+	fPtpi(0),
+	fPtka(0),
+	fETApic(0),
+	fETAkac(0),
+	fDecayer(0)
 {
   // 
   // Standard constructor
   //
     fName="HIJINGpara";
     fTitle="HIJING Parametrisation Particle Generator";
-    fPtpi    =  0;
-    fPtka    =  0;
-    fETApic  =  0;
-    fETAkac  =  0;
-    fDecayer =  0;
-    fNt      = -1;
-    fNpartProd = npart;
     SetCutVertexZ();
     SetPtRange();
-    SetPi0Decays();
+}
+
+AliGenHIJINGpara::AliGenHIJINGpara(const AliGenHIJINGpara & para):
+    AliGenerator(para),
+    fNt(-1),
+    fNpartProd(0),
+    fPi0Decays(kFALSE),
+    fPtWgtPi(0.),
+    fPtWgtKa(0.),
+    fPtpi(0),
+    fPtka(0),
+    fETApic(0),
+    fETAkac(0),
+    fDecayer(0)
+{
+// Copy constructor
+    para.Copy(*this);
 }
 
 //_____________________________________________________________________________

@@ -100,9 +100,11 @@ AliGenHBTosl::AliGenHBTosl():
  fQRange(0.06),
  fQNBins(60),
  fGenerator(0x0),
+ fStackBuffer(0),
  fBufferSize(5),
  fNBinsToScale(Int_t(fQNBins*0.1)),
  fDebug(0),
+ fSignalShapeCreated(0),
  fMaxIterations(1000),
  fMaxChiSquereChange(0.01),
  fMaxChiSquerePerNDF(1.5), 
@@ -112,6 +114,7 @@ AliGenHBTosl::AliGenHBTosl():
  fSamplePhiMax(TMath::TwoPi()+0.01),
  fSignalRegion(0.0),
  fMinFill(1000),
+ fSwapped(0),
  fLogFile(0x0)
 {
 //default constructor
@@ -129,6 +132,7 @@ AliGenHBTosl::AliGenHBTosl(Int_t n, Int_t pid):
  fQRange(0.06),
  fQNBins(60),
  fGenerator(0x0),
+ fStackBuffer(0),
  fBufferSize(5),
  fNBinsToScale(Int_t(fQNBins*0.1)),
  fDebug(0),
@@ -142,9 +146,42 @@ AliGenHBTosl::AliGenHBTosl(Int_t n, Int_t pid):
  fSamplePhiMax(TMath::TwoPi()+0.01),
  fSignalRegion(0.0),
  fMinFill(1000),
+ fSwapped(0),
  fLogFile(0x0)
 {
 //default constructor
+}
+
+AliGenHBTosl::AliGenHBTosl(const AliGenHBTosl & hbt):
+ AliGenerator(-1),
+ fQCoarseBackground(0x0),
+ fQCoarseSignal(0x0),
+ fQSignal(0x0),
+ fQBackground(0x0),
+ fQSecondSignal(0x0),
+ fQSecondBackground(0x0),
+ fQRange(0.06),
+ fQNBins(60),
+ fGenerator(0x0),
+ fStackBuffer(0),
+ fBufferSize(5),
+ fNBinsToScale(Int_t(fQNBins*0.1)),
+ fDebug(0),
+ fSignalShapeCreated(kFALSE),
+ fMaxIterations(1000),
+ fMaxChiSquereChange(0.01),
+ fMaxChiSquerePerNDF(1.5),
+ fQRadius(8.0),
+ fPID(kPiPlus),
+ fSamplePhiMin(-0.01),
+ fSamplePhiMax(TMath::TwoPi()+0.01),
+ fSignalRegion(0.0),
+ fMinFill(1000),
+ fSwapped(0),
+ fLogFile(0x0)
+{
+// Copy constructor
+    hbt.Copy(*this);
 }
 /***********************************************************/
 
@@ -1898,3 +1935,20 @@ void AliGenHBTosl::SwapGeneratingHistograms()
   fSwapped = kTRUE;
   
 }
+
+AliGenHBTosl& AliGenHBTosl::operator=(const  AliGenHBTosl& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this);
+    return *this;
+}
+
+void AliGenHBTosl::Copy(TObject&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
+}
+
+

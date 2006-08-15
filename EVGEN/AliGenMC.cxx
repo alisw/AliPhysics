@@ -32,51 +32,105 @@
 ClassImp(AliGenMC)
 
 AliGenMC::AliGenMC()
-    :AliGenerator()
+    :AliGenerator(),
+     fParticles(0),
+     fParentSelect(8),
+     fChildSelect(8),
+     fCutOnChild(0),
+     fChildPtMin(0.),
+     fChildPtMax(1.e10),
+     fChildPMin(0.),
+     fChildPMax(1.e10),
+     fChildPhiMin(0.),
+     fChildPhiMax(2. * TMath::Pi()),
+     fChildThetaMin(0.),
+     fChildThetaMax(TMath::Pi()),
+     fChildYMin(-12.),
+     fChildYMax(12.),
+     fXingAngleX(0.),
+     fXingAngleY(0.),
+     fForceDecay(kAll),
+     fMaxLifeTime(1.e-15),
+     fAProjectile(1),
+     fZProjectile(1),
+     fATarget(1),
+     fZTarget(1),
+     fProjectile("P"),
+     fTarget("P"),    
+     fDyBoost(0.),
+     fGeometryAcceptance(0),
+     fPdgCodeParticleforAcceptanceCut(0),
+     fNumberOfAcceptedParticles(2)
 {
 // Default Constructor
-    SetCutOnChild();
-    SetChildMomentumRange();
-    SetChildPtRange();
-    SetChildPhiRange();
-    SetChildThetaRange(); 
-    SetChildYRange(); 
-    SetMaximumLifetime();
-    SetGeometryAcceptance();
-    SetPdgCodeParticleforAcceptanceCut();
-    SetNumberOfAcceptedParticles();
-    SetTarget();
-    SetProjectile();
-    fParentSelect.Set(8);
-    fChildSelect.Set(8);
-    fForceDecay = kAll;
 }
 
 AliGenMC::AliGenMC(Int_t npart)
-    :AliGenerator(npart)
+    :AliGenerator(npart),
+     fParticles(0),
+     fParentSelect(8),
+     fChildSelect(8),
+     fCutOnChild(0),
+     fChildPtMin(0.),
+     fChildPtMax(1.e10),
+     fChildPMin(0.),
+     fChildPMax(1.e10),
+     fChildPhiMin(0.),
+     fChildPhiMax(2. * TMath::Pi()),
+     fChildThetaMin(0.),
+     fChildThetaMax(TMath::Pi()),
+     fChildYMin(-12.),
+     fChildYMax(12.),
+     fXingAngleX(0.),
+     fXingAngleY(0.),
+     fForceDecay(kAll),
+     fMaxLifeTime(1.e-15),
+     fAProjectile(1),
+     fZProjectile(1),
+     fATarget(1),
+     fZTarget(1),
+     fProjectile("P"),
+     fTarget("P"),    
+     fDyBoost(0.),
+     fGeometryAcceptance(0),
+     fPdgCodeParticleforAcceptanceCut(0),
+     fNumberOfAcceptedParticles(2)
 {
 //  Constructor
-    SetCutOnChild();
-    SetChildMomentumRange();
-    SetChildPtRange();
-    SetChildPhiRange();
-    SetChildThetaRange();
-    SetChildYRange(); 
 // 
-    fParentSelect.Set(8);
-    fChildSelect.Set(8);
     for (Int_t i=0; i<8; i++) fParentSelect[i]=fChildSelect[i]=0;
-    SetMaximumLifetime();
-    SetGeometryAcceptance();
-    SetPdgCodeParticleforAcceptanceCut();
-    SetNumberOfAcceptedParticles();
-    SetTarget();
-    SetProjectile();
-    fForceDecay = kAll;
 }
 
 AliGenMC::AliGenMC(const AliGenMC & mc):
-    AliGenerator(mc)
+    AliGenerator(mc),
+    fParticles(0),
+    fParentSelect(8),
+    fChildSelect(8),
+    fCutOnChild(0),
+    fChildPtMin(0.),
+    fChildPtMax(1.e10),
+    fChildPMin(0.),
+    fChildPMax(1.e10),
+    fChildPhiMin(0.),
+    fChildPhiMax(2. * TMath::Pi()),
+    fChildThetaMin(0.),
+    fChildThetaMax(TMath::Pi()),
+    fChildYMin(-12.),
+    fChildYMax(12.),
+    fXingAngleX(0.),
+    fXingAngleY(0.),
+    fForceDecay(kAll),
+    fMaxLifeTime(1.e-15),
+    fAProjectile(1),
+    fZProjectile(1),
+    fATarget(1),
+    fZTarget(1),
+    fProjectile("P"),
+    fTarget("P"),    
+    fDyBoost(0.),
+    fGeometryAcceptance(0),
+    fPdgCodeParticleforAcceptanceCut(0),
+    fNumberOfAcceptedParticles(2)
 {
 // Copy constructor
     mc.Copy(*this);

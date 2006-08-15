@@ -30,18 +30,19 @@
 ClassImp(AliGenBeamGas)
 
 AliGenBeamGas::AliGenBeamGas()
-    :AliGenExtFile()
+    :AliGenExtFile(), 
+     fInteractions(1)
 {
 //  Constructor
 //
-    fInteractions = 1;
     fOsigma[0] =    0.;
     fOsigma[1] =    0.;
     fOsigma[2] = 2000.;
 }
 
 AliGenBeamGas::AliGenBeamGas(const AliGenBeamGas & beamgas):
-    AliGenExtFile(beamgas)
+    AliGenExtFile(beamgas),
+    fInteractions(1)
 {
 // Copy constructor
     beamgas.Copy(*this);

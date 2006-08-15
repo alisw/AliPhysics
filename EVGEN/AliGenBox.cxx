@@ -34,25 +34,24 @@ ClassImp(AliGenBox)
 
 //_____________________________________________________________________________
 AliGenBox::AliGenBox()
-    :AliGenerator()
+    :AliGenerator(), 
+     fIpart(0)
 {
   //
   // Default constructor
   //
-  fIpart=0;
 }
 
 //_____________________________________________________________________________
 AliGenBox::AliGenBox(Int_t npart)
-  :AliGenerator(npart)
+    :AliGenerator(npart),
+     fIpart(kProton)
 {
   //
   // Standard constructor
   //
   fName  = "Box";
   fTitle = "Box particle generator";
-  // Generate Proton by default
-  fIpart=kProton;
 }
 
 //_____________________________________________________________________________

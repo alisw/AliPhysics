@@ -19,24 +19,24 @@
 #include "AliGenEventHeader.h"
 #include <TList.h>
 
-ClassImp(AliGenCocktailEventHeader)
+ClassImp(AliGenCocktailEventHeader);
 
 
-
-AliGenCocktailEventHeader::AliGenCocktailEventHeader()
+AliGenCocktailEventHeader::AliGenCocktailEventHeader():
+    fHeaders(0)
 {
 // Default Constructor
-    fHeaders = 0x0;
 }
 
-AliGenCocktailEventHeader::AliGenCocktailEventHeader(const char* name):AliGenEventHeader(name)
+AliGenCocktailEventHeader::AliGenCocktailEventHeader(const char* name):AliGenEventHeader(name),
+    fHeaders(0)
 {
 // Constructor
-    fHeaders = 0x0;
 }
 
 AliGenCocktailEventHeader::AliGenCocktailEventHeader(const AliGenCocktailEventHeader &header):
-AliGenEventHeader(header)
+    AliGenEventHeader(header),
+    fHeaders(0)
 {
 // Copy Constructor
     header.Copy(*this);

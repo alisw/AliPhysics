@@ -16,8 +16,7 @@ class AliGenReaderEMD : public AliGenReader
  public:
     AliGenReaderEMD();
     
-    AliGenReaderEMD(const AliGenReaderEMD &reader):AliGenReader(reader)
-	{reader.Copy(*this);}
+    AliGenReaderEMD(const AliGenReaderEMD &reader);
     virtual ~AliGenReaderEMD();
     AliGenReaderEMD & operator=(const AliGenReaderEMD & rhs);
     // Initialise 

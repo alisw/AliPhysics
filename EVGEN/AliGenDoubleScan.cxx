@@ -27,12 +27,15 @@
  ClassImp(AliGenDoubleScan)
     
  AliGenDoubleScan::AliGenDoubleScan()
-	 :AliGenScan(-1)
+     :AliGenScan(-1),
+      fDistance(0.)
 {
+    // Default constructor
 }
 
 AliGenDoubleScan::AliGenDoubleScan(Int_t npart)
-    :AliGenScan(npart)
+    :AliGenScan(npart),
+     fDistance(0.)
 {
 // Constructor
     fName = "Double Scan";

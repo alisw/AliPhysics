@@ -35,7 +35,18 @@
 ClassImp(AliGenHaloProtvino)
 
 AliGenHaloProtvino::AliGenHaloProtvino()
-    :AliGenerator(-1)
+    :AliGenerator(-1), 
+     fFile(0),
+     fFileName(0),
+     fSide(1),
+     fRunPeriod(kY3D90),
+     fTimePerEvent(1.e-4),
+     fNskip(0),
+     fZ1(0),
+     fZ2(0),
+     fG1(0),
+     fG2(0),
+     fGPASize(0)
 {
 // Constructor
     
@@ -44,32 +55,45 @@ AliGenHaloProtvino::AliGenHaloProtvino()
 //
 //  Read all particles
     fNpart = -1;
-    fFile  =  0;
-    fSide  =  1;
-//
-    SetRunPeriod();
-    SetTimePerEvent();
     SetAnalog(0);
 }
 
 AliGenHaloProtvino::AliGenHaloProtvino(Int_t npart)
-    :AliGenerator(npart)
+    :AliGenerator(npart),
+     fFile(0),
+     fFileName(0),
+     fSide(1),
+     fRunPeriod(kY3D90),
+     fTimePerEvent(1.e-4),
+     fNskip(0),
+     fZ1(0),
+     fZ2(0),
+     fG1(0),
+     fG2(0),
+     fGPASize(0)
 {
 // Constructor
     fName = "Halo";
     fTitle= "Halo from LHC Tunnel";
 //
     fNpart   = npart;
-    fFile    = 0;
-    fSide    = 1;
 //
-    SetRunPeriod();
-    SetTimePerEvent();
     SetAnalog(0);
 }
 
 AliGenHaloProtvino::AliGenHaloProtvino(const AliGenHaloProtvino & HaloProtvino):
-    AliGenerator(HaloProtvino)
+    AliGenerator(HaloProtvino),
+    fFile(0),
+    fFileName(0),
+    fSide(1),
+    fRunPeriod(kY3D90),
+    fTimePerEvent(1.e-4),
+    fNskip(0),
+    fZ1(0),
+    fZ2(0),
+    fG1(0),
+    fG2(0),
+    fGPASize(0)
 {
 // Copy constructor
     HaloProtvino.Copy(*this);

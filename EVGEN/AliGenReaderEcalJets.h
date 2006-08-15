@@ -16,9 +16,7 @@ class AliGenReaderEcalJets : public AliGenReader
 {
  public:
     AliGenReaderEcalJets();
-    
-    AliGenReaderEcalJets(const AliGenReaderEcalJets &reader):AliGenReader(reader)
-	{reader.Copy(*this);}
+    AliGenReaderEcalJets(const AliGenReaderEcalJets &reader);
     virtual ~AliGenReaderEcalJets(){;}
     // Initialise 
     virtual void Init();

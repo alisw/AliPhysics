@@ -48,29 +48,37 @@ ClassImp(AliGenCocktailAfterBurner)
 /*********************************************************************/ 
 /*********************************************************************/ 
 
-AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()
+    AliGenCocktailAfterBurner::AliGenCocktailAfterBurner():
+	fNAfterBurners(0),
+	fAfterBurnerEntries(new TList()),
+	fGenerationDone(kFALSE),
+	fInternalStacks(0),
+	fCollisionGeometries(0),
+	fCurrentEvent(0),
+	fActiveStack(0),
+	fActiveEvent(-1),
+	fCurrentGenerator(0),
+	fNBgEvents(0)
 {
 // Constructor
     if (gDebug > 0) 
-       cout<<"AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()"<<endl;
+	cout<<"AliGenCocktailAfterBurner::AliGenCocktailAfterBurner()"<<endl;
     SetName("AliGenCocktailAfterBurner");
     SetTitle("AliGenCocktailAfterBurner");
-    fInternalStacks = 0;
-    fCollisionGeometries = 0;
-    fActiveStack = 0;
-    fCurrentGenerator = 0;
-    fCurrentEvent =0;
-    fAfterBurnerEntries = new TList();
-    fNAfterBurners = 0;
-    fGenerationDone = kFALSE;
-    
-    fActiveEvent = -1;  
-    fNBgEvents = 0;
 }
 /*********************************************************************/ 
 AliGenCocktailAfterBurner::AliGenCocktailAfterBurner(const AliGenCocktailAfterBurner& cocktail):
-    AliGenCocktail(cocktail)
-
+    AliGenCocktail(cocktail), 
+    fNAfterBurners(0),
+    fAfterBurnerEntries(new TList()),
+    fGenerationDone(kFALSE),
+    fInternalStacks(0),
+    fCollisionGeometries(0),
+    fCurrentEvent(0),
+    fActiveStack(0),
+    fActiveEvent(-1),
+    fCurrentGenerator(0),
+    fNBgEvents(0)
 {
  //Copy constructor
     cocktail.Copy(*this);

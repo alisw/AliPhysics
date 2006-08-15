@@ -57,7 +57,8 @@ class AliGenMC : public AliGenerator
     virtual void   SetProjectile(TString proj="P", Int_t a = 1, Int_t z = 1)
 	{fProjectile = proj; fAProjectile = a; fZProjectile = z;}    
     virtual void   SetTarget(TString tar="P", Int_t a = 1, Int_t z = 1)
-	{fTarget = tar; fATarget = a; fZTarget = z;}    
+	{fTarget = tar; fATarget = a; fZTarget = z;}
+    virtual void   SetCrossingAngle(Float_t phiX, Float_t phiY) {fXingAngleX = phiX; fXingAngleY = phiY;}
     virtual void Boost();
 
  protected:
@@ -84,6 +85,8 @@ class AliGenMC : public AliGenerator
     Float_t     fChildThetaMax; // Children maximum theta
     Float_t     fChildYMin;     // Children minimum y
     Float_t     fChildYMax;     // Children maximum y
+    Float_t     fXingAngleX;    // Crossing angle X
+    Float_t     fXingAngleY;    // Crossing angle Y    
     Decay_t     fForceDecay;    // Decay channel forced
     Float_t     fMaxLifeTime;   // Maximum lifetime for unstable particles
     Int_t       fAProjectile;   // Projectile A

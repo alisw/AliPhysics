@@ -37,26 +37,26 @@ ClassImp(AliGenGeVSimEventHeader)
 ////////////////////////////////////////////////////////////////////////////////
 
 AliGenGeVSimEventHeader::AliGenGeVSimEventHeader()
-  :AliGenEventHeader() {
+  :AliGenEventHeader(),
+   fEventPlane(0),
+   fEllipticFlow(0)
+{
   //
   // Default Constructor 
   //
-
-  fEventPlane = 0;
-  fEllipticFlow = 0;
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 AliGenGeVSimEventHeader::AliGenGeVSimEventHeader(const char *name)
-  :AliGenEventHeader(name) {
+  :AliGenEventHeader(name),
+   fEventPlane(0),
+   fEllipticFlow(0)
+ {
   //
   // Standard constructor
   //
-  
-  fEventPlane = 0;
-  fEllipticFlow = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

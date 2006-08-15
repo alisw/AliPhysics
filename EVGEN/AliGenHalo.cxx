@@ -32,7 +32,9 @@
 ClassImp(AliGenHalo)
 
 AliGenHalo::AliGenHalo()
-    :AliGenerator(-1)
+    :AliGenerator(-1),
+     fp(0),
+     fFileName(0)
 {
 // Constructor
     fName="Halo";
@@ -40,11 +42,12 @@ AliGenHalo::AliGenHalo()
 //
 //  Read all particles
     fNpart=-1;
-    fp=0;
 }
 
 AliGenHalo::AliGenHalo(Int_t npart)
-    :AliGenerator(npart)
+    :AliGenerator(npart),
+     fp(0),
+     fFileName(0)
 {
 // Constructor
     fName="Halo";
@@ -52,11 +55,12 @@ AliGenHalo::AliGenHalo(Int_t npart)
 //
 //  Read all particles
     fNpart=-1;
-    fp=0;
 }
 
 AliGenHalo::AliGenHalo(const AliGenHalo & Halo)
-    :AliGenerator(Halo)
+    :AliGenerator(Halo),
+     fp(0),
+     fFileName(0)
 {
 // Copy constructor
     Halo.Copy(*this);

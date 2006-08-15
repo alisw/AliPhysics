@@ -18,8 +18,7 @@ class AliGenReaderEcalHijing : public AliGenReader
  public:
     AliGenReaderEcalHijing();
     
-    AliGenReaderEcalHijing(const AliGenReaderEcalHijing &reader):AliGenReader(reader)
-	{reader.Copy(*this);}
+    AliGenReaderEcalHijing(const AliGenReaderEcalHijing &reader);
     virtual ~AliGenReaderEcalHijing(){;}
     // Initialise 
     virtual void Init();

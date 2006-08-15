@@ -19,8 +19,7 @@ class AliDecayerPolarized : public AliDecayer
     typedef enum { kElectron = 1, kMuon = 2} FinState_t;
   AliDecayerPolarized();
   AliDecayerPolarized(Double_t alpha, Polar_t systref, FinState_t decprod);
-  AliDecayerPolarized(const AliDecayerPolarized &decayer):AliDecayer(decayer)
-      {decayer.Copy(*this);}
+  AliDecayerPolarized(const AliDecayerPolarized &decayer);
   virtual ~AliDecayerPolarized();
   void SetPolDec(Double_t alpha=0) {fAlpha=alpha;}
   void SetPolRefSys(Polar_t systref=kColSop) {fSystRef=systref;}

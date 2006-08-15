@@ -37,27 +37,46 @@
 ClassImp(AliGenFLUKAsource)
 
 AliGenFLUKAsource::AliGenFLUKAsource()
-	 :AliGenerator(-1)
+    :AliGenerator(-1), 
+     fIkine(6),
+     fAgeMax(1.e-5), 
+     fAddWeight(1.),
+     fZshift(0.),
+     fFrac(0.),
+     fSourceId(-1),
+     fFileName(0),
+     fTreeChain(0),
+     fTreeFluka(0),
+     fIp(0.),
+     fIpp(0.),
+     fXi(0.),
+     fYi(0.),
+     fZi(0.),
+     fPx(0.),
+     fPy(0.),
+     fPz(0.),
+     fEkin(0.),
+     fZv(0.),
+     fRv(0.),
+     fItra(0.),
+     fIgas(0.),
+     fWgt(0.),
+     fEtag(0.),
+     fPtg(0.),
+     fAge(0.)
 {
     // Constructor
     fName="FLUKA";
     fTitle="FLUKA Boundary Source";
     // Read in all particle types by default
-    fIkine=6;
     // Set maximum admitted age of particles to 1.e-05 by default 
-    fAgeMax=1.e-05;
     // Do not add weight
-    fAddWeight=1.;
     // Shift the z-coordinate of the impact point by 4.5 cm only if it reads 
     // from  specific boundary source to the chamber (fZshift=4.5;),else there 
     // is no need to shift as it reads boundary source for the whole volume of 
     // the Muon Arm; the default value corresponds to boundary source for the
     // whole volume of the MUON Arm 
-    fZshift=0;
     // Set the default file 
-    fFileName="";
-
-    fTreeFluka=0;
     fTreeChain = new TChain("h1");
 //
 //  Read all particles
@@ -65,33 +84,67 @@ AliGenFLUKAsource::AliGenFLUKAsource()
 }
 
 AliGenFLUKAsource::AliGenFLUKAsource(Int_t npart)
-    :AliGenerator(npart)
+    :AliGenerator(npart), 
+     fIkine(6),
+     fAgeMax(1.e-5), 
+     fAddWeight(1.),
+     fZshift(0.),
+     fFrac(0.),
+     fSourceId(-1),
+     fFileName(""),
+     fTreeChain(new TChain("h1")),
+     fTreeFluka(0),
+     fIp(0.),
+     fIpp(0.),
+     fXi(0.),
+     fYi(0.),
+     fZi(0.),
+     fPx(0.),
+     fPy(0.),
+     fPz(0.),
+     fEkin(0.),
+     fZv(0.),
+     fRv(0.),
+     fItra(0.),
+     fIgas(0.),
+     fWgt(0.),
+     fEtag(0.),
+     fPtg(0.),
+     fAge(0.)
 {
     // Constructor
     fName  = "FLUKA";
     fTitle = "FLUKA Boundary Source";
-    // Read in all particle types by default
-    fIkine=6;
-    // Set maximum admitted age of particles to 1.e-05 by default 
-    fAgeMax=1.e-05;
-    // Do not add weight
-    fAddWeight=1.;
-    // Shift the z-coordinate of the impact point by 4.5 cm only if it reads 
-    // from  specific boundary source to the chamber (fZshift=4.5;),else there 
-    // is no need to shift as it reads boundary source for the whole volume of 
-    // the Muon Arm; the default value corresponds to boundary source for the
-    // whole volume of the MUON Arm 
-    fZshift=0;
-    // Set the default file 
-    fFileName="";
-
-    fTreeFluka=0;
-    fTreeChain = new TChain("h1"); 
-    fSourceId=-1;
 }
 
 AliGenFLUKAsource::AliGenFLUKAsource(const AliGenFLUKAsource & FLUKAsource):
-    AliGenerator(FLUKAsource)
+    AliGenerator(FLUKAsource), 
+    fIkine(6),
+    fAgeMax(1.e-5), 
+    fAddWeight(1.),
+    fZshift(0.),
+    fFrac(0.),
+    fSourceId(-1),
+    fFileName(0),
+    fTreeChain(0),
+    fTreeFluka(0),
+    fIp(0.),
+    fIpp(0.),
+    fXi(0.),
+    fYi(0.),
+    fZi(0.),
+    fPx(0.),
+    fPy(0.),
+    fPz(0.),
+    fEkin(0.),
+    fZv(0.),
+    fRv(0.),
+    fItra(0.),
+    fIgas(0.),
+    fWgt(0.),
+    fEtag(0.),
+    fPtg(0.),
+    fAge(0.)
 {
 // Copy constructor
     FLUKAsource.Copy(*this);

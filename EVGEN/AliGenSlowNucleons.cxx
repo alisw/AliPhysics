@@ -35,37 +35,97 @@
 #include "AliGenSlowNucleons.h"
 #include "AliSlowNucleonModel.h"
 
- ClassImp(AliGenSlowNucleons)
+ClassImp(AliGenSlowNucleons);
+
     
- AliGenSlowNucleons::AliGenSlowNucleons():AliGenerator(-1)
+AliGenSlowNucleons::AliGenSlowNucleons()
+    :AliGenerator(-1),
+     fCMS(0.),
+     fMomentum(0.),
+     fBeta(0.),
+     fPmax (0.),
+     fATarget (0.),
+     fZTarget (0.),
+     fCharge(0),
+     fProtonDirection(0.),
+     fTemperatureG(0.), 
+     fBetaSourceG(0.),
+     fTemperatureB(0.),
+     fBetaSourceB(0.),
+     fNgp(0),
+     fNgn(0),
+     fNbp(0),
+     fNbn(0),
+     fDebug(0),
+     fDebugHist1(0),
+     fDebugHist2(0),
+     fThetaDistribution(),
+     fCosThetaGrayHist(),
+     fCosTheta(),
+     fSlowNucleonModel(0)
 {
 // Default constructor
-    fSlowNucleonModel = 0;
     fCollisionGeometry = 0;
-    fDebugHist1 = 0;
-    fDebugHist2 = 0;
 }
 
 AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
-    :AliGenerator(npart)
+    :AliGenerator(npart),
+     fCMS(14000.),
+     fMomentum(0.),
+     fBeta(0.),
+     fPmax (10.),
+     fATarget (208.),
+     fZTarget (82.),
+     fCharge(1),
+     fProtonDirection(0.),
+     fTemperatureG(0.04), 
+     fBetaSourceG(0.05),
+     fTemperatureB(0.004),
+     fBetaSourceB(0.),
+     fNgp(0),
+     fNgn(0),
+     fNbp(0),
+     fNbn(0),
+     fDebug(0),
+     fDebugHist1(0),
+     fDebugHist2(0),
+     fThetaDistribution(),
+     fCosThetaGrayHist(),
+     fCosTheta(),
+     fSlowNucleonModel(new AliSlowNucleonModel())
 {
 // Constructor
     fName  = "SlowNucleons";
     fTitle = "Generator for gray particles in pA collisions";
-    SetPmax();
-    SetTarget();
-    SetNominalCmsEnergy();
-    SetCharge();
-    SetTemperature();
-    SetBetaSource();
-    fSlowNucleonModel = new AliSlowNucleonModel();
     fCollisionGeometry = 0;
-    fDebug = 0;
 }
 
 //____________________________________________________________
 AliGenSlowNucleons::AliGenSlowNucleons(const AliGenSlowNucleons & sn):
-    AliGenerator(sn)
+    AliGenerator(sn),
+    fCMS(0.),
+    fMomentum(0.),
+    fBeta(0.),
+    fPmax (0.),
+    fATarget (0.),
+    fZTarget (0.),
+    fCharge(0),
+    fProtonDirection(0.),
+    fTemperatureG(0.), 
+    fBetaSourceG(0.),
+    fTemperatureB(0.),
+    fBetaSourceB(0.),
+    fNgp(0),
+    fNgn(0),
+    fNbp(0),
+    fNbn(0),
+    fDebug(0),
+    fDebugHist1(0),
+    fDebugHist2(0),
+    fThetaDistribution(),
+    fCosThetaGrayHist(),
+    fCosTheta(),
+    fSlowNucleonModel(0)
 {
 // Copy constructor
     sn.Copy(*this);

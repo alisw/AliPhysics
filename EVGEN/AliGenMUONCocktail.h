@@ -56,9 +56,9 @@ class AliGenMUONCocktail : public AliGenCocktail
       { fInvMassMinCut=MassMin; 
         fInvMassMaxCut=MassMax;
         fInvMassCut = kTRUE; }
-
- protected:
- 
+ private:
+    AliGenMUONCocktail& operator=(const AliGenMUONCocktail & rhs);
+    void Copy(TObject &cocktail) const;
     //
  private:
     AliFastGlauber *  fFastGlauber; //! Fast glauber calculations

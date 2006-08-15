@@ -153,31 +153,34 @@ static Double_t etakac( Double_t *py, Double_t *)
 }
 
 AliGenHIJINGparaBa::AliGenHIJINGparaBa()
-  :AliGenHIJINGpara()
+    :AliGenHIJINGpara(),
+     fPtba(0),
+     fETAba(0)
 {
     //
     // Default constructor
     //
     fName="HIGINGparaBa";
     fTitle="HIJING Parametrisation Particle Generator with Baryons";
-    fETAba = 0;
-    fPtba  = 0;
 }
 
 //_____________________________________________________________________________
 AliGenHIJINGparaBa::AliGenHIJINGparaBa(Int_t npart)
-  :AliGenHIJINGpara(npart)
+  :AliGenHIJINGpara(npart),
+     fPtba(0),
+     fETAba(0)
 {
   // 
   // Standard constructor
   //
     fName="HIGINGparaBa";
     fTitle="HIJING Parametrisation Particle Generator with Baryons";
-    fETAba = 0;
-    fPtba  = 0;
 }
 
-AliGenHIJINGparaBa::AliGenHIJINGparaBa(const AliGenHIJINGparaBa& para) : AliGenHIJINGpara(para)
+AliGenHIJINGparaBa::AliGenHIJINGparaBa(const AliGenHIJINGparaBa& para) : 
+    AliGenHIJINGpara(para),
+    fPtba(0),
+    fETAba(0)									
 {
 // Copy constructor
     para.Copy(*this);
