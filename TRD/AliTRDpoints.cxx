@@ -33,37 +33,42 @@
 ClassImp(AliTRDpoints)
 
 //_____________________________________________________________________________
-AliTRDpoints::AliTRDpoints():AliPoints()
+AliTRDpoints::AliTRDpoints()
+  :AliPoints()
+  ,fNTRpoints(0)
+  ,fTRpolyMarker(0)
 {
   //
   // Default constructor
   //
 
-  fNTRpoints    = 0;
-  fTRpolyMarker = 0;
-
 }
 
 //_____________________________________________________________________________
-AliTRDpoints::AliTRDpoints(Int_t nhitsE, Int_t nhitsT):AliPoints(nhitsE)
+AliTRDpoints::AliTRDpoints(Int_t nhitsE, Int_t nhitsT)
+  :AliPoints(nhitsE)
+  ,fNTRpoints(nhitsT)
+  ,fTRpolyMarker(0)
 {
   //
   // Standard constructor
   //
 
-  fNTRpoints    = nhitsT;
-  fTRpolyMarker = 0;
-
 }
 	 
 //_____________________________________________________________________________
-AliTRDpoints::AliTRDpoints(const AliTRDpoints &p):AliPoints(p)
+AliTRDpoints::AliTRDpoints(const AliTRDpoints &p)
+  :AliPoints(p)
+  ,fNTRpoints(p.fNTRpoints)
+  ,fTRpolyMarker(0)
 {
   //
   // Copy contructor
   //
- 
-  ((AliTRDpoints &) p).Copy(*this);
+
+  for (Int_t i = 0; i < 3*fNTRpoints; i++) {
+    ((AliTRDpoints &) p).fTRpoints[i] = fTRpoints[i];
+  }
 
 }
 
@@ -74,7 +79,10 @@ AliTRDpoints::~AliTRDpoints()
   // Default destructor
   //
 
-  if (fTRpolyMarker) delete fTRpolyMarker;
+  if (fTRpolyMarker) {
+    delete fTRpolyMarker;
+    fTRpolyMarker = 0;
+  }
 
 }
 
@@ -113,7 +121,6 @@ void AliTRDpoints::Draw(Option_t *option)
 
   AliPoints::Draw(option);
 
-  //if (fTRpolyMarker) delete fTRpolyMarker;
   if (fNTRpoints) {
     fTRpolyMarker = new TPolyMarker3D(fNTRpoints,fTRpoints,29);
     fTRpolyMarker->SetMarkerColor(2); 
@@ -130,15 +137,14 @@ void AliTRDpoints::SetTRpoints(Int_t n, Float_t *coor)
   // Sets the number and the coordinates of the photon hits
   //
 
-  if (kNTRpoints >= 3 * n) {
+  if (kNTRpoints >= 3*n) {
     fNTRpoints = n;
     for (Int_t i = 0; i < 3*n; i++) {
       fTRpoints[i] = coor[i];
     } 
   }
   else {
-    printf("AliTRDpoints::SetTRpoints -- ");
-    printf("Boundary error: %d/%d\n",3*n,kNTRpoints);
+    AliError(Form("Boundary error: %d/%d\n",3*n,kNTRpoints));
   }
 
 }

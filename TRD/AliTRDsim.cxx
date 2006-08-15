@@ -37,22 +37,40 @@
 #include <TParticle.h>
 
 #include "AliModule.h"
+#include "AliLog.h"
 
 #include "AliTRDsim.h"
 
 ClassImp(AliTRDsim)
 
 //_____________________________________________________________________________
-AliTRDsim::AliTRDsim():TObject()
+AliTRDsim::AliTRDsim()
+  :TObject()
+  ,fNFoilsDim(0)
+  ,fNFoils(0)
+  ,fNFoilsUp(0)
+  ,fFoilThick(0)
+  ,fGapThick(0)
+  ,fFoilDens(0)
+  ,fGapDens(0)
+  ,fFoilOmega(0)
+  ,fGapOmega()
+  ,fFoilZ(0)
+  ,fGapZ(0)
+  ,fFoilA(0)
+  ,fGapA(0)
+  ,fTemp(0)
+  ,fSpNBins(0)
+  ,fSpRange(0)
+  ,fSpBinWidth(0)
+  ,fSpLower(0)
+  ,fSpUpper(0)
+  ,fSigma(0)
+  ,fSpectrum(0)
 {
   //
   // AliTRDsim default constructor
   // 
-
-  fSpectrum = 0;
-  fSigma    = 0;
-  fNFoils   = 0;
-  fNFoilsUp = 0;
 
   Init();
 
@@ -60,6 +78,28 @@ AliTRDsim::AliTRDsim():TObject()
 
 //_____________________________________________________________________________
 AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
+  :TObject()
+  ,fNFoilsDim(0)
+  ,fNFoils(0)
+  ,fNFoilsUp(0)
+  ,fFoilThick(0)
+  ,fGapThick(0)
+  ,fFoilDens(0)
+  ,fGapDens(0)
+  ,fFoilOmega(0)
+  ,fGapOmega()
+  ,fFoilZ(0)
+  ,fGapZ(0)
+  ,fFoilA(0)
+  ,fGapA(0)
+  ,fTemp(0)
+  ,fSpNBins(0)
+  ,fSpRange(0)
+  ,fSpBinWidth(0)
+  ,fSpLower(0)
+  ,fSpUpper(0)
+  ,fSigma(0)
+  ,fSpectrum(0)
 {
   //
   // AliTRDsim constructor. Takes the material properties of the radiator
@@ -68,15 +108,18 @@ AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
   // thickness of the gaps is 500 mu.
   //
 
-  Float_t aFoil, zFoil, rhoFoil;
-  Float_t aGap,  zGap,  rhoGap;
-  Float_t rad, abs;
-  Char_t  name[21];
+  Float_t aFoil;
+  Float_t zFoil;
+  Float_t rhoFoil;
 
-  fSpectrum = 0;
-  fSigma    = 0;
-  fNFoils   = 0;
-  fNFoilsUp = 0;
+  Float_t aGap;
+  Float_t zGap;
+  Float_t rhoGap;
+
+  Float_t rad;
+  Float_t abs;
+
+  Char_t  name[21];
 
   Init();
 
@@ -96,13 +139,59 @@ AliTRDsim::AliTRDsim(AliModule *mod, Int_t foil, Int_t gap)
 }
 
 //_____________________________________________________________________________
-AliTRDsim::AliTRDsim(const AliTRDsim &s):TObject(s)
+AliTRDsim::AliTRDsim(const AliTRDsim &s)
+  :TObject(s)
+  ,fNFoilsDim(s.fNFoilsDim)
+  ,fNFoils(0)
+  ,fNFoilsUp(0)
+  ,fFoilThick(s.fFoilThick)
+  ,fGapThick(s.fGapThick)
+  ,fFoilDens(s.fFoilDens)
+  ,fGapDens(s.fGapDens)
+  ,fFoilOmega(s.fFoilOmega)
+  ,fGapOmega(s.fGapOmega)
+  ,fFoilZ(s.fFoilZ)
+  ,fGapZ(s.fGapZ)
+  ,fFoilA(s.fFoilA)
+  ,fGapA(s.fGapA)
+  ,fTemp(s.fTemp)
+  ,fSpNBins(s.fSpNBins)
+  ,fSpRange(s.fSpRange)
+  ,fSpBinWidth(s.fSpBinWidth)
+  ,fSpLower(s.fSpLower)
+  ,fSpUpper(s.fSpUpper)
+  ,fSigma(0)
+  ,fSpectrum(0)
 {
   //
   // AliTRDsim copy constructor
   //
 
-  ((AliTRDsim &) s).Copy(*this);
+  if (((AliTRDsim &) s).fNFoils) {
+    delete [] ((AliTRDsim &) s).fNFoils;
+  }
+  ((AliTRDsim &) s).fNFoils   = new Int_t[fNFoilsDim];
+  for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
+    ((AliTRDsim &) s).fNFoils[iFoil]   = fNFoils[iFoil];
+  }  
+
+  if (((AliTRDsim &) s).fNFoilsUp) {
+    delete [] ((AliTRDsim &) s).fNFoilsUp;
+  }
+  ((AliTRDsim &) s).fNFoilsUp = new Double_t[fNFoilsDim];
+  for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
+    ((AliTRDsim &) s).fNFoilsUp[iFoil] = fNFoilsUp[iFoil];
+  }  
+
+  if (((AliTRDsim &) s).fSigma) {
+    delete [] ((AliTRDsim &) s).fSigma;
+  }
+  ((AliTRDsim &) s).fSigma    = new Double_t[fSpNBins];
+  for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
+    ((AliTRDsim &) s).fSigma[iBin]     = fSigma[iBin];
+  }  
+
+  fSpectrum->Copy(*((AliTRDsim &) s).fSpectrum);
 
 }
 
@@ -113,10 +202,20 @@ AliTRDsim::~AliTRDsim()
   // AliTRDsim destructor
   //
 
-  //  if (fSpectrum) delete fSpectrum;
-  if (fSigma)    delete [] fSigma;
-  if (fNFoils)   delete [] fNFoils;
-  if (fNFoilsUp) delete [] fNFoilsUp;
+  if (fSigma) {
+    delete [] fSigma;
+    fSigma    = 0;
+  }
+
+  if (fNFoils) {
+    delete [] fNFoils;
+    fNFoils   = 0;
+  }
+
+  if (fNFoilsUp) {
+    delete [] fNFoilsUp;
+    fNFoilsUp = 0;
+  }
 
 }
 
@@ -128,6 +227,7 @@ AliTRDsim &AliTRDsim::operator=(const AliTRDsim &s)
   //
 
   if (this != &s) ((AliTRDsim &) s).Copy(*this);
+
   return *this;
 
 }
@@ -156,22 +256,28 @@ void AliTRDsim::Copy(TObject &s) const
   ((AliTRDsim &) s).fSpLower    = fSpLower;
   ((AliTRDsim &) s).fSpUpper    = fSpUpper;
 
-  if (((AliTRDsim &) s).fNFoils) delete [] ((AliTRDsim &) s).fNFoils;
+  if (((AliTRDsim &) s).fNFoils) {
+    delete [] ((AliTRDsim &) s).fNFoils;
+  }
   ((AliTRDsim &) s).fNFoils   = new Int_t[fNFoilsDim];
   for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
-    ((AliTRDsim &) s).fNFoils[iFoil] = fNFoils[iFoil];
+    ((AliTRDsim &) s).fNFoils[iFoil]   = fNFoils[iFoil];
   }  
 
-  if (((AliTRDsim &) s).fNFoilsUp) delete [] ((AliTRDsim &) s).fNFoilsUp;
+  if (((AliTRDsim &) s).fNFoilsUp) {
+    delete [] ((AliTRDsim &) s).fNFoilsUp;
+  }
   ((AliTRDsim &) s).fNFoilsUp = new Double_t[fNFoilsDim];
   for (Int_t iFoil = 0; iFoil < fNFoilsDim; iFoil++) {
     ((AliTRDsim &) s).fNFoilsUp[iFoil] = fNFoilsUp[iFoil];
   }  
 
-  if (((AliTRDsim &) s).fSigma)  delete [] ((AliTRDsim &) s).fSigma;
-  ((AliTRDsim &) s).fSigma = new Double_t[fSpNBins];
+  if (((AliTRDsim &) s).fSigma) {
+    delete [] ((AliTRDsim &) s).fSigma;
+  }
+  ((AliTRDsim &) s).fSigma    = new Double_t[fSpNBins];
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
-    ((AliTRDsim &) s).fSigma[iBin] = fSigma[iBin];
+    ((AliTRDsim &) s).fSigma[iBin]     = fSigma[iBin];
   }  
 
   fSpectrum->Copy(*((AliTRDsim &) s).fSpectrum);
@@ -189,17 +295,21 @@ void AliTRDsim::Init()
 
   fNFoilsDim   = 7;
 
-  if (fNFoils)   delete [] fNFoils;
+  if (fNFoils) {
+    delete [] fNFoils;
+  }
   fNFoils      = new Int_t[fNFoilsDim];
   fNFoils[0]   = 170;
-  fNFoils[1]   = 225; //250;
-  fNFoils[2]   = 275; //310;
-  fNFoils[3]   = 305; //380;
-  fNFoils[4]   = 325; //430;
-  fNFoils[5]   = 340; //490;
-  fNFoils[6]   = 350; //550;
+  fNFoils[1]   = 225;
+  fNFoils[2]   = 275;
+  fNFoils[3]   = 305;
+  fNFoils[4]   = 325;
+  fNFoils[5]   = 340;
+  fNFoils[6]   = 350;
 
-  if (fNFoilsUp) delete [] fNFoilsUp;
+  if (fNFoilsUp) {
+    delete [] fNFoilsUp;
+  }
   fNFoilsUp    = new Double_t[fNFoilsDim];
   fNFoilsUp[0] = 1.25;
   fNFoilsUp[1] = 1.75;
@@ -290,7 +400,7 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
   const Double_t kAlpha  = 0.0072973;
   const Int_t    kSumMax = 30;
 	
-  Double_t tau = fGapThick / fFoilThick;
+  Double_t tau   = fGapThick / fFoilThick;
 
   // Calculate gamma
   Double_t gamma = TMath::Sqrt(p*p + mass*mass) / mass;
@@ -300,45 +410,59 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
 
   fSpectrum->Reset();
 
+  //
   // The TR spectrum
-	Double_t csi1,csi2,rho1,rho2;
-	Double_t fSigma,Sum,Nequ,theta_n,aux;
-  Double_t energyeV, energykeV;
-	for (Int_t iBin = 1; iBin <= fSpNBins; iBin++) {
+  //
+
+  Double_t csi1;
+  Double_t csi2;
+  Double_t rho1;
+  Double_t rho2;
+  Double_t sSigma;
+  Double_t sum;
+  Double_t nEqu;
+  Double_t thetaN;
+  Double_t aux;
+  Double_t energyeV;
+  Double_t energykeV;
+
+  for (Int_t iBin = 1; iBin <= fSpNBins; iBin++) {
+
     energykeV = fSpectrum->GetBinCenter(iBin);
-    energyeV = energykeV * 1.e3;
+    energyeV  = energykeV * 1.e3;
+    sSigma    = Sigma(energykeV);
 
-    fSigma       = Sigma(energykeV);
+    csi1      = fFoilOmega / energyeV;
+    csi2      = fGapOmega  / energyeV;
 
-    csi1 = fFoilOmega / energyeV;
-    csi2 = fGapOmega  / energyeV;
-
-    rho1 = 2.5 * energyeV * fFoilThick * 1.E4 
-                                 * (1. / (gamma*gamma) + csi1*csi1);
-    rho2 = 2.5 * energyeV * fFoilThick * 1.E4 
-                                 * (1.0 / (gamma*gamma) + csi2 *csi2);
+    rho1      = 2.5 * energyeV * fFoilThick * 1.0e4 
+              * (1. / (gamma*gamma) + csi1*csi1);
+    rho2      = 2.5 * energyeV * fFoilThick * 1.0e4 
+              * (1.0 / (gamma*gamma) + csi2 *csi2);
 
     // Calculate the sum
-    Sum = 0;
+    sum = 0;
     for (Int_t n = 1; n <= kSumMax; n++) {
-      theta_n = (TMath::Pi() * 2.0 * n - (rho1 + tau * rho2)) / (1.+ tau);
-      if (theta_n < 0.) theta_n = 0.0;
-      aux   = 1. / (rho1 + theta_n) - 1. / (rho2 + theta_n);
-      Sum  += theta_n * (aux*aux) * (1.0 - TMath::Cos(rho1 + theta_n));
+      thetaN = (TMath::Pi() * 2.0 * n - (rho1 + tau * rho2)) / (1.0 + tau);
+      if (thetaN < 0.0) {
+        thetaN = 0.0;
+      }
+      aux    = 1.0 / (rho1 + thetaN) - 1.0 / (rho2 + thetaN);
+      sum  += thetaN * (aux*aux) * (1.0 - TMath::Cos(rho1 + thetaN));
     }
 
     // Equivalent number of foils
-    Nequ      = (1. - TMath::Exp(-foils * fSigma)) / (1.- TMath::Exp(-fSigma));
-
+    nEqu = (1.0 - TMath::Exp(-foils * sSigma)) / (1.0 - TMath::Exp(-sSigma));
 
     // dN / domega
-    fSpectrum->SetBinContent(iBin,4. * kAlpha * Nequ * Sum /  (energykeV * (1. + tau)));
+    fSpectrum->SetBinContent(iBin,4.0 * kAlpha * nEqu * sum / (energykeV * (1.0 + tau)));
+
   }
 
   // <nTR> (binsize corr.)
   Float_t ntr = fSpBinWidth*fSpectrum->Integral();
   // Number of TR photons from Poisson distribution with mean <ntr>
-  nPhoton = gRandom->Poisson(ntr);
+  nPhoton     = gRandom->Poisson(ntr);
   // Energy of the TR photons
   for (Int_t iPhoton = 0; iPhoton < nPhoton; iPhoton++) {
     ePhoton[iPhoton] = fSpectrum->GetRandom();
@@ -355,12 +479,14 @@ void AliTRDsim::SetSigma()
   // Sets the absorbtion crosssection for the energies of the TR spectrum
   //
 
-  if (fSigma) delete [] fSigma;
+  if (fSigma) {
+    delete [] fSigma;
+  }
   fSigma = new Double_t[fSpNBins];
+
   for (Int_t iBin = 0; iBin < fSpNBins; iBin++) {
     Double_t energykeV = iBin * fSpBinWidth + 1.0;
     fSigma[iBin]       = Sigma(energykeV);
-    //printf("SetSigma(): iBin = %d fSigma %g\n",iBin,fSigma[iBin]);
   }
 
 }
@@ -379,7 +505,7 @@ Double_t AliTRDsim::Sigma(Double_t energykeV)
            GetMuAi(energyMeV) * fGapDens  * fGapThick  * GetTemp());
   }
   else {
-    return 1e6;
+    return 1.0e6;
   }
 
 }
@@ -778,20 +904,30 @@ Int_t AliTRDsim::Locate(Double_t *xv, Int_t n, Double_t xval
   // Locates a point (xval) in a 1-dim grid (xv(n))
   //
 
-  if (xval >= xv[n-1]) return  1;
-  if (xval <  xv[0])   return -1;
+  if (xval >= xv[n-1]) {
+    return  1;
+  }
+  if (xval <  xv[0]) {
+    return -1;
+  }
 
   Int_t km;
   Int_t kh = n - 1;
 
   kl = 0;
   while (kh - kl > 1) {
-    if (xval < xv[km = (kl+kh)/2]) kh = km; 
-    else                           kl = km;
+    if (xval < xv[km = (kl+kh)/2]) {
+      kh = km; 
+    }
+    else {
+      kl = km;
+    }
   }
-  if (xval < xv[kl] || xval > xv[kl+1] || kl >= n-1) {
-    printf("Locate failed xv[%d] %f xval %f xv[%d] %f!!!\n"
-          ,kl,xv[kl],xval,kl+1,xv[kl+1]);
+  if ((xval <  xv[kl])   || 
+      (xval >  xv[kl+1]) || 
+      (kl   >= n-1)) {
+    AliError(Form("Locate failed xv[%d] %f xval %f xv[%d] %f!!!\n"
+                 ,kl,xv[kl],xval,kl+1,xv[kl+1]));
     exit(1);
   }
 

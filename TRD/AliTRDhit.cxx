@@ -26,7 +26,10 @@
 ClassImp(AliTRDhit)
 
 //_____________________________________________________________________________
-AliTRDhit::AliTRDhit():AliHit()
+AliTRDhit::AliTRDhit()
+  :AliHit()
+  ,fDetector(0)
+  ,fQ(0)
 {
   //
   // AliTRDhit default constructor
@@ -37,22 +40,18 @@ AliTRDhit::AliTRDhit():AliHit()
 //_____________________________________________________________________________
 AliTRDhit::AliTRDhit(Int_t shunt, Int_t track, Int_t det
                    , Float_t *hits, Int_t q)
-          :AliHit(shunt, track)
+  :AliHit(shunt,track)
+  ,fDetector((UShort_t) det)
+  ,fQ((Short_t) q)
 {
   //
   // Create a TRD hit
   //
 
-  // Store detector number
-  fDetector = (UShort_t) det;
-
   // Store position 
-  fX        = hits[0];
-  fY        = hits[1];
-  fZ        = hits[2];
-
-  // Store the charge
-  fQ        = (Short_t) q;
+  fX = hits[0];
+  fY = hits[1];
+  fZ = hits[2];
 
 }
 

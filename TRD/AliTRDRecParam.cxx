@@ -32,82 +32,101 @@ AliTRDRecParam* AliTRDRecParam::fgInstance = 0;
 Bool_t AliTRDRecParam::fgTerminated = kFALSE;
 
 //_ singleton implementation __________________________________________________
-AliTRDRecParam* AliTRDRecParam::Instance()
+AliTRDRecParam* AliTRDRecParam::Instance() 
 {
   //
   // Singleton implementation
   // Returns an instance of this class, it is created if neccessary
   // 
   
-  if (fgTerminated != kFALSE)
+  if (fgTerminated != kFALSE) {
     return 0;
+  }
 
-  if (fgInstance == 0)
+  if (fgInstance == 0) {
     fgInstance = new AliTRDRecParam();
-  
+  }  
+
   return fgInstance;
+
 }
 
+//_____________________________________________________________________________
 void AliTRDRecParam::Terminate()
 {
   //
   // Singleton implementation
-  // Deletes the instance of this class and sets the terminated flag, instances cannot be requested anymore
+  // Deletes the instance of this class and sets the terminated flag,
+  // instances cannot be requested anymore
   // This function can be called several times.
   //
   
   fgTerminated = kTRUE;
   
-  if (fgInstance != 0)
-  {
+  if (fgInstance != 0) {
     delete fgInstance;
     fgInstance = 0;
   }
+
 }
 
 //_____________________________________________________________________________
 AliTRDRecParam::AliTRDRecParam()
+  :TObject()
+  ,fClusMaxThresh(0)
+  ,fClusSigThresh(0)
+  ,fLUTOn(kFALSE)
+  ,fLUTbin(0)
+  ,fLUT(0)
+  ,fTCOn(kFALSE)
+  ,fTCnexp(0)
 {
   //
-  // constructor
+  // Constructor
   //
-  
-  fClusMaxThresh      = 0;
-  fClusSigThresh      = 0;
-  
-  fLUT                = 0;
-  fLUTOn              = kFALSE;  
-  fLUTbin = 0;
-  
-  fTCOn               = kFALSE;
-  fTCnexp             = 0;
-  
+    
   Init();
+
 }
 
 //_____________________________________________________________________________
 AliTRDRecParam::~AliTRDRecParam() 
 {
   //
-  // destructor
+  // Destructor
   //
   
   if (fLUT) {
     delete [] fLUT;
-    fLUT    = 0;
+    fLUT = 0;
   }
+
 }
 
 //_____________________________________________________________________________
-AliTRDRecParam::AliTRDRecParam(const AliTRDRecParam &p):TObject(p)
+AliTRDRecParam::AliTRDRecParam(const AliTRDRecParam &p)
+  :TObject(p)
+  ,fClusMaxThresh(p.fClusMaxThresh)
+  ,fClusSigThresh(p.fClusSigThresh)
+  ,fLUTOn(p.fLUTOn)
+  ,fLUTbin(p.fLUTbin)
+  ,fLUT(0)
+  ,fTCOn(p.fTCOn)
+  ,fTCnexp(p.fTCnexp)
 {
   //
-  // copy constructor
+  // Copy constructor
   //
 
-  ((AliTRDRecParam &) p).Copy(*this);
-}
+  if (((AliTRDRecParam &) p).fLUT) {
+    delete [] ((AliTRDRecParam &) p).fLUT;
+  }
+  ((AliTRDRecParam &) p).fLUT = new Float_t[fLUTbin];
+  for (Int_t iBin = 0; iBin < fLUTbin; iBin++) {
+    ((AliTRDRecParam &) p).fLUT[iBin] = fLUT[iBin];
+  }                                                                             
 
+}
 
 //_____________________________________________________________________________
 AliTRDRecParam &AliTRDRecParam::operator=(const AliTRDRecParam &p)
@@ -117,7 +136,9 @@ AliTRDRecParam &AliTRDRecParam::operator=(const AliTRDRecParam &p)
   //
 
   if (this != &p) ((AliTRDRecParam &) p).Copy(*this);
+
   return *this;
+
 }
 
 //_____________________________________________________________________________
@@ -128,22 +149,26 @@ void AliTRDRecParam::Copy(TObject &p) const
   //
   
   AliTRDRecParam* target = dynamic_cast<AliTRDRecParam*> (&p);
-  if (!target)
+  if (!target) {
     return;
-  
-  target->fLUTOn              = fLUTOn;
-  target->fLUTbin             = fLUTbin;
-  if (target->fLUT)    delete [] target->fLUT;
-  target->fLUT  = new Float_t[fLUTbin];
-  for (Int_t iBin = 0; iBin < fLUTbin; iBin++) {
-    target->fLUT[iBin]  = fLUT[iBin];
-  }
+  }  
+
+  target->fLUTOn         = fLUTOn;
+  target->fLUTbin        = fLUTbin;
       
-  target->fClusMaxThresh      = fClusMaxThresh;
-  target->fClusSigThresh      = fClusSigThresh;
+  target->fClusMaxThresh = fClusMaxThresh;
+  target->fClusSigThresh = fClusSigThresh;
   
-  target->fTCOn               = fTCOn;
-  target->fTCnexp             = fTCnexp;
+  target->fTCOn          = fTCOn;
+  target->fTCnexp        = fTCnexp;
+
+  if (target->fLUT) {
+    delete [] target->fLUT;
+  }
+  target->fLUT = new Float_t[fLUTbin];
+  for (Int_t iBin = 0; iBin < fLUTbin; iBin++) {
+    target->fLUT[iBin] = fLUT[iBin];
+  }
 
 }
 
@@ -151,7 +176,7 @@ void AliTRDRecParam::Copy(TObject &p) const
 void AliTRDRecParam::Init() 
 {
   //
-  // constructor helper
+  // Constructor helper
   //
   
   // The default parameter for the clustering
@@ -165,10 +190,10 @@ void AliTRDRecParam::Init()
   FillLUT();
 
   // The tail cancelation
-  fTCOn           = kTRUE;
+  fTCOn          = kTRUE;
 
   // The number of exponentials
-  fTCnexp         = 1;
+  fTCnexp        = 1;
 
 }
 
@@ -179,7 +204,7 @@ void AliTRDRecParam::FillLUT()
   // Create the LUT
   //
 
-  const Int_t kNlut  = 128;
+  const Int_t kNlut = 128;
 
   fLUTbin = kNplan * kNlut;
 
@@ -295,11 +320,13 @@ void AliTRDRecParam::FillLUT()
     }
   }; 
 
-  if (fLUT) delete [] fLUT;
+  if (fLUT) {
+    delete [] fLUT;
+  }
   fLUT = new Float_t[fLUTbin];
 
   for (Int_t iplan = 0; iplan < kNplan; iplan++) {
-    for (Int_t ilut  = 0; ilut  < kNlut; ilut++) {
+    for (Int_t ilut  = 0; ilut  <  kNlut; ilut++  ) {
       fLUT[iplan*kNlut+ilut] = lut[iplan][ilut];
     }
   }
@@ -307,17 +334,18 @@ void AliTRDRecParam::FillLUT()
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDRecParam::LUTposition(Int_t iplane, Double_t ampL, Double_t ampC, Double_t ampR) const
+Double_t AliTRDRecParam::LUTposition(Int_t iplane, Double_t ampL
+                                  , Double_t ampC, Double_t ampR) const
 {
   //
   // Calculates the cluster position using the lookup table.
   // Method provided by Bogdan Vulpescu.
   //
 
-  const Int_t kNlut  = 128;
+  const Int_t kNlut = 128;
 
   Double_t pos;
-  Double_t x = 0.0;
+  Double_t x    = 0.0;
   Double_t xmin;
   Double_t xmax;
   Double_t xwid;
@@ -325,8 +353,10 @@ Double_t AliTRDRecParam::LUTposition(Int_t iplane, Double_t ampL, Double_t ampC,
   Int_t    side = 0;
   Int_t    ix;
 
-  Double_t xMin[kNplan] = { 0.006492, 0.006377, 0.006258, 0.006144, 0.006030, 0.005980 };
-  Double_t xMax[kNplan] = { 0.960351, 0.965870, 0.970445, 0.974352, 0.977667, 0.996101 };
+  Double_t xMin[kNplan] = { 0.006492, 0.006377, 0.006258
+                          , 0.006144, 0.006030, 0.005980 };
+  Double_t xMax[kNplan] = { 0.960351, 0.965870, 0.970445
+                          , 0.974352, 0.977667, 0.996101 };
 
   if      (ampL > ampR) {
     x    = (ampL - ampR) / ampC;
@@ -362,5 +392,5 @@ Double_t AliTRDRecParam::LUTposition(Int_t iplane, Double_t ampL, Double_t ampC,
   }
 
   return pos;
-}
 
+}

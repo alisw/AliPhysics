@@ -23,39 +23,42 @@
 
 #include <TFile.h>
 
-#include "AliTRDReconstructor.h"
 #include "AliRunLoader.h"
-#include "AliTRDclusterizerV1.h"
-#include "AliTRDtracker.h"
-#include "AliTRDpidESD.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
-#include "AliTRDtrigger.h"
-#include "AliTRDtrigParam.h"
-#include "AliTRDgtuTrack.h"
 #include "AliRun.h"
 #include "AliESDTrdTrack.h"
 #include "AliESD.h"
 
+#include "AliTRDReconstructor.h"
+#include "AliTRDclusterizerV1.h"
+#include "AliTRDtracker.h"
+#include "AliTRDpidESD.h"
+#include "AliTRDtrigger.h"
+#include "AliTRDtrigParam.h"
+#include "AliTRDgtuTrack.h"
+
 ClassImp(AliTRDReconstructor)
 
-Bool_t  AliTRDReconstructor::fgkSeedingOn = kFALSE;
-Int_t   AliTRDReconstructor::fgStreamLevel     = 0;      // stream (debug) level
+Bool_t AliTRDReconstructor::fgkSeedingOn  = kFALSE;
+Int_t  AliTRDReconstructor::fgStreamLevel = 0;      // Stream (debug) level
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
+void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
 {
-// reconstruct clusters
+  //
+  // Reconstruct clusters
+  //
 
-  AliLoader *loader=runLoader->GetLoader("TRDLoader");
+  AliLoader *loader = runLoader->GetLoader("TRDLoader");
   loader->LoadRecPoints("recreate");
 
   runLoader->CdGAFile();
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    AliTRDclusterizerV1 clusterer("clusterer", "TRD clusterizer");
-    clusterer.Open(runLoader->GetFileName(), iEvent);
+    AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+    clusterer.Open(runLoader->GetFileName(),iEvent);
     clusterer.ReadDigits();
     clusterer.MakeClusters();
     clusterer.WriteClusters(-1);
@@ -63,30 +66,33 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
   loader->UnloadRecPoints();
 
+  //
   // Trigger (tracklets, LTU)
-
+  //
   loader->LoadTracks("RECREATE");
-
-  Info("Reconstruct","Trigger tracklets will be produced");
+  AliInfo("Trigger tracklets will be produced");
 
   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 
-  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
+  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
+                                              ,"TRD Trigger parameters");
 
-  if (runLoader->GetAliRun() == 0x0) runLoader->LoadgAlice();
+  if (runLoader->GetAliRun() == 0x0) {
+    runLoader->LoadgAlice();
+  }
   gAlice = runLoader->GetAliRun();
-  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t x[3]  = { 0.0, 0.0, 0.0 };
   Double_t b[3];
-  gAlice->Field(x,b);  // b[] is in kilo Gauss
-  Float_t field = b[2] * 0.1; // Tesla
-  Info("Reconstruct","Trigger set for magnetic field = %f Tesla \n",field);
+  gAlice->Field(x,b);          // b[] is in kilo Gauss
+  Float_t  field = b[2] * 0.1; // Tesla
+  AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
 
   trigp->SetField(field);
   trigp->Init();
   trdTrigger.SetParameter(trigp);
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    trdTrigger.Open(runLoader->GetFileName(), iEvent);
+    trdTrigger.Open(runLoader->GetFileName(),iEvent);
     trdTrigger.ReadDigits();
     trdTrigger.MakeTracklets();
     trdTrigger.WriteTracklets(-1);
@@ -97,14 +103,16 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
-                                      AliRawReader* rawReader) const
+void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
+                                    , AliRawReader *rawReader) const
 {
-// reconstruct clusters
+  //
+  // Reconstruct clusters
+  //
 
   AliInfo("Reconstruct TRD clusters from RAW data");
 
-  AliLoader *loader=runLoader->GetLoader("TRDLoader");
+  AliLoader *loader = runLoader->GetLoader("TRDLoader");
   loader->LoadRecPoints("recreate");
 
   runLoader->CdGAFile();
@@ -112,8 +120,8 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     if (!rawReader->NextEvent()) break;
-    AliTRDclusterizerV1 clusterer("clusterer", "TRD clusterizer");
-    clusterer.Open(runLoader->GetFileName(), iEvent);
+    AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
+    clusterer.Open(runLoader->GetFileName(),iEvent);
     clusterer.ReadDigits(rawReader);
     clusterer.MakeClusters();
     clusterer.WriteClusters(-1);
@@ -121,26 +129,30 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   loader->UnloadRecPoints();
 
+  //
   // Trigger (tracklets, LTU)
-
+  //
   loader->LoadTracks();
   if (loader->TreeT()) {
-    Info("Reconstruct","Tracklets already exist");
+    AliError("Tracklets already exist");
     return;
   }
-  Info("Reconstruct","Trigger tracklets will be produced");
+  AliInfo("Trigger tracklets will be produced");
 
   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 
-  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
+  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
+                                              ,"TRD Trigger parameters");
 
-  if (runLoader->GetAliRun() == 0x0) runLoader->LoadgAlice();
+  if (runLoader->GetAliRun() == 0x0) {
+    runLoader->LoadgAlice();
+  }
   gAlice = runLoader->GetAliRun();
-  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t x[3]  = { 0.0, 0.0, 0.0 };
   Double_t b[3];
-  gAlice->Field(x,b);  // b[] is in kilo Gauss
-  Float_t field = b[2] * 0.1; // Tesla
-  Info("Reconstruct","Trigger set for magnetic field = %f Tesla \n",field);
+  gAlice->Field(x,b);          // b[] is in kilo Gauss
+  Float_t  field = b[2] * 0.1; // Tesla
+  AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
 
   trigp->SetField(field);
   trigp->Init();
@@ -150,7 +162,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
     if (!rawReader->NextEvent()) break;
-    trdTrigger.Open(runLoader->GetFileName(), iEvent);
+    trdTrigger.Open(runLoader->GetFileName(),iEvent);
     trdTrigger.ReadDigits(rawReader);
     trdTrigger.MakeTracklets();
     trdTrigger.WriteTracklets(-1);
@@ -161,41 +173,46 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader* runLoader,
 }
 
 //_____________________________________________________________________________
-AliTracker* AliTRDReconstructor::CreateTracker(AliRunLoader* runLoader) const
+AliTracker *AliTRDReconstructor::CreateTracker(AliRunLoader *runLoader) const
 {
-// create a TRD tracker
+  //
+  // Create a TRD tracker
+  //
 
   runLoader->CdGAFile();
+
   return new AliTRDtracker(gFile);
+
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::FillESD(AliRunLoader* runLoader, 
-				  AliESD* esd) const
+void AliTRDReconstructor::FillESD(AliRunLoader *runLoader
+				 , AliESD *esd) const
 {
-// make PID
+  //
+  // Make PID
+  //
 
-  //Double_t parTRD[] = {
-  //  280., // Min. Ionizing Particle signal.  Check it !!!
-  //  0.23, // relative resolution             Check it !!!
-  //  10.   // PID range (in sigmas)
-  //};
   AliTRDpidESD trdPID;
   trdPID.MakePID(esd);
 
+  //
   // Trigger (tracks, GTU)
-
+  //
   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 
-  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
+  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
+                                              ,"TRD Trigger parameters");
 
-  if (runLoader->GetAliRun() == 0x0) runLoader->LoadgAlice();
+  if (runLoader->GetAliRun() == 0x0) {
+    runLoader->LoadgAlice();
+  }
   gAlice = runLoader->GetAliRun();
-  Double_t x[3] = { 0.0, 0.0, 0.0 };
+  Double_t x[3]  = { 0.0, 0.0, 0.0 };
   Double_t b[3];
-  gAlice->Field(x,b);  // b[] is in kilo Gauss
-  Float_t field = b[2] * 0.1; // Tesla
-  Info("FillESD","Trigger set for magnetic field = %f Tesla \n",field);
+  gAlice->Field(x,b);          // b[] is in kilo Gauss
+  Float_t  field = b[2] * 0.1; // Tesla
+  AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
 
   trigp->SetField(field);
   trigp->Init();
@@ -235,6 +252,3 @@ void AliTRDReconstructor::FillESD(AliRunLoader* runLoader,
   }
 
 }
-
-
-
