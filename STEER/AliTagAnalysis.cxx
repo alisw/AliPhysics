@@ -127,11 +127,9 @@ TChain *AliTagAnalysis::QueryTags(AliEventTagCuts *EvTagCuts) {
   AliEventTag *evTag = new AliEventTag;
   fChain->SetBranchAddress("AliTAG",&tag);
 
-  Long64_t size = -1;
-  const char* md5 = 0;
-  const char* guid = 0;
-  const char* turl = 0;
-  const char* path = 0;
+  TString guid = 0;
+  TString turl = 0;
+  TString path = 0;
 
   Int_t iAccepted = 0;
   for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
@@ -140,17 +138,15 @@ TChain *AliTagAnalysis::QueryTags(AliEventTagCuts *EvTagCuts) {
     const TClonesArray *tagList = tag->GetEventTags();
     for(Int_t i = 0; i < iEvents; i++) {
       evTag = (AliEventTag *) tagList->At(i);
-      size = evTag->GetSize();
-      md5 = evTag->GetMD5();
       guid = evTag->GetGUID(); 
       turl = evTag->GetTURL(); 
       path = evTag->GetPath();
       if(EvTagCuts->IsAccepted(evTag)) fEventList->Enter(iAccepted+i);
     }//event loop
     iAccepted += iEvents;
-
-    if(path != NULL) fESDchain->Add(path);
-    else if(turl != NULL) fESDchain->Add(turl);
+    
+    if(path != "") fESDchain->AddFile(path);
+    else if(turl != "") fESDchain->AddFile(turl);
   }//tag file loop
   AliInfo(Form("Accepted events: %d",fEventList->GetN()));
   fESDchain->SetEventList(fEventList);
