@@ -33,6 +33,8 @@ class AlidNdEtaAnalysisESDSelector : public AliSelector {
     AlidNdEtaCorrection* fdNdEtaCorrection; // correction maps
 
  private:
+    AlidNdEtaAnalysisESDSelector(const AlidNdEtaAnalysisESDSelector&);
+    AlidNdEtaAnalysisESDSelector& operator=(const AlidNdEtaAnalysisESDSelector&);
 
   ClassDef(AlidNdEtaAnalysisESDSelector, 0);
 };

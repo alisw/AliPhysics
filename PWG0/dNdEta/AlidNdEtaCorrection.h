@@ -89,6 +89,10 @@ protected:
   Long64_t fNEvents;
   Long64_t fNTriggeredEvents;
 
+private:
+  AlidNdEtaCorrection(const AlidNdEtaCorrection&);
+  AlidNdEtaCorrection& operator=(const AlidNdEtaCorrection&);
+
   ClassDef(AlidNdEtaCorrection, 1)
 };
 

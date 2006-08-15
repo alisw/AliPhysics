@@ -27,6 +27,7 @@ AliCorrectionMatrix::AliCorrectionMatrix() : TNamed(),
   // default constructor
 }
 
+//____________________________________________________________________
 AliCorrectionMatrix::AliCorrectionMatrix(const Char_t* name, const Char_t* title) : TNamed(name, title),
   fhMeas(0),
   fhGene(0),
@@ -36,8 +37,10 @@ AliCorrectionMatrix::AliCorrectionMatrix(const Char_t* name, const Char_t* title
 }
 
 //____________________________________________________________________
-AliCorrectionMatrix::AliCorrectionMatrix(const AliCorrectionMatrix& c)
-  : TNamed(c)
+AliCorrectionMatrix::AliCorrectionMatrix(const AliCorrectionMatrix& c) : TNamed(c),
+  fhMeas(0),
+  fhGene(0),
+  fhCorr(0)
 {
   // copy constructor
   ((AliCorrectionMatrix &)c).Copy(*this);
@@ -74,7 +77,7 @@ AliCorrectionMatrix &AliCorrectionMatrix::operator=(const AliCorrectionMatrix &c
 {
   // assigment operator
 
-  if (this != &c) 
+  if (this != &c)
     ((AliCorrectionMatrix &) c).Copy(*this);
 
   return *this;

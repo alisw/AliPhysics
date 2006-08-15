@@ -30,7 +30,9 @@ AlidNdEtaSystematicsSelector::AlidNdEtaSystematicsSelector() :
   fSigmaVertex(0),
   fEsdTrackCuts(0),
   fOverallPrimaries(0),
-  fOverallSecondaries(0)
+  fOverallSecondaries(0),
+  fPIDParticles(0),
+  fPIDTracks(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -104,6 +106,9 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
     fSigmaVertex = new TH1F("fSigmaVertex", "fSigmaVertex;Nsigma2vertex;NacceptedTracks", 10, 0.25, 5.25);
     printf("WARNING: sigma-vertex analysis enabled. This will produce weird results in the AliESDtrackCuts histograms\n");
   }
+
+  fPIDParticles = new TH1F("pid_particles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
+  fPIDTracks = new TH1F("pid_tracks", "MC PID of reconstructed tracks", 10001, -5000.5, 5000.5);
 }
 
 Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
@@ -214,11 +219,27 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
       case 211: id = 0; break;
       case 321: id = 1; break;
       case 2212: id = 2; break;
+      case 11: 
+        {
+          if (pt < 0.1 && particle->GetMother(0) > -1)
+          {
+            TParticle* mother = stack->Particle(particle->GetMother(0));
+            printf("Mother pdg code is %d\n", mother->GetPdgCode());
+          }   
+          //particle->Dump();
+          //if (particle->GetUniqueID() == 1)
+
+          //printf("Found illegal particle mc id = %d file = %s event = %d\n", iMc,  fTree->GetCurrentFile()->GetName(), fTree->GetTree()->GetReadEntry()); 
+        }
       default: id = 3; break;
     }
 
     if (vertexReconstructed)
+    {
       fdNdEtaCorrection[id]->FillParticle(vtxMC[2], eta, pt);
+      if (pt < 0.1)
+        fPIDParticles->Fill(particle->GetPdgCode());
+    }
 
     fdNdEtaCorrection[id]->FillParticleAllEvents(eta, pt);
     if (eventTriggered)
@@ -253,7 +274,11 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
     }
 
     if (vertexReconstructed)
+    {
       fdNdEtaCorrection[id]->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
+      if (particle->Pt() < 0.1)
+        fPIDTracks->Fill(particle->GetPdgCode());
+    }
   } // end of track loop
 
   delete iter;
@@ -400,6 +425,15 @@ void AlidNdEtaSystematicsSelector::Terminate()
   for (Int_t i=0; i<4; ++i)
     fdNdEtaCorrection[i] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
   fSigmaVertex = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertex"));
+
+  TDatabasePDG* pdgDB = new TDatabasePDG;
+
+  for (Int_t i=0; i <= fPIDParticles->GetNbinsX()+1; ++i)
+    if (fPIDParticles->GetBinContent(i) > 0)
+      printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
+
+  delete pdgDB;
+  pdgDB = 0;
 
   TFile* fout = TFile::Open("systematics.root", "RECREATE");
 

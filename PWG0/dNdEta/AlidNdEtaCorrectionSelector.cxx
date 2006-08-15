@@ -35,6 +35,10 @@ AlidNdEtaCorrectionSelector::AlidNdEtaCorrectionSelector() :
   fdNdEtaCorrection(0),
   fPIDParticles(0),
   fPIDTracks(0),
+  fClustersITSPos(0),
+  fClustersTPCPos(0),
+  fClustersITSNeg(0),
+  fClustersTPCNeg(0),
   fSignMode(0)
 {
   //

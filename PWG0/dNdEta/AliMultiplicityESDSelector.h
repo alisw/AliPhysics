@@ -27,6 +27,8 @@ class AliMultiplicityESDSelector : public AliSelector {
     AliESDtrackCuts*  fEsdTrackCuts;     // Object containing the parameters of the esd track cuts
 
  private:
+    AliMultiplicityESDSelector(const AliMultiplicityESDSelector&);
+    AliMultiplicityESDSelector& operator=(const AliMultiplicityESDSelector&);
 
   ClassDef(AliMultiplicityESDSelector, 0);
 };

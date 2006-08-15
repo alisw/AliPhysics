@@ -37,7 +37,12 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
     Long64_t fOverallPrimaries; // count of all primaries
     Long64_t fOverallSecondaries; // count of all secondaries
 
+    TH1F* fPIDParticles; // pid of primary particles
+    TH1F* fPIDTracks; // pid of reconstructed tracks
+
  private:
+    AlidNdEtaSystematicsSelector(const AlidNdEtaSystematicsSelector&);
+    AlidNdEtaSystematicsSelector& operator=(const AlidNdEtaSystematicsSelector&);
 
   ClassDef(AlidNdEtaSystematicsSelector, 0);
 };

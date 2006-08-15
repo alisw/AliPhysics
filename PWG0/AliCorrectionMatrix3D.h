@@ -30,6 +30,8 @@ public:
 
   virtual ~AliCorrectionMatrix3D();
 
+  AliCorrectionMatrix3D& operator= (const AliCorrectionMatrix3D& c);
+
   TH3F* GetGeneratedHistogram();
   TH3F* GetMeasuredHistogram();
   TH3F* GetCorrectionHistogram();

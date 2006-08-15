@@ -32,6 +32,17 @@ AliCorrectionMatrix2D::AliCorrectionMatrix2D(const AliCorrectionMatrix2D& c)
 }
 
 //____________________________________________________________________
+AliCorrectionMatrix2D &AliCorrectionMatrix2D::operator=(const AliCorrectionMatrix2D &c)
+{
+  // assigment operator
+
+  if (this != &c)
+    ((AliCorrectionMatrix2D &) c).Copy(*this);
+
+  return *this;
+}
+
+//____________________________________________________________________
 AliCorrectionMatrix2D::AliCorrectionMatrix2D(const Char_t* name, const Char_t* title,
 				       Int_t nBinX, Float_t Xmin, Float_t Xmax,
 				       Int_t nBinY, Float_t Ymin, Float_t Ymax) 

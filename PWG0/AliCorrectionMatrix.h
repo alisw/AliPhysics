@@ -25,9 +25,9 @@ protected: // do not create this baseclass
   AliCorrectionMatrix(const Char_t* name, const Char_t* title);
   AliCorrectionMatrix(const AliCorrectionMatrix& c);
   virtual ~AliCorrectionMatrix();
+  AliCorrectionMatrix& operator=(const AliCorrectionMatrix& corrMatrix);
 
 public:
-  AliCorrectionMatrix& operator=(const AliCorrectionMatrix& corrMatrix);
   virtual void Copy(TObject& c) const;
   virtual Long64_t Merge(TCollection* list);
 

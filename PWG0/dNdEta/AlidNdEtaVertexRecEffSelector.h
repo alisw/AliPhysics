@@ -31,6 +31,8 @@ class AlidNdEtaVertexRecEffSelector : public AliSelectorRL {
     TH1F* fVtxRec;  //! generated vertex z of events with reconstructed vertex
 
  private:
+    AlidNdEtaVertexRecEffSelector(const AlidNdEtaVertexRecEffSelector&);
+    AlidNdEtaVertexRecEffSelector& operator=(const AlidNdEtaVertexRecEffSelector&);
 
   ClassDef(AlidNdEtaVertexRecEffSelector, 0);
 };
