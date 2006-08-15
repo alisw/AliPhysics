@@ -1,8 +1,0 @@
-SRCS= AliFast.cxx AliFMaker.cxx AliFDet.cxx AliFTrackMaker.cxx \
-      AliFTrack.cxx AliFHistBrowser.cxx AliFBigBang.cxx \
-      AliFBrowsable.cxx AliFVirtualDisplay.cxx
-
-
-HDRS= $(SRCS:.cxx=.h)
-
-DHDR:=ALIFASTLinkDef.h
