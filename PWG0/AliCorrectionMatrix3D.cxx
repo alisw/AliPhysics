@@ -33,6 +33,17 @@ AliCorrectionMatrix3D::AliCorrectionMatrix3D(const AliCorrectionMatrix3D& c)
 }
 
 //____________________________________________________________________
+AliCorrectionMatrix3D &AliCorrectionMatrix3D::operator=(const AliCorrectionMatrix3D &c)
+{
+  // assigment operator
+
+  if (this != &c)
+    ((AliCorrectionMatrix3D &) c).Copy(*this);
+
+  return *this;
+}
+
+//____________________________________________________________________
 AliCorrectionMatrix3D::AliCorrectionMatrix3D(const Char_t* name, const Char_t* title,
               Int_t nBinX, Float_t Xmin, Float_t Xmax,
               Int_t nBinY, Float_t Ymin, Float_t Ymax,

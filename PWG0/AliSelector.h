@@ -41,6 +41,9 @@ class AliSelector : public TSelector {
 
     TFile*        fKineFile;   //! pointer to Kinematics.root if the file was opened
 
+    AliSelector(const AliSelector&);
+    AliSelector& operator=(const AliSelector&);
+
   ClassDef(AliSelector,0);
 };
 

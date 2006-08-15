@@ -28,6 +28,8 @@ public:
 
   virtual ~AliCorrectionMatrix2D();
 
+  AliCorrectionMatrix2D& operator= (const AliCorrectionMatrix2D& c);
+
   TH2F* GetGeneratedHistogram() const;
   TH2F* GetMeasuredHistogram() const;
 
@@ -41,6 +43,8 @@ public:
 
 protected:
   ClassDef(AliCorrectionMatrix2D,1)
+
+private:
 };
 
 #endif

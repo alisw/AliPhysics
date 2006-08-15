@@ -24,6 +24,10 @@ class AliPWG0Helper : public TObject
     
   protected:
     ClassDef(AliPWG0Helper, 0)
+
+  private:
+    AliPWG0Helper(const AliPWG0Helper&);
+    AliPWG0Helper& operator=(const AliPWG0Helper&);
 };
 
 #endif

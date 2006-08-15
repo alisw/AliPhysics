@@ -29,6 +29,9 @@ class AlidNdEtaAnalysisMCSelector : public AliSelectorRL {
     TH1F* fPartEta; //! counted particles as function of eta
     Int_t fEvents;  //! number of processed events
 
+    AlidNdEtaAnalysisMCSelector(const AlidNdEtaAnalysisMCSelector&);
+    AlidNdEtaAnalysisMCSelector& operator=(const AlidNdEtaAnalysisMCSelector&);
+
     ClassDef(AlidNdEtaAnalysisMCSelector, 0);
 };
 

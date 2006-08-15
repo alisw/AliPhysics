@@ -22,7 +22,7 @@
 
 #include "AliESDtrack.h"
 
-class AliRecoVsGeneCheck : public TObject 
+class AliRecoVsGeneCheck : public TObject
 {
 
 public:
@@ -61,7 +61,9 @@ protected:
   TH3F* fhDPtVsPtVsEta;
   TH3F* fhDEtaVsPtVsEta;  
 
-
+  private:
+    AliRecoVsGeneCheck(const AliRecoVsGeneCheck&);
+    AliRecoVsGeneCheck& operator=(const AliRecoVsGeneCheck&);
 
   ClassDef(AliRecoVsGeneCheck, 1)
 };

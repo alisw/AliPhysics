@@ -32,6 +32,9 @@ class AliSelectorRL : public AliSelector {
     Bool_t fKinematicsLoaded;    // determines if the stack is properly loaded (AliRunLoader::LoadKinematics() succeeded), this is needed because the GetStack returnes a invalid stack object when the function failed
     Bool_t fHeaderLoaded;        // determines if the header is properly loaded
 
+    AliSelectorRL(const AliSelectorRL&);
+    AliSelectorRL& operator=(const AliSelectorRL&);
+
     ClassDef(AliSelectorRL,0);
 };
 

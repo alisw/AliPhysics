@@ -40,6 +40,8 @@ class AlidNdEtaCorrectionSelector : public AliSelectorRL {
     Int_t fSignMode;  // if 0 process all particles, if +-1 process only particles with that sign
 
  private:
+    AlidNdEtaCorrectionSelector(const AlidNdEtaCorrectionSelector&);
+    AlidNdEtaCorrectionSelector& operator=(const AlidNdEtaCorrectionSelector&);
 
   ClassDef(AlidNdEtaCorrectionSelector, 0);
 };
