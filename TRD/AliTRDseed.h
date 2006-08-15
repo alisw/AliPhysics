@@ -4,6 +4,14 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */ 
 
+/* $Id$ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  The TRD track seed                                                    //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TObject.h" 
 
 class AliTRDcluster;
@@ -15,53 +23,56 @@ class AliTRDseed : public TObject {
  public:
 
   AliTRDseed(); 
+  AliTRDseed(const AliTRDseed &s);
   ~AliTRDseed() {};                 
 
-  static void    EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh);
-  static Float_t FitRiemanTilt(AliTRDseed *seed, Bool_t error);
-  void           UseClusters(); // use clusters
-  void           Update();      // update information - without tilt correction
-  void           CookLabels();  // cook label
-  void           UpdateUsed();
-  void           Reset();       // reset seed
-  Bool_t         IsOK() const { return fN2 > 8;}
+  AliTRDseed      &operator=(const AliTRDseed &/*s*/)       { return *this;   } 
+
+  static  void     EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean, Double_t &sigma, Int_t hh);
+  static  Float_t  FitRiemanTilt(AliTRDseed *seed, Bool_t error);
+          void     UseClusters();
+          void     Update();
+          void     CookLabels();
+          void     UpdateUsed();
+          void     Reset();
+          Bool_t   IsOK() const                             { return fN2 > 8; }
 
  private:
 
-  Float_t        fTilt;         // tilting angle
-  Float_t        fPadLength;    // pad length
-  Float_t        fX0;           // x0 position
-  Float_t        fX[25];        // !x position
-  Float_t        fY[25];        // !y position
-  Float_t        fZ[25];        // !z position
-  Int_t          fIndexes[25];  // !indexes
-  AliTRDcluster *fClusters[25]; // !clusters
-  Bool_t         fUsable[25];   // !indication  - usable cluster
-  Float_t        fYref[2];      // reference y
-  Float_t        fZref[2];      // reference z
-  Float_t        fYfit[2];      // y fit position +derivation
-  Float_t        fYfitR[2];     // y fit position +derivation
-  Float_t        fZfit[2];      // z fit position
-  Float_t        fZfitR[2];     // z fit position
-  Float_t        fSigmaY;       // "robust" sigma in Y - constant fit
-  Float_t        fSigmaY2;      // "robust" sigma in Y - line fit
-  Float_t        fMeanz;        // mean vaue of z
-  Float_t        fZProb;        // max probbable z
-  Int_t          fLabels[2];    // labels
-  Int_t          fN;            // number of associated clusters
-  Int_t          fN2;           // number of not crossed
-  Int_t          fNUsed;        // number of used clusters
-  Int_t          fFreq;         // freq
-  Int_t          fNChange;      // change z counter
-  Float_t        fMPads;        // mean number of pads per cluster
-  // global
-  //
-  Float_t        fC;            // curvature
-  Float_t        fCC;           // curvature with constrain
-  Float_t        fChi2;         // global chi2
-  Float_t        fChi2Z;        // global chi2
+          Float_t  fTilt;               //  Tilting angle
+          Float_t  fPadLength;          //  Pad length
+          Float_t  fX0;                 //  X0 position
+          Float_t  fX[25];              //! X position
+          Float_t  fY[25];              //! Y position
+          Float_t  fZ[25];              //! Z position
+          Int_t    fIndexes[25];        //! Indexes
+          AliTRDcluster *fClusters[25]; //! Clusters
+          Bool_t   fUsable[25];         //! Indication  - usable cluster
+          Float_t  fYref[2];            //  Reference y
+          Float_t  fZref[2];            //  Reference z
+          Float_t  fYfit[2];            //  Y fit position +derivation
+          Float_t  fYfitR[2];           //  Y fit position +derivation
+          Float_t  fZfit[2];            //  Z fit position
+          Float_t  fZfitR[2];           //  Z fit position
+          Float_t  fSigmaY;             //  "Robust" sigma in Y - constant fit
+          Float_t  fSigmaY2;            //  "Robust" sigma in Y - line fit
+          Float_t  fMeanz;              //  Mean vaue of z
+          Float_t  fZProb;              //  Max probbable z
+          Int_t    fLabels[2];          //  Labels
+          Int_t    fN;                  //  Number of associated clusters
+          Int_t    fN2;                 //  Number of not crossed
+          Int_t    fNUsed;              //  Number of used clusters
+          Int_t    fFreq;               //  Frequency
+          Int_t    fNChange;            //  Change z counter
+          Float_t  fMPads;              //  Mean number of pads per cluster
 
-  ClassDef(AliTRDseed,1)        // Seed for a local TRD track
+          Float_t  fC;                  //  Curvature
+          Float_t  fCC;                 //  Curvature with constrain
+          Float_t  fChi2;               //  Global chi2
+          Float_t  fChi2Z;              //  Global chi2
+
+  ClassDef(AliTRDseed,1)                //  Seed for a local TRD track
 
 };
+
 #endif 

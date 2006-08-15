@@ -175,7 +175,7 @@ void AliTRDdataArray::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
   fNdim1  = nrow * ncol;
   fNdim2  = ntime;
   fNelems = fNdim1 * fNdim2;
-
+  
   fNrow   = nrow;
   fNcol   = ncol;
   fNtime  = ntime;
