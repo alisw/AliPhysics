@@ -1,5 +1,4 @@
 
-ALIFAST/module.mk:	 ALIFAST/libALIFAST.pkg
 ALIROOT/module.mk:	 ALIROOT/binaliroot.pkg 
 ANALYSIS/module.mk:	 ANALYSIS/libANALYSIS.pkg 
 CRT/module.mk:           CRT/libCRT.pkg
