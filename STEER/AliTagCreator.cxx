@@ -48,11 +48,13 @@ ClassImp(AliTagCreator)
 
 
 //______________________________________________________________________________
-AliTagCreator::AliTagCreator() {
+  AliTagCreator::AliTagCreator() :
+    TObject(),
+    fSE("ALICE::CERN::se01"),
+    fgridpath(""),
+    fStorage(0)
+{
   //==============Default constructor for a AliTagCreator==================
-  fgridpath = "";
-  fSE = "";   
-  fStorage = 0; 
 }
 
 //______________________________________________________________________________
@@ -202,6 +204,73 @@ Bool_t AliTagCreator::MergeTags() {
     AliInfo(Form("Chained tag files: %d",fgChain->GetEntries()));
   }//grid mode
  
+  AliRunTag *tag = new AliRunTag;
+  AliEventTag *evTag = new AliEventTag;
+  fgChain->SetBranchAddress("AliTAG",&tag);
+   
+  //Defining new tag objects
+  AliRunTag *newTag = new AliRunTag();
+  TTree ttag("T","A Tree with event tags");
+  TBranch * btag = ttag.Branch("AliTAG", &newTag);
+  btag->SetCompressionLevel(9);
+  for(Int_t iTagFiles = 0; iTagFiles < fgChain->GetEntries(); iTagFiles++) {
+    fgChain->GetEntry(iTagFiles);
+    newTag->SetRunId(tag->GetRunId());
+    const TClonesArray *tagList = tag->GetEventTags();
+    for(Int_t j = 0; j < tagList->GetEntries(); j++) {
+      evTag = (AliEventTag *) tagList->At(j);
+      newTag->AddEventTag(*evTag);
+    }
+    ttag.Fill();
+    newTag->Clear();
+  }//tag file loop 
+  
+  TString localFileName = "Run"; localFileName += tag->GetRunId(); 
+  localFileName += ".Merged"; localFileName += ".ESD.tag.root";
+     
+  TString filename = 0x0;
+  
+  if(fStorage == 0) {
+    filename = localFileName.Data();      
+    AliInfo(Form("Writing merged tags to local file: %s",filename.Data()));
+  } 
+  else if(fStorage == 1) {
+    TString alienFileName = "/alien";
+    alienFileName += gGrid->Pwd();
+    alienFileName += fgridpath.Data();
+    alienFileName += "/";
+    alienFileName +=  localFileName;
+    alienFileName += "?se=";
+    alienFileName += fSE.Data();
+    filename = alienFileName.Data();
+    AliInfo(Form("Writing merged tags to grid file: %s",filename.Data()));     
+  }
+  
+  TFile* ftag = TFile::Open(filename, "recreate");
+  ftag->cd();
+  ttag.Write();
+  ftag->Close();
+
+  delete tag;
+  delete newTag;
+
+  return kTRUE;
+}
+
+//__________________________________________________________________________
+Bool_t AliTagCreator::MergeTags(TGridResult *result) {
+  //Merges the tags that are listed in the TGridResult 
+  AliInfo(Form("Merging tags....."));
+  TChain *fgChain = new TChain("T");
+
+  Int_t nEntries = result->GetEntries();
+
+  TString alienUrl;
+  for(Int_t i = 0; i < nEntries; i++) {
+    alienUrl = result->GetKey(i,"turl");
+    fgChain->Add(alienUrl);  
+  }
+  AliInfo(Form("Chained tag files: %d",fgChain->GetEntries()));
   AliRunTag *tag = new AliRunTag;
   AliEventTag *evTag = new AliEventTag;
   fgChain->SetBranchAddress("AliTAG",&tag);
