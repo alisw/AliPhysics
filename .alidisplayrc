@@ -1,8 +1,0 @@
-AliDisplay.MomentumMin:                  0.000000
-AliDisplay.MomentumMax:                  2.000000
-AliDisplay.RapidityMin:                  -1.205622
-AliDisplay.RapidityMax:                  1.500000
-AliDisplay.SliderUpdate:                 1
-AliDisplay.ZoomStep:                     1.200000
-AliDisplay.SliderStep:                   0.010000
-AliDisplay.RawDataPath:                  /raw
