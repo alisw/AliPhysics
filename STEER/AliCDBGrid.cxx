@@ -598,10 +598,10 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 	}
 	delete arr; arr=0;
 		
-	AliInfo(Form("gridUrl:	%s",gridUrl.Data()));
-	AliInfo(Form("user:	%s",user.Data()));
-	AliInfo(Form("dbFolder:	%s",dbFolder.Data()));
-	AliInfo(Form("s.e.:	%s",se.Data()));
+	AliDebug(2, Form("gridUrl:	%s",gridUrl.Data()));
+	AliDebug(2, Form("user:	%s",user.Data()));
+	AliDebug(2, Form("dbFolder:	%s",dbFolder.Data()));
+	AliDebug(2, Form("s.e.:	%s",se.Data()));
 
 	return new AliCDBGridParam(gridUrl, user, dbFolder, se);       
 }

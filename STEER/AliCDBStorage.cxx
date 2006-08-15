@@ -38,7 +38,7 @@ AliCDBStorage::~AliCDBStorage() {
 
 //_____________________________________________________________________________
 void AliCDBStorage::GetSelection(/*const*/ AliCDBId* id) {
-// return required version and subversion from the list of selection criteria 
+// return required version and subversion from the list of selection criteria
 	
 	TIter iter(&fSelections);
 	AliCDBId* aSelection;
@@ -183,7 +183,7 @@ void AliCDBStorage::PrintSelectionList(){
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {	
+AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 // get an AliCDBEntry object from the database
 	
 	// check if query's path and runRange are valid
@@ -208,18 +208,20 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 
 	if (oldStatus != kFALSE)
   		TH1::AddDirectory(kTRUE);
-		
+
   	if (entry) {
     		AliInfo(Form("CDB object retrieved: %s", entry->GetId().ToString().Data()));
   	} else {
-    		AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d", 
-		        (query.GetPath()).Data(), query.GetFirstRun()));
+		// TODO this is to make the SHUTTLE output lighter
+		if(!(query.GetPath().Contains("SHUTTLE/STATUS")))
+    			AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d",
+		        	(query.GetPath()).Data(), query.GetFirstRun()));
   	}
-	
+
 	// if drain storage is set, drain entry into drain storage
 	if(entry && (AliCDBManager::Instance())->IsDrainSet())
 		AliCDBManager::Instance()->Drain(entry);
-	
+
 	return entry;
 }
 

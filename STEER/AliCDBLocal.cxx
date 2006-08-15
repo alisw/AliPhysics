@@ -577,13 +577,17 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 	
 	entry->SetVersion(id.GetVersion());
 	entry->SetSubVersion(id.GetSubVersion());
-	
+
 	// write object (key name: "AliCDBEntry")
 	Bool_t result = file.WriteTObject(entry, "AliCDBEntry");
 	if (!result) AliDebug(2,Form("Can't write entry to file: %s", filename.Data()));
 
 	file.Close();
-        if(result) AliInfo(Form("CDB object stored into file %s",filename.Data()));
+        if(result) {
+		// TODO this is to make the SHUTTLE output lighter
+		if(!(id.GetPath().Contains("SHUTTLE/STATUS")))
+			AliInfo(Form("CDB object stored into file %s",filename.Data()));
+	}
 
 	return result;
 }
