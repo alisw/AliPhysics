@@ -428,6 +428,10 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
         // Get the digits
         fDigits = fDigitsManager->GetDigits(idet);
 	if (!fDigits) return kFALSE;
+	// This is to take care of switched off super modules
+        if (fDigits->GetNtime() == 0) {
+          continue;
+	}
         fDigits->Expand();
         fTrack0 = fDigitsManager->GetDictionary(idet,0);
 	if (!fTrack0) return kFALSE;

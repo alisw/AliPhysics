@@ -261,6 +261,10 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 
         // Get the digits
         digitsIn = fDigitsManager->GetDigits(idet);
+	// This is to take care of switched off super modules
+        if (digitsIn->GetNtime() == 0) {
+          continue;
+	}
         digitsIn->Expand();
         track0   = fDigitsManager->GetDictionary(idet,0);
         track0->Expand();
@@ -467,6 +471,9 @@ Bool_t AliTRDclusterizerV1::MakeClusters()
 			                            ,clusterSig
 			                            ,iType
                                                     ,clusterPads[1]);
+
+                printf("Add a cluster: q=%f, det=%d, x=%f, y=%f, z=%f\n",clusterCharge
+		       ,idet,clusterPos[0],clusterPos[1],clusterPos[2]);
 
 		Short_t signals[7]={ 0, 0, 0, 0, 0, 0, 0 };
 		for (Int_t jPad = col-3; jPad <= col+3; jPad++) {
