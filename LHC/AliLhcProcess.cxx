@@ -21,14 +21,14 @@
 ClassImp(AliLhcProcess)
 
 AliLhcProcess::AliLhcProcess(AliLHC *lhc, const char* name, const char* title)
-    :TNamed(name,title)
+    :TNamed(name,title),
+     fAccelerator(lhc)
 {
 // Constructor
-  fAccelerator = lhc;
 }
 
 AliLhcProcess::AliLhcProcess(const AliLhcProcess& process)
-    : TNamed(process), AliLhcMonitor(process)
+    : TNamed(process), AliLhcMonitor(process), fAccelerator(0)
 {
 // copy constructor
 }

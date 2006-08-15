@@ -23,11 +23,25 @@
 ClassImp(AliLhcProcessBT)
 
 AliLhcProcessBT::AliLhcProcessBT(AliLHC* lhc, const char* name, const char* title)
-    :AliLhcProcess(lhc,name,title)
+    :AliLhcProcess(lhc,name,title),
+     fCrossSection(0.),
+     fIRegions(0),
+     fBetaMin(0.)
 {
 // Constructor
 }
 
+
+
+AliLhcProcessBT::AliLhcProcessBT(const AliLhcProcessBT& bt):
+    AliLhcProcess(bt),
+    fCrossSection(0.),
+    fIRegions(0),
+    fBetaMin(0.)
+{
+// Copy Constructor
+
+}
 
 AliLhcProcessBT::~AliLhcProcessBT()
 {

@@ -39,9 +39,27 @@ ClassImp(AliLhcProcessIBS)
   Double_t func(Double_t *x, Double_t *par);
 
 AliLhcProcessIBS::AliLhcProcessIBS(AliLHC* lhc, const char* name, const char* title)
-    :AliLhcProcess(lhc,name,title)
+    :AliLhcProcess(lhc,name,title),
+     fCrossSection(0.),
+     fIRegions(0),
+     fTaux(0.),
+     fTaue(0.),
+     fTauxArray(0),
+     fTaueArray(0)
 {
 // Constructor
+}
+
+AliLhcProcessIBS::AliLhcProcessIBS(const AliLhcProcessIBS& ibs):
+    AliLhcProcess(ibs),
+    fCrossSection(0.),
+    fIRegions(0),
+    fTaux(0.),
+    fTaue(0.),
+    fTauxArray(0),
+    fTaueArray(0)
+{
+// Copy Constructor
 }
 
 

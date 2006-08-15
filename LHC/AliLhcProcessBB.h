@@ -12,6 +12,7 @@ class AliLhcProcessBB : public AliLhcProcess
 {
  public:
     AliLhcProcessBB(AliLHC* lhc, const char* name, const char* title);
+    AliLhcProcessBB(const AliLhcProcessBB& bb);
     virtual ~AliLhcProcessBB();
     virtual void SetCrossSection(Float_t sig) {fCrossSection = sig*1.e-24;}
     virtual void Init();

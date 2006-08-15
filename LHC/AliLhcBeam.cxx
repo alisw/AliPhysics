@@ -32,14 +32,45 @@
 
 ClassImp(AliLhcBeam)
 
-AliLhcBeam::AliLhcBeam(AliLHC* lhc)
+AliLhcBeam::AliLhcBeam(AliLHC* lhc):
+    fAccelerator(lhc),
+    fN(0),
+    fN0(0),
+    fNEmittance(0.),
+    fEmittance(0.),
+    fEmittance0(0.),
+    fEmittanceL(0.),
+    fEmittanceL0(0.),
+    fEnergySpread(0.),
+    fA(0),
+    fZ(0),
+    fEnergy(0.),
+    fGamma(0.),
+    fTimeArray(0),
+    fEmittanceArray(0),
+    fEmittanceLArray(0)
 {
 // Constructor
-  fAccelerator = lhc;
 }
 
-AliLhcBeam::AliLhcBeam(const AliLhcBeam& beam)
-    : TNamed(beam), AliLhcMonitor(beam)
+AliLhcBeam::AliLhcBeam(const AliLhcBeam& beam): 
+    TNamed(beam), AliLhcMonitor(beam),
+    fAccelerator(0),
+    fN(0),
+    fN0(0),
+    fNEmittance(0.),
+    fEmittance(0.),
+    fEmittance0(0.),
+    fEmittanceL(0.),
+    fEmittanceL0(0.),
+    fEnergySpread(0.),
+    fA(0),
+    fZ(0),
+    fEnergy(0.),
+    fGamma(0.),
+    fTimeArray(0),
+    fEmittanceArray(0),
+    fEmittanceLArray(0)
 {
 // copy constructor
 }

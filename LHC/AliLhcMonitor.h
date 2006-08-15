@@ -8,7 +8,7 @@
 class AliLhcMonitor
 {
  public:
-    AliLhcMonitor(){;}
+    AliLhcMonitor();
     virtual ~AliLhcMonitor(){;}
     virtual void  SetMonitor(Int_t n) = 0;
     virtual void  Record()            = 0;

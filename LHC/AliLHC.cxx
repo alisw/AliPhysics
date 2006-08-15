@@ -32,27 +32,50 @@
 
 ClassImp(AliLHC)
 
-AliLHC::AliLHC()
+
+AliLHC::AliLHC():
+    fNRegions(0),
+    fNProcesses(0),
+    fIRegions(new TList()),
+    fProcesses(new TList()),
+    fBeams(new TObjArray(2)),
+    fRadius(0.),
+    fAverageBeta(0.),
+    fAverageDisp(0.),
+    fNt(0),
+    fNmax(0),
+    fTime(0.),
+    fTimeA(0),
+    fTimeStep(0.),
+    fTimeMax(0.),
+    fFillingTime(0.),
+    fSetUpTime(0.)
 {
 // Constructor
-    fIRegions   = new TList;
-    fProcesses  = new TList;
-    fNRegions   = 0;
-    fNProcesses = 0;
-    fBeams = new TObjArray(2);
-    //PH    (*fBeams)[0] = 0;
-    //PH    (*fBeams)[1] = 0;    
     fBeams->AddAt(0,0);
     fBeams->AddAt(0,1);    
-    fTime = 0;
-    fTimeMax = 0;
-    fTimeA = 0;
 }
 
-AliLHC::AliLHC(const AliLHC& lhc)
-    : TObject(lhc)
+AliLHC::AliLHC(const AliLHC& lhc):
+    TObject(lhc),
+    fNRegions(0),
+    fNProcesses(0),
+    fIRegions(0),
+    fProcesses(0),
+    fBeams(0),
+    fRadius(0.),
+    fAverageBeta(0.),
+    fAverageDisp(0.),
+    fNt(0),
+    fNmax(0),
+    fTime(0.),
+    fTimeA(0),
+    fTimeStep(0.),
+    fTimeMax(0.),
+    fFillingTime(0.),
+    fSetUpTime(0.)
 {
-// copy constructor
+// Copy constructor
 }
 
 AliLHC::~AliLHC()

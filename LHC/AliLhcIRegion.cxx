@@ -38,17 +38,39 @@
 ClassImp(AliLhcIRegion)
 
 AliLhcIRegion::AliLhcIRegion(AliLHC* lhc, const char* name, const char* title)
-    :TNamed(name,title)
+    :TNamed(name,title),
+     fAccelerator(lhc),
+     fBeam1(0),
+     fBeam2(0),
+     fLuminosity(0.),
+     fLuminosity0(0.),
+     fAverageLumi(0.),
+     fBetaStar(0.),
+     fBetaStar0(0.),
+     fCrossingAngle(0.),
+     fFrequency(0.),
+     fLumiArray(0),
+     fAverageLumiArray(0),
+     fBetaStarArray(0)
 {
 // Constructor
-    fAccelerator=lhc;   
-    fLumiArray        = 0;  
-    fAverageLumiArray = 0;
-    fBetaStarArray = 0;
 }
 
-AliLhcIRegion::AliLhcIRegion(const AliLhcIRegion& region)
-    : TNamed(region), AliLhcMonitor(region) 
+AliLhcIRegion::AliLhcIRegion(const AliLhcIRegion& region): 
+    TNamed(region), AliLhcMonitor(region),
+    fAccelerator(0),
+    fBeam1(0),
+    fBeam2(0),
+    fLuminosity(0.),
+    fLuminosity0(0.),
+    fAverageLumi(0.),
+    fBetaStar(0.),
+    fBetaStar0(0.),
+    fCrossingAngle(0.),
+    fFrequency(0.),
+    fLumiArray(0),
+    fAverageLumiArray(0),
+    fBetaStarArray(0)
 {
 // copy constructor
 }

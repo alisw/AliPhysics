@@ -16,14 +16,10 @@
 /* $Id$ */
 
 #include "AliLhcMonitor.h"
-#include "AliLHC.h"
-#include <TMath.h>
-#include <TCanvas.h>
-#include <TGraph.h>
-
-ClassImp(AliLhcMonitor)
+ClassImp(AliLhcMonitor);
 
 
+AliLhcMonitor::AliLhcMonitor():fNmax(0){;}
 
 
 
