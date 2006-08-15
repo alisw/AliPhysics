@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.7  2006/07/20 09:54:40  jgrosseo
+introducing status management: The processing per subdetector is divided into several steps,
+after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
+can keep track of the number of failures and skips further processing after a certain threshold is
+exceeded. These thresholds can be configured in LDAP.
+
 Revision 1.6  2006/07/19 10:09:55  jgrosseo
 new configuration, accesst to DAQ FES (Alberto)
 
@@ -145,6 +151,10 @@ ClassImp(AliShuttleConfig)
 AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
 	fIsValid(kFALSE),
+	fDAQlbHost(""), fDAQlbUser(""), fDAQlbPass(""),
+	fMaxPPRetries(0), fMaxRetries(0),
+	fDetectorMap(), fDetectorList(),
+	fShuttleInstanceHost(""), fProcessedDetectors(),
 	fProcessAll(kFALSE)
 {
 	//

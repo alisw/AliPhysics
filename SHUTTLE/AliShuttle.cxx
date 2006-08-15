@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.12  2006/08/08 14:19:29  jgrosseo
+Update to shuttle classes (Alberto)
+
+- Possibility to set the full object's path in the Preprocessor's and
+Shuttle's  Store functions
+- Possibility to extend the object's run validity in the same classes
+("startValidity" and "validityInfinite" parameters)
+- Implementation of the StoreReferenceData function to store reference
+data in a dedicated CDB storage.
+
 Revision 1.11  2006/07/21 07:37:20  jgrosseo
 last run is stored after each run
 
@@ -115,9 +125,13 @@ some docs added
 
 ClassImp(AliShuttle)
 
+TString AliShuttle::fgkMainCDB("alien://DBFolder=ShuttleCDB");
 TString AliShuttle::fgkLocalCDB("local://LocalShuttleCDB");
 TString AliShuttle::fgkMainRefStorage("alien://DBFolder=ShuttleReference");
 TString AliShuttle::fgkLocalRefStorage("local://LocalReferenceStorage");
+
+Bool_t AliShuttle::fgkProcessDCS(kTRUE); 
+
 
 const char* AliShuttle::fgkShuttleTempDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/temp");
 const char* AliShuttle::fgkShuttleLogDir = gSystem->ExpandPathName("$ALICE_ROOT/SHUTTLE/log");
@@ -131,10 +145,13 @@ const char* AliShuttle::fgkDetectorCode[AliShuttle::fgkNDetectors] = {"SPD", "SD
 //______________________________________________________________________________________________
 AliShuttle::AliShuttle(const AliShuttleConfig* config,
 		UInt_t timeout, Int_t retries):
-	fConfig(config),
-	fTimeout(timeout),
-	fRetries(retries), fCurrentRun(-1), fCurrentStartTime(0),
-	fCurrentEndTime(0), fStatusEntry(0)
+fConfig(config),
+fTimeout(timeout), fRetries(retries),
+fPreprocessorMap(),
+fCurrentRun(-1),
+fCurrentStartTime(0), fCurrentEndTime(0),
+fCurrentDetector(""),
+fStatusEntry(0)
 {
 	//
 	// config: AliShuttleConfig used
@@ -151,7 +168,15 @@ AliShuttle::AliShuttle(const AliShuttleConfig* config,
 
 //______________________________________________________________________
 AliShuttle::AliShuttle(const AliShuttle& /*other*/):
-AliShuttleInterface()
+AliShuttleInterface(),
+fConfig(0),
+fTimeout(0), fRetries(0),
+fPreprocessorMap(),
+fCurrentRun(-1),
+fCurrentStartTime(0), fCurrentEndTime(0),
+fCurrentDetector(""),
+fStatusEntry(0)
+
 {
 // copy constructor (not implemented)
 
@@ -238,11 +263,13 @@ UInt_t AliShuttle::Store(const AliCDBPath& path, TObject* object,
 
 	UInt_t result = 0;
 
-	if (!(AliCDBManager::Instance()->IsDefaultStorageSet())) {
-		Log(fCurrentDetector, "No CDB storage set!");
+	if (!(AliCDBManager::Instance()->GetStorage(fgkMainCDB))) {
+		Log(fCurrentDetector, "Cannot activate main CDB storage!");
 	} else {
-		result = (UInt_t) AliCDBManager::Instance()->Put(object, id, metaData);
+		result = (UInt_t) AliCDBManager::Instance()->GetStorage(fgkMainCDB)
+					->Put(object, id, metaData);
 	}
+
 	if(!result) {
 
 		Log(fCurrentDetector,
@@ -557,9 +584,15 @@ Bool_t AliShuttle::Process()
 
 	while ((anAlias = (TObjString*) iter.Next())) {
 		TObjArray valueSet;
-		//result = GetValueSet(host, port, anAlias->String(), valueSet);
-		AliInfo(Form("Port = %d",port));
-		result = kTRUE;
+		// TODO Test only... I've added a flag that allows to
+		// exclude DCS archive DB query
+		if(fgkProcessDCS){
+			AliInfo("Querying DCS archive DB data...");
+			result = GetValueSet(host, port, anAlias->String(), valueSet);
+		} else {
+			AliInfo(Form("Skipping DCS processing. Port = %d",port));
+			result = kTRUE;
+		}
 		if(result) {
 			aliasMap.Add(anAlias->Clone(), valueSet.Clone());
 		}else{
@@ -584,6 +617,9 @@ Bool_t AliShuttle::Process()
 	if(aPreprocessor)
 	{
 		aPreprocessor->Initialize(fCurrentRun, fCurrentStartTime, fCurrentEndTime);
+
+		// TODO Think about what to do in case of "Grid storage error"
+		// (-> object put in local backup storage, return 2)
 		hasError = (aPreprocessor->Process(&aliasMap) == 0);
 	}else{
     // TODO default behaviour?

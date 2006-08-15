@@ -1,17 +1,31 @@
 void Shuttle(const char* param = "listen") {
 
+	// WARNING: if ldap is built with ssl support it may cause confilcts with the 
+	// AliEn interface. If this happens, grid storage activation must be done BEFORE 
+	// loading LDAP libraries!!!
+
+	gSystem->Load("libRLDAP.so");
 	gSystem->Load("libSHUTTLE");
 	gSystem->Load("$ROOTSYS/lib/libThread");
 	gSystem->Load("$ALICE_ROOT/SHUTTLE/test/libTest.so");
 
 //	AliLog::SetGlobalDebugLevel(1);
 
-	AliCDBManager *man = AliCDBManager::Instance();
-	man->SetDefaultStorage("local://MainCDB");
+	// Setting local CDB and reference storage locations
+	AliShuttle::SetMainCDB("alien://DBFolder=ShuttleCDB");
+	AliShuttle::SetLocalCDB("local://LocalShuttleCDB");
+	AliShuttle::SetMainRefStorage("alien://DBFolder=GridReferenceStorage");
+	AliShuttle::SetLocalRefStorage("local://LocalReferenceStorage");
+
+	AliShuttle::SetProcessDCS(kTRUE);
+
+
+//	AliCDBManager *man = AliCDBManager::Instance();
+//	man->SetDefaultStorage("local://MainCDB");
 //	man->SetDefaultStorage("alien://DBFolder=ShuttleMainCDB");
 
-	AliShuttleConfig config("pcalice290.cern.ch", 389,
-			"o=alice,dc=cern,dc=ch");
+
+	AliShuttleConfig config("pcalice290.cern.ch", 389, "o=alice,dc=cern,dc=ch");
 	config.SetProcessAll(kTRUE);
         config.Print();
 
@@ -20,8 +34,8 @@ void Shuttle(const char* param = "listen") {
 	AliShuttle* shuttle = trigger.GetShuttle();
 
 	// Add here detectors preprocessor ...
-	//TestTPCPreprocessor *tpcPrep = new TestTPCPreprocessor("TPC",shuttle);
-	//TestITSPreprocessor *itsPrep = new TestITSPreprocessor("ITS",shuttle);
+	TestTPCPreprocessor *tpcPrep = new TestTPCPreprocessor("TPC",shuttle);
+	TestITSPreprocessor *itsPrep = new TestITSPreprocessor("ITS",shuttle);
 	TestRICHPreprocessor *richPrep = new TestRICHPreprocessor("RICH",shuttle);
 
 	TString paramStr(param);
@@ -46,7 +60,7 @@ void Shuttle(const char* param = "listen") {
 		cout<<"new - collect data only for the new runs"<<endl;
 		cout<<"all - collect data for all runs"<<endl;
 		cout<<"listen - start listening for DAQ notification"<<endl;
-    cout<<"lastrun=<run> - sets last run manually. use with caution!" << endl
+    		cout<<"lastrun=<run> - sets last run manually. use with caution!" << endl;
 		cout<<"<empty parameter> - the same as 'listen'"<<endl;
 	}
 

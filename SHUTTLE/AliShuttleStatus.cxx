@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1  2006/07/20 13:20:13  jgrosseo
+introducing status management: The processing per subdetector is divided into several steps,
+after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
+can keep track of the number of failures and skips further processing after a certain threshold is
+exceeded. These thresholds can be configured in LDAP.
+
 */
 
 //
@@ -47,7 +53,10 @@ AliShuttleStatus::AliShuttleStatus(Status status) : TObject(),
   fTimeStamp = time(0);
 }
 
-AliShuttleStatus::AliShuttleStatus(const AliShuttleStatus& c) : TObject(c)
+AliShuttleStatus::AliShuttleStatus(const AliShuttleStatus& c) :
+TObject(c),  fTimeStamp(0),
+fStatus(kInvalid),
+fCount(1)
 {
   // copy constructor
 

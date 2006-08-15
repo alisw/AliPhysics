@@ -14,7 +14,9 @@ public:
 
 	void infoHandler();
 
-	void errorHandler(int severity, int code, char *msg); 
+	void errorHandler(int severity, int code, char *msg);
+private:
+	DATENotifier(const DATENotifier& other);
 };
 
 #endif

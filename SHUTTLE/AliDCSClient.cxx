@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2006/07/04 14:59:57  jgrosseo
+revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
+
 Revision 1.3  2006/06/12 09:11:16  jgrosseo
 coding conventions (Alberto)
 
@@ -104,7 +107,7 @@ AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
 			fSocket->SetOption(kNoBlock, 1);
 			break;
 		}
-		
+
 		AliDebug(1, Form("Connection timeout! tries <%d> ...", tries));
 
 		delete fSocket;
@@ -117,7 +120,9 @@ AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
 
 //______________________________________________________________________
 AliDCSClient::AliDCSClient(const AliDCSClient& /*other*/):
-TObject()
+	TObject(), fSocket(NULL), fTimeout(0), fRetries(0),
+	fServerErrorCode(AliDCSMessage::kNoneError), fServerError("")
+
 {
 // copy constructor (not implemented)
 

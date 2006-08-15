@@ -15,6 +15,16 @@
 
 /*
  $Log$
+ Revision 1.9  2006/08/08 14:19:29  jgrosseo
+ Update to shuttle classes (Alberto)
+
+ - Possibility to set the full object's path in the Preprocessor's and
+ Shuttle's  Store functions
+ - Possibility to extend the object's run validity in the same classes
+ ("startValidity" and "validityInfinite" parameters)
+ - Implementation of the StoreReferenceData function to store reference
+ data in a dedicated CDB storage.
+
  Revision 1.8  2006/07/21 07:37:20  jgrosseo
  last run is stored after each run
 
@@ -82,7 +92,7 @@ ClassImp(TerminateSignalHandler)
 
 //______________________________________________________________________
 TerminateSignalHandler::TerminateSignalHandler(const TerminateSignalHandler& /*other*/):
-TSignalHandler()
+TSignalHandler(), fTrigger()
 {
 // copy constructor (not implemented)
 
@@ -116,8 +126,9 @@ ClassImp(AliShuttleTrigger)
 AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 		UInt_t timeout, Int_t retries):
 	fConfig(config), fShuttle(NULL),
-	fNotified(kFALSE), fTerminate(kFALSE), fLastRun(0), fCondition(&fMutex),
-	fQuitSignalHandler(this, kSigQuit), 
+	fNotified(kFALSE), fTerminate(kFALSE), fLastRun(0),
+	fMutex(), fCondition(&fMutex),
+	fQuitSignalHandler(this, kSigQuit),
 	fInterruptSignalHandler(this, kSigInterrupt)
 {
 	//
@@ -137,7 +148,12 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 
 //______________________________________________________________________
 AliShuttleTrigger::AliShuttleTrigger(const AliShuttleTrigger& /*other*/):
-TObject()
+	TObject(), fConfig(), fShuttle(NULL),
+	fNotified(kFALSE), fTerminate(kFALSE), fLastRun(0),
+	fMutex(), fCondition(&fMutex),
+	fQuitSignalHandler(this, kSigQuit),
+	fInterruptSignalHandler(this, kSigInterrupt)
+
 {
 // copy constructor (not implemented)
 

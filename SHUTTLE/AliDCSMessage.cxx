@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.5  2006/07/20 09:54:40  jgrosseo
+introducing status management: The processing per subdetector is divided into several steps,
+after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
+can keep track of the number of failures and skips further processing after a certain threshold is
+exceeded. These thresholds can be configured in LDAP.
+
 Revision 1.4  2006/07/04 14:59:57  jgrosseo
 revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
 
@@ -84,7 +90,12 @@ ClassImp(AliDCSMessage)
 
 //______________________________________________________________________
 AliDCSMessage::AliDCSMessage():
-	fMessage(NULL), fMessageSize(0), fType(kInvalid)
+	fMessage(NULL), fMessageSize(0), fType(kInvalid),
+	fStartTime(0), fEndTime(0),
+	fRequestString(""), fCount(0),
+	fValueType(AliDCSValue::kInvalid), fValues(),
+	fErrorCode(kNoneError), fErrorString(""),
+	fRequestStrings()
 {
 // default constructor
 
@@ -92,7 +103,12 @@ AliDCSMessage::AliDCSMessage():
 
 //______________________________________________________________________
 AliDCSMessage::AliDCSMessage(const char* message, UInt_t size):
-        fMessageSize(size), fType(kInvalid)
+        fMessageSize(size), fType(kInvalid),
+	fStartTime(0), fEndTime(0),
+	fRequestString(""), fCount(0),
+	fValueType(AliDCSValue::kInvalid), fValues(),
+	fErrorCode(kNoneError), fErrorString(""),
+	fRequestStrings()
 {
 // default constructor
 
@@ -103,7 +119,12 @@ AliDCSMessage::AliDCSMessage(const char* message, UInt_t size):
 
 //______________________________________________________________________
 AliDCSMessage::AliDCSMessage(const AliDCSMessage& /*other*/):
-TObject()
+	TObject(), fMessage(NULL), fMessageSize(0), fType(kInvalid),
+	fStartTime(0), fEndTime(0),
+	fRequestString(""), fCount(0),
+	fValueType(AliDCSValue::kInvalid), fValues(),
+	fErrorCode(kNoneError), fErrorString(""),
+	fRequestStrings()
 {
 // copy constructor (not implemented)
 
