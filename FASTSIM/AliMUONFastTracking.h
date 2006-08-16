@@ -85,7 +85,7 @@ class AliMUONFastTracking :  public TObject {
     ClassDef(AliMUONFastTracking,1)      // Fast MUON Tracking Data Handler
  private:
     AliMUONFastTracking();
-    AliMUONFastTracking(Float_t /*bkg*/){;}
+    AliMUONFastTracking(Float_t /*bkg*/);
     AliMUONFastTracking(const AliMUONFastTracking &ft);
     void Copy(TObject &) const;
     AliMUONFastTracking& operator=(const AliMUONFastTracking & rhs);

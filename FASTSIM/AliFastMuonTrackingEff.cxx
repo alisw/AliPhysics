@@ -29,15 +29,20 @@ ClassImp(AliFastMuonTrackingEff)
 
 
 AliFastMuonTrackingEff::AliFastMuonTrackingEff() :
-    AliFastResponse("Efficiency", "Muon Tracking Efficiency")
+    AliFastResponse("Efficiency", "Muon Tracking Efficiency"),
+    fBackground(1.),
+    fCharge(1.),
+    fFastTracking(0)
 {
 //
 // Constructor
-    SetBackground();
 }
 
 AliFastMuonTrackingEff::AliFastMuonTrackingEff(const AliFastMuonTrackingEff& eff)
-    :AliFastResponse(eff)
+    :AliFastResponse(eff),
+    fBackground(1.),
+    fCharge(1.),
+    fFastTracking(0)
 {
 // Copy constructor
     eff.Copy(*this);

@@ -17,3 +17,25 @@
 
 #include "AliMUONFastTrackingEntry.h"
 ClassImp(AliMUONFastTrackingEntry)
+
+
+AliMUONFastTrackingEntry::AliMUONFastTrackingEntry():
+    fP(0.),
+    fTheta(0.),
+    fPhi(0.),
+    fMeanp(0.),
+    fMeantheta(0.),
+    fMeanphi(0.),
+    fSigmap(0.),
+    fSigmatheta(0.),
+    fSigmaphi(0.),
+    fSigma1p(0.),
+    fChi2p(0.),
+    fChi2theta(0.),
+    fChi2phi(0.),
+    fNormG2(0.),
+    fMeanG2(0.),
+    fSigmaG2(0.)
+{
+    // Default Constructor
+}

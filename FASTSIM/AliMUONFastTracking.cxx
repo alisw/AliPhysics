@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.10  2006/01/27 09:51:37  morsch
+Some small corrections to avoid infinite loops at high momenta.
+(A. de Falco)
+
 Revision 1.9  2004/02/03 16:45:20  morsch
 Unique name for functions (TF1).
 
@@ -81,7 +85,44 @@ static Double_t FitP(Double_t *x, Double_t *par){
     return TMath::Abs(value);
 } 
 
-AliMUONFastTracking::AliMUONFastTracking(const AliMUONFastTracking & ft):TObject()
+AliMUONFastTracking::AliMUONFastTracking(Float_t bg):
+    fNbinp(0),
+    fPmin(0.),
+    fPmax(0.),
+    fDeltaP(0.),
+    fNbintheta(0),
+    fThetamin(0.),
+    fThetamax(0.),
+    fDeltaTheta(0.),
+    fNbinphi(0),
+    fPhimin(0.),
+    fPhimax(0.),
+    fDeltaPhi(0.),
+    fPrintLevel(0),
+    fBkg(bg),
+    fSpline(0),
+    fClusterFinder(kOld)
+{
+    // Default Constructor
+}
+
+AliMUONFastTracking::AliMUONFastTracking(const AliMUONFastTracking & ft):TObject(),
+    fNbinp(0),
+    fPmin(0.),
+    fPmax(0.),
+    fDeltaP(0.),
+    fNbintheta(0),
+    fThetamin(0.),
+    fThetamax(0.),
+    fDeltaTheta(0.),
+    fNbinphi(0),
+    fPhimin(0.),
+    fPhimax(0.),
+    fDeltaPhi(0.),
+    fPrintLevel(0),
+    fBkg(0),
+    fSpline(0),
+    fClusterFinder(kOld)
 {
 // Copy constructor
     ft.Copy(*this);
@@ -99,7 +140,23 @@ AliMUONFastTracking* AliMUONFastTracking::Instance()
     }
 }
 
-AliMUONFastTracking::AliMUONFastTracking() 
+AliMUONFastTracking::AliMUONFastTracking():
+     fNbinp(0),
+    fPmin(0.),
+    fPmax(0.),
+    fDeltaP(0.),
+    fNbintheta(0),
+    fThetamin(0.),
+    fThetamax(0.),
+    fDeltaTheta(0.),
+    fNbinphi(0),
+    fPhimin(0.),
+    fPhimax(0.),
+    fDeltaPhi(0.),
+    fPrintLevel(0),
+    fBkg(0.),
+    fSpline(0),
+    fClusterFinder(kOld)
 {
 //
 // constructor

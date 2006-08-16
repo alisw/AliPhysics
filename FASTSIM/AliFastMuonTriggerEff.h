@@ -30,7 +30,7 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     
  public:
     AliFastMuonTriggerEff();
-    AliFastMuonTriggerEff(const char* /*Name*/, const char* /*Title*/) {;}
+    AliFastMuonTriggerEff(const char* /*Name*/, const char* /*Title*/);
     AliFastMuonTriggerEff(const AliFastMuonTriggerEff& eff);
     virtual ~AliFastMuonTriggerEff(){;}
     virtual void    Init();

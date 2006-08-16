@@ -60,20 +60,20 @@ Int_t AliQuenchingWeights::fgCounter = 0;
 
 
 AliQuenchingWeights::AliQuenchingWeights() 
-                   : TObject()
+    : TObject(),
+      fInstanceNumber(fgCounter++),
+      fMultSoft(kTRUE), 
+      fECMethod(kDefault),
+      fQTransport(1.),
+      fMu(1.),
+      fK(4.e5),
+      fLengthMax(20),
+      fLengthMaxOld(0),
+      fHistos(0),
+      fHisto(0),
+      fTablesLoaded(kFALSE)
 {
   //default constructor 
-
-  fTablesLoaded=kFALSE;
-  fMultSoft=kTRUE; 
-  fHistos=0;
-  SetMu();
-  SetQTransport();
-  SetK();
-  fECMethod=kDefault; 
-  SetLengthMax();
-  fLengthMaxOld=0;
-  fInstanceNumber=fgCounter++;
   Char_t name[100];
   sprintf(name,"hhistoqw_%d",fInstanceNumber);
   fHisto = new TH1F(name,"",fgkBins,0.,fgkMaxBin);
@@ -82,7 +82,18 @@ AliQuenchingWeights::AliQuenchingWeights()
 }
 
 AliQuenchingWeights::AliQuenchingWeights(const AliQuenchingWeights& a) 
-                   : TObject()
+    : TObject(),
+      fInstanceNumber(fgCounter++),
+      fMultSoft(kTRUE), 
+      fECMethod(kDefault),
+      fQTransport(1.),
+      fMu(1.),
+      fK(4.e5),
+      fLengthMax(20),
+      fLengthMaxOld(0),
+      fHistos(0),
+      fHisto(0),
+      fTablesLoaded(kFALSE)
 {
   // copy constructor 
 

@@ -86,12 +86,23 @@ TF2*    AliFastGlauber::fgWAlmondFixedB[40];
 const Int_t AliFastGlauber::fgkMCInts = 100000;
 Int_t AliFastGlauber::fgCounter = 0;       
 
-AliFastGlauber::AliFastGlauber() : fName()
+AliFastGlauber::AliFastGlauber(): 
+    fWSr0(0.),
+    fWSd(0.), 
+    fWSw(0.), 
+    fWSn(0.), 
+    fSigmaHard(0.),
+    fSigmaNN(0.),  
+    fA(0),         
+    fBmin(0.),     
+    fBmax(0.),     
+    fEllDef(0),    
+    fName()     
 {
   //  Default Constructor 
   fgCounter++;
   if(fgCounter>1)
-    Error("AliFastGlauber","More than more instance (%d) is not supported, check your code!",fgCounter);
+    Error("AliFastGlauber","More than one instance (%d) is not supported, check your code!",fgCounter);
 
   //  Defaults for Pb
   SetMaxImpact();
@@ -100,7 +111,18 @@ AliFastGlauber::AliFastGlauber() : fName()
 }
 
 AliFastGlauber::AliFastGlauber(const AliFastGlauber & gl)
-    :TObject(gl)
+    :TObject(gl),
+     fWSr0(0.),
+     fWSd(0.), 
+     fWSw(0.), 
+     fWSn(0.), 
+     fSigmaHard(0.),
+     fSigmaNN(0.),  
+     fA(0),         
+     fBmin(0.),     
+     fBmax(0.),     
+     fEllDef(0),    
+     fName()     
 {
 // Copy constructor
     gl.Copy(*this);

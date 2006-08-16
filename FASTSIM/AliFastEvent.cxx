@@ -18,3 +18,10 @@
 #include "AliFastEvent.h"
 
 ClassImp(AliFastEvent)
+
+AliFastEvent::AliFastEvent():
+    fMultiplicity(0),
+    fEventVertex(0)
+{
+    // Constructor
+}

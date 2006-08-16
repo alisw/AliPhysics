@@ -14,7 +14,7 @@ static const Int_t kSplitTheta = 3;
 
 class AliMUONFastTrackingEntry {
  public:
-  AliMUONFastTrackingEntry(){;}
+  AliMUONFastTrackingEntry();
   virtual ~AliMUONFastTrackingEntry(){;}
   Float_t fP;
   Float_t fTheta;

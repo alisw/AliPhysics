@@ -31,14 +31,19 @@ ClassImp(AliFastMuonTrackingRes)
 
 
 AliFastMuonTrackingRes::AliFastMuonTrackingRes() :
-    AliFastResponse("Resolution", "Muon Tracking Resolution")
+    AliFastResponse("Resolution", "Muon Tracking Resolution"),
+    fBackground(0.),
+    fCharge(1.),
+    fFastTracking(0)
 {
-// Deafault constructor
-    SetBackground();
+// Default constructor
 }
 
 AliFastMuonTrackingRes::AliFastMuonTrackingRes(const AliFastMuonTrackingRes & res)
-    :AliFastResponse(res)
+    :AliFastResponse(res),
+    fBackground(0.),
+    fCharge(1.),
+    fFastTracking(0)
 {
 // Copy constructor
     res.Copy(*this);

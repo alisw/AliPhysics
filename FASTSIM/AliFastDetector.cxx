@@ -31,28 +31,44 @@
 #include <TString.h>
 
 ClassImp(AliFastDetector)
-AliFastDetector::AliFastDetector()
+
+
+AliFastDetector::AliFastDetector():
+    fSubdetectors(0),
+    fResponses(0),
+    fLnkD(0),
+    fLnkR(0),
+    fEfficiency(0),
+    fResolution(0),
+    fGeometry(0)
 {
 // Default Constructor
     fName  = "FastDetector";
     fTitle = "Fast Detector Base Class";
-    fLnkD  = 0;
-    fLnkR  = 0;
-    
-    fResponses    = 0;
-    fSubdetectors = 0;
 }
 
 AliFastDetector::AliFastDetector(char* Name, char* Title):
-    TNamed(Name, Title)
+    TNamed(Name, Title),
+    fSubdetectors(0),
+    fResponses(0),
+    fLnkD(0),
+    fLnkR(0),
+    fEfficiency(0),
+    fResolution(0),
+    fGeometry(0)
 {
 // Constructor
-    fSubdetectors = new TList();
-    fResponses    = new TList();
-}
+ }
 
 AliFastDetector::AliFastDetector(const AliFastDetector & det)
-    :TNamed(det)
+    :TNamed(det),
+    fSubdetectors(0),
+    fResponses(0),
+    fLnkD(0),
+    fLnkR(0),
+    fEfficiency(0),
+    fResolution(0),
+    fGeometry(0)
 {
 // Copy constructor
     det.Copy(*this);

@@ -10,7 +10,7 @@
 
 class AliFastEvent : public TObject {
  public:
-    AliFastEvent(){;}
+    AliFastEvent();
     virtual ~AliFastEvent(){;}
     virtual void  SetMultiplicty(Int_t mul) 
 	{fMultiplicity = mul;}

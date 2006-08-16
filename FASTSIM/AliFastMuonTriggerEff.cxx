@@ -37,19 +37,102 @@
 ClassImp(AliFastMuonTriggerEff)
 
 AliFastMuonTriggerEff::AliFastMuonTriggerEff():
-    AliFastResponse("Efficiency", "Muon Trigger Efficiency")
+    AliFastResponse("Efficiency", "Muon Trigger Efficiency"),
+    fPtMin(0.),
+    fPtMax(0.),
+    fDpt(0.),
+    fnptb(0),
+    fPhiMin(0.),
+    fPhiMax(0.),
+    fDphi(0.),
+    fnphib(0),
+    fThetaMin(0.),
+    fThetaMax(0.),
+    fDtheta(0.),
+    fnthetab(0),
+    fCut(kLow),
+    fZones(0),
+    fhEffAPt(0),
+    fhEffLPt(0),
+    fhEffHPt(0),
+    fhLX(0),
+    fhLY(0),
+    fhLZ(0),
+    fBkg(0.),
+    fTableTitle(0),
+    fDescription(0),
+    fInt(0),
+    fibx(0),
+    fiby(0),
+    fibz(0)
 {
 //
 // Default constructor
 //
-    SetCut(kLow);
-    fZones=0;
-    SetBkgLevel(0.);
-    UnsetInt();
+}
+
+AliFastMuonTriggerEff::AliFastMuonTriggerEff(const char* Name, const char* Title):
+    AliFastResponse(Name, Title),
+    fPtMin(0.),
+    fPtMax(0.),
+    fDpt(0.),
+    fnptb(0),
+    fPhiMin(0.),
+    fPhiMax(0.),
+    fDphi(0.),
+    fnphib(0),
+    fThetaMin(0.),
+    fThetaMax(0.),
+    fDtheta(0.),
+    fnthetab(0),
+    fCut(kLow),
+    fZones(0),
+    fhEffAPt(0),
+    fhEffLPt(0),
+    fhEffHPt(0),
+    fhLX(0),
+    fhLY(0),
+    fhLZ(0),
+    fBkg(0.),
+    fTableTitle(0),
+    fDescription(0),
+    fInt(0),
+    fibx(0),
+    fiby(0),
+    fibz(0)
+{
+// Another constructor
 }
 
 AliFastMuonTriggerEff::AliFastMuonTriggerEff(const AliFastMuonTriggerEff& eff)
-    :AliFastResponse(eff)
+    :AliFastResponse(eff),
+    fPtMin(0.),
+    fPtMax(0.),
+    fDpt(0.),
+    fnptb(0),
+    fPhiMin(0.),
+    fPhiMax(0.),
+    fDphi(0.),
+    fnphib(0),
+    fThetaMin(0.),
+    fThetaMax(0.),
+    fDtheta(0.),
+    fnthetab(0),
+    fCut(kLow),
+    fZones(0),
+    fhEffAPt(0),
+    fhEffLPt(0),
+    fhEffHPt(0),
+    fhLX(0),
+    fhLY(0),
+    fhLZ(0),
+    fBkg(0.),
+    fTableTitle(0),
+    fDescription(0),
+    fInt(0),
+    fibx(0),
+    fiby(0),
+    fibz(0)
 {
 // Copy constructor
     eff.Copy(*this);

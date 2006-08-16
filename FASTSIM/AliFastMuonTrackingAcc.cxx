@@ -29,13 +29,19 @@ ClassImp(AliFastMuonTrackingAcc)
 
 
 AliFastMuonTrackingAcc::AliFastMuonTrackingAcc() :
-    AliFastResponse("Acceptance", "Muon Tracking Acceptance")
+    AliFastResponse("Acceptance", "Muon Tracking Acceptance"),
+    fBackground(1.),
+    fCharge(1.),
+    fFastTracking(0)
 {
-    SetBackground();
+    // Default Constructor
 }
 
 AliFastMuonTrackingAcc::AliFastMuonTrackingAcc(const AliFastMuonTrackingAcc & acc)
-    :AliFastResponse(acc)
+    :AliFastResponse(acc),
+     fBackground(1.),
+     fCharge(1.),
+     fFastTracking(0)
 {
 // Copy constructor
     acc.Copy(*this);
