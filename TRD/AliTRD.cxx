@@ -44,6 +44,8 @@
 #include "AliMC.h"
 #include "AliMagF.h"
 #include "AliRun.h"
+#include "AliTrackReference.h"
+
 #include "AliTRD.h"
 #include "AliTRDdigit.h"
 #include "AliTRDdigitizer.h"
@@ -52,8 +54,6 @@
 #include "AliTRDhit.h"
 #include "AliTRDpoints.h"
 #include "AliTRDrawData.h"
-#include "AliTrackReference.h"
-
 #include "AliTRDSimParam.h"
 #include "AliTRDRecParam.h"
 #include "AliTRDCommonParam.h"
@@ -63,38 +63,36 @@ ClassImp(AliTRD)
  
 //_____________________________________________________________________________
 AliTRD::AliTRD()
+  :AliDetector()
+  ,fGeometry(0)
+  ,fGasDensity(0)
+  ,fFoilDensity(0)
+  ,fDrawTR(0)
+  ,fDisplayType(0)
 {
   //
   // Default constructor
   //
-
-  fIshunt        = 0;
-  fHits          = 0;
-  fDigits        = 0;
-
-  fGeometry      = 0;
-
-  fGasDensity    = 0;
-  fFoilDensity   = 0;
-
-  fDrawTR        = 0;
-  fDisplayType   = 0;
  
 }
  
 //_____________________________________________________________________________
 AliTRD::AliTRD(const char *name, const char *title)
-       : AliDetector(name,title)
+  :AliDetector(name,title)
+  ,fGeometry(0)
+  ,fGasDensity(0)
+  ,fFoilDensity(0)
+  ,fDrawTR(0)
+  ,fDisplayType(0)
 {
   //
   // Standard constructor for the TRD
   //
 
-  // Check that FRAME is there otherwise we have no place where to
-  // put TRD
-  AliModule* frame = gAlice->GetModule("FRAME");
+  // Check that FRAME is there otherwise we have no place where to put TRD
+  AliModule *frame = gAlice->GetModule("FRAME");
   if (!frame) {
-    Error("Ctor","TRD needs FRAME to be present\n");
+    AliError("TRD needs FRAME to be present\n");
     exit(1);
   } 
 
@@ -104,43 +102,36 @@ AliTRD::AliTRD(const char *name, const char *title)
     fGeometry = new AliTRDgeometry();
   }
   else {
-    Error("Ctor","Could not find valid FRAME version\n");
+    AliError("Could not find valid FRAME version\n");
     exit(1);
   }
 
   // Save the geometry
-  TDirectory* saveDir = gDirectory;
+  TDirectory *saveDir = gDirectory;
   gAlice->GetRunLoader()->CdGAFile();
   fGeometry->Write("TRDgeometry");
   saveDir->cd();
 
   // Allocate the hit array
-  fHits          = new TClonesArray("AliTRDhit"     ,405);
+  fHits = new TClonesArray("AliTRDhit",405);
   gAlice->GetMCApp()->AddHitList(fHits);
-
-  // Allocate the digits array
-  fDigits        = 0;
-
-  fIshunt        = 0;
-
-  fGasDensity    = 0;
-  fFoilDensity   = 0;
-
-  fDrawTR        = 0;
-  fDisplayType   = 0;
 
   SetMarkerColor(kWhite);   
 
 }
 
 //_____________________________________________________________________________
-AliTRD::AliTRD(const AliTRD &trd):AliDetector(trd)
+AliTRD::AliTRD(const AliTRD &trd)
+  :AliDetector(trd)
+  ,fGeometry(trd.fGeometry)
+  ,fGasDensity(trd.fGasDensity)
+  ,fFoilDensity(trd.fFoilDensity)
+  ,fDrawTR(trd.fDrawTR)
+  ,fDisplayType(trd.fDisplayType)
 {
   //
   // Copy constructor
   //
-
-  ((AliTRD &) trd).Copy(*this);
 
 }
 
@@ -151,15 +142,14 @@ AliTRD::~AliTRD()
   // TRD destructor
   //
 
-  fIshunt = 0;
-
   if (fGeometry) {
     delete fGeometry;
-    fGeometry  = 0;
+    fGeometry = 0;
   }
+
   if (fHits) {
     delete fHits;
-    fHits      = 0;
+    fHits     = 0;
   }
 
 }
@@ -177,12 +167,14 @@ void AliTRD::Hits2Digits()
   // Initialization
   digitizer.InitDetector();
     
-  if (!fLoader->TreeH()) fLoader->LoadHits("read");
+  if (!fLoader->TreeH()) {
+    fLoader->LoadHits("read");
+  }
   fLoader->LoadDigits("recreate");
-  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+  AliRunLoader *runLoader = fLoader->GetRunLoader(); 
 
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    digitizer.Open(runLoader->GetFileName().Data(), iEvent);
+    digitizer.Open(runLoader->GetFileName().Data(),iEvent);
     digitizer.MakeDigits();
     digitizer.WriteDigits();
   }
@@ -207,12 +199,14 @@ void AliTRD::Hits2SDigits()
   // Initialization
   digitizer.InitDetector();
     
-  if (!fLoader->TreeH()) fLoader->LoadHits("read");
+  if (!fLoader->TreeH()) {
+    fLoader->LoadHits("read");
+  }
   fLoader->LoadSDigits("recreate");
   AliRunLoader* runLoader = fLoader->GetRunLoader(); 
 
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    digitizer.Open(runLoader->GetFileName().Data(), iEvent);
+    digitizer.Open(runLoader->GetFileName().Data(),iEvent);
     digitizer.MakeDigits();
     digitizer.WriteDigits();
   }
@@ -223,7 +217,7 @@ void AliTRD::Hits2SDigits()
 }
 
 //_____________________________________________________________________________
-AliDigitizer* AliTRD::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer *AliTRD::CreateDigitizer(AliRunDigitizer* manager) const
 {
   //
   // Creates a new digitizer object
@@ -257,13 +251,15 @@ void AliTRD::SDigits2Digits()
   sdigitsManager.SetSDigits(kTRUE);
   sdigitsManager.CreateArrays();
   
-  if (!fLoader->TreeS()) 
-    if (fLoader->LoadSDigits("read"))
-     {
-       Error("SDigits2Digits","Error while reading SDigits for event %d",gAlice->GetEvNumber());
-       return;
-     }
-  if (!fLoader->TreeS()) return;
+  if (!fLoader->TreeS()) { 
+    if (fLoader->LoadSDigits("read")) {
+      return;
+    }
+  }
+  if (!fLoader->TreeS()) {
+    AliError(Form("Error while reading SDigits for event %d",gAlice->GetEvNumber()));
+    return;
+  }
   
   sdigitsManager.ReadDigits(fLoader->TreeS());
 
@@ -274,7 +270,9 @@ void AliTRD::SDigits2Digits()
   digitizer.SDigits2Digits();
 
   // Store the digits
-  if (!fLoader->TreeD()) fLoader->MakeTree("D");
+  if (!fLoader->TreeD()) {
+    fLoader->MakeTree("D");
+  }
   if (digitizer.MakeBranch(fLoader->TreeD())){
     digitizer.WriteDigits();
   }
@@ -285,20 +283,19 @@ void AliTRD::SDigits2Digits()
 void AliTRD::Digits2Raw() 
 {
   //
-  // convert digits of the current event to raw data
+  // Convert digits of the current event to raw data
   //
 
   fLoader->LoadDigits();
-  TTree* digits = fLoader->TreeD();
+  TTree *digits = fLoader->TreeD();
   if (!digits) {
-    Error("Digits2Raw", "no digits tree");
+    AliError("No digits tree");
     return;
   }
 
   AliTRDrawData rawWriter;
-  //  rawWriter.SetDebug(2);
   if (!rawWriter.Digits2Raw(digits)) {
-    Error("AliTRD::Digits2Raw","The raw writer could not load the digits tree");
+    AliError("The raw writer could not load the digits tree");
   }
 
   fLoader->UnloadDigits();
@@ -315,12 +312,14 @@ void AliTRD::AddHit(Int_t track, Int_t det, Float_t *hits, Int_t q
 
   TClonesArray &lhits = *fHits;
   AliTRDhit *hit = new(lhits[fNhits++]) AliTRDhit(fIshunt,track,det,hits,q);
+
   if (inDrift) {
     hit->SetDrift();
   }
   else {
     hit->SetAmplification();
   }
+
   if (q < 0) {
     hit->SetTRphoton();
   }
@@ -337,8 +336,10 @@ void AliTRD::BuildGeometry()
   TNode *node, *top;
   TPGON *pgon;
 
-  Float_t rmin, rmax;
-  Float_t zmax1, zmax2;
+  Float_t rmin;
+  Float_t rmax;
+  Float_t zmax1;
+  Float_t zmax2;
 
   Int_t   iPlan;
  
@@ -398,10 +399,10 @@ void AliTRD::BuildGeometry()
     }
 
     thickness += AliTRDgeometry::DrThick();
-    rmin  = AliTRDgeometry::Rmin() + thickness;
-    rmax  = rmin + AliTRDgeometry::AmThick();
-    zmax2 = AliTRDgeometry::Zmax2() + slope * thickness;
-    zmax1 = zmax2 + slope * AliTRDgeometry::AmThick();
+    rmin       = AliTRDgeometry::Rmin() + thickness;
+    rmax       = rmin + AliTRDgeometry::AmThick();
+    zmax2      = AliTRDgeometry::Zmax2() + slope * thickness;
+    zmax1      = zmax2 + slope * AliTRDgeometry::AmThick();
 
     for (iPlan = 0; iPlan < AliTRDgeometry::Nplan(); iPlan++) {
 
@@ -441,8 +442,6 @@ void AliTRD::Copy(TObject &trd) const
   ((AliTRD &) trd).fDrawTR      = fDrawTR;
   ((AliTRD &) trd).fDisplayType = fDisplayType;
 
-  //AliDetector::Copy(trd);
-
 }
 
 //_____________________________________________________________________________
@@ -453,7 +452,7 @@ void AliTRD::CreateGeometry()
   //
 
   // Check that FRAME is there otherwise we have no place where to put the TRD
-  AliModule* frame = gAlice->GetModule("FRAME");
+  AliModule *frame = gAlice->GetModule("FRAME");
   if (!frame) {
     AliFatal("The TRD needs the FRAME to be defined first");
   }
@@ -473,40 +472,40 @@ void AliTRD::CreateMaterials()
   Float_t sxmgmx = gAlice->Field()->Max();
   
   // For polyethilene (CH2) 
-  Float_t ape[2] = { 12.011 ,  1.0079 };
-  Float_t zpe[2] = {  6.0   ,  1.0    };
-  Float_t wpe[2] = {  1.0   ,  2.0    };
-  Float_t dpe    = 0.95;
+  Float_t ape[2]    = { 12.011 ,  1.0079 };
+  Float_t zpe[2]    = {  6.0   ,  1.0    };
+  Float_t wpe[2]    = {  1.0   ,  2.0    };
+  Float_t dpe       = 0.95;
 
   // For mylar (C5H4O2) 
-  Float_t amy[3] = { 12.011 ,  1.0079, 15.9994 };
-  Float_t zmy[3] = {  6.0   ,  1.0   ,  8.0    };
-  Float_t wmy[3] = {  5.0   ,  4.0   ,  2.0    };
-  Float_t dmy    = 1.39;
+  Float_t amy[3]    = { 12.011 ,  1.0079, 15.9994 };
+  Float_t zmy[3]    = {  6.0   ,  1.0   ,  8.0    };
+  Float_t wmy[3]    = {  5.0   ,  4.0   ,  2.0    };
+  Float_t dmy       = 1.39;
 
   // For CO2 
-  Float_t aco[2] = { 12.011 , 15.9994 };
-  Float_t zco[2] = {  6.0   ,  8.0    };
-  Float_t wco[2] = {  1.0   ,  2.0    };
-  Float_t dco    = 0.00186;
+  Float_t aco[2]    = { 12.011 , 15.9994 };
+  Float_t zco[2]    = {  6.0   ,  8.0    };
+  Float_t wco[2]    = {  1.0   ,  2.0    };
+  Float_t dco       = 0.00186;
 
   // For water
-  Float_t awa[2] = {  1.0079, 15.9994 };
-  Float_t zwa[2] = {  1.0   ,  8.0    };
-  Float_t wwa[2] = {  2.0   ,  1.0    };
-  Float_t dwa    = 1.0;
+  Float_t awa[2]    = {  1.0079, 15.9994 };
+  Float_t zwa[2]    = {  1.0   ,  8.0    };
+  Float_t wwa[2]    = {  2.0   ,  1.0    };
+  Float_t dwa       = 1.0;
 
   // For isobutane (C4H10)
-  Float_t ais[2] = { 12.011 ,  1.0079 };
-  Float_t zis[2] = {  6.0   ,  1.0    };
-  Float_t wis[2] = {  4.0   , 10.0    };
-  Float_t dis    = 0.00267;
+  Float_t ais[2]    = { 12.011 ,  1.0079 };
+  Float_t zis[2]    = {  6.0   ,  1.0    };
+  Float_t wis[2]    = {  4.0   , 10.0    };
+  Float_t dis       = 0.00267;
 
   // For plexiglas (C5H8O2)
-  Float_t apg[3] = { 12.011 ,  1.0079, 15.9994 };
-  Float_t zpg[3] = {  6.0   ,  1.0   ,  8.0    };
-  Float_t wpg[3] = {  5.0   ,  8.0   ,  2.0    };
-  Float_t dpg    = 1.18; 
+  Float_t apg[3]    = { 12.011 ,  1.0079, 15.9994 };
+  Float_t zpg[3]    = {  6.0   ,  1.0   ,  8.0    };
+  Float_t wpg[3]    = {  5.0   ,  8.0   ,  2.0    };
+  Float_t dpg       = 1.18; 
   
   // For epoxy (C18H19O3)
   Float_t aEpoxy[3] = { 15.9994,  1.0079, 12.011  }; 
@@ -531,18 +530,17 @@ void AliTRD::CreateMaterials()
   Float_t zXeCO2[3] = {  54.0    ,   6.0    ,   8.0     };
   // Move to number of atoms
   Float_t wXeCO2[3] = {   8.5    ,   1.5    ,   3.0     }; 
-  //Float_t wXeCO2[3] = {   0.85   ,   0.0375 ,   0.1125  };
   // Xe-content of the Xe/CO2-mixture (85% / 15%) 
   Float_t fxc       = 0.85;
   Float_t dxe       = 0.00549;
   Float_t dgm       = fxc * dxe + (1.0 - fxc) * dco;
   
   // General tracking parameter
-  Float_t tmaxfd = -10.;
-  Float_t stemax = -1e10;
-  Float_t deemax = -0.1;
-  Float_t epsil  =  1e-4;
-  Float_t stmin  = -0.001;
+  Float_t tmaxfd    = -10.0;
+  Float_t stemax    = -1.0e10;
+  Float_t deemax    = -0.1;
+  Float_t epsil     =  1.0e-4;
+  Float_t stmin     = -0.001;
   
   //////////////////////////////////////////////////////////////////////////
   //     Define Materials 
@@ -561,9 +559,7 @@ void AliTRD::CreateMaterials()
   AliMixture(7, "Mylar",        amy,    zmy,    dmy,    -3, wmy   );
   AliMixture(8, "CO2",          aco,    zco,    dco,    -2, wco   );
   AliMixture(9, "Isobutane",    ais,    zis,    dis,    -2, wis   );
-  // Move to number of atoms
   AliMixture(10,"Gas mixture",  aXeCO2, zXeCO2, dgm,    -3, wXeCO2);
-  //AliMixture(10,"Gas mixture",  aXeCO2, zXeCO2, dgm,     3, wXeCO2);
   AliMixture(12,"G10",          aG10,   zG10,   dG10,    4, wG10  );
   AliMixture(13,"Water",        awa,    zwa,    dwa,    -2, wwa   );
   AliMixture(14,"Plexiglas",    apg,    zpg,    dpg,    -3, wpg   );
@@ -710,6 +706,7 @@ Int_t AliTRD::DistancetoPrimitive(Int_t , Int_t )
   //
   // Distance between the mouse and the TRD detector on the screen
   // Dummy routine
+  //
   
   return 9999;
 
@@ -738,13 +735,19 @@ void AliTRD::LoadPoints(Int_t )
   // Hit originating from TR photons are given a different color
   //
 
-  if (fHits == 0) return;
+  if (fHits == 0) {
+    return;
+  }
 
-  Int_t nhits = fHits->GetEntriesFast();
-  if (nhits == 0) return;
+  Int_t nhits  = fHits->GetEntriesFast();
+  if (nhits == 0) {
+    return;
+  }
 
   Int_t tracks = gAlice->GetMCApp()->GetNtrack();
-  if (fPoints == 0) fPoints = new TObjArray(tracks);
+  if (fPoints == 0) {
+    fPoints = new TObjArray(tracks);
+  }
 
   AliTRDhit *ahit;
   
@@ -796,7 +799,8 @@ void AliTRD::LoadPoints(Int_t )
 
     }
     // TR photon hits
-    else if ((ahit->GetCharge() < 0) && (fDrawTR)) {
+    else if ((ahit->GetCharge() < 0) && 
+             (fDrawTR)) {
 
       trk = ahit->GetTrack();
       if (ntrkT[trk] == limiT[trk]) {
@@ -863,7 +867,7 @@ void AliTRD::LoadPoints(Int_t )
 }
 
 //_____________________________________________________________________________
-void AliTRD::MakeBranch(Option_t* option)
+void AliTRD::MakeBranch(Option_t *option)
 {
   //
   // Create Tree branches for the TRD digits.
@@ -873,13 +877,15 @@ void AliTRD::MakeBranch(Option_t* option)
   Char_t branchname[15];
   sprintf(branchname,"%s",GetName());
 
-  const char *cD = strstr(option,"D");
+  const Char_t *cD = strstr(option,"D");
 
   AliDetector::MakeBranch(option);
 
-  if (fDigits && gAlice->TreeD() && cD) {
+  if (fDigits         && 
+      gAlice->TreeD() && 
+      cD) {
     MakeBranchInTree(gAlice->TreeD(),branchname,&fDigits,buffersize,0);
-  }	
+  }
 
 }
 
@@ -891,7 +897,10 @@ void AliTRD::ResetDigits()
   //
 
   fNdigits = 0;
-  if (fDigits) fDigits->Clear();
+
+  if (fDigits) {
+    fDigits->Clear();
+  }
 
 }
 
@@ -902,7 +911,8 @@ void AliTRD::SetTreeAddress()
   // Set the branch addresses for the trees.
   //
 
-  if ( fLoader->TreeH() && (fHits == 0x0)) {
+  if (fLoader->TreeH() && 
+      (fHits == 0x0)) {
     fHits = new TClonesArray("AliTRDhit",405);
   }
   AliDetector::SetTreeAddress();
@@ -917,6 +927,7 @@ AliTRD &AliTRD::operator=(const AliTRD &trd)
   //
 
   if (this != &trd) ((AliTRD &) trd).Copy(*this);
+
   return *this;
 
 } 

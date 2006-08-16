@@ -109,14 +109,16 @@ Int_t AliTRDpidESD::MakePID(AliESD *event)
 
   AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
-    //AliError("No access to calibration data\n");
+    AliErrorGeneral("AliTRDpidESD::MakePID"
+                   ,"No access to calibration data\n");
     return -1;
   }  
 
   // Retrieve the CDB container class with the probability distributions
   const AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
   if (!pd) {
-    //AliError("No access to AliTRDCalPIDLQ\n");
+    AliErrorGeneral("AliTRDpidESD::MakePID"
+                   ,"No access to AliTRDCalPIDLQ\n");
     return -1;
   }
 

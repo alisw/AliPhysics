@@ -2744,7 +2744,8 @@ AliTRDtracker::AliTRDtrackingSector
 
   AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
-    //AliError("Could not get common parameters\n");
+    AliErrorGeneral("AliTRDtrackingSector::Ctor"
+                   ,"Could not get common parameters\n");
     return;
   }
     
@@ -2848,8 +2849,9 @@ void AliTRDtracker::AliTRDtrackingSector
 
     if(index < 0) continue;
     if(index >= (Int_t) kMaxTimeBinIndex) {
-      //AliWarning(Form("Index %d exceeds allowed maximum of %d!\n"
-      //               ,index,kMaxTimeBinIndex-1));
+      AliWarningGeneral("AliTRDtrackingSector::MapTimeBinLayers()"
+                       ,Form("Index %d exceeds allowed maximum of %d!\n"
+                       ,index,kMaxTimeBinIndex-1));
       continue;
     }
 
@@ -2947,7 +2949,8 @@ void AliTRDtracker::AliTRDtrackingSector
   //
 
   if (fN == ((Int_t) kMaxLayersPerSector)) {
-    //AliWarning("Too many layers !\n");
+    AliWarningGeneral("AliTRDtrackingSector::InsertLayer"
+                     ,"Too many layers !\n");
     return;
   }
 
@@ -2957,7 +2960,8 @@ void AliTRDtracker::AliTRDtrackingSector
   }
 
   Int_t i = Find(pl->GetX());
-  memmove(fLayers + i + 1,fLayers + i,(fN-i)*sizeof(AliTRDpropagationLayer*));
+  memmove(fLayers + i + 1,fLayers + i
+         ,(fN-i)*sizeof(AliTRDpropagationLayer*));
   fLayers[i] = pl; 
   fN++;
 
@@ -3037,12 +3041,14 @@ void AliTRDtracker::AliTRDpropagationLayer
   //
 
   if (fTimeBinIndex < 0) { 
-    //AliError("Attempt to insert cluster into non-sensitive time bin!\n");
+    AliErrorGeneral("AliTRDpropagationLayer::InsertCluster"
+                   ,"Attempt to insert cluster into non-sensitive time bin!\n");
     return;
   }
 
   if (fN == (Int_t) kMaxClusterPerTimeBin) {
-    //AliError("Too many clusters !\n"); 
+    AliErrorGeneral("AliTRDpropagationLayer::InsertCluster"
+                   ,"Too many clusters !\n"); 
     return;
   }
 

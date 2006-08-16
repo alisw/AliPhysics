@@ -5,9 +5,11 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////
-//  Manager and hits classes for set:TRD version 1    //
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Manager and hits classes for set: TRD version 1                       //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 // Energy spectrum of the delta-rays 
 Double_t Ermilova(Double_t *x, Double_t *par);
@@ -18,6 +20,7 @@ Double_t IntSpecGeant(Double_t *x, Double_t *par);
 class TF1;
 class TTree;
 class TFile;
+
 class AliTRDsim;
 
 //_____________________________________________________________________________
@@ -31,48 +34,48 @@ class AliTRDv1 : public AliTRD {
   virtual ~AliTRDv1();
   AliTRDv1 &operator=(const AliTRDv1 &trd);
 
-  virtual void       Copy(TObject &trd) const;
-  virtual void       CreateGeometry();
-  virtual void       CreateMaterials();
-  virtual void       CreateTRhit(Int_t det);
-  virtual Int_t      IsVersion() const          { return 1; };
-  virtual void       StepManager();
-  virtual void       Init();
+  virtual void     Copy(TObject &trd) const;
+  virtual void     Init();
+  virtual Int_t    IsVersion() const          { return 1;      }
 
-          void       StepManagerErmilova();
-          void       StepManagerGeant();
-          void       StepManagerFixedStep();
-          void       SelectStepManager(Int_t t);
-          void       SetStepSize(Double_t s)    { fStepSize = s; };
+  virtual void     CreateGeometry();
+  virtual void     CreateMaterials();
+  virtual void     CreateTRhit(Int_t det);
 
-          void       SetTR(Bool_t kTRUE)        { fTRon = kTRUE; };
+  virtual void     StepManager();
+          void     StepManagerErmilova();
+          void     StepManagerGeant();
+          void     StepManagerFixedStep();
+          void     SelectStepManager(Int_t t);
 
-          Bool_t     GetTR() const              { return fTRon;            };
-          AliTRDsim *GetTRDsim() const          { return fTR;              };
+          void     SetStepSize(Double_t s)    { fStepSize = s; }
+          void     SetTR(Bool_t kTRUE)        { fTRon = kTRUE; }
+
+          Bool_t   GetTR() const              { return fTRon;  }
+  AliTRDsim       *GetTRDsim() const          { return fTR;    }
 
  protected:
 
-  void        *StepManagerEntity();
+          void    *StepManagerEntity();
 
-  Bool_t       fTRon;                   // Switch for TR simulation
-  AliTRDsim   *fTR;                     // TR simulator
+          Bool_t   fTRon;               //  Switch for TR simulation
+  AliTRDsim       *fTR;                 //  TR simulator
 
-  Int_t        fTypeOfStepManager;      // Type of Step Manager.
-  Double_t     fStepSize;               // Used for the fixed step size
+          Int_t    fTypeOfStepManager;  //  Type of Step Manager.
+          Double_t fStepSize;           //  Used for the fixed step size
 
  private:
 
-  Double_t     BetheBloch(Double_t bg);
-  Double_t     BetheBlochGeant(Double_t bg);
-  void 	       Stepping();
+          Double_t BetheBloch(Double_t bg);
+          Double_t BetheBlochGeant(Double_t bg);
   
-  TF1         *fDeltaE;                 // Energy distribution of the delta-electrons (Ermilova)
-  TF1         *fDeltaG;                 // Energy distribution of the
-	                                // Delta-electrons (GEANT) for StepManagerGeant
-  Float_t      fTrackLength0;         	// Save the track length at chamber entrance  
-  Int_t	       fPrimaryTrackPid;        // Save the id of the primary track  
+          TF1     *fDeltaE;             //  Energy distribution of the delta-electrons (Ermilova)
+          TF1     *fDeltaG;             //  Energy distribution of the
 
-  ClassDef(AliTRDv1,5)                  // Transition Radiation Detector version 1 (slow simulator)
+          Float_t  fTrackLength0;       //  Save the track length at chamber entrance  
+          Int_t	   fPrimaryTrackPid;    //  Save the id of the primary track  
+
+  ClassDef(AliTRDv1,5)                  //  Transition Radiation Detector version 1 (slow simulator)
 
 };
 

@@ -19,13 +19,6 @@
 //                                                                           //
 //  Transition Radiation Detector version 0 -- fast simulator                //
 //                                                                           //
-//Begin_Html
-/*
-<img src="picts/AliTRDfullClass.gif">
-*/
-//End_Html
-//                                                                           //
-//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h> 
@@ -38,33 +31,33 @@
 
 #include "AliConst.h"
 #include "AliRun.h"
+#include "AliMC.h"
+
 #include "AliTRDgeometry.h"
 #include "AliTRDhit.h"
 #include "AliTRDv0.h"
-#include "AliMC.h"
 
 ClassImp(AliTRDv0)
   
 //_____________________________________________________________________________
-AliTRDv0::AliTRDv0():AliTRD() 
+AliTRDv0::AliTRDv0()
+  :AliTRD() 
+  ,fHitsOn(0)
 {
   //
   // AliTRDv0 default constructor
   //
 
-  fHitsOn     = 0;
-
 }
 
 //_____________________________________________________________________________
 AliTRDv0::AliTRDv0(const char *name, const char *title) 
-         :AliTRD(name, title) 
+  :AliTRD(name,title) 
+  ,fHitsOn(0)
 {
   //
   // Standard constructor for Transition Radiation Detector version 0
   //
-
-  fHitsOn     = 0;
 
 }
 
@@ -87,7 +80,10 @@ void AliTRDv0::CreateGeometry()
 
   // Check that FRAME is there otherwise we have no place where to put the TRD
   AliModule* frame = gAlice->GetModule("FRAME");
-  if (!frame) return;
+  if (!frame) {
+    AliError("TRD needs FRAME to be present\n");
+    return;
+  }
 
   // Define the chambers
   AliTRD::CreateGeometry();
@@ -114,9 +110,8 @@ void AliTRDv0::Init()
 
   AliTRD::Init();
 
-  printf("          Fast simulator\n\n");
-  for (Int_t i = 0; i < 80; i++) printf("*");
-  printf("\n");
+  AliDebug(1,"          Fast simulator\n\n");
+  AliDebug(1,"++++++++++++++++++++++++++++++++++++++++++++++");
   
 }
 
@@ -147,7 +142,9 @@ void AliTRDv0::StepManager()
   const Int_t kNplan = AliTRDgeometry::Nplan();
 
   // Writing out hits enabled?
-  if (!(fHitsOn)) return;
+  if (!(fHitsOn)) {
+    return;
+  }
 
   // Use only charged tracks and count them only once per volume
   if (gMC->TrackCharge()    && 
@@ -158,20 +155,24 @@ void AliTRDv0::StepManager()
     if (cIdSens == cIdCurrent[1]) {
 
       gMC->TrackPosition(p);
-      for (Int_t i = 0; i < 3; i++) hits[i] = p[i];
+      for (Int_t i = 0; i < 3; i++) {
+        hits[i] = p[i];
+      }
 
       // The sector number (0 - 17)
       // The numbering goes clockwise and starts at y = 0
       Float_t phi = kRaddeg*TMath::ATan2(hits[0],hits[1]);
-      if (phi < 90.) 
-        phi = phi + 270.;
-      else
-        phi = phi -  90.;
-      sec = ((Int_t) (phi / 20));
+      if (phi < 90.0) {
+        phi = phi + 270.0;
+      }
+      else {
+        phi = phi -  90.0;
+      }
+      sec = ((Int_t) (phi / 20.0));
 
       // The plane and chamber number
-      cIdChamber[0] = cIdCurrent[2];
-      cIdChamber[1] = cIdCurrent[3];
+      cIdChamber[0]   = cIdCurrent[2];
+      cIdChamber[1]   = cIdCurrent[3];
       Int_t idChamber = atoi(cIdChamber);
       cha = ((Int_t) idChamber / kNplan);
       pla = ((Int_t) idChamber % kNplan);

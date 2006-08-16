@@ -5,15 +5,16 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////
-//  Manager and hits classes for set:TRD version 0    //
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Manager and hits classes for set: TRD version 0                       //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
  
 #include "AliTRD.h"
 
 class AliTRDsim;
 
-//_____________________________________________________________________________ 
 class AliTRDv0 : public AliTRD {
 
  public:
@@ -22,23 +23,24 @@ class AliTRDv0 : public AliTRD {
   AliTRDv0(const char *name, const char *title);
   virtual ~AliTRDv0();
 
-  virtual void       CreateGeometry();
-  virtual void       CreateMaterials();
-  virtual Int_t      IsVersion() const           { return 0; };
-  virtual void       StepManager();
-  virtual void       Init();
+  virtual Int_t    IsVersion() const           { return 0;    };
+  virtual void     Init();
 
-  virtual void       SetHits()                   { fHitsOn = 1; };
+  virtual void     CreateGeometry();
+  virtual void     CreateMaterials();
 
-          void       SetTR(Bool_t )              { };
+  virtual void     StepManager();
+ 
+  virtual void     SetHits()                   { fHitsOn = 1; };
+          void     SetTR(Bool_t )              { };
 
-          Bool_t     GetTR() const               { return 0; };
+          Bool_t   GetTR() const               { return 0;    };
 
  protected:
 
-  Int_t        fHitsOn;     // Used to switch hits on
+          Int_t    fHitsOn;     //  Used to switch hits on
 
-  ClassDef(AliTRDv0,2)      // Transition Radiation Detector version 0 (fast simulator)
+  ClassDef(AliTRDv0,2)          //  Transition Radiation Detector version 0 (fast simulator)
 
 };
 

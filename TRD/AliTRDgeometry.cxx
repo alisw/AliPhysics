@@ -30,8 +30,8 @@
 #include "AliRunLoader.h"
 #include "AliAlignObj.h"
 #include "AliAlignObjAngles.h"
-
 #include "AliRun.h"
+
 #include "AliTRD.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
@@ -177,10 +177,9 @@ AliTRDgeometry::AliTRDgeometry()
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry(const AliTRDgeometry &g)
   :AliGeometry(g)
-   ,fMatrixArray(g.fMatrixArray)
-   ,fMatrixCorrectionArray(g.fMatrixCorrectionArray)
-   ,fMatrixGeo(g.fMatrixGeo)
-
+  ,fMatrixArray(g.fMatrixArray)
+  ,fMatrixCorrectionArray(g.fMatrixCorrectionArray)
+  ,fMatrixGeo(g.fMatrixGeo)
 {
   //
   // AliTRDgeometry copy constructor
@@ -197,8 +196,15 @@ AliTRDgeometry::~AliTRDgeometry()
   // AliTRDgeometry destructor
   //
 
-  delete fMatrixArray;
-  delete fMatrixCorrectionArray;
+  if (fMatrixArray) {
+    delete fMatrixArray;
+    fMatrixArray           = 0;
+  }
+
+  if (fMatrixCorrectionArray) {
+    delete fMatrixCorrectionArray;
+    fMatrixCorrectionArray = 0;
+  }
 
 }
 
@@ -210,6 +216,7 @@ AliTRDgeometry &AliTRDgeometry::operator=(const AliTRDgeometry &g)
   //
 
   if (this != &g) Init();
+
   return *this;
 
 }
@@ -266,12 +273,12 @@ void AliTRDgeometry::Init()
 
   for (icham = 0; icham < kNcham; icham++) {
     for (iplan = 0; iplan < kNplan; iplan++) {
-      fClength[iplan][icham]   = length[iplan][icham];
+      fClength[iplan][icham] = length[iplan][icham];
     }
   }
 
   // The rotation matrix elements
-  Float_t phi = 0;
+  Float_t phi = 0.0;
   for (isect = 0; isect < fgkNsect; isect++) {
     phi = -2.0 * TMath::Pi() /  (Float_t) fgkNsect * ((Float_t) isect + 0.5);
     fRotA11[isect] = TMath::Cos(phi);
@@ -334,7 +341,9 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   const Int_t kNparTrd = 4;
   const Int_t kNparCha = 3;
 
-  Float_t xpos, ypos, zpos;
+  Float_t xpos;
+  Float_t ypos;
+  Float_t zpos;
 
   Float_t parTrd[kNparTrd];
   Float_t parCha[kNparCha];
@@ -344,26 +353,26 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
 
   // The TRD mother volume for one sector (Air), full length in z-direction
   // Provides material for side plates of super module
-  parTrd[0] = fgkSwidth1/2.;
-  parTrd[1] = fgkSwidth2/2.;
-  parTrd[2] = fgkSlenTR1/2.;
-  parTrd[3] = fgkSheight/2.;
+  parTrd[0] = fgkSwidth1/2.0;
+  parTrd[1] = fgkSwidth2/2.0;
+  parTrd[2] = fgkSlenTR1/2.0;
+  parTrd[3] = fgkSheight/2.0;
   gMC->Gsvolu("UTR1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
   // 
   // The outer aluminum plates of the super module (Al)
-  parTrd[0] = fgkSwidth1/2.;
-  parTrd[1] = fgkSwidth2/2.;
-  parTrd[2] = fgkSlenTR1/2.;
-  parTrd[3] = fgkSheight/2.;
+  parTrd[0] = fgkSwidth1/2.0;
+  parTrd[1] = fgkSwidth2/2.0;
+  parTrd[2] = fgkSlenTR1/2.0;
+  parTrd[3] = fgkSheight/2.0;
   gMC->Gsvolu("UTS1","TRD1",idtmed[1301-1],parTrd,kNparTrd);
 
   // The inner part of the TRD mother volume for one sector (Air), 
   // full length in z-direction
-  parTrd[0] = fgkSwidth1/2. - fgkSMpltT;
-  parTrd[1] = fgkSwidth2/2. - fgkSMpltT;
-  parTrd[2] = fgkSlenTR1/2.;
-  parTrd[3] = fgkSheight/2. - fgkSMpltT;
+  parTrd[0] = fgkSwidth1/2.0 - fgkSMpltT;
+  parTrd[1] = fgkSwidth2/2.0 - fgkSMpltT;
+  parTrd[2] = fgkSlenTR1/2.0;
+  parTrd[3] = fgkSheight/2.0 - fgkSMpltT;
   gMC->Gsvolu("UTI1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
   for (Int_t icham = 0; icham < kNcham; icham++) {
@@ -374,83 +383,83 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
       // The lower part of the readout chambers (gas volume + radiator) 
       // The aluminum frames 
       sprintf(cTagV,"UA%02d",iDet);
-      parCha[0] = fCwidth[iplan]/2.;
-      parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.;
-      parCha[2] = fgkCraH/2. + fgkCdrH/2.;
+      parCha[0] = fCwidth[iplan]/2.0;
+      parCha[1] = fClength[iplan][icham]/2.0 - fgkHspace/2.0;
+      parCha[2] = fgkCraH/2.0 + fgkCdrH/2.0;
       fChamberUAboxd[iDet][0] = parCha[0];
       fChamberUAboxd[iDet][1] = parCha[1];
       fChamberUAboxd[iDet][2] = parCha[2];
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
       // The G10 frames 
       sprintf(cTagV,"UB%02d",iDet);
-      parCha[0] = fCwidth[iplan]/2. - fgkCalT; 
-      parCha[1] = -1.;
-      parCha[2] = -1.;
+      parCha[0] = fCwidth[iplan]/2.0 - fgkCalT; 
+      parCha[1] = -1.0;
+      parCha[2] = -1.0;
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1307-1],parCha,kNparCha);
       // The inner part (air)
       sprintf(cTagV,"UC%02d",iDet);
-      parCha[0] = fCwidth[iplan]/2. - fgkCalT - fgkCclsT; 
-      parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.- fgkCclfT;
-      parCha[2] = -1.;
+      parCha[0] = fCwidth[iplan]/2.0 - fgkCalT - fgkCclsT; 
+      parCha[1] = fClength[iplan][icham]/2.0 - fgkHspace/2.0- fgkCclfT;
+      parCha[2] = -1.0;
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1302-1],parCha,kNparCha);
 
       // The upper part of the readout chambers (readout plane)
       // The G10 frames
       sprintf(cTagV,"UD%02d",iDet);
-      parCha[0] = fCwidth[iplan]/2. + fgkCroW;
-      parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.;
-      parCha[2] = fgkCamH/2.;
+      parCha[0] = fCwidth[iplan]/2.0 + fgkCroW;
+      parCha[1] = fClength[iplan][icham]/2.0 - fgkHspace/2.0;
+      parCha[2] = fgkCamH/2.0;
       fChamberUDboxd[iDet][0] = parCha[0];
       fChamberUDboxd[iDet][1] = parCha[1];
       fChamberUDboxd[iDet][2] = parCha[2];
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1307-1],parCha,kNparCha);
       // The inner part of the G10 frame (air)
       sprintf(cTagV,"UE%02d",iDet);
-      parCha[0] = fCwidth[iplan]/2. + fgkCroW - fgkCcuT; 
-      parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.- fgkCcuT;
+      parCha[0] = fCwidth[iplan]/2.0 + fgkCroW - fgkCcuT; 
+      parCha[1] = fClength[iplan][icham]/2.0 - fgkHspace/2.0- fgkCcuT;
       parCha[2] = -1.;
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1302-1],parCha,kNparCha);
       // The aluminum frames
       sprintf(cTagV,"UF%02d",iDet);
-      parCha[0] = fCwidth[iplan]/2. + fgkCroW;
-      parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.;
-      parCha[2] = fgkCroH/2.;
+      parCha[0] = fCwidth[iplan]/2.0 + fgkCroW;
+      parCha[1] = fClength[iplan][icham]/2.0 - fgkHspace/2.0;
+      parCha[2] = fgkCroH/2.0;
       fChamberUFboxd[iDet][0] = parCha[0];
       fChamberUFboxd[iDet][1] = parCha[1];
       fChamberUFboxd[iDet][2] = parCha[2];
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
       // The inner part of the aluminum frames
       sprintf(cTagV,"UG%02d",iDet);
-      parCha[0] = fCwidth[iplan]/2. + fgkCroW - fgkCauT; 
-      parCha[1] = fClength[iplan][icham]/2. - fgkHspace/2.- fgkCauT;
-      parCha[2] = -1.;
+      parCha[0] = fCwidth[iplan]/2.0 + fgkCroW - fgkCauT; 
+      parCha[1] = fClength[iplan][icham]/2.0 - fgkHspace/2.0- fgkCauT;
+      parCha[2] = -1.0;
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1302-1],parCha,kNparCha);
 
       // The material layers inside the chambers
-      parCha[0] = -1.;
-      parCha[1] = -1.;
+      parCha[0] = -1.0;
+      parCha[1] = -1.0;
       // Rohacell layer (radiator)
-      parCha[2] = fgkRaThick/2;
+      parCha[2] = fgkRaThick/2.0;
       sprintf(cTagV,"UH%02d",iDet);
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1315-1],parCha,kNparCha);
       // Mylar layer (entrance window + HV cathode) 
-      parCha[2] = fgkMyThick/2;
+      parCha[2] = fgkMyThick/2.0;
       sprintf(cTagV,"UI%02d",iDet);
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1308-1],parCha,kNparCha);
       // Xe/Isobutane layer (drift volume) 
-      parCha[2] = fgkDrThick/2.;
+      parCha[2] = fgkDrThick/2.0;
       sprintf(cTagV,"UJ%02d",iDet);
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1309-1],parCha,kNparCha);
       // Xe/Isobutane layer (amplification volume)
-      parCha[2] = fgkAmThick/2.;
+      parCha[2] = fgkAmThick/2.0;
       sprintf(cTagV,"UK%02d",iDet);
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1309-1],parCha,kNparCha);  
       // Cu layer (pad plane)
-      parCha[2] = fgkCuThick/2;
+      parCha[2] = fgkCuThick/2.0;
       sprintf(cTagV,"UL%02d",iDet);
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1305-1],parCha,kNparCha);
       // G10 layer (support structure / honeycomb)
-      parCha[2] = fgkSuThick/2;
+      parCha[2] = fgkSuThick/2.0;
       sprintf(cTagV,"UM%02d",iDet);
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1313-1],parCha,kNparCha);
       // G10 layer (readout board)
@@ -458,13 +467,13 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
       sprintf(cTagV,"UN%02d",iDet);
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1313-1],parCha,kNparCha);
       // Cu layer (readout board)
-      parCha[2] = fgkRcThick/2;
+      parCha[2] = fgkRcThick/2.0;
       sprintf(cTagV,"UO%02d",iDet);
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1306-1],parCha,kNparCha);
 
       // Position the layers in the chambers
-      xpos = 0;
-      ypos = 0;
+      xpos = 0.0;
+      ypos = 0.0;
       // Lower part
       // Rohacell layer (radiator)
       zpos = fgkRaZpos;
@@ -510,9 +519,9 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
       gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");
 
       // Position the inner volumes of the chambers in the frames
-      xpos      = 0.0;
-      ypos      = 0.0;
-      zpos      = 0.0;
+      xpos = 0.0;
+      ypos = 0.0;
+      zpos = 0.0;
       // The inside of the lower G10 frame
       sprintf(cTagV,"UC%02d",iDet);
       sprintf(cTagM,"UB%02d",iDet);
@@ -531,13 +540,13 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
       gMC->Gspos(cTagV,1,cTagM,xpos,ypos,zpos,0,"ONLY");      
 
       // Position the frames of the chambers in the TRD mother volume
-      xpos  = 0.;
-      ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.;
+      xpos  = 0.0;
+      ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.0;
       for (Int_t ic = 0; ic < icham; ic++) {
         ypos += fClength[iplan][ic];        
       }
-      ypos += fClength[iplan][icham]/2.;
-      zpos  = fgkVrocsm + fgkCraH/2. + fgkCdrH/2. - fgkSheight/2. 
+      ypos += fClength[iplan][icham]/2.0;
+      zpos  = fgkVrocsm + fgkCraH/2.0 + fgkCdrH/2.0 - fgkSheight/2.0 
             + iplan * (fgkCH + fgkVspace);
       // The lower aluminum frame, radiator + drift region
       sprintf(cTagV,"UA%02d",iDet);      
@@ -546,13 +555,13 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
       fChamberUAorig[iDet][2] = zpos;
       // The upper G10 frame, amplification region
       sprintf(cTagV,"UD%02d",iDet);
-      zpos += fgkCamH/2. + fgkCraH/2. + fgkCdrH/2.;      
+      zpos += fgkCamH/2.0 + fgkCraH/2.0 + fgkCdrH/2.0;      
       fChamberUDorig[iDet][0] = xpos;
       fChamberUDorig[iDet][1] = ypos;
       fChamberUDorig[iDet][2] = zpos;
       // The upper aluminum frame
       sprintf(cTagV,"UF%02d",iDet);
-      zpos += fgkCroH/2. + fgkCamH/2.;      
+      zpos += fgkCroH/2.0 + fgkCamH/2.0;      
       fChamberUForig[iDet][0] = xpos;
       fChamberUForig[iDet][1] = ypos;
       fChamberUForig[iDet][2] = zpos;
@@ -572,21 +581,21 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
     }
   }
   
-  xpos = 0.;
-  ypos = 0.;
-  zpos = 0.;
+  xpos = 0.0;
+  ypos = 0.0;
+  zpos = 0.0;
   gMC->Gspos("UTI1",1,"UTS1",xpos,ypos,zpos,0,"ONLY");
 
-  xpos = 0.;
-  ypos = 0.;
-  zpos = 0.;
+  xpos = 0.0;
+  ypos = 0.0;
+  zpos = 0.0;
   gMC->Gspos("UTS1",1,"UTR1",xpos,ypos,zpos,0,"ONLY");
 
   // Put the TRD volumes into the space frame mother volumes
   // if enabled via status flag
-  xpos = 0.;
-  ypos = 0.;
-  zpos = 0.;
+  xpos = 0.0;
+  ypos = 0.0;
+  zpos = 0.0;
   for (Int_t isect = 0; isect < kNsect; isect++) {
     if (fSMstatus[isect]) {
       sprintf(cTagV,"BTRD%d",isect);
@@ -620,28 +629,26 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   // The chamber support rails
   //
 
-  const Float_t kSRLwid  = 2.0;
+  const Float_t kSRLwid  = 2.00;
   const Float_t kSRLhgt  = 2.3;
   const Float_t kSRLdst  = 0.6;
   const Int_t   kNparSRL = 3;
   Float_t parSRL[kNparSRL];
-  parSRL[0] = kSRLwid/2.;
+  parSRL[0] = kSRLwid/2.0;
   parSRL[1] = fgkSlenTR1/2.;
-  parSRL[2] = kSRLhgt/2.;
+  parSRL[2] = kSRLhgt/2.0;
   gMC->Gsvolu("USRL","BOX ",idtmed[1301-1],parSRL,kNparSRL);
 
   xpos  = 0.0;
   ypos  = 0.0;
   zpos  = 0.0;
   for (iplan = 0; iplan < kNplan; iplan++) {
-    
-    xpos  = fCwidth[iplan]/2. + kSRLwid/2. + kSRLdst;
+        xpos  = fCwidth[iplan]/2.0 + kSRLwid/2.0 + kSRLdst;
     ypos  = 0.0;
-    zpos  = fgkVrocsm + fgkCraH + fgkCdrH - fgkSheight/2. - kSRLhgt/2. 
+    zpos  = fgkVrocsm + fgkCraH + fgkCdrH - fgkSheight/2.0 - kSRLhgt/2.0 
           + iplan * (fgkCH + fgkVspace);
     gMC->Gspos("USRL",iplan+1         ,"UTI1", xpos,ypos,zpos,0,"ONLY");
     gMC->Gspos("USRL",iplan+1+  kNplan,"UTI1",-xpos,ypos,zpos,0,"ONLY");
-
   }
 
   //
@@ -651,56 +658,56 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   const Float_t kSCBwid  = 1.0;
   const Int_t   kNparSCB = 3;
   Float_t parSCB[kNparSCB];
-  parSCB[1] = kSCBwid/2.;
-  parSCB[2] = fgkCH/2.;
+  parSCB[1] = kSCBwid/2.0;
+  parSCB[2] = fgkCH/2.0;
 
   xpos  = 0.0;
   ypos  = 0.0;
   zpos  = 0.0;
   for (iplan = 0; iplan < kNplan; iplan++) {
 
-    parSCB[0] = fCwidth[iplan]/2. + kSRLdst/2.;
+    parSCB[0] = fCwidth[iplan]/2.0 + kSRLdst/2.0;
 
     sprintf(cTagV,"US0%01d",iplan);
     gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parSCB,kNparSCB);
     xpos  = 0.0;
-    ypos  =   fgkSlenTR1/2. - kSCBwid/2.;
-    zpos  = fgkVrocsm + fgkCH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
+    ypos  = fgkSlenTR1/2.0 - kSCBwid/2.0;
+    zpos  = fgkVrocsm + fgkCH/2.0 - fgkSheight/2.0 + iplan * (fgkCH + fgkVspace);
     gMC->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
 
     sprintf(cTagV,"US1%01d",iplan);
     gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parSCB,kNparSCB);
     xpos  = 0.0;
-    ypos  = fClength[iplan][2]/2. + fClength[iplan][1];
-    zpos  = fgkVrocsm + fgkCH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
+    ypos  = fClength[iplan][2]/2.0 + fClength[iplan][1];
+    zpos  = fgkVrocsm + fgkCH/2.0 - fgkSheight/2.0 + iplan * (fgkCH + fgkVspace);
     gMC->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
 
     sprintf(cTagV,"US2%01d",iplan);
     gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parSCB,kNparSCB);
     xpos  = 0.0;
-    ypos  = fClength[iplan][2]/2.;
-    zpos  = fgkVrocsm + fgkCH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
+    ypos  = fClength[iplan][2]/2.0;
+    zpos  = fgkVrocsm + fgkCH/2.0 - fgkSheight/2.0 + iplan * (fgkCH + fgkVspace);
     gMC->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
 
     sprintf(cTagV,"US3%01d",iplan);
     gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parSCB,kNparSCB);
     xpos  = 0.0;
-    ypos  = - fClength[iplan][2]/2.;
-    zpos  = fgkVrocsm + fgkCH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
+    ypos  = - fClength[iplan][2]/2.0;
+    zpos  = fgkVrocsm + fgkCH/2.0 - fgkSheight/2.0 + iplan * (fgkCH + fgkVspace);
     gMC->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
 
     sprintf(cTagV,"US4%01d",iplan);
     gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parSCB,kNparSCB);
     xpos  = 0.0;
-    ypos  = - fClength[iplan][2]/2. - fClength[iplan][1];
-    zpos  = fgkVrocsm + fgkCH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
+    ypos  = - fClength[iplan][2]/2.0 - fClength[iplan][1];
+    zpos  = fgkVrocsm + fgkCH/2.0 - fgkSheight/2.0 + iplan * (fgkCH + fgkVspace);
     gMC->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
 
     sprintf(cTagV,"US5%01d",iplan);
     gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parSCB,kNparSCB);
     xpos  = 0.0;
-    ypos  = - fgkSlenTR1/2. + kSCBwid/2.;
-    zpos  = fgkVrocsm + fgkCH/2. - fgkSheight/2. + iplan * (fgkCH + fgkVspace);
+    ypos  = - fgkSlenTR1/2.0 + kSCBwid/2.0;
+    zpos  = fgkVrocsm + fgkCH/2.0 - fgkSheight/2.0 + iplan * (fgkCH + fgkVspace);
     gMC->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
 
   }
@@ -737,11 +744,11 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   // The rotation matrices
   const Int_t kNmatrix = 3;
   Int_t   matrix[kNmatrix];
-  gMC->Matrix(matrix[0],100.0,  0.0, 90.0, 90.0, 10.0,  0.0);
-  gMC->Matrix(matrix[1], 80.0,  0.0, 90.0, 90.0, 10.0,180.0);
-  gMC->Matrix(matrix[2],  0.0,  0.0, 90.0, 90.0, 90.0,  0.0);
+  gMC->Matrix(matrix[0], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
+  gMC->Matrix(matrix[1],  80.0,   0.0,  90.0,  90.0,  10.0, 180.0);
+  gMC->Matrix(matrix[2],   0.0,   0.0,  90.0,  90.0,  90.0,   0.0);
 
-  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
+  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
     AliError("Could not get common parameters\n");
     return;
@@ -760,14 +767,14 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   const Float_t kCOLposz = -0.2;
   // Thickness of the walls of the cooling arterias
   const Float_t kCOLthk  =  0.1;
-  const Int_t   kNparCOL = 3;
+  const Int_t   kNparCOL =  3;
   Float_t parCOL[kNparCOL];
-  parCOL[0]  = kCOLwid/2.;
-  parCOL[1]  = fgkSlenTR1/2.;
-  parCOL[2]  = kCOLhgt/2.;
+  parCOL[0]  = kCOLwid/2.0;
+  parCOL[1]  = fgkSlenTR1/2.0;
+  parCOL[2]  = kCOLhgt/2.0;
   gMC->Gsvolu("UTCL","BOX ",idtmed[1324-1],parCOL,kNparCOL);
   parCOL[0] -= kCOLthk;
-  parCOL[1]  = fgkSlenTR1/2.;
+  parCOL[1]  = fgkSlenTR1/2.0;
   parCOL[2] -= kCOLthk;
   gMC->Gsvolu("UTCW","BOX ",idtmed[1314-1],parCOL,kNparCOL);
 
@@ -777,15 +784,14 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Gspos("UTCW",1,"UTCL", xpos,ypos,zpos,0,"ONLY");
 
   for (iplan = 0; iplan < kNplan; iplan++) { 
-    
-    xpos  = fCwidth[iplan]/2. + kCOLwid/2. + kCOLposx;
+    xpos  = fCwidth[iplan]/2.0 + kCOLwid/2.0 + kCOLposx;
     ypos  = 0.0;
-    zpos  = fgkVrocsm + kCOLhgt/2. - fgkSheight/2. + kCOLposz 
+    zpos  = fgkVrocsm + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
           + iplan * (fgkCH + fgkVspace);
-    if (iplan == 0) zpos += 0.25;  // To avoid overlaps !
+    // To avoid overlaps !
+    if (iplan == 0) zpos += 0.25;  
     gMC->Gspos("UTCL",iplan+1         ,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
     gMC->Gspos("UTCL",iplan+1+  kNplan,"UTI1",-xpos,ypos,zpos,matrix[1],"ONLY");
-
   }
 
   //
@@ -796,18 +802,18 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   const Float_t kPWRhgt  =  4.5;
   const Float_t kPWRposx =  1.05;
   const Float_t kPWRposz =  0.9;
-  const Int_t   kNparPWR = 3;
+  const Int_t   kNparPWR =  3;
   Float_t parPWR[kNparPWR];
-  parPWR[0] = kPWRwid/2.;
-  parPWR[1] = fgkSlenTR1/2.;
-  parPWR[2] = kPWRhgt/2.;
+  parPWR[0] = kPWRwid/2.0;
+  parPWR[1] = fgkSlenTR1/2.0;
+  parPWR[2] = kPWRhgt/2.0;
   gMC->Gsvolu("UTPW","BOX ",idtmed[1325-1],parPWR,kNparPWR);
   
   for (iplan = 0; iplan < kNplan; iplan++) { 
     
-    xpos  = fCwidth[iplan]/2. + kPWRwid/2. + kPWRposx;
+    xpos  = fCwidth[iplan]/2.0 + kPWRwid/2.0 + kPWRposx;
     ypos  = 0.0;
-    zpos  = fgkVrocsm + kPWRhgt/2. - fgkSheight/2. + kPWRposz 
+    zpos  = fgkVrocsm + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
           + iplan * (fgkCH + fgkVspace);
     gMC->Gspos("UTPW",iplan+1         ,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
     gMC->Gspos("UTPW",iplan+1+  kNplan,"UTI1",-xpos,ypos,zpos,matrix[1],"ONLY");
@@ -827,23 +833,24 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
       Int_t iDet = GetDetectorSec(iplan,icham);
 
       sprintf(cTagV,"UU%02d",iDet);
-      parServ[0] = fCwidth[iplan]/2.;
-      parServ[1] = fClength[iplan][icham]/2. - fgkHspace/2.;
-      parServ[2] = fgkVspace/2. - 0.742/2.; //!!!!!!!!!!!!!!      
+      parServ[0] = fCwidth[iplan]/2.0;
+      parServ[1] = fClength[iplan][icham]/2.0 - fgkHspace/2.0;
+      // ???? !!!!!!!!!!!!!!      
+      parServ[2] = fgkVspace/2.0 - 0.742/2.0; 
       fChamberUUboxd[iDet][0] = parServ[0];
       fChamberUUboxd[iDet][1] = parServ[1];
       fChamberUUboxd[iDet][2] = parServ[2];
       gMC->Gsvolu(cTagV,"BOX",idtmed[1302-1],parServ,kNparServ);
 
       xpos  = 0.;
-      ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.;
+      ypos  = - fClength[iplan][0] - fClength[iplan][1] - fClength[iplan][2]/2.0;
       for (Int_t ic = 0; ic < icham; ic++) {
         ypos += fClength[iplan][ic];        
       }
-      ypos += fClength[iplan][icham]/2.;
-      zpos  = fgkVrocsm + fgkCH + fgkVspace/2. - fgkSheight/2. 
+      ypos += fClength[iplan][icham]/2.0;
+      zpos  = fgkVrocsm + fgkCH + fgkVspace/2.0 - fgkSheight/2.0 
             + iplan * (fgkCH + fgkVspace);
-      zpos -= 0.742/2.;
+      zpos -= 0.742/2.0;
       fChamberUUorig[iDet][0] = xpos;
       fChamberUUorig[iDet][1] = ypos;
       fChamberUUorig[iDet][2] = zpos;
@@ -864,7 +871,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Gsvolu("UTCP","TUBE",idtmed[1324-1],parTube,0);
   // The cooling water
   parTube[0] =  0.0;
-  parTube[1] =  0.2/2.;
+  parTube[1] =  0.2/2.0;
   parTube[2] = -1.;
   gMC->Gsvolu("UTCH","TUBE",idtmed[1314-1],parTube,kNparTube);
   // Water inside the cooling pipe
@@ -881,17 +888,17 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
       Int_t   iDet    = GetDetectorSec(iplan,icham);
       Int_t   iCopy   = GetDetector(iplan,icham,0) * 100;
       Int_t   nMCMrow = commonParam->GetRowMax(iplan,icham,0);
-      Float_t ySize   = (GetChamberLength(iplan,icham) - 2.*fgkRpadW) 
+      Float_t ySize   = (GetChamberLength(iplan,icham) - 2.0*fgkRpadW) 
                       / ((Float_t) nMCMrow);
       sprintf(cTagV,"UU%02d",iDet);
       for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
         xpos   = 0.0;
         ypos   = (0.5 + iMCMrow) * ySize - 1.9 
-               - fClength[iplan][icham]/2. + fgkHspace/2.;
-        zpos   = 0.0 + 0.742/2.;                 
+               - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
+        zpos   = 0.0 + 0.742/2.0;                 
         par[0] = 0.0;
-        par[1] = 0.3/2.; // Thickness of the cooling pipes
-        par[2] = fCwidth[iplan]/2.;
+        par[1] = 0.3/2.0; // Thickness of the cooling pipes
+        par[2] = fCwidth[iplan]/2.0;
         gMC->Gsposp("UTCP",iCopy+iMCMrow,cTagV,xpos,ypos,zpos
                           ,matrix[2],"ONLY",par,kNpar);
       }
@@ -914,17 +921,17 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
       Int_t   iDet    = GetDetectorSec(iplan,icham);
       Int_t   iCopy   = GetDetector(iplan,icham,0) * 100;
       Int_t   nMCMrow = commonParam->GetRowMax(iplan,icham,0);
-      Float_t ySize   = (GetChamberLength(iplan,icham) - 2.*fgkRpadW) 
+      Float_t ySize   = (GetChamberLength(iplan,icham) - 2.0*fgkRpadW) 
                       / ((Float_t) nMCMrow);
       sprintf(cTagV,"UU%02d",iDet);
       for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
         xpos   = 0.0;
         ypos   = (0.5 + iMCMrow) * ySize - 1.0 
-               - fClength[iplan][icham]/2. + fgkHspace/2.;
-        zpos   = -0.4 + 0.742/2.;
+               - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
+        zpos   = -0.4 + 0.742/2.0;
         par[0] = 0.0;
-        par[1] = 0.2/2.; // Thickness of the power lines
-        par[2] = fCwidth[iplan]/2.;
+        par[1] = 0.2/2.0; // Thickness of the power lines
+        par[2] = fCwidth[iplan]/2.0;
         gMC->Gsposp("UTPL",iCopy+iMCMrow,cTagV,xpos,ypos,zpos
                           ,matrix[2],"ONLY",par,kNpar);
       }
@@ -938,35 +945,35 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   // The mother volume for the MCMs (air)
   const Int_t kNparMCM = 3;
   Float_t parMCM[kNparMCM];
-  parMCM[0] = 3.0/2.;
-  parMCM[1] = 3.0/2.;
-  parMCM[2] = 0.14/2.;
+  parMCM[0] = 3.0/2.0;
+  parMCM[1] = 3.0/2.0;
+  parMCM[2] = 0.14/2.0;
   gMC->Gsvolu("UMCM","BOX",idtmed[1302-1],parMCM,kNparMCM);
 
   // The MCM carrier G10 layer
-  parMCM[0] = 3.0/2.;
-  parMCM[1] = 3.0/2.;
-  parMCM[2] = 0.1/2.;
+  parMCM[0] = 3.0/2.0;
+  parMCM[1] = 3.0/2.0;
+  parMCM[2] = 0.1/2.0;
   gMC->Gsvolu("UMC1","BOX",idtmed[1319-1],parMCM,kNparMCM);
   // The MCM carrier Cu layer
-  parMCM[0] = 3.0/2.;
-  parMCM[1] = 3.0/2.;
-  parMCM[2] = 0.0162/2.;
+  parMCM[0] = 3.0/2.0;
+  parMCM[1] = 3.0/2.0;
+  parMCM[2] = 0.0162/2.0;
   gMC->Gsvolu("UMC2","BOX",idtmed[1318-1],parMCM,kNparMCM);
   // The silicon of the chips
-  parMCM[0] = 3.0/2.;
-  parMCM[1] = 3.0/2.;
-  parMCM[2] = 0.003/2.;
+  parMCM[0] = 3.0/2.0;
+  parMCM[1] = 3.0/2.0;
+  parMCM[2] = 0.003/2.0;
   gMC->Gsvolu("UMC3","BOX",idtmed[1320-1],parMCM,kNparMCM);
 
   // Put the MCM material inside the MCM mother volume
   xpos  =  0.0;
   ypos  =  0.0;
-  zpos  = -0.07      + 0.1/2.;
+  zpos  = -0.07 + 0.1/2.0;
   gMC->Gspos("UMC1",1,"UMCM",xpos,ypos,zpos,0,"ONLY");
-  zpos +=  0.1/2.    + 0.0162/2.;
+  zpos +=  0.1/2.0   + 0.0162/2.0;
   gMC->Gspos("UMC2",1,"UMCM",xpos,ypos,zpos,0,"ONLY");
-  zpos +=  0.00162/2 + 0.003/2.;
+  zpos +=  0.00162/2 + 0.003/2.0;
   gMC->Gspos("UMC3",1,"UMCM",xpos,ypos,zpos,0,"ONLY");
 
   // Position the MCMs in the mother volume
@@ -977,22 +984,22 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
       Int_t   iDet    = GetDetectorSec(iplan,icham);
       Int_t   iCopy   = GetDetector(iplan,icham,0) * 1000;
       Int_t   nMCMrow = commonParam->GetRowMax(iplan,icham,0);
-      Float_t ySize   = (GetChamberLength(iplan,icham) - 2.*fgkRpadW) 
+      Float_t ySize   = (GetChamberLength(iplan,icham) - 2.0*fgkRpadW) 
                       / ((Float_t) nMCMrow);
       Int_t   nMCMcol = 8;
-      Float_t xSize   = (GetChamberWidth(iplan) - 2.* fgkCpadW)
+      Float_t xSize   = (GetChamberWidth(iplan) - 2.0* fgkCpadW)
 	              / ((Float_t) nMCMcol);
       sprintf(cTagV,"UU%02d",iDet);
       for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
         for (Int_t iMCMcol = 0; iMCMcol < nMCMcol; iMCMcol++) {
           xpos   = (0.5 + iMCMcol) * xSize + 1.0 
-                 - fCwidth[iplan]/2.;
+                 - fCwidth[iplan]/2.0;
           ypos   = (0.5 + iMCMrow) * ySize + 1.0 
-                 - fClength[iplan][icham]/2. + fgkHspace/2.;
-          zpos   = -0.4 + 0.742/2.;
+                 - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
+          zpos   = -0.4 + 0.742/2.0;
           par[0] = 0.0;
-          par[1] = 0.2/2.; // Thickness of the power lines
-          par[2] = fCwidth[iplan]/2.;
+          par[1] = 0.2/2.0; // Thickness of the power lines
+          par[2] = fCwidth[iplan]/2.0;
           gMC->Gspos("UMCM",iCopy+iMCMrow*10+iMCMcol,cTagV
                            ,xpos,ypos,zpos,0,"ONLY");
 	}
@@ -1025,7 +1032,8 @@ void AliTRDgeometry::GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed)
   Char_t  cTagM[5];
 
   for (Int_t i = 0; i < 3; i++) {
-    xyzMin[i] = +9999; xyzMax[i] = -9999;
+    xyzMin[i] = +9999.0; 
+    xyzMax[i] = -9999.0;
   }
 
   for (Int_t i = 0; i < 3; i++) {
@@ -1048,7 +1056,6 @@ void AliTRDgeometry::GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed)
   }
   
   sprintf(cTagM,"UT%02d",iDet);
-
   gMC->Gsvolu(cTagM,"BOX ",idtmed[1302-1],xyzBoxd,kNparCha);
 
   sprintf(cTagV,"UA%02d",iDet);
@@ -1134,7 +1141,8 @@ Bool_t AliTRDgeometry::Local2Global(Int_t iplan, Int_t icham, Int_t isect
 
   Double_t  rot[3];
   rot[0] = time0 - (timeSlice - calibration->GetT0(idet, col, row))
-      * calibration->GetVdrift(idet, col, row)/calibration->GetSamplingFrequency();
+         * calibration->GetVdrift(idet, col, row)
+         / calibration->GetSamplingFrequency();
   rot[1] = padPlane->GetColPos(col) - 0.5 * padPlane->GetColSize(col);
   rot[2] = padPlane->GetRowPos(row) - 0.5 * padPlane->GetRowSize(row);
 
@@ -1155,15 +1163,17 @@ Bool_t AliTRDgeometry::Global2Local(Int_t mode, Double_t *local, Double_t *globa
   // index[1] = chamber number
   // index[2] = sector number
   //
-  // mode=0  - local coordinate in y, z,             x - rotated global   
-  // mode=2  - local coordinate in pad, and pad row, x - rotated global
+  // mode = 0  - local coordinate in y, z,             x - rotated global   
   //
 
   Int_t idet = GetDetector(index[0],index[1],index[2]); // Detector number
   RotateBack(idet,global,local);
-  if (mode == 0) return kTRUE;
 
-  return kTRUE;
+  if (mode == 0) {
+    return kTRUE;
+  }
+
+  return kFALSE;
 
 }
 
@@ -1186,9 +1196,9 @@ Bool_t AliTRDgeometry::Global2Detector(Double_t global[3], Int_t index[3])
   //
   Float_t fi = TMath::ATan2(global[1],global[0]);
   if (fi < 0) {
-    fi += 2*TMath::Pi();
+    fi += 2.0 * TMath::Pi();
   }
-  index[2] = fgkNsect - 1 - TMath::Nint((fi - GetAlpha()/2.)/GetAlpha());
+  index[2] = fgkNsect - 1 - TMath::Nint((fi - GetAlpha()/2.0) / GetAlpha());
 
   //
   // Find plane
@@ -1196,29 +1206,29 @@ Bool_t AliTRDgeometry::Global2Detector(Double_t global[3], Int_t index[3])
   Float_t locx = global[0] * fRotA11[index[2]] + global[1] * fRotA12[index[2]];  
   index[0] = 0;
   Float_t max = locx - GetTime0(0);
-  for (Int_t iplane=1; iplane<fgkNplan;iplane++){
+  for (Int_t iplane = 1; iplane < fgkNplan; iplane++) {
     Float_t dist = TMath::Abs(locx - GetTime0(iplane));
-    if (dist < max){
+    if (dist < max) {
       index[0] = iplane;
-      max = dist;
+      max      = dist;
     }
   }
 
   //
   // Find chamber
   //
-  if (TMath::Abs(global[2]) < 0.5*GetChamberLength(index[0],2)){
-    index[1]=2;
+  if (TMath::Abs(global[2]) < 0.5*GetChamberLength(index[0],2)) {
+    index[1] = 2;
   }
-  else{
+  else {
     Double_t localZ = global[2];
-    if (global[2] > 0){
-      localZ -= 0.5*(GetChamberLength(index[0],2)+GetChamberLength(index[0],1));
-      index[1] = (TMath::Abs(localZ) < 0.5*GetChamberLength(index[0],3)) ? 1:0;
+    if (global[2] > 0.0) {
+      localZ   -= 0.5*(GetChamberLength(index[0],2)+GetChamberLength(index[0],1));
+      index[1]  = (TMath::Abs(localZ) < 0.5*GetChamberLength(index[0],3)) ? 1 : 0;
     }
-    else{
-      localZ += 0.5*(GetChamberLength(index[0],2)+GetChamberLength(index[0],3));
-      index[1] = (TMath::Abs(localZ) < 0.5*GetChamberLength(index[0],1)) ? 3:4;
+    else {
+      localZ   += 0.5*(GetChamberLength(index[0],2)+GetChamberLength(index[0],3));
+      index[1]  = (TMath::Abs(localZ) < 0.5*GetChamberLength(index[0],1)) ? 3 : 4;
     }
   }  
 
@@ -1320,32 +1330,32 @@ Int_t AliTRDgeometry::GetSector(Int_t d) const
 }
 
 //_____________________________________________________________________________
-AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader* runLoader)
+AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader *runLoader)
 {
   //
-  // load the geometry from the galice file
+  // Load the geometry from the galice file
   //
 
   if (!runLoader) runLoader = AliRunLoader::GetRunLoader();
   if (!runLoader) {
-    //AliError("No run loader");
+    AliErrorGeneral("AliTRDgeometry::GetGeometry","No run loader");
     return NULL;
   }
 
-  TDirectory* saveDir = gDirectory;
+  TDirectory *saveDir = gDirectory;
   runLoader->CdGAFile();
 
   // Try from the galice.root file
-  AliTRDgeometry* geom = (AliTRDgeometry*) gDirectory->Get("TRDgeometry");
+  AliTRDgeometry *geom = (AliTRDgeometry *) gDirectory->Get("TRDgeometry");
 
   if (!geom) {
     // It is not in the file, try to get it from gAlice, 
     // which corresponds to the run loader 
-    AliTRD * trd = (AliTRD*)runLoader->GetAliRun()->GetDetector("TRD");
+    AliTRD *trd = (AliTRD *) runLoader->GetAliRun()->GetDetector("TRD");
     geom = trd->GetGeometry();
   }
   if (!geom) {
-    //AliError("Geometry not found");
+    AliErrorGeneral("AliTRDgeometry::GetGeometry","Geometry not found");
     return NULL;
   }
 
@@ -1361,22 +1371,25 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
   // Read geo matrices from current gGeoManager for each TRD sector
   //
 
-  if (!gGeoManager) return kFALSE;
-  fMatrixArray = new TObjArray(kNdet); 
+  if (!gGeoManager) {
+    return kFALSE;
+  }
+  fMatrixArray           = new TObjArray(kNdet); 
   fMatrixCorrectionArray = new TObjArray(kNdet);
-  fMatrixGeo   = new TObjArray(kNdet);
+  fMatrixGeo             = new TObjArray(kNdet);
   AliAlignObjAngles o;
 
   for (Int_t iLayer = AliAlignObj::kTRD1; iLayer <= AliAlignObj::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
-      UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *path = AliAlignObj::GetVolPath(volid);
+
+      UShort_t    volid   = AliAlignObj::LayerToVolUID(iLayer,iModule);
+      const char *path    = AliAlignObj::GetVolPath(volid);
       if (!gGeoManager->cd(path)) return kFALSE;      
-      TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
-      Int_t     iLayerTRD    = iLayer-AliAlignObj::kTRD1;
-      Int_t     isector      = Nsect()-1-(iModule/Ncham());
-      Int_t     ichamber     = Ncham()-1-(iModule%Ncham());
-      Int_t     lid          = GetDetector(iLayerTRD,ichamber,isector);    
+      TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
+      Int_t     iLayerTRD = iLayer - AliAlignObj::kTRD1;
+      Int_t     isector   = Nsect() - 1 - (iModule/Ncham());
+      Int_t     ichamber  = Ncham() - 1 - (iModule%Ncham());
+      Int_t     lid       = GetDetector(iLayerTRD,ichamber,isector);    
 
       //
       // Local geo system z-x-y  to x-y--z 
@@ -1384,7 +1397,8 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
       fMatrixGeo->AddAt(new TGeoHMatrix(*m),lid);
       
       TGeoRotation mchange; 
-      mchange.RotateY(90); mchange.RotateX(90);
+      mchange.RotateY(90); 
+      mchange.RotateX(90);
 
       TGeoHMatrix gMatrix(mchange.Inverse());
       gMatrix.MultiplyLeft(m);
@@ -1395,7 +1409,7 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
       //
       TGeoHMatrix  rotMatrix(mchange.Inverse());
       rotMatrix.MultiplyLeft(m);
-      Double_t sectorAngle = 20.*(isector%18)+10;
+      Double_t sectorAngle = 20.0 * (isector % 18) + 10.0;
       TGeoHMatrix  rotSector;
       rotSector.RotateZ(sectorAngle);
       rotMatrix.MultiplyLeft(&rotSector);      
