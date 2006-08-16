@@ -31,18 +31,42 @@
 ClassImp(AliFieldReader)
 
 
+
 //_______________________________________________________________________
-AliFieldReader::AliFieldReader()
+AliFieldReader::AliFieldReader():
+    fField(0),
+    fMap(0),
+    fCatalogue(0),
+    fHtmlMain(0),
+    fStepSize(0.),
+    fZStart(1383.),
+    fDd(0.08),
+    fDz(0.064),
+    fPolarity(1.),
+    fCatalogueName("goodfiles.list")
 {
 //
 //  Constructor
 //
-    SetCatalogueName();
-    SetZStart();
-    SetPolarity();
-    
-    fDd = 0.08;
-    fDz = 0.064;
+}
+
+AliFieldReader::AliFieldReader(const AliFieldReader& reader):
+    TObject(reader),
+    fField(0),
+    fMap(0),
+    fCatalogue(0),
+    fHtmlMain(0),
+    fStepSize(0.),
+    fZStart(0.),
+    fDd(0.),
+    fDz(0.),
+    fPolarity(0.),
+    fCatalogueName(0)
+{
+//
+//  Constructor
+//
+    reader.Copy(*this);
 }
 
 //_______________________________________________________________________
@@ -816,4 +840,21 @@ void AliFieldReader::ReadRegisterMapSolenoid()
     
     fclose(regmap);
     
+}
+
+
+AliFieldReader& AliFieldReader::operator=(const  AliFieldReader& rhs)
+{
+// Assignment operator
+    rhs.Copy(*this);
+    return *this;
+}
+
+
+void AliFieldReader::Copy( TObject&) const
+{
+    //
+    // Copy 
+    //
+    Fatal("Copy","Not implemented!\n");
 }

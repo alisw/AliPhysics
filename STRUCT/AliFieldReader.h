@@ -21,6 +21,7 @@ class AliFieldReader : public TObject
 
  public:
     AliFieldReader();
+    AliFieldReader(const AliFieldReader& reader);
     virtual ~AliFieldReader();
     virtual void Init();
     virtual void ReadMap();
@@ -37,6 +38,9 @@ class AliFieldReader : public TObject
     void MakeHtmlTrailor(FILE* file);
     void ReadRegisterMap();
     void ReadRegisterMapSolenoid();
+    AliFieldReader & operator=(const AliFieldReader & rhs);
+    virtual void Copy(TObject&) const;
+    
  protected:
     AliMagFMaps* fField;           // Pointer to calculated map
     TNtuple*     fMap;             // Pointer to measured map

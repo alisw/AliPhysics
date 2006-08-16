@@ -33,20 +33,21 @@
 #include "AliLog.h"
  
 ClassImp(AliPIPEv0)
+
  
 //_____________________________________________________________________________
-AliPIPEv0::AliPIPEv0()
+AliPIPEv0::AliPIPEv0():
+    fPipeMaterial(kBe)   
 {
 // Constructor
-    SetPipeMaterial();
 }
 
 //_____________________________________________________________________________
 AliPIPEv0::AliPIPEv0(const char *name, const char *title)
-  : AliPIPE(name,title)
+    : AliPIPE(name,title),
+      fPipeMaterial(kBe)   
 {
 // Constructor
-    SetPipeMaterial();
 }
 
  

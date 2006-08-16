@@ -33,23 +33,23 @@
 #include "AliLog.h"
  
 ClassImp(AliFRAMEv2)
+
  
 //_____________________________________________________________________________
-AliFRAMEv2::AliFRAMEv2()
+AliFRAMEv2::AliFRAMEv2():
+    fHoles(0)
 {
 // Constructor
-    SetHoles(0);
 }
 
 //_____________________________________________________________________________
 AliFRAMEv2::AliFRAMEv2(const char *name, const char *title)
-  : AliFRAME(name,title)
+    : AliFRAME(name,title), 
+      fHoles(0)
 {
 // Constructor
-    SetHoles(0);
 }
 
- 
 //___________________________________________
 void AliFRAMEv2::CreateGeometry()
 {

@@ -30,9 +30,12 @@
 #include "AliLog.h"
 
 ClassImp(AliSHILvF)
+
  
 //_____________________________________________________________________________
-AliSHILvF::AliSHILvF()
+AliSHILvF::AliSHILvF():
+    fPbCone(kTRUE),
+    fWriteGeometry(kTRUE)
 {
   //
   // Default constructor for muon shield
@@ -41,7 +44,9 @@ AliSHILvF::AliSHILvF()
  
 //_____________________________________________________________________________
 AliSHILvF::AliSHILvF(const char *name, const char *title)
-  : AliSHIL(name,title)
+    : AliSHIL(name,title),
+      fPbCone(kTRUE),
+      fWriteGeometry(kTRUE)
 {
   //
   // Standard constructor for muon shield
@@ -51,8 +56,6 @@ AliSHILvF::AliSHILvF(const char *name, const char *title)
   SetMarkerSize(0.4);
   // Pb  cone not yet compatible with muon chamber inner radii
   // Switched off by default
-  SetWriteGeometry();
-  SetPbCone();
 }
  
 //_____________________________________________________________________________

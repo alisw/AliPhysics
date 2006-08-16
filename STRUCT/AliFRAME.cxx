@@ -39,9 +39,11 @@
 #include "AliRun.h"
  
 ClassImp(AliFRAME)
+
  
 //_____________________________________________________________________________
-AliFRAME::AliFRAME()
+AliFRAME::AliFRAME():
+    fRefVolumeId(0)
 {
   //
   // Default constructor
@@ -50,7 +52,8 @@ AliFRAME::AliFRAME()
  
 //_____________________________________________________________________________
 AliFRAME::AliFRAME(const char *name, const char *title)
-  : AliModule(name,title)
+    : AliModule(name,title),
+      fRefVolumeId(0)
 {
   //
   // Standard constructor

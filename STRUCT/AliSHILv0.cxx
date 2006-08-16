@@ -39,16 +39,19 @@
 ClassImp(AliSHILv0)
  
 //_____________________________________________________________________________
-AliSHILv0::AliSHILv0()
+AliSHILv0::AliSHILv0():
+    fPbCone(1)
 {
   //
   // Default constructor for muon shield
   //
+    
 }
  
 //_____________________________________________________________________________
 AliSHILv0::AliSHILv0(const char *name, const char *title)
-  : AliSHIL(name,title)
+    : AliSHIL(name,title), 
+      fPbCone(1)
 {
   //
   // Standard constructor for muon shield
@@ -58,8 +61,7 @@ AliSHILv0::AliSHILv0(const char *name, const char *title)
   SetMarkerSize(0.4);
   // Pb  cone not yet compatible with muon chamber inner radii
   // Switched off by default
-  fPbCone=kTRUE;
-}
+ }
  
 //_____________________________________________________________________________
 void AliSHILv0::CreateGeometry()

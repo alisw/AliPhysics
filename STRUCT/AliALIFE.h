@@ -12,9 +12,8 @@ class AliALIFE : public  TObject {
  public:
     AliALIFE(const char *name1, const char *name2);
     AliALIFE();    
-    AliALIFE(const AliALIFE &rhs) : TObject(rhs) {
-	rhs.Copy(*this);
-    }
+    AliALIFE(const AliALIFE &rhs);
+
     virtual ~AliALIFE() {}
     void Cylinder(Float_t rmin, Float_t rmax,
 		  Float_t zmin, Float_t zmax,

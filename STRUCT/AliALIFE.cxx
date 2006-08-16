@@ -25,31 +25,50 @@
 
 ClassImp(AliALIFE)
 
-
-AliALIFE::AliALIFE(const char* file1, const char* file2)
+AliALIFE::AliALIFE(const char* file1, const char* file2):
+    fNBodies(0), 
+    fNVolumes(0), 
+    fBodyFile(file1),
+    fVolumeFile(file2),
+    fFile1(fopen(fBodyFile,"w")),
+    fFile2(fopen(fVolumeFile,"w")),
+    fDefaultVolume1("DEFAU1"),
+    fDefaultVolume2("DEFAU2")    
 {  
 // Constructor
-    fNBodies = 0; 
-    fNVolumes= 0; 
-    fBodyFile   = file1;   // File for Fluka bodies
-    fVolumeFile = file2;
-    fFile1=fopen(fBodyFile,"w");
-    fFile2=fopen(fVolumeFile,"w");
     BodyHeader();
     VolumeHeader();
-    fDefaultVolume1 = "DEFAU1";
-    fDefaultVolume2 = "DEFAU2";    
 }
 
-AliALIFE::AliALIFE()
+AliALIFE::AliALIFE():
+    fNBodies(0), 
+    fNVolumes(0), 
+    fBodyFile("FlukaBody.inp"),
+    fVolumeFile("FlukaVolume.inp"),
+    fFile1(fopen(fBodyFile,"w")),
+    fFile2(fopen(fVolumeFile,"w")),
+    fDefaultVolume1("DEFAU1"),
+    fDefaultVolume2("DEFAU2")    
 {
 // Default constructor
-    fBodyFile   = "FlukaBody.inp";  
-    fVolumeFile = "FlukaVolume.inp";
-    fFile1=fopen(fBodyFile,"w");
-    fFile2=fopen(fVolumeFile,"w");
     BodyHeader();
     VolumeHeader();
+}
+
+
+AliALIFE::AliALIFE(const AliALIFE &rhs): 
+    TObject(rhs),
+    fNBodies(0), 
+    fNVolumes(0), 
+    fBodyFile(0),
+    fVolumeFile(0),
+    fFile1(0),
+    fFile2(0),
+    fDefaultVolume1(0),
+    fDefaultVolume2(0)   
+{
+    // Copy Constructor
+    rhs.Copy(*this);
 }
 
 void AliALIFE::BodyHeader()
