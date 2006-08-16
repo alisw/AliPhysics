@@ -35,14 +35,14 @@ public:
    //GlobalFlag:1, CTP trig:1, DAQ:1, Reg pattern:8;
 
    Bool_t  GetEventType()  const {return (fWord &  0x40000000);}
-   Char_t  GetDarcType()   const {return (Char_t)(fWord >> 27) &  0x7;}
-   Char_t  GetSerialNb()   const {return (Char_t)(fWord >> 23) &  0xF;}
-   Char_t  GetVersion()    const {return (Char_t)(fWord >> 15) &  0xFF;}
+   UChar_t GetDarcType()   const {return (UChar_t)(fWord >> 27) &  0x7;}
+   UChar_t GetSerialNb()   const {return (UChar_t)(fWord >> 23) &  0xF;}
+   UChar_t GetVersion()    const {return (UChar_t)(fWord >> 15) &  0xFF;}
    Bool_t  GetVMETrig()    const {return (fWord &  0x800);}
    Bool_t  GetGlobalFlag() const {return (fWord &  0x400);}
    Bool_t  GetCTPTrig()    const {return (fWord &  0x200);}
    Bool_t  GetDAQFlag()    const {return (fWord &  0x100);}
-   Char_t  GetRegPattern() const {return (Char_t)(fWord &  0xFF);}
+   UChar_t GetRegPattern() const {return (UChar_t)(fWord &  0xFF);}
 
    void    SetWord(UInt_t w) {fWord = w;}
    void    SetGlobalInput(Int_t in, Int_t n) {fGlobalInput[n] = in;}
