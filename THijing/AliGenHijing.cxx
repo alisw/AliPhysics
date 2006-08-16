@@ -36,59 +36,137 @@
 ClassImp(AliGenHijing)
 
 AliGenHijing::AliGenHijing()
-                 :AliGenMC()
+    :AliGenMC(),
+     fFrame("CMS"),
+     fMinImpactParam(0.),
+     fMaxImpactParam(5.),
+     fKeep(0),
+     fQuench(1),
+     fShadowing(1),
+     fDecaysOff(1),
+     fTrigger(0),     
+     fEvaluate(0),
+     fSelectAll(0),
+     fFlavor(0),
+     fEnergyCMS(5500.),
+     fKineBias(0.),
+     fTrials(0),
+     fXsection(0.),
+     fHijing(0),
+     fPtHardMin(0.),
+     fPtHardMax(1.e4),
+     fSpectators(1),
+     fDsigmaDb(0),
+     fDnDb(0),
+     fPtMinJet(-2.5),
+     fEtaMinJet(-20.),
+     fEtaMaxJet(+20.),
+     fPhiMinJet(0.),
+     fPhiMaxJet(2. * TMath::Pi()),
+     fRadiation(3),
+     fSimpleJet(kFALSE),
+     fNoGammas(kFALSE),
+     fProjectileSpecn(0),
+     fProjectileSpecp(0),
+     fTargetSpecn(0),
+     fTargetSpecp(0),
+     fLHC(kFALSE),
+     fRandomPz(kFALSE),
+     fNoHeavyQuarks(kFALSE)
 {
 // Constructor
     fParticles = 0;
-    fHijing    = 0;
-    fDsigmaDb  = 0;
-    fDnDb      = 0;
     AliHijingRndm::SetHijingRandom(GetRandom());
 }
 
 AliGenHijing::AliGenHijing(Int_t npart)
-    :AliGenMC(npart)
+    :AliGenMC(npart),
+     fFrame("CMS"),
+     fMinImpactParam(0.),
+     fMaxImpactParam(5.),
+     fKeep(0),
+     fQuench(1),
+     fShadowing(1),
+     fDecaysOff(1),
+     fTrigger(0),     
+     fEvaluate(0),
+     fSelectAll(0),
+     fFlavor(0),
+     fEnergyCMS(5500.),
+     fKineBias(0.),
+     fTrials(0),
+     fXsection(0.),
+     fHijing(0),
+     fPtHardMin(0.),
+     fPtHardMax(1.e4),
+     fSpectators(1),
+     fDsigmaDb(0),
+     fDnDb(0),
+     fPtMinJet(-2.5),
+     fEtaMinJet(-20.),
+     fEtaMaxJet(+20.),
+     fPhiMinJet(0.),
+     fPhiMaxJet(2. * TMath::Pi()),
+     fRadiation(3),
+     fSimpleJet(kFALSE),
+     fNoGammas(kFALSE),
+     fProjectileSpecn(0),
+     fProjectileSpecp(0),
+     fTargetSpecn(0),
+     fTargetSpecp(0),
+     fLHC(kFALSE),
+     fRandomPz(kFALSE),
+     fNoHeavyQuarks(kFALSE)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
     fName = "Hijing";
     fTitle= "Particle Generator using HIJING";
-
-    SetEnergyCMS();
-    SetImpactParameterRange();
-    SetBoostLHC();
-    SetJetEtaRange();
-    SetJetPhiRange();
-    
-    fKeep       =  0;
-    fQuench     =  1;
-    fShadowing  =  1;
-    fTrigger    =  0;
-    fDecaysOff  =  1;
-    fEvaluate   =  0;
-    fSelectAll  =  0;
-    fFlavor     =  0;
-    fSpectators =  1;
-    fDsigmaDb   =  0;
-    fDnDb       =  0;
-    fPtMinJet   = -2.5; 	
-    fRadiation  =  3;
-    //
-    SetSimpleJets();
-    SetNoGammas();
-    SetRandomPz();
-    SwitchOffHeavyQuarks(kFALSE);
 //
     fParticles = new TClonesArray("TParticle",10000);    
 //
 // Set random number generator   
     AliHijingRndm::SetHijingRandom(GetRandom());
-    fHijing = 0;
-
 }
 
 AliGenHijing::AliGenHijing(const AliGenHijing & hijing):
-    AliGenMC(hijing)
+    AliGenMC(hijing),
+     fFrame("CMS"),
+     fMinImpactParam(0.),
+     fMaxImpactParam(5.),
+     fKeep(0),
+     fQuench(1),
+     fShadowing(1),
+     fDecaysOff(1),
+     fTrigger(0),     
+     fEvaluate(0),
+     fSelectAll(0),
+     fFlavor(0),
+     fEnergyCMS(5500.),
+     fKineBias(0.),
+     fTrials(0),
+     fXsection(0.),
+     fHijing(0),
+     fPtHardMin(0.),
+     fPtHardMax(1.e4),
+     fSpectators(1),
+     fDsigmaDb(0),
+     fDnDb(0),
+     fPtMinJet(-2.5),
+     fEtaMinJet(-20.),
+     fEtaMaxJet(+20.),
+     fPhiMinJet(0.),
+     fPhiMaxJet(2. * TMath::Pi()),
+     fRadiation(3),
+     fSimpleJet(kFALSE),
+     fNoGammas(kFALSE),
+     fProjectileSpecn(0),
+     fProjectileSpecp(0),
+     fTargetSpecn(0),
+     fTargetSpecp(0),
+     fLHC(kFALSE),
+     fRandomPz(kFALSE),
+     fNoHeavyQuarks(kFALSE)
 {
 // copy constructor
 }

@@ -66,30 +66,43 @@ extern "C" void type_of_call rluset_hijing(Int_t & lfn, Int_t & move);
 
 ClassImp(THijing)
 
-THijing::THijing() : TGenerator("Hijing","Hijing")
+
+THijing::THijing(): 
+    TGenerator("Hijing","Hijing"),
+    fEfrm(5500.),
+    fFrame("CMS"),
+    fProj("A"),
+    fTarg("A"),
+    fIap(208),
+    fIzp(82),
+    fIat(208),
+    fIzt(82),
+    fBmin(0.),
+    fBmax(5.)
 {
 // Default constructor 
 }
 
 //______________________________________________________________________________
 THijing::THijing(Float_t efrm, const char *frame="CMS", 
-	const char *proj="A", const char *targ="A", Int_t iap=207, 
-	Int_t izp=82, Int_t iat=207, Int_t izt=82, Float_t bmin=0, 
-	Float_t bmax=20) : TGenerator("Hijing","Hijing")
+		 const char *proj="A", const char *targ="A", 
+		 Int_t iap=207, Int_t izp=82, Int_t iat=207, Int_t izt=82,
+		 Float_t bmin=0, Float_t bmax=20): 
+    TGenerator("Hijing","Hijing"),
+    fEfrm(efrm),
+    fFrame(frame),
+    fProj(proj),
+    fTarg(targ),
+    fIap(iap),
+    fIzp(izp),
+    fIat(iat),
+    fIzt(izt),
+    fBmin(bmin),
+    fBmax(bmax)
 {
 // THijing constructor: 
 // Note that there may be only one functional THijing object
 // at a time, so it's not use to create more than one instance of it.
-      fEfrm=efrm;
-      fFrame=frame;
-      fProj=proj;
-      fTarg=targ;
-      fIap=iap;
-      fIzp=izp;
-      fIat=iat;
-      fIzt=izt;
-      fBmin=bmin;
-      fBmax=bmax;
 }
 
 //______________________________________________________________________________

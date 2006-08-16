@@ -18,4 +18,25 @@
 #include "AliGenHijingEventHeader.h"
 ClassImp(AliGenHijingEventHeader)
 
+AliGenHijingEventHeader::AliGenHijingEventHeader():
+    fTotalEnergy(0.),
+    fTrials(0),
+    fJet1(0., 0., 0., 0.),
+    fJet2(0., 0., 0., 0.),
+    fJetFsr1(0., 0., 0., 0.),
+    fJetFsr2(0., 0., 0., 0.)
+{
+    // Constructor
+}
 
+AliGenHijingEventHeader::AliGenHijingEventHeader(const char* name):
+    AliGenEventHeader(name),
+    fTotalEnergy(0.),
+    fTrials(0),
+    fJet1(0., 0., 0., 0.),
+    fJet2(0., 0., 0., 0.),
+    fJetFsr1(0., 0., 0., 0.),
+    fJetFsr2(0., 0., 0., 0.)
+{
+    // Copy Constructor
+}

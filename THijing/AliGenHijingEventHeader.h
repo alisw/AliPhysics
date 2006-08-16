@@ -14,10 +14,8 @@
 class AliGenHijingEventHeader : public AliGenEventHeader, public AliCollisionGeometry
 {
  public:
-
-  AliGenHijingEventHeader(const char* name)
-    : AliGenEventHeader(name) {}
-  AliGenHijingEventHeader(){}
+    AliGenHijingEventHeader(const char* name);
+  AliGenHijingEventHeader();
   virtual ~AliGenHijingEventHeader() {}
   // Getters
   Float_t TotalEnergy()  {return fTotalEnergy;} 
