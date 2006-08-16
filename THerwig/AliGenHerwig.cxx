@@ -53,42 +53,77 @@ ClassImp(AliGenHerwig)
     fXsection(0),
     fHerwig(0x0),
     fProcess(0),
-    fPtHardMin(0),
-    fPtRMS(0),
+    fPtHardMin(0.),
+    fPtRMS(0.),
     fMaxPr(10),
     fMaxErrors(1000),
     fEnSoft(1),
     fEv1Pr(0),
-    fEv2Pr(0)
+    fEv2Pr(0),
+    fFileName(0)
 {
 // Constructor
 }
 
 AliGenHerwig::AliGenHerwig(Int_t npart)
-    :AliGenMC(npart)
+    :AliGenMC(npart),
+    fAutPDF("GRV"),
+    fModPDF(5),
+    fStrucFunc(kCTEQ5L),
+    fKeep(0),
+    fDecaysOff(1),
+    fTrigger(0),
+    fSelectAll(0),
+    fFlavor(0),
+    fEnergyCMS(14000),
+    fMomentum1(7000),
+    fMomentum2(7000),
+    fKineBias(1),
+    fTrials(0),
+    fXsection(0),
+    fHerwig(0x0),
+    fProcess(0),
+    fPtHardMin(0.),
+    fPtRMS(0.),
+    fMaxPr(10),
+    fMaxErrors(1000),
+    fEnSoft(1),
+    fEv1Pr(0),
+    fEv2Pr(0),
+    fFileName(0)
 {
-    SetBeamMomenta();
     SetTarget();
     SetProjectile();
-    SetStrucFunc(kCTEQ5L);
-    fKeep=0;
-    fTrigger=0;
-    fDecaysOff=1;
-    fSelectAll=0;
-    fFlavor=0;
-    fPtHardMin=0.;
-    fPtRMS=0.0;
-    fEnSoft=1.0;
-    fMaxPr=10;
-    fMaxErrors=1000;
-    fEv1Pr=0;
-    fEv2Pr=0;
     // Set random number generator   
     AliHerwigRndm::SetHerwigRandom(GetRandom());
 }
 
 AliGenHerwig::AliGenHerwig(const AliGenHerwig & Herwig)
-    :AliGenMC(Herwig)
+    :AliGenMC(Herwig),
+    fAutPDF("GRV"),
+    fModPDF(5),
+    fStrucFunc(kCTEQ5L),
+    fKeep(0),
+    fDecaysOff(1),
+    fTrigger(0),
+    fSelectAll(0),
+    fFlavor(0),
+    fEnergyCMS(14000),
+    fMomentum1(7000),
+    fMomentum2(7000),
+    fKineBias(1),
+    fTrials(0),
+    fXsection(0),
+    fHerwig(0x0),
+    fProcess(0),
+    fPtHardMin(0.),
+    fPtRMS(0.),
+    fMaxPr(10),
+    fMaxErrors(1000),
+    fEnSoft(1),
+    fEv1Pr(0),
+    fEv2Pr(0),
+    fFileName(0)
 {
 // Copy constructor
     Herwig.Copy(*this);
@@ -151,10 +186,34 @@ void AliGenHerwig::InitPDF()
 {
   switch(fStrucFunc)
     {
+//    case kGRVLO:
+//      fModPDF=5;
+//      fAutPDF="GRV";
+//      break;
+//    case kGRVHO:
+//      fModPDF=6;
+//      fAutPDF="GRV";
+//      break;
     case kGRVLO98:
       fModPDF=12;
       fAutPDF="GRV";
       break;
+//    case kMRSDminus:
+//      fModPDF=31;
+//      fAutPDF="MRS";
+//      break;
+//    case kMRSD0:
+//      fModPDF=30;
+//      fAutPDF="MRS";
+//      break;
+//    case kMRSG:
+//      fModPDF=41;
+//      fAutPDF="MRS";
+//      break;
+//    case kMRSTcgLO:
+//      fModPDF=72;
+//      fAutPDF="MRS";
+//      break;
     case kCTEQ4M:
       fModPDF=34;
       fAutPDF="CTEQ";
@@ -163,10 +222,10 @@ void AliGenHerwig::InitPDF()
       fModPDF=46;
       fAutPDF="CTEQ";
       break;
-    case kCTEQ5M:
-      fModPDF=48;
-      fAutPDF="CTEQ";
-      break;
+//    case kCTEQ5M:
+//      fModPDF=48;
+//      fAutPDF="CTEQ";
+//      break;
     default:
       cerr << "This structure function is not inplemented " << fStrucFunc << endl;
       break;

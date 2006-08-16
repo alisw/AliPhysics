@@ -727,9 +727,7 @@ class THerwig6 : public TGenerator {
 public:
 				// ****** constructors and destructor
   THerwig6();
-  THerwig6(const THerwig6 & source): TGenerator(source) {
-    Fatal("THerwig6","Copy constructor not implemented yet");
-  }
+  THerwig6(const THerwig6 & source);
   THerwig6 & operator=(const THerwig6 & /*source*/) {
     Fatal("THerwig6","Assignment operator not implemented yet");
     return *this;

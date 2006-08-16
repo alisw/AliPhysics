@@ -64,61 +64,107 @@ extern "C" {
 }
 
 
-THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6") {
+THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6"),
+  fHepevt((Hepevt_t*) herwig6_common_block_address_((char*)"HEPEVT",6)),
+  fHwbeam((Hwbeam_t*) herwig6_common_block_address_((char*)"HWBEAM",6)),
+  fHwbmch((Hwbmch_t*) herwig6_common_block_address_((char*)"HWBMCH",6)),
+  fHwproc((Hwproc_t*) herwig6_common_block_address_((char*)"HWPROC",6)),
+  fHwpram((Hwpram_t*) herwig6_common_block_address_((char*)"HWPRAM",6)),
+  fHwprch((Hwprch_t*) herwig6_common_block_address_((char*)"HWPRCH",6)),
+  fHwpart((Hwpart_t*) herwig6_common_block_address_((char*)"HWPART",6)),
+  fHwparp((Hwparp_t*) herwig6_common_block_address_((char*)"HWPARP",6)),
+  fHwbosc((Hwbosc_t*) herwig6_common_block_address_((char*)"HWBOSC",6)),
+  fHwparc((Hwparc_t*) herwig6_common_block_address_((char*)"HWPARC",6)),
+  fHwbrch((Hwbrch_t*) herwig6_common_block_address_((char*)"HWBRCH",6)),
+  fHwevnt((Hwevnt_t*) herwig6_common_block_address_((char*)"HWEVNT",6)),
+  fHwhard((Hwhard_t*) herwig6_common_block_address_((char*)"HWHARD",6)),
+  fHwprop((Hwprop_t*) herwig6_common_block_address_((char*)"HWPROP",6)),
+  fHwunam((Hwunam_t*) herwig6_common_block_address_((char*)"HWUNAM",6)),
+  fHwupdt((Hwupdt_t*) herwig6_common_block_address_((char*)"HWUPDT",6)),
+  fHwuwts((Hwuwts_t*) herwig6_common_block_address_((char*)"HWUWTS",6)),
+  fHwuclu((Hwuclu_t*) herwig6_common_block_address_((char*)"HWUCLU",6)),
+  fHwdist((Hwdist_t*) herwig6_common_block_address_((char*)"HWDIST",6)),
+  fHwqdks((Hwqdks_t*) herwig6_common_block_address_((char*)"HWQDKS",6)),
+  fHwusud((Hwusud_t*) herwig6_common_block_address_((char*)"HWUSUD",6)),
+  fHwsusy((Hwsusy_t*) herwig6_common_block_address_((char*)"HWSUSY",6)),
+  fHwrpar((Hwrpar_t*) herwig6_common_block_address_((char*)"HWRPAR",6)),
+  fHwminb((Hwminb_t*) herwig6_common_block_address_((char*)"HWMINB",6)),
+  fHwclus((Hwclus_t*) herwig6_common_block_address_((char*)"HWCLUS",6)),
+  fHwgrav((Hwgrav_t*) herwig6_common_block_address_((char*)"HWGRAV",6)),
+  fHw6202((Hw6202_t*) herwig6_common_block_address_((char*)"HW6202",6)),
+  fHw6203((Hw6203_t*) herwig6_common_block_address_((char*)"HW6203",6)),
+  fHw6300((Hw6300_t*) herwig6_common_block_address_((char*)"HW6300",6)),
+  fHwpmrs((Hwpmrs_t*) herwig6_common_block_address_((char*)"HWPMRS",6)),
+  fHwcirc((Hwcirc_t*) herwig6_common_block_address_((char*)"HWCIRC",6)),
+  fHwdspb((Hwdspb_t*) herwig6_common_block_address_((char*)"HWDSPB",6)),
+  fHwdsp2((Hwdsp2_t*) herwig6_common_block_address_((char*)"HWDSP2",6)),
+  fHwdsp3((Hwdsp3_t*) herwig6_common_block_address_((char*)"HWDSP3",6)),
+  fHwdsp4((Hwdsp4_t*) herwig6_common_block_address_((char*)"HWDSP4",6)),
+  fHwdspn((Hwdspn_t*) herwig6_common_block_address_((char*)"HWDSPN",6)),
+  fHwspin((Hwspin_t*) herwig6_common_block_address_((char*)"HWSPIN",6)),
+  fHwstau((Hwstau_t*) herwig6_common_block_address_((char*)"HWSTAU",6)),
+  fHwgupr((Hwgupr_t*) herwig6_common_block_address_((char*)"HWGUPR",6)),
+  fHw6500((Hw6500_t*) herwig6_common_block_address_((char*)"HW6500",6)),
+  fHw6504((Hw6504_t*) herwig6_common_block_address_((char*)"HW6504",6)),
+  fHw6506((Hw6506_t*) herwig6_common_block_address_((char*)"HW6506",6))
+{
 
 // THerwig6 constructor: creates a TClonesArray in which it will store all
 // particles. Note that there may be only one functional THerwig6 object
 // at a time, so it's not use to create more than one instance of it.
 
   delete fParticles; // was allocated as TObjArray in TGenerator
-
   fParticles = new TClonesArray("TParticle",50);
 
   // initialize common-blocks
-  fHepevt = (Hepevt_t*) herwig6_common_block_address_((char*)"HEPEVT",6);
-  fHwbeam = (Hwbeam_t*) herwig6_common_block_address_((char*)"HWBEAM",6);
-  fHwbmch = (Hwbmch_t*) herwig6_common_block_address_((char*)"HWBMCH",6);
-  fHwproc = (Hwproc_t*) herwig6_common_block_address_((char*)"HWPROC",6);
-  fHwpram = (Hwpram_t*) herwig6_common_block_address_((char*)"HWPRAM",6);
-  fHwprch = (Hwprch_t*) herwig6_common_block_address_((char*)"HWPRCH",6);
-  fHwpart = (Hwpart_t*) herwig6_common_block_address_((char*)"HWPART",6);
-  fHwparp = (Hwparp_t*) herwig6_common_block_address_((char*)"HWPARP",6);
-  fHwbosc = (Hwbosc_t*) herwig6_common_block_address_((char*)"HWBOSC",6);
-  fHwparc = (Hwparc_t*) herwig6_common_block_address_((char*)"HWPARC",6);
-  fHwbrch = (Hwbrch_t*) herwig6_common_block_address_((char*)"HWBRCH",6);
-  fHwevnt = (Hwevnt_t*) herwig6_common_block_address_((char*)"HWEVNT",6);
-  fHwhard = (Hwhard_t*) herwig6_common_block_address_((char*)"HWHARD",6);
-  fHwprop = (Hwprop_t*) herwig6_common_block_address_((char*)"HWPROP",6);
-  fHwunam = (Hwunam_t*) herwig6_common_block_address_((char*)"HWUNAM",6);
-  fHwupdt = (Hwupdt_t*) herwig6_common_block_address_((char*)"HWUPDT",6);
-  fHwuwts = (Hwuwts_t*) herwig6_common_block_address_((char*)"HWUWTS",6);
-  fHwuclu = (Hwuclu_t*) herwig6_common_block_address_((char*)"HWUCLU",6);
-  fHwdist = (Hwdist_t*) herwig6_common_block_address_((char*)"HWDIST",6);
-  fHwqdks = (Hwqdks_t*) herwig6_common_block_address_((char*)"HWQDKS",6);
-  fHwusud = (Hwusud_t*) herwig6_common_block_address_((char*)"HWUSUD",6);
-  fHwsusy = (Hwsusy_t*) herwig6_common_block_address_((char*)"HWSUSY",6);
-  fHwrpar = (Hwrpar_t*) herwig6_common_block_address_((char*)"HWRPAR",6);
-  fHwminb = (Hwminb_t*) herwig6_common_block_address_((char*)"HWMINB",6);
-  fHwclus = (Hwclus_t*) herwig6_common_block_address_((char*)"HWCLUS",6);
-  fHwgrav = (Hwgrav_t*) herwig6_common_block_address_((char*)"HWGRAV",6);
-  fHw6202 = (Hw6202_t*) herwig6_common_block_address_((char*)"HW6202",6);
-  fHw6203 = (Hw6203_t*) herwig6_common_block_address_((char*)"HW6203",6);
-  fHw6300 = (Hw6300_t*) herwig6_common_block_address_((char*)"HW6300",6);
-  fHwpmrs = (Hwpmrs_t*) herwig6_common_block_address_((char*)"HWPMRS",6);
-  fHwcirc = (Hwcirc_t*) herwig6_common_block_address_((char*)"HWCIRC",6);
-  fHwdspb = (Hwdspb_t*) herwig6_common_block_address_((char*)"HWDSPB",6);
-  fHwdsp2 = (Hwdsp2_t*) herwig6_common_block_address_((char*)"HWDSP2",6);
-  fHwdsp3 = (Hwdsp3_t*) herwig6_common_block_address_((char*)"HWDSP3",6);
-  fHwdsp4 = (Hwdsp4_t*) herwig6_common_block_address_((char*)"HWDSP4",6);
-  fHwdspn = (Hwdspn_t*) herwig6_common_block_address_((char*)"HWDSPN",6);
-  fHwspin = (Hwspin_t*) herwig6_common_block_address_((char*)"HWSPIN",6);
-  fHwstau = (Hwstau_t*) herwig6_common_block_address_((char*)"HWSTAU",6);
-  fHwgupr = (Hwgupr_t*) herwig6_common_block_address_((char*)"HWGUPR",6);
-  fHw6500 = (Hw6500_t*) herwig6_common_block_address_((char*)"HW6500",6);
-  fHw6504 = (Hw6504_t*) herwig6_common_block_address_((char*)"HW6504",6);
-  fHw6506 = (Hw6506_t*) herwig6_common_block_address_((char*)"HW6506",6);
  }
 
+THerwig6::THerwig6(const THerwig6 & source): TGenerator(source), 
+  fHepevt((Hepevt_t*) herwig6_common_block_address_((char*)"HEPEVT",6)),
+  fHwbeam((Hwbeam_t*) herwig6_common_block_address_((char*)"HWBEAM",6)),
+  fHwbmch((Hwbmch_t*) herwig6_common_block_address_((char*)"HWBMCH",6)),
+  fHwproc((Hwproc_t*) herwig6_common_block_address_((char*)"HWPROC",6)),
+  fHwpram((Hwpram_t*) herwig6_common_block_address_((char*)"HWPRAM",6)),
+  fHwprch((Hwprch_t*) herwig6_common_block_address_((char*)"HWPRCH",6)),
+  fHwpart((Hwpart_t*) herwig6_common_block_address_((char*)"HWPART",6)),
+  fHwparp((Hwparp_t*) herwig6_common_block_address_((char*)"HWPARP",6)),
+  fHwbosc((Hwbosc_t*) herwig6_common_block_address_((char*)"HWBOSC",6)),
+  fHwparc((Hwparc_t*) herwig6_common_block_address_((char*)"HWPARC",6)),
+  fHwbrch((Hwbrch_t*) herwig6_common_block_address_((char*)"HWBRCH",6)),
+  fHwevnt((Hwevnt_t*) herwig6_common_block_address_((char*)"HWEVNT",6)),
+  fHwhard((Hwhard_t*) herwig6_common_block_address_((char*)"HWHARD",6)),
+  fHwprop((Hwprop_t*) herwig6_common_block_address_((char*)"HWPROP",6)),
+  fHwunam((Hwunam_t*) herwig6_common_block_address_((char*)"HWUNAM",6)),
+  fHwupdt((Hwupdt_t*) herwig6_common_block_address_((char*)"HWUPDT",6)),
+  fHwuwts((Hwuwts_t*) herwig6_common_block_address_((char*)"HWUWTS",6)),
+  fHwuclu((Hwuclu_t*) herwig6_common_block_address_((char*)"HWUCLU",6)),
+  fHwdist((Hwdist_t*) herwig6_common_block_address_((char*)"HWDIST",6)),
+  fHwqdks((Hwqdks_t*) herwig6_common_block_address_((char*)"HWQDKS",6)),
+  fHwusud((Hwusud_t*) herwig6_common_block_address_((char*)"HWUSUD",6)),
+  fHwsusy((Hwsusy_t*) herwig6_common_block_address_((char*)"HWSUSY",6)),
+  fHwrpar((Hwrpar_t*) herwig6_common_block_address_((char*)"HWRPAR",6)),
+  fHwminb((Hwminb_t*) herwig6_common_block_address_((char*)"HWMINB",6)),
+  fHwclus((Hwclus_t*) herwig6_common_block_address_((char*)"HWCLUS",6)),
+  fHwgrav((Hwgrav_t*) herwig6_common_block_address_((char*)"HWGRAV",6)),
+  fHw6202((Hw6202_t*) herwig6_common_block_address_((char*)"HW6202",6)),
+  fHw6203((Hw6203_t*) herwig6_common_block_address_((char*)"HW6203",6)),
+  fHw6300((Hw6300_t*) herwig6_common_block_address_((char*)"HW6300",6)),
+  fHwpmrs((Hwpmrs_t*) herwig6_common_block_address_((char*)"HWPMRS",6)),
+  fHwcirc((Hwcirc_t*) herwig6_common_block_address_((char*)"HWCIRC",6)),
+  fHwdspb((Hwdspb_t*) herwig6_common_block_address_((char*)"HWDSPB",6)),
+  fHwdsp2((Hwdsp2_t*) herwig6_common_block_address_((char*)"HWDSP2",6)),
+  fHwdsp3((Hwdsp3_t*) herwig6_common_block_address_((char*)"HWDSP3",6)),
+  fHwdsp4((Hwdsp4_t*) herwig6_common_block_address_((char*)"HWDSP4",6)),
+  fHwdspn((Hwdspn_t*) herwig6_common_block_address_((char*)"HWDSPN",6)),
+  fHwspin((Hwspin_t*) herwig6_common_block_address_((char*)"HWSPIN",6)),
+  fHwstau((Hwstau_t*) herwig6_common_block_address_((char*)"HWSTAU",6)),
+  fHwgupr((Hwgupr_t*) herwig6_common_block_address_((char*)"HWGUPR",6)),
+  fHw6500((Hw6500_t*) herwig6_common_block_address_((char*)"HW6500",6)),
+  fHw6504((Hw6504_t*) herwig6_common_block_address_((char*)"HW6504",6)),
+  fHw6506((Hw6506_t*) herwig6_common_block_address_((char*)"HW6506",6))
+{
+    Fatal("THerwig6","Copy constructor not implemented yet");
+}
 //------------------------------------------------------------------------------
  THerwig6::~THerwig6()
  {
