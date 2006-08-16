@@ -871,6 +871,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
       // 16 local card per regional board
       UShort_t localMask = 0x0;
+
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
 
 	// slot zero for Regional card
@@ -902,14 +903,12 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 	      locCard = -1; 
 	    }
 	    // calculate regional input High and low Pt
-	     regInpHpt |= (locDec >> 2) & 0x3;
-	     regInpLpt |=  locDec       & 0x3;
-
-	     if (iLoc < 15) { // shift not the last one
-	       regInpLpt <<= 2;
-	       regInpHpt <<= 2;
-	     }
-
+	    UInt_t tmp1 = (locDec >> 2) & 0x3;
+	    UInt_t tmp2 =  locDec & 0x3;
+	    
+	    regInpHpt |= tmp1 << (30 - iLoc*2);
+	    regInpLpt |= tmp2 << (30 - iLoc*2);
+	   
 	    //packing word
 	    word = 0;
 	    AliBitPacking::PackWord((UInt_t)iLoc,word,19,22); //card id number in crate
