@@ -91,7 +91,8 @@ AliCDBMetaData *md= new AliCDBMetaData(); // metaData describing the object
 
 AliCDBId id("VZERO/Calib/Data",0,9999999);
 
-md->SetObjectClassName("VZERO calibration parameters");
+//md->SetObjectClassName("VZERO calibration parameters"); automatically 
+//set to AliVZEROCalibData by the CDB classes during storage 
 md->SetResponsible("Brigitte Cheynis");
 md->SetBeamPeriod(0);
 md->SetAliRootVersion("July2006");
