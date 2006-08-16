@@ -38,7 +38,8 @@ AliMUONRegHeader::AliMUONRegHeader()
   :  TObject(),
      fDarcWord(0),
      fWord(0),
-     fL0Mask(0),
+     fMask(0),
+     fL0(0),
      fClk(0),
      fHold(0)
 
@@ -76,7 +77,8 @@ AliMUONRegHeader::AliMUONRegHeader(const AliMUONRegHeader& event)
   fWord     = event.fWord;
   fClk      = event.fClk;
   fHold     = event.fHold;
-  fL0Mask   = event.fL0Mask;
+  fL0       = event.fL0;
+  fMask     = event.fMask;
 
   fInput[0] = event.fInput[0];
   fInput[1] = event.fInput[1];
@@ -104,7 +106,8 @@ AliMUONRegHeader& AliMUONRegHeader::operator=(const AliMUONRegHeader& event)
   fWord     = event.fWord;
   fClk      = event.fClk;
   fHold     = event.fHold;
-  fL0Mask   = event.fL0Mask;
+  fL0       = event.fL0;
+  fMask     = event.fMask;
 
   fInput[0] = event.fInput[0];
   fInput[1] = event.fInput[1];

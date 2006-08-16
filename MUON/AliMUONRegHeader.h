@@ -25,15 +25,15 @@ public:
 
    virtual ~AliMUONRegHeader();
 
-   UInt_t  GetDarcWord()      const {return fDarcWord;}
-   UInt_t  GetWord()          const {return fWord;}
-   UInt_t  GetInput(Int_t n)  const {return fInput[n];}
-   UInt_t  GetL0()            const {return ((fL0Mask >> 16) & 0xFFFF);}
-   UInt_t  GetMask()          const {return (fL0Mask & 0xFFFF);}
+   UInt_t   GetDarcWord()      const {return fDarcWord;}
+   UInt_t   GetWord()          const {return fWord;}
+   UInt_t   GetInput(Int_t n)  const {return fInput[n];}
+   UShort_t GetL0()            const {return fL0   & 0xFFFF;}
+   UShort_t GetMask()          const {return fMask & 0xFFFF;}
 
    //word: phys type:1, reset: 6, serialNb:5, Id:4, version: 8, regional output:8
    //true for phys, false for soft
-   Bool_t   GetRegPhysFlag() const {return (fWord & 0x80000000);} 
+   Bool_t    GetRegPhysFlag() const {return (fWord & 0x80000000);} 
    UChar_t   GetResetNb()    const {return (UChar_t)(fWord >> 25) &  0x20;}
    UChar_t   GetSerialNb()   const {return (UChar_t)(fWord >> 20) &  0x1F;}
    UChar_t   GetId()         const {return (UChar_t)(fWord >> 16) &  0x0F;}
@@ -56,9 +56,12 @@ public:
    UChar_t  GetBusy()            const {return (UChar_t)  (fDarcWord)       &  0x4;}
 
    void    SetDarcWord(UInt_t w) {fDarcWord = w;}
-   void    SetWord(UInt_t w) {fWord = w;}
+   void    SetWord(UInt_t w)     {fWord = w;}
+   void    SetMask(UShort_t m)   {fMask = m;}
+   void    SetL0(UShort_t l)     {fL0   = (l & 0xFFFF);}
    void    SetInput(UInt_t in, Int_t n) {fInput[n] = in;}
-   
+ 
+
    Int_t   GetHeaderLength() const {return fgkHeaderLength;}
    UInt_t  GetEndOfReg()     const {return fgkEndOfReg;}
 
@@ -97,7 +100,8 @@ public:
    UInt_t    fDarcWord;      ///< darc word
    UInt_t    fWord;          ///< first reg word
    UInt_t    fInput[2];      ///< regional input
-   UInt_t    fL0Mask;        ///< L0 counter (16 bits) and local mask (16 bits)
+   UShort_t  fMask;          ///< local mask ("poids faible" 16 bits)
+   UShort_t  fL0;            ///< L0 counter (16 bits)
 
    // regional card scalers   
    UInt_t     fClk;        ///< regional clock

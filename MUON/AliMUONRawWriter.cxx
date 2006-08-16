@@ -727,7 +727,10 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   Int_t index;
   Int_t iEntries = 0;
   Int_t iLocCard, locCard;
-  Char_t locDec, trigY, posY, posX,regOut;
+  Char_t locDec, trigY, posY, posX, regOut;
+  UInt_t regInpLpt;
+  UInt_t regInpHpt;
+
   Int_t devX;
   Int_t version = 1; // software version
   Int_t eventPhys = 1; // trigger type: 1 for physics, 0 for software
@@ -793,7 +796,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     fDarcHeader->SetWord(word);
 
     memcpy(&buffer[index], fDarcHeader->GetHeader(), (kDarcHeaderLength)*4); 
-    index += fDarcHeader->GetDarcHeaderLength();
+    index += kDarcHeaderLength;
 
     if (iDDL == 0)
      fDarcHeader->SetGlobalOutput(gloTrigPat);// no global input for the moment....
@@ -803,19 +806,19 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     if (fScalerEvent) {
       // 6 DARC scaler words
       memcpy(&buffer[index], fDarcHeader->GetDarcScalers(),kDarcScalerLength*4);
-      index += fDarcHeader->GetDarcScalerLength();
+      index += kDarcScalerLength;
     }
     // end of darc word
     buffer[index++] = fDarcHeader->GetEndOfDarc();
 
     // 4 words of global board input + Global board output
     memcpy(&buffer[index], fDarcHeader->GetGlobalInput(), (kGlobalHeaderLength)*4); 
-    index += fDarcHeader->GetGlobalHeaderLength(); 
+    index += kGlobalHeaderLength; 
 
     if (fScalerEvent) {
       // 10 Global scaler words
       memcpy(fDarcHeader->GetGlobalScalers(), &buffer[index], kGlobalScalerLength*4);
-      index += fDarcHeader->GetGlobalScalerLength();
+      index += kGlobalScalerLength;
     }
 
     // end of global word
@@ -838,23 +841,26 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
       // set darc status word
       fRegHeader->SetDarcWord(word);
 
-      regOut  = 0;
+      regOut    = 0;
+      regInpHpt = regInpLpt = 0;
       // fill darc word, not darc status for the moment (empty)
       //see  AliMUONRegHeader.h for details
       AliBitPacking::PackWord((UInt_t)eventPhys,word,31,31); 
       AliBitPacking::PackWord((UInt_t)serialNb,word,19,24); 
       AliBitPacking::PackWord((UInt_t)version,word,16,23);
       AliBitPacking::PackWord((UInt_t)iReg,word,15,18);
-      AliBitPacking::PackWord((UInt_t)regOut,word,0,7); // whenever regional output will be implemented
+      AliBitPacking::PackWord((UInt_t)regOut,word,0,7); // waiting realistic output of AliMUONGlobalTrigger (oct 06 ?)
       fRegHeader->SetWord(word);
 
-      memcpy(&buffer[index],fRegHeader->GetHeader(),fRegHeader->GetHeaderLength()*4);
-      index += fRegHeader->GetHeaderLength();
+
+      // fill header later, need local response
+      Int_t indexReg = index;
+      index += kRegHeaderLength;
 
       // 11 regional scaler word
       if (fScalerEvent) {
-	memcpy(&buffer[index], fRegHeader->GetScalers(), fRegHeader->GetScalerLength()*4);
-	index += fRegHeader->GetScalerLength();
+	memcpy(&buffer[index], fRegHeader->GetScalers(), kRegScalerLength*4);
+	index += kRegScalerLength;
       }
 
       // end of regional word
@@ -864,6 +870,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
 
       // 16 local card per regional board
+      UShort_t localMask = 0x0;
       for (Int_t iLoc = 0; iLoc < 16; iLoc++) {
 
 	// slot zero for Regional card
@@ -873,24 +880,35 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
 	  if ((iLocCard = localBoard->GetNumber()) != 0) {// if notified board
 
+	    localMask |= (0x1 << iLoc); // local mask
 	    if (isFired[iLocCard]) { // if card has triggered
-	      locTrg = (AliMUONLocalTrigger*)localTrigger->At(iEntries);
+	      locTrg  = (AliMUONLocalTrigger*)localTrigger->At(iEntries);
 	      locCard = locTrg->LoCircuit();
 	      locDec  = locTrg->GetLoDecision();
 	      trigY = 0;
-	      posY = locTrg->LoStripY();
-	      posX = locTrg->LoStripX();
-	      devX = locTrg->LoDev();
+	      posY  = locTrg->LoStripY();
+	      posX  = locTrg->LoStripX();
+	      devX  = locTrg->LoDev();
+
 	      AliDebug(4,Form("loctrg %d, posX %d, posY %d, devX %d\n", 
 			      locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripY(),locTrg->LoDev()));
 	    } else { //no trigger (see PRR chpt 3.4)
-	      locCard = -1; // set to -1
 	      locDec = 0;
 	      trigY = 1;
 	      posY = 15;
 	      posX = 0;
 	      devX = 0x8;
+	      // set local card id to -1
+	      locCard = -1; 
 	    }
+	    // calculate regional input High and low Pt
+	     regInpHpt |= (locDec >> 2) & 0x3;
+	     regInpLpt |=  locDec       & 0x3;
+
+	     if (iLoc < 15) { // shift not the last one
+	       regInpLpt <<= 2;
+	       regInpHpt <<= 2;
+	     }
 
 	    //packing word
 	    word = 0;
@@ -931,14 +949,19 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
 
 	// 45 regional scaler word
 	if (fScalerEvent) {
-	  memcpy(&buffer[index], fLocalStruct->GetScalers(), fLocalStruct->GetScalerLength()*4);
-	  index += fLocalStruct->GetScalerLength();
+	  memcpy(&buffer[index], fLocalStruct->GetScalers(), kLocScalerLength*4);
+	  index += kLocScalerLength;
 	}
 
 	// end of local structure words
  	buffer[index++] = fLocalStruct->GetEndOfLocal();
 
       } // local card 
+      // fill regional header with local output
+      fRegHeader->SetInput(regInpLpt, 0);
+      fRegHeader->SetInput(regInpHpt, 1);
+      fRegHeader->SetMask(localMask);
+      memcpy(&buffer[indexReg],fRegHeader->GetHeader(),kRegHeaderLength*4);
 
     } // Regional card
     
