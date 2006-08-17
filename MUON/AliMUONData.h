@@ -35,6 +35,7 @@ class AliMUONTriggerTrack;
 class AliMUONDigit;
 class AliMUONHit;
 class AliMUONLocalTrigger;
+class AliMUONRegionalTrigger;
 class AliMUONGlobalTrigger;
 
 //__________________________________________________________________
@@ -74,6 +75,8 @@ class AliMUONData : public TNamed
     virtual void   AddGlobalTrigger(const AliMUONGlobalTrigger& trigger); // use copy constructor
 
     virtual void   AddLocalTrigger(const AliMUONLocalTrigger& trigger); // use copy constructor
+ 
+    virtual void   AddRegionalTrigger(const AliMUONRegionalTrigger& trigger); // use copy constructor
 
     virtual void   AddRawCluster(Int_t id, const AliMUONRawCluster& clust);
     virtual void   AddRecTrack(const AliMUONTrack& track);
@@ -83,6 +86,7 @@ class AliMUONData : public TNamed
     TClonesArray*  Digits(Int_t DetectionPlane) const;
     TClonesArray*  SDigits(Int_t DetectionPlane) const;
     TClonesArray*  LocalTrigger() const;
+    TClonesArray*  RegionalTrigger() const;
     TClonesArray*  GlobalTrigger() const;    
     TClonesArray*  RawClusters(Int_t DetectionPlane);
     
@@ -192,6 +196,8 @@ class AliMUONData : public TNamed
     TObjArray*      fRawClusters; ///< One event in TreeR/Rawcluster and one branch per tracking detection plane
     TClonesArray*   fGlobalTrigger; ///< List of Global Trigger One event in TreeR/GlobalTriggerBranch
     TClonesArray*   fLocalTrigger;  ///< List of Local Trigger, One event in TreeR/LocalTriggerBranch
+    TClonesArray*   fRegionalTrigger;  ///< List of Regional Trigger, One event in TreeR/LocalTriggerBranch
+
     TClonesArray*   fRecTracks; ///< pointer to array of reconstructed tracks
     TClonesArray*   fRecTriggerTracks; ///< pointer to array of reconstructed trigger tracks
 
@@ -201,6 +207,7 @@ class AliMUONData : public TNamed
     Int_t*          fNrawclusters;  //!< Number of Raw Clusters
     Int_t           fNglobaltrigger;//!< Number of Global trigger
     Int_t           fNlocaltrigger; //!< Number of Local trigger
+    Int_t           fNregionaltrigger; //!< Number of regional trigger
     Int_t           fNrectracks;    //!< Number of reconstructed tracks
     Int_t           fNrectriggertracks; //!< Number of reconstructed tracks
     Int_t           fSplitLevel;   ///< Splitting of branches 0 no spitting (root files are smaller) 1 splitting (larger output files)

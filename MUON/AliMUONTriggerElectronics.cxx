@@ -29,6 +29,7 @@
 #include "AliMUONRegionalTriggerBoard.h"
 #include "AliMUONGlobalTriggerBoard.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONRegionalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUON.h" 
 #include "AliMUONData.h" 
@@ -640,6 +641,8 @@ void AliMUONTriggerElectronics::Digits2Trigger()
 {
   /// Main method to go from digits to trigger decision
 
+  AliMUONRegionalTrigger *pRegTrig = new AliMUONRegionalTrigger();
+
   ClearDigitNumbers();
   
   fMUONData->ResetTrigger(); 
@@ -655,8 +658,14 @@ void AliMUONTriggerElectronics::Digits2Trigger()
   while ( ( cr = fCrates->NextCrate() ) )
   {            
     TObjArray *boards = cr->Boards();
-    
-    for (Int_t j=1; j<boards->GetEntries(); j++)
+
+    UInt_t regInpLpt = 0;
+    UInt_t regInpHpt = 0;
+    UShort_t localMask = 0x0;
+
+    AliMUONRegionalTriggerBoard *regBoard = (AliMUONRegionalTriggerBoard*)boards->At(0);
+
+    for (Int_t j = 1; j < boards->GetEntries(); j++)
     {     
       TObject *o = boards->At(j);
       
@@ -683,7 +692,16 @@ void AliMUONTriggerElectronics::Digits2Trigger()
           localtr[4] = (response & 12) >> 2;
           localtr[5] = (response & 48) >> 4;
           localtr[6] = (response &  3);
-          
+
+	  // calculates regional inputs from local for the moment
+	  UInt_t hPt = (response >> 4) & 0x3;
+	  UInt_t lPt = (response >> 2) & 0x3;
+	    
+	  regInpHpt |= hPt << (30 - (j-1)*2);
+	  regInpLpt |= lPt << (30 - (j-1)*2);
+	  localMask |= (0x1 << (j-1)); // local mask
+
+
           TBits rrr;
           rrr.Set(6,&response);
           
@@ -702,10 +720,19 @@ void AliMUONTriggerElectronics::Digits2Trigger()
           AliMUONLocalTrigger *pLocTrig = new AliMUONLocalTrigger(localtr, fDigitNumbers[icirc]);
           
           fMUONData->AddLocalTrigger(*pLocTrig);  
+	  delete pLocTrig;
         }
       }
     }
+    pRegTrig->SetLocalOutput(regInpLpt, 0);
+    pRegTrig->SetLocalOutput(regInpHpt, 1);
+    pRegTrig->SetLocalMask(localMask);
+    pRegTrig->SetOutput((regBoard->GetResponse() >> 4) & 0xF); // to be uniformized (oct06 ?)
+
+    fMUONData->AddRegionalTrigger(*pRegTrig);  
+
   }
+  delete pRegTrig;
   
   // GLOBAL TRIGGER INFORMATION: [0] -> LOW PT 
   //                             [1] -> HIGH PT
@@ -741,7 +768,8 @@ void AliMUONTriggerElectronics::Digits2Trigger()
   
   // ADD A LOCAL TRIGGER IN THE LIST 
   fMUONData->AddGlobalTrigger(*pGloTrig);
-  
+  delete pGloTrig;
+
   // NOW RESET ELECTRONICS
   Reset();
 }

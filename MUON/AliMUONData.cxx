@@ -27,10 +27,11 @@
 
 #include "AliLog.h"
 #include "AliMUONConstants.h"
+#include "AliMUONHit.h"
 #include "AliMUONDigit.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliMUONHit.h"
 #include "AliMUONLocalTrigger.h"
+#include "AliMUONRegionalTrigger.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTriggerTrack.h"
@@ -52,6 +53,7 @@ ClassImp(AliMUONData)
     fRawClusters(0x0),
     fGlobalTrigger(0x0),
     fLocalTrigger(0x0),
+    fRegionalTrigger(0x0),
     fRecTracks(0x0),
     fRecTriggerTracks(0x0),
     fNhits(0),
@@ -60,6 +62,7 @@ ClassImp(AliMUONData)
     fNrawclusters(0x0),
     fNglobaltrigger(0),
     fNlocaltrigger(0),
+    fNregionaltrigger(0),
     fNrectracks(0),
     fNrectriggertracks(0),
     fSplitLevel(0),
@@ -77,6 +80,7 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
     fRawClusters(0x0),
     fGlobalTrigger(0x0),
     fLocalTrigger(0x0),
+    fRegionalTrigger(0x0),
     fRecTracks(0x0),
     fRecTriggerTracks(0x0),
     fNhits(0),
@@ -85,6 +89,7 @@ AliMUONData::AliMUONData(AliLoader * loader, const char* name, const char* title
     fNrawclusters(0x0),
     fNglobaltrigger(0),
     fNlocaltrigger(0),
+    fNregionaltrigger(0),
     fNrectracks(0),
     fNrectriggertracks(0),
     fSplitLevel(0),
@@ -118,6 +123,10 @@ AliMUONData::~AliMUONData()
     fGlobalTrigger->Delete();
     delete fGlobalTrigger;
   }  
+  if (fRegionalTrigger){
+    fRegionalTrigger->Delete();
+    delete fRegionalTrigger;
+  }
   if (fLocalTrigger){
     fLocalTrigger->Delete();
     delete fLocalTrigger;
@@ -131,7 +140,38 @@ AliMUONData::~AliMUONData()
     delete fRecTriggerTracks;
   }
 }
+//____________________________________________________________________________
+void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
+			 Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
+			 Float_t tof, Float_t momentum, Float_t theta, 
+			 Float_t phi, Float_t length, Float_t destep,
+			 Float_t Xref,Float_t Yref,Float_t Zref)
+{
+/// Add new hit to the hit list
 
+  TClonesArray &lhits = *fHits;
+  new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
+				  idpart, X, Y, Z, 
+				  tof, momentum, theta, 
+				  phi, length, destep,
+				  Xref,Yref,Zref);
+}
+//____________________________________________________________________________
+void AliMUONData::AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId, 
+			 Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
+			 Float_t tof, Float_t momentum, Float_t theta, 
+			 Float_t phi, Float_t length, Float_t destep,
+			 Float_t Xref,Float_t Yref,Float_t Zref)
+{
+ // Add new hit to the hit list
+
+  TClonesArray &lhits = *fHits;
+  new(lhits[fNhits++]) AliMUONHit(fIshunt, track, detElemId, 
+				  idpart, X, Y, Z, 
+				  tof, momentum, theta, 
+				  phi, length, destep,
+				  Xref,Yref,Zref, true);
+}
 //_____________________________________________________________________________
 void AliMUONData::AddDigit(Int_t id, Int_t *tracks, Int_t *charges, Int_t *digits)
 {
@@ -173,37 +213,13 @@ void AliMUONData::AddGlobalTrigger(const AliMUONGlobalTrigger& trigger )
   TClonesArray &globalTrigger = *fGlobalTrigger;
   new(globalTrigger[fNglobaltrigger++]) AliMUONGlobalTrigger(trigger);
 }
-//____________________________________________________________________________
-void AliMUONData::AddHit(Int_t fIshunt, Int_t track, Int_t iChamber, 
-			 Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
-			 Float_t tof, Float_t momentum, Float_t theta, 
-			 Float_t phi, Float_t length, Float_t destep,
-			 Float_t Xref,Float_t Yref,Float_t Zref)
-{
-/// Add new hit to the hit list
 
-  TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliMUONHit(fIshunt, track, iChamber, 
-				  idpart, X, Y, Z, 
-				  tof, momentum, theta, 
-				  phi, length, destep,
-				  Xref,Yref,Zref);
-}
 //____________________________________________________________________________
-void AliMUONData::AddHit2(Int_t fIshunt, Int_t track, Int_t detElemId, 
-			 Int_t idpart, Float_t X, Float_t Y, Float_t Z, 
-			 Float_t tof, Float_t momentum, Float_t theta, 
-			 Float_t phi, Float_t length, Float_t destep,
-			 Float_t Xref,Float_t Yref,Float_t Zref)
+void AliMUONData::AddRegionalTrigger(const  AliMUONRegionalTrigger& trigger)
 {
- // Add new hit to the hit list
-
-  TClonesArray &lhits = *fHits;
-  new(lhits[fNhits++]) AliMUONHit(fIshunt, track, detElemId, 
-				  idpart, X, Y, Z, 
-				  tof, momentum, theta, 
-				  phi, length, destep,
-				  Xref,Yref,Zref, true);
+/// add a MUON regional Trigger to the list
+  TClonesArray &regionalTrigger = *fRegionalTrigger;
+  new(regionalTrigger[fNregionaltrigger++]) AliMUONRegionalTrigger(trigger);
 }
 //____________________________________________________________________________
 void AliMUONData::AddLocalTrigger(const  AliMUONLocalTrigger& trigger)
@@ -213,6 +229,7 @@ void AliMUONData::AddLocalTrigger(const  AliMUONLocalTrigger& trigger)
   TClonesArray &localTrigger = *fLocalTrigger;
   new(localTrigger[fNlocaltrigger++]) AliMUONLocalTrigger(trigger);
 }
+
 //_____________________________________________________________________________
 void AliMUONData::AddRawCluster(Int_t id, const AliMUONRawCluster& c)
 {
@@ -419,9 +436,13 @@ void AliMUONData::Fill(Option_t* option)
         sprintf(branchname,"%sLocalTrigger",GetName());
         branch = TreeD()->GetBranch(branchname); 
         branch->Fill();
+	sprintf(branchname,"%sRegionalTrigger",GetName());
+        branch = TreeD()->GetBranch(branchname);
+        branch->Fill();
         sprintf(branchname,"%sGlobalTrigger",GetName());
         branch = TreeD()->GetBranch(branchname);
         branch->Fill();
+
       } 
       else
       {
@@ -468,6 +489,9 @@ void AliMUONData::Fill(Option_t* option)
       {
         // Branch per branch filling
         sprintf(branchname,"%sLocalTrigger",GetName());
+        branch = TreeR()->GetBranch(branchname); 
+        branch->Fill();
+	sprintf(branchname,"%sRegionalTrigger",GetName());
         branch = TreeR()->GetBranch(branchname); 
         branch->Fill();
         sprintf(branchname,"%sGlobalTrigger",GetName());
@@ -533,7 +557,7 @@ void AliMUONData::MakeBranch(Option_t* option)
   const char *cS   = strstr(option,"S");   // Digits branches in TreeS
   const char *cRC  = strstr(option,"RC");  // RawCluster branches in TreeR
   const char *cGLT = strstr(option,"GLT"); // Global and Local Trigger branches in TreeD
-  const char *cTC = strstr(option,"TC");   // global and local Trigger branches Copy in TreeR
+  const char *cTC  = strstr(option,"TC");   // global and local Trigger branches Copy in TreeR
   const char *cRT  = strstr(option,"RT");  // Reconstructed Track in TreeT
   const char *cRL  = strstr(option,"RL");  // Reconstructed Trigger Track in TreeT
                                            //const char *cRP  = strstr(option,"RP");  // Reconstructed Particle in TreeP
@@ -621,6 +645,26 @@ void AliMUONData::MakeBranch(Option_t* option)
       return ;
     }
     branch = treeD->Branch(branchname, &fGlobalTrigger, kBufferSize);
+
+  //
+    // one branch for regional trigger
+    //  
+    sprintf(branchname,"%sRegionalTrigger",GetName());
+    branch = 0x0;
+    
+    if (fRegionalTrigger == 0x0) 
+    {
+      fRegionalTrigger  = new TClonesArray("AliMUONRegionalTrigger",16);
+      fNregionaltrigger = 0;
+    }
+    branch = treeD->GetBranch(branchname);
+    if (branch) 
+    {  
+      AliInfo(Form("Branch RegionalTrigger is already in treeD."));
+      return;
+    }
+    branch = treeD->Branch(branchname, &fRegionalTrigger, kBufferSize);
+  
 
     //
     // one branch for local trigger
@@ -724,7 +768,24 @@ void AliMUONData::MakeBranch(Option_t* option)
     }
     branch = TreeR()->Branch(branchname, &fGlobalTrigger, kBufferSize);
     //Info("MakeBranch", "Making Branch %s for Global Trigger\n",branchname);
+
+  //
+    // one branch for regional trigger
+    //  
+    sprintf(branchname,"%sRegionalTrigger",GetName());
+    branch = 0x0;
     
+    if (fRegionalTrigger == 0x0) {
+      fRegionalTrigger  = new TClonesArray("AliMUONRegionalTrigger",16);
+      fNregionaltrigger = 0;
+    }
+    branch = TreeR()->GetBranch(branchname);
+    if (branch) {  
+      AliInfo(Form("Branch RegionalTrigger is already in treeR."));
+      return;
+    }
+    branch = TreeR()->Branch(branchname, &fRegionalTrigger, kBufferSize);
+     
     //
     // one branch for local trigger
     //  
@@ -862,8 +923,11 @@ void AliMUONData::ResetTrigger()
 
   fNglobaltrigger = 0;
   if (fGlobalTrigger) fGlobalTrigger->Clear();
+  fNregionaltrigger = 0;
+  if (fRegionalTrigger) fRegionalTrigger->Clear();
   fNlocaltrigger = 0;
   if (fLocalTrigger) fLocalTrigger->Clear();
+
 }
 //____________________________________________________________________________
 void AliMUONData::ResetRecTracks()
@@ -937,6 +1001,9 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     if (fLocalTrigger == 0x0 && cGLT) {
       fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);
     }
+    if (fRegionalTrigger == 0x0 && cGLT) {
+      fRegionalTrigger  = new TClonesArray("AliMUONRegionalTrigger",16);
+    }
     if (fGlobalTrigger== 0x0 && cGLT) {
       fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1); 
     }
@@ -960,6 +1027,12 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     branch = TreeD()->GetBranch(branchname);
     if (branch) branch->SetAddress(&fLocalTrigger);
     else AliWarning(Form("(%s) Failed for LocalTrigger. Can not find branch in treeD.",GetName()));
+  }
+ if ( TreeD()  && fRegionalTrigger && cGLT) {
+    sprintf(branchname,"%sRegionalTrigger",GetName());
+    branch = TreeD()->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fRegionalTrigger);
+    else AliWarning(Form("(%s) Failed for RegionalTrigger. Can not find branch in treeD.",GetName()));
   }
   if ( TreeD() && fGlobalTrigger && cGLT) {
     sprintf(branchname,"%sGlobalTrigger",GetName());
@@ -1020,6 +1093,9 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     if (fLocalTrigger == 0x0 && cTC) {
       fLocalTrigger  = new TClonesArray("AliMUONLocalTrigger",234);
     }
+   if (fRegionalTrigger == 0x0 && cTC) {
+      fRegionalTrigger  = new TClonesArray("AliMUONRegionalTrigger",16);
+    }
     if (fGlobalTrigger== 0x0 && cTC) {
       fGlobalTrigger = new TClonesArray("AliMUONGlobalTrigger",1); 
     }
@@ -1041,6 +1117,14 @@ void AliMUONData::SetTreeAddress(Option_t* option)
     if (branch) branch->SetAddress(&fLocalTrigger);
     else AliWarning(Form("(%s) Failed for LocalTrigger. Can not find branch in treeR.",GetName()));
   }
+
+  if ( TreeR()  && fRegionalTrigger && cTC) {
+    sprintf(branchname,"%sRegionalTrigger",GetName());
+    branch = TreeR()->GetBranch(branchname);
+    if (branch) branch->SetAddress(&fRegionalTrigger);
+    else AliWarning(Form("(%s) Failed for RegionalTrigger. Can not find branch in treeR.",GetName()));
+  }
+
   if ( TreeR() && fGlobalTrigger && cTC) {
     sprintf(branchname,"%sGlobalTrigger",GetName());
     branch = TreeR()->GetBranch(branchname);
