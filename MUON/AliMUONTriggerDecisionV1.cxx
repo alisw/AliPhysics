@@ -1565,7 +1565,8 @@ void AliMUONTriggerDecisionV1::Exec(Option_t*)
   
   // add a local trigger in the list 
   fMUONData->AddGlobalTrigger(*pGloTrig);
-  
+  delete pGloTrig;
+
   for (Int_t icirc=0; icirc<AliMUONConstants::NTriggerCircuit(); icirc++) 
   { 
     if(GetITrigger(icirc)==1) 
@@ -1601,6 +1602,7 @@ void AliMUONTriggerDecisionV1::Exec(Option_t*)
       
       AliMUONLocalTrigger* pLocTrig = new AliMUONLocalTrigger(localtr, fDigitNumbers[icirc]);
       fMUONData->AddLocalTrigger(*pLocTrig);  // add a local trigger in the list
+      delete pLocTrig;
     }
   }
 }
