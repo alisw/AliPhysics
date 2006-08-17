@@ -28,38 +28,33 @@
 ClassImp(AliITSCalibration)
 
 //______________________________________________________________________
-AliITSCalibration::AliITSCalibration(){
-    // Default Constructor
+AliITSCalibration::AliITSCalibration():
+TObject(),
+fDataType(),
+fdv(0.000375),
+fN(0.),
+fT(300.),
+fGeVcharge(0.),
+fResponse(){
+    // Default Constructor (300 microns and 80 volts)
 
-    fdv = 0.000375;  // 300 microns and 80 volts.
-    fN  = 0.0;
-    fT  = 300.0;
     SetGeVToCharge();
     fResponse = 0;
 }
 //______________________________________________________________________
-AliITSCalibration::AliITSCalibration(Double_t thickness){
+AliITSCalibration::AliITSCalibration(Double_t thickness):
+TObject(),
+fDataType(),
+fdv(0.),
+fN(0.),
+fT(300.),
+fGeVcharge(0.),
+fResponse(){
     // Default Constructor
 
     fdv = thickness/80.0;   // 80 volts.
-    fN  = 0.0;
-    fT  = 300.0;
     SetGeVToCharge();
     fResponse = 0;
-}
-//______________________________________________________________________
-AliITSCalibration::AliITSCalibration(const AliITSCalibration &ob) : TObject(ob) {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSCalibration","Copy constructor not allowed\n");
-}
-
-//______________________________________________________________________
-AliITSCalibration& AliITSCalibration::operator=(const AliITSCalibration& /* ob */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
 }
 
 //______________________________________________________________________

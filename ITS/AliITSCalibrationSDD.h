@@ -28,9 +28,9 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void  GetNoiseParam(Double_t &/*n*/, Double_t &/*b*/) const {
       NotImplemented("GetNoiseParam");}
 
-    virtual Double_t GetBaseline(Int_t anode) const {return fBaseline[anode];}
+    virtual Float_t GetBaseline(Int_t anode) const {return fBaseline[anode];}
     virtual void SetBaseline(Int_t anode,Double_t bas) {fBaseline[anode]=bas;}
-    virtual Double_t GetNoise(Int_t anode) const {return fNoise[anode];}
+    virtual Float_t GetNoise(Int_t anode) const {return fNoise[anode];}
     virtual void SetNoise(Int_t anode, Double_t noise) {fNoise[anode]=noise;}
 
     virtual void   SetThresholds(Double_t  mv, Double_t /* b */){
@@ -44,14 +44,14 @@ class AliITSCalibrationSDD : public AliITSCalibration {
 	// Noise after electronics (ADC units)
 	// 2.36 for ALICE from beam test measurements 2001
 	fNoiseAfterEl[anode]=n;}
-    Double_t  GetNoiseAfterElectronics(Int_t anode) const {
+    Float_t  GetNoiseAfterElectronics(Int_t anode) const {
 	// Noise after electronics (ADC units)
 	return fNoiseAfterEl[anode];} 
     //void SetDeadChannels(Int_t nchips=0, Int_t nchannels=0);
     void SetDeadChannels(Int_t ndead=0){fDeadChannels=ndead; fBadChannels.Set(ndead);}
     Int_t GetDeadChips() const { return fDeadChips; }
     Int_t GetDeadChannels() const { return fDeadChannels; }
-    Double_t Gain(Int_t wing,Int_t chip,Int_t ch)const 
+    Float_t Gain(Int_t wing,Int_t chip,Int_t ch)const 
         {return fGain[wing][chip][ch]; }
     virtual void SetGain(Double_t g,Int_t wing,Int_t chip, Int_t ch) 
       {fGain[wing][chip][ch]=g;}
@@ -93,26 +93,26 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void SetElectronics(Int_t p1=1) {((AliITSresponseSDD*)fResponse)->SetElectronics(p1);}
     virtual Int_t GetElectronics() const {return ((AliITSresponseSDD*)fResponse)->Electronics();}
     virtual void SetMaxAdc(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetMaxAdc(p1);}
-    virtual Double_t GetMaxAdc() const {return ((AliITSresponseSDD*)fResponse)->MaxAdc();} 
+    virtual Float_t GetMaxAdc() const {return ((AliITSresponseSDD*)fResponse)->MaxAdc();} 
     virtual void SetChargeLoss(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetChargeLoss(p1);}
-    virtual Double_t GetChargeLoss() const {return ((AliITSresponseSDD*)fResponse)->ChargeLoss();}
+    virtual Float_t GetChargeLoss() const {return ((AliITSresponseSDD*)fResponse)->ChargeLoss();}
     virtual void SetDynamicRange(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDynamicRange(p1);}
-    virtual Double_t GetDynamicRange() const {return ((AliITSresponseSDD*)fResponse)->DynamicRange();} 
+    virtual Float_t GetDynamicRange() const {return ((AliITSresponseSDD*)fResponse)->DynamicRange();} 
     virtual void SetDriftSpeed(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDriftSpeed(p1);}
-    virtual Double_t GetDriftSpeed() const {return ((AliITSresponseSDD*)fResponse)->DriftSpeed();}
+    virtual Float_t GetDriftSpeed() const {return ((AliITSresponseSDD*)fResponse)->DriftSpeed();}
     virtual void SetParamOptions(const char *opt1,const char *opt2) {((AliITSresponseSDD*)fResponse)->SetParamOptions(opt1,opt2);}
     virtual void GetParamOptions(char *opt1,char *opt2) const {((AliITSresponseSDD*)fResponse)->ParamOptions(opt1,opt2);}
     virtual Bool_t Do10to8() const {return ((AliITSresponseSDD*)fResponse)->Do10to8();}
     virtual void SetZeroSupp (const char *opt) {((AliITSresponseSDD*)fResponse)->SetZeroSupp(opt);} 
     virtual const char *GetZeroSuppOption() const {return ((AliITSresponseSDD*)fResponse)->ZeroSuppOption();}
     virtual void SetNSigmaIntegration(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetNSigmaIntegration(p1);}
-    virtual Double_t GetNSigmaIntegration() const {return ((AliITSresponseSDD*)fResponse)->NSigmaIntegration();}
+    virtual Float_t GetNSigmaIntegration() const {return ((AliITSresponseSDD*)fResponse)->NSigmaIntegration();}
     virtual void SetNLookUp(Int_t p1) {((AliITSresponseSDD*)fResponse)->SetNLookUp(p1);}
     virtual Int_t GetGausNLookUp() const {return ((AliITSresponseSDD*)fResponse)->GausNLookUp();}
-    virtual Double_t GetGausLookUp(Int_t i) const {return ((AliITSresponseSDD*)fResponse)->GausLookUp(i);}
+    virtual Float_t GetGausLookUp(Int_t i) const {return ((AliITSresponseSDD*)fResponse)->GausLookUp(i);}
     virtual Int_t Convert8to10(Int_t signal) const {return ((AliITSresponseSDD*)fResponse)->Convert8to10(signal);}
     virtual void  SetJitterError(Double_t jitter=20) {((AliITSresponseSDD*)fResponse)->SetJitterError(jitter);}
-    virtual Double_t GetJitterError() const {return ((AliITSresponseSDD*)fResponse)->JitterError();}
+    virtual Float_t GetJitterError() const {return ((AliITSresponseSDD*)fResponse)->JitterError();}
     virtual void  SetDo10to8(Bool_t bitcomp=kTRUE) {((AliITSresponseSDD*)fResponse)->SetDo10to8(bitcomp);}
  protected:
 
@@ -121,19 +121,19 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     static const Int_t fgkWings = 2;     // Number of wings per module
     static const Int_t fgkChips = 4;        // Number of chips/module
     static const Int_t fgkChannels = 64;    // Number of channels/chip
-    static const Double_t fgkTemperatureDefault; // default for fT (Kelvin)
-    static const Double_t fgkNoiseDefault; // default for fNoise
-    static const Double_t fgkBaselineDefault; // default for fBaseline
-    static const Double_t fgkMinValDefault; // default for fMinVal
-    static const Double_t fgkGainDefault; //default for gain
+    static const Float_t fgkTemperatureDefault; // default for fT (Kelvin)
+    static const Float_t fgkNoiseDefault; // default for fNoise
+    static const Float_t fgkBaselineDefault; // default for fBaseline
+    static const Float_t fgkMinValDefault; // default for fMinVal
+    static const Float_t fgkGainDefault; //default for gain
     static const Int_t fgkMapTimeNBin = 72; //map granularity along drift direction
     Int_t fDeadChips;                     // Number of dead chips
     Int_t fDeadChannels;                  // Number of dead channels
-    Double_t fGain[fgkWings][fgkChips][fgkChannels];//Array for channel gains
-    Double_t fNoise[fgkWings*fgkChips*fgkChannels];          // Noise array
-    Double_t fBaseline[fgkWings*fgkChips*fgkChannels];       // Baseline array
-    Double_t fNoiseAfterEl[fgkWings*fgkChips*fgkChannels];   // Noise after electronics
-    Double_t fMinVal;        // Min value used in 2D zero-suppression algo
+    Float_t fGain[fgkWings][fgkChips][fgkChannels];//Array for channel gains
+    Float_t fNoise[fgkWings*fgkChips*fgkChannels];          // Noise array
+    Float_t fBaseline[fgkWings*fgkChips*fgkChannels];       // Baseline array
+    Float_t fNoiseAfterEl[fgkWings*fgkChips*fgkChannels];   // Noise after electronics
+    Float_t fMinVal;        // Min value used in 2D zero-suppression algo
 
     Bool_t   fIsDead;  // module is dead or alive ?
     TArrayI  fBadChannels; //Array with bad anodes number (0-512) 
@@ -145,7 +145,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,4) // SDD response 
+    ClassDef(AliITSCalibrationSDD,5) // SDD response 
     
     };
 #endif

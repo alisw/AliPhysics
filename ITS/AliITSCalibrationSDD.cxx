@@ -27,19 +27,25 @@
 //                                                  //
 //////////////////////////////////////////////////////
 
-const Double_t AliITSCalibrationSDD::fgkTemperatureDefault = 296.;
-const Double_t AliITSCalibrationSDD::fgkNoiseDefault = 10.;
-const Double_t AliITSCalibrationSDD::fgkGainDefault = 1.;
-const Double_t AliITSCalibrationSDD::fgkBaselineDefault = 20.;
-const Double_t AliITSCalibrationSDD::fgkMinValDefault  = 4;
+const Float_t AliITSCalibrationSDD::fgkTemperatureDefault = 296.;
+const Float_t AliITSCalibrationSDD::fgkNoiseDefault = 10.;
+const Float_t AliITSCalibrationSDD::fgkGainDefault = 1.;
+const Float_t AliITSCalibrationSDD::fgkBaselineDefault = 20.;
+const Float_t AliITSCalibrationSDD::fgkMinValDefault  = 4;
 //______________________________________________________________________
 ClassImp(AliITSCalibrationSDD)
 
-AliITSCalibrationSDD::AliITSCalibrationSDD(){
+AliITSCalibrationSDD::AliITSCalibrationSDD():
+AliITSCalibration(),
+fDeadChips(0),
+fDeadChannels(0),
+fMinVal(fgkMinValDefault),
+fIsDead(kFALSE),
+fBadChannels()
+{
   // default constructor
 
   SetDeadChannels();
-  fBadChannels.Set(fDeadChannels);
   for(Int_t ian=0;ian<fgkWings*fgkChannels*fgkChips;ian++){
     fBaseline[ian]=fgkBaselineDefault;
     fNoise[ian]=fgkNoiseDefault;
@@ -62,11 +68,16 @@ AliITSCalibrationSDD::AliITSCalibrationSDD(){
   }
  }
 //______________________________________________________________________
-AliITSCalibrationSDD::AliITSCalibrationSDD(const char *dataType){
+AliITSCalibrationSDD::AliITSCalibrationSDD(const char *dataType):
+AliITSCalibration(),
+fDeadChips(0),
+fDeadChannels(0),
+fMinVal(fgkMinValDefault),
+fIsDead(kFALSE),
+fBadChannels(){
   // constructor
 
   SetDeadChannels();
-  fBadChannels.Set(fDeadChannels);
   for(Int_t ian=0;ian<fgkWings*fgkChannels*fgkChips;ian++){
     fBaseline[ian]=fgkBaselineDefault;
       fNoise[ian]=fgkNoiseDefault;
@@ -90,20 +101,7 @@ AliITSCalibrationSDD::AliITSCalibrationSDD(const char *dataType){
   }
 
  }
-//______________________________________________________________________
-AliITSCalibrationSDD::AliITSCalibrationSDD(const AliITSCalibrationSDD &ob) : AliITSCalibration(ob) {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSCalibrationSDD","Copy constructor not allowed\n");
-}
 
-//______________________________________________________________________
-AliITSCalibrationSDD& AliITSCalibrationSDD::operator=(const AliITSCalibrationSDD& /* ob */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
-}
 
 //______________________________________________________________________
 void AliITSCalibrationSDD::GiveCompressParam(Int_t  cp[8],Int_t ian) const {

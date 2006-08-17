@@ -27,13 +27,16 @@
 ClassImp(AliITSresponse)
 
 //______________________________________________________________________
-AliITSresponse::AliITSresponse(){
+AliITSresponse::AliITSresponse():
+TObject(),
+fFileName1(),
+fFileName2(),
+fFileName3(),
+fWrite(kFALSE),
+fDiffCoeff(0.),
+fDiffCoeff1(0.){
   
   // Default Constructor
 
-  SetFilenames();
-  SetOutputOption();
-  fDiffCoeff=0;
-  fDiffCoeff1=0;
 }
 

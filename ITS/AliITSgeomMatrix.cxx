@@ -83,6 +83,7 @@ fPath(){     // Path in geometry to this module
     }// end for i
     fm[0][0] = fm[1][1] = fm[2][2] = 1.0;
 }
+/*
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &sourse) : 
     TObject(sourse){
@@ -132,11 +133,12 @@ void AliITSgeomMatrix::operator=(const AliITSgeomMatrix &sourse){
 	}// end for i
      this->fPath   = sourse.fPath;
 }
+*/
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt,const Int_t id[3],
                         const Double_t rot[3],const Double_t tran[3]):
 TObject(),
-fDetectorIndex(0), // Detector type index (like fShapeIndex was)
+fDetectorIndex(idt), // Detector type index (like fShapeIndex was)
 fid(),       // layer, ladder, detector numbers.
 frot(),      //! vector of rotations about x,y,z [radians].
 ftran(),     // Translation vector of module x,y,z.
@@ -169,7 +171,6 @@ fPath(){     // Path in geometry to this moduel
     //    A properly inilized AliITSgeomMatrix class.
     Int_t i;
 
-    fDetectorIndex = idt; // a value never defined.
     for(i=0;i<3;i++){
 	fid[i]   = id[i];
 	frot[i]  = rot[i];
@@ -185,7 +186,7 @@ AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt, const Int_t id[3],
                                    Double_t matrix[3][3],
                                    const Double_t tran[3]):
 TObject(),
-fDetectorIndex(0), // Detector type index (like fShapeIndex was)
+fDetectorIndex(idt), // Detector type index (like fShapeIndex was)
 fid(),       // layer, ladder, detector numbers.
 frot(),      //! vector of rotations about x,y,z [radians].
 ftran(),     // Translation vector of module x,y,z.
@@ -219,7 +220,6 @@ fPath(){     // Path in geometry to this module
     //    A properly inilized AliITSgeomMatrix class.
     Int_t i,j;
 
-    fDetectorIndex = idt; // a value never defined.
     for(i=0;i<3;i++){
 	fid[i]   = id[i];
 	ftran[i] = tran[i];
@@ -318,7 +318,12 @@ void AliITSgeomMatrix::MatrixFromSixAngles(const Double_t *ang){
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(const Double_t rotd[6]/*degrees*/,
                                    Int_t idt,const Int_t id[3],
-                                   const Double_t tran[3]){
+                                   const Double_t tran[3]):
+TObject(),
+fDetectorIndex(idt),
+fCylR(0.),
+fCylPhi(0.),
+fPath(){
     // This is a constructor for the AliITSgeomMatrix class. The matrix 
     // is defined by the 6 GEANT 3.21 rotation angles [degrees], and 
     // the translation vector tran [cm]. In addition the layer, ladder, 
@@ -341,7 +346,6 @@ AliITSgeomMatrix::AliITSgeomMatrix(const Double_t rotd[6]/*degrees*/,
     //    Double_t tran[3]  The translation vector
     Int_t i;
 
-    fDetectorIndex = idt; // a value never defined.
     for(i=0;i<3;i++){
 	fid[i]   = id[i];
 	ftran[i] = tran[i];

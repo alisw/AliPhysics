@@ -29,10 +29,6 @@ class AliITSgeomMatrix : public TObject {
         AliITSgeomMatrix(const Double_t rotd[6]/*degrees GEANT angles*/,
                          Int_t idt,const Int_t id[3],
                          const Double_t tran[3]);
-	// Copy operator
-	AliITSgeomMatrix(const AliITSgeomMatrix &source);
-	// Alignment operator
-	void operator=(const AliITSgeomMatrix &sourse); // copy
 	virtual ~AliITSgeomMatrix(){}; // default constructor.
 	// Prints a line describing the output format of the function Print.
 	void PrintComment(ostream *os) const;
@@ -152,6 +148,10 @@ class AliITSgeomMatrix : public TObject {
      void MakeFigures() const;
      //
  private: // private functions
+	// Copy constructor
+	AliITSgeomMatrix(const AliITSgeomMatrix &source);
+	// Assignment operator
+	void operator=(const AliITSgeomMatrix &sourse); // copy
 	// Given the rotation matrix fm it fills the rotation angles frot
 	void MatrixFromAngle();
 	// Given the rotation angles frot it fills the rotation matrix fm

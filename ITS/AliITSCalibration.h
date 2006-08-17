@@ -26,8 +26,7 @@ class AliITSCalibration : public TObject {
     AliITSCalibration();
     // Standard Constructor
     AliITSCalibration(Double_t Thickness);
-    AliITSCalibration(const AliITSCalibration &ob); // copy constructor
-    AliITSCalibration& operator=(const AliITSCalibration & /* source */); // ass.
+
     // Destructor.
     virtual ~AliITSCalibration() {;}
     //
@@ -149,6 +148,8 @@ class AliITSCalibration : public TObject {
     virtual Bool_t OutputOption() const {return fResponse->OutputOption();} 
 
  protected:
+    AliITSCalibration(const AliITSCalibration &ob); // copy constructor
+    AliITSCalibration& operator=(const AliITSCalibration & /* source */); // ass.
     void NotImplemented(const char *method) const {if(gDebug>0)
          Warning(method,"This method is not implemented for this sub-class");}
 

@@ -25,27 +25,38 @@
 
 
 const Int_t AliITSresponseSDD::fgkMaxAdcDefault = 1024;
-const Double_t AliITSresponseSDD::fgkDynamicRangeDefault = 132.;
-const Double_t AliITSresponseSDD::fgkfChargeLossDefault = 0;
+const Float_t AliITSresponseSDD::fgkDynamicRangeDefault = 132.;
+const Float_t AliITSresponseSDD::fgkfChargeLossDefault = 0;
 const Float_t AliITSresponseSDD::fgkDiffCoeffDefault = 3.23;
 const Float_t AliITSresponseSDD::fgkDiffCoeff1Default = 30.;
 const TString AliITSresponseSDD::fgkParam1Default = "same";
 const TString AliITSresponseSDD::fgkParam2Default = "same";
 const TString AliITSresponseSDD::fgkOptionDefault = "1D";
-const Double_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
-const Double_t AliITSresponseSDD::fgkNsigmasDefault = 3.;
+const Float_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
+const Float_t AliITSresponseSDD::fgkNsigmasDefault = 3.;
 const Int_t AliITSresponseSDD::fgkNcompsDefault = 121;
 
 ClassImp(AliITSresponseSDD)
 
 //_________________________________________________________________________
-AliITSresponseSDD::AliITSresponseSDD():AliITSresponse(){
+AliITSresponseSDD::AliITSresponseSDD():
+AliITSresponse(),
+fJitterError(0.),
+fDynamicRange(0.),
+fChargeLoss(0.),
+fDriftSpeed(fgkDriftSpeedDefault),
+fElectronics(0),
+fMaxAdc(fgkMaxAdcDefault),
+fNsigmas(fgkNsigmasDefault),
+fGaus(),
+fNcomps(0),
+fBitComp(kFALSE),
+fOption(),
+fParam1(),
+fParam2() {
   // default constructor
   fGaus = 0;
-  SetMaxAdc(fgkMaxAdcDefault);
   SetDiffCoeff(fgkDiffCoeffDefault,fgkDiffCoeff1Default);
-  SetDriftSpeed(fgkDriftSpeedDefault);
-  SetNSigmaIntegration(fgkNsigmasDefault);
   //  SetNLookUp(fgkNcompsDefault);
 
   SetJitterError();
@@ -65,20 +76,6 @@ AliITSresponseSDD::~AliITSresponseSDD() {
   if(fGaus) delete fGaus;
 }
 
-//______________________________________________________________________
-AliITSresponseSDD::AliITSresponseSDD(const AliITSresponseSDD &ob) : AliITSresponse(ob) {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSresponseSDD","Copy constructor not allowed\n");
-}
-
-//______________________________________________________________________
-AliITSresponseSDD& AliITSresponseSDD::operator=(const AliITSresponseSDD& /* ob */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
-}
 
 //______________________________________________________________________
 Int_t AliITSresponseSDD::Convert8to10(Int_t signal) const {
@@ -115,7 +112,7 @@ void AliITSresponseSDD::SetNLookUp(Int_t p1){
   if (fGaus) delete fGaus;
   fGaus = new TArrayF(fNcomps+1);
   for(Int_t i=0; i<=fNcomps; i++) {
-    Double_t x = -fNsigmas + (2.*i*fNsigmas)/(fNcomps-1);
+    Float_t x = -fNsigmas + (2.*i*fNsigmas)/(fNcomps-1);
     (*fGaus)[i] = exp(-((x*x)/2));
   }
 }
