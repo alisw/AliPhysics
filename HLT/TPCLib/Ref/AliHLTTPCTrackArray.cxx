@@ -293,20 +293,24 @@ UInt_t AliHLTTPCTrackArray::WriteConfMapTracks(AliHLTTPCTrackSegmentData* tr){
     if(!track) continue;                           //use only present tracks
     AliHLTTPCConfMapPoint *hit = (AliHLTTPCConfMapPoint*)track->lastHit;
     AliHLTTPCConfMapPoint *lastHit = (AliHLTTPCConfMapPoint*)track->firstHit;
+/*
     tP->fX = hit->GetX();
     tP->fY = hit->GetY();
     tP->fZ = hit->GetZ();
     tP->fLastX = lastHit->GetX();
     tP->fLastY = lastHit->GetY();
     tP->fLastZ = lastHit->GetZ();
-   
-//    tP->fX = track->GetFirstPointX();
-//    tP->fY = track->GetFirstPointY();
-//    tP->fZ = track->GetFirstPointZ();
+*/   
+    tP->fX = track->GetFirstPointX();
+    tP->fY = track->GetFirstPointY();
+    tP->fZ = track->GetFirstPointZ();
+
     tP->fPt = track->GetPt();
-//    tP->fLastX = track->GetLastPointX();
-//    tP->fLastY = track->GetLastPointY();
-//    tP->fLastZ = track->GetLastPointZ();
+
+    tP->fLastX = track->GetLastPointX();
+    tP->fLastY = track->GetLastPointY();
+    tP->fLastZ = track->GetLastPointZ();
+
     tP->fPsi = track->GetPsi();
     tP->fTgl = track->GetTgl();
     tP->fCharge = track->GetCharge();

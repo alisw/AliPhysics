@@ -97,7 +97,7 @@ class AliHLTTPCConfMapper {
   void SetRowScopeTracklet(Int_t f, Bool_t vertex_constraint)      { fRowScopeTracklet[(Int_t)vertex_constraint] = f; }  // sets one row scope for tracklets
   void SetMaxAngleTracklet(Double_t f, Bool_t vertex_constraint)   { fMaxAngleTracklet[(Int_t)vertex_constraint] = f; }  // sets one angle cut
 
-  void SetPointers();
+ 
   Double_t CpuTime();
   void SetParamDone(Bool_t vertex_constraint) {fParamSet[(Int_t)vertex_constraint] = kTRUE;}
   
@@ -107,7 +107,7 @@ class AliHLTTPCConfMapper {
   AliHLTTPCConfMapper();
   //  AliHLTTPCConfMapper(AliTPCParam *param,AliHLTTPCVertex *vertex,Bool_t bench=(Bool_t)false);
   virtual ~AliHLTTPCConfMapper();
-  
+  void SetPointers();   /////////// JMT -----------------
   void InitVolumes();
   void InitSector(Int_t sector,Int_t *rowrange=0,Float_t *etarange=0);
   void SetVertex(AliHLTTPCVertex *vertex){fVertex = vertex;}
@@ -119,6 +119,7 @@ class AliHLTTPCConfMapper {
 			  Int_t rowscopetracklet, Int_t rowscopetrack,Double_t maxphi=0.1,Double_t maxeta=0.1);
   void NonVertexSettings(Int_t trackletlength, Int_t tracklength, 
 			 Int_t rowscopetracklet, Int_t rowscopetrack);
+
   Bool_t ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits );
   void ClusterLoop();
   void CreateTrack(AliHLTTPCConfMapPoint *hit);

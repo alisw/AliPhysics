@@ -5,7 +5,7 @@ dnl template for the configuration script for the Alice HLT
 dnl framework and components
 dnl 
 dnl ------------------------------------------------------------------
-AC_INIT([Alice High Level Trigger] , [0.1], [Matthias.Richter@ift.uib.no], alice-hlt)
+AC_INIT([Alice High Level Trigger] , [0.2], [Matthias.Richter@ift.uib.no], alice-hlt)
 
 dnl ------------------------------------------------------------------
 dnl the package from CVS contains the old Makefiles as well. In order to

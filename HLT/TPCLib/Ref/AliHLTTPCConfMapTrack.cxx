@@ -163,10 +163,12 @@ void AliHLTTPCConfMapTrack::UpdateParam(AliHLTTPCConfMapPoint *thisHit)
 void AliHLTTPCConfMapTrack::Fill(AliHLTTPCVertex *vertex,Double_t max_Dca)
 {
   //Fill track variables with or without fit.
-  
+  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","TEST")<< "=========="<< ENDLOG;
   //fRadius = sqrt(a2Xy*a2Xy+1)/(2*fabs(a1Xy));
   Double_t radius = sqrt(a2Xy*a2Xy+1)/(2*fabs(a1Xy));
+  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","TEST")<< "====A====== r=" << GetRadius() << ENDLOG;
   SetRadius(radius);
+  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapTrack::Fill","TEST")<< "====B====== r=" << GetRadius() << ENDLOG;
 
   //fPt = (Double_t)(BFACT * AliHLTTPCTransform::GetBField() * fRadius);
   Double_t pt = (Double_t)(BFACT * AliHLTTPCTransform::GetBField() * GetRadius());

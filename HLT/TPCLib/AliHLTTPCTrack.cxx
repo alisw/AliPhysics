@@ -235,7 +235,6 @@ Double_t AliHLTTPCTrack::GetCrossingAngle(Int_t padrow,Int_t slice)
 Bool_t AliHLTTPCTrack::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 {
   //Assumes the track is given in local coordinates
-  
   if(!IsLocal())
     {
       cerr<<"GetCrossingPoint: Track is given on global coordinates"<<endl;
@@ -243,6 +242,13 @@ Bool_t AliHLTTPCTrack::GetCrossingPoint(Int_t padrow,Float_t *xyz)
     }
   
   Double_t xHit = AliHLTTPCTransform::Row2X(padrow);
+
+// BEGINN ############################################## MODIFIY JMT
+  if (xHit < xyz[0]){
+      LOG(AliHLTTPCLog::kError,"AliHLTTPCTRACK::GetCrossingPoint","")<< "Track doesn't cross padrow " << padrow <<"(x=" << xHit << "). Smallest x=" << xyz[0] << ENDLOG;
+      return false;
+  }
+// END ################################################# MODIFIY JMT
 
   xyz[0] = xHit;
   Double_t aa = (xHit - GetCenterX())*(xHit - GetCenterX());
@@ -261,11 +267,15 @@ Bool_t AliHLTTPCTrack::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   if(angle1 < 0) angle1 += 2.*AliHLTTPCTransform::Pi();
   Double_t angle2 = atan2((GetFirstPointY() - GetCenterY()),(GetFirstPointX() - GetCenterX()));
   if(angle2 < 0) angle2 += AliHLTTPCTransform::TwoPi();
+
   Double_t diffangle = angle1 - angle2;
   diffangle = fmod(diffangle,AliHLTTPCTransform::TwoPi());
   if((GetCharge()*diffangle) > 0) diffangle = diffangle - GetCharge()*AliHLTTPCTransform::TwoPi();
+
   Double_t stot = fabs(diffangle)*GetRadius();
+
   Double_t zHit = GetFirstPointZ() + stot*GetTgl();
+
   xyz[2] = zHit;
  
   return true;
@@ -438,7 +448,9 @@ void AliHLTTPCTrack::UpdateToFirstPoint()
   //However, if you later on want to do more precise local calculations, such
   //as impact parameter, residuals etc, you need to give the track parameters
   //according to the actual fit.
-
+// BEGINN ############################################## MODIFIY JMT
+    LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::UpdateToFirstPoint","ENTER") <<ENDLOG;
+// END ################################################# MODIFIY JMT
   Double_t xc = GetCenterX() - GetFirstPointX();
   Double_t yc = GetCenterY() - GetFirstPointY();
   
@@ -472,7 +484,9 @@ void AliHLTTPCTrack::UpdateToFirstPoint()
   SetPhi0(atan2(point[1],point[0]));
   SetFirstPoint(point[0],point[1],GetZ0());
   SetPsi(pointpsi);
-  
+  // BEGINN ############################################## MODIFIY JMT
+    LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::UpdateToFirstPoint","LEAVE") <<ENDLOG;
+// END ################################################# MODIFIY JMT
 }
 
 void AliHLTTPCTrack::GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestx,Double_t &closesty,Double_t &closestz)
@@ -521,6 +535,21 @@ void AliHLTTPCTrack::GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestx,
 
 void AliHLTTPCTrack::Print() const
 { //print out parameters of track
+// BEGINN ############################################## MODIFIY JMT
+
+#if 1
+ LOG(AliHLTTPCLog::kInformational,"AliHLTTPCTrack::Print","Print values")
+    <<"NH="<<fNHits<<" "<<fMCid<<" K="<<fKappa<<" R="<<fRadius<<" Cx="<<fCenterX<<" Cy="<<fCenterY<<" MVT="
+    <<fFromMainVertex<<" Row0="<<fRowRange[0]<<" Row1="<<fRowRange[1]<<" Sector="<<fSector<<" Q="<<fQ<<" TgLam="
+    <<fTanl<<" psi="<<fPsi<<" pt="<<fPt<<" L="<<fLength<<" "<<fPterr<<" "<<fPsierr<<" "<<fZ0err<<" "
+    <<fTanlerr<<" phi0="<<fPhi0<<" R0="<<fR0<<" Z0"<<fZ0<<" X0"<<fFirstPoint[0]<<" Y0"<<fFirstPoint[1]<<" Z0"
+    <<fFirstPoint[2]<<" XL"<<fLastPoint[0]<<" YL"<<fLastPoint[1]<<" ZL"<<fLastPoint[2]<<" "
+    <<fPoint[0]<<" "<<fPoint[1]<<" "<<fPoint[2]<<" "<<fPointPsi<<" "<<fIsPoint<<" local="
+    <<fIsLocal<<" "<<fPID<<ENDLOG; 
+
+
+
+#else
   LOG(AliHLTTPCLog::kInformational,"AliHLTTPCTrack::Print","Print values")
     <<fNHits<<" "<<fMCid<<" "<<fKappa<<" "<<fRadius<<" "<<fCenterX<<" "<<fCenterY<<" "
     <<fFromMainVertex<<" "<<fRowRange[0]<<" "<<fRowRange[1]<<" "<<fSector<<" "<<fQ<<" "
@@ -529,4 +558,7 @@ void AliHLTTPCTrack::Print() const
     <<fFirstPoint[2]<<" "<<fLastPoint[0]<<" "<<fLastPoint[1]<<" "<<fLastPoint[2]<<" "
     <<fPoint[0]<<" "<<fPoint[1]<<" "<<fPoint[2]<<" "<<fPointPsi<<" "<<fIsPoint<<" "
     <<fIsLocal<<" "<<fPID<<ENDLOG; 
+#endif
+
+// END ################################################# MODIFIY JMT
 }

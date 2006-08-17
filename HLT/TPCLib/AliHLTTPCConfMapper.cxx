@@ -156,11 +156,12 @@ Bool_t AliHLTTPCConfMapper::ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits
   //read hits
   Int_t nhit=(Int_t)count; 
   for (Int_t i=0;i<nhit;i++)
-    {
-      fHit[i].Reset();
-      fHit[i].ReadHits(&(hits[i]));
+    {	
+      fHit[i+fClustersUnused].Reset();
+      fHit[i+fClustersUnused].ReadHits(&(hits[i]));
     }
   fClustersUnused += nhit;
+
   LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::ReadHits","#hits")
     <<AliHLTTPCLog::kDec<<"hit_counter: "<<nhit<<" count: "<<count<<ENDLOG;
   
@@ -301,8 +302,11 @@ void AliHLTTPCConfMapper::MainVertexTracking()
 
   Double_t initCpuTime,cpuTime;
   initCpuTime = CpuTime();
-  
-  SetPointers();
+// END ################################################# MODIFIY JMT
+#if 0
+  SetPointers(); // moved to Component
+#endif
+// END ################################################# MODIFIY JMT
   SetVertexConstraint(true);
       
   ClusterLoop();
@@ -663,9 +667,17 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
 		     
 		      if(track)//track search - look for nearest neighbor to extrapolated track
 			{
+// BEGINN ############################################## MODIFIY JMT
+#if 1
+			    if (fVertexConstraint) {   
+				if(!VerifyRange(starthit,hit))
+				    continue;
+			    }
+#else
 			  if(!VerifyRange(starthit,hit))
 			    continue;
-			  			  
+#endif
+// END ################################################# MODIFIY JMT			  
 			  testhit = EvaluateHit(starthit,hit,track);
 			  
 			  if(testhit == 0)//chi2 not good enough, keep looking
@@ -682,8 +694,17 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
 			  
 			  if((dist=CalcDistance(starthit,hit)) < closestdist)
 			    {
-			      if(!VerifyRange(starthit,hit))
-				continue;
+// BEGINN ############################################## MODIFIY JMT
+#if 1
+			    if (fVertexConstraint) {   
+				if(!VerifyRange(starthit,hit))
+				    continue;
+			    }
+#else
+			  if(!VerifyRange(starthit,hit))
+			    continue;
+#endif
+// END ################################################# MODIFIY JMT	
 			      closestdist = dist;
 			      closesthit = hit;
 			 

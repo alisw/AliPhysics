@@ -138,8 +138,13 @@ void AliHLTTPCConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etara
     }
   
   //Set the angles to sector 2:
+#if 0
+  fPhiMin = -1.*90/todeg;//fParam->GetAngle(sector) - 10/todeg;
+  fPhiMax = 90./todeg;//fParam->GetAngle(sector) + 10/todeg;
+#else
   fPhiMin = -1.*10/todeg;//fParam->GetAngle(sector) - 10/todeg;
-  fPhiMax = 10/todeg;//fParam->GetAngle(sector) + 10/todeg;
+  fPhiMax = 10./todeg;//fParam->GetAngle(sector) + 10/todeg;
+#endif
 
   nTracks=0;
   fMainVertexTracks = 0;
@@ -179,10 +184,12 @@ void AliHLTTPCConfMapper::SetPointers()
 {
   //Check if there are not enough clusters to make a track in this sector
   //Can happen in pp events.
-
+//    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper:SetPointers","Tracking")<< "==================== UNUSED CLUSTERS="<< fClustersUnused <<ENDLOG;
   if(fClustersUnused < fMinPoints[fVertexConstraint])
     return;
-  
+
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::SetPointers","Tracking")<< "--------> fMaxPhi=" << fMaxPhi << "  fMaxEta="<< fMaxEta <<  ENDLOG;
+
   //Reset detector volumes
   memset(fVolume,0,fBounds*sizeof(AliHLTTPCConfMapContainer));
   memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliHLTTPCConfMapContainer));
@@ -190,6 +197,8 @@ void AliHLTTPCConfMapper::SetPointers()
   Float_t phiSlice = (fPhiMax-fPhiMin)/fNumPhiSegment;
   Float_t etaSlice = (fEtaMax-fEtaMin)/fNumEtaSegment;
 
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::SetPointers","Parameters") << "min=" << fEtaMin <<"   max=" << fEtaMax  <<"   fNumEtaSegment=" <<fNumEtaSegment << ENDLOG;
+  //LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::SetPointers","Parameters") << "min=" << fPhiMin <<"   max=" << fPhiMax  <<"   fNumEtaSegment=" <<fNumPhiSegment << ENDLOG;
   Int_t volumeIndex;
   Int_t local_counter=0;
   for(Int_t j=0; j<fClustersUnused; j++)
@@ -209,15 +218,19 @@ void AliHLTTPCConfMapper::SetPointers()
       
       if(thisHit->phiIndex<1 || thisHit->phiIndex>fNumPhiSegment)
 	{
-	  //cout << "Phiindex: " << thisHit->phiIndex << " " << thisHit->GetPhi() << endl;
+	    //cout << j<< "||Phiindex: " << thisHit->phiIndex << " | " << thisHit->GetPhi() << " PHIMIN=" << fPhiMin << endl;
 	  fPhiHitsOutOfRange++;
 	  continue;
 	}
-      
+    
       thisHit->etaIndex=(Int_t)((thisHit->GetEta()-fEtaMin)/etaSlice + 1);
       if(thisHit->etaIndex<1 || thisHit->etaIndex>fNumEtaSegment)
 	{
-	  //cout << "Etaindex: " << thisHit->etaIndex << " " << thisHit->GetEta() << endl;
+	    if (thisHit->etaIndex<1)  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::SetPointers","Parameters") << " ----1-----" << ENDLOG;
+	    if (thisHit->etaIndex>fNumEtaSegment) {
+//		LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::SetPointers","Parameters") << "INDEX=" << thisHit->etaIndex << "   fNumEtaSegment=" <<fNumEtaSegment << ENDLOG;
+		//  cout << j<< "||Etaindex: " << thisHit->etaIndex << " | " << thisHit->GetEta() << " ETAMIN=" << fEtaMin << endl;
+	    }
 	  fEtaHitsOutOfRange++;
 	  continue;
 	}
@@ -230,7 +243,6 @@ void AliHLTTPCConfMapper::SetPointers()
       else
  	((AliHLTTPCConfMapPoint *)fVolume[volumeIndex].last)->nextVolumeHit=thisHit;
       fVolume[volumeIndex].last = (void *)thisHit;
-      
       
       //set row pointers
       if(fRow[(localrow-fRowMin)].first == NULL)
@@ -262,22 +274,23 @@ void AliHLTTPCConfMapper::MainVertexTracking_a()
       return;
     }
 
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::MainVertexTracking","Tracking")<< "USE MAINVERTEX TRACKING -  ENTER A"<<ENDLOG;
   Double_t initCpuTime,cpuTime;
   initCpuTime = CpuTime();
 
-  SetPointers();
+//  SetPointers();
   SetVertexConstraint(true);
   cpuTime = CpuTime() - initCpuTime;
   if(fBench)
     LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::MainVertexTracking_a","Timing")
       <<AliHLTTPCLog::kDec<<"Setup finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
-  
+  // LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::MainVertexTracking","Tracking")<< "USE MAINVERTEX TRACKING -  LEAVE A"<<ENDLOG;
 }
 
 void AliHLTTPCConfMapper::MainVertexTracking_b()
 {
   //Tracking with vertex constraint.
-
+//LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::MainVertexTracking","Tracking")<< "USE MAINVERTEX TRACKING -  ENTER B"<<ENDLOG;
   if(!fParamSet[(Int_t)kTRUE])
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::MainVertexTracking","Parameters")<<AliHLTTPCLog::kDec<<
@@ -293,12 +306,13 @@ void AliHLTTPCConfMapper::MainVertexTracking_b()
   if(fBench)
     LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::MainVertexTracking_b","Timing")
       <<AliHLTTPCLog::kDec<<"Main Tracking finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::MainVertexTracking","Tracking")<< "USE MAINVERTEX TRACKING -  LEAVE B"<<ENDLOG;
 }
 
 void AliHLTTPCConfMapper::MainVertexTracking()
 {
   //Tracking with vertex constraint.
-
+//LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::MainVertexTracking","Tracking")<< "USE MAINVERTEX TRACKING -  ENTER"<<ENDLOG;
   if(!fParamSet[(Int_t)kTRUE])
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::MainVertexTracking","Parameters")<<AliHLTTPCLog::kDec<<
@@ -309,7 +323,7 @@ void AliHLTTPCConfMapper::MainVertexTracking()
   Double_t initCpuTime,cpuTime;
   initCpuTime = CpuTime();
   
-  SetPointers();
+//  SetPointers();
   SetVertexConstraint(true);
       
   ClusterLoop();
@@ -318,7 +332,7 @@ void AliHLTTPCConfMapper::MainVertexTracking()
   if(fBench)
     LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::MainVertexTracking","Timing")<<AliHLTTPCLog::kDec<<
       "Tracking finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
-  
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::MainVertexTracking","Tracking")<< "USE MAINVERTEX TRACKING -  LEAVE"<<ENDLOG;
   return;
 }
 
@@ -328,7 +342,7 @@ void AliHLTTPCConfMapper::NonVertexTracking()
   //in order to do tracking on the remaining clusters.
   //The conformal mapping is now done with respect to the first cluster
   //assosciated with this track.
-  
+//    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::NonVertexTracking","Tracking")<< "USE NONVERTEX TRACKING -  ENTER"<<ENDLOG;
   if(!fParamSet[(Int_t)kFALSE])
     {
       LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::NonVertexTracking","Parameters")<<AliHLTTPCLog::kDec<<
@@ -340,6 +354,8 @@ void AliHLTTPCConfMapper::NonVertexTracking()
   ClusterLoop();
   LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::NonVertexTracking","ntracks")<<AliHLTTPCLog::kDec<<
     "Number of nonvertex tracks found: "<<(nTracks-fMainVertexTracks)<<ENDLOG;
+
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::NonVertexTracking","Tracking")<< "USE NONVERTEX TRACKING -  LEAVE"<<ENDLOG;
   return;
 }
 
@@ -368,7 +384,7 @@ void AliHLTTPCConfMapper::NonVertexSettings(Int_t trackletlength, Int_t tracklen
   SetTrackletLength(trackletlength,(Bool_t)false);
   SetRowScopeTracklet(rowscopetracklet, (Bool_t)false);
   SetRowScopeTrack(rowscopetrack, (Bool_t)false);
-  SetMinPoints(tracklength,(Bool_t)false);
+  SetMinPoints(tracklength,(Bool_t)false);  
   SetParamDone(kFALSE);
 }
 
@@ -396,34 +412,43 @@ void AliHLTTPCConfMapper::SetTrackletCuts(Double_t maxangle,Double_t goodDist, B
 }
 
 void AliHLTTPCConfMapper::ClusterLoop()
-{
+{ 
+//    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Clusterloop","Tracking")<< "USE CLUSTERLOOP NVT -  ENTER"<<ENDLOG;
   //Loop over hits, starting at outermost padrow, and trying to build segments.
   
   //Check if there are not enough clusters to make a track in this sector
   //Can happen in pp events.
   if(fClustersUnused < fMinPoints[fVertexConstraint])
     return;
-  
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Clusterloop","Tracking")<< "USE CLUSTERLOOP NVT -  0"<<ENDLOG;
   Int_t row_segm,lastrow = fRowMin + fMinPoints[fVertexConstraint];
   AliHLTTPCConfMapPoint *hit;
   
   //Loop over rows, and try to create tracks from the hits.
   //Starts at the outermost row, and loops as long as a track can be build, due to length.
-  
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Clusterloop","Tracking")<< "USE CLUSTERLOOP: row_sgm="<< row_segm << " fRowMax="<< fRowMax << "lastrow=" 
+//									 << lastrow << ENDLOG;
   for(row_segm = fRowMax; row_segm >= lastrow; row_segm--)
     {
-      if(fRow[(row_segm-fRowMin)].first && ((AliHLTTPCConfMapPoint*)fRow[(row_segm-fRowMin)].first)->GetPadRow() < fRowMin + 1)
-	break;
-
-      for(hit = (AliHLTTPCConfMapPoint*)fRow[(row_segm-fRowMin)].first; hit!=0; hit=hit->nextRowHit)
-	{
-	  if(hit->GetUsage() == true)
+	if(fRow[(row_segm-fRowMin)].first && ((AliHLTTPCConfMapPoint*)fRow[(row_segm-fRowMin)].first)->GetPadRow() < fRowMin + 1){
+	    break;
+	} 
+//	LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Clusterloop","Tracking")<< "USE CLUSTERLOOP NVT - xxx= "<< fRow[(row_segm-fRowMin)].first << ENDLOG;
+									    
+     for(hit = (AliHLTTPCConfMapPoint*)fRow[(row_segm-fRowMin)].first; hit!=0; hit=hit->nextRowHit)
+     {
+//	 LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Clusterloop","Tracking")<< "USE CLUSTERLOOP NVT - www" <<  ENDLOG;
+	 if(hit->GetUsage() == true){
+//		LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Clusterloop","Tracking")<< "USE CLUSTERLOOP NVT -  2"<<ENDLOG;
 	    continue;
-	  else
-	    CreateTrack(hit);
+	    }
+	  else  {
+	      //LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Clusterloop","Tracking")<< "=================== CALL CREATE TRACK  : HITNUMMER:"<< hit->GetHitNumber() << ENDLOG;
+	      CreateTrack(hit);
+	  }
 	}
     }
-  
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Clusterloop","Tracking")<< "USE CLUSTERLOOP NVT -  LEAVE"<<ENDLOG;
   return;
 }
 
@@ -449,21 +474,22 @@ void AliHLTTPCConfMapper::CreateTrack(AliHLTTPCConfMapPoint *hit)
   //set conformal coordinates if we are looking for non vertex tracks
   if(!fVertexConstraint) 
     {
+	//LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Create Track","Tracking")<< "====== 1 =====" << ENDLOG;
       hit->SetAllCoord(hit);
     }
-  
+
   //fill fit parameters of initial track:
   track->UpdateParam(hit); //here the number of hits is incremented.
   trackhitnumber[track->GetNumberOfPoints()-1] = hit->GetHitNumber();
   
   Double_t dx,dy;
   //create tracklets:
-  
+  //LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "=========== OK 0 === " << ENDLOG;
   for(point=1; point<fTrackletLength[fVertexConstraint]; point++)
     {
       if((closest_hit = GetNextNeighbor(hit)))
 	{//closest hit exist
-	  
+	    // LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "=========== OK 0  01 === " << ENDLOG;
 	  //   Calculate track length in sz plane
 	  dx = ((AliHLTTPCConfMapPoint*)closest_hit)->GetX() - ((AliHLTTPCConfMapPoint*)hit)->GetX();
 	  dy = ((AliHLTTPCConfMapPoint*)closest_hit)->GetY() - ((AliHLTTPCConfMapPoint*)hit)->GetY();
@@ -482,6 +508,7 @@ void AliHLTTPCConfMapper::CreateTrack(AliHLTTPCConfMapPoint *hit)
 	}
       else
 	{
+	    //LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "=========== OK 0 02 === " << ENDLOG;
 	  //closest hit does not exist:
 	  track->DeleteCandidate();
 	  fTrack->RemoveLast();
@@ -489,11 +516,11 @@ void AliHLTTPCConfMapper::CreateTrack(AliHLTTPCConfMapPoint *hit)
 	  point = fTrackletLength[fVertexConstraint];
 	}
     }
-  
+  //LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "=========== OK 1 === " << ENDLOG;
   //tracklet is long enough to be extended to a track
   if(track->GetNumberOfPoints() == fTrackletLength[fVertexConstraint])
     {
-      
+	//   LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "=========== OK 100 === " << ENDLOG;
       track->SetProperties(true);
             
       if(TrackletAngle(track) > fMaxAngleTracklet[fVertexConstraint])
@@ -552,10 +579,11 @@ void AliHLTTPCConfMapper::CreateTrack(AliHLTTPCConfMapPoint *hit)
 	  track->fChiSq[0] = xyChi2;
 	  track->fChiSq[1] = szChi2;
 	  Double_t normalized_chi2 = (track->fChiSq[0]+track->fChiSq[1])/track->GetNumberOfPoints();
-	  
+	  //  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "=========== OK 2 === " << ENDLOG;
 	  //remove tracks with not enough points already now
 	  if(track->GetNumberOfPoints() < fMinPoints[fVertexConstraint] || normalized_chi2 > fTrackChi2Cut[fVertexConstraint])
-	    {
+	    {	
+		//	LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "=#=#=#=#=#=#=#=#=#=#= BAD =#=#= " << ENDLOG;
 	      track->SetProperties(false);
 	      nTracks--;
 	      track->DeleteCandidate();
@@ -564,7 +592,8 @@ void AliHLTTPCConfMapper::CreateTrack(AliHLTTPCConfMapPoint *hit)
 	    }
 	  
 	  else
-	    {
+	    { 
+		//	LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "=========== OK === " << ENDLOG;
 	      fClustersUnused -= track->GetNumberOfPoints();
 	      track->ComesFromMainVertex(fVertexConstraint);
 	      //mark track as main vertex track or not
@@ -578,7 +607,7 @@ void AliHLTTPCConfMapper::CreateTrack(AliHLTTPCConfMapPoint *hit)
 	}//good tracklet
       
     }
-  
+  // if (nTracks > 0)  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::CreateTrack","Tracking")<< "########### number of tracks:"<< nTracks << ENDLOG;
   return;
 }
 
@@ -587,7 +616,7 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
 {
   //When forming segments: Finds closest hit to input hit
   //When forming tracks: Find closest hit to track fit.
-  
+  //LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 0 #####" << ENDLOG;
   Double_t dist,closest_dist = fMaxDist[fVertexConstraint];
   
   AliHLTTPCConfMapPoint *hit = NULL;
@@ -619,17 +648,19 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
     min_row = fRowMin;
   if(max_row < fRowMin)
     return 0;  //reached the last padrow under consideration
-
+ 
   else
-    {
+  {// LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx1 #####" << ENDLOG;
       //loop over sub rows
       for(sub_row_segm=max_row; sub_row_segm>=min_row; sub_row_segm--)
 	{
+//LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx2 #####" << ENDLOG;
 	  //loop over subsegments, in the order defined above.
 	  for(Int_t i=0; i<9; i++)  
 	    {
+//LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx3 #####" << ENDLOG;
 	      sub_phi_segm = start_hit->phiIndex + loop_phi[i];
-	      
+	      //  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx4 #####" << ENDLOG;
 	      if(sub_phi_segm < 0 || sub_phi_segm >= fNumPhiSegment)
 		continue;
 	      /*
@@ -642,65 +673,95 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
 	      //loop over sub eta segments
 	      
 	      sub_eta_segm = start_hit->etaIndex + loop_eta[i];
-	      
+	      //  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx5 #####" << ENDLOG;
 	      if(sub_eta_segm < 0 || sub_eta_segm >=fNumEtaSegment)
 		continue;//segment exceeds bounds->skip it
 	      
 	      //loop over hits in this sub segment:
 	      volumeIndex= (sub_row_segm-fRowMin)*fNumPhiEtaSegmentPlusOne +
 		sub_phi_segm*fNumEtaSegmentPlusOne + sub_eta_segm;
-	      
+	      //    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx6 #####" << ENDLOG;
 	      if(volumeIndex<0)
 		{//debugging
 		  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNextNeighbor","Memory")<<AliHLTTPCLog::kDec<<
 		    "VolumeIndex error "<<volumeIndex<<ENDLOG;
 		}
-	      
+	      //  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx6a #####" << ENDLOG;
 	      for(hit = (AliHLTTPCConfMapPoint*)fVolume[volumeIndex].first;
 		  hit!=0; hit = hit->nextVolumeHit)
 		{
-		  
+		    //	  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx7 #####" << ENDLOG;
 		  if(!hit->GetUsage())
 		    {//hit was not used before
-		      
+			//	       LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx8 #####" << ENDLOG;
 		      //set conformal mapping if looking for nonvertex tracks:
 		      if(!fVertexConstraint)
 			{
 			  hit->SetAllCoord(start_hit);
 			}
-		     
+//		      LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx9 #####" << ENDLOG;
 		      if(track)//track search - look for nearest neighbor to extrapolated track
 			{
-			  if(!VerifyRange(start_hit,hit))
-			    continue;
-			  			  
+			    // LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx10 #####" << ENDLOG;
+// --JMT---------------------- MODIFY --------------------------------------------------------------------------
+				if (fVertexConstraint) {
+				    if(!VerifyRange(start_hit,hit))
+					continue;
+				}
+
+#if 0
+				if(!VerifyRange(start_hit,hit))
+				    continue;
+#endif
+// --JMT---------------------- MODIFY --------------------------------------------------------------------------
+				//   LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx11 #####" << ENDLOG;			  
 			  test_hit = EvaluateHit(start_hit,hit,track);
-			  
-			  if(test_hit == 0)//chi2 not good enough, keep looking
-			    continue;
-			  else if(test_hit==2)//chi2 good enough, return it
-			    return hit;
-			  else
+			  //LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx12 #####" << ENDLOG;			
+			  if(test_hit == 0){//chi2 not good enough, keep looking
+			      // LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 0x1x0 #####" << ENDLOG;
+			      continue;
+			  }
+			  else if(test_hit==2){//chi2 good enough, return it 
+			      //  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 0x2x0 #####" << ENDLOG;
+			      return hit;}
+			  else{
+			      //    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 0x3x0 #####" << ENDLOG;
 			    closest_hit = hit;//chi2 acceptable, but keep looking
+			}
 			  
 			}//track search
 		      
 		      else //tracklet search, look for nearest neighbor
 			{
-			  
+			    //  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx-100 #####" << ENDLOG;
 			  if((dist=CalcDistance(start_hit,hit)) < closest_dist)
-			    {
-			      if(!VerifyRange(start_hit,hit))
-				continue;
+			    {  
+// --JMT---------------------- MODIFY --------------------------------------------------------------------------
+				if (fVertexConstraint) {
+				    //   LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx-101 #####" << ENDLOG;
+				    if(!VerifyRange(start_hit,hit)){
+					//LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx-102 #####" << ENDLOG;
+					continue;
+				    }
+				}
+#if 0
+				if(!VerifyRange(start_hit,hit))
+				    continue;
+#endif
+// --JMT---------------------- MODIFY --------------------------------------------------------------------------
 			      closest_dist = dist;
 			      closest_hit = hit;
-			 
+			      // LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx-103 #####" << ENDLOG;
 			      //if this hit is good enough, return it:
-			      if(closest_dist < fGoodDist)
-			        return closest_hit;
+			      if(closest_dist < fGoodDist){
+				  //LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx-104 #####" << ENDLOG;
+				  return closest_hit;
+			      }
 			    }
-			  else
-			    continue;//sub hit was farther away than a hit before
+			  else {
+			      //    LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 00xxxxxxxxxxxxx-105 #####" << ENDLOG;
+			      continue;//sub hit was farther away than a hit before
+			  }
 			  
 			}//tracklet search
 		      
@@ -708,7 +769,7 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
 		  
 		  else continue; //sub hit was used before
 		  
-		}//loop over hits in sub segment
+		}//loop over hits in sub segment ------------END 6A
 	     	      
 	    }//loop over sub segments
 	  	  
@@ -717,6 +778,8 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
     }//else
 
   //closest hit found:
+
+  // LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::GetNExtNeighbor","Tracking")<< "###### 0000 #####"  << ENDLOG;
   if(closest_hit)// && closest_dist < mMaxDist)
     return closest_hit;
   else
@@ -781,14 +844,23 @@ Double_t AliHLTTPCConfMapper::CalcDistance(const AliHLTTPCConfMapPoint *hit1,con
 }
 
 Bool_t AliHLTTPCConfMapper::VerifyRange(const AliHLTTPCConfMapPoint *hit1,const AliHLTTPCConfMapPoint *hit2) const
-{
+{ 
   //Check if the hit are within reasonable range in phi and eta
   Double_t dphi,deta;//maxphi=0.1,maxeta=0.1;
   dphi = fabs(hit1->GetPhi() - hit2->GetPhi());
+//  LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::VerifyRange","Tracking")<< "|||||||||||||||||||||||||< phi1=" << hit1->GetPhi() << "   phi2="<< hit2->GetPhi() 
+  //								 << " dphi="  << dphi << " maxphi=" << fMaxPhi << "twopi=" << twopi << ENDLOG;
+
   if(dphi > pi) dphi = fabs(twopi - dphi);
+ 
+
   if(dphi > fMaxPhi) return false;
   
   deta = fabs(hit1->GetEta() - hit2->GetEta());
+
+  // LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::VerifyRange","Tracking")<< "|||||||||||||||||||||||||< eta1=" << hit1->GetEta() << "   eta2="<< hit2->GetEta() 
+  //								 << " deta="  << deta << " maxeta=" <<  fMaxEta << ENDLOG;
+
   if(deta > fMaxEta) return false;
 
   return true;
@@ -868,13 +940,11 @@ Int_t AliHLTTPCConfMapper::FillTracks()
   //which should be done in order to get nice tracks.
   
   Int_t num_of_tracks = nTracks;
-  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::FillTracks","nTracks")<<AliHLTTPCLog::kDec<<
-    "Number of found tracks: "<<nTracks<<ENDLOG;
+  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::FillTracks","nTracks")<<AliHLTTPCLog::kDec<< " Number of found tracks: "<<nTracks<<ENDLOG;
   
   if(nTracks == 0)
     {
-      LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::FillTracks","nTracks")<<AliHLTTPCLog::kDec<<
-	"No tracks found!!"<<ENDLOG;
+      LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::FillTracks","nTracks")<<AliHLTTPCLog::kDec<<" No tracks found!!"<<ENDLOG;
       return 0;
     }
   
@@ -883,7 +953,7 @@ Int_t AliHLTTPCConfMapper::FillTracks()
     {
       AliHLTTPCConfMapTrack *track = (AliHLTTPCConfMapTrack*)fTrack->GetTrack(i);
       track->Fill(fVertex,fMaxDca);
-      
+      LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::Filltracks","TEST")<< "====C====== r=" << track->GetRadius() << ENDLOG;
     }
   return 1;
 

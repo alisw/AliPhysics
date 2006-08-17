@@ -69,6 +69,11 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 	int fMultiplicity;
 	double fBField;
 
+// BEGINN ############################################## MODIFIY JMT
+	Bool_t fnonvertextracking;   // enable NONVERTEX Tracking
+	Bool_t fmainvertextracking;  // enable MAINVERTEX Tracking
+// END ################################################# MODIFIY JMT
+
 	ClassDef(AliHLTTPCSliceTrackerComponent, 0)
 
     };

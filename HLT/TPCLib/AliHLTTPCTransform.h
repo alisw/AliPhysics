@@ -225,8 +225,7 @@ class AliHLTTPCTransform {
   static void Global2Local(Float_t *xyz, Int_t sector);
   static void Global2LocHLT(Float_t *xyz, Int_t slice);
   static void Raw2Global(Float_t *xyz, Int_t sector, Int_t row, Float_t pad, Float_t time);
-  static void RawHLT2Global(Float_t *xyz, Int_t slice, 
-                            Int_t slicerow, Float_t pad, Float_t time);
+  static void RawHLT2Global(Float_t *xyz, Int_t slice, Int_t slicerow, Float_t pad, Float_t time);
   static void Raw2Global(Float_t *xyz, Int_t sector, Int_t row, Int_t pad, Int_t time);
   static void RawHLT2Global(Float_t *xyz, Int_t slice, 
                             Int_t slicerow, Int_t pad, Int_t time);

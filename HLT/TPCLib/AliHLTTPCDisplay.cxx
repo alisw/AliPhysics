@@ -12,17 +12,9 @@
 //         Anders Vestbo <mailto:vestbo@fi.uib.no>      
 //*-- Copyright &copy ALICE HLT Group 
 
-
-// Recent Changes:
-// ==============
-// - Rename and Merge of functions / Complete new arrangement in order to use the AliHLTGUI
-// - 3D Geometry
-//   - display padrows, cluster, tracks
-//   - select single Tracks
-//   - select used / unused cluster
-// - Histogram
-//   - display padrows
-//   - display pads in padrows
+#define TRACKHELIX 0
+#define TRACKPOLYMARKER 0
+#define BACKWARD 0
 
 #include "AliHLTTPCStandardIncludes.h"
 #include <TView.h>
@@ -38,9 +30,13 @@
 #include <THelix.h>
 #include <TStyle.h>
 #include <TGraph.h>
+#include <TMultiGraph.h>
 #include <TAttText.h>
 #include <TAxis.h>
 
+#if TRACKHELIX
+#include <THelix.h>
+#endif
 
 #ifdef use_aliroot
 #include <TClonesArray.h>
@@ -65,7 +61,7 @@ using namespace std;
 ClassImp(AliHLTTPCDisplay)
 
 // #############################################################################
-AliHLTTPCDisplay::AliHLTTPCDisplay(Char_t *gfile) {
+void AliHLTTPCDisplay::InitDisplay(Char_t *gfile) {
     //constructor
     memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
     memset(fNcl, 0, 36*6*sizeof(UInt_t)); 
@@ -76,12 +72,23 @@ AliHLTTPCDisplay::AliHLTTPCDisplay(Char_t *gfile) {
     fHistpad1 = NULL;
     fHistpad2 = NULL;
     fHistpad3 = NULL;
-    fHistallresiduals = NULL;
+    fHistallresidualsY = NULL;   
+    fHistallresidualsZ = NULL;
     fHistcharge = NULL;
-    fGraphresiduals = NULL;
+    fGraphresidualsY = NULL;
+    fGraphresidualsZ = NULL;
+    fGraphresidualsYLength = NULL;
+    fGraphresidualsZLength = NULL;
+
 
     fGeom = NULL;
-
+// ---------------------------------------------------
+// In order to be backward compatible
+// ---------------------------------------------------
+#if BACKWARD
+    //fc1 = NULL;
+#endif 
+// ---------------------------------------------------
     fNPads = 0;
     fNTimes = 0;
     fMinHits = 0;
@@ -102,13 +109,14 @@ AliHLTTPCDisplay::AliHLTTPCDisplay(Char_t *gfile) {
 
     fBackColor = 1; 
     fLineColor = 0;
+    fKeepView = kFALSE;
 
     fSwitch3DCluster = kFALSE;
     fSwitch3DTracks = kFALSE;
     fSwitch3DPadRow = kFALSE;
     fSwitch3DGeometry = kFALSE;
 
-    //ctor. Specify which slices you want to look at.
+    AliHLTTPCTransform::SetBField(0.4);
     LoadGeometrie(gfile);
 }
 
@@ -239,6 +247,7 @@ void AliHLTTPCDisplay::SetupTracks(AliHLTTPCTrackArray *tracks) {
 		continue;
 	    }
 	    points[pos].fUsed = kTRUE;
+	    points[pos].fTrackN = j;
 	}
     }
 }
@@ -248,9 +257,6 @@ void AliHLTTPCDisplay::SetupHist(){
 
     Int_t maxpads = 150;
     fNTimes = AliHLTTPCTransform::GetNTimeBins();
-    Float_t xyz[3];
-    AliHLTTPCTransform::RawHLT2Global(xyz, 0, 0, 0, 0);
-    LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplay::ccc","") << "t="<< fNTimes  <<"maxZ="<<xyz[2] << "|" << xyz[0]<< "|"<< xyz[1]<< ENDLOG;
 
     if ( fHistraw ){
 	delete fHistraw;
@@ -276,11 +282,15 @@ void AliHLTTPCDisplay::SetupHist(){
 	fHistpad3 = NULL;
     }
 
-    if ( fHistallresiduals){
-	delete fHistallresiduals;
-	fHistallresiduals = NULL;
+    if ( fHistallresidualsY){
+	delete fHistallresidualsY;
+	fHistallresidualsY = NULL;
     }
 
+    if ( fHistallresidualsZ){
+	delete fHistallresidualsZ;
+	fHistallresidualsZ = NULL;
+    }
     if ( fHistcharge){
 	delete fHistcharge;
 	fHistcharge = NULL;
@@ -293,18 +303,23 @@ void AliHLTTPCDisplay::SetupHist(){
     fHistpad1 = new TH1F ("fHistpad1","Selected Pad -1;Timebin #",fNTimes,0,fNTimes-1);
     fHistpad2 = new TH1F ("fHistpad2","Selected Pad;Timebin #",fNTimes,0,fNTimes-1); 
     fHistpad3 = new TH1F ("fHistpad3","Selected Pad +1;Timebin #",fNTimes,0,fNTimes-1);
-    fHistallresiduals = new TH1F ("fHistallresiduals","Residuals of all Tracks in selected slices;residuals",5000,0,100);
-    fHistcharge = new TH1F ("fHistcharge","Cluster distribution per charge;charge;#cluster",500,0,6000);
+    fHistallresidualsY = new TH1F ("fHistallresiduals","Y Residuals of all Tracks in selected slices;residuals",5000,0,100);
+    fHistallresidualsZ = new TH1F ("fHistallresiduals","Z Residuals of all Tracks in selected slices;residuals",5000,0,100);
+    fHistcharge = new TH1F ("fHistcharge","Cluster distribution per charge;charge;#cluster",5000,0,30000);
 
     fHistraw->SetOption("COLZ"); 
 
-  
+    fHistallresidualsY->SetTitleSize(0.03);
+    fHistallresidualsY->GetXaxis()->SetLabelSize(0.03);
+    fHistallresidualsY->GetXaxis()->SetTitleSize(0.03);
+    fHistallresidualsY->GetYaxis()->SetLabelSize(0.03);
+    fHistallresidualsY->GetYaxis()->SetTitleSize(0.03);
 
-    fHistallresiduals->SetTitleSize(0.03);
-    fHistallresiduals->GetXaxis()->SetLabelSize(0.03);
-    fHistallresiduals->GetXaxis()->SetTitleSize(0.03);
-    fHistallresiduals->GetYaxis()->SetLabelSize(0.03);
-    fHistallresiduals->GetYaxis()->SetTitleSize(0.03);
+    fHistallresidualsZ->SetTitleSize(0.03);
+    fHistallresidualsZ->GetXaxis()->SetLabelSize(0.03);
+    fHistallresidualsZ->GetXaxis()->SetTitleSize(0.03);
+    fHistallresidualsZ->GetYaxis()->SetLabelSize(0.03);
+    fHistallresidualsZ->GetYaxis()->SetTitleSize(0.03);
 
     fHistcharge->SetTitleSize(0.03);
     fHistcharge->GetXaxis()->SetLabelSize(0.03);
@@ -339,7 +354,6 @@ void AliHLTTPCDisplay::SetupHist(){
     gStyle->SetPalette(1);
     
     SetHistPadRowAxis();
-
 }
 
 // ####################################################################################################
@@ -382,10 +396,10 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 		UInt_t charge = fDigitReader->GetSignal();
 		
 		for (UInt_t ii=0;ii < 19;ii++){
-		    if ( charge > (ii*21) && charge <= ((ii*21) + 21) )	fcolorbin[ii]++;
+		    if ( charge > (ii*15) && charge <= ((ii*15) + 15) )	fcolorbin[ii]++;
 		}
-                // larger than 19 * 21	
-		if (charge > 399 ) fcolorbin[19]++;
+                // larger than 19 * 15	
+		if (charge > 285 ) fcolorbin[19]++;
 	    }
 
 	    // read next value
@@ -443,15 +457,15 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 		AliHLTTPCTransform::RawHLT2Global(xyz, fSlicePadRow, fPadRow, pad, time);
 
 		for (UInt_t ii=0;ii < 19;ii++){
-		    if ( charge > (ii*21) && charge <= ((ii*21) + 21) ){
+		    if ( charge > (ii*15) && charge <= ((ii*15) + 15) ){
 			fpmarr[ii][fbinct[ii]] = xyz[0];
 			fpmarr[ii][fbinct[ii]+1] = xyz[1];
 			fpmarr[ii][fbinct[ii]+2] = xyz[2];
 			fbinct[ii] += 3;
 		    }
 		}
-		// larger than 19 * 21
-		if (charge > 399 ) {
+		// larger than 19 * 15
+		if (charge > 285 ) {
 		    fpmarr[19][fbinct[19]] = xyz[0];
 		    fpmarr[19][fbinct[19]+1] = xyz[1];
 		    fpmarr[19][fbinct[19]+2] = xyz[2];
@@ -491,7 +505,6 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
     }
 }
 
-
 // #############################################################################
 void AliHLTTPCDisplay::ResetHistPadRow(){  
     fHistraw->Reset();   
@@ -503,7 +516,8 @@ void AliHLTTPCDisplay::ResetHistPadRow(){
 
 // #############################################################################
 void AliHLTTPCDisplay::ResetHistResiduals(){  
-    fHistallresiduals->Reset();
+    fHistallresidualsY->Reset();
+    fHistallresidualsZ->Reset();
 }
 
 // #############################################################################
@@ -582,28 +596,75 @@ void AliHLTTPCDisplay::DrawHistPad3(){
 }
 
 // #############################################################################
-void AliHLTTPCDisplay::DrawHistResiduals(){  
+void AliHLTTPCDisplay::DrawHistResiduals(Bool_t ySwitch){  
     if (fSwitch3DTracks){
-    
-        // Residual histogram for 1 track
-	if (fSelectTrackSwitch){
-	    Char_t title[256];
-	    sprintf(title,"Residuals of Track %d in Slice %d",fSelectTrack, fSelectTrackSlice );
-	 
-//	    fHistresiduals->SetMarkerStyle(2);
-//	    fHistresiduals->SetStats(kFALSE);
-//	    fHistresiduals->SetTitle(title);
-//	    fHistresiduals->Draw("p");
-	    fGraphresiduals->SetTitle(title);	
-	    fGraphresiduals->GetXaxis()->SetTitle("z");	
-	    fGraphresiduals->GetYaxis()->SetTitle("residuals");
-	    fGraphresiduals->Draw("A*");
-	    
+	if (ySwitch){
+	    // Y Residual histogram for 1 track
+
+	    if (fSelectTrackSwitch){
+		Char_t title[256];
+		sprintf(title,"Y Residuals of Track %d in Slice %d",fSelectTrack, fSelectTrackSlice );
+
+		TMultiGraph *mgY = new TMultiGraph();
+
+
+//		fGraphresidualsY->SetTitle(title);	
+		fGraphresidualsY->GetXaxis()->SetTitle("padrow");	
+		fGraphresidualsY->GetYaxis()->SetTitle("residuals");
+//		fGraphresidualsY->Draw("A*");
+		fGraphresidualsY->GetXaxis()->SetLabelSize(0.02);
+		fGraphresidualsY->GetXaxis()->SetTitleSize(0.02);
+		fGraphresidualsY->GetYaxis()->SetLabelSize(0.02);
+		fGraphresidualsY->GetYaxis()->SetTitleSize(0.02);
+		fGraphresidualsYLength->SetMarkerColor(2);
+		fGraphresidualsYLength->SetMarkerStyle(5);
+		fGraphresidualsY->SetMarkerColor(1);
+		fGraphresidualsY->SetMarkerStyle(3);
+
+//		fGraphresidualsY->Draw("A*");
+//		fGraphresidualsYLength->Draw("*");
+
+		mgY->Add(fGraphresidualsY);
+		mgY->Add(fGraphresidualsYLength);
+		mgY->SetTitle(title);
+//		mgY->GetXaxis()->SetTitle("padrow");	
+//		mgY->GetYaxis()->SetTitle("residuals");
+		mgY->Draw("AP");
+	    }
+	    // Global residuals histogram
+	    else{
+		fHistallresidualsY->SetStats(kFALSE);
+		fHistallresidualsY->Draw();
+	    }
 	}
-	// Global residuals histogram
-	else{
-	    fHistallresiduals->SetStats(kFALSE);
-	    fHistallresiduals->Draw();
+	else {
+            // Z Residual histogram for 1 track
+	    if (fSelectTrackSwitch){
+		Char_t title[256];
+		sprintf(title,"Z Residuals of Track %d in Slice %d",fSelectTrack, fSelectTrackSlice );
+
+		TMultiGraph *mgZ = new TMultiGraph();
+
+		fGraphresidualsZ->SetTitle(title);	
+		fGraphresidualsZ->GetXaxis()->SetTitle("padrow");	
+		fGraphresidualsZ->GetYaxis()->SetTitle("residuals");
+		fGraphresidualsZ->GetXaxis()->SetLabelSize(0.02);
+		fGraphresidualsZ->GetXaxis()->SetTitleSize(0.02);
+		fGraphresidualsZ->GetYaxis()->SetLabelSize(0.02);
+		fGraphresidualsZ->GetYaxis()->SetTitleSize(0.02);
+//		fGraphresidualsZLength->Draw("F*");
+//		fGraphresidualsZ->Draw("A*");
+	
+		mgZ->Add(fGraphresidualsZ);
+//		mgZ->Add(fGraphresidualsZLength);
+		mgZ->SetTitle(title);
+		mgZ->Draw("A*");
+	    }
+	    // Global residuals histogram
+	    else{
+		fHistallresidualsZ->SetStats(kFALSE);
+		fHistallresidualsZ->Draw();
+	    }
 	}
     }
 }
@@ -629,12 +690,43 @@ void AliHLTTPCDisplay::Draw3D(){
     // DRAW 3D CLUSTER
     //--------------------------------------------------------------------------------------------
     if (fSwitch3DCluster){
+	Int_t maxCharge = 0;
+
 	for (Int_t slice=0; slice <= 35; slice++){
 
-	    UInt_t maxCharge = 0;
-	    Float_t maxXYZ[3];
-	    UChar_t padrow;
+	    Int_t currenttrack = -1;
 
+	    if (fSelectCluster == 1 && fSelectTrackSwitch && slice == fSelectTrackSlice ){
+
+		Int_t trackcounter = 0;
+		Int_t ntracks = fTracks->GetNTracks();
+	
+		for(Int_t j=0; j<ntracks; j++) { 	
+
+		    AliHLTTPCTrack *gtrack = fTracks->GetCheckedTrack(j); 
+		    if(!gtrack) continue;
+
+		    Int_t nHits = gtrack->GetNHits();  // Number of associated hits to track
+		    Int_t tmpslice = gtrack->GetSector();
+
+		    // --- CHECK if track is should be drawn
+		    // select Single Track
+		    if(tmpslice != fSelectTrackSlice) continue;
+			
+		    if (trackcounter != fSelectTrack){
+			trackcounter++;  
+			continue;
+		    }
+		    trackcounter++;
+
+		    if((fPtThreshold > 0) && (gtrack->GetPt()< fPtThreshold)) continue;
+		    if(nHits < fMinHits) continue;
+
+		    currenttrack = j;
+		    break;
+		}
+	    }
+	    
 	    if (!fSliceArray[slice]) continue;
 	    
 	    for(Int_t p=0;p<6;p++){
@@ -642,14 +734,20 @@ void AliHLTTPCDisplay::Draw3D(){
 		AliHLTTPCSpacePointData *points = fClusters[slice][p];
 		if(!points) continue;
 		Int_t npoints = fNcl[slice][p];
-		TPolyMarker3D *pm = new TPolyMarker3D(npoints);
-	
+		TPolyMarker3D *pmUsed = new TPolyMarker3D(1,6);
+		TPolyMarker3D *pmUnused = new TPolyMarker3D(1,6);
+		Int_t nUsedCluster = 0;
+		Int_t nUnusedCluster = 0;
+
 		Float_t xyz[3];
 		for(Int_t i=0; i<npoints; i++){
 		    // Used  cluster only
 		    if (fSelectCluster == 1  && points[i].fUsed == kFALSE) continue; 
 		    // Unused cluster only
 		    if (fSelectCluster == 2  && points[i].fUsed == kTRUE) continue; 
+
+		    // if single track is selcted draw only cluster for this track
+		    if (fSelectCluster == 1 && fSelectTrackSwitch && points[i].fTrackN != currenttrack) continue;
 		    
 		    xyz[0] = points[i].fX;
 		    xyz[1] = points[i].fY;
@@ -663,33 +761,32 @@ void AliHLTTPCDisplay::Draw3D(){
 			if ( pointEta<etaRange[0] || pointEta>etaRange[1] )
 			    continue;
 		    }
+
 		    AliHLTTPCTransform::Local2Global(xyz,slice);
-		    
-		    pm->SetPoint(i,xyz[0],xyz[1],xyz[2]);
-		    
+		 
+		    if (points[i].fUsed == kTRUE){
+			pmUsed->SetPoint(nUsedCluster,xyz[0],xyz[1],xyz[2]);
+			nUsedCluster++;
+		    }
+		    else {
+			pmUnused->SetPoint(nUnusedCluster,xyz[0],xyz[1],xyz[2]);
+			nUnusedCluster++;
+		    }
+
 		    // Fill Charge Histogram
 		    fHistcharge->Fill(points[i].fCharge);
-		    if (points[i].fCharge > maxCharge ){
-			maxCharge = points[i].fCharge; 
-			maxXYZ[0] = points[i].fX;
-			maxXYZ[1] = points[i].fY;
-			maxXYZ[2] = points[i].fZ;
-			padrow = points[i].fPadRow;
-		    }
-		    
+		    if ((Int_t)points[i].fCharge > maxCharge ) maxCharge = (Int_t) points[i].fCharge; 
 		}
-		pm->SetMarkerSize(4);
-		pm->SetMarkerColor(2); 
-		pm->Draw("");
-	    } 	    
-	
-	    LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplay::CHARGE","")<< "MAX CHARGE =" <<  maxCharge <<  "  slice=" << slice 
-								   << " z=" << maxXYZ[0]<< " y=" << maxXYZ[1]<< " z=" << maxXYZ[2]
+		pmUsed->SetMarkerSize(1);
+		pmUsed->SetMarkerColor(3); 
+		pmUsed->Draw("");
 
-								   << ENDLOG;
-
-
-	}
+		pmUnused->SetMarkerSize(1);
+		pmUnused->SetMarkerColor(2); 
+		pmUnused->Draw("");
+	    } // END - PATCH LOOP	    
+	}  // END - SLICE LOOP
+	fHistcharge->SetAxisRange(0,maxCharge);
     }   // END - DRAW 3D CLUSTER 
 
     //--------------------------------------------------------------------------------------------
@@ -697,272 +794,268 @@ void AliHLTTPCDisplay::Draw3D(){
     //--------------------------------------------------------------------------------------------
     if (fSwitch3DTracks){
 
+	Int_t trackcounter = 0;
 	Int_t ntracks = fTracks->GetNTracks();
+	Double_t drawStep = 0.2;
+
+	Double_t maxResidualY = 0.;
+	Double_t maxResidualZ = 0.;
 
 	TPolyLine3D *line = new TPolyLine3D[ntracks];
-	TPolyLine3D *lineT = new TPolyLine3D[ntracks];
-	Float_t xCl[176];
-	Float_t yCl[176];
-	Float_t zCl[176];
-
-	Float_t xT[176];
-	Float_t yT[176];
-	Float_t zT[176];
-
-	Float_t res[176];
-
-	Int_t trackcounter = 0;
-
+#if TRACKHELIX
+	THelix *helix = new THelix[ntracks];
+#endif
 	for(Int_t j=0; j<ntracks; j++) { 	
 
 	    AliHLTTPCTrack *gtrack = fTracks->GetCheckedTrack(j); 
 	    if(!gtrack) continue;
 
-	    Int_t nHits = gtrack->GetNHits();
-	    UInt_t *hitnum = gtrack->GetHitNumbers();
-	    Int_t hitcount=0;	
+	    Int_t nHits = gtrack->GetNHits();  // Number of associated hits to track
+	    Int_t slice = gtrack->GetSector();
 
-	    Bool_t nexttrack = kFALSE;
-
-	    TPolyMarker3D *pm = new TPolyMarker3D(nHits,7);
-	    TPolyMarker3D *pmT = new TPolyMarker3D(nHits,7);
-
+            // --- CHECK if track is should be drawn
+	    // select if slice should be displayed or not
+	    if (!fSliceArray[slice]) continue;	
+	    
+	    // select Single Track
+	    if (fSelectTrackSwitch){
+		if(slice != fSelectTrackSlice) continue;
+	
+		if (trackcounter != fSelectTrack){
+		    trackcounter++;  
+		    continue;
+		}
+		trackcounter++;
+	    }
+    
+	    if((fPtThreshold > 0) && (gtrack->GetPt()< fPtThreshold)) continue;
+	    if(nHits < fMinHits) continue;
+	    
 	    TPolyMarker3D *pmL = new TPolyMarker3D(1,2);
 	    TPolyMarker3D *pmF = new TPolyMarker3D(1,2);
 
-	    Double_t lambda = 0.;  // dipAngle lambda
-	    Double_t r = 0.;       // radius
-	    Double_t kappa = 0.;   // curvature = 1/R , signed
-	    Double_t xyz0[3];      // startingpoint of track
-	    Double_t xyzT[3];      // point on track
-	    Double_t xyzC[3];      // cluster
-	    Double_t s = 0.;       // length of track
-	    Double_t phi0 = 0.;    // azimuthal angle of startingpoint, with respect to helix axis
-	    Double_t bfield = 0;   // BField
+	    Double_t radius = gtrack->GetRadius();      // radius
+	    Double_t kappa = gtrack->GetKappa();        // curvature = 1/R , signed
+	    Double_t lambda = atan( gtrack->GetTgl() ); // dipAngle lambda
+	    Double_t phi0 = gtrack->GetPsi() + (gtrack->GetCharge() * AliHLTTPCTransform::PiHalf() ); // azimuthal angle of startingpoint, with respect to helix axis
 
 	    Double_t xyzL[3];      // lastpoint of track
 	    Double_t xyzF[3];      // firstpoint of track
 
-	    Double_t maxZ = 0;     // range of the histogram
-	    Double_t minZ =99999.; // range of the histogram
+	    xyzF[0] = gtrack->GetFirstPointX();
+	    xyzF[1] = gtrack->GetFirstPointY();
+	    xyzF[2] = gtrack->GetFirstPointZ();
+	    pmF->SetPoint(0,xyzF[0],xyzF[1],xyzF[2]);
+
+	    xyzL[0] = gtrack->GetLastPointX();
+	    xyzL[1] = gtrack->GetLastPointY();
+	    xyzL[2] = gtrack->GetLastPointZ();
+	    pmL->SetPoint(0,xyzL[0],xyzL[1],xyzL[2]);
+
+	    Double_t s = 0.;       // length of the track
+
+	    // Calculate the length of the track. If it is to flat in in s,z plane use sxy, otherwise use sz
+	    if (fabs(lambda) > 0.05){
+                // length of track calculated out of z
+		s = fabs( (xyzL[2] - xyzF[2]) / sin(lambda) ); // length of track calculated out of z
+	    }
+	    else {
+		Double_t d =  (xyzL[0] - xyzF[0])*(xyzL[0] - xyzF[0]) + (xyzL[1] - xyzF[1])*(xyzL[1] - xyzF[1]);
+		// length of track calculated out of xy
+		s = fabs ( acos( 0.5 * (2 - (d / (radius*radius)))) / ( kappa * cos(lambda) ) ); 		
+	    }
+	    
+	    Int_t nTrackPoints = 2 + (Int_t) floor(s / drawStep);
+
+#if TRACKPOLYMARKER
+	    TPolyMarker3D *pmT = new TPolyMarker3D(nTrackPoints,6);
+#endif
+
+	    Double_t *xT = new Double_t[nTrackPoints];
+	    Double_t *yT = new Double_t[nTrackPoints];
+	    Double_t *zT = new Double_t[nTrackPoints];
+
+	    //Write Track Parameters for single track
+	    if (fSelectTrackSwitch){
+		fTrackParam.id = trackcounter - 1;
+		fTrackParam.nHits = nHits;
+		fTrackParam.charge = gtrack->GetCharge();
+		fTrackParam.lambda = lambda;
+		fTrackParam.kappa = kappa;
+		fTrackParam.radius = radius;
+		fTrackParam.slice = slice;
+		fTrackParam.phi0 = phi0;
+		fTrackParam.pt = gtrack->GetPt();
+		fTrackParam.bfield = AliHLTTPCTransform::GetBFieldValue();
+		fTrackParam.xyzF[0] = gtrack->GetFirstPointX();
+		fTrackParam.xyzF[1] = gtrack->GetFirstPointY();
+		fTrackParam.xyzF[2] = gtrack->GetFirstPointZ();
+		fTrackParam.xyzL[0] = gtrack->GetLastPointX();
+		fTrackParam.xyzL[1] = gtrack->GetLastPointY();
+		fTrackParam.xyzL[2] = gtrack->GetLastPointZ();
+		fTrackParam.psi = gtrack->GetPsi();
+		fTrackParam.s = s;
+	    }
+
+	    Int_t trackPointCounter = 0;
+
+	    for (Double_t ds = 0.; ds < s; ds = ds + drawStep){
+		// FILL ARRAYS IN ORDER TO DRAW THE TRACKPOINTS, OUT OF THE PARAMETER
+		xT[trackPointCounter] = xyzF[0] + radius * ( cos( phi0 + (ds*kappa*cos(lambda)) ) - cos(phi0) );
+		yT[trackPointCounter] = xyzF[1] + radius * ( sin( phi0 + (ds*kappa*cos(lambda)) ) - sin(phi0) );
+		zT[trackPointCounter] = xyzF[2] + ds * sin(lambda);
+#if TRACKPOLYMARKER
+		pmT->SetPoint(trackPointCounter,xT[trackPointCounter],yT[trackPointCounter],zT[trackPointCounter]);
+#endif
+		trackPointCounter++;
+	    }
+
+	    xT[trackPointCounter] = xyzF[0] + radius * ( cos( phi0 + (s*kappa*cos(lambda)) ) - cos(phi0) );
+	    yT[trackPointCounter] = xyzF[1] + radius * ( sin( phi0 + (s*kappa*cos(lambda)) ) - sin(phi0) );
+	    zT[trackPointCounter] = xyzF[2] + s * sin(lambda);
+#if TRACKPOLYMARKER       
+	    pmT->SetPoint(trackPointCounter,xT[trackPointCounter],yT[trackPointCounter],zT[trackPointCounter]);
+#endif
+	    // --- RESIDUALS ---
+	    gtrack->Rotate(slice,kTRUE);
+	    Int_t nRes = 0;  // number of resiudals
+	    
+	    UInt_t *hitnum = gtrack->GetHitNumbers();
+
+	    Double_t *resY= new Double_t[nHits];
+	    Double_t *resZ= new Double_t[nHits];
+
+	    Double_t *resYLength= new Double_t[2*nHits];
+	    Double_t *resZLength= new Double_t[2*nHits];
+
+	    Double_t *padrows = new Double_t[nHits];
+	    Double_t *padrowsLength = new Double_t[2*nHits];
 
 	    for(Int_t h=0; h<nHits; h++){
-
 		UInt_t id=hitnum[h];
-		Int_t slice = (id>>25) & 0x7f;
 		Int_t patch = (id>>22) & 0x7;
 		UInt_t pos = id&0x3fffff; 
 
-		// select if slice should be displayed or not
-		if (!fSliceArray[slice]) {	
-		    nexttrack = kTRUE;
-		    break;	   
-		}
-		
-		// select Single Track
-		if (fSelectTrackSwitch){
-		    if(slice != fSelectTrackSlice) {
-			nexttrack = kTRUE;
-			break;
-		    }
-
-		    if (trackcounter != fSelectTrack && h==0){
-			trackcounter++;  
-			nexttrack = kTRUE;
-			break;
-		    }
-
-		    trackcounter++;
-    		}
-
-		// --> in the hit loop because of 'trackcounter++', otherwise wrong single track in slice will be selected
-		if((fPtThreshold > 0) && (gtrack->GetPt()< fPtThreshold)) {	
-		    nexttrack = kTRUE;
-		    break;
-		}
-		
-		// --> in the hit loop because of 'trackcounter++', otherwise wrong single track in slice will be selected
-		if(nHits < fMinHits) {	
-		    nexttrack = kTRUE;
-		    break;
-		}
-
 		AliHLTTPCSpacePointData *points = fClusters[slice][patch];
-		
-		if(!points) {
-		    LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplay::Draw3D","Clusterarray") <<"No points at slice "<<slice<<" patch "<<patch
-											<<" pos "<<pos<<ENDLOG;
-		    continue;
-		}
- 
-		if(pos>=fNcl[slice][patch]) {
-		    LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplay::Draw3D","Clusterarray") <<"Pos is too large: pos "<<pos <<" ncl "
-											<<fNcl[slice][patch]<<ENDLOG;
-		    continue;
-		}
-
-		// set the data for the residuals
-		if (h == 0){
-		    // -> Curvature / Radius / Phi0
-		    //kappa = gtrack->GetKappa(); 
-		    //r = gtrack->GetRadius();
-		    //phi0 = gtrack->GetPhi0();
-		    //bfield = AliHLTTPCTransform::GetBFieldValue();
-		    
-		    lambda = atan( gtrack->GetTgl() ); 
-		    
-		    bfield = 0.0029980 * 0.4; // KORRIGIERE B für =0.4 T Feld
-		    
-		    xyz0[0] = gtrack->GetFirstPointX();
-		    xyz0[1] = gtrack->GetFirstPointY();
-		    xyz0[2] = gtrack->GetFirstPointZ();
-		    
-		    xyzF[0] = gtrack->GetFirstPointX();
-		    xyzF[1] = gtrack->GetFirstPointY();
-		    xyzF[2] = gtrack->GetFirstPointZ();
-
-		    xyzL[0] = gtrack->GetLastPointX();
-		    xyzL[1] = gtrack->GetLastPointY();
-		    xyzL[2] = gtrack->GetLastPointZ();
-
-		    pmL->SetPoint(0,xyzL[0],xyzL[1],xyzL[2]);
-		    pmF->SetPoint(0,xyzF[0],xyzF[1],xyzF[2]);
-
-		    phi0 = gtrack->GetPsi() + (gtrack->GetCharge() * AliHLTTPCTransform::PiHalf() ); 
-		    
-		    if (bfield != 0.){
-			r = gtrack->GetPt() / bfield; 
-			kappa = - gtrack->GetCharge() * 1. / r;
-		    }
-		    else {
-			r = 999999; // just infinity
-			kappa = 0;
-		    }
-
-		    //Write Track Parameters for single track
-		    if (fSelectTrackSwitch){
-			fTrackParam.id = trackcounter - 1;
-			fTrackParam.nHits = nHits;
-			fTrackParam.charge = gtrack->GetCharge();
-			fTrackParam.lambda = lambda;
-			fTrackParam.kappa = kappa;
-			fTrackParam.radius = r;
-			fTrackParam.slice = slice;
-			fTrackParam.phi0 = phi0;
-			fTrackParam.pt = gtrack->GetPt();
-			fTrackParam.bfield = bfield;
-			fTrackParam.xyzF[0] = gtrack->GetFirstPointX();
-			fTrackParam.xyzF[1] = gtrack->GetFirstPointY();
-			fTrackParam.xyzF[2] = gtrack->GetFirstPointZ();
-			fTrackParam.xyzL[0] = gtrack->GetLastPointX();
-			fTrackParam.xyzL[1] = gtrack->GetLastPointY();
-			fTrackParam.xyzL[2] = gtrack->GetLastPointZ();
-			fTrackParam.psi = gtrack->GetPsi();
-		    }
-		}
-
 
 		Float_t xyzCtmp[3];    // cluster tmp
+		Float_t xyzTtmp[3];    // track tmp
 
 		xyzCtmp[0] = points[pos].fX;
 		xyzCtmp[1] = points[pos].fY;
 		xyzCtmp[2] = points[pos].fZ;
 
-		AliHLTTPCTransform::Local2Global(xyzCtmp,slice);
+		Int_t padrow = AliHLTTPCTransform::GetPadRow(points[pos].fX);
+		xyzTtmp[0] = gtrack->GetFirstPointX();
+		if(gtrack->GetCrossingPoint(padrow,xyzTtmp)) {
+
+		    Float_t deltaY = ( xyzCtmp[1] - xyzTtmp[1] );
+		    Float_t deltaZ = ( xyzCtmp[2] - xyzTtmp[2] );
+//		    Float_t residual = sqrt( deltaY*deltaY + deltaZ*deltaZ );
 		    
-		xCl[h] = xyzCtmp[0];
-		yCl[h] = xyzCtmp[1];
-		zCl[h] = xyzCtmp[2];
+		    padrows[nRes] = (Double_t) padrow;
+		    resY[nRes] = (Double_t) deltaY;
+		    resZ[nRes] = (Double_t) deltaZ;
 
-		// FILL POLYMARKER FOR THE ORIGINAL TRACKS
-		pm->SetPoint(h,xCl[h],yCl[h],zCl[h]);  
+		    resYLength[(2*nRes)] = 0.5 * AliHLTTPCTransform::GetPadLength(padrow);
+		    resYLength[(2*nRes)+1] = -0.5 * AliHLTTPCTransform::GetPadLength(padrow);
+		    resZLength[nRes] = AliHLTTPCTransform::GetZLength();
+		    padrowsLength[(2*nRes)] = (Double_t) padrow;
+		    padrowsLength[(2*nRes)+1] = (Double_t) padrow;
 
-		xyzC[0] = (Double_t) xyzCtmp[0];
-		xyzC[1] = (Double_t) xyzCtmp[1];
-		xyzC[2] = (Double_t) xyzCtmp[2];
-
-		xyzT[2] = xyzC[2];
-
-		//calculate length
-		s = ( xyzT[2] - xyz0[2] ) / sin(lambda);
-
-		// calculate the corresponding coordinates on the track
-		xyzT[0] = xyz0[0] +  r * ( cos( phi0 + (s*kappa*cos(lambda)) ) - cos( phi0 ) );
-		xyzT[1] = xyz0[1] +  r * ( sin( phi0 + (s*kappa*cos(lambda)) ) - sin( phi0 ) );
-
-		Double_t deltaX = ( xyzC[0] - xyzT[0] );
-		Double_t deltaY = ( xyzC[1] - xyzT[1] );
-		
-		Double_t residual = sqrt( deltaX*deltaX + deltaY*deltaY );
-		res[h] = (Float_t) residual;
-
-		if (maxZ < fabs(xyzT[2])) maxZ = fabs(xyzT[2]);
-		if (minZ > fabs(xyzT[2])) minZ = fabs(xyzT[2]);
-
-		// FILL RESIDUALS HISTOGRAM
-		fHistallresiduals->Fill(residual);
-		
-		// FILL ARRAYS IN ORDER TO DRAW THE TRACKPOINTS, OUT OF THE PARAMETER
-		xT[h] = xyzT[0];
-		yT[h] = xyzT[1];
-		zT[h] = xyzT[2];
-
-		// FILL POLYMARKER FOR THE NEW TRACKS
-		pmT->SetPoint(h,xT[h],yT[h],zT[h]);
-       	  
-		hitcount++;
+		    // FILL RESIDUALS HISTOGRAM
+		    fHistallresidualsY->Fill(resY[nRes]);
+		    fHistallresidualsZ->Fill(resZ[nRes]);
+		    if (resY[nRes] > maxResidualY ) maxResidualY = resY[nRes];
+		    if (resZ[nRes] > maxResidualZ ) maxResidualZ = resZ[nRes];
+		    nRes++;
+		}
 	    }
 
-	    if(nexttrack) continue;
-	    if(hitcount==0) continue;
-	
+	    gtrack->Rotate(slice,kFALSE);
+	    // --- RESIDUALS ---
 
-	    if ( fGraphresiduals){
-		delete fGraphresiduals;
-		fGraphresiduals = NULL;
-	    }
-
-	    // FILL RESIDUALS GRAPH
-	    fGraphresiduals = new TGraph(nHits,zT,res);
-	    fGraphresiduals->GetXaxis()->SetLabelSize(0.02);
-	    fGraphresiduals->GetXaxis()->SetTitleSize(0.02);
-	    fGraphresiduals->GetYaxis()->SetLabelSize(0.02);
-	    fGraphresiduals->GetYaxis()->SetTitleSize(0.02);
-	    
-	    TPolyLine3D *currentline = &(line[j]);
-	    currentline = new TPolyLine3D(nHits,xCl,yCl,zCl,"");
-	    currentline->SetLineColor(4);   
-	    currentline->SetLineWidth(2);
-//	    currentline->Draw("same");
-
-	    TPolyLine3D *currentlineT = &(lineT[j]);
-	    currentlineT = new TPolyLine3D(nHits,xT,yT,zT,"");
-	    currentlineT->SetLineColor(7);   
-	    currentlineT->SetLineWidth(1);
-//	    currentlineT->Draw("same");
-
-	    
-	    //Last Point of Track
+	    // Draw last point of Track
 	    pmL->SetMarkerSize(3);
 	    pmL->SetMarkerColor(4); 
 	    pmL->Draw();
 
-	    //First Point of Track
+	    // Draw first point of Track
 	    pmF->SetMarkerSize(3);
 	    pmF->SetMarkerColor(5); 
 	    pmF->Draw();
-	    
-            //Original Track 
-	    pm->SetMarkerSize(4);
-	    pm->SetMarkerColor(6); 
-	    pm->Draw();
 
-	    //New Track
-	    pmT->SetMarkerSize(4);
-            pmT->SetMarkerColor(3); 
+#if TRACKPOLYMARKER
+	    // Draw Track -- as polymarker
+	    pmT->SetMarkerSize(3);
+	    pmT->SetMarkerColor(3); 
 	    pmT->Draw();
+#endif
+	    // Draw Track -- as line
+	    TPolyLine3D *currentline = &(line[j]);
+	    currentline = new TPolyLine3D(nTrackPoints,xT,yT,zT,"");
+	    currentline->SetLineColor(4);   
+	    currentline->SetLineWidth(2);
+	    currentline->Draw("same");
+
+#if TRACKHELIX
+	    // Draw Track -- as helix
+            // works ok, execpt for very small dipangles -> track almost horizontal
+	    Double_t hrange[2];
+	    Double_t v0[3];
+	    Double_t omega;
+	    hrange[0] = xyzF[2];
+	    hrange[1] = xyzL[2];
+	    v0[0] = gtrack->GetPx();
+	    v0[1] = gtrack->GetPy();
+	    v0[2] = gtrack->GetPz();
+	    omega = AliHLTTPCTransform::GetBFieldValue() * gtrack->GetCharge();
+
+	    THelix *currenthelix = &(helix[j]);
+	    currenthelix = new THelix(xyzF,v0,omega,hrange,kHelixZ,0);
+	    currenthelix->SetLineColor(6);   
+	    currenthelix->SetLineWidth(1);
+	    currenthelix->Draw("same");   	    
+#endif
+
+	    //Residuals
+	    if ( fGraphresidualsY){
+		delete fGraphresidualsY;
+		fGraphresidualsY = NULL;
+	    }
+
+	    if ( fGraphresidualsZ){
+		delete fGraphresidualsZ;
+		fGraphresidualsZ = NULL;
+	    }
+	    //Residuals
+	    if ( fGraphresidualsYLength){
+		delete fGraphresidualsYLength;
+		fGraphresidualsYLength = NULL;
+	    }
+
+	    if ( fGraphresidualsZLength){
+		delete fGraphresidualsZLength;
+		fGraphresidualsZLength = NULL;
+	    }
+
+
+
+	    // FILL Y RESIDUALS GRAPH
+	    fGraphresidualsY = new TGraph(nRes-1,padrows,resY);
+	    fGraphresidualsYLength = new TGraph((2*nRes)-2,padrowsLength,resYLength);
+	    // FILL Z RESIDUALS GRAPH
+	    fGraphresidualsZ = new TGraph(nRes-1,padrows,resZ);
+	    fGraphresidualsZLength = new TGraph(nRes-1,padrows,resZLength);
+
+	    if (xT) delete xT;
+	    if (yT) delete yT;
+	    if (zT) delete zT;
 
 	} // END for tracks
+
+	fHistallresidualsY->SetAxisRange(0,maxResidualY);
+	fHistallresidualsZ->SetAxisRange(0,maxResidualZ);
 
     }   // END - DRAW 3D Tracks
 
@@ -1005,6 +1098,54 @@ void AliHLTTPCDisplay::Draw3D(){
     v->Draw();   
 }
 
+// ---------------------------------------------------
+// In order to be backward compatible
+// ---------------------------------------------------
+#if BACKWARD
+void AliHLTTPCDisplay::DisplayClusters(Bool_t x3don,Float_t* etaRange) {
+    if (!fc1){
+	fc1 = new TCanvas("c1","",900,900);
+	fc1->cd();
+    }
 
+    fSwitch3DTracks = kFALSE; 
+    fSwitch3DCluster = kTRUE; 
+    fSwitch3DPadRow = kFALSE; 
+    fSwitch3DGeometry = kFALSE;
 
- 
+    Draw3D();
+}
+// ---------------------------------------------------
+void AliHLTTPCDisplay::DisplayTracks(Int_t minhits,Bool_t x3don,Float_t thr) {
+    if (!fc1){
+	fc1 = new TCanvas("c1","",900,900);
+	fc1->cd();
+    }
+
+    fMinHits = minhits; 
+    fPtThreshold = thr;
+    fSwitch3DTracks = kTRUE; 
+    fSwitch3DCluster = kFALSE; 
+    fSwitch3DPadRow = kFALSE; 
+    fSwitch3DGeometry = kFALSE;
+
+    Draw3D();
+}
+// ---------------------------------------------------
+void AliHLTTPCDisplay::DisplayAll(Int_t minhits,Bool_t clusterswitch,Bool_t trackswitch,Bool_t x3don, Float_t thr, Float_t* etaRange){
+    if (!fc1){
+	fc1 = new TCanvas("c1","",900,900);
+	fc1->cd();
+    }
+
+    fMinHits = minhits; 
+    fPtThreshold = thr;
+    fSwitch3DTracks = trackswitch; 
+    fSwitch3DCluster = clusterswitch; 
+    fSwitch3DPadRow = kFALSE; 
+    fSwitch3DGeometry = kFALSE;
+
+    Draw3D();
+}
+#endif
+// ---------------------------------------------------

@@ -1,4 +1,3 @@
-// XEmacs -*-C++-*-
 // @(#) $Id$
 
 #ifndef ALIHLTTPCCLUSTERFINDERCOMPONENT_H

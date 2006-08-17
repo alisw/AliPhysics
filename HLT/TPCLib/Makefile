@@ -12,8 +12,8 @@ ALIHLT_TOPDIR = $(shell pwd)/..
 endif
 
 USENEWIO=1
-#EXTRACXXFLAGS=-ggdb3 -O0
-#EXTRALDFLAGS=-ggdb3 -O0
+EXTRACXXFLAGS=-ggdb3 -O0
+EXTRALDFLAGS=-ggdb3 -O0
 
 include $(ALIHLT_TOPDIR)/Makefile.conf
 

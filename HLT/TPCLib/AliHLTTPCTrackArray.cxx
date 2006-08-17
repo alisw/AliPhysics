@@ -275,6 +275,10 @@ void AliHLTTPCTrackArray::FillTracks(Int_t ntracks, AliHLTTPCTrackSegmentData* t
     AliHLTTPCTransform::Local2Global(last,slice);
     track->SetLastPoint(last[0],last[1],last[2]);
     track->SetHits( trs->fNPoints, trs->fPointIDs );
+// BEGINN ############################################## MODIFIY JMT
+    track->SetSector(slice);
+    track->CalculateHelix();
+// END ################################################# MODIFIY JMT
 #ifdef INCLUDE_TPC_HOUGH
 #ifdef ROWHOUGHPARAMS
     if(GetTrackType()=='h') {
@@ -362,6 +366,13 @@ UInt_t AliHLTTPCTrackArray::WriteTracks(AliHLTTPCTrackSegmentData* tr)
     tmpP += sizeof(AliHLTTPCTrackSegmentData)+tP->fNPoints*sizeof(UInt_t);
     size += sizeof(AliHLTTPCTrackSegmentData)+tP->fNPoints*sizeof(UInt_t);
     tP = (AliHLTTPCTrackSegmentData*)tmpP;
+
+// BEGINN ############################################## MODIFIY JMT
+    LOG(AliHLTTPCLog::kError,"AliHLTTPCTrackArray::WriteTracks","TRACKPARAMETER") <<ENDLOG;
+    track->Rotate(0,kFALSE);
+    track->Print();
+// END ################################################# MODIFIY JMT
+
   }
   return size;
 }

@@ -60,7 +60,7 @@ AliHLTTPCTrack::AliHLTTPCTrack()
 }
 
 void AliHLTTPCTrack::Set(AliHLTTPCTrack *tpt){
-  
+  LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::Set","TEST")<< "=========== ENTER ======= " << ENDLOG;
   SetRowRange(tpt->GetFirstRow(),tpt->GetLastRow());
   SetPhi0(tpt->GetPhi0());
   SetKappa(tpt->GetKappa());
@@ -78,7 +78,8 @@ void AliHLTTPCTrack::Set(AliHLTTPCTrack *tpt){
 }
 
 Int_t AliHLTTPCTrack::Compare(const AliHLTTPCTrack *track) const
-{
+{ 
+    LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::Compare","TEST")<< "=========== ENTER ======= " << ENDLOG;
   if(track->GetNHits() < GetNHits()) return 1;
   if(track->GetNHits() > GetNHits()) return -1;
   return 0;
@@ -119,7 +120,7 @@ void AliHLTTPCTrack::Rotate(Int_t slice,Bool_t tolocal)
   //If flag tolocal is set, the track is rotated
   //to local coordinates.
 
-  
+   LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::Rotate","TEST")<< "=========== ENTER ======= " << ENDLOG;
   Float_t psi[1] = {GetPsi()};
   if(!tolocal)
     AliHLTTPCTransform::Local2GlobalAngle(psi,slice);
@@ -164,6 +165,8 @@ void AliHLTTPCTrack::Rotate(Int_t slice,Bool_t tolocal)
 }
 
 void AliHLTTPCTrack::CalculateHelix(){
+ LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::claculateHelix","TEST")<< "=========== ENTER ======= " << ENDLOG;
+
   //Calculate Radius, CenterX and CenterY from Psi, X0, Y0
   //
   
@@ -188,7 +191,7 @@ Double_t AliHLTTPCTrack::GetCrossingAngle(Int_t padrow,Int_t slice)
   //point. This is done by rotating the radius vector by 90 degrees;
   //rotation matrix: (  0  1 )
   //                 ( -1  0 )
-
+ LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::getcrossingangle","TEST")<< "=========== ENTER ======= " << ENDLOG;
   Float_t angle=0;//Angle perpendicular to the padrow in local coordinates
   if(slice>=0)//Global coordinates
     {
@@ -220,7 +223,7 @@ Double_t AliHLTTPCTrack::GetCrossingAngle(Int_t padrow,Int_t slice)
 Bool_t AliHLTTPCTrack::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 {
   //Assumes the track is given in local coordinates
-  
+   LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::getcrossingpoint","TEST")<< "=========== ENTER ======= " << ENDLOG;
   if(!IsLocal())
     {
       cerr<<"GetCrossingPoint: Track is given on global coordinates"<<endl;
@@ -260,7 +263,8 @@ Bool_t AliHLTTPCTrack::GetCrossingPoint(Int_t padrow,Float_t *xyz)
 
 Bool_t AliHLTTPCTrack::CalculateReferencePoint(Double_t angle,Double_t radius){
   // Global coordinate: crossing point with y = ax+ b; a=tan(angle-AliHLTTPCTransform::Pi()/2);
-  //
+  // 
+LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::calculatereferencepoint","TEST")<< "=========== ENTER ======= " << ENDLOG;
   const Double_t rr=radius;//132; //position of reference plane
   const Double_t xr = cos(angle) * rr;
   const Double_t yr = sin(angle) * rr;
@@ -310,7 +314,9 @@ Bool_t AliHLTTPCTrack::CalculateReferencePoint(Double_t angle,Double_t radius){
 
 Bool_t AliHLTTPCTrack::CalculateEdgePoint(Double_t angle){
   // Global coordinate: crossing point with y = ax; a=tan(angle);
-  //
+  // 
+
+LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::calculateedgepoint","TEST")<< "=========== ENTER ======= " << ENDLOG;
   Double_t rmin=AliHLTTPCTransform::Row2X(AliHLTTPCTransform::GetFirstRow(-1));  //min Radius of TPC
   Double_t rmax=AliHLTTPCTransform::Row2X(AliHLTTPCTransform::GetLastRow(-1)); //max Radius of TPC
 
@@ -374,6 +380,7 @@ Bool_t AliHLTTPCTrack::CalculateEdgePoint(Double_t angle){
 Bool_t AliHLTTPCTrack::CalculatePoint(Double_t xplane){
   // Local coordinate: crossing point with x plane
   //
+LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::calculatepoint","TEST")<< "=========== ENTER ======= " << ENDLOG;
   Double_t racine = pow(fRadius,2)-pow(xplane-fCenterX,2);
   if(racine<0) return IsPoint(kFALSE);
   Double_t rootRacine = sqrt(racine);
@@ -407,6 +414,8 @@ Bool_t AliHLTTPCTrack::CalculatePoint(Double_t xplane){
 
 void AliHLTTPCTrack::UpdateToFirstPoint()
 {
+LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::updatetofirstpoint","TEST")<< "=========== ENTER ======= " << ENDLOG;
+
   //Update track parameters to the innermost point on the track.
   //Basically it justs calculates the intersection of the track, and a cylinder
   //with radius = r(innermost point). Then the parameters are updated to this point.
@@ -460,7 +469,9 @@ void AliHLTTPCTrack::UpdateToFirstPoint()
   Double_t tPsi = tPhi - GetCharge() * 0.5 * pi / abs(GetCharge()) ;
   if ( tPsi > 2. * pi ) tPsi -= 2. * pi ;
   if ( tPsi < 0.        ) tPsi += 2. * pi ;
-  
+
+  LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::updatetofirstpoint","TEST")<< "===1===" << "radius=" << radius  << " fR0=" << fR0 << ENDLOG;
+
   //And finally, update the track parameters
   SetCenterX(xc);
   SetCenterY(yc);
@@ -468,13 +479,15 @@ void AliHLTTPCTrack::UpdateToFirstPoint()
   SetPhi0(phi);
   SetFirstPoint(radius*cos(phi),radius*sin(phi),z);
   SetPsi(tPsi);
+ LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::updatetofirstpoint","TEST")<< "===2===" << "radius=" << radius  << " fR0=" << fR0 << ENDLOG;
 }
 
 void AliHLTTPCTrack::GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closest_x,Double_t &closest_y,Double_t &closest_z)
 {
   //Calculate the point of closest approach to the vertex
   
-  
+  LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::getclosestpoint","TEST")<< "=========== ENTER ======= " << ENDLOG;
+
   Double_t xc = GetCenterX() - vertex->GetX();//Shift the center of curvature with respect to the vertex
   Double_t yc = GetCenterY() - vertex->GetY();
   

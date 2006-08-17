@@ -56,6 +56,10 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
     fMultiplicity = 4000;
     fBField = 0.4;
     fDoPP = false;
+// --JMT---------------------- NEW ----------------------------	    
+    fnonvertextracking = kFALSE;
+    fmainvertextracking = kTRUE;
+// --JMT---------------------- NEW ----------------------------
     }
 
 AliHLTTPCSliceTrackerComponent::~AliHLTTPCSliceTrackerComponent()
@@ -109,13 +113,45 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t e
     fTracker->SetNSegments(phi_segments,eta_segments);
     fTracker->SetMaxDca(min_pt_fit);
     //   fTracker->MainVertexSettings(trackletlength,tracklength,rowscopetracklet,rowscopetrack);
+
+// --JMT---------------------- NEW ----------------------------
+#if 0
     fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,vertexConstraints);
     fTracker->SetTrackletCuts(maxangle,goodDist,vertexConstraints);
-    
-    if( vertexConstraints )
+#endif    	
+    Logging( kHLTLogError, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "==============================" );
+
+    if ( fmainvertextracking == kTRUE && fnonvertextracking == kFALSE){
+	fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,kTRUE);
+	fTracker->SetTrackletCuts(maxangle,goodDist,kTRUE);
+
+	fTracker->MainVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack, maxphi, maxeta);	
+	Logging( kHLTLogError, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "MAINVERTEXTRACKING" );
+    }
+    else if ( fmainvertextracking == kTRUE && fnonvertextracking == kTRUE){
+	fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,kTRUE);
+	fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,kFALSE);
+	fTracker->SetTrackletCuts(maxangle,goodDist,kTRUE);
+	fTracker->SetTrackletCuts(maxangle,goodDist,kFALSE);
+
 	fTracker->MainVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack, maxphi, maxeta);
-    else
+	fTracker->NonVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack);	
+	Logging( kHLTLogError, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "MAINVERTEXTRACKING - NONVERTEXTRACKING" );
+    }
+    else if ( fmainvertextracking == kFALSE && fnonvertextracking == kTRUE){
+	fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,kFALSE);
+	fTracker->SetTrackletCuts(maxangle,goodDist,kFALSE);
+
 	fTracker->NonVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack);
+	Logging( kHLTLogError, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "NONVERTEXTRACKING" );
+    }
+
+
+#if 0
+    if( vertexConstraints ) fTracker->MainVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack, maxphi, maxeta);
+    else fTracker->NonVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack);
+#endif 
+// --JMT---------------------- NEW ----------------------------
     //fTracker->SetParamDone(true);
 
     //AliHLTTPC::SetVertexFit( kFALSE );
@@ -125,6 +161,10 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t e
 
 void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicity, double bField )
     {
+    AliHLTTPCTransform::SetBField( bField );
+    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bField );
+    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "B field is  %f\n",AliHLTTPCTransform::GetBFieldValue());	
+
     if ( doPP )
 	{
 	//tracker->SetClusterFinderParam(xyerror,zerror,kTRUE); // ??
@@ -249,8 +289,8 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicit
 		    }
 		break;
 	    }
-	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bfs[closestBf] );
-	AliHLTTPCTransform::SetBField( bfs[closestBf] );
+//	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bfs[closestBf] );
+//	AliHLTTPCTransform::SetBField( bfs[closestBf] );
 
 	}
     }
@@ -267,7 +307,12 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     fTracker = new AliHLTTPCConfMapper();
     fVertex = new AliHLTTPCVertex();
     fEta[0] = 0.;
-    fEta[1] = 1.1;
+
+#if 0
+    fEta[1] = 10.1;
+#else
+    fEta[1] = 1.1; 
+#endif
     fDoNonVertex = false;
     fMultiplicity = 4000;
     fBField = 0.4;
@@ -309,15 +354,32 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
 	    fBField = strtod( argv[i+1], &cpErr );
 	    if ( *cpErr )
 		{
-		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing multiplicity", "Cannot convert B-field specifier '%s'.", argv[i+1] );
+// --JMT---------------------- MODIFY ----------------------------
+		Logging( kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Missing B-field", "Cannot convert B-field specifier '%s'.", argv[i+1] );
+// --JMT---------------------- MODIFY ----------------------------
 		return EINVAL;
 		}
 	    i += 2;
 	    continue;
 	    }
+// --JMT---------------------- NEW ----------------------------
+	if ( !strcmp( argv[i], "-nonvertextracking" ) ){
+	    fnonvertextracking = kTRUE;
+	    i++;
+	    continue;	    
+	}
+	
+	if ( !strcmp( argv[i], "-mainvertextrackingoff" ) ){	
+	    fmainvertextracking = kFALSE;
+	    i++;
+	    continue;	    
+	}
+// --JMT---------------------- NEW ----------------------------
+
 	Logging(kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
 	return EINVAL;
 	}
+
     SetTrackerParam( fDoPP, fMultiplicity, fBField );
     return 0;
     }
@@ -497,12 +559,39 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	}
 
     outPtr = (AliHLTTPCTrackletData*)(outBPtr);
+
+// --JMT---------------------- NEW ----------------------------
+
+    fTracker->SetPointers();
+    if ( fmainvertextracking == kTRUE && fnonvertextracking == kFALSE){	
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
+	fTracker->MainVertexTracking_a();
+	fTracker->MainVertexTracking_b();
+	fTracker->FillTracks();
+    }
+    else if ( fmainvertextracking == kTRUE && fnonvertextracking == kTRUE){	
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---MAINVERTEXTRACKING---");
+	fTracker->MainVertexTracking_a();
+	fTracker->MainVertexTracking_b();
+	fTracker->FillTracks();	
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---NONVERTEXTRACKING---");
+	fTracker->NonVertexTracking();
+    }
+    else if ( fmainvertextracking == kFALSE && fnonvertextracking == kTRUE){
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "Tracking", " ---NONVERTEXTRACKING---");
+	fTracker->NonVertexTracking();	
+	fTracker->FillTracks();	
+    }
+
+#if 0
     fTracker->MainVertexTracking_a();
     fTracker->MainVertexTracking_b();
     fTracker->FillTracks();
-    
-    if ( fDoNonVertex )
-	fTracker->NonVertexTracking();//Do a second pass for nonvertex tracks
+    if (fDoNonVertex) fTracker->NonVertexTracking();//Do a second pass for nonvertex tracks
+#endif
+// --JMT---------------------- NEW ----------------------------
+
+
     
     // XXX Do track merging??
     

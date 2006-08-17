@@ -234,6 +234,15 @@ void AliHLTTPCClusterFinder::ProcessDigits()
     while(1){ //Loop over current
       charge = fDigitReader->GetSignal();
 
+
+      // CHARGE DEBUG
+      if (fDigitReader->GetRow() == 90){
+/////	  LOG(AliHLTTPCLog::kFatal,"AliHLTTPCClusterFinder::Row","row90")  << "PAD=" <<  fDigitReader->GetPad() << "  TIME=" <<  fDigitReader->GetTime() 
+	  //					   << "  SIGNAL=" <<  fDigitReader->GetSignal() << ENDLOG;
+
+      }
+
+
       if(time >= AliHLTTPCTransform::GetNTimeBins()){
 	LOG(AliHLTTPCLog::kFatal,"AliHLTTPCClusterFinder::ProcessRow","Digits")
 	  <<"Timebin out of range "<<(Int_t)time<<ENDLOG;
@@ -420,6 +429,11 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       Float_t ftime =(Float_t)list[j].fTime / list[j].fTotalCharge;
       Float_t ftime2=fZErr*fZErr;  //fixed given error
 
+
+   
+     
+
+
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
 	Int_t patch = AliHLTTPCTransform::GetPatch(fCurrentRow);
 	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
@@ -488,6 +502,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       fSpacePointData[counter].fSigmaZ2  = ftime2;
 
       fSpacePointData[counter].fUsed = kFALSE;         // only used / set in AliHLTTPCDisplay
+      fSpacePointData[counter].fTrackN = -1;           // only used / set in AliHLTTPCDisplay
 
       Int_t patch=fCurrentPatch;
       if(patch==-1) patch=0; //never store negative patch number

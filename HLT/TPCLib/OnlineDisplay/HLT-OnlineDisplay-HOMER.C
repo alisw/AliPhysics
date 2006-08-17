@@ -35,16 +35,13 @@
  *         next event : <Display PadRow>, <Display PadRow with Clusters>, <Display PadRow with Tracks> or <Display PadRow with Clusters and Tracks>
  */
 
-
-// gROOT->GetInterpreter()->AddIncludePath( "$ALIHLT_TOPDIR/BASE" );
-// gROOT->GetInterpreter()->AddIncludePath( "$ALIHLT_TOPDIR/TPCLib" );
-
 #include "AliHLTDataTypes.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCDigitReader.h"
+//#include "AliHLTTPCTrackArray.h"
 
 // include because of connecttofile()
 #include <stdio.h>
@@ -64,12 +61,25 @@
 #include "AliHLT_C_Component_WrapperInterface.h"
 
 
+void* fODHReader;  /* really HOMERReader* */
+void* fODHDisplay; /* really AliHLTTPCDisplay* */
 
-//#include "AliHLTTPCTrackArray.h"
+Int_t fTracksPerSlice[36];   // TrackCount per slice
 
-    void* gODH_Reader; /* really HOMERReader* */
-    void* gODH_Display; /* really AliHLTTPCDisplay* */
+Float_t fTheta;
+Float_t fPhi;
 
+//vector<QString> fHostnames;
+//vector<QString> fPorts;
+
+class AliHLTTPCTrackArray;
+AliHLTTPCTrackArray* fTrackArray;
+
+TCanvas *fCanvasPad;
+TCanvas *fCanvasPadRow;
+TCanvas *fCanvas3D;
+TCanvas *fCanvasCharge;
+TCanvas *fCanvasResiduals;
 
 /* Dummy function to work around the problem that the interpreter does not load the first function properly... */
 int ODH_Dummy() {
@@ -78,138 +88,89 @@ int ODH_Dummy() {
 
 // ########################################################################################################################################
 int HLT_OnlineDisplay_HOMER() {
-    gODH_Display = NULL;
+    fODHDisplay = NULL;
+    fODHReader = NULL; 
+    fTrackArray = NULL;  
+    fTheta = 90.;
+    fPhi = 0.;
+
+    fCanvasPad = NULL;
+    fCanvasPadRow = NULL;
+    fCanvas3D = NULL;
+    fCanvasCharge = NULL;
+    fCanvasResiduals = NULL;
     return 0;
 }
 
 // ########################################################################################################################################
-int ODH_Init( char* path_to_geom_file, char* path_to_homer_lib = NULL ) {
+int ODH_Init() {
     // --- Load LIBS
-    TString lib;
     cout << "Loading ROOT libraries (ROOTSYS has to be set)" << endl;
-
     gSystem->Load("libPhysics");
     gSystem->Load("libEG");
-//     if(gSystem->Load("libMC")==-1) {
     gSystem->Load("libGeom");
     gSystem->Load("libVMC");
-// 	}
+    gSystem->Load("libGpad");
 
     cout << "Loading ALICE TPC libraries (ALICE_ROOT & ALICE_TARGET have to be set)" << endl;
     gSystem->Load("libESD");
     gSystem->Load("libSTEER");
+    // AliRoot versions v4-04-Release or higher have a changed RAW library layout
+    // TODO: check this at configure time
+#ifndef ALIRAW_4_04
+    gSystem->Load("libRAWData");
+#else //ALIRAW_4_04
     gSystem->Load("libRAWDatabase");
     gSystem->Load("libRAWDatarec");
+#endif //ALIRAW_4_04
 //     gSystem->Load("libCONTAINERS");
 //     if(gSystem->Load("libTPC")!=0) {
     gSystem->Load("libTPCbase");
     gSystem->Load("libTPCrec");
     gSystem->Load("libTPCsim");
     gSystem->Load("libTPCfast");
-//  	}
 
     cout << "Loading HLT libraries (ALIHLT_LIBDIR has to be set)" << endl;
     gSystem->Load("$(ALIHLT_LIBDIR)/libHLTbase.so");
     gSystem->Load("$(ALIHLT_LIBDIR)/libAliHLTTPC.so");
+
     cout << "Loading HOMER library" << endl;
-
-    if ( path_to_homer_lib ) {
-	lib = path_to_homer_lib;
-	lib += "/";
-    }
-    else {
-	lib = "";
-    }
-    
-    lib += "libHOMERReader_ROOT.so";
-    gSystem->Load( lib );
-
+    gSystem->Load("${ALIHLT_DC_DIR}/lib/Linux-i686/libHOMERReader_ROOT.so" );
 
     // --- Create DISPLAY
     cout << "Creating display" << endl;
+    fCanvasPad = new TCanvas("fCanvasPad","HLT Online Display - Pad Display",900,900);
+    fCanvasPad->Divide(1,3);
+    fCanvasPadRow = new TCanvas("fCanvasPadRow","HLT Online Display - PadRow Display",900,900);
+    fCanvas3D = new TCanvas("fCanvas3D","HLT Online Display - 3D Display",900,900);
+    fCanvasCharge = new TCanvas("fCanvasCharge","HLT Online Display - Charge Display",900,900);
+    fCanvasResiduals = new TCanvas("fCanvasResiduals","HLT Online Display - Residuals Display",900,900);
 
-    Char_t *gfile="alice.geom"; // geometrie file
+    fTheta = 90.;
+    fPhi = 0.;
+
+    // --- Load Geometry
     TString geoPath;
-    if ( path_to_geom_file ){	
-	geoPath = path_to_geom_file;
-	geoPath += "/";
+
+    Char_t * geometryPath = getenv("ALIHLT_DC_DIR");
+    Char_t * geometryFile = "alice.geom";
+
+    if (geometryPath) {
+	geoPath = geometryPath;
+	geoPath += "/share/TPC-OnlineDisplayHOMER";
     }
-    else {
-	geoPath = "";
-    }
-    geoPath += gfile;
+    else geoPath = ".";
+    
+    geoPath += "/";
+    geoPath += geometryFile;
 
-    Int_t slices[] = { 0, 35 };
-    AliHLTTPCDisplay* display = new AliHLTTPCDisplay( slices, geoPath.Data() );
+    AliHLTTPCDisplay* display = new AliHLTTPCDisplay( (Char_t*)geoPath.Data() );
 
-    display->SetSlices();
-    display->DisplayAll(0,kFALSE,kFALSE,kFALSE,kFALSE);
+    fODHDisplay = (void*)display;
 
-    gODH_Display = (void*)display;
+    display->SetupHist();
+
     return 0;
-}
-
-int ODH_SetSliceRange(int minslice,int maxslice){
-  // sets a range of Slices
-  if (!gODH_Display ) return -1;
-  AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
-
-  display->SetSlices(minslice,maxslice);
-  display->DisplayAll(0,kFALSE,kFALSE,kFALSE,kFALSE);
-}
-
-int ODH_SetSliceRange(int slice){
-  // sets one slice
-  if (!gODH_Display ) return -1;
-  AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
-
-  display->SetSlices(slice); 
-  display->DisplayAll(0,kFALSE,kFALSE,kFALSE,kFALSE);
-}
-
-int ODH_SetSliceRange(){
-  // sets all Slices
-  if (!gODH_Display ) return -1;
-  AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
-
-  display->SetSlices();
-  display->DisplayAll(0,kFALSE,kFALSE,kFALSE,kFALSE);
-}
-
-int ODH_SetSlicePair(int slice){
-  // sets a pair of slices
-  if (!gODH_Display ) return -1;
-  AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
-
-  display->SetSlicesPair(slice);
-  display->DisplayAll(0,kFALSE,kFALSE,kFALSE,kFALSE);
-}
-
-int ODH_SetSlicePair(int minslice, int maxslice){
-  // sets a pair of slices
-  if (!gODH_Display ) return -1;
-  AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
-
-  display->SetSlicesPair(minslice,maxslice);
-  display->DisplayAll(0,kFALSE,kFALSE,kFALSE,kFALSE);
-}
-
-int ODH_SetInvert(){
-  // sets a pair of slices
-  if (!gODH_Display ) return -1;
-  AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
-
-  display->SetInvert();
-  display->DisplayAll(0,kFALSE,kFALSE,kFALSE,kFALSE);
-}
-
-int ODH_SetDrawGeo(){
-  // sets a pair of slices
-  if (!gODH_Display ) return -1;
-  AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
-
-  display->SetDrawGeo();
-  display->DisplayAll(0,kFALSE,kFALSE,kFALSE,kFALSE);
 }
 
 // ########################################################################################################################################
@@ -252,167 +213,114 @@ int ODH_Connect( char* hostname_clusters, short port_clusters, char* hostname_tr
 	delete reader;
 	reader = NULL;
     }
-    gODH_Reader = (void*)reader;
+    fODHReader = (void*)reader;
+
+    printf( "CONNECTED\n");
     return ret;
 }
 
 // ########################################################################################################################################
-int ODH_Disconnect() {
-    if ( !gODH_Reader )
+Int_t ODH_Disconnect() {
+    if ( !fODHReader )
 	return 0;
-    HOMERReader* reader = (HOMERReader*)gODH_Reader;
+    HOMERReader* reader = (HOMERReader*)fODHReader;
     delete reader;
-    gODH_Reader = NULL;
-    return 0;
-}
+    fODHReader = NULL;
+  
+    if ( fTrackArray )  delete fTrackArray;   
+    fTrackArray = NULL;  
+
+    return 0; 
+} 
+
 
 // ########################################################################################################################################
-Int_t ODH_SetupPadRow(Int_t histswitch, Int_t slice, Int_t padrow){  
-    // PADROW 0 - 158
-    if (!gODH_Display ) return -1;
-    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
+Int_t ODH_DisplayEvent(Bool_t nextSwitch=kTRUE, Bool_t threeDSwitch=kTRUE, Bool_t PadRowSwitch= kTRUE){
 
-    // Setup Geometry:  histswitch = 0;
-    // Setup Histogram: histswitch = 1|2|3;
-    display->SetupPadRow(histswitch,slice,padrow);
-
-    return 0;
-}
-
-// ########################################################################################################################################
-int ODH_DisplayNextEvent( Bool_t clusterswitch, Bool_t trackswitch, Bool_t padrowswitch, Float_t* clustersEtaRange = NULL ) {
+    if ( !fODHReader || !fODHDisplay ) {
+    	printf( "ERROR no READER or DISPLAY" );
+	return -1;
+    }
     
-    if ( !gODH_Reader || !gODH_Display ) return -1;
-    
+    HOMERReader* reader = (HOMERReader*)fODHReader;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
     // -- input datatypes , reverse
     char* spptID="SRETSULC";
-    //char* spptID="STPECAPS";
     char* trkID = "SGESKART";
-    //char* trkID = "SGESCART";
     char* padrowID = "KPWR_LDD";
+    Int_t ret;
 
-    Int_t minHits = 0;
-    Bool_t x3don = kFALSE;
-
-    HOMERReader* reader = (HOMERReader*)gODH_Reader;
-    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;
-    int ret = reader->ReadNextEvent();
-
-    if ( ret ) {
-	int ndx = reader->GetErrorConnectionNdx();
-	printf( "------------ TRY AGAIN --------------->Error reading event from source %d: %s (%d)\n", ndx, strerror(ret), ret );
-	ODH_DisplayNextEvent( clusterswitch, trackswitch, padrowswitch, clustersEtaRange);
-	return ret;
-    }
-
-    unsigned long blockCnt = reader->GetBlockCnt();
-    printf( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t)reader->GetEventID(), (ULong64_t)reader->GetEventID(), blockCnt );
-
-    for ( unsigned long i = 0; i < blockCnt; i++ ) {
-	char tmp1[9], tmp2[5];
-	memset( tmp1, 0, 9 );
-	memset( tmp2, 0, 5 );
-	void *tmp11 = tmp1;
-	ULong64_t* tmp12 = (ULong64_t*)tmp11;
-	*tmp12 = reader->GetBlockDataType( i );
-	void *tmp21 = tmp2;
-	ULong_t* tmp22 = (ULong_t*)tmp21;
-	*tmp22 = reader->GetBlockDataOrigin( i );
- 	printf( "Block %lu length: %lu - type: %s - origin: %s\n",
- 		i, reader->GetBlockDataLength( i ), tmp1, tmp2 );
+    if (nextSwitch) {
+	ret = reader->ReadNextEvent();
+    
+	if ( ret ) {
+	    int ndx = reader->GetErrorConnectionNdx();
+	    printf( "------------ TRY AGAIN --------------->Error reading event from source %d: %s (%d)\n", ndx, strerror(ret), ret );
+	    return ret; 
+	}
+	
+	unsigned long blockCnt = reader->GetBlockCnt();
+	printf( "Event 0x%016LX (%Lu) with %lu blocks\n", (ULong64_t)reader->GetEventID(), (ULong64_t)reader->GetEventID(), blockCnt );
+	
+	for ( unsigned long i = 0; i < blockCnt; i++ ) {
+	    char tmp1[9], tmp2[5];
+	    memset( tmp1, 0, 9 );
+	    memset( tmp2, 0, 5 );
+	    void *tmp11 = tmp1;
+	    ULong64_t* tmp12 = (ULong64_t*)tmp11;
+	    *tmp12 = reader->GetBlockDataType( i );
+	    void *tmp21 = tmp2;
+	    ULong_t* tmp22 = (ULong_t*)tmp21;
+	    *tmp22 = reader->GetBlockDataOrigin( i );
+	    printf( "Block %lu length: %lu - type: %s - origin: %s\n",i, reader->GetBlockDataLength( i ), tmp1, tmp2 );
+	}
+	
+	for(Int_t ii=0;ii<36;ii++) fTracksPerSlice[ii] = 0;
     }
     
-    display->ResetDisplay();
-
-    // -------------- CLUSTER
-    if ( clusterswitch ) {
+    //--------------------------------------------------------------------------------------------
+    // READ CLUSTER DATA
+    //-------------------------------------------------------------------------------------------- 
+    if (nextSwitch) {
 	unsigned long blk = reader->FindBlockNdx( spptID, " CPT",0xFFFFFFFF );
-	printf( "blk: %lu\n", blk );
+    
 	while ( blk != ~(unsigned long)0 ) {	    
 	    printf( "Found clusters block %lu\n", blk );
 	    const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*)reader->GetBlockData( blk );
-	    unsigned long dataLen = reader->GetBlockDataLength( blk );
+	    if ( !clusterData ) {
+		printf( "No track data for block %lu\n", blk );
+		continue;
+	    }
 	    
 	    ULong_t spec = reader->GetBlockDataSpec( blk );
 	    Int_t patch = AliHLTTPCDefinitions::GetMinPatchNr( spec );
 	    Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );
 	    printf( "%lu Clusters found for slice %u - patch %u\n", clusterData->fSpacePointCnt, slice, patch );
-
-	    void* tmp30 = clusterData;
+	    
+	    void* tmp30 = (void*)clusterData;
 	    Byte_t* tmp31 = (Byte_t*)tmp30;
 	    unsigned long offset;
 	    offset = sizeof(clusterData->fSpacePointCnt);
-	    if ( offset <= reader->GetBlockTypeAlignment( blk, 1 ) )
-		offset = reader->GetBlockTypeAlignment( blk, 1 );
+	    if ( offset <= reader->GetBlockTypeAlignment( blk, 1 ) ) offset = reader->GetBlockTypeAlignment( blk, 1 );
 	    tmp31 += offset;
 	    tmp30 = tmp31;
 	    AliHLTTPCSpacePointData* tmp32 = (AliHLTTPCSpacePointData*)tmp30;
-
-	    display->SetupClusterDataForPatch( slice, patch, clusterData->fSpacePointCnt, tmp32 );
-
+	    
+	    display->SetupCluster( slice, patch, clusterData->fSpacePointCnt, tmp32 );
+	    
 	    blk = reader->FindBlockNdx( spptID, " CPT", 0xFFFFFFFF, blk+1 );
-	    printf( "blk: %lu\n", blk );
 	}
     }
-
-    // -------------- PADROW
-    if ( padrowswitch ) {
-	Int_t padrow = display->GetPadrow();
-	Int_t patch =  AliHLTTPCTransform::GetPatch(padrow);
-	Int_t maxpatch = patch;
-	AliHLTUInt8_t padslice = (AliHLTUInt8_t) display->GetSlice();
-
-	if (padrow == 30 || padrow == 90 || padrow == 139) maxpatch++;
-      
-	for (Int_t tpatch=patch;tpatch <= maxpatch;tpatch++){
-
-	  
-	    AliHLTUInt32_t padrowSpec = AliHLTTPCDefinitions::EncodeDataSpecification( padslice, padslice,(AliHLTUInt8_t) tpatch,(AliHLTUInt8_t) tpatch );
-	    
-	    unsigned long blk;
-	    
-	    // READ RAW DATA BLOCK
-	    blk = reader->FindBlockNdx( padrowID, " CPT", padrowSpec );
-	    printf( "Raw Data found for slice %u/patch %u\n", padslice, tpatch );
-	    
-	    unsigned long rawDataBlock = reader->GetBlockData( blk );
-	    unsigned long rawDataLen = reader->GetBlockDataLength( blk );
-	    
-	    // READ CLUSTERS BLOCK
-	    blk = reader->FindBlockNdx( spptID, " CPT", padrowSpec );
-	    
-	    const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*)reader->GetBlockData( blk );
-	    
-	    printf( "%lu Clusters found for slice %u - patch %u\n", clusterData->fSpacePointCnt, padslice, tpatch );
-	    
-	    void* tmp30 = clusterData;
-	    Byte_t* tmp31 = (Byte_t*)tmp30;
-	    unsigned long offset;
-	    offset = sizeof(clusterData->fSpacePointCnt);
-	    if ( offset <= reader->GetBlockTypeAlignment( blk, 1 ) )
-		offset = reader->GetBlockTypeAlignment( blk, 1 );
-	    tmp31 += offset;
-	    tmp30 = tmp31;
-	    AliHLTTPCSpacePointData* tmp32 = (AliHLTTPCSpacePointData*)tmp30;
-	    
-	    // DISPLAY RAW DATA AND CLUSTERS
-	    display->FillPadRow( tpatch, rawDataBlock, rawDataLen, clusterData->fSpacePointCnt, tmp32);
-	}
-
-
-    }
-
-    AliHLTTPCTrackArray* trackArray = NULL;
-    trackArray = new AliHLTTPCTrackArray;
-    if ( !trackArray ) {
-	printf( "No track array\n" );
-	return -1;
-    }
-
-    // -------------- TRACKS
-    if ( trackswitch ) {
+    //--------------------------------------------------------------------------------------------
+    // READ TRACKS
+    //-------------------------------------------------------------------------------------------- 
+    if (nextSwitch) {
+	if ( fTrackArray ) delete fTrackArray; 
+	fTrackArray = new AliHLTTPCTrackArray;
+	
 	unsigned long blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF );
-
+	
 	while ( blk != ~(unsigned long)0 ) {
 	    printf( "Found tracks in block %lu\n", blk );
 	    const AliHLTTPCTrackletData* trackData = (const AliHLTTPCTrackletData*)reader->GetBlockData( blk );
@@ -424,174 +332,340 @@ int ODH_DisplayNextEvent( Bool_t clusterswitch, Bool_t trackswitch, Bool_t padro
 	    ULong_t spec = reader->GetBlockDataSpec( blk );
 	    Int_t patchmin = AliHLTTPCDefinitions::GetMinPatchNr( spec );
 	    Int_t patchmax = AliHLTTPCDefinitions::GetMaxPatchNr( spec );
- 	    Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );  
-
+	    Int_t slice = AliHLTTPCDefinitions::GetMinSliceNr( spec );  
 	    printf( "%lu tracks found for slice %u - patch %u-%u\n", trackData->fTrackletCnt, slice, patchmin, patchmax );
-
-	    void* tmp40 = trackData;
+	    
+	    fTracksPerSlice[slice] = trackData->fTrackletCnt;
+	    
+	    void* tmp40 = (void*)trackData;
 	    Byte_t* tmp41 = (Byte_t*)tmp40;
 	    unsigned long offset;
-
 	    offset = sizeof(trackData->fTrackletCnt);
-
 	    if ( offset <= reader->GetBlockTypeAlignment( blk, 1 ) ) offset = reader->GetBlockTypeAlignment( blk, 1 );
-
 	    tmp41 += offset;
 	    tmp40 = tmp41;
 	    AliHLTTPCTrackSegmentData* tmp42 = (AliHLTTPCTrackSegmentData*)tmp40;
-
-	    trackArray->FillTracks( trackData->fTrackletCnt, tmp42, slice );
-
- 	    blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF, blk+1 );
+	    
+	    fTrackArray->FillTracks( trackData->fTrackletCnt, tmp42, slice );
+	    
+	    blk = reader->FindBlockNdx( trkID, " CPT", 0xFFFFFFFF, blk+1 );	
 	}
-
-
+	
+	display->SetupTracks( fTrackArray );  
     }
 
-    display->SetTracks( trackArray );
+    //--------------------------------------------------------------------------------------------
+    // READ RAW DATA for PADROW HISTOGRAM
+    //--------------------------------------------------------------------------------------------
+    if (PadRowSwitch) {
+	AliHLTUInt8_t padslice = (AliHLTUInt8_t) display->GetSlicePadRow();
+	Int_t padrow = display->GetPadRow();
+	Int_t patch =  AliHLTTPCTransform::GetPatch(padrow);
+	Int_t maxpatch = patch;
+	
+	display->ResetHistPadRow();
+	
+	if (padrow == 30 || padrow == 90 || padrow == 139) maxpatch++;
+	
+	for (Int_t tpatch=patch;tpatch <= maxpatch;tpatch++) {
+	    unsigned long blk;
+	    AliHLTUInt32_t padrowSpec = AliHLTTPCDefinitions::EncodeDataSpecification( padslice, padslice,(AliHLTUInt8_t) tpatch,(AliHLTUInt8_t) tpatch );
+	    
+	    // READ RAW DATA BLOCK - READ CLUSTERS BLOCK
+	    blk = reader->FindBlockNdx( padrowID, " CPT", padrowSpec );	
+
+	    if ( ~(unsigned long)0 != blk ){
+		printf( "Raw Data found for slice %u/patch %u\n", padslice, tpatch );
+		unsigned long rawDataBlock = (unsigned long) reader->GetBlockData( blk );
+		unsigned long rawDataLen = reader->GetBlockDataLength( blk );
+
+		display->FillPadRow( tpatch, rawDataBlock, rawDataLen);
+	    }
+	}
     
-    // DISPLAY
-    display->DisplayAll( minHits, clusterswitch, trackswitch, x3don, 0. /*, clustersEtaRange */ );
-    if ( padrowswitch) display->DrawPadRow(x3don);
+	if (fCanvasPadRow){
+	    fCanvasPadRow->cd();
+	    display->DrawHistPadRow();
+	    fCanvasPadRow->Update();
+	}
+	
+	if (fCanvasPad){
+	    fCanvasPad->cd(1);
+	    display->DrawHistPad1();
+	    fCanvasPad->GetCanvas()->Update();
+	    
+	    fCanvasPad->cd(2);
+	    display->DrawHistPad2();
+	    fCanvasPad->GetCanvas()->Update();
+	    
+	    fCanvasPad->cd(3);
+	    display->DrawHistPad3();
+	    fCanvasPad->GetCanvas()->Update();
+	}
+    }
+
+    //--------------------------------------------------------------------------------------------
+    // RESET HISTOGRAMS
+    //--------------------------------------------------------------------------------------------
+    if ( display->Get3DSwitchCluster() ) display->ResetHistCharge();
+    if ( display->Get3DSwitchTracks() ) display->ResetHistResiduals();
+
+    //--------------------------------------------------------------------------------------------
+    // DRAW 3D
+    //--------------------------------------------------------------------------------------------
+    if ( (threeDSwitch || (PadRowSwitch && display->Get3DSwitchPadRow())) && fCanvas3D ){
+
+	fCanvas3D->cd(); 
+	fCanvas3D->Clear();
+	fCanvas3D->SetFillColor(display->GetBackColor());
+	
+	if ( !display->GetKeepView() ){
+	    fCanvas3D->SetTheta(fTheta);
+	    fCanvas3D->SetPhi(fPhi);
+	}
+	
+	display->Draw3D();
+	
+	fCanvas3D->Modified();
+	fCanvas3D->Update();		    
+    }
     
-    if ( trackArray )  delete trackArray;   
+    //--------------------------------------------------------------------------------------------
+    // DRAW RESIDUALS
+    //--------------------------------------------------------------------------------------------
+    if ( display->Get3DSwitchTracks() && fCanvasResiduals) {
+	fCanvasResiduals->cd();  
+	fCanvasResiduals->Clear();
+	fCanvasResiduals->Divide(1,2);
+	fCanvasResiduals->cd(1);
+	display->DrawHistResiduals(kTRUE);
+	fCanvasResiduals->cd(2);
+	display->DrawHistResiduals(kFALSE);
+	fCanvasResiduals->Update();
+    }
+    //--------------------------------------------------------------------------------------------
+    // DRAW CHARGE
+    //--------------------------------------------------------------------------------------------
+    if ( display->Get3DSwitchCluster() && fCanvasCharge != NULL) {
+	fCanvasCharge->cd();       
+	fCanvasCharge->Clear();
+
+	display->DrawHistCharge();
+
+	fCanvasCharge->Update();
+    }
 
     return 0;
 }
 
-// ########################################################################################################################################
-// ########################################################################################################################################
-// ########################################################################################################################################
-int ODH_SimpleDisplay(char * infiles[7],unsigned int slice){
-    if ( !gODH_Display ) return -1;
-
-    FILE * inFH = 1;
-    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)gODH_Display;	
-    int i = 1;
-    char* error = NULL;
-    int errorArg = -1;
-    int errorParam = -1;
-
-    AliHLTComponent_DataType dataType;
-    AliHLTUInt32_t dataSpec = ~(AliHLTUInt32_t)0;
-    dataType.fStructSize = sizeof(dataType);
-    memset( dataType.fID, '*', 8 );
-    memset( dataType.fOrigin, '*', 4 );
-    AliHLTComponent_BlockData blocks[7];
-    unsigned long totalRead = 0;
-  
-    // --- get INFILE
-    for (int ii = 0;ii<7;ii++){
-
-	inFH = fopen( infiles[ii], "r");
-	if ( inFH == -1 ) {
-	    error = "Unable to open input file for reading";
-	    errorArg = i;
-	    errorParam = i+1;
-	    break;
-	}
+// ####################################################################################################
+//       SETTER - minor functions
+// ####################################################################################################
+Int_t ODH_SetSliceRange(){
+    // -- sets all Slices
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
     
-	AliHLTComponent_BlockData newBlock;
-	newBlock.fStructSize = sizeof(AliHLTComponent_BlockData);
+    display->SetSlices();
+    fTheta = 90.;
 
-	newBlock.fShmKey.fStructSize = sizeof(AliHLTComponent_ShmData);
-	newBlock.fShmKey.fShmType = gkAliHLTComponent_InvalidShmType;
-	newBlock.fShmKey.fShmID = gkAliHLTComponent_InvalidShmID;
-	
-	fseek( inFH, 0, SEEK_END );
-	long sz = ftell(inFH);
-	
-	fseek( inFH, 0, SEEK_SET);
-	newBlock.fPtr = new uint8[ sz ];
-	
-	if ( !newBlock.fPtr ) {
-	    fprintf( stderr, "Out of memory trying to allocate memory for input file '%s' of %lu bytes.\n",
-		     infile, sz );
-	    return -1;
-	}
-
-	unsigned long curSize = 0;
-	int ret=1;
-	void * tmp50 = newBlock.fPtr;
-	uint8* tmp51 = (uint8*)tmp50;
-	while ( ret>0 ) {
-	    ret = fread(tmp51+curSize,1, sz-curSize,inFH);
-
- 	    if ( ret >= 0 ) {
-		curSize += (unsigned long)ret;
-		if ( curSize >= (unsigned long)sz ) {
-		    newBlock.fSize = sz;
-		    blocks[ii] =  newBlock;
-		    break;
-		}
-	    }
-	    else {
-		fprintf( stderr, "%s error reading data from input file after %lu bytes.\n", infile, curSize );
-		return -1;
-	    }
-	}
-    }
-  
-    //  --- Setup CLUSTERS
-    for (int ii = 1;ii<7;ii++){
-	unsigned int patch = ii - 1;
-	const AliHLTTPCClusterData* clusterData = (const AliHLTTPCClusterData*) blocks[ii].fPtr;
-	
-	if ( !clusterData )	{
-	    printf( "No ClusterData\n" );
-	    return -1;
-	}
-	
-		void* tmp30 = clusterData;
-	Byte_t* tmp31 = (Byte_t*)tmp30;
-	unsigned long offset;
-	
-	offset = sizeof(clusterData->fSpacePointCnt);
-	
-	tmp31 += offset;
-	tmp30 = tmp31;
-	AliHLTTPCSpacePointData* tmp32 = (AliHLTTPCSpacePointData*)tmp30;
-	
-	display->SetupClusterDataForPatch( slice, patch, clusterData->fSpacePointCnt, tmp32 );
-    }
-
-    // --- Setup TRACKS
-    AliHLTTPCTrackArray* trackArray = NULL;
-    trackArray = new AliHLTTPCTrackArray;
-    
-    if ( !trackArray )	{
-	printf( "No track array\n" );
-	return -1;
-    }
-
-    const AliHLTTPCTrackletData* trackData = (const AliHLTTPCTrackletData*) blocks[0].fPtr;
-    if ( !trackData )
-    {
-	printf( "No track data for block %lu\n", blk );
-	continue;
-    }
-   
-    void* tmp40 = trackData;
-    Byte_t* tmp41 = (Byte_t*)tmp40;
-    unsigned long offset;
-    
-    offset = sizeof(trackData->fTrackletCnt);
-    
-    tmp41 += offset;
-    tmp40 = tmp41;
-    AliHLTTPCTrackSegmentData* tmp42 = (AliHLTTPCTrackSegmentData*)tmp40;
-    
-    trackArray->FillTracks( trackData->fTrackletCnt, tmp42, slice );
-    
-    display->SetTracks( trackArray );
-
-    // --- Display 
-    Int_t minHits = 0; 
-
-    display->SetSlices(0,4);
-    display->DisplayAll( minHits, clusterswitch, trackswitch, kFALSE, 0. /*, clustersEtaRange */ );
-    if ( trackArray ) delete trackArray;
-    
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
     return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetSliceRange(Int_t slice){
+    // -- sets one slice
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+    
+    display->SetSlices(slice);  
+    fTheta = 0.;
 
-} // END ODH_SimpleDisplay
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetSliceRange(Int_t minslice,Int_t maxslice){
+    // -- sets a range of Slices
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+    
+    display->SetSlices(minslice,maxslice);  
+    fTheta = 90.;
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetSlicePair(Int_t slice){
+    // -- sets a pair of slices
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+    
+    display->SetSlicesPair(slice); 
+    fTheta = 90.;
+    
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetSlicePair(Int_t minslice, Int_t maxslice){
+    // -- sets a pair of slices
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+    
+    display->SetSlicesPair(minslice,maxslice);
+    fTheta = 90.;
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetCluster(Bool_t used=kTRUE, Bool_t unused=kTRUE){    
+    // -- set used/unuse/all cluster
+    if ( !fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+    
+    //  ALL Cluster = 0  | USED Cluster = 1 | UNUSED Cluster = 2
+    if (used && unused) display->SetSelectCluster(0);
+    else if (used) display->SetSelectCluster(1);
+    else if (unused) display->SetSelectCluster(2);
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetInvert(){    
+    // -- set invert 3D display
+    if ( !fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
+    display->SetInvert();
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetKeepView(Bool_t keepview){ 
+    // -- keep angle view 
+    if ( !fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
+    if (keepview) display->SetKeepView(kTRUE);
+    else display->SetKeepView(kFALSE);
+
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetPadRow(Int_t slice, Int_t padrow, Int_t pad = 0) {
+    // -- set padrow and pad histograms
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+    
+    if( padrow < 0 || padrow > 158){
+	printf("Padrow %d out of range, has to be in [0,158].",padrow);
+	return -2;
+    }
+
+    display->SetSlicePadRow(slice);
+    display->SetPadRow(padrow); 
+    display->SetHistPadRowAxis();
+    display->SetPad(pad);
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kTRUE);
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetSelectTrack(Bool_t trackswitch=kFALSE, Int_t slice=0, Int_t track=0){
+    // -- trackswitch : turn on /off of single track
+    // -- slice : select slice for single track
+    // -- track :select single track in slice
+    
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
+    display->SetSelectTrackSwitch(trackswitch);
+    if(!trackswitch) display->SetSelectTrack(0); 
+    else {
+	if ( track < 0 || track >  fTracksPerSlice[slice]) {
+	    printf ("No Track %d, Maximum of Tracks in Slice %d is %d ! ",track,slice,fTracksPerSlice[slice] );
+	    return -2;
+	}
+	
+	display->SetSelectTrackSlice(slice); 
+	display->SetSelectTrack(track);
+    }
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_SetTrack(Int_t minhits = 0, Float_t ptthreshold = 0.){
+    // -- set track properties
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
+    display->SetMinHits(minhits);
+    display->SetPtThreshold(ptthreshold );
+    return 0;
+}
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같
+Int_t ODH_Set3D(Bool_t tracks=kFALSE, Bool_t cluster=kFALSE, Bool_t padrow=kFALSE, Bool_t geometry=kFALSE){    
+    // -- set 3D Display
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+    
+    if  (padrowCheckBox->isChecked()) setPadRow();
+    
+    display->SetSwitches(tracks, cluster, padrow, geometry);
+
+    if (display->Get3DSwitchPadRow()) ODH_DisplayEvent(kFALSE,kTRUE,kTRUE);
+    else ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}  
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같  
+Int_t ODH_Set3DTracks(Bool_t on=kFALSE){
+    // --  Set 3D tracks
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
+    display->Set3DSwitchTracks(on);
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}  
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같  
+Int_t ODH_Set3DCluster(Bool_t on=kFALSE){
+    // --  Set 3D cluster
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
+    display->Set3DSwitchCluster(on);
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}  
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같  
+Int_t ODH_Set3DPadRow(Bool_t on=kFALSE){
+    // --  Set 3D padrow
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
+    display->Set3DSwitchPadRow(on);
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}  
+// 같같같같같같같같같같같같같같같같같같같같같같같같같같같같  
+Int_t ODH_Set3DGeometry(Bool_t on=kFALSE){
+    // --  Set 3D geometry
+    if (!fODHDisplay ) return -1;
+    AliHLTTPCDisplay* display = (AliHLTTPCDisplay*)fODHDisplay;
+
+    display->Set3DSwitchGeometry(on);
+
+    ODH_DisplayEvent(kFALSE,kTRUE,kFALSE);
+    return 0;
+}  
+
+

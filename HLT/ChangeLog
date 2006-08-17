@@ -1,0 +1,7 @@
+2006-08-17 Jochen's TPCLib source code from Jan 2006 (not a joke) merged
+	- bugfix in AliHLTTPCConfMapper (caused low tracking efficiency)
+	- Online Display development
+	- Note: the AliHLTTPCDisplay Interface has been changed -> AliHLTGUI
+	  has to be re-linked
+	- no changes in BASE
+	
