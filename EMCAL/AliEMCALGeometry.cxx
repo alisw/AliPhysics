@@ -80,6 +80,75 @@ AliGeometry(name, title) {// ctor only for internal usage (singleton)
   CreateListOfTrd1Modules();
 }
 //______________________________________________________________________
+AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title, AliEMCALAlignData* alignData) :
+  AliGeometry(name, title) {// Align data in action
+  fgAlignData = alignData;
+  Init();
+  CreateListOfTrd1Modules();
+};
+//______________________________________________________________________
+AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom):AliGeometry(geom) {
+  //copy ctor
+  fGeoName = geom.fGeoName;
+
+  fArrayOpts = geom.fArrayOpts;
+
+  fAlFrontThick = geom.fAlFrontThick;
+  fECPbRadThickness = geom.fECPbRadThickness;
+  fECScintThick = geom.fECScintThick;
+  fNECLayers = geom.fNECLayers;
+  fArm1PhiMin = geom.fArm1PhiMin;
+  fArm1PhiMax = geom.fArm1PhiMax;
+  fArm1EtaMin = geom.fArm1EtaMin;
+  fArm1EtaMax = geom.fArm1EtaMax;
+
+  fIPDistance = geom.fIPDistance;
+  fShellThickness = geom.fShellThickness;
+  fZLength = geom.fZLength;
+  fGap2Active = geom.fGap2Active;
+  fNZ = geom.fNZ;
+  fNPhi = geom.fNPhi;
+  fSampling = geom.fSampling;
+
+  fNumberOfSuperModules = geom.fNumberOfSuperModules;
+  fSteelFrontThick = geom.fSteelFrontThick;
+  fFrontSteelStrip = geom.fFrontSteelStrip;
+  fLateralSteelStrip = geom.fLateralSteelStrip;
+  fPassiveScintThick = geom.fPassiveScintThick;
+  fPhiModuleSize = geom.fPhiModuleSize;
+  fEtaModuleSize = geom.fEtaModuleSize;
+  fPhiTileSize = geom.fPhiTileSize;
+  fEtaTileSize = geom.fEtaTileSize;
+  fLongModuleSize = geom.fLongModuleSize;
+  fNPhiSuperModule = geom.fNPhiSuperModule;
+  fNPHIdiv = geom.fNPHIdiv;
+  fNETAdiv = geom.fNETAdiv;
+
+  fNCells = geom.fNCells;
+  fNCellsInSupMod = geom.fNCellsInSupMod;
+  fNCellsInTower = geom.fNCellsInTower;
+  fNTRU = geom.fNTRU;
+  fNTRUEta = geom.fNTRUEta;
+  fNTRUPhi = geom.fNTRUPhi;
+  fTrd1Angle = geom.fTrd1Angle;
+  f2Trd1Dx2 = geom.f2Trd1Dx2;
+  fPhiGapForSM = geom.fPhiGapForSM;
+  fKey110DEG = geom.fKey110DEG;
+  fTrd2AngleY = geom.fTrd2AngleY;
+  f2Trd2Dy2 = geom.f2Trd2Dy2;
+  fEmptySpace = geom.fEmptySpace;
+  fTubsR = geom.fTubsR;
+  fTubsTurnAngle = geom.fTubsTurnAngle;
+  fEtaCentersOfCells = geom.fEtaCentersOfCells;
+  fXCentersOfCells = geom.fXCentersOfCells;
+  fPhiCentersOfCells = geom.fPhiCentersOfCells;
+
+  fShishKebabTrd1Modules = geom.fShishKebabTrd1Modules;
+
+  fNAdditionalOpts = geom.fNAdditionalOpts;
+}
+
+//______________________________________________________________________
 AliEMCALGeometry::~AliEMCALGeometry(void){
     // dtor
 }

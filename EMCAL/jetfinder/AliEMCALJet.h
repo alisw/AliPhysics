@@ -46,10 +46,10 @@ protected:
   Float_t  fEta;      // Jet Eta
   Float_t  fPhi;      // Jet Phi
   Int_t    fNt;       // Number of associated tracks
-  Float_t  fPtT [1000]; // Track pt 
-  Float_t  fEtaT[1000]; // Track eta
-  Float_t  fPhiT[1000]; // Track phi
-  Int_t    fPdgT[1000]; // Track pdg code
+  Float_t  *fPtT;      //[fNt] Track pt 
+  Float_t  *fEtaT;     //[fNt] Track eta
+  Float_t  *fPhiT;     //[fNt] Track phi
+  Int_t    *fPdgT;     //[fNt] Track pdg code
   ClassDef(AliEMCALJet,8) // Jet for EMCAL
 
 } ;

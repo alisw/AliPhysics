@@ -40,6 +40,7 @@ ClassImp(AliEMCALShishKebabTrd1Module)
   Double_t AliEMCALShishKebabTrd1Module::fgangle=0.;   // around one degree 
   Double_t AliEMCALShishKebabTrd1Module::fgtanBetta=0; //
 
+//_____________________________________________________________________________
 AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEMCALGeometry *g) : TNamed()
 { 
   // theta in radians ; first object shold be with theta=pi/2.
@@ -55,6 +56,7 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
   cout<< "AliEMCALShishKebabTrd1Module - first module:  theta " << fTheta << " geometry " << g << endl;  
 }
 
+//_____________________________________________________________________________
 AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor) : TNamed()
 { 
   //  printf("** Left Neighbor : %s **\n", leftNeighbor.GetName());
@@ -63,6 +65,24 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd
   Init(leftNeighbor.GetA(),leftNeighbor.GetB());
 }
 
+//________________________________________________________________
+AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const AliEMCALShishKebabTrd1Module& mod) : TNamed(mod.GetName(),mod.GetTitle()) 
+{
+  //copy ctor
+  fOK = mod.fOK;
+  fA = mod.fA;
+  fB = mod.fB;
+  fThetaA = mod.fThetaA;
+  fTheta = mod.fTheta;
+  fOK1 = mod.fOK1;
+  fOK2 = mod.fOK2;
+  fOB = mod.fOB;
+  fOB1 = mod.fOB1;
+  fOB2 = mod.fOB2;
+
+}
+
+//________________________________________________________________
 void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
 { 
   // Define parameter module from parameters A,B from previos.
@@ -106,6 +126,7 @@ void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
   fOB2.Set(fOB.X()+fga/4.*TMath::Sin(fTheta), fOB.Y()-fga/4.*TMath::Cos(fTheta));
 }
 
+//_____________________________________________________________________________
 void AliEMCALShishKebabTrd1Module::DefineFirstModule()
 {
   // Define first module
@@ -128,12 +149,14 @@ void AliEMCALShishKebabTrd1Module::DefineFirstModule()
   TObject::SetUniqueID(1); //
 }
 
+//_____________________________________________________________________________
 void AliEMCALShishKebabTrd1Module::DefineName(Double_t theta)
 {
   // Define name of object
   SetName(Form("%2i(%5.2f)", TObject::GetUniqueID(), theta*TMath::RadToDeg()));
 }
 
+//_____________________________________________________________________________
 Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 {
  // Get needing module parameters from EMCAL geometry
@@ -157,6 +180,7 @@ Bool_t AliEMCALShishKebabTrd1Module::GetParameters()
 }
 
 // service methods
+//_____________________________________________________________________________
 void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
 {
   // service method
@@ -180,11 +204,13 @@ void AliEMCALShishKebabTrd1Module::PrintShish(int pri) const
   }
 }
 
+//_____________________________________________________________________________
 Double_t  AliEMCALShishKebabTrd1Module::GetThetaInDegree() const 
 {
   return fTheta*TMath::RadToDeg();
 }
 
+//_____________________________________________________________________________
 Double_t  AliEMCALShishKebabTrd1Module::GetEtaOfCenterOfModule() const 
 { 
   return -TMath::Log(TMath::Tan(fOK.Phi()/2.));

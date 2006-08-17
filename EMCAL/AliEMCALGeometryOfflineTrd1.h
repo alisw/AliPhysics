@@ -25,10 +25,7 @@ class AliEMCALShishKebabTrd1Module;
 
 class AliEMCALGeometryOfflineTrd1 : public TNamed {
  public:
-  AliEMCALGeometryOfflineTrd1(const AliEMCALGeometryOfflineTrd1& geom):TNamed(geom.GetName(),geom.GetTitle()) {
-    // cpy ctor requested by Coding Convention but not yet needed
-    Fatal("Cpy ctor", "Not implemented");
-  }
+  AliEMCALGeometryOfflineTrd1(const AliEMCALGeometryOfflineTrd1& geom);
 
   //assignment operator for coding convention
   const AliEMCALGeometryOfflineTrd1 & operator = (const AliEMCALGeometryOfflineTrd1 &) {return *this;}

@@ -22,10 +22,8 @@ class AliEMCALShishKebabModule : public TNamed {
   AliEMCALShishKebabModule();
   AliEMCALShishKebabModule(AliEMCALShishKebabModule &leftNeighbor);
   void Init(Double_t A, Double_t B);
-  AliEMCALShishKebabModule(const AliEMCALShishKebabModule& mod) : TNamed(mod.GetName(),mod.GetTitle()){
-    // cpy ctor: no implementation yet; requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;  
-  }
+  AliEMCALShishKebabModule(const AliEMCALShishKebabModule& mod);
+
   AliEMCALShishKebabModule & operator = (const AliEMCALShishKebabModule& /*rvalue*/)  {
     Fatal("operator =", "not implemented") ;  
     return *this ; 

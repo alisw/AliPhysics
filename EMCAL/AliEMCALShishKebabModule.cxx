@@ -35,6 +35,7 @@ ClassImp(AliEMCALShishKebabModule)
   Double_t AliEMCALShishKebabModule::fgb=0.; 
   Double_t AliEMCALShishKebabModule::fgr=0.; 
 
+//_________________________________________________________________________
 AliEMCALShishKebabModule::AliEMCALShishKebabModule() : TNamed()
 { 
   // theta in radians ; first object shold be with theta=pi/2.
@@ -49,6 +50,7 @@ AliEMCALShishKebabModule::AliEMCALShishKebabModule() : TNamed()
   }
 }
 
+//_________________________________________________________________________
 AliEMCALShishKebabModule::AliEMCALShishKebabModule(AliEMCALShishKebabModule &leftNeighbor) : TNamed()
 { 
   // 22-sep-04
@@ -56,6 +58,18 @@ AliEMCALShishKebabModule::AliEMCALShishKebabModule(AliEMCALShishKebabModule &lef
   Init(leftNeighbor.GetA(),leftNeighbor.GetB());
 }
 
+//_________________________________________________________________________
+AliEMCALShishKebabModule::AliEMCALShishKebabModule(const AliEMCALShishKebabModule& mod) : TNamed(mod.GetName(),mod.GetTitle())
+{
+  //copy ctor
+  fOK = mod.fOK;
+  fA = mod.fA;
+  fB = mod.fB;
+  fTheta = mod.fTheta;
+
+}
+
+//_________________________________________________________________________
 void AliEMCALShishKebabModule::Init(Double_t A, Double_t B)
 { 
   //
@@ -88,6 +102,7 @@ void AliEMCALShishKebabModule::Init(Double_t A, Double_t B)
   DefineName(fTheta);
 }
 
+//_________________________________________________________________________
 void AliEMCALShishKebabModule::DefineFirstModule()
 {
   // Define first module
@@ -98,6 +113,7 @@ void AliEMCALShishKebabModule::DefineFirstModule()
   TObject::SetUniqueID(1); //
 }
 
+//_________________________________________________________________________
 void AliEMCALShishKebabModule::DefineSecondModuleFirstAssumption()
 { // Keep for testing and checking
   // cos(theta) << 1, theta ~ pi/2.; a/r = 11.4/462.54 = 0.0246465 << 1; 
@@ -114,6 +130,7 @@ void AliEMCALShishKebabModule::DefineSecondModuleFirstAssumption()
   */
 }
 
+//_________________________________________________________________________
 Double_t AliEMCALShishKebabModule::Solve(Double_t (*fcn)(Double_t*,Double_t*), 
 Double_t xmin, Double_t xmax, Int_t npar, Double_t *par, Double_t eps, Int_t maxIter)
 {
@@ -130,6 +147,7 @@ Double_t xmin, Double_t xmax, Int_t npar, Double_t *par, Double_t eps, Int_t max
   return x;
 }
 
+//_________________________________________________________________________
 Double_t AliEMCALShishKebabModule::Y2(Double_t *x, Double_t *par)
 { 
   // For position calulation of second module
@@ -143,6 +161,7 @@ Double_t AliEMCALShishKebabModule::Y2(Double_t *x, Double_t *par)
   return y;
 }
 
+//_________________________________________________________________________
 Double_t AliEMCALShishKebabModule::YALL(Double_t *x, Double_t *par)
 { 
   // For position calulation of 3th, 4th to 30th modules
@@ -158,12 +177,14 @@ Double_t AliEMCALShishKebabModule::YALL(Double_t *x, Double_t *par)
   return y;
 }
 
+//_________________________________________________________________________
 void AliEMCALShishKebabModule::DefineName(Double_t theta)
 {
   // Define name of object
   SetName(Form("%2i(%5.2f)", TObject::GetUniqueID(), theta*TMath::RadToDeg()));
 }
 
+//_________________________________________________________________________
 Bool_t AliEMCALShishKebabModule::GetParameters()
 {
   // Get needing module parameters from EMCAL geometry
@@ -180,6 +201,7 @@ Bool_t AliEMCALShishKebabModule::GetParameters()
   return kTRUE;
 }
 
+//_________________________________________________________________________
 void AliEMCALShishKebabModule::PrintShish(Int_t pri) const
 {
   // service method
@@ -195,6 +217,7 @@ void AliEMCALShishKebabModule::PrintShish(Int_t pri) const
   }
 }
 
+//_________________________________________________________________________
 Double_t AliEMCALShishKebabModule::GetThetaInDegree() const 
 {
   return fTheta*TMath::RadToDeg();

@@ -226,7 +226,7 @@ Bool_t AliEMCALDigit::operator==(AliEMCALDigit const & digit) const
 }
  
 //____________________________________________________________________________
-AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit) 
+AliEMCALDigit AliEMCALDigit::operator+(const AliEMCALDigit &digit) 
 {
   // Adds the amplitude of digits and completes the list of primary particles
   // if amplitude is larger than 
@@ -287,7 +287,7 @@ AliEMCALDigit& AliEMCALDigit::operator+(AliEMCALDigit const & digit)
 }
 
 //____________________________________________________________________________
-AliEMCALDigit& AliEMCALDigit::operator*(Float_t factor) 
+AliEMCALDigit AliEMCALDigit::operator*(Float_t factor) 
 {
   // Multiplies the amplitude by a factor
   

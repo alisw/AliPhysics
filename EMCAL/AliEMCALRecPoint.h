@@ -28,7 +28,7 @@ class AliEMCALRecPoint : public AliRecPoint {
 
   AliEMCALRecPoint() ;                   // ctor         
   AliEMCALRecPoint(const char * opt) ;   // ctor 
-  AliEMCALRecPoint(const AliEMCALRecPoint & rp):AliRecPoint(rp) { Fatal("cpy ctor", "not implemented") ; } 
+  AliEMCALRecPoint(const AliEMCALRecPoint & rp);
   
   virtual ~AliEMCALRecPoint();
   virtual void    AddDigit(AliDigitNew &){ Fatal("AddDigit", "use AddDigit(AliEMCALDigit & digit, Float_t Energy )") ; }

@@ -37,7 +37,7 @@ public:
   
   AliEMCALClusterizerv1() ;         
   //cpy ctor required by coding convention
-  AliEMCALClusterizerv1(const AliEMCALClusterizerv1& clus):AliEMCALClusterizer(clus){};
+  AliEMCALClusterizerv1(const AliEMCALClusterizerv1& clus);
 
   AliEMCALClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
   virtual ~AliEMCALClusterizerv1()  ;

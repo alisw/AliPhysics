@@ -30,11 +30,7 @@ class AliEMCALReconstructor : public AliReconstructor {
 public:
 
   AliEMCALReconstructor() ; //ctor            
-  AliEMCALReconstructor(const AliEMCALReconstructor & rec) : AliReconstructor(rec) {
-    // cpy ctor: 
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliEMCALReconstructor(const AliEMCALReconstructor & rec);
    
   virtual ~AliEMCALReconstructor() ; //dtor
 

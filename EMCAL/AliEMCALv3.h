@@ -27,10 +27,8 @@ public:
 
   AliEMCALv3(void) ; 
   AliEMCALv3(const char *name, const char *title="") ;
-  // cpy ctor: no implementation yet
-  // requested by the Coding Convention
-  AliEMCALv3(const AliEMCALv3 & emcal):AliEMCALv1(emcal) {
-    Fatal("cpy ctor", "not implemented") ;  }
+  AliEMCALv3(const AliEMCALv3 & emcal); //copy ctor
+
   virtual ~AliEMCALv3(void) ;
 
   using AliEMCALv1::AddHit;

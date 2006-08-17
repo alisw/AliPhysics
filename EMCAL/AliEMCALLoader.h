@@ -41,7 +41,7 @@ class AliEMCALLoader : public AliLoader {
  public:
 
   AliEMCALLoader();
-  AliEMCALLoader(const AliEMCALLoader & obj):AliLoader(obj){}
+  AliEMCALLoader(const AliEMCALLoader & obj);
   AliEMCALLoader(const Char_t *detname,const Char_t *eventfoldername); 
   
   virtual ~AliEMCALLoader() ; 

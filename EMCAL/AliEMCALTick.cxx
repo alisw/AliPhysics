@@ -53,6 +53,9 @@ AliEMCALTick::AliEMCALTick(Float_t time, Float_t a, Float_t slope):TObject()
   fA = a;
   fB = slope ;  
 }
+
+
+
 //____________________________________________________________________________ 
 Int_t AliEMCALTick::Compare(const TObject * obj) const 
 {

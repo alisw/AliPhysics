@@ -28,8 +28,8 @@ public:
   AliEMCALv1(const char *name, const char *title="") ;
   virtual ~AliEMCALv1(void) ;
 
-  AliEMCALv1(const AliEMCALv1 & emcal):AliEMCALv0(emcal) {
-    Fatal("cpy ctor", "not implemented") ;  }
+  AliEMCALv1(const AliEMCALv1 & emcal);
+
   AliEMCALv1 & operator = (const AliEMCALv1  & /*rvalue*/) {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented");

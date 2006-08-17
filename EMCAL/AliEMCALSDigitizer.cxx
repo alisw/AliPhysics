@@ -76,6 +76,7 @@ ClassImp(AliEMCALSDigitizer)
 {
   // ctor
   fFirstEvent = fLastEvent  = fControlHists = 0;  
+  InitParameters();
   fDefaultInit = kTRUE ; 
   fHists = 0;
 }

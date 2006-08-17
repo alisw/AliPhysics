@@ -45,6 +45,13 @@ ClassImp(AliEMCALReconstructor)
 
 } 
 
+//____________________________________________________________________________
+AliEMCALReconstructor::AliEMCALReconstructor(const AliEMCALReconstructor & rec): AliReconstructor(rec)
+{
+  //copy ctor
+  fDebug = rec.fDebug;
+
+}
 
 //____________________________________________________________________________
 AliEMCALReconstructor::~AliEMCALReconstructor()

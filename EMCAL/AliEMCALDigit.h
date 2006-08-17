@@ -36,8 +36,8 @@ class AliEMCALDigit : public AliDigitNew {
   virtual ~AliEMCALDigit() ;
 
   Bool_t operator==(const AliEMCALDigit &rValue) const;
-  AliEMCALDigit& operator+(AliEMCALDigit const &rValue) ;
-  AliEMCALDigit& operator*(Float_t factor) ; 
+  AliEMCALDigit operator+(const AliEMCALDigit &rValue) ;
+  AliEMCALDigit operator*(Float_t factor) ; 
   const AliEMCALDigit& operator = (const AliEMCALDigit &) {return *this;}
 
   Int_t   Compare(const TObject * obj) const ;  

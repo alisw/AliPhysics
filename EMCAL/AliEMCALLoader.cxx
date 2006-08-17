@@ -83,6 +83,19 @@ AliEMCALLoader::AliEMCALLoader(const Char_t *detname,const Char_t *eventfolderna
   fRecPoints = new TObjArray();
 }
 
+//____________________________________________________________________________
+AliEMCALLoader::AliEMCALLoader(const AliEMCALLoader & obj):AliLoader(obj)
+{
+  //copy ctor
+
+  fDebug = obj.fDebug;
+  fHits = obj.fHits;
+  fDigits = obj.fDigits;
+  fSDigits = obj.fSDigits;
+  fRecPoints = obj.fRecPoints;
+
+}
+
 //____________________________________________________________________________ 
 AliEMCALLoader::~AliEMCALLoader()
 {

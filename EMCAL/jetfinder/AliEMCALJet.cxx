@@ -27,6 +27,20 @@ ClassImp(AliEMCALJet)
 AliEMCALJet::AliEMCALJet()
 {
 // Default constructor
+  fEnergy = 0.;
+  fEMCALEnergy = 0.;
+  fEMCALEnergyBGSub = 0;
+  fTrackEnergy = 0.;
+  fTrackEnergyPtCut = 0.;
+  fHCEnergy = 0.;
+  fIsWeightedEnergy = kFALSE;
+  fEta = 0.;
+  fPhi = 0.;
+  fNt = 0;
+  fPtT = 0;
+  fEtaT = 0;
+  fPhiT = 0;
+  fPdgT = 0;
 }
 
 AliEMCALJet::AliEMCALJet(Float_t energy, Float_t phi, Float_t eta)

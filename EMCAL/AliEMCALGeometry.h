@@ -31,10 +31,7 @@ class TClonesArray ;
 
 class AliEMCALGeometry : public AliGeometry {
 public:
-  AliEMCALGeometry(const AliEMCALGeometry& geom):AliGeometry(geom) {
-    // cpy ctor requested by Coding Convention but not yet needed
-    Fatal("Cpy ctor", "Not implemented");
-  };
+  AliEMCALGeometry(const AliEMCALGeometry& geom);
   virtual ~AliEMCALGeometry(void); 
 
   static AliEMCALGeometry * GetInstance(const Text_t* name,
@@ -177,12 +174,7 @@ public:
 protected:
   AliEMCALGeometry(const Text_t* name, const Text_t* title);// ctor only for internal usage (singleton)
 
-  AliEMCALGeometry(const Text_t* name, const Text_t* title, AliEMCALAlignData* alignData) :
-    AliGeometry(name, title) {// Align data in action
-    fgAlignData = alignData;
-    Init();
-    CreateListOfTrd1Modules();
-  };
+  AliEMCALGeometry(const Text_t* name, const Text_t* title, AliEMCALAlignData* alignData);
 
   void Init(void);     			// initializes the parameters of EMCAL
   void CheckAdditionalOptions();        //

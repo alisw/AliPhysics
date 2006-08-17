@@ -20,10 +20,8 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   AliEMCALShishKebabTrd1Module(Double_t theta=0.0, AliEMCALGeometry *g=0);
   AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd1Module &leftNeighbor);
   void Init(Double_t A, Double_t B);
-  AliEMCALShishKebabTrd1Module(const AliEMCALShishKebabTrd1Module& mod) : TNamed(mod.GetName(),mod.GetTitle()){
-    // cpy ctor: no implementation yet; requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;  
-  }
+  AliEMCALShishKebabTrd1Module(const AliEMCALShishKebabTrd1Module& mod);
+
   AliEMCALShishKebabTrd1Module & operator = (const AliEMCALShishKebabTrd1Module& /*rvalue*/)  {
     Fatal("operator =", "not implemented") ;  
     return *this ; 

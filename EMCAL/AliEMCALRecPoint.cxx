@@ -94,6 +94,33 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) : AliRecPoint(opt)
   fGeomPtr->GetTransformationForSM(); // Global <-> Local
 }
 //____________________________________________________________________________
+AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp) : AliRecPoint(rp)
+{
+  //copy ctor
+  fGeomPtr = rp.fGeomPtr;
+  fClusterType = rp.fClusterType;
+  fCoreEnergy = rp.fCoreEnergy;
+  fLambda[0] = rp.fLambda[0];
+  fLambda[1] = rp.fLambda[1];
+  fDispersion = rp.fDispersion;
+  fEnergyList = new Float_t[rp.fMulDigit];
+  fTimeList = new Float_t[rp.fMulDigit];
+  fAbsIdList = new Int_t[rp.fMulDigit];
+  for(Int_t i = 0; i < rp.fMulDigit; i++) {
+    fEnergyList[i] = rp.fEnergyList[i];
+    fTimeList[i] = rp.fTimeList[i];
+    fAbsIdList[i] = rp.fAbsIdList[i];
+  }
+  fTime = rp.fTime;
+  fCoreRadius = rp.fCoreRadius;
+  fMulParent = rp.fMulParent;
+  fMaxParent = rp.fMaxParent;
+  fParentsList = new Int_t[rp.fMulParent];
+  for(Int_t i = 0; i < rp.fMulParent; i++) fParentsList[i] = rp.fParentsList[i];
+  fSuperModuleNumber = rp.fSuperModuleNumber;
+
+}
+//____________________________________________________________________________
 AliEMCALRecPoint::~AliEMCALRecPoint()
 {
   // dtor

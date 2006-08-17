@@ -64,6 +64,17 @@ AliEMCALv1::AliEMCALv1(const char *name, const char *title):
 }
 
 //______________________________________________________________________
+AliEMCALv1::AliEMCALv1(const AliEMCALv1 & emcal):AliEMCALv0(emcal)
+{
+  //copy ctor
+  fCurPrimary = emcal.fCurPrimary;
+  fCurParent = emcal.fCurParent;
+  fCurTrack = emcal.fCurTrack;
+  fTimeCut = emcal.fTimeCut;
+
+}
+
+//______________________________________________________________________
 AliEMCALv1::~AliEMCALv1(){
     // dtor
 

@@ -33,11 +33,8 @@ class AliEMCAL : public AliDetector {
   
   AliEMCAL(); 
   AliEMCAL(const char* name, const char* title="");
-  AliEMCAL(const AliEMCAL& emcal) : AliDetector(emcal) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;  
-  }
+  AliEMCAL(const AliEMCAL& emcal);
+
   virtual ~AliEMCAL() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
@@ -61,7 +58,7 @@ class AliEMCAL : public AliDetector {
   
   virtual AliTriggerDetector* CreateTriggerDetector() const 
     { return new AliEMCALTrigger(); }
-  
+
   // Raw Read Out
   Double_t GetRawFormatCapa() const { return fgCapa ; }   
   Double_t GetRawFormatHighCharge() const { return fHighCharge ; }  
@@ -89,6 +86,8 @@ protected:
   
   static Double_t RawResponseFunction(Double_t *x, Double_t *par) ; 
   void FitRaw(Bool_t lowGainFlag, TGraph * gLowGain, TGraph * gHighGain, TF1* signalF, Double_t & energy, Double_t & time) ;
+
+  void Init(void);  //initializes some params
 
   Int_t fBirkC0;    // constants for Birk's Law implementation
   Double_t fBirkC1; // constants for Birk's Law implementation

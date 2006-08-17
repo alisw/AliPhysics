@@ -35,6 +35,7 @@ Double_t AliEMCALHadronCorrectionv1::fgParLookup[HCPARAMETERS][HCPARAMETERSETS] 
 
 AliEMCALHadronCorrectionv1* AliEMCALHadronCorrectionv1::fgHadrCorr = 0;
 
+//______________________________________________________________________
 void AliEMCALHadronCorrectionv1::SetGeometry(AliEMCALGeometry *geometry)
 {
   // Initialise EMCAL geometry
@@ -52,6 +53,7 @@ void AliEMCALHadronCorrectionv1::SetGeometry(AliEMCALGeometry *geometry)
     return;	
 }	
 	
+//______________________________________________________________________
 void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 {
   // Initialise EMCAL geometry
@@ -86,11 +88,14 @@ void AliEMCALHadronCorrectionv1::SetGeometry(TString name,Double_t fs)
 	
 }	
 
-	
+//______________________________________________________________________	
 AliEMCALHadronCorrectionv1::AliEMCALHadronCorrectionv1(const char *name,const char *title) 
                            :AliEMCALHadronCorrection(name, title)
 {
   fgHadrCorr = this;
+  fSamplingFraction = 1.0;
+  for(Int_t i = 0; i < 6; i++) fPar[i] = 0.;
+
 }
 
 /*
@@ -103,16 +108,16 @@ AliEMCALHadronCorrectionv1::AliEMCALHadronCorrectionv1(const char *name,const ch
 }	
 */
 
-AliEMCALHadronCorrectionv1*
-AliEMCALHadronCorrectionv1::Instance()
+//______________________________________________________________________
+AliEMCALHadronCorrectionv1* AliEMCALHadronCorrectionv1::Instance()
 {
   // return pointer to global instance. Instantiate if needed
   if (! fgHadrCorr) new AliEMCALHadronCorrectionv1();
   return fgHadrCorr;
 }
 
-Double_t 
-AliEMCALHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
+//______________________________________________________________________
+Double_t AliEMCALHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
 {
   // Return parametrised energy response
   Double_t etai = TMath::Abs(eta); 

@@ -26,7 +26,7 @@ class AliEMCALFastRecParticle : public TParticle {
   
   AliEMCALFastRecParticle() ;
   
-  AliEMCALFastRecParticle(const AliEMCALFastRecParticle & rp) ;  // ctor
+  AliEMCALFastRecParticle(const AliEMCALFastRecParticle & rp) ;  // copy ctor
   AliEMCALFastRecParticle(const TParticle & p) ;  // ctor
   virtual ~AliEMCALFastRecParticle(){
     // dtor

@@ -102,6 +102,39 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(const TString alirunFileName, const
 }
 
 //____________________________________________________________________________
+AliEMCALClusterizerv1::AliEMCALClusterizerv1(const AliEMCALClusterizerv1& clus):AliEMCALClusterizer(clus)
+{
+  //copy ctor
+  fHists = clus.fHists;
+  fPointE = clus.fPointE;
+  fPointL1 = clus.fPointL1;
+  fPointL2 = clus.fPointL2;
+  fPointDis = clus.fPointDis;
+  fPointMult = clus.fPointMult;
+  fDigitAmp = clus.fDigitAmp;
+  fMaxE = clus.fMaxE;
+  fMaxL1 = clus.fMaxL1;
+  fMaxL2 = clus.fMaxL2;
+  fMaxDis = clus.fMaxDis;
+
+  fGeom = clus.fGeom;
+  fDefaultInit = clus.fDefaultInit;
+  fToUnfold = clus.fToUnfold;
+  fNumberOfECAClusters = clus.fNumberOfECAClusters;
+  fNTowerInGroup = clus.fNTowerInGroup;
+  fCalibData = clus.fCalibData;
+  fADCchannelECA = clus.fADCchannelECA;
+  fADCpedestalECA = clus.fADCpedestalECA;
+  fECAClusteringThreshold = clus.fECAClusteringThreshold;
+  fECALocMaxCut = clus.fECALocMaxCut;
+  fECAW0 = clus.fECAW0;
+  fRecPointsInRun = clus.fRecPointsInRun;
+  fTimeGate = clus.fTimeGate;
+  fMinECut = clus.fMinECut;
+
+}
+
+//____________________________________________________________________________
   AliEMCALClusterizerv1::~AliEMCALClusterizerv1()
 {
   // dtor

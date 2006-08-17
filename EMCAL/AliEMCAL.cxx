@@ -67,23 +67,44 @@ AliEMCAL::AliEMCAL():AliDetector()
 {
   // Default ctor 
   fName = "EMCAL" ;
+  Init();
+
 }
 
 //____________________________________________________________________________
 AliEMCAL::AliEMCAL(const char* name, const char* title): AliDetector(name,title)
 {
   //   ctor : title is used to identify the layout
+  Init();
 
-  fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
-  fHighGain          = 6.64 ; 
-  fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
-  fLowGainOffset     = 1 ;            // offset added to the module id to distinguish high and low gain data
+}
+
+//____________________________________________________________________________
+AliEMCAL::AliEMCAL(const AliEMCAL& emcal) : AliDetector(emcal)
+{
+  //copy ctor
+  Init();
+
 }
 
 //____________________________________________________________________________
 AliEMCAL::~AliEMCAL()
 {
   //dtor
+}
+
+//____________________________________________________________________________
+void AliEMCAL::Init(void)
+{
+  //initialize EMCAL values
+  fBirkC0 = 1;
+  fBirkC1 = 0.013/1.032;
+  fBirkC2 = 9.6e-6/(1.032 * 1.032);
+  
+  fHighCharge        = 8.2 ;          // adjusted for a high gain range of 5.12 GeV (10 bits)
+  fHighGain          = 6.64 ; 
+  fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
+  fLowGainOffset     = 1 ;            // offset added to the module id to distinguish high and low gain data
 }
 
 //____________________________________________________________________________

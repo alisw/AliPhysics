@@ -32,8 +32,8 @@ class AliEMCALv0 : public AliEMCAL {
   AliEMCALv0(const char *name, const char *title="") ;
   virtual ~AliEMCALv0(){} 
 
-  AliEMCALv0(const AliEMCALv0 & emcal):AliEMCAL(emcal) {
-    Fatal("cpy ctor", "not implemented") ;  }
+  AliEMCALv0(const AliEMCALv0 & emcal);
+
   AliEMCALv0 & operator = (const AliEMCALv0  & /*rvalue*/) {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented");

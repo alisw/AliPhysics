@@ -85,6 +85,16 @@ AliEMCALv3::AliEMCALv3(const char *name, const char *title): AliEMCALv1(name,tit
 }
 
 //______________________________________________________________________
+AliEMCALv3::AliEMCALv3(const AliEMCALv3 & emcal):AliEMCALv1(emcal)
+{
+  fGeometry = emcal.fGeometry;
+  fHDe = emcal.fHDe;
+  fHNhits = emcal.fHNhits;
+  fHDeDz = emcal.fHDeDz;
+
+}
+
+//______________________________________________________________________
 AliEMCALv3::~AliEMCALv3(){
     // dtor
 

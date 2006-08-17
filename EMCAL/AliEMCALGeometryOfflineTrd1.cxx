@@ -35,6 +35,7 @@ ClassImp(AliEMCALGeometryOfflineTrd1)
 
 AliEMCALGeometryOfflineTrd1* AliEMCALGeometryOfflineTrd1::fgGeomOfflineTrd1=0;
 
+//___________________________________________________________________________
 AliEMCALGeometryOfflineTrd1* AliEMCALGeometryOfflineTrd1::GetInstance()
 {
   //retrurn instance of the geometry
@@ -44,6 +45,7 @@ AliEMCALGeometryOfflineTrd1* AliEMCALGeometryOfflineTrd1::GetInstance()
   return fgGeomOfflineTrd1;
 }
 
+//___________________________________________________________________________
 AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1() : TNamed("geomTRD1","")
 { 
   // this private constarctor
@@ -51,6 +53,32 @@ AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1() : TNamed("geomTRD1","
   Init();
 }
 
+//___________________________________________________________________________
+AliEMCALGeometryOfflineTrd1::AliEMCALGeometryOfflineTrd1(const AliEMCALGeometryOfflineTrd1& geom):TNamed(geom.GetName(),geom.GetTitle())
+{
+  //copy ctor
+  fGeometry = geom.fGeometry;
+  fMaxInEta = geom.fMaxInEta;
+
+  for(Int_t mod = 0; mod < 26; mod++) fTrd1Modules[mod] = geom.fTrd1Modules[mod];
+
+  fSMMaxEta = geom.fSMMaxEta;
+  for(Int_t i = 0; i < fSMMaxEta; i++) fSMPositionEta[i] = geom.fSMPositionEta[i];
+  
+  fSMPositionPhi = geom.fSMPositionPhi;
+  fShiftOnPhi = geom.fShiftOnPhi;
+  fNPhiSuperModule = geom.fNPhiSuperModule;
+  for(Int_t rot = 0; rot < 6; rot++) {
+    fSuperModuleRotationZ[rot] = geom.fSuperModuleRotationZ[rot];
+    fNameSuperModuleRotationZ[rot] = geom.fNameSuperModuleRotationZ[rot];
+  }
+  fSuperModuleRotationX = geom.fSuperModuleRotationX;
+  for(Int_t rot = 0; rot < 12; rot++) fSuperModuleRotation[rot] = geom.fSuperModuleRotation[rot];
+  fXYZofCells = geom.fXYZofCells;
+
+}
+
+//___________________________________________________________________________
 void AliEMCALGeometryOfflineTrd1::Init()
 {
   // Super module
@@ -109,6 +137,7 @@ void AliEMCALGeometryOfflineTrd1::Init()
   }
 }
 
+//___________________________________________________________________________
 TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(int nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta)
 { 
   //return location of position within supermodule
@@ -122,6 +151,7 @@ TVector3& AliEMCALGeometryOfflineTrd1::PosInSuperModule(int nSupMod, Int_t nTowe
   return v;
 } 
 
+//___________________________________________________________________________
 void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(Int_t iphi, Int_t ieta, 
 double &lphi, double &leta)
 { 
@@ -135,6 +165,7 @@ double &lphi, double &leta)
   leta = fSMPositionEta[ie].X();
 }
 
+//___________________________________________________________________________
 void AliEMCALGeometryOfflineTrd1::PositionInSuperModule(int nSupMod, Int_t nTower, Int_t nIphi, Int_t nIeta,
 double &lphi, double &leta)
 {
@@ -145,6 +176,7 @@ double &lphi, double &leta)
   PositionInSuperModule(iphi,ieta, lphi,leta);
 }
 
+//___________________________________________________________________________
 TRotation* AliEMCALGeometryOfflineTrd1::Rotation(Int_t module)
 { 
   //return rotation matrix for module
@@ -154,6 +186,7 @@ TRotation* AliEMCALGeometryOfflineTrd1::Rotation(Int_t module)
   return &fSuperModuleRotation[module];
 }
 
+//___________________________________________________________________________
 TVector3* AliEMCALGeometryOfflineTrd1::CellPosition(int absId)
 { 
   //return cell position given absoluted cell id
@@ -162,6 +195,7 @@ TVector3* AliEMCALGeometryOfflineTrd1::CellPosition(int absId)
   return (TVector3*)fXYZofCells->At(absId-1);
 }
 
+//___________________________________________________________________________
 void AliEMCALGeometryOfflineTrd1::PrintSuperModule()
 {
   //utility method for printing supermodule info
@@ -177,6 +211,7 @@ void AliEMCALGeometryOfflineTrd1::PrintSuperModule()
   }
 }
 
+//___________________________________________________________________________
 void AliEMCALGeometryOfflineTrd1::PrintCell(Int_t absId)
 {
   //utility method for printing cell info
@@ -191,6 +226,7 @@ void AliEMCALGeometryOfflineTrd1::PrintCell(Int_t absId)
   }
 }
 
+//___________________________________________________________________________
 void AliEMCALGeometryOfflineTrd1::Browse(TBrowser* b)
 {
   //Browse the geometry
@@ -211,6 +247,7 @@ void AliEMCALGeometryOfflineTrd1::Browse(TBrowser* b)
   b->Add(fXYZofCells);
 }
 
+//___________________________________________________________________________
 Bool_t AliEMCALGeometryOfflineTrd1::IsFolder() const
 {
   //folder check
