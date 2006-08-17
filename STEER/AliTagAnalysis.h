@@ -39,6 +39,7 @@ class AliTagAnalysis : public TObject {
   void ChainLocalTags(const char *dirname);
   void ChainGridTags(TGridResult *result);
   TChain *QueryTags(AliEventTagCuts *EvTagCuts);
+  Bool_t CreateXMLCollection(const char* name, AliEventTagCuts *EvTagCuts);
    
  protected:
   TGridResult *ftagresult; //the results from the tag grid query     

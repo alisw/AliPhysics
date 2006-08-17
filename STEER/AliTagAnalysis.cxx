@@ -34,6 +34,7 @@
 #include "AliEventTag.h"
 #include "AliTagAnalysis.h"
 #include "AliEventTagCuts.h"
+#include "AliXMLCollection.h"
 
 class TTree;
 
@@ -115,6 +116,7 @@ void AliTagAnalysis::ChainGridTags(TGridResult *res) {
 TChain *AliTagAnalysis::QueryTags(AliEventTagCuts *EvTagCuts) {
   //Queries the tag chain using the defined 
   //event tag cuts from the AliEventTagCuts object
+  //and returns a TChain along with the associated TEventList
   AliInfo(Form("Querying the tags........"));
   
   //ESD file chain
@@ -154,4 +156,40 @@ TChain *AliTagAnalysis::QueryTags(AliEventTagCuts *EvTagCuts) {
   return fESDchain;
 }
 
+//___________________________________________________________________________
+Bool_t AliTagAnalysis::CreateXMLCollection(const char* name, AliEventTagCuts *EvTagCuts) {
+  //Queries the tag chain using the defined 
+  //event tag cuts from the AliEventTagCuts object
+  //and returns a XML collection
+  AliInfo(Form("Creating the collection........"));
+
+  AliXMLCollection *collection = new AliXMLCollection();
+  collection->SetCollectionName(name);
+  collection->WriteHeader();
+
+  //Event list
+  TEventList *fEventList = new TEventList();
+  TString guid = 0x0;
+  
+  //Defining tag objects
+  AliRunTag *tag = new AliRunTag;
+  AliEventTag *evTag = new AliEventTag;
+  fChain->SetBranchAddress("AliTAG",&tag);
+
+  for(Int_t iTagFiles = 0; iTagFiles < fChain->GetEntries(); iTagFiles++) {
+    fChain->GetEntry(iTagFiles);
+    Int_t iEvents = tag->GetNEvents();
+    const TClonesArray *tagList = tag->GetEventTags();
+    for(Int_t i = 0; i < iEvents; i++) {
+      evTag = (AliEventTag *) tagList->At(i);
+      guid = evTag->GetGUID(); 
+      if(EvTagCuts->IsAccepted(evTag)) fEventList->Enter(i);
+    }//event loop
+    collection->WriteBody(iTagFiles+1,guid,fEventList);
+    fEventList->Clear();
+  }//tag file loop
+  collection->Export();
+
+  return kTRUE;
+}
 
