@@ -8,7 +8,7 @@ struct AliRawDataHeader {
     fSize(0xFFFFFFFF), 
     fEventID1(0),
     fL1TriggerType(0),
-    fVersion(1),
+    fVersion(2),
     fEventID2(0),
     fAttributesSubDetectors(0),
     fStatusMiniEventID(0x1000),  // status bit 4: no L1/L2 trigger information
@@ -16,6 +16,15 @@ struct AliRawDataHeader {
     fROILowTriggerClassHigh(0),
     fROIHigh(0)
   {}
+
+  UShort_t  GetEventID1() const
+    {return (fEventID1 & 0xFFF);};
+
+  UChar_t   GetL1TriggerMessage() const
+    {return (UChar_t)((fEventID1 >> 14) | ((UShort_t)fL1TriggerType << 2));};
+
+  UChar_t   GetVersion() const
+    {return fVersion;};
 
   UChar_t   GetAttributes() const 
     {return (fAttributesSubDetectors >> 24) & 0xFF;};
