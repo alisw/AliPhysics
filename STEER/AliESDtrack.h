@@ -170,6 +170,7 @@ public:
   Float_t GetTRDchi2() const {return fTRDchi2;}
   Int_t   GetTRDclusters(Int_t *idx) const;
   Int_t   GetTRDncls() const {return fTRDncls;}
+  Int_t   GetTRDncls0() const {return fTRDncls0;}
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
   Int_t   GetTRDLabel() const {return fTRDLabel;}
