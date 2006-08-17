@@ -21,6 +21,7 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONTransientDigit.cxx \
         AliMUONRawCluster.cxx \
         AliMUONGlobalTrigger.cxx  \
+        AliMUONRegionalTrigger.cxx \
         AliMUONLocalTrigger.cxx \
         AliMUONTriggerLut.cxx \
         AliMUONDisplay.cxx \

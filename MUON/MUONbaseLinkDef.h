@@ -39,6 +39,7 @@
 #pragma link C++ class AliMUONDigit+; 
 #pragma link C++ class AliMUONTransientDigit+;
 #pragma link C++ class AliMUONGlobalTrigger+; 
+#pragma link C++ class AliMUONRegionalTrigger+; 
 #pragma link C++ class AliMUONLocalTrigger+; 
 #pragma link C++ class AliMUONTriggerLut+; 
 
