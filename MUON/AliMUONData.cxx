@@ -852,6 +852,15 @@ AliMUONData::LocalTrigger() const
 }
 
 //____________________________________________________________________________
+TClonesArray*  
+AliMUONData::RegionalTrigger() const
+{
+/// Getting regional trigger
+
+  return fRegionalTrigger;
+}
+
+//____________________________________________________________________________
 void
 AliMUONData::GetDigits() const 
 {
