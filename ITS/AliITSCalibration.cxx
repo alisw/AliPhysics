@@ -24,6 +24,7 @@
 
 #include "Riostream.h"
 #include "AliITSCalibration.h"
+#include "AliLog.h"
 
 ClassImp(AliITSCalibration)
 
@@ -55,6 +56,29 @@ fResponse(){
     fdv = thickness/80.0;   // 80 volts.
     SetGeVToCharge();
     fResponse = 0;
+}
+
+//______________________________________________________________________
+AliITSCalibration::AliITSCalibration(const AliITSCalibration &ob):
+  TObject(ob)
+{
+  // Copy constructor
+  // not implemented
+  AliWarning("Copy constructor not implemented!");
+}
+
+//______________________________________________________________________________
+AliITSCalibration& AliITSCalibration::operator= (const AliITSCalibration& source)
+{
+  // Asignment operator
+  // not implemented
+  if(this==&source) return *this;
+
+  AliWarning("Asignment operator not implemented!");
+
+  ((TObject *)this)->operator=(source);
+
+  return *this;
 }
 
 //______________________________________________________________________

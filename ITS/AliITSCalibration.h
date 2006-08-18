@@ -149,7 +149,7 @@ class AliITSCalibration : public TObject {
 
  protected:
     AliITSCalibration(const AliITSCalibration &ob); // copy constructor
-    AliITSCalibration& operator=(const AliITSCalibration & /* source */); // ass.
+    AliITSCalibration& operator=(const AliITSCalibration& source); // ass.
     void NotImplemented(const char *method) const {if(gDebug>0)
          Warning(method,"This method is not implemented for this sub-class");}
 
