@@ -97,8 +97,8 @@ class AliTRDdigitizer : public AliDigitizer {
           Float_t  fLorentzFactor;          //  Factor due to Lorentz force
 
           Float_t  fTimeLastVdrift;         //  The structures are valid for fLastVdrift (caching)
-          Float_t *fTimeStruct1;            //  Time Structure of Drift Cells
-          Float_t *fTimeStruct2;            //  Time Structure of Drift Cells
+          Float_t *fTimeStruct1;            //! Time Structure of Drift Cells
+          Float_t *fTimeStruct2;            //! Time Structure of Drift Cells
           Float_t  fVDlo;                   //  Lower drift velocity, for interpolation
           Float_t  fVDhi;                   //  Higher drift velocity, for interpolation
   
@@ -106,7 +106,7 @@ class AliTRDdigitizer : public AliDigitizer {
     
   virtual Bool_t   Init();
 
-  ClassDef(AliTRDdigitizer,13)              //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,14)              //  Produces TRD-Digits
 
 };
 
