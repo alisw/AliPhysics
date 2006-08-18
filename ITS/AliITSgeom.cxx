@@ -628,7 +628,7 @@ fShape(0,0)      // TObjArray of detector geom.
     } // end while ever loop
     fclose(pf);
 }
-/*
+
 //______________________________________________________________________
 AliITSgeom::AliITSgeom(const AliITSgeom &source) : TObject(source){
     //     The copy constructor for the AliITSgeom class. It calls the
@@ -644,6 +644,7 @@ AliITSgeom::AliITSgeom(const AliITSgeom &source) : TObject(source){
     *this = source;  // Just use the = operator for now.
     return;
 }
+
 //______________________________________________________________________
 AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
     //     The = operator function for the AliITSgeom class. It makes an
@@ -687,7 +688,7 @@ AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
         this->fGm.AddAt(new TObject(*(source.fGm.At(i))),i);
     return *this;
 }
-*/
+
 //______________________________________________________________________
 Int_t AliITSgeom::GetModuleIndex(Int_t lay,Int_t lad,Int_t det)const{
     //      This routine computes the module index number from the layer,
