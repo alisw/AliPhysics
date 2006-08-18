@@ -38,224 +38,131 @@ Bool_t  AliSTARTRawReader::Next()
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
+//"LookUpTable":
+// Amplitude LED TRM=0; chain=0; TDC 0 -5        channel 0,2,4,6
+// Time CFD      TRM=0; chain=0; TDC 6 - 11      channel 0,2,4,6
+// mean time     TRM=0; chain=0; TDC 12          channel 0
+// T0A           TRM=0; chain=0; TDC 12          channel 2
+// T0C           TRM=0; chain=0; TDC 12          channel 4
+// vertex        TRM=0; chain=0; TDC 12          channel 6
+// mult QTC0        TRM=0; chain=0; TDC 13          channel 0
+// mult QTC1        TRM=0; chain=0; TDC 13          channel 2
 
-  UInt_t word, unpackword;
-  Int_t time,  pmt;
+// Charge QTC0   TRM=1; chain=0; TDC 0 -5        channel 0,2,4,6
+// Charge QTC1   TRM=1; chain=0; TDC 6 - 11      channel 0,2,4,6
+// T0A trigger          TRM=1; chain=0; TDC 12          channel 0
+// T0C trigger          TRM=1; chain=0; TDC 12          channel 2
+// vertex trigger       TRM=1; chain=0; TDC 12          channel 4
+// trigger central      TRM=1; chain=0; TDC 13          channel 0
+// tigger semicenral    TRM=1; chain=0; TDC 13          channel 2
+
+
+  UInt_t word;
+  Int_t time=0,  itdc=0, ichannel=0; 
+  Int_t numberOfWordsInTRM=0, iTRM=0;
+  Int_t tdcTime, koef ;
+  Int_t allData[107];
+
   TArrayI *timeTDC1 = new TArrayI(24);
   TArrayI * chargeTDC1 = new TArrayI(24);
   TArrayI *timeTDC2 = new TArrayI(24);
   TArrayI *chargeTDC2 = new TArrayI(24);
-
+   
+  for ( Int_t k=0; k<107; k++)  allData[k]=0;
   do {
     if (!fRawReader->ReadNextData(fData)) return kFALSE;
   } while (fRawReader->GetDataSize() == 0);
   
-  fPosition = GetPosition();
- //  trigger 
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
+  //  fPosition = GetPosition();
+  fPosition = 0;
 
-   word=0;
-   unpackword=0;
+  //DRM header
+  for (Int_t i=0; i<4; i++) {
+    word = GetNextWord();
+  }
+  //TRMheader  
    word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
+   numberOfWordsInTRM=AliBitPacking::UnpackWord(word,4,16);
+   iTRM=AliBitPacking::UnpackWord(word,0,3);
 
-   word=0;
-   unpackword=0;
+   //chain header
    word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-    unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
+  
+   for (Int_t i=0; i<numberOfWordsInTRM; i++) {
+     word = GetNextWord();
+     tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
 
-   word=0;
-   unpackword=0;
+     if ( tdcTime == 1)
+       {
+	 itdc=AliBitPacking::UnpackWord(word,24,27);
+	 ichannel=AliBitPacking::UnpackWord(word,21,23);
+	 time=AliBitPacking::UnpackWord(word,0,20);
+	 koef = itdc*4 + ichannel/2;
+	 allData[koef]=time;
+       }
+   }
+   word = GetNextWord(); //chain trailer
+   word = GetNextWord(); //TRM trailer
+     
+  //TRMheader  
    word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
-   word=0;
-   unpackword=0;
+   numberOfWordsInTRM=AliBitPacking::UnpackWord(word,4,16);
+   iTRM=AliBitPacking::UnpackWord(word,0,3);
+   //chain header
    word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
-
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
-
-
-//multiplicity
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
-   fDigits->SetSumMult(time);   
-
-   // best time differece  
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
-
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
-   fDigits->SetDiffTime(time);   
-  // best time left 
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
-   fDigits->SetTimeBestLeft(time);   
    
-  // Best time right &left  
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
- 
-   word=0;
-   unpackword=0;
-   
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
-   fDigits->SetTimeBestRight(time);  
-  // mean 
-   word=0;
-   unpackword=0;
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,8,31);
-   time=unpackword;
- 
-   word=0;
-   unpackword=0;
-   
-   word = GetNextWord();
-   unpackword=AliBitPacking::UnpackWord(word,0,8);
-   pmt=unpackword;
-   fDigits->SetMeanTime(time);  
+   for (Int_t iword=0; iword<numberOfWordsInTRM; iword++) {
+     word = GetNextWord();
+     tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
 
-   for (Int_t i=0; i<24; i++)   //QTC amplified
+     if ( tdcTime == 1)
+       {
+	 itdc=AliBitPacking::UnpackWord(word,24,27);
+	 ichannel=AliBitPacking::UnpackWord(word,21,23);
+	 time=AliBitPacking::UnpackWord(word,0,20);
+	 koef = itdc*4 + ichannel/2;
+	 allData[koef+54]=time;
+       }
+   }
+      
+   for (Int_t in=0; in<24; in++)
      {
-      word=0;
-      unpackword=0;
+       timeTDC1->AddAt(allData[in],in);
+       timeTDC2->AddAt(allData[in+24],in);
+       chargeTDC1->AddAt(allData[in+54],in);
+       chargeTDC2->AddAt(allData[in+78],in);
+     }      
+   word = GetNextWord();
+   word = GetNextWord();
+   
+   fDigits->SetTime(*timeTDC2);
+   fDigits->SetADC(*chargeTDC1);
+   
+   fDigits->SetTimeAmp(*timeTDC1);
+   fDigits->SetADCAmp(*chargeTDC2);
+   fTree->Fill();
+   
+   delete timeTDC1 ;
+   delete chargeTDC1;
+   delete timeTDC2 ;
+   delete chargeTDC2;
+   
+   return kTRUE;
+}
+//_____________________________________________________________________________
+/*
+void AliSTARTRawReader::UnpackTime(Int_t outTime, Int_t outCh)
+{
+      UInt_t word=0;
+      UInt_t unpackword=0;
     
       word = GetNextWord();
-      unpackword=AliBitPacking::UnpackWord(word,8,31);
-      time=unpackword;
-      word=0;
-      unpackword=0;
-      word = GetNextWord();
-      unpackword= AliBitPacking::UnpackWord(word,0,8);
-      pmt=unpackword;  
-      chargeTDC2->AddAt(time,pmt-72);
-     }
-
-  for (Int_t i=0; i<24; i++)
-    {
-      //  QTC
-      word=0;
-      unpackword=0;
-      word = GetNextWord();
-      unpackword=AliBitPacking::UnpackWord(word,8,31);
-      time=unpackword;
-      word=0;
-      unpackword=0;
-      word = GetNextWord();
-      unpackword= AliBitPacking::UnpackWord(word,0,8);
-      pmt=unpackword; //
-      chargeTDC1->AddAt(time,pmt-48);
-    }
-  
-  for (Int_t i=0; i<24; i++) //time CFD
-    {
-      word=0;
-      unpackword=0;
-      word = GetNextWord();
-      unpackword=AliBitPacking::UnpackWord(word,8,31);
-      time=unpackword;
-      word=0;
-      unpackword=0;
-      word = GetNextWord();
-       unpackword=AliBitPacking::UnpackWord(word,0,8);
-      pmt=unpackword;
-      timeTDC2->AddAt(time,pmt-24);
-    } 
-
-  
-  for (Int_t i=0; i<24; i++) //time LED
-    {
-      word=0;
-      unpackword=0;
-      word = GetNextWord();
-      unpackword=AliBitPacking::UnpackWord(word,8,31);
-      time=unpackword; 
-      
-      word=0;
-      unpackword=0;
-      word = GetNextWord();
-      unpackword=AliBitPacking::UnpackWord(word,0,8);
-      pmt=unpackword;
-      timeTDC1->AddAt(time,pmt);
-    }
- 
-  
-  fDigits->SetTime(*timeTDC2);
-  fDigits->SetADC(*chargeTDC1);
-  
-  fDigits->SetTimeAmp(*timeTDC1);
-  fDigits->SetADCAmp(*chargeTDC2);
-    fTree->Fill();
-
-    delete timeTDC1 ;
-    delete chargeTDC1;
-    delete timeTDC2 ;
-    delete chargeTDC2;
-  
-    return kTRUE;
-}
- 
+      unpackword=AliBitPacking::UnpackWord(word,0,12);
+      outTime=unpackword;
+      unpackword= AliBitPacking::UnpackWord(word,21,27);
+      outCh=unpackword;  
+ }
+ */
 //_____________________________________________________________________________
 Int_t AliSTARTRawReader::GetPosition()
 {
@@ -271,7 +178,8 @@ UInt_t AliSTARTRawReader::GetNextWord()
   // Read the next 32 bit word in backward direction
   // The input stream access is given by fData and fPosition
 
-   fPosition--;
+
+  //   fPosition--;
   Int_t iBit = fPosition * 32;
   Int_t iByte = iBit / 8;
 
@@ -280,7 +188,8 @@ UInt_t AliSTARTRawReader::GetNextWord()
   word |= fData[iByte+2]<<16;
   word |= fData[iByte+1]<<8;
   word |= fData[iByte];
-// fPosition--;
+   fPosition++;
+
   return word;
 
 }

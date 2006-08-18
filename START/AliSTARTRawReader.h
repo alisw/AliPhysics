@@ -17,6 +17,7 @@ class AliSTARTRawReader : public TTask {
 
   Bool_t  Next(); //read next raw digit
   Int_t            GetPosition();
+  // void UnpackTime(Int_t outTime, Int_t outCh);
   UInt_t         GetNextWord();
   
   protected :
