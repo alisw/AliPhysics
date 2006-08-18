@@ -130,6 +130,10 @@ protected:
   AliCDBEntry*   fCalibentry ;  // pointer to START calibration object
 
   ClassDef(AliSTARTParameters,2)
+private:
+  AliSTARTParameters(const  AliSTARTParameters&);
+  AliSTARTParameters& operator=(const AliSTARTParameters&);
+
 };
 
 #endif

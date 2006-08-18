@@ -34,7 +34,7 @@
 ClassImp(AliSTARTRecPoint)
 
 //------------------------------------
-  AliSTARTRecPoint::AliSTARTRecPoint() : TObject()
+  AliSTARTRecPoint::AliSTARTRecPoint() : TObject(), fTimeAverage(0),fVertexPosition(0),fTimeBestRight(0),fTimeBestLeft(0),fMultC(0),fMultA(0)
 {
   //ctor
   fTimeAverage=99999;

@@ -176,7 +176,7 @@ void AliSTARTDigitizer::Exec(Option_t* /*option*/)
     Int_t pmtBestRight=9999;
     Int_t pmtBestLeft=9999;
     Int_t timeDiff=999, meanTime=0;
-    Int_t sumMult =0;// fSumMult=0;
+    Int_t sumMult =0;   fSumMult=0;
     bestRightTDC = 99999;  bestLeftTDC = 99999;
  
     ftimeCFD -> Reset();

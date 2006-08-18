@@ -77,6 +77,7 @@ ClassImp(AliSTARTReconstructor)
     timeDelayCFD[i] = param->GetTimeDelayCFD(i);
     timeDelayLED[i] = param->GetTimeDelayLED(i);
     gain[i] = param->GetGain(i);
+    //gain[i] = 1;
     slewingLED.AddAtAndExpand(param->GetSlew(i),i);
   }
   zdetC = param->GetZposition(0);
@@ -112,7 +113,7 @@ ClassImp(AliSTARTReconstructor)
       
     if(fTimeCFD->At(ipmt)>0 ){
       time[ipmt] = channelWidth *( fTimeCFD->At(ipmt)) - 1000*timeDelayCFD[ipmt];
-      Float_t adc_digPs = channelWidth * Float_t (fADC->At(ipmt)) ;
+      Float_t adc_digPs = channelWidth * Float_t (fADCLED->At(ipmt)) ;
       adc[ipmt] = TMath::Exp(adc_digPs/1000) /gain[ipmt];
       AliDebug(1,Form(" time %f ps,  adc %f mv in MIP %i\n ",
 		      time[ipmt], adc[ipmt], Int_t (adc[ipmt]/mV2Mip +0.5)));
@@ -147,7 +148,7 @@ ClassImp(AliSTARTReconstructor)
   if(besttimeright !=999999 && besttimeleft != 999999 ){
     timeDiff = besttimeright - besttimeleft;
     meanTime = (besttimeright + besttimeleft)/2.;
-    vertex = c*(timeDiff); //-(lenr-lenl))/2;
+    vertex = c*(timeDiff)/2.; //-(lenr-lenl))/2;
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
     frecpoints->SetMeanTime(Int_t(meanTime));

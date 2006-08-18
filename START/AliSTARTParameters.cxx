@@ -51,7 +51,8 @@ AliSTARTParameters::Instance()
 }
 
 //____________________________________________________________________
-AliSTARTParameters::AliSTARTParameters() 
+AliSTARTParameters::AliSTARTParameters()
+  :fIsInit(kFALSE),fPh2Mip(0),fmV2Mip(0),fChannelWidth(0),fmV2Channel(0),fQTmin(0),fQTmax(0),fFixedGain(0),fSlewingLED(),fSlewingRec(),fPMTeff(),fTimeDelayLED(0),fTimeDelayCFD(0),fTimeDelayTVD(0),fCalibentry() 
 {
   // Default constructor 
 

@@ -25,6 +25,9 @@ class AliSTARTTrigger : public AliTriggerDetector
   AliSTART *fSTART;          //!
   AliSTARTdigit *fDigits   ; //! digits
 
+  AliSTARTTrigger(const AliSTARTTrigger&);
+  AliSTARTTrigger& operator=(const AliSTARTTrigger&);
+
   
   ClassDef(AliSTARTTrigger,1)  // START Trigger Detector class
     };

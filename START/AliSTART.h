@@ -60,6 +60,9 @@ protected:
    Int_t fIdSens;    // Sensetive Cherenkov photocathode
    AliSTARTdigit *fDigits;
    AliSTARTRecPoint *fRecPoints;
+
+   AliSTART(const AliSTART&);
+   AliSTART& operator=(const AliSTART&);
  
   ClassDef(AliSTART,4)  //Base class for the T0 aka START detector
 };

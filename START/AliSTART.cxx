@@ -69,6 +69,7 @@ ClassImp(AliSTART)
 
 //_____________________________________________________________________________
 AliSTART::AliSTART()
+  : AliDetector(), fIdSens(0), fDigits(NULL), fRecPoints(NULL)
 {
   //
   // Default constructor for class AliSTART
@@ -81,7 +82,7 @@ AliSTART::AliSTART()
  
 //_____________________________________________________________________________
 AliSTART::AliSTART(const char *name, const char *title)
-       : AliDetector(name,title)
+  : AliDetector(name,title), fIdSens(0), fDigits(new AliSTARTdigit()), fRecPoints(new AliSTARTRecPoint())
 {
   //
   // Standard constructor for START Detector
@@ -92,10 +93,10 @@ AliSTART::AliSTART(const char *name, const char *title)
   // Initialise Hit array
   fHits       = new TClonesArray("AliSTARThit",  405);
   gAlice->GetMCApp()->AddHitList(fHits);
-  fDigits    = new AliSTARTdigit();
-  fRecPoints = new AliSTARTRecPoint();
+  //  fDigits    = new AliSTARTdigit();
+  //  fRecPoints = new AliSTARTRecPoint();
   fIshunt     =  1;
-  fIdSens   =  0;
+  //  fIdSens   =  0;
   SetMarkerColor(kRed);
 }
 

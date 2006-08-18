@@ -49,7 +49,7 @@ ClassImp(AliSTARTCalibData)
 }
 
 //________________________________________________________________
-AliSTARTCalibData::AliSTARTCalibData(const char* name):TNamed()
+AliSTARTCalibData::AliSTARTCalibData(const char* name):TNamed(),fTimeDelayTVD(0),fWalk(),fSlewingLED(),fSlewingRec()
 {
   TString namst = "Calib_";
   namst += name;
@@ -60,7 +60,7 @@ AliSTARTCalibData::AliSTARTCalibData(const char* name):TNamed()
 
 //________________________________________________________________
 AliSTARTCalibData::AliSTARTCalibData(const AliSTARTCalibData& calibda) :
-  TNamed(calibda)
+  TNamed(calibda),fTimeDelayTVD(0),fWalk(),fSlewingLED(),fSlewingRec()
 {
 // copy constructor
   SetName(calibda.GetName());

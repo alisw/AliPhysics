@@ -42,6 +42,9 @@ private:
   Int_t fSumMult; // multiplicity
   TObjArray fEffPMT; //pmt registration effeicincy
 
+  AliSTARTDigitizer(const AliSTARTDigitizer&);
+  AliSTARTDigitizer& operator=(const AliSTARTDigitizer);
+
   
     ClassDef(AliSTARTDigitizer,1)
 };    
