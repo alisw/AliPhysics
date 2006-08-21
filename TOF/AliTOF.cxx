@@ -113,7 +113,7 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   if (strstr(option,"tzero")){
     fHits   = new TClonesArray("AliTOFhitT0",  1000);
     fTZero = kTRUE;
-    AliWarning("tzero option requires AliTOFv4T0/AliTOFv5T0 as TOF version (check Your Config.C)");
+    //AliWarning("tzero option requires AliTOFv4T0/AliTOFv5T0 as TOF version (check Your Config.C)");
   }else{
     fHits   = new TClonesArray("AliTOFhit",  1000);
     fTZero = kFALSE;
