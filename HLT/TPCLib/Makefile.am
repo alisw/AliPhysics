@@ -3,8 +3,7 @@
 
 MODULE 				= AliHLTTPC
 
-AM_CPPFLAGS			= -I$(top_srcdir)/src        \
-				  -I$(top_srcdir)/BASE       \
+AM_CPPFLAGS			= -I$(top_srcdir)/BASE       \
 				  -I$(ALICE_ROOT)/include    \
 				  -I$(ALICE_ROOT)/TPC        \
 				  -I$(ALICE_ROOT)/CONTAINERS \
@@ -117,7 +116,7 @@ pkginclude_HEADERS		= $(CLASS_HDRS) \
 
 
 # version info for the library
-libAliHLTTPC_la_LDFLAGS	=  -version-info 1:0:0
+libAliHLTTPC_la_LDFLAGS	=  -version-info 2:0:0
 
 # set the file name for the generated root dictionary
 DICTCPP				=  AliHLTTPC-DICT.cxx
@@ -127,4 +126,7 @@ CLEANFILES			=
 
 include $(top_srcdir)/make.dict
 
-SUBDIRS 			= . Ref
+if EN_HLT_TPCREF
+REFDIR				= Ref
+endif
+SUBDIRS 			= . $(REFDIR)

@@ -62,6 +62,11 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    */
   AliHLTConfiguration(const char* id, const char* component,
 		      const char* sources, const char* arguments);
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTConfiguration(const AliHLTConfiguration&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTConfiguration& operator=(const AliHLTConfiguration&);
+  /** destructor */
   /** destructor */
   virtual ~AliHLTConfiguration();
 

@@ -3,7 +3,6 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, C. Loizides <mailto:loizides@ikf.uni-frankfurt.de>
 //*-- Copyright &copy ALICE HLT Group 
 
-#include "AliHLTTPCStandardIncludes.h"
 #include <TClonesArray.h>
 #include <TSystem.h>
 #include <TMath.h>

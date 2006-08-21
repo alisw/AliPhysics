@@ -17,7 +17,6 @@
  * This section describes the HLT integration into AliRoot.
  */
 
-#include "AliL3RootTypes.h"
 #include "AliHLTLogging.h"
 #include <TList.h>
 
@@ -40,6 +39,10 @@ class AliHLTSystem : public AliHLTLogging {
  public:
   /** default constructor */
   AliHLTSystem();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTSystem(const AliHLTSystem&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTSystem& operator=(const AliHLTSystem&);
   /** destructor */
   virtual ~AliHLTSystem();
 
@@ -122,8 +125,8 @@ class AliHLTSystem : public AliHLTLogging {
   int StopEvent();
  
  private:
-  TList fConfList;
-  int fbListChanged;
+/*   TList fConfList; */
+/*   int fbListChanged; */
 
   TList fTaskList;
 

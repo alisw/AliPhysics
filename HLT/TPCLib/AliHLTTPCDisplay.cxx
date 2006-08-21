@@ -16,7 +16,6 @@
 #define TRACKPOLYMARKER 0
 #define BACKWARD 0
 
-#include "AliHLTTPCStandardIncludes.h"
 #include <TView.h>
 #include <TPolyMarker3D.h>
 #include <TPolyLine3D.h>

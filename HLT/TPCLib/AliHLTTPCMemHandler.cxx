@@ -63,7 +63,6 @@
 */  
 
 #include "AliHLTTPCRootTypes.h"
-#include "AliHLTTPCStandardIncludes.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"

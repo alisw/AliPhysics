@@ -13,7 +13,6 @@
 */
 
 #include <math.h>
-#include "AliHLTTPCStandardIncludes.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCFitter.h"
 #include "AliHLTTPCVertex.h"

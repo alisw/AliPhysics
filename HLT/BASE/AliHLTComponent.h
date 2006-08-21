@@ -16,7 +16,6 @@
  * @defgroup alihlt_component Component handling of the HLT module
  * This section describes the the component handling for the HLT module.
  */
-#include <cerrno>
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTDefinitions.h"
@@ -163,22 +162,13 @@ class AliHLTComponent : public AliHLTLogging {
    * Set the global component handler.
    * The static method is needed for the automatic registration of components. 
    */
-  static int SetGlobalComponentHandler(AliHLTComponentHandler* pCH, int bOverwrite=0) {
-    int iResult=0;
-    if (fpComponentHandler==NULL || bOverwrite!=0)
-      fpComponentHandler=pCH;
-    else
-      iResult=-EPERM;
-    return iResult;
-  }
+  static int SetGlobalComponentHandler(AliHLTComponentHandler* pCH, int bOverwrite=0);
 
   /**
    * Clear the global component handler.
    * The static method is needed for the automatic registration of components. 
    */
-  static int UnsetGlobalComponentHandler() {
-    return SetGlobalComponentHandler(NULL,1);
-  }
+  static int UnsetGlobalComponentHandler();
 
  protected:
 
@@ -240,11 +230,7 @@ class AliHLTComponent : public AliHLTLogging {
    * framework. Function pointers are transferred via the @ref
    * AliHLTComponentEnvironment structure.
    */
-  void* AllocMemory( unsigned long size ) {
-    if (fEnvironment.fAllocMemoryFunc)
-      return (*fEnvironment.fAllocMemoryFunc)(fEnvironment.fParam, size );
-    return NULL;
-  }
+  void* AllocMemory( unsigned long size );
 
   /**
    * Helper function to create a monolithic BlockData description block out
@@ -257,11 +243,6 @@ class AliHLTComponent : public AliHLTLogging {
    */
   int MakeOutputDataBlockList( const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount,
 			       AliHLTComponent_BlockData** outputBlocks );
-/*  { */
-/*     if (fEnvironment.fMakeOutputDataBlockListFunc) */
-/*       return (*fEnvironment.fMakeOutputDataBlockListFunc)(fEnvironment.fParam, blocks, blockCount, outputBlocks ); */
-/*     return -ENOSYS; */
-/*   } */
 
   /**
    * Fill the EventDoneData structure.
@@ -269,12 +250,7 @@ class AliHLTComponent : public AliHLTLogging {
    * framework. Function pointers are transferred via the @ref
    * AliHLTComponentEnvironment structure.
    */
-  int GetEventDoneData( unsigned long size, AliHLTComponent_EventDoneData** edd ) {
-    if (fEnvironment.fGetEventDoneDataFunc)
-      return (*fEnvironment.fGetEventDoneDataFunc)(fEnvironment.fParam, fCurrentEvent, size, edd );
-    return -ENOSYS;
-  }
-
+  int GetEventDoneData( unsigned long size, AliHLTComponent_EventDoneData** edd );
 
   /**
    * Helper function to convert the data type to a string.

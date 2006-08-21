@@ -13,7 +13,6 @@ endif
 SUBDIRS 		= BASE \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
-			  src \
 			  doc
 
 DIST_SUBDIRS		= $(SUBDIRS)

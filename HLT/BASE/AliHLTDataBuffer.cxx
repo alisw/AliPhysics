@@ -31,15 +31,36 @@ using namespace std;
 #include "AliHLTSystem.h"
 
 AliHLTConsumerDescriptor::AliHLTConsumerDescriptor()
+  :
+  fpConsumer(NULL),
+  fSegments()
 {
-  fpConsumer=NULL;
   fSegments.clear();
 }
 
 AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(AliHLTComponent* pConsumer)
+  :
+  fpConsumer(pConsumer),
+  fSegments()
 {
-  fpConsumer=pConsumer;
   fSegments.clear();
+}
+
+AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor& desc)
+  :
+  fpConsumer(desc.fpConsumer),
+  fSegments()
+{
+  // we can simply transfer the pointer to th new object since there are no
+  // release actions in the destructor
+}
+
+AliHLTConsumerDescriptor& AliHLTConsumerDescriptor::operator=(const AliHLTConsumerDescriptor& desc)
+{ 
+  // we can simply transfer the pointer to th new object since there are no
+  // release actions in the destructor
+  fpConsumer=desc.fpConsumer;
+  return *this;
 }
 
 AliHLTConsumerDescriptor::~AliHLTConsumerDescriptor()
@@ -103,15 +124,37 @@ int AliHLTConsumerDescriptor::ReleaseActiveDataSegment(AliHLTUInt32_t offset, Al
 ClassImp(AliHLTDataBuffer)
 
 AliHLTDataBuffer::AliHLTDataBuffer()
+  :
+  fSegments(),
+  fConsumers(),
+  fActiveConsumers(),
+  fReleasedConsumers(),
+  fpBuffer(NULL),
+  fFlags(0)
 {
-  // TODO: do the right initialization 
-  //fSegments.empty();
-  //fConsumers.empty;
-  //fActiveConsumers.empty;
-  //fReleasedConsumers.empty;
-  fpBuffer=NULL;
-  fFlags=0;
+  fSegments.empty();
+  fConsumers.empty();
+  fActiveConsumers.empty();
+  fReleasedConsumers.empty();
   fNofInstances++;
+}
+
+AliHLTDataBuffer::AliHLTDataBuffer(const AliHLTDataBuffer&)
+  :
+  fSegments(),
+  fConsumers(),
+  fActiveConsumers(),
+  fReleasedConsumers(),
+  fpBuffer(NULL),
+  fFlags(0)
+{
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTDataBuffer& AliHLTDataBuffer::operator=(const AliHLTDataBuffer&)
+{ 
+  HLTFatal("assignment operator untested");
+  return *this;
 }
 
 int AliHLTDataBuffer::fNofInstances=0;

@@ -38,35 +38,62 @@ using namespace std;
 ClassImp(AliHLTConfiguration)
 
 AliHLTConfiguration::AliHLTConfiguration()
+  :
+  fID(NULL),
+  fComponent(NULL),
+  fStringSources(NULL),
+  fNofSources(-1),
+  fArguments(NULL),
+  fArgc(-1),
+  fArgv(NULL),
+  fListSources(),
+  fListSrcElement()
 { 
-  fID=NULL;
-  fComponent=NULL;
-  fStringSources=NULL;
-  fNofSources=-1;
-  fArguments=NULL;
-  fArgc=-1;
-  fArgv=NULL;
   fListSrcElement=fListSources.begin();
 }
 
 AliHLTConfiguration::AliHLTConfiguration(const char* id, const char* component, const char* sources, const char* arguments)
+  :
+  fID(id),
+  fComponent(component),
+  fStringSources(sources),
+  fNofSources(-1),
+  fArguments(arguments),
+  fArgc(-1),
+  fArgv(NULL),
+  fListSources(),
+  fListSrcElement()
 {
-  fArgc=-1;
-  fArgv=NULL;
-  
+  fListSrcElement=fListSources.begin();
   if (id && component) {
-    fID=id;
-    fComponent=component;
-    fStringSources=sources;
-    fNofSources=-1;
-    fArguments=arguments;
-    fListSrcElement=fListSources.begin();
     if (fConfigurationHandler) {
       fConfigurationHandler->RegisterConfiguration(this);
     } else {
       HLTError("no configuration handler set, abort registration");
     }
   }
+}
+
+AliHLTConfiguration::AliHLTConfiguration(const AliHLTConfiguration&)
+  :
+  fID(NULL),
+  fComponent(NULL),
+  fStringSources(NULL),
+  fNofSources(-1),
+  fArguments(NULL),
+  fArgc(-1),
+  fArgv(NULL),
+  fListSources(),
+  fListSrcElement()
+{ 
+  fListSrcElement=fListSources.begin();
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTConfiguration& AliHLTConfiguration::operator=(const AliHLTConfiguration&)
+{ 
+  HLTFatal("assignment operator untested");
+  return *this;
 }
 
 AliHLTConfiguration::~AliHLTConfiguration()
@@ -336,22 +363,47 @@ int AliHLTConfiguration::FollowDependency(const char* id, TList* pTgtList)
 ClassImp(AliHLTTask)
 
 AliHLTTask::AliHLTTask()
+  :
+  fpConfiguration(NULL),
+  fpComponent(NULL),
+  fpBlockDataArray(NULL),
+  fBlockDataArraySize(0),
+  fpDataBuffer(NULL),
+  fListTargets(),
+  fListDependencies()
 {
-  fpConfiguration=NULL;
-  fpComponent=NULL;
-  fpBlockDataArray=NULL;
-  fBlockDataArraySize=0;
-  fpDataBuffer=NULL;
 }
 
 AliHLTTask::AliHLTTask(AliHLTConfiguration* fConf, AliHLTComponentHandler* pCH)
+  :
+  fpConfiguration(NULL),
+  fpComponent(NULL),
+  fpBlockDataArray(NULL),
+  fBlockDataArraySize(0),
+  fpDataBuffer(NULL),
+  fListTargets(),
+  fListDependencies()
 {
-  fpConfiguration=NULL;
-  fpComponent=NULL;
-  fpBlockDataArray=NULL;
-  fBlockDataArraySize=0;
-  fpDataBuffer=NULL;
   Init(fConf, pCH);
+}
+
+AliHLTTask::AliHLTTask(const AliHLTTask&)
+  :
+  fpConfiguration(NULL),
+  fpComponent(NULL),
+  fpBlockDataArray(NULL),
+  fBlockDataArraySize(0),
+  fpDataBuffer(NULL),
+  fListTargets(),
+  fListDependencies()
+{
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTTask& AliHLTTask::operator=(const AliHLTTask&)
+{ 
+  HLTFatal("assignment operator untested");
+  return *this;
 }
 
 AliHLTTask::~AliHLTTask()

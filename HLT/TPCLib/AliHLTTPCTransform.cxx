@@ -4,7 +4,6 @@
 //*-- Copyright &copy ALICE HLT Group
 
 
-#include "AliHLTTPCStandardIncludes.h"
 #include "dirent.h"
 
 #ifdef use_aliroot

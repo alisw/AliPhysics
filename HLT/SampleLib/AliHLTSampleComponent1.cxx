@@ -25,7 +25,6 @@
 using namespace std;
 #endif
 
-#include "AliL3StandardIncludes.h"
 #include "AliHLTSampleComponent1.h"
 
 /**

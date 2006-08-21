@@ -30,18 +30,22 @@ class AliHLTComponent;
  */
 struct AliHLTDataSegment {
   AliHLTDataSegment()
+    :
+    fDataType(),
+    fSegmentOffset(0),
+    fSegmentSize(0),
+    fSpecification(0)
   {
-    //fDataType=0;
-   fSegmentOffset=0;
-   fSegmentSize=0;
-   fSpecification=0;
+    memset(&fDataType, 0, sizeof(AliHLTComponent_DataType));
   }
   AliHLTDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size) 
+    :
+    fDataType(),
+    fSegmentOffset(offset),
+    fSegmentSize(size),
+    fSpecification(0)
   {
-    //fDataType=0;
-   fSegmentOffset=offset;
-   fSegmentSize=size;
-   fSpecification=0;
+    memset(&fDataType, 0, sizeof(AliHLTComponent_DataType));
   }
   /** the data type of this segment */
   AliHLTComponent_DataType fDataType;
@@ -91,6 +95,11 @@ class AliHLTConsumerDescriptor : public AliHLTLogging, public TObject {
    * @param pConsumer pointer to the consumer component
    */
   AliHLTConsumerDescriptor(AliHLTComponent* pConsumer);
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTConsumerDescriptor& operator=(const AliHLTConsumerDescriptor&);
+  /** destructor */
   ~AliHLTConsumerDescriptor();
 
   /**
@@ -162,7 +171,11 @@ class AliHLTDataBuffer : public AliHLTLogging, public TObject {
   /* standard constructor
    */
   AliHLTDataBuffer();
-
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTDataBuffer(const AliHLTDataBuffer&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTDataBuffer& operator=(const AliHLTDataBuffer&);
+  /** destructor */
   virtual ~AliHLTDataBuffer();
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

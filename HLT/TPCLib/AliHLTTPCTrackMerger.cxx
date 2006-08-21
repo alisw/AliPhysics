@@ -13,8 +13,6 @@
 </pre
 */
 
-#include "AliHLTTPCStandardIncludes.h"
-
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTrackMerger.h"
 #include "AliHLTTPCTrack.h"

@@ -3,8 +3,6 @@
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliHLTTPCStandardIncludes.h"
-
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCConfMapPoint.h"
 #include "AliHLTTPCSpacePointData.h"

@@ -3,8 +3,6 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliHLTTPCStandardIncludes.h"
-
 #ifndef no_root
 #include <TFile.h>
 #include <TDirectory.h>

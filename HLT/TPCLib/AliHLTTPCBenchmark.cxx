@@ -22,7 +22,6 @@
 #include <TStopwatch.h>
 #include <TMath.h>
 #endif
-#include "AliHLTTPCStandardIncludes.h"
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCBenchmark.h"

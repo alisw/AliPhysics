@@ -25,15 +25,18 @@
 using namespace std;
 #endif
 
+#include "AliHLTStdIncludes.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
-#include <string>
 #include "AliHLTSystem.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent)
 
 AliHLTComponent::AliHLTComponent()
+  :
+  fCurrentEvent(0),
+  fEnvironment()
 { 
   memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   if (fpComponentHandler)
@@ -45,6 +48,20 @@ AliHLTComponent::~AliHLTComponent()
 }
 
 AliHLTComponentHandler* AliHLTComponent::fpComponentHandler=NULL;
+
+int AliHLTComponent::SetGlobalComponentHandler(AliHLTComponentHandler* pCH, int bOverwrite) 
+{
+  int iResult=0;
+  if (fpComponentHandler==NULL || bOverwrite!=0)
+    fpComponentHandler=pCH;
+  else
+    iResult=-EPERM;
+  return iResult;
+}
+
+int AliHLTComponent::UnsetGlobalComponentHandler() {
+  return SetGlobalComponentHandler(NULL,1);
+}
 
 int AliHLTComponent::Init( AliHLTComponentEnvironment* environ, void* environ_param, int argc, const char** argv )
 {
@@ -71,6 +88,12 @@ strcat( output, ":" );
 strncat( output, type.fID, 8 );
 }
 
+void* AliHLTComponent::AllocMemory( unsigned long size ) {
+  if (fEnvironment.fAllocMemoryFunc)
+    return (*fEnvironment.fAllocMemoryFunc)(fEnvironment.fParam, size );
+  return NULL;
+}
+
 int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponent_BlockData>& blocks, AliHLTUInt32_t* blockCount,
 					      AliHLTComponent_BlockData** outputBlocks ) {
     if ( !blockCount || !outputBlocks )
@@ -90,6 +113,12 @@ int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponent_Block
     *blockCount = count;
     return 0;
 
+}
+
+int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponent_EventDoneData** edd ) {
+  if (fEnvironment.fGetEventDoneDataFunc)
+    return (*fEnvironment.fGetEventDoneDataFunc)(fEnvironment.fParam, fCurrentEvent, size, edd );
+  return -ENOSYS;
 }
 
 int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponent_DataType>* tgtList) 

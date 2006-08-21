@@ -5,8 +5,7 @@ EXTRA_DIST			= tutorial.c
 
 MODULE 				= AliHLTSample
 
-AM_CPPFLAGS			= -I$(top_srcdir)/src        \
-				  -I$(top_srcdir)/BASE
+AM_CPPFLAGS			= -I$(top_srcdir)/BASE
 
 
 # library definition

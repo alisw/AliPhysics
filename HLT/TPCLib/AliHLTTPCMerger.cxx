@@ -3,8 +3,6 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy Uli 
 
-#include "AliHLTTPCStandardIncludes.h"
-
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCMerger.h"
 #include "AliHLTTPCTrack.h"

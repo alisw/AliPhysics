@@ -14,7 +14,6 @@
 
 #include <sys/time.h>
  
-#include "AliHLTTPCStandardIncludes.h"
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCLogging.h" 

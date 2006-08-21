@@ -3,7 +3,7 @@
 
 MODULE				= HLTbase
 
-AM_CPPFLAGS			= -I$(top_srcdir)/src      
+AM_CPPFLAGS			= 
 
 # library definition
 lib_LTLIBRARIES			=  libHLTbase.la
@@ -38,6 +38,7 @@ pkginclude_HEADERS		=  $(CLASS_HDRS) \
 				   AliHLT_C_Component_WrapperInterface.h \
 				   AliHLTDefinitions.h
 
+noinst_HEADERS			=  AliHLTStdIncludes.h
 
 # version info for the library
 libHLTbase_la_LDFLAGS		=  -version-info 1:0:0

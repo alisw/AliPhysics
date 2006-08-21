@@ -26,21 +26,34 @@
 using namespace std;
 #endif
 
-#include <cerrno>
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStdIncludes.h"
 #include "AliHLTLogging.h"
-#include <cstdarg>
-#include <string>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTLogging)
 
 AliHLTLogging::AliHLTLogging()
+  :
+  fpDefaultKeyword(NULL),
+  fpCurrentKeyword(NULL),
+  //fLocalLogFilter(kHLTLogDefault),
+  fLocalLogFilter(kHLTLogAll)
 {
-  fpDefaultKeyword=NULL;
-  fpCurrentKeyword=NULL;
-  //fLocalLogFilter=kHLTLogDefault;
-  fLocalLogFilter=kHLTLogAll;
+}
+
+AliHLTLogging::AliHLTLogging(const AliHLTLogging&)
+  :
+  fpDefaultKeyword(NULL),
+  fpCurrentKeyword(NULL),
+  fLocalLogFilter(kHLTLogAll)
+{
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTLogging& AliHLTLogging::operator=(const AliHLTLogging&)
+{ 
+  HLTFatal("assignment operator untested");
+  return *this;
 }
 
 char AliHLTLogging::fLogBuffer[LOG_BUFFER_SIZE]="";
@@ -130,7 +143,7 @@ int AliHLTLogging::Logging(AliHLTComponent_LogSeverity severity, const char* ori
   return iResult;
 }
 
-int AliHLTLogging::LoggingVarargs( AliHLTComponent_LogSeverity severity, const char* origin_class, const char* origin_func,  ... )
+int AliHLTLogging::LoggingVarargs( AliHLTComponent_LogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const
 {
   int iResult=CheckFilter(severity);
   if (iResult>0) {
@@ -172,7 +185,7 @@ int AliHLTLogging::LoggingVarargs( AliHLTComponent_LogSeverity severity, const c
   return iResult;
 }
 
-int AliHLTLogging::CheckFilter(AliHLTComponent_LogSeverity severity)
+int AliHLTLogging::CheckFilter(AliHLTComponent_LogSeverity severity) const
 {
   int iResult=severity==kHLTLogNone || (severity&fGlobalLogFilter)>0 && (severity&fLocalLogFilter)>0;
   return iResult;

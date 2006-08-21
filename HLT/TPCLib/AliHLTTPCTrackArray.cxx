@@ -3,8 +3,6 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliHLTTPCStandardIncludes.h"
-
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTrackArray.h"
 #ifdef INCLUDE_TPC_HOUGH

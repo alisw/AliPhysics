@@ -3,8 +3,6 @@
 // Author: Uli Frankenfeld <mailto:franken@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliHLTTPCStandardIncludes.h"
-#include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCVertexData.h"
 #include "AliHLTTPCLogging.h"

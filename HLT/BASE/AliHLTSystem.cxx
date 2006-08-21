@@ -25,9 +25,7 @@
 using namespace std;
 #endif
 
-#include <cerrno>
-#include <string>
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStdIncludes.h"
 #include "AliHLTSystem.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
@@ -39,8 +37,11 @@ using namespace std;
 ClassImp(AliHLTSystem)
 
 AliHLTSystem::AliHLTSystem()
+  :
+  fpComponentHandler(new AliHLTComponentHandler()),
+  fpConfigurationHandler(new AliHLTConfigurationHandler()),
+  fTaskList()
 {
-  fpComponentHandler=new AliHLTComponentHandler();
   if (fpComponentHandler) {
     AliHLTComponentEnvironment env;
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
@@ -52,7 +53,6 @@ AliHLTSystem::AliHLTSystem()
   } else {
     HLTFatal("can not create Component Handler");
   }
-  fpConfigurationHandler=new AliHLTConfigurationHandler();
   if (fpConfigurationHandler) {
     AliHLTConfiguration::GlobalInit(fpConfigurationHandler);
   } else {
@@ -60,6 +60,20 @@ AliHLTSystem::AliHLTSystem()
   }
 }
 
+AliHLTSystem::AliHLTSystem(const AliHLTSystem&)
+  :
+  fpComponentHandler(NULL),
+  fpConfigurationHandler(NULL),
+  fTaskList()
+{
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTSystem& AliHLTSystem::operator=(const AliHLTSystem&)
+{ 
+  HLTFatal("assignment operator untested");
+  return *this;
+}
 
 AliHLTSystem::~AliHLTSystem()
 {

@@ -4,7 +4,7 @@
 #define ALIHLTTPCLOGGING_H
 
 #include "AliHLTTPCRootTypes.h"
-#include "AliHLTTPCStandardIncludes.h"
+#include "AliHLTStdIncludes.h"
 
 #ifdef use_logging
 #include <MLUCLog.hpp>

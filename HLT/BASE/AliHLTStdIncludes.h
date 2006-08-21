@@ -1,7 +1,8 @@
 // @(#) $Id$
+// Original file : src/AliL3StandardIncludes.h,v 1.5
 
-#ifndef ALIL3STANDARDINCLUDESH
-#define ALIL3STANDARDINCLUDESH
+#ifndef ALIHLTSTDINCLUDESH
+#define ALIHLTSTDINCLUDESH
 
 #if __GNUC__ >= 3
 #include <fstream>
@@ -12,6 +13,8 @@
 #include <cstring>
 #include <ctime>
 #include <cstdlib>
+#include <cerrno>
+#include <cstdarg>
 
 /* Use these only if absolutely necessary 
 eg. in inline functions defined in header files */
@@ -30,6 +33,8 @@ eg. in inline functions defined in header files */
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <stdarg.h>
 
 /* Use these only if absolutely necessary 
 eg. in inline functions defined in header files */

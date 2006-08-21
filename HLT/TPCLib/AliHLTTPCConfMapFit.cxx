@@ -3,7 +3,6 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
-#include "AliHLTTPCStandardIncludes.h"
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCVertex.h"

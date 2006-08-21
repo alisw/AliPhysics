@@ -41,6 +41,8 @@
 class AliHLTLogging {
 public:
   AliHLTLogging();
+  AliHLTLogging(const AliHLTLogging&);
+  AliHLTLogging& operator=(const AliHLTLogging&);
   virtual ~AliHLTLogging();
 
   // logging filter for all objects
@@ -67,7 +69,7 @@ public:
 
   // get the current keyword
   //
-  const char* GetKeyword()
+  const char* GetKeyword() const
     {
       if (fpCurrentKeyword) return fpCurrentKeyword;
       else if (fpDefaultKeyword) return fpDefaultKeyword;
@@ -82,11 +84,11 @@ public:
 
   // logging function with two origin parameters, used by the log macros
   //
-  int LoggingVarargs( AliHLTComponent_LogSeverity severity, const char* origin_class, const char* origin_func,  ... );
+  int LoggingVarargs( AliHLTComponent_LogSeverity severity, const char* origin_class, const char* origin_func,  ... ) const;
 
   // apply filter, return 1 if message should pass
   //
-  int CheckFilter(AliHLTComponent_LogSeverity severity);
+  int CheckFilter(AliHLTComponent_LogSeverity severity) const;
 
   static int Message(void * param, AliHLTComponent_LogSeverity severity, const char* origin, const char* keyword, const char* message);
 
@@ -115,18 +117,34 @@ private:
 class AliHLTKeyword {
  public:
   AliHLTKeyword()
+    :
+    fpParent(NULL),
+    fpOriginal(NULL)
     {
-      fpParent=NULL;
-      fpOriginal=NULL;
     }
 
   AliHLTKeyword(AliHLTLogging* parent, const char* keyword)
+    :
+    fpParent(parent),
+    fpOriginal(NULL)
     {
-      fpOriginal=NULL;
       if (parent) {
-	fpParent=parent;
 	fpOriginal=fpParent->SetKeyword(keyword);
       }
+    }
+
+  AliHLTKeyword(const AliHLTKeyword& kw)
+    :
+    fpParent(kw.fpParent),
+    fpOriginal(kw.fpOriginal)
+    {
+    }
+
+  AliHLTKeyword& operator=(const AliHLTKeyword& kw)
+    { 
+      fpParent=kw.fpParent;
+      fpOriginal=kw.fpOriginal;
+      return *this;
     }
 
   ~AliHLTKeyword()

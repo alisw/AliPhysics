@@ -25,10 +25,8 @@
 using namespace std;
 #endif
 
-#include <cerrno>
-#include <string>
 #include <dlfcn.h>
-#include "AliL3StandardIncludes.h"
+#include "AliHLTStdIncludes.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTDataTypes.h"
@@ -38,9 +36,14 @@ using namespace std;
 ClassImp(AliHLTComponentHandler)
 
 AliHLTComponentHandler::AliHLTComponentHandler()
+  :
+  fComponentList(),
+  fScheduleList(),
+  fLibraryList(),
+  fEnvironment()
 {
+  memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
 }
-
 
 AliHLTComponentHandler::~AliHLTComponentHandler()
 {

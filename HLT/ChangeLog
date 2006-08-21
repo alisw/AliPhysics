@@ -1,3 +1,13 @@
+2006-08-21 intermediate
+	- made package indepentend of src
+	  added BASE/AliHLTStdIncludes.h which should take the job of
+	  including std headers
+	- removed eff C++ warnings in BASE
+	- TPCref library off by default
+	- added doc pictures to distribution
+	- TPCLib version interface no 2
+	- started to sort header includes in TPCLib
+	
 2006-08-17 Jochen's TPCLib source code from Jan 2006 (not a joke) merged
 	- bugfix in AliHLTTPCConfMapper (caused low tracking efficiency)
 	- Online Display development

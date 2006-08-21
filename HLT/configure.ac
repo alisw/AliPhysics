@@ -43,9 +43,47 @@ ALIHLT_USEPACKAGE=ALIROOT
 #ALIHLT_USEPACKAGE=STANDALONE
 AC_DEFINE(use_aliroot)
 AC_DEFINE(use_root)
-CPPFLAGS="$CPPFLAGS -DROOTVERSION=`${ROOTCONF} --version`"
-CPPFLAGS="$CPPFLAGS -DALIROOTVERSION=0"
-CPPFLAGS="$CPPFLAGS -I${ROOTINCDIR}"
+CPPFLAGS="$CPPFLAGS -DROOTVERSION=\\\"`${ROOTCONF} --version`\\\""
+CPPFLAGS="$CPPFLAGS -DALIROOTVERSION=\\\"Unknown\\\""
+CPPFLAGS="$CPPFLAGS ${ROOTCFLAGS}"
+LDFLAGS="$LDFLAGS -L${ROOTLIBDIR} ${ROOTLIBS}"
+
+dnl ------------------------------------------------------------------
+dnl check for AliRoot
+dnl AC_LANG_PUSH(C++)
+dnl AC_MSG_CHECKING([for AliRoot])
+dnl have_aliroot=no
+dnl ALIROOTLIBDIR=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}
+dnl ALIROOTINCDIR=${ALICE_ROOT}/include
+dnl if test "x$ALICE_ROOT" != "x" \
+dnl    && test -d ${ALIROOTLIBDIR} \
+dnl    && test -d ${ALIROOTINCDIR}; then
+dnl have_aliroot=yes
+dnl else
+dnl ALIROOTLIBDIR=
+dnl ALIROOTINCDIR=
+dnl fi
+dnl AC_MSG_RESULT([$have_aliroot])
+
+dnl if test ! "x$have_aliroot" = "x" ; then
+dnl CPPFLAGS="$CPPFLAGS -I${ALIROOTINCDIR}"
+dnl LDFLAGS="$LDFLAGS -L${ALIROOTLIBDIR} -lESD -lGeom -lMinuit -lVMC -lEG -lRAWData -ldl"
+dnl have_alisteer=no
+dnl AC_CHECK_LIB(STEER, [AliRun], [have_alisteer=yes])
+dnl fi
+dnl AC_LANG_POP(C++)
+
+
+dnl ------------------------------------------------------------------
+AC_MSG_CHECKING([whether to impose strict coding conventions])
+AC_ARG_ENABLE(strict,
+  [AC_HELP_STRING([--enable-strict],
+      [enable coding convention checks ])],
+  [],[enable_strict=no])
+if test "x$enable_strict" = "xyes" ; then
+   CPPFLAGS="$CPPFLAGS -Weffc++"
+fi
+AC_MSG_RESULT([$enable_strict])
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to compile sample library])
@@ -74,6 +112,21 @@ AM_CONDITIONAL(EN_HLT_TPC, test x$enable_tpc = xyes)
 AC_MSG_RESULT([$enable_tpc])
 
 dnl ------------------------------------------------------------------
+if test "x$enable_tpc" = "xyes" ; then 
+  AC_MSG_CHECKING([whether to compile tpc reference library])
+  AH_TEMPLATE([HLT_TPCREF],[hlt tpc reference library])
+  AC_ARG_ENABLE(tpcref,
+    [AC_HELP_STRING([--enable-tpcref],
+        [compile the tpc reference library ])],
+    [],[enable_tpcref=no])
+  if test "x$enable_tpcref" = "xyes" ; then 
+    AC_DEFINE(HLT_TPCREF)
+  fi
+  AM_CONDITIONAL(EN_HLT_TPCREF, test x$enable_tpcref = xyes)
+  AC_MSG_RESULT([$enable_tpcref])
+fi
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to enable HLT logging])
 AH_TEMPLATE([NOLOGGING],[disable hlt logging])
 AC_ARG_ENABLE(logging,
@@ -96,13 +149,6 @@ if test "x$enable_mc_saving" = "xyes" ; then
   AC_DEFINE(DOMC)
 fi
 AC_MSG_RESULT([$enable_mc_saving])
-
-dnl ------------------------------------------------------------------
-# TODO: get AliRoot version during configure
-#Switch on ALIROOT version detection by cvs command
-#ifeq ($(ALIHLT_ALIDETECT),true)
-#USECVS = 1
-#endif
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to enable AliRoot NEWIO])
@@ -153,7 +199,6 @@ AC_CONFIG_FILES([Makefile
 		 SampleLib/Makefile
 		 TPCLib/Makefile
 		 TPCLib/Ref/Makefile
-		 src/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])
 

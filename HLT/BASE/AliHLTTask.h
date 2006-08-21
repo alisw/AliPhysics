@@ -48,6 +48,10 @@ class AliHLTTask : public TObject, public AliHLTLogging {
       @param pCH   the HLT component handler
    */
   AliHLTTask(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH);
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTask(const AliHLTTask&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTask& operator=(const AliHLTTask&);
   /** destructor */
   virtual ~AliHLTTask();
 

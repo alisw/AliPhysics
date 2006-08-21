@@ -8,7 +8,6 @@
 
 
 #include "AliHLTTPCDigitReader.h"
-#include "AliHLTTPCStandardIncludes.h"
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCClusterFinder.h"

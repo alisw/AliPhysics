@@ -8,8 +8,6 @@
 // 
 
 
-#include "AliHLTTPCStandardIncludes.h"
-
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCVertex.h"
