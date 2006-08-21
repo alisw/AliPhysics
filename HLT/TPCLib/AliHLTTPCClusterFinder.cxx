@@ -1,4 +1,5 @@
 // @(#) $Id$
+// Original: AliL3ClustFinderNew.cxx,v 1.29 2005/06/14 10:55:21 cvetan Exp 
 
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>, 
 //         Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>

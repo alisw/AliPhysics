@@ -1,4 +1,5 @@
 // @(#) $Id$
+// Original: AliL3Log.h,v 1.2 2004/06/11 16:06:33 loizides Exp $
 
 #ifndef ALIHLTTPCLOG_H
 #define ALIHLTTPCLOG_H

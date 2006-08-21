@@ -1,4 +1,5 @@
 // @(#) $Id$
+// Original: AliL3ConfMapPoint.cxx,v 1.10 2005/06/23 17:46:55 hristov 
 
 // Author: Anders Vestbo <mailto:vestbo$fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
