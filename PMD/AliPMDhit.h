@@ -15,26 +15,27 @@ class TClonesArray;
 class AliPMDhit : public AliHit {
 
  public:
-  AliPMDhit() {}
+  AliPMDhit();
   AliPMDhit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-  AliPMDhit(AliPMDhit* oldhit) {*this=*oldhit;}
+  AliPMDhit(AliPMDhit* oldhit);
   virtual ~AliPMDhit() {}
-  virtual Int_t GetVolume(Int_t i) const {return fVolume[i];}
-  virtual Float_t GetEnergy() const {return fEnergy;}
+  Int_t GetVolume(Int_t i) const {return fVolume[i];}
+  Float_t GetEnergy() const {return fEnergy;}
   int operator == (AliPMDhit &cell) const;
-  virtual AliPMDhit& operator + (AliPMDhit &cell) {
+  AliPMDhit operator + (AliPMDhit &cell) {
     fEnergy+=cell.GetEnergy();
     return *this;
   }
-  virtual void Print(Option_t *) const {
+  void Print(Option_t *) const {
     printf("PMD Cell %d %d %d %d %d %d\n   Primary %d -   Energy %f\n",
-	   fVolume[0],fVolume[1],fVolume[2],fVolume[3],fVolume[7],fVolume[8],fTrack,fEnergy);
+	   fVolume[0],fVolume[1],fVolume[2],fVolume[3],
+	   fVolume[7],fVolume[8],fTrack,fEnergy);
   }
   
  protected:
   Int_t      fVolume[10];  //array of volumes
-  Float_t    fEnergy;     //Total energy deposited in eV
+  Float_t    fEnergy;      //Total energy deposited in eV
   
-  ClassDef(AliPMDhit,3)  //Hits object for set:PMD
+  ClassDef(AliPMDhit,4)  //Hits object for set:PMD
 };
 #endif

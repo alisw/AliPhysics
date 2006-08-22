@@ -21,8 +21,18 @@
 ClassImp(AliPMDhit)
   
 //_____________________________________________________________________________
+AliPMDhit::AliPMDhit():
+  fEnergy(0.)
+{
+  for (Int_t i=0; i<10; i++)
+    {
+      fVolume[i] = 0;
+    }
+}
+//_____________________________________________________________________________
 AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
-  AliHit(shunt, track)
+  AliHit(shunt, track),
+  fEnergy(hits[3])
 {
   //
   // Add a PMD hit
@@ -32,8 +42,15 @@ AliPMDhit::AliPMDhit(Int_t shunt,Int_t track, Int_t *vol, Float_t *hits):
   fX=hits[0];
   fY=hits[1];
   fZ=hits[2];
-  fEnergy=hits[3];
+
 }
+//_____________________________________________________________________________
+AliPMDhit::AliPMDhit(AliPMDhit* oldhit):
+  fEnergy(0.)
+{
+  *this=*oldhit;
+}
+
 //_____________________________________________________________________________
 int AliPMDhit::operator == (AliPMDhit &cell) const
 {
