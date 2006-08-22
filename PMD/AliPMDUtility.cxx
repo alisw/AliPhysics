@@ -30,28 +30,51 @@
 
 ClassImp(AliPMDUtility)
 
-AliPMDUtility::AliPMDUtility()
+AliPMDUtility::AliPMDUtility():
+  fPx(0.),
+  fPy(0.),
+  fPz(0.),
+  fTheta(0.),
+  fEta(0.),
+  fPhi(0.)
 {
   // Default constructor
-  fPx    = 0.;
-  fPy    = 0.;
-  fPz    = 0.;
-  fTheta = 0.;
-  fEta   = 0.;
-  fPhi   = 0.;
 }
 
-AliPMDUtility::AliPMDUtility(Float_t px, Float_t py, Float_t pz)
+AliPMDUtility::AliPMDUtility(Float_t px, Float_t py, Float_t pz):
+  fPx(px),
+  fPy(py),
+  fPz(pz),
+  fTheta(0.),
+  fEta(0.),
+  fPhi(0.)
 {
   // Constructor
-  fPx = px;
-  fPy = py;
-  fPz = pz;
-  fTheta = 0.;
-  fEta   = 0.;
-  fPhi   = 0.;
 }
-
+AliPMDUtility::AliPMDUtility(const AliPMDUtility &pmdutil):
+  fPx(pmdutil.fPx),
+  fPy(pmdutil.fPy),
+  fPz(pmdutil.fPz),
+  fTheta(pmdutil.fTheta),
+  fEta(pmdutil.fEta),
+  fPhi(pmdutil.fPhi)
+{
+  // copy constructor
+}
+AliPMDUtility & AliPMDUtility::operator=(const AliPMDUtility &pmdutil)
+{
+  // assignment operator
+  if(this != &pmdutil)
+    {
+      fPx = pmdutil.fPx;
+      fPy = pmdutil.fPy;
+      fPz = pmdutil.fPz;
+      fTheta = pmdutil.fTheta;
+      fEta = pmdutil.fEta;
+      fPhi = pmdutil.fPhi;
+    }
+  return *this;
+}
 AliPMDUtility::~AliPMDUtility()
 {
   // Default destructor
@@ -236,6 +259,18 @@ void AliPMDUtility::RectGeomCellPos(Int_t ism, Float_t xpad, Float_t ypad, Float
     }
 
 }
+void AliPMDUtility::ApplyVertexCorrection(Float_t vertex[], Float_t xpos,
+					  Float_t ypos, Float_t zpos)
+{
+  // Not implemented
+  fPx = xpos - vertex[0];
+  fPy = ypos - vertex[1];
+  fPz = zpos - vertex[2];
+}
+void AliPMDUtility::ApplyAlignment()
+{
+  // Not implemented
+}
 
 void AliPMDUtility::SetPxPyPz(Float_t px, Float_t py, Float_t pz)
 {
@@ -295,7 +330,7 @@ void AliPMDUtility::CalculateEtaPhi()
   theta = TMath::ATan2(rpxpy,fPz);
   eta   = -TMath::Log(TMath::Tan(0.5*theta));
   
-  if(fPx==0)
+  if(fPx == 0)
     {
       if(fPy>0) phi = 90.;
       if(fPy<0) phi = 270.;
@@ -317,6 +352,22 @@ void AliPMDUtility::CalculateEtaPhi()
   fEta   = eta;
   fPhi   = phi;
 }
+void AliPMDUtility::CalculateXY(Float_t eta, Float_t phi, Float_t zpos)
+{
+  // Not implemented
+
+  //  eta   = -TMath::Log(TMath::Tan(0.5*theta));
+
+  Float_t xpos = 0., ypos = 0.;
+
+  //  Float_t theta = 2.0*TMath::ATan(TMath::Log(-eta));
+
+  fEta = eta;
+  fPhi = phi;
+  fPx  = xpos;
+  fPy  = ypos;
+  fPz  = zpos;
+}
 Float_t AliPMDUtility::GetTheta() const
 {
   return fTheta;
@@ -328,5 +379,17 @@ Float_t AliPMDUtility::GetEta() const
 Float_t AliPMDUtility::GetPhi() const
 {
   return fPhi;
+}
+Float_t AliPMDUtility::GetX() const
+{
+  return fPx;
+}
+Float_t AliPMDUtility::GetY() const
+{
+  return fPy;
+}
+Float_t AliPMDUtility::GetZ() const
+{
+  return fPz;
 }
 
