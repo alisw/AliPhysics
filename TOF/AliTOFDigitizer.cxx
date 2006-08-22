@@ -81,10 +81,10 @@ AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager):
 //------------------------------------------------------------------------
 AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
   AliDigitizer(source),
+  fGeom(0x0), 
   fDigits(0),
   fSDigitsArray(0),
-  fhitMap(0),
-  fGeom(0x0) 
+  fhitMap(0)
 {
   // copy constructor
   this->fDigits=source.fDigits;
@@ -482,17 +482,23 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
     }
     Int_t index = calib->GetIndex(detId);     
     AliTOFChannel *calChannel = cal->GetChannel(index);
+    // time slewing parameters
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
       par[j]=calChannel->GetSlewPar(j);
       if(par[j]!=0)dbEntry=kTRUE;
     }
-
+    // the global time shift
+    Float_t timedelay = calChannel->GetDelay();
     Float_t tToT= dig->GetToT();
     dig->SetTdcND(dig->GetTdc());
     Float_t tdc = ((dig->GetTdc())*AliTOFGeometry::TdcBinWidth()+32)*1.E-3; //tof signal in ns
+    // add slewing effect
     Float_t timeoffset=par[0] + tToT*(par[1] +tToT*(par[2] +tToT*(par[3] +tToT*(par[4] +tToT*par[5])))); 
-    Float_t timeSlewed = tdc + timeoffset;
+    Float_t timeSlewed = tdc+timeoffset;
+    // add global time shift
+    timeSlewed = timeSlewed + timedelay;
+
     // Setting Decalibrated Time signal    
     dig->SetTdc((timeSlewed*1E3-32)/AliTOFGeometry::TdcBinWidth());   
   }
