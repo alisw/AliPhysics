@@ -18,6 +18,7 @@
 class AliTOFcluster : public TObject {
  public:
   AliTOFcluster(); // default ctor
+  AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND, Bool_t status); // ctor
   AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND); // ctor
   AliTOFcluster(Double_t *h, Int_t *ind); // new ctor
   AliTOFcluster(const AliTOFcluster & cluster); // copy ctor
@@ -37,6 +38,8 @@ class AliTOFcluster : public TObject {
   void     Use() {fADC=-fADC;}
   Double_t GetQuality() const {return fQuality;}
   void     SetQuality(Double_t quality) {fQuality = quality;}
+  Bool_t   GetStatus() const {return fStatus;}
+  void     SetStatus(Bool_t status) {fStatus = status;}
   void     SetToT(Float_t ToT) {fToT = ToT;}
   void     SetTDC(Float_t Tdc) {fTDC = Tdc;}
   void     SetTDCND(Float_t Tdc) {fTdcND = Tdc;}
@@ -53,8 +56,9 @@ class AliTOFcluster : public TObject {
   Double_t fQuality;  // quality of the best track 
   Float_t  fToT;       // ToT
   Double_t fTdcND;      // TDC count
+  Bool_t   fStatus;      // cluster online status 
 
-  ClassDef(AliTOFcluster, 2) // TOF cluster
+  ClassDef(AliTOFcluster, 3) // TOF cluster
 };
 
 #endif

@@ -79,6 +79,7 @@ AliTOFClusterFinder::AliTOFClusterFinder():
   fTOFLoader(0),
   fTreeD(0),
   fTreeR(0),
+  fTOFGeometry(new AliTOFGeometryV5()),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0)
@@ -87,7 +88,6 @@ AliTOFClusterFinder::AliTOFClusterFinder():
 // Constructor
 //
 
-  fTOFGeometry = new AliTOFGeometryV5();
   AliInfo("V5 TOF Geometry is taken as the default");
 
 }
@@ -98,6 +98,7 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader):
   fTOFLoader(runLoader->GetLoader("TOFLoader")),
   fTreeD(0),
   fTreeR(0),
+  fTOFGeometry(new AliTOFGeometryV5()),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0)
@@ -115,7 +116,15 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader):
 
 //------------------------------------------------------------------------
 AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
-  :TObject()
+  :TObject(),
+  fRunLoader(0),
+  fTOFLoader(0),
+  fTreeD(0),
+  fTreeR(0),
+  fTOFGeometry(new AliTOFGeometryV5()),
+  fDigits(new TClonesArray("AliTOFdigit", 4000)),
+  fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
+  fNumberOfTofClusters(0)
 {
   // copy constructor
   this->fDigits=source.fDigits;
@@ -556,8 +565,9 @@ void AliTOFClusterFinder::FillRecPoint()
   Double_t cylindricalPosition[5];
   Int_t trackLabels[3];
   Int_t digitIndex = -1;
-  Float_t tToT;
-  Double_t tTdcND;
+  Float_t tToT=0.;
+  Double_t tTdcND=0.;
+  Bool_t cStatus = kTRUE;
 
   TClonesArray &lRecPoints = *fRecPoints;
   
@@ -573,8 +583,9 @@ void AliTOFClusterFinder::FillRecPoint()
     cylindricalPosition[4] = fTofClusters[ii]->GetADC();
     tToT = fTofClusters[ii]->GetToT();
     tTdcND = fTofClusters[ii]->GetTDCND();
+    cStatus=fTofClusters[ii]->GetStatus();
 
-    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex, tToT, tTdcND);
+    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, trackLabels, detectorIndex, digitIndex, tToT, tTdcND, cStatus);
 
     //AliInfo(Form("%3i  %3i  %f %f %f %f %f  %2i %2i %2i %1i %2i",ii,digitIndex, cylindricalPosition[2],cylindricalPosition[0],cylindricalPosition[1],cylindricalPosition[3],cylindricalPosition[4],detectorIndex[0],detectorIndex[1],detectorIndex[2],detectorIndex[3],detectorIndex[4]));
 
@@ -610,12 +621,21 @@ void AliTOFClusterFinder::CalibrateRecPoint()
     Int_t index = calib->GetIndex(detectorIndex);
      
     AliTOFChannel * calChannel = calTOFArray->GetChannel(index);
+
+    // Get channel status 
+    Bool_t status=calChannel->GetStatus();
+    if(status)fTofClusters[ii]->SetStatus(!status); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
+
+    // Get Rough channel online equalization 
+    Float_t roughDelay=calChannel->GetDelay();
+
+    // Get Refined channel offline calibration parameters
     Float_t par[6];
     for (Int_t j = 0; j<6; j++){
       par[j]=calChannel->GetSlewPar(j);
     }
     tToT = fTofClusters[ii]->GetToT();
-    Float_t timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT;
+    Float_t timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT+roughDelay;
     tdcCorr=(fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()+32)*1.E-3-timeCorr;
     tdcCorr=(tdcCorr*1E3-32)/AliTOFGeometry::TdcBinWidth();
     fTofClusters[ii]->SetTDC(tdcCorr);

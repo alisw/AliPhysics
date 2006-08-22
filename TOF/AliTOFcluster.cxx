@@ -34,28 +34,41 @@ Revision 0.01 2005/07/25 A. De Caro
 
 ClassImp(AliTOFcluster)
 
-AliTOFcluster::AliTOFcluster() {
+AliTOFcluster::AliTOFcluster():
+  fIdx(-1),
+  fR(0),
+  fPhi(0),
+  fZ(0),
+  fTDC(0),
+  fADC(0),
+  fQuality(-100), 
+  fToT(0),
+  fTdcND(0),
+  fStatus(kTRUE) 
+ {
   //
   // default ctor
   //
 
   Int_t ii;
-  fR   = 0.;
-  fPhi = 0.;
-  fZ   = 0.;
-  fTDC = 0.;
-  fADC = 0.;
-  fToT = 0.;
-  fTdcND = 0;
   for (ii=0; ii<3; ii++) fLab[ii]      = -1;
-  fIdx = -1;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = -1;
-  fQuality    = -100; 
 }
 //-------------------------------------------------------------------------
 
-AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND)
-:TObject() {
+AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND, Bool_t status):
+  TObject(),
+  fIdx(idx),
+  fR(0),
+  fPhi(0),
+  fZ(0),
+  fTDC(0),
+  fADC(0),
+  fQuality(-100), 
+  fToT(ToT),
+  fTdcND(TdcND),
+  fStatus(status) 
+ {
   //
   // constructor
   //
@@ -66,17 +79,52 @@ AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float
   fZ   = h[2];
   fTDC = h[3];
   fADC = h[4];
-  fToT = ToT;
-  fTdcND = TdcND;
   for (ii=0; ii<3; ii++) fLab[ii]      = l[ii];
-  fIdx = idx;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
-  fQuality    = -100; 
 }
 //-------------------------------------------------------------------------
 
-AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *ind)
-:TObject() {
+AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *l, Int_t *ind, Int_t idx, Float_t ToT, Double_t TdcND):
+  TObject(),
+  fIdx(idx),
+  fR(0),
+  fPhi(0),
+  fZ(0),
+  fTDC(0),
+  fADC(0),
+  fQuality(-100), 
+  fToT(ToT),
+  fTdcND(TdcND),
+  fStatus(kTRUE) 
+ {
+  //
+  // constructor
+  //
+
+  Int_t ii;
+  fR   = h[0];
+  fPhi = h[1];
+  fZ   = h[2];
+  fTDC = h[3];
+  fADC = h[4];
+  for (ii=0; ii<3; ii++) fLab[ii]      = l[ii];
+  for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
+}
+//-------------------------------------------------------------------------
+
+AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *ind):
+  TObject(), 
+  fIdx(-1),
+  fR(0),
+  fPhi(0),
+  fZ(0),
+  fTDC(0),
+  fADC(0),
+  fQuality(-100), 
+  fToT(0),
+  fTdcND(0),
+  fStatus(kTRUE) 
+{
   //
   // constructor
   //
@@ -88,14 +136,23 @@ AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *ind)
   fTDC = h[3];
   fADC = h[4];
   for (ii=0; ii<3; ii++) fLab[ii]      = -1;
-  fIdx = -1;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
-  fQuality    = -100; 
 }
 //-------------------------------------------------------------------------
 
-AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster)
-:TObject() {
+AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster):
+  TObject(),
+  fIdx(-1),
+  fR(0),
+  fPhi(0),
+  fZ(0),
+  fTDC(0),
+  fADC(0),
+  fQuality(-100), 
+  fToT(0),
+  fTdcND(0),
+  fStatus(kTRUE) 
+ {
   //
   // copy ctor for AliTOFcluster object
   //

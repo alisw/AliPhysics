@@ -43,33 +43,59 @@ extern TGeoManager *gGeoManager;
 ClassImp(AliTOFtrackerMI)
 
 //_____________________________________________________________________________
-AliTOFtrackerMI::AliTOFtrackerMI(AliTOFGeometry * geom, Double_t parPID[2]) { 
+AliTOFtrackerMI::AliTOFtrackerMI(AliTOFGeometry * geom, Double_t parPID[2]):
+  fGeom(geom),
+  fTOFpid(new AliTOFpidESD(parPID)),
+  fHoles(kFALSE),
+  fN(0),
+  fNseeds(0),
+  fNseedsTOF(0),
+  fngoodmatch(0),
+  fnbadmatch(0),
+  fnunmatch(0),
+  fnmatch(0),
+  fR(378.), 
+  fTOFHeigth(15.3),  
+  fdCut(3.), 
+  fDx(1.5), 
+  fDy(0), 
+  fDz(0), 
+  fTracks(0x0),
+  fSeeds(0x0),
+  fDebugStreamer(0x0)
+ { 
   //AliTOFtrackerMI main Ctor
 
   //fHoles=true;
-  fNseeds=0;
-  fNseedsTOF=0;
-  fngoodmatch=0;
-  fnbadmatch=0;
-  fnunmatch=0;
-  fnmatch=0;
-  fGeom = geom;
-  fTOFpid = new AliTOFpidESD(parPID);
-  fR=378.; 
-  fTOFHeigth=15.3;  
-  fdCut=3.; 
   fDy=AliTOFGeometry::XPad(); 
   fDz=AliTOFGeometry::ZPad(); 
-  fDx=1.5; 
-  fSeeds=0x0;
-  fTracks=0x0;
-  fN=0;
   fDebugStreamer = new TTreeSRedirector("TOFdebug.root");   
   //Init(); // temporary solution to know about Holes/no Holes
   fHoles=geom->GetHoles();
 }
 //_____________________________________________________________________________
-AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):AliTracker() { 
+AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):
+  AliTracker(),
+  fGeom(0x0),
+  fTOFpid(0x0),
+  fHoles(kFALSE),
+  fN(0),
+  fNseeds(0),
+  fNseedsTOF(0),
+  fngoodmatch(0),
+  fnbadmatch(0),
+  fnunmatch(0),
+  fnmatch(0),
+  fR(378.), 
+  fTOFHeigth(15.3),  
+  fdCut(3.), 
+  fDx(1.5), 
+  fDy(0), 
+  fDz(0), 
+  fTracks(0x0),
+  fSeeds(0x0),
+  fDebugStreamer(0x0)
+ { 
   //AliTOFtrackerMI copy Ctor
 
   fHoles=t.fHoles;

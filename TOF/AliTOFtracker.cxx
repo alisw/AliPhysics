@@ -49,33 +49,59 @@ extern TGeoManager *gGeoManager;
 ClassImp(AliTOFtracker)
 
 //_____________________________________________________________________________
-AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]) { 
+AliTOFtracker::AliTOFtracker(AliTOFGeometry * geom, Double_t parPID[2]):
+  fGeom(geom),
+  fTOFpid(new AliTOFpidESD(parPID)),
+  fHoles(kFALSE),
+  fN(0),
+  fNseeds(0),
+  fNseedsTOF(0),
+  fngoodmatch(0),
+  fnbadmatch(0),
+  fnunmatch(0),
+  fnmatch(0),
+  fR(378.), 
+  fTOFHeigth(15.3),  
+  fdCut(3.), 
+  fDx(1.5), 
+  fDy(0), 
+  fDz(0), 
+  fDzMax(35.), 
+  fDyMax(50.), 
+  fTracks(0x0),
+  fSeeds(0x0)
+ { 
   //AliTOFtracker main Ctor
 
   //fHoles=true;
-  fNseeds=0;
-  fNseedsTOF=0;
-  fngoodmatch=0;
-  fnbadmatch=0;
-  fnunmatch=0;
-  fnmatch=0;
-  fGeom = geom;
-  fTOFpid = new AliTOFpidESD(parPID);
-  fR=378.; 
-  fTOFHeigth=15.3;  
-  fdCut=3.; 
   fDy=AliTOFGeometry::XPad(); 
   fDz=AliTOFGeometry::ZPad(); 
-  fDx=1.5; 
-  fDzMax=35.; 
-  fDyMax=50.; 
-  fSeeds=0x0;
-  fTracks=0x0;
-  fN=0;
   fHoles = fGeom->GetHoles();
 }
 //_____________________________________________________________________________
-AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):AliTracker() { 
+AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):
+  AliTracker(),
+  fGeom(0x0),
+  fTOFpid(0x0),
+  fHoles(kFALSE),
+  fN(0),
+  fNseeds(0),
+  fNseedsTOF(0),
+  fngoodmatch(0),
+  fnbadmatch(0),
+  fnunmatch(0),
+  fnmatch(0),
+  fR(378.), 
+  fTOFHeigth(15.3),  
+  fdCut(3.), 
+  fDx(1.5), 
+  fDy(0), 
+  fDz(0), 
+  fDzMax(35.), 
+  fDyMax(50.), 
+  fTracks(0x0),
+  fSeeds(0x0)
+ { 
   //AliTOFtracker copy Ctor
 
   fHoles=t.fHoles;
@@ -186,6 +212,8 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
       t->SetTOFcluster(seed->GetTOFcluster());
       t->SetTOFsignalToT(seed->GetTOFsignalToT());
       t->SetTOFCalChannel(seed->GetTOFCalChannel());
+      Int_t tlab[3]; seed->GetTOFLabel(tlab);    
+      t->SetTOFLabel(tlab);
       AliTOFtrack *track = new AliTOFtrack(*seed); 
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);   
       delete track;
@@ -318,6 +346,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       AliTOFcluster *c=fClusters[k];
       if (c->GetZ() > z+dz) break;
       if (c->IsUsed()) continue;
+      if (!c->GetStatus()) continue; // skip bad channels as declared in OCDB
       
       //AliInfo(Form(" fClusters[k]->GetZ() (%f) z-dz (%f)   %4i ", fClusters[k]->GetZ(), z-dz, k));
 
@@ -492,6 +521,12 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     ind[4]=c->GetDetInd(4);
     Int_t calindex = calib->GetIndex(ind);
     t->SetTOFCalChannel(calindex);
+
+    // keep track of the track labels in the matched cluster
+    Int_t tlab[3];
+    tlab[0]=c->GetLabel(0);
+    tlab[1]=c->GetLabel(1);
+    tlab[2]=c->GetLabel(2);
     
     Double_t tof=AliTOFGeometry::TdcBinWidth()*c->GetTDC()+32; // in ps
     t->SetTOFsignal(tof);
@@ -509,6 +544,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     t->UpdateTrackParams(trackTOFout,AliESDtrack::kTOFout);    
     t->SetIntegratedLength(recL);
     t->SetIntegratedTimes(time);
+    t->SetTOFLabel(tlab);
 
     delete trackTOFout;
   }
