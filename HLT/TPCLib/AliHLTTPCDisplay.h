@@ -21,11 +21,12 @@
 #include <TCanvas.h>
 #include <TH2.h>
 #include <TGraph.h>
+#include "AliHLTLogging.h"
 
 class AliHLTTPCSpacePointData;
 class AliHLTTPCTrackArray;
 
-class AliHLTTPCDisplay : public TObject {
+class AliHLTTPCDisplay : public TObject, public AliHLTLogging {
 
  public:
     AliHLTTPCDisplay(Char_t *gfile="$(ALIHLT_BASEDIR)/geo/alice.geom") {InitDisplay(gfile);}

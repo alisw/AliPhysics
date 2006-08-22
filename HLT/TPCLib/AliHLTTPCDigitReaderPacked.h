@@ -10,7 +10,10 @@
 /* AliHLTTPCDigitReaderPacked
  */
 
+#include "AliHLTLogging.h"
 #include "AliHLTTPCDigitReader.h"
+
+#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 
 class AliRawReaderMemory;
 class AliTPCRawStream;
@@ -37,7 +40,16 @@ private:
   ClassDef(AliHLTTPCDigitReaderPacked, 0)
     
 };
+
+#else
+// add a dummy class to make CINT happy
+class AliHLTTPCDigitReaderPacked : public AliHLTLogging{
+public:
+  AliHLTTPCDigitReaderPacked()
+  {
+    HLTFatal("AliHLTTPCDigitReaderPacked not build");
+  }
+};
+#endif //defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+
 #endif
-
- 
-

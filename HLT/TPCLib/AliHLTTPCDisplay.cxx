@@ -358,6 +358,7 @@ void AliHLTTPCDisplay::SetupHist(){
 
 // ####################################################################################################
 void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
+#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
     AliHLTTPCDigitReaderPacked* fDigitReader = new AliHLTTPCDigitReaderPacked();
     bool readValue = true;
     Int_t rowOffset = 0;
@@ -503,6 +504,9 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	    fHistrawcl->Fill(xyz[1],xyz[2]);
 	}
     }
+#else //! if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+    HLTFatal("DigitReaderPacked not available - check your build");
+#endif //defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 }
 
 // #############################################################################

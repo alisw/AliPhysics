@@ -27,15 +27,13 @@
 using namespace std;
 #endif
 
+#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliTPCRawStream.h"
 #include "AliRawReaderMemory.h"
 #include "AliRawDataHeader.h"
 
-#include "AliHLTTPCLogging.h"
-
-#include <stdlib.h>
-#include <errno.h>
+#include "AliHLTStdIncludes.h"
 
 ClassImp(AliHLTTPCDigitReaderPacked)
 
@@ -87,3 +85,4 @@ int AliHLTTPCDigitReaderPacked::GetTime(){
   rtime = fTPCRawStream->GetTime();
   return rtime;
 }
+#endif //defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)

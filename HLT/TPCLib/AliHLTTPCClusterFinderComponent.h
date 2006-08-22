@@ -19,7 +19,16 @@ class AliHLTTPCClusterFinder;
 class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
     {
     public:
+        /**
+         * constructor 
+         * @param packed    whether to use the packed or unpacked reader 
+         */
 	AliHLTTPCClusterFinderComponent(bool packed);
+	/** not a valid copy constructor, defined according to effective C++ style */
+	AliHLTTPCClusterFinderComponent(const AliHLTTPCClusterFinderComponent&);
+	/** not a valid assignment op, but defined according to effective C++ style */
+	AliHLTTPCClusterFinderComponent& operator=(const AliHLTTPCClusterFinderComponent&);
+	/** destructor */
 	virtual ~AliHLTTPCClusterFinderComponent();
 
 	// Public functions to implement AliHLTComponent's interface.
@@ -46,8 +55,7 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
     private:
 
       AliHLTTPCClusterFinder* fClusterFinder;
-      AliHLTTPCDigitReaderPacked* fReaderPacked;
-      AliHLTTPCDigitReaderUnpacked* fReaderUnpacked;
+      AliHLTTPCDigitReader* fReader;
       bool fClusterDeconv;
       float fXYClusterError;
       float fZClusterError;

@@ -47,18 +47,36 @@ AliHLTTPCClusterFinderComponent gAliHLTTPCClusterFinderComponentUnpacked(false);
 ClassImp(AliHLTTPCClusterFinderComponent)
 
 AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
-    {
-    // use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
-    // use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
-    fPackedSwitch = packed;
+  :
+  // use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"
+  // use fPackedSwitch = false for unpacked inputtype "gkUnpackedRawDataType"
+  fPackedSwitch(packed),
 
-    fClusterFinder = NULL;
-    fReaderPacked = NULL;
-    fReaderUnpacked = NULL;
-    fClusterDeconv = true;
-    fXYClusterError = -1;
-    fZClusterError = -1;
-    }
+  fClusterFinder(NULL),
+  fReader(NULL),
+  fClusterDeconv(true),
+  fXYClusterError(-1),
+  fZClusterError(-1)
+{
+}
+
+AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(const AliHLTTPCClusterFinderComponent&)
+  :
+  fPackedSwitch(0),
+  fClusterFinder(NULL),
+  fReader(NULL),
+  fClusterDeconv(true),
+  fXYClusterError(-1),
+  fZClusterError(-1)
+{
+  HLTFatal("copy constructor untested");
+}
+
+AliHLTTPCClusterFinderComponent& AliHLTTPCClusterFinderComponent::operator=(const AliHLTTPCClusterFinderComponent&)
+{ 
+  HLTFatal("assignment operator untested");
+  return *this;
+}
 
 AliHLTTPCClusterFinderComponent::~AliHLTTPCClusterFinderComponent()
     {
@@ -107,12 +125,17 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     fClusterFinder = new AliHLTTPCClusterFinder();
 
     if (fPackedSwitch) {
-      fReaderPacked = new AliHLTTPCDigitReaderPacked();
-      fClusterFinder->SetReader(fReaderPacked);
+#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+      fReader = new AliHLTTPCDigitReaderPacked();
+      fClusterFinder->SetReader(fReader);
+#else // ! defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+      HLTFatal("DigitReaderPacked not available - check your build");
+      return -ENODEV;
+#endif //  defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
     }
     else {
-      fReaderUnpacked = new AliHLTTPCDigitReaderUnpacked();
-      fClusterFinder->SetReader(fReaderUnpacked);
+      fReader = new AliHLTTPCDigitReaderUnpacked();
+      fClusterFinder->SetReader(fReader);
     }
     
     // Variables to setup the Clusterfinder
@@ -150,14 +173,10 @@ int AliHLTTPCClusterFinderComponent::DoDeinit()
 	delete fClusterFinder;
     fClusterFinder = NULL;
  
-    if ( fReaderUnpacked )
-	delete fReaderUnpacked;
-    fReaderUnpacked = NULL;
+    if ( fReader )
+	delete fReader;
+    fReader = NULL;
     
-    if ( fReaderPacked )
-	delete fReaderPacked;
-    fReaderPacked = NULL;
-
     return 0;
     }
 

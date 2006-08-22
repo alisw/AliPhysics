@@ -5,7 +5,7 @@ dnl template for the configuration script for the Alice HLT
 dnl framework and components
 dnl 
 dnl ------------------------------------------------------------------
-AC_INIT([Alice High Level Trigger] , [0.2], [Matthias.Richter@ift.uib.no], alice-hlt)
+AC_INIT([Alice High Level Trigger] , [0.3-dev], [Matthias.Richter@ift.uib.no], alice-hlt)
 
 dnl ------------------------------------------------------------------
 dnl the package from CVS contains the old Makefiles as well. In order to
@@ -43,36 +43,166 @@ ALIHLT_USEPACKAGE=ALIROOT
 #ALIHLT_USEPACKAGE=STANDALONE
 AC_DEFINE(use_aliroot)
 AC_DEFINE(use_root)
-CPPFLAGS="$CPPFLAGS -DROOTVERSION=\\\"`${ROOTCONF} --version`\\\""
-CPPFLAGS="$CPPFLAGS -DALIROOTVERSION=\\\"Unknown\\\""
 CPPFLAGS="$CPPFLAGS ${ROOTCFLAGS}"
 LDFLAGS="$LDFLAGS -L${ROOTLIBDIR} ${ROOTLIBS}"
 
 dnl ------------------------------------------------------------------
-dnl check for AliRoot
-dnl AC_LANG_PUSH(C++)
-dnl AC_MSG_CHECKING([for AliRoot])
-dnl have_aliroot=no
-dnl ALIROOTLIBDIR=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}
-dnl ALIROOTINCDIR=${ALICE_ROOT}/include
-dnl if test "x$ALICE_ROOT" != "x" \
-dnl    && test -d ${ALIROOTLIBDIR} \
-dnl    && test -d ${ALIROOTINCDIR}; then
-dnl have_aliroot=yes
-dnl else
-dnl ALIROOTLIBDIR=
-dnl ALIROOTINCDIR=
-dnl fi
-dnl AC_MSG_RESULT([$have_aliroot])
+dnl check for AliRoot features
+AC_LANG_PUSH(C++)
+AC_MSG_CHECKING([for AliRoot])
+have_aliroot=no
+with_aliroot=yes
+if test "x$with_aliroot" = "xyes" || test "x$with_aliroot" = "x" ; then
+  ALIROOTLIBDIR=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}
+  ALIROOTINCDIR=${ALICE_ROOT}/include
+elif test "x$with_aliroot" != "xno" ; then
+  # TODO: think about the tgt_* subfolder
+  ALICE_ROOT="$with_aliroot"
+  ALIROOTLIBDIR="$ALICE_ROOT/lib"
+  ALIROOTINCDIR="$ALICE_ROOT/include"
+fi
+if test "x$ALICE_ROOT" != "x" \
+   && test -d ${ALIROOTLIBDIR} \
+   && test -d ${ALIROOTINCDIR}; then
+  have_aliroot=$ALICE_ROOT
+else
+  ALIROOTLIBDIR=
+  ALIROOTINCDIR=
+fi
+AC_MSG_RESULT([$have_aliroot])
 
-dnl if test ! "x$have_aliroot" = "x" ; then
-dnl CPPFLAGS="$CPPFLAGS -I${ALIROOTINCDIR}"
-dnl LDFLAGS="$LDFLAGS -L${ALIROOTLIBDIR} -lESD -lGeom -lMinuit -lVMC -lEG -lRAWData -ldl"
-dnl have_alisteer=no
-dnl AC_CHECK_LIB(STEER, [AliRun], [have_alisteer=yes])
-dnl fi
-dnl AC_LANG_POP(C++)
+if test ! "x$have_aliroot" = "xno" ; then
+  # we check for the libSTEER library which is linked to
+  # - the ROOT libs libGeom libMinuit libVMC libEG
+  # - the AliRoot libESD libRAWData (libRAWDatarec from v4-04-Rev-07)
+  # - ROOT libCint needs also libdl
+  ALIROOT_CPPFLAGS="-I${ALIROOTINCDIR} -I${ALICE_ROOT}/RAW"
+  ALIROOT_LDFLAGS="-L${ALIROOTLIBDIR}"
+  ALIROOT_LIBS="-lESD -lGeom -lMinuit -lVMC -lEG -ldl -lSTEER"
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  save_LIBS=$LIBS
+  CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+  LDFLAGS="$save_LDFLAGS $ALIROOT_LDFLAGS"
+  LIBS="$save_LIBS $ALIROOT_LIBS"
+ 
+  # check for certain AliRoot libraries/files/features
+  if test ! "x$have_aliroot" = "xno" ; then
+    # the RAWReader classe are needed by the TPCLib/AliHLTTPCDigitReaderPacket
+    # and by the STEER library. From version v4-04-Rev-07 on the RawReader classes
+    # are in libRAWDatarec, before in libRAWData
+    have_alirawdata=yes
+    AC_MSG_CHECKING(for AliRawReader classes in RAWData libraries)
+    if test ! "x$have_alirawdata" = "xno" ; then
+      CHECKLIB="-lRAWDatarec"
+      LIBS="$save_LIBS $ALIROOT_LIBS -lRAWDatabase $CHECKLIB"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRawReaderMemory.h>
+  				       #include <AliRawReaderFile.h>
+  				       #include <AliRawReaderDate.h>
+  				       #include <AliRawReaderRoot.h>], 
+                                      [AliRawReaderMemory mreader;
+  				       AliRawReaderFile freader;
+  				       AliRawReaderDate dreader(NULL,0);
+  				       AliRawReaderRoot rreader(NULL,0)])],
+                                      [AC_DEFINE(HAVE_ALIRAWDATA)
+				       ALIROOT_LIBS="$ALIROOT_LIBS -lRAWDatabase $CHECKLIB"
+				       have_alirawdata=$CHECKLIB], 
+  				      [have_alirawdata=no])
+      # second pass with -RAWData
+      if test "x$have_alirawdata" = "xno" ; then
+        CHECKLIB="-lRAWData"
+        LIBS="$save_LIBS $ALIROOT_LIBS $CHECKLIB"
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRawReaderMemory.h>
+    				       #include <AliRawReaderFile.h>
+    				       #include <AliRawReaderDate.h>
+    				       #include <AliRawReaderRoot.h>], 
+                                        [AliRawReaderMemory mreader;
+    				       AliRawReaderFile freader;
+    				       AliRawReaderDate dreader(NULL,0);
+    				       AliRawReaderRoot rreader(NULL,0);])],
+                                        [AC_DEFINE(HAVE_ALIRAWDATA)
+    				       ALIROOT_LIBS="$ALIROOT_LIBS $CHECKLIB"
+    				       have_alirawdata=$CHECKLIB], 
+    				      [have_alirawdata=no])
+      fi
+    fi
+    AC_MSG_RESULT($have_alirawdata)
+  fi
 
+  have_alisteer=yes
+  #AC_CHECK_HEADERS([AliRun.h],[have_alisteer=yes])
+  AC_MSG_CHECKING(for AliRun in -lSTEER)
+  if test "x$have_alisteer" = "xyes" ; then
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRun.h>], [AliRun aliroot])],
+                                    [AC_DEFINE(HAVE_ALISTEER)], 
+				    [have_alisteer=no
+				     have_aliroot=no])
+  fi
+  AC_MSG_RESULT($have_alisteer)
+
+  if test ! "x$have_aliroot" = "xno" ; then
+    # the HLTTPCLib needs to link agains TPCbase and TPCrec
+    # TPC library for AliTPCParam and AliSimDigits used in 
+    # AliHLTTPCFileHandler.h and AliHLTTPCDisplay.cxx
+    saveALIROOT_CPPFLAGS="$ALIROOT_CPPFLAGS"
+    ALIROOT_CPPFLAGS="$saveALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+    have_alitpc=yes
+    AC_MSG_CHECKING(for required classes in TPC libraries)
+    if test ! "x$have_alitpc" = "xno" ; then
+      save_ALIROOT_LIBS=$ALIROOT_LIBS
+      ALIROOT_LIBS="$save_ALIROOT_LIBS -lTPCbase -lTPCrec"
+      LIBS="$save_LIBS $ALIROOT_LIBS"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliSimDigits.h>
+  				       #include <AliTPCParam.h>
+				       #include <AliTPCParamSR.h>
+				       #include <AliTPCDigitsArray.h>
+				       #include <AliTPCClustersArray.h>
+				       #include <AliTPCcluster.h>     
+				       #include <AliTPCClustersRow.h>], 
+                                      [AliSimDigits dig;
+  				       AliTPCParam param;
+				       AliTPCParamSR paramsr;
+				       AliTPCDigitsArray digarray;
+				       AliTPCClustersArray clustarray;
+				       AliTPCcluster clust;
+				       AliTPCClustersRow row])],
+                                      [AC_DEFINE(HAVE_ALITPC)
+				       saveALIROOT_CPPFLAGS=$ALIROOT_CPPFLAGS
+				       saveALIROOT_LIBS=$ALIROOT_LIBS], 
+  				      [have_alitpc=no
+				       ALIROOT_CPPFLAGS=$saveALIROOT_CPPFLAGS
+				       ALIROOT_LIBS=$saveALIROOT_LIBS])
+    fi
+    AC_MSG_RESULT($have_alitpc)
+  fi
+
+  if test ! "x$have_alirawdata" = "xno" ; then
+    # check for header files needed by the TPCLib/AliHLTTPCDigitReaderPacket
+    # the header file has been moved to the TPC module
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+    # AliRawReaderMemory.h AliRawReaderFile.h already checked
+    #AC_CHECK_HEADERS([AliRawReaderMemory.h AliRawReaderFile.h AliTPCRawStream.h])
+    AC_CHECK_HEADERS([AliTPCRawStream.h])
+  fi
+
+  if test "x$have_aliroot" = "xno" ; then
+    ALIROOT_CPPFLAGS=
+    ALIROOT_LDFLAGS=
+    ALIROOT_LIBS=
+  fi
+  CPPFLAGS=$save_CPPFLAGS
+  LDFLAGS=$save_LDFLAGS
+  LIBS=$save_LIBS
+  if test ! "x$have_aliroot" = "xno" ; then
+    CPPFLAGS="$CPPFLAGS -DALIROOTVERSION=\\\"Unknown\\\""
+  fi
+fi
+AC_LANG_POP(C++)
+AC_SUBST([ALIROOT_CPPFLAGS])
+AC_SUBST([ALIROOT_LDFLAGS])
+AC_SUBST([ALIROOT_LIBS])
+CPPFLAGS="$CPPFLAGS -DROOTVERSION=\\\"`${ROOTCONF} --version`\\\""
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to impose strict coding conventions])
@@ -105,6 +235,11 @@ AC_ARG_ENABLE(tpc,
   [AC_HELP_STRING([--enable-tpc],
       [compile the tpc library ])],
   [],[enable_tpc=yes])
+if test "x$have_aliroot" = "xno" ; then
+   enable_tpc="no...requires.AliRoot"
+elif test "x$have_alitpc" = "xno" ; then
+   enable_tpc="no...requires.AliRoot.TPC.libraries"
+fi
 if test "x$enable_tpc" = "xyes" ; then 
   AC_DEFINE(HLT_TPC)
 fi
@@ -122,9 +257,9 @@ if test "x$enable_tpc" = "xyes" ; then
   if test "x$enable_tpcref" = "xyes" ; then 
     AC_DEFINE(HLT_TPCREF)
   fi
-  AM_CONDITIONAL(EN_HLT_TPCREF, test x$enable_tpcref = xyes)
   AC_MSG_RESULT([$enable_tpcref])
 fi
+AM_CONDITIONAL(EN_HLT_TPCREF, test x$enable_tpcref = xyes)
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to enable HLT logging])

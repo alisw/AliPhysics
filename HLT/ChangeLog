@@ -1,3 +1,11 @@
+2006-08-22 intermediate
+	- check for AliRoot features/libs/files and corresponding conditional
+	  build
+	- made package capable of handling the splitted RawData (changed in
+	  AliRoot version v4-04-Rev-07
+	- libHLTBase linked to ROOT libraries, TPCLib linked to ROOT and AliRoot
+	  libraries -> avoid addlibrary options for wrapper subscriber 
+	
 2006-08-21 intermediate
 	- made package indepentend of src
 	  added BASE/AliHLTStdIncludes.h which should take the job of
