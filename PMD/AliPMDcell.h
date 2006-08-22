@@ -10,7 +10,8 @@
 //  the correct track number to a multiple hit cell    //
 //                                                     //
 //-----------------------------------------------------//
-
+// Author - B.K. Nandi
+//
 #include "TObject.h"
 class TClonesArray;
 
@@ -20,7 +21,7 @@ class AliPMDcell : public TObject
   AliPMDcell();
   AliPMDcell(Int_t trnumber, Int_t smnumber,
 	      Int_t xpos, Int_t ypos, Float_t edep);
-  AliPMDcell(AliPMDcell *pmdcell) {*this = *pmdcell;}
+  AliPMDcell(AliPMDcell *pmdcell);
   AliPMDcell (const AliPMDcell &alipmdcell);  // copy constructor
   AliPMDcell &operator=(const AliPMDcell &alipmdcell); // assignment op
 
@@ -39,7 +40,7 @@ class AliPMDcell : public TObject
   Int_t   fYpos;         // y-position of the cell
   Float_t fEdep;         // Energy deposition in a cell
   
-  ClassDef(AliPMDcell,2) // To keep cell information
+  ClassDef(AliPMDcell,4) // To keep cell information
 };
 
 #endif

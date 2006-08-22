@@ -27,6 +27,8 @@ class AliPMDClusterFinder : public TObject
 
   AliPMDClusterFinder();
   AliPMDClusterFinder(AliRunLoader* runLoader);
+  AliPMDClusterFinder(const AliPMDClusterFinder &finder);  // copy constructor
+  AliPMDClusterFinder &operator=(const AliPMDClusterFinder &finder); // assignment op
   virtual ~AliPMDClusterFinder();
 
   void Digits2RecPoints(Int_t ievt);
@@ -67,7 +69,7 @@ class AliPMDClusterFinder : public TObject
   static const Int_t fgkCol = 96; // Total number of cols in one unitmodule
   Double_t fCellADC[fgkRow][fgkCol]; // Array containing individual cell ADC
 
-  ClassDef(AliPMDClusterFinder,9) // To run PMD clustering
+  ClassDef(AliPMDClusterFinder,10) // To run PMD clustering
 };
 #endif
 

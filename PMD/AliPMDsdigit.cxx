@@ -25,48 +25,63 @@
 
 ClassImp(AliPMDsdigit)
 
-AliPMDsdigit::AliPMDsdigit()
+AliPMDsdigit::AliPMDsdigit():
+  fTrNumber(0),
+  fDet(0),
+  fSMN(0),
+  fRow(0),
+  fColumn(0),
+  fEdep(0.)
 {
   // Default Constructor
-  fTrNumber   = 0;
-  fDet        = 0;
-  fSMN        = 0;
-  fRow        = 0;
-  fColumn     = 0;
-  fEdep       = 0.;
 }
 
 AliPMDsdigit::AliPMDsdigit(Int_t trnumber, Int_t det, Int_t smn,
-			   Int_t irow, Int_t icol, Float_t edep)
+			   Int_t irow, Int_t icol, Float_t edep):
+  fTrNumber(trnumber),
+  fDet(det),
+  fSMN(smn),
+  fRow(irow),
+  fColumn(icol),
+  fEdep(edep)
 {
   // Constructor
-  fTrNumber   = trnumber;
-  fDet        = det;
-  fSMN        = smn;
-  fRow        = irow;
-  fColumn     = icol;
-  fEdep       = edep;
 }
-AliPMDsdigit::AliPMDsdigit(const AliPMDsdigit& pmdsdigit):TObject(pmdsdigit) {
+
+AliPMDsdigit::AliPMDsdigit(AliPMDsdigit *pmdsdigit):
+  fTrNumber(0),
+  fDet(0),
+  fSMN(0),
+  fRow(0),
+  fColumn(0),
+  fEdep(0.)
+{
+  *this = *pmdsdigit;
+}
+
+AliPMDsdigit::AliPMDsdigit(const AliPMDsdigit& pmdsdigit):
+  TObject(pmdsdigit),
+  fTrNumber(pmdsdigit.fTrNumber),
+  fDet(pmdsdigit.fDet),
+  fSMN(pmdsdigit.fSMN),
+  fRow(pmdsdigit.fRow),
+  fColumn(pmdsdigit.fColumn),
+  fEdep(pmdsdigit.fEdep)
+{
   //Copy Constructor 
-  if(&pmdsdigit == this) return;
-  this->fTrNumber   = pmdsdigit.fTrNumber;
-  this->fDet        = pmdsdigit.fDet;
-  this->fSMN        = pmdsdigit.fSMN;
-  this->fRow        = pmdsdigit.fRow;
-  this->fColumn     = pmdsdigit.fColumn;
-  this->fEdep       = pmdsdigit.fEdep;
-  return;
 }
-AliPMDsdigit & AliPMDsdigit::operator=(const AliPMDsdigit& pmdsdigit) {
+AliPMDsdigit & AliPMDsdigit::operator=(const AliPMDsdigit& pmdsdigit)
+{
   //Assignment operator 
-  if(&pmdsdigit == this) return *this;
-  this->fTrNumber   = pmdsdigit.fTrNumber;
-  this->fDet        = pmdsdigit.fDet;
-  this->fSMN        = pmdsdigit.fSMN;
-  this->fRow        = pmdsdigit.fRow;
-  this->fColumn     = pmdsdigit.fColumn;
-  this->fEdep       = pmdsdigit.fEdep;
+  if(this != &pmdsdigit)
+    {
+      fTrNumber   = pmdsdigit.fTrNumber;
+      fDet        = pmdsdigit.fDet;
+      fSMN        = pmdsdigit.fSMN;
+      fRow        = pmdsdigit.fRow;
+      fColumn     = pmdsdigit.fColumn;
+      fEdep       = pmdsdigit.fEdep;
+    }
   return *this;
 }
 

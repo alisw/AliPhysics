@@ -19,7 +19,7 @@ class AliPMDdigit : public TObject
   AliPMDdigit();
   AliPMDdigit(Int_t trnumber, Int_t det, Int_t smnumber,
 	      Int_t irow, Int_t icol, Float_t adc);
-  AliPMDdigit(AliPMDdigit *pmddigit) {*this = *pmddigit;}
+  AliPMDdigit(AliPMDdigit *pmddigit);
   AliPMDdigit (const AliPMDdigit &pmddigit);  // copy constructor
   AliPMDdigit &operator=(const AliPMDdigit &pmddigit); // assignment op
 
@@ -40,7 +40,7 @@ class AliPMDdigit : public TObject
   Int_t   fColumn;      // Cell Column Number (0-95)
   Float_t fADC;         // Energy deposition(ADC) in a hexagonal cell
   
-  ClassDef(AliPMDdigit,3) // Digits object for Detector set:PMD
+  ClassDef(AliPMDdigit,4) // Digits object for Detector set:PMD
 };
 
 #endif

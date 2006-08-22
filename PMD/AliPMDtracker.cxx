@@ -70,6 +70,22 @@ AliPMDtracker::AliPMDtracker():
   //
 }
 //--------------------------------------------------------------------//
+AliPMDtracker:: AliPMDtracker(const AliPMDtracker & /* tracker */):
+  TObject(/* tracker */)
+{
+  // copy constructor
+  AliError("Copy constructor not allowed");
+}
+
+//--------------------------------------------------------------------//
+AliPMDtracker& AliPMDtracker::operator=(const AliPMDtracker & /* tracker */)
+{
+ // assignment operator
+  AliError("Assignment operator not allowed");
+  return *this;
+}
+
+//--------------------------------------------------------------------//
 AliPMDtracker::~AliPMDtracker()
 {
   // Destructor

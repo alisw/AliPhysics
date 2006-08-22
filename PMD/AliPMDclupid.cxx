@@ -38,39 +38,48 @@ AliPMDclupid::AliPMDclupid():
     }
 }
 // ------------------------------------------------------------------ //
-AliPMDclupid::AliPMDclupid(Int_t idet, Int_t ismn, Float_t *clusdata)
+AliPMDclupid::AliPMDclupid(Int_t idet, Int_t ismn, Float_t *clusdata):
+  fDet(idet),
+  fSMN(ismn)
 {
   // Constructor
-  fDet = idet;
-  fSMN = ismn;
   for (Int_t i = 0; i < 6; i++)
     {
       fClusData[i] = clusdata[i];
     }
 }
 // ------------------------------------------------------------------ //
-AliPMDclupid::AliPMDclupid(const AliPMDclupid &pmdclupid):TObject(pmdclupid)
+AliPMDclupid::AliPMDclupid(AliPMDclupid *pmdclupid):
+  fDet(0),
+  fSMN(0)
+{
+  *this = *pmdclupid;
+}
+
+// ------------------------------------------------------------------ //
+AliPMDclupid::AliPMDclupid(const AliPMDclupid &pmdclupid):
+  TObject(pmdclupid),
+  fDet(pmdclupid.fDet),
+  fSMN(pmdclupid.fSMN)
 {
   //Copy Constructor 
-  if(&pmdclupid == this) return;
-  this->fDet = pmdclupid.fDet;
-  this->fSMN = pmdclupid.fSMN;
   for(Int_t i=0; i<6; i++)
     {
-      this->fClusData[i] = pmdclupid.fClusData[i];
+      fClusData[i] = pmdclupid.fClusData[i];
     }
-  return;
 }
 // ------------------------------------------------------------------ //
 AliPMDclupid & AliPMDclupid::operator=(const AliPMDclupid &pmdclupid)
 {
   // Assignment operator 
-  if(&pmdclupid == this) return *this;
-  this->fDet = pmdclupid.fDet;
-  this->fSMN = pmdclupid.fSMN;
-  for(Int_t i=0; i<6; i++)
+  if(this != &pmdclupid)
     {
-      this->fClusData[i] = pmdclupid.fClusData[i];
+      fDet = pmdclupid.fDet;
+      fSMN = pmdclupid.fSMN;
+      for(Int_t i=0; i<6; i++)
+	{
+	  fClusData[i] = pmdclupid.fClusData[i];
+	}
     }
   return *this;
 }

@@ -9,7 +9,8 @@
 //  Store cluster informations for PMD                 //
 //                                                     //
 //-----------------------------------------------------//
-
+// Author - B.K. Nandi
+//
 #include "Rtypes.h"
 #include "TObject.h"
 class TClonesArray;
@@ -20,7 +21,7 @@ class AliPMDcluster : public TObject
   AliPMDcluster();
   AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
 		Int_t *celldataX, Int_t *celldataY);
-  AliPMDcluster(AliPMDcluster *pmdcluster) {*this = *pmdcluster;}
+  AliPMDcluster(AliPMDcluster *pmdcluster);
   AliPMDcluster (const AliPMDcluster &pmdcluster);  // copy constructor
   AliPMDcluster &operator=(const AliPMDcluster &pmdcluster); // assignment op
   
@@ -51,7 +52,7 @@ class AliPMDcluster : public TObject
     fClusData[4] : Cluster SigmaX    , fClusData[5] : Cluster SigmaY
   */
   
-  ClassDef(AliPMDcluster,3) // Keep Cluster information
+  ClassDef(AliPMDcluster,4) // Keep Cluster information
 };
 
 #endif

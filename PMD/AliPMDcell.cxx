@@ -27,47 +27,59 @@
 
 ClassImp(AliPMDcell)
 
-AliPMDcell::AliPMDcell()
+AliPMDcell::AliPMDcell():
+  fTrNumber(0),
+  fSMNumber(0),
+  fXpos(0),
+  fYpos(0),
+  fEdep(0.)
 {
   // Standard constructor
-  fTrNumber = 0;
-  fSMNumber = 0;
-  fXpos     = 0;
-  fYpos     = 0;
-  fEdep     = 0.;
 }
 
 AliPMDcell::AliPMDcell(Int_t trnumber, Int_t smnumber, 
-			 Int_t xpos, Int_t ypos, Float_t edep)
+		       Int_t xpos, Int_t ypos, Float_t edep):
+  fTrNumber(trnumber),
+  fSMNumber(smnumber),
+  fXpos(xpos),
+  fYpos(ypos),
+  fEdep(edep)
 {
   // Constructor
-  fTrNumber = trnumber;
-  fSMNumber = smnumber;
-  fXpos     = xpos;
-  fYpos     = ypos;
-  fEdep     = edep;
-
 }
 
-AliPMDcell::AliPMDcell(const AliPMDcell& source):TObject(source) {
-  //Copy Constructor 
-  if(&source == this) return;
-  this->fTrNumber = source.fTrNumber;
-  this->fSMNumber = source.fSMNumber;
-  this->fXpos = source.fXpos;
-  this->fYpos = source.fYpos;
-  this->fEdep = source.fEdep;
-  return;
+AliPMDcell::AliPMDcell(AliPMDcell *pmdcell):
+  fTrNumber(0),
+  fSMNumber(0),
+  fXpos(0),
+  fYpos(0),
+  fEdep(0.)
+{
+  *this = *pmdcell;
 }
 
-AliPMDcell& AliPMDcell::operator=(const AliPMDcell& source) {
+AliPMDcell::AliPMDcell(const AliPMDcell& source):
+  TObject(source),
+  fTrNumber(source.fTrNumber),
+  fSMNumber(source.fSMNumber),
+  fXpos(source.fXpos),
+  fYpos(source.fYpos),
+  fEdep(source.fEdep)
+{
   //Copy Constructor 
-  if(&source == this) return *this;
-  this->fTrNumber = source.fTrNumber;
-  this->fSMNumber = source.fSMNumber;
-  this->fXpos = source.fXpos;
-  this->fYpos = source.fYpos;
-  this->fEdep = source.fEdep;
+}
+
+AliPMDcell& AliPMDcell::operator=(const AliPMDcell& source)
+{
+  //Copy Constructor 
+  if(this != &source)
+    {
+      fTrNumber = source.fTrNumber;
+      fSMNumber = source.fSMNumber;
+      fXpos = source.fXpos;
+      fYpos = source.fYpos;
+      fEdep = source.fEdep;
+    }
   return *this;
 }
 

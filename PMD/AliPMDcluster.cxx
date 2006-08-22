@@ -42,12 +42,13 @@ AliPMDcluster::AliPMDcluster():
     }
 
 }
+// --------------------------------------------------------------------- //
 AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
-			     Int_t *celldataX, Int_t *celldataY)
+			     Int_t *celldataX, Int_t *celldataY):
+  fDet(idet),
+  fSMN(ismn)
 {
   // Constructor
-  fDet = idet;
-  fSMN = ismn;
   for (Int_t i = 0; i < 6; i++)
     {
       fClusData[i] = clusdata[i];
@@ -59,12 +60,21 @@ AliPMDcluster::AliPMDcluster(Int_t idet, Int_t ismn, Float_t *clusdata,
     }
 
 }
-AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):TObject(pmdcluster)
+// --------------------------------------------------------------------- //
+AliPMDcluster::AliPMDcluster(AliPMDcluster *pmdcluster):
+  fDet(0),
+  fSMN(0)
+{
+  *this = *pmdcluster;
+}
+// --------------------------------------------------------------------- //
+
+AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):
+  TObject(pmdcluster),
+  fDet(pmdcluster.fDet),
+  fSMN(pmdcluster.fSMN)
 {
   //Copy Constructor 
-  if(&pmdcluster == this) return;
-  this->fDet = pmdcluster.fDet;
-  this->fSMN = pmdcluster.fSMN;
   for(Int_t i=0; i<6; i++)
     {
       this->fClusData[i] = pmdcluster.fClusData[i];
@@ -74,69 +84,83 @@ AliPMDcluster::AliPMDcluster(const AliPMDcluster &pmdcluster):TObject(pmdcluster
       this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
       this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
     }
-  return;
 }
+// --------------------------------------------------------------------- //
 
 AliPMDcluster & AliPMDcluster::operator=(const AliPMDcluster &pmdcluster)
 {
   // Assignment operator 
-  if(&pmdcluster == this) return *this;
-  this->fDet = pmdcluster.fDet;
-  this->fSMN = pmdcluster.fSMN;
-  for(Int_t i=0; i<6; i++)
+  if(this != &pmdcluster)
     {
-      this->fClusData[i] = pmdcluster.fClusData[i];
-    }
-  for(Int_t i=0; i<15; i++)
-    {
-      this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
-      this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
+      this->fDet = pmdcluster.fDet;
+      this->fSMN = pmdcluster.fSMN;
+      for(Int_t i=0; i<6; i++)
+	{
+	  this->fClusData[i] = pmdcluster.fClusData[i];
+	}
+      for(Int_t i=0; i<15; i++)
+	{
+	  this->fClusCellDataX[i] = pmdcluster.fClusCellDataX[i];
+	  this->fClusCellDataY[i] = pmdcluster.fClusCellDataY[i];
+	}
     }
   return *this;
 }
+// --------------------------------------------------------------------- //
 
 AliPMDcluster::~AliPMDcluster()
 {
   // Destructor
 }
+// --------------------------------------------------------------------- //
 
 Int_t AliPMDcluster::GetDetector() const
 {
   return fDet;
 }
+// --------------------------------------------------------------------- //
 Int_t AliPMDcluster::GetSMN() const
 {
   return fSMN;
 }
+// --------------------------------------------------------------------- //
 Float_t AliPMDcluster::GetClusX() const
 {
   return fClusData[0];
 }
+// --------------------------------------------------------------------- //
 Float_t AliPMDcluster::GetClusY() const
 {
   return fClusData[1];
 }
+// --------------------------------------------------------------------- //
 Float_t AliPMDcluster::GetClusADC() const
 {
   return fClusData[2];
 }
+// --------------------------------------------------------------------- //
 Float_t AliPMDcluster::GetClusCells() const
 {
   return fClusData[3];
 }
+// --------------------------------------------------------------------- //
 Float_t AliPMDcluster::GetClusSigmaX() const
 {
   return fClusData[4];
 }
+// --------------------------------------------------------------------- //
 Float_t AliPMDcluster::GetClusSigmaY() const
 {
   return fClusData[5];
 }
+// --------------------------------------------------------------------- //
 Int_t AliPMDcluster::GetClusCellX(Int_t i) const
 {
   return fClusCellDataX[i];
 }
+// --------------------------------------------------------------------- //
 Int_t AliPMDcluster::GetClusCellY(Int_t i) const
 {
   return fClusCellDataY[i];
 }
+// --------------------------------------------------------------------- //

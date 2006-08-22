@@ -9,7 +9,8 @@
 //  used to store the info into TreeS                  //
 //                                                     //
 //-----------------------------------------------------//
-
+// Author - B.K. Nandi
+//
 #include "TObject.h"
 class TClonesArray;
 
@@ -20,7 +21,7 @@ class AliPMDsdigit : public TObject
   AliPMDsdigit();
   AliPMDsdigit(Int_t trnumber, Int_t det, Int_t smn,
 	       Int_t irow, Int_t icol, Float_t edep);
-  AliPMDsdigit(AliPMDsdigit *pmdsdigit) {*this = *pmdsdigit;}
+  AliPMDsdigit(AliPMDsdigit *pmdsdigit);
   AliPMDsdigit (const AliPMDsdigit &pmdsdigit);  // copy constructor
   AliPMDsdigit &operator=(const AliPMDsdigit &pmdsdigit); // assignment op
 
@@ -42,7 +43,7 @@ class AliPMDsdigit : public TObject
   Int_t   fColumn;     // Cell Column Number (0-95)
   Float_t fEdep;       // Energy deposition in a hexagonal cell
   
-  ClassDef(AliPMDsdigit,3) // SDigits object for Detector set:PMD
+  ClassDef(AliPMDsdigit,4) // SDigits object for Detector set:PMD
 };
 
 #endif

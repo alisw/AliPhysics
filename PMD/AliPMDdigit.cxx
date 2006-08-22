@@ -26,48 +26,61 @@
 
 ClassImp(AliPMDdigit)
 
-AliPMDdigit::AliPMDdigit()
+AliPMDdigit::AliPMDdigit():
+  fTrNumber(0),
+  fDet(0),
+  fSMNumber(0),
+  fRow(0),
+  fColumn(0),
+  fADC(0.)
 {
   // Default Constructor
-  fTrNumber   = 0;
-  fDet        = 0;
-  fSMNumber   = 0;
-  fRow        = 0;
-  fColumn     = 0;
-  fADC        = 0.;
 }
 
 AliPMDdigit::AliPMDdigit(Int_t trnumber, Int_t det, Int_t smnumber, 
-			 Int_t irow, Int_t icol, Float_t adc)
+			 Int_t irow, Int_t icol, Float_t adc):
+  fTrNumber(trnumber),
+  fDet(det),
+  fSMNumber(smnumber),
+  fRow(irow),
+  fColumn(icol),
+  fADC(adc)
 {
   // Constructor
-  fTrNumber   = trnumber;
-  fDet        = det;
-  fSMNumber   = smnumber;
-  fRow        = irow;
-  fColumn     = icol;
-  fADC        = adc;
 }
-AliPMDdigit::AliPMDdigit(const AliPMDdigit& pmddigit):TObject(pmddigit) {
+AliPMDdigit::AliPMDdigit(AliPMDdigit *pmddigit):
+  fTrNumber(0),
+  fDet(0),
+  fSMNumber(0),
+  fRow(0),
+  fColumn(0),
+  fADC(0.)
+{
+  *this = *pmddigit;
+}
+
+AliPMDdigit::AliPMDdigit(const AliPMDdigit& pmddigit):
+  TObject(pmddigit),
+  fTrNumber(pmddigit.fTrNumber),
+  fDet(pmddigit.fDet),
+  fSMNumber(pmddigit.fSMNumber),
+  fRow(pmddigit.fRow),
+  fColumn(pmddigit.fColumn),
+  fADC(pmddigit.fADC)
+{
   //Copy Constructor 
-  if(&pmddigit == this) return;
-  this->fTrNumber   = pmddigit.fTrNumber;
-  this->fDet        = pmddigit.fDet;
-  this->fSMNumber   = pmddigit.fSMNumber;
-  this->fRow        = pmddigit.fRow;
-  this->fColumn     = pmddigit.fColumn;
-  this->fADC        = pmddigit.fADC;
-  return;
 }
 AliPMDdigit & AliPMDdigit::operator=(const AliPMDdigit& pmddigit) {
   //Assignment operator 
-  if(&pmddigit == this) return *this;
-  this->fTrNumber   = pmddigit.fTrNumber;
-  this->fDet        = pmddigit.fDet;
-  this->fSMNumber   = pmddigit.fSMNumber;
-  this->fRow        = pmddigit.fRow;
-  this->fColumn     = pmddigit.fColumn;
-  this->fADC        = pmddigit.fADC;
+  if(this != &pmddigit)
+    {
+      fTrNumber   = pmddigit.fTrNumber;
+      fDet        = pmddigit.fDet;
+      fSMNumber   = pmddigit.fSMNumber;
+      fRow        = pmddigit.fRow;
+      fColumn     = pmddigit.fColumn;
+      fADC        = pmddigit.fADC;
+    }
   return *this;
 }
 AliPMDdigit::~AliPMDdigit()

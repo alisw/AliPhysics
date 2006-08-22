@@ -10,7 +10,8 @@
 //  after Discrimination                               //
 //                                                     //
 //-----------------------------------------------------//
-
+// Author - B.K. Nandi
+//
 #include "Rtypes.h"
 #include "TObject.h"
 class TClonesArray;
@@ -20,7 +21,7 @@ class AliPMDclupid : public TObject
  public:
   AliPMDclupid();
   AliPMDclupid(Int_t idet, Int_t ismn, Float_t *clusdata);
-  AliPMDclupid(AliPMDclupid *pmdclupid) {*this = *pmdclupid;}
+  AliPMDclupid(AliPMDclupid *pmdclupid);
   AliPMDclupid (const AliPMDclupid &pmdclupid);  // copy constructor
   AliPMDclupid &operator=(const AliPMDclupid &pmdclupid); // assignment op
   
@@ -47,7 +48,7 @@ class AliPMDclupid : public TObject
     fClusData[4] : Cluster radius    , fClusData[5] : Cluster pid
   */
   
-  ClassDef(AliPMDclupid,1) // Keep Cluster information
+  ClassDef(AliPMDclupid,2) // Keep Cluster information
 };
 
 #endif

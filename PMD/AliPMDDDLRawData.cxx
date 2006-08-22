@@ -39,6 +39,24 @@ AliPMDDDLRawData::AliPMDDDLRawData():
 
 }
 //____________________________________________________________________________
+AliPMDDDLRawData::AliPMDDDLRawData(const AliPMDDDLRawData& ddlraw):
+  TObject(ddlraw),
+  fDigits(ddlraw.fDigits)
+{
+  //Copy Constructor 
+}
+//____________________________________________________________________________
+AliPMDDDLRawData & AliPMDDDLRawData::operator=(const AliPMDDDLRawData& ddlraw)
+{
+  //Assignment operator 
+  if(this != &ddlraw)
+    {
+      fDigits = ddlraw.fDigits;
+    }
+  return *this;
+}
+
+//____________________________________________________________________________
 
 AliPMDDDLRawData::~AliPMDDDLRawData()
 {
@@ -400,6 +418,9 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   treeD->GetEntry(imodule); 
   Int_t nentries = fDigits->GetLast();
   Int_t totword = nentries+1;
+
+  AliPMDdigit *fPMDdigit;
+
 
   for (Int_t ient = 0; ient < totword; ient++)
     {

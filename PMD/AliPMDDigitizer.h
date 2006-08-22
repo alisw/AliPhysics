@@ -9,7 +9,8 @@
 //  Date   : September 20 2002                         //
 //                                                     //
 //-----------------------------------------------------//
-
+// Author - B.K. Nandi
+//
 
 #include "AliDigitizer.h"
 
@@ -41,6 +42,8 @@ class AliPMDDigitizer:public AliDigitizer
  public:
 
   AliPMDDigitizer();
+  AliPMDDigitizer(const AliPMDDigitizer &digitizer);  // copy constructor
+  AliPMDDigitizer &operator=(const AliPMDDigitizer &digitizer); // assign op
   AliPMDDigitizer(AliRunDigitizer *manager);
   virtual ~AliPMDDigitizer();
 

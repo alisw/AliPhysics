@@ -46,17 +46,16 @@ AliPMDPatchBusHeader::~AliPMDPatchBusHeader()
 }
 
 //___________________________________________
-AliPMDPatchBusHeader::AliPMDPatchBusHeader(const AliPMDPatchBusHeader & pbush)
-  :  TObject()
+AliPMDPatchBusHeader::AliPMDPatchBusHeader(const AliPMDPatchBusHeader & pbush):
+  TObject(),
+  fTotalLength(pbush.fTotalLength),
+  fRawDataLength(pbush.fRawDataLength),
+  fPatchBusId(pbush.fPatchBusId),
+  fTrWord(pbush.fTrWord)
 {
   //
   // copy ctor
   //
-
-  fTotalLength   = pbush.fTotalLength;
-  fRawDataLength = pbush.fRawDataLength;
-  fPatchBusId    = pbush.fPatchBusId;
-  fTrWord        = pbush.fTrWord;
 }
 
 //___________________________________________
@@ -66,13 +65,13 @@ AliPMDPatchBusHeader::operator=(const AliPMDPatchBusHeader &pbush)
   // 
   // assignment operator
   //
-  if (this == &pbush) return *this;
-
-  fTotalLength   = pbush.fTotalLength;
-  fRawDataLength = pbush.fRawDataLength;
-  fPatchBusId    = pbush.fPatchBusId;
-  fTrWord        = pbush.fTrWord;
-
+  if (this != &pbush)
+    {
+      fTotalLength   = pbush.fTotalLength;
+      fRawDataLength = pbush.fRawDataLength;
+      fPatchBusId    = pbush.fPatchBusId;
+      fTrWord        = pbush.fTrWord;
+    }
   return *this;
 }
 void AliPMDPatchBusHeader::SetHeader(Int_t *header)
@@ -82,4 +81,4 @@ void AliPMDPatchBusHeader::SetHeader(Int_t *header)
   fPatchBusId    = header[2];
   fTrWord        = header[3];
 }
-      
+

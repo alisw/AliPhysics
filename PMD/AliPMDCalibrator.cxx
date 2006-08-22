@@ -47,12 +47,10 @@ const Int_t kMaxSMN = 24;
 const Int_t kMaxRow =96;
 const Int_t kMaxCol =96;
 
-AliPMDCalibrator::AliPMDCalibrator()
+AliPMDCalibrator::AliPMDCalibrator():
+  fCalibData(new AliPMDCalibData())
 {
   // Standard Constructor
-
-  fCalibData = new AliPMDCalibData();
-  
   for(Int_t d=0;d<2;d++)
     {
       for(Int_t i=0;i<24;i++)
@@ -70,7 +68,52 @@ AliPMDCalibrator::AliPMDCalibrator()
     }
 }
 // ------------------------------------------------------------------------ //
+AliPMDCalibrator::AliPMDCalibrator(const AliPMDCalibrator &pmdcalibrator):
+  fCalibData(new AliPMDCalibData())
+{
+  for(Int_t d=0;d<2;d++)
+    {
+      for(Int_t i=0;i<24;i++)
+	{
+	  fHsmIso[d][i] = pmdcalibrator.fHsmIso[d][i] ;
+	  for(Int_t j=0;j<96;j++)
+	    {
+	      for(Int_t k=0;k<96;k++)
+		{
+		  fGainFact[d][i][j][k] = pmdcalibrator.fGainFact[d][i][j][k];
+		  fHadcIso[d][i][j][k]  = pmdcalibrator.fHadcIso[d][i][j][k];
+		}
+	    }
+	}
+    }
 
+}
+// ------------------------------------------------------------------------ //
+AliPMDCalibrator &AliPMDCalibrator::operator=(const AliPMDCalibrator &pmdcalibrator)
+{
+  if(this != &pmdcalibrator)
+    {
+      for(Int_t d=0;d<2;d++)
+	{
+	  for(Int_t i=0;i<24;i++)
+	    {
+	      fHsmIso[d][i] = pmdcalibrator.fHsmIso[d][i] ;
+	      for(Int_t j=0;j<96;j++)
+		{
+		  for(Int_t k=0;k<96;k++)
+		    {
+		      fGainFact[d][i][j][k] =
+			pmdcalibrator.fGainFact[d][i][j][k];
+		      fHadcIso[d][i][j][k]  =
+			pmdcalibrator.fHadcIso[d][i][j][k];
+		    }
+		}
+	    }
+	}
+    }
+  return *this;
+}
+// ------------------------------------------------------------------------ //
 AliPMDCalibrator::~AliPMDCalibrator()
 {
   // dtor

@@ -91,6 +91,23 @@ AliPMDDigitizer::AliPMDDigitizer() :
 
 }
 //____________________________________________________________________________
+AliPMDDigitizer::AliPMDDigitizer(const AliPMDDigitizer& /*digitizer*/):
+  AliDigitizer(/* digitizer */)
+{
+  // copy constructor
+  AliError("Copy constructor not allowed ");
+  
+}
+//____________________________________________________________________________
+
+AliPMDDigitizer & AliPMDDigitizer::operator=(const AliPMDDigitizer& /*digitizer*/)
+{
+  // Assignment operator
+  AliError("Assignement operator not allowed ");
+
+  return *this;
+}
+//____________________________________________________________________________
 AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager) 
   :AliDigitizer(manager),
   fRunLoader(0),

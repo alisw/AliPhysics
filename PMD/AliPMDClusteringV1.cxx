@@ -54,6 +54,7 @@ ClassImp(AliPMDClusteringV1)
 const Double_t AliPMDClusteringV1::fgkSqroot3by2=0.8660254;  // sqrt(3.)/2.
 
 AliPMDClusteringV1::AliPMDClusteringV1():
+  fClno(0),
   fCutoff(0.0)
 {
   for(int i = 0; i < kNDIMX; i++)

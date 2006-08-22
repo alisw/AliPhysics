@@ -53,6 +53,7 @@ ClassImp(AliPMDClusterFinder)
 AliPMDClusterFinder::AliPMDClusterFinder():
   fRunLoader(0),
   fPMDLoader(0),
+  fCalibData(GetCalibData()),
   fTreeD(0),
   fTreeR(0),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
@@ -60,17 +61,18 @@ AliPMDClusterFinder::AliPMDClusterFinder():
   fRechits(new TClonesArray("AliPMDrechit", 1000)),
   fNpoint(0),
   fNhit(0),
+  fDetNo(0),
   fEcut(0.)
 {
 //
 // Constructor
 //
-  fCalibData = GetCalibData();
 }
 // ------------------------------------------------------------------------- //
 AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fRunLoader(runLoader),
   fPMDLoader(runLoader->GetLoader("PMDLoader")),
+  fCalibData(GetCalibData()),
   fTreeD(0),
   fTreeR(0),
   fDigits(new TClonesArray("AliPMDdigit", 1000)),
@@ -78,12 +80,26 @@ AliPMDClusterFinder::AliPMDClusterFinder(AliRunLoader* runLoader):
   fRechits(new TClonesArray("AliPMDrechit", 1000)),
   fNpoint(0),
   fNhit(0),
+  fDetNo(0),
   fEcut(0.)
 {
 //
 // Constructor
 //
-  fCalibData = GetCalibData();
+}
+// ------------------------------------------------------------------------- //
+AliPMDClusterFinder::AliPMDClusterFinder(const AliPMDClusterFinder & /*finder*/):
+  TObject(/*finder*/)
+{
+  // copy constructor
+  AliError("Copy constructor not allowed");
+}
+// ------------------------------------------------------------------------- //
+AliPMDClusterFinder &AliPMDClusterFinder::operator=(const AliPMDClusterFinder & /*finder*/)
+{
+ // assignment op
+  AliError("Assignment Operator not allowed");
+  return *this;
 }
 // ------------------------------------------------------------------------- //
 AliPMDClusterFinder::~AliPMDClusterFinder()
@@ -172,7 +188,6 @@ void AliPMDClusterFinder::Digits2RecPoints(Int_t ievt)
 	  
 	  // CALIBRATION
 	  Float_t gain = fCalibData->GetGainFact(det,smn,xpos,ypos);
-	  
 	 // printf("adc = %d gain = %f\n",adc,gain);
 	  
 	  adc = adc*gain;

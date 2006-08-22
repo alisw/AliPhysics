@@ -16,10 +16,7 @@
  
 #include "AliPMDddldata.h"
 
-
-
 ClassImp(AliPMDddldata)
-
 
 //------------------------------------------------------------
 AliPMDddldata::AliPMDddldata():
@@ -49,22 +46,22 @@ AliPMDddldata::~AliPMDddldata()
 }
 
 //___________________________________________
-AliPMDddldata::AliPMDddldata(const AliPMDddldata & ddl) :  TObject()
+AliPMDddldata::AliPMDddldata(const AliPMDddldata & ddl) :
+  TObject(),
+  fDetector(ddl.fDetector),
+  fSMN(ddl.fSMN),
+  fModule(ddl.fModule),
+  fPatchBus(ddl.fPatchBus),
+  fMCM(ddl.fMCM),
+  fChannel(ddl.fChannel),
+  fRow(ddl.fRow),
+  fCol(ddl.fCol),
+  fSignal(ddl.fSignal),
+  fBit(ddl.fBit)
 {
   //
   // copy ctor
   //
-  fDetector = ddl.fDetector;
-  fSMN   = ddl.fSMN;
-  fModule   = ddl.fModule;
-  fPatchBus = ddl.fPatchBus;
-  fMCM      = ddl.fMCM;
-  fChannel  = ddl.fChannel;
-  fRow      = ddl.fRow;
-  fCol      = ddl.fCol;
-  fSignal   = ddl.fSignal;
-  fBit      = ddl.fBit;
-
 }
 
 //___________________________________________
@@ -73,18 +70,18 @@ AliPMDddldata& AliPMDddldata::operator=(const AliPMDddldata &ddl)
   // 
   // assignment operator
   //
-  if (this == &ddl) return *this;
-
-  fDetector = ddl.fDetector;
-  fSMN   = ddl.fSMN;
-  fModule   = ddl.fModule;
-  fPatchBus = ddl.fPatchBus;
-  fMCM      = ddl.fMCM;
-  fChannel  = ddl.fChannel;
-  fRow      = ddl.fRow;
-  fCol      = ddl.fCol;
-  fSignal   = ddl.fSignal;
-  fBit      = ddl.fBit;
-
+  if (this != &ddl)
+    {
+      fDetector = ddl.fDetector;
+      fSMN   = ddl.fSMN;
+      fModule   = ddl.fModule;
+      fPatchBus = ddl.fPatchBus;
+      fMCM      = ddl.fMCM;
+      fChannel  = ddl.fChannel;
+      fRow      = ddl.fRow;
+      fCol      = ddl.fCol;
+      fSignal   = ddl.fSignal;
+      fBit      = ddl.fBit;
+    }
   return *this;
 }

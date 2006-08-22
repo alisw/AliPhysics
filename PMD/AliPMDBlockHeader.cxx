@@ -50,21 +50,21 @@ AliPMDBlockHeader::~AliPMDBlockHeader()
 }
 
 //___________________________________________
-AliPMDBlockHeader::AliPMDBlockHeader(const AliPMDBlockHeader & blockh)
-  :  TObject()
+AliPMDBlockHeader::AliPMDBlockHeader(const AliPMDBlockHeader & blockh):
+  TObject(),
+  fTotalLength(blockh.fTotalLength),
+  fRawDataLength(blockh.fRawDataLength),
+  fDspId(blockh.fDspId),
+  fTrWord1(blockh.fTrWord1),
+  fTrWord2(blockh.fTrWord2),
+  fTrWord3(blockh.fTrWord3),
+  fTrWord4(blockh.fTrWord4),
+  fPadWord(blockh.fPadWord)
 {
   //
   // copy ctor
   //
 
-  fTotalLength = blockh.fTotalLength;
-  fRawDataLength      = blockh.fRawDataLength;
-  fDspId       = blockh.fDspId;
-  fTrWord1     = blockh.fTrWord1;
-  fTrWord2     = blockh.fTrWord2;
-  fTrWord3     = blockh.fTrWord3;
-  fTrWord4     = blockh.fTrWord4;
-  fPadWord     = blockh.fPadWord;
 }
 
 //___________________________________________
@@ -74,17 +74,17 @@ AliPMDBlockHeader::operator=(const AliPMDBlockHeader &blockh)
   // 
   // assignment operator
   //
-  if (this == &blockh) return *this;
-
-  fTotalLength = blockh.fTotalLength;
-  fRawDataLength      = blockh.fRawDataLength;
-  fDspId       = blockh.fDspId;
-  fTrWord1     = blockh.fTrWord1;
-  fTrWord2     = blockh.fTrWord2;
-  fTrWord3     = blockh.fTrWord3;
-  fTrWord4     = blockh.fTrWord4;
-  fPadWord     = blockh.fPadWord;
-
+  if (this != &blockh)
+    {
+      fTotalLength   = blockh.fTotalLength;
+      fRawDataLength = blockh.fRawDataLength;
+      fDspId         = blockh.fDspId;
+      fTrWord1       = blockh.fTrWord1;
+      fTrWord2       = blockh.fTrWord2;
+      fTrWord3       = blockh.fTrWord3;
+      fTrWord4       = blockh.fTrWord4;
+      fPadWord       = blockh.fPadWord;
+    }
   return *this;
 }
 void AliPMDBlockHeader::SetHeader(Int_t *header)

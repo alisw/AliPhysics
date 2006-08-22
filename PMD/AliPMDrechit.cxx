@@ -33,26 +33,37 @@ AliPMDrechit::AliPMDrechit():
   // Standard constructor
 }
 
-AliPMDrechit::AliPMDrechit(Int_t cellx, Int_t celly)
+AliPMDrechit::AliPMDrechit(Int_t cellx, Int_t celly):
+  fXcell(cellx),
+  fYcell(celly)
+
 {
   // Constructor
-  fXcell     = cellx;
-  fYcell     = celly;
+}
+AliPMDrechit::AliPMDrechit(AliPMDrechit *pmdrechit):
+  fXcell(0),
+  fYcell(0)
+{
+  *this = *pmdrechit;
 }
 
-AliPMDrechit::AliPMDrechit(const AliPMDrechit& source):TObject(source) {
+AliPMDrechit::AliPMDrechit(const AliPMDrechit& source):
+  TObject(source),
+  fXcell(source.fXcell),
+  fYcell(source.fYcell)
+{
   //Copy Constructor 
-  if(&source == this) return;
-  this->fXcell = source.fXcell;
-  this->fYcell = source.fYcell;
-  return;
+
 }
 
-AliPMDrechit& AliPMDrechit::operator=(const AliPMDrechit& source) {
+AliPMDrechit& AliPMDrechit::operator=(const AliPMDrechit& source)
+{
   //Copy Constructor 
-  if(&source == this) return *this;
-  this->fXcell = source.fXcell;
-  this->fYcell = source.fYcell;
+  if(this != &source)
+    {
+      fXcell = source.fXcell;
+      fYcell = source.fYcell;
+    }
   return *this;
 }
 

@@ -13,6 +13,9 @@ class AliPMDCalibrator
 {
  public:
   AliPMDCalibrator() ;              // ctor
+  AliPMDCalibrator(const AliPMDCalibrator &pmdcalibrator);  // copy constructor
+  AliPMDCalibrator &operator=(const AliPMDCalibrator &pmdcalibrator); // assignment op
+
   virtual ~AliPMDCalibrator() ;     // dtor
   virtual void Exec();
   void CalculateIsoCell();          //calculates gains
@@ -25,6 +28,6 @@ class AliPMDCalibrator
   TH1F *fHadcIso[2][24][96][96];    // histos of isolated cells cellwise
   AliPMDCalibData *fCalibData;
 
-ClassDef(AliPMDCalibrator,1)        // description 
+ClassDef(AliPMDCalibrator,2)        // description 
 };
 #endif // AliPMDCALIBRATOR_H

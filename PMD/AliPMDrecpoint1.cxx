@@ -38,39 +38,48 @@ AliPMDrecpoint1::AliPMDrecpoint1():
     }
 }
 // ------------------------------------------------------------------------- //
-AliPMDrecpoint1::AliPMDrecpoint1(Int_t idet, Int_t ismn, Float_t *clusdata)
+AliPMDrecpoint1::AliPMDrecpoint1(Int_t idet, Int_t ismn, Float_t *clusdata):
+  fDet(idet),
+  fSMN(ismn)
 {
   // Constructor
-  fDet = idet;
-  fSMN = ismn;
   for (Int_t i = 0; i < 6; i++)
     {
       fClusData[i] = clusdata[i];
     }
 }
 // ------------------------------------------------------------------------- //
-AliPMDrecpoint1::AliPMDrecpoint1(const AliPMDrecpoint1 &pmdrecpoint):TObject(pmdrecpoint)
+AliPMDrecpoint1::AliPMDrecpoint1(AliPMDrecpoint1 *pmdrecpoint):
+  fDet(0),
+  fSMN(0)
+{
+  *this = *pmdrecpoint;
+}
+
+// ------------------------------------------------------------------------- //
+AliPMDrecpoint1::AliPMDrecpoint1(const AliPMDrecpoint1 &pmdrecpoint):
+  TObject(pmdrecpoint),
+  fDet(pmdrecpoint.fDet),
+  fSMN(pmdrecpoint.fSMN)
 {
   //Copy Constructor 
-  if(&pmdrecpoint == this) return;
-  this->fDet = pmdrecpoint.fDet;
-  this->fSMN = pmdrecpoint.fSMN;
   for(Int_t i=0; i<6; i++)
     {
-      this->fClusData[i] = pmdrecpoint.fClusData[i];
+      fClusData[i] = pmdrecpoint.fClusData[i];
     }
-  return;
 }
 // ------------------------------------------------------------------------- //
 AliPMDrecpoint1 & AliPMDrecpoint1::operator=(const AliPMDrecpoint1 &pmdrecpoint)
 {
   // Assignment operator 
-  if(&pmdrecpoint == this) return *this;
-  this->fDet = pmdrecpoint.fDet;
-  this->fSMN = pmdrecpoint.fSMN;
-  for(Int_t i=0; i<6; i++)
+  if(this != &pmdrecpoint)
     {
-      this->fClusData[i] = pmdrecpoint.fClusData[i];
+      fDet = pmdrecpoint.fDet;
+      fSMN = pmdrecpoint.fSMN;
+      for(Int_t i=0; i<6; i++)
+	{
+	  fClusData[i] = pmdrecpoint.fClusData[i];
+	}
     }
   return *this;
 }

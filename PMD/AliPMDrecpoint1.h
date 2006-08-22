@@ -21,7 +21,7 @@ class AliPMDrecpoint1 : public TObject
  public:
   AliPMDrecpoint1();
   AliPMDrecpoint1(Int_t idet, Int_t ismn, Float_t *clusdata);
-  AliPMDrecpoint1(AliPMDrecpoint1 *pmdrecpoint) {*this = *pmdrecpoint;}
+  AliPMDrecpoint1(AliPMDrecpoint1 *pmdrecpoint);
   AliPMDrecpoint1 (const AliPMDrecpoint1 &pmdrecpoint);  // copy constructor
   AliPMDrecpoint1 &operator=(const AliPMDrecpoint1 &pmdrecpoint); // assignment op
   
@@ -48,7 +48,7 @@ class AliPMDrecpoint1 : public TObject
     fClusData[4] : Cluster SigmaX ,  fClusData[5] : Cluster SigmaY
   */
   
-  ClassDef(AliPMDrecpoint1,3) // keep reconstructed points info
+  ClassDef(AliPMDrecpoint1,4) // keep reconstructed points info
 };
 
 #endif

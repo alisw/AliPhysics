@@ -9,7 +9,8 @@
 //  Store cellhits associated to a cluster             //
 //                                                     //
 //-----------------------------------------------------//
-
+// Author - B.K. Nandi
+//
 #include "TObject.h"
 class TClonesArray;
 
@@ -18,7 +19,7 @@ class AliPMDrechit : public TObject
  public:
   AliPMDrechit();
   AliPMDrechit(Int_t cellx, Int_t celly);
-  AliPMDrechit(AliPMDrechit *pmdrechit) {*this = *pmdrechit;}
+  AliPMDrechit(AliPMDrechit *pmdrechit);
   AliPMDrechit (const AliPMDrechit &alipmdrechit);  // copy constructor
   AliPMDrechit &operator=(const AliPMDrechit &alipmdrechit); // assignment op
 
@@ -31,7 +32,7 @@ class AliPMDrechit : public TObject
   Int_t   fXcell;         // x-position of the cell
   Int_t   fYcell;         // y-position of the cell
   
-  ClassDef(AliPMDrechit,1) // To keep cell hit information
+  ClassDef(AliPMDrechit,2) // To keep cell hit information
 };
 
 #endif

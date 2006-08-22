@@ -22,6 +22,9 @@ class AliPMDDDLRawData:public TObject
  public:
 
   AliPMDDDLRawData();
+  AliPMDDDLRawData (const AliPMDDDLRawData &ddlraw);  // copy constructor
+  AliPMDDDLRawData &operator=(const AliPMDDDLRawData &ddlraw); // assignment op
+
   virtual ~AliPMDDDLRawData();
 
   void WritePMDRawData(TTree *treeD);
@@ -38,9 +41,9 @@ class AliPMDDDLRawData:public TObject
  protected:
 
   TClonesArray *fDigits;    //! List of digits
-  AliPMDdigit  *fPMDdigit;  //! Pointer to digits
+  //  AliPMDdigit  *fPMDdigit;  //! Pointer to digits
 
-  ClassDef(AliPMDDDLRawData,4)    // To make RAW Data
+  ClassDef(AliPMDDDLRawData,6)    // To make RAW Data
 };
 #endif
 

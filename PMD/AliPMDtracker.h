@@ -29,6 +29,9 @@ class AliPMDtracker:public TObject
  public:
 
   AliPMDtracker();
+  AliPMDtracker(const AliPMDtracker &tracker);  // copy constructor
+  AliPMDtracker &operator=(const AliPMDtracker &tracker); // assignment op
+
   virtual ~AliPMDtracker();
 
   void LoadClusters(TTree *treein);
@@ -55,7 +58,7 @@ class AliPMDtracker:public TObject
   Double_t fSigmaY;         // Y-vertex error
   Double_t fSigmaZ;         // Z-vertex error
 
-  ClassDef(AliPMDtracker,3) // To run PMD clustering
+  ClassDef(AliPMDtracker,4) // To run PMD clustering
 };
 #endif
 

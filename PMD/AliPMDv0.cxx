@@ -56,22 +56,28 @@ const Float_t AliPMDv0::fgkPi         = 3.14159;  // pi
 ClassImp(AliPMDv0)
  
 //_____________________________________________________________________________
-  AliPMDv0::AliPMDv0()
+AliPMDv0::AliPMDv0():
+  fSMthick(0.),
+  fSMLength(0.),
+  fMedSens(0),
+  fNcellSM(0)
 {
   //
   // Default constructor 
   //
-  fMedSens=0;
 }
  
 //_____________________________________________________________________________
-AliPMDv0::AliPMDv0(const char *name, const char *title)
-  : AliPMD(name,title)
+AliPMDv0::AliPMDv0(const char *name, const char *title):
+  AliPMD(name,title),
+  fSMthick(0.),
+  fSMLength(0.),
+  fMedSens(0),
+  fNcellSM(0)
 {
   //
   // Standard constructor
   //
-  fMedSens=0;
 }
 
 //_____________________________________________________________________________

@@ -61,23 +61,49 @@ const Float_t AliPMDv1::fgkThSS       = 1.03;
 const Float_t AliPMDv1::fgkThG10      = 1.03;
 ClassImp(AliPMDv1)
  
-  //_____________________________________________________________________________
-  AliPMDv1::AliPMDv1()
+//_____________________________________________________________________________
+AliPMDv1::AliPMDv1():
+  fSMthick(0.),
+  fDthick(0.),
+  fSMLengthax(0.),
+  fSMLengthay(0.),
+  fSMLengthbx(0.),
+  fSMLengthby(0.),
+  fMedSens(0)
 {
   //
   // Default constructor 
   //
-  fMedSens=0;
+  for (Int_t i = 0; i < 3; i++)
+    {
+      fDboxmm1[i]  = 0.;
+      fDboxmm12[i] = 0.;
+      fDboxmm2[i]  = 0.;
+      fDboxmm22[i] = 0.;
+    }
 }
  
 //_____________________________________________________________________________
-AliPMDv1::AliPMDv1(const char *name, const char *title)
-  : AliPMD(name,title)
+AliPMDv1::AliPMDv1(const char *name, const char *title):
+  AliPMD(name,title),
+  fSMthick(0.),
+  fDthick(0.),
+  fSMLengthax(0.),
+  fSMLengthay(0.),
+  fSMLengthbx(0.),
+  fSMLengthby(0.),
+  fMedSens(0)
 {
   //
   // Standard constructor
   //
-  fMedSens=0;
+  for (Int_t i = 0; i < 3; i++)
+    {
+      fDboxmm1[i]  = 0.;
+      fDboxmm12[i] = 0.;
+      fDboxmm2[i]  = 0.;
+      fDboxmm22[i] = 0.;
+    }
 }
 
 //_____________________________________________________________________________
