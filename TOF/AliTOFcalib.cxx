@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2006/04/20 22:30:50  hristov
+Coding conventions (Annalisa)
+
 Revision 1.8  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -78,7 +81,24 @@ ClassImp(AliTOFcalib)
 
 const Int_t AliTOFcalib::fgkchannel = 5000;
 //_______________________________________________________________________
-AliTOFcalib::AliTOFcalib():TTask("AliTOFcalib",""){ 
+AliTOFcalib::AliTOFcalib():
+  TTask("AliTOFcalib",""),
+  fNChannels(-1),
+  fNSector(-1),
+  fNPlate(-1),
+  fNStripA(-1),
+  fNStripB(-1),
+  fNStripC(-1),
+  fNpadZ(-1),
+  fNpadX(-1),
+  fNevents(0),
+  fESDsel(0x0),
+  fArrayToT(0x0),
+  fArrayTime(0x0),
+  fTOFCal(0x0),
+  fTOFSimCal(0x0),
+  fTOFSimToT(0x0)
+{ 
   //TOF Calibration Class ctor
   fArrayToT = 0x0;
   fArrayTime = 0x0;
@@ -99,7 +119,24 @@ AliTOFcalib::AliTOFcalib():TTask("AliTOFcalib",""){
   delete geom;
 }
 //_______________________________________________________________________
-AliTOFcalib::AliTOFcalib(AliTOFGeometry *geom):TTask("AliTOFcalib",""){ 
+AliTOFcalib::AliTOFcalib(AliTOFGeometry *geom):
+  TTask("AliTOFcalib",""),
+  fNChannels(-1),
+  fNSector(-1),
+  fNPlate(-1),
+  fNStripA(-1),
+  fNStripB(-1),
+  fNStripC(-1),
+  fNpadZ(-1),
+  fNpadX(-1),
+  fNevents(0),
+  fESDsel(0x0),
+  fArrayToT(0x0),
+  fArrayTime(0x0),
+  fTOFCal(0x0),
+  fTOFSimCal(0x0),
+  fTOFSimToT(0x0)
+{ 
   //TOF Calibration Class ctor, taking the TOF geometry as input
   fArrayToT = 0x0;
   fArrayTime = 0x0;
@@ -118,7 +155,23 @@ AliTOFcalib::AliTOFcalib(AliTOFGeometry *geom):TTask("AliTOFcalib",""){
 }
 //____________________________________________________________________________ 
 
-AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):TTask("AliTOFcalib","")
+AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
+  TTask("AliTOFcalib",""),
+  fNChannels(-1),
+  fNSector(-1),
+  fNPlate(-1),
+  fNStripA(-1),
+  fNStripB(-1),
+  fNStripC(-1),
+  fNpadZ(-1),
+  fNpadX(-1),
+  fNevents(0),
+  fESDsel(0x0),
+  fArrayToT(0x0),
+  fArrayTime(0x0),
+  fTOFCal(0x0),
+  fTOFSimCal(0x0),
+  fTOFSimToT(0x0)
 {
   //TOF Calibration Class copy ctor
   fNSector = calib.fNSector;

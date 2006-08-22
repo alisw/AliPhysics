@@ -18,9 +18,9 @@ class AliTOFGeometry;
 class AliTOFpidESD : public TObject {
 enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 public:
-  AliTOFpidESD(){fN=0; fEventN=0;}
-  AliTOFpidESD(Double_t *param);
-  ~AliTOFpidESD(){}
+ AliTOFpidESD();
+ AliTOFpidESD(Double_t *param);
+ ~AliTOFpidESD(){}
 
   Int_t MakePID(AliESD *event);
   void  SetEventNumber(Int_t n) {fEventN=n;}

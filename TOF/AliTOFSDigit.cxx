@@ -42,20 +42,34 @@
 ClassImp(AliTOFSDigit)
 
 ////////////////////////////////////////////////////////////////////////
-  AliTOFSDigit::AliTOFSDigit()
+AliTOFSDigit::AliTOFSDigit():
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadx(-1),
+  fPadz(-1),
+  fNDigits(0),
+  fTdc(0x0),
+  fAdc(0x0),
+  fTracks(0x0)
 {
   //
   // default ctor
   //
-  fNDigits = 0;
-  fTdc = 0;
-  fAdc = 0;
-  fTracks = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t *vol,Float_t *digit)
-:TObject()
+AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t *vol,Float_t *digit):
+  TObject(),
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadx(-1),
+  fPadz(-1),
+  fNDigits(0),
+  fTdc(0x0),
+  fAdc(0x0),
+  fTracks(0x0)
 {
   //
   // Constructor of digit object
@@ -79,8 +93,17 @@ AliTOFSDigit::AliTOFSDigit(Int_t tracknum, Int_t *vol,Float_t *digit)
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFSDigit::AliTOFSDigit(const AliTOFSDigit & digit)
-:TObject()
+AliTOFSDigit::AliTOFSDigit(const AliTOFSDigit & digit):
+  TObject(),
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadx(-1),
+  fPadz(-1),
+  fNDigits(0),
+  fTdc(0x0),
+  fAdc(0x0),
+  fTracks(0x0)
 {
   // 
   // copy ctor for AliTOFSDigit object
@@ -117,17 +140,20 @@ AliTOFSDigit& AliTOFSDigit::operator=(const AliTOFSDigit & digit)
 
 ////////////////////////////////////////////////////////////////////////
 AliTOFSDigit::AliTOFSDigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx,
-			   Int_t padz, Float_t tdc, Float_t adc)
+			   Int_t padz, Float_t tdc, Float_t adc):
+  fSector(sector),
+  fPlate(plate),
+  fStrip(strip),
+  fPadx(padx),
+  fPadz(padz),
+  fNDigits(1),
+  fTdc(0x0),
+  fAdc(0x0),
+  fTracks(0x0)
 {
   //
   // Constructor for sdigit
   //
-  fSector = sector;
-  fPlate  = plate;
-  fStrip  = strip;
-  fPadx   = padx;
-  fPadz   = padz;  
-  fNDigits = 1;
   fTdc = new TArrayF(fNDigits);
   (*fTdc)[0] = tdc;   
   fAdc = new TArrayF(fNDigits);

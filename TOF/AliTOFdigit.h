@@ -24,7 +24,7 @@ class AliTOFdigit : public AliDigit {
 friend ostream& operator << ( ostream& , const AliTOFdigit&) ;
 
  public:
-  AliTOFdigit(){}
+ AliTOFdigit();
   AliTOFdigit(Int_t* tracks, Int_t* vol, Float_t* digit);
 // new ctor for sdigits
   AliTOFdigit(Int_t sector, Int_t plate, Int_t strip, Int_t padx, Int_t padz, Float_t tdc, Float_t adc);
@@ -54,7 +54,7 @@ friend ostream& operator << ( ostream& , const AliTOFdigit&) ;
   //overloading of ==, + operators (summable digits)
   
   Bool_t operator==(const AliTOFdigit& digit) const;
-  AliTOFdigit& operator+(AliTOFdigit const &digit) ;  
+  AliTOFdigit operator+(const AliTOFdigit &digit) ;  
 
 
 protected:

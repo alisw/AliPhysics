@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2006/07/12 16:03:44  arcelli
+updates to match the new numbering of the TOF/TRD mother volumes in FRAME (ALICE convention)
+
 Revision 1.10  2006/05/10 18:40:17  hristov
 Larger strings for the names
 
@@ -100,7 +103,14 @@ extern AliRun *gAlice;
 ClassImp(AliTOFv5T0)
 
 //_____________________________________________________________________________
-AliTOFv5T0::AliTOFv5T0()
+  AliTOFv5T0::AliTOFv5T0():
+  fIdFTOA(-1),
+  fIdFTOB(-1),
+  fIdFTOC(-1),
+  fIdFLTA(-1),
+  fIdFLTB(-1),
+  fIdFLTC(-1),
+  fTOFHoles(kFALSE)
 {
   //
   // Default constructor
@@ -108,8 +118,15 @@ AliTOFv5T0::AliTOFv5T0()
 }
  
 //_____________________________________________________________________________
-AliTOFv5T0::AliTOFv5T0(const char *name, const char *title)
-        : AliTOF(name,title,"tzero")
+AliTOFv5T0::AliTOFv5T0(const char *name, const char *title):
+  AliTOF(name,title,"tzero"),
+  fIdFTOA(-1),
+  fIdFTOB(-1),
+  fIdFTOC(-1),
+  fIdFLTA(-1),
+  fIdFLTB(-1),
+  fIdFLTC(-1),
+  fTOFHoles(kFALSE)
 {
   //
   // Standard constructor

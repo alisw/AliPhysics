@@ -69,18 +69,20 @@ ClassImp(AliTOFTrigger)
   CreateInputs();
 }
 //----------------------------------------------------------------------
-AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow) : AliTriggerDetector() 
+AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, Int_t UPTh, Float_t deltaminpsi, Float_t deltamaxpsi, Float_t deltaminro, Float_t deltamaxro, Int_t stripWindow) : 
+  AliTriggerDetector(),   
+  fHighMultTh(HighMultTh),
+  fppMBTh(ppMBTh),
+  fMultiMuonTh(MultiMuonTh),
+  fUPTh(UPTh),
+  fdeltaminpsi(deltaminpsi),
+  fdeltamaxpsi(deltamaxpsi),
+  fdeltaminro(deltaminro),
+  fdeltamaxro(deltamaxro),
+  fstripWindow(stripWindow)
+
 {
   //ctor with thresholds for triggers
-  fHighMultTh=HighMultTh;
-  fppMBTh=ppMBTh;
-  fMultiMuonTh=MultiMuonTh;
-  fUPTh=UPTh;
-  fdeltaminpsi = deltaminpsi;
-  fdeltamaxpsi = deltamaxpsi;
-  fdeltaminro = deltaminro;
-  fdeltamaxro = deltamaxro;
-  fstripWindow = stripWindow;
   for (Int_t i=0;i<kNLTM;i++){
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=kFALSE;
@@ -98,7 +100,17 @@ AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, 
 
 //____________________________________________________________________________ 
 
-AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):AliTriggerDetector()
+AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
+  AliTriggerDetector(),
+  fHighMultTh(0),
+  fppMBTh(0),
+  fMultiMuonTh(0),
+  fUPTh(0),
+  fdeltaminpsi(0),
+  fdeltamaxpsi(0),
+  fdeltaminro(0),
+  fdeltamaxro(0),
+  fstripWindow(0)
 {
   //copy ctor
   fHighMultTh=tr.fHighMultTh;

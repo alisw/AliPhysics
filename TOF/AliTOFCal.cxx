@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/04/20 22:30:49  hristov
+Coding conventions (Annalisa)
+
 Revision 1.5  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -54,25 +57,38 @@ ClassImp(AliTOFCal)
 
 //________________________________________________________________
 
-AliTOFCal::AliTOFCal():TObject(){
+AliTOFCal::AliTOFCal():
+  TObject(),
+  fNSector(0),
+  fNPlate(0),
+  fNStripA(0),
+  fNStripB(0),
+  fNStripC(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fnpad(0),
+  fGeom(0x0),
+  fPads(0x0)
+{
   //main ctor
-  fGeom = 0x0;
-  fNSector = 0;
-  fNPlate  = 0;
-  fNStripA = 0;
-  fNStripB = 0;
-  fNStripC = 0;
-  fNpadZ = 0;
-  fNpadX = 0;
-  fnpad = 0;
-  fPads = 0x0;
   gROOT->GetListOfBrowsables()->Add(this);
  }
 //________________________________________________________________
 
-AliTOFCal::AliTOFCal(AliTOFGeometry *geom):TObject(){
+AliTOFCal::AliTOFCal(AliTOFGeometry *geom):
+  TObject(),
+  fNSector(0),
+  fNPlate(0),
+  fNStripA(0),
+  fNStripB(0),
+  fNStripC(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fnpad(0),
+  fGeom(geom),
+  fPads(0x0)
+{
   //ctor with geom
-  fGeom = geom;
   fNSector = fGeom->NSectors();
   fNPlate  = fGeom->NPlates();
   fNStripA = fGeom->NStripA();
@@ -81,14 +97,23 @@ AliTOFCal::AliTOFCal(AliTOFGeometry *geom):TObject(){
   fNpadZ = fGeom->NpadZ();
   fNpadX = fGeom->NpadX();
   fnpad = fNSector*(2*(fNStripC+fNStripB)+fNStripA)*fNpadZ*fNpadX;
-  fPads = 0x0;
   gROOT->GetListOfBrowsables()->Add(this);
 }
 //________________________________________________________________
 
 AliTOFCal::AliTOFCal(const AliTOFCal& cal):
-  TObject(cal)
-  {
+  TObject(cal),
+  fNSector(0),
+  fNPlate(0),
+  fNStripA(0),
+  fNStripB(0),
+  fNStripC(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fnpad(0),
+  fGeom(0x0),
+  fPads(0x0)  
+{
     //copy ctor 
     fNSector = cal.fNSector;
     fNPlate = cal.fNPlate;

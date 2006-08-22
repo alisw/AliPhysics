@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2006/08/10 14:46:54  decaro
+TOF raw data format: updated version
+
 Revision 1.6.1  2006/06/28 A. De Caro, R. Preghenella:
         Update TOF raw data format
         according to the final version
@@ -355,13 +358,42 @@ ClassImp(AliTOFRawStream)
 
 
 //_____________________________________________________________________________
-AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader)
+AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
+  fRawReader(0x0),
+  fDDL(-1),
+  fTRM(-1),
+  fTDC(-1),
+  fTRMchain(-1),
+  fTDCchannel(-1),
+  fTof(-1),
+  fToT(-1),
+  fErrorFlag(-1),
+
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadX(-1),
+  fPadZ(-1),
+  fTOFGeometry(new AliTOFGeometryV5()),
+  fWordType(-1),
+  fSlotID(-1),
+  fACQ(-1),
+  fPSbit(-1),
+  fTime(-1),
+  fTDCerrorFlag(-1),
+  fInsideDRM(kFALSE),
+  fInsideTRM(kFALSE),
+  fInsideLTM(kFALSE),
+  fInsideTRMchain0(kFALSE),
+  fInsideTRMchain1(kFALSE),
+  fLeadingOrphane(kFALSE)
 {
   //
   // create an object to read TOF raw digits
   //
 
   fRawReader = rawReader;
+  /*
   fDDL = -1;
   fTRM = -1;
   fTDC = -1;
@@ -376,11 +408,10 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader)
   fStrip = -1;
   fPadX = -1;
   fPadZ = -1;
-
   fTOFGeometry = new AliTOFGeometryV5();
-
+  */
   fRawReader->Select("TOF");
-
+  /*
   fWordType = -1;
   fSlotID = -1;
   fACQ = -1;
@@ -393,16 +424,44 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader)
   fInsideTRMchain0 = kFALSE;
   fInsideTRMchain1 = kFALSE;
   fLeadingOrphane = kFALSE;
-
+  */
 }
 
 //_____________________________________________________________________________
-AliTOFRawStream::AliTOFRawStream()
+AliTOFRawStream::AliTOFRawStream():
+  fRawReader(0x0),
+  fDDL(-1),
+  fTRM(-1),
+  fTDC(-1),
+  fTRMchain(-1),
+  fTDCchannel(-1),
+  fTof(-1),
+  fToT(-1),
+  fErrorFlag(-1),
+
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadX(-1),
+  fPadZ(-1),
+  fTOFGeometry(new AliTOFGeometryV5()),
+  fWordType(-1),
+  fSlotID(-1),
+  fACQ(-1),
+  fPSbit(-1),
+  fTime(-1),
+  fTDCerrorFlag(-1),
+  fInsideDRM(kFALSE),
+  fInsideTRM(kFALSE),
+  fInsideLTM(kFALSE),
+  fInsideTRMchain0(kFALSE),
+  fInsideTRMchain1(kFALSE),
+  fLeadingOrphane(kFALSE)
 {
   //
   // default ctr
   //
-
+  /*
   fRawReader = 0x0;
   fDDL = -1;
   fTRM = -1;
@@ -418,9 +477,7 @@ AliTOFRawStream::AliTOFRawStream()
   fStrip = -1;
   fPadX = -1;
   fPadZ = -1;
-
   fTOFGeometry = new AliTOFGeometryV5();
-
   fWordType = -1;
   fSlotID = -1;
   fACQ = -1;
@@ -433,12 +490,40 @@ AliTOFRawStream::AliTOFRawStream()
   fInsideTRMchain0 = kFALSE;
   fInsideTRMchain1 = kFALSE;
   fLeadingOrphane = kFALSE;
-
+  */
 }
 
 //_____________________________________________________________________________
 AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
-  TObject(stream)
+  TObject(stream),
+  fRawReader(0x0),
+  fDDL(-1),
+  fTRM(-1),
+  fTDC(-1),
+  fTRMchain(-1),
+  fTDCchannel(-1),
+  fTof(-1),
+  fToT(-1),
+  fErrorFlag(-1),
+
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadX(-1),
+  fPadZ(-1),
+  fTOFGeometry(new AliTOFGeometryV5()),
+  fWordType(-1),
+  fSlotID(-1),
+  fACQ(-1),
+  fPSbit(-1),
+  fTime(-1),
+  fTDCerrorFlag(-1),
+  fInsideDRM(kFALSE),
+  fInsideTRM(kFALSE),
+  fInsideLTM(kFALSE),
+  fInsideTRMchain0(kFALSE),
+  fInsideTRMchain1(kFALSE),
+  fLeadingOrphane(kFALSE)
 {
   //
   // copy constructor

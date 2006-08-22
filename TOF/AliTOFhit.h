@@ -20,7 +20,7 @@
 class AliTOFhit : public AliHit {
   
 public:
-  AliTOFhit() {}
+  AliTOFhit();
   AliTOFhit(Int_t shunt, Int_t track, Int_t* vol, 
             Float_t *hits);
   AliTOFhit(const AliTOFhit & hit) ;

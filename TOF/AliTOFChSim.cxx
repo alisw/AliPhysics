@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/13 17:22:26  arcelli
+just Fixing Log info
+
 Revision 1.1  2006/02/13 16:10:48  arcelli
 Add classes for TOF Calibration (C.Zampolli)
 
@@ -38,7 +41,9 @@ fSpectrum(-1)
 {}
 //________________________________________________________________
 AliTOFChSim::AliTOFChSim(const AliTOFChSim& channel) :
-  TObject(channel)
+  TObject(channel),
+  fSlewedStatus(kFALSE),
+  fSpectrum(-1)
 {
 // copy constructor
   fSlewedStatus = channel.fSlewedStatus;

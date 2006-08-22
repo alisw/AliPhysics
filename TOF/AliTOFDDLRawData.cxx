@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.11  2006/08/10 14:46:54  decaro
+TOF raw data format: updated version
+
 Revision 1.10.1  2006/06/28 A.De Caro
         Update TOF raw data format
                according to the final version
@@ -65,31 +68,40 @@ extern TRandom *gRandom;
 ClassImp(AliTOFDDLRawData)
 
 //---------------------------------------------------------------------------
-AliTOFDDLRawData::AliTOFDDLRawData()
+AliTOFDDLRawData::AliTOFDDLRawData():
+  fVerbose(0),
+  fIndex(-1),
+  fTOFgeometry(0),
+  fTOFdigitMap(new AliTOFDigitMap()),
+  fTOFdigitArray(0x0),
+  fTOFrawStream(new AliTOFRawStream())
 {
   //Default constructor
-  fIndex=-1;
-  fVerbose=0;
-  fTOFgeometry = 0;
-  fTOFdigitMap = new AliTOFDigitMap();
 }
 
 //----------------------------------------------------------------------------
-AliTOFDDLRawData::AliTOFDDLRawData(AliTOFGeometry *tofGeom)
+AliTOFDDLRawData::AliTOFDDLRawData(AliTOFGeometry *tofGeom):
+  fVerbose(0),
+  fIndex(-1),
+  fTOFgeometry(tofGeom),
+  fTOFdigitMap(new AliTOFDigitMap()),
+  fTOFdigitArray(0x0),
+  fTOFrawStream(new AliTOFRawStream())
 {
   //Constructor
-  fIndex=-1;
-  fVerbose=0;
-  fTOFgeometry = tofGeom;
-  fTOFdigitMap = new AliTOFDigitMap();
-  fTOFdigitArray = 0x0;
-  fTOFrawStream = new AliTOFRawStream();
 
 }
 
 //----------------------------------------------------------------------------
 AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
-    TObject(source) {
+  TObject(source),
+  fVerbose(0),
+  fIndex(-1),
+  fTOFgeometry(0),
+  fTOFdigitMap(new AliTOFDigitMap()),
+  fTOFdigitArray(0x0),
+  fTOFrawStream(new AliTOFRawStream())
+ {
   //Copy Constructor
   this->fIndex=source.fIndex;
   this->fVerbose=source.fVerbose;

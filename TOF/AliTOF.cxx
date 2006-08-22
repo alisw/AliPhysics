@@ -74,27 +74,38 @@ extern AliRun *gAlice;
 ClassImp(AliTOF)
  
 //_____________________________________________________________________________
-AliTOF::AliTOF()
+AliTOF::AliTOF():
+  fFGeom(0x0),
+  fDTask(0x0),
+  fReTask(0x0),
+  fSDigits(0x0),
+  fNSDigits(0),
+  fReconParticles(0x0),
+  fIdSens(-1),
+  fTZero(kFALSE),
+  fTOFGeometry(0x0)
 {
   //
   // Default constructor
   //
-  fFGeom  = 0x0;
-  fDTask  = 0x0;
-  fReTask = 0x0;
+  fDigits = 0;
   fIshunt   = 0;
-  fSDigits  = 0 ;
-  fNSDigits = 0;
-  fDigits   = 0 ;
-  fReconParticles = 0x0;
-  fName="TOF";
-  fTZero  = kFALSE;
-  fTOFGeometry = 0;
+  fName = "TOF";
 }
  
 //_____________________________________________________________________________
 AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
-       : AliDetector(name,title)
+       : 
+  AliDetector(name,title),
+  fFGeom(0x0),
+  fDTask(0x0),
+  fReTask(0x0),
+  fSDigits(0x0),
+  fNSDigits(0),
+  fReconParticles(0x0),
+  fIdSens(-1),
+  fTZero(kFALSE),
+  fTOFGeometry(0x0)
 {
   //
   // AliTOF standard constructor
@@ -104,16 +115,13 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
 
   // Initialization of hits, sdigits and digits array
   // added option for time zero analysis
-  fFGeom  = 0x0; //skowron
-  fDTask  = 0x0;
-  fReTask = 0x0;
-  fReconParticles= 0x0;
+  //skowron
   fTOFGeometry = new AliTOFGeometry();
 
   if (strstr(option,"tzero")){
     fHits   = new TClonesArray("AliTOFhitT0",  1000);
     fTZero = kTRUE;
-    //AliWarning("tzero option requires AliTOFv4T0/AliTOFv5T0 as TOF version (check Your Config.C)");
+    //    AliWarning("tzero option requires AliTOFv4T0/AliTOFv5T0 as TOF version (check Your Config.C)");
   }else{
     fHits   = new TClonesArray("AliTOFhit",  1000);
     fTZero = kFALSE;
@@ -131,12 +139,6 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   fIshunt  = 0;
   fSDigits = new TClonesArray("AliTOFSDigit", 1000);
   fDigits  = new TClonesArray("AliTOFdigit",  1000);
-  fNSDigits = 0;
-
-  fFGeom = 0x0;
-  fDTask = 0x0;
-  fReTask = 0x0;
-  fReconParticles = 0x0;
 
   //
   // Digitization parameters
@@ -177,7 +179,16 @@ void AliTOF::GetTOFSectors(Int_t *sectors) const
 }
 //_____________________________________________________________________________
 AliTOF::AliTOF(const AliTOF &source)
-  :AliDetector()
+  :AliDetector(),
+  fFGeom(0x0),
+  fDTask(0x0),
+  fReTask(0x0),
+  fSDigits(0x0),
+  fNSDigits(0),
+  fReconParticles(0x0),
+  fIdSens(-1),
+  fTZero(kFALSE),
+  fTOFGeometry(0x0)
 {
   // copy constructor
 

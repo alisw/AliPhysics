@@ -108,25 +108,38 @@ extern AliRun *gAlice;
 ClassImp(AliTOFT0)
 
 //____________________________________________________________________________ 
-  AliTOFT0::AliTOFT0():TTask("AliTOFT0","") 
+AliTOFT0::AliTOFT0():
+  TTask("AliTOFT0",""),
+  fNevents(0),
+  fTimeResolution(0),
+  fLowerMomBound(0),
+  fUpperMomBound(0),
+  fT0File(""),
+  fHeadersFile("")
 {
   // ctor
-  fNevents = 0 ;
 }
            
 //____________________________________________________________________________ 
-  AliTOFT0::AliTOFT0(char* headerFile, Int_t nEvents):TTask("AliTOFT0","") 
+AliTOFT0::AliTOFT0(char* headerFile, Int_t nEvents):
+  TTask("AliTOFT0",""), 
+  fNevents(nEvents),
+  fTimeResolution(1.2e-10),
+  fLowerMomBound(1.5),
+  fUpperMomBound(2.),
+  fT0File(""),
+  fHeadersFile(headerFile)
 {
   //
   //
   //
 
-  fNevents=nEvents ; // Number of events for which calculate the T0, 
+  //fNevents=nEvents ; // Number of events for which calculate the T0, 
                      // default 0: it means all evens in current file
-  fLowerMomBound=1.5; // [GeV/c] default value
-  fUpperMomBound=2. ; // [GeV/c] default value
-  fTimeResolution   = 1.2e-10; // 120 ps by default	
-  fHeadersFile = headerFile ;
+  //fLowerMomBound=1.5; // [GeV/c] default value
+  //fUpperMomBound=2. ; // [GeV/c] default value
+  //fTimeResolution   = 1.2e-10; // 120 ps by default	
+  //fHeadersFile = headerFile ;
 
   TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data() ) ;
 
@@ -145,7 +158,14 @@ ClassImp(AliTOFT0)
 }
 
 //____________________________________________________________________________ 
-  AliTOFT0::AliTOFT0(const AliTOFT0 & tzero):TTask("AliTOFT0","")
+AliTOFT0::AliTOFT0(const AliTOFT0 & tzero):
+  TTask("AliTOFT0",""),
+  fNevents(0),
+  fTimeResolution(0),
+  fLowerMomBound(0),
+  fUpperMomBound(0),
+  fT0File(""),
+  fHeadersFile("")
 {
   // copy ctr
 

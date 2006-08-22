@@ -42,14 +42,19 @@
 
 ClassImp(AliTOFDigitMap)
 
-AliTOFDigitMap::AliTOFDigitMap()
+AliTOFDigitMap::AliTOFDigitMap():
+  fNSector(-1),
+  fNplate(-1),
+  fNstrip(-1),
+  fNpx(-1),
+  fNpz(-1),
+  fMaxIndex(-1),
+  fDigitMap(0x0),
+  fTOFGeometry(new AliTOFGeometry())
 {
 //
 // Default ctor
 //
-  fDigitMap = 0;
-
-  fTOFGeometry = new AliTOFGeometry();
 
   fNSector = AliTOFGeometry::NSectors();
   fNplate = AliTOFGeometry::NPlates();
@@ -64,8 +69,16 @@ AliTOFDigitMap::AliTOFDigitMap()
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & /*digitMap*/)
-:TObject()
+AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & /*digitMap*/):
+  TObject(),
+  fNSector(-1),
+  fNplate(-1),
+  fNstrip(-1),
+  fNpx(-1),
+  fNpz(-1),
+  fMaxIndex(-1),
+  fDigitMap(0x0),
+  fTOFGeometry(new AliTOFGeometry())
 {
 //
 // Dummy copy constructor

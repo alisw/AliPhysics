@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/02/13 17:22:26  arcelli
+just Fixing Log info
+
 Revision 1.1  2006/02/13 16:10:48  arcelli
 Add classes for TOF Calibration (C.Zampolli)
 
@@ -49,7 +52,9 @@ fDelay(delay)
 
 //________________________________________________________________
 AliTOFChannel::AliTOFChannel(const AliTOFChannel& channel) :
-  TObject(channel)
+  TObject(channel),
+  fStatus(kFALSE),
+  fDelay(0)
 {
 // copy constructor
 

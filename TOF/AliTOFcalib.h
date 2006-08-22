@@ -58,13 +58,13 @@ public:
   class AliTOFArray : public TObject {
   public:
     AliTOFArray(): TObject(),fSize(0),fArray(0x0){}
-    AliTOFArray(Int_t size) :
+    AliTOFArray(Int_t size):
       TObject(),
       fSize(size),
       fArray(new TArrayF*[size]) {
     } 
     AliTOFArray(const AliTOFArray & source):
-      TObject(){ // copy constructor
+      TObject(),fSize(0),fArray(0x0){ // copy constructor
       this->fSize= source.fSize;
       this->fArray= source.fArray;
     };

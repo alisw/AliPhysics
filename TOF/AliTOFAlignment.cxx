@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2006/08/10 14:46:54  decaro
+TOF raw data format: updated version
+
 Revision 1.8  2006/05/04 19:41:42  hristov
 Possibility for partial TOF geometry (S.Arcelli)
 
@@ -66,14 +69,20 @@ author: Silvia Arcelli, arcelli@bo.infn.it
 ClassImp(AliTOFAlignment)
 
 //_____________________________________________________________________________
-AliTOFAlignment::AliTOFAlignment():TTask("AliTOFAlignment","") { 
+AliTOFAlignment::AliTOFAlignment():
+  TTask("AliTOFAlignment",""),
+  fNTOFAlignObj(0),
+  fTOFAlignObjArray(0x0)
+ { 
   //AliTOFalignment main Ctor
 
-  fNTOFAlignObj=0;
-  fTOFAlignObjArray=0x0;
 }
 //_____________________________________________________________________________
-AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):TTask("AliTOFAlignment",""){ 
+AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):
+  TTask("AliTOFAlignment",""),
+  fNTOFAlignObj(0),
+  fTOFAlignObjArray(0x0)
+{ 
   //AliTOFAlignment copy Ctor
 
   fNTOFAlignObj=t.fNTOFAlignObj;

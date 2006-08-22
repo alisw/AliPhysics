@@ -18,7 +18,7 @@
 
 class AliTOFhitT0 : public AliHit {  
 public:
-  AliTOFhitT0() {}
+  AliTOFhitT0();
   AliTOFhitT0(Int_t shunt, Int_t track, Int_t* vol, 
             Float_t *hits);
   AliTOFhitT0(const AliTOFhitT0 & hit) ;

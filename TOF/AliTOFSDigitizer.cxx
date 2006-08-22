@@ -58,26 +58,93 @@ extern AliRun *gAlice;
 ClassImp(AliTOFSDigitizer)
 
 //____________________________________________________________________________ 
-  AliTOFSDigitizer::AliTOFSDigitizer():TTask("TOFSDigitizer","") 
+AliTOFSDigitizer::AliTOFSDigitizer():
+  TTask("TOFSDigitizer",""),
+  fEvent1(-1),
+  fEvent2(-1),
+  ftail(0x0),
+  fHeadersFile(""),
+  fRunLoader(0x0),
+  fTOFLoader(0x0),
+  fTOFGeometry(new AliTOFGeometry()),
+  fSelectedSector(-1), 
+  fSelectedPlate(-1),
+  fTimeResolution(0),
+  fpadefficiency(0),
+  fEdgeEffect(-1),
+  fEdgeTails(-1),
+  fHparameter(0),
+  fH2parameter(0),
+  fKparameter(0),
+  fK2parameter(0),
+  fEffCenter(0),
+  fEffBoundary(0),
+  fEff2Boundary(0),
+  fEff3Boundary(0),
+  fAddTRes(0),
+  fResCenter(0),
+  fResBoundary(0),
+  fResSlope(0),
+  fTimeWalkCenter(0),
+  fTimeWalkBoundary(0),
+  fTimeWalkSlope(0),
+  fTimeDelayFlag(-1),
+  fPulseHeightSlope(0),
+  fTimeDelaySlope(0),
+  fMinimumCharge(0),
+  fChargeSmearing(0),
+  fLogChargeSmearing(0),
+  fTimeSmearing(0),
+  fAverageTimeFlag(-1),
+  fAdcBin(0),
+  fAdcMean(0),
+  fAdcRms(0)
 {
   // ctor
-
-  fRunLoader      = 0;
-  fTOFLoader      = 0;
-
-  fEvent1         = 0;
-  fEvent2         = 0;
-  ftail           = 0;
-  fSelectedSector = -1;
-  fSelectedPlate  = -1;
-
-  fTOFGeometry = new AliTOFGeometry();
-
 }
 
 //------------------------------------------------------------------------
-AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source)
-  :TTask(source)
+AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source):
+  TTask(source),
+  fEvent1(-1),
+  fEvent2(-1),
+  ftail(0x0),
+  fHeadersFile(""),
+  fRunLoader(0x0),
+  fTOFLoader(0x0),
+  fTOFGeometry(0x0),
+  fSelectedSector(-1), 
+  fSelectedPlate(-1),
+  fTimeResolution(0),
+  fpadefficiency(0),
+  fEdgeEffect(-1),
+  fEdgeTails(-1),
+  fHparameter(0),
+  fH2parameter(0),
+  fKparameter(0),
+  fK2parameter(0),
+  fEffCenter(0),
+  fEffBoundary(0),
+  fEff2Boundary(0),
+  fEff3Boundary(0),
+  fAddTRes(0),
+  fResCenter(0),
+  fResBoundary(0),
+  fResSlope(0),
+  fTimeWalkCenter(0),
+  fTimeWalkBoundary(0),
+  fTimeWalkSlope(0),
+  fTimeDelayFlag(-1),
+  fPulseHeightSlope(0),
+  fTimeDelaySlope(0),
+  fMinimumCharge(0),
+  fChargeSmearing(0),
+  fLogChargeSmearing(0),
+  fTimeSmearing(0),
+  fAverageTimeFlag(-1),
+  fAdcBin(0),
+  fAdcMean(0),
+  fAdcRms(0)
 {
   // copy constructor
   this->fTOFGeometry=source.fTOFGeometry;
@@ -94,14 +161,50 @@ AliTOFSDigitizer& AliTOFSDigitizer::operator=(const AliTOFSDigitizer &source)
 }
 
 //____________________________________________________________________________ 
-AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):TTask("TOFSDigitizer","")
+AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):
+  TTask("TOFSDigitizer",""),
+  fEvent1(-1),
+  fEvent2(-1),
+  ftail(0x0),
+  fHeadersFile(HeaderFile), // input filename (with hits)
+  fRunLoader(0x0),
+  fTOFLoader(0x0),
+  fTOFGeometry(0x0),
+  fSelectedSector(-1), // by default we sdigitize all sectors
+  fSelectedPlate(-1),  // by default we sdigitize all plates in all sectors
+  fTimeResolution(0),
+  fpadefficiency(0),
+  fEdgeEffect(-1),
+  fEdgeTails(-1),
+  fHparameter(0),
+  fH2parameter(0),
+  fKparameter(0),
+  fK2parameter(0),
+  fEffCenter(0),
+  fEffBoundary(0),
+  fEff2Boundary(0),
+  fEff3Boundary(0),
+  fAddTRes(0),
+  fResCenter(0),
+  fResBoundary(0),
+  fResSlope(0),
+  fTimeWalkCenter(0),
+  fTimeWalkBoundary(0),
+  fTimeWalkSlope(0),
+  fTimeDelayFlag(-1),
+  fPulseHeightSlope(0),
+  fTimeDelaySlope(0),
+  fMinimumCharge(0),
+  fChargeSmearing(0),
+  fLogChargeSmearing(0),
+  fTimeSmearing(0),
+  fAverageTimeFlag(-1),
+  fAdcBin(0),
+  fAdcMean(0),
+  fAdcRms(0)
 {
   //ctor, reading from input file 
-  ftail    = 0;
-  fSelectedSector=-1; // by default we sdigitize all sectors
-  fSelectedPlate =-1; // by default we sdigitize all plates in all sectors
   
-  fHeadersFile = HeaderFile ; // input filename (with hits)
   TFile * file = (TFile*) gROOT->GetFile(fHeadersFile.Data());
   
   //File was not opened yet open file and get alirun object

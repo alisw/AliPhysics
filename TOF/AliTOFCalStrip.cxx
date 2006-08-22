@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/04/20 22:30:49  hristov
+Coding conventions (Annalisa)
+
 Revision 1.5  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -52,39 +55,45 @@ ClassImp(AliTOFCalStrip)
 
 //________________________________________________________________
 
-AliTOFCalStrip::AliTOFCalStrip(){
+AliTOFCalStrip::AliTOFCalStrip():
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0), 
+  fCh(0x0)
+{
   //main ctor
-  fCh = 0;
-  fGeom= 0x0; 
-  fNpadZ = 0;
-  fNpadX = 0;
 }
 //________________________________________________________________
 
 AliTOFCalStrip::AliTOFCalStrip(AliTOFChannel *ch):
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0), 
   fCh(ch)
 {
   // ctor with channel
-  fGeom= 0x0; 
-  fNpadZ = 0;
-  fNpadX = 0;
 }
 //________________________________________________________________
 
-AliTOFCalStrip::AliTOFCalStrip(AliTOFGeometry *geom){
+AliTOFCalStrip::AliTOFCalStrip(AliTOFGeometry *geom):
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(geom), 
+  fCh(0x0)
+{
   //ctor with geom
-  fCh = 0;
-  fGeom = geom;
   fNpadZ = fGeom->NpadZ();
   fNpadX = fGeom->NpadX();
 }
 //________________________________________________________________
 
 AliTOFCalStrip::AliTOFCalStrip(AliTOFGeometry *geom,AliTOFChannel *ch):
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(geom), 
   fCh(ch)
 {
   //ctor with channel and geom
-  fGeom = geom;
   fNpadZ = fGeom->NpadZ();
   fNpadX = fGeom->NpadX();
 }
@@ -99,7 +108,11 @@ AliTOFCalStrip::~AliTOFCalStrip()
 //________________________________________________________________
 
 AliTOFCalStrip::AliTOFCalStrip(const AliTOFCalStrip& strip):
-  TObject(strip)
+  TObject(strip),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0), 
+  fCh(0x0)
   {
     //copy ctor
     fCh = strip.fCh;

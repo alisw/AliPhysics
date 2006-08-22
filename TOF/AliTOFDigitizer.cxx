@@ -57,29 +57,34 @@ extern AliRun *gAlice;
 ClassImp(AliTOFDigitizer)
 
 //___________________________________________
-  AliTOFDigitizer::AliTOFDigitizer()  :AliDigitizer()
+  AliTOFDigitizer::AliTOFDigitizer()  :
+    AliDigitizer(),
+    fGeom(0x0),
+    fDigits(0x0),
+    fSDigitsArray(0x0),
+    fhitMap(0x0)
 {
   // Default ctor - don't use it
-  fDigits=0;
-  fSDigitsArray=0;
-  fhitMap=0;
-  fGeom=0x0; 
 }
 
 //___________________________________________
-AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager) 
-    :AliDigitizer(manager) 
+AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager): 
+  AliDigitizer(manager), 
+  fGeom(0x0),
+  fDigits(0x0),
+  fSDigitsArray(0x0),
+  fhitMap(0x0)
 {
   //ctor with RunDigitizer
-  fDigits=0;
-  fSDigitsArray=0;
-  fhitMap=0;
-  fGeom=0x0; 
 }
 
 //------------------------------------------------------------------------
-AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source)
-  :AliDigitizer(source)
+AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
+  AliDigitizer(source),
+  fDigits(0),
+  fSDigitsArray(0),
+  fhitMap(0),
+  fGeom(0x0) 
 {
   // copy constructor
   this->fDigits=source.fDigits;

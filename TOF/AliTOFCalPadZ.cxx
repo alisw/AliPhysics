@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/04/20 22:30:49  hristov
+Coding conventions (Annalisa)
+
 Revision 1.5  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -51,28 +54,40 @@ ClassImp(AliTOFCalPadZ)
 
 //________________________________________________________________
 
-AliTOFCalPadZ::AliTOFCalPadZ(){
-  fCh = 0;
-  fNpadX=0;
+  AliTOFCalPadZ::AliTOFCalPadZ():
+  fNpadX(0),
+  fGeom(0x0),
+  fCh(0)
+{
+  //fCh = 0;
+  //fNpadX=0;
 }
 //________________________________________________________________
 
 AliTOFCalPadZ::AliTOFCalPadZ(AliTOFChannel *ch):
+  fNpadX(0),
+  fGeom(0x0),
   fCh(ch)
 {  
-  fNpadX = 0;
+  //fNpadX = 0;
 }
 //________________________________________________________________
 
-AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom){
+AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom):
+  fNpadX(0),
+  fGeom(geom),
+  fCh(0)
+{
   //ctor with TOF geometry
-  fCh = 0;
-  fGeom = geom;
+  //fCh = 0;
+  //fGeom = geom;
   fNpadX = fGeom->NpadX();
 }
 //________________________________________________________________
 
 AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom,AliTOFChannel *ch):
+  fNpadX(0),
+  fGeom(geom),
   fCh(ch)
 {  
   //ctor with TOF geometry and cal channel
@@ -81,8 +96,11 @@ AliTOFCalPadZ::AliTOFCalPadZ(AliTOFGeometry *geom,AliTOFChannel *ch):
 }
 
 //________________________________________________________________
-AliTOFCalPadZ::AliTOFCalPadZ(const AliTOFCalPadZ &source)
-  :TObject()
+AliTOFCalPadZ::AliTOFCalPadZ(const AliTOFCalPadZ &source):
+  TObject(),
+  fNpadX(0),
+  fGeom(0x0),
+  fCh(0)
 {
   // copy constructor
 

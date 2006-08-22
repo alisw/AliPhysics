@@ -61,7 +61,14 @@ extern AliRun *gAlice;
 ClassImp(AliTOFv4T0)
 
 //_____________________________________________________________________________
-AliTOFv4T0::AliTOFv4T0()
+  AliTOFv4T0::AliTOFv4T0():
+  fIdFTOA(-1),
+  fIdFTOB(-1),
+  fIdFTOC(-1),
+  fIdFLTA(-1),
+  fIdFLTB(-1),
+  fIdFLTC(-1),
+  fTOFHoles(kFALSE)
 {
   //
   // Default constructor
@@ -69,8 +76,15 @@ AliTOFv4T0::AliTOFv4T0()
 }
  
 //_____________________________________________________________________________
-AliTOFv4T0::AliTOFv4T0(const char *name, const char *title)
-        : AliTOF(name,title,"tzero")
+AliTOFv4T0::AliTOFv4T0(const char *name, const char *title):
+  AliTOF(name,title,"tzero"),
+  fIdFTOA(-1),
+  fIdFTOB(-1),
+  fIdFTOC(-1),
+  fIdFLTA(-1),
+  fIdFLTB(-1),
+  fIdFLTC(-1),
+  fTOFHoles(kFALSE)
 {
   //
   // Standard constructor

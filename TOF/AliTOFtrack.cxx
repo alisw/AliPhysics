@@ -28,14 +28,69 @@
 #include "AliESDtrack.h" 
 #include "AliLog.h" 
 
-#include "AliTOFGeometryV4.h"
+#include "AliTOFGeometryV5.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtrack.h" 
 
 ClassImp(AliTOFtrack)
 
 //_____________________________________________________________________________
-AliTOFtrack::AliTOFtrack(const AliTOFtrack& t) : AliKalmanTrack(t) {
+AliTOFtrack::AliTOFtrack() : 
+  AliKalmanTrack(),
+  fSeedInd(-1),
+  fSeedLab(-1),
+  fAlpha(0),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fE(0),
+  fT(0),
+  fC(0),
+  fCyy(0),
+  fCzy(0),
+  fCzz(0),
+  fCey(0),
+  fCez(0),
+  fCee(0),
+  fCty(0),
+  fCtz(0),
+  fCte(0),
+  fCtt(0),
+  fCcy(0),
+  fCcz(0),
+  fCce(0),
+  fCct(0),
+  fCcc(0),
+  fTOFgeometry(0x0)
+ {
+}//_____________________________________________________________________________
+AliTOFtrack::AliTOFtrack(const AliTOFtrack& t) : AliKalmanTrack(t),
+  fSeedInd(-1),
+  fSeedLab(-1),
+  fAlpha(0),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fE(0),
+  fT(0),
+  fC(0),
+  fCyy(0),
+  fCzy(0),
+  fCzz(0),
+  fCey(0),
+  fCez(0),
+  fCee(0),
+  fCty(0),
+  fCtz(0),
+  fCte(0),
+  fCtt(0),
+  fCcy(0),
+  fCcz(0),
+  fCce(0),
+  fCct(0),
+  fCcc(0),
+  fTOFgeometry(0x0)
+ {
   //
   // Copy constructor.
   //
@@ -56,18 +111,44 @@ AliTOFtrack::AliTOFtrack(const AliTOFtrack& t) : AliKalmanTrack(t) {
   fCty=t.fCty;  fCtz=t.fCtz;  fCte=t.fCte;  fCtt=t.fCtt;
   fCcy=t.fCcy;  fCcz=t.fCcz;  fCce=t.fCce;  fCct=t.fCct;  fCcc=t.fCcc;  
 
-  fTOFgeometry = new AliTOFGeometryV4();
+  fTOFgeometry = new AliTOFGeometryV5();
 
 }                                
 
 //_____________________________________________________________________________
-AliTOFtrack::AliTOFtrack(const AliESDtrack& t) 
-           :AliKalmanTrack() {
+AliTOFtrack::AliTOFtrack(const AliESDtrack& t):
+  AliKalmanTrack(),
+  fSeedInd(-1),
+  fSeedLab(-1),
+  fAlpha(0),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fE(0),
+  fT(0),
+  fC(0),
+  fCyy(0),
+  fCzy(0),
+  fCzz(0),
+  fCey(0),
+  fCez(0),
+  fCee(0),
+  fCty(0),
+  fCtz(0),
+  fCte(0),
+  fCtt(0),
+  fCcy(0),
+  fCcz(0),
+  fCce(0),
+  fCct(0),
+  fCcc(0),
+  fTOFgeometry(0x0)
+ {
   //
   // Constructor from AliESDtrack
   //
 
-  fTOFgeometry = new AliTOFGeometryV4();
+  fTOFgeometry = new AliTOFGeometryV5();
 
   SetSeedIndex(-1);
   SetLabel(t.GetLabel());

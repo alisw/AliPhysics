@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/04/20 22:30:49  hristov
+Coding conventions (Annalisa)
+
 Revision 1.5  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -52,40 +55,50 @@ ClassImp(AliTOFCalPlateB)
 
 //________________________________________________________________
 
-AliTOFCalPlateB::AliTOFCalPlateB(){
+AliTOFCalPlateB::AliTOFCalPlateB():
+  fNStripB(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0), 
+  fCh(0x0)
+{
   //main ctor
-  fCh = 0;
-  fGeom= 0x0; 
-  fNStripB = 0;
-  fNpadZ = 0;
-  fNpadX = 0;
 }
 //________________________________________________________________
 
-AliTOFCalPlateB::AliTOFCalPlateB(AliTOFChannel *ch) : fCh(ch)
+AliTOFCalPlateB::AliTOFCalPlateB(AliTOFChannel *ch) : 
+  fNStripB(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0), 
+  fCh(ch)
 {
   //ctor with channel
-  fGeom= 0x0; 
-  fNStripB = 0;
-  fNpadZ = 0;
-  fNpadX = 0;
 }
 //________________________________________________________________
 
-AliTOFCalPlateB::AliTOFCalPlateB(AliTOFGeometry *geom){
+AliTOFCalPlateB::AliTOFCalPlateB(AliTOFGeometry *geom):
+  fNStripB(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(geom), 
+  fCh(0x0)
+{
   //ctor with geom
-  fCh = 0;
-  fGeom = geom;  
   fNStripB = fGeom->NStripB();
   fNpadZ = fGeom->NpadZ();
   fNpadX = fGeom->NpadX();
 }
 //________________________________________________________________
 
-AliTOFCalPlateB::AliTOFCalPlateB(AliTOFGeometry *geom, AliTOFChannel *ch): fCh(ch)
+AliTOFCalPlateB::AliTOFCalPlateB(AliTOFGeometry *geom, AliTOFChannel *ch): 
+  fNStripB(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(geom), 
+  fCh(ch)
 {
   //ctor with channel and geom
-  fGeom = geom;  
   fNStripB = fGeom->NStripB();
   fNpadZ = fGeom->NpadZ();
   fNpadX = fGeom->NpadX();
@@ -102,7 +115,12 @@ AliTOFCalPlateB::~AliTOFCalPlateB()
 //________________________________________________________________
 
 AliTOFCalPlateB::AliTOFCalPlateB(const AliTOFCalPlateB& pl):
-  TObject(pl)
+  TObject(pl),
+  fNStripB(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0), 
+  fCh(0x0)
   {
   //copy ctor
     fCh = pl.fCh;

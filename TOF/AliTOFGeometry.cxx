@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2006/04/20 22:30:50  hristov
+Coding conventions (Annalisa)
+
 Revision 1.15  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -103,22 +106,21 @@ const Float_t AliTOFGeometry::fgkSigmaForTail2= 0.5;//Sig2 for simulation of TDC
 const Float_t AliTOFGeometry::fgkTdcBin = 24.4;     // time-window for the TDC bins [ps]
 
 //_____________________________________________________________________________
-AliTOFGeometry::AliTOFGeometry()
+AliTOFGeometry::AliTOFGeometry():
+  fNStripC(19),  // number of strips in C type module 
+  fZlenA(106.0),  // length (cm) of the A module
+  fZlenB(141.0),  // length (cm) of the B module
+  fZlenC(177.5),  // length (cm) of the C module
+  fMaxhZtof(371.5),  // Max half z-size of TOF (cm)
+  fRmin(370.), // Inner radius of the TOF (cm)
+  fRmax(399.), // Outer radius of the TOF (cm)
+  fxTOF(371.), // Inner radius of the TOF for Reconstruction (cm)
+  fHoles(0),   // Flag for Holes
+  fPhiSec(20.) // sector Phi width (deg)
 {
   //
   // AliTOFGeometry default constructor
   //
-
-  fNStripC     = 19;  // number of strips in C type module 
-  fZlenA    = 106.0;  // length (cm) of the A module
-  fZlenB    = 141.0;  // length (cm) of the B module
-  fZlenC    = 177.5;  // length (cm) of the C module
-  fMaxhZtof = 371.5;  // Max half z-size of TOF (cm)
-
-  fxTOF     = 371.; // Inner radius of the TOF for Reconstruction (cm)
-  fRmin     = 370.; // Inner radius of the TOF (cm)
-  fRmax     = 399.; // Outer radius of the TOF (cm)
-
   Init();
 
 }

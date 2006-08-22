@@ -58,8 +58,44 @@
 ClassImp(AliTOFhit)
 
 //____________________________________________________________________________
+  AliTOFhit::AliTOFhit():
+  AliHit(),
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadx(-1),
+  fPadz(-1),
+  fPx(0),
+  fPy(0),
+  fPz(0),
+  fPmom(0),
+  fTof(0),
+  fDx(0),
+  fDy(0),
+  fDz(0),
+  fIncA(0),
+  fEdep(0)
+{
+}
+
+//____________________________________________________________________________
 AliTOFhit::AliTOFhit(const AliTOFhit & hit)
-: AliHit(hit)
+  : AliHit(hit),
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadx(-1),
+  fPadz(-1),
+  fPx(0),
+  fPy(0),
+  fPz(0),
+  fPmom(0),
+  fTof(0),
+  fDx(0),
+  fDy(0),
+  fDz(0),
+  fIncA(0),
+  fEdep(0)
 {
    //
    // copy ctor for AliTOFhit object
@@ -89,7 +125,22 @@ AliTOFhit::AliTOFhit(const AliTOFhit & hit)
 //______________________________________________________________________________
 AliTOFhit::AliTOFhit(Int_t shunt, Int_t track, Int_t *vol,
                      Float_t *hits)
-:AliHit(shunt, track)
+  :AliHit(shunt, track),
+  fSector(-1),
+  fPlate(-1),
+  fStrip(-1),
+  fPadx(-1),
+  fPadz(-1),
+  fPx(0),
+  fPy(0),
+  fPz(0),
+  fPmom(0),
+  fTof(0),
+  fDx(0),
+  fDy(0),
+  fDz(0),
+  fIncA(0),
+  fEdep(0)
 {
 //
 // Constructor of hit object

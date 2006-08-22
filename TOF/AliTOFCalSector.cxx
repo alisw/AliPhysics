@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/04/20 22:30:49  hristov
+Coding conventions (Annalisa)
+
 Revision 1.5  2006/04/16 22:29:05  hristov
 Coding conventions (Annalisa)
 
@@ -57,40 +60,48 @@ ClassImp(AliTOFCalSector)
 
 //________________________________________________________________
 
-AliTOFCalSector::AliTOFCalSector(){
+AliTOFCalSector::AliTOFCalSector():
+  fNPlate(0),
+  fNStripA(0),
+  fNStripB(0),
+  fNStripC(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0),
+  fCh(0x0)
+{
   //main ctor
-  fCh = 0;
-  fGeom=0x0;
-  fNPlate=0;
-  fNStripA=0;
-  fNStripB=0;
-  fNStripC=0;
-  fNpadZ=0;
-  fNpadX=0;
   gROOT->GetListOfBrowsables()->Add(this);
 
 }
 //________________________________________________________________
 
 AliTOFCalSector::AliTOFCalSector(AliTOFChannel *ch):
+  fNPlate(0),
+  fNStripA(0),
+  fNStripB(0),
+  fNStripC(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0),
   fCh(ch)
 {
   //ctor with channel
-  fGeom=0x0;
-  fNPlate=0;
-  fNStripA=0;
-  fNStripB=0;
-  fNStripC=0;
-  fNpadZ=0;
-  fNpadX=0;
   gROOT->GetListOfBrowsables()->Add(this);
 }
 //________________________________________________________________
 
-AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom){
+AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom):
+  fNPlate(0),
+  fNStripA(0),
+  fNStripB(0),
+  fNStripC(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(geom),
+  fCh(0x0)
+{
   //ctor with geom
-  fCh = 0;
-  fGeom= geom; 
   fNPlate  = fGeom->NPlates();
   fNStripA = fGeom->NStripA();
   fNStripB = fGeom->NStripB();
@@ -103,10 +114,16 @@ AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom){
 //________________________________________________________________
 
 AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom,AliTOFChannel *ch):
+  fNPlate(0),
+  fNStripA(0),
+  fNStripB(0),
+  fNStripC(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(geom),
   fCh(ch)
 {
   // ctor with channel and geom
-  fGeom= geom; 
   fNPlate  = fGeom->NPlates();
   fNStripA = fGeom->NStripA();
   fNStripB = fGeom->NStripB();
@@ -118,7 +135,15 @@ AliTOFCalSector::AliTOFCalSector(AliTOFGeometry *geom,AliTOFChannel *ch):
 //________________________________________________________________
 
 AliTOFCalSector::AliTOFCalSector(const AliTOFCalSector& sec):
-  TObject(sec)
+  TObject(sec),
+  fNPlate(0),
+  fNStripA(0),
+  fNStripB(0),
+  fNStripC(0),
+  fNpadZ(0),
+  fNpadX(0),
+  fGeom(0x0),
+  fCh(0x0)
   {
     //copy ctor
     fCh = sec.fCh;

@@ -25,7 +25,7 @@ class AliTOFtrack : public AliKalmanTrack {
 
 public:
 
-   AliTOFtrack():AliKalmanTrack(){}
+  AliTOFtrack();
    AliTOFtrack(const AliTOFtrack& t);
    AliTOFtrack(const AliESDtrack& t);
    AliTOFtrack& operator=(const AliTOFtrack &source); // ass. op.

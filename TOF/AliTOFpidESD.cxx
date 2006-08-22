@@ -30,12 +30,23 @@
 ClassImp(AliTOFpidESD)
 
 //_________________________________________________________________________
-AliTOFpidESD::AliTOFpidESD(Double_t *param) {
+  AliTOFpidESD::AliTOFpidESD(): 
+  fN(-1),
+  fEventN(-1),
+  fSigma(0),
+  fRange(0)
+{
+}
+//_________________________________________________________________________
+AliTOFpidESD::AliTOFpidESD(Double_t *param):
+  fN(0),
+  fEventN(0),
+  fSigma(0),
+  fRange(0)
+ {
   //
   //  The main constructor
   //
-  fN=0; fEventN=0;
-
   fSigma=param[0];
   fRange=param[1];
 

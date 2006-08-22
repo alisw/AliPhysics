@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/04/20 22:30:50  hristov
+Coding conventions (Annalisa)
+
 Revision 1.4  2006/04/05 08:35:38  hristov
 Coding conventions (S.Arcelli, C.Zampolli)
 
@@ -44,6 +47,7 @@ ClassImp(AliTOFcalibESD)
 
 //________________________________________________________________
 AliTOFcalibESD::AliTOFcalibESD():
+  fCombID(-1),
   fTOFCalCh(-1),
   fToT(0),
   fIntLen(0),
