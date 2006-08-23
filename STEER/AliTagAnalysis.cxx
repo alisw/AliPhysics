@@ -65,7 +65,7 @@ void AliTagAnalysis::ChainLocalTags(const char *dirname) {
   TChain *fgChain = new TChain("T");
   fChain = fgChain;
   
-  const char * tagPattern = "tag";
+  const char * tagPattern = "tag.root";
   // Open the working directory
   void * dirp = gSystem->OpenDirectory(fTagDirName);
   const char * name = 0x0;
