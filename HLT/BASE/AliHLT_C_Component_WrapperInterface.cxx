@@ -44,6 +44,7 @@ int AliHLT_C_Component_InitSystem( AliHLTComponentEnvironment* environ )
   if ( !gComponentHandler_C )
     return EFAULT;
   gComponentHandler_C->SetEnvironment( environ );
+  gComponentHandler_C->AnnounceVersion();
   return 0;
 }
 

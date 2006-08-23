@@ -50,6 +50,23 @@ AliHLTComponentHandler::~AliHLTComponentHandler()
   UnloadLibraries();
 }
 
+int AliHLTComponentHandler::AnnounceVersion()
+{
+  int iResult=0;
+#ifdef PACKAGE_STRING
+  void HLTbaseCompileInfo( char*& date, char*& time);
+  char* date="";
+  char* time="";
+  HLTbaseCompileInfo(date, time);
+  if (!date) date="unknown";
+  if (!time) time="unknown";
+  HLTInfo("%s build on %s (%s)", PACKAGE_STRING, date, time);
+#else
+  HLTInfo("ALICE High Level Trigger (embedded AliRoot build)");
+#endif
+  return iResult;
+}
+
 Int_t AliHLTComponentHandler::RegisterComponent(AliHLTComponent* pSample)
 {
   Int_t iResult=0;
@@ -61,7 +78,7 @@ Int_t AliHLTComponentHandler::RegisterComponent(AliHLTComponent* pSample)
       }
     } else {
       // component already registered
-      HLTInfo("component %s already registered, skipped", pSample->GetComponentID());
+      HLTDebug("component %s already registered, skipped", pSample->GetComponentID());
       iResult=-EEXIST;
     }
   } else {
@@ -86,7 +103,7 @@ Int_t AliHLTComponentHandler::ScheduleRegister(AliHLTComponent* pSample)
   return iResult;
 }
 
-int AliHLTComponentHandler::CreateComponent(const char* componentID, void* environ_param, int argc, const char** argv, AliHLTComponent*& component )
+int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnv, int argc, const char** argv, AliHLTComponent*& component )
 {
   int iResult=0;
   if (componentID) {
@@ -95,7 +112,7 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* envir
       component=pSample->Spawn();
       if (component) {
 	HLTDebug("component \"%s\" created (%p)", componentID, component);
-	component->Init(&fEnvironment, environ_param, argc, argv);
+	component->Init(&fEnvironment, pEnv, argc, argv);
       } else {
 	HLTError("can not spawn component \"%s\"", componentID);
 	iResult=-ENOENT;
@@ -173,7 +190,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
     AliHLTLibHandle hLib=dlopen(libraryPath, RTLD_NOW);
     if (hLib) {
       AliHLTComponent::UnsetGlobalComponentHandler();
-      HLTDebug("library %s loaded", libraryPath);
+      HLTInfo("library %s loaded", libraryPath);
       fLibraryList.push_back(hLib);
       vector<AliHLTComponent*>::iterator element=fScheduleList.begin();
       int iSize=fScheduleList.size();
