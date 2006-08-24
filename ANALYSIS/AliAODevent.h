@@ -1,5 +1,13 @@
 #ifndef ALIAODEVENT_H
 #define ALIAODEVENT_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+//-------------------------------------------------------------------------
+//     Implementation of the Analysis Oriented Data (AOD) event summary
+//     Purpose : container of event important information for soft analysis
+//     Author : Renaud Vernet, IPHC, Strasbourg
+//-------------------------------------------------------------------------
 
 #include <TObject.h>
 #include <TClonesArray.h>
@@ -10,40 +18,40 @@ class AliAODxi;
 
 class AliAODevent : public TObject {
 
- private :
-  TClonesArray* fV0s;
-  TClonesArray* fCascades;
-  Double_t      fPrimVertexX; // here put the whole AliESDVertex ?
-  Double_t      fPrimVertexY;
-  Double_t      fPrimVertexZ;
-  
-  UInt_t        fRunNumber;
-  UInt_t        fEventNumber;
-  UInt_t        fNumberOfTracks;
-
  public :
   AliAODevent();
   ~AliAODevent();
-  AliAODevent(AliESD*);
-  AliAODevent(const AliAODevent&); 
-  AliAODevent& operator=(const AliAODevent&);
+  AliAODevent(AliESD* esd);
+  AliAODevent(const AliAODevent& aodevent); 
+  AliAODevent& operator=(const AliAODevent& aodevent);
   
-  void AddV0(AliAODv0*);
-  void AddCascade(AliAODxi*);
-  inline TClonesArray*  GetV0s() {return fV0s;}
-  inline TClonesArray*  GetCascades() {return fCascades;}
-  inline AliAODv0*      GetV0     (UInt_t idx) {return ((AliAODv0*)fV0s->UncheckedAt(idx));}
-  inline AliAODxi*      GetCascade(UInt_t idx) {return ((AliAODxi*)fCascades->UncheckedAt(idx));}
+  void AddV0(AliAODv0* aodv0);
+  void AddCascade(AliAODxi* aodxi);
+  TClonesArray*  GetV0s() const              {return fV0s;}
+  TClonesArray*  GetCascades() const         {return fCascades;}
+  AliAODv0*      GetV0    (UInt_t idx) const {return ((AliAODv0*)fV0s->UncheckedAt(idx));}
+  AliAODxi*      GetCascade(UInt_t idx) const {return ((AliAODxi*)fCascades->UncheckedAt(idx));}
 
-  inline UInt_t         GetNumberOfTracks()   {return fNumberOfTracks;}
-  inline UInt_t         GetNumberOfV0s()      {return fV0s->GetEntries();}
-  inline UInt_t         GetNumberOfCascades() {return fCascades->GetEntries();}
-  inline UInt_t         GetRunNumber()        {return fRunNumber;}
-  inline UInt_t         GetEventNumber()      {return fEventNumber;}
+  UInt_t         GetNumberOfTracks() const   {return fNumberOfTracks;}
+  UInt_t         GetNumberOfV0s() const      {return fV0s->GetEntries();}
+  UInt_t         GetNumberOfCascades() const {return fCascades->GetEntries();}
+  UInt_t         GetRunNumber() const        {return fRunNumber;}
+  UInt_t         GetEventNumber() const      {return fEventNumber;}
 
-  inline Double_t       GetPrimVertexX()      {return fPrimVertexX;}
-  inline Double_t       GetPrimVertexY()      {return fPrimVertexY;}
-  inline Double_t       GetPrimVertexZ()      {return fPrimVertexZ;}
+  Double_t       GetPrimVertexX() const      {return fPrimVertexX;}
+  Double_t       GetPrimVertexY() const      {return fPrimVertexY;}
+  Double_t       GetPrimVertexZ() const      {return fPrimVertexZ;}
+
+ private :
+  TClonesArray* fV0s;         // List of V0's ?
+  TClonesArray* fCascades;    // List of cascades ?
+  Double_t      fPrimVertexX; // Vertex X coordinate ?
+  Double_t      fPrimVertexY; // Vertex Y coordinate ?
+  Double_t      fPrimVertexZ; // Vertex Z coordinate ?
+  
+  UInt_t        fRunNumber;   // Run number
+  UInt_t        fEventNumber; // Event number
+  UInt_t        fNumberOfTracks; // Number of tracks
 
   ClassDef(AliAODevent,1);
 };

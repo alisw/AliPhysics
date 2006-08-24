@@ -37,16 +37,17 @@ AliAODevent::~AliAODevent() {
 }
 
 AliAODevent::AliAODevent(AliESD* e) {
+  // Constructor from an ESD.
   fV0s      = new TClonesArray("AliAODv0");
   fCascades = new TClonesArray("AliAODxi");
   fRunNumber        = (UInt_t)e->GetRunNumber();
   fEventNumber      = (UInt_t)e->GetEventNumber();
   fNumberOfTracks   = (UInt_t)e->GetNumberOfTracks();
 
-  const AliESDVertex* V = e->GetVertex();
-  fPrimVertexX = V->GetXv();
-  fPrimVertexY = V->GetYv();
-  fPrimVertexZ = V->GetZv();
+  const AliESDVertex* esdVertex = e->GetVertex();
+  fPrimVertexX = esdVertex->GetXv();
+  fPrimVertexY = esdVertex->GetYv();
+  fPrimVertexZ = esdVertex->GetZv();
 
   for (Int_t i=0; i<e->GetNumberOfV0s(); i++) {
     AliAODv0* v=new AliAODv0(e->GetV0(i),e);
@@ -72,12 +73,12 @@ AliAODevent::AliAODevent(const AliAODevent& aod) :
   fEventNumber(aod.fEventNumber),
   fNumberOfTracks(aod.fNumberOfTracks)
 {
-  //copy constructor
+  // Copy constructor.
 }
 
 
 AliAODevent& AliAODevent::operator=(const AliAODevent& aod){
-  // assignment operator
+  // Assignment operator
   if(this!=&aod) {
     fPrimVertexX    = aod.fPrimVertexX;
     fPrimVertexY    = aod.fPrimVertexY;
@@ -96,12 +97,14 @@ AliAODevent& AliAODevent::operator=(const AliAODevent& aod){
 
 
 void AliAODevent::AddV0(AliAODv0* v0) {
+  // Adds a V0 in the list.
   Int_t idx=fV0s->GetEntries();
   TClonesArray& arr=*fV0s;
   new(arr[idx]) AliAODv0(*v0);
 }
 
 void AliAODevent::AddCascade(AliAODxi* xi) {
+  // Adds a cascade in the list.
   Int_t idx=fCascades->GetEntries();
   TClonesArray& arr=*fCascades;
   new(arr[idx]) AliAODxi(*xi);
