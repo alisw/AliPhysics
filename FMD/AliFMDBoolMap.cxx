@@ -40,6 +40,7 @@ AliFMDBoolMap::AliFMDBoolMap(const AliFMDBoolMap& other)
               other.fMaxRings,
               other.fMaxSectors,
               other.fMaxStrips),
+    fTotal(0),
     fData(0)
 {
   // Copy constructor
@@ -54,6 +55,7 @@ AliFMDBoolMap::AliFMDBoolMap(size_t maxDet,
                          size_t maxSec,
                          size_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr),
+    fTotal(0),
     fData(0)
 {
   // Constructor.

@@ -100,7 +100,23 @@ AliFMDGeometry::Instance()
 //____________________________________________________________________
 AliFMDGeometry::AliFMDGeometry() 
   : AliGeometry("FMD", "Forward multiplicity"), 
-    fBuilder(0)
+    fIsInitialized(kFALSE), 
+    fInner(0),
+    fOuter(0),
+    fFMD1(0),
+    fFMD2(0),
+    fFMD3(0),
+    fUseFMD1(kFALSE),
+    fUseFMD2(kFALSE),
+    fUseFMD3(kFALSE),
+    fBuilder(0),
+    fDetectorOff(0),
+    fModuleOff(0),  
+    fRingOff(0),
+    fSectorOff(0),
+    fActive(2),
+    fDetailed(kFALSE),       
+    fUseAssembly(kFALSE)
 {
   // PROTECTED
   // Default constructor 
@@ -130,6 +146,11 @@ AliFMDGeometry::AliFMDGeometry(const AliFMDGeometry& other)
     fUseFMD1(other.fUseFMD1), 
     fUseFMD2(other.fUseFMD2), 
     fUseFMD3(other.fUseFMD3), 
+    fBuilder(other.fBuilder),
+    fDetectorOff(other.fDetectorOff),
+    fModuleOff(other.fModuleOff),  
+    fRingOff(other.fRingOff),
+    fSectorOff(other.fSectorOff),
     fActive(other.fActive),
     fDetailed(other.fDetailed),
     fUseAssembly(other.fUseAssembly)

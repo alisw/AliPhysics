@@ -198,7 +198,34 @@ public:
 protected:
   /** Copy ctor 
       @param o Object to copy from  */
-  AliFMDInput(const AliFMDInput& o) : TObject(o) {}
+  AliFMDInput(const AliFMDInput& o) 
+    : TObject(o),
+      fGAliceFile(""),
+      fLoader(0),
+      fRun(0),
+      fStack(0),
+      fFMDLoader(0),
+      fReader(0),
+      fFMD(0),
+      fMainESD(0),
+      fESD(0),
+      fTreeE(0),
+      fTreeH(0),
+      fTreeD(0),
+      fTreeS(0),
+      fTreeR(0),
+      fTreeA(0),
+      fChainE(0),
+      fArrayE(0),
+      fArrayH(0),
+      fArrayD(0),
+      fArrayS(0),
+      fArrayR(0),
+      fArrayA(0),
+      fGeoManager(0),
+      fTreeMask(0),
+      fIsInit(kFALSE)
+  {}
   /** Assignement operator 
       @return  REference to this */
   AliFMDInput& operator=(const AliFMDInput&) { return *this; }

@@ -44,7 +44,8 @@ AliFMDRecPoint::AliFMDRecPoint()
     fStrip(0),
     fEta(0),
     fPhi(0),
-    fEdep(0)
+    fEdep(0),
+    fParticles(0)
 {
   // CTOR 
 }

@@ -126,7 +126,22 @@ public:
       @param option Not used. */
   void Exec(Option_t* option="");
 protected:
-  AliFMDAlignFaker(const AliFMDAlignFaker& o) : TTask(o) {}
+  AliFMDAlignFaker(const AliFMDAlignFaker& o) 
+    : TTask(o), 
+      fMask(0), 
+      fSensorTransMin(0,0,0),
+      fSensorTransMax(0,0,0),
+      fSensorRotMin(0,0,0),
+      fSensorRotMax(0,0,0),
+      fHalfTransMin(0,0,0),
+      fHalfTransMax(0,0,0),
+      fHalfRotMin(0,0,0),
+      fHalfRotMax(0,0,0),
+      fRunMin(0), 
+      fRunMax(0),
+      fArray(0),
+      fComment("")
+{}
   AliFMDAlignFaker& operator=(const AliFMDAlignFaker&) { return *this; }
   
   /** Make the alignment object for a path

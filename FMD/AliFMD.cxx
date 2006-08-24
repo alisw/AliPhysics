@@ -127,7 +127,9 @@ AliFMD::AliFMD()
     fSDigits(0), 
     fNsdigits(0),
     fDetailed(kTRUE),
-    fBad(0)
+    fUseOld(kFALSE),
+    fUseAssembly(kTRUE),
+    fBad(0) 
 {
   //
   // Default constructor for class AliFMD
@@ -136,8 +138,6 @@ AliFMD::AliFMD()
   fHits        = 0;
   fDigits      = 0;
   fIshunt      = 0;
-  fUseOld      = kFALSE;
-  fUseAssembly = kTRUE;
   fBad         = new TClonesArray("AliFMDHit");
 }
 
@@ -147,11 +147,11 @@ AliFMD::AliFMD(const AliFMD& other)
     fSDigits(other.fSDigits), 
     fNsdigits(other.fNsdigits),
     fDetailed(other.fDetailed),
+    fUseOld(other.fUseOld),
+    fUseAssembly(other.fUseAssembly),
     fBad(other.fBad)
 {
   // Copy constructor 
-  fUseOld      = other.fUseOld;
-  fUseAssembly = other.fUseAssembly;
 }
 
 //____________________________________________________________________
@@ -160,14 +160,14 @@ AliFMD::AliFMD(const char *name, const char *title)
     fSDigits(0),
     fNsdigits(0),
     fDetailed(kTRUE),
+    fUseOld(kFALSE),
+    fUseAssembly(kFALSE),
     fBad(0)
 {
   //
   // Standard constructor for Forward Multiplicity Detector
   //
   AliDebug(10, "\tStandard CTOR");
-  fUseOld      = kFALSE;
-  fUseAssembly = kFALSE;
   fBad         = new TClonesArray("AliFMDHit");
   
   // Initialise Hit array

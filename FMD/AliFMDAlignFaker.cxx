@@ -67,9 +67,18 @@ AliFMDAlignFaker::AliFMDAlignFaker(Int_t mask, const char* geo,
 				   const char* loc) 
   : TTask(geo, loc),
     fMask(mask),
+    fSensorTransMin(0,0,0),
+    fSensorTransMax(0,0,0),
+    fSensorRotMin(0,0,0),
+    fSensorRotMax(0,0,0),
+    fHalfTransMin(0,0,0),
+    fHalfTransMax(0,0,0),
+    fHalfRotMin(0,0,0),
+    fHalfRotMax(0,0,0),
     fRunMin(0),
     fRunMax(10), 
-    fArray(0)
+    fArray(0),
+    fComment("")
 {
   // Default constructor 
   SetSensorDisplacement();

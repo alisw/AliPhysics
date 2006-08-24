@@ -42,7 +42,22 @@ ClassImp(AliFMD3)
 
 //____________________________________________________________________
 AliFMD3::AliFMD3(AliFMDRing* inner, AliFMDRing* outer) 
-  : AliFMDDetector(3, inner, outer)
+  : AliFMDDetector(3, inner, outer),
+    fNoseZ(0),
+    fNoseLowR(0),
+    fNoseHighR(0),
+    fNoseLength(0),
+    fBackLowR(0),
+    fBackHighR(0),
+    fBackLength(0),
+    fBeamThickness(0),
+    fBeamWidth(0),
+    fConeLength(0),
+    fFlangeR(0),
+    fZ(0),
+    fAlpha(0), 
+    fNBeam(0), 
+    fNFlange(0)
 {
   // Constructor. 
   SetInnerZ(-62.8);

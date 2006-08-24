@@ -49,7 +49,8 @@ AliFMDIndex::AliFMDIndex()
     fRing('\0'), 
     fSector(0), 
     fStrip(0), 
-    fHash(-1)
+    fName(""),
+    fHash(-1) 
 {
   // CTOR
 }
@@ -60,6 +61,7 @@ AliFMDIndex::AliFMDIndex(const AliFMDIndex& o)
     fRing(o.fRing), 
     fSector(o.fSector), 
     fStrip(o.fStrip), 
+    fName(""),
     fHash(o.fHash)
 {
   // Copy constructor 
@@ -74,6 +76,7 @@ AliFMDIndex::AliFMDIndex(UShort_t detector,
     fRing(ring), 
     fSector(sector), 
     fStrip(strip), 
+    fName(""),
     fHash(-1)
 {
   //

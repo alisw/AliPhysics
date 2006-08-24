@@ -36,6 +36,8 @@ ClassImp(AliFMDCalibPedestal)
 
 //____________________________________________________________________
 AliFMDCalibPedestal::AliFMDCalibPedestal()
+  : fValue(), 
+    fWidth()
 {
   // CTOR 
   fValue.Reset(-1.);
@@ -44,7 +46,9 @@ AliFMDCalibPedestal::AliFMDCalibPedestal()
 
 //____________________________________________________________________
 AliFMDCalibPedestal::AliFMDCalibPedestal(const AliFMDCalibPedestal& o)
-  : TObject(o), fValue(o.fValue), fWidth(o.fWidth)
+  : TObject(o), 
+    fValue(o.fValue), 
+    fWidth(o.fWidth)
 {
   // Copy Ctor 
 }

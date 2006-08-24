@@ -220,7 +220,12 @@ ClassImp(AliFMDBaseDigitizer)
 
 //____________________________________________________________________
 AliFMDBaseDigitizer::AliFMDBaseDigitizer()  
-  : fRunLoader(0)
+  : fRunLoader(0),
+    fEdep(AliFMDMap::kMaxDetectors, 
+	  AliFMDMap::kMaxRings, 
+	  AliFMDMap::kMaxSectors, 
+	  AliFMDMap::kMaxStrips),
+    fShapingTime(0)
 {
   // Default ctor - don't use it
 }
@@ -232,7 +237,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager)
     fEdep(AliFMDMap::kMaxDetectors, 
 	  AliFMDMap::kMaxRings, 
 	  AliFMDMap::kMaxSectors, 
-	  AliFMDMap::kMaxStrips)
+	  AliFMDMap::kMaxStrips), 
+    fShapingTime(0)
 {
   // Normal CTOR
   AliDebug(1," processed");

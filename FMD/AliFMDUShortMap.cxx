@@ -38,6 +38,7 @@ ClassImp(AliFMDUShortMap)
 AliFMDUShortMap::AliFMDUShortMap(const AliFMDUShortMap& other)
   : AliFMDMap(other.fMaxDetectors, other.fMaxRings, other.fMaxSectors, 
 	      other.fMaxStrips), 
+    fTotal(0),
     fData(0)
 {
   // CTOR
@@ -54,6 +55,7 @@ AliFMDUShortMap::AliFMDUShortMap(size_t maxDet,
 				 size_t maxSec, 
 				 size_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr), 
+    fTotal(0),
     fData(0)
 {
   // Construct a map

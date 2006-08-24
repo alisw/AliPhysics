@@ -271,7 +271,30 @@ protected:
   AliFMDParameters();
   /** CTOR  */
   AliFMDParameters(const AliFMDParameters& o) 
-    : TNamed(o), fkSiDeDxMip(o.fkSiDeDxMip) {}
+    : TNamed(o), 
+      fIsInit(o.fIsInit),
+      fkSiDeDxMip(o.fkSiDeDxMip),
+      fVA1MipRange(o.fVA1MipRange),
+      fAltroChannelSize(o.fAltroChannelSize),
+      fChannelsPerAltro(o.fChannelsPerAltro),
+      fPedestalFactor(o.fPedestalFactor),
+      fFixedPedestal(o.fFixedPedestal),
+      fFixedPedestalWidth(o.fFixedPedestalWidth),
+      fFixedZeroSuppression(o.fFixedZeroSuppression),
+      fFixedSampleRate(o.fFixedSampleRate),
+      fFixedThreshold(o.fFixedThreshold),
+      fFixedMinStrip(o.fFixedMinStrip),
+      fFixedMaxStrip(o.fFixedMaxStrip),
+      fFixedPulseGain(o.fFixedPulseGain),
+      fEdepMip(o.fEdepMip),
+      fZeroSuppression(o.fZeroSuppression),
+      fSampleRate(o.fSampleRate),
+      fPedestal(o.fPedestal),
+      fPulseGain(o.fPulseGain),
+      fDeadMap(o.fDeadMap),
+      fAltroMap(o.fAltroMap),
+      fStripRange(o.fStripRange)
+  {}
   /** Assignement operator 
       @return Reference to this */
   AliFMDParameters& operator=(const AliFMDParameters&) { return *this; }

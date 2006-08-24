@@ -65,7 +65,24 @@ public:
   Int_t GetDetectorOff() const { return fDetectorOff; }
 protected:
   /** Copy CTOR */
-  AliFMDGeometryBuilder(const AliFMDGeometryBuilder& o) : TTask(o) {}
+  AliFMDGeometryBuilder(const AliFMDGeometryBuilder& o) 
+    : TTask(o),
+      fActiveId(o.fActiveId),
+      fDetailed(o.fDetailed),
+      fUseAssembly(o.fUseAssembly),
+      fSectorOff(o.fSectorOff),
+      fModuleOff(o.fModuleOff),
+      fRingOff(o.fRingOff),
+      fDetectorOff(o.fDetectorOff),
+      fSi(o.fSi),
+      fC(o.fC),
+      fAl(o.fAl),
+      fPCB(o.fPCB),
+      fChip(o.fChip),
+      fAir(o.fAir),
+      fPlastic(o.fPlastic),
+      fCopper(o.fCopper)
+  {}
   /** Assignment operator */
   AliFMDGeometryBuilder& operator=(const AliFMDGeometryBuilder&){return *this;}
   /** Make a ring volume 

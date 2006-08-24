@@ -44,6 +44,24 @@ ClassImp(AliFMDRing)
 AliFMDRing::AliFMDRing(Char_t id) 
   : TNamed(Form("FMD%c", id), "Forward multiplicity ring"), 
     fId(id), 
+    fBondingWidth(0),
+    fWaferRadius(0),
+    fSiThickness(0),
+    fLowR(0),
+    fHighR(0),
+    fMinR(0),
+    fMaxR(0),
+    fTheta(0),
+    fNStrips(0),
+    fRingDepth(0),
+    fLegRadius(0),
+    fLegLength(0),
+    fLegOffset(0),
+    fModuleSpacing(0),
+    fPrintboardThickness(0),
+    fCopperThickness(0),
+    fChipThickness(0),
+    fSpacing(0),
     fVerticies(0)
 {
   // CTOR

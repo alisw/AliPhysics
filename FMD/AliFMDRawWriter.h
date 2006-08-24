@@ -57,7 +57,13 @@ public:
       ALTRO data. */
   virtual void WriteDigits(TClonesArray* digits);
 protected:
-  AliFMDRawWriter(const AliFMDRawWriter& o) : TTask(o) {}
+  AliFMDRawWriter(const AliFMDRawWriter& o) 
+    : TTask(o), 
+      fFMD(0), 
+      fSampleRate(0), 
+      fChannelsPerAltro(0), 
+      fThreshold(0)
+  {}
   AliFMDRawWriter& operator=(const AliFMDRawWriter&) { return *this; }
   AliFMD*       fFMD;              //! Pointer to detector description 
   UShort_t      fSampleRate;       // The sample rate (0 -> inferred from data)

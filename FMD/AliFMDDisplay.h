@@ -107,7 +107,29 @@ public:
 protected:
   /** Copy constructor 
       @param o Object to copy from  */
-  AliFMDDisplay(const AliFMDDisplay& o) : AliFMDInput(o) { } 
+  AliFMDDisplay(const AliFMDDisplay& o) 
+    : AliFMDInput(o),
+      fWait(kFALSE),
+      fMarkers(0),
+      fHits(0),
+      fCanvas(0),
+      fPad(0),
+      fButton(0),
+      fZoom(0),
+      fPick(0),
+      fZoomMode(0),
+      fX0(0),
+      fY0(0),
+      fX1(0),
+      fY1(0),
+      fMultCut(0),
+      fPedestalFactor(0),
+      fXPixel(0),
+      fYPixel(0),
+      fOldXPixel(0),
+      fOldYPixel(0),
+      fLineDrawn(0)
+  { } 
   /** Assignment operator 
       @return Reference to this object */
   AliFMDDisplay& operator=(const AliFMDDisplay&) { return *this; } 

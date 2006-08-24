@@ -239,7 +239,14 @@ protected:
   /** Copy CTOR 
       @param o object to copy from  */
   AliFMDBaseDigitizer(const AliFMDBaseDigitizer& o) 
-    : AliDigitizer(o) {}
+    : AliDigitizer(o),
+      fRunLoader(0),
+      fEdep(AliFMDMap::kMaxDetectors, 
+	    AliFMDMap::kMaxRings, 
+	    AliFMDMap::kMaxSectors, 
+	    AliFMDMap::kMaxStrips),
+      fShapingTime(0)
+  {}
   /** Assignment operator
       @return Reference to this object */
   AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer&) { return *this; }

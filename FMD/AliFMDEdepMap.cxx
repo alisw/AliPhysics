@@ -40,6 +40,7 @@ ClassImp(AliFMDEdepMap)
 AliFMDEdepMap::AliFMDEdepMap(const AliFMDEdepMap& other)
   : AliFMDMap(other.fMaxDetectors, other.fMaxRings, other.fMaxSectors, 
 	      other.fMaxStrips), 
+    fTotal(0),
     fData(0)
 {
   // Copy constructor 
@@ -56,6 +57,7 @@ AliFMDEdepMap::AliFMDEdepMap(size_t maxDet,
 			     size_t maxSec, 
 			     size_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr), 
+    fTotal(0),
     fData(0)
 {
   // Construct a map

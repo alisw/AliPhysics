@@ -59,7 +59,10 @@ ClassImp(AliFMDRawWriter)
 //____________________________________________________________________
 AliFMDRawWriter::AliFMDRawWriter(AliFMD* fmd) 
   : TTask("FMDRawWriter", "Writer of Raw ADC values from the FMD"),
-    fFMD(fmd)
+    fFMD(fmd),
+    fSampleRate(0), 
+    fChannelsPerAltro(0), 
+    fThreshold(0)
 {
   // CTOR 
 }

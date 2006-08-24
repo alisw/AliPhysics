@@ -69,12 +69,25 @@ AliFMDDisplay::Instance()
 AliFMDDisplay::AliFMDDisplay(const char* gAliceFile)
   : AliFMDInput(gAliceFile),
     fWait(kFALSE),
+    fMarkers(0),
+    fHits(0),
     fCanvas(0), 
     fPad(0), 
     fButton(0), 
     fZoom(0),
     fPick(0),
-    fZoomMode(kFALSE)
+    fZoomMode(kFALSE),
+    fX0(0),
+    fY0(0),
+    fX1(0),
+    fY1(0),
+    fMultCut(0),
+    fPedestalFactor(0),
+    fXPixel(0),
+    fYPixel(0),
+    fOldXPixel(0),
+    fOldYPixel(0),
+    fLineDrawn(0)
 {
   // Constructor of an FMD display object. 
   AddLoad(kGeometry);

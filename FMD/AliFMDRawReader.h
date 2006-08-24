@@ -58,7 +58,12 @@ public:
       @return @c true on success */
   virtual Bool_t ReadAdcs(TClonesArray* array);
 protected:
-  AliFMDRawReader(const AliFMDRawReader& o) : TTask(o) {}
+  AliFMDRawReader(const AliFMDRawReader& o) 
+    : TTask(o), 
+      fTree(0), 
+      fReader(0), 
+      fSampleRate(0)
+  {}
   AliFMDRawReader& operator=(const AliFMDRawReader&) { return *this; }
   TTree*        fTree;       //! Pointer to tree to read into 
   AliRawReader* fReader;     //! Pointer to raw reader 

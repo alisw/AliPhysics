@@ -82,14 +82,22 @@ const Char_t* AliFMDGeometryBuilder::fgkFMDName         = "F%dM%c";
 
 //____________________________________________________________________
 AliFMDGeometryBuilder::AliFMDGeometryBuilder() 
-  : fDetailed(kTRUE),
+  : TTask("FMD", "Geomtry builder"),
+    fActiveId(0),
+    fDetailed(kTRUE),
     fUseAssembly(kTRUE),
+    fSectorOff(0),
+    fModuleOff(0),
+    fRingOff(0),
+    fDetectorOff(0),
     fSi(0),
     fC(0),
     fAl(0),
     fPCB(0),
     fChip(0),
-    fPlastic(0)
+    fAir(0),
+    fPlastic(0),
+    fCopper(0)
 {
   // Default constructor
   fActiveId.Set(2);
@@ -98,14 +106,21 @@ AliFMDGeometryBuilder::AliFMDGeometryBuilder()
 //____________________________________________________________________
 AliFMDGeometryBuilder::AliFMDGeometryBuilder(Bool_t detailed) 
   : TTask("FMD", "Geometry builder"),
+    fActiveId(0),
     fDetailed(detailed),
     fUseAssembly(kTRUE),
+    fSectorOff(0),
+    fModuleOff(0),
+    fRingOff(0),
+    fDetectorOff(0),
     fSi(0),
     fC(0),
     fAl(0),
     fPCB(0),
     fChip(0),
-    fPlastic(0)
+    fAir(0),
+    fPlastic(0),
+    fCopper(0)
 {
   // Normal constructor
   // 

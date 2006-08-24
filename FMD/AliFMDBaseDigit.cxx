@@ -79,18 +79,20 @@ AliFMDBaseDigit::AliFMDBaseDigit()
   : fDetector(0), 
     fRing('\0'), 
     fSector(0), 
-    fStrip(0)
+    fStrip(0), 
+    fName("")
 {}
 
 //____________________________________________________________________
 AliFMDBaseDigit::AliFMDBaseDigit(UShort_t detector, 
-			 Char_t   ring, 
-			 UShort_t sector, 
-			 UShort_t strip)
+				 Char_t   ring, 
+				 UShort_t sector, 
+				 UShort_t strip)
   : fDetector(detector), 
     fRing(ring), 
     fSector(sector), 
-    fStrip(strip)
+    fStrip(strip),
+    fName("")
 {
   //
   // Creates a base data digit object

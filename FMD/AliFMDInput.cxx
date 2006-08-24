@@ -79,6 +79,7 @@ AliFMDInput::AliFMDInput()
     fTreeD(0),
     fTreeS(0),
     fTreeR(0), 
+    fTreeA(0), 
     fChainE(0),
     fArrayE(0),
     fArrayH(0),
@@ -86,6 +87,7 @@ AliFMDInput::AliFMDInput()
     fArrayS(0), 
     fArrayR(0), 
     fArrayA(0), 
+    fGeoManager(0),
     fTreeMask(0), 
     fIsInit(kFALSE)
 {
@@ -113,6 +115,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fTreeD(0),
     fTreeS(0),
     fTreeR(0), 
+    fTreeA(0), 
     fChainE(0),
     fArrayE(0),
     fArrayH(0),
@@ -120,6 +123,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fArrayS(0), 
     fArrayR(0), 
     fArrayA(0), 
+    fGeoManager(0),
     fTreeMask(0), 
     fIsInit(kFALSE)
 {

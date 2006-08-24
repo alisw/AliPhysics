@@ -35,6 +35,8 @@ ClassImp(AliFMDCalibGain)
 
 //____________________________________________________________________
 AliFMDCalibGain::AliFMDCalibGain()
+  : fValue(),
+    fThreshold(-1.)
 {
   // CTOR
   fValue.Reset(-1.);
@@ -43,7 +45,9 @@ AliFMDCalibGain::AliFMDCalibGain()
 
 //____________________________________________________________________
 AliFMDCalibGain::AliFMDCalibGain(const AliFMDCalibGain& o)
-  : TObject(o), fValue(o.fValue), fThreshold(o.fThreshold)
+  : TObject(o), 
+    fValue(o.fValue), 
+    fThreshold(o.fThreshold)
 {
   // Copy CTOR 
 }
