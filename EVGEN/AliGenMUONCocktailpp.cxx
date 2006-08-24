@@ -49,9 +49,9 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
      fTotalRate(0),
      fMuonMultiplicity(0),
      fMuonPtCut(0.),
-     fMuonThetaMinCut(0.), 
+     fMuonThetaMinCut(0.),
      fMuonThetaMaxCut(0.),
-     fNSucceded(0), 
+     fNSucceded(0),
      fNGenerated(0)
 {
 // Constructor
@@ -62,12 +62,19 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp(const AliGenMUONCocktailpp & cocktail
     fTotalRate(0),
     fMuonMultiplicity(0),
     fMuonPtCut(0.),
-    fMuonThetaMinCut(0.), 
+    fMuonThetaMinCut(0.),
     fMuonThetaMaxCut(0.),
-    fNSucceded(0), 
+    fNSucceded(0),
     fNGenerated(0)
 {
 // Copy constructor
+  fTotalRate =0;
+  fNSucceded=0; 
+  fNGenerated=0;
+  fMuonMultiplicity=0;
+  fMuonPtCut=0.;
+  fMuonThetaMinCut=0.; 
+  fMuonThetaMaxCut=0.;
 }
 //_________________________________________________________________________
 AliGenMUONCocktailpp::~AliGenMUONCocktailpp()
@@ -100,20 +107,19 @@ void AliGenMUONCocktailpp::Init()
     Double_t ratioupsilonP;
     Double_t ratioupsilonPP;
     
-// Cross sections in barns (from PPR Vol. II p: 552) pp - 14 TeV
+// Cross sections in barns (from PPR Vol. II p: 552) pp - 14 TeV and 
+// corrected from feed down of higher resonances 
 
-    Double_t sigmajpsi = 53.85e-6;  
+    Double_t sigmajpsi = 49.44e-6;  
     Double_t sigmapsiP = 7.67e-6;  
-    Double_t sigmaupsilon = 1.15e-6;  
-    Double_t sigmaupsilonP = 0.526e-6;  
+    Double_t sigmaupsilon = 0.989e-6;  
+    Double_t sigmaupsilonP = 0.502e-6;  
     Double_t sigmaupsilonPP = 0.228e-6;
     
-// Generation using CDF scaled distribution
-//(See http://clrwww.in2p3.fr/DIMUON2004/talks/sgrigoryan.pdf )
-    
-//------------------------------------------------------------------
+// Generation using CDF scaled distribution for pp@14TeV (from D. Stocco)
+//----------------------------------------------------------------------
 // Jpsi generator
-    AliGenParam * genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF scaled", "Jpsi");
+    AliGenParam * genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp", "Jpsi");
 // first step: generation in 4pi
     genjpsi->SetPtRange(0.,100.);
     genjpsi->SetYRange(-8.,8.);
@@ -133,7 +139,7 @@ void AliGenMUONCocktailpp::Init()
     
 //------------------------------------------------------------------
 // Psi prime generator
-    AliGenParam * genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF scaled", "PsiP");
+    AliGenParam * genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp", "PsiP");
 // first step: generation in 4pi
     genpsiP->SetPtRange(0.,100.);
     genpsiP->SetYRange(-8.,8.);
@@ -153,7 +159,7 @@ void AliGenMUONCocktailpp::Init()
     
 //------------------------------------------------------------------
 // Upsilon 1S generator
-    AliGenParam * genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF scaled", "Upsilon");
+    AliGenParam * genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp", "Upsilon");
 // first step: generation in 4pi
     genupsilon->SetPtRange(0.,100.); 
     genupsilon->SetYRange(-8.,8.);
@@ -173,7 +179,7 @@ void AliGenMUONCocktailpp::Init()
     
 //------------------------------------------------------------------
 // Upsilon 2S generator
-    AliGenParam * genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF scaled", "UpsilonP");
+    AliGenParam * genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp", "UpsilonP");
 // first step: generation in 4pi
     genupsilonP->SetPtRange(0.,100.);
     genupsilonP->SetYRange(-8.,8.);
@@ -193,7 +199,7 @@ void AliGenMUONCocktailpp::Init()
     
 //------------------------------------------------------------------
 // Upsilon 3S generator
-    AliGenParam * genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF scaled", "UpsilonPP");
+    AliGenParam * genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF pp", "UpsilonPP");
 // first step: generation in 4pi
     genupsilonPP->SetPtRange(0.,100.); 
     genupsilonPP->SetYRange(-8.,8.);
