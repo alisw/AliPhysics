@@ -28,7 +28,7 @@
 #include "AliTrackReference.h"
 #include "AliTPCParam.h"
 #include "AliDetector.h"
-#include "AliStack.h"
+#include "AliStack.h" 
 #include "AliGenInfo.h"
 
 
@@ -387,10 +387,10 @@ void PRFYZ(TCut cut0, TCut cut1,  char * description){
   TF1 * f1 = new TF1("fdiff","sqrt([0]*[0]+(250-x)*[1]*[1])");
   f1->SetParameter(1,0.2);
   f1->SetParameter(0,0.2);
-  comp.DrawXY("Cl.fZ","sqrt(Cl.fSigmaY2)","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut0,5,10,240,-0,1);
+  comp.DrawXY("abs(Cl.fZ)","sqrt(Cl.fSigmaY2)","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut0,5,10,240,-0,1);
   TH1F * prfInnerY = (TH1F*)comp.fMean->Clone();
 
-  comp.DrawXY("Cl.fZ","sqrt(Cl.fSigmaY2)","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut1,5,10,240,-0,1);
+  comp.DrawXY("abs(Cl.fZ)","sqrt(Cl.fSigmaY2)","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut1,5,10,240,-0,1);
   TH1F * prfOuterY = (TH1F*)comp.fMean->Clone();
   //
   //
@@ -456,10 +456,10 @@ void ResYZ(TCut cut0, TCut cut1,  char * description){
   TF1 * f1 = new TF1("fdiff","sqrt([0]*[0]+(250-x)*[1]*[1])");
   f1->SetParameter(1,0.2);
   f1->SetParameter(0,0.2);
-  comp.DrawXY("Cl.fZ","Track.fTrackPoints.GetY()-Cl.GetY()","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut0,5,10,240,-0.5,0.5);
+  comp.DrawXY("abs(Cl.fZ)","Track.fTrackPoints.GetY()-Cl.GetY()","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut0,5,10,240,-0.5,0.5);
   TH1F * prfInnerY = (TH1F*)comp.fRes->Clone();
 
-  comp.DrawXY("Cl.fZ","Track.fTrackPoints.GetY()-Cl.GetY()","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut1,5,10,240,-0.5,0.5);
+  comp.DrawXY("abs(Cl.fZ)","Track.fTrackPoints.GetY()-Cl.GetY()","abs(Track.fTrackPoints.GetAngleY())<0.05","Track.fTrackPoints.fTX>0"+cut1,5,10,240,-0.5,0.5);
   TH1F * prfOuterY = (TH1F*)comp.fRes->Clone();
   //
   //
@@ -502,7 +502,7 @@ void SysZX(TCut cut0,  char * description){
   //
   //
   TProfile * profA = new TProfile("profZ","profZ",70,89,250);
-  comp.fTree->Draw("Cl.fZ-Track.fTrackPoints.GetZ():Track.fTrackPoints.GetX()>>profZ","abs(Cl.fZ-Track.fTrackPoints.GetZ())<1&&Track.fTrackPoints.fTX>10"+cut0,"prof");
+  comp.fTree->Draw("abs(Cl.fZ)-abs(Track.fTrackPoints.GetZ()):Track.fTrackPoints.GetX()>>profZ","abs(abs(Cl.fZ)-abs(Track.fTrackPoints.GetZ()))<1&&Track.fTrackPoints.fTX>10"+cut0,"prof");
   profA->SetXTitle("Local X (cm)");
   profA->SetYTitle("Mean #Delta Z (cm)");  
   TLegend *legend = new TLegend(0.55,0.25,0.85,0.30, description);
@@ -516,7 +516,7 @@ TProfile * ProfileMaxRow(TCut cut0, char *name, Int_t max){
   TProfile *profA = new TProfile(name,name,max,0,max-1);
   char expr[100];
   sprintf(expr,"Cl.fMax:Cl.fRow>>%s",name);
-  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  comp.fTree->Draw(expr,"abs(Cl.fZ)>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Pad Row");
   profA->SetYTitle("Amplitude at maxima (ADC)");
   return profA;
@@ -529,10 +529,10 @@ TProfile * ProfileMaxPhi(TCut cut0, char *name, Int_t max){
   TProfile *profA = new TProfile(name,name,max,-0.14,0.14);
   char expr[100];
   sprintf(expr,"Cl.fMax:Cl.fY/Cl.fX>>%s",name);
-  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  comp.fTree->Draw(expr,"abs(Cl.fZ)>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Local #phi(rad)");
   profA->SetYTitle("Amplitude at maxima (ADC)");
-  return profA;
+  return profA; 
 }
 
 TProfile * ProfileQRow(TCut cut0, char *name, Int_t max){ 
@@ -542,7 +542,7 @@ TProfile * ProfileQRow(TCut cut0, char *name, Int_t max){
   TProfile *profA = new TProfile(name,name,max,0,max-1);
   char expr[100];
   sprintf(expr,"Cl.fQ:Cl.fRow>>%s",name);
-  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  comp.fTree->Draw(expr,"abs(Cl.fZ)>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Pad Row");
   profA->SetYTitle("Total charge(ADC)");
   return profA;
@@ -555,7 +555,7 @@ TProfile * ProfileQPhi(TCut cut0, char *name, Int_t max){
   TProfile *profA = new TProfile(name,name,max,-0.14,0.14);
   char expr[100];
   sprintf(expr,"Cl.fQ:Cl.fY/Cl.fX>>%s",name);
-  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  comp.fTree->Draw(expr,"abs(Cl.fZ)>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Local #phi(rad)");
   profA->SetYTitle("Total charge (ADC)");
   return profA;
@@ -569,8 +569,8 @@ TProfile * ProfileQZ(TCut cut0, char *name, Int_t max){
   TF1 * f1 = new TF1("f1","[0]*exp(-[1]*(250-x))");
   TProfile *profA = new TProfile(name,name,max,0,250);
   char expr[100];
-  sprintf(expr,"Cl.fQ:Cl.fZ>>%s",name);
-  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  sprintf(expr,"Cl.fQ:abs(Cl.fZ)>>%s",name);
+  comp.fTree->Draw(expr,"abs(Cl.fZ)>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Z position (cm)"); 
   profA->SetYTitle("Amplitude (ADC)");
   char chc[100];
@@ -592,8 +592,8 @@ TProfile * ProfileMaxZ(TCut cut0, char *name, Int_t max){
   TF1 * f1 = new TF1("f1","[0]+[1]*[0]*(250-x)");
   TProfile *profA = new TProfile(name,name,max,0,250);
   char expr[100];
-  sprintf(expr,"Cl.fMax:Cl.fZ>>%s",name);
-  comp.fTree->Draw(expr,"Cl.fZ>0&&Cl.fMax<500"+cut0,"prof");
+  sprintf(expr,"Cl.fMax:abs(Cl.fZ)>>%s",name);
+  comp.fTree->Draw(expr,"abs(Cl.fZ)>0&&Cl.fMax<500"+cut0,"prof");
   profA->SetXTitle("Z position (cm)"); 
   profA->SetYTitle("Amplitude at maxima (ADC)");
   char chc[100];
