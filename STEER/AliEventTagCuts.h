@@ -16,23 +16,24 @@
 
 class AliEventTag;
 
-class AliEventTagCuts : public TObject
-{
+//___________________________________________________________________________
+class AliEventTagCuts : public TObject {
  public:
   AliEventTagCuts();
-  
   ~AliEventTagCuts();
-
   void Reset();
   
+ //____________________________________________________//
   void SetParticipantsRange(Int_t i1, Int_t i2);
   void SetImpactParamRange(Float_t r1, Float_t r2);
-
   void SetPrimaryVertexXRange(Float_t r1, Float_t r2);
   void SetPrimaryVertexYRange(Float_t r1, Float_t r2);
   void SetPrimaryVertexZRange(Float_t r1, Float_t r2);
-
   void SetPrimaryVertexFlag(Int_t i);
+
+  void SetPrimaryVertexZErrorRange(Float_t r1, Float_t r2) {fPrimaryVertexZErrorMin = r1; fPrimaryVertexZErrorMax = r2; fPVzErrorFlag = kTRUE;}
+  void SetTriggerMask(ULong64_t trmask) {fTriggerMask = trmask; fTriggerMaskFlag = kTRUE;}
+  void SetTriggerCluster(UChar_t trcluster) {fTriggerCluster = trcluster;fTriggerClusterFlag = kTRUE;}
 
   void SetZDCNeutr1Range(Float_t r1, Float_t r2);
   void SetZDCProt1Range(Float_t r1, Float_t r2);
@@ -40,7 +41,6 @@ class AliEventTagCuts : public TObject
   void SetZDCNeutr2Range(Float_t r1, Float_t r2);
   void SetZDCProt2Range(Float_t r1, Float_t r2);
   void SetT0VertexZRange(Float_t r1, Float_t r2);
-
   void SetMultiplicityRange(Int_t n1, Int_t n2);
   void SetPosMultiplicityRange(Int_t n1, Int_t n2);
   void SetNegMultiplicityRange(Int_t n1, Int_t n2);
@@ -49,10 +49,15 @@ class AliEventTagCuts : public TObject
   void SetCascadesRange(Int_t n1, Int_t n2);
   void SetKinksRange(Int_t n1, Int_t n2);
  
+  void SetNumOfPMDTracksRange(Int_t n1, Int_t n2) {fPMDTracksMin = n1; fPMDTracksMax = n2; fPMDTracksFlag = kTRUE;}
+  void SetNumOfFMDTracksRange(Int_t n1, Int_t n2) {fFMDTracksMin = n1; fFMDTracksMax = n2; fFMDTracksFlag = kTRUE;}
+  void SetNumOfPHOSClustersRange(Int_t n1, Int_t n2) {fPHOSClustersMin = n1; fPHOSClustersMax = n2; fPHOSClustersFlag = kTRUE;}
+  void SetNumOfEMCALClustersRange(Int_t n1, Int_t n2) {fEMCALClustersMin = n1; fEMCALClustersMax = n2; fEMCALClustersFlag = kTRUE;}
+  void SetNumOfJetCandidatesRange(Int_t n1, Int_t n2) {fJetCandidatesMin = n1; fJetCandidatesMax = n2; fJetCandidatesFlag = kTRUE;}
+
   void SetMaxJetEnergy(Float_t r1);
   void SetMaxNeutralEnergy(Float_t r1);
   void SetHardPhotonsRange(Int_t i1, Int_t i2);
- 
   void SetNChargedAbove1GeVRange(Int_t i1, Int_t i2);
   void SetNChargedAbove3GeVRange(Int_t i1, Int_t i2);
   void SetNChargedAbove10GeVRange(Int_t i1, Int_t i2);
@@ -62,7 +67,6 @@ class AliEventTagCuts : public TObject
   void SetNElectronsAbove1GeVRange(Int_t i1, Int_t i2);
   void SetNElectronsAbove3GeVRange(Int_t i1, Int_t i2);
   void SetNElectronsAbove10GeVRange(Int_t i1, Int_t i2);
- 
   void SetNElectronRange(Int_t n1, Int_t n2);
   void SetNMuonRange(Int_t n1, Int_t n2);
   void SetNPionRange(Int_t n1, Int_t n2);
@@ -72,8 +76,7 @@ class AliEventTagCuts : public TObject
   void SetNPhotonRange(Int_t n1, Int_t n2);
   void SetNPi0Range(Int_t n1, Int_t n2);
   void SetNNeutronRange(Int_t n1, Int_t n2);
-  void SetNKaon0Range(Int_t n1, Int_t n2);
- 
+  void SetNKaon0Range(Int_t n1, Int_t n2); 
   void SetTotalPRange(Float_t r1, Float_t r2);
   void SetMeanPtRange(Float_t r1, Float_t r2);
   void SetMaxPt(Float_t r1);
@@ -85,6 +88,7 @@ class AliEventTagCuts : public TObject
  
   Bool_t IsAccepted(AliEventTag *EvTag) const;
 
+  //____________________________________________________//
  private:
   Float_t fVxMin, fVxMax;  //Definition of the range of the Vx
   Bool_t fVxFlag;          //Shows whether this cut is used or not
@@ -98,6 +102,13 @@ class AliEventTagCuts : public TObject
   Bool_t fImpactParamFlag; //Shows whether this cut is used or not
   Int_t fPrimaryVertexFlag; //Primary vertex flag: 0->not found, 1->found
   Bool_t fPVFlag;          //Shows whether this cut is used or not
+
+  Float_t fPrimaryVertexZErrorMin, fPrimaryVertexZErrorMax; //Range of the primary vertex z error
+  Bool_t fPVzErrorFlag;          //Shows whether this cut is used or not
+  ULong64_t fTriggerMask;  //trigger mask definition
+  Bool_t fTriggerMaskFlag; //Shows whether this cut is used or not
+  UChar_t fTriggerCluster;  //trigger cluster definition
+  Bool_t fTriggerClusterFlag; //Shows whether this cut is used or not
   
   Float_t fZDCNeutron1EnergyMin, fZDCNeutron1EnergyMax; //ZDC min,max - neutron
   Bool_t fZDCNeutron1EnergyFlag;//Shows whether this cut is used or not
@@ -110,8 +121,7 @@ class AliEventTagCuts : public TObject
   Float_t fZDCEMEnergyMin, fZDCEMEnergyMax; //ZDC min,max - em
   Bool_t fZDCEMEnergyFlag;//Shows whether this cut is used or not
   Float_t fT0VertexZMin, fT0VertexZMax; //T0 min, max
-  Bool_t fT0VertexZFlag;//Shows whether this cut is used or not
-  
+  Bool_t fT0VertexZFlag;//Shows whether this cut is used or not  
   Int_t fMultMin, fMultMax;  //Definition of the range of the multiplicity
   Bool_t fMultFlag;//Shows whether this cut is used or not
   Int_t fMultPosMin, fMultPosMax; //Positive tracks multiplicity range
@@ -127,14 +137,24 @@ class AliEventTagCuts : public TObject
   Int_t fkinksMin, fkinksMax; //Range of kinks
   Bool_t fkinksFlag;//Shows whether this cut is used or not
   
+  Int_t fPMDTracksMin, fPMDTracksMax; //Range of PMD tracks
+  Bool_t fPMDTracksFlag;//Shows whether this cut is used or not
+  Int_t fFMDTracksMin, fFMDTracksMax; //Range of FMD tracks
+  Bool_t fFMDTracksFlag;//Shows whether this cut is used or not
+  Int_t fPHOSClustersMin, fPHOSClustersMax; //Range of PHOS clusters
+  Bool_t fPHOSClustersFlag;//Shows whether this cut is used or not
+  Int_t fEMCALClustersMin, fEMCALClustersMax; //Range of EMCAL clusters
+  Bool_t fEMCALClustersFlag;//Shows whether this cut is used or not
+  Int_t fJetCandidatesMin, fJetCandidatesMax; //Range of jet candidates
+  Bool_t fJetCandidatesFlag;//Shows whether this cut is used or not
+
   Float_t fMaxJetEnergy; //max jet energy info
   Bool_t fMaxJetEnergyFlag;//Shows whether this cut is used or not
   
   Int_t fNHardPhotonsCandidatesMin, fNHardPhotonsCandidatesMax; //Hard photons candidates
   Bool_t fNHardPhotonsCandidatesFlag;//Shows whether this cut is used or not
   Float_t fMaxNeutralEnergy; //max neutral energy info
-  Bool_t fMaxNeutralFlag;//Shows whether this cut is used or not
-  
+  Bool_t fMaxNeutralFlag;//Shows whether this cut is used or not  
   Int_t fChargedAbove1GeVMin, fChargedAbove1GeVMax;//Definition of the range of the number of charged above 1GeV
   Bool_t fChargedAbove1GeVFlag;//Shows whether this cut is used or not
   Int_t fChargedAbove3GeVMin, fChargedAbove3GeVMax;//Definition of the range of the number of charged above 3GeV
@@ -152,8 +172,7 @@ class AliEventTagCuts : public TObject
   Int_t fElectronsAbove3GeVMin, fElectronsAbove3GeVMax;//Definition of the range of the number of electorns above 3GeV
   Bool_t fElectronsAbove3GeVFlag;//Shows whether this cut is used or not
   Int_t fElectronsAbove10GeVMin,fElectronsAbove10GeVMax;//Definition of the range of the number of electorns above 10GeV
-  Bool_t fElectronsAbove10GeVFlag;//Shows whether this cut is used or not
-  
+  Bool_t fElectronsAbove10GeVFlag;//Shows whether this cut is used or not  
   Int_t fElectronsMin, fElectronsMax; //Number of electrons range
   Bool_t fElectronsFlag;//Shows whether this cut is used or not
   Int_t fMuonsMin, fMuonsMax;  //Number of muons range
@@ -173,8 +192,7 @@ class AliEventTagCuts : public TObject
   Int_t fNeutronsMin, fNeutronsMax; //Number of neutrons range
   Bool_t fNeutronsFlag;//Shows whether this cut is used or not
   Int_t fKaon0sMin, fKaon0sMax; //Number of K0s range
-  Bool_t fKaon0sFlag;//Shows whether this cut is used or not
-  
+  Bool_t fKaon0sFlag;//Shows whether this cut is used or not  
   Float_t fTotalPMin, fTotalPMax; //Range of the sum of the momentum per event
   Bool_t fTotalPFlag;//Shows whether this cut is used or not
   Float_t fMeanPtMin, fMeanPtMax; //Range of mean Pt per event
@@ -192,7 +210,7 @@ class AliEventTagCuts : public TObject
   Float_t fHBTRadiiMin, fHBTRadiiMax; //HBT info
   Bool_t fHBTRadiiFlag;//Shows whether this cut is used or not
 
-  ClassDef(AliEventTagCuts, 1)
-} ;
+  ClassDef(AliEventTagCuts, 2)
+};
 
 #endif
