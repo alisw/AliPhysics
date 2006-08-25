@@ -31,21 +31,16 @@
 ClassImp(AliPHOSHit)
   
   //____________________________________________________________________________
-  AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit) : AliHit(hit)
+AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit) :
+  AliHit(hit),fId(0),fELOS(0),fTime(0)
 {
   // copy ctor
-  fX       = hit.fX ; 
-  fY       = hit.fY ; 
-  fZ       = hit.fZ ; 
-  fId      = hit.fId ; 
-  fELOS    = hit.fELOS ;
-  fTrack   = hit.fTrack ; 
-  fTime    = hit.fTime  ;
-  
+  hit.Copy(*this);
 } 
 
 //____________________________________________________________________________
-AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t track, Int_t id, Float_t *hits): AliHit(shunt, track)
+AliPHOSHit::AliPHOSHit(Int_t shunt, Int_t track, Int_t id, Float_t *hits) : 
+  AliHit(shunt, track),fId(0),fELOS(0),fTime(0)
 {
   //
   // Create a CPV hit object
