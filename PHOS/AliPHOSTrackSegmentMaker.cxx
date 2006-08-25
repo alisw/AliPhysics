@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.25  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -57,6 +60,15 @@ AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const TString alirunFileName,
   fFirstEvent = 0 ; 
   fLastEvent  = -1 ; 
 }
+
+//____________________________________________________________________________
+AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) :
+  TTask(tsmaker),fEventFolderName(tsmaker.GetEventFolderName()),
+  fFirstEvent(tsmaker.GetFirstEvent()),fLastEvent(tsmaker.GetLastEvent()),
+  fESD(tsmaker.GetESD())
+{
+  //Copy constructor
+} 
 
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()

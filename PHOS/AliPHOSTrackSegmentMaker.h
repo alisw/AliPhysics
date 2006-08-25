@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.38  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -38,15 +41,22 @@ public:
 
   AliPHOSTrackSegmentMaker();
   AliPHOSTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;                     
-  AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) : TTask(tsmaker) { ; } 
+  AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) ;
   virtual ~ AliPHOSTrackSegmentMaker() ;
+  AliPHOSTrackSegmentMaker & operator = (const AliPHOSTrackSegmentMaker & obj);
 
   virtual Int_t GetTrackSegmentsInRun()  const {Warning("GetTrackSegmentsInRun", "Not Defined" ) ; return 0 ; } 
 
   virtual void    Print(const Option_t * = "")const {Warning("Print", "Not Defined" ) ; }
+
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
   void SetESD(AliESD *esd) { fESD = esd; }
+
+  TString GetEventFolderName() const {return fEventFolderName;}
+  Int_t   GetFirstEvent()      const {return fFirstEvent;     }
+  Int_t   GetLastEvent()       const {return fLastEvent;      }
+  AliESD *GetESD()             const {return fESD;            }
 
   virtual void WriteTrackSegments() = 0;
   

@@ -25,7 +25,7 @@ class AliPHOSHit : public AliHit {
   
  public:
   
-  AliPHOSHit() {
+  AliPHOSHit() : fId(0),fELOS(0),fTime(0) {
     // default ctor 
   }
   AliPHOSHit(const AliPHOSHit & hit) ; 

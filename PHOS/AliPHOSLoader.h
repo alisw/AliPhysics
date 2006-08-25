@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2006/08/01 12:15:03  cvetan
+ * Adding a constructor from TFolder. Needed by AliReconstruction plugin scheme
+ *
  * Revision 1.10  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -61,7 +64,7 @@ class AliPHOSLoader : public AliLoader {
 public:
 
   AliPHOSLoader();
-  AliPHOSLoader(const AliPHOSLoader & obj) : AliLoader(obj) {}
+  AliPHOSLoader(const AliPHOSLoader & obj);
   AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername); 
   AliPHOSLoader(const Char_t *detname,TFolder *topfolder);
   
@@ -186,8 +189,10 @@ public:
   
   void   SetDebug(Int_t level) {fDebug = level;} // Set debug level
   void   SetBranchTitle(const TString& btitle);
-  
-  AliPHOSCalibrationDB * CalibrationDB(){return  fcdb; }
+
+  Int_t   GetDebug()                     const {return fDebug;      }
+  TString GetBranchTitle()               const {return fBranchTitle;}
+  AliPHOSCalibrationDB * CalibrationDB() const {return fcdb;        }
   void ReadCalibrationDB(const char * name, const char * filename);
   
 protected:

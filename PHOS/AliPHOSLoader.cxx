@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.16  2006/08/01 12:15:04  cvetan
+ * Adding a constructor from TFolder. Needed by AliReconstruction plugin scheme
+ *
  * Revision 1.15  2005/07/12 20:07:35  hristov
  * Changes needed to run simulation and reconstrruction in the same AliRoot session
  *
@@ -97,6 +100,13 @@ AliPHOSLoader::AliPHOSLoader(const Char_t *detname,TFolder *topfolder):
       AliLoader(detname,topfolder)
 {
   fDebug=0;
+}
+//____________________________________________________________________________ 
+AliPHOSLoader::AliPHOSLoader(const AliPHOSLoader & obj):
+  AliLoader(obj),fBranchTitle(obj.GetBranchTitle()),fcdb(obj.CalibrationDB()),
+  fDebug(obj.GetDebug())
+{
+  // Copy constructor
 }
 //____________________________________________________________________________ 
 

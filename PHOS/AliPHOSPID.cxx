@@ -38,7 +38,7 @@
 ClassImp(AliPHOSPID)
 
 //____________________________________________________________________________
-  AliPHOSPID::AliPHOSPID():TTask("","")
+AliPHOSPID::AliPHOSPID():TTask("","")
 {
   // ctor
   fEventFolderName = "" ; 
@@ -57,6 +57,13 @@ AliPHOSPID::AliPHOSPID(const TString alirunFileName, const TString eventFolderNa
   fLastEvent  = -1 ;
 }
 
+//____________________________________________________________________________
+AliPHOSPID::AliPHOSPID(const AliPHOSPID & pid) :
+  TTask(pid),fEventFolderName(pid.GetEventFolderName()),
+  fFirstEvent(pid.GetFirstEvent()),fLastEvent(pid.GetLastEvent())
+{
+  // Copy constructor
+}
 //____________________________________________________________________________
 AliPHOSPID::~AliPHOSPID()
 {
