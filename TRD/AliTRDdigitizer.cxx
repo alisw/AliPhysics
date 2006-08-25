@@ -735,7 +735,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   AliDebug(1,Form("Found %d primary particles\n",nTrack));
   AliDebug(1,Form("Sampling = %.0fMHz\n"        ,calibration->GetSamplingFrequency()));
   AliDebug(1,Form("Gain     = %d\n"             ,((Int_t) simParam->GetGasGain())));
-  AliDebug(1,Form("Noise     = %d\n"            ,((Int_t) simParam->GetNoise())));
+  AliDebug(1,Form("Noise    = %d\n"             ,((Int_t) simParam->GetNoise())));
   if (simParam->TimeStructOn()) {
     AliDebug(1,"Time Structure of drift cells implemented.\n");
   } 
@@ -763,275 +763,280 @@ Bool_t AliTRDdigitizer::MakeDigits()
       countHits++;
       iHit++;
 
-              pos[0]        = hit->X();
-              pos[1]        = hit->Y();
-              pos[2]        = hit->Z();
-      Float_t q             = hit->GetCharge();
-      Int_t   track         = hit->Track();
-      Int_t   detector      = hit->GetDetector();
-      Int_t   plane         = fGeo->GetPlane(detector);
-      Int_t   chamber       = fGeo->GetChamber(detector);
-      Float_t time0         = AliTRDgeometry::GetTime0(plane);
-
-      padPlane              = commonParam->GetPadPlane(plane,chamber);
-      Float_t row0          = padPlane->GetRow0();
-      Int_t   nRowMax       = padPlane->GetNrows();
-      Int_t   nColMax       = padPlane->GetNcols();
-      Int_t   inDrift       = 1;
-       
+      Float_t q        = hit->GetCharge();
       // Don't analyze test hits
-      if (((Int_t) q) != 0) {
+      if (((Int_t) q) == 0) {
+        hit = (AliTRDhit *) fTRD->NextHit();   
+        continue;
+      }
 
-        if (detector != detectorOld) {
+      pos[0]           = hit->X();
+      pos[1]           = hit->Y();
+      pos[2]           = hit->Z();
+      Int_t   track    = hit->Track();
+      Int_t   detector = hit->GetDetector();
+      Int_t   plane    = fGeo->GetPlane(detector);
+      Int_t   chamber  = fGeo->GetChamber(detector);
+      Float_t time0    = AliTRDgeometry::GetTime0(plane);
+      padPlane         = commonParam->GetPadPlane(plane,chamber);
+      Float_t row0     = padPlane->GetRow0();
+      Int_t   nRowMax  = padPlane->GetNrows();
+      Int_t   nColMax  = padPlane->GetNcols();
+      Int_t   inDrift  = 1;
 
-          // Compress the old one if enabled
-          if ((fCompress) && (detectorOld > -1)) {
-            AliDebug(1,"Compress the old container ...");
-            signals->Compress(1,0);
-            for (iDict = 0; iDict < kNDict; iDict++) {
-              dictionary[iDict]->Compress(1,0);
-	    }
+      // Find the current volume with the geo manager
+      gGeoManager->SetCurrentPoint(pos); 	 
+      gGeoManager->FindNode(); 	 
+      if (strstr(gGeoManager->GetPath(),"/UK")) { 	 
+	inDrift = 0; 	 
+      } 	 
+
+      if (detector != detectorOld) {
+
+        // Compress the old one if enabled
+        if ((fCompress) && (detectorOld > -1)) {
+          signals->Compress(1,0);
+          for (iDict = 0; iDict < kNDict; iDict++) {
+            dictionary[iDict]->Compress(1,0);
+          }
+        }
+	// Get the new container
+        signals = (AliTRDdataArrayF *) signalsArray->At(detector);
+        if (signals->GetNtime() == 0) {
+          // Allocate a new one if not yet existing
+          signals->Allocate(nRowMax,nColMax,nTimeTotal);
+	}
+        else {
+	  // Expand an existing one
+          if (fCompress) {
+            signals->Expand();
 	  }
-	  // Get the new container
-          signals = (AliTRDdataArrayF *) signalsArray->At(detector);
-          if (signals->GetNtime() == 0) {
-            // Allocate a new one if not yet existing
-            signals->Allocate(nRowMax,nColMax,nTimeTotal);
+        }
+	// The same for the dictionary
+        for (iDict = 0; iDict < kNDict; iDict++) {       
+          dictionary[iDict] = fDigitsManager->GetDictionary(detector,iDict);
+          if (dictionary[iDict]->GetNtime() == 0) {
+            dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeTotal);
 	  }
           else {
-	    // Expand an existing one
-            if (fCompress) {
-              signals->Expand();
+            if (fCompress) dictionary[iDict]->Expand();
+          }
+        }      
+        detectorOld = detector;
+      }
+
+      // Rotate the sectors on top of each other       
+      // by using the geoManager
+      Double_t aaa[3];
+      gGeoManager->MasterToLocal(pos,aaa);
+      if (inDrift) {
+        aaa[2] = time0 - (kDrWidth / 2.0 + kAmWidth) + aaa[2];
+      } 
+      else {
+        aaa[2] = time0 + aaa[2];
+      }
+      aaa[1] = row0 + padPlane->GetLengthRim() + fGeo->RpadW() 
+             - 0.5 * fGeo->GetChamberLength(plane,chamber) 
+             + aaa[1];
+      rot[0] = aaa[2];
+      rot[1] = aaa[0];
+      rot[2] = aaa[1];
+
+      // The driftlength. It is negative if the hit is between pad plane and anode wires.
+      Double_t driftlength = time0 - rot[0];
+
+      // Loop over all electrons of this hit
+      // TR photons produce hits with negative charge
+      Int_t nEl = ((Int_t) TMath::Abs(q));
+      for (Int_t iEl = 0; iEl < nEl; iEl++) {
+
+        xyz[0] = rot[0];
+        xyz[1] = rot[1];
+        xyz[2] = rot[2];
+
+	// Stupid patch to take care of TR photons that are absorbed
+	// outside the chamber volume. A real fix would actually need
+	// a more clever implementation of the TR hit generation
+        if (q < 0.0) {
+	  if ((xyz[2] < padPlane->GetRowEnd()) ||
+              (xyz[2] > padPlane->GetRow0())) {
+            if (iEl == 0) {
+              AliDebug(2,Form("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
+                             ,xyz[2],padPlane->GetRow0(),padPlane->GetRowEnd()));
 	    }
+            continue;
 	  }
-	  // The same for the dictionary
-          for (iDict = 0; iDict < kNDict; iDict++) {       
-            dictionary[iDict] = fDigitsManager->GetDictionary(detector,iDict);
-            if (dictionary[iDict]->GetNtime() == 0) {
-              dictionary[iDict]->Allocate(nRowMax,nColMax,nTimeTotal);
+          Float_t tt = driftlength + kAmWidth;
+          if ((tt < 0.0) || 
+              (tt > kDrWidth + 2.0*kAmWidth)) {
+            if (iEl == 0) {
+              AliDebug(2,Form("Hit outside of sensitive volume, time (Q = %d)\n"
+                             ,((Int_t) q)));
 	    }
-            else {
-              if (fCompress) dictionary[iDict]->Expand();
-            }
-          }      
-          detectorOld = detector;
+            continue;
+	  }
         }
 
-        // Rotate the sectors on top of each other       
-	// by using the geoManager
-        Double_t aaa[3];
-        gGeoManager->MasterToLocal(pos,aaa);
-        if (inDrift) {
-          aaa[2] = time0 - (kDrWidth / 2.0 + kAmWidth) + aaa[2];
-	} 
-        else {
-          aaa[2] = time0 + aaa[2];
-	}
-        aaa[1] = row0 + padPlane->GetLengthRim() + fGeo->RpadW() 
-               - 0.5 * fGeo->GetChamberLength(plane,chamber) 
-	       + aaa[1];
-        rot[0] = aaa[2];
-        rot[1] = aaa[0];
-        rot[2] = aaa[1];
+        // Get row and col of unsmeared electron to retrieve drift velocity
+        // The pad row (z-direction)
+        Int_t    rowE         = padPlane->GetPadRowNumber(xyz[2]);
+        if (rowE < 0) continue;
+        Double_t rowOffset    = padPlane->GetPadRowOffset(rowE,xyz[2]);
 
-        // The driftlength. It is negative if the hit is between pad plane and anode wires.
-        Double_t driftlength = time0 - rot[0];
+        // The pad column (rphi-direction)
+	Double_t offsetTilt   = padPlane->GetTiltOffset(rowOffset);
+        Int_t    colE         = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
+        if (colE < 0) continue;	  
+        Double_t colOffset    = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
 
-        // Loop over all electrons of this hit
-        // TR photons produce hits with negative charge
-        Int_t nEl = ((Int_t) TMath::Abs(q));
-        for (Int_t iEl = 0; iEl < nEl; iEl++) {
-
-          xyz[0] = rot[0];
-          xyz[1] = rot[1];
-          xyz[2] = rot[2];
-
-	  // Stupid patch to take care of TR photons that are absorbed
-	  // outside the chamber volume. A real fix would actually need
-	  // a more clever implementation of the TR hit generation
-          if (q < 0.0) {
-	    if ((xyz[2] < padPlane->GetRowEnd()) ||
-                (xyz[2] > padPlane->GetRow0())) {
-              if (iEl == 0) {
-                AliDebug(2,Form("Hit outside of sensitive volume, row (z=%f, row0=%f, rowE=%f)\n"
-                               ,xyz[2],padPlane->GetRow0(),padPlane->GetRowEnd()));
-	      }
-              continue;
-	    }
-            Float_t tt = driftlength + kAmWidth;
-            if ((tt < 0.0) || 
-                (tt > kDrWidth + 2.0*kAmWidth)) {
-              if (iEl == 0) {
-                AliDebug(2,Form("Hit outside of sensitive volume, time (Q = %d)\n"
-                               ,((Int_t) q)));
-	      }
-              continue;
-	    }
-	  }
-
-          // Get row and col of unsmeared electron to retrieve drift velocity
-          // The pad row (z-direction)
-          Int_t    rowE         = padPlane->GetPadRowNumber(xyz[2]);
-          if (rowE < 0) continue;
-          Double_t rowOffset    = padPlane->GetPadRowOffset(rowE,xyz[2]);
-
-          // The pad column (rphi-direction)
-	  Double_t offsetTilt   = padPlane->GetTiltOffset(rowOffset);
-          Int_t    colE         = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
-          if (colE < 0) continue;	  
-          Double_t colOffset    = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
-
-          Float_t driftvelocity = calibration->GetVdrift(detector,colE,rowE);
+        Float_t driftvelocity = calibration->GetVdrift(detector,colE,rowE);
                     
-          // Normalised drift length
-          Double_t absdriftlength = TMath::Abs(driftlength);
-          if (commonParam->ExBOn()) {
-            absdriftlength /= TMath::Sqrt(GetLorentzFactor(driftvelocity));
-	  }
+        // Normalised drift length
+        Double_t absdriftlength = TMath::Abs(driftlength);
+        if (commonParam->ExBOn()) {
+          absdriftlength /= TMath::Sqrt(GetLorentzFactor(driftvelocity));
+        }
 
-          // Electron attachment
-          if (simParam->ElAttachOn()) {
-            if (gRandom->Rndm() < (absdriftlength * elAttachProp)) continue;
-          }
+        // Electron attachment
+        if (simParam->ElAttachOn()) {
+          if (gRandom->Rndm() < (absdriftlength * elAttachProp)) continue;
+        }
           
-          // Apply the diffusion smearing
-          if (simParam->DiffusionOn()) {
-            if (!(Diffusion(driftvelocity,absdriftlength,xyz))) continue;
-          }
+        // Apply the diffusion smearing
+        if (simParam->DiffusionOn()) {
+          if (!(Diffusion(driftvelocity,absdriftlength,xyz))) continue;
+        }
 
-          // Apply E x B effects (depends on drift direction)
-          if (commonParam->ExBOn()) { 
-            if (!(ExB(driftvelocity,driftlength,xyz))) continue;
-          }
+        // Apply E x B effects (depends on drift direction)
+        if (commonParam->ExBOn()) { 
+          if (!(ExB(driftvelocity,driftlength,xyz))) continue;
+        }
 
-          // The electron position after diffusion and ExB in pad coordinates.
-          // The pad row (z-direction)
-          rowE       = padPlane->GetPadRowNumber(xyz[2]);
-          if (rowE < 0) continue;
-          rowOffset  = padPlane->GetPadRowOffset(rowE,xyz[2]);
+        // The electron position after diffusion and ExB in pad coordinates.
+        // The pad row (z-direction)
+        rowE       = padPlane->GetPadRowNumber(xyz[2]);
+        if (rowE < 0) continue;
+        rowOffset  = padPlane->GetPadRowOffset(rowE,xyz[2]);
 
-          // The pad column (rphi-direction)
-          offsetTilt = padPlane->GetTiltOffset(rowOffset);
-          colE       = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
-          if (colE < 0) continue;         
-          colOffset  = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
+        // The pad column (rphi-direction)
+        offsetTilt = padPlane->GetTiltOffset(rowOffset);
+        colE       = padPlane->GetPadColNumber(xyz[1]+offsetTilt,rowOffset);
+        if (colE < 0) continue;         
+        colOffset  = padPlane->GetPadColOffset(colE,xyz[1]+offsetTilt);
 	  
-          // Also re-retrieve drift velocity because col and row may have changed
-          driftvelocity = calibration->GetVdrift(detector,colE,rowE);
-          Float_t t0    = calibration->GetT0(detector,colE,rowE);
+        // Also re-retrieve drift velocity because col and row may have changed
+        driftvelocity = calibration->GetVdrift(detector,colE,rowE);
+        Float_t t0    = calibration->GetT0(detector,colE,rowE);
           
-          // Convert the position to drift time, using either constant drift velocity or
-          // time structure of drift cells (non-isochronity, GARFIELD calculation).
-	  Double_t drifttime;
-          if (simParam->TimeStructOn()) {
-	    // Get z-position with respect to anode wire:
-            Double_t Z  =  row0 - xyz[2] + simParam->GetAnodeWireOffset();
-	    Z -= ((Int_t)(2 * Z)) / 2.0;
-	    if (Z > 0.25) {
-              Z  = 0.5 - Z;
-	    }
-	    // Use drift time map (GARFIELD)
-            drifttime = TimeStruct(driftvelocity,time0-xyz[0]+kAmWidth,Z);
-	  } 
-          else {
-	    // Use constant drift velocity
-            drifttime = TMath::Abs(time0 - xyz[0]) / driftvelocity;
+        // Convert the position to drift time, using either constant drift velocity or
+        // time structure of drift cells (non-isochronity, GARFIELD calculation).
+	Double_t drifttime;
+        if (simParam->TimeStructOn()) {
+	  // Get z-position with respect to anode wire:
+          Double_t Z  =  row0 - xyz[2] + simParam->GetAnodeWireOffset();
+	  Z -= ((Int_t)(2 * Z)) / 2.0;
+	  if (Z > 0.25) {
+            Z  = 0.5 - Z;
 	  }
+	  // Use drift time map (GARFIELD)
+          drifttime = TimeStruct(driftvelocity,time0-xyz[0]+kAmWidth,Z);
+        } 
+        else {
+	  // Use constant drift velocity
+          drifttime = TMath::Abs(time0 - xyz[0]) / driftvelocity;
+        }
 
-          // Apply the gas gain including fluctuations
-          Double_t ggRndm = 0.0;
-          do {
-            ggRndm = gRandom->Rndm();
-	  } while (ggRndm <= 0);
-          Int_t signal = (Int_t) (-(simParam->GetGasGain()) * TMath::Log(ggRndm));
+        // Apply the gas gain including fluctuations
+        Double_t ggRndm = 0.0;
+        do {
+          ggRndm = gRandom->Rndm();
+	} while (ggRndm <= 0);
+        Int_t signal = (Int_t) (-(simParam->GetGasGain()) * TMath::Log(ggRndm));
 
-          // Apply the pad response 
-          if (simParam->PRFOn()) {
-  	    // The distance of the electron to the center of the pad 
-	    // in units of pad width
-	    Double_t dist = (colOffset - 0.5*padPlane->GetColSize(colE))
-                          / padPlane->GetColSize(colE);
-            if (!(calibration->PadResponse(signal,dist,plane,padSignal))) continue;
-	  }
-	  else {
-            padSignal[0] = 0.0;
-            padSignal[1] = signal;
-            padSignal[2] = 0.0;
-	  }
+        // Apply the pad response 
+        if (simParam->PRFOn()) {
+  	  // The distance of the electron to the center of the pad 
+	  // in units of pad width
+	  Double_t dist = (colOffset - 0.5*padPlane->GetColSize(colE))
+                        / padPlane->GetColSize(colE);
+          if (!(calibration->PadResponse(signal,dist,plane,padSignal))) continue;
+	}
+        else {
+          padSignal[0] = 0.0;
+          padSignal[1] = signal;
+          padSignal[2] = 0.0;
+        }
 
-          // The time bin (always positive), with t0 correction
-          Double_t timeBinIdeal = drifttime * samplingRate + t0;
-	  // Protection 
-          if (TMath::Abs(timeBinIdeal) > 2*nTimeTotal) {
-            timeBinIdeal = 2 * nTimeTotal;
-	  }
-          Int_t    timeBinTruncated = (Int_t) timeBinIdeal;
-          // The distance of the position to the middle of the timebin
-          Double_t timeOffset       = ((Float_t) timeBinTruncated 
-                                    + 0.5 - timeBinIdeal) / samplingRate;
+        // The time bin (always positive), with t0 correction
+        Double_t timeBinIdeal = drifttime * samplingRate + t0;
+        // Protection 
+        if (TMath::Abs(timeBinIdeal) > 2*nTimeTotal) {
+          timeBinIdeal = 2 * nTimeTotal;
+	}
+        Int_t    timeBinTruncated = (Int_t) timeBinIdeal;
+        // The distance of the position to the middle of the timebin
+        Double_t timeOffset       = ((Float_t) timeBinTruncated 
+                                  + 0.5 - timeBinIdeal) / samplingRate;
           
-	  // Sample the time response inside the drift region
-	  // + additional time bins before and after.
-          // The sampling is done always in the middle of the time bin
-          for (Int_t iTimeBin = TMath::Max(timeBinTruncated, 0);
-               iTimeBin < TMath::Min(timeBinTruncated+timeBinTRFend,nTimeTotal);
-	       iTimeBin++) {
+	// Sample the time response inside the drift region
+	// + additional time bins before and after.
+        // The sampling is done always in the middle of the time bin
+        for (Int_t iTimeBin = TMath::Max(timeBinTruncated, 0);
+             iTimeBin < TMath::Min(timeBinTruncated+timeBinTRFend,nTimeTotal);
+	     iTimeBin++) {
 
-     	    // Apply the time response
-            Double_t timeResponse = 1.0;
-            Double_t crossTalk    = 0.0;
-            Double_t time         = (iTimeBin - timeBinTruncated) / samplingRate + timeOffset;
-            if (simParam->TRFOn()) {
-              timeResponse = simParam->TimeResponse(time);
+     	  // Apply the time response
+          Double_t timeResponse = 1.0;
+          Double_t crossTalk    = 0.0;
+          Double_t time         = (iTimeBin - timeBinTruncated) / samplingRate + timeOffset;
+          if (simParam->TRFOn()) {
+            timeResponse = simParam->TimeResponse(time);
+          }
+          if (simParam->CTOn()) {
+            crossTalk    = simParam->CrossTalk(time);
+          }
+
+          signalOld[0] = 0.0;
+          signalOld[1] = 0.0;
+          signalOld[2] = 0.0;
+
+          for (iPad = 0; iPad < kNpad; iPad++) {
+
+            Int_t colPos = colE + iPad - 1;
+            if (colPos <        0) continue;
+            if (colPos >= nColMax) break;
+
+            // Add the signals
+            Int_t iCurrentTimeBin = iTimeBin;
+            signalOld[iPad]  = signals->GetDataUnchecked(rowE,colPos,iCurrentTimeBin);
+            if (colPos != colE) {
+              signalOld[iPad] += padSignal[iPad] * (timeResponse + crossTalk);
+            } 
+            else {
+              signalOld[iPad] += padSignal[iPad] * timeResponse;
             }
-      
-            if (simParam->CTOn()) {
-              crossTalk    = simParam->CrossTalk(time);
-            }
+            signals->SetDataUnchecked(rowE,colPos,iCurrentTimeBin,signalOld[iPad]);
 
-            signalOld[0] = 0.0;
-            signalOld[1] = 0.0;
-            signalOld[2] = 0.0;
-
-            for (iPad = 0; iPad < kNpad; iPad++) {
-
-              Int_t colPos = colE + iPad - 1;
-              if (colPos <        0) continue;
-              if (colPos >= nColMax) break;
-
-              // Add the signals
-              Int_t iCurrentTimeBin = iTimeBin;
-              signalOld[iPad]  = signals->GetDataUnchecked(rowE,colPos,iCurrentTimeBin);
-              if (colPos != colE) {
-                signalOld[iPad] += padSignal[iPad] * (timeResponse + crossTalk);
-              } 
-              else {
-                signalOld[iPad] += padSignal[iPad] * timeResponse;
-              }
-              signals->SetDataUnchecked(rowE,colPos,iCurrentTimeBin,signalOld[iPad]);
-
-              // Store the track index in the dictionary
-              // Note: We store index+1 in order to allow the array to be compressed
-              if (signalOld[iPad] > 0) { 
-                for (iDict = 0; iDict < kNDict; iDict++) {
-                  Int_t oldTrack = dictionary[iDict]->GetDataUnchecked(rowE
-                                                                      ,colPos
-                                                                      ,iCurrentTimeBin);
-                  if (oldTrack == track+1) break;
-                  if (oldTrack ==       0) {
-                    dictionary[iDict]->SetDataUnchecked(rowE,colPos,iCurrentTimeBin,track+1);
-                    break;
-                  }
+            // Store the track index in the dictionary
+            // Note: We store index+1 in order to allow the array to be compressed
+            if (signalOld[iPad] > 0) { 
+              for (iDict = 0; iDict < kNDict; iDict++) {
+                Int_t oldTrack = dictionary[iDict]->GetDataUnchecked(rowE
+                                                                    ,colPos
+                                                                    ,iCurrentTimeBin);
+                if (oldTrack == track+1) break;
+                if (oldTrack ==       0) {
+                  dictionary[iDict]->SetDataUnchecked(rowE,colPos,iCurrentTimeBin,track+1);
+                  break;
                 }
               }
+            }
 
-	    } // Loop: pads
+	  } // Loop: pads
 
-	  } // Loop: time bins
+	} // Loop: time bins
 
-        } // Loop: electrons of a single hit
-
-      } // If: detector and test hit
+      } // Loop: electrons of a single hit
 
       hit = (AliTRDhit *) fTRD->NextHit();   
 
@@ -1063,8 +1068,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
     Double_t *inADC  = new Double_t[nTimeTotal];
     Double_t *outADC = new Double_t[nTimeTotal];
 
-    AliDebug(1,Form("Digitization for chamber %d\n",iDet));
-
     // Add a container for the digits of this detector
     digits = fDigitsManager->GetDigits(iDet);        
     // Allocate memory space for the digits buffer
@@ -1093,7 +1096,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
     Int_t nDigits = 0;
 
     // Don't create noise in detectors that are switched off / not installed, etc.
-    if (!calibration->GetChamberStatus(iDet)) {
+    if (calibration->GetChamberStatus(iDet)) {
 
       // Create the digits for this chamber
       for (iRow  = 0; iRow  <  nRowMax;   iRow++ ) {
@@ -1127,9 +1130,9 @@ Bool_t AliTRDdigitizer::MakeDigits()
               // Pad and time coupling
               signalAmp *= coupling;
 
-              Float_t padgain = calibration->GetGainFactor(iDet, iCol, iRow);
+              Float_t padgain = calibration->GetGainFactor(iDet,iCol,iRow);
               if (padgain <= 0) {
-                AliError(Form("Not a valid gain %f, %d %d %d\n", padgain, iDet, iCol, iRow));
+                AliError(Form("Not a valid gain %f, %d %d %d\n",padgain,iDet,iCol,iRow));
               }
 	      signalAmp *= padgain;
 
@@ -1186,10 +1189,12 @@ Bool_t AliTRDdigitizer::MakeDigits()
     totalSizeDict1  += dictionary[1]->GetSize();
     totalSizeDict2  += dictionary[2]->GetSize();
 
-    Float_t nPixel = nRowMax * nColMax * nTimeTotal;
-    AliDebug(1,Form("Found %d digits in detector %d (%3.0f).\n"
-                   ,nDigits,iDet
-                   ,100.0 * ((Float_t) nDigits) / nPixel));
+    if (nDigits > 0) {
+      Float_t nPixel = nRowMax * nColMax * nTimeTotal;
+      AliDebug(1,Form("Found %d digits in detector %d (%3.0f).\n"
+                     ,nDigits,iDet
+                     ,100.0 * ((Float_t) nDigits) / nPixel));
+    }
 
     if (fCompress) {
       signals->Compress(1,0);
@@ -1284,7 +1289,6 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   Double_t adcOutRange  = simParam->GetADCoutRange();
   Int_t    adcThreshold = simParam->GetADCthreshold();
   Int_t    adcBaseline  = simParam->GetADCbaseline();   
-
   Int_t    nTimeTotal   = calibration->GetNumberOfTimeBins();
 
   AliTRDdataArrayI *digitsIn;
@@ -1294,8 +1298,6 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
   
   // Loop through the detectors
   for (Int_t iDet = 0; iDet < AliTRDgeometry::Ndet(); iDet++) {
-
-    AliDebug(1,Form("Convert detector %d to digits.\n",iDet));
 
     Int_t plane      = fGeo->GetPlane(iDet);
     Int_t sector     = fGeo->GetSector(iDet);
@@ -1322,13 +1324,14 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
 
         for (iTime = 0; iTime < nTimeTotal; iTime++) {
 
+	  // Scale s-digits to normal digits
           Double_t signal = (Double_t) digitsIn->GetDataUnchecked(iRow,iCol,iTime);
           signal         *= sDigitsScale;
+	  // Apply the pad-by-pad gain factors
           Float_t padgain = calibration->GetGainFactor(iDet,iCol,iRow);
           if (padgain <= 0.0) {
             AliError(Form("Not a valid gain %f, %d %d %d\n",padgain,iDet,iCol,iRow));
           }
-
           signal *= padgain;
           // Pad and time coupling
           signal *= coupling;

@@ -263,7 +263,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c)
   fPadRow = new Double_t[fNrows];
   Double_t row = fGeo->GetChamberLength(p,0)
     	       + fGeo->GetChamberLength(p,1)
-               + fGeo->GetChamberLength(p,2) / 2.
+               + fGeo->GetChamberLength(p,2) / 2.0
                - fGeo->RpadW()
                - fLengthRim;
   for (Int_t ic = 0; ic < c; ic++) {
@@ -283,7 +283,7 @@ AliTRDpadPlane::AliTRDpadPlane(Int_t p, Int_t c)
   // Column direction
   //
   fPadCol = new Double_t[fNcols];
-  Double_t col = fGeo->GetChamberWidth(p) / 2. 
+  Double_t col = fGeo->GetChamberWidth(p) / 2.0
                + fGeo->CroWid()
                - fWidthRim;
   for (Int_t ic = 0; ic < fNcols; ic++) {
@@ -328,13 +328,17 @@ AliTRDpadPlane::AliTRDpadPlane(const AliTRDpadPlane &p)
 
   Int_t iBin = 0;
 
-  if (((AliTRDpadPlane &) p).fPadRow) delete [] ((AliTRDpadPlane &) p).fPadRow;
+  if (((AliTRDpadPlane &) p).fPadRow) {
+    delete [] ((AliTRDpadPlane &) p).fPadRow;
+  }
   ((AliTRDpadPlane &) p).fPadRow = new Double_t[fNrows];
   for (iBin = 0; iBin < fNrows; iBin++) {
     ((AliTRDpadPlane &) p).fPadRow[iBin] = fPadRow[iBin];
   }                                                                             
 
-  if (((AliTRDpadPlane &) p).fPadCol) delete [] ((AliTRDpadPlane &) p).fPadCol;
+  if (((AliTRDpadPlane &) p).fPadCol) {
+    delete [] ((AliTRDpadPlane &) p).fPadCol;
+  }
   ((AliTRDpadPlane &) p).fPadCol = new Double_t[fNrows];
   for (iBin = 0; iBin < fNrows; iBin++) {
     ((AliTRDpadPlane &) p).fPadCol[iBin] = fPadCol[iBin];
@@ -373,7 +377,10 @@ AliTRDpadPlane &AliTRDpadPlane::operator=(const AliTRDpadPlane &p)
   // Assignment operator
   //
 
-  if (this != &p) ((AliTRDpadPlane &) p).Copy(*this);
+  if (this != &p) {
+    ((AliTRDpadPlane &) p).Copy(*this);
+  }
+
   return *this;
 
 }
@@ -410,13 +417,17 @@ void AliTRDpadPlane::Copy(TObject &p) const
   ((AliTRDpadPlane &) p).fTiltingAngle = fTiltingAngle;
   ((AliTRDpadPlane &) p).fTiltingTan   = fTiltingTan;
 
-  if (((AliTRDpadPlane &) p).fPadRow) delete [] ((AliTRDpadPlane &) p).fPadRow;
+  if (((AliTRDpadPlane &) p).fPadRow) {
+    delete [] ((AliTRDpadPlane &) p).fPadRow;
+  }
   ((AliTRDpadPlane &) p).fPadRow = new Double_t[fNrows];
   for (iBin = 0; iBin < fNrows; iBin++) {
     ((AliTRDpadPlane &) p).fPadRow[iBin] = fPadRow[iBin];
   }                                                                             
 
-  if (((AliTRDpadPlane &) p).fPadCol) delete [] ((AliTRDpadPlane &) p).fPadCol;
+  if (((AliTRDpadPlane &) p).fPadCol) {
+    delete [] ((AliTRDpadPlane &) p).fPadCol;
+  }
   ((AliTRDpadPlane &) p).fPadCol = new Double_t[fNrows];
   for (iBin = 0; iBin < fNrows; iBin++) {
     ((AliTRDpadPlane &) p).fPadCol[iBin] = fPadCol[iBin];
@@ -438,20 +449,27 @@ Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
   Int_t nbelow = 0;
   Int_t middle = 0;
 
-  if ((z > GetRow0()) || (z < GetRowEnd())) {
+  if ((z > GetRow0()  ) || 
+      (z < GetRowEnd())) {
 
     row = -1;
 
   }
   else {
 
-    nabove = fNrows+1;
+    nabove = fNrows + 1;
     nbelow = 0;
     while (nabove - nbelow > 1) {
       middle = (nabove + nbelow) / 2;
-      if (z == fPadRow[middle-1]) row    = middle;
-      if (z  > fPadRow[middle-1]) nabove = middle;
-      else                        nbelow = middle;
+      if (z == fPadRow[middle-1]) {
+        row    = middle;
+      }
+      if (z  > fPadRow[middle-1]) {
+        nabove = middle;
+      }
+      else {
+        nbelow = middle;
+      }
     }
     row = nbelow - 1;
 
@@ -463,39 +481,38 @@ Int_t AliTRDpadPlane::GetPadRowNumber(Double_t z) const
 
 //_____________________________________________________________________________
 Int_t AliTRDpadPlane::GetPadColNumber(Double_t rphi
-				     , Double_t /*rowOffset*/) const
+				    , Double_t /*rowOffset*/) const
 {
   //
   // Finds the pad column number for a given global rphi-position
   //
 
-  Int_t    col       = 0;
-  Int_t    nabove    = 0;
-  Int_t    nbelow    = 0;
-  Int_t    middle    = 0;
-  Double_t rphiShift = 0;
+  Int_t    col    = 0;
+  Int_t    nabove = 0;
+  Int_t    nbelow = 0;
+  Int_t    middle = 0;
 
-  // MI change don't apply tilting angle here - better to do it directly on hit level
-  // Take the tilting angle into account by shifting the hit position
-  // into the opposite direction
-  // 
-
-  rphiShift = rphi ;
-
-  if ((rphiShift > GetCol0()) || (rphiShift < GetColEnd())) {
+  if ((rphi > GetCol0()  ) || 
+      (rphi < GetColEnd())) {
 
     col = -1;
 
   }
   else {
 
-    nabove = fNcols+1;
+    nabove = fNcols + 1;
     nbelow = 0;
     while (nabove - nbelow > 1) {
       middle = (nabove + nbelow) / 2;
-      if (rphiShift == fPadCol[middle-1]) col    = middle;
-      if (rphiShift  > fPadCol[middle-1]) nabove = middle;
-      else                                nbelow = middle;
+      if (rphi == fPadCol[middle-1]) {
+        col    = middle;
+      }
+      if (rphi  > fPadCol[middle-1]) {
+        nabove = middle;
+      }
+      else {
+        nbelow = middle;
+      }
     }
     col = nbelow - 1;
 
