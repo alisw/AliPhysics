@@ -32,29 +32,36 @@
 ClassImp(AliPHOSClusterizer)
 
 //____________________________________________________________________________
-  AliPHOSClusterizer::AliPHOSClusterizer():TTask("","")
+AliPHOSClusterizer::AliPHOSClusterizer():
+  TTask("",""),
+  fEventFolderName(""),
+  fFirstEvent(0),
+  fLastEvent(-1),
+  fRawReader(0)
 {
   // ctor
-
-  fEventFolderName = "" ; 
-  fFirstEvent = 0 ; 
-  fLastEvent  = -1 ; 
-  fRawReader  = 0 ;
 }
 
 //____________________________________________________________________________
 AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName, 
 				       const TString eventFolderName):
   TTask("PHOS"+AliConfig::Instance()->GetReconstructionerTaskName(), 
-	alirunFileName), fEventFolderName(eventFolderName)
+	alirunFileName), fEventFolderName(eventFolderName),
+  fFirstEvent(0),
+  fLastEvent(-1),
+  fRawReader(0)
 {
   // ctor
- 
-  fFirstEvent = 0 ; 
-  fLastEvent  = -1 ; 
-  fRawReader  = 0 ;
 }
 
+//____________________________________________________________________________
+AliPHOSClusterizer::AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) :
+  TTask(clusterizer),fEventFolderName(clusterizer.GetEventFolderName()),
+  fFirstEvent(clusterizer.GetFirstEvent()),fLastEvent(clusterizer.GetLastEvent()),
+  fRawReader(clusterizer.GetRawReader())
+{
+  //Copy constructor
+}
 //____________________________________________________________________________
 AliPHOSClusterizer::~AliPHOSClusterizer()
 {

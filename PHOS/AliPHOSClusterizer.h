@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.39  2006/03/30 13:04:56  hristov
+ * AliRawReader is not persistent
+ *
  * Revision 1.38  2005/07/25 15:53:09  kharlov
  * Set raw data reader
  *
@@ -37,7 +40,7 @@ public:
 
   AliPHOSClusterizer() ;        // default ctor
   AliPHOSClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
-  AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) : TTask(clusterizer) { ; }
+  AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer);
   virtual ~AliPHOSClusterizer() ; // dtor
   virtual Float_t GetEmcClusteringThreshold()const {Warning("GetEmcClusteringThreshold", "Not Defined" ) ; return 0. ; }  
   virtual Float_t GetEmcLocalMaxCut()const {Warning("GetEmcLocalMaxCut", "Not Defined" ) ; return 0. ; } 
@@ -63,6 +66,11 @@ public:
   void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
   void SetEventFolderName(TString name) { fEventFolderName = name ; }
   void SetRawReader(AliRawReader *reader) {fRawReader = reader;}
+
+  TString       GetEventFolderName() const {return fEventFolderName;}
+  Int_t         GetFirstEvent()      const {return fFirstEvent;     }
+  Int_t         GetLastEvent()       const {return fLastEvent;      }
+  AliRawReader *GetRawReader()       const {return fRawReader;      }
 
   AliPHOSClusterizer & operator = (const AliPHOSClusterizer & /*rvalue*/)  {return *this ;} 
  

@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.46  2006/08/01 12:20:17  cvetan
+ * 1. Adding a possibility to read and reconstruct an old rcu formatted raw data. This is controlled by an option of AliReconstruction and AliPHOSReconstructor. 2. In case of raw data processing (without galice.root) create the default AliPHOSGeometry object. Most likely this should be moved to the CDB
+ *
  * Revision 1.45  2006/04/29 20:26:46  hristov
  * Separate EMC and CPV calibration (Yu.Kharlov)
  *
@@ -45,13 +48,9 @@ class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
   
 public:
   
-  AliPHOSClusterizerv1() ;         
+  AliPHOSClusterizerv1() ;
   AliPHOSClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
-  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) : AliPHOSClusterizer(clu) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) ;
   virtual ~AliPHOSClusterizerv1()  ;
   
   virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
@@ -106,7 +105,8 @@ protected:
   virtual Bool_t IsInEmc (AliPHOSDigit * digit)const ;     // Tells if id digit is in EMC
   virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
   void           CleanDigits(TClonesArray * digits) ;
-  
+  AliPHOSClusterizerv1 & operator = (const AliPHOSClusterizerv1 & obj);
+ 
 private:
 
   const   TString BranchName() const ; 

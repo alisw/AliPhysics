@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.26  2006/08/25 16:00:53  kharlov
+ * Compliance with Effective C++AliPHOSHit.cxx
+ *
  * Revision 1.25  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -42,29 +45,34 @@ ClassImp( AliPHOSTrackSegmentMaker)
 
 
 //____________________________________________________________________________
-  AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : TTask("","")
+AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : 
+  TTask("",""),
+  fEventFolderName(""),
+  fFirstEvent(0),
+  fLastEvent(-1),
+  fESD(0)
 {
   // ctor
-  fEventFolderName = "" ; 
-  fFirstEvent = 0 ; 
-  fLastEvent  = -1 ; 
 }
 
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const TString alirunFileName, 
 						   const TString eventFolderName):
   TTask("PHOS"+AliConfig::Instance()->GetTrackerTaskName(), alirunFileName), 
-  fEventFolderName(eventFolderName)
+  fEventFolderName(eventFolderName),
+  fFirstEvent(0),
+  fLastEvent(-1),
+  fESD(0)
 {
   // ctor
-  fFirstEvent = 0 ; 
-  fLastEvent  = -1 ; 
 }
 
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) :
-  TTask(tsmaker),fEventFolderName(tsmaker.GetEventFolderName()),
-  fFirstEvent(tsmaker.GetFirstEvent()),fLastEvent(tsmaker.GetLastEvent()),
+  TTask(tsmaker),
+  fEventFolderName(tsmaker.GetEventFolderName()),
+  fFirstEvent(tsmaker.GetFirstEvent()),
+  fLastEvent(tsmaker.GetLastEvent()),
   fESD(tsmaker.GetESD())
 {
   //Copy constructor

@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.95  2006/08/11 12:36:26  cvetan
+ * Update of the PHOS code needed in order to read and reconstruct the beam test raw data (i.e. without an existing galice.root)
+ *
  * Revision 1.94  2006/08/07 12:27:49  hristov
  * Removing obsolete code which affected the event numbering scheme
  *
@@ -122,7 +125,16 @@
 ClassImp(AliPHOSClusterizerv1)
   
 //____________________________________________________________________________
-  AliPHOSClusterizerv1::AliPHOSClusterizerv1() : AliPHOSClusterizer()
+AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
+  AliPHOSClusterizer(),
+  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
+  fWrite(0),                  fNumberOfEmcClusters(0),  fNumberOfCpvClusters(0),
+  fCalibData(0),              fADCchanelEmc(0),         fADCpedestalEmc(0),
+  fADCchanelCpv(0),           fADCpedestalCpv(0),       fEmcClusteringThreshold(0),
+  fCpvClusteringThreshold(0), fEmcMinE(0),              fCpvMinE(0),
+  fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
+  fW0CPV(0),                  fRecPointsInRun(0),       fEmcTimeGate(0),
+  fIsOldRCUFormat(0)
 {
   // default ctor (to be used mainly by Streamer)
   
@@ -131,8 +143,16 @@ ClassImp(AliPHOSClusterizerv1)
 }
 
 //____________________________________________________________________________
-AliPHOSClusterizerv1::AliPHOSClusterizerv1(const TString alirunFileName, const TString eventFolderName)
-:AliPHOSClusterizer(alirunFileName, eventFolderName)
+AliPHOSClusterizerv1::AliPHOSClusterizerv1(const TString alirunFileName, const TString eventFolderName) :
+  AliPHOSClusterizer(alirunFileName, eventFolderName),
+  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
+  fWrite(0),                  fNumberOfEmcClusters(0),  fNumberOfCpvClusters(0),
+  fCalibData(0),              fADCchanelEmc(0),         fADCpedestalEmc(0),
+  fADCchanelCpv(0),           fADCpedestalCpv(0),       fEmcClusteringThreshold(0),
+  fCpvClusteringThreshold(0), fEmcMinE(0),              fCpvMinE(0),
+  fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
+  fW0CPV(0),                  fRecPointsInRun(0),       fEmcTimeGate(0),
+  fIsOldRCUFormat(0)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   

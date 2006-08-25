@@ -38,23 +38,24 @@
 ClassImp(AliPHOSPID)
 
 //____________________________________________________________________________
-AliPHOSPID::AliPHOSPID():TTask("","")
+AliPHOSPID::AliPHOSPID():
+  TTask("",""),
+  fEventFolderName(""),
+  fFirstEvent(0),
+  fLastEvent(-1)
 {
   // ctor
-  fEventFolderName = "" ; 
-  fFirstEvent = 0 ; 
-  fLastEvent  = -1 ; 
 }
 
 
 //____________________________________________________________________________
 AliPHOSPID::AliPHOSPID(const TString alirunFileName, const TString eventFolderName):
   TTask("PHOS"+AliConfig::Instance()->GetPIDTaskName(), alirunFileName), 
-  fEventFolderName(eventFolderName)
+  fEventFolderName(eventFolderName),
+  fFirstEvent(0),
+  fLastEvent(-1)
 {
   // ctor
-  fFirstEvent = 0 ; 
-  fLastEvent  = -1 ;
 }
 
 //____________________________________________________________________________
