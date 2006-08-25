@@ -1,6 +1,11 @@
 #ifndef AliZDCDataDCS_H
 #define AliZDCDataDCS_H
 
+////////////////////////////////////////////////
+//  Class for ZDC DCS data                    //
+////////////////////////////////////////////////
+
+
 #include <TMap.h>
 #include <TClonesArray.h>
 #include <TGraph.h>
@@ -16,9 +21,9 @@ public:
 	void SetRun(Int_t run) {fRun = run;}
 	void SetStartTime(Int_t startTime) {fStartTime = startTime;}
 	void SetEndTime(Int_t endTime) {fEndTime = endTime;}
-	Int_t GetRun() {return fRun;}
-	Int_t GetStartTime() {return fStartTime;}
-	Int_t GetEndTime() {return fEndTime;}
+	const Int_t GetRun() {return fRun;}
+	const Int_t GetStartTime() {return fStartTime;}
+	const Int_t GetEndTime() {return fEndTime;}
 
 	void ProcessData(TMap& aliasMap, Float_t *CalibData);
 
@@ -39,16 +44,16 @@ private:
 	void Introduce(UInt_t numAlias, const TObjArray* aliasArr);
 	void CreateGraph(int i, int dim, const Double_t *x, const Double_t *y);
 
-	Int_t fRun;
-	UInt_t fStartTime;
-	UInt_t fEndTime;
+	Int_t fRun;		// Run number
+	UInt_t fStartTime;	// Start of run time
+	UInt_t fEndTime;	// End of run time
 
-	TString fAliasNames[kNAliases];
-	TClonesArray fGraphs;
+	TString fAliasNames[kNAliases];	// Name of the aliases provided by the DCS
+	TClonesArray fGraphs;		// Array containing PTM HV graphics
 	
-	Float_t fCalibData[kNAliases];
+	Float_t fCalibData[kNAliases];	// Array containing calibration data
 
-	Bool_t fIsProcessed;
+	Bool_t fIsProcessed;		// Flag set when data are processed
 
 	ClassDef(AliZDCDataDCS, 2);
 };

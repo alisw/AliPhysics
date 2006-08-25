@@ -1,3 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Class for ZDC DCS data                                                    //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "AliZDCDataDCS.h"
 
 #include "AliCDBMetaData.h"
@@ -15,108 +21,118 @@ ClassImp(AliZDCDataDCS)
 
 //---------------------------------------------------------------
 AliZDCDataDCS::AliZDCDataDCS():
-	TObject(),
-	fRun(0),
-	fStartTime(0),
-	fEndTime(0),
-	fGraphs("TGraph",kNGraphs),
-	fIsProcessed(kFALSE)
-{}
+   TObject(),
+   fRun(0),
+   fStartTime(0),
+   fEndTime(0),
+   fGraphs("TGraph",kNGraphs),
+   fIsProcessed(kFALSE)
+{
+  // Default constructor
+}
 
 //---------------------------------------------------------------
 AliZDCDataDCS::AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
-	TObject(),
-	fRun(nRun),
-	fStartTime(startTime),
-	fEndTime(endTime),
-	fGraphs("TGraph",kNGraphs),
-	fIsProcessed(kFALSE)
+   TObject(),
+   fRun(nRun),
+   fStartTime(startTime),
+   fEndTime(endTime),
+   fGraphs("TGraph",kNGraphs),
+   fIsProcessed(kFALSE)
 {
-	AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
-	TTimeStamp(startTime).AsString(),
-	TTimeStamp(endTime).AsString()));
+   // Standard constructor
+   
+   AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", nRun,
+   TTimeStamp(startTime).AsString(),
+   TTimeStamp(endTime).AsString()));
 
-	Init();
-
-}
-
-//---------------------------------------------------------------
-AliZDCDataDCS::~AliZDCDataDCS() {
-
-	fGraphs.Clear("C");
-}
-
-//---------------------------------------------------------------
-void AliZDCDataDCS::ProcessData(TMap& aliasMap, Float_t *fCalibData){
-
-	TObjArray *aliasArr;
-	AliDCSValue* aValue;
-	for(int j=0; j<kNAliases; j++){
-	   aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
-	   if(!aliasArr){
-	     AliError(Form("Alias %s not found!", fAliasNames[j].Data()));
-	     continue;
-	   }
-	   Introduce(j, aliasArr);
-
-	   if(aliasArr->GetEntries()<2){
-	     AliError(Form("Alias %s has just %d entries!",
-	   	  	     fAliasNames[j].Data(),aliasArr->GetEntries()));
-	     continue;
-	   }
-
-	   TIter iterarray(aliasArr);
-
-	   Double_t *time = new Double_t[aliasArr->GetEntries()];
-	   Double_t *val = new Double_t[aliasArr->GetEntries()];
-
-	   UInt_t ne=0;
-	   while((aValue = (AliDCSValue*) iterarray.Next())) {
-	     val[ne] = aValue->GetFloat();
-	     time[ne] = (Double_t) (aValue->GetTimeStamp());
-	     fCalibData[ne] = val[ne];
-	     ne++;
-	   }
-	   //
-	   
-	   //
-	   if(j>=4) CreateGraph(j, aliasArr->GetEntries(), time, val); // fill graphs 
-	   //
-	   delete[] val;
-	   delete[] time;	   
-	}
-	//
-	fIsProcessed=kTRUE;
-
+   Init();
 
 }
 
 //---------------------------------------------------------------
-void AliZDCDataDCS::Init(){
+AliZDCDataDCS::~AliZDCDataDCS() 
+{
+  // Destructor
+  fGraphs.Clear("C");
+}
 
-	TH1::AddDirectory(kFALSE);
+//---------------------------------------------------------------
+void AliZDCDataDCS::ProcessData(TMap& aliasMap, Float_t *fCalibData)
+{
+   // Data processing
+   
+   TObjArray *aliasArr;
+   AliDCSValue* aValue;
+   for(int j=0; j<kNAliases; j++){
+      aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[j].Data());
+      if(!aliasArr){
+   	AliError(Form("Alias %s not found!", fAliasNames[j].Data()));
+   	continue;
+      }
+      Introduce(j, aliasArr);
 
-	fGraphs.SetOwner(1);
+      if(aliasArr->GetEntries()<2){
+   	AliError(Form("Alias %s has just %d entries!",
+   			fAliasNames[j].Data(),aliasArr->GetEntries()));
+   	continue;
+      }
 
-	for(int i=0;i<kNAliases;i++){
-		if(i<4){
-		  fAliasNames[i] = "ZDC.Position";
-		  fAliasNames[i] += i;
-		}
-		else{
-		  fAliasNames[i] = "ZDC.HVValue";
-		  fAliasNames[i] += i-4;
-		}
-	}
+      TIter iterarray(aliasArr);
+
+      Double_t *time = new Double_t[aliasArr->GetEntries()];
+      Double_t *val = new Double_t[aliasArr->GetEntries()];
+
+      UInt_t ne=0;
+      while((aValue = (AliDCSValue*) iterarray.Next())) {
+   	val[ne] = aValue->GetFloat();
+   	time[ne] = (Double_t) (aValue->GetTimeStamp());
+   	fCalibData[ne] = val[ne];
+   	ne++;
+      }
+      //
+      
+      //
+      if(j>=4) CreateGraph(j, aliasArr->GetEntries(), time, val); // fill graphs 
+      //
+      delete[] val;
+      delete[] time;	      
+   }
+   //
+   fIsProcessed=kTRUE;
 
 }
 
 //---------------------------------------------------------------
-void AliZDCDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr){
+void AliZDCDataDCS::Init()
+{
+   // Initialization
+   
+   TH1::AddDirectory(kFALSE);
 
-	int entries=aliasArr->GetEntries();
-	AliInfo(Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
-	AliInfo(Form("    	%d DP values collected",entries));
+   fGraphs.SetOwner(1);
+
+   for(int i=0;i<kNAliases;i++){
+   	   if(i<4){
+   	     fAliasNames[i] = "ZDC.Position";
+   	     fAliasNames[i] += i;
+   	   }
+   	   else{
+   	     fAliasNames[i] = "ZDC.HVValue";
+   	     fAliasNames[i] += i-4;
+   	   }
+   }
+
+}
+
+//---------------------------------------------------------------
+void AliZDCDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr)
+{
+   // Getting array of DCS aliases
+   
+   int entries=aliasArr->GetEntries();
+   AliInfo(Form("************ Alias: %s **********",fAliasNames[numAlias].Data()));
+   AliInfo(Form("	   %d DP values collected",entries));
 
 }
 
@@ -125,12 +141,14 @@ void AliZDCDataDCS::Introduce(UInt_t numAlias, const TObjArray* aliasArr){
 void AliZDCDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_t *y)
 {
 
-	TGraph *gr = new(fGraphs[fGraphs.GetEntriesFast()]) TGraph(dim, x, y);
+   // Create graphics
+   
+   TGraph *gr = new(fGraphs[fGraphs.GetEntriesFast()]) TGraph(dim, x, y);
 
-	gr->GetXaxis()->SetTimeDisplay(1);
-	gr->SetTitle(fAliasNames[i].Data());
+   gr->GetXaxis()->SetTimeDisplay(1);
+   gr->SetTitle(fAliasNames[i].Data());
 
-	AliInfo(Form("Array entries: %d",fGraphs.GetEntriesFast()));
+   AliInfo(Form("Array entries: %d",fGraphs.GetEntriesFast()));
 
 
 }
@@ -138,7 +156,7 @@ void AliZDCDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_
 //---------------------------------------------------------------
 void AliZDCDataDCS::Draw(const Option_t* /*option*/)
 {
-// Draw graphs
+  // Draw graphics
 
   fIsProcessed=1;
   if(!fIsProcessed) return;
