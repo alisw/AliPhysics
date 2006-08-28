@@ -85,44 +85,7 @@ static Double_t FitP(Double_t *x, Double_t *par){
     return TMath::Abs(value);
 } 
 
-AliMUONFastTracking::AliMUONFastTracking(Float_t bg):
-    fNbinp(0),
-    fPmin(0.),
-    fPmax(0.),
-    fDeltaP(0.),
-    fNbintheta(0),
-    fThetamin(0.),
-    fThetamax(0.),
-    fDeltaTheta(0.),
-    fNbinphi(0),
-    fPhimin(0.),
-    fPhimax(0.),
-    fDeltaPhi(0.),
-    fPrintLevel(0),
-    fBkg(bg),
-    fSpline(0),
-    fClusterFinder(kOld)
-{
-    // Default Constructor
-}
-
-AliMUONFastTracking::AliMUONFastTracking(const AliMUONFastTracking & ft):TObject(),
-    fNbinp(0),
-    fPmin(0.),
-    fPmax(0.),
-    fDeltaP(0.),
-    fNbintheta(0),
-    fThetamin(0.),
-    fThetamax(0.),
-    fDeltaTheta(0.),
-    fNbinphi(0),
-    fPhimin(0.),
-    fPhimax(0.),
-    fDeltaPhi(0.),
-    fPrintLevel(0),
-    fBkg(0),
-    fSpline(0),
-    fClusterFinder(kOld)
+AliMUONFastTracking::AliMUONFastTracking(const AliMUONFastTracking & ft):TObject()
 {
 // Copy constructor
     ft.Copy(*this);
@@ -140,23 +103,7 @@ AliMUONFastTracking* AliMUONFastTracking::Instance()
     }
 }
 
-AliMUONFastTracking::AliMUONFastTracking():
-     fNbinp(0),
-    fPmin(0.),
-    fPmax(0.),
-    fDeltaP(0.),
-    fNbintheta(0),
-    fThetamin(0.),
-    fThetamax(0.),
-    fDeltaTheta(0.),
-    fNbinphi(0),
-    fPhimin(0.),
-    fPhimax(0.),
-    fDeltaPhi(0.),
-    fPrintLevel(0),
-    fBkg(0.),
-    fSpline(0),
-    fClusterFinder(kOld)
+AliMUONFastTracking::AliMUONFastTracking() 
 {
 //
 // constructor
@@ -269,42 +216,27 @@ void AliMUONFastTracking::ReadLUT(TFile* file)
 	  Float_t theta = fThetamin + fDeltaTheta * (itheta + 0.5);
 	  Float_t phi   = fPhimin   + fDeltaPhi   * (iphi   + 0.5);
 	  
-	  fEntry[ip][itheta][iphi][ibkg]->fP          = p;
-	  fEntry[ip][itheta][iphi][ibkg]->fMeanp      = 
-	    hmeanp->GetBinContent(ip+1,itheta+1,iphi+1);
-	  fEntry[ip][itheta][iphi][ibkg]->fSigmap     = 
-	    TMath::Abs(hsigmap->GetBinContent(ip+1,itheta+1,iphi+1));
-	  fEntry[ip][itheta][iphi][ibkg]->fSigma1p    = 
-	    hsigma1p->GetBinContent(ip+1,itheta+1,iphi+1);
-	  fEntry[ip][itheta][iphi][ibkg]->fChi2p      = 
-	    hchi2p->GetBinContent(ip+1,itheta+1,iphi+1);
-	  fEntry[ip][itheta][iphi][ibkg]->fNormG2     = 
-	    hnormg2->GetBinContent(ip+1,itheta+1,iphi+1);
-	  fEntry[ip][itheta][iphi][ibkg]->fMeanG2     = 
-	    hmeang2->GetBinContent(ip+1,itheta+1,iphi+1);
-	  if (ibkg == 0)  fEntry[ip][itheta][iphi][ibkg]->fSigmaG2 = 9999;
-	  else fEntry[ip][itheta][iphi][ibkg]->fSigmaG2    = 
-	    hsigmag2->GetBinContent(ip+1,itheta+1,iphi+1);
-	  fEntry[ip][itheta][iphi][ibkg]->fTheta      = theta;
-	  fEntry[ip][itheta][iphi][ibkg]->fMeantheta  = 
-	    hmeantheta->GetBinContent(ip+1,itheta+1,iphi+1);
-	  fEntry[ip][itheta][iphi][ibkg]->fSigmatheta = 
-	    TMath::Abs(hsigmatheta->GetBinContent(ip+1,itheta+1,iphi+1));
-	  fEntry[ip][itheta][iphi][ibkg]->fChi2theta  = 
-	    hchi2theta->GetBinContent(ip+1,itheta+1,iphi+1);
-	  fEntry[ip][itheta][iphi][ibkg]->fPhi        = phi;
-	  fEntry[ip][itheta][iphi][ibkg]->fMeanphi    = 
-	    hmeanphi->GetBinContent(ip+1,itheta+1,iphi+1);
-	  fEntry[ip][itheta][iphi][ibkg]->fSigmaphi   = 
-	    TMath::Abs(hsigmaphi->GetBinContent(ip+1,itheta+1,iphi+1));
-	  fEntry[ip][itheta][iphi][ibkg]->fChi2phi    = 
-	    hchi2phi->GetBinContent(ip+1,itheta+1,iphi+1);
+	  fEntry[ip][itheta][iphi][ibkg]->SetP(p);
+	  fEntry[ip][itheta][iphi][ibkg]->SetMeanp(hmeanp->GetBinContent(ip+1,itheta+1,iphi+1));
+	  fEntry[ip][itheta][iphi][ibkg]->SetSigmap(TMath::Abs(hsigmap->GetBinContent(ip+1,itheta+1,iphi+1)));
+	  fEntry[ip][itheta][iphi][ibkg]->SetSigma1p(hsigma1p->GetBinContent(ip+1,itheta+1,iphi+1));
+	  fEntry[ip][itheta][iphi][ibkg]->SetChi2p(hchi2p->GetBinContent(ip+1,itheta+1,iphi+1));
+	  fEntry[ip][itheta][iphi][ibkg]->SetNormG2(hnormg2->GetBinContent(ip+1,itheta+1,iphi+1));
+	  fEntry[ip][itheta][iphi][ibkg]->SetMeanG2(hmeang2->GetBinContent(ip+1,itheta+1,iphi+1));
+	  if (ibkg == 0)  fEntry[ip][itheta][iphi][ibkg]->SetSigmaG2(9999);
+	  else fEntry[ip][itheta][iphi][ibkg]->SetSigmaG2(hsigmag2->GetBinContent(ip+1,itheta+1,iphi+1));
+	  fEntry[ip][itheta][iphi][ibkg]->SetTheta(theta);
+	  fEntry[ip][itheta][iphi][ibkg]->SetMeantheta(hmeantheta->GetBinContent(ip+1,itheta+1,iphi+1));
+	  fEntry[ip][itheta][iphi][ibkg]->SetSigmatheta(TMath::Abs(hsigmatheta->GetBinContent(ip+1,itheta+1,iphi+1)));
+	  fEntry[ip][itheta][iphi][ibkg]->SetChi2theta(hchi2theta->GetBinContent(ip+1,itheta+1,iphi+1));
+	  fEntry[ip][itheta][iphi][ibkg]->SetPhi(phi);
+	  fEntry[ip][itheta][iphi][ibkg]->SetMeanphi(hmeanphi->GetBinContent(ip+1,itheta+1,iphi+1));
+	  fEntry[ip][itheta][iphi][ibkg]->SetSigmaphi(TMath::Abs(hsigmaphi->GetBinContent(ip+1,itheta+1,iphi+1)));
+	  fEntry[ip][itheta][iphi][ibkg]->SetChi2phi(hchi2phi->GetBinContent(ip+1,itheta+1,iphi+1));
 	  for (Int_t i=0; i<kSplitP; i++) { 
 	    for (Int_t j=0; j<kSplitTheta; j++) { 
-	      fEntry[ip][itheta][iphi][ibkg]->fAcc[i][j] = 
-		hacc[i][j]->GetBinContent(ip+1,itheta+1,iphi+1);
-	      fEntry[ip][itheta][iphi][ibkg]->fEff[i][j] = 
-		heff[i][j]->GetBinContent(ip+1,itheta+1,iphi+1);
+	      fEntry[ip][itheta][iphi][ibkg]->SetAcc(i,j,hacc[i][j]->GetBinContent(ip+1,itheta+1,iphi+1));
+	      fEntry[ip][itheta][iphi][ibkg]->SetEff(i,j,heff[i][j]->GetBinContent(ip+1,itheta+1,iphi+1));
 	    }
 	  }
 	} // iphi 
@@ -318,11 +250,11 @@ void AliMUONFastTracking::ReadLUT(TFile* file)
   for (Int_t ip=0; ip< fNbinp; ip++){
     for (Int_t itheta=0; itheta< fNbintheta; itheta++){
       for (Int_t iphi=0; iphi< fNbinphi; iphi++){
-	graph->SetPoint(0,0.5,fEntry[ip][itheta][iphi][1]->fSigmaG2);
-	graph->SetPoint(1,1,fEntry[ip][itheta][iphi][2]->fSigmaG2);
-	graph->SetPoint(2,2,fEntry[ip][itheta][iphi][3]->fSigmaG2);
+	graph->SetPoint(0,0.5,fEntry[ip][itheta][iphi][1]->GetSigmaG2());
+	graph->SetPoint(1,1,fEntry[ip][itheta][iphi][2]->GetSigmaG2());
+	graph->SetPoint(2,2,fEntry[ip][itheta][iphi][3]->GetSigmaG2());
 	graph->Fit("f","q"); 
-	fEntry[ip][itheta][iphi][0]->fSigmaG2 = f->Eval(0); 
+	fEntry[ip][itheta][iphi][0]->SetSigmaG2(f->Eval(0)); 
       }
     }
   }
@@ -400,7 +332,7 @@ Float_t AliMUONFastTracking::Efficiency(Float_t p,   Float_t theta,
   Int_t ibinp  = Int_t(nSplitP*(dp - fDeltaP * Int_t(dp / fDeltaP))/fDeltaP); 
   Float_t dtheta = theta - fThetamin;
   Int_t ibintheta  = Int_t(nSplitTheta*(dtheta - fDeltaTheta * Int_t(dtheta / fDeltaTheta))/fDeltaTheta); 
-  Float_t eff = fCurrentEntry[ip][itheta][iphi]->fEff[ibinp][ibintheta];
+  Float_t eff = fCurrentEntry[ip][itheta][iphi]->GetEff(ibinp,ibintheta);
   return eff;   
 }
 
@@ -421,7 +353,7 @@ Float_t AliMUONFastTracking::Acceptance(Float_t p,   Float_t theta,
   Int_t ibinp  = Int_t(nSplitP*(dp - fDeltaP * Int_t(dp / fDeltaP))/fDeltaP); 
   Float_t dtheta = theta - fThetamin;
   Int_t ibintheta  = Int_t(nSplitTheta*(dtheta - fDeltaTheta * Int_t(dtheta / fDeltaTheta))/fDeltaTheta); 
-  Float_t acc = fCurrentEntry[ip][itheta][iphi]->fAcc[ibinp][ibintheta];
+  Float_t acc = fCurrentEntry[ip][itheta][iphi]->GetAcc(ibinp,ibintheta);
   return acc;   
 }
 
@@ -433,7 +365,7 @@ Float_t AliMUONFastTracking::MeanP(Float_t p,   Float_t theta,
   //
     Int_t ip=0, itheta=0, iphi=0;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
-    return fCurrentEntry[ip][itheta][iphi]->fMeanp;
+    return fCurrentEntry[ip][itheta][iphi]->GetMeanp();
 }
 
 Float_t AliMUONFastTracking::SigmaP(Float_t p,   Float_t theta, 
@@ -446,7 +378,7 @@ Float_t AliMUONFastTracking::SigmaP(Float_t p,   Float_t theta,
     Int_t index;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     // central value and corrections with spline 
-    Float_t sigmap = fCurrentEntry[ip][itheta][iphi]->fSigmap;
+    Float_t sigmap = fCurrentEntry[ip][itheta][iphi]->GetSigmap();
     if (!fSpline) return sigmap;
     // corrections vs p, theta, phi 
     index = iphi + fNbinphi * itheta;
@@ -454,9 +386,9 @@ Float_t AliMUONFastTracking::SigmaP(Float_t p,   Float_t theta,
     Float_t frac1 = fSplineSigmap[index][0]->Eval(p)/sigmap; 
     
     if (p>fPmax-fDeltaP/2.) {
-	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->fSigmap;
-	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->fSigmap;
-	Float_t s3 = fCurrentEntry[fNbinp-3][itheta][iphi]->fSigmap;
+	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->GetSigmap();
+	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->GetSigmap();
+	Float_t s3 = fCurrentEntry[fNbinp-3][itheta][iphi]->GetSigmap();
 	Float_t p1  = fDeltaP * (fNbinp - 1 + 0.5) + fPmin;
 	Float_t p2  = fDeltaP * (fNbinp - 2 + 0.5) + fPmin;
 	Float_t p3  = fDeltaP * (fNbinp - 3 + 0.5) + fPmin;
@@ -494,14 +426,14 @@ Float_t AliMUONFastTracking::Sigma1P(Float_t p,   Float_t theta,
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     if (p>fPmax) {
 	// linear extrapolation of sigmap for p out of range 
-	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->fSigma1p;
-	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->fSigma1p;
+	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->GetSigma1p();
+	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->GetSigma1p();
 	Float_t p1  = fDeltaP * (fNbinp - 1 + 0.5) + fPmin;
 	Float_t p2  = fDeltaP * (fNbinp - 2 + 0.5) + fPmin;
 	Float_t sigma = 1./(p1-p2) * ( (s1-s2)*p + (s2-s1)*p1 + s1*(p1-p2) ); 
 	return sigma;
     }
-    else return fCurrentEntry[ip][itheta][iphi]->fSigma1p;
+    else return fCurrentEntry[ip][itheta][iphi]->GetSigma1p();
 }
 
 Float_t AliMUONFastTracking::NormG2(Float_t p,   Float_t theta, 
@@ -515,14 +447,14 @@ Float_t AliMUONFastTracking::NormG2(Float_t p,   Float_t theta,
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     if (p>fPmax) {
 	// linear extrapolation of sigmap for p out of range 
-	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->fNormG2;
-	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->fNormG2;
+	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->GetNormG2();
+	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->GetNormG2();
 	Float_t p1  = fDeltaP * (fNbinp - 1 + 0.5) + fPmin;
 	Float_t p2  = fDeltaP * (fNbinp - 2 + 0.5) + fPmin;
 	Float_t norm = 1./(p1-p2) * ( (s1-s2)*p + (s2-s1)*p1 + s1*(p1-p2) ); 
 	return norm;
     }
-    else return fCurrentEntry[ip][itheta][iphi]->fNormG2;
+    else return fCurrentEntry[ip][itheta][iphi]->GetNormG2();
 }
 
 Float_t AliMUONFastTracking::MeanG2(Float_t p,   Float_t theta, 
@@ -536,14 +468,14 @@ Float_t AliMUONFastTracking::MeanG2(Float_t p,   Float_t theta,
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     if (p>fPmax) {
 	// linear extrapolation of sigmap for p out of range 
-	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->fMeanG2;
-	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->fMeanG2;
+	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->GetMeanG2();
+	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->GetMeanG2();
 	Float_t p1  = fDeltaP * (fNbinp - 1 + 0.5) + fPmin;
 	Float_t p2  = fDeltaP * (fNbinp - 2 + 0.5) + fPmin;
 	Float_t norm = 1./(p1-p2) * ( (s1-s2)*p + (s2-s1)*p1 + s1*(p1-p2) ); 
 	return norm;
     }
-    else return fCurrentEntry[ip][itheta][iphi]->fMeanG2;
+    else return fCurrentEntry[ip][itheta][iphi]->GetMeanG2();
 }
 
 Float_t AliMUONFastTracking::SigmaG2(Float_t p,   Float_t theta, 
@@ -557,14 +489,14 @@ Float_t AliMUONFastTracking::SigmaG2(Float_t p,   Float_t theta,
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
     if (p>fPmax) {
 	// linear extrapolation of sigmap for p out of range 
-	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->fSigmaG2;
-	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->fSigmaG2;
+	Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->GetSigmaG2();
+	Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->GetSigmaG2();
 	Float_t p1  = fDeltaP * (fNbinp - 1 + 0.5) + fPmin;
 	Float_t p2  = fDeltaP * (fNbinp - 2 + 0.5) + fPmin;
 	Float_t sigma = 1./(p1-p2) * ( (s1-s2)*p + (s2-s1)*p1 + s1*(p1-p2) ); 
 	return sigma;
     }
-    else return fCurrentEntry[ip][itheta][iphi]->fSigmaG2;
+    else return fCurrentEntry[ip][itheta][iphi]->GetSigmaG2();
 }
 
 
@@ -576,7 +508,7 @@ Float_t AliMUONFastTracking::MeanTheta(Float_t p,   Float_t theta,
   //
     Int_t ip=0, itheta=0, iphi=0;
     GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
-    return fCurrentEntry[ip][itheta][iphi]->fMeantheta;
+    return fCurrentEntry[ip][itheta][iphi]->GetMeantheta();
 }
 
 Float_t AliMUONFastTracking::SigmaTheta(Float_t p,   Float_t theta,  
@@ -589,7 +521,7 @@ Float_t AliMUONFastTracking::SigmaTheta(Float_t p,   Float_t theta,
   Int_t index;
   GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
   // central value and corrections with spline 
-  Float_t sigmatheta = fCurrentEntry[ip][itheta][iphi]->fSigmatheta;
+  Float_t sigmatheta = fCurrentEntry[ip][itheta][iphi]->GetSigmatheta();
   if (!fSpline) return sigmatheta;
   // corrections vs p, theta, phi 
   index = iphi + fNbinphi * itheta;
@@ -597,8 +529,8 @@ Float_t AliMUONFastTracking::SigmaTheta(Float_t p,   Float_t theta,
   Float_t frac1 = fSplineSigmatheta[index][0]->Eval(p)/sigmatheta; 
   if (p>fPmax-fDeltaP/2.) {
     // linear extrapolation of sigmap for p out of range 
-    Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->fSigmatheta;
-    Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->fSigmatheta;
+    Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->GetSigmatheta();
+    Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->GetSigmatheta();
     Float_t p1  = fDeltaP * (fNbinp - 1 + 0.5) + fPmin;
     Float_t p2  = fDeltaP * (fNbinp - 2 + 0.5) + fPmin;
     Float_t sigma = 1./(p1-p2) * ( (s1-s2)*p + (s2-s1)*p1 + s1*(p1-p2) ); 
@@ -626,7 +558,7 @@ Float_t AliMUONFastTracking::MeanPhi(Float_t p,   Float_t theta,
   //
   Int_t ip=0, itheta=0, iphi=0;
   GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
-  return fCurrentEntry[ip][itheta][iphi]->fMeanphi;
+  return fCurrentEntry[ip][itheta][iphi]->GetMeanphi();
 }
 
 Float_t AliMUONFastTracking::SigmaPhi(Float_t p,   Float_t theta, 
@@ -638,15 +570,15 @@ Float_t AliMUONFastTracking::SigmaPhi(Float_t p,   Float_t theta,
   Int_t index;
   GetIpIthetaIphi(p,theta,phi,charge,ip,itheta,iphi);
   // central value and corrections with spline 
-  Float_t sigmaphi = fCurrentEntry[ip][itheta][iphi]->fSigmaphi;
+  Float_t sigmaphi = fCurrentEntry[ip][itheta][iphi]->GetSigmaphi();
   if (!fSpline) return sigmaphi;
   // corrections vs p, theta, phi 
   index = iphi + fNbinphi * itheta;
   Float_t frac1 = fSplineSigmaphi[index][0]->Eval(p)/sigmaphi; 
   Double_t xmin,ymin,xmax,ymax;
   if (p>fPmax-fDeltaP/2.) {
-    Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->fSigmaphi;
-    Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->fSigmaphi;
+    Float_t s1 = fCurrentEntry[fNbinp-1][itheta][iphi]->GetSigmaphi();
+    Float_t s2 = fCurrentEntry[fNbinp-2][itheta][iphi]->GetSigmaphi();
     Float_t p1  = fDeltaP * (fNbinp - 1 + 0.5) + fPmin;
     Float_t p2  = fDeltaP * (fNbinp - 2 + 0.5) + fPmin;
     Float_t sigma = 1./(p1-p2) * ( (s1-s2)*p + (s2-s1)*p1 + s1*(p1-p2) ); 
@@ -698,14 +630,10 @@ void AliMUONFastTracking::SetSpline(){
   for (Int_t itheta=0; itheta< fNbintheta; itheta++){
     for (Int_t iphi=0; iphi< fNbinphi; iphi++){
       for (Int_t ip=0; ip<fNbinp; ip++) {
-	//	for (Int_t i=0; i<5; i++) { 
-	//	  yeff[5 * ip + i]  = fCurrentEntry[ip][itheta][iphi]->fEff[i];
-	//	  yacc[5 * ip + i]  = fCurrentEntry[ip][itheta][iphi]->fAcc[i];
-	//	}
-	ysigmap[ip]     = fCurrentEntry[ip][itheta][iphi]->fSigmap;
-	ysigma1p[ip]    = fCurrentEntry[ip][itheta][iphi]->fSigma1p;
-	ysigmatheta[ip] = fCurrentEntry[ip][itheta][iphi]->fSigmatheta;
-	ysigmaphi[ip]   = fCurrentEntry[ip][itheta][iphi]->fSigmaphi;
+	ysigmap[ip]     = fCurrentEntry[ip][itheta][iphi]->GetSigmap();
+	ysigma1p[ip]    = fCurrentEntry[ip][itheta][iphi]->GetSigma1p();
+	ysigmatheta[ip] = fCurrentEntry[ip][itheta][iphi]->GetSigmatheta();
+	ysigmaphi[ip]   = fCurrentEntry[ip][itheta][iphi]->GetSigmaphi();
       }
       if (fPrintLevel>3) cout << " creating new spline " << splname << endl;
       sprintf (splname,"fSplineEff[%d][%d]",ispline,ivar);
@@ -731,12 +659,10 @@ void AliMUONFastTracking::SetSpline(){
     for (Int_t iphi=0; iphi< fNbinphi; iphi++){
       for (Int_t itheta=0; itheta< fNbintheta; itheta++){
 	// for efficiency and acceptance let's take the central value
-	//	yeff[itheta]        = fCurrentEntry[ip][itheta][iphi]->fEff[2];
-	//	yacc[itheta]        = fCurrentEntry[ip][itheta][iphi]->fAcc[2];
-	ysigmap[itheta]     = fCurrentEntry[ip][itheta][iphi]->fSigmap;
-	ysigma1p[itheta]    = fCurrentEntry[ip][itheta][iphi]->fSigma1p;
-	ysigmatheta[itheta] = fCurrentEntry[ip][itheta][iphi]->fSigmatheta;
-	ysigmaphi[itheta]   = fCurrentEntry[ip][itheta][iphi]->fSigmaphi;
+	ysigmap[itheta]     = fCurrentEntry[ip][itheta][iphi]->GetSigmap();
+	ysigma1p[itheta]    = fCurrentEntry[ip][itheta][iphi]->GetSigma1p();
+	ysigmatheta[itheta] = fCurrentEntry[ip][itheta][iphi]->GetSigmatheta();
+	ysigmaphi[itheta]   = fCurrentEntry[ip][itheta][iphi]->GetSigmaphi();
       }
       if (fPrintLevel>3) cout << " creating new spline " << splname << endl;
       sprintf (splname,"fSplineEff[%d][%d]",ispline,ivar);
@@ -762,12 +688,10 @@ void AliMUONFastTracking::SetSpline(){
     for (Int_t itheta=0; itheta< fNbintheta; itheta++){
       for (Int_t iphi=0; iphi< fNbinphi; iphi++){
 	// for efficiency and acceptance let's take the central value
-	//	yeff[iphi]        = fCurrentEntry[ip][itheta][iphi]->fEff[2];
-	//	yacc[iphi]        = fCurrentEntry[ip][itheta][iphi]->fAcc[2];
-	ysigmap[iphi]     = fCurrentEntry[ip][itheta][iphi]->fSigmap;
-	ysigma1p[iphi]    = fCurrentEntry[ip][itheta][iphi]->fSigma1p;
-	ysigmatheta[iphi] = fCurrentEntry[ip][itheta][iphi]->fSigmatheta;
-	ysigmaphi[iphi]   = fCurrentEntry[ip][itheta][iphi]->fSigmaphi;
+	ysigmap[iphi]     = fCurrentEntry[ip][itheta][iphi]->GetSigmap();
+	ysigma1p[iphi]    = fCurrentEntry[ip][itheta][iphi]->GetSigma1p();
+	ysigmatheta[iphi] = fCurrentEntry[ip][itheta][iphi]->GetSigmatheta();
+	ysigmaphi[iphi]   = fCurrentEntry[ip][itheta][iphi]->GetSigmaphi();
       }
       if (fPrintLevel>3) cout << " creating new spline " << splname << endl;
       sprintf (splname,"fSplineEff[%d][%d]",ispline,ivar);
@@ -811,50 +735,50 @@ void AliMUONFastTracking::SetBackground(Float_t bkg){
   for (Int_t ip=0; ip< fNbinp; ip++){
     for (Int_t itheta=0; itheta< fNbintheta; itheta++){
       for (Int_t iphi=0; iphi< fNbinphi; iphi++){
-	fCurrentEntry[ip][itheta][iphi]->fP = fEntry[ip][itheta][iphi][ibkg]->fP;
-	fCurrentEntry[ip][itheta][iphi]->fTheta = fEntry[ip][itheta][iphi][ibkg]->fTheta;
-	fCurrentEntry[ip][itheta][iphi]->fPhi = fEntry[ip][itheta][iphi][ibkg]->fPhi;
-	fCurrentEntry[ip][itheta][iphi]->fChi2p = -1;
-	fCurrentEntry[ip][itheta][iphi]->fChi2theta = -1;
-	fCurrentEntry[ip][itheta][iphi]->fChi2phi = -1;
+	fCurrentEntry[ip][itheta][iphi]->SetP(fEntry[ip][itheta][iphi][ibkg]->GetP());
+	fCurrentEntry[ip][itheta][iphi]->SetTheta(fEntry[ip][itheta][iphi][ibkg]->GetTheta());
+	fCurrentEntry[ip][itheta][iphi]->SetPhi(fEntry[ip][itheta][iphi][ibkg]->GetPhi());
+	fCurrentEntry[ip][itheta][iphi]->SetChi2p(-1);
+	fCurrentEntry[ip][itheta][iphi]->SetChi2theta(-1);
+	fCurrentEntry[ip][itheta][iphi]->SetChi2phi(-1);
 
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fMeanp;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fMeanp;
-	fCurrentEntry[ip][itheta][iphi]      ->fMeanp = (y1 - y0) * x + y0;
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fMeantheta;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fMeantheta;
-	fCurrentEntry[ip][itheta][iphi]      ->fMeantheta = (y1 - y0) * x + y0;
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fMeanphi;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fMeanphi;
-	fCurrentEntry[ip][itheta][iphi]      ->fMeanphi = (y1 - y0) * x + y0;
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fSigmap;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fSigmap;
-	fCurrentEntry[ip][itheta][iphi]      ->fSigmap = (y1 - y0) * x + y0;
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fSigmatheta;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fSigmatheta;
-	fCurrentEntry[ip][itheta][iphi]      ->fSigmatheta = (y1 - y0) * x + y0;
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fSigmaphi;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fSigmaphi;
-	fCurrentEntry[ip][itheta][iphi]      ->fSigmaphi = (y1 - y0) * x + y0;
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fSigma1p;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fSigma1p;
-	fCurrentEntry[ip][itheta][iphi]      ->fSigma1p = (y1 - y0) * x + y0;
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fNormG2;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fNormG2;
-	fCurrentEntry[ip][itheta][iphi]      ->fNormG2 = (y1 - y0) * x + y0;
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fMeanG2;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fMeanG2;
-	fCurrentEntry[ip][itheta][iphi]      ->fMeanG2 = (y1 - y0) * x + y0;
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetMeanp();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetMeanp();
+	fCurrentEntry[ip][itheta][iphi]      ->SetMeanp((y1 - y0) * x + y0);
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetMeantheta();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetMeantheta();
+	fCurrentEntry[ip][itheta][iphi]      ->SetMeantheta((y1 - y0) * x +y0);
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetMeanphi();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetMeanphi();
+	fCurrentEntry[ip][itheta][iphi]      ->SetMeanphi((y1 - y0) * x + y0);
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetSigmap();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetSigmap();
+	fCurrentEntry[ip][itheta][iphi]      ->SetSigmap((y1 - y0) * x + y0);
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetSigmatheta();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetSigmatheta();
+	fCurrentEntry[ip][itheta][iphi]      ->SetSigmatheta((y1 - y0) * x+y0);
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetSigmaphi();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetSigmaphi();
+	fCurrentEntry[ip][itheta][iphi]      ->SetSigmaphi((y1 - y0) * x + y0);
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetSigma1p();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetSigma1p();
+	fCurrentEntry[ip][itheta][iphi]      ->SetSigma1p((y1 - y0) * x + y0);
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetNormG2();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetNormG2();
+	fCurrentEntry[ip][itheta][iphi]      ->SetNormG2((y1 - y0) * x + y0);
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetMeanG2();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetMeanG2();
+	fCurrentEntry[ip][itheta][iphi]      ->SetMeanG2((y1 - y0) * x + y0);
 	
-	y0 = fEntry[ip][itheta][iphi][ibkg-1]->fSigmaG2;
-	y1 =   fEntry[ip][itheta][iphi][ibkg]->fSigmaG2;
-	fCurrentEntry[ip][itheta][iphi]      ->fSigmaG2 = (y1 - y0) * x + y0;
+	y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetSigmaG2();
+	y1 =   fEntry[ip][itheta][iphi][ibkg]->GetSigmaG2();
+	fCurrentEntry[ip][itheta][iphi]      ->SetSigmaG2((y1 - y0) * x + y0);
 	for (Int_t i=0; i<kSplitP; i++) {
 	  for (Int_t j=0; j<kSplitTheta; j++) {
-	    fCurrentEntry[ip][itheta][iphi]->fAcc[i][j] = fEntry[ip][itheta][iphi][ibkg]->fAcc[i][j];
-	    y0 = fEntry[ip][itheta][iphi][ibkg-1]->fEff[i][j];
-	    y1 =   fEntry[ip][itheta][iphi][ibkg]->fEff[i][j];
-	    fCurrentEntry[ip][itheta][iphi]->fEff[i][j] = (y1 - y0) * x + y0;
+	    fCurrentEntry[ip][itheta][iphi]->SetAcc(i,j,fEntry[ip][itheta][iphi][ibkg]->GetAcc(i,j));
+	    y0 = fEntry[ip][itheta][iphi][ibkg-1]->GetEff(i,j);
+	    y1 =   fEntry[ip][itheta][iphi][ibkg]->GetEff(i,j);
+	    fCurrentEntry[ip][itheta][iphi]->SetEff(i,j, (y1 - y0) * x + y0);
 	  }
 	}
       }

@@ -16,8 +16,6 @@
 /* $Id$ */
 
 #include "AliMUONFastTrackingEntry.h"
-ClassImp(AliMUONFastTrackingEntry)
-
 
 AliMUONFastTrackingEntry::AliMUONFastTrackingEntry():
     fP(0.),
@@ -36,6 +34,13 @@ AliMUONFastTrackingEntry::AliMUONFastTrackingEntry():
     fNormG2(0.),
     fMeanG2(0.),
     fSigmaG2(0.)
-{
-    // Default Constructor
+{ 
+  for (Int_t i=0; i<5; i++) { 
+    for (Int_t j=0; j<3; j++) { 
+      fAcc[i][j] = 0;
+      fEff[i][j] = 0;
+    }
+  }  
 }
+
+ClassImp(AliMUONFastTrackingEntry)
