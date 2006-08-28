@@ -17,31 +17,32 @@ public:
    virtual ~AliPMDPatchBusHeader();
 
    // PatchBus header
-
+   void  SetDataKey(Int_t dkey)            {fDataKey = dkey;}
    void  SetTotalLength(Int_t totlength)   {fTotalLength = totlength;}
    void  SetRawDataLength(Int_t rawlength) {fRawDataLength = rawlength;}
    void  SetPatchBusId(Int_t pbusid)       {fPatchBusId = pbusid;}
-   void  SetTriggerWord(Int_t trword)      {fTrWord = trword;}
 
    void  SetHeader(Int_t *header);
 
 
    Int_t GetHeaderLength()  const {return fgkHeaderLength;}
+   Int_t GetDataKey()       const {return fDataKey;}  
    Int_t GetTotalLength()   const {return fTotalLength;}
    Int_t GetRawDataLength() const {return fRawDataLength;}
    Int_t GetPatchBusId()    const {return fPatchBusId;}
-   Int_t GetTriggerWord()   const {return fTrWord;}  
+
 
 
  private:
 
+   Int_t     fDataKey;        // data key
    Int_t     fTotalLength;    // total length of block structure
    Int_t     fRawDataLength;  // length of raw data
    Int_t     fPatchBusId;     // Patch bus id
-   Int_t     fTrWord;         // 1st trigger word
+
 
    static const Int_t fgkHeaderLength;   // header length in word
 
-   ClassDef(AliPMDPatchBusHeader,0)  // PMD PatchBus Header
+   ClassDef(AliPMDPatchBusHeader,1)  // PMD PatchBus Header
 };
 #endif

@@ -21,19 +21,22 @@
 ClassImp(AliPMDDspHeader)
 
 
-const Int_t  AliPMDDspHeader::fgkHeaderLength = 8;
+const Int_t   AliPMDDspHeader::fgkHeaderLength = 10;
+const UInt_t  AliPMDDspHeader::fgkDefaultPaddingWord = 0xFFFFFFFF;
 
 //------------------------------------------------------------
-AliPMDDspHeader::AliPMDDspHeader():
+AliPMDDspHeader::AliPMDDspHeader() :
   TObject(),
+  fDataKey(0),
   fTotalLength(0),
   fRawDataLength(0),
-  fTrWord1(0),
-  fTrWord2(0),
-  fTrWord3(0),
-  fTrWord4(0),
   fDspId(0),
-  fEvtWord(0)
+  fBlkL1ATrigger(0),
+  fMiniEventId(0),
+  fL1ATrigger(0),
+  fL1RTrigger(0),
+  fPaddingWord(0),
+  fErrorWord(0)
 {
   //
   // ctor
@@ -52,14 +55,16 @@ AliPMDDspHeader::~AliPMDDspHeader()
 //___________________________________________
 AliPMDDspHeader::AliPMDDspHeader(const AliPMDDspHeader & dsph):
   TObject(),
+  fDataKey(dsph.fDataKey),
   fTotalLength(dsph.fTotalLength),
   fRawDataLength(dsph.fRawDataLength),
-  fTrWord1(dsph.fTrWord1),
-  fTrWord2(dsph.fTrWord2),
-  fTrWord3(dsph.fTrWord3),
-  fTrWord4(dsph.fTrWord4),
   fDspId(dsph.fDspId),
-  fEvtWord(dsph.fEvtWord)
+  fBlkL1ATrigger(dsph.fBlkL1ATrigger),
+  fMiniEventId(dsph.fMiniEventId),
+  fL1ATrigger(dsph.fL1ATrigger),
+  fL1RTrigger(dsph.fL1RTrigger),
+  fPaddingWord(dsph.fPaddingWord),
+  fErrorWord(dsph.fErrorWord)
 {
   //
   // copy ctor
@@ -74,26 +79,30 @@ AliPMDDspHeader& AliPMDDspHeader::operator=(const AliPMDDspHeader &dsph)
   //
   if (this != &dsph)
     {
+      fDataKey       = dsph.fDataKey;
       fTotalLength   = dsph.fTotalLength;
       fRawDataLength = dsph.fRawDataLength;
-      fTrWord1       = dsph.fTrWord1;
-      fTrWord2       = dsph.fTrWord2;
-      fTrWord3       = dsph.fTrWord3;
-      fTrWord4       = dsph.fTrWord4;
       fDspId         = dsph.fDspId;
-      fEvtWord       = dsph.fEvtWord;
+      fBlkL1ATrigger = dsph.fBlkL1ATrigger;
+      fMiniEventId   = dsph.fMiniEventId;
+      fL1ATrigger    = dsph.fL1ATrigger;
+      fL1RTrigger    = dsph.fL1RTrigger;
+      fPaddingWord   = dsph.fPaddingWord;
+      fErrorWord     = dsph.fErrorWord;
     }
   return *this;
 }
 void AliPMDDspHeader::SetHeader(Int_t *header)
 {
-  fTotalLength   = header[0];
-  fRawDataLength = header[1];
-  fTrWord1       = header[2];
-  fTrWord2       = header[3];
-  fTrWord3       = header[4];
-  fTrWord4       = header[5];
-  fDspId         = header[6];
-  fEvtWord       = header[7];
+  fDataKey        = header[0];
+  fTotalLength    = header[1];
+  fRawDataLength  = header[2];
+  fDspId          = header[3];
+  fBlkL1ATrigger  = header[4];
+  fMiniEventId    = header[5];
+  fL1ATrigger     = header[6];
+  fL1RTrigger     = header[7];
+  fPaddingWord    = header[8];
+  fErrorWord      = header[9];
 }
       

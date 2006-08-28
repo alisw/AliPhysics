@@ -26,14 +26,14 @@ const Int_t  AliPMDBlockHeader::fgkHeaderLength = 8;
 //------------------------------------------------------------
 AliPMDBlockHeader::AliPMDBlockHeader()
   :  TObject(),
+     fDataKey(0),
      fTotalLength(0),
      fRawDataLength(0),
      fDspId(0),
-     fTrWord1(0),
-     fTrWord2(0),
-     fTrWord3(0),
-     fTrWord4(0),
-     fPadWord(0)
+     fL0Trigger(0),
+     fMiniEventId(0),
+     fEventId1(0),
+     fEventId2(0)
 {
   //
   // ctor
@@ -52,19 +52,18 @@ AliPMDBlockHeader::~AliPMDBlockHeader()
 //___________________________________________
 AliPMDBlockHeader::AliPMDBlockHeader(const AliPMDBlockHeader & blockh):
   TObject(),
+  fDataKey(blockh.fDataKey),
   fTotalLength(blockh.fTotalLength),
   fRawDataLength(blockh.fRawDataLength),
   fDspId(blockh.fDspId),
-  fTrWord1(blockh.fTrWord1),
-  fTrWord2(blockh.fTrWord2),
-  fTrWord3(blockh.fTrWord3),
-  fTrWord4(blockh.fTrWord4),
-  fPadWord(blockh.fPadWord)
+  fL0Trigger(blockh.fL0Trigger),
+  fMiniEventId(blockh.fMiniEventId),
+  fEventId1(blockh.fEventId1),
+  fEventId2(blockh.fEventId2)
 {
   //
   // copy ctor
   //
-
 }
 
 //___________________________________________
@@ -76,27 +75,26 @@ AliPMDBlockHeader::operator=(const AliPMDBlockHeader &blockh)
   //
   if (this != &blockh)
     {
+      fDataKey       = blockh.fDataKey;
       fTotalLength   = blockh.fTotalLength;
       fRawDataLength = blockh.fRawDataLength;
       fDspId         = blockh.fDspId;
-      fTrWord1       = blockh.fTrWord1;
-      fTrWord2       = blockh.fTrWord2;
-      fTrWord3       = blockh.fTrWord3;
-      fTrWord4       = blockh.fTrWord4;
-      fPadWord       = blockh.fPadWord;
+      fL0Trigger     = blockh.fL0Trigger;
+      fMiniEventId   = blockh.fMiniEventId;
+      fEventId1      = blockh.fEventId1;
+      fEventId2      = blockh.fEventId2;
     }
   return *this;
 }
 void AliPMDBlockHeader::SetHeader(Int_t *header)
 {
-  fTotalLength   = header[0];
-  fRawDataLength = header[1];
-  fDspId         = header[2];
-  fTrWord1       = header[3];
-  fTrWord2       = header[4];
-  fTrWord3       = header[5];
-  fTrWord4       = header[6];
-  fPadWord       = header[7];
-
+  fDataKey       = header[0];
+  fTotalLength   = header[1];
+  fRawDataLength = header[2];
+  fDspId         = header[3];
+  fL0Trigger     = header[4];
+  fMiniEventId   = header[5];
+  fEventId1      = header[6];
+  fEventId2      = header[7];
 }
       

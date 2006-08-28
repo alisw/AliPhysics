@@ -25,6 +25,9 @@
 #include "AliRawDataHeader.h"
 #include "AliBitPacking.h"
 #include "AliPMDdigit.h"
+#include "AliPMDBlockHeader.h"
+#include "AliPMDDspHeader.h"
+#include "AliPMDPatchBusHeader.h"
 #include "AliPMDRawStream.h"
 #include "AliPMDDDLRawData.h"
 #include "AliDAQ.h"
@@ -55,7 +58,6 @@ AliPMDDDLRawData & AliPMDDDLRawData::operator=(const AliPMDDDLRawData& ddlraw)
     }
   return *this;
 }
-
 //____________________________________________________________________________
 
 AliPMDDDLRawData::~AliPMDDDLRawData()
@@ -175,9 +177,9 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	  dsp[i] += 4*dspBus[i];
 	}
 
-      Int_t dspBlockARDL = 0;
-      Int_t dspBlockBRDL = 0;
-      
+      Int_t dspBlockARDL    = 0;
+      Int_t dspBlockBRDL    = 0;
+
       for (Int_t i = 0; i < 5; i++)
 	{
 	  Int_t ieven = 2*i;
@@ -185,43 +187,60 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 	  if (dsp[ieven] > 0)
 	    {
 	      dspBlockARDL += dsp[ieven];
-	      dspBlockARDL += 8;
+	      Int_t remainder = dsp[ieven]%2;
+	      if (remainder == 1)
+		{
+		  dspBlockARDL++;
+		}
 	    }
 	  if (dsp[iodd] > 0)
 	    {
 	      dspBlockBRDL += dsp[iodd];
-	      dspBlockBRDL += 8;
+	      Int_t remainder = dsp[ieven]%2;
+	      if (remainder == 1)
+		{
+		  dspBlockARDL++;
+		}
 	    }
 	}
       
       // Start writing the DDL file
+
+      AliPMDBlockHeader blHeader;
+      AliPMDDspHeader   dspHeader;
+      AliPMDPatchBusHeader pbusHeader;
+
+      const Int_t kblHLen   = blHeader.GetHeaderLength();
+      const Int_t kdspHLen  = dspHeader.GetHeaderLength();
+      const Int_t kpbusHLen = pbusHeader.GetHeaderLength();
+
       UInt_t dspRDL = 0;
-      UInt_t dspBlockHeader[8];
-      UInt_t dspHeader[8];
-      UInt_t patchBusHeader[4];
+      UInt_t dspBlockHeaderWord[8];
+      UInt_t dspHeaderWord[10];
+      UInt_t patchBusHeaderWord[4];
       Int_t iskip[5];
+
 
       for (Int_t iblock = 0; iblock < 2; iblock++)
 	{
 	  // DSP Block Header
 	  
-	  for (Int_t i=0; i<8; i++)
+	  for (Int_t i=0; i<kblHLen; i++)
 	    {
-	      dspBlockHeader[i] = 0;
-	      if (i == 1)
-		{
-		  if (iblock == 0)
-		    {
-		      dspBlockHeader[1] = (UInt_t) dspBlockARDL;
-		    }
-		  else if (iblock == 1)
-		    {
-		      dspBlockHeader[1] = (UInt_t) dspBlockBRDL;
-		    }
-		}
+	      dspBlockHeaderWord[i] = 0;
+	    }
+	  if (iblock == 0)
+	    {
+	      dspBlockHeaderWord[1] = (UInt_t) (dspBlockARDL + kblHLen);
+	      dspBlockHeaderWord[2] = (UInt_t) dspBlockARDL;
+	    }
+	  else if (iblock == 1)
+	    {
+	      dspBlockHeaderWord[1] = (UInt_t) (dspBlockBRDL + kblHLen);
+	      dspBlockHeaderWord[2] = (UInt_t) dspBlockBRDL;
 	    }
 
-	  outfile.write((char*)(&dspBlockHeader),8*sizeof(UInt_t));
+	  outfile.write((char*)dspBlockHeaderWord,kblHLen*sizeof(UInt_t));
 
 	  if (iblock == 0)
 	    {
@@ -255,28 +274,43 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 		  dspRDL = (UInt_t) dsp[dspno];
 		}
 
-	      for (Int_t i=0; i<8; i++)
+	      for (Int_t i=0; i<kdspHLen; i++)
 		{
-		  dspHeader[i] = 0;
+		  dspHeaderWord[i] = 0;
 		}
-	      dspHeader[1] = dspRDL;
-	      dspHeader[6] = dspno;
-	      outfile.write((char*)(&dspHeader),8*sizeof(UInt_t));
-	      
+	      Int_t remainder = dspRDL%2;
+	      if (remainder == 1) dspRDL++;
+
+	      dspHeaderWord[1] = dspRDL + kdspHLen;
+	      dspHeaderWord[2] = dspRDL;
+	      dspHeaderWord[3] = dspno;
+	      if (remainder == 1) dspHeaderWord[8] = 1; // setting the padding word
+	      outfile.write((char*)dspHeaderWord,kdspHLen*sizeof(UInt_t));
+
 	      for (Int_t ibus = 0; ibus < 5; ibus++)
 		{
 		  // Patch Bus Header
 		  Int_t busno = iskip[idsp] + ibus;
 		  Int_t patchbusRDL = contentsBus[busno];
-		  
-		  for (Int_t i=0; i<4; i++)
-		    {
-		      patchBusHeader[i] = 0;
-		    }
-		  patchBusHeader[1] = (UInt_t) patchbusRDL;
-		  patchBusHeader[2] = (UInt_t) busno;
 
-		  outfile.write((char*)(&patchBusHeader),4*sizeof(UInt_t));
+		  if (patchbusRDL > 0)
+		    {
+		      patchBusHeaderWord[0] = 0;
+		      patchBusHeaderWord[1] = (UInt_t) (patchbusRDL + kpbusHLen);
+		      patchBusHeaderWord[2] = (UInt_t) patchbusRDL;
+		      patchBusHeaderWord[3] = (UInt_t) busno;
+		    }
+		  else if (patchbusRDL == 0)
+		    {
+		      patchBusHeaderWord[0] = 0;
+		      patchBusHeaderWord[1] = (UInt_t) kpbusHLen;
+		      patchBusHeaderWord[2] = (UInt_t) 0;
+		      patchBusHeaderWord[3] = (UInt_t) busno;
+		    }
+
+
+		  outfile.write((char*)patchBusHeaderWord,4*sizeof(UInt_t));
+
 
 		  for (Int_t iword = 0; iword < patchbusRDL; iword++)
 		    {
@@ -284,12 +318,19 @@ void AliPMDDDLRawData::WritePMDRawData(TTree *treeD)
 		    }
 		  
 		  outfile.write((char*)buffer,patchbusRDL*sizeof(UInt_t));
-		  
+
+		} // End of patch bus loop
+
+
+	      // Adding a padding word if the total words odd
+	      if (remainder == 1)
+		{
+		  UInt_t paddingWord = dspHeader.GetDefaultPaddingWord();
+		  outfile.write((char*)(&paddingWord),sizeof(UInt_t));
 		}
 	    }
 	}
-      
-      
+
       // Write real data header
       // take the pointer to the beginning of the data header
       // write the total number of words per ddl and bring the
@@ -419,18 +460,17 @@ void AliPMDDDLRawData::GetUMDigitsData(TTree *treeD, Int_t imodule,
   Int_t nentries = fDigits->GetLast();
   Int_t totword = nentries+1;
 
-  AliPMDdigit *fPMDdigit;
-
+  AliPMDdigit *pmddigit;
 
   for (Int_t ient = 0; ient < totword; ient++)
     {
-      fPMDdigit = (AliPMDdigit*)fDigits->UncheckedAt(ient);
+      pmddigit = (AliPMDdigit*)fDigits->UncheckedAt(ient);
       
-      det    = fPMDdigit->GetDetector();
-      smn    = fPMDdigit->GetSMNumber();
-      irow   = fPMDdigit->GetRow();
-      icol   = fPMDdigit->GetColumn();
-      adc    = (UInt_t) fPMDdigit->GetADC();
+      det    = pmddigit->GetDetector();
+      smn    = pmddigit->GetSMNumber();
+      irow   = pmddigit->GetRow();
+      icol   = pmddigit->GetColumn();
+      adc    = (UInt_t) pmddigit->GetADC();
 
       TransformS2H(smn,irow,icol);
 

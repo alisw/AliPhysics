@@ -192,47 +192,53 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
   AliPMDDspHeader      dspHeader;
   AliPMDPatchBusHeader pbusHeader;
 
+  const Int_t kblHLen   = blockHeader.GetHeaderLength();
+  const Int_t kdspHLen  = dspHeader.GetHeaderLength();
+  const Int_t kpbusHLen = pbusHeader.GetHeaderLength();
+  
+
   Int_t idet, ismn;
   Int_t irow = -1;
   Int_t icol = -1;
 
-  Int_t block[8];
-  Int_t pbus[4];
+  Int_t blHeaderWord[8];
+  Int_t dspHeaderWord[10];
+  Int_t pbusHeaderWord[4];
 
   Int_t ilowLimit = 0;
   Int_t iuppLimit = 0;
   for (Int_t iblock = 0; iblock < 2; iblock++)
     {
       ilowLimit = iuppLimit;
-      iuppLimit = ilowLimit + 8;
+      iuppLimit = ilowLimit + kblHLen;
 
       for (Int_t i = ilowLimit; i < iuppLimit; i++)
 	{
-	  block[i-ilowLimit] = (Int_t) buffer[i];
+	  blHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
 	}
-      blockHeader.SetHeader(block);
+      blockHeader.SetHeader(blHeaderWord);
       for (Int_t idsp = 0; idsp < 5; idsp++)
 	{
 	  ilowLimit = iuppLimit;
-	  iuppLimit = ilowLimit + 8;
+	  iuppLimit = ilowLimit + kdspHLen;
 
 	  for (Int_t i = ilowLimit; i < iuppLimit; i++)
 	    {
-	      block[i-ilowLimit] = (Int_t) buffer[i];
+	      dspHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
 	    }
-	  dspHeader.SetHeader(block);
+	  dspHeader.SetHeader(dspHeaderWord);
 
 	  for (Int_t ibus = 0; ibus < 5; ibus++)
 	    {
 
 	      ilowLimit = iuppLimit;
-	      iuppLimit = ilowLimit + 4;
+	      iuppLimit = ilowLimit + kpbusHLen;
 
 	      for (Int_t i = ilowLimit; i < iuppLimit; i++)
 		{
-		  pbus[i-ilowLimit] = (Int_t) buffer[i];
+		  pbusHeaderWord[i-ilowLimit] = (Int_t) buffer[i];
 		}
-	      pbusHeader.SetHeader(pbus);
+	      pbusHeader.SetHeader(pbusHeaderWord);
 	      Int_t rawdatalength = pbusHeader.GetRawDataLength();
 	      Int_t pbusid = pbusHeader.GetPatchBusId();
 
@@ -274,11 +280,12 @@ void AliPMDRawStream::DdlData(TObjArray *pmdddlcont)
 		  
 		  pmdddlcont->Add(pmdddldata);
 		  
-		}
+		} // data word loop
+	    } // patch bus loop
 
-	    }
+	  if (dspHeader.GetPaddingWord() == 1) iuppLimit++;
+
 	} // end of DSP
-
 
     } // end of BLOCK
 
