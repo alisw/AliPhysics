@@ -1,5 +1,5 @@
 //_____________________________________________________________________________
-Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
+Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 4
                           , Bool_t sdigits = kFALSE) 
 {
   //  
@@ -14,39 +14,34 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
 
   Char_t *inputFile = "galice.root";
 
-  const Int_t kNdict = 3;
-
   // Define the objects
   AliTRDv1       *trd;
   AliTRDgeometry *geo;
 
-  Int_t           track;
-  Int_t           idict;
-
-  TString evfoldname = AliConfig::GetDefaultEventFolderName();
-  fRunLoader = AliRunLoader::GetRunLoader(evfoldname);
-  if (!fRunLoader) {
-    fRunLoader = AliRunLoader::Open(inputFile
-                                   ,AliConfig::GetDefaultEventFolderName()
-				   ,"UPDATE");
+  TString       evfoldname = AliConfig::GetDefaultEventFolderName();
+  AliRunLoader *runLoader  = AliRunLoader::GetRunLoader(evfoldname);
+  if (!runLoader) {
+    runLoader = AliRunLoader::Open(inputFile
+                                  ,AliConfig::GetDefaultEventFolderName()
+                                  ,"UPDATE");
   }
-  if (!fRunLoader) {
-    Printf("Can not open session for file %s.",inputFile);
+  if (!runLoader) {
+    printf("Can not open session for file %s.",inputFile);
     return kFALSE;
   }
    
-  if (!fRunLoader->GetAliRun()) {
-    fRunLoader->LoadgAlice();
+  if (!runLoader->GetAliRun()) {
+    runLoader->LoadgAlice();
   }
-  gAlice = fRunLoader->GetAliRun();  
+  gAlice = runLoader->GetAliRun();  
   if (!gAlice) {
     printf("Could not find AliRun object.\n");
     return kFALSE;
   }
 
-  fRunLoader->GetEvent(event);
+  runLoader->GetEvent(event);
   
-  AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
+  AliLoader *loader = runLoader->GetLoader("TRDLoader");
   if (!loader) {
     printf("Can not get TRD loader from Run Loader");
   }
@@ -72,6 +67,7 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
   TCanvas *c1 = new TCanvas("digits","TRD digits display",0,0,700,730);
   TView   *v  = new TView(1);
   v->SetRange(-430,-560,-430,430,560,1710);
+  v->SetParallel();
   c1->Clear();
   c1->SetFillColor(1);
   c1->SetTheta(90.0);
@@ -109,11 +105,6 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
     printf("<AliTRDdisplayDigits3D> Loading detector %d\n",idet);
     AliTRDdataArrayI *digits  = digitsManager->GetDigits(idet);
     digits->Expand();
-    AliTRDdataArrayI *tracks[kNdict];
-    for (Int_t idict = 0; idict < kNdict; idict++) {
-      tracks[idict] = digitsManager->GetDictionary(idet,idict);
-      tracks[idict]->Expand();
-    }
 
     Int_t isec    = geo->GetSector(idet);
     Int_t icha    = geo->GetChamber(idet);
@@ -127,29 +118,13 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
     if (ndigits > 0) {
 
       TPolyMarker3D *pmSignal = new TPolyMarker3D(ndigits);
-      TPolyMarker3D *pmBgnd   = new TPolyMarker3D(ndigits);
-      TPolyMarker3D *pmMerged = new TPolyMarker3D(ndigits);
- 
-      Int_t ibgnd   = 0;
       Int_t isignal = 0;
-      Int_t imerged = 0;
 
       for (Int_t time = 0; time < timeMax; time++) {
         for (Int_t  col = 0;  col <  colMax;  col++) {
           for (Int_t  row = 0;  row <  rowMax;  row++) {
 
-            Int_t type = 1;
-
             Int_t amp = digits->GetDataUnchecked(row,col,time);
-            for (idict = 0; idict < kNdict; idict++) {
-              Int_t trk = tracks[idict]->GetDataUnchecked(row,col,time) - 1;
-              if ((idict == 0) && (trk >= mask)) {
-                type = 2;
-	      }
-              if ((type  == 1) && (trk >= mask)) {
-                type = 3;
-	      }              
-            }
 
             if (amp > thresh) {
           
@@ -164,21 +139,9 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
               Double_t y = glb[1];
               Double_t z = glb[2];
 
-              if      (type == 1) {
-                pmSignal->SetPoint(isignal,x,y,z);
-                isignal++;
-                totalsignal++;
-	      }
-              else if (type == 2) {
-                pmBgnd->SetPoint(ibgnd,x,y,z);
-                ibgnd++;
-                totalbgnd++;
-	      }
-              else if (type == 3) {
-                pmMerged->SetPoint(imerged,x,y,z);
-                imerged++;
-                totalmerged++;
-	      }
+              pmSignal->SetPoint(isignal,x,y,z);
+              isignal++;
+              totalsignal++;
 
 	    }
 
@@ -187,19 +150,6 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
       }
 
       digits->Compress(1,0);
-      for (idict = 0; idict < kNdict; idict++) {
-        tracks[idict]->Compress(1,0);
-      }
-
-      pmMerged->SetMarkerSize(1); 
-      pmMerged->SetMarkerColor(markerColorMerged);
-      pmMerged->SetMarkerStyle(1);
-      pmMerged->Draw();
-
-      pmBgnd->SetMarkerSize(1); 
-      pmBgnd->SetMarkerColor(markerColorBgnd);
-      pmBgnd->SetMarkerStyle(1);
-      pmBgnd->Draw();
 
       pmSignal->SetMarkerSize(1); 
       pmSignal->SetMarkerColor(markerColorSignal);
@@ -231,10 +181,6 @@ Int_t AliTRDdisplayDigits3D(Int_t event = 0, Int_t thresh = 2
 
   c1->Modified(); 
   c1->Update(); 
-
-  printf("<AliTRDdisplayDigits3D> Number of digits:\n");
-  printf("                        signal = %d, bgnd = %d, merged = %d\n"
-        ,totalsignal,totalbgnd,totalmerged);
 
   return 0;
 
