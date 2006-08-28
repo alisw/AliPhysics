@@ -35,6 +35,7 @@
 #include <TTree.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <TTimeStamp.h>
 
 #include <AliLog.h>
 #include <AliESD.h>
@@ -147,7 +148,7 @@ Bool_t AliSelector::Notify()
 
   AliDebug(AliLog::kDebug, "=========NOTIFY==========");
   AliDebug(AliLog::kDebug, Form("Hostname: %s", gSystem->HostName()));
-  AliDebug(AliLog::kDebug, Form("Time: %s", gSystem->Now().AsString()));
+  AliDebug(AliLog::kDebug, Form("Time: %s", TTimeStamp(time(0)).AsString()));
 
   ++fCountFiles;
   if (fTree)
