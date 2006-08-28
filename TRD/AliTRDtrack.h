@@ -106,7 +106,7 @@ class AliTRDtrack : public AliKalmanTrack {
           Int_t    PropagateToR(Double_t xr, Double_t step);
           void     ResetCovariance();   
           void     ResetCovariance(Float_t mult);   
-          void     ResetClusters()                      { SetChi2(0.); 
+          void     ResetClusters()                      { SetChi2(0.0); 
                                                           SetNumberOfClusters(0);   }
           Int_t    Rotate(Double_t angle, Bool_t absolute = kFALSE);
           Int_t    Update(const AliTRDcluster *c, Double_t chi2, UInt_t i, Double_t h01);
@@ -126,8 +126,7 @@ class AliTRDtrack : public AliKalmanTrack {
           Int_t    Update(const AliCluster*/*c*/, Double_t /*chi2*/, UInt_t /*i*/) { return 0;   }
 
           Int_t    fSeedLab;                               //  Track label taken from seeding  
-          Float_t  fdEdx;                                  //  dE/dx 
-          Float_t  fdEdxT;                                 //  dE/dx  - truncated mean
+          Float_t  fdEdx;                                  //  dE/dx  - truncated mean
           Float_t  fDE;                                    //  Integrated delta energy
           Float_t  fdEdxPlane[kNplane][kNslice];           //  dE/dx from all 6 planes in 3 slices each
           Int_t    fTimBinPlane[kNplane];                  //  Time bin of Max cluster from all 6 planes
@@ -165,7 +164,7 @@ class AliTRDtrack : public AliKalmanTrack {
           Float_t  fBudget[3];                             //  Integrated material budget
           AliTRDtrack    *fBackupTrack;                    //! Backup track
 
-  ClassDef(AliTRDtrack,5)                                  //  TRD reconstructed tracks
+  ClassDef(AliTRDtrack,6)                                  //  TRD reconstructed tracks
 
 };                     
 
@@ -181,7 +180,7 @@ inline void AliTRDtrack::GetExternalParameters(Double_t &xr, Double_t x[5]) cons
   x[1] = GetZ();  
   x[2] = GetSnp();  
   x[3] = GetTgl();
-  x[4] = (TMath::Sign(1e-9,fC) + fC) * GetLocalConvConst();
+  x[4] = (TMath::Sign(1.0e-9,fC) + fC) * GetLocalConvConst();
 
 }           
 

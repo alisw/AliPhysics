@@ -39,7 +39,6 @@ AliTRDtrack::AliTRDtrack()
   :AliKalmanTrack()
   ,fSeedLab(-1)
   ,fdEdx(0)
-  ,fdEdxT(0)
   ,fDE(0)
   ,fAlpha(0)
   ,fX(0)
@@ -109,7 +108,6 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   :AliKalmanTrack() 
   ,fSeedLab(-1)
   ,fdEdx(0.0)
-  ,fdEdxT(0.0)
   ,fDE(0.0)
   ,fAlpha(alpha)
   ,fX(xref)
@@ -153,9 +151,13 @@ AliTRDtrack::AliTRDtrack(const AliTRDcluster *c, UInt_t index,
   Int_t  j = 0;
   UInt_t k = 0;
 
-  if (fAlpha <  -TMath::Pi()) fAlpha += 2.0 * TMath::Pi();
-  if (fAlpha >=  TMath::Pi()) fAlpha -= 2.0 * TMath::Pi();   
- 
+  if (fAlpha <  -TMath::Pi()) {
+    fAlpha += 2.0 * TMath::Pi();
+  }
+  if (fAlpha >=  TMath::Pi()) {
+    fAlpha -= 2.0 * TMath::Pi();   
+  } 
+
   SaveLocalConvConst();
 
   fIndex[0] = index;
@@ -193,7 +195,6 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack &t)
   :AliKalmanTrack(t) 
   ,fSeedLab(t.fSeedLab)
   ,fdEdx(t.fdEdx)
-  ,fdEdxT(t.fdEdxT)
   ,fDE(t.fDE)
   ,fAlpha(t.fAlpha)
   ,fX(t.fX)
@@ -272,7 +273,6 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack &t, Double_t alpha)
   :AliKalmanTrack(t) 
   ,fSeedLab(-1)
   ,fdEdx(t.GetPIDsignal())
-  ,fdEdxT(0)
   ,fDE(0)
   ,fAlpha(alpha)
   ,fX(0)
@@ -382,7 +382,6 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
   :AliKalmanTrack() 
   ,fSeedLab(-1)
   ,fdEdx(t.GetTRDsignal())
-  ,fdEdxT(0)
   ,fDE(0)
   ,fAlpha(t.GetAlpha())
   ,fX(0)
@@ -639,15 +638,19 @@ Int_t AliTRDtrack::Compare(const TObject *o) const
   // Compares tracks according to their Y2 or curvature
   //
 
-  AliTRDtrack *t=(AliTRDtrack*)o;
+  AliTRDtrack *t = (AliTRDtrack *) o;
   //  Double_t co=t->GetSigmaY2();
   //  Double_t c =GetSigmaY2();
 
-  Double_t co=TMath::Abs(t->GetC());
-  Double_t c =TMath::Abs(GetC());  
+  Double_t co = TMath::Abs(t->GetC());
+  Double_t c  = TMath::Abs(GetC());  
 
-  if      (c>co) return 1;
-  else if (c<co) return -1;
+  if      (c > co) {
+    return 1;
+  }
+  else if (c < co) {
+    return -1;
+  }
   return 0;
 
 }                
@@ -656,43 +659,28 @@ Int_t AliTRDtrack::Compare(const TObject *o) const
 void AliTRDtrack::CookdEdx(Double_t low, Double_t up) 
 {
   //
-  // Calculates the dE/dX within the "low" and "up" cuts.
+  // Calculates the truncated dE/dx within the "low" and "up" cuts.
   //
 
-  Int_t i = 0;
+  Int_t   i  = 0;
+
+  // Array to sort the dEdx values according to amplitude
+  Float_t sorted[kMAXCLUSTERSPERTRACK];
 
   // Number of clusters used for dedx
-  Int_t nc = fNdedx; 
+  Int_t   nc = fNdedx; 
+
   // Require at least 10 clusters for a dedx measurement
-  // Should fdEdxT not also be set here ????
   if (nc < 10) {
     SetdEdx(0);
     return;
-  }
-
-  // Get the charge deposits from each cluster
-  Float_t sorted[kMAXCLUSTERSPERTRACK];
-  for (i = 0; i < nc; i++) {
-    sorted[i] = fdQdl[i];
   }
 
   // Lower and upper bound
   Int_t nl = Int_t(low * nc);
   Int_t nu = Int_t( up * nc);
 
-  // Sum up the total energy deposit
-  Float_t dedx = 0.0;
-  for (i = 0; i < nc; i++) {
-    dedx += sorted[i];
-  }
-  // Why is dedx divided by (nu - nl) ????
-  // And why is it not saved ????
-  if ((nu - nl) != 0) {
-    dedx /= (nu - nl);
-  }
-
-  // Calculate the truncated mean
-  // Can fdQdl be negative ???? Why is it nor checked above ????
+  // Can fdQdl be negative ????
   for (i = 0; i < nc; i++) {
     sorted[i] = TMath::Abs(fdQdl[i]);
   }
@@ -700,15 +688,13 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up)
   // Sort the dedx values by amplitude
   Int_t *index = new Int_t[nc];
   TMath::Sort(nc,sorted,index,kFALSE);
+
   // Sum up the truncated charge between nl and nu  
-  dedx = 0.0;
+  Float_t dedx = 0.0;
   for (i = nl; i <= nu; i++) {
     dedx += sorted[index[i]];
   }
-  dedx /= (nu - nl + 1);
-
-  // Why are fdEdx and fdEdxT set to the same value ????
-  fdEdxT = dedx;
+  dedx /= (nu - nl + 1.0);
   SetdEdx(dedx);
 
   delete [] index;
