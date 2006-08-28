@@ -15,9 +15,9 @@ AlidNdEtaCorrection::AlidNdEtaCorrection()
   fTrack2ParticleCorrection(0),
   fVertexRecoCorrection(0),
   fTriggerCorrection(0),
-  fTriggerBiasCorrection(0),
-  fNEvents(0),
-  fNTriggeredEvents(0)
+  fTriggerBiasCorrection(0)
+  //fNEvents(0),
+  //fNTriggeredEvents(0)
 {
   // default constructor
 }
@@ -28,9 +28,9 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   fTrack2ParticleCorrection(0),
   fVertexRecoCorrection(0),
   fTriggerCorrection(0),
-  fTriggerBiasCorrection(0),
-  fNEvents(0),
-  fNTriggeredEvents(0)
+  fTriggerBiasCorrection(0)
+  //fNEvents(0),
+  //fNTriggeredEvents(0)
 {
   // constructor
   //
@@ -118,25 +118,25 @@ AlidNdEtaCorrection::Finish() {
   fVertexRecoCorrection->Divide();
   fTriggerCorrection->Divide();
 
-  if (fNEvents == 0)
+  if (GetNevents() <= 0)
   {
-    printf("ERROR: fNEvents is empty. Cannot scale histogram. Skipping processing of fTriggerBiasCorrection\n");
+    printf("ERROR: GetNevents() returns 0. Cannot scale histogram. Skipping processing of fTriggerBiasCorrection\n");
     return;
   }
-  fTriggerBiasCorrection->GetMeasuredHistogram()->Scale(Double_t(fNTriggeredEvents)/Double_t(fNEvents));
+  fTriggerBiasCorrection->GetMeasuredHistogram()->Scale(Double_t(GetNtriggeredEvents())/Double_t(GetNevents()));
   fTriggerBiasCorrection->Divide();
 }
 
 //____________________________________________________________________
-Long64_t 
+Long64_t
 AlidNdEtaCorrection::Merge(TCollection* list) {
   // Merge a list of dNdEtaCorrection objects with this (needed for
-  // PROOF). 
+  // PROOF).
   // Returns the number of merged objects (including this).
 
   if (!list)
     return 0;
-  
+
   if (list->IsEmpty())
     return 1;
 
@@ -147,35 +147,37 @@ AlidNdEtaCorrection::Merge(TCollection* list) {
   TList* collectionNtrackToNparticle = new TList;
   TList* collectionVertexReco        = new TList;
   TList* collectionTriggerBias       = new TList;
+  TList* collectionTrigger           = new TList;
 
   Int_t count = 0;
   while ((obj = iter->Next())) {
-    
+
     AlidNdEtaCorrection* entry = dynamic_cast<AlidNdEtaCorrection*> (obj);
-    if (entry == 0) 
+    if (entry == 0)
       continue;
 
     collectionNtrackToNparticle ->Add(entry->GetTrack2ParticleCorrection());
     collectionVertexReco        ->Add(entry->GetVertexRecoCorrection());
     collectionTriggerBias        ->Add(entry->GetTriggerBiasCorrection());
+    collectionTrigger        ->Add(entry->GetTriggerCorrection());
 
     count++;
 
-    fNEvents += entry->fNEvents;
-    fNTriggeredEvents += entry->fNTriggeredEvents;
+    //fNEvents += entry->fNEvents;
+    //fNTriggeredEvents += entry->fNTriggeredEvents;
   }
   fTrack2ParticleCorrection ->Merge(collectionNtrackToNparticle);
   fVertexRecoCorrection        ->Merge(collectionVertexReco);
   fTriggerBiasCorrection        ->Merge(collectionTriggerBias);
+  fTriggerCorrection        ->Merge(collectionTrigger);
 
   delete collectionNtrackToNparticle;
   delete collectionVertexReco;
   delete collectionTriggerBias;
-
+  delete collectionTrigger;
 
   return count+1;
 }
-
 
 //____________________________________________________________________
 Bool_t
@@ -191,7 +193,6 @@ AlidNdEtaCorrection::LoadHistograms(const Char_t* fileName, const Char_t* dir) {
 
   return kTRUE;
 }
-
 
 //____________________________________________________________________
 void
@@ -281,4 +282,24 @@ void AlidNdEtaCorrection::ReduceInformation()
   fVertexRecoCorrection->ReduceInformation();
   fTriggerCorrection->ReduceInformation();
   fTriggerBiasCorrection->ReduceInformation();
+}
+
+Int_t AlidNdEtaCorrection::GetNevents()
+{
+  // Return total number of events used for this correction map (taken from fTriggerCorrection)
+
+  if (!fTriggerCorrection)
+    return -1;
+
+  return (Int_t) fTriggerCorrection->GetGeneratedHistogram()->Integral(0, fTriggerCorrection->GetGeneratedHistogram()->GetNbinsX()+1);
+}
+
+Int_t AlidNdEtaCorrection::GetNtriggeredEvents()
+{
+  // Return total number of triggered events used for this correction map (taken from fTriggerCorrection)
+
+  if (!fTriggerCorrection)
+    return -1;
+
+  return (Int_t) fTriggerCorrection->GetMeasuredHistogram()->Integral(0, fTriggerCorrection->GetMeasuredHistogram()->GetNbinsX()+1);
 }

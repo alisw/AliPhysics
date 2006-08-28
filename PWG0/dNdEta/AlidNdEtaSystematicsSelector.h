@@ -7,7 +7,8 @@
 
 class AliESDtrackCuts;
 class AlidNdEtaCorrection;
-class TH3F;
+
+class TH2F;
 class TH1F;
 
 class AlidNdEtaSystematicsSelector : public AliSelectorRL {
@@ -25,17 +26,16 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
     void ReadUserObjects(TTree* tree);
 
     void FillCorrectionMaps(TObjArray* listOfTracks);
-    void FillSecondaries(TObjArray* listOfTracks);
+    void FillSecondaries();
     void FillSigmaVertex();
 
-    TH3F* fSecondaries; // (accepted tracks) vs (tracks from sec)/(n * tracks from sec) vs pT
+    TH2F* fSecondaries; // (Nprim/Nsec for the cases: all/above3GeV/reconstructed tracks/accepted tracks) vs (particle count)
+
     AlidNdEtaCorrection* fdNdEtaCorrection[4];      // correction for different particle species: here pi, K, p, others
+
     TH1F* fSigmaVertex; // (accepted tracks) vs (n of sigma to vertex cut)
 
     AliESDtrackCuts* fEsdTrackCuts;     // Object containing the parameters of the esd track cuts
-
-    Long64_t fOverallPrimaries; // count of all primaries
-    Long64_t fOverallSecondaries; // count of all secondaries
 
     TH1F* fPIDParticles; // pid of primary particles
     TH1F* fPIDTracks; // pid of reconstructed tracks

@@ -16,12 +16,20 @@
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
 
+// uncomment this to enable mona lisa monitoring
+//#define ALISELECTOR_USEMONALISA
+
+#ifdef ALISELECTOR_USEMONALISA
+  #include <TMonaLisaWriter.h>
+#endif
+
 ClassImp(AliMultiplicityESDSelector)
 
 AliMultiplicityESDSelector::AliMultiplicityESDSelector() :
   AliSelector(),
   fMultiplicity(0),
-  fEsdTrackCuts(0)
+  fEsdTrackCuts(0),
+  fMonaLisaWriter(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -72,6 +80,24 @@ void AliMultiplicityESDSelector::SlaveBegin(TTree* tree)
   ReadUserObjects(tree);
 
   fMultiplicity = new TH1F("fMultiplicity", "multiplicity", 201, 0.5, 200.5);
+
+  #ifdef ALISELECTOR_USEMONALISA
+    TNamed *nm = 0;
+    if (fInput)
+      nm = dynamic_cast<TNamed*> (fInput->FindObject("PROOF_QueryTag"));
+    if (!nm)
+    {
+      AliDebug(AliLog::kError, "Query tag not found. Cannot enable monitoring");
+      return;
+    }
+
+    TString option = GetOption();
+    option.ReplaceAll("#+", "");
+
+    TString id;
+    id.Form("%s_%s%d", gSystem->HostName(), nm->GetTitle(), gSystem->GetPid());
+    fMonaLisaWriter = new TMonaLisaWriter(option, id, "CAF", "aliendb6.cern.ch");
+  #endif
 }
 
 Bool_t AliMultiplicityESDSelector::Process(Long64_t entry)
@@ -131,6 +157,14 @@ void AliMultiplicityESDSelector::SlaveTerminate()
   // on each slave server.
 
   AliSelector::SlaveTerminate();
+
+  #ifdef ALISELECTOR_USEMONALISA
+    if (fMonaLisaWriter)
+    {
+      delete fMonaLisaWriter;
+      fMonaLisaWriter = 0;
+    }
+  #endif
 
   // Add the histograms to the output on each slave server
   if (!fOutput)

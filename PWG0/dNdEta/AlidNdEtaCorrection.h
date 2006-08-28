@@ -44,14 +44,15 @@ public:
   void FillParticleAllEvents(Float_t eta, Float_t pt)          {fTriggerBiasCorrection->FillGene(eta, pt);}
   void FillParticleWhenEventTriggered(Float_t eta, Float_t pt) {fTriggerBiasCorrection->FillMeas(eta, pt);}
 
-  void IncreaseEventCount() { fNEvents++; }
-  void IncreaseTriggeredEventCount() { fNTriggeredEvents++; }
+  //void IncreaseEventCount() { fNEvents++; }
+  //void IncreaseTriggeredEventCount() { fNTriggeredEvents++; }
 
   void Finish();
 
   AliCorrectionMatrix3D* GetTrack2ParticleCorrection()    {return fTrack2ParticleCorrection;}
   AliCorrectionMatrix2D* GetVertexRecoCorrection()        {return fVertexRecoCorrection;}
   AliCorrectionMatrix2D* GetTriggerBiasCorrection()       {return fTriggerBiasCorrection;}
+  AliCorrectionMatrix2D* GetTriggerCorrection()       {return fTriggerCorrection;}
 
   virtual Long64_t Merge(TCollection* list);
 
@@ -64,7 +65,7 @@ public:
   
   //  void RemoveEdges(Float_t cut=2, Int_t nBinsVtx=0, Int_t nBinsEta=0);
   
-  Float_t GetTrack2ParticleCorrection(Float_t vtx, Float_t eta, Float_t pt) 
+  Float_t GetTrack2ParticleCorrection(Float_t vtx, Float_t eta, Float_t pt)
     {return fTrack2ParticleCorrection->GetCorrection(vtx, eta, pt);}
 
   Float_t GetVertexRecoCorrection(Float_t vtx, Float_t n) {return fVertexRecoCorrection->GetCorrection(vtx, n);}
@@ -75,7 +76,10 @@ public:
 
   Float_t GetMeasuredFraction(Float_t ptCutOff, Float_t eta = -1, Bool_t debug = kFALSE);
 
-  void SetNEvents(Long64_t events) { fNEvents = events; }
+  //void SetNEvents(Long64_t events) { fNEvents = events; }
+
+  Int_t GetNevents();
+  Int_t GetNtriggeredEvents();
 
   void ReduceInformation();
 
@@ -86,8 +90,8 @@ protected:
 
   AliCorrectionMatrix2D* fTriggerBiasCorrection;          //-> MB to desired sample
 
-  Long64_t fNEvents;
-  Long64_t fNTriggeredEvents;
+  //Long64_t fNEvents;
+  //Long64_t fNTriggeredEvents;
 
 private:
   AlidNdEtaCorrection(const AlidNdEtaCorrection&);
