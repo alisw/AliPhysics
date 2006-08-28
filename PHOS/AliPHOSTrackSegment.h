@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.22  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -34,7 +37,7 @@ class AliPHOSTrackSegment : public TObject  {
 
 public:
 
-  AliPHOSTrackSegment() {} 
+  AliPHOSTrackSegment() ;
   AliPHOSTrackSegment(AliPHOSEmcRecPoint * EmcRecPoint , 
 		      AliPHOSRecPoint * Cpv) ;
   AliPHOSTrackSegment(AliPHOSEmcRecPoint * EmcRecPoint , 

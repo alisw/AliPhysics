@@ -19,6 +19,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.49  2006/05/10 06:42:53  kharlov
+ * Remove redundant loop over primaries
+ *
  * Revision 1.48  2006/04/22 10:30:17  hristov
  * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
  *
@@ -74,50 +77,44 @@
 #include "AliPHOSGetter.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSSDigitizer.h"
-		//#include "AliMemoryWatcher.h"
+//#include "AliMemoryWatcher.h"
 
 ClassImp(AliPHOSSDigitizer)
 
            
 //____________________________________________________________________________ 
-  AliPHOSSDigitizer::AliPHOSSDigitizer():TTask("","")
+AliPHOSSDigitizer::AliPHOSSDigitizer() : 
+  TTask("",""),
+  fA(0.f), fB(0.f),
+  fPrimThreshold(0.f),
+  fDefaultInit(kTRUE),
+  fEventFolderName(""),
+  fInit(kFALSE),
+  fSDigitsInRun(0),
+  fFirstEvent(0),
+  fLastEvent(0)
 {
   // ctor
-  fFirstEvent = fLastEvent  = 0 ;  
-  fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName, 
 				     const char * eventFolderName):
   TTask("PHOS"+AliConfig::Instance()->GetSDigitizerTaskName(), alirunFileName),
-  fEventFolderName(eventFolderName)
+  fA(0.f), fB(0.f),
+  fPrimThreshold(0.f),
+  fDefaultInit(kFALSE),
+  fEventFolderName(eventFolderName),
+  fInit(kFALSE),
+  fSDigitsInRun(0),
+  fFirstEvent(0),
+  fLastEvent(0)
 {
-
   // ctor
-  fFirstEvent = fLastEvent  = 0 ; // runs one event by defaut  
   InitParameters() ; 
   Init();
   fDefaultInit = kFALSE ; 
 }
-
-//____________________________________________________________________________ 
-AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer & sd)
-  : TTask(sd)
-{
-  //cpy ctor 
-
-  fFirstEvent    = sd.fFirstEvent ; 
-  fLastEvent     = sd.fLastEvent ;
-  fA             = sd.fA ;
-  fB             = sd.fB ;
-  fPrimThreshold = sd.fPrimThreshold ;
-  fSDigitsInRun  = sd.fSDigitsInRun ;
-  SetName(sd.GetName()) ; 
-  SetTitle(sd.GetTitle()) ; 
-  fEventFolderName = sd.fEventFolderName;
-}
-
 
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::~AliPHOSSDigitizer() {

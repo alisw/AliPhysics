@@ -28,8 +28,6 @@ class AliPHOSRecPoint : public AliRecPoint {
 
   AliPHOSRecPoint() ;                   // ctor         
   AliPHOSRecPoint(const char * opt) ;   // ctor 
-  AliPHOSRecPoint(const AliPHOSRecPoint & rp) : AliRecPoint(rp) {
-    Fatal("Cpy ctor", "not implemented") ; } 
   
   virtual ~AliPHOSRecPoint(){
     // dtor
@@ -59,9 +57,6 @@ class AliPHOSRecPoint : public AliRecPoint {
     // Print prototype
   } 
 
-  AliPHOSRecPoint & operator = (const AliPHOSRecPoint & )  {
-    Fatal("operator = ", "not implemented") ;  return *this ; 
-  }
 protected:
   
   Int_t fPHOSMod ;      // PHOS Module number in which the RecPoint is found

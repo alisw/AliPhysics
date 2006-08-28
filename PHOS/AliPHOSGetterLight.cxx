@@ -37,45 +37,58 @@ ClassImp(AliPHOSGetterLight)
 
 
 //____________________________________________________________________________ 
-  AliPHOSGetterLight::AliPHOSGetterLight():AliPHOSGetter(0)
+AliPHOSGetterLight::AliPHOSGetterLight() : 
+  AliPHOSGetter(0),
+  fDigits(0),
+  fEmcRecPoints(0),
+  fCpvRecPoints(0),
+  fTS(0),
+  fRP(0),
+  fClusterizer(0), 
+  fTSM(0),
+  fPID(0)
 {
   // ctor
-  fDigits = 0 ;
-  fEmcRecPoints = 0 ;
-  fCpvRecPoints = 0 ;
-  fTS = 0;
-  fRP = 0;
-  //  fcdb = 0 ;
-  fClusterizer = 0 ; 
-  fTSM = 0 ;
-  fPID = 0 ;
   SetRawDigits(kTRUE) ;
   //  fRawDigits =kTRUE;
   fgObjGetter = this ;
 }
 //____________________________________________________________________________ 
-AliPHOSGetterLight::AliPHOSGetterLight(const char* /*alirunFileName*/, const char* /*version*/, Option_t * /*openingOption*/):AliPHOSGetter(0) 
+AliPHOSGetterLight::AliPHOSGetterLight(const char* /*alirunFileName*/, const char* /*version*/, Option_t * /*openingOption*/) :
+  AliPHOSGetter(0),
+  fDigits(new TClonesArray("AliPHOSDigit",256)),
+  fEmcRecPoints(new TObjArray(50)),
+  fCpvRecPoints(new TObjArray(0)),
+  fTS(new TClonesArray("AliPHOSTrackSegment",50)),
+  fRP(new TClonesArray("AliPHOSRecParticle",50)),
+  fClusterizer (0),
+  fTSM(0),
+  fPID(0)
 {
   //Create containers of reconstructed objects for one event
-  fDigits = new TClonesArray("AliPHOSDigit",256) ;
-  fEmcRecPoints = new TObjArray(50) ;
   fEmcRecPoints->SetOwner(kTRUE) ;
-  fCpvRecPoints= new TObjArray(0);
   fCpvRecPoints->SetOwner(kTRUE) ;
-  fTS = new TClonesArray("AliPHOSTrackSegment",50) ;
-  fRP = new TClonesArray("AliPHOSRecParticle",50) ;
-
-  //Objects which are not owned by Getter
-  //  fcdb = 0 ;
-
-  fClusterizer = 0; 
-  fTSM = 0 ;
-  fPID = 0 ;
 
   SetRawDigits(kTRUE) ;
   //  fRawDigits = kTRUE ;
   fgObjGetter = this ;
 }
+
+//____________________________________________________________________________ 
+AliPHOSGetterLight::AliPHOSGetterLight(const AliPHOSGetterLight & obj) : 
+  AliPHOSGetter(obj),
+  fDigits(0),
+  fEmcRecPoints(0),
+  fCpvRecPoints(0),
+  fTS(0),
+  fRP(0),
+  fClusterizer(0), 
+  fTSM(0),
+  fPID(0)
+{
+  // cpy ctor requested by Coding Convention 
+  Fatal("cpy ctor", "not implemented") ;
+} 
 
 //____________________________________________________________________________ 
   AliPHOSGetterLight::~AliPHOSGetterLight()

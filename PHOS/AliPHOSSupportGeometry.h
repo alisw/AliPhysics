@@ -23,12 +23,8 @@ class AliPHOSSupportGeometry : public TObject {
 public: 
 
   AliPHOSSupportGeometry();
-  AliPHOSSupportGeometry(const AliPHOSSupportGeometry & geom) : TObject(geom) {
-    Fatal("cpy ctor", "not implemented") ; } 
   virtual ~AliPHOSSupportGeometry(void) {}
 
-  AliPHOSSupportGeometry & operator = (const AliPHOSSupportGeometry  & /*rvalue*/) {
-    Fatal("operator =", "not implemented") ; return *this ; }
   Float_t GetRailOuterSize(Int_t index)     const { return fRailOuterSize[index]; }
   Float_t GetRailPart1    (Int_t index)     const { return fRailPart1[index]; }
   Float_t GetRailPart2    (Int_t index)     const { return fRailPart2[index]; }

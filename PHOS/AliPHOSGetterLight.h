@@ -29,10 +29,7 @@ class AliPHOSGetterLight : public AliPHOSGetter {
 
 public:
   AliPHOSGetterLight() ;          // ctor
-  AliPHOSGetterLight(const AliPHOSGetterLight & obj) : AliPHOSGetter(obj) {
-    // cpy ctor requested by Coding Convention 
-    Fatal("cpy ctor", "not implemented") ;
-  } 
+  AliPHOSGetterLight(const AliPHOSGetterLight & obj);
   
   AliPHOSGetterLight & operator = (const AliPHOSGetterLight & ) {
     // assignement operator requested by coding convention, but not needed

@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.18  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -35,10 +38,7 @@ public:
 
   AliPHOSCpvRecPoint() ;
   AliPHOSCpvRecPoint(const char * opt) ;
-  AliPHOSCpvRecPoint(const AliPHOSCpvRecPoint & rp) : AliPHOSEmcRecPoint(rp) {
-    Fatal("cpy ctor", "not implemented") ; 
-  } 
- 
+
   virtual ~AliPHOSCpvRecPoint() ;  
 
   Int_t  Compare(const TObject * obj) const;                 // method for sorting  
@@ -53,10 +53,6 @@ public:
   Bool_t IsCPV(void) const {return kTRUE  ; }        // true if the recpoint is in CPV
   Bool_t IsSortable() const { return kTRUE ; }    // tells that this is a sortable object
   void   Print(const Option_t * = "") const ; 
-
-  AliPHOSCpvRecPoint & operator = (const AliPHOSCpvRecPoint & /*rvalue*/)  {
-   Fatal("operator =", "not implemented") ; return *this ; 
-  }
 
  protected:
 

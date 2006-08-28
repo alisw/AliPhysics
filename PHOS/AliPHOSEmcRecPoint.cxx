@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.53  2005/12/20 14:28:47  hristov
+ * Additional protection
+ *
  * Revision 1.52  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -49,58 +52,54 @@
 ClassImp(AliPHOSEmcRecPoint)
 
 //____________________________________________________________________________
-AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : AliPHOSRecPoint()
+AliPHOSEmcRecPoint::AliPHOSEmcRecPoint() : 
+  AliPHOSRecPoint(),
+  fCoreEnergy(0.), fDispersion(0.),
+  fEnergyList(0), fTime(-1.), fNExMax(0),
+  fM2x(0.), fM2z(0.), fM3x(0.), fM4z(0.),
+  fPhixe(0.), fDebug(0)
 {
   // ctor
-
   fMulDigit   = 0 ;  
   fAmp   = 0. ;   
-  fCoreEnergy = 0 ; 
-  fEnergyList = 0 ;
-  fNExMax     = 0 ;   //Not unfolded yet
-  fTime = -1. ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
-  fDebug=0;
-   
 }
 
 //____________________________________________________________________________
-AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) : AliPHOSRecPoint(opt)
+AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const char * opt) : 
+  AliPHOSRecPoint(opt),
+  fCoreEnergy(0.), fDispersion(0.),
+  fEnergyList(0), fTime(-1.), fNExMax(0),
+  fM2x(0.), fM2z(0.), fM3x(0.), fM4z(0.),
+  fPhixe(0.), fDebug(0)
 {
   // ctor
-  
   fMulDigit   = 0 ;  
   fAmp   = 0. ;   
-  fNExMax     = 0 ;   //Not unfolded yet
-  fCoreEnergy = 0 ; 
-  fEnergyList = 0 ;
-  fTime = -1. ;
   fLocPos.SetX(1000000.)  ;      //Local position should be evaluated
-  fDebug=0;
-  
 }
 
 //____________________________________________________________________________
-AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) : AliPHOSRecPoint(rp)
+AliPHOSEmcRecPoint::AliPHOSEmcRecPoint(const AliPHOSEmcRecPoint & rp) : 
+  AliPHOSRecPoint(rp),
+  fCoreEnergy(rp.fCoreEnergy), fDispersion(rp.fDispersion),
+  fEnergyList(0), fTime(rp.fTime), fNExMax(rp.fNExMax),
+  fM2x(rp.fM2x), fM2z(rp.fM2z), fM3x(rp.fM3x), fM4z(rp.fM4z),
+  fPhixe(rp.fPhixe), fDebug(rp.fDebug)
 {
   // cpy ctor
-
   fMulDigit   = rp.fMulDigit ;  
   fAmp        = rp.fAmp ;   
-  fCoreEnergy = rp.fCoreEnergy ; 
   fEnergyList = new Float_t[rp.fMulDigit] ;
   Int_t index ; 
   for(index = 0 ; index < fMulDigit ; index++) 
     fEnergyList[index] = rp.fEnergyList[index] ; 
-  fNExMax     = rp.fNExMax ;  
-  fTime       = rp.fTime ;   
 }
 
 //____________________________________________________________________________
 AliPHOSEmcRecPoint::~AliPHOSEmcRecPoint()
 {
   // dtor
-
   if ( fEnergyList )
     delete[] fEnergyList ; 
 }

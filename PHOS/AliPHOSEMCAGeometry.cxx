@@ -32,7 +32,55 @@
 ClassImp(AliPHOSEMCAGeometry)
 
 //____________________________________________________________________________
-AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
+AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
+                     fAirGapLed(0.f),
+                     fStripWallWidthOut(0.f),
+                     fStripWallWidthIn(0.f),
+                     fTyvecThickness(0.f),
+                     fInnerThermoWidthX(0.f),
+                     fInnerThermoWidthY(0.f),
+                     fInnerThermoWidthZ(0.f),
+                     fAirGapWidthX(0.f),
+                     fAirGapWidthY(0.f),
+                     fAirGapWidthZ(0.f),
+                     fCoolerWidthX(0.f),
+                     fCoolerWidthY(0.f),
+                     fCoolerWidthZ(0.f),
+                     fAlCoverThickness(0.f),
+                     fOuterThermoWidthXUp(0.f),
+                     fOuterThermoWidthXLow(0.f),
+                     fOuterThermoWidthY(0.f),
+                     fOuterThermoWidthZ(0.f),
+                     fAlFrontCoverX(0.f),
+                     fAlFrontCoverZ(0.f),
+                     fFiberGlassSup2X(0.f),
+                     fFiberGlassSup1X(0.f),
+                     fFrameHeight(0.f),
+                     fFrameThickness(0.f),
+                     fAirSpaceFeeX(0.f),
+                     fAirSpaceFeeZ(0.f),
+                     fAirSpaceFeeY(0.f),
+                     fWarmUpperThickness(0.f),
+                     fWarmBottomThickness(0.f),
+                     fWarmAlCoverWidthX(0.f),
+                     fWarmAlCoverWidthY(0.f),
+                     fWarmAlCoverWidthZ(0.f),
+                     fFiberGlassSup1Y(0.f),
+                     fFiberGlassSup2Y(0.f),
+                     fTSupportDist(0.f),
+                     fTSupport1Thickness(0.f),
+                     fTSupport2Thickness(0.f),
+                     fTSupport1Width(0.f),
+                     fTSupport2Width(0.f),
+                     fIPtoOuterCoverDistance(0.f),
+                     fIPtoCrystalSurface(0.f),
+                     fSupportPlateThickness(0.f),
+                     fNCellsInStrip(0),
+                     fNStripX(0),
+                     fNStripZ(0),
+                     fNTSupports(0),
+                     fNPhi(0),
+                     fNZ(0)
 {
 
 
@@ -318,4 +366,3 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry()
   fNZ   = fNStripZ ;                     //number of crystals along beam
 }
 
-//____________________________________________________________________________

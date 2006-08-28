@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.47  2005/11/17 12:35:27  hristov
+ * Use references instead of objects. Avoid to create objects when they are not really needed
+ *
  * Revision 1.46  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -35,12 +38,9 @@ class  AliPHOSTrackSegmentMakerv1 : public AliPHOSTrackSegmentMaker {
 public:
 
   AliPHOSTrackSegmentMakerv1() ;                     
-  AliPHOSTrackSegmentMakerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
-  AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm) : AliPHOSTrackSegmentMaker(tsm) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliPHOSTrackSegmentMakerv1(const TString & alirunFileNameFile, const TString & eventFolderName = AliConfig::GetDefaultEventFolderName());
+  AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm);
+
   virtual ~ AliPHOSTrackSegmentMakerv1() ; // dtor
   
   //  virtual char*  GetRecPointsBranch    (void)const{return (char*)fRecPointsBranchTitle.Data() ;}

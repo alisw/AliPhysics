@@ -31,10 +31,7 @@ class AliPHOSGeometry : public AliGeometry {
 public: 
 
   AliPHOSGeometry() ;
-
-  AliPHOSGeometry(const AliPHOSGeometry & geom) : AliGeometry(geom) {
-    Fatal("cpy ctor", "not implemented") ; 
-  } 
+  AliPHOSGeometry(const AliPHOSGeometry & geom) ;
   
   virtual ~AliPHOSGeometry(void) ; 
   static AliPHOSGeometry * GetInstance(const Text_t* name, const Text_t* title="") ; 
@@ -43,8 +40,10 @@ public:
   virtual void   GetGlobal(const AliRecPoint* RecPoint, TVector3 & gpos) const ;
   virtual Bool_t Impact(const TParticle * particle) const ;
 
-  AliPHOSGeometry & operator = (const AliPHOSGeometry  & /*rvalue*/) const {
-    Fatal("operator =", "nt implemented") ; return *(GetInstance()) ; }
+  AliPHOSGeometry & operator = (const AliPHOSGeometry  & /*rvalue*/) {
+    Fatal("operator =", "not implemented") ;
+    return *this ;    
+  }
  
   // General
 
@@ -149,10 +148,7 @@ public:
 
 protected:
 
-  AliPHOSGeometry(const Text_t* name, const Text_t* title="") : AliGeometry(name, title) { 
-    // ctor only for internal usage (singleton)
-    Init() ; 
-  }
+  AliPHOSGeometry(const Text_t* name, const Text_t* title="") ;
 private:
 
   Int_t                    fNModules ;       // Number of modules constituing PHOS

@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.79  2006/04/25 12:41:15  hristov
+ * Moving non-persistent data to AliESDfriend (Yu.Belikov)
+ *
  * Revision 1.78  2005/11/18 13:04:51  hristov
  * Bug fix
  *
@@ -85,25 +88,69 @@ ClassImp( AliPHOSTrackSegmentMakerv1)
 
 
 //____________________________________________________________________________
-  AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() : AliPHOSTrackSegmentMaker()
+AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() :
+  AliPHOSTrackSegmentMaker(),
+  fDefaultInit(kTRUE),
+  fWrite(kFALSE),
+  fNTrackSegments(0),
+  fRcpv(0.f),
+  fRtpc(0.f),
+  fLinkUpArray(0),
+  fEmcFirst(0),
+  fEmcLast(0),
+  fCpvFirst(0),
+  fCpvLast(0),
+  fModule(0),
+  fTrackSegmentsInRun(0)
+  
 {
   // default ctor (to be used mainly by Streamer)
-
   InitParameters() ; 
-  fDefaultInit = kTRUE ; 
 }
 
 //____________________________________________________________________________
- AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(const TString alirunFileName, const TString eventFolderName)
-   :AliPHOSTrackSegmentMaker(alirunFileName, eventFolderName)
+AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(const TString & alirunFileName, const TString & eventFolderName) :
+  AliPHOSTrackSegmentMaker(alirunFileName, eventFolderName),
+  fDefaultInit(kFALSE),
+  fWrite(kFALSE),
+  fNTrackSegments(0),
+  fRcpv(0.f),
+  fRtpc(0.f),
+  fLinkUpArray(0),
+  fEmcFirst(0),
+  fEmcLast(0),
+  fCpvFirst(0),
+  fCpvLast(0),
+  fModule(0),
+  fTrackSegmentsInRun(0)
 {
   // ctor
-
   InitParameters() ; 
   Init() ;
-  fDefaultInit = kFALSE ; 
   fESD = 0;
 }
+
+
+AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegmentMakerv1 & tsm) :
+  AliPHOSTrackSegmentMaker(tsm),
+  fDefaultInit(kFALSE),
+  fWrite(kFALSE),
+  fNTrackSegments(0),
+  fRcpv(0.f),
+  fRtpc(0.f),
+  fLinkUpArray(0),
+  fEmcFirst(0),
+  fEmcLast(0),
+  fCpvFirst(0),
+  fCpvLast(0),
+  fModule(0),
+  fTrackSegmentsInRun(0)
+{
+  // cpy ctor: no implementation yet
+  // requested by the Coding Convention
+  Fatal("cpy ctor", "not implemented") ;
+}
+
 
 //____________________________________________________________________________
  AliPHOSTrackSegmentMakerv1::~AliPHOSTrackSegmentMakerv1()

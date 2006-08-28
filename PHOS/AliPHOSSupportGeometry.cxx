@@ -29,12 +29,15 @@
 ClassImp(AliPHOSSupportGeometry)
 
 //____________________________________________________________________________
-AliPHOSSupportGeometry::AliPHOSSupportGeometry()
+AliPHOSSupportGeometry::AliPHOSSupportGeometry() :
+  fRailLength(1200.0),
+  fDistanceBetwRails(420.0),
+  fRailsDistanceFromIP(590.),
+  fCradleWallThickness(2.0)
 {
 
   // Initializes the PHOS support parameters
   
-  fRailLength   = 1200.0;
 
   fRailPart1[0] =   28.0;
   fRailPart1[1] =    3.0;
@@ -52,14 +55,9 @@ AliPHOSSupportGeometry::AliPHOSSupportGeometry()
   fRailOuterSize[1] = fRailPart1[1]*2 + fRailPart2[1] + fRailPart3[1];
   fRailOuterSize[2] = fRailLength;
 
-  fDistanceBetwRails = 420.0;
-  fRailsDistanceFromIP = 590.;
-
   fRailRoadSize[0] = fDistanceBetwRails + fRailOuterSize[0];
   fRailRoadSize[1] = fRailOuterSize[1];
   fRailRoadSize[2] = fRailOuterSize[2];
-
-  fCradleWallThickness = 2.0;
 
   fCradleWall[0] =   0.;  // Inner radius, to be defined from PHOS parameters
   fCradleWall[1] =  65.;  // Diff. between outer and inner radii
@@ -70,6 +68,4 @@ AliPHOSSupportGeometry::AliPHOSSupportGeometry()
   fCradleWheel[0] = 30.0;
   fCradleWheel[1] = 80.0;
   fCradleWheel[2] = 30.0;
-  
 }
-//____________________________________________________________________________

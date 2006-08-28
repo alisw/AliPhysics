@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.39  2006/04/22 15:04:24  hristov
+ * Effective C++ initialization of data members in the default constructor
+ *
  * Revision 1.38  2006/04/22 10:30:17  hristov
  * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
  *
@@ -64,7 +67,12 @@ AliPHOSDigit::AliPHOSDigit() :
 }
 
 //____________________________________________________________________________
-AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t time, Int_t index) 
+AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t time, Int_t index) :
+  fNprimary(0),
+  fPrimary(0),
+  fEnergy(0.f),
+  fTime(0.f),
+  fTimeR(0.f)
 {  
   // ctor with all data 
 
@@ -86,7 +94,12 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Int_t digEnergy, Float_t tim
 }
 
 //____________________________________________________________________________
-AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Float_t energy, Float_t time, Int_t index) 
+AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Float_t energy, Float_t time, Int_t index) :
+  fNprimary(0),
+  fPrimary(0),
+  fEnergy(0.f),
+  fTime(0.f),
+  fTimeR(0.f)
 {  
   // ctor with all data 
 
@@ -108,11 +121,16 @@ AliPHOSDigit::AliPHOSDigit(Int_t primary, Int_t id, Float_t energy, Float_t time
 }
 
 //____________________________________________________________________________
-AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) : AliDigitNew(digit)
+AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) : 
+  AliDigitNew(digit),
+  fNprimary(digit.fNprimary),
+  fPrimary(0),
+  fEnergy(digit.fEnergy),
+  fTime(digit.fTime),
+  fTimeR(digit.fTimeR)
+
 {
   // copy ctor
-
-  fNprimary = digit.fNprimary ;  
   if(fNprimary){
     fPrimary = new Int_t[fNprimary] ;
     for (Int_t i = 0; i < fNprimary ; i++)
@@ -121,9 +139,6 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) : AliDigitNew(digit)
   else
     fPrimary = 0 ;
   fAmp         = digit.fAmp ;
-  fEnergy      = digit.fEnergy ;
-  fTime        = digit.fTime ;
-  fTimeR       = digit.fTimeR ;
   fId          = digit.fId;
   fIndexInList = digit.fIndexInList ; 
 }
@@ -200,7 +215,7 @@ Bool_t AliPHOSDigit::operator==(AliPHOSDigit const & digit) const
 }
  
 //____________________________________________________________________________
-AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit) 
+AliPHOSDigit& AliPHOSDigit::operator+=(AliPHOSDigit const & digit) 
 {
 
   // Adds the amplitude of digits and completes the list of primary particles
@@ -231,7 +246,7 @@ AliPHOSDigit& AliPHOSDigit::operator+(AliPHOSDigit const & digit)
    return *this ;
 }
 //____________________________________________________________________________
-AliPHOSDigit& AliPHOSDigit::operator*(Float_t factor) 
+AliPHOSDigit& AliPHOSDigit::operator *= (Float_t factor) 
 {
   // Multiplies the amplitude by a factor
   

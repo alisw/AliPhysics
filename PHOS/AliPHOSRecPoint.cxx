@@ -40,23 +40,22 @@ ClassImp(AliPHOSRecPoint)
 
 //____________________________________________________________________________
 AliPHOSRecPoint::AliPHOSRecPoint()
-  : AliRecPoint()
+  : AliRecPoint(),
+    fPHOSMod(0)
 {
   // ctor
 
   fMaxTrack = 0 ;
-  fPHOSMod  = 0 ;
-
 }
 
 //____________________________________________________________________________
-AliPHOSRecPoint::AliPHOSRecPoint(const char * opt) : AliRecPoint(opt)
+AliPHOSRecPoint::AliPHOSRecPoint(const char * opt) 
+  : AliRecPoint(opt),
+    fPHOSMod(0)
 {
   // ctor
   
   fMaxTrack = 200 ;
-  fPHOSMod  = 0;
-  
 }
 
 //____________________________________________________________________________

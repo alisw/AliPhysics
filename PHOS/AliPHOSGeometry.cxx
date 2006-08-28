@@ -47,16 +47,51 @@ AliPHOSGeometry  * AliPHOSGeometry::fgGeom = 0 ;
 Bool_t             AliPHOSGeometry::fgInit = kFALSE ;
 
 //____________________________________________________________________________
-AliPHOSGeometry::AliPHOSGeometry() {
+AliPHOSGeometry::AliPHOSGeometry() : 
+	            fNModules(0),
+	            fAngle(0.f),
+	            fPHOSAngle(0),
+	            fIPtoUpperCPVsurface(0),
+	            fRotMatrixArray(0),
+	            fGeometryEMCA(0),
+	            fGeometryCPV(0),
+	            fGeometrySUPP(0)
+{
     // default ctor 
     // must be kept public for root persistency purposes, but should never be called by the outside world
-    fPHOSAngle      = 0 ;
-    fGeometryEMCA   = 0 ;
-    fGeometrySUPP   = 0 ;
-    fGeometryCPV    = 0 ;
     fgGeom          = 0 ;
-    fRotMatrixArray = 0 ;  
 }  
+
+//____________________________________________________________________________
+AliPHOSGeometry::AliPHOSGeometry(const AliPHOSGeometry & rhs)
+		    : AliGeometry(rhs),
+		      fNModules(rhs.fNModules),
+		      fAngle(rhs.fAngle),
+		      fPHOSAngle(0),
+		      fIPtoUpperCPVsurface(rhs.fIPtoUpperCPVsurface),
+		      fRotMatrixArray(0),
+		      fGeometryEMCA(0),
+		      fGeometryCPV(0),
+		      fGeometrySUPP(0)
+{
+  Fatal("cpy ctor", "not implemented") ; 
+}
+
+AliPHOSGeometry::AliPHOSGeometry(const Text_t* name, const Text_t* title) 
+	          : AliGeometry(name, title),
+	            fNModules(0),
+	            fAngle(0.f),
+	            fPHOSAngle(0),
+	            fIPtoUpperCPVsurface(0),
+	            fRotMatrixArray(0),
+	            fGeometryEMCA(0),
+	            fGeometryCPV(0),
+	            fGeometrySUPP(0)
+{ 
+  // ctor only for internal usage (singleton)
+  Init() ; 
+}
+
 
 //____________________________________________________________________________
 AliPHOSGeometry::~AliPHOSGeometry(void)

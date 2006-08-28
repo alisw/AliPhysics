@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.23  2005/12/20 14:28:47  hristov
+ * Additional protection
+ *
  * Revision 1.22  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -47,22 +50,22 @@
 ClassImp(AliPHOSCpvRecPoint)
 
 //____________________________________________________________________________
-AliPHOSCpvRecPoint::AliPHOSCpvRecPoint() : AliPHOSEmcRecPoint()
+AliPHOSCpvRecPoint::AliPHOSCpvRecPoint() : 
+  AliPHOSEmcRecPoint(),
+  fLengX(-1),
+  fLengZ(-1)
 {
   // ctor
-
-  fLengX = -1;
-  fLengZ = -1;
 }
 
 //____________________________________________________________________________
-AliPHOSCpvRecPoint::AliPHOSCpvRecPoint(const char * opt) : AliPHOSEmcRecPoint(opt)
+AliPHOSCpvRecPoint::AliPHOSCpvRecPoint(const char * opt) : 
+  AliPHOSEmcRecPoint(opt),
+  fLengX(-1),
+  fLengZ(-1)
 {
    // ctor
- 
-   fLengX = -1;
-   fLengZ = -1;
- }
+}
 
 //____________________________________________________________________________
 AliPHOSCpvRecPoint::~AliPHOSCpvRecPoint()

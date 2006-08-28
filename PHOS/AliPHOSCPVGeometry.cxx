@@ -34,19 +34,19 @@ ClassImp(AliPHOSCPVGeometry)
 
 //____________________________________________________________________________
 AliPHOSCPVGeometry::AliPHOSCPVGeometry()
+  : fNumberOfCPVLayers(1),
+    fNumberOfCPVPadsPhi(128),
+    fNumberOfCPVPadsZ(56),
+    fCPVPadSizePhi(1.13),
+    fCPVPadSizeZ(2.26),
+    fNumberOfCPVChipsPhi(8),
+    fNumberOfCPVChipsZ(8),
+    fCPVGasThickness(1.3),
+    fCPVTextoliteThickness(0.1),
+    fCPVCuNiFoilThickness(56e-04)
 {
 
   // Initializes the CPV parameters
-  fNumberOfCPVLayers     = 1;
-  fNumberOfCPVPadsPhi    = 128;
-  fNumberOfCPVPadsZ      = 56;
-  fCPVPadSizePhi         = 1.13;
-  fCPVPadSizeZ           = 2.26;
-  fNumberOfCPVChipsPhi   = 8;
-  fNumberOfCPVChipsZ     = 8;
-  fCPVGasThickness       = 1.3;
-  fCPVTextoliteThickness = 0.1;
-  fCPVCuNiFoilThickness  = 56e-04;;
   fCPVFrameSize[0]       = 2.5;
   fCPVFrameSize[1]       = 5.1;
   fCPVFrameSize[2]       = 2.5;

@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.29  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -40,8 +43,22 @@
 ClassImp(AliPHOSTrackSegment)
 
 //____________________________________________________________________________
+AliPHOSTrackSegment::AliPHOSTrackSegment()
+			: fEmcRecPoint(0),
+			  fIndexInList(0),
+			  fCpvRecPoint(0),
+			  fTrack(0)
+{
+  //def ctor
+}
+
+//____________________________________________________________________________
 AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , 
 					  AliPHOSRecPoint * cpvrp1)
+			: fEmcRecPoint(0),
+			  fIndexInList(0),
+			  fCpvRecPoint(0),
+			  fTrack(0)
 {
   // ctor
 
@@ -64,6 +81,10 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc ,
 AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc , 
 					  AliPHOSRecPoint * cpvrp1, 
 					  Int_t track)
+			: fEmcRecPoint(0),
+			  fIndexInList(0),
+			  fCpvRecPoint(0),
+			  fTrack(0)
 {
   // ctor
 
@@ -84,7 +105,11 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( AliPHOSEmcRecPoint * emc ,
 
 //____________________________________________________________________________
 AliPHOSTrackSegment::AliPHOSTrackSegment( const AliPHOSTrackSegment & ts) 
-  : TObject(ts)
+  : TObject(ts),
+    fEmcRecPoint(0),
+    fIndexInList(0),
+    fCpvRecPoint(0),
+    fTrack(0)
 {
   // Copy ctor
 

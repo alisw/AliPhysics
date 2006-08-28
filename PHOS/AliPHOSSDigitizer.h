@@ -9,6 +9,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.25  2005/11/30 18:56:26  schutz
+ * Small corrections to fix compilation errors
+ *
  * Revision 1.24  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -37,7 +40,7 @@ class AliPHOSSDigitizer: public TTask {
 public:
   AliPHOSSDigitizer() ;          // ctor
   AliPHOSSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::GetDefaultEventFolderName()) ; 
-  AliPHOSSDigitizer(const AliPHOSSDigitizer & sd) ; // cpy ctor
+
   virtual ~AliPHOSSDigitizer(); // dtor
 
   Float_t        Calibrate(Int_t amp)const {return (amp - fA)/fB ; }
@@ -49,7 +52,6 @@ public:
   void           SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
 
   Bool_t operator == (const AliPHOSSDigitizer & sd) const ;
-  AliPHOSSDigitizer & operator = (const AliPHOSSDigitizer & /*sd*/) {return *this ;}
   
 private:
   void     Init() ;

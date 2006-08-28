@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2006/01/12 17:01:00  schutz
+ * Correct few coding violations, missing comments
+ *
  * Revision 1.9  2005/12/20 07:31:51  schutz
  * added data members
  *
@@ -44,8 +47,7 @@ public:
   AliPHOSGammaJet() ; // default ctor
   AliPHOSGammaJet(const TString inputfilename) ; //ctor 
   AliPHOSGammaJet(const AliPHOSGammaJet & gj) ; // cpy ctor
-  AliPHOSGammaJet & operator = (const AliPHOSGammaJet & /*rvalue*/) 
-    { return *this ;} //assignement operator requested by coding convention but not needed
+
   virtual ~AliPHOSGammaJet() ; //virtual dtor
   virtual void   Exec(Option_t *option); 
   void List() const; 
@@ -139,6 +141,10 @@ public:
   void  SetDirPattern(char * dp)  { fPattern = dp ; }
 
  private:
+  AliPHOSGammaJet & operator = (const AliPHOSGammaJet & /*rvalue*/) 
+  { return *this ;}
+
+
 //   void AddHIJINGToList(TList & particleList, TList & particleListCh, 
 // 		       TList & particleListNe, const Int_t iEvent, 
 // 		       const TLorentzVector gamma, Double_t & rot ); 

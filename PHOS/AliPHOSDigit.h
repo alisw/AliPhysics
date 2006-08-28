@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.34  2006/04/22 10:30:17  hristov
+ * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
+ *
  * Revision 1.33  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -46,10 +49,14 @@ class AliPHOSDigit : public AliDigitNew {
   virtual ~AliPHOSDigit() ;
 
   Bool_t operator==(const AliPHOSDigit &rValue) const;
-  AliPHOSDigit& operator+(AliPHOSDigit const &rValue) ;
-  AliPHOSDigit& operator*(Float_t factor) ; 
-  //  AliPHOSDigit& operator=(const AliPHOSDigit) {
-  //  Fatal("operator = ", "not implemented") ; return *this ; } 
+
+  AliPHOSDigit& operator += (AliPHOSDigit const &rValue) ;
+  AliPHOSDigit& operator *= (Float_t factor) ; 
+
+public:
+
+  AliPHOSDigit& operator=(const AliPHOSDigit) {
+    Fatal("operator = ", "not implemented") ; return *this ; } 
   Int_t   Compare(const TObject * obj) const ;  
   Int_t   GetNprimary()           const { return fNprimary ; }
   Int_t   GetPrimary(Int_t index) const ; 

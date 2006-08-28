@@ -54,19 +54,18 @@ ClassImp(AliPHOSTrigger)
 //______________________________________________________________________
 AliPHOSTrigger::AliPHOSTrigger()
   : AliTriggerDetector(),
-    f2x2MaxAmp(-1), f2x2CrystalPhi(-1),  f2x2CrystalEta(-1),
-    f4x4MaxAmp(-1), f4x4CrystalPhi(-1),  f4x4CrystalEta(-1), 
+    f2x2MaxAmp(-1), f2x2CrystalPhi(-1),  f2x2CrystalEta(-1), f2x2SM(0),
+    f4x4MaxAmp(-1), f4x4CrystalPhi(-1),  f4x4CrystalEta(-1), f4x4SM(0),
+    fADCValuesHigh4x4(0), fADCValuesLow4x4(0),
+    fADCValuesHigh2x2(0), fADCValuesLow2x2(0), fDigitsList(0),
     fL0Threshold(50), fL1JetLowPtThreshold(200), fL1JetHighPtThreshold(500),
     fNTRU(8), fNTRUZ(2), fNTRUPhi(4), fSimulation(kTRUE)
 {
   //ctor
-
   fADCValuesHigh4x4 = 0x0; //new Int_t[fTimeBins];
   fADCValuesLow4x4  = 0x0; //new Int_t[fTimeBins];
   fADCValuesHigh2x2 = 0x0; //new Int_t[fTimeBins];
   fADCValuesLow2x2  = 0x0; //new Int_t[fTimeBins];
-
-  fDigitsList = 0x0 ;
 
   SetName("PHOS");
   CreateInputs();
@@ -74,37 +73,40 @@ AliPHOSTrigger::AliPHOSTrigger()
   //Print("") ; 
 }
 
-
-
 //____________________________________________________________________________
-AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) 
-  : AliTriggerDetector(trig) 
+AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) : 
+  AliTriggerDetector(trig),
+  f2x2MaxAmp(trig.f2x2MaxAmp),
+  f2x2CrystalPhi(trig.f2x2CrystalPhi),
+  f2x2CrystalEta(trig.f2x2CrystalEta),
+  f2x2SM(trig.f2x2SM),
+  f4x4MaxAmp(trig.f4x4MaxAmp),
+  f4x4CrystalPhi(trig.f4x4CrystalPhi),
+  f4x4CrystalEta(trig.f4x4CrystalEta),
+  f4x4SM(trig.f4x4SM),
+  fADCValuesHigh4x4(trig.fADCValuesHigh4x4),
+  fADCValuesLow4x4(trig.fADCValuesLow4x4),
+  fADCValuesHigh2x2(trig.fADCValuesHigh2x2),
+  fADCValuesLow2x2(trig.fADCValuesLow2x2),
+  fDigitsList(trig.fDigitsList),
+  fL0Threshold(trig.fL0Threshold),
+  fL1JetLowPtThreshold(trig.fL1JetLowPtThreshold),
+  fL1JetHighPtThreshold(trig.fL1JetHighPtThreshold),
+  fNTRU(trig.fNTRU),
+  fNTRUZ(trig.fNTRUZ),
+  fNTRUPhi(trig.fNTRUPhi),
+  fSimulation(trig.fSimulation)
 {
-
   // cpy ctor
-
-  f2x2MaxAmp            = trig.f2x2MaxAmp ;
-  f4x4MaxAmp            = trig.f4x4MaxAmp ;
-  f2x2CrystalPhi        = trig.f2x2CrystalPhi ;
-  f4x4CrystalPhi        = trig.f4x4CrystalPhi ;
-  f2x2CrystalEta        = trig.f2x2CrystalEta ;
-  f4x4CrystalEta        = trig.f4x4CrystalEta ;
-  fADCValuesHigh4x4     = trig.fADCValuesHigh4x4 ; 
-  fADCValuesLow4x4      = trig.fADCValuesLow4x4  ; 
-  fADCValuesHigh2x2     = trig.fADCValuesHigh2x2 ; 
-  fADCValuesLow2x2      = trig.fADCValuesLow2x2  ;
-  fDigitsList           = trig.fDigitsList ;
-  fL0Threshold          = trig.fL0Threshold ; 
-  fL1JetLowPtThreshold  = trig.fL1JetLowPtThreshold ;
-  fL1JetHighPtThreshold = trig.fL1JetHighPtThreshold ;
-  fNTRU                 = trig.fNTRU ; 
-  fNTRUZ                = trig.fNTRUZ ; 
-  fNTRUPhi              = trig.fNTRUPhi ; 
-  fSimulation           = trig.fSimulation ;
-
 }
 
 //_________________________________________________________________________
+AliPHOSTrigger & AliPHOSTrigger::operator = (const AliPHOSTrigger &)
+{
+  Fatal("operator =", "no implemented");
+  return *this;
+}
+
 void AliPHOSTrigger::CreateInputs()
 {
    // inputs 

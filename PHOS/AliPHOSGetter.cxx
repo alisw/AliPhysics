@@ -78,8 +78,35 @@ Int_t AliPHOSGetter::fgDebug = 0;
 
 //  TFile * AliPHOSGetter::fgFile = 0 ; 
 
+AliPHOSGetter::AliPHOSGetter() :
+  fBTE(0),
+  fLoadingStatus(),
+  fNPrimaries(0),
+  fPrimaries(0),
+  fESDFile(0),
+  fESDFileName(),
+  fESD(0),
+  fESDTree(0),
+  fRawDigits(kFALSE),
+  fcdb(0)
+{
+  // ctor: this is a singleton, the ctor should never be called but cint needs it as public
+  Fatal("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
+} 
+
+
 //____________________________________________________________________________ 
-AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option_t * openingOption)
+AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option_t * openingOption) :
+  fBTE(0),
+  fLoadingStatus(),
+  fNPrimaries(0),
+  fPrimaries(0),
+  fESDFile(0),
+  fESDFileName(),
+  fESD(0),
+  fESDTree(0),
+  fRawDigits(kFALSE),
+  fcdb(0)
 {
   // ctor only called by Instance()
 
@@ -116,6 +143,40 @@ AliPHOSGetter::AliPHOSGetter(const char* headerFile, const char* version, Option
   fRawDigits = kFALSE ;
 
 }
+
+AliPHOSGetter::AliPHOSGetter(const AliPHOSGetter & obj) :
+  TObject(obj),
+  fBTE(0),
+  fLoadingStatus(),
+  fNPrimaries(0),
+  fPrimaries(0),
+  fESDFile(0),
+  fESDFileName(),
+  fESD(0),
+  fESDTree(0),
+  fRawDigits(kFALSE),
+  fcdb(0)
+{
+  // cpy ctor requested by Coding Convention 
+  Fatal("cpy ctor", "not implemented") ;
+} 
+
+//____________________________________________________________________________ 
+AliPHOSGetter::AliPHOSGetter(Int_t /*i*/) :
+  fBTE(0),
+  fLoadingStatus(),
+  fNPrimaries(0),
+  fPrimaries(0),
+  fESDFile(0),
+  fESDFileName(),
+  fESD(0),
+  fESDTree(0),
+  fRawDigits(kFALSE),
+  fcdb(0)
+{
+  // special constructor for onflight 
+} 
+
 
 //____________________________________________________________________________ 
 AliPHOSGetter::~AliPHOSGetter()

@@ -50,16 +50,11 @@ class AliRawReader ;
 class AliPHOSGetter : public TObject {
   
 public:  
-  AliPHOSGetter(){    // ctor: this is a singleton, the ctor should never be called but cint needs it as public
-    Fatal("ctor", "AliPHOSGetter is a singleton default ctor not callable") ;
-  } 
+  // ctor: this is a singleton, the ctor should never be called but cint needs it as public
+  AliPHOSGetter() ;
 
 public:
-  AliPHOSGetter(const AliPHOSGetter & obj) : TObject(obj) {
-    // cpy ctor requested by Coding Convention 
-    Fatal("cpy ctor", "not implemented") ;
-  } 
-  
+  AliPHOSGetter(const AliPHOSGetter & obj) ;
   AliPHOSGetter & operator = (const AliPHOSGetter & ) {
     // assignement operator requested by coding convention, but not needed
     Fatal("operator =", "not implemented") ;
@@ -208,9 +203,8 @@ public:
   virtual AliESD * ESD() const { return fESD ; }
   
 protected :
-  AliPHOSGetter(Int_t /*i*/){    // special constructor for onflight 
-
-  } 
+  AliPHOSGetter(Int_t /*i*/) ;
+  
 protected:
   static AliPHOSGetter * fgObjGetter; // pointer to the unique instance of the singleton 
   

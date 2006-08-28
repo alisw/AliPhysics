@@ -24,17 +24,9 @@ class AliPHOSEMCAGeometry : public TObject {
 public: 
 
   AliPHOSEMCAGeometry();
-  AliPHOSEMCAGeometry(const AliPHOSEMCAGeometry & cpv) : TObject(cpv) {
-    // cpy ctor requested by Coding Convention but not yet needed
-    Fatal("Copy ctor","Not implemented yet");
-  } 
-  virtual ~AliPHOSEMCAGeometry(void) {}
+  //Compiler-generated copy ctor and copy-assignment operator _ARE_ OK.
 
-  AliPHOSEMCAGeometry & operator = (const AliPHOSEMCAGeometry  & /*rvalue*/) {
-    // assignement operator requested by coding convention but not needed
-    Fatal("Operator = ","Not implemented yet");
-    return *this ; 
-  }
+  virtual ~AliPHOSEMCAGeometry(void) {}
 
   Float_t * GetStripHalfSize() {return fStripHalfSize ;}
   Float_t   GetStripWallWidthOut() const {return fStripWallWidthOut ;}

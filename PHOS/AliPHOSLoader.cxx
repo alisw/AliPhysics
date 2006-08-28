@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.17  2006/08/25 16:00:53  kharlov
+ * Compliance with Effective C++AliPHOSHit.cxx
+ *
  * Revision 1.16  2006/08/01 12:15:04  cvetan
  * Adding a constructor from TFolder. Needed by AliReconstruction plugin scheme
  *
@@ -85,21 +88,24 @@ const TString AliPHOSLoader::fgkCpvRecPointsBranchName("PHOSCpvRP");//Name for b
 const TString AliPHOSLoader::fgkTrackSegmentsBranchName("PHOSTS");//Name for branch with TrackSegments
 const TString AliPHOSLoader::fgkRecParticlesBranchName("PHOSRP");//Name for branch with Reconstructed Particles
 //____________________________________________________________________________ 
-AliPHOSLoader::AliPHOSLoader()
- {
-  fDebug = 0;
- }
-//____________________________________________________________________________ 
-AliPHOSLoader::AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername):
-      AliLoader(detname,eventfoldername)
+AliPHOSLoader::AliPHOSLoader() : fBranchTitle(), fcdb(0), fDebug(0)
 {
-  fDebug=0;
+  //def ctor
+}
+//____________________________________________________________________________ 
+AliPHOSLoader::AliPHOSLoader(const Char_t *detname,const Char_t *eventfoldername) :
+      AliLoader(detname, eventfoldername),
+      fBranchTitle(), fcdb(0), fDebug(0)
+{
+  //ctor
 }
 //____________________________________________________________________________ 
 AliPHOSLoader::AliPHOSLoader(const Char_t *detname,TFolder *topfolder):
-      AliLoader(detname,topfolder)
+      AliLoader(detname,topfolder),
+      fBranchTitle(), fcdb(0), fDebug(0)
+
 {
-  fDebug=0;
+  //ctor
 }
 //____________________________________________________________________________ 
 AliPHOSLoader::AliPHOSLoader(const AliPHOSLoader & obj):

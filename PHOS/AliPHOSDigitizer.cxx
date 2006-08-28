@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.91  2006/04/29 20:25:30  hristov
+ * Decalibration is implemented (Yu.Kharlov)
+ *
  * Revision 1.90  2006/04/22 10:30:17  hristov
  * Add fEnergy to AliPHOSDigit and operate with EMC amplitude in energy units (Yu.Kharlov)
  *
@@ -99,24 +102,64 @@ ClassImp(AliPHOSDigitizer)
 
 
 //____________________________________________________________________________ 
-  AliPHOSDigitizer::AliPHOSDigitizer():AliDigitizer("",""),
-				       fInput(0),
-				       fInputFileNames(0x0),
-				       fEventNames(0x0)
+AliPHOSDigitizer::AliPHOSDigitizer() :
+  AliDigitizer("",""),
+  fDefaultInit(kTRUE),
+  fDigitsInRun(0),
+  fInit(kFALSE),
+  fInput(0),
+  fInputFileNames(0x0),
+  fEventNames(0x0),
+  fEmcCrystals(0),
+  fPinNoise(0.f),
+  fEMCDigitThreshold(0.f),
+  fCPVNoise(0.f),
+  fCPVDigitThreshold(0.f),
+  fTimeResolution(0.f),
+  fTimeThreshold(0.f),
+  fTimeSignalLength(0.f),
+  fADCchanelEmc(0.f),
+  fADCpedestalEmc(0.f),
+  fNADCemc(0),
+  fADCchanelCpv(0.f),
+  fADCpedestalCpv(0.f),
+  fNADCcpv(0),
+  fEventFolderName(""),
+  fFirstEvent(0),
+  fLastEvent(0)
 {
   // ctor
   InitParameters() ; 
-  fDefaultInit = kTRUE ;
   fManager = 0 ;                     // We work in the standalong mode
-  fEventFolderName = "" ; 
 }
 
 //____________________________________________________________________________ 
 AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName, 
 				   TString eventFolderName):
-  AliDigitizer("PHOS"+AliConfig::Instance()->GetDigitizerTaskName(), 
-	       alirunFileName), 
-  fInputFileNames(0), fEventNames(0), fEventFolderName(eventFolderName)
+  AliDigitizer("PHOS"+AliConfig::Instance()->GetDigitizerTaskName(), alirunFileName), 
+  fDefaultInit(kFALSE),
+  fDigitsInRun(0),
+  fInit(kFALSE),
+  fInput(0),
+  fInputFileNames(0x0),
+  fEventNames(0x0),
+  fEmcCrystals(0),
+  fPinNoise(0.f),
+  fEMCDigitThreshold(0.f),
+  fCPVNoise(0.f),
+  fCPVDigitThreshold(0.f),
+  fTimeResolution(0.f),
+  fTimeThreshold(0.f),
+  fTimeSignalLength(0.f),
+  fADCchanelEmc(0.f),
+  fADCpedestalEmc(0.f),
+  fNADCemc(0),
+  fADCchanelCpv(0.f),
+  fADCpedestalCpv(0.f),
+  fNADCcpv(0),
+  fEventFolderName(eventFolderName),
+  fFirstEvent(0),
+  fLastEvent(0)
 {
   // ctor
   InitParameters() ; 
@@ -126,37 +169,66 @@ AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName,
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d)
-  : AliDigitizer(d)
+AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d) : 
+  AliDigitizer(d),
+  fDefaultInit(d.fDefaultInit),
+  fDigitsInRun(d.fDigitsInRun),
+  fInit(d.fInit),
+  fInput(d.fInput),
+  fInputFileNames(0x0),//?
+  fEventNames(0x0),//?
+  fEmcCrystals(d.fEmcCrystals),
+  fPinNoise(d.fPinNoise),
+  fEMCDigitThreshold(d.fEMCDigitThreshold),
+  fCPVNoise(d.fCPVNoise),
+  fCPVDigitThreshold(d.fCPVDigitThreshold),
+  fTimeResolution(d.fTimeResolution),
+  fTimeThreshold(d.fTimeThreshold),
+  fTimeSignalLength(d.fTimeSignalLength),
+  fADCchanelEmc(d.fADCchanelEmc),
+  fADCpedestalEmc(d.fADCpedestalEmc),
+  fNADCemc(d.fNADCemc),
+  fADCchanelCpv(d.fADCchanelCpv),
+  fADCpedestalCpv(d.fADCpedestalCpv),
+  fNADCcpv(d.fNADCcpv),
+  fEventFolderName(d.fEventFolderName),
+  fFirstEvent(d.fFirstEvent),
+  fLastEvent(d.fLastEvent)
 {
   // copyy ctor 
-
   SetName(d.GetName()) ; 
   SetTitle(d.GetTitle()) ; 
-  fPinNoise = d.fPinNoise ; 
-  fEMCDigitThreshold = d.fEMCDigitThreshold ; 
-  fCPVNoise          = d.fCPVNoise ; 
-  fCPVDigitThreshold = d.fCPVDigitThreshold ; 
-  fTimeResolution    = d.fTimeResolution ; 
-  fTimeThreshold     = d.fTimeThreshold ; 
-  fTimeSignalLength  = d.fTimeSignalLength ; 
-  fADCchanelEmc      = d.fADCchanelEmc ; 
-  fADCpedestalEmc    = d.fADCpedestalEmc ; 
-  fNADCemc           = d.fNADCemc ;
-  fADCchanelCpv      = d.fADCchanelCpv ;
-  fADCpedestalCpv    = d.fADCpedestalCpv ;
-  fNADCcpv           = d.fNADCcpv ; 
-  fEventFolderName   = d.fEventFolderName;
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd):
- AliDigitizer(rd,"PHOS"+AliConfig::Instance()->GetDigitizerTaskName()),
- fEventFolderName(0)
+AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
+  AliDigitizer(rd,"PHOS"+AliConfig::Instance()->GetDigitizerTaskName()),
+  fDefaultInit(kFALSE),
+  fDigitsInRun(0),
+  fInit(kFALSE),
+  fInput(0),
+  fInputFileNames(0x0),
+  fEventNames(0x0),
+  fEmcCrystals(0),
+  fPinNoise(0.f),
+  fEMCDigitThreshold(0.f),
+  fCPVNoise(0.f),
+  fCPVDigitThreshold(0.f),
+  fTimeResolution(0.f),
+  fTimeThreshold(0.f),
+  fTimeSignalLength(0.f),
+  fADCchanelEmc(0.f),
+  fADCpedestalEmc(0.f),
+  fNADCemc(0),
+  fADCchanelCpv(0.f),
+  fADCpedestalCpv(0.f),
+  fNADCcpv(0),
+  fEventFolderName(fManager->GetInputFolderName(0)),
+  fFirstEvent(0),
+  fLastEvent(0)
 {
   // ctor Init() is called by RunDigitizer
   fManager = rd ; 
-  fEventFolderName = fManager->GetInputFolderName(0) ;
   SetTitle(dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
   fDefaultInit = kFALSE ; 
@@ -293,7 +365,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 	  new((*ticks)[contrib++]) AliPHOSTick(curSDigit->GetTime(),0, b);  
 	  new((*ticks)[contrib++]) AliPHOSTick(curSDigit->GetTime()+fTimeSignalLength, -a, -b); 
 	  
-	  *digit = *digit + *curSDigit ;  //add energies
+	  *digit += *curSDigit ;  //add energies
 
 	  index[i]++ ;
 	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
@@ -348,7 +420,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 	  curSDigit->ShiftPrimary(primaryoffset) ;
 
 	  //add energies
-	  *digit = *digit + *curSDigit ;  
+	  *digit += *curSDigit ;  
 	  index[i]++ ;
 	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
 	    curSDigit = dynamic_cast<AliPHOSDigit*>( dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i]) ) ; 	

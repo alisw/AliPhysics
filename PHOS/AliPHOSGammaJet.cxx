@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.13  2006/04/26 07:32:37  hristov
+ * Coding conventions, clean-up and related changes
+ *
  * Revision 1.12  2006/03/10 13:23:36  hristov
  * Using AliESDCaloCluster instead of AliESDtrack
  *
@@ -72,48 +75,37 @@
 ClassImp(AliPHOSGammaJet)
 
 //____________________________________________________________________________
-AliPHOSGammaJet::AliPHOSGammaJet() : TTask() 
+AliPHOSGammaJet::AliPHOSGammaJet() : 
+  TTask(), fAnyConeOrPt(0), fOptionGJ(""),
+  fOutputFile(new TFile(gDirectory->GetName())),
+  fOutputFileName(gDirectory->GetName()),
+  fInputFileName(gDirectory->GetName()),
+  fHIJINGFileName(gDirectory->GetName()),
+  fHIJING(0), fESDdata(0), fEtaCut(0.),
+  fOnlyCharged(0), fPhiMaxCut(0.),
+  fPhiMinCut(0.), fPtCut(0.),
+  fNeutralPtCut(0.), fChargedPtCut(0.),
+  fInvMassMaxCut(0.), fInvMassMinCut(0.),
+  fMinDistance(0.), fRatioMaxCut(0.), fRatioMinCut(0.),
+  fTPCCutsLikeEMCAL(0), fDirName(""), fESDTree(""),
+  fPattern(""), fJetTPCRatioMaxCut(0.),
+  fJetTPCRatioMinCut(0.), fJetRatioMaxCut(0.),
+  fJetRatioMinCut(0.), fNEvent(0), fNCone(0),
+  fNPt(0), fCone(0), fPtThreshold(0),
+  fPtJetSelectionCut(0.0),
+  fListHistos(new TObjArray(100)),
+  fFastRec(0), fOptFast(0),
+  fRan(0), fResPara1(0.), fResPara2(0.), fResPara3(0.),  
+  fPosParaA(0.), fPosParaB(0.), fAngleMaxParam(), fSelect(0)
 {
   // ctor
   fAngleMaxParam.Set(4) ;
   fAngleMaxParam.Reset(0.);
-  fAnyConeOrPt      = 0  ;
-  fEtaCut           = 0. ;
-  fESDdata          = 0  ;
-  fFastRec          = 0  ;
-  fInvMassMaxCut    = 0. ;
-  fInvMassMinCut    = 0. ;
-  fJetRatioMaxCut   = 0. ;
-  fJetRatioMinCut   = 0. ;
-  fJetTPCRatioMaxCut   = 0. ;
-  fJetTPCRatioMinCut   = 0. ;
-  fMinDistance      = 0. ;
-  fNEvent           = 0  ;
-  fNCone            = 0  ;
-  fNPt              = 0  ;
-  fOnlyCharged      = 0  ;
-  fOptFast          = 0  ;
-  fPhiMaxCut        = 0. ;
-  fPhiMinCut        = 0. ;
-  fPtCut            = 0. ;
-  fNeutralPtCut     = 0. ;
-  fChargedPtCut     = 0. ;
-  fRatioMaxCut      = 0. ;
-  fRatioMinCut      = 0. ;
-  fCone             = 0  ;
-  fPtThreshold      = 0  ;
-  fTPCCutsLikeEMCAL = 0  ;
-  fSelect           = 0  ;
-
-  fDirName          = "" ;
-  fESDTree          = "" ;
-  fPattern          = "" ;
 
   for(Int_t i = 0; i<10; i++){
     fCones[i]         = 0.0 ;
     fNameCones[i]     = ""  ;
     fPtThres[i]      = 0.0 ;
-    fPtJetSelectionCut = 0.0 ;
     fNamePtThres[i]  = ""  ;
     if( i < 6 ){
       fJetXMin1[i]     = 0.0 ;
@@ -131,21 +123,7 @@ AliPHOSGammaJet::AliPHOSGammaJet() : TTask()
       }
     }
   }
-
-  fOptionGJ       = "" ;
-  fOutputFile     = new TFile(gDirectory->GetName()) ;
-  fInputFileName  = gDirectory->GetName() ;
-  fOutputFileName = gDirectory->GetName() ;
-  fHIJINGFileName = gDirectory->GetName() ;
-  fHIJING        = 0 ;
-  fPosParaA      = 0. ;                      
-  fPosParaB      = 0. ;
-  fRan           = 0 ;                            
-  fResPara1      = 0. ;                       
-  fResPara2      = 0. ;                        
-  fResPara3      = 0. ;  
         
-  fListHistos     = new TObjArray(100) ;
   TList * list = gDirectory->GetListOfKeys() ; 
   TIter next(list) ; 
   TH2F * h = 0 ;
@@ -160,7 +138,29 @@ AliPHOSGammaJet::AliPHOSGammaJet() : TTask()
 
 //____________________________________________________________________________
 AliPHOSGammaJet::AliPHOSGammaJet(const TString inputfilename) : 
-  TTask("GammaJet","Analysis of gamma-jet correlations")
+  TTask("GammaJet","Analysis of gamma-jet correlations"),
+  fAnyConeOrPt(0), fOptionGJ(),
+  fOutputFile(0),
+  fOutputFileName(),
+  fInputFileName(),
+  fHIJINGFileName(),
+  fHIJING(0), fESDdata(0), fEtaCut(0.),
+  fOnlyCharged(0), fPhiMaxCut(0.),
+  fPhiMinCut(0.), fPtCut(0.),
+  fNeutralPtCut(0.), fChargedPtCut(0.),
+  fInvMassMaxCut(0.), fInvMassMinCut(0.),
+  fMinDistance(0.), fRatioMaxCut(0.), fRatioMinCut(0.),
+  fTPCCutsLikeEMCAL(0), fDirName(), fESDTree(),
+  fPattern(), fJetTPCRatioMaxCut(0.),
+  fJetTPCRatioMinCut(0.), fJetRatioMaxCut(0.),
+  fJetRatioMinCut(0.), fNEvent(0), fNCone(0),
+  fNPt(0), fCone(0), fPtThreshold(0),
+  fPtJetSelectionCut(0.0),
+  fListHistos(0),
+  fFastRec(0), fOptFast(0),
+  fRan(0), fResPara1(0.), fResPara2(0.), fResPara3(0.),  
+  fPosParaA(0.), fPosParaB(0.), fAngleMaxParam(), fSelect(0)
+
 {
   // ctor
   fInputFileName = inputfilename;
@@ -168,58 +168,37 @@ AliPHOSGammaJet::AliPHOSGammaJet(const TString inputfilename) :
   AliPHOSGetter *  gime = AliPHOSGetter::Instance(fInputFileName) ;
   fNEvent = gime->MaxEvent();
   InitParameters();
-  fListHistos = 0 ;
 }
 
 //____________________________________________________________________________
-AliPHOSGammaJet::AliPHOSGammaJet(const AliPHOSGammaJet & gj) : TTask(gj)
+AliPHOSGammaJet::AliPHOSGammaJet(const AliPHOSGammaJet & gj) : 
+  TTask(gj),
+  fAnyConeOrPt(gj.fAnyConeOrPt), fOptionGJ(gj.fOptionGJ),
+  fOutputFile(gj.fOutputFile),
+  fOutputFileName(gj.fOutputFileName),
+  fInputFileName(gj.fInputFileName),
+  fHIJINGFileName(gj.fHIJINGFileName),
+  fHIJING(gj.fHIJING), fESDdata(gj.fESDdata), fEtaCut(gj.fEtaCut),
+  fOnlyCharged(gj.fOnlyCharged), fPhiMaxCut(gj.fPhiMaxCut),
+  fPhiMinCut(gj.fPhiMinCut), fPtCut(gj.fPtCut),
+  fNeutralPtCut(gj.fNeutralPtCut), fChargedPtCut(gj.fChargedPtCut),
+  fInvMassMaxCut(gj.fInvMassMaxCut), fInvMassMinCut(gj.fInvMassMinCut),
+  fMinDistance(gj.fMinDistance), fRatioMaxCut(gj.fRatioMaxCut), 
+  fRatioMinCut(gj.fRatioMinCut), fTPCCutsLikeEMCAL(gj.fTPCCutsLikeEMCAL), 
+  fDirName(gj.fDirName), fESDTree(gj.fESDTree),
+  fPattern(gj.fPattern), fJetTPCRatioMaxCut(gj.fJetTPCRatioMaxCut),
+  fJetTPCRatioMinCut(gj.fJetTPCRatioMinCut), fJetRatioMaxCut(gj.fJetRatioMaxCut),
+  fJetRatioMinCut(gj.fJetRatioMinCut), fNEvent(gj.fNEvent), fNCone(gj.fNCone),
+  fNPt(gj.fNPt), fCone(gj.fCone), fPtThreshold(gj.fPtThreshold),
+  fPtJetSelectionCut(gj.fPtJetSelectionCut),
+  fListHistos(0),//?????
+  fFastRec(gj.fFastRec), fOptFast(gj.fOptFast),
+  fRan(0), //???
+  fResPara1(gj.fResPara1), fResPara2(gj.fResPara2), fResPara3(gj.fResPara3),  
+  fPosParaA(gj.fPosParaA), fPosParaB(gj.fPosParaB), 
+  fAngleMaxParam(gj.fAngleMaxParam), fSelect(gj.fSelect)
 {
   // cpy ctor
-  fAngleMaxParam     = gj.fAngleMaxParam;
-  fAnyConeOrPt       = gj.fAnyConeOrPt;
-  fESDdata           = gj.fESDdata;
-  fEtaCut            = gj.fEtaCut ;
-  fInvMassMaxCut     = gj.fInvMassMaxCut ;
-  fInvMassMinCut     = gj.fInvMassMinCut ;
-  fFastRec           = gj.fFastRec ;
-  fOptionGJ          = gj.fOptionGJ ;
-  fMinDistance       = gj.fMinDistance ;
-  fOptFast           = gj.fOptFast ;
-  fOnlyCharged       = gj.fOnlyCharged ;
-  fOutputFile        = gj.fOutputFile ;
-  fInputFileName     = gj.fInputFileName ;
-  fOutputFileName    = gj.fOutputFileName ;
-  fHIJINGFileName    = gj.fHIJINGFileName ;
-  fHIJING            = gj.fHIJING ;
-  fRatioMaxCut       = gj.fRatioMaxCut ;
-  fRatioMinCut       = gj.fRatioMinCut ;
-  fJetRatioMaxCut    = gj.fJetRatioMaxCut ;
-  fJetRatioMinCut    = gj.fJetRatioMinCut ;
-  fJetTPCRatioMaxCut = gj.fJetRatioMaxCut ;
-  fJetTPCRatioMinCut = gj.fJetRatioMinCut ;
-  fNEvent            = gj.fNEvent ;  
-  fNCone             = gj.fNCone ;
-  fNPt               = gj.fNPt ;
-  fResPara1          = gj.fResPara1 ;    
-  fResPara2          = gj.fResPara2 ; 
-  fResPara3          = gj.fResPara3 ; 
-  fPtCut             = gj.fPtCut ;
-  fNeutralPtCut      = gj.fNeutralPtCut ;
-  fChargedPtCut      = gj.fChargedPtCut ;
-  fPtJetSelectionCut = gj.fPtJetSelectionCut ;
-  fPhiMaxCut         = gj.fPhiMaxCut  ;
-  fPhiMinCut         = gj.fPhiMinCut ;
-  fPosParaA          = gj.fPosParaA ;    
-  fPosParaB          = gj.fPosParaB ;
-  fSelect            = gj.fSelect   ; 
-  fTPCCutsLikeEMCAL  = gj.fTPCCutsLikeEMCAL ;
-  fCone              = gj.fCone ;
-  fPtThreshold       = gj.fPtThreshold  ;
-
-  fDirName           = gj.fDirName ;
-  fESDTree           = gj.fESDTree ;
-  fPattern           = gj.fPattern ;
-
   SetName (gj.GetName()) ; 
   SetTitle(gj.GetTitle()) ; 
 
@@ -250,7 +229,6 @@ AliPHOSGammaJet::AliPHOSGammaJet(const AliPHOSGammaJet & gj) : TTask(gj)
 AliPHOSGammaJet::~AliPHOSGammaJet() 
 {
   fOutputFile->Close() ;
-
 }
 
 //____________________________________________________________________________

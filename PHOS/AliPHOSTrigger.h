@@ -43,6 +43,8 @@ class AliPHOSTrigger : public AliTriggerDetector {
   AliPHOSTrigger() ; //  ctor
   AliPHOSTrigger(const AliPHOSTrigger & trig) ; // cpy ctor
   virtual ~AliPHOSTrigger() {}; //virtual dtor
+
+
   virtual void    CreateInputs(); //Define trigger inputs for Central Trigger Processor
   void            Print(const Option_t * opt ="") const ;  
   virtual void    Trigger();  //Make PHOS trigger
@@ -94,6 +96,8 @@ class AliPHOSTrigger : public AliTriggerDetector {
   void SetSimulation(Bool_t sim )          {fSimulation = sim ; }
 
  private:
+
+  AliPHOSTrigger & operator = (const AliPHOSTrigger & trig) ;//cpy assignment
 
   void FillTRU(const TClonesArray * digits, const AliPHOSGeometry * geom, TClonesArray * amptru, TClonesArray * timeRtru) const ;
 
