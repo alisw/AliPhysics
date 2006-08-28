@@ -240,9 +240,21 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
     AliInfo(Form("Writing the cluster tree %s for event %d."
 	        ,fClusterTree->GetName(),fRunLoader->GetEventNumber()));
 
-    AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
-    loader->WriteRecPoints("OVERWRITE");
+    if (fRecPoints) {
+
+      branch->SetAddress(&fRecPoints);
+
+      AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
+      loader->WriteRecPoints("OVERWRITE");
   
+    }
+    else {
+
+      AliError("Cluster tree does not exist. Cannot write clusters.\n");
+      return kFALSE;
+
+    }
+
     return kTRUE;  
 
   }
@@ -267,7 +279,6 @@ AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin
   AliTRDcluster *c = new AliTRDcluster();
 
   c->SetDetector(det);
-  c->AddTrackIndex(tracks);
   c->SetQ(amp);
   c->SetX(pos[2]);
   c->SetY(pos[0]);
@@ -276,6 +287,10 @@ AliTRDcluster* AliTRDclusterizer::AddCluster(Double_t *pos, Int_t timebin
   c->SetSigmaZ2(sig[1]);
   c->SetLocalTimeBin(timebin);
   c->SetCenter(center);
+
+  if (tracks) {
+    c->AddTrackIndex(tracks);
+  }
 
   switch (iType) {
   case 0:
@@ -311,7 +326,7 @@ Double_t AliTRDclusterizer::CalcXposFromTimebin(Float_t timebin, Int_t idet
   
   AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
-    AliError("Cannot calibration object");
+    AliError("Cannot find calibration object");
     return -1;
   }
 

@@ -75,7 +75,10 @@ AliTRDdataArrayI::~AliTRDdataArrayI()
   // Destructor
   //
 
-  if (fElements) delete fElements;
+  if (fElements) {
+    delete fElements;
+    fElements = 0;
+  }
   
 }
 
@@ -88,9 +91,14 @@ void AliTRDdataArrayI::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
   // The row- and column dimensions are compressible.
   //
 
-  if (fNelems < 0) AliTRDdataArray::Allocate(nrow,ncol,ntime);
+  if (fNelems < 0) {
+    AliTRDdataArray::Allocate(nrow,ncol,ntime);
+  }
 
-  if (fElements) delete fElements;
+  if (fElements) {
+    delete fElements;
+  }
+
   fElements = new AliTRDarrayI();
   fElements->Set(fNelems);
 
@@ -118,7 +126,11 @@ void AliTRDdataArrayI::Reset()
   // Reset the array (old content gets deleted)
   //
 
-  if (fElements) delete fElements;
+  if (fElements) {
+    delete fElements;
+  }
+
+
   fElements = new AliTRDarrayI();
   fElements->Set(0); 
 

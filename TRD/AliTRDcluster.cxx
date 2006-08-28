@@ -38,7 +38,7 @@ AliTRDcluster::AliTRDcluster()
   ,fCenter(0)
 { 
   //
-  // default constructor
+  // Default constructor
   //
 
   for (Int_t i = 0; i < 7; i++) {

@@ -106,7 +106,10 @@ AliTRDdataArray::~AliTRDdataArray()
   // AliTRDdataArray destructor
   //
 
-  if (fIndex) delete fIndex;
+  if (fIndex) {
+    delete fIndex;
+    fIndex = 0;
+  }
   
 }
 
@@ -198,12 +201,16 @@ Bool_t AliTRDdataArray::CheckBounds(Int_t idx1, Int_t idx2)
   // Does the boundary checking
   //
 
-  if ((idx2 >= fNdim2) || (idx2 < 0)) 
+  if ((idx2 >= fNdim2) || 
+      (idx2 <       0)) {
     return OutOfBoundsError(idx1,idx2);
+  }
 
   Int_t index = (*fIndex).At(idx2) + idx1;
-  if ((index < 0) || (index > fNelems)) 
+  if ((index <       0) || 
+      (index > fNelems)) {
     return OutOfBoundsError(idx1,idx2);
+  }
 
   return kTRUE;  
 
@@ -230,7 +237,10 @@ void AliTRDdataArray::Reset()
   // Reset the array (old content gets deleted)
   //
 
-  if (fIndex) delete fIndex;
+  if (fIndex) {
+    delete fIndex;
+  }
+
   fIndex = new AliTRDarrayI();
   fIndex->Set(0); 
 

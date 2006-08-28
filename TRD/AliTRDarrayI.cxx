@@ -70,11 +70,17 @@ void AliTRDarrayI::Expand(Int_t n)
   // The user is responsible for the appropriate size of the array.
   //
 
-  if (n < 0) return;  
-  fArray = (Int_t*) TStorage::ReAlloc(fArray
-                                     ,n  * sizeof(Int_t)
-                                     ,fN * sizeof(Int_t));
-  if (fArray != 0) fN = n;
+  if (n < 0) {
+    return;  
+  }
+
+  fArray = (Int_t *) TStorage::ReAlloc(fArray
+                                      ,n *sizeof(Int_t)
+                                      ,fN*sizeof(Int_t));
+
+  if (fArray != 0) {
+    fN = n;
+  }
  
 }
 

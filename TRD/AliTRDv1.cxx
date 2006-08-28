@@ -342,10 +342,17 @@ void AliTRDv1::StepManager()
   //
 
   switch (fTypeOfStepManager) {
-    case 0  : StepManagerErmilova();  break;  // 0 is Ermilova
-    case 1  : StepManagerGeant();     break;  // 1 is Geant
-    case 2  : StepManagerFixedStep(); break;  // 2 is fixed step
-    default : AliWarning("Not a valid Step Manager.");
+   case 0: 
+    StepManagerErmilova();
+    break;  
+   case 1: 
+    StepManagerGeant();  
+    break;  
+   case 2: 
+    StepManagerFixedStep();
+    break;  
+   default: 
+    AliWarning("Not a valid Step Manager.");
   }
 
 }
