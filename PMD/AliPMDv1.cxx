@@ -442,20 +442,21 @@ void AliPMDv1::CreateSupermodule()
   // Z-dimension 1.03/2 = 0.515 cm
   //------------------------------------------------------//
   // A Stainless Steel Boundary Channel to house the unit module
-  Float_t fDboxss1[3];
-  fDboxss1[0]           = dboxGGA[0]+fgkSSBoundary; 
-  fDboxss1[1]           = dboxGGA[1]+fgkSSBoundary;       
-  fDboxss1[2]           = fgkThSS/2.;
+
+  Float_t dboxSS1[3];
+  dboxSS1[0]           = dboxGGA[0]+fgkSSBoundary; 
+  dboxSS1[1]           = dboxGGA[1]+fgkSSBoundary;       
+  dboxSS1[2]           = fgkThSS/2.;
   
   //FOR PRESHOWER
 
   //Stainless Steel boundary - Material Stainless Steel
-  gMC->Gsvolu("ESSA","BOX", idtmed[618], fDboxss1, 3);
+  gMC->Gsvolu("ESSA","BOX", idtmed[618], dboxSS1, 3);
   gMC->Gsatt("ESSA", "SEEN", 0);
 
   //FOR VETO
   //Stainless Steel boundary - Material Stainless Steel
-  gMC->Gsvolu("ESVA","BOX", idtmed[618], fDboxss1, 3);
+  gMC->Gsvolu("ESVA","BOX", idtmed[618], dboxSS1, 3);
   gMC->Gsatt("ESVA", "SEEN", 0);
 
   //----------------------------------------------------------------//
@@ -539,18 +540,18 @@ void AliPMDv1::CreateSupermodule()
   //----------------------------------------------------------//
   // A  unit module type A of Air
   // Dimensions of Unit Module same as SS boundary channel
-  Float_t fDboxum1[3];
-  fDboxum1[0] = fDboxss1[0];
-  fDboxum1[1] = fDboxss1[1];
-  fDboxum1[2] = fgkThSS/2. +0.15; // 0.15 added to accomodate Base Plate at
+  Float_t dboxUM1[3];
+  dboxUM1[0] = dboxSS1[0];
+  dboxUM1[1] = dboxSS1[1];
+  dboxUM1[2] = fgkThSS/2. +0.15; // 0.15 added to accomodate Base Plate at
   // the bottom and the backplane PCB at the top.
 
   //FOR PRESHOWER
   //Create a Unit module of above dimensions Material : AIR
-  gMC->Gsvolu("EUM1","BOX", idtmed[698], fDboxum1, 3);
+  gMC->Gsvolu("EUM1","BOX", idtmed[698], dboxUM1, 3);
   gMC->Gsatt("EUM1", "SEEN", 0);
   //FOR VETO
-  gMC->Gsvolu("EUV1","BOX", idtmed[698], fDboxum1, 3);
+  gMC->Gsvolu("EUV1","BOX", idtmed[698], dboxUM1, 3);
   gMC->Gsatt("EUV1", "SEEN", 0);
 
   //----------------------------------------------------------------//
@@ -561,8 +562,8 @@ void AliPMDv1::CreateSupermodule()
   // Base plate is as big as the final UM dimensions that is as 
   // SS boundary channel
   Float_t dboxBaseA[3];
-  dboxBaseA[0]       = fDboxss1[0];
-  dboxBaseA[1]       = fDboxss1[1];       
+  dboxBaseA[0]       = dboxSS1[0];
+  dboxBaseA[1]       = dboxSS1[1];       
   dboxBaseA[2]       = fgkThBase/2.;
   
   //Base Blate is a G10 BOX
@@ -573,7 +574,7 @@ void AliPMDv1::CreateSupermodule()
   //FOR VETO
   //- Placing of all components of UM in AIR BOX EUM1--//
   //(1)   FIRST PUT THE BASE PLATE
-  Float_t zbaseplate = -fDboxum1[2] + fgkThBase/2.;
+  Float_t zbaseplate = -dboxUM1[2] + fgkThBase/2.;
   gMC->Gspos("EBPA", 1, "EUV1", 0., 0., zbaseplate, 0, "ONLY");
 
   //(2)   NEXT PLACING the SS BOX 
@@ -586,7 +587,7 @@ void AliPMDv1::CreateSupermodule()
 
   //FOR PRESHOWER
   // (3) Positioning the Backplane PCB 0.1 cm
-  zbkp = -fDboxum1[2] + fgkThBKP/2.;
+  zbkp = -dboxUM1[2] + fgkThBKP/2.;
   gMC->Gspos("EBKA", 1, "EUM1", 0., 0., zbkp, 0, "ONLY");
 
   //(2)   NEXT PLACING the SS BOX 
@@ -694,17 +695,18 @@ void AliPMDv1::CreateSupermodule()
   // Z-dimension 1.03/2 = 0.515 cm
   //------------------------------------------------------//
   // A Stainless Steel Boundary Channel to house the unit module
-  Float_t fDboxss2[3];
-  fDboxss2[0]           = dboxGGB[0]+fgkSSBoundary; 
-  fDboxss2[1]           = dboxGGB[1]+fgkSSBoundary;       
-  fDboxss2[2]           = fgkThSS/2.;
+
+  Float_t dboxSS2[3];
+  dboxSS2[0]  = dboxGGB[0] + fgkSSBoundary; 
+  dboxSS2[1]  = dboxGGB[1] + fgkSSBoundary;       
+  dboxSS2[2]  = fgkThSS/2.;
   
   //PRESHOWER
   //Stainless Steel boundary - Material Stainless Steel
-  gMC->Gsvolu("ESSB","BOX", idtmed[618], fDboxss2, 3);
+  gMC->Gsvolu("ESSB","BOX", idtmed[618], dboxSS2, 3);
   gMC->Gsatt("ESSB", "SEEN", 0);
   //VETO
-  gMC->Gsvolu("ESVB","BOX", idtmed[618], fDboxss2, 3);
+  gMC->Gsvolu("ESVB","BOX", idtmed[618], dboxSS2, 3);
   gMC->Gsatt("ESVB", "SEEN", 0);
   //----------------------------------------------------------------//
 
@@ -784,19 +786,20 @@ void AliPMDv1::CreateSupermodule()
   //----------------------------------------------------------//
   // A  unit module type B of Air
   // Dimensions of Unit Module same as SS boundary channel
-  Float_t fDboxum2[3];
-  fDboxum2[0] = fDboxss2[0];
-  fDboxum2[1] = fDboxss2[1];
-  fDboxum2[2] = fgkThSS/2. +0.15; // 0.15 added to accomodate Base Plate at
+
+  Float_t dboxUM2[3];
+  dboxUM2[0] = dboxSS2[0];
+  dboxUM2[1] = dboxSS2[1];
+  dboxUM2[2] = fgkThSS/2. +0.15; // 0.15 added to accomodate Base Plate at
   // the bottom and the backplane PCB at the top.
 
   //PRESHOWER
   //Create a Unit module of above dimensions Material : AIR
-  gMC->Gsvolu("EUM2","BOX", idtmed[698], fDboxum2, 3);
+  gMC->Gsvolu("EUM2","BOX", idtmed[698], dboxUM2, 3);
   gMC->Gsatt("EUM2", "SEEN", 0);
 
   //VETO
-  gMC->Gsvolu("EUV2","BOX", idtmed[698], fDboxum2, 3);
+  gMC->Gsvolu("EUV2","BOX", idtmed[698], dboxUM2, 3);
   gMC->Gsatt("EUV2", "SEEN", 0);
   //----------------------------------------------------------------//
 
@@ -806,8 +809,8 @@ void AliPMDv1::CreateSupermodule()
   // Base plate is as big as the final UM dimensions that is as 
   // SS boundary channel
   Float_t dboxBaseB[3];
-  dboxBaseB[0]       = fDboxss2[0];
-  dboxBaseB[1]       = fDboxss2[1];       
+  dboxBaseB[0]       = dboxSS2[0];
+  dboxBaseB[1]       = dboxSS2[1];       
   dboxBaseB[2]       = fgkThBase/2.;
   
   //Base Blate is a G10 BOX
@@ -818,7 +821,7 @@ void AliPMDv1::CreateSupermodule()
   //VETO
   //- Placing of all components of UM in AIR BOX EUM2--//
   //(1)   FIRST PUT THE BASE PLATE
-  Float_t zbaseplate2 = -fDboxum2[2] + fgkThBase/2.;
+  Float_t zbaseplate2 = -dboxUM2[2] + fgkThBase/2.;
   gMC->Gspos("EBPB", 1, "EUV2", 0., 0., zbaseplate2, 0, "ONLY");
 
   //(2)   NEXT PLACING the SS BOX 
@@ -833,7 +836,7 @@ void AliPMDv1::CreateSupermodule()
 
   //FOR PRESHOWER
   // (3) Positioning the Backplane PCB 0.1 cm
-  zbkp2 = -fDboxum2[2] + fgkThBKP/2.;
+  zbkp2 = -dboxUM2[2] + fgkThBKP/2.;
   gMC->Gspos("EBKB", 1, "EUM2", 0., 0., zbkp2, 0, "ONLY");
 
   //(2)   NEXT PLACING the SS BOX 
@@ -854,16 +857,16 @@ void AliPMDv1::CreateSupermodule()
   // Dimensions of Unit Module same as SS boundary channel
 
   Float_t dboxPba[3];
-  dboxPba[0] = fDboxum1[0];
-  dboxPba[1] = fDboxum1[1];
+  dboxPba[0] = dboxUM1[0];
+  dboxPba[1] = dboxUM1[1];
   dboxPba[2] = fgkThLead/2.;
   // Lead of UM dimension
   gMC->Gsvolu("EPB1","BOX", idtmed[600], dboxPba, 3);
   gMC->Gsatt ("EPB1", "SEEN", 0);
 
   Float_t dboxPbb[3];
-  dboxPbb[0] = fDboxum2[0];
-  dboxPbb[1] = fDboxum2[1];
+  dboxPbb[0] = dboxUM2[0];
+  dboxPbb[1] = dboxUM2[1];
   dboxPbb[2] = fgkThLead/2.;
   // Lead of UM dimension
   gMC->Gsvolu("EPB2","BOX", idtmed[600], dboxPbb, 3);
@@ -880,9 +883,9 @@ void AliPMDv1::CreateSupermodule()
   // in x-direction and 0.1cm along y-direction
 
   Float_t dboxSM1[3];
-  dboxSM1[0] = 3.0*fDboxum1[0] + (2.0*0.075);
-  dboxSM1[1] = 2.0*fDboxum1[1] +  0.05;
-  dboxSM1[2] = fDboxum1[2];
+  dboxSM1[0] = 3.0*dboxUM1[0] + (2.0*0.075);
+  dboxSM1[1] = 2.0*dboxUM1[1] +  0.05;
+  dboxSM1[2] = dboxUM1[2];
 
   //FOR PRESHOWER  
   gMC->Gsvolu("ESMA","BOX", idtmed[698], dboxSM1, 3);
@@ -894,11 +897,11 @@ void AliPMDv1::CreateSupermodule()
 
   //Position the 6 unit modules in EMSA
   Float_t xa1,xa2,xa3,ya1,ya2; 
-  xa1 =  dboxSM1[0] - fDboxum1[0];
-  xa2 = xa1 - fDboxum1[0] - 0.15 - fDboxum1[0];
-  xa3 = xa2 - fDboxum1[0] - 0.15 - fDboxum1[0];
-  ya1 = dboxSM1[1]  - fDboxum1[1];
-  ya2 = ya1 - fDboxum1[1] - 0.1 - fDboxum1[1];
+  xa1 =  dboxSM1[0] - dboxUM1[0];
+  xa2 = xa1 - dboxUM1[0] - 0.15 - dboxUM1[0];
+  xa3 = xa2 - dboxUM1[0] - 0.15 - dboxUM1[0];
+  ya1 = dboxSM1[1]  - dboxUM1[1];
+  ya2 = ya1 - dboxUM1[1] - 0.1 - dboxUM1[1];
 
   //PRESHOWER
   gMC->Gspos("EUM1", 1, "ESMA", xa1, ya1, 0., 0, "ONLY");
@@ -920,9 +923,9 @@ void AliPMDv1::CreateSupermodule()
   // volume for SUPERMODULE ESMB 
   //Space is added to provide a gapping for HV between UM's
   Float_t dboxSM2[3];
-  dboxSM2[0] = 2.0*fDboxum2[0] + 0.075; 
-  dboxSM2[1] = 3.0*fDboxum2[1] + (2.0*0.05);
-  dboxSM2[2] = fDboxum2[2];
+  dboxSM2[0] = 2.0*dboxUM2[0] + 0.075; 
+  dboxSM2[1] = 3.0*dboxUM2[1] + (2.0*0.05);
+  dboxSM2[2] = dboxUM2[2];
   
   //PRESHOWER
   gMC->Gsvolu("ESMB","BOX", idtmed[698], dboxSM2, 3);
@@ -933,11 +936,11 @@ void AliPMDv1::CreateSupermodule()
 
   //Position the 6 unit modules in EMSB
   Float_t xb1,xb2,yb1,yb2,yb3; 
-  xb1 = dboxSM2[0] - fDboxum2[0];
-  xb2 = xb1 - fDboxum2[0] - 0.15 - fDboxum2[0];
-  yb1 = dboxSM2[1]-fDboxum2[1];
-  yb2 = yb1 - fDboxum2[1] - 0.1 -  fDboxum2[1];
-  yb3 = yb2 - fDboxum2[1] - 0.1 -  fDboxum2[1];
+  xb1 = dboxSM2[0] - dboxUM2[0];
+  xb2 = xb1 - dboxUM2[0] - 0.15 - dboxUM2[0];
+  yb1 = dboxSM2[1] - dboxUM2[1];
+  yb2 = yb1 - dboxUM2[1] - 0.1 -  dboxUM2[1];
+  yb3 = yb2 - dboxUM2[1] - 0.1 -  dboxUM2[1];
 
 
   //PRESHOWER  
@@ -966,8 +969,8 @@ void AliPMDv1::CreateSupermodule()
   //Space added to provide a gapping for HV between UM's
 
   Float_t dboxSMPb1[3];
-  dboxSMPb1[0] = 3.0*fDboxum1[0] + (2.0*0.075);
-  dboxSMPb1[1] = 2.0*fDboxum1[1] +  0.05;
+  dboxSMPb1[0] = 3.0*dboxUM1[0] + (2.0*0.075);
+  dboxSMPb1[1] = 2.0*dboxUM1[1] +  0.05;
   dboxSMPb1[2] = fgkThLead/2.;
   
   gMC->Gsvolu("ESPA","BOX", idtmed[698], dboxSMPb1, 3);
@@ -976,11 +979,11 @@ void AliPMDv1::CreateSupermodule()
 
   //Position the 6 unit modules in ESMPbA
   Float_t xpa1,xpa2,xpa3,ypa1,ypa2; 
-  xpa1 = -dboxSMPb1[0] + fDboxum1[0];
-  xpa2 = xpa1 + fDboxum1[0] + 0.15 + fDboxum1[0];
-  xpa3 = xpa2 + fDboxum1[0] + 0.15 + fDboxum1[0];
-  ypa1 = dboxSMPb1[1]  - fDboxum1[1];
-  ypa2 = ypa1 - fDboxum1[1] - 0.1 - fDboxum1[1];
+  xpa1 = -dboxSMPb1[0] + dboxUM1[0];
+  xpa2 = xpa1 + dboxUM1[0] + 0.15 + dboxUM1[0];
+  xpa3 = xpa2 + dboxUM1[0] + 0.15 + dboxUM1[0];
+  ypa1 = dboxSMPb1[1]  - dboxUM1[1];
+  ypa2 = ypa1 - dboxUM1[1] - 0.1 - dboxUM1[1];
 
 
   gMC->Gspos("EPB1", 1, "ESPA", xpa1, ypa1, 0., 0, "ONLY");
@@ -994,8 +997,8 @@ void AliPMDv1::CreateSupermodule()
   // volume for SUPERMODULE ESMPbB 
   //Space is added to provide a gapping for HV between UM's
   Float_t dboxSMPb2[3];
-  dboxSMPb2[0] = 2.0*fDboxum2[0] + 0.075;
-  dboxSMPb2[1] = 3.0*fDboxum2[1] + (2.0*0.05);
+  dboxSMPb2[0] = 2.0*dboxUM2[0] + 0.075;
+  dboxSMPb2[1] = 3.0*dboxUM2[1] + (2.0*0.05);
   dboxSMPb2[2] = fgkThLead/2.;
 
   gMC->Gsvolu("ESPB","BOX", idtmed[698], dboxSMPb2, 3);
@@ -1003,11 +1006,11 @@ void AliPMDv1::CreateSupermodule()
  
   //Position the 6 unit modules in ESMPbB
   Float_t xpb1,xpb2,ypb1,ypb2,ypb3; 
-  xpb1 = -dboxSMPb2[0] + fDboxum2[0];
-  xpb2 = xpb1 + fDboxum2[0] + 0.15 + fDboxum2[0];
-  ypb1 = dboxSMPb2[1]  - fDboxum2[1];
-  ypb2 = ypb1 - fDboxum2[1] - 0.1 -  fDboxum2[1];
-  ypb3 = ypb2 - fDboxum2[1] - 0.1 -  fDboxum2[1];
+  xpb1 = -dboxSMPb2[0] + dboxUM2[0];
+  xpb2 = xpb1 + dboxUM2[0] + 0.15 + dboxUM2[0];
+  ypb1 = dboxSMPb2[1]  - dboxUM2[1];
+  ypb2 = ypb1 - dboxUM2[1] - 0.1 -  dboxUM2[1];
+  ypb3 = ypb2 - dboxUM2[1] - 0.1 -  dboxUM2[1];
 
 
   gMC->Gspos("EPB2", 1, "ESPB", xpb1, ypb1, 0., 0, "ONLY");
@@ -1066,43 +1069,43 @@ void AliPMDv1::CreateSupermodule()
 
   //Type A 
 
-  Float_t x_fee; // X-position of FEE board
-  Float_t y_fee; // Y-position of FEE board
-  Float_t z_fee = 0.0; // Z-position of FEE board
+  Float_t xFee; // X-position of FEE board
+  Float_t yFee; // Y-position of FEE board
+  Float_t zFee = 0.0; // Z-position of FEE board
 
-  Float_t x_a    = 0.25; //distance from the border to 1st FEE board
-  Float_t y_a    = 4.00; //distance from the border to 1st FEE board
-  Float_t x_sepa = 1.70; //Distance between two FEE boards
-  Float_t y_sepa = 8.00; //Distance between two FEE boards
+  Float_t xA    = 0.25; //distance from the border to 1st FEE board
+  Float_t yA    = 4.00; //distance from the border to 1st FEE board
+  Float_t xSepa = 1.70; //Distance between two FEE boards
+  Float_t ySepa = 8.00; //Distance between two FEE boards
 
   
   // FEE Boards EFEE placed inside EFBA
   number = 1;
-  y_fee =  dboxFEEBPlaneA[1] - y_a;  
+  yFee =  dboxFEEBPlaneA[1] - yA;  
   for (i = 1; i <= 6; ++i) 
     {
-      x_fee = -dboxFEEBPlaneA[0] + x_a; 
+      xFee = -dboxFEEBPlaneA[0] + xA; 
       for (j = 1; j <= 12; ++j) 
 	{
-	  gMC->Gspos("EFEE", number, "EFBA", x_fee,y_fee,z_fee, 0, "ONLY");
-	  x_fee += x_sepa;
+	  gMC->Gspos("EFEE", number, "EFBA", xFee,yFee,zFee, 0, "ONLY");
+	  xFee += xSepa;
 	  number += 1;
 	}
-      y_fee -= y_sepa; 
+      yFee -= ySepa; 
     }
   // FEE Boards EFEE placed inside EFBB
   number = 1;
-  y_fee =  dboxFEEBPlaneB[1] - y_a;  
+  yFee =  dboxFEEBPlaneB[1] - yA;  
   for (i = 1; i <= 3; ++i) 
     {
-      x_fee = -dboxFEEBPlaneB[0] + x_a; 
+      xFee = -dboxFEEBPlaneB[0] + xA; 
       for (j = 1; j <= 24; ++j) 
 	{
-	  gMC->Gspos("EFEE", number, "EFBB", x_fee,y_fee,z_fee, 0, "ONLY");
-	  x_fee += x_sepa;
+	  gMC->Gspos("EFEE", number, "EFBB", xFee,yFee,zFee, 0, "ONLY");
+	  xFee += xSepa;
 	  number += 1;
 	}
-      y_fee -= y_sepa; 
+      yFee -= ySepa; 
     }
 
 
