@@ -7,15 +7,16 @@
 
 #include "AliTRDsegmentArrayBase.h"
 
-////////////////////////////////////////////////////////
-//  Array for TRD detector segments containing digits //
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Array for TRD detector segments containing digits                     //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 class TTree;
 
 class AliTRDdataArray;
 
-//_____________________________________________________________________________
 class AliTRDsegmentArray : public AliTRDsegmentArrayBase {
 
  public:

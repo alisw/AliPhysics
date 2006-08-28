@@ -5,17 +5,20 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////
-//  Manager class for a general Alice segment // 
-////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Manager class for a general Alice segment                             // 
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
 
 class TTree;
 class TBranch;
+class TObjArray;
+
 class AliTRDarrayI;
 class AliTRDsegmentID;
-class TObjArray;
  
 class AliTRDsegmentArrayBase: public TNamed {
 
@@ -32,15 +35,17 @@ class AliTRDsegmentArrayBase: public TNamed {
 
           Bool_t           AddSegment(AliTRDsegmentID *segment);
           AliTRDsegmentID *AddSegment(Int_t index);  
-          void             ClearSegment(Int_t index); 
-  virtual void             Copy(TObject &a) const;
-  virtual Bool_t           ConnectTree(const char *treeName);
-          Bool_t           MakeArray(Int_t n);    
   virtual AliTRDsegmentID *NewSegment(); 
-  virtual void             MakeTree(char *file = 0);           
   virtual AliTRDsegmentID *LoadSegment(Int_t index);
   virtual AliTRDsegmentID *LoadEntry(Int_t index); 
   virtual void             StoreSegment(Int_t index);
+          void             ClearSegment(Int_t index);
+ 
+  virtual void             Copy(TObject &a) const;
+  virtual Bool_t           ConnectTree(const char *treeName);
+
+          Bool_t           MakeArray(Int_t n);    
+  virtual void             MakeTree(char *file = 0);           
           Bool_t           MakeDictionary(Int_t size);
 
           Bool_t           SetClass(const char *classname);

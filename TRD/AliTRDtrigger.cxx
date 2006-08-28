@@ -490,16 +490,6 @@ Bool_t AliTRDtrigger::MakeTracklets(Bool_t makeTracks)
 		  AliInfo(Form("Add tracklet %d in col %02d \n",fNtracklets,fMCM->GetSeedCol()[iSeed]));
 		}
 
-		if (fTrigParam->GetDebugLevel() == -1) {
-		  AliInfo(Form("Add tracklet %d in col %02d \n",fNtracklets,fMCM->GetSeedCol()[iSeed]));
-		  for (time = 0; time < nTimeTotal; time++) {
-		    for (col = 0; col < kMcmCol; col++) {		    
-		      printf("%03.0f  ",fMCM->GetADC(col,time));
-		    }
-		    printf("\n");
-		  }
-		}
-
 		if (TestTracklet(idet,row,iSeed,0)) {
 		  AddTracklet(idet,row,iSeed,fNtracklets++);
 		}

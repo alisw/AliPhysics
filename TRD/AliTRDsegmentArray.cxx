@@ -15,11 +15,11 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  Alice segment manager class                                              //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Alice segment manager class                                           //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TTree.h>
 
@@ -32,7 +32,8 @@
 ClassImp(AliTRDsegmentArray)
 
 //_____________________________________________________________________________
-AliTRDsegmentArray::AliTRDsegmentArray():AliTRDsegmentArrayBase()
+AliTRDsegmentArray::AliTRDsegmentArray()
+  :AliTRDsegmentArrayBase()
 {
   //
   // Default constructor
@@ -42,7 +43,7 @@ AliTRDsegmentArray::AliTRDsegmentArray():AliTRDsegmentArrayBase()
 
 //_____________________________________________________________________________
 AliTRDsegmentArray::AliTRDsegmentArray(const char *classname, Int_t n)
-                   :AliTRDsegmentArrayBase(classname,n)
+  :AliTRDsegmentArrayBase(classname,n)
 {
   //
   // Constructor creating an array of AliTRDdataArray of size <n>
@@ -58,7 +59,7 @@ AliTRDsegmentArray::AliTRDsegmentArray(const char *classname, Int_t n)
 
 //_____________________________________________________________________________
 AliTRDsegmentArray::AliTRDsegmentArray(AliTRDsegmentArray &a)
-:AliTRDsegmentArrayBase(a)
+  :AliTRDsegmentArrayBase(a)
 {
   //
   // AliTRDsegmentArray copy constructor
@@ -115,15 +116,18 @@ Bool_t AliTRDsegmentArray::LoadArray(const Char_t *branchname, TTree *tree)
 
   // Connect the digits tree as default
   if (!fTree) {
-    printf("AliTRDsegmentArray::LoadArray -- ");
-    printf("Use default TreeD\n");
+    AliWarning("Use default TreeD\n");
     fTree = gAlice->TreeD();
-    if (!fTree) return kFALSE;
+    if (!fTree) {
+      return kFALSE;
+    }
   }
 
   // Get the branch
   fBranch = fTree->GetBranch(branchname);
-  if (!fBranch) return kFALSE;
+  if (!fBranch) {
+    return kFALSE;
+  }
 
   // Loop through all segments and read them from the tree
   Bool_t status = kTRUE;
@@ -153,15 +157,18 @@ Bool_t AliTRDsegmentArray::StoreArray(const Char_t *branchname, TTree *tree)
 
   // Connect the digits tree as default
   if (!fTree) {
-    printf("AliTRDsegmentArray::StoreArray -- ");
-    printf("Use default TreeD\n");
+    AliWarning("Use default TreeD\n");
     fTree = gAlice->TreeD();
-    if (!fTree) return kFALSE;
+    if (!fTree) {
+      return kFALSE;
+    }
   }
 
   // Get the branch
   fBranch = fTree->GetBranch(branchname);
-  if (!fBranch) return kFALSE;
+  if (!fBranch) {
+    return kFALSE;
+  }
 
   // Loop through all segments and fill them into the tree
   Bool_t status = kTRUE;
@@ -193,7 +200,8 @@ AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t det) const
 
 //_____________________________________________________________________________
 AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t pla
-                                                , Int_t cha, Int_t sec) const
+                                                , Int_t cha
+                                                , Int_t sec) const
 {
   //
   // Returns the data array for a given detector
@@ -208,8 +216,7 @@ AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t pla
   }
   else {
 
-    printf("AliTRDsegmentArray::GetDigits -- ");
-    printf("gAlice is not defined\n");
+    AliError("gAlice is not defined\n");
     return NULL;
 
   }

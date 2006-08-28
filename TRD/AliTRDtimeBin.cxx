@@ -15,61 +15,95 @@
 
 /* $Id$ */
              
-//////////////////////////////////////////////////////////////////////
-//                                                                  //
-//  Hit compression class                                           //
-//  Adapted from AliTPCTimeBin by Marian                            //
-//                                                                  //
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Hit compression class                                                 //
+//  Adapted from AliTPCTimeBin by Marian                                  //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
                    
 #include "AliTRDcluster.h" 
 #include "AliTRDtimeBin.h" 
 
 ClassImp(AliTRDtimeBin)
 
-//______________________________________________________
+//_____________________________________________________________________________
+AliTRDtimeBin::AliTRDtimeBin() 
+  :TObject()
+  ,fN(0)
+{
+  //
+  // Default constructor
+  //
 
-  AliTRDtimeBin::AliTRDtimeBin() {
-  //default constructor
-    fN=0;
-    for (UInt_t i=0; i<kMaxClusterPerTimeBin; i++) 
-      fClusters[i]=0;
+  for (UInt_t i = 0; i < kMaxClusterPerTimeBin; i++) { 
+    fClusters[i] = 0;
   }
-//______________________________________________________
 
-void AliTRDtimeBin::InsertCluster(AliTRDcluster* c, UInt_t index) {
+}
 
-// Insert cluster in TimeBin cluster array.
-// Clusters are sorted according to Y coordinate.  
+//_____________________________________________________________________________
+void AliTRDtimeBin::InsertCluster(AliTRDcluster* c, UInt_t index) 
+{
+  //
+  // Insert cluster in TimeBin cluster array.
+  // Clusters are sorted according to Y coordinate.  
+  //
 
-  if (fN==kMaxClusterPerTimeBin) {
-    printf("AliTRDtimeBin::InsertCluster(): Too many clusters !\n"); 
+  if (fN == kMaxClusterPerTimeBin) {
+    AliError("Too many clusters!\n"); 
     return;
   }
-  if (fN==0) {fIndex[0]=index; fClusters[fN++]=c; return;}
-  Int_t i=Find(c->GetY());
-  memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliTRDcluster*));
-  memmove(fIndex   +i+1 ,fIndex   +i,(fN-i)*sizeof(UInt_t)); 
-  fIndex[i]=index; fClusters[i]=c; fN++;
+
+  if (fN == 0) {
+    fIndex[0]       = index; 
+    fClusters[fN++] = c; 
+    return;
+  }
+
+  Int_t i = Find(c->GetY());
+
+  memmove(fClusters+i+1,fClusters+i,(fN-i)*sizeof(AliTRDcluster*));
+  memmove(fIndex   +i+1,fIndex   +i,(fN-i)*sizeof(UInt_t)); 
+
+  fIndex[i]    = index; 
+  fClusters[i] = c; 
+  fN++;
+
 }  
 
-//______________________________________________________
+//_____________________________________________________________________________
+Int_t AliTRDtimeBin::Find(Double_t y) const 
+{
+  //
+  // Returns index of the cluster nearest in Y    
+  //
 
-Int_t AliTRDtimeBin::Find(Double_t y) const {
-
-// Returns index of the cluster nearest in Y    
-
-  if (y <= fClusters[0]->GetY()) return 0;
-  if (y > fClusters[fN-1]->GetY()) return fN;
-  Int_t b=0, e=fN-1, m=(b+e)/2;
-  for (; b<e; m=(b+e)/2) {
-    if (y > fClusters[m]->GetY()) b=m+1;
-    else e=m;
+  if (y <= fClusters[   0]->GetY()) {
+    return 0;
   }
+  if (y >  fClusters[fN-1]->GetY()) {
+    return fN;
+  }
+
+  Int_t b = 0;
+  Int_t e = fN - 1;
+  Int_t m = (b + e) / 2;
+
+  for ( ; b < e; m = (b+e)/2) {
+    if (y > fClusters[m]->GetY()) {
+      b = m + 1;
+    }
+    else {
+      e = m;
+    }
+  }
+
   return m;
+
 }    
 
-//______________________________________________________
+//_____________________________________________________________________________
 AliTRDcluster *AliTRDtimeBin::operator[](Int_t i)
 {
   //
