@@ -27,7 +27,7 @@ AlidNdEtaAnalysisESDSelector::AlidNdEtaAnalysisESDSelector() :
   fdNdEtaAnalysis(0),
   fEsdTrackCuts(0),
   fdNdEtaCorrection(0)
-{
+  {
   //
   // Constructor. Initialization of pointers
   //
@@ -62,7 +62,7 @@ AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
     fdNdEtaAnalysisMBVtx = 0;
   }
 
-  if (fEsdTrackCuts)
+  /*if (fEsdTrackCuts)
   {
     delete fEsdTrackCuts;
     fEsdTrackCuts = 0;
@@ -72,7 +72,7 @@ AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
   {
     delete fdNdEtaCorrection;
     fdNdEtaCorrection = 0;
-  }
+  }*/
 }
 
 void AlidNdEtaAnalysisESDSelector::Begin(TTree* tree)

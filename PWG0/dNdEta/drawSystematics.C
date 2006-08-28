@@ -60,12 +60,16 @@ void Prepare2DPlot(TH2* hist)
   SetRanges(hist);
 }
 
-void Prepare1DPlot(TH1* hist)
+void Prepare1DPlot(TH1* hist, Bool_t setRanges = kTRUE)
 {
   hist->SetLineWidth(2);
   hist->SetStats(kFALSE);
 
-  SetRanges(hist);
+  hist->GetXaxis()->SetTitleOffset(1.2);
+  hist->GetYaxis()->SetTitleOffset(1.2);
+
+  if (setRanges)
+    SetRanges(hist);
 }
 
 void InitPad()
@@ -97,51 +101,22 @@ void Secondaries()
 {
   TFile* file = TFile::Open("systematics.root");
 
-  TH3F* secondaries = dynamic_cast<TH3F*> (file->Get("fSecondaries"));
+  TH2F* secondaries = dynamic_cast<TH2F*> (file->Get("fSecondaries"));
   if (!secondaries)
   {
     printf("Could not read histogram\n");
     return;
   }
 
-  for (Int_t ptBin=1; ptBin<=secondaries->GetNbinsZ(); ptBin++)
-  //for (Int_t ptBin = 1; ptBin<=2; ptBin++)
+  TCanvas* canvas = new TCanvas("Secondaries", "Secondaries", 1000, 1000);
+  canvas->Divide(3, 3);
+  for (Int_t i=1; i<=8; i++)
   {
-    TH1F* hist = new TH1F(Form("secondaries_%d", ptBin), Form("secondaries_%d", ptBin), secondaries->GetNbinsY(), secondaries->GetYaxis()->GetXmin(), secondaries->GetYaxis()->GetXmax());
+    TH1D* hist = secondaries->ProjectionY(Form("proj_%d", i), i, i);
+    hist->SetTitle(secondaries->GetXaxis()->GetBinLabel(i));
 
-    hist->SetTitle(Form("%f < p_{T} < %f", secondaries->GetZaxis()->GetBinLowEdge(ptBin), secondaries->GetZaxis()->GetBinUpEdge(ptBin)));
-
-    for (Int_t cBin=1; cBin<=secondaries->GetNbinsY(); ++cBin)
-    {
-      if (secondaries->GetBinContent(0, cBin, ptBin) > 0)
-        printf("WARNING: Underflow bin not empty!");
-      if (secondaries->GetBinContent(secondaries->GetNbinsX()+1, cBin, ptBin) > 0)
-        printf("WARNING: Overflow bin not empty!");
-
-      Double_t sum = 0;
-      Double_t count = 0;
-      for (Int_t nBin=1; nBin<=secondaries->GetNbinsX(); ++nBin)
-      {
-        //printf("%f %f\n", secondaries->GetXaxis()->GetBinCenter(nBin), secondaries->GetBinContent(nBin, cBin, ptBin));
-        sum += secondaries->GetXaxis()->GetBinCenter(nBin) * secondaries->GetBinContent(nBin, cBin, ptBin);
-        count += secondaries->GetBinContent(nBin, cBin, ptBin);
-      }
-
-      printf("%f %f\n", sum, count);
-
-      if (count > 0)
-      {
-        hist->SetBinContent(cBin, sum / count);
-        hist->SetBinError(cBin, TMath::Sqrt(sum) / count);
-      }
-    }
-
-    hist->Scale(1.0 / hist->GetBinContent(hist->GetXaxis()->FindBin(1)));
-    hist->Add(new TF1("flat", "-1", 0, 2));
-
-    new TCanvas;
-    hist->SetMarkerStyle(21);
-    hist->Draw("");
+    canvas->cd(i);
+    hist->Draw();
   }
 }
 
@@ -214,7 +189,7 @@ TH1** DrawRatios(const char* fileName = "systematics.root")
 
   TH1** ptDists = new TH1*[4];
 
-  TLegend* legend = new TLegend(0.7, 0.7, 0.95, 0.95);
+  TLegend* legend = new TLegend(0.73, 0.73, 0.98, 0.98);
 
   const char* folderNames[] = { "correction_0", "correction_1", "correction_2", "correction_3" };
   const char* particleNames[] = { "#pi", "K", "p", "other" };
@@ -255,17 +230,41 @@ TH1** DrawRatios(const char* fileName = "systematics.root")
   for (Int_t i=0; i<4; ++i)
   {
     ptDists[i]->Divide(total);
-    ptDists[i]->SetTitle(";p_{T};Ratio");
+    ptDists[i]->SetStats(kFALSE);
+    ptDists[i]->SetTitle(";p_{T};Fraction of total");
     ptDists[i]->GetYaxis()->SetRangeUser(0, 1);
     ptDists[i]->Draw((i == 0) ? "" : "SAME");
   }
+  legend->SetFillColor(0);
   legend->Draw();
 
   canvas->SaveAs("DrawRatios.gif");
 
+
+  canvas = new TCanvas("PythiaRatios", "PythiaRatios", 500, 500);
+  for (Int_t i=0; i<4; ++i)
+  {
+    TH1* hist = ptDists[i]->Clone();
+    hist->GetXaxis()->SetRangeUser(0, 1.9);
+    hist->Draw((i == 0) ? "" : "SAME");
+  }
+  legend->Draw();
+
+  canvas->SaveAs("pythiaratios.eps");
+
   file->Close();
 
   return ptDists;
+}
+
+void DrawCompareToReal()
+{
+  gROOT->ProcessLine(".L drawPlots.C");
+
+  const char* fileNames[] = { "correction_map.root", "new_compositions.root" };
+  const char* folderNames[] = { "dndeta_correction", "PythiaRatios" };
+
+  Track2Particle1DComposition(fileNames, 2, folderNames);
 }
 
 void DrawDifferentSpecies()
@@ -308,7 +307,7 @@ void DrawBoosts()
   Track2Particle1DComposition(fileNames, 4, folderNames);
 }
 
-TH1F* HistogramDifferences(const char* filename, const char* folder1, const char* folder2)
+TH2F* HistogramDifferences(const char* filename, const char* folder1, const char* folder2)
 {
   gSystem->Load("libPWG0base");
 
@@ -322,15 +321,19 @@ TH1F* HistogramDifferences(const char* filename, const char* folder1, const char
   fdNdEtaCorrection[1] = new AlidNdEtaCorrection(folder2, folder2);
   fdNdEtaCorrection[1]->LoadHistograms(filename, folder2);
 
-  TH1F* difference = new TH1F("difference", Form(";#DeltaC_{pT, z, #eta} %s - %s;Count", folder2, folder1), 1000, -0.5, 0.5);
-
   TH3F* hist1 = fdNdEtaCorrection[0]->GetTrack2ParticleCorrection()->GetCorrectionHistogram();
   TH3F* hist2 = fdNdEtaCorrection[1]->GetTrack2ParticleCorrection()->GetCorrectionHistogram();
+
+  //TH1F* difference = new TH1F("difference", Form(";#DeltaC_{pT, z, #eta} %s / %s;Count", folder2, folder1), 1000, 0.9, 1.1);
+  TH2F* difference = new TH2F(Form("difference_%s_%s", folder1, folder2), Form(";#Sigma (C_{pT, z} %s / C_{pT, z} %s);#eta;Count", folder2, folder1), 100, 0.9, 1.1, hist1->GetYaxis()->GetNbins(), hist1->GetYaxis()->GetXmin(), hist1->GetYaxis()->GetXmax());
 
   for (Int_t x=hist1->GetXaxis()->FindBin(-10); x<=hist1->GetXaxis()->FindBin(10); ++x)
     for (Int_t y=hist1->GetYaxis()->FindBin(-0.8); y<=hist1->GetYaxis()->FindBin(0.8); ++y)
       for (Int_t z=hist1->GetZaxis()->FindBin(0.3); z<=hist1->GetZaxis()->FindBin(9.9); ++z)
-        difference->Fill(hist2->GetBinContent(x, y, z) - hist1->GetBinContent(x, y, z));
+        if (hist1->GetBinContent(x, y, z) != 0)
+          difference->Fill(hist2->GetBinContent(x, y, z) / hist1->GetBinContent(x, y, z), hist1->GetYaxis()->GetBinCenter(y));
+
+  difference->GetYaxis()->SetRangeUser(-0.8, 0.8);
 
   printf("Over-/Underflow bins: %d %d\n", difference->GetBinContent(0), difference->GetBinContent(difference->GetNbinsX()+1));
 
@@ -339,26 +342,78 @@ TH1F* HistogramDifferences(const char* filename, const char* folder1, const char
 
 void HistogramDifferences()
 {
-  TH1F* PiBoosted = HistogramDifferences("new_compositions.root", "PythiaRatios", "PiBoosted");
-  TH1F* KBoosted = HistogramDifferences("new_compositions.root", "PythiaRatios", "KBoosted");
-  TH1F* pBoosted = HistogramDifferences("new_compositions.root", "PythiaRatios", "pBoosted");
+  TH2F* KBoosted = HistogramDifferences("new_compositions.root", "PythiaRatios", "KBoosted");
+  TH2F* pBoosted = HistogramDifferences("new_compositions.root", "PythiaRatios", "pBoosted");
+  TH2F* KReduced = HistogramDifferences("new_compositions.root", "PythiaRatios", "KReduced");
+  TH2F* pReduced = HistogramDifferences("new_compositions.root", "PythiaRatios", "pReduced");
 
-  TCanvas* canvas = new TCanvas("HistogramDifferences", "HistogramDifferences", 1200, 400);
-  canvas->Divide(3, 1);
+  TCanvas* canvas = new TCanvas("HistogramDifferences", "HistogramDifferences", 1000, 1000);
+  canvas->Divide(2, 2);
 
   canvas->cd(1);
-  PiBoosted->GetXaxis()->SetRangeUser(-0.01, 0.01);
-  PiBoosted->Draw();
+  KBoosted->GetXaxis()->SetRangeUser(-0.05, 0.05);
+  KBoosted->Draw("COLZ");
 
   canvas->cd(2);
-  KBoosted->GetXaxis()->SetRangeUser(-0.01, 0.01);
-  KBoosted->Draw();
+  KReduced->GetXaxis()->SetRangeUser(-0.05, 0.05);
+  KReduced->Draw("COLZ");
 
   canvas->cd(3);
-  pBoosted->GetXaxis()->SetRangeUser(-0.01, 0.01);
-  pBoosted->Draw();
+  pBoosted->GetXaxis()->SetRangeUser(-0.02, 0.02);
+  pBoosted->Draw("COLZ");
+
+  canvas->cd(4);
+  pReduced->GetXaxis()->SetRangeUser(-0.02, 0.02);
+  pReduced->Draw("COLZ");
 
   canvas->SaveAs("HistogramDifferences.gif");
+
+  canvas = new TCanvas("HistogramDifferencesProfile", "HistogramDifferencesProfile", 1000, 500);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+  gPad->SetBottomMargin(0.13);
+  KBoosted->SetTitle("a) Ratio of correction maps");
+  KBoosted->SetStats(kFALSE);
+  KBoosted->GetXaxis()->SetTitleOffset(1.4);
+  KBoosted->GetXaxis()->SetLabelOffset(0.02);
+  KBoosted->Draw("COLZ");
+
+  canvas->cd(2);
+  gPad->SetGridx();
+  gPad->SetGridy();
+
+  TLegend* legend = new TLegend(0.73, 0.73, 0.98, 0.98);
+
+  for (Int_t i=0; i<4; ++i)
+  {
+    TH2F* hist = 0;
+    TString name;
+    switch (i)
+    {
+      case 0: hist = KBoosted; name = "K enhanced"; break;
+      case 1: hist = KReduced; name = "K reduced"; break;
+      case 2: hist = pBoosted; name = "p enhanced"; break;
+      case 3: hist = pReduced; name = "p reduced"; break;
+    }
+
+    TProfile* profile = hist->ProfileY();
+    profile->SetTitle("b) Mean and RMS");
+    profile->GetXaxis()->SetRange(hist->GetYaxis()->GetFirst(), hist->GetYaxis()->GetLast());
+    profile->GetXaxis()->SetTitleOffset(1.2);
+    profile->GetXaxis()->SetLabelOffset(0.02);
+    profile->GetYaxis()->SetRangeUser(0.98, 1.02);
+    profile->SetStats(kFALSE);
+    profile->SetLineColor(i+1);
+    profile->SetMarkerColor(i+1);
+    profile->DrawCopy(((i > 0) ? "SAME" : ""));
+
+
+    legend->AddEntry(profile, name);
+  }
+
+  legend->Draw();
+  canvas->SaveAs("particlecomposition_result.eps");
 }
 
 
@@ -416,26 +471,44 @@ const char* ChangeComposition(void** correctionPointer, Int_t index)
       break;
 
     case 1: // each species rated with pythia ratios
-      TH1** ptDists = DrawRatios("pythiaratios.root");
+      /*TH1** ptDists = DrawRatios("pythiaratios.root");
 
       for (Int_t i=0; i<3; ++i)
       {
         ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetMeasuredHistogram(), ptDists[i]);
         ScalePtDependent(fdNdEtaCorrection[i]->GetTrack2ParticleCorrection()->GetGeneratedHistogram(), ptDists[i]);
-      }
+      }*/
       return "PythiaRatios";
       break;
 
+      // one species enhanced / reduced
+    case 2: // + 50% pions
+    case 3: // - 50% pions
+    case 4: // + 50% kaons
+    case 5: // - 50% kaons
+    case 6: // + 50% protons
+    case 7: // - 50% protons
+      Int_t correctionIndex = (index - 2) / 2;
+      Double_t scaleFactor = (index % 2 == 0) ? 1.5 : 0.5;
+
+      fdNdEtaCorrection[correctionIndex]->GetTrack2ParticleCorrection()->GetMeasuredHistogram()->Scale(scaleFactor);
+      fdNdEtaCorrection[correctionIndex]->GetTrack2ParticleCorrection()->GetGeneratedHistogram()->Scale(scaleFactor);
+
+      TString* str = new TString;
+      str->Form("%s%s", (correctionIndex == 0) ? "Pi" : ((correctionIndex == 1) ? "K" : "p"), (index % 2 == 0) ? "Boosted" : "Reduced");
+      return str->Data();
+      break;
+
       // each species rated with pythia ratios
-    case 2: // + 10% pions
-    case 3: // - 10% pions
-    case 4: // + 10% kaons
-    case 5: // - 10% kaons
-    case 6: // + 10% protons
-    case 7: // - 10% protons
+    case 12: // + 50% pions
+    case 13: // - 50% pions
+    case 14: // + 50% kaons
+    case 15: // - 50% kaons
+    case 16: // + 50% protons
+    case 17: // - 50% protons
       TH1** ptDists = DrawRatios("pythiaratios.root");
       Int_t functionIndex = (index - 2) / 2;
-      Double_t scaleFactor = (index % 2 == 0) ? 1.1 : 0.9;
+      Double_t scaleFactor = (index % 2 == 0) ? 1.5 : 0.5;
       ptDists[functionIndex]->Scale(scaleFactor);
 
       for (Int_t i=0; i<3; ++i)
@@ -673,4 +746,44 @@ void drawSystematics()
   //Composition();
 
   Sigma2VertexSimulation();
+}
+
+void DrawdNdEtaDifferences()
+{
+  TH1* hists[5];
+
+  TCanvas* canvas = new TCanvas("DrawdNdEtaDifferences", "DrawdNdEtaDifferences", 1000, 500);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+
+  for (Int_t i=0; i<5; ++i)
+  {
+    TFile* file = 0;
+
+    switch(i)
+    {
+      case 0 : file = TFile::Open("systematics_dndeta_reference.root"); break;
+      case 1 : file = TFile::Open("systematics_dndeta_KBoosted.root"); break;
+      case 2 : file = TFile::Open("systematics_dndeta_KReduced.root"); break;
+      case 3 : file = TFile::Open("systematics_dndeta_pBoosted.root"); break;
+      case 4 : file = TFile::Open("systematics_dndeta_pReduced.root"); break;
+      default: return;
+    }
+
+    hists[i] = (TH1*) file->Get("dndeta/dndeta_dNdEta_corrected_2");
+
+    hists[i]->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
+    hists[i]->SetLineColor(i+1);
+    hists[i]->DrawCopy(((i > 0) ? "SAME" : ""));
+  }
+
+  canvas->cd(2);
+
+  for (Int_t i=1; i<5; ++i)
+  {
+    hists[i]->Divide(hists[0]);
+    hists[i]->GetYaxis()->SetRangeUser(0.98, 1.02);
+    hists[i]->DrawCopy(((i > 1) ? "SAME" : ""));
+  }
 }

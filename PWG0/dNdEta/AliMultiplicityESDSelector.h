@@ -8,6 +8,8 @@
 class AliESDtrackCuts;
 class TH1F;
 
+class TMonaLisaWriter;
+
 class AliMultiplicityESDSelector : public AliSelector {
   public:
     AliMultiplicityESDSelector();
@@ -29,6 +31,8 @@ class AliMultiplicityESDSelector : public AliSelector {
  private:
     AliMultiplicityESDSelector(const AliMultiplicityESDSelector&);
     AliMultiplicityESDSelector& operator=(const AliMultiplicityESDSelector&);
+
+    TMonaLisaWriter* fMonaLisaWriter; //! ML instance for monitoring
 
   ClassDef(AliMultiplicityESDSelector, 0);
 };

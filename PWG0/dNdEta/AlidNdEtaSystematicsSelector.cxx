@@ -8,7 +8,7 @@
 #include <TVector3.h>
 #include <TChain.h>
 #include <TFile.h>
-#include <TH3F.h>
+#include <TH2F.h>
 #include <TH1F.h>
 #include <TParticle.h>
 
@@ -29,8 +29,6 @@ AlidNdEtaSystematicsSelector::AlidNdEtaSystematicsSelector() :
   fSecondaries(0),
   fSigmaVertex(0),
   fEsdTrackCuts(0),
-  fOverallPrimaries(0),
-  fOverallSecondaries(0),
   fPIDParticles(0),
   fPIDTracks(0)
 {
@@ -88,7 +86,15 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
 
   if (option.Contains("secondaries"))
   {
-    fSecondaries = new TH3F("fSecondaries", "fSecondaries;NacceptedTracks;CratioSecondaries;p_{T}", 2000, -0.5, 205.5, 16, 0.45, 2.05, 10, 0, 10);
+    fSecondaries = new TH2F("fSecondaries", "fSecondaries;Case;N", 8, 0.5, 8.5, 2001, -0.5, 2000.5);
+    fSecondaries->GetXaxis()->SetBinLabel(1, "All Primaries");
+    fSecondaries->GetXaxis()->SetBinLabel(2, "All Secondaries");
+    fSecondaries->GetXaxis()->SetBinLabel(3, "Primaries pT > 0.3 GeV/c");
+    fSecondaries->GetXaxis()->SetBinLabel(4, "Secondaries pT > 0.3 GeV/c");
+    fSecondaries->GetXaxis()->SetBinLabel(5, "Tracks from Primaries");
+    fSecondaries->GetXaxis()->SetBinLabel(6, "Tracks from Secondaries");
+    fSecondaries->GetXaxis()->SetBinLabel(7, "Accepted Tracks from Primaries");
+    fSecondaries->GetXaxis()->SetBinLabel(8, "Accepted Tracks from Secondaries");
   }
 
   if (option.Contains("particle-composition"))
@@ -160,7 +166,7 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     FillCorrectionMaps(list);
 
   if (fSecondaries)
-    FillSecondaries(list);
+    FillSecondaries();
 
   if (fSigmaVertex)
     FillSigmaVertex();
@@ -219,17 +225,17 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
       case 211: id = 0; break;
       case 321: id = 1; break;
       case 2212: id = 2; break;
-      case 11: 
+      case 11:
         {
-          if (pt < 0.1 && particle->GetMother(0) > -1)
+          /*if (pt < 0.1 && particle->GetMother(0) > -1)
           {
             TParticle* mother = stack->Particle(particle->GetMother(0));
             printf("Mother pdg code is %d\n", mother->GetPdgCode());
-          }   
+          } */
           //particle->Dump();
           //if (particle->GetUniqueID() == 1)
 
-          //printf("Found illegal particle mc id = %d file = %s event = %d\n", iMc,  fTree->GetCurrentFile()->GetName(), fTree->GetTree()->GetReadEntry()); 
+          //printf("Found illegal particle mc id = %d file = %s event = %d\n", iMc,  fTree->GetCurrentFile()->GetName(), fTree->GetTree()->GetReadEntry());
         }
       default: id = 3; break;
     }
@@ -237,7 +243,7 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
     if (vertexReconstructed)
     {
       fdNdEtaCorrection[id]->FillParticle(vtxMC[2], eta, pt);
-      if (pt < 0.1)
+      //if (pt < 0.1)
         fPIDParticles->Fill(particle->GetPdgCode());
     }
 
@@ -264,8 +270,36 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
       continue;
     }
 
+    TParticle* mother = particle;
+    // find primary particle that created this particle
+    while (label >= nPrim)
+    {
+      //printf("Particle %d (pdg %d) is not a primary. Let's check its mother %d\n", label, mother->GetPdgCode(), mother->GetMother(0));
+
+      if (mother->GetMother(0) == -1)
+      {
+        AliDebug(AliLog::kError, Form("UNEXPECTED: Could not find mother of secondary particle %d.", label));
+        mother = 0;
+        break;
+      }
+
+      label = mother->GetMother(0);
+
+      mother = stack->Particle(label);
+      if (!mother)
+      {
+        AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (find mother loop).", label));
+        break;
+      }
+    }
+
+    if (!mother)
+      continue;
+
+    //printf("We continue with particle %d (pdg %d)\n", label, mother->GetPdgCode());
+
     Int_t id = -1;
-    switch (TMath::Abs(particle->GetPdgCode()))
+    switch (TMath::Abs(mother->GetPdgCode()))
     {
       case 211:  id = 0; break;
       case 321:  id = 1; break;
@@ -276,31 +310,92 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
     if (vertexReconstructed)
     {
       fdNdEtaCorrection[id]->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
-      if (particle->Pt() < 0.1)
+      //if (particle->Pt() < 0.1)
         fPIDTracks->Fill(particle->GetPdgCode());
     }
   } // end of track loop
+
+  Int_t nGoodTracks = listOfTracks->GetEntries();
+
+  for (Int_t i=0; i<4; ++i)
+  {
+    fdNdEtaCorrection[i]->FillEvent(vtxMC[2], nGoodTracks);
+    if (eventTriggered)
+    {
+      fdNdEtaCorrection[i]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+      if (vertexReconstructed)
+        fdNdEtaCorrection[i]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+    }
+  }
 
   delete iter;
   iter = 0;
 }
 
-void AlidNdEtaSystematicsSelector::FillSecondaries(TObjArray* listOfTracks)
+void AlidNdEtaSystematicsSelector::FillSecondaries()
 {
   // fills the secondary histograms
 
   AliStack* stack = GetStack();
 
-  TH1* nPrimaries = new TH1F("secondaries_primaries", "secondaries_primaries", fSecondaries->GetZaxis()->GetNbins(), fSecondaries->GetZaxis()->GetXmin(), fSecondaries->GetZaxis()->GetXmax());
-  TH1* nSecondaries = new TH1F("secondaries_secondaries", "secondaries_secondaries", fSecondaries->GetZaxis()->GetNbins(), fSecondaries->GetZaxis()->GetXmin(), fSecondaries->GetZaxis()->GetXmax());
+  Int_t particlesPrimaries = 0;
+  Int_t particlesSecondaries = 0;
+  Int_t particlesPrimariesPtCut = 0;
+  Int_t particlesSecondariesPtCut = 0;
 
-  TIterator* iter = listOfTracks->MakeIterator();
-  TObject* obj = 0;
-  while ((obj = iter->Next()) != 0)
+  for (Int_t iParticle = 0; iParticle < stack->GetNtrack(); iParticle++)
   {
-    AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (obj);
-    if (!esdTrack)
+    TParticle* particle = stack->Particle(iParticle);
+    if (!particle)
+    {
+      AliDebug(AliLog::kError, Form("UNEXPECTED: particle with label %d not found in stack (particle loop).", iParticle));
       continue;
+    }
+
+    if (TMath::Abs(particle->Eta()) > 0.9)
+      continue;
+
+    Bool_t isPrimary = kFALSE;
+    if (iParticle < stack->GetNprimary())
+    {
+      if (AliPWG0Helper::IsPrimaryCharged(particle, stack->GetNprimary()) == kFALSE)
+        continue;
+
+      isPrimary = kTRUE;
+    }
+
+    if (isPrimary)
+      particlesPrimaries++;
+    else
+      particlesSecondaries++;
+
+    if (particle->Pt() < 0.3)
+      continue;
+
+    if (isPrimary)
+      particlesPrimariesPtCut++;
+    else
+      particlesSecondariesPtCut++;
+  }
+
+  fSecondaries->Fill(1, particlesPrimaries);
+  fSecondaries->Fill(2, particlesSecondaries);
+  fSecondaries->Fill(3, particlesPrimariesPtCut);
+  fSecondaries->Fill(4, particlesSecondariesPtCut);
+
+  Int_t allTracksPrimaries = 0;
+  Int_t allTracksSecondaries = 0;
+  Int_t acceptedTracksPrimaries = 0;
+  Int_t acceptedTracksSecondaries = 0;
+
+  for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++)
+  {
+    AliESDtrack* esdTrack = fESD->GetTrack(iTrack);
+    if (!esdTrack)
+    {
+      AliDebug(AliLog::kError, Form("UNEXPECTED: Could not get track %d.", iTrack));
+      continue;
+    }
 
     Int_t label = TMath::Abs(esdTrack->GetLabel());
     TParticle* particle = stack->Particle(label);
@@ -310,42 +405,26 @@ void AlidNdEtaSystematicsSelector::FillSecondaries(TObjArray* listOfTracks)
       continue;
     }
 
-    Int_t nPrim  = stack->GetNprimary();
-    if (label < nPrim)
-      nPrimaries->Fill(particle->Pt());
+   if (label < stack->GetNprimary())
+      allTracksPrimaries++;
     else
-      nSecondaries->Fill(particle->Pt());
+      allTracksSecondaries++;
+
+    if (!fEsdTrackCuts->AcceptTrack(esdTrack))
+      continue;
+
+    if (label < stack->GetNprimary())
+      acceptedTracksPrimaries++;
+    else
+      acceptedTracksSecondaries++;
   }
 
-  for (Int_t i=1; i<=nPrimaries->GetNbinsX(); ++i)
-  {
-    Int_t primaries = (Int_t) nPrimaries->GetBinContent(i);
-    Int_t secondaries = (Int_t) nSecondaries->GetBinContent(i);
+  fSecondaries->Fill(5, allTracksPrimaries);
+  fSecondaries->Fill(6, allTracksSecondaries);
+  fSecondaries->Fill(7, acceptedTracksPrimaries);
+  fSecondaries->Fill(8, acceptedTracksSecondaries);
 
-    if (primaries + secondaries > 0)
-    {
-      AliDebug(AliLog::kDebug, Form("The ratio between primaries and secondaries is %d:%d = %f", primaries, secondaries, ((secondaries > 0) ? (Double_t) primaries / secondaries : -1)));
-
-      for (Double_t factor = 0.5; factor < 2.01; factor += 0.1)
-      {
-        Double_t nTracks = (Double_t) primaries + (Double_t) secondaries * factor;
-        fSecondaries->Fill(nTracks, factor, nPrimaries->GetBinCenter(i));
-        //if (secondaries > 0) printf("We fill: %f %f %f\n", nTracks, factor, nPrimaries->GetBinCenter(i));
-      }
-    }
-  }
-
-  fOverallPrimaries += (Int_t) nPrimaries->Integral();
-  fOverallSecondaries += (Int_t) nSecondaries->Integral();
-
-  delete nPrimaries;
-  nPrimaries = 0;
-
-  delete nSecondaries;
-  nSecondaries = 0;
-
-  delete iter;
-  iter = 0;
+  //printf("P = %d, S = %d, P_pt = %d, S_pt = %d, T_P = %d, T_S = %d, T_P_acc = %d, T_S_acc = %d\n", particlesPrimaries, particlesSecondaries, particlesPrimariesPtCut, particlesSecondariesPtCut, allTracksPrimaries, allTracksSecondaries, acceptedTracksPrimaries, acceptedTracksSecondaries);
 }
 
 void AlidNdEtaSystematicsSelector::FillSigmaVertex()
@@ -421,7 +500,7 @@ void AlidNdEtaSystematicsSelector::Terminate()
 
   AliSelector::Terminate();
 
-  fSecondaries = dynamic_cast<TH3F*> (fOutput->FindObject("fSecondaries"));
+  fSecondaries = dynamic_cast<TH2F*> (fOutput->FindObject("fSecondaries"));
   for (Int_t i=0; i<4; ++i)
     fdNdEtaCorrection[i] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
   fSigmaVertex = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertex"));
@@ -441,10 +520,7 @@ void AlidNdEtaSystematicsSelector::Terminate()
     fEsdTrackCuts->SaveHistograms("esd_track_cuts");
 
   if (fSecondaries)
-  {
     fSecondaries->Write();
-    printf("We had %d primaries and %d secondaries.\n", (Int_t) fOverallPrimaries, (Int_t) fOverallSecondaries);
-  }
 
   if (fSigmaVertex)
     fSigmaVertex->Write();
@@ -459,7 +535,7 @@ void AlidNdEtaSystematicsSelector::Terminate()
   if (fSecondaries)
   {
     new TCanvas;
-    fSecondaries->Draw();
+    fSecondaries->Draw("COLZ");
   }
 
   if (fSigmaVertex)
