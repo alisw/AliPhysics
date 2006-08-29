@@ -24,7 +24,7 @@
 ClassImp(AliPHOSEmcCalibData)
 
 //________________________________________________________________
-AliPHOSEmcCalibData::AliPHOSEmcCalibData()
+  AliPHOSEmcCalibData::AliPHOSEmcCalibData(): TNamed()
 {
   // Default constructor
   Reset();
@@ -48,12 +48,12 @@ AliPHOSEmcCalibData::AliPHOSEmcCalibData(const AliPHOSEmcCalibData& calibda) :
   // copy constructor
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
-  Reset();
+
   for(Int_t module=0; module<5; module++) {
     for(Int_t column=0; column<56; column++) {
       for(Int_t row=0; row<64; row++) {
-	fADCchannelEmc[module][column][row] = calibda.GetADCchannelEmc(module,column,row);
-	fADCpedestalEmc[module][column][row] = calibda.GetADCpedestalEmc(module,column,row);
+	fADCchannelEmc[module][column][row] = calibda.fADCchannelEmc[module][column][row];
+	fADCpedestalEmc[module][column][row] = calibda.fADCpedestalEmc[module][column][row];
       }
     }
   }
@@ -63,17 +63,22 @@ AliPHOSEmcCalibData::AliPHOSEmcCalibData(const AliPHOSEmcCalibData& calibda) :
 AliPHOSEmcCalibData &AliPHOSEmcCalibData::operator =(const AliPHOSEmcCalibData& calibda)
 {
   // assignment operator
-  SetName(calibda.GetName());
-  SetTitle(calibda.GetName());
-  Reset();
-  for(Int_t module=0; module<5; module++) {
-    for(Int_t column=0; column<56; column++) {
-      for(Int_t row=0; row<64; row++) {
-	fADCchannelEmc[module][column][row] = calibda.GetADCchannelEmc(module,column,row);
-	fADCpedestalEmc[module][column][row] = calibda.GetADCpedestalEmc(module,column,row);
+
+  if(this != &calibda) { 
+
+    SetName(calibda.GetName());
+    SetTitle(calibda.GetName());
+
+    for(Int_t module=0; module<5; module++) {
+      for(Int_t column=0; column<56; column++) {
+	for(Int_t row=0; row<64; row++) {
+	  fADCchannelEmc[module][column][row] = calibda.fADCchannelEmc[module][column][row];
+	  fADCpedestalEmc[module][column][row] = calibda.fADCpedestalEmc[module][column][row];
+	}
       }
     }
   }
+
   return *this;
 }
 
