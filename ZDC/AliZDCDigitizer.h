@@ -47,6 +47,10 @@ public:
   AliZDCCalibData *GetCalibData() const; 
 
 private:
+
+  AliZDCDigitizer(const AliZDCDigitizer&);
+  AliZDCDigitizer& operator=(const AliZDCDigitizer&);
+
   void    Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
                         Int_t &freeSpecN, Int_t &freeSpecP) const;
   void    SpectatorSignal(Int_t SpecType, Int_t numEvents, 

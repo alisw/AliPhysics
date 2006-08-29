@@ -12,9 +12,10 @@
 class AliZDCHit : public AliHit {
 
 public:
-  AliZDCHit() {}
+  AliZDCHit();
   AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-  AliZDCHit(AliZDCHit* oldhit) {*this=*oldhit;}
+  //AliZDCHit(const AliZDCHit* oldhit) {*this=*oldhit;}
+  AliZDCHit(const AliZDCHit &oldhit);
   virtual ~AliZDCHit() {}
 
   // Getters 
@@ -36,17 +37,17 @@ public:
   virtual void SetYImpact(Float_t value)  {fYImpact=value;}
 
   // Operators
-  Int_t operator == (AliZDCHit &quad) {
+  Int_t operator == (AliZDCHit &quad){
      Int_t i;
      if(fTrack!=quad.GetTrack()) return 0;
      for(i=0; i<2; i++) if(fVolume[i]!=quad.GetVolume(i)) return 0;
      return 1;
   }
   
-  virtual AliZDCHit& operator + (AliZDCHit &quad) {
-     fLightPMQ+=quad.GetLightPMQ();
-     fLightPMC+=quad.GetLightPMC();
-     fEnergy+=quad.GetEnergy();
+  virtual AliZDCHit operator + (AliZDCHit &quad){
+     fLightPMQ += quad.GetLightPMQ();
+     fLightPMC += quad.GetLightPMC();
+     fEnergy += quad.GetEnergy();
      return *this;
   }
 

@@ -38,64 +38,34 @@ ClassImp(AliZDCReconstructor)
 
 
 //_____________________________________________________________________________
-AliZDCReconstructor:: AliZDCReconstructor()
+AliZDCReconstructor:: AliZDCReconstructor() :
+
+  fZNCen (new TF1("fZNCen", 
+	"(-2.287920+sqrt(2.287920*2.287920-4*(-0.007629)*(11.921710-x)))/(2*(-0.007629))",0.,164.)),
+  fZNPer (new TF1("fZNPer",
+      "(-37.812280-sqrt(37.812280*37.812280-4*(-0.190932)*(-1709.249672-x)))/(2*(-0.190932))",0.,164.)),
+  fZPCen (new TF1("fZPCen",
+       "(-1.321353+sqrt(1.321353*1.321353-4*(-0.007283)*(3.550697-x)))/(2*(-0.007283))",0.,60.)),
+  fZPPer (new TF1("fZPPer",
+      "(-42.643308-sqrt(42.643308*42.643308-4*(-0.310786)*(-1402.945615-x)))/(2*(-0.310786))",0.,60.)),
+  fZDCCen (new TF1("fZDCCen",
+      "(-1.934991+sqrt(1.934991*1.934991-4*(-0.004080)*(15.111124-x)))/(2*(-0.004080))",0.,225.)),
+  fZDCPer (new TF1("fZDCPer",
+      "(-34.380639-sqrt(34.380639*34.380639-4*(-0.104251)*(-2612.189017-x)))/(2*(-0.104251))",0.,225.)),
+  fbCen (new TF1("fbCen","-0.056923+0.079703*x-0.0004301*x*x+0.000001366*x*x*x",0.,220.)),
+  fbPer (new TF1("fbPer","17.943998-0.046846*x+0.000074*x*x",0.,220.)),
+  fZEMn (new TF1("fZEMn","126.2-0.05399*x+0.000005679*x*x",0.,4000.)),
+  fZEMp (new TF1("fZEMp","82.49-0.03611*x+0.00000385*x*x",0.,4000.)),
+  fZEMsp (new TF1("fZEMsp","208.7-0.09006*x+0.000009526*x*x",0.,4000.)),
+  fZEMb (new TF1("fZEMb",
+	"16.06-0.01633*x+1.44e-5*x*x-6.778e-9*x*x*x+1.438e-12*x*x*x*x-1.112e-16*x*x*x*x*x",0.,4000.)),
+  fCalibData(GetCalibData())
+
 {
   // **** Default constructor
-  
-  //  ---      Number of generated spectator nucleons and impact parameter
-  // --------------------------------------------------------------------------------------------------
-  // [1] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
-  // Fit results for neutrons (Nspectator n true vs. EZN)
-  fZNCen = new TF1("fZNCen",
-      "(-2.287920+sqrt(2.287920*2.287920-4*(-0.007629)*(11.921710-x)))/(2*(-0.007629))",0.,164.);
-  fZNPer = new TF1("fZNPer",
-      "(-37.812280-sqrt(37.812280*37.812280-4*(-0.190932)*(-1709.249672-x)))/(2*(-0.190932))",0.,164.);
-  // Fit results for protons (Nspectator p true vs. EZP)
-  fZPCen = new TF1("fZPCen",
-       "(-1.321353+sqrt(1.321353*1.321353-4*(-0.007283)*(3.550697-x)))/(2*(-0.007283))",0.,60.);
-  fZPPer = new TF1("fZPPer",
-      "(-42.643308-sqrt(42.643308*42.643308-4*(-0.310786)*(-1402.945615-x)))/(2*(-0.310786))",0.,60.);
-  // Fit results for total number of spectators (Nspectators true vs. EZDC)
-  fZDCCen = new TF1("fZDCCen",
-      "(-1.934991+sqrt(1.934991*1.934991-4*(-0.004080)*(15.111124-x)))/(2*(-0.004080))",0.,225.);
-  fZDCPer = new TF1("fZDCPer",
-      "(-34.380639-sqrt(34.380639*34.380639-4*(-0.104251)*(-2612.189017-x)))/(2*(-0.104251))",0.,225.);
-  // --------------------------------------------------------------------------------------------------
-  // Fit results for b (b vs. EZDC)
-  // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
-  fbCen = new TF1("fbCen","-0.056923+0.079703*x-0.0004301*x*x+0.000001366*x*x*x",0.,220.);
-  fbPer = new TF1("fbPer","17.943998-0.046846*x+0.000074*x*x",0.,220.);
-  // --------------------------------------------------------------------------------------------------
-  // Evaluating Nspectators and b from ZEM energy
-  // [2] ### Results from a new production  -> 0<b<18 fm (Apr 2002)
-  fZEMn  = new TF1("fZEMn","126.2-0.05399*x+0.000005679*x*x",0.,4000.);
-  fZEMp  = new TF1("fZEMp","82.49-0.03611*x+0.00000385*x*x",0.,4000.);
-  fZEMsp = new TF1("fZEMsp","208.7-0.09006*x+0.000009526*x*x",0.,4000.);
-  fZEMb  = new TF1("fZEMb","16.06-0.01633*x+1.44e-5*x*x-6.778e-9*x*x*x+1.438e-12*x*x*x*x-1.112e-16*x*x*x*x*x",0.,4000.);
-  
-  // Get calibration data
-  fCalibData = GetCalibData(); 
+
 }
 
-//_____________________________________________________________________________
-AliZDCReconstructor::AliZDCReconstructor(const AliZDCReconstructor& 
-                                         reconstructor):
-  AliReconstructor(reconstructor)
-{
-// copy constructor
-
-  Fatal("AliZDCReconstructor", "copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliZDCReconstructor& AliZDCReconstructor::operator = 
-  (const AliZDCReconstructor& /*reconstructor*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
 
 //_____________________________________________________________________________
 AliZDCReconstructor::~AliZDCReconstructor()
@@ -370,7 +340,7 @@ void AliZDCReconstructor::FillESD(AliRunLoader* runLoader,
 //_____________________________________________________________________________
 AliCDBStorage* AliZDCReconstructor::SetStorage(const char *uri) 
 {
-  //printf("\n\t AliZDCReconstructor::SetStorage \n");
+  // Setting the storage
 
   Bool_t deleteManager = kFALSE;
   

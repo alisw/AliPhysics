@@ -76,6 +76,23 @@ AliZDCDigitizer::~AliZDCDigitizer()
 
 
 //____________________________________________________________________________
+AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
+  AliDigitizer()
+{
+  // Copy constructor
+
+  for(Int_t i=0; i<6; i++){
+     for(Int_t j=0; j<5; j++){
+        fPMGain[i][j]   = digitizer.fPMGain[i][j];           
+     }
+  }
+  for(Int_t i=0; i<2; i++) fADCRes[i] = digitizer.fADCRes[i];
+  fIsCalibration = digitizer.fIsCalibration;
+  fCalibData = digitizer.fCalibData;
+
+}
+
+//____________________________________________________________________________
 Bool_t AliZDCDigitizer::Init()
 {
   // Initialize the digitizer

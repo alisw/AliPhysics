@@ -18,9 +18,8 @@ class AliRawReader;
 
 class AliZDCRawStream: public TObject {
   public :
-    AliZDCRawStream(AliRawReader* rawReader);
+    AliZDCRawStream(AliRawReader* rawReader); 
     virtual ~AliZDCRawStream();
-
     virtual Bool_t   Next();
 
     Int_t            GetSector(Int_t i) const {return fSector[i];};
@@ -34,13 +33,13 @@ class AliZDCRawStream: public TObject {
     AliZDCRawStream(const AliZDCRawStream& stream);
     AliZDCRawStream& operator = (const AliZDCRawStream& stream);
 
-    AliRawReader*    fRawReader;    // object for reading the raw data
+    AliRawReader*    fRawReader;     // object for reading the raw data
 
-    UInt_t           fRawADC;       // raw ADC
-    Int_t            fSector[2];    // index of current sector
-    Int_t            fADCModule;    // ADC module;
-    Int_t            fADCValue;     // ADC value;
-    Int_t            fADCGain;      // ADC gain (0=high range; 1=low range)
+    UInt_t           fRawADC;        // raw ADC
+    Int_t            fSector[2];     // index of current sector
+    Int_t            fADCModule;     // ADC module;
+    Int_t            fADCValue;      // ADC value;
+    Int_t            fADCGain;       // ADC gain (0=high range; 1=low range)
     Bool_t           fIsADCDataWord; //True when data word
 
     ClassDef(AliZDCRawStream, 2)    // class for reading ZDC raw digits

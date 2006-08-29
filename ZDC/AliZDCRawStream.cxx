@@ -28,6 +28,7 @@
 
 #include "AliZDCRawStream.h"
 #include "AliRawReader.h"
+#include "AliLog.h"
 
 ClassImp(AliZDCRawStream)
 
@@ -35,13 +36,13 @@ ClassImp(AliZDCRawStream)
 //_____________________________________________________________________________
 AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fRawReader(rawReader),
-  fADCValue(-1)
+  fRawADC(0),	 
+  fADCModule(-1),
+  fADCValue(-1),	 
+  fADCGain(0)
 {
   // Create an object to read ZDC raw digits
 
-  fSector[0] = 0;
-  fSector[1] = -1;
-  fADCModule = 0;
   fRawReader->Select("ZDC");
 }
 
@@ -97,9 +98,9 @@ Bool_t AliZDCRawStream::Next()
   } 
   //ADC Data Words
   else{
-    //printf("This is an ADC Data Word -> channel %d range %d\n",(fRawADC & 0x1e0000) >> 17, (fRawADC & 0x10000) >> 16);
+    /*printf("This is an ADC Data Word -> channel %d range %d\n",(fRawADC & 0x1e0000) >> 17, (fRawADC & 0x10000) >> 16);
     if(fRawADC & 0x1000) printf("ZDCRawStream -> ADC overflow\n");
-    if(fRawADC & 0x2000) printf("ZDCRawStream -> ADC underflow\n");
+    if(fRawADC & 0x2000) printf("ZDCRawStream -> ADC underflow\n");*/
     //
     fADCGain = (fRawADC & 0x10000) >> 16;
     fADCValue = (fRawADC & 0xfff);   
@@ -130,7 +131,7 @@ Bool_t AliZDCRawStream::Next()
         fSector[1] = vADCChannel-8;
       } 
     }
-    else printf("\t AliZDCRawStreamer -> ERROR! No valid ADC module!\n");
+    else Warning("AliZDCRawStream","\t No valid ADC module!\n");
     
   }
   return kTRUE;

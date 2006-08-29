@@ -29,15 +29,15 @@ class AliZDCDigit : public TObject {
   // Operators
   // Two digits are equal if they refers to the detector
   // in the same sub-volume (same procedure as for hits)
-  Int_t operator == (AliZDCDigit &digit) {
+  Int_t operator == (AliZDCDigit &digit){
     Int_t i;
     for(i=0; i<2; i++) if(fSector[i]!=digit.GetSector(i)) return 0;
     return 1;
   }
   // Adds the amplitude of digits 
-  virtual AliZDCDigit& operator + (AliZDCDigit &digit) {
+  virtual AliZDCDigit operator + (AliZDCDigit &digit){
     for(Int_t i = 0; i < 2; i++) fADCValue[i] += digit.fADCValue[i];
-    return *this ;
+    return *this;
   }
 
   // Print method

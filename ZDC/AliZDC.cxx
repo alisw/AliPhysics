@@ -54,38 +54,41 @@ ClassImp(AliZDC)
 AliZDC *gAliZDC;
  
 //_____________________________________________________________________________
-AliZDC::AliZDC()
+AliZDC::AliZDC() :
+  AliDetector(),
+  fNoShower  (0),
+  fCalibData (0)
+
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
   //
   
-  fIshunt     = 1;
-  fNoShower   = 0;
-
-  fHits       = 0;
-  fNhits      = 0;
-
-  fDigits     = 0;
-  fNdigits    = 0;
+  fIshunt = 1;
+  fNhits  = 0;
+  fHits = 0;
+  fDigits = 0;
+  fNdigits = 0;
   
-  fCalibData  = 0;
-
 }
  
 //_____________________________________________________________________________
-AliZDC::AliZDC(const char *name, const char *title)
-  : AliDetector(name,title)
+AliZDC::AliZDC(const char *name, const char *title) : 
+  AliDetector(name,title),
+  fNoShower  (0),
+  fCalibData (0)
+		 
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
   //
-
-  fIshunt   = 1;
-  fNoShower = 0;
-
-  // Allocate the hits array  
-  fHits   = new TClonesArray("AliZDCHit",1000);
+    
+  fIshunt = 1;
+  fNhits  = 0;
+  fDigits = 0;
+  fNdigits = 0;
+ 
+  fHits = new TClonesArray("AliZDCHit",1000);
   gAlice->GetMCApp()->AddHitList(fHits);
   
   char sensname[5],senstitle[25];
@@ -93,14 +96,10 @@ AliZDC::AliZDC(const char *name, const char *title)
   sprintf(senstitle,"ZDC dummy");
   SetName(sensname); SetTitle(senstitle);
 
-  fDigits     = 0;
-  fNdigits    = 0;
-  
-  fCalibData  = 0;
-
-  gAliZDC=this;
+  gAliZDC = this;
 
 }
+
 //____________________________________________________________________________ 
 AliZDC::~AliZDC()
 {
@@ -108,12 +107,34 @@ AliZDC::~AliZDC()
   // ZDC destructor
   //
 
-  fIshunt   = 0;
-  gAliZDC=0;
+  fIshunt = 0;
+  gAliZDC = 0;
 
   delete fCalibData;
 
 }
+
+//_____________________________________________________________________________
+AliZDC::AliZDC(const AliZDC& ZDC) :
+  AliDetector("ZDC","ZDC")
+{
+  // copy constructor
+    fNoShower = ZDC.fNoShower;
+    fCalibData = ZDC.fCalibData;
+    fZDCCalibFName = ZDC.fZDCCalibFName;
+}
+
+//_____________________________________________________________________________
+AliZDC& AliZDC::operator=(const AliZDC& ZDC)
+{
+  // assignement operator
+  if(this!=&ZDC){
+    fNoShower = ZDC.fNoShower;
+    fCalibData = ZDC.fCalibData;
+    fZDCCalibFName = ZDC.fZDCCalibFName;
+  } return *this;
+}
+
 //_____________________________________________________________________________
 void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 {
@@ -158,15 +179,31 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
      curprimquad = (AliZDCHit*) lhits[j];
      if(*curprimquad == *newquad){
         *curprimquad = *curprimquad+*newquad;
+        // CH. debug
+        /*if(newquad->GetEnergy() != 0. || newquad->GetLightPMC() != 0. || 
+	   newquad->GetLightPMQ() != 0.){
+	  printf("\n\t --- Equal hits found\n");
+	  curprimquad->Print("");
+	  newquad->Print("");
+          printf("\t --- Det. %d, Quad. %d: X = %f, E = %f, LightPMC = %f, LightPMQ = %f\n",
+          curprimquad->GetVolume(0),curprimquad->GetVolume(1),curprimquad->GetXImpact(),
+          curprimquad->GetEnergy(), curprimquad->GetLightPMC(), curprimquad->GetLightPMQ());
+	}*/
+	//
 	delete newquad;
 	return;
      } 
   }
 
     //Otherwise create a new hit
-    new(lhits[fNhits]) AliZDCHit(newquad);
+    new(lhits[fNhits]) AliZDCHit(*newquad);
     fNhits++;
-    
+    // CH. debug
+    /*printf("\n\t New ZDC hit added! fNhits = %d\n", fNhits);
+    printf("\t Det. %d, Quad.t %d: X = %f, E = %f, LightPMC = %f, LightPMQ = %f\n",
+    newquad->GetVolume(0),newquad->GetVolume(1),newquad->GetXImpact(),
+    newquad->GetEnergy(), newquad->GetLightPMC(), newquad->GetLightPMQ());
+    */
     delete newquad;
 }
 

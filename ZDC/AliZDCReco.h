@@ -12,12 +12,12 @@
 class AliZDCReco : public TObject {
 
 public:
-  AliZDCReco() {}
+  AliZDCReco();
   AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezdc1, Float_t ezem, 
   	     Float_t ezn2, Float_t ezp2, Float_t ezdc2, Int_t detspnLeft, 
              Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight, 
 	     Int_t trspn, Int_t trspp, Int_t trsp, Int_t part, Float_t b);
-  AliZDCReco(AliZDCReco* oldreco) {*this=*oldreco;}
+  AliZDCReco(const AliZDCReco &oldreco);
   virtual ~AliZDCReco() {}
 
   // Getters 

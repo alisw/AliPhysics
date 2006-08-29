@@ -24,27 +24,27 @@ public:
   AliZDCReconstructor();
   virtual ~AliZDCReconstructor();
 
-  virtual void   Reconstruct(AliRunLoader* runLoader) const;
-  virtual void   Reconstruct(AliRunLoader* runLoader,
-  		  AliRawReader* rawReader) const;
-  virtual void   Reconstruct(TTree* digitsTree, TTree* clustersTree) const 
-  		  {AliReconstructor::Reconstruct(digitsTree,clustersTree);}
-  virtual void   Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const 
-  		  {AliReconstructor::Reconstruct(rawReader,clustersTree);}
-  virtual void   FillESD(AliRunLoader* runLoader, AliESD* esd) const;
-  virtual void   FillESD(TTree* digitsTree, TTree* clustersTree, AliESD* esd) const 
-  		  {AliReconstructor::FillESD(digitsTree,clustersTree,esd);}
-  virtual void   FillESD(AliRawReader* rawReader, TTree* clustersTree, AliESD* esd) const 
-  		  {AliReconstructor::FillESD(rawReader,clustersTree,esd);}
-  virtual void   FillESD(AliRunLoader* runLoader, AliRawReader* rawReader, AliESD* esd) const 
+  virtual void Reconstruct(AliRunLoader* runLoader) const;
+  virtual void Reconstruct(AliRunLoader* runLoader,
+  	        AliRawReader* rawReader) const;
+  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const 
+  	        {AliReconstructor::Reconstruct(digitsTree,clustersTree);}
+  virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const 
+  	        {AliReconstructor::Reconstruct(rawReader,clustersTree);}
+  virtual void FillESD(AliRunLoader* runLoader, AliESD* esd) const;
+  virtual void FillESD(TTree* digitsTree, TTree* clustersTree, AliESD* esd) const 
+  	        {AliReconstructor::FillESD(digitsTree,clustersTree,esd);}
+  virtual void FillESD(AliRawReader* rawReader, TTree* clustersTree, AliESD* esd) const 
+  	        {AliReconstructor::FillESD(rawReader,clustersTree,esd);}
+  virtual void FillESD(AliRunLoader* runLoader, AliRawReader* rawReader, AliESD* esd) const 
   		  {AliReconstructor::FillESD(runLoader,rawReader,esd);}
   
   AliCDBStorage   *SetStorage(const char* uri);
   AliZDCCalibData *GetCalibData() const; 
 
 private:
-  AliZDCReconstructor(const AliZDCReconstructor& reconstructor);
-  AliZDCReconstructor& operator = (const AliZDCReconstructor& reconstructor);
+  AliZDCReconstructor(const AliZDCReconstructor&);
+  AliZDCReconstructor& operator =(const AliZDCReconstructor&);
 
   void   ReconstructEvent(AliLoader* loader, Float_t zn1corr, Float_t zp1corr, Float_t zemcorr,
   		Float_t zn2corr, Float_t zp2corr) const;

@@ -22,6 +22,8 @@ public:
   AliZDC();
   AliZDC(const char *name, const char *title);
   virtual       ~AliZDC();
+  AliZDC(const AliZDC&);
+  //
   virtual void  AddHit(Int_t track, Int_t *vol, Float_t *hits);
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
@@ -54,6 +56,10 @@ public:
   // Trigger
   virtual AliTriggerDetector* CreateTriggerDetector() const
   	{return new AliZDCTrigger();}
+
+private:
+
+  AliZDC& operator = (const AliZDC&);
 
 protected:
 

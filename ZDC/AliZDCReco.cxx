@@ -27,32 +27,90 @@
 
 ClassImp(AliZDCReco)
   
+
+//_____________________________________________________________________________
+AliZDCReco::AliZDCReco() :
+	
+  TObject(),
+  fZN1energy(0),
+  fZP1energy(0),
+  fZDC1energy(0),
+  fZN2energy(0),
+  fZP2energy(0),
+  fZDC2energy(0),
+  fZEMenergy(0),
+  fNDetSpecNLeft(0),
+  fNDetSpecPLeft(0),
+  fNDetSpecNRight(0),
+  fNDetSpecPRight(0),
+  fNTrueSpecN(0),
+  fNTrueSpecP(0),
+  fNTrueSpec(0),
+  fNPart(0),
+  fImpPar(0)
+
+{ 
+  //
+  // Default constructor
+  //
+}
+  
+
 //_____________________________________________________________________________
 AliZDCReco::AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezdc1, Float_t ezem,
 	Float_t ezn2, Float_t ezp2, Float_t ezdc2,
      	Int_t detspnLeft, Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight,
-	Int_t trspn, Int_t trspp, Int_t trsp, Int_t part, Float_t b)
+	Int_t trspn, Int_t trspp, Int_t trsp, Int_t part,
+	Float_t b) :
+	
+  TObject(),
+  fZN1energy(ezn1),
+  fZP1energy(ezp1),
+  fZDC1energy(ezdc1),
+  fZN2energy(ezn2),
+  fZP2energy(ezp2),
+  fZDC2energy(ezdc2),
+  fZEMenergy(ezem),
+  fNDetSpecNLeft(detspnLeft),
+  fNDetSpecPLeft(detsppLeft),
+  fNDetSpecNRight(detspnRight),
+  fNDetSpecPRight(detsppRight),
+  fNTrueSpecN(trspn),
+  fNTrueSpecP(trspp),
+  fNTrueSpec(trsp),
+  fNPart(part),
+  fImpPar(b)
+
 { 
   //
-  // Standard constructor
+  // Constructor
   //
-  fZN1energy  = ezn1;
-  fZP1energy  = ezp1;
-  fZDC1energy = ezdc1;
-  fZN2energy  = ezn2;
-  fZP2energy  = ezp2;
-  fZDC2energy = ezdc2;
-  fZEMenergy = ezem;
-  fNDetSpecNLeft = detspnLeft;
-  fNDetSpecPLeft = detsppLeft;
-  fNDetSpecNRight = detspnRight;
-  fNDetSpecPRight = detsppRight;
-  fNTrueSpecN = trspn;
-  fNTrueSpecP = trspp;
-  fNTrueSpec = trsp;
-  fNPart     = part;
-  fImpPar    = b;
   
+}
+
+//______________________________________________________________________________
+AliZDCReco::AliZDCReco(const AliZDCReco &oldreco) :
+
+  TObject()
+{
+  // Copy constructor
+
+  fZN1energy = oldreco.GetZN1energy();
+  fZP1energy = oldreco.GetZP1energy();            
+  fZDC1energy = oldreco.GetZDC1energy();	  
+  fZN2energy = oldreco.GetZN2energy();	   
+  fZP2energy = oldreco.GetZP2energy(); 	   
+  fZDC2energy = oldreco.GetZDC2energy();	  
+  fZEMenergy = oldreco.GetZEMenergy();	   
+  fNDetSpecNLeft = oldreco.GetNDetSpecNLeft();	
+  fNDetSpecPLeft = oldreco.GetNDetSpecPLeft();	
+  fNDetSpecNRight = oldreco.GetNDetSpecNRight();	
+  fNDetSpecPRight = oldreco.GetNDetSpecPRight();	
+  fNTrueSpecN = oldreco.GetNTrueSpecN();	  
+  fNTrueSpecP = oldreco.GetNTrueSpecP();	  
+  fNTrueSpec = oldreco.GetNTrueSpec();	  
+  fNPart = oldreco.GetNPart();			 
+  fImpPar = oldreco.GetImpPar();			 
 }
 
 //______________________________________________________________________________

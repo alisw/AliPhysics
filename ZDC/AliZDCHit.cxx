@@ -26,28 +26,62 @@
 ClassImp(AliZDCHit)
   
 //_____________________________________________________________________________
-AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
-  AliHit(shunt, track)
+AliZDCHit::AliZDCHit() :
+//  AliHit(shunt, track),
+  fPrimKinEn(00),
+  fXImpact(0.),
+  fYImpact(0.),
+  fSFlag(0),
+  fLightPMQ(0.),
+  fLightPMC(0.),
+  fEnergy(0.) 
+
 {
   //
-  // Add a ZDC hit
+  // Default constructor
+  //
+}
+
+//_____________________________________________________________________________
+AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits) :
+  AliHit(shunt, track),
+  fPrimKinEn(hits[3]),
+  fXImpact(hits[4]),
+  fYImpact(hits[5]),
+  fSFlag(hits[6]),
+  fLightPMQ(hits[7]),
+  fLightPMC(hits[8]),
+  fEnergy(hits[9]) 
+
+{
+  //
+  // Standard constructor
   //
   Int_t i;
-  for(i=0; i<2; i++) {
-     fVolume[i] = vol[i];
-  }
+  for(i=0; i<2; i++) fVolume[i] = vol[i];
   fX 		= hits[0];
   fY 		= hits[1];
   fZ 		= hits[2];
-  fPrimKinEn 	= hits[3];
-  fXImpact 	= hits[4];
-  fYImpact 	= hits[5];
-  fSFlag 	= hits[6];
-  fLightPMQ 	= hits[7];
-  fLightPMC 	= hits[8];
-  fEnergy 	= hits[9]; 
-  
 }
+  
+//_____________________________________________________________________________
+AliZDCHit::AliZDCHit(const AliZDCHit &oldhit) :
+  AliHit(0,oldhit.GetTrack())
+{
+  // Copy constructor
+  fX = oldhit.X();
+  fY = oldhit.Y();
+  fZ = oldhit.Z();
+  for(Int_t i=0; i<2; i++) fVolume[i] = oldhit.GetVolume(i);
+  fPrimKinEn = oldhit.GetPrimKinEn();
+  fXImpact = oldhit.GetXImpact();  
+  fYImpact = oldhit.GetYImpact();  
+  fSFlag = oldhit.GetSFlag();    
+  fLightPMQ = oldhit.GetLightPMQ(); 
+  fLightPMC = oldhit.GetLightPMC(); 
+  fEnergy = oldhit.GetEnergy();   
+}
+  
   
 //_____________________________________________________________________________
 void AliZDCHit::Print(Option_t *) const 
