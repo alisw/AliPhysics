@@ -752,6 +752,9 @@ void DrawdNdEtaDifferences()
 {
   TH1* hists[5];
 
+  TLegend* legend = new TLegend(0.6, 0.73, 0.98, 0.98);
+  legend->SetFillColor(0);
+
   TCanvas* canvas = new TCanvas("DrawdNdEtaDifferences", "DrawdNdEtaDifferences", 1000, 500);
   canvas->Divide(2, 1);
 
@@ -760,30 +763,54 @@ void DrawdNdEtaDifferences()
   for (Int_t i=0; i<5; ++i)
   {
     TFile* file = 0;
+    TString title;
 
     switch(i)
     {
-      case 0 : file = TFile::Open("systematics_dndeta_reference.root"); break;
-      case 1 : file = TFile::Open("systematics_dndeta_KBoosted.root"); break;
-      case 2 : file = TFile::Open("systematics_dndeta_KReduced.root"); break;
-      case 3 : file = TFile::Open("systematics_dndeta_pBoosted.root"); break;
-      case 4 : file = TFile::Open("systematics_dndeta_pReduced.root"); break;
+      case 0 : file = TFile::Open("systematics_dndeta_reference.root"); title = "standard composition"; break;
+      case 1 : file = TFile::Open("systematics_dndeta_KBoosted.root"); title = "+ 50% kaons"; break;
+      case 2 : file = TFile::Open("systematics_dndeta_KReduced.root"); title = "- 50% kaons"; break;
+      case 3 : file = TFile::Open("systematics_dndeta_pBoosted.root"); title = "+ 50% protons"; break;
+      case 4 : file = TFile::Open("systematics_dndeta_pReduced.root"); title = "- 50% protons"; break;
       default: return;
     }
 
     hists[i] = (TH1*) file->Get("dndeta/dndeta_dNdEta_corrected_2");
+    hists[i]->SetTitle("a)");
 
     hists[i]->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
     hists[i]->SetLineColor(i+1);
+    hists[i]->SetMarkerColor(i+1);
+    hists[i]->GetXaxis()->SetLabelOffset(0.015);
+    Prepare1DPlot(hists[i], kFALSE);
     hists[i]->DrawCopy(((i > 0) ? "SAME" : ""));
+
+    legend->AddEntry(hists[i], title);
+    hists[i]->SetTitle(title);
   }
+  legend->Draw();
 
   canvas->cd(2);
+  gPad->SetLeftMargin(0.14);
+
+  TLegend* legend2 = new TLegend(0.73, 0.73, 0.98, 0.98);
+  legend2->SetFillColor(0);
 
   for (Int_t i=1; i<5; ++i)
   {
+    legend2->AddEntry(hists[i]);
+
     hists[i]->Divide(hists[0]);
+    hists[i]->SetTitle("b)");
     hists[i]->GetYaxis()->SetRangeUser(0.98, 1.02);
+    hists[i]->GetYaxis()->SetTitle("Ratio to standard composition");
+    hists[i]->GetYaxis()->SetTitleOffset(1.8);
     hists[i]->DrawCopy(((i > 1) ? "SAME" : ""));
+
   }
+
+  legend2->Draw();
+
+  canvas->SaveAs("particlecomposition_result.eps");
+  canvas->SaveAs("particlecomposition_result.gif");
 }

@@ -188,10 +188,6 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
 
   Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
 
-  fdNdEtaCorrection->IncreaseEventCount();
-  if (eventTriggered)
-    fdNdEtaCorrection->IncreaseTriggeredEventCount();
-
   // get the MC vertex
   AliGenEventHeader* genHeader = header->GenEventHeader();
 
