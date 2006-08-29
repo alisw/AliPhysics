@@ -26,7 +26,7 @@
 #include "AliGenerator.h"
 
 
-ClassImp(AliGenCocktailEntry);
+ClassImp(AliGenCocktailEntry)
 
 AliGenCocktailEntry::AliGenCocktailEntry():
     fGenerator(0),
