@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2006/08/15 10:50:00  jgrosseo
+effc++ corrections (alberto)
+
 Revision 1.1  2006/07/20 13:20:13  jgrosseo
 introducing status management: The processing per subdetector is divided into several steps,
 after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
@@ -109,9 +112,9 @@ const char* AliShuttleStatus::GetStatusName(Status status)
     case kDCSError: return "DCSError";
     case kPPStarted: return "PPStarted";
     case kPPError: return "PPError";
-    case kPPDone: return "PPDone";
     case kDone: return "Done";
     case kFailed: return "Failed";
+    case kStoreFailed: return "StoreFailed";
   }
 
   return 0;

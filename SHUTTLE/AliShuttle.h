@@ -93,6 +93,10 @@ private:
 //	Bool_t RetrieveHLTFile(const char* daqFileName, const char* localFileName;
 	TList* GetHLTFileSources(const char* detector, const char* id);
 
+	UInt_t WriteToCDB(const char* mainUri, const char* localUri,
+				const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
+				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+
   	AliShuttleStatus* ReadShuttleStatus();
   	Bool_t WriteShuttleStatus(AliShuttleStatus* status);
   	Bool_t ContinueProcessing();
@@ -126,7 +130,9 @@ private:
 	Bool_t fFESCalled[3];		//! FES call status
 	TList  fFESlist[3];		//! List of files retrieved from each FES
 
-  	AliCDBEntry* fStatusEntry; //! last CDB entry containing a AliShuttleStatus retrieved
+	AliCDBEntry* fStatusEntry; //! last CDB entry containing a AliShuttleStatus retrieved
+
+	Bool_t fGridError; // determines if at least one storage to the Grid OCDB failed for the current sub detector and the file was stored on the local disk
 
 	//TODO Test only, remove later !
 	static Bool_t fgkProcessDCS; // flag to enable DCS archive data processing

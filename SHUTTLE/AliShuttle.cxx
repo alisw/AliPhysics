@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.13  2006/08/15 10:50:00  jgrosseo
+effc++ corrections (alberto)
+
 Revision 1.12  2006/08/08 14:19:29  jgrosseo
 Update to shuttle classes (Alberto)
 
@@ -151,7 +154,8 @@ fPreprocessorMap(),
 fCurrentRun(-1),
 fCurrentStartTime(0), fCurrentEndTime(0),
 fCurrentDetector(""),
-fStatusEntry(0)
+fStatusEntry(0),
+fGridError(kFALSE)
 {
 	//
 	// config: AliShuttleConfig used
@@ -175,8 +179,8 @@ fPreprocessorMap(),
 fCurrentRun(-1),
 fCurrentStartTime(0), fCurrentEndTime(0),
 fCurrentDetector(""),
-fStatusEntry(0)
-
+fStatusEntry(0),
+fGridError(kFALSE)
 {
 // copy constructor (not implemented)
 
@@ -229,23 +233,49 @@ UInt_t AliShuttle::Store(const AliCDBPath& path, TObject* object,
   // Stores a CDB object in the storage for offline reconstruction. Objects that are not needed for
   // offline reconstruction, but should be stored anyway (e.g. for debugging) should NOT be stored
   // using this function. Use StoreReferenceData instead!
-  //
+  // It calls WriteToCDB function which perform actual storage
 
-  // The parameters are
-  //   1) the object's path.
-  //   2) the object to be stored
-  //   3) the metaData to be associated with the object
-  //   4) the validity start run number w.r.t. the current run,
+	return WriteToCDB(fgkMainCDB, fgkLocalCDB, path, object,
+				metaData, validityStart, validityInfinite);
+
+}
+
+//______________________________________________________________________________________________
+UInt_t AliShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object,
+		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
+{
+  // Stores a CDB object in the storage for reference data. This objects will not be available during
+  // offline reconstrunction. Use this function for reference data only!
+  // It calls WriteToCDB function which perform actual storage
+
+	return WriteToCDB(fgkMainRefStorage, fgkLocalRefStorage, path, object,
+				metaData, validityStart, validityInfinite);
+
+}
+
+//______________________________________________________________________________________________
+UInt_t AliShuttle::WriteToCDB(const char* mainUri, const char* localUri,
+			const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
+			Int_t validityStart, Bool_t validityInfinite)
+{
+  // write object into the CDB. Parameters are passed by Store and StoreReferenceData functions.
+  // The parameters are:
+  //   1) Uri of the main storage (Grid)
+  //   2) Uri of the backup storage (Local)
+  //   3) the object's path.
+  //   4) the object to be stored
+  //   5) the metaData to be associated with the object
+  //   6) the validity start run number w.r.t. the current run,
   //      if the data is valid only for this run leave the default 0
-  //   5) specifies if the calibration data is valid for infinity (this means until updated),
+  //   7) specifies if the calibration data is valid for infinity (this means until updated),
   //      typical for calibration runs, the default is kFALSE
   //
-  //
   // returns 0 if fail
-  // 	     1 if stored in main (Grid) CDB storage
-  // 	     2 if stored in backup (Local) CDB storage
+  // 	     1 if stored in main (Grid) storage
+  // 	     2 if stored in backup (Local) storage
 
-
+	const char* cdbType = (mainUri == fgkMainCDB) ? "CDB" : "Reference";
+	
 	Int_t firstRun = GetCurrentRun() - validityStart;
   	if(firstRun < 0) {
 		AliError("First valid run happens to be less than 0! Setting it to 0...");
@@ -263,89 +293,26 @@ UInt_t AliShuttle::Store(const AliCDBPath& path, TObject* object,
 
 	UInt_t result = 0;
 
-	if (!(AliCDBManager::Instance()->GetStorage(fgkMainCDB))) {
-		Log(fCurrentDetector, "Cannot activate main CDB storage!");
+	if (!(AliCDBManager::Instance()->GetStorage(mainUri))) {
+		Log(fCurrentDetector, Form("Cannot activate main %s storage!", cdbType));
 	} else {
-		result = (UInt_t) AliCDBManager::Instance()->GetStorage(fgkMainCDB)
+		result = (UInt_t) AliCDBManager::Instance()->GetStorage(mainUri)
 					->Put(object, id, metaData);
 	}
 
 	if(!result) {
 
 		Log(fCurrentDetector,
-			"Error while storing object in main storage: it will go to local storage!");
+			Form("Problem with main %s storage. Object will go to local storage!", cdbType));
 
-		result = AliCDBManager::Instance()->GetStorage(fgkLocalCDB)
+		result = AliCDBManager::Instance()->GetStorage(localUri)
 					->Put(object, id, metaData);
 
 		if(result) {
 			result = 2;
+      			fGridError = kTRUE;
 		}else{
 			Log(fCurrentDetector, "Can't store data!");
-		}
-	}
-	return result;
-
-}
-
-//______________________________________________________________________________________________
-UInt_t AliShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object,
-		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
-{
-  // Stores a CDB object in the storage for reference data. This objects will not be available during
-  // offline reconstrunction. Use this function for reference data only!
-  //
-
-  // The parameters are
-  //   1) the object's path.
-  //   2) the object to be stored
-  //   3) the metaData to be associated with the object
-  //   4) the validity start run number w.r.t. the current run,
-  //      if the data is valid only for this run leave the default 0
-  //   5) specifies if the calibration data is valid for infinity (this means until updated),
-  //      typical for calibration runs, the default is kFALSE
-  //
-  //
-  // returns 0 if fail
-  // 	     1 if stored in main (Grid) reference storage
-  // 	     2 if stored in backup (Local) reference storage
-
- 	Int_t firstRun = GetCurrentRun() - validityStart;
-  	if(firstRun < 0) {
-		AliError("First valid run happens to be less than 0! Setting it to 0...");
-		firstRun=0;
-  	}
-
-	Int_t lastRun = -1;
-	if(validityInfinite) {
-		lastRun = AliCDBRunRange::Infinity();
-	} else {
-		lastRun = GetCurrentRun();
-	}
-
- 	AliCDBId id(path, firstRun, lastRun);
-
-	UInt_t result = 0;
-
-	if (!(AliCDBManager::Instance()->GetStorage(fgkMainRefStorage))) {
-		Log(fCurrentDetector, "Cannot activate main reference storage!");
-	} else {
-		result = (UInt_t) AliCDBManager::Instance()->GetStorage(fgkMainRefStorage)
-					->Put(object, id, metaData);
-	}
-
-	if(!result) {
-
-		Log(fCurrentDetector,
-			"Error while storing object in main reference storage: it will go to local ref storage!");
-
-		result = AliCDBManager::Instance()->GetStorage(fgkLocalRefStorage)
-					->Put(object, id, metaData);
-
-		if(result) {
-			result = 2;
-		}else{
-			Log(fCurrentDetector, "Can't store reference data!");
 		}
 	}
 	return result;
@@ -465,6 +432,13 @@ Bool_t AliShuttle::ContinueProcessing()
     return kFALSE;
   }
 
+  // TODO what to do in case of storage error? currently it does not do anything
+  if (status->GetStatus() == AliShuttleStatus::kStoreFailed)
+  {
+    Log("SHUTTLE", Form("%s: Grid storage failed at least once for run %d", fCurrentDetector.Data(), fCurrentRun));
+    return kFALSE;
+  }
+
   // if we get here, there is a restart
 
   // abort conditions
@@ -496,7 +470,7 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime)
 	// Returns kFALSE in case of error occured and kTRUE otherwise
 	//
 
-	AliInfo(Form("\n\n ^*^*^*^*^*^* Processing run %d ^*^*^*^*^*^*", run));
+	AliInfo(Form("\n\n \t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: START ^*^*^*^*^*^*^*^*^*^*^*^* \n", run));
 
 	// Initialization
 	Bool_t hasError = kFALSE;
@@ -518,12 +492,14 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime)
 
 		if (ContinueProcessing() == kFALSE) continue;
 
+		AliInfo(Form("\n\n \t\t\t****** %s: START  ******", aDetector->GetName()));
+
 		if(!Process()) {
 			hasError = kTRUE;
 			detectorError=kTRUE;
 			continue;
 		}
-		AliInfo(Form("Process ended successfully for detector %s!",aDetector->GetName()));
+		AliInfo(Form("\n \t\t\t****** %s: FINISH ****** \n\n", aDetector->GetName()));
 
 		// Process successful: Update time_processed field in FES logbooks!
 		if(fFESCalled[kDAQ]) {
@@ -539,12 +515,14 @@ Bool_t AliShuttle::Process(Int_t run, UInt_t startTime, UInt_t endTime)
 		//	fFESlist[kHLT].Clear();
 		//}
 
-		UpdateShuttleStatus(AliShuttleStatus::kDone);
+		// UpdateShuttleStatus(AliShuttleStatus::kDone);
 	}
 
 	fCurrentRun = -1;
 	fCurrentStartTime = 0;
 	fCurrentEndTime = 0;
+
+	AliInfo(Form("\n\n \t\t\t^*^*^*^*^*^*^*^*^*^*^*^* run %d: FINISH ^*^*^*^*^*^*^*^*^*^*^*^* \n", run));
 
 	return hasError == kFALSE;
 }
@@ -579,8 +557,9 @@ Bool_t AliShuttle::Process()
 	TObjString* anAlias;
 	TMap aliasMap;
 
-	Bool_t hasError = kFALSE;
-	Bool_t result=kFALSE;
+	Bool_t aDCSError = kFALSE;
+	fGridError = kFALSE;
+	UInt_t aPPResult;
 
 	while ((anAlias = (TObjString*) iter.Next())) {
 		TObjArray valueSet;
@@ -588,39 +567,36 @@ Bool_t AliShuttle::Process()
 		// exclude DCS archive DB query
 		if(fgkProcessDCS){
 			AliInfo("Querying DCS archive DB data...");
-			result = GetValueSet(host, port, anAlias->String(), valueSet);
+			aDCSError = (GetValueSet(host, port, anAlias->String(), valueSet) == 0);
 		} else {
 			AliInfo(Form("Skipping DCS processing. Port = %d",port));
-			result = kTRUE;
+			aDCSError = kFALSE;
 		}
-		if(result) {
+		if(!aDCSError) {
 			aliasMap.Add(anAlias->Clone(), valueSet.Clone());
 		}else{
 			TString message = Form("Error while retrieving alias %s !",
 					anAlias->GetName());
 			Log(fCurrentDetector, message.Data());
-			hasError = kTRUE;
+			aDCSError = kTRUE;
 			break;
 		}
 	}
 
-	if (hasError)
+	if (aDCSError)
 	{
 		UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 		return kFALSE;
 	}
 
-  UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
+	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
 
-  AliPreprocessor* aPreprocessor =
+	AliPreprocessor* aPreprocessor =
 		dynamic_cast<AliPreprocessor*> (fPreprocessorMap.GetValue(fCurrentDetector));
 	if(aPreprocessor)
 	{
 		aPreprocessor->Initialize(fCurrentRun, fCurrentStartTime, fCurrentEndTime);
-
-		// TODO Think about what to do in case of "Grid storage error"
-		// (-> object put in local backup storage, return 2)
-		hasError = (aPreprocessor->Process(&aliasMap) == 0);
+		aPPResult = aPreprocessor->Process(&aliasMap);
 	}else{
     // TODO default behaviour?
 		AliInfo(Form("No Preprocessor for %s: storing TMap of DP arrays into CDB!", fCurrentDetector.Data()));
@@ -630,17 +606,20 @@ Bool_t AliShuttle::Process()
   		metaData.SetProperty("StartEndTime", &dcsValue);
   		metaData.SetComment("Automatically stored by Shuttle!");
 		AliCDBPath path(fCurrentDetector,"DCS","Data");
-		hasError = (Store(path, &aliasMap, &metaData) == 0);
+		aPPResult = Store(path, &aliasMap, &metaData);
 	}
 
-  if (hasError)
-    UpdateShuttleStatus(AliShuttleStatus::kPPError);
-  else
-    UpdateShuttleStatus(AliShuttleStatus::kPPDone);
+	if (aPPResult == 0) { // Preprocessor error
+		UpdateShuttleStatus(AliShuttleStatus::kPPError);
+	} else if (fGridError == kFALSE) { // process and Grid storage ok!
+    		UpdateShuttleStatus(AliShuttleStatus::kDone);
+        } else { // Grid storage error (process ok, but object put in local storage)
+     		UpdateShuttleStatus(AliShuttleStatus::kStoreFailed);
+	}
 
-  	aliasMap.Delete();
+	aliasMap.Delete();
 
-	return hasError == kFALSE;
+	return (aPPResult > 0);
 }
 
 //______________________________________________________________________________________________
@@ -1076,7 +1055,7 @@ void AliShuttle::Log(const char* detector, const char* message)
 		gSystem->FreeDirectory(dir);
 	}
 
-  	TString toLog = Form("%s: %s, run %d - %s", TTimeStamp(time(0)).AsString(),
+  	TString toLog = Form("%s: %s, run %d - %s", TTimeStamp(time(0)).AsString("s"),
 	detector, GetCurrentRun(), message);
   	AliInfo(toLog.Data());
 
