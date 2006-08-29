@@ -14,8 +14,10 @@
 #include "TObject.h"
 
 class TTree;
-class AliTRDdigitsManager;
+
 class AliRawReader;
+
+class AliTRDdigitsManager;
 
 class AliTRDrawData : public TObject {
 
@@ -25,7 +27,7 @@ class AliTRDrawData : public TObject {
   virtual ~AliTRDrawData();
 
   virtual Bool_t               Digits2Raw(TTree *digits);
-  virtual AliTRDdigitsManager* Raw2Digits(AliRawReader* rawReader);
+  virtual AliTRDdigitsManager* Raw2Digits(AliRawReader *rawReader);
 
  protected:
 

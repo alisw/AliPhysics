@@ -39,7 +39,8 @@
 ClassImp(AliTRDrawData)
 
 //_____________________________________________________________________________
-AliTRDrawData::AliTRDrawData():TObject()
+AliTRDrawData::AliTRDrawData()
+  :TObject()
 {
   //
   // Default constructor
@@ -90,7 +91,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
   unsigned char *bytePtr;
   unsigned char *headerPtr;
 
-  AliTRDdigitsManager* digitsManager = new AliTRDdigitsManager();
+  AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
 
   // Read in the digit arrays
   if (!digitsManager->ReadDigits(digitsTree)) {
@@ -98,27 +99,28 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     return kFALSE;
   }
 
-  AliTRDgeometry   *geo = new AliTRDgeometry();
-  AliTRDdataArrayI *digits;
+  AliTRDgeometry    *geo = new AliTRDgeometry();
+  AliTRDdataArrayI  *digits;
 
-  AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();
+  AliTRDCommonParam *commonParam = AliTRDCommonParam::Instance();
   if (!commonParam) {
     AliError("Could not get common parameters\n");
     return 0;
   }
   
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
+  AliTRDcalibDB     *calibration = AliTRDcalibDB::Instance();
   if (!calibration)
   {
     AliError("Could not get calibration object\n");
     return kFALSE;
   }
     
-  // the event header
+  // The event header
   AliRawDataHeader header;
 
   // Open the output files
   for (Int_t iDDL = 0; iDDL < kNumberOfDDLs; iDDL++) {
+
     char name[20];
     strcpy(name,AliDAQ::DdlFileName("TRD",iDDL));
 #ifndef __DECCXX
@@ -131,6 +133,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     bHPosition[iDDL] = outputFile[iDDL]->tellp();
     outputFile[iDDL]->write((char*)(&header),sizeof(header));
     ntotalbyte[iDDL] = 0;
+
   }
 
   // Loop through all detectors
@@ -154,6 +157,10 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     // Get the digits array
     digits = digitsManager->GetDigits(det);
     digits->Expand();
+    // This is to take care of switched off super modules
+    if (digits->GetNtime() == 0) {
+      continue;
+    }
 
     // Loop through the detector pixel
     for (Int_t col = 0; col < colMax; col++) {
@@ -235,11 +242,11 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     *bytePtr++ = (nbyte >> 16);
     *bytePtr++ = (npads & 0xff);
     *bytePtr++ = (npads >> 8);
-    outputFile[iDDL]->write((char*)headerPtr,kSubeventHeaderLength);
+    outputFile[iDDL]->write((char *) headerPtr,kSubeventHeaderLength);
 
     // Write the buffer to the file
     bytePtr = (unsigned char *) buffer;
-    outputFile[iDDL]->write((char*)bytePtr,nbyte);
+    outputFile[iDDL]->write((char *) bytePtr,nbyte);
 
     ntotalbyte[iDDL] += nbyte + kSubeventHeaderLength;
 
@@ -253,7 +260,7 @@ Bool_t AliTRDrawData::Digits2Raw(TTree *digitsTree)
     header.fSize = UInt_t(outputFile[iDDL]->tellp()) - bHPosition[iDDL];
     header.SetAttribute(0);  // valid data
     outputFile[iDDL]->seekp(bHPosition[iDDL]);
-    outputFile[iDDL]->write((char*)(&header),sizeof(header));
+    outputFile[iDDL]->write((char *) (&header),sizeof(header));
 
     outputFile[iDDL]->close();
     delete outputFile[iDDL];
@@ -278,10 +285,10 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
   // Read the raw data digits and put them into the returned digits manager
   //
 
-  AliTRDdataArrayI *digits    = 0;
-  AliTRDdataArrayI *track0    = 0;
-  AliTRDdataArrayI *track1    = 0;
-  AliTRDdataArrayI *track2    = 0; 
+  AliTRDdataArrayI *digits = 0;
+  AliTRDdataArrayI *track0 = 0;
+  AliTRDdataArrayI *track1 = 0;
+  AliTRDdataArrayI *track2 = 0; 
 
   AliTRDgeometry *geo = new AliTRDgeometry();
 
@@ -346,11 +353,12 @@ AliTRDdigitsManager* AliTRDrawData::Raw2Digits(AliRawReader* rawReader)
     digits->SetDataUnchecked(input.GetRow(),input.GetColumn(),
 			     input.GetTime(),input.GetSignal());
     track0->SetDataUnchecked(input.GetRow(),input.GetColumn(),
-                             input.GetTime(),               -1);
+                             input.GetTime(),                0);
     track1->SetDataUnchecked(input.GetRow(),input.GetColumn(),
-                             input.GetTime(),               -1);
+                             input.GetTime(),                0);
     track2->SetDataUnchecked(input.GetRow(),input.GetColumn(),
-                             input.GetTime(),               -1);
+                             input.GetTime(),                0);
+
   }
 
   if (digits) digits->Compress(1,0);
