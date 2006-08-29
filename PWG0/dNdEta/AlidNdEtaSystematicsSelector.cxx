@@ -187,13 +187,6 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
   Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
   Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
 
-  for (Int_t i=0; i<4; ++i)
-  {
-    fdNdEtaCorrection[i]->IncreaseEventCount();
-    if (eventTriggered)
-      fdNdEtaCorrection[i]->IncreaseTriggeredEventCount();
-  }
-
   // get the MC vertex
   AliGenEventHeader* genHeader = header->GenEventHeader();
 
