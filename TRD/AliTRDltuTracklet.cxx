@@ -45,6 +45,7 @@ AliTRDltuTracklet::AliTRDltuTracklet()
   //
   // AliTRDltuTracklet default constructor
   //
+
 }
 
 //_____________________________________________________________________________
@@ -72,7 +73,7 @@ AliTRDltuTracklet::AliTRDltuTracklet(Int_t det, Int_t row, Float_t rowz
 AliTRDltuTracklet::~AliTRDltuTracklet()
 {
   //
-  // destructor
+  // Destructor
   //
 
 }
@@ -88,10 +89,10 @@ Float_t AliTRDltuTracklet::GetPt(Float_t field) const
   // Consistent with AliTRDmcmTracklet::GetPt(...)
   //
 
-  Float_t infSlope = TMath::ATan(fY/fX)/TMath::Pi()*180.0;    
+  Float_t infSlope = TMath::ATan(fY/fX) / TMath::Pi()*180.0;    
   Float_t alpha    = fSlope - infSlope;
   Float_t r        = TMath::Sqrt(fX*fX + fY*fY)
-                   / (2.0*TMath::Sin(alpha/180.0*TMath::Pi()));
+                   / (2.0 * TMath::Sin(alpha/180.0*TMath::Pi()));
   
   Float_t pt       = 0.3 * field * 0.01 * r;
  
@@ -100,19 +101,27 @@ Float_t AliTRDltuTracklet::GetPt(Float_t field) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDltuTracklet::Compare(const TObject * o) const
+Int_t AliTRDltuTracklet::Compare(const TObject *o) const
 {
   //
   // compare two LTU tracklets according to the intercept point Y1
   //
 
-  AliTRDltuTracklet *ltutrk = (AliTRDltuTracklet*)o;
+  AliTRDltuTracklet *ltutrk = (AliTRDltuTracklet *) o;
 
-  if (fRow      != ltutrk->fRow)      return +1;
-  if (fDetector != ltutrk->fDetector) return +1;
+  if (fRow      != ltutrk->fRow) {
+    return +1;
+  }
+  if (fDetector != ltutrk->fDetector) {
+    return +1;
+  }
 
-  if (fY <  ltutrk->fY) return -1;
-  if (fY == ltutrk->fY) return  0;
+  if (fY <  ltutrk->fY) {
+    return -1;
+  }
+  if (fY == ltutrk->fY) {
+    return  0;
+  }
 
   return 1;
 

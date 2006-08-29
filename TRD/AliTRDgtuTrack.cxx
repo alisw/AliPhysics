@@ -128,6 +128,7 @@ AliTRDgtuTrack::~AliTRDgtuTrack()
   if (fTracklets) {
     fTracklets->Delete();
     delete fTracklets;
+    fTracklets = 0;
   }
 
 }
@@ -169,10 +170,14 @@ Int_t AliTRDgtuTrack::Compare(const TObject * o) const
   // Compare function for sorting the tracks
   //
 
-  AliTRDgtuTrack *gtutrack = (AliTRDgtuTrack*)o;
+  AliTRDgtuTrack *gtutrack = (AliTRDgtuTrack *) o;
 
-  if (fYproj <  gtutrack->GetYproj()) return -1;
-  if (fYproj == gtutrack->GetYproj()) return  0;
+  if (fYproj <  gtutrack->GetYproj()) {
+    return -1;
+  }
+  if (fYproj == gtutrack->GetYproj()) {
+    return  0;
+  }
 
   return +1;
 
@@ -369,18 +374,23 @@ void AliTRDgtuTrack::MakePID()
 
   Int_t i = 0;
 
-  AliTRDcalibDB* calibration = AliTRDcalibDB::Instance();
-  if (!calibration)
-  {
+  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
     AliError("No instance of AliTRDcalibDB.");
     return;  
   }
   const AliTRDCalPIDLQ *pd = calibration->GetPIDLQObject();
   
   AliTRDltuTracklet *trk;
-  Int_t nTracklets = GetNtracklets();
-  Int_t det, pla;
-  Float_t sl, th, q, probPio = 1.0, probEle = 1.0;
+  Int_t   nTracklets = GetNtracklets();
+  Int_t   det;
+  Int_t   pla;
+  Float_t sl;
+  Float_t th;
+  Float_t q;
+  Float_t probPio = 1.0;
+  Float_t probEle = 1.0;
+
   for (i = 0; i < nTracklets; i++) {
 
     trk = GetTracklet(i);
@@ -486,12 +496,15 @@ void AliTRDgtuTrack::CookLabel()
   }
 
   Bool_t counted;
-  Int_t label, nTracks = 0;
+  Int_t  label;
+  Int_t  nTracks = 0;
   for (Int_t itrk = 0; itrk < fNtracklets; itrk++) {
 
     trk = GetTracklet(itrk);
 
-    if (trk->GetLabel() == -1) continue;
+    if (trk->GetLabel() == -1) {
+      continue;
+    }
 
     label = trk->GetLabel();
 
@@ -516,9 +529,9 @@ void AliTRDgtuTrack::CookLabel()
     
   }
 
-  Float_t frac = 4.0/5.0;
+  Float_t frac = 4.0 / 5.0;
   for (Int_t it = 0; it < kMaxTracks; it++) {
-    if (trackCount[it] >= (Int_t)(frac*fNtracklets)) {
+    if (trackCount[it] >= (Int_t) (frac*fNtracklets)) {
       fLabel = trackLabel[it];
       break;
     }
@@ -540,7 +553,7 @@ void AliTRDgtuTrack::ResetTracklets()
 }
 
 //_____________________________________________________________________________
-TObjArray* AliTRDgtuTrack::Tracklets() 
+TObjArray *AliTRDgtuTrack::Tracklets() 
 { 
   //
   // Returns the list of tracklets
