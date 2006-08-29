@@ -36,14 +36,12 @@ class AliESDtrackCuts : public TObject
 
 public:
   AliESDtrackCuts();
-  AliESDtrackCuts(const AliESDtrackCuts& pd);  // Copy Constructor
   virtual ~AliESDtrackCuts();
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESD* esd);
   Int_t CountAcceptedTracks(AliESD* esd);
 
-  AliESDtrackCuts &operator=(const AliESDtrackCuts &c);
   virtual void Copy(TObject &c) const;
 
   //######################################################
@@ -149,6 +147,12 @@ protected:
 
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
+
+ private:
+
+  AliESDtrackCuts(const AliESDtrackCuts& pd);  // Copy Constructor
+  AliESDtrackCuts &operator=(const AliESDtrackCuts &c);
+  
   
   ClassDef(AliESDtrackCuts, 1)
 };
