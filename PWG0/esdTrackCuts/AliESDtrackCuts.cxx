@@ -24,7 +24,6 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "trk-to-vtx",
  "trk-to-vtx failed",
  "kink daughters",
-
  "p",
  "p_{T}",
  "p_{x}",
@@ -35,7 +34,38 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
 };
 
 //____________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts()
+AliESDtrackCuts::AliESDtrackCuts() : TObject(),
+  fCutMinNClusterTPC(0),
+  fCutMinNClusterITS(0),
+  fCutMaxChi2PerClusterTPC(0),
+  fCutMaxChi2PerClusterITS(0),
+  fCutMaxC11(0),
+  fCutMaxC22(0),
+  fCutMaxC33(0),
+  fCutMaxC44(0),
+  fCutMaxC55(0),
+  fCutAcceptKinkDaughters(0),
+  fCutRequireTPCRefit(0),
+  fCutRequireITSRefit(0),
+  fCutNsigmaToVertex(0),
+  fCutSigmaToVertexRequired(0),
+  fPMin(0),
+  fPMax(0),
+  fPtMin(0),
+  fPtMax(0),
+  fPxMin(0),
+  fPxMax(0),
+  fPyMin(0),
+  fPyMax(0),
+  fPzMin(0),
+  fPzMax(0),
+  fEtaMin(0),
+  fEtaMax(0),
+  fRapMin(0),
+  fRapMax(0),
+  fHistogramsOn(0),
+  fhCutStatistics(0),         
+  fhCutCorrelation(0)
 {
   //
   // constructor
@@ -67,7 +97,38 @@ AliESDtrackCuts::AliESDtrackCuts()
 }
 
 //_____________________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : TObject(c)
+AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : TObject(c),
+  fCutMinNClusterTPC(0),
+  fCutMinNClusterITS(0),
+  fCutMaxChi2PerClusterTPC(0),
+  fCutMaxChi2PerClusterITS(0),
+  fCutMaxC11(0),
+  fCutMaxC22(0),
+  fCutMaxC33(0),
+  fCutMaxC44(0),
+  fCutMaxC55(0),
+  fCutAcceptKinkDaughters(0),
+  fCutRequireTPCRefit(0),
+  fCutRequireITSRefit(0),
+  fCutNsigmaToVertex(0),
+  fCutSigmaToVertexRequired(0),
+  fPMin(0),
+  fPMax(0),
+  fPtMin(0),
+  fPtMax(0),
+  fPxMin(0),
+  fPxMax(0),
+  fPyMin(0),
+  fPyMax(0),
+  fPzMin(0),
+  fPzMax(0),
+  fEtaMin(0),
+  fEtaMax(0),
+  fRapMin(0),
+  fRapMax(0),
+  fHistogramsOn(0),
+  fhCutStatistics(0),         
+  fhCutCorrelation(0)
 {
   //
   // copy constructor
