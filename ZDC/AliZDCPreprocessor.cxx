@@ -12,9 +12,9 @@
 #include "AliZDCCalibData.h"
 
 //
-// This class is an example for a simple preprocessor.
-// It takes data from DCS and passes it to the class AliZDCDataDCS, which
-// reformats its. This class is then written to the CDB.
+// Class implementing ZDC pre-processor.
+// It takes data from DCS and passes it to the class AliZDCDataDCS.
+// The class is then written to the CDB.
 //
 
 ClassImp(AliZDCPreprocessor)
@@ -32,6 +32,7 @@ AliZDCPreprocessor::~AliZDCPreprocessor()
 {
   // destructor
 }
+
 
 //______________________________________________________________________________________________
 void AliZDCPreprocessor::Initialize(Int_t run, UInt_t startTime,
@@ -95,7 +96,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   metaData.SetResponsible("Chiara");
   metaData.SetComment("This preprocessor fills an AliZDCDataDCS object.");
 
-  UInt_t result = Store("DCS", "Data", fData, &metaData);
+  UInt_t result = Store("SHUTTLE","Data",fData, &metaData);
   delete fData;
   fData = 0;
 
