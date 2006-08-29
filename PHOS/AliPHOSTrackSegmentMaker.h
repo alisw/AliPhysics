@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.39  2006/08/25 16:00:53  kharlov
+ * Compliance with Effective C++AliPHOSHit.cxx
+ *
  * Revision 1.38  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -43,7 +46,8 @@ public:
   AliPHOSTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;                     
   AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) ;
   virtual ~ AliPHOSTrackSegmentMaker() ;
-  AliPHOSTrackSegmentMaker & operator = (const AliPHOSTrackSegmentMaker & obj);
+  AliPHOSTrackSegmentMaker & operator = (const AliPHOSTrackSegmentMaker & /*rvalue*/)  {
+    Fatal("operator =", "not implemented") ; return *this ; }
 
   virtual Int_t GetTrackSegmentsInRun()  const {Warning("GetTrackSegmentsInRun", "Not Defined" ) ; return 0 ; } 
 

@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.96  2006/08/25 16:56:30  kharlov
+ * Compliance with Effective C++
+ *
  * Revision 1.95  2006/08/11 12:36:26  cvetan
  * Update of the PHOS code needed in order to read and reconstruct the beam test raw data (i.e. without an existing galice.root)
  *
@@ -161,6 +164,20 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(const TString alirunFileName, const T
   fDefaultInit = kFALSE ; 
 }
 
+//____________________________________________________________________________
+AliPHOSClusterizerv1::AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & obj) :
+  AliPHOSClusterizer(obj),
+  fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
+  fWrite(0),                  fNumberOfEmcClusters(0),  fNumberOfCpvClusters(0),
+  fCalibData(0),              fADCchanelEmc(0),         fADCpedestalEmc(0),
+  fADCchanelCpv(0),           fADCpedestalCpv(0),       fEmcClusteringThreshold(0),
+  fCpvClusteringThreshold(0), fEmcMinE(0),              fCpvMinE(0),
+  fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
+  fW0CPV(0),                  fRecPointsInRun(0),       fEmcTimeGate(0),
+  fIsOldRCUFormat(0)
+{
+  // Copy constructor
+}
 //____________________________________________________________________________
   AliPHOSClusterizerv1::~AliPHOSClusterizerv1()
 {

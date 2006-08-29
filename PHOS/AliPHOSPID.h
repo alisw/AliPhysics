@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.36  2006/08/25 16:00:53  kharlov
+ * Compliance with Effective C++AliPHOSHit.cxx
+ *
  * Revision 1.35  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -43,7 +46,8 @@ class AliPHOSPID : public TTask {
   AliPHOSPID (const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
   AliPHOSPID(const AliPHOSPID & pid) ;
   virtual ~AliPHOSPID() ; // dtor
-  AliPHOSPID & operator = (const AliPHOSPID & obj);
+  AliPHOSPID & operator = (const AliPHOSPID & /*rvalue*/)  {
+    Fatal("operator =", "not implemented") ; return *this ; }
 
   virtual Int_t GetRecParticlesInRun()  const { Warning("GetRecParticlesInRun", "not defined" ) ; return 0 ;} 
   virtual void Print(const Option_t * = "") const { Warning("Print", "not defined" ) ;}
