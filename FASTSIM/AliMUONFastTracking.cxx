@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2006/08/28 10:31:17  morsch
+Coding rule violations corrected (A. de Falco)
+
 Revision 1.10  2006/01/27 09:51:37  morsch
 Some small corrections to avoid infinite loops at high momenta.
 (A. de Falco)
@@ -85,7 +88,24 @@ static Double_t FitP(Double_t *x, Double_t *par){
     return TMath::Abs(value);
 } 
 
-AliMUONFastTracking::AliMUONFastTracking(const AliMUONFastTracking & ft):TObject()
+AliMUONFastTracking::AliMUONFastTracking(const AliMUONFastTracking & ft):
+    TObject(),
+    fNbinp(10),
+    fPmin(0.),
+    fPmax(200.),
+    fDeltaP((fPmax-fPmin)/fNbinp),
+    fNbintheta(10),
+    fThetamin(2.),
+    fThetamax(9.),
+    fDeltaTheta((fThetamax-fThetamin)/fNbintheta),
+    fNbinphi(10),
+    fPhimin(-180.),
+    fPhimax(180.),
+    fDeltaPhi((fPhimax-fPhimin)/fNbinphi),
+    fPrintLevel(1),
+    fBkg(0.),
+    fSpline(0),
+    fClusterFinder(kOld)									 
 {
 // Copy constructor
     ft.Copy(*this);
@@ -103,7 +123,23 @@ AliMUONFastTracking* AliMUONFastTracking::Instance()
     }
 }
 
-AliMUONFastTracking::AliMUONFastTracking() 
+AliMUONFastTracking::AliMUONFastTracking():
+    fNbinp(10),
+    fPmin(0.),
+    fPmax(200.),
+    fDeltaP((fPmax-fPmin)/fNbinp),
+    fNbintheta(10),
+    fThetamin(2.),
+    fThetamax(9.),
+    fDeltaTheta((fThetamax-fThetamin)/fNbintheta),
+    fNbinphi(10),
+    fPhimin(-180.),
+    fPhimax(180.),
+    fDeltaPhi((fPhimax-fPhimin)/fNbinphi),
+    fPrintLevel(1),
+    fBkg(0.),
+    fSpline(0),
+    fClusterFinder(kOld)
 {
 //
 // constructor
@@ -115,33 +151,6 @@ AliMUONFastTracking::AliMUONFastTracking()
       }
     }
   }
-
-    fClusterFinder = kOld; 
-    fPrintLevel = 1;  
-    // read binning; temporarily put by hand
-    Float_t pmin = 0, pmax = 200;
-    Int_t   nbinp = 10;
-    Float_t thetamin = 2, thetamax = 9;
-    Int_t   nbintheta=10;
-    Float_t phimin = -180, phimax =180;
-    Int_t   nbinphi=10;
-    //--------------------------------------
-
-    fNbinp = nbinp;
-    fPmin  = pmin;
-    fPmax  = pmax;
-    
-    fNbintheta = nbintheta;
-    fThetamin  = thetamin;
-    fThetamax  = thetamax;
-    
-    fNbinphi = nbinphi;
-    fPhimin  = phimin;
-    fPhimax  = phimax;
-    
-    fDeltaP     = (fPmax-fPmin)/fNbinp;
-    fDeltaTheta = (fThetamax-fThetamin)/fNbintheta;
-    fDeltaPhi   = (fPhimax-fPhimin)/fNbinphi;
 }
 
 void AliMUONFastTracking::Init(Float_t bkg)
