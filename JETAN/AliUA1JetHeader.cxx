@@ -27,25 +27,25 @@ ClassImp(AliUA1JetHeader)
 ////////////////////////////////////////////////////////////////////////
 
 AliUA1JetHeader::AliUA1JetHeader():
-  AliJetHeader("AliUA1JetHeader")
+  AliJetHeader("AliUA1JetHeader"),
+  fConeRadius(0.3),
+  fEtSeed(3.0),
+  fMinJetEt(10.),
+  fMinCellEt(0.),
+  fMode(1),
+  fMinMove(0.05),
+  fMaxMove(0.15),
+  fPrecBg(0.035),
+  fLegoNbinEta(36),
+  fLegoNbinPhi(124),
+  fLegoEtaMin(-0.9),
+  fLegoEtaMax(0.9),
+  fLegoPhiMin(0.),
+  fLegoPhiMax(2.*TMath::Pi()),
+  fOnlySignal(kFALSE),
+  fOnlyBkgd(kFALSE)
 {
-  // Constructor
-  fConeRadius =  0.3;
-  fEtSeed     =  3.0;
-  fMinJetEt   = 10.0;
-  fMinCellEt  =  0.0;
-  fMode       =  1;
-  fMinMove    =  0.05;
-  fMaxMove    =  0.15;
-  fPrecBg     =  0.035;
-  fLegoNbinEta    =  36;
-  fLegoNbinPhi    = 124;
-  fLegoPhiMin     =   0.;
-  fLegoPhiMax     = 2. * TMath::Pi();
-  fLegoEtaMin     = -0.9;
-  fLegoEtaMax     =  0.9;
-  fOnlySignal = kFALSE;
-  fOnlyBkgd = kFALSE;
+  // Default constructor
 }
  
 ////////////////////////////////////////////////////////////////////////

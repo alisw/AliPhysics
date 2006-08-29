@@ -27,11 +27,12 @@ ClassImp(AliJetKineReaderHeader)
 //____________________________________________________________________________
 
 AliJetKineReaderHeader::AliJetKineReaderHeader():
- AliJetReaderHeader("AliJetKineReaderHeader") 
+  AliJetReaderHeader("AliJetKineReaderHeader"),
+  fFastSimTPC(kFALSE),
+  fFastSimEMCAL(kFALSE)
 {
-  // Constructor
-  SetFastSimTPC(kFALSE);
-  SetFastSimEMCAL(kFALSE);
+  // Default constructor
+
 }
 
 //____________________________________________________________________________

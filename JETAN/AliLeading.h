@@ -41,6 +41,9 @@ class AliLeading : public TObject
 
  protected:
 
+  AliLeading(const AliLeading& rLeading);
+  AliLeading& operator = (const AliLeading& rl);
+
   Int_t fNassoc;            // number of associated particles
   TLorentzVector* fLeading; // leading particle
   TArrayI fCorr;            // array to store azimuthal correlation

@@ -27,14 +27,14 @@ class AliJetReaderHeader : public TNamed
   virtual const char* GetPattern() {return fPattern.Data();}
   virtual Float_t     GetFiducialEtaMin() const {return fFiducialEtaMin;}
   virtual Float_t     GetFiducialEtaMax() const {return fFiducialEtaMax;}  
-  virtual Float_t GetPtCut()       const  {return fPtCut;}
+  virtual Float_t GetPtCut() const {return fPtCut;}
   Float_t GetDCA() const  {return fDCA;}       // not working so far..(always 0)
-  Float_t GetTLength() const  {return fTLength;}   // not working so far.. (always 0)
+  Float_t GetTLength() const {return fTLength;}   // not working so far.. (always 0)
   Int_t   GetNesd() const {return fNesd;}
   Int_t   GetNEvents() const {return fLast-fFirst;}
   Int_t   GetFirstEvent() const {return fFirst;}
   Int_t   GetLastEvent() const {return fLast;}
-
+  
   // Setters
   virtual void SetComment(const char* s) {fComment=TString(s);}
   virtual void SetPattern(const char* s) {fPattern=TString(s);}
@@ -47,7 +47,7 @@ class AliJetReaderHeader : public TNamed
   virtual void SetPtCut(Float_t par = 2.0) {fPtCut = par;}
   virtual void SetDCA(Float_t dca = 0.0) {fDCA = dca;}
   virtual void SetTLength(Float_t length = 0.0) {fTLength = length;}
- 
+
  protected:
 
   Int_t fNesd;             // Number of ESDs to read

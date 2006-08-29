@@ -27,9 +27,13 @@ ClassImp(AliPxconeJetHeader)
 ////////////////////////////////////////////////////////////////////////
 
 AliPxconeJetHeader::AliPxconeJetHeader():
-  AliJetHeader("AliPxconeJetHeader")
+  AliJetHeader("AliPxconeJetHeader"),
+  fMode(2),
+  fRadius(0.3),
+  fMinPt(10),
+  fOverlap(0.75)
 {
-  // Constructor
+  // Default constructor
   SetMode();
   SetRadius();
   SetMinPt();

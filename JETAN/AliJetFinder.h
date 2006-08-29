@@ -47,6 +47,9 @@ class AliJetFinder : public TObject
   virtual void GetGenJets();
 
  protected:
+  AliJetFinder(const AliJetFinder& rJetFinder);
+  AliJetFinder& operator = (const AliJetFinder& rhsf);
+
   Bool_t fPlotMode;              // do you want control plots?
   AliJet* fJets;                 // pointer to jet class
   AliJet* fGenJets;              // pointer to generated jets

@@ -40,35 +40,33 @@ ClassImp(AliJetDistributions)
 ////////////////////////////////////////////////////////////////////////
 // constructor/destructor
   
-AliJetDistributions::AliJetDistributions()
+AliJetDistributions::AliJetDistributions():
+  fReaderHeader(0x0),
+  fDirectory(0x0),
+  fFile(0x0),
+  fEventMin(0),
+  fEventMax(-1),
+  fRunMin(0),
+  fRunMax(11),
+  fPercentage(-1.0),
+  fPartPtCut(0.0),
+  fPythia(kFALSE),
+  fDoPart(kTRUE),
+  fDoGenJ(kTRUE),
+  fDoRecJ(kTRUE),
+  fPart(0),
+  fGenJ(0),
+  fRecJ(0),
+  fRetaH(0),
+  fRphiH(0),
+  fRptH(0),
+  fRetaphiH(0),
+  fMultH(0)
 {
-  // Constructor
-  fDirectory    = 0x0;   
-  fFile         = "jets.root";   
-  fEventMin     =  0;
-  fEventMax     = -1;
-  fRunMin       =  0;
-  fRunMax       = 11;
-  fPercentage   = -1.0;
+  // Default constructor
+  fFile = "jets.root";   
   SetReaderHeader();
   
-  fPart = 0;
-  fGenJ = 0;
-  fRecJ = 0;
-
-  fRetaH = 0;
-  fRphiH = 0;
-  fRptH = 0;
-  fRetaphiH = 0;
-
-  fMultH = 0;
-
-  // for Analize()
-  fPythia = kFALSE;
-  fDoPart = kTRUE;
-  fDoGenJ = kTRUE;
-  fDoRecJ = kTRUE;
-
 }
 
 ////////////////////////////////////////////////////////////////////////

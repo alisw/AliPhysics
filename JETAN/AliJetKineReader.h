@@ -29,10 +29,13 @@ class AliJetKineReader : public AliJetReader
   Bool_t  Efficiency(Float_t pt, Float_t eta, Float_t phi);
 
  protected:
-  AliRunLoader           *fRunLoader; // Pointer to the run loader
+  AliJetKineReader(const AliJetKineReader& rJetKine);
+  AliJetKineReader& operator = (const AliJetKineReader& rkr);
+
+  AliRunLoader *fRunLoader;       // Pointer to the run loader
   
-  Float_t fMass;                      // Particle mass
-  Int_t   fPdgC;                      // Pdg code
+  Float_t fMass;                  // Particle mass
+  Int_t   fPdgC;                  // Pdg code
  
   ClassDef(AliJetKineReader,1)
 };

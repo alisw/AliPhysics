@@ -24,6 +24,7 @@
 #pragma link C++ class AliJetProductionDataPDC2004+;
 #pragma link C++ class AliJetAnalysis+;
 #pragma link C++ class AliJetDistributions+;
+#pragma link C++ class AliFFT;
 #pragma link C++ class AliUA1JetFinderV1+;
 #pragma link C++ class AliUA1JetHeaderV1+;
 #endif

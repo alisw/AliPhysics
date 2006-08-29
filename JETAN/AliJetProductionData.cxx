@@ -29,12 +29,14 @@ ClassImp(AliJetProductionData)
  
 ////////////////////////////////////////////////////////////////////////
 
-AliJetProductionData::AliJetProductionData() 
+AliJetProductionData::AliJetProductionData():
+  fNbins(0),
+  fPtHardLimits(0x0),
+  fWeights(0x0),
+  fRunTitles(0x0)
 {
-  // Constructor
-    fNbins           = 0;   
-    fPtHardLimits    = 0x0;
-    fRunTitles       = 0x0;
+  // Default constructor
+
 } 
 
 ////////////////////////////////////////////////////////////////////////

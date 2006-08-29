@@ -32,12 +32,12 @@
 
 ClassImp(AliJetESDmcReader)
 
-AliJetESDmcReader::AliJetESDmcReader()
+AliJetESDmcReader::AliJetESDmcReader():
+  fMass(0),
+  fSign(0)
 {
   // Constructor    
   fReaderHeader = 0x0;
-  fMass = 0;
-  fSign = 0;
 }
 
 //____________________________________________________________________________

@@ -44,133 +44,110 @@ ClassImp(AliJetAnalysis)
 #include "AliLeading.h"
   
   
-AliJetAnalysis::AliJetAnalysis()
+AliJetAnalysis::AliJetAnalysis():
+  fReaderHeader(0x0),
+  fDirectory(0x0),
+  fBkgdDirectory(0x0),
+  fFile(0x0),
+  fEventMin(0),
+  fEventMax(-1),
+  fRunMin(0),
+  fRunMax(11),
+  fminMult(0),
+  fPercentage(-1.0),
+  fPartPtCut(0.0),
+  fdrJt(1.0),
+  fdrdNdxi(0.7),
+  fdrdEdr(1.0),
+  fEfactor(1.0),
+  fp0(0.0),
+  fPtJ(0.0),
+  fEJ(0.0),
+  fEtaJ(0.0),
+  fPhiJ(0.0),
+  fjv3X(0.0),
+  fjv3Y(0.0),
+  fjv3Z(0.0),
+  fPythia(kFALSE),
+  fDoPart(kTRUE),
+  fDoGenJ(kTRUE),
+  fDoRecJ(kTRUE),
+  fDoKine(kTRUE),
+  fDoCorr(kTRUE),
+  fDoCorr50(kFALSE),
+  fDoShap(kTRUE),
+  fDoFrag(kTRUE),
+  fDoTrig(kTRUE),
+  fDoJt(kTRUE),
+  fDodNdxi(kTRUE),
+  fDoBkgd(kTRUE),
+  fWeight(1.0),
+  fWShapR(0.0),
+  fWFragR(0.0),
+  fWdEdr(0.0),
+  fWJt(0.0),
+  fWdNdxi(0.0),
+  fPart(0),
+  fGenJ(0),
+  fRecJ(0),
+  fRecB(0),
+  fRKineEneH(0),
+  fRKinePtH(0),
+  fRKinePhiH(0),
+  fRKineEtaH(0),
+  fGKineEneH(0),
+  fGKinePtH(0),
+  fGKinePhiH(0),
+  fGKineEtaH(0),
+  fPKineEneH(0),
+  fPKinePtH(0),
+  fPKinePhiH(0),
+  fPKineEtaH(0),
+  fPGCorrEneH(0),
+  fPGCorrPtH(0),
+  fPGCorrEtaH(0),
+  fPGCorrPhiH(0),
+  fPRCorrEneH(0),
+  fPRCorrPtH(0),
+  fPRCorrEtaH(0),
+  fPRCorrPhiH(0),
+  fRGCorrEneH(0),
+  fRGCorrPtH(0),
+  fRGCorrEtaH(0),
+  fRGCorrPhiH(0),
+  fPRCorr50EneH(0),
+  fPRCorr50PtH(0),
+  fPRCorr50EtaH(0),
+  fPRCorr50PhiH(0),
+  fRGCorr50EneH(0),
+  fRGCorr50PtH(0),
+  fRGCorr50EtaH(0),
+  fRGCorr50PhiH(0),
+  fRFragSelH(0),
+  fRFragRejH(0),
+  fRFragAllH(0),
+  fRShapSelH(0),
+  fRShapRejH(0),
+  fRShapAllH(0),
+  fGTriggerEneH(0),
+  fRTriggerEneH(0),
+  fGPTriggerEneH(0),
+  fPTriggerEneH(0),
+  fdEdrH(0),
+  fdEdrB(0),
+  fPtEneH2(0),
+  fdEdrW(0),
+  fJtH(0),
+  fJtB(0),
+  fJtW(0),
+  fdNdxiH(0),
+  fdNdxiB(0),
+  fdNdxiW(0),
+  fPtEneH(0)
 {
-  // Constructor
-  fDirectory     = 0x0;   
-  fBkgdDirectory = 0x0;   
-  fFile          = "anajets.root";   
-  fEventMin      =  0;
-  fEventMax      = -1;
-  fRunMin        =  0;
-  fRunMax        = 11;
-  fminMult       =  0;
-  fPercentage    = -1.0;
-  fEfactor       = 1.0;
-  SetReaderHeader();
+  // Default constructor
+  fFile          = "anaJets.root";   
   
-  // for Analize()
-  fPythia    = kFALSE;
-  fDoPart    = kTRUE;
-  fDoGenJ    = kTRUE;
-  fDoRecJ    = kTRUE;
-  fDoKine    = kTRUE;
-  fDoCorr    = kTRUE;
-  fDoCorr50  = kFALSE;
-  fDoShap    = kTRUE;
-  fDoFrag    = kTRUE;
-  fDoTrig    = kTRUE;
-  fDoJt      = kTRUE;
-  fDodNdxi   = kTRUE;
-  fDoBkgd    = kFALSE;
-
-  fPart      = 0;
-  fGenJ      = 0;
-  fRecJ      = 0;
-  fRecB      = 0;
-  fWeight    = 1.0;
-  fWdEdr     = 0.0;
-  fPartPtCut = 0.0;
-  fWJt       = 0.0;
-  fWdNdxi    = 0.0;
-
-  // for bkgd
-  fp0    = 0.0;
-  fPtJ   = 0.0;
-  fEJ    = 0.0;
-  fEtaJ  = 0.0;
-  fPhiJ  = 0.0;
-  fjv3X = 0.0;
-  fjv3Y = 0.0;
-  fjv3Z = 0.0;
-
-  // kine histos
-  fRKineEneH = 0;
-  fRKinePtH  = 0;
-  fRKinePhiH = 0;
-  fRKineEtaH = 0;
-  fGKineEneH = 0;
-  fGKinePtH  = 0;
-  fGKinePhiH = 0;
-  fGKineEtaH = 0;
-  fPKineEneH = 0;
-  fPKinePtH  = 0;
-  fPKinePhiH = 0;
-  fPKineEtaH = 0;
-  
-  // correlation histograms
-  fPGCorrEneH = 0;
-  fPGCorrPtH  = 0;
-  fPGCorrEtaH = 0;
-  fPGCorrPhiH = 0;
-  fPRCorrEneH = 0;
-  fPRCorrPtH  = 0;
-  fPRCorrEtaH = 0;
-  fPRCorrPhiH = 0;
-  fRGCorrEneH = 0;
-  fRGCorrPtH  = 0;
-  fRGCorrEtaH = 0;
-  fRGCorrPhiH = 0;
-  
-  // correlation histograms when one particle 
-  // has more than 50% of the energy of the jet
-  fPRCorr50EneH = 0;
-  fPRCorr50PtH  = 0;
-  fPRCorr50EtaH = 0;
-  fPRCorr50PhiH = 0;
-  fRGCorr50EneH = 0;
-  fRGCorr50PtH  = 0;
-  fRGCorr50EtaH = 0;
-  fRGCorr50PhiH = 0;
-
-  // shape histos
-  fWShapR    = 0.0;
-  fRShapSelH = 0;
-  fRShapRejH = 0;
-  fRShapAllH = 0;  
-  
-  // fragmentation function histos
-  fWFragR    = 0.0;
-  fRFragSelH = 0;
-  fRFragRejH = 0;
-  fRFragAllH = 0; 
-
-  // trigger bias histos
-  fGTriggerEneH  = 0;
-  fRTriggerEneH  = 0;
-  fGPTriggerEneH = 0;
-  fPTriggerEneH  = 0;
-  
-  // dE/dr histo and its dr
-  fdEdrH   = 0;
-  fdEdrB   = 0;
-  fPtEneH2 = 0;
-  fdEdrW   = 0;
-  fdrdEdr = 1.0;
-
-  // jt histo and its dr
-  fJtH   = 0;
-  fJtB   = 0;
-  fJtW   = 0;
-  fdrJt = 1.0;
-
-  // dN/dxi histo and its dr
-  fdNdxiH   = 0;
-  fdNdxiB   = 0;
-  fdNdxiW   = 0;
-  fPtEneH   = 0;
-  fdrdNdxi = 0.7;
-
   // initialize weight for dE/dr histo
   SetdEdrWeight();
 }

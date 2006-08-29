@@ -32,10 +32,24 @@ ClassImp(AliJetControlPlots)
   
 ////////////////////////////////////////////////////////////////////////
 
-AliJetControlPlots::AliJetControlPlots()
+AliJetControlPlots::AliJetControlPlots():
+  fNJetsH(0),
+  fMultH(0),
+  fPtH(0),
+  fEtaH(0),
+  fEneH(0),
+  fFragH(0),
+  fFragLnH(0),
+  fFragrH(0),
+  fFragLnrH(0),
+  fShapeH(0),
+  fShaperH(0),
+  fPhiH(0),
+  fInJetH(0),
+  fNJetT(0)
+
 {
-  // Constructor
-  fNJetT=0;
+  // Default constructor
 
   // general properties
   fNJetsH = new TH1I("fNJetsH","Number of Jets",12,0,11);

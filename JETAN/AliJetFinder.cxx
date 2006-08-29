@@ -33,16 +33,24 @@
 ClassImp(AliJetFinder)
 
 
-AliJetFinder::AliJetFinder()
+AliJetFinder::AliJetFinder():
+  fPlotMode(kFALSE),
+  fJets(0),
+  fGenJets(0),
+  fLeading(0),
+  fReader(0x0),
+  fPlots(0x0),
+  fOut(0x0)
+
 {
   // Constructor
-  fOut     = 0x0;
+  //fOut     = 0x0;
   fJets    = new AliJet();
   fGenJets = new AliJet();
   fLeading = new AliLeading();
-  fReader  = 0x0;
-  fPlots   = 0x0;
-  SetPlotMode(kFALSE);
+  //fReader  = 0x0;
+  //fPlots   = 0x0;
+  //SetPlotMode(kFALSE);
 }
 
 ////////////////////////////////////////////////////////////////////////

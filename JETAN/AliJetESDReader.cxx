@@ -31,12 +31,12 @@
 
 ClassImp(AliJetESDReader)
 
-  AliJetESDReader::AliJetESDReader()
+AliJetESDReader::AliJetESDReader():
+  fMass(0),
+  fSign(0)
 {
   // Constructor    
   fReaderHeader = 0x0;
-  fMass = 0;
-  fSign = 0;
 }
 
 //____________________________________________________________________________
@@ -49,7 +49,6 @@ AliJetESDReader::~AliJetESDReader()
 //____________________________________________________________________________
 
 void AliJetESDReader::OpenInputFiles()
-
 {
   // chain for the ESDs
   fChain   = new TChain("esdTree");
@@ -128,12 +127,12 @@ void AliJetESDReader::FillMomentumArray(Int_t event)
     track->GetPxPyPz(mom);
     p3.SetXYZ(mom[0],mom[1],mom[2]);
     pt = p3.Pt();
-    if (((status & AliESDtrack::kITSrefit) == 0) ||
-	((status & AliESDtrack::kTPCrefit) == 0)) continue;    // quality check
+    if ((status & AliESDtrack::kTPCrefit) == 0) continue;    // quality check
+    //if ((status & AliESDtrack::kITSrefit) == 0) continue;    // quality check
     if (((AliJetESDReaderHeader*) fReaderHeader)->ReadSignalOnly() 
-	&& TMath::Abs(track->GetLabel()) > 10000)  continue;   // quality check
+ 	&& TMath::Abs(track->GetLabel()) > 10000)  continue;   // quality check
     if (((AliJetESDReaderHeader*) fReaderHeader)->ReadBkgdOnly() 
-	&& TMath::Abs(track->GetLabel()) < 10000)  continue;   // quality check
+ 	&& TMath::Abs(track->GetLabel()) < 10000)  continue;   // quality check
     eta = p3.Eta();
     if ( (eta > etaMax) || (eta < etaMin)) continue;           // checking eta cut
     

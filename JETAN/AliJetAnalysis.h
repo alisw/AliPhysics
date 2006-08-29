@@ -194,7 +194,8 @@ class AliJetAnalysis : public TObject
     TH2F *fRGCorrEtaH;  // Pseudorapidity correlation rec jet-gen jet
     TH2F *fRGCorrPhiH;  // Azimuthal angle correlation rec jet-gen jet
    
-    // correlation histograms
+    // correlation histogramswhen one particle 
+    // has more than 50% of the energy of the jet
     TH2F *fPRCorr50EneH;  // Energy correlation part-rec jet
     TH2F *fPRCorr50PtH;   // Pt correlation part-rec jet
     TH2F *fPRCorr50EtaH;  // Pseudorapidity correlation part-rec jet
@@ -234,6 +235,11 @@ class AliJetAnalysis : public TObject
     TH2F* fdNdxiB;  // dN/d#xi bkgd histo
     TH1F* fdNdxiW;  // dN/d#xi weight histo
     TH2F* fPtEneH;  // fPtEneH
+
+protected:
+    AliJetAnalysis(const AliJetAnalysis& rJetA);
+    AliJetAnalysis& operator = (const AliJetAnalysis& rhsa);
+
 
     ClassDef(AliJetAnalysis,1)
 };

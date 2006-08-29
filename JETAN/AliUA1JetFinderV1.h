@@ -57,6 +57,8 @@ class AliUA1JetFinderV1 : public AliJetFinder
   void WriteJHeaderToFile();
 
  protected:
+  AliUA1JetFinderV1(const AliUA1JetFinderV1& rJetF1);
+  AliUA1JetFinderV1& operator = (const AliUA1JetFinderV1& rhsf);
 
   AliUA1JetHeaderV1* fHeader;         // pointer to jet header
   TH2F           * fLego;           //! Lego Histo

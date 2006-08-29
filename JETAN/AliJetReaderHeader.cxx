@@ -27,28 +27,38 @@ ClassImp(AliJetReaderHeader)
 
 AliJetReaderHeader::AliJetReaderHeader():  
  TNamed("AliJetReaderHeader", "Jet Reader Header"),
- fComment("No comment"),fDir(""),fPattern("")
+ fNesd(0),
+ fFirst(0),
+ fLast(-1),
+ fFiducialEtaMin(-0.9),
+ fFiducialEtaMax(0.9),
+ fPtCut(2.0),
+ fDCA(0.),
+ fTLength(0.),
+ fComment("No comment"),
+ fDir(""),
+ fPattern("")
 {
-  // Constructor
-  fFirst = 0;
-  fLast = -1;
-  fFiducialEtaMin = -0.9;
-  fFiducialEtaMax =  0.9;
-  SetPtCut();
+  // Default constructor
 }
 
 ////////////////////////////////////////////////////////////////////////
 
 AliJetReaderHeader::AliJetReaderHeader(const char * name):  
  TNamed(name, "Jet Reader Header"),
- fComment("No comment"),fDir(""),fPattern("")
+ fNesd(0),
+ fFirst(0),
+ fLast(-1),
+ fFiducialEtaMin(-0.9),
+ fFiducialEtaMax(0.9),
+ fPtCut(2.0),
+ fDCA(0.),
+ fTLength(0.),
+ fComment("No comment"),
+ fDir(""),
+ fPattern("")
 {
   // Constructor
-  fFirst = 0;
-  fLast = -1;
-  fFiducialEtaMin = -0.9;
-  fFiducialEtaMax =  0.9;
-  SetPtCut();
 }
 
 ////////////////////////////////////////////////////////////////////////

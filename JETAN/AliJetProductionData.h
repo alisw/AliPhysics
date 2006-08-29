@@ -30,6 +30,9 @@ class AliJetProductionData : public TObject
     TString*  fRunTitles;     //[fNbins]
     
  private: 
+    AliJetProductionData(const AliJetProductionData& rJetPD);
+    AliJetProductionData& operator = (const AliJetProductionData& rjpd);
+
     ClassDef(AliJetProductionData, 1)
 };
  

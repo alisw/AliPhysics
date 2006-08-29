@@ -25,22 +25,29 @@
 
 #include "AliJet.h"
 ClassImp(AliJet)
-
-
-AliJet::AliJet() 
+  
+AliJet::AliJet():
+  fNInput(0),
+  fNJets(0),
+  fEtAvg(0),
+  fInJet(0),
+  fMultiplicities(0),
+  fNCells(0),
+  fPtFromSignal(0),
+  fJets(0),
+  fEtaIn(0),
+  fPhiIn(0),
+  fPtIn(0)
 {
-  // Constructor
+  // Default constructor
   fJets = new TClonesArray("TLorentzVector",1000);
-  fNInput=0;
-  fNJets=0;
-  fEtAvg = 0;
-  fInJet=TArrayI();
-  fPtIn=TArrayF();
-  fEtaIn=TArrayF();
-  fPhiIn=TArrayF();
-  fPtFromSignal=TArrayF();
-  fMultiplicities=TArrayI();
-  fNCells=TArrayI();
+  fInJet = TArrayI();
+  fPtIn = TArrayF();
+  fEtaIn = TArrayF();
+  fPhiIn = TArrayF();
+  fPtFromSignal = TArrayF();
+  fMultiplicities = TArrayI();
+  fNCells = TArrayI();
 } 
 
 ////////////////////////////////////////////////////////////////////////

@@ -32,6 +32,8 @@ class AliPxconeJetFinder : public AliJetFinder
   void WriteJHeaderToFile();
 
  protected:
+  AliPxconeJetFinder(const AliPxconeJetFinder& rPxJet);
+  AliPxconeJetFinder& operator = (const AliPxconeJetFinder& rhsh);
 
   AliPxconeJetHeader* fHeader;         // pointer to jet header
 

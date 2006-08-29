@@ -77,6 +77,10 @@ class AliJetDistributions : public TObject
 
     TH1F* fMultH;   // Multiplicity
 
+ protected:
+    AliJetDistributions(const AliJetDistributions& rJetD);
+    AliJetDistributions& operator = (const AliJetDistributions& rhsd);
+
     ClassDef(AliJetDistributions,1)
 };
  

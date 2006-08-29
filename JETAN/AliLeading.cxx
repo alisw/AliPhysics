@@ -32,15 +32,17 @@ ClassImp(AliLeading)
 
 ////////////////////////////////////////////////////////////////////////
 
-AliLeading::AliLeading() 
+AliLeading::AliLeading():
+  fNassoc(0),
+  fLeading(0),
+  fCorr(0),
+  fnBin(45),
+  fLow(-TMath::Pi()/2.0),
+  fFound(kFALSE)
 {
   // Constructor
-  fNassoc =  0;
   fLeading = new TLorentzVector(0.,0.,0.,0.);
-  fLow     = -TMath::Pi()/2.0;
-  fnBin    = 45;
   fCorr    = TArrayI(fnBin);
-  fFound   = kFALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////

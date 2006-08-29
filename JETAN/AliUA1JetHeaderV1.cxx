@@ -26,25 +26,26 @@ ClassImp(AliUA1JetHeaderV1)
 ////////////////////////////////////////////////////////////////////////
 
 AliUA1JetHeaderV1::AliUA1JetHeaderV1():
-  AliJetHeader("AliUA1JetHeaderV1")
+
+    AliJetHeader("AliUA1JetHeaderV1"),
+    fConeRadius(0.3),
+    fEtSeed(3.0),
+    fMinJetEt(10.),
+    fMinMove(0.05),
+    fMaxMove(0.15),
+    fBackgMode(1),
+    fPrecBg(0.035),
+    fBackgStat(0.0), 
+    fBackgCutRatio(1.0),
+    fNAcceptJets(3),
+    fLegoNbinEta(36),
+    fLegoNbinPhi(124),
+    fLegoEtaMin(-0.9),
+    fLegoEtaMax(0.9),
+    fLegoPhiMin(0.),
+    fLegoPhiMax(2.*TMath::Pi())
 {
   // Constructor
-  fConeRadius    =  0.3;
-  fEtSeed        =  3.0;
-  fMinJetEt      = 10.0;
-  fMinMove       =  0.05;
-  fMaxMove       =  0.15;
-  fBackgMode     =  1;   // subtract backg
-  fPrecBg        =  0.035; //background prec
-  fBackgStat     =  0.0;  // pre-calculated background used in statistic subtraction method
-  fBackgCutRatio = 1.0;   // pre-calculated pt-cut ratio used in ratio subtraction method
-  fNAcceptJets   = 3;   // number of accepted jets per events
-  fLegoNbinEta   =  36;
-  fLegoNbinPhi   = 124;
-  fLegoPhiMin    =   0.;
-  fLegoPhiMax    = 2. * TMath::Pi();
-  fLegoEtaMin    = -0.9;
-  fLegoEtaMax    =  0.9;
 }
 
 ////////////////////////////////////////////////////////////////////////

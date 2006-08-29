@@ -50,6 +50,9 @@ class AliJetControlPlots : public TObject
   void Normalize();
 
  protected:
+  AliJetControlPlots(const AliJetControlPlots& rControlPlots);
+  AliJetControlPlots& operator = (const AliJetControlPlots& rcp);
+
   TH1I *fNJetsH;   // distribution of number of jets
   TH1I *fMultH;    // jet multiplicity
   TH1D *fPtH;      // pt spectra

@@ -31,15 +31,20 @@ ClassImp(AliJetReader)
 
 ////////////////////////////////////////////////////////////////////////
 
-AliJetReader::AliJetReader()
+AliJetReader::AliJetReader():
+  fChain(0),
+  fChainMC(0),
+  fMomentumArray(0),
+  fArrayMC(0),
+  fESD(0),
+  fReaderHeader(0),
+  fAliHeader(0),
+  fSignalFlag(0),
+  fCutFlag(0)
+    
 {
-  // Constructor
-  fChain = 0; 
-  fChainMC = 0;
-  fESD = 0;
+  // Default constructor
   fMomentumArray = new TClonesArray("TLorentzVector",2000);
-  fArrayMC = 0;
-  fAliHeader = 0;
   fSignalFlag = TArrayI();
   fCutFlag = TArrayI();
 }

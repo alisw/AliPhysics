@@ -36,12 +36,12 @@ ClassImp(AliUA1JetFinderV1)
 
 ////////////////////////////////////////////////////////////////////////
 
-AliUA1JetFinderV1::AliUA1JetFinderV1()
-
+AliUA1JetFinderV1::AliUA1JetFinderV1():
+  fHeader(0x0),
+  fLego(0x0)
 {
-  // Constructor
-  fHeader = 0x0;
-  fLego   = 0x0;
+  // Default constructor
+
 }
 
 ////////////////////////////////////////////////////////////////////////

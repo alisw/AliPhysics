@@ -26,17 +26,17 @@ class AliJet : public TObject
   ~AliJet();
 
   // Getters
-  Int_t GetNinput() const { return fNInput; }
+  Int_t GetNinput() const {return fNInput;}
   Int_t GetNJets() const {return fNJets;}
   TClonesArray* GetJets() const {return fJets;}
   TArrayI GetInJet() const {return fInJet;}
   TArrayI GetMultiplicities() const {return fMultiplicities;}
   TArrayI GetNCells() const {return fNCells;}
   TArrayF GetPtFromSignal() const {return fPtFromSignal;}
-  TArrayF GetEtaIn() const { return fEtaIn; }
-  TArrayF GetPhiIn() const { return fPhiIn; }
-  TArrayF GetPtIn() const { return fPtIn; }
-  Double_t GetEtAvg() const { return fEtAvg; }
+  TArrayF GetEtaIn() const {return fEtaIn;}
+  TArrayF GetPhiIn() const {return fPhiIn;}
+  TArrayF GetPtIn() const {return fPtIn;}
+  Double_t GetEtAvg() const {return fEtAvg;}
 
   TLorentzVector* GetJet(Int_t i);
   Int_t GetMultiplicity(Int_t i) const;
@@ -70,6 +70,9 @@ class AliJet : public TObject
   void PrintJets();
 
  protected:
+
+  AliJet(const AliJet& rJet);
+  AliJet& operator = (const AliJet& rhs);
 
   Int_t fNInput;               // number of input objects
   Int_t fNJets;                // number of jets found

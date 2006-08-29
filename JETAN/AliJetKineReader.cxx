@@ -37,13 +37,13 @@
 
 ClassImp(AliJetKineReader)
 
-AliJetKineReader::AliJetKineReader()
+AliJetKineReader::AliJetKineReader():
+  fRunLoader(0x0),
+  fMass(0),
+  fPdgC(0)
 {
-  // Constructor
+  // Default constructor
   fReaderHeader = 0x0;
-  fRunLoader    = 0x0;
-  fMass         = 0;
-  fPdgC         = 0;
 }
 
 //____________________________________________________________________________

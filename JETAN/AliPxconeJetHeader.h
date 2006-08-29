@@ -30,8 +30,8 @@ class AliPxconeJetHeader : public AliJetHeader
   // Setters
   void SetMode(Int_t m=2) {fMode=m;}
   void SetRadius(Double_t r=0.3) {fRadius=r;}
-  void SetMinPt(Double_t p=10.0) {fMinPt=p;}
-  void SetOverlap(Double_t o=.75) {fOverlap=o;}
+  void SetMinPt(Double_t p=10) {fMinPt=p;}
+  void SetOverlap(Double_t o=0.75) {fOverlap=o;}
 
   // others
   void PrintParameters() const;

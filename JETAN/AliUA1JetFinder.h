@@ -35,6 +35,9 @@ class AliUA1JetFinder : public AliJetFinder
 
  protected:
 
+  AliUA1JetFinder(const AliUA1JetFinder& rUA1Finder);
+  AliUA1JetFinder& operator = (const AliUA1JetFinder& ruaf);
+
   AliUA1JetHeader* fHeader;         // pointer to jet header
   TH2F           * fLego;           //! Lego Histo
 

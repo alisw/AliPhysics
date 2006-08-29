@@ -41,6 +41,9 @@ class AliJetReader : public TObject
   void ClearArray();
  
  protected:
+  AliJetReader(const AliJetReader& rJetReader);
+  AliJetReader& operator = (const AliJetReader& rhsr);
+
   TChain                  *fChain;         // chain for reconstructed tracks
   TChain                  *fChainMC;       // chain for mc information
   TClonesArray            *fMomentumArray; // array of particle momenta
