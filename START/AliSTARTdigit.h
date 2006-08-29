@@ -46,6 +46,8 @@ class AliSTARTdigit: public TObject {
   TArrayI *fTimeAmp;    // array's TDC
   TArrayI *fADCAmp;    // array's ADC
   Int_t fSumMult;   //multiplisity
+  AliSTARTdigit( const AliSTARTdigit& );
+  AliSTARTdigit& operator=(const AliSTARTdigit&); 
   
   ClassDef(AliSTARTdigit,4)  //Digit (Header) object for set:START
     };
