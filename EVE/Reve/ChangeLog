@@ -1,3 +1,20 @@
+2006-08-29  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+	
+	* BoxSetGL.cxx:
+	* QuadSetGL.cxx:
+	Added ifdefs for post root-5.11.0 prototype of SetModelCheckClass().
+
+	* PointSet.cxx:
+	In Reset: added call to PointSet3D::ClearIds().
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Added support for control of camera-reset to Redraw3D(); when
+	opening GL window disable automatic camera reset on update and on
+	double-click.
+
 2006-08-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* PointSet.cxx:

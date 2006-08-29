@@ -39,8 +39,10 @@ Bool_t TPCSector3DGL::SetModel(TObject* obj)
 {
 #if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   if(set_model(obj, "Alieve::TPCSector3D")) {
-#else
+#elif ROOT_VERSION_CODE <= ROOT_VERSION(5,13,0)
   if(SetModelCheckClass(obj, "Alieve::TPCSector3D")) {
+#else
+  if(SetModelCheckClass(obj, Alieve::TPCSector3D::Class())) {
 #endif
     fSector = (TPCSector3D*) fExternalObj;
     if(fBoxRnr == 0) {

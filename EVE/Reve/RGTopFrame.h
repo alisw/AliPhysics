@@ -50,6 +50,7 @@ private:
   RenderElementList   *fGlobalStore;
 
   Int_t                fRedrawDisabled;
+  Bool_t               fResetCameras;
   Bool_t               fTimerActive;
   TTimer               fRedrawTimer;
 
@@ -79,7 +80,10 @@ public:
   void DisableRedraw() { ++fRedrawDisabled; }
   void EnableRedraw()  { --fRedrawDisabled; if(fRedrawDisabled <= 0) Redraw3D(); }
 
-  void Redraw3D() { if(fRedrawDisabled <= 0 && !fTimerActive) RegisterRedraw3D(); }
+  void Redraw3D(Bool_t resetCameras=kFALSE) {
+    if(fRedrawDisabled <= 0 && !fTimerActive) RegisterRedraw3D();
+    if(resetCameras) fResetCameras = kTRUE;
+  }
   void RegisterRedraw3D();
   void DoRedraw3D();
 

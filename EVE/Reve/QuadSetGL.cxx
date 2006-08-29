@@ -32,8 +32,10 @@ Bool_t QuadSetGL::SetModel(TObject* obj)
 {
 #if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   return set_model(obj, "Reve::QuadSet");
-#else
+#elif ROOT_VERSION_CODE <= ROOT_VERSION(5,13,0)
   return SetModelCheckClass(obj, "Reve::QuadSet");
+#else
+  return SetModelCheckClass(obj, Reve::QuadSet::Class());
 #endif
 }
 

@@ -3,7 +3,8 @@
 void clusters_from_label(Int_t label=0)
 {
   AliESD* esd = Alieve::Event::AssertESD();
-  TPolyMarker3D* clusters = new TPolyMarker3D(64);
+  Reve::PointSet* clusters = new Reve::PointSet(64);
+  clusters->SetOwnIds(kTRUE);
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++) {
     AliESDtrack* at = esd->GetTrack(n);
@@ -19,6 +20,9 @@ void clusters_from_label(Int_t label=0)
       const Float_t* z = pArr->GetZ();
       for (Int_t i=0; i<np; ++i) {
 	clusters->SetNextPoint(x[i], y[i], z[i]);
+	AliTrackPoint *atp = new AliTrackPoint;
+	pArr->GetPoint(*atp, i);
+	clusters->SetPointId(atp);
       }
     }
   }

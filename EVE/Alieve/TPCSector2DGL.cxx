@@ -6,6 +6,7 @@
 
 #include <TStopwatch.h>
 
+#include <TGLDrawFlags.h>
 #include <GL/gl.h>
 
 using namespace Reve;
@@ -48,8 +49,10 @@ Bool_t TPCSector2DGL::SetModel(TObject* obj)
 {
 #if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
   if(set_model(obj, "Alieve::TPCSector2D")) {
-#else
+#elif ROOT_VERSION_CODE <= ROOT_VERSION(5,13,0)
   if(SetModelCheckClass(obj, "Alieve::TPCSector2D")) {
+#else
+  if(SetModelCheckClass(obj, Alieve::TPCSector2D::Class())) {
 #endif
     fSector = (TPCSector2D*) fExternalObj;
     return kTRUE;
@@ -68,7 +71,7 @@ void TPCSector2DGL::SetBBox()
 
 /**************************************************************************/
 
-void TPCSector2DGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
+void TPCSector2DGL::DirectDraw(const TGLDrawFlags& flags) const
 {
   // Actual GL drawing.
 
@@ -96,52 +99,42 @@ void TPCSector2DGL::DirectDraw(const TGLDrawFlags& /*flags*/) const
     const TPCSectorData::SegmentInfo& o1Seg = TPCSectorData::GetOut1Seg();
     const TPCSectorData::SegmentInfo& o2Seg = TPCSectorData::GetOut2Seg();
 
-    if(fSector->fUseTexture) {
-      //texture
-      glEnable(GL_BLEND);
-      glDepthMask(GL_FALSE);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if(flags.SecSelection()) {
 
-      glPolygonOffset(2,2);
-      glEnable(GL_POLYGON_OFFSET_FILL);
+      if(fSector->fRnrInn)  DisplayNamedQuads(iSeg, 0, 0);
+      if(fSector->fRnrOut1) DisplayNamedQuads(o1Seg, iSeg.GetNMaxPads(), 0);
+      if(fSector->fRnrOut2) DisplayNamedQuads(o2Seg, 0, o1Seg.GetNRows());
 
-      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glBindTexture(GL_TEXTURE_2D, fTexture);
-      glEnable(GL_TEXTURE_2D);
-
-      if(fSector->fRnrInn)
-	DisplayTexture(iSeg.GetPadWidth(),  iSeg.GetPadHeight(),  iSeg.GetRLow(),
-		       iSeg.GetNMaxPads(),  iSeg.GetNRows(),
-		       0,                   0);
-      if(fSector->fRnrOut1)
-	DisplayTexture(o1Seg.GetPadWidth(), o1Seg.GetPadHeight(), o1Seg.GetRLow(),
-		       o1Seg.GetNMaxPads(), o1Seg.GetNRows(),
-		       iSeg.GetNMaxPads(),  0);
-      if(fSector->fRnrOut2)
-	DisplayTexture(o2Seg.GetPadWidth(), o2Seg.GetPadHeight(), o2Seg.GetRLow(),
-		       o2Seg.GetNMaxPads(), o2Seg.GetNRows(),
-		       0,                   o1Seg.GetNRows());
-
-      glDisable(GL_TEXTURE_2D);
     } else {
-      if(fSector->fRnrInn)
-	DisplayQuads(iSeg.GetPadWidth(),  iSeg.GetPadHeight(),  iSeg.GetRLow(),
-		     iSeg.GetNMaxPads(),  iSeg.GetNRows(),
-		     0,                   0);
-      if(fSector->fRnrOut1)
-	DisplayQuads(o1Seg.GetPadWidth(), o1Seg.GetPadHeight(), o1Seg.GetRLow(),
-		     o1Seg.GetNMaxPads(), o1Seg.GetNRows(),
-		     iSeg.GetNMaxPads(),    0);
-      if(fSector->fRnrOut2)
-	DisplayQuads(o2Seg.GetPadWidth(), o2Seg.GetPadHeight(), o2Seg.GetRLow(),
-		     o2Seg.GetNMaxPads(), o2Seg.GetNRows(),
-		     0,                   o1Seg.GetNRows());
-    }
-  }
 
-  // Display frame
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  DisplayFrame();
+      if(fSector->fUseTexture) {
+	//texture
+	glEnable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glPolygonOffset(2,2);
+	glEnable(GL_POLYGON_OFFSET_FILL);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBindTexture(GL_TEXTURE_2D, fTexture);
+	glEnable(GL_TEXTURE_2D);
+
+	if(fSector->fRnrInn)  DisplayTexture(iSeg, 0, 0);
+	if(fSector->fRnrOut1) DisplayTexture(o1Seg, iSeg.GetNMaxPads(), 0);
+	if(fSector->fRnrOut2) DisplayTexture(o2Seg, 0, o1Seg.GetNRows());
+
+	glDisable(GL_TEXTURE_2D);
+      } else {
+	if(fSector->fRnrInn)  DisplayQuads(iSeg, 0, 0);
+	if(fSector->fRnrOut1) DisplayQuads(o1Seg, iSeg.GetNMaxPads(), 0);
+	if(fSector->fRnrOut2) DisplayQuads(o2Seg, 0, o1Seg.GetNRows());
+      }
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      DisplayFrame();
+    }
+
+  }
 
   glPopAttrib();
 }
@@ -232,7 +225,7 @@ void TPCSector2DGL::CreateTexture() const
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  // glTexEnvf      (GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,   GL_MODULATE); // Lightning is off anyway.
+  glTexEnvf      (GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,   GL_REPLACE);
   glTexImage2D   (GL_TEXTURE_2D, 0, GL_RGBA, fgkTextureWidth, fgkTextureHeight,
                   0, GL_RGBA, GL_UNSIGNED_BYTE, fImage);
 
@@ -242,41 +235,46 @@ void TPCSector2DGL::CreateTexture() const
 // Data display
 /**************************************************************************/
 
-void TPCSector2DGL::DisplayTexture(Float_t padW,     Float_t padH, Float_t startR,
-                                   Int_t numMaxPads, Int_t numRows, 
-                                   Int_t startCol,   Int_t startRow) const
+void TPCSector2DGL::DisplayTexture(const TPCSectorData::SegmentInfo& seg,
+                                   Int_t startCol, Int_t startRow) const
 {
-  Float_t w  = numMaxPads*padW/2;
+  Float_t w  = seg.GetNMaxPads()*seg.GetPadWidth()/2;
+  Float_t y1 = seg.GetRLow();
+  Float_t y2 = y1 + seg.GetNRows()*seg.GetPadHeight();
+
   Float_t u1 = (Float_t) startCol / fgkTextureWidth;
   Float_t v1 = (Float_t) startRow / fgkTextureHeight;
-  Float_t u2 = u1 + (Float_t) numMaxPads / fgkTextureWidth;
-  Float_t v2 = v1 + (Float_t) numRows    / fgkTextureHeight;
+  Float_t u2 = u1 + (Float_t) seg.GetNMaxPads() / fgkTextureWidth;
+  Float_t v2 = v1 + (Float_t) seg.GetNRows()    / fgkTextureHeight;
 
   glBegin(GL_QUADS);  
-  glTexCoord2f(u1, v1);  glVertex2f(-w, startR);
-  glTexCoord2f(u1, v2);  glVertex2f(-w, startR + numRows*padH);
-  glTexCoord2f(u2, v2);  glVertex2f( w, startR + numRows*padH);
-  glTexCoord2f(u2, v1);  glVertex2f( w, startR);
+  glTexCoord2f(u1, v1);  glVertex2f(-w, y1);
+  glTexCoord2f(u1, v2);  glVertex2f(-w, y2);
+  glTexCoord2f(u2, v2);  glVertex2f( w, y2);
+  glTexCoord2f(u2, v1);  glVertex2f( w, y1);
   glEnd();
 }
 
 /**************************************************************************/
 
-void TPCSector2DGL::DisplayQuads(Float_t padW,     Float_t padH, Float_t startR,
-                                 Int_t numMaxPads, Int_t numRows, 
-                                 Int_t startCol,   Int_t startRow) const
+void TPCSector2DGL::DisplayQuads(const TPCSectorData::SegmentInfo& seg,
+                                 Int_t startCol, Int_t startRow) const
 {
-  UChar_t *pix;
   Float_t y_d, y_u;
   Float_t x_off, x;
+  Float_t padW = seg.GetPadWidth();
+  Float_t padH = seg.GetPadHeight();
 
   glBegin(GL_QUADS);
-  for (Int_t row=0; row<numRows; row++) {
-    y_d = startR + row*padH;
+  for (Int_t row=0; row<seg.GetNRows(); row++) {
+    y_d = seg.GetRLow() + row*padH;
     y_u = y_d + padH;
-    x_off = -numMaxPads*padW/2;
-    pix = GetRowCol(row + startRow, startCol);
-    for (Int_t pad=0; pad<numMaxPads; pad++, pix+=4) {
+    x_off = -seg.GetNMaxPads()*padW/2;
+    Int_t tpcRow = row + seg.GetFirstRow();
+    Int_t deltaPad = (seg.GetNMaxPads() - TPCSectorData::GetNPadsInRow(tpcRow))/2;
+    Int_t   maxPad = seg.GetNMaxPads() - deltaPad;
+    UChar_t   *pix = GetRowCol(row + startRow, startCol + deltaPad);
+    for (Int_t pad=deltaPad; pad<maxPad; pad++, pix+=4) {
       x = x_off + pad*padW;
       if (pix[3] != 0) {
         glColor4ubv(pix);
@@ -288,6 +286,44 @@ void TPCSector2DGL::DisplayQuads(Float_t padW,     Float_t padH, Float_t startR,
     }
   }
   glEnd();
+}
+
+void TPCSector2DGL::DisplayNamedQuads(const TPCSectorData::SegmentInfo& seg,
+				      Int_t startCol, Int_t startRow) const
+{
+  Float_t y_d, y_u;
+  Float_t x_off, x;
+  Float_t padW = seg.GetPadWidth();
+  Float_t padH = seg.GetPadHeight();
+
+  glPushName(0);
+  for (Int_t row=0; row<seg.GetNRows(); row++) {
+    y_d = seg.GetRLow() + row*padH;
+    y_u = y_d + padH;
+    x_off = -seg.GetNMaxPads()*padW/2;
+    Int_t tpcRow = row + seg.GetFirstRow();
+    glLoadName(tpcRow);
+    Int_t deltaPad = (seg.GetNMaxPads() - TPCSectorData::GetNPadsInRow(tpcRow))/2;
+    Int_t   maxPad = seg.GetNMaxPads() - deltaPad;
+    UChar_t   *pix = GetRowCol(row + startRow, startCol + deltaPad);
+    glPushName(0);
+    for (Int_t pad=deltaPad; pad<maxPad; pad++, pix+=4) {
+      x = x_off + pad*padW;
+      // !!! Potentially replace following 'if', add an option to TPCSector2D.
+      // !!! Details depend on how data is processed during extraction.
+      if (pix[3] != 0) {
+	glLoadName(pad - deltaPad);
+	glBegin(GL_QUADS);
+        glVertex2f(x+padW, y_d);
+        glVertex2f(x,      y_d);
+        glVertex2f(x,      y_u);
+        glVertex2f(x+padW, y_u);
+	glEnd();
+      }
+    }
+    glPopName();
+  }
+  glPopName();
 }
 
 /**************************************************************************/

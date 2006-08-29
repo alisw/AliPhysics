@@ -1,3 +1,13 @@
+2006-08-29  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* TPCSector2DGL.cxx:
+	* TPCSector2DGL.h:
+	Added support for two-level selection down to pad level; added
+	ifdefs for post root-5.11.0 prototype of SetModelCheckClass().
+
+	* TPCSector3DGL.cxx:
+	Added ifdefs for post root-5.11.0 prototype ofSetModelCheckClass().
+
 2006-07-11  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:

@@ -94,7 +94,8 @@ void RGTopFrame::Init()
   fGlobalStore    = 0;
 
   fRedrawDisabled = 0;
-  fTimerActive    = false;
+  fResetCameras   = kFALSE;
+  fTimerActive    = kFALSE;
   fRedrawTimer.Connect("Timeout()", "Reve::RGTopFrame", this, "DoRedraw3D()");
 }
 
@@ -185,7 +186,9 @@ RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look)
 
   TGLViewer* glv = dynamic_cast<TGLViewer*>(fCC->GetViewer3D());
   if(glv) {
-    glv->SetSmartRefresh(true);
+    glv->SetSmartRefresh(kTRUE);
+    glv->SetResetCamerasOnUpdate(kFALSE);
+    glv->SetResetCameraOnDoubleClick(kFALSE);
   }
 
   /**************************************************************************/
@@ -248,9 +251,13 @@ void RGTopFrame::RegisterRedraw3D()
 void RGTopFrame::DoRedraw3D()
 {
   // printf("RGTopFrame::DoRedraw3D redraw triggered\n");
+  if (fResetCameras) {
+    fCC->GetViewer3D()->ResetCamerasAfterNextUpdate();
+    fResetCameras = kFALSE;
+  }
   fCC->Modified();
   fCC->Update();
-  fTimerActive = false;
+  fTimerActive = kFALSE;
 }
 
 /**************************************************************************/

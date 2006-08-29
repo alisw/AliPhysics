@@ -59,6 +59,7 @@ void PointSet::Reset(Int_t n_points)
   if(fN) fP = new Float_t [3*fN];
   memset(fP, 0, 3*fN*sizeof(Float_t));
   fLastPoint = -1;
+  ClearIds();
   ResetBBox();
 }
 

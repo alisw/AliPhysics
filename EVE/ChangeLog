@@ -1,3 +1,14 @@
+2006-08-29  Matevz TADEL  <matevz.tadel@ijs.si>
+
+	Merged EVE-dev to HEAD. Re-tagged EVE-dev (EVE-dev-after-merge) and
+	EVE's HEAD (EVE-head-after-merge).
+
+2006-08-29  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/clusters_from_label.C:
+	Use Reve::PointSet for cluster representation; attach to each
+	cluster a copy of AliTrackPoint it represents.
+
 2006-08-04  Matevz TADEL  <matevz.tadel@cern.ch>
 
 	Merged HEAD to EVE-dev. Re-tagged EVE-dev (EVE-dev-after-merge) and
