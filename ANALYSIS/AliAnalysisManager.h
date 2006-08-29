@@ -31,8 +31,6 @@ enum EAliAnalysisContType {
    kOutputContainer  = 2
 };   
    AliAnalysisManager();
-   AliAnalysisManager(const AliAnalysisManager& other);
-   AliAnalysisManager& operator=(const AliAnalysisManager& other);
    virtual            ~AliAnalysisManager();
    
    // Selector-specific methods
@@ -85,6 +83,11 @@ protected:
    TObjArray           *fTopTasks;     //-> List of top tasks
    TObjArray           *fZombies;      //-> List of zombie tasks
 //   AliAnalysisInfo     *fStatus;       // Analysis info object
+
+private:
+   AliAnalysisManager(const AliAnalysisManager& other);
+   AliAnalysisManager& operator=(const AliAnalysisManager& other);
+
 
    ClassDef(AliAnalysisManager,1)  // Analysis manager class
 };   

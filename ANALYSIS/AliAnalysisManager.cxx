@@ -57,6 +57,7 @@ AliAnalysisManager::AliAnalysisManager() : TSelector(),
    }
 }
 
+#ifdef NEVER
 //______________________________________________________________________________
 AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                    :TSelector(other),
@@ -96,6 +97,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
    }
    return *this;
 }
+#endif
 
 //______________________________________________________________________________
 AliAnalysisManager::~AliAnalysisManager()
