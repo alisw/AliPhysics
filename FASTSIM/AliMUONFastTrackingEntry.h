@@ -1,11 +1,12 @@
-#ifndef ALIMUONFASTTRACKINGENTRY
-#define ALIMUONFASTTRACKINGENTRY
+#ifndef ALIMUONFASTTRACKINGENTRY_H
+#define ALIMUONFASTTRACKINGENTRY_H
 
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
+
 
 #include <TClassTable.h>
 
@@ -16,24 +17,24 @@ class AliMUONFastTrackingEntry {
  public:
   AliMUONFastTrackingEntry();
   virtual ~AliMUONFastTrackingEntry(){;}
-  Float_t GetP(){return fP;}
-  Float_t GetTheta(){return fTheta;}
-  Float_t GetPhi(){return fPhi;}
-  Float_t GetMeanp(){return fMeanp;}
-  Float_t GetMeantheta(){return fMeantheta;}
-  Float_t GetMeanphi(){return fMeanphi;}
-  Float_t GetSigmap(){return fSigmap;}
-  Float_t GetSigmatheta(){return fSigmatheta;}
-  Float_t GetSigmaphi(){return fSigmaphi;}
-  Float_t GetSigma1p(){return fSigma1p;}
-  Float_t GetChi2p(){return fChi2p;}
-  Float_t GetChi2theta(){return fChi2theta;}
-  Float_t GetChi2phi(){return fChi2phi;}
-  Float_t GetAcc(Int_t i, Int_t j) {return fAcc[i][j];}
-  Float_t GetEff(Int_t i, Int_t j) {return fEff[i][j];}
-  Float_t GetNormG2(){return fNormG2;}
-  Float_t GetMeanG2(){return fMeanG2;}
-  Float_t GetSigmaG2(){return fSigmaG2;}
+  Float_t GetP()const {return fP;}
+  Float_t GetTheta()const {return fTheta;}
+  Float_t GetPhi()const {return fPhi;}
+  Float_t GetMeanp()const {return fMeanp;}
+  Float_t GetMeantheta()const {return fMeantheta;}
+  Float_t GetMeanphi()const {return fMeanphi;}
+  Float_t GetSigmap()const {return fSigmap;}
+  Float_t GetSigmatheta()const {return fSigmatheta;}
+  Float_t GetSigmaphi()const {return fSigmaphi;}
+  Float_t GetSigma1p()const {return fSigma1p;}
+  Float_t GetChi2p()const {return fChi2p;}
+  Float_t GetChi2theta()const {return fChi2theta;}
+  Float_t GetChi2phi()const {return fChi2phi;}
+  Float_t GetAcc(Int_t i, Int_t j)const {return fAcc[i][j];}
+  Float_t GetEff(Int_t i, Int_t j) const {return fEff[i][j];}
+  Float_t GetNormG2()const {return fNormG2;}
+  Float_t GetMeanG2()const {return fMeanG2;}
+  Float_t GetSigmaG2()const {return fSigmaG2;}
 
   void SetP(Float_t p){fP = p;}
   void SetTheta(Float_t theta){fTheta = theta;}
