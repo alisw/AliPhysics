@@ -40,6 +40,7 @@ class AliTRDdigitizer : public AliDigitizer {
           void     InitOutput(Int_t iEvent);
   virtual void     Exec(Option_t *option = 0);  
   virtual Bool_t   Open(const Char_t *file, Int_t nEvent = 0);
+  virtual Bool_t   Open(AliRunLoader *runLoader, Int_t nEvent = 0);
   virtual Bool_t   MakeBranch(TTree *tree) const;
   virtual Bool_t   MakeDigits();
 

@@ -171,10 +171,12 @@ void AliTRD::Hits2Digits()
     fLoader->LoadHits("read");
   }
   fLoader->LoadDigits("recreate");
+
   AliRunLoader *runLoader = fLoader->GetRunLoader(); 
 
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    digitizer.Open(runLoader->GetFileName().Data(),iEvent);
+    runLoader->GetEvent(iEvent);
+    digitizer.Open(runLoader,iEvent);
     digitizer.MakeDigits();
     digitizer.WriteDigits();
   }
@@ -203,10 +205,12 @@ void AliTRD::Hits2SDigits()
     fLoader->LoadHits("read");
   }
   fLoader->LoadSDigits("recreate");
-  AliRunLoader* runLoader = fLoader->GetRunLoader(); 
+
+  AliRunLoader *runLoader = fLoader->GetRunLoader(); 
 
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    digitizer.Open(runLoader->GetFileName().Data(),iEvent);
+    runLoader->GetEvent(iEvent);
+    digitizer.Open(runLoader,iEvent);
     digitizer.MakeDigits();
     digitizer.WriteDigits();
   }
@@ -217,7 +221,7 @@ void AliTRD::Hits2SDigits()
 }
 
 //_____________________________________________________________________________
-AliDigitizer *AliTRD::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer *AliTRD::CreateDigitizer(AliRunDigitizer *manager) const
 {
   //
   // Creates a new digitizer object

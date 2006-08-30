@@ -370,11 +370,11 @@ void AliTRDdigitizer::Copy(TObject &d) const
   // Do not copy timestructs, just invalidate lastvdrift.
   // Next time they are requested, they get recalculated
   if (target.fTimeStruct1) {
-    delete[] target.fTimeStruct1;
+    delete [] target.fTimeStruct1;
     target.fTimeStruct1 = 0;
   }
   if (target.fTimeStruct2) {
-    delete[] target.fTimeStruct2;
+    delete [] target.fTimeStruct2;
     target.fTimeStruct2 = 0;
   }  
   target.fTimeLastVdrift = -1;
@@ -424,12 +424,13 @@ void AliTRDdigitizer::Exec(Option_t *option)
   // Initialization
   //
 
-  AliRunLoader* orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  AliRunLoader *orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+
   if (InitDetector()) {
 
-    AliLoader* ogime = orl->GetLoader("TRDLoader");
+    AliLoader *ogime = orl->GetLoader("TRDLoader");
 
-    TTree* tree = 0;
+    TTree *tree = 0;
     if (fSDigits) { 
       // If we produce SDigits
       tree = ogime->TreeS();
@@ -522,8 +523,8 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
     fRunLoader = AliRunLoader::Open(file,evfoldname,"UPDATE");
   }  
   if (!fRunLoader) {
-     AliError(Form("Can not open session for file %s.",file));
-     return kFALSE;
+    AliError(Form("Can not open session for file %s.",file));
+    return kFALSE;
   }
    
   if (!fRunLoader->GetAliRun()) {
@@ -559,6 +560,69 @@ Bool_t AliTRDdigitizer::Open(const Char_t *file, Int_t nEvent)
     }
     else {
       // If we produce Digits
+      tree = loader->TreeD();
+      if (!tree) {
+        loader->MakeTree("D");
+        tree = loader->TreeD();
+      }
+    }
+    return MakeBranch(tree);
+  }
+  else {
+    return kFALSE;
+  }
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDdigitizer::Open(AliRunLoader *runLoader, Int_t nEvent)
+{
+  //
+  // Opens a ROOT-file with TRD-hits and reads in the hit-tree
+  //
+  // Connect the AliRoot file containing Geometry, Kine, and Hits
+  //  
+
+  fRunLoader = runLoader;
+  if (!fRunLoader) {
+    AliError("RunLoader does not exist");
+    return kFALSE;
+  }
+   
+  if (!fRunLoader->GetAliRun()) {
+    fRunLoader->LoadgAlice();
+  }
+  gAlice = fRunLoader->GetAliRun();
+  
+  if (gAlice) {
+    AliDebug(1,"AliRun object found on file.\n");
+  }
+  else {
+    AliError("Could not find AliRun object.\n");
+    return kFALSE;
+  }
+
+  fEvent = nEvent;
+
+  AliLoader *loader = fRunLoader->GetLoader("TRDLoader");
+  if (!loader) {
+    AliError("Can not get TRD loader from Run Loader");
+    return kFALSE;
+  }
+  
+  if (InitDetector()) {
+    TTree *tree = 0;
+    if (fSDigits) { 
+      // If we produce SDigits
+      tree = loader->TreeS();
+      if (!tree) {
+        loader->MakeTree("S");
+        tree = loader->TreeS();
+      }
+    }
+    else {
+      // If we produce Digits
+      tree = loader->TreeD();
       if (!tree) {
         loader->MakeTree("D");
         tree = loader->TreeD();
@@ -614,7 +678,7 @@ Bool_t AliTRDdigitizer::InitDetector()
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDdigitizer::MakeBranch(TTree* tree) const
+Bool_t AliTRDdigitizer::MakeBranch(TTree *tree) const
 {
   // 
   // Create the branches for the digits array
