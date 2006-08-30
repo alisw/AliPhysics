@@ -733,13 +733,14 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   // reads the raw format data, converts it into digits format and store digits in Digits()
   // container.
   // isOldRCUFormat = kTRUE in case of the old RCU
-  // format used in the raw data readout
+  // format used in the raw data readout.
+  // Reimplemented by Boris Polichtchouk (Jul 2006)
+  // to make it working with the Jul-Aug 2006 beam test data.
+ 
 
   AliPHOSRawStream in(rawReader);
   in.SetOldRCUFormat(isOldRCUFormat);
  
-  Bool_t first = kTRUE ;
-  
   TF1 * signalF = new TF1("signal", AliPHOS::RawResponseFunction, 0, PHOS()->GetRawFormatTimeMax(), 4);
   signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero") ; 
 
@@ -747,74 +748,86 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   Bool_t lowGainFlag = kFALSE ; 
 
   TClonesArray * digits = Digits() ;
-  digits->Clear() ; 
-  Int_t idigit = 0 ; 
-  Int_t amp    = 0 ; 
-  Double_t energy = 0. ; 
-  Double_t time   = 0. ; 
+  digits->Clear() ;
 
-  TGraph * gLowGain = new TGraph(PHOS()->GetRawFormatTimeBins()) ; 
-  TGraph * gHighGain= new TGraph(PHOS()->GetRawFormatTimeBins()) ;  
-  gLowGain ->SetTitle("Low gain channel");
-  gHighGain->SetTitle("High gain channel");
+  Int_t iBin = 0;
+  Int_t idigit = 0 ; 
+  Double_t energy = 0. ; 
+  Double_t time   = 0. ;
+
+  Float_t* ampLG = 0;
+  Float_t* ampHG = 0;
+  Float_t* timeLH = 0; 
+
+  Int_t iDigLow = 0;
+  Int_t iDigHigh = 0;
 
   while ( in.Next() ) { // PHOS entries loop 
-    if ( (in.IsNewRow() || in.IsNewColumn() || in.IsNewModule()) ) {
-      if (!first) {
-	FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
- 	amp = (Int_t)energy;
-	if (energy > 0) {
-	  new((*digits)[idigit]) AliPHOSDigit( -1, id, (Float_t)energy, time) ;	
-	  idigit++ ; 
-	}
-	Int_t index ; 
-	for (index = 0; index < PHOS()->GetRawFormatTimeBins(); index++) {
-	  gLowGain ->SetPoint(index,
-			      index * PHOS()->GetRawFormatTimeMax() /
-			      PHOS()->GetRawFormatTimeBins(), 0) ;  
-	  gHighGain->SetPoint(index,
-			      index * PHOS()->GetRawFormatTimeMax() / 
-			      PHOS()->GetRawFormatTimeBins(), 0) ; 
-	} 
-      }
-      first = kFALSE ; 
-      relId[0] = in.GetModule() ;
-      Int_t lowGainOffset = PHOSGeometry()->GetNModules() + 1;
-      if ( relId[0] >= lowGainOffset ) { 
-	relId[0] -=  lowGainOffset ;
-	lowGainFlag = kTRUE ;
-      } else
-	lowGainFlag = kFALSE ;
-      relId[1] = 0 ;
-      relId[2] = in.GetRow() ;
-      relId[3] = in.GetColumn() ;
-      PHOSGeometry()->RelToAbsNumbering(relId, id) ;
-    }
-    if (lowGainFlag)
-      gLowGain->SetPoint(in.GetTime(), 
-			 in.GetTime()* PHOS()->GetRawFormatTimeMax() /
-			 PHOS()->GetRawFormatTimeBins(), 
-			 in.GetSignal()) ;
-    else 
-      gHighGain->SetPoint(in.GetTime(), 
-			  in.GetTime() * PHOS()->GetRawFormatTimeMax() /
-			  PHOS()->GetRawFormatTimeBins(), 
-			  in.GetSignal() ) ;
-
-  } // PHOS entries loop
-
-  FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time) ; 
-  amp = (Int_t)energy;
-  if (energy > 0 ) {
-    new((*digits)[idigit]) AliPHOSDigit( -1, id, (Float_t)energy, time) ;
-    idigit++ ; 
-  }
-  digits->Sort() ; 
-
-  delete signalF ; 
-  delete gLowGain;
-  delete gHighGain ; 
   
+    if(!ampLG) ampLG = new Float_t[in.GetTimeLength()];
+    if(!ampHG) ampHG = new Float_t[in.GetTimeLength()];
+    if(!timeLH) timeLH = new Float_t[in.GetTimeLength()];
+     
+    timeLH[in.GetTimeLength()-iBin-1] =  in.GetTime();
+
+    lowGainFlag = in.IsLowGain();
+
+    if(lowGainFlag) 
+      ampLG[in.GetTimeLength()-iBin-1] = in.GetSignal(); //low gain
+    else 
+      ampHG[in.GetTimeLength()-iBin-1] = in.GetSignal(); //high gain
+    iBin++;
+
+    if(iBin==in.GetTimeLength()) {
+      iBin=0;
+
+      TGraph gLowGain(in.GetTimeLength(),timeLH,ampLG);
+      TGraph gHighGain(in.GetTimeLength(),timeLH,ampHG);
+
+      if(lowGainFlag) iDigLow++;
+      else iDigHigh++;
+	  
+      // Temporarily we do not fit the sample graph, but
+      // take the energy from the graph maximum, and the pedestal from the 0th point
+      // 30 Aug 2006
+
+      //FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time);
+      if(!lowGainFlag) {
+	energy = gHighGain.GetHistogram()->GetMaximum();
+	energy -= gHighGain.Eval(0); // "pedestal subtraction"
+      }
+      else {
+	energy = gLowGain.GetHistogram()->GetMaximum();
+	energy -= gLowGain.Eval(0); // "pedestal subtraction"
+      }
+	    
+      time = -1;
+
+      relId[0] = in.GetModule();
+      relId[1] = 0;
+      relId[2] = in.GetRow();
+      relId[3] = in.GetColumn();
+      if(!PHOSGeometry()) Fatal("ReadRaw","Couldn't find PHOSGeometry!");
+      PHOSGeometry()->RelToAbsNumbering(relId, id);
+
+      if(!lowGainFlag) {
+	new((*digits)[idigit]) AliPHOSDigit(-1,id,(Float_t)energy,time);
+	idigit++;
+      }
+
+      delete timeLH; timeLH=0;
+      delete ampHG; ampHG=0;
+      delete ampLG; ampLG=0;
+    }
+  }
+
+  // PHOS entries loop
+ 
+  digits->Sort() ;
+  //printf("\t\t\t------ %d Digits: %d LowGain + %d HighGain.\n",
+  //	 digits->GetEntriesFast(),iDigLow,iDigHigh);   
+
+  delete signalF ;   
   return digits->GetEntriesFast() ; 
 }
 

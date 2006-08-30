@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.47  2006/08/25 16:56:30  kharlov
+ * Compliance with Effective C++
+ *
  * Revision 1.46  2006/08/01 12:20:17  cvetan
  * 1. Adding a possibility to read and reconstruct an old rcu formatted raw data. This is controlled by an option of AliReconstruction and AliPHOSReconstructor. 2. In case of raw data processing (without galice.root) create the default AliPHOSGeometry object. Most likely this should be moved to the CDB
  *
@@ -105,12 +108,13 @@ protected:
   virtual Bool_t IsInEmc (AliPHOSDigit * digit)const ;     // Tells if id digit is in EMC
   virtual Bool_t IsInCpv (AliPHOSDigit * digit)const ;     // Tells if id digit is in CPV
   void           CleanDigits(TClonesArray * digits) ;
+  void           GetCalibrationParameters(void);
+
   AliPHOSClusterizerv1 & operator = (const AliPHOSClusterizerv1 & obj);
  
 private:
 
   const   TString BranchName() const ; 
-  void    GetCalibrationParameters(void) ;
   
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit ** MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
@@ -126,16 +130,16 @@ private:
 
   Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
 
-  Int_t   fEmcCrystals ;             // number of EMC cristalls in PHOS
+  Int_t   fEmcCrystals ;             // number of EMC cristals in PHOS
 
   Bool_t  fToUnfold ;                // To perform unfolding 
   Bool_t  fWrite ;                   // Write RecPoints to TreeR  
-
-  Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found 
+ 
+  Int_t   fNumberOfEmcClusters ;     // number of EMC clusters found
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
   //Calibration parameters
-  AliPHOSCalibData * fCalibData ;   //! Calibration database if aval
+  AliPHOSCalibData * fCalibData ;   //! Calibration database if aval.
   Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
   Float_t fADCpedestalEmc ;         //
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
