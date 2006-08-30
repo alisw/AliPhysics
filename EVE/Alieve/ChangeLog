@@ -1,4 +1,40 @@
+2006-08-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	* ITSDigitsInfo.cxx:
+	* ITSDigitsInfo.h:
+	* ITSModule.cxx:
+	* ITSModule.h:
+	* MUONDigitsInfo.cxx:
+	* MUONDigitsInfo.h:
+	* MUONModule.cxx:
+	* MUONModule.h:
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	* TPCLoaderEditor.cxx:
+	* TPCLoaderEditor.h:
+	* TPCSector2DEditor.cxx:
+	* TPCSector2DEditor.h:
+	* TPCSector2DGL.cxx:
+	* TPCSector2DGL.h:
+	* TPCSector3D.cxx:
+	* TPCSector3DEditor.cxx:
+	* TPCSector3DEditor.h:
+	* TPCSector3DGL.cxx:
+	* TPCSector3DGL.h:
+	* TPCSectorData.cxx:
+	* TPCSectorData.h:
+	* TPCSectorViz.h:
+	* TPCSectorVizEditor.cxx:
+	* TPCSectorVizEditor.h:
+	* VSDCreator.cxx:
+	* VSDCreator.h:
+	Fix effc++ warnings.
+
 2006-08-29  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
 
 	* TPCSector2DGL.cxx:
 	* TPCSector2DGL.h:

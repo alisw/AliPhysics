@@ -1,3 +1,42 @@
+2006-08-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* GeoNode.h:
+	* PODs.h:
+	* PointSet.cxx:
+	* PointSet.h:
+	* PointSetArrayEditor.cxx:
+	* PointSetArrayEditor.h:
+	* QuadSet.cxx:
+	* QuadSet.h:
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	* RGValuators.h:
+	* RGeoNodeEditors.cxx:
+	* RGeoNodeEditors.h:
+	* RenderElement.cxx:
+	* RenderElement.h:
+	* RenderElementEditor.cxx:
+	* RenderElementEditor.h:
+	* Reve.h:
+	* TTreeTools.h:
+	* Track.cxx:
+	* Track.h:
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	* VSD.cxx:
+	* VSD.h:
+	* VSDEvent.cxx:
+	* VSDEvent.h:
+	* VSDSelector.cxx:
+	* VSDSelector.h:
+	Fix effc++ warnings.
+
+	* LinkDef.h:
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	Removed code for gled-like object editors (obsolete, somewhat
+	decayed); fix effc++ warnings.
+
 2006-08-29  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev
