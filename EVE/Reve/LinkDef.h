@@ -64,8 +64,6 @@
 #pragma link C++ class Reve::VSDSelector+;
 
 // RGBrowser
-#pragma link C++ class Reve::ReveValuator+;
-#pragma link C++ class Reve::ReveColorSelect+;
 #pragma link C++ class Reve::RGBrowser+;
 
 // RGEditor
