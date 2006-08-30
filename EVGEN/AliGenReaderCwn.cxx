@@ -29,7 +29,7 @@
 
 #include "AliGenReaderCwn.h"
 
-ClassImp(AliGenReaderCwn);
+ClassImp(AliGenReaderCwn)
 
 AliGenReaderCwn::AliGenReaderCwn():
     fNcurrent(0),

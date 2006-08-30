@@ -25,7 +25,7 @@
 #include "AliDecayerPolarized.h"
 #include "AliLog.h"
 
-ClassImp(AliDecayerPolarized);
+ClassImp(AliDecayerPolarized)
 
 
 

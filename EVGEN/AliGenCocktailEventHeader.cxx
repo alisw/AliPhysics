@@ -19,7 +19,7 @@
 #include "AliGenEventHeader.h"
 #include <TList.h>
 
-ClassImp(AliGenCocktailEventHeader);
+ClassImp(AliGenCocktailEventHeader)
 
 
 AliGenCocktailEventHeader::AliGenCocktailEventHeader():

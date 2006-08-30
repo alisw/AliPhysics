@@ -16,7 +16,7 @@
 /* $Id$ */
 
 #include "AliLhcMonitor.h"
-ClassImp(AliLhcMonitor);
+ClassImp(AliLhcMonitor)
 
 
 AliLhcMonitor::AliLhcMonitor():fNmax(0){;}

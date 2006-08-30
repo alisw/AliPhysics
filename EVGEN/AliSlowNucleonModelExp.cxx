@@ -27,7 +27,7 @@
 #include "AliCollisionGeometry.h"
 #include <TRandom.h>
 
-ClassImp(AliSlowNucleonModelExp);
+ClassImp(AliSlowNucleonModelExp)
 
 
 AliSlowNucleonModelExp::AliSlowNucleonModelExp():

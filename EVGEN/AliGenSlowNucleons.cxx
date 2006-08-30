@@ -35,7 +35,7 @@
 #include "AliGenSlowNucleons.h"
 #include "AliSlowNucleonModel.h"
 
-ClassImp(AliGenSlowNucleons);
+ClassImp(AliGenSlowNucleons)
 
     
 AliGenSlowNucleons::AliGenSlowNucleons()

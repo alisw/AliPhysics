@@ -27,7 +27,7 @@
 
 #include "AliGenReaderEcalHijing.h"
 
-ClassImp(AliGenReaderEcalHijing);
+ClassImp(AliGenReaderEcalHijing)
 
 AliGenReaderEcalHijing::AliGenReaderEcalHijing():
     fNcurrent(0),
