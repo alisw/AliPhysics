@@ -22,6 +22,9 @@ class TPCSectorViz;
 
 class TPCSectorVizEditor : public TGedFrame
 {
+  TPCSectorVizEditor(const TPCSectorVizEditor&);            // Not implemented
+  TPCSectorVizEditor& operator=(const TPCSectorVizEditor&); // Not implemented
+
 protected:
   TPCSectorViz* fM; // fModel dynamic-casted to TPCSectorVizEditor
 
@@ -33,7 +36,7 @@ protected:
   TGCheckButton*    fRnrOut2;
 
   Reve::RGValuator* fThreshold;
-  Reve::RGValuator* fMaxVal;
+  Reve::RGValuator* fMaxVal;   
 
   Reve::RGDoubleValuator* fTime;
 

@@ -21,48 +21,74 @@ using namespace Reve;
 
 ClassImp(Reve::Track)
 
-Track::Track()
-{
-  fRnrStyle = 0;
-}
+Track::Track() :
+  RenderElement(),
+  TPolyLine3D(),
 
-Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs)
-{
-  fRnrStyle = rs;
+  fV(),
+  fP(),
+  fBeta(0),
+  fCharge(0),
+  fLabel(0),
+  fPathMarks(),
 
-  fName = t->GetName();
+  fRnrStyle(0),
+
+  fName(),
+  fTitle()
+{}
+
+Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
+  RenderElement(),
+  TPolyLine3D(),
+
+  fV(t->Vx(), t->Vy(), t->Vz()),
+  fP(t->Px(), t->Py(), t->Pz()),
+  fBeta(t->P()/t->Energy()),
+  fCharge(0),
+  fLabel(t->label),
+  fPathMarks(),
+
+  fRnrStyle(rs),
+
+  fName(t->GetName()),
+  fTitle()
+{
   fLineColor = fRnrStyle->GetColor();
   fMainColorPtr = &fLineColor;
-
-  fV.Set(t->Vx(), t->Vy(), t->Vz());
-  fP.Set(t->Px(), t->Py(), t->Pz());
-  fBeta   = t->P()/t->Energy();
 
   TParticlePDG* pdgp = t->GetPDG();
   if(pdgp == 0) {
     t->ResetPdgCode(); pdgp = t->GetPDG();
   }
-
   fCharge = (Int_t) TMath::Nint(pdgp->Charge()/3);
-  fLabel  = t->label;
 }
 
-Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs)
+Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
+  RenderElement(),
+  TPolyLine3D(),
+
+  fV(t->V),
+  fP(t->P),
+  fBeta(t->beta),
+  fCharge(t->sign),
+  fLabel(t->label),
+  fPathMarks(),
+
+  fRnrStyle(rs),
+
+  fName(t->GetName()),
+  fTitle()
 {
-  fRnrStyle = rs;
-  fName = t->GetName();
   fLineColor = fRnrStyle->GetColor();
   fMainColorPtr = &fLineColor;
-
-  fV = t->V;
-  fP = t->P;
-  fBeta   = t->beta;
-  fCharge = t->sign;
-  fLabel  = t->label; 
 }
 
 Track::~Track()
-{}
+{
+  for (vpPathMark_i i=fPathMarks.begin(); i!=fPathMarks.end(); ++i)
+    delete *i;
+}
 
 void Track::Reset(Int_t n_points)
 {
@@ -206,21 +232,22 @@ Float_t       TrackRnrStyle::fgDefMagField = 5;
 const Float_t TrackRnrStyle::fgkB2C        = 0.299792458e-3;
 TrackRnrStyle TrackRnrStyle::fgDefStyle;
 
-void TrackRnrStyle::Init()
-{
-  fMagField = fgDefMagField;
+TrackRnrStyle::TrackRnrStyle() :
+  TObject(),
 
-  fMaxR  = 350;
-  fMaxZ  = 450;
+  fColor(1),
+  fMagField(fgDefMagField),
 
-  fMaxOrbs = 0.5;
-  fMinAng  = 45;
+  fMaxR  (350),
+  fMaxZ  (450),
 
-  fFitDaughters = kTRUE;
-  fFitDecay     = kTRUE;
+  fMaxOrbs (0.5),
+  fMinAng  (45),
+  fDelta   (0.1),
 
-  fDelta  = 0.1; //calculate step size depending on helix radius
-}
+  fFitDaughters(kTRUE),
+  fFitDecay    (kTRUE)
+{}
 
 /**************************************************************************/
 /**************************************************************************/
@@ -237,23 +264,32 @@ void TrackList::Init()
   fMarkerColor = 5;
   // fMarker->SetMarkerSize(0.05);
 
-  fRnrMarkers = kTRUE;
-  fRnrTracks  = kTRUE;
-
   mRnrStyle = new TrackRnrStyle;
   SetMainColorPtr(&mRnrStyle->fColor);
 }
 
 TrackList::TrackList(Int_t n_tracks) :
   RenderElementListBase(),
-  TPolyMarker3D(n_tracks)
+  TPolyMarker3D(n_tracks),
+
+  fTitle(),
+
+  mRnrStyle   (0),
+  fRnrMarkers (kTRUE),
+  fRnrTracks  (kTRUE)
 {
   Init();
 }
 
 TrackList::TrackList(const Text_t* name, Int_t n_tracks) :
   RenderElementListBase(),
-  TPolyMarker3D(n_tracks)
+  TPolyMarker3D(n_tracks),
+
+  fTitle(),
+
+  mRnrStyle   (0),
+  fRnrMarkers (kTRUE),
+  fRnrTracks  (kTRUE)
 {
   Init();
   SetName(name);

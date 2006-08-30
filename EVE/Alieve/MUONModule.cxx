@@ -33,42 +33,26 @@ using namespace std;
 ClassImp(MUONModule)
 
 /**************************************************************************/
-MUONModule:: ~MUONModule() 
-{
-
-}
-
-/**************************************************************************/
-void MUONModule::Init()
-{
-
-  fInfo = 0;
-  fID = -1;
-
-}
-
-/**************************************************************************/
 
 MUONModule::MUONModule(const Text_t* n, const Text_t* t, Color_t col) :
   Reve::RenderElement(fFrameCol),
   QuadSet(n, t),
-  fFrameCol(col)
-{
-  Init();
-}
+  fInfo(0),
+  fID(-1), fCath(0),
+  fShowDigits(0), fShowClusters(0), fShowTracks(0),
+  fFrameCol(col),
+  fDetElemId(-1)
+{}
 
 MUONModule::MUONModule(Int_t id, Int_t cath, MUONDigitsInfo* info, Bool_t dig, Bool_t clus, Color_t col ) :
   Reve::RenderElement(fFrameCol),
   QuadSet(Form("M-DetElemId %d C%1d",id,cath)),
-  fFrameCol(col)
+  fInfo(info),
+  fID(-1), fCath(0),
+  fShowDigits(dig), fShowClusters(clus), fShowTracks(0),
+  fFrameCol(col),
+  fDetElemId(-1)
 {
-
-  Init();
-  
-  fInfo = info;
-
-  fShowDigits = dig;
-  fShowClusters = clus;
 
   if (!fShowDigits && !fShowClusters) fShowTracks = 1;
 

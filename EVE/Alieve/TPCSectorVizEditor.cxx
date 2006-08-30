@@ -24,11 +24,16 @@ using namespace Alieve;
 
 ClassImp(TPCSectorVizEditor)
 
-TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
-	     UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back)
+TPCSectorVizEditor::TPCSectorVizEditor(const TGWindow *p, Int_t id,
+                                       Int_t width, Int_t height,
+                                       UInt_t options, Pixel_t back) :
+  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  fM(0),
+  fSectorID  (0), fTrans   (0),
+  fRnrInn    (0), fRnrOut1 (0), fRnrOut2(0),
+  fThreshold (0), fMaxVal  (0),
+  fTime      (0)
 {
-  fM = 0;
   MakeTitle("TPCSectorViz");
 
   Int_t labelW = 60;

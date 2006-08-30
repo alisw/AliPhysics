@@ -18,6 +18,9 @@ class TrackList;
 
 class TrackListEditor : public TGedFrame
 {
+  TrackListEditor(const TrackListEditor&);            // Not implemented
+  TrackListEditor& operator=(const TrackListEditor&); // Not implemented
+
 protected:
   TrackList* fTC; // fModel dynamic-casted to TrackListEditor
 

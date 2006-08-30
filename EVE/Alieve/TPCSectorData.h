@@ -15,6 +15,9 @@ namespace Alieve {
 
 class TPCSectorData : public TObject
 {
+  TPCSectorData(const TPCSectorData&);            // Not implemented
+  TPCSectorData& operator=(const TPCSectorData&); // Not implemented
+
 public:
 
   class PadData
@@ -47,6 +50,17 @@ public:
       fBeg(pd.Data()), fEnd(pd.Data() + pd.Length()), fPos(pd.Data()),
       fTime(-1), fSignal(-1), fThreshold(thr), fNChunk(0)
     {}
+    PadIterator(const PadIterator& i) :
+      fBeg(i.fBeg), fEnd(i.fEnd), fPos(i.fPos),
+      fTime(i.fTime), fSignal(i.fSignal), fThreshold(i.fThreshold), fNChunk(i.fNChunk)
+    {}
+    virtual ~PadIterator() {}
+
+    PadIterator& operator=(const PadIterator& i) {
+      fBeg = i.fBeg; fEnd = i.fEnd; fPos = i.fPos;
+      fTime = i.fTime; fSignal = i.fSignal; fThreshold = i.fThreshold; fNChunk = i.fNChunk;
+      return *this;
+    }
 
     Bool_t Next();
     void   Reset();
@@ -74,6 +88,15 @@ public:
       fPadArray(first), fNPads(npads),
       fPad(-1)
     {}
+    RowIterator(const RowIterator& i) :
+      PadIterator(i),
+      fPadArray(i.fPadArray), fNPads(i.fNPads), fPad(i.fPad)
+    {}
+
+    RowIterator& operator=(const RowIterator& i) {
+      fPadArray = i.fPadArray; fNPads = i.fNPads; fPad = i.fPad;
+      return *this;
+    }
 
     Bool_t NextPad();
     void   ResetRow();

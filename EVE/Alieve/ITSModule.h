@@ -11,6 +11,9 @@ namespace Alieve {
 class ITSModule : public Reve::RenderElement,
                   public Reve::QuadSet
 {
+  ITSModule(const ITSModule&);            // Not implemented
+  ITSModule& operator=(const ITSModule&); // Not implemented
+
 private:
   void LoadQuads();
 

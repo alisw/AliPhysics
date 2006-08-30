@@ -13,6 +13,9 @@ namespace Alieve {
 
 class TPCSector2DGL : public TGLObject
 {
+  TPCSector2DGL(const TPCSector2DGL&);            // Not implemented
+  TPCSector2DGL& operator=(const TPCSector2DGL&); // Not implemented
+
 protected:
   virtual void DirectDraw(const TGLDrawFlags & flags) const;
 

@@ -9,14 +9,13 @@ namespace Alieve {
 
 class MUONDigitsInfo : public TObject
 {
+  MUONDigitsInfo(const MUONDigitsInfo&);            // Not implemented
+  MUONDigitsInfo& operator=(const MUONDigitsInfo&); // Not implemented
 
  public:
 
-  MUONDigitsInfo(const Text_t* /*n*/="MUONDigitsInfo", const Text_t* /*t*/=0) :
-      TObject()
-      { Init(); } 
- 
-  virtual ~MUONDigitsInfo();
+  MUONDigitsInfo() : TObject(), fDTree(0), fRTree(0), fTTree(0) {}
+  virtual ~MUONDigitsInfo() {}
 
   void SetDTree(TTree* tree);
   void SetRTree(TTree* tree);
@@ -32,7 +31,6 @@ class MUONDigitsInfo : public TObject
   
  private:
 
-  void Init();
   void CreateColors();
 
  protected:

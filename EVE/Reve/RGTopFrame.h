@@ -30,11 +30,13 @@ class EventBase;
 
 class RGTopFrame : public TGMainFrame
 {
+  RGTopFrame(const RGTopFrame&);            // Not implemented
+  RGTopFrame& operator=(const RGTopFrame&); // Not implemented
+
 public:
   enum LookType_e { LT_Classic, LT_Editor, LT_GLViewer };
 
 private:
-  void                Init();
   TCanvas             *fCC;
   TCanvas             *fHistoCanvas;
   VSDSelector         *fSelector;

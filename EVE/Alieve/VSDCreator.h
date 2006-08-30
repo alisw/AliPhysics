@@ -14,6 +14,9 @@ namespace Alieve {
 
 class VSDCreator : public Reve::VSD
 {
+  VSDCreator(const VSDCreator&);            // Not implemented
+  VSDCreator& operator=(const VSDCreator&); // Not implemented
+
 public:
   enum KineType_e { KT_Standard, KT_ProtonProton };
 
@@ -26,18 +29,15 @@ protected:
   TString       mDataDir;   // X{G}
   Int_t         mEvent;     // X{G}
 
-  Float_t       mTRDHitRes;  // X{gs} 
   Float_t       mTPCHitRes;  // X{gs} 
+  Float_t       mTRDHitRes;  // X{gs} 
 
   Int_t         mDebugLevel;
 
   std::map<Int_t, Reve::GenInfo*> mGenInfoMap; //!
 
-  void init();
-
 public:
-  VSDCreator();
-  VSDCreator(const Text_t* name, const Text_t* title="");
+  VSDCreator(const Text_t* name="Alieve::VSDCreator", const Text_t* title="");
   virtual ~VSDCreator() {}
 
   void CreateVSD(const Text_t* data_dir, Int_t event,

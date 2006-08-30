@@ -90,7 +90,7 @@ class PathMark
   Vector V, P;
   Type_e type;
 
-  PathMark(Type_e t=Reference) : type(t) {}
+  PathMark(Type_e t=Reference) : V(), P(), type(t) {}
   virtual ~PathMark() {}
 
   ClassDef(PathMark, 1);
@@ -112,7 +112,8 @@ public:
   Vector  V_decay;     // Decay vertex
   Vector  P_decay;     // Decay momentum
 
-  MCTrack() { decayed = false; }
+  MCTrack() : label(0), eva_label(0),
+              decayed(false), t_decay(0), V_decay(), P_decay() {}
   virtual ~MCTrack() {}
 
   MCTrack& operator=(const TParticle& p)
@@ -140,7 +141,7 @@ public:
   Float_t length;
   Float_t time;
 
-  MCTrackRef() {}
+  MCTrackRef() : label(0), status(0), V(), P(), length(0), time(0) {}
   virtual ~MCTrackRef() {}
 
   ClassDef(MCTrackRef, 1)
@@ -169,7 +170,7 @@ public:
 
   // ?? Float_t charge. Probably specific.
 
-  Hit() {}
+  Hit() : det_id(0), subdet_id(0), label(0), eva_label(0), V() {}
   virtual ~Hit() {}
 
   ClassDef(Hit, 1);
@@ -196,7 +197,7 @@ public:
   // Vector   W;         // Cluster widths
   // ?? Coord system? Special variables Wz, Wy?
 
-  Cluster() {}
+  Cluster() : det_id(0), subdet_id(0), V() { label[0] = label[1] = label [2] = 0; }
   virtual ~Cluster() {}
 
   ClassDef(Cluster, 1);
@@ -219,7 +220,7 @@ public:
 
   // PID data missing
 
-  RecTrack() {}
+  RecTrack() : label(0), status(0), sign(0), V(), P(), beta(0) {}
   virtual ~RecTrack() {}
 
   Float_t Pt() { return P.Perp(); }
@@ -242,7 +243,7 @@ public:
   Vector  V_kink;     // Kink vertex: reconstructed position of the kink
   Vector  P_sec;      // Momentum of secondary track
 
-  RecKink() : RecTrack() {}
+  RecKink() : RecTrack(), label_sec(0), V_end(), V_kink(), P_sec() {}
   virtual ~RecKink() {}
 
   ClassDef(RecKink, 1);
@@ -271,7 +272,9 @@ public:
   Int_t pdg;          // PDG code of mother
   Int_t d_label[2];   // Daughter labels ?? Rec labels present anyway.
 
-  RecV0() {}
+  RecV0() : status(), V_neg(), P_neg(), V_pos(), P_pos(),
+            V_ca(), V0_birth(), label(0), pdg(0)
+  { d_label[0] = d_label[1] = 0; }
   virtual ~RecV0() {}
 
   ClassDef(RecV0, 1);
@@ -294,7 +297,8 @@ public:
   Int_t        n_hits;
   Int_t        n_clus;
 
-  GenInfo() { is_rec = has_V0 = has_kink = false; }
+  GenInfo() : is_rec(false), has_V0(false), has_kink(false),
+              label(0), n_hits(0), n_clus(0) {}
   virtual ~GenInfo() {}
 
   ClassDef(GenInfo, 1);

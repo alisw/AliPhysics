@@ -31,7 +31,7 @@ void Quad::ColorFromIdx(Color_t ci)
   }
 }
 
-Quad::Quad(TRandom& rnd, Float_t origin, Float_t size)
+Quad::Quad(TRandom& rnd, Float_t origin, Float_t size) : color(0)
 {
   ColorFromIdx(Int_t(30*rnd.Rndm()));
   Float_t x = 2*origin*(rnd.Rndm() - 0.5);
@@ -54,6 +54,7 @@ ClassImp(Reve::QuadSet)
 
 QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
   TNamed(n, t),
+  fQuads(),
   fTrans(false)
 {}
 

@@ -13,24 +13,6 @@ using namespace std;
 ClassImp(MUONDigitsInfo)
 
 /**************************************************************************/
-MUONDigitsInfo:: ~MUONDigitsInfo() 
-{
-
-}
-
-/**************************************************************************/
-void MUONDigitsInfo::Init()
-{
-
-  fDTree = 0;
-  fRTree = 0;
-  fTTree = 0;
-
-  //CreateColors();
-
-}
-
-/**************************************************************************/
 void MUONDigitsInfo::SetDTree(TTree* tree)
 {
     

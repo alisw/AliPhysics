@@ -28,6 +28,9 @@ TPCSector3D::TPCSector3D(const Text_t* n, const Text_t* t) :
   fPointFrac    (0.25),
   fPointSize    (3),
 
+  fPointSetOn     (0),
+  fPointSetMaxVal (0),
+
   fDriftVel  (1),
   fZStep     (250.0/450)
 {

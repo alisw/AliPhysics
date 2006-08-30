@@ -17,6 +17,9 @@ class GeoTopNodeRnrEl;
 
 class GeoNodeRnrElEditor : public TGedFrame
 {
+  GeoNodeRnrElEditor(const GeoNodeRnrElEditor&);            // Not implemented
+  GeoNodeRnrElEditor& operator=(const GeoNodeRnrElEditor&); // Not implemented
+
 protected:
   GeoNodeRnrEl*   fNodeRE;
 
@@ -47,6 +50,9 @@ public:
 
 class GeoTopNodeRnrElEditor : public TGedFrame
 {
+  GeoTopNodeRnrElEditor(const GeoTopNodeRnrElEditor&);            // Not implemented
+  GeoTopNodeRnrElEditor& operator=(const GeoTopNodeRnrElEditor&); // Not implemented
+
 protected:
   GeoTopNodeRnrEl*   fTopNodeRE;
 

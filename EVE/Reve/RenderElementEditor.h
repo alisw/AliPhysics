@@ -15,6 +15,9 @@ class RenderElement;
 
 class RenderElementEditor : public TGedFrame
 {
+  RenderElementEditor(const RenderElementEditor&);            // Not implemented
+  RenderElementEditor& operator=(const RenderElementEditor&); // Not implemented
+
 protected:
   RenderElement* fRE; // fModel dynamic-casted to RenderElementEditor
 

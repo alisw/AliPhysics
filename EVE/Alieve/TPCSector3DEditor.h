@@ -20,6 +20,9 @@ class TPCSector3D;
 
 class TPCSector3DEditor : public TGedFrame
 {
+  TPCSector3DEditor(const TPCSector3DEditor&);            // Not implemented
+  TPCSector3DEditor& operator=(const TPCSector3DEditor&); // Not implemented
+
 protected:
   TPCSector3D*      fM; // fModel dynamic-casted to TPCSector3DEditor
 

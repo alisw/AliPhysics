@@ -25,11 +25,23 @@ using namespace Alieve;
 
 ClassImp(TPCLoaderEditor)
 
-TPCLoaderEditor::TPCLoaderEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
+TPCLoaderEditor::TPCLoaderEditor(const TGWindow *p, Int_t id,
+                                 Int_t width, Int_t height,
 				 UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back)
+  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+
+  fM (0),
+
+  fFile     (0),
+  fOpenFile (0),
+
+  fEvent    (0),
+  fDoubleSR (0),
+
+  fUpdateSectors   (0),
+  fCreateSectors3D (0),
+  fDeleteSectors3D (0)
 {
-  fM = 0;
   MakeTitle("TPCLoader");
 
   Int_t labelW = 42;

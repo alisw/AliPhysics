@@ -11,41 +11,32 @@ using namespace Reve;
 
 ClassImp(VSD)
 
-VSD::VSD()
-{
-  mFile      = 0;
-  mDirectory = 0;
-  InitTreeVars();
-}
+VSD::VSD(const Text_t* , const Text_t* ) :
+  TObject(),
 
-VSD::VSD(const Text_t* , const Text_t* )
-{
-  mFile      = 0;
-  mDirectory = 0;
-  InitTreeVars();
-}
+  fBuffSize  (128*1024),
 
-void VSD::InitTreeVars()
-{
-  fBuffSize = 128*1024;
+  mFile      (0),
+  mDirectory (0),
 
-  mTreeK  = 0;
-  //mTreeTR = 0;
-  mTreeH  = 0;
-  mTreeC  = 0;
-  mTreeR  = 0;
-  mTreeKK = 0;
-  mTreeV0 = 0;
-  mTreeGI = 0;
 
-  mpK  = &mK;
-  mpH  = &mH;
-  mpC  = &mC;
-  mpV0 = &mV0;
-  mpKK = &mKK;
-  mpR  = &mR;
-  mpGI = &mGI;
-}
+  mTreeK  (0),
+  //mTreeTR (0),
+  mTreeH  (0),
+  mTreeC  (0),
+  mTreeR  (0),
+  mTreeKK (0),
+  mTreeV0 (0),
+  mTreeGI (0),
+
+  mK(),  mpK (&mK),
+  mH(),  mpH (&mH),
+  mC(),  mpC (&mC),
+  mR(),  mpR (&mR),
+  mKK(), mpKK(&mKK),
+  mV0(), mpV0(&mV0),
+  mGI(), mpGI(&mGI)
+{}
 
 /**************************************************************************/
 /**************************************************************************/

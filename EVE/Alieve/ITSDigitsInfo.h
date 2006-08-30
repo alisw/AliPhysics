@@ -23,8 +23,10 @@ namespace Alieve {
 
 class ITSDigitsInfo : public TObject
 {
+  ITSDigitsInfo(const ITSDigitsInfo&);            // Not implemented
+  ITSDigitsInfo& operator=(const ITSDigitsInfo&); // Not implemented
+
 private:
-  void Init();
   Float_t fSPDZCoord[192];
 
 protected:
@@ -49,10 +51,7 @@ public:
   Int_t        fSDDScaleZ[NSCALE];
   Int_t        fSSDScale[NSCALE];
     
-  ITSDigitsInfo(const Text_t* /*n*/="ITSDigitsInfo", const Text_t* /*t*/=0) :
-    TObject()
-  { Init(); } 
- 
+  ITSDigitsInfo();
   virtual ~ITSDigitsInfo();
 
   void SetTree(TTree* tree);
@@ -60,7 +59,6 @@ public:
   TClonesArray* GetDigits(Int_t moduleID, Int_t detector);
 
   void GetSPDLocalZ(Int_t j, Float_t& z);
-
 
   void IncRefCount() { ++fRefCount; }
   void DecRefCount() { --fRefCount; if(fRefCount <= 0) delete this; }

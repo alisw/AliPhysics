@@ -20,8 +20,6 @@ class PointSet : public RenderElement,
                  public TPointSelectorConsumer
 {
   friend class PointSetArray;
-private:
-  void Init();
 
 protected:
   TString fTitle;
@@ -55,6 +53,9 @@ class PointSetArray : public RenderElementListBase,
                       public TPointSelectorConsumer
 {
   friend class PointSetArrayEditor;
+
+  PointSetArray(const PointSetArray&);            // Not implemented
+  PointSetArray& operator=(const PointSetArray&); // Not implemented
 
 protected:
   PointSet**   fBins;

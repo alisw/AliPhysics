@@ -70,40 +70,40 @@ ToolBarData_t tb_data[] = {
 
 /**************************************************************************/
 
+RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
+  TGMainFrame(p, w, h),
 
-void RGTopFrame::Init()
+  fCC          (0),
+  fHistoCanvas (0),
+  fSelector    (0),
+  fBrowser     (0),
+  fStatusBar   (0),
+  fVSDFile     (""),
+
+  fMacroFolder(0),
+  fEditor (0),
+
+  fCurrentEvent   (0),
+  fGlobalStore    (0),
+
+  fRedrawDisabled (0),
+  fResetCameras   (kFALSE),
+  fTimerActive    (kFALSE),
+  fRedrawTimer    (),
+
+  fLook           (LT_Editor),
+  fGeometries     ()
 {
   gReve = this;
-
-  fCC          = 0;
-  fHistoCanvas = 0;
-  fSelector    = 0;
-  fBrowser     = 0;
-  fStatusBar   = 0;
-  fVSDFile     = "";
-
+  fRedrawTimer.Connect("Timeout()", "Reve::RGTopFrame", this, "DoRedraw3D()");
   fMacroFolder = new TFolder("EVE", "Visualization macros");
   gROOT->GetListOfBrowsables()->Add(fMacroFolder);
 
   fClient->GetMimeTypeList()->AddType("root/tmacro", "Reve::RMacro",
                                       "tmacro_s.xpm", "tmacro_t.xpm", "");
 
-  fEditor = 0;
+  // Build GUI
 
-  fCurrentEvent   = 0;
-  fGlobalStore    = 0;
-
-  fRedrawDisabled = 0;
-  fResetCameras   = kFALSE;
-  fTimerActive    = kFALSE;
-  fRedrawTimer.Connect("Timeout()", "Reve::RGTopFrame", this, "DoRedraw3D()");
-}
-
-
-RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look)
-  : TGMainFrame(p, w, h)
-{
-  Init();
   TGLayoutHints *fL0 = new TGLayoutHints(kLHintsCenterX |kLHintsCenterY | kLHintsExpandY|  kLHintsExpandX);
   TGLayoutHints *fL1 = new TGLayoutHints(kLHintsCenterX |kLHintsCenterY | kLHintsExpandY|  kLHintsExpandX,2,0,2,2);
   TGLayoutHints* fL2 = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY,

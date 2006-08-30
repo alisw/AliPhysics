@@ -18,6 +18,9 @@ class PointSetArray;
 
 class PointSetArrayEditor : public TGedFrame
 {
+  PointSetArrayEditor(const PointSetArrayEditor&);            // Not implemented
+  PointSetArrayEditor& operator=(const PointSetArrayEditor&); // Not implemented
+
 protected:
   PointSetArray* fM; // fModel dynamic-casted to PointSetArrayEditor
 

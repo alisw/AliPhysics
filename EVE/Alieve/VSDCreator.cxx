@@ -37,16 +37,21 @@ using namespace std;
 
 ClassImp(VSDCreator)
 
-void VSDCreator::init()
-{
-  mKineType = KT_Standard;
-  mDataDir  = ".";
+VSDCreator::VSDCreator(const Text_t* name, const Text_t* title) :
+  VSD(name, title),
+
+  mKineType (KT_Standard),
+  mDataDir  ("."),
+  mEvent    (0),
   
-  mTPCHitRes = 2;
-  mTRDHitRes = 2;
+  mTPCHitRes (2),
+  mTRDHitRes (2),
 
-  pRunLoader = 0;
+  mDebugLevel (0),
+  mGenInfoMap (),
 
+  pRunLoader (0)
+{
   // Particles not in ROOT's PDG database occuring in ALICE
   AliPDG::AddParticlesToPdgDataBase();
   {
@@ -71,17 +76,6 @@ void VSDCreator::init()
   }
 
   // AliKalmanTrack::SetConvConst(1); 
-}
-
-VSDCreator::VSDCreator()
-{
-  init();
-}
-
-VSDCreator::VSDCreator(const Text_t* name, const Text_t* title) :
-  VSD(name, title)
-{
-  init();
 }
 
 /**************************************************************************/

@@ -21,14 +21,14 @@ ClassImp(ITSDigitsInfo)
 
 /**************************************************************************/
 
-void ITSDigitsInfo::Init()
-{
-  fTree = 0;
-  fGeom = 0;
-  fSegSPD = 0;
-  fSegSDD = 0;
-  fSegSSD = 0;
-}
+ITSDigitsInfo::ITSDigitsInfo() :
+  TObject(),
+  fRefCount(0),
+  fSPDmap(), fSDDmap(), fSSDmap(),
+  fTree (0),
+  fGeom (0),
+  fSegSPD(0), fSegSDD(0), fSegSSD(0)
+{}
 
 /**************************************************************************/
 

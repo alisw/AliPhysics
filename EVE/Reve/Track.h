@@ -19,26 +19,29 @@ class Track : public RenderElement,
 {
   friend class TrackList;
 
-private:
-  void                   Init();
+  Track(const Track&);            // Not implemented
+  Track& operator=(const Track&); // Not implemented
 
 protected:
-  Reve::Vector           fV;
-  Reve::Vector           fP;
-  Double_t               fBeta;
-  Int_t                  fCharge;
-  Int_t                  fLabel;
+  typedef std::vector<Reve::PathMark*>           vpPathMark_t;
+  typedef std::vector<Reve::PathMark*>::iterator vpPathMark_i;
 
-  TrackRnrStyle* 	 fRnrStyle;
+  Reve::Vector      fV;
+  Reve::Vector      fP;
+  Double_t          fBeta;
+  Int_t             fCharge;
+  Int_t             fLabel;
+  vpPathMark_t      fPathMarks;
+
+  TrackRnrStyle*    fRnrStyle;
     
-  TString                fName; 
-  TString                fTitle; 
+  TString           fName;
+  TString           fTitle;
 
 public: 
   Track();
   Track(Reve::MCTrack*  t, TrackRnrStyle* rs);
   Track(Reve::RecTrack* t, TrackRnrStyle* rs);
-  std::vector<Reve::PathMark*> fPathMarks;
   virtual ~Track();
 
   void Reset(Int_t n_points=0);
@@ -61,6 +64,7 @@ public:
   virtual void SetTitle(const Text_t* title) { fTitle = title; }
 
   Int_t GetLabel() const { return fLabel; }
+  void  AddPathMark(Reve::PathMark* pm) { fPathMarks.push_back(pm); }
 
   //--------------------------------
 
@@ -85,9 +89,6 @@ public:
 
 class TrackRnrStyle : public TObject 
 {
-private:
-  void         Init();
-
 public:
   Color_t                  fColor;
   Float_t                  fMagField;  
@@ -102,7 +103,7 @@ public:
   Bool_t                   fFitDaughters;   
   Bool_t                   fFitDecay;   
 
-  TrackRnrStyle() { Init(); }
+  TrackRnrStyle();
 
   void    SetColor(Color_t c) { fColor = c; }
   Color_t GetColor() const    { return fColor; }
@@ -125,6 +126,9 @@ public:
 class TrackList : public RenderElementListBase,
 		  public TPolyMarker3D
 {
+  TrackList(const TrackList&);            // Not implemented
+  TrackList& operator=(const TrackList&); // Not implemented
+
 private:
   void  Init();
 

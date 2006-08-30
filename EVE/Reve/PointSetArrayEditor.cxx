@@ -23,7 +23,9 @@ ClassImp(PointSetArrayEditor)
 
 PointSetArrayEditor::PointSetArrayEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
 	     UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back)
+  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  fM(0),
+  fRange(0)
 {
   fM = 0;
   MakeTitle("PointSetArray");

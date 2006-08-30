@@ -17,7 +17,8 @@ namespace Alieve {
 class Event : public Reve::EventBase
 {
 private:
-  void Init();
+  Event(const Event&);            // Not implemented
+  Event& operator=(const Event&); // Not implemented
 
 protected:
   TString       fPath;

@@ -8,39 +8,42 @@
 
 namespace Reve {
 
-  class TrackRnrStyle;
-  class TrackList;
+class TrackRnrStyle;
+class TrackList;
 
-  class VSDSelector : public ::Reve::VSD
-  {
-  private:
-    void NotifyBrowser(TGListTreeItem* parent); 
-    TGListTree*               fListTree;
+class VSDSelector : public ::Reve::VSD
+{
+  VSDSelector(const VSDSelector&);            // Not implemented
+  VSDSelector& operator=(const VSDSelector&); // Not implemented
 
-  protected:
-    TGTextEntry*              mParticleSelection;   
-    TGTextEntry*              mHitSelection;   
-    TGTextEntry*              mClusterSelection;   
-    TGTextEntry*              mRecSelection;  
+private:
+  void NotifyBrowser(TGListTreeItem* parent);
+  TGListTree*               fListTree;
 
-  public: 
-    TGCheckButton*            fRecursiveSelect;
-    VSDSelector(TGListTree* lt, TGCompositeFrame *tFrame);
+protected:
+  TGTextEntry*              mParticleSelection;
+  TGTextEntry*              mHitSelection;
+  TGTextEntry*              mClusterSelection;
+  TGTextEntry*              mRecSelection;
 
-    virtual void LoadVSD(const Text_t* vsd_file_name,
-			 const Text_t* dir_name="Event0");
+public: 
+  TGCheckButton*            fRecursiveSelect;
+  VSDSelector(TGListTree* lt, TGCompositeFrame *tFrame);
 
-    void SelectParticles (const Text_t* selection=0);
-    void ImportDaughtersRec(TGListTreeItem* parent, TrackList* cont, Int_t first, Int_t last);
-    void SelectHits();
-    void SelectClusters();
-    void SelectRecTracks();
+  virtual void LoadVSD(const Text_t* vsd_file_name,
+                       const Text_t* dir_name="Event0");
 
-    void SetRecursiveSelection(Bool_t rec){fRecursiveSelect->SetOn(rec,1);}
-    //      printf("SetRecursiveSelection is %d on %d \n", rec?1:0,fRecursiveSelect->IsOn()?1:0);}
-    Bool_t GetRecursiveSelection(){return fRecursiveSelect->IsOn();}
-    ClassDef(VSDSelector, 1);
-  };
+  void SelectParticles (const Text_t* selection=0);
+  void ImportDaughtersRec(TGListTreeItem* parent, TrackList* cont, Int_t first, Int_t last);
+  void SelectHits();
+  void SelectClusters();
+  void SelectRecTracks();
+
+  void SetRecursiveSelection(Bool_t rec){fRecursiveSelect->SetOn(rec,1);}
+  //      printf("SetRecursiveSelection is %d on %d \n", rec?1:0,fRecursiveSelect->IsOn()?1:0);}
+  Bool_t GetRecursiveSelection(){return fRecursiveSelect->IsOn();}
+  ClassDef(VSDSelector, 1);
+};
 
 }
 

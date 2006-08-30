@@ -17,6 +17,9 @@ public:
 
 class VSD : public TObject
 {
+  VSD(const VSD&);            // Not implemented
+  VSD& operator=(const VSD&); // Not implemented
+
 protected:
   Int_t        fBuffSize;
 
@@ -43,9 +46,7 @@ public:
   GenInfo      mGI, *mpGI;   //!
 
 public:
-  VSD();
-  VSD(const Text_t* name, const Text_t* title="");
-  virtual void InitTreeVars();
+  VSD(const Text_t* name="VSD", const Text_t* title="");
 
   virtual void SetDirectory(TDirectory* dir);
 

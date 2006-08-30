@@ -22,10 +22,12 @@ using namespace Alieve;
 
 ClassImp(TPCSector3DGL)
 
-TPCSector3DGL::TPCSector3DGL() : fSector(0), fBoxRnr(0)
+TPCSector3DGL::TPCSector3DGL() :
+  TGLObject(),
+  fSector(0), fBoxRnr(0),
+  fRTS(0)
 {
   // fCached = false; // Disable display list.
-  fRTS = 0;
 }
 
 TPCSector3DGL::~TPCSector3DGL()

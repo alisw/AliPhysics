@@ -17,6 +17,9 @@ class TPCSector3D;
 
 class TPCSector3DGL : public TGLObject
 {
+  TPCSector3DGL(const TPCSector3DGL&);            // Not implemented
+  TPCSector3DGL& operator=(const TPCSector3DGL&); // Not implemented
+
 protected:
   TPCSector3D*    fSector; // fModel dynamic-casted to TPCSector3DGL
   Reve::BoxSetGL* fBoxRnr;

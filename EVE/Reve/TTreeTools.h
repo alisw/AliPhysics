@@ -12,6 +12,9 @@
 
 class TSelectorToEventList : public TSelectorDraw
 {
+  TSelectorToEventList(const TSelectorToEventList&);            // Not implemented
+  TSelectorToEventList& operator=(const TSelectorToEventList&); // Not implemented
+
 protected:
   TEventList* fEvList;
   TList       fInput;
@@ -66,6 +69,9 @@ public:
 
 class TPointSelector : public TSelectorDraw
 {
+  TPointSelector(const TPointSelector&);            // Not implemented
+  TPointSelector& operator=(const TPointSelector&); // Not implemented
+
 protected:
   TTree                  *fTree;
   TPointSelectorConsumer *fConsumer;

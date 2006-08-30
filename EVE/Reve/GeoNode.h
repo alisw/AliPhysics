@@ -17,6 +17,9 @@ class GeoNodeRnrEl : public RenderElementListBase,
 {
   friend class GeoNodeRnrElEditor;
 
+  GeoNodeRnrEl(const GeoNodeRnrEl&);            // Not implemented
+  GeoNodeRnrEl& operator=(const GeoNodeRnrEl&); // Not implemented
+
 protected:
   TGeoNode *fNode;
 
@@ -51,6 +54,9 @@ public:
 
 class GeoTopNodeRnrEl : public GeoNodeRnrEl
 {
+  GeoTopNodeRnrEl(const GeoTopNodeRnrEl&);            // Not implemented
+  GeoTopNodeRnrEl& operator=(const GeoTopNodeRnrEl&); // Not implemented
+
 protected:
   TGeoManager* fManager;
   TGeoHMatrix* fGlobalTrans;

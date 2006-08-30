@@ -24,11 +24,13 @@ using namespace Alieve;
 
 ClassImp(TPCSector3DEditor)
 
-TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
+TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p, Int_t id,
+                                     Int_t width, Int_t height,
                                      UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back)
+  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  fM(0),
+  fRnrFrame(0), fDriftVel(0), fPointFrac(0), fPointSize(0)
 {
-  fM = 0;
   MakeTitle("TPCSector3D");
 
   Int_t labelW = 60;

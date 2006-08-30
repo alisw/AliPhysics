@@ -154,9 +154,9 @@ void TPCSectorData::NewBlock()
 /**************************************************************************/
 
 TPCSectorData::TPCSectorData(Int_t sector, Int_t bsize) :
-  fSectorID(sector), fNPadsFilled(0),
-  fBlockSize(bsize), fBlockPos(0),
-  fCurrentRow(0), fCurrentPad(0), fCurrentPos(0),
+  fSectorID(sector), fNPadsFilled(0), fPads(),
+  fBlockSize(bsize), fBlockPos(0),    fBlocks(),
+  fCurrentRow(0), fCurrentPad(0), fCurrentPos(0), fCurrentStep(0),
   fPadRowHackSet(0)
 {
   if(fgParam == 0) InitStatics();
@@ -446,9 +446,15 @@ void TPCSectorData::RowIterator::Test()
 
 ClassImp(TPCSectorData::SegmentInfo)
 
-TPCSectorData::SegmentInfo::SegmentInfo()
+TPCSectorData::SegmentInfo::SegmentInfo() :
+  TObject(),
+
+  fPadWidth(0), fPadHeight(0),
+  fRLow(0), fNRows(0), fFirstRow(0), fLastRow(0),
+  fNMaxPads(0),
+  fNYSteps(0)
 {
-  memset(this, sizeof(SegmentInfo), 0);
+  memset(fYStep, sizeof(fYStep), 0);
 }
 
 /**************************************************************************/

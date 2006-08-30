@@ -20,6 +20,8 @@ ClassImp(RenderElement)
 RenderElement::RenderElement() :
   fRnrElement          (kTRUE),
   fMainColorPtr        (0),
+  fItems               (),
+  fParents             (),
   fDestroyOnZeroRefCnt (kTRUE),
   fDenyDestroy         (kFALSE)
 {}
@@ -27,6 +29,8 @@ RenderElement::RenderElement() :
 RenderElement::RenderElement(Color_t& main_color) :
   fRnrElement          (kTRUE),
   fMainColorPtr        (&main_color),
+  fItems               (),
+  fParents             (),
   fDestroyOnZeroRefCnt (kTRUE),
   fDenyDestroy         (kFALSE)
 {}

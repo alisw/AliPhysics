@@ -22,11 +22,27 @@ using namespace Reve;
 
 ClassImp(TrackListEditor)
 
-TrackListEditor::TrackListEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
-	     UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back)
+TrackListEditor::TrackListEditor(const TGWindow *p, Int_t id,
+                                 Int_t width, Int_t height,
+                                 UInt_t options, Pixel_t back) :
+  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+
+  fTC (0),
+
+  fMaxR(0),
+  fMaxZ(0),
+  fMaxOrbits(0),
+  fMinAng(0),
+  fDelta(0),
+
+  fRnrTracks(0),
+  fRnrMarkers(0),
+
+  fFitDaughters(0),
+  fFitDecay(0),
+
+  fPtRange(0)
 {
-  fTC = 0;
   MakeTitle("TrackList");
 
     // --- Limits

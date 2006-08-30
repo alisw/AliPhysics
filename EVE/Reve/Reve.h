@@ -76,6 +76,10 @@ class GeoManagerHolder
 {
 private:
   TGeoManager* fManager;
+
+  GeoManagerHolder(const GeoManagerHolder&);            // Not implemented
+  GeoManagerHolder& operator=(const GeoManagerHolder&); // Not implemented
+
 public:
   GeoManagerHolder(TGeoManager* new_gmgr=0);
   virtual ~GeoManagerHolder();

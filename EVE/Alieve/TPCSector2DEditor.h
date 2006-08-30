@@ -18,6 +18,9 @@ class TPCSector2D;
 
 class TPCSector2DEditor : public TGedFrame
 {
+  TPCSector2DEditor(const TPCSector2DEditor&);            // Not implemented
+  TPCSector2DEditor& operator=(const TPCSector2DEditor&); // Not implemented
+
 protected:
   TPCSector2D* fM; // fModel dynamic-casted to TPCSector2DEditor
 

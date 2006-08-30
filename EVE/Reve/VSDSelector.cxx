@@ -17,10 +17,18 @@ using namespace Reve;
 
 using Reve::Exc_t;
 
-VSDSelector::VSDSelector(TGListTree* lt, TGCompositeFrame *tFrame)
-{
-  fListTree = lt;
+VSDSelector::VSDSelector(TGListTree* lt, TGCompositeFrame *tFrame) :
+  VSD(),
 
+  fListTree (lt),
+
+  mParticleSelection(0),
+  mHitSelection(0),   
+  mClusterSelection(0), 
+  mRecSelection(0),
+  
+  fRecursiveSelect(0)
+{
   //create gui
   TGGroupFrame *gframe = new TGGroupFrame(tFrame, "Options", kVerticalFrame);
   TGLayoutHints* lh0 = new TGLayoutHints(kLHintsTop | kLHintsLeft |  kLHintsExpandX | kLHintsExpandY  , 5, 5, 5, 5);
@@ -219,7 +227,7 @@ void VSDSelector::SelectParticles(const Text_t* selection)
           pm->V.x = mK.V_decay.x;
           pm->V.y = mK.V_decay.y;
           pm->V.z = mK.V_decay.z;
-	  track->fPathMarks.push_back(pm);
+	  track->AddPathMark(pm);
 	}
       }
       track->MakeTrack();
@@ -252,14 +260,14 @@ void VSDSelector::ImportDaughtersRec(TGListTreeItem* parent, TrackList* cont,
     dam->V.x = mK.Vx();
     dam->V.y = mK.Vy();
     dam->V.z = mK.Vz();
-    mother->fPathMarks.push_back(dam);
+    mother->AddPathMark(dam);
 
     if(mK.decayed) {
       Reve::PathMark* decm = new Reve::PathMark(Reve::PathMark::Decay);
       decm->V.x = mK.V_decay.x;
       decm->V.y = mK.V_decay.y;
       decm->V.z = mK.V_decay.z;
-      track->fPathMarks.push_back(decm);
+      track->AddPathMark(decm);
 
     }
     track->MakeTrack();

@@ -21,7 +21,7 @@ class EvTree : public TTree
 public:
   TFolder fFolder;
 
-  EvTree() : TTree() {}
+  EvTree() : TTree(), fFolder() {}
   EvTree(const char* name, const char* title, Int_t splitlevel = 99) :
     TTree(name, title, splitlevel), fFolder("Folder", "Additional event data") {}
   virtual ~EvTree() {}
@@ -33,6 +33,9 @@ public:
 
 class VSDEvent : public EventBase
 {
+  VSDEvent(const VSDEvent&);            // Not implemented
+  VSDEvent& operator=(const VSDEvent&); // Not implemented
+
 protected:
   Int_t        fRun;
   Int_t        fEvent;

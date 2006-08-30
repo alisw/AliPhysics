@@ -21,6 +21,9 @@ class TPCLoader;
 
 class TPCLoaderEditor : public TGedFrame
 {
+  TPCLoaderEditor(const TPCLoaderEditor&);            // Not implemented
+  TPCLoaderEditor& operator=(const TPCLoaderEditor&); // Not implemented
+
 protected:
   TPCLoader* fM; // fModel dynamic-casted to TPCLoaderEditor
 

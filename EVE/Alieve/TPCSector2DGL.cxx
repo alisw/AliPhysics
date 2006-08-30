@@ -27,15 +27,16 @@ const Int_t TPCSector2DGL::fgkTextureByteSize = 4*256*128;
 
 /**************************************************************************/
 
-TPCSector2DGL::TPCSector2DGL() : TGLObject()
-{
-  fSector     = 0;
-  fSectorData = 0;
+TPCSector2DGL::TPCSector2DGL() :
+  TGLObject(),
+  
+  fSector     (0),
+  fSectorData (0),
 
-  fImage   = 0;
-  fTexture = 0;
-  fRTS     = 0;
-}
+  fImage   (0),
+  fTexture (0),
+  fRTS     (0)
+{}
 
 TPCSector2DGL::~TPCSector2DGL()
 {

@@ -22,7 +22,9 @@ ClassImp(PointSet)
 PointSet::PointSet(Int_t n_points, TreeVarType_e tv_type) :
   RenderElement(fMarkerColor),
   TPointSet3D(n_points),
-  TPointSelectorConsumer(tv_type)  
+  TPointSelectorConsumer(tv_type),
+
+  fTitle()
 {
   fMarkerStyle = 20;
 }
@@ -30,7 +32,9 @@ PointSet::PointSet(Int_t n_points, TreeVarType_e tv_type) :
 PointSet::PointSet(const Text_t* name, Int_t n_points, TreeVarType_e tv_type) :
   RenderElement(fMarkerColor),
   TPointSet3D(n_points),
-  TPointSelectorConsumer(tv_type)
+  TPointSelectorConsumer(tv_type),
+
+  fTitle()
 {
   fMarkerStyle = 20;
   SetName(name);
@@ -39,7 +43,9 @@ PointSet::PointSet(const Text_t* name, Int_t n_points, TreeVarType_e tv_type) :
 PointSet::PointSet(const Text_t* name, TTree* tree, TreeVarType_e tv_type) :
   RenderElement(fMarkerColor),
   TPointSet3D(tree->GetSelectedRows()),
-  TPointSelectorConsumer(tv_type)
+  TPointSelectorConsumer(tv_type),
+
+  fTitle()
 {
   static const Exc_t eH("PointSet::PointSet ");
 
@@ -135,7 +141,11 @@ PointSetArray::PointSetArray(const Text_t* name,
 			     const Text_t* title) :
   RenderElementListBase(fMarkerColor),
   TNamed(name, title),
-  fBins(0), fDefPointSetCapacity(128), fNBins(0)
+
+  fBins(0), fDefPointSetCapacity(128), fNBins(0),
+  fMin(0), fCurMin(0), fMax(0), fCurMax(0),
+  fBinWidth(0),
+  fQuantName()
 {}
 
 PointSetArray::~PointSetArray()

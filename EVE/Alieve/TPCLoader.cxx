@@ -23,6 +23,7 @@ ClassImp(TPCLoader)
 TPCLoader::TPCLoader(const Text_t* n, const Text_t* t) :
   RenderElementList(n, t),
 
+  fFile(),
   fEvent(-1),
   fDoubleSR(kFALSE),
 
@@ -33,7 +34,8 @@ TPCLoader::TPCLoader(const Text_t* n, const Text_t* t) :
   fSec2Ds(36),
   fSec3Ds(36),
 
-  fSetInitSectorParams(kFALSE)
+  fSetInitSectorParams(kFALSE),
+  fInitMinTime(0), fInitMaxTime(460), fInitThreshold(5)
 {}
 
 TPCLoader::~TPCLoader()

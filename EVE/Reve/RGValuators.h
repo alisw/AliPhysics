@@ -14,6 +14,9 @@ namespace Reve {
 
 class RGValuatorBase: public TGCompositeFrame
 {
+  RGValuatorBase(const RGValuatorBase&);            // Not implemented
+  RGValuatorBase& operator=(const RGValuatorBase&); // Not implemented
+
 protected:
   UInt_t      fLabelWidth;
   Bool_t      fAlignRight;
@@ -44,6 +47,9 @@ public:
 
 class RGValuator: public RGValuatorBase
 {
+  RGValuator(const RGValuator&);            // Not implemented
+  RGValuator& operator=(const RGValuator&); // Not implemented
+
 protected:
   Float_t        fValue;
   Float_t        fMin;
@@ -88,6 +94,9 @@ public:
 
 class RGDoubleValuator: public RGValuatorBase
 {
+  RGDoubleValuator(const RGDoubleValuator&);            // Not implemented
+  RGDoubleValuator& operator=(const RGDoubleValuator&); // Not implemented
+
 protected:
   TGNumberEntry*    fMinEntry;
   TGNumberEntry*    fMaxEntry;

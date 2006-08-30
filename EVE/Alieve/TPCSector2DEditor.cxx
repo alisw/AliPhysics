@@ -22,11 +22,13 @@ using namespace Alieve;
 
 ClassImp(TPCSector2DEditor)
 
-TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
+TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p, Int_t id,
+                                     Int_t width, Int_t height,
 				     UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back)
+  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  fM(0),
+  fShowMax(0), fAverage(0), fUseTexture(0)
 {
-  fM = 0;
   MakeTitle("TPCSector2D");
 
   fUseTexture = new TGCheckButton(this, "UseTexture");

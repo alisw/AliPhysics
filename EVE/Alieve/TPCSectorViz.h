@@ -31,6 +31,9 @@ class TPCSectorViz : public Reve::RenderElement,
   friend class TPCSector3DEditor;
   friend class TPCSector3DGL;
 
+  TPCSectorViz(const TPCSectorViz&);            // Not implemented
+  TPCSectorViz& operator=(const TPCSectorViz&); // Not implemented
+
 protected:
   TPCData*    fTPCData; 
   Int_t       fSectorID;

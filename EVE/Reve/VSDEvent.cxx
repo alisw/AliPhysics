@@ -18,19 +18,22 @@ const TString VSDEvent::sVSDHeaderName("VSDheader");
 
 VSDEvent::VSDEvent() :
   EventBase("VSDEvent"),
-  fRun(0), fEvent(0),
+  fRun(0), fEvent(0), fUrl(),
+  fTags(),
   fDirectory(0), fCreator(0), fSelector(0)
 {}
 
 VSDEvent::VSDEvent(Int_t run, Int_t evt, const TString& url) :
   EventBase("VSDEvent"),
   fRun(run), fEvent(evt), fUrl(url),
+  fTags(),
   fDirectory(0), fCreator(0), fSelector(0)
 {}
 
 VSDEvent::VSDEvent(const TString& url) :
   EventBase("VSDEvent"),
   fRun(0), fEvent(0), fUrl(url),
+  fTags(),
   fDirectory(0), fCreator(0), fSelector(0)
 {}
 

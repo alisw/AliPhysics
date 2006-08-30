@@ -21,15 +21,15 @@ struct Quad
 
   void ColorFromIdx(Color_t ci);
 
-  Quad(Color_t col = 1)
+  Quad(Color_t col = 1) : color(0)
   { ColorFromIdx(col); }
 
-  Quad(Color_t col, Float_t* p)
+  Quad(Color_t col, Float_t* p) : color(0)
   { ColorFromIdx(col); memcpy(vertices, p, 12*sizeof(Float_t)); }
 
   Quad(TRandom& rnd, Float_t origin, Float_t size);
 
-  Quad(const Quad& org) { memcpy(this, &org, sizeof(Quad)); }
+  Quad(const Quad& org) : color(0) { memcpy(this, &org, sizeof(Quad)); }
 
   virtual ~Quad() {}
 

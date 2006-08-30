@@ -49,28 +49,23 @@ void Event::Initialize(Bool_t use_runloader, Bool_t use_esd)
 
 /**************************************************************************/
 
-void Event::Init()
-{
-  fRunLoader = 0;
-  fESDFile   = 0;
-  fESDTree   = 0;
-  fESD       = 0;
-  fESDfriendFile = 0;
-  fESDfriendTree = 0;
-  fESDfriend     = 0;
-}
-
 Event::Event() :
-  EventBase(), fEventId(0)
-{
-  Init();
-}
+  EventBase(),
+
+  fPath (), fEventId   (0),
+  fRunLoader (0),
+  fESDFile       (0), fESDTree       (0), fESD       (0),
+  fESDfriendFile (0), fESDfriendTree (0), fESDfriend (0)
+{}
 
 Event::Event(TString path, Int_t ev) :
   EventBase("AliEVE Event"),
-  fPath(path), fEventId(ev)
+
+  fPath (path), fEventId(ev),
+  fRunLoader (0),
+  fESDFile       (0), fESDTree       (0), fESD       (0),
+  fESDfriendFile (0), fESDfriendTree (0), fESDfriend (0)
 {
-  Init();
   Open();
 }
 

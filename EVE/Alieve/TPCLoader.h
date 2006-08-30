@@ -17,6 +17,9 @@ class TPCLoader : public Reve::RenderElementList
 {
   friend class TPCLoaderEditor;
 
+  TPCLoader(const TPCLoader&);            // Not implemented
+  TPCLoader& operator=(const TPCLoader&); // Not implemented
+
 protected:
   TString           fFile;
   Int_t             fEvent;
