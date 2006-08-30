@@ -4,10 +4,12 @@
 #ifndef AliHLTTPC_ClusterFinder
 #define AliHLTTPC_ClusterFinder
 
+#include "AliHLTLogging.h"
+
 class AliHLTTPCSpacePointData;
 class AliHLTTPCDigitReader;
 
-class AliHLTTPCClusterFinder {
+class AliHLTTPCClusterFinder : public AliHLTLogging {
 
  public:
   struct AliClusterData
@@ -55,7 +57,13 @@ class AliHLTTPCClusterFinder {
 #endif
   
  public:
+  /** standard constructor */
   AliHLTTPCClusterFinder();
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCClusterFinder& operator=(const AliHLTTPCClusterFinder&);
+  /** destructor */
   virtual ~AliHLTTPCClusterFinder();
 
   void Read(void* ptr,unsigned long size);

@@ -38,6 +38,7 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCGlobalMerger.cxx \
 				  AliHLTTPCInterMerger.cxx \
 				  AliHLTTPC.cxx \
+				  AliHLTTPCPad.cxx \
 				  AliHLTTPCDisplay.cxx \
 				  AliHLTTPCDefinitions.cxx \
 				  AliHLTTPCRawDataUnpackerComponent.cxx \
@@ -87,6 +88,7 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPCGlobalMerger.h \
 				  AliHLTTPCInterMerger.h \
 				  AliHLTTPC.h \
+				  AliHLTTPCPad.h \
 				  AliHLTTPCSpacePointData.h \
 				  AliHLTTPCDisplay.h \
 				  AliHLTTPCDefinitions.h \

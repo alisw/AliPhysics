@@ -16,6 +16,7 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCMemHandler.h"
+#include "AliHLTTPCPad.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -95,21 +96,55 @@ using namespace std;
 ClassImp(AliHLTTPCClusterFinder)
 
 AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
+  :
+  fMatch(1),
+  fThreshold(10),
+  fXYErr(0.2),
+  fZErr(0.3),
+  fDeconvPad(kTRUE),
+  fDeconvTime(kTRUE),
+  fStdout(kFALSE),
+  fCalcerr(kTRUE),
+  fRawSP(kFALSE),
+  fFirstRow(0),
+  fLastRow(0),
+  fDigitReader(NULL)
 {
   //constructor
-  fMatch = 1;
-  fThreshold = 10;
-  fXYErr = 0.2;
-  fZErr = 0.3;
-  fDeconvPad = kTRUE;
-  fDeconvTime = kTRUE;
-  fStdout = kFALSE;
-  fCalcerr = kTRUE;
-  fRawSP = kFALSE;
-  fFirstRow=0;
-  fLastRow=0;
-  fDigitReader = 0;
+}
 
+AliHLTTPCClusterFinder::AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder& src)
+  :
+  fMatch(src.fMatch),
+  fThreshold(src.fThreshold),
+  fXYErr(src.fXYErr),
+  fZErr(src.fZErr),
+  fDeconvPad(src.fDeconvPad),
+  fDeconvTime(src.fDeconvTime),
+  fStdout(src.fStdout),
+  fCalcerr(src.fCalcerr),
+  fRawSP(src.fRawSP),
+  fFirstRow(src.fFirstRow),
+  fLastRow(src.fLastRow),
+  fDigitReader(src.fDigitReader)
+{
+}
+
+AliHLTTPCClusterFinder& AliHLTTPCClusterFinder::operator=(const AliHLTTPCClusterFinder& src)
+{
+  fMatch=src.fMatch;
+  fThreshold=src.fThreshold;
+  fXYErr=src.fXYErr;
+  fZErr=src.fZErr;
+  fDeconvPad=src.fDeconvPad;
+  fDeconvTime=src.fDeconvTime;
+  fStdout=src.fStdout;
+  fCalcerr=src.fCalcerr;
+  fRawSP=src.fRawSP;
+  fFirstRow=src.fFirstRow;
+  fLastRow=src.fLastRow;
+  fDigitReader=src.fDigitReader;
+  return (*this);
 }
 
 AliHLTTPCClusterFinder::~AliHLTTPCClusterFinder()
@@ -156,9 +191,9 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   bool readValue = true;
   Int_t newRow = 0;    
   Int_t rowOffset = 0;
-  UChar_t pad;
-  UShort_t time,newTime=0;
-  UInt_t charge,newPad=0;
+  UShort_t time=0,newTime=0;
+  UInt_t pad=0,newPad=0;
+  AliHLTTPCSignal_t charge=0;
 
   fNClusters = 0;
 
@@ -187,6 +222,18 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   currentPt = pad2;
   previousPt = pad1;
   UInt_t nprevious=0,ncurrent=0,ntotal=0;
+
+  /* quick implementation of baseline calculation and zero suppression
+     open a pad object for each pad and delete it after processing.
+     later a list of pad objects with base line history can be used
+     The whole thing only works if we really get unprocessed raw data, if
+     the data is already zero suppressed, there might be gaps in the time
+     bins.
+   */
+  Int_t gatingGridOffset=50;
+  AliHLTTPCPad baseline(gatingGridOffset, AliHLTTPCTransform::GetNTimeBins());
+  // just to make later conversion to a list of objects easier
+  AliHLTTPCPad* pCurrentPad=&baseline;
 
   while ( readValue ){   // Reads through all digits in block
 
@@ -229,10 +276,41 @@ void AliHLTTPCClusterFinder::ProcessDigits()
       lastwas_falling = 0;
     }
 
+    while(1){ //Loop over time bins of current pad
+      // read all the values for one pad at once to calculate the base line
+      if (pCurrentPad) {
+	if (!pCurrentPad->IsStarted()) {
+	  //HLTDebug("reading data for pad %d, padrow %d", fDigitReader->GetPad(), fDigitReader->GetRow()+rowOffset);
+	  pCurrentPad->SetID(fDigitReader->GetRow()+rowOffset,fDigitReader->GetPad());
+	  if ((pCurrentPad->StartEvent())>=0) {
+	    do {
+	      if ((fDigitReader->GetRow()+rowOffset)!=pCurrentPad->GetRowNumber()) break;
+	      if (fDigitReader->GetPad()!=pCurrentPad->GetPadNumber()) break;
+	      pCurrentPad->SetRawData(fDigitReader->GetTime(), fDigitReader->GetSignal());
+	      //HLTDebug("set raw data to pad: bin %d charge %d", fDigitReader->GetTime(), fDigitReader->GetSignal());
+	    } while ((readValue = fDigitReader->Next())!=0);
+	  }
+	  pCurrentPad->CalculateBaseLine(AliHLTTPCTransform::GetNTimeBins()/2);
+	  if (pCurrentPad->Next(kTRUE/*do zero suppression*/)==0) {
+	    HLTDebug("no data available after zero suppression");
+	    pCurrentPad->StopEvent();
+	    pCurrentPad->ResetHistory();
+	    break;
+	  }
+	  time=pCurrentPad->GetCurrentPosition();
+	  if (time>pCurrentPad->GetSize()) {
+	    HLTError("invalid time bin for pad");
+	    break;
+	  }
+	}
+      }
 
-    // LOOP OVER CURRENR SEQUENCE
-    while(1){ //Loop over current
+      if (pCurrentPad) {
+	charge = pCurrentPad->GetCorrectedData();
+      } else {
       charge = fDigitReader->GetSignal();
+      }
+      //HLTDebug("get next charge value: position %d charge %d", time, charge);
 
 
       // CHARGE DEBUG
@@ -242,13 +320,12 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 
       }
 
-
       if(time >= AliHLTTPCTransform::GetNTimeBins()){
-	LOG(AliHLTTPCLog::kFatal,"AliHLTTPCClusterFinder::ProcessRow","Digits")
-	  <<"Timebin out of range "<<(Int_t)time<<ENDLOG;
+	HLTWarning("Timebin (%d) out of range (%d)", time, AliHLTTPCTransform::GetNTimeBins());
 	break;
       }
-      
+
+
       //Get the current ADC-value
       if(fDeconvTime){
 
@@ -268,14 +345,31 @@ void AliHLTTPCClusterFinder::ProcessDigits()
       seqaverage += time*charge;
       seqerror += time*time*charge;
       
+      if (pCurrentPad) {
+	
+	if((pCurrentPad->Next(kTRUE/*do zero suppression*/))==0) {
+	  pCurrentPad->StopEvent();
+	  pCurrentPad->ResetHistory();
+	  if(readValue) {
+	    newPad = fDigitReader->GetPad();
+	    newTime = fDigitReader->GetTime();
+	    newRow = fDigitReader->GetRow() + rowOffset;
+	  }
+	  break;
+	}
+
+	newPad=pCurrentPad->GetPadNumber();
+	newTime=pCurrentPad->GetCurrentPosition();
+	newRow=pCurrentPad->GetRowNumber();
+      } else {
       readValue = fDigitReader->Next();
-      
       //Check where to stop:
       if(!readValue) break; //No more value
 
       newPad = fDigitReader->GetPad();
       newTime = fDigitReader->GetTime();
       newRow = fDigitReader->GetRow() + rowOffset;
+      }
 
       if(newPad != pad)break; //new pad
       if(newTime != time+1) break; //end of sequence
@@ -285,6 +379,12 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 
     }//end loop over sequence
 
+    //HLTDebug("ended time bin sequence loop: seqcharge=%d readValue=%d", seqcharge, readValue);
+    //HLTDebug("pad=%d newpad=%d current row=%d newrow=%d", pad, newPad, fCurrentRow, newRow);
+    if (seqcharge<=0) {
+      // with active zero suppression zero values are possible
+      continue;
+    }
 
     //Calculate mean of sequence:
     Int_t seqmean=0;
@@ -377,8 +477,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   
     // to prevent endless loop  
     if(time >= AliHLTTPCTransform::GetNTimeBins()){
-      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCClusterFinder::ProcessRow","Digits")
-	<<"Timebin out of range "<<(Int_t)time<<ENDLOG;
+      HLTWarning("Timebin (%d) out of range (%d)", time, AliHLTTPCTransform::GetNTimeBins());
       break;
     }
 
@@ -404,11 +503,11 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   
   } // END while(readValue)
 
+  if (pCurrentPad) pCurrentPad->StopEvent();
+
   WriteClusters(ntotal,clusterlist);
 
-  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCClusterFinder::ProcessDigits","Space points") 
-    << "ClusterFinder found " << fNClusters << " clusters in slice " << fCurrentSlice << " patch " 
-    << fCurrentPatch << ENDLOG;
+  HLTInfo("ClusterFinder found %d clusters in slice %d patch %d", fNClusters, fCurrentSlice, fCurrentPatch);
 
 } // ENDEND
 

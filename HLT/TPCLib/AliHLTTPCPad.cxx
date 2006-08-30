@@ -1,0 +1,325 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Authors: Matthias Richter <Matthias.Richter@ift.uib.no>                *
+ *          for The ALICE Off-line Project.                               *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/** @file   AliHLTTPCPad.cxx
+    @author Matthias Richter
+    @date   
+    @brief  Container Class for TPC Pads.
+*/
+
+#if __GNUC__>= 3
+using namespace std;
+#endif
+
+#include <cerrno>
+#include "AliHLTTPCPad.h"
+
+/** margin for the base line be re-avaluated */
+#define ALIHLTPAD_BASELINE_MARGIN (2*fAverage)
+
+/** ROOT macro for the implementation of ROOT specific class methods */
+ClassImp(AliHLTTPCPad)
+
+AliHLTTPCPad::AliHLTTPCPad()
+  :
+  fRowNo(-1),
+  fPadNo(-1),
+  fThreshold(0),
+  fAverage(-1),
+  fNofEvents(0),
+  fSum(0),
+  fBLMax(-1),
+  fBLMaxBin(-1),
+  fCount(0),
+  fTotal(0),
+  fpRawData(NULL),
+  fFirstBLBin(0),
+  fNofBins(0),
+  fReadPos(0)
+{
+}
+
+AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
+  :
+  fRowNo(-1),
+  fPadNo(-1),
+  fThreshold(0),
+  fAverage(-1),
+  fNofEvents(0),
+  fSum(0),
+  fBLMax(-1),
+  fBLMaxBin(-1),
+  fCount(0),
+  fTotal(0),
+  fpRawData(NULL),
+  fFirstBLBin(offset),
+  fNofBins(nofBins),
+  fReadPos(0)
+{
+}
+
+AliHLTTPCPad::AliHLTTPCPad(const AliHLTTPCPad& srcPad)
+  :
+  fRowNo(srcPad.fRowNo),
+  fPadNo(srcPad.fPadNo),
+  fThreshold(0),
+  fAverage(-1),
+  fNofEvents(0),
+  fSum(0),
+  fBLMax(-1),
+  fBLMaxBin(-1),
+  fCount(0),
+  fTotal(0),
+  fpRawData(NULL),
+  fFirstBLBin(0),
+  fNofBins(0),
+  fReadPos(0)
+{
+  HLTFatal("copy constructor not implemented");
+}
+
+AliHLTTPCPad& AliHLTTPCPad::operator=(const AliHLTTPCPad&)
+{
+  HLTFatal("assignment operator not implemented");
+  return (*this);
+}
+
+AliHLTTPCPad::~AliHLTTPCPad()
+{
+  if (fpRawData) {
+    HLTWarning("event data acquisition not stopped");
+    StopEvent();
+  }
+}
+
+Int_t AliHLTTPCPad::SetID(Int_t rowno, Int_t padno)
+{
+  fRowNo=rowno;
+  fPadNo=padno;
+}
+
+Int_t AliHLTTPCPad::StartEvent()
+{
+  Int_t iResult=0;
+  if (fpRawData==NULL) {
+    fBLMax=-1;
+    fBLMaxBin=-1;
+    fSum=0;
+    fCount=0;
+    fTotal=0;
+    if (fNofBins>0) {
+      fpRawData=new AliHLTTPCSignal_t[fNofBins];
+      if (fpRawData) {
+	for (int i=0; i<fNofBins; i++) fpRawData[i]=-1;
+      } else {
+	HLTError("memory allocation failed");
+	iResult=-ENOMEM;
+      }
+    }
+  } else {
+    HLTWarning("event data acquisition already started");
+    iResult=-EALREADY;
+  }
+  return iResult;
+}
+
+Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
+{
+  Int_t iResult=0;
+  AliHLTTPCSignal_t avBackup=fAverage;
+  if (fCount>=reqMinCount && fCount>=fTotal/2) {
+    fAverage=fCount>0?fSum/fCount:0;
+    if (fAverage>0) {
+      HLTDebug("average for current event %f", fAverage);
+      fCount=0;fSum=-1;
+      if (fBLMax>ALIHLTPAD_BASELINE_MARGIN) {
+	// calculate again
+	HLTDebug("maximum value %f exceeds margin for base line %f "
+		 "-> re-evaluate base line", fBLMax, ALIHLTPAD_BASELINE_MARGIN);
+	if (fpRawData) {
+	  for (Int_t i=fFirstBLBin; i<fNofBins; i++)
+	    if (fpRawData[i]>=0) AddBaseLineValue(i, fpRawData[i]);
+	  if (fCount>0 && fCount>=reqMinCount && fCount>=fTotal/2) {
+	    fAverage=fSum/fCount;
+	    HLTDebug("new average %f", fAverage);
+	  } else {
+	    HLTWarning("baseline re-eveluation skipped because of to few "
+		       "contributing bins: total=%d, contributing=%d, req=%d"
+		       "\ndata might be already zero suppressed"
+		       , fTotal, fCount, reqMinCount);
+	    iResult=-ENODATA;
+	  }
+	  fCount=0;fSum=-1;
+	} else {
+	  HLTError("missing raw data for base line calculation");
+	  iResult=-ENOBUFS;
+	}
+      }
+      if (iResult>=0) {
+	// calculate average for all events
+	fAverage=((avBackup*fNofEvents)+fAverage)/(fNofEvents+1);
+	HLTDebug("base line average for %d events: %f", fNofEvents+1, fAverage);
+      } else {
+	fAverage=avBackup;      
+      }
+    } else {
+      fAverage=avBackup;
+    }
+  } else {
+    HLTWarning("baseline calculation skipped because of to few contributing "
+	       "bins: total=%d, contributing=%d, required=%d \ndata might be "
+	       "already zero suppressed", fTotal, fCount, reqMinCount);
+  }
+
+  return iResult;
+}
+
+Int_t AliHLTTPCPad::StopEvent()
+{
+  Int_t iResult=0;
+  if (fpRawData) {
+    AliHLTTPCSignal_t* pData=fpRawData;
+    fpRawData=NULL;
+    delete [] pData;
+    fTotal=0;
+    fNofEvents++;
+    Rewind();
+  } else if (fNofBins>0) {
+    HLTError("event data acquisition not started");
+    iResult=-EBADF;
+  }
+  return iResult;
+}
+
+Int_t AliHLTTPCPad::ResetHistory()
+{
+  Int_t iResult=0;
+  fAverage=-1;
+  fNofEvents=0;
+  return iResult;
+}
+
+Int_t AliHLTTPCPad::SetThreshold(AliHLTTPCSignal_t thresh)
+{
+  Int_t iResult=0;
+  fThreshold=thresh;
+  return iResult;
+}
+
+Int_t AliHLTTPCPad::AddBaseLineValue(Int_t bin, AliHLTTPCSignal_t value)
+{
+  Int_t iResult=0;
+  if (bin>=fFirstBLBin) {
+    if (fAverage<0 || value<ALIHLTPAD_BASELINE_MARGIN) {
+      // add to the current sum and count
+      fSum+=value;
+      fCount++;
+      if (fBLMax<value) {
+	// keep the maximum value for later quality control of the base 
+	// line calculation
+	fBLMax=value;
+	fBLMaxBin=bin;
+      }
+    } else {
+      HLTDebug("ignoring value %f of bin %d for base line calculation "
+	       "- average %f",
+	       value, bin, fAverage);
+    }
+  }
+  return iResult;
+}
+
+Int_t AliHLTTPCPad::SetRawData(Int_t bin, AliHLTTPCSignal_t value)
+{
+  Int_t iResult=0;
+  if (fpRawData) {
+    if (bin<fNofBins) {
+      if (value>=0) {
+	if (fpRawData[bin]<0) {
+	  AddBaseLineValue(bin, value);
+	  fTotal++;
+	} else {
+	  // ignore value for average calculation
+	  HLTWarning("overriding content of bin %d (%f)", bin, fpRawData[bin]);
+	}
+	fpRawData[bin]=value;
+      } else {
+	HLTWarning("ignoring neg. raw data");
+      }
+    } else {
+      HLTWarning("bin %d out of range (%d)", bin, fNofBins);
+      iResult=-ERANGE;
+    }
+  } else if (fNofBins>0) {
+    HLTError("event cycle not started");
+    iResult=-EBADF;
+  }
+  return iResult;
+}
+
+Int_t AliHLTTPCPad::Next(Int_t bZeroSuppression) 
+{
+  if (fpRawData==NULL) return 0;
+  Int_t iResult=fReadPos<fNofBins;
+  if (iResult>0 && (iResult=(++fReadPos<fNofBins))>0) {
+    if (bZeroSuppression) {
+      while ((iResult=(fReadPos<fNofBins))>0 &&
+	     GetCorrectedData(fReadPos)<=0)
+	fReadPos++;
+    }
+  }
+  return iResult;
+}
+
+Int_t AliHLTTPCPad::Rewind(Int_t bZeroSuppression)
+{
+  fReadPos=(bZeroSuppression>0?0:fFirstBLBin)-1;
+  return Next(bZeroSuppression);
+}
+
+AliHLTTPCSignal_t AliHLTTPCPad::GetRawData(Int_t bin) const
+{
+  AliHLTTPCSignal_t data=0;
+  if (fpRawData) {
+    if (bin<fNofBins) {
+      data=fpRawData[bin];
+    } else {
+      HLTWarning("requested bin %d out of range (%d)", bin, fNofBins);
+    }
+  } else if (fNofBins>0) {
+    HLTWarning("data only available within event cycle");
+  }
+  return data;
+}
+
+AliHLTTPCSignal_t AliHLTTPCPad::GetCorrectedData(Int_t bin) const
+{
+  AliHLTTPCSignal_t data=GetRawData(bin)-GetBaseLine(bin);
+  if (fThreshold>0) data-=fThreshold;
+  if (data<0) data=0;
+  if (bin<fFirstBLBin) data=0;
+  return data;
+}
+
+AliHLTTPCSignal_t AliHLTTPCPad::GetBaseLine(Int_t bin) const
+{
+  return fAverage>0?fAverage:0;
+}
+
+AliHLTTPCSignal_t AliHLTTPCPad::GetAverage() const
+{
+  return fAverage>0?fAverage:0;
+}
+
