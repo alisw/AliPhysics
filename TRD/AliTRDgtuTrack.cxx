@@ -59,7 +59,7 @@ AliTRDgtuTrack::AliTRDgtuTrack()
 }
 
 //_____________________________________________________________________________
-AliTRDgtuTrack::AliTRDgtuTrack(const AliTRDgtuTrack& t)
+AliTRDgtuTrack::AliTRDgtuTrack(const AliTRDgtuTrack &t)
   :TObject(t)
   ,fTracklets(NULL)
   ,fYproj(t.fYproj)
@@ -90,6 +90,7 @@ AliTRDgtuTrack &AliTRDgtuTrack::operator=(const AliTRDgtuTrack &t)
   //
 
   if (this != &t) ((AliTRDgtuTrack &) t).Copy(*this); 
+
   return *this;
 
 } 
@@ -126,7 +127,8 @@ AliTRDgtuTrack::~AliTRDgtuTrack()
   //
 
   if (fTracklets) {
-    fTracklets->Delete();
+    //fTracklets->Delete();
+    fTracklets->Clear();
     delete fTracklets;
     fTracklets = 0;
   }
@@ -145,7 +147,7 @@ void AliTRDgtuTrack::AddTracklet(AliTRDltuTracklet *trk)
 }
 
 //_____________________________________________________________________________
-AliTRDltuTracklet* AliTRDgtuTrack::GetTracklet(Int_t pos) const
+AliTRDltuTracklet *AliTRDgtuTrack::GetTracklet(Int_t pos) const
 {
   //
   // Return LTU tracklet at position "pos"
@@ -164,7 +166,7 @@ AliTRDltuTracklet* AliTRDgtuTrack::GetTracklet(Int_t pos) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDgtuTrack::Compare(const TObject * o) const
+Int_t AliTRDgtuTrack::Compare(const TObject *o) const
 {
   //
   // Compare function for sorting the tracks
@@ -235,12 +237,12 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
 
   for (i = 0; i < nTracklets; i++) {
 
-    trk = GetTracklet(i);
-    fYproj += trk->GetYproj(xpl);
-    fZproj += trk->GetZproj(xpl);
-    fSlope += trk->GetSlope();
+    trk         = GetTracklet(i);
+    fYproj     += trk->GetYproj(xpl);
+    fZproj     += trk->GetZproj(xpl);
+    fSlope     += trk->GetSlope();
     fNclusters += trk->GetNclusters();
-    iDet = trk->GetDetector();
+    iDet        = trk->GetDetector();
 
     newDetector = kTRUE;
     for (Int_t id = 0; id < nDet; id++) {
@@ -259,16 +261,20 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
     fC[i][2] = trk->GetRowz();
 
   }
-  fYproj /= (Float_t)nTracklets;
-  fZproj /= (Float_t)nTracklets;
-  fSlope /= (Float_t)nTracklets;
+  fYproj /= (Float_t) nTracklets;
+  fZproj /= (Float_t) nTracklets;
+  fSlope /= (Float_t) nTracklets;
 
-  Float_t x[kNmaxTrk+1], y[kNmaxTrk+1], z[kNmaxTrk+1];
-  Bool_t count[kNmaxTrk];
-  for (Int_t i = 0; i < kNmaxTrk; i++) count[i] = kFALSE;
+  Float_t x[kNmaxTrk+1];
+  Float_t y[kNmaxTrk+1];
+  Float_t z[kNmaxTrk+1];
+  Bool_t  count[kNmaxTrk];
+  for (Int_t i = 0; i < kNmaxTrk; i++) {
+    count[i] = kFALSE;
+  }
 
   Int_t iXmin = -1;
-  Int_t j = 0;
+  Int_t j     =  0;
   x[0] = y[0] = z[0] = 0.0;
   while (j < nTracklets) {
     iXmin = -1;
@@ -278,7 +284,9 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
 	iXmin = i;
 	continue;
       }
-      if (fC[i][0] < fC[iXmin][0]) iXmin = i;
+      if (fC[i][0] < fC[iXmin][0]) {
+        iXmin = i;
+      }
     }
     x[j+1] = fC[iXmin][0];
     y[j+1] = fC[iXmin][1];
@@ -296,8 +304,8 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
   smatrix.Zero();
   sums.Zero();
   for (i = 0; i < nTracklets; i++) {
-    xv = (Double_t)x[i+1];
-    yv = (Double_t)y[i+1];
+    xv = (Double_t) x[i+1];
+    yv = (Double_t) y[i+1];
     smatrix(0,0) += 1.0;
     smatrix(1,1) += xv*xv;
     smatrix(0,1) += xv;
@@ -306,26 +314,26 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
     sums(1,0)    += xv*yv;
   }
   res = smatrix.Invert() * sums;
-  a = res(0,0);
-  b = res(1,0);
+  a   = res(0,0);
+  b   = res(1,0);
 
   Float_t dist  = AliTRDgeometry::GetTime0(1) - AliTRDgeometry::GetTime0(0);
-  Float_t fx1   = x[1]          + dist * (Float_t)(nTracklets-1)/6.0;
+  Float_t fx1   = x[1]          + dist * (Float_t) (nTracklets-1) / 6.0;
   Float_t fy1   = a + b * fx1;
-  Float_t fx2   = x[nTracklets] - dist * (Float_t)(nTracklets-1)/6.0;
+  Float_t fx2   = x[nTracklets] - dist * (Float_t) (nTracklets-1) / 6.0;
   Float_t fy2   = a + b * fx2;
   Float_t d12   = TMath::Sqrt((fx2-fx1)*(fx2-fx1)+(fy2-fy1)*(fy2-fy1));
   Float_t alpha = TMath::ATan(fy2/fx2) - TMath::ATan(fy1/fx1);
-  Float_t r     = (d12/2.0)/TMath::Sin(alpha);
+  Float_t r     = (d12 / 2.0) / TMath::Sin(alpha);
 
   fPt = 0.3 * field * 0.01 * r;
 
-  Float_t d1 = fx1*fx1+fy1*fy1;
-  Float_t d2 = fx2*fx2+fy2*fy2;
-  Float_t d  = fx1*fy2-fx2*fy1;
+  Float_t d1 = fx1*fx1 + fy1*fy1;
+  Float_t d2 = fx2*fx2 + fy2*fy2;
+  Float_t d  = fx1*fy2 - fx2*fy1;
   
-  Float_t xc = (d1*fy2-d2*fy1)/(2*d);
-  Float_t yc = (d2*fx1-d1*fx2)/(2*d);
+  Float_t xc = (d1*fy2 - d2*fy1) / (2.0*d);
+  Float_t yc = (d2*fx1 - d1*fx2) / (2.0*d);
 
   if (yc != 0.0) {
     fPhi = TMath::ATan(xc/yc);
@@ -339,8 +347,8 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
   smatrix.Zero();
   sums.Zero();
   for (i = 0; i < nTracklets+1; i++) {
-    xv = (Double_t)z[i];
-    yv = (Double_t)x[i];
+    xv = (Double_t) z[i];
+    yv = (Double_t) x[i];
     smatrix(0,0) += 1.0;
     smatrix(1,1) += xv*xv;
     smatrix(0,1) += xv;
@@ -349,8 +357,8 @@ void AliTRDgtuTrack::Track(Float_t xpl, Float_t field)
     sums(1,0)    += xv*yv;
   }
   res = smatrix.Invert() * sums;
-  a = res(0,0);
-  b = res(1,0);
+  a   = res(0,0);
+  b   = res(1,0);
   Float_t theta = TMath::ATan(b);
   
   if (theta < 0.0) {
@@ -395,20 +403,19 @@ void AliTRDgtuTrack::MakePID()
 
     trk = GetTracklet(i);
 
-    sl = TMath::Abs(trk->GetSlope());     // tracklet inclination in X-y plane
-    th = trk->GetRowz()/trk->GetTime0();  // tracklet inclination in X-z plane
-    th = TMath::ATan(TMath::Abs(th));
+    sl  = TMath::Abs(trk->GetSlope());     // Tracklet inclination in X-y plane
+    th  = trk->GetRowz()/trk->GetTime0();  // Tracklet inclination in X-z plane
+    th  = TMath::ATan(TMath::Abs(th));
 
-    q = trk->GetQ() 
-      * TMath::Cos(sl/180.0*TMath::Pi()) 
-      * TMath::Cos(th/180.0*TMath::Pi());
+    q   = trk->GetQ() 
+        * TMath::Cos(sl/180.0*TMath::Pi()) 
+        * TMath::Cos(th/180.0*TMath::Pi());
 
     det = trk->GetDetector();
     pla = trk->GetPlane(det);
 
-    // unclear yet factor to match the PS distributions = 5.8
+    // Unclear yet factor to match the PS distributions = 5.8
     // not explained only by the tail filter ...
-
     // AliRoot v4-03-07 , v4-03-Release
     //q = q * 5.8;
 
@@ -443,8 +450,8 @@ void AliTRDgtuTrack::MakePID()
 
   }
 
-  if ((probEle+probPio) > 0.0) {
-    fPID = probEle/(probEle+probPio);
+  if ((probEle + probPio) > 0.0) {
+    fPID = probEle/(probEle + probPio);
   } 
   else {
     fPID = 0.0;
@@ -467,7 +474,7 @@ void AliTRDgtuTrack::MakePID()
   //Float_t fPIDcut = 0.829 - 0.032 * TMath::Abs(fPt);
 
   // HEAD28Mar06 with new generated distributions (pol2 fit)
-  Float_t absPt = TMath::Abs(fPt);
+  Float_t absPt   = TMath::Abs(fPt);
   //Float_t fPIDcut = 0.9575 - 0.0832 * absPt + 0.0037 * absPt*absPt;  // 800 bins in dEdx
   Float_t fPIDcut = 0.9482 - 0.0795 * absPt + 0.0035 * absPt*absPt;    // 200 bins in dEdx
 
@@ -492,7 +499,7 @@ void AliTRDgtuTrack::CookLabel()
   Int_t trackCount[kMaxTracks];
   for (Int_t it = 0; it < kMaxTracks; it++) {
     trackLabel[it] = -1;
-    trackCount[it] = 0;
+    trackCount[it] =  0;
   }
 
   Bool_t counted;
@@ -547,7 +554,8 @@ void AliTRDgtuTrack::ResetTracklets()
   //
 
   if (fTracklets) {
-    fTracklets->Delete(); 
+    //fTracklets->Delete(); 
+    fTracklets->Clear();
   }
 
 }

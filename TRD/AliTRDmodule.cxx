@@ -195,7 +195,7 @@ void AliTRDmodule::ResetTracks()
 }
 
 //_____________________________________________________________________________
-AliTRDgtuTrack* AliTRDmodule::GetTrack(Int_t pos) const
+AliTRDgtuTrack *AliTRDmodule::GetTrack(Int_t pos) const
 {
   //
   // Return track at position "pos"
@@ -245,7 +245,7 @@ void AliTRDmodule::AddTracklet(Int_t det, Int_t row, Float_t rowz, Float_t slope
 }
 
 //_____________________________________________________________________________
-AliTRDltuTracklet* AliTRDmodule::GetTracklet(Int_t pos) const
+AliTRDltuTracklet *AliTRDmodule::GetTracklet(Int_t pos) const
 {
   //
   // Get the tracklet at position "pos"
@@ -396,9 +396,24 @@ void AliTRDmodule::FindTracksCombi(Int_t zchan)
   
   static Int_t trkTrack[12];
   
-  Int_t   nTracklets, nPlanes;
-  Int_t   ntrk1, trkId1, ntrk2, trkId2;
-  Float_t y1, y1min, y1max, s1, z1, s1min, s1max, y2, s2, z2;
+  Int_t   nTracklets;
+  Int_t   nPlanes;
+  Int_t   ntrk1;
+  Int_t   trkId1;
+  Int_t   ntrk2;
+  Int_t   trkId2;
+
+  Float_t y1;
+  Float_t y1min;
+  Float_t y1max;
+  Float_t s1;
+  Float_t z1;
+  Float_t s1min;
+  Float_t s1max;
+  Float_t y2;
+  Float_t s2;
+  Float_t z2;
+
   AliTRDltuTracklet *trk1;
   AliTRDltuTracklet *trk2;
   AliTRDltuTracklet *trk ;
@@ -537,8 +552,12 @@ void AliTRDmodule::RemoveMultipleTracks()
   AliTRDgtuTrack *trk1;
   AliTRDgtuTrack *trk2;
 
-  Float_t yproj1, yproj2, alpha1, alpha2;
-  Int_t   ntrk1, ntrk2;
+  Float_t yproj1;
+  Float_t yproj2;
+  Float_t alpha1;
+  Float_t alpha2;
+  Int_t   ntrk1;
+  Int_t   ntrk2;
   Int_t   iTrack = 0;
 
   while (iTrack < (GetNtracks()-1)) {
@@ -571,7 +590,7 @@ void AliTRDmodule::RemoveMultipleTracks()
 }
 
 //_____________________________________________________________________________
-TObjArray* AliTRDmodule::Tracklets() 
+TObjArray *AliTRDmodule::Tracklets() 
 { 
   //
   // Returns the list of tracklets
@@ -627,7 +646,7 @@ Int_t AliTRDmodule::GetNtracklets() const
 }
 
 //_____________________________________________________________________________
-TObjArray* AliTRDmodule::Tracks() 
+TObjArray *AliTRDmodule::Tracks() 
 {
   //
   // Returns the list of tracks
