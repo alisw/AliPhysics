@@ -35,9 +35,12 @@
 #include <TRandom.h>
 #include <TMath.h>
 #include <TParticle.h>
+#include <TVirtualMC.h>
+#include <TVirtualMCStack.h>
 
 #include "AliModule.h"
 #include "AliLog.h"
+#include "AliMC.h"
 
 #include "AliTRDsim.h"
 
@@ -394,8 +397,18 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
                          , Int_t &nPhoton, Float_t *ePhoton)
 {
   //
-  // Produces TR photons.
+  // Produces TR photons using a parametric model for regular radiator. Photons
+  // with energy larger than 15 keV are included in the MC stack and tracked by VMC
+  // machinary.
   //
+  // Input parameters:
+  // p    - parent momentum [GeV/c]
+  // mass - parent mass
+  //
+  // Output :
+  // nPhoton - number of photons which have to be processed by custom code
+  // ePhoton - energy of this photons in keV.
+  //   
 
   const Double_t kAlpha  = 0.0072973;
   const Int_t    kSumMax = 30;
@@ -410,62 +423,108 @@ Int_t AliTRDsim::TrPhotons(Float_t p, Float_t mass
 
   fSpectrum->Reset();
 
-  //
   // The TR spectrum
-  //
-
   Double_t csi1;
   Double_t csi2;
   Double_t rho1;
   Double_t rho2;
-  Double_t sSigma;
+  Double_t fSigma;
   Double_t sum;
   Double_t nEqu;
   Double_t thetaN;
   Double_t aux;
   Double_t energyeV;
   Double_t energykeV;
-
   for (Int_t iBin = 1; iBin <= fSpNBins; iBin++) {
 
     energykeV = fSpectrum->GetBinCenter(iBin);
-    energyeV  = energykeV * 1.e3;
-    sSigma    = Sigma(energykeV);
+    energyeV  = energykeV * 1.0e3;
+
+    fSigma    = Sigma(energykeV);
 
     csi1      = fFoilOmega / energyeV;
     csi2      = fGapOmega  / energyeV;
 
     rho1      = 2.5 * energyeV * fFoilThick * 1.0e4 
-              * (1. / (gamma*gamma) + csi1*csi1);
+                               * (1.0 / (gamma*gamma) + csi1*csi1);
     rho2      = 2.5 * energyeV * fFoilThick * 1.0e4 
-              * (1.0 / (gamma*gamma) + csi2 *csi2);
+                               * (1.0 / (gamma*gamma) + csi2 *csi2);
 
     // Calculate the sum
-    sum = 0;
+    sum = 0.0;
     for (Int_t n = 1; n <= kSumMax; n++) {
       thetaN = (TMath::Pi() * 2.0 * n - (rho1 + tau * rho2)) / (1.0 + tau);
       if (thetaN < 0.0) {
         thetaN = 0.0;
       }
-      aux    = 1.0 / (rho1 + thetaN) - 1.0 / (rho2 + thetaN);
+      aux   = 1.0 / (rho1 + thetaN) - 1.0 / (rho2 + thetaN);
       sum  += thetaN * (aux*aux) * (1.0 - TMath::Cos(rho1 + thetaN));
     }
 
     // Equivalent number of foils
-    nEqu = (1.0 - TMath::Exp(-foils * sSigma)) / (1.0 - TMath::Exp(-sSigma));
+    nEqu = (1.0 - TMath::Exp(-foils * fSigma)) / (1.0 - TMath::Exp(-fSigma));
 
     // dN / domega
-    fSpectrum->SetBinContent(iBin,4.0 * kAlpha * nEqu * sum / (energykeV * (1.0 + tau)));
+    fSpectrum->SetBinContent(iBin,4.0 * kAlpha * nEqu * sum /  (energykeV * (1.0 + tau)));
 
   }
 
   // <nTR> (binsize corr.)
-  Float_t ntr = fSpBinWidth*fSpectrum->Integral();
-  // Number of TR photons from Poisson distribution with mean <ntr>
-  nPhoton     = gRandom->Poisson(ntr);
-  // Energy of the TR photons
-  for (Int_t iPhoton = 0; iPhoton < nPhoton; iPhoton++) {
-    ePhoton[iPhoton] = fSpectrum->GetRandom();
+  Float_t nTr     = fSpBinWidth * fSpectrum->Integral();
+  // Number of TR photons from Poisson distribution with mean <nTr>
+  Int_t   nPhCand = gRandom->Poisson(nTr);
+  
+  // Link the MC stack and get info about parent electron
+  TVirtualMCStack *stack       = gMC->GetStack();
+  TParticle       *trGenerator = stack->GetCurrentTrack();
+  Int_t    track = stack->GetCurrentTrackNumber();
+  Double_t px    = trGenerator->Px() / trGenerator->P();
+  Double_t py    = trGenerator->Py() / trGenerator->P();
+  Double_t pz    = trGenerator->Pz() / trGenerator->P();
+
+  // Current position of electron
+  Double_t x;
+  Double_t y;
+  Double_t z; 
+  gMC->TrackPosition(x,y,z);
+  
+  // Counter for TR analysed in custom code (e < 15keV)
+  nPhoton = 0;  
+
+  for (Int_t iPhoton = 0; iPhoton < nPhCand; iPhoton++) {
+
+    // Energy of the TR photon
+    Double_t e = fSpectrum->GetRandom();
+
+    // Put TR photon on particle stack
+    if (e > 15.0 ) { 
+
+      e *= 1.0e-6; // Convert it to GeV
+
+      Int_t phtrack;
+      stack-> PushTrack(1                 // Must be 1
+		       ,track             // Identifier of the parent track, -1 for a primary
+		       ,22                // Particle code.
+		       ,px*e              // 4 momentum (The photon is generated on the same  
+                       ,py*e              // direction as the parent. For irregular radiator one
+                       ,pz*e              // can calculate also the angle but this is a secondary
+                       ,e                 // order effect)
+    	               ,x,y,z,0.0         // 4 vertex	
+		       ,0.0,0.0,0.0       // Polarisation
+		       ,kPFeedBackPhoton  // Production mechanism (there is no TR in G3 so one
+                                          // has to make some convention)
+		       ,phtrack           // On output the number of the track stored
+		       ,1.0
+                       ,1);
+
+    }
+    // Custom treatment of TR photons
+    else {
+  
+      ePhoton[nPhoton++] = e;
+
+    }
+
   }
 
   return 1;
@@ -926,7 +985,7 @@ Int_t AliTRDsim::Locate(Double_t *xv, Int_t n, Double_t xval
   if ((xval <  xv[kl])   || 
       (xval >  xv[kl+1]) || 
       (kl   >= n-1)) {
-    AliError(Form("Locate failed xv[%d] %f xval %f xv[%d] %f!!!\n"
+    AliFatal(Form("Locate failed xv[%d] %f xval %f xv[%d] %f!!!\n"
                  ,kl,xv[kl],xval,kl+1,xv[kl+1]));
     exit(1);
   }
