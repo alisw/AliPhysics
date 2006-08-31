@@ -85,6 +85,20 @@ Bool_t AlidNdEtaCorrectionSelector::SignOK(TParticlePDG* particle)
   return kTRUE;
 }
 
+void AlidNdEtaCorrectionSelector::ReadUserObjects(TTree* tree)
+{
+  // read the user objects, called from slavebegin and begin
+
+  if (!fEsdTrackCuts && fInput)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("AliESDtrackCuts"));
+
+  if (!fEsdTrackCuts && tree)
+    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (tree->GetUserInfo()->FindObject("AliESDtrackCuts"));
+
+  if (!fEsdTrackCuts)
+     AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from input list.");
+}
+
 void AlidNdEtaCorrectionSelector::Begin(TTree * tree)
 {
   // The Begin() function is called at the start of the query.
@@ -92,6 +106,8 @@ void AlidNdEtaCorrectionSelector::Begin(TTree * tree)
   // The tree argument is deprecated (on PROOF 0 is passed).
 
   AliSelectorRL::Begin(tree);
+
+  ReadUserObjects(tree);
 
   TString option = GetOption();
   AliInfo(Form("Called with option %s.", option.Data()));
@@ -116,13 +132,9 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
 
   AliSelectorRL::SlaveBegin(tree);
 
+  ReadUserObjects(tree);
+
   fdNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
-
-  if (fTree)
-    fEsdTrackCuts = dynamic_cast<AliESDtrackCuts*> (fTree->GetUserInfo()->FindObject("AliESDtrackCuts"));
-
-  if (!fEsdTrackCuts)
-    AliDebug(AliLog::kError, "ERROR: Could not read EsdTrackCuts from user info");
 
   fPIDParticles = new TH1F("pid_particles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
   fPIDTracks = new TH1F("pid_tracks", "MC PID of reconstructed tracks", 10001, -5000.5, 5000.5);
@@ -163,6 +175,8 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     AliDebug(AliLog::kError, "ESD branch not available");
     return kFALSE;
   }
+
+  gDebug = 2;
 
   AliHeader* header = GetHeader();
   if (!header)
@@ -334,7 +348,8 @@ void AlidNdEtaCorrectionSelector::Terminate()
 
   TFile* fout = new TFile(Form("correction_map%s.root", GetOption()), "RECREATE");
 
-  fEsdTrackCuts->SaveHistograms("esd_track_cuts");
+  if (fEsdTrackCuts)
+    fEsdTrackCuts->SaveHistograms("esd_track_cuts");
   fdNdEtaCorrection->SaveHistograms();
 
   fout->Write();
@@ -342,31 +357,37 @@ void AlidNdEtaCorrectionSelector::Terminate()
 
   fdNdEtaCorrection->DrawHistograms();
 
-  new TCanvas("pidcanvas", "pidcanvas", 500, 500);
+  if (fPIDParticles && fPIDTracks)
+  {
+    new TCanvas("pidcanvas", "pidcanvas", 500, 500);
 
-  fPIDParticles->Draw();
-  fPIDTracks->SetLineColor(2);
-  fPIDTracks->Draw("SAME");
+    fPIDParticles->Draw();
+    fPIDTracks->SetLineColor(2);
+    fPIDTracks->Draw("SAME");
 
-  TDatabasePDG* pdgDB = new TDatabasePDG;
+    TDatabasePDG* pdgDB = new TDatabasePDG;
 
-  for (Int_t i=0; i <= fPIDParticles->GetNbinsX()+1; ++i)
-    if (fPIDParticles->GetBinContent(i) > 0)
-      printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
+    for (Int_t i=0; i <= fPIDParticles->GetNbinsX()+1; ++i)
+      if (fPIDParticles->GetBinContent(i) > 0)
+        printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
 
-  delete pdgDB;
-  pdgDB = 0;
+    delete pdgDB;
+    pdgDB = 0;
+  }
 
-  TCanvas* canvas = new TCanvas("clusters", "clusters", 1000, 500);
-  canvas->Divide(2, 1);
+  if (fClustersITSPos && fClustersITSNeg && fClustersTPCPos && fClustersTPCNeg)
+  {
+    TCanvas* canvas = new TCanvas("clusters", "clusters", 1000, 500);
+    canvas->Divide(2, 1);
 
-  canvas->cd(1);
-  fClustersITSPos->Draw();
-  fClustersITSNeg->SetLineColor(kRed);
-  fClustersITSNeg->Draw("SAME");
+    canvas->cd(1);
+    fClustersITSPos->Draw();
+    fClustersITSNeg->SetLineColor(kRed);
+    fClustersITSNeg->Draw("SAME");
 
-  canvas->cd(2);
-  fClustersTPCPos->Draw();
-  fClustersTPCNeg->SetLineColor(kRed);
-  fClustersTPCNeg->Draw("SAME");
+    canvas->cd(2);
+    fClustersTPCPos->Draw();
+    fClustersTPCNeg->SetLineColor(kRed);
+    fClustersTPCNeg->Draw("SAME");
+  }
 }

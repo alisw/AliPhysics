@@ -217,8 +217,11 @@ void AliCorrectionMatrix::SaveHistograms()
   // saves the histograms
   //
 
-  fhMeas ->Write();
-  fhGene ->Write();
+  if (fhMeas)
+    fhMeas ->Write();
+
+  if (fhGene)
+    fhGene ->Write();
 
   if (fhCorr)
     fhCorr->Write();

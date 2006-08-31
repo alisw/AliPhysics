@@ -16,6 +16,7 @@
 #include <AliLog.h>
 #include <AliGenEventHeader.h>
 #include <AliHeader.h>
+#include <AliStack.h>
 
 #include "dNdEta/dNdEtaAnalysis.h"
 #include "AliPWG0Helper.h"
@@ -51,6 +52,9 @@ void AlidNdEtaAnalysisMCSelector::SlaveBegin(TTree * tree)
   AliSelectorRL::SlaveBegin(tree);
 
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+  fVertex = new TH3F("vertex_check", "vertex_check", 50, -50, 50, 50, -50, 50, 50, -50, 50);
+  fPartEta = new TH1F("dndeta_check", "dndeta_check", 120, -6, 6);
+  fPartEta->Sumw2();
 }
 
 void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
@@ -58,10 +62,6 @@ void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
   AliSelectorRL::Init(tree);
 
   tree->SetBranchStatus("ESD", 0);
-
-  fVertex = new TH3F("vertex_check", "vertex_check", 50, -50, 50, 50, -50, 50, 50, -50, 50);
-  fPartEta = new TH1F("dndeta_check", "dndeta_check", 120, -6, 6);
-  fPartEta->Sumw2();
 }
 
 Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
@@ -71,10 +71,10 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
   if (AliSelectorRL::Process(entry) == kFALSE)
     return kFALSE;
 
-  TTree* particleTree = GetKinematics();
-  if (!particleTree)
+  AliStack* stack = GetStack();
+  if (!stack)
   {
-    AliDebug(AliLog::kError, "Kinematics not available");
+    AliDebug(AliLog::kError, "Stack not available");
     return kFALSE;
   }
 
@@ -91,25 +91,12 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
   TArrayF vtxMC(3);
   genHeader->PrimaryVertex(vtxMC);
 
-  particleTree->SetBranchStatus("*", 0);
-  particleTree->SetBranchStatus("fDaughter[2]", 1);
-  particleTree->SetBranchStatus("fPdgCode", 1);
-  particleTree->SetBranchStatus("fPx", 1);
-  particleTree->SetBranchStatus("fPy", 1);
-  particleTree->SetBranchStatus("fPz", 1);
-  particleTree->SetBranchStatus("fVx", 1);
-  particleTree->SetBranchStatus("fVy", 1);
-  particleTree->SetBranchStatus("fVz", 1);
+  // loop over mc particles
+  Int_t nPrim  = stack->GetNprimary();
 
-  TParticle* particle = 0;
-  particleTree->SetBranchAddress("Particles", &particle);
-
-  Int_t nPrim  = header->GetNprimary();
-  Int_t nTotal = header->GetNtrack();
-
-  for (Int_t i_mc = nTotal - nPrim; i_mc < nTotal; ++i_mc)
+  for (Int_t iMc = 0; iMc < nPrim; ++iMc)
   {
-    particleTree->GetEntry(i_mc);
+    TParticle* particle = stack->Particle(iMc);
 
     if (!particle)
       continue;
@@ -117,7 +104,7 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
-    AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", i_mc, particle->GetUniqueID()));
+    AliDebug(AliLog::kDebug+1, Form("Accepted primary %d, unique ID: %d", iMc, particle->GetUniqueID()));
 
     fdNdEtaAnalysis->FillTrack(vtxMC[2], particle->Eta(), particle->Pt(), 1);
     fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
@@ -172,15 +159,18 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
   fout->Write();
   fout->Close();
 
-  fPartEta->Scale(1.0/fEvents);
-  fPartEta->Scale(1.0/fPartEta->GetBinWidth(1));
+  if (fPartEta)
+  {
+    fPartEta->Scale(1.0/fEvents);
+    fPartEta->Scale(1.0/fPartEta->GetBinWidth(1));
 
-  TCanvas* canvas = new TCanvas("control", "control", 900, 450);
-  canvas->Divide(2, 1);
+    TCanvas* canvas = new TCanvas("control", "control", 900, 450);
+    canvas->Divide(2, 1);
 
-  canvas->cd(1);
-  fVertex->Draw();
+    canvas->cd(1);
+    fVertex->Draw();
 
-  canvas->cd(2);
-  fPartEta->Draw();
+    canvas->cd(2);
+    fPartEta->Draw();
+  }
 }

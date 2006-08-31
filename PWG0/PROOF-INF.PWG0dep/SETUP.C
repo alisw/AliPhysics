@@ -1,14 +1,34 @@
 void SETUP()
 {
    // we assume PWG0base (and thus ESD) already loaded
+   CheckLoadLibrary("libMinuit");
 
    // this package depends on STEER
-   gSystem->Load("libVMC");
-   gSystem->Load("libMinuit");
-   gSystem->Load("libSTEER");
+   CheckLoadLibrary("libVMC");
+   CheckLoadLibrary("libMinuit");
+   CheckLoadLibrary("libSTEER");
 
-   gSystem->Load("libPWG0dep");
+   CheckLoadLibrary("libPWG0dep");
+
+   // more packages to access the alice event header
+   CheckLoadLibrary("libEVGEN");
+   CheckLoadLibrary("libFASTSIM");
+   CheckLoadLibrary("libmicrocern");
+   CheckLoadLibrary("libpdf");
+   CheckLoadLibrary("libpythia6");
+   CheckLoadLibrary("libEGPythia6");
+   CheckLoadLibrary("libAliPythia6");
 
    // Set the Include paths
    gROOT->ProcessLine(".include PWG0dep");
+}
+
+Int_t CheckLoadLibrary(const char* library)
+{
+  // checks if a library is already loaded, if not loads the library
+
+  if (strlen(gSystem->GetLibraries(Form("%s.so", library), "", kFALSE)) > 0)
+    return 1;
+
+  return gSystem->Load(library);
 }

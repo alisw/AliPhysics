@@ -313,6 +313,9 @@ void AlidNdEtaAnalysisESDSelector::Terminate()
   if (fEsdTrackCuts)
     fEsdTrackCuts->SaveHistograms("esd_tracks_cuts");
 
+  if (fdNdEtaCorrection)
+    fdNdEtaCorrection->SaveHistograms();
+
   fout->Write();
   fout->Close();
 }

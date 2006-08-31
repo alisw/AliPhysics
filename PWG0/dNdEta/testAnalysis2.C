@@ -9,58 +9,30 @@
 //
 
 #include "../CreateESDChain.C"
+#include "../PWG0Helper.C"
 
-void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
+void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction")
 {
-  gSystem->Load("libEG");
-  gSystem->Load("libGeom");
-  gSystem->Load("libESD");
-  gSystem->Load("libPWG0base");
-  if (aMC != kFALSE)
-    gSystem->Load("libPWG0dep");
+  if (aProof)
+    connectProof("proof01@lxb6046");
 
-  gROOT->ProcessLine(".L CreatedNdEta.C");
+  TString libraries("libEG;libGeom;libESD;libPWG0base");
+  TString packages("PWG0base");
+  if (aMC != kFALSE)
+  {
+    libraries += ";libVMC;libMinuit;libSTEER;libPWG0dep;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6";
+    packages += ";PWG0dep";
+  }
+
+  if (!prepareQuery(libraries, packages, kTRUE))
+    return;
+
+  //TODO somehow prevent loading several times
   gROOT->ProcessLine(".L CreateCuts.C");
   gROOT->ProcessLine(".L drawPlots.C");
 
-  TChain* chain = CreateESDChain(data, nRuns, offset);;
-  TVirtualProof* proof = 0;
+  TChain* chain = CreateESDChain(data, nRuns, offset);
 
-  if (aProof != kFALSE)
-  {
-    proof = TProof::Open("jgrosseo@lxb6046");
-
-    if (!proof)
-    {
-      printf("ERROR: PROOF connection not established.\n");
-      return;
-    }
-
-    if (proof->EnablePackage("ESD"))
-    {
-      printf("ERROR: ESD package could not be enabled.\n");
-      return;
-    }
-
-    if (proof->EnablePackage("PWG0base"))
-    {
-      printf("ERROR: PWG0base package could not be enabled.\n");
-      return;
-    }
-
-    if (aMC != kFALSE)
-    {
-      if (proof->EnablePackage("PWG0dep"))
-      {
-        printf("ERROR: PWG0dep package could not be enabled.\n");
-        return;
-      }
-    }
-
-    //chain->SetProof(proof);
-  }
-
-  // ########################################################
   // selection of esd tracks
   AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
   if (!esdTrackCuts)
@@ -69,20 +41,18 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
     return;
   }
 
-  chain->GetUserInfo()->Add(esdTrackCuts);
-  if (proof)
-    proof->AddInput(esdTrackCuts);
+  TList inputList;
+  inputList.Add(esdTrackCuts);
 
   if (aMC == kFALSE)
   {
-    AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
-    dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
+    AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(correctionMapFolder, correctionMapFolder);
+    dNdEtaCorrection->LoadHistograms(correctionMapFile, correctionMapFolder);
     dNdEtaCorrection->ReduceInformation();
-    //dNdEtaCorrection->RemoveEdges(2, 0, 2);
+    dNdEtaCorrection->SetName("dndeta_correction");
+    dNdEtaCorrection->SetTitle("dndeta_correction");
 
-    chain->GetUserInfo()->Add(dNdEtaCorrection);
-    if (proof)
-      proof->AddInput(dNdEtaCorrection);
+    inputList.Add(dNdEtaCorrection);
   }
 
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
@@ -93,36 +63,21 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   if (aDebug != kFALSE)
     selectorName += "g";
 
-  TStopwatch timer;
-  timer.Start();
+  Int_t result = executeQuery(chain, &inputList, selectorName);
 
-  Long64_t result = -1;
-
-  if (proof != kFALSE)
-    result = chain->MakeTDSet()->Process(selectorName);
-  else
-    result = chain->Process(selectorName);
-
-  if (result != 0)
+  if (result >= 0)
   {
-    printf("ERROR: Executing process failed with %d.\n", result);
-    return;
+    dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
+
+    TFile* file = TFile::Open(aMC ? "analysis_mc.root" : "analysis_esd.root");
+    if (!file)
+    {
+      cout << "Error. File not found" << endl;
+      return;
+    }
+    fdNdEtaAnalysis->LoadHistograms();
+    fdNdEtaAnalysis->DrawHistograms();
+
+    dNdEta(kTRUE);
   }
-
-  timer.Stop();
-  timer.Print();
-
-  dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
-
-  TFile* file = TFile::Open(aMC ? "analysis_mc.root" : "analysis_esd.root");
-  if (!file)
-  {
-    cout << "Error. File not found" << endl;
-    return;
-  }
-  fdNdEtaAnalysis->LoadHistograms();
-  fdNdEtaAnalysis->DrawHistograms();
-
-  dNdEta(kTRUE);
 }
-

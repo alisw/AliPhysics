@@ -693,7 +693,7 @@ TH1F* Sigma2VertexSimulation()
     return;
   }
 
-  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;Nsigma;% included 3 sigma / % included n sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
+  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included #sigma / % included n #sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
 
   for (Int_t i=1; i<=sigmavertex->GetNbinsX(); ++i)
     ratio->SetBinContent(i, sigmavertex->GetBinContent(sigmavertex->GetXaxis()->FindBin(3)) / sigmavertex->GetBinContent(i));
@@ -723,20 +723,28 @@ void Sigma2VertexCompare()
   ratio1->SetMarkerStyle(0);
   ratio2->SetMarkerStyle(0);
 
-  TLegend* legend = new TLegend(0.647177,0.775424,0.961694,0.966102);
+  ratio1->SetLineWidth(2);
+  ratio2->SetLineWidth(2);
+
+  TLegend* legend = new TLegend(0.7, 0.8, 0.95, 0.95);
+  legend->SetFillColor(0);
   legend->AddEntry(ratio1, "Gaussian");
   legend->AddEntry(ratio2, "Simulation");
 
-  ratio1->GetXaxis()->SetTitleOffset(1.5);
+  ratio2->SetTitle("");
+  ratio2->GetYaxis()->SetTitleOffset(1.5);
+  ratio2->GetXaxis()->SetRangeUser(2, 4);
 
   TCanvas* canvas = new TCanvas("Sigma2VertexCompare", "Sigma2VertexCompare", 500, 500);
   InitPad();
 
-  ratio1->Draw();
   ratio2->SetLineColor(kRed);
-  ratio2->Draw("SAME");
+  ratio2->Draw();
+  ratio1->Draw("SAME");
 
   legend->Draw();
+
+  canvas->SaveAs("Sigma2VertexCompare.eps");
 }
 
 void drawSystematics()

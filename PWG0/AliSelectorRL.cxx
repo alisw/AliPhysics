@@ -58,7 +58,10 @@ Bool_t AliSelectorRL::Process(Long64_t entry)
     return kFALSE;
 
   if (fRunLoader)
-    fRunLoader->GetEvent(entry);
+  {
+    if (fRunLoader->GetEvent(entry) != 0)
+      return kFALSE;
+  }
 
   return kTRUE;
 }
@@ -93,12 +96,6 @@ AliRunLoader* AliSelectorRL::GetRunLoader()
     if (!fRunLoader)
       return 0;
 
-    if (fRunLoader->LoadgAlice() != 0)
-    {
-      delete fRunLoader;
-      fRunLoader = 0;
-      return 0;
-    }
     fRunLoader->GetEvent(fTree->GetTree()->GetReadEntry());
   }
 
