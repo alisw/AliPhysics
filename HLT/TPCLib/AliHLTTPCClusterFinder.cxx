@@ -198,11 +198,11 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   fNClusters = 0;
 
   // initialize block for reading packed data
-  fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow);
+  fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
   readValue = fDigitReader->Next();
 
   if (!readValue)return;
- 
+
   pad = fDigitReader->GetPad();
   time = fDigitReader->GetTime();
   fCurrentRow = fDigitReader->GetRow();
@@ -500,7 +500,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 
     pad = newPad;
     time = newTime;
-  
+
   } // END while(readValue)
 
   if (pCurrentPad) pCurrentPad->StopEvent();

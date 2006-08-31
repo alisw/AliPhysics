@@ -20,7 +20,7 @@ public:
   AliHLTTPCDigitReaderUnpacked();
   virtual ~AliHLTTPCDigitReaderUnpacked();
   
-  int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow);
+  int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice);
   bool Next();
   int GetRow();
   int GetPad();

@@ -109,10 +109,10 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * Create a component of the given name (ID).
    * @param componentID  ID of the component to create
    * @param pEnv         environment for the component
-   * @param argc         number of arguments in @ref argv
+   * @param argc         number of arguments in argv
    * @param argv         argument array like in main()
    * @param component    reference to receive the create component instance
-   * @return component pointer in @ref component, neg. error code if failed
+   * @return component pointer in component, neg. error code if failed
    */
   int CreateComponent( const char* componentID, void* pEnv, 
 		       int argc, const char** argv, AliHLTComponent*& component );
@@ -123,7 +123,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @param componentID  ID of the component to create
    * @param pEnv         environment for the component
    * @param component    reference to receive the create component instance
-   * @return component pointer in @ref component, neg. error code if failed
+   * @return component pointer in component, neg. error code if failed
    */
   int CreateComponent( const char* componentID, void* pEnv, 
 		       AliHLTComponent*& component ) 

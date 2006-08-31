@@ -86,6 +86,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetReader(AliHLTTPCDigitReader* f){fDigitReader = f;}
   Int_t GetNumberOfClusters() const {return fNClusters;}
   
-  ClassDef(AliHLTTPCClusterFinder,1) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,0) //Fast cluster finder
 };
 #endif

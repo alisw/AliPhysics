@@ -180,17 +180,31 @@ void AliHLTTPCTrack::Rotate(Int_t slice,Bool_t tolocal)
 
 void AliHLTTPCTrack::CalculateHelix()
 {
-  //Calculate Radius, CenterX and CenterY from Psi, X0, Y0
-  fRadius = fPt / (AliHLTTPCTransform::GetBFieldValue());
-  if(fRadius) fKappa = -fQ*1./fRadius;
-  else fRadius = 999999;  //just zero
-  Double_t trackPhi0 = fPsi + fQ * AliHLTTPCTransform::PiHalf();
+// #### -B0-CHANGE-START == JMT
+    // for straight line fit
+    if (AliHLTTPCTransform::GetBFieldValue() == 0.0 ){
+	fRadius = 999999;  //just zero
 
-  fCenterX = fFirstPoint[0] - fRadius *  cos(trackPhi0);
-  fCenterY = fFirstPoint[1] - fRadius *  sin(trackPhi0);
-  
-  SetPhi0(atan2(fFirstPoint[1],fFirstPoint[0]));
-  SetR0(sqrt(fFirstPoint[0]*fFirstPoint[0]+fFirstPoint[1]*fFirstPoint[1]));
+	SetPhi0(atan2(fFirstPoint[1],fFirstPoint[0]));
+	SetR0(sqrt(fFirstPoint[0]*fFirstPoint[0]+fFirstPoint[1]*fFirstPoint[1]));
+    }
+    // for helix fit
+    else { 
+// #### -B0-UNCHANGED-START == JMT
+	//Calculate Radius, CenterX and CenterY from Psi, X0, Y0
+	fRadius = fPt / (AliHLTTPCTransform::GetBFieldValue());
+	if(fRadius) fKappa = -fQ*1./fRadius;
+	else fRadius = 999999;  //just zero
+	Double_t trackPhi0 = fPsi + fQ * AliHLTTPCTransform::PiHalf();
+	
+	fCenterX = fFirstPoint[0] - fRadius *  cos(trackPhi0);
+	fCenterY = fFirstPoint[1] - fRadius *  sin(trackPhi0);
+	
+	SetPhi0(atan2(fFirstPoint[1],fFirstPoint[0]));
+	SetR0(sqrt(fFirstPoint[0]*fFirstPoint[0]+fFirstPoint[1]*fFirstPoint[1]));
+// #### -B0-UNCHANGED-END == JMT
+    }
+// #### -B0-CHANGE-END == JMT
 }
 
 Double_t AliHLTTPCTrack::GetCrossingAngle(Int_t padrow,Int_t slice) 
@@ -242,42 +256,62 @@ Bool_t AliHLTTPCTrack::GetCrossingPoint(Int_t padrow,Float_t *xyz)
   Double_t xHit = AliHLTTPCTransform::Row2X(padrow);
 
 // BEGINN ############################################## MODIFIY JMT
-  if (xHit < xyz[0]){
-      LOG(AliHLTTPCLog::kError,"AliHLTTPCTRACK::GetCrossingPoint","")<< "Track doesn't cross padrow " << padrow <<"(x=" << xHit << "). Smallest x=" << xyz[0] << ENDLOG;
-      return false;
-  }
+//if (xHit < xyz[0]){
+//    LOG(AliHLTTPCLog::kError,"AliHLTTPCTRACK::GetCrossingPoint","")<< "Track doesn't cross padrow " 
+//				<< padrow <<"(x=" << xHit << "). Smallest x=" << xyz[0] << ENDLOG;
+//      return false;
+//}
 // END ################################################# MODIFIY JMT
 
-  xyz[0] = xHit;
-  Double_t aa = (xHit - GetCenterX())*(xHit - GetCenterX());
-  Double_t r2 = GetRadius()*GetRadius();
-  if(aa > r2)
-    return false;
+// #### -B0-CHANGE-START == JMT
+  // for straight line fit
+    if (AliHLTTPCTransform::GetBFieldValue() == 0.0 ){
 
-  Double_t aa2 = sqrt(r2 - aa);
-  Double_t y1 = GetCenterY() + aa2;
-  Double_t y2 = GetCenterY() - aa2;
-  xyz[1] = y1;
-  if(fabs(y2) < fabs(y1)) xyz[1] = y2;
- 
-  Double_t yHit = xyz[1];
-  Double_t angle1 = atan2((yHit - GetCenterY()),(xHit - GetCenterX()));
-  if(angle1 < 0) angle1 += 2.*AliHLTTPCTransform::Pi();
-  Double_t angle2 = atan2((GetFirstPointY() - GetCenterY()),(GetFirstPointX() - GetCenterX()));
-  if(angle2 < 0) angle2 += AliHLTTPCTransform::TwoPi();
+	Double_t yHit = GetFirstPointY() + (Double_t) tan( GetPsi() ) * (xHit - GetFirstPointX());   
+	
+	Double_t s = (xHit - GetFirstPointX())*(xHit - GetFirstPointX()) + (yHit - GetFirstPointY())*(yHit - GetFirstPointY()); 
+	
+	Double_t zHit = GetFirstPointZ() + s * GetTgl();
 
-  Double_t diffangle = angle1 - angle2;
-  diffangle = fmod(diffangle,AliHLTTPCTransform::TwoPi());
-  if((GetCharge()*diffangle) > 0) diffangle = diffangle - GetCharge()*AliHLTTPCTransform::TwoPi();
+	xyz[0] = xHit;
+	xyz[1] = yHit;
+	xyz[2] = zHit;
+    }
+    // for helix fit
+    else { 
+// #### -B0-UNCHANGED-START == JMT
+	xyz[0] = xHit;
+	Double_t aa = (xHit - GetCenterX())*(xHit - GetCenterX());
+	Double_t r2 = GetRadius()*GetRadius();
+	if(aa > r2)
+	    return false;
+	
+	Double_t aa2 = sqrt(r2 - aa);
+	Double_t y1 = GetCenterY() + aa2;
+	Double_t y2 = GetCenterY() - aa2;
+	xyz[1] = y1;
+	if(fabs(y2) < fabs(y1)) xyz[1] = y2;
+	
+	Double_t yHit = xyz[1];
+	Double_t angle1 = atan2((yHit - GetCenterY()),(xHit - GetCenterX()));
+	if(angle1 < 0) angle1 += 2.*AliHLTTPCTransform::Pi();
+	Double_t angle2 = atan2((GetFirstPointY() - GetCenterY()),(GetFirstPointX() - GetCenterX()));
+	if(angle2 < 0) angle2 += AliHLTTPCTransform::TwoPi();
+	
+	Double_t diffangle = angle1 - angle2;
+	diffangle = fmod(diffangle,AliHLTTPCTransform::TwoPi());
+	if((GetCharge()*diffangle) > 0) diffangle = diffangle - GetCharge()*AliHLTTPCTransform::TwoPi();
+	
+	Double_t stot = fabs(diffangle)*GetRadius();
+	
+	Double_t zHit = GetFirstPointZ() + stot*GetTgl();
+	
+	xyz[2] = zHit;
+// #### -B0-UNCHANGED-END == JMT
+    }
+// #### -B0-CHANGE-END == JMT
 
-  Double_t stot = fabs(diffangle)*GetRadius();
-
-  Double_t zHit = GetFirstPointZ() + stot*GetTgl();
-
-  xyz[2] = zHit;
- 
-  return true;
-
+    return true;
 }
 
 Bool_t AliHLTTPCTrack::CalculateReferencePoint(Double_t angle,Double_t radius)
@@ -446,45 +480,69 @@ void AliHLTTPCTrack::UpdateToFirstPoint()
   //However, if you later on want to do more precise local calculations, such
   //as impact parameter, residuals etc, you need to give the track parameters
   //according to the actual fit.
-// BEGINN ############################################## MODIFIY JMT
-    LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::UpdateToFirstPoint","ENTER") <<ENDLOG;
-// END ################################################# MODIFIY JMT
-  Double_t xc = GetCenterX() - GetFirstPointX();
-  Double_t yc = GetCenterY() - GetFirstPointY();
-  
-  Double_t distx1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t disty1 = yc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t distance1 = sqrt(distx1*distx1 + disty1*disty1);
-  
-  Double_t distx2 = xc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t disty2 = yc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
-  Double_t distance2 = sqrt(distx2*distx2 + disty2*disty2);
-  
-  //Choose the closest:
-  Double_t point[2];
-  if(distance1 < distance2)
-    {
-      point[0] = distx1 + GetFirstPointX();
-      point[1] = disty1 + GetFirstPointY();
-    }
-  else
-    {
-      point[0] = distx2 + GetFirstPointX();
-      point[1] = disty2 + GetFirstPointY();
-    }
+// #### -B0-CHANGE-START == JMT
+    // for straight line fit
+    if (AliHLTTPCTransform::GetBFieldValue() == 0.0 ){
+	Double_t xc = GetCenterX() - GetFirstPointX();
+	Double_t yc = GetCenterY() - GetFirstPointY();
 
-  Double_t pointpsi = atan2(point[1]-GetCenterY(),point[0]-GetCenterX());
-  pointpsi -= GetCharge()*AliHLTTPCTransform::PiHalf();
-  if(pointpsi < 0) pointpsi += AliHLTTPCTransform::TwoPi();
-  
-  //Update the track parameters
-  SetR0(sqrt(point[0]*point[0]+point[1]*point[1]));
-  SetPhi0(atan2(point[1],point[0]));
-  SetFirstPoint(point[0],point[1],GetZ0());
-  SetPsi(pointpsi);
-  // BEGINN ############################################## MODIFIY JMT
-    LOG(AliHLTTPCLog::kError,"AliHLTTPCTrack::UpdateToFirstPoint","LEAVE") <<ENDLOG;
-// END ################################################# MODIFIY JMT
+	Double_t xn = (Double_t) sin( GetPsi() );
+	Double_t yn = -1. * (Double_t) cos( GetPsi() );
+
+	Double_t d = xc*xn + yc*yn;
+
+	Double_t distx = d * xn;
+	Double_t disty = d * yn;
+
+	Double_t point[2];
+
+	point[0] = distx + GetFirstPointX();
+	point[1] = disty + GetFirstPointY();
+
+	//Update the track parameters
+	SetR0(sqrt(point[0]*point[0]+point[1]*point[1]));
+	SetPhi0(atan2(point[1],point[0]));
+	SetFirstPoint(point[0],point[1],GetZ0());
+    }
+    // for helix fit
+    else { 
+// #### -B0-UNCHANGED-START == JMT
+	Double_t xc = GetCenterX() - GetFirstPointX();
+	Double_t yc = GetCenterY() - GetFirstPointY();
+	
+	Double_t distx1 = xc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+	Double_t disty1 = yc*(1 + GetRadius()/sqrt(xc*xc + yc*yc));
+	Double_t distance1 = sqrt(distx1*distx1 + disty1*disty1);
+	
+	Double_t distx2 = xc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+	Double_t disty2 = yc*(1 - GetRadius()/sqrt(xc*xc + yc*yc));
+	Double_t distance2 = sqrt(distx2*distx2 + disty2*disty2);
+	
+	//Choose the closest:
+	Double_t point[2];
+	if(distance1 < distance2)
+	{
+	    point[0] = distx1 + GetFirstPointX();
+	    point[1] = disty1 + GetFirstPointY();
+	}
+	else
+	{
+	    point[0] = distx2 + GetFirstPointX();
+	    point[1] = disty2 + GetFirstPointY();
+	}
+
+	Double_t pointpsi = atan2(point[1]-GetCenterY(),point[0]-GetCenterX());
+	pointpsi -= GetCharge()*AliHLTTPCTransform::PiHalf();
+	if(pointpsi < 0) pointpsi += AliHLTTPCTransform::TwoPi();
+	
+	//Update the track parameters
+	SetR0(sqrt(point[0]*point[0]+point[1]*point[1]));
+	SetPhi0(atan2(point[1],point[0]));
+	SetFirstPoint(point[0],point[1],GetZ0());
+	SetPsi(pointpsi);
+// #### -B0-UNCHANGED-END == JMT
+    }
+// #### -B0-CHANGE-END == JMT
 }
 
 void AliHLTTPCTrack::GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestx,Double_t &closesty,Double_t &closestz)

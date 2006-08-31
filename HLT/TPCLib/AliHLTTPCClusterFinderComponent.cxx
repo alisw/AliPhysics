@@ -25,13 +25,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#if __GNUC__== 3
+#if __GNUC__>= 3
 using namespace std;
 #endif
-
+#include "AliHLTTPCLogging.h"
 #include "AliHLTTPCClusterFinderComponent.h"
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
+#include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawDataFormat.h"
@@ -124,39 +125,98 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
     fClusterFinder = new AliHLTTPCClusterFinder();
 
-    if (fPackedSwitch) {
+    Int_t rawreadermode =  -1;
+
+    // Data Format version numbers:
+    // 0: RCU Data format as delivered during TPC commissioning, pads/padrows are sorted, RCU trailer is one 32 bit word.
+    // 1: As 0, but pads/padrows are delivered "as is", without sorting
+    // 2: As 0, but RCU trailer is 3 32 bit words.
+    // 3: As 1, but RCU trailer is 3 32 bit words.
+    // -1: use offline raw reader
+
+    Int_t i = 0;
+    Char_t* cpErr;
+
+    while ( i < argc ) {      
+
+      // -- raw reader mode option
+      if ( !strcmp( argv[i], "rawreadermode" ) ) {
+	if ( argc <= i+1 ) {
+	  Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Raw Reader Mode not specified" );
+	  return ENOTSUP;
+	}
+	
+	if ( !strcmp( argv[i+1], "sorted_1_trailerword" ) ) {
+	  rawreadermode = 0;
+	}
+	else if ( !strcmp( argv[i+1], "sorted_3_trailerword" ) ) {
+	  rawreadermode = 2;
+	}
+	else if ( !strcmp( argv[i+1], "unsorted_1_trailerword" ) ) {
+	  rawreadermode = 1;
+	}
+	else if ( !strcmp( argv[i+1], "unsorted_3_trailerword" ) ) {
+	  rawreadermode = 3;
+	}
+	else if ( !strcmp( argv[i+1], "offline" ) ) {
+	  rawreadermode = -1;
+	}
+	else {
+	  rawreadermode = strtoul( argv[i+1], &cpErr ,0);
+	    if ( *cpErr ) {
+	      Logging( kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Missing rawreadermode", "Cannot convert rawreadermode specifier '%s'.", argv[i+1] );
+	      return EINVAL;
+	    }
+	}
+
+	i += 2;
+	continue;
+      }
+
+      // -- pp run option
+      if ( !strcmp( argv[i], "pp-run" ) ) {
+	fClusterDeconv = false;
+	i++;
+	continue;
+      }
+
+      Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
+      return EINVAL;
+
+    }
+
+    // Choose reader
+
+    if (fPackedSwitch) { 
+      if (rawreadermode == -1) {
 #if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-      fReader = new AliHLTTPCDigitReaderPacked();
-      fClusterFinder->SetReader(fReader);
+	fReader = new AliHLTTPCDigitReaderPacked();
+	fClusterFinder->SetReader(fReader);
 #else // ! defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-      HLTFatal("DigitReaderPacked not available - check your build");
-      return -ENODEV;
+	HLTFatal("DigitReaderPacked not available - check your build");
+	return -ENODEV;
 #endif //  defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
+      } else {
+#if defined(HAVE_TPC_MAPPING)
+	fReader = new AliHLTTPCDigitReaderRaw(rawreadermode);
+	fClusterFinder->SetReader(fReader);
+#else //! defined(HAVE_TPC_MAPPING)
+      HLTFatal("DigitReaderRaw not available - check your build");
+      return -ENODEV;
+#endif //defined(HAVE_TPC_MAPPING)
+      }
     }
     else {
       fReader = new AliHLTTPCDigitReaderUnpacked();
       fClusterFinder->SetReader(fReader);
     }
-    
+      
     // Variables to setup the Clusterfinder
     fClusterDeconv = true;
     fXYClusterError = -1;
     fZClusterError = -1;
 
-    int i = 0;
-    while ( i < argc )
-	{
-	  if ( !strcmp( argv[i], "pp-run" ) ){
-	    fClusterDeconv = false;
-	    i++;
-	    continue;
-	  }
-
-	Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
-	return EINVAL;
-	}
-
-
+ 
     fClusterFinder->SetDeconv( fClusterDeconv );
     fClusterFinder->SetXYError( fXYClusterError );
     fClusterFinder->SetZError( fZClusterError );
@@ -186,6 +246,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 					      AliHLTUInt32_t& size, 
 					      vector<AliHLTComponent_BlockData>& outputBlocks )
     {
+
     //  == init iter (pointer to datablock)
     const AliHLTComponent_BlockData* iter = NULL;
     unsigned long ndx;
@@ -244,7 +305,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 	outPtr = (AliHLTTPCClusterData*)outBPtr;
 
 	maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
-	
+
 	fClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
 	fClusterFinder->SetOutputArray( outPtr->fSpacePoints );
 	fClusterFinder->Read(iter->fPtr, iter->fSize );
@@ -261,8 +322,6 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
 		 "Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
 		 realPoints, slice, patch, row[0], row[1] );
-	
-	
 	AliHLTComponent_BlockData bd;
 	FillBlockData( bd );
 	bd.fOffset = offset;
@@ -285,6 +344,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponent_EventData& e
 	}
     
     size = tSize;
+
     return 0;
     }
 

@@ -63,11 +63,11 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 
 	AliHLTTPCConfMapper* fTracker;
 	AliHLTTPCVertex* fVertex;
-	float fEta[2];
-	bool fDoNonVertex;
-	bool fDoPP;
-	int fMultiplicity;
-	double fBField;
+	Float_t fEta[2];
+	Bool_t fDoNonVertex;
+	Bool_t  fDoPP;
+	Int_t fMultiplicity;
+	Double_t fBField;
 
 // BEGINN ############################################## MODIFIY JMT
 	Bool_t fnonvertextracking;   // enable NONVERTEX Tracking

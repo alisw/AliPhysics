@@ -17,10 +17,16 @@ class AliHLTTPCConfMapFit {
   AliHLTTPCConfMapFit (AliHLTTPCConfMapTrack *track,AliHLTTPCVertex *vertex);
   virtual ~AliHLTTPCConfMapFit() {};
 
+  // helix fit
   Int_t FitHelix();
   Int_t FitCircle();
   Int_t FitLine();
 
+  // straight line fit
+  Int_t FitStraightLine();
+  Int_t FitLineXY();
+  Int_t FitLineSZ();
+  
   ClassDef(AliHLTTPCConfMapFit,1) //Conformal mapping fit class
 };
 

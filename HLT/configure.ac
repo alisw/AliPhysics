@@ -5,7 +5,7 @@ dnl template for the configuration script for the Alice HLT
 dnl framework and components
 dnl 
 dnl ------------------------------------------------------------------
-AC_INIT([Alice High Level Trigger] , [0.3], [Matthias.Richter@ift.uib.no], alice-hlt)
+AC_INIT([Alice High Level Trigger] , [0.4-dev], [Matthias.Richter@ift.uib.no], alice-hlt)
 
 dnl ------------------------------------------------------------------
 dnl the package from CVS contains the old Makefiles as well. In order to
@@ -44,7 +44,6 @@ ALIHLT_USEPACKAGE=ALIROOT
 AC_DEFINE(use_aliroot)
 AC_DEFINE(use_root)
 CPPFLAGS="$CPPFLAGS ${ROOTCFLAGS}"
-LDFLAGS="$LDFLAGS -L${ROOTLIBDIR} ${ROOTLIBS}"
 
 dnl ------------------------------------------------------------------
 dnl check for AliRoot features
@@ -83,8 +82,8 @@ if test ! "x$have_aliroot" = "xno" ; then
   save_LDFLAGS=$LDFLAGS
   save_LIBS=$LIBS
   CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
-  LDFLAGS="$save_LDFLAGS $ALIROOT_LDFLAGS"
-  LIBS="$save_LIBS $ALIROOT_LIBS"
+  LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
  
   # check for certain AliRoot libraries/files/features
   if test ! "x$have_aliroot" = "xno" ; then
@@ -95,7 +94,7 @@ if test ! "x$have_aliroot" = "xno" ; then
     AC_MSG_CHECKING(for AliRawReader classes in RAWData libraries)
     if test ! "x$have_alirawdata" = "xno" ; then
       CHECKLIB="-lRAWDatarec"
-      LIBS="$save_LIBS $ALIROOT_LIBS -lRAWDatabase $CHECKLIB"
+      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lRAWDatabase $CHECKLIB"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRawReaderMemory.h>
   				       #include <AliRawReaderFile.h>
   				       #include <AliRawReaderDate.h>
@@ -111,7 +110,7 @@ if test ! "x$have_aliroot" = "xno" ; then
       # second pass with -RAWData
       if test "x$have_alirawdata" = "xno" ; then
         CHECKLIB="-lRAWData"
-        LIBS="$save_LIBS $ALIROOT_LIBS $CHECKLIB"
+        LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $CHECKLIB"
         AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliRawReaderMemory.h>
     				       #include <AliRawReaderFile.h>
     				       #include <AliRawReaderDate.h>
@@ -152,7 +151,7 @@ if test ! "x$have_aliroot" = "xno" ; then
     if test ! "x$have_alitpc" = "xno" ; then
       save_ALIROOT_LIBS=$ALIROOT_LIBS
       ALIROOT_LIBS="$save_ALIROOT_LIBS -lTPCbase -lTPCrec"
-      LIBS="$save_LIBS $ALIROOT_LIBS"
+      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliSimDigits.h>
   				       #include <AliTPCParam.h>
 				       #include <AliTPCParamSR.h>
@@ -186,6 +185,24 @@ if test ! "x$have_aliroot" = "xno" ; then
     AC_CHECK_HEADERS([AliTPCRawStream.h])
   fi
 
+  have_tpc_mapping=no
+  if test ! "x$have_aliroot" = "xno" ; then
+    # the TPCLib/AliHLTTPCRawReader needs the actual Pad layot of the TPC 
+    # which is stored in the TPC/mapping/Patchx.data files from
+    # AliRoot version v4-04-Release (May 2006)
+    AH_TEMPLATE([HAVE_TPC_MAPPING],[TPC pad mapping available])
+    TPC_PAD_MAPPING_PATH=$have_aliroot/TPC/mapping
+    AC_CHECK_FILE( [$TPC_PAD_MAPPING_PATH/Patch0.data], 
+		   [have_tpc_mapping=yes
+		    AC_SUBST(TPC_PAD_MAPPING_PATH)
+		    AC_DEFINE(HAVE_TPC_MAPPING)],
+		   [])
+    
+  fi
+  AC_MSG_CHECKING([for TPC mapping layout])
+  AM_CONDITIONAL(USE_TPC_MAPPING, test x$have_tpc_mapping = xyes)
+  AC_MSG_RESULT([$have_tpc_mapping])
+  
   if test "x$have_aliroot" = "xno" ; then
     ALIROOT_CPPFLAGS=
     ALIROOT_LDFLAGS=
@@ -333,6 +350,7 @@ AC_CONFIG_FILES([Makefile
 		 BASE/Makefile
 		 SampleLib/Makefile
 		 TPCLib/Makefile
+		 TPCLib/mapping2array.cxx
 		 TPCLib/Ref/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])

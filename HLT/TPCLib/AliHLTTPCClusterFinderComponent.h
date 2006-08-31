@@ -13,6 +13,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
+#include "AliHLTTPCDigitReaderRaw.h"
 
 class AliHLTTPCClusterFinder;
 
@@ -53,9 +54,11 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks );
 	
     private:
+	/** the cluster finder object */
+	AliHLTTPCClusterFinder* fClusterFinder;
+	/** the reader object for data decoding */
+	AliHLTTPCDigitReader* fReader;
 
-      AliHLTTPCClusterFinder* fClusterFinder;
-      AliHLTTPCDigitReader* fReader;
       bool fClusterDeconv;
       float fXYClusterError;
       float fZClusterError;

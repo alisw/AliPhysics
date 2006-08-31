@@ -98,6 +98,9 @@ class AliHLTTPCDisplay : public TObject, public AliHLTLogging {
 
     Bool_t GetSelectTrackSwitch() {return fSelectTrackSwitch;}
 
+    // EXECUTER
+    void ExecPadRow();
+
     struct AliHLTTPCTrackParameter{
 	Int_t nHits;
 	Int_t charge;

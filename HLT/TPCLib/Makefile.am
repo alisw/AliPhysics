@@ -6,6 +6,20 @@ MODULE 				= AliHLTTPC
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
 				  -I$(top_srcdir)/BASE
 
+# generation of the TPC Pad mapping tables for the 
+# AliHLTTPCDigitReaderRaw reader
+if USE_TPC_MAPPING
+TPC_MAPPING_NOINST_SRC		= mapping2array.cxx
+TPC_MAPPING_INC			= mapping_array_out.inc
+TPC_MAPPING_NOINST_PGM		= mapping2array
+TPC_MAPPING_COMPONENTS		= AliHLTTPCDigitReaderRaw.cxx
+endif
+
+noinst_PROGRAMS			= $(TPC_MAPPING_NOINST_PGM)
+if USE_TPC_MAPPING
+mapping2array_SOURCES		= $(TPC_MAPPING_NOINST_SRC)
+endif
+
 # library definition
 lib_LTLIBRARIES			=  libAliHLTTPC.la
 
@@ -23,6 +37,7 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCDigitReader.cxx \
 				  AliHLTTPCDigitReaderPacked.cxx \
 				  AliHLTTPCDigitReaderUnpacked.cxx \
+				  AliHLTTPCDigitReaderRaw.cxx \
 				  AliHLTTPCVertex.cxx \
 				  AliHLTTPCVertexArray.cxx \
 				  AliHLTTPCVertexFinder.cxx \
@@ -73,6 +88,7 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPCDigitReader.h \
 				  AliHLTTPCDigitReaderPacked.h \
 				  AliHLTTPCDigitReaderUnpacked.h \
+				  AliHLTTPCDigitReaderRaw.h \
 				  AliHLTTPCVertex.h \
 				  AliHLTTPCVertexArray.h \
 				  AliHLTTPCVertexFinder.h \
@@ -113,15 +129,18 @@ pkginclude_HEADERS		= $(CLASS_HDRS) \
 
 
 # version info for the library
-libAliHLTTPC_la_LDFLAGS		= @ALIROOT_LDFLAGS@ \
+libAliHLTTPC_la_LDFLAGS		= -L@ROOTLIBDIR@ \
+				  @ROOTLIBS@ \
+				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
-				  -version-info 2:0:0
+				  -version-info 2:1:0
 
 # set the file name for the generated root dictionary
 DICTCPP				=  AliHLTTPC-DICT.cxx
 nodist_libAliHLTTPC_la_SOURCES  =  $(DICTCPP)
 
-CLEANFILES			=
+BUILT_SOURCES			= $(TPC_MAPPING_INC)
+CLEANFILES			= $(BUILT_SOURCES)
 
 include $(top_srcdir)/make.dict
 
@@ -129,3 +148,6 @@ if EN_HLT_TPCREF
 REFDIR				= Ref
 endif
 SUBDIRS 			= . $(REFDIR)
+
+$(TPC_MAPPING_INC): $(TPC_MAPPING_NOINST_PGM)
+	./$<

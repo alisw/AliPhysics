@@ -22,7 +22,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#if __GNUC__== 3
+#if __GNUC__>= 3
 using namespace std;
 #endif
 
@@ -116,14 +116,14 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t e
 
 // BEGINN ############################################## MODIFIY JMT
 #if 1
-    Logging( kHLTLogError, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "==============================" );
+    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "==============================" );
 
     if ( fmainvertextracking == kTRUE && fnonvertextracking == kFALSE){
 	fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,kTRUE);
 	fTracker->SetTrackletCuts(maxangle,goodDist,kTRUE);
 
 	fTracker->MainVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack, maxphi, maxeta);	
-	Logging( kHLTLogError, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "MAINVERTEXTRACKING" );
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "MAINVERTEXTRACKING" );
     }
     else if ( fmainvertextracking == kTRUE && fnonvertextracking == kTRUE){
 	fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,kTRUE);
@@ -133,14 +133,14 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t e
 
 	fTracker->MainVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack, maxphi, maxeta);
 	fTracker->NonVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack);	
-	Logging( kHLTLogError, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "MAINVERTEXTRACKING - NONVERTEXTRACKING" );
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "MAINVERTEXTRACKING - NONVERTEXTRACKING" );
     }
     else if ( fmainvertextracking == kFALSE && fnonvertextracking == kTRUE){
 	fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,kFALSE);
 	fTracker->SetTrackletCuts(maxangle,goodDist,kFALSE);
 
 	fTracker->NonVertexSettings( trackletlength, tracklength, rowscopetracklet, rowscopetrack);
-	Logging( kHLTLogError, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "NONVERTEXTRACKING" );
+	Logging( kHLTLogDebug, "HLT::TPCSliceTracker::SetTrackerParam", "Tracking", "NONVERTEXTRACKING" );
     }
 #else
     fTracker->SetTrackCuts(hitChi2Cut,goodHitChi2,trackChi2Cut,maxdist,vertexConstraints);
@@ -162,8 +162,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phi_segments, Int_t e
 void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicity, double bField )
     {
     AliHLTTPCTransform::SetBField( bField );
-    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f\n", bField );
-    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "B field is  %f\n",AliHLTTPCTransform::GetBFieldValue());	
+    Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f T\n", bField );
 
     if ( doPP )
 	{
@@ -301,7 +300,6 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicit
 int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
     {
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "DoInit", "DoInit()" );
-    fprintf( stderr, "sizeof(AliHLTTPCTrackSegmentData): %d\n", sizeof(AliHLTTPCTrackSegmentData) );
 
     if ( fTracker || fVertex )
 	return EINPROGRESS;
@@ -388,6 +386,15 @@ int AliHLTTPCSliceTrackerComponent::DoInit( int argc, const char** argv )
 	Logging(kHLTLogError, "HLT::TPCSliceTracker::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
 	return EINVAL;
 	}
+// #### -B0-CHANGE-START == JMT
+    if (fBField == 0.){
+	// parameter for B=0 T 
+	fDoPP = kTRUE;
+	fnonvertextracking = kTRUE;
+	fmainvertextracking = kFALSE;
+    }
+// #### -B0-CHANGE-END == JMT
+
     SetTrackerParam( fDoPP, fMultiplicity, fBField );
     return 0;
     }

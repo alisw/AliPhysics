@@ -16,6 +16,11 @@
 #define TRACKHELIX 0
 #define TRACKPOLYMARKER 0
 #define BACKWARD 0
+#define FIRSTLASTPOINT 0
+
+#define TRACKCOLOR 
+#define USEDCLUSTERCOLOR
+#define UNUSEDCLUSTERCOLOR
 
 #include <TView.h>
 #include <TPolyMarker3D.h>
@@ -143,6 +148,29 @@ Bool_t AliHLTTPCDisplay::LoadGeometrie(Char_t *gfile) {
 	delete file;
     }
     return kTRUE;
+}
+
+// #############################################################################
+//                 EXECUTER
+// #############################################################################
+void AliHLTTPCDisplay::ExecPadRow(){
+   int event = gPad->GetEvent();
+   if (event != 11) return;
+
+   printf("TEST !!!!!!!!!!!!!!!");
+/*   int px = gPad->GetEventX();
+   TObject *select = gPad->GetSelected();
+   if (!select) return;
+   if (select->InheritsFrom("TH1")) {
+      TH1 *h = (TH1*)select;
+      Float_t xx = gPad->AbsPixeltoX(px);
+      Float_t x  = gPad->PadtoX(xx);
+      Int_t binx = h->GetXaxis()->FindBin(x);
+      printf("event=%d, hist:%s, bin=%d, content=%f\n",event,h->GetName(),binx,h->GetBinContent(binx));
+   }
+
+*/
+
 }
 
 // #############################################################################
@@ -303,8 +331,8 @@ void AliHLTTPCDisplay::SetupHist(){
     fHistpad1 = new TH1F ("fHistpad1","Selected Pad -1;Timebin #",fNTimes,0,fNTimes-1);
     fHistpad2 = new TH1F ("fHistpad2","Selected Pad;Timebin #",fNTimes,0,fNTimes-1); 
     fHistpad3 = new TH1F ("fHistpad3","Selected Pad +1;Timebin #",fNTimes,0,fNTimes-1);
-    fHistallresidualsY = new TH1F ("fHistallresiduals","Y Residuals of all Tracks in selected slices;residuals",5000,0,100);
-    fHistallresidualsZ = new TH1F ("fHistallresiduals","Z Residuals of all Tracks in selected slices;residuals",5000,0,100);
+    fHistallresidualsY = new TH1F ("fHistallresiduals","Y Residuals of all Tracks in selected slices;residuals",5000,-100,100);
+    fHistallresidualsZ = new TH1F ("fHistallresiduals","Z Residuals of all Tracks in selected slices;residuals",5000,-100,100);
     fHistcharge = new TH1F ("fHistcharge","Cluster distribution per charge;charge;#cluster",5000,0,30000);
 
     fHistraw->SetOption("COLZ"); 
@@ -372,7 +400,7 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 
     // Initialize block for reading packed data
     void* tmpdataBlock = (void*) dataBlock;
-    fDigitReader->InitBlock(tmpdataBlock,dataLen,firstRow,lastRow);
+    fDigitReader->InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,0);
 
     readValue = fDigitReader->Next();
 
@@ -431,7 +459,7 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	fpmarr[19] = new Float_t[fcolorbin[19]*3]; 
 	
 	// Rewind the raw reader and fill the polymarker3D
-	fDigitReader->InitBlock(tmpdataBlock,dataLen,firstRow,lastRow);
+	fDigitReader->InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,0);
 	
 	readValue = fDigitReader->Next();
     } // END if (fSwitch3DPadRow)
@@ -982,12 +1010,12 @@ void AliHLTTPCDisplay::Draw3D(){
 	    // Draw last point of Track
 	    pmL->SetMarkerSize(3);
 	    pmL->SetMarkerColor(4); 
-	    pmL->Draw();
+//	    pmL->Draw();
 
 	    // Draw first point of Track
 	    pmF->SetMarkerSize(3);
 	    pmF->SetMarkerColor(5); 
-	    pmF->Draw();
+//	    pmF->Draw();
 
 #if TRACKPOLYMARKER
 	    // Draw Track -- as polymarker
@@ -1058,8 +1086,8 @@ void AliHLTTPCDisplay::Draw3D(){
 
 	} // END for tracks
 
-	fHistallresidualsY->SetAxisRange(0,maxResidualY);
-	fHistallresidualsZ->SetAxisRange(0,maxResidualZ);
+	fHistallresidualsY->SetAxisRange(-maxResidualY,maxResidualY);
+	fHistallresidualsZ->SetAxisRange(-maxResidualZ,maxResidualZ);
 
     }   // END - DRAW 3D Tracks
 

@@ -155,7 +155,7 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
 	    fAverage=fSum/fCount;
 	    HLTDebug("new average %f", fAverage);
 	  } else {
-	    HLTWarning("baseline re-eveluation skipped because of to few "
+	    HLTDebug("baseline re-eveluation skipped because of to few "
 		       "contributing bins: total=%d, contributing=%d, req=%d"
 		       "\ndata might be already zero suppressed"
 		       , fTotal, fCount, reqMinCount);
@@ -178,7 +178,7 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
       fAverage=avBackup;
     }
   } else {
-    HLTWarning("baseline calculation skipped because of to few contributing "
+    HLTDebug("baseline calculation skipped because of to few contributing "
 	       "bins: total=%d, contributing=%d, required=%d \ndata might be "
 	       "already zero suppressed", fTotal, fCount, reqMinCount);
   }

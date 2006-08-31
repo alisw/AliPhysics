@@ -30,6 +30,7 @@ SRCS	= AliHLTTPCLog.cxx \
           AliHLTTPCDigitReader.cxx \
           AliHLTTPCDigitReaderPacked.cxx \
           AliHLTTPCDigitReaderUnpacked.cxx \
+	  AliHLTTPCDigitReaderRaw.cxx \
           AliHLTTPCVertex.cxx \
           AliHLTTPCVertexArray.cxx \
           AliHLTTPCVertexFinder.cxx \
@@ -51,8 +52,7 @@ SRCS	= AliHLTTPCLog.cxx \
           AliHLTTPCClusterFinderComponent.cxx \
           AliHLTTPCVertexFinderComponent.cxx \
           AliHLTTPCSliceTrackerComponent.cxx \
-          AliHLTTPCGlobalMergerComponent.cxx \
-
+          AliHLTTPCGlobalMergerComponent.cxx 
 
 #          AliRawReaderMemory.cxx
 

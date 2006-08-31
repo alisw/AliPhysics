@@ -1,3 +1,8 @@
+2006-08-31 code from TPC commissioning version merged
+	- DigitReaderRaw added with different read modes (sorted/unsorted;
+	  several data specifications to adapt to the real data)
+	- quick hack to sort incoming data in DigitReaderPacked 
+	- straight line fit implemented in Conformal Mapping Fit
 2006-08-23 version HLT-v0-3
 	- check for AliRoot features/libs/files and corresponding conditional
 	  build

@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include <iomanip>
+
+using namespace std;
+
+int main(){
+    ifstream inFile[6];
+    ofstream outFile;
+    int ofile;
+   
+    
+    char * mappingpath="@TPC_PAD_MAPPING_PATH@/";
+    char * mappingfiles[6]= {"@TPC_PAD_MAPPING_PATH@/Patch0.data",
+			     "@TPC_PAD_MAPPING_PATH@/Patch1.data",
+			     "@TPC_PAD_MAPPING_PATH@/Patch2.data",
+			     "@TPC_PAD_MAPPING_PATH@/Patch3.data",
+			     "@TPC_PAD_MAPPING_PATH@/Patch4.data",
+			     "@TPC_PAD_MAPPING_PATH@/Patch5.data"};
+
+    int numberOfChannels[6];
+    int maxHWAddress[6];
+
+    outFile.open("mapping_array_out.inc");
+
+    outFile << "// **** WARNING: This file is generated automatically. DO NOT EDIT" << endl << endl;
+    
+
+    for (int ii = 0; ii< 6; ii++) {
+      
+      //for (int ii = 1; ii< 2; ii++) {
+	
+	inFile[ii].open(mappingfiles[ii]);
+	inFile[ii].seekg (0, ios::beg);
+
+	int* tmpPad;
+	int* tmpRow;
+
+	inFile[ii] >> numberOfChannels[ii] >> maxHWAddress[ii];
+
+	cout << numberOfChannels[ii] << "  "<< maxHWAddress[ii]<< endl;
+	
+	outFile << "Int_t AliHLTTPCDigitReaderRaw::fMapping_"<< ii << "["<< maxHWAddress[ii]+1 << "][2] = { " << endl;
+	tmpPad = new int[maxHWAddress[ii]+1];
+	tmpRow = new int[maxHWAddress[ii]+1];
+
+	for (int jj = 0; jj <= maxHWAddress[ii]; jj++){
+	    tmpPad[jj] = -1;
+	    tmpRow[jj] = -1;
+	}
+	    
+	while (1) {
+	    int address,row,pad;
+	    
+	    inFile[ii] >> address >> row >>  pad;
+	    tmpPad[address] = pad;
+	    tmpRow[address] = row;
+
+	    if (!inFile[ii].good()) break;
+	}
+
+	for (int jj = 0; jj <= maxHWAddress[ii]; jj++)
+	  {
+// 	    if ( tmpRow[jj]==-1 )
+// 	      printf( "Found -1 (%d)\n", jj );
+	    outFile <<  "{" << tmpRow[jj] << "," << tmpPad[jj] << "},"<< endl;
+	  }
+
+
+	cout << " ---------------" << ii << endl;
+	
+	inFile[ii].close();
+	outFile << "};\n" << endl;
+    }
+
+    outFile << "unsigned AliHLTTPCDigitReaderRaw::fMaxHWA[6]= {";
+    for ( int ii=0; ii<6; ii++ )
+      {
+	outFile << maxHWAddress[ii];
+	if ( ii<5 )
+	  outFile << ",";
+      }
+    outFile << "};" << endl;
+
+    
+    	outFile.close();
+
+  
+   
+    return 0;
+}

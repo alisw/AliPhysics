@@ -10,14 +10,15 @@
 /* AliHLTTPCDigitReader
  */
 
+#include "AliHLTLogging.h"
 #include "TObject.h"
 
-class AliHLTTPCDigitReader{
+class AliHLTTPCDigitReader : public AliHLTLogging {
 public:
   AliHLTTPCDigitReader();
   virtual ~AliHLTTPCDigitReader();
   
-  virtual int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow)=0;
+  virtual int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice)=0;
   virtual bool Next()=0;
   virtual int GetRow()=0;
   virtual int GetPad()=0;

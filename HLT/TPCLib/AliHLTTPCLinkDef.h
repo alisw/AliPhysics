@@ -32,12 +32,15 @@
 #pragma link C++ class AliHLTTPCClustFinderNew;
 #pragma link C++ class AliHLTTPCClusterFinder;
 #pragma link C++ class AliHLTTPCDigitReader;
+#pragma link C++ class AliHLTTPCDigitReaderRaw;
 #pragma link C++ class AliHLTTPCDigitReaderPacked;
 #pragma link C++ class AliHLTTPCDigitReaderUnpacked;
 #pragma link C++ class AliHLTTPCFitter;
 /* #pragma link C++ class AliHLTTPCRawDataFileHandler; */
 /* #pragma link C++ class AliHLTTPCTPCBeamTestMemHandler; */
 #pragma link C++ class AliHLTTPCModelTrack;
+
+
 
 #ifdef use_aliroot
 #pragma link C++ class AliHLTTPCFileHandler;
@@ -106,6 +109,7 @@
 #pragma link C++ class AliHLTTPCVertexFinderComponent;
 #pragma link C++ class AliHLTTPCSliceTrackerComponent;
 #pragma link C++ class AliHLTTPCGlobalMergerComponent;
+
 /* #pragma link C++ class AliRawReaderMemory; */
 
 #endif

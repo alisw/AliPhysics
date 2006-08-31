@@ -127,7 +127,7 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnv,
   return iResult;
 }
 
-Int_t AliHLTComponentHandler::FindComponentIndex(const Char_t* componentID)
+Int_t AliHLTComponentHandler::FindComponentIndex(const char* componentID)
 {
   Int_t iResult=0;
   if (componentID) {
@@ -146,7 +146,7 @@ Int_t AliHLTComponentHandler::FindComponentIndex(const Char_t* componentID)
   return iResult;
 }
 
-AliHLTComponent* AliHLTComponentHandler::FindComponent(const Char_t* componentID)
+AliHLTComponent* AliHLTComponentHandler::FindComponent(const char* componentID)
 {
   AliHLTComponent* pSample=NULL;
   Int_t index=FindComponentIndex(componentID);

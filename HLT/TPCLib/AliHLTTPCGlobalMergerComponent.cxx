@@ -144,7 +144,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponent_EventData& ev
 		break;
 	    sdIter++;
 	    }
-	if ( sdIter->fSlice>slice || sdIter==sdEnd )
+	if ( sdIter==sdEnd || sdIter->fSlice>slice )
 	    {
 	    if ( sdIter == sdEnd )
 		maxSlice = slice;
@@ -192,11 +192,12 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	    }
 	}
 
-    fGlobalMerger->Setup( minSlice, maxSlice );
+    //fGlobalMerger->Setup( minSlice, maxSlice );
+    fGlobalMerger->Setup( 0, 35 );
 
     if ( !lastVertexBlock )
 	{
-	Logging( kHLTLogError, "HLT::GlobalMerger::DoEvent", "No vertex data block",
+	Logging( kHLTLogInfo, "HLT::GlobalMerger::DoEvent", "No vertex data block",
 		 "No vertex data block found  for event  0x%08lX (%lu).", evtData.fEventID, evtData.fEventID );
 	fVertex->SetZero();
 	}
@@ -206,6 +207,7 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponent_EventData& ev
     // Add all tracks into the merger
     sdIter = slices.begin();
     sdEnd = slices.end();
+    int lastSlice = -1;
     while ( sdIter != sdEnd )
 	{
 	if ( sdIter->fVertexBlock )
@@ -213,20 +215,28 @@ int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponent_EventData& ev
 	    fVertex->Read( (AliHLTTPCVertexData*)( sdIter->fVertexBlock->fPtr ) );
 	    fGlobalMerger->SetVertex( fVertex );
 	    }
-	inPtr = (AliHLTTPCTrackletData*)( sdIter->fTrackletBlock->fPtr );
-	if ( !inPtr )
+	for ( int slNr=lastSlice+1; slNr<=sdIter->fSlice; slNr++ )
+  	    fGlobalMerger->InitSlice( slNr );
+        if ( sdIter->fTrackletBlock )
 	    {
-	    Logging( kHLTLogError, "HLT::GlobalMerger::DoEvent", "No track data block",
-		     "No track data block found  for event  0x%08lX (%lu).", evtData.fEventID, evtData.fEventID );
+	    inPtr = (AliHLTTPCTrackletData*)( sdIter->fTrackletBlock->fPtr );
+	    if ( !inPtr )
+	          {
+		  Logging( kHLTLogError, "HLT::GlobalMerger::DoEvent", "No track data block",
+			   "No track data block found  for event  0x%08lX (%lu).", evtData.fEventID, evtData.fEventID );
+		  }
+	    else
+	        {
+		//fGlobalMerger->InitSlice( sdIter->fSlice );
+		fGlobalMerger->FillTracks( inPtr->fTrackletCnt, inPtr->fTracklets );
+	        } 
 	    }
-	else
-	    {
-	    fGlobalMerger->InitSlice( sdIter->fSlice );
-	    fGlobalMerger->FillTracks( inPtr->fTrackletCnt, inPtr->fTracklets );
-	    }
-	
+	lastSlice = sdIter->fSlice;
 	sdIter++;
 	}
+    for ( int slNr=lastSlice+1; slNr<=35; slNr++ )
+        fGlobalMerger->InitSlice( slNr );
+    
 
     // Now we can really merge
     fGlobalMerger->Merge();

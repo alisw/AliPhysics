@@ -48,7 +48,7 @@ AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked(){
 AliHLTTPCDigitReaderUnpacked::~AliHLTTPCDigitReaderUnpacked(){
 }
 
-int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t firstrow, Int_t lastrow){
+int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t firstrow, Int_t lastrow, Int_t patch, Int_t slice){
   AliHLTTPCUnpackedRawData *tmpptr;
   fPtr = ptr;
   fSize = size;

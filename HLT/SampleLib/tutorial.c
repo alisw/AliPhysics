@@ -30,6 +30,19 @@
     A description will follow ...
 */
 
+/* note pad
+
+Making a new module/library
+
+Automatic ROOT dictionary generation:
+The automatic ROOT dictionary generation relies on the rule, that the main class
+of a header file has the same name as the file (except the prefix).
+
+Troubleshooting:
+Error: link requested for unknown class <class name> <library>-LinkDef.h:<line no>
+most likely there is no class <class name> defined in the header file <class name>.h*
+
+ */
 #error Not for compilation
 //
 // EOF
