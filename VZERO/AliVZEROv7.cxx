@@ -393,10 +393,10 @@ void AliVZEROv7::CreateGeometry()
     TGeoVolume *v0L4 = new TGeoVolume("V0L4",sV0AR4,medV0ASci);
     v0L1->SetLineColor(kV0AColorSci); v0L2->SetLineColor(kV0AColorSci);
     v0L3->SetLineColor(kV0AColorSci); v0L4->SetLineColor(kV0AColorSci);
-    v0ASci->AddNode(v0L1,1);
-    v0ASci->AddNode(v0L2,1);
-    v0ASci->AddNode(v0L3,1);
-    v0ASci->AddNode(v0L4,1);
+    v0ASec->AddNode(v0L1,1);
+    v0ASec->AddNode(v0L2,1);
+    v0ASec->AddNode(v0L3,1);
+    v0ASec->AddNode(v0L4,1);
 
     /// Non-sensitive scintilator
     for (int i=0;i<2;i++) {
@@ -536,8 +536,8 @@ void AliVZEROv7::CreateGeometry()
     /// Replicate sectors
     TGeoVolume *v0LE = new TGeoVolumeAssembly("V0LE");
     for(int i=0; i<8; i++) {
-      TGeoRotation *rot = new TGeoRotation("rot", 90., i*45., 90., 90.+i*45., 0., 0.);
-      v0LE->AddNode(v0ASec,i,rot);
+      TGeoRotation *rot = new TGeoRotation("rot", 90., i*45.+90, 90., 90.+i*45.+90, 0., 0.);
+      v0LE->AddNode(v0ASec,i+1,rot);  /// modificacion +1 anhadido
     }
   
     /// Basis Construction
@@ -776,7 +776,7 @@ void AliVZEROv7::StepManager()
   static Int_t idV0L4 = gMC->VolId("V0L4");
   static Int_t idV0R5 = gMC->VolId("V0R5");
   static Int_t idV0R6 = gMC->VolId("V0R6");
-  bool   hitOnV0C = false;
+  bool   hitOnV0C = true;
   double lightYield;
   double lightAttenuation;
   double nMeters;
@@ -837,6 +837,17 @@ void AliVZEROv7::StepManager()
       hits[16] = par->Vz();
       tlength  = 0.0;
       eloss    = 0.0;	    
+
+      //////////////////////////
+      ///// Display V0A geometry
+      //      if (!hitOnV0C) {
+      //      	FILE *of;
+      //      	of = fopen("V0A.out", "a");
+      //      	// x, y, z, ringnumber, cellid
+      //      	fprintf( of, "%f %f %f %f %d \n",  hits[0], hits[1], hits[2], hits[8], GetCellId (vol, hits) );
+      //      	fclose(of);
+      //      }
+      //////////////////////////
     }
     nPhotons  = nPhotons + nPhotonsInStep;
     if( gMC->IsTrackExiting() || gMC->IsTrackStop() || gMC->IsTrackDisappeared()){
@@ -906,6 +917,7 @@ Int_t AliVZEROv7::GetCellId(Int_t *vol, Float_t *hits)
   Int_t index      = vol[1];
   Int_t ringNumber = Int_t(hits[8]);
   fCellId          = 0;
+
   Float_t phi = Float_t(TMath::ATan2(Double_t(hits[1]),Double_t(hits[0])) ); 
   Float_t kRaddeg = 180.0/TMath::Pi();
   phi = kRaddeg * phi;
@@ -926,5 +938,6 @@ Int_t AliVZEROv7::GetCellId(Int_t *vol, Float_t *hits)
     index = (index - 7 + 48) + ( ( ringNumber - 1 ) * 8);
     fCellId   = index;
   }
+
   return fCellId;
 }
