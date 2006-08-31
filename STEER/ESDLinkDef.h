@@ -43,6 +43,7 @@
 
 #pragma link C++ class AliTagCreator+;
 #pragma link C++ class AliTagAnalysis+;
+#pragma link C++ class AliRunTagCuts+;
 #pragma link C++ class AliEventTagCuts+;
 #pragma link C++ class AliXMLCollection+;
 
