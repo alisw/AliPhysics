@@ -5,61 +5,28 @@
 //
 
 #include "../CreateESDChain.C"
+#include "../PWG0Helper.C"
 
-void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
+TChain* runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
 {
-  TStopwatch timer;
-  timer.Start();
+  if (aProof)
+    connectProof("proof01@lxb6046");
 
-  gSystem->Load("libEG");
-  gSystem->Load("libGeom");
-  gSystem->Load("libESD");
-  gSystem->Load("libPWG0base");
+  TString libraries("libEG;libGeom;libESD;libPWG0base");
+  TString packages("PWG0base");
+
   if (aMC != kFALSE)
-    gSystem->Load("libPWG0dep");
+  {
+    libraries += ";libVMC;libMinuit;libSTEER;libPWG0dep;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6";
+    packages += ";PWG0dep";
+  }
 
-  gROOT->ProcessLine(".L CreatedNdEta.C");
+  if (!prepareQuery(libraries, packages, kTRUE))
+    return;
+
   gROOT->ProcessLine(".L CreateCuts.C");
   gROOT->ProcessLine(".L drawPlots.C");
 
-  TChain* chain = CreateESDChain(data, nRuns, offset);
-  TVirtualProof* proof = 0;
-
-  if (aProof != kFALSE)
-  {
-    proof = TProof::Open("jgrosseo@lxb6046");
-
-    if (!proof)
-    {
-      printf("ERROR: PROOF connection not established.\n");
-      return;
-    }
-
-    if (proof->EnablePackage("ESD"))
-    {
-      printf("ERROR: ESD package could not be enabled.\n");
-      return;
-    }
-
-    if (proof->EnablePackage("PWG0base"))
-    {
-      printf("ERROR: PWG0base package could not be enabled.\n");
-      return;
-    }
-
-    if (aMC != kFALSE)
-    {
-      if (proof->EnablePackage("PWG0dep"))
-      {
-        printf("ERROR: PWG0dep package could not be enabled.\n");
-        return;
-      }
-    }
-
-    //chain->SetProof(proof);
-  }
-
-  // ########################################################
   // selection of esd tracks
   AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
   if (!esdTrackCuts)
@@ -68,24 +35,20 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
     return;
   }
 
-  chain->GetUserInfo()->Add(esdTrackCuts);
-  if (proof)
-    proof->AddInput(esdTrackCuts);
+  TList inputList;
+  inputList.Add(esdTrackCuts);
+
+  TChain* chain = CreateESDChain(data, nRuns, offset);
 
   TString selectorName = ((aMC == kFALSE) ? "AliMultiplicityESDSelector" : "AliMultiplicityMCSelector");
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 
-  selectorName += ".cxx++";
+  selectorName += ".cxx+";
 
   if (aDebug != kFALSE)
     selectorName += "g";
 
-  Long64_t result = -1;
-
-  if (proof != kFALSE)
-    result = chain->MakeTDSet()->Process(selectorName);
-  else
-    result = chain->Process(selectorName);
+  Int_t result = executeQuery(chain, &inputList, selectorName);
 
   if (result != 0)
   {
@@ -93,7 +56,10 @@ void runMultiplicitySelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_
     return;
   }
 
-  timer.Stop();
-  timer.Print();
+  // and draw it
+  if (aMC != kFALSE)
+    MultiplicityMC();
+  else
+    MultiplicityESD();
 }
 

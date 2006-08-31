@@ -5,11 +5,18 @@
 //
 
 #include "../CreateESDChain.C"
+#include "../PWG0Helper.C"
 
-void makeSystematics(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t debug = kFALSE, const Char_t* option = "")
+void makeSystematics(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t debug = kFALSE, Bool_t aProof = kFALSE, const Char_t* option = "")
 {
-  gSystem->Load("libPWG0base");
-  gSystem->Load("libPWG0dep");
+  if (aProof)
+    connectProof("proof01@lxb6046");
+
+  TString libraries("libEG;libGeom;libESD;libPWG0base;libVMC;libMinuit;libSTEER;libPWG0dep;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6");
+  TString packages("PWG0base;PWG0dep");
+
+  if (!prepareQuery(libraries, packages, kTRUE))
+    return;
 
   gROOT->ProcessLine(".L CreateCuts.C");
 
@@ -20,14 +27,16 @@ void makeSystematics(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t d
     return;
   }
 
-  TChain* chain = CreateESDChain(dataDir, nRuns, offset);
-  chain->GetUserInfo()->Add(esdTrackCuts);
+  TList inputList;
+  inputList.Add(esdTrackCuts);
 
-  TString selector("AlidNdEtaSystematicsSelector.cxx+");
+  TChain* chain = CreateESDChain(dataDir, nRuns, offset);
+
+  TString selector("AlidNdEtaSystematicsSelector.cxx++");
   if (debug != kFALSE)
     selector += "g";
 
-  chain->Process(selector, option);
+  Int_t result = executeQuery(chain, &inputList, selector, option);
 }
 
 void runAnalysisWithDifferentMaps(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t debug = kFALSE, Bool_t proof = kFALSE)

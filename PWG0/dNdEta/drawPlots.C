@@ -247,12 +247,12 @@ void ptCutoff()
   canvas->SaveAs("ptCutoff.eps");
 }
 
-void TriggerBiasVtxRecon(const char* fileName = "correction_map.root")
+void TriggerBiasVtxRecon(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction")
 {
   TFile* file = TFile::Open(fileName);
 
-  TH2* corrTrigger = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_trigger"));
-  TH2* corrVtx = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_vtxReco"));
+  TH2* corrTrigger = dynamic_cast<TH2*> (file->Get(Form("%s/corr_%s_trigger", folder, folder)));
+  TH2* corrVtx = dynamic_cast<TH2*> (file->Get(Form("%s/corr_%s_vtxReco", folder, folder)));
 
   Prepare2DPlot(corrTrigger);
   corrTrigger->SetTitle("a) Trigger bias correction");
@@ -549,15 +549,15 @@ void Track2Particle2DCreatePlots(const char* fileName = "correction_map.root")
   meas->GetXaxis()->SetRange(0, 0);
 }
 
-void Track2Particle2D(const char* fileName = "correction_map.root")
+void Track2Particle2D(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction")
 {
   gSystem->Load("libPWG0base");
 
   Track2Particle2DCreatePlots(fileName);
 
-  TH2* corrYX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx"));
-  TH2* corrZX = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zx_div_meas_nTrackToNPart_zx"));
-  TH2* corrZY = dynamic_cast<TH2*> (gROOT->FindObject("gene_nTrackToNPart_zy_div_meas_nTrackToNPart_zy"));
+  TH2* corrYX = dynamic_cast<TH2*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_yx_div_meas_%s_nTrackToNPart_yx", folder, folder)));
+  TH2* corrZX = dynamic_cast<TH2*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_zx_div_meas_%s_nTrackToNPart_zx", folder, folder)));
+  TH2* corrZY = dynamic_cast<TH2*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_zy_div_meas_%s_nTrackToNPart_zy", folder, folder)));
 
   /* this reads them from the file
   TH2* corrYX = dynamic_cast<TH2*> (file->Get("dndeta_correction/gene_nTrackToNPart_yx_div_meas_nTrackToNPart_yx"));

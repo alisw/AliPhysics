@@ -20,7 +20,7 @@
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
-#include "AlidNdEtaCorrection.h"
+#include "dNdEta/AlidNdEtaCorrection.h"
 
 ClassImp(AlidNdEtaSystematicsSelector)
 
@@ -498,14 +498,17 @@ void AlidNdEtaSystematicsSelector::Terminate()
     fdNdEtaCorrection[i] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
   fSigmaVertex = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertex"));
 
-  TDatabasePDG* pdgDB = new TDatabasePDG;
+  if (fPIDParticles)
+  {
+    TDatabasePDG* pdgDB = new TDatabasePDG;
 
-  for (Int_t i=0; i <= fPIDParticles->GetNbinsX()+1; ++i)
-    if (fPIDParticles->GetBinContent(i) > 0)
-      printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
+    for (Int_t i=0; i <= fPIDParticles->GetNbinsX()+1; ++i)
+      if (fPIDParticles->GetBinContent(i) > 0)
+        printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
 
-  delete pdgDB;
-  pdgDB = 0;
+    delete pdgDB;
+    pdgDB = 0;
+  }
 
   TFile* fout = TFile::Open("systematics.root", "RECREATE");
 

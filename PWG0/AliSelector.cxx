@@ -78,9 +78,15 @@ void AliSelector::CheckOptions()
 
   TString option = GetOption();
 
-  if (option.Contains("debug"))
+  if (option.Contains("moredebug"))
   {
-    printf("Enabling debug more for %s\n", ClassName());
+    printf("Enabling verbose debug mode for %s\n", ClassName());
+    AliLog::SetClassDebugLevel(ClassName(), AliLog::kDebug+1);
+    AliInfo(Form("Called with option %s.", option.Data()));
+  }
+  else if (option.Contains("debug"))
+  {
+    printf("Enabling debug mode for %s\n", ClassName());
     AliLog::SetClassDebugLevel(ClassName(), AliLog::kDebug);
     AliInfo(Form("Called with option %s.", option.Data()));
   }
@@ -235,6 +241,9 @@ TTree* AliSelector::GetKinematics()
 
     TString fileName(fTree->GetCurrentFile()->GetName());
     fileName.ReplaceAll("AliESDs", "Kinematics");
+
+    // temporary workaround for PROOF bug #18505
+    fileName.ReplaceAll("#Kinematics.root#Kinematics.root", "#Kinematics.root");
 
     AliDebug(AliLog::kInfo, Form("Opening %s", fileName.Data()));
 
