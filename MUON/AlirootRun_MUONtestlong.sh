@@ -6,7 +6,7 @@ OUTDIR=testlong_out
 
 rm -fr $OUTDIR
 mkdir $OUTDIR
-cp .rootrc rootlogon.C $OUTDIR
+cp $ALICE_ROOT/MUON/.rootrc $ALICE_ROOT/MUON/rootlogon.C $OUTDIR
 cd $OUTDIR
 
 FULLPATH="$CURDIR/$OUTDIR"
@@ -15,25 +15,6 @@ FULLPATH="$CURDIR/$OUTDIR"
 NEVENTS=10000
 SEED=1234567
 
-CDBDIRECTORY="$ALICE_ROOT/MUON/CDB/Default";
-CDB="local://$CDBDIRECTORY";
-
-if [ ! -d $CDBDIRECTORY"/MUON" ]; then
-
-echo "Generating Condition Database in directory $CDBDIRECTORY. This may take a while, so please be patient..."
-
-aliroot -b >& testGenerateCalibrations.out << EOF
-.L $ALICE_ROOT/MUON/MUONCDB.C+
-gRandom->SetSeed($SEED);
-generateCalibrations("$CDB",true);
-.q
-EOF
-
-else
-
-echo "Condition Database found in directory $CDBDIRECTORY. Will use it if needed."
-
-fi
 
 echo "Running simulation  ..."
 
@@ -44,7 +25,6 @@ aliroot -b >& testSim.out << EOF
 // man->SetDefaultStorage("local://$ALICE_ROOT");
 // man->SetSpecificStorage("MUON","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
 gRandom->SetSeed($SEED);
-AliCDBManager::Instance()->SetDefaultStorage("$CDB");
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
 MuonSim.SetMakeTrigger("MUON");
 MuonSim.Run($NEVENTS); 
@@ -55,7 +35,6 @@ echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF 
 gRandom->SetSeed($SEED);
-AliCDBManager::Instance()->SetDefaultStorage("$CDB");
 AliReconstruction MuonRec("galice.root"); 
 MuonRec.SetRunTracking("");
 MuonRec.SetRunVertexFinder(kFALSE);
