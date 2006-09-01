@@ -37,8 +37,6 @@
 //__________________________________________________________________________________________________
 AliRICHRecon::AliRICHRecon():
   TTask       ("RichRec","RichPat"),
-  fClusters(0x0),
-  fParam(AliRICHParam::Instance()),
   fPhotonsNumber(0),
   fPhotonIndex(0), // should we use -1?
   fFittedHoughPhotons(0),
@@ -81,8 +79,6 @@ AliRICHRecon::AliRICHRecon():
   fPortionOfRing(0),
   fHoughArea(0),
   fHoughRMS(999),
-  fCandidatePhotonX(0x0),
-  fCandidatePhotonY(0x0),
   fFittedTrackTheta(0),
   fFittedTrackPhi(0),
   fFittedThetaCerenkov(0),
@@ -96,7 +92,8 @@ AliRICHRecon::AliRICHRecon():
   fnPhotBKG(0),
   fThetaCerenkov(0),
   fWeightThetaCerenkov(0),
-  fThetaPeakPos(0)
+  fThetaPeakPos(0),
+  fRingSigma2(0)
 {
 // main ctor
   for (Int_t i=0; i<3000; i++) {
@@ -119,7 +116,6 @@ Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluster
 //   Returns: Track theta ckov in rad, nphot is the number of photon candidates accepted for reconstruction track theta ckov   
   SetTrackTheta(pHelix->Ploc().Theta());  SetTrackPhi(pHelix->Ploc().Phi());
   SetShiftX(pHelix->PosRad().X());        SetShiftY(pHelix->PosRad().Y());
-  fClusters = pClusters;
   if(pClusters->GetEntries()>200) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
   else                            fIsWEIGHT = kFALSE;
 
@@ -131,13 +127,13 @@ Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluster
   // Photon Flag:  Flag = 0 initial set; Flag = 1 good candidate (charge compatible with photon); Flag = 2 photon used for the ring;
   //
   
-  for (Int_t iClu=0; iClu<fClusters->GetEntriesFast();iClu++){//clusters loop
+  for (Int_t iClu=0; iClu<pClusters->GetEntriesFast();iClu++){//clusters loop
     if(iClu == nphot) continue; // do not consider MIP cluster as a photon candidate
     SetPhotonIndex(iClu);
     SetPhotonFlag(0);
     SetPhotonEta(-999.);
     SetPhotonWeight(0.);
-    AliRICHCluster *pClu=(AliRICHCluster*)fClusters->UncheckedAt(iClu);                      //get pointer to current cluster
+    AliRICHCluster *pClu=(AliRICHCluster*)pClusters->UncheckedAt(iClu);                      //get pointer to current cluster
     if(pClu->Q()>AliRICHParam::QthMIP()) continue;                                           //avoid MIP clusters from bkg
     SetEntranceX(pClu->X() - GetShiftX());    SetEntranceY(pClu->Y() - GetShiftY());         //cluster position with respect to track intersection
     FindPhiPoint();
@@ -149,7 +145,7 @@ Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluster
     SetPhotonEta(thetaPhotonCerenkov);
   }//clusters loop
 
-  SetPhotonsNumber(fClusters->GetEntries());
+  SetPhotonsNumber(pClusters->GetEntries());
 
   if((nphot=FlagPhotons(HoughResponse()))<1) return -11; //flag photons according to individual theta ckov with respect to most probable track theta ckov
 
@@ -177,7 +173,7 @@ Double_t AliRICHRecon::ThetaCerenkov(AliRICHHelix *pHelix,TClonesArray *pCluster
 
   SetHoughArea(houghArea);
 */
-  FindThetaCerenkov();
+  FindThetaCerenkov(pClusters->GetEntries());
   return GetThetaCerenkov();
 }//ThetaCerenkov()
 //__________________________________________________________________________________________________
@@ -201,7 +197,7 @@ Int_t AliRICHRecon::PhotonInBand()
   // inner radius //
   SetEmissionPoint(AliRICHParam::RadThick() -0.0001);
 
-  nfreon = fParam->IdxC6F14(fParam->EckovMin());
+  nfreon = AliRICHParam::Instance()->IdxC6F14(AliRICHParam::Instance()->EckovMin());
   thetacer = 0.;
 
   AliDebug(1,Form("thetacer in photoninband min %f",thetacer));
@@ -231,7 +227,7 @@ Int_t AliRICHRecon::PhotonInBand()
   SetEmissionPoint(0.);
 //  SetMassHypotesis(0.139567);
 
-  nfreon = fParam->IdxC6F14(fParam->EckovMax());
+  nfreon = AliRICHParam::Instance()->IdxC6F14(AliRICHParam::Instance()->EckovMax());
 
   thetacer = Cerenkovangle(nfreon,1);
 
@@ -658,11 +654,9 @@ Float_t AliRICHRecon::FromEmissionToCathode()
 
   Float_t nfreon, nquartz, ngas; 
 
-  //fParam->Print();
-
-  nfreon  = fParam->IdxC6F14(fParam->EckovMean());
-  nquartz = fParam->IdxSiO2(fParam->EckovMean());
-  ngas    = fParam->IdxCH4(fParam->EckovMean());
+  nfreon  = AliRICHParam::Instance()->IdxC6F14(AliRICHParam::Instance()->EckovMean());
+  nquartz = AliRICHParam::Instance()->IdxSiO2(AliRICHParam::Instance()->EckovMean());
+  ngas    = AliRICHParam::Instance()->IdxCH4(AliRICHParam::Instance()->EckovMean());
 
   Float_t trackTheta = GetTrackTheta();
   Float_t trackPhi = GetTrackPhi();
@@ -829,11 +823,11 @@ Double_t AliRICHRecon::HoughResponse()
   return (Double_t)(locMax*fDTheta+0.5*fDTheta); //final most probable track theta ckov   
 }//HoughResponse
 //__________________________________________________________________________________________________
-void AliRICHRecon::FindThetaCerenkov()
+void AliRICHRecon::FindThetaCerenkov(Int_t iNclus)
 {
 // Loops on all Ckov candidates and estimates the best Theta Ckov for a ring formed by those candidates. Also estimates an error for that Theat Ckov
 // collecting errors for all single Ckov candidates thetas. (Assuming they are independent)  
-// Arguments: none
+// Arguments: iNclus- total number of clusters in chamber for background estimation
 //    Return: none    
 
   Float_t wei = 0.;
@@ -858,7 +852,7 @@ void AliRICHRecon::FindThetaCerenkov()
                                       //???????????  Look at SetPhoton Flag method    
       Double_t phiref=GetTrackPhi();
   
-      Double_t beta = 1./(TMath::Cos(GetPhotonEta())*fParam->IdxC6F14(AliRICHParam::EckovMean()));
+      Double_t beta = 1./(TMath::Cos(GetPhotonEta())*AliRICHParam::Instance()->IdxC6F14(AliRICHParam::EckovMean()));
       sigma2 += 1./AliRICHParam::SigmaSinglePhotonFormula(GetPhotonEta(),GetPhiPoint(),GetTrackTheta(),phiref,beta);
     }
   }
@@ -874,12 +868,12 @@ void AliRICHRecon::FindThetaCerenkov()
   SetThetaOfRing(etaMax); FindAreaAndPortionOfRing(); Double_t externalArea = GetAreaOfRing();
 
   Double_t effArea = (AliRICHParam::PcSizeX()-AliRICHParam::DeadZone())*(AliRICHParam::PcSizeY()-2*AliRICHParam::DeadZone());
-  Double_t nPhotBKG = (externalArea-internalArea)/effArea*fClusters->GetEntries();
+  Double_t nPhotBKG = (externalArea-internalArea)/effArea*iNclus;//????? is the division right?
   if(nPhotBKG<0) nPhotBKG=0; //just protection from funny angles...
   SetPhotBKG(nPhotBKG);
   
   AliDebug(1,Form(" thetac weighted -> %f",weightThetaCerenkov));
-}
+}//FindThetaCerenkov()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliRICHRecon::FlagPhotons(Double_t thetaCkovHough)
 {

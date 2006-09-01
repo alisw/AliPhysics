@@ -10,9 +10,24 @@
 class AliRICHHit : public AliHit
 {
 public:
-  AliRICHHit()                                                                         :AliHit(     ),fCham(-1) ,fE(-1),fPid(-1 ){fInX3.SetXYZ(0,0,0);fOutX3.SetXYZ(0,0,0);}
-  AliRICHHit(Int_t c,Int_t tid,TVector3 in,TVector3 out,Double_t e,Int_t pid)          :AliHit(0,tid),fCham(c ) ,fE(e) ,fPid(pid){fInX3=in; fOutX3=out; fX=out.X();fY=out.Y();fZ=out.Z();}
-  AliRICHHit(Int_t tid,Double_t e,Int_t pad,Double_t x,Double_t y,Double_t z,Int_t pid):AliHit(0,tid),fCham(pad),fE(e) ,fPid(pid){fX=x;fY=y;fZ=z;}
+  AliRICHHit():AliHit(),
+      fCham(-1) ,
+      fE(-1),
+      fPid(-1 ),
+      fInX3(TVector3(0,0,0)),
+      fOutX3(TVector3(0,0,0)) {}
+  AliRICHHit(Int_t c,Int_t tid,TVector3 in,TVector3 out,Double_t e,Int_t pid):AliHit(0,tid),
+      fCham(c ),
+      fE(e),
+      fPid(pid),
+      fInX3(in),
+      fOutX3(out)              {fX=out.X();fY=out.Y();fZ=out.Z();}
+  AliRICHHit(Int_t tid,Double_t e,Int_t pad,Double_t x,Double_t y,Double_t z,Int_t pid):AliHit(0,tid),
+      fCham(pad),
+      fE(e),
+      fPid(pid),
+      fInX3(TVector3(x,y,z)),
+      fOutX3(TVector3(x,y,z))  {fX=x;fY=y;fZ=z;}
            
   virtual ~AliRICHHit()                                                                                            {}
 //framework part

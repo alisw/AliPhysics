@@ -21,7 +21,7 @@ public:
 //ctor & dtor    
             AliRICH();                                            
             AliRICH(const char *name, const char *title);
-            AliRICH(const AliRICH& RICH                ):AliDetector(RICH) {;}  //copy ctor 
+            AliRICH(const AliRICH& RICH                ):AliDetector(RICH),fSdig(0),fSdigCnt(0),fDig(0),fClu(0),fCounters(0),fNcham(0) {;}  //copy ctor not implemented
   virtual  ~AliRICH();                                            
           
   AliRICH&  operator=(const AliRICH&)                 {return *this;}

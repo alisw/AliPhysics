@@ -18,8 +18,8 @@ public:
   AliRICHDigit()                                                :AliDigit(),fCFM(-1) ,fChamber(-1  )     ,fPadX(-1)      ,fPadY(-1)      ,fQdc(-1)  {}
   AliRICHDigit(Int_t pad,Double_t qdc,Int_t cfm=-1,Int_t tid=-1):AliDigit(),fCFM(cfm),fChamber(P2C(pad)) ,fPadX(P2X(pad)),fPadY(P2Y(pad)),fQdc(qdc) {fTracks[0]=tid;}
   AliRICHDigit(TVector pad,Double_t q                          ):AliDigit(),fCFM(-1) ,fChamber(-1)       ,fPadX((Int_t)pad[0])  ,fPadY((Int_t)pad[1])  ,fQdc(q)   {}
-  AliRICHDigit(Int_t c,TVector pad,Double_t q,Int_t cfm,Int_t tid0,Int_t tid1,Int_t tid2):fCFM(cfm),fChamber(c)  
-       {fPadX=(Int_t)pad[0];fPadY=(Int_t)pad[1];fQdc=q;fTracks[0]=tid0;fTracks[1]=tid1;fTracks[2]=tid2;}
+  AliRICHDigit(Int_t c,TVector pad,Double_t q,Int_t cfm,Int_t tid0,Int_t tid1,Int_t tid2):fCFM(cfm),fChamber(c),fPadX((Int_t)pad[0]),fPadY((Int_t)pad[1]),fQdc(q)  
+       {fTracks[0]=tid0;fTracks[1]=tid1;fTracks[2]=tid2;}
   virtual ~AliRICHDigit() {;}
 //framework part    
                 Bool_t   IsSortable  (                               )const{return kTRUE;}                                                    //provision to use TObject::Sort()

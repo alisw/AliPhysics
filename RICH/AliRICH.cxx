@@ -44,14 +44,13 @@ ClassImp(AliRICH)
 */
 //END_HTML
 //__________________________________________________________________________________________________
-AliRICH::AliRICH():AliDetector(),fSdig(0),fSdigCnt(0),fDig(0),fClu(0) 
+AliRICH::AliRICH():AliDetector(),fSdig(0),fSdigCnt(0),fDig(0),fClu(0),fCounters(0),fNcham(0) 
 {
 //Default ctor should not contain any new operators
 //AliDetector ctor deals with Hits and Digits  
 }//AliRICH::AliRICH()
 //__________________________________________________________________________________________________
-AliRICH::AliRICH(const char *name, const char *title)
-        :AliDetector(name,title),fSdig(0),fSdigCnt(0),fDig(0),fClu(0)
+AliRICH::AliRICH(const char *name, const char *title):AliDetector(name,title),fSdig(0),fSdigCnt(0),fDig(0),fClu(0),fCounters(0),fNcham(0)
 {
 //Named ctor
   AliDebug(1,"Start.");

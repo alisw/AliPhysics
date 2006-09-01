@@ -3,11 +3,19 @@
 
 ClassImp(AliRICHHelix)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliRICHHelix::AliRICHHelix(Double_t p,Double_t theta,Double_t phi,Double_t bz):TObject() 
+AliRICHHelix::AliRICHHelix(Double_t p,Double_t theta,Double_t phi,Double_t bz):TObject(),
+  fX0(TVector3(0,0,0)),
+  fP0(TVector3(0,0,0)),
+  fX(TVector3(0,0,0)),
+  fP(TVector3(0,0,0)),
+  fLen(0),
+  fQ(0),
+  fBz(bz),
+  fPosRad(TVector2(0,0)),
+  fPosPc(TVector2(0,0)),
+  fPloc(TVector3(0,0,0)) 
 {
-  fX0.SetXYZ(0,0,0);                                                       fX=fX0;
   fP0.SetMagThetaPhi(p,theta*TMath::DegToRad(),phi*TMath::DegToRad());     fP=fP0;
-  fLen=0; fQ=1;fBz=bz;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void  AliRICHHelix::Print(Option_t *opt) const

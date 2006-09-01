@@ -32,7 +32,7 @@ public :
   void FindThetaAtQuartz(Float_t ThetaCer);   //
   Double_t HoughResponse (              );                   //most probable track theta ckov out of all photon candidate thetas 
   Int_t    FlagPhotons   (Double_t theta);                   //n. of photon candidates which thetas are inside a window around most probable track theta ckov
-  void FindThetaCerenkov();                   //
+  void FindThetaCerenkov(Int_t iNclus);       //
   void FindIntersectionWithDetector();        //
   Float_t Cerenkovangle(Float_t n, Float_t b);//
   Int_t   PhotonInBand();                     //
@@ -135,8 +135,6 @@ public :
   Float_t FromEmissionToCathode();                                                                  //
 
 protected:
-  TClonesArray *fClusters;                    //tmp pointer to list of clusters
-  AliRICHParam *fParam;                       //tmp pointer to AliRICHParam instance containing all the parameters needed for proccessing
   Int_t fPhotonsNumber;                       // Number of photons candidate
   Int_t fPhotonIndex;                         // index of photons
   Int_t fPhotonFlag[3000];                    // flag for photons
@@ -184,8 +182,6 @@ protected:
   Float_t fPhotonEta[3000];                   // theta cerenkov of photon candidates
   Float_t fPhotonWeight[3000];                // weigth
   Float_t fHoughRMS;                          // rms Hough
-  Float_t* fCandidatePhotonX;                 // x photon candidates
-  Float_t* fCandidatePhotonY;                 // y photon candidates
   Float_t fFittedTrackTheta;                  // theta track after minim.
   Float_t fFittedTrackPhi;                    // phi track after minim.
   Float_t fFittedThetaCerenkov;               // thetacerenkov after minim.

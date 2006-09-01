@@ -8,9 +8,29 @@
 class AliRICHHelix: public TObject
 {
 public:
-  AliRICHHelix():TObject()                                                                                                                  {}
+  AliRICHHelix():TObject(),
+    fX0(TVector3(0,0,0)),
+    fP0(TVector3(0,0,0)),
+    fX(TVector3(0,0,0)),
+    fP(TVector3(0,0,0)),
+    fLen(0),
+    fQ(0),
+    fBz(0),
+    fPosRad(TVector2(0,0)),
+    fPosPc(TVector2(0,0)),
+    fPloc(TVector3(0,0,0))            {}
   AliRICHHelix(Double_t p,Double_t theta,Double_t phi,Double_t bz=0.2);//p [GeV], theta,phi [deg], Bz [Tesla];
-  AliRICHHelix(const TVector3 &x0,const TVector3 &p0,Int_t q=1,Double_t b=0.2):TObject(),fX0(x0),fP0(p0),fX(x0),fP(p0),fLen(0),fQ(q),fBz(b) {}
+  AliRICHHelix(const TVector3 &x0,const TVector3 &p0,Int_t q=1,Double_t b=0.2):TObject(),
+    fX0(x0),
+    fP0(p0),
+    fX(x0),
+    fP(p0),
+    fLen(0),
+    fQ(q),
+    fBz(b),
+    fPosRad(TVector2(0,0)),
+    fPosPc(TVector2(0,0)),
+    fPloc(TVector3(0,0,0))            {}
   virtual ~AliRICHHelix()                                                                                                                   {}        
            
          void     Draw          (const Option_t *opt=""              );                              //from TObject, draw helix

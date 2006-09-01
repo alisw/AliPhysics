@@ -10,8 +10,8 @@
 class AliRICHv1 : public AliRICH //TObject-TNamed-AliModule-AliDetector-AliRICH-AliRICHv0
 {
 public:
-                 AliRICHv1():AliRICH()                                               {;}          //default ctor
-                 AliRICHv1(const char *name, const char *title):AliRICH(name,title)  {;}          //named ctor
+                 AliRICHv1()                                   :AliRICH(          ),fIdRad(-1),fIdWin(-1),fIdProxGap(-1),fIdAmpGap(-1),fIdPc(-1),fIdAnod(-1),fIdCath(-1),fIdColl(-1) {;}          //default ctor
+                 AliRICHv1(const char *name, const char *title):AliRICH(name,title),fIdRad(-1),fIdWin(-1),fIdProxGap(-1),fIdAmpGap(-1),fIdPc(-1),fIdAnod(-1),fIdCath(-1),fIdColl(-1) {;}          //named ctor
   virtual       ~AliRICHv1()                                                         {;}          //dtor
 //framework part++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++   
           void    CreateMaterials  (                                );                                        //from AliModule invoked from AliMC::ConstructGeometry() 
