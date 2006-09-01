@@ -51,25 +51,35 @@ ClassImp(AliMUONAlignment)
   Int_t AliMUONAlignment::fgNCh = 10;
   Int_t AliMUONAlignment::fgNSt = 5;
 
-AliMUONAlignment::AliMUONAlignment() : TObject()
+AliMUONAlignment::AliMUONAlignment() 
+  : TObject(),
+    fBFieldOn(kTRUE),
+    fStartFac(16.), 
+    fResCutInitial(100.), 
+    fResCut(100.),
+    fMillepede(0),
+    fTrackParamAtHit(0),
+    fHitForRecAtHit(0),
+    fTrack(0),
+    fRecHit(0),
+    fTrackParam(0),
+    fNGlobal(fgNDetElem*fgNParCh),
+    fNLocal(4),
+    fNStdDev(3),
+    fDetElemId(0),
+    fDetElemNumber(0),
+    fPhi(0.),
+    fCosPhi(1.),
+    fSinPhi(0.),
+    fTransform(0)
 {
   /// Default constructor, setting define alignment parameters
   fSigma[0] = 1.0e-1;
   fSigma[1] = 1.0e-2;
-  fPhi = 0;
-  fNGlobal = fgNDetElem*fgNParCh;
-  fNLocal = 4;
-  fNStdDev = 3;
 
   fDoF[0] = kTRUE;  fDoF[1] = kTRUE;  fDoF[2] = kTRUE;
   fAllowVar[0] = 0.05;  fAllowVar[1] = 0.05;  fAllowVar[2] = 0.001;
-  fStartFac = 16.;
-  fResCut = 100.;
-  fResCutInitial = 100.;
-
-  fBFieldOn = kTRUE;
-//   fBFieldOn = kFALSE;
-
+  
   AliInfo(Form("fAllowVar[0]: %f\t fAllowVar[1]: %f\t fPhi: %f\t fgNDetElem: %i\t fNGlobal: %i\t fNLocal: %i",fAllowVar[0],fAllowVar[1],fPhi,fgNDetElem,fNGlobal,fNLocal));
 
   fMillepede = new AliMillepede();

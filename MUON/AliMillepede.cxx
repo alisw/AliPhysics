@@ -36,15 +36,33 @@
 #include "AliMillepede.h"
 
 //=============================================================================
-AliMillepede::AliMillepede(): TObject()
+AliMillepede::AliMillepede()
+  : TObject(),
+    fIndexLocEq(fgkMaxGlobalPar+fgkMaxLocalPar),
+    fDerivLocEq(fgkMaxGlobalPar+fgkMaxLocalPar),
+    fIndexAllEqs(1000*fgkMaxGlobalPar+fgkMaxLocalPar),
+    fDerivAllEqs(1000*fgkMaxGlobalPar+fgkMaxLocalPar),
+    fLocEqPlace(1000), 
+    fNIndexLocEq(0),
+    fNDerivLocEq(0),
+    fNIndexAllEqs(0),
+    fNDerivAllEqs(0),
+    fNLocEqPlace(0),
+    fNLocalEquations(0),
+    fResCutInit(0.),
+    fResCut(0.),
+    fChi2CutFactor(1.0),
+    fChi2CutRef(1.0),
+    fIter(0),
+    fMaxIter(10),
+    fNStdDev(3),
+    fNGlobalConstraints(0),
+    fNLocalFits(0),
+    fNLocalFitsRejected(0),
+    fNGlobalPar(0),
+    fNLocalPar(0)
 {
   /// Standard constructor
-
-  fIndexLocEq.Set(fgkMaxGlobalPar+fgkMaxLocalPar);    
-  fDerivLocEq.Set(fgkMaxGlobalPar+fgkMaxLocalPar);
-  fIndexAllEqs.Set(1000*fgkMaxGlobalPar+fgkMaxLocalPar);    
-  fDerivAllEqs.Set(1000*fgkMaxGlobalPar+fgkMaxLocalPar);
-  fLocEqPlace.Set(1000);
 
   AliInfo("                                           ");
   AliInfo("            * o o                   o      ");

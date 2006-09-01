@@ -62,63 +62,77 @@ ClassImp(AliMUONGeometryMisAligner)
 
 //______________________________________________________________________________
 AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartXMisAligM, Double_t cartXMisAligW, Double_t cartYMisAligM, Double_t cartYMisAligW, Double_t angMisAligM, Double_t angMisAligW)
-:TObject(), fDisplacementGenerator(0)
+  : TObject(),
+    fUseUni(kFALSE),
+    fUseGaus(kTRUE),
+    fCartXMisAligM(cartXMisAligM),
+    fCartXMisAligW(cartXMisAligW), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+    fCartYMisAligM(cartYMisAligM),
+    fCartYMisAligW(cartYMisAligW), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+    fAngMisAligM(angMisAligM),
+    fAngMisAligW(angMisAligW),
+    fXYAngMisAligFactor(0.0),
+    fZCartMisAligFactor(0.0),
+    fDisplacementGenerator(0)
 {
   /// Standard constructor
-  fCartXMisAligM = cartXMisAligM;
-  fCartXMisAligW = cartXMisAligW;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-  fCartYMisAligM = cartYMisAligM;
-  fCartYMisAligW = cartYMisAligW;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-  fAngMisAligM = angMisAligM;
-  fAngMisAligW = angMisAligW;
-  fXYAngMisAligFactor = 0.0;
-  fZCartMisAligFactor = 0.0;
   fDisplacementGenerator = new TRandom(0);
-  fUseUni = kFALSE;
-  fUseGaus = kTRUE;
 }
 
 //______________________________________________________________________________
 AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAligM, Double_t cartMisAligW, Double_t angMisAligM, Double_t angMisAligW)
-:TObject(), fDisplacementGenerator(0)
+  : TObject(), 
+    fUseUni(kFALSE),
+    fUseGaus(kTRUE),
+    fCartXMisAligM(cartMisAligM),
+    fCartXMisAligW(cartMisAligW), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+    fCartYMisAligM(cartMisAligM),
+    fCartYMisAligW(cartMisAligW), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+    fAngMisAligM(angMisAligM),
+    fAngMisAligW(angMisAligW),
+    fXYAngMisAligFactor(0.0),
+    fZCartMisAligFactor(0.0),
+    fDisplacementGenerator(0)
 {
   /// Standard constructor
-  fCartXMisAligM = cartMisAligM;
-  fCartXMisAligW = cartMisAligW;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-  fCartYMisAligM = cartMisAligM;
-  fCartYMisAligW = cartMisAligW;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-  fAngMisAligM = angMisAligM;
-  fAngMisAligW = angMisAligW;
-  fXYAngMisAligFactor = 0.0;
-  fZCartMisAligFactor = 0.0;
   fDisplacementGenerator = new TRandom(0);
-  fUseUni = kFALSE;
-  fUseGaus = kTRUE;
 }
 
 //______________________________________________________________________________
 AliMUONGeometryMisAligner::AliMUONGeometryMisAligner(Double_t cartMisAlig, Double_t angMisAlig)
-:TObject(), fDisplacementGenerator(0)
+  : TObject(), 
+    fUseUni(kTRUE),
+    fUseGaus(kFALSE),
+    fCartXMisAligM(0.),
+    fCartXMisAligW(cartMisAlig), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+    fCartYMisAligM(0.),
+    fCartYMisAligW(cartMisAlig), // 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
+    fAngMisAligM(0.),
+    fAngMisAligW(angMisAlig),
+    fXYAngMisAligFactor(0.0),
+    fZCartMisAligFactor(0.0),
+    fDisplacementGenerator(0)
 {
   /// Standard constructor
-  fCartXMisAligM = 0.;
-  fCartXMisAligW = cartMisAlig;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-  fCartYMisAligM = 0.;
-  fCartYMisAligW = cartMisAlig;	// 0.5 mm. Perhaps this should go into AliMUONConstants.h ? 
-  fAngMisAligM = 0.;
-  fAngMisAligW = angMisAlig;
-  fXYAngMisAligFactor = 0.0;
-  fZCartMisAligFactor = 0.0;
   fDisplacementGenerator = new TRandom(0);
-  fUseUni = kTRUE;
-  fUseGaus = kFALSE;
 }
 
 //_____________________________________________________________________________
 AliMUONGeometryMisAligner::AliMUONGeometryMisAligner()
-:TObject(), fDisplacementGenerator(0)
+  : TObject(), 
+    fUseUni(kTRUE),
+    fUseGaus(kFALSE),
+    fCartXMisAligM(0.),
+    fCartXMisAligW(0.),
+    fCartYMisAligM(0.),
+    fCartYMisAligW(0.),
+    fAngMisAligM(0.),
+    fAngMisAligW(0.),
+    fXYAngMisAligFactor(0.0),
+    fZCartMisAligFactor(0.0),
+    fDisplacementGenerator(0)
 {
-/// Default constructor
+  /// Default constructor
 }
 
 //______________________________________________________________________________
@@ -126,7 +140,7 @@ AliMUONGeometryMisAligner::~AliMUONGeometryMisAligner()
 {
 /// Destructor
 
-  delete fDisplacementGenerator;
+  if (fDisplacementGenerator) delete fDisplacementGenerator;
 }
 
 //_________________________________________________________________________
