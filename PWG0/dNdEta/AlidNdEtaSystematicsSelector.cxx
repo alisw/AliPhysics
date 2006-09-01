@@ -109,7 +109,7 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
 
   if (option.Contains("sigma-vertex"))
   {
-    fSigmaVertex = new TH1F("fSigmaVertex", "fSigmaVertex;Nsigma2vertex;NacceptedTracks", 10, 0.25, 5.25);
+    fSigmaVertex = new TH1F("fSigmaVertex", "fSigmaVertex;Nsigma2vertex;NacceptedTracks", 50, 0.05, 5.05);
     printf("WARNING: sigma-vertex analysis enabled. This will produce weird results in the AliESDtrackCuts histograms\n");
   }
 
@@ -442,7 +442,7 @@ void AlidNdEtaSystematicsSelector::FillSigmaVertex()
 
     Float_t sigma2Vertex = fEsdTrackCuts->GetSigmaToVertex(esdTrack);
 
-    for (Double_t nSigma = 0.5; nSigma < 5.1; nSigma += 0.5)
+    for (Double_t nSigma = 0.1; nSigma < 5.05; nSigma += 0.1)
     {
       if (sigma2Vertex < nSigma)
         fSigmaVertex->Fill(nSigma);

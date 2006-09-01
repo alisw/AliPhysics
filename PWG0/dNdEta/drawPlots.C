@@ -65,6 +65,10 @@ void Prepare1DPlot(TH1* hist)
   hist->SetLineWidth(2);
   hist->SetStats(kFALSE);
 
+  hist->GetXaxis()->SetLabelOffset(0.02);
+  hist->GetXaxis()->SetTitleOffset(1.3);
+  hist->GetYaxis()->SetTitleOffset(1.3);
+
   SetRanges(hist);
 }
 
@@ -74,10 +78,10 @@ void InitPad()
   gPad->SetLeftMargin(0.15);
   //gPad->SetRightMargin(0.05);
   //gPad->SetTopMargin(0.13);
-  //gPad->SetBottomMargin(0.1);
+  gPad->SetBottomMargin(0.12);
 
-  //gPad->SetGridx();
-  //gPad->SetGridy();
+  gPad->SetGridx();
+  gPad->SetGridy();
 }
 
 void InitPadCOLZ()
@@ -105,14 +109,24 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   Prepare1DPlot(histESDMB);
   Prepare1DPlot(histESDMBVtx);
 
-  histESD->SetLineColor(kRed);
-  histESDMB->SetLineColor(kBlue);
-  histESDMBVtx->SetLineColor(103);
+  histESD->SetLineColor(0);
+  histESDMB->SetLineColor(0);
+  histESDMBVtx->SetLineColor(0);
+
+  histESD->SetMarkerColor(kRed);
+  histESDMB->SetMarkerColor(kBlue);
+  histESDMBVtx->SetMarkerColor(103);
+
+  histESD->SetMarkerStyle(20);
+  histESDMB->SetMarkerStyle(21);
+  histESDMBVtx->SetMarkerStyle(22);
 
   TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 100, 0, histESDMBVtx->GetMaximum() * 1.1);
+  Prepare1DPlot(dummy);
   dummy->SetStats(kFALSE);
   dummy->SetXTitle("#eta");
-  dummy->SetYTitle("dN/d#eta");
+  dummy->SetYTitle("dN_{ch}/d#eta");
+  dummy->GetYaxis()->SetTitleOffset(1);
 
   histESDMBVtx->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
   histESDMB->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
@@ -149,6 +163,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDNoPt->SetLineColor(102);
 
   TH2* dummy2 = (TH2F*) dummy->Clone("dummy2");
+  Prepare1DPlot(dummy2);
   dummy2->GetYaxis()->SetRangeUser(0, histESD->GetMaximum() * 1.1);
 
   dummy2->DrawCopy();
@@ -161,27 +176,44 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   canvas2->SaveAs("dNdEta2.gif");
   canvas2->SaveAs("dNdEta2.eps");
 
-  TCanvas* canvas3 = new TCanvas("dNdEta", "dNdEta", 1000, 500);
-  canvas3->Divide(2, 1);
+  TCanvas* canvas3 = new TCanvas("dNdEta", "dNdEta", 700, 500);
+  //InitPad();
+  gPad->SetBottomMargin(0.12);
 
-  dummy->SetTitle("a)");
-  dummy2->SetTitle("b)");
+  TLegend* legend = new TLegend(0.35, 0.2, 0.6, 0.4);
+  legend->SetFillColor(0);
+  legend->AddEntry(histESDMBVtx, "triggered, vertex");
+  legend->AddEntry(histESDMB, "triggered");
+  legend->AddEntry(histESD, "all events");
+  legend->AddEntry(histMC, "MC prediction");
 
-  canvas3->cd(1);
-  dummy->Draw();
+  dummy->DrawCopy();
   histESDMBVtx->Draw("SAME");
   histESDMB->Draw("SAME");
   histESD->Draw("SAME");
-
-  canvas3->cd(2);
-  dummy2->Draw();
   histMC->Draw("SAME");
-  histESD->Draw("SAME");
-  histESDNoPt->Draw("SAME");
-  histMCPtCut->Draw("SAME");
+
+  legend->Draw();
 
   canvas3->SaveAs("dNdEta.gif");
   canvas3->SaveAs("dNdEta.eps");
+
+  TH1* ratio = (TH1*) histMC->Clone("ratio");
+  TH1* ratioNoPt = (TH1*) histMCPtCut->Clone("ratioNoPt");
+
+  ratio->Divide(histESD);
+  ratioNoPt->Divide(histESDNoPt);
+
+  TCanvas* canvas4 = new TCanvas("ratio", "ratio", 700, 500);
+
+  ratio->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
+
+  ratio->SetLineColor(1);
+  ratioNoPt->SetLineColor(2);
+
+  ratio->Draw();
+  ratioNoPt->Draw("SAME");
+
 }
 
 void ptSpectrum()
@@ -225,9 +257,9 @@ void ptCutoff()
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection("dndeta_correction", "dndeta_correction");
   dNdEtaCorrection->LoadHistograms("correction_map.root","dndeta_correction");
 
-  dNdEtaCorrection->GetMeasuredFraction(0.3, -1, kTRUE);
+  dNdEtaCorrection->GetMeasuredFraction(0.3, -100, kTRUE);
 
-  TH1* hist = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_pt"));
+  TH1* hist = dynamic_cast<TH1*> (gROOT->FindObject("gene_dndeta_correction_nTrackToNPart_pt")->Clone("ptcutoff"));
 
   hist->GetXaxis()->SetRangeUser(0, 0.9999);
   hist->SetMinimum(0);
@@ -235,8 +267,8 @@ void ptCutoff()
   hist->SetTitle("Generated Particles");
   Prepare1DPlot(hist);
 
-  TCanvas* canvas = new TCanvas("ptCutoff", "ptCutoff", 500, 500);
-  hist->Draw();
+  TCanvas* canvas = new TCanvas("ptCutoff", "ptCutoff", 700, 500);
+  hist->DrawCopy();
 
   TLine* line = new TLine(0.3, 0 - hist->GetMaximum() * 0, 0.3, hist->GetMaximum() * 1.1);
   line->SetLineWidth(3);
@@ -245,6 +277,20 @@ void ptCutoff()
 
   canvas->SaveAs("ptCutoff.gif");
   canvas->SaveAs("ptCutoff.eps");
+
+  TH1F* factor = new TH1F("factor", ";#eta;correction factor", 10, -1, 1.000001);
+  for (Float_t eta = -0.9; eta<1; eta += 0.2)
+    factor->Fill(eta, 1.0 / dNdEtaCorrection->GetMeasuredFraction(0.3, eta, kFALSE));
+
+  TCanvas* canvas = new TCanvas("ptCutoff_factor", "ptCutoff_factor", 700, 500);
+  InitPad();
+
+  Prepare1DPlot(factor);
+  factor->GetYaxis()->SetRangeUser(1, 2);
+  factor->GetYaxis()->SetTitleOffset(1);
+  factor->Draw();
+
+  canvas->SaveAs("ptCutoff_factor.eps");
 }
 
 void TriggerBiasVtxRecon(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction")
@@ -318,11 +364,34 @@ void TriggerBias(const char* fileName = "correction_map.root")
   canvas->SaveAs(Form("TriggerBiasZoom_%d.eps", gMax));
 }
 
+void TriggerBias1D(const char* fileName = "correction_map.root", const char* folderName = "dndeta_correction")
+{
+  gSystem->Load("libPWG0base");
+
+  TFile* file = TFile::Open(fileName);
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(folderName, folderName);
+  dNdEtaCorrection->LoadHistograms(fileName, folderName);
+
+  TH1* hist = dNdEtaCorrection->GetTriggerCorrection()->Get1DCorrection("x");
+
+  TCanvas* canvas = new TCanvas("TriggerBias1D", "TriggerBias1D", 500, 500);
+  InitPad();
+
+  Prepare1DPlot(hist);
+  hist->SetTitle("");
+  hist->GetYaxis()->SetTitle("correction factor");
+  hist->GetYaxis()->SetRangeUser(1, 1.5);
+  hist->GetYaxis()->SetTitleOffset(1.6);
+  hist->Draw();
+
+  canvas->SaveAs("TriggerBias1D.eps");
+}
+
 void VtxRecon()
 {
   TFile* file = TFile::Open("correction_map.root");
 
-  TH2* corr = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_vtxReco"));
+  TH2* corr = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_dndeta_correction_vtxReco"));
 
   Prepare2DPlot(corr);
   corr->SetTitle("Vertex reconstruction correction");
@@ -342,6 +411,29 @@ void VtxRecon()
 
   canvas->SaveAs(Form("VtxReconZoom_%d.gif", gMax));
   canvas->SaveAs(Form("VtxReconZoom_%d.eps", gMax));
+}
+
+void VtxRecon1D(const char* fileName = "correction_map.root", const char* folderName = "dndeta_correction")
+{
+  gSystem->Load("libPWG0base");
+
+  TFile* file = TFile::Open(fileName);
+  AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(folderName, folderName);
+  dNdEtaCorrection->LoadHistograms(fileName, folderName);
+
+  TH1* hist = dNdEtaCorrection->GetVertexRecoCorrection()->Get1DCorrection("x");
+
+  TCanvas* canvas = new TCanvas("VtxRecon1D", "VtxRecon1D", 500, 500);
+  InitPad();
+
+  Prepare1DPlot(hist);
+  hist->SetTitle("");
+  hist->GetYaxis()->SetTitle("correction factor");
+  hist->GetYaxis()->SetRangeUser(1, 1.8);
+  hist->GetYaxis()->SetTitleOffset(1.6);
+  hist->Draw();
+
+  canvas->SaveAs("VtxRecon1D.eps");
 }
 
 void Track2ParticleAsNumber(const char* fileName = "correction_map.root")
@@ -413,29 +505,31 @@ void Track2Particle1DCreatePlots(const char* fileName = "correction_map.root", c
   AliPWG0Helper::CreateDividedProjections(gene, meas, "z", kTRUE);
 }
 
-void Track2Particle1D(const char* fileName = "correction_map.root", const char* folderName = "dndeta_correction", Float_t upperPtLimit = 9.9)
+void Track2Particle1D(const char* fileName = "correction_map.root", const char* folder = "dndeta_correction", Float_t upperPtLimit = 9.9)
 {
   gSystem->Load("libPWG0base");
 
-  Track2Particle1DCreatePlots(fileName, folderName, upperPtLimit);
+  Track2Particle1DCreatePlots(fileName, folder, upperPtLimit);
 
-  TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_x_div_meas_nTrackToNPart_x"));
-  TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_y_div_meas_nTrackToNPart_y"));
-  TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject("gene_nTrackToNPart_z_div_meas_nTrackToNPart_z"));
+  TH1* corrX = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_x_div_meas_%s_nTrackToNPart_x", folder, folder)));
+  TH1* corrY = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_y_div_meas_%s_nTrackToNPart_y", folder, folder)));
+  TH1* corrZ = dynamic_cast<TH1*> (gROOT->FindObject(Form("gene_%s_nTrackToNPart_z_div_meas_%s_nTrackToNPart_z", folder, folder)));
 
   Prepare1DPlot(corrX);
   Prepare1DPlot(corrY);
   Prepare1DPlot(corrZ);
 
-  const char* title = "Track2Particle Correction";
-  corrX->SetTitle(title);
-  corrY->SetTitle(title);
-  corrZ->SetTitle(title);
+  //corrX->SetTitle("a) z projection");
+  corrY->SetTitle("a) #eta projection");
+  corrZ->SetTitle("b) p_{T} projection");
+
+  corrY->GetYaxis()->SetTitle("correction factor");
+  corrZ->GetYaxis()->SetTitle("correction factor");
 
   corrZ->GetXaxis()->SetRangeUser(0, upperPtLimit);
 
   TString canvasName;
-  canvasName.Form("Track2Particle1D_%s", folderName);
+  canvasName.Form("Track2Particle1D_%s", folder);
   TCanvas* canvas = new TCanvas(canvasName, canvasName, 1200, 400);
   canvas->Divide(3, 1);
 
@@ -451,8 +545,27 @@ void Track2Particle1D(const char* fileName = "correction_map.root", const char* 
   InitPad();
   corrZ->DrawCopy();
 
-  canvas->SaveAs(Form("Track2Particle1D_%s_%d_%f.gif", fileName, gMax, upperPtLimit));
-  canvas->SaveAs(Form("Track2Particle1D_%s_%d_%f.eps", fileName, gMax, upperPtLimit));
+  canvas->SaveAs(Form("Track2Particle1D_%s_%f.gif", fileName, upperPtLimit));
+  canvas->SaveAs(Form("Track2Particle1D_%s_%f.eps", fileName, upperPtLimit));
+
+  canvasName.Form("Track2Particle1D_%s_etapt", folder);
+  TCanvas* canvas = new TCanvas(canvasName, canvasName, 1000, 500);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+  InitPad();
+  corrY->GetXaxis()->SetRangeUser(-0.99, 0.99);
+  corrY->GetYaxis()->SetRangeUser(1, 1.5);
+  corrY->GetYaxis()->SetTitleOffset(1.5);
+  corrY->DrawCopy();
+
+  canvas->cd(2);
+  InitPad();
+  corrZ->GetYaxis()->SetRangeUser(1, 1.5);
+  corrZ->GetYaxis()->SetTitleOffset(1.5);
+  corrZ->DrawCopy();
+
+  canvas->SaveAs(Form("Track2Particle1D_etapt_%s_%f.eps", fileName, upperPtLimit));
 }
 
 void CompareTrack2Particle1D(Float_t upperPtLimit = 9.9)

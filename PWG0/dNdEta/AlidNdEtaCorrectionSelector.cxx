@@ -176,8 +176,6 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
     return kFALSE;
   }
 
-  gDebug = 2;
-
   AliHeader* header = GetHeader();
   if (!header)
   {

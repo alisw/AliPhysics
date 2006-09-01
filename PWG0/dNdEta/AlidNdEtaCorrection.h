@@ -74,7 +74,7 @@ public:
 
   Float_t GetTriggerBiasCorrection(Float_t eta, Float_t pt=0) {return fTriggerBiasCorrection->GetCorrection(eta, pt);}
 
-  Float_t GetMeasuredFraction(Float_t ptCutOff, Float_t eta = -1, Bool_t debug = kFALSE);
+  Float_t GetMeasuredFraction(Float_t ptCutOff, Float_t eta = -100, Bool_t debug = kFALSE);
 
   //void SetNEvents(Long64_t events) { fNEvents = events; }
 
@@ -88,7 +88,7 @@ protected:
   AliCorrectionMatrix2D* fVertexRecoCorrection;     //-> handles the vertex reconstruction efficiency, function of n_clustersITS and vtx_z
   AliCorrectionMatrix2D* fTriggerCorrection;       //-> handles the trigger efficiency, function of n_clustersITS and vtx_z
 
-  AliCorrectionMatrix2D* fTriggerBiasCorrection;          //-> MB to desired sample
+  AliCorrectionMatrix2D* fTriggerBiasCorrection;          //-> MB to desired sample, obsolete!!!
 
   //Long64_t fNEvents;
   //Long64_t fNTriggeredEvents;

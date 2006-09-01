@@ -236,7 +236,7 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, 
   // find eta borders, if eta is negative assume -0.8 ... 0.8
   Int_t etaBegin = 0;
   Int_t etaEnd = 0;
-  if (eta < 0)
+  if (eta < -99)
   {
     etaBegin = generated->GetYaxis()->FindBin(-0.8);
     etaEnd = generated->GetYaxis()->FindBin(0.8);
@@ -269,6 +269,9 @@ Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, 
   }
   else
     delete ptProj;
+
+  if (debug)
+    printf("AlidNdEtaCorrection::GetMeasuredFraction: pt cut off = %f, eta = %f, => fraction = %f\n", ptCutOff, eta, fraction);
 
   return fraction;
 }
