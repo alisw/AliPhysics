@@ -83,8 +83,8 @@ void InitPad()
   //gPad->SetTopMargin(0.13);
   //gPad->SetBottomMargin(0.1);
 
-  //gPad->SetGridx();
-  //gPad->SetGridy();
+  gPad->SetGridx();
+  gPad->SetGridy();
 }
 
 void InitPadCOLZ()
@@ -660,18 +660,18 @@ TH1F* Sigma2VertexGaussian()
   canvas->cd(1);
   tracks->Draw("COLZ");
 
-  TH1F* ratio = new TH1F("Sigma2Vertex_ratio", "Sigma2Vertex_ratio;n sigma;included", 10, 0.25, 5.25);
-  for (Double_t nSigma = 0.5; nSigma < 5.1; nSigma += 0.5)
+  TH1F* ratio = new TH1F("Sigma2Vertex_ratio", "Sigma2Vertex_ratio;n sigma;included", 50, 0.05, 5.05);
+  for (Double_t nSigma = 0.1; nSigma < 5.05; nSigma += 0.1)
     ratio->Fill(nSigma, Sigma2VertexCount(tracks, nSigma));
   ratio->SetMarkerStyle(21);
 
   canvas->cd(2);
   ratio->DrawCopy("P");
 
-  TH1F* ratio2 = new TH1F("Sigma2Vertex_ratio2", "Sigma2Vertex_ratio2;nSigma;% included 3 sigma / % included n sigma", 10, 0.25, 5.25);
+  TH1F* ratio2 = new TH1F("Sigma2Vertex_ratio2", "Sigma2Vertex_ratio2;nSigma;% included 3 sigma / % included n sigma", 50, 0.05, 5.05);
   Double_t sigma3 = Sigma2VertexCount(tracks, 3);
-  for (Double_t nSigma = 0.5; nSigma < 5.1; nSigma += 0.5)
-    ratio2->Fill(nSigma, sigma3 / Sigma2VertexCount(tracks, nSigma));
+  for (Double_t nSigma = 0.1; nSigma < 5.05; nSigma += 0.1)
+    ratio2->Fill(nSigma, sigma3 / ratio->GetBinContent(ratio->FindBin(nSigma)));
   ratio2->SetMarkerStyle(21);
 
   canvas->cd(3);
@@ -693,7 +693,7 @@ TH1F* Sigma2VertexSimulation()
     return;
   }
 
-  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included #sigma / % included n #sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
+  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included 3 #sigma / % included N#sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
 
   for (Int_t i=1; i<=sigmavertex->GetNbinsX(); ++i)
     ratio->SetBinContent(i, sigmavertex->GetBinContent(sigmavertex->GetXaxis()->FindBin(3)) / sigmavertex->GetBinContent(i));
@@ -760,7 +760,7 @@ void DrawdNdEtaDifferences()
 {
   TH1* hists[5];
 
-  TLegend* legend = new TLegend(0.6, 0.73, 0.98, 0.98);
+  TLegend* legend = new TLegend(0.3, 0.73, 0.70, 0.98);
   legend->SetFillColor(0);
 
   TCanvas* canvas = new TCanvas("DrawdNdEtaDifferences", "DrawdNdEtaDifferences", 1000, 500);
@@ -770,6 +770,7 @@ void DrawdNdEtaDifferences()
 
   for (Int_t i=0; i<5; ++i)
   {
+    hists[i] = 0;
     TFile* file = 0;
     TString title;
 
@@ -783,18 +784,23 @@ void DrawdNdEtaDifferences()
       default: return;
     }
 
-    hists[i] = (TH1*) file->Get("dndeta/dndeta_dNdEta_corrected_2");
-    hists[i]->SetTitle("a)");
+    if (file)
+    {
+      hists[i] = (TH1*) file->Get("dndeta/dndeta_dNdEta_corrected_2");
+      hists[i]->SetTitle("a)");
 
-    hists[i]->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
-    hists[i]->SetLineColor(i+1);
-    hists[i]->SetMarkerColor(i+1);
-    hists[i]->GetXaxis()->SetLabelOffset(0.015);
-    Prepare1DPlot(hists[i], kFALSE);
-    hists[i]->DrawCopy(((i > 0) ? "SAME" : ""));
+      Prepare1DPlot(hists[i], kFALSE);
+      hists[i]->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
+      hists[i]->SetLineColor(i+1);
+      hists[i]->SetMarkerColor(i+1);
+      hists[i]->GetXaxis()->SetLabelOffset(0.015);
+      hists[i]->GetYaxis()->SetTitleOffset(1.5);
+      gPad->SetLeftMargin(0.12);
+      hists[i]->DrawCopy(((i > 0) ? "SAME" : ""));
 
-    legend->AddEntry(hists[i], title);
-    hists[i]->SetTitle(title);
+      legend->AddEntry(hists[i], title);
+      hists[i]->SetTitle(title);
+    }
   }
   legend->Draw();
 
@@ -806,15 +812,17 @@ void DrawdNdEtaDifferences()
 
   for (Int_t i=1; i<5; ++i)
   {
-    legend2->AddEntry(hists[i]);
+    if (hists[i])
+    {
+      legend2->AddEntry(hists[i]);
 
-    hists[i]->Divide(hists[0]);
-    hists[i]->SetTitle("b)");
-    hists[i]->GetYaxis()->SetRangeUser(0.98, 1.02);
-    hists[i]->GetYaxis()->SetTitle("Ratio to standard composition");
-    hists[i]->GetYaxis()->SetTitleOffset(1.8);
-    hists[i]->DrawCopy(((i > 1) ? "SAME" : ""));
-
+      hists[i]->Divide(hists[0]);
+      hists[i]->SetTitle("b)");
+      hists[i]->GetYaxis()->SetRangeUser(0.98, 1.02);
+      hists[i]->GetYaxis()->SetTitle("Ratio to standard composition");
+      hists[i]->GetYaxis()->SetTitleOffset(1.8);
+      hists[i]->DrawCopy(((i > 1) ? "SAME" : ""));
+    }
   }
 
   legend2->Draw();
