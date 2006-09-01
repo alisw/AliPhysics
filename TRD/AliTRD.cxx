@@ -532,7 +532,6 @@ void AliTRD::CreateMaterials()
   // For Xe/CO2-gas-mixture 
   Float_t aXeCO2[3] = { 131.29   ,  12.0107 ,  15.9994  };
   Float_t zXeCO2[3] = {  54.0    ,   6.0    ,   8.0     };
-  // Move to number of atoms
   Float_t wXeCO2[3] = {   8.5    ,   1.5    ,   3.0     }; 
   // Xe-content of the Xe/CO2-mixture (85% / 15%) 
   Float_t fxc       = 0.85;
