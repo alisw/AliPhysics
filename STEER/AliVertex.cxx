@@ -27,37 +27,43 @@
 ClassImp(AliVertex)
 
 //--------------------------------------------------------------------------
-AliVertex::AliVertex() : TNamed() {
+AliVertex::AliVertex() :
+  TNamed(),
+  fSigma(0),
+  fNContributors(0)
+{
 //
 // Default Constructor, set everything to 0
 //
   for(Int_t k=0;k<3;k++) fPosition[k]   = 0;
-  fSigma = 0;
-  fNContributors=0;
 }
 
 //--------------------------------------------------------------------------
 AliVertex::AliVertex(Double_t position[3],Double_t dispersion,
-		Int_t nContributors): TNamed() {
+		     Int_t nContributors):
+  TNamed(),
+  fSigma(dispersion),
+  fNContributors(nContributors)
+{
   //
   // Standard Constructor
   //
 
   for(Int_t k=0;k<3;k++) fPosition[k]   = position[k];
-  fSigma         = dispersion;
-  fNContributors = nContributors;
   SetName("BaseVertex");
 
 }
 
 //--------------------------------------------------------------------------
-AliVertex::AliVertex(const AliVertex &source): TNamed(source) {
+AliVertex::AliVertex(const AliVertex &source):
+  TNamed(source),
+  fSigma(source.GetDispersion()),
+  fNContributors(source.GetNContributors())
+{
   //
   // Copy constructor
   //
   for(Int_t i=0;i<3;i++)fPosition[i] = source.fPosition[i];
-  fSigma = source.GetDispersion();
-  fNContributors = source.GetNContributors();
 }
 
 //--------------------------------------------------------------------------

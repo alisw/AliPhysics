@@ -60,6 +60,7 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha,
 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(const AliKalmanTrack& track) :
+  fX(0),
   fAlpha(track.GetAlpha())
 {
   //

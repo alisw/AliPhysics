@@ -22,13 +22,10 @@ class AliTrackPoint;
 class AliTracker : public TObject {
 public:
 
-  enum {kTrackInward, kTrackBack, kTrackRefit} Propagation_t; //type of propagation
+  enum Propagation_t {kTrackInward, kTrackBack, kTrackRefit}; //type of propagation
   
   AliTracker();
-  AliTracker(const AliTracker &atr): TObject(atr)
-    {Fatal("Copy ctor","Not Implemented!\n");}
-  // AliTracker & operator=(const AliTracker &)
-  //  {Fatal("= op","Not Implemented\n");return *this;}
+  AliTracker(const AliTracker &atr);
   virtual ~AliTracker(){}
   virtual Int_t Clusters2Tracks(AliESD *event)=0;
   virtual Int_t PropagateBack(AliESD *event)=0;

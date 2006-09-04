@@ -33,7 +33,8 @@ ClassImp(AliXMLCollection)
 //___________________________________________________________________________
   AliXMLCollection::AliXMLCollection() :
     TObject(),
-    fCollectionName(0)
+    fCollectionName(),
+    fout()
 {
   //Default constructor
 }

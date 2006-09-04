@@ -25,18 +25,24 @@
 ClassImp(AliStrLine)
 
 //________________________________________________________
-AliStrLine::AliStrLine() {
+AliStrLine::AliStrLine() :
+  TObject(),
+  fTpar(0),
+  fDebug(0)
+ {
   // Default constructor
   for(Int_t i=0;i<3;i++) {
     fP0[i] = 0.;
     fCd[i] = 0.;
   }
-  fTpar = 0.;
-  SetDebug();
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) {
+AliStrLine::AliStrLine(Double_t *point, Double_t *cd,Bool_t twopoints) :
+  TObject(),
+  fTpar(0),
+  fDebug(0)
+{
   // Standard constructor
   // if twopoints is true:  point and cd are the 3D coordinates of
   //                        two points defininig the straight line

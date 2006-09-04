@@ -86,6 +86,7 @@ AliESD::AliESD(const AliESD& esd):
   fT0zVertex(esd.fT0zVertex),
   fSPDVertex(esd.fSPDVertex),
   fPrimaryVertex(esd.fPrimaryVertex),
+  fSPDMult(esd.fSPDMult),
   fT0timeStart(esd.fT0timeStart),
   fTracks(*((TClonesArray*)esd.fTracks.Clone())),
   fHLTConfMapTracks(*((TClonesArray*)esd.fHLTConfMapTracks.Clone())),
@@ -108,6 +109,56 @@ AliESD::AliESD(const AliESD& esd):
     fT0time[i] = esd.fT0time[i];
     fT0amplitude[i] = esd.fT0amplitude[i];
   }
+}
+
+//______________________________________________________________________________
+AliESD & AliESD::operator=(const AliESD& source) {
+
+  // Assignment operator
+
+  if(&source == this) return *this;
+
+  fEventNumber = source.fEventNumber;
+  fRunNumber = source.fRunNumber;
+  fTriggerMask = source.fTriggerMask;
+  fTriggerCluster = source.fTriggerCluster;
+  fRecoVersion = source.fRecoVersion;
+  fMagneticField = source.fMagneticField;
+  fZDCN1Energy = source.fZDCN1Energy;
+  fZDCP1Energy = source.fZDCP1Energy;
+  fZDCN2Energy = source.fZDCN2Energy;
+  fZDCP2Energy = source.fZDCP2Energy;
+  fZDCEMEnergy = source.fZDCEMEnergy;
+  fZDCParticipants = source.fZDCParticipants;
+  fT0zVertex = source.fT0zVertex;
+  fSPDVertex = source.fSPDVertex;
+  fPrimaryVertex = source.fPrimaryVertex;
+  fSPDMult = source.fSPDMult;
+  fT0timeStart = source.fT0timeStart;
+  fTracks = *((TClonesArray*)source.fTracks.Clone());
+  fHLTConfMapTracks = *((TClonesArray*)source.fHLTConfMapTracks.Clone());
+  fHLTHoughTracks = *((TClonesArray*)source.fHLTHoughTracks.Clone());
+  fMuonTracks = *((TClonesArray*)source.fMuonTracks.Clone());
+  fPmdTracks = *((TClonesArray*)source.fPmdTracks.Clone());
+  fTrdTracks = *((TClonesArray*)source.fTrdTracks.Clone());
+  fV0s = *((TClonesArray*)source.fV0s.Clone());
+  fCascades = *((TClonesArray*)source.fCascades.Clone());
+  fKinks = *((TClonesArray*)source.fKinks.Clone());
+  fV0MIs = *((TClonesArray*)source.fV0MIs.Clone());
+  fCaloClusters = *((TClonesArray*)source.fCaloClusters.Clone());
+  fEMCALClusters = source.fEMCALClusters;
+  fFirstEMCALCluster = source.fFirstEMCALCluster;
+  fPHOSClusters = source.fPHOSClusters;
+  fFirstPHOSCluster = source.fFirstPHOSCluster;
+  fESDFMD = source.fESDFMD;
+
+  for (Int_t i=0; i<24; i++) {
+    fT0time[i] = source.fT0time[i];
+    fT0amplitude[i] = source.fT0amplitude[i];
+  }
+
+  return *this;
+
 }
 
 

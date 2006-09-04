@@ -271,6 +271,7 @@ TTreeStream::TTreeStream(const char *treename):
   fBranches(0),
   fTree(new TTree(treename, treename)),
   fCurrentIndex(0),
+  fId(0),
   fNextName(),
   fNextNameCounter(),
   fStatus(0)

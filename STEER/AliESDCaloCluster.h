@@ -26,6 +26,7 @@ public:
 
   AliESDCaloCluster();
   AliESDCaloCluster(const AliESDCaloCluster& clus);
+  AliESDCaloCluster & operator=(const AliESDCaloCluster& source);
   virtual ~AliESDCaloCluster();
 
   void SetID(Int_t id) {fID = id;}

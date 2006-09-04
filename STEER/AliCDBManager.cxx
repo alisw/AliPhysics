@@ -73,10 +73,15 @@ void AliCDBManager::Destroy() {
 
 //_____________________________________________________________________________
 AliCDBManager::AliCDBManager():
-	fDefaultStorage(NULL),
-	fDrainStorage(NULL),
-	fCache(kTRUE),
-	fRun(-1)
+  TObject(),
+  fFactories(),
+  fActiveStorages(),
+  fSpecificStorages(),
+  fDefaultStorage(NULL),
+  fDrainStorage(NULL),
+  fEntryCache(),
+  fCache(kTRUE),
+  fRun(-1)
 {
 // default constuctor
 	fFactories.SetOwner(1);
@@ -689,7 +694,8 @@ void AliCDBManager::QueryCDB() {
 ///////////////////////////////////////////////////////////
 
 AliCDBParam::AliCDBParam():
-fType(), fURI()
+  fType(),
+  fURI()
 {
 // constructor
 

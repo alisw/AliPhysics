@@ -99,6 +99,9 @@ class AliCDBManager: public TObject {
  private:
 		
 	AliCDBManager();
+	AliCDBManager(const AliCDBManager & source);
+	AliCDBManager & operator=(const AliCDBManager & source);
+
 	static AliCDBManager* fgInstance; // AliCDBManager instance
 	
 	AliCDBStorage* GetActiveStorage(const AliCDBParam* param);

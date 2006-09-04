@@ -26,39 +26,41 @@
 ClassImp(AliDetectorTag)
 
 //___________________________________________________________________________
-  AliDetectorTag::AliDetectorTag() :
-    TObject(),
-    fITS(kFALSE),
-    fTPC(kFALSE),
-    fTRD(kFALSE),
-    fTOF(kFALSE),
-    fHMPID(kFALSE),
-    fPHOS(kFALSE),
-    fZDC(kFALSE),
-    fMUON(kFALSE),
-    fPMD(kFALSE),
-    fEMCAL(kFALSE),
-    fVZERO(kFALSE),
-    fTZERO(kFALSE)
+AliDetectorTag::AliDetectorTag() :
+  TObject(),
+  fITS(kFALSE),
+  fTPC(kFALSE),
+  fTRD(kFALSE),
+  fTOF(kFALSE),
+  fHMPID(kFALSE),
+  fPHOS(kFALSE),
+  fZDC(kFALSE),
+  fMUON(kFALSE),
+  fPMD(kFALSE),
+  fEMCAL(kFALSE),
+  fVZERO(kFALSE),
+  fTZERO(kFALSE)
 {
   // Default constructor
 }
 
 //___________________________________________________________________________
-AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) : TObject(detTag) {
+AliDetectorTag::AliDetectorTag(const AliDetectorTag & detTag) :
+  TObject(detTag),
+  fITS(detTag.fITS),
+  fTPC(detTag.fTPC),
+  fTRD(detTag.fTRD),
+  fTOF(detTag.fTOF),
+  fHMPID(detTag.fHMPID),
+  fPHOS(detTag.fPHOS),
+  fZDC(detTag.fZDC),
+  fMUON(detTag.fMUON),
+  fPMD(detTag.fPMD),
+  fEMCAL(detTag.fEMCAL),
+  fVZERO(detTag.fVZERO),
+  fTZERO(detTag.fTZERO)
+ {
   // DetectorTag copy constructor
-  SetITS();
-  SetTPC();
-  SetTRD();
-  SetTOF();
-  SetHMPID();
-  SetPHOS();
-  SetZDC();
-  SetMUON();
-  SetPMD();
-  SetEMCAL();
-  SetVZERO();
-  SetTZERO();
 }
 
 //___________________________________________________________________________
@@ -67,18 +69,18 @@ AliDetectorTag & AliDetectorTag::operator=(const AliDetectorTag &detTag) {
   if (this != &detTag) {
     TObject::operator=(detTag);
     
-    SetITS();
-    SetTPC();
-    SetTRD();
-    SetTOF();
-    SetHMPID();
-    SetPHOS();
-    SetZDC();
-    SetMUON();
-    SetPMD();
-    SetEMCAL();
-    SetVZERO();
-    SetTZERO();
+    fITS = detTag.fITS;
+    fTPC = detTag.fTPC;
+    fTRD = detTag.fTRD;
+    fTOF = detTag.fTOF;
+    fHMPID = detTag.fHMPID;
+    fPHOS = detTag.fPHOS;
+    fZDC = detTag.fZDC;
+    fMUON = detTag.fMUON;
+    fPMD = detTag.fPMD;
+    fEMCAL = detTag.fEMCAL;
+    fVZERO = detTag.fVZERO;
+    fTZERO = detTag.fTZERO;
   }
   return *this;
 }

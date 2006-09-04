@@ -35,8 +35,13 @@ ClassImp(AliCDBPath)
 
 //_____________________________________________________________________________
 AliCDBPath::AliCDBPath() :
-fIsValid(kTRUE),
-fIsWildcard(kFALSE)
+  TObject(),
+  fPath(""),
+  fLevel0(""),
+  fLevel1(""),
+  fLevel2(""),
+  fIsValid(kTRUE),
+  fIsWildcard(kFALSE)
 {
 // default constructor
 
@@ -44,8 +49,13 @@ fIsWildcard(kFALSE)
 
 //_____________________________________________________________________________
 AliCDBPath::AliCDBPath(const AliCDBPath& other):
-TObject(other),
-fPath(other.fPath)
+  TObject(other),
+  fPath(other.fPath),
+  fLevel0(""),
+  fLevel1(""),
+  fLevel2(""),
+  fIsValid(other.fIsValid),
+  fIsWildcard(other.fIsWildcard)
 {
 // constructor
 	Init();
@@ -56,9 +66,13 @@ fPath(other.fPath)
 //_____________________________________________________________________________
 AliCDBPath::AliCDBPath(const char* level0, const char* level1,
 	const char* level2):
-fLevel0(level0), 
-fLevel1(level1), 
-fLevel2(level2)
+  TObject(),
+  fPath(""),
+  fLevel0(level0), 
+  fLevel1(level1), 
+  fLevel2(level2),
+  fIsValid(kTRUE),
+  fIsWildcard(kFALSE)
 {
 // constructor
 
@@ -84,7 +98,13 @@ fLevel2(level2)
 
 //_____________________________________________________________________________
 AliCDBPath::AliCDBPath(const char* path):
-fPath(path)
+  TObject(),
+  fPath(path),
+  fLevel0(""),
+  fLevel1(""),
+  fLevel2(""),
+  fIsValid(kTRUE),
+  fIsWildcard(kFALSE)
 {
 // constructor
 
@@ -94,7 +114,13 @@ fPath(path)
 
 //_____________________________________________________________________________
 AliCDBPath::AliCDBPath(const TString& path):
-fPath(path)
+  TObject(),
+  fPath(path),
+  fLevel0(""),
+  fLevel1(""),
+  fLevel2(""),
+  fIsValid(kTRUE),
+  fIsWildcard(kFALSE)
 {
 	Init();
 	InitPath();

@@ -43,20 +43,34 @@ private:
   ClassDef(AliV0vertexer,1)  // V0 verterxer 
 };
 
-inline AliV0vertexer::AliV0vertexer() {
-  fChi2max=33.; 
-  fDNmin=0.015; fDPmin=0.015;
-  fDCAmax=0.01; fCPAmax=0.025; 
-  fRmin=0.5;    fRmax=2.5; 
-  fX=fY=fZ=0.;
+inline AliV0vertexer::AliV0vertexer() :
+  TObject(),
+  fChi2max(33.), 
+  fDNmin(0.015),
+  fDPmin(0.015),
+  fDCAmax(0.01),
+  fCPAmax(0.025), 
+  fRmin(0.5),
+  fRmax(2.5), 
+  fX(0),
+  fY(0),
+  fZ(0)
+{
 }
 
-inline AliV0vertexer::AliV0vertexer(const Double_t cuts[7]) {
-  fChi2max=cuts[0]; 
-  fDNmin=cuts[1];   fDPmin=cuts[2];
-  fDCAmax=cuts[3];  fCPAmax=cuts[4];
-  fRmin=cuts[5];    fRmax=cuts[6]; 
-  fX=fY=fZ=0.;
+inline AliV0vertexer::AliV0vertexer(const Double_t cuts[7]) :
+  TObject(),
+  fChi2max(cuts[0]), 
+  fDNmin(cuts[1]),
+  fDPmin(cuts[2]),
+  fDCAmax(cuts[3]),
+  fCPAmax(cuts[4]),
+  fRmin(cuts[5]),
+  fRmax(cuts[6]), 
+  fX(0),
+  fY(0),
+  fZ(0)
+{
 }
 
 inline void AliV0vertexer::SetCuts(const Double_t cuts[7]) {

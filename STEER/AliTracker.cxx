@@ -34,6 +34,7 @@ const AliMagF *AliTracker::fgkFieldMap=0;
 ClassImp(AliTracker)
 
 AliTracker::AliTracker():
+  TObject(),
   fX(0),
   fY(0),
   fZ(0),
@@ -47,6 +48,23 @@ AliTracker::AliTracker():
   if (!fgkFieldMap) AliWarning("Field map is not set. Call AliTracker::SetFieldMap before creating a tracker!");
 }
 
+//__________________________________________________________________________
+AliTracker::AliTracker(const AliTracker &atr):
+  TObject(atr),
+  fX(atr.fX),
+  fY(atr.fY),
+  fZ(atr.fZ),
+  fSigmaX(atr.fSigmaX),
+  fSigmaY(atr.fSigmaY),
+  fSigmaZ(atr.fSigmaZ)
+{
+  //--------------------------------------------------------------------
+  // The default constructor.
+  //--------------------------------------------------------------------
+  if (!fgkFieldMap) AliWarning("Field map is not set. Call AliTracker::SetFieldMap before creating a tracker!");
+}
+
+//__________________________________________________________________________
 void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
   //--------------------------------------------------------------------
   //This passes the field map to the reconstruction.

@@ -106,6 +106,10 @@ protected:
 	TString fType;    //! Local, Grid: base folder name - Dump: file name
 	TString fBaseFolder;    //! Local, Grid: base folder name - Dump: file name
 
+ private:
+	AliCDBStorage(const AliCDBStorage & source);
+	AliCDBStorage & operator=(const AliCDBStorage & source);
+
 	ClassDef(AliCDBStorage, 0);
 };
 

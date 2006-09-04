@@ -3,18 +3,26 @@
 ClassImp(AliMultiplicity)
 
 //______________________________________________________________________
-AliMultiplicity::AliMultiplicity():TObject() {
+AliMultiplicity::AliMultiplicity():
+  TObject(),
+  fNtracks(0),
+  fTh(0),
+  fPhi(0),
+  fDeltPhi(0)
+
+{
   // Default Constructor
-  fNtracks = 0;
-  fTh = 0;
-  fPhi = 0;
-  fDeltPhi = 0;
 }
 
 //______________________________________________________________________
-AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df):TObject() {
+AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df):
+  TObject(),
+  fNtracks(ntr),
+  fTh(0),
+  fPhi(0),
+  fDeltPhi(0)
+{
 // Standard constructor
-  fNtracks = ntr;
   if(ntr>0){
     fTh = new Float_t [ntr];
     fPhi = new Float_t [ntr];
@@ -25,15 +33,16 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
       fDeltPhi[i]=df[i];
     }
   }
-  else {
-    fTh = 0;
-    fPhi = 0;
-    fDeltPhi = 0;
-  }
 }
 
 //______________________________________________________________________
-AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):TObject(m){
+AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
+  TObject(m),
+  fNtracks(m.fNtracks),
+  fTh(0),
+  fPhi(0),
+  fDeltPhi(0)
+{
   // copy constructor
 
   Duplicate(m);

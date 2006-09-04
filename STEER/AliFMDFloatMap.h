@@ -20,10 +20,10 @@
 class AliFMDFloatMap : public AliFMDMap
 {
 public:
-  AliFMDFloatMap(size_t  maxDet = kMaxDetectors, 
-		 size_t  maxRing= kMaxRings, 
-		 size_t  maxSec = kMaxSectors, 
-		 size_t  maxStr = kMaxStrips);
+  AliFMDFloatMap(Int_t  maxDet = kMaxDetectors, 
+		 Int_t  maxRing= kMaxRings, 
+		 Int_t  maxSec = kMaxSectors, 
+		 Int_t  maxStr = kMaxStrips);
   AliFMDFloatMap(const AliFMDFloatMap& o);
   virtual ~AliFMDFloatMap() { delete [] fData; }
   AliFMDFloatMap& operator=(const AliFMDFloatMap& o);
@@ -37,9 +37,9 @@ public:
 				    UShort_t sec,
 				    UShort_t str) const;
 protected:
-  size_t   fTotal;  // Total number of entries
+  Int_t   fTotal;  // Total number of entries
   Float_t* fData;   //[fTotal]
-  ClassDef(AliFMDFloatMap,1) // Map of floats
+  ClassDef(AliFMDFloatMap,2) // Map of floats
 };
 
 #endif

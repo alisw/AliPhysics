@@ -92,6 +92,7 @@ AliAlignObj** AliAlignObj::fgAlignObjs[kLastLayer - kFirstLayer] = {
 
 //_____________________________________________________________________________
 AliAlignObj::AliAlignObj():
+  fVolPath(),
   fVolUID(0)
 {
   // default constructor
@@ -99,29 +100,32 @@ AliAlignObj::AliAlignObj():
 }
 
 //_____________________________________________________________________________
-AliAlignObj::AliAlignObj(const char* volpath, UShort_t voluid) : TObject()
+AliAlignObj::AliAlignObj(const char* volpath, UShort_t voluid) :
+  TObject(),
+  fVolPath(volpath),
+  fVolUID(voluid)
 {
   // standard constructor
   //
-  fVolPath=volpath;
-  fVolUID=voluid;
 }
 
-AliAlignObj::AliAlignObj(const char* volpath, ELayerID detId, Int_t volId) : TObject()
+AliAlignObj::AliAlignObj(const char* volpath, ELayerID detId, Int_t volId) :
+  TObject(),
+  fVolPath(volpath),
+  fVolUID(0)
 {
   // standard constructor
   // 
-  fVolPath=volpath;
   SetVolUID(detId,volId); 
 }
 
 //_____________________________________________________________________________
 AliAlignObj::AliAlignObj(const AliAlignObj& theAlignObj) :
-  TObject(theAlignObj)
+  TObject(theAlignObj),
+  fVolPath(theAlignObj.GetVolPath()),
+  fVolUID(theAlignObj.GetVolUID())
 {
   //copy constructor
-  fVolPath = theAlignObj.GetVolPath();
-  fVolUID = theAlignObj.GetVolUID();
 }
 
 //_____________________________________________________________________________

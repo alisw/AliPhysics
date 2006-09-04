@@ -46,19 +46,36 @@ private:
   ClassDef(AliCascadeVertexer,1)  // cascade verterxer 
 };
 
-inline AliCascadeVertexer::AliCascadeVertexer() {
- fChi2max=33.; 
- fDV0min=0.015; fMassWin=0.05; fDBachMin=0.015;
- fDCAmax=0.01;  fCPAmax=0.025; 
- fRmin=0.5;     fRmax=2.5; 
+inline AliCascadeVertexer::AliCascadeVertexer() :
+  TObject(),
+  fChi2max(33.), 
+  fDV0min(0.015),
+  fMassWin(0.05),
+  fDBachMin(0.015),
+  fDCAmax(0.01),
+  fCPAmax(0.025), 
+  fRmin(0.5),
+  fRmax(2.5), 
+  fX(0),
+  fY(0),
+  fZ(0)
+{
 }
 
-inline AliCascadeVertexer::AliCascadeVertexer(const Double_t cuts[8]) {
-  fChi2max=cuts[0]; 
-  fDV0min=cuts[1];   fMassWin=cuts[2]; fDBachMin=cuts[3];
-  fDCAmax=cuts[4];   fCPAmax=cuts[5];
-  fRmin=cuts[6];     fRmax=cuts[7]; 
-  fX=fY=fZ=0.;
+inline AliCascadeVertexer::AliCascadeVertexer(const Double_t cuts[8]) :
+  TObject(),
+  fChi2max(cuts[0]), 
+  fDV0min(cuts[1]),
+  fMassWin(cuts[2]),
+  fDBachMin(cuts[3]),
+  fDCAmax(cuts[4]),
+  fCPAmax(cuts[5]),
+  fRmin(cuts[6]),
+  fRmax(cuts[7]), 
+  fX(0),
+  fY(0),
+  fZ(0)
+{
 }
 
 inline void AliCascadeVertexer::SetCuts(const Double_t cuts[8]) {

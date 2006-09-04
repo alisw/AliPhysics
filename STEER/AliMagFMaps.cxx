@@ -73,6 +73,7 @@ AliMagFMaps::AliMagFMaps(const char *name, const char *title, Int_t integ,
 AliMagFMaps::AliMagFMaps(const AliMagFMaps &magf):
   AliMagFC(magf),
   fSolenoid(0),
+  fSolenoidUser(0),
   fL3Option(0)
 {
   //

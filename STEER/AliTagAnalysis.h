@@ -47,6 +47,10 @@ class AliTagAnalysis : public TObject {
     
   static TChain *fgChain; //tag chain 
   TChain *fChain; //tag chain 
+
+ private:
+  AliTagAnalysis(const AliTagAnalysis & source);
+  AliTagAnalysis & operator=(const AliTagAnalysis & source);
        
   ClassDef(AliTagAnalysis,0)  
 };

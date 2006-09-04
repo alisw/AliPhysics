@@ -46,6 +46,8 @@ class AliPreprocessor : public TNamed
     UInt_t fEndTime;    // endtime of current run
 
   private:
+    AliPreprocessor(const AliPreprocessor & source);
+    AliPreprocessor & operator=(const AliPreprocessor & source);
     AliShuttleInterface* fShuttle;   // link to Shuttle
 
     ClassDef(AliPreprocessor, 0);

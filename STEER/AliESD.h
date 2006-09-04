@@ -211,6 +211,7 @@ public:
    
 protected:
   AliESD(const AliESD&);
+  AliESD &operator=(const AliESD& source);
 
   // Event Identification
   Int_t        fEventNumber;     // Event Number

@@ -62,14 +62,14 @@ AliESDv0::AliESDv0() :
 }
 
 AliESDv0::AliESDv0(const AliESDv0& rAliESDv0) :
-  TObject(rAliESDv0)
+  TObject(rAliESDv0),
+  fPdgCode(rAliESDv0.fPdgCode),
+  fEffMass(rAliESDv0.fEffMass),
+  fDcaV0Daughters(rAliESDv0.fDcaV0Daughters),
+  fChi2V0(rAliESDv0.fChi2V0),
+  fNidx(rAliESDv0.fNidx),
+  fPidx(rAliESDv0.fPidx)
 {
-  fPdgCode        = rAliESDv0.fPdgCode;
-  fEffMass        = rAliESDv0.fEffMass;
-  fDcaV0Daughters = rAliESDv0.fDcaV0Daughters;
-  fChi2V0         = rAliESDv0.fChi2V0;
-  fNidx           = rAliESDv0.fNidx;
-  fPidx           = rAliESDv0.fPidx;
 
   for (int i=0; i<3; i++) {
     fPos[i]  = rAliESDv0.fPos[i];

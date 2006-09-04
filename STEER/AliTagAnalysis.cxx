@@ -45,7 +45,9 @@ TChain *AliTagAnalysis::fgChain = 0;
 //___________________________________________________________________________
 AliTagAnalysis::AliTagAnalysis(): 
   TObject(),
-  ftagresult(0)
+  ftagresult(0x0),
+  fTagDirName(),
+  fChain(0x0)
 {
   //Default constructor for a AliTagAnalysis
 }

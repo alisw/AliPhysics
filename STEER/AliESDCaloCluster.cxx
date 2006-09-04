@@ -33,6 +33,7 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fID(0),
   fClusterType(-1),
   fEMCALCluster(kFALSE),
+  fPHOSCluster(kFALSE),
   fEnergy(-1),
   fDispersion(-1),
   fChi2(-1),
@@ -43,9 +44,9 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fNExMax(0),
   fEmcCpvDistance(9999),
   fNumberOfDigits(0),
-  fDigitAmplitude(0),
-  fDigitTime(0),
-  fDigitIndex(0)
+  fDigitAmplitude(0x0),
+  fDigitTime(0x0),
+  fDigitIndex(0x0)
 {
   //
   // The default ESD constructor 
@@ -60,6 +61,7 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fID(clus.fID),
   fClusterType(clus.fClusterType),
   fEMCALCluster(clus.fEMCALCluster),
+  fPHOSCluster(clus.fPHOSCluster),
   fEnergy(clus.fEnergy),
   fDispersion(clus.fDispersion),
   fChi2(clus.fChi2),
@@ -69,7 +71,10 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fM11(clus.fM11),
   fNExMax(clus.fNExMax),
   fEmcCpvDistance(clus.fEmcCpvDistance),
-  fNumberOfDigits(clus.fNumberOfDigits)
+  fNumberOfDigits(clus.fNumberOfDigits),
+  fDigitAmplitude(0x0),
+  fDigitTime(0x0),
+  fDigitIndex(0x0)
 {
   //
   // The copy constructor 
@@ -79,10 +84,6 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fGlobalPos[2] = clus.fGlobalPos[2];
 
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = clus.fPID[i];
-
-  fDigitAmplitude = 0x0;
-  fDigitTime = 0x0;
-  fDigitIndex = 0x0;
 
   if (clus.fNumberOfDigits > 0) {
     if (clus.fDigitAmplitude) {
@@ -101,6 +102,59 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
 	fDigitIndex[i]=clus.fDigitIndex[i];
     }
   }
+}
+
+//_______________________________________________________________________
+AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
+{
+  // assignment operator
+
+  if(&source == this) return *this;
+
+  fID = source.fID;
+  fClusterType = source.fClusterType;
+  fEMCALCluster = source.fEMCALCluster;
+  fPHOSCluster = source.fPHOSCluster;
+  fEnergy = source.fEnergy;
+  fDispersion = source.fDispersion;
+  fChi2 = source.fChi2;
+  fPrimaryIndex = source.fPrimaryIndex;
+  fM20 = source.fM20;
+  fM02 = source.fM02;
+  fM11 = source.fM11;
+  fNExMax = source.fNExMax;
+  fEmcCpvDistance = source.fEmcCpvDistance;
+  fNumberOfDigits = source.fNumberOfDigits;
+  delete fDigitAmplitude; fDigitAmplitude=0x0;
+  delete fDigitTime; fDigitTime = 0x0;
+  delete fDigitIndex; fDigitIndex = 0x0;
+
+  fGlobalPos[0] = source.fGlobalPos[0];
+  fGlobalPos[1] = source.fGlobalPos[1];
+  fGlobalPos[2] = source.fGlobalPos[2];
+
+  for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
+
+  if (source.fNumberOfDigits > 0) {
+    if (source.fDigitAmplitude) {
+      fDigitAmplitude = new UShort_t[source.fNumberOfDigits];
+      for (Int_t i=0; i<source.fNumberOfDigits; i++)
+	fDigitAmplitude[i]=source.fDigitAmplitude[i];
+    }
+    if (source.fDigitTime) {
+      fDigitTime = new UShort_t[source.fNumberOfDigits];
+      for (Int_t i=0; i<source.fNumberOfDigits; i++)
+	fDigitTime[i]=source.fDigitTime[i];
+    }
+    if (source.fDigitIndex) {
+      fDigitIndex = new UShort_t[source.fNumberOfDigits];
+      for (Int_t i=0; i<source.fNumberOfDigits; i++)
+	fDigitIndex[i]=source.fDigitIndex[i];
+    }
+  }
+
+  return *this;
+
 }
 
 

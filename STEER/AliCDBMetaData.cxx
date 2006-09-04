@@ -35,7 +35,8 @@ fObjectClassName(""),
 fResponsible(""), 	
 fBeamPeriod(0),	
 fAliRootVersion(""),
-fComment("")	
+fComment(""),
+fProperties()	
 {
 // default constructor
 

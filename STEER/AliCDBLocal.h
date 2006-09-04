@@ -32,6 +32,8 @@ protected:
 
 private:
 
+	AliCDBLocal(const AliCDBLocal & source);
+	AliCDBLocal & operator=(const AliCDBLocal & source);
 	AliCDBLocal(const char* baseDir);
 	virtual ~AliCDBLocal();
 	

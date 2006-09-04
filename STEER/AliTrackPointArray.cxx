@@ -30,41 +30,46 @@
 ClassImp(AliTrackPointArray)
 
 //______________________________________________________________________________
-AliTrackPointArray::AliTrackPointArray()
+AliTrackPointArray::AliTrackPointArray() :
+  TObject(),
+  fNPoints(0),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fSize(0),
+  fCov(0),
+  fVolumeID(0)
 {
-  fNPoints = fSize = 0;
-  fX = fY = fZ = 0;
-  fVolumeID = 0;
-  fCov = 0;
 }
 
 //______________________________________________________________________________
 AliTrackPointArray::AliTrackPointArray(Int_t npoints):
-  fNPoints(npoints)
+  TObject(),
+  fNPoints(npoints),
+  fX(new Float_t[npoints]),
+  fY(new Float_t[npoints]),
+  fZ(new Float_t[npoints]),
+  fSize(6*npoints),
+  fCov(new Float_t[fSize]),
+  fVolumeID(new UShort_t[npoints])
 {
   // Constructor
   //
-  fSize = 6*npoints;
-  fX = new Float_t[npoints];
-  fY = new Float_t[npoints];
-  fZ = new Float_t[npoints];
-  fVolumeID = new UShort_t[npoints];
-  fCov = new Float_t[fSize];
 }
 
 //______________________________________________________________________________
 AliTrackPointArray::AliTrackPointArray(const AliTrackPointArray &array):
-  TObject(array)
+  TObject(array),
+  fNPoints(array.fNPoints),
+  fX(new Float_t[fNPoints]),
+  fY(new Float_t[fNPoints]),
+  fZ(new Float_t[fNPoints]),
+  fSize(array.fSize),
+  fCov(new Float_t[fSize]),
+  fVolumeID(new UShort_t[fNPoints])
 {
   // Copy constructor
   //
-  fNPoints = array.fNPoints;
-  fSize = array.fSize;
-  fX = new Float_t[fNPoints];
-  fY = new Float_t[fNPoints];
-  fZ = new Float_t[fNPoints];
-  fVolumeID = new UShort_t[fNPoints];
-  fCov = new Float_t[fSize];
   memcpy(fX,array.fX,fNPoints*sizeof(Float_t));
   memcpy(fY,array.fY,fNPoints*sizeof(Float_t));
   memcpy(fZ,array.fZ,fNPoints*sizeof(Float_t));
@@ -150,18 +155,26 @@ Bool_t AliTrackPointArray::HasVolumeID(UShort_t volid) const
 ClassImp(AliTrackPoint)
 
 //______________________________________________________________________________
-AliTrackPoint::AliTrackPoint()
+AliTrackPoint::AliTrackPoint() :
+  TObject(),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fVolumeID(0)
 {
   // Default constructor
   //
-  fX = fY = fZ = 0;
-  fVolumeID = 0;
   memset(fCov,0,6*sizeof(Float_t));
 }
 
 
 //______________________________________________________________________________
-AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid)
+AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid) :
+  TObject(),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fVolumeID(0)
 {
   // Constructor
   //
@@ -170,7 +183,12 @@ AliTrackPoint::AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov
 }
 
 //______________________________________________________________________________
-AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid)
+AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid) :
+  TObject(),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fVolumeID(0)
 {
   // Constructor
   //
@@ -180,7 +198,11 @@ AliTrackPoint::AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t vo
 
 //______________________________________________________________________________
 AliTrackPoint::AliTrackPoint(const AliTrackPoint &p):
-  TObject(p)
+  TObject(p),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fVolumeID(0)
 {
   // Copy constructor
   //

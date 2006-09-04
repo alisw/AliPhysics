@@ -102,6 +102,9 @@ class AliVertexerTracks : public TObject {
   // fAlgo=5 finds the average point among DCA points of all pairs of tracks
   //         approximated as straight lines 
 
+ private:
+  AliVertexerTracks(const AliVertexerTracks & source);
+  AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
   ClassDef(AliVertexerTracks,4) // 3D Vertexing with ESD tracks 
 };

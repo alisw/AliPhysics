@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.4  2006/08/08 14:20:49  jgrosseo
+Update to shuttle classes (Alberto)
+
+- Possibility to set the full object's path in the Preprocessor's and
+Shuttle's  Store functions
+- Possibility to extend the object's run validity in the same classes
+("startValidity" and "validityInfinite" parameters)
+- Implementation of the StoreReferenceData function to store reference
+data in a dedicated CDB storage.
+
 Revision 1.3  2006/07/11 12:42:43  jgrosseo
 adding parameters for extended validity range of data produced by preprocessor
 
@@ -83,6 +93,9 @@ ClassImp(AliPreprocessor)
 //______________________________________________________________________________________________
 AliPreprocessor::AliPreprocessor(const char* detector, AliShuttleInterface* shuttle) :
   TNamed(detector, ""),
+  fRun(-1),
+  fStartTime(0),
+  fEndTime(0),
   fShuttle(shuttle)
 {
 	SetTitle(Form("AliPreprocessor for %s subdetector.", detector));

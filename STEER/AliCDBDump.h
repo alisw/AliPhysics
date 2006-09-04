@@ -35,6 +35,8 @@ protected:
 
 private:
 
+	AliCDBDump(const AliCDBDump & source);
+	AliCDBDump & operator=(const AliCDBDump & source);
 	AliCDBDump(const char* dbFile, Bool_t readOnly);
 	virtual ~AliCDBDump();	
 

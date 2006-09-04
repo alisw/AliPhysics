@@ -39,23 +39,22 @@ AliFMDFloatMap::AliFMDFloatMap(const AliFMDFloatMap& other)
               other.fMaxRings,
               other.fMaxSectors,
               other.fMaxStrips),
-    fData(0)
+    fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
+    fData(new Float_t[fTotal])
 {
   // Copy constructor
-  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-  fData  = new Float_t[fTotal];
-  for (size_t i = 0; i < fMaxDetectors * fMaxRings 
-	 * fMaxSectors * fMaxStrips; i++)
+  for (Int_t i = 0; i < fTotal; i++)
     fData[i] = other.fData[i];
 }
 
 //__________________________________________________________
-AliFMDFloatMap::AliFMDFloatMap(size_t maxDet,
-			       size_t maxRing,
-			       size_t maxSec,
-			       size_t maxStr)
+AliFMDFloatMap::AliFMDFloatMap(Int_t maxDet,
+			       Int_t maxRing,
+			       Int_t maxSec,
+			       Int_t maxStr)
   : AliFMDMap(maxDet, maxRing, maxSec, maxStr),
-    fData(0)
+    fTotal(fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips),
+    fData(new Float_t[fTotal])
 {
   // Constructor.
   // Parameters:
@@ -63,8 +62,6 @@ AliFMDFloatMap::AliFMDFloatMap(size_t maxDet,
   //	maxRing	Maximum number of rings per detector
   //	maxSec	Maximum number of sectors per ring
   //	maxStr	Maximum number of strips per sector
-  fTotal = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-  fData  = new Float_t[fTotal];
   Reset();
 }
 
@@ -80,7 +77,7 @@ AliFMDFloatMap::operator=(const AliFMDFloatMap& other)
   fTotal        = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
   if (fData) delete [] fData;
   fData = new Float_t[fTotal];
-  for (size_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
   return *this;
 }
 
@@ -89,7 +86,7 @@ void
 AliFMDFloatMap::Reset(const Float_t& val)
 {
   // Reset map to val
-  for (size_t i = 0; i < fTotal; i++) fData[i] = val;
+  for (Int_t i = 0; i < fTotal; i++) fData[i] = val;
 }
 
 //__________________________________________________________

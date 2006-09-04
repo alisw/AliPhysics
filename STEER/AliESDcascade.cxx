@@ -69,7 +69,9 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
 			     const AliExternalTrackParam &t, Int_t i) : 
   AliESDv0(v),
   fPdgCode(kXiMinus),
+  fEffMass(-1),
   fChi2Xi(1.e+33),
+  fDcaXiDaughters(-1),
   fBachIdx(i)
 {
   //---------------------------------------------------------------------------------------------
@@ -132,14 +134,14 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
 }
 
 AliESDcascade::AliESDcascade(const AliESDcascade& cas) :
-  AliESDv0(cas)
+  AliESDv0(cas),
+  fPdgCode(cas.fPdgCode),
+  fEffMass(cas.fEffMass),
+  fChi2Xi(cas.fChi2Xi),
+  fDcaXiDaughters(cas.fDcaXiDaughters),
+  fBachIdx(cas.fBachIdx)
 {
   //copy constructor
-  fPdgCode = cas.fPdgCode;
-  fEffMass = cas.fEffMass;
-  fChi2Xi  = cas.fChi2Xi;
-  fDcaXiDaughters = cas.fDcaXiDaughters;
-  fBachIdx = cas.fBachIdx;
   for (int i=0; i<3; i++) {
     fPosXi[i]     = cas.fPosXi[i];
     fBachMom[i] = cas.fBachMom[i];

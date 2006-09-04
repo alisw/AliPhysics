@@ -29,9 +29,36 @@ ClassImp(AliRunTagCuts)
 
 
 //___________________________________________________________________________
-AliRunTagCuts::AliRunTagCuts() {
+AliRunTagCuts::AliRunTagCuts() :
+  TObject(),
+  fAliceRunId(-1),                  
+  fAliceRunIdFlag(kFALSE),              
+  fAliceMagneticField(-1.),          
+  fAliceMagneticFieldFlag(kFALSE),      
+  fAliceRunStartTimeMin(-1),        
+  fAliceRunStartTimeMax(-1),        
+  fAliceRunStartTimeFlag(kFALSE),       
+  fAliceRunStopTimeMin(-1),         
+  fAliceRunStopTimeMax(-1),         
+  fAliceRunStopTimeFlag(kFALSE),        
+  fAlirootVersion(""),              
+  fAlirootVersionFlag(kFALSE),          
+  fRootVersion(""),                 
+  fRootVersionFlag(kFALSE),             
+  fGeant3Version(""),               
+  fGeant3VersionFlag(kFALSE),           
+  fAliceRunQuality(0),             
+  fAliceRunQualityFlag(kFALSE),         
+  fAliceBeamEnergy(-1),             
+  fAliceBeamEnergyFlag(kFALSE),         
+  fAliceBeamType(""),               
+  fAliceBeamTypeFlag(kFALSE),           
+  fAliceCalibrationVersion(-1),    
+  fAliceCalibrationVersionFlag(kFALSE),
+  fAliceDataType(-1),                
+  fAliceDataTypeFlag(kFALSE)
+{
   //Default constructor which calls the Reset method.
-  Reset();
 }
 
 //___________________________________________________________________________

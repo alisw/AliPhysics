@@ -46,7 +46,9 @@ AliVertexer::AliVertexer(const AliVertexer &vtxr) :
   TObject(vtxr),
   fCurrentVertex(vtxr.fCurrentVertex),
   fFirstEvent(vtxr.fFirstEvent),
-  fLastEvent(vtxr.fLastEvent)
+  fLastEvent(vtxr.fLastEvent),
+  fDebug(vtxr.fDebug),
+  fMult(vtxr.fMult)
 {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.

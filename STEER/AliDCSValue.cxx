@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/07/20 09:43:46  jgrosseo
+removing dynamic types
+
 Revision 1.2  2006/07/04 14:58:11  jgrosseo
 revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
 
@@ -56,62 +59,80 @@ some more descriptions added
 
 ClassImp(AliDCSValue)
 
-AliDCSValue::AliDCSValue() : TObject()
+AliDCSValue::AliDCSValue() :
+  TObject(),
+  fType(kInvalid),
+  fBool(kFALSE),
+  fChar(0),
+  fInt(0),
+  fUInt(0),
+  fFloat(0),
+  fTimeStamp(0)
 {
   // default constructor
-
-  Init();
 }
 
-AliDCSValue::AliDCSValue(Bool_t value, UInt_t timeStamp) : TObject()
+AliDCSValue::AliDCSValue(Bool_t value, UInt_t timeStamp) : 
+  TObject(),
+  fType(kBool),
+  fBool(value),
+  fChar(0),
+  fInt(0),
+  fUInt(0),
+  fFloat(0),
+  fTimeStamp(timeStamp)
 {
   // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kBool;
-  fBool = value;
 }
 
-AliDCSValue::AliDCSValue(Char_t value, UInt_t timeStamp) : TObject()
+AliDCSValue::AliDCSValue(Char_t value, UInt_t timeStamp) :
+  TObject(),
+  fType(kChar),
+  fBool(kFALSE),
+  fChar(value),
+  fInt(0),
+  fUInt(0),
+  fFloat(0),
+  fTimeStamp(timeStamp)
 {
   // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kChar;
-  fChar = value;
 }
 
-AliDCSValue::AliDCSValue(Int_t value, UInt_t timeStamp) : TObject()
+AliDCSValue::AliDCSValue(Int_t value, UInt_t timeStamp) :
+  TObject(),
+  fType(kInt),
+  fBool(kFALSE),
+  fChar(0),
+  fInt(value),
+  fUInt(0),
+  fFloat(0),
+  fTimeStamp(timeStamp)
 {
   // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kInt;
-  fInt = value;
 }
 
-AliDCSValue::AliDCSValue(UInt_t value, UInt_t timeStamp) : TObject()
+AliDCSValue::AliDCSValue(UInt_t value, UInt_t timeStamp) :
+  TObject(),
+  fType(kUInt),
+  fBool(kFALSE),
+  fChar(0),
+  fInt(0),
+  fUInt(value),
+  fFloat(0),
+  fTimeStamp(timeStamp)
 {
   // constructor
-
-  Init();
-
-  fTimeStamp = timeStamp;
-
-  fType = kUInt;
-  fUInt = value;
 }
 
-AliDCSValue::AliDCSValue(Float_t value, UInt_t timeStamp) : TObject()
+AliDCSValue::AliDCSValue(Float_t value, UInt_t timeStamp) :
+  TObject(),
+  fType(kFloat),
+  fBool(kFALSE),
+  fChar(0),
+  fInt(0),
+  fUInt(0),
+  fFloat(value),
+  fTimeStamp(timeStamp)
 {
   // constructor
 
@@ -123,11 +144,17 @@ AliDCSValue::AliDCSValue(Float_t value, UInt_t timeStamp) : TObject()
   fFloat = value;
 }
 
-AliDCSValue::AliDCSValue(const AliDCSValue& c) : TObject(c)
+AliDCSValue::AliDCSValue(const AliDCSValue& c) :
+  TObject(c),
+  fType(c.fType),
+  fBool(c.fBool),
+  fChar(c.fChar),
+  fInt(c.fInt),
+  fUInt(c.fUInt),
+  fFloat(c.fFloat),
+  fTimeStamp(c.fTimeStamp)
 {
   // copy constructor
-
-  ((AliDCSValue &)c).Copy(*this);
 }
 
 void AliDCSValue::Init()

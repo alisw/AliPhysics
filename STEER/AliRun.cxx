@@ -87,6 +87,7 @@ AliRun::AliRun():
   fPDGDB(0),  //Particle factory object
   fConfigFunction(""),
   fRandom(0),
+  fBaseFileName(""),
   fIsRootGeometry(kFALSE),
   fGeometryFileName(""),
   fTriggerDescriptor(""),
@@ -117,6 +118,7 @@ AliRun::AliRun(const AliRun& arun):
   fPDGDB(0),  //Particle factory object
   fConfigFunction("\0"),
   fRandom(0),
+  fBaseFileName(""),
   fIsRootGeometry(kFALSE),
   fGeometryFileName(""),
   fTriggerDescriptor(""),
@@ -146,6 +148,7 @@ AliRun::AliRun(const char *name, const char *title):
   fPDGDB(TDatabasePDG::Instance()),        //Particle factory object!
   fConfigFunction("Config();"),
   fRandom(new TRandom3()),
+  fBaseFileName(""),
   fIsRootGeometry(kFALSE),
   fGeometryFileName(""),
   fTriggerDescriptor(""),
