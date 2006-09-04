@@ -13,6 +13,7 @@
 
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
+#include "AliCDBMetaData.h"
 
 class AliCDBGrid: public AliCDBStorage {
 	friend class AliCDBGridFactory;
@@ -39,21 +40,28 @@ private:
 	AliCDBGrid(const AliCDBGrid& db);
 	AliCDBGrid& operator = (const AliCDBGrid& db);
 
-	Bool_t FilenameToId(const char* filename, AliCDBRunRange& runRange, Int_t& version);
-	Bool_t IdToFilename(const AliCDBRunRange& runRange, Int_t version, TString& filename);
+	Bool_t FilenameToId(TString& filename, AliCDBId& id);
+	Bool_t IdToFilename(const AliCDBId& id, TString& filename);
 
 	Bool_t PrepareId(AliCDBId& id);
-	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
+	AliCDBId* GetId(const TList& validFileIds, const AliCDBId& query);
+	AliCDBEntry* GetEntryFromFile(TString& filename, const AliCDBId* dataId);
 
+	Bool_t AddTag(TString& foldername, const char* tagname);
+	void TagFileId(TString& filename, const AliCDBId* id);
+	void TagFileMetaData(TString& filename, const AliCDBMetaData* md);
 
-	void GetEntriesForLevel0(const char* level0, const AliCDBId& query, TList* result);
-	void GetEntriesForLevel1(const char* level0, const char* level1, 
-				 const AliCDBId& query, TList* result);
+//	Bool_t CheckVersion(const AliCDBId& query, AliCDBId* idToCheck, AliCDBId* result);
+
+	void MakeQueryFilter(Long64_t firstRun, Long64_t lastRun, const AliCDBPath& pathFilter, Int_t version,
+				const AliCDBMetaData* md, TString& result) const;
+
+	virtual void QueryValidFiles();
 
 	TString    fGridUrl;	// Grid Url ("alien://aliendb4.cern.ch:9000")
 	TString    fUser;	// User
 	TString    fDBFolder;   // path of the DB folder
-	TString    fSE;	  	// Storage Element 
+	TString    fSE;	  	// Storage Element
 
 ClassDef(AliCDBGrid, 0)      // access class to a DataBase in an AliEn storage 
 };
@@ -87,7 +95,7 @@ class AliCDBGridParam: public AliCDBParam {
 	
 public:
 	AliCDBGridParam();
-	AliCDBGridParam(const char* gridUrl, const char* user, 
+	AliCDBGridParam(const char* gridUrl, const char* user,
 			const char* dbFolder, const char* se);
 	
 	virtual ~AliCDBGridParam();

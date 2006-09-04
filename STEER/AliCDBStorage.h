@@ -18,6 +18,7 @@
 #include <TList.h>
 
 class AliCDBEntry;
+class AliCDBPath;
 
 class AliCDBStorage: public TObject {
 
@@ -26,6 +27,9 @@ public:
 
 	void SetURI(const TString& uri) {fURI = uri;}
 	const TString& GetURI() const {return fURI;}
+	const TString& GetType() const {return fType;}
+	const TString& GetBaseFolder() const {return fBaseFolder;}
+
 
 	void ReadSelectionFromFile(const char *fileName);
 	
@@ -74,22 +78,33 @@ public:
 
 	virtual Bool_t IsReadOnly() const = 0;
 	virtual Bool_t HasSubVersion() const = 0;
-
 	virtual Bool_t Contains(const char* path) const = 0;
 
+	void QueryCDB(Long64_t run, const char* pathFilter="*",
+			Int_t version=-1, AliCDBMetaData *mdFilter=0);
+	void PrintQueryCDB();
+	TList* GetQueryCDBList() {return &fValidFileIds;}
+
 protected:
-		
-	virtual ~AliCDBStorage();	
+
+	virtual ~AliCDBStorage();
 	void    GetSelection(/*const*/ AliCDBId* id);
 	virtual AliCDBEntry* GetEntry(const AliCDBId& query) = 0;
 	virtual TList* GetEntries(const AliCDBId& query) = 0;
-	virtual Bool_t PutEntry(AliCDBEntry* entry) = 0; 
+	virtual Bool_t PutEntry(AliCDBEntry* entry) = 0;
 	virtual TList *GetIdListFromFile(const char* fileName)=0;
+	virtual void   QueryValidFiles() = 0;
 
-private:
+	TList fValidFileIds; 	// list of Id's of the files valid for a given run (cached as fRun)
+	Long64_t fRun;		// run number, used to manage list of valid files
+	AliCDBPath fPathFilter;	// path filter, used to manage list of valid files
+	Int_t fVersion;		// version, used to manage list of valid files
+	AliCDBMetaData* fMetaDataFilter; // metadata, used to manage list of valid files
 
 	TList fSelections; 	// list of selection criteria
-	TString fURI;		//! storage URI;
+	TString fURI;		// storage URI;
+	TString fType;    //! Local, Grid: base folder name - Dump: file name
+	TString fBaseFolder;    //! Local, Grid: base folder name - Dump: file name
 
 	ClassDef(AliCDBStorage, 0);
 };

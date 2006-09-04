@@ -62,13 +62,13 @@ class AliCDBManager: public TObject {
 	void UnsetDrain(){fDrainStorage = 0x0;}
 
 	AliCDBEntry* Get(const AliCDBId& query);
-	AliCDBEntry* Get(const AliCDBPath& path, Int_t runNumber=-1, 
+	AliCDBEntry* Get(const AliCDBPath& path, Int_t runNumber=-1,
 				Int_t version = -1, Int_t subVersion = -1);
 	AliCDBEntry* Get(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1);
 
 	TList* GetAll(const AliCDBId& query);
-	TList* GetAll(const AliCDBPath& path, Int_t runNumber=-1, 
+	TList* GetAll(const AliCDBPath& path, Int_t runNumber=-1,
 				Int_t version = -1, Int_t subVersion = -1);
 	TList* GetAll(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1); 
@@ -86,6 +86,8 @@ class AliCDBManager: public TObject {
 
 	void DestroyActiveStorages();
 	void DestroyActiveStorage(AliCDBStorage* storage);
+
+	void QueryCDB();
 
 	void Print(Option_t* option="") const;
 

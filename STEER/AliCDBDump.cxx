@@ -46,6 +46,9 @@ fFile(NULL), fReadOnly(readOnly) {
 		AliDebug(2,Form("File <%s> opened",dbFile));
 		if(fReadOnly) AliDebug(2,Form("in read-only mode"));
 	}
+
+	fType="dump";
+	fBaseFolder = dbFile;
 }
 
 //_____________________________________________________________________________
@@ -600,6 +603,14 @@ Bool_t AliCDBDump::Contains(const char* path) const{
 
 }
 
+//_____________________________________________________________________________
+void AliCDBDump::QueryValidFiles()
+{
+// blabla
+
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                             //
 // AliCDBDump factory  			                                                       //
@@ -670,7 +681,9 @@ AliCDBStorage* AliCDBDumpFactory::Create(const AliCDBParam* param) {
 ClassImp(AliCDBDumpParam)
 
 //_____________________________________________________________________________
-AliCDBDumpParam::AliCDBDumpParam() {
+AliCDBDumpParam::AliCDBDumpParam():
+fDBPath(), fReadOnly(kFALSE)
+{
 // default constructor
 
 }

@@ -43,6 +43,8 @@ private:
 	Bool_t PrepareId(AliCDBId& id);
 	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
 
+	virtual void QueryValidFiles();
+
 	void GetEntriesForLevel0(const char* level0, const AliCDBId& query, TList* result);
 	void GetEntriesForLevel1(const char* level0, const char* Level1,
 			const AliCDBId& query, TList* result);

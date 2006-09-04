@@ -24,15 +24,30 @@
 ClassImp(AliCDBStorage)
 
 //_____________________________________________________________________________
-AliCDBStorage::AliCDBStorage() {
+AliCDBStorage::AliCDBStorage():
+fValidFileIds(),
+fRun(-1),
+fPathFilter(),
+fVersion(-1),
+fMetaDataFilter(0),
+fSelections(),
+fURI(),
+fType(),
+fBaseFolder()
+{
 // constructor
 
+	fValidFileIds.SetOwner(1);
 	fSelections.SetOwner(1);
 }
 
 //_____________________________________________________________________________
 AliCDBStorage::~AliCDBStorage() {
 // destructor
+
+	RemoveAllSelections();
+	fValidFileIds.Clear();
+	delete fMetaDataFilter;
 
 }
 
@@ -108,7 +123,7 @@ void AliCDBStorage::AddSelection(const AliCDBId& selection) {
 }
 
 //_____________________________________________________________________________
-void AliCDBStorage::AddSelection(const AliCDBPath& path, 
+void AliCDBStorage::AddSelection(const AliCDBPath& path,
 	const AliCDBRunRange& runRange, Int_t version, Int_t subVersion){
 // add a selection criterion
 
@@ -157,14 +172,14 @@ void AliCDBStorage::RemoveSelection(const AliCDBPath& path,
 void AliCDBStorage::RemoveSelection(int position){
 // remove a selection criterion from its position in the list
 
-	fSelections.RemoveAt(position);
+	delete fSelections.RemoveAt(position);
 }
 
 //_____________________________________________________________________________
 void AliCDBStorage::RemoveAllSelections(){
 // remove all selection criteria
 
-	fSelections.RemoveAll();
+	fSelections.Clear();
 }
 
 //_____________________________________________________________________________
@@ -173,7 +188,7 @@ void AliCDBStorage::PrintSelectionList(){
 
 	TIter iter(&fSelections);
 	AliCDBId* aSelection;
-        
+
 	// loop on the list of selection criteria
 	int index=0;
 	while ((aSelection = (AliCDBId*) iter.Next())) {
@@ -199,7 +214,7 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 				query.ToString().Data()));
                 return NULL;
 	}
-	
+
 	// This is needed otherwise TH1  objects (histos, TTree's) are lost when file is closed!
 	Bool_t oldStatus = TH1::AddDirectoryStatus();
 	TH1::AddDirectory(kFALSE);
@@ -210,9 +225,11 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
   		TH1::AddDirectory(kTRUE);
 
   	if (entry) {
-    		AliInfo(Form("CDB object retrieved: %s", entry->GetId().ToString().Data()));
+		// this is to make the SHUTTLE output lighter
+		if(!(query.GetPath().Contains("SHUTTLE/STATUS")))
+    			AliInfo(Form("CDB object retrieved: %s", entry->GetId().ToString().Data()));
   	} else {
-		// TODO this is to make the SHUTTLE output lighter
+		// this is to make the SHUTTLE output lighter
 		if(!(query.GetPath().Contains("SHUTTLE/STATUS")))
     			AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d",
 		        	(query.GetPath()).Data(), query.GetFirstRun()));
@@ -269,14 +286,14 @@ TList* AliCDBStorage::GetAll(const AliCDBId& query) {
 
  	Int_t nEntries = result->GetEntries();
  	if (nEntries) {
- 		 AliInfo(Form("%d AliCDBEntry objects retrieved.",nEntries));
+ 		 AliInfo(Form("%d objects retrieved.",nEntries));
 		 for(int i=0; i<nEntries;i++){
 		 	AliCDBEntry *entry = (AliCDBEntry*) result->At(i);
 			AliInfo(Form("%s",entry->GetId().ToString().Data()));
 		 
 		 }
  	} else {
-     		 AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d, version = %d", 
+     		 AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d, version = %d",
 		        (query.GetPath()).Data(), query.GetFirstRun(), query.GetVersion()));
 	}
 
@@ -329,13 +346,13 @@ Bool_t AliCDBStorage::Put(AliCDBEntry* entry) {
 	}
 	
 	if (!entry->GetId().IsValid()) {
-		AliError(Form("Invalid entry ID: %s", 
+		AliError(Form("Invalid entry ID: %s",
 			entry->GetId().ToString().Data()));
 		return kFALSE;
 	}	
 
 	if (!entry->GetId().IsSpecified()) {
-		AliError(Form("Unspecified entry ID: %s", 
+		AliError(Form("Unspecified entry ID: %s",
 			entry->GetId().ToString().Data()));
 		return kFALSE;
 	}
@@ -344,5 +361,60 @@ Bool_t AliCDBStorage::Put(AliCDBEntry* entry) {
 	entry->GetMetaData()->SetObjectClassName(entry->GetObject()->ClassName());
 
 	return PutEntry(entry);
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::QueryCDB(Long64_t run, const char* pathFilter,
+				Int_t version, AliCDBMetaData* md){
+// query CDB for files valid for given run, and fill list fValidFileIds
+// Actual query is done in virtual function QueryValidFiles()
+
+	fRun = run;
+
+	fPathFilter = pathFilter;
+	if(!fPathFilter.IsValid()) {
+		AliError(Form("Filter not valid: %s", pathFilter));
+		fPathFilter = "*";
+		return;
+	}
+
+	fVersion = version;
+
+	// Clear fValidFileIds list (it cannot be filled twice!
+	AliDebug(2, "Clearing list of CDB Id's previously loaded");
+	fValidFileIds.Clear();
+
+	if(fMetaDataFilter) {delete fMetaDataFilter; fMetaDataFilter=0;}
+	if(md) fMetaDataFilter = dynamic_cast<AliCDBMetaData*> (md->Clone());
+
+	QueryValidFiles();
+
+	AliInfo(Form("%d files valid for run %ld, path %s and version %d found in CDB storage: \n %s://%s",
+				fValidFileIds.GetEntries(), (long) fRun, pathFilter, version,
+				fType.Data(), fBaseFolder.Data()));
+
+}
+
+//_____________________________________________________________________________
+void AliCDBStorage::PrintQueryCDB(){
+// print parameters used to load list of CDB Id's (fRun, fPathFilter, fVersion)
+
+	AliInfo(Form("QueryCDB Parameters: \n\tRun = %ld \n\tPath filter = %s \n\tVersion = %d",
+				(long) fRun, fPathFilter.GetPath().Data(), fVersion));
+
+	if(fMetaDataFilter) {
+		AliInfo("CDBMetaData Parameters: ");
+	}
+	fMetaDataFilter->PrintMetaData();
+
+	AliInfo("Id's of valid objects found:");
+	TIter iter(&fValidFileIds);
+	AliCDBId* anId=0;
+
+	// loop on the list of selection criteria
+	while ((anId = dynamic_cast<AliCDBId*>(iter.Next()))) {
+		AliInfo(Form("%s", anId->ToString().Data()));
+	}
+
 }
 

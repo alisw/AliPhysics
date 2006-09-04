@@ -52,7 +52,7 @@ fSE(se)
 	if (!gGrid || fGridUrl != gGrid->GridUrl()  
 	     || (( fUser != "" ) && ( fUser != gGrid->GetUser() )) ) {
    		// connection to the Grid
-		AliInfo("Connection to the Grid!!!!");
+		AliInfo("Connection to the Grid...");
 		if(gGrid){
 			AliInfo(Form("gGrid = %x; fGridUrl = %s; gGrid->GridUrl() = %s",gGrid,fGridUrl.Data(), gGrid->GridUrl()));
 			AliInfo(Form("fUser = %s; gGrid->GetUser() = %s",fUser.Data(), gGrid->GetUser()));
@@ -84,6 +84,9 @@ fSE(se)
 	while(fDBFolder.EndsWith("/")) fDBFolder.Remove(fDBFolder.Last('/')); 
 	fDBFolder+="/";
 
+	fType="alien";
+	fBaseFolder = fDBFolder;
+
 	// return to the initial directory
 	gGrid->Cd(initDir.Data(),0);
 }
@@ -92,35 +95,43 @@ fSE(se)
 AliCDBGrid::~AliCDBGrid()
 {
 // destructor
+	delete gGrid; gGrid=0;
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBGrid::FilenameToId(const char* filename, AliCDBRunRange& runRange, 
-				Int_t& gridVersion) {
-// build AliCDBId from filename numbers
+Bool_t AliCDBGrid::FilenameToId(TString& filename, AliCDBId& id) {
+// build AliCDBId from full path filename (fDBFolder/path/Run#x_#y_v#z.root)
+
+	if(filename.Contains(fDBFolder)){
+		filename = filename(fDBFolder.Length(),filename.Length()-fDBFolder.Length());
+	}
+
+	TString idPath = filename(0,filename.Last('/'));
+	id.SetPath(idPath);
+	if(!id.IsValid()) return kFALSE;
+
+	filename=filename(idPath.Length()+1,filename.Length()-idPath.Length());
 
         Ssiz_t mSize;
-	
 	// valid filename: Run#firstRun_#lastRun_v#version.root
         TRegexp keyPattern("^Run[0-9]+_[0-9]+_v[0-9]+.root$");
         keyPattern.Index(filename, &mSize);
         if (!mSize) {
-		AliDebug(2,Form("Bad filename <%s>.", filename));
+		AliDebug(2,Form("Bad filename <%s>.", filename.Data()));
                 return kFALSE;
         }
 
-	TString idString(filename);
-	idString.Resize(idString.Length() - sizeof(".root") + 1);
+	filename.Resize(filename.Length() - sizeof(".root") + 1);
 
-        TObjArray* strArray = (TObjArray*) idString.Tokenize("_");
+        TObjArray* strArray = (TObjArray*) filename.Tokenize("_");
 
 	TString firstRunString(((TObjString*) strArray->At(0))->GetString());
-	runRange.SetFirstRun(atoi(firstRunString.Data() + 3));
-	runRange.SetLastRun(atoi(((TObjString*) strArray->At(1))->GetString()));
-	
+	id.SetFirstRun(atoi(firstRunString.Data() + 3));
+	id.SetLastRun(atoi(((TObjString*) strArray->At(1))->GetString()));
+
 	TString verString(((TObjString*) strArray->At(2))->GetString());
-	gridVersion = atoi(verString.Data() + 1);
+	id.SetVersion(atoi(verString.Data() + 1));
 
         delete strArray;
 
@@ -128,28 +139,26 @@ Bool_t AliCDBGrid::FilenameToId(const char* filename, AliCDBRunRange& runRange,
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBGrid::IdToFilename(const AliCDBRunRange& runRange, Int_t gridVersion, 
-				 TString& filename) {
-// build file name from AliCDBId data (run range, version)
+Bool_t AliCDBGrid::IdToFilename(const AliCDBId& id, TString& filename) {
+// build file name from AliCDBId (path, run range, version) and fDBFolder
 
-	if (!runRange.IsValid()) {
-		AliDebug(2,Form("Invalid run range <%d, %d>.", 
-			runRange.GetFirstRun(), runRange.GetLastRun()));
+	if (!id.GetAliCDBRunRange().IsValid()) {
+		AliDebug(2,Form("Invalid run range <%d, %d>.",
+			id.GetFirstRun(), id.GetLastRun()));
 		return kFALSE;
 	}
 
-	if (gridVersion < 0) {
-		AliDebug(2,Form("Invalid version <%d>.", gridVersion));
+	if (id.GetVersion() < 0) {
+		AliDebug(2,Form("Invalid version <%d>.", id.GetVersion()));
                 return kFALSE;
 	}
- 
-        filename += "Run";
-	filename += runRange.GetFirstRun();
-        filename += "_";
-        filename += runRange.GetLastRun();
-	filename += "_v";
-	filename += gridVersion;
-	filename += ".root";
+
+	filename = Form("Run%d_%d_v%d.root",
+				id.GetFirstRun(),
+				id.GetLastRun(),
+				id.GetVersion());
+
+	filename.Prepend(fDBFolder + id.GetPath() + '/');
 
         return kTRUE;
 }
@@ -183,21 +192,20 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 	delete arrName;
 	gGrid->Cd(initDir,0);
 
-	const char* filename;
-	AliCDBRunRange aRunRange; // the runRange got from filename 
+	TString filename;
+	AliCDBId anId; // the id got from filename
 	AliCDBRunRange lastRunRange(-1,-1); // highest runRange found
-	Int_t aVersion; // the version got from filename 
 	Int_t lastVersion=0; // highest version found
 
 	TGridResult *res = gGrid->Ls(dirName);
 
 	//loop on the files in the directory, look for highest version
 	for(int i=0; i < res->GetEntries(); i++){
-		filename=res->GetFileName(i);
-		if (!FilenameToId(filename, aRunRange, aVersion)) continue;
-		if (aRunRange.Overlaps(id.GetAliCDBRunRange()) && aVersion > lastVersion) {
-			lastVersion = aVersion;
-			lastRunRange = aRunRange;
+		filename=res->GetFileNamePath(i);
+		if (!FilenameToId(filename, anId)) continue;
+		if (anId.GetAliCDBRunRange().Overlaps(id.GetAliCDBRunRange()) && anId.GetVersion() > lastVersion) {
+			lastVersion = anId.GetVersion();
+			lastRunRange = anId.GetAliCDBRunRange();
 		}
 
 	}
@@ -221,93 +229,148 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBGrid::GetId(const AliCDBId& query, AliCDBId& result) {
-// look for filename matching query (called by GetEntry)
+AliCDBId* AliCDBGrid::GetId(const TList& validFileIds, const AliCDBId& query) {
+// look for the Id that matches query's requests (highest or exact version)
 
-	TString initDir(gGrid->Pwd(0));
-
-	TString dirName(fDBFolder);
-	dirName += query.GetPath(); // dirName = fDBFolder/idPath
-
-	if (!gGrid->Cd(dirName,0)) {
-		AliDebug(2,Form("Directory <%s> not found", (query.GetPath()).Data()));
-		AliDebug(2,Form("in DB folder %s", fDBFolder.Data()));
-		return kFALSE;
+	if(validFileIds.GetEntries() < 1) {
+		return NULL;
+	} else if (validFileIds.GetEntries() == 1) {
+		return dynamic_cast<AliCDBId*> (validFileIds.At(0));
 	}
- 
-	TGridResult *res = gGrid->Ls(dirName);
 
-	const char* filename;
-	AliCDBRunRange aRunRange; // the runRange got from filename
-	Int_t aVersion; // the version got from filename
- 
-	for(int i=0; i < res->GetEntries(); i++){
-		filename=res->GetFileName(i);
-		if (!FilenameToId(filename, aRunRange, aVersion)) continue;
-                // aRunRange and aVersion filled from filename
-		
-		if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue; 
-		// aRunRange contains requested run!
+	TIter iter(&validFileIds);
+
+	AliCDBId *anIdPtr=0;
+	AliCDBId* result=0;
+
+	while((anIdPtr = dynamic_cast<AliCDBId*> (iter.Next()))){
+
+		if(anIdPtr->GetPath() != query.GetPath()) continue;
+
+		//if(!CheckVersion(query, anIdPtr, result)) return NULL;
 
 		if (!query.HasVersion()){ // look for highest version
-			if(result.GetVersion() > aVersion) continue;
-			if(result.GetVersion() == aVersion) {
-				AliDebug(2,Form("More than one object valid for run %d, version %d!", 
-					query.GetFirstRun(), aVersion));
-			return kFALSE; 
+			if(result && result->GetVersion() > anIdPtr->GetVersion()) continue;
+			if(result && result->GetVersion() == anIdPtr->GetVersion()) {
+				AliDebug(2,Form("More than one object valid for run %d, version %d!",
+					query.GetFirstRun(), anIdPtr->GetVersion()));
+				return NULL;
 			}
-			result.SetVersion(aVersion);
-			result.SetFirstRun(aRunRange.GetFirstRun());
-			result.SetLastRun(aRunRange.GetLastRun());
-
+			result = anIdPtr;
 		} else { // look for specified version
-			if(query.GetVersion() != aVersion) continue;
-			if(result.GetVersion() == aVersion){
-				AliDebug(2,Form("More than one object valid for run %d, version %d!", 
-					query.GetFirstRun(), aVersion));
-					return kFALSE; 
+			if(query.GetVersion() != anIdPtr->GetVersion()) continue;
+			if(result && result->GetVersion() == anIdPtr->GetVersion()){
+				AliDebug(2,Form("More than one object valid for run %d, version %d!",
+					query.GetFirstRun(), anIdPtr->GetVersion()));
+				return NULL;
 			}
-			result.SetVersion(aVersion);
-			result.SetFirstRun(aRunRange.GetFirstRun());
-			result.SetLastRun(aRunRange.GetLastRun());
+			result = anIdPtr;
 		}
-	} // end loop on filenames
-	delete res;
-	
-	gGrid->Cd(initDir.Data(),0);
- 
+
+	}
+
+
+	return result;
+}
+
+/* TODO remove
+//_____________________________________________________________________________
+Bool_t AliCDBGrid::CheckVersion(const AliCDBId& query, AliCDBId* idToCheck, AliCDBId* result){
+// Check if idToCheck has the "right" requested version and return it in result
+
+	if (!result) {
+		result = idToCheck;
+		AliInfo(Form("all'inizio: result = %s", result->ToString().Data()));
+		return kTRUE;
+	}
+
+	AliInfo(Form("result = %s", result->ToString().Data()));
+
+	if (!query.HasVersion()){ // look for highest version
+		if(result->GetVersion() > idToCheck->GetVersion()) return kTRUE;
+		if(result->GetVersion() == idToCheck->GetVersion()) {
+			AliDebug(2,Form("More than one object valid for run %d, version %d!",
+				query.GetFirstRun(), idToCheck->GetVersion()));
+			return kFALSE;
+		}
+
+	} else { // look for specified version
+		if(query.GetVersion() != idToCheck->GetVersion()) return kTRUE;
+		if(result->GetVersion() == idToCheck->GetVersion()){
+			AliDebug(2,Form("More than one object valid for run %d, version %d!",
+				query.GetFirstRun(), idToCheck->GetVersion()));
+			return kFALSE;
+		}
+	}
+	result = idToCheck;
+	AliInfo(Form("alla fine: result = %s", result->ToString().Data()));
 	return kTRUE;
 }
+*/
 
 //_____________________________________________________________________________
 AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 // get AliCDBEntry from the database
 
-	AliCDBId dataId(queryId.GetAliCDBPath(), -1, -1, -1, -1);
-        Bool_t result;
-	
-	// look for a filename matching query requests (path, runRange, version, subVersion)
-	if (!queryId.HasVersion()) {
+	AliCDBId* dataId=0;
+
+	AliCDBId selectedId(queryId);
+	if (!selectedId.HasVersion()) {
 		// if version is not specified, first check the selection criteria list
-		AliCDBId selectedId(queryId);
 		GetSelection(&selectedId);
-		result = GetId(selectedId,dataId);
-	} else {
-		result = GetId(queryId,dataId);
 	}
 
-	if (!result || !dataId.IsSpecified()) return NULL;
+	TList validFileIds;
+	validFileIds.SetOwner(1);
+
+	// look for file matching query requests (path, runRange, version)
+	if(selectedId.GetFirstRun() == fRun &&
+			fPathFilter.Comprises(selectedId.GetAliCDBPath()) && fVersion < 0){
+		// look into list of valid files previously loaded with AliCDBStorage::FillValidFileIds()
+		AliDebug(2, Form("List of files valid for run %d and for path %s was loaded. Looking there!",
+					selectedId.GetFirstRun(), selectedId.GetPath().Data()));
+		dataId = GetId(fValidFileIds, selectedId);
+
+	} else {
+		// List of files valid for reqested run was not loaded. Looking directly into CDB
+		AliDebug(2, Form("List of files valid for run %d and for path %s was not loaded. Looking directly into CDB!",
+					selectedId.GetFirstRun(), selectedId.GetPath().Data()));
+
+		TString filter;
+		MakeQueryFilter(selectedId.GetFirstRun(), selectedId.GetLastRun(),
+				selectedId.GetAliCDBPath(), selectedId.GetVersion(), 0, filter);
+
+		TGridResult *res = gGrid->Query(fDBFolder, "Run*.root", filter, "");
+		AliCDBId validFileId;
+		for(int i=0; i<res->GetEntries(); i++){
+			TString filename = res->GetKey(i, "lfn");
+			if(FilenameToId(filename, validFileId))
+					validFileIds.AddLast(validFileId.Clone());
+		}
+		delete res;
+		dataId = GetId(validFileIds, selectedId);
+	}
+
+	if (!dataId) return NULL;
 
 	TString filename;
-	if (!IdToFilename(dataId.GetAliCDBRunRange(), dataId.GetVersion(),filename)) {
+	if (!IdToFilename(*dataId, filename)) {
 		AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
 		return NULL;
 	}
 
-	filename.Prepend("/alien" + fDBFolder + queryId.GetPath() + '/');
-	filename += "?se="; filename += fSE.Data(); 
+	AliCDBEntry* anEntry = GetEntryFromFile(filename, dataId);
+
+	return anEntry;
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBGrid::GetEntryFromFile(TString& filename, const AliCDBId* dataId){
+// Get AliCBEntry object from file "filename"
 
 	AliDebug(2,Form("Opening file: %s",filename.Data()));
+
+	filename.Prepend("/alien");
 	TFile *file = TFile::Open(filename);
 	if (!file) {
 		AliDebug(2,Form("Can't open file <%s>!", filename.Data()));
@@ -317,92 +380,34 @@ AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 	// get the only AliCDBEntry object from the file
 	// the object in the file is an AliCDBEntry entry named "AliCDBEntry"
 
-	TObject* anObject = file->Get("AliCDBEntry");
+	AliCDBEntry* anEntry = dynamic_cast<AliCDBEntry*> (file->Get("AliCDBEntry"));
 
-	if (!anObject) {
-		AliDebug(2,Form("Bad storage data: NULL entry object!"));
- 		return NULL;
-	}
-
-	if (AliCDBEntry::Class() != anObject->IsA()) {
-		AliDebug(2,Form("Bad storage data: Invalid entry object!"));
+	if (!anEntry) {
+		AliDebug(2,Form("Bad storage data: file does not contain an AliCDBEntry object!"));
+		file->Close();
 		return NULL;
 	}
 
-	AliCDBId entryId = ((AliCDBEntry* ) anObject)->GetId();
- 
 	// The object's Id is not reset during storage
 	// If object's Id runRange or version do not match with filename,
 	// it means that someone renamed file by hand. In this case a warning msg is issued.
- 
-	((AliCDBEntry*) anObject)->SetLastStorage("grid");
- 
-	if(!((entryId.GetAliCDBRunRange()).IsEqual(&dataId.GetAliCDBRunRange())) || 
-		entryId.GetVersion() != dataId.GetVersion()){
-		AliWarning(Form("Either RunRange or gridVersion in the object's metadata do noth match with fileName numbers:"));
-		AliWarning(Form("someone renamed file by hand!"));
+
+	if(anEntry){
+		AliCDBId entryId = anEntry->GetId();
+		if(!((entryId.GetAliCDBRunRange()).IsEqual(&(dataId->GetAliCDBRunRange()))) ||
+			entryId.GetVersion() != dataId->GetVersion()){
+			AliWarning(Form("Either RunRange or gridVersion in the object's metadata"));
+			AliWarning(Form("do noth match with fileName numbers:"));
+			AliWarning(Form("someone renamed file by hand!"));
+		}
 	}
+
+	anEntry->SetLastStorage("grid");
 
 	// close file, return retieved entry
 	file->Close(); delete file; file=0;
-	return (AliCDBEntry*) anObject;
-}
 
-//_____________________________________________________________________________
-void AliCDBGrid::GetEntriesForLevel0(const char* level0,
-	const AliCDBId& queryId, TList* result) {
-// multiple request (AliCDBStorage::GetAll)
-
-	TString level0Dir=fDBFolder;
-	level0Dir += level0;
-
-	if (!gGrid->Cd(level0Dir,0)) {
-		AliDebug(2,Form("Level0 directory <%s> not found", level0Dir.Data()));
-		return;
-	}
-
-	TGridResult *res = gGrid->Ls(level0Dir);
-	TString level1;
-	for(int i=0; i < res->GetEntries(); i++){
-		level1=res->GetFileName(i);
-	if (queryId.GetAliCDBPath().Level1Comprises(level1))
-		GetEntriesForLevel1(level0, level1, queryId, result);
-	}
-	delete res;
-}
-
-//_____________________________________________________________________________
-void AliCDBGrid::GetEntriesForLevel1(const char* level0, const char* level1,
-	const AliCDBId& queryId, TList* result) {
-// multiple request (AliCDBStorage::GetAll)
-
-	TString level1Dir=fDBFolder;
-	level1Dir += level0;
-	level1Dir += '/';
-	level1Dir += level1;
-
-	if (!gGrid->Cd(level1Dir,0)) {
-		AliDebug(2,Form("Level1 directory <%s> not found", level1Dir.Data()));
-		return;
-	}
-
-	TGridResult *res = gGrid->Ls(level1Dir);
-	TString level2;
-	for(int i=0; i < res->GetEntries(); i++){
-		level2=res->GetFileName(i);
-		if (queryId.GetAliCDBPath().Level2Comprises(level2)){
-			AliCDBPath entryPath(level0, level1, level2);
-			AliCDBId entryId(entryPath, 
-				queryId.GetAliCDBRunRange(),
-				queryId.GetVersion(), 
-				queryId.GetSubVersion());
-
-			AliCDBEntry* anEntry = GetEntry(entryId);
-			if (anEntry) result->Add(anEntry);
-
-		}
-	}
-	delete res;
+	return anEntry;
 }
 
 //_____________________________________________________________________________
@@ -412,69 +417,231 @@ TList* AliCDBGrid::GetEntries(const AliCDBId& queryId) {
 	TList* result = new TList();
 	result->SetOwner();
 
-	TString initDir(gGrid->Pwd(0));
+	TList validFileIds;
+	validFileIds.SetOwner(1);
 
-	TGridResult *res = gGrid->Ls(fDBFolder);
-	TString level0;
+	Bool_t alreadyLoaded = kFALSE;
 
-	for(int i=0; i < res->GetEntries(); i++){
-		level0=res->GetFileName(i);
-		if (queryId.GetAliCDBPath().Level0Comprises(level0)) 
-			GetEntriesForLevel0(level0, queryId, result);				    
-	}	 
-	delete res;
- 
-	gGrid->Cd(initDir.Data(),0);
-	return result;  
+	// look for file matching query requests (path, runRange)
+	if(queryId.GetFirstRun() == fRun &&
+			fPathFilter.Comprises(queryId.GetAliCDBPath()) && fVersion < 0){
+		// look into list of valid files previously loaded with AliCDBStorage::FillValidFileIds()
+		AliDebug(2,Form("List of files valid for run %d and for path %s was loaded. Looking there!",
+					queryId.GetFirstRun(), queryId.GetPath().Data()));
+
+		alreadyLoaded = kTRUE;
+
+	} else {
+		// List of files valid for reqested run was not loaded. Looking directly into CDB
+		AliDebug(2,Form("List of files valid for run %d and for path %s was not loaded. Looking directly into CDB!",
+					queryId.GetFirstRun(), queryId.GetPath().Data()));
+
+		TString filter;
+		MakeQueryFilter(queryId.GetFirstRun(), queryId.GetLastRun(),
+				queryId.GetAliCDBPath(), queryId.GetVersion(), 0, filter);
+
+		TGridResult *res = gGrid->Query(fDBFolder, "Run*.root", filter, "");
+		AliCDBId validFileId;
+		for(int i=0; i<res->GetEntries(); i++){
+			TString filename = res->GetKey(i, "lfn");
+			if(FilenameToId(filename, validFileId))
+					validFileIds.AddLast(validFileId.Clone());
+		}
+		delete res;
+	}
+
+	TIter *iter=0;
+	if(alreadyLoaded){
+		iter = new TIter(&fValidFileIds);
+	} else {
+		iter = new TIter(&validFileIds);
+	}
+
+	TList selectedIds;
+	selectedIds.SetOwner(1);
+
+	// loop on list of valid Ids to select the right version to get.
+	// According to query and to the selection criteria list, version can be the highest or exact
+	AliCDBPath pathCopy;
+	AliCDBId* anIdPtr=0;
+	AliCDBId* dataId=0;
+	AliCDBPath queryPath = queryId.GetAliCDBPath();
+	while((anIdPtr = dynamic_cast<AliCDBId*> (iter->Next()))){
+		AliCDBPath thisCDBPath = anIdPtr->GetAliCDBPath();
+		if(!(queryPath.Comprises(thisCDBPath)) || pathCopy.GetPath() == thisCDBPath.GetPath()) continue;
+		pathCopy = thisCDBPath;
+
+		// check the selection criteria list for this query
+		AliCDBId thisId(*anIdPtr);
+		thisId.SetVersion(queryId.GetVersion());
+		if(!thisId.HasVersion()) GetSelection(&thisId);
+
+		if(alreadyLoaded){
+			dataId = GetId(fValidFileIds, thisId);
+		} else {
+			dataId = GetId(validFileIds, thisId);
+		}
+		if(dataId) selectedIds.Add(dataId->Clone());
+	}
+
+	delete iter; iter=0;
+
+	// selectedIds contains the Ids of the files matching all requests of query!
+	// All the objects are now ready to be retrieved
+	iter = new TIter(&selectedIds);
+	while((anIdPtr = dynamic_cast<AliCDBId*> (iter->Next()))){
+		TString filename;
+		if (!IdToFilename(*anIdPtr, filename)) {
+			AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
+			continue;
+		}
+
+		AliCDBEntry* anEntry = GetEntryFromFile(filename, anIdPtr);
+
+		if(anEntry) result->Add(anEntry);
+
+	}
+	delete iter; iter=0;
+
+	return result;
 }
 
 //_____________________________________________________________________________
 Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 // put an AliCDBEntry object into the database
-	
+
 	AliCDBId& id = entry->GetId();
 
 	// set version for the entry to be stored
-	if (!PrepareId(id)) return kFALSE; 	 
+	if (!PrepareId(id)) return kFALSE;
 
 	// build filename from entry's id
 	TString filename;
-	if (!IdToFilename(id.GetAliCDBRunRange(), id.GetVersion(), filename)) {
+	if (!IdToFilename(id, filename)) {
 		AliError("Bad ID encountered! Subnormal error!");
 		return kFALSE;
-	} 
+	}
 
-	filename.Prepend("/alien" + fDBFolder + id.GetPath() + '/');
-	TString filenameCopy(filename);
-	filename += "?se="; filename += fSE.Data(); 
- 
+	TString folderToTag = Form("%s%s",
+					fDBFolder.Data(),
+					id.GetPath().Data());
+
+	// add CDB and CDB_MD tag to folder
+	// TODO how to check that folder has already tags?
+	Bool_t tagCDB = AddTag(folderToTag,"CDB");
+	Bool_t tagCDBmd = AddTag(folderToTag,"CDB_MD");
+
 	TDirectory* saveDir = gDirectory;
 
+	// specify SE to filename
+	TString fullFilename = Form("/alien%s?se=%s", filename.Data(), fSE.Data());
+
 	// open file
-	TFile *file = TFile::Open(filename,"CREATE");
+	TFile *file = TFile::Open(fullFilename,"CREATE");
 	if(!file || !file->IsWritable()){
-		AliError(Form("Can't open file <%s>!", filename.Data()));    
+		AliError(Form("Can't open file <%s>!", filename.Data()));
 		if(file && !file->IsWritable()) file->Close(); delete file; file=0;
 		return kFALSE;
 	}
-  
-	file->cd(); 
+
+	file->cd();
 
 	entry->SetVersion(id.GetVersion());
 
 	// write object (key name: "AliCDBEntry")
 	Bool_t result = (entry->Write("AliCDBEntry") != 0); 
-	if (!result) AliError(Form("Can't write entry to file <%s>!",filename.Data()));
+	if (!result) AliError(Form("Can't write entry to file <%s>!", filename.Data()));
 
 
 	if (saveDir) saveDir->cd(); else gROOT->cd();
 	file->Close(); delete file; file=0;
 	if(result) {
-		AliInfo(Form("CDB object stored into file %s",filenameCopy.Data()));
+		AliInfo(Form("CDB object stored into file %s", filename.Data()));
 		AliInfo(Form("using S.E. %s", fSE.Data()));
+
+		if(tagCDB) TagFileId(filename, &id);
+		if(tagCDBmd) TagFileMetaData(filename, entry->GetMetaData());
 	}
- 
+
 	return result;
+}
+//_____________________________________________________________________________
+Bool_t AliCDBGrid::AddTag(TString& folderToTag, const char* tagname){
+// add "tagname" tag (CDB or CDB_MD) to folder where object will be stored
+
+	Bool_t result = kTRUE;
+	AliDebug(2, Form("adding %s tag to folder %s", tagname, folderToTag.Data()));
+	TString addTag = Form("addTag %s %s", folderToTag.Data(), tagname);
+	TGridResult *gridres = gGrid->Command(addTag.Data());
+	const char* resCode = gridres->GetKey(0,"__result__"); // '1' if success
+	if(resCode[0] != '1') {
+		AliError(Form("Couldn't add %s tags to folder %s !",
+						tagname, folderToTag.Data()));
+		result = kFALSE;
+	}
+	delete gridres;
+	return result;
+}
+
+//_____________________________________________________________________________
+void AliCDBGrid::TagFileId(TString& filename, const AliCDBId* id){
+// tag stored object in CDB table using object Id's parameters
+
+	TString addTagValue_1 = Form("addTagValue %s CDB ", filename.Data());
+	TString addTagValue_2 = Form("first_run=%d last_run=%d version=%d ",
+					id->GetFirstRun(),
+					id->GetLastRun(),
+					id->GetVersion());
+	TString addTagValue_3 = Form("path_level_0=\"%s\" path_level_1=\"%s\" path_level_2=\"%s\"",
+					id->GetLevel0().Data(),
+					id->GetLevel1().Data(),
+					id->GetLevel2().Data());
+	TString addTagValue = Form("%s%s%s",
+					addTagValue_1.Data(),
+					addTagValue_2.Data(),
+					addTagValue_3.Data());
+
+	AliDebug(2, Form("Tagging file. Tag command: %s", addTagValue.Data()));
+	TGridResult* res = gGrid->Command(addTagValue.Data());
+	const char* resCode = res->GetKey(0,"__result__"); // '1' if success
+	if(resCode[0] != '1') {
+		AliWarning(Form("Couldn't add CDB tag value to file %s !",
+						filename.Data()));
+	} else {
+		AliInfo("Object successfully tagged.");
+	}
+	delete res;
+
+
+}
+
+//_____________________________________________________________________________
+void AliCDBGrid::TagFileMetaData(TString& filename, const AliCDBMetaData* md){
+// tag stored object in CDB table using object Id's parameters
+
+	TString addTagValue_1 = Form("addTagValue %s CDB_MD ", filename.Data());
+	TString addTagValue_2 = Form("object_classname=\"%s\" responsible=\"%s\" beam_period=%d ",
+					md->GetObjectClassName(),
+					md->GetResponsible(),
+					md->GetBeamPeriod());
+	TString addTagValue_3 = Form("aliroot_version=\"%s\" comment=\"%s\"",
+					md->GetAliRootVersion(),
+					md->GetComment());
+	TString addTagValue = Form("%s%s%s",
+					addTagValue_1.Data(),
+					addTagValue_2.Data(),
+					addTagValue_3.Data());
+
+	AliDebug(2, Form("Tagging file. Tag command: %s", addTagValue.Data()));
+	TGridResult* res = gGrid->Command(addTagValue.Data());
+	const char* resCode = res->GetKey(0,"__result__"); // '1' if success
+	if(resCode[0] != '1') {
+		AliWarning(Form("Couldn't add CDB_MD tag value to file %s !",
+						filename.Data()));
+	} else {
+		AliInfo("Object successfully tagged.");
+	}
+
 }
 
 //_____________________________________________________________________________
@@ -482,7 +649,7 @@ TList* AliCDBGrid::GetIdListFromFile(const char* fileName){
 
 	TString turl(fileName);
 	turl.Prepend("/alien" + fDBFolder);
-	turl += "?se="; turl += fSE.Data(); 
+	turl += "?se="; turl += fSE.Data();
 	TFile *file = TFile::Open(turl);
 	if (!file) {
 		AliError(Form("Can't open selection file <%s>!", turl.Data()));
@@ -493,7 +660,7 @@ TList* AliCDBGrid::GetIdListFromFile(const char* fileName){
 	list->SetOwner();
 	int i=0;
 	TString keycycle;
-	
+
 	AliCDBId *id;
 	while(1){
 		i++;
@@ -522,6 +689,72 @@ Bool_t AliCDBGrid::Contains(const char* path) const{
 	if (gGrid->Cd(dirName,0)) result=kTRUE;
 	gGrid->Cd(initDir.Data(),0);
 	return result;
+}
+
+//_____________________________________________________________________________
+void AliCDBGrid::QueryValidFiles()
+{
+// Query the CDB for files valid for AliCDBStorage::fRun
+// fills list fValidFileIds with AliCDBId objects created from file name
+
+	TString filter;
+	MakeQueryFilter(fRun, fRun, fPathFilter, fVersion, fMetaDataFilter, filter);
+
+	TGridResult *res = gGrid->Query(fDBFolder, "Run*.root", filter, "");
+	AliCDBId validFileId;
+	for(int i=0; i<res->GetEntries(); i++){
+		TString filename = res->GetKey(i, "lfn");
+		AliDebug(2,Form("Found valid file: %s", filename.Data()));
+		Bool_t result = FilenameToId(filename, validFileId);
+		if(result) {
+			fValidFileIds.AddLast(validFileId.Clone());
+		}
+	}
+	delete res;
+
+}
+
+//_____________________________________________________________________________
+void AliCDBGrid::MakeQueryFilter(Long64_t firstRun, Long64_t lastRun,
+					const AliCDBPath& pathFilter, Int_t version,
+					const AliCDBMetaData* md, TString& result) const
+{
+// create filter for file query
+
+	result = Form("CDB:first_run<=%ld and CDB:last_run>=%ld", (long) firstRun, (long) lastRun);
+
+	if(version >= 0) {
+		result += Form(" and CDB:version=%d", version);
+	}
+	if(pathFilter.GetLevel0() != "*") {
+		result += Form(" and CDB:path_level_0=\"%s\"", pathFilter.GetLevel0().Data());
+	}
+	if(pathFilter.GetLevel1() != "*") {
+		result += Form(" and CDB:path_level_1=\"%s\"", pathFilter.GetLevel1().Data());
+	}
+	if(pathFilter.GetLevel2() != "*") {
+		result += Form(" and CDB:path_level_2=\"%s\"", pathFilter.GetLevel2().Data());
+	}
+
+	if(md){
+		if(md->GetObjectClassName()[0] != '\0') {
+			result += Form(" and CDB_MD:object_classname=\"%s\"", md->GetObjectClassName());
+		}
+		if(md->GetResponsible()[0] != '\0') {
+			result += Form(" and CDB_MD:responsible=\"%s\"", md->GetResponsible());
+		}
+		if(md->GetBeamPeriod() != 0) {
+			result += Form(" and CDB_MD:beam_period=%d", md->GetBeamPeriod());
+		}
+		if(md->GetAliRootVersion()[0] != '\0') {
+			result += Form(" and CDB_MD:aliroot_version=\"%s\"", md->GetAliRootVersion());
+		}
+		if(md->GetComment()[0] != '\0') {
+			result += Form(" and CDB_MD:comment=\"%s\"", md->GetComment());
+		}
+	}
+	AliDebug(2, Form("filter: %s",result.Data()));
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -562,7 +795,7 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 
 	TObjArray *arr = buffer.Tokenize('?');
 	TIter iter(arr);
-	TObjString *str;
+	TObjString *str = 0;
 	
 	while((str = (TObjString*) iter.Next())){
 		TString entry(str->String());
@@ -603,24 +836,25 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 	AliDebug(2, Form("dbFolder:	%s",dbFolder.Data()));
 	AliDebug(2, Form("s.e.:	%s",se.Data()));
 
-	return new AliCDBGridParam(gridUrl, user, dbFolder, se);       
+	return new AliCDBGridParam(gridUrl.Data(), user.Data(), dbFolder.Data(), se.Data());
 }
 
 //_____________________________________________________________________________
 AliCDBStorage* AliCDBGridFactory::Create(const AliCDBParam* param) {
 // create AliCDBGrid storage instance from parameters
 	
+	AliCDBGrid *grid = 0;
 	if (AliCDBGridParam::Class() == param->IsA()) {
-		
-		const AliCDBGridParam* gridParam = (const AliCDBGridParam*) param;
-		AliCDBGrid *grid = new AliCDBGrid(gridParam->GridUrl(), 
-				      gridParam->GetUser(), gridParam->GetDBFolder(),
-				      gridParam->GetSE()); 
 
-		if(gGrid) return grid;
+		const AliCDBGridParam* gridParam = (const AliCDBGridParam*) param;
+		grid = new AliCDBGrid(gridParam->GridUrl().Data(),
+				      gridParam->GetUser().Data(),
+				      gridParam->GetDBFolder().Data(),
+				      gridParam->GetSE().Data());
+
 	}
 
-	return NULL;
+	return grid;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -632,16 +866,23 @@ AliCDBStorage* AliCDBGridFactory::Create(const AliCDBParam* param) {
 ClassImp(AliCDBGridParam)
 
 //_____________________________________________________________________________
-AliCDBGridParam::AliCDBGridParam() {
+AliCDBGridParam::AliCDBGridParam():
+ AliCDBParam(),
+ fGridUrl(),
+ fUser(),
+ fDBFolder(),
+ fSE()
+ {
 // default constructor
 
 }
 
 //_____________________________________________________________________________
 AliCDBGridParam::AliCDBGridParam(const char* gridUrl, 
-				const char* user, 
+				const char* user,
 			        const char* dbFolder, 
 				const char* se):
+ AliCDBParam(),
  fGridUrl(gridUrl),
  fUser(user),
  fDBFolder(dbFolder),
@@ -651,13 +892,11 @@ AliCDBGridParam::AliCDBGridParam(const char* gridUrl,
 	
 	SetType("alien");
 
-	TString uri;
-	uri+=fGridUrl; uri+="?";
-	uri+="User="; 	uri+=fUser; uri+="?"; 
-	uri+="DBFolder="; uri+=fDBFolder; uri+="?";
-	uri+="SE="; 	uri+=fSE;
-	
-	SetURI(uri);
+	TString uri = Form("%s?User=%s?DBFolder=%s?SE=%s",
+			fGridUrl.Data(), fUser.Data(),
+			fDBFolder.Data(), fSE.Data());
+
+	SetURI(uri.Data());
 }
 
 //_____________________________________________________________________________
@@ -670,7 +909,8 @@ AliCDBGridParam::~AliCDBGridParam() {
 AliCDBParam* AliCDBGridParam::CloneParam() const {
 // clone parameter
 
-        return new AliCDBGridParam(fGridUrl, fUser, fDBFolder, fSE);
+        return new AliCDBGridParam(fGridUrl.Data(), fUser.Data(),
+					fDBFolder.Data(), fSE.Data());
 }
 
 //_____________________________________________________________________________

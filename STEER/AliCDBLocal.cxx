@@ -49,6 +49,8 @@ fBaseDirectory(baseDir)
 		AliDebug(2,Form("Folder <%s> found",fBaseDirectory.Data()));
 		gSystem->FreeDirectory(dir);
 	}
+	fType="local";
+	fBaseFolder = fBaseDirectory;
 }
 
 //_____________________________________________________________________________
@@ -409,24 +411,20 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 	// get the only AliCDBEntry object from the file
 	// the object in the file is an AliCDBEntry entry named "AliCDBEntry"
 	
-	TObject* anObject = file.Get("AliCDBEntry");
-	if (!anObject) {
-		AliDebug(2,Form("Bad storage data: NULL entry object!"));
+	AliCDBEntry* anEntry = dynamic_cast<AliCDBEntry*> (file.Get("AliCDBEntry"));
+	if (!anEntry) {
+		AliDebug(2,Form("Bad storage data: No AliCDBEntry in file!"));
+		file.Close();
 		return NULL;
 	}
 
-	if (AliCDBEntry::Class() != anObject->IsA()) {
-		AliDebug(2,Form("Bad storage data: Invalid entry object!"));
-		return NULL;
-	}
-	
- 	AliCDBId entryId = ((AliCDBEntry* ) anObject)->GetId();
+ 	AliCDBId entryId = anEntry->GetId();
  
 	// The object's Id are not reset during storage
 	// If object's Id runRange or version do not match with filename,
 	// it means that someone renamed file by hand. In this case a warning msg is issued.
-	
-	((AliCDBEntry*) anObject)-> SetLastStorage("local");
+
+	anEntry-> SetLastStorage("local");
  
  	if(!((entryId.GetAliCDBRunRange()).IsEqual(& dataId.GetAliCDBRunRange())) || 
     		(entryId.GetVersion() != dataId.GetVersion()) || (entryId.GetSubVersion() != dataId.GetSubVersion())){
@@ -436,7 +434,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 	
 	// close file, return retieved entry
 	file.Close();
-	return (AliCDBEntry*) anObject;
+	return anEntry;
 }
 
 //_____________________________________________________________________________
@@ -500,7 +498,7 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
 		}
 
 		if (queryId.GetAliCDBPath().Level2Comprises(level2)) {
-			
+
 			AliCDBPath entryPath(level0, level1, level2);
         		AliCDBId entryId(entryPath, queryId.GetAliCDBRunRange(),
 		                queryId.GetVersion(), queryId.GetSubVersion());
@@ -558,7 +556,7 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 
 	
 	// build filename from entry's id
-	TString filename;
+	TString filename="";
 	if (!IdToFilename(id.GetAliCDBRunRange(), id.GetVersion(),
 		id.GetSubVersion(), filename)) {
 
@@ -640,6 +638,13 @@ Bool_t AliCDBLocal::Contains(const char* path) const{
 	return result;
 }
 
+//_____________________________________________________________________________
+void AliCDBLocal::QueryValidFiles()
+{
+// blabla
+
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                             //
 // AliCDBLocal factory  			                                               //
@@ -700,15 +705,19 @@ AliCDBStorage* AliCDBLocalFactory::Create(const AliCDBParam* param) {
 ClassImp(AliCDBLocalParam)
 
 //_____________________________________________________________________________
-AliCDBLocalParam::AliCDBLocalParam() {
+AliCDBLocalParam::AliCDBLocalParam():
+ AliCDBParam(),
+ fDBPath()
+ {
 // default constructor
 
 }
 
 //_____________________________________________________________________________
 AliCDBLocalParam::AliCDBLocalParam(const char* dbPath):
-fDBPath(dbPath)
-{	
+ AliCDBParam(),
+ fDBPath(dbPath)
+{
 // constructor
 
 	SetType("local");

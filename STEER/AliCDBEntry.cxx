@@ -29,6 +29,7 @@ ClassImp(AliCDBEntry)
 //_____________________________________________________________________________
 AliCDBEntry::AliCDBEntry():
 fObject(NULL),
+fId(),
 fMetaData(NULL), 
 fIsOwner(kFALSE){
 // default constructor

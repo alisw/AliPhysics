@@ -107,8 +107,9 @@ TString AliCDBId::ToString() const {
 	result += GetLastRun();
 	result += "]; version v";
 	result += GetVersion();
-	result += "_s";
-	result += GetSubVersion();
-	
+	if(GetSubVersion()>0){
+		result += "_s";
+		result += GetSubVersion();
+	}
 	return result;	
 }

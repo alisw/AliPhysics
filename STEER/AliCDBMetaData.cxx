@@ -81,18 +81,25 @@ Bool_t AliCDBMetaData::RemoveProperty(const char* property) {
 void AliCDBMetaData::PrintMetaData() {
 // print the object's metaData
 
-	AliInfo("**** Object's MetaData set ****");
-	AliInfo(Form("  Object's class name:	%s", fObjectClassName.Data()));
-	AliInfo(Form("  Responsible:		%s", fResponsible.Data()));
-	AliInfo(Form("  Beam period:		%d", fBeamPeriod));
-	AliInfo(Form("  AliRoot version:	%s", fAliRootVersion.Data()));
-	AliInfo(Form("  Comment:		%s", fComment.Data()));
-	AliInfo("  Properties key names:");
+	TString message;
+	if(fObjectClassName != "")
+		message += Form("\tObject's class name:	%s\n", fObjectClassName.Data());
+	if(fResponsible != "")
+		message += Form("\tResponsible:		%s\n", fResponsible.Data());
+	if(fBeamPeriod != 0)
+		message += Form("\tBeam period:		%d\n", fBeamPeriod);
+	if(fAliRootVersion != "")
+		message += Form("\tAliRoot version:	%s\n", fAliRootVersion.Data());
+	if(fComment != "")
+		message += Form("\tComment:		%s\n", fComment.Data());
+	if(fProperties.GetEntries() > 0){
+		message += "\tProperties key names:";
 
-	TIter iter(fProperties.GetTable());	
-	TPair* aPair;
-	while ((aPair = (TPair*) iter.Next())) {
-		AliInfo(Form(" 			%s",((TObjString* )aPair->Key())->String().Data()));
+		TIter iter(fProperties.GetTable());
+		TPair* aPair;
+		while ((aPair = (TPair*) iter.Next())) {
+			message += Form("\t\t%s\n", ((TObjString* ) aPair->Key())->String().Data());
+		}
 	}
-	
+	AliInfo(Form("**** Object's MetaData set **** \n%s", message.Data()));
 }

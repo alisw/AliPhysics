@@ -80,7 +80,9 @@ AliCDBManager::AliCDBManager():
 {
 // default constuctor
 	fFactories.SetOwner(1);
-  	fEntryCache.SetOwner(1);
+	fActiveStorages.SetOwner(1);
+	fSpecificStorages.SetOwner(1);
+	fEntryCache.SetOwner(1);
 }
 
 //_____________________________________________________________________________
@@ -88,15 +90,9 @@ AliCDBManager::~AliCDBManager() {
 // destructor
 	ClearCache();
 	DestroyActiveStorages();
+	fFactories.Delete();
 	fDrainStorage = 0x0;
 	fDefaultStorage = 0x0;
-}
-
-//_____________________________________________________________________________
-AliCDBStorage* AliCDBManager::GetActiveStorage(const AliCDBParam* param) {
-// get a storage object from the list of active storages 
-
-        return (AliCDBStorage*) fActiveStorages.GetValue(param);
 }
 
 //_____________________________________________________________________________
@@ -122,7 +118,7 @@ Bool_t AliCDBManager::HasStorage(const char* dbString) const {
 
 	TIter iter(&fFactories);
 
-	AliCDBStorageFactory* factory;
+	AliCDBStorageFactory* factory=0;
 	while ((factory = (AliCDBStorageFactory*) iter.Next())) {
 
 		if (factory->Validate(dbString)) {
@@ -139,13 +135,10 @@ AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) const {
 
 	TIter iter(&fFactories);
 
-        AliCDBStorageFactory* factory;
+        AliCDBStorageFactory* factory=0;
         while ((factory = (AliCDBStorageFactory*) iter.Next())) {
-
 		AliCDBParam* param = factory->CreateParameter(dbString);
-		if (param) {
-			return param;
-		}
+		if(param) return param;
         }
 
         return NULL;
@@ -163,7 +156,6 @@ AliCDBStorage* AliCDBManager::GetStorage(const char* dbString) {
 	AliCDBStorage* aStorage = GetStorage(param);
 
 	delete param;
-	
 	return aStorage;
 }
 
@@ -180,7 +172,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 
 	TIter iter(&fFactories);
 
-        AliCDBStorageFactory* factory;
+        AliCDBStorageFactory* factory=0;
 
 	// loop on the list of registered factories
 	while ((factory = (AliCDBStorageFactory*) iter.Next())) {
@@ -198,13 +190,21 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 }
 
 //_____________________________________________________________________________
+AliCDBStorage* AliCDBManager::GetActiveStorage(const AliCDBParam* param) {
+// get a storage object from the list of active storages
+
+        return dynamic_cast<AliCDBStorage*> (fActiveStorages.GetValue(param));
+}
+
+//_____________________________________________________________________________
 TList* AliCDBManager::GetActiveStorages() {
 // return list of active storages
+// user has responsibility to delete returned object
 
 	TList* result = new TList();
 
 	TIter iter(fActiveStorages.GetTable());
-	TPair* aPair;
+	TPair* aPair=0;
 	while ((aPair = (TPair*) iter.Next())) {
 		result->Add(aPair->Value());
 	}
@@ -286,11 +286,17 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 		return;
 	}
 	
-	TObjString *objCalibType = new TObjString(calibType);
+	AliCDBPath aPath(calibType);
+	if(!aPath.IsValid()){
+		AliError(Form("Not a valid path: %s", calibType));
+		return;
+	}
+
+	TObjString *objCalibType = new TObjString(aPath.GetPath());
 	if(fSpecificStorages.Contains(objCalibType)){
-		AliWarning(Form("%s storage already activated! It will be replaced by the new one",
+		AliWarning(Form("Storage \"%s\" already activated! It will be replaced by the new one",
 					calibType));
-		fSpecificStorages.Remove(objCalibType);	
+		fSpecificStorages.Remove(objCalibType);
 	}
 	GetStorage(param);
 	fSpecificStorages.Add(objCalibType, param->CloneParam());
@@ -314,11 +320,18 @@ AliCDBStorage* AliCDBManager::GetSpecificStorage(const char* calibType) {
 AliCDBParam* AliCDBManager::SelectSpecificStorage(const TString& path) {
 // select storage valid for path from the list of specific storages
 
+	AliCDBPath aPath(path);
+	if(!aPath.IsValid()){
+		AliError(Form("Not a valid path: %s", path.Data()));
+		return NULL;
+	}
+
 	TIter iter(&fSpecificStorages);
-	TObjString *aCalibType;
+	TObjString *aCalibType=0;
 	AliCDBParam* aPar=0;
 	while((aCalibType = (TObjString*) iter.Next())){
-		if(path.Contains(aCalibType->String(), TString::kIgnoreCase)) {
+		AliCDBPath calibTypePath(aCalibType->GetName());
+		if(calibTypePath.Comprises(aPath)) {
 		 	aPar = (AliCDBParam*) fSpecificStorages.GetValue(aCalibType);
 			break;
 		}
@@ -382,18 +395,18 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
   	AliCDBEntry *entry=0;
 	
   	// first look into map of cached objects
-  	if(query.GetFirstRun() == fRun) 
+  	if(fCache && query.GetFirstRun() == fRun)
 		entry = (AliCDBEntry*) fEntryCache.GetValue(query.GetPath());
 
   	if(entry) {
-		AliDebug(2,Form("Object %s retrieved from cache !!",query.GetPath().Data()));		
+		AliInfo(Form("Object %s retrieved from cache !!",query.GetPath().Data()));
 		return entry;
 	}
   	
 	// Entry is not in cache -> retrieve it from CDB and cache it!!   
 	AliCDBStorage *aStorage=0;
 	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
-	
+
 	if(aPar) {
 		aStorage=GetStorage(aPar);
 		TString str = aPar->GetURI();
@@ -417,7 +430,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 }
 
 //_____________________________________________________________________________
-TList* AliCDBManager::GetAll(const AliCDBPath& path, Int_t runNumber, 
+TList* AliCDBManager::GetAll(const AliCDBPath& path, Int_t runNumber,
 	Int_t version, Int_t subVersion) {
 // get multiple AliCDBEntry objects from the database
 
@@ -576,7 +589,7 @@ void AliCDBManager::Print(Option_t* /*option*/) const
 	if(fSpecificStorages.GetEntries()>0) {
 		AliInfo("*** Specific Storages: ***");
 		TIter iter(fSpecificStorages.GetTable());
-		TPair *aPair;
+		TPair *aPair=0;
 		while((aPair = (TPair*) iter.Next())){
 			output = Form("Key: %s - Storage: %s",
 				((TObjString*) aPair->Key())->GetName(),
@@ -605,6 +618,7 @@ void AliCDBManager::SetRun(Long64_t run)
   
 	fRun = run;
 	ClearCache();
+	QueryCDB();
 }
 
 //_____________________________________________________________________________
@@ -641,13 +655,42 @@ void AliCDBManager::DestroyActiveStorage(AliCDBStorage* /*storage*/) {
 
 }
 
+//_____________________________________________________________________________
+void AliCDBManager::QueryCDB() {
+// query default and specific storages for files valid for fRun. Every storage loads the Ids into its list.
+
+	if (fRun < 0){
+		AliError("Run number not yet set! Use AliCDBManager::SetRun.");
+	return;
+	}
+
+	AliInfo(Form("Querying default and specific storages for files valid for run %ld", (long) fRun));
+	fDefaultStorage->QueryCDB(fRun);
+
+	TIter iter(&fSpecificStorages);
+	TObjString *aCalibType=0;
+	AliCDBParam* aPar=0;
+	while((aCalibType = dynamic_cast<TObjString*> (iter.Next()))){
+		aPar = (AliCDBParam*) fSpecificStorages.GetValue(aCalibType);
+		if(aPar) {
+			AliDebug(2,Form("Qerying specific storage %s",aCalibType->GetName()));
+			GetStorage(aPar)->QueryCDB(fRun,aCalibType->GetName());
+
+		}
+	}
+
+}
+
+
 ///////////////////////////////////////////////////////////
 // AliCDBManager Parameter class                         //
 // interface to specific AliCDBParameter class           //
 // (AliCDBGridParam, AliCDBLocalParam, AliCDBDumpParam)  //
 ///////////////////////////////////////////////////////////
 
-AliCDBParam::AliCDBParam() {
+AliCDBParam::AliCDBParam():
+fType(), fURI()
+{
 // constructor
 
 }
