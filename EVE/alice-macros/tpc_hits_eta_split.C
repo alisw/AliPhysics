@@ -17,7 +17,7 @@ void tpc_hits_eta_split(const char *varexp    =
   l->SetSourceCS(TPointSelectorConsumer::TVT_RPhiZ);
   l->SetMarkerColor((Color_t)3);
   l->SetMarkerStyle(20); // full circle
-  l->SetMarkerSize(2);
+  l->SetMarkerSize(.5);
   
   gReve->AddRenderElement(l);
   l->InitBins("Eta", 20, -2, 2);

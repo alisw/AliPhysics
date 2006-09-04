@@ -19,7 +19,7 @@ tpc_hits(const char *varexp    = "TPC2.fArray.fR:TPC2.fArray.fFi:TPC2.fArray.fZ"
   ps.Select();
 
   points->SetTitle(Form("N=%d", points->Size()));
-  points->SetMarkerSize(2);
+  points->SetMarkerSize(.5);
   points->SetMarkerColor((Color_t)3);
 
   gReve->AddRenderElement(points);

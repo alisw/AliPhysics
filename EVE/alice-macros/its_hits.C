@@ -15,7 +15,7 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   ps.Select();
 
   points->SetTitle(Form("N=%d", points->Size()));
-  points->SetMarkerSize(2);
+  points->SetMarkerSize(.5);
   points->SetMarkerColor((Color_t)2);
 
   gReve->AddRenderElement(points);
