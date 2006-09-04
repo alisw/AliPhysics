@@ -31,7 +31,7 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
 
     TH2F* fSecondaries; // (Nprim/Nsec for the cases: all/above3GeV/reconstructed tracks/accepted tracks) vs (particle count)
 
-    AlidNdEtaCorrection* fdNdEtaCorrection[4];      // correction for different particle species: here pi, K, p, others
+    AlidNdEtaCorrection* fdNdEtaCorrectionSpecies[4];      // correction for different particle species: here pi, K, p, others
 
     TH1F* fSigmaVertex; // (accepted tracks) vs (n of sigma to vertex cut)
 
@@ -39,6 +39,8 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
 
     TH1F* fPIDParticles; // pid of primary particles
     TH1F* fPIDTracks; // pid of reconstructed tracks
+
+    AlidNdEtaCorrection* fdNdEtaCorrectionVertexReco[3]; // correction for vertex reco eff
 
  private:
     AlidNdEtaSystematicsSelector(const AlidNdEtaSystematicsSelector&);

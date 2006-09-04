@@ -14,9 +14,12 @@
 
 #include <AliLog.h>
 #include <AliESD.h>
-#include <AliGenEventHeader.h>
 #include <AliStack.h>
 #include <AliHeader.h>
+#include <AliGenEventHeader.h>
+#include <AliGenPythiaEventHeader.h>
+#include <AliGenCocktailEventHeader.h>
+
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
@@ -37,7 +40,11 @@ AlidNdEtaSystematicsSelector::AlidNdEtaSystematicsSelector() :
   //
 
   for (Int_t i=0; i<4; ++i)
-    fdNdEtaCorrection[i] = 0;
+    fdNdEtaCorrectionSpecies[i] = 0;
+
+  for (Int_t i=0; i<3; ++i)
+    fdNdEtaCorrectionVertexReco[i] = 0;
+
 }
 
 AlidNdEtaSystematicsSelector::~AlidNdEtaSystematicsSelector()
@@ -103,7 +110,7 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
     {
       TString name;
       name.Form("correction_%d", i);
-      fdNdEtaCorrection[i] = new AlidNdEtaCorrection(name, name);
+      fdNdEtaCorrectionSpecies[i] = new AlidNdEtaCorrection(name, name);
     }
   }
 
@@ -111,6 +118,12 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
   {
     fSigmaVertex = new TH1F("fSigmaVertex", "fSigmaVertex;Nsigma2vertex;NacceptedTracks", 50, 0.05, 5.05);
     printf("WARNING: sigma-vertex analysis enabled. This will produce weird results in the AliESDtrackCuts histograms\n");
+  }
+
+  if (option.Contains("vertexreco")) {
+    fdNdEtaCorrectionVertexReco[0] = new AlidNdEtaCorrection("vertexRecoND", "vertexRecoND");
+    fdNdEtaCorrectionVertexReco[1] = new AlidNdEtaCorrection("vertexRecoSD", "vertexRecoSD");
+    fdNdEtaCorrectionVertexReco[2] = new AlidNdEtaCorrection("vertexRecoDD", "vertexRecoDD");
   }
 
   fPIDParticles = new TH1F("pid_particles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
@@ -162,7 +175,7 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
 
   TObjArray* list = fEsdTrackCuts->GetAcceptedTracks(fESD);
 
-  if (fdNdEtaCorrection[0])
+  if (fdNdEtaCorrectionSpecies[0])
     FillCorrectionMaps(list);
 
   if (fSecondaries)
@@ -170,6 +183,77 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
 
   if (fSigmaVertex)
     FillSigmaVertex();
+
+  // stuff for vertex reconstruction correction systematics
+  if (fdNdEtaCorrectionVertexReco[0]) {
+    AliHeader* header = GetHeader();
+    if (!header) {
+      AliDebug(AliLog::kError, "Header not available");
+      return kFALSE;
+    }
+
+    // is there a smart way to check if it is really a pythia header?
+    AliGenCocktailEventHeader* genHeaders = dynamic_cast<AliGenCocktailEventHeader*>(header->GenEventHeader());
+    if (!genHeaders)
+      return kTRUE;
+
+    TList* headerList = genHeaders->GetHeaders();
+    if (!headerList)
+      return kTRUE;
+    
+    AliGenPythiaEventHeader* genHeader = 0;
+    for (Int_t i=0; i<headerList->GetEntries(); i++) {
+      genHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
+      if (genHeader)
+	break;
+    }        
+    if (!genHeader)
+      return kTRUE;
+    
+    Int_t processtype = genHeader->ProcessType();      
+
+    // get the MC vertex
+    TArrayF vtxMC(3);
+    genHeader->PrimaryVertex(vtxMC);
+
+    Int_t nGoodTracks = list->GetEntries();
+
+    Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
+    Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
+
+    // genHeader->Print();
+    // printf("  heps %d %d %d %f \n", eventTriggered, vertexReconstructed, processtype, vtxMC[2]);
+
+    // non diffractive
+    if (processtype!=92 && processtype!=93 && processtype!=94) { 
+      fdNdEtaCorrectionVertexReco[0]->FillEvent(vtxMC[2], nGoodTracks);
+      if (eventTriggered) {
+	fdNdEtaCorrectionVertexReco[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (vertexReconstructed)
+	  fdNdEtaCorrectionVertexReco[0]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+      }
+    }
+
+    // single diffractive
+    if (processtype==92 || processtype==93) { 
+      fdNdEtaCorrectionVertexReco[1]->FillEvent(vtxMC[2], nGoodTracks);
+      if (eventTriggered) {
+	fdNdEtaCorrectionVertexReco[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (vertexReconstructed)
+	  fdNdEtaCorrectionVertexReco[1]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+      }
+    }
+
+    // double diffractive
+    if (processtype==94) { 
+      fdNdEtaCorrectionVertexReco[2]->FillEvent(vtxMC[2], nGoodTracks);
+      if (eventTriggered) {
+	fdNdEtaCorrectionVertexReco[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (vertexReconstructed)
+	  fdNdEtaCorrectionVertexReco[2]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+      }
+    }
+  }
 
   delete list;
   list = 0;
@@ -235,14 +319,14 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
 
     if (vertexReconstructed)
     {
-      fdNdEtaCorrection[id]->FillParticle(vtxMC[2], eta, pt);
+      fdNdEtaCorrectionSpecies[id]->FillParticle(vtxMC[2], eta, pt);
       //if (pt < 0.1)
         fPIDParticles->Fill(particle->GetPdgCode());
     }
 
-    fdNdEtaCorrection[id]->FillParticleAllEvents(eta, pt);
+    fdNdEtaCorrectionSpecies[id]->FillParticleAllEvents(eta, pt);
     if (eventTriggered)
-      fdNdEtaCorrection[id]->FillParticleWhenEventTriggered(eta, pt);
+      fdNdEtaCorrectionSpecies[id]->FillParticleWhenEventTriggered(eta, pt);
   }// end of mc particle
 
   // loop over esd tracks
@@ -302,7 +386,7 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
 
     if (vertexReconstructed)
     {
-      fdNdEtaCorrection[id]->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
+      fdNdEtaCorrectionSpecies[id]->FillParticleWhenMeasuredTrack(vtxMC[2], particle->Eta(), particle->Pt());
       //if (particle->Pt() < 0.1)
         fPIDTracks->Fill(particle->GetPdgCode());
     }
@@ -312,12 +396,12 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
 
   for (Int_t i=0; i<4; ++i)
   {
-    fdNdEtaCorrection[i]->FillEvent(vtxMC[2], nGoodTracks);
+    fdNdEtaCorrectionSpecies[i]->FillEvent(vtxMC[2], nGoodTracks);
     if (eventTriggered)
     {
-      fdNdEtaCorrection[i]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+      fdNdEtaCorrectionSpecies[i]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
       if (vertexReconstructed)
-        fdNdEtaCorrection[i]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+        fdNdEtaCorrectionSpecies[i]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
     }
   }
 
@@ -478,11 +562,16 @@ void AlidNdEtaSystematicsSelector::SlaveTerminate()
     fOutput->Add(fSecondaries);
 
   for (Int_t i=0; i<4; ++i)
-    if (fdNdEtaCorrection[i])
-      fOutput->Add(fdNdEtaCorrection[i]);
+    if (fdNdEtaCorrectionSpecies[i])
+      fOutput->Add(fdNdEtaCorrectionSpecies[i]);
 
   if (fSigmaVertex)
     fOutput->Add(fSigmaVertex);
+
+  for (Int_t i=0; i<3; ++i)
+    if (fdNdEtaCorrectionVertexReco[i])
+      fOutput->Add(fdNdEtaCorrectionVertexReco[i]);
+
 }
 
 void AlidNdEtaSystematicsSelector::Terminate()
@@ -495,7 +584,7 @@ void AlidNdEtaSystematicsSelector::Terminate()
 
   fSecondaries = dynamic_cast<TH2F*> (fOutput->FindObject("fSecondaries"));
   for (Int_t i=0; i<4; ++i)
-    fdNdEtaCorrection[i] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
+    fdNdEtaCorrectionSpecies[i] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
   fSigmaVertex = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertex"));
 
   if (fPIDParticles)
@@ -504,11 +593,20 @@ void AlidNdEtaSystematicsSelector::Terminate()
 
     for (Int_t i=0; i <= fPIDParticles->GetNbinsX()+1; ++i)
       if (fPIDParticles->GetBinContent(i) > 0)
-        printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", (Int_t) fPIDParticles->GetBinCenter(i), pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), (Int_t) fPIDParticles->GetBinContent(i), (Int_t) fPIDTracks->GetBinContent(i), ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
+        printf("PDG = %d (%s): generated: %d, reconstructed: %d, ratio: %f\n", 
+	       (Int_t) fPIDParticles->GetBinCenter(i), 
+	       pdgDB->GetParticle((Int_t) fPIDParticles->GetBinCenter(i))->GetName(), 
+	       (Int_t) fPIDParticles->GetBinContent(i), 
+	       (Int_t) fPIDTracks->GetBinContent(i), 
+	       ((fPIDTracks->GetBinContent(i) > 0) ? fPIDParticles->GetBinContent(i) / fPIDTracks->GetBinContent(i) : -1));
 
     delete pdgDB;
     pdgDB = 0;
   }
+
+  for (Int_t i=0; i<3; ++i)
+    if (fdNdEtaCorrectionVertexReco[i])
+      fdNdEtaCorrectionVertexReco[i]->Finish();
 
   TFile* fout = TFile::Open("systematics.root", "RECREATE");
 
@@ -522,8 +620,12 @@ void AlidNdEtaSystematicsSelector::Terminate()
     fSigmaVertex->Write();
 
   for (Int_t i=0; i<4; ++i)
-    if (fdNdEtaCorrection[i])
-      fdNdEtaCorrection[i]->SaveHistograms();
+    if (fdNdEtaCorrectionSpecies[i])
+      fdNdEtaCorrectionSpecies[i]->SaveHistograms();
+
+  for (Int_t i=0; i<3; ++i)
+    if (fdNdEtaCorrectionVertexReco[i])
+      fdNdEtaCorrectionVertexReco[i]->SaveHistograms();
 
   fout->Write();
   fout->Close();
