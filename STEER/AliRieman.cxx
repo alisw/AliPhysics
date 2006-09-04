@@ -50,7 +50,24 @@ ClassImp(AliRieman)
 
 
 
-AliRieman::AliRieman(){
+AliRieman::AliRieman() :
+  TObject(),
+  fCapacity(0),
+  fN(0),
+  fX(0),
+  fY(0),
+  fZ(0),
+  fSy(0),
+  fSz(0),
+  fCovar(0),
+  fCovarPolY(0),
+  fCovarPolZ(0),
+  fSumZZ(0),
+  fChi2(0),
+  fChi2Y(0),
+  fChi2Z(0),
+  fConv(kFALSE)
+{
   //
   // default constructor
   //
@@ -61,25 +78,27 @@ AliRieman::AliRieman(){
     fSumPolY[i]=0;
     fSumPolZ[i]=0;
   }
-  fSumZZ = 0;
-  fCapacity = 0;
-  fN =0;
-  fX  = 0;
-  fY  = 0;
-  fZ  = 0;
-  fSy = 0;
-  fSz = 0;
-  fChi2  = 0;
-  fChi2Y = 0;
-  fChi2Z = 0;
-  fCovar = 0;
-  fCovarPolY = 0;
-  fCovarPolZ = 0;
-  fConv = kFALSE;
 }
 
 
-AliRieman::AliRieman(Int_t capacity){
+AliRieman::AliRieman(Int_t capacity) :
+  TObject(),
+  fCapacity(capacity),
+  fN(0),
+  fX(new Double_t[fCapacity]),
+  fY(new Double_t[fCapacity]),
+  fZ(new Double_t[fCapacity]),
+  fSy(new Double_t[fCapacity]),
+  fSz(new Double_t[fCapacity]),
+  fCovar(new TMatrixDSym(6)),
+  fCovarPolY(new TMatrixDSym(3)),
+  fCovarPolZ(new TMatrixDSym(2)),
+  fSumZZ(0),
+  fChi2(0),
+  fChi2Y(0),
+  fChi2Z(0),
+  fConv(kFALSE)
+{
   //
   // default constructor
   //
@@ -90,24 +109,27 @@ AliRieman::AliRieman(Int_t capacity){
     fSumPolY[i]=0;
     fSumPolZ[i]=0;
   }
-  fSumZZ =0;
-  fCapacity = capacity;
-  fN =0;
-  fX  = new Double_t[fCapacity];
-  fY  = new Double_t[fCapacity];
-  fZ  = new Double_t[fCapacity];
-  fSy = new Double_t[fCapacity];
-  fSz = new Double_t[fCapacity];
-  fCovar = new TMatrixDSym(6);
-  fCovarPolY = new TMatrixDSym(3);
-  fCovarPolZ = new TMatrixDSym(2);
-  fChi2  = 0;
-  fChi2Y = 0;
-  fChi2Z = 0;
-  fConv = kFALSE;
 }
 
-AliRieman::AliRieman(const AliRieman &rieman):TObject(rieman){
+AliRieman::AliRieman(const AliRieman &rieman):
+  TObject(rieman),
+  fCapacity(rieman.fN),
+  fN(rieman.fN),
+  fX(new Double_t[fN]),
+  fY(new Double_t[fN]),
+  fZ(new Double_t[fN]),
+  fSy(new Double_t[fN]),
+  fSz(new Double_t[fN]),
+  fCovar(new TMatrixDSym(*(rieman.fCovar))), 
+  fCovarPolY(new TMatrixDSym(*(rieman.fCovarPolY))), 
+  fCovarPolZ(new TMatrixDSym(*(rieman.fCovarPolZ))), 
+  fSumZZ(rieman.fSumZZ),
+  fChi2(rieman.fChi2),
+  fChi2Y(rieman.fChi2Y),
+  fChi2Z(rieman.fChi2Z),
+  fConv(rieman.fConv)
+
+{
   //
   // copy constructor
   // 
@@ -118,18 +140,6 @@ AliRieman::AliRieman(const AliRieman &rieman):TObject(rieman){
     fSumPolY[i]=rieman.fSumPolY[i];
     fSumPolZ[i]=rieman.fSumPolZ[i];
   }
-  fSumZZ    = rieman.fSumZZ;
-  fCapacity = rieman.fN;
-  fN =rieman.fN;
-  fCovar = new TMatrixDSym(*(rieman.fCovar)); 
-  fCovarPolY = new TMatrixDSym(*(rieman.fCovarPolY)); 
-  fCovarPolZ = new TMatrixDSym(*(rieman.fCovarPolZ)); 
-  fConv = rieman.fConv;
-  fX  = new Double_t[fN];
-  fY  = new Double_t[fN];
-  fZ  = new Double_t[fN];
-  fSy = new Double_t[fN];
-  fSz = new Double_t[fN];
   for (Int_t i=0;i<rieman.fN;i++){
     fX[i]   = rieman.fX[i];
     fY[i]   = rieman.fY[i];

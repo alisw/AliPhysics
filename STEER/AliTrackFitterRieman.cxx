@@ -42,45 +42,48 @@ ClassImp(AliTrackFitterRieman)
 
 
 AliTrackFitterRieman::AliTrackFitterRieman():
-  AliTrackFitter()
+  AliTrackFitter(),
+  fAlpha(0.),
+  fNUsed(0),
+  fConv(kFALSE),
+  fMaxDelta(3),
+  fRieman(new AliRieman(10000)),  // allocate rieman
+  fDebugStream(new TTreeSRedirector("RiemanAlignDebug.root"))
 {
   //
   // default constructor
   //
-  fAlpha = 0.;
-  fNUsed = 0;
-  fConv = kFALSE;
-  fMaxDelta = 3;
-  fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
-  fRieman = new AliRieman(10000);  // allocate rieman
 }
 
 
 AliTrackFitterRieman::AliTrackFitterRieman(AliTrackPointArray *array, Bool_t owner):
-  AliTrackFitter(array,owner)
+  AliTrackFitter(array,owner),
+  fAlpha(0.),
+  fNUsed(0),
+  fConv(kFALSE),
+  fMaxDelta(3),
+  fRieman(new AliRieman(10000)),  //allocate rieman
+  fDebugStream(0)
 {
   //
   // Constructor
   //
-  fAlpha = 0.;
-  fNUsed = 0;
-  fConv = kFALSE;
-  fMaxDelta = 3;
   if (AliLog::GetDebugLevel("","AliTrackFitterRieman")) fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
-  fRieman = new AliRieman(10000);  //allocate rieman
 }
 
 AliTrackFitterRieman::AliTrackFitterRieman(const AliTrackFitterRieman &rieman):
-  AliTrackFitter(rieman)
+  AliTrackFitter(rieman),
+  fAlpha(rieman.fAlpha),
+  fNUsed(rieman.fNUsed),
+  fConv(rieman.fConv),
+  fMaxDelta(rieman.fMaxDelta),
+  fRieman(new AliRieman(*(rieman.fRieman))),
+  fDebugStream(0)
 {
   //
   // copy constructor
   //
-  fAlpha = rieman.fAlpha;
-  fNUsed = rieman.fNUsed;
-  fConv = rieman.fConv;
-  fMaxDelta = rieman.fMaxDelta;
-  fRieman = new AliRieman(*(rieman.fRieman));
+  if (AliLog::GetDebugLevel("","AliTrackFitterRieman")) fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
 }
 
 //_____________________________________________________________________________
@@ -97,6 +100,8 @@ AliTrackFitterRieman &AliTrackFitterRieman::operator =(const AliTrackFitterRiema
   fConv   = rieman.fConv;
   fMaxDelta = rieman.fMaxDelta;
   fRieman = new AliRieman(*(rieman.fRieman));
+  fDebugStream = 0;
+  if (AliLog::GetDebugLevel("","AliTrackFitterRieman")) fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
   return *this;
 }
 

@@ -44,10 +44,12 @@
 ClassImp( AliTriggerDetector )
 
 //_____________________________________________________________________________
-AliTriggerDetector::AliTriggerDetector() : TNamed()
+AliTriggerDetector::AliTriggerDetector() :
+  TNamed(),
+  fMask(0),
+  fInputs()
 {
    // Default constructor
-   fMask    = 0;
 }
 
 //_____________________________________________________________________________

@@ -25,8 +25,6 @@ class AliAlignmentTracks : public TObject {
   AliAlignmentTracks();
   AliAlignmentTracks(TChain *esdchain);
   AliAlignmentTracks(const char *esdfilename, const char *esdtreename = "esdTree");
-  AliAlignmentTracks(const AliAlignmentTracks & alignment);
-  AliAlignmentTracks& operator= (const AliAlignmentTracks& alignment);
   virtual ~AliAlignmentTracks();
 
   void AddESD(TChain *esdchain);
@@ -96,6 +94,11 @@ class AliAlignmentTracks : public TObject {
   AliTrackFitter   *fTrackFitter;    //  Pointer to the track fitter
   AliTrackResiduals*fMinimizer;      //  Pointer to track residuals minimizer
   Bool_t            fDoUpdate;       //  Indicator - update Alignment object after minimization
+
+ private:
+  AliAlignmentTracks(const AliAlignmentTracks & alignment);
+  AliAlignmentTracks& operator= (const AliAlignmentTracks& alignment);
+
   ClassDef(AliAlignmentTracks,2)
 
 };

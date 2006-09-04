@@ -41,12 +41,13 @@
 ClassImp(AliTrackResidualsLinear)
 
 //______________________________________________________________________________
-AliTrackResidualsLinear::AliTrackResidualsLinear():AliTrackResiduals()
+AliTrackResidualsLinear::AliTrackResidualsLinear():
+  AliTrackResiduals(),
+  fFitter(0),
+  fFraction(-1),
+  fChi2Orig(0)
 {
   // Default constructor
-  fFitter = 0;
-  fFraction =-1;
-  fChi2Orig =0;
   for (Int_t ipar=0; ipar<6; ipar++){
     fBFixed[ipar] = kFALSE;
     fFixed[ipar]  = 0;;
@@ -56,12 +57,12 @@ AliTrackResidualsLinear::AliTrackResidualsLinear():AliTrackResiduals()
 
 //______________________________________________________________________________
 AliTrackResidualsLinear::AliTrackResidualsLinear(Int_t ntracks):
-  AliTrackResiduals(ntracks)
+  AliTrackResiduals(ntracks),
+  fFitter(new TLinearFitter(6,"hyp6")),
+  fFraction(-1),
+  fChi2Orig(0)
 {
   // Constructor
-  fFitter = new TLinearFitter(6,"hyp6");
-  fFraction =-1;
-  fChi2Orig =0;
   for (Int_t ipar=0; ipar<6; ipar++){
     fBFixed[ipar] = kFALSE;
     fFixed[ipar]  = 0;
@@ -71,17 +72,18 @@ AliTrackResidualsLinear::AliTrackResidualsLinear(Int_t ntracks):
  
 //______________________________________________________________________________
 AliTrackResidualsLinear::AliTrackResidualsLinear(const AliTrackResidualsLinear &res):
-  AliTrackResiduals(res)
+  AliTrackResiduals(res),
+  fFitter(new TLinearFitter(*(res.fFitter))),
+  fFraction(res.fFraction),
+  fChi2Orig(res.fChi2Orig)
 {
   // Copy constructor
   //..
-  fFitter = new TLinearFitter(*(res.fFitter));
   for (Int_t ipar=0; ipar<6; ipar++){
     fBFixed[ipar]  = res.fBFixed[ipar];
     fFixed[ipar]   = res.fFixed[ipar];
     fParams[ipar]  = res.fParams[ipar];
   }
-  fChi2Orig = res.fChi2Orig;
 }
 
 //______________________________________________________________________________

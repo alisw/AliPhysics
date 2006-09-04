@@ -29,48 +29,57 @@
 ClassImp(AliTrackFitter)
 
 //_____________________________________________________________________________
-AliTrackFitter::AliTrackFitter()
+AliTrackFitter::AliTrackFitter() :
+  TObject(),
+  fCov(0),
+  fPoints(0),
+  fPVolId(0),
+  fPTrack(0),
+  fChi2(0),
+  fNdf(0),
+  fMinNPoints(0),
+  fIsOwner(kFALSE)
 {
   // default constructor
   //
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
-  fCov = 0;
-  fPoints = 0;
-  fPVolId = fPTrack = 0;
-  fChi2 = 0;
-  fNdf = 0;
-  fMinNPoints = 0;
-  fIsOwner = kFALSE;
 }
 
 //_____________________________________________________________________________
-AliTrackFitter::AliTrackFitter(AliTrackPointArray *array, Bool_t owner)
+AliTrackFitter::AliTrackFitter(AliTrackPointArray *array, Bool_t owner) :
+  TObject(),
+  fCov(new TMatrixDSym(6)),
+  fPoints(0),
+  fPVolId(0),
+  fPTrack(0),
+  fChi2(0),
+  fNdf(0),
+  fMinNPoints(0),
+  fIsOwner(kFALSE)
+  
 {
   // constructor from space points array
   //
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
-  fCov = new TMatrixDSym(6);
-  fPVolId = fPTrack = 0;
-  fChi2 = 0;
-  fNdf = 0;
-  fMinNPoints = 0;
-  fIsOwner = kFALSE;
   SetTrackPointArray(array,owner);
 }
 
 //_____________________________________________________________________________
 AliTrackFitter::AliTrackFitter(const AliTrackFitter &fitter):
-  TObject(fitter)
+  TObject(fitter),
+  fCov(new TMatrixDSym(*fitter.fCov)),
+  fPoints(0),
+  fPVolId(0),
+  fPTrack(0),
+  fChi2(fitter.fChi2),
+  fNdf(fitter.fNdf),
+  fMinNPoints(fitter.fMinNPoints),
+  fIsOwner(kFALSE)
 {
   // Copy constructor
   //
   SetTrackPointArray(fitter.fPoints,fitter.fIsOwner);
   for (Int_t i=0;i<6;i++) fParams[i] = fitter.fParams[i];
-  fCov = new TMatrixDSym(*fitter.fCov);
-  fChi2 = fitter.fChi2;
-  fNdf = fitter.fNdf;
-  fMinNPoints = fitter.fMinNPoints;
-  fIsOwner = kFALSE;
 }
 
 //_____________________________________________________________________________

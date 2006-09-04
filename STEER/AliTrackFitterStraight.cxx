@@ -5,49 +5,49 @@
 ClassImp(AliTrackFitterStraight)
 
 AliTrackFitterStraight::AliTrackFitterStraight():
-  AliTrackFitter()
+  AliTrackFitter(),
+  fAlpha(0.),
+  fSumYY(0),
+  fSumZZ(0),
+  fNUsed(0),
+  fConv(kFALSE)
 {
   //
   // default constructor
   //
-  fAlpha = 0.;
   for (Int_t i=0;i<5;i++) fSumXY[i] = 0;
-  fSumYY = 0;
   for (Int_t i=0;i<5;i++) fSumXZ[i] = 0;
-  fSumZZ = 0;
-  fNUsed = 0;
-  fConv = kFALSE;
 }
 
 
 AliTrackFitterStraight::AliTrackFitterStraight(AliTrackPointArray *array, Bool_t owner):
-  AliTrackFitter(array,owner)
+  AliTrackFitter(array,owner),
+  fAlpha(0.),
+  fSumYY(0),
+  fSumZZ(0),
+  fNUsed(0),
+  fConv(kFALSE)
 {
   //
   // Constructor
   //
-  fAlpha = 0.;
   for (Int_t i=0;i<5;i++) fSumXY[i] = 0;
-  fSumYY = 0;
   for (Int_t i=0;i<5;i++) fSumXZ[i] = 0;
-  fSumZZ = 0;
-  fNUsed = 0;
-  fConv = kFALSE;
 }
 
 AliTrackFitterStraight::AliTrackFitterStraight(const AliTrackFitterStraight &fitter):
-  AliTrackFitter(fitter)
+  AliTrackFitter(fitter),
+  fAlpha(fitter.fAlpha),
+  fSumYY(fitter.fSumYY),
+  fSumZZ(fitter.fSumZZ),
+  fNUsed(fitter.fNUsed),
+  fConv(fitter.fConv)
 {
   //
   // copy constructor
   //
-  fAlpha = fitter.fAlpha;
   for (Int_t i=0;i<5;i++) fSumXY[i]  = fitter.fSumXY[i];
-  fSumYY = fitter.fSumYY;
   for (Int_t i=0;i<5;i++) fSumXZ[i]  = fitter.fSumXZ[i];
-  fSumZZ = fitter.fSumZZ;
-  fNUsed = fitter.fNUsed;
-  fConv = fitter.fConv;
 }
 
 //_____________________________________________________________________________

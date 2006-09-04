@@ -31,29 +31,30 @@
 ClassImp(AliTrackResidualsFast)
 
 //______________________________________________________________________________
-AliTrackResidualsFast::AliTrackResidualsFast():AliTrackResiduals()
+AliTrackResidualsFast::AliTrackResidualsFast():
+  AliTrackResiduals(),
+  fSumR(0)
 {
   // Default constructor
   for (Int_t i = 0; i < 27; i++) fSum[i] = 0;
-  fSumR = 0;
 }
 
 //______________________________________________________________________________
 AliTrackResidualsFast::AliTrackResidualsFast(Int_t ntracks):
-  AliTrackResiduals(ntracks)
+  AliTrackResiduals(ntracks),
+  fSumR(0)
 {
   // Constructor
   for (Int_t i = 0; i < 27; i++) fSum[i] = 0;
-  fSumR = 0;
 }
  
 //______________________________________________________________________________
 AliTrackResidualsFast::AliTrackResidualsFast(const AliTrackResidualsFast &res):
-  AliTrackResiduals(res)
+  AliTrackResiduals(res),
+  fSumR(res.fSumR)
 {
   // Copy constructor
   for (Int_t i = 0; i < 27; i++) fSum[i] = res.fSum[i];
-  fSumR = res.fSumR;
 }
 
 //______________________________________________________________________________

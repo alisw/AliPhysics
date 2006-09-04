@@ -37,7 +37,12 @@
 ClassImp( AliExpression )
 
 //______________________________________________________________________________
-AliExpression::AliExpression( TString exp )
+AliExpression::AliExpression( TString exp ) :
+  TObject(),
+  fVname(""),
+  fArg1(0x0),
+  fArg2(0x0),
+  fOperator(0)
 {
    // Default constructor
    TObjArray* tokens = Tokenize( exp );
@@ -76,21 +81,25 @@ AliExpression& AliExpression::operator=(const AliExpression& e)
 }
 
 //______________________________________________________________________________
-AliExpression::AliExpression( int op, AliExpression* a, AliExpression* b )
+AliExpression::AliExpression( int op, AliExpression* a, AliExpression* b ) :
+  TObject(),
+  fVname(""),
+  fArg1(a),
+  fArg2(b),
+  fOperator(op)
 {
    // Create a new expression
-   fArg1 = a;
-   fArg2 = b;
-   fOperator = op;
 }
 
 //______________________________________________________________________________
-AliExpression::AliExpression( int op, AliExpression* a )
+AliExpression::AliExpression( int op, AliExpression* a ) :
+  TObject(),
+  fVname(""),
+  fArg1(0),
+  fArg2(a),
+  fOperator(op)
 {
    // Create a unary expression.
-   fArg1 = 0;
-   fArg2 = a;
-   fOperator = op;
 }
 
 //______________________________________________________________________________

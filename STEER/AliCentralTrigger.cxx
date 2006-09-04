@@ -58,7 +58,9 @@ ClassImp( AliCentralTrigger )
 //_____________________________________________________________________________
 AliCentralTrigger::AliCentralTrigger() :
    TObject(),
-   fClassMask(0)
+   fClassMask(0),
+   fDescriptors(),
+   fInputs()
 {
    // Default constructor
 //   LoadDescriptor("Pb-Pb");
@@ -67,7 +69,9 @@ AliCentralTrigger::AliCentralTrigger() :
 //_____________________________________________________________________________
 AliCentralTrigger::AliCentralTrigger( TString & descriptor ) :
    TObject(),
-   fClassMask(0)
+   fClassMask(0),
+   fDescriptors(),
+   fInputs()
 {
    // Default constructor
    LoadDescriptor( descriptor );
@@ -76,7 +80,9 @@ AliCentralTrigger::AliCentralTrigger( TString & descriptor ) :
 //_____________________________________________________________________________
 AliCentralTrigger::AliCentralTrigger( const AliCentralTrigger& ctp ):
    TObject( ctp ),
-   fClassMask( ctp.fClassMask )
+   fClassMask( ctp.fClassMask ),
+   fDescriptors(),
+   fInputs()
 {
    // Copy constructor
 

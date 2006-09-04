@@ -44,6 +44,7 @@ AliAlignmentTracks::AliAlignmentTracks():
   fLastIndex(0),
   fArrayIndex(0),
   fIsIndexBuilt(kFALSE),
+  fAlignObjs(0),
   fMisalignObjs(0),
   fTrackFitter(0),
   fMinimizer(0),
@@ -63,6 +64,7 @@ AliAlignmentTracks::AliAlignmentTracks(TChain *esdchain):
   fLastIndex(0),
   fArrayIndex(0),
   fIsIndexBuilt(kFALSE),
+  fAlignObjs(0),
   fMisalignObjs(0),
   fTrackFitter(0),
   fMinimizer(0),
@@ -78,12 +80,14 @@ AliAlignmentTracks::AliAlignmentTracks(TChain *esdchain):
 
 //______________________________________________________________________________
 AliAlignmentTracks::AliAlignmentTracks(const char *esdfilename, const char *esdtreename):
+  fESDChain(new TChain(esdtreename)),
   fPointsFilename("AliTrackPoints.root"),
   fPointsFile(0),
   fPointsTree(0),
   fLastIndex(0),
   fArrayIndex(0),
   fIsIndexBuilt(kFALSE),
+  fAlignObjs(0),
   fMisalignObjs(0),
   fTrackFitter(0),
   fMinimizer(0),
@@ -92,35 +96,12 @@ AliAlignmentTracks::AliAlignmentTracks(const char *esdfilename, const char *esdt
   // Constructor in the case
   // the user provides a single ESD file
   // or a directory containing ESD files
-  fESDChain = new TChain(esdtreename);
   fESDChain->Add(esdfilename);
 
   InitIndex();
   InitAlignObjs();
 }
 
-//______________________________________________________________________________
-AliAlignmentTracks::AliAlignmentTracks(const AliAlignmentTracks &alignment):
-  TObject(alignment)
-{
-  // Copy constructor
-  // not implemented
-  AliWarning("Copy constructor not implemented!");
-}
-
-//______________________________________________________________________________
-AliAlignmentTracks& AliAlignmentTracks::operator= (const AliAlignmentTracks& alignment)
-{
-  // Asignment operator
-  // not implemented
-  if(this==&alignment) return *this;
-
-  AliWarning("Asignment operator not implemented!");
-
-  ((TObject *)this)->operator=(alignment);
-
-  return *this;
-}
 
 //______________________________________________________________________________
 AliAlignmentTracks::~AliAlignmentTracks()

@@ -85,19 +85,25 @@ const TString AliTriggerDescriptor::fgkDescriptorFileName("/data/triggerDescript
 
 //_____________________________________________________________________________
 AliTriggerDescriptor::AliTriggerDescriptor():
-TNamed(), fDetectorCluster("")
+  TNamed(),
+  fDetectorCluster(""),
+  fConditions()
 {
 }
 
 //_____________________________________________________________________________
 AliTriggerDescriptor::AliTriggerDescriptor( TString & name, TString & description ):
-TNamed( name, description ), fDetectorCluster("")
+  TNamed( name, description ),
+  fDetectorCluster(""),
+  fConditions()
 {
 }
 
 //_____________________________________________________________________________
 AliTriggerDescriptor::AliTriggerDescriptor( const AliTriggerDescriptor& des ):
-TNamed( des ), fDetectorCluster( des.fDetectorCluster )
+  TNamed( des ),
+  fDetectorCluster( des.fDetectorCluster ),
+  fConditions()
 {
    // Copy constructor
    Int_t ncond = des.fConditions.GetEntriesFast();

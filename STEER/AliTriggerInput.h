@@ -33,7 +33,9 @@
 class AliTriggerInput : public TNamed {
 
 public:
-                          AliTriggerInput() {}
+                          AliTriggerInput(): TNamed(),
+                                             fMask( 0 ),
+                                             fValue( 0 ) {}
                           AliTriggerInput( TString name, TString description, Long_t mask )
                                            : TNamed( name.Data(), description.Data() ),
                                              fMask( mask ),
