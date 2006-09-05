@@ -212,6 +212,8 @@ Int_t AliTOFtracker::PropagateBack(AliESD* event) {
       t->SetTOFcluster(seed->GetTOFcluster());
       t->SetTOFsignalToT(seed->GetTOFsignalToT());
       t->SetTOFCalChannel(seed->GetTOFCalChannel());
+      Int_t tlab[3]; seed->GetTOFLabel(tlab);    
+      t->SetTOFLabel(tlab);
       AliTOFtrack *track = new AliTOFtrack(*seed); 
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);   
       delete track;
@@ -345,6 +347,9 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       AliTOFcluster *c=fClusters[k];
       if (c->GetZ() > z+dz) break;
       if (c->IsUsed()) continue;
+
+      if (!c->GetStatus()) continue; // skip bad channels as declared in OCDB
+      
       //AliInfo(Form(" fClusters[k]->GetZ() (%f) z-dz (%f)   %4i ", fClusters[k]->GetZ(), z-dz, k));
 
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
@@ -352,7 +357,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       if (TMath::Abs(dph)>dphi) continue;
 
       {
-      Double_t maxChi2=150.; // "calibratin constant". Needs to be tuned.
+      Double_t maxChi2=150.; // "calibration constant". Needs to be tuned.
       Double_t yc=(c->GetPhi() - trackTOFin->GetAlpha())*c->GetR();
       Double_t p[2]={yc, c->GetZ()};
       Double_t cov[3]={fDy*fDy/12., 0., fDz*fDz/12.};
@@ -527,6 +532,12 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     ind[4]=c->GetDetInd(4);
     Int_t calindex = calib->GetIndex(ind);
     t->SetTOFCalChannel(calindex);
+
+    // keep track of the track labels in the matched cluster
+    Int_t tlab[3];
+    tlab[0]=c->GetLabel(0);
+    tlab[1]=c->GetLabel(1);
+    tlab[2]=c->GetLabel(2);
     
     Double_t tof=AliTOFGeometry::TdcBinWidth()*c->GetTDC()+32; // in ps
     t->SetTOFsignal(tof);
@@ -544,6 +555,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     t->UpdateTrackParams(trackTOFout,AliESDtrack::kTOFout);    
     t->SetIntegratedLength(recL);
     t->SetIntegratedTimes(time);
+    t->SetTOFLabel(tlab);
 
     delete trackTOFout;
   }
