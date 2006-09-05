@@ -143,7 +143,46 @@ AliESDtrackCuts::~AliESDtrackCuts()
   // destructor
   //
 
-  // ## TODO to be implemented
+  for (Int_t i=0; i<2; i++) {
+    
+    if (fhNClustersITS[i])
+      delete fhNClustersITS[i];            
+    if (fhNClustersTPC[i])
+      delete fhNClustersTPC[i];                
+    if (fhChi2PerClusterITS[i])
+      delete fhChi2PerClusterITS[i];       
+    if (fhChi2PerClusterTPC[i])
+      delete fhChi2PerClusterTPC[i];       
+    if (fhC11[i])
+      delete fhC11[i];                     
+    if (fhC22[i])
+      delete fhC22[i];                     
+    if (fhC33[i])
+      delete fhC33[i];                     
+    if (fhC44[i])
+      delete fhC44[i];                     
+    if (fhC55[i])
+    delete fhC55[i];                     
+    
+    if (fhDXY[i])
+      delete fhDXY[i];                     
+    if (fhDZ[i])
+      delete fhDZ[i];                      
+    if (fhDXYvsDZ[i])
+      delete fhDXYvsDZ[i];                 
+    
+    if (fhDXYNormalized[i])
+      delete fhDXYNormalized[i];           
+    if (fhDZNormalized[i])
+      delete fhDZNormalized[i];            
+    if (fhDXYvsDZNormalized[i])
+      delete fhDXYvsDZNormalized[i];       
+  }
+
+  if (fhCutStatistics)
+    delete fhCutStatistics;             
+  if (fhCutCorrelation)
+    delete fhCutCorrelation;            
 }
 
 void AliESDtrackCuts::Init()
@@ -301,6 +340,68 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   TObject::Copy(c);
 }
+
+//_____________________________________________________________________________
+Long64_t AliESDtrackCuts::Merge(TCollection* list) {
+  // Merge a list of AliESDtrackCuts objects with this (needed for PROOF)
+  // Returns the number of merged objects (including this)
+
+  if (!list)
+    return 0;
+  
+  if (list->IsEmpty())
+    return 1;
+
+  if (!fHistogramsOn)
+    return 0;
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj;
+
+
+  // collection of measured and generated histograms
+  Int_t count = 0;
+  while ((obj = iter->Next())) {
+
+    AliESDtrackCuts* entry = dynamic_cast<AliESDtrackCuts*>(obj);
+    if (entry == 0)
+      continue;
+
+    if (!entry->fHistogramsOn)
+      continue;
+    
+    for (Int_t i=0; i<2; i++) {
+      
+      fhNClustersITS[i]      ->Add(entry->fhNClustersITS[i]     );      
+      fhNClustersTPC[i]      ->Add(entry->fhNClustersTPC[i]     ); 
+      					  			    
+      fhChi2PerClusterITS[i] ->Add(entry->fhChi2PerClusterITS[i]); 
+      fhChi2PerClusterTPC[i] ->Add(entry->fhChi2PerClusterTPC[i]); 
+      					  			    
+      fhC11[i]               ->Add(entry->fhC11[i]              ); 
+      fhC22[i]               ->Add(entry->fhC22[i]              ); 
+      fhC33[i]               ->Add(entry->fhC33[i]              ); 
+      fhC44[i]               ->Add(entry->fhC44[i]              ); 
+      fhC55[i]               ->Add(entry->fhC55[i]              ); 
+      					  			    
+      fhDXY[i]               ->Add(entry->fhDXY[i]              ); 
+      fhDZ[i]                ->Add(entry->fhDZ[i]               ); 
+      fhDXYvsDZ[i]           ->Add(entry->fhDXYvsDZ[i]          ); 
+      					  			    
+      fhDXYNormalized[i]     ->Add(entry->fhDXYNormalized[i]    ); 
+      fhDZNormalized[i]      ->Add(entry->fhDZNormalized[i]     ); 
+      fhDXYvsDZNormalized[i] ->Add(entry->fhDXYvsDZNormalized[i]); 
+    }      
+
+    fhCutStatistics  ->Add(entry->fhCutStatistics);        
+    fhCutCorrelation ->Add(entry->fhCutCorrelation);      
+
+    count++;
+  }
+
+  return count+1;
+}
+
 
 //____________________________________________________________________
 Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
