@@ -26,22 +26,26 @@
 
 //___________________________________________
 AliMUONTriggerBoard::AliMUONTriggerBoard()
+    : TNamed(),
+      fSlot(0),
+      fResponse(0)
 {
 // Default Ctor
-   fSlot  = fResponse = 0;
+
 }
 
 //___________________________________________
-AliMUONTriggerBoard::AliMUONTriggerBoard(const char *Name, Int_t islot) : TNamed(Name,"Trigger board")
+AliMUONTriggerBoard::AliMUONTriggerBoard(const char *Name, Int_t islot) 
+    : TNamed(Name,"Trigger board"),
+      fSlot(islot),
+      fResponse(0)
 {
 // Standard Ctor
-   fSlot = islot;
 
-   fResponse = 0;
 }
 
 //___________________________________________
-AliMUONTriggerBoard::AliMUONTriggerBoard(const AliMUONTriggerBoard &board) : TNamed(board)
+AliMUONTriggerBoard::AliMUONTriggerBoard(const AliMUONTriggerBoard &board): TNamed(board)
 {
 // Dummy Copy Ctor
    board.Copy(*this);

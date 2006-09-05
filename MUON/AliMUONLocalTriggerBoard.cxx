@@ -56,11 +56,18 @@ const Int_t AliMUONLocalTriggerBoard::fgkCircuitId[234] =
 
 //___________________________________________
 AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
-: AliMUONTriggerBoard()
+    : AliMUONTriggerBoard(),
+      fNumber(0),
+      fCrate(0),
+      fTC(kTRUE),
+      fStripX11(0),
+      fStripY11(0),
+      fDev(0),
+      fOutput(0),
+      fLUT(0x0)      
 {
 //* constructor
 //*
-   fNumber = 0;
 
    for (Int_t i=0; i<2; i++) 
       for (Int_t j=0; j<4; j++) 
@@ -72,15 +79,7 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
 
    for (Int_t i=0; i<10; i++) fSwitch[i] = 0;
 
-   fTC = kTRUE;
-
-   fLUT = 0x0;
-
    for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
-
-   fOutput = 0;
-   
-   fStripX11 = fStripY11 = fDev = 0;
 
    for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = fLutApt[i] = 0;
 }
@@ -88,11 +87,18 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
 //___________________________________________
 AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
                                                    AliMUONTriggerLut* lut) 
-: AliMUONTriggerBoard(name, a)
+    : AliMUONTriggerBoard(name, a),
+      fNumber(0),
+      fCrate(0),
+      fTC(kTRUE),
+      fStripX11(0),
+      fStripY11(0),
+      fDev(0),
+      fOutput(0),
+      fLUT(lut)
 {
 //* constructor
 //*
-   fNumber = 0;
    
    for (Int_t i=0; i<2; i++) 
       for (Int_t j=0; j<4; j++) 
@@ -104,22 +110,22 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
 
    for (Int_t i=0; i<10; i++) fSwitch[i] = 0;
 
-   fTC = kTRUE;
-
-   fLUT = lut;
-
    for (Int_t i=0; i<5; i++) fMinDevStrip[i] = fMinDev[i] = fCoordY[i] = 0;
-
-   fOutput = 0;
-   
-   fStripX11 = fStripY11 = fDev = 0;
 
    for (Int_t i=0; i<2; i++) fLutLpt[i] = fLutHpt[i] = fLutApt[i] = 0;
 }
 
 //______________________________________________________________________________
 AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoard& right) 
-  : AliMUONTriggerBoard(right) 
+    : AliMUONTriggerBoard(right),
+      fNumber(right.fNumber),
+      fCrate(right.fCrate),
+      fTC(right.fTC),
+      fStripX11(right.fStripX11),
+      fStripY11(right.fStripY11),
+      fDev(right.fDev),
+      fOutput(right.fOutput),
+      fLUT(right.fLUT)
 {  
 /// Protected copy constructor (not implemented)
 

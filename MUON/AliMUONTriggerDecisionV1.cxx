@@ -60,8 +60,9 @@ ClassImp(AliMUONTriggerDecisionV1)
 AliMUONTriggerDecisionV1::AliMUONTriggerDecisionV1(AliMUONData* data)
   : TTask("AliMUONTriggerDecisionV1",
           "From trigger digits to Local and Global Trigger objects (old style)"),
-fMUONData(data),
-fMUON(0x0)
+    fMUONData(data),
+    fMUON(0x0),
+    fTriggerCircuit(new TObjArray(AliMUONConstants::NTriggerCircuit()))
 {
   // Constructor 
 
@@ -115,7 +116,6 @@ fMUON(0x0)
     }
   }
 
-  fTriggerCircuit = new TObjArray(AliMUONConstants::NTriggerCircuit());
 
   // getting MUON
   fMUON = (AliMUON*) gAlice->GetDetector("MUON");
@@ -143,7 +143,10 @@ AliMUONTriggerDecisionV1::AliMUONTriggerDecisionV1()
 
 //----------------------------------------------------------------------
 AliMUONTriggerDecisionV1::AliMUONTriggerDecisionV1(const AliMUONTriggerDecisionV1& rhs)
-  : TTask(rhs) 
+    : TTask(rhs), 
+      fTriggerCircuit(rhs.fTriggerCircuit),
+      fMUONData(rhs.fMUONData),
+      fMUON(rhs.fMUON)
 {
 // Protected copy constructor
 

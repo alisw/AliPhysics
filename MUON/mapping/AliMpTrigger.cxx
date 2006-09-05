@@ -63,16 +63,26 @@ namespace
 
 //_____________________________________________________________________________
 AliMpTrigger::AliMpTrigger()
-: TObject(), fId(""), fPlaneType(kNonBendingPlane), 
-fMaxNofPadsY(0), fDX(0), fDY(0)
+: TObject(), 
+  fId(""), 
+  fPlaneType(kNonBendingPlane), 
+  fSlats(0),
+  fMaxNofPadsY(0),
+  fDX(0), 
+  fDY(0)
 {
   // default ctor
 }
 
 //_____________________________________________________________________________
 AliMpTrigger::AliMpTrigger(const char* slatType, AliMpPlaneType bendingOrNot)
-:  TObject(), fId(slatType), fPlaneType(bendingOrNot), 
-fMaxNofPadsY(0), fDX(0), fDY(0)
+    :  TObject(), 
+       fId(slatType), 
+       fPlaneType(bendingOrNot), 
+       fSlats(0),
+       fMaxNofPadsY(0), 
+       fDX(0), 
+       fDY(0)
 {
   // normal ctor
 }

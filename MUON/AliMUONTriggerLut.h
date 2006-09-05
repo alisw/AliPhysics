@@ -27,12 +27,12 @@ class AliMUONTriggerLut : public TNamed
 		    Int_t lutLpt[2], Int_t lutHpt[2], Int_t lutApt[2]);
 
  protected:
-  // copy constructor
-  AliMUONTriggerLut (const AliMUONTriggerLut& AliMUONTriggerLut); 
   // assignment operator
   AliMUONTriggerLut& operator=(const AliMUONTriggerLut& AliMUONTriggerLut); 
 		
  private:
+  // copy constructor
+  AliMUONTriggerLut (const AliMUONTriggerLut& AliMUONTriggerLut);
   Int_t GetMask(Int_t ystrip);
 
 private:

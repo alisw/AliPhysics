@@ -56,7 +56,8 @@ fNofStrips(0)
 //_____________________________________________________________________________
 AliMpTriggerSegmentation::AliMpTriggerSegmentation(const AliMpTrigger* slat) 
 : AliMpVSegmentation(), 
-fkSlat(slat)
+  fkSlat(slat),
+  fNofStrips(0)
 {
   //
   // Normal ctor.
@@ -68,7 +69,7 @@ fkSlat(slat)
   // into account the fact that a given strip might be part of several
   // layer. Otherwise we would double count pads.
 
-  fNofStrips = 0;
+
   for ( Int_t ix = 0; ix <= MaxPadIndexX(); ++ix )
   {
     for ( Int_t iy = 0; iy <= MaxPadIndexY(); ++iy )
@@ -83,7 +84,9 @@ fkSlat(slat)
 
 //______________________________________________________________________________
 AliMpTriggerSegmentation::AliMpTriggerSegmentation(const AliMpTriggerSegmentation& right) 
-  : AliMpVSegmentation(right) 
+    : AliMpVSegmentation(right),
+      fkSlat(right.fkSlat),
+      fNofStrips(right.fNofStrips)
 {  
 /// Protected copy constructor (not implemented)
 

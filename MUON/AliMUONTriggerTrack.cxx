@@ -44,15 +44,14 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
 }
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t thetax, Float_t thetay, Long_t theGTPattern)
-  : TObject()
+    : TObject(),
+      fx11(x11),
+      fy11(y11),
+      fthetax(thetax),
+      fthetay(thetay),
+      fGTPattern(theGTPattern)
 {
 // ctor from local trigger output
-    fx11 = x11;
-    fy11 = y11;
-    fthetax = thetax;
-    fthetay = thetay;
-    fGTPattern = theGTPattern;
-
 }
 
 //__________________________________________________________________________
@@ -65,13 +64,16 @@ AliMUONTriggerTrack::~AliMUONTriggerTrack()
 
 //__________________________________________________________________________
 AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTriggerTrack)
-  : TObject(theMUONTriggerTrack)
+    : TObject(theMUONTriggerTrack),
+      fx11(theMUONTriggerTrack.fx11),
+      fy11(theMUONTriggerTrack.fy11),
+      fthetax(theMUONTriggerTrack.fthetax),
+      fthetay(theMUONTriggerTrack.fthetay),
+      fGTPattern(theMUONTriggerTrack.fGTPattern)    
 {
-  fx11 = theMUONTriggerTrack.fx11;
-  fy11 = theMUONTriggerTrack.fy11;
-  fthetax = theMUONTriggerTrack.fthetax;
-  fthetay = theMUONTriggerTrack.fthetay;
-  fGTPattern = theMUONTriggerTrack.fGTPattern;
+//
+// copy ctor
+//
 }
       
 //__________________________________________________________________________

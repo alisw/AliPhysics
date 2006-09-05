@@ -59,31 +59,30 @@ AliMUONLocalTrigger::AliMUONLocalTrigger()
 }
 //----------------------------------------------------------------------
 AliMUONLocalTrigger::AliMUONLocalTrigger(const AliMUONLocalTrigger& theMUONLocalTrig)
-  : TObject(theMUONLocalTrig)
+    : TObject(theMUONLocalTrig),
+      fLoCircuit(theMUONLocalTrig.fLoCircuit),
+      fLoStripX(theMUONLocalTrig.fLoStripX),
+      fLoDev(theMUONLocalTrig.fLoDev),
+      fLoStripY(theMUONLocalTrig.fLoStripY),
+      fLoLpt(theMUONLocalTrig.fLoLpt),
+      fLoHpt(theMUONLocalTrig.fLoHpt),
+      fLoApt(theMUONLocalTrig.fLoApt),
+      
+      fX1Pattern(theMUONLocalTrig.fX1Pattern),
+      fX2Pattern(theMUONLocalTrig.fX2Pattern),
+      fX3Pattern(theMUONLocalTrig.fX3Pattern),
+      fX4Pattern(theMUONLocalTrig.fX4Pattern),
+      
+      fY1Pattern(theMUONLocalTrig.fY1Pattern),
+      fY2Pattern(theMUONLocalTrig.fY2Pattern),
+      fY3Pattern(theMUONLocalTrig.fY3Pattern),
+      fY4Pattern(theMUONLocalTrig.fY4Pattern),
+      
+      fLoDecision(theMUONLocalTrig.fLoDecision),
+      fDigits(theMUONLocalTrig.fDigits)
 {
 /// Copy constructor (useful for TClonesArray)
 
-  fLoCircuit = theMUONLocalTrig.fLoCircuit;
-  fLoStripX  = theMUONLocalTrig.fLoStripX;         
-  fLoDev     = theMUONLocalTrig.fLoDev;           
-  fLoStripY  = theMUONLocalTrig.fLoStripY;           
-  fLoLpt     = theMUONLocalTrig.fLoLpt;
-  fLoHpt     = theMUONLocalTrig.fLoHpt;
-  fLoApt     = theMUONLocalTrig.fLoApt;
-
-  fX1Pattern  = theMUONLocalTrig.fX1Pattern;
-  fX2Pattern  = theMUONLocalTrig.fX2Pattern;
-  fX3Pattern  = theMUONLocalTrig.fX3Pattern;
-  fX4Pattern  = theMUONLocalTrig.fX4Pattern;
-
-  fY1Pattern  = theMUONLocalTrig.fY1Pattern;
-  fY2Pattern  = theMUONLocalTrig.fY2Pattern;
-  fY3Pattern  = theMUONLocalTrig.fY3Pattern;
-  fY4Pattern  = theMUONLocalTrig.fY4Pattern;
-
-  fLoDecision =  theMUONLocalTrig.fLoDecision;
-
-  fDigits = theMUONLocalTrig.fDigits;
 }
 //----------------------------------------------------------------------
 AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& theMUONLocalTrig)
@@ -148,6 +147,7 @@ AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& di
 
   fDigits = digits;
 }
+
 //----------------------------------------------------------------------
 Char_t AliMUONLocalTrigger::GetLoDecision()
 {

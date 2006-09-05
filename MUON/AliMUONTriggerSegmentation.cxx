@@ -37,6 +37,7 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation()
     fNsec(7),
     fNpx(999999),
     fNpy(999999),
+    fSector(0),
     fXhit(0.),
     fYhit(0.),
     fIx(0),
@@ -69,8 +70,10 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(Bool_t bending)
   : AliMUONVGeometryDESegmentation(),
     fBending(bending),
     fId(0),
+    fNsec(7),
     fNpx(999999),
     fNpy(999999),
+    fSector(0),
     fXhit(0.),
     fYhit(0.),
     fIx(0),
@@ -84,7 +87,6 @@ AliMUONTriggerSegmentation::AliMUONTriggerSegmentation(Bool_t bending)
 {
 /// Standard constructor
 
-  fNsec = 7;  
 // add to St345SlatSegmentation
   for (Int_t i=0; i<7; i++) {
       fNstrip[i]=0;

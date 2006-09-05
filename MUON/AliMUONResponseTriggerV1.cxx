@@ -65,7 +65,11 @@ namespace
 
 //------------------------------------------------------------------   
 AliMUONResponseTriggerV1::AliMUONResponseTriggerV1()
-  : AliMUONResponseTrigger() 
+    : AliMUONResponseTrigger(),
+      fGenerCluster(0),
+      fA(0),
+      fB(0),       
+      fC(0)
 {
 // default constructor 
   Float_t hv=9.2;
@@ -74,7 +78,11 @@ AliMUONResponseTriggerV1::AliMUONResponseTriggerV1()
 
 //------------------------------------------------------------------   
 AliMUONResponseTriggerV1::AliMUONResponseTriggerV1(Float_t hv)
-  : AliMUONResponseTrigger() 
+    : AliMUONResponseTrigger(),
+      fGenerCluster(0),
+      fA(0),
+      fB(0),       
+      fC(0)
 {
 // Constructor 
   SetParameters(hv);

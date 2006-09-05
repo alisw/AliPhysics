@@ -33,14 +33,20 @@ ClassImp(AliMUONTriggerLut)
 
 //----------------------------------------------------------------------
 AliMUONTriggerLut::AliMUONTriggerLut() 
-  : TNamed()
+    : TNamed(),
+      fLptPlus(0),
+      fLptMinu(0),
+      fLptUnde(0),
+      fHptPlus(0),
+      fHptMinu(0),
+      fHptUnde(0),
+      fAptPlus(0),
+      fAptMinu(0),
+      fAptUnde(0)
 {
-/// Default constructor
-
-  fLptPlus = fLptMinu = fLptUnde = 0;
-  fHptPlus = fHptMinu = fHptUnde = 0;
-  fAptPlus = fAptMinu = fAptUnde = 0;
+    //ctor
 }
+
 //----------------------------------------------------------------------
 AliMUONTriggerLut::~AliMUONTriggerLut() 
 {

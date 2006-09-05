@@ -44,10 +44,17 @@ ClassImp(AliMUONTriggerDecision)
 
 //----------------------------------------------------------------------
 AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint, AliMUONData* data)
-  : TObject()
+    : TObject(),
+      fDebug(iprint),      
+      fLoader(loader),
+      fTriggerCircuit(new TObjArray(AliMUONConstants::NTriggerCircuit())),
+      fDigits(new TObjArray(AliMUONConstants::NCh())),
+      fDigitIndices(new TArrayI[AliMUONConstants::NCh()]),
+      fMUONData(data),
+      fMUON((AliMUON*) gAlice->GetDetector("MUON"))
 {
 // Constructor 
-  fDebug = iprint;            // print option
+
 // iprint = 0 : don't print anything
 // iprint = 1 : print Global Trigger Output
 // iprint = 2 : print Local and Global Trigger Outputs
@@ -92,20 +99,6 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint, 
     }
   }
 
-  fTriggerCircuit = new TObjArray(AliMUONConstants::NTriggerCircuit());
-
-  // initialize loader's
-  fLoader = loader;
-
-  // initialize container
-  if (data == 0){
-    AliError("No MUONdata for trigger");
-  }else{
-    fMUONData = data;
-  }
-
-  // getting MUON
-  fMUON = (AliMUON*) gAlice->GetDetector("MUON");
 
   // setting circuit
   for (icirc = 0; icirc < AliMUONConstants::NTriggerCircuit(); icirc++) {
@@ -115,17 +108,18 @@ AliMUONTriggerDecision::AliMUONTriggerDecision(AliLoader* loader, Int_t iprint, 
   }
 
   // setting digits
-  fDigits = new TObjArray(AliMUONConstants::NCh()); //NTriggerCh
   for (Int_t i=0; i<AliMUONConstants::NCh() ;i++) 
     fDigits->AddAt(new TClonesArray("AliMUONDigit",10000),i);
-  fDigitIndices = new TArrayI[AliMUONConstants::NCh()];
 }
 
 //----------------------------------------------------------------------
 AliMUONTriggerDecision::AliMUONTriggerDecision()
   : TObject(),
+    fDebug(0),      
     fLoader(0),
     fTriggerCircuit(0),
+    fDigits(0),
+    fDigitIndices(0),
     fMUONData(0),
     fMUON(0)
 {
@@ -135,11 +129,16 @@ AliMUONTriggerDecision::AliMUONTriggerDecision()
 
 //----------------------------------------------------------------------
 AliMUONTriggerDecision::AliMUONTriggerDecision(const AliMUONTriggerDecision& rhs)
-  : TObject(rhs) 
+    : TObject(rhs),
+      fDebug(rhs.fDebug),      
+      fLoader(rhs.fLoader),
+      fTriggerCircuit(new TObjArray(AliMUONConstants::NTriggerCircuit())),
+      fDigits(new TObjArray(AliMUONConstants::NCh())),
+      fDigitIndices(new TArrayI[AliMUONConstants::NCh()]),
+      fMUONData(rhs.fMUONData),
+      fMUON(rhs.fMUON)      
 {
 // Protected copy constructor
-
-  AliFatal("Not implemented.");
 }
 
 //----------------------------------------------------------------------
