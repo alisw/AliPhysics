@@ -41,7 +41,7 @@ public:
   AliITStrackMI(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
   AliITStrackMI(const AliITStrackMI& t);
   Int_t GetProlongationFast(Double_t alpha, Double_t xr,Double_t &y, Double_t &z);
-  Int_t UpdateMI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t chi2,UInt_t i);  
+  Bool_t UpdateMI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t chi2, Int_t i);  
   Int_t CorrectForMaterial(Double_t d, Double_t x0=21.82);
 
   void UpdateESDtrack(ULong_t flags);
@@ -56,8 +56,8 @@ public:
   Float_t GetNUsed() const {return fNUsed;}
 
   Int_t Compare(const TObject *o) const;
-  Double_t GetCov33() const {return fC33;} // cov. matrix el. 3,3
-  Double_t GetCov44() const {return fC44;} // cov. matrix el. 4,4
+  Double_t GetCov33() const {return GetCovariance()[9];} // cov. matrix el. 3,3
+  //Double_t GetCov44() const {return GetCovariance()[15];}// cov. matrix el. 4,4
   Float_t GetDy(Int_t i) const {return fDy[i];}
   Float_t GetDz(Int_t i) const {return fDz[i];}
   Float_t GetSigmaY(Int_t i) const {return fSigmaY[i];}

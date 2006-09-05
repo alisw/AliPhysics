@@ -82,7 +82,7 @@ Int_t AliL3ITStracker::Clusters2Tracks(AliESD *event) {
         delete t;
         continue;
       }
-      if (TMath::Abs(t->GetD())>5) {
+      if (TMath::Abs(t->GetD(GetX(),GetY()))>5) {
 	delete t;
 	continue;
       }
@@ -124,7 +124,7 @@ Int_t AliL3ITStracker::Clusters2Tracks(AliESD *event) {
        }
        
        if (!fBestTrack.PropagateTo(3.,0.0028,65.19)) continue;
-       if (!fBestTrack.PropagateToVertex()) continue;
+       if (!fBestTrack.PropagateToVertex(event->GetVertex())) continue;
        fBestTrack.SetLabel(tpcLabel);
        fBestTrack.CookdEdx();
        CookLabel(&fBestTrack,0.); //For comparison only

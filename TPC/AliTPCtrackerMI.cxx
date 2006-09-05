@@ -30,11 +30,11 @@
 #include <TFile.h>
 #include <TObjArray.h>
 #include <TTree.h>
-#include "AliLog.h"
 
 #include "AliComplexCluster.h"
 #include "AliESD.h"
-#include "AliESDkink.h"
+#include "AliKink.h"
+#include "AliV0.h"
 #include "AliHelix.h"
 #include "AliRunLoader.h"
 #include "AliTPCClustersRow.h"
@@ -47,7 +47,6 @@
 #include "AliTPCtrackerMI.h"
 #include "TStopwatch.h"
 #include "AliTPCReconstructor.h"
-#include "AliESDkink.h"
 #include "AliPID.h"
 #include "TTreeStream.h"
 #include "AliAlignObj.h"
@@ -1443,16 +1442,6 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   y=t.GetY(); 
   Double_t z=t.GetZ();
   //
-  if (!IsActive(t.fRelativeSector,nr)) {
-    t.fInDead = kTRUE;
-    t.SetClusterIndex2(nr,-1); 
-    return 0;
-  }
-  //AliInfo(Form("A - Sector%d phi %f - alpha %f", t.fRelativeSector,y/x, t.GetAlpha()));
-  Bool_t isActive  = IsActive(t.fRelativeSector,nr);
-  Bool_t isActive2 = (nr>=fInnerSec->GetNRows()) ? fOuterSec[t.fRelativeSector][nr-fInnerSec->GetNRows()].GetN()>0:fInnerSec[t.fRelativeSector][nr].GetN()>0;
-  
-  if (!isActive || !isActive2) return 0;
   const AliTPCRow &krow=GetRow(t.fRelativeSector,nr);
   if ( (t.GetSigmaY2()<0) || t.GetSigmaZ2()<0) return 0;
   Double_t  roady  =1.;
@@ -1684,12 +1673,6 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   }
   //
   if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()) return 0;
-  if (!IsActive(t.fRelativeSector,nr)) {
-    t.fInDead = kTRUE;
-    t.SetClusterIndex2(nr,-1); 
-    return 0;
-  }
-  //AliInfo(Form("A - Sector%d phi %f - alpha %f", t.fRelativeSector,y/x, t.GetAlpha()));
   AliTPCRow &krow=GetRow(t.fRelativeSector,nr);
 
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.fDeadZone){
@@ -1806,7 +1789,7 @@ Int_t AliTPCtrackerMI::FollowProlongation(AliTPCseed& t, Int_t rf, Int_t step) {
 	if (index==0) break;
 	if (index<0) continue;
 	//
-	AliESDkink * kink = fEvent->GetKink(index-1);
+	AliKink * kink = (AliKink*)fEvent->GetKink(index-1);
 	if (!kink){
 	  printf("PROBLEM\n");
 	}
@@ -1884,7 +1867,7 @@ Int_t AliTPCtrackerMI::FollowBackProlongation(AliTPCseed& t, Int_t rf) {
 	if (index==0) break;
 	if (index>0) continue;
 	index = TMath::Abs(index);
-	AliESDkink * kink = fEvent->GetKink(index-1);
+	AliKink * kink = (AliKink*)fEvent->GetKink(index-1);
 	if (!kink){
 	  printf("PROBLEM\n");
 	}
@@ -2668,6 +2651,7 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESD *event)
   Info("PropagateBack","Number of back propagated tracks %d",ntracks);
   fEvent =0;
   //WriteTracks();
+
   return 0;
 }
 
@@ -2676,12 +2660,14 @@ void AliTPCtrackerMI::DeleteSeeds()
 {
   //
   //delete Seeds
+
   Int_t nseed = fSeeds->GetEntriesFast();
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed * seed = (AliTPCseed*)fSeeds->At(i);
     if (seed) delete fSeeds->RemoveAt(i);
   }
   delete fSeeds;
+
   fSeeds =0;
 }
 
@@ -2725,8 +2711,8 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
       }
 
     }
-    if (((status&AliESDtrack::kITSout)==0)&&(direction==1)) seed->ResetCovariance(); 
-    if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance();
+    if (((status&AliESDtrack::kITSout)==0)&&(direction==1)) seed->ResetCovariance(10.); 
+    if ( direction ==2 &&(status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance(10.);
     if ( direction ==2 && ((status & AliESDtrack::kTPCout) == 0) ) {
       fSeeds->AddAt(0,i);
       delete seed;
@@ -2742,7 +2728,7 @@ void AliTPCtrackerMI::ReadSeeds(AliESD *event, Int_t direction)
       if (esd->GetTRDncls()>0) trdchi2 = esd->GetTRDchi2()/esd->GetTRDncls();
       //reset covariance if suspicious 
       if ( (delta1>0.1) || (delta2>0.006) ||trdchi2>7.)
-	seed->ResetCovariance();
+	seed->ResetCovariance(10.);
     }
 
     //
@@ -3020,7 +3006,7 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 	//	if (!BuildSeed(kr1[is],kcl,0,x1,x2,x3,x,c)) continue;
 	
         UInt_t index=kr1.GetIndex(is);
-	AliTPCseed *track=new(seed) AliTPCseed(index, x, c, x1, ns*alpha+shift);
+	AliTPCseed *track=new(seed) AliTPCseed(x1, ns*alpha+shift, x, c, index);
 	
 	track->fIsSeeding = kTRUE;
 	track->fSeed1 = i1;
@@ -3311,7 +3297,7 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
       //	if (!BuildSeed(kr1[is],kcl,0,x1,x2,x3,x,c)) continue;
       
       UInt_t index=kr1.GetIndex(is);
-      AliTPCseed *track=new(seed) AliTPCseed(index, x, c, x1, sec*alpha+shift);
+      AliTPCseed *track=new(seed) AliTPCseed(x1, sec*alpha+shift, x, c, index);
       
       track->fIsSeeding = kTRUE;
 
@@ -3590,7 +3576,7 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 
 	UInt_t index=0;
 	//kr0.GetIndex(is);
-	AliTPCseed *track=new (seed) AliTPCseed(index, x, c, x1, sec*alpha+shift);
+	AliTPCseed *track=new (seed) AliTPCseed(x1,sec*alpha+shift,x,c,index);
 	track->fIsSeeding = kTRUE;
 	Int_t rc=FollowProlongation(*track, i2);	
 	if (constrain) track->fBConstrain =1;
@@ -3739,7 +3725,7 @@ AliTPCseed *AliTPCtrackerMI::MakeSeed(AliTPCseed *track, Float_t r0, Float_t r1,
   c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
   
   //  Int_t row1 = fSectors->GetRowNumber(x2[0]);
-  AliTPCseed *seed=new  AliTPCseed(0, x, c, x2[0], sec2*fSectors->GetAlpha()+fSectors->GetAlphaShift());
+  AliTPCseed *seed=new  AliTPCseed(x2[0], sec2*fSectors->GetAlpha()+fSectors->GetAlphaShift(), x, c, 0);
   //  Double_t y0,z0,y1,z1, y2,z2;
   //seed->GetProlongation(x0[0],y0,z0);
   // seed->GetProlongation(x1[0],y1,z1);
@@ -3859,7 +3845,7 @@ AliTPCseed *AliTPCtrackerMI::ReSeed(AliTPCseed *track, Float_t r0, Float_t r1, F
   c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
   
   //  Int_t row1 = fSectors->GetRowNumber(xyz[2][0]);
-  AliTPCseed *seed=new  AliTPCseed(0, x, c, xyz[2][0], sec[2]*fSectors->GetAlpha()+fSectors->GetAlphaShift());
+  AliTPCseed *seed=new  AliTPCseed(xyz[2][0], sec[2]*fSectors->GetAlpha()+fSectors->GetAlphaShift(), x, c, 0);
   seed->fLastPoint  = row[2];
   seed->fFirstPoint = row[2];  
   return seed;
@@ -4008,7 +3994,7 @@ AliTPCseed *AliTPCtrackerMI::ReSeed(AliTPCseed *track,Int_t r0, Bool_t forward)
   c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
   
   //  Int_t row1 = fSectors->GetRowNumber(xyz[2][0]);
-  AliTPCseed *seed=new  AliTPCseed(0, x, c, xyz[2][0], sec[2]*fSectors->GetAlpha()+fSectors->GetAlphaShift());
+  AliTPCseed *seed=new  AliTPCseed(xyz[2][0], sec[2]*fSectors->GetAlpha()+fSectors->GetAlphaShift(), x, c, 0);
   seed->fLastPoint  = row[2];
   seed->fFirstPoint = row[2];  
   for (Int_t i=row[0];i<row[2];i++){
@@ -4032,7 +4018,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
   Int_t    *sign         = new Int_t[nentries];
   Int_t    *nclusters    = new Int_t[nentries];
   Float_t  *alpha        = new Float_t[nentries];
-  AliESDkink * kink      = new AliESDkink();
+  AliKink  *kink         = new AliKink();
   Int_t      * usage     = new Int_t[nentries];
   Float_t  *zm           = new Float_t[nentries];
   Float_t  *z0           = new Float_t[nentries]; 
@@ -4095,19 +4081,19 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
     AliTPCseed * track0 = (AliTPCseed*)array->At(i0);
     if (!track0) continue;    
     if (track0->fN<40) continue;
-    if (TMath::Abs(1./track0->fP4)>200) continue;
+    if (TMath::Abs(1./track0->GetC())>200) continue;
     for (Int_t i1=i0+1;i1<nentries;i1++){
       AliTPCseed * track1 = (AliTPCseed*)array->At(i1);
       if (!track1) continue;
       if (track1->fN<40)                  continue;
-      if ( TMath::Abs(track1->fP3+track0->fP3)>0.1) continue;
+      if ( TMath::Abs(track1->GetTgl()+track0->GetTgl())>0.1) continue;
       if (track0->fBConstrain&&track1->fBConstrain) continue;
-      if (TMath::Abs(1./track1->fP4)>200) continue;
-      if (track1->fP4*track0->fP4>0)      continue;
-      if (track1->fP3*track0->fP3>0)      continue;
-      if (max(TMath::Abs(1./track0->fP4),TMath::Abs(1./track1->fP4))>190) continue;
-      if (track0->fBConstrain&&TMath::Abs(track1->fP4)<TMath::Abs(track0->fP4)) continue; //returning - lower momenta
-      if (track1->fBConstrain&&TMath::Abs(track0->fP4)<TMath::Abs(track1->fP4)) continue; //returning - lower momenta
+      if (TMath::Abs(1./track1->GetC())>200) continue;
+      if (track1->Get1Pt()*track0->Get1Pt()>0)      continue;
+      if (track1->GetTgl()*track0->GetTgl()>0)      continue;
+      if (max(TMath::Abs(1./track0->GetC()),TMath::Abs(1./track1->GetC()))>190) continue;
+      if (track0->fBConstrain&&TMath::Abs(track1->Get1Pt())<TMath::Abs(track0->Get1Pt())) continue; //returning - lower momenta
+      if (track1->fBConstrain&&TMath::Abs(track0->Get1Pt())<TMath::Abs(track1->Get1Pt())) continue; //returning - lower momenta
       //
       Float_t mindcar = TMath::Min(TMath::Abs(dca[i0]),TMath::Abs(dca[i1]));
       if (mindcar<5)   continue;
@@ -4171,7 +4157,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
 	if (sign){
 	  circular[i0] = kTRUE;
 	  circular[i1] = kTRUE;
-	  if (TMath::Abs(track0->fP4)<TMath::Abs(track1->fP4)){
+	  if (TMath::Abs(track0->Get1Pt())<TMath::Abs(track1->Get1Pt())){
 	    track0->fCircular += 1;
 	    track1->fCircular += 2;
 	  }
@@ -4346,7 +4332,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
 
       if (mpt<1){
 	//for high momenta momentum not defined well in first iteration
-	Double_t qt   =  TMath::Sin(kink->GetAngle(2))*ktrack1->P();
+	Double_t qt   =  TMath::Sin(kink->GetAngle(2))*ktrack1->GetP();
 	if (qt>0.35) continue; 
       }
       
@@ -4373,12 +4359,12 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
 	//	angle and densities  not defined yet
 	if (kink->GetTPCDensityFactor()<0.8) continue;
 	if ((2-kink->GetTPCDensityFactor())*kink->GetDistance() >0.25) continue;
-	if (kink->GetAngle(2)*ktrack0->P()<0.003) continue; //too small angle
+	if (kink->GetAngle(2)*ktrack0->GetP()<0.003) continue; //too small angle
 	if (kink->GetAngle(2)>0.2&&kink->GetTPCDensityFactor()<1.15) continue;
 	if (kink->GetAngle(2)>0.2&&kink->GetTPCDensity(0,1)>0.05) continue;
 
-	Float_t criticalangle = track0->fC22+track0->fC33;
-	criticalangle+= track1->fC22+track1->fC33;
+	Float_t criticalangle = track0->GetSigmaSnp2()+track0->GetSigmaTgl2();
+	criticalangle+= track1->GetSigmaSnp2()+track1->GetSigmaTgl2();
 	criticalangle= 3*TMath::Sqrt(criticalangle);
 	if (criticalangle>0.02) criticalangle=0.02;
 	if (kink->GetAngle(2)<criticalangle) continue;
@@ -4409,7 +4395,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
       }      
       //      esd->AddKink(kink);
       kinks->AddLast(kink);
-      kink = new AliESDkink;
+      kink = new AliKink;
       ncandidates++;
     }
   }
@@ -4425,7 +4411,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
   //
   for (Int_t i=0;i<nkinks;i++){
     quality[i] =100000;
-    AliESDkink *kink = (AliESDkink*)kinks->At(i);
+    AliKink *kink = (AliKink*)kinks->At(i);
     //
     // refit kinks towards vertex
     // 
@@ -4487,12 +4473,12 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
   //remove double find kinks
   //
   for (Int_t ikink0=1;ikink0<nkinks;ikink0++){
-    AliESDkink * kink0 = (AliESDkink*) kinks->At(indexes[ikink0]);
+    AliKink * kink0 = (AliKink*) kinks->At(indexes[ikink0]);
     if (!kink0) continue;
     //
     for (Int_t ikink1=0;ikink1<ikink0;ikink1++){
       if (!kink0) continue;
-      AliESDkink * kink1 = (AliESDkink*) kinks->At(indexes[ikink1]);
+      AliKink * kink1 = (AliKink*) kinks->At(indexes[ikink1]);
       if (!kink1) continue;
       // if not close kink continue
       if (TMath::Abs(kink1->GetPosition()[2]-kink0->GetPosition()[2])>10) continue;
@@ -4555,7 +4541,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
 
 
   for (Int_t i=0;i<nkinks;i++){
-    AliESDkink * kink = (AliESDkink*) kinks->At(indexes[i]);
+    AliKink * kink = (AliKink*) kinks->At(indexes[i]);
     if (!kink) continue;
     kink->SetTPCRow0(GetRowNumber(kink->GetR()));
     Int_t index0 = kink->GetIndex(0);
@@ -4610,7 +4596,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
   for (Int_t i=0;i<nentries;i++){
     AliTPCseed * track0 = (AliTPCseed*)array->At(i);
     if (!track0) continue;
-    if (track0->Pt()<1.4) continue;
+    if (track0->GetPt()<1.4) continue;
     //remove double high momenta tracks - overlapped with kink candidates
     Int_t shared=0;
     Int_t all   =0;
@@ -4630,11 +4616,11 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
 
     AliTPCseed *pmother = new AliTPCseed();
     AliTPCseed *pdaughter = new AliTPCseed();
-    AliESDkink *pkink = new AliESDkink;
+    AliKink *pkink = new AliKink;
 
     AliTPCseed & mother = *pmother;
     AliTPCseed & daughter = *pdaughter;
-    AliESDkink & kink = *pkink;
+    AliKink & kink = *pkink;
     if (CheckKinkPoint(track0,mother,daughter, kink)){
       if (mother.fN<30||daughter.fN<20) {
 	delete pmother;
@@ -4642,7 +4628,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESD *esd)
 	delete pkink;
 	continue;  //too short tracks
       }
-      if (mother.Pt()<1.4) {
+      if (mother.GetPt()<1.4) {
 	delete pmother;
 	delete pdaughter;
 	delete pkink;
@@ -4753,9 +4739,9 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
     // 
     // dca error parrameterezation + pulls
     //
-    sdcar[i]      = TMath::Sqrt(0.150*0.150+(100*track->fP4)*(100*track->fP4));
-    if (TMath::Abs(track->fP3)>1) sdcar[i]*=2.5;
-    cdcar[i]      = TMath::Exp((TMath::Abs(track->fP4)-0.0106)*525.3);
+    sdcar[i]      = TMath::Sqrt(0.150*0.150+(100*track->GetC())*(100*track->GetC()));
+    if (TMath::Abs(track->GetTgl())>1) sdcar[i]*=2.5;
+    cdcar[i]      = TMath::Exp((TMath::Abs(track->GetC())-0.0106)*525.3);
     pulldcar[i]   = (dca[i]-cdcar[i])/sdcar[i];
     pulldcaz[i]   = (z0[i]-zvertex)/sdcar[i];
     pulldca[i]    = TMath::Sqrt(pulldcar[i]*pulldcar[i]+pulldcaz[i]*pulldcaz[i]);
@@ -4784,7 +4770,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
   // //  
   TTreeSRedirector &cstream = *fDebugStreamer; 
   Float_t fprimvertex[3]={GetX(),GetY(),GetZ()};
-  AliESDV0MI vertex; 
+  AliV0 vertex; 
   Double_t cradius0 = 10*10;
   Double_t cradius1 = 200*200;
   Double_t cdist1=3.;
@@ -4811,7 +4797,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
 	"\n";
     }
     //
-    if (track0->fP4<0) continue;
+    if (track0->Get1Pt()<0) continue;
     if (track0->GetKinkIndex(0)>0||isPrim[i]) continue;   //daughter kink
     //
     if (TMath::Abs(helixes[i].GetHelix(4))<0.000000001) continue;
@@ -5047,12 +5033,14 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
   timer.Print();
 }
 
-Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &kink)
+Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &knk)
 {
   //
   // refit kink towards to the vertex
   //
   //
+  AliKink &kink=(AliKink &)knk;
+
   Int_t row0 = GetRowNumber(kink.GetR());
   FollowProlongation(mother,0);
   mother.Reset(kFALSE);
@@ -5067,7 +5055,7 @@ Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliES
   const Int_t kNdiv =5;
   AliTPCseed  param0[kNdiv];  // parameters along the track
   AliTPCseed  param1[kNdiv];  // parameters along the track
-  AliESDkink   kinks[kNdiv];   // corresponding kink parameters
+  AliKink     kinks[kNdiv];   // corresponding kink parameters
   //
   Int_t rows[kNdiv];
   for (Int_t irow=0; irow<kNdiv;irow++){
@@ -5098,7 +5086,7 @@ Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliES
     if (TMath::Abs(kinks[irow].GetR())>240.) continue;
     if (TMath::Abs(kinks[irow].GetR())<100.) continue;
     //
-    Float_t normdist = TMath::Abs(param0[irow].fX-kinks[irow].GetR())*(0.1+kink.GetDistance());
+    Float_t normdist = TMath::Abs(param0[irow].GetX()-kinks[irow].GetR())*(0.1+kink.GetDistance());
     normdist/= (param0[irow].fN+param1[irow].fN+40.);
     if (normdist < mindist){
       mindist = normdist;
@@ -5189,7 +5177,7 @@ void AliTPCtrackerMI::UpdateKinkQualityD(AliTPCseed * seed){
 }
 
 
-Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &kink)
+Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTPCseed &daughter, AliESDkink &knk)
 {
   //
   // check kink point for given track
@@ -5197,6 +5185,7 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   // otherwise seed0 correspond to mother particle
   //           seed1 correspond to daughter particle
   //           kink  parameter of kink point
+  AliKink &kink=(AliKink &)knk;
 
   Int_t middlerow = (seed->fFirstPoint+seed->fLastPoint)/2;
   Int_t first = seed->fFirstPoint; 
@@ -5218,7 +5207,7 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   //
   AliTPCseed  param0[20];  // parameters along the track
   AliTPCseed  param1[20];  // parameters along the track
-  AliESDkink            kinks[20];   // corresponding kink parameters
+  AliKink     kinks[20];   // corresponding kink parameters
   Int_t rows[20];
   for (Int_t irow=0; irow<20;irow++){
     rows[irow] = first +((last-first)*irow)/19;
@@ -5245,7 +5234,7 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   for (Int_t irow=1;irow<19;irow++){
     if (TMath::Abs(kinks[irow].GetR())>240.) continue;
     if (TMath::Abs(kinks[irow].GetR())<110.) continue;
-    Float_t quality = TMath::Abs(kinks[irow].GetAngle(2))/(3.+TMath::Abs(kinks[irow].GetR()-param0[irow].fX));
+    Float_t quality = TMath::Abs(kinks[irow].GetAngle(2))/(3.+TMath::Abs(kinks[irow].GetR()-param0[irow].GetX()));
     if ( quality > maxchange){
       maxchange = quality;
       index = irow;
@@ -5261,15 +5250,15 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   seed1 = new AliTPCseed(param1[index]);
   seed0->Reset(kFALSE);
   seed1->Reset(kFALSE);
-  seed0->ResetCovariance();
-  seed1->ResetCovariance();
+  seed0->ResetCovariance(10.);
+  seed1->ResetCovariance(10.);
   FollowProlongation(*seed0,0);
   FollowBackProlongation(*seed1,158);
   new (&mother) AliTPCseed(*seed0);  // backup mother at position 0
   seed0->Reset(kFALSE);  
   seed1->Reset(kFALSE);
-  seed0->ResetCovariance();
-  seed1->ResetCovariance();
+  seed0->ResetCovariance(10.);
+  seed1->ResetCovariance(10.);
   //
   first = TMath::Max(row0-20,0);
   last  = TMath::Min(row0+20,158);
@@ -5301,7 +5290,7 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   for (Int_t irow=0;irow<20;irow++){
     if (TMath::Abs(kinks[irow].GetR())>250.) continue;
     if (TMath::Abs(kinks[irow].GetR())<90.) continue;
-    Float_t quality = TMath::Abs(kinks[irow].GetAngle(2))/(3.+TMath::Abs(kinks[irow].GetR()-param0[irow].fX));
+    Float_t quality = TMath::Abs(kinks[irow].GetAngle(2))/(3.+TMath::Abs(kinks[irow].GetR()-param0[irow].GetX()));
     if ( quality > maxchange){
       maxchange = quality;
       index = irow;
@@ -5459,7 +5448,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
   }
   //
   RemoveUsed2(fSeeds,0.85,0.85,0);
-  if (AliTPCReconstructor::GetRecoParam()->GetDoKinks()) FindKinks(fSeeds,fEvent);
+  FindKinks(fSeeds,fEvent);
   RemoveUsed2(fSeeds,0.5,0.4,20);
  //  //
 //   // refit short tracks
@@ -5657,7 +5646,6 @@ TObjArray * AliTPCtrackerMI::Tracking()
 {
   //
   //
-  if (AliTPCReconstructor::GetRecoParam()->GetSpecialSeeding()) return TrackingSpecial();
   TStopwatch timer;
   timer.Start();
   Int_t nup=fOuterSec->GetNRows()+fInnerSec->GetNRows();
@@ -5808,49 +5796,6 @@ TObjArray * AliTPCtrackerMI::Tracking()
 }
 
 
-TObjArray * AliTPCtrackerMI::TrackingSpecial()
-{
-  //
-  // seeding adjusted for laser and cosmic tests - short tracks with big inclination angle
-  // no primary vertex seeding tried
-  //
-  TStopwatch timer;
-  timer.Start();
-  Int_t nup=fOuterSec->GetNRows()+fInnerSec->GetNRows();
-
-  TObjArray * seeds = new TObjArray;
-  TObjArray * arr=0;
-  
-  Int_t   gap  = 15;
-  Float_t cuts[4];
-  Float_t fnumber  = 3.0;
-  Float_t fdensity = 3.0;
-  
-  // find secondaries
-  cuts[0] = AliTPCReconstructor::GetRecoParam()->GetMaxC();   // max curvature
-  cuts[1] = 3.5;    // max tan(phi) angle for seeding
-  cuts[2] = 3.;     // not used (cut on z primary vertex)     
-  cuts[3] = 3.5;    // max tan(theta) angle for seeding
-
-  for (Int_t delta = 0; nup-delta-gap-1>0; delta+=3){
-    //
-    arr = Tracking(4,nup-1-delta,nup-1-delta-gap,cuts,-1);
-    SumTracks(seeds,arr);   
-    SignClusters(seeds,fnumber,fdensity);   
-  } 
- 
-  if (fDebug>0){
-    Info("Tracking()","\n\nSecondary seeding\t%d\n\n",seeds->GetEntriesFast());
-    timer.Print();
-    timer.Start();
-  }
-
-  return seeds;
-  //
-      
-}
-
-
 void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
 {
   //
@@ -5860,13 +5805,6 @@ void AliTPCtrackerMI::SumTracks(TObjArray *arr1,TObjArray *arr2) const
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed *pt=(AliTPCseed*)arr2->UncheckedAt(i);    
     if (pt){
-      //
-      // remove tracks with too big curvature
-      //
-      if (TMath::Abs(pt->GetC())>AliTPCReconstructor::GetRecoParam()->GetMaxC()){
-	delete arr2->RemoveAt(i);
-	continue;
-      }
        // REMOVE VERY SHORT  TRACKS
       if (pt->GetNumberOfClusters()<20){ 
 	delete arr2->RemoveAt(i);

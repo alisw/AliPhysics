@@ -271,7 +271,7 @@ Int_t AliITSVertexerTracks::PrepareTracks(TTree &trkTree) {
     // propagate track to vtxSeed
     alpha  = track->GetAlpha();
     xlStart = fNominalPos[0]*TMath::Cos(alpha)+fNominalPos[1]*TMath::Sin(alpha);
-    track->PropagateTo(xlStart,field);   // to vtxSeed
+    track->AliExternalTrackParam::PropagateTo(xlStart,field);   // to vtxSeed
 
     // select tracks with d0rphi < maxd0rphi
    
@@ -494,7 +494,7 @@ void AliITSVertexerTracks::VertexFitter() {
       t = (AliESDtrack*)fTrkArray.At(k);
       alpha = t->GetAlpha();
       xlStart = initPos[0]*TMath::Cos(alpha)+initPos[1]*TMath::Sin(alpha);
-      t->PropagateTo(xlStart,AliTracker::GetBz());   // to vtxSeed
+      t->AliExternalTrackParam::PropagateTo(xlStart,AliTracker::GetBz());   // to vtxSeed
       rotAngle = alpha;
       if(alpha<0.) rotAngle += 2.*TMath::Pi();
       cosRot = TMath::Cos(rotAngle);

@@ -20,51 +20,42 @@
 //   that is the base for AliTPCtrack, AliITStrackV2 and AliTRDtrack
 //        Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
 //-------------------------------------------------------------------------
-#include "AliTracker.h"
+#include <TGeoManager.h>
 #include "AliKalmanTrack.h"
-#include "TGeoManager.h"
 
 ClassImp(AliKalmanTrack)
 
 //_______________________________________________________________________
-AliKalmanTrack::AliKalmanTrack():
+  AliKalmanTrack::AliKalmanTrack():AliExternalTrackParam(),
   fLab(-3141593),
   fFakeRatio(0),
   fChi2(0),
   fMass(AliPID::ParticleMass(AliPID::kPion)),
   fN(0),
-  fLocalConvConst(0),
   fStartTimeIntegral(kFALSE),
   fIntegratedLength(0)
 {
   //
   // Default constructor
   //
-  if (AliTracker::GetFieldMap()==0) {
-      AliError("The magnetic field has not been set!");
-  }
 
   for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;
 }
 
 //_______________________________________________________________________
 AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
-  TObject(t),
+  AliExternalTrackParam(t),
   fLab(t.fLab),
   fFakeRatio(t.fFakeRatio),
   fChi2(t.fChi2),
   fMass(t.fMass),
   fN(t.fN),
-  fLocalConvConst(t.fLocalConvConst),
   fStartTimeIntegral(t.fStartTimeIntegral),
   fIntegratedLength(t.fIntegratedLength)
 {
   //
   // Copy constructor
   //
-  if (AliTracker::GetFieldMap()==0) {
-    AliFatal("The magnetic field has not been set!");
-  }
   
   for (Int_t i=0; i<AliPID::kSPECIES; i++)
       fIntegratedTime[i] = t.fIntegratedTime[i];
@@ -172,29 +163,13 @@ void AliKalmanTrack::SetIntegratedTimes(const Double_t *times) {
   for (Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i]=times[i];
 }
 
-void AliKalmanTrack::External2Helix(Double_t helix[6]) const { 
-  //--------------------------------------------------------------------
-  // External track parameters -> helix parameters 
-  //--------------------------------------------------------------------
-  Double_t alpha,x,cs,sn;
-  GetExternalParameters(x,helix); alpha=GetAlpha();
-
-  cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
-  helix[5]=x*cs - helix[0]*sn;            // x0
-  helix[0]=x*sn + helix[0]*cs;            // y0
-//helix[1]=                               // z0
-  helix[2]=TMath::ASin(helix[2]) + alpha; // phi0
-//helix[3]=                               // tgl
-  helix[4]=helix[4]/GetLocalConvConst();  // C
-}
-
 Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Double_t *mparam)
 {
-  //
+  // 
   // calculate mean material budget and material properties beween point start and end
   // mparam - returns parameters used for dEdx and multiple scatering
   //
-  // mparam[0] - density mean 
+  // mparam[0] - density mean
   // mparam[1] - rad length
   // mparam[2] - A mean
   // mparam[3] - Z mean
@@ -202,10 +177,10 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
   // mparam[5] - Z/A mean
   // mparam[6] - number of boundary crosses
   //
-    mparam[0]=0; mparam[1]=1; mparam[2] =0; mparam[3] =0, mparam[4]=0, mparam[5]=0; mparam[6]=0; 
+    mparam[0]=0; mparam[1]=1; mparam[2] =0; mparam[3] =0, mparam[4]=0, mparam[5]=0; mparam[6]=0;
   //
   Double_t bparam[6], lparam[6];          // bparam - total param - lparam - local parameters
-  for (Int_t i=0;i<6;i++) bparam[i]=0;    // 
+  for (Int_t i=0;i<6;i++) bparam[i]=0;    //
 
   if (!gGeoManager) {
     printf("ERROR: no TGeo\n");
@@ -215,8 +190,8 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
   Double_t length;
   Double_t dir[3];
   length = TMath::Sqrt((end[0]-start[0])*(end[0]-start[0])+
-		       (end[1]-start[1])*(end[1]-start[1])+
-		       (end[2]-start[2])*(end[2]-start[2]));
+                       (end[1]-start[1])*(end[1]-start[1])+
+                       (end[2]-start[2])*(end[2]-start[2]));
   mparam[4]=length;
   if (length<TGeoShape::Tolerance()) return 0.0;
   Double_t invlen = 1./length;
@@ -236,7 +211,7 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
   lparam[1]   = material->GetRadLen();
   lparam[2]   = material->GetA();
   lparam[3]   = material->GetZ();
-  lparam[4]   = length; 
+  lparam[4]   = length;
   lparam[5]   = lparam[3]/lparam[2];
   if (material->IsMixture()) {
     lparam[1]*=lparam[0];  // different normalization in the modeler for mixture
@@ -254,7 +229,7 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
   Double_t step = 0.0;
   // If no boundary within proposed length, return current density
   if (snext>=length) {
-    for (Int_t ip=0;ip<5;ip++) mparam[ip] = lparam[ip];  
+    for (Int_t ip=0;ip<5;ip++) mparam[ip] = lparam[ip];
     return lparam[0];
   }
   // Try to cross the boundary and see what is next
@@ -265,7 +240,7 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
     bparam[1]    += snext*lparam[1];
     bparam[2]    += snext*lparam[2];
     bparam[3]    += snext*lparam[3];
-    bparam[5]    += snext*lparam[5];    
+    bparam[5]    += snext*lparam[5];
     bparam[0]    += snext*lparam[0];
 
     if (snext>=length) break;
@@ -275,15 +250,15 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
       gGeoManager->SetStep(1.E-3);
       currentnode = gGeoManager->Step();
       if (!gGeoManager->IsEntering() || !currentnode) {
-	//	printf("ERROR: cannot cross boundary\n"); 
-	mparam[0] = bparam[0]/step;
-	mparam[1] = bparam[1]/step;
-	mparam[2] = bparam[2]/step;
-	mparam[3] = bparam[3]/step;	
-	mparam[5] = bparam[5]/step;	
-	mparam[4] = step;
-	mparam[0] = 0.;             // if crash of navigation take mean density 0 
-	mparam[1] = 1000000;        // and infinite rad length
+        //      printf("ERROR: cannot cross boundary\n");
+        mparam[0] = bparam[0]/step;
+        mparam[1] = bparam[1]/step;
+        mparam[2] = bparam[2]/step;
+        mparam[3] = bparam[3]/step;
+        mparam[5] = bparam[5]/step;
+        mparam[4] = step;
+        mparam[0] = 0.;             // if crash of navigation take mean density 0
+        mparam[1] = 1000000;        // and infinite rad length
         return bparam[0]/step;
       }
       step += 1.E-3;
@@ -304,39 +279,23 @@ Double_t AliKalmanTrack::MeanMaterialBudget(Double_t *start, Double_t *end, Doub
     if (material->IsMixture()) {
       lparam[1]*=lparam[0];
       TGeoMixture * mixture = (TGeoMixture*)material;
-      lparam[5]=0; 
+      lparam[5]=0;
       Double_t sum =0;
       for (Int_t iel=0;iel<mixture->GetNelements();iel++){
-	sum+= mixture->GetWmixt()[iel];
-	lparam[5]+= mixture->GetZmixt()[iel]*mixture->GetWmixt()[iel]/mixture->GetAmixt()[iel];
+        sum+= mixture->GetWmixt()[iel];
+        lparam[5]+= mixture->GetZmixt()[iel]*mixture->GetWmixt()[iel]/mixture->GetAmixt()[iel];
       }
       lparam[5]/=sum;
     }
     gGeoManager->FindNextBoundary(length);
     snext = gGeoManager->GetStep();
-  }   
+  }
   mparam[0] = bparam[0]/step;
   mparam[1] = bparam[1]/step;
   mparam[2] = bparam[2]/step;
-  mparam[3] = bparam[3]/step;  
-  mparam[5] = bparam[5]/step;  
-  return bparam[0]/step;   
-  
-}
+  mparam[3] = bparam[3]/step;
+  mparam[5] = bparam[5]/step;
+  return bparam[0]/step;
 
-Double_t AliKalmanTrack::GetConvConst() {
-  return 1000/0.299792458/AliTracker::GetBz();
 }
-
-void AliKalmanTrack::SaveLocalConvConst() {
-  //---------------------------------------------------------------------
-  // Saves local conversion constant "curvature (1/cm) -> pt (GeV/c)" 
-  //---------------------------------------------------------------------
-  if (AliTracker::UniformField()) {
-     fLocalConvConst=1000/0.299792458/AliTracker::GetBz();
-  } else {
-     Float_t r[3]; GetXYZ(r);
-     fLocalConvConst=1000/0.299792458/AliTracker::GetBz(r);
-  }
-} 
 

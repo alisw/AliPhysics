@@ -75,7 +75,6 @@ AliESDtrack::AliESDtrack() :
   fITSncls(0),
   fITSsignal(0),
   fITSLabel(0),
-  fITSFakeRatio(0),
   fTPCchi2(0),
   fTPCncls(0),
   fTPCnclsF(0),
@@ -154,7 +153,6 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fITSncls(track.fITSncls),
   fITSsignal(track.fITSsignal),
   fITSLabel(track.fITSLabel),
-  fITSFakeRatio(track.fITSFakeRatio),
   fTPCchi2(track.fTPCchi2),
   fTPCncls(track.fTPCncls),
   fTPCnclsF(track.fTPCnclsF),
@@ -282,7 +280,6 @@ void AliESDtrack::MakeMiniESDtrack(){
   fITSsignal = 0;     
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
   fITSLabel = 0;       
-  fITSFakeRatio = 0;   
 
   // Reset TPC related track information
   fTPCchi2 = 0;       
@@ -381,7 +378,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     SetIntegratedLength(t->GetIntegratedLength());
   }
 
-  Set(*t);
+  Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
   
   switch (flags) {
     
@@ -393,18 +390,19 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     fITSchi2=t->GetChi2();
     fITSsignal=t->GetPIDsignal();
     fITSLabel = t->GetLabel();
-    fITSFakeRatio = t->GetFakeRatio();
     break;
     
   case kTPCin: case kTPCrefit:
     fTPCLabel = t->GetLabel();
     if (!fIp) fIp=new AliExternalTrackParam(*t);
-    else fIp->Set(*t);
+    else 
+      fIp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
   case kTPCout:
     index=fFriendTrack->GetTPCindices(); 
     if (flags & kTPCout){
       if (!fOp) fOp=new AliExternalTrackParam(*t);
-      else fOp->Set(*t);
+      else 
+        fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
     }
     fTPCncls=t->GetNumberOfClusters();    
     fTPCchi2=t->GetChi2();
@@ -473,7 +471,8 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
     break;
   case kTRDbackup:
     if (!fOp) fOp=new AliExternalTrackParam(*t);
-    else fOp->Set(*t);
+    else 
+      fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
     fTRDncls0 = t->GetNumberOfClusters(); 
     break;
   case kTOFin: 
@@ -939,3 +938,52 @@ void AliESDtrack::Print(Option_t *) const {
     printf("\n           signal = %f\n", GetRICHsignal()) ;
   }
 } 
+
+Bool_t AliESDtrack::PropagateTo(Double_t xToGo, Double_t b, Double_t mass, 
+Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
+  //----------------------------------------------------------------
+  //
+  // MI's function
+  //
+  // Propagates this track to the plane X=xk (cm) 
+  // in the magnetic field "b" (kG),
+  // the correction for the material is included
+  //
+  // mass     - mass used in propagation - used for energy loss correction
+  // maxStep  - maximal step for propagation
+  //----------------------------------------------------------------
+  const Double_t kEpsilon = 0.00001;
+  Double_t xpos     = GetX();
+  Double_t dir      = (xpos<xToGo) ? 1.:-1.;
+  //
+  while ( (xToGo-xpos)*dir > kEpsilon){
+    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
+    Double_t x    = xpos+step;
+    Double_t xyz0[3],xyz1[3],param[7];
+    GetXYZ(xyz0);   //starting global position
+    if (!GetXYZAt(x,b,xyz1)) return kFALSE;   // no prolongation
+    xyz1[2]+=kEpsilon; // waiting for bug correction in geo
+    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
+    if (TMath::Abs(GetSnpAt(x,b)) >= maxSnp) return kFALSE;
+    if (!AliExternalTrackParam::PropagateTo(x,b))  return kFALSE;
+
+    Double_t rho=param[0],x0=param[1],distance=param[4];
+    Double_t d=distance*rho/x0;
+
+    if (!CorrectForMaterial(d,x0,mass)) return kFALSE;
+    if (rotateTo){
+      if (TMath::Abs(GetSnp()) >= maxSnp) return kFALSE;
+      GetXYZ(xyz0);   // global position
+      Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]); 
+      //
+      Double_t ca=TMath::Cos(alphan-GetAlpha()), 
+               sa=TMath::Sin(alphan-GetAlpha());
+      Double_t sf=GetSnp(), cf=TMath::Sqrt(1.- sf*sf);
+      Double_t sinNew =  sf*ca - cf*sa;
+      if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
+      if (!Rotate(alphan)) return kFALSE;
+    }
+    xpos = GetX();
+  }
+  return kTRUE;
+}

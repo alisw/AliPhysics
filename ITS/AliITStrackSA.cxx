@@ -88,9 +88,9 @@ AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t d
   // cluster of this track (data member fAlpha)
   Float_t rotmatr[9];
   geom->GetRotMatrix(layer,ladder,detector,rotmatr);
-  fAlpha=TMath::ATan2(rotmatr[1],rotmatr[0])+TMath::Pi();
-  fAlpha+=TMath::Pi()/2.;
-  if(layer==1) fAlpha+=TMath::Pi();
+  Double_t sAlpha=TMath::ATan2(rotmatr[1],rotmatr[0])+TMath::Pi();
+  sAlpha+=TMath::Pi()/2.;
+  if(layer==1) sAlpha+=TMath::Pi();
 
 
   // get the radius of this detector. Procedure taken from the 
@@ -102,33 +102,36 @@ AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t d
   fi+=TMath::Pi()/2;
   if (layer==1) fi+=TMath::Pi();
   Double_t cp=TMath::Cos(fi), sp=TMath::Sin(fi);
-  fX=x*cp+y*sp;
+  Double_t sX=x*cp+y*sp;
 
 
   fdEdx = 0;
 
-  fC00 = 0.000009; // 0.000009
-  fC10 = 0.;
-  fC11 = 0.000003; //0.000030
-  fC20 = 0.;
-  fC21 = 0.;
-  fC22 = 0.000001; //0.000001
-  fC30 = 0.;
-  fC31 = 0.;
-  fC32 = 0.;
-  fC33 = 0.000002; //0.000002
-  fC40 = 0.;
-  fC41 = 0.;
-  fC42 = 0.;
-  fC43 = 0.;
-  fC44 = 0.000001; //0.0000001
+  Double_t conv=GetBz()*kB2C;
+  Double_t sC[] = {0.000009, // 0.000009
+                   0.,
+                   0.000003, //0.000030
+                   0.,
+	           0.,
+	           0.000001, //0.000001
+	           0.,
+	           0.,
+	           0.,
+	           0.000002, //0.000002
+	           0.,
+	           0.,
+	           0.,
+	           0.,
+		   0.000001/(conv*conv)}; //0.0000001
 
-  fP0 = Ycoor;
-  fP1 = Zcoor;
-  
-  fP2 = TMath::Sin(phi-fAlpha);
-  fP3 = tanlambda;
-  fP4 = curv;
+  Double_t sP[] = {Ycoor,
+		   Zcoor,
+                   TMath::Sin(phi-sAlpha),
+		   tanlambda,
+		   curv/conv};
+
+  Set(sX,sAlpha,sP,sC);
+
   for(Int_t i=0; i<kMaxLayer; i++) fIndex[i] = 0;  // to be set explicitely
 
   for(Int_t i=0; i<4; i++) fdEdxSample[i] = 0; 
@@ -142,7 +145,6 @@ AliITStrackSA::AliITStrackSA(AliITSgeom* geom,Int_t layer, Int_t ladder, Int_t d
   SetMass(0.139);    // pion mass
   SetLabel(lab); 
   
-
 }
 
 //____________________________________________________________

@@ -840,7 +840,7 @@ void AliVertexerTracks::VertexFitter(Bool_t useNominalVtx) {
       t = (AliESDtrack*)fTrkArray.At(k);
       alpha = t->GetAlpha();
       xlStart = initPos[0]*TMath::Cos(alpha)+initPos[1]*TMath::Sin(alpha);
-      t->PropagateTo(xlStart,AliTracker::GetBz());   // to vtxSeed
+      t->AliExternalTrackParam::PropagateTo(xlStart,AliTracker::GetBz());   // to vtxSeed
       rotAngle = alpha;
       if(alpha<0.) rotAngle += 2.*TMath::Pi();
       cosRot = TMath::Cos(rotAngle);

@@ -1448,11 +1448,11 @@ Int_t AliITStrackerANN::SaveTracks(Int_t sector)
 					if (cluster) trac->AddClusterV2(l, (node[l]->ClusterRef() & 0x0fffffff)>>0);
 				}
             AliITStrackV2* ot = new AliITStrackV2(*trac);
-				ot->ResetCovariance();
+				ot->ResetCovariance(10.);
 				ot->ResetClusters();
 				if (RefitAt(49.,ot,trac)) { //fit from layer 1 to layer 6
 					AliITStrackV2 *otrack2 = new AliITStrackV2(*ot);
-					otrack2->ResetCovariance();
+					otrack2->ResetCovariance(10.);
 					otrack2->ResetClusters();
 					//fit from layer 6 to layer 1
 					if (RefitAt(3.7,otrack2,ot)) fFoundTracks->AddLast(otrack2);
@@ -1613,11 +1613,11 @@ Int_t AliITStrackerANN::StoreTracks()
 				if (cluster) trac->AddClusterV2(l, (annTrack[l]->ClusterRef() & 0x0fffffff)>>0);
 			}
 			AliITStrackV2* ot = new AliITStrackV2(*trac);
-			ot->ResetCovariance();
+			ot->ResetCovariance(10.);
 			ot->ResetClusters();
 			if (RefitAt(49.,ot,trac)) { //fit from layer 1 to layer 6
 				AliITStrackV2 *otrack2 = new AliITStrackV2(*ot);
-				otrack2->ResetCovariance();
+				otrack2->ResetCovariance(10.);
 				otrack2->ResetClusters();
 				//fit from layer 6 to layer 1
 				if (RefitAt(3.7,otrack2,ot)) fFoundTracks->AddLast(otrack2);

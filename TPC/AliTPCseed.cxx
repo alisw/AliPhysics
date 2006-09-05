@@ -167,10 +167,9 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
-AliTPCseed::AliTPCseed(UInt_t index,  const Double_t xx[5],
-		       const Double_t cc[15], 
-		       Double_t xr, Double_t alpha):      
-  AliTPCtrack(index, xx, cc, xr, alpha),
+AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
+		       const Double_t cc[15], Int_t index):      
+  AliTPCtrack(xr, alpha, xx, cc, index),
   fEsd(0x0),
   fClusterOwner(kFALSE),
   fPoints(0x0),
@@ -328,7 +327,7 @@ void AliTPCseed::Reset(Bool_t all)
   SetNumberOfClusters(0);
   fNFoundable = 0;
   SetChi2(0);
-  ResetCovariance();
+  ResetCovariance(10.);
   /*
   if (fTrackPoints){
     for (Int_t i=0;i<8;i++){
@@ -354,14 +353,11 @@ void AliTPCseed::Modify(Double_t factor)
   //This function makes a track forget its history :)  
   //------------------------------------------------------------------
   if (factor<=0) {
-    ResetCovariance();
+    ResetCovariance(10.);
     return;
   }
-  fC00*=factor;
-  fC10*=0;  fC11*=factor;
-  fC20*=0;  fC21*=0;  fC22*=factor;
-  fC30*=0;  fC31*=0;  fC32*=0;  fC33*=factor;
-  fC40*=0;  fC41*=0;  fC42*=0;  fC43*=0;  fC44*=factor;
+  ResetCovariance(factor);
+
   SetNumberOfClusters(0);
   fNFoundable =0;
   SetChi2(0);
@@ -383,25 +379,25 @@ Int_t  AliTPCseed::GetProlongation(Double_t xk, Double_t &y, Double_t & z) const
   // doesn't change internal state of the track
   //-----------------------------------------------------------------
   
-  Double_t x1=fX, x2=x1+(xk-x1), dx=x2-x1;
+  Double_t x1=GetX(), x2=x1+(xk-x1), dx=x2-x1;
 
-  if (TMath::Abs(fP4*xk - fP2) >= AliTPCReconstructor::GetMaxSnpTrack()) {   
+  if (TMath::Abs(GetSnp()+GetC()*dx) >= AliTPCReconstructor::GetMaxSnpTrack()) {   
     return 0;
   }
 
   //  Double_t y1=fP0, z1=fP1;
-  Double_t c1=fP4*x1 - fP2, r1=sqrt(1.- c1*c1);
-  Double_t c2=fP4*x2 - fP2, r2=sqrt(1.- c2*c2);
+  Double_t c1=GetSnp(), r1=sqrt(1.- c1*c1);
+  Double_t c2=c1 + GetC()*dx, r2=sqrt(1.- c2*c2);
   
-  y = fP0;
-  z = fP1;
+  y = GetY();
+  z = GetZ();
   //y += dx*(c1+c2)/(r1+r2);
   //z += dx*(c1+c2)/(c1*r2 + c2*r1)*fP3;
   
   Double_t dy = dx*(c1+c2)/(r1+r2);
   Double_t dz = 0;
   //
-  Double_t delta = fP4*dx*(c1+c2)/(c1*r2 + c2*r1);
+  Double_t delta = GetC()*dx*(c1+c2)/(c1*r2 + c2*r1);
   /*
   if (TMath::Abs(delta)>0.0001){
     dz = fP3*TMath::ASin(delta)/fP4;
@@ -410,7 +406,7 @@ Int_t  AliTPCseed::GetProlongation(Double_t xk, Double_t &y, Double_t & z) const
   }
   */
   //  dz =  fP3*AliTPCFastMath::FastAsin(delta)/fP4;
-  dz =  fP3*TMath::ASin(delta)/fP4;
+  dz =  GetTgl()*TMath::ASin(delta)/GetC();
   //
   y+=dy;
   z+=dz;
@@ -426,23 +422,10 @@ Double_t AliTPCseed::GetPredictedChi2(const AliCluster *c) const
   //-----------------------------------------------------------------
   // This function calculates a predicted chi2 increment.
   //-----------------------------------------------------------------
-  //Double_t r00=c->GetSigmaY2(), r01=0., r11=c->GetSigmaZ2();
-  Double_t r00=fErrorY2, r01=0., r11=fErrorZ2;
-  r00+=fC00; r01+=fC10; r11+=fC11;
-
-  Double_t det=r00*r11 - r01*r01;
-  if (TMath::Abs(det) < 1.e-10) {
-    //Int_t n=GetNumberOfClusters();
-    //if (n>4) cerr<<n<<" AliKalmanTrack warning: Singular matrix !\n";
-    return 1e10;
-  }
-  Double_t tmp=r00; r00=r11; r11=tmp; r01=-r01;
-  
-  Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
-  
-  return (dy*r00*dy + 2*r01*dy*dz + dz*r11*dz)/det;
+  Double_t p[2]={c->GetY(), c->GetZ()};
+  Double_t cov[3]={fErrorY2, 0., fErrorZ2};
+  return AliExternalTrackParam::GetPredictedChi2(p,cov);
 }
-
 
 //_________________________________________________________________________________________
 
@@ -452,7 +435,7 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
   // This function compares tracks according to the sector - for given sector according z
   //-----------------------------------------------------------------
   AliTPCseed *t=(AliTPCseed*)o;
-  const Double_t kfC44mean = 0.0001; 
+
   if (fSort == 0){
     if (t->fRelativeSector>fRelativeSector) return -1;
     if (t->fRelativeSector<fRelativeSector) return 1;
@@ -463,23 +446,12 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
     return 0;
   }
   else {
-    if (t->fC44<0){
-      AliError("Non positive covariance");
-      t->Dump();
-      return -1;
-    }
-    if (fC44<0){
-      AliError("Non positive covariance");
-      Dump();
-      return 1;
-    }
-    //
     Float_t f2 =1;
-    f2 = 1./(kfC44mean+TMath::Sqrt(TMath::Abs(t->fC44)));
+    f2 = 1-20*TMath::Sqrt(t->GetSigma1Pt2())/(TMath::Abs(t->Get1Pt())+0.0066);
     if (t->fBConstrain) f2=1.2;
 
     Float_t f1 =1;
-    f1 = 1./(kfC44mean+TMath::Sqrt(TMath::Abs(fC44)));
+    f1 = 1-20*TMath::Sqrt(GetSigma1Pt2())/(TMath::Abs(Get1Pt())+0.0066);
 
     if (fBConstrain)   f1=1.2;
  
@@ -492,59 +464,22 @@ Int_t AliTPCseed::Compare(const TObject *o) const {
 
 
 //_____________________________________________________________________________
-Int_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, UInt_t /*index*/) {
+Bool_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, Int_t /*index*/)
+{
   //-----------------------------------------------------------------
   // This function associates a cluster with this track.
   //-----------------------------------------------------------------
-  Double_t r00=fErrorY2, r01=0., r11=fErrorZ2;
+  Double_t p[2]={c->GetY(), c->GetZ()};
+  Double_t cov[3]={fErrorY2, 0., fErrorZ2};
 
-  r00+=fC00; r01+=fC10; r11+=fC11;
-  Double_t det=r00*r11 - r01*r01;
-  Double_t tmp=r00; r00=r11/det; r11=tmp/det; r01=-r01/det;
-
-  Double_t k00=fC00*r00+fC10*r01, k01=fC00*r01+fC10*r11;
-  Double_t k10=fC10*r00+fC11*r01, k11=fC10*r01+fC11*r11;
-  Double_t k20=fC20*r00+fC21*r01, k21=fC20*r01+fC21*r11;
-  Double_t k30=fC30*r00+fC31*r01, k31=fC30*r01+fC31*r11;
-  Double_t k40=fC40*r00+fC41*r01, k41=fC40*r01+fC41*r11;
-
-  Double_t dy=c->GetY() - fP0, dz=c->GetZ() - fP1;
-  Double_t cur=fP4 + k40*dy + k41*dz, eta=fP2 + k20*dy + k21*dz;
-  if (TMath::Abs(cur*fX-eta) >= AliTPCReconstructor::GetMaxSnpTrack()) {
-    return 0;
-  }
-
-  fP0 += k00*dy + k01*dz;
-  fP1 += k10*dy + k11*dz;
-  fP2  = eta;
-  fP3 += k30*dy + k31*dz;
-  fP4  = cur;
-
-  Double_t c01=fC10, c02=fC20, c03=fC30, c04=fC40;
-  Double_t c12=fC21, c13=fC31, c14=fC41;
-
-  fC00-=k00*fC00+k01*fC10; fC10-=k00*c01+k01*fC11;
-  fC20-=k00*c02+k01*c12;   fC30-=k00*c03+k01*c13;
-  fC40-=k00*c04+k01*c14; 
-
-  fC11-=k10*c01+k11*fC11;
-  fC21-=k10*c02+k11*c12;   fC31-=k10*c03+k11*c13;
-  fC41-=k10*c04+k11*c14; 
-
-  fC22-=k20*c02+k21*c12;   fC32-=k20*c03+k21*c13;
-  fC42-=k20*c04+k21*c14; 
-
-  fC33-=k30*c03+k31*c13;
-  fC43-=k40*c03+k41*c13; 
-
-  fC44-=k40*c04+k41*c14; 
+  if (!AliExternalTrackParam::Update(p,cov)) return kFALSE;
 
   Int_t n=GetNumberOfClusters();
   //  fIndex[n]=index;
   SetNumberOfClusters(n+1);
   SetChi2(GetChi2()+chisq);
 
-  return 1;
+  return kTRUE;
 }
 
 
@@ -805,7 +740,7 @@ void AliTPCseed::CookPID()
   Double_t sumr =0;
   for (Int_t j=0; j<ns; j++) {
     Double_t mass=AliPID::ParticleMass(j);
-    Double_t mom=P();
+    Double_t mom=GetP();
     Double_t dedx=fdEdx/fMIP;
     Double_t bethe=Bethe(mom/mass); 
     Double_t sigma=fRes*bethe;
@@ -1000,3 +935,15 @@ void AliTPCseed::CookdEdx2(Double_t low, Double_t up) {
 
 }
 */
+Double_t AliTPCseed::GetYat(Double_t xk) const {
+//-----------------------------------------------------------------
+// This function calculates the Y-coordinate of a track at the plane x=xk.
+//-----------------------------------------------------------------
+  if (TMath::Abs(GetSnp())>AliTPCReconstructor::GetMaxSnpTrack()) return 0.; //patch 01 jan 06
+    Double_t c1=GetSnp(), r1=TMath::Sqrt(1.- c1*c1);
+    Double_t c2=c1+GetC()*(xk-GetX());
+    if (TMath::Abs(c2)>AliTPCReconstructor::GetMaxSnpTrack()) return 0;
+    Double_t r2=TMath::Sqrt(1.- c2*c2);
+    return GetY() + (xk-GetX())*(c1+c2)/(r1+r2);
+}
+

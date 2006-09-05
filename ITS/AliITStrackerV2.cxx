@@ -37,7 +37,62 @@ ClassImp(AliITStrackerV2)
 
 AliITStrackerV2::AliITSlayer AliITStrackerV2::fgLayers[kMaxLayer]; // ITS layers
 
-AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
+AliITStrackerV2::AliITStrackerV2(): 
+  AliTracker(), 
+  fI(kMaxLayer),
+  fBestTrack(),
+  fTrackToFollow(),
+  fPass(0),
+  fLastLayerToTrackTo(kLastLayerToTrackTo)
+{
+  //--------------------------------------------------------------------
+  //This is the AliITStrackerV2 default constructor
+  //--------------------------------------------------------------------
+
+  for (Int_t i=1; i<kMaxLayer+1; i++) new(fgLayers+i-1) AliITSlayer();
+
+  fConstraint[0]=1; fConstraint[1]=0;
+
+  Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV}; 
+  SetVertex(xyz,ers);
+
+  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=kLayersNotToSkip[i];
+
+}
+
+AliITStrackerV2::AliITStrackerV2(const AliITStrackerV2 &t): 
+  AliTracker(t), 
+  fI(t.fI),
+  fBestTrack(t.fBestTrack),
+  fTrackToFollow(t.fTrackToFollow),
+  fPass(t.fPass),
+  fLastLayerToTrackTo(t.fLastLayerToTrackTo)
+{
+  //--------------------------------------------------------------------
+  //This is the AliITStrackerV2 copy constructor
+  //--------------------------------------------------------------------
+
+  //for (Int_t i=1; i<kMaxLayer+1; i++) new(fgLayers+i-1) AliITSlayer();
+
+  fConstraint[0]=t.fConstraint[0]; fConstraint[1]=t.fConstraint[1];
+
+  Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV};
+  xyz[0]=t.GetX(); xyz[1]=t.GetY(); xyz[2]=t.GetZ(); 
+  ers[0]=t.GetSigmaX(); ers[1]=t.GetSigmaY(); ers[2]=t.GetSigmaZ(); 
+  SetVertex(xyz,ers);
+
+  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=t.fLayersNotToSkip[i];
+
+}
+
+AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : 
+  AliTracker(), 
+  fI(kMaxLayer),
+  fBestTrack(),
+  fTrackToFollow(),
+  fPass(0),
+  fLastLayerToTrackTo(kLastLayerToTrackTo)
+{
   //--------------------------------------------------------------------
   //This is the AliITStrackerV2 constructor
   //--------------------------------------------------------------------
@@ -85,16 +140,12 @@ AliITStrackerV2::AliITStrackerV2(const AliITSgeom *geom) : AliTracker() {
 
   }
 
-  fI=kMaxLayer;
-
-  fPass=0;
   fConstraint[0]=1; fConstraint[1]=0;
 
   Double_t xyz[]={kXV,kYV,kZV}, ers[]={kSigmaXV,kSigmaYV,kSigmaZV}; 
   SetVertex(xyz,ers);
 
   for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=kLayersNotToSkip[i];
-  fLastLayerToTrackTo=kLastLayerToTrackTo;
 
 }
 
@@ -213,7 +264,7 @@ Int_t AliITStrackerV2::Clusters2Tracks(AliESD *event) {
         delete t;
         continue;
       }
-      if (TMath::Abs(t->GetD())>4) {
+      if (TMath::Abs(t->GetD(GetX(),GetY()))>4) {
 	delete t;
 	continue;
       }
@@ -300,13 +351,13 @@ Int_t AliITStrackerV2::PropagateBack(AliESD *event) {
      // propagete to vertex [SR, GSI 17.02.2003]
      // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
      if (fTrackToFollow.PropagateTo(3.,0.0028,65.19)) {
-       if (fTrackToFollow.PropagateToVertex()) {
+       if (fTrackToFollow.PropagateToVertex(event->GetVertex())) {
           fTrackToFollow.StartTimeIntegral();
        }
        fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
      }
 
-     fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
+     fTrackToFollow.ResetCovariance(10.); fTrackToFollow.ResetClusters();
      if (RefitAt(49.,&fTrackToFollow,t)) {
         if (CorrectForDeadZoneMaterial(&fTrackToFollow)!=0) {
           Warning("PropagateBack",
@@ -551,7 +602,7 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
   }
 
   if (fTrackToFollow.GetNumberOfClusters()>1)
-  if (TMath::Abs(fTrackToFollow.GetD())>4) return 0;
+    if (TMath::Abs(fTrackToFollow.GetD(GetX(),GetY()))>4) return 0;
 
   fTrackToFollow.
     SetSampledEdx(cc->GetQ(),fTrackToFollow.GetNumberOfClusters()-1); //b.b.
@@ -573,35 +624,43 @@ Int_t AliITStrackerV2::TakeNextProlongation() {
 }
 
 
-AliITStrackerV2::AliITSlayer::AliITSlayer() {
+AliITStrackerV2::AliITSlayer::AliITSlayer():
+  fR(0.),
+  fPhiOffset(0.),
+  fNladders(0),
+  fZOffset(0.),
+  fNdetectors(0),
+  fDetectors(0),
+  fNsel(0),
+  fRoad(2*fR*TMath::Sqrt(3.14/1.)) //assuming that there's only one cluster
+{
   //--------------------------------------------------------------------
   //default AliITSlayer constructor
   //--------------------------------------------------------------------
-  fR=0.; fPhiOffset=0.; fZOffset=0.;
-  fNladders=0; fNdetectors=0;
-  fDetectors=0;
   
   for (Int_t i=0; i<kNsector; i++) fN[i]=0;
-  fNsel=0;
 
-  fRoad=2*fR*TMath::Sqrt(3.14/1.);//assuming that there's only one cluster
 }
 
 AliITStrackerV2::AliITSlayer::
-AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd) {
+AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd): 
+  fR(r), 
+  fPhiOffset(p), 
+  fNladders(nl),
+  fZOffset(z),
+  fNdetectors(nd),
+  fDetectors(new AliITSdetector[nl*nd]),
+  fNsel(0),
+  fRoad(2*r*TMath::Sqrt(3.14/1.)) //assuming that there's only one cluster
+{
   //--------------------------------------------------------------------
   //main AliITSlayer constructor
   //--------------------------------------------------------------------
-  fR=r; fPhiOffset=p; fZOffset=z;
-  fNladders=nl; fNdetectors=nd;
-  fDetectors=new AliITSdetector[fNladders*fNdetectors];
 
   for (Int_t i=0; i<kNsector; i++) fN[i]=0;
-  fNsel=0;
 
   for (Int_t i=0; i<kMaxClusterPerLayer; i++) fClusters[i]=0;
 
-  fRoad=2*fR*TMath::Sqrt(3.14/1.);//assuming that there's only one cluster
 }
 
 AliITStrackerV2::AliITSlayer::~AliITSlayer() {

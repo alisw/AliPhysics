@@ -30,7 +30,7 @@
 #include <TTree.h>
 
 #include "AliESD.h"
-#include "AliESDV0MI.h"
+#include "AliV0.h"
 #include "AliHelix.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeom.h"
@@ -410,13 +410,13 @@ Int_t AliITStrackerMI::PropagateBack(AliESD *event) {
      // propagete to vertex [SR, GSI 17.02.2003]
      // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
      if (fTrackToFollow.PropagateTo(3.,0.0028,65.19)) {
-       if (fTrackToFollow.PropagateToVertex()) {
+       if (fTrackToFollow.PropagateToVertex(event->GetVertex())) {
           fTrackToFollow.StartTimeIntegral();
        }
        fTrackToFollow.PropagateTo(3.,-0.0028,65.19);
      }
 
-     fTrackToFollow.ResetCovariance(); fTrackToFollow.ResetClusters();
+     fTrackToFollow.ResetCovariance(10.); fTrackToFollow.ResetClusters();
      if (RefitAt(49.,&fTrackToFollow,t)) {
         if (CorrectForDeadZoneMaterial(&fTrackToFollow)!=0) {
           //Warning("PropagateBack",
@@ -478,7 +478,7 @@ Int_t AliITStrackerMI::RefitInward(AliESD *event) {
     fTrackToFollow.ResetClusters();
 
     if ((esd->GetStatus()&AliESDtrack::kTPCin)==0)
-      fTrackToFollow.ResetCovariance();
+      fTrackToFollow.ResetCovariance(10.);
 
     //Refitting...
     if (RefitAt(3.7, &fTrackToFollow, t,kTRUE)) {
@@ -794,7 +794,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	ntracks[ilayer]++;
       }
 
-      if (constrain&&itrack<1&&TMath::Abs(currenttrack1.fP3)>1.1){  //big theta -- for low mult. runs
+      if (constrain&&itrack<1&&TMath::Abs(currenttrack1.GetTgl())>1.1){  //big theta -- for low mult. runs
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	vtrack->fClIndex[ilayer]=0;
 	fI = ilayer;
@@ -889,10 +889,10 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
     for (Int_t i=0;i<3;i++){
       Int_t  index = otrack->fESDtrack->GetV0Index(i); 
       if (index==0) break;
-      AliESDV0MI * vertex = fEsd->GetV0MI(index);
+      AliV0 * vertex = (AliV0*)fEsd->GetV0MI(index);
       if (vertex->GetStatus()<0) continue;     // rejected V0
       //
-      if (otrack->fP4>0) {
+      if (otrack->GetSign()>0) {
 	vertex->SetIndex(0,esdindex);
       }
       else{
@@ -911,7 +911,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       if (nearestold<5&&nearest<5){
 	Bool_t accept = track.fNormChi2[nearest]<10; 
 	if (accept){
-	  if (track.fP4>0) {
+	  if (track.GetSign()>0) {
 	    vertex->SetP(track);
 	    vertex->Update(fprimvertex);
 	    //	    vertex->SetIndex(0,track.fESDtrack->GetID()); 
@@ -1871,32 +1871,32 @@ Double_t AliITStrackerMI::GetMatchingChi2(AliITStrackMI * track1, AliITStrackMI 
   AliITStrackMI track3(*track2);
   track3.Propagate(track1->GetAlpha(),track1->GetX());
   TMatrixD vec(5,1);
-  vec(0,0)=track1->fP0-track3.fP0;
-  vec(1,0)=track1->fP1-track3.fP1;
-  vec(2,0)=track1->fP2-track3.fP2;
-  vec(3,0)=track1->fP3-track3.fP3;
-  vec(4,0)=track1->fP4-track3.fP4;
+  vec(0,0)=track1->GetY()   - track3.GetY();
+  vec(1,0)=track1->GetZ()   - track3.GetZ();
+  vec(2,0)=track1->GetSnp() - track3.GetSnp();
+  vec(3,0)=track1->GetTgl() - track3.GetTgl();
+  vec(4,0)=track1->Get1Pt() - track3.Get1Pt();
   //
   TMatrixD cov(5,5);
-  cov(0,0) = track1->fC00+track3.fC00;
-  cov(1,1) = track1->fC11+track3.fC11;
-  cov(2,2) = track1->fC22+track3.fC22;
-  cov(3,3) = track1->fC33+track3.fC33;
-  cov(4,4) = track1->fC44+track3.fC44;
+  cov(0,0) = track1->GetSigmaY2()+track3.GetSigmaY2();
+  cov(1,1) = track1->GetSigmaZ2()+track3.GetSigmaZ2();
+  cov(2,2) = track1->GetSigmaSnp2()+track3.GetSigmaSnp2();
+  cov(3,3) = track1->GetSigmaTgl2()+track3.GetSigmaTgl2();
+  cov(4,4) = track1->GetSigma1Pt2()+track3.GetSigma1Pt2();
   
-  cov(0,1)=cov(1,0) = track1->fC10+track3.fC10;
-  cov(0,2)=cov(2,0) = track1->fC20+track3.fC20;
-  cov(0,3)=cov(3,0) = track1->fC30+track3.fC30;
-  cov(0,4)=cov(4,0) = track1->fC40+track3.fC40;
+  cov(0,1)=cov(1,0) = track1->GetSigmaZY()+track3.GetSigmaZY();
+  cov(0,2)=cov(2,0) = track1->GetSigmaSnpY()+track3.GetSigmaSnpY();
+  cov(0,3)=cov(3,0) = track1->GetSigmaTglY()+track3.GetSigmaTglY();
+  cov(0,4)=cov(4,0) = track1->GetSigma1PtY()+track3.GetSigma1PtY();
   //
-  cov(1,2)=cov(2,1) = track1->fC21+track3.fC21;
-  cov(1,3)=cov(3,1) = track1->fC31+track3.fC31;
-  cov(1,4)=cov(4,1) = track1->fC41+track3.fC41;
+  cov(1,2)=cov(2,1) = track1->GetSigmaSnpZ()+track3.GetSigmaSnpZ();
+  cov(1,3)=cov(3,1) = track1->GetSigmaTglZ()+track3.GetSigmaTglZ();
+  cov(1,4)=cov(4,1) = track1->GetSigma1PtZ()+track3.GetSigma1PtZ();
   //
-  cov(2,3)=cov(3,2) = track1->fC32+track3.fC32;
-  cov(2,4)=cov(4,2) = track1->fC42+track3.fC42;
+  cov(2,3)=cov(3,2) = track1->GetSigmaTglSnp()+track3.GetSigmaTglSnp();
+  cov(2,4)=cov(4,2) = track1->GetSigma1PtSnp()+track3.GetSigma1PtSnp();
   //
-  cov(3,4)=cov(4,3) = track1->fC43+track3.fC43;
+  cov(3,4)=cov(4,3) = track1->GetSigma1PtTgl()+track3.GetSigma1PtTgl();
   
   cov.Invert();
   TMatrixD vec2(cov,TMatrixD::kMult,vec);
@@ -2681,15 +2681,15 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
     if (track->fConstrain){
       if (!backtrack->PropagateTo(3.,0.0028,65.19)) continue;
       if (!backtrack->Improve(0,xyzv,ersv))         continue;      
-      if (!backtrack->PropagateTo(2.,0.0028,0))     continue;
-      if (!backtrack->Improve(0,xyzv,ersv))         continue;
-      if (!backtrack->PropagateTo(1.,0.0028,0))     continue;
-      if (!backtrack->Improve(0,xyzv,ersv))         continue;            	  
-      if (!backtrack->PropagateToVertex())          continue;
-      backtrack->ResetCovariance();      
-      if (!backtrack->Improve(0,xyzv,ersv))         continue;            	        
+      //if (!backtrack->PropagateTo(2.,0.0028,0))     continue; // This 
+      //if (!backtrack->Improve(0,xyzv,ersv))         continue; // is
+      //if (!backtrack->PropagateTo(1.,0.0028,0))     continue; // an over-kill
+      //if (!backtrack->Improve(0,xyzv,ersv))         continue; //   (I.B.)
+      //if (!backtrack->PropagateToVertex())          continue; //
+      backtrack->ResetCovariance(10.);      
+      //if (!backtrack->Improve(0,xyzv,ersv))         continue;            	        
     }else{
-      backtrack->ResetCovariance();
+      backtrack->ResetCovariance(10.);
     }
     backtrack->ResetClusters();
 
@@ -3065,7 +3065,7 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   track->fSigmaY[layer] = erry;
   track->fSigmaZ[layer] = errz;
   //track->fNormQ[layer] = cluster->GetQ()/TMath::Sqrt(1+theta*theta+phi*phi);
-  track->fNormQ[layer] = cluster->GetQ()/TMath::Sqrt((1.+ track->fP3*track->fP3)/(1.- track->fP2*track->fP2));
+  track->fNormQ[layer] = cluster->GetQ()/TMath::Sqrt((1.+ track->GetTgl()*track->GetTgl())/(1.- track->GetSnp()*track->GetSnp()));
   return chi2;
 
 }
@@ -3274,8 +3274,8 @@ void   AliITStrackerMI::GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Fl
   //to be paramterized using external parameters in future 
   //
   // 
-  sigmarfi = 0.004+1.4 *TMath::Abs(track->fP4)+332.*track->fP4*track->fP4;
-  sigmaz   = 0.011+4.37*TMath::Abs(track->fP4);
+  sigmarfi = 0.004+1.4 *TMath::Abs(track->GetC())+332.*track->GetC()*track->GetC();
+  sigmaz   = 0.011+4.37*TMath::Abs(track->GetC());
 }
 
 
@@ -3458,7 +3458,7 @@ void AliITStrackerMI::UpdateTPCV0(AliESD *event){
     if (clayer < 5 ){ // calculate chi2 after vertex
       Float_t chi2p = 0, chi2m=0;  
       //
-      if (trackp&&TMath::Abs(trackp->fP3)<1.){
+      if (trackp&&TMath::Abs(trackp->GetTgl())<1.){
 	for (Int_t ilayer=clayer;ilayer<6;ilayer++){
 	  if (trackp->fClIndex[ilayer]>0){
 	    chi2p+=trackp->fDy[ilayer]*trackp->fDy[ilayer]/(trackp->fSigmaY[ilayer]*trackp->fSigmaY[ilayer])+
@@ -3472,7 +3472,7 @@ void AliITStrackerMI::UpdateTPCV0(AliESD *event){
 	chi2p = 0;
       }
       //
-      if (trackm&&TMath::Abs(trackm->fP3)<1.){
+      if (trackm&&TMath::Abs(trackm->GetTgl())<1.){
 	for (Int_t ilayer=clayer;ilayer<6;ilayer++){
 	  if (trackm->fClIndex[ilayer]>0){
 	    chi2m+=trackm->fDy[ilayer]*trackm->fDy[ilayer]/(trackm->fSigmaY[ilayer]*trackm->fSigmaY[ilayer])+
@@ -3542,7 +3542,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
   Float_t *minr        = new Float_t[ntracks+2];
   Float_t *minPointAngle= new Float_t[ntracks+2];
   //
-  AliESDV0MI *pvertex      = new AliESDV0MI;
+  AliV0 *pvertex      = new AliV0;
   AliITStrackMI * dummy= new AliITStrackMI;
   dummy->SetLabel(0);
   AliITStrackMI  trackat0;    //temporary track for DCA calculation
@@ -3626,19 +3626,20 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       best     = original;
       bestLong = original;
     }
-    trackat0 = *bestLong;
+    //I.B. trackat0 = *bestLong;
+    new (&trackat0) AliITStrackV2(*bestLong);
     Double_t xx,yy,zz,alpha; 
     bestLong->GetGlobalXYZat(bestLong->GetX(),xx,yy,zz);
     alpha = TMath::ATan2(yy,xx);    
     trackat0.Propagate(alpha,0);      
     // calculate normalized distances to the vertex 
     //
-    Float_t ptfac  = (1.+100.*TMath::Abs(trackat0.fP4));
+    Float_t ptfac  = (1.+100.*TMath::Abs(trackat0.GetC()));
     if ( bestLong->fN>3 ){      
-      dist[itsindex]      = trackat0.fP0;
-      norm[itsindex]      = ptfac*TMath::Sqrt(trackat0.fC00);
-      normdist0[itsindex] = TMath::Abs(trackat0.fP0/norm[itsindex]);
-      normdist1[itsindex] = TMath::Abs((trackat0.fP1-primvertex[2])/(ptfac*TMath::Sqrt(trackat0.fC11)));
+      dist[itsindex]      = trackat0.GetY();
+      norm[itsindex]      = ptfac*TMath::Sqrt(trackat0.GetSigmaY2());
+      normdist0[itsindex] = TMath::Abs(trackat0.GetY()/norm[itsindex]);
+      normdist1[itsindex] = TMath::Abs((trackat0.GetZ()-primvertex[2])/(ptfac*TMath::Sqrt(trackat0.GetSigmaZ2())));
       normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
       if (!bestConst){
 	if (bestLong->fN+bestLong->fNDeadZone<6) normdist[itsindex]*=2.;
@@ -3657,12 +3658,12 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	normdist1[itsindex] = TMath::Abs(bestConst->fD[0]/norm[itsindex]);
 	normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
       }else{
-	dist[itsindex]      = trackat0.fP0;
-	norm[itsindex]      = ptfac*TMath::Sqrt(trackat0.fC00);
-	normdist0[itsindex] = TMath::Abs(trackat0.fP0/norm[itsindex]);
-	normdist1[itsindex] = TMath::Abs((trackat0.fP1-primvertex[2])/(ptfac*TMath::Sqrt(trackat0.fC11)));
+	dist[itsindex]      = trackat0.GetY();
+	norm[itsindex]      = ptfac*TMath::Sqrt(trackat0.GetSigmaY2());
+	normdist0[itsindex] = TMath::Abs(trackat0.GetY()/norm[itsindex]);
+	normdist1[itsindex] = TMath::Abs((trackat0.GetZ()-primvertex[2])/(ptfac*TMath::Sqrt(trackat0.GetSigmaZ2())));
 	normdist[itsindex]  = TMath::Sqrt(normdist0[itsindex]*normdist0[itsindex]+normdist1[itsindex]*normdist1[itsindex]);
-	if (TMath::Abs(trackat0.fP3)>1.05){
+	if (TMath::Abs(trackat0.GetTgl())>1.05){
 	  if (normdist[itsindex]<3) forbidden[itsindex]=kTRUE;
 	  if (normdist[itsindex]>3) {
 	    minr[itsindex] = TMath::Max(Float_t(40.),minr[itsindex]);
@@ -3756,7 +3757,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
     if (forbidden[itrack0]) continue;
     AliITStrackMI * btrack0 = (AliITStrackMI*)trackarray.At(itrack0);
     if (!btrack0) continue;    
-    if (btrack0->fP4>0) continue;
+    if (btrack0->GetC()>0) continue;
     AliITStrackMI *trackc0 = (AliITStrackMI*)trackarrayc.At(itrack0);
     //
     for (Int_t iesd1=0;iesd1<ntracks;iesd1++){
@@ -3765,7 +3766,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 
       AliITStrackMI * btrack1 = (AliITStrackMI*)trackarray.At(itrack1); 
       if (!btrack1) continue;
-      if (btrack1->fP4<0) continue;
+      if (btrack1->GetC()<0) continue;
       Bool_t isGold = kFALSE;
       if (TMath::Abs(TMath::Abs(btrack0->GetLabel())-TMath::Abs(btrack1->GetLabel()))==1){
 	isGold = kTRUE;
@@ -3845,10 +3846,10 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       //
       //
       TObjArray * array0b     = (TObjArray*)fBestHypothesys.At(itrack0);
-      if (!array0b&&pvertex->GetRr()<40 && TMath::Abs(track0->fP3)<1.1) 
+      if (!array0b&&pvertex->GetRr()<40 && TMath::Abs(track0->GetTgl())<1.1) 
 	FollowProlongationTree((AliITStrackMI*)fOriginal.At(itrack0),itrack0, kFALSE);
       TObjArray * array1b    = (TObjArray*)fBestHypothesys.At(itrack1);
-      if (!array1b&&pvertex->GetRr()<40 && TMath::Abs(track1->fP3)<1.1) 
+      if (!array1b&&pvertex->GetRr()<40 && TMath::Abs(track1->GetTgl())<1.1) 
 	FollowProlongationTree((AliITStrackMI*)fOriginal.At(itrack1),itrack1, kFALSE);
       //
       AliITStrackMI * track0b = (AliITStrackMI*)fOriginal.At(itrack0);       
@@ -3868,7 +3869,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	if (!btrack) continue;
 	if (btrack->fN>track0l->fN) track0l = btrack;     
 	//	if (btrack->fX<pvertex->GetRr()-2.-0.5/(0.1+pvertex->GetAnglep()[2])) {
-	if (btrack->fX<pvertex->GetRr()-2.) {
+	if (btrack->GetX()<pvertex->GetRr()-2.) {
 	  if ( (maxLayer>i+2|| (i==0)) && btrack->fN==(6-i)&&i<3){
 	    Float_t sumchi2= 0;
 	    Float_t sumn   = 0;
@@ -3912,7 +3913,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	if (!btrack) continue;
 	if (btrack->fN>track1l->fN) track1l = btrack;     
 	//	if (btrack->fX<pvertex->GetRr()-2-0.5/(0.1+pvertex->GetAnglep()[2])){
-	if (btrack->fX<pvertex->GetRr()-2){
+	if (btrack->GetX()<pvertex->GetRr()-2){
 	  if ((maxLayer>i+2 || (i==0))&&btrack->fN==(6-i)&&(i<3)){
 	    Float_t sumchi2= 0;
 	    Float_t sumn   = 0;
@@ -3952,9 +3953,9 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       }
       //
       // position resolution - used for DCA cut
-      Float_t sigmad = track0b->fC00+track0b->fC11+track1b->fC00+track1b->fC11+
-	(track0b->fX-pvertex->GetRr())*(track0b->fX-pvertex->GetRr())*(track0b->fC22+track0b->fC33)+
-	(track1b->fX-pvertex->GetRr())*(track1b->fX-pvertex->GetRr())*(track1b->fC22+track1b->fC33);
+      Float_t sigmad = track0b->GetSigmaY2()+track0b->GetSigmaZ2()+track1b->GetSigmaY2()+track1b->GetSigmaZ2()+
+	(track0b->GetX()-pvertex->GetRr())*(track0b->GetX()-pvertex->GetRr())*(track0b->GetSigmaSnp2()+track0b->GetSigmaTgl2())+
+	(track1b->GetX()-pvertex->GetRr())*(track1b->GetX()-pvertex->GetRr())*(track1b->GetSigmaSnp2()+track1b->GetSigmaTgl2());
       sigmad =TMath::Sqrt(sigmad)+0.04;
       if (pvertex->GetRr()>50){
 	Double_t cov0[15],cov1[15];
@@ -3966,7 +3967,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	sigmad =TMath::Sqrt(sigmad)+0.05;
       }
       //       
-      AliESDV0MI vertex2;
+      AliV0 vertex2;
       vertex2.SetM(*track0b);
       vertex2.SetP(*track1b);
       vertex2.Update(primvertex);
@@ -4115,9 +4116,9 @@ void AliITStrackerMI::RefitV02(AliESD *event)
   //
   Int_t  nv0s = event->GetNumberOfV0MIs();
   Float_t primvertex[3]={GetX(),GetY(),GetZ()};
-  AliESDV0MI v0temp;
+  AliV0 v0temp;
   for (Int_t iv0 = 0; iv0<nv0s;iv0++){
-    AliESDV0MI * v0mi = event->GetV0MI(iv0);
+    AliV0 * v0mi = (AliV0*)event->GetV0MI(iv0);
     if (!v0mi) continue;
     Int_t     itrack0   = v0mi->GetIndex(0);
     Int_t     itrack1   = v0mi->GetIndex(1);

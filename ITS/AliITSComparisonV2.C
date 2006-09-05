@@ -208,8 +208,6 @@ Int_t AliITSComparisonV2
            numb[nmult]=cnt; nmult++;        
         }
 
-	if (esd->GetITSFakeRatio()<ratio) tlab = TMath::Abs(tlab);
-
         if (lab==tlab) hfound->Fill(ptg);
         else {
           fake[nfake++]=lab;

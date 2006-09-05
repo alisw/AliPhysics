@@ -26,8 +26,6 @@ public:
 
   Int_t Compare(const TObject *o) const;
 
-  Bool_t GetPxPyPzAt(Double_t x,Double_t *p) const;
-
   ClassDef(AliL3ITStrack,2)   //HLT ITS reconstructed track
 };
 

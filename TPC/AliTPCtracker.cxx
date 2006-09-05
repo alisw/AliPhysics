@@ -35,21 +35,41 @@
 ClassImp(AliTPCtracker)
 
 //_____________________________________________________________________________
+AliTPCtracker::AliTPCtracker(): 
+  AliTracker(), 
+  fkNIS(0), 
+  fInnerSec(0),         
+  fkNOS(0),
+  fOuterSec(0),
+  fN(0),
+  fSectors(0),
+  fParam(0),
+  fSeeds(0)
+{
+  //
+  // The default TPC tracker constructor
+  //
+}
+
+//_____________________________________________________________________________
 AliTPCtracker::AliTPCtracker(const AliTPCParam *par): 
-AliTracker(), fkNIS(par->GetNInnerSector()/2), fkNOS(par->GetNOuterSector()/2)
+  AliTracker(), 
+  fkNIS(par->GetNInnerSector()/2), 
+  fInnerSec(new AliTPCSector[fkNIS]),         
+  fkNOS(par->GetNOuterSector()/2),
+  fOuterSec(new AliTPCSector[fkNOS]),
+  fN(0),
+  fSectors(0),
+  fParam((AliTPCParam*) par),
+  fSeeds(0)
 {
   //---------------------------------------------------------------------
   // The main TPC tracker constructor
   //---------------------------------------------------------------------
-  fInnerSec=new AliTPCSector[fkNIS];         
-  fOuterSec=new AliTPCSector[fkNOS];
 
   Int_t i;
   for (i=0; i<fkNIS; i++) fInnerSec[i].Setup(par,0);
   for (i=0; i<fkNOS; i++) fOuterSec[i].Setup(par,1);
-
-  fParam = (AliTPCParam*) par;
-  fSeeds=0;
 
 }
 
@@ -211,7 +231,7 @@ Int_t AliTPCtracker::FollowProlongation(AliTPCseed& t, Int_t rf) {
     UInt_t index=0;
     Double_t maxchi2=kMaxCHI2;
     const AliTPCRow &krow=fSectors[s][nr];
-    Double_t pt=t.GetConvConst()/(100/0.299792458/0.2)/t.Get1Pt();
+    Double_t pt=1./t.Get1Pt();
     Double_t sy2=AliTPCcluster::SigmaY2(t.GetX(),t.GetTgl(),pt);
     Double_t sz2=AliTPCcluster::SigmaZ2(t.GetX(),t.GetTgl());
     Double_t road=4.*sqrt(t.GetSigmaY2() + sy2), y=t.GetY(), z=t.GetZ();
@@ -321,7 +341,7 @@ Int_t AliTPCtracker::FollowBackProlongation
   Int_t s=Int_t(alpha/fSectors->GetAlpha())%fN;
 
   Int_t idx=-1, sec=-1, row=-1;
-  Int_t nc=seed.GetNumber();
+  Int_t nc=track.GetNumberOfClusters();
 
   if (nc--) {
      idx=track.GetClusterIndex(nc);
@@ -333,7 +353,8 @@ Int_t AliTPCtracker::FollowBackProlongation
   Int_t nr=fSectors->GetNRows();
   for (Int_t i=0; i<nr; i++) {
     Double_t x=fSectors->GetX(i), ymax=fSectors->GetMaxY(i);
-    Double_t y=seed.GetYat(x);
+    Double_t y;
+    if (!seed.GetYAt(x,GetBz(),y)) return 0;
  
     if (y > ymax) {
        s = (s+1) % fN;
@@ -348,7 +369,7 @@ Int_t AliTPCtracker::FollowBackProlongation
     AliTPCcluster *cl=0;
     Int_t index=0;
     Double_t maxchi2=kMaxCHI2;
-    Double_t pt=seed.GetConvConst()/(100/0.299792458/0.2)/seed.Get1Pt();
+    Double_t pt=1./seed.Get1Pt();
     Double_t sy2=AliTPCcluster::SigmaY2(seed.GetX(),seed.GetTgl(),pt);
     Double_t sz2=AliTPCcluster::SigmaZ2(seed.GetX(),seed.GetTgl());
     Double_t road=4.*sqrt(seed.GetSigmaY2() + sy2), z=seed.GetZ();
@@ -401,8 +422,6 @@ Int_t AliTPCtracker::FollowBackProlongation
     }
 
   }
-
-  seed.SetNumber(nc);
 
   return 1;
 }
@@ -496,8 +515,8 @@ void AliTPCtracker::MakeSeeds(Int_t i1, Int_t i2) {
         c[13]=f30*sy1*f40+f32*sy2*f42;
         c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
 
-        UInt_t index=kr1.GetIndex(is);
-	AliTPCseed *track=new AliTPCseed(index, x, c, x1, ns*alpha+shift);
+        Int_t index=kr1.GetIndex(is);
+	AliTPCseed *track=new AliTPCseed(x1, ns*alpha+shift, x, c, index);
         Float_t l=fSectors->GetPadPitchWidth();
         track->SetSampledEdx(kr1[is]->GetQ()/l,0);
 
@@ -639,7 +658,7 @@ Int_t AliTPCtracker::RefitInward(AliESD* event) {
     AliTPCtrack* tpcTrack = new AliTPCtrack(*track);
     AliTPCseed* seed=new AliTPCseed(*tpcTrack); seed->ResetClusters(); 
 
-    if ( (status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance();
+    if ( (status & AliESDtrack::kTRDrefit) == 0 ) seed->ResetCovariance(10.);
 
     fSectors = fOuterSec;
 
@@ -690,10 +709,7 @@ Int_t AliTPCtracker::PropagateBack(AliESD *event) {
     const AliTPCtrack t(*esd);
     AliTPCseed s(t); s.ResetClusters();
 
-    if ( (status & AliESDtrack::kITSout) == 0 ) s.ResetCovariance();
-
-    Int_t nc=t.GetNumberOfClusters();
-    s.SetNumber(nc); //set number of the cluster to start with
+    if ( (status & AliESDtrack::kITSout) == 0 ) s.ResetCovariance(10.);
 
     //inner sectors
     fSectors=fInnerSec; fN=fkNIS;
@@ -713,7 +729,7 @@ Int_t AliTPCtracker::PropagateBack(AliESD *event) {
     //outer sectors
     fSectors=fOuterSec; fN=fkNOS;
 
-    nc=s.GetNumberOfClusters();
+    Int_t nc=s.GetNumberOfClusters();
 
     alpha=s.GetAlpha() - fSectors->GetAlphaShift();
     if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();

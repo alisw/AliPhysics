@@ -86,7 +86,7 @@ public:
   const Int_t * GetClusters(Int_t i) const {return fClusters[i];}
   void SetNormDCAPrim(Float_t nd0, Float_t nd1){fNormDCAPrim[0] = nd0; fNormDCAPrim[1]=nd1;}
   const Float_t  *GetNormDCAPrimP() const {return fNormDCAPrim;}
-private:
+protected:
   AliExternalTrackParam fParamP;  // external parameters of positive particle
   AliExternalTrackParam fParamM;  // external parameters of negative particle
   Float_t        fRP[5];         // combined pid positive

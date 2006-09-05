@@ -12,24 +12,26 @@
 //            Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
+#include "AliExternalTrackParam.h"
 #include "AliLog.h"
 #include "AliPID.h"
 
 class AliCluster;
 
-class AliKalmanTrack : public TObject {
+class AliKalmanTrack : public AliExternalTrackParam {
 public:
   AliKalmanTrack();
   AliKalmanTrack(const AliKalmanTrack &t);
-
   virtual ~AliKalmanTrack(){};
+
   void SetLabel(Int_t lab) {fLab=lab;}
-  void SetFakeRatio(Float_t ratio) {fFakeRatio=ratio;}
+
+  virtual Double_t GetPredictedChi2(const AliCluster *c) const = 0;
+  virtual Bool_t PropagateTo(Double_t xr, Double_t x0, Double_t rho) = 0;
+  virtual Bool_t Update(const AliCluster* c, Double_t chi2, Int_t index) = 0;
 
   Bool_t   IsSortable() const {return kTRUE;}
   Int_t    GetLabel()   const {return fLab;}
-  Float_t    GetFakeRatio()   const {return fFakeRatio;}
   Double_t GetChi2()    const {return fChi2;}
   Double_t GetMass()    const {return fMass;}
   Int_t    GetNumberOfClusters() const {return fN;}
@@ -42,51 +44,36 @@ public:
     return 0.;
   }
 
-  virtual Double_t GetAlpha() const {
-    AliWarning("Method must be overloaded !\n");
-    return 0.;
-  }
-  virtual Double_t GetSigmaY2() const {
-    AliWarning("Method must be overloaded !\n");
-    return 0.;
-  }
-  virtual Double_t GetSigmaZ2() const {
-    AliWarning("Method must be overloaded !\n");
-    return 0.;
-  }
-
   virtual Int_t Compare(const TObject *) const {return 0;} 
 
-  virtual void GetExternalParameters(Double_t&/*xr*/,Double_t/*x*/[5]) const=0;
-  virtual void GetExternalCovariance(Double_t /*cov*/[15]) const = 0;
+  void GetExternalParameters(Double_t &xr,Double_t p[5]) const {
+    xr=GetX();
+    for (Int_t i=0; i<5; i++) p[i]=GetParameter()[i];
+  }
+  void GetExternalCovariance(Double_t cov[15]) const {
+    for (Int_t i=0; i<15; i++) cov[i]=GetCovariance()[i];
+  }
 
-  virtual Double_t GetPredictedChi2(const AliCluster *) const = 0;
-  virtual Int_t PropagateTo(Double_t/*xr*/,Double_t/*x0*/,Double_t/*rho*/) = 0;
+  static 
+  Double_t MeanMaterialBudget(Double_t *start,Double_t *end,Double_t *mparam);
 
-  virtual Int_t Update(const AliCluster*, Double_t /*chi2*/, UInt_t) = 0;
-
-  static Double_t MeanMaterialBudget(Double_t *start, Double_t *end, Double_t *mparam);
- 
   // Time integration (S.Radomski@gsi.de)
-  void   StartTimeIntegral();
+  void StartTimeIntegral();
   void SetIntegratedLength(Double_t l) {fIntegratedLength=l;}
   void SetIntegratedTimes(const Double_t *times);
 
   Bool_t IsStartedTimeIntegral() const {return fStartTimeIntegral;}
-  void     AddTimeStep(Double_t length);
+  void AddTimeStep(Double_t length);
   void GetIntegratedTimes(Double_t *times) const;
   Double_t GetIntegratedTime(Int_t pdg) const;
   Double_t GetIntegratedLength() const {return fIntegratedLength;}
-  virtual void GetXYZ(Float_t r[3]) const = 0;
 
-  static Double_t GetConvConst();
   void SetNumberOfClusters(Int_t n) {fN=n;} 
+
+  void SetFakeRatio(Float_t ratio) {fFakeRatio=ratio;}
+  Float_t  GetFakeRatio()   const {return fFakeRatio;}
+
 protected:
-  void     SaveLocalConvConst();
-  Double_t GetLocalConvConst() const {return fLocalConvConst;}
-
-  void External2Helix(Double_t helix[6]) const;
-
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
   void SetMass(Double_t mass) {fMass=mass;}
 
@@ -97,14 +84,12 @@ protected:
   Int_t fN;               // number of associated clusters
 
 private:
-  Double_t fLocalConvConst;   //local conversion "curvature(1/cm) -> pt(GeV/c)"
-
   // variables for time integration (S.Radomski@gsi.de)
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
   Double_t fIntegratedTime[AliPID::kSPECIES];       // integrated time
   Double_t fIntegratedLength;        // integrated length
   
-  ClassDef(AliKalmanTrack,5)    // Reconstructed track
+  ClassDef(AliKalmanTrack,6)    // Reconstructed track
 };
 
 #endif

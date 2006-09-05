@@ -45,27 +45,20 @@ AliL3HoughKalmanTrack::AliL3HoughKalmanTrack(const AliL3HoughTrack& t) throw (co
   SetMass(0.13957);
 
   fdEdx=0;
-  fAlpha = fmod((t.GetSector()+0.5)*(2*TMath::Pi()/18),2*TMath::Pi());
-  if      (fAlpha < -TMath::Pi()) fAlpha += 2*TMath::Pi();
-  else if (fAlpha >= TMath::Pi()) fAlpha -= 2*TMath::Pi();
+  Double_t alpha = fmod((t.GetSector()+0.5)*(2*TMath::Pi()/18),2*TMath::Pi());
+  if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
+  else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
 
   const Double_t xhit = 82.97;
   const Double_t zvertex = t.GetFirstPointZ();
-  Double_t xx[5];
+  Double_t par[5];
   Double_t deltax = t.GetPterr();
   Double_t deltay = t.GetPsierr();
   Double_t deltaeta = t.GetTglerr();
-  if(CalcExternalParams(t,0,0,0,zvertex,xhit,xx)==0) throw "AliL3HoughKalmanTrack: conversion failed !\n";
+  if(CalcExternalParams(t,0,0,0,zvertex,xhit,par)==0) throw "AliL3HoughKalmanTrack: conversion failed !\n";
 
-  //Filling of the track paramaters
-  fX=xhit;
-  fP0=xx[0];
-  fP1=xx[1];
-  fP2=xx[2];
-  fP3=xx[3];
-  fP4=xx[4];
-
-  SaveLocalConvConst();
+  Double_t cnv=1./(GetBz()*kB2C);
+  par[4]*=cnv;;
 
   //and covariance matrix
   //For the moment estimate the covariance matrix numerically
@@ -78,14 +71,19 @@ AliL3HoughKalmanTrack::AliL3HoughKalmanTrack(const AliL3HoughTrack& t) throw (co
 
   Double_t dx1[5],dx2[5],dx3[5];
   for(Int_t i=0;i<5;i++) {
-    dx1[i]=xx1[i]-xx[i];
-    dx2[i]=xx2[i]-xx[i];
-    dx3[i]=xx3[i]-xx[i];
+    dx1[i]=xx1[i]-par[i];
+    dx2[i]=xx2[i]-par[i];
+    dx3[i]=xx3[i]-par[i];
   }
 
-  fC00=dx1[0]*dx1[0]+dx2[0]*dx2[0];
-  fC22=dx1[2]*dx1[2]+dx2[2]*dx2[2];
-  fC44=dx1[4]*dx1[4]+dx2[4]*dx2[4];
+  Double_t cov[15]={
+    dx1[0]*dx1[0]+dx2[0]*dx2[0],
+    0.,  dx3[1]*dx3[1],
+    0.,  0.,  dx1[2]*dx1[2]+dx2[2]*dx2[2],
+    0.,  dx3[3]*dx3[1],  0.,  dx3[3]*dx3[3],
+    0.,  0.,  0.,  0.,  dx1[4]*dx1[4]+dx2[4]*dx2[4]
+  };
+  /*
   fC20=dx1[2]*dx1[0]+dx2[2]*dx2[0];
   fC40=dx1[4]*dx1[0]+dx2[4]*dx2[0];
   fC42=dx1[4]*dx1[2]+dx2[4]*dx2[2];
@@ -94,6 +92,10 @@ AliL3HoughKalmanTrack::AliL3HoughKalmanTrack(const AliL3HoughTrack& t) throw (co
   fC31=dx3[3]*dx3[1];
   fC10=fC30=fC21=fC41=fC32=fC43=0;
   fC20=fC42=fC40=0;
+  */
+  cov[10]*=cnv; cov[11]*=cnv; cov[12]*=cnv; cov[13]*=cnv; cov[14]*=(cnv*cnv); 
+
+  Set(xhit,alpha,par,cov);
 
 }
 
@@ -132,12 +134,9 @@ Int_t CalcExternalParams(const AliL3HoughTrack& t, Double_t deltax, Double_t del
   Double_t tanl = 1./tan(theta);
   zhit = zvertex + stot*tanl;
 
-  //Local sine of track azimuthal angle
-  Double_t sinbeta = centerx/radius;
-
   xx[0] = yhit;
   xx[1] = zhit;
-  xx[2] = sinbeta;
+  xx[2] = (xhit-centerx)/radius;
   xx[3] = tanl;
   xx[4] = kappa;
   return 1;

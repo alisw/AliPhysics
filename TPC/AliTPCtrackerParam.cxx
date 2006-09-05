@@ -992,17 +992,17 @@ void AliTPCtrackerParam::BuildTrack(AliTPCseedGeant *s,Int_t ch) {
   // fAlpha = Alpha        Rotation angle the local (TPC sector) 
   // fP0    = YL           Y-coordinate of a track
   // fP1    = ZG           Z-coordinate of a track
-  // fP2    = C*x0         x0 is center x in rotated frame
+  // fP2    = sin(phi)     sine of the (local) azimuthal angle
   // fP3    = Tgl          tangent of the track momentum dip angle
   // fP4    = C            track curvature
   xx[0] = s->GetYL();
   xx[1] = s->GetZL();
+  xx[2] = ch/rho*(xref-x0);
   xx[3] = s->GetPz()/s->GetPt();
   xx[4] = ch/rho;
-  xx[2] = xx[4]*x0;
 
   // create the object AliTPCtrack    
-  AliTPCtrack track(0,xx,cc,xref,s->GetAlpha());
+  AliTPCtrack track(xref,s->GetAlpha(),xx,cc,0);
   new(&fTrack) AliTPCtrack(track);
 
   return;
@@ -1047,7 +1047,7 @@ void AliTPCtrackerParam::CompareTPCtracks(
   Double_t ptgener;
   Bool_t   usethis;
   Int_t    label;
-  Double_t cc[15],dAlpha;
+  Double_t dAlpha;
   Int_t    pi=0,ka=0,mu=0,el=0,pr=0;
   Int_t   *geaPi = new Int_t[effBins];
   Int_t   *geaKa = new Int_t[effBins];
@@ -1211,30 +1211,30 @@ void AliTPCtrackerParam::CompareTPCtracks(
       
       cmptrk.dP0 = kaltrack->GetY()-geatrack->GetY();
       cmptrk.dP1 = kaltrack->GetZ()-geatrack->GetZ();
-      cmptrk.dP2 = kaltrack->GetEta()-geatrack->GetEta();
+      cmptrk.dP2 = kaltrack->GetSnp()-geatrack->GetSnp();
       cmptrk.dP3 = kaltrack->GetTgl()-geatrack->GetTgl();
       cmptrk.dP4 = kaltrack->GetC()-geatrack->GetC();
       cmptrk.dpt = 1/kaltrack->Get1Pt()-1/geatrack->Get1Pt();
     
       // get covariance matrix
       // beware: lines 3 and 4 in the matrix are inverted!
-      kaltrack->GetCovariance(cc);
+      //kaltrack->GetCovariance(cc);
 
-      cmptrk.c00 = cc[0];
-      cmptrk.c10 = cc[1];
-      cmptrk.c11 = cc[2];
-      cmptrk.c20 = cc[3];
-      cmptrk.c21 = cc[4];
-      cmptrk.c22 = cc[5];
-      cmptrk.c30 = cc[10];
-      cmptrk.c31 = cc[11];
-      cmptrk.c32 = cc[12];
-      cmptrk.c33 = cc[14];
-      cmptrk.c40 = cc[6];
-      cmptrk.c41 = cc[7];
-      cmptrk.c42 = cc[8];
-      cmptrk.c43 = cc[13];
-      cmptrk.c44 = cc[9];
+      cmptrk.c00 = kaltrack->GetSigmaY2();
+      cmptrk.c10 = kaltrack->GetSigmaZY();
+      cmptrk.c11 = kaltrack->GetSigmaZ2();
+      cmptrk.c20 = kaltrack->GetSigmaSnpY();
+      cmptrk.c21 = kaltrack->GetSigmaSnpY();
+      cmptrk.c22 = kaltrack->GetSigmaSnp2();
+      cmptrk.c30 = kaltrack->GetSigmaTglY();
+      cmptrk.c31 = kaltrack->GetSigmaTglZ();
+      cmptrk.c32 = kaltrack->GetSigmaTglSnp();
+      cmptrk.c33 = kaltrack->GetSigmaTgl2();
+      cmptrk.c40 = kaltrack->GetSigma1PtY();
+      cmptrk.c41 = kaltrack->GetSigma1PtZ();
+      cmptrk.c42 = kaltrack->GetSigma1PtSnp();
+      cmptrk.c43 = kaltrack->GetSigma1PtTgl();
+      cmptrk.c44 = kaltrack->GetSigma1Pt2();
     
       // fill tree
       cmptrktree->Fill();
@@ -1414,7 +1414,7 @@ void AliTPCtrackerParam::CookTrack(Double_t pt,Double_t eta) {
   alpha=fTrack.GetAlpha();
   xx[0]=fTrack.GetY();
   xx[1]=fTrack.GetZ();
-  xx[2]=fTrack.GetX()*fTrack.GetC()-fTrack.GetSnp();
+  xx[2]=fTrack.GetSnp();
   xx[3]=fTrack.GetTgl();
   xx[4]=fTrack.GetC();
     
@@ -1422,7 +1422,7 @@ void AliTPCtrackerParam::CookTrack(Double_t pt,Double_t eta) {
   xxsm[0]=xref;
   SmearTrack(xx,xxsm,covMatSmear);
     
-  AliTPCtrack track(0,xxsm,cc,xref,alpha);
+  AliTPCtrack track(xref,alpha,xxsm,cc,0);
   new(&fTrack) AliTPCtrack(track);
   
   return; 

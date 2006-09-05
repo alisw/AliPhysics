@@ -213,7 +213,7 @@ Int_t   AliITSPid::GetPcode(AliITStrackV2 *track)
   if(track==0)return 0;
   //      track->Propagate(track->GetAlpha(),3.,0.1/65.19*1.848,0.1*1.848);
       track->PropagateTo(3.,0.0028,65.19);
-      track->PropagateToVertex();
+      //track->PropagateToVertex();          Not needed. (I.B.)
     Double_t xk,par[5]; track->GetExternalParameters(xk,par);
     Float_t lam=TMath::ATan(par[3]);
     Float_t pt1=TMath::Abs(par[4]);

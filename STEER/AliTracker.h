@@ -21,11 +21,8 @@ class AliTrackPoint;
 
 class AliTracker : public TObject {
 public:
-
   enum Propagation_t {kTrackInward, kTrackBack, kTrackRefit}; //type of propagation
-  
   AliTracker();
-  AliTracker(const AliTracker &atr);
   virtual ~AliTracker(){}
   virtual Int_t Clusters2Tracks(AliESD *event)=0;
   virtual Int_t PropagateBack(AliESD *event)=0;
@@ -56,11 +53,16 @@ public:
     Double_t bz=-Double_t(b[2]);
     return  (TMath::Sign(1e-13,bz) + bz);
   }
+  static Double_t GetBz(Double_t *r) {
+    Float_t rr[]={r[0],r[1],r[2]};
+    return GetBz(rr);
+  }
   static Double_t GetBz() {return fgBz;}
   static Bool_t UniformField() {return fgUniformField;}
 
+protected:
+  AliTracker(const AliTracker &atr);
 private:
-
   AliTracker & operator=(const AliTracker & atr);
 
   static Bool_t fgUniformField;       // uniform field flag
@@ -70,7 +72,7 @@ private:
   Double_t fX;  //X-coordinate of the primary vertex
   Double_t fY;  //Y-coordinate of the primary vertex
   Double_t fZ;  //Z-coordinate of the primary vertex
-
+ 
   Double_t fSigmaX; // error of the primary vertex position in X
   Double_t fSigmaY; // error of the primary vertex position in Y
   Double_t fSigmaZ; // error of the primary vertex position in Z

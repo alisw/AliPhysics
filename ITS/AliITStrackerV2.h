@@ -21,7 +21,7 @@ class TTree;
 //-------------------------------------------------------------------------
 class AliITStrackerV2 : public AliTracker {
 public:
-  AliITStrackerV2():AliTracker(){}
+  AliITStrackerV2();
   AliITStrackerV2(const AliITSgeom *geom);
   ~AliITStrackerV2(){}
   AliCluster *GetCluster(Int_t index) const;
@@ -48,8 +48,8 @@ public:
 
   class AliITSdetector {
   public:
-    AliITSdetector(){}
-    AliITSdetector(Double_t r,Double_t phi) {fR=r; fPhi=phi;}
+    AliITSdetector():fR(0.),fPhi(0.){}
+    AliITSdetector(Double_t r,Double_t phi):fR(r),fPhi(phi){}
     Double_t GetR()   const {return fR;}
     Double_t GetPhi() const {return fPhi;}
   private:
@@ -78,6 +78,8 @@ public:
     Int_t GetNdetectors() const {return fNdetectors;}
     Int_t GetNumberOfClusters() const;
   protected:
+    AliITSlayer(const AliITSlayer&);
+    AliITSlayer &operator=(const AliITSlayer &tr);  
     Double_t fR;                // mean radius of this layer
     Double_t fPhiOffset;        // offset of the first detector in Phi
     Int_t fNladders;            // number of ladders
@@ -96,6 +98,7 @@ public:
   };
 
 protected:
+  AliITStrackerV2(const AliITStrackerV2&);
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
   void  FollowProlongation();
@@ -119,6 +122,8 @@ protected:
   Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
 
+private:
+  AliITStrackerV2 &operator=(const AliITStrackerV2 &tr);  
   ClassDef(AliITStrackerV2,1)   //ITS tracker V2
 };
 

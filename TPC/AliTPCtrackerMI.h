@@ -36,8 +36,6 @@ public:
     fInnerSec=fOuterSec=0; fSeeds=0; 
   }
   AliTPCtrackerMI(const AliTPCParam *par); 
-  AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
-  AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
   virtual ~AliTPCtrackerMI();
   //
   void SetIteration(Int_t iteration){fIteration = iteration;}
@@ -194,6 +192,8 @@ private:
    Int_t AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster, Float_t factor, Float_t cory=1., Float_t corz=1.);
 
 private:
+  AliTPCtrackerMI(const AliTPCtrackerMI& r);           //dummy copy constructor
+  AliTPCtrackerMI &operator=(const AliTPCtrackerMI& r);//dummy assignment operator
    inline AliTPCRow &GetRow(Int_t sec, Int_t row);
    inline Bool_t     IsActive(Int_t sec, Int_t row);
    inline Double_t  GetXrow(Int_t row) const;

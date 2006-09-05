@@ -798,8 +798,8 @@ Float_t AliTOFtrackerMI::GetLinearDistances(AliTOFtrack * track, AliTOFcluster *
   //
   Double_t v0[3];
   Double_t dir[3];
-  track->GetGlobalXYZ(v0[0],v0[1],v0[2]);
-  track->GetPxPyPz(dir[0],dir[1],dir[2]);
+  track->GetXYZ(v0);
+  track->GetPxPyPz(dir);
   dir[0]/=track->GetP();
   dir[1]/=track->GetP();
   dir[2]/=track->GetP();

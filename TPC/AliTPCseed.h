@@ -35,18 +35,22 @@ class AliTPCseed : public AliTPCtrack {
      AliTPCseed(const AliTPCtrack &t);
      AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner = kFALSE);
      //AliTPCseed(const AliTPCseed &t, Double_t a);
-     AliTPCseed(UInt_t index, const Double_t xx[5], 
-                const Double_t cc[15], Double_t xr, Double_t alpha);     
+     AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5], 
+                const Double_t cc[15], Int_t i);     
      Int_t Compare(const TObject *o) const;
      void Reset(Bool_t all = kTRUE);
      Int_t GetProlongation(Double_t xr, Double_t &y, Double_t & z) const;
      virtual Double_t GetPredictedChi2(const AliCluster *cluster2) const;
-     virtual Int_t Update(const AliCluster* c2, Double_t chi2, UInt_t i);
+     virtual Bool_t Update(const AliCluster* c2, Double_t chi2, Int_t i);
      AliTPCTrackerPoint * GetTrackPoint(Int_t i);
      AliTPCclusterMI * GetClusterFast(Int_t irow){ return fClusterPointer[irow];}
      void RebuildSeed(); // rebuild seed to be ready for storing
      Double_t GetDensityFirst(Int_t n);
-     Double_t GetSigma2C() const {return fC44;};
+     Double_t GetSigma2C() const {
+       Double_t cnv=GetBz()*kB2C;
+       return GetSigma1Pt2()*cnv*cnv;
+     }
+     Double_t GetEta() const { return GetC()*GetX() - GetSnp();}
      void GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2);
      
      void Modify(Double_t factor);
@@ -62,6 +66,8 @@ class AliTPCseed : public AliTPCtrack {
        return pica;
      }
     
+     Double_t GetYat(Double_t x) const;
+
      void SetErrorY2(Float_t sy2){fErrorY2=sy2;}
      void SetErrorZ2(Float_t sz2){fErrorZ2=sz2;}
      Float_t  CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=159, Bool_t onlyused = kFALSE);

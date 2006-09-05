@@ -620,12 +620,12 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 
               AliITStrackMI* ot = new AliITStrackSA(*trac);
               
-              ot->ResetCovariance();
+              ot->ResetCovariance(10.);
               ot->ResetClusters();
               
               if(RefitAt(49.,ot,trac)){ //fit from layer 1 to layer 6
                 AliITStrackMI *otrack2 = new AliITStrackMI(*ot);
-                otrack2->ResetCovariance(); 
+                otrack2->ResetCovariance(10.); 
                 otrack2->ResetClusters();
                 //fit from layer 6 to layer 1
                 if(RefitAt(3.7,otrack2,ot)) {

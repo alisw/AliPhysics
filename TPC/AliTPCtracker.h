@@ -25,10 +25,7 @@ class AliESD;
 
 class AliTPCtracker : public AliTracker {
 public:
-   AliTPCtracker():AliTracker(),fkNIS(0),fkNOS(0) {
-      fInnerSec=fOuterSec=0; fSeeds=0; 
-      fParam = 0;
-   }
+   AliTPCtracker();
    AliTPCtracker(const AliTPCParam *par);
   ~AliTPCtracker();
 
@@ -48,11 +45,9 @@ public:
 //**************** Internal tracker class ********************** 
    class AliTPCRow {
    public:
-     AliTPCRow() {
-       fN=0; 
-       fSize=kMaxClusterPerRow/8;
-       fClusterArray=new AliTPCcluster[fSize];
-     }
+     AliTPCRow():
+         fN(0), fSize(kMaxClusterPerRow/8),
+         fClusterArray(new AliTPCcluster[fSize]), fX(0) {}
      ~AliTPCRow() {delete[] fClusterArray;}
      void InsertCluster(const AliTPCcluster *c, Int_t sec, Int_t row);
      void ResetClusters() {fN=0; delete[] fClusterArray; fClusterArray=0;}
@@ -68,22 +63,22 @@ public:
      Double_t GetX() const {return fX;}
 
    private:
+     AliTPCRow(const AliTPCRow& r);            //dummy copy constructor
+     AliTPCRow &operator=(const AliTPCRow& r); //dummy assignment operator
      Int_t fN;                                          //number of clusters 
      const AliTPCcluster *fClusters[kMaxClusterPerRow]; //pointers to clusters
      Int_t fSize;                                 //size of array of clusters
      AliTPCcluster *fClusterArray;                      //array of clusters
      UInt_t fIndex[kMaxClusterPerRow];                  //indeces of clusters
      Double_t fX;                                 //X-coordinate of this row
-
-   private:
-     AliTPCRow(const AliTPCRow& r);            //dummy copy constructor
-     AliTPCRow &operator=(const AliTPCRow& r); //dummy assignment operator
    };
 
 //**************** Internal tracker class ********************** 
    class AliTPCSector {
    public:
-     AliTPCSector() { fN=0; fRow = 0; }
+     AliTPCSector(): 
+        fN(0),fRow(0),fAlpha(0),fAlphaShift(0),
+        fPadPitchWidth(0),f1PadPitchLength(0),f2PadPitchLength(0){}
     ~AliTPCSector() { delete[] fRow; }
      AliTPCRow& operator[](Int_t i) const { return *(fRow+i); }
      Int_t GetNRows() const { return fN; }
@@ -135,9 +130,9 @@ public:
    public:
      AliTPCseed():AliTPCtrack(){}
      AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){}
-     AliTPCseed(UInt_t index, const Double_t xx[5], 
-                const Double_t cc[15], Double_t xr, Double_t alpha): 
-                AliTPCtrack(index, xx, cc, xr, alpha) {}
+     AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5], 
+                const Double_t cc[15], Int_t index): 
+                AliTPCtrack(xr, alpha, xx, cc, index) {}
      void SetSampledEdx(Float_t q, Int_t i) {
         Double_t s=GetSnp(), t=GetTgl();
         q *= TMath::Sqrt((1-s*s)/(1+t*t));

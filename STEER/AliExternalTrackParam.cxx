@@ -26,14 +26,14 @@
 // Origin: I.Belikov, CERN, Jouri.Belikov@cern.ch                            //
 ///////////////////////////////////////////////////////////////////////////////
 #include "AliExternalTrackParam.h"
-#include "AliKalmanTrack.h"
 #include "AliESDVertex.h"
-
+#include "AliLog.h"
 
 ClassImp(AliExternalTrackParam)
 
 //_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam() :
+  TObject(),
   fX(0),
   fAlpha(0)
 {
@@ -45,9 +45,23 @@ AliExternalTrackParam::AliExternalTrackParam() :
 }
 
 //_____________________________________________________________________________
+AliExternalTrackParam::AliExternalTrackParam(const AliExternalTrackParam &track):
+  TObject(track),
+  fX(track.fX),
+  fAlpha(track.fAlpha)
+{
+  //
+  // copy constructor
+  //
+  for (Int_t i = 0; i < 5; i++) fP[i] = track.fP[i];
+  for (Int_t i = 0; i < 15; i++) fC[i] = track.fC[i];
+}
+
+//_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha, 
 					     const Double_t param[5], 
 					     const Double_t covar[15]) :
+  TObject(),
   fX(x),
   fAlpha(alpha)
 {
@@ -59,23 +73,15 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha,
 }
 
 //_____________________________________________________________________________
-AliExternalTrackParam::AliExternalTrackParam(const AliKalmanTrack& track) :
-  fX(0),
-  fAlpha(track.GetAlpha())
-{
+void AliExternalTrackParam::Set(Double_t x, Double_t alpha,
+				const Double_t p[5], const Double_t cov[15]) {
   //
+  //  Sets the parameters
   //
-  track.GetExternalParameters(fX,fP);
-  track.GetExternalCovariance(fC);
-}
-
-//_____________________________________________________________________________
-void AliExternalTrackParam::Set(const AliKalmanTrack& track) {
-  //
-  //
-  fAlpha=track.GetAlpha();
-  track.GetExternalParameters(fX,fP);
-  track.GetExternalCovariance(fC);
+  fX=x;
+  fAlpha=alpha;
+  for (Int_t i = 0; i < 5; i++)  fP[i] = p[i];
+  for (Int_t i = 0; i < 15; i++) fC[i] = cov[i];
 }
 
 //_____________________________________________________________________________
@@ -776,6 +782,26 @@ AliExternalTrackParam::GetYAt(Double_t x, Double_t b, Double_t &y) const {
 }
 
 Bool_t 
+AliExternalTrackParam::GetZAt(Double_t x, Double_t b, Double_t &z) const {
+  //---------------------------------------------------------------------
+  // This function returns the local Z-coordinate of the intersection 
+  // point between this track and the reference plane "x" (cm). 
+  // Magnetic field "b" (kG)
+  //---------------------------------------------------------------------
+  Double_t dx=x-fX;
+  if(TMath::Abs(dx)<=kAlmost0) {z=fP[1]; return kTRUE;}
+
+  Double_t f1=fP[2], f2=f1 + dx*fP[4]*b*kB2C;
+
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+  
+  Double_t r1=sqrt(1.- f1*f1), r2=sqrt(1.- f2*f2);
+  z = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3]; // Many thanks to P.Hristov !
+  return kTRUE;
+}
+
+Bool_t 
 AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   //---------------------------------------------------------------------
   // This function returns the global track position extrapolated to
@@ -792,7 +818,7 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   Double_t r1=TMath::Sqrt(1.- f1*f1), r2=TMath::Sqrt(1.- f2*f2);
   r[0] = x;
   r[1] = fP[0] + dx*(f1+f2)/(r1+r2);
-  r[2] = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3];//Many thanks to P.Hristov !
+  r[2] = fP[1] + dx*(f1+f2)/(f1*r2 + f2*r1)*fP[3];
   return Local2GlobalPosition(r,fAlpha);
 }
 
@@ -823,56 +849,3 @@ Double_t AliExternalTrackParam::GetSnpAt(Double_t x,Double_t b) const {
   Double_t res = fP[2]+dx*crv;
   return res;
 }
-
-Bool_t AliExternalTrackParam::PropagateTo(Double_t xToGo, Double_t b, Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
-  //----------------------------------------------------------------
-  //
-  // Very expensive function !  Don't abuse it !
-  //
-  // Propagates this track to the plane X=xk (cm) 
-  // in the magnetic field "b" (kG),
-  // the correction for the material is included
-  //
-  //  Requires acces to geomanager
-  //
-  // mass     - mass used in propagation - used for energy loss correction
-  // maxStep  - maximal step for propagation
-  //----------------------------------------------------------------
-  const Double_t kEpsilon = 0.00001;
-  Double_t xpos     = GetX();
-  Double_t dir      = (xpos<xToGo) ? 1.:-1.;
-  //
-  while ( (xToGo-xpos)*dir > kEpsilon){
-    Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
-    Double_t x    = xpos+step;
-    Double_t xyz0[3],xyz1[3],param[7];
-    GetXYZ(xyz0);   //starting global position
-    if (!GetXYZAt(x,b,xyz1)) return kFALSE;   // no prolongation
-    xyz1[2]+=kEpsilon; // waiting for bug correction in geo
-    AliKalmanTrack::MeanMaterialBudget(xyz0,xyz1,param);	
-    if (TMath::Abs(GetSnpAt(x,b)) >= maxSnp) return kFALSE;
-    if (!PropagateTo(x,b))  return kFALSE;
-
-    Double_t rho=param[0],x0=param[1],distance=param[4];
-    Double_t d=distance*rho/x0;
-
-    if (!CorrectForMaterial(d,x0,mass)) return kFALSE;
-    if (rotateTo){
-      if (TMath::Abs(fP[2]) >= maxSnp) return kFALSE;
-      GetXYZ(xyz0);   // global position
-      Double_t alphan = TMath::ATan2(xyz0[1], xyz0[0]); 
-      //
-      Double_t ca=TMath::Cos(alphan-fAlpha), sa=TMath::Sin(alphan-fAlpha);
-      Double_t sf=fP[2], cf=TMath::Sqrt(1.- fP[2]*fP[2]);
-      Double_t sinNew =  sf*ca - cf*sa;
-      if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
-      if (!Rotate(alphan)) return kFALSE;
-    }
-    xpos = GetX();
-  }
-  return kTRUE;
-}
-
-
-
-

@@ -73,6 +73,9 @@ public:
     if (!fCp) return kFALSE;
     return fCp->GetXYZ(r);
   }
+  const AliExternalTrackParam *GetConstrainedExternalParameters() const {
+    return fCp;
+  }
   Bool_t GetConstrainedExternalParameters
               (Double_t &alpha, Double_t &x, Double_t p[5]) const;
   Bool_t GetConstrainedExternalCovariance(Double_t cov[15]) const;
@@ -115,8 +118,6 @@ public:
   Float_t GetITSchi2() const {return fITSchi2;}
   Int_t   GetITSclusters(Int_t *idx) const;
   Int_t   GetITSLabel() const {return fITSLabel;}
-  Float_t GetITSFakeRatio() const {return fITSFakeRatio;}
-
   void    SetITStrack(AliKalmanTrack * track){
      fFriendTrack->SetITStrack(track);
   }
@@ -170,7 +171,6 @@ public:
   Float_t GetTRDchi2() const {return fTRDchi2;}
   Int_t   GetTRDclusters(Int_t *idx) const;
   Int_t   GetTRDncls() const {return fTRDncls;}
-  Int_t   GetTRDncls0() const {return fTRDncls0;}
   void    SetTRDpid(Int_t iSpecies, Float_t p);
   Float_t GetTRDpid(Int_t iSpecies) const;
   Int_t   GetTRDLabel() const {return fTRDLabel;}
@@ -238,6 +238,10 @@ public:
   }
   virtual void Print(Option_t * opt) const ; 
 
+  //MI
+  Bool_t PropagateTo(Double_t x, Double_t b, Double_t mass, Double_t maxStep,
+                     Bool_t rotateTo=kTRUE, Double_t maxSnp=0.8);
+
   enum {
     kITSin=0x0001,kITSout=0x0002,kITSrefit=0x0004,kITSpid=0x0008,
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
@@ -283,8 +287,6 @@ protected:
   Float_t fITSsignal;      // detector's PID signal
   Float_t fITSr[AliPID::kSPECIES]; // "detector response probabilities" (for the PID)
   Int_t   fITSLabel;       // label according TPC
-  Float_t fITSFakeRatio;   // ration of fake tracks
-
 
   // TPC related track information
   Float_t  fTPCchi2;       // chi2 in the TPC
@@ -344,7 +346,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,29)  //ESDtrack 
+  ClassDef(AliESDtrack,30)  //ESDtrack 
 };
 
 #endif 

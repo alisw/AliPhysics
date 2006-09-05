@@ -29,7 +29,6 @@
 #pragma link C++ class  AliESDCaloCluster+;
 
 #pragma link C++ class  AliKalmanTrack+;
-#pragma link C++ class  AliHelix+;
 #pragma link C++ class  AliExternalTrackParam+;
 #pragma link C++ class  AliLog+;
 #pragma link C++ class  AliPID+;
@@ -49,7 +48,6 @@
 
 #pragma link C++ class AliTrackPointArray+;
 #pragma link C++ class AliTrackPoint+;
-#pragma link C++ class  AliCluster+;
 
 #pragma link C++ class  AliESDFMD+;
 #pragma link C++ class  AliFMDMap+;
@@ -57,7 +55,6 @@
 
 #pragma link C++ class  AliESDMultITS+;
 #pragma link C++ class  AliMultiplicity+;
-#pragma link C++ class  AliTracker+;
 #endif
 
 
