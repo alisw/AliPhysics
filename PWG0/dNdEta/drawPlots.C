@@ -306,6 +306,9 @@ void TriggerBiasVtxRecon(const char* fileName = "correction_map.root", const cha
   Prepare2DPlot(corrVtx);
   corrVtx->SetTitle("b) Vertex reconstruction correction");
 
+  corrTrigger->GetYaxis()->SetTitle("Multiplicity");
+  corrVtx->GetYaxis()->SetTitle("Multiplicity");
+
   TCanvas* canvas = new TCanvas("TriggerBiasVtxRecon", "TriggerBiasVtxRecon", 1000, 500);
   canvas->Divide(2, 1);
 
@@ -342,7 +345,7 @@ void TriggerBias(const char* fileName = "correction_map.root")
 {
   TFile* file = TFile::Open(fileName);
 
-  TH2* corr = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_trigger"));
+  TH2* corr = dynamic_cast<TH2*> (file->Get("dndeta_correction/corr_dndeta_correction_trigger"));
 
   Prepare2DPlot(corr);
   corr->SetTitle("Trigger bias correction");
@@ -548,6 +551,8 @@ void Track2Particle1D(const char* fileName = "correction_map.root", const char* 
   canvas->SaveAs(Form("Track2Particle1D_%s_%f.gif", fileName, upperPtLimit));
   canvas->SaveAs(Form("Track2Particle1D_%s_%f.eps", fileName, upperPtLimit));
 
+  //TPaveText* pave = new TPaveText(-0.4, 1.35, 0.4, 1.45);
+
   canvasName.Form("Track2Particle1D_%s_etapt", folder);
   TCanvas* canvas = new TCanvas(canvasName, canvasName, 1000, 500);
   canvas->Divide(2, 1);
@@ -558,12 +563,22 @@ void Track2Particle1D(const char* fileName = "correction_map.root", const char* 
   corrY->GetYaxis()->SetRangeUser(1, 1.5);
   corrY->GetYaxis()->SetTitleOffset(1.5);
   corrY->DrawCopy();
+  TPaveText* pave = new TPaveText(0.3, 0.7, 0.7, 0.8, "NDC");
+  pave->AddText("|z| < 10 cm");
+  pave->AddText("0.3 GeV/c < p_{T} < 10 GeV/c");
+  pave->Draw();
 
   canvas->cd(2);
   InitPad();
-  corrZ->GetYaxis()->SetRangeUser(1, 1.5);
+  gPad->SetLogx();
+  corrZ->GetYaxis()->SetRangeUser(1, 2.5);
+  corrZ->GetXaxis()->SetRangeUser(0.101, upperPtLimit);
   corrZ->GetYaxis()->SetTitleOffset(1.5);
   corrZ->DrawCopy();
+  pave = new TPaveText(0.5, 0.7, 0.8, 0.8, "NDC");
+  pave->AddText("|z| < 10 cm");
+  pave->AddText("|#eta| < 0.8");
+  pave->Draw();
 
   canvas->SaveAs(Form("Track2Particle1D_etapt_%s_%f.eps", fileName, upperPtLimit));
 }

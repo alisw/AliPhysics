@@ -11,7 +11,7 @@
 #include "../CreateESDChain.C"
 #include "../PWG0Helper.C"
 
-void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction")
+void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction", const char* option = "")
 {
   if (aProof)
     connectProof("proof01@lxb6046");
@@ -63,7 +63,7 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   if (aDebug != kFALSE)
     selectorName += "g";
 
-  Int_t result = executeQuery(chain, &inputList, selectorName);
+  Int_t result = executeQuery(chain, &inputList, selectorName, option);
 
   if (result >= 0)
   {
