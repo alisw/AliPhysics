@@ -21,7 +21,6 @@ class AliTrackPoint;
 
 class AliTracker : public TObject {
 public:
-  enum Propagation_t {kTrackInward, kTrackBack, kTrackRefit}; //type of propagation
   AliTracker();
   virtual ~AliTracker(){}
   virtual Int_t Clusters2Tracks(AliESD *event)=0;
