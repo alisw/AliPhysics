@@ -46,7 +46,7 @@ dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
 {
   // constructor
 
-  fData  = new TH3F(Form("%s_analysis", name),"Input data",80,-20,20,120,-6,6,100, 0, 10);
+  fData  = new TH3F(Form("%s_analysis", name),"Input data",80,-20,20,40,-2,2,100, 0, 10);
   fData->SetXTitle("vtx z [cm]");
   fData->SetYTitle("#eta");
   fData->SetZTitle("p_{T}");

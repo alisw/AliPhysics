@@ -19,6 +19,8 @@ Bool_t AliPWG0Helper::IsEventTriggered(AliESD* aEsd)
 {
   // check if the event was triggered
   //
+  // this function needs the branch fTriggerMask
+  //
   // MB should be
   // ITS_SPD_GFO_L0  : 32
   // VZERO_OR_LEFT   : 1
@@ -36,6 +38,9 @@ Bool_t AliPWG0Helper::IsEventTriggered(AliESD* aEsd)
 Bool_t AliPWG0Helper::IsVertexReconstructed(AliESD* aEsd)
 {
   // checks if the vertex is reasonable
+  //
+  // this function needs the branches fSPDVertex*
+
 
   const AliESDVertex* vtxESD = aEsd->GetVertex();
 

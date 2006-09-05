@@ -43,36 +43,6 @@ AlidNdEtaAnalysisESDSelector::~AlidNdEtaAnalysisESDSelector()
 
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
-
-  if (fdNdEtaAnalysis)
-  {
-    delete fdNdEtaAnalysis;
-    fdNdEtaAnalysis = 0;
-  }
-
-  if (fdNdEtaAnalysisMB)
-  {
-    delete fdNdEtaAnalysisMB;
-    fdNdEtaAnalysisMB = 0;
-  }
-
-  if (fdNdEtaAnalysisMBVtx)
-  {
-    delete fdNdEtaAnalysisMBVtx;
-    fdNdEtaAnalysisMBVtx = 0;
-  }
-
-  /*if (fEsdTrackCuts)
-  {
-    delete fEsdTrackCuts;
-    fEsdTrackCuts = 0;
-  }
-
-  if (fdNdEtaCorrection)
-  {
-    delete fdNdEtaCorrection;
-    fdNdEtaCorrection = 0;
-  }*/
 }
 
 void AlidNdEtaAnalysisESDSelector::Begin(TTree* tree)
@@ -126,6 +96,16 @@ void AlidNdEtaAnalysisESDSelector::Init(TTree* tree)
   // read the user objects
 
   AliSelector::Init(tree);
+
+  // Enable only the needed branches
+  if (tree)
+  {
+    tree->SetBranchStatus("*", 0);
+    tree->SetBranchStatus("fTriggerMask", 1);
+    tree->SetBranchStatus("fSPDVertex*", 1);
+
+    AliESDtrackCuts::EnableNeededBranches(tree);
+  }
 }
 
 Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
@@ -171,10 +151,16 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
   }
 
   if (AliPWG0Helper::IsEventTriggered(fESD) == kFALSE)
+  {
+    AliDebug(AliLog::kDebug+1, Form("Skipping event %d because it was not triggered", (Int_t) entry));
     return kTRUE;
+  }
 
   if (AliPWG0Helper::IsVertexReconstructed(fESD) == kFALSE)
+  {
+    AliDebug(AliLog::kDebug+1, Form("Skipping event %d because its vertex was not reconstructed", (Int_t) entry));
     return kTRUE;
+  }
 
   // ########################################################
   // get the EDS vertex

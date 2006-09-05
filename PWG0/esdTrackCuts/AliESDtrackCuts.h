@@ -30,6 +30,7 @@
 class AliESD;
 class AliESDtrack;
 class AliLog;
+class TTree;
 
 class AliESDtrackCuts : public TObject 
 {
@@ -80,6 +81,8 @@ public:
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
   
   virtual void Print(const Option_t* = "") const;
+
+  static void EnableNeededBranches(TTree* tree);
 
   // void SaveQualityCuts(Char_t* file)
   // void LoadQualityCuts(Char_t* file)

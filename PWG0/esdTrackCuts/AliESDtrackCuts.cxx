@@ -4,6 +4,7 @@
 #include <AliESDtrack.h>
 #include <AliESD.h>
 #include <AliLog.h>
+#include <TTree.h>
 
 //____________________________________________________________________
 ClassImp(AliESDtrackCuts)
@@ -447,6 +448,26 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
   return d;
 }
 
+void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
+{
+  // enables the branches needed by AcceptTrack, for a list see comment of AcceptTrack
+
+  tree->SetBranchStatus("fTracks.fFlags", 1);
+  tree->SetBranchStatus("fTracks.fITSncls", 1);
+  tree->SetBranchStatus("fTracks.fTPCncls", 1);
+  tree->SetBranchStatus("fTracks.fITSchi2", 1);
+  tree->SetBranchStatus("fTracks.fTPCchi2", 1);
+  tree->SetBranchStatus("fTracks.fC*", 1);
+  tree->SetBranchStatus("fTracks.fD", 1);
+  tree->SetBranchStatus("fTracks.fZ", 1);
+  tree->SetBranchStatus("fTracks.fCdd", 1);
+  tree->SetBranchStatus("fTracks.fCdz", 1);
+  tree->SetBranchStatus("fTracks.fCzz", 1);
+  tree->SetBranchStatus("fTracks.fP*", 1);
+  tree->SetBranchStatus("fTracks.fR*", 1);
+  tree->SetBranchStatus("fTracks.fKinkIndexes*", 1);
+}
+
 //____________________________________________________________________
 Bool_t
 AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
@@ -457,7 +478,22 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // retrieved from the track. then it is found out what cuts the
   // track did not survive and finally the cuts are imposed.
 
-
+  // this function needs the following branches:
+  // fTracks.fFlags
+  // fTracks.fITSncls
+  // fTracks.fTPCncls
+  // fTracks.fITSchi2
+  // fTracks.fTPCchi2
+  // fTracks.fC   //GetExternalCovariance
+  // fTracks.fD   //GetImpactParameters
+  // fTracks.fZ   //GetImpactParameters
+  // fTracks.fCdd //GetImpactParameters
+  // fTracks.fCdz //GetImpactParameters
+  // fTracks.fCzz //GetImpactParameters
+  // fTracks.fP   //GetPxPyPz
+  // fTracks.fR   //GetMass
+  // fTracks.fP   //GetMass
+  // fTracks.fKinkIndexes
 
   UInt_t status = esdTrack->GetStatus();
 
@@ -475,7 +511,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   if (nClustersITS!=0)
     chi2PerClusterITS = esdTrack->GetITSchi2()/Float_t(nClustersITS);
   if (nClustersTPC!=0)
-    chi2PerClusterTPC = esdTrack->GetTPCchi2()/Float_t(nClustersTPC);  
+    chi2PerClusterTPC = esdTrack->GetTPCchi2()/Float_t(nClustersTPC);
 
   Double_t extCov[15];
   esdTrack->GetExternalCovariance(extCov);
@@ -535,7 +571,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
   // if n sigma could not be calculated
   if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)
     cuts[12]=kTRUE;
-  if (!fCutAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0) 
+  if (!fCutAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)
     cuts[13]=kTRUE;
   // track kinematics cut
   if((momentum < fPMin) || (momentum > fPMax)) 

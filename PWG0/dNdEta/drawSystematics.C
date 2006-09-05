@@ -693,7 +693,7 @@ TH1F* Sigma2VertexSimulation()
     return;
   }
 
-  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included 3 #sigma / % included N#sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
+  TH1F* ratio = new TH1F("sigmavertexsimulation_ratio", "sigmavertexsimulation_ratio;N#sigma;% included in 3 #sigma / % included in N#sigma", sigmavertex->GetNbinsX(), sigmavertex->GetXaxis()->GetXmin(), sigmavertex->GetXaxis()->GetXmax());
 
   for (Int_t i=1; i<=sigmavertex->GetNbinsX(); ++i)
     ratio->SetBinContent(i, sigmavertex->GetBinContent(sigmavertex->GetXaxis()->FindBin(3)) / sigmavertex->GetBinContent(i));
@@ -738,9 +738,14 @@ void Sigma2VertexCompare()
   TCanvas* canvas = new TCanvas("Sigma2VertexCompare", "Sigma2VertexCompare", 500, 500);
   InitPad();
 
+  ratio2->SetMarkerStyle(21);
+  ratio1->SetMarkerStyle(22);
+
+  ratio2->GetYaxis()->SetRangeUser(0.8, 1.2);
   ratio2->SetLineColor(kRed);
-  ratio2->Draw();
-  ratio1->Draw("SAME");
+  ratio2->SetMarkerColor(kRed);
+  ratio2->Draw("PL");
+  ratio1->Draw("SAMEPL");
 
   legend->Draw();
 
