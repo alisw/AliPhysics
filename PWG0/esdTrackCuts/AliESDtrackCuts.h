@@ -42,6 +42,7 @@ public:
   TObjArray* GetAcceptedTracks(AliESD* esd);
   Int_t CountAcceptedTracks(AliESD* esd);
 
+  virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
 
   //######################################################
