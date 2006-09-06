@@ -11,8 +11,8 @@
     @brief  Data type declaration for the HLT module.
 */
 
-/* #include <vector> */
-/* using namespace std; */
+#include <vector>
+using namespace std;
 
 extern "C" {
 
