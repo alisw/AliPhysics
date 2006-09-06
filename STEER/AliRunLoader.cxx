@@ -301,8 +301,15 @@ Int_t AliRunLoader::GetEvent(Int_t evno)
      return 2;
    }
 
-  if (fStack && fKineDataLoader->GetBaseLoader(0)->IsLoaded()) fStack->GetEvent();
-  
+  if (fStack && fKineDataLoader->GetBaseLoader(0)->IsLoaded())
+    {
+      if (fStack->GetEvent() == kFALSE)
+	{
+	  AliError(Form("Error occured while GetEvent for Stack. Event %d",evno));
+	  return 2;
+	}
+    }
+
   //Trigger data reloading in all loaders 
   TIter next(fLoaders);
   AliLoader *loader;
