@@ -1,3 +1,11 @@
+2006-09-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* MUONDigitsInfo.cxx:
+	* MUONDigitsInfo.h:
+	* MUONModule.cxx:
+	* MUONModule.h:
+	From Bogdan: fix effc++ warnings, add comments.
+
 2006-08-30  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* EventAlieve.cxx:
