@@ -1,3 +1,10 @@
+/* HEAD11Jul06 */
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// The main AliEVE drawing module for the MUON detector                 //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
 #include "EventAlieve.h"
 #include "Reve/PointSet.h"
 #include "Reve/RGTopFrame.h"
@@ -33,26 +40,36 @@ using namespace std;
 ClassImp(MUONModule)
 
 /**************************************************************************/
-
 MUONModule::MUONModule(const Text_t* n, const Text_t* t, Color_t col) :
-  Reve::RenderElement(fFrameCol),
+  Reve::RenderElement(col),
   QuadSet(n, t),
   fInfo(0),
-  fID(-1), fCath(0),
+  fID(-1), 
+  fCath(0),
   fShowDigits(0), fShowClusters(0), fShowTracks(0),
   fFrameCol(col),
   fDetElemId(-1)
-{}
+{
+  //
+  // Default constructor
+  //
 
+}
+
+/**************************************************************************/
 MUONModule::MUONModule(Int_t id, Int_t cath, MUONDigitsInfo* info, Bool_t dig, Bool_t clus, Color_t col ) :
-  Reve::RenderElement(fFrameCol),
+  Reve::RenderElement(col),
   QuadSet(Form("M-DetElemId %d C%1d",id,cath)),
   fInfo(info),
-  fID(-1), fCath(0),
+  fID(-1), 
+  fCath(0),
   fShowDigits(dig), fShowClusters(clus), fShowTracks(0),
   fFrameCol(col),
   fDetElemId(-1)
 {
+  //
+  // Constructor
+  //
 
   if (!fShowDigits && !fShowClusters) fShowTracks = 1;
 
@@ -71,8 +88,55 @@ MUONModule::MUONModule(Int_t id, Int_t cath, MUONDigitsInfo* info, Bool_t dig, B
 }
 
 /**************************************************************************/
+MUONModule::MUONModule(const MUONModule &mmod) :
+  Reve::RenderElement(),
+  QuadSet(Form("M-DetElemId %d C%1d",mmod.fID,mmod.fCath)),
+  fInfo(mmod.fInfo),
+  fID(mmod.fID),
+  fCath(mmod.fCath),
+  fShowDigits(mmod.fShowDigits),
+  fShowClusters(mmod.fShowClusters),
+  fShowTracks(mmod.fShowTracks),
+  fFrameCol(mmod.fFrameCol),
+  fDetElemId(mmod.fDetElemId)
+{
+  //
+  // Copy constructor
+  //
+
+}
+
+/**************************************************************************/
+MUONModule& MUONModule::operator=(const MUONModule &mmod)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &mmod) {
+
+    fInfo         = mmod.fInfo;
+    fID           = mmod.fID;
+    fCath         = mmod.fCath;
+    fShowDigits   = mmod.fShowDigits;
+    fShowClusters = mmod.fShowClusters;
+    fShowTracks   = mmod.fShowTracks;
+    fFrameCol     = mmod.fFrameCol;
+    fDetElemId    = mmod.fDetElemId;
+
+  }
+
+  return *this;
+
+}
+
+/**************************************************************************/
 void MUONModule::SetID(Int_t id, Int_t cath)
 {
+  //
+  // Select a single detector element id
+  //
+
   static const Exc_t eH("MUOModule::SetID ");
 
   if(fInfo == 0)
@@ -88,6 +152,9 @@ void MUONModule::SetID(Int_t id, Int_t cath)
 /**************************************************************************/
 void MUONModule::InitModule()
 {
+  // 
+  // Initialize and draw selected items
+  //
 
   fDetElemId = 0;
 
@@ -103,13 +170,15 @@ void MUONModule::InitModule()
     }
   }
   ComputeBBox();
-  SetTrans();
 
 }
 
 /**************************************************************************/
 void MUONModule::LoadQuadsChambers(Int_t chamber1, Int_t chamber2, Int_t id, Int_t cat)
 {
+  //
+  // Draw chambers
+  //
 
   //printf("Draw chambers: %d %d %d %d %d \n",chamber1,chamber2,id,cat,fCath);
 
@@ -345,6 +414,9 @@ void MUONModule::LoadQuadsChambers(Int_t chamber1, Int_t chamber2, Int_t id, Int
 /**************************************************************************/
 void MUONModule::LoadQuadsDigits()
 {
+  // 
+  // Draw digits
+  //
 
   if (fDetElemId > 0 && fDetElemId != fID) return;
 
@@ -397,6 +469,7 @@ void MUONModule::LoadQuadsDigits()
 
     //printf("Dig ix %d iy %d \n",ix,iy);
 
+    // time delay information
     if (fChamber > 10) { // trigger chamber
       Int_t sumCharge = 0;
       Int_t n = mdig->Ntracks();
@@ -406,7 +479,7 @@ void MUONModule::LoadQuadsDigits()
       assert(sumCharge==mdig->Signal());
       Int_t testCharge = sumCharge-(Int_t(sumCharge/n))*n;
       if(sumCharge <= n || testCharge > 0) {
-	colorTrigger = color; 
+	colorTrigger = 4; 
       } else {
 	colorTrigger = 5; 
       }
@@ -425,7 +498,9 @@ void MUONModule::LoadQuadsDigits()
     xg2 = xlocal2;
     yg2 = ylocal2;
 
-    if (fChamber > 10) color = 4;
+    if (fChamber > 10) {
+      color = colorTrigger;
+    }
 
     fQuads.push_back(Reve::Quad());
     fQuads.back().ColorFromIdx(color);
@@ -442,16 +517,13 @@ void MUONModule::LoadQuadsDigits()
     p[3] = zg1;         p[4] =  yg1+yg2; p[5]  = xg1-xg2;
     p[6] = zg1;         p[7] =  yg1+yg2; p[8]  = xg1+xg2;
     p[9] = zg1;         p[10] = yg1-yg2; p[11] = xg1+xg2;
-
-    if (fChamber > 10) {
-      // fill the digit quads...
-    }
-
     /*
+    if (fChamber < 11) {
     printf("coordinates.............................. \n");
     for (Int_t j = 0; j < 12; j++) {
       printf("%f ",p[j]);
       if ((j+1)%3 == 0) printf("\n");
+    }
     }
     */
 
@@ -464,6 +536,9 @@ void MUONModule::LoadQuadsDigits()
 /**************************************************************************/
 void MUONModule::LoadQuadsClusters()
 {
+  //
+  // Draw clusters
+  //
 
   Int_t fChamber;
 
@@ -479,7 +554,7 @@ void MUONModule::LoadQuadsClusters()
   if (clusters == 0) return;
   nclusters = clusters->GetEntriesFast(); 
 
-  Float_t zpos = AliMUONConstants::DefaultChamberZ(fChamber-1);  
+  //Float_t zpos = AliMUONConstants::DefaultChamberZ(fChamber-1);  
 
   AliMUONRawCluster  *cls;
   for (Int_t iCls = 0; iCls < nclusters; iCls++) {
@@ -490,7 +565,7 @@ void MUONModule::LoadQuadsClusters()
 
     Float_t x = cls->GetX(0);
     Float_t y = cls->GetY(0);
-    Float_t z = zpos;
+    Float_t z = cls->GetZ(0);
 
     Float_t dx = 1.0/2.0;
     Float_t dy = 1.0/2.0;
@@ -537,6 +612,9 @@ void MUONModule::LoadQuadsClusters()
 /**************************************************************************/
 void MUONModule::LoadQuadsTracks(Int_t id)
 {
+  //
+  // Draw tracks
+  //
 
   /*           D I S P L A Y     T R A C K S                           */
 
@@ -582,14 +660,6 @@ void MUONModule::LoadQuadsTracks(Int_t id)
     zRec0 = zRec;
 
   } // end loop rec. hits
-
-}
-
-/**************************************************************************/
-void MUONModule::SetTrans()
-{
-
-
 
 }
 
