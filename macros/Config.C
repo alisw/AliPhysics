@@ -50,7 +50,6 @@ void Config()
 
     // Set Random Number seed
   gRandom->SetSeed(123456); // Set 0 to use the currecnt time
-  AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
 
    // libraries required by geant321
