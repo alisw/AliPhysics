@@ -31,6 +31,11 @@
 
 // raw data
 #pragma link C++ class AliMUONDigitMaker+;
+
+// display
+#pragma link C++ class AliMUONDisplay+; 
+#pragma link C++ class AliMUONRecoCheck+;
+
 #endif
 
 

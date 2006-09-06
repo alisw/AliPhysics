@@ -10,6 +10,7 @@ void loadlibs ()
   // root [5] rec.Run()
 
   gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
 
   // Uncomment the following line for macosx
   // Waiting for a better solution

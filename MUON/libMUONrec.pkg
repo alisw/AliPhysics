@@ -22,7 +22,9 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONDigitCalibrator.cxx \
        AliMUONDigitMaker.cxx \
        AliMillepede.cxx \
-       AliMUONAlignment.cxx
+       AliMUONAlignment.cxx \
+       AliMUONDisplay.cxx \
+       AliMUONRecoCheck.cxx
  
 
 HDRS:= $(SRCS:.cxx=.h)

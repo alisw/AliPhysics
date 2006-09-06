@@ -142,7 +142,6 @@ AliITSLoader::~AliITSLoader(){
     UnloadCascades();
     dl = GetCascadeDataLoader();
     fDataLoaders->Remove(dl);
-    if(fITSpid)delete fITSpid;
     if(fGeom)delete fGeom;
     fGeom = 0;
 }
