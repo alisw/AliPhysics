@@ -35,7 +35,7 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
 };
 
 //____________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts() : TObject(),
+AliESDtrackCuts::AliESDtrackCuts(Char_t* name) : TNamed(name,name),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMaxChi2PerClusterTPC(0),
@@ -98,7 +98,7 @@ AliESDtrackCuts::AliESDtrackCuts() : TObject(),
 }
 
 //_____________________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : TObject(c),
+AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : TNamed(c),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMaxChi2PerClusterTPC(0),

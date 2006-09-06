@@ -1,145 +1,78 @@
 /* $Id$ */
 
-testESDtrackCuts(Char_t* dataDir=, Int_t nRuns=10) {
+//
+// script to run the AliMultiplicityESDSelector
+//
 
-  Char_t str[256];
+#include "../CreateESDChain.C"
+#include "../PWG0Helper.C"
 
-  gSystem->Load("libPWG0base.so");
+TChain* testESDtrackCuts(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE)
+{
+  if (aProof)
+    connectProof("proof01@lxb6046");
 
-  // ########################################################
-  // definition of ESD track cuts
+  TString libraries("libEG;libGeom;libESD;libPWG0base;libVMC;libMinuit;libSTEER;libPWG0dep;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;lib
+EGPythia6;libAliPythia6");
+  TString packages("PWG0base;PWG0dep");
 
-  AliESDtrackCuts* trackCuts = new AliESDtrackCuts();
-  trackCuts->DefineHistograms(4);
+  if (!prepareQuery(libraries, packages, kTRUE))
+    return;
 
-  trackCuts->SetMinNClustersTPC(50);
-  trackCuts->SetMaxChi2PerClusterTPC(3.5);
-  trackCuts->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
-  trackCuts->SetRequireTPCRefit(kTRUE);
+  // selection of esd tracks
+  AliESDtrackCuts* esdTrackCutsAll = new AliESDtrackCuts("esdTrackCutsAll");
+  AliESDtrackCuts* esdTrackCutsPri = new AliESDtrackCuts("esdTrackCutsPri");
+  AliESDtrackCuts* esdTrackCutsSec = new AliESDtrackCuts("esdTrackCutsSec");
 
-  trackCuts->SetMinNsigmaToVertex(3);
-  trackCuts->SetAcceptKingDaughters(kFALSE);
+  esdTrackCutsAll->DefineHistograms(1);
+  esdTrackCutsAll->SetMinNClustersTPC(50);
+  esdTrackCutsAll->SetMaxChi2PerClusterTPC(3.5);
+  esdTrackCutsAll->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+  esdTrackCutsAll->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsAll->SetMinNsigmaToVertex(3);
+  esdTrackCutsAll->SetRequireSigmaToVertex(kTRUE);
+  esdTrackCutsAll->SetAcceptKingDaughters(kFALSE);
 
-  trackCuts->SetPRange(0.3);
+  esdTrackCutsPri->DefineHistograms(4);
+  esdTrackCutsPri->SetMinNClustersTPC(50);
+  esdTrackCutsPri->SetMaxChi2PerClusterTPC(3.5);
+  esdTrackCutsPri->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+  esdTrackCutsPri->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsPri->SetMinNsigmaToVertex(3);
+  esdTrackCutsPri->SetRequireSigmaToVertex(kTRUE);
+  esdTrackCutsPri->SetAcceptKingDaughters(kFALSE);
 
-  AliLog::SetClassDebugLevel("AliESDtrackCuts",1);
+  esdTrackCutsSec->DefineHistograms(2);
+  esdTrackCutsSec->SetMinNClustersTPC(50);
+  esdTrackCutsSec->SetMaxChi2PerClusterTPC(3.5);
+  esdTrackCutsSec->SetMaxCovDiagonalElements(2,2,0.5,0.5,2);
+  esdTrackCutsSec->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsSec->SetMinNsigmaToVertex(3);
+  esdTrackCutsSec->SetRequireSigmaToVertex(kTRUE);
+  esdTrackCutsSec->SetAcceptKingDaughters(kFALSE);
 
-  // ########################################################
-  // definition of used pointers
-  TFile* esdFile;
-  TTree* esdTree;
-  TBranch* esdBranch;
 
-  AliESD* esd = 0;
+  TList inputList;
+  inputList.Add(esdTrackCutsAll);
+  inputList.Add(esdTrackCutsPri);
+  inputList.Add(esdTrackCutsSec);
 
-  // ########################################################
-  // get the data dir  
-  Char_t execDir[256];
-  sprintf(execDir,gSystem->pwd());
-  TSystemDirectory* baseDir = new TSystemDirectory(".",dataDir);
-  TList* dirList            = baseDir->GetListOfFiles();
-  Int_t nDirs               = dirList->GetEntries();
-  // go back to the dir where this script is executed
-  gSystem->cd(execDir);
-  
-  // ########################################################
-  // loop over runs
-  Int_t nRunCounter = 0;
-  for (Int_t r=1; r<=nDirs; r++) {
+  TChain* chain = CreateESDChain(data, nRuns, offset);
 
-    TSystemFile* presentDir = (TSystemFile*)dirList->At(r);
-    if (!presentDir->IsDirectory())
-      continue;
-    // first check that the files are there
-    sprintf(str,"%s/%s",dataDir, presentDir->GetName());
-    if ((!gSystem->Which(str,"galice.root")) ||
-        (!gSystem->Which(str,"AliESDs.root"))) 
-      continue;
-    
-    if (nRunCounter++ >= nRuns)
-      break;    
-    
-    cout << "run #" << nRunCounter << endl;
+  TString selectorName = "AliTestESDtrackCutsSelector";
+  AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 
-    // #########################################################
-    // setup galice and runloader
-    if (gAlice) {
-      delete gAlice->GetRunLoader();
-      delete gAlice;
-      gAlice=0;
-    }
+  selectorName += ".cxx+";
 
-    sprintf(str,"%s/run%d/galice.root",dataDir,r);
-    AliRunLoader* runLoader = AliRunLoader::Open(str);
+  if (aDebug != kFALSE)
+    selectorName += "g";
 
-    runLoader->LoadgAlice();
-    gAlice = runLoader->GetAliRun();
-    runLoader->LoadHeader();
+  Int_t result = executeQuery(chain, &inputList, selectorName);
 
-    // #########################################################
-    // open esd file and get the tree
-
-    sprintf(str,"%s/run%d/AliESDs.root",dataDir,r);
-    // close it first to avoid memory leak
-    if (esdFile)
-      if (esdFile->IsOpen())
-        esdFile->Close();
-
-    esdFile = TFile::Open(str);
-    esdTree = (TTree*)esdFile->Get("esdTree");
-    if (!esdTree)
-      continue;
-    esdBranch = esdTree->GetBranch("ESD");
-    esdBranch->SetAddress(&esd);
-    if (!esdBranch)
-      continue;
-
-    // ########################################################
-    // Magnetic field
-    AliTracker::SetFieldMap(gAlice->Field(),kTRUE); // kTRUE means uniform magnetic field
-
-    // ########################################################
-    // getting number of events
-    Int_t nEvents    = (Int_t)runLoader->GetNumberOfEvents();
-    Int_t nESDEvents = esdBranch->GetEntries();
-    
-    if (nEvents!=nESDEvents) 
-      cout << " Warning: Different number of events from runloader and esdtree!!!" << nEvents << " / " << nESDEvents << endl;
-    
-    // ########################################################
-    // loop over number of events
-    cout << " looping over events..." << endl;
-    for(Int_t i=1; i<nEvents; i++) {
-      
-      esdBranch->GetEntry(i);
-      runLoader->GetEvent(i);
-      
-      // ########################################################
-      // get the EDS vertex
-      AliESDVertex* vtxESD = esd->GetVertex();
-      
-      Double_t vtxSigma[3];
-      vtxESD->GetSigmaXYZ(vtxSigma);
-      
-      // ########################################################
-      // loop over esd tracks      
-      Int_t nTracks = esd->GetNumberOfTracks();      
-
-      for (Int_t t=0; t<nTracks; t++) {
-	AliESDtrack* esdTrack = esd->GetTrack(t);      
-	
-	//trackCuts->AcceptTrack(esdTrack, vtxESD, esd->GetMagneticField());
-	trackCuts->AcceptTrack(esdTrack);
-	
-      } // end of track loop
-    } // end  of event loop
-  } // end of run loop
-
-  TFile* fout = new TFile("out.root","RECREATE");
-
-  trackCuts->SaveHistograms("esd_track_cuts");
-  
-  fout->Write();
-  fout->Close();
-
+  if (result != 0)
+  {
+    printf("ERROR: Executing process failed with %d.\n", result);
+    return;
+  }
 }
+

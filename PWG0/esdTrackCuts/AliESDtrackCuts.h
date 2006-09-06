@@ -24,7 +24,7 @@
 #ifndef ALIESDTRACKCUTS_H
 #define ALIESDTRACKCUTS_H
 
-#include <TObject.h>
+#include <TNamed.h>
 #include <TH2.h>
 
 class AliESD;
@@ -32,11 +32,11 @@ class AliESDtrack;
 class AliLog;
 class TTree;
 
-class AliESDtrackCuts : public TObject 
+class AliESDtrackCuts : public TNamed 
 {
 
 public:
-  AliESDtrackCuts();
+  AliESDtrackCuts(Char_t* name="AliESDtrackCuts");
   virtual ~AliESDtrackCuts();
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
