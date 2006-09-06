@@ -36,7 +36,8 @@ class AliESDtrackCuts : public TNamed
 {
 
 public:
-  AliESDtrackCuts(Char_t* name="AliESDtrackCuts");
+  AliESDtrackCuts();
+  AliESDtrackCuts(Char_t* name, Char_t* title="");
   virtual ~AliESDtrackCuts();
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
@@ -57,11 +58,11 @@ public:
   void SetAcceptKingDaughters(Bool_t b=kFALSE)   {fCutAcceptKinkDaughters=b;}
   void SetMaxCovDiagonalElements(Float_t c1=1e99, Float_t c2=1e99, Float_t c3=1e99, Float_t c4=1e99, Float_t c5=1e99) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
-  
+
   // track to vertex cut setters
   void SetMinNsigmaToVertex(Float_t sigma=1e99)       {fCutNsigmaToVertex = sigma;}
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
-  
+
   // track kinmatic cut setters  
   void SetPRange(Float_t r1=0, Float_t r2=1e99)       {fPMin=r1;   fPMax=r2;}
   void SetPtRange(Float_t r1=0, Float_t r2=1e99)      {fPtMin=r1;  fPtMax=r2;}
