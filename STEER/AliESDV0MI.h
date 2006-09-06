@@ -48,7 +48,6 @@ public:
   Int_t  GetStatus() const {return fStatus;}
   Float_t GetEffMass(UInt_t p1, UInt_t p2);
   Float_t GetProb(UInt_t p1, UInt_t p2);
-  void Update(Float_t vertex[3]);            //update
   void SetID(Int_t id){fID =id;}
   Int_t GetID() const { return fID;}
   Int_t GetIndex(Int_t i) const {return fIndex[i];}

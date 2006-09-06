@@ -26,7 +26,6 @@ public:
   Int_t GetID(){return fID;}
   void SetMother(const AliExternalTrackParam & pmother); 
   void SetDaughter(const AliExternalTrackParam & pdaughter);
-  void Update();            //update
   Float_t GetTPCDensityFactor() const;
   Float_t GetQt() const;    
   //
