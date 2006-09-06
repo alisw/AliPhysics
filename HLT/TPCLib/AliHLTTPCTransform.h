@@ -152,6 +152,7 @@ class AliHLTTPCTransform {
   static Double_t ToRad() {return 1./fgkToDeg;}
   static Double_t ToDeg() {return fgkToDeg;}
 
+  static Int_t GetNumberOfPatches();
   static Int_t GetFirstRow(Int_t patch);
   static Int_t GetLastRow(Int_t patch);
   static Int_t GetFirstRowOnDDL(Int_t patch);

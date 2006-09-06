@@ -25,6 +25,7 @@ using namespace std;
 
 #include <cerrno>
 #include "AliHLTTPCPad.h"
+#include "AliHLTStdIncludes.h"
 
 /** margin for the base line be re-avaluated */
 #define ALIHLTPAD_BASELINE_MARGIN (2*fAverage)
@@ -42,6 +43,8 @@ AliHLTTPCPad::AliHLTTPCPad()
   fSum(0),
   fBLMax(-1),
   fBLMaxBin(-1),
+  fBLMin(-1),
+  fBLMinBin(-1),
   fCount(0),
   fTotal(0),
   fpRawData(NULL),
@@ -61,6 +64,8 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   fSum(0),
   fBLMax(-1),
   fBLMaxBin(-1),
+  fBLMin(-1),
+  fBLMinBin(-1),
   fCount(0),
   fTotal(0),
   fpRawData(NULL),
@@ -80,6 +85,8 @@ AliHLTTPCPad::AliHLTTPCPad(const AliHLTTPCPad& srcPad)
   fSum(0),
   fBLMax(-1),
   fBLMaxBin(-1),
+  fBLMin(-1),
+  fBLMinBin(-1),
   fCount(0),
   fTotal(0),
   fpRawData(NULL),
@@ -116,6 +123,8 @@ Int_t AliHLTTPCPad::StartEvent()
   if (fpRawData==NULL) {
     fBLMax=-1;
     fBLMaxBin=-1;
+    fBLMin=-1;
+    fBLMinBin=-1;
     fSum=0;
     fCount=0;
     fTotal=0;
@@ -139,21 +148,22 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
 {
   Int_t iResult=0;
   AliHLTTPCSignal_t avBackup=fAverage;
+  //HLTDebug("reqMinCount=%d fCount=%d fTotal=%d fSum=%d fBLMax=%d fBLMin=%d", reqMinCount, fCount, fTotal, fSum, fBLMax, fBLMin);
   if (fCount>=reqMinCount && fCount>=fTotal/2) {
     fAverage=fCount>0?fSum/fCount:0;
     if (fAverage>0) {
-      HLTDebug("average for current event %f", fAverage);
+      //HLTDebug("average for current event %d (%d - %d)", fAverage, fBLMax, fBLMin);
       fCount=0;fSum=-1;
       if (fBLMax>ALIHLTPAD_BASELINE_MARGIN) {
 	// calculate again
-	HLTDebug("maximum value %f exceeds margin for base line %f "
+	HLTDebug("maximum value %d exceeds margin for base line (%d) "
 		 "-> re-evaluate base line", fBLMax, ALIHLTPAD_BASELINE_MARGIN);
 	if (fpRawData) {
 	  for (Int_t i=fFirstBLBin; i<fNofBins; i++)
 	    if (fpRawData[i]>=0) AddBaseLineValue(i, fpRawData[i]);
 	  if (fCount>0 && fCount>=reqMinCount && fCount>=fTotal/2) {
 	    fAverage=fSum/fCount;
-	    HLTDebug("new average %f", fAverage);
+	    HLTDebug("new average %d", fAverage);
 	  } else {
 	    HLTDebug("baseline re-eveluation skipped because of to few "
 		       "contributing bins: total=%d, contributing=%d, req=%d"
@@ -170,7 +180,7 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
       if (iResult>=0) {
 	// calculate average for all events
 	fAverage=((avBackup*fNofEvents)+fAverage)/(fNofEvents+1);
-	HLTDebug("base line average for %d events: %f", fNofEvents+1, fAverage);
+	//HLTDebug("base line average for %d event(s): %d", fNofEvents+1, fAverage);
       } else {
 	fAverage=avBackup;      
       }
@@ -232,9 +242,15 @@ Int_t AliHLTTPCPad::AddBaseLineValue(Int_t bin, AliHLTTPCSignal_t value)
 	fBLMax=value;
 	fBLMaxBin=bin;
       }
+      if (fBLMin<0 || fBLMin>value) {
+	// keep the minimum value for later quality control of the base 
+	// line calculation
+	fBLMin=value;
+	fBLMinBin=bin;
+      }
     } else {
-      HLTDebug("ignoring value %f of bin %d for base line calculation "
-	       "- average %f",
+      HLTDebug("ignoring value %d (bin %d) for base line calculation "
+	       "(current average is %d)",
 	       value, bin, fAverage);
     }
   }
@@ -252,7 +268,7 @@ Int_t AliHLTTPCPad::SetRawData(Int_t bin, AliHLTTPCSignal_t value)
 	  fTotal++;
 	} else {
 	  // ignore value for average calculation
-	  HLTWarning("overriding content of bin %d (%f)", bin, fpRawData[bin]);
+	  HLTWarning("overriding content of bin %d (%d)", bin, fpRawData[bin]);
 	}
 	fpRawData[bin]=value;
       } else {
@@ -310,12 +326,27 @@ AliHLTTPCSignal_t AliHLTTPCPad::GetCorrectedData(Int_t bin) const
   if (fThreshold>0) data-=fThreshold;
   if (data<0) data=0;
   if (bin<fFirstBLBin) data=0;
+  //HLTDebug("fReadPos=%d data=%d threshold=%d raw data=%d base line=%d", fReadPos, data, fThreshold, GetRawData(bin), GetBaseLine(bin));
   return data;
 }
 
 AliHLTTPCSignal_t AliHLTTPCPad::GetBaseLine(Int_t bin) const
 {
-  return fAverage>0?fAverage:0;
+  AliHLTTPCSignal_t val=0;
+  if (fAverage>0) {
+    // we take the minumum value as the base line if it doesn't differ from
+    // the average to much
+    const AliHLTTPCSignal_t kMaxDifference=15;
+    val=fAverage;
+    if ((fAverage-fBLMin)<=kMaxDifference) val=fBLMin;
+    else val>kMaxDifference?val-=kMaxDifference:0;
+  }
+  if (val<0) {
+    // here we should never get
+    val=0;
+    HLTFatal("wrong base line value");
+  }
+  return val;
 }
 
 AliHLTTPCSignal_t AliHLTTPCPad::GetAverage() const

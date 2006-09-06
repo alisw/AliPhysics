@@ -1,3 +1,12 @@
+2006-09-06 intermediate
+	- parameter protection in the TPC raw reader class
+	- TPC digit reader classes fetch row range from AliHLTTPCTransform
+	- bugfix HLTComponentHandler::CreateComponent: result handling after DoInit
+	- bugfix ClusterFinder: index check for arrays of fixed size
+	- base line calculation and zero suppression fully implemented into
+	  Cluster Finder: new argument 'adc-threshold' for ClusterFinderComponent 
+	- code documetation
+	- effective C++ corrections
 2006-08-31 code from TPC commissioning version merged
 	- DigitReaderRaw added with different read modes (sorted/unsorted;
 	  several data specifications to adapt to the real data)

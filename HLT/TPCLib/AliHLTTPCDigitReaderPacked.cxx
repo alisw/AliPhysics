@@ -17,13 +17,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// class for reading packed data for the HLT                                 //
-// includes reordering of the pads                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
+/** @file   AliHLTTPCDigitReaderPacked.cxx
+    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
+    @date   
+    @brief  A digit reader implementation for simulated, packed TPC 'raw' data.
+*/
 
 #if __GNUC__>= 3
 using namespace std;
@@ -43,27 +41,33 @@ using namespace std;
 
 ClassImp(AliHLTTPCDigitReaderPacked)
 
-AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked(){
+AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
+  :
+#if ENABLE_PAD_SORTING
+  fCurrentRow(0),
+  fCurrentPad(0),
+  fCurrentBin(-1),
+  fNRows(0),
+  fRowOffset(0),
+  fNMaxRows(0),
+  fNMaxPads(0),
+  fNTimeBins(0),
+  fData(NULL),
+#endif // ENABLE_PAD_SORTING  
+  fRawMemoryReader(NULL),
+  fTPCRawStream(NULL)
+{
   fRawMemoryReader = new AliRawReaderMemory;
   
   fTPCRawStream = new AliTPCRawStream( fRawMemoryReader );
 
 #if ENABLE_PAD_SORTING
-  fCurrentRow = 0;
-  fCurrentPad = 0;
-  fCurrentBin = -1;
-
-  fNRows = 0;
-  fRowOffset = 0;
-
   // get max number of rows
-  fNMaxRows = 0;
   for (Int_t ii=0; ii < 6; ii++)
       if (AliHLTTPCTransform::GetNRows(ii) > fNMaxRows) 
 	  fNMaxRows = AliHLTTPCTransform::GetNRows(ii);
 
   // get max number of pads
-  fNMaxPads = 0;
   for (Int_t ii=0; ii < AliHLTTPCTransform::GetNRows();ii++ )
       if (AliHLTTPCTransform::GetNPads(ii) > fNMaxPads) 
 	  fNMaxPads = AliHLTTPCTransform::GetNPads(ii);
@@ -71,12 +75,50 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked(){
   // get max number of bins
   fNTimeBins = AliHLTTPCTransform::GetNTimeBins();
 
-  HLTDebug("||| MAXPAD=%d ||| MAXROW=%d ||| MAXBIN=%d ||| MAXMUL=%d", 
+  HLTDebug("Array Borders  ||| MAXPAD=%d ||| MAXROW=%d ||| MAXBIN=%d ||| MAXMUL=%d", 
 	   fNMaxPads, fNMaxRows, fNTimeBins, fNTimeBins*fNMaxRows*fNMaxPads);
 
   // init Data array
   fData = new Int_t[ fNMaxRows*fNMaxPads*fNTimeBins ];
 #endif // ENABLE_PAD_SORTING
+}
+
+AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked(const AliHLTTPCDigitReaderPacked& src)
+  :
+#if ENABLE_PAD_SORTING
+  fCurrentRow(0),
+  fCurrentPad(0),
+  fCurrentBin(-1),
+  fNRows(0),
+  fRowOffset(0),
+  fNMaxRows(0),
+  fNMaxPads(0),
+  fNTimeBins(0),
+  fData(NULL),
+#endif // ENABLE_PAD_SORTING  
+  fRawMemoryReader(NULL),
+  fTPCRawStream(NULL)
+{
+  HLTFatal("copy constructor not for use");
+}
+
+AliHLTTPCDigitReaderPacked& AliHLTTPCDigitReaderPacked::operator=(const AliHLTTPCDigitReaderPacked& src)
+{
+#if ENABLE_PAD_SORTING
+  fCurrentRow=0;
+  fCurrentPad=0;
+  fCurrentBin=-1;
+  fNRows=0;
+  fRowOffset=0;
+  fNMaxRows=0;
+  fNMaxPads=0;
+  fNTimeBins=0;
+  fData=NULL;
+#endif // ENABLE_PAD_SORTING  
+  fRawMemoryReader=NULL;
+  fTPCRawStream=NULL;
+  HLTFatal("assignment operator not for use");
+  return (*this);
 }
 
 AliHLTTPCDigitReaderPacked::~AliHLTTPCDigitReaderPacked(){
@@ -93,7 +135,7 @@ AliHLTTPCDigitReaderPacked::~AliHLTTPCDigitReaderPacked(){
 #endif // ENABLE_PAD_SORTING
 }
 
-Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size,Int_t firstrow, Int_t lastrow, Int_t patch, Int_t slice){
+Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){
 
   fRawMemoryReader->SetMemory( reinterpret_cast<UChar_t*>( ptr ), size );
 
@@ -115,6 +157,8 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size,Int_t f
   fCurrentPad = 0;
   fCurrentBin = -1;
 
+  Int_t firstrow=AliHLTTPCTransform::GetFirstRow(patch);
+  Int_t lastrow=AliHLTTPCTransform::GetLastRow(patch);
   fNRows = lastrow - firstrow + 1;
 
   Int_t offset=0;

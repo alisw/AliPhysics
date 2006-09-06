@@ -476,7 +476,7 @@ Double_t AliHLTTPCTransform::fgX[159] = { 85.195,
 				     245.930
 };
 
-#if 0
+#if 1
 // New  number of pads changed 2006-04-15 Jochen Thaeder
 // changed according to formula in AliTPCROC.cxx
 // according to real Pad Distribution on build TPC
@@ -1462,6 +1462,10 @@ Int_t AliHLTTPCTransform::GetNPads(Int_t row)
     }
 
   return fgNPads[row];
+}
+
+Int_t AliHLTTPCTransform::GetNumberOfPatches() {
+  return fgNPatches;
 }
 
 Int_t AliHLTTPCTransform::GetFirstRow(Int_t patch)

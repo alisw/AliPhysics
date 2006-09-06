@@ -17,17 +17,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// base class for reading packed and unpacked data for the HLT               //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTTPCDigitReader.cxx
+    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
+    @date   
+    @brief  An abstract reader class for TPC data.
+*/
 
 #if __GNUC__>= 3
 using namespace std;
 #endif
 
 #include "AliHLTTPCDigitReader.h"
+#include "AliHLTTPCTransform.h"
+#include "AliHLTStdIncludes.h"
 
 ClassImp(AliHLTTPCDigitReader)
 
@@ -35,5 +37,21 @@ AliHLTTPCDigitReader::AliHLTTPCDigitReader(){
 }
 
 AliHLTTPCDigitReader::~AliHLTTPCDigitReader(){
+}
+
+int AliHLTTPCDigitReader::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice){
+  if (patch<0 || patch>=AliHLTTPCTransform::GetNumberOfPatches()) {
+    HLTError("invalid readout partition number %d", patch);
+    return -EINVAL;
+  }
+  if (firstrow!=AliHLTTPCTransform::GetFirstRow(patch)) {
+    HLTWarning("The firstrow parameter does not match the layout of the readout partition %d "
+	       "(firstrow=%d). Parameter is ignored", patch, AliHLTTPCTransform::GetFirstRow(patch));
+  }
+  if (lastrow!=AliHLTTPCTransform::GetLastRow(patch)) {
+    HLTWarning("The lastrow parameter does not match the layout of the readout partition %d "
+	       "(lastrow=%d). Parameter is ignored", patch, AliHLTTPCTransform::GetLastRow(patch));
+  }
+  return InitBlock(ptr, size, patch, slice);
 }
 

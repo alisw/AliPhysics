@@ -7,35 +7,66 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTTPCDigitReaderRaw
- */
+/** @file   AliHLTTPCDigitReaderRaw.h
+    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
+    @date   
+    @brief  A digit reader implementation for the RAW data coming from the RCU.
+*/
 
 #include "TObject.h"
-
-#include "AliHLTLogging.h"
 
 #if defined(HAVE_TPC_MAPPING)
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTDataTypes.h"
 
-
+/**
+ * @class AliHLTTPCDigitReaderRaw
+ * A digit reader implementation for the RAW data coming from the RCU.
+ * The reader decodes the data package to the level of the ALtro 10 bit words.
+ *
+ * The reader supports the following data format modes:
+ *  - 0: RCU Data format as delivered during TPC commissioning, pads/padrows 
+ *    are sorted, RCU trailer is one 32 bit word.
+ *  - 1: As 0, but pads/padrows are delivered "as is", without sorting
+ *  - 2: As 0, but RCU trailer is 3 32 bit words.
+ *  - 3: As 1, but RCU trailer is 3 32 bit words.
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCDigitReaderRaw : public AliHLTTPCDigitReader  {
 public:
-  // Data Format version numbers:
-  // 0: RCU Data format as delivered during TPC commissioning, pads/padrows are sorted, RCU trailer is one 32 bit word.
-  // 1: As 0, but pads/padrows are delivered "as is", without sorting
-  // 2: As 0, but RCU trailer is 3 32 bit words.
-  // 3: As 1, but RCU trailer is 3 32 bit words.
-    AliHLTTPCDigitReaderRaw( unsigned formatVersion );
-    virtual ~AliHLTTPCDigitReaderRaw();
+  /** standard constructor
+   * @param formatVersion  Data Format version numbers:
+   *  - 0: RCU Data format as delivered during TPC commissioning, pads/padrows
+   *    are sorted, RCU trailer is one 32 bit word.
+   *  - 1: As 0, but pads/padrows are delivered "as is", without sorting
+   *  - 2: As 0, but RCU trailer is 3 32 bit words.
+   *  - 3: As 1, but RCU trailer is 3 32 bit words.
+   */
+  AliHLTTPCDigitReaderRaw( unsigned formatVersion );
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCDigitReaderRaw& operator=(const AliHLTTPCDigitReaderRaw&);
+  /** destructor */
+  virtual ~AliHLTTPCDigitReaderRaw();
     
-    virtual int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice);
+  /**
+   * Init the reader with a data block.
+   * The function fetches the first and last row for the readout partition
+   * from @ref AliHLTTransform.
+   * @param ptr     pointer to data buffer
+   * @param size    size of the data buffer
+   * @param patch   patch (readout partition) number within the slice
+   * @param slice   sector no (0 to 35)
+   */
+  virtual int InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice);
+
   // Deliver values sorted for format 0, otherwise pass through to corresponding *Real* method
-    virtual bool Next();
-    virtual int GetRow();
-    virtual int GetPad();
-    virtual int GetSignal();
-    virtual int GetTime();
+  virtual bool Next();
+  virtual int GetRow();
+  virtual int GetPad();
+  virtual int GetSignal();
+  virtual int GetTime();
 
   bool Verify( bool verify )
   {

@@ -387,7 +387,7 @@ void AliHLTTPCDisplay::SetupHist(){
 // ####################################################################################################
 void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLen){
 #if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
-    AliHLTTPCDigitReaderPacked* fDigitReader = new AliHLTTPCDigitReaderPacked();
+    AliHLTTPCDigitReader* digitReader = new AliHLTTPCDigitReaderPacked();
     bool readValue = true;
     Int_t rowOffset = 0;
 
@@ -400,9 +400,9 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 
     // Initialize block for reading packed data
     void* tmpdataBlock = (void*) dataBlock;
-    fDigitReader->InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,0);
+    digitReader->InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,0);
 
-    readValue = fDigitReader->Next();
+    readValue = digitReader->Next();
 
     if (!readValue){	
 	LOG(AliHLTTPCLog::kError,"AliHLTTPCDisplay::FillPadRow","Read first value") << "No value in data block" << ENDLOG;
@@ -419,10 +419,10 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	// read number of entries in colorbin
 	while ( readValue ){ 
 
-	    Int_t row = fDigitReader->GetRow() + rowOffset;
+	    Int_t row = digitReader->GetRow() + rowOffset;
 	    
 	    if (row == fPadRow){    
-		UInt_t charge = fDigitReader->GetSignal();
+		UInt_t charge = digitReader->GetSignal();
 		
 		for (UInt_t ii=0;ii < 19;ii++){
 		    if ( charge > (ii*15) && charge <= ((ii*15) + 15) )	fcolorbin[ii]++;
@@ -432,7 +432,7 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	    }
 
 	    // read next value
-	    readValue = fDigitReader->Next();
+	    readValue = digitReader->Next();
       
 	    if(!readValue) break; //No more value
 	} 
@@ -459,21 +459,21 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	fpmarr[19] = new Float_t[fcolorbin[19]*3]; 
 	
 	// Rewind the raw reader and fill the polymarker3D
-	fDigitReader->InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,0);
+	digitReader->InitBlock(tmpdataBlock,dataLen,firstRow,lastRow,patch,0);
 	
-	readValue = fDigitReader->Next();
+	readValue = digitReader->Next();
     } // END if (fSwitch3DPadRow)
 
     // -- Fill Raw Data
     while ( readValue ){ 
 
-	Int_t row = fDigitReader->GetRow() + rowOffset;
+	Int_t row = digitReader->GetRow() + rowOffset;
 
 	// select padrow to fill in histogramm
 	if (row == fPadRow){    
-	    UChar_t pad = fDigitReader->GetPad();
-	    UShort_t time = fDigitReader->GetTime();
-	    UInt_t charge = fDigitReader->GetSignal();
+	    UChar_t pad = digitReader->GetPad();
+	    UShort_t time = digitReader->GetTime();
+	    UInt_t charge = digitReader->GetSignal();
 	    Float_t xyz[3];
 	    fHistraw->Fill(pad,time,charge);
 
@@ -505,15 +505,15 @@ void AliHLTTPCDisplay::FillPadRow(Int_t patch, ULong_t dataBlock, ULong_t dataLe
 	}
 	
 	// read next value
-	readValue = fDigitReader->Next();
+	readValue = digitReader->Next();
       
 	//Check where to stop:
 	if(!readValue) break; //No more value
     } 
     
-    if ( fDigitReader )
-	delete fDigitReader;
-    fDigitReader = NULL;
+    if ( digitReader )
+	delete digitReader;
+    digitReader = NULL;
 
     AliHLTTPCSpacePointData *points = fClusters[fSlicePadRow][patch];
     if(!points) return;

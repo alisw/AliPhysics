@@ -17,11 +17,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// class for reading unpacked data for the HLT                               //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTTPCDigitReaderUnpacked.cxx
+    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
+    @date   
+    @brief  A digit reader implementation for unpacked TPC data.
+*/
 
 #if __GNUC__== 3
 using namespace std;
@@ -30,25 +30,59 @@ using namespace std;
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCRawDataFormat.h"
-
-#include "AliHLTTPCLogging.h"
-
-#include <stdlib.h>
-#include <errno.h>
+#include "AliHLTTPCTransform.h"
+#include "AliHLTStdIncludes.h"
 
 ClassImp(AliHLTTPCDigitReaderUnpacked)
 
-AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked(){
-  fBin = 0;
-  fRow = 0;
-  fFirstRow = 0;
-  fLastRow = 0;
+AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked()
+  :
+  fDigitRowData(NULL),
+  fActRowData(NULL),
+  fData(NULL),
+  fPtr(NULL),
+  fSize(0),
+  fBin(0),
+  fRow(0),
+  fFirstRow(0),
+  fLastRow(0)
+{
+}
+
+AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked(const AliHLTTPCDigitReaderUnpacked& src)
+  :
+  fDigitRowData(NULL),
+  fActRowData(NULL),
+  fData(NULL),
+  fPtr(NULL),
+  fSize(0),
+  fBin(0),
+  fRow(0),
+  fFirstRow(0),
+  fLastRow(0)
+{
+  HLTFatal("copy constructor not for use");
+}
+
+AliHLTTPCDigitReaderUnpacked& AliHLTTPCDigitReaderUnpacked::operator=(const AliHLTTPCDigitReaderUnpacked& src)
+{
+  fDigitRowData=NULL;
+  fActRowData=NULL;
+  fData=NULL;
+  fPtr=NULL;
+  fSize=0;
+  fBin=0;
+  fRow=0;
+  fFirstRow=0;
+  fLastRow=0;
+  HLTFatal("assignment operator not for use");
+  return (*this);
 }
 
 AliHLTTPCDigitReaderUnpacked::~AliHLTTPCDigitReaderUnpacked(){
 }
 
-int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t firstrow, Int_t lastrow, Int_t patch, Int_t slice){
+int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){
   AliHLTTPCUnpackedRawData *tmpptr;
   fPtr = ptr;
   fSize = size;
@@ -59,13 +93,14 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
 
   fBin = -1;
 
-  fFirstRow = firstrow;
-  fLastRow = lastrow;
+  fFirstRow=AliHLTTPCTransform::GetFirstRow(patch);
+  fLastRow=AliHLTTPCTransform::GetLastRow(patch);
+
   return 0;
   fRow = fFirstRow; 
 
   if ((Int_t)fActRowData->fRow != fRow){
-      LOG(AliHLTTPCLog::kWarning,"AliHLTTPCDigitReaderUnpacked::Next","Digits") << "Row number should match!" << fActRowData->fRow << " " << fRow << ENDLOG;
+      HLTWarning("Row number should match! fActRowData->fRow=%d fRow=%d", fActRowData->fRow, fRow);
   }
 }
 
@@ -99,7 +134,7 @@ bool AliHLTTPCDigitReaderUnpacked::Next(){
     }
     
     if ((Int_t)fActRowData->fRow != fRow){
-      LOG(AliHLTTPCLog::kWarning,"AliHLTTPCDigitReaderUnpacked::Next","Digits") << "Row number should match!" << fActRowData->fRow << " " << fRow << ENDLOG;
+      HLTWarning("Row number should match! fActRowData->fRow=%d fRow=%d", fActRowData->fRow, fRow);
     }
   }
 

@@ -126,6 +126,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     fClusterFinder = new AliHLTTPCClusterFinder();
 
     Int_t rawreadermode =  -1;
+    Int_t sigthresh = -1;
 
     // Data Format version numbers:
     // 0: RCU Data format as delivered during TPC commissioning, pads/padrows are sorted, RCU trailer is one 32 bit word.
@@ -180,6 +181,17 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 	continue;
       }
 
+      // -- zero suppression threshold
+      if ( !strcmp( argv[i], "adc-threshold" ) ) {
+	sigthresh = strtoul( argv[i+1], &cpErr ,0);
+	if ( *cpErr ) {
+	  HLTError("Cannot convert threshold specifier '%s'.", argv[i+1]);
+	  return EINVAL;
+	}
+	i+=2;
+	continue;
+      }
+
       Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
       return EINVAL;
 
@@ -222,6 +234,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     fClusterFinder->SetZError( fZClusterError );
     if ( (fXYClusterError>0) && (fZClusterError>0) )
       fClusterFinder->SetCalcErr( false );
+    fClusterFinder->SetSignalThreshold(sigthresh);
     
     return 0;
     }

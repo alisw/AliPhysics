@@ -99,6 +99,7 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   :
   fMatch(1),
   fThreshold(10),
+  fSignalThreshold(-1),
   fXYErr(0.2),
   fZErr(0.3),
   fDeconvPad(kTRUE),
@@ -117,6 +118,7 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder& src
   :
   fMatch(src.fMatch),
   fThreshold(src.fThreshold),
+  fSignalThreshold(src.fSignalThreshold),
   fXYErr(src.fXYErr),
   fZErr(src.fZErr),
   fDeconvPad(src.fDeconvPad),
@@ -134,6 +136,7 @@ AliHLTTPCClusterFinder& AliHLTTPCClusterFinder::operator=(const AliHLTTPCCluster
 {
   fMatch=src.fMatch;
   fThreshold=src.fThreshold;
+  fSignalThreshold=src.fSignalThreshold;
   fXYErr=src.fXYErr;
   fZErr=src.fZErr;
   fDeconvPad=src.fDeconvPad;
@@ -213,9 +216,11 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   fCurrentRow += rowOffset;
 
   UInt_t lastpad = 123456789;
-  AliClusterData *pad1[5000]; //2 lists for internal memory=2pads
-  AliClusterData *pad2[5000]; //2 lists for internal memory=2pads
-  AliClusterData clusterlist[10000]; //Clusterlist
+  const Int_t kPadArraySize=5000;
+  const Int_t kClusterListSize=10000;
+  AliClusterData *pad1[kPadArraySize]; //2 lists for internal memory=2pads
+  AliClusterData *pad2[kPadArraySize]; //2 lists for internal memory=2pads
+  AliClusterData clusterlist[kClusterListSize]; //Clusterlist
 
   AliClusterData **currentPt;  //List of pointers to the current pad
   AliClusterData **previousPt; //List of pointers to the previous pad
@@ -233,7 +238,11 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   Int_t gatingGridOffset=50;
   AliHLTTPCPad baseline(gatingGridOffset, AliHLTTPCTransform::GetNTimeBins());
   // just to make later conversion to a list of objects easier
-  AliHLTTPCPad* pCurrentPad=&baseline;
+  AliHLTTPCPad* pCurrentPad=NULL;
+  if (fSignalThreshold>=0) {
+    pCurrentPad=&baseline;
+    baseline.SetThreshold(fSignalThreshold);
+  }
 
   while ( readValue ){   // Reads through all digits in block
 
@@ -292,7 +301,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 	  }
 	  pCurrentPad->CalculateBaseLine(AliHLTTPCTransform::GetNTimeBins()/2);
 	  if (pCurrentPad->Next(kTRUE/*do zero suppression*/)==0) {
-	    HLTDebug("no data available after zero suppression");
+	    //HLTDebug("no data available after zero suppression");
 	    pCurrentPad->StopEvent();
 	    pCurrentPad->ResetHistory();
 	    break;
@@ -403,7 +412,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 
 
     //Compare with results on previous pad:
-    for(UInt_t p=0; p<nprevious; p++){
+    for(UInt_t p=0; p<nprevious && p<kPadArraySize && ncurrent<kPadArraySize; p++){
       
       //dont merge sequences on the same pad twice
       if(previousPt[p]->fLastMergedPad==pad) continue;
@@ -445,7 +454,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
     } //Loop over results on previous pad.
 
 
-    if(newcluster){
+    if(newcluster && ncurrent<kPadArraySize){
       //Start a new cluster. Add it to the clusterlist, and update
       //the list of pointers to clusters in current pad.
       //current pad will be previous pad on next pad.
@@ -483,6 +492,11 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 
 
     if(!readValue) break; //No more value
+    
+    if (ntotal>=kClusterListSize || ncurrent>=kPadArraySize) {
+      HLTWarning("pad array size exceeded ntotal=%d ncurrent=%d, skip rest of the data", ntotal, ncurrent);
+      break;
+    }
 
     if(fCurrentRow != newRow){
       WriteClusters(ntotal,clusterlist);
@@ -502,8 +516,6 @@ void AliHLTTPCClusterFinder::ProcessDigits()
     time = newTime;
 
   } // END while(readValue)
-
-  if (pCurrentPad) pCurrentPad->StopEvent();
 
   WriteClusters(ntotal,clusterlist);
 

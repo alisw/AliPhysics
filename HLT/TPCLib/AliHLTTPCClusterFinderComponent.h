@@ -17,6 +17,21 @@
 
 class AliHLTTPCClusterFinder;
 
+/**
+ * @class AliHLTTPCClusterFinderComponent
+ * Implementation of the cluster finder component.
+ * The component implements the interface methods of the @ref AliHLTProcessor.
+ * The actual cluster finding algorithm is implemented in @ref AliHLTTPCClusterFinder.
+ * 
+ * The component has the following component arguments:
+ * - rawreadermode   the mode for the @ref AliHLTTPCDigitReaderRaw
+ * - adc-threshold   ADC count threshold for zero suppression, if <0 the base line
+ *                   calculation and subtraction is switched off
+ * - pp-run          set parameters specific to a pp run; currently this switches
+ *                   cluster deconvolution off for pp runs
+ *
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
     {
     public:

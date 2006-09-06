@@ -4,15 +4,17 @@
 #ifndef ALIHLTTPCDIGITREADERPACKED_H
 #define ALIHLTTPCDIGITREADERPACKED_H
 
-#define ENABLE_PAD_SORTING 1
-
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTTPCDigitReaderPacked
- */
+/** @file   AliHLTTPCDigitReaderPacked.h
+    @author Timm Steinbeck, Jochen Thaeder, Matthias Richter
+    @date   
+    @brief  A digit reader implementation for simulated, packed TPC 'raw' data.
+*/
 
-#include "AliHLTLogging.h"
+#define ENABLE_PAD_SORTING 1
+
 #include "AliHLTTPCDigitReader.h"
 
 #if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
@@ -21,17 +23,38 @@ class AliRawReaderMemory;
 
 class AliTPCRawStream;
 
+/**
+ * @class AliHLTTPCDigitReaderPacked
+ * A digit reader implementation for simulated, packed TPC 'raw' data.
+ * Includes reordering of the pads if @ref ENABLE_PAD_SORTING is 1.
+ * @ingroup alihlt_tpc
+ */
 class AliHLTTPCDigitReaderPacked : public AliHLTTPCDigitReader{
 public:
-    AliHLTTPCDigitReaderPacked(); 
-    virtual ~AliHLTTPCDigitReaderPacked();
+  /** standard constructor */
+  AliHLTTPCDigitReaderPacked(); 
+  /** not a valid copy constructor, defined according to effective C++ style */
+  AliHLTTPCDigitReaderPacked(const AliHLTTPCDigitReaderPacked&);
+  /** not a valid assignment op, but defined according to effective C++ style */
+  AliHLTTPCDigitReaderPacked& operator=(const AliHLTTPCDigitReaderPacked&);
+  /** destructor */
+  virtual ~AliHLTTPCDigitReaderPacked();
   
-  Int_t InitBlock(void* ptr,ULong_t size, Int_t firstrow, Int_t lastrow, Int_t patch, Int_t slice);
-    Bool_t Next();
-    Int_t GetRow();
-    Int_t GetPad();
-    Int_t GetSignal();
-    Int_t GetTime();
+  /**
+   * Init the reader with a data block.
+   * The function fetches the first and last row for the readout partition
+   * from @ref AliHLTTransform.
+   * @param ptr     pointer to data buffer
+   * @param size    size of the data buffer
+   * @param patch   patch (readout partition) number within the slice
+   * @param slice   sector no (0 to 35)
+   */
+  Int_t InitBlock(void* ptr,ULong_t size, Int_t patch, Int_t slice);
+  Bool_t Next();
+  Int_t GetRow();
+  Int_t GetPad();
+  Int_t GetSignal();
+  Int_t GetTime();
     
 protected:
     

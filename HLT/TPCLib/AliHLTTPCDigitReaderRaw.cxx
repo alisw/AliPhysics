@@ -17,11 +17,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// base class for reading packed and unpacked data for the HLT               //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @file   AliHLTTPCDigitReaderRaw.cxx
+    @author Timm Steinbeck
+    @date   
+    @brief  A digit reader implementation for the RAW data coming from the RCU.
+*/
 
 #if __GNUC__>= 3
 using namespace std;
@@ -37,32 +37,26 @@ using namespace std;
 
 ClassImp(AliHLTTPCDigitReaderRaw)
 
-  char gTmpHexBuffer[16][128];
-char* AsHex( AliHLTUInt64_t value, unsigned off=0 )
+AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion )
+  :
+  fBuffer(NULL),
+  fBufferSize(0),
+  fPatch(-1),
+  fSlice(-1),
+  fDataFormatVersion(formatVersion),
+  fCurrentRow(0),
+  fCurrentPad(0),
+  fCurrentBin(-1),
+  fVerify(false),
+  
+  // For sorting
+  fNRows(0),
+  fRowOffset(0),
+  fNMaxRows(0),
+  fNMaxPads(0),
+  fNTimeBins(0),
+  fData(NULL)
 {
-  sprintf( gTmpHexBuffer[off], "%016LX", (unsigned long long)value );
-  return gTmpHexBuffer[off];
-}
-
-AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion ){
-    fBuffer = NULL;
-    fBufferSize = 0;
-    fPatch = -1;
-    fSlice = -1;
-    fDataFormatVersion = formatVersion;
-    fCurrentRow = 0;
-    fCurrentPad = 0;
-    fCurrentBin = -1;
-    fVerify = false;
-    
-    // For sorting
-    fNRows = 0;
-    fRowOffset = 0;
-    fNMaxRows = 0;
-    fNMaxPads = 0;
-    fNTimeBins = 0;
-    fData = NULL;
-
     if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
       {
 	
@@ -79,13 +73,58 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion ){
 	// get max number of bins
 	fNTimeBins = AliHLTTPCTransform::GetNTimeBins();
 	
-	LOG(AliHLTTPCLog::kDebug,"AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw","Array Borders") 
-	  << " ||| MAXPAD="   << fNMaxPads  << " ||| MAXROW="  << fNMaxRows 
-	  << " ||| MAXBIN="   << fNTimeBins << " ||| MAXMUL="  << fNTimeBins*fNMaxRows*fNMaxPads << ENDLOG;
+	HLTDebug("Array Borders ||| MAXPAD=%d ||| MAXROW=%d ||| MAXBIN=%d ||| MAXMUL=%d", 
+		 fNMaxPads, fNMaxRows, fNTimeBins, fNTimeBins*fNMaxRows*fNMaxPads);
 	
 	// init Data array
 	fData = new Int_t[ fNMaxRows*fNMaxPads*fNTimeBins ];
       }
+}
+
+AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw& src)
+  :
+  fBuffer(NULL),
+  fBufferSize(0),
+  fPatch(-1),
+  fSlice(-1),
+  fDataFormatVersion(src.fDataFormatVersion),
+  fCurrentRow(0),
+  fCurrentPad(0),
+  fCurrentBin(-1),
+  fVerify(false),
+  
+  // For sorting
+  fNRows(0),
+  fRowOffset(0),
+  fNMaxRows(0),
+  fNMaxPads(0),
+  fNTimeBins(0),
+  fData(NULL)
+{
+  HLTFatal("copy constructor not for use");
+}
+
+AliHLTTPCDigitReaderRaw& AliHLTTPCDigitReaderRaw::operator=(const AliHLTTPCDigitReaderRaw& src)
+{
+  fBuffer=NULL;
+  fBufferSize=0;
+  fPatch=-1;
+  fSlice=-1;
+  fDataFormatVersion=src.fDataFormatVersion;
+  fCurrentRow=0;
+  fCurrentPad=0;
+  fCurrentBin=-1;
+  fVerify=false;
+  
+  // For sorting
+  fNRows=0;
+  fRowOffset=0;
+  fNMaxRows=0;
+  fNMaxPads=0;
+  fNTimeBins=0;
+  fData=NULL;
+  HLTFatal("assignment operator not for use");
+  return (*this);
 }
 
 AliHLTTPCDigitReaderRaw::~AliHLTTPCDigitReaderRaw(){
@@ -97,10 +136,15 @@ AliHLTTPCDigitReaderRaw::~AliHLTTPCDigitReaderRaw(){
     }
 }
 
-int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice){
+int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){
 
     fBuffer = (AliHLTUInt8_t*) ptr;
+    if (fBuffer==NULL) {
+      HLTError("invalid data buffer");
+      return -EINVAL;
+    }
     fBufferSize = size;
+    if (fBufferSize<=0) HLTWarning("no data available: zero length buffer");
     fPatch = patch;
     fSlice = slice;
     fPad = -1;
@@ -115,6 +159,8 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size,Int_t firstr
     fBunchLength = 0;
     fWordInBunch = (unsigned)-1;
 
+    Int_t firstrow=AliHLTTPCTransform::GetFirstRow(patch);
+    Int_t lastrow=AliHLTTPCTransform::GetLastRow(patch);
 
     if ( fDataFormatVersion==0 || fDataFormatVersion==2 )
       {
@@ -133,43 +179,48 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size,Int_t firstr
 	
 	// Init array with -1
 	memset( fData, 0xFF, sizeof(Int_t)*(fNMaxRows*fNMaxPads*fNTimeBins) );
-	
+
+	const Int_t maxErrorPrintout=20;
+	Int_t errorCount=0;
+	Int_t entryCount=0;
 	// read data and fill in array
+
 	while( RealNext()){
-	  
+
+	  entryCount++;
 	  Int_t row = GetRealRow();
 	  Int_t pad = GetRealPad();
 	  Int_t bin = GetRealTime();
 	  
-//	  LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::FILL","Index out of array range") 
-//		<< "PAD=" << pad  << " ||| ROW=" << row << " ||| BIN="  <<  bin   <<" ||| OFFSET="<< offset <<" ||| ROWOFFSET="<< fRowOffset << ENDLOG;
+//	  HLTFatal("Index out of array range: PAD=%d ||| ROW=%d ||| BIN=%d ||| OFFSET=%d ||| ROWOFFSET=%d", pad, row, bin, offset, fRowOffset);
 
 	  if ( row < firstrow || row > lastrow || pad > AliHLTTPCTransform::GetNPads(row + offset) || bin > fNTimeBins || pad<0 || bin<0){
 //	  if ( row < firstrow || row > lastrow || pad > AliHLTTPCTransform::GetNPads(row + offset) || bin > fNTimeBins){
-	    LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::InitBlock","Index out of Range") << "Probably wrong patch!"<< slice << "-" << patch << ENDLOG;
-	    LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::FILL","Index out of array range") 
-	      << "PAD=" << pad <<"|" << AliHLTTPCTransform::GetNPads(row + offset)
-	      << " ||| ROW=" << row <<"|" << firstrow <<"|" << lastrow
-	      << " ||| BIN="  <<  bin <<"|" <<  fNTimeBins
-	      <<" ||| OFFSET="<< offset <<" ||| ROWOFFSET="<< fRowOffset << ENDLOG;
+	    if (errorCount++<maxErrorPrintout) {
+	      HLTFatal("Index out of range. Probably wrong patch! slice %d - patch %d", slice, patch);
+	      HLTFatal("PAD=%d out of %d ||| ROW=%d (%d to %d)  ||| BIN=%d out of %d  ||| OFFSET=%d ||| ROWOFFSET=%d",
+		       pad, AliHLTTPCTransform::GetNPads(row + offset), row, firstrow, lastrow, bin, fNTimeBins,
+		       offset, fRowOffset);
 
-	    if ( row < firstrow || row > lastrow ) 
-	      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::InitBlock","Row out of Range") << firstrow << "<" << row << "<" << lastrow << ENDLOG;
-	    if ( pad > AliHLTTPCTransform::GetNPads(row + offset) ) 
-	      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::InitBlock","Pad out of Range") << pad << "<" << AliHLTTPCTransform::GetNPads(row + offset)  << ENDLOG;
-	    if ( bin > fNTimeBins )
-	      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::InitBlock","Bin out of Range") << bin << "<" << fNTimeBins << ENDLOG;
-	  }
-	  else {  
-	    if ((row-fRowOffset)*fNMaxPads*fNTimeBins+ pad*fNTimeBins + bin >=  fNMaxRows*fNMaxPads*fNTimeBins ) {
-	      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::FILL","Index out of array range") 
-		<< "PAD=" << pad  << " ||| ROW=" << row << " ||| BIN="  <<  bin   <<" ||| OFFSET="<< offset <<" ||| ROWOFFSET="<< fRowOffset << ENDLOG;
-	      continue;
+	      if ( row < firstrow || row > lastrow ) 
+		HLTFatal("Row out of range: %d  ( %d to %d)", row, firstrow, lastrow);
+	      if ( pad > AliHLTTPCTransform::GetNPads(row + offset) ) 
+		HLTFatal("Pad out of range: %d  (pad count %d)", pad, AliHLTTPCTransform::GetNPads(row + offset));
+	      if ( bin > fNTimeBins )
+		HLTFatal("Time bin out of range: %d (bin count %d)", bin, fNTimeBins);
 	    }
-	    else {
-	      fData[ (row-fRowOffset)*fNMaxPads*fNTimeBins+ pad*fNTimeBins + bin ] = GetRealSignal() ;
+	    continue;
+	  } else if ((row-fRowOffset)*fNMaxPads*fNTimeBins+ pad*fNTimeBins + bin >=  fNMaxRows*fNMaxPads*fNTimeBins ) {
+	    if (errorCount++<maxErrorPrintout) {
+	      HLTFatal("index out of range: PAD=%d ||| ROW=%d ||| BIN=%d ||| OFFSET=%d ||| ROWOFFSET=%d", pad, row, bin, offset, fRowOffset);
 	    }
+	    continue;
+	  } else {
+	    fData[ (row-fRowOffset)*fNMaxPads*fNTimeBins+ pad*fNTimeBins + bin ] = GetRealSignal() ;
 	  }
+	}
+	if (errorCount>0) {
+	  HLTFatal("%d of %d entries out of range", errorCount, entryCount);
 	}
       }
 
@@ -198,7 +249,7 @@ bool AliHLTTPCDigitReaderRaw::Next(){
 	}
 	
 	if (fCurrentRow*fNMaxPads*fNTimeBins+ fCurrentPad*fNTimeBins + fCurrentBin >=  fNMaxRows*fNMaxPads*fNTimeBins ) {
-	  LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::NEXT","Overflow") << fCurrentRow << " " << fCurrentPad << " " << fCurrentBin << ENDLOG;
+	  HLTFatal("Overflow: fCurrentRow=%d fCurrentPad=%d fCurrentBin=%d", fCurrentRow, fCurrentPad, fCurrentBin);
 	  readvalue = kFALSE;
 	  break;
 	}
@@ -261,7 +312,7 @@ bool AliHLTTPCDigitReaderRaw::RealNext(){
 	fBunchTimebinStart = GetAltroBlock10BitWord( fBunchPosition+1 );
 	fWordInBunch = 2;
     }
-//    printf( "%u %u %u %u %u\n", fBunchPosition, fBunchLength, fBunchTimebinStart, fWordInBunch, (unsigned)fAltroBlock10BitWordCnt );
+    //HLTDebug( "%u %u %u %u %u\n", fBunchPosition, fBunchLength, fBunchTimebinStart, fWordInBunch, (unsigned)fAltroBlock10BitWordCnt );
     return true;
 }
 int AliHLTTPCDigitReaderRaw::GetRealRow(){
@@ -274,17 +325,19 @@ int AliHLTTPCDigitReaderRaw::GetRealSignal(){
     return GetAltroBlock10BitWord( fBunchPosition+fWordInBunch );
 }
 int AliHLTTPCDigitReaderRaw::GetRealTime(){
-  //printf( "GetRealTime: %u - %u\n", fBunchTimebinStart, fWordInBunch );
+  //HLTDebug( "GetRealTime: %u - %u\n", fBunchTimebinStart, fWordInBunch );
     return fBunchTimebinStart-(fWordInBunch-2);
 }
 
 AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetRCUTrailer(){
-unsigned rcuDataBlockLen = GetRCUDataBlockLength(); 
-return *((AliHLTUInt32_t*)(fBuffer+fBufferSize-rcuDataBlockLen));
+  if (fBufferSize<=0) return 0;
+  unsigned rcuDataBlockLen = GetRCUDataBlockLength(); 
+  return *((AliHLTUInt32_t*)(fBuffer+fBufferSize-rcuDataBlockLen));
 }
 
 bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
     {
+    if (fBufferSize<=0) return 0;
     if ( !fAltroBlockLengthBytes )
 	{
 	// First block in back linked list (last block in memory)
@@ -294,8 +347,7 @@ bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
 	{
 	if ( fAltroBlockPositionBytes<fAltroBlockLengthBytes+GetCommonDataHeaderSize() )
 	  {
-	    LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::NextAltroBlock","Data Error")
-	      << "Inconsistent Data: fAltroBlockPositionBytes: " << AliHLTTPCLog::kDec << fAltroBlockPositionBytes << " - fAltroBlockLengthBytes: " << fAltroBlockLengthBytes << "." << ENDLOG;
+	    HLTFatal("Inconsistent Data: fAltroBlockPositionBytes=%d fAltroBlockLengthBytes=%d", fAltroBlockPositionBytes, fAltroBlockLengthBytes);
 	  }
 	if ( fAltroBlockPositionBytes<=fAltroBlockLengthBytes+GetCommonDataHeaderSize() )
 	    return false; // We have reached the end of the back linked list
@@ -306,9 +358,9 @@ bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
 
       if ( fVerify && ((altroTrailerWord & 0xFFFC000000ULL)!=0xAAA8000000ULL) )
 	{
-	  LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::NextAltroBlock","Data Error")
-	    << "Data inconsistency in Altro Block at byte position 0x" << AsHex( fAltroBlockPositionBytes, 0 ) << " (" << AliHLTTPCLog::kDec
-	    << fAltroBlockPositionBytes << "): Expected 0x2AAA in high 14 bits of altro trailer word; Found 0x" << AsHex( ((altroTrailerWord & 0xFFFC000000ULL) >> 26), 1 ) << " (" << AsHex( altroTrailerWord, 2 ) << ")" << "." << ENDLOG;
+	  HLTFatal("Data inconsistency in Altro Block at byte position %#x (%d): Expected 0x2AAA in high 14 bits of altro trailer word; Found %#llx (%#llx)",
+		   fAltroBlockPositionBytes, fAltroBlockPositionBytes, 
+		   ((altroTrailerWord & 0xFFFC000000ULL) >> 26), altroTrailerWord);
 
 
 	  return false;
@@ -316,9 +368,8 @@ bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
 
       if ( fVerify && ((altroTrailerWord & 0x000000F000ULL)!=0x000000A000ULL) )
 	{
-	  LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::NextAltroBlock","Data Error")
-	    << "Data inconsistency in Altro Block at byte position 0x" << AsHex( fAltroBlockPositionBytes, 0 ) << " (" << AliHLTTPCLog::kDec
-	    << fAltroBlockPositionBytes << "): Expected 0xA in bits 12-15 of altro trailer word; Found 0x" << AsHex( ((altroTrailerWord & 0x000000F000ULL) >> 12), 1 ) << "." << ENDLOG;
+	  HLTFatal("Data inconsistency in Altro Block at byte position %#x (%d): Expected 0xA in bits 12-15 of altro trailer word; Found %#llx .",
+		   fAltroBlockPositionBytes, fAltroBlockPositionBytes,  ((altroTrailerWord & 0x000000F000ULL) >> 12)); 
 
 	  return false;
 	}
@@ -329,11 +380,8 @@ bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
       // ApplyMapping
       if (!ApplyMapping())
 	{
-	  LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::NextAltroBlock","Mapping Error")
-	    << "Mapping failed Patch " << AliHLTTPCLog::kDec << fPatch << " HWA 0x"
-	    << AsHex( fAltroBlockHWAddress, 0 ) << " (" << AliHLTTPCLog::kDec
-	    << fAltroBlockHWAddress << ") - maxHWA 0x" << AsHex( fMaxHWA[fPatch], 1 )
-	    << AliHLTTPCLog::kDec << " (" << fMaxHWA[fPatch] << ")." << ENDLOG;
+	  HLTFatal("Mapping failed Patch %d HWA %#x (%d) - maxHWA %#x (%d)",
+		   fPatch, fAltroBlockHWAddress, fAltroBlockHWAddress, fMaxHWA[fPatch], fMaxHWA[fPatch]);
 
 	}
 
@@ -352,10 +400,8 @@ bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
 	  {
 	    if ( GetAltroBlockReal10BitWord(b)!=0x2AA )
 	      {
-		LOG(AliHLTTPCLog::kFatal,"AliHLTTPCDigitReaderRaw::NextAltroBlock","Data Error")
-		  << "Data inconsistency in trailing 10 bit fill word of Altro Block at byte position 0x" << AliHLTTPCLog::kHex
-		  << AsHex( fAltroBlockPositionBytes, 0 ) << " (" << AliHLTTPCLog::kDec
-		  << fAltroBlockPositionBytes << "): Expected 0x2AA; Found 0x" << AliHLTTPCLog::kHex << AsHex( GetAltroBlockReal10BitWord(b), 1 ) << "." << ENDLOG;
+		HLTFatal("Data inconsistency in trailing 10 bit fill word of Altro Block at byte position %#x (%d): Expected 0x2AA; Found %#x",
+			 fAltroBlockPositionBytes, fAltroBlockPositionBytes, GetAltroBlockReal10BitWord(b));
 		
 		return false;
 	      }

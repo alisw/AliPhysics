@@ -112,7 +112,11 @@ int AliHLTComponentHandler::CreateComponent(const char* componentID, void* pEnv,
       component=pSample->Spawn();
       if (component) {
 	HLTDebug("component \"%s\" created (%p)", componentID, component);
-	component->Init(&fEnvironment, pEnv, argc, argv);
+	if ((iResult=component->Init(&fEnvironment, pEnv, argc, argv))!=0) {
+	  HLTError("Initialization of component \"%s\" failed with error %d", componentID, iResult);
+	  delete component;
+	  component=NULL;
+	}
       } else {
 	HLTError("can not spawn component \"%s\"", componentID);
 	iResult=-ENOENT;

@@ -47,6 +47,8 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Int_t fCurrentPatch;   //current patch
   Int_t fMatch;          //size of match
   UInt_t fThreshold;     //threshold for clusters
+  /** threshold for zero suppression (applied per bin) */
+  Int_t fSignalThreshold;
   Int_t fNClusters;      //number of found clusters
   Int_t fMaxNClusters;   //max. number of clusters
   Float_t fXYErr;        //fixed error in XY
@@ -79,6 +81,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetZError(Float_t f) {fZErr=f;}
   void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
   void SetThreshold(UInt_t i) {fThreshold=i;}
+  void SetSignalThreshold(Int_t i) {fSignalThreshold=i;}
   void SetMatchWidth(UInt_t i) {fMatch=i;}
   void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  
   void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}

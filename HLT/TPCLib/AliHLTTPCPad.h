@@ -238,6 +238,10 @@ class AliHLTTPCPad : public AliHLTLogging {
   AliHLTTPCSignal_t fBLMax;
   /** The bin for the maximum bl value within one event */
   Int_t fBLMaxBin;
+  /** The minimum base line value within one event */
+  AliHLTTPCSignal_t fBLMin;
+  /** The bin for the minimum bl value within one event */
+  Int_t fBLMinBin;
   /** The first bin included in the base line calculation */
   Int_t fFirstBLBin;
   /** Number of bins */
