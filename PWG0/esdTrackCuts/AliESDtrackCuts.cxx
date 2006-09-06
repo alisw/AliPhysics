@@ -35,7 +35,46 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
 };
 
 //____________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts(Char_t* name) : TNamed(name,name),
+AliESDtrackCuts::AliESDtrackCuts() : TNamed(),
+  fCutMinNClusterTPC(0),
+  fCutMinNClusterITS(0),
+  fCutMaxChi2PerClusterTPC(0),
+  fCutMaxChi2PerClusterITS(0),
+  fCutMaxC11(0),
+  fCutMaxC22(0),
+  fCutMaxC33(0),
+  fCutMaxC44(0),
+  fCutMaxC55(0),
+  fCutAcceptKinkDaughters(0),
+  fCutRequireTPCRefit(0),
+  fCutRequireITSRefit(0),
+  fCutNsigmaToVertex(0),
+  fCutSigmaToVertexRequired(0),
+  fPMin(0),
+  fPMax(0),
+  fPtMin(0),
+  fPtMax(0),
+  fPxMin(0),
+  fPxMax(0),
+  fPyMin(0),
+  fPyMax(0),
+  fPzMin(0),
+  fPzMax(0),
+  fEtaMin(0),
+  fEtaMax(0),
+  fRapMin(0),
+  fRapMax(0),
+  fHistogramsOn(0),
+  fhCutStatistics(0),         
+  fhCutCorrelation(0)
+{
+  //
+  // default constructor
+  //
+}
+
+//____________________________________________________________________
+AliESDtrackCuts::AliESDtrackCuts(Char_t* name, Char_t* title) : TNamed(name,title),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMaxChi2PerClusterTPC(0),
@@ -430,9 +469,6 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
   //
   // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-x**2)/2)
   // Can this be expressed in a different way?
-  //
-  //
-  // FIX: I don't think this is correct!!! Keeping d as n_sigma for now...
 
   if (bRes[0] == 0 || bRes[1] ==0)
     return -1;
@@ -773,9 +809,9 @@ AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
     fhChi2PerClusterITS[i]   = new TH1F(Form("chi2PerClusterITS%s",str),"",500,0,10);
     fhChi2PerClusterTPC[i]   = new TH1F(Form("chi2PerClusterTPC%s",str),"",500,0,10);
 
-    fhC11[i]                 = new TH1F(Form("covMatrixDiagonal11%s",str),"",1000,0,5);
-    fhC22[i]                 = new  TH1F(Form("covMatrixDiagonal22%s",str),"",1000,0,5);
-    fhC33[i]                 = new  TH1F(Form("covMatrixDiagonal33%s",str),"",1000,0,0.5);
+    fhC11[i]                 = new TH1F(Form("covMatrixDiagonal11%s",str),"",2000,0,20);
+    fhC22[i]                 = new  TH1F(Form("covMatrixDiagonal22%s",str),"",2000,0,20);
+    fhC33[i]                 = new  TH1F(Form("covMatrixDiagonal33%s",str),"",1000,0,1);
     fhC44[i]                 = new  TH1F(Form("covMatrixDiagonal44%s",str),"",1000,0,5);
     fhC55[i]                 = new  TH1F(Form("covMatrixDiagonal55%s",str),"",1000,0,5);
 
@@ -827,6 +863,8 @@ AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
     fhDZNormalized[i]->SetLineColor(color);   fhDZNormalized[i]->SetLineWidth(2);
   }
 }
+
+
 
 //____________________________________________________________________
 void 
