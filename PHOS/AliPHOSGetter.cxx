@@ -755,34 +755,28 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   Double_t energy = 0. ; 
   Double_t time   = 0. ;
 
-  Float_t* ampLG = 0;
-  Float_t* ampHG = 0;
-  Float_t* timeLH = 0; 
-
   Int_t iDigLow = 0;
   Int_t iDigHigh = 0;
 
+  TGraph* gLowGain = 0;
+  TGraph* gHighGain = 0;
+
   while ( in.Next() ) { // PHOS entries loop 
-  
-    if(!ampLG) ampLG = new Float_t[in.GetTimeLength()];
-    if(!ampHG) ampHG = new Float_t[in.GetTimeLength()];
-    if(!timeLH) timeLH = new Float_t[in.GetTimeLength()];
-     
-    timeLH[in.GetTimeLength()-iBin-1] =  in.GetTime();
+       
+    if(!gHighGain) gHighGain = new TGraph(in.GetTimeLength());
+    if(!gLowGain)  gLowGain = new TGraph(in.GetTimeLength());
 
     lowGainFlag = in.IsLowGain();
-
+    
     if(lowGainFlag) 
-      ampLG[in.GetTimeLength()-iBin-1] = in.GetSignal(); //low gain
-    else 
-      ampHG[in.GetTimeLength()-iBin-1] = in.GetSignal(); //high gain
+      gLowGain->SetPoint(in.GetTimeLength()-iBin-1,in.GetTime(),in.GetSignal());
+    else
+      gHighGain->SetPoint(in.GetTimeLength()-iBin-1,in.GetTime(),in.GetSignal());
+
     iBin++;
 
     if(iBin==in.GetTimeLength()) {
       iBin=0;
-
-      TGraph gLowGain(in.GetTimeLength(),timeLH,ampLG);
-      TGraph gHighGain(in.GetTimeLength(),timeLH,ampHG);
 
       if(lowGainFlag) iDigLow++;
       else iDigHigh++;
@@ -793,12 +787,12 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 
       //FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time);
       if(!lowGainFlag) {
-	energy = gHighGain.GetHistogram()->GetMaximum();
-	energy -= gHighGain.Eval(0); // "pedestal subtraction"
+	energy = gHighGain->GetHistogram()->GetMaximum();
+	energy -= gHighGain->Eval(0); // "pedestal subtraction"
       }
       else {
-	energy = gLowGain.GetHistogram()->GetMaximum();
-	energy -= gLowGain.Eval(0); // "pedestal subtraction"
+	energy = gLowGain->GetHistogram()->GetMaximum();
+	energy -= gLowGain->Eval(0); // "pedestal subtraction"
       }
 	    
       time = -1;
@@ -815,19 +809,19 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 	idigit++;
       }
 
-      delete timeLH; timeLH=0;
-      delete ampHG; ampHG=0;
-      delete ampLG; ampLG=0;
     }
   }
 
   // PHOS entries loop
  
   digits->Sort() ;
-  //printf("\t\t\t------ %d Digits: %d LowGain + %d HighGain.\n",
-  //	 digits->GetEntriesFast(),iDigLow,iDigHigh);   
+//   printf("\t\t\t------ %d Digits: %d LowGain + %d HighGain.\n",
+//   	 digits->GetEntriesFast(),iDigLow,iDigHigh);   
 
-  delete signalF ;   
+  delete signalF ;
+  delete gHighGain;
+  delete gLowGain;
+
   return digits->GetEntriesFast() ; 
 }
 
