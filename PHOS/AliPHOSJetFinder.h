@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.6  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -29,10 +32,7 @@ class AliPHOSJetFinder : public TNamed {
 
 public:
   AliPHOSJetFinder() ;          // ctor
-  AliPHOSJetFinder(const AliPHOSJetFinder & jet) : TNamed(jet) {
-    // copy ctor: no implementation yet
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliPHOSJetFinder(const AliPHOSJetFinder & jet);
   virtual ~AliPHOSJetFinder() ; // dtor
 
   void FindJetsFromParticles(const TClonesArray * plist,TObjArray * jetslist) ; //Do the job

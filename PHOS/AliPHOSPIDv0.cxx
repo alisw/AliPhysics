@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.13  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -84,48 +87,90 @@
 ClassImp( AliPHOSPIDv0) 
 
 //____________________________________________________________________________
-AliPHOSPIDv0::AliPHOSPIDv0():AliPHOSPID()
+AliPHOSPIDv0::AliPHOSPIDv0():
+  fTrackSegmentsTitle(""), 
+  fRecPointsTitle(""),
+  fRecParticlesTitle(""),
+  fIDOptions("dis time"),
+  fNEvent(0),
+  fClusterizer(0),
+  fTSMaker(0),
+  fFormula(0),
+  fDispersion(0.f),
+  fCpvEmcDistance(0.f),
+  fTimeGate(2.e-9f),
+  fRecParticlesInRun(0)
 { 
   // default ctor
-  fFormula           = 0 ;
-  fDispersion        = 0. ; 
-  fCpvEmcDistance    = 0 ; 
-  fTimeGate          = 2.e-9 ;
-  fEventFolderName    = "" ; 
-  fTrackSegmentsTitle= "" ; 
-  fRecPointsTitle    = "" ; 
-  fRecParticlesTitle = "" ; 
-  fIDOptions         = "dis time" ; 
-  fRecParticlesInRun = 0 ;
-  fClusterizer = 0;
-  fTSMaker = 0;
+  fEventFolderName = ""; 
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv0::AliPHOSPIDv0(const char * evFolderName,const char * name) : AliPHOSPID(evFolderName, name)
+AliPHOSPIDv0::AliPHOSPIDv0(const char * evFolderName,const char * name) : 
+  AliPHOSPID(evFolderName, name),
+  fTrackSegmentsTitle(GetName()), 
+  fRecPointsTitle(GetName()),
+  fRecParticlesTitle(GetName()),
+  fIDOptions("dis time"),
+  fNEvent(0),
+  fClusterizer(0),
+  fTSMaker(0),
+  fFormula(new TFormula("LambdaCuts","(x>1)*(x<2.5)*(y>0)*(y<x)")),
+  fDispersion(2.f),
+  fCpvEmcDistance(3.f),
+  fTimeGate(2.e-9f),
+  fRecParticlesInRun(0)
 { 
   //ctor with the indication on where to look for the track segments
-
-  fFormula        = new TFormula("LambdaCuts","(x>1)*(x<2.5)*(y>0)*(y<x)") ;   
-  fDispersion     = 2.0 ; 
-  fCpvEmcDistance = 3.0 ;
-  fTimeGate          = 2.e-9 ;
- 
-  fEventFolderName     = GetTitle() ; 
-  fTrackSegmentsTitle = GetName();
-  fRecPointsTitle     = GetName();
-  fRecParticlesTitle  = GetName();
-  fIDOptions          = "dis time" ;
-    
-  fRecParticlesInRun = 0 ; 
-
+  fEventFolderName    = GetTitle() ; 
   Init() ;
+}
 
+//____________________________________________________________________________
+AliPHOSPIDv0::AliPHOSPIDv0(const AliPHOSPIDv0 & rhs) :
+  AliPHOSPID(rhs),
+  fTrackSegmentsTitle(rhs.fTrackSegmentsTitle), 
+  fRecPointsTitle(rhs.fRecPointsTitle),
+  fRecParticlesTitle(rhs.fRecParticlesTitle),
+  fIDOptions(rhs.fIDOptions),
+  fNEvent(rhs.fNEvent),
+  fClusterizer(rhs.fClusterizer),
+  fTSMaker(rhs.fTSMaker),
+  fFormula(rhs.fFormula),
+  fDispersion(rhs.fDispersion),
+  fCpvEmcDistance(rhs.fCpvEmcDistance),
+  fTimeGate(rhs.fTimeGate),
+  fRecParticlesInRun(rhs.fRecParticlesInRun)
+{
+  //Copy ctor, the same as compiler-generated, possibly wrong if
+  //someone implements dtor correctly.
+}
+  
+//____________________________________________________________________________
+AliPHOSPIDv0 & AliPHOSPIDv0::operator = (const AliPHOSPIDv0 & rhs)
+{
+  //Copy-assignment, emulates compiler generated, possibly wrong.
+  AliPHOSPID::operator = (rhs);
+  fTrackSegmentsTitle = rhs.fTrackSegmentsTitle;
+  fRecPointsTitle = rhs.fRecPointsTitle;
+  fRecParticlesTitle = rhs.fRecParticlesTitle;
+  fIDOptions = rhs.fIDOptions;
+  fNEvent = rhs.fNEvent;
+  fClusterizer = rhs.fClusterizer;
+  fTSMaker = rhs.fTSMaker;
+  fFormula = rhs.fFormula;
+  fDispersion = rhs.fDispersion;
+  fCpvEmcDistance = rhs.fCpvEmcDistance;
+  fTimeGate = rhs.fTimeGate;
+  fRecParticlesInRun = rhs.fRecParticlesInRun;
+
+  return *this;
 }
 
 //____________________________________________________________________________
 AliPHOSPIDv0::~AliPHOSPIDv0()
-{ 
+{
+  //Empty dtor, fFormula leaks 
 }
 
 //____________________________________________________________________________

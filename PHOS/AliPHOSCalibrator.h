@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.10  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 
@@ -33,11 +36,7 @@ class AliPHOSCalibrator: public TTask{
 public:
   AliPHOSCalibrator() ;          // ctor
   AliPHOSCalibrator(const char* run, const char * title = "Default") ;
-  AliPHOSCalibrator(const AliPHOSCalibrator & ctor) : TTask(ctor) {
-    // cpy ctor: no implementation yet
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliPHOSCalibrator(const AliPHOSCalibrator & ctor);
  
   virtual ~AliPHOSCalibrator() ; // dtor
 

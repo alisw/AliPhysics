@@ -24,10 +24,8 @@ class AliPHOSJet : public TObject {
 
 public:
   AliPHOSJet() ;          // ctor
-  AliPHOSJet(const AliPHOSJet & jet) : TObject(jet){
-    // copy ctor: no implementation yet
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliPHOSJet(const AliPHOSJet & jet);
+  
   virtual ~AliPHOSJet() ; 
 
   void AddDigit(Double_t e, Double_t eta, Double_t phi, Int_t index) ;

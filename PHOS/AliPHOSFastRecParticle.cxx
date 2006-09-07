@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.39  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -42,19 +45,22 @@
 ClassImp(AliPHOSFastRecParticle) 
 
 //____________________________________________________________________________
-AliPHOSFastRecParticle::AliPHOSFastRecParticle() : TParticle()
+AliPHOSFastRecParticle::AliPHOSFastRecParticle() :
+  fIndexInList(0),
+  fTof(0.f),
+  fType(0)
 {
   // ctor
-  fType = 0 ; 
 }
 
 //____________________________________________________________________________
  AliPHOSFastRecParticle::AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp)
-   : TParticle(rp)
+   : TParticle(rp),
+     fIndexInList(rp.fIndexInList),//?
+     fTof(rp.fTof),//?
+     fType(rp.fType)
 {
   // copy ctor
-
-  fType        = rp.fType ;
   fPdgCode     = rp.fPdgCode;
   fStatusCode  = rp.fStatusCode;
   fMother[0]   = rp.fMother[0];
@@ -77,13 +83,14 @@ AliPHOSFastRecParticle::AliPHOSFastRecParticle() : TParticle()
 }
 
 //____________________________________________________________________________
- AliPHOSFastRecParticle::AliPHOSFastRecParticle(const TParticle & pp)
+ AliPHOSFastRecParticle::AliPHOSFastRecParticle(const TParticle & pp) :
+   fIndexInList(0),
+   fTof(0.f),
+   fType(0)
 {
   // ctor from a TParticle (crummy?!)
- 
   TParticle & pnoconst = (TParticle &)(pp) ;
   AliPHOSFastRecParticle & p = (AliPHOSFastRecParticle &)(pnoconst) ;
-  fType        = 0  ;
   fPdgCode     = p.fPdgCode;
   fStatusCode  = p.fStatusCode;
   fMother[0]   = p.fMother[0];

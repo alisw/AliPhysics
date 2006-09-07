@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.102  2006/01/23 17:51:48  hristov
+ * Using the recommended way of forward declarations for TVector and TMatrix (see v5-08-00 release notes). Additional clean-up
+ *
  * Revision 1.101  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -107,7 +110,33 @@
 ClassImp( AliPHOSPIDv1) 
 
 //____________________________________________________________________________
-AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
+AliPHOSPIDv1::AliPHOSPIDv1() :
+  fBayesian(kFALSE),
+  fDefaultInit(kFALSE),
+  fWrite(kFALSE),
+  fNEvent(0),
+  fFileNamePrincipalPhoton(),
+  fFileNamePrincipalPi0(),
+  fFileNameParameters(),
+  fPrincipalPhoton(0),
+  fPrincipalPi0(0),
+  fX(0),
+  fPPhoton(0),
+  fPPi0(0),
+  fRecParticlesInRun(0),
+  fParameters(0),
+  fTFphoton(0),
+  fTFpiong(0),
+  fTFkaong(0),
+  fTFkaonl(0),
+  fTFhhadrong(0),
+  fTFhhadronl(0),
+  fDFmuon(0),
+  fERecWeight(0),
+  fChargedNeutralThreshold(0.),
+  fTOFEnThreshold(0),
+  fDispEnThreshold(0),
+  fDispMultThreshold(0)
 { 
   // default ctor
  
@@ -116,7 +145,35 @@ AliPHOSPIDv1::AliPHOSPIDv1():AliPHOSPID()
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv1::AliPHOSPIDv1(const AliPHOSPIDv1 & pid ):AliPHOSPID(pid)
+AliPHOSPIDv1::AliPHOSPIDv1(const AliPHOSPIDv1 & pid ) : 
+  AliPHOSPID(pid),
+  fBayesian(kFALSE),
+  fDefaultInit(kFALSE),
+  fWrite(kFALSE),
+  fNEvent(0),
+  fFileNamePrincipalPhoton(),
+  fFileNamePrincipalPi0(),
+  fFileNameParameters(),
+  fPrincipalPhoton(0),
+  fPrincipalPi0(0),
+  fX(0),
+  fPPhoton(0),
+  fPPi0(0),
+  fRecParticlesInRun(0),
+  fParameters(0),
+  fTFphoton(0),
+  fTFpiong(0),
+  fTFkaong(0),
+  fTFkaonl(0),
+  fTFhhadrong(0),
+  fTFhhadronl(0),
+  fDFmuon(0),
+  fERecWeight(0),
+  fChargedNeutralThreshold(0.),
+  fTOFEnThreshold(0),
+  fDispEnThreshold(0),
+  fDispMultThreshold(0)
+
 { 
   // ctor
   InitParameters() ; 
@@ -125,7 +182,35 @@ AliPHOSPIDv1::AliPHOSPIDv1(const AliPHOSPIDv1 & pid ):AliPHOSPID(pid)
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv1::AliPHOSPIDv1(const TString alirunFileName, const TString eventFolderName):AliPHOSPID(alirunFileName, eventFolderName)
+AliPHOSPIDv1::AliPHOSPIDv1(const TString alirunFileName, const TString eventFolderName) :
+  AliPHOSPID(alirunFileName, eventFolderName),
+  fBayesian(kFALSE),
+  fDefaultInit(kFALSE),
+  fWrite(kFALSE),
+  fNEvent(0),
+  fFileNamePrincipalPhoton(),
+  fFileNamePrincipalPi0(),
+  fFileNameParameters(),
+  fPrincipalPhoton(0),
+  fPrincipalPi0(0),
+  fX(0),
+  fPPhoton(0),
+  fPPi0(0),
+  fRecParticlesInRun(0),
+  fParameters(0),
+  fTFphoton(0),
+  fTFpiong(0),
+  fTFkaong(0),
+  fTFkaonl(0),
+  fTFhhadrong(0),
+  fTFhhadronl(0),
+  fDFmuon(0),
+  fERecWeight(0),
+  fChargedNeutralThreshold(0.),
+  fTOFEnThreshold(0),
+  fDispEnThreshold(0),
+  fDispMultThreshold(0)
+
 { 
   //ctor with the indication on where to look for the track segments
  

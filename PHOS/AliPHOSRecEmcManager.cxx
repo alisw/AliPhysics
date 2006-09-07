@@ -31,31 +31,22 @@ ClassImp(AliPHOSRecEmcManager)
 
 //____________________________________________________________________________
 
-  AliPHOSRecEmcManager::AliPHOSRecEmcManager()
+AliPHOSRecEmcManager::AliPHOSRecEmcManager():
+  fOneGamChisqCut(1.3f),
+  fOneGamInitialStep(0.00005f),
+  fOneGamChisqMin(1.f),
+  fOneGamStepMin(0.0005f),
+  fOneGamNumOfIterations(50),
+  fTwoGamInitialStep(0.00005f),
+  fTwoGamChisqMin(1.f),
+  fTwoGamEmin(0.1f),
+  fTwoGamStepMin(0.00005),
+  fTwoGamNumOfIterations(50),
+  fThr0(0.f),
+  fSqdCut(0.f)
 {
   // default ctor
-//    fOneGamChisqCut = 3.;
-  fOneGamChisqCut = 1.3; // bvp 31.08.2001 
-
-  fOneGamInitialStep = 0.00005;
-  fOneGamChisqMin = 1.;
-  fOneGamStepMin = 0.0005;
-  fOneGamNumOfIterations = 50;
-
-  fTwoGamInitialStep = 0.00005;
-  fTwoGamChisqMin = 1.;
-  fTwoGamEmin = 0.1;
-  fTwoGamStepMin = 0.00005;
-  fTwoGamNumOfIterations = 50;  
-
-//    fThr0 = 0.6;
-  fThr0 = 0.;
-//    fSqdCut = 3.;
-//    fSqdCut = 0.5; // bvp 31.08.2001
-  fSqdCut = 0.;
-
   SetTitle("Emc Reconstruction Manager");
-
 }
 
 AliPHOSRecEmcManager::~AliPHOSRecEmcManager(void) {}

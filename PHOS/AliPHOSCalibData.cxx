@@ -35,13 +35,14 @@ ClassImp(AliPHOSCalibData)
 
 //________________________________________________________________
   AliPHOSCalibData::AliPHOSCalibData(): 
-    TNamed(), fCalibDataEmc(0x0), fCalibDataCpv(0x0)
+    TNamed(), 
+    fCalibDataEmc(0x0), 
+    fCalibDataCpv(0x0),
+    fEmcDataPath("PHOS/Calib/EmcGainPedestals"),
+    fCpvDataPath("PHOS/Calib/CpvGainPedestals")
 {
-  // Default constructor  
-
-  fEmcDataPath="PHOS/Calib/EmcGainPedestals";
-  fCpvDataPath="PHOS/Calib/CpvGainPedestals";
-
+  // Default constructor
+  
   AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data());
   if(entryEmc)
     fCalibDataEmc = (AliPHOSEmcCalibData*)entryEmc->GetObject();
@@ -55,13 +56,11 @@ ClassImp(AliPHOSCalibData)
 //________________________________________________________________
 AliPHOSCalibData::AliPHOSCalibData(Int_t runNumber) :
   TNamed("phosCalib","PHOS Calibration Data Manager"),
-  fCalibDataEmc(0x0), fCalibDataCpv(0x0)
+  fCalibDataEmc(0x0), fCalibDataCpv(0x0),
+  fEmcDataPath("PHOS/Calib/EmcGainPedestals"),
+  fCpvDataPath("PHOS/Calib/CpvGainPedestals")
 {
   // Constructor
-  
-  fEmcDataPath="PHOS/Calib/EmcGainPedestals";
-  fCpvDataPath="PHOS/Calib/CpvGainPedestals";
-
   AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data(),runNumber);
   if(entryEmc)
     fCalibDataEmc = (AliPHOSEmcCalibData*)entryEmc->GetObject();
@@ -74,21 +73,33 @@ AliPHOSCalibData::AliPHOSCalibData(Int_t runNumber) :
 
 //________________________________________________________________
 AliPHOSCalibData::AliPHOSCalibData(AliPHOSCalibData & phosCDB) :
-  TNamed(phosCDB)
+  TNamed(phosCDB),
+  fCalibDataEmc(phosCDB.fCalibDataEmc),
+  fCalibDataCpv(phosCDB.fCalibDataCpv),
+  fEmcDataPath(phosCDB.fEmcDataPath),
+  fCpvDataPath(phosCDB.fCpvDataPath)
 {
   // Copy constructor
-
-  fCalibDataEmc = phosCDB.fCalibDataEmc;
-  fCalibDataCpv = phosCDB.fCalibDataCpv;
-  
-  fEmcDataPath  = phosCDB.fEmcDataPath;
-  fCpvDataPath  = phosCDB.fCpvDataPath;
 }
 //________________________________________________________________
 AliPHOSCalibData::~AliPHOSCalibData()
 {
   // Destructor
  
+}
+
+AliPHOSCalibData & AliPHOSCalibData::operator = (const AliPHOSCalibData & rhs)
+{
+  //Copy-assignment. Does not delete anything (see destructor)
+  //compiler generated is ok, but ... because -Weffc++ and pointer
+  //members we have to define it explicitly.
+  TNamed::operator=(rhs);
+  fCalibDataEmc = rhs.fCalibDataEmc;
+  fCalibDataCpv = rhs.fCalibDataCpv;
+  fEmcDataPath  = rhs.fEmcDataPath;
+  fCpvDataPath  = rhs.fCpvDataPath;
+  
+  return *this;
 }
 
 //________________________________________________________________

@@ -24,11 +24,7 @@ class AliPHOSCalibrManager:public TNamed {
 
 public:
   AliPHOSCalibrManager() ;          // ctor
-  AliPHOSCalibrManager(const AliPHOSCalibrManager & manager) : TNamed(manager) {
-    // cpy ctor: no need
-    // requested by the Coding Convention
-    Fatal("cpy ctor", "not implemented") ;
-  }
+  AliPHOSCalibrManager(const AliPHOSCalibrManager & manager);
  
   virtual ~AliPHOSCalibrManager() ; // dtor
   static AliPHOSCalibrManager * GetInstance() ;

@@ -33,7 +33,7 @@ ClassImp(AliPHOSCalibrationDB)
 
 
 //____________________________________________________________________________ 
-  AliPHOSCalibrationDB::AliPHOSCalibrationDB():TNamed() 
+  AliPHOSCalibrationDB::AliPHOSCalibrationDB():fPedestals(), fGains()
 {
 }
 //____________________________________________________________________________ 

@@ -36,25 +36,47 @@
 ClassImp(AliPHOSJet)
   
 //____________________________________________________________________________ 
-AliPHOSJet::AliPHOSJet():TObject() {
+AliPHOSJet::AliPHOSJet():
+  fNpart(0),
+  fList(0),
+  fConeRad(0),
+  fMaxConeMove(0),
+  fMinConeMove(0),
+  fSumEnergy(0),
+  fSumEta(0),
+  fSumPhi(0),
+  fEnergy(0),
+  fEta(0),
+  fPhi(0),
+  fLEnergy(0),
+  fLEta(0),
+  fLPhi(0) 
+{
   //Initialize members
-  fNpart = 0 ;
-  fList = 0 ;
-  //  fMode = 0 ;
-  fConeRad = 0 ;
-  fMaxConeMove = 0 ;
-  fMinConeMove = 0 ;
-  
-  fSumEnergy = 0 ;
-  fSumEta = 0 ;
-  fSumPhi = 0 ; 
-  fEnergy = 0 ;
-  fEta = 0 ;
-  fPhi = 0 ; 
-  fLEnergy = 0 ;
-  fLEta = 0 ;
-  fLPhi = 0 ; 
 }
+
+//____________________________________________________________________________ 
+AliPHOSJet::AliPHOSJet(const AliPHOSJet & jet) : 
+  TObject(jet),
+  fNpart(0),
+  fList(0),
+  fConeRad(0),
+  fMaxConeMove(0),
+  fMinConeMove(0),
+  fSumEnergy(0),
+  fSumEta(0),
+  fSumPhi(0),
+  fEnergy(0),
+  fEta(0),
+  fPhi(0),
+  fLEnergy(0),
+  fLEta(0),
+  fLPhi(0) 
+{
+  // copy ctor: no implementation yet
+  Fatal("cpy ctor", "not implemented") ;
+}
+
 
 //____________________________________________________________________________ 
 AliPHOSJet::~AliPHOSJet(){

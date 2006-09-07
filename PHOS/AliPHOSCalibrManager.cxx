@@ -54,26 +54,41 @@ ClassImp(AliPHOSCalibrManager)
   
   AliPHOSCalibrManager * AliPHOSCalibrManager::fgCaMa = 0 ;
 //____________________________________________________________________________ 
-AliPHOSCalibrManager::AliPHOSCalibrManager():TNamed() 
+AliPHOSCalibrManager::AliPHOSCalibrManager() : 
+  fFileName(""),
+  fInputKind(0),
+  fctdb(0)
 {
   // default ctor: not to be used
-  fInputKind = 0 ;
-  fFileName= "" ;
-  fctdb = 0 ;
   AliFatal(Form("Should not be used")) ;
 }
 //____________________________________________________________________________ 
 AliPHOSCalibrManager::AliPHOSCalibrManager(const char* filename,const char * kind ):
-  TNamed("AliPHOSCalibrManager",filename){
+  TNamed("AliPHOSCalibrManager",filename),
+  fFileName(filename),
+  fInputKind(0),
+  fctdb(0)
+{
   if(strcmp(kind,"root")==0){
     fInputKind = 0 ;
   }
   else{
     fInputKind = 1 ;
   }
-  fFileName = filename;
-  fctdb = 0 ;
 } 
+
+//____________________________________________________________________________ 
+AliPHOSCalibrManager::AliPHOSCalibrManager(const AliPHOSCalibrManager & manager) : 
+  TNamed(manager), 
+  fFileName(""),
+  fInputKind(0),
+  fctdb(0)
+{
+  // cpy ctor: no need
+  // requested by the Coding Convention
+  Fatal("cpy ctor", "not implemented") ;
+}
+
 //____________________________________________________________________________ 
 AliPHOSCalibrManager::~AliPHOSCalibrManager()
 {

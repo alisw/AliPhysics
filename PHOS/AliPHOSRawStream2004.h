@@ -26,6 +26,12 @@ public :
   
   AliPHOSRawStream2004(AliRawReader* rawReader);
   
+  //Class does not own/free any resources, compiler generated version
+  //are OK, but to supress -Weffc++ we define them explicitly.
+  AliPHOSRawStream2004(const AliPHOSRawStream2004 & rhs);
+  AliPHOSRawStream2004 & operator = (const AliPHOSRawStream2004 & rhs);
+
+  
 
  Bool_t ReadDigits(TClonesArray * digits) ;
  

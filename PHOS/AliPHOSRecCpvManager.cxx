@@ -32,30 +32,21 @@
 ClassImp(AliPHOSRecCpvManager) 
 
 //____________________________________________________________________________
-
-  AliPHOSRecCpvManager::AliPHOSRecCpvManager()
+AliPHOSRecCpvManager::AliPHOSRecCpvManager() :
+  fOneGamChisqCut(3.),
+  fOneGamInitialStep(0.00005),
+  fOneGamChisqMin(1.),
+  fOneGamStepMin(0.0005),
+  fOneGamNumOfIterations(50),
+  fTwoGamInitialStep(0.00005),
+  fTwoGamChisqMin(1.),
+  fTwoGamEmin(0.1),
+  fTwoGamStepMin(0.00005),
+  fTwoGamNumOfIterations(50),  
+  fThr0(0.),
+  fSqdCut(0.) 
 {
   // Put a comment here
-
-  fOneGamChisqCut = 3.; // If Chi2/dof > fOneGamChisqCut, split point.
-
-  fOneGamInitialStep = 0.00005;
-  fOneGamChisqMin = 1.;
-  fOneGamStepMin = 0.0005;
-  fOneGamNumOfIterations = 50;
-
-  fTwoGamInitialStep = 0.00005;
-  fTwoGamChisqMin = 1.;
-  fTwoGamEmin = 0.1;
-  fTwoGamStepMin = 0.00005;
-  fTwoGamNumOfIterations = 50;  
-
-//    fThr0 = 0.0285; // Min. energy of rec. point. If E<fThr0, point deleted.
-//    fSqdCut = 3.; // Min. distance (in cm) between two rec points.
-
-  fThr0 = 0.; 
-  fSqdCut = 0.; 
-  
   SetTitle("Cpv Reconstruction Manager");
 }
 

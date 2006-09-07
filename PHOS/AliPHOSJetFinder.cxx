@@ -26,6 +26,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.8  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 // --- ROOT system ---
@@ -48,25 +51,44 @@ ClassImp(AliPHOSJetFinder)
 
 
 //____________________________________________________________________________ 
-  AliPHOSJetFinder::AliPHOSJetFinder():TNamed("AliPHOSJetFinder","") 
+AliPHOSJetFinder::AliPHOSJetFinder():
+  TNamed("AliPHOSJetFinder",""),
+  fNJets(0),
+  fStatusCode(-999),
+  fMode(0),
+  fConeRad(1.),
+  fMaxConeMove(0.15),
+  fMinConeMove(0.05),
+  fEtSeed(4.),
+  fEtMin(5.),
+  fPrecBg(0.00035),
+  fSimGain(0.),
+  fSimPedestal(0.),
+  fParticles(0),
+  fJets(0)
 {
   //Initialize jet parameters
-  fNJets = 0 ; 
-  fMode  = 0 ;   //No iterations 
-  fStatusCode = -999 ; //no selection
+}
 
-  fConeRad = 1.;   //Radius of jet value?????????
-  fMaxConeMove = 0.15 ; //value???????
-  fMinConeMove = 0.05 ; //value???????
-  fEtSeed = 4. ; //Energy of seed particle value??????????
-  fEtMin = 5.;   //minimal energy of jet   value??????????
-  fPrecBg = 0.00035 ; //value????????
-  fSimGain = 0.;
-  fSimPedestal = 0.;
-
-  fParticles = 0;
-  fJets = 0 ;
-  
+//____________________________________________________________________________ 
+AliPHOSJetFinder::AliPHOSJetFinder(const AliPHOSJetFinder & jet) : 
+  TNamed(jet),
+  fNJets(0),
+  fStatusCode(-999),
+  fMode(0),
+  fConeRad(1.),
+  fMaxConeMove(0.15),
+  fMinConeMove(0.05),
+  fEtSeed(4.),
+  fEtMin(5.),
+  fPrecBg(0.00035),
+  fSimGain(0.),
+  fSimPedestal(0.),
+  fParticles(0),
+  fJets(0)
+{
+  // copy ctor: no implementation yet
+  Fatal("cpy ctor", "not implemented");
 }
 
 //____________________________________________________________________________ 

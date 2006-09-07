@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.10  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -34,7 +37,11 @@ public:
 
   AliPHOSPIDv0() ;          // ctor            
   AliPHOSPIDv0(const char* evFolderName, const char * tsBranch = "Default");
-  virtual ~AliPHOSPIDv0() ; // dtor
+  virtual ~AliPHOSPIDv0() ; // dtor, empty, memory leak in fFormula member
+
+  //Compiler generated should be ok, because destructor is empty.
+  AliPHOSPIDv0(const AliPHOSPIDv0 & rhs);
+  AliPHOSPIDv0 & operator = (const AliPHOSPIDv0 & rhs);
 
   virtual void Exec(Option_t * option);
   //  virtual char * GetRecParticlesBranch()const {return (char*) fRecParticlesTitle.Data() ;}      

@@ -32,8 +32,6 @@
 #include "TClonesArray.h"
 #include "TClass.h"
 
-
-
 #include "AliPHOSRawStream2004.h"
 #include "AliRawReader.h"
 #include "AliRawEventHeaderBase.h"
@@ -45,11 +43,38 @@
 ClassImp(AliPHOSRawStream2004)
 
 //_____________________________________________________________________________
-AliPHOSRawStream2004::AliPHOSRawStream2004(AliRawReader* rawReader) : TObject()
+AliPHOSRawStream2004::AliPHOSRawStream2004(AliRawReader* rawReader) :
+  fRawReader(rawReader),
+  fData(0),
+  fctdb(0),
+  fTrig(0)
 {
-  fRawReader = rawReader ;
-  fctdb = 0 ;
+  //Ctor
 }
+
+//_____________________________________________________________________________
+AliPHOSRawStream2004::AliPHOSRawStream2004(const AliPHOSRawStream2004 & rhs) :
+  TObject(rhs),
+  fRawReader(rhs.fRawReader),
+  fData(rhs.fData),
+  fctdb(rhs.fctdb),
+  fTrig(rhs.fTrig)
+{
+  //Copy ctor
+}
+
+//_____________________________________________________________________________
+AliPHOSRawStream2004 & AliPHOSRawStream2004::operator = (const AliPHOSRawStream2004 &rhs)
+{
+  TObject::operator = (rhs);
+  fRawReader = rhs.fRawReader;
+  fData = rhs.fData;
+  fctdb = rhs.fctdb;
+  fTrig = rhs.fTrig;
+  
+  return *this;
+}
+
 //_____________________________________________________________________________
 Bool_t AliPHOSRawStream2004::ReadDigits(TClonesArray * digits){
 

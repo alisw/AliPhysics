@@ -24,6 +24,9 @@ class AliPHOSCalibData: public TNamed {
   AliPHOSCalibData(Int_t runNumber);
   AliPHOSCalibData(AliPHOSCalibData & phosCDB);
   virtual ~AliPHOSCalibData();
+
+  AliPHOSCalibData & operator = (const AliPHOSCalibData & rhs);
+
   void Reset();
   virtual void Print(Option_t *option = "") const; 
   

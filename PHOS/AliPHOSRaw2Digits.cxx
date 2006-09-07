@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.12  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -77,85 +80,91 @@
 
 ClassImp(AliPHOSRaw2Digits)
   
-  
 //____________________________________________________________________________ 
-  AliPHOSRaw2Digits::AliPHOSRaw2Digits():TTask() 
+AliPHOSRaw2Digits::AliPHOSRaw2Digits() : 
+  fDigits(0),
+  fPHOSHeader(0),
+  fctdb(0),
+  fHeaderFile(0),
+  fDigitsFile(0),
+  fBeamEnergy(0.f),
+  fMaxPerFile(20000),
+  fEvent(0),
+  fStatus(0),
+  fInName(""),
+  fDebug(kFALSE),
+  fIsInitialized(kFALSE),
+  fMK1(0x0123CDEF),
+  fMK2(0x80708070),
+  fMK3(0x4321ABCD),
+  fMK4(0x80618061),
+  fCKW(0x4640E400)
 {
   //As one can easily see, this is constructor.
-  fInName="";  
-  fMK1 = 0x0123CDEF ;
-  fMK2 = 0x80708070 ;
-  fMK3 = 0x4321ABCD ;
-  fMK4 = 0x80618061 ;
-  fCKW = 0x4640E400 ;
-  fDebug = kFALSE;             //  Debug flag
-  fIsInitialized = kFALSE ;
   fTarget[0] = 0 ;
   fTarget[1] = 0 ;
   fTarget[2] = 0 ;
-  fDigits = 0 ;
-  fHeaderFile = 0 ;
-  fDigitsFile = 0 ;
-  fPHOSHeader =0 ;
-  fMaxPerFile = 20000 ;  //Maximal number of events in root file.
-  fEvent = 0 ;
-  fctdb = 0;
 }
+
 //____________________________________________________________________________ 
-  AliPHOSRaw2Digits::AliPHOSRaw2Digits(const char * filename):TTask("Default","") 
+AliPHOSRaw2Digits::AliPHOSRaw2Digits(const char * filename) : 
+  TTask("Default",""),
+  fDigits(0),
+  fPHOSHeader(0),
+  fctdb(0),
+  fHeaderFile(0),
+  fDigitsFile(0),
+  fBeamEnergy(0.f),
+  fMaxPerFile(20000),
+  fEvent(0),
+  fStatus(0),
+  fInName(filename),
+  fDebug(kFALSE),
+  fIsInitialized(kFALSE),
+  fMK1(0x0123CDEF),
+  fMK2(0x80708070),
+  fMK3(0x4321ABCD),
+  fMK4(0x80618061),
+  fCKW(0x4640E400)
 {
-  //this constructor should be normally used. Parameters: imput file 
-  fInName=filename;
-  TString outname("") ;
- 
-  outname =fInName ;
+  //this constructor should be normally used. Parameters: input file 
+  TString outname(fInName) ;
   outname.ToLower() ;
   outname.ReplaceAll(".fz",".root") ;
   outname.ReplaceAll(".gz","") ;
-  
-  SetTitle(outname) ;
+  SetTitle(outname);
 
-  fMK1 = 0x0123CDEF ;
-  fMK2 = 0x80708070 ;
-  fMK3 = 0x4321ABCD ;
-  fMK4 = 0x80618061 ;
-  fCKW = 0x4640E400 ;
-  fDebug = kFALSE;             //  Debug flag
-  fIsInitialized = kFALSE ;
   fTarget[0] = 0 ;
   fTarget[1] = 0 ;
   fTarget[2] = 0 ;
-  fDigits = 0 ;
-  fPHOSHeader =0 ;
-  fHeaderFile = 0 ;
-  fDigitsFile = 0 ;
-  fMaxPerFile = 20000 ;
-  fEvent = 0 ;
-  fctdb = 0;
 }
-//____________________________________________________________________________ 
-AliPHOSRaw2Digits::AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d):TTask(r2d.GetName(), r2d.GetTitle()) 
-{
-  // cpy ctor
-  fInName=r2d.fInName ;
 
-  fMK1 =  r2d.fMK1 ;
-  fMK2 =  r2d.fMK2 ;
-  fMK3 =  r2d.fMK3 ;
-  fMK4 =  r2d.fMK4 ;
-  fCKW =  r2d.fCKW ;
-  fDebug =  kFALSE;             //  Debug flag
-  fIsInitialized =  kFALSE ;
+//____________________________________________________________________________ 
+AliPHOSRaw2Digits::AliPHOSRaw2Digits(AliPHOSRaw2Digits & r2d) :
+  TTask(r2d.GetName(), r2d.GetTitle()),
+  fDigits(r2d.fDigits),
+  fPHOSHeader(r2d.fPHOSHeader),
+  fctdb(new AliPHOSConTableDB(*r2d.fctdb)),
+  fHeaderFile(new TFile(r2d.fHeaderFile->GetName(), "new" )),
+  fDigitsFile(new TFile(r2d.fDigitsFile->GetName(), "new" )),
+  fBeamEnergy(r2d.fBeamEnergy),
+  fMaxPerFile(r2d.fMaxPerFile),
+  fEvent(r2d.fEvent),
+  fStatus(r2d.fStatus),
+  fInName(r2d.fInName),
+  fDebug(kFALSE),
+  fIsInitialized(kFALSE),
+  fMK1(r2d.fMK1),
+  fMK2(r2d.fMK2),
+  fMK3(r2d.fMK3),
+  fMK4(r2d.fMK4),
+  fCKW(r2d.fCKW)
+{
+  // cpy ctor. wrong. because dtor can delete fDigits twice (or n times you copy AliPHOSRaw2Digits)
+  //because fHeaderFile and fDigitsFile will recreate existing files etc.
   fTarget[0] = r2d.fTarget[0] ;
   fTarget[1] = r2d.fTarget[1] ;
   fTarget[2] = r2d.fTarget[2] ;
-  fDigits = r2d.fDigits ;
-  fPHOSHeader = r2d.fPHOSHeader  ;
-  fHeaderFile = new TFile( (r2d.fHeaderFile)->GetName(), "new" ) ;
-  fDigitsFile = new TFile( (r2d.fDigitsFile)->GetName(), "new" ) ;
-  fMaxPerFile = r2d.fMaxPerFile ;
-  fEvent = r2d.fEvent ;
-  fctdb =  new AliPHOSConTableDB( *(r2d.fctdb) ) ;
 }
 
 //____________________________________________________________________________ 

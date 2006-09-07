@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2006/01/13 16:59:39  kharlov
+ * Rename classes to read raw data 2004
+ *
  * Revision 1.10  2005/05/28 14:19:04  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -82,48 +85,82 @@ ClassImp(AliPHOSCalibrator)
 
 
 //____________________________________________________________________________ 
-  AliPHOSCalibrator::AliPHOSCalibrator():TTask("AliPHOSCalibrator","Default") 
+AliPHOSCalibrator::AliPHOSCalibrator() :
+  TTask("AliPHOSCalibrator","Default"),
+  fRunList(0),
+  fPedHistos(0),
+  fGainHistos(0),
+  fhPedestals(0),
+  fhPedestalsWid(0),
+  fhGains(0),
+  fhGainsWid(0),
+  fctdb(0),
+  fConTableDB("Beamtest2002"),
+  fConTableDBFile("ConTableDB.root"),
+  fBeamEnergy(0),
+  fGainAcceptCorr(0),
+  fAcceptCorr(0),
+  fGainMax(0),
+  fNGainBins(0),
+  fNch(0),
+  fNChan(0)  
 {
   //Default constuctor for root. Normally should not be used
-  fRunList=0 ;
-  fBeamEnergy = 0. ;
-  fNch = 0 ;
-  fPedHistos = 0 ;
-  fGainHistos = 0 ;
-  fhPedestals = 0 ;
-  fhPedestalsWid = 0 ;
-  fctdb = 0 ;
-  fConTableDB = "Beamtest2002" ;
-  fConTableDBFile = "ConTableDB.root" ;
 }
+
 //____________________________________________________________________________ 
 AliPHOSCalibrator::AliPHOSCalibrator(const char* file, const char* title):
-  TTask("AliPHOSCalibrator",title) 
+  TTask("AliPHOSCalibrator",title),
+  fRunList(new TList),
+  fPedHistos(0),
+  fGainHistos(0),
+  fhPedestals(0),
+  fhPedestalsWid(0),
+  fhGains(0),
+  fhGainsWid(0),
+  fctdb(0),
+  fConTableDB("Beamtest2002"),
+  fConTableDBFile("ConTableDB.root"),
+  fBeamEnergy(10.),
+  fGainAcceptCorr(5),
+  fAcceptCorr(10),
+  fGainMax(0.1),
+  fNGainBins(100),
+  fNch(0),
+  fNChan(100)
+
 { 
   //Constructor which should normally be used.
   //file: path/galice.root  - header file
   //title: branch name of PHOS reconstruction (e.g. "Default")
- 
+  fRunList->SetOwner();
+  fRunList->Add(new TObjString(file));
+}
 
-  fRunList = new TList() ;
-  fRunList->SetOwner() ;
-  fRunList->Add(new TObjString(file)) ;
-  fNch = 0 ;
-  fBeamEnergy = 10. ;
-
-  fNChan  = 100 ;  
-  fGainMax = 0.1 ;
-  fNGainBins= 100 ;
-  fAcceptCorr = 10 ;     //Maximal deviation from mean, considered as normal 
-
-  fGainAcceptCorr = 5 ;  //Factor for gain deviation
-  fPedHistos = 0 ;
-  fGainHistos = 0 ;
-  fhPedestals = 0 ;
-  fhPedestalsWid = 0 ;
-  fctdb = 0 ;
-  fConTableDB = "Beamtest2002" ;
-  fConTableDBFile = "ConTableDB.root" ;
+//____________________________________________________________________________ 
+AliPHOSCalibrator::AliPHOSCalibrator(const AliPHOSCalibrator & ctor) : 
+  TTask(ctor),
+  fRunList(0),
+  fPedHistos(0),
+  fGainHistos(0),
+  fhPedestals(0),
+  fhPedestalsWid(0),
+  fhGains(0),
+  fhGainsWid(0),
+  fctdb(0),
+  fConTableDB("Beamtest2002"),
+  fConTableDBFile("ConTableDB.root"),
+  fBeamEnergy(0),
+  fGainAcceptCorr(0),
+  fAcceptCorr(0),
+  fGainMax(0),
+  fNGainBins(0),
+  fNch(0),
+  fNChan(0)  
+{
+  // cpy ctor: no implementation yet
+  // requested by the Coding Convention
+  Fatal("cpy ctor", "not implemented") ;
 }
 
 //____________________________________________________________________________ 

@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.18  2006/08/28 10:01:56  kharlov
+ * Effective C++ warnings fixed (Timur Pocheptsov)
+ *
  * Revision 1.17  2006/08/25 16:00:53  kharlov
  * Compliance with Effective C++AliPHOSHit.cxx
  *
@@ -650,6 +653,8 @@ Int_t AliPHOSLoader::ReadTracks()
    }
   
   TBranch * branch = treeT->GetBranch(fgkTrackSegmentsBranchName);
+//   AliInfo(Form("Branch named %s is opened: 0x%z",
+// 		  fgkTrackSegmentsBranchName.Data(),branch));
   if (branch == 0) 
    {//easy, maybe just a new tree
     AliError(Form("Cannot find branch named %s",
