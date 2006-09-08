@@ -144,10 +144,7 @@ CLEANFILES			= $(BUILT_SOURCES)
 
 include $(top_srcdir)/make.dict
 
-if EN_HLT_TPCREF
-REFDIR				= Ref
-endif
-SUBDIRS 			= . $(REFDIR)
+SUBDIRS 			= .
 
 $(TPC_MAPPING_INC): $(TPC_MAPPING_NOINST_PGM)
 	./$<

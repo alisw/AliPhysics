@@ -264,21 +264,6 @@ AM_CONDITIONAL(EN_HLT_TPC, test x$enable_tpc = xyes)
 AC_MSG_RESULT([$enable_tpc])
 
 dnl ------------------------------------------------------------------
-if test "x$enable_tpc" = "xyes" ; then 
-  AC_MSG_CHECKING([whether to compile tpc reference library])
-  AH_TEMPLATE([HLT_TPCREF],[hlt tpc reference library])
-  AC_ARG_ENABLE(tpcref,
-    [AC_HELP_STRING([--enable-tpcref],
-        [compile the tpc reference library ])],
-    [],[enable_tpcref=no])
-  if test "x$enable_tpcref" = "xyes" ; then 
-    AC_DEFINE(HLT_TPCREF)
-  fi
-  AC_MSG_RESULT([$enable_tpcref])
-fi
-AM_CONDITIONAL(EN_HLT_TPCREF, test x$enable_tpcref = xyes)
-
-dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to enable HLT logging])
 AH_TEMPLATE([NOLOGGING],[disable hlt logging])
 AC_ARG_ENABLE(logging,
@@ -351,7 +336,6 @@ AC_CONFIG_FILES([Makefile
 		 SampleLib/Makefile
 		 TPCLib/Makefile
 		 TPCLib/mapping2array.cxx
-		 TPCLib/Ref/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])
 
