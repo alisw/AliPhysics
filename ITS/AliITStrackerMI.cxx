@@ -3627,7 +3627,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
       bestLong = original;
     }
     //I.B. trackat0 = *bestLong;
-    new (&trackat0) AliITStrackV2(*bestLong);
+    new (&trackat0) AliITStrackMI(*bestLong);
     Double_t xx,yy,zz,alpha; 
     bestLong->GetGlobalXYZat(bestLong->GetX(),xx,yy,zz);
     alpha = TMath::ATan2(yy,xx);    
@@ -3757,7 +3757,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
     if (forbidden[itrack0]) continue;
     AliITStrackMI * btrack0 = (AliITStrackMI*)trackarray.At(itrack0);
     if (!btrack0) continue;    
-    if (btrack0->GetC()>0) continue;
+    if (btrack0->GetSign()>0) continue;
     AliITStrackMI *trackc0 = (AliITStrackMI*)trackarrayc.At(itrack0);
     //
     for (Int_t iesd1=0;iesd1<ntracks;iesd1++){
@@ -3766,7 +3766,7 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 
       AliITStrackMI * btrack1 = (AliITStrackMI*)trackarray.At(itrack1); 
       if (!btrack1) continue;
-      if (btrack1->GetC()<0) continue;
+      if (btrack1->GetSign()<0) continue;
       Bool_t isGold = kFALSE;
       if (TMath::Abs(TMath::Abs(btrack0->GetLabel())-TMath::Abs(btrack1->GetLabel()))==1){
 	isGold = kTRUE;
