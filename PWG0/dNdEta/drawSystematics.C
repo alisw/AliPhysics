@@ -759,6 +759,7 @@ void drawSystematics()
   //Composition();
 
   Sigma2VertexSimulation();
+
 }
 
 void DrawdNdEtaDifferences()
@@ -834,4 +835,88 @@ void DrawdNdEtaDifferences()
 
   canvas->SaveAs("particlecomposition_result.eps");
   canvas->SaveAs("particlecomposition_result.gif");
+}
+
+mergeVertexRecoCorrections_SystematicStudies(Char_t* standardCorrectionFileName="correction_map.root", 
+					     Char_t* systematicCorrectionFileName="systematics.root",
+					     Char_t* outputFileName="corrections_vtxreco_syst.root") {
+  //
+  // Function used to merge standard corrections with vertex
+  // reconstruction corrections obtained by a certain mix of ND, DD
+  // and SD events.
+  // 
+
+  gSystem->Load("libPWG0base");
+
+  AlidNdEtaCorrection* correctionStandard = new AlidNdEtaCorrection("dndeta_correction","dndeta_correction");
+  correctionStandard->LoadHistograms(standardCorrectionFileName);
+  
+  TString name;
+  name.Form("vertexRecoND");
+  AlidNdEtaCorrection* dNdEtaCorrectionND = new AlidNdEtaCorrection(name,name);
+  dNdEtaCorrectionND->LoadHistograms(systematicCorrectionFileName, name);
+  name.Form("vertexRecoDD");
+  AlidNdEtaCorrection* dNdEtaCorrectionDD = new AlidNdEtaCorrection(name,name);
+  dNdEtaCorrectionDD->LoadHistograms(systematicCorrectionFileName, name);
+  name.Form("vertexRecoSD");
+  AlidNdEtaCorrection* dNdEtaCorrectionSD = new AlidNdEtaCorrection(name,name);
+  dNdEtaCorrectionSD->LoadHistograms(systematicCorrectionFileName, name);  
+  
+  Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless"};
+  Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.5, 0.5, 1.5, 0.5};
+  Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 0.5};
+
+  // cross section from Pythia
+  Float_t sigmaND = 55.2;
+  Float_t sigmaDD = 9.78;
+  Float_t sigmaSD = 14.30;
+
+  AlidNdEtaCorrection* corrections[7];
+  for (Int_t i=0; i<7; i++) {
+    name.Form("dndeta_correction_syst_vertexreco_%s",changes[i]);
+    corrections[i] = (AlidNdEtaCorrection*)correctionStandard->Clone(name);
+    
+    // calculating relative 
+    Float_t nd = 100 * sigmaND/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
+    Float_t dd = 100 * (scalesDD[i]*sigmaDD)/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
+    Float_t sd = 100 * (scalesSD[i]*sigmaSD)/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
+
+    printf(Form("%s : ND=%.1f\%, DD=%.1f\%, SD=%.1f\% \n",changes[i],nd,dd,sd));
+    corrections[i]->SetTitle(Form("ND=%.2f\%,DD=%.2f\%,SD=%.2f\%",nd,dd,sd));        
+    corrections[i]->SetTitle(name);        
+
+    TH2F* measND = (TH2F*)dNdEtaCorrectionND->GetVertexRecoCorrection()->GetMeasuredHistogram()->Clone();
+    TH2F* measDD = (TH2F*)dNdEtaCorrectionDD->GetVertexRecoCorrection()->GetMeasuredHistogram()->Clone();
+    measDD->Scale(scalesDD[i]);
+    TH2F* measSD = (TH2F*)dNdEtaCorrectionSD->GetVertexRecoCorrection()->GetMeasuredHistogram()->Clone();
+    measSD->Scale(scalesSD[i]);
+    
+    TH2F* geneND = (TH2F*)dNdEtaCorrectionND->GetVertexRecoCorrection()->GetGeneratedHistogram()->Clone();
+    TH2F* geneDD = (TH2F*)dNdEtaCorrectionDD->GetVertexRecoCorrection()->GetGeneratedHistogram()->Clone();
+    geneDD->Scale(scalesDD[i]);
+    TH2F* geneSD = (TH2F*)dNdEtaCorrectionSD->GetVertexRecoCorrection()->GetGeneratedHistogram()->Clone();
+    geneSD->Scale(scalesSD[i]);
+
+    
+    TH2F* meas = (TH2F*)measND->Clone();
+    meas->Add(measDD);
+    meas->Add(measSD);
+
+    TH2F* gene = (TH2F*)geneND->Clone();
+    gene->Add(geneDD);
+    gene->Add(geneSD);
+
+    corrections[i]->GetVertexRecoCorrection()->SetMeasuredHistogram(meas);
+    corrections[i]->GetVertexRecoCorrection()->SetGeneratedHistogram(gene);        
+    corrections[i]->GetVertexRecoCorrection()->Divide();
+  }
+  
+  
+  TFile* fout = new TFile(outputFileName,"RECREATE");
+
+  for (Int_t i=0; i<7; i++) 
+    corrections[i]->SaveHistograms();
+
+  fout->Write();
+  fout->Close();
 }
