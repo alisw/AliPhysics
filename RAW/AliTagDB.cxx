@@ -78,7 +78,7 @@ Bool_t AliTagDB::Create(const char* fileName)
    const char *name = fileName;
    if (!name) name = GetFileName();
    fTagDB = new TFile(name, "RECREATE",
-                      Form("ALICE MDC%d tag DB", AliRawDB::kMDC), 1);
+                      Form("ALICE tag DB (%s)", AliRawDB::GetAliRootTag()), 1);
    if (fTagDB->IsZombie()) {
       Error("Create", "error opening tag DB");
       fTagDB = 0;
@@ -92,7 +92,7 @@ Bool_t AliTagDB::Create(const char* fileName)
    }
 
    // Create ROOT Tree object container
-   fTree = new TTree("TAG", Form("ALICE MDC%d header data tree", AliRawDB::kMDC));
+   fTree = new TTree("TAG", Form("ALICE header data tree (%s)", AliRawDB::GetAliRootTag()));
    fTree->SetAutoSave(100000000);  // autosave when 100 Mbyte written
 
    Int_t bufsize = 32000;

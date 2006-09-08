@@ -37,6 +37,7 @@
 
 ClassImp(AliRawDB)
 
+const char *AliRawDB::fgkAliRootTag = "$Name$";
 
 //______________________________________________________________________________
 AliRawDB::AliRawDB(AliRawEvent *event,
@@ -190,7 +191,7 @@ again:
    retry++;
 
    fRawDB = TFile::Open(fname, GetOpenOption(),
-			Form("ALICE MDC%d raw DB", kMDC), fCompress,
+			Form("ALICE raw-data file (%s)", GetAliRootTag()), fCompress,
 			GetNetopt());
    if (!fRawDB) {
       if (retry < kMaxRetry) {
@@ -241,7 +242,7 @@ void AliRawDB::MakeTree()
 {
    // Create ROOT Tree object container.
 
-   fTree = new TTree("RAW", Form("ALICE MDC%d raw data tree", kMDC));
+   fTree = new TTree("RAW", Form("ALICE raw-data tree (%s)", GetAliRootTag()));
    fTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
 
    Int_t bufsize = 256000;
@@ -253,7 +254,7 @@ void AliRawDB::MakeTree()
    // Create tree which will contain the HLT ESD information
 
    if (fESD) {
-     fESDTree = new TTree("esdTree", Form("ALICE MDC%d HLT ESD tree", kMDC));
+     fESDTree = new TTree("esdTree", Form("ALICE HLT ESD tree (%s)", GetAliRootTag()));
      fESDTree->SetAutoSave(2000000000);  // autosave when 2 Gbyte written
      split   = 0;
      fESDTree->Branch("ESD", "AliESD", &fESD, bufsize, split);
@@ -402,4 +403,18 @@ Float_t AliRawDB::GetCompressionFactor() const
       return 1.0;
    else
       return fTree->GetTotBytes()/fTree->GetZipBytes();
+}
+
+//______________________________________________________________________________
+const char *AliRawDB::GetAliRootTag()
+{
+  // Return the aliroot tag (version)
+  // used to generate the raw data file.
+  // Stored in the raw-data file title.
+
+  TString version = fgkAliRootTag;
+  version.Remove(TString::kBoth,'$');
+  version.ReplaceAll("Name","AliRoot version");
+
+  return version.Data();
 }

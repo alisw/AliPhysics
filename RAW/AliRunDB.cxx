@@ -74,7 +74,7 @@ AliRunDB::AliRunDB(const char* localFS, Bool_t rdbms,
    if (!gSystem->AccessPathName(filename, kFileExists))
       fRunDB = new TFile(filename, "UPDATE");
    else
-      fRunDB = new TFile(filename, "CREATE", Form("ALICE MDC%d Run DB", AliRawDB::kMDC));
+     fRunDB = new TFile(filename, "CREATE", Form("ALICE Run DB (%s)", AliRawDB::GetAliRootTag()));
 
    // Put wide read-write permissions
    if(gSystem->Chmod(filename,438)) {
@@ -146,8 +146,8 @@ void AliRunDB::UpdateRDBMS(AliStats *stats)
    strcpy(bt, stats->GetBeginTime().AsSQLString());
    strcpy(et, stats->GetEndTime().AsSQLString());
 
-   sprintf(sql, "INSERT INTO mdc%dcatalog VALUES (0, '%s', %d, "
-           "%d, %d, %d, %d, %d, %d, %.2f, '%s', '%s', '%s')", AliRawDB::kMDC,
+   sprintf(sql, "INSERT INTO mdccatalog VALUES (0, '%s', %d, "
+           "%d, %d, %d, %d, %d, %d, %.2f, '%s', '%s', '%s')",
            stats->GetFileName(), (int)stats->GetFileSize(), stats->GetEvents(),
            stats->GetFirstRun(), stats->GetFirstEvent(), stats->GetLastRun(),
            stats->GetLastEvent(), stats->GetCompressionMode(),
@@ -167,7 +167,7 @@ void AliRunDB::UpdateRDBMS(AliStats *stats)
 //    TSQLResult *res = db->Query(sql);
 
 //    if (!res) {
-//       Error("UpdateRDBMS", Form("insert into mdc%dcatalog failed", AliRawDB::kMDC));
+//       Error("UpdateRDBMS", "insert into mdccatalog failed");
 //       printf("%s\n", sql);
 //    }
 

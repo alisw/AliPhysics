@@ -67,8 +67,7 @@ public:
    Float_t      GetCompressionFactor() const;
    Int_t        GetCompressionMode() const { return fRawDB->GetCompressionLevel(); }
    void         Stop() { fStop = kTRUE; }
-
-   enum {kMDC = 6};  // Which MDC is this...
+   static const char *GetAliRootTag();
 
 protected:
    TFile         *fRawDB;         // DB to store raw data
@@ -82,6 +81,8 @@ protected:
    TString        fFS2;           // second raw DB file system location
    Bool_t         fDeleteFiles;   // flag for deletion of files
    Bool_t         fStop;          // stop execution (triggered by SIGUSR1)
+
+   static const char  *fgkAliRootTag; // string with the aliroot tag id
 
    virtual const char *GetFileName() const;
    virtual Bool_t      FSHasSpace(const char *fs) const;
