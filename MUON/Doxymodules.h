@@ -19,6 +19,12 @@
  */
 /** @} */
 
+/** @defgroup analysis MUON_analysis
+ *  Category of classes for analysis
+ *  @{
+ */
+/** @} */
+
 /** @defgroup geometry MUON_geometry
  *  Category of geometry framework classes
  *  @{
