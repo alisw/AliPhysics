@@ -512,6 +512,22 @@ for (int tr = 0; tr < mDigit->Ntracks(); tr++){
 In this example, for simplicity, only the first hit of a 
 hit-track is used to check the particle ID.
 
+==========================================================
+Macro to process PDC06 preproduction 
+==========================================================
+
+To read a generation/reconstrution from PDC06 preproduction, and write a file 
+with a tree of AliMUONTrackLight / AliMUONPairLight :
+go to the directory containing the generation/reconstruction. From there run
+aliroot
+.x DecodeRecoCocktail.C+
+.q
+
+To read the file previously generated:
+aliroot
+.x ReadRecoCocktail.C+
+.q
+
 ===========================================================
  Still working ..............
 ===========================================================
