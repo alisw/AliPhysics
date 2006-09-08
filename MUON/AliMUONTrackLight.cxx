@@ -1,0 +1,350 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *      SigmaEffect_thetadegrees                                                                  *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpeateose. It is      *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
+//===================================================================
+//This class was prepared by INFN Cagliari, July 2006
+//(authors: H.Woehri, A.de Falco)
+// 
+// 
+// Compact information for the muon generated tracks in the MUON arm 
+// useful at the last stage of the analysis chain
+// provides a link between the reconstructed track and the generated particle 
+// stores kinematical information at gen. and rec. level and 
+// the decay history of the muon, allowing the identification of the 
+// mother process 
+// 
+// To be used together with AliMUONPairLight
+//===================================================================
+
+#include "AliMUONTrackLight.h"
+#include "AliMUONTrack.h"
+#include "AliMUONConstants.h"
+
+#include "AliESDMuonTrack.h"
+#include "AliRunLoader.h"
+#include "AliStack.h"
+#include "AliHeader.h"
+
+#include "TDatabasePDG.h"
+#include "TClonesArray.h"
+#include "TParticle.h"
+#include "TString.h"
+
+ClassImp(AliMUONTrackLight) 
+
+//===================================================================
+
+AliMUONTrackLight::AliMUONTrackLight() 
+  : TObject(), 
+    fPrec(), 
+    fIsTriggered(kFALSE),
+    fCharge(-999), 
+    fCentr(-1),
+    fPgen(), 
+    fTrackPythiaLine(-999),
+    fTrackPDGCode(-999),
+    fOscillation(kFALSE), 
+    fNParents(0)
+{
+  /// default constructor
+  fPgen.SetPxPyPzE(0.,0.,0.,0.); 
+  fPrec.SetPxPyPzE(0.,0.,0.,0.); 
+  for (Int_t i=0; i<3; i++) fXYZ[i]=-999; 
+  for (Int_t npar = 0; npar < fgkNParentsMax; npar++){
+    fParentPDGCode[npar] = -1; 
+    fParentPythiaLine[npar] = -1;
+  }
+  for (Int_t i = 0; i < 4; i++){
+    fQuarkPDGCode[i] = -1; 
+    fQuarkPythiaLine[i] = -1; 
+  }
+}
+
+//============================================
+AliMUONTrackLight::AliMUONTrackLight(const AliMUONTrackLight &muonCopy) 
+  : TObject(muonCopy), 
+    fPrec(muonCopy.fPrec), 
+    fIsTriggered(muonCopy.fIsTriggered),
+    fCharge(muonCopy.fCharge), 
+    fCentr(muonCopy.fCentr),
+    fPgen(muonCopy.fPgen), 
+    fTrackPythiaLine(muonCopy.fTrackPythiaLine),
+    fTrackPDGCode(muonCopy.fTrackPDGCode),
+    fOscillation(muonCopy.fOscillation), 
+    fNParents(muonCopy.fNParents)
+{
+  /// copy constructor
+  for (Int_t i=0; i<3; i++) fXYZ[i]=muonCopy.fXYZ[i]; 
+  for (Int_t npar = 0; npar < fgkNParentsMax; npar++){
+    fParentPDGCode[npar] = muonCopy.fParentPDGCode[npar]; 
+    fParentPythiaLine[npar] = muonCopy.fParentPythiaLine[npar];
+  }
+  for (Int_t i = 0; i < 4; i++){
+    fQuarkPDGCode[i] = muonCopy.fQuarkPDGCode[i]; 
+    fQuarkPythiaLine[i] = muonCopy.fQuarkPythiaLine[i]; 
+  }
+}
+
+//============================================
+AliMUONTrackLight::AliMUONTrackLight(AliESDMuonTrack* muonTrack)
+  : TObject(), 
+    fPrec(), 
+    fIsTriggered(kFALSE),
+    fCharge(-999), 
+    fCentr(-1),
+    fPgen(), 
+    fTrackPythiaLine(-999),
+    fTrackPDGCode(-999),
+    fOscillation(kFALSE), 
+    fNParents(0)
+{ 
+  /// constructor
+  //AliMUONTrackLight(); 
+  ComputePRecAndChargeFromESD(muonTrack); 
+}
+
+//============================================
+void AliMUONTrackLight::ComputePRecAndChargeFromESD(AliESDMuonTrack* muonTrack){ 
+  /// computes prec and charge from ESD track
+  Double_t mumass = TDatabasePDG::Instance()->GetParticle(13)->Mass(); 
+  Double_t thetaX = muonTrack->GetThetaX();
+  Double_t thetaY = muonTrack->GetThetaY();
+  Double_t tanthx = TMath::Tan(thetaX);
+  Double_t tanthy = TMath::Tan(thetaY);
+  Double_t pYZ    =  1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
+  Double_t pz     = - pYZ / TMath::Sqrt(1.0 + tanthy * tanthy);
+  Double_t px     = pz * tanthx;
+  Double_t py     = pz * tanthy;
+  fCharge   = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
+  Double_t energy = TMath::Sqrt(mumass * mumass + px*px + py*py + pz*pz);
+  fPrec.SetPxPyPzE(px,py,pz,energy);
+}
+
+//============================================
+void AliMUONTrackLight::SetPxPyPz(Double_t px, Double_t py, Double_t pz){ 
+  /// set the reconstructed 4-momentum, assuming the particle is a muon
+  Double_t mumass = TDatabasePDG::Instance()->GetParticle(13)->Mass(); 
+  Double_t energy = TMath::Sqrt(mumass * mumass + px*px + py*py + pz*pz);
+  fPrec.SetPxPyPzE(px,py,pz,energy);
+}
+
+//============================================
+TParticle* AliMUONTrackLight::FindRefTrack(AliMUONTrack* trackReco, TClonesArray* trackRefArray, AliRunLoader *runLoader){ 
+  /// find the MC particle that corresponds to a given rec track
+  TParticle *part = 0; 
+  const Double_t kSigma2Cut = 16;  // 4 sigmas cut, kSigma2Cut = 4*4
+  Int_t nTrackRef = trackRefArray->GetEntriesFast();
+  Int_t compPart = 0; 
+  for (Int_t iref = 0; iref < nTrackRef; iref++) {
+    AliMUONTrack *trackRef = (AliMUONTrack *)trackRefArray->At(iref);
+    // check if trackRef is compatible with trackReco:
+    //routine returns for each chamber a yes/no information if the
+    //hit of rec. track and hit of referenced track are compatible
+    Bool_t *compTrack = trackRef->CompatibleTrack(trackReco,kSigma2Cut);
+    Int_t iTrack = this->TrackCheck(compTrack); //returns number of validated conditions 
+    if (iTrack==4) { 
+      compPart++; 
+      Int_t trackID = trackRef->GetTrackID();
+      this->SetTrackPythiaLine(trackID);
+      part = ((AliStack *)(((AliHeader *) runLoader->GetHeader())->Stack()))->Particle(trackID);
+      fTrackPDGCode = part->GetPdgCode();
+    }
+  }
+  if (compPart>1) { 
+    printf ("<AliMUONTrackLight::FindRefTrack> ERROR: more than one particle compatible to the reconstructed track.\n"); 
+    Int_t i=0, j=1/i; 
+    printf ("j=%d \n",j); 
+  } 
+  return part; 
+}
+
+//============================================
+Int_t AliMUONTrackLight::TrackCheck(Bool_t *compTrack){
+  /// Apply reconstruction requirements
+  /// Return number of validated conditions 
+  /// If all the tests are verified then TrackCheck = 4 (good track)
+  Int_t iTrack = 0;
+  Int_t hitsInLastStations = 0;
+  
+  // apply reconstruction requirements
+  if (compTrack[0] || compTrack[1]) iTrack++; // at least one hit in st. 0
+  if (compTrack[2] || compTrack[3]) iTrack++; // at least one hit in st. 1
+  if (compTrack[4] || compTrack[5]) iTrack++; // at least one hit in st. 2
+  for (Int_t ch = 6; ch < AliMUONConstants::NTrackingCh(); ch++) {
+    if (compTrack[ch]) hitsInLastStations++; 
+  }
+  if (hitsInLastStations > 2) iTrack++; // at least 3 hits in st. 3 & 4
+  return iTrack;
+}
+
+//============================================
+void AliMUONTrackLight::FillMuonHistory(AliRunLoader *runLoader, TParticle *part){
+  /// scans the muon history to determine parents pdg code and pythia line
+  Int_t countP = -1;
+  Int_t parents[10], parLine[10];
+  Int_t lineM = part->GetFirstMother();//line in the Pythia output of the particle's mother
+
+  AliStack *stack = runLoader->GetHeader()->Stack();
+  TParticle *mother;
+  Int_t status=-1, pdg=-1;
+  while(lineM >= 0){
+
+    mother = stack->Particle(lineM); //direct mother of rec. track
+    pdg = mother->GetPdgCode();//store PDG code of first mother
+    if(pdg == 92) break;  // break if a string is found 
+    parents[++countP] = pdg;
+    parLine[countP] = lineM;
+    status = mother->GetStatusCode();//get its status code to check if oscillation occured
+    if(IsB0(parents[countP]) && status == 12) this->SetOscillation(kTRUE);
+    lineM = mother->GetFirstMother();
+  }
+  //store all the fragmented parents in an array:
+  for(int i = 0; i <= countP; i++){
+    this->SetParentPDGCode(i,parents[countP-i]);
+    this->SetParentPythiaLine(i,parLine[countP-i]);
+  }
+
+  fNParents = countP+1;
+  countP = -1;
+  //and store the lines of the string and further quarks in another array:
+  while(lineM >= 0){
+    mother = stack->Particle(lineM);
+    pdg = mother->GetPdgCode();
+    //now, get information before the fragmentation
+    this->SetQuarkPythiaLine(++countP, lineM);//store the line of the string in index 0
+    this->SetQuarkPDGCode(countP, pdg);//store the pdg of the quarks in index 1,2
+    lineM = mother->GetFirstMother();
+  }
+
+  //check if in case of HF production, the string points to the correct end
+  //and correct it in case of need:
+  countP = 1;
+  if(this->GetQuarkPythiaLine(countP) > -1 && (this->GetParentFlavour(0)==4 || this->GetParentFlavour(0)==5)){
+    if(this->GetParentFlavour(0) != TMath::Abs(this->GetQuarkPDGCode(countP))){
+
+      Int_t pdg = this->GetQuarkPDGCode(1), line = this->GetQuarkPythiaLine(1);
+      this->ResetQuarkInfo();
+      while(TMath::Abs(pdg) != this->GetParentFlavour(0)){//pdg of q,g in Pythia listing following the wrong string end
+                                                        //must coincide with the flavour of the last fragmented mother
+
+	pdg = stack->Particle(++line)->GetPdgCode();    
+      }
+      //now, we have the correct string end and the correct line
+      //continue to fill again all parents and corresponding lines
+      while(line >= 0){
+	mother = stack->Particle(line);//get again the mother
+	pdg = mother->GetPdgCode();
+	this->SetQuarkPythiaLine(countP, line);
+	this->SetQuarkPDGCode(countP++, pdg);
+	line = mother->GetFirstMother();
+      }
+    }
+  }
+}
+//====================================
+void AliMUONTrackLight::ResetQuarkInfo(){
+  /// resets parton information
+  for(int pos = 1; pos < 4; pos++){//[0] is the string
+    this->SetQuarkPDGCode(pos,-1);
+    this->SetQuarkPythiaLine(pos,-1);
+  }
+}
+
+//====================================
+Bool_t AliMUONTrackLight::IsB0(Int_t intTest) const {
+  /// checks if the particle is a B0 
+  Int_t bMes0[2] = {511,531};//flavour code of B0d and B0s
+  Bool_t answer = kFALSE;
+  for(int i = 0; i < 2; i++){
+    if(TMath::Abs(intTest) == bMes0[i]){
+      answer = kTRUE;
+      break;
+    }
+  }
+  return answer;
+}
+//====================================
+Bool_t AliMUONTrackLight::IsMotherAResonance(Int_t index) const {
+  /// checks if mother is a resonance
+  Int_t intTest = GetParentPDGCode(index); 
+  // the resonance pdg code is built this way
+  // x00ffn where x=0,1,.. (1S,2S... states), f=quark flavour 
+  Int_t id=intTest%100000; 
+  return (!((id-id%10)%110));
+}
+//====================================
+Int_t AliMUONTrackLight::GetParentFlavour(Int_t idParent) const {
+  /// returns the flavour of parent idParent (idParent=0 is the oldest 
+  /// hadronized parent)
+  Int_t pdg = GetParentPDGCode(idParent); 
+  Int_t quark = TMath::Abs(pdg/100);
+  if(quark > 9) quark = quark/10;
+  return quark;
+}
+
+//====================================
+void AliMUONTrackLight::PrintInfo(Option_t* opt){
+  /// prints information about the track: 
+  /// - "H" muon's decay history
+  /// - "K" muon kinematics
+  /// - "A" all variables
+  TString options(opt);
+  options.ToUpper();
+
+  if(options.Contains("H") || options.Contains("A")){ //muon decay history
+    char *name= new char[100];
+    TString pdg = "", line = "";
+    for(int i = 3; i >= 0; i--){
+      if(this->GetQuarkPythiaLine(i)>= 0){
+	sprintf(name, "%4d --> ", this->GetQuarkPythiaLine(i));
+	line += name;
+	sprintf(name, "%4d --> ", this->GetQuarkPDGCode(i));
+	pdg += name;
+      }
+    }
+    for(int i = 0; i < fNParents; i++){ 
+      if(this->GetParentPythiaLine(i)>= 0){
+	sprintf(name, "%7d --> ", this->GetParentPythiaLine(i));
+	line += name;
+	sprintf(name, "%7d --> ", this->GetParentPDGCode(i));
+	pdg += name;
+      }
+    }
+    sprintf(name, "%4d", this->GetTrackPythiaLine()); line += name;
+    sprintf(name, "%4d", this->GetTrackPDGCode()); pdg += name;
+
+    printf("\nmuon's decay history:\n");
+    printf(" PDG: %s\n", pdg.Data());
+    printf("line: %s\n", line.Data());
+  }
+  if(options.Contains("K") || options.Contains("A")){ //muon kinematic
+
+    Int_t charge = this->GetCharge();
+    Double_t *vtx = this->GetVertex();
+    TLorentzVector momRec = this->GetPRec();
+    TLorentzVector momGen = this->GetPGen();
+    printf("the track's charge is %d\n", charge);
+    printf("Primary vertex: Vx = %1.3f, Vy = %1.3f, Vz = %1.3f\n", vtx[0], vtx[1], vtx[2]);
+    printf("Generated:     Px = %1.3f, Py = %1.3f, Pz = %1.3f\n", momGen.Px(), momGen.Py(), momGen.Pz());
+    printf("Reconstructed: Px = %1.3f, Py = %1.3f, Pz = %1.3f\n", momRec.Px(), momRec.Py(), momRec.Pz());
+    printf("Rec. variables: pT %1.3f, pseudo-rapidity %1.3f, theta %1.3f (%1.3f degree), phi %1.3f (%1.3f degree)\n", 
+	   momRec.Pt(), momRec.Eta(), momRec.Theta(), 180./TMath::Pi() * momRec.Theta(), 
+	   momRec.Phi(), 180./TMath::Pi() * momRec.Phi());
+  }
+}
+
+
