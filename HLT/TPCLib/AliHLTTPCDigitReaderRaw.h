@@ -61,6 +61,22 @@ public:
    */
   virtual int InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice);
 
+  /**
+   * Old Init function.
+   * <b>Note:</b> This method is for backward compatibility only, not for further
+   * use. The <i>firstrow</i> and <i>lastrow</i> parameters are fetched from
+   * @ref AliHLTTPCTransform. The method is implemented in the raw reader base class
+   * but is defined here to keep the signature of the library interface.
+   *
+   * @param ptr       pointer to data buffer
+   * @param size      size of the data buffer
+   * @param firstrow  first row occuring in the data
+   * @param lastrow   last row occuring in the data
+   * @param patch     patch (readout partition) number within the slice
+   * @param slice     sector no (0 to 35)
+   */
+  int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice);
+
   // Deliver values sorted for format 0, otherwise pass through to corresponding *Real* method
   virtual bool Next();
   virtual int GetRow();

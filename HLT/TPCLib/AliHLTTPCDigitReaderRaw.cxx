@@ -32,7 +32,7 @@ using namespace std;
 #include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCRootTypes.h"
-#include "AliHLTTPCStandardIncludes.h"
+#include "AliHLTStdIncludes.h"
 #include "AliHLTTPCLogging.h"
 
 ClassImp(AliHLTTPCDigitReaderRaw)
@@ -134,6 +134,10 @@ AliHLTTPCDigitReaderRaw::~AliHLTTPCDigitReaderRaw(){
 	delete [] fData;
       fData = NULL;
     }
+}
+
+int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice) {
+  return AliHLTTPCDigitReader::InitBlock(ptr, size, firstrow, lastrow, patch, slice);
 }
 
 int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){

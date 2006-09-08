@@ -54,7 +54,6 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCInterMerger.cxx \
 				  AliHLTTPC.cxx \
 				  AliHLTTPCPad.cxx \
-				  AliHLTTPCDisplay.cxx \
 				  AliHLTTPCDefinitions.cxx \
 				  AliHLTTPCRawDataUnpackerComponent.cxx \
 				  AliHLTTPCClusterFinderComponent.cxx \
@@ -63,6 +62,7 @@ libAliHLTTPC_la_SOURCES		= AliHLTTPCLog.cxx \
 				  AliHLTTPCGlobalMergerComponent.cxx
 
 
+# 				  AliHLTTPCDisplay.cxx \
 #				  AliRawReaderMemory.cxx
 
 
@@ -106,7 +106,6 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 				  AliHLTTPC.h \
 				  AliHLTTPCPad.h \
 				  AliHLTTPCSpacePointData.h \
-				  AliHLTTPCDisplay.h \
 				  AliHLTTPCDefinitions.h \
 				  AliHLTTPCRawDataUnpackerComponent.h \
 				  AliHLTTPCClusterFinderComponent.h \
@@ -117,7 +116,6 @@ CLASS_HDRS			= AliHLTTPCLog.h \
 
 pkginclude_HEADERS		= $(CLASS_HDRS) \
 				  AliHLTTPCLogging.h \
-				  AliHLTTPCStandardIncludes.h \
 				  AliHLTTPCRootTypes.h \
 				  AliHLTTPCDigitData.h \
 				  AliHLTTPCTrackSegmentData.h \
@@ -133,7 +131,7 @@ libAliHLTTPC_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
-				  -version-info 2:1:0
+				  -version-info 3:0:0
 
 # set the file name for the generated root dictionary
 DICTCPP				=  AliHLTTPC-DICT.cxx
@@ -144,7 +142,7 @@ CLEANFILES			= $(BUILT_SOURCES)
 
 include $(top_srcdir)/make.dict
 
-SUBDIRS 			= .
+SUBDIRS 			= . OnlineDisplay
 
 $(TPC_MAPPING_INC): $(TPC_MAPPING_NOINST_PGM)
 	./$<

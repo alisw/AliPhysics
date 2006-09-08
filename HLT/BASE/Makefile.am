@@ -41,7 +41,7 @@ pkginclude_HEADERS		=  $(CLASS_HDRS) \
 noinst_HEADERS			=  AliHLTStdIncludes.h
 
 # version info for the library
-libHLTbase_la_LDFLAGS		=  -version-info 1:0:0
+libHLTbase_la_LDFLAGS		=  -version-info 1:1:0
 
 # automatic generation of data and time of library build
 COMPILE_INFO			=  HLTBaseCompileInfo.cxx

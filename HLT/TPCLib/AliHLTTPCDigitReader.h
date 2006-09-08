@@ -56,7 +56,7 @@ public:
    * @param patch     patch (readout partition) number within the slice
    * @param slice     sector no (0 to 35)
    */
-  int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice);
+  virtual int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice);
 
   /**
    * Set the reader position to the next value.

@@ -222,6 +222,45 @@ AC_SUBST([ALIROOT_LIBS])
 CPPFLAGS="$CPPFLAGS -DROOTVERSION=\\\"`${ROOTCONF} --version`\\\""
 
 dnl ------------------------------------------------------------------
+dnl check for the HLT PubSub Framework
+AC_MSG_CHECKING([for HLT PubSub Framework])
+AC_ARG_WITH(pubsub, [installation path of the HLT PubSub framework],
+		    [],
+		    [ test -n $ALIHLT_DC_DIR && with_pubsub=$ALIHLT_DC_DIR ])
+if test -z $with_pubsub || ! test -d $with_pubsub ; then
+  with_pubsub=no
+fi
+AC_MSG_RESULT([$with_pubsub])
+
+AH_TEMPLATE([HAVE_HOMERREADER],[the HLT PubSub Homer Reader interface])
+if test "x$with_pubsub" != "xno" ; then
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  save_LIBS=$LIBS
+  HOMER_CPPFLAGS="-I${with_pubsub}/include/HOMER/reader"
+  HOMER_LDFLAGS="-L${with_pubsub}/lib/`uname -s`-`uname -p`"
+  CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS"
+  LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS"
+  LIBS="$save_LIBS "
+  with_homer=no
+  AC_LANG_PUSH(C++)
+  AC_CHECK_HEADER([HOMERReader.h],
+    [ AC_CHECK_LIB([HOMERReader],[_init],[with_homer=yes])])
+  AC_LANG_POP(C++)
+  if test "x$with_homer" = "xno" ; then
+    HOMER_CPPFLAGS=
+    HOMER_LDFLAGS=
+  else
+    AC_DEFINE(HAVE_HOMERREADER)
+  fi
+  CPPFLAGS="$save_CPPFLAGS"
+  LDFLAGS="$save_LDFLAGS"
+  LIBS="$save_LIBS"  
+fi
+AC_SUBST([HOMER_CPPFLAGS])
+AC_SUBST([HOMER_LDFLAGS])
+
+dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to impose strict coding conventions])
 AC_ARG_ENABLE(strict,
   [AC_HELP_STRING([--enable-strict],
@@ -336,6 +375,7 @@ AC_CONFIG_FILES([Makefile
 		 SampleLib/Makefile
 		 TPCLib/Makefile
 		 TPCLib/mapping2array.cxx
+		 TPCLib/OnlineDisplay/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])
 

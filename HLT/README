@@ -37,6 +37,14 @@ usual way (ROOTSYS, ALICE_ROOT, library locations evtl. specified in
 LD_LIBRARY_PATH, ...). Actually, the BASE and SampleLib modules are
 not dependend on AliRoot. The TPCLib does.
 
+To set up a version retrieved from CVS, autoconf 2.57, automake 1.6
+,and libtool 1.4 or higher versions are required. Thats the versions
+which come with the Scientific Linux CERN 3. The same applies if
+you want to change the Makefiles.
+
+If your GNU build tools are too old, ask the maintainers for a distributed
+package.  
+
 Setting up a version retrieved from CVS
 =======================================
 Skip this section if you have started from the tar ball.
