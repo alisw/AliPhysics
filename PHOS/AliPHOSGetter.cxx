@@ -758,20 +758,21 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
   Int_t iDigLow = 0;
   Int_t iDigHigh = 0;
 
-  TGraph* gLowGain = 0;
-  TGraph* gHighGain = 0;
+  TH1F* gLowGain = 0;
+  TH1F* gHighGain = 0;
 
   while ( in.Next() ) { // PHOS entries loop 
        
-    if(!gHighGain) gHighGain = new TGraph(in.GetTimeLength());
-    if(!gLowGain)  gLowGain = new TGraph(in.GetTimeLength());
+    if(!gHighGain) gHighGain = new TH1F("gHighGain","High gain",in.GetTimeLength(),0,in.GetTimeLength());
+    if(!gLowGain)  gLowGain = new TH1F("gLowGain","Low gain",in.GetTimeLength(),0,in.GetTimeLength());
 
     lowGainFlag = in.IsLowGain();
     
     if(lowGainFlag) 
-      gLowGain->SetPoint(in.GetTimeLength()-iBin-1,in.GetTime(),in.GetSignal());
-    else
-      gHighGain->SetPoint(in.GetTimeLength()-iBin-1,in.GetTime(),in.GetSignal());
+      gLowGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
+    else {
+      gHighGain->SetBinContent(in.GetTimeLength()-iBin-1,in.GetSignal());
+    }
 
     iBin++;
 
@@ -787,12 +788,12 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 
       //FitRaw(lowGainFlag, gLowGain, gHighGain, signalF, energy, time);
       if(!lowGainFlag) {
-	energy = gHighGain->GetHistogram()->GetMaximum();
-	energy -= gHighGain->Eval(0); // "pedestal subtraction"
+	energy = gHighGain->GetMaximum();
+	energy -= gHighGain->GetBinContent(0); // "pedestal subtraction"
       }
       else {
-	energy = gLowGain->GetHistogram()->GetMaximum();
-	energy -= gLowGain->Eval(0); // "pedestal subtraction"
+	energy = gLowGain->GetMaximum();
+	energy -= gLowGain->GetBinContent(0); // "pedestal subtraction"
       }
 	    
       time = -1;
@@ -816,7 +817,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
  
   digits->Sort() ;
 //   printf("\t\t\t------ %d Digits: %d LowGain + %d HighGain.\n",
-//   	 digits->GetEntriesFast(),iDigLow,iDigHigh);   
+//    	 digits->GetEntriesFast(),iDigLow,iDigHigh);   
 
   delete signalF ;
   delete gHighGain;
