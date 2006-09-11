@@ -122,30 +122,29 @@ AliMUONLocalTrigger& AliMUONLocalTrigger::operator=(const AliMUONLocalTrigger& t
 }
 
 //----------------------------------------------------------------------
-AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& digits)
+AliMUONLocalTrigger::AliMUONLocalTrigger(const Int_t* localtr, const TArrayI& digits) :
+    fLoCircuit(localtr[0]),
+    fLoStripX(localtr[1]),      
+    fLoDev(localtr[2]),      
+    fLoStripY(localtr[3]),          
+    fLoLpt(localtr[4]),
+    fLoHpt(localtr[5]),
+    fLoApt(localtr[6]),
+    // keep on with this way
+    fX1Pattern((UShort_t)localtr[7]),
+    fX2Pattern((UShort_t)localtr[8]),
+    fX3Pattern((UShort_t)localtr[9]),
+    fX4Pattern((UShort_t)localtr[10]),
+    
+    fY1Pattern((UShort_t)localtr[11]),
+    fY2Pattern((UShort_t)localtr[12]),
+    fY3Pattern((UShort_t)localtr[13]),
+    fY4Pattern((UShort_t)localtr[14]),
+    
+    fLoDecision(0),
+    fDigits(digits)
 {
-/// Add a local trigger object 
-
-  fLoCircuit = localtr[0];
-  fLoStripX  = localtr[1];         
-  fLoDev     = localtr[2];           
-  fLoStripY  = localtr[3];           
-  fLoLpt     = localtr[4];
-  fLoHpt     = localtr[5];
-  fLoApt     = localtr[6];
-
-  // keep on with this way
-  fX1Pattern = (UShort_t)localtr[7];
-  fX2Pattern = (UShort_t)localtr[8];
-  fX3Pattern = (UShort_t)localtr[9];
-  fX4Pattern = (UShort_t)localtr[10];
-
-  fY1Pattern = (UShort_t)localtr[11];
-  fY2Pattern = (UShort_t)localtr[12];
-  fY3Pattern = (UShort_t)localtr[13];
-  fY4Pattern = (UShort_t)localtr[14];
-
-  fDigits = digits;
+/// Add a local trigger object
 }
 
 //----------------------------------------------------------------------

@@ -45,10 +45,13 @@ AliMUONTriggerBoard::AliMUONTriggerBoard(const char *Name, Int_t islot)
 }
 
 //___________________________________________
-AliMUONTriggerBoard::AliMUONTriggerBoard(const AliMUONTriggerBoard &board): TNamed(board)
+AliMUONTriggerBoard::AliMUONTriggerBoard(const AliMUONTriggerBoard &board)
+    : TNamed(board),
+      fSlot(board.fSlot),
+      fResponse(board.fResponse)
 {
 // Dummy Copy Ctor
-   board.Copy(*this);
+//   board.Copy(*this);
 }
 
 //___________________________________________

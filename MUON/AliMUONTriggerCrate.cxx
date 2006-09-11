@@ -30,9 +30,10 @@ ClassImp(AliMUONTriggerCrate)
 
 //___________________________________________
 AliMUONTriggerCrate::AliMUONTriggerCrate()
-: fNslots(0),
-  fNboards(0),
-  fBoards(0x0)
+    : fNslots(0),
+      fNboards(0),
+      fBoards(0x0),
+      fSourceFileName(0)    
 {
     // Def Ctor
 }
@@ -44,10 +45,13 @@ AliMUONTriggerCrate::~AliMUONTriggerCrate()
 }
 
 //___________________________________________
-AliMUONTriggerCrate::AliMUONTriggerCrate(const char *name, Int_t n) : TNamed(name,"Regional trigger crate")
+AliMUONTriggerCrate::AliMUONTriggerCrate(const char *name, Int_t n) : 
+    TNamed(name,"Regional trigger crate"),
+    fNslots(n),
+    fNboards(0),
+    fBoards(new TObjArray(fNslots)),
+    fSourceFileName(0)
 {
-   fNslots = n;
-   fBoards = new TObjArray(fNslots);
 }
 
 //___________________________________________
@@ -59,10 +63,16 @@ void AliMUONTriggerCrate::AddBoard(AliMUONTriggerBoard *board, Int_t i)
 }
 
 //___________________________________________
-AliMUONTriggerCrate::AliMUONTriggerCrate(const AliMUONTriggerCrate &crate) : TNamed(crate)
+AliMUONTriggerCrate::AliMUONTriggerCrate(const AliMUONTriggerCrate &crate) 
+    : TNamed(crate),
+      fNslots(crate.fNslots),
+      fNboards(crate.fNboards),
+      fBoards(crate.fBoards),
+      fSourceFileName(crate.fSourceFileName)
 {
+    
 // Dummy Copy Ctor
-   crate.Copy(*this);
+//   crate.Copy(*this);
 }
 
 //___________________________________________

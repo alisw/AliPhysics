@@ -60,13 +60,14 @@ namespace
 //_____________________________________________________________________________
 AliMUONTriggerSegmentationV2::AliMUONTriggerSegmentationV2() 
 : AliMUONVGeometryDESegmentation(),
-fDetElemId(-1),
-fPlaneType(kNonBendingPlane),
-fSlat(0),
-fSlatSegmentation(0),
-fXhit(FMAX),
-fYhit(FMAX),
-fLineNumber(-1)
+  fDetElemId(-1),
+  fPlaneType(kNonBendingPlane),
+  fSlat(0),
+  fSlatSegmentation(0),
+  fCurrentPad(),
+  fXhit(FMAX),
+  fYhit(FMAX),
+  fLineNumber(-1)
 {
 /// Default ctor (empty).
 
@@ -77,14 +78,15 @@ fLineNumber(-1)
 AliMUONTriggerSegmentationV2::AliMUONTriggerSegmentationV2(
                                    AliMpVSegmentation* segmentation,
                                    Int_t detElemId, AliMpPlaneType bendingOrNonBending)
-: AliMUONVGeometryDESegmentation(),
-fDetElemId(detElemId),
-fPlaneType(bendingOrNonBending),
-fSlat(0),
-fSlatSegmentation(0),
-fXhit(FMAX),
-fYhit(FMAX),
-fLineNumber(-1)
+    : AliMUONVGeometryDESegmentation(),
+      fDetElemId(detElemId),
+      fPlaneType(bendingOrNonBending),
+      fSlat(0),
+      fSlatSegmentation(0),
+      fCurrentPad(),
+      fXhit(FMAX),
+      fYhit(FMAX),
+      fLineNumber(-1)
 {
 /// Normal ctor.
 
