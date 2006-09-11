@@ -197,6 +197,8 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
   UShort_t charge; 
   Int_t    dataSize;
 
+  Int_t iChamber;
+
   AliMUONDDLTracker*   ddlTracker = 0x0;
   AliMUONBlockHeader*  blkHeader  = 0x0;
   AliMUONDspHeader*    dspHeader  = 0x0;
@@ -244,7 +246,7 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 	    // Get Back the hits at pads
 	    Int_t error = GetMapping(buspatchId,manuId,channelId,fDigit); 
 	    if (error) {
-	      printf("Mapping Error\n");
+	      AliWarning("Mapping Error\n");
 	      continue;
 	    }
 	    // debugging 
@@ -262,7 +264,8 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 	    }
 
 	    // fill digits
-	    fMUONData->AddDigit(fRawStreamTracker->GetDDL()/2, *fDigit);
+	    iChamber = fDigit->DetElemId()/100 - 1;
+	    fMUONData->AddDigit(iChamber, *fDigit);
 
 	  } // iData
 	} // iBusPatch
@@ -284,7 +287,7 @@ Int_t AliMUONDigitMaker::GetMapping(Int_t busPatchId, UShort_t manuId,
   fMappingTimer.Start(kFALSE);
   
   // getting DE from buspatch
-  Int_t  detElemId = fBusPatchManager->GetDEfromBus(busPatchId);
+  Int_t detElemId = fBusPatchManager->GetDEfromBus(busPatchId);
   AliDebug(3,Form("detElemId: %d busPatchId %d\n", detElemId, busPatchId));
 
   AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentationByElectronics(detElemId, manuId);  
