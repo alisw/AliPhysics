@@ -46,8 +46,6 @@ class AliMUONDigitMaker : public TObject
 
  protected:
   AliMUONDigitMaker();                  // Default constructor
-  AliMUONDigitMaker (const AliMUONDigitMaker& rhs); // copy constructor
-  AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
 
  private:
 
@@ -70,6 +68,9 @@ class AliMUONDigitMaker : public TObject
   TStopwatch fTrackerTimer;                    //!< time watcher for tracker part
   TStopwatch fTriggerTimer;                    //!< time watcher for trigger part
   TStopwatch fMappingTimer;                    //!< time watcher for mapping-tracker part
+
+  AliMUONDigitMaker (const AliMUONDigitMaker& rhs); // copy constructor
+  AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
 
   ClassDef(AliMUONDigitMaker,1) // MUON digit maker from rawdata
 };

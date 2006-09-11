@@ -33,12 +33,12 @@ ClassImp(AliMUONDDLTracker)
 
 //___________________________________________
 AliMUONDDLTracker::AliMUONDDLTracker()
-  :  TObject()
+  :  TObject(),
+     fBlkHeaderArray(new TClonesArray("AliMUONBlockHeader", 2))
 {
   //
   //ctor
   //
-  fBlkHeaderArray = new TClonesArray("AliMUONBlockHeader", 2);
 
 }
 

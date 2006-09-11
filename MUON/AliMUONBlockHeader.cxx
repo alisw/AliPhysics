@@ -42,13 +42,13 @@ AliMUONBlockHeader::AliMUONBlockHeader()
      fL0Trigger(0),
      fMiniEventId(0),
      fEventId1(0),
-     fEventId2(0)
+     fEventId2(0),
+     fDspHeaderArray(new TClonesArray("AliMUONDspHeader", 5))
+
 {
   //
   // ctor
   //
-
-  fDspHeaderArray = new TClonesArray("AliMUONDspHeader", 5);
 
 }
 
@@ -64,22 +64,21 @@ AliMUONBlockHeader::~AliMUONBlockHeader()
 
 //___________________________________________
 AliMUONBlockHeader::AliMUONBlockHeader(const AliMUONBlockHeader& event)
-  :  TObject(event)
+  :  TObject(event),
+     fDataKey(event.fDataKey),
+     fTotalLength(event.fTotalLength),
+     fLength(event.fLength),
+     fDspId(event.fDspId),
+     fL0Trigger(event.fL0Trigger),
+     fMiniEventId(event.fMiniEventId),
+     fEventId1(event.fEventId1),
+     fEventId2(event.fEventId2),
+     fDspHeaderArray(new TClonesArray("AliMUONDspHeader", 5))
 {
   //
   // copy ctor
   //
 
-  fDataKey     = event.fDataKey;
-  fTotalLength = event.fTotalLength;
-  fLength      = event.fLength;
-  fDspId       = event.fDspId;
-  fL0Trigger   = event.fL0Trigger;
-  fMiniEventId = event.fMiniEventId;
-  fEventId1    = event.fEventId1;
-  fEventId2    = event.fEventId2;
-
-  fDspHeaderArray = new TClonesArray("AliMUONDspHeader", 5);
   for (Int_t index = 0; index < (event.fDspHeaderArray)->GetEntriesFast(); index++) {
     {new ((*fDspHeaderArray)[fDspHeaderArray->GetEntriesFast()]) 
         AliMUONDspHeader(*(AliMUONDspHeader*)(event.fDspHeaderArray)->At(index));}

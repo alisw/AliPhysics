@@ -45,7 +45,9 @@ public:
  private:
 
    TClonesArray* fBlkHeaderArray;  ///< array of block header
-   
+ 
+   AliMUONDDLTracker(const AliMUONDDLTracker& event);
+   AliMUONDDLTracker& operator=(const AliMUONDDLTracker& event);
  
    ClassDef(AliMUONDDLTracker,1)  // MUON DDL Tracker
 };

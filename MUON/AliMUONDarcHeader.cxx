@@ -57,7 +57,9 @@ AliMUONDarcHeader::AliMUONDarcHeader()
      fDarcL2R(0),
      fDarcClk(0),
      fDarcHold(0),
-     fDarcSpare(0)     
+     fDarcSpare(0),
+     fRegHeaderArray(new TClonesArray("AliMUONRegHeader",8))
+  
 
 {
   //
@@ -69,32 +71,32 @@ AliMUONDarcHeader::AliMUONDarcHeader()
   for (Int_t i = 0; i < 6; i++)
     fGlobalScaler[i] = 0;
 
-  fRegHeaderArray = new TClonesArray("AliMUONRegHeader",8);
 }
 
 //___________________________________________
 AliMUONDarcHeader::AliMUONDarcHeader(const AliMUONDarcHeader& event)
-  :  TObject(event)
+  :  TObject(event),
+     fWord(event.fWord),
+     fGlobalOutput(event.fGlobalOutput),
+     fGlobalL0(event.fGlobalL0),
+     fGlobalClk(event.fGlobalClk),
+     fGlobalHold(event.fGlobalHold),   
+     fGlobalSpare(event.fGlobalSpare),
+
+     fDarcL0R(event.fDarcL0R),
+     fDarcL1P(event.fDarcL1P),
+     fDarcL1S(event.fDarcL1S),
+     fDarcL2A(event.fDarcL2A),
+     fDarcL2R(event.fDarcL2R),
+     fDarcClk(event.fDarcClk),
+     fDarcHold(event.fDarcHold),
+     fDarcSpare(event.fDarcSpare),
+     fRegHeaderArray(new TClonesArray("AliMUONRegHeader", 8))
+
 {
   //
   // copy ctor
   //
-  fWord         = event.fWord;
-  fGlobalOutput = event.fGlobalOutput;
-  fGlobalL0     = event.fGlobalL0;
-  fGlobalClk    = event.fGlobalClk;
-  fGlobalHold   = event.fGlobalHold;   
-  fGlobalSpare  = event.fGlobalSpare;
-
-  fDarcL0R   = event.fDarcL0R;
-  fDarcL1P   = event.fDarcL1P;
-  fDarcL1S   = event.fDarcL1S;
-  fDarcL2A   = event.fDarcL2A;
-  fDarcL2R   = event.fDarcL2R;
-  fDarcClk   = event.fDarcClk;
-  fDarcHold  = event.fDarcHold;
-  fDarcSpare = event.fDarcSpare;
-
  
  for (Int_t i = 0; i < 4; i++)
     fGlobalInput[i] = event.fGlobalInput[i];
@@ -102,7 +104,6 @@ AliMUONDarcHeader::AliMUONDarcHeader(const AliMUONDarcHeader& event)
   for (Int_t i = 0; i < 6; i++)
     fGlobalScaler[i] = event.fGlobalScaler[i];
 
-  fRegHeaderArray = new TClonesArray("AliMUONRegHeader", 8);
   for (Int_t index = 0; index < (event.fRegHeaderArray)->GetEntriesFast(); index++) {
     new ((*fRegHeaderArray)[fRegHeaderArray->GetEntriesFast()]) 
         AliMUONRegHeader(*(AliMUONRegHeader*)(event.fRegHeaderArray)->At(index));

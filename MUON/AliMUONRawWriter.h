@@ -42,8 +42,6 @@ class AliMUONRawWriter : public TObject
 
 protected:
   AliMUONRawWriter();                  // Default constructor
-  AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
-  AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs); // assignment operator
 
   // writing raw data
   Int_t WriteTrackerDDL(Int_t iCh);
@@ -96,6 +94,9 @@ private:
   
   AliMpSegFactory* fSegFactory;         //!< mapping segmentation factory
   
+  AliMUONRawWriter (const AliMUONRawWriter& rhs); // copy constructor
+  AliMUONRawWriter& operator=(const AliMUONRawWriter& rhs); // assignment operator
+
   ClassDef(AliMUONRawWriter,1) // MUON cluster reconstructor in ALICE
 };
 	

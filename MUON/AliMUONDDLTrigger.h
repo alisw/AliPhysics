@@ -33,8 +33,11 @@ public:
 
  private:
 
+
    AliMUONDarcHeader* fDarcHeader;  ///< pointer of darc header
-   
+
+   AliMUONDDLTrigger(const AliMUONDDLTrigger& event);
+   AliMUONDDLTrigger& operator=(const AliMUONDDLTrigger& event);
 
    ClassDef(AliMUONDDLTrigger,1)  // MUON DDL Trigger
 };

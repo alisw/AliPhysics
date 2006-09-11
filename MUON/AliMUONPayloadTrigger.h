@@ -27,8 +27,6 @@ class AliMUONRegHeader;
 class AliMUONPayloadTrigger: public TObject {
   public :
     AliMUONPayloadTrigger();
-    AliMUONPayloadTrigger(const AliMUONPayloadTrigger& stream);
-    AliMUONPayloadTrigger& operator = (const AliMUONPayloadTrigger& stream);
     virtual ~AliMUONPayloadTrigger();
 
     Bool_t Decode(UInt_t *buffer);
@@ -45,7 +43,7 @@ class AliMUONPayloadTrigger: public TObject {
     AliMUONRegHeader*       GetRegHeader()  const {return fRegHeader;}
     AliMUONDDLTrigger*      GetDDLTrigger() const {return fDDLTrigger;}
 
-  protected :
+  private :
 
     Int_t fMaxReg;        ///< maximum number of regional cards in DATE file
     Int_t fMaxLoc;        ///< maximum number of local cards in DATE file
@@ -53,6 +51,10 @@ class AliMUONPayloadTrigger: public TObject {
     AliMUONDDLTrigger*       fDDLTrigger;   //!< pointer for DDL structure
     AliMUONRegHeader*        fRegHeader;    //!< pointer for regional structure
     AliMUONLocalStruct*      fLocalStruct;  //!< pointer to local structure
+
+
+    AliMUONPayloadTrigger(const AliMUONPayloadTrigger& stream);
+    AliMUONPayloadTrigger& operator = (const AliMUONPayloadTrigger& stream);
 
     ClassDef(AliMUONPayloadTrigger, 1)    // base class for reading MUON trigger rawdata
 };

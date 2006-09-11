@@ -41,6 +41,7 @@ ClassImp(AliMUONRawStreamTrigger)
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
   : TObject(),
     fRawReader(0x0),
+    fPayload(new AliMUONPayloadTrigger()),
     fDDL(0),
     fSubEntries(0),
     fNextDDL(kTRUE),
@@ -51,13 +52,14 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
   // Default ctor for monitoring purposes
   //
 
-  fPayload = new AliMUONPayloadTrigger();
 
 }
 
 //_________________________________________________________________
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(AliRawReader* rawReader)
   : TObject(),
+    fRawReader(rawReader),
+    fPayload(new AliMUONPayloadTrigger()),
     fDDL(0),
     fSubEntries(0),
     fNextDDL(kTRUE),
@@ -69,30 +71,6 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(AliRawReader* rawReader)
   // for reconstruction purpose
   //
 
-  fRawReader = rawReader;
-  fPayload   = new AliMUONPayloadTrigger();
-
-}
-
-//_________________________________________________________________
-AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(const AliMUONRawStreamTrigger& stream) :
-  TObject(stream)
-{
-  //
-  // copy ctor
-  //
-  AliFatal("copy constructor not implemented");
-}
-
-//______________________________________________________________________
-AliMUONRawStreamTrigger& AliMUONRawStreamTrigger::operator = (const AliMUONRawStreamTrigger& 
-					      /* stream */)
-{ 
-  // 
-  // assignment operator
-  //
-  AliFatal("assignment operator not implemented");
-  return *this;
 }
 
 //___________________________________

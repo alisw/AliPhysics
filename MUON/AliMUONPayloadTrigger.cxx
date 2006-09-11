@@ -40,38 +40,16 @@ ClassImp(AliMUONPayloadTrigger)
 AliMUONPayloadTrigger::AliMUONPayloadTrigger()
   : TObject(),
     fMaxReg(8),
-    fMaxLoc(16)
+    fMaxLoc(16),
+    fDDLTrigger(new AliMUONDDLTrigger()),
+    fRegHeader(new AliMUONRegHeader()), 
+    fLocalStruct(new AliMUONLocalStruct())
 {
   //
   // create an object to read MUON raw digits
   // Default ctor for monitoring purposes
   //
 
-  fDDLTrigger  = new AliMUONDDLTrigger();
-  fRegHeader   = new AliMUONRegHeader();  
-  fLocalStruct = new AliMUONLocalStruct();
-
-}
-
-//_________________________________________________________________
-AliMUONPayloadTrigger::AliMUONPayloadTrigger(const AliMUONPayloadTrigger& stream) :
-  TObject(stream)
-{
-  //
-  // copy ctor
-  //
-  AliFatal("copy constructor not implemented");
-}
-
-//______________________________________________________________________
-AliMUONPayloadTrigger& AliMUONPayloadTrigger::operator = (const AliMUONPayloadTrigger& 
-					      /* stream */)
-{ 
-  // 
-  // assignment operator
-  //
-  AliFatal("assignment operator not implemented");
-  return *this;
 }
 
 //___________________________________

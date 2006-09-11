@@ -29,8 +29,6 @@ class AliMUONRawStreamTracker: public TObject {
   public :
     AliMUONRawStreamTracker();
     AliMUONRawStreamTracker(AliRawReader* rawReader);
-    AliMUONRawStreamTracker(const AliMUONRawStreamTracker& stream);
-    AliMUONRawStreamTracker& operator = (const AliMUONRawStreamTracker& stream);
     virtual ~AliMUONRawStreamTracker();
 
     virtual Bool_t   Next();
@@ -55,7 +53,7 @@ class AliMUONRawStreamTracker: public TObject {
     AliMUONDDLTracker*      GetDDLTracker()   const {return fPayload->GetDDLTracker();}
     Int_t                   GetDDL()          const {return fDDL - 1;}
 
-  protected :
+  private :
 
     AliRawReader*    fRawReader;    ///< object for reading the raw data
  
@@ -69,6 +67,9 @@ class AliMUONRawStreamTracker: public TObject {
     Int_t  fMaxDDL;       ///< maximum number of DDL in DATE file
 
     AliMUONPayloadTracker* fPayload; ///< pointer to payload decoder
+
+    AliMUONRawStreamTracker(const AliMUONRawStreamTracker& stream);
+    AliMUONRawStreamTracker& operator = (const AliMUONRawStreamTracker& stream);
 
     ClassDef(AliMUONRawStreamTracker, 2)    // base class for reading MUON raw digits
 };

@@ -39,41 +39,23 @@ ClassImp(AliMUONPayloadTracker)
 
 AliMUONPayloadTracker::AliMUONPayloadTracker()
   : TObject(),
+    fBusPatchId(0),
+    fDspId(0),
+    fBlkId(0),
+    fMaxDDL(20),
     fMaxBlock(2),
     fMaxDsp(5),
-    fMaxBus(5)
+    fMaxBus(5),
+    fDDLTracker(new AliMUONDDLTracker()),
+    fBusStruct(new AliMUONBusStruct()),
+    fBlockHeader(new AliMUONBlockHeader()),
+    fDspHeader(new AliMUONDspHeader())
 {
   //
   // create an object to decode MUON payload
   //
 
-  fDDLTracker      = new AliMUONDDLTracker();
-  fBusStruct       = new AliMUONBusStruct();
-  fBlockHeader     = new AliMUONBlockHeader();
-  fDspHeader       = new AliMUONDspHeader();
 }
-
-//_________________________________________________________________
-AliMUONPayloadTracker::AliMUONPayloadTracker(const AliMUONPayloadTracker& stream) :
-  TObject(stream)
-{ 
-  //
-  // copy ctor
-  //
-  AliFatal("copy constructor not implemented");
-}
-
-//______________________________________________________________________
-AliMUONPayloadTracker& AliMUONPayloadTracker::operator = (const AliMUONPayloadTracker& 
-					      /* stream */)
-{
-  // 
-  // assignment operator
-  //
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
-
 
 //___________________________________
 AliMUONPayloadTracker::~AliMUONPayloadTracker()

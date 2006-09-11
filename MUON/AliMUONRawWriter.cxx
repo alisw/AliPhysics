@@ -87,46 +87,45 @@ Int_t AliMUONRawWriter::fgManuPerBusSwp2NB[12] = {1, 27, 53, 79, 105, 131, 157, 
 
 //__________________________________________________________________________
 AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
-: TObject(),
-  fScalerEvent(kFALSE)
+  : TObject(),
+    fMUONData(data),
+    fBusArray(new TClonesArray("AliMUONBusStruct",1000)),
+    fBlockHeader(new AliMUONBlockHeader()),
+    fDspHeader(new AliMUONDspHeader()),
+    fBusStruct(new AliMUONBusStruct()),
+    fDarcHeader(new AliMUONDarcHeader()),
+    fRegHeader(new AliMUONRegHeader()),
+    fLocalStruct(new AliMUONLocalStruct()),
+    fBusPatchManager(new AliMpBusPatch()),
+    fCrateManager(new AliMUONTriggerCrateStore()),
+    fScalerEvent(kFALSE),
+    fHeader(),
+    fTrackerTimer(),
+    fTriggerTimer(),
+    fMappingTimer(),
+    fSegFactory(new AliMpSegFactory())
+
 {
   //
   // Standard Constructor
   //
   AliDebug(1,"Standard ctor");
-      
-  // initialize container
-  fMUONData  = data;
+  fFile[0] = fFile[1] = 0x0;  
+  fFile[2] = fFile[3] = 0x0;  
 
   // initialize array
-  fBusArray = new TClonesArray("AliMUONBusStruct",1000);
   fBusArray->SetOwner(kTRUE);
-
-  // ddl tracker pointers
-  fBlockHeader     = new AliMUONBlockHeader();
-  fDspHeader       = new AliMUONDspHeader();
-  fBusStruct       = new AliMUONBusStruct();
 
   // setting data key to default value (only for writting)
   fBlockHeader->SetDataKey(fBlockHeader->GetDefaultDataKey());
   fDspHeader->SetDataKey(fDspHeader->GetDefaultDataKey());
   fBusStruct->SetDataKey(fBusStruct->GetDefaultDataKey());
 
-  // ddl trigger pointers
-  fDarcHeader      = new AliMUONDarcHeader();
-  fRegHeader       = new AliMUONRegHeader();
-  fLocalStruct     = new AliMUONLocalStruct();
-
   // bus patch managers
-  fBusPatchManager = new AliMpBusPatch();
   fBusPatchManager->ReadBusPatchFile();
 
   // Crate manager
-  fCrateManager = new AliMUONTriggerCrateStore();
   fCrateManager->ReadFromFile();
-
-  //Seg factory
-  fSegFactory = new AliMpSegFactory();
 
   // timers
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
@@ -139,6 +138,7 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
 AliMUONRawWriter::AliMUONRawWriter()
   : TObject(),
     fMUONData(0),
+    fBusArray(0),
     fBlockHeader(0),
     fDspHeader(0),
     fBusStruct(0),
@@ -148,6 +148,10 @@ AliMUONRawWriter::AliMUONRawWriter()
     fBusPatchManager(0),
     fCrateManager(0x0),
     fScalerEvent(kFALSE),
+    fHeader(),
+    fTrackerTimer(),
+    fTriggerTimer(),
+    fMappingTimer(),
     fSegFactory(0x0)
 {
   //
@@ -160,30 +164,6 @@ AliMUONRawWriter::AliMUONRawWriter()
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
   fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
-}
-
-//_______________________________________________________________________
-AliMUONRawWriter::AliMUONRawWriter (const AliMUONRawWriter& rhs)
-  : TObject(rhs)
-{
-  //
-  // Protected copy constructor
-  //
-  AliFatal("Not implemented.");
-}
-
-//_______________________________________________________________________
-AliMUONRawWriter & 
-AliMUONRawWriter::operator=(const AliMUONRawWriter& rhs)
-{
-  //
-  // Protected assignement operator
-  //
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }
 
 //__________________________________________________________________________

@@ -47,58 +47,37 @@ AliMUONRawStreamTracker::AliMUONRawStreamTracker()
     fDspId(0),
     fBlkId(0),
     fNextDDL(kTRUE),
-    fMaxDDL(20)
+    fMaxDDL(20),
+    fPayload(new AliMUONPayloadTracker())
 {
   //
   // create an object to read MUON raw digits
   // Default ctor for monitoring purposes
   //
 
-  fPayload = new AliMUONPayloadTracker();
 
 }
 
 //_________________________________________________________________
 AliMUONRawStreamTracker::AliMUONRawStreamTracker(AliRawReader* rawReader)
   : TObject(),
+    fRawReader(rawReader),
     fDDL(0),
     fBusPatchId(0),
     fDspId(0),
     fBlkId(0),
     fNextDDL(kTRUE),
-    fMaxDDL(20)
+    fMaxDDL(20),
+    fPayload(new AliMUONPayloadTracker())
+
 {
   //
   // ctor with AliRawReader as argument
   // for reconstruction purpose
   //
 
-  fRawReader = rawReader;
-  fPayload   = new AliMUONPayloadTracker();
 
 }
-
-//_________________________________________________________________
-AliMUONRawStreamTracker::AliMUONRawStreamTracker(const AliMUONRawStreamTracker& stream) :
-  TObject(stream)
-{ 
-  //
-  // copy ctor
-  //
-  AliFatal("copy constructor not implemented");
-}
-
-//______________________________________________________________________
-AliMUONRawStreamTracker& AliMUONRawStreamTracker::operator = (const AliMUONRawStreamTracker& 
-					      /* stream */)
-{
-  // 
-  // assignment operator
-  //
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
-
 
 //___________________________________
 AliMUONRawStreamTracker::~AliMUONRawStreamTracker()

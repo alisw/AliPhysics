@@ -34,12 +34,12 @@ ClassImp(AliMUONDDLTrigger)
 
 //___________________________________________
 AliMUONDDLTrigger::AliMUONDDLTrigger()
-  :  TObject()
+  :  TObject(),
+     fDarcHeader(new AliMUONDarcHeader())
 {
   //
   //ctor
   //
-  fDarcHeader = new AliMUONDarcHeader();
 }
 
 //___________________________________________

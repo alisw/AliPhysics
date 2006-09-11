@@ -76,7 +76,18 @@ ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 //__________________________________________________________________________
 AliMUONDigitMaker::AliMUONDigitMaker(AliMUONData* data)
   : TObject(),
-    fScalerEvent(kFALSE)
+    fMUONData(data),
+    fSegFactory(new AliMpSegFactory()),
+    fBusPatchManager(new AliMpBusPatch()),
+    fScalerEvent(kFALSE),
+    fRawStreamTracker(new AliMUONRawStreamTracker()),    
+    fRawStreamTrigger(new AliMUONRawStreamTrigger()),    
+    fDigit(new AliMUONDigit()),
+    fLocalTrigger(new AliMUONLocalTrigger()),
+    fGlobalTrigger(new AliMUONGlobalTrigger()),
+    fTrackerTimer(),
+    fTriggerTimer(),
+    fMappingTimer()
 {
   //
   // ctor with AliMUONData as argument
@@ -87,26 +98,9 @@ AliMUONDigitMaker::AliMUONDigitMaker(AliMUONData* data)
 
   // Standard Constructor
 
-  // initialize segmentation factory
-  fSegFactory = new AliMpSegFactory();
-
-  // initialize container
-  fMUONData  = data;
-
   // bus patch 
-  fBusPatchManager = new AliMpBusPatch();
   fBusPatchManager->ReadBusPatchFile();
 
-  // raw streamers
-  fRawStreamTracker = new AliMUONRawStreamTracker();    
-  fRawStreamTrigger = new AliMUONRawStreamTrigger();    
-
-  // digit
-  fDigit = new AliMUONDigit();
-
-  // local trigger
-  fLocalTrigger  =  new AliMUONLocalTrigger();
-  fGlobalTrigger =  new AliMUONGlobalTrigger();
 
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
@@ -124,7 +118,11 @@ AliMUONDigitMaker::AliMUONDigitMaker()
     fRawStreamTracker(0),
     fRawStreamTrigger(0),
     fDigit(0),
-    fLocalTrigger(0)
+    fLocalTrigger(0),
+    fGlobalTrigger(0),
+    fTrackerTimer(),
+    fTriggerTimer(),
+    fMappingTimer()
 {
   //
   // Default Constructor
@@ -136,32 +134,8 @@ AliMUONDigitMaker::AliMUONDigitMaker()
   
 }
 
-//_______________________________________________________________________
-AliMUONDigitMaker::AliMUONDigitMaker (const AliMUONDigitMaker& rhs)
-  : TObject(rhs)
-{
-  //
-  // Protected copy constructor
-  //
-  AliFatal("Not implemented.");
-}
-
-//_______________________________________________________________________
-AliMUONDigitMaker & 
-AliMUONDigitMaker::operator=(const AliMUONDigitMaker& rhs)
-{
-  //
-  // Protected assignement operator
-  //
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}
-
 //__________________________________________________________________________
-AliMUONDigitMaker::~AliMUONDigitMaker(void)
+AliMUONDigitMaker::~AliMUONDigitMaker()
 {
   //
   // clean up

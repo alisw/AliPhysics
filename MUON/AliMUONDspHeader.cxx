@@ -46,13 +46,12 @@ AliMUONDspHeader::AliMUONDspHeader()
      fL1ATrigger(0),
      fL1RTrigger(0),
      fPaddingWord(0),
-     fErrorWord(0)
+     fErrorWord(0),
+     fBusPatchArray(new TClonesArray("AliMUONBusStruct",5))
 {
   //
   //ctor
   //
-
-  fBusPatchArray  = new TClonesArray("AliMUONBusStruct",5);
 
 }
 
@@ -68,22 +67,23 @@ AliMUONDspHeader::~AliMUONDspHeader()
 
 //___________________________________________
 AliMUONDspHeader::AliMUONDspHeader(const AliMUONDspHeader& event)
-  :  TObject(event)
+  :  TObject(event),
+     fDataKey(event.fDataKey),
+     fTotalLength(event.fTotalLength),
+     fLength(event.fLength),
+     fDspId(event.fDspId),
+     fBlkL1ATrigger(event.fBlkL1ATrigger),
+     fMiniEventId(event.fMiniEventId),
+     fL1ATrigger(event.fL1ATrigger),
+     fL1RTrigger(event.fL1RTrigger),
+     fPaddingWord(event.fPaddingWord),
+     fErrorWord(event.fErrorWord),
+     fBusPatchArray(new TClonesArray("AliMUONBusStruct", 5))
 {
   // 
   // copy constructor
   //
-  fTotalLength   = event.fTotalLength;
-  fLength        = event.fLength;
-  fDspId         = event.fDspId;
-  fBlkL1ATrigger = event.fBlkL1ATrigger;
-  fMiniEventId   = event.fMiniEventId;
-  fL1ATrigger    = event.fL1ATrigger;
-  fL1RTrigger    = event.fL1RTrigger;
-  fPaddingWord   = event.fPaddingWord;
-  fErrorWord     = event.fErrorWord;
 
-  fBusPatchArray = new TClonesArray("AliMUONBusStruct", 5);
   for (Int_t index = 0; index < (event.fBusPatchArray)->GetEntriesFast(); index++) {
     {new ((*fBusPatchArray)[fBusPatchArray->GetEntriesFast()]) 
         AliMUONBusStruct(*(AliMUONBusStruct*)(event.fBusPatchArray)->At(index));}
@@ -100,9 +100,10 @@ AliMUONDspHeader& AliMUONDspHeader::operator=(const AliMUONDspHeader& event)
   //
   if (this == &event) return *this;
 
-  fTotalLength = event.fTotalLength;
-  fLength      = event.fLength;
-  fDspId       = event.fDspId;
+  fDataKey       = event.fDataKey;
+  fTotalLength   = event.fTotalLength;
+  fLength        = event.fLength;
+  fDspId         = event.fDspId;
   fBlkL1ATrigger = event.fBlkL1ATrigger;
   fMiniEventId   = event.fMiniEventId;
   fL1ATrigger    = event.fL1ATrigger;

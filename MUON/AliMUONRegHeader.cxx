@@ -41,8 +41,8 @@ AliMUONRegHeader::AliMUONRegHeader()
      fMask(0),
      fL0(0),
      fClk(0),
-     fHold(0)
-
+     fHold(0),
+     fLocalArray(new TClonesArray("AliMUONLocalStruct",16))
 {
   //
   // ctor
@@ -51,8 +51,6 @@ AliMUONRegHeader::AliMUONRegHeader()
 
   for (Int_t i = 0; i < 8; i++)
     fScaler[i] = 0;
-
-  fLocalArray  = new TClonesArray("AliMUONLocalStruct",16);
 
 }
 
@@ -68,17 +66,18 @@ AliMUONRegHeader::~AliMUONRegHeader()
 
 //___________________________________________
 AliMUONRegHeader::AliMUONRegHeader(const AliMUONRegHeader& event)
-  :  TObject(event)
+  :  TObject(event),
+     fDarcWord(event.fDarcWord),
+     fWord(event.fWord),
+     fMask(event.fMask),
+     fL0(event.fL0),
+     fClk(event.fClk),
+     fHold(event.fHold),
+     fLocalArray(new TClonesArray("AliMUONLocalStruct", 16))
 {
   //
   // copy ctor
   //
-  fDarcWord = event.fDarcWord;
-  fWord     = event.fWord;
-  fClk      = event.fClk;
-  fHold     = event.fHold;
-  fL0       = event.fL0;
-  fMask     = event.fMask;
 
   fInput[0] = event.fInput[0];
   fInput[1] = event.fInput[1];
@@ -86,7 +85,6 @@ AliMUONRegHeader::AliMUONRegHeader(const AliMUONRegHeader& event)
   for (Int_t i = 0; i < 8; i++)
     fScaler[i] = event.fScaler[i];
 
-  fLocalArray = new TClonesArray("AliMUONLocalStruct", 16);
   for (Int_t index = 0; index < (event.fLocalArray)->GetEntriesFast(); index++) {
     {new ((*fLocalArray)[fLocalArray->GetEntriesFast()]) 
         AliMUONLocalStruct(*(AliMUONLocalStruct*)(event.fLocalArray)->At(index));}

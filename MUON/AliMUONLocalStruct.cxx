@@ -64,25 +64,24 @@ AliMUONLocalStruct::AliMUONLocalStruct()
 
 //___________________________________________
 AliMUONLocalStruct::AliMUONLocalStruct(const AliMUONLocalStruct& event)
-  :  TObject(event)
+  :  TObject(event),
+     fL0(event.fL0),
+     fHold(event.fHold),
+     fClk(event.fClk),
+     fLPtNTrig(event.fLPtNTrig),
+     fHPtNTrig(event.fHPtNTrig),
+     fLPtRTrig(event.fLPtRTrig),
+     fHPtRTrig(event.fHPtRTrig),
+     fLPtLTrig(event.fLPtLTrig),
+     fHPtLTrig(event.fHPtLTrig),
+     fLPtSTrig(event.fLPtSTrig),
+     fHPtSTrig(event.fHPtSTrig),
+     fEOS(event.fEOS),
+     fReset(event.fReset)
 {
   //
   // copy ctor
   //
-  fL0       = event.fL0;
-  fHold     = event.fHold;
-  fClk      = event.fClk;
-  fLPtNTrig = event.fLPtNTrig;
-  fHPtNTrig = event.fHPtNTrig;
-  fLPtRTrig = event.fLPtRTrig;
-  fHPtRTrig = event.fHPtRTrig;
-  fLPtLTrig = event.fLPtLTrig;
-  fHPtLTrig = event.fHPtLTrig;
-  fLPtSTrig = event.fLPtSTrig;
-  fHPtSTrig = event.fHPtSTrig;
-  fEOS      = event.fEOS;
-  fReset    = event.fReset  ;
-
   for (Int_t i = 0; i < 5; i++)
     fData[i] = event.fData[i];
 

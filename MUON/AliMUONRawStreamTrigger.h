@@ -29,8 +29,6 @@ class AliMUONRawStreamTrigger: public TObject {
   public :
     AliMUONRawStreamTrigger();
     AliMUONRawStreamTrigger(AliRawReader* rawReader);
-    AliMUONRawStreamTrigger(const AliMUONRawStreamTrigger& stream);
-    AliMUONRawStreamTrigger& operator = (const AliMUONRawStreamTrigger& stream);
     virtual ~AliMUONRawStreamTrigger();
 
     virtual Bool_t   Next();
@@ -51,7 +49,7 @@ class AliMUONRawStreamTrigger: public TObject {
     AliMUONDDLTrigger* GetDDLTrigger() const {return fPayload->GetDDLTrigger();}
     Int_t              GetDDL()        const {return fDDL - 1;}
 
-  protected :
+  private :
 
     AliRawReader*    fRawReader;     ///< object for reading the raw data
     AliMUONPayloadTrigger* fPayload; ///< pointer to payload decoder
@@ -60,6 +58,9 @@ class AliMUONRawStreamTrigger: public TObject {
     Int_t  fSubEntries;   ///< entries of buspatch structure
     Bool_t fNextDDL;      ///< flag for next DDL to be read
     Int_t  fMaxDDL;       ///< maximum number of DDL in DATE file
+
+    AliMUONRawStreamTrigger(const AliMUONRawStreamTrigger& stream);
+    AliMUONRawStreamTrigger& operator = (const AliMUONRawStreamTrigger& stream);
 
     ClassDef(AliMUONRawStreamTrigger, 3)    // base class for reading MUON trigger rawdata
 };

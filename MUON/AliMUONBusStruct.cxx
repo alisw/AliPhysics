@@ -42,6 +42,7 @@ AliMUONBusStruct::AliMUONBusStruct()
      fTotalLength(0),
      fLength(0),
      fBusPatchId(0),
+     fData(new UInt_t[1024]),
      fBufSize(1024),
      fDspId(0),
      fBlkId(0)
@@ -49,7 +50,7 @@ AliMUONBusStruct::AliMUONBusStruct()
   //
   // ctor
   // 
-  fData = new UInt_t[fBufSize];
+
 }
 //___________________________________________
 AliMUONBusStruct::~AliMUONBusStruct()
@@ -102,21 +103,21 @@ void AliMUONBusStruct::ResizeData(Int_t size)
 }
 //___________________________________________
 AliMUONBusStruct::
-AliMUONBusStruct(const AliMUONBusStruct& event): TObject(event)
+AliMUONBusStruct(const AliMUONBusStruct& event)
+  : TObject(event),
+    fDataKey(event.fDataKey),
+    fTotalLength(event.fTotalLength),
+    fLength(event.fLength),
+    fBusPatchId(event.fBusPatchId),
+    fData(new UInt_t[event.fBufSize]),
+    fBufSize(event.fBufSize),
+    fDspId(event.fDspId),
+    fBlkId(event.fBlkId)
 {
   //
   // copy ctor
   //
-  fDataKey     = event.fDataKey;
-  fTotalLength = event.fTotalLength;
-  fLength      = event.fLength;
-  fBusPatchId  = event.fBusPatchId;
-  fBufSize     = event.fBufSize;
 
-  fBlkId = event.fBlkId;
-  fDspId = event.fDspId;
-
-  fData =  new UInt_t[event.fBufSize];
   for (int i = 0; i < event.fBufSize; i++)
     fData[i] = event.fData[i];
 }

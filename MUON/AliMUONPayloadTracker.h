@@ -28,8 +28,6 @@ class AliMUONBlockHeader;
 class AliMUONPayloadTracker: public TObject {
   public :
     AliMUONPayloadTracker();
-    AliMUONPayloadTracker(const AliMUONPayloadTracker& stream);
-    AliMUONPayloadTracker& operator = (const AliMUONPayloadTracker& stream);
     virtual ~AliMUONPayloadTracker();
 
     Int_t GetMaxBlock() const {return fMaxBlock;}
@@ -50,9 +48,8 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONBusStruct*       GetBusPatchInfo() const {return fBusStruct;}
     AliMUONDDLTracker*      GetDDLTracker()   const {return fDDLTracker;}
 
-  protected :
+  private :
 
- 
     Int_t  fBusPatchId;   ///< entry of buspatch structure
     Int_t  fDspId;        ///< entry of Dsp header
     Int_t  fBlkId;        ///< entry of Block header
@@ -66,6 +63,9 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONBusStruct*       fBusStruct;       //!< pointer for local structure
     AliMUONBlockHeader*     fBlockHeader;     //!< pointer for block structure 
     AliMUONDspHeader*       fDspHeader;       //!< pointer for dsp structure 
+
+    AliMUONPayloadTracker(const AliMUONPayloadTracker& stream);
+    AliMUONPayloadTracker& operator = (const AliMUONPayloadTracker& stream);
 
     Bool_t CheckDataParity();
 
