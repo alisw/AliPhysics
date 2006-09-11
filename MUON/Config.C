@@ -173,6 +173,8 @@ void Config(char directory[100]="", char option[6]="param")
   // AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
   //                               "sdigitizer:AliMUONSDigitizerV2",
   //                               "digitizer:NewDigitizerNewTrigger");
+  // activate trigger cluster-size i.e. ResponseTriggerV1 (default/v1 = 0/1)
+  // MUON->SetTriggerResponseV1(0);
   //
   // To enable Trigger Chamber Efficiency, please use :
   //

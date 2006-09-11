@@ -33,6 +33,7 @@
 #include "AliMUONChamber.h"
 #include "AliMUONResponseV0.h"
 #include "AliMUONResponseTrigger.h"
+#include "AliMUONResponseTriggerV1.h"
 
 ClassImp(AliMUONResponseFactory)
 
@@ -182,10 +183,16 @@ void AliMUONResponseFactory::BuildStation6()
 {
 /// Configuration for Trigger Chambers   (Station 6,7) ---------           
 
-  for (Int_t chamber = 10; chamber < 14; chamber++) {
-   
-    fMUON->SetResponseModel(chamber, new AliMUONResponseTrigger);
-    fMUON->Chamber(chamber).SetChargeCorrel(0); // same charge on both cathodes
+    Bool_t resTrigV1 = fMUON->GetTriggerResponseV1();    
+
+    for (Int_t chamber = 10; chamber < 14; chamber++) {
+	
+	if (!resTrigV1) 
+	    fMUON->SetResponseModel(chamber, new AliMUONResponseTrigger);
+    	else 
+	    fMUON->SetResponseModel(chamber, new AliMUONResponseTriggerV1);
+	
+	fMUON->Chamber(chamber).SetChargeCorrel(0); // same charge on both cathodes
   }
 }       
 

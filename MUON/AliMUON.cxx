@@ -593,3 +593,14 @@ AliMUON::ResetGeometryBuilder()
   fGeometryBuilder
     ->AddBuilder(new AliMUONCommonGeometryBuilder(this));
 }
+
+//____________________________________________________________________
+Bool_t  AliMUON::GetTriggerResponseV1() const
+{
+///
+/// Returns fTriggerResponseV1
+///  
+    return fTriggerResponseV1;
+    
+}  
+
