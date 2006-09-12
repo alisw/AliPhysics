@@ -5,7 +5,7 @@
 
 /// \ingroup base
 /// \class AliMUONDataIterator
-/// \brief
+/// \brief An iterator on MUON data structures (so far only Digits).
 /// 
 /// \author Laurent Aphecetche
 
@@ -43,7 +43,7 @@ private:
   AliMUONDataIterator(const AliMUONDataIterator& rhs);
   AliMUONDataIterator& operator=(const AliMUONDataIterator& rhs);
   
-  ClassDef(AliMUONDataIterator,0) // 
+  ClassDef(AliMUONDataIterator,0) // Iterator on MUON data structures.
 };
 
 #endif
