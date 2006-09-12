@@ -29,11 +29,10 @@ class AliMUONResponseFactory : public  TNamed {
     void Build(AliMUON* where);
     void BuildStation(AliMUON* where, Int_t stationNumber);
 
-  protected:
+  private:
     AliMUONResponseFactory(const AliMUONResponseFactory& rhs);
     AliMUONResponseFactory& operator=(const AliMUONResponseFactory& rhs);
 
-  private:
     void BuildCommon();
     void BuildStation1();
     void BuildStation2();
