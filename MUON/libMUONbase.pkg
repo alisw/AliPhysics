@@ -33,6 +33,7 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONV2DStore.cxx \
         AliMUONV1DStore.cxx \
         AliMUON2DMap.cxx \
+        AliMUON2DMapIterator.cxx \
         AliMUON1DArray.cxx \
         AliMUONVCalibParam.cxx \
         AliMUONCalibParam1I.cxx \
