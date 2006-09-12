@@ -18,7 +18,10 @@
 #include "AliMUON2DMap.h"
 
 #include "AliLog.h"
+#include "AliMUONVDataIterator.h"
+#include "AliMUON2DMapIterator.h"
 #include "AliMpExMap.h"
+#include "AliMpIntPair.h"
 
 /// \class AliMUON2DMap
 /// \brief Basic implementation of AliMUONV2DStore container using
@@ -87,6 +90,19 @@ AliMUON2DMap::Get(Int_t i, Int_t j) const
     AliMpExMap* m = dynamic_cast<AliMpExMap*>(o);
     if (!m) AliFatal(Form("fMap[%d] not of the expected type",i));
     return m->GetValue(j);
+  }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+AliMUONVDataIterator*
+AliMUON2DMap::Iterator() const
+{
+  // Create and return an iterator on this map
+  // Returned iterator must be deleted by user.
+  if ( fMap ) 
+  {
+    return new AliMUON2DMapIterator(*fMap);
   }
   return 0x0;
 }
