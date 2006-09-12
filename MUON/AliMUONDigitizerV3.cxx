@@ -88,6 +88,9 @@ fTriggerProcessor(0x0),
 fTriggerCodeVersion(triggerCodeVersion),
 fUseTriggerEfficiency(useTriggerEfficiency),
 fTriggerEfficiency(0x0),
+fFindDigitIndexTimer(),
+fGenerateNoisyDigitsTimer(),
+fExecTimer(),
 fNoiseFunction(0x0),
 fGenerateNoisyDigits(generateNoisyDigits)
 {
@@ -98,15 +101,6 @@ fGenerateNoisyDigits(generateNoisyDigits)
   fGenerateNoisyDigitsTimer.Start(kTRUE); fGenerateNoisyDigitsTimer.Stop();
   fExecTimer.Start(kTRUE); fExecTimer.Stop();
   fFindDigitIndexTimer.Start(kTRUE); fFindDigitIndexTimer.Stop();
-}
-
-//______________________________________________________________________________
-AliMUONDigitizerV3::AliMUONDigitizerV3(const AliMUONDigitizerV3& right) 
-  : AliDigitizer(right) 
-{  
-/// Protected copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
@@ -134,20 +128,6 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
                fExecTimer.RealTime(),fExecTimer.CpuTime()));
   
 }
-
-//______________________________________________________________________________
-AliMUONDigitizerV3& 
-AliMUONDigitizerV3::operator=(const AliMUONDigitizerV3& right)
-{
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //_____________________________________________________________________________
 void 

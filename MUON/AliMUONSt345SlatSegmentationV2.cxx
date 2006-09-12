@@ -54,6 +54,7 @@ fPlaneType(kBendingPlane),
 fSlat(0),
 fSlatSegmentation(0),
 fPadIterator(0),
+fCurrentPad(),
 fXhit(FMAX),
 fYhit(FMAX)
 {
@@ -72,6 +73,7 @@ fPlaneType(bendingOrNonBending),
 fSlat(0),
 fSlatSegmentation(0),
 fPadIterator(0),
+fCurrentPad(),
 fXhit(FMAX),
 fYhit(FMAX)
 { 

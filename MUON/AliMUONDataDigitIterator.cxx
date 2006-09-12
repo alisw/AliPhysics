@@ -43,7 +43,10 @@ AliMUONDataDigitIterator::AliMUONDataDigitIterator(const AliMUONData* data,
 AliMUONVDataIterator(),
 fData(data),
 fFirstChamber(firstChamber),
-fLastChamber(lastChamber)
+fLastChamber(lastChamber),
+fDigits(0x0),
+fCurrentDigit(-1),
+fCurrentChamber(-1)
 {
   /// Standard constructor
   Reset();
@@ -52,7 +55,13 @@ fLastChamber(lastChamber)
 //_____________________________________________________________________________
 AliMUONDataDigitIterator::AliMUONDataDigitIterator(const AliMUONDataDigitIterator& rhs)
 : 
-AliMUONVDataIterator()
+AliMUONVDataIterator(),
+fData(0x0),
+fFirstChamber(-1),
+fLastChamber(-1),
+fDigits(0x0),
+fCurrentDigit(-1),
+fCurrentChamber(-1)
 {
   /// Copy constructor
 

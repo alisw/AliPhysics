@@ -60,33 +60,12 @@ ClassImp(AliMUONResponseFactory)
 }
 
 //__________________________________________________________________________
-AliMUONResponseFactory::AliMUONResponseFactory(const AliMUONResponseFactory& rhs)
- : TNamed(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//__________________________________________________________________________
 
 AliMUONResponseFactory::~AliMUONResponseFactory()
 {
 /// Destructor
 	AliDebug(1,Form("dtor this=%p",this));
 }
-
-//__________________________________________________________________________
-AliMUONResponseFactory&  AliMUONResponseFactory::operator=(const AliMUONResponseFactory& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
           
 //__________________________________________________________________________
 void AliMUONResponseFactory::BuildCommon() 

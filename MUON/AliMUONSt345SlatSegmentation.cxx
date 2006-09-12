@@ -50,6 +50,11 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation()
 	fNpx(999999),
 	fNpy(999999),
 	fWireD(0.0),
+  fRtype(0),
+  fSector(0),
+  fDxPCB(0.0),
+  fDyPCB(0.0),
+  fCy(0.0),
 	fXhit(0.),
 	fYhit(0.),
 	fIx(0),
@@ -59,7 +64,11 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation()
 	fIxmin(0),
 	fIxmax(0),
 	fIymin(0),
-        fIymax(0),
+  fIymax(0),
+  fXmin(0.0),
+  fXmax(0.0),
+  fYmin(0.0),
+  fYmax(0.0),
 	fInitDone(kFALSE)
 {
 /// Default constructor
@@ -80,6 +89,11 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending)
 	fNpx(999999),
 	fNpy(999999),
 	fWireD(0.25),
+  fRtype(0),
+  fSector(0),
+  fDxPCB(0.0),
+  fDyPCB(0.0),
+  fCy(0.0),
 	fXhit(0.),
 	fYhit(0.),
 	fIx(0),
@@ -90,8 +104,11 @@ AliMUONSt345SlatSegmentation::AliMUONSt345SlatSegmentation(Bool_t bending)
 	fIxmax(0),
 	fIymin(0),
 	fIymax(0),
+  fXmin(0.0),
+  fXmax(0.0),
+  fYmin(0.0),
+  fYmax(0.0),
 	fInitDone(kFALSE)
-
 {
 /// Standard constructor
 

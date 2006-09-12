@@ -75,6 +75,7 @@ AliMUONResponseV0::AliMUONResponseV0()
   fChargeSpreadY(0.0),
   fSigmaIntegration(0.0),
   fMaxAdc(0),
+  fSaturation(0),
   fZeroSuppression(0),
   fChargeCorrel(0.0),
   fMathieson(new AliMUONMathieson),
@@ -84,32 +85,11 @@ AliMUONResponseV0::AliMUONResponseV0()
     AliDebug(1,Form("Default ctor"));
 }
 
-   //_________________________________________________________________________
-AliMUONResponseV0::AliMUONResponseV0(const AliMUONResponseV0& rhs)
- : AliMUONResponse(rhs)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-   //__________________________________________________________________________
+//__________________________________________________________________________
 AliMUONResponseV0::~AliMUONResponseV0()
 {
   AliDebug(1,"");
   delete fMathieson;
-}
-
-   //________________________________________________________________________
-AliMUONResponseV0& AliMUONResponseV0::operator = (const AliMUONResponseV0& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }
 
 //______________________________________________________________________________
@@ -123,20 +103,6 @@ AliMUONResponseV0::Print(Option_t*) const
     << fChargeSpreadY
     << " ChargeCorrelation=" << fChargeCorrel
     << endl;
-  
-//Float_t fChargeSlope;              // Slope of the charge distribution
-//Float_t fChargeSpreadX;            // Width of the charge distribution in x
-//Float_t fChargeSpreadY;            // Width of the charge distribution in y
-//Float_t fSigmaIntegration;         // Number of sigma's used for charge distribution
-//Int_t   fMaxAdc;                   // Maximum ADC channel
-//Int_t   fSaturation;               // Pad saturation in ADC channel
-//Int_t   fZeroSuppression;          // Zero suppression threshold
-//Float_t fChargeCorrel;             // amplitude of charge correlation on 2 cathods
-//                                   // is RMS of ln(q1/q2)
-//AliMUONMathieson* fMathieson;      // pointer to mathieson fct
-//Float_t fChargeThreshold;          // Charges below this threshold are = 0  
-//
-
 }
 
   //__________________________________________________________________________

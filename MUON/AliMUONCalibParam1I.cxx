@@ -52,7 +52,8 @@ AliMUONCalibParam1I::AliMUONCalibParam1I()
 //_____________________________________________________________________________
 AliMUONCalibParam1I::AliMUONCalibParam1I(Int_t theSize, Int_t fillWithValue) 
 : AliMUONVCalibParam(),
-  fSize(theSize)
+  fSize(theSize),
+  fValues(0x0)
 {
 /// Normal constructor, where theSize specifies the number of channels handled
 /// by this object, and fillWithValue the default value assigned to each
