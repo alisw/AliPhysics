@@ -60,9 +60,9 @@ ClassImp(AliMUONTriggerDecisionV1)
 AliMUONTriggerDecisionV1::AliMUONTriggerDecisionV1(AliMUONData* data)
   : TTask("AliMUONTriggerDecisionV1",
           "From trigger digits to Local and Global Trigger objects (old style)"),
+  fTriggerCircuit(new TObjArray(AliMUONConstants::NTriggerCircuit())),
     fMUONData(data),
-    fMUON(0x0),
-    fTriggerCircuit(new TObjArray(AliMUONConstants::NTriggerCircuit()))
+    fMUON(0x0)
 {
   // Constructor 
 
