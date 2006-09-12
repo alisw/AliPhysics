@@ -64,7 +64,8 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard()
       fStripY11(0),
       fDev(0),
       fOutput(0),
-      fLUT(0x0)      
+      fLUT(0x0),
+      fCoinc44(0)      
 {
 //* constructor
 //*
@@ -95,7 +96,8 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const char *name, Int_t a,
       fStripY11(0),
       fDev(0),
       fOutput(0),
-      fLUT(lut)
+      fLUT(lut),
+      fCoinc44(0)
 {
 //* constructor
 //*
@@ -125,7 +127,8 @@ AliMUONLocalTriggerBoard::AliMUONLocalTriggerBoard(const AliMUONLocalTriggerBoar
       fStripY11(right.fStripY11),
       fDev(right.fDev),
       fOutput(right.fOutput),
-      fLUT(right.fLUT)
+      fLUT(right.fLUT),
+      fCoinc44(right.fCoinc44)
 {  
 /// Protected copy constructor (not implemented)
 
@@ -468,8 +471,7 @@ void AliMUONLocalTriggerBoard::Module(char *mod)
 }
 
 //___________________________________________
-void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[32], Int_t ch4q[32], 
-                                     Int_t coinc44)
+void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[32], Int_t ch4q[32])
 {
 // note : coinc44 = flag 0 or 1 (0 coincidence -> 3/4, 1 coincidence -> 4/4)
 //---------------------------------------------------------
@@ -577,7 +579,7 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
       !dbleHit1[14] & !dbleHit1[13] & !dbleHit1[12] & !dbleHit1[11] & 
       !dbleHit1[10] & !dbleHit1[9]  & !dbleHit1[8]  & !dbleHit1[7]  & 
       !dbleHit1[6]  & !dbleHit1[5]  & !dbleHit1[4]  & !dbleHit1[3]  & 
-      !dbleHit1[2]  & !dbleHit1[1]  & !dbleHit1[0]  & !coinc44;
+      !dbleHit1[2]  & !dbleHit1[1]  & !dbleHit1[0]  & !fCoinc44;
 
    Int_t notOr2= !dbleHit2[62] & !dbleHit2[61] & !dbleHit2[60] & !dbleHit2[59] & 
       !dbleHit2[58] & !dbleHit2[57] & !dbleHit2[56] & !dbleHit2[55] & 
@@ -594,7 +596,7 @@ void AliMUONLocalTriggerBoard::TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[
       !dbleHit2[14] & !dbleHit2[13] & !dbleHit2[12] & !dbleHit2[11] & 
       !dbleHit2[10] & !dbleHit2[9]  & !dbleHit2[8]  & !dbleHit2[7]  & 
       !dbleHit2[6]  & !dbleHit2[5]  & !dbleHit2[4]  & !dbleHit2[3]  & 
-      !dbleHit2[2]  & !dbleHit2[1]  & !dbleHit2[0]  & !coinc44;	
+      !dbleHit2[2]  & !dbleHit2[1]  & !dbleHit2[0]  & !fCoinc44;	
 
 // DS reduction
    for (i=0; i<31; i++) {
@@ -854,8 +856,7 @@ void AliMUONLocalTriggerBoard::Sort2x5(Int_t dev1[6], Int_t dev2[6],
 
 //___________________________________________
 void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], Int_t y4[16],
-                                     Int_t y3u[16], Int_t y3d[16], Int_t y4u[16], Int_t y4d[16],
-                                     Int_t coinc44)
+                                     Int_t y3u[16], Int_t y3d[16], Int_t y4u[16], Int_t y4d[16])
 {
 // note : resMid = 1 -> cancel 
 //---------------------------------------------------------
@@ -1006,8 +1007,8 @@ void AliMUONLocalTriggerBoard::TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], I
       !dble2[3]  & !dble2[2]  & !dble2[1]  & !dble2[0];
 
    for (i=0; i<16; i++) {
-      sgle1[i] = sgle1[i] & notOr1 & !coinc44;
-      sgle2[i] = sgle2[i] & notOr2 & !coinc44;
+      sgle1[i] = sgle1[i] & notOr1 & !fCoinc44;
+      sgle2[i] = sgle2[i] & notOr2 & !fCoinc44;
    }
 
 //---------------------------------------------------------
@@ -1292,9 +1293,9 @@ void AliMUONLocalTriggerBoard::Response()
       xXX4[i+24] = x4u[i];
    }
    
-   Int_t coinc44 = 0;
+//   Int_t coinc44 = 0;
    
-   TrigX(xX1, xX2, xXX3, xXX4, coinc44);   
+   TrigX(xX1, xX2, xXX3, xXX4);   
 
    Int_t yY1[16], yY2[16], yY3[16], yY4[16];
    
@@ -1328,7 +1329,7 @@ void AliMUONLocalTriggerBoard::Response()
       yY4D[i] = y4d[i];
    }
 
-   TrigY(yY1, yY2, yY3, yY4, yY3U, yY3D, yY4U, yY4D, coinc44);
+   TrigY(yY1, yY2, yY3, yY4, yY3U, yY3D, yY4U, yY4D);
    
 // ASIGN fLutLpt, fLutHpt, fLutApt
    LocalTrigger(); 

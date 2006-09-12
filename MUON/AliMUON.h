@@ -126,6 +126,10 @@ class AliMUON : public  AliDetector
     virtual void  SetTriggerResponseV1(Bool_t trigResV1 = false)
 	{fTriggerResponseV1 = trigResV1;}
     virtual Bool_t GetTriggerResponseV1() const;
+    // trigger coinc44
+    virtual void  SetTriggerCoinc44(Int_t trigCoinc44 = 0)
+	{fTriggerCoinc44 = trigCoinc44;}
+    virtual Int_t GetTriggerCoinc44() const;
     
     // Getters
                   /// Return reference to Chamber \a id
@@ -181,6 +185,7 @@ class AliMUON : public  AliDetector
     // setting scaler for trigger
     Bool_t fTriggerScalerEvent; ///< Flag to generates scaler event
     Bool_t fTriggerResponseV1;  ///< Flag to select TriggerResponseV1
+    Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 
     
     TString fSDigitizerType;    ///< Class to use for SDigitizer
     TString fDigitizerType;     ///< Class to use for Digitizer

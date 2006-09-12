@@ -107,7 +107,15 @@ void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
 {  
  //* BUILD ALL ELECTRONICS
  //*
- 
+
+// get coinc44 from AliMUON (added 12/09/06)
+  AliMUON *pMUON  = (AliMUON*)gAlice->GetModule("MUON");
+  Int_t coinc44 = pMUON->GetTriggerCoinc44();
+  if (coinc44 != 0 && coinc44 != 1) {
+      AliFatal("Coinc 44 should be equal to 0 or 1");
+      return;
+  }
+
   fCrates->ReadFromFile(gSystem->ExpandPathName(fSourceFileName.Data()));
   
   if ( !calibData ) return;
@@ -123,6 +131,7 @@ void AliMUONTriggerElectronics::Factory(AliMUONCalibrationData* calibData)
   while ( (localBoard=fCrates->NextLocalBoard()) )
   {
     localBoard->SetLUT(lut);
+    localBoard->SetCoinc44(coinc44);
   }
 }
 

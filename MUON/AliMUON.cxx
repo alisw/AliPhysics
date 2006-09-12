@@ -119,6 +119,8 @@ AliMUON::AliMUON()
     fMaxIterPad(0),
     fCurIterPad(0),
     fTriggerScalerEvent(kFALSE),
+    fTriggerResponseV1(kFALSE),
+    fTriggerCoinc44(0),
     fSDigitizerType(""),
     fDigitizerType(""),
   fRawWriter(0x0)
@@ -152,7 +154,9 @@ AliMUON::AliMUON(const char *name, const char *title,
     fMaxDestepAlu(-1), // in the calculation of the tracking parameters
     fMaxIterPad(0),
     fCurIterPad(0),
-	  fTriggerScalerEvent(kFALSE),
+    fTriggerScalerEvent(kFALSE),
+    fTriggerResponseV1(kFALSE),
+    fTriggerCoinc44(0),
     fSDigitizerType(sDigitizerClassName),
     fDigitizerType(digitizerClassName),
   fRawWriter(0x0)
@@ -601,6 +605,16 @@ Bool_t  AliMUON::GetTriggerResponseV1() const
 /// Returns fTriggerResponseV1
 ///  
     return fTriggerResponseV1;
+    
+}  
+
+//____________________________________________________________________
+Int_t  AliMUON::GetTriggerCoinc44() const
+{
+///
+/// Returns fTriggerCoinc44
+///  
+    return fTriggerCoinc44;
     
 }  
 

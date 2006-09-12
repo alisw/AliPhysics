@@ -41,7 +41,8 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       Bool_t HasLUT() const { return (fLUT != 0); }
       
       void SetLUT(AliMUONTriggerLut* lut) { fLUT = lut; }
-
+      void SetCoinc44(Int_t coinc44=0) { fCoinc44 = coinc44; }
+      
       virtual void     Setbit(Int_t strip, Int_t cathode, Int_t chamber);
       virtual void     SetbitM(Int_t strip, Int_t cathode, Int_t chamber);
 
@@ -83,15 +84,13 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     Mask(Int_t index, UShort_t value);
 
-      virtual void     TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[32], Int_t ch4q[32], 
-                             Int_t coinc44);
+      virtual void     TrigX(Int_t ch1q[16], Int_t ch2q[16], Int_t ch3q[32], Int_t ch4q[32]);
       
       virtual void     Sort2x5(Int_t dev1[6], Int_t dev2[6],
                                Int_t minDev[6], Int_t &dev1GTdev2);
       
       virtual void     TrigY(Int_t y1[16], Int_t y2[16], Int_t y3[16], Int_t y4[16],
-                             Int_t y3u[16], Int_t y3d[16], Int_t y4u[16], Int_t y4d[16], 
-                             Int_t coinc44);
+                             Int_t y3u[16], Int_t y3d[16], Int_t y4u[16], Int_t y4d[16]);
 
       virtual void     SetXYU(UShort_t V[2][4]) {for (Int_t i=0;i<2;i++) for (Int_t j=0;j<4;j++) fXYU[i][j] = V[i][j];}
 
@@ -154,8 +153,9 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       Int_t    fMinDevStrip[5];   ///< X (from algo)
       Int_t    fMinDev[5];        ///< Dev (from algo)
       Int_t    fCoordY[5];        ///< Y (from algo)
-
+      
       AliMUONTriggerLut *fLUT;    //!< Pointer to trigger LUT, that we do not own.
+      Int_t    fCoinc44;          ///< Coinc 44 (0/1 = coinc34/coinc44)
       
       ClassDef(AliMUONLocalTriggerBoard,1) 
 };

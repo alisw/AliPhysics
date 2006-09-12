@@ -171,10 +171,12 @@ void Config(char directory[100]="", char option[6]="param")
   // To get brand new trigger code, please use :
   //
   // AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
-  //                               "sdigitizer:AliMUONSDigitizerV2",
-  //                               "digitizer:NewDigitizerNewTrigger");
+  //				"sdigitizer:AliMUONSDigitizerV2",
+  //				"digitizer:NewDigitizerNewTrigger");
   // activate trigger cluster-size i.e. ResponseTriggerV1 (default/v1 = 0/1)
   // MUON->SetTriggerResponseV1(0);
+  // activate 4/4 trigger coincidence (0(default)/1 = coinc 34/44)
+  // MUON->SetTriggerCoinc44(0);
   //
   // To enable Trigger Chamber Efficiency, please use :
   //
