@@ -16,11 +16,15 @@
 #  include "TObject.h"
 #endif
 
+class AliMUONVDataIterator;
+
 class AliMUONV2DStore : public TObject
 {
 public:
   AliMUONV2DStore();
   virtual ~AliMUONV2DStore();
+  
+  virtual AliMUONVDataIterator* Iterator() const { return 0x0; }
   
   /// Return the object stored at (i,j).
   virtual TObject* Get(Int_t i, Int_t j) const = 0;
