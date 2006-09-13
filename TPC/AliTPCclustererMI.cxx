@@ -849,6 +849,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   for (Int_t i=0; i<nchannels; i++){
     dtime[i] = i;
     dsignal[i] = signal[i];
+    if (i<offset) continue;
     if (signal[i]>max && i <fMaxTime-100) {  // temporary remove spike signals at the end
       max = signal[i];
       maxPos = i;
@@ -958,7 +959,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   Double_t ceSumThreshold=8.*cerms;
   const Int_t    cemin=5;  // range for the analysis of the ce signal +- channels from the peak
   const Int_t    cemax=5;
-  if (max-mean06>ceThreshold)   for (Int_t i=nchannels-2; i>1; i--){
+  for (Int_t i=nchannels-2; i>1; i--){
     if ( (dsignal[i]-mean06)>ceThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] ){
       cemaxpos=i;
       break;
@@ -966,7 +967,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   }
   if (cemaxpos!=0){
       for (Int_t i=cemaxpos-cemin; i<cemaxpos+cemax; i++){
-	  if (i>0 && i<nchannels){
+	  if (i>0 && i<nchannels&&dsignal[i]- cemean>0){
 	      Double_t val=dsignal[i]- cemean;
 	      ceTime+=val*dtime[i];
 	      ceQsum+=val;
@@ -982,6 +983,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	      "Max="<<ceQmax<<
 	      "Qsum="<<ceQsum<<
 	      "Time="<<ceTime<<
+	      "RMS06="<<rms06<<
 	      //
 	      "\n";
       }
@@ -997,17 +999,18 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   Int_t    ggmaxpos= 0;
   Double_t ggThreshold=5.*ggrms;
   Double_t ggSumThreshold=8.*ggrms;
-  const Int_t    ggmin=5;  // range for the analysis of the gg signal +- channels from the peak
-  const Int_t    ggmax=5;
-  if (max-mean06>ggThreshold)   for (Int_t i=1; i<nchannels-1; i++){
-    if ( (dsignal[i]-mean06)>ggThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] ){
+
+  for (Int_t i=1; i<nchannels-1; i++){
+    if ( (dsignal[i]-mean06)>ggThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] &&
+	 (dsignal[i]+dsignal[i+1]+dsignal[i-1]-3*mean06)>ggSumThreshold){
       ggmaxpos=i;
+      if (dsignal[i-1]>dsignal[i+1]) ggmaxpos=i-1;
       break;
     }
   }
   if (ggmaxpos!=0){
-      for (Int_t i=ggmaxpos-ggmin; i<ggmaxpos+ggmax; i++){
-	  if (i>0 && i<nchannels && dsignal[i]>0){
+      for (Int_t i=ggmaxpos-1; i<ggmaxpos+3; i++){       
+	  if (i>0 && i<nchannels && dsignal[i]-ggmean>0){
 	      Double_t val=dsignal[i]- ggmean;
 	      ggTime+=val*dtime[i];
 	      ggQsum+=val;
@@ -1023,6 +1026,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	      "Max="<<ggQmax<<
 	      "Qsum="<<ggQsum<<
 	      "Time="<<ggTime<<
+	      "RMS06="<<rms06<<
 	      //
 	      "\n";
       }
