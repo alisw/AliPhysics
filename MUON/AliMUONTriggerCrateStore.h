@@ -16,6 +16,8 @@
 #  include "TObject.h"
 #endif
 
+#include "TString.h"
+
 class AliMUONLocalTriggerBoard;
 class AliMUONTriggerCrate;
 class AliMpExMap;
@@ -31,7 +33,8 @@ public:
   void FirstCrate();
   AliMUONTriggerCrate* NextCrate();
   AliMUONTriggerCrate* Crate(const char* crateName) const;
-  
+  AliMUONTriggerCrate* Crate(Int_t ddl, Int_t reg) const;
+
   Int_t NumberOfLocalBoards() const;
   void FirstLocalBoard();
   AliMUONLocalTriggerBoard* NextLocalBoard();
@@ -39,6 +42,7 @@ public:
   
   void ReadFromFile(const char* crateFile =
                     "$ALICE_ROOT/MUON/mapping/data/stationTrigger/crate.dat");
+ 
 
 protected:
   AliMUONTriggerCrateStore(const AliMUONTriggerCrateStore& rhs);
@@ -54,6 +58,8 @@ private:
   TExMapIter* fLBIterator; //!< iterator for boards (through crates)
   AliMUONTriggerCrate* fCurrentCrate; //!< used for iterating on local board
   Int_t fCurrentLocalBoard; //!< used for iterating on local board
+
+  TString GetCrateName(Int_t ddl, Int_t reg) const;
 
   ClassDef(AliMUONTriggerCrateStore,1) // Reader for CRATE.TXT file
 };

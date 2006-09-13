@@ -56,7 +56,6 @@ private:
   }
 
   Int_t GetBusPatch(const AliMUONDigit& digit);
-  void  GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg);
 
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
 

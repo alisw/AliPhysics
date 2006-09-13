@@ -40,10 +40,6 @@ class AliMUONReconstructor: public AliReconstructor
     virtual void         FillESD(AliRunLoader* runLoader, AliESD* esd) const;
     virtual void         FillESD(AliRunLoader* runLoader, 
 				 AliRawReader* /*rawReader*/, AliESD* esd) const;
-
-protected:
-    AliMUONReconstructor(const AliMUONReconstructor& right);
-    AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
      
 private:
 
@@ -55,6 +51,9 @@ private:
 
     mutable AliMUONCalibrationData* fCalibrationData; //!< pointer to calibration data
     
+    AliMUONReconstructor(const AliMUONReconstructor& right);
+    AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
+
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
 };
 

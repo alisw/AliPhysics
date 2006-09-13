@@ -113,6 +113,50 @@ AliMUONTriggerCrateStore::Crate(const char *name) const
 }
 
 //_____________________________________________________________________________
+AliMUONTriggerCrate* 
+AliMUONTriggerCrateStore::Crate(Int_t ddl, Int_t reg) const
+{
+  /// return a crate by name
+  if ( !fCrates )
+  {
+    AliError("Object not properly initialized");
+    return 0x0;
+  }
+  TString name = GetCrateName(ddl, reg);
+  return static_cast<AliMUONTriggerCrate*>(fCrates->GetValue(name.Data()));
+}
+// //____________________________________________________________________
+TString AliMUONTriggerCrateStore::GetCrateName(Int_t ddl, Int_t reg) const
+{
+  // set crate name from DDL & reg number
+
+  Char_t name[10];
+  switch(reg) {
+      case 0:
+      case 1:
+	sprintf(name,"%d", reg+1);
+	break;
+      case 2:
+	strcpy(name, "2-3");
+	break;
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+	sprintf(name,"%d", reg);
+	break;
+  }
+
+  // crate Right for first DDL
+  if (ddl == 0)
+    strcat(name, "R");
+  else 
+    strcat(name, "L"); 
+
+  return TString(name);
+}
+//_____________________________________________________________________________
 void
 AliMUONTriggerCrateStore::FirstCrate()
 {

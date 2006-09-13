@@ -808,9 +808,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     for (Int_t iReg = 0; iReg < 8; iReg++) {
 
       // crate info
-      Char_t crateName[10];
-      GetCrateName(crateName, iDDL, iReg);
-      AliMUONTriggerCrate* crate = fCrateManager->Crate(crateName);
+      AliMUONTriggerCrate* crate = fCrateManager->Crate(iDDL, iReg);
 
       if (!crate) 
 	AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, iDDL));
@@ -971,31 +969,4 @@ void AliMUONRawWriter::SetScalersNumbers()
  
   fScalerEvent = kTRUE;
 }
-//____________________________________________________________________
-void  AliMUONRawWriter::GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg)
-{
-  // set crate name from DDL & reg number
 
-      switch(iReg) {
-      case 0:
-      case 1:
-	sprintf(name,"%d", iReg+1);
-	break;
-      case 2:
-	strcpy(name, "2-3");
-	break;
-      case 3:
-      case 4:
-      case 5:
-      case 6:
-      case 7:
-	sprintf(name,"%d", iReg);
-	break;
-      }
-
-      // crate Right for first DDL
-      if (iDDL == 0)
-	strcat(name, "R");
-      else 
-	strcat(name, "L"); 
-}

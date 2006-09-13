@@ -77,9 +77,9 @@
 
 ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 //__________________________________________________________________________
-AliMUONDigitMaker::AliMUONDigitMaker(AliMUONData* data)
+AliMUONDigitMaker::AliMUONDigitMaker()
   : TObject(),
-    fMUONData(data),
+    fMUONData(0x0),
     fSegFactory(new AliMpSegFactory()),
     fBusPatchManager(new AliMpBusPatch()),
     fScalerEvent(kFALSE),
@@ -112,33 +112,6 @@ AliMUONDigitMaker::AliMUONDigitMaker(AliMUONData* data)
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
   fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
 
-}
-
-//__________________________________________________________________________
-AliMUONDigitMaker::AliMUONDigitMaker()
-  : TObject(),
-    fMUONData(0),
-    fSegFactory(0),
-    fBusPatchManager(0),
-    fScalerEvent(kFALSE),
-    fRawStreamTracker(0),
-    fRawStreamTrigger(0),
-    fDigit(0),
-    fLocalTrigger(0),
-    fGlobalTrigger(0),
-    fCrateManager(0),
-    fTrackerTimer(),
-    fTriggerTimer(),
-    fMappingTimer()
-{
-  //
-  // Default Constructor
-  //
-  AliDebug(1,""); 
-  fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
-  fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
-  fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
-  
 }
 
 //__________________________________________________________________________
@@ -364,10 +337,7 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
     for(Int_t iReg = 0; iReg < nReg ;iReg++){   //reg loop
 
      // crate info
-      Char_t crateName[10];
-      GetCrateName(crateName, fRawStreamTrigger->GetDDL(), iReg);
-
-      AliMUONTriggerCrate* crate = fCrateManager->Crate(crateName);
+      AliMUONTriggerCrate* crate = fCrateManager->Crate(fRawStreamTrigger->GetDDL(), iReg);
   
       if (!crate) 
 	AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, fRawStreamTrigger->GetDDL()));

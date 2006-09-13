@@ -28,7 +28,7 @@ class AliMUONRawStreamTrigger;
 class AliMUONDigitMaker : public TObject 
 {
  public:
-  AliMUONDigitMaker(AliMUONData* data); // Constructor
+  AliMUONDigitMaker(); // Constructor
   virtual ~AliMUONDigitMaker(void); // Destructor
     
   // write raw data
@@ -44,9 +44,6 @@ class AliMUONDigitMaker : public TObject
 			  UChar_t channelId, AliMUONDigit* digit );
 
   void  SetScalerEvent() {fScalerEvent = kTRUE;}
-
- protected:
-  AliMUONDigitMaker();                  // Default constructor
 
  private:
 

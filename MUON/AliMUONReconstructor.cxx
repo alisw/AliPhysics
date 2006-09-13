@@ -48,20 +48,14 @@ ClassImp(AliMUONReconstructor)
 
 //_____________________________________________________________________________
 AliMUONReconstructor::AliMUONReconstructor()
-  : AliReconstructor(), fCalibrationData(0x0)
+  : AliReconstructor(), 
+    fRunLoader(0x0),
+    fDigitMaker(new AliMUONDigitMaker()), 
+    fCalibrationData(0x0) 
 {
 /// Default constructor
 
     AliDebug(1,"");
-}
-
-//______________________________________________________________________________
-AliMUONReconstructor::AliMUONReconstructor(const AliMUONReconstructor& right) 
-  : AliReconstructor(right) 
-{  
-/// Protected copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
@@ -71,21 +65,8 @@ AliMUONReconstructor::~AliMUONReconstructor()
 
   AliDebug(1,"");
   delete fCalibrationData;
+  delete fDigitMaker;
 }
-
-//______________________________________________________________________________
-AliMUONReconstructor& 
-AliMUONReconstructor::operator=(const AliMUONReconstructor& right)
-{
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //_____________________________________________________________________________
 TTask* 
@@ -277,7 +258,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
   // passing loader as argument.
   AliMUONTrackReconstructor recoEvent(loader, &data);
 
-  AliMUONDigitMaker rawData(&data);
+  fDigitMaker->SetMUONData(&data);
 
   AliMUONClusterReconstructor recoCluster(&data);
 
@@ -335,7 +316,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
     
     data.SetTreeAddress("D,GLT");
     rawTimer.Start(kFALSE);
-    rawData.Raw2Digits(rawReader);
+    fDigitMaker->Raw2Digits(rawReader);
     rawTimer.Stop();
     
     if ( calibration )
