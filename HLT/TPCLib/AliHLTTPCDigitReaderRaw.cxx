@@ -213,12 +213,18 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch
 	      if ( bin > fNTimeBins )
 		HLTFatal("Time bin out of range: %d (bin count %d)", bin, fNTimeBins);
 	    }
-	    continue;
+	    // stop at the fist error message in order to avoid endless messages and
+	    // to handle corrupted events
+	    //continue;
+	    break;
 	  } else if ((row-fRowOffset)*fNMaxPads*fNTimeBins+ pad*fNTimeBins + bin >=  fNMaxRows*fNMaxPads*fNTimeBins ) {
 	    if (errorCount++<maxErrorPrintout) {
 	      HLTFatal("index out of range: PAD=%d ||| ROW=%d ||| BIN=%d ||| OFFSET=%d ||| ROWOFFSET=%d", pad, row, bin, offset, fRowOffset);
 	    }
-	    continue;
+	    // stop at the fist error message in order to avoid endless messages and
+	    // to handle corrupted events
+	    //continue;
+	    break;
 	  } else {
 	    fData[ (row-fRowOffset)*fNMaxPads*fNTimeBins+ pad*fNTimeBins + bin ] = GetRealSignal() ;
 	  }

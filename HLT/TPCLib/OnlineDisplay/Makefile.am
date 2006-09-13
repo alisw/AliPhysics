@@ -23,11 +23,7 @@ libAliHLTTPCDisplay_la_SOURCES	= AliHLTTPCDisplayMain.cxx \
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
-CLASS_HDRS			= 
-
-
-pkginclude_HEADERS		= $(CLASS_HDRS) \
-				  AliHLTTPCDisplayMain.h  \
+CLASS_HDRS			= AliHLTTPCDisplayMain.h  \
 				  AliHLTTPCDisplay.h  \
 				  AliHLTTPCDisplay3D.h  \
 				  AliHLTTPCDisplayCharge.h  \
@@ -38,6 +34,7 @@ pkginclude_HEADERS		= $(CLASS_HDRS) \
 
 
 
+pkginclude_HEADERS		= $(CLASS_HDRS)
 
 # version info for the library
 libAliHLTTPCDisplay_la_LDFLAGS	= -L@ROOTLIBDIR@ \
@@ -49,6 +46,10 @@ libAliHLTTPCDisplay_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 
 # set the file name for the generated root dictionary
 DICTCPP				=  AliHLTTPCDisplay-DICT.cxx
+# add additional include files which are necessary for the compilation of the 
+# dictionary files and which are not part of the CLASS_HDRS
+DICTINCLUDE			= AliHLTTPCSpacePointData.h \
+				  AliHLTTPCTrackArray.h
 nodist_libAliHLTTPCDisplay_la_SOURCES  =  $(DICTCPP)
 
 CLEANFILES			= 

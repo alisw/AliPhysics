@@ -5,7 +5,7 @@ dnl template for the configuration script for the Alice HLT
 dnl framework and components
 dnl 
 dnl ------------------------------------------------------------------
-AC_INIT([Alice High Level Trigger] , [0.4-dev], [Matthias.Richter@ift.uib.no], alice-hlt)
+AC_INIT([Alice High Level Trigger] , [0.4], [Matthias.Richter@ift.uib.no], alice-hlt)
 
 dnl ------------------------------------------------------------------
 dnl the package from CVS contains the old Makefiles as well. In order to
@@ -237,8 +237,14 @@ if test "x$with_pubsub" != "xno" ; then
   save_CPPFLAGS=$CPPFLAGS
   save_LDFLAGS=$LDFLAGS
   save_LIBS=$LIBS
-  HOMER_CPPFLAGS="-I${with_pubsub}/include/HOMER/reader"
-  HOMER_LDFLAGS="-L${with_pubsub}/lib/`uname -s`-`uname -p`"
+  # currently the different versions of the HLT PubSub framework have a different
+  # directory layout
+  if test -d ${with_pubsub}/include/HOMER/reader ; then
+    HOMER_CPPFLAGS="-I${with_pubsub}/include/HOMER/reader"
+  else
+    HOMER_CPPFLAGS="-I${with_pubsub}/src/Util/HOMER/reader/include -I${with_pubsub}/src/Util/HOMER/data/include"
+  fi
+  HOMER_LDFLAGS="-L${with_pubsub}/lib/`uname -s`-`uname -m`"
   CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS"
   LIBS="$save_LIBS "
