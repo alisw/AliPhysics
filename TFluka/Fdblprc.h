@@ -133,6 +133,7 @@ const Double_t rhflmn = 1.0e-10;
 //*         twothi = 2/3                                                 *
 //*         thrfou = 3/4                                                 *
 //*         thrtwo = 3/2                                                 *
+//*         two2o3 = 2^2/3                                               *
 //*         pipipi = circumference / diameter                            *
 //*         twopip = 2 x pipipi                                          *
 //*         pip5o2 = 5/2 x pipipi                                        *
@@ -155,55 +156,56 @@ const Double_t rhflmn = 1.0e-10;
 //*                                                                      *
 //*----------------------------------------------------------------------*
 //*
-const Float_t  zersng = 0.e+00;
-const Double_t zerzer = 0.e+00;
-const Double_t oneone = 1.e+00;
-const Double_t twotwo = 2.e+00;
-const Double_t thrthr = 3.e+00;
-const Double_t foufou = 4.e+00;
-const Double_t fivfiv = 5.e+00;
-const Double_t sixsix = 6.e+00;
-const Double_t sevsev = 7.e+00;
-const Double_t eigeig = 8.e+00;
-const Double_t aninen = 9.e+00;
-const Double_t tenten = 10.e+00;
-const Double_t eleven = 11.e+00;
-const Double_t twelve = 12.e+00;
-const Double_t fiften = 15.e+00;
-const Double_t sixten = 16.e+00;
-const Double_t hlfhlf = 0.5e+00;
-const Double_t onethi = oneone/thrthr;
-const Double_t onefou = oneone/foufou;
-const Double_t onefiv = oneone/fivfiv;
-const Double_t onesix = oneone/sixsix;
-const Double_t onesev = oneone/sevsev;
-const Double_t oneeig = oneone/eigeig;
-const Double_t twothi = twotwo/thrthr;
-const Double_t thrfou = thrthr/foufou;
-const Double_t thrtwo = thrthr/twotwo;
-const Double_t fouthr = foufou/thrthr;    
-const Double_t pipipi = 3.141592653589793238462643383279e+00;
-const Double_t twopip = 6.283185307179586476925286766559e+00;
-const Double_t pip5o2 = 7.853981633974483096156608458199e+00;
-const Double_t pipisq = 9.869604401089358618834490999876e+00;
-const Double_t pihalf = 1.570796326794896619231321691640e+00;
-const Double_t erfa00 = 0.886226925452758013649083741671e+00;
-const Double_t sqrtpi = 1.772453850905516027298167483341e+00;
-const Double_t sqtwpi = 2.506628274631000502415765284811e+00;
-const Double_t eulero = 0.577215664901532860606512e+00;
-const Double_t eulexp = 1.781072417990197985236504e+00;
-const Double_t eullog = -0.5495393129816448223376619e+00;
-const Double_t e1m2eu = 0.8569023337737540831433017e+00;
-const Double_t eneper = 2.718281828459045235360287471353e+00;
-const Double_t sqrent = 1.648721270700128146848650787814e+00;
-const Double_t sqrtwo = 1.414213562373095048801688724210e+00;
-const Double_t sqrthr = 1.732050807568877293527446341506e+00;
-const Double_t sqrfiv = 2.236067977499789696409173668731e+00;
-const Double_t sqrsix = 2.449489742783178098197284074706e+00;
-const Double_t sqrsev = 2.645751311064590590501615753639e+00;
-const Double_t sqrt12 = 3.464101615137754587054892683012e+00;
-const Double_t s2fwhm = 2.354820045030949e+00;
-const Double_t twolog = 0.693147180559945309417232121458e+00;
+    const Float_t  zersng = 0.e+00;
+    const Double_t zerzer = 0.e+00;
+    const Double_t oneone = 1.e+00;
+    const Double_t twotwo = 2.e+00;
+    const Double_t thrthr = 3.e+00;
+    const Double_t foufou = 4.e+00;
+    const Double_t fivfiv = 5.e+00;
+    const Double_t sixsix = 6.e+00;
+    const Double_t sevsev = 7.e+00;
+    const Double_t eigeig = 8.e+00;
+    const Double_t aninen = 9.e+00;
+    const Double_t tenten = 10.e+00;
+    const Double_t eleven = 11.e+00;
+    const Double_t twelve = 12.e+00;
+    const Double_t fiften = 15.e+00;
+    const Double_t sixten = 16.e+00;
+    const Double_t hlfhlf = 0.5e+00;
+    const Double_t onethi = oneone/thrthr;
+    const Double_t onefou = oneone/foufou;
+    const Double_t onefiv = oneone/fivfiv;
+    const Double_t onesix = oneone/sixsix;
+    const Double_t onesev = oneone/sevsev;
+    const Double_t oneeig = oneone/eigeig;
+    const Double_t twothi = twotwo/thrthr;
+    const Double_t thrfou = thrthr/foufou;
+    const Double_t thrtwo = thrthr/twotwo;
+    const Double_t fouthr = foufou/thrthr;    
+    const Double_t pipipi = 3.141592653589793238462643383279e+00;
+    const Double_t two2o3 = 1.587401051968199e+00; // 2006.3
+    const Double_t twopip = 6.283185307179586476925286766559e+00;
+    const Double_t pip5o2 = 7.853981633974483096156608458199e+00;
+    const Double_t pipisq = 9.869604401089358618834490999876e+00;
+    const Double_t pihalf = 1.570796326794896619231321691640e+00;
+    const Double_t erfa00 = 0.886226925452758013649083741671e+00;
+    const Double_t sqrtpi = 1.772453850905516027298167483341e+00;
+    const Double_t sqtwpi = 2.506628274631000502415765284811e+00;
+    const Double_t eulero = 0.577215664901532860606512e+00;
+    const Double_t eulexp = 1.781072417990197985236504e+00;
+    const Double_t eullog = -0.5495393129816448223376619e+00;
+    const Double_t e1m2eu = 0.8569023337737540831433017e+00;
+    const Double_t eneper = 2.718281828459045235360287471353e+00;
+    const Double_t sqrent = 1.648721270700128146848650787814e+00;
+    const Double_t sqrtwo = 1.414213562373095048801688724210e+00;
+    const Double_t sqrthr = 1.732050807568877293527446341506e+00;
+    const Double_t sqrfiv = 2.236067977499789696409173668731e+00;
+    const Double_t sqrsix = 2.449489742783178098197284074706e+00;
+    const Double_t sqrsev = 2.645751311064590590501615753639e+00;
+    const Double_t sqrt12 = 3.464101615137754587054892683012e+00;
+    const Double_t s2fwhm = 2.354820045030949e+00;
+    const Double_t twolog = 0.693147180559945309417232121458e+00;
 //*
 //*======================================================================*
 //*======================================================================*
@@ -222,11 +224,15 @@ const Double_t twolog = 0.693147180559945309417232121458e+00;
 //*         plckbr = reduced planck constant (erg s)                     *
 //*         elccgs = elementary charge (cgs unit)                        *
 //*         elcmks = elementary charge (mks unit)                        *
+//*         epsil0 = vacuum dielectric constant (MKS unit)               *
 //*         amugrm = atomic mass unit (g)                                *
 //*         ammumu = muon    mass (amu)                                  *
 //*         amprmu = proton  mass (amu)                                  *
 //*         amnemu = neutron mass (amu)                                  *
-//*                                                                      *
+//*                                                                      * //*          Note:                                                       *
+//*          e[MKS]^2/ (4 pi epsilon0 hbar[MKS] c[MKS]) = alpha = 1/137  *
+//*          e[CGS]^2/ (hbar[CGS] c[CGS]) = alpha = 1/137                *
+//*          with c[MKs] = 10^-2 c[CGS], hbar[MKS] = 10^-7 hbar[CGS]     *
 //*   derived constants:                                                 *
 //*                                                                      *
 //*         alpfsc = fine structure constant  = e^2/(hbar c) (cgs units) *
@@ -292,17 +298,18 @@ const Double_t twolog = 0.693147180559945309417232121458e+00;
 //*                                                                      *
 //*----------------------------------------------------------------------*
 //*
-const Double_t clight = 2.99792458e+10;
-const Double_t avogad = 6.0221367e+23;
-const Double_t boltzm = 1.380658e-23;
-const Double_t amelgr = 9.1093897e-28;
-const Double_t plckbr = 1.05457266e-27;
-const Double_t elccgs = 4.8032068e-10;
-const Double_t elcmks = 1.60217733e-19;
-const Double_t amugrm = 1.6605402e-24;
-const Double_t ammumu = 0.113428913e+00;
-const Double_t amprmu = 1.007276470e+00;
-const Double_t amnemu = 1.008664904e+00;
+    const Double_t clight = 2.99792458e+10;
+    const Double_t avogad = 6.0221367e+23;
+    const Double_t boltzm = 1.380658e-23;
+    const Double_t amelgr = 9.1093897e-28;
+    const Double_t plckbr = 1.05457266e-27;
+    const Double_t elccgs = 4.8032068e-10;
+    const Double_t elcmks = 1.60217733e-19;
+    const Double_t epsil0 = 8.854187817e-12; // 2006.3
+    const Double_t amugrm = 1.6605402e-24;
+    const Double_t ammumu = 0.113428913e+00;
+    const Double_t amprmu = 1.007276470e+00;
+    const Double_t amnemu = 1.008664904e+00;
 //* const Double_t alpfsc = 1.e+00 / 137.035989561e+00
 //* const Double_t fscto2 = alpfsc * alpfsc
 //* const Double_t fscto3 = fscto2 * alpfsc
@@ -374,18 +381,19 @@ const Double_t amemev = gevmev * amelct;
 //*
 
 typedef struct {
-   Int_t    lfluka;
-   Int_t    lgbias;
-   Int_t    lgbana;
-   Int_t    lflgeo;
-   Int_t    loflts;
-   Int_t    lusrin;
-   Int_t    lnmgeo;
-   Int_t    lnminp;
-   Int_t    lfrfmt;
-   Int_t    lfdrtr;
-   Int_t    kflgeo;
-   Int_t    kfldnr;
+    Int_t    lfluka;
+    Int_t    lgbias;
+    Int_t    lgbana;
+    Int_t    lflgeo;
+    Int_t    loflts;
+    Int_t    lusrin;
+    Int_t    lusrgl; // 2006.3
+    Int_t    lnmgeo;
+    Int_t    lnminp;
+    Int_t    lfrfmt;
+    Int_t    lfdrtr;
+    Int_t    kflgeo;
+    Int_t    kfldnr;
 } globalCommon;
 #define GLOBAL COMMON_BLOCK(GLOBAL,global)
 COMMON_BLOCK_DEF(globalCommon,GLOBAL);

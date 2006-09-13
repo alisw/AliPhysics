@@ -32,7 +32,7 @@ extern "C" {
   //*        ichrge(i) = electric charge of the i_th particle              *
   //*        ibarch(i) = baryonic charge of the i_th particle              *
   //*        iscore(j) = id for the j_th scored distribution               *
-  //*        genpar(k) = name of the k_th generalized particle type        *
+  //*        gnname(k) = name of the k_th generalized particle type        * 2006.3
   //*        ijdisc(i) = flag for discarding the i_th particle type        *
   //*        tmnlf (i) = mean (not half!) life of the i_th particle (s)    *
   //*        biasdc(i) = decay biasing factor for the i_th particle        *
@@ -57,34 +57,36 @@ extern "C" {
   //*----------------------------------------------------------------------*
 
 
-const Int_t mxgnpr =  33;
-typedef struct {
-   Double_t am[nallwp+7];         //(-6:NALLWP)
-   Double_t amdisc[nallwp+7];     //(-6:NALLWP)
-   Double_t tmnlf[nallwp+7];      //(-6:NALLWP)
-   Double_t biasdc[nallwp+7];     //(-6:NALLWP)
-   Double_t biasin[nallwp+7];     //(-6:NALLWP)
-   Int_t    ichrge[nallwp+7];     //(-6:NALLWP)
-   Int_t    ibarch[nallwp+7];     //(-6:NALLWP)
-   Int_t    ijdisc[nallwp+7];     //(-6:NALLWP)
-   Int_t    jspinp[nallwp+7];     //(-6:NALLWP)
-   Int_t    iparty[nallwp+7];     //(-6:NALLWP)
-   Int_t    iparid[nallwp+7];     //(-6:NALLWP)
-   Int_t    lhadro[nallwp+7];     //(-6:NALLWP)
-   Int_t    lbsdcy[nallwp+7];     //(-6:NALLWP)
-   Int_t    iscore[12];
-   Int_t    lprbsd;
-   Int_t    lprbsi;
-   Int_t    lsclwf;
-   Int_t    lscnbl;
-} papropCommon;
+//    const Int_t mxgnpr =  33; // 2006.3
+    const Int_t mxgnpr =  35;
+    typedef struct {
+	Double_t am[nallwp+7];         //(-6:NALLWP)
+	Double_t amdisc[nallwp+7];     //(-6:NALLWP)
+	Double_t tmnlf[nallwp+7];      //(-6:NALLWP)
+	Double_t biasdc[nallwp+7];     //(-6:NALLWP)
+	Double_t biasin[nallwp+7];     //(-6:NALLWP)
+	Int_t    ichrge[nallwp+7];     //(-6:NALLWP)
+	Int_t    ibarch[nallwp+7];     //(-6:NALLWP)
+	Int_t    ijdisc[nallwp+7];     //(-6:NALLWP)
+	Int_t    jspinp[nallwp+7];     //(-6:NALLWP)
+	Int_t    iparty[nallwp+7];     //(-6:NALLWP)
+	Int_t    iparid[nallwp+7];     //(-6:NALLWP)
+	Int_t    lhadro[nallwp+7];     //(-6:NALLWP)
+	Int_t    lbsdcy[nallwp+7];     //(-6:NALLWP)
+	Int_t    iscore[12];
+	Int_t    lprbsd;
+	Int_t    lprbsi;
+	Int_t    lsclwf;
+	Int_t    lscnbl;
+    } papropCommon;
 #define PAPROP COMMON_BLOCK(PAPROP,paprop)
 COMMON_BLOCK_DEF(papropCommon,PAPROP);
 
-typedef struct {
-   Char_t   btype[nallwp+7][8];     //(-6:NALLWP)
-   Char_t   genpar[mxgnpr][8];          //(30)
-} chpprpCommon;
+    typedef struct {
+	Char_t   btype[nallwp+7][8];     //(-6:NALLWP)
+//	Char_t   genpar[mxgnpr][8];          // 2006.3 
+	Char_t   gnname[mxgnpr][8];          // 2006.3
+    } chpprpCommon;
 #define CHPPRP COMMON_BLOCK(CHPPRP,chpprp)
 COMMON_BLOCK_DEF(chpprpCommon,CHPPRP);
 }

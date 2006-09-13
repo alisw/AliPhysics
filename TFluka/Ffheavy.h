@@ -47,6 +47,7 @@ extern "C" {
 //*        ihheav(kp) = number of hyperons of the kp-type heavy particle *
 //*     khheav(jp,kp) = id of the jp_th hyperon of the kp-type heavy     *
 //*                     particle                                         *
+//*        infhea(ip) = possible extra infos for the ip_th secondary     * 2006.3
 //*   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   *
 //*   !!! there is now the possibility to produce up to 6 "heavy" !!!!   *
 //*   !!! fragments besides the residual nucleus recorded in      !!!!   *
@@ -60,23 +61,24 @@ const Int_t mxheav = 100;
 const Int_t kxheav = 30;
 
 typedef struct {
-   Double_t cxheav[mxheav];
-   Double_t cyheav[mxheav];
-   Double_t czheav[mxheav];
-   Double_t tkheav[mxheav];
-   Double_t pheavy[mxheav];
-   Double_t wheavy[mxheav];
-   Double_t agheav[mxheav];
-   Double_t bhheav[kxheav][ihypmx];
-   Double_t amheav[kxheav];
-   Double_t amnhea[kxheav];
-   Int_t    kheavy[mxheav];
-   Int_t    icheav[kxheav];
-   Int_t    ibheav[kxheav];
-   Int_t    imheav[kxheav];
-   Int_t    ihheav[kxheav];
-   Int_t    khheav[kxheav][ihypmx];
-   Int_t    npheav;
+    Double_t cxheav[mxheav];
+    Double_t cyheav[mxheav];
+    Double_t czheav[mxheav];
+    Double_t tkheav[mxheav];
+    Double_t pheavy[mxheav];
+    Double_t wheavy[mxheav];
+    Double_t agheav[mxheav];
+    Double_t bhheav[kxheav][ihypmx];
+    Double_t amheav[kxheav];
+    Double_t amnhea[kxheav];
+    Int_t    kheavy[mxheav];
+    Int_t    infhea[mxheav]; // 2006.3
+    Int_t    icheav[kxheav];
+    Int_t    ibheav[kxheav];
+    Int_t    imheav[kxheav];
+    Int_t    ihheav[kxheav];
+    Int_t    khheav[kxheav][ihypmx];
+    Int_t    npheav;
 } fheavyCommon;
 #define FHEAVY COMMON_BLOCK(FHEAVY,fheavy)
 COMMON_BLOCK_DEF(fheavyCommon,FHEAVY);

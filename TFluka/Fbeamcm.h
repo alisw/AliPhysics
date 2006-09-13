@@ -72,52 +72,54 @@ extern "C" {
 //*        Lvlcar = logical flag for using a cartesian   volume source   *
 //*        Lvlcyl = logical flag for using a cylindrical volume source   *
 //*        Lvlsph = logical flag for using a spherical   volume source   *
-//*        Lsourc = logical flag for a user written source routine       *    
+//*        Lsourc = logical flag for a user written source routine       *
+//*        Lrdbea = logical flag for a radioactive isotope beam          * 2006.3
 //*                                                                      *
 //*----------------------------------------------------------------------*
 
 typedef struct {
-   Double_t pbeam;
-   Double_t dpbeam;
-   Double_t pbmmax;
-   Double_t divbm;
-   Double_t xspot;
-   Double_t yspot;
-   Double_t xbeam;
-   Double_t ybeam;
-   Double_t zbeam;
-   Double_t ubeam;
-   Double_t vbeam;
-   Double_t wbeam;
-   Double_t ubmpol;
-   Double_t vbmpol;
-   Double_t wbmpol;
-   Double_t polfra;
-   Double_t beawei;
-   Double_t bmaxis[3][3];
-   Double_t rvlmin;
-   Double_t rvlmax;
-   Double_t dxvlmn;
-   Double_t dxvlmx;
-   Double_t dyvlmn;
-   Double_t dyvlmx;
-   Double_t dzvlmn;
-   Double_t dzvlmx;
-   Int_t    ijbeam;
-   Int_t    ijhion;
-   Int_t    ldpgss;
-   Int_t    ldvgss;
-   Int_t    ldxgss;
-   Int_t    ldygss;
-   Int_t    lbeamc;
-   Int_t    lpperp;
-   Int_t    lpfrac;
-   Int_t    lbaxis;
-   Int_t    lflood;
-   Int_t    lvlcar;
-   Int_t    lvlcyl;
-   Int_t    lvlsph;
-   Int_t    lsourc;
+    Double_t pbeam;
+    Double_t dpbeam;
+    Double_t pbmmax;
+    Double_t divbm;
+    Double_t xspot;
+    Double_t yspot;
+    Double_t xbeam;
+    Double_t ybeam;
+    Double_t zbeam;
+    Double_t ubeam;
+    Double_t vbeam;
+    Double_t wbeam;
+    Double_t ubmpol;
+    Double_t vbmpol;
+    Double_t wbmpol;
+    Double_t polfra;
+    Double_t beawei;
+    Double_t bmaxis[3][3];
+    Double_t rvlmin;
+    Double_t rvlmax;
+    Double_t dxvlmn;
+    Double_t dxvlmx;
+    Double_t dyvlmn;
+    Double_t dyvlmx;
+    Double_t dzvlmn;
+    Double_t dzvlmx;
+    Int_t    ijbeam;
+    Int_t    ijhion;
+    Int_t    ldpgss;
+    Int_t    ldvgss;
+    Int_t    ldxgss;
+    Int_t    ldygss;
+    Int_t    lbeamc;
+    Int_t    lpperp;
+    Int_t    lpfrac;
+    Int_t    lbaxis;
+    Int_t    lflood;
+    Int_t    lvlcar;
+    Int_t    lvlcyl;
+    Int_t    lvlsph;
+    Int_t    lsourc;
+    Int_t    lrdbea; // 2006.3
 } beamcmCommon;
 #define BEAMCM COMMON_BLOCK(BEAMCM,beamcm)
 COMMON_BLOCK_DEF(beamcmCommon,BEAMCM);

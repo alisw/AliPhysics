@@ -51,6 +51,7 @@
 //*                    4-He) fragments after evaporation                 *
 //*        Tvbind    = approximate energy wasted in nuclear binding      *
 //*                    effects (not yet operational)                     *
+//*      Infext (ip) = possible extra infos for the ip_th secondary      * 2006.3
 //*                                                                      *
 //*----------------------------------------------------------------------*
 
@@ -59,24 +60,25 @@ const Int_t mxp = mxpscs;
 //*
 
 typedef struct {
-   Double_t cxr[mxp];
-   Double_t cyr[mxp];
-   Double_t czr[mxp];
-   Double_t cxrpol[mxp];
-   Double_t cyrpol[mxp];
-   Double_t czrpol[mxp];
-   Double_t tki[mxp];
-   Double_t plr[mxp];
-   Double_t wei[mxp];
-   Double_t agesec[mxp];
-   Double_t tv;
-   Double_t tvcms;
-   Double_t tvrecl;
-   Double_t tvheav;
-   Double_t tvbind;
-   Int_t    kpart[mxp];
-   Int_t    np0;
-   Int_t    np;
+    Double_t cxr[mxp];
+    Double_t cyr[mxp];
+    Double_t czr[mxp];
+    Double_t cxrpol[mxp];
+    Double_t cyrpol[mxp];
+    Double_t czrpol[mxp];
+    Double_t tki[mxp];
+    Double_t plr[mxp];
+    Double_t wei[mxp];
+    Double_t agesec[mxp];
+    Double_t tv;
+    Double_t tvcms;
+    Double_t tvrecl;
+    Double_t tvheav;
+    Double_t tvbind;
+    Int_t    kpart[mxp];
+    Int_t    infext[mxpscs];
+    Int_t    np0;
+    Int_t    np;
 } genstkCommon;
 #define GENSTK COMMON_BLOCK(GENSTK,genstk)
 COMMON_BLOCK_DEF(genstkCommon,GENSTK);
