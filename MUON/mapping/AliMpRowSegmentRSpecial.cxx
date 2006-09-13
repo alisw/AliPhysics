@@ -224,7 +224,7 @@ Int_t AliMpRowSegmentRSpecial::SetIndicesToMotifPosition(Int_t i,
 
   // Check for consistence
   if (GetLowIndicesLimit().GetFirst() != indices.GetFirst()) 
-    Fatal("SetIndicesToMotifPosition", "Inconsistent indices");
+    AliFatal("Inconsistent indices");
 
   // Get motif position
   AliMpMotifPosition* motifPosition
