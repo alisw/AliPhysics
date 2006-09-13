@@ -647,8 +647,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       if (input.GetSector() != fSector)
 	AliFatal(Form("Sector index mismatch ! Expected (%d), but got (%d) !",fSector,input.GetSector()));
 
-      if (input.GetTime() < AliTPCReconstructor::GetRecoParam()->GetFirstBin()) continue;
-      if (input.GetTime() > AliTPCReconstructor::GetRecoParam()->GetLastBin()) continue;
       
       Int_t iRow = input.GetRow();
       if (iRow < 0 || iRow >= nRows)
@@ -707,6 +705,10 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
 	  Float_t pedestal = ProcesSignal(p, fMaxTime, id);
 	  for (Int_t iTimeBin = 0; iTimeBin < fMaxTime; iTimeBin++) {
 	    allBins[iRow][iPad*fMaxTime+iTimeBin] -= pedestal;
+	    if (iTimeBin < AliTPCReconstructor::GetRecoParam()->GetFirstBin())  
+	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
+	    if (iTimeBin > AliTPCReconstructor::GetRecoParam()->GetLastBin())  
+	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
 	    if (allBins[iRow][iPad*fMaxTime+iTimeBin] < zeroSup)
 	      allBins[iRow][iPad*fMaxTime+iTimeBin] = 0;
 	  }
@@ -857,7 +859,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   Double_t rms06=0, rms09=0; 
   AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean06, rms06, int(0.6*(nchannels-offset)));
   AliMathBase::EvaluateUni(nchannels-offset, &(dsignal[offset]), mean09, rms09, int(0.9*(nchannels-offset)));
-  
+  //
   //
   UInt_t uid[3] = {UInt_t(id[0]),UInt_t(id[1]),UInt_t(id[2])};
   if (uid[0]< AliTPCROC::Instance()->GetNSectors() 
@@ -945,6 +947,89 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     "Mean09="<<mean09<<
     "RMS09="<<rms09<<
     "\n";
+  //
+  //
+  //  Central Electrode signal analysis  
+  //
+  Double_t ceQmax  =0, ceQsum=0, ceTime=0;
+  Double_t cemean  = mean06, cerms=rms06 ;
+  Int_t    cemaxpos= 0;
+  Double_t ceThreshold=5.*cerms;
+  Double_t ceSumThreshold=8.*cerms;
+  const Int_t    cemin=5;  // range for the analysis of the ce signal +- channels from the peak
+  const Int_t    cemax=5;
+  if (max-mean06>ceThreshold)   for (Int_t i=nchannels-2; i>1; i--){
+    if ( (dsignal[i]-mean06)>ceThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] ){
+      cemaxpos=i;
+      break;
+    }
+  }
+  if (cemaxpos!=0){
+      for (Int_t i=cemaxpos-cemin; i<cemaxpos+cemax; i++){
+	  if (i>0 && i<nchannels){
+	      Double_t val=dsignal[i]- cemean;
+	      ceTime+=val*dtime[i];
+	      ceQsum+=val;
+	      if (val>ceQmax) ceQmax=val;
+	  }
+      }
+      if (ceQmax&&ceQsum>ceSumThreshold) {
+	  ceTime/=ceQsum;
+	  (*fDebugStreamer)<<"Signalce"<<
+	      "Sector="<<uid[0]<<
+	      "Row="<<uid[1]<<
+	      "Pad="<<uid[2]<<
+	      "Max="<<ceQmax<<
+	      "Qsum="<<ceQsum<<
+	      "Time="<<ceTime<<
+	      //
+	      "\n";
+      }
+  }
+  // end of ce signal analysis
+  //
+
+  //
+  //  Gating grid signal analysis  
+  //
+  Double_t ggQmax  =0, ggQsum=0, ggTime=0;
+  Double_t ggmean  = mean06, ggrms=rms06 ;
+  Int_t    ggmaxpos= 0;
+  Double_t ggThreshold=5.*ggrms;
+  Double_t ggSumThreshold=8.*ggrms;
+  const Int_t    ggmin=5;  // range for the analysis of the gg signal +- channels from the peak
+  const Int_t    ggmax=5;
+  if (max-mean06>ggThreshold)   for (Int_t i=1; i<nchannels-1; i++){
+    if ( (dsignal[i]-mean06)>ggThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] ){
+      ggmaxpos=i;
+      break;
+    }
+  }
+  if (ggmaxpos!=0){
+      for (Int_t i=ggmaxpos-ggmin; i<ggmaxpos+ggmax; i++){
+	  if (i>0 && i<nchannels && dsignal[i]>0){
+	      Double_t val=dsignal[i]- ggmean;
+	      ggTime+=val*dtime[i];
+	      ggQsum+=val;
+	      if (val>ggQmax) ggQmax=val;
+	  }
+      }
+      if (ggQmax&&ggQsum>ggSumThreshold) {
+	  ggTime/=ggQsum;
+	  (*fDebugStreamer)<<"Signalgg"<<
+	      "Sector="<<uid[0]<<
+	      "Row="<<uid[1]<<
+	      "Pad="<<uid[2]<<
+	      "Max="<<ggQmax<<
+	      "Qsum="<<ggQsum<<
+	      "Time="<<ggTime<<
+	      //
+	      "\n";
+      }
+  }
+  // end of gg signal analysis
+      
+
   delete [] dsignal;
   delete [] dtime;
   if (rms06>fRecoParam->GetMaxNoise()) return 1024+median; // sign noisy channel in debug mode
