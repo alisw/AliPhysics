@@ -70,7 +70,7 @@ class AliMUONTriggerElectronics : public TTask
       virtual void ClearDigitNumbers();
       virtual void DigitFiredCircuit(Int_t circuit, Int_t cathode, Int_t chamber, Int_t digit);
 
-   protected:
+   private:
       AliMUONTriggerElectronics(const AliMUONTriggerElectronics& right);
       AliMUONTriggerElectronics&  operator = (const AliMUONTriggerElectronics& right);
      
