@@ -29,7 +29,6 @@
 #include "AliTPCclusterMI.h"
 
 ClassImp(AliTPCclusterMI)
-ClassImp(AliTPCclusterLMI)
 
 Bool_t AliTPCclusterMI::IsSortable() const
 {
