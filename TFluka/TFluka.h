@@ -386,6 +386,11 @@ class TFluka : public TVirtualMC {
   private:
   void PrintHeader();
   void AddParticlesToPdgDataBase() const;
+  //
+  // Info about primary ionization electrons
+  Int_t    GetNPrimaryElectrons();
+  Double_t GetPrimaryElectronKineticEnergy(Int_t i);
+  //
   TFluka(const TFluka &mc): TVirtualMC(mc) {;}
   TFluka & operator=(const TFluka &) {return (*this);}
 

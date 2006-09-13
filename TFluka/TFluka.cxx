@@ -48,6 +48,7 @@
 #include "Fstepsz.h"       //(STEPSZ) fluka common
 #include "Fopphst.h"       //(OPPHST) fluka common
 #include "Fltclcm.h"       //(LTCLCM) fluka common
+#include "Falldlt.h"       //(ALLDLT) fluka common
 
 #include "TVirtualMC.h"
 #include "TMCProcess.h"
@@ -2162,3 +2163,22 @@ void TFluka::AddParticlesToPdgDataBase() const
                      0,6,"Ion",kion+20030);
 }
 
+  //
+  // Info about primary ionization electrons
+  Int_t TFluka::GetNPrimaryElectrons()
+{
+    // Get number of primary electrons
+    return ALLDLT.nalldl;
+}
+
+Double_t GetPrimaryElectronKineticEnergy(Int_t i)
+{
+    // Returns kinetic energy of primary electron i
+    if (i >= 0 && i < ALLDLT.nalldl) {
+	return ALLDLT.talldl[i];
+    } else {
+	Warning("GetPrimaryElectronKineticEnergy", 
+		"Primary electron index out of range %d %d \n", 
+		i, ALLDLT.nalldl);
+    }
+}

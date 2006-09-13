@@ -51,7 +51,7 @@ extern "C" {
 //      SAVE / ALLDLT /
     const Int_t mxalld = 5000;
     typedef struct {
-	Double_t talldl[kmxalld];
+	Double_t talldl[mxalld];
 	Double_t tallmn;
 	Int_t    nalldl;
 	Int_t    lalldl;
