@@ -39,6 +39,7 @@ ClassImp(AliMpMotifSpecial)
 //______________________________________________________________________________
 AliMpMotifSpecial::AliMpMotifSpecial():
   AliMpVMotif(),
+  fDimensions(),
   fPadDimensionsVector(),
   fPadDimensionsVector2()
 {
@@ -50,6 +51,7 @@ AliMpMotifSpecial::AliMpMotifSpecial():
 AliMpMotifSpecial::AliMpMotifSpecial(const TString &id, 
                                      AliMpMotifType *motifType)
   : AliMpVMotif(id,motifType),
+    fDimensions(),
 #ifdef WITH_STL
     fPadDimensionsVector(),
 #endif    
@@ -136,7 +138,7 @@ TVector2 AliMpMotifSpecial::GetPadDimensions(Int_t i) const
 /// Returns the i-th different pad dimensions 
 
   if (i<0 || i>GetNofPadDimensions()) {
-    Fatal("GetPadDimensions(i)", "Index outside limits.");
+    AliFatal("Index outside limits.");
     return TVector2();
   }  
 

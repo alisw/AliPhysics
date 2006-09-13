@@ -57,6 +57,7 @@ AliMpNeighboursPadIterator::AliMpNeighboursPadIterator(
   : AliMpVPadIterator(),
     fkSegmentation(segmentation),
     fCenterPad(centerPad),
+    fPads(),
     fIndex(fgkInvalidIndex)
 {
 /// Standard constructor, set *this to invalid position
@@ -67,7 +68,11 @@ AliMpNeighboursPadIterator::AliMpNeighboursPadIterator(
 //______________________________________________________________________________
 AliMpNeighboursPadIterator::AliMpNeighboursPadIterator(
                                  const AliMpNeighboursPadIterator& right)
-  : AliMpVPadIterator(right)
+  : AliMpVPadIterator(right),
+    fkSegmentation(0),
+    fCenterPad(AliMpPad::Invalid()),
+    fPads(),
+    fIndex(fgkInvalidIndex)
 {
 /// Copy constructor
 
@@ -108,7 +113,7 @@ AliMpNeighboursPadIterator::operator = (const AliMpNeighboursPadIterator& right)
   fIndex         = right.fIndex;
 #endif
 #ifdef WITH_ROOT
-  Fatal("operator=", "Not allowed assignment for TObjArray");
+  AliFatal("Not allowed assignment for TObjArray");
 #endif
 
   return *this;

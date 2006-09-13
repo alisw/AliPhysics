@@ -62,7 +62,8 @@ AliMpArea::AliMpArea()
 AliMpArea::AliMpArea(const AliMpArea& rhs):
   TObject(rhs),
   fPosition(rhs.fPosition),
-  fDimensions(rhs.fDimensions) 
+  fDimensions(rhs.fDimensions), 
+  fValidity(rhs.fValidity) 
 {
 /// Copy constructor
 }

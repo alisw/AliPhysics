@@ -50,11 +50,15 @@ AliMpSectorAreaHPadIterator::AliMpSectorAreaHPadIterator(
 //______________________________________________________________________________
 AliMpSectorAreaHPadIterator::AliMpSectorAreaHPadIterator(
                                 const AliMpSectorAreaHPadIterator& right)
-  : AliMpVPadIterator(right)
+  : AliMpVPadIterator(right),
+    fkSegmentation(0),
+    fkArea(AliMpArea()),
+    fCurrentPad(AliMpPad::Invalid()),
+    fCurrentRowPosition(0.)
 {
-/// Protected copy constructor (not provided)
+/// Copy constructor
  
-  Fatal("Copy constructor", "Not implemented");
+  *this = right;
 }
 
 //______________________________________________________________________________

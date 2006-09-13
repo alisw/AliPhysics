@@ -35,6 +35,7 @@ ClassImp(AliMpZone)
 AliMpZone::AliMpZone(Int_t id) 
   : TObject(),
     fID(id),
+    fSubZones(),
     fPadDimensions(TVector2())
 {
 /// Standard constructor
@@ -44,6 +45,7 @@ AliMpZone::AliMpZone(Int_t id)
 AliMpZone::AliMpZone() 
   : TObject(),
     fID(0),
+    fSubZones(),
     fPadDimensions(TVector2())
 {
 /// Default constructor

@@ -92,7 +92,13 @@ AliMpPad::AliMpPad()
 
 //_____________________________________________________________________________
 AliMpPad::AliMpPad(const AliMpPad& rhs)
-  : TObject(rhs)
+  : TObject(rhs),
+    fLocations(0),
+    fLocation(AliMpIntPair::Invalid()),
+    fIndices(AliMpIntPair::Invalid()),
+    fPosition(-1.,-1.),
+    fDimensions(0.,0.),
+    fValidity(false) 
 {
 /// Copy constructor
 

@@ -40,15 +40,13 @@ Int_t              AliMpGraphContext::fgStackSize = 0;
 //_____________________________________________________________________________
 AliMpGraphContext::AliMpGraphContext():
   TObject(),
+  fColor(20),
   fPadPosition(TVector2(0.5,0.5)),
   fPadDimensions(TVector2(0.49,0.49)),
   fRealPosition(TVector2(0.,0.)),
   fRealDimensions(TVector2(1,1))
 {
-/// Private constructor
-
-  fColor = 20;
-  // default constructor (private)
+/// Default constructor (private)
 }
 
 //_____________________________________________________________________________

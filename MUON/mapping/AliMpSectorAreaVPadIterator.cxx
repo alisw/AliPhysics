@@ -50,11 +50,15 @@ AliMpSectorAreaVPadIterator::AliMpSectorAreaVPadIterator(
 //______________________________________________________________________________
 AliMpSectorAreaVPadIterator::AliMpSectorAreaVPadIterator(
                                 const AliMpSectorAreaVPadIterator& right)
-  : AliMpVPadIterator(right)
+  : AliMpVPadIterator(right),
+    fkSegmentation(0),
+    fkArea(AliMpArea()),
+    fCurrentPad(AliMpPad::Invalid()),
+    fCurrentColumnPosition(0.)
 {
-/// Protected copy constructor (not provided)
+/// Copy constructor
  
-  Fatal("Copy constructor", "Not implemented");
+  *this = right;
 }
 
 //______________________________________________________________________________
@@ -138,7 +142,7 @@ void AliMpSectorAreaVPadIterator::First()
 /// pad in the area
 
   if (!fkSegmentation) {
-    Fatal("First", "Segmentation is not defined");
+    AliFatal("Segmentation is not defined");
     return;
   }  
 

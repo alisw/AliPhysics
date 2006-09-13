@@ -65,7 +65,13 @@ AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSector* const sector)
 
 //______________________________________________________________________________
 AliMpSectorPadIterator::AliMpSectorPadIterator(const AliMpSectorPadIterator& right)
-  : AliMpVPadIterator(right)
+  : AliMpVPadIterator(right),
+    fkSector(0),
+    fCurrentRow(0),
+    fCurrentSeg(0),
+    fCurrentMotif(0),
+    fMotifPos(0),
+    fIterator()
 {
 /// Copy constructor
  

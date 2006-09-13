@@ -39,7 +39,9 @@ ClassImp(AliMpPadRow)
 AliMpPadRow::AliMpPadRow(AliMpXDirection direction) 
   : TObject(),
     fDirection(direction), 
-    fID(0) 
+    fID(0),
+    fOffsetX(0),
+    fSegments() 
 {
 /// Standard constructor
 }
@@ -48,7 +50,9 @@ AliMpPadRow::AliMpPadRow(AliMpXDirection direction)
 AliMpPadRow::AliMpPadRow() 
   : TObject(),
     fDirection(kLeft), 
-    fID(0)
+    fID(0),
+    fOffsetX(0),
+    fSegments() 
 {
 /// Default constructor
 }
