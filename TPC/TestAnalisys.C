@@ -264,9 +264,9 @@ void AddChains(Int_t run){
   runDesc+=run;
   // TPC tracks
   //
-  sprintf(strcl,"ls  *%d*/TPCtracks.root > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/TPCtracks.root > files.txt", run);
   gSystem->Exec(strcl);
-  in0.open("/tmp/files.txt");
+  in0.open("files.txt");
   for (;in0>>sfile;){
     if (sfile.Length()==0) break;
     printf("%s\n",sfile.Data());
@@ -279,9 +279,9 @@ void AddChains(Int_t run){
   }
   //
   // Fitted signals
-  sprintf(strcl,"ls  *%d*/FitSignal.root > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/FitSignal.root > files.txt", run);
   gSystem->Exec(strcl);
-  in1.open("/tmp/files.txt");
+  in1.open("files.txt");
   for (;in1>>sfile;){
     if (sfile.Length()==0) break;
     printf("%s\n",sfile.Data()); 
@@ -294,9 +294,9 @@ void AddChains(Int_t run){
   }
   //
   // Fitted pedestal
-  sprintf(strcl,"ls  *%d*/TPCsignal.root > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/TPCsignal.root > files.txt", run);
   gSystem->Exec(strcl);
-  in2.open("/tmp/files.txt");
+  in2.open("files.txt");
   for (;in2>>sfile;){
     if (sfile.Length()==0) break;
     printf("%s\n",sfile.Data());
@@ -310,9 +310,9 @@ void AddChains(Int_t run){
   }
   //
   // Random signals
-  sprintf(strcl,"ls  *%d*/TPCsignal.root > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/TPCsignal.root > files.txt", run);
   gSystem->Exec(strcl);
-  in4.open("/tmp/files.txt");
+  in4.open("files.txt");
   for (;in4>>sfile;){
     if (sfile.Length()==0) break;
     printf("%s\n",sfile.Data());
@@ -328,9 +328,9 @@ void AddChains(Int_t run){
   // Rec points trees
   //
   printf("\n IMPORT REC points");
-  sprintf(strcl,"ls  *%d*/*RecPoints* > /tmp/files.txt", run);
+  sprintf(strcl,"ls  *%d*/*RecPoints* > files.txt", run);
   gSystem->Exec(strcl);
-  in3.open("/tmp/files.txt");
+  in3.open("files.txt");
   for (;in3>>sfile;){
     if (sfile.Length()==0) break;
     printf("%s\n",sfile.Data());    
@@ -350,7 +350,7 @@ void Select(){
   //
   // base cut on the tracks
   //
-  comp.fTree->Draw(">>listTracks","Track.fN>30&&abs(Track.fP4)<0.002");
+  comp.fTree->Draw(">>listTracks","Etrack.fTPCncls>30&&abs(Etrack.fIp.fP[4])<1");
   comp.fTree->SetEventList(listTracks);
   //
   compF.fTree->Draw(">>listFitS","p2>0&&p2<5&&p1<900&&p0<10000&&p4<1&&p4>0&&p5<p3&&chi2<150");
@@ -361,7 +361,7 @@ void SelectLaser(){
   //
   // base cut on the tracks
   //
-  comp.fTree->Draw(">>listTracks","Track.fN>20&&abs(Track.fP4)<0.001&&abs(Etrack.fP[3])<0.01");
+  comp.fTree->Draw(">>listTracks","Etrack.fTPCncls>20&&abs(Etrack.fIp.fP[4])<1&&abs(Etrack.fIp.fP[3])<0.01");
   comp.fTree->SetEventList(listTracks);
   //
   compF.fTree->Draw(">>listFitS","p2>0&&p2<5&&p1<900&&p0<10000&&p4<1&&p4>0&&p5<p3&&chi2<150");
@@ -370,10 +370,10 @@ void SelectLaser(){
   // make default aliases
   //
   //  laser z beam
-  comp.fTree->SetAlias("lz0","abs(Etrack.fP[1]-20)<5");
-  comp.fTree->SetAlias("lz1","abs(Etrack.fP[1]-70)<20");
-  comp.fTree->SetAlias("lz2","abs(Etrack.fP[1]-150)<20");
-  comp.fTree->SetAlias("lz3","abs(Etrack.fP[1]-210)<20");
+  comp.fTree->SetAlias("lz0","abs(Etrack.fIp.fP[1]-20)<5");
+  comp.fTree->SetAlias("lz1","abs(Etrack.fIp.fP[1]-70)<20");
+  comp.fTree->SetAlias("lz2","abs(Etrack.fIp.fP[1]-150)<20");
+  comp.fTree->SetAlias("lz3","abs(Etrack.fIp.fP[1]-210)<20");
 
 }
 
