@@ -51,33 +51,11 @@ AliMpRowPainter::AliMpRowPainter(AliMpRow *row)
   /// Standard constructor 
 }
 
-//_____________________________________________________________________________
-AliMpRowPainter::AliMpRowPainter(const AliMpRowPainter& right) 
-  : AliMpVPainter(right) {
-// 
-  /// Protected copy constructor (not provided)
-
-  Fatal("AliMpRowPainter", "Copy constructor not provided.");
-}
-
 //_______________________________________________________________________
 AliMpRowPainter::~AliMpRowPainter()
 {
   /// Destructor
 }
-
-//_____________________________________________________________________________
-AliMpRowPainter& AliMpRowPainter::operator=(const AliMpRowPainter& right)
-{
-  /// Assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //_______________________________________________________________________
 void AliMpRowPainter::DumpObject()

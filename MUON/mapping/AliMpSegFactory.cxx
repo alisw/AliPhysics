@@ -61,15 +61,6 @@ AliMpSegFactory::AliMpSegFactory()
 }
 
 //______________________________________________________________________________
-AliMpSegFactory::AliMpSegFactory(const AliMpSegFactory& rhs)
- : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//______________________________________________________________________________
 
 AliMpSegFactory::~AliMpSegFactory()
 {
@@ -79,18 +70,6 @@ AliMpSegFactory::~AliMpSegFactory()
   AliDebug(1,"");
 }
 
-//______________________________________________________________________________
-AliMpSegFactory&  AliMpSegFactory::operator=(const AliMpSegFactory& rhs)
-{
-  // Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
-          
 //
 // private methods
 //

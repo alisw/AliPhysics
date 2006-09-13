@@ -30,11 +30,10 @@ public:
   TVector2 GetDimensions() const;
   TVector2 GetPosition() const;
 
- protected:
+ private:
   AliMpPCBPainter(const AliMpPCBPainter& right);
   AliMpPCBPainter&  operator = (const AliMpPCBPainter& right);
-     
- private:
+
   AliMpPCB* fPCB; //!< PCB to be plotted.
 
   ClassDef(AliMpPCBPainter,1) // A painter for a PCB of stations 3,4,5

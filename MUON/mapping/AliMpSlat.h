@@ -139,11 +139,10 @@ class AliMpSlat : public TObject
   
   Int_t NofPads() const { return fNofPads; }
  
- protected:
+ private:
   AliMpSlat(const AliMpSlat& rhs);
   AliMpSlat& operator=(const AliMpSlat& rhs);
-  
- private:
+
   TString fId; ///< The name of this slat, e.g. 112233N
   AliMpPlaneType fPlaneType; ///< Whether it's bending or non-bending plane
   Double_t fDX; ///< Half-size in X (cm)

@@ -39,7 +39,8 @@ ClassImp(AliMpSubZone)
 //_____________________________________________________________________________
 AliMpSubZone::AliMpSubZone(AliMpVMotif* motif) 
   : TObject(),
-    fMotif(motif)
+    fMotif(motif),
+    fSegments()
 {
 /// Standard constructor
 }
@@ -47,18 +48,10 @@ AliMpSubZone::AliMpSubZone(AliMpVMotif* motif)
 //_____________________________________________________________________________
 AliMpSubZone::AliMpSubZone() 
   : TObject(),
-    fMotif(0)
+    fMotif(0),
+    fSegments()
 {
 /// Default constructor
-}
-
-//_____________________________________________________________________________
-AliMpSubZone::AliMpSubZone(const AliMpSubZone& right) 
-  : TObject(right) 
-{
-/// Protected copy constructor (not provided) 
-
-  Fatal("AliMpSubZone", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
@@ -66,23 +59,6 @@ AliMpSubZone::~AliMpSubZone()
 {
 // Destructor 
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpSubZone& AliMpSubZone::operator=(const AliMpSubZone& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // public methods

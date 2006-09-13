@@ -53,34 +53,11 @@ AliMpZonePainter::AliMpZonePainter(AliMpZone *zone)
 
 }
 
-//_____________________________________________________________________________
-AliMpZonePainter::AliMpZonePainter(const AliMpZonePainter& right) 
-  : AliMpVPainter(right) 
-{  
-  /// Protected copy constructor (not provided)
-
-  Fatal("AliMpZonePainter", "Copy constructor not provided.");
-}
-
 //_______________________________________________________________________
 AliMpZonePainter::~AliMpZonePainter()
 {
   /// Destructor 
 }
-
-//_____________________________________________________________________________
-AliMpZonePainter& 
-AliMpZonePainter::operator=(const AliMpZonePainter& right)
-{
-  /// Assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //_______________________________________________________________________
 Int_t AliMpZonePainter::DistancetoPrimitive(Int_t x, Int_t y)

@@ -80,29 +80,6 @@ fCurrentDelegateIndex(0)
 }
 
 //_____________________________________________________________________________
-AliMpSlatPadIterator::AliMpSlatPadIterator(const AliMpSlatPadIterator& o) 
-: AliMpVPadIterator(),
-fkSlat(o.fkSlat),
-fCurrentDelegate(o.fCurrentDelegate),
-fCurrentDelegateIndex(o.fCurrentDelegateIndex)
-{
-  //
-  // Copy ctor. 
-  //
-	AliFatal("Not implemented");
-}
-
-//_____________________________________________________________________________
-AliMpSlatPadIterator& AliMpSlatPadIterator::operator=(const AliMpSlatPadIterator&)
-{
-  //
-  // Assignement operator
-  //
-	AliFatal("Not implemented");
-	return *this;
-}
-
-//_____________________________________________________________________________
 AliMpSlatPadIterator::~AliMpSlatPadIterator()
 { 
   //

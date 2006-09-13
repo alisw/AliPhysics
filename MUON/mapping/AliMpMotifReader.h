@@ -61,11 +61,10 @@ class AliMpMotifReader : public TObject
                                           AliMpMotifType* motifType,
                                           Double_t scale=1.0);
     
-  protected:
+  private:
     AliMpMotifReader(const AliMpMotifReader& right);
     AliMpMotifReader&  operator = (const AliMpMotifReader& right);
 
-  private:
     // data members  
     AliMpStationType  fStationType; ///< station type 
     AliMpPlaneType    fPlaneType;   ///< plane type 

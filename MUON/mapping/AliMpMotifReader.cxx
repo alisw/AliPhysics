@@ -68,41 +68,10 @@ AliMpMotifReader::AliMpMotifReader()
 }
 
 //_____________________________________________________________________________
-AliMpMotifReader::AliMpMotifReader(const AliMpMotifReader& right) 
-  : TObject(right) 
-{
-/// Protected copy constructor (not provided)
-
-  Fatal("AliMpMotifReader", "Copy constructor not provided.");
-}
-
-//_____________________________________________________________________________
 AliMpMotifReader::~AliMpMotifReader() 
 {
 /// Destructor  
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpMotifReader& AliMpMotifReader::operator=(const AliMpMotifReader& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
-
-//
-// private methods
-//
-
 
 //
 // public methods

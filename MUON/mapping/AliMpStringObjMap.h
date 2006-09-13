@@ -30,13 +30,10 @@ class AliMpStringObjMap : public TObject
     virtual void Print(const char* /*option*/ = "") const;
     void Print(const TString& key, ofstream& out) const;
     
-  protected:
-    AliMpStringObjMap(const AliMpStringObjMap& rhs);
-
-    // operators  
-    AliMpStringObjMap& operator = (const AliMpStringObjMap& rhs);
- 
   private:
+    AliMpStringObjMap(const AliMpStringObjMap& rhs);
+    AliMpStringObjMap& operator = (const AliMpStringObjMap& rhs);
+
     // data members
     Int_t      fNofItems;    ///<  number of items
     TObjArray  fFirstArray;  ///<  first item array

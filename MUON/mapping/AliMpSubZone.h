@@ -53,11 +53,10 @@ class AliMpSubZone : public TObject
     AliMpVRowSegment*  GetRowSegment(Int_t i) const;
     AliMpVMotif*       GetMotif() const;
 
-  protected:
+  private:
     AliMpSubZone(const AliMpSubZone& right);
     AliMpSubZone&  operator = (const AliMpSubZone& right);
 
-  private:
     // data members
     AliMpVMotif*     fMotif;   ///< the motif in this subzone
     RowSegmentVector fSegments;///< contained row segments

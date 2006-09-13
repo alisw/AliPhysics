@@ -94,38 +94,12 @@ AliMpSectorReader::AliMpSectorReader()
 }
 
 //_____________________________________________________________________________
-AliMpSectorReader::AliMpSectorReader(const AliMpSectorReader& right) 
-  : TObject(right) 
-{
-/// Protected copy constructor (not provided) 
-
-  Fatal("AliMpSectorReader", "Copy constructor not provided.");
-}
-
-//_____________________________________________________________________________
 AliMpSectorReader::~AliMpSectorReader() 
 {
 /// Destructor  
 
   delete fMotifReader;
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpSectorReader& AliMpSectorReader::operator=(const AliMpSectorReader& right)
-{
-/// Protected assignment operator (not provided) 
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // private methods

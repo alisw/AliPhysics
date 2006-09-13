@@ -34,12 +34,10 @@ class AliMpSlatPainter : public AliMpVPainter
 
   void Paint(Option_t* option);
 
- protected:
+ private:
   AliMpSlatPainter(const AliMpSlatPainter& right);
   AliMpSlatPainter&  operator = (const AliMpSlatPainter& right);
-     
-  
- private:
+
   const AliMpSlat* fkSlat; //!< pointer to the slat to be drawn
 
   ClassDef(AliMpSlatPainter,1) // A painter for a slat of stations 3,4,5

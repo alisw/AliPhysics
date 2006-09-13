@@ -51,13 +51,13 @@ class AliMpVPainter : public TObject
   static AliMpVPainter *CreatePainter(TObject *object);
 
  protected:
-  AliMpVPainter(const AliMpVPainter& right);
-  AliMpVPainter&  operator = (const AliMpVPainter& right);
-  
   void AddPainter(AliMpVPainter *painter);
   AliMpVPainter *DrawObject(TObject *object,Option_t *option="");
 
  private:
+  AliMpVPainter(const AliMpVPainter& right);
+  AliMpVPainter&  operator = (const AliMpVPainter& right);
+
   Int_t fColor;            ///< color
   TVector2 fPadPosition;   ///< position inside the graphics pad
   TVector2 fPadDimensions; ///< dimensions inside the graphics pad

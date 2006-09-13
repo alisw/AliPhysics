@@ -51,15 +51,6 @@ AliMpBusPatch::AliMpBusPatch()
 }
 
 //_____________________________________________________________________________
-AliMpBusPatch::AliMpBusPatch(const AliMpBusPatch& rhs)
-  : TObject(rhs)
-{
-/// Copy constructor
-
- *this = rhs;
-}
-
-//_____________________________________________________________________________
 AliMpBusPatch::~AliMpBusPatch() 
 {
 /// Destructor
@@ -68,16 +59,6 @@ AliMpBusPatch::~AliMpBusPatch()
   fBusPatchToDetElem.Delete();
   fBusPatchToDDL.Delete();
 
-}
-
-//_____________________________________________________________________________
-AliMpBusPatch& AliMpBusPatch::operator = (const AliMpBusPatch& /*rhs*/) 
-{
-/// Assignment operator
- 
-  AliFatal("= operator not implemented");
-
-  return *this;
 }
 
 //____________________________________________________________________

@@ -101,11 +101,10 @@ class AliMpSector : public TNamed
     virtual void Print(Option_t* opt="") const;
     
     
-  protected:
+  private:
     AliMpSector(const AliMpSector& right);
     AliMpSector&  operator = (const AliMpSector& right);
 
-  private:
     // methods
     AliMpVRowSegment* FindRowSegment(const TVector2& position) const;
     void SetRowOffsets();

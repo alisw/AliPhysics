@@ -41,13 +41,10 @@ class AliMpConnection : public TObject
     // modifiers
     void SetOwner(AliMpMotifType *owner) {fOwner=owner;}
 
-  protected:
-    AliMpConnection(const AliMpConnection& right);
-
-    // operators
-    AliMpConnection& operator=(const AliMpConnection& right);
-    
   private:
+    AliMpConnection(const AliMpConnection& right);
+    AliMpConnection& operator=(const AliMpConnection& right);
+
     // data members
     Int_t fPadNum;    ///< Pad number
     Int_t fBergNum;   ///< Berg connector number

@@ -61,6 +61,8 @@ const Double_t AliMpSectorSegmentation::fgkS2 = 1000.;
 AliMpSectorSegmentation::AliMpSectorSegmentation(const AliMpSector* sector) 
   : AliMpVSegmentation(),
     fkSector(sector),
+    fPadBuffer(0),
+    fPadDimensionsMap(),
     fMaxIndexInX(0),
     fMaxIndexInY(0)
 {
@@ -83,16 +85,6 @@ AliMpSectorSegmentation::AliMpSectorSegmentation()
 /// Default constructor
 }
 
-//_____________________________________________________________________________
-AliMpSectorSegmentation::AliMpSectorSegmentation(
-                                    const AliMpSectorSegmentation& right) 
-  : AliMpVSegmentation(right) 
-{
-/// Protected copy constructor (not provided) 
-
-  Fatal("AliMpSectorSegmentation", "Copy constructor not provided.");
-}
-
 //______________________________________________________________________________
 AliMpSectorSegmentation::~AliMpSectorSegmentation() 
 {
@@ -100,24 +92,6 @@ AliMpSectorSegmentation::~AliMpSectorSegmentation()
 
   delete fPadBuffer;
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpSectorSegmentation& 
-AliMpSectorSegmentation::operator=(const AliMpSectorSegmentation& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // private methods

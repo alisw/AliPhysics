@@ -54,35 +54,11 @@ AliMpRowSegmentPainter::AliMpRowSegmentPainter(AliMpVRowSegment *row)
 
 }
 
-//_____________________________________________________________________________
-AliMpRowSegmentPainter::AliMpRowSegmentPainter(
-                                       const AliMpRowSegmentPainter& right) 
-  : AliMpVPainter(right) 
-{  
-  /// Protected copy constructor (not provided)
-
-  Fatal("AliMpRowSegmentPainter", "Copy constructor not provided.");
-}
-
 //_______________________________________________________________________
 AliMpRowSegmentPainter::~AliMpRowSegmentPainter()
 {
   /// Destructor
 }
-
-//_____________________________________________________________________________
-AliMpRowSegmentPainter& 
-AliMpRowSegmentPainter::operator=(const AliMpRowSegmentPainter& right)
-{
-  /// Assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //_______________________________________________________________________
 TVector2 AliMpRowSegmentPainter::GetPosition() const

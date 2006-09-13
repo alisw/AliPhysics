@@ -44,12 +44,9 @@ class AliMpVMotif : public TObject
   virtual TVector2     PadPositionLocal(const AliMpIntPair& localIndices) const=0;
   virtual AliMpIntPair PadIndicesLocal(const TVector2& localPos) const=0;
 
- protected:
+ private:
   AliMpVMotif(const AliMpVMotif& right);
   AliMpVMotif&  operator = (const AliMpVMotif& right);
-
- private:
-  // methods
 
   // data members 
   TString         fID;        ///< identifier

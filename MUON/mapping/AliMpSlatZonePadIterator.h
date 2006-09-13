@@ -32,11 +32,10 @@ class AliMpSlatZonePadIterator : public AliMpVPadIterator
   AliMpPad CurrentItem() const;
   void Invalidate();
  
- protected:
+ private:
   AliMpSlatZonePadIterator(const AliMpSlatZonePadIterator& right);
   AliMpSlatZonePadIterator&  operator = (const AliMpSlatZonePadIterator& right);
-     
- private:
+
   Bool_t CropArea();
   Bool_t GetNextPosition(Double_t& x, Double_t& y);
   void SetPad(AliMpPad& pad, const TVector2& pos);

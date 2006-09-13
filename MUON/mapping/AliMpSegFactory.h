@@ -44,14 +44,11 @@ class AliMpSegFactory : public  TObject {
 
     void DeleteSegmentations();
 
-  protected:
+  private:
     AliMpSegFactory(const AliMpSegFactory& rhs);
     AliMpSegFactory& operator=(const AliMpSegFactory& rhs);
 
-  private:
     AliMpExMap* FillMpMap(Int_t detElemId);
-  
-  private:
 
     AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE names
     AliMpExMap*        fMpMap;          ///< Map of el. cards IDs to segmentations

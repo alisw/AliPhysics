@@ -63,11 +63,10 @@ public:
   
   TVector2 Dimensions() const;
   
-protected:
+private:
   AliMpTriggerSegmentation(const AliMpTriggerSegmentation& right);
   AliMpTriggerSegmentation&  operator = (const AliMpTriggerSegmentation& right);
-     
-private:
+
   const AliMpTrigger* fkSlat; ///< Slat
   Int_t fNofStrips; ///< Number of strips in this slat
 

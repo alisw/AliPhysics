@@ -54,34 +54,11 @@ AliMpMotifPainter::AliMpMotifPainter(AliMpMotifPosition *motifPos)
 
 }
 
-//_____________________________________________________________________________
-AliMpMotifPainter::AliMpMotifPainter(const AliMpMotifPainter& right) 
-  : AliMpVPainter(right) 
-{
-  /// Protected copy constructor (not provided) 
-
-  Fatal("AliMpMotifPainter", "Copy constructor not provided.");
-}
-
 //_______________________________________________________________________
 AliMpMotifPainter::~AliMpMotifPainter()
 {
   /// Default constructor
 }
-
-//_____________________________________________________________________________
-AliMpMotifPainter& 
-AliMpMotifPainter::operator=(const AliMpMotifPainter& right)
-{
-  /// Assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //_______________________________________________________________________
 void AliMpMotifPainter::DumpObject()

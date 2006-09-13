@@ -63,15 +63,6 @@ AliMpRow::AliMpRow()
 }
 
 //_____________________________________________________________________________
-AliMpRow::AliMpRow(const AliMpRow& right) 
-  : AliMpVIndexed(right) 
-{
-/// Protected copy constructor (not provided) 
-
-  Fatal("AliMpRow", "Copy constructor not provided.");
-}
-
-//_____________________________________________________________________________
 AliMpRow::~AliMpRow() 
 {
 /// Destructor 
@@ -85,23 +76,6 @@ AliMpRow::~AliMpRow()
   fSegments.Delete();
 #endif
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpRow&  AliMpRow::operator=(const AliMpRow& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // private methods

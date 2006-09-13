@@ -30,11 +30,10 @@ class AliMpSectorPainter : public AliMpVPainter
   virtual TVector2 GetPosition() const;
   virtual TVector2 GetDimensions() const;
 
- protected:
+ private:
   AliMpSectorPainter(const AliMpSectorPainter& right);
   AliMpSectorPainter&  operator = (const AliMpSectorPainter& right);
 
- private:
   AliMpSector *fSector; ///< the sector to draw
 
   ClassDef(AliMpSectorPainter,1) // Sector painter

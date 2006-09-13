@@ -83,22 +83,6 @@ AliMpSlat::AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending)
 }
 
 //_____________________________________________________________________________
-AliMpSlat::AliMpSlat(const AliMpSlat&) : TObject()
-{
-  //
-  AliFatal("Implement me if needed");
-}
-
-//_____________________________________________________________________________
-AliMpSlat&
-AliMpSlat::operator=(const AliMpSlat&)
-{
-  //
-  AliFatal("Implement me if needed");
-  return *this;
-}
-
-//_____________________________________________________________________________
 AliMpSlat::~AliMpSlat()
 {
   //

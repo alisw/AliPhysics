@@ -46,12 +46,11 @@ class AliMpDEManager : public  TObject {
     static AliMpStationType GetStationType(Int_t detElemId);
     static Int_t            GetCathod(Int_t detElemId, AliMpPlaneType planeType);
 
-  protected:
+  private:
     AliMpDEManager();
     AliMpDEManager(const AliMpDEManager& rhs);
     AliMpDEManager& operator=(const AliMpDEManager& rhs);
 
-  private:
     // methods
     static Bool_t IsPlaneType(const TString& planeTypeName);
     static AliMpPlaneType   PlaneType(const TString& planeTypeName);

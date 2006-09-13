@@ -46,11 +46,10 @@ class AliMpMotifPosition : public AliMpVIndexed
 
   void Print(Option_t* option="") const;
 
- protected:
+ private:
   AliMpMotifPosition(const AliMpMotifPosition& right);
   AliMpMotifPosition&  operator = (const AliMpMotifPosition& right);
 
- private:
   // methods
   // data members 
   Int_t         fID;       ///< identifier=manu id

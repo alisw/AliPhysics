@@ -26,12 +26,8 @@ class AliMpBusPatch : public TObject
  public:
 
   AliMpBusPatch();
-  AliMpBusPatch(const AliMpBusPatch& src);
   virtual ~AliMpBusPatch();
 
-  // operators  
-  AliMpBusPatch& operator = (const AliMpBusPatch& src) ;
-  
   // methods
   void ReadBusPatchFile();
   void GetDspInfo(Int_t iDDL, Int_t& iDspMax, Int_t* iBusPerDSP) const;
@@ -46,6 +42,8 @@ class AliMpBusPatch : public TObject
   void     ResetBusItr(Int_t iDDL);
 
  private:
+  AliMpBusPatch(const AliMpBusPatch& src);
+  AliMpBusPatch& operator = (const AliMpBusPatch& src) ;
 
   TExMap fDetElemIdToBusPatch;       //!< Map from idDE to BusPatch   
   TExMap fBusPatchToDetElem;         //!< Map from BusPatch to idDE

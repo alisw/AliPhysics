@@ -44,11 +44,10 @@ class AliMpSectorReader : public TObject
     // methods   
     AliMpSector*  BuildSector();
     
-  protected:
+  private:  
     AliMpSectorReader(const AliMpSectorReader& right);
     AliMpSectorReader&  operator = (const AliMpSectorReader& right);
 
-  private:  
     // methods
     void  ReadSectorData(ifstream& in);
     void  ReadZoneData(ifstream& in);

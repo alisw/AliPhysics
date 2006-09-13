@@ -63,43 +63,11 @@ const TString AliMpFiles::fgkTriggerLocalBoards = "crate";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
 
 //______________________________________________________________________________
-AliMpFiles::AliMpFiles()
-  : TObject()
-{
-/// Default constructor
-}
-  
-//______________________________________________________________________________
-AliMpFiles::AliMpFiles(const AliMpFiles& right)
-  : TObject(right) 
-{
-/// Protected copy constructor 
-
-  AliFatalClass("Attempt to copy AliMpFiles singleton.");
-}
-
-
-//______________________________________________________________________________
 AliMpFiles::~AliMpFiles() 
 {
 /// Destructor
 }
 
-// operators
-
-//______________________________________________________________________________
-AliMpFiles& AliMpFiles::operator=(const AliMpFiles& right)
-{
-/// Assignment operator
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  AliFatalClass("Attempt to assign AliMpFiles singleton.");
-    
-  return *this;  
-}    
-          
 //
 // private methods
 //

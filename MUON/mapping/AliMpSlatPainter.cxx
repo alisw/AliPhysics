@@ -58,15 +58,6 @@ AliMpSlatPainter::AliMpSlatPainter(const AliMpSlat* slat)
     //
 }
 
-//______________________________________________________________________________
-AliMpSlatPainter::AliMpSlatPainter(const AliMpSlatPainter& right) 
-  : AliMpVPainter(right) 
-{  
-/// Protected copy constructor (not implemented)
-
-  AliFatal("Copy constructor not provided.");
-}
-
 //_____________________________________________________________________________
 AliMpSlatPainter::~AliMpSlatPainter()
 {
@@ -74,20 +65,6 @@ AliMpSlatPainter::~AliMpSlatPainter()
   // Dtor.
   //
 }
-
-//______________________________________________________________________________
-AliMpSlatPainter& 
-AliMpSlatPainter::operator=(const AliMpSlatPainter& right)
-{
-/// Protected assignement operator (not implemented)
-
-  // check assignement to self
-  if (this == &right) return *this;
-
-  AliFatal("Assignement operator not provided.");
-    
-  return *this;  
-}    
 
 //_____________________________________________________________________________
 TVector2

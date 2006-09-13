@@ -46,40 +46,12 @@ AliMpExMap  AliMpDEManager::fgDENamesMap(true);
 AliMpExMap  AliMpDEManager::fgDECathBNBMap(true);
 
 //______________________________________________________________________________
-AliMpDEManager::AliMpDEManager()
-    : TObject()
-{  
-/// Protected default/standard constructor
-}
-
-//______________________________________________________________________________
-AliMpDEManager::AliMpDEManager(const AliMpDEManager& rhs)
- : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//______________________________________________________________________________
 
 AliMpDEManager::~AliMpDEManager()
 {
 /// Destructor
 }
 
-//______________________________________________________________________________
-AliMpDEManager&  AliMpDEManager::operator=(const AliMpDEManager& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
-          
 //
 // static private methods
 //

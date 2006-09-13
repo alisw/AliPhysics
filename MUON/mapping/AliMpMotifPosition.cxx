@@ -53,36 +53,11 @@ AliMpMotifPosition::AliMpMotifPosition()
 /// Default constructor
 }
 
-//_____________________________________________________________________________
-AliMpMotifPosition::AliMpMotifPosition(const AliMpMotifPosition& right) 
-  : AliMpVIndexed(right) 
-{
-/// Protected copy constructor (not provided)
-
-  Fatal("AliMpMotifPosition", "Copy constructor not provided.");
-}
-
 //______________________________________________________________________________
 AliMpMotifPosition::~AliMpMotifPosition()\
 {
 /// Destructor 
 }
-
-// operators
-
-//_____________________________________________________________________________
-AliMpMotifPosition& 
-AliMpMotifPosition::operator=(const AliMpMotifPosition& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //______________________________________________________________________________
 AliMpVPadIterator* AliMpMotifPosition::CreateIterator() const

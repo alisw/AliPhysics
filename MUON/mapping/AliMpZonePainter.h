@@ -33,11 +33,10 @@ class AliMpZonePainter : public AliMpVPainter
   virtual TVector2 GetDimensions() const;
   virtual Int_t DistancetoPrimitive(Int_t x, Int_t y);
 
- protected:
+ private: 
   AliMpZonePainter(const AliMpZonePainter& right);
   AliMpZonePainter&  operator = (const AliMpZonePainter& right);
 
- private: 
   AliMpZone *fZone; ///< the zone to draw
 
   ClassDef(AliMpZonePainter,1) // Zone painter

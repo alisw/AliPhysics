@@ -59,37 +59,10 @@ AliMpVPadRowSegment::AliMpVPadRowSegment()
 }
 
 //_____________________________________________________________________________
-AliMpVPadRowSegment::AliMpVPadRowSegment(const AliMpVPadRowSegment& right) 
-  : TObject(right) 
-{
-/// Protected copy constructor (not provided) 
-
-  Fatal("AliMpVPadRowSegment", "Copy constructor not provided.");
-}
-
-//_____________________________________________________________________________
 AliMpVPadRowSegment::~AliMpVPadRowSegment() 
 {
 /// Destructor   
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpVPadRowSegment& 
-AliMpVPadRowSegment::operator=(const AliMpVPadRowSegment& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // public methods  

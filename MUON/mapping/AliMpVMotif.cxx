@@ -57,34 +57,10 @@ AliMpVMotif::AliMpVMotif(const TString &id, AliMpMotifType *motifType):
 }
 
 //_____________________________________________________________________________
-AliMpVMotif::AliMpVMotif(const AliMpVMotif& right) 
-  : TObject(right) 
-{
-  /// Protected copy constructor (not provided) 
-
-  Fatal("AliMpVMotif", "Copy constructor not provided.");
-}
-
-//_____________________________________________________________________________
 AliMpVMotif::~AliMpVMotif()
 {
   /// Destructor
 }
-
-// operators
-
-//_____________________________________________________________________________
-AliMpVMotif& AliMpVMotif::operator=(const AliMpVMotif& right)
-{
-  /// Protected assignment operator (not provided)
-  
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //_____________________________________________________________________________
 AliMpConnection* 

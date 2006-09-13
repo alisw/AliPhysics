@@ -92,11 +92,10 @@ class AliMpSectorSegmentation : public AliMpVSegmentation
     
     TVector2 Dimensions() const;
     
-protected:
+  private:
     AliMpSectorSegmentation(const AliMpSectorSegmentation& right);
     AliMpSectorSegmentation&  operator = (const AliMpSectorSegmentation& right);
 
-  private:
 #ifdef WITH_ROOT
     static const Double_t   fgkS1;  // the separators used for conversion
     static const Double_t   fgkS2;  // of TVector2 to Long_t

@@ -47,6 +47,7 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
     fOffset(offset),
     fZones(),
     fRows(),
+    fMotifMap(0),
     fDirection(direction),
     fMinPadDimensions(TVector2(1.e6, 1.e6)),
     fMaxPadIndices(AliMpIntPair::Invalid()),
@@ -72,15 +73,6 @@ AliMpSector::AliMpSector(const TString& id, Int_t nofZones, Int_t nofRows,
   for (Int_t irow = 0; irow<nofRows; irow++) 
     fRows.Add(new AliMpRow(irow, fMotifMap));
 #endif
-}
-
-//_____________________________________________________________________________
-AliMpSector::AliMpSector(const AliMpSector& right) 
-  : TNamed(right) 
-{
-/// Protected copy constructor (not provided) 
-
-  Fatal("AliMpSector", "Copy constructor not provided.");
 }
 
 //_____________________________________________________________________________
@@ -113,23 +105,6 @@ AliMpSector::~AliMpSector()
 
   delete fMotifMap;
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpSector& AliMpSector::operator=(const AliMpSector& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // private methods

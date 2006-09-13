@@ -43,15 +43,6 @@ AliMpConnection::AliMpConnection(Int_t padNum, Int_t bergNum,Int_t kaptonNum,
 }
 
 //_____________________________________________________________________________
-AliMpConnection::AliMpConnection(const AliMpConnection& right) 
-  : TObject(right) 
-{
-/// Protected copy constructor (not provided) 
-
-  Fatal("AliMpConnection", "Copy constructor not provided.");
-}
-
-//_____________________________________________________________________________
 AliMpConnection::AliMpConnection() 
   : TObject(),
     fPadNum(-1),
@@ -67,22 +58,3 @@ AliMpConnection::AliMpConnection()
 AliMpConnection::~AliMpConnection() {
 //  
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpConnection& 
-AliMpConnection::operator=(const AliMpConnection& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
-

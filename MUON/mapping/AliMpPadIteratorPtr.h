@@ -32,15 +32,14 @@ class AliMpPadIteratorPtr : public TObject
     AliMpVPadIterator* operator->() { return  fIterator; }
     AliMpVPadIterator& operator*()  { return *fIterator; }
 
-  protected:
+  private:   
     AliMpPadIteratorPtr(const AliMpPadIteratorPtr& right);
 
     // operators
     AliMpPadIteratorPtr& operator=(const AliMpPadIteratorPtr& right);
         // copy and assignment are disallowed to avoid
         // multiple deletion of fIterator
-    
-  private:   
+
     // data members
     AliMpVPadIterator*  fIterator; ///< The pad iterator
      

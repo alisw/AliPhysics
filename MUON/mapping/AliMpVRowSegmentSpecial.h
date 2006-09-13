@@ -84,9 +84,6 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     virtual Int_t         GetMotifPositionId(Int_t i) const;
 
   protected:
-    AliMpVRowSegmentSpecial(const AliMpVRowSegmentSpecial& right);
-    AliMpVRowSegmentSpecial&  operator = (const AliMpVRowSegmentSpecial& right);
-
     // methods
     virtual TVector2  MotifCenterSlow(Int_t motifPositionId) const = 0;
     AliMpPadRow*         FindPadRow(Double_t y) const;
@@ -101,6 +98,9 @@ class AliMpVRowSegmentSpecial : public AliMpVRowSegment
     Double_t      GetOffsetX() const;
 
   private:
+    AliMpVRowSegmentSpecial(const AliMpVRowSegmentSpecial& right);
+    AliMpVRowSegmentSpecial&  operator = (const AliMpVRowSegmentSpecial& right);
+
 #ifdef WITH_ROOT
     // static data members
     static const Int_t  fgkMaxNofMotifPositionIds; // dimension of fMotifPositionIds

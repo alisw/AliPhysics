@@ -53,34 +53,11 @@ AliMpSectorPainter::AliMpSectorPainter(AliMpSector *sector)
 
 }
 
-//_____________________________________________________________________________
-AliMpSectorPainter::AliMpSectorPainter(const AliMpSectorPainter& right) 
-  : AliMpVPainter(right) 
-{  
-  /// Protected copy constructor (not provided)
-
-  Fatal("AliMpSectorPainter", "Copy constructor not provided.");
-}
-
 //_______________________________________________________________________
 AliMpSectorPainter::~AliMpSectorPainter()
 {
   /// Destructor
 }
-
-//_____________________________________________________________________________
-AliMpSectorPainter& 
-AliMpSectorPainter::operator=(const AliMpSectorPainter& right)
-{
-  /// Assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //_______________________________________________________________________
 void AliMpSectorPainter::DumpObject()

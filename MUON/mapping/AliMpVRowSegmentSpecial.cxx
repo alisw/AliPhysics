@@ -78,16 +78,6 @@ AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial()
 #endif    
 }
 
-//_____________________________________________________________________________
-AliMpVRowSegmentSpecial::AliMpVRowSegmentSpecial(
-                                  const AliMpVRowSegmentSpecial& right) 
-  : AliMpVRowSegment(right) 
-{
-/// Protected copy constructor (not provided)
- 
-  Fatal("AliMpVRowSegmentSpecial", "Copy constructor not provided.");
-}
-
 //______________________________________________________________________________
 AliMpVRowSegmentSpecial::~AliMpVRowSegmentSpecial() 
 {
@@ -96,24 +86,6 @@ AliMpVRowSegmentSpecial::~AliMpVRowSegmentSpecial()
   for (Int_t i=0; i<GetNofPadRows(); i++)
     delete fPadRows[i];
 }
-
-//
-// operators
-//
-
-//_____________________________________________________________________________
-AliMpVRowSegmentSpecial& 
-AliMpVRowSegmentSpecial::operator=(const AliMpVRowSegmentSpecial& right)
-{
-/// Protected assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //
 // protected methods  

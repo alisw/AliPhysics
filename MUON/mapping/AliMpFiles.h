@@ -77,14 +77,12 @@ class AliMpFiles : public TObject
     // set methods
     static void SetTopPath(const TString& topPath);
   
-  protected:
+  private: 
     AliMpFiles();
     AliMpFiles(const AliMpFiles& right);
   
     // operators
     AliMpFiles& operator=(const AliMpFiles& right);    
-  
-  private: 
     // methods
     static TString GetTop();
     static TString PlaneDataDir(AliMpStationType station, AliMpPlaneType plane); 

@@ -47,36 +47,12 @@ AliMpStringObjMap::AliMpStringObjMap()
 }
 
 //______________________________________________________________________________
-AliMpStringObjMap::AliMpStringObjMap(const AliMpStringObjMap& rhs)
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Copy constructor is not implemented.");
-}
-
-//______________________________________________________________________________
 AliMpStringObjMap::~AliMpStringObjMap()
 {
 /// Destructor
 
   fFirstArray.Delete();
 }
-
-//______________________________________________________________________________
-AliMpStringObjMap& 
-AliMpStringObjMap::operator = (const AliMpStringObjMap& rhs) 
-{
-/// Protected assignement operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Assignment operator is not implemented.");
-    
-  return *this;  
-}
-
 
 //
 // public methods

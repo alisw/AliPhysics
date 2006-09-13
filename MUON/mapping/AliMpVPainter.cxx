@@ -53,7 +53,10 @@ ClassImp(AliMpVPainter)
 //_______________________________________________________________________
 AliMpVPainter::AliMpVPainter()
   : TObject(),
-    fColor(2)
+    fColor(2),
+    fPadPosition(),
+    fPadDimensions(),
+    fTrashList(0)
 {
   /// Default constructor
 
@@ -62,15 +65,6 @@ AliMpVPainter::AliMpVPainter()
   fPadDimensions =  gr->GetPadDimensions();
   fColor=gr->GetColor();
   fTrashList = new TList;
-}
-
-//_____________________________________________________________________________
-AliMpVPainter::AliMpVPainter(const AliMpVPainter& right) 
-  : TObject(right) 
-{  
-  /// Protected copy constructor (not provided)
-
-  Fatal("AliMpVPainter", "Copy constructor not provided.");
 }
 
 //_______________________________________________________________________
@@ -83,19 +77,6 @@ AliMpVPainter::~AliMpVPainter()
     delete fTrashList;
   }
 }
-
-//_____________________________________________________________________________
-AliMpVPainter& AliMpVPainter::operator=(const AliMpVPainter& right)
-{
-  /// Assignment operator (not provided)
-
-  // check assignment to self
-  if (this == &right) return *this;
-
-  Fatal("operator =", "Assignment operator not provided.");
-    
-  return *this;  
-}    
 
 //_______________________________________________________________________
 Bool_t AliMpVPainter::IsInside(const TVector2 &point,const TVector2& pos,const TVector2& dim)
