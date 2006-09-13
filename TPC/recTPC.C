@@ -16,7 +16,7 @@ void recTPC(Int_t type, const char *filename="data.root")
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetRun(0);
-  man->SetSpecificStorage("TPC","local:///afs/cern.ch/user/m/mivanov/public/Calib");
+  man->SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   //
   // Set reconstruction parameters
   //
@@ -31,7 +31,8 @@ void recTPC(Int_t type, const char *filename="data.root")
   //
   //
   AliReconstruction rec;  
-  rec.SetSpecificStorage("TPC","local:///afs/cern.ch/user/m/mivanov/public/Calib");
+  rec.SetDefaultStorage("local://$ALICE_ROOT");
+  rec.SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   rec.SetLoadAlignData("");
   rec.SetWriteESDfriend(kTRUE);
   rec.SetInput(filename);
@@ -57,7 +58,7 @@ void recTracking(Int_t type, const char *filename="data.root", Int_t nevents=1)
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetRun(0);
-  man->SetSpecificStorage("TPC","local:///afs/cern.ch/user/m/mivanov/public/Calib");
+  man->SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   //
   // Set reconstruction parameters
   //
@@ -74,7 +75,7 @@ void recTracking(Int_t type, const char *filename="data.root", Int_t nevents=1)
   //
   //
   AliReconstruction rec;
-  //rec.SetSpecificStorage("TPC","local:///afs/cern.ch/user/m/mivanov/public/Calib");
+  rec.SetSpecificStorage("TPC/*/*","local:///afs/cern.ch/user/m/mivanov/public/Calib");
   rec.SetLoadAlignData("");
   rec.SetWriteESDfriend(kTRUE);
   rec.SetInput(filename);
