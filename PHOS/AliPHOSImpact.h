@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -35,7 +38,7 @@ class AliPHOSImpact : public AliHit {
 
 public:
   
-  AliPHOSImpact() { }              // default ctor 
+  AliPHOSImpact();              // default ctor 
   AliPHOSImpact(const AliPHOSImpact & hit) ; 
   AliPHOSImpact(Int_t shunt, Int_t primary, Int_t track, Int_t pid, TLorentzVector p, Float_t *xyz);
   virtual ~AliPHOSImpact(void) { } // dtor 

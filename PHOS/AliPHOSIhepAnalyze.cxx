@@ -59,22 +59,24 @@
 ClassImp(AliPHOSIhepAnalyze)
 
 //____________________________________________________________________________
-
-AliPHOSIhepAnalyze::AliPHOSIhepAnalyze() 
- {
-   fRunLoader = 0x0;
- }
+AliPHOSIhepAnalyze::AliPHOSIhepAnalyze():
+  fRunLoader(0),
+  fFileName()
+{
+}
 
 //____________________________________________________________________________
-
-AliPHOSIhepAnalyze::AliPHOSIhepAnalyze(Text_t * name) : fFileName(name) {
+AliPHOSIhepAnalyze::AliPHOSIhepAnalyze(Text_t * name) : 
+  fRunLoader(0),
+  fFileName(name)
+{
   // Constructor: open a header file
   fRunLoader = AliRunLoader::Open(fFileName);
   if (fRunLoader == 0x0)
    {
      AliFatal(Form("Can not load event from file %s",name));
    }
- }
+}
 
 //____________________________________________________________________________
 void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)

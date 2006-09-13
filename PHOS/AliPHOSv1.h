@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.39  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -30,9 +33,7 @@ public:
 
   AliPHOSv1(void) ;
   AliPHOSv1(const char *name, const char *title="") ;
-  AliPHOSv1(AliPHOSv1 & phos) : AliPHOSv0(phos) {
-    phos.Copy(*this) ; 
-  }
+  AliPHOSv1(AliPHOSv1 & phos);
   virtual ~AliPHOSv1(void) ;
 
   virtual void   Copy(TObject &phos) const; 

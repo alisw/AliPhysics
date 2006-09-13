@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.25  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -37,9 +40,8 @@ public:
 
   AliPHOSvFast() ;
   AliPHOSvFast(const char *name, const char *title="") ;
-  AliPHOSvFast(AliPHOSvFast & fast) : AliPHOS(fast) {
-    fast.Copy(*this) ; 
-  }
+  AliPHOSvFast(AliPHOSvFast & fast);
+  
   virtual ~AliPHOSvFast(void) ;
 
   virtual void Copy(TObject &fast) const; 

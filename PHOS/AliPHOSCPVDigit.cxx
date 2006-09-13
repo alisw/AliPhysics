@@ -29,16 +29,26 @@
 ClassImp(AliPHOSCPVDigit)
 
 //______________________________________________________________________________
-
-AliPHOSCPVDigit::AliPHOSCPVDigit(Int_t x, Int_t y, Float_t q)
+AliPHOSCPVDigit::AliPHOSCPVDigit():
+  fXpad(0),
+  fYpad(0),
+  fQpad(0.)
 {
   //
   // Create a CPV digit object
   //
+}
 
-  fXpad = x;
-  fYpad = y;
-  fQpad = q;
+
+//______________________________________________________________________________
+AliPHOSCPVDigit::AliPHOSCPVDigit(Int_t x, Int_t y, Float_t q):
+  fXpad(x),
+  fYpad(y),
+  fQpad(q)
+{
+  //
+  // Create a CPV digit object
+  //
 }
 
 //______________________________________________________________________________

@@ -37,36 +37,42 @@ ClassImp(AliPHOSCalibrationData)
 
 
 //____________________________________________________________________________ 
-  AliPHOSCalibrationData::AliPHOSCalibrationData():TObject() 
+AliPHOSCalibrationData::AliPHOSCalibrationData():
+  fCategory(), 
+  fVersion(),
+  fData(0),
+  fDataCheck(0),
+  fBegin(0),
+  fEnd(0)
 {
-  // default ctor : does nothing
-  fBegin=0;
-  fEnd=0;
-  fData = 0 ;
-  fDataCheck = 0 ;
-  fCategory=""; 
-  fVersion="" ; 
+  // default ctor
 }
 
 //____________________________________________________________________________ 
-  AliPHOSCalibrationData::AliPHOSCalibrationData(const char * category, const char * version, Int_t nchannels)
+AliPHOSCalibrationData::AliPHOSCalibrationData(const char * category, const char * version, Int_t nchannels):
+  fCategory(category), 
+  fVersion(version),
+  fData(new TArrayF(nchannels)),
+  fDataCheck(new TArrayF(nchannels)),
+  fBegin(0),
+  fEnd(0)
 {
   // ctor: sets up the calibration IO
-  fData      = new TArrayF(nchannels) ;
-  fDataCheck = new TArrayF(nchannels) ;
-  fCategory=category; 
-  fVersion=version ; 
 }
+
 //____________________________________________________________________________ 
-AliPHOSCalibrationData::AliPHOSCalibrationData(const AliPHOSCalibrationData & cd)
-  : TObject(cd)
+AliPHOSCalibrationData::AliPHOSCalibrationData(const AliPHOSCalibrationData & cd):
+  TObject(cd),
+  fCategory(cd.fCategory),
+  fVersion(cd.fVersion),
+  fData(new TArrayF(*cd.fData)),
+  fDataCheck(new TArrayF(*cd.fDataCheck)),
+  fBegin(cd.fBegin),
+  fEnd(cd.fEnd)
 {
   //copy ctor
-  fData = new TArrayF(*cd.fData) ;
-  fDataCheck = new TArrayF(*cd.fDataCheck) ;
-  fCategory=cd.fCategory; 
-  fVersion=cd.fVersion ; 
 }
+
 //____________________________________________________________________________ 
   AliPHOSCalibrationData::~AliPHOSCalibrationData()
 {

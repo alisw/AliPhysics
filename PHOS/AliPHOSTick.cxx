@@ -33,20 +33,21 @@ ClassImp(AliPHOSTick)
 
 
 //____________________________________________________________________________ 
-  AliPHOSTick::AliPHOSTick():TObject() 
+AliPHOSTick::AliPHOSTick():
+  fTime(0),
+  fA(0),
+  fB(0)
 {
-  fTime = 0;
-  fA = 0;
-  fB = 0 ;
 }
 
 //____________________________________________________________________________ 
-AliPHOSTick::AliPHOSTick(Float_t time, Float_t a, Float_t slope):TObject()
+AliPHOSTick::AliPHOSTick(Float_t time, Float_t a, Float_t slope):
+  fTime(time),
+  fA(a),
+  fB(slope)
 {
-  fTime = time;
-  fA = a;
-  fB = slope ;  
 }
+
 //____________________________________________________________________________ 
 Int_t AliPHOSTick::Compare(const TObject * obj) const {
   if(obj->InheritsFrom("AliPHOSTick")){

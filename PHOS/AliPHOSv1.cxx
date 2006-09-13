@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.104  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -50,23 +53,29 @@ ClassImp(AliPHOSv1)
 
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1():
-AliPHOSv0()
+  fLightYieldMean(0.),
+  fIntrinsicPINEfficiency(0.),
+  fLightYieldAttenuation(0.),
+  fRecalibrationFactor(0.),
+  fElectronsPerGeV(0.),
+  fAPDGain(0.),
+  fLightFactor(0.),
+  fAPDFactor(0.)
 {
-
-  fLightYieldMean         = 0. ;         
-  fIntrinsicPINEfficiency = 0. ; 
-  fLightYieldAttenuation  = 0. ;  
-  fRecalibrationFactor    = 0. ;    
-  fElectronsPerGeV        = 0. ;
-  fAPDGain                = 0. ;  
-  fLightFactor            = 0. ; 
-  fAPDFactor              = 0. ; 
-
+  //Def ctor.
 }
 
 //____________________________________________________________________________
 AliPHOSv1::AliPHOSv1(const char *name, const char *title):
- AliPHOSv0(name,title) 
+  AliPHOSv0(name,title),
+  fLightYieldMean(0.),
+  fIntrinsicPINEfficiency(0.),
+  fLightYieldAttenuation(0.),
+  fRecalibrationFactor(0.),
+  fElectronsPerGeV(0.),
+  fAPDGain(0.),
+  fLightFactor(0.),
+  fAPDFactor(0.)
 {
   //
   // We store hits :
@@ -109,6 +118,22 @@ AliPHOSv1::AliPHOSv1(const char *name, const char *title):
   fLightFactor            = fLightYieldMean * fIntrinsicPINEfficiency ; 
   fAPDFactor              = (fRecalibrationFactor/100.) * fAPDGain ;   
 }
+
+AliPHOSv1::AliPHOSv1(AliPHOSv1 & phos) :
+  AliPHOSv0(phos),
+  fLightYieldMean(0.),
+  fIntrinsicPINEfficiency(0.),
+  fLightYieldAttenuation(0.),
+  fRecalibrationFactor(0.),
+  fElectronsPerGeV(0.),
+  fAPDGain(0.),
+  fLightFactor(0.),
+  fAPDFactor(0.)
+{
+  //Copy ctor. Can be wrong.
+  phos.Copy(*this) ; 
+}
+
 
 //____________________________________________________________________________
 AliPHOSv1::~AliPHOSv1()

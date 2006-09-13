@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.6  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -43,32 +46,38 @@
 ClassImp(AliPHOSImpact)
 
 //____________________________________________________________________________
-AliPHOSImpact::AliPHOSImpact(const AliPHOSImpact & hit) 
-  : AliHit(hit)
+AliPHOSImpact::AliPHOSImpact() : 
+  fPid(0),
+  fPrimary(0),
+  fMomentum()
 {
-   // copy ctor
-   
+  //Def ctor.
+}
+
+//____________________________________________________________________________
+AliPHOSImpact::AliPHOSImpact(const AliPHOSImpact & hit) : 
+  AliHit(hit),
+  fPid(hit.fPid),
+  fPrimary(hit.fPrimary),
+  fMomentum(hit.fMomentum)
+{
+  // copy ctor
   fTrack   = hit.fTrack ; 
-  fPrimary = hit.fPrimary ; 
-  fPid     = hit.fPid ;
-  fMomentum= hit.fMomentum ;
   fX       = hit.fX ; 
   fY       = hit.fY ; 
   fZ       = hit.fZ ; 
- 
 } 
 
 //____________________________________________________________________________
-AliPHOSImpact::AliPHOSImpact(Int_t shunt, Int_t primary, Int_t track, Int_t pid, TLorentzVector p, Float_t *xyz)
-  : AliHit(shunt, track)
+AliPHOSImpact::AliPHOSImpact(Int_t shunt, Int_t primary, Int_t track, Int_t pid, TLorentzVector p, Float_t *xyz): 
+  AliHit(shunt, track),
+  fPid(pid),
+  fPrimary(primary),
+  fMomentum(p)
 {
   //
   // Create a PHOS hit impact object
   //
-
-  fPrimary   = primary ;
-  fPid       = pid ; 
-  fMomentum  = p;
   fX         = xyz[0];  //position of particle first entering cristall/pad
   fY         = xyz[1];
   fZ         = xyz[2];  

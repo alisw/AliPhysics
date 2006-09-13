@@ -25,7 +25,8 @@ class AliPHOSIhepAnalyze : public TObject {
 
   AliPHOSIhepAnalyze() ;              // ctor
   AliPHOSIhepAnalyze(Text_t * name) ; // ctor
-  AliPHOSIhepAnalyze(const AliPHOSIhepAnalyze & obj) : TObject(obj) {
+  AliPHOSIhepAnalyze(const AliPHOSIhepAnalyze & obj) : TObject(obj), fRunLoader(0), fFileName()
+  {
     // cpy ctor: no implementation yet
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;

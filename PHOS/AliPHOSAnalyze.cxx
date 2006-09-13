@@ -92,19 +92,23 @@
 ClassImp(AliPHOSAnalyze)
 
 //____________________________________________________________________________
-  AliPHOSAnalyze::AliPHOSAnalyze()
+AliPHOSAnalyze::AliPHOSAnalyze():
+  fCorrection(1.2),  //Value calculated for default parameters of reconstruction
+  fEvt(0),
+  ffileName(),
+  fRunLoader(0)
 {
   // default ctor (useless)
-  fCorrection = 1.2 ;  //Value calculated for default parameters of reconstruction  
-  fRunLoader = 0x0;
 }
 
 //____________________________________________________________________________
-AliPHOSAnalyze::AliPHOSAnalyze(Text_t * fileName)
+AliPHOSAnalyze::AliPHOSAnalyze(Text_t * fileName):
+  fCorrection(1.05),  //Value calculated for default parameters of reconstruction   
+  fEvt(0),
+  ffileName(fileName),
+  fRunLoader(0)
 {
   // ctor: analyze events from root file "name"
-  ffileName = fileName;
-  fCorrection = 1.05 ;  //Value calculated for default parameters of reconstruction   
   fRunLoader = AliRunLoader::Open(fileName,"AliPHOSAnalyze");
   if (fRunLoader == 0x0)
    {
@@ -113,8 +117,12 @@ AliPHOSAnalyze::AliPHOSAnalyze(Text_t * fileName)
 }
 
 //____________________________________________________________________________
-AliPHOSAnalyze::AliPHOSAnalyze(const AliPHOSAnalyze & ana)
-  : TObject(ana)
+AliPHOSAnalyze::AliPHOSAnalyze(const AliPHOSAnalyze & ana): 
+  TObject(ana),
+  fCorrection(0.),
+  fEvt(0),
+  ffileName(),
+  fRunLoader(0)
 {
   // copy ctor
   ( (AliPHOSAnalyze &)ana ).Copy(*this) ;

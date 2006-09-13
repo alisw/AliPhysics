@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -46,49 +49,55 @@ ClassImp(AliPHOSConTableDB)
 
 
 //____________________________________________________________________________ 
-  AliPHOSConTableDB::AliPHOSConTableDB():TNamed("AliPHOSConTableDB","Beamtest2002") 
+AliPHOSConTableDB::AliPHOSConTableDB():
+  TNamed("AliPHOSConTableDB","Beamtest2002"),
+  fGeom(0),
+  fProtoRaws(0),
+  fProtoColumns(0),
+  fRawOffset(0),
+  fColOffset(0),
+  fNcrInProto(0),
+  fMinAbsId(0),
+  fMaxAbsId(0),
+  fAbsIdMap(0),
+  fRawIdMap(0)
 {
-//default constructor, nothing created.
-  fNcrInProto = 0 ;
-  fProtoRaws = 0 ;
-  fProtoColumns = 0 ;
-  fRawOffset = 0 ;
-  fColOffset = 0 ;
-  fGeom = 0;
-  fAbsIdMap = 0 ;
-  fRawIdMap = 0 ;
+  //default constructor, nothing created.
 }
 
 //____________________________________________________________________________ 
-  AliPHOSConTableDB::AliPHOSConTableDB(const char * title):TNamed("AliPHOSConTableDB",title) 
+AliPHOSConTableDB::AliPHOSConTableDB(const char * title):
+  TNamed("AliPHOSConTableDB",title),
+  fGeom(0),
+  fProtoRaws(0),
+  fProtoColumns(0),
+  fRawOffset(0),
+  fColOffset(0),
+  fNcrInProto(0),
+  fMinAbsId(0),
+  fMaxAbsId(0),
+  fAbsIdMap(0),
+  fRawIdMap(0)
 {
- //Normally used constructor 
-  fNcrInProto = 0 ;
-  fProtoRaws = 0 ;
-  fProtoColumns = 0 ;
-  fRawOffset = 0 ;
-  fColOffset = 0 ;
-  fAbsIdMap = 0 ;
-  fRawIdMap = 0 ;
-
+  //Normally used constructor 
   fGeom = AliPHOSGeometry::GetInstance("IHEP","") ;
-
 }
 
 //____________________________________________________________________________ 
-AliPHOSConTableDB::AliPHOSConTableDB(const AliPHOSConTableDB& cdb):TNamed(cdb.GetName(), cdb.GetTitle()) 
+AliPHOSConTableDB::AliPHOSConTableDB(const AliPHOSConTableDB& cdb):
+  TNamed(cdb.GetName(), cdb.GetTitle()),
+  fGeom(0),
+  fProtoRaws(cdb.fProtoRaws),
+  fProtoColumns(cdb.fProtoColumns),
+  fRawOffset(cdb.fRawOffset),
+  fColOffset(cdb.fColOffset),
+  fNcrInProto(cdb.fNcrInProto),
+  fMinAbsId(cdb.fMinAbsId),
+  fMaxAbsId(cdb.fMaxAbsId),
+  fAbsIdMap(new TArrayS(*(cdb.fAbsIdMap))),
+  fRawIdMap(new TArrayS(*(cdb.fRawIdMap)))
 {
   //Copy constructor
-  
-  fProtoRaws=cdb.fProtoRaws ;        //  Parameters
-  fProtoColumns=cdb.fProtoColumns ;     //  used to calculate
-  fRawOffset=cdb.fRawOffset ;        //  correspondance
-  fColOffset=cdb.fColOffset ;        //  map
-  fNcrInProto=cdb.fNcrInProto ;       //Number of channels in prototype
-  fMinAbsId=cdb.fMinAbsId ;         //Minimal AbsId, corresponding to some prototype cristall.
-  fMaxAbsId=cdb.fMaxAbsId ;         //Maximal AbsId, corresponding to some prototype cristall
-  fAbsIdMap=new TArrayS(*(cdb.fAbsIdMap)) ;         //Map of correspondance between Raw and PHOS ID
-  fRawIdMap=new TArrayS(*(cdb.fRawIdMap)) ;         //Map of correspondance between AbsId and Raw
 }
 
 //____________________________________________________________________________ 

@@ -70,9 +70,19 @@ ClassImp(AliPHOSOnlineMonitor)
 
 
 //____________________________________________________________________________ 
-AliPHOSOnlineMonitor::AliPHOSOnlineMonitor(): TDialogCanvas("PHOS","PHOS",150,300)
+AliPHOSOnlineMonitor::AliPHOSOnlineMonitor(): 
+  TDialogCanvas("PHOS","PHOS",150,300),
+  fScanPed(kFALSE),
+  fScanSig(kFALSE),
+  fReconstruct(kFALSE),
+  fNevents(0),
+  fNUpdate(1000),
+  fCanvasList(new TList),
+  fHistosList(new TList),
+  fInputFile(),
+  fGeom(0),
+  fcdb(0)
 {
-  
   MakeButtons() ;
   Modified(kTRUE);
   Update();
@@ -85,23 +95,22 @@ AliPHOSOnlineMonitor::AliPHOSOnlineMonitor(): TDialogCanvas("PHOS","PHOS",150,30
   fRefObject = this;
   fRefPad    = (TPad*)gROOT->GetSelectedPad();
 
-  fScanPed = 0 ;
-  fScanSig = 0; 
-  fReconstruct = 0 ;
-
-  //Prepare list of canvas with histograms
-  fCanvasList = new TList() ;
-  fHistosList = new TList() ;
-
-  fcdb = 0 ;
   fGeom = AliPHOSGeometry::GetInstance("IHEP","") ;
-  fNUpdate = 1000 ;
-
 }
 //____________________________________________________________________________ 
-AliPHOSOnlineMonitor::AliPHOSOnlineMonitor(const char * inputfile): TDialogCanvas("PHOS","PHOS",150,300)
+AliPHOSOnlineMonitor::AliPHOSOnlineMonitor(const char * inputfile): 
+  TDialogCanvas("PHOS","PHOS",150,300),
+  fScanPed(kFALSE),
+  fScanSig(kFALSE),
+  fReconstruct(kFALSE),
+  fNevents(0),
+  fNUpdate(1000),
+  fCanvasList(new TList),
+  fHistosList(new TList),
+  fInputFile(inputfile),
+  fGeom(0),
+  fcdb(0)
 {
-
   MakeButtons() ;
   Modified(kTRUE);
   Update();
@@ -114,22 +123,35 @@ AliPHOSOnlineMonitor::AliPHOSOnlineMonitor(const char * inputfile): TDialogCanva
   fRefObject = this;
   fRefPad    = (TPad*)gROOT->GetSelectedPad();
 
-  fScanPed = 0 ;
-  fScanSig = 0; 
-  fReconstruct = 0 ;
-
-  //Prepare list of canvas with histograms
-  fCanvasList = new TList() ;
-  fHistosList = new TList() ;
-
-  fInputFile = inputfile ;
   fGeom = AliPHOSGeometry::GetInstance("IHEP","") ;
-  fcdb = 0 ;
-  fNUpdate = 1000 ;
-
 }
+
 //____________________________________________________________________________ 
-  AliPHOSOnlineMonitor::~AliPHOSOnlineMonitor()
+AliPHOSOnlineMonitor::AliPHOSOnlineMonitor(const AliPHOSOnlineMonitor & /*rhs*/):
+  TDialogCanvas(),
+  fScanPed(kFALSE),
+  fScanSig(kFALSE),
+  fReconstruct(kFALSE),
+  fNevents(0),
+  fNUpdate(0),
+  fCanvasList(0),
+  fHistosList(0),
+  fInputFile(),
+  fGeom(0),
+  fcdb(0)
+{
+  Fatal("AliPHOSOnlineMonitor", "not implemented");
+}
+
+//____________________________________________________________________________ 
+AliPHOSOnlineMonitor & AliPHOSOnlineMonitor::operator = (const AliPHOSOnlineMonitor &)
+{
+  Fatal("operator = ", "not implemented");
+  return *this;
+}
+
+//____________________________________________________________________________ 
+AliPHOSOnlineMonitor::~AliPHOSOnlineMonitor()
 {
   //Obvious, but unevoidable comment for destructor: cleans up everething.
   TIter nextCanvas(fCanvasList);

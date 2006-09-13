@@ -91,12 +91,14 @@ AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(Bool_t cpv, AliPHOSEvalRecPoint* parent
   
 }
 
-AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(Int_t i, Bool_t cpv) : fEventFolderName(AliConfig::GetDefaultEventFolderName())
+AliPHOSEvalRecPoint::AliPHOSEvalRecPoint(Int_t i, Bool_t cpv) : 
+  fIsEmc(kFALSE),
+  fIsCpv(kFALSE),
+  fParent(-333),
+  fChi2Dof(-111),
+  fEventFolderName(AliConfig::GetDefaultEventFolderName())
 {
   // ctor
-  fChi2Dof=-111;
-  fParent=-333;
-
   AliPHOSEmcRecPoint* rp=0;
 
   AliPHOSLoader* fLoader = AliPHOSLoader::GetPHOSLoader(fEventFolderName);

@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -38,10 +41,18 @@
 ClassImp(AliPHOSGridFile)
 
 //____________________________________________________________________________
-AliPHOSGridFile::AliPHOSGridFile(TString grid)
+AliPHOSGridFile::AliPHOSGridFile(TString grid):
+  fGrid(0),
+  fRoot("/alice/production/aliprod"),
+  fYear(""),
+  fProd(""),
+  fVers(""),
+  fType(""),
+  fRun(""),
+  fEvt(""),
+  fPath("")
 {
   // default ctor; Doing initialisation ;
-  fGrid = 0 ;
   if (grid == "alien")
     fGrid = TGrid::Connect("alien://aliendb1.cern.ch:15000/?direct") ;
   else
@@ -49,22 +60,31 @@ AliPHOSGridFile::AliPHOSGridFile(TString grid)
   if ( !fGrid )
     Error("ctor", "Cannot connect to alien://aliendb1.cern.ch:15000/?direct") ;
 
-  fRoot = "/alice/production/aliprod" ;
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
   if ( !fGrid->OpenDir(fRoot) )
     Error("ctor", "Cannot find directory %s ", fRoot.Data() ) ;
 #else
   Error("AliPHOSGridFile", "needs to be ported to new TGrid");
 #endif
-  fYear = "" ;
-  fProd = "" ;
-  fVers = "" ;
-  fType = "" ;
-  fRun  = "" ;
-  fEvt  = "" ;
 
   fPath += fRoot ;
+}
 
+//____________________________________________________________________________
+AliPHOSGridFile::AliPHOSGridFile(const AliPHOSGridFile &rhs) :
+  TObject(rhs),
+  fGrid(0),
+  fRoot(""),
+  fYear(""),
+  fProd(""),
+  fVers(""),
+  fType(""),
+  fRun(""),
+  fEvt(""),
+  fPath("")
+{
+  //copy ctor
+  rhs.Copy(*this);
 }
 
 //____________________________________________________________________________

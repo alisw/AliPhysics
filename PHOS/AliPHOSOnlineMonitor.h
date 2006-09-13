@@ -55,6 +55,11 @@ public:
   void ScanRecon(TClonesArray * recParticles) ;
 
 private:
+  //They call Fatal, but they are private, user will have compile time error instead
+  //of run-time error. Fatal - because it's not clear, should I copy canvases, 
+  //hists etc.
+  AliPHOSOnlineMonitor(const AliPHOSOnlineMonitor &);
+  AliPHOSOnlineMonitor & operator = (const AliPHOSOnlineMonitor &);
 
   Bool_t fScanPed ;     //should we analyse pedestal events
   Bool_t fScanSig;      //should we analyse signal events

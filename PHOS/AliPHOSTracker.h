@@ -18,9 +18,17 @@ class AliRunLoader;
 class AliPHOSTracker : public AliTracker
 {
 public:
-  AliPHOSTracker():AliTracker()   {fRunLoader=0;}
-  AliPHOSTracker(AliRunLoader *loader):AliTracker() {fRunLoader=loader;}
+  AliPHOSTracker():AliTracker(), fRunLoader(0) {}
+  AliPHOSTracker(AliRunLoader *loader):AliTracker(), fRunLoader(loader) {}
+  AliPHOSTracker(const AliPHOSTracker & rhs):AliTracker(rhs), fRunLoader(rhs.fRunLoader){}
+  
   virtual ~AliPHOSTracker()       {AliDebug(1,"Start.");}
+  
+  AliPHOSTracker & operator = (const AliPHOSTracker & rhs)
+  {
+    fRunLoader = rhs.fRunLoader;
+    return *this;
+  }
 
   Int_t Clusters2Tracks(AliESD *) {AliDebug(1,"Start.");return 0;}
   Int_t RefitInward(AliESD *)     {AliDebug(1,"Start.");return 0;}

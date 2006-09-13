@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.8  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -34,9 +37,7 @@ public:
 
   AliPHOSvImpacts(void) ;
   AliPHOSvImpacts(const char *name, const char *title="") ;
-  AliPHOSvImpacts(AliPHOSvImpacts & phos) : AliPHOSv1(phos) {
-    phos.Copy(*this) ; 
-  }
+  AliPHOSvImpacts(AliPHOSvImpacts & phos);
   virtual ~AliPHOSvImpacts(void) ;
 
   virtual void   Copy(TObject & phos) const; 

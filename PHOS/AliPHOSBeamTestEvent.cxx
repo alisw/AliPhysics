@@ -37,7 +37,9 @@ ClassImp(AliPHOSBeamTestEvent)
 
 
 //____________________________________________________________________________ 
-  AliPHOSBeamTestEvent::AliPHOSBeamTestEvent():TObject() 
+AliPHOSBeamTestEvent::AliPHOSBeamTestEvent():
+  fBeamEnergy(0.),
+  fPattern(0)
 {
 //Nothig should be set by default.
 }

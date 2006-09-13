@@ -21,8 +21,12 @@ class AliPHOSGetter;
 class AliPHOSFastGlobalReconstruction : public TObject {
 
 public:
-  AliPHOSFastGlobalReconstruction() {};
+  AliPHOSFastGlobalReconstruction();
   AliPHOSFastGlobalReconstruction(const char* headerFile);
+  
+  AliPHOSFastGlobalReconstruction(const AliPHOSFastGlobalReconstruction &rhs);
+  AliPHOSFastGlobalReconstruction & operator = (const AliPHOSFastGlobalReconstruction &);
+  
   virtual ~AliPHOSFastGlobalReconstruction();
   void FastReconstruction(Int_t event);
   TClonesArray *GetRecParticles() const {return fParticles;}

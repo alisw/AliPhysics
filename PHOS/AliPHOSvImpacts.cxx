@@ -19,6 +19,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.22  2005/06/17 07:39:07  hristov
+ * Removing GetDebug and SetDebug from AliRun and AliModule. Using AliLog for the messages
+ *
  * Revision 1.21  2005/05/28 14:19:05  schutz
  * Compilation warnings fixed by T.P.
  *
@@ -54,17 +57,20 @@
 ClassImp(AliPHOSvImpacts)
 
 //____________________________________________________________________________
-AliPHOSvImpacts::AliPHOSvImpacts():AliPHOSv1()
+AliPHOSvImpacts::AliPHOSvImpacts():
+  fEMCImpacts(0),
+  fCPVImpacts(0),
+  fPPSDImpacts(0)
 {
   // ctor
-  fEMCImpacts  = 0 ;
-  fPPSDImpacts = 0 ;
-  fCPVImpacts  = 0 ; 
 }
 
 //____________________________________________________________________________
 AliPHOSvImpacts::AliPHOSvImpacts(const char *name, const char *title):
-AliPHOSv1(name,title) 
+  AliPHOSv1(name,title),
+  fEMCImpacts(new TList),
+  fCPVImpacts(new TList),
+  fPPSDImpacts(0)
 {
   // ctor : title is used to identify the layout
   //
@@ -78,9 +84,6 @@ AliPHOSv1(name,title)
   //  - fEMCImpacts, fCPVImpacts which are
   //    TList of EMC and CPV modules respectively, each
   //    modules contains TClonesArray of AliPHOSImpacts
-  
-  fEMCImpacts  = new TList();
-  fCPVImpacts  = new TList();
 
   Int_t nPHOSModules = GetGeometry()->GetNModules();
   Int_t nCPVModules  = GetGeometry()->GetNModules();
@@ -98,6 +101,16 @@ AliPHOSv1(name,title)
     impacts = dynamic_cast<TClonesArray *>(fCPVImpacts->At(iPHOSModule));
   }
 
+}
+
+//____________________________________________________________________________
+AliPHOSvImpacts::AliPHOSvImpacts(AliPHOSvImpacts & phos):
+  AliPHOSv1(phos),
+  fEMCImpacts(0),
+  fCPVImpacts(0),
+  fPPSDImpacts(0)
+{
+  phos.Copy(*this);
 }
 
 //____________________________________________________________________________

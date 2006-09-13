@@ -20,7 +20,7 @@ class AliPHOSCPVDigit : public TObject {
   
 public:
   virtual ~AliPHOSCPVDigit() {}
-           AliPHOSCPVDigit() {}
+           AliPHOSCPVDigit();
            AliPHOSCPVDigit(Int_t x, Int_t y, Float_t q);
   
   void     SetQpad(Float_t q) { fQpad = q;     }

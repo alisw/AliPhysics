@@ -41,16 +41,45 @@
 ClassImp(AliPHOSFastGlobalReconstruction)
 
 //____________________________________________________________________________
-AliPHOSFastGlobalReconstruction::AliPHOSFastGlobalReconstruction(const char* headerFile )
+AliPHOSFastGlobalReconstruction::AliPHOSFastGlobalReconstruction(): 
+  fgime(0),
+  fGenerator(0),
+  fParticles(0),
+  fNParticles(0)
+{
+  //Def ctor.
+}
+
+//____________________________________________________________________________
+AliPHOSFastGlobalReconstruction::AliPHOSFastGlobalReconstruction(const char* headerFile):
+  fgime(AliPHOSGetter::Instance(headerFile)),
+  fGenerator(gAlice->Generator()),
+  fParticles(new TClonesArray("TParticle",100)),
+  fNParticles(0)
 {
   // Constructor of fast global reconstruction:
   // create an instance of the PHOS getter,
   // create an array or reconstructed particles.
+}
 
-  fgime = AliPHOSGetter::Instance(headerFile);
-  fGenerator = gAlice->Generator();
-  fParticles = new TClonesArray("TParticle",100);
-  fNParticles = 0;
+//____________________________________________________________________________
+AliPHOSFastGlobalReconstruction::AliPHOSFastGlobalReconstruction(const AliPHOSFastGlobalReconstruction & rhs):
+  TObject(rhs),
+  fgime(0),
+  fGenerator(0),
+  fParticles(0),
+  fNParticles(0)
+{
+  //Required by effc++, but not clear for me how to do correct copy. To be fixed.
+  Fatal("AliPHOSFastGlobalReconstruction", "copy ctor not implemented");
+}
+
+//____________________________________________________________________________
+AliPHOSFastGlobalReconstruction & AliPHOSFastGlobalReconstruction::operator = (const AliPHOSFastGlobalReconstruction &)
+{
+  //Required by effc++, but not clear for me how to do correct copy. To be fixed.
+  Fatal("operator = ", "copy ctor not implemented");
+  return *this;
 }
 
 //____________________________________________________________________________

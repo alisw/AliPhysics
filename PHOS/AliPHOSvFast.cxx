@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.29  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -49,53 +52,72 @@
 
 ClassImp(AliPHOSvFast)
 
-//____________________________________________________________________________
-AliPHOSvFast::AliPHOSvFast() : AliPHOS()
+AliPHOSvFast::AliPHOSvFast() :
+  fBigBoxX(0.),
+  fBigBoxY(0.),
+  fBigBoxZ(0.),
+  fFastRecParticles(0),
+  fNRecParticles(0),
+  fRan(0),
+  fResPara1(0.),
+  fResPara2(0.),
+  fResPara3(0.),
+  fPosParaA0(0.),
+  fPosParaA1(0.),
+  fPosParaB0(0.),
+  fPosParaB1(0.),
+  fPosParaB2(0.)    
 {
   // default ctor : initialize data member
-   fBigBoxX = 0. ;                      
-   fBigBoxY = 0. ;                      
-   fBigBoxZ = 0. ;                       
-   fFastRecParticles = 0 ;        
-   fNRecParticles = 0 ;                
-   fRan = 0 ;                            
-   fResPara1 = 0. ;                       
-   fResPara2 = 0. ;                        
-   fResPara3 = 0. ;                      
-   fPosParaA0 = 0. ;                      
-   fPosParaA1 = 0. ;
-   fPosParaB0 = 0. ;     
-   fPosParaB1 = 0. ;    
-   fPosParaB2 = 0. ;    
-
 }
 
 //____________________________________________________________________________
 AliPHOSvFast::AliPHOSvFast(const char *name, const char *title):
-  AliPHOS(name,title)
+  AliPHOS(name,title),
+  fBigBoxX(0.),
+  fBigBoxY(0.),
+  fBigBoxZ(0.),
+  fFastRecParticles(new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100)),
+  fNRecParticles(0),
+  fRan(0),
+  fResPara1(0.030), // GeV
+  fResPara2(0.00003),
+  fResPara3(0.00001),
+  fPosParaA0(2.87),    // mm
+  fPosParaA1(-0.0975),
+  fPosParaB0(0.257),
+  fPosParaB1(0.137),
+  fPosParaB2(0.00619)
 {
   // ctor
-
-  
   // create the Loader 
-  
   SetBigBox(0, GetGeometry()->GetOuterBoxSize(0) ) ;
   SetBigBox(1, GetGeometry()->GetOuterBoxSize(3) + GetGeometry()->GetCPVBoxSize(1) ) ; 
   SetBigBox(2, GetGeometry()->GetOuterBoxSize(2) ); 
-  
-  fNRecParticles = 0 ; 
-  fFastRecParticles = new AliPHOSFastRecParticle::FastRecParticlesList("AliPHOSFastRecParticle", 100) ;
-  
-  fResPara1 = 0.030 ;    // GeV
-  fResPara2 = 0.00003 ; 
-  fResPara3 = 0.00001 ; 
-  
-  fPosParaA0 = 2.87 ;    // mm
-  fPosParaA1 = -0.0975 ;  
-  fPosParaB0 = 0.257 ;   
-  fPosParaB1 = 0.137 ; 
-  fPosParaB2 = 0.00619 ; 
 }
+
+//____________________________________________________________________________
+AliPHOSvFast::AliPHOSvFast(AliPHOSvFast & fast) :
+  AliPHOS(fast),
+  fBigBoxX(0.),
+  fBigBoxY(0.),
+  fBigBoxZ(0.),
+  fFastRecParticles(0),
+  fNRecParticles(0),
+  fRan(0),
+  fResPara1(0.),
+  fResPara2(0.),
+  fResPara3(0.),
+  fPosParaA0(0.),
+  fPosParaA1(0.),
+  fPosParaB0(0.),
+  fPosParaB1(0.),
+  fPosParaB2(0.)    
+{
+  //Copy ctor.
+  fast.Copy(*this) ; 
+}
+
 
 //____________________________________________________________________________
 AliPHOSvFast::~AliPHOSvFast()

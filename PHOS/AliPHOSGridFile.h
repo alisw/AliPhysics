@@ -6,6 +6,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2005/05/28 14:19:04  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -26,9 +29,8 @@ class AliPHOSGridFile : public TObject {
  public:
   
   AliPHOSGridFile(TString grid="alien") ; 
-  AliPHOSGridFile(AliPHOSGridFile & lfn) : TObject(lfn) {
-    lfn.Copy(*this) ; 
-  } 
+  AliPHOSGridFile(const AliPHOSGridFile & lfn);
+  
   virtual ~AliPHOSGridFile(void) ; 
 
   virtual void Copy(TObject & obj) const;
@@ -72,10 +74,8 @@ private:
   TString fEvt  ; //! event number
   TString fPath ; //! the lfn is fRoot/fYear/fProd/fVers/fType/fRun/fEvt
  
-
   ClassDef(AliPHOSGridFile,1)  
-    
-    };
+};
 
 #endif // AliPHOSGRIDFILE_H
  

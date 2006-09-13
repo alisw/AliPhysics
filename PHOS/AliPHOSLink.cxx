@@ -37,14 +37,13 @@ ClassImp(AliPHOSLink)
 }
 
 //____________________________________________________________________________
-  AliPHOSLink::AliPHOSLink(Float_t r, Int_t emc, Int_t cpv, Int_t track)
+AliPHOSLink::AliPHOSLink(Float_t r, Int_t emc, Int_t cpv, Int_t track):
+  fEmcN(emc),
+  fCpvN(cpv),
+  fR(r),
+  fTrack(track)
 {
   // ctor
-
-  fR     = r ;  
-  fEmcN  = emc ;
-  fCpvN  = cpv ;   
-  fTrack = track ; 
 }
 
 //____________________________________________________________________________

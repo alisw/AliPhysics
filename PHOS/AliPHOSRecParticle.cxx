@@ -35,7 +35,10 @@
 #include "AliLog.h"
 
 //____________________________________________________________________________
-  AliPHOSRecParticle::AliPHOSRecParticle(): fPHOSTrackSegment(0)  ,  fDebug( kFALSE )
+AliPHOSRecParticle::AliPHOSRecParticle(): 
+  fPHOSTrackSegment(0),
+  fDebug(kFALSE),
+  fPos()
 {
   // ctor
   const Int_t nSPECIES = AliPID::kSPECIESN;
@@ -45,13 +48,13 @@
 
 
 //____________________________________________________________________________
- AliPHOSRecParticle::AliPHOSRecParticle(const AliPHOSRecParticle & rp)
-   : AliPHOSFastRecParticle(rp)
+AliPHOSRecParticle::AliPHOSRecParticle(const AliPHOSRecParticle & rp):
+  AliPHOSFastRecParticle(rp),
+  fPHOSTrackSegment(rp.fPHOSTrackSegment),
+  fDebug(kFALSE),
+  fPos()
 {
   // copy ctor
-
-  fPHOSTrackSegment = rp.fPHOSTrackSegment ; 
-  fDebug            = kFALSE ; 
   fType             = rp.fType ; 
   fIndexInList      = rp.fIndexInList ;
 
