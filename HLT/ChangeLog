@@ -6,10 +6,14 @@
 	  - DigitReaderPacked capable of sorting incoming data 
 	  - straight line fit implemented in Conformal Mapping Fit
 	- TPCDisplay library added
+	  - the library needs the HOMER package, which is part of the PubSub
+	    Framework, currently there is a circular dependency which will
+	    be removed or handled better
 	- bugfix HLTComponentHandler::CreateComponent: result handling after DoInit
 	- bugfix ClusterFinder: index check for arrays of fixed size
 	- base line calculation and zero suppression implemented into
 	  Cluster Finder: new argument 'adc-threshold' for ClusterFinderComponent 
+	- Makefiles of the old build scheme have been removed
 2006-08-23 version HLT-v0-3
 	- check for AliRoot features/libs/files and corresponding conditional
 	  build
