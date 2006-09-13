@@ -64,6 +64,9 @@
 #include "AliMUONRegHeader.h"
 #include "AliMUONLocalStruct.h"
 
+#include "AliMUONTriggerCrateStore.h"
+#include "AliMUONTriggerCrate.h"
+#include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
 
@@ -85,6 +88,7 @@ AliMUONDigitMaker::AliMUONDigitMaker(AliMUONData* data)
     fDigit(new AliMUONDigit()),
     fLocalTrigger(new AliMUONLocalTrigger()),
     fGlobalTrigger(new AliMUONGlobalTrigger()),
+    fCrateManager(new AliMUONTriggerCrateStore()),
     fTrackerTimer(),
     fTriggerTimer(),
     fMappingTimer()
@@ -101,6 +105,8 @@ AliMUONDigitMaker::AliMUONDigitMaker(AliMUONData* data)
   // bus patch 
   fBusPatchManager->ReadBusPatchFile();
 
+  // Crate manager
+  fCrateManager->ReadFromFile();
 
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
@@ -120,6 +126,7 @@ AliMUONDigitMaker::AliMUONDigitMaker()
     fDigit(0),
     fLocalTrigger(0),
     fGlobalTrigger(0),
+    fCrateManager(0),
     fTrackerTimer(),
     fTriggerTimer(),
     fMappingTimer()
@@ -149,6 +156,8 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
   delete fDigit;
   delete fLocalTrigger;
   delete fGlobalTrigger;
+
+  delete fCrateManager;
 
   delete fBusPatchManager;
 
@@ -354,6 +363,18 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 
     for(Int_t iReg = 0; iReg < nReg ;iReg++){   //reg loop
 
+     // crate info
+      Char_t crateName[10];
+      GetCrateName(crateName, fRawStreamTrigger->GetDDL(), iReg);
+
+      AliMUONTriggerCrate* crate = fCrateManager->Crate(crateName);
+  
+      if (!crate) 
+	AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, fRawStreamTrigger->GetDDL()));
+
+      TObjArray *boards  = crate->Boards();
+
+
       regHeader =  darcHeader->GetRegHeaderEntry(iReg);
 
       Int_t nLocal = regHeader->GetLocalEntries();
@@ -362,9 +383,13 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 
 	localStruct = regHeader->GetLocalEntry(iLocal);
 
+	// if card has triggered
 	if (localStruct->GetTriggerY() == 0) {
-	  loCircuit = localStruct->GetId()+ 16*regHeader->GetId() 
-                                              + 128*fRawStreamTrigger->GetDDL(); 
+
+	  AliMUONLocalTriggerBoard* localBoard = 
+	    (AliMUONLocalTriggerBoard*)boards->At(localStruct->GetId()+1);
+
+	  loCircuit = localBoard->GetNumber();
 	    
 	  // fill local trigger
 	  fLocalTrigger->SetLocalStruct(loCircuit, *localStruct);
@@ -381,3 +406,33 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 
 }
 
+//____________________________________________________________________
+void  AliMUONDigitMaker::GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg)
+{
+  // set crate name from DDL & reg number
+  // method same as in RawWriter, not so nice
+  // should be put in AliMUONTriggerCrateStore
+
+      switch(iReg) {
+      case 0:
+      case 1:
+	sprintf(name,"%d", iReg+1);
+	break;
+      case 2:
+	strcpy(name, "2-3");
+	break;
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+	sprintf(name,"%d", iReg);
+	break;
+      }
+
+      // crate Right for first DDL
+      if (iDDL == 0)
+	strcat(name, "R");
+      else 
+	strcat(name, "L"); 
+}

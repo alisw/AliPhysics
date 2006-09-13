@@ -19,6 +19,7 @@ class AliMUONData;
 class AliMUONDigit;
 class AliMUONGlobalTrigger;
 class AliMUONLocalTrigger;
+class AliMUONTriggerCrateStore;
 
 class AliMpSegFactory;
 class AliMUONRawStreamTracker;
@@ -65,12 +66,16 @@ class AliMUONDigitMaker : public TObject
   AliMUONLocalTrigger*  fLocalTrigger;         //!< pointer to local trigger
   AliMUONGlobalTrigger* fGlobalTrigger;        //!< pointer to local trigger
 
+  AliMUONTriggerCrateStore* fCrateManager;     //!< Crate array
+
   TStopwatch fTrackerTimer;                    //!< time watcher for tracker part
   TStopwatch fTriggerTimer;                    //!< time watcher for trigger part
   TStopwatch fMappingTimer;                    //!< time watcher for mapping-tracker part
 
   AliMUONDigitMaker (const AliMUONDigitMaker& rhs); // copy constructor
   AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
+
+  void GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg);
 
   ClassDef(AliMUONDigitMaker,1) // MUON digit maker from rawdata
 };
