@@ -198,7 +198,7 @@ AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
  n=s.GetNerrors();
  for (Int_t j=1; j<=n; j++)
  {
-  if (s.GetErrorFlag(i))
+  if (s.GetErrorFlag(j))
   {
    val=s.GetSignalError(j);
    SetSignalError(val,j);
