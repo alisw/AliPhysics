@@ -158,6 +158,7 @@ class TFluka : public TVirtualMC {
   virtual void       SetProcess(const char* flagName, Int_t flagValue, Int_t imed);
   virtual Bool_t     SetCut(const char* cutName, Double_t cutValue);
   virtual void       SetCut(const char* cutName, Double_t cutValue, Int_t imed);
+  virtual void       SetModelParameter(const char* parName, Double_t parValue, Int_t imed);
   virtual TObjArray* GetListOfUserConfigs() {return fUserConfig;}
   virtual Double_t   Xsec(char*, Double_t, Int_t, Int_t);
 

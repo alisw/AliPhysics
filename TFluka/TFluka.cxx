@@ -591,6 +591,8 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
 //
 //
    Bool_t process = kFALSE;
+   Bool_t modelp  = kFALSE;
+   
    if (strncmp(param, "DCAY",  4) == 0 ||
        strncmp(param, "PAIR",  4) == 0 ||
        strncmp(param, "COMP",  4) == 0 ||
@@ -609,11 +611,24 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
        process = kTRUE;
    } 
    
+   if (strncmp(param, "PRIMIO_N",  8) == 0 ||
+       strncmp(param, "PRIMIO_E",  8) == 0)
+   {
+       modelp = kTRUE;
+   }
+   
    if (process) {
+       // Process switch
        SetProcess(param, Int_t (parval), itmed);
+   } else if (modelp) {
+       // Model parameters
+       SetModelParameter(param, parval, itmed);
    } else {
+       // Cuts
        SetCut(param, parval, itmed);
    }
+   
+   
 }    
 
 // functions from GGEOM 
@@ -1024,6 +1039,27 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
 
     proc = new TFlukaConfigOption(imed);
     proc->SetCut(cutName, cutValue);
+    fUserConfig->Add(proc);
+}
+
+
+//______________________________________________________________________________ 
+void TFluka::SetModelParameter(const char* parName, Double_t parValue, Int_t imed)
+{
+// Set model parameter for material imed
+//
+    TIter next(fUserConfig);
+    TFlukaConfigOption* proc;
+    while((proc = (TFlukaConfigOption*)next()))
+    { 
+	if (proc->Medium() == imed) {
+	    proc->SetModelParameter(parName, parValue);
+	    return;
+	}
+    }
+
+    proc = new TFlukaConfigOption(imed);
+    proc->SetModelParameter(parName, parValue);
     fUserConfig->Add(proc);
 }
 

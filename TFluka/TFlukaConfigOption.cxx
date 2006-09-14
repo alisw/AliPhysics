@@ -79,6 +79,20 @@ void TFlukaConfigOption::SetCut(const char* flagname, Double_t val)
     }
 }
 
+void TFlukaConfigOption::SetModelParameter(const char* flagname, Double_t val)
+{
+    // Set a model parameter value
+    const TString parms[2] = {"PRIMIO_N", "PRIMIO_E"};
+    Int_t i;
+    for (i = 0; i < 2; i++) {
+	if (parms[i].CompareTo(flagname) == 0) {
+	    fModelParameter[i] = val;
+	    break;
+	}
+    }
+}
+
+
 void TFlukaConfigOption::SetProcess(const char* flagname, Int_t flag)
 {
     // Set a process flag
@@ -515,9 +529,11 @@ void TFlukaConfigOption::ProcessLOSS()
     //
     // Impose consistency
     
-    if (fProcessFlag[kLOSS] == 1 || fProcessFlag[kLOSS] == 3) {
+    if (fProcessFlag[kLOSS] == 1 || fProcessFlag[kLOSS] == 3 || fProcessFlag[kLOSS] > 10) {
+    // Restricted fluctuations
 	fProcessFlag[kDRAY] = 1;
     } else if (fProcessFlag[kLOSS] == 2) {
+    // Full fluctuations
 	fProcessFlag[kDRAY] = 0;
 	fCutValue[kDCUTE] = 1.e10;
 	fCutValue[kDCUTM] = 1.e10;	
@@ -547,6 +563,20 @@ void TFlukaConfigOption::ProcessLOSS()
 // Restricted energy loss fluctuations 
 //
 	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n", 1., 1., stra, fCMatMin, fCMatMax);
+	fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", cutM, 0., 0., fCMatMin, fCMatMax, 1.);
+    } else if (fProcessFlag[kLOSS] > 10) {
+//
+// Primary ionisation electron generation
+//
+	// Ionisation model
+	Float_t ioModel = Float_t (fProcessFlag[kLOSS]-10);
+	//  Effective 1st ionisation potential
+	Float_t ePot    = ModelParameter(kPRIMIOE);
+	// Number of primary ionisations per cm for a mip 
+	Float_t nPrim   = ModelParameter(kPRIMION); 
+	
+	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n", 1., 1., stra, fCMatMin, fCMatMax);
+	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPRIM-ION\n", ePot, nPrim, ioModel, fCMatMin, fCMatMax, 1.);
 	fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", cutM, 0., 0., fCMatMin, fCMatMax, 1.);
     } else if (fProcessFlag[kLOSS] == 4) {
 //

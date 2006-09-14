@@ -27,6 +27,8 @@
 typedef enum {kDCAY, kPAIR, kCOMP, kPHOT, kPFIS, kDRAY, kANNI, kBREM,
 	      kMUNU, kCKOV, kHADR, kLOSS, kMULS, kRAYL, kSTRA} FlukaProcessOption_t;
 typedef enum {kCUTGAM, kCUTELE, kCUTNEU, kCUTHAD, kCUTMUO, kBCUTE, kBCUTM, kDCUTE, kDCUTM, kPPCUTM, kTOFMAX}  FlukaCutOption_t;
+typedef enum {kPRIMION, kPRIMIOE}  FlukaModelOption_t;
+
 class TFlukaMCGeometry;
 class TGeoMaterial;
 
@@ -37,11 +39,13 @@ public:
     TFlukaConfigOption();
     TFlukaConfigOption(Int_t imed);
     // Getters
-    Double_t Cut(FlukaCutOption_t i)      const {return fCutValue[i];}
-    Int_t    Flag(FlukaProcessOption_t i) const {return fProcessFlag[i];}
-    Int_t    Medium()                     const {return fMedium;}    
+    Double_t Cut(FlukaCutOption_t i)              const {return fCutValue[i];}
+    Int_t    Flag(FlukaProcessOption_t i)         const {return fProcessFlag[i];}
+    Int_t    ModelParameter(FlukaModelOption_t i) const {return fModelParameter[i];}
+    Int_t    Medium()                             const {return fMedium;}    
     // Setters
     void     SetCut(const char* flagname, Double_t val);
+    void     SetModelParameter(const char* flagname, Double_t val);
     void     SetProcess(const char* flagname, Int_t flagValue);
     void     SetMedium(Int_t imed)       {fMedium = imed;}
     //
@@ -78,6 +82,7 @@ public:
  protected:
     Double_t fCutValue[11];            // User cut
     Int_t    fProcessFlag[15];         // User flag assigned to processes
+    Double_t fModelParameter[15];      // User model parameter
     Int_t    fMedium;                  // Material assigned to user settings
     Float_t  fCMatMin;                 // Minimum material number used for current card 
     Float_t  fCMatMax;                 // Maximum material number used for current card
