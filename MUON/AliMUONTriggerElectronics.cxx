@@ -412,22 +412,6 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
 //___________________________________________
 void AliMUONTriggerElectronics::LocalResponse()
 {
-  // INTERFACE BOARDS
-  struct crates_t 
-  {
-    TString name;
-    Int_t slots[5];
-    Int_t ns;
-
-    crates_t() : name(""), ns(0) {}
-  } crate[6];
-
-  crate[0].name = "2R";   crate[0].ns = 1; crate[0].slots[0] = 16;
-  crate[1].name = "2L";   crate[1].ns = 1; crate[1].slots[0] = 16;
-  crate[2].name = "3L";   crate[2].ns = 1; crate[2].slots[0] = 16;
-  crate[3].name = "3R";   crate[3].ns = 1; crate[3].slots[0] = 16;
-  crate[4].name = "2-3R"; crate[4].ns = 2; crate[4].slots[0] = 1;  crate[4].slots[1] = 9;
-  crate[5].name = "2-3L"; crate[5].ns = 2; crate[5].slots[0] = 1;  crate[5].slots[1] = 9; 
 	
   AliMUONTriggerCrate* cr;
   
@@ -435,25 +419,14 @@ void AliMUONTriggerElectronics::LocalResponse()
   
   while ( ( cr = fCrates->NextCrate() ) )
   {            
-    Int_t iib = -1;
-    
-    for (Int_t icr=0; icr<6; icr++) 
-    {
-      const char *n = (crate[icr].name).Data();
-			
-      AliMUONTriggerCrate *dcr = fCrates->Crate(n);
-      
-      //       THIS CRATE CONTAINS AN INTERFACE BOARD
-      if ( dcr && !strcmp(cr->GetName(),dcr->GetName()) ) iib = icr;
-    }
     
     TObjArray *boards = cr->Boards();
     
     AliMUONRegionalTriggerBoard *regb = (AliMUONRegionalTriggerBoard*)boards->At(0);
     
     UShort_t thisl[16]; for (Int_t j=0; j<16; j++) thisl[j] = 0;
-        
-    for (Int_t j=1; j<boards->GetEntries(); j++)
+  
+    for (Int_t j = 1; j < boards->GetEntries(); j++)
     {     
 	TObject *o = boards->At(j);
       
@@ -461,27 +434,23 @@ void AliMUONTriggerElectronics::LocalResponse()
       
 	AliMUONLocalTriggerBoard *board = (AliMUONLocalTriggerBoard*)o;
       
-	if (board) 
+	if (board) // check if empty slot
 	{
 	  board->Response();
 				
-	  UShort_t tmp = board->GetResponse();            
+	  UShort_t response = board->GetResponse();            
         
-	    //          CRATE CONTAINING INTERFACE BOARD
-	    if ( iib>-1 ) 
-	    {
-		for (Int_t iid = 0; iid<crate[iib].ns; iid++) 
-		{
-		    if ( j == crate[iib].slots[iid] )
-		    {
-			if ( tmp != 0 ) 
-			  AliWarning(Form("Interface board %s in slot %d of crate %s has a non zero response",
+	  // CRATE CONTAINING INTERFACE BOARD
+	  if (board->GetNumber() == 0) // copy boards
+	  {
+	    if ( response != 0 ) 
+	      AliWarning(Form("Interface board %s in slot %d of crate %s has a non zero response",
 					  board->GetName(),j,cr->GetName()));
-		    }
-		}				
-	    }
+	    AliDebug(1, Form("local slot %d, number %d in crate %s\n", j, board->GetNumber(), cr->GetName()));
+
+	  }
         
-	    thisl[j-1] = tmp;
+	  thisl[j-1] = response;
 	}
       }
     
