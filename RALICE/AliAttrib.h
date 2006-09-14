@@ -34,6 +34,8 @@ class AliAttrib
   Int_t GetGainFlag(TString name) const;       // Provide gain flag of the name-specified attribute slot
   Int_t GetOffsetFlag(Int_t j=1) const;        // Provide offset flag of the j-th attribute slot
   Int_t GetOffsetFlag(TString name) const;     // Provide offset flag of the name-specified attribute slot
+  Int_t GetCalWord(Int_t j=1) const;           // Provide calib. word of the j-th attribute slot
+  Int_t GetCalWord(TString name) const;        // Provide calib word of the name-specified attribute slot
   void ResetGain(Int_t j=1);                   // Reset j-th gain value and flag
   void ResetGain(TString name);                // Reset name-specified gain value and flag
   void ResetOffset(Int_t j=1);                 // Reset j-th offset value and flag
@@ -61,6 +63,8 @@ class AliAttrib
   virtual void List(TString name) const;       // Printout of name-specified attribute data
   virtual void Load(AliAttrib& a,Int_t j=0);   // Load j-th slot or all attributes of the input AliAttrib
   virtual void Load(AliAttrib& a,TString name);// Load name-specified slot attributes of the input AliAttrib
+  void AddNamedSlot(TString s);                // Add a new slot with the specified name
+  virtual Int_t GetNslots() const;             // Provide the number of exising slots
   void SetSlotName(TString s,Int_t j=1);       // Set user defined name for the j-th slot
   TString GetSlotName(Int_t j=1) const;        // Provide user defined name for the j-th slot
   Int_t GetSlotIndex(TString name) const;      // Provide the slot index of the matching name
@@ -84,6 +88,6 @@ class AliAttrib
   TObjArray* fCalfuncs;                        // Explicit signal calibration functions
   TObjArray* fDecalfuncs;                      // Explicit signal de-calibration functions
 
- ClassDef(AliAttrib,4) // Generic handling of detector signal (calibration) attributes.
+ ClassDef(AliAttrib,5) // Generic handling of detector signal (calibration) attributes.
 };
 #endif

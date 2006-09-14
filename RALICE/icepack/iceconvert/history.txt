@@ -68,6 +68,13 @@
                 AliSignal::AddTrack facility instead of AddLink in IceF2k. 
                 Also default split level set to 0 in IceF2k to minimise file size and
                 I/O time.
-                 
+13-sep-2006 NvE IceF2k updated for multiple waveforms per OM by making use of the
+                new AliAttrib::AddNamedSlot facility.
+                Also some calibration constants dropped from OM data words in IceF2k
+                and IceCal2Root, since these values are also stored as parameters in
+                the corresponding (de)calibration functions.                 
+                Also for TWR data the values stored in the histos are (baseline-amp),
+                so that all pulses appear as positive instead of negative and the
+                resulting histos are baseline corrected.
 
 

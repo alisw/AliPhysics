@@ -344,23 +344,15 @@ void IceCal2Root::GetCalibData()
  // The basic OM contents
  IceAOM om;
 
+ // Slots to hold the various (de)calibration functions
  om.SetSlotName("ADC",1);
  om.SetSlotName("LE",2);
  om.SetSlotName("TOT",3);
-
+ // Slots with hardware parameters
  om.SetSlotName("TYPE",4);
  om.SetSlotName("ORIENT",5);
  om.SetSlotName("THRESH",6);
  om.SetSlotName("SENSIT",7);
- om.SetSlotName("BETA-TDC",8);
- om.SetSlotName("T0",9);
- om.SetSlotName("ALPHA-TDC",10);
- om.SetSlotName("PED-ADC",11);
- om.SetSlotName("BETA-ADC",12);
- om.SetSlotName("KAPPA-ADC",13);
- om.SetSlotName("PED-TOT",14);
- om.SetSlotName("BETA-TOT",15);
- om.SetSlotName("KAPPA-TOT",16);
 
  fInput.seekg(0); // Position at beginning of file
  fInput >> dec;   // Make sure all integers starting with 0 are taken in decimal format
@@ -429,12 +421,6 @@ void IceCal2Root::GetCalibData()
     omx->SetDecalFunction(0,3);
    }
 
-   omx->SetSignal(beta,8);
-   omx->SetSignal(ped,9);
-   omx->SetSignal(alpha,10);
-   omx->SetSignal(beta,15);
-   omx->SetSignal(0,16);
-
    fcal=omx->GetCalFunction(2);
    fdecal=omx->GetDecalFunction(2);
    if (fcal)
@@ -491,11 +477,6 @@ void IceCal2Root::GetCalibData()
     omx->SetCalFunction(0,3);
     omx->SetDecalFunction(0,3);
    }
-
-   omx->SetSignal(ped,11);
-   omx->SetSignal(beta,12);
-   omx->SetSignal(0,13);
-   omx->SetSignal(totped,14);
 
    fcal=omx->GetCalFunction(1);
    fdecal=omx->GetDecalFunction(1);

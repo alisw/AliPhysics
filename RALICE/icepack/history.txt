@@ -71,3 +71,8 @@
 07-jul-2006 NvE Track Id correctly set in IceLinefit.
 28-jul-2006 NvE New class IceChi2 introduced and example macro icechi2.cc added.
                 Also IcePandel updated to use a Convoluted Pandel pdf.
+14-sep-2006 NvE IceCalibrate.cxx updated to correctly process multiple waveforms and hits per OM.
+                Also some calibration constants dropped from OM data words in IceCalibrate,
+                since these values are also stored as parameters in the corresponding
+                (de)calibration functions.                 
+                 

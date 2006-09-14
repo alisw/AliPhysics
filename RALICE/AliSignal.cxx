@@ -123,6 +123,7 @@ AliSignal::AliSignal() : TNamed(),AliPosition(),AliAttrib()
 // when entering values and/or errors.
  fSignals=0;
  fDsignals=0;
+ fSigflags=0;
  fWaveforms=0;
  fLinks=0;
  fDevice=0;
@@ -141,6 +142,11 @@ AliSignal::~AliSignal()
  {
   delete fDsignals;
   fDsignals=0;
+ }
+ if (fSigflags)
+ {
+  delete fSigflags;
+  fSigflags=0;
  }
  if (fWaveforms)
  {
@@ -170,6 +176,7 @@ AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
 // Copy constructor
  fSignals=0;
  fDsignals=0;
+ fSigflags=0;
  fWaveforms=0;
  fLinks=0;
  fTracks=0;
@@ -181,15 +188,21 @@ AliSignal::AliSignal(const AliSignal& s) : TNamed(s),AliPosition(s),AliAttrib(s)
  Double_t val;
  for (Int_t i=1; i<=n; i++)
  {
-  val=s.GetSignal(i);
-  SetSignal(val,i);
+  if (s.GetSignalFlag(i))
+  {
+   val=s.GetSignal(i);
+   SetSignal(val,i);
+  }
  } 
 
  n=s.GetNerrors();
  for (Int_t j=1; j<=n; j++)
  {
-  val=s.GetSignalError(j);
-  SetSignalError(val,j);
+  if (s.GetErrorFlag(i))
+  {
+   val=s.GetSignalError(j);
+   SetSignalError(val,j);
+  }
  }
 
  n=s.GetNwaveforms();
@@ -301,19 +314,26 @@ void AliSignal::ResetSignals(Int_t mode)
   mode=0;
  }
 
+ Int_t sflag=0;
+ Int_t eflag=0;
+
  if (fSignals && (mode==0 || mode==1))
  {
-  for (Int_t i=0; i<fSignals->GetSize(); i++)
+  for (Int_t i=1; i<=fSignals->GetSize(); i++)
   {
-   fSignals->AddAt(0,i);
+   fSignals->AddAt(0,i-1);
+   eflag=GetErrorFlag(i);
+   SetSigFlags(0,eflag,i);
   }
  }
 
  if (fDsignals && (mode==0 || mode==2))
  {
-  for (Int_t j=0; j<fDsignals->GetSize(); j++)
+  for (Int_t j=1; j<=fDsignals->GetSize(); j++)
   {
-   fDsignals->AddAt(0,j);
+   fDsignals->AddAt(0,j-1);
+   sflag=GetSignalFlag(j);
+   SetSigFlags(sflag,0,j);
   }
  }
 
@@ -351,6 +371,31 @@ void AliSignal::DeleteSignals(Int_t mode)
   fDsignals=0;
  }
 
+ Int_t sflag=0;
+ Int_t eflag=0;
+
+ if (mode==0)
+ {
+  delete fSigflags;
+  fSigflags=0;
+ }
+ else if (mode==1)
+ {
+  for (Int_t i=1; i<=fSigflags->GetSize(); i++)
+  {
+   eflag=GetErrorFlag(i);
+   SetSigFlags(0,eflag,i);
+  }
+ }
+ else if (mode==2)
+ {
+  for (Int_t j=1; j<=fSigflags->GetSize(); j++)
+  {
+   sflag=GetSignalFlag(j);
+   SetSigFlags(sflag,0,j);
+  }
+ }
+
  DeleteWaveform(0);
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -376,6 +421,9 @@ void AliSignal::SetSignal(Double_t sig,Int_t j)
  }
 
  fSignals->AddAt(float(sig),j-1);
+
+ Int_t eflag=GetErrorFlag(j);
+ SetSigFlags(1,eflag,j);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignal(Double_t sig,TString name)
@@ -415,6 +463,9 @@ void AliSignal::AddSignal(Double_t sig,Int_t j)
 
  Float_t sum=(fSignals->At(j-1))+sig;
  fSignals->AddAt(sum,j-1);
+
+ Int_t eflag=GetErrorFlag(j);
+ SetSigFlags(1,eflag,j);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::AddSignal(Double_t sig,TString name)
@@ -637,6 +688,9 @@ void AliSignal::SetSignalError(Double_t dsig,Int_t j)
  }
 
  fDsignals->AddAt(float(dsig),j-1);
+
+ Int_t sflag=GetSignalFlag(j);
+ SetSigFlags(sflag,1,j);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignalError(Double_t dsig,TString name)
@@ -764,23 +818,10 @@ void AliSignal::List(Int_t j) const
   }
  }
 
- Int_t nvalues=GetNvalues();
- Int_t nerrors=GetNerrors();
+ Int_t n=GetNslots();
  Int_t nlinkslots=0;
  if (GetNlinks()) nlinkslots=fLinks->GetMaxColumn();
- Int_t ncalibs=GetNcalflags();
- Int_t ncalfuncs=GetNcalfuncs();
- Int_t ndecalfuncs=GetNdecalfuncs();
-
- Int_t n=nvalues;
- if (nerrors>n) n=nerrors;
  if (nlinkslots>n) n=nlinkslots;
- if (InheritsFrom("AliDevice"))
- {
-  if (ncalibs>n) n=ncalibs;
-  if (ncalfuncs>n) n=ncalfuncs;
-  if (ndecalfuncs>n) n=ndecalfuncs;
- }
  
  TObject* obj=0;
  Int_t nrefs=0;
@@ -791,28 +832,33 @@ void AliSignal::List(Int_t j) const
  {
   for (Int_t i=1; i<=n; i++)
   {
-   cout << "   Slot : " << i;
-   if (i<=nvalues) cout << " Signal value : " << GetSignal(i);
-   if (i<=nerrors) cout << " error : " << GetSignalError(i);
-   AliAttrib::List(i);
-   cout << endl;
    obj=0;
    nrefs=GetIndices(obj,i,posarr);
-   for (Int_t k=0; k<nrefs; k++)
+
+   if (GetSignalFlag(i) || GetErrorFlag(i) || GetCalFunction(i) || GetDecalFunction(i) || GetCalWord(i) || nrefs)
    {
-    pos=posarr.At(k);
-    obj=GetLink(i,pos);
-    if (obj)
+    cout << "   Slot : " << i;
+    if (GetSignalFlag(i)) cout << " Signal value : " << GetSignal(i);
+    if (GetErrorFlag(i))  cout << " error : " << GetSignalError(i);
+    AliAttrib::List(i);
+    cout << endl;
+
+    for (Int_t k=0; k<nrefs; k++)
     {
-     cout << "    Link at position " << pos << " to : " << obj->ClassName();
-     if (obj->InheritsFrom("TNamed"))
+     pos=posarr.At(k);
+     obj=GetLink(i,pos);
+     if (obj)
      {
-      const char* lname=obj->GetName();
-      const char* ltitle=obj->GetTitle();
-      if (strlen(lname))  cout << " Name : " << lname;
-      if (strlen(ltitle)) cout << " Title : " << ltitle;
+      cout << "    Link at position " << pos << " to : " << obj->ClassName();
+      if (obj->InheritsFrom("TNamed"))
+      {
+       const char* lname=obj->GetName();
+       const char* ltitle=obj->GetTitle();
+       if (strlen(lname))  cout << " Name : " << lname;
+       if (strlen(ltitle)) cout << " Title : " << ltitle;
+      }
+      cout << endl;
      }
-     cout << endl;
     }
    }
   }
@@ -821,28 +867,33 @@ void AliSignal::List(Int_t j) const
  {
   if (j<=n)
   {
-   cout << "   Slot : " << j;
-   if (j<=nvalues) cout << " Signal value : " << GetSignal(j);
-   if (j<=nerrors) cout << " error : " << GetSignalError(j);
-   AliAttrib::List(j);
-   cout << endl;
    obj=0;
    nrefs=GetIndices(obj,j,posarr);
-   for (Int_t kj=0; kj<nrefs; kj++)
+
+   if (GetSignalFlag(j) || GetErrorFlag(j) || GetCalFunction(j) || GetDecalFunction(j) || GetCalWord(j) || nrefs)
    {
-    pos=posarr.At(kj);
-    obj=GetLink(j,pos);
-    if (obj)
+    cout << "   Slot : " << j;
+    if (GetSignalFlag(j)) cout << " Signal value : " << GetSignal(j);
+    if (GetErrorFlag(j))  cout << " error : " << GetSignalError(j);
+    AliAttrib::List(j);
+    cout << endl;
+
+    for (Int_t kj=0; kj<nrefs; kj++)
     {
-     cout << "    Link at position " << pos << " to : " << obj->ClassName();
-     if (obj->InheritsFrom("TNamed"))
+     pos=posarr.At(kj);
+     obj=GetLink(j,pos);
+     if (obj)
      {
-      const char* lnamej=obj->GetName();
-      const char* ltitlej=obj->GetTitle();
-      if (strlen(lnamej))  cout << " Name : " << lnamej;
-      if (strlen(ltitlej)) cout << " Title : " << ltitlej;
+      cout << "    Link at position " << pos << " to : " << obj->ClassName();
+      if (obj->InheritsFrom("TNamed"))
+      {
+       const char* lnamej=obj->GetName();
+       const char* ltitlej=obj->GetTitle();
+       if (strlen(lnamej))  cout << " Name : " << lnamej;
+       if (strlen(ltitlej)) cout << " Title : " << ltitlej;
+      }
+      cout << endl;
      }
-     cout << endl;
     }
    }
   }
@@ -1008,16 +1059,175 @@ void AliSignal::ListTrack(Int_t j) const
 Int_t AliSignal::GetNvalues() const
 {
 // Provide the number of values for this signal.
+ 
+ if (!fSignals) return 0;
+
  Int_t n=0;
- if (fSignals) n=fSignals->GetSize();
+ for (Int_t i=1; i<=fSigflags->GetSize(); i++)
+ {
+  if (GetSignalFlag(i)) n=i;
+ }
+
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliSignal::GetNerrors() const
 {
 // Provide the number specified errors on the values for this signal.
+ 
+ if (!fDsignals) return 0;
+
  Int_t n=0;
- if (fDsignals) n=fDsignals->GetSize();
+ for (Int_t i=1; i<=fSigflags->GetSize(); i++)
+ {
+  if (GetErrorFlag(i)) n=i;
+ }
+
+ return n;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliSignal::SetSigFlags(Int_t is,Int_t ie,Int_t j)
+{
+// Store signal and/or error value flags of the j-th (default j=1) slot.
+// Note : The first slot is at j=1.
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for the flags, the number of reserved slots for the flags is
+// increased automatically.
+// The value stored is : 10*signalflag + errorflag.
+
+ if (j<1) 
+ {
+  cout << " *AliSignal::SetSigFlags* Invalid argument j = " << j << endl;
+  return;
+ }
+
+ if (!fSigflags)
+ {
+  fSigflags=new TArrayI(j);
+ }
+
+ Int_t size=fSigflags->GetSize();
+
+ if (j>size)
+ {
+  fSigflags->Set(j);
+ }
+
+ Int_t word=10*is+ie;
+ 
+ fSigflags->AddAt(word,j-1);
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetSignalFlag(Int_t j) const
+{
+// Provide signal value flag of the j-th (default j=1) slot.
+//
+// flag = 1 : Signal value was set
+//        0 : Signal value was not set
+//
+// Note : The first attribute slot is at j=1.
+// In case j is invalid, 0 is returned.
+
+ if (j<1) 
+ {
+  cout << " *AliSignal::GetSignalFlag* Invalid argument j = " << j << endl;
+  return 0;
+ }
+ Int_t flag=0;
+ if (fSigflags)
+ {
+  if (j>0 && j<=(fSigflags->GetSize()))
+  {
+   Int_t word=fSigflags->At(j-1);
+   flag=word/10;
+  }
+ }
+ return flag;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetSignalFlag(TString name) const
+{
+// Provide signal value flag of the name-specified slot.
+//
+// flag = 1 : Signal value was set
+//        0 : Signal value was not set
+//
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t flag=0;
+ if (j>0) flag=GetSignalFlag(j);
+ return flag;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetErrorFlag(Int_t j) const
+{
+// Provide error value flag of the j-th (default j=1) slot.
+//
+// flag = 1 : Error value was set
+//        0 : Error value was not set
+//
+// Note : The first attribute slot is at j=1.
+// In case j is invalid, 0 is returned.
+
+ if (j<1) 
+ {
+  cout << " *AliSignal::GetErrorFlag* Invalid argument j = " << j << endl;
+  return 0;
+ }
+ Int_t flag=0;
+ if (fSigflags)
+ {
+  if (j>0 && j<=(fSigflags->GetSize()))
+  {
+   Int_t word=fSigflags->At(j-1);
+   flag=word%10;
+  }
+ }
+ return flag;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetErrorFlag(TString name) const
+{
+// Provide error value flag of the name-specified slot.
+//
+// flag = 1 : Error value was set
+//        0 : Error value was not set
+//
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t flag=0;
+ if (j>0) flag=GetErrorFlag(j);
+ return flag;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliSignal::GetNslots() const
+{
+// Provide the number of existing slots.
+
+ Int_t n=AliAttrib::GetNslots();
+
+ if (!fSigflags) return n;
+
+ Int_t nflags=0;
+ for (Int_t i=0; i<fSigflags->GetSize(); i++)
+ {
+  if (fSigflags->At(i)) nflags=i+1;
+ }
+
+ if (n<nflags) n=nflags;
+
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////

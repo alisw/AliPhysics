@@ -698,3 +698,10 @@
                 and fDresult suppressed for I/O streaming. This will reduce the produced
                 output filesize.
 21-jul-2006 NvE AliSample extended for computation of median.
+12-sep-2006 NvE Memberfunctions GetNslots and AddNamedSlot introduced and various
+                modifications made in AliAttrib and AliSignal to overcome a ROOT
+                feature which always sets the size of TArray objects to a default
+                of 16 when reading these objects back from a file.
+                The modified AliAttrib and AliSignal don't rely on a GetSize()
+                anymore, but determine the number of stored values from the
+                actual array contents. 

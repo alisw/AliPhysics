@@ -156,32 +156,60 @@ AliAttrib::AliAttrib(const AliAttrib& a)
 Int_t AliAttrib::GetNgains() const
 {
 // Provide the number of specified gains for this attribute.
+
+ if (!fGains) return 0;
+
  Int_t n=0;
- if (fGains) n=fGains->GetSize();
+ for (Int_t i=1; i<=fGains->GetSize(); i++)
+ {
+  if (GetGainFlag(i)) n=i;
+ }
+
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliAttrib::GetNoffsets() const
 {
 // Provide the number of specified offsets for this attribute.
+
+ if (!fOffsets) return 0;
+
  Int_t n=0;
- if (fOffsets) n=fOffsets->GetSize();
+ for (Int_t i=1; i<=fOffsets->GetSize(); i++)
+ {
+  if (GetOffsetFlag(i)) n=i;
+ }
+
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliAttrib::GetNcalflags() const
 {
 // Provide the number of specified calib. flags for this attribute.
+
+ if (!fCalflags) return 0;
+
  Int_t n=0;
- if (fCalflags) n=fCalflags->GetSize();
+ for (Int_t i=1; i<=fCalflags->GetSize(); i++)
+ {
+  if (fCalflags->At(i-1)) n=i;
+ }
+
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
 Int_t AliAttrib::GetNnames() const
 {
 // Provide the maximum number of specified names for this attribute.
+
+ if (!fNames) return 0;
+
  Int_t n=0;
- if (fNames) n=fNames->GetSize();
+ for (Int_t i=1; i<=fNames->GetSize(); i++)
+ {
+  if (fNames->At(i-1)) n=i;
+ }
+
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -408,6 +436,45 @@ Int_t AliAttrib::GetOffsetFlag(TString name) const
  Int_t flag=0;
  if (j>0) flag=GetOffsetFlag(j);
  return flag;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetCalWord(Int_t j) const
+{
+// Provide calib. word of the j-th (default j=1) attribute slot.
+// The word value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+//
+// Note : The first attribute slot is at j=1.
+// In case j is invalid, 0 is returned.
+
+ if (j<1) 
+ {
+  cout << " *AliAttrib::GetCalWord* Invalid argument j = " << j << endl;
+  return 0;
+ }
+
+ Int_t word=0;
+ if (fCalflags)
+ {
+  if (j>0 && j<=(fCalflags->GetSize())) word=fCalflags->At(j-1);
+ }
+ return word;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetCalWord(TString name) const
+{
+// Provide calib. word of the name-specified attribute slot.
+// The word value stored is : 1000*edge + 100*dead + 10*gainflag + offsetflag.
+//
+// This procedure involves a slot-index search based on the specified name
+// at each invokation. This may become slow in case many slots have been
+// defined and/or when this procedure is invoked many times.
+// In such cases it is preferable to use indexed addressing in the user code
+// either directly or via a few invokations of GetSlotIndex().
+
+ Int_t j=GetSlotIndex(name);
+ Int_t word=0;
+ if (j>0) word=GetCalWord(j);
+ return word;
 }
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliAttrib::GetGain(Int_t j) const
@@ -1038,10 +1105,39 @@ Int_t AliAttrib::GetDeadValue(TString name) const
  return val;
 }
 ///////////////////////////////////////////////////////////////////////////
+Int_t AliAttrib::GetNslots() const
+{
+// Provide the number of existing slots.
+
+  Int_t n=GetNcalflags();
+  Int_t nn=GetNnames();
+  Int_t ncalf=GetNcalfuncs();
+  Int_t ndecalf=GetNdecalfuncs();
+  if (n<nn) n=nn;
+  if (n<ncalf) n=ncalf;
+  if (n<ndecalf) n=ndecalf;
+
+  return n;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAttrib::AddNamedSlot(TString s)
+{
+// Add a new slot with the specified name.
+// In case a slot with the specified name already exists, no action is taken.
+
+ if (GetSlotIndex(s)) return;
+
+ Int_t n=GetNslots();
+ SetSlotName(s,n+1);
+}
+///////////////////////////////////////////////////////////////////////////
 void AliAttrib::SetSlotName(TString s,Int_t j)
 {
 // Set a user defined name for the j-th (default j=1) slot. 
 // Note : The first attribute slot is at j=1.
+// In case the value of the index j exceeds the maximum number of reserved
+// slots for the names, the number of reserved slots for the names
+// is increased automatically to the corresponding value.
 
  if (j<1) 
  {
@@ -1339,8 +1435,13 @@ Int_t AliAttrib::GetNcalfuncs() const
 {
 // Provide the number of specified calib. functions for this attribute.
 
+ if (!fCalfuncs) return 0;
+
  Int_t n=0;
- if (fCalfuncs) n=fCalfuncs->GetSize();
+ for (Int_t i=1; i<=fCalfuncs->GetSize(); i++)
+ {
+  if (fCalfuncs->At(i-1)) n=i;
+ }
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -1348,8 +1449,13 @@ Int_t AliAttrib::GetNdecalfuncs() const
 {
 // Provide the number of specified de-calib. functions for this attribute.
 
+ if (!fDecalfuncs) return 0;
+
  Int_t n=0;
- if (fDecalfuncs) n=fDecalfuncs->GetSize();
+ for (Int_t i=1; i<=fDecalfuncs->GetSize(); i++)
+ {
+  if (fDecalfuncs->At(i-1)) n=i;
+ }
  return n;
 }
 ///////////////////////////////////////////////////////////////////////////

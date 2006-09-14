@@ -565,24 +565,15 @@ void IceF2k::FillOMdbase()
  {
   dev=new IceAOM();
   dev->SetUniqueID(i+1);
-
+  // Slots to hold the various (de)calibration functions  
   dev->SetSlotName("ADC",1);
   dev->SetSlotName("LE",2);
   dev->SetSlotName("TOT",3);
-
+  // Slots to hold hardware parameters
   dev->SetSlotName("TYPE",4);
   dev->SetSlotName("ORIENT",5);
   dev->SetSlotName("THRESH",6);
   dev->SetSlotName("SENSIT",7);
-  dev->SetSlotName("BETA-TDC",8);
-  dev->SetSlotName("T0",9);
-  dev->SetSlotName("ALPHA-TDC",10);
-  dev->SetSlotName("PED-ADC",11);
-  dev->SetSlotName("BETA-ADC",12);
-  dev->SetSlotName("KAPPA-ADC",13);
-  dev->SetSlotName("PED-TOT",14);
-  dev->SetSlotName("BETA-TOT",15);
-  dev->SetSlotName("KAPPA-TOT",16);
 
   pos[0]=fHeader.x[i];
   pos[1]=fHeader.y[i];
@@ -640,15 +631,6 @@ void IceF2k::FillOMdbase()
   dev->SetSignal((Float_t)fHeader.costh[i],5);
   dev->SetSignal(fHeader.thresh[i],6);
   dev->SetSignal(fHeader.sensit[i],7);
-  dev->SetSignal(fHeader.cal[i].beta_t,8);
-  dev->SetSignal(fHeader.cal[i].t_0,9);
-  dev->SetSignal(fHeader.cal[i].alpha_t,10);
-  dev->SetSignal(fHeader.cal[i].ped,11);
-  dev->SetSignal(fHeader.cal[i].beta_a,12);
-  dev->SetSignal(fHeader.cal[i].kappa,13);
-  dev->SetSignal(fHeader.cal[i].ped_tot,14);
-  dev->SetSignal(fHeader.cal[i].beta_tot,15);
-  dev->SetSignal(fHeader.cal[i].kappa_tot,16);
 
   fOmdb->EnterObject(i+1,1,dev);
  }
@@ -1177,8 +1159,10 @@ void IceF2k::PutHits()
 
   if (!omx) continue;
 
-  omx->SetSlotName("BASELINE",omx->GetNnames()+1);
-  omx->SetSignal(-fEvent.wf[iwf].baseline,"BASELINE");
+  hname="BASELINE-WF";
+  hname+=omx->GetNwaveforms()+1;
+  omx->AddNamedSlot(hname);
+  omx->SetSignal(fEvent.wf[iwf].baseline,hname);
 
   // Fill the waveform histogram
   hname="OM";
@@ -1195,7 +1179,7 @@ void IceF2k::PutHits()
 
   for (Int_t jbin=1; jbin<=fEvent.wf[iwf].ndigi; jbin++)
   {
-   histo.SetBinContent(jbin,-fEvent.wf[iwf].digi[jbin-1]);
+   histo.SetBinContent(jbin,fEvent.wf[iwf].baseline-fEvent.wf[iwf].digi[jbin-1]);
   }
 
   omx->SetWaveform(&histo,omx->GetNwaveforms()+1);

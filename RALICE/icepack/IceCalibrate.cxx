@@ -108,8 +108,8 @@ void IceCalibrate::Exec(Option_t* opt)
  IceGOM* ome=0; // The event OM pointer
  IceGOM* omd=0; // The database OM pointer
  Int_t id=0;
- Float_t sig=0;
- Float_t sigc=0;
+ Float_t adc=0,le=0,tot=0;    // Uncalibrated values
+ Float_t cadc=0,cle=0,ctot=0; // Calibrated values
  TF1* fcal=0;
  TF1* fdecal=0;
  TString slotname;
@@ -131,22 +131,12 @@ void IceCalibrate::Exec(Option_t* opt)
    for (Int_t ind=1; ind<=omd->GetNnames(); ind++)
    {
     slotname=omd->GetSlotName(ind);
-    ome->SetSlotName(slotname.Data(),ind);
+    ome->AddNamedSlot(slotname);
    }
    for (Int_t isd=1; isd<=omd->GetNvalues(); isd++)
    {
-    ome->SetSignal(omd->GetSignal(isd),isd);
+    ome->SetSignal(omd->GetSignal(isd),omd->GetSlotName(isd));
    }
-  }
-  else
-  {
-   for (Int_t ise=8; ise<=ome->GetNvalues(); ise++)
-   {
-    ome->SetSignal(0,ise);
-   }
-   ome->SetSignal(1,8);
-   ome->SetSignal(1,12);
-   ome->SetSignal(1,15);
   }
 
   // Make signals of bad modules available
@@ -161,7 +151,7 @@ void IceCalibrate::Exec(Option_t* opt)
    if (!sx) continue;
 
    // ADC (de)calibration
-   sig=sx->GetSignal("ADC",-7); // Get uncalibrated signal
+   adc=sx->GetSignal("ADC",-7); // Get uncalibrated signal
    fcal=0;
    fdecal=0;
    if (omd)
@@ -171,20 +161,16 @@ void IceCalibrate::Exec(Option_t* opt)
    }
    if (fcal) // Store calibrated signal
    {
-    sigc=fcal->Eval(sig);
-    sx->SetSignal(sigc,"ADC");
-    ome->SetCalFunction(0,"ADC");
-    ome->SetDecalFunction(fdecal,"ADC");
+    cadc=fcal->Eval(adc);
+    sx->SetSignal(cadc,"ADC");
    }
    else // Store uncalibrated signal
    {
-    sx->SetSignal(sig,"ADC");
-    ome->SetCalFunction(fcal,"ADC");
-    ome->SetDecalFunction(0,"ADC");
+    sx->SetSignal(adc,"ADC");
    }
 
    // LE (TDC) (de)calibration
-   sig=sx->GetSignal("LE",-7); // Get uncalibrated signal
+   le=sx->GetSignal("LE",-7); // Get uncalibrated signal
    fcal=0;
    fdecal=0;
    if (omd)
@@ -192,27 +178,15 @@ void IceCalibrate::Exec(Option_t* opt)
     fcal=omd->GetCalFunction("LE");
     fdecal=omd->GetDecalFunction("LE");
    }
-   // Store the ADC independent (de)calibration function in the OM
-   if (fcal)
-   {
-    ome->SetCalFunction(0,"LE");
-    ome->SetDecalFunction(fdecal,"LE");
-   }
-   else
-   {
-    ome->SetCalFunction(fcal,"LE");
-    ome->SetDecalFunction(0,"LE");
-   }
    // Store the hit-specific ADC dependent (de)calibration function in the hit itself
    sx->SetCalFunction(fcal,"LE");
    sx->SetDecalFunction(fdecal,"LE");
    fcal=sx->GetCalFunction("LE");
    fdecal=sx->GetDecalFunction("LE");
-   sigc=sx->GetSignal("ADC",-7);
-   if (sigc>0)
+   if (adc>0)
    {
-    if (fcal) fcal->SetParameter(3,sigc);
-    if (fdecal) fdecal->SetParameter(3,sigc);
+    if (fcal) fcal->SetParameter(3,adc);
+    if (fdecal) fdecal->SetParameter(3,adc);
    }
    else
    {
@@ -221,20 +195,20 @@ void IceCalibrate::Exec(Option_t* opt)
    }
    if (fcal) // Store calibrated signal
    {
-    sigc=fcal->Eval(sig);
-    sx->SetSignal(sigc,"LE");
+    cle=fcal->Eval(le);
+    sx->SetSignal(cle,"LE");
     sx->SetCalFunction(0,"LE");
     sx->SetDecalFunction(fdecal,"LE");
    }
    else // Store uncalibrated signal
    {
-    sx->SetSignal(sig,"LE");
+    sx->SetSignal(le,"LE");
     sx->SetCalFunction(fcal,"LE");
     sx->SetDecalFunction(0,"LE");
    }
 
    // TOT (de)calibration
-   sig=sx->GetSignal("TOT",-7); // Get uncalibrated signal
+   tot=sx->GetSignal("TOT",-7); // Get uncalibrated signal
    fcal=0;
    fdecal=0;
    if (omd)
@@ -244,25 +218,79 @@ void IceCalibrate::Exec(Option_t* opt)
    }
    if (fcal) // Store calibrated signal
    {
-    sigc=fcal->Eval(sig);
-    sx->SetSignal(sigc,"TOT");
-    ome->SetCalFunction(0,"TOT");
-    ome->SetDecalFunction(fdecal,"TOT");
+    ctot=fcal->Eval(tot);
+    sx->SetSignal(ctot,"TOT");
    }
    else // Store uncalibrated signal
    {
-    sx->SetSignal(sig,"TOT");
-    ome->SetCalFunction(fcal,"TOT");
-    ome->SetDecalFunction(0,"TOT");
+    sx->SetSignal(tot,"TOT");
    }
-  }
+  } // End of loop over hits of the OM
 
+  // Set bad OM flags according to dbase info
   if (omd)
   {  
    if (omd->GetDeadValue("ADC")) ome->SetDead("ADC");
    if (omd->GetDeadValue("LE")) ome->SetDead("LE");
    if (omd->GetDeadValue("TOT")) ome->SetDead("TOT");
   }
- }
+
+  // Store ADC (de)calibration function in this OM according to dbase info
+  fcal=0;
+  fdecal=0;
+  if (omd)
+  {
+   fcal=omd->GetCalFunction("ADC");
+   fdecal=omd->GetDecalFunction("ADC");
+  }
+  if (fcal) // Calibrated ADC signals were stored
+  {
+   ome->SetCalFunction(0,"ADC");
+   ome->SetDecalFunction(fdecal,"ADC");
+  }
+  else // Uncalibrated ADC signals were stored
+  {
+   ome->SetCalFunction(fcal,"ADC");
+   ome->SetDecalFunction(0,"ADC");
+  }
+
+  // Store ADC independent LE (de)calibration function in this OM according to dbase info
+  fcal=0;
+  fdecal=0;
+  if (omd)
+  {
+   fcal=omd->GetCalFunction("LE");
+   fdecal=omd->GetDecalFunction("LE");
+  }
+  if (fcal) // Calibrated LE signals were stored
+  {
+   ome->SetCalFunction(0,"LE");
+   ome->SetDecalFunction(fdecal,"LE");
+  }
+  else // Uncalibrated LE signals were stored
+  {
+   ome->SetCalFunction(fcal,"LE");
+   ome->SetDecalFunction(0,"LE");
+  }
+
+  // Store TOT (de)calibration function in this OM according to dbase info
+  fcal=0;
+  fdecal=0;
+  if (omd)
+  {
+   fcal=omd->GetCalFunction("TOT");
+   fdecal=omd->GetDecalFunction("TOT");
+  }
+  if (fcal) // Calibrated TOT signals were stored
+  {
+   ome->SetCalFunction(0,"TOT");
+   ome->SetDecalFunction(fdecal,"TOT");
+  }
+  else // Uncalibrated TOT signals were stored
+  {
+   ome->SetCalFunction(fcal,"TOT");
+   ome->SetDecalFunction(0,"TOT");
+  }
+ } // End of loop over OM's of the event
 }
 ///////////////////////////////////////////////////////////////////////////

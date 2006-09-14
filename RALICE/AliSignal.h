@@ -45,6 +45,7 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   void ListTrack(Int_t j=0) const;                              // Print info for the j-th (all) assoc. track(s)
   Int_t GetNvalues() const;                                     // Provide the number of signal values
   Int_t GetNerrors() const;                                     // Provide the number of specified errors
+  virtual Int_t GetNslots() const;                              // Provide the number of exising slots
   Int_t GetNwaveforms() const;                                  // Provide the number of specified waveforms
   void SetWaveform(TH1F* waveform,Int_t j=1);                   // Set the histogram for the j-th waveform
   TH1F* GetWaveform(Int_t j=1) const;                           // Pointer to the histo of the j-th waveform
@@ -80,15 +81,21 @@ class AliSignal : public TNamed,public AliPosition,public AliAttrib
   Int_t GetNtracks(AliTrack* t=0) const;                        // Provide number of related AliTracks
   AliTrack* GetTrack(Int_t j) const;                            // Access to the related AliTrack number j
   AliTrack* GetIdTrack(Int_t id) const;                         // Access to the related AliTrack with ID=id
+  Int_t GetSignalFlag(Int_t j=1) const;                         // Provide signal value flag of the j-th slot
+  Int_t GetSignalFlag(TString name) const;                      // Provide signal value flag of the name specified slot
+  Int_t GetErrorFlag(Int_t j=1) const;                          // Provide error value flag of the j-th slot
+  Int_t GetErrorFlag(TString name) const;                       // Provide error value flag of the name specified slot
 
  protected:
+  void SetSigFlags(Int_t is,Int_t ie,Int_t j); // Set flags for signal and/or error value settings
   TArrayF* fSignals;                           // Signal values
   TArrayF* fDsignals;                          // Errors on signal values
+  TArrayI* fSigflags;                          // Flags to mark setting of signal and/or error values 
   TObjArray* fWaveforms;                       // The 1D histograms containing the signal waveforms
   AliObjMatrix* fLinks;                        // Pointers of objects related to the various slots
   TObject* fDevice;                            // Pointer to the device that owns this signal
   TObjArray* fTracks;                          // Pointers to associated tracks
 
- ClassDef(AliSignal,15) // Generic handling of (extrapolated) detector signals.
+ ClassDef(AliSignal,16) // Generic handling of (extrapolated) detector signals.
 };
 #endif
