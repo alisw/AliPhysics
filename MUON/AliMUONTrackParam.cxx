@@ -38,16 +38,16 @@ ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
 
   //_________________________________________________________________________
 AliMUONTrackParam::AliMUONTrackParam()
-  : TObject()
+  : TObject(),
+    fInverseBendingMomentum(0.),
+    fBendingSlope(0.),
+    fNonBendingSlope(0.),
+    fZ(0.),
+    fBendingCoor(0.),
+    fNonBendingCoor(0.)
 {
 // Constructor
 
-  fInverseBendingMomentum = 0;
-  fBendingSlope = 0;
-  fNonBendingSlope = 0;
-  fZ = 0;
-  fBendingCoor = 0;
-  fNonBendingCoor = 0;
 }
 
   //_________________________________________________________________________
@@ -72,15 +72,16 @@ AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUONTrackParam)
 }
   //_________________________________________________________________________
 AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
-  : TObject(theMUONTrackParam)
+  : TObject(theMUONTrackParam),
+    fInverseBendingMomentum(theMUONTrackParam.fInverseBendingMomentum), 
+    fBendingSlope(theMUONTrackParam.fBendingSlope),
+    fNonBendingSlope(theMUONTrackParam.fNonBendingSlope),
+    fZ(theMUONTrackParam.fZ),
+    fBendingCoor(theMUONTrackParam.fBendingCoor),
+    fNonBendingCoor(theMUONTrackParam.fNonBendingCoor)
 {
   // Copy constructor
-  fInverseBendingMomentum =  theMUONTrackParam.fInverseBendingMomentum; 
-  fBendingSlope           =  theMUONTrackParam.fBendingSlope; 
-  fNonBendingSlope        =  theMUONTrackParam.fNonBendingSlope; 
-  fZ                      =  theMUONTrackParam.fZ; 
-  fBendingCoor            =  theMUONTrackParam.fBendingCoor; 
-  fNonBendingCoor         =  theMUONTrackParam.fNonBendingCoor;
+
 }
 
   //_________________________________________________________________________

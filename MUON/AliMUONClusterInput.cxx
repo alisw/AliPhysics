@@ -48,7 +48,10 @@ ClassImp(AliMUONClusterInput)
 
 AliMUONClusterInput::AliMUONClusterInput()
   : TObject(),
+    fNseg(0),
+    fChamber(0),
     fCluster(0),
+    fZ(0.),
     fChargeCorrel(1.),
     fDetElemId(0)
   
@@ -91,13 +94,6 @@ AliMUONClusterInput::~AliMUONClusterInput()
     delete fgSegmentation;
     fgMinuit = 0;
     fgMathieson = 0;
-}
-
-AliMUONClusterInput::AliMUONClusterInput(const AliMUONClusterInput& clusterInput):TObject(clusterInput)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
 }
 
 void AliMUONClusterInput::SetDigits(Int_t chamber, Int_t idDE, TClonesArray* dig1, TClonesArray* dig2)

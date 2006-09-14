@@ -93,10 +93,6 @@ class AliMUONTrackReconstructor : public TObject {
 
   AliMUONData*  GetMUONData() {return fMUONData;}
 
- protected:
-  AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); // copy constructor
-  AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs); // assignment operator
-
  private:
 
   // Constants which should be elsewhere ????
@@ -182,6 +178,8 @@ class AliMUONTrackReconstructor : public TObject {
   Int_t fMuons; ///< AZ - number of muons within acceptance - just for tests
 
   // Functions
+  AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); // copy constructor
+  AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs); // assignment operator
   void ResetHitsForRec(void);
   void MakeEventToBeReconstructed(void);
   void AddHitsForRecFromTrackRef(TTree *TTR, Int_t Signal);

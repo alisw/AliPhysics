@@ -33,24 +33,25 @@ ClassImp(AliMUONTrackHit) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONTrackHit::AliMUONTrackHit()
-  : TObject()
+  : TObject(),
+    fTrackParam(),
+    fHitForRecPtr(0x0),
+    fNextTrackHitWithSameHitForRec(0x0),
+    fPrevTrackHitWithSameHitForRec(0x0)
 {
 /// Default constructor
 
-  fHitForRecPtr = 0;
-  fNextTrackHitWithSameHitForRec = 0;
-  fPrevTrackHitWithSameHitForRec = 0;
 }
   //__________________________________________________________________________
 AliMUONTrackHit::AliMUONTrackHit (const AliMUONTrackHit& theMUONTrackHit)
-  :  TObject(theMUONTrackHit)
+  : TObject(theMUONTrackHit),
+    fTrackParam(theMUONTrackHit.fTrackParam),
+    fHitForRecPtr(theMUONTrackHit.fHitForRecPtr),
+    fNextTrackHitWithSameHitForRec(theMUONTrackHit.fNextTrackHitWithSameHitForRec),
+    fPrevTrackHitWithSameHitForRec(theMUONTrackHit.fPrevTrackHitWithSameHitForRec)
 {
 /// Copy constructor
 
-  fTrackParam                    =  theMUONTrackHit.fTrackParam;
-  fHitForRecPtr                  =  theMUONTrackHit.fHitForRecPtr;
-  fNextTrackHitWithSameHitForRec =  theMUONTrackHit.fNextTrackHitWithSameHitForRec;
-  fPrevTrackHitWithSameHitForRec =  theMUONTrackHit.fPrevTrackHitWithSameHitForRec;
 }
   //__________________________________________________________________________
 AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& theMUONTrackHit)
@@ -74,10 +75,14 @@ AliMUONTrackHit & AliMUONTrackHit::operator=(const AliMUONTrackHit& theMUONTrack
 }
   //__________________________________________________________________________
 AliMUONTrackHit::AliMUONTrackHit(AliMUONHitForRec* Hit)
+  : TObject(),
+    fTrackParam(),
+    fHitForRecPtr(Hit),
+    fNextTrackHitWithSameHitForRec(0x0),
+    fPrevTrackHitWithSameHitForRec(0x0)
 {
 /// Constructor from the HitForRec pointed to by "Hit"
 
-  fHitForRecPtr = Hit; // pointer to HitForRec
   // links from/to HitForRec
   if (Hit->GetNTrackHits() == 0) {
     fPrevTrackHitWithSameHitForRec = NULL;

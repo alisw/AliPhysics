@@ -47,14 +47,23 @@ void fcnCombiS2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
 ClassImp(AliMUONClusterFinderVS)
 
 AliMUONClusterFinderVS::AliMUONClusterFinderVS()
-  : TObject()
+  : TObject(),
+    fInput(AliMUONClusterInput::Instance()),
+    fDeclusterFlag(0),
+    fClusterSize(0),
+    fNperMax(0),
+    fGhostChi2Cut(1e6),
+    fNPeaks(0),
+    fNRawClusters(0),
+    fRawClusters(0x0),
+    fZPlane(0.),
+    fSector(0),
+    fFitStat(0)
 {
 /// Default constructor
-    fInput=AliMUONClusterInput::Instance();
     fDigitMap[0] = 0;
     fDigitMap[1] = 0;
     fTrack[0]=fTrack[1]=-1;
-    fGhostChi2Cut = 1e6; // nothing done by default
     fSeg2[0]    = 0;
     fSeg2[1]    = 0;
 
@@ -64,7 +73,6 @@ AliMUONClusterFinderVS::AliMUONClusterFinderVS()
       }
     } 
     fRawClusters = new TClonesArray("AliMUONRawCluster",1000);
-    fNRawClusters = 0;
 }
  //____________________________________________________________________________
 AliMUONClusterFinderVS::~AliMUONClusterFinderVS()
@@ -79,12 +87,6 @@ AliMUONClusterFinderVS::~AliMUONClusterFinderVS()
    }
 }
 
-AliMUONClusterFinderVS::AliMUONClusterFinderVS(const AliMUONClusterFinderVS & clusterFinder):TObject(clusterFinder)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
 //____________________________________________________________________________
 void AliMUONClusterFinderVS::ResetRawClusters()
 {

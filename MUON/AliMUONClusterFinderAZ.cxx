@@ -53,7 +53,16 @@ ClassImp(AliMUONClusterFinderAZ)
 
 //_____________________________________________________________________________
 AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw)
-  : AliMUONClusterFinderVS()
+  : AliMUONClusterFinderVS(),
+    fZpad(0),
+    fNpar(0),
+    fQtot(0),
+    fReco(1),
+    fCathBeg(0),
+    fDraw(0x0),
+    fPixArray(0x0),
+    fnCoupled(0),
+    fDebug(0)
 {
 /// Constructor
   fnPads[0]=fnPads[1]=0;
@@ -72,32 +81,18 @@ AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(Bool_t draw)
 
   fSegmentation[1] = fSegmentation[0] = 0x0; 
 
-  fZpad = 0;
-  fQtot = 0;
-  fPadBeg[0] = fPadBeg[1] = fCathBeg = fNpar = fnCoupled = 0;
+  fPadBeg[0] = fPadBeg[1] = 0;
 
   if (!fgMinuit) fgMinuit = new TMinuit(8);
   if (!fgClusterFinder) fgClusterFinder = this;
   fPixArray = new TObjArray(20); 
 
-  fDebug = 0; //0;
-  fReco = 1;
-  fDraw = 0x0;
   if (draw) {
     fDebug = 1;
     fReco = 0;
     fDraw = new AliMUONClusterDrawAZ(this);
   }
   cout << " *** Running AZ cluster finder *** " << endl;
-}
-
-//_____________________________________________________________________________
-AliMUONClusterFinderAZ::AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs)
-  : AliMUONClusterFinderVS(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
 }
 
 //_____________________________________________________________________________
@@ -2473,19 +2468,6 @@ void AliMUONClusterFinderAZ::FindCluster(Int_t *localMax, Int_t iMax)
   delete [] used; used = 0;
 }
 
-//_____________________________________________________________________________
-AliMUONClusterFinderAZ&  
-AliMUONClusterFinderAZ::operator=(const AliMUONClusterFinderAZ& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
-          
 //_____________________________________________________________________________
 void AliMUONClusterFinderAZ::AddVirtualPad()
 {

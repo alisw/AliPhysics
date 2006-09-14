@@ -42,7 +42,14 @@ ClassImp(AliMUONRecoCheck)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
+  AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
+  : TObject(),
+  fRunLoader(0x0),
+  fMUONData(0x0),
+  fMuonTrackRef(0x0),
+  fTrackReco(0x0),
+  fReconstructibleTracks(0),
+  fRecoTracks(0)
 {
 /// Constructor
 
@@ -67,8 +74,6 @@ AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader)
   fRunLoader->LoadTrackRefs("READ");
   loader->LoadTracks("READ");
 
-  fReconstructibleTracks = 0; 
-  fRecoTracks = 0;
 }
 
 //_____________________________________________________________________________

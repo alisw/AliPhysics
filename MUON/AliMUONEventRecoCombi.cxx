@@ -45,14 +45,17 @@ AliMUONEventRecoCombi* AliMUONEventRecoCombi::fgRecoCombi = 0;
 ClassImp(AliMUONEventRecoCombi)
 
 //_________________________________________________________________________
-AliMUONEventRecoCombi::AliMUONEventRecoCombi() : TObject()
+  AliMUONEventRecoCombi::AliMUONEventRecoCombi() 
+    : TObject(),
+      fDetElems(0x0),
+      fZ(0x0),
+      fNZ(0),
+      fDEvsZ(0x0)
 {
   // Ctor
 
   fDetElems = new TClonesArray("AliMUONDetElement", 20);
   fZ = new TArrayD(20);
-  fNZ = 0;
-  fDEvsZ = NULL;
 }
 
 //_________________________________________________________________________
@@ -76,27 +79,6 @@ AliMUONEventRecoCombi::~AliMUONEventRecoCombi()
   delete fDetElems;
   delete fZ;
   delete [] fDEvsZ;
-}
-
-//_________________________________________________________________________
-AliMUONEventRecoCombi::AliMUONEventRecoCombi (const AliMUONEventRecoCombi& rhs)
-  : TObject(rhs)
-{
-  // Protected copy constructor
-  AliFatal("Not implemented.");
-}
-
-//_________________________________________________________________________
-AliMUONEventRecoCombi & AliMUONEventRecoCombi::operator = (const AliMUONEventRecoCombi& rhs)
-{
-  // Protected assignment operator
-
-  // check assignement to self
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-
-  return *this;
 }
 
 //_________________________________________________________________________

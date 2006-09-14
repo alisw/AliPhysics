@@ -34,10 +34,6 @@ public:
   void     ResetMuon() { fxyMu[0][6] = fxyMu[1][6] = 9999; } // reset muons
   void     UpdateCluster(Int_t npad); // update cluster after removing non-overlapped pads
 
-protected:
-  AliMUONClusterDrawAZ(const AliMUONClusterDrawAZ& rhs);
-  AliMUONClusterDrawAZ& operator=(const AliMUONClusterDrawAZ& rhs);
-
 private:
   AliMUONData *fData; //!<  pointer to muon data container
   AliMUONClusterFinderAZ* fFind; //!<  pointer to ClusterFinder
@@ -52,6 +48,8 @@ private:
 
   // Functions
 
+  AliMUONClusterDrawAZ(const AliMUONClusterDrawAZ& rhs);
+  AliMUONClusterDrawAZ& operator=(const AliMUONClusterDrawAZ& rhs);
   void   Init(); // initialization
   void   ModifyHistos(); // modify histograms
   void   DrawHits(); // draw simulated and reconstructed hits

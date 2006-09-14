@@ -28,20 +28,22 @@ ClassImp(AliMUONPixel) // Class implementation in ROOT context
 
 //_____________________________________________________________________________
 AliMUONPixel::AliMUONPixel()
-  : TObject()
+  : TObject(),
+    fCharge(0),
+    fFlag(0)
 {
 /// Default constructor
-  fXY[0] = fXY[1] = fSize[0] = fSize[1] = fCharge = 0;
-  fFlag = 0;
+  fXY[0] = fXY[1] = fSize[0] = fSize[1] = 0;
 } 
 
 //_____________________________________________________________________________
 AliMUONPixel::AliMUONPixel(Double_t xc, Double_t yc, Double_t wx, Double_t wy, Double_t charge)
-  : TObject()
+  : TObject(),
+    fCharge(charge),
+    fFlag(0)
 {
 /// Constructor
-  fXY[0] = xc; fXY[1] = yc; fSize[0] = wx; fSize[1] = wy; fCharge = charge;
-  fFlag = 0;
+  fXY[0] = xc; fXY[1] = yc; fSize[0] = wx; fSize[1] = wy;
 }
 
 //_____________________________________________________________________________

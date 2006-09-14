@@ -59,8 +59,31 @@ ClassImp(AliMUONTrackK) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK()
-  //AZ: TObject()
-  : AliMUONTrack() 
+  : AliMUONTrack(),
+    fStartSegment(0x0),
+    fPosition(0.),
+    fPositionNew(0.),
+    fChi2(0.),
+    fTrackHits(0x0),
+    fNmbTrackHits(0),
+    fTrackDir(1),
+    fBPFlag(kFALSE),
+    fRecover(0),
+    fSkipHit(0x0),
+    fTrackPar(0x0),
+    fTrackParNew(0x0),
+    fCovariance(0x0),
+    fWeight(0x0),
+    fParExtrap(0x0),
+    fParFilter(0x0), 
+    fParSmooth(0x0),
+    fCovExtrap(0x0),
+    fCovFilter(0x0),
+    fJacob(0x0),
+    fNSteps(0),
+    fSteps(0x0),
+    fChi2Array(0x0),
+    fChi2Smooth(0x0)
 {
 /// Default constructor
 
@@ -68,25 +91,36 @@ AliMUONTrackK::AliMUONTrackK()
   fgHitForRec = NULL; // pointer to points
   fgNOfPoints = 0; // number of points
 
-  fStartSegment = NULL;
-  fTrackHits = NULL;
-  fNmbTrackHits = 0;
-  fTrackPar = fTrackParNew = NULL;
-  fCovariance = fWeight = NULL;
-  fSkipHit = NULL;
-  fParExtrap = fParFilter = fParSmooth = NULL;
-  fCovExtrap = fCovFilter = NULL;
-  fJacob = NULL; 
-  fSteps = NULL; fNSteps = 0; 
-  fChi2Array = NULL;
-  fChi2Smooth = NULL;
-
   return;
 }
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClonesArray *hitForRec)
-  : AliMUONTrack()
+  : AliMUONTrack(),
+    fStartSegment(0x0),
+    fPosition(0.),
+    fPositionNew(0.),
+    fChi2(0.),
+    fTrackHits(0x0),
+    fNmbTrackHits(0),
+    fTrackDir(1),
+    fBPFlag(kFALSE),
+    fRecover(0),
+    fSkipHit(0x0),
+    fTrackPar(0x0),
+    fTrackParNew(0x0),
+    fCovariance(0x0),
+    fWeight(0x0),
+    fParExtrap(0x0),
+    fParFilter(0x0), 
+    fParSmooth(0x0),
+    fCovExtrap(0x0),
+    fCovFilter(0x0),
+    fJacob(0x0),
+    fNSteps(0),
+    fSteps(0x0),
+    fChi2Array(0x0),
+    fChi2Smooth(0x0)
 {
 /// Constructor
 
@@ -96,26 +130,36 @@ AliMUONTrackK::AliMUONTrackK(AliMUONTrackReconstructor *TrackReconstructor, TClo
   fgNOfPoints = fgHitForRec->GetEntriesFast(); // number of points
   fgCombi = NULL;
   if (fgTrackReconstructor->GetTrackMethod() == 3) fgCombi = AliMUONEventRecoCombi::Instance();
-
-  fStartSegment = NULL;
-  fTrackHits = NULL;
-  fNmbTrackHits = 0;
-  fChi2 = 0;
-  fTrackPar = fTrackParNew = NULL;
-  fCovariance = fWeight = NULL;
-  fSkipHit = NULL;
-  fParExtrap = fParFilter = fParSmooth = NULL;
-  fCovExtrap = fCovFilter = NULL;
-  fJacob = NULL; 
-  fSteps = NULL; fNSteps = 0; 
-  fChi2Array = NULL;
-  fChi2Smooth = NULL;
 }
 
   //__________________________________________________________________________
 AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   //: AliMUONTrack(segment, segment, fgTrackReconstructor)
-  : AliMUONTrack(NULL, segment, fgTrackReconstructor)
+  : AliMUONTrack(NULL, segment, fgTrackReconstructor),
+    fStartSegment(segment),
+    fPosition(0.),
+    fPositionNew(0.),
+    fChi2(0.),
+    fTrackHits(new TObjArray(13)),
+    fNmbTrackHits(2),
+    fTrackDir(1),
+    fBPFlag(kFALSE),
+    fRecover(0),
+    fSkipHit(0x0),
+    fTrackPar(new TMatrixD(fgkSize,1)),
+    fTrackParNew(new TMatrixD(fgkSize,1)),
+    fCovariance(new TMatrixD(fgkSize,fgkSize)),
+    fWeight(new TMatrixD(fgkSize,fgkSize)),
+    fParExtrap(new TObjArray(15)),
+    fParFilter(new TObjArray(15)), 
+    fParSmooth(0x0),
+    fCovExtrap(new TObjArray(15)),
+    fCovFilter(new TObjArray(15)),
+    fJacob(new TObjArray(15)),
+    fNSteps(0),
+    fSteps(new TArrayD(15)),
+    fChi2Array(new TArrayD(13)),
+    fChi2Smooth(0x0)
 {
 /// Constructor from a segment
   Double_t dX, dY, dZ;
@@ -123,9 +167,6 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   AliMUONRawCluster *clus;
   TClonesArray *rawclusters;
 
-  fStartSegment = segment;
-  fRecover = 0;
-  fSkipHit = NULL;
   // Pointers to hits from the segment
   hit1 = segment->GetHitForRec1();
   hit2 = segment->GetHitForRec2();
@@ -136,15 +177,6 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
     hit1 = hit2;
     hit2 = segment->GetHitForRec1();
   }
-  // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
-  fTrackHits = new TObjArray(13);
-  fNmbTrackHits = 2;
-  fChi2 = 0;
-  fBPFlag = kFALSE;
-  fTrackPar = new TMatrixD(fgkSize,1); // track parameters
-  fTrackParNew = new TMatrixD(fgkSize,1); // track parameters
-  fCovariance = new TMatrixD(fgkSize,fgkSize); // covariance matrix
-  fWeight = new TMatrixD(fgkSize,fgkSize); // weight matrix (inverse of covariance)
 
   // Fill array of track parameters
   if (hit1->GetChamberNumber() > 7) {
@@ -177,18 +209,6 @@ AliMUONTrackK::AliMUONTrackK(AliMUONSegment *segment)
   (*fTrackPar)(4,0) *= TMath::Cos((*fTrackPar)(3,0)); // 1/p
   // Evaluate covariance (and weight) matrix
   EvalCovariance(dZ);
-
-  // For smoother
-  fParExtrap = new TObjArray(15);
-  fParFilter = new TObjArray(15);
-  fCovExtrap = new TObjArray(15);
-  fCovFilter = new TObjArray(15);
-  fJacob = new TObjArray(15);
-  fSteps = new TArrayD(15);
-  fNSteps = 0;
-  fChi2Array = new TArrayD(13);
-  fChi2Smooth = NULL;
-  fParSmooth = NULL;
 
   if (fgDebug < 0 ) return;
   cout << fgTrackReconstructor->GetNRecTracks()-1 << " " << fgTrackReconstructor->GetBendingMomentumFromImpactParam(segment->GetBendingImpact()) << " " << 1/(*fTrackPar)(4,0) << " ";
@@ -290,14 +310,6 @@ AliMUONTrackK::~AliMUONTrackK()
   delete fParExtrap; delete fParFilter;
   delete fCovExtrap; delete fCovFilter;
   delete fJacob;
-}
-
-  //__________________________________________________________________________
-AliMUONTrackK::AliMUONTrackK (const AliMUONTrackK& source)
-  : AliMUONTrack(source)
-{
-/// Protected copy constructor
-  AliFatal("Not implemented.");
 }
 
   //__________________________________________________________________________

@@ -36,8 +36,6 @@ class AliMUONEventRecoCombi : public TObject
 
  protected:
     AliMUONEventRecoCombi();
-    AliMUONEventRecoCombi(const AliMUONEventRecoCombi& rhs);
-    AliMUONEventRecoCombi & operator = (const AliMUONEventRecoCombi& rhs);
 
  private:
     static AliMUONEventRecoCombi* fgRecoCombi; //!<  singleton instance
@@ -45,6 +43,9 @@ class AliMUONEventRecoCombi : public TObject
     TArrayD *fZ; //!<  array of det. elem. Z-coordinates
     Int_t fNZ; //!<  number of different Z's
     Int_t **fDEvsZ; //!<  list of DE's vs Z-coordinates
+
+    AliMUONEventRecoCombi(const AliMUONEventRecoCombi& rhs);
+    AliMUONEventRecoCombi & operator = (const AliMUONEventRecoCombi& rhs);
 
     ClassDef(AliMUONEventRecoCombi, 0) // Combined cluster/track finder steering class
       };

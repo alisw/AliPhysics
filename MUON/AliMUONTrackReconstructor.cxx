@@ -84,15 +84,43 @@ ClassImp(AliMUONTrackReconstructor) // Class implementation in ROOT context
 
 //__________________________________________________________________________
 AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUONData* data)
-  : TObject()
+  : TObject(),
+    fTrackMethod(1), //AZ - tracking method (1-default, 2-Kalman)
+    fMinBendingMomentum(fgkDefaultMinBendingMomentum),
+    fMaxBendingMomentum(fgkDefaultMaxBendingMomentum),
+    fMaxChi2(fgkDefaultMaxChi2),
+    fMaxSigma2Distance(fgkDefaultMaxSigma2Distance),
+    fBendingResolution(fgkDefaultBendingResolution),
+    fNonBendingResolution(fgkDefaultNonBendingResolution),
+    fChamberThicknessInX0(fgkDefaultChamberThicknessInX0),
+    fSimpleBValue(fgkDefaultSimpleBValue),
+    fSimpleBLength(fgkDefaultSimpleBLength),
+    fSimpleBPosition(fgkDefaultSimpleBPosition),
+    fRecTrackRefHits(fgkDefaultRecTrackRefHits),
+    fEfficiency(fgkDefaultEfficiency),
+    // Initializions for track ref. background events
+    fBkgTrackRefFile(0x0),
+    fBkgTrackRefTK(0x0),
+    fBkgTrackRefParticles(0x0),
+    fBkgTrackRefTTR(0x0),
+    fBkgTrackRefEventNumber(-1),
+    fHitsForRecPtr(0x0),
+    fNHitsForRec(0),
+    fRecTracksPtr(0x0),
+    fNRecTracks(0),
+    fRecTrackHitsPtr(0x0),
+    fNRecTrackHits(0),
+    fMUONData(data),
+    fLoader(loader),
+    fMuons(0)
 {
   // Constructor for class AliMUONTrackReconstructor
   SetReconstructionParametersToDefaults();
-  fTrackMethod = 1; //AZ - tracking method (1-default, 2-Kalman)
+
   // Memory allocation for the TClonesArray of hits for reconstruction
   // Is 10000 the right size ????
   fHitsForRecPtr = new TClonesArray("AliMUONHitForRec", 10000);
-  fNHitsForRec = 0; // really needed or GetEntriesFast sufficient ????
+
   // Memory allocation for the TClonesArray's of segments in stations
   // Is 2000 the right size ????
   for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++) {
@@ -102,11 +130,10 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUOND
   // Memory allocation for the TClonesArray of reconstructed tracks
   // Is 10 the right size ????
   fRecTracksPtr = new TClonesArray("AliMUONTrack", 10);
-  fNRecTracks = 0; // really needed or GetEntriesFast sufficient ????
+
   // Memory allocation for the TClonesArray of hits on reconstructed tracks
   // Is 100 the right size ????
   fRecTrackHitsPtr = new TClonesArray("AliMUONTrackHit", 100);
-  fNRecTrackHits = 0; // really needed or GetEntriesFast sufficient ????
 
   // Sign of fSimpleBValue according to sign of Bx value at (50,50,-950).
   Float_t b[3], x[3];
@@ -122,42 +149,11 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUOND
   AliDebug(1,"Magnetic field from root file:");
   if ( AliLog::GetGlobalDebugLevel()>0) gAlice->Field()->Dump();
 
-  
-  // Initializions for track ref. background events
-  fBkgTrackRefFile = 0;
-  fBkgTrackRefTK = 0;
-  fBkgTrackRefParticles = 0;
-  fBkgTrackRefTTR = 0;
-  fBkgTrackRefEventNumber = -1;
-   
-  // initialize loader's
-  fLoader = loader;
-
   // initialize container
   // fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
-  fMUONData  = data;
+  //fMUONData  = data;
 
   return;
-}
-  //__________________________________________________________________________
-AliMUONTrackReconstructor::AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs)
-  : TObject(rhs)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-AliMUONTrackReconstructor & 
-AliMUONTrackReconstructor::operator=(const AliMUONTrackReconstructor& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }
 
   //__________________________________________________________________________
@@ -175,10 +171,6 @@ void AliMUONTrackReconstructor::SetReconstructionParametersToDefaults(void)
 {
   // Set reconstruction parameters to default values
   // Would be much more convenient with a structure (or class) ????
-  fMinBendingMomentum = fgkDefaultMinBendingMomentum;
-  fMaxBendingMomentum = fgkDefaultMaxBendingMomentum;
-  fMaxChi2 = fgkDefaultMaxChi2;
-  fMaxSigma2Distance = fgkDefaultMaxSigma2Distance;
 
   // ******** Parameters for making HitsForRec
   // minimum radius,
@@ -216,15 +208,6 @@ void AliMUONTrackReconstructor::SetReconstructionParametersToDefaults(void)
   fSegmentMaxDistBending[4] = TMath::Abs( 6.0 *
 					  (AliMUONConstants::DefaultChamberZ(9) - AliMUONConstants::DefaultChamberZ(8)) / 20.0);
 
-  
-  fBendingResolution = fgkDefaultBendingResolution;
-  fNonBendingResolution = fgkDefaultNonBendingResolution;
-  fChamberThicknessInX0 = fgkDefaultChamberThicknessInX0;
-  fSimpleBValue = fgkDefaultSimpleBValue;
-  fSimpleBLength = fgkDefaultSimpleBLength;
-  fSimpleBPosition = fgkDefaultSimpleBPosition;
-  fRecTrackRefHits = fgkDefaultRecTrackRefHits;
-  fEfficiency = fgkDefaultEfficiency;
   return;
 }
 

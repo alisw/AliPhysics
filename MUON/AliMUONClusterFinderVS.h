@@ -62,9 +62,6 @@ class AliMUONClusterFinderVS : public TObject
     void ResetRawClusters();
 
  protected:
-    AliMUONClusterFinderVS(const AliMUONClusterFinderVS& clusterFinder);
-//  Assignment operator
-    AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
 
     AliMUONClusterInput*          fInput;        //!< AliMUONClusterInput instance
     AliMUONDigitMapA1*            fDigitMap[2];  ///< Hit Maps for cathode 1 and 2
@@ -111,7 +108,11 @@ class AliMUONClusterFinderVS : public TObject
     Int_t                    fTrack[2];        ///< Only digits with main contributions from these tracks are
     // considered 
     
-    //  Return pointer to raw clusters    
+ private:
+    AliMUONClusterFinderVS(const AliMUONClusterFinderVS& clusterFinder);
+//  Assignment operator
+    AliMUONClusterFinderVS & operator = (const AliMUONClusterFinderVS& rhs);
+
     ClassDef(AliMUONClusterFinderVS,2) //Class for clustering and reconstruction of space points
       };
 #endif

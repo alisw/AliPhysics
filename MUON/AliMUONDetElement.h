@@ -28,8 +28,6 @@ class AliMUONDetElement : public TObject
 
   AliMUONDetElement();
   AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClusterFinderAZ *recModel); // constructor
-  AliMUONDetElement(const AliMUONDetElement & rhs); // copy constructor
-  AliMUONDetElement& operator = (const AliMUONDetElement& rhs); // assignment operator
   virtual ~AliMUONDetElement(); // Destructor
 
   Int_t IdDE(void) const { return fidDE; } // det. elem. ID
@@ -56,8 +54,6 @@ class AliMUONDetElement : public TObject
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* detElem) const; // "Compare" function for sorting
 
- protected:
-
  private:
  
   Int_t fidDE; ///< det. elem. ID
@@ -74,6 +70,8 @@ class AliMUONDetElement : public TObject
   AliMUONClusterFinderAZ *fRecModel; ///< cluster finder
 
   // Functions
+  AliMUONDetElement(const AliMUONDetElement & rhs); // copy constructor
+  AliMUONDetElement& operator = (const AliMUONDetElement& rhs); // assignment operator
 
   ClassDef(AliMUONDetElement,0) // detection element object
     };

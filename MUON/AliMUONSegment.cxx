@@ -37,34 +37,47 @@ ClassImp(AliMUONSegment) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONSegment::AliMUONSegment()
-  : TObject()
+  : TObject(),
+    fHitForRecPtr1(0x0),
+    fHitForRecPtr2(0x0),
+    fBendingCoor(0.),
+    fBendingSlope(0.),
+    fBendingCoorReso2(0.),
+    fBendingSlopeReso2(0.),
+    fBendingCoorSlopeReso2(0.),
+    fBendingImpact(0.),
+    fNonBendingCoor(0.),
+    fNonBendingSlope(0.),
+    fNonBendingCoorReso2(0.),
+    fNonBendingSlopeReso2(0.),
+    fNonBendingCoorSlopeReso2(0.),
+    fNonBendingImpact(0.),
+    fZ(0.),
+    fInTrack(kFALSE)
 {
   // Default constructor
-  fHitForRecPtr1 = 0; // pointer to HitForRec in first chamber
-  fHitForRecPtr2 = 0; // pointer to HitForRec in second chamber
-  // Bending plane:
-  fBendingCoor = 0.0; // Coordinate in bending plane
-  fBendingSlope = 0.0; // Slope in bending plane
-  // Covariance in bending plane:
-  fBendingCoorReso2 = 0.0; // Covariance(coordinate C1 in first chamber)
-  fBendingSlopeReso2 = 0.0; // Covariance(slope)
-  fBendingCoorSlopeReso2 = 0.0; // Covariance(C1,slope)
-  fBendingImpact = 0.0; // Impact parameter in bending plane
-  // Non Bending plane:
-  fNonBendingCoor = 0.0; // Coordinate in non bending plane
-  fNonBendingSlope = 0.0; // Slope in non bending plane
-  // Covariance in non bending plane:
-  fNonBendingCoorReso2 = 0.0; // Covariance(coordinate C1 in first chamber)
-  fNonBendingSlopeReso2 = 0.0; // Covariance(slope)
-  fNonBendingCoorSlopeReso2 = 0.0; // Covariance(C1,slope)
-  fZ = 0.0; // z in first plane
-  fNonBendingImpact = 0.0; // Impact parameter in non bending plane
-  fInTrack = kFALSE; // TRUE if segment belongs to one track
+
 }
 
   //__________________________________________________________________________
 AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)
-  : TObject()
+  : TObject(),
+    fHitForRecPtr1(Hit1),
+    fHitForRecPtr2(Hit2),
+    fBendingCoor(Hit1->GetBendingCoor()),
+    fBendingSlope(0.),
+    fBendingCoorReso2(Hit1->GetBendingReso2()),
+    fBendingSlopeReso2(0.),
+    fBendingCoorSlopeReso2(0.),
+    fBendingImpact(0.),
+    fNonBendingCoor(Hit1->GetNonBendingCoor()),
+    fNonBendingSlope(0.),
+    fNonBendingCoorReso2(Hit1->GetNonBendingReso2()),
+    fNonBendingSlopeReso2(0.),
+    fNonBendingCoorSlopeReso2(0.),
+    fNonBendingImpact(0.),
+    fZ(Hit1->GetZ()),
+    fInTrack(kFALSE)
 {
   // Constructor for AliMUONSegment from two HitForRec's,
   // one, in the first chamber of the station, pointed to by "Hit1",
@@ -75,49 +88,21 @@ AliMUONSegment::AliMUONSegment(AliMUONHitForRec* Hit1, AliMUONHitForRec* Hit2)
   // in bending and non bending planes.
   // Puts the "fInTrack" flag to "kFALSE".
   Double_t dz;
-  // pointers to HitForRec's
-  fHitForRecPtr1 = Hit1;
-  fHitForRecPtr2 = Hit2;
   dz = Hit1->GetZ() - Hit2->GetZ();
-  fZ = Hit1->GetZ();
+
   // bending plane
-  fBendingCoor = Hit1->GetBendingCoor();
   fBendingSlope = (fBendingCoor - Hit2->GetBendingCoor()) / dz;
   fBendingImpact = fBendingCoor - Hit1->GetZ() * fBendingSlope;
-  fBendingCoorReso2 = Hit1->GetBendingReso2();
   fBendingSlopeReso2 = ( Hit1->GetBendingReso2() +
 			 Hit2->GetBendingReso2() ) / dz / dz;
   fBendingCoorSlopeReso2 = Hit1->GetBendingReso2() / dz;
   // non bending plane
-  fNonBendingCoor = Hit1->GetNonBendingCoor();
   fNonBendingSlope = (fNonBendingCoor - Hit2->GetNonBendingCoor()) / dz;
   fNonBendingImpact = fNonBendingCoor - Hit1->GetZ() * fNonBendingSlope;
-  fNonBendingCoorReso2 = Hit1->GetNonBendingReso2();
   fNonBendingSlopeReso2 = ( Hit1->GetNonBendingReso2() +
 			    Hit2->GetNonBendingReso2() ) / dz / dz;
   fNonBendingCoorSlopeReso2 = Hit1->GetNonBendingReso2() / dz;
-  // "fInTrack" flag to "kFALSE"
-  fInTrack = kFALSE;
   return;
-}
-
-AliMUONSegment::AliMUONSegment (const AliMUONSegment& theMUONSegment)
-  : TObject(theMUONSegment)
-{
-// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-AliMUONSegment & AliMUONSegment::operator=(const AliMUONSegment& rhs)
-{
-// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }
 
   //__________________________________________________________________________

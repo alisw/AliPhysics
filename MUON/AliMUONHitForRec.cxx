@@ -32,17 +32,45 @@ ClassImp(AliMUONHitForRec) // Class implementation in ROOT context
 
   //__________________________________________________________________________
 AliMUONHitForRec::AliMUONHitForRec()
-  : TObject()
+  : TObject(),
+    fBendingCoor(0.),
+    fNonBendingCoor(0.),
+    fZ(0.),
+    fBendingReso2(0.),
+    fNonBendingReso2(0.),
+    fChamberNumber(0),
+    fDetElemId(0),
+    fHitNumber(0),
+    fTTRTrack(0),
+    fTrackRefSignal(0),
+    fIndexOfFirstSegment(0),
+    fNSegments(0),
+    fFirstTrackHitPtr(0x0),
+    fLastTrackHitPtr(0x0),
+    fNTrackHits(0)
 {
 /// Default Constructor
  
-    fFirstTrackHitPtr = 0;
-    fLastTrackHitPtr = 0;
 }
 
   //__________________________________________________________________________
 AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
-  : TObject()
+  : TObject(),
+    fBendingCoor(theGhit->Y()),
+    fNonBendingCoor(theGhit->X()),
+    fZ(theGhit->Z()),
+    fBendingReso2(0.),
+    fNonBendingReso2(0.),
+    fChamberNumber(0),
+    fDetElemId(0),
+    fHitNumber(0),
+    fTTRTrack(0),
+    fTrackRefSignal(0),
+    fIndexOfFirstSegment(-1),
+    fNSegments(0),
+    fFirstTrackHitPtr(0x0),
+    fLastTrackHitPtr(0x0),
+    fNTrackHits(0)
 {
 /// Constructor for AliMUONHitForRec from a track ref. hit.
 /// Fills the bending, non bending, and Z coordinates,
@@ -50,20 +78,12 @@ AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
 /// the track number (track ref. and not TH),
 /// and the chamber number (0...).
 
-  fBendingCoor = theGhit->Y();
-  fNonBendingCoor = theGhit->X();
-  fZ = theGhit->Z();
   // fTrack = theGhit->fTrack; ?????????
   fDetElemId = theGhit->UserId();
   if (fDetElemId) fChamberNumber = fDetElemId / 100 - 1;
   else fChamberNumber = AliMUONConstants::ChamberNumber(fZ);
   // other fields will be updated in
-  // AliMUONEventReconstructor::NewHitForRecFromTrackRef,
-  // except the following ones
-  fIndexOfFirstSegment = -1;
-  fNSegments = 0;
-  fFirstTrackHitPtr = fLastTrackHitPtr = NULL;
-  fNTrackHits = 0;
+  // AliMUONEventReconstructor::NewHitForRecFromTrackRef
   return;
 }
 
@@ -85,47 +105,52 @@ AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
 
   //__________________________________________________________________________
 AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
-  : TObject()
+  : TObject(),
+    fBendingCoor(theRawCluster->GetY(0)),
+    fNonBendingCoor(theRawCluster->GetX(0)),
+    fZ(0.),
+    fBendingReso2(0.),
+    fNonBendingReso2(0.),
+    fChamberNumber(0),
+    fDetElemId(theRawCluster->GetDetElemId()),
+    fHitNumber(0),
+    fTTRTrack(-1),
+    fTrackRefSignal(-1),
+    fIndexOfFirstSegment(-1),
+    fNSegments(0),
+    fFirstTrackHitPtr(0x0),
+    fLastTrackHitPtr(0x0),
+    fNTrackHits(0)
 {
 /// Constructor for AliMUONHitForRec from a raw cluster.
 /// Fills the bending and non bending coordinates.
 
-  fNonBendingCoor = theRawCluster->GetX(0);
-  fBendingCoor = theRawCluster->GetY(0);
-  fDetElemId = theRawCluster->GetDetElemId();
   // other fields will be updated in
   // AliMUONEventReconstructor::AddHitsForRecFromRawClusters,
-  // except the following ones
-  fTTRTrack = -1;
-  fTrackRefSignal = -1;
-  fIndexOfFirstSegment = -1;
-  fNSegments = 0;
-  fFirstTrackHitPtr = fLastTrackHitPtr = NULL;
-  fNTrackHits = 0;
   return;
 }
 
   //__________________________________________________________________________
 AliMUONHitForRec::AliMUONHitForRec (const AliMUONHitForRec& theMUONHitForRec)
-  :  TObject(theMUONHitForRec)
+  : TObject(theMUONHitForRec),
+    fBendingCoor(theMUONHitForRec.fBendingCoor),
+    fNonBendingCoor(theMUONHitForRec.fNonBendingCoor),
+    fZ(theMUONHitForRec.fZ),
+    fBendingReso2(theMUONHitForRec.fBendingReso2),
+    fNonBendingReso2(theMUONHitForRec.fNonBendingReso2),
+    fChamberNumber(theMUONHitForRec.fChamberNumber),
+    fDetElemId(theMUONHitForRec.fDetElemId),
+    fHitNumber(theMUONHitForRec.fHitNumber),
+    fTTRTrack(theMUONHitForRec.fTTRTrack),
+    fTrackRefSignal(theMUONHitForRec.fTrackRefSignal),
+    fIndexOfFirstSegment(theMUONHitForRec.fIndexOfFirstSegment),
+    fNSegments(theMUONHitForRec.fNSegments),
+    fFirstTrackHitPtr(theMUONHitForRec.fFirstTrackHitPtr),
+    fLastTrackHitPtr(theMUONHitForRec.fLastTrackHitPtr),
+    fNTrackHits(theMUONHitForRec.fNTrackHits)
 {
 /// Copy constructor
 
-  fBendingCoor = theMUONHitForRec.fBendingCoor;
-  fNonBendingCoor = theMUONHitForRec.fNonBendingCoor;
-  fZ = theMUONHitForRec.fZ;
-  fBendingReso2 = theMUONHitForRec.fBendingReso2;
-  fNonBendingReso2 = theMUONHitForRec.fNonBendingReso2;
-  fChamberNumber = theMUONHitForRec.fChamberNumber;
-  fDetElemId = theMUONHitForRec.fDetElemId;
-  fHitNumber = theMUONHitForRec.fHitNumber;
-  fTTRTrack = theMUONHitForRec.fTTRTrack;
-  fTrackRefSignal = theMUONHitForRec.fTrackRefSignal;
-  fIndexOfFirstSegment = theMUONHitForRec.fIndexOfFirstSegment;
-  fNSegments = theMUONHitForRec.fNSegments;
-  fFirstTrackHitPtr = theMUONHitForRec.fFirstTrackHitPtr;
-  fLastTrackHitPtr = theMUONHitForRec.fLastTrackHitPtr;
-  fNTrackHits = theMUONHitForRec.fNTrackHits;
 }
 
   //__________________________________________________________________________

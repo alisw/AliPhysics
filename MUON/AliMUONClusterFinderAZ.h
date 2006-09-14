@@ -40,11 +40,7 @@ public:
   void SetReco(Int_t iReco) { fReco = iReco; } // set reco flag
   void SetStart(Int_t iCath, Int_t iPad) { fCathBeg = iCath; fPadBeg[0] = fPadBeg[1] = 0; fPadBeg[fCathBeg] = iPad; } // start
  
-protected:
-  AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs);
-  AliMUONClusterFinderAZ& operator=(const AliMUONClusterFinderAZ& rhs);
-
- private:
+private:
   // Some constants
   static const Int_t fgkDim = 10000; ///< array size
   static const Double_t fgkCouplMin; ///< threshold on coupling 
@@ -73,6 +69,8 @@ protected:
 
   // Functions
 
+  AliMUONClusterFinderAZ(const AliMUONClusterFinderAZ& rhs);
+  AliMUONClusterFinderAZ& operator=(const AliMUONClusterFinderAZ& rhs);
   void   AddPad(Int_t cath, Int_t digit); // add a pad to the cluster
   Bool_t Overlap(Int_t cath, AliMUONDigit *dig); // check if the pad from one cathode overlaps with a pad in the cluster on the other cathode
   Bool_t Overlap(Float_t *xy1, Int_t iPad, Float_t *xy12, Int_t iSkip); // check if pads xy1 and iPad overlap and return overlap area

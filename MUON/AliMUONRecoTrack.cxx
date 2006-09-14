@@ -32,13 +32,25 @@
 ClassImp(AliMUONRecoTrack)
 
 //-------------------------------------------------------------------
+AliMUONRecoTrack::AliMUONRecoTrack() 
+  : TObject(), 
+    fSign(0), 
+    fFlag(0), 
+    fZvr(0.), 
+    fChi2r(0.) 
+{ 
+//Default constructor
+}
+
+//-------------------------------------------------------------------
 AliMUONRecoTrack::AliMUONRecoTrack(Bool_t active)
-  : TObject()
+  : TObject(),
+    fSign(0),
+    fFlag(0),
+    fZvr(0.),
+    fChi2r(0.)
 {
 //Constructor of AliMUONRecoTrack
-   fSign  = 0;
-   fZvr   = 0.0;
-   fChi2r = 0.0;
    if (active) {
    	for (Int_t axis=0; axis<3; axis++) {
       	fPr[axis] = 0.0;

@@ -75,7 +75,6 @@ class AliMUONTrackK : public AliMUONTrack {
 
  protected:
 
-  AliMUONTrackK (const AliMUONTrackK& source); // copy constructor
   AliMUONTrackK& operator=(const AliMUONTrackK& source); // assignment operator
 
  private:
@@ -119,6 +118,7 @@ class AliMUONTrackK : public AliMUONTrack {
 
   // Functions
 
+  AliMUONTrackK (const AliMUONTrackK& source); // copy constructor
   void EvalCovariance(Double_t dZ);
   void ParPropagation(Double_t zEnd);
   void WeightPropagation(Double_t zEnd, Bool_t smooth);

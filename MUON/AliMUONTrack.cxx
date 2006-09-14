@@ -58,26 +58,44 @@ ClassImp(AliMUONTrack) // Class implementation in ROOT context
 
 //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack()
-  : TObject() 
+  : TObject(),
+    fTrackReconstructor(0x0),
+    fTrackParamAtVertex(),
+    fTrackParamAtHit(0x0),
+    fHitForRecAtHit(0x0),
+    fTrackHitsPtr(0x0),
+    fNTrackHits(0),
+    fFitMCS(0),
+    fFitNParam(0),
+    fFitStart(0),
+    fFitFMin(-1.),
+    fMatchTrigger(kFALSE),
+    fChi2MatchTrigger(0.),
+    fTrackID(0)
 {
   // Default constructor
   fgFitter = 0;
-  fTrackReconstructor = 0;
-  fTrackHitsPtr = NULL;
-  fTrackParamAtHit = NULL;
-  fHitForRecAtHit = NULL;
-  fTrackID = 0;
 }
 
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegment, AliMUONTrackReconstructor* TrackReconstructor)
-  : TObject()
+  : TObject(),
+    fTrackReconstructor(TrackReconstructor),
+    fTrackParamAtVertex(),
+    fTrackParamAtHit(0x0),
+    fHitForRecAtHit(0x0),
+    fTrackHitsPtr(new TObjArray(10)),
+    fNTrackHits(0),
+    fFitMCS(0),
+    fFitNParam(3),
+    fFitStart(1),
+    fFitFMin(-1.),
+    fMatchTrigger(kFALSE),
+    fChi2MatchTrigger(0.),
+    fTrackID(0)
 {
   // Constructor from two Segment's
-  fTrackReconstructor = TrackReconstructor; // link back to TrackReconstructor
-  // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
-  fTrackHitsPtr = new TObjArray(10);
-  fNTrackHits = 0;
+
   if (BegSegment) { //AZ
     AddSegment(BegSegment); // add hits from BegSegment
     AddSegment(EndSegment); // add hits from EndSegment
@@ -86,40 +104,34 @@ AliMUONTrack::AliMUONTrack(AliMUONSegment* BegSegment, AliMUONSegment* EndSegmen
   }
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
   fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
-  // set fit conditions...
-  fFitMCS = 0;
-  fFitNParam = 3;
-  fFitStart = 1;
-  fFitFMin = -1.0;
-  fMatchTrigger = kFALSE;
-  fChi2MatchTrigger = 0;
-  fTrackID = 0;
   return;
 }
 
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack(AliMUONSegment* Segment, AliMUONHitForRec* HitForRec, AliMUONTrackReconstructor* TrackReconstructor)
-  : TObject()
+  : TObject(),
+    fTrackReconstructor(TrackReconstructor),
+    fTrackParamAtVertex(),
+    fTrackParamAtHit(0x0),
+    fHitForRecAtHit(0x0),
+    fTrackHitsPtr(new TObjArray(10)),
+    fNTrackHits(0),
+    fFitMCS(0),
+    fFitNParam(3),
+    fFitStart(1),
+    fFitFMin(-1.),
+    fMatchTrigger(kFALSE),
+    fChi2MatchTrigger(0.),
+    fTrackID(0)
 {
   // Constructor from one Segment and one HitForRec
-  fTrackReconstructor = TrackReconstructor; // link back to TrackReconstructor
-  // memory allocation for the TObjArray of pointers to reconstructed TrackHit's
-  fTrackHitsPtr = new TObjArray(10);
-  fNTrackHits = 0;
+
   AddSegment(Segment); // add hits from Segment
   AddHitForRec(HitForRec); // add HitForRec
   fTrackHitsPtr->Sort(); // sort TrackHits according to increasing Z
   SetTrackParamAtVertex(); // set track parameters at vertex
   fTrackParamAtHit = new TClonesArray("AliMUONTrackParam",10);
   fHitForRecAtHit = new TClonesArray("AliMUONHitForRec",10);
-  // set fit conditions...
-  fFitMCS = 0;
-  fFitNParam = 3;
-  fFitStart = 1;
-  fFitFMin = -1.0;
-  fMatchTrigger = kFALSE;
-  fChi2MatchTrigger = 0;
-  fTrackID = 0;
   return;
 }
 
@@ -148,17 +160,28 @@ AliMUONTrack::~AliMUONTrack()
 
   //__________________________________________________________________________
 AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
-  :  TObject(theMUONTrack)
+  : TObject(theMUONTrack),
+    fTrackReconstructor(theMUONTrack.fTrackReconstructor),
+    fTrackParamAtVertex(theMUONTrack.fTrackParamAtVertex),
+    fTrackParamAtHit(0x0),
+    fHitForRecAtHit(0x0),
+    fTrackHitsPtr(0x0),
+    fNTrackHits(theMUONTrack.fNTrackHits),
+    fFitMCS(theMUONTrack.fFitMCS),
+    fFitNParam(theMUONTrack.fFitNParam),
+    fFitStart(theMUONTrack.fFitStart),
+    fFitFMin(theMUONTrack.fFitFMin),
+    fMatchTrigger(theMUONTrack.fMatchTrigger),
+    fChi2MatchTrigger(theMUONTrack.fChi2MatchTrigger),
+    fTrackID(theMUONTrack.fTrackID)
 {
   //fTrackReconstructor = new AliMUONTrackReconstructor(*MUONTrack.fTrackReconstructor);
                                // is it right ?
 			       // NO, because it would use dummy copy constructor
 			       // and AliMUONTrack is not the owner of its TrackReconstructor 
-  fTrackReconstructor = theMUONTrack.fTrackReconstructor;
-  fTrackParamAtVertex = theMUONTrack.fTrackParamAtVertex;
+  //fTrackParamAtVertex = theMUONTrack.fTrackParamAtVertex;
 
  // necessary to make a copy of the objects and not only the pointers in TObjArray.
-  fTrackHitsPtr = 0;
   if (theMUONTrack.fTrackHitsPtr) {
     fTrackHitsPtr  =  new TObjArray(10);
     for (Int_t index = 0; index < (theMUONTrack.fTrackHitsPtr)->GetEntriesFast(); index++) {
@@ -169,7 +192,6 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
   }
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  fTrackParamAtHit = 0;
   if (theMUONTrack.fTrackParamAtHit) {
     fTrackParamAtHit  =  new TClonesArray("AliMUONTrackParam",10);
     for (Int_t index = 0; index < (theMUONTrack.fTrackParamAtHit)->GetEntriesFast(); index++) {
@@ -179,7 +201,6 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
   }  
 
   // necessary to make a copy of the objects and not only the pointers in TClonesArray.
-  fHitForRecAtHit = 0;
   if (theMUONTrack.fHitForRecAtHit) {
     fHitForRecAtHit  =  new TClonesArray("AliMUONHitForRec",10);
     for (Int_t index = 0; index < (theMUONTrack.fHitForRecAtHit)->GetEntriesFast(); index++) {
@@ -188,14 +209,6 @@ AliMUONTrack::AliMUONTrack (const AliMUONTrack& theMUONTrack)
     }
   }  
 
-  fNTrackHits       =  theMUONTrack.fNTrackHits;
-  fFitMCS           =  theMUONTrack.fFitMCS;
-  fFitNParam        =  theMUONTrack.fFitNParam;
-  fFitFMin          =  theMUONTrack.fFitFMin;
-  fFitStart         =  theMUONTrack.fFitStart;
-  fMatchTrigger     =  theMUONTrack.fMatchTrigger;
-  fChi2MatchTrigger =  theMUONTrack.fChi2MatchTrigger;
-  fTrackID          =  theMUONTrack.fTrackID;
 }
 
   //__________________________________________________________________________

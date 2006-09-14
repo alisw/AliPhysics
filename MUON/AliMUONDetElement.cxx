@@ -41,7 +41,15 @@ ClassImp(AliMUONDetElement) // Class implementation in ROOT context
 
 //_________________________________________________________________________
 AliMUONDetElement::AliMUONDetElement()
-  : TObject()
+  : TObject(),
+    fidDE(0),
+    fIndex(0),
+    fChamber(0),
+    fZ(0.),
+    fNHitsForRec(0),
+    fRawClus(0x0),
+    fHitsForRec(0x0),
+    fRecModel(0x0)
 {
 /// Default constructor
   for (Int_t i = 0; i < 2; i++) {
@@ -49,23 +57,25 @@ AliMUONDetElement::AliMUONDetElement()
     fDigits[i] = NULL;
     fSeg[i] = NULL;
   }
-  fRawClus = fHitsForRec = NULL;
-  fRecModel = NULL;
 } 
 
 //_________________________________________________________________________
 AliMUONDetElement::AliMUONDetElement(Int_t idDE, AliMUONDigit *dig, AliMUONClusterFinderAZ *recModel) 
-  : TObject()
+  : TObject(),
+    fidDE(idDE),
+    fIndex(0),
+    fChamber(idDE / 100 - 1),
+    fZ(0.),
+    fNHitsForRec(0),
+    fRawClus(0x0),
+    fHitsForRec(0x0),
+    fRecModel(recModel)
 {
 /// Constructor
-  fidDE = idDE;
-  fChamber = fidDE / 100 - 1;
   fDigits[0] = new TObjArray(10);
   fDigits[1] = new TObjArray(10);
   fRawClus = new TObjArray(10);
   fHitsForRec = new TClonesArray("AliMUONHitForRec",10);
-  fNHitsForRec = 0;
-  fRecModel = recModel;
   AliMUON *pMUON = (AliMUON*) gAlice->GetModule("MUON");
   AliMUONSegmentation *pSegmentation = pMUON->GetSegmentation();
   fSeg[0] = pSegmentation->GetModuleSegmentation(fChamber, 0);
@@ -87,25 +97,6 @@ AliMUONDetElement::~AliMUONDetElement()
   if (fRawClus) { fRawClus->Delete(); delete fRawClus; fRawClus = 0; }
   //if (fRawClus) { delete fRawClus; fRawClus = 0; }
   delete fHitsForRec; fHitsForRec = 0;
-}
-
-//_________________________________________________________________________
-AliMUONDetElement::AliMUONDetElement (const AliMUONDetElement& rhs)
-  : TObject(rhs)
-{
-/// Copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//________________________________________________________________________
-AliMUONDetElement & AliMUONDetElement::operator = (const AliMUONDetElement& rhs)
-{
-/// Assignement operator
-
-  if (this == &rhs) return *this;
-  AliFatal( "Not implemented.");
-  return *this;
 }
 
 //_________________________________________________________________________

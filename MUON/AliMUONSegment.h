@@ -56,10 +56,6 @@ class AliMUONSegment : public TObject
   Bool_t IsSortable() const { return kTRUE; }
   Int_t Compare(const TObject* Segment) const; // "Compare" function for sorting
 
- protected:
-  AliMUONSegment (const AliMUONSegment& AliMUONSegment); // copy constructor
-  AliMUONSegment& operator=(const AliMUONSegment& AliMUONSegment); // assignment operator
-
  private:
   AliMUONHitForRec* fHitForRecPtr1; ///< pointer to HitForRec in first chamber
   AliMUONHitForRec* fHitForRecPtr2; ///< pointer to HitForRec in second chamber
@@ -82,6 +78,9 @@ class AliMUONSegment : public TObject
   Double_t fZ;                ///< Z of the segment
   Bool_t fInTrack; ///< TRUE if segment belongs to one track
   
+  AliMUONSegment (const AliMUONSegment& AliMUONSegment); // copy constructor
+  AliMUONSegment& operator=(const AliMUONSegment& AliMUONSegment); // assignment operator
+
   ClassDef(AliMUONSegment, 1) // Segment for reconstruction in ALICE dimuon spectrometer
 };
 	

@@ -45,10 +45,6 @@ public:
                 /// Return reference muon tracks
   TClonesArray *GetMuonTrackRef() {return fMuonTrackRef;}
 
-protected:
-  AliMUONRecoCheck(const AliMUONRecoCheck& rhs);
-  AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
-
 private:
   
   AliRunLoader* fRunLoader;     ///< alice run loader 
@@ -58,7 +54,10 @@ private:
   Int_t fReconstructibleTracks; ///< number of reconstructible tracks 
   Int_t fRecoTracks;            ///< number of reconstructed tracks 
 
-  ClassDef(AliMUONRecoCheck, 0) //Utility class to check reconstruction
+  AliMUONRecoCheck(const AliMUONRecoCheck& rhs);
+  AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
+
+  ClassDef(AliMUONRecoCheck, 0)   //Utility class to check reconstruction
 };
 
 #endif

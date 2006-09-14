@@ -51,23 +51,34 @@ ClassImp(AliMUONClusterDrawAZ)
  
 //_____________________________________________________________________________
 AliMUONClusterDrawAZ::AliMUONClusterDrawAZ()
-  : TObject()
+  : TObject(),
+    fData(0x0),
+    fFind(0x0),
+    fnMu(0),
+    fEvent(0),
+    fChamber(0),
+    fidDE(0),
+    fDebug(0),
+    fModif(0)
 {
 /// Default constructor
-  fFind = NULL; fData = NULL;
   for (Int_t i=0; i<4; i++) fHist[i] = NULL;
 }
 
 //_____________________________________________________________________________
 AliMUONClusterDrawAZ::AliMUONClusterDrawAZ(AliMUONClusterFinderAZ *clusFinder)
-  : TObject()
+  : TObject(),
+    fData(0x0),
+    fFind(clusFinder),
+    fnMu(0),
+    fEvent(0),
+    fChamber(0),
+    fidDE(0),
+    fDebug(1),
+    fModif(0)
 {
 /// Constructor
-  fFind = clusFinder;
   for (Int_t i=0; i<4; i++) fHist[i] = NULL;
-  fDebug = 1; 
-  fEvent = fChamber = fidDE = 0;
-  fModif = 0; //0; 
   Init();
 }
 
@@ -76,28 +87,6 @@ AliMUONClusterDrawAZ::~AliMUONClusterDrawAZ()
 {
 /// Destructor
 }
-
-//_____________________________________________________________________________
-AliMUONClusterDrawAZ::AliMUONClusterDrawAZ(const AliMUONClusterDrawAZ& rhs)
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-
-//_____________________________________________________________________________
-AliMUONClusterDrawAZ&  
-AliMUONClusterDrawAZ::operator=(const AliMUONClusterDrawAZ& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-  return *this;  
-}    
 
 //_____________________________________________________________________________
 void AliMUONClusterDrawAZ::Init()

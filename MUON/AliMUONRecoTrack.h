@@ -26,7 +26,7 @@
 class AliMUONRecoTrack : public TObject 
 {
   public:
-    AliMUONRecoTrack() { }
+    AliMUONRecoTrack();
     AliMUONRecoTrack(Bool_t active);
     virtual        ~AliMUONRecoTrack() { }	//desctructor
     Double_t GetChi2r() const {return fChi2r;};
