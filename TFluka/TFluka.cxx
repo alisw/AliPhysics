@@ -2173,12 +2173,14 @@ void TFluka::AddParticlesToPdgDataBase() const
 
 Double_t GetPrimaryElectronKineticEnergy(Int_t i)
 {
+    Double_t ekin = -1.;
     // Returns kinetic energy of primary electron i
     if (i >= 0 && i < ALLDLT.nalldl) {
-	return ALLDLT.talldl[i];
+	ekin =  ALLDLT.talldl[i];
     } else {
 	Warning("GetPrimaryElectronKineticEnergy", 
 		"Primary electron index out of range %d %d \n", 
 		i, ALLDLT.nalldl);
     }
+    return ekin;
 }
