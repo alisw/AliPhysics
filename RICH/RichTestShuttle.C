@@ -22,7 +22,6 @@ void RichTestShuttle()
   
   AliCDBManager::Instance()->SetDefaultStorage("local://$HOME/tstCDB"); // initialize location of CDB
       
-      
   gSystem->Load("libTestShuttle.so"); 
   Int_t iRun=1;   
   AliTestShuttle* pShuttle = new AliTestShuttle(iRun,0,100000);   
@@ -32,19 +31,32 @@ void RichTestShuttle()
   delete pp;
   
     
-//read array of TF1 stored in CDB  
-  AliCDBEntry *pEntry=AliCDBManager::Instance()->Get("RICH/DCS/RefIdx",iRun);
-  if(!pEntry) {Printf("ERROR file is not retrieved!!!");return;}
+  AliCDBEntry *pTempEn=AliCDBManager::Instance()->Get("RICH/DCS/RadTemp",iRun);
+  if(!pTempEn) {Printf("ERROR file is not retrieved!!!");return;}
 
-  TObjArray *pFunLst=(TObjArray*)pEntry->GetObject(); TF1 *pRad0,*pRad1,*pRad2;  
+  TObjArray *pTempLst=(TObjArray*)pTempEn->GetObject(); TF1 *pRad0,*pRad1,*pRad2;  
   TCanvas *pC=new TCanvas; pC->Divide(3,3);
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
     if(iCh==6) pC->cd(1);  if(iCh==5) pC->cd(2);                          //this is just to see the input
     if(iCh==4) pC->cd(4);  if(iCh==3) pC->cd(5);  if(iCh==2) pC->cd(6);
                            if(iCh==1) pC->cd(8);  if(iCh==0) pC->cd(9); 
     pMG[iCh]->Draw("ap"); pMG[iCh]->GetXaxis()->SetTimeDisplay(kTRUE);
-    pRad0=(TF1*)pFunLst->At(iCh*3+0); pRad0->Draw("same");
-    pRad1=(TF1*)pFunLst->At(iCh*3+1); pRad1->Draw("same");
-    pRad2=(TF1*)pFunLst->At(iCh*3+2); pRad2->Draw("same");
+    pRad0=(TF1*)pTempLst->At(iCh*3+0); pRad0->Draw("same");
+    pRad1=(TF1*)pTempLst->At(iCh*3+1); pRad1->Draw("same");
+    pRad2=(TF1*)pTempLst->At(iCh*3+2); pRad2->Draw("same");
   }  
+  
+  AliCDBEntry *pIdxEn=AliCDBManager::Instance()->Get("RICH/DCS/MeanIdx",iRun);
+  if(!pIdxEn) {Printf("ERROR file is not retrieved!!!");return;}
+
+  TObjArray *pIdxLst=(TObjArray*)pIdxEn->GetObject(); TF1 *pRad0,*pRad1,*pRad2;  
+  TCanvas *pC=new TCanvas("c2","Ref Idx"); pC->Divide(3,3);
+  for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
+    if(iCh==6) pC->cd(1);  if(iCh==5) pC->cd(2);                          //this is just to see the input
+    if(iCh==4) pC->cd(4);  if(iCh==3) pC->cd(5);  if(iCh==2) pC->cd(6);
+                           if(iCh==1) pC->cd(8);  if(iCh==0) pC->cd(9); 
+    pRad0=(TF1*)pIdxLst->At(iCh*3+0); pRad0->Draw();  pRad0->GetXaxis()->SetTimeDisplay(kTRUE); pRad0->GetYaxis()->SetRangeUser(1.28,1.3);
+    pRad1=(TF1*)pIdxLst->At(iCh*3+1); pRad1->Draw("same");
+    pRad2=(TF1*)pIdxLst->At(iCh*3+2); pRad2->Draw("same");
+  }    
 }//Test()
