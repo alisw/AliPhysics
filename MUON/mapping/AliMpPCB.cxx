@@ -52,13 +52,21 @@ ClassImp(AliMpPCB)
 
 //_____________________________________________________________________________
 AliMpPCB::AliMpPCB() 
-  : TObject(), fId(""), 
-    fPadSizeX(0), fPadSizeY(0), 
-    fEnveloppeSizeX(0), fEnveloppeSizeY(0),
-    fXoffset(0),
-    fActiveXmin(0), fActiveXmax(0),
-    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0),
-    fNofPads(0)
+: TObject(), 
+  fId(""), 
+  fPadSizeX(0), 
+  fPadSizeY(0), 
+  fEnveloppeSizeX(0), 
+  fEnveloppeSizeY(0),
+  fXoffset(0),
+  fActiveXmin(0), 
+  fActiveXmax(0),
+  fIxmin(99999), 
+  fIxmax(0), 
+  fIymin(99999), 
+  fIymax(0),
+  fMotifs(),
+  fNofPads(0)
 {
       //
       // Default ctor.
@@ -68,13 +76,21 @@ AliMpPCB::AliMpPCB()
 //_____________________________________________________________________________
 AliMpPCB::AliMpPCB(const char* id, Double_t padSizeX, Double_t padSizeY,
 		   Double_t enveloppeSizeX, Double_t enveloppeSizeY)
-  : TObject(), fId(id), 
-    fPadSizeX(padSizeX), fPadSizeY(padSizeY), 
-    fEnveloppeSizeX(enveloppeSizeX), fEnveloppeSizeY(enveloppeSizeY),
-    fXoffset(0),
-    fActiveXmin(0), fActiveXmax(0),
-    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0),
-    fNofPads(0)
+: TObject(), 
+  fId(id), 
+  fPadSizeX(padSizeX),
+  fPadSizeY(padSizeY), 
+  fEnveloppeSizeX(enveloppeSizeX), 
+  fEnveloppeSizeY(enveloppeSizeY),
+  fXoffset(0),
+  fActiveXmin(0), 
+  fActiveXmax(0),
+  fIxmin(99999), 
+  fIxmax(0),
+  fIymin(99999), 
+  fIymax(0),
+  fMotifs(),
+  fNofPads(0)
 {
       //
       // Normal ctor. Must be fed with the PCB's name (id), the pad dimensions
@@ -84,21 +100,42 @@ AliMpPCB::AliMpPCB(const char* id, Double_t padSizeX, Double_t padSizeY,
 
 //_____________________________________________________________________________
 AliMpPCB::AliMpPCB(const AliMpPCB& o) 
-  : TObject(o),
-    fPadSizeX(0), fPadSizeY(0), 
-    fEnveloppeSizeX(0), fEnveloppeSizeY(0),
-    fXoffset(0),
-    fActiveXmin(0), fActiveXmax(0),
-    fIxmin(99999), fIxmax(0), fIymin(99999), fIymax(0),
-    fNofPads(0)
+: TObject(o),
+  fId(0),
+  fPadSizeX(0), 
+  fPadSizeY(0), 
+  fEnveloppeSizeX(0),
+  fEnveloppeSizeY(0),
+  fXoffset(0),
+  fActiveXmin(0), 
+  fActiveXmax(0),
+  fIxmin(99999), 
+  fIxmax(0), 
+  fIymin(99999), 
+  fIymax(0),
+  fMotifs(),
+  fNofPads(0)
 {
   o.Copy(*this);
 }
 
 //_____________________________________________________________________________
 AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
-: TObject(), fId(id), fPadSizeX(-1.0), fPadSizeY(-1.0),
-  fXoffset(0)
+: TObject(), 
+  fId(id), 
+  fPadSizeX(-1.0), 
+  fPadSizeY(-1.0),
+  fEnveloppeSizeX(ms->Dimensions().X()*2.0),
+  fEnveloppeSizeY(ms->Dimensions().Y()*2.0),
+  fXoffset(0.0),
+  fActiveXmin(0.0),
+  fActiveXmax(fEnveloppeSizeX),
+  fIxmin(0),
+  fIxmax(ms->GetMotifType()->GetNofPadsX()-1),
+  fIymin(0),
+  fIymax(ms->GetMotifType()->GetNofPadsY()-1),
+  fMotifs(),
+  fNofPads(ms->GetMotifType()->GetNofPads())
 {
   //
   // Very special ctor to be used by trigger stations only (and for a very
@@ -108,14 +145,7 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
   // This limitation might not be justified, except that it's all we need
   // so far ;-)
   //
-  fXoffset = 0.0;
-  fEnveloppeSizeX = ms->Dimensions().X()*2.0;
-  fEnveloppeSizeY = ms->Dimensions().Y()*2.0;
-  fActiveXmin = 0.0;
-  fActiveXmax = fEnveloppeSizeX;
-  fIxmin = fIymin = 0;
-  fIxmax = ms->GetMotifType()->GetNofPadsX()-1;
-  fIymax = ms->GetMotifType()->GetNofPadsY()-1;
+ 
   TVector2 position(ms->Dimensions());
   AliMpMotifPosition* mp = new AliMpMotifPosition(-1,ms,position);
   mp->SetLowIndicesLimit(AliMpIntPair(fIxmin,fIymin));
@@ -125,7 +155,6 @@ AliMpPCB::AliMpPCB(const char* id, AliMpMotifSpecial* ms)
 #else
   fMotifs.push_back(mp);
 #endif
-  fNofPads = ms->GetMotifType()->GetNofPads();
 }
 
 //_____________________________________________________________________________

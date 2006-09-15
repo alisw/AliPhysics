@@ -52,6 +52,8 @@ AliMpSlat::AliMpSlat()
   fNofPadsX(0), 
   fMaxNofPadsY(0),
   fManuMap(),
+  fPCBs(),
+  fPosition(),
   fNofPads(0)
 {
     //
@@ -69,11 +71,9 @@ AliMpSlat::AliMpSlat(const char* id, AliMpPlaneType bendingOrNonBending)
   fDY(0),
   fNofPadsX(0), 
   fMaxNofPadsY(0),
-//#ifdef WITH_ROOT
   fManuMap(kTRUE),
-//#else  
-//  fManuMap(),
-//#endif  
+  fPCBs(),
+  fPosition(),
   fNofPads(0)
 {
     //

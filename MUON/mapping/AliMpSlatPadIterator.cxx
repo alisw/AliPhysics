@@ -52,6 +52,7 @@ ClassImp(AliMpSlatPadIterator)
 AliMpSlatPadIterator::AliMpSlatPadIterator()
 : AliMpVPadIterator(),
 fkSlat(0),
+fDelegates(),
 fCurrentDelegate(0),
 fCurrentDelegateIndex(0)
 {
@@ -65,6 +66,7 @@ AliMpSlatPadIterator::AliMpSlatPadIterator(const AliMpSlat* slat,
 																					 const AliMpArea& area)
 : AliMpVPadIterator(),
 fkSlat(slat),
+fDelegates(),
 fCurrentDelegate(0),
 fCurrentDelegateIndex(0)
 {

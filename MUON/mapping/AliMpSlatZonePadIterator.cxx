@@ -50,6 +50,7 @@ fSlatSegmentation(new AliMpSlatSegmentation(slat)),
 fArea(area),
 fOffset(0.0,0.0),
 fStep(0.0,0.0),
+fCurrentPad(),
 fIsDone(kTRUE)
 {
   //
