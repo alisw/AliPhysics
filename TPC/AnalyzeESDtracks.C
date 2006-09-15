@@ -5,7 +5,7 @@
 /*
   .L AnalyzeESDtracks.C+
   .L AliGenInfo.C+
-  AnalyzESDtracks(567);   // process tracks
+  AnalyzeESDtracks(567);   // process tracks
   // Tracks are written to the file "TPCtracks.root"
   // Now yo can analyze it
   TFile fesd("AliESDs.root");
@@ -23,7 +23,7 @@
 .L AnalyzeESDtracks.C+
 .L AliGenInfo.C+
 
-//AnalyzESDtracks(567);
+//AnalyzeESDtracks(567);
 
 
 TFile fesd("AliESDs.root");
@@ -88,7 +88,8 @@ void FitSignals(TTree * treeB, TCut cut="Max-Median>150&&RMS06<2&&abs(Median-Mea
 void AnalyzeESDtracks(Int_t run){
   //
   // output redirect 
-  TTreeSRedirector  cstream("TPCtracks.root");
+  TTreeSRedirector *  pcstream = new TTreeSRedirector("TPCtracks.root");
+  TTreeSRedirector &cstream = *pcstream;
   //
   // dummy magnetic field
   AliMagF mag("aaa","aaa",1,1,10);
@@ -146,12 +147,13 @@ void AnalyzeESDtracks(Int_t run){
 	"\n";
     }  
   }
+  delete pcstream;
   //
   // Fit signal part
   //
   TFile fs("TPCsignal.root");
   TTree *treeB =(TTree*)fs.Get("SignalB");
-  FitSignals(treeB,"Max-Median>150&&RMS06<2.5");
+  //  FitSignals(treeB,"Max-Median>150&&RMS06<2.5");
 }
 
 
