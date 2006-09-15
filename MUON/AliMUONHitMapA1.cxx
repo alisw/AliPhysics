@@ -32,38 +32,27 @@
 ClassImp(AliMUONHitMapA1)
 
 AliMUONHitMapA1::AliMUONHitMapA1()
-  : AliHitMap()
+  : AliHitMap(),
+    fNpx(0),
+    fNpy(0),
+    fDigits(0),
+    fMaxIndex(0),
+    fHitMap(0)
 {
 /// Default constructor
-    fNpx          = 0;
-    fNpy          = 0;
-    fMaxIndex     = 0;
-    
-    fHitMap       = 0;
-    fDigits       = 0;
 }
 
 //________________________________________________________________________________
 AliMUONHitMapA1::AliMUONHitMapA1(Int_t npx, Int_t npy, TObjArray* dig)
-  : AliHitMap()
+  : AliHitMap(),
+    fNpx(npx),
+    fNpy(npy),
+    fDigits(dig),
+    fMaxIndex(2*(fNpx+1)*2*(fNpy+1)+2*fNpy),
+    fHitMap(new Int_t[fMaxIndex])
 {
 /// Standard constructor
-
-    fNpx = npx;
-    fNpy = npy;
-    fMaxIndex=2*(fNpx+1)*2*(fNpy+1)+2*fNpy;
-    
-    fHitMap = new Int_t[fMaxIndex];
-    fDigits =  dig;
     Clear();
-}
-//______________________________________________________________
-AliMUONHitMapA1::AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap)
-  : AliHitMap(hitMap)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
 }
 //_________________________________
 AliMUONHitMapA1::~AliMUONHitMapA1()
@@ -167,19 +156,3 @@ FlagType AliMUONHitMapA1::TestHit(Int_t ix, Int_t iy)
 	return kUnused;
     }
 }
-//________________________________________________________________________
-AliMUONHitMapA1 & AliMUONHitMapA1::operator = (const AliMUONHitMapA1 & rhs) 
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal( "Not implemented.");
-    
-  return *this;  
-}
-
-
-
-
-

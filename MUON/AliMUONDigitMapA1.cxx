@@ -44,26 +44,17 @@ AliMUONDigitMapA1::AliMUONDigitMapA1()
 }
 //________________________________________________________________________________
 AliMUONDigitMapA1::AliMUONDigitMapA1(Int_t idDE, Int_t npx, Int_t npy )
+  : fIdDE(idDE),
+    fNpx(npx),
+    fNpy(npy),
+    fDigits(0),
+    fMaxIndex(fNpx * fNpy + fNpx),
+    fHitMap(new Int_t[fMaxIndex])
 {
 /// Standard constructor
-
-   fIdDE = idDE;
-   fNpx = npx;
-   fNpy = npy;
-   fMaxIndex = fNpx * fNpy + fNpx ;
-    
-   fHitMap = new Int_t[fMaxIndex];
    Clear();
-
 }
-//______________________________________________________________
-AliMUONDigitMapA1::AliMUONDigitMapA1(const AliMUONDigitMapA1& hitMap)
-  : TObject(hitMap)
-{
-/// Protected copy constructor
 
-  AliFatal("Not implemented.");
-}
 //_________________________________
 AliMUONDigitMapA1::~AliMUONDigitMapA1()
 {
@@ -154,15 +145,4 @@ FlagType AliMUONDigitMapA1::TestHit(Int_t ix, Int_t iy) const
     } else {
 	return kUnused;
     }
-}
-//________________________________________________________________________
-AliMUONDigitMapA1 & AliMUONDigitMapA1::operator = (const AliMUONDigitMapA1 & rhs) 
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal( "Not implemented.");
-    
-  return *this;  
 }

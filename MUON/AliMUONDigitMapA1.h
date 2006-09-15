@@ -43,12 +43,11 @@ class AliMUONDigitMapA1 : public TObject
     // Test hit status
     virtual FlagType TestHit(Int_t ix, Int_t iy) const;
 
- protected:
+ private:
     AliMUONDigitMapA1(const AliMUONDigitMapA1 & hitMap);
     // Assignment operator
     AliMUONDigitMapA1& operator = (const AliMUONDigitMapA1& rhs);
-    
- private:
+
     // Check index
     Int_t CheckedIndex(Int_t ix, Int_t iy) const;
  private:

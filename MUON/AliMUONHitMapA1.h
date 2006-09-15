@@ -42,12 +42,11 @@ class AliMUONHitMapA1 : public AliHitMap
     // Test hit status
     virtual FlagType TestHit(Int_t ix, Int_t iy);
 
- protected:
+ private:
     AliMUONHitMapA1(const AliMUONHitMapA1 & hitMap);
     // Assignment operator
     AliMUONHitMapA1& operator = (const AliMUONHitMapA1& rhs);
-    
- private:
+
     // Check index
     Int_t CheckedIndex(Int_t ix, Int_t iy) const;
  private:
