@@ -805,7 +805,7 @@ void AliVZEROv7::StepManager()
       lightYield = fV0ALightYield;
       lightAttenuation = fV0ALightAttenuation;
       nMeters = fV0AnMeters;
-      fibToPhot = fV0CFibToPhot;
+      fibToPhot = fV0AFibToPhot;
     }
     nPhotonsInStep  = Int_t(destep / (lightYield *1e-9) );	
     nPhotonsInStep  = gRandom->Poisson(nPhotonsInStep);
