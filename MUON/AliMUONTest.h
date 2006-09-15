@@ -51,11 +51,10 @@ class AliMUONTest : public  TObject
     //
     void DetElemTransforms() const;
 
-  protected:
+  private:  
     AliMUONTest(const AliMUONTest& rhs);
     AliMUONTest& operator = (const AliMUONTest& rhs);
-    
-  private:  
+
     // methods
     void BuildWithMUON(const TString& configMacro);
     void BuildWithoutMUON(const TString& option);

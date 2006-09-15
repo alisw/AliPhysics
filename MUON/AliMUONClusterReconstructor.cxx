@@ -51,28 +51,6 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONData* data)
   fDigitsCath1->SetOwner(kTRUE);
 }
 
-//_______________________________________________________________________
-AliMUONClusterReconstructor::AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs)
-  : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//_______________________________________________________________________
-AliMUONClusterReconstructor & 
-AliMUONClusterReconstructor::operator=(const AliMUONClusterReconstructor& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}
-
 //__________________________________________________________________________
 AliMUONClusterReconstructor::~AliMUONClusterReconstructor(void)
 {

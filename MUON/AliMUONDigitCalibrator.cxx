@@ -57,21 +57,6 @@ AliMUONDigitCalibrator::AliMUONDigitCalibrator(AliMUONData* muonData,
 }
 
 //_____________________________________________________________________________
-AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONDigitCalibrator&)
-: TTask()
-{
-  AliFatal("Implement me if needed");
-}
-
-//_____________________________________________________________________________
-AliMUONDigitCalibrator& 
-AliMUONDigitCalibrator::operator=(const AliMUONDigitCalibrator&)
-{
-  AliFatal("Implement me if needed");
-  return *this;
-}
-
-//_____________________________________________________________________________
 AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 {
   //

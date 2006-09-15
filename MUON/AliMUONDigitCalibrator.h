@@ -27,11 +27,10 @@ public:
   
   virtual void Exec(Option_t*);
 
-protected:
-  AliMUONDigitCalibrator(const AliMUONDigitCalibrator& other);
-  AliMUONDigitCalibrator& operator=(const AliMUONDigitCalibrator& other);
-       
 private:    
+    AliMUONDigitCalibrator(const AliMUONDigitCalibrator& other);
+    AliMUONDigitCalibrator& operator=(const AliMUONDigitCalibrator& other);
+
     AliMUONData* fData;                       //!< MUON data 
     AliMUONCalibrationData* fCalibrationData; //!< Calibration data
   

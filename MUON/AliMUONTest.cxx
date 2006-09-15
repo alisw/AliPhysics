@@ -85,32 +85,11 @@ AliMUONTest::AliMUONTest()
 }
 
 //_____________________________________________________________________________
-AliMUONTest::AliMUONTest(const AliMUONTest& rhs)
- : TObject(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
-}
-
-//_____________________________________________________________________________
 AliMUONTest::~AliMUONTest()
 {
 /// Destructor
 
   delete fCanvas;
-}
-
-//_____________________________________________________________________________
-AliMUONTest& AliMUONTest::operator = (const AliMUONTest& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
 }
 
 //

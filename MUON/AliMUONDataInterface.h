@@ -109,11 +109,9 @@ class AliMUONDataInterface : public TObject
   // Returns the currently selected cathode in TreeD.
   Int_t   CurrentDCathode() const { return fCathode;     };
   
- protected:
+ private:
   AliMUONDataInterface(const AliMUONDataInterface& rhs);
   AliMUONDataInterface& operator=(const AliMUONDataInterface& rhs);
-  
- private:
   
   Bool_t FetchMuonLoader(TString filename, TString foldername);
   Bool_t LoadLoaders(TString filename, TString foldername);

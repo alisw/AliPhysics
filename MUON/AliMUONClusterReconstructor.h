@@ -35,12 +35,11 @@ class AliMUONClusterReconstructor : public TObject
   void SetRecoModel(AliMUONClusterFinderVS* rec);
 
  protected:
-  AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
-  AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
-
   void ClusterizeOneDE(Int_t detElemId);
   
  private:
+  AliMUONClusterReconstructor (const AliMUONClusterReconstructor& rhs); // copy constructor
+  AliMUONClusterReconstructor& operator=(const AliMUONClusterReconstructor& rhs); // assignment operator
 
   AliMUONData*            fMUONData;           //!< Data container for MUON subsystem 
   AliMUONClusterFinderVS* fRecModel;           //!< cluster recontruction model
