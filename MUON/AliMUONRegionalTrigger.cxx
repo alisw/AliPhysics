@@ -41,15 +41,15 @@ AliMUONRegionalTrigger::AliMUONRegionalTrigger()
 }
 //----------------------------------------------------------------------
 AliMUONRegionalTrigger::AliMUONRegionalTrigger(const AliMUONRegionalTrigger& theMUONRegionalTrig)
-  : TObject(theMUONRegionalTrig)
+  : TObject(theMUONRegionalTrig),
+    fId(theMUONRegionalTrig.fId),
+    fLocalMask(theMUONRegionalTrig.fLocalMask),  
+    fOutput(theMUONRegionalTrig.fOutput)           
 {
 /// Copy constructor (useful for TClonesArray)
 
-  fId             = theMUONRegionalTrig.fId;
-  fLocalMask      = theMUONRegionalTrig.fLocalMask;   
   fLocalOutput[0] = theMUONRegionalTrig.fLocalOutput[0];
   fLocalOutput[1] = theMUONRegionalTrig.fLocalOutput[1];
-  fOutput         = theMUONRegionalTrig.fOutput;           
  
 }
 //----------------------------------------------------------------------

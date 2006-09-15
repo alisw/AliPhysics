@@ -67,9 +67,25 @@ ClassImp(AliMUONDataInterface)
 /// \endcond
 
 AliMUONDataInterface::AliMUONDataInterface()
-	: TObject(), fData(NULL, "MUON", "MUON")
+	: TObject(), 
+	  fCreatedRunLoader(kFALSE),
+	  fHitAddressSet(kFALSE),
+	  fSDigitAddressSet(kFALSE),
+	  fDigitAddressSet(kFALSE),
+	  fClusterAddressSet(kFALSE),
+	  fTriggerAddressSet(kFALSE),
+	  fRecTracksAddressSet(kFALSE),
+	  fRunloader(0x0),
+	  fMuonloader(0x0),
+	  fData(0x0, "MUON", "MUON"),
+	  fFilename(),
+	  fFoldername(),
+	  fEventnumber(-1),
+	  fTrack(-1),
+	  fSCathode(-1),
+	  fCathode(-1)
 {
-/// Set all internal pointers to NULL and indices to -1.
+/// Set all internal pointers to 0x0 and indices to -1.
 
 	Reset();
 }

@@ -49,48 +49,39 @@ ClassImp(AliMUONDigitizer)
 //___________________________________________
 AliMUONDigitizer::AliMUONDigitizer() : 
 	AliDigitizer(),
+	fRunLoader(0),
+	fGime(0),
+	fMUON(0),
+	fMUONData(0),
+	fTrigDec(0),
 	fHitMap(0),
 	fTDList(0),
 	fTDCounter(0),
 	fMask(0),
-	fSignal(0)
+	fSignal(0),
+	fSegmentation(0)
 {
 /// Default constructor.
 /// Initializes all pointers to NULL.
-
-	fRunLoader = NULL;
-	fGime = NULL;
-	fMUON = NULL;
-	fMUONData = NULL;
-	fTrigDec = NULL;
 }
 
 //___________________________________________
 AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) : 
 	AliDigitizer(manager),
+	fRunLoader(0),
+	fGime(0),
+	fMUON(0),
+	fMUONData(0),
+	fTrigDec(0),
 	fHitMap(0),
 	fTDList(0),
 	fTDCounter(0),
 	fMask(0),
-	fSignal(0)
+	fSignal(0),
+	fSegmentation(0)
 {
 /// Constructor which should be used rather than the default constructor.
 /// Initializes all pointers to NULL.
-
-	fRunLoader = NULL;
-	fGime = NULL;
-	fMUON = NULL;
-	fMUONData = NULL;
-	fTrigDec = NULL;
-}
-
-//___________________________________________
-AliMUONDigitizer::AliMUONDigitizer(const AliMUONDigitizer& rhs)
-  : AliDigitizer(rhs)
-{
-/// Protected copy constructor
-
-  AliFatal("Not implemented.");
 }
 
 //___________________________________________
@@ -105,19 +96,6 @@ AliMUONDigitizer::~AliMUONDigitizer()
     delete fTrigDec;
 }
 
-//-------------------------------------------------------------------
-AliMUONDigitizer&  
-AliMUONDigitizer::operator=(const AliMUONDigitizer& rhs)
-{
-/// Protected assignement operator
-
-  if (this == &rhs) return *this;
-
-  AliFatal("Not implemented.");
-    
-  return *this;  
-}    
-         
 //------------------------------------------------------------------------
 Bool_t AliMUONDigitizer::Init()
 {

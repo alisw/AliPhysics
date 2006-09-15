@@ -48,9 +48,6 @@ public:
 	virtual void Exec(Option_t* option = 0);
 
 protected:
-        AliMUONDigitizer(const AliMUONDigitizer& rhs);
-        AliMUONDigitizer& operator=(const AliMUONDigitizer& rhs);
-
 	/* Digitizers inheriting from AliMUONDigitizer should implement this abstract method 
 	   so that TransientDigit objects are generated and put onto the fTDList.
 	   The method would be implemented as some loop over the input stream. The data can be
@@ -189,6 +186,8 @@ protected:
 
 
 private:
+        AliMUONDigitizer(const AliMUONDigitizer& rhs);
+        AliMUONDigitizer& operator=(const AliMUONDigitizer& rhs);
 
 	ClassDef(AliMUONDigitizer, 1)   // MUON merging/digitization
 };    
