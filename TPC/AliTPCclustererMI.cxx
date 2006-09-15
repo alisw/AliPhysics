@@ -901,7 +901,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	"Sector="<<uid[0]<<
 	"Row="<<uid[1]<<
 	"Pad="<<uid[2]<<
-	"Graph.="<<graph<<
+	"Graph="<<graph<<
 	"Max="<<max<<
 	"MaxPos="<<maxPos<<
 	//
@@ -918,7 +918,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
 	"Sector="<<uid[0]<<
 	"Row="<<uid[1]<<
 	"Pad="<<uid[2]<<
-	"Graph.="<<graph<<
+	"Graph="<<graph<<
 	"Max="<<max<<
 	"MaxPos="<<maxPos<<	
 	//
