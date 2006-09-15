@@ -227,6 +227,10 @@ public:
     x=fRICHmipX; y=fRICHmipY;
   }
   Bool_t IsRICH()  const {return fFlags&kRICHpid;}
+  
+  Int_t GetEMCALcluster() {return fEMCALindex;}
+  void SetEMCALcluster(Int_t index) {fEMCALindex=index;}
+  Bool_t IsEMCAL() const {return fFlags&kEMCALmatch;}
 
   void   SetTrackPointArray(AliTrackPointArray *points);
   const AliTrackPointArray *GetTrackPointArray() const; 
@@ -248,6 +252,7 @@ public:
     kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
     kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
     kRICHpid=0x20000,
+    kEMCALmatch=0x40000,
     kTRDbackup=0x80000,
     kTRDStop=0x20000000,
     kESDpid=0x40000000,
@@ -255,7 +260,8 @@ public:
   }; 
   enum {
     kNPlane = 6,
-    kNSlice = 3
+    kNSlice = 3,
+    kEMCALNoMatch = -999999999
   };
 protected:
   
@@ -337,6 +343,9 @@ protected:
   Float_t fRICHdy;         // y of the track impact minus y of the MIP
   Float_t fRICHmipX;       // x of the MIP in LORS
   Float_t fRICHmipY;       // y of the MIP in LORS
+  
+  // EMCAL related track information
+  Int_t fEMCALindex;       // index of associated EMCAL cluster (AliESDCaloCluster)
 
   AliTrackPointArray *fPoints;// Array of track space points in the global frame
 
@@ -346,7 +355,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,30)  //ESDtrack 
+  ClassDef(AliESDtrack,31)  //ESDtrack 
 };
 
 #endif 

@@ -105,6 +105,7 @@ AliESDtrack::AliESDtrack() :
   fRICHdy(-1),
   fRICHmipX(-1),
   fRICHmipY(-1),
+  fEMCALindex(kEMCALNoMatch),
   fPoints(0),
   fFriendTrack(new AliESDfriendTrack())
 {
@@ -183,6 +184,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fRICHdy(track.fRICHdy),
   fRICHmipX(track.fRICHmipX),
   fRICHmipY(track.fRICHmipY),
+  fEMCALindex(track.fEMCALindex),
   fPoints(0),
   fFriendTrack(0)
 {
@@ -333,6 +335,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fRICHdy = 0;      
   fRICHmipX = 0;
   fRICHmipY = 0;
+  fEMCALindex = kEMCALNoMatch;
 
   delete fFriendTrack; fFriendTrack = 0;
   delete fPoints; fPoints = 0;
