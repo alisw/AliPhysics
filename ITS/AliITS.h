@@ -21,6 +21,7 @@ class TTree;
 class AliITSpListItem;
 class AliITSsimulation;
 class AliITSsegmentation;
+
 class AliITSCalibration;
 class AliITShit;
 class AliITSgeom;
@@ -144,7 +145,9 @@ class AliITS : public AliDetector {
 
     //===================== Raw Data IO ================================
     // Write digits into raw data format
-    virtual void Digits2Raw();
+    virtual void   Digits2Raw();
+    virtual Bool_t Raw2SDigits(AliRawReader*);
+    
 
  protected:
     static const Int_t fgkNTYPES=3; //number of detector types

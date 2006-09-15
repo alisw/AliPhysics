@@ -85,6 +85,14 @@ the AliITS class.
 #include "AliMC.h"
 #include "AliITSDigitizer.h"
 #include "AliITSRecPoint.h"
+#include "AliITSsegmentationSPD.h"
+#include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSSD.h"
+#include "AliITSRawStreamSPD.h"
+#include "AliITSRawStreamSSD.h"
+#include "AliITSRawStreamSDD.h"
+#include "AliITSresponseSDD.h" 
+#include "AliRawReader.h"
 #include "AliRun.h"
 #include "AliLog.h"
 #include "AliITSInitGeometry.h"
@@ -1142,6 +1150,143 @@ AliLoader* AliITS::MakeLoader(const char* topfoldername){
     return fLoader;
 }
 
+Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
+{
+  //
+  // Converts RAW data to SDigits
+  //
+  // Get TreeS
+  //
+    Int_t last   = -1;
+    Int_t size   = GetITSgeom()->GetIndexMax();
+    TClonesArray** modA = new TClonesArray*[size];
+    for (Int_t mod = 0; mod < size; mod++) modA[mod] = new TClonesArray("AliITSpListItem", 10000);
+    
+    AliLoader* loader =  (gAlice->GetRunLoader())->GetLoader("ITSLoader");
+    if (!loader)
+    {
+	Error("Open","Can not get ITS loader from Run Loader");
+	return kFALSE;
+    }
+
+    TTree* tree = 0;
+    tree = loader->TreeS();
+    if (!tree)
+    {
+	loader->MakeTree("S");
+	tree = loader->TreeS();
+    }
+    //
+    // Array for SDigits
+    // 
+    TClonesArray aSDigits("AliITSpListItem",10000), *itsSDigits=&aSDigits;
+    Int_t bufsize = 32000;
+    tree->Branch("ITS", &itsSDigits, bufsize);
+    Int_t npx = 0;
+    //
+    // SPD
+    //
+    AliITSsegmentationSPD* segSPD = (AliITSsegmentationSPD*) fDetTypeSim->GetSegmentationModel(0);
+    npx = segSPD->Npx();
+    Double_t thr, sigma; 
+    
+    AliITSRawStreamSPD inputSPD(rawReader);
+    while(1){
+	Bool_t next  = inputSPD.Next();
+	if (!next) break;
+
+	Int_t module = inputSPD.GetModuleID();
+	Int_t column = inputSPD.GetColumn();
+	Int_t row    = inputSPD.GetRow();
+	Int_t index  = npx * column + row;
+
+	if (module >= size) continue;
+ 
+	last = (modA[module])->GetEntries();
+	TClonesArray& dum = *modA[module];
+	fDetTypeSim->GetCalibrationModel(module)->Thresholds(thr,sigma);
+	thr += 1.;
+	new (dum[last]) AliITSpListItem(-1, -1, module, index, thr);
+    }
+    rawReader->Reset();
+
+    //
+    // SDD
+    // 
+    AliITSsegmentationSDD* segSDD = (AliITSsegmentationSDD*) fDetTypeSim->GetSegmentationModel(1);
+    npx = segSDD->Npx();
+    AliITSRawStreamSDD inputSDD(rawReader);
+    while(1){
+	Bool_t next  = inputSDD.Next();
+	if (!next) break;
+
+	Int_t module = inputSDD.GetModuleID();
+	Int_t anode  = inputSDD.GetAnode();
+	Int_t time   = inputSDD.GetTime();
+	Int_t signal = inputSDD.GetSignal();
+	Int_t index  = npx * anode + time;
+
+	if (module >= size) continue;
+	// 8bit -> 10 bit
+	AliITSresponseSDD *resSDD = (AliITSresponseSDD*) fDetTypeSim->GetResponse(1);
+	Int_t signal10 = resSDD->Convert8to10(signal);  // signal is a 8 bit value (if the compression is active)
+	
+	last = modA[module]->GetEntries();
+	TClonesArray& dum = *modA[module];
+	new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal10));
+	((AliITSpListItem*) dum.At(last))->AddSignalAfterElect(module, index, Double_t(signal10));
+	
+    }
+    rawReader->Reset();
+
+    //
+    // SSD
+    // 
+    AliITSsegmentationSSD* segSSD = (AliITSsegmentationSSD*) fDetTypeSim->GetSegmentationModel(2);
+    npx = segSSD->Npx();
+    AliITSRawStreamSSD inputSSD(rawReader);
+    while(1){
+	Bool_t next  = inputSSD.Next();
+	if (!next) break;
+
+	Int_t module  = inputSSD.GetModuleID();
+	Int_t side    = inputSSD.GetSideFlag();
+	Int_t strip   = inputSSD.GetStrip();
+	Int_t signal  = inputSSD.GetSignal();
+	Int_t index  = npx * side + strip;
+
+	if (module >= size) continue;
+	
+	last = modA[module]->GetEntries();
+	TClonesArray& dum = *modA[module];
+	new (dum[last]) AliITSpListItem(-1, -1, module, index, Double_t(signal));
+    }
+    rawReader->Reset();
+     AliITSpListItem* sdig = 0;
+    
+    for (Int_t mod = 0; mod < size; mod++)
+    {
+	Int_t nsdig =  modA[mod]->GetEntries();
+	for (Int_t ie = 0; ie < nsdig; ie++) {
+	    sdig = (AliITSpListItem*) (modA[mod]->At(ie));
+	    new (aSDigits[ie]) AliITSpListItem(-1, -1, mod, sdig->GetIndex(), sdig->GetSignal());
+	    Float_t sig = sdig->GetSignalAfterElect();
+	    if (sig > 0.) {
+		sdig = (AliITSpListItem*)aSDigits[ie];
+		sdig->AddSignalAfterElect(mod, sdig->GetIndex(), Double_t(sig));
+	    }
+	}
+	
+	tree->Fill();
+	aSDigits.Clear();
+	modA[mod]->Clear();
+    }
+    loader->WriteSDigits("OVERWRITE");    
+    delete modA;
+    return kTRUE;
+}
+
+
 //______________________________________________________________________
 void AliITS::UpdateInternalGeometry(){
 
@@ -1156,3 +1301,4 @@ void AliITS::UpdateInternalGeometry(){
   geom->Write(0,kOverwrite);
 
 }
+
