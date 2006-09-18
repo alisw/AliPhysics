@@ -38,7 +38,7 @@ public:
   virtual void SetInput(TTree * tree);  // set input tree with digits    
   virtual void SetOutput(TTree * tree); //set output tree with 
 private:
-  Bool_t IsMaximum(Float_t k, Int_t max, const Float_t *bins); 
+  Bool_t IsMaximum(Float_t k, Int_t max, const Float_t *bins) const; 
   void MakeCluster2(Int_t k,Int_t max,Float_t *bins,UInt_t m,
    AliTPCclusterMI &c);  
   void MakeCluster(Int_t k,Int_t max,Float_t *bins,UInt_t m,
@@ -57,9 +57,9 @@ private:
   Float_t * fBins;       //!digits array
   Float_t * fResBins;    //!digits array with res. after 1 finder
   Int_t fLoop;         //loop - cf in 2 loops
-  Int_t fMaxBin;
-  Int_t fMaxTime;
-  Int_t fMaxPad;
+  Int_t fMaxBin;       //current ( for current sector)  maximal bin
+  Int_t fMaxTime;      //current ( for current sector)  maximal time
+  Int_t fMaxPad;       //current ( for current sector)  maximal pad
   Int_t fSector;      //!current sector
   Int_t fRow;         //!current row
   Float_t fSign;      //!current sign 
@@ -83,7 +83,7 @@ private:
   ClassDef(AliTPCclustererMI,1)  // Time Projection Chamber digits
 };
 
-inline Bool_t AliTPCclustererMI::IsMaximum(Float_t q,Int_t max,const Float_t *bins){
+inline Bool_t AliTPCclustererMI::IsMaximum(Float_t q,Int_t max,const Float_t *bins) const {
   //is this a local maximum ?
   if (bins[-max] >= q) return kFALSE;
   if (bins[-1  ] >= q) return kFALSE; 

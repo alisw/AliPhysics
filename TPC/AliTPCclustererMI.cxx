@@ -80,6 +80,11 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fDebugStreamer(0),
   fRecoParam(0)
 {
+  //
+  // COSNTRUCTOR
+  // param     - tpc parameters for given file
+  // recoparam - reconstruction parameters 
+  //
   fIsOldRCUFormat = kFALSE;
   fInput =0;
   fOutput=0;
@@ -154,6 +159,12 @@ Float_t  AliTPCclustererMI::GetSigmaZ2(Int_t iz){
 void AliTPCclustererMI::MakeCluster(Int_t k,Int_t max,Float_t *bins, UInt_t /*m*/,
 AliTPCclusterMI &c) 
 {
+  //
+  //  k    - Make cluster at position k  
+  //  bins - 2 D array of signals mapped to 1 dimensional array - 
+  //  max  - the number of time bins er one dimension
+  //  c    - refernce to cluster to be filled
+  //
   Int_t i0=k/max;  //central pad
   Int_t j0=k%max;  //central time bin
 
@@ -981,8 +992,8 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   Int_t    cemaxpos= 0;
   Double_t ceThreshold=5.*cerms;
   Double_t ceSumThreshold=8.*cerms;
-  const Int_t    cemin=5;  // range for the analysis of the ce signal +- channels from the peak
-  const Int_t    cemax=5;
+  const Int_t    kCemin=5;  // range for the analysis of the ce signal +- channels from the peak
+  const Int_t    kCemax=5;
   for (Int_t i=nchannels-2; i>1; i--){
     if ( (dsignal[i]-mean06)>ceThreshold && dsignal[i]>=dsignal[i+1] && dsignal[i]>=dsignal[i-1] ){
       cemaxpos=i;
@@ -990,7 +1001,7 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
     }
   }
   if (cemaxpos!=0){
-      for (Int_t i=cemaxpos-cemin; i<cemaxpos+cemax; i++){
+      for (Int_t i=cemaxpos-kCemin; i<cemaxpos+kCemax; i++){
 	  if (i>0 && i<nchannels&&dsignal[i]- cemean>0){
 	      Double_t val=dsignal[i]- cemean;
 	      ceTime+=val*dtime[i];
