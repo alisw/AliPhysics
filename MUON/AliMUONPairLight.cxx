@@ -58,7 +58,7 @@ AliMUONPairLight::AliMUONPairLight() :
 AliMUONPairLight::AliMUONPairLight(AliMUONPairLight &dimuCopy) 
   : TObject(dimuCopy),
     fMu0(dimuCopy.fMu0),
-    fMu1(dimuCopy.fMu0), 
+    fMu1(dimuCopy.fMu1), 
     fCreationProcess(dimuCopy.fCreationProcess),
     fIsCorrelated(dimuCopy.fIsCorrelated), 
     fCauseOfCorrelation (dimuCopy.fCauseOfCorrelation),
