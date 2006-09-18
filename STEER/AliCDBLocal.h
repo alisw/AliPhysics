@@ -22,12 +22,15 @@ public:
 	virtual Bool_t IsReadOnly() const {return kFALSE;};
 	virtual Bool_t HasSubVersion() const {return kTRUE;};
 	virtual Bool_t Contains(const char* path) const;
+	virtual Int_t  GetLatestVersion(const char* path, Int_t run);
+	virtual Int_t  GetLatestSubVersion(const char* path, Int_t run, Int_t version=-1);
+	virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const;
 
 protected:
 
-	virtual AliCDBEntry* GetEntry(const AliCDBId& queryId);
-        virtual TList* GetEntries(const AliCDBId& queryId);
-        virtual Bool_t PutEntry(AliCDBEntry* entry);
+	virtual AliCDBEntry*    GetEntry(const AliCDBId& queryId);
+        virtual TList* 		GetEntries(const AliCDBId& queryId);
+        virtual Bool_t 		PutEntry(AliCDBEntry* entry);
 	virtual TList* 		GetIdListFromFile(const char* fileName);
 
 private:
@@ -39,8 +42,6 @@ private:
 	
 	Bool_t FilenameToId(const char* filename, AliCDBRunRange& runRange, 
 			Int_t& version, Int_t& subVersion);
-	Bool_t IdToFilename(const AliCDBRunRange& runRange, Int_t version, 
-			Int_t subVersion, TString& filename);
 
 	Bool_t PrepareId(AliCDBId& id);
 	Bool_t GetId(const AliCDBId& query, AliCDBId& result);

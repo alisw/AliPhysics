@@ -82,7 +82,7 @@ public:
   // CDB storage activation
   void InitCDBStorage();
   void SetDefaultStorage(const char* uri);
-  void SetSpecificStorage(const char* detName, const char* uri);    
+  void SetSpecificStorage(const char* calibType, const char* uri);
 
   Bool_t SetRunNumber();
 

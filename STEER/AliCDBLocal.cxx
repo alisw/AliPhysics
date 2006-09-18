@@ -98,35 +98,29 @@ Bool_t AliCDBLocal::FilenameToId(const char* filename, AliCDBRunRange& runRange,
 
 
 //_____________________________________________________________________________
-Bool_t AliCDBLocal::IdToFilename(const AliCDBRunRange& runRange, Int_t version,
-	Int_t subVersion, TString& filename) {
+Bool_t AliCDBLocal::IdToFilename(const AliCDBId& id, TString& filename) const {
 // build file name from AliCDBId data (run range, version, subVersion)
 
-	if (!runRange.IsValid()) {
+	if (!id.GetAliCDBRunRange().IsValid()) {
 		AliDebug(2,Form("Invalid run range <%d, %d>.", 
-			runRange.GetFirstRun(), runRange.GetLastRun()));
+			id.GetFirstRun(), id.GetLastRun()));
 		return kFALSE;
 	}
 
-	if (version < 0) {
-		AliDebug(2,Form("Invalid version <%d>.", version));
+	if (id.GetVersion() < 0) {
+		AliDebug(2,Form("Invalid version <%d>.", id.GetVersion()));
                 return kFALSE;
 	}
 
-	if (subVersion < 0) {
-		AliDebug(2,Form("Invalid subversion <%s>.", subVersion));
+	if (id.GetSubVersion() < 0) {
+		AliDebug(2,Form("Invalid subversion <%s>.", id.GetSubVersion()));
 		return kFALSE;
 	}
  
-        filename += "Run";
-	filename += runRange.GetFirstRun();
-        filename += "_";
-        filename += runRange.GetLastRun();
-	filename += "_v";
-	filename += version;
-	filename += "_s";
-	filename += subVersion;
-	filename += ".root";
+	filename = Form("Run%d_%d_v%d_s%d.root", id.GetFirstRun(), id.GetLastRun(),
+						 id.GetVersion(), id.GetSubVersion());
+
+	filename.Prepend(fBaseDirectory +'/' + id.GetPath() + '/');
 
         return kTRUE;
 }
@@ -135,10 +129,7 @@ Bool_t AliCDBLocal::IdToFilename(const AliCDBRunRange& runRange, Int_t version,
 Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
 // prepare id (version, subVersion) of the object that will be stored (called by PutEntry)
 
-	TString dirName;
-	dirName += fBaseDirectory;
-	dirName += '/';
-	dirName += id.GetPath();
+	TString dirName = Form("%s/%s", fBaseDirectory.Data(), id.GetPath().Data());
 
 	// go to the path; if directory does not exist, create it
 	void* dirPtr = gSystem->OpenDirectory(dirName);
@@ -245,27 +236,24 @@ Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
 Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 // look for filename matching query (called by GetEntry)
 
-	TString dirName;
-	dirName += fBaseDirectory;
-	dirName += '/';
-	dirName += query.GetPath(); // dirName = fDBPath/idPath
+	TString dirName = Form("%s/%s", fBaseDirectory.Data(), query.GetPath().Data());
 
-	void* dirPtr = gSystem->OpenDirectory(dirName); 
+	void* dirPtr = gSystem->OpenDirectory(dirName);
 	if (!dirPtr) {
    	 	AliDebug(2,Form("Directory <%s> not found", (query.GetPath()).Data()));
    	 	AliDebug(2,Form("in DB folder %s", fBaseDirectory.Data()));
 		return kFALSE;
 	}
 
-	const char* filename;	
-	
+	const char* filename;
+
 	AliCDBRunRange aRunRange; // the runRange got from filename
 	Int_t aVersion, aSubVersion; // the version and subVersion got from filename
 
 	if (!query.HasVersion()) { // neither version and subversion specified -> look for highest version and subVersion
-		
+
 		while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
-			
+
 			TString aString(filename);
 			if (aString == "." || aString == "..") continue;
 
@@ -274,7 +262,7 @@ Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 
 			if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue;
 			// aRunRange contains requested run!
-			
+
 			if (result.GetVersion() < aVersion) {
 				result.SetVersion(aVersion);
 				result.SetSubVersion(aSubVersion);
@@ -379,7 +367,7 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 
 	AliCDBId dataId(queryId.GetAliCDBPath(), -1, -1, -1, -1);
         Bool_t result;
-		
+
 	// look for a filename matching query requests (path, runRange, version, subVersion)
 	if (!queryId.HasVersion()) {
 		// if version is not specified, first check the selection criteria list
@@ -393,14 +381,11 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 	if (!result || !dataId.IsSpecified()) return NULL;
 
 	TString filename;
-	if (!IdToFilename(dataId.GetAliCDBRunRange(), dataId.GetVersion(),
-		 dataId.GetSubVersion(), filename)) {
+	if (!IdToFilename(dataId, filename)) {
 
 		AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
                 return NULL;
 	}
-	
-	filename.Prepend((fBaseDirectory +'/' + queryId.GetPath() + '/'));
 
 	TFile file(filename, "READ"); // open file
 	if (!file.IsOpen()) {
@@ -442,17 +427,14 @@ void AliCDBLocal::GetEntriesForLevel0(const char* level0,
 	const AliCDBId& queryId, TList* result) {
 // multiple request (AliCDBStorage::GetAll)
 
-	TString level0Dir;
-	level0Dir += fBaseDirectory;
-	level0Dir += '/';
-	level0Dir += level0;
-	
+	TString level0Dir = Form("%s/%s", fBaseDirectory.Data(), level0);
+
 	void* level0DirPtr = gSystem->OpenDirectory(level0Dir);
 	if (!level0DirPtr) {
-		AliDebug(2,Form("Can't open level0 directory <%s>!", 
+		AliDebug(2,Form("Can't open level0 directory <%s>!",
 			level0Dir.Data()));
                 return;
-	} 
+	}
 
 	const char* level1;
 	while ((level1 = gSystem->GetDirEntry(level0DirPtr))) {
@@ -475,16 +457,11 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
 	const AliCDBId& queryId, TList* result) {
 // multiple request (AliCDBStorage::GetAll)
 
-	TString level1Dir;
-	level1Dir += fBaseDirectory;
-	level1Dir += '/';
-	level1Dir += level0;
-	level1Dir += '/';
-	level1Dir += level1;
+	TString level1Dir = Form("%s/%s/%s", fBaseDirectory.Data(), level0,level1);
 
 	void* level1DirPtr = gSystem->OpenDirectory(level1Dir);
 	if (!level1DirPtr) {
-		AliDebug(2,Form("Can't open level1 directory <%s>!", 
+		AliDebug(2,Form("Can't open level1 directory <%s>!",
 			level1Dir.Data()));
                 return;
 	}
@@ -522,24 +499,24 @@ TList* AliCDBLocal::GetEntries(const AliCDBId& queryId) {
 		AliDebug(2,Form("Can't open storage directory <%s>",
 			fBaseDirectory.Data()));
 		return NULL;
-	}	
+	}
 
 	TList* result = new TList();
 	result->SetOwner();
 
 	const char* level0;
 	while ((level0 = gSystem->GetDirEntry(storageDirPtr))) {
-		
+
 		TString level0Str(level0);
 		if (level0Str == "." || level0Str == "..") {
 			continue;
 		}
 
 		if (queryId.GetAliCDBPath().Level0Comprises(level0)) {
-			GetEntriesForLevel0(level0, queryId, result);	
+			GetEntriesForLevel0(level0, queryId, result);
 		}
-	}	
-	
+	}
+
 	gSystem->FreeDirectory(storageDirPtr);
 
 	return result;	
@@ -552,20 +529,17 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 	AliCDBId& id = entry->GetId();
 
 	// set version and subVersion for the entry to be stored
-	if (!PrepareId(id)) return kFALSE;		
+	if (!PrepareId(id)) return kFALSE;
 
 	
 	// build filename from entry's id
 	TString filename="";
-	if (!IdToFilename(id.GetAliCDBRunRange(), id.GetVersion(),
-		id.GetSubVersion(), filename)) {
+	if (!IdToFilename(id, filename)) {
 
 		AliDebug(2,Form("Bad ID encountered! Subnormal error!"));
 		return kFALSE;
 	}
-	
-	filename.Prepend(fBaseDirectory +'/' + id.GetPath() + '/');
-	
+
 	// open file
 	TFile file(filename, "CREATE");
 	if (!file.IsOpen()) {
@@ -582,7 +556,6 @@ Bool_t AliCDBLocal::PutEntry(AliCDBEntry* entry) {
 
 	file.Close();
         if(result) {
-		// TODO this is to make the SHUTTLE output lighter
 		if(!(id.GetPath().Contains("SHUTTLE/STATUS")))
 			AliInfo(Form("CDB object stored into file %s",filename.Data()));
 	}
@@ -625,10 +598,7 @@ TList* AliCDBLocal::GetIdListFromFile(const char* fileName){
 Bool_t AliCDBLocal::Contains(const char* path) const{
 // check for path in storage's fBaseDirectory
 
-	TString dirName;
-	dirName += fBaseDirectory;
-	dirName += '/';
-	dirName += path; // dirName = fDBPath/path
+	TString dirName = Form("%s/%s", fBaseDirectory.Data(), path);
 	Bool_t result=kFALSE;
 
 	void* dirPtr = gSystem->OpenDirectory(dirName); 
@@ -641,7 +611,121 @@ Bool_t AliCDBLocal::Contains(const char* path) const{
 //_____________________________________________________________________________
 void AliCDBLocal::QueryValidFiles()
 {
-// blabla
+// Query the CDB for files valid for AliCDBStorage::fRun
+// fills list fValidFileIds with AliCDBId objects created from file name
+
+	if(fVersion != -1) AliWarning ("Version parameter is not used by local storage query!");
+	if(fMetaDataFilter) {
+		AliWarning ("CDB meta data parameters are not used by local storage query!");
+		delete fMetaDataFilter; fMetaDataFilter=0;
+	}
+
+	void* storageDirPtr = gSystem->OpenDirectory(fBaseDirectory);
+
+	const char* level0;
+	while ((level0 = gSystem->GetDirEntry(storageDirPtr))) {
+
+		TString level0Str(level0);
+		if (level0Str == "." || level0Str == "..") {
+			continue;
+		}
+
+		if (fPathFilter.Level0Comprises(level0)) {
+			TString level0Dir = Form("%s/%s",fBaseDirectory.Data(),level0);
+			void* level0DirPtr = gSystem->OpenDirectory(level0Dir);
+			const char* level1;
+			while ((level1 = gSystem->GetDirEntry(level0DirPtr))) {
+
+				TString level1Str(level1);
+				if (level1Str == "." || level1Str == "..") {
+					continue;
+				}
+
+                		if (fPathFilter.Level1Comprises(level1)) {
+					TString level1Dir = Form("%s/%s/%s",
+							fBaseDirectory.Data(),level0,level1);
+
+					void* level1DirPtr = gSystem->OpenDirectory(level1Dir);
+					const char* level2;
+					while ((level2 = gSystem->GetDirEntry(level1DirPtr))) {
+
+						TString level2Str(level2);
+						if (level2Str == "." || level2Str == "..") {
+							continue;
+						}
+
+						if (fPathFilter.Level2Comprises(level2)) {
+							TString dirName = Form("%s/%s/%s/%s",
+									fBaseDirectory.Data(),level0,level1,level2);
+
+							void* dirPtr = gSystem->OpenDirectory(dirName);
+
+							const char* filename;
+
+							AliCDBRunRange aRunRange; // the runRange got from filename
+							Int_t aVersion, aSubVersion; // the version and subVersion got from filename
+
+							while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
+
+								TString aString(filename);
+								if (aString == "." || aString == "..") continue;
+
+								if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
+								AliCDBRunRange runrg(fRun,fRun);
+								if (!aRunRange.Comprises(runrg)) continue;
+								// aRunRange contains requested run!
+								AliCDBPath validPath(level0,level1,level2);
+								AliCDBId validId(validPath,aRunRange,aVersion,aSubVersion);
+      		        					fValidFileIds.AddLast(validId.Clone());
+		        				}
+							gSystem->FreeDirectory(dirPtr);
+						}
+					}
+					gSystem->FreeDirectory(level1DirPtr);
+				}
+			}
+			gSystem->FreeDirectory(level0DirPtr);
+		}
+	}
+	gSystem->FreeDirectory(storageDirPtr);
+
+}
+
+//_____________________________________________________________________________
+Int_t AliCDBLocal::GetLatestVersion(const char* path, Int_t run){
+// get last version found in the database valid for run and path
+
+	AliCDBPath aCDBPath(path);
+	if(!aCDBPath.IsValid() || aCDBPath.IsWildcard()) {
+		AliError(Form("Invalid path in request: %s", path));
+		return -1;
+	}
+
+	AliCDBId query(path, run, run, -1, -1);
+	AliCDBId dataId;
+
+	GetId(query,dataId);
+
+	return dataId.GetVersion();
+
+}
+
+//_____________________________________________________________________________
+Int_t AliCDBLocal::GetLatestSubVersion(const char* path, Int_t run, Int_t version){
+// get last version found in the database valid for run and path
+
+	AliCDBPath aCDBPath(path);
+	if(!aCDBPath.IsValid() || aCDBPath.IsWildcard()) {
+		AliError(Form("Invalid path in request: %s", path));
+		return -1;
+	}
+
+	AliCDBId query(path, run, run, version, -1);
+	AliCDBId dataId;
+
+	GetId(query,dataId);
+
+	return dataId.GetSubVersion();
 
 }
 

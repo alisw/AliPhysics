@@ -32,13 +32,29 @@ ClassImp(AliCDBMetaData)
 AliCDBMetaData::AliCDBMetaData() :
 TObject(),
 fObjectClassName(""),
-fResponsible(""), 	
-fBeamPeriod(0),	
+fResponsible(""),
+fBeamPeriod(0),
 fAliRootVersion(""),
 fComment(""),
 fProperties()	
 {
 // default constructor
+
+	fProperties.SetOwner(1);
+}
+
+//_____________________________________________________________________________
+AliCDBMetaData::AliCDBMetaData(const char *responsible, UInt_t beamPeriod,
+				const char* alirootVersion, const char* comment) :
+TObject(),
+fObjectClassName(""),
+fResponsible(responsible),
+fBeamPeriod(beamPeriod),
+fAliRootVersion(alirootVersion),
+fComment(comment),
+fProperties()	
+{
+// constructor
 
 	fProperties.SetOwner(1);
 }
@@ -102,5 +118,6 @@ void AliCDBMetaData::PrintMetaData() {
 			message += Form("\t\t%s\n", ((TObjString* ) aPair->Key())->String().Data());
 		}
 	}
-	AliInfo(Form("**** Object's MetaData set **** \n%s", message.Data()));
+	message += '\n';
+	AliInfo(Form("**** Object's MetaData parameters **** \n%s", message.Data()));
 }

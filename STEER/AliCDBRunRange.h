@@ -43,14 +43,14 @@ public:
 
 	virtual Bool_t IsEqual(const TObject *obj) const;
 
-	static UInt_t Infinity() {return fgkInfinity;}
+	static Int_t Infinity() {return fgkInfinity;}
 	
 private:
 
 	Int_t fFirstRun;	// first valid run
 	Int_t fLastRun;		// last valid run	
 
-	static const UInt_t fgkInfinity = 999999999; 	 //! Flag for "infinity"
+	static const Int_t fgkInfinity = 999999999; 	 //! Flag for "infinity"
 
 	ClassDef(AliCDBRunRange, 1);	
 };

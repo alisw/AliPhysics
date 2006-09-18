@@ -285,7 +285,7 @@ void AliSimulation::InitCDBStorage()
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     AliWarning(Form("Specific CDB storage for %s is set to: %s",obj->GetName(),obj->GetTitle()));
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    man->SetSpecificStorage(obj->GetName(),obj->GetTitle());
+    man->SetSpecificStorage(obj->GetName(), obj->GetTitle());
   }
   man->Print();
 }
@@ -300,13 +300,19 @@ void AliSimulation::SetDefaultStorage(const char* uri) {
 }
 
 //_____________________________________________________________________________
-void AliSimulation::SetSpecificStorage(const char* detName, const char* uri) {
+void AliSimulation::SetSpecificStorage(const char* calibType, const char* uri) {
 // Store a detector-specific CDB storage location
 // Activate it later within the Run() method
 
-  TObject* obj = fSpecCDBUri.FindObject(detName);
+  AliCDBPath aPath(calibType);
+  if(!aPath.IsValid()){
+  	AliError(Form("Not a valid path: %s", calibType));
+  	return;
+  }
+
+  TObject* obj = fSpecCDBUri.FindObject(calibType);
   if (obj) fSpecCDBUri.Remove(obj);
-  fSpecCDBUri.Add(new TNamed(detName, uri));
+  fSpecCDBUri.Add(new TNamed(calibType, uri));
 
 }
 

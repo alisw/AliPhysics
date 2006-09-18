@@ -545,7 +545,7 @@ Bool_t AliCDBDump::PutEntry(AliCDBEntry* entry) {
 	// write object (key name: Run#firstRun_#lastRun_v#version_s#subVersion)
 	Bool_t result = gDirectory->WriteTObject(entry, keyname);
 	if (!result) {
-		AliError(Form("Can't write entry to file: %s", 
+		AliError(Form("Can't write entry to file: %s",
 				fFile->GetName()));
 	}
 
@@ -606,7 +606,54 @@ Bool_t AliCDBDump::Contains(const char* path) const{
 //_____________________________________________________________________________
 void AliCDBDump::QueryValidFiles()
 {
-// blabla
+// Query the CDB for files valid for AliCDBStorage::fRun
+// fills list fValidFileIds with AliCDBId objects created from file name
+
+	AliError("Not yet (and maybe never) implemented");
+}
+
+//_____________________________________________________________________________
+Bool_t AliCDBDump::IdToFilename(const AliCDBId& /*id*/, TString& /*filename*/) const {
+// build file name from AliCDBId (path, run range, version) and fDBFolder
+
+	AliError("Not implemented");
+        return kFALSE;
+}
+
+//_____________________________________________________________________________
+Int_t AliCDBDump::GetLatestVersion(const char* path, Int_t run){
+// get last version found in the database valid for run and path
+
+	AliCDBPath aCDBPath(path);
+	if(!aCDBPath.IsValid() || aCDBPath.IsWildcard()) {
+		AliError(Form("Invalid path in request: %s", path));
+		return -1;
+	}
+
+	AliCDBId query(path, run, run, -1, -1);
+	AliCDBId dataId;
+
+	GetId(query,dataId);
+
+	return dataId.GetVersion();
+}
+
+//_____________________________________________________________________________
+Int_t AliCDBDump::GetLatestSubVersion(const char* path, Int_t run, Int_t version){
+// get last version found in the database valid for run and path
+
+	AliCDBPath aCDBPath(path);
+	if(!aCDBPath.IsValid() || aCDBPath.IsWildcard()) {
+		AliError(Form("Invalid path in request: %s", path));
+		return -1;
+	}
+
+	AliCDBId query(path, run, run, version, -1);
+	AliCDBId dataId;
+
+	GetId(query,dataId);
+
+	return dataId.GetSubVersion();
 
 }
 

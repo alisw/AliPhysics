@@ -20,10 +20,13 @@ class AliCDBGrid: public AliCDBStorage {
 
 public:
 		  
-	virtual Bool_t IsReadOnly() const {return kFALSE;};
-	virtual Bool_t HasSubVersion() const {return kFALSE;};
+	virtual Bool_t IsReadOnly() const {return kFALSE;}
+	virtual Bool_t HasSubVersion() const {return kFALSE;}
 	virtual Bool_t Contains(const char* path) const;
-  
+	virtual Int_t  GetLatestVersion(const char* path, Int_t run);
+	virtual Int_t  GetLatestSubVersion(const char* path, Int_t run, Int_t version);
+	virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const;
+
 protected:
 
 	virtual AliCDBEntry*	GetEntry(const AliCDBId& queryId);
@@ -41,19 +44,18 @@ private:
 	AliCDBGrid& operator = (const AliCDBGrid& db);
 
 	Bool_t FilenameToId(TString& filename, AliCDBId& id);
-	Bool_t IdToFilename(const AliCDBId& id, TString& filename);
 
 	Bool_t PrepareId(AliCDBId& id);
 	AliCDBId* GetId(const TList& validFileIds, const AliCDBId& query);
 	AliCDBEntry* GetEntryFromFile(TString& filename, const AliCDBId* dataId);
 
 	Bool_t AddTag(TString& foldername, const char* tagname);
-	void TagFileId(TString& filename, const AliCDBId* id);
-	void TagFileMetaData(TString& filename, const AliCDBMetaData* md);
+	Bool_t TagFileId(TString& filename, const AliCDBId* id);
+	Bool_t TagFileMetaData(TString& filename, const AliCDBMetaData* md);
 
 //	Bool_t CheckVersion(const AliCDBId& query, AliCDBId* idToCheck, AliCDBId* result);
 
-	void MakeQueryFilter(Long64_t firstRun, Long64_t lastRun, const AliCDBPath& pathFilter, Int_t version,
+	void MakeQueryFilter(Int_t firstRun, Int_t lastRun, const AliCDBPath& pathFilter, Int_t version,
 				const AliCDBMetaData* md, TString& result) const;
 
 	virtual void QueryValidFiles();

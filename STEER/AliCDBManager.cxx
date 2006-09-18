@@ -155,6 +155,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const char* dbString) {
 	
 	AliCDBParam* param = CreateParameter(dbString);
 	if (!param) {
+		AliError(Form("Failed to activate requested storage! Check URI: %s", dbString));
 		return NULL;
 	}
 
@@ -187,9 +188,14 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 		if (aStorage) {
 			PutActiveStorage(param->CloneParam(), aStorage);
 			aStorage->SetURI(param->GetURI());
+			if(fRun > 0) {
+				aStorage->QueryCDB(fRun);
+			}
 			return aStorage;
 		}
         }
+
+	AliError(Form("Failed to activate requested storage! Check URI: %s", param->GetURI().Data()));
 
         return NULL;
 }
@@ -283,11 +289,12 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 // sets storage specific for detector or calibration type (works with AliCDBManager::Get(...))
 // Default storage should be defined prior to any specific storages, e.g.:
 // AliCDBManager::instance()->SetDefaultStorage("alien://");
-// AliCDBManager::instance()->SetSpecificStorage("TPC","local://DB_TPC");
-// AliCDBManager::instance()->SetSpecificStorage("RICH/Align","local://DB_TPCAlign");
+// AliCDBManager::instance()->SetSpecificStorage("TPC/*","local://DB_TPC");
+// AliCDBManager::instance()->SetSpecificStorage("*/Align/*","local://DB_TPCAlign");
+// calibType must be a valid CDB path! (3 level folder structure)
 
 	if(!fDefaultStorage) {
-		AliError("Please activate a default storage first!");	
+		AliError("Please activate a default storage first!");
 		return;
 	}
 	
@@ -613,7 +620,7 @@ void AliCDBManager::Print(Option_t* /*option*/) const
 }
 
 //_____________________________________________________________________________
-void AliCDBManager::SetRun(Long64_t run)
+void AliCDBManager::SetRun(Int_t run)
 {
 // Sets current run number.
 // When the run number changes the caching is cleared.
@@ -669,7 +676,7 @@ void AliCDBManager::QueryCDB() {
 	return;
 	}
 
-	AliInfo(Form("Querying default and specific storages for files valid for run %ld", (long) fRun));
+	AliInfo(Form("Querying default and specific storages for files valid for run %d", fRun));
 	fDefaultStorage->QueryCDB(fRun);
 
 	TIter iter(&fSpecificStorages);
@@ -678,7 +685,7 @@ void AliCDBManager::QueryCDB() {
 	while((aCalibType = dynamic_cast<TObjString*> (iter.Next()))){
 		aPar = (AliCDBParam*) fSpecificStorages.GetValue(aCalibType);
 		if(aPar) {
-			AliDebug(2,Form("Qerying specific storage %s",aCalibType->GetName()));
+			AliDebug(2,Form("Querying specific storage %s",aCalibType->GetName()));
 			GetStorage(aPar)->QueryCDB(fRun,aCalibType->GetName());
 
 		}

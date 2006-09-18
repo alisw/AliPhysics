@@ -98,18 +98,10 @@ Bool_t AliCDBId::IsValid() const {
 TString AliCDBId::ToString() const {
 // returns a string of Id data
 
-	TString result;
-	result += "path \"";
-	result += GetPath();
-	result += "\"; run range [";
-	result += GetFirstRun();
-	result += ",";
-	result += GetLastRun();
-	result += "]; version v";
-	result += GetVersion();
-	if(GetSubVersion()>0){
-		result += "_s";
-		result += GetSubVersion();
-	}
-	return result;	
+	TString result = Form("path: \"%s\"; run range: [%d,%d]",
+				GetPath().Data(), GetFirstRun(), GetLastRun());
+
+	if(GetVersion() >= 0) result += Form("; version: v%d", GetVersion());
+	if(GetSubVersion() >= 0) result += Form("_s%d", GetSubVersion());
+	return result;
 }

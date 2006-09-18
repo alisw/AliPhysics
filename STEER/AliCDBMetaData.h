@@ -19,6 +19,7 @@ class AliCDBMetaData: public TObject {
 	
 public:
 	AliCDBMetaData();
+	AliCDBMetaData(const char *responsible, UInt_t beamPeriod=0, const char* alirootVersion="", const char* comment="");
 	virtual ~AliCDBMetaData();
 
 	void 		SetObjectClassName(const char* name) 

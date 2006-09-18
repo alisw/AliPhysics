@@ -79,8 +79,8 @@ class AliCDBManager: public TObject {
 	void SetCacheFlag(Bool_t cacheFlag) {fCache=cacheFlag;}
 	Bool_t GetCacheFlag() const {return fCache;}
 
-	void SetRun(Long64_t run);
-	Long64_t GetRun() const {return fRun;}
+	void SetRun(Int_t run);
+	Int_t GetRun() const {return fRun;}
 
 	// AliCDBEntry* Get(const char* path);
 
@@ -125,7 +125,7 @@ class AliCDBManager: public TObject {
   	TMap fEntryCache;    	//! cache of the retrieved objects
 
 	Bool_t fCache;			//! The cache flag
-  	Long64_t fRun;			//! The run number
+  	Int_t fRun;			//! The run number
 
 	ClassDef(AliCDBManager, 0);
 };

@@ -291,15 +291,13 @@ void AliReconstruction::InitCDBStorage()
   }
 
   // Now activate the detector specific CDB storage locations
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-    TString detName = fgkDetectorName[iDet];
-    TObject* obj = fSpecCDBUri.FindObject(detName.Data());
-    if (obj) {
-      AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      AliWarning(Form("Specific CDB storage for %s is set to: %s",detName.Data(),obj->GetTitle()));
-      AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      man->SetSpecificStorage(detName.Data(),obj->GetTitle());
-    }
+  for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {
+    TObject* obj = fSpecCDBUri[i];
+    if (!obj) continue;
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning(Form("Specific CDB storage for %s is set to: %s",obj->GetName(),obj->GetTitle()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    man->SetSpecificStorage(obj->GetName(), obj->GetTitle());
   }
   man->Print();
 }
@@ -314,13 +312,44 @@ void AliReconstruction::SetDefaultStorage(const char* uri) {
 }
 
 //_____________________________________________________________________________
-void AliReconstruction::SetSpecificStorage(const char* detName, const char* uri) {
+void AliReconstruction::SetSpecificStorage(const char* calibType, const char* uri) {
 // Store a detector-specific CDB storage location
 // Activate it later within the Run() method
 
-  TObject* obj = fSpecCDBUri.FindObject(detName);
+  AliCDBPath aPath(calibType);
+  if(!aPath.IsValid()){
+	// if calibType is not wildcard but it is a valid detector, add "/*" to make it a valid path
+	for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+		if(!strcmp(calibType, fgkDetectorName[iDet])) {
+			aPath.SetPath(Form("%s/*", calibType));
+			AliInfo(Form("Path for specific storage set to %s", aPath.GetPath().Data()));
+			break;
+		}
+        }
+	if(!aPath.IsValid()){
+  		AliError(Form("Not a valid path or detector: %s", calibType));
+  		return;
+	}
+  }
+
+  // check that calibType refers to a "valid" detector name
+  Bool_t isDetector = kFALSE;
+  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+    TString detName = fgkDetectorName[iDet];
+    if(aPath.GetLevel0() == detName) {
+    	isDetector = kTRUE;
+	break;
+    }
+  }
+
+  if(!isDetector) {
+	AliError(Form("Not a valid detector: %s", aPath.GetLevel0().Data()));
+	return;
+  }
+
+  TObject* obj = fSpecCDBUri.FindObject(aPath.GetPath().Data());
   if (obj) fSpecCDBUri.Remove(obj);
-  fSpecCDBUri.Add(new TNamed(detName, uri));
+  fSpecCDBUri.Add(new TNamed(aPath.GetPath().Data(), uri));
 
 }
 

@@ -79,11 +79,15 @@ public:
 	virtual Bool_t IsReadOnly() const = 0;
 	virtual Bool_t HasSubVersion() const = 0;
 	virtual Bool_t Contains(const char* path) const = 0;
+	virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const = 0;
 
-	void QueryCDB(Long64_t run, const char* pathFilter="*",
+	void QueryCDB(Int_t run, const char* pathFilter="*",
 			Int_t version=-1, AliCDBMetaData *mdFilter=0);
 	void PrintQueryCDB();
 	TList* GetQueryCDBList() {return &fValidFileIds;}
+
+	virtual Int_t GetLatestVersion(const char* path, Int_t run)=0;
+	virtual Int_t GetLatestSubVersion(const char* path, Int_t run, Int_t version=-1)=0;
 
 protected:
 
@@ -96,7 +100,7 @@ protected:
 	virtual void   QueryValidFiles() = 0;
 
 	TList fValidFileIds; 	// list of Id's of the files valid for a given run (cached as fRun)
-	Long64_t fRun;		// run number, used to manage list of valid files
+	Int_t fRun;		// run number, used to manage list of valid files
 	AliCDBPath fPathFilter;	// path filter, used to manage list of valid files
 	Int_t fVersion;		// version, used to manage list of valid files
 	AliCDBMetaData* fMetaDataFilter; // metadata, used to manage list of valid files
@@ -106,7 +110,7 @@ protected:
 	TString fType;    //! Local, Grid: base folder name - Dump: file name
 	TString fBaseFolder;    //! Local, Grid: base folder name - Dump: file name
 
- private:
+private:
 	AliCDBStorage(const AliCDBStorage & source);
 	AliCDBStorage & operator=(const AliCDBStorage & source);
 

@@ -231,8 +231,7 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
   	} else {
 		// this is to make the SHUTTLE output lighter
 		if(!(query.GetPath().Contains("SHUTTLE/STATUS")))
-    			AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d",
-		        	(query.GetPath()).Data(), query.GetFirstRun()));
+    			AliInfo(Form("No valid CDB object found! request was: %s", query.ToString().Data()));
   	}
 
 	// if drain storage is set, drain entry into drain storage
@@ -293,8 +292,7 @@ TList* AliCDBStorage::GetAll(const AliCDBId& query) {
 		 
 		 }
  	} else {
-     		 AliInfo(Form("No valid CDB object found! request was: name = <%s>, run = %d, version = %d",
-		        (query.GetPath()).Data(), query.GetFirstRun(), query.GetVersion()));
+     		 AliInfo(Form("No valid CDB object found! request was: %s", query.ToString().Data()));
 	}
 
 	// if drain storage is set, drain entries into drain storage
@@ -364,7 +362,7 @@ Bool_t AliCDBStorage::Put(AliCDBEntry* entry) {
 }
 
 //_____________________________________________________________________________
-void AliCDBStorage::QueryCDB(Long64_t run, const char* pathFilter,
+void AliCDBStorage::QueryCDB(Int_t run, const char* pathFilter,
 				Int_t version, AliCDBMetaData* md){
 // query CDB for files valid for given run, and fill list fValidFileIds
 // Actual query is done in virtual function QueryValidFiles()
@@ -388,9 +386,10 @@ void AliCDBStorage::QueryCDB(Long64_t run, const char* pathFilter,
 	if(md) fMetaDataFilter = dynamic_cast<AliCDBMetaData*> (md->Clone());
 
 	QueryValidFiles();
+	AliCDBId queryId(pathFilter,run,run,version);
 
-	AliInfo(Form("%d files valid for run %ld, path %s and version %d found in CDB storage: \n %s://%s",
-				fValidFileIds.GetEntries(), (long) fRun, pathFilter, version,
+	AliInfo(Form("%d files valid for request <%s> found in CDB storage \"%s://%s\"",
+				fValidFileIds.GetEntries(), queryId.ToString().Data(),
 				fType.Data(), fBaseFolder.Data()));
 
 }
@@ -399,22 +398,22 @@ void AliCDBStorage::QueryCDB(Long64_t run, const char* pathFilter,
 void AliCDBStorage::PrintQueryCDB(){
 // print parameters used to load list of CDB Id's (fRun, fPathFilter, fVersion)
 
-	AliInfo(Form("QueryCDB Parameters: \n\tRun = %ld \n\tPath filter = %s \n\tVersion = %d",
-				(long) fRun, fPathFilter.GetPath().Data(), fVersion));
+	AliCDBId paramId(fPathFilter, fRun, fRun, fVersion);
+	AliInfo(Form("**** QueryCDB Parameters **** \n\t<%s>\n",
+				paramId.ToString().Data()));
 
-	if(fMetaDataFilter) {
-		AliInfo("CDBMetaData Parameters: ");
-	}
-	fMetaDataFilter->PrintMetaData();
+	if(fMetaDataFilter) fMetaDataFilter->PrintMetaData();
 
-	AliInfo("Id's of valid objects found:");
+
+	TString message = "**** Id's of valid objects found *****\n";
 	TIter iter(&fValidFileIds);
 	AliCDBId* anId=0;
 
 	// loop on the list of selection criteria
 	while ((anId = dynamic_cast<AliCDBId*>(iter.Next()))) {
-		AliInfo(Form("%s", anId->ToString().Data()));
+		message += Form("\t%s\n", anId->ToString().Data());
 	}
-
+	message += Form("\n\tTotal: %d objects found\n", fValidFileIds.GetEntries());
+	AliInfo(Form("%s", message.Data()));
 }
 
