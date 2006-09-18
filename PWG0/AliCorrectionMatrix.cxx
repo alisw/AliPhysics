@@ -195,15 +195,14 @@ Bool_t AliCorrectionMatrix::LoadHistograms(const Char_t* fileName, const Char_t*
   if(fhMeas)  {delete fhMeas;  fhMeas=0;}
   
   fhMeas  = dynamic_cast<TH1*> (fin->Get(Form("%s/meas_%s", dir,GetName())));
-  if(!fhMeas)  Info("LoadHistograms","No meas  hist available");
+  if(!fhMeas)  Info("LoadHistograms","No meas. (%s) hist available",Form("%s/meas_%s", dir,GetName()));
 
   fhGene  = dynamic_cast<TH1*> (fin->Get(Form("%s/gene_%s",dir, GetName())));
-  if(!fhGene)  Info("LoadHistograms","No gene  hist available");
+  if(!fhGene)  Info("LoadHistograms","No gene. (%s) hist available",Form("%s/gene_%s",dir, GetName()));
 
   fhCorr  = dynamic_cast<TH1*> (fin->Get(Form("%s/corr_%s",dir, GetName())));
-  if(!fhCorr) 
-  {
-    Info("LoadHistograms","No corr  hist available");
+  if(!fhCorr) {
+    Info("LoadHistograms","No corr.(%s) hist available",Form("%s/corr_%s",dir, GetName()));
     return kFALSE;
   }
       

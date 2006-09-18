@@ -22,6 +22,7 @@
 
 #include <AliCorrectionMatrix2D.h>
 #include <AliCorrectionMatrix3D.h>
+#include <AliLog.h>
 
 class AlidNdEtaCorrection : public TNamed
 {
@@ -31,35 +32,29 @@ public:
 
   ~AlidNdEtaCorrection();
 
-  // fVertexRecoCorrection, fTriggerCorrection
-  void FillEvent(Float_t vtx, Float_t n)                        {fTriggerCorrection->FillGene(vtx, n);}
-  void FillEventWithTrigger(Float_t vtx, Float_t n)             {fVertexRecoCorrection->FillGene(vtx, n); fTriggerCorrection->FillMeas(vtx, n);}
-  void FillEventWithTriggerWithReconstructedVertex(Float_t vtx, Float_t n) {fVertexRecoCorrection->FillMeas(vtx, n);}
-
   // fTrack2ParticleCorrection
   void FillParticle(Float_t vtx, Float_t eta, Float_t pt)                  {fTrack2ParticleCorrection->FillGene(vtx, eta, pt);}
   void FillParticleWhenMeasuredTrack(Float_t vtx, Float_t eta, Float_t pt) {fTrack2ParticleCorrection->FillMeas(vtx, eta, pt);}
 
-  // fTriggerBiasCorrection
-  void FillParticleAllEvents(Float_t eta, Float_t pt)          {fTriggerBiasCorrection->FillGene(eta, pt);}
-  void FillParticleWhenEventTriggered(Float_t eta, Float_t pt) {fTriggerBiasCorrection->FillMeas(eta, pt);}
-
-  //void IncreaseEventCount() { fNEvents++; }
-  //void IncreaseTriggeredEventCount() { fNTriggeredEvents++; }
-
+  // fVertexRecoCorrection & fTriggerBiasCorrection
+  void FillEventWithTriggerWithReconstructedVertex(Float_t vtx, Float_t n) {fVertexRecoCorrection->FillMeas(vtx, n);}
+  void FillEventWithTrigger(Float_t vtx, Float_t n);                         
+  void FillEventAll(Float_t vtx, Float_t n, Char_t* opt="INEL"); 
+    
   void Finish();
 
-  AliCorrectionMatrix3D* GetTrack2ParticleCorrection()    {return fTrack2ParticleCorrection;}
-  AliCorrectionMatrix2D* GetVertexRecoCorrection()        {return fVertexRecoCorrection;}
-  AliCorrectionMatrix2D* GetTriggerBiasCorrection()       {return fTriggerBiasCorrection;}
-  AliCorrectionMatrix2D* GetTriggerCorrection()       {return fTriggerCorrection;}
+  AliCorrectionMatrix3D* GetTrack2ParticleCorrection()  {return fTrack2ParticleCorrection;}
+  AliCorrectionMatrix2D* GetVertexRecoCorrection()      {return fVertexRecoCorrection;}
+  AliCorrectionMatrix2D* GetTriggerBiasCorrectionINEL() {return fTriggerBiasCorrectionMBToINEL;}
+  AliCorrectionMatrix2D* GetTriggerBiasCorrectionNSD()  {return fTriggerBiasCorrectionMBToNSD;}
+  AliCorrectionMatrix2D* GetTriggerBiasCorrectionND()   {return fTriggerBiasCorrectionMBToND;}
+  AliCorrectionMatrix2D* GetTriggerBiasCorrection(Char_t* opt="INEL");
 
   virtual Long64_t Merge(TCollection* list);
 
   void    SaveHistograms();
   Bool_t  LoadHistograms(const Char_t* fileName, const Char_t* dir = "dndeta_correction");
-  Bool_t  LoadCorrection(const Char_t* fileName, const Char_t* dir = "dndeta_correction")
-    {return LoadHistograms(fileName, dir);}
+  Bool_t  LoadCorrection(const Char_t* fileName, const Char_t* dir = "dndeta_correction") {return LoadHistograms(fileName, dir);}
   
   void DrawHistograms();
   
@@ -67,28 +62,24 @@ public:
   
   Float_t GetTrack2ParticleCorrection(Float_t vtx, Float_t eta, Float_t pt)
     {return fTrack2ParticleCorrection->GetCorrection(vtx, eta, pt);}
-
-  Float_t GetVertexRecoCorrection(Float_t vtx, Float_t n) {return fVertexRecoCorrection->GetCorrection(vtx, n);}
-
-  Float_t GetTriggerCorrection(Float_t vtx, Float_t n) {return fTriggerCorrection->GetCorrection(vtx, n);}
-
-  Float_t GetTriggerBiasCorrection(Float_t eta, Float_t pt=0) {return fTriggerBiasCorrection->GetCorrection(eta, pt);}
+  
+  Float_t GetVertexRecoCorrection     (Float_t vtx, Float_t n) {return fVertexRecoCorrection->GetCorrection(vtx, n);}
+  Float_t GetTriggerBiasCorrectionINEL(Float_t vtx, Float_t n) {return fTriggerBiasCorrectionMBToINEL->GetCorrection(vtx, n);} 
+  Float_t GetTriggerBiasCorrectionNSD (Float_t vtx, Float_t n) {return fTriggerBiasCorrectionMBToNSD->GetCorrection(vtx, n);} 
+  Float_t GetTriggerBiasCorrectionND  (Float_t vtx, Float_t n) {return fTriggerBiasCorrectionMBToND->GetCorrection(vtx, n);} 
+  Float_t GetTriggerBiasCorrection    (Float_t vtx, Float_t n, Char_t* opt="INEL");
 
   Float_t GetMeasuredFraction(Float_t ptCutOff, Float_t eta = -100, Bool_t debug = kFALSE);
 
-  //void SetNEvents(Long64_t events) { fNEvents = events; }
-
-  Int_t GetNevents();
-  Int_t GetNtriggeredEvents();
 
   void ReduceInformation();
 
 protected:
-  AliCorrectionMatrix3D* fTrack2ParticleCorrection; //-> handles the track-to-particle correction, function of vtx_z, eta, pt
-  AliCorrectionMatrix2D* fVertexRecoCorrection;     //-> handles the vertex reconstruction efficiency, function of n_clustersITS and vtx_z
-  AliCorrectionMatrix2D* fTriggerCorrection;       //-> handles the trigger efficiency, function of n_clustersITS and vtx_z
-
-  AliCorrectionMatrix2D* fTriggerBiasCorrection;          //-> MB to desired sample, obsolete!!!
+  AliCorrectionMatrix3D* fTrack2ParticleCorrection;       //-> handles the track-to-particle correction, function of vtx_z, eta, pt
+  AliCorrectionMatrix2D* fVertexRecoCorrection;           //-> handles the vertex reconstruction efficiency, function of n_clustersITS and vtx_z
+  AliCorrectionMatrix2D* fTriggerBiasCorrectionMBToINEL;  //-> handles the trigger bias MB->INEL, function of n and vtx_z
+  AliCorrectionMatrix2D* fTriggerBiasCorrectionMBToNSD;   //-> handles the trigger bias MB->NSD,  function of n and vtx_z
+  AliCorrectionMatrix2D* fTriggerBiasCorrectionMBToND;    //-> handles the trigger bias MB->ND,   function of n and vtx_z
 
   //Long64_t fNEvents;
   //Long64_t fNTriggeredEvents;

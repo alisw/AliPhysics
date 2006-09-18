@@ -5,6 +5,8 @@
 
 #include <TObject.h>
 
+#include <AliHeader.h>
+
 // static helper functions
 
 class AliESD;
@@ -16,11 +18,13 @@ class AliPWG0Helper : public TObject
   public:
     static Bool_t IsEventTriggered(AliESD* aEsd);
     static Bool_t IsVertexReconstructed(AliESD* aEsd);
-    static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t debug = kFALSE);
+    static Bool_t IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug = kFALSE);
+
+    static const Int_t GetPythiaEventProcessType(AliHeader* aHeader, Bool_t adebug = kFALSE);
 
     static void CreateProjections(TH3* hist);
     static void CreateDividedProjections(TH3* hist, TH3* hist2, const char* axis = 0, Bool_t putErrors = kFALSE);
-    static const char* GetAxisTitle(TH3* hist, const char axis);
+    static const char* GetAxisTitle(TH3* hist, const char axis);    
     
   protected:
     ClassDef(AliPWG0Helper, 0)
