@@ -672,9 +672,6 @@ Bool_t AliTRDtrack::Rotate(Double_t alpha, Bool_t absolute)
     fNRotate++;
   }
 
-  if (GetLabel()==277)
-    printf("Rotate %e %e %e %e\n",GetAlpha(),GetX(),GetY(),GetZ());
-
   return AliExternalTrackParam::Rotate(GetAlpha()+alpha);
 }                         
 
