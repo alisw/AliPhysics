@@ -102,7 +102,7 @@ TH2F* AliCorrectionMatrix2D::GetMeasuredHistogram() const
 }
 
 //____________________________________________________________________
-TH1F* AliCorrectionMatrix2D::Get1DCorrection(Char_t* opt)
+TH1F* AliCorrectionMatrix2D::Get1DCorrection(Char_t* opt, Float_t min, Float_t max)
 {
   //
   // integrate the correction over one variable 
@@ -112,12 +112,34 @@ TH1F* AliCorrectionMatrix2D::Get1DCorrection(Char_t* opt)
   TH1D* gene1D = 0; 
 
   if (strcmp(opt,"x")==0) {
-    meas1D = GetMeasuredHistogram()->ProjectionX();
-    gene1D = GetGeneratedHistogram()->ProjectionX();
+    Int_t binMin = GetMeasuredHistogram()->GetYaxis()->FindBin(min);
+    Int_t binMax = GetMeasuredHistogram()->GetYaxis()->FindBin(max);
+
+    if (min==0 && max==0) {
+      meas1D = GetMeasuredHistogram()->ProjectionX();
+      gene1D = GetGeneratedHistogram()->ProjectionX();
+    }
+    else {
+      AliDebug(AliLog::kDebug+1, Form("Getting 1D map. Including y-bins %d to %d \n", binMin, binMax));
+
+      meas1D = GetMeasuredHistogram()->ProjectionX("pm",binMin,binMax);
+      gene1D = GetGeneratedHistogram()->ProjectionX("pg",binMin,binMax);
+    }
   }
   if (strcmp(opt,"y")==0) {
-    meas1D = GetMeasuredHistogram()->ProjectionY();
-    gene1D = GetGeneratedHistogram()->ProjectionY();
+    Int_t binMin = GetMeasuredHistogram()->GetXaxis()->FindBin(min);
+    Int_t binMax = GetMeasuredHistogram()->GetXaxis()->FindBin(max);
+
+    if (min==0 && max==0) {
+      meas1D = GetMeasuredHistogram()->ProjectionY();
+      gene1D = GetGeneratedHistogram()->ProjectionY();
+    }
+    else {
+      AliDebug(AliLog::kDebug+1, Form("Getting 1D map. Including x-bins %d to %d \n", binMin, binMax));
+
+      meas1D = GetMeasuredHistogram()->ProjectionY("pm", binMin, binMax);
+      gene1D = GetGeneratedHistogram()->ProjectionY("pg", binMin, binMax);
+    }
   }
   gene1D->Sumw2();
 

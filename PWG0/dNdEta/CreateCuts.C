@@ -4,7 +4,7 @@
 
 AliESDtrackCuts* CreateTrackCuts(Bool_t hists = kTRUE)
 {
-  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","");
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
 
   if (hists)
     esdTrackCuts->DefineHistograms(1);

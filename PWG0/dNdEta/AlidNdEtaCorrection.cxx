@@ -14,10 +14,9 @@ AlidNdEtaCorrection::AlidNdEtaCorrection()
   : TNamed(),
   fTrack2ParticleCorrection(0),
   fVertexRecoCorrection(0),
-  fTriggerCorrection(0),
-  fTriggerBiasCorrection(0)
-  //fNEvents(0),
-  //fNTriggeredEvents(0)
+  fTriggerBiasCorrectionMBToINEL(0),
+  fTriggerBiasCorrectionMBToNSD(0),
+  fTriggerBiasCorrectionMBToND(0)
 {
   // default constructor
 }
@@ -27,10 +26,9 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   : TNamed(name, title),
   fTrack2ParticleCorrection(0),
   fVertexRecoCorrection(0),
-  fTriggerCorrection(0),
-  fTriggerBiasCorrection(0)
-  //fNEvents(0),
-  //fNTriggeredEvents(0)
+  fTriggerBiasCorrectionMBToINEL(0),
+  fTriggerBiasCorrectionMBToNSD(0),
+  fTriggerBiasCorrectionMBToND(0)
 {
   // constructor
   //
@@ -49,17 +47,19 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   matrixName.Form("%s_vtxReco", name);
   fVertexRecoCorrection        = new AliCorrectionMatrix2D(matrixName, matrixName, 10,binLimitsVtx ,22,binLimitsN);
 
-  matrixName.Form("%s_trigger", name);
-  fTriggerCorrection           = new AliCorrectionMatrix2D(matrixName, matrixName, 10,binLimitsVtx ,22,binLimitsN);
+  matrixName.Form("%s_triggerBias_MBToINEL", name);
+  fTriggerBiasCorrectionMBToINEL       = new AliCorrectionMatrix2D(matrixName, matrixName, 10,binLimitsVtx ,22,binLimitsN);
+  matrixName.Form("%s_triggerBias_MBToNSD", name);
+  fTriggerBiasCorrectionMBToNSD        = new AliCorrectionMatrix2D(matrixName, matrixName, 10,binLimitsVtx ,22,binLimitsN);
+  matrixName.Form("%s_triggerBias_MBToND", name);
+  fTriggerBiasCorrectionMBToND         = new AliCorrectionMatrix2D(matrixName, matrixName, 10,binLimitsVtx ,22,binLimitsN);
+  
+  fTrack2ParticleCorrection      ->SetAxisTitles("vtx z [cm]", "#eta", "p_{T} [GeV/c]");
+  fVertexRecoCorrection          ->SetAxisTitles("vtx z [cm]", "Ntracks");
+  fTriggerBiasCorrectionMBToINEL ->SetAxisTitles("vtx z [cm]", "Ntracks");
+  fTriggerBiasCorrectionMBToNSD  ->SetAxisTitles("vtx z [cm]", "Ntracks");
+  fTriggerBiasCorrectionMBToND   ->SetAxisTitles("vtx z [cm]", "Ntracks");
 
-  matrixName.Form("%s_triggerBias", name);
-  fTriggerBiasCorrection       = new AliCorrectionMatrix2D(matrixName, matrixName, 120,-6,6,100, 0, 10);
-
-  fTrack2ParticleCorrection ->SetAxisTitles("vtx z [cm]", "#eta", "p_{T} [GeV/c]");
-  fVertexRecoCorrection        ->SetAxisTitles("vtx z [cm]", "Ntracks");
-  fTriggerCorrection        ->SetAxisTitles("vtx z [cm]", "Ntracks");
-
-  fTriggerBiasCorrection       ->SetAxisTitles("#eta", "p_{T} [GeV/c]");
 }
 
 //____________________________________________________________________
@@ -67,28 +67,29 @@ AlidNdEtaCorrection::~AlidNdEtaCorrection()
 {
   // destructor
 
-  if (fTrack2ParticleCorrection)
-  {
+  if (fTrack2ParticleCorrection) {
     delete fTrack2ParticleCorrection;
     fTrack2ParticleCorrection = 0;
   }
 
-  if (fVertexRecoCorrection)
-  {
+  if (fVertexRecoCorrection) {
     delete fVertexRecoCorrection;
     fVertexRecoCorrection = 0;
   }
 
-  if (fTriggerCorrection)
-  {
-    delete fTriggerCorrection;
-    fTriggerCorrection = 0;
+  if (fTriggerBiasCorrectionMBToINEL) {
+    delete fTriggerBiasCorrectionMBToINEL;
+    fTriggerBiasCorrectionMBToINEL = 0;
   }
 
-  if (fTriggerBiasCorrection)
-  {
-    delete fTriggerBiasCorrection;
-    fTriggerBiasCorrection = 0;
+  if (fTriggerBiasCorrectionMBToNSD) {
+    delete fTriggerBiasCorrectionMBToNSD;
+    fTriggerBiasCorrectionMBToNSD = 0;
+  }
+
+  if (fTriggerBiasCorrectionMBToND) {
+    delete fTriggerBiasCorrectionMBToND;
+    fTriggerBiasCorrectionMBToND = 0;
   }
 }
 
@@ -116,15 +117,9 @@ AlidNdEtaCorrection::Finish() {
   printf("INFO: In the central region fTrack2ParticleCorrection has %d empty bins\n", emptyBins);
 
   fVertexRecoCorrection->Divide();
-  fTriggerCorrection->Divide();
-
-  if (GetNevents() <= 0)
-  {
-    printf("ERROR: GetNevents() returns 0. Cannot scale histogram. Skipping processing of fTriggerBiasCorrection\n");
-    return;
-  }
-  fTriggerBiasCorrection->GetMeasuredHistogram()->Scale(Double_t(GetNtriggeredEvents())/Double_t(GetNevents()));
-  fTriggerBiasCorrection->Divide();
+  fTriggerBiasCorrectionMBToINEL->Divide();
+  fTriggerBiasCorrectionMBToNSD->Divide();
+  fTriggerBiasCorrectionMBToND->Divide();
 }
 
 //____________________________________________________________________
@@ -144,10 +139,11 @@ AlidNdEtaCorrection::Merge(TCollection* list) {
   TObject* obj;
 
   // collections of measured and generated histograms
-  TList* collectionNtrackToNparticle = new TList;
-  TList* collectionVertexReco        = new TList;
-  TList* collectionTriggerBias       = new TList;
-  TList* collectionTrigger           = new TList;
+  TList* collectionNtrackToNparticle    = new TList;
+  TList* collectionVertexReco           = new TList;
+  TList* collectionTriggerBiasMBToINEL  = new TList;
+  TList* collectionTriggerBiasMBToNSD   = new TList;
+  TList* collectionTriggerBiasMBToND    = new TList;
 
   Int_t count = 0;
   while ((obj = iter->Next())) {
@@ -156,28 +152,33 @@ AlidNdEtaCorrection::Merge(TCollection* list) {
     if (entry == 0)
       continue;
 
-    collectionNtrackToNparticle ->Add(entry->GetTrack2ParticleCorrection());
-    collectionVertexReco        ->Add(entry->GetVertexRecoCorrection());
-    collectionTriggerBias        ->Add(entry->GetTriggerBiasCorrection());
-    collectionTrigger        ->Add(entry->GetTriggerCorrection());
+    collectionNtrackToNparticle  ->Add(entry->GetTrack2ParticleCorrection());
+    collectionVertexReco         ->Add(entry->GetVertexRecoCorrection());
+    collectionTriggerBiasMBToINEL->Add(entry->GetTriggerBiasCorrection("INEL"));
+    collectionTriggerBiasMBToNSD ->Add(entry->GetTriggerBiasCorrection("NSD"));
+    collectionTriggerBiasMBToND  ->Add(entry->GetTriggerBiasCorrection("ND"));
 
     count++;
 
     //fNEvents += entry->fNEvents;
     //fNTriggeredEvents += entry->fNTriggeredEvents;
   }
-  fTrack2ParticleCorrection ->Merge(collectionNtrackToNparticle);
-  fVertexRecoCorrection        ->Merge(collectionVertexReco);
-  fTriggerBiasCorrection        ->Merge(collectionTriggerBias);
-  fTriggerCorrection        ->Merge(collectionTrigger);
+  fTrack2ParticleCorrection      ->Merge(collectionNtrackToNparticle);
+  fVertexRecoCorrection          ->Merge(collectionVertexReco);
+  fTriggerBiasCorrectionMBToINEL ->Merge(collectionTriggerBiasMBToINEL);
+  fTriggerBiasCorrectionMBToNSD  ->Merge(collectionTriggerBiasMBToNSD);
+  fTriggerBiasCorrectionMBToND   ->Merge(collectionTriggerBiasMBToND);
 
   delete collectionNtrackToNparticle;
   delete collectionVertexReco;
-  delete collectionTriggerBias;
-  delete collectionTrigger;
+  delete collectionTriggerBiasMBToINEL;
+  delete collectionTriggerBiasMBToNSD;
+  delete collectionTriggerBiasMBToND;
 
   return count+1;
 }
+
+
 
 //____________________________________________________________________
 Bool_t
@@ -186,10 +187,13 @@ AlidNdEtaCorrection::LoadHistograms(const Char_t* fileName, const Char_t* dir) {
   // loads the histograms
   //
 
-  fTrack2ParticleCorrection ->LoadHistograms(fileName, dir);
-  fVertexRecoCorrection        ->LoadHistograms(fileName, dir);
-  fTriggerCorrection        ->LoadHistograms(fileName, dir);
-  fTriggerBiasCorrection       ->LoadHistograms(fileName, dir);
+  fTrack2ParticleCorrection      ->LoadHistograms(fileName, dir);
+  fVertexRecoCorrection          ->LoadHistograms(fileName, dir);
+  fTriggerBiasCorrectionMBToINEL ->LoadHistograms(fileName, dir);
+  fTriggerBiasCorrectionMBToNSD  ->LoadHistograms(fileName, dir);
+  fTriggerBiasCorrectionMBToND   ->LoadHistograms(fileName, dir);
+
+  
 
   return kTRUE;
 }
@@ -204,10 +208,11 @@ AlidNdEtaCorrection::SaveHistograms() {
   gDirectory->mkdir(fName.Data());
   gDirectory->cd(fName.Data());
 
-  fTrack2ParticleCorrection->SaveHistograms();
-  fVertexRecoCorrection->SaveHistograms();
-  fTriggerCorrection->SaveHistograms();
-  fTriggerBiasCorrection->SaveHistograms();
+  fTrack2ParticleCorrection     ->SaveHistograms();
+  fVertexRecoCorrection         ->SaveHistograms();
+  fTriggerBiasCorrectionMBToINEL->SaveHistograms();
+  fTriggerBiasCorrectionMBToNSD ->SaveHistograms();
+  fTriggerBiasCorrectionMBToND  ->SaveHistograms();
 
   gDirectory->cd("../");
 }
@@ -218,12 +223,78 @@ void AlidNdEtaCorrection::DrawHistograms()
   //
   // call the draw histogram method of the two AliCorrectionMatrix2D objects
 
-  fTrack2ParticleCorrection ->DrawHistograms();
-  fVertexRecoCorrection        ->DrawHistograms();
-  fTriggerCorrection        ->DrawHistograms();
-  fTriggerBiasCorrection       ->DrawHistograms();
+  fTrack2ParticleCorrection     ->DrawHistograms();
+  fVertexRecoCorrection         ->DrawHistograms();
+  fTriggerBiasCorrectionMBToINEL->DrawHistograms();
+  fTriggerBiasCorrectionMBToNSD ->DrawHistograms();
+  fTriggerBiasCorrectionMBToND  ->DrawHistograms();
 
 }
+
+//____________________________________________________________________
+void AlidNdEtaCorrection::FillEventWithTrigger(Float_t vtx, Float_t n) 
+{
+  // fill events with trigger.
+  // used to calculate vertex reco and trigger bias corrections
+
+  fVertexRecoCorrection->FillGene(vtx, n);
+  fTriggerBiasCorrectionMBToINEL ->FillMeas(vtx, n);
+  fTriggerBiasCorrectionMBToNSD  ->FillMeas(vtx, n);
+  fTriggerBiasCorrectionMBToND   ->FillMeas(vtx, n);  
+}
+
+//____________________________________________________________________
+void AlidNdEtaCorrection::FillEventAll(Float_t vtx, Float_t n, Char_t* opt)  
+{
+  // fill all events 
+  // used to calculate trigger bias corrections
+
+  if (strcmp(opt,"INEL")==0) 
+    fTriggerBiasCorrectionMBToINEL->FillGene(vtx, n);
+  else if (strcmp(opt,"NSD")==0)  
+    fTriggerBiasCorrectionMBToNSD->FillGene(vtx, n);
+  else if (strcmp(opt,"ND")==0)   
+    fTriggerBiasCorrectionMBToND->FillGene(vtx, n);
+  else 
+    AliDebug(AliLog::kWarning, Form(" event type %s unknown (use INEL, NSD or ND)",opt));
+}
+
+//____________________________________________________________________
+AliCorrectionMatrix2D* AlidNdEtaCorrection::GetTriggerBiasCorrection(Char_t* opt)  
+{
+  // returning the trigger bias correction matrix 
+  // option can be used to specify to which collision process (INEL, NSD or ND)  
+  if (strcmp(opt,"INEL")==0) 
+    return fTriggerBiasCorrectionMBToINEL;
+  else if (strcmp(opt,"NSD")==0)  
+    return fTriggerBiasCorrectionMBToNSD;
+  else if (strcmp(opt,"ND")==0)   
+    return fTriggerBiasCorrectionMBToND;
+  else 
+    {
+      AliDebug(AliLog::kWarning, Form(" %s is unknown (use INEL, NSD or ND). returning INEL ",opt)); 
+      return fTriggerBiasCorrectionMBToINEL;
+    }
+}
+
+//____________________________________________________________________
+Float_t AlidNdEtaCorrection::GetTriggerBiasCorrection(Float_t vtx, Float_t n, Char_t* opt) 
+{
+  // returning the trigger bias correction matrix 
+  // 3rd option can be used to specify to which collision process (INEL, NSD or ND)  
+
+  if (strcmp(opt,"INEL")==0) 
+    return fTriggerBiasCorrectionMBToINEL->GetCorrection(vtx, n);
+  else if (strcmp(opt,"NSD")==0)  
+    return fTriggerBiasCorrectionMBToNSD->GetCorrection(vtx, n);
+  else if (strcmp(opt,"ND")==0)   
+    return fTriggerBiasCorrectionMBToND->GetCorrection(vtx, n);
+  else {
+    AliDebug(AliLog::kWarning, Form(" %s unknown (use INEL, NSD or ND). returning corr for INEL",opt)); 
+    return fTriggerBiasCorrectionMBToINEL->GetCorrection(vtx, n);
+  }
+}
+
 
 //____________________________________________________________________
 Float_t AlidNdEtaCorrection::GetMeasuredFraction(Float_t ptCutOff, Float_t eta, Bool_t debug)
@@ -282,27 +353,9 @@ void AlidNdEtaCorrection::ReduceInformation()
   // in memory
 
   // these are needed for GetMeasuredFraction(): fTrack2ParticleCorrection->ReduceInformation();
-  fVertexRecoCorrection->ReduceInformation();
-  fTriggerCorrection->ReduceInformation();
-  fTriggerBiasCorrection->ReduceInformation();
+  fVertexRecoCorrection          ->ReduceInformation();
+  fTriggerBiasCorrectionMBToINEL ->ReduceInformation();
+  fTriggerBiasCorrectionMBToNSD  ->ReduceInformation();
+  fTriggerBiasCorrectionMBToND   ->ReduceInformation();
 }
 
-Int_t AlidNdEtaCorrection::GetNevents()
-{
-  // Return total number of events used for this correction map (taken from fTriggerCorrection)
-
-  if (!fTriggerCorrection)
-    return -1;
-
-  return (Int_t) fTriggerCorrection->GetGeneratedHistogram()->Integral(0, fTriggerCorrection->GetGeneratedHistogram()->GetNbinsX()+1);
-}
-
-Int_t AlidNdEtaCorrection::GetNtriggeredEvents()
-{
-  // Return total number of triggered events used for this correction map (taken from fTriggerCorrection)
-
-  if (!fTriggerCorrection)
-    return -1;
-
-  return (Int_t) fTriggerCorrection->GetMeasuredHistogram()->Integral(0, fTriggerCorrection->GetMeasuredHistogram()->GetNbinsX()+1);
-}

@@ -11,6 +11,11 @@
 #include <AliESD.h>
 #include <AliESDVertex.h>
 
+#include <AliGenEventHeader.h>
+#include <AliGenPythiaEventHeader.h>
+#include <AliGenCocktailEventHeader.h>
+
+
 //____________________________________________________________________
 ClassImp(AliPWG0Helper)
 
@@ -60,7 +65,7 @@ Bool_t AliPWG0Helper::IsVertexReconstructed(AliESD* aEsd)
 }
 
 //____________________________________________________________________
-Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t debug)
+Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimaries, Bool_t adebug)
 {
   //
   // this function checks if a particle from the event generator (i.e. among the nPrim particles in the stack)
@@ -72,7 +77,7 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
   // if the particle has a daughter primary, we do not want to count it
   if (aParticle->GetFirstDaughter() != -1 && aParticle->GetFirstDaughter() < aTotalPrimaries)
   {
-    if (debug)
+    if (adebug)
       printf("Dropping particle because it has a daughter among the primaries.\n");
     return kFALSE;
   }
@@ -82,14 +87,14 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
   // skip quarks and gluon
   if (pdgCode <= 10 || pdgCode == 21)
   {
-    if (debug)
+    if (adebug)
       printf("Dropping particle because it is a quark or gluon.\n");
     return kFALSE;
   }
 
   if (strcmp(aParticle->GetName(),"XXX") == 0)
   {
-    if (debug)
+    if (adebug)
       printf("WARNING: There is a particle named XXX.\n");
     return kFALSE;
   }
@@ -98,19 +103,60 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
 
   if (strcmp(pdgPart->ParticleClass(),"Unknown") == 0)
   {
-    if (debug)
+    if (adebug)
       printf("WARNING: There is a particle with an unknown particle class (pdg code %d).\n", pdgCode);
     return kFALSE;
   }
 
   if (pdgPart->Charge() == 0)
   {
-    if (debug)
+    if (adebug)
       printf("Dropping particle because it is not charged.\n");
     return kFALSE;
   }
 
   return kTRUE;
+}
+
+//____________________________________________________________________
+const Int_t AliPWG0Helper::GetPythiaEventProcessType(AliHeader* aHeader, Bool_t adebug) {
+  //
+  // get the process type of the event.
+  // 
+
+  // can only read pythia headers, either directly or from cocktalil header
+  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader->GenEventHeader());
+  
+  if (!pythiaGenHeader) {
+    
+    AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(aHeader->GenEventHeader());
+    if (!genCocktailHeader) {
+      printf("AliPWG0Helper::GetProcessType : Unknown header type (not Pythia or Cocktail). \n");
+      return -1;
+    }
+
+    TList* headerList = genCocktailHeader->GetHeaders();
+    if (!headerList) {     
+      return -1;
+    }
+    
+    for (Int_t i=0; i<headerList->GetEntries(); i++) {
+      pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
+      if (pythiaGenHeader)
+	break;
+    }        
+    
+    if (!pythiaGenHeader) {
+      printf("AliPWG0Helper::GetProcessType : Could not find Pythia header. \n");
+      return -1;
+    }
+  }
+  
+  if (adebug) {
+    printf("AliPWG0Helper::GetProcessType : Pythia process type found: %d \n",pythiaGenHeader->ProcessType());
+  }
+
+  return pythiaGenHeader->ProcessType();        
 }
 
 //____________________________________________________________________
