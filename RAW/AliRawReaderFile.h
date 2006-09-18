@@ -24,8 +24,6 @@ class AliRawReaderFile: public AliRawReader {
   public :
     AliRawReaderFile(Int_t eventNumber = -1);
     AliRawReaderFile(const char* dirName, Int_t eventNumber = -1);
-    AliRawReaderFile(const AliRawReaderFile& rawReader);
-    AliRawReaderFile& operator = (const AliRawReaderFile& rawReader);
     virtual ~AliRawReaderFile();
 
     virtual void     RequireHeader(Bool_t required);
@@ -68,6 +66,10 @@ class AliRawReaderFile: public AliRawReader {
     Int_t            fEquipmentId; // equipment ID from file name
     UChar_t*         fBuffer;      // buffer for payload
     Int_t            fBufferSize;  // size of fBuffer in bytes
+
+  private :
+    AliRawReaderFile(const AliRawReaderFile& rawReader);
+    AliRawReaderFile& operator = (const AliRawReaderFile& rawReader);
 
     ClassDef(AliRawReaderFile, 0) // class for reading raw digits from a file
 };

@@ -27,6 +27,9 @@ public:
   void                 RunTPCtracking(AliRawEvent* event, AliESD* esd);
   void                 RunITStracking(AliESD* esd, TTree *treeClusters);
 private:
+  AliHoughFilter(const AliHoughFilter&);
+  AliHoughFilter &operator=(const AliHoughFilter&);
+
   Float_t fPtmin;        //Low limit on Pt
 
   AliITSgeom *fITSgeom;  //Pointer to the ITS geometry

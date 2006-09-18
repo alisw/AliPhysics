@@ -65,23 +65,6 @@ AliRawDB::AliRawDB(AliRawEvent *event,
 }
 
 //______________________________________________________________________________
-AliRawDB::AliRawDB(const AliRawDB& rawDB): TObject(rawDB)
-{
-// copy constructor
-
-  Fatal("AliRawDB", "copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliRawDB& AliRawDB::operator = (const AliRawDB& /*rawDB*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
-
-//______________________________________________________________________________
 Bool_t AliRawDB::FSHasSpace(const char *fs) const
 {
    // Check for at least fMaxSize bytes of free space on the file system.

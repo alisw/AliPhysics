@@ -19,8 +19,6 @@ class AliRawReader;
 class AliVMERawStream: public TObject {
   public :
     AliVMERawStream(AliRawReader* rawReader);
-    AliVMERawStream(const AliVMERawStream& stream);
-    AliVMERawStream& operator = (const AliVMERawStream& stream);
     virtual ~AliVMERawStream() {};
 
     virtual Bool_t   Next();
@@ -39,6 +37,9 @@ class AliVMERawStream: public TObject {
     UInt_t           GetTimeMuSec() const {return fTimeMuSec;};
 
   private :
+    AliVMERawStream(const AliVMERawStream& stream);
+    AliVMERawStream& operator = (const AliVMERawStream& stream);
+
     Bool_t           CheckString(const char* str) const;
     Bool_t           ReadTDC();
     Bool_t           ReadTime();

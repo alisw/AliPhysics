@@ -175,24 +175,6 @@ AliMDC::~AliMDC()
 }
  
 //______________________________________________________________________________
-AliMDC::AliMDC(const AliMDC& mdc): TObject(mdc)
-{
-// copy constructor
-
-  Fatal("AliMDC", "copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliMDC& AliMDC::operator = (const AliMDC& /*mdc*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
-
-
-//______________________________________________________________________________
 Int_t AliMDC::Open(EWriteMode mode, const char* fileName)
 {
 // open a new raw DB file

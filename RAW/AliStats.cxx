@@ -32,28 +32,46 @@ ClassImp(AliStats)
 
 
 //______________________________________________________________________________
-AliStats::AliStats(const char *filename, Int_t compmode, Bool_t filter)
+AliStats::AliStats(const char *filename, Int_t compmode, Bool_t filter):
+fEvents(0),
+fFirstRun(0),
+fFirstEvent(0),
+fLastRun(0),
+fLastEvent(0),
+fBegin(),
+fEnd(),
+fFileName(filename),
+fFileSize(0),
+fCompFactor(0),
+fCompMode(compmode),
+fFilter(filter),
+fRTHist(NULL),
+fChunk(-0.5)
 {
    // Create statistics object.
 
-   fEvents     = 0;
-   fFirstRun   = 0;
-   fFirstEvent = 0;
-   fLastRun    = 0;
-   fLastEvent  = 0;
-   fChunk      = -0.5;
-   fFileName   = filename;
-   fCompMode   = compmode;
-   fFilter     = filter;
-   fRTHist     = 0;
 }
 
 //______________________________________________________________________________
-AliStats::AliStats(const AliStats &rhs): TObject(rhs)
+AliStats::AliStats(const AliStats &rhs):
+TObject(rhs),
+fEvents(rhs.fEvents),
+fFirstRun(rhs.fFirstRun),
+fFirstEvent(rhs.fFirstEvent),
+fLastRun(rhs.fLastRun),
+fLastEvent(rhs.fLastEvent),
+fBegin(rhs.fBegin),
+fEnd(rhs.fEnd),
+fFileName(rhs.fFileName),
+fFileSize(rhs.fFileSize),
+fCompFactor(rhs.fCompFactor),
+fCompMode(rhs.fCompMode),
+fFilter(rhs.fFilter),
+fRTHist(rhs.fRTHist ? (TH1F*) rhs.fRTHist->Clone() : 0),
+fChunk(rhs.fChunk)
 {
-   // AliStats copy constructor.
+  // AliStats copy constructor.
 
-   operator=(rhs);
 }
 
 //______________________________________________________________________________

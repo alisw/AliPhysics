@@ -68,28 +68,6 @@ AliFstream::AliFstream(const char *fileName):
 }
 
 //______________________________________________________________________________
-AliFstream::AliFstream(const AliFstream &source):
-  TObject(source)
-{
-  // Copy constructor
-  //
-  AliFatal("Copy constructor not implemented !");
-}
-
-//______________________________________________________________________________
-AliFstream &AliFstream::operator =(const AliFstream& source)
-{
-  // assignment operator
-  //
-  if(this==&source) return *this;
-  ((TObject *)this)->operator=(source);
-
-  AliFatal("Assigment operator not implemented !");
-
-  return *this;
-}
-
-//______________________________________________________________________________
 AliFstream::~AliFstream()
 {
   // Destructor

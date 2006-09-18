@@ -54,33 +54,16 @@ ClassImp(AliRawEvent)
 
 
 //______________________________________________________________________________
-AliRawEvent::AliRawEvent()
+AliRawEvent::AliRawEvent():
+fNEquipments(0),
+fNSubEvents(0),
+fEvtHdr(NULL),
+fEquipments(NULL),
+fSubEvents(NULL)
 {
    // Create ALICE event object. If ownData is kFALSE we will use a static
    // raw data object, otherwise a private copy will be made.
 
-   fNEquipments = 0;
-   fNSubEvents  = 0;
-   fEvtHdr      = 0;
-   fEquipments  = 0;
-   fSubEvents   = 0;
-}
-
-//______________________________________________________________________________
-AliRawEvent::AliRawEvent(const AliRawEvent& rawEvent): TObject(rawEvent)
-{
-// copy constructor
-
-  Fatal("AliRawEvent", "copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliRawEvent& AliRawEvent::operator = (const AliRawEvent& /*rawEvent*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
 }
 
 //______________________________________________________________________________

@@ -35,6 +35,18 @@
 
 ClassImp(AliRawEventHeaderBase)
 
+//______________________________________________________________________________
+AliRawEventHeaderBase::AliRawEventHeaderBase():
+fSize(0),
+fMagic(0),
+fHeadSize(0),
+fVersion(0),
+fExtendedDataSize(0),
+fExtendedData(NULL),
+fIsSwapped(kFALSE)
+{
+  // Default constructor
+}
 
 //______________________________________________________________________________
 void *AliRawEventHeaderBase::HeaderBegin()

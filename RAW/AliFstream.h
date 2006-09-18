@@ -19,8 +19,6 @@ class AliFstream : public TObject {
 public:
   AliFstream();
   AliFstream(const char *fileName);
-  AliFstream(const AliFstream &source);
-  AliFstream& operator= (const AliFstream &source);
   virtual ~AliFstream();
 
   void   Seekp(UInt_t position);
@@ -28,6 +26,9 @@ public:
   void   WriteBuffer(const char *buffer, UInt_t size, Bool_t force = kFALSE);
 
 private:
+
+  AliFstream(const AliFstream &source);
+  AliFstream &operator =(const AliFstream& source);
 
   fstream *fFile;       // Output file stream
   UChar_t *fBuffer;     // Pointer to the internal buffer

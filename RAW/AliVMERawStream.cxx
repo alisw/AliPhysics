@@ -50,20 +50,6 @@ AliVMERawStream::AliVMERawStream(AliRawReader* rawReader) :
   fRawReader->SelectEquipment(551, 38, 38);
 }
 
-AliVMERawStream::AliVMERawStream(const AliVMERawStream& stream) :
-  TObject(stream)
-{
-  Fatal("AliVMERawStream", "copy constructor not implemented");
-}
-
-AliVMERawStream& AliVMERawStream::operator = (const AliVMERawStream& 
-					      /* stream */)
-{
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
-
-
 Bool_t AliVMERawStream::Next()
 {
 // read the next raw digit

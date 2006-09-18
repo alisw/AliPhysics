@@ -20,7 +20,7 @@
 class AliRawData : public TObject {
 
 public:
-   AliRawData() { fSize = fBufSize = 0; fRawData = 0; fOwner = kTRUE; }
+   AliRawData();
    virtual ~AliRawData() { if (fOwner) delete [] fRawData; }
 
    inline void SetSize(Int_t size);

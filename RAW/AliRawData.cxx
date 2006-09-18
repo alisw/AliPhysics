@@ -26,3 +26,12 @@
 
 
 ClassImp(AliRawData)
+
+AliRawData::AliRawData():
+fSize(0),
+fBufSize(0),
+fRawData(NULL),
+fOwner(kTRUE)
+{
+  // Default constructor
+}

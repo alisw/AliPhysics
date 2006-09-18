@@ -54,23 +54,6 @@ AliTagDB::AliTagDB(AliRawEventHeaderBase *header, const char* fileName) :
 }
 
 //______________________________________________________________________________
-AliTagDB::AliTagDB(const AliTagDB& tagDB): TObject(tagDB)
-{
-// copy constructor
-
-  Fatal("AliTagDB", "copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliTagDB& AliTagDB::operator = (const AliTagDB& /*tagDB*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
-
-//______________________________________________________________________________
 Bool_t AliTagDB::Create(const char* fileName)
 {
    // Create a new tag DB.

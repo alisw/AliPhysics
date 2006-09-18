@@ -50,29 +50,12 @@ ClassImp(AliRawEquipment)
 
 
 //______________________________________________________________________________
-AliRawEquipment::AliRawEquipment()
+AliRawEquipment::AliRawEquipment():
+fEqpHdr(NULL),
+fRawData(NULL)
 {
    // Create ALICE equipment object.
 
-   fEqpHdr     = 0;
-   fRawData    = 0;
-}
-
-//______________________________________________________________________________
-AliRawEquipment::AliRawEquipment(const AliRawEquipment& rawEquipment): TObject(rawEquipment)
-{
-// copy constructor
-
-  Fatal("AliRawEquipment", "copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliRawEquipment& AliRawEquipment::operator = (const AliRawEquipment& /*rawEquipment*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
 }
 
 //______________________________________________________________________________

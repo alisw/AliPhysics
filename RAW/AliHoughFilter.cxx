@@ -43,7 +43,9 @@
 ClassImp(AliHoughFilter)
 
 //_____________________________________________________________________________
-AliHoughFilter::AliHoughFilter()
+AliHoughFilter::AliHoughFilter():
+fPtmin(0),
+fITSgeom(NULL)
 {
 // default constructor
 

@@ -19,7 +19,7 @@
 class AliRawEventHeaderBase : public TObject {
 
 public:
-   AliRawEventHeaderBase() { fSize=fMagic=fHeadSize=fVersion=fExtendedDataSize=0; fExtendedData = 0x0; fIsSwapped = kFALSE; }
+   AliRawEventHeaderBase();
    virtual ~AliRawEventHeaderBase() { if (fExtendedData) delete [] fExtendedData; }
 
    void         *HeaderBaseBegin() { return (void *) &fSize; }
@@ -68,6 +68,9 @@ public:
    };
 
 private:
+   AliRawEventHeaderBase(const AliRawEventHeaderBase&);
+   AliRawEventHeaderBase& operator=(const AliRawEventHeaderBase&);
+
    UInt_t fSize;          // size of event in bytes
    UInt_t fMagic;         // magic number used for consistency check
    UInt_t fHeadSize;      // size of header in bytes

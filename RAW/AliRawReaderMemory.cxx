@@ -31,7 +31,8 @@ ClassImp(AliRawReaderMemory)
 AliRawReaderMemory::AliRawReaderMemory() :
   fBuffer(NULL),
   fBufferSize(0),
-  fPosition(0)
+  fPosition(0),
+  fEquipmentId(-1)
 {
 // create an object to read digits from
 // the given memory location
@@ -42,7 +43,8 @@ AliRawReaderMemory::AliRawReaderMemory() :
 AliRawReaderMemory::AliRawReaderMemory(UChar_t* memory, UInt_t size) :
   fBuffer(memory),
   fBufferSize(size),
-  fPosition(0)
+  fPosition(0),
+  fEquipmentId(-1)
 {
 // create an object to read digits from the given memory
 
@@ -54,20 +56,6 @@ AliRawReaderMemory::~AliRawReaderMemory()
 // close the input memory
 
   delete fHeader;
-}
-
-
-AliRawReaderMemory::AliRawReaderMemory(const AliRawReaderMemory& rawReader) :
-  AliRawReader(rawReader)
-{
-  Fatal("AliRawReaderMemory", "copy constructor not implemented");
-}
-
-AliRawReaderMemory& AliRawReaderMemory::operator = (const AliRawReaderMemory& 
-					      /* rawReader */)
-{
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
 }
 
 void AliRawReaderMemory::RequireHeader(Bool_t required)

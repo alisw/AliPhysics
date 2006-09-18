@@ -70,19 +70,6 @@ AliRawReaderFile::AliRawReaderFile(const char* dirName, Int_t eventNumber) :
   fHeader = new AliRawDataHeader;
 }
 
-AliRawReaderFile::AliRawReaderFile(const AliRawReaderFile& rawReader) :
-  AliRawReader(rawReader)
-{
-  Fatal("AliRawReaderFile", "copy constructor not implemented");
-}
-
-AliRawReaderFile& AliRawReaderFile::operator = (const AliRawReaderFile& 
-					      /* rawReader */)
-{
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
-
 AliRawReaderFile::~AliRawReaderFile()
 {
 // close the input file

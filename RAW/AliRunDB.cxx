@@ -84,23 +84,6 @@ AliRunDB::AliRunDB(const char* localFS, Bool_t rdbms,
 }
 
 //______________________________________________________________________________
-AliRunDB::AliRunDB(const AliRunDB& runDB): TObject(runDB)
-{
-// copy constructor
-
-  Fatal("AliRunDB", "copy constructor not implemented");
-}
-
-//______________________________________________________________________________
-AliRunDB& AliRunDB::operator = (const AliRunDB& /*runDB*/)
-{
-// assignment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
-
-//______________________________________________________________________________
 void AliRunDB::Update(AliStats *stats)
 {
   UpdateLocal(stats);
