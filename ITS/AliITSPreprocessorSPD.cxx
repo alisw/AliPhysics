@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.3  2006/04/12 08:32:31  hristov
+New SPD simulation (Massimo):
+- speeding up of the diffusion code (Bjorn)
+- creation  of CDB file with the dead channels, implementation
+of the CDB reading, check of  the code (Henrik, Giuseppe, Domenico)
+- final tuning of the diffusion model parameters (Romualdo)
+
 Revision 1.2  2006/02/03 11:31:18  masera
 Calibration framework improved (E. Crescio)
 
@@ -1403,20 +1410,17 @@ Bool_t AliITSPreprocessorSPD::Store(AliCDBId& /*id*/, AliCDBMetaData* /*md*/, In
 
   AliInfo("Storing bad channels");
  
-  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
-    AliWarning("No storage set! Will use dummy one");
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  }
-
-  
   AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", runNumber);
+
   if(!entrySPD){
     AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
-    AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
-    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
 	
-    entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", runNumber);
-    AliCDBManager::Instance()->SetDefaultStorage(origStorage);
+    AliCDBStorage *localStor = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
+    entrySPD = localStor->Get("ITS/Calib/CalibSPD", runNumber);
+    if(!entrySPD){
+      AliFatal("Cannot find SPD calibration entry!");
+      return kFALSE;
+    }
   }
 
   TObjArray *respSPD = (TObjArray *)entrySPD->GetObject();
@@ -1441,12 +1445,18 @@ Bool_t AliITSPreprocessorSPD::Store(AliCDBId& /*id*/, AliCDBMetaData* /*md*/, In
     }
   }
     
-  
-  AliCDBManager::Instance()->Put(entrySPD);
+
+  AliCDBStorage *storage = AliCDBManager::Instance()->GetDefaultStorage();
+  if(!storage) {
+    AliWarning("No default storage set! Will use dummy one");
+    storage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
+    if(!storage) AliFatal("Could not even set dummy storage! Something very strange is happening...");
+  }
+
+  status = storage->Put(entrySPD);
   entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);
 
   delete entrySPD;
-  status=kTRUE;
   return status;
 }
