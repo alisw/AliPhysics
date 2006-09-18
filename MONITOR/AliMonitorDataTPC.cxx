@@ -30,38 +30,29 @@ ClassImp(AliMonitorDataTPC)
 
 
 //_____________________________________________________________________________
-AliMonitorDataTPC::AliMonitorDataTPC()
+AliMonitorDataTPC::AliMonitorDataTPC():
+  TObject(),
+  fNTracks(0),
+  fPt(NULL),
+  fEta(NULL),
+  fPhi(NULL),
+  fSize(0)
 {
 // default constructor
 
-  fPt = fEta = fPhi = NULL;
-  fSize = 0;
 }
 
 //_____________________________________________________________________________
-AliMonitorDataTPC::AliMonitorDataTPC(const AliMonitorDataTPC& data) :
-  TObject(data)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorDataTPC& AliMonitorDataTPC::operator = (const AliMonitorDataTPC& 
-						  /*data*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
-
-//_____________________________________________________________________________
-AliMonitorDataTPC::AliMonitorDataTPC(Int_t size)
+AliMonitorDataTPC::AliMonitorDataTPC(Int_t size):
+  TObject(),
+  fNTracks(0),
+  fPt(new Float_t[size]),
+  fEta(new Float_t[size]),
+  fPhi(new Float_t[size]),
+  fSize(size)
 {
 // constructor with given size
 
-  fPt = new Float_t[size];
-  fEta = new Float_t[size];
-  fPhi = new Float_t[size];
-  fSize = size;
 }
 
 //_____________________________________________________________________________

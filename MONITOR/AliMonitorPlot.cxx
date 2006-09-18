@@ -38,20 +38,23 @@ Color_t AliMonitorPlot::fgColorCompare = kRed;
 
 
 //_____________________________________________________________________________
-AliMonitorPlot::AliMonitorPlot() : TNamed()
+AliMonitorPlot::AliMonitorPlot() :
+  TNamed(),
+  fDescription(),
+  fNumberOfEvents(0)
 {
 // default contructor
 
-  fNumberOfEvents = 0;
 }
 
 //_____________________________________________________________________________
 AliMonitorPlot::AliMonitorPlot(const AliMonitorPlot& plot) :
-  TNamed(plot)
+  TNamed(plot),
+  fDescription(plot.fDescription),
+  fNumberOfEvents(plot.fNumberOfEvents)
 {
 // copy constructor
 
-  fNumberOfEvents = plot.fNumberOfEvents;
 }
 
 //_____________________________________________________________________________
@@ -66,11 +69,12 @@ AliMonitorPlot& AliMonitorPlot::operator =(const AliMonitorPlot& plot)
 
 //_____________________________________________________________________________
 AliMonitorPlot::AliMonitorPlot(const char* name, const char* title) :
-  TNamed(name, title)
+  TNamed(name, title),
+  fDescription(),
+  fNumberOfEvents(0)
 {
 // constructor setting name and title
 
-  fNumberOfEvents = 0;
 }
 
 

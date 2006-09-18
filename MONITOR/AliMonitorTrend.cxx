@@ -43,32 +43,35 @@ Int_t AliMonitorTrend::fgIncSize = 10;
 
 
 //_____________________________________________________________________________
-AliMonitorTrend::AliMonitorTrend()
+AliMonitorTrend::AliMonitorTrend():
+  AliMonitorPlot(),
+  fLabel(),
+  fMin(0),
+  fMax(0),
+  fData(),
+  fHistoDraw(NULL),
+  fRefMean(0),
+  fRefSigma(-1),
+  fHistoCompare(NULL)
 {
 // default contructor
 
-  fMin = fMax = 0;
-  fHistoDraw = NULL;
-  fRefMean = 0;
-  fRefSigma = -1;
-  fHistoCompare = NULL;
 }
 
 //_____________________________________________________________________________
 AliMonitorTrend::AliMonitorTrend(const AliMonitorTrend& trend) :
-  AliMonitorPlot(trend)
+  AliMonitorPlot(trend),
+  fLabel(trend.fLabel),
+  fMin(trend.fMin),
+  fMax(trend.fMax),
+  fData(trend.fData),
+  fHistoDraw(NULL),
+  fRefMean(trend.fRefMean),
+  fRefSigma(trend.fRefSigma),
+  fHistoCompare(NULL)
 {
 // copy constructor
 
-  fLabel = trend.fLabel;
-  fMin = trend.fMin;
-  fMax = trend.fMax;
-  trend.fData.Copy(fData);
-
-  fHistoDraw = NULL;
-  fRefMean = trend.fRefMean;
-  fRefSigma = trend.fRefSigma;
-  fHistoCompare = NULL;
 }
 
 //_____________________________________________________________________________
@@ -94,17 +97,18 @@ AliMonitorTrend& AliMonitorTrend::operator =(const AliMonitorTrend& trend)
 //_____________________________________________________________________________
 AliMonitorTrend::AliMonitorTrend(const char* name, const char* title,
 		  const char* label, Double_t min, Double_t max) :
-  AliMonitorPlot(name, title)
+  AliMonitorPlot(name, title),
+  fLabel(label),
+  fMin(min),
+  fMax(max),
+  fData(),
+  fHistoDraw(NULL),
+  fRefMean(0),
+  fRefSigma(0),
+  fHistoCompare(NULL)
 {
 // create a monitor trend
 
-  fLabel = label;
-  fMin = min;
-  fMax = max;
-
-  fHistoDraw = NULL;
-  fRefMean = fRefSigma = 0;
-  fHistoCompare = NULL;
 }
 
 //_____________________________________________________________________________

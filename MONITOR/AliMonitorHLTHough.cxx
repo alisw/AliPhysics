@@ -35,28 +35,25 @@
 #include <AliL3Transform.h>
 
 //_____________________________________________________________________________
-AliMonitorHLTHough::AliMonitorHLTHough(AliTPCParam* param)
+AliMonitorHLTHough::AliMonitorHLTHough(AliTPCParam* param):
+  AliMonitor(),
+  fParam(param),
+  fClustersCharge(NULL),
+  fNClustersVsRow(NULL),
+  fNClustersVsSector(NULL),
+  fNTracks(NULL),
+  fTrackPt(NULL),
+  fTrackEta(NULL),
+  fTrackPhi(NULL),
+  fTrackNHits(NULL),
+  fTrackDEdxVsP(NULL),
+  fTrackDEdx(NULL),
+  fTrackEtaVsPhi(NULL),
+  fPtEtaVsPhi(NULL)
 {
 // create a HLT monitor object with the given parameters
 
-  fParam = param;
 }
-
-//_____________________________________________________________________________
-AliMonitorHLTHough::AliMonitorHLTHough(const AliMonitorHLTHough& monitor) :
-  AliMonitor(monitor)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorHLTHough& AliMonitorHLTHough::operator = (const AliMonitorHLTHough& 
-						    /*monitor*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
-
 
 //_____________________________________________________________________________
 void AliMonitorHLTHough::CreateHistos(TFolder* folder)

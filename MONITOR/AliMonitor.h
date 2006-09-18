@@ -19,8 +19,6 @@ class AliMonitorTrend;
 class AliMonitor : public TObject {
 public:
   AliMonitor();
-  AliMonitor(const AliMonitor& monitor);
-  AliMonitor& operator = (const AliMonitor& monitor);
   virtual ~AliMonitor() {};
 
   virtual void     CreateHistos(TFolder* folder) = 0;
@@ -45,6 +43,10 @@ protected:
   AliMonitorTrend* CreateTrend(const char* name, const char* title,
 			       const char* label, 
 			       Double_t min = 0, Double_t max = 0);
+
+ private:
+  AliMonitor(const AliMonitor& monitor);
+  AliMonitor& operator = (const AliMonitor& monitor);
 
   ClassDef(AliMonitor, 0)   // base class for the creation and filling of monitor histograms
 };

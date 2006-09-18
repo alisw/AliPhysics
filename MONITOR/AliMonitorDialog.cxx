@@ -33,25 +33,24 @@ ClassImp(AliMonitorDialog)
 
 //_____________________________________________________________________________
 AliMonitorDialog::AliMonitorDialog(TGFrame* main, Int_t width, Int_t height,
-				   Bool_t cancelBtn)
+				   Bool_t cancelBtn) :
+  TObject(),
+  fQObject(),
+  fMain(new TGTransientFrame(gClient->GetRoot(), main, width, height)),
+  fFrameLayout(new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2, 2, 2, 2)),
+  fFrame(new TGHorizontalFrame(fMain, 0, 0)),
+  fButtonFrameLayout(new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2, 2, 2, 2)),
+  fButtonFrame(new TGHorizontalFrame(fMain, 0, 0)),
+  fButtonLayout(new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 15, 15, 2, 2)),
+  fOkButton(new TGTextButton(fButtonFrame, "    &Ok    ", 1)),
+  fCancelButton(NULL)
 {
 // create a dialog with an ok and a cancel button
 
-  fMain = new TGTransientFrame(gClient->GetRoot(), main, width, height);
-
-  fFrameLayout = new TGLayoutHints(kLHintsCenterX | kLHintsCenterY,
-				   2, 2, 2, 2);
-  fFrame = new TGHorizontalFrame(fMain, 0, 0);
   fMain->AddFrame(fFrame, fFrameLayout);
 
-  fButtonFrameLayout = new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 
-					 2, 2, 2, 2);
-  fButtonFrame = new TGHorizontalFrame(fMain, 0, 0);
   fMain->AddFrame(fButtonFrame, fButtonFrameLayout);
 
-  fButtonLayout = new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 
-				    15, 15, 2, 2);
-  fOkButton = new TGTextButton(fButtonFrame, "    &Ok    ", 1);
   fButtonFrame->AddFrame(fOkButton, fButtonLayout);
   fOkButton->Connect("Clicked()", "AliMonitorDialog", this, "DoOk()");
   if (cancelBtn) {
@@ -59,8 +58,6 @@ AliMonitorDialog::AliMonitorDialog(TGFrame* main, Int_t width, Int_t height,
     fButtonFrame->AddFrame(fCancelButton, fButtonLayout);
     fCancelButton->Connect("Clicked()", "AliMonitorDialog", this, 
 			   "DoCancel()");
-  } else {
-    fCancelButton = NULL;
   }
 
   fMain->Connect("CloseWindow()", "AliMonitorDialog", this, "CloseWindow()");
@@ -80,21 +77,6 @@ AliMonitorDialog::AliMonitorDialog(TGFrame* main, Int_t width, Int_t height,
   fMain->MapSubwindows();
   fMain->Layout();
   fMain->MapWindow();
-}
-
-//_____________________________________________________________________________
-AliMonitorDialog::AliMonitorDialog(const AliMonitorDialog& dlg) :
-  TObject(dlg)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorDialog& AliMonitorDialog::operator = (const AliMonitorDialog& 
-						/*dlg*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
 }
 
 //_____________________________________________________________________________

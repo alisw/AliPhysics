@@ -43,42 +43,45 @@ Int_t   AliMonitorHisto::fgNHistosMax = 10;
 
 
 //_____________________________________________________________________________
-AliMonitorHisto::AliMonitorHisto()
+AliMonitorHisto::AliMonitorHisto() :
+  AliMonitorPlot(),
+  fHisto(NULL),
+  fHistoList(),
+  fNHistos(0),
+  fHistoRun(NULL),
+  fHistoDraw(NULL),
+  fHistoRef(NULL),
+  fHistoCompare(NULL),
+  fNorm(kNormNone)
 {
 // default contructor
 
-  fHisto = NULL;
-  fNHistos = 0;
-  fHistoRun = NULL;
-  fHistoDraw = NULL;
-  fHistoRef = NULL;
-  fHistoCompare = NULL;
-  fNorm = kNormNone;
 }
 
 //_____________________________________________________________________________
 AliMonitorHisto::AliMonitorHisto(const AliMonitorHisto& histo) :
-  AliMonitorPlot(histo)
+  AliMonitorPlot(histo),
+  fHisto(NULL),
+  fHistoList(),
+  fNHistos(histo.fNHistos),
+  fHistoRun(NULL),
+  fHistoDraw(NULL),
+  fHistoRef(NULL),
+  fHistoCompare(NULL),
+  fNorm(histo.fNorm)
 {
 // copy constructor
 
   Bool_t addStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  fHisto = NULL;
   if (histo.fHisto) fHisto = (TH1*) histo.fHisto->Clone();
-  fNHistos = histo.fNHistos;
   TObjLink* link = histo.fHistoList.FirstLink();
   for (Int_t i = 0; i < fNHistos; i++) {
     fHistoList.Add(link->GetObject()->Clone());
     link = link->Next();
   }
-  fHistoRun = NULL;
   if (histo.fHistoRun) fHistoRun = (TH1*) histo.fHistoRun->Clone();
-  fHistoDraw = NULL;
-  fHistoRef = NULL;
   if (histo.fHistoRef) fHistoRef = (TH1*) histo.fHistoRef->Clone();
-  fHistoCompare = NULL;
-  fNorm = histo.fNorm;
   TH1::AddDirectory(addStatus);
 }
 
@@ -113,7 +116,15 @@ AliMonitorHisto& AliMonitorHisto::operator =(const AliMonitorHisto& histo)
 
 //_____________________________________________________________________________
 AliMonitorHisto::AliMonitorHisto(TH1* histo, ENorm norm) :
-  AliMonitorPlot(histo->GetName(), histo->GetTitle())
+  AliMonitorPlot(histo->GetName(), histo->GetTitle()),
+  fHisto(histo),
+  fHistoList(),
+  fNHistos(0),
+  fHistoRun(NULL),
+  fHistoDraw(NULL),
+  fHistoRef(NULL),
+  fHistoCompare(NULL),
+  fNorm(norm)
 {
 // create a monitor histogram from the given histogram
 
@@ -123,17 +134,11 @@ AliMonitorHisto::AliMonitorHisto(TH1* histo, ENorm norm) :
 
   histo->SetDirectory(NULL);
   histo->Reset();
-  fHisto = histo;
   fHisto->Sumw2();
-  fNHistos = 0;
   Bool_t addStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   fHistoRun = (TH1*) histo->Clone();
   TH1::AddDirectory(addStatus);
-  fHistoDraw = NULL;
-  fHistoRef = NULL;
-  fHistoCompare = NULL;
-  fNorm = norm;
 }
 
 //_____________________________________________________________________________

@@ -40,27 +40,29 @@ ClassImp(AliMonitorITS)
 
 
 //_____________________________________________________________________________
-AliMonitorITS::AliMonitorITS(AliITSgeom* geom)
+AliMonitorITS::AliMonitorITS(AliITSgeom* geom):
+  AliMonitor(),
+  fGeom(geom),
+  fSDDDigitsCharge(NULL),
+  fSSDDigitsCharge(NULL),
+  fSDDClustersCharge(NULL),
+  fSSDClustersCharge(NULL),
+  fSPDNClustersVsModule(NULL),
+  fSDDNClustersVsModule(NULL),
+  fSSDNClustersVsModule(NULL),
+  fNClustersVsLayer(NULL),
+  fNTracks(NULL),
+  fNTracksITSTPC(NULL),
+  fTrackPt(NULL),
+  fTrackEta(NULL),
+  fTrackPhi(NULL),
+  fTrackDEdxVsP(NULL)
+
 {
 // create a ITS monitor object with the given geometry
 
-  fGeom = geom;
 }
 
-
-//_____________________________________________________________________________
-AliMonitorITS::AliMonitorITS(const AliMonitorITS& monitor) :
-  AliMonitor(monitor)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorITS& AliMonitorITS::operator = (const AliMonitorITS& /*monitor*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
 
 //_____________________________________________________________________________
 void AliMonitorITS::CreateHistos(TFolder* folder)

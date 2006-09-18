@@ -42,23 +42,10 @@ ClassImp(AliMonitor)
 
 
 //_____________________________________________________________________________
-AliMonitor::AliMonitor()
+AliMonitor::AliMonitor():
+  TObject(),
+  fFolder(NULL)
 {
-  fFolder = NULL;
-}
-
-//_____________________________________________________________________________
-AliMonitor::AliMonitor(const AliMonitor& monitor) :
-  TObject(monitor)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitor& AliMonitor::operator = (const AliMonitor& /*monitor*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
 }
 
 //_____________________________________________________________________________

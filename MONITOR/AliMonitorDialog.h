@@ -21,8 +21,6 @@ RQ_OBJECT("AliMonitorDialog")
 public:
   AliMonitorDialog(TGFrame* main, Int_t width = 300, Int_t height = 80,
 		   Bool_t cancelBtn = kTRUE);
-  AliMonitorDialog(const AliMonitorDialog& dlg);
-  AliMonitorDialog& operator = (const AliMonitorDialog& dlg);
   virtual ~AliMonitorDialog();
 
   void               CloseWindow() const;
@@ -40,6 +38,10 @@ protected:
   TGLayoutHints*     fButtonLayout;        // layout of the buttons
   TGTextButton*      fOkButton;            // the Ok button
   TGTextButton*      fCancelButton;        // the cancel button
+
+ private:
+  AliMonitorDialog(const AliMonitorDialog& dlg);
+  AliMonitorDialog& operator = (const AliMonitorDialog& dlg);
 
   ClassDef(AliMonitorDialog, 0)   // base class for dialogs with ok and cancel button
 };

@@ -34,26 +34,16 @@ ClassImp(AliMonitorV0s)
 
 
 //_____________________________________________________________________________
-AliMonitorV0s::AliMonitorV0s()
+AliMonitorV0s::AliMonitorV0s():
+  AliMonitor(),
+  fRadius(NULL),
+  fMassK0(NULL),
+  fMassLambda(NULL),
+  fMassAntiLambda(NULL)
 {
 // create a monitor object for V0s
 
 }
-
-//_____________________________________________________________________________
-AliMonitorV0s::AliMonitorV0s(const AliMonitorV0s& monitor) :
-  AliMonitor(monitor)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorV0s& AliMonitorV0s::operator = (const AliMonitorV0s& /*monitor*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
-
 
 //_____________________________________________________________________________
 void AliMonitorV0s::CreateHistos(TFolder* folder)

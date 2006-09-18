@@ -195,19 +195,14 @@ private:
   public:
     AliMonitorStringDlg(TString& string, TGFrame* main, const char* title,
 			const char* label);
-    AliMonitorStringDlg(const AliMonitorStringDlg& dlg) : 
-      AliMonitorDialog(dlg), fString(dlg.fString) {
-      Fatal("AliMonitorStringDlg", "copy constructor not implemented");
-    }
-    AliMonitorStringDlg& operator = (const AliMonitorStringDlg& /*dlg*/) {
-      Fatal("operator =", "assignment operator not implemented");
-      return *this;
-    }
     virtual ~AliMonitorStringDlg();
 
     virtual void       OnOkClicked();
 
   private:
+    AliMonitorStringDlg(const AliMonitorStringDlg& dlg);
+    AliMonitorStringDlg& operator = (const AliMonitorStringDlg& /*dlg*/);
+
     TGLayoutHints*     fStringLayout;    // layout of the text entry
     TGLabel*           fStringLabel;     // label for the text entry
     TGTextEntry*       fStringEntry;     // the text enty
@@ -221,19 +216,14 @@ private:
   public:
     AliMonitorNumberDlg(Float_t& value, TGFrame* main, const char* title,
 			const char* label, Float_t min);
-    AliMonitorNumberDlg(const AliMonitorNumberDlg& dlg) : 
-      AliMonitorDialog(dlg), fNumber(dlg.fNumber) {
-      Fatal("AliMonitorNumberDlg", "copy constructor not implemented");
-    }
-    AliMonitorNumberDlg& operator = (const AliMonitorNumberDlg& /*dlg*/) {
-      Fatal("operator =", "assignment operator not implemented");
-      return *this;
-    }
     virtual ~AliMonitorNumberDlg();
 
     virtual void       OnOkClicked();
 
   private:
+    AliMonitorNumberDlg(const AliMonitorNumberDlg& dlg);
+    AliMonitorNumberDlg& operator = (const AliMonitorNumberDlg& /*dlg*/);
+
     TGLayoutHints*     fNumberLayout;    // layout of the number entry
     TGLabel*           fNumberLabel;     // label for the number entry
     TGNumberEntry*     fNumberEntry;     // the number entry

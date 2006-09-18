@@ -11,8 +11,6 @@ class AliTPCParam;
 class AliMonitorHLTHough : public AliMonitor {
 public:
   AliMonitorHLTHough(AliTPCParam* param);
-  AliMonitorHLTHough(const AliMonitorHLTHough& monitor);
-  AliMonitorHLTHough& operator = (const AliMonitorHLTHough& monitor);
   virtual ~AliMonitorHLTHough() {};
 
   virtual void     CreateHistos(TFolder* folder);
@@ -20,6 +18,9 @@ public:
 			      AliRawReader* rawReader, AliESD* esd);
 
 private:
+  AliMonitorHLTHough(const AliMonitorHLTHough& monitor);
+  AliMonitorHLTHough& operator = (const AliMonitorHLTHough& monitor);
+
   AliTPCParam*     fParam;              // TPC parameters
 
   AliMonitorHisto* fClustersCharge;     // charge distribution of HLT clusters

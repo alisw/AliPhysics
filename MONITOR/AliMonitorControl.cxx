@@ -47,15 +47,16 @@ ClassImp(AliMonitorControl)
 //_____________________________________________________________________________
 AliMonitorControl::AliMonitorBufferDlg::AliMonitorBufferDlg(Int_t& size, 
 							    TGFrame* main) :
-  AliMonitorDialog(main, 250, 80), fSize(size)
+  AliMonitorDialog(main, 250, 80),
+  fBufferLayout(new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 5, 2, 2)),
+  fBufferLabel(new TGLabel(fFrame, "size of histogram buffer:")),
+  fBufferEntry(new TGNumberEntry(fFrame, size, 2, -1,
+				 TGNumberFormat::kNESInteger)),
+  fSize(size)
 {
 // create a dialog for setting the size of the buffer for monitor histos
 
-  fBufferLayout = new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 5, 2, 2);
-  fBufferLabel = new TGLabel(fFrame, "size of histogram buffer:");
   fFrame->AddFrame(fBufferLabel, fBufferLayout);
-  fBufferEntry = new TGNumberEntry(fFrame, size, 2, -1,
-				   TGNumberFormat::kNESInteger);
   fBufferEntry->SetLimits(TGNumberFormat::kNELLimitMinMax, 1, 99);
   fFrame->AddFrame(fBufferEntry, fBufferLayout);
 
@@ -87,7 +88,10 @@ void AliMonitorControl::AliMonitorBufferDlg::OnOkClicked()
 //_____________________________________________________________________________
 AliMonitorControl::AliMonitorClientsDlg::AliMonitorClientsDlg(TObjArray* clients, 
 							      TGFrame* main) :
-  AliMonitorDialog(main, 450, 300, kFALSE)
+  AliMonitorDialog(main, 450, 300, kFALSE),
+  fClientsLayout(new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 
+				   0, 0, 0, 0)),
+  fClients(new TGTextView(fFrame, 420, 230))
 {
 // create a dialog to display the list of clients
 
@@ -95,9 +99,6 @@ AliMonitorControl::AliMonitorClientsDlg::AliMonitorClientsDlg(TObjArray* clients
   fFrameLayout = new TGLayoutHints(kLHintsCenterX | kLHintsTop, 
 				   10, 10, 15, 15);
   ((TGFrameElement*)(fMain->GetList()->First()))->fLayout = fFrameLayout;
-  fClientsLayout = new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 
-				     0, 0, 0, 0);
-  fClients = new TGTextView(fFrame, 420, 230);
   fFrame->AddFrame(fClients, fClientsLayout);
 
   char line[256];
@@ -141,11 +142,50 @@ enum {kMenuFileExit, kMenuFileAbort,
 
 
 //_____________________________________________________________________________
-AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
+AliMonitorControl::AliMonitorControl(AliMonitorProcess* process):
+  TObject(),
+  fQObject(),
+  fMonitorProcess(process),
+  fColorStatus(0),
+  fColorStart(0),
+  fColorStop(0),
+  fMain(new TGMainFrame(gClient->GetRoot(), 380, 200)),
+  fMenuBarLayout(new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 1, 1)),
+  fMenuBarItemLayout(new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0)),
+  fMenuBarHelpLayout(new TGLayoutHints(kLHintsTop | kLHintsRight)),
+  fMenuFile(new TGPopupMenu(gClient->GetRoot())),
+  fMenuOptions(new TGPopupMenu(gClient->GetRoot())),
+  fMenuHelp(new TGPopupMenu(gClient->GetRoot())),
+  fMenuBar(new TGMenuBar(fMain, 1, 1, kHorizontalFrame)),
+  fFrameLayout(new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 2, 2, 2, 2)),
+  fFrame(new TGVerticalFrame(fMain, 0, 0, kChildFrame | kSunkenFrame)),
+  fStatusLayout(new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 10, 2, 2, 2)),
+  fStatusFrameLayout(new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 2, 2, 2)),
+  fStatus1Frame(new TGHorizontalFrame(fFrame, 0, 0)),
+  fRunNumberLabel(new TGLabel(fStatus1Frame, "current run:")),
+  fRunNumber(new TGTextEntry(fStatus1Frame, "-")),
+  fEventNumberLabel(new TGLabel(fStatus1Frame,"  event:")),
+  fEventNumber(new TGTextEntry(fStatus1Frame, "-/-/-")),
+  fStatus2Frame(new TGHorizontalFrame(fFrame, 0, 0)),
+  fStatusLabel(new TGLabel(fStatus2Frame, "current status:")),
+  fStatus(new TGTextEntry(fStatus2Frame, "stopped")),
+  fStatus3Frame(new TGHorizontalFrame(fFrame, 0, 0)),
+  fEventsLabel(new TGLabel(fStatus3Frame, "monitored events:")),
+  fEvents(new TGTextEntry(fStatus3Frame, "-")),
+  fClientsLabel(new TGLabel(fStatus3Frame, " number of clients:")),
+  fClients(new TGTextEntry(fStatus3Frame, "-")),
+  fButtonFrameLayout(new TGLayoutHints(kLHintsExpandX | kLHintsBottom, 50, 50, 10, 10)),
+  fButtonFrame(new TGHorizontalFrame(fMain, 0, 0)),
+  fButtonLayout(new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2, 2, 2, 2)),
+  fResetButton(new TGTextButton(fButtonFrame, " &Reset ", 1)),
+  fStartStopButton(new TGTextButton(fButtonFrame, " &Start ", 2)),
+  fStartButtonStatus(kTRUE),
+  fTerminating(kFALSE),
+  fTimer(new TTimer(this, 10, kTRUE))
+  
 {
 // initialize the monitoring control window
 
-  fMonitorProcess = process;
 
 
   // colors
@@ -153,35 +193,22 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
   gClient->GetColorByName("green", fColorStart);
   gClient->GetColorByName("red", fColorStop);
 
-  // main window
-  fMain = new TGMainFrame(gClient->GetRoot(), 380, 200);
-
-  // menu bar
-  fMenuBarLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX,
-                                      0, 0, 1, 1);
-  fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
-  fMenuBarHelpLayout = new TGLayoutHints(kLHintsTop | kLHintsRight);
-
-  fMenuFile = new TGPopupMenu(gClient->GetRoot());
   fMenuFile->AddEntry("E&xit", kMenuFileExit);
   fMenuFile->AddEntry("&Abort", kMenuFileAbort);
   fMenuFile->DisableEntry(kMenuFileAbort);
   fMenuFile->Connect("Activated(Int_t)", "AliMonitorControl", this,
 		     "HandleMenu(Int_t)");
 
-  fMenuOptions = new TGPopupMenu(gClient->GetRoot());
   fMenuOptions->AddEntry("&Histogram buffer...", kMenuOptBuffer);
   fMenuOptions->AddEntry("List of &Clients...", kMenuOptClients);
   fMenuOptions->Connect("Activated(Int_t)", "AliMonitorControl", this,
 			"HandleMenu(Int_t)");
 
-  fMenuHelp = new TGPopupMenu(gClient->GetRoot());
   fMenuHelp->AddEntry("&Documentation...", kMenuHelpDoc);
   fMenuHelp->AddEntry("A&bout...", kMenuHelpAbout);
   fMenuHelp->Connect("Activated(Int_t)", "AliMonitorControl", this,
 		     "HandleMenu(Int_t)");
 
-  fMenuBar = new TGMenuBar(fMain, 1, 1, kHorizontalFrame);
   fMenuBar->AddPopup("&File", fMenuFile, fMenuBarItemLayout);
   fMenuBar->AddPopup("&Options", fMenuOptions, fMenuBarItemLayout);
   fMenuBar->AddPopup("&Help", fMenuHelp, fMenuBarHelpLayout);
@@ -190,32 +217,19 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
 
 
   // status frame
-  fFrameLayout = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 
-				   2, 2, 2, 2);
-  fFrame = new TGVerticalFrame(fMain, 0, 0, kChildFrame | kSunkenFrame);
   fMain->AddFrame(fFrame, fFrameLayout);
 
-  fStatusLayout = new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 10, 2, 2, 2);
-  fStatusFrameLayout = new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 2, 2, 2);
-
-
   // run and event number
-  fStatus1Frame = new TGHorizontalFrame(fFrame, 0, 0);
   fFrame->AddFrame(fStatus1Frame, fStatusFrameLayout);
 
-  fRunNumberLabel = new TGLabel(fStatus1Frame, "current run:");
   fStatus1Frame->AddFrame(fRunNumberLabel, fStatusLayout);
-  fRunNumber = new TGTextEntry(fStatus1Frame, "-");
   fRunNumber->Resize(60, fRunNumber->GetDefaultHeight());
   fRunNumber->SetAlignment(kTextRight);
   fRunNumber->SetEnabled(kFALSE);
   fRunNumber->SetBackgroundColor(fColorStatus);
   fStatus1Frame->AddFrame(fRunNumber, fStatusLayout);
 
-  fEventNumberLabel = new TGLabel(fStatus1Frame, 
-				  "  event:");
   fStatus1Frame->AddFrame(fEventNumberLabel, fStatusLayout);
-  fEventNumber = new TGTextEntry(fStatus1Frame, "-/-/-");
   fEventNumber->Resize(100, fEventNumber->GetDefaultHeight());
   fEventNumber->SetAlignment(kTextRight);
   fEventNumber->SetEnabled(kFALSE);
@@ -224,12 +238,9 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
 
 
   // process status
-  fStatus2Frame = new TGHorizontalFrame(fFrame, 0, 0);
   fFrame->AddFrame(fStatus2Frame, fStatusFrameLayout);
 
-  fStatusLabel = new TGLabel(fStatus2Frame, "current status:");
   fStatus2Frame->AddFrame(fStatusLabel, fStatusLayout);
-  fStatus = new TGTextEntry(fStatus2Frame, "stopped");
   fStatus->Resize(250, fStatus->GetDefaultHeight());
   fStatus->SetAlignment(kTextLeft);
   fStatus->SetEnabled(kFALSE);
@@ -238,21 +249,16 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
 
 
   // process status
-  fStatus3Frame = new TGHorizontalFrame(fFrame, 0, 0);
   fFrame->AddFrame(fStatus3Frame, fStatusFrameLayout);
 
-  fEventsLabel = new TGLabel(fStatus3Frame, "monitored events:");
   fStatus3Frame->AddFrame(fEventsLabel, fStatusLayout);
-  fEvents = new TGTextEntry(fStatus3Frame, "-");
   fEvents->Resize(60, fEvents->GetDefaultHeight());
   fEvents->SetAlignment(kTextRight);
   fEvents->SetEnabled(kFALSE);
   fEvents->SetBackgroundColor(fColorStatus);
   fStatus3Frame->AddFrame(fEvents, fStatusLayout);
 
-  fClientsLabel = new TGLabel(fStatus3Frame, " number of clients:");
   fStatus3Frame->AddFrame(fClientsLabel, fStatusLayout);
-  fClients = new TGTextEntry(fStatus3Frame, "-");
   fClients->Resize(40, fClients->GetDefaultHeight());
   fClients->SetAlignment(kTextRight);
   fClients->SetEnabled(kFALSE);
@@ -261,23 +267,15 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
 
 
   // buttons
-  fButtonFrameLayout = new TGLayoutHints(kLHintsExpandX | kLHintsBottom, 
-					 50, 50, 10, 10);
-  fButtonFrame = new TGHorizontalFrame(fMain, 0, 0);
   fMain->AddFrame(fButtonFrame, fButtonFrameLayout);
 
-  fButtonLayout = new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 
-				    2, 2, 2, 2);
-  fResetButton = new TGTextButton(fButtonFrame, " &Reset ", 1);
   fResetButton->Connect("Clicked()", "AliMonitorControl", this, "DoReset()");
   fButtonFrame->AddFrame(fResetButton, fButtonLayout);
 
-  fStartStopButton = new TGTextButton(fButtonFrame, " &Start ", 2);
   fStartStopButton->SetBackgroundColor(0x00FF00);
   fStartStopButton->Connect("Clicked()", "AliMonitorControl", this, 
 			    "DoStartStop()");
   fButtonFrame->AddFrame(fStartStopButton, fButtonLayout);
-  fStartButtonStatus = kTRUE;
 
 
   // main window
@@ -292,25 +290,7 @@ AliMonitorControl::AliMonitorControl(AliMonitorProcess* process)
   fMain->MapWindow();
 
 
-  fTerminating = kFALSE;
-
-  fTimer = new TTimer(this, 10, kTRUE);
   fTimer->TurnOn();
-}
-
-//_____________________________________________________________________________
-AliMonitorControl::AliMonitorControl(const AliMonitorControl& control) :
-  TObject(control)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorControl& AliMonitorControl::operator = (const AliMonitorControl& 
-						  /*control*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
 }
 
 //_____________________________________________________________________________

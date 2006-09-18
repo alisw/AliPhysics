@@ -11,8 +11,6 @@
 class AliMonitorDataTPC : public TObject {
 public:
   AliMonitorDataTPC();
-  AliMonitorDataTPC(const AliMonitorDataTPC& data);
-  AliMonitorDataTPC& operator = (const AliMonitorDataTPC& data);
   AliMonitorDataTPC(Int_t size);
   virtual ~AliMonitorDataTPC();
   void     SetSize(Int_t size);
@@ -20,6 +18,9 @@ public:
   void     SetData(Int_t i, Float_t pt, Float_t eta, Float_t phi);
 
 private:
+  AliMonitorDataTPC(const AliMonitorDataTPC& data);
+  AliMonitorDataTPC& operator = (const AliMonitorDataTPC& data);
+
   Int_t    fNTracks;   // number of TPC tracks
   Float_t* fPt;        //[fNTracks]
   Float_t* fEta;       //[fNTracks]

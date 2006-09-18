@@ -11,8 +11,6 @@
 class AliMonitorV0s : public AliMonitor {
 public:
   AliMonitorV0s();
-  AliMonitorV0s(const AliMonitorV0s& monitor);
-  AliMonitorV0s& operator = (const AliMonitorV0s& monitor);
   virtual ~AliMonitorV0s() {};
 
   virtual void     CreateHistos(TFolder* folder);
@@ -20,6 +18,9 @@ public:
 			      AliRawReader* rawReader, AliESD* esd);
 
 private:
+  AliMonitorV0s(const AliMonitorV0s& monitor);
+  AliMonitorV0s& operator = (const AliMonitorV0s& monitor);
+
   AliMonitorHisto* fRadius;             // radius of V0 vertices
   AliMonitorHisto* fMassK0;             // invariant mass distribution of V0s for pi+ pi- hypothesis
   AliMonitorHisto* fMassLambda;         // invariant mass distribution of V0s for p pi- hypothesis

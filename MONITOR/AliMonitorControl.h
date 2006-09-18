@@ -30,8 +30,6 @@ RQ_OBJECT("AliMonitorControl")
 
 public:
   AliMonitorControl(AliMonitorProcess* process);
-  AliMonitorControl(const AliMonitorControl& control);
-  AliMonitorControl& operator = (const AliMonitorControl& control);
   virtual ~AliMonitorControl();
 
   void               HandleMenu(Int_t id);
@@ -39,6 +37,9 @@ public:
   void               DoStartStop();
 
 private:
+  AliMonitorControl(const AliMonitorControl& control);
+  AliMonitorControl& operator = (const AliMonitorControl& control);
+
   virtual Bool_t     HandleTimer(TTimer* timer);
 
   void               UpdateStatus();
@@ -96,19 +97,14 @@ private:
 
   public:
     AliMonitorBufferDlg(Int_t& size, TGFrame* main);
-    AliMonitorBufferDlg(const AliMonitorBufferDlg& dlg) : 
-      AliMonitorDialog(dlg), fSize(dlg.fSize) {
-      Fatal("AliMonitorBufferDlg", "copy constructor not implemented");
-    }
-    AliMonitorBufferDlg& operator = (const AliMonitorBufferDlg& /*dlg*/) {
-      Fatal("operator =", "assignment operator not implemented");
-      return *this;
-    }
     virtual ~AliMonitorBufferDlg();
 
     virtual void       OnOkClicked();
 
   private:
+    AliMonitorBufferDlg(const AliMonitorBufferDlg& dlg);
+    AliMonitorBufferDlg& operator = (const AliMonitorBufferDlg& dlg);
+
     TGLayoutHints*     fBufferLayout;       // layout of buffer entry
     TGLabel*           fBufferLabel;        // label for buffer entry
     TGNumberEntry*     fBufferEntry;        // buffer number entry
@@ -121,17 +117,12 @@ private:
 
   public:
     AliMonitorClientsDlg(TObjArray* clients, TGFrame* main);
-    AliMonitorClientsDlg(const AliMonitorClientsDlg& dlg) : 
-      AliMonitorDialog(dlg) {
-      Fatal("AliMonitorClientsDlg", "copy constructor not implemented");
-    }
-    AliMonitorClientsDlg& operator = (const AliMonitorClientsDlg& /*dlg*/) {
-      Fatal("operator =", "assignment operator not implemented");
-      return *this;
-    }
     virtual ~AliMonitorClientsDlg();
 
   private:
+    AliMonitorClientsDlg(const AliMonitorClientsDlg& dlg);
+    AliMonitorClientsDlg& operator = (const AliMonitorClientsDlg& dlg);
+
     TGLayoutHints*     fClientsLayout;      // layout of clients list
     TGTextView*        fClients;            // list of clients
   };

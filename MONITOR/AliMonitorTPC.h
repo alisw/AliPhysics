@@ -14,8 +14,6 @@ class AliMonitorDataTPC;
 class AliMonitorTPC : public AliMonitor {
 public:
   AliMonitorTPC(AliTPCParam* param);
-  AliMonitorTPC(const AliMonitorTPC& monitor);
-  AliMonitorTPC& operator = (const AliMonitorTPC& monitor);
   virtual ~AliMonitorTPC();
 
   virtual void     CreateHistos(TFolder* folder);
@@ -24,6 +22,9 @@ public:
 			      AliRawReader* rawReader, AliESD* esd);
 
 private:
+  AliMonitorTPC(const AliMonitorTPC& monitor);
+  AliMonitorTPC& operator = (const AliMonitorTPC& monitor);
+
   AliTPCParam*     fParam;              // TPC parameters
 
   AliMonitorHisto* fPadsCharge;         // charge distribution of TPC pads

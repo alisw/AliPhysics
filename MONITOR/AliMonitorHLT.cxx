@@ -36,27 +36,29 @@
 #include "AliL3Vertex.h"
 
 //_____________________________________________________________________________
-AliMonitorHLT::AliMonitorHLT(AliTPCParam* param)
+AliMonitorHLT::AliMonitorHLT(AliTPCParam* param):
+  AliMonitor(),
+  fParam(param),
+  fClustersCharge(NULL),
+  fNClustersVsRow(NULL),
+  fNClustersVsSector(NULL),
+  fNTracks(NULL),
+  fTrackPt(NULL),
+  fTrackEta(NULL),
+  fTrackPhi(NULL),
+  fTrackNHits(NULL),
+  fTrackDEdxVsP(NULL),
+  fTrackDEdx(NULL),
+  fTrackDz0(NULL),
+  fTrackDr0(NULL),
+  fTrackEtaVsPhi(NULL),
+  fPtEtaVsPhi(NULL),
+  fTrackZvsNHits(NULL),
+  fTrackXYvsNHits(NULL)
 {
 // create a HLT monitor object with the given parameters
 
-  fParam = param;
 }
-
-//_____________________________________________________________________________
-AliMonitorHLT::AliMonitorHLT(const AliMonitorHLT& monitor) :
-  AliMonitor(monitor)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorHLT& AliMonitorHLT::operator = (const AliMonitorHLT& /*monitor*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
-}
-
 
 //_____________________________________________________________________________
 void AliMonitorHLT::CreateHistos(TFolder* folder)

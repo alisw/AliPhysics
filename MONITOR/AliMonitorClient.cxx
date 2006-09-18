@@ -63,14 +63,15 @@ AliMonitorClient::AliMonitorStringDlg::AliMonitorStringDlg(TString& string,
 							   TGFrame* main, 
 							   const char* title, 
 							   const char* label) :
-  AliMonitorDialog(main, 300, 80), fString(string)
+  AliMonitorDialog(main, 300, 80),
+  fStringLayout(new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 5, 2, 2)),
+  fStringLabel(new TGLabel(fFrame, label)),
+  fStringEntry(new TGTextEntry(fFrame, string.Data())),
+  fString(string)
 {
 // create a dialog for connecting to a monitor process
 
-  fStringLayout = new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 5, 2, 2);
-  fStringLabel = new TGLabel(fFrame, label);
   fFrame->AddFrame(fStringLabel, fStringLayout);
-  fStringEntry = new TGTextEntry(fFrame, string.Data());
   fStringEntry->Resize(100, fStringEntry->GetDefaultHeight());
   fFrame->AddFrame(fStringEntry, fStringLayout);
 
@@ -105,15 +106,15 @@ AliMonitorClient::AliMonitorNumberDlg::AliMonitorNumberDlg(Float_t& value,
 							   const char* title, 
 							   const char* label, 
 							   Float_t min) :
-  AliMonitorDialog(main, 250, 80), fNumber(value)
+  AliMonitorDialog(main, 250, 80),
+  fNumberLayout(new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 5, 2, 2)),
+  fNumberLabel(new TGLabel(fFrame, label)),
+  fNumberEntry(new TGNumberEntry(fFrame, value, 4, -1, TGNumberFormat::kNESRealOne)),
+  fNumber(value)
 {
 // create a dialog for getting a number
 
-  fNumberLayout = new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 5, 2, 2);
-  fNumberLabel = new TGLabel(fFrame, label);
   fFrame->AddFrame(fNumberLabel, fNumberLayout);
-  fNumberEntry = new TGNumberEntry(fFrame, value, 4, -1,
-				   TGNumberFormat::kNESRealOne);
   fNumberEntry->SetLimits(TGNumberFormat::kNELLimitMin, min, 0);
   fFrame->AddFrame(fNumberEntry, fNumberLayout);
 
@@ -158,18 +159,68 @@ enum {kMenuFileConnect, kMenuFileDisconnect, kMenuFileOpen, kMenuFileExit,
 
 //_____________________________________________________________________________
 AliMonitorClient::AliMonitorClient():
-  TGMainFrame(gClient->GetRoot(), 500, 300)
+  TGMainFrame(gClient->GetRoot(), 500, 300),
+  fQObject(),
+  fMenuBarLayout(new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 1, 1)),
+  fMenuBarItemLayout(new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0)),
+  fMenuBarHelpLayout(new TGLayoutHints(kLHintsTop | kLHintsRight)),
+  fMenuFile(new TGPopupMenu(gClient->GetRoot())),
+  fMenuView(new TGPopupMenu(gClient->GetRoot())),
+  fMenuFavorites(new TGPopupMenu(gClient->GetRoot())),
+  fMenuReference(new TGPopupMenu(gClient->GetRoot())),
+  fMenuOptions(new TGPopupMenu(gClient->GetRoot())),
+  fMenuHelp(new TGPopupMenu(gClient->GetRoot())),
+  fMenuBar(new TGMenuBar(this, 1, 1, kHorizontalFrame)),
+  fToolBarLayout(new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 2, 2)),
+  fToolBarSep(new TGHorizontal3DLine(this)),
+  fToolBar(new TGToolBar(this, 60, 20, kHorizontalFrame)),
+  fEventNumberLayout(new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 10, 2, 10, 5)),
+  fEventNumber(new TGNumberEntry(fToolBar, 1, 4, 10, TGNumberFormat::kNESInteger)),
+  fEventButton(NULL),
+  fSumButton(NULL),
+  fRunButton(NULL),
+  fLoopButton(NULL),
+  fLoopOnPicture(NULL),
+  fLoopOffPicture(NULL),
+  fPreviousButton(NULL),
+  fNextButton(NULL),
+  fCopyButton(NULL),
+  fSaveButton(NULL),
+  fPrintButton(NULL),
+  fBottomLayout(new TGLayoutHints(kLHintsExpandX | kLHintsBottom)),
+  fLeftLayout(new TGLayoutHints(kLHintsLeft | kLHintsExpandY)),
+  fExpandLayout(new TGLayoutHints(kLHintsExpandX | kLHintsExpandY)),
+  fVerticalFrame(new TGVerticalFrame(this, 10, 10)),
+  fHorizontalFrame(new TGHorizontalFrame(fVerticalFrame, 10, 10)),
+  fTreeFrame(new TGCompositeFrame(fHorizontalFrame, 10, 10, kSunkenFrame | kFixedWidth)),
+  fTreeCanvas(new TGCanvas(fTreeFrame, 10, 10)),
+  fTree(new TGListTree(fTreeCanvas, kHorizontalFrame)),
+  fHistoPicture(fClient->GetPicture("h1_t.xpm")),
+  fAllItem(fTree->AddItem(NULL, "All")),
+  fFavoritesItem(fTree->AddItem(NULL, "Favorites")),
+  fComparisonItem(fTree->AddItem(NULL, "Comparison")),
+  fTreeSplitter(new TGVSplitter(fHorizontalFrame, 4)),
+  fDrawFrame(new TGCompositeFrame(fHorizontalFrame, 10, 10, kSunkenFrame)),
+  fDrawCanvas(new TRootEmbeddedCanvas("current monitor histogram", fDrawFrame, 10, 10)),
+  fDescriptionSplitter(new TGHSplitter(fVerticalFrame, 4, 4)),
+  fDescriptionFrame(new TGCompositeFrame(fVerticalFrame, 10, 60, kSunkenFrame | kFixedHeight)),
+  fDescription(new TGTextView(fDescriptionFrame, 10, 60, "")),
+  fServerName("localhost"),
+  fSocket(NULL),
+  fSocketHandler(NULL),
+  fFolder(CreateTopFolder()),
+  fCurrentItem(NULL),
+  fBaseItem(NULL),
+  fLoopTimer(NULL),
+  fLoopInterval(1000),
+  fFavoritesFileName(""),
+  fReferenceFileName(""),
+  fReference(CreateTopFolder()),
+  fPrintCommand("gv")
 {
 // initialize the monitoring client window
 
-  // *** menu bar ***
-  fMenuBarLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX,
-                                      0, 0, 1, 1);
-  fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
-  fMenuBarHelpLayout = new TGLayoutHints(kLHintsTop | kLHintsRight);
-
   // File menu
-  fMenuFile = new TGPopupMenu(gClient->GetRoot());
   fMenuFile->AddEntry("&Connect...", kMenuFileConnect);
   fMenuFile->AddEntry("&Disconnect...", kMenuFileDisconnect);
   fMenuFile->HideEntry(kMenuFileDisconnect);
@@ -180,7 +231,6 @@ AliMonitorClient::AliMonitorClient():
 		     "OnMenuActivated(Int_t)");
 
   // View menu
-  fMenuView = new TGPopupMenu(gClient->GetRoot());
   fMenuView->AddEntry("Tool&bar", kMenuViewToolBar);
   fMenuView->CheckEntry(kMenuViewToolBar);
   fMenuView->AddEntry("&Tree", kMenuViewTree);
@@ -198,7 +248,6 @@ AliMonitorClient::AliMonitorClient():
 		     "OnMenuActivated(Int_t)");
 
   // Favorites menu
-  fMenuFavorites = new TGPopupMenu(gClient->GetRoot());
   fMenuFavorites->AddEntry("&Add", kMenuFavAdd);
   fMenuFavorites->DisableEntry(kMenuFavAdd);
   fMenuFavorites->AddEntry("&Delete", kMenuFavDelete);
@@ -215,7 +264,6 @@ AliMonitorClient::AliMonitorClient():
 			  "OnMenuActivated(Int_t)");
 
   // Reference menu
-  fMenuReference = new TGPopupMenu(gClient->GetRoot());
   fMenuReference->AddEntry("&Load...", kMenuRefLoad);
   fMenuReference->AddEntry("&Threshold...", kMenuRefThreshold);
   fMenuReference->AddSeparator();
@@ -229,7 +277,6 @@ AliMonitorClient::AliMonitorClient():
 			  "OnMenuActivated(Int_t)");
 
   // Options menu
-  fMenuOptions = new TGPopupMenu(gClient->GetRoot());
   fMenuOptions->AddEntry("&Loop Interval...", kMenuOptLoop);
   fMenuOptions->AddEntry("&Print Command...", kMenuOptPrint);
   fMenuOptions->AddSeparator();
@@ -240,14 +287,12 @@ AliMonitorClient::AliMonitorClient():
 			"OnMenuActivated(Int_t)");
 
   // Help menu
-  fMenuHelp = new TGPopupMenu(gClient->GetRoot());
   fMenuHelp->AddEntry("&Documentation...", kMenuHelpDoc);
   fMenuHelp->AddEntry("A&bout...", kMenuHelpAbout);
   fMenuHelp->Connect("Activated(Int_t)", "AliMonitorClient", this,
 		     "OnMenuActivated(Int_t)");
 
   // menu bar
-  fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame);
   fMenuBar->AddPopup("&File", fMenuFile, fMenuBarItemLayout);
   fMenuBar->AddPopup("&View", fMenuView, fMenuBarItemLayout);
   fMenuBar->AddPopup("F&avorites", fMenuFavorites, fMenuBarItemLayout);
@@ -259,17 +304,10 @@ AliMonitorClient::AliMonitorClient():
 
 
   // *** tool bar ***
-  fToolBarLayout = new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 2, 2);
-  fToolBarSep = new TGHorizontal3DLine(this);
   AddFrame(fToolBarSep, fToolBarLayout);
-  fToolBar = new TGToolBar(this, 60, 20, kHorizontalFrame);
   AddFrame(fToolBar, fToolBarLayout);
 
   // event number field
-  fEventNumberLayout = new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 
-					 10, 2, 10, 5);
-  fEventNumber = new TGNumberEntry(fToolBar, 1, 4, 10, 
-				   TGNumberFormat::kNESInteger);
   fEventNumber->SetLimits(TGNumberFormat::kNELLimitMin, 1, 0);
   fToolBar->AddFrame(fEventNumber, fEventNumberLayout);
   fEventNumber->GetNumberEntry()->Connect("ReturnPressed()", 
@@ -367,23 +405,13 @@ AliMonitorClient::AliMonitorClient():
 			"OnPrintButtonClicked()");
 
   // *** frames ***
-  fBottomLayout = new TGLayoutHints(kLHintsExpandX | kLHintsBottom);
-  fLeftLayout = new TGLayoutHints(kLHintsLeft | kLHintsExpandY);
-  fExpandLayout = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
-
-  fVerticalFrame = new TGVerticalFrame(this, 10, 10);
   AddFrame(fVerticalFrame, fExpandLayout);
 
-  fHorizontalFrame = new TGHorizontalFrame(fVerticalFrame, 10, 10);
   fVerticalFrame->AddFrame(fHorizontalFrame, fExpandLayout);
 
   // tree frame
-  fTreeFrame = new TGCompositeFrame(fHorizontalFrame, 10, 10, 
-				    kSunkenFrame | kFixedWidth);
   fHorizontalFrame->AddFrame(fTreeFrame, fLeftLayout);
-  fTreeCanvas = new TGCanvas(fTreeFrame, 10, 10);
   fTreeFrame->AddFrame(fTreeCanvas, fExpandLayout);
-  fTree = new TGListTree(fTreeCanvas, kHorizontalFrame);
   fTreeCanvas->AddFrame(fTree, fExpandLayout);
   fTree->Connect("Clicked(TGListTreeItem*,Int_t)", "AliMonitorClient",
 		 this, "OnTreeClicked(TGListTreeItem*,Int_t)");
@@ -391,33 +419,21 @@ AliMonitorClient::AliMonitorClient():
 		 this, "OnTreeReturnPressed(TGListTreeItem*)");
 
   // tree items
-  fAllItem = fTree->AddItem(NULL, "All");
-  fFavoritesItem = fTree->AddItem(NULL, "Favorites");
-  fComparisonItem = fTree->AddItem(NULL, "Comparison");
-  fHistoPicture = fClient->GetPicture("h1_t.xpm"); 
   fTreeFrame->Resize(100, fTreeFrame->GetDefaultHeight());
 
   // tree / histogram splitter
-  fTreeSplitter = new TGVSplitter(fHorizontalFrame, 4);
   fTreeSplitter->SetFrame(fTreeFrame, kTRUE);
   fHorizontalFrame->AddFrame(fTreeSplitter, fLeftLayout);
 
   // histogram frame
-  fDrawFrame = new TGCompositeFrame(fHorizontalFrame, 10, 10, kSunkenFrame);
   fHorizontalFrame->AddFrame(fDrawFrame, fExpandLayout);
-  fDrawCanvas = new TRootEmbeddedCanvas("current monitor histogram", 
-					fDrawFrame, 10, 10);
   fDrawFrame->AddFrame(fDrawCanvas, fExpandLayout);
 
   // description frame
-  fDescriptionFrame = new TGCompositeFrame(fVerticalFrame, 10, 60, 
-					   kSunkenFrame | kFixedHeight);
   fVerticalFrame->AddFrame(fDescriptionFrame, fBottomLayout);
-  fDescription = new TGTextView(fDescriptionFrame, 10, 60, "");
   fDescriptionFrame->AddFrame(fDescription, fExpandLayout);
 
   // histogram / description splitter
-  fDescriptionSplitter = new TGHSplitter(fVerticalFrame, 4, 4);
   fVerticalFrame->AddFrame(fDescriptionSplitter, fBottomLayout);
   fDescriptionSplitter->SetFrame(fDescriptionFrame, kFALSE);
 
@@ -433,24 +449,11 @@ AliMonitorClient::AliMonitorClient():
 
 
   // default data members
-  fServerName = "localhost";
-  fSocket = NULL;
-  fSocketHandler = NULL;
 
   fFolder = CreateTopFolder();
 
-  fCurrentItem = NULL;
-  fBaseItem = NULL;
-  fLoopTimer = NULL;
-  fLoopInterval = 1000;
-
-  fFavoritesFileName = "";
-
-  fReferenceFileName = "";
   fReference = CreateTopFolder();
   AliMonitorHisto::SetThreshold(5.0);
-
-  fPrintCommand = "gv";
 
   // load saved settings
   LoadSettings();

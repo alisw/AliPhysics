@@ -13,8 +13,6 @@ class AliITSgeom;
 class AliMonitorITS : public AliMonitor {
 public:
   AliMonitorITS(AliITSgeom* param);
-  AliMonitorITS(const AliMonitorITS& monitor);
-  AliMonitorITS& operator = (const AliMonitorITS& monitor);
   virtual ~AliMonitorITS() {};
 
   virtual void     CreateHistos(TFolder* folder);
@@ -22,6 +20,9 @@ public:
 			      AliRawReader* rawReader, AliESD* esd);
 
 private:
+  AliMonitorITS(const AliMonitorITS& monitor);
+  AliMonitorITS& operator = (const AliMonitorITS& monitor);
+
   AliITSgeom*      fGeom;               // ITS geometry
 
   AliMonitorHisto* fSDDDigitsCharge;    // charge distribution of ITS-SDD digits

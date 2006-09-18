@@ -42,26 +42,26 @@ ClassImp(AliMonitorTPC)
 
 
 //_____________________________________________________________________________
-AliMonitorTPC::AliMonitorTPC(AliTPCParam* param)
+AliMonitorTPC::AliMonitorTPC(AliTPCParam* param):
+  AliMonitor(),
+  fParam(param),
+  fPadsCharge(NULL),
+  fClustersCharge(NULL),
+  fNClustersVsRow(NULL),
+  fNClustersVsSector(NULL),
+  fNTracks(NULL),
+  fTrackPt(NULL),
+  fTrackEta(NULL),
+  fTrackPhi(NULL),
+  fTrackNCl(NULL),
+  fTrackDEdxVsP(NULL),
+  fTrackDEdx(NULL),
+  fTrackEtaVsPhi(NULL),
+  fPtEtaVsPhi(NULL),
+  fData(new AliMonitorDataTPC(10000))
 {
 // create a TPC monitor object with the given parameters
 
-  fParam = param;
-  fData = new AliMonitorDataTPC(10000);
-}
-
-//_____________________________________________________________________________
-AliMonitorTPC::AliMonitorTPC(const AliMonitorTPC& monitor) :
-  AliMonitor(monitor)
-{
-  AliFatal("copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliMonitorTPC& AliMonitorTPC::operator = (const AliMonitorTPC& /*monitor*/)
-{
-  AliFatal("assignment operator not implemented");
-  return *this;
 }
 
 //_____________________________________________________________________________
