@@ -13,7 +13,6 @@
 #include <TString.h>
 #include <TNamed.h>
 #include "AliESD.h"
-#include "AliTracker.h"
 
 //-----------------------------------------------------------------------------
 class AliD0toKpiAnalysis : public TNamed {
@@ -29,9 +28,6 @@ class AliD0toKpiAnalysis : public TNamed {
   void FindCandidatesESD(Int_t evFirst=0,Int_t evLast=0,
   			 const Char_t *outName="AliD0toKpi.root");
   void PrintStatus() const;
-  void SetBz(const AliMagF *map) { 
-    AliTracker::SetFieldMap(map,kTRUE); fBz=map->SolenoidField()/10.; 
-  }
   void SetVertexOnTheFly() { fVertexOnTheFly=kTRUE; }
   void SetSimulation() { fSim=kTRUE; }
   void SetOnlySignal() { fOnlySignal=kTRUE; }
@@ -47,7 +43,6 @@ class AliD0toKpiAnalysis : public TNamed {
   //
  private:
   //
-  Double_t fBz;             // value of the magnetic field
   Bool_t   fVertexOnTheFly; // flag for primary vertex reco on the fly
   Bool_t   fSim;            // flag for the analysis of simulated events
   Bool_t   fOnlySignal;     // write to file only signal candidates (for sim)

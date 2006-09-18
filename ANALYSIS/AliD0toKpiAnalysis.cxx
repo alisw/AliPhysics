@@ -50,8 +50,6 @@ ClassImp(AliD0toKpiAnalysis)
 //----------------------------------------------------------------------------
 AliD0toKpiAnalysis::AliD0toKpiAnalysis() {
   // Default constructor
-
-  fBz=-9999;
   SetPtCut();
   Setd0Cut();
   SetMassCut();
@@ -138,11 +136,6 @@ Double_t AliD0toKpiAnalysis::CalculateTOFmass(Double_t mom,Double_t length,
 void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 					const Char_t *outName) {
   // Find D0 candidates and calculate parameters
-
-  if(fBz<-9000.) {
-    printf("AliD0toKpiAnalysis::FindCandidates():  Set B!\n");
-    return;
-  }
 
   TString trkName("AliITStracksV2.root");
   if(gSystem->AccessPathName(trkName.Data(),kFileExists)) {
@@ -369,11 +362,6 @@ void AliD0toKpiAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 					   const Char_t *outName) {
   // Find D0 candidates and calculate parameters
-
-  if(fBz<-9000.) {
-    printf("AliD0toKpiAnalysis::FindCandidatesESD():  Set B!\n");
-    return;
-  }
 
   TString esdName("AliESDs.root");
   if(gSystem->AccessPathName(esdName.Data(),kFileExists)) {
@@ -642,7 +630,6 @@ void AliD0toKpiAnalysis::FindCandidatesESD(Int_t evFirst,Int_t evLast,
 void AliD0toKpiAnalysis::PrintStatus() const {
   // Print parameters being used
 
-  printf(" fBz      = %f T\n",fBz);
   printf("Preselections:\n");
   printf("    fPtCut   = %f GeV\n",fPtCut);
   printf("    fd0Cut   = %f micron\n",fd0Cut);
