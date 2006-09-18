@@ -50,7 +50,6 @@ class AliTPCseed : public AliTPCtrack {
        Double_t cnv=GetBz()*kB2C;
        return GetSigma1Pt2()*cnv*cnv;
      }
-     Double_t GetEta() const { return GetC()*GetX() - GetSnp();}
      void GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_t &foundable, Int_t &shared, Bool_t plus2);
      
      void Modify(Double_t factor);

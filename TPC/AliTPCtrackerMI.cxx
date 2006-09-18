@@ -1908,6 +1908,7 @@ Int_t AliTPCtrackerMI::FollowBackProlongation(AliTPCseed& t, Int_t rf) {
       fSectors = fInnerSec;
     else
       fSectors = fOuterSec;
+
     FollowToNext(t,nr);                                                             
   }   
   return 1;
@@ -2601,6 +2602,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESD *event)
 	"Track.="<<seed<<
 	"\n"; 
     }
+
     if (seed->GetNumberOfClusters()>15){
       esd->UpdateTrackParams(seed,AliESDtrack::kTPCrefit); 
       esd->SetTPCPoints(seed->GetPoints());
@@ -3065,17 +3067,14 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 	}
 	nout1++;
         // Z VERTEX CONDITION
-	Double_t zv;
-        zv = track->GetZ()+track->GetTgl()/track->GetC()*
-	  ( asin(-track->GetEta()) - asin(track->GetX()*track->GetC()-track->GetEta()));
+	Double_t zv, bz=GetBz();
+        if ( !track->GetZAt(0.,bz,zv) ) continue;
 	if (TMath::Abs(zv-z3)>cuts[2]) {
 	  FollowProlongation(*track, TMath::Max(i2-20,0));
-	  zv = track->GetZ()+track->GetTgl()/track->GetC()*
-	    ( asin(-track->GetEta()) - asin(track->GetX()*track->GetC()-track->GetEta()));
+          if ( !track->GetZAt(0.,bz,zv) ) continue;
 	  if (TMath::Abs(zv-z3)>cuts[2]){
 	    FollowProlongation(*track, TMath::Max(i2-40,0));
-	    zv = track->GetZ()+track->GetTgl()/track->GetC()*
-	      ( asin(-track->GetEta()) - asin(track->GetX()*track->GetC()-track->GetEta()));
+            if ( !track->GetZAt(0.,bz,zv) ) continue;
 	    if (TMath::Abs(zv-z3)>cuts[2] &&(track->GetNumberOfClusters() > track->fNFoundable*0.7)){
 	      // make seed without constrain
 	      AliTPCseed * track2 = MakeSeed(track,0.2,0.5,1.);
