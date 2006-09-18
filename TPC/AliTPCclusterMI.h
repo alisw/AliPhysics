@@ -16,8 +16,8 @@
 //_____________________________________________________________________________
 class AliTPCclusterMI : public AliCluster {
 public:
-  AliTPCclusterMI():AliCluster(){fX =0; fQ=0; fUsed=0; fDetector = 0; fRow =0;}
-  AliTPCclusterMI(Int_t *lab, Float_t *hit) : AliCluster(lab,hit) {fQ = (UShort_t)hit[4];}
+  AliTPCclusterMI();
+  AliTPCclusterMI(Int_t *lab, Float_t *hit);
   virtual ~AliTPCclusterMI() {}
   virtual Bool_t IsSortable() const; 
   virtual Int_t Compare(const TObject* obj) const;

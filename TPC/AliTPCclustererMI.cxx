@@ -54,7 +54,31 @@ ClassImp(AliTPCclustererMI)
 
 
 
-  AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam)
+AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam):
+  fBins(0),
+  fResBins(0),
+  fLoop(0),
+  fMaxBin(0),
+  fMaxTime(0),
+  fMaxPad(0),
+  fSector(-1),
+  fRow(-1),
+  fSign(0),
+  fRx(0),
+  fPadWidth(0),
+  fPadLength(0),
+  fZWidth(0),
+  fPedSubtraction(kFALSE),
+  fIsOldRCUFormat(kFALSE),
+  fInput(0),
+  fOutput(0),
+  fRowCl(0),
+  fRowDig(0),
+  fParam(0),
+  fNcluster(0),
+  fAmplitudeHisto(0),
+  fDebugStreamer(0),
+  fRecoParam(0)
 {
   fIsOldRCUFormat = kFALSE;
   fInput =0;

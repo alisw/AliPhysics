@@ -30,6 +30,37 @@
 
 ClassImp(AliTPCclusterMI)
 
+
+AliTPCclusterMI::AliTPCclusterMI():
+  AliCluster(),
+  fX(0),
+  fQ(0),
+  fType(0),
+  fMax(0),
+  fUsed(0),
+  fDetector(0),
+  fRow(0)
+{
+  //
+  // default constructor
+  //
+}
+
+AliTPCclusterMI::AliTPCclusterMI(Int_t *lab, Float_t *hit) : 
+  AliCluster(lab,hit),
+  fX(0),
+  fType(0),
+  fMax(0),
+  fUsed(0),
+  fDetector(0),
+  fRow(0)    
+{
+  //
+  // constructor
+  //
+  fQ = (UShort_t)hit[4];
+}
+
 Bool_t AliTPCclusterMI::IsSortable() const
 {
   //
