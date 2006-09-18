@@ -23,12 +23,13 @@
 #include <TClass.h>
 #include <TMath.h>
 
+#include "AliMagF.h"
 #include "AliTracker.h"
 #include "AliCluster.h"
 #include "AliKalmanTrack.h"
 
 Bool_t AliTracker::fgUniformField=kTRUE;
-Double_t AliTracker::fgBz=0.;
+Double_t AliTracker::fgBz=kAlmost0Field;
 const AliMagF *AliTracker::fgkFieldMap=0;
 
 ClassImp(AliTracker)
@@ -83,7 +84,7 @@ void AliTracker::SetFieldMap(const AliMagF* map, Bool_t uni) {
   //Double_t bz=-b[2];
  
   Double_t bz=-map->SolenoidField();
-  fgBz=TMath::Sign(1e-13,bz) + bz;
+  fgBz=TMath::Sign(kAlmost0Field,bz) + bz;
 
 }
 
@@ -146,4 +147,13 @@ void AliTracker::UseClusters(const AliKalmanTrack *t, Int_t from) const {
      AliCluster *c=GetCluster(index); 
      c->Use();   
   }
+}
+
+Double_t AliTracker::GetBz(Float_t *r) {
+  //------------------------------------------------------------------
+  // Returns Bz (kG) at the point "r" .
+  //------------------------------------------------------------------
+    Float_t b[3]; fgkFieldMap->Field(r,b);
+    Double_t bz=-Double_t(b[2]);
+    return  (TMath::Sign(kAlmost0Field,bz) + bz);
 }

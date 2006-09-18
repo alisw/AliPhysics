@@ -195,7 +195,8 @@ CorrectForMaterial(Double_t d,  Double_t x0, Double_t mass) {
   Double_t &fC43=fC[13];
   Double_t &fC44=fC[14];
 
-  Double_t p2=(1.+ fP3*fP3)/(fP4*fP4);
+  Double_t p=GetP();
+  Double_t p2=p*p;
   Double_t beta2=p2/(p2 + mass*mass);
   d*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
 

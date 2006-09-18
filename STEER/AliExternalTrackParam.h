@@ -27,8 +27,7 @@ const Double_t kVeryBig=1./kAlmost0;
 
 const Double_t kB2C=0.299792458e-3;
 const Double_t kAlmost0Field=1.e-13;
-const Double_t kVeryBigConvConst=1/kB2C/kAlmost0Field;
-const Double_t kMostProbableMomentum=0.35;
+const Double_t kMostProbablePt=0.35;
 
 class AliESDVertex;
 
@@ -48,7 +47,7 @@ class AliExternalTrackParam: public TObject {
     fC[1] = 0.;  fC[2]*= s2;
     fC[3] = 0.;  fC[4] = 0.;  fC[5]*= s2;
     fC[6] = 0.;  fC[7] = 0.;  fC[8] = 0.;  fC[9]*= s2;
-    fC[10]= 0.;  fC[11]= 0.;  fC[12]= 0.;  fC[13]= 0.;  fC[14]*=10.;
+    fC[10]= 0.;  fC[11]= 0.;  fC[12]= 0.;  fC[13]= 0.;  fC[14]*=s2;
   }
 
   const Double_t *GetParameter() const {return fP;}

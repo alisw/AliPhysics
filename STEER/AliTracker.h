@@ -11,8 +11,8 @@
 //       Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------------------------
 #include <TObject.h>
-#include "AliMagF.h"
 
+class AliMagF;
 class AliCluster;
 class TTree;
 class AliKalmanTrack;
@@ -47,11 +47,7 @@ public:
 
   static void SetFieldMap(const AliMagF* map, Bool_t uni);
   static const AliMagF *GetFieldMap() {return fgkFieldMap;}
-  static Double_t GetBz(Float_t *r) {
-    Float_t b[3]; fgkFieldMap->Field(r,b);
-    Double_t bz=-Double_t(b[2]);
-    return  (TMath::Sign(1e-13,bz) + bz);
-  }
+  static Double_t GetBz(Float_t *r); 
   static Double_t GetBz(Double_t *r) {
     Float_t rr[]={r[0],r[1],r[2]};
     return GetBz(rr);
