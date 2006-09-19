@@ -193,7 +193,6 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
     AliHLTComponent::SetGlobalComponentHandler(this);
     AliHLTLibHandle hLib=dlopen(libraryPath, RTLD_NOW);
     if (hLib) {
-      AliHLTComponent::UnsetGlobalComponentHandler();
       HLTInfo("library %s loaded", libraryPath);
       fLibraryList.push_back(hLib);
       vector<AliHLTComponent*>::iterator element=fScheduleList.begin();
@@ -210,6 +209,7 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
       HLTError("dlopen error: %s", dlerror());
       iResult=-ELIBACC;
     }
+    AliHLTComponent::UnsetGlobalComponentHandler();
   } else {
     iResult=-EINVAL;
   }
