@@ -18,15 +18,44 @@
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalDet.h"
+#include "AliTPCParamSR.h"
 
 
 
 #endif
 
-
+//
 // run number for the dummy file
-const Int_t gkDummyRun = 0;
+Int_t gkDummyRun = 0;
+char *gCDBpath   = "local://~/mycalib1";
 AliCDBStorage* gStorLoc = 0;
+
+//
+Float_t gTSample    = 2.0000000e-07;
+//
+//
+Float_t gMeanGain   = 1;
+Float_t gSigmaGain  = 0;
+//
+Float_t gMeanTime0  = 0;
+Float_t gSigmaTime0 = 0;
+//
+Float_t gMeanNoise  = 1;
+Float_t gSigmaNoise = 0;
+//
+Float_t gMeanPRF    = 1;
+Float_t gSigmaPRF   = 0;
+//
+Float_t gMeanPedestal  = 0;
+Float_t gSigmaPedestal = 0;
+//
+// Missalignment
+//
+Float_t gSigmaDx    = 0;
+Float_t gSigmaDy    = 0;
+Float_t gSigmaDz    = 0;
+Float_t gSigmaAngle = 0;
+
 
 
 
@@ -64,10 +93,10 @@ AliCDBMetaData* CreateMetaObject(const char* objectClassName)
 }
 
 
-void CDBAlignmentObjectCreation(const char *fileName, const char *arrayName, const char *detName, const char *cdbPath = "local://$ALICE_ROOT"){
+void CDBAlignmentObjectCreation(const char *fileName, const char *arrayName, const char *detName){
   // make instance of storage
   AliCDBManager *CDB = AliCDBManager::Instance();
-  AliCDBStorage* storLoc = CDB->GetStorage(cdbPath);
+  AliCDBStorage* storLoc = CDB->GetStorage(gCDBpath);
   
   // create or get from a file the TClonesArray of alignment objects
   // for given detector, DET should be TPC, TRD ...
@@ -137,7 +166,7 @@ void AliTPCCreateDummyCDB()
   
 
   AliCDBManager *man = AliCDBManager::Instance();
-  gStorLoc = man->GetStorage("local://$ALICE_ROOT");
+  gStorLoc = man->GetStorage(gCDBpath);
   if (!gStorLoc)
     return;
 
@@ -148,41 +177,43 @@ void AliTPCCreateDummyCDB()
   // Gain factor (relative) - normalized to 1 - spread 0
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
-  obj = CreatePadObject("PadGainFactor","TPC Gain Factor (local -pad- variations)", 1 , 0.0);
+  obj = CreatePadObject("PadGainFactor","TPC Gain Factor (local -pad- variations)", gMeanGain , gSigmaGain);
   StoreObject("TPC/Calib/PadGainFactor", obj, metaData);
   //
   // Time0 fluctuation   - normalized to 0  - spread 0.00 mus
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
-  obj = CreatePadObject("PadTime0","TPC Time 0  (local -pad- variations)", 0 , 0.000);
+  obj = CreatePadObject("PadTime0","TPC Time 0  (local -pad- variations)", gMeanTime0 , gSigmaTime0);
   StoreObject("TPC/Calib/PadTime0", obj, metaData);
   //
   // Noise  fluctuation   - normalized to 1.0  - spread - 0.0 
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
-  obj = CreatePadObject("PadNoise","TPC Noise  (local -pad- variations)", 1.0 , 0.0);
+  obj = CreatePadObject("PadNoise","TPC Noise  (local -pad- variations)", gMeanNoise , gSigmaNoise);
   StoreObject("TPC/Calib/PadNoise", obj, metaData);
   //
   // PRF width fluctuation   - normalized to 0.  - spread - 0.0 
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
-  obj = CreatePadObject("PadPRF","TPC PRF  (local -pad- variations)", 0.0 , 0.0);
+  obj = CreatePadObject("PadPRF","TPC PRF  (local -pad- variations)", gMeanPRF , gSigmaPRF);
   StoreObject("TPC/Calib/PadPRF", obj, metaData);
   //
   // Pedestals
   //
   metaData = CreateMetaObject("AliTPCCalPad");  
-  obj = CreatePadObject("PadPRF","TPC pedestals  (local -pad- variations)", 0.0 , 0.0);
+  obj = CreatePadObject("PadPedestal","TPC pedestals  (local -pad- variations)", gMeanPedestal, gSigmaPedestal);
   StoreObject("TPC/Calib/Pedestals", obj, metaData);  
   //
   // Parameters 
   //
   metaData = CreateMetaObject("AliTPCParam");  
   AliTPCParam * param = new AliTPCParamSR;
+  param->SetTSample(gTSample);
+  param->Update();
   StoreObject("TPC/Calib/Parameters", param, metaData); 
   //
   //
   // generate random missalignemnt
   //
-  GenerateRndTPC(0.0,0.0,0.0,0.00);
+  GenerateRndTPC(gSigmaDx,gSigmaDy,gSigmaDz,gSigmaAngle);
 }
