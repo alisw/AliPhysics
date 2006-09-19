@@ -20,6 +20,9 @@ public:
   virtual      ~AliTPCv2() {}
   virtual void  CreateGeometry();
   virtual void  CreateMaterials();
+  virtual void  AddAlignableVolumes() const;
+  void SetInnerChambersAlignable() const;
+  void SetOuterChambersAlignable() const;
   virtual void  Init();
   virtual Int_t IsVersion() const {return 2;}
   virtual void  StepManager();

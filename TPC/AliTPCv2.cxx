@@ -878,9 +878,93 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
   alice->AddNode(v1,1);  
   
+  AddAlignableVolumes();
 
 } // end of function
  
+//_____________________________________________________________________________
+void AliTPCv2::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  // 
+  SetInnerChambersAlignable();
+  SetOuterChambersAlignable();
+}
+ 
+//_____________________________________________________________________________
+void AliTPCv2::SetInnerChambersAlignable() const
+{
+  //
+  Int_t modnum = 0;
+  TString vp_str1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
+  TString vp_str2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
+  TString vp_append = "/TPC_IROC_1";
+  TString sn_str1="TPC/EndcapA/Sector";
+  TString sn_str2="TPC/EndcapC/Sector";
+  TString sn_append="/InnerChamber";
+  TString volpath, symname;
+  
+  for(Int_t cnt=1; cnt<=18; cnt++){
+    volpath = vp_str1;
+    volpath += cnt;
+    volpath += vp_append;
+    symname = sn_str1;
+    symname += cnt;
+    symname += sn_append;
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    modnum++;
+  }
+  for(Int_t cnt=1; cnt<=18; cnt++){
+    volpath = vp_str2;
+    volpath += cnt;
+    volpath += vp_append;
+    symname = sn_str2;
+    symname += cnt;
+    symname += sn_append;
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    modnum++;
+  }
+}
+
+ 
+//_____________________________________________________________________________
+void AliTPCv2::SetOuterChambersAlignable() const
+{
+  //
+  Int_t modnum = 0;
+  TString vp_str1 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_1/TPC_SECT_";
+  TString vp_str2 = "ALIC_1/TPC_M_1/TPC_Drift_1/TPC_ENDCAP_2/TPC_SECT_";
+  TString vp_append = "/TPC_OROC_1";
+  TString sn_str1="TPC/EndcapA/Sector";
+  TString sn_str2="TPC/EndcapC/Sector";
+  TString sn_append="/OuterChamber";
+  TString volpath, symname;
+  
+  for(Int_t cnt=1; cnt<=18; cnt++){
+    volpath = vp_str1;
+    volpath += cnt;
+    volpath += vp_append;
+    symname = sn_str1;
+    symname += cnt;
+    symname += sn_append;
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    modnum++;
+  }
+  for(Int_t cnt=1; cnt<=18; cnt++){
+    volpath = vp_str2;
+    volpath += cnt;
+    volpath += vp_append;
+    symname = sn_str2;
+    symname += cnt;
+    symname += sn_append;
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+    modnum++;
+  }
+}
+
 //_____________________________________________________________________________
 void AliTPCv2::DrawDetector()
 {

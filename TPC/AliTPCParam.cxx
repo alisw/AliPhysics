@@ -531,7 +531,7 @@ Bool_t AliTPCParam::Update()
 
 Bool_t AliTPCParam::ReadGeoMatrices(){
   //
-  //read geo matrixes
+  // read geo matrixes
   //
   if (!gGeoManager){
     AliFatal("Geo manager not initialized\n");
@@ -562,9 +562,13 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     }
 
     UShort_t volid = AliAlignObj::LayerToVolUID(iLayer,iModule);
-    const char *path = AliAlignObj::GetVolPath(volid);
-    gGeoManager->cd(path);
-    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
+    const char *symname = AliAlignObj::SymName(volid);
+    TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
+    const char *path = symname;
+    if(pne) path=pne->GetTitle();
+    if (!gGeoManager->cd(path)) return kFALSE;      
+    TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
+ 
     //
     TGeoRotation mchange; 
     mchange.RotateY(90); mchange.RotateX(90);

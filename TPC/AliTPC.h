@@ -39,6 +39,7 @@ public:
   virtual void  BuildGeometry();
   virtual void  CreateGeometry() {}
   virtual void  CreateMaterials();
+  virtual void  AddAlignableVolumes() const {};
   
   virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
   virtual void  SDigits2Digits(){;} //MI change -cycling to production
