@@ -35,19 +35,8 @@ AliAlignObjMatrix::AliAlignObjMatrix() :
 }
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi) :
-  AliAlignObj(volpath, voluid),
-  fMatrix()
-{
-  // standard constructor with 3 translation + 3 rotation parameters
-  //
-  SetTranslation(x, y, z);
-  SetRotation(psi, theta, phi);
-}
-
-//_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID layerId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) :
-  AliAlignObj(volpath,layerId,volId),
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) :
+  AliAlignObj(volpath,volUId),
   fMatrix()
 {
   // standard constructor with 3 translation + 3 rotation parameters
@@ -57,8 +46,7 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID layerId, Int_
   // constructor will fail (no object created)
   // 
   if(global){
-    SetTranslation(x, y, z);
-    SetRotation(psi, theta, phi);
+    SetPars(x, y, z, psi, theta, phi);
   }else{
     if(!SetLocalPars(x,y,z,psi,theta,phi)) throw "Alignment object creation failed (TGeo instance needed)!\n";
   }
@@ -66,25 +54,23 @@ AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID layerId, Int_
 
 
 //_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t volUID, TGeoMatrix& m) :
-  AliAlignObj(volpath,volUID),
+AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *) :
+  AliAlignObj(volpath,volUId),
   fMatrix()
 {
   // standard constructor with TGeoMatrix
+  // If the user explicitly sets the global variable to kFALSE then the
+  // parameters are interpreted as giving the local transformation.
+  // This requires to have a gGeoMenager active instance, otherwise the
+  // constructor will fail (no object created)
   //
-  SetTranslation(m);
-  SetRotation(m);
-}
 
-//_____________________________________________________________________________
-AliAlignObjMatrix::AliAlignObjMatrix(const char* volpath, ELayerID layerId, Int_t volId, TGeoMatrix& m) :
-  AliAlignObj(volpath,layerId,volId),
-  fMatrix()
-{
-  // standard constructor with TGeoMatrix
-  //
-  SetTranslation(m);
-  SetRotation(m);
+  if (global) {
+    SetMatrix(m);
+  }
+  else {
+    if (!SetLocalMatrix(m)) throw "Alignment object creation failed (TGeo instance needed)!\n";
+  }
 }
 
 //_____________________________________________________________________________
@@ -98,8 +84,8 @@ AliAlignObjMatrix::AliAlignObjMatrix(const AliAlignObj& theAlignObj) :
   theAlignObj.GetTranslation(tr);
   SetTranslation(tr[0],tr[1],tr[2]);
   Double_t rot[3];
-  theAlignObj.GetAngles(rot);
-  SetRotation(rot[0],rot[1],rot[2]);
+  if (theAlignObj.GetAngles(rot))
+    SetRotation(rot[0],rot[1],rot[2]);
 }
 
 //_____________________________________________________________________________
@@ -113,8 +99,9 @@ AliAlignObjMatrix &AliAlignObjMatrix::operator =(const AliAlignObj& theAlignObj)
   theAlignObj.GetTranslation(tr);
   SetTranslation(tr[0],tr[1],tr[2]);
   Double_t rot[3];
-  theAlignObj.GetAngles(rot);
-  SetRotation(rot[0],rot[1],rot[2]);
+  if (theAlignObj.GetAngles(rot))
+    SetRotation(rot[0],rot[1],rot[2]);
+
   return *this;
 }
 
@@ -158,25 +145,6 @@ Bool_t AliAlignObjMatrix::SetRotation(const TGeoMatrix& m)
 }
 
 //_____________________________________________________________________________
-void AliAlignObjMatrix::SetMatrix(const TGeoMatrix& m)
-{
-  // Set rotation matrix and translation
-  // using TGeoMatrix
-  SetTranslation(m);
-  SetRotation(m);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::SetPars(Double_t x, Double_t y, Double_t z,
-		       Double_t psi, Double_t theta, Double_t phi)
-{
-  // Set rotation matrix and translation
-  // using 3 angles and 3 translations
-  SetTranslation(x,y,z);
-  SetRotation(psi,theta,phi);
-}
-
-//_____________________________________________________________________________
 void AliAlignObjMatrix::GetTranslation(Double_t *tr) const
 {
   // Get Translation from TGeoMatrix
@@ -192,13 +160,6 @@ Bool_t AliAlignObjMatrix::GetAngles(Double_t *angles) const
   // Get rotation angles from the TGeoHMatrix
   const Double_t* rot = fMatrix.GetRotationMatrix();
   return MatrixToAngles(rot,angles);
-}
-
-//_____________________________________________________________________________
-void AliAlignObjMatrix::GetPars(Double_t tr[], Double_t angles[]) const
-{
-  GetTranslation(tr);
-  GetAngles(angles);
 }
 
 //_____________________________________________________________________________

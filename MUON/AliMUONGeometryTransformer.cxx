@@ -800,7 +800,7 @@ void  AliMUONGeometryTransformer::AddMisAlignModule(Int_t moduleId,
   TClonesArray& refArray =*fMisAlignArray;
   Int_t pos = fMisAlignArray->GetEntriesFast();
   new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, 
-                              const_cast<TGeoHMatrix&>(matrix));
+					const_cast<TGeoHMatrix&>(matrix),kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -831,7 +831,7 @@ void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId,
   TClonesArray& refArray =*fMisAlignArray;
   Int_t pos = fMisAlignArray->GetEntriesFast();
   new(refArray[pos]) AliAlignObjMatrix(path.Data(), volId, 
-                              const_cast<TGeoHMatrix&>(matrix));
+				       const_cast<TGeoHMatrix&>(matrix),kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -860,7 +860,7 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
 
     // Create mis align matrix
     Int_t pos = array->GetEntriesFast();
-    new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, matrix);
+    new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, matrix, kTRUE);
   }     
 
   // Detection elements
@@ -882,7 +882,7 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
 
       // Create mis align matrix
       Int_t pos = array->GetEntriesFast();
-      new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, matrix);
+      new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, matrix, kTRUE);
     }
   }
   

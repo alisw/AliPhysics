@@ -1383,7 +1383,10 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer); iModule++) {
 
       UShort_t    volid   = AliAlignObj::LayerToVolUID(iLayer,iModule);
-      const char *path    = AliAlignObj::GetVolPath(volid);
+      const char *symname = AliAlignObj::SymName(volid);
+      TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
+      const char *path = symname;
+      if(pne) path=pne->GetTitle();
       if (!gGeoManager->cd(path)) return kFALSE;      
       TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
       Int_t     iLayerTRD = iLayer - AliAlignObj::kTRD1;

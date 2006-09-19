@@ -19,10 +19,8 @@
 class AliAlignObjAngles : public AliAlignObj{
  public:
   AliAlignObjAngles();
-  AliAlignObjAngles(const char* volpath, UShort_t voluid, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi);
-  AliAlignObjAngles(const char* volpath, ELayerID detId, Int_t volId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global=1) throw (const Char_t *);
-  AliAlignObjAngles(const char* volpath, UShort_t voluid, TGeoMatrix& m);
-  AliAlignObjAngles(const char* volpath, ELayerID layerId, Int_t volId, TGeoMatrix& m);
+  AliAlignObjAngles(const char* volpath, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *);
+  AliAlignObjAngles(const char* volpath, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *);
   AliAlignObjAngles(const AliAlignObj& theAlignObj);
   AliAlignObjAngles& operator= (const AliAlignObj& theAlignObj);
   virtual ~AliAlignObjAngles();
@@ -34,11 +32,6 @@ class AliAlignObjAngles : public AliAlignObj{
   virtual void SetRotation(Double_t psi, Double_t theta, Double_t phi){
     fRotation[0]=psi; fRotation[1]=theta; fRotation[2]=phi;}
   virtual Bool_t SetRotation(const TGeoMatrix& m);
-  virtual void SetMatrix(const TGeoMatrix& m);
-  virtual void SetPars(Double_t x, Double_t y, Double_t z, Double_t psi,
-		   Double_t theta, Double_t phi){
-    fTranslation[0]=x; fTranslation[1]=y; fTranslation[2]=z;
-    fRotation[0]=psi; fRotation[1]=theta; fRotation[2]=phi;}
   
   //Getters
   virtual void GetTranslation(Double_t *tr)  const {
@@ -46,7 +39,6 @@ class AliAlignObjAngles : public AliAlignObj{
   virtual Bool_t GetAngles(Double_t* angles)   const {
     angles[0] = fRotation[0]; angles[1] = fRotation[1];
     angles[2] = fRotation[2]; return kTRUE;}
-  virtual void GetPars(Double_t tr[], Double_t angles[]) const;
   virtual void GetMatrix(TGeoHMatrix& m) const;
 
   virtual AliAlignObj& Inverse() const;

@@ -236,7 +236,7 @@ AliFMDInput::Init()
 	  AliAlignObjAngles* a = static_cast<AliAlignObjAngles*>(array->At(i));
 	  if (!a->ApplyToGeometry()) {
 	    AliWarning(Form("Failed to apply alignment to %s", 
-			    a->GetVolPath()));
+			    a->GetSymName()));
 	  }
 	}
       }

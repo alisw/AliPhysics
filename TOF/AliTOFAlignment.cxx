@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2006/08/22 13:26:05  arcelli
+removal of effective c++ warnings (C.Zampolli)
+
 Revision 1.9  2006/08/10 14:46:54  decaro
 TOF raw data format: updated version
 
@@ -129,7 +132,7 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)
     dpsi   = rot[0];
     dtheta = rot[1];
     dphi   = rot[2];
-    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
+    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
     fTOFAlignObjArray->Add(o);
   }
 
@@ -166,7 +169,7 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot)
     dtheta = rot[1];
     dphi   = rot[2];
     
-    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
+    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
     fTOFAlignObjArray->Add(o);
   }
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();

@@ -239,8 +239,8 @@ void AliAlignmentTracks::BuildIndex()
       for (Int_t ipoint = 0; ipoint < array->GetNPoints(); ipoint++) {
 	UShort_t volId = array->GetVolumeID()[ipoint];
 	// check if the volId is valid
-	if (!AliAlignObj::GetVolPath(volId)) {
-	  AliError(Form("The volume id %d has no default volume path !",
+	if (!AliAlignObj::SymName(volId)) {
+	  AliError(Form("The volume id %d has no default volume name !",
 			volId));
 	  continue;
 	}
@@ -345,7 +345,7 @@ void AliAlignmentTracks::InitAlignObjs()
     fAlignObjs[iLayer] = new AliAlignObj*[AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer)];
     for (Int_t iModule = 0; iModule < AliAlignObj::LayerSize(iLayer + AliAlignObj::kFirstLayer); iModule++) {
       UShort_t volid = AliAlignObj::LayerToVolUID(iLayer+ AliAlignObj::kFirstLayer,iModule);
-      fAlignObjs[iLayer][iModule] = new AliAlignObjAngles("",volid,0,0,0,0,0,0);
+      fAlignObjs[iLayer][iModule] = new AliAlignObjAngles("",volid,0,0,0,0,0,0,kTRUE);
     }
   }
 }

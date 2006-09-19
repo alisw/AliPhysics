@@ -3,9 +3,10 @@
 
 //************************************************************************
 // AliAlignObj: alignment base class for the storage of alignment        *
-//   information for a single volume, that is a translation, a rotation  *
-//   and a the identity of the volume itself in form of a TGeo path and  *
-//   as a unique integer identifier                                      *
+//   information for a single volume, that is a displacement (a shift    *
+//   a rotation) plus the identity of the volume itself in form of a     *
+//   symbolic volume name (eventually a TGeo path) and as a unique       *
+//   integer identifier                                                  *
 //************************************************************************
 #include "TObject.h"
 #include "TString.h"
@@ -31,8 +32,8 @@ class AliAlignObj : public TObject {
 		kMUON=19,
 		kLastLayer=20};
   AliAlignObj();
-  AliAlignObj(const char* volpath, UShort_t voluid);
-  AliAlignObj(const char* volpath, ELayerID detId, Int_t modId);
+  AliAlignObj(const char* symname, UShort_t voluid);
+  AliAlignObj(const char* symname, ELayerID detId, Int_t modId);
   AliAlignObj(const AliAlignObj& theAlignObj);
   AliAlignObj& operator= (const AliAlignObj& theAlignObj);
   AliAlignObj& operator*=(const AliAlignObj& theAlignObj);
@@ -44,21 +45,22 @@ class AliAlignObj : public TObject {
   virtual void SetRotation(Double_t psi, Double_t theta, Double_t phi) = 0;
   virtual Bool_t SetRotation(const TGeoMatrix& m) = 0;
   virtual void SetPars(Double_t x, Double_t y, Double_t z, Double_t psi,
-               Double_t theta, Double_t phi) = 0;
+               Double_t theta, Double_t phi);
   virtual Bool_t SetLocalPars(Double_t x, Double_t y, Double_t z,
 			      Double_t psi, Double_t theta, Double_t phi);
-  virtual void SetMatrix(const TGeoMatrix& m) = 0;
-  void  SetVolPath(const TString& volpath) {fVolPath=volpath;}
+  virtual Bool_t SetMatrix(const TGeoMatrix& m);
+  virtual Bool_t SetLocalMatrix(const TGeoMatrix& m);
+  void  SetSymName(const TString& symname) {fVolPath=symname;}
   void  SetVolUID(UShort_t voluid) {fVolUID=voluid;}
   void  SetVolUID(ELayerID layerId, Int_t modId);
 
   //Getters
-  const char  *GetVolPath()    const {return fVolPath.Data();}
+  const char  *GetSymName()    const {return fVolPath.Data();}
   UShort_t     GetVolUID()     const {return fVolUID;}
   void         GetVolUID(ELayerID &layerId, Int_t &modId) const;
   virtual void GetTranslation(Double_t* tr)  const=0;
   virtual Bool_t GetAngles(Double_t* angles) const=0;
-  virtual void GetPars(Double_t transl[], Double_t rot[]) const=0;
+  virtual Bool_t GetPars(Double_t transl[], Double_t rot[]) const;
   virtual void GetMatrix(TGeoHMatrix& m) const=0;
 
   Bool_t   IsSortable() const {return kTRUE;}
@@ -80,13 +82,12 @@ class AliAlignObj : public TObject {
   static ELayerID VolUIDToLayer(UShort_t voluid, Int_t &modId);
   static ELayerID VolUIDToLayer(UShort_t voluid);
 
-  static const char* GetVolPath(UShort_t voluid);
-  static const char* GetVolPath(ELayerID layerId, Int_t modId);
+  static const char* SymName(UShort_t voluid);
+  static const char* SymName(ELayerID layerId, Int_t modId);
 
   Bool_t ApplyToGeometry();
-  static Bool_t   GetFromGeometry(const char *path, AliAlignObj &alobj);
+  static Bool_t   GetFromGeometry(const char *symname, AliAlignObj &alobj);
 
-  static void         InitAlignObjFromGeometry();
   static AliAlignObj* GetAlignObj(UShort_t voluid);
   static AliAlignObj* GetAlignObj(ELayerID layerId, Int_t modId);
 
@@ -95,17 +96,18 @@ class AliAlignObj : public TObject {
   void AnglesToMatrix(const Double_t *angles, Double_t *rot) const;
   Bool_t MatrixToAngles(const Double_t *rot, Double_t *angles) const;
 
-  static void InitVolPaths();
+  static void InitSymNames();
+  static void InitAlignObjFromGeometry();
 
   //Volume identifiers
-  TString  fVolPath; // Volume path inside TGeo geometry
+  TString  fVolPath; // Symbolic volume name; in case could coincide with
+                     // the volume path inside TGeo geometry
   UShort_t fVolUID;  // Unique volume ID
 
   static Int_t       fgLayerSize[kLastLayer - kFirstLayer]; // Size of layers
   static const char* fgLayerName[kLastLayer - kFirstLayer]; // Name of layers
 
-  static TString*    fgVolPath[kLastLayer - kFirstLayer]; // Volume path
-
+  static TString*    fgVolPath[kLastLayer - kFirstLayer]; // Symbolic volume names
   static AliAlignObj** fgAlignObjs[kLastLayer - kFirstLayer]; // Alignment objects
 
   ClassDef(AliAlignObj, 2)

@@ -214,7 +214,7 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
   Int_t nAlign = fArray->GetEntries();
   id = 0;
   AliAlignObjAngles* obj = 
-    new ((*fArray)[nAlign]) AliAlignObjAngles(path.Data(), id,0,0,0,0,0,0);
+    new ((*fArray)[nAlign]) AliAlignObjAngles(path.Data(), id,0,0,0,0,0,0,kTRUE);
   if (!obj) {
     AliError(Form("Failed to create alignment object for %s", path.Data()));
     return kFALSE;
