@@ -3,8 +3,10 @@ void AliD0toKpiPlots(const Char_t *inName="AliD0toKpi.root",
   //--------------------------------------------------------------------------
   // This macro histograms many variables of D0->Kpi candidates
   //
-  //     Andrea Dainese, andrea.dainese@pd.infn.it
+  //     Andrea Dainese, andrea.dainese@lnl.infn.it
   //--------------------------------------------------------------------------
+
+  gSystem->Load("libANALYSIS.so");
 
   // set of cuts
   Double_t D0Cuts[9] = {0.1,         // mass [GeV]

@@ -7,7 +7,10 @@
 //                          Class AliD0toKpi
 //                 Reconstructed D0 -> K^- pi^+ class
 //      
-//         Origin: A. Dainese    andrea.dainese@pd.infn.it                  
+// Note: the two decay tracks are labelled: 0 (positive track)
+//                                          1 (negative track)
+//
+//         Origin: A. Dainese    andrea.dainese@lnl.infn.it                  
 //-------------------------------------------------------------------------
 
 #include <TObject.h>
@@ -19,7 +22,7 @@
 // particle masses
 const Double_t kMD0 = 1.8645;  // D0  mass
 const Double_t kMK  = 0.49368; // K+  mass
-const Double_t kMPi = 0.13957; // Pi+ mass
+const Double_t kMPi = 0.13957; // pi+ mass
 
 //  --- TOF tagging probabilities --- 
 //  central HIJING
@@ -84,7 +87,7 @@ class AliD0toKpi : public TObject {
   AliD0toKpi(const AliD0toKpi& d0toKpi);
 
   Double_t Alpha() const { return (Ql(0)-Ql(1))/(Ql(0)+Ql(1)); }
-  void     ApplyPID(const Char_t * pidScheme="TOFparamPbPb");
+  void     ApplyPID(TString pidScheme="TOFparamPbPb");
   Double_t ChildrenRelAngle() const; 
   void     ComputeWgts();
   void     CorrectWgt4BR(Double_t factor);
@@ -107,6 +110,7 @@ class AliD0toKpi : public TObject {
   void     GetSecondaryVtx(Double_t vtx[3]) const 
     { vtx[0]=fV2x; vtx[1]=fV2y; vtx[2]=fV2z; }
 
+  Double_t ImpPar() const;
   void     InvMass(Double_t &mD0,Double_t &mD0bar) const;
   Bool_t   IsSignal() const { if(fSignal) return kTRUE; return kFALSE; } 
   Double_t Length() const
@@ -132,11 +136,8 @@ class AliD0toKpi : public TObject {
   void     SetPIDresponse(Double_t resp0[5],Double_t resp1[5]); 
   void     SetPdgCodes(Int_t pdg[2]) {fPdg[0]=pdg[0];fPdg[1]=pdg[1]; }
   void     SetMumPdgCodes(Int_t mum[2]) {fMum[0]=mum[0];fMum[1]=mum[1]; }
-
-  void     DrawPIDinTOF(const Char_t * pidScheme="TOFparamPbPb") const;
   Double_t LinearInterpolation(Double_t p,Int_t nBins,Double_t Bin,
 			       const Double_t *values) const;
-  //  void     SetPtWgts4pp();
   //
  private:
   //
@@ -154,7 +155,7 @@ class AliD0toKpi : public TObject {
   Double_t fV2z; // Z-position of the reconstructed secondary vertex
   Double_t fDCA; // DCA of the two tracks
 
-  Double_t fPx[2];  // X,Y,Z-
+  Double_t fPx[2];  // X,Y,Z
   Double_t fPy[2];  // momenta of the two tracks
   Double_t fPz[2];  // at the reconstructed vertex  
 

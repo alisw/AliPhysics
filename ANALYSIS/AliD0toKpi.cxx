@@ -15,10 +15,10 @@
 
 //----------------------------------------------------------------------------
 //               Implementation of the D0toKpi class
-//      for pp and PbPb interactions
+//                  for pp and PbPb interactions
 // Note: the two decay tracks are labelled: 0 (positive track)
 //                                          1 (negative track)
-//            Origin: A. Dainese    andrea.dainese@pd.infn.it            
+//            Origin: A. Dainese    andrea.dainese@lnl.infn.it            
 //----------------------------------------------------------------------------
 
 #include <TH1.h>
@@ -127,17 +127,15 @@ AliD0toKpi::AliD0toKpi( const AliD0toKpi& d0toKpi):TObject(d0toKpi) {
   // dummy copy constructor
 }
 //----------------------------------------------------------------------------
-void AliD0toKpi::ApplyPID(const Char_t * pidScheme) {
+void AliD0toKpi::ApplyPID(TString pidScheme) {
   // Applies particle identification
-  const char *tofparampbpb = strstr(pidScheme,"TOFparamPbPb");
-  const char *tofparampp   = strstr(pidScheme,"TOFparamPP");
 
-  if((tofparampbpb || tofparampp) && fPdg[0]==0) {
+  if((!pidScheme.CompareTo("TOFparamPbPb") || !pidScheme.CompareTo("TOFparamPP")) && fPdg[0]==0) {
     printf("AliD0toKpi::ApplyPID :\n Warning: TOF parameterized PID can be used only for simulation!\n"); 
     return;
   }
 
-  if(tofparampbpb) {
+  if(!pidScheme.CompareTo("TOFparamPbPb")) {
     // tagging of the positive track
     if(TMath::Abs(fPdg[0])==211 || TMath::Abs(fPdg[0])==13 
        || TMath::Abs(fPdg[0])==11) { // pion,muon,electron
@@ -185,7 +183,7 @@ void AliD0toKpi::ApplyPID(const Char_t * pidScheme) {
   }
 
 
-  if(tofparampp) {
+  if(!pidScheme.CompareTo("TOFparamPP")) {
     // tagging of the positive track
     if(TMath::Abs(fPdg[0])==211 || TMath::Abs(fPdg[0])==13 
        || TMath::Abs(fPdg[0])==11) { // pion,muon,electron
@@ -260,11 +258,13 @@ void AliD0toKpi::ComputeWgts() {
   fWgtDD0    = 1.-fWgtAD0-fWgtBD0-fWgtCD0;
   fWgtDD0bar = 1.-fWgtAD0bar-fWgtBD0bar-fWgtCD0bar;
 
-  /*
+  /*  
   cerr<<fWgtAD0<<"  "<<fWgtAD0bar<<endl;
   cerr<<fWgtBD0<<"  "<<fWgtBD0bar<<endl;
   cerr<<fWgtCD0<<"  "<<fWgtCD0bar<<endl;
-
+  cerr<<fWgtDD0<<"  "<<fWgtDD0bar<<endl;
+  */
+  /*
   if(fWgtAD0<0.) cerr<<"AliD0toKpi::ComputeWgts()  Negative weight!!!\n";
   if(fWgtAD0bar<0.) cerr<<"AliD0toKpi::ComputeWgts()  Negative weight!!!\n";
   if(fWgtBD0<0.) cerr<<"AliD0toKpi::ComputeWgts()  Negative weight!!!\n";
@@ -352,38 +352,38 @@ void AliD0toKpi::GetWgts(Double_t &WgtD0,Double_t &WgtD0bar,TString sample)
   const {
   // returns the weights for pid
 
-  const char *sampleA = strstr(sample.Data(),"A");
-  const char *sampleB = strstr(sample.Data(),"B");
-  const char *sampleC = strstr(sample.Data(),"C");
-  const char *sampleD = strstr(sample.Data(),"D");
-  const char *sampleABCD = strstr(sample.Data(),"ABCD");
-  const char *sampleABC = strstr(sample.Data(),"ABC");
-  const char *sampleBC = strstr(sample.Data(),"BC");
-
-  if(sampleA) { WgtD0 = fWgtAD0;  WgtD0bar = fWgtAD0bar; }
-  if(sampleB) { WgtD0 = fWgtBD0;  WgtD0bar = fWgtBD0bar; }
-  if(sampleC) { WgtD0 = fWgtCD0;  WgtD0bar = fWgtCD0bar; }
-  if(sampleD) { WgtD0 = fWgtDD0;  WgtD0bar = fWgtDD0bar; }
-  if(sampleABCD) { 
+  if(!sample.CompareTo("A")) { WgtD0 = fWgtAD0;  WgtD0bar = fWgtAD0bar; }
+  if(!sample.CompareTo("B")) { WgtD0 = fWgtBD0;  WgtD0bar = fWgtBD0bar; }
+  if(!sample.CompareTo("C")) { WgtD0 = fWgtCD0;  WgtD0bar = fWgtCD0bar; }
+  if(!sample.CompareTo("D")) { WgtD0 = fWgtDD0;  WgtD0bar = fWgtDD0bar; }
+  if(!sample.CompareTo("ABCD")) { 
     WgtD0    = fWgtAD0+fWgtBD0+fWgtCD0+fWgtDD0; 
     WgtD0bar = fWgtAD0bar+fWgtBD0bar+fWgtCD0bar+fWgtDD0bar; 
   }
-  if(sampleABC) { 
+  if(!sample.CompareTo("ABC")) { 
     WgtD0    = fWgtAD0+fWgtBD0+fWgtCD0; 
     WgtD0bar = fWgtAD0bar+fWgtBD0bar+fWgtCD0bar; 
   }
-  if(sampleBC) { 
+  if(!sample.CompareTo("BC")) { 
     WgtD0    = fWgtBD0+fWgtCD0; 
     WgtD0bar = fWgtBD0bar+fWgtCD0bar; 
   }
 
-
-  if(fSignal) {
-    if(fMum[0]==421)  WgtD0bar = 0.;
-    if(fMum[0]==-421) WgtD0 = 0.; 
-  }
-
   return;
+}
+//----------------------------------------------------------------------------
+Double_t AliD0toKpi::ImpPar() const {
+  // D0 impact parameter in the bending plane
+  
+    Double_t k = -(fV2x-fV1x)*Px()-(fV2y-fV1y)*Py();
+    k /= Pt()*Pt();
+    Double_t dx = fV2x-fV1x+k*Px();
+    Double_t dy = fV2y-fV1y+k*Py();
+    Double_t absDD = TMath::Sqrt(dx*dx+dy*dy);
+    TVector3 mom(Px(),Py(),Pz());
+    TVector3 flight(fV2x-fV1x,fV2y-fV1y,fV2z-fV1z);
+    TVector3 cross = mom.Cross(flight);
+    return (cross.Z()>0. ? absDD : -absDD);
 }
 //----------------------------------------------------------------------------
 void AliD0toKpi::InvMass(Double_t &mD0,Double_t &mD0bar) const {
@@ -495,116 +495,6 @@ void AliD0toKpi::SetPIDresponse(Double_t resp0[5],Double_t resp1[5]) {
 
   return;
 } 
-//-----------------------------------------------------------------------------
-void AliD0toKpi::DrawPIDinTOF(const Char_t * pidScheme) const {
-  // Draw parameterized PID probabilities in TOF
-
-  const char *tofparampbpb = strstr(pidScheme,"TOFparamPbPb");
-  const char *tofparampp = strstr(pidScheme,"TOFparamPP");
-
-  TH2F* framePi = new TH2F("framePi","Tag probabilities for PIONS",2,0,2.5,2,0,1);
-  framePi->SetXTitle("p [GeV/c]"); 
-  framePi->SetStats(0);
-  TH2F* frameK = new TH2F("frameK","Tag probabilities for KAONS",2,0,2.5,2,0,1);
-  frameK->SetXTitle("p [GeV/c]");
-  frameK->SetStats(0);
-  TH2F* frameP = new TH2F("frameP","Tag probabilities for PROTONS",2,0,4.5,2,0,1);
-  frameP->SetXTitle("p [GeV/c]");
-  frameP->SetStats(0);
-
-  TH1F* hPiPi = new TH1F("hPiPi","Tag probabilities for PIONS",kPiBinsPbPb,0,2.5);
-  TH1F* hPiNid = new TH1F("hPiNid","Tag probabilities for PIONS",kPiBinsPbPb,0,2.5);
-
-  TH1F* hKK = new TH1F("hKK","Tag probabilities for KAONS",kKBinsPbPb,0,2.5);
-  TH1F* hKNid = new TH1F("hKNid","Tag probabilities for KAONS",kKBinsPbPb,0,2.5);
-  TH1F* hKPi = new TH1F("hKPi","Tag probabilities for KAONS",kKBinsPbPb,0,2.5);
-
-  TH1F* hPP = new TH1F("hPP","Tag probabilities for PROTONS",kPBinsPbPb,0,4.5);
-  TH1F* hPNid = new TH1F("hPNid","Tag probabilities for PROTONS",kPBinsPbPb,0,4.5);
-  TH1F* hPPi = new TH1F("hPPi","Tag probabilities for PROTONS",kPBinsPbPb,0,4.5);
-
-
-  if(tofparampbpb) {
-
-    for(Int_t i=1; i<=kPiBinsPbPb; i++) {
-      hPiPi->SetBinContent(i,kPiTagPiPbPb[i-1]);
-      hPiNid->SetBinContent(i,kPiTagPiPbPb[i-1]+kPiTagNidPbPb[i-1]);
-      
-      hKK->SetBinContent(i,kKTagKPbPb[i-1]);
-      hKPi->SetBinContent(i,kKTagKPbPb[i-1]+kKTagPiPbPb[i-1]);
-      hKNid->SetBinContent(i,kKTagKPbPb[i-1]+kKTagPiPbPb[i-1]+kKTagNidPbPb[i-1]);
-    }
-    for(Int_t i=1; i<=kPBinsPbPb; i++) {    
-      hPP->SetBinContent(i,kPTagPPbPb[i-1]);
-      hPPi->SetBinContent(i,kPTagPPbPb[i-1]+kPTagPiPbPb[i-1]);
-      hPNid->SetBinContent(i,kPTagPPbPb[i-1]+kPTagPiPbPb[i-1]+kPTagNidPbPb[i-1]);
-    }
-
-  } else if(tofparampp) {
-
-    for(Int_t i=1; i<=kPiBinsPP; i++) {
-      hPiPi->SetBinContent(i,kPiTagPiPP[i-1]);
-      hPiNid->SetBinContent(i,kPiTagPiPP[i-1]+kPiTagNidPP[i-1]);
-      
-      hKK->SetBinContent(i,kKTagKPP[i-1]);
-      hKPi->SetBinContent(i,kKTagKPP[i-1]+kKTagPiPP[i-1]);
-      hKNid->SetBinContent(i,kKTagKPP[i-1]+kKTagPiPP[i-1]+kKTagNidPP[i-1]);
-    }
-    for(Int_t i=1; i<=kPBinsPP; i++) {    
-      hPP->SetBinContent(i,kPTagPPP[i-1]);
-      hPPi->SetBinContent(i,kPTagPPP[i-1]+kPTagPiPP[i-1]);
-      hPNid->SetBinContent(i,kPTagPPP[i-1]+kPTagPiPP[i-1]+kPTagNidPP[i-1]);
-    }
-
-  } 
-
-
-  TCanvas* c = new TCanvas("c","Parameterized PID in TOF",0,0,1000,400);
-  c->Divide(3,1);
-  c->cd(1);
-  framePi->Draw();
-  hPiNid->SetFillColor(18); hPiNid->Draw("same");
-  hPiPi->SetFillColor(4); hPiPi->Draw("same");
-  TPaveLabel* pav1 = new TPaveLabel(1,.2,1.4,.3,"#pi");
-  pav1->SetBorderSize(0);
-  pav1->Draw("same");
-  TPaveLabel* pav2 = new TPaveLabel(1,.8,1.8,.9,"non-id");
-  pav2->SetBorderSize(0);
-  pav2->Draw("same");
-
-  c->cd(2);
-  frameK->Draw();
-  hKNid->SetFillColor(18); hKNid->Draw("same");
-  hKPi->SetFillColor(4); hKPi->Draw("same");
-  hKK->SetFillColor(7); hKK->Draw("same");
-  TPaveLabel* pav3 = new TPaveLabel(1,.2,1.5,.3,"K");
-  pav3->SetBorderSize(0);
-  pav3->Draw("same");
-  TPaveLabel* pav4 = new TPaveLabel(1,.8,1.8,.9,"non-id");
-  pav4->SetBorderSize(0);
-  pav4->Draw("same");
-  TPaveLabel* pav5 = new TPaveLabel(.4,.5,.8,.6,"#pi");
-  pav5->SetBorderSize(0);
-  pav5->Draw("same");
-
-  c->cd(3);
-  frameP->Draw();
-  hPNid->SetFillColor(18); hPNid->Draw("same");
-  hPPi->SetFillColor(4); hPPi->Draw("same");
-  hPP->SetFillColor(3); hPP->Draw("same");
-  TPaveLabel* pav6 = new TPaveLabel(1,.2,1.5,.3,"p");
-  pav6->SetBorderSize(0);
-  pav6->Draw("same");
-  TPaveLabel* pav7 = new TPaveLabel(1,.8,2.6,.9,"non-id");
-  pav7->SetBorderSize(0);
-  pav7->Draw("same");
-  TPaveLabel* pav8 = new TPaveLabel(.2,.5,1,.6,"#pi");
-  pav8->SetBorderSize(0);
-  pav8->Draw("same");
-
-
-  return;
-}
 //----------------------------------------------------------------------------
 Double_t AliD0toKpi::LinearInterpolation(Double_t p,Int_t nBins,Double_t Bin,
 					 const Double_t *values) const {
@@ -634,38 +524,6 @@ Double_t AliD0toKpi::LinearInterpolation(Double_t p,Int_t nBins,Double_t Bin,
   return value;
 }
 //----------------------------------------------------------------------------
-
-
-
-
-
-
-/*
-//____________________________________________________________________________
-void AliD0toKpi::SetPtWgts4pp() {
-  // Correct pt distribution in order to reproduce MNR pt slope
-  // (for pp generated with PYTHIA min. bias)
-
-  if(TMath::Abs(fMum[0]) != 421 && TMath::Abs(fMum[1]) != 421 &&
-     TMath::Abs(fMum[0]) != 411 && TMath::Abs(fMum[1]) != 411) return;
-
-  Double_t ptWgt = 1.;
-  ptWgt = 2.05-0.47*Pt()+0.02*Pt()*Pt();
-  if(Pt() >= 5.) ptWgt = 0.56*TMath::Exp(-0.12*Pt());
-
-  fWgtAD0    *= ptWgt;
-  fWgtAD0bar *= ptWgt;
-  fWgtBD0    *= ptWgt;
-  fWgtBD0bar *= ptWgt;
-  fWgtCD0    *= ptWgt;
-  fWgtCD0bar *= ptWgt;
-  fWgtDD0    *= ptWgt;
-  fWgtDD0bar *= ptWgt;
-
-  return;
-}
-//____________________________________________________________________________
-*/
 
 
 

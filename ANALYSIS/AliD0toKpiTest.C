@@ -1,38 +1,45 @@
 //--------------------------------------------------------------------------
 // Test macro for reconstruction and analysis of D0->Kpi
 //
-//     Andrea Dainese, andrea.dainese@pd.infn.it
+//     Andrea Dainese, andrea.dainese@lnl.infn.it
 //--------------------------------------------------------------------------
 
 void AliD0toKpiReco() {
   
+  gSystem->Load("libANALYSIS.so");
+
   //==============  R E C O N S T R U C T I O N ==============================
 
-  // Look for field value in galice.root
-  Double_t field = 0.4;
+  Int_t evFirst = 0;
+  Int_t evLast  = 1000000;
+
+  // Get field from galice.root
   if (gAlice) {
     delete gAlice->GetRunLoader();
     delete gAlice; 
     gAlice=0;
+  }  
+  AliRunLoader *rl = AliRunLoader::Open("galice.root");
+  if (rl == 0x0) {
+    cerr<<"Can not open session"<<endl;
+    return;
   }
-  if(!gSystem->AccessPathName("galice.root",kFileExists)) {
-    AliRunLoader *rl = AliRunLoader::Open("galice.root");
-    rl->LoadgAlice();
-    field=gAlice->Field();
-    Double_t bz=field->SolenoidField()/10.;
-    printf("B = %3.1f T read from gAlice and set\n",bz);
-    delete gAlice->GetRunLoader();
-    delete gAlice; 
-    gAlice=0;
-  } else {
-    printf(" File galice.root not found: default %3.1f T being used!\n",field);
+  Int_t retval = rl->LoadgAlice();
+  if (retval) {
+    cerr<<"LoadgAlice returned error"<<endl;
+    delete rl;
+    return;
   }
+  gAlice=rl->GetAliRun();
+  AliMagF *fiel = (AliMagF*)gAlice->Field();
+  // Set the conversion constant between curvature and Pt
+  AliTracker::SetFieldMap(fiel,kTRUE);
 
   AliD0toKpiAnalysis *analysis = new AliD0toKpiAnalysis();
-  //--- set magnetic field
-  analysis->SetBz(field); 
   // set simulation to take info on PDG codes from kine tree
-  //analysis->SetSimulation();
+  analysis->SetSimulation();
+  rl->LoadKinematics(); 
+  analysis->MakeTracksRefFile(gAlice,evFirst,evLast);
   //--- set this is you want only signal candidates in output file
   //analysis->SetOnlySignal();
   //--- set this if you want to compute primary vertex D0 by D0 using 
@@ -42,27 +49,25 @@ void AliD0toKpiReco() {
   //analysis->SetVertexOnTheFly();
   //analysis->SetMassCut(0.1); // GeV
   //--- set single-track preselections
-  analysis->SetPtCut(0.5); // GeV
-  analysis->Setd0Cut(50.); // micron
+  analysis->SetPtCut(0.); // GeV
+  analysis->Setd0Cut(0.); // micron
   //--- set cuts on D0 candidates to be written to file
   //    (see AliD0toKpiAnalysis.h for a description and for the defaults)
-  analysis->SetD0Cuts(0.1,1000.,1.1,0.,0.,10000.,10000.,0.,.5);
-  //analysis->SetD0Cuts();
+  //analysis->SetD0Cuts(0.1,1000.,1.1,0.,0.,10000.,10000.,0.,.5);
+  analysis->SetD0Cuts();
 
   //--- check the settings
   analysis->PrintStatus();
 
-  Int_t evFirst = 0;
-  Int_t evLast  = 1000000;
-  //analysis->SetDebug();
-  //analysis->FindCandidates(evFirst,evLast,"AliD0toKpi.root");
-  analysis->FindCandidatesESD(evFirst,evLast,"AliD0toKpi.root");
+  analysis->FindCandidates(evFirst,evLast,"AliD0toKpi.root");
   delete analysis;
 
   return;
 }
 //==========================================================================
 void AliD0toKpiSele() {  
+
+  gSystem->Load("libANALYSIS.so");
 
   //========================  S E L E C T I O N ============================
 
