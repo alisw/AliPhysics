@@ -236,6 +236,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
 // (Two iterations: 
 //  1st with 5*fNSigma*sigma(pt) cut w.r.t. to initial vertex; 
 //  2nd with fNSigma*sigma(pt) cut w.r.t. to vertex found in 1st iteration) 
+// All ESD tracks with inside the beam pipe are then propagated to found vertex
 //
   fCurrentVertex = 0;
 
@@ -264,6 +265,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
     trkTree->Fill();
   }
   delete esdTrack;
+ 
 
   // ITERATION 1
   // propagate tracks to initVertex
@@ -337,7 +339,19 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
 
   if(fDebug) fCurrentVertex->PrintStatus();
   if(fTrksToSkip) delete [] fTrksToSkip;
-
+  
+  // propagate tracks to found vertex
+  if(TMath::Sqrt(fCurrentVertex->GetXv()*fCurrentVertex->GetXv()+fCurrentVertex->GetYv()*fCurrentVertex->GetYv())<3.) {
+    for(Int_t ii=0; ii<entr; ii++) {
+      AliESDtrack *et = esdEvent->GetTrack(ii);
+      if(!et->GetStatus()&AliESDtrack::kITSin) continue;
+      if(et->GetX()>3.) continue;
+      et->RelateToVertex(fCurrentVertex,GetField(),100.);
+    }
+  } else {
+    AliWarning("Found vertex outside beam pipe!");
+  }
+ 
   return fCurrentVertex;
 }
 //----------------------------------------------------------------------------

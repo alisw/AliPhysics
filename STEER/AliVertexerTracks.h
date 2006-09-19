@@ -66,7 +66,10 @@ class AliVertexerTracks : public TObject {
   static void GetStrLinDerivMatrix(Double_t *p0,Double_t *p1,Double_t *sigmasq,Double_t (*m)[3],Double_t *d);
 
  protected:
-  Double_t GetField() const { return AliTracker::GetBz();} 
+  Double_t GetField() const { 
+    if(!AliTracker::GetFieldMap())
+      AliFatal("Field map not set; use AliTracker::SetFieldMap()!");
+    return AliTracker::GetBz(); } 
   Int_t    PrepareTracks(TTree &trkTree, Int_t OptImpParCut);
   Double_t Sigmad0rphi(Double_t pt) const;
   void     VertexFinder(Int_t optUseWeights=0);
