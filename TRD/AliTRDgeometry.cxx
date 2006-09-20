@@ -227,28 +227,6 @@ void AliTRDgeometry::Init()
   //
   // Initializes the geometry parameter
   //
-  // The maximum number of pads
-  // and the position of pad 0,0,0 
-  // 
-  // chambers seen from the top:
-  //     +----------------------------+
-  //     |                            |
-  //     |                            |      ^
-  //     |                            |  rphi|
-  //     |                            |      |
-  //     |0                           |      | 
-  //     +----------------------------+      +------>
-  //                                             z 
-  // chambers seen from the side:            ^
-  //     +----------------------------+ drift|
-  //     |0                           |      |
-  //     |                            |      |
-  //     +----------------------------+      +------>
-  //                                             z
-  //                                             
-  // IMPORTANT: time bin 0 is now the first one in the drift region 
-  // closest to the readout !!!
-  //
 
   Int_t icham;
   Int_t iplan;
