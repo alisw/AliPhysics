@@ -1,6 +1,6 @@
 Package: ALICE HLT
 
-This package implements the ALICE High Level Trigger framework.
+This package implements the ALICE High Level Trigger analysis framework.
 All contributions are under the terms of the 
 GNU General Public License as published by the Free Software 
 Foundation. Also see files AUTHORS and THANKS.
@@ -10,7 +10,7 @@ Comments, bug reports, suggestions welcome!
 
 Overview
 ========
-This package provides is a compilation of shared libraries of the ALICE
+This package provides a compilation of shared libraries of the ALICE
 HLT project and is intended for stand-alone compilation, i.e. not as part 
 of the AliRoot compilation. 
 
@@ -23,6 +23,7 @@ framework)
 implementation and a tutorial.
 
 - TPCLib: The HLT code for the TPC
+- TPCLib/OnlineDisplay: HLT visualization code for the TPC
 
 Currently, the the package is not included to the standard AliRoot
 compilation, but will be part of it.
@@ -49,8 +50,7 @@ Setting up a version retrieved from CVS
 =======================================
 Skip this section if you have started from the tar ball.
 
-A version checked out from CVS requires a few steps to set up the Makefiles
-and to set some links which are related to the CVS structure at the IFT.
+A version checked out from CVS requires a few steps to set up the Makefiles.
 Go to the directory and run
 autoreconf -i -f
 
@@ -71,13 +71,12 @@ section.
 
 Installation
 ============
-NOTE: The Makefiles which are in repository are port of the old build system.
+NOTE: The Makefiles which are in repository are part of the old build system.
 Now, the Makefile.am templates are valid.
 
 Package build relies on the GNU triplet configure, make and make install.
-For historical reasons there are Makefiles around from the old build system.
-In order to avoid messing up the two build strategies, it is recommended to
-use a separate build directory, e.g. from the top directory do
+In order to keep the development directory clean, it is recommended to
+use a separate build directory. 
 
   mkdir build
   cd build
@@ -85,6 +84,7 @@ use a separate build directory, e.g. from the top directory do
   make
   make install
 
+You should redirect the output of the make into a file.
 The default install directories are set to the current directory ($PWD).
 
 To override the default prefix use
@@ -113,3 +113,13 @@ Further information
 ===================
 A wiki with detailed information is set up at
 http://www.kip.uni-heidelberg.de/wiki/HLT
+
+Reporting bugs/Asking for support
+=================================
+Please include the following information into your request:
+- config.log from your build directory
+- output of the make process. Note: Redirect BOTH the stdout and stderr
+  channel to a log file. Redirection depends on the shell you are using:
+    bash: make 2>&1 | tee make.log 
+    csh: make |& tee make.log
+  The 'tee' command just duplicates the output.

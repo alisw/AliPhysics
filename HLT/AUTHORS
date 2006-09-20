@@ -1,6 +1,6 @@
 Package: ALICE HLT
 
-This package implements the ALICE High Level Trigger framework.
+This package implements the ALICE High Level Trigger analysis framework.
 
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
