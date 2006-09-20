@@ -23,6 +23,8 @@
 //  tilting angle, etc.                                                      //
 //  It also provides methods to identify the current pad number from         //
 //  global coordinates.                                                      //
+//  The numbering and coordinates should follow the official convention      //
+//  (see David Emschermanns note on TRD convention                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
