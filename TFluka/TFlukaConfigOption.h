@@ -41,7 +41,7 @@ public:
     // Getters
     Double_t Cut(FlukaCutOption_t i)              const {return fCutValue[i];}
     Int_t    Flag(FlukaProcessOption_t i)         const {return fProcessFlag[i];}
-    Int_t    ModelParameter(FlukaModelOption_t i) const {return fModelParameter[i];}
+    Double_t  ModelParameter(FlukaModelOption_t i) const {return fModelParameter[i];}
     Int_t    Medium()                             const {return fMedium;}    
     // Setters
     void     SetCut(const char* flagname, Double_t val);
@@ -79,6 +79,8 @@ public:
 	{fgFile = file; fgMatMin = matMin; fgMatMax = matMax; fgGeom = geom;}
     static Double_t DefaultCut(FlukaCutOption_t i) {return fgDCutValue[i];}
     static Int_t    DefaultProcessFlag(FlukaProcessOption_t i) {return fgDProcessFlag[i];}
+ 
+    
  protected:
     Double_t fCutValue[11];            // User cut
     Int_t    fProcessFlag[15];         // User flag assigned to processes
@@ -95,6 +97,12 @@ public:
     static Float_t   fgMatMax;            // Maximum meterial number
     static FILE*     fgFile;              // Output file
     static TFlukaMCGeometry* fgGeom;      // Pointer to geometry     
+
+ private:
+    // Copy constructor and operator= declared but not implemented (-Weff++ flag)
+    TFlukaConfigOption(const TFlukaConfigOption&);
+    TFlukaConfigOption& operator=(const TFlukaConfigOption&);
+    
     ClassDef(TFlukaConfigOption, 1)    // Fluka Configuration Option
 };
 	

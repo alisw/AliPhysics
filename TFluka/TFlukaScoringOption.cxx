@@ -26,12 +26,19 @@ FILE*              TFlukaScoringOption::fgFile(0x0);
 TFlukaMCGeometry*  TFlukaScoringOption::fgGeom(0x0);
 
 TFlukaScoringOption::TFlukaScoringOption()
+   : fNopfl(0),
+     fOutFile(""),
+     fLun(0)
 {
+
     // Default constructor
 }
 
 TFlukaScoringOption::TFlukaScoringOption(const char* name, const char* sdum, Int_t nopfl, char* outfile, Float_t* what)
-    : TNamed(name, sdum)
+    : TNamed(name, sdum),
+      fNopfl(nopfl),
+      fOutFile(outfile),
+      fLun(0)
 {
     // Constructor
     fNopfl   = nopfl;
@@ -41,12 +48,15 @@ TFlukaScoringOption::TFlukaScoringOption(const char* name, const char* sdum, Int
 }
 
 TFlukaScoringOption::TFlukaScoringOption(const char* name, const char* sdum, Int_t nopfl, char* outfile, Float_t* what, 
-					 const char* det1, const char* det2, const char* det3)
-    : TNamed(name, sdum)
+                                         const char* det1, const char* det2, const char* det3)
+    : TNamed(name, sdum),
+      fNopfl(nopfl + 2),
+      fOutFile(outfile),
+      fLun(0)
 {
     // Constructor
-    fNopfl   = nopfl + 2;
-    fOutFile = outfile;
+//    fNopfl   = nopfl + 2;
+//    fOutFile = outfile;
     Int_t npar = (nopfl == 0)? 6 : 12;
     for (Int_t i = 0; i < npar; i++)  fWhat[i] = what[i];
 
@@ -73,7 +83,7 @@ void TFlukaScoringOption::WriteOpenFlukaFile()
     // Write Fluka input card for output file opening
     // 
     fprintf(fgFile, "OPEN      %10.1f                                                    %s\n", 
-	    GetLun(), "NEW");	  
+            GetLun(), "NEW");
     fprintf(fgFile, "%s\n", GetFileName());
 }
 
@@ -97,63 +107,63 @@ void TFlukaScoringOption::WriteFlukaInputCards()
 // USRBIN
 //
     if(strncmp(GetName(), "USRBIN", 6) == 0){
-	if (Par() == 0) {
-	    fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", 
-		    What(1), What(2), GetLun(), What(4), What(5), What(6));
-	} else if (Par() == 1) {
-	    fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",  
-		    What(1), What(2), GetLun(), What(4), What(5),  What(6));
-	    fprintf(fgFile, "USRBIN    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1f  %s\n",  
-		    What(7), What(8), What(9), What(10), What(11), What(12), cont_line);
-	} else if (Par() == 2) {
-	    if(What(1) == 2.0 || What(1) == 12){
-		fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",  
-			What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))),
-			Float_t(GetRegionByName(GetRegName(2))), Float_t(GetRegionByName(GetRegName(3))));
-		fprintf(fgFile, "USRBIN    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1f  %s\n",  
-			Float_t(GetRegionByName(GetRegName(1))), Float_t(GetRegionByName(GetRegName(2))),
-			Float_t(GetRegionByName(GetRegName(3))), 1., 1., 1., cont_line);
-	    } else {
-		printf("Check consistency of SetUserScoring values \n");
-	    }
-	}
+        if (Par() == 0) {
+            fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
+                    What(1), What(2), GetLun(), What(4), What(5), What(6));
+        } else if (Par() == 1) {
+            fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
+                    What(1), What(2), GetLun(), What(4), What(5),  What(6));
+            fprintf(fgFile, "USRBIN    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1f  %s\n",
+                    What(7), What(8), What(9), What(10), What(11), What(12), cont_line);
+        } else if (Par() == 2) {
+            if(What(1) == 2.0 || What(1) == 12){
+                fprintf(fgFile, "USRBIN    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
+                        What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))),
+                        Float_t(GetRegionByName(GetRegName(2))), Float_t(GetRegionByName(GetRegName(3))));
+                fprintf(fgFile, "USRBIN    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1f  %s\n",
+                        Float_t(GetRegionByName(GetRegName(1))), Float_t(GetRegionByName(GetRegName(2))),
+                        Float_t(GetRegionByName(GetRegName(3))), 1., 1., 1., cont_line);
+            } else {
+                printf("Check consistency of SetUserScoring values \n");
+            }
+        }
     }
    
 //
 // USRBDX
 //
     if(strncmp(GetName(), "USRBDX", 6) == 0){
-	if (Par() == 2) {
-	    fprintf(fgFile, "USRBDX    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", 
-		    What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))), 
-		    Float_t(GetRegionByName(GetRegName(2))), What(6));
-	} else if (Par() == 3) {
-	    fprintf(fgFile, "USRBDX    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",  
-		    What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))),
-		    Float_t(GetRegionByName(GetRegName(2))), What(6));
-	    fprintf(fgFile, "USRBDX    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1f  %s\n",  
-		    What(7), What(8), What(9), What(10), What(11), What(12), cont_line);	      
-	}
+        if (Par() == 2) {
+            fprintf(fgFile, "USRBDX    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
+                    What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))),
+                    Float_t(GetRegionByName(GetRegName(2))), What(6));
+        } else if (Par() == 3) {
+            fprintf(fgFile, "USRBDX    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
+                    What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))),
+                    Float_t(GetRegionByName(GetRegName(2))), What(6));
+            fprintf(fgFile, "USRBDX    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1f  %s\n",
+                    What(7), What(8), What(9), What(10), What(11), What(12), cont_line);
+        }
     }
     
 //
 // USTRACK
 //
     if(strncmp(GetName(), "USRTRACK", 6) == 0){
-	fprintf(fgFile, "USRTRACK  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",  
-		What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))), What(4), What(5));
-	fprintf(fgFile, "USRTRACK  %10.1f%10.4g                                          %s\n",  
-		What(7), What(8), cont_line);
+        fprintf(fgFile, "USRTRACK  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
+                What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))), What(4), What(5));
+        fprintf(fgFile, "USRTRACK  %10.1f%10.4g                                          %s\n",
+                What(7), What(8), cont_line);
     }
     
 //
 // USRCOLL
 // 
     if(strncmp(GetName(), "USRCOLL", 6) == 0){
-	fprintf(fgFile, "USRCOLL   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",  
-		What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))), What(4), What(5));
-	fprintf(fgFile, "USRCOLL   %10.1f%10.4g                                          %s\n",  
-		What(7), What(8), cont_line);	      
+        fprintf(fgFile, "USRCOLL   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",
+                What(1), What(2), GetLun(), Float_t(GetRegionByName(GetRegName(1))), What(4), What(5));
+        fprintf(fgFile, "USRCOLL   %10.1f%10.4g                                          %s\n",
+                What(7), What(8), cont_line);
     }
 }
 

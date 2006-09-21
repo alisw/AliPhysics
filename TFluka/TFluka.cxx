@@ -64,6 +64,8 @@
 #include "TArrayI.h"
 #include "TArrayD.h"
 #include "TDatabasePDG.h"
+#include "TStopwatch.h"
+
 
 // Fluka methods that may be needed.
 #ifndef WIN32 
@@ -74,6 +76,8 @@
 # define mcihad mcihad_
 # define mpdgha mpdgha_
 # define newplo newplo_
+# define genout genout_
+# define flkend flkend_
 #else 
 # define flukam  FLUKAM
 # define fluka_openinp FLUKA_OPENINP
@@ -82,6 +86,8 @@
 # define mcihad MCIHAD
 # define mpdgha MPDGHA
 # define newplo NEWPLO
+# define genout GENOUT
+# define flkend FLKEND
 #endif
 
 extern "C" 
@@ -91,6 +97,8 @@ extern "C"
   //
   void type_of_call flukam(const int&);
   void type_of_call newplo();
+  void type_of_call genout();
+  void type_of_call flkend();
   void type_of_call fluka_openinp(const int&, DEFCHARA);
   void type_of_call fluka_openout(const int&, DEFCHARA);
   void type_of_call fluka_closeinp(const int&);
@@ -110,36 +118,68 @@ ClassImp(TFluka)
 TFluka::TFluka()
   :TVirtualMC(),
    fVerbosityLevel(0),
+   fNEvent(0),
    fInputFileName(""),
+   fCoreInputFileName(""),
+   fCaller(kNoCaller),
+   fIcode(kNoProcess),
+   fNewReg(-1),
+   fRull(0),
+   fXsco(0),
+   fYsco(0),
+   fZsco(0),
+   fTrackIsEntering(kFALSE),
+   fTrackIsExiting(kFALSE),
+   fTrackIsNew(kFALSE),
+   fFieldFlag(kTRUE),
+   fGeneratePemf(kFALSE),
+   fDummyBoundary(kFALSE),
+   fStopped(kFALSE),
+   fStopEvent(kFALSE),
+   fStopRun(kFALSE),
+   fMaterials(0),
+   fNVolumes(0),
+   fCurrentFlukaRegion(-1),
+   fNCerenkov(0),
+   fGeom(0),
+   fMCGeo(0),
    fUserConfig(0), 
    fUserScore(0)
 { 
   //
   // Default constructor
   //
-   fGeneratePemf = kFALSE;
-   fNVolumes = 0;
-   fCurrentFlukaRegion = -1;
-   fNewReg = -1;
-   fGeom = 0;
-   fMCGeo = 0;
-   fMaterials = 0;
-   fDummyBoundary = 0;
-   fFieldFlag = 1;
-   fStopped   = 0;
-   fStopEvent = 0;
-   fStopRun   = 0;
-   fNEvent    = 0;
 } 
  
 //______________________________________________________________________________ 
 TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupported)
   :TVirtualMC("TFluka",title, isRootGeometrySupported),
    fVerbosityLevel(verbosity),
+   fNEvent(0),
    fInputFileName(""),
-   fTrackIsEntering(0),
-   fTrackIsExiting(0),
-   fTrackIsNew(0),
+   fCoreInputFileName(""),
+   fCaller(kNoCaller),
+   fIcode(kNoProcess),
+   fNewReg(-1),
+   fRull(0),
+   fXsco(0),
+   fYsco(0),
+   fZsco(0),
+   fTrackIsEntering(kFALSE),
+   fTrackIsExiting(kFALSE),
+   fTrackIsNew(kFALSE),
+   fFieldFlag(kTRUE),
+   fGeneratePemf(kFALSE),
+   fDummyBoundary(kFALSE),
+   fStopped(kFALSE),
+   fStopEvent(kFALSE),
+   fStopRun(kFALSE),
+   fMaterials(0),
+   fNVolumes(0),
+   fCurrentFlukaRegion(-1),
+   fNCerenkov(0),
+   fGeom(0),
+   fMCGeo(0),
    fUserConfig(new TObjArray(100)),
    fUserScore(new TObjArray(100)) 
 {
@@ -148,41 +188,31 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
        cout << "<== TFluka::TFluka(" << title << ") constructor called." << endl;
    SetCoreInputFileName();
    SetInputFileName();
-   SetGeneratePemf(kFALSE);
-   fNVolumes      = 0;
-   fCurrentFlukaRegion = -1;
-   fNewReg = -1;
-   fDummyBoundary = 0;
-   fFieldFlag = 1;
-   fGeneratePemf = kFALSE;
    fMCGeo = new TGeoMCGeometry("MCGeo", "TGeo Implementation of VirtualMCGeometry", kFALSE);
    fGeom  = new TFlukaMCGeometry("geom", "FLUKA VMC Geometry");
    if (verbosity > 2) fGeom->SetDebugMode(kTRUE);
-   fMaterials = 0;
-   fStopped   = 0;
-   fStopEvent = 0;
-   fStopRun   = 0;
-   fNEvent    = 0;
    PrintHeader();
 }
 
 //______________________________________________________________________________ 
-TFluka::~TFluka() {
-// Destructor
+TFluka::~TFluka()
+{
+    // Destructor
     if (fVerbosityLevel >=3)
-	cout << "<== TFluka::~TFluka() destructor called." << endl;
+        cout << "<== TFluka::~TFluka() destructor called." << endl;
+    if (fMaterials) delete [] fMaterials;
     
     delete fGeom;
     delete fMCGeo;
     
     if (fUserConfig) {
-	fUserConfig->Delete();
-	delete fUserConfig;
+        fUserConfig->Delete();
+        delete fUserConfig;
     }
     
     if (fUserScore) {
-	fUserScore->Delete();
-	delete fUserScore;
+        fUserScore->Delete();
+        delete fUserScore;
     }
 }
 
@@ -244,22 +274,22 @@ void TFluka::BuildPhysics() {
 //
     
     if (fVerbosityLevel >=3)
-	cout << "==> TFluka::BuildPhysics() called." << endl;
+        cout << "==> TFluka::BuildPhysics() called." << endl;
 
     
     if (fVerbosityLevel >=3) {
-	TList *medlist = gGeoManager->GetListOfMedia();
-	TIter next(medlist);
-	TGeoMedium*   med = 0x0;
-	TGeoMaterial* mat = 0x0;
-	Int_t ic = 0;
-	
-	while((med = (TGeoMedium*)next()))
-	{
-	    mat = med->GetMaterial();
-	    printf("Medium %5d %12s %5d %5d\n", ic, (med->GetName()), med->GetId(), mat->GetIndex());
-	    ic++;
-	}
+        TList *medlist = gGeoManager->GetListOfMedia();
+        TIter next(medlist);
+        TGeoMedium*   med = 0x0;
+        TGeoMaterial* mat = 0x0;
+        Int_t ic = 0;
+        
+        while((med = (TGeoMedium*)next()))
+        {
+            mat = med->GetMaterial();
+            printf("Medium %5d %12s %5d %5d\n", ic, (med->GetName()), med->GetId(), mat->GetIndex());
+            ic++;
+        }
     }
     
     //
@@ -277,8 +307,13 @@ void TFluka::BuildPhysics() {
     fluka_openinp(lunin, PASSCHARA(fname));
     fluka_openout(11, PASSCHARA("fluka.out"));
 //  Read input cards    
+    cout << "==> TFluka::BuildPhysics() Read input cards." << endl;
+    TStopwatch timer;
+    timer.Start();
     GLOBAL.lfdrtr = true;
     flukam(1);
+    cout << "<== TFluka::BuildPhysics() Read input cards End"
+         << Form(" R:%.2fs C:%.2fs", timer.RealTime(),timer.CpuTime()) << endl;
 //  Close input file
     fluka_closeinp(lunin);
 //  Finish geometry    
@@ -291,18 +326,18 @@ void TFluka::ProcessEvent() {
 // Process one event
 //
     if (fStopRun) {
-	Warning("ProcessEvent", "User Run Abortion: No more events handled !\n");
-	fNEvent += 1;
-	return;
+        Warning("ProcessEvent", "User Run Abortion: No more events handled !\n");
+        fNEvent += 1;
+        return;
     }
 
     if (fVerbosityLevel >=3)
-	cout << "==> TFluka::ProcessEvent() called." << endl;
+        cout << "==> TFluka::ProcessEvent() called." << endl;
     fApplication->GeneratePrimaries();
     SOURCM.lsouit = true;
     flukam(1);
     if (fVerbosityLevel >=3)
-	cout << "<== TFluka::ProcessEvent() called." << endl;
+        cout << "<== TFluka::ProcessEvent() called." << endl;
     //
     // Increase event number
     //
@@ -317,7 +352,7 @@ Bool_t TFluka::ProcessRun(Int_t nevent) {
 
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::ProcessRun(" << nevent << ") called." 
-	 << endl;
+         << endl;
 
   if (fVerbosityLevel >=2) {
     cout << "\t* GLOBAL.fdrtr = " << (GLOBAL.lfdrtr?'T':'F') << endl;
@@ -326,16 +361,23 @@ Bool_t TFluka::ProcessRun(Int_t nevent) {
 
   Int_t todo = TMath::Abs(nevent);
   for (Int_t ev = 0; ev < todo; ev++) {
+      TStopwatch timer;
+      timer.Start();
       fApplication->BeginEvent();
       ProcessEvent();
       fApplication->FinishEvent();
+      cout << "Event: "<< ev
+           << Form(" R:%.2fs C:%.2fs", timer.RealTime(),timer.CpuTime()) << endl;
   }
 
   if (fVerbosityLevel >=3)
     cout << "<== TFluka::ProcessRun(" << nevent << ") called." 
-	 << endl;
+         << endl;
+  
   // Write fluka specific scoring output
+  genout();
   newplo();
+  flkend();
   
   return kTRUE;
 }
@@ -346,8 +388,8 @@ Bool_t TFluka::ProcessRun(Int_t nevent) {
 // functions from GCONS 
 //____________________________________________________________________________ 
 void TFluka::Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,  
-		    Float_t &dens, Float_t &radl, Float_t &absl,
-		    Float_t* /*ubuf*/, Int_t& /*nbuf*/) {
+                    Float_t &dens, Float_t &radl, Float_t &absl,
+                    Float_t* /*ubuf*/, Int_t& /*nbuf*/) {
 //
    TGeoMaterial *mat;
    TIter next (gGeoManager->GetListOfMaterials());
@@ -368,8 +410,8 @@ void TFluka::Gfmate(Int_t imat, char *name, Float_t &a, Float_t &z,
 
 //______________________________________________________________________________ 
 void TFluka::Gfmate(Int_t imat, char *name, Double_t &a, Double_t &z,  
-		    Double_t &dens, Double_t &radl, Double_t &absl,
-		    Double_t* /*ubuf*/, Int_t& /*nbuf*/) {
+                    Double_t &dens, Double_t &radl, Double_t &absl,
+                    Double_t* /*ubuf*/, Int_t& /*nbuf*/) {
 //
    TGeoMaterial *mat;
    TIter next (gGeoManager->GetListOfMaterials());
@@ -391,8 +433,8 @@ void TFluka::Gfmate(Int_t imat, char *name, Double_t &a, Double_t &z,
 // detector composition
 //______________________________________________________________________________ 
 void TFluka::Material(Int_t& kmat, const char* name, Double_t a, 
-		      Double_t z, Double_t dens, Double_t radl, Double_t absl,
-		      Float_t* buf, Int_t nwbuf) {
+                      Double_t z, Double_t dens, Double_t radl, Double_t absl,
+                      Float_t* buf, Int_t nwbuf) {
 //
    Double_t* dbuf = fGeom->CreateDoubleArray(buf, nwbuf);  
    Material(kmat, name, a, z, dens, radl, absl, dbuf, nwbuf);
@@ -401,8 +443,8 @@ void TFluka::Material(Int_t& kmat, const char* name, Double_t a,
 
 //______________________________________________________________________________ 
 void TFluka::Material(Int_t& kmat, const char* name, Double_t a, 
-		      Double_t z, Double_t dens, Double_t radl, Double_t absl,
-		      Double_t* /*buf*/, Int_t /*nwbuf*/) {
+                      Double_t z, Double_t dens, Double_t radl, Double_t absl,
+                      Double_t* /*buf*/, Int_t /*nwbuf*/) {
 //
 // Define a material
   TGeoMaterial *mat;
@@ -420,7 +462,7 @@ void TFluka::Material(Int_t& kmat, const char* name, Double_t a,
 
 //______________________________________________________________________________ 
 void TFluka::Mixture(Int_t& kmat, const char *name, Float_t *a, 
-		     Float_t *z, Double_t dens, Int_t nlmat, Float_t *wmat) {
+                     Float_t *z, Double_t dens, Int_t nlmat, Float_t *wmat) {
 //
 // Define a material mixture
 //
@@ -440,7 +482,7 @@ void TFluka::Mixture(Int_t& kmat, const char *name, Float_t *a,
 
 //______________________________________________________________________________ 
 void TFluka::Mixture(Int_t& kmat, const char *name, Double_t *a, 
-		     Double_t *z, Double_t dens, Int_t nlmat, Double_t *wmat) {
+                     Double_t *z, Double_t dens, Int_t nlmat, Double_t *wmat) {
 //
   // Defines mixture OR COMPOUND IMAT as composed by 
   // THE BASIC NLMAT materials defined by arrays A,Z and WMAT
@@ -554,33 +596,33 @@ void TFluka::Mixture(Int_t& kmat, const char *name, Double_t *a,
 
 //______________________________________________________________________________ 
 void TFluka::Medium(Int_t& kmed, const char *name, Int_t nmat, 
-		    Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
-		    Double_t stemax, Double_t deemax, Double_t epsil, 
-		    Double_t stmin, Float_t* ubuf, Int_t nbuf) { 
+                    Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd,
+                    Double_t stemax, Double_t deemax, Double_t epsil,
+                    Double_t stmin, Float_t* ubuf, Int_t nbuf) {
   // Define a medium
   // 
   kmed = gGeoManager->GetListOfMedia()->GetSize()+1;
   fMCGeo->Medium(kmed, name, nmat, isvol, ifield, fieldm, tmaxfd, stemax, deemax, 
-	     epsil, stmin, ubuf, nbuf);
+             epsil, stmin, ubuf, nbuf);
 } 
 
 //______________________________________________________________________________ 
 void TFluka::Medium(Int_t& kmed, const char *name, Int_t nmat, 
-		    Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd, 
-		    Double_t stemax, Double_t deemax, Double_t epsil, 
-		    Double_t stmin, Double_t* ubuf, Int_t nbuf) { 
+                    Int_t isvol, Int_t ifield, Double_t fieldm, Double_t tmaxfd,
+                    Double_t stemax, Double_t deemax, Double_t epsil,
+                    Double_t stmin, Double_t* ubuf, Int_t nbuf) {
   // Define a medium
   // 
   kmed = gGeoManager->GetListOfMedia()->GetSize()+1;
   fMCGeo->Medium(kmed, name, nmat, isvol, ifield, fieldm, tmaxfd, stemax, deemax, 
-	     epsil, stmin, ubuf, nbuf);
+             epsil, stmin, ubuf, nbuf);
 } 
 
 //______________________________________________________________________________ 
 void TFluka::Matrix(Int_t& krot, Double_t thetaX, Double_t phiX, 
-		    Double_t thetaY, Double_t phiY, Double_t thetaZ, 
-		    Double_t phiZ) {
-//		     
+                    Double_t thetaY, Double_t phiY, Double_t thetaZ,
+                    Double_t phiZ) {
+//        
   krot = gGeoManager->GetListOfMatrices()->GetEntriesFast();
   fMCGeo->Matrix(krot, thetaX, phiX, thetaY, phiY, thetaZ, phiZ); 
 } 
@@ -645,42 +687,42 @@ void TFluka::Gsatt(const char *name, const char *att, Int_t val)
 
 //______________________________________________________________________________ 
 Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,  
-		     Float_t *upar, Int_t np)  {
+                     Float_t *upar, Int_t np)  {
 //
     return fMCGeo->Gsvolu(name, shape, nmed, upar, np); 
 }
 
 //______________________________________________________________________________ 
 Int_t TFluka::Gsvolu(const char *name, const char *shape, Int_t nmed,  
-		     Double_t *upar, Int_t np)  {
+                     Double_t *upar, Int_t np)  {
 //
     return fMCGeo->Gsvolu(name, shape, nmed, upar, np); 
 }
  
 //______________________________________________________________________________ 
 void TFluka::Gsdvn(const char *name, const char *mother, Int_t ndiv, 
-		   Int_t iaxis) {
+                   Int_t iaxis) {
 //
     fMCGeo->Gsdvn(name, mother, ndiv, iaxis); 
 } 
 
 //______________________________________________________________________________ 
 void TFluka::Gsdvn2(const char *name, const char *mother, Int_t ndiv, 
-		    Int_t iaxis, Double_t c0i, Int_t numed) {
+                    Int_t iaxis, Double_t c0i, Int_t numed) {
 //
     fMCGeo->Gsdvn2(name, mother, ndiv, iaxis, c0i, numed); 
 } 
 
 //______________________________________________________________________________ 
 void TFluka::Gsdvt(const char *name, const char *mother, Double_t step, 
-		   Int_t iaxis, Int_t numed, Int_t ndvmx) {
-//	
+                   Int_t iaxis, Int_t numed, Int_t ndvmx) {
+//        
     fMCGeo->Gsdvt(name, mother, step, iaxis, numed, ndvmx); 
 } 
 
 //______________________________________________________________________________ 
 void TFluka::Gsdvt2(const char *name, const char *mother, Double_t step, 
-		    Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx) { 
+                    Int_t iaxis, Double_t c0, Int_t numed, Int_t ndvmx) {
 //
     fMCGeo->Gsdvt2(name, mother, step, iaxis, c0, numed, ndvmx); 
 } 
@@ -693,24 +735,24 @@ void TFluka::Gsord(const char * /*name*/, Int_t /*iax*/) {
 
 //______________________________________________________________________________ 
 void TFluka::Gspos(const char *name, Int_t nr, const char *mother,  
-		   Double_t x, Double_t y, Double_t z, Int_t irot, 
-		   const char *konly) {
+                   Double_t x, Double_t y, Double_t z, Int_t irot,
+                   const char *konly) {
 //
   fMCGeo->Gspos(name, nr, mother, x, y, z, irot, konly); 
 } 
 
 //______________________________________________________________________________ 
 void TFluka::Gsposp(const char *name, Int_t nr, const char *mother,  
-		    Double_t x, Double_t y, Double_t z, Int_t irot,
-		    const char *konly, Float_t *upar, Int_t np)  {
+                    Double_t x, Double_t y, Double_t z, Int_t irot,
+                    const char *konly, Float_t *upar, Int_t np)  {
   //
   fMCGeo->Gsposp(name, nr, mother, x, y, z, irot, konly, upar, np); 
 } 
 
 //______________________________________________________________________________ 
 void TFluka::Gsposp(const char *name, Int_t nr, const char *mother,  
-		    Double_t x, Double_t y, Double_t z, Int_t irot,
-		    const char *konly, Double_t *upar, Int_t np)  {
+                    Double_t x, Double_t y, Double_t z, Int_t irot,
+                    const char *konly, Double_t *upar, Int_t np)  {
   //
   fMCGeo->Gsposp(name, nr, mother, x, y, z, irot, konly, upar, np); 
 } 
@@ -825,7 +867,7 @@ Bool_t TFluka::GetMedium(const TString &volumeName,TString &name,
 
 //______________________________________________________________________________ 
 void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
-			 Float_t* absco, Float_t* effic, Float_t* rindex) {
+                         Float_t* absco, Float_t* effic, Float_t* rindex) {
 //
 // Set Cerenkov properties for medium itmed
 //
@@ -847,7 +889,7 @@ void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
 }  
 
 void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
-			 Float_t* absco, Float_t* effic, Float_t* rindex, Float_t* rfl) {
+                         Float_t* absco, Float_t* effic, Float_t* rindex, Float_t* rfl) {
 //
 // Set Cerenkov properties for medium itmed
 //
@@ -871,13 +913,13 @@ void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
 
 //______________________________________________________________________________ 
 void TFluka::SetCerenkov(Int_t /*itmed*/, Int_t /*npckov*/, Double_t * /*ppckov*/,
-			 Double_t * /*absco*/, Double_t * /*effic*/, Double_t * /*rindex*/) {
+                         Double_t * /*absco*/, Double_t * /*effic*/, Double_t * /*rindex*/) {
 //
 //  Double_t version not implemented
 }  
 
 void TFluka::SetCerenkov(Int_t /*itmed*/, Int_t /*npckov*/, Double_t* /*ppckov*/,
-			 Double_t* /*absco*/, Double_t* /*effic*/, Double_t* /*rindex*/, Double_t* /*rfl*/) { 
+                         Double_t* /*absco*/, Double_t* /*effic*/, Double_t* /*rindex*/, Double_t* /*rfl*/) {
 //
 // //  Double_t version not implemented
 }
@@ -946,34 +988,34 @@ Int_t TFluka::PDGFromId(Int_t id) const
 
     if (id == kFLUKAoptical) {
 // Cerenkov photon
-	if (fVerbosityLevel >= 3)
-	    printf("\n PDGFromId: Cerenkov Photon \n");
-	return  50000050;
+//        if (fVerbosityLevel >= 3)
+//            printf("\n PDGFromId: Cerenkov Photon \n");
+        return  50000050;
     }
 // Error id    
     if (id == 0 || id < kFLUKAcodemin || id > kFLUKAcodemax) {
-	if (fVerbosityLevel >= 3)
-	    printf("PDGFromId: Error id = 0\n");
-	return -1;
+        if (fVerbosityLevel >= 3)
+            printf("PDGFromId: Error id = 0\n");
+        return -1;
     }
 // Good id    
     if (id > 0) {
-	Int_t intfluka = GetFlukaIPTOKP(id);
-	if (intfluka == 0) {
-	    if (fVerbosityLevel >= 3)
-		printf("PDGFromId: Error intfluka = 0: %d\n", id);
-	    return -1;
-	} else if (intfluka < 0) {
-	    if (fVerbosityLevel >= 3)
-		printf("PDGFromId: Error intfluka < 0: %d\n", id);
-	    return -1;
-	}
-//	if (fVerbosityLevel >= 3)
-//	    printf("mpdgha called with %d %d \n", id, intfluka);
-	return mpdgha(intfluka);
+        Int_t intfluka = GetFlukaIPTOKP(id);
+        if (intfluka == 0) {
+            if (fVerbosityLevel >= 3)
+                printf("PDGFromId: Error intfluka = 0: %d\n", id);
+            return -1;
+        } else if (intfluka < 0) {
+            if (fVerbosityLevel >= 3)
+                printf("PDGFromId: Error intfluka < 0: %d\n", id);
+            return -1;
+        }
+//        if (fVerbosityLevel >= 3)
+//            printf("mpdgha called with %d %d \n", id, intfluka);
+        return mpdgha(intfluka);
     } else {
-	// ions and optical photons
-	return idSpecial[id - kFLUKAcodemin];
+        // ions and optical photons
+        return idSpecial[id - kFLUKAcodemin];
     }
 }
 
@@ -1002,10 +1044,10 @@ void TFluka::SetProcess(const char* flagName, Int_t flagValue, Int_t imed)
     TFlukaConfigOption* proc;
     while((proc = (TFlukaConfigOption*)next()))
     { 
-	if (proc->Medium() == imed) {
-	    proc->SetProcess(flagName, flagValue);
-	    return;
-	}
+        if (proc->Medium() == imed) {
+            proc->SetProcess(flagName, flagValue);
+            return;
+        }
     }
     proc = new TFlukaConfigOption(imed);
     proc->SetProcess(flagName, flagValue);
@@ -1031,10 +1073,10 @@ void TFluka::SetCut(const char* cutName, Double_t cutValue, Int_t imed)
     TFlukaConfigOption* proc;
     while((proc = (TFlukaConfigOption*)next()))
     { 
-	if (proc->Medium() == imed) {
-	    proc->SetCut(cutName, cutValue);
-	    return;
-	}
+        if (proc->Medium() == imed) {
+            proc->SetCut(cutName, cutValue);
+            return;
+        }
     }
 
     proc = new TFlukaConfigOption(imed);
@@ -1052,10 +1094,10 @@ void TFluka::SetModelParameter(const char* parName, Double_t parValue, Int_t ime
     TFlukaConfigOption* proc;
     while((proc = (TFlukaConfigOption*)next()))
     { 
-	if (proc->Medium() == imed) {
-	    proc->SetModelParameter(parName, parValue);
-	    return;
-	}
+        if (proc->Medium() == imed) {
+            proc->SetModelParameter(parName, parValue);
+            return;
+        }
     }
 
     proc = new TFlukaConfigOption(imed);
@@ -1115,16 +1157,16 @@ void TFluka::InitPhysics()
     
 // Open files 
     if ((pFlukaVmcCoreInp = fopen(sFlukaVmcCoreInp.Data(),"r")) == NULL) {
-	Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcCoreInp.Data());
-	exit(1);
+        Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcCoreInp.Data());
+        exit(1);
     }
     if ((pFlukaVmcFlukaMat = fopen(sFlukaVmcTmp.Data(),"r")) == NULL) {
-	Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcTmp.Data());
-	exit(1);
+        Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcTmp.Data());
+        exit(1);
     }
     if ((pFlukaVmcInp = fopen(sFlukaVmcInp.Data(),"w")) == NULL) {
-	Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcInp.Data());
-	exit(1);
+        Warning("InitPhysics", "\nCannot open file %s\n",sFlukaVmcInp.Data());
+        exit(1);
     }
 
 // Copy core input file 
@@ -1132,27 +1174,27 @@ void TFluka::InitPhysics()
     Float_t fEventsPerRun;
     
     while ((fgets(sLine,255,pFlukaVmcCoreInp)) != NULL) {
-	if (strncmp(sLine,"GEOEND",6) != 0)
-	    fprintf(pFlukaVmcInp,"%s",sLine); // copy until GEOEND card
-	else {
-	    fprintf(pFlukaVmcInp,"GEOEND\n");   // add GEOEND card
-	    goto flukamat;
-	}
+        if (strncmp(sLine,"GEOEND",6) != 0)
+            fprintf(pFlukaVmcInp,"%s",sLine); // copy until GEOEND card
+        else {
+            fprintf(pFlukaVmcInp,"GEOEND\n");   // add GEOEND card
+            goto flukamat;
+        }
     } // end of while until GEOEND card
     
 
  flukamat:
     while ((fgets(sLine,255,pFlukaVmcFlukaMat)) != NULL) { // copy flukaMat.inp file
-	fprintf(pFlukaVmcInp,"%s\n",sLine);
+        fprintf(pFlukaVmcInp,"%s\n",sLine);
     }
     
     while ((fgets(sLine,255,pFlukaVmcCoreInp)) != NULL) { 
-	if (strncmp(sLine,"START",5) != 0)
-	    fprintf(pFlukaVmcInp,"%s\n",sLine);
-	else {
-	    sscanf(sLine+10,"%10f",&fEventsPerRun);
-	    goto fin;
-	}
+        if (strncmp(sLine,"START",5) != 0)
+            fprintf(pFlukaVmcInp,"%s\n",sLine);
+        else {
+            sscanf(sLine+10,"%10f",&fEventsPerRun);
+            goto fin;
+        }
     } //end of while until START card
     
  fin:
@@ -1179,32 +1221,32 @@ void TFluka::InitPhysics()
 
     for (Int_t isc = 0; isc < nscore; isc++) 
     {
-	mopo = dynamic_cast<TFlukaScoringOption*> (fUserScore->At(isc));
-	char*    fileName = mopo->GetFileName();
-	Int_t    size     = strlen(fileName);
-	Float_t  lun      = -1.;
+        mopo = dynamic_cast<TFlukaScoringOption*> (fUserScore->At(isc));
+        char*    fileName = mopo->GetFileName();
+        Int_t    size     = strlen(fileName);
+        Float_t  lun      = -1.;
 //
 // Check if new output file has to be opened
-	for (Int_t isci = 0; isci < isc; isci++) {
+        for (Int_t isci = 0; isci < isc; isci++) {
 
-	    
-	    mopi = dynamic_cast<TFlukaScoringOption*> (fUserScore->At(isci));
-	    if(strncmp(mopi->GetFileName(), fileName, size)==0) {
-		// 
-		// No, the file already exists
-		lun = mopi->GetLun();
-		mopo->SetLun(lun);
-		break;
-	    }
-	} // inner loop
+        
+            mopi = dynamic_cast<TFlukaScoringOption*> (fUserScore->At(isci));
+            if(strncmp(mopi->GetFileName(), fileName, size)==0) {
+                //
+                // No, the file already exists
+                lun = mopi->GetLun();
+                mopo->SetLun(lun);
+                break;
+            }
+        } // inner loop
 
-	if (lun == -1.) {
-	    // Open new output file
-	    inp++;
-	    mopo->SetLun(loginp + inp);
-	    mopo->WriteOpenFlukaFile();
-	}
-	mopo->WriteFlukaInputCards();
+        if (lun == -1.) {
+            // Open new output file
+            inp++;
+            mopo->SetLun(loginp + inp);
+            mopo->WriteOpenFlukaFile();
+        }
+        mopo->WriteFlukaInputCards();
     }
 
 // Add RANDOMIZ card
@@ -1228,9 +1270,9 @@ void TFluka::InitPhysics()
     
     for (Int_t im = 0; im < nmaterial; im++)
     {
-	TGeoMaterial* material = dynamic_cast<TGeoMaterial*> (matList->At(im));
-	Int_t idmat = material->GetIndex();
-	fMaterials[idmat] = im;
+        TGeoMaterial* material = dynamic_cast<TGeoMaterial*> (matList->At(im));
+        Int_t idmat = material->GetIndex();
+        fMaterials[idmat] = im;
     }
 } // end of InitPhysics
 
@@ -1239,10 +1281,11 @@ void TFluka::InitPhysics()
 void TFluka::SetMaxStep(Double_t step)
 {
 // Set the maximum step size
-    if (step > 1.e4) return;
+//    if (step > 1.e4) return;
     
-    Int_t mreg, latt;
-    fGeom->GetCurrentRegion(mreg, latt);
+//    Int_t mreg=0, latt=0;
+//    fGeom->GetCurrentRegion(mreg, latt);
+    Int_t mreg = fGeom->GetCurrentRegion();
     STEPSZ.stepmx[mreg - 1] = step;
 }
 
@@ -1526,7 +1569,7 @@ Int_t TFluka::CorrectFlukaId() const
    // since we don't put photons and e- created bellow transport cut on the vmc stack
    // and there is a call to endraw for energy deposition for each of them
    // and they have the track number of their parent, but different identity (pdg)
-   // so we want to assign also their parent identity also.
+   // so we want to assign also their parent identity.
    if( (IsTrackStop() )
         && TRACKR.ispusr[mkbmx2 - 4] == TRACKR.ispusr[mkbmx2 - 1]
         && TRACKR.jtrack != TRACKR.ispusr[mkbmx2 - 3] ) {
@@ -1725,69 +1768,69 @@ Int_t TFluka::NSecondaries() const
 // FHEAVY.npheav = number of secondaries for light and heavy secondary ions
     FlukaCallerCode_t caller = GetCaller();
     if (caller == kUSDRAW)  // valid only after usdraw
-	return GENSTK.np + FHEAVY.npheav;
+        return GENSTK.np + FHEAVY.npheav;
     else if (caller == kUSTCKV) {
-	// Cerenkov Photon production
-	return fNCerenkov;
+        // Cerenkov Photon production
+        return fNCerenkov;
     }
     return 0;
 } // end of NSecondaries
 
 //______________________________________________________________________________ 
 void TFluka::GetSecondary(Int_t isec, Int_t& particleId,
-		TLorentzVector& position, TLorentzVector& momentum)
+                TLorentzVector& position, TLorentzVector& momentum)
 {
 // Copy particles from secondary stack to vmc stack
 //
 
     FlukaCallerCode_t caller = GetCaller();
     if (caller == kUSDRAW) {  // valid only after usdraw
-	if (GENSTK.np > 0) {
-	    // Hadronic interaction
-	    if (isec >= 0 && isec < GENSTK.np) {
-		particleId = PDGFromId(GENSTK.kpart[isec]);
-		position.SetX(fXsco);
-		position.SetY(fYsco);
-		position.SetZ(fZsco);
-		position.SetT(TRACKR.atrack);
-		momentum.SetPx(GENSTK.plr[isec]*GENSTK.cxr[isec]);
-		momentum.SetPy(GENSTK.plr[isec]*GENSTK.cyr[isec]);
-		momentum.SetPz(GENSTK.plr[isec]*GENSTK.czr[isec]);
-		momentum.SetE(GENSTK.tki[isec] + PAPROP.am[GENSTK.kpart[isec]+6]);
-	    }
-	    else if (isec >= GENSTK.np && isec < GENSTK.np + FHEAVY.npheav) {
-		Int_t jsec = isec - GENSTK.np;
-		particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
-		position.SetX(fXsco);
-		position.SetY(fYsco);
-		position.SetZ(fZsco);
-		position.SetT(TRACKR.atrack);
-		momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
-		momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
-		momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
-		if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6) 
-		    momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
-		else if (FHEAVY.tkheav[jsec] > 6)
-		    momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
-	    }
-	    else
-		Warning("GetSecondary","isec out of range");
-	} 
+        if (GENSTK.np > 0) {
+            // Hadronic interaction
+            if (isec >= 0 && isec < GENSTK.np) {
+                particleId = PDGFromId(GENSTK.kpart[isec]);
+                position.SetX(fXsco);
+                position.SetY(fYsco);
+                position.SetZ(fZsco);
+                position.SetT(TRACKR.atrack);
+                momentum.SetPx(GENSTK.plr[isec]*GENSTK.cxr[isec]);
+                momentum.SetPy(GENSTK.plr[isec]*GENSTK.cyr[isec]);
+                momentum.SetPz(GENSTK.plr[isec]*GENSTK.czr[isec]);
+                momentum.SetE(GENSTK.tki[isec] + PAPROP.am[GENSTK.kpart[isec]+6]);
+            }
+            else if (isec >= GENSTK.np && isec < GENSTK.np + FHEAVY.npheav) {
+                Int_t jsec = isec - GENSTK.np;
+                particleId = FHEAVY.kheavy[jsec]; // this is Fluka id !!!
+                position.SetX(fXsco);
+                position.SetY(fYsco);
+                position.SetZ(fZsco);
+                position.SetT(TRACKR.atrack);
+                momentum.SetPx(FHEAVY.pheavy[jsec]*FHEAVY.cxheav[jsec]);
+                momentum.SetPy(FHEAVY.pheavy[jsec]*FHEAVY.cyheav[jsec]);
+                momentum.SetPz(FHEAVY.pheavy[jsec]*FHEAVY.czheav[jsec]);
+                if (FHEAVY.tkheav[jsec] >= 3 && FHEAVY.tkheav[jsec] <= 6)
+                    momentum.SetE(FHEAVY.tkheav[jsec] + PAPROP.am[jsec+6]);
+                else if (FHEAVY.tkheav[jsec] > 6)
+                    momentum.SetE(FHEAVY.tkheav[jsec] + FHEAVY.amnhea[jsec]); // to be checked !!!
+            }
+            else
+                Warning("GetSecondary","isec out of range");
+        }
     } else if (caller == kUSTCKV) {
-	Int_t index = OPPHST.lstopp - isec;
-	position.SetX(OPPHST.xoptph[index]);
-	position.SetY(OPPHST.yoptph[index]);
-	position.SetZ(OPPHST.zoptph[index]);
-	position.SetT(OPPHST.agopph[index]);
-	Double_t p = OPPHST.poptph[index];
-	
-	momentum.SetPx(p * OPPHST.txopph[index]);
-	momentum.SetPy(p * OPPHST.tyopph[index]);
-	momentum.SetPz(p * OPPHST.tzopph[index]);
-	momentum.SetE(p);
+        Int_t index = OPPHST.lstopp - isec;
+        position.SetX(OPPHST.xoptph[index]);
+        position.SetY(OPPHST.yoptph[index]);
+        position.SetZ(OPPHST.zoptph[index]);
+        position.SetT(OPPHST.agopph[index]);
+        Double_t p = OPPHST.poptph[index];
+        
+        momentum.SetPx(p * OPPHST.txopph[index]);
+        momentum.SetPy(p * OPPHST.tyopph[index]);
+        momentum.SetPz(p * OPPHST.tzopph[index]);
+        momentum.SetE(p);
     }
     else
-	Warning("GetSecondary","no secondaries available");
+        Warning("GetSecondary","no secondaries available");
     
 } // end of GetSecondary
 
@@ -1800,8 +1843,8 @@ TMCProcess TFluka::ProdProcess(Int_t) const
 // in the current step
 
     Int_t mugamma = (TRACKR.jtrack == kFLUKAphoton || 
-		     TRACKR.jtrack == kFLUKAmuplus || 
-		     TRACKR.jtrack == kFLUKAmuminus);
+                     TRACKR.jtrack == kFLUKAmuplus ||
+                     TRACKR.jtrack == kFLUKAmuminus);
     FlukaProcessCode_t icode = GetIcode();
 
     if      (icode == kKASKADdecay)                                   return kPDecay;
@@ -1813,9 +1856,9 @@ TMCProcess TFluka::ProdProcess(Int_t) const
     else if (icode == kEMFSCOmoller     || icode == kEMFSCObhabha)    return kPDeltaRay;
     else if (icode == kEMFSCOanniflight || icode == kEMFSCOannirest)  return kPAnnihilation;
     else if (icode == kKASKADinelint) {
-	if (!mugamma)                                                 return kPHadronic;
-	else if (TRACKR.jtrack == kFLUKAphoton)                       return kPPhotoFission;
-	else                                                          return kPMuonNuclear;
+        if (!mugamma)                                                 return kPHadronic;
+        else if (TRACKR.jtrack == kFLUKAphoton)                       return kPPhotoFission;
+        else                                                          return kPMuonNuclear;
     }
     else if (icode == kEMFSCOrayleigh)                                return kPRayleigh;
 // Fluka codes 100, 300 and 400 still to be investigasted
@@ -1837,8 +1880,8 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
     case kKASNEUtimekill:
     case kKASHEAtimekill:
     case kKASOPHtimekill:
-	iproc =  kPTOFlimit;
-	break;
+        iproc =  kPTOFlimit;
+        break;
     case kKASKADstopping:
     case kKASKADescape:
     case kEMFSCOstopping1:
@@ -1848,18 +1891,18 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
     case kKASNEUescape:
     case kKASHEAescape:
     case kKASOPHescape:
-	iproc = kPStop;
-	break;
+        iproc = kPStop;
+        break;
     case kKASOPHabsorption:
-	iproc = kPLightAbsorption;
-	break;
+        iproc = kPLightAbsorption;
+        break;
     case kKASOPHrefraction:
-	iproc = kPLightRefraction;
+        iproc = kPLightRefraction;
     case kEMSCOlocaledep : 
-	iproc = kPPhotoelectric;
-	break;
+        iproc = kPPhotoelectric;
+        break;
     default:
-	iproc = ProdProcess(0);
+        iproc = ProdProcess(0);
     }
     proc[0] = iproc;
     return 1;
@@ -1955,7 +1998,7 @@ const char* TFluka::CurrentVolPath() {
 }
 //______________________________________________________________________________ 
 Int_t TFluka::CurrentMaterial(Float_t & a, Float_t & z, 
-		      Float_t & dens, Float_t & radl, Float_t & absl) const
+                      Float_t & dens, Float_t & radl, Float_t & absl) const
 {
 //
 //  Return the current medium number and material properties
@@ -2068,6 +2111,7 @@ void TFluka::SetMreg(Int_t l, Int_t lttc)
 
 
 
+//______________________________________________________________________________
 TString TFluka::ParticleName(Int_t pdg) const
 {
     // Return particle name for particle with pdg code pdg.
@@ -2076,6 +2120,7 @@ TString TFluka::ParticleName(Int_t pdg) const
 }
  
 
+//______________________________________________________________________________
 Double_t TFluka::ParticleMass(Int_t pdg) const
 {
     // Return particle mass for particle with pdg code pdg.
@@ -2083,12 +2128,14 @@ Double_t TFluka::ParticleMass(Int_t pdg) const
     return (PAPROP.am[ifluka - kFLUKAcodemin]);
 }
 
+//______________________________________________________________________________
 Double_t TFluka::ParticleMassFPC(Int_t fpc) const
 {
     // Return particle mass for particle with Fluka particle code fpc
     return (PAPROP.am[fpc - kFLUKAcodemin]);
 }
 
+//______________________________________________________________________________
 Double_t TFluka::ParticleCharge(Int_t pdg) const
 {
     // Return particle charge for particle with pdg code pdg.
@@ -2096,6 +2143,7 @@ Double_t TFluka::ParticleCharge(Int_t pdg) const
     return Double_t(PAPROP.ichrge[ifluka - kFLUKAcodemin]);
 }
 
+//______________________________________________________________________________
 Double_t TFluka::ParticleLifeTime(Int_t pdg) const
 {
     // Return particle lifetime for particle with pdg code pdg.
@@ -2103,6 +2151,7 @@ Double_t TFluka::ParticleLifeTime(Int_t pdg) const
     return (PAPROP.tmnlf[ifluka - kFLUKAcodemin]);
 }
 
+//______________________________________________________________________________
 void TFluka::Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& charge, Float_t& tlife)
 {
     // Retrieve particle properties for particle with pdg code pdg.
@@ -2114,6 +2163,7 @@ void TFluka::Gfpart(Int_t pdg, char* name, Int_t& type, Float_t& mass, Float_t& 
     tlife  = ParticleLifeTime(pdg);
 }
 
+//______________________________________________________________________________
 void TFluka::PrintHeader()
 {
     //
@@ -2135,8 +2185,8 @@ void TFluka::PrintHeader()
 
 extern "C" {
   void pshckp(Double_t & px, Double_t & py, Double_t & pz, Double_t & e,
-	      Double_t & vx, Double_t & vy, Double_t & vz, Double_t & tof,
-	      Double_t & polx, Double_t & poly, Double_t & polz, Double_t & wgt, Int_t& ntr)
+              Double_t & vx, Double_t & vy, Double_t & vz, Double_t & tof,
+              Double_t & polx, Double_t & poly, Double_t & polz, Double_t & wgt, Int_t& ntr)
   {
     //
     // Pushes one cerenkov photon to the stack
@@ -2146,30 +2196,56 @@ extern "C" {
     TVirtualMCStack* cppstack = fluka->GetStack();
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
     cppstack->PushTrack(0, parent, 50000050,
-			px, py, pz, e,
-			vx, vy, vz, tof,
-			polx, poly, polz,
-			kPCerenkov, ntr, wgt, 0);
+                        px, py, pz, e,
+                        vx, vy, vz, tof,
+                        polx, poly, polz,
+                        kPCerenkov, ntr, wgt, 0);
+    if (fluka->GetVerbosityLevel() >= 3)
+            printf("pshckp: track=%d parent=%d lattc=%d %s\n", ntr, parent, TRACKR.lt1trk, fluka->CurrentVolName());
   }
     
     void ustckv(Int_t & nphot, Int_t & mreg, Double_t & x, Double_t & y, Double_t & z)
     {
-	//
-	// Calls stepping in order to signal cerenkov production
-	//
-	TFluka *fluka = (TFluka*)gMC;
-	fluka->SetMreg(mreg,LTCLCM.mlatm1);
-	fluka->SetXsco(x);
-	fluka->SetYsco(y);
-	fluka->SetZsco(z);
-	fluka->SetNCerenkov(nphot);
-	fluka->SetCaller(kUSTCKV);
-	if (fluka->GetVerbosityLevel() >= 3) 
-	(TVirtualMCApplication::Instance())->Stepping();
-	
+        //
+        // Calls stepping in order to signal cerenkov production
+        //
+        TFluka *fluka = (TFluka*)gMC;
+        fluka->SetMreg(mreg, TRACKR.lt1trk); //LTCLCM.mlatm1);
+        fluka->SetXsco(x);
+        fluka->SetYsco(y);
+        fluka->SetZsco(z);
+        fluka->SetNCerenkov(nphot);
+        fluka->SetCaller(kUSTCKV);
+        if (fluka->GetVerbosityLevel() >= 3)
+            printf("ustckv: %10d mreg=%d lattc=%d  newlat=%d (%f, %f, %f) edep=%f vol=%s\n",
+                    nphot, mreg, TRACKR.lt1trk, LTCLCM.newlat, x, y, z, fluka->Edep(), fluka->CurrentVolName());
+   
+    // check region lattice consistency (debug Ernesto)
+    // *****************************************************
+   Int_t nodeId;
+   Int_t volId = fluka->CurrentVolID(nodeId);
+   Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
+
+   if( mreg != volId  && !gGeoManager->IsOutside() ) {
+       cout << "  ustckv:   track=" << TRACKR.ispusr[mkbmx2-1] << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
+            << " icode=" << fluka->GetIcode() << " gNstep=" << fluka->GetNstep() << endl
+            << "               fluka   mreg=" << mreg << " mlttc=" << TRACKR.lt1trk << endl
+            << "               TGeo   volId=" << volId << " crtlttc=" << crtlttc << endl
+            << "     common TRACKR   lt1trk=" << TRACKR.lt1trk << " lt2trk=" << TRACKR.lt2trk << endl
+            << "     common LTCLCM   newlat=" << LTCLCM.newlat << " mlatld=" <<  LTCLCM.mlatld << endl
+            << "                     mlatm1=" << LTCLCM.mlatm1 << " mltsen=" <<  LTCLCM.mltsen << endl
+            << "                     mltsm1=" << LTCLCM.mltsm1 << " mlattc=" << LTCLCM.mlattc << endl;
+        if( TRACKR.lt1trk == crtlttc ) cout << "   *************************************************************" << endl;
+    }
+    // *****************************************************
+
+
+
+        (TVirtualMCApplication::Instance())->Stepping();
     }
 }
 
+//______________________________________________________________________________
 void TFluka::AddParticlesToPdgDataBase() const
 {
 
@@ -2199,24 +2275,28 @@ void TFluka::AddParticlesToPdgDataBase() const
                      0,6,"Ion",kion+20030);
 }
 
-  //
-  // Info about primary ionization electrons
-  Int_t TFluka::GetNPrimaryElectrons()
+//
+// Info about primary ionization electrons
+//
+
+//______________________________________________________________________________
+Int_t TFluka::GetNPrimaryElectrons()
 {
     // Get number of primary electrons
     return ALLDLT.nalldl;
 }
 
+//______________________________________________________________________________
 Double_t GetPrimaryElectronKineticEnergy(Int_t i)
 {
     Double_t ekin = -1.;
     // Returns kinetic energy of primary electron i
     if (i >= 0 && i < ALLDLT.nalldl) {
-	ekin =  ALLDLT.talldl[i];
+        ekin =  ALLDLT.talldl[i];
     } else {
-	Warning("GetPrimaryElectronKineticEnergy", 
-		"Primary electron index out of range %d %d \n", 
-		i, ALLDLT.nalldl);
+        Warning("GetPrimaryElectronKineticEnergy",
+                "Primary electron index out of range %d %d \n",
+                i, ALLDLT.nalldl);
     }
     return ekin;
 }

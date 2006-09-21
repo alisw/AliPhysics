@@ -52,13 +52,13 @@ void stupre()
 
   Int_t npnw, ispr;
   for (npnw = EMFSTK.npstrt-1; npnw <= EMFSTK.npemf-1; npnw++) {
-      
+
       for (ispr = 0; ispr <= mkbmx1-1; ispr++) 
-	  EMFSTK.espark[npnw][ispr] = TRACKR.spausr[ispr];
-      
+          EMFSTK.espark[npnw][ispr] = TRACKR.spausr[ispr];
+
       for (ispr = 0; ispr <= mkbmx2-1; ispr++) 
-	  EMFSTK.iespak[npnw][ispr] = TRACKR.ispusr[ispr];
-    
+          EMFSTK.iespak[npnw][ispr] = TRACKR.ispusr[ispr];
+
       EMFSTK.louemf[npnw] = TRACKR.llouse;
   }
 
@@ -77,35 +77,36 @@ void stupre()
   
   for (kp = EMFSTK.npstrt - 1; kp <= EMFSTK.npemf - 1; kp++) {
     
-// Ckeck transport cut first
+// Check transport cut first
     Int_t    ireg   = EMFSTK.iremf[kp];
     Double_t cut    = (TMath::Abs(EMFSTK.ichemf[kp]) == 1) ? EMFRGN.elethr[ireg-1] :  EMFRGN.phothr[ireg-1];
     Double_t e      = EMFSTK.etemf[kp];
 
     if ((e < cut) 
-	&& ( 
-	    (EMFSTK.ichemf[kp] ==  0) ||
-	    (EMFSTK.ichemf[kp] == -1) ||
-	    (EMFSTK.ichemf[kp] ==  1 &&  EMFRGN.phothr[ireg-1] > emassmev)
-	    )
-	)
+        && (
+            (EMFSTK.ichemf[kp] ==  0) ||
+            (EMFSTK.ichemf[kp] == -1) ||
+            (EMFSTK.ichemf[kp] ==  1 &&  EMFRGN.phothr[ireg-1] > emassmev)
+            )
+        )
     {
-	EMFSTK.iespak[kp][mkbmx2-1] = TRACKR.ispusr[mkbmx2-1];
-	EMFSTK.iespak[kp][mkbmx2-2] =  0;
-	EMFSTK.iespak[kp][mkbmx2-3] = TRACKR.jtrack;
-	continue;
+        EMFSTK.iespak[kp][mkbmx2-1] = TRACKR.ispusr[mkbmx2-1];
+        EMFSTK.iespak[kp][mkbmx2-2] =  0;
+        EMFSTK.iespak[kp][mkbmx2-3] = TRACKR.jtrack;
+        EMFSTK.irlatt[kp] = TRACKR.lt1trk;
+        continue;
     }
 
 // Save the parent track number and reset it at each loop
     Int_t done = 0;
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
     Int_t flukaid = 0;
-    
+
 // Identify particle type
     if      (EMFSTK.ichemf[kp] == -1)  flukaid = kFLUKAelectron;
     else if (EMFSTK.ichemf[kp] ==  0)  flukaid = kFLUKAphoton;
     else if (EMFSTK.ichemf[kp] ==  1)  flukaid = kFLUKApositron;
-    
+
 
     e *= emvgev;
     Int_t    pdg    = fluka->PDGFromId(flukaid);
@@ -130,73 +131,73 @@ void stupre()
 //* all secondaries are true
     if ((EVTFLG.lpairp == 1) || (EVTFLG.lphoel == 1) ||
         (EVTFLG.lannfl == 1) || (EVTFLG.lannrs == 1)) {
-	
-	if (EVTFLG.lpairp == 1) mech = kPPair;
-	else if (EVTFLG.lphoel == 1) mech = kPPhotoelectric;
-	else mech = kPAnnihilation;
-        cppstack->PushTrack(done, parent, pdg,
-			   px, py, pz, e, vx, vy, vz, tof,
-			   polx, poly, polz, mech, ntr, weight, is);
-	if (debug) cout << endl << " !!! stupre (PAIR, ..) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << "energy " << e-PAPROP.am[flukaid+6] << endl;
 
-	EMFSTK.iespak[kp][mkbmx2-1] = ntr;
-	EMFSTK.iespak[kp][mkbmx2-2] = 0;
+        if (EVTFLG.lpairp == 1) mech = kPPair;
+        else if (EVTFLG.lphoel == 1) mech = kPPhotoelectric;
+        else mech = kPAnnihilation;
+        cppstack->PushTrack(done, parent, pdg,
+                           px, py, pz, e, vx, vy, vz, tof,
+                           polx, poly, polz, mech, ntr, weight, is);
+        if (debug) cout << endl << " !!! stupre (PAIR, ..) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << " energy " << e-PAPROP.am[flukaid+6] << endl;
+
+        EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+        EMFSTK.iespak[kp][mkbmx2-2] = 0;
     } // end of lpairp, lphoel, lannfl, lannrs
-    
+
 //* Compton: secondary is true only if charged (e+, e-)
     else if ((EVTFLG.lcmptn == 1)) {
 
-	if (EMFSTK.ichemf[kp] != 0) {
-	    mech = kPCompton;
-	    cppstack->PushTrack(done, parent, pdg,
-			       px, py, pz, e, vx, vy, vz, tof,
-			       polx, poly, polz, mech, ntr, weight, is);
-	    if (debug) cout << endl << " !!! stupre (COMPTON) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
-	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
-	    EMFSTK.iespak[kp][mkbmx2-2] = 0;
-	}
+        if (EMFSTK.ichemf[kp] != 0) {
+            mech = kPCompton;
+            cppstack->PushTrack(done, parent, pdg,
+                               px, py, pz, e, vx, vy, vz, tof,
+                               polx, poly, polz, mech, ntr, weight, is);
+            if (debug) cout << endl << " !!! stupre (COMPTON) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
+            EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+            EMFSTK.iespak[kp][mkbmx2-2] = 0;
+        }
     } // end of lcmptn
-    
+
 //* Bremsstrahlung: true secondary only if charge = 0 (photon)
     else if ((EVTFLG.lbrmsp == 1)) {
-	if (EMFSTK.ichemf[kp] == 0) {
-	    mech = kPBrem;
-	    cppstack->PushTrack(done, parent, pdg,
-			       px, py, pz, e, vx, vy, vz, tof,
-			       polx, poly, polz, mech, ntr, weight, is);
-	    if (debug) cout << endl << " !!! stupre (BREMS) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
-	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
-	    EMFSTK.iespak[kp][mkbmx2-2] = 0;
-	}
+        if (EMFSTK.ichemf[kp] == 0) {
+            mech = kPBrem;
+            cppstack->PushTrack(done, parent, pdg,
+                               px, py, pz, e, vx, vy, vz, tof,
+                               polx, poly, polz, mech, ntr, weight, is);
+            if (debug) cout << endl << " !!! stupre (BREMS) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
+            EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+            EMFSTK.iespak[kp][mkbmx2-2] = 0;
+        }
     } // end of lbrmsp
-    
+
 //* Delta ray: If Bhabha, true secondary only if negative (electron)
     else if ((EVTFLG.ldltry == 1)) {
-	if (lbhabh == 1) {
-	    if (EMFSTK.ichemf[kp] == -1) {
-		mech = kPDeltaRay;
-		cppstack->PushTrack(done, parent, pdg,
-				   px, py, pz, e, vx, vy, vz, tof,
-				   polx, poly, polz, mech, ntr, weight, is);
-		EMFSTK.iespak[kp][mkbmx2-1] = ntr;
-		EMFSTK.iespak[kp][mkbmx2-2] = 0;
-	   if (debug) cout << endl << " !!! stupre (BHABA) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
-	    } // end of Bhabha
-	} // lbhabh == 1
-	
+        if (lbhabh == 1) {
+            if (EMFSTK.ichemf[kp] == -1) {
+                mech = kPDeltaRay;
+                cppstack->PushTrack(done, parent, pdg,
+                                   px, py, pz, e, vx, vy, vz, tof,
+                                   polx, poly, polz, mech, ntr, weight, is);
+                EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+                EMFSTK.iespak[kp][mkbmx2-2] = 0;
+           if (debug) cout << endl << " !!! stupre (BHABA) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
+            } // end of Bhabha
+        } // lbhabh == 1
+
 //* Delta ray: Otherwise Moller: true secondary is the electron with
 //*            lower energy, which has been put higher in the stack
-	else if (kp == EMFSTK.npemf-1) {
-	    mech = kPDeltaRay;
-	    cppstack->PushTrack(done, parent, pdg,
-			       px, py, pz, e, vx, vy, vz, tof,
-			       polx, poly, polz, mech, ntr, weight, is);
-	    if (debug) cout << endl << " !!! stupre (Moller) : ntr=" << ntr << "pdg " << pdg << " parent=" << parent << endl;
-	    EMFSTK.iespak[kp][mkbmx2-1] = ntr;
-	    EMFSTK.iespak[kp][mkbmx2-2] = 0;
-	} // end of Delta ray
+        else if (kp == EMFSTK.npemf-1) {
+            mech = kPDeltaRay;
+            cppstack->PushTrack(done, parent, pdg,
+                               px, py, pz, e, vx, vy, vz, tof,
+                               polx, poly, polz, mech, ntr, weight, is);
+            if (debug) cout << endl << " !!! stupre (Moller) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
+            EMFSTK.iespak[kp][mkbmx2-1] = ntr;
+            EMFSTK.iespak[kp][mkbmx2-2] = 0;
+        } // end of Delta ray
     } // end of ldltry
-    
+
   } // end of loop
 } // end of stupre
 } // end of extern "C"

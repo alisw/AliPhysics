@@ -31,6 +31,7 @@ class TFlukaMCGeometry :public TNamed {
     virtual ~TFlukaMCGeometry();
   
     // get methods
+    Int_t         GetNstep();  // to be removed
     Int_t         GetMedium() const;
     Int_t        *GetRegionList(Int_t imed, Int_t &nreg);
     Int_t        *GetMaterialList(Int_t imat, Int_t &nreg);
@@ -46,6 +47,7 @@ class TFlukaMCGeometry :public TNamed {
     void          SetMreg(Int_t mreg, Int_t lttc);
     void          SetCurrentRegion(Int_t mreg, Int_t latt);
     void          GetCurrentRegion(Int_t &mreg, Int_t &latt) const {mreg=fCurrentRegion; latt=fCurrentLattice;}
+    Int_t         GetCurrentRegion() const {return fCurrentRegion;}
     Int_t         GetDummyRegion() const {return fDummyRegion;}
     Int_t         GetDummyLattice() const {return kLttcVirtual;}
     void          SetNextRegion(Int_t mreg, Int_t latt);
@@ -65,8 +67,9 @@ class TFlukaMCGeometry :public TNamed {
     void     Vname(const char *name, char *vname) const;
    
   private:
+    // Copy constructor and operator= declared but not implemented (-Weff++ flag)
     TFlukaMCGeometry(const TFlukaMCGeometry& rhs);
-    TFlukaMCGeometry& operator=(const TFlukaMCGeometry& /*rhs*/) {return (*this);}
+    TFlukaMCGeometry& operator=(const TFlukaMCGeometry& /*rhs*/); // {return (*this);}
 
     static TFlukaMCGeometry*  fgInstance; // singleton instance
     Bool_t       fDebug;                  // debug flag
@@ -80,6 +83,7 @@ class TFlukaMCGeometry :public TNamed {
     Int_t        fIndmat;                 // material index where pemf file creation starts
     TObjArray   *fMatList;                //! material list as known by FLUKA
     TObjArray   *fMatNames;               //! list of FLUKA material names
+    
   ClassDef(TFlukaMCGeometry,1)  //Virtual MonteCarlo Interface
 };
 

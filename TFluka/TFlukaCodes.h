@@ -53,6 +53,7 @@ typedef enum {
 FlukaProcessCode_t;	  
 
 typedef enum {
+    kNoCaller       =  0,
     kEEDRAW         =  2,      // Stepping called from eedraw 
     kENDRAW         =  3,      // Stepping called from endraw      
     kMGDRAW         =  4,      // Stepping called from mgdraw 

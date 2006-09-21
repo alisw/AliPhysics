@@ -33,6 +33,7 @@
 #include "TObjString.h"
 #include "Fsourcm.h"
 #include "Ftrackr.h"
+#include "Fstepsz.h"       //(STEPSZ) fluka common
 
 #ifndef WIN32 
 # define idnrwr idnrwr_
@@ -79,11 +80,11 @@ extern "C"
    void  type_of_call   g1wr(Double_t & /*pSx*/, Double_t & /*pSy*/, Double_t & /*pSz*/, 
                              Double_t * /*pV*/,  Int_t & /*oldReg*/ , const Int_t & /*oldLttc*/, Double_t & /*propStep*/,
                              Int_t & /*nascFlag*/, Double_t & /*retStep*/, Int_t & /*newReg*/,
-	                          Double_t & /*saf*/, Int_t & /*newLttc*/, Int_t & /*LttcFlag*/,
+                                  Double_t & /*saf*/, Int_t & /*newLttc*/, Int_t & /*LttcFlag*/,
                              Double_t *s /*Lt*/, Int_t * /*jrLt*/);
    
    void  type_of_call g1rtwr();
-   void  type_of_call conhwr(Int_t & /*intHist*/, Int_t * /*incrCount*/); 
+   void  type_of_call conhwr(Int_t & /*intHist*/, Int_t & /*incrCount*/);
    void  type_of_call inihwr(Int_t & /*intHist*/);
    void  type_of_call jomiwr(const Int_t & /*nge*/, const Int_t & /*lin*/, const Int_t & /*lou*/,
                              Int_t & /*flukaReg*/);
@@ -95,17 +96,17 @@ extern "C"
                              Int_t & /*flagErr*/, Int_t & /*newReg*/, Int_t & /*newLttc*/);
    void  type_of_call lkmgwr(Double_t & /*pSx*/, Double_t & /*pSy*/, Double_t & /*pSz*/,
                              Double_t * /*pV*/, const Int_t & /*oldReg*/, const Int_t & /*oldLttc*/,
-		                       Int_t & /*flagErr*/, Int_t & /*newReg*/, Int_t & /*newLttc*/);
+                                       Int_t & /*flagErr*/, Int_t & /*newReg*/, Int_t & /*newLttc*/);
    void  type_of_call   lkwr(Double_t & /*pSx*/, Double_t & /*pSy*/, Double_t & /*pSz*/,
                              Double_t * /*pV*/, const Int_t & /*oldReg*/, const Int_t & /*oldLttc*/,
-	                          Int_t & /*flagErr*/, Int_t & /*newReg*/, Int_t & /*newLttc*/);
+                                  Int_t & /*flagErr*/, Int_t & /*newReg*/, Int_t & /*newLttc*/);
 //   void  type_of_call magfld(const Double_t & /*pX*/, const Double_t & /*pY*/, const Double_t & /*pZ*/,
 //                             Double_t & /*cosBx*/, Double_t & /*cosBy*/, Double_t & /*cosBz*/, 
-//                             Double_t & /*Bmag*/, Int_t & /*reg*/, Int_t & /*idiscflag*/);	    
+//                             Double_t & /*Bmag*/, Int_t & /*reg*/, Int_t & /*idiscflag*/);        
    void  type_of_call nrmlwr(Double_t & /*pSx*/, Double_t & /*pSy*/, Double_t & /*pSz*/,
                              Double_t & /*pVx*/, Double_t & /*pVy*/, Double_t & /*pVz*/,
-	                          Double_t * /*norml*/, const Int_t & /*oldReg*/, 
-	                          const Int_t & /*newReg*/, Int_t & /*flagErr*/);
+                                  Double_t * /*norml*/, const Int_t & /*oldReg*/,
+                                  const Int_t & /*newReg*/, Int_t & /*flagErr*/);
    void  type_of_call rgrpwr(const Int_t & /*flukaReg*/, const Int_t & /*ptrLttc*/, Int_t & /*g4Reg*/,
                              Int_t * /*indMother*/, Int_t * /*repMother*/, Int_t & /*depthFluka*/);
    Int_t type_of_call isvhwr(const Int_t & /*fCheck*/, const Int_t & /*intHist*/);
@@ -122,47 +123,49 @@ TFlukaMCGeometry* TFlukaMCGeometry::fgInstance= NULL;
 
 //_____________________________________________________________________________
 TFlukaMCGeometry::TFlukaMCGeometry(const char *name, const char *title) 
-                 : TNamed(name, title)
+   :TNamed(name, title), 
+   fDebug(kFALSE),
+   fLastMaterial(0),
+   fDummyRegion(0),
+   fCurrentRegion(0),
+   fCurrentLattice(0),
+   fNextRegion(0),
+   fNextLattice(0),
+   fRegionList(0),
+   fIndmat(0),
+   fMatList(new TObjArray(256)),
+   fMatNames(new TObjArray(256))
 {
   //
   // Standard constructor
   //
-  fDebug        = kFALSE;
-  fLastMaterial = 0;
-  fCurrentRegion   = 0;
-  fCurrentLattice  = 0;
-  fDummyRegion  = 0;
-  fNextRegion   = 0;
-  fNextLattice  = 0;
-  fRegionList   = 0;
-  fIndmat = 0;
   gFluka = (TFluka*)gMC;
   gMCGeom = this;
   gNstep = 0;
-  fMatList = new TObjArray(256);
-  fMatNames = new TObjArray(256);
 }
 
 //_____________________________________________________________________________
 TFlukaMCGeometry::TFlukaMCGeometry()
-{    
+  :TNamed(),
+   fDebug(kFALSE),
+   fLastMaterial(0),
+   fDummyRegion(0),
+   fCurrentRegion(0),
+   fCurrentLattice(0),
+   fNextRegion(0),
+   fNextLattice(0),
+   fRegionList(0),
+   fIndmat(0),
+   fMatList(0),
+   fMatNames(0)
+
+{
   //
   // Default constructor
   //
-  fDebug        = kFALSE;
-  fLastMaterial = 0;
-  fCurrentRegion   = 0;
-  fCurrentLattice  = 0;
-  fDummyRegion  = 0;
-  fNextRegion   = 0;
-  fNextLattice  = 0;
-  fRegionList   = 0;
-  fIndmat = 0;
   gFluka = (TFluka*)gMC;
   gMCGeom = this;
   gNstep = 0;
-  fMatList = 0;
-  fMatNames = 0;
 }
 
 //_____________________________________________________________________________
@@ -181,14 +184,6 @@ TFlukaMCGeometry::~TFlukaMCGeometry()
 //
 // private methods
 //
-//_____________________________________________________________________________
-TFlukaMCGeometry::TFlukaMCGeometry(const TFlukaMCGeometry &)
-  : TNamed()
-{    
-  //
-  // Copy constructor
-  //
-}
 
 //_____________________________________________________________________________
 Double_t* TFlukaMCGeometry::CreateDoubleArray(Float_t* array, Int_t size) const
@@ -253,12 +248,12 @@ Int_t *TFlukaMCGeometry::GetRegionList(Int_t imed, Int_t &nreg)
        if ((med = vol->GetMedium()) == 0) continue;
        imedium = med->GetId();
        if (imedium == imed) {
-	   ireg = vol->GetNumber();
-	   fRegionList[nreg++] = ireg;
+           ireg = vol->GetNumber();
+           fRegionList[nreg++] = ireg;
        }
    }
    return fRegionList;
-}         
+}
 
 //_____________________________________________________________________________
 Int_t *TFlukaMCGeometry::GetMaterialList(Int_t imat, Int_t &nreg)
@@ -274,12 +269,12 @@ Int_t *TFlukaMCGeometry::GetMaterialList(Int_t imat, Int_t &nreg)
        if ((med = vol->GetMedium()) == 0) continue;
        imaterial = med->GetMaterial()->GetIndex();
        if (imaterial == imat) {
-	   ireg = vol->GetNumber();
-	   fRegionList[nreg++] = ireg;
+           ireg = vol->GetNumber();
+           fRegionList[nreg++] = ireg;
        }
    }
    return fRegionList;
-}         
+}
  
 //_____________________________________________________________________________
 Int_t TFlukaMCGeometry::NofVolumes() const 
@@ -827,32 +822,32 @@ void TFlukaMCGeometry::CreatePemfFile()
     TString sname;
     
     for (i = fIndmat; i < fLastMaterial - 2; i++) {
-	printf("Write Peg Files %d\n", i);
-	
-	mat = (TGeoMaterial*)fMatList->At(i);
-	if (!mat->IsUsed()) continue;
-	sname = "mat";
-	sprintf(number, "%d", i);
-	sname.Append(number);
-	cout << endl;
-	cout << endl;
-	cout << "******************************************************************************" << endl;
-	cout << "******************************************************************************" << endl;
-	cout << endl;
-	WritePegFile(i, &countNoStern, &countElemError, &countMixError, &countGas);
-	sname.Prepend("$FLUPRO/pemf/rpemf peg/");
-	gSystem->Exec(sname.Data());
-	
-	// check if the pemf file was created
-	TString sname = Form("peg/mat%d.pemf", i);
-	ifstream in( sname.Data() );
-	if ( in ) {
-	    countMatOK++;
-	    in.close();
-	} else {
-	    cout << "ERROR Fail to create the pemf file " << sname << endl;
-	    countPemfError++; 
-	}
+        printf("Write Peg Files %d\n", i);
+        
+        mat = (TGeoMaterial*)fMatList->At(i);
+        if (!mat->IsUsed()) continue;
+        sname = "mat";
+        sprintf(number, "%d", i);
+        sname.Append(number);
+        cout << endl;
+        cout << endl;
+        cout << "******************************************************************************" << endl;
+        cout << "******************************************************************************" << endl;
+        cout << endl;
+        WritePegFile(i, &countNoStern, &countElemError, &countMixError, &countGas);
+        sname.Prepend("$FLUPRO/pemf/rpemf peg/");
+        gSystem->Exec(sname.Data());
+        
+        // check if the pemf file was created
+        TString sname = Form("peg/mat%d.pemf", i);
+        ifstream in( sname.Data() );
+        if ( in ) {
+            countMatOK++;
+            in.close();
+        } else {
+            cout << "ERROR Fail to create the pemf file " << sname << endl;
+            countPemfError++;
+        }
     }
     cout << "Materials (pemf created)   " << countMatOK         << endl;
     cout << "Not Sternheimer par. found  " << countNoStern   << endl;
@@ -1025,11 +1020,11 @@ void TFlukaMCGeometry::WritePegFile(Int_t imat, Int_t *NoStern, Int_t *ElemError
    while((proc = (TFlukaConfigOption*)next()))
    { 
        if (proc->Medium() == mat->GetIndex()) {
-	   ap = proc->Cut(kCUTGAM);
-	   ae = proc->Cut(kCUTELE);
-	   if (ap == -1.) ap =  TFlukaConfigOption::DefaultCut(kCUTGAM);
-	   if (ae == -1.) ae =  TFlukaConfigOption::DefaultCut(kCUTELE);
-	   break;
+           ap = proc->Cut(kCUTGAM);
+           ae = proc->Cut(kCUTELE);
+           if (ap == -1.) ap =  TFlukaConfigOption::DefaultCut(kCUTGAM);
+           if (ae == -1.) ae =  TFlukaConfigOption::DefaultCut(kCUTELE);
+           break;
        }
    }
 
@@ -1073,6 +1068,10 @@ Double_t * TFlukaMCGeometry::GetISSB(Double_t rho, Int_t nElem, Double_t *zelem,
       Double_t    afact;              // AFACT
       Double_t    sk;                 // SK
       Double_t    delta0;             // DELTA0
+
+      sternheimerData():
+         longname(""), nelems(0), density(0), iev(0), cbar(0),
+         x0(0), x1(0), afact(0), sk(0), delta0(0) {}
    };
    
    TString     shortname;
@@ -1291,9 +1290,9 @@ void TFlukaMCGeometry::FlukaMatName(TString &str) const
     TObjArray * tokens = str.Tokenize("_");
     Int_t ntok = tokens->GetEntries();
     if (ntok > 0) {
-	TString head = ((TObjString*) tokens->At(0))->GetString();
-	Int_t nhead = head.Length();
-	str = str.Remove(0, nhead + 1);
+        TString head = ((TObjString*) tokens->At(0))->GetString();
+        Int_t nhead = head.Length();
+        str = str.Remove(0, nhead + 1);
     }
     tokens->Clear();
     delete tokens;
@@ -1326,7 +1325,7 @@ void TFlukaMCGeometry::FlukaMatName(TString &str) const
       }   
    }   
 }   
-         
+
 //______________________________________________________________________________
 void TFlukaMCGeometry::Vname(const char *name, char *vname) const
 {
@@ -1342,6 +1341,12 @@ void TFlukaMCGeometry::Vname(const char *name, char *vname) const
 }
 
 
+//______________________________________________________________________________
+Int_t TFlukaMCGeometry::GetNstep()
+{
+   // return gNstep for debug propose
+   return gNstep;
+}
 
 // FLUKA GEOMETRY WRAPPERS - to replace FLUGG wrappers
 
@@ -1363,12 +1368,19 @@ Int_t idnrwr(const Int_t & /*nreg*/, const Int_t & /*mlat*/)
 void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz, 
           Double_t *pV,  Int_t &oldReg , const Int_t &oldLttc, Double_t &propStep,
           Int_t &/*nascFlag*/, Double_t &retStep, Int_t &newReg,
-	       Double_t &saf, Int_t &newLttc, Int_t &lttcFlag,
+          Double_t &saf, Int_t &newLttc, Int_t &lttcFlag,
           Double_t *sLt, Int_t *jrLt)
 
 {
    // Initialize FLUKa point and direction;
    gNstep++;
+
+//   if( (gNstep > 43912170 && gNstep < 43912196 ) ||
+//       (gNstep > 47424560 && gNstep < 47424581  ) ||
+//       (gNstep > 54388266 && gNstep < 54388319 )
+//       ) gMCGeom->SetDebugMode();
+//   else gMCGeom->SetDebugMode(kFALSE);
+   
    NORLAT.xn[0] = pSx;
    NORLAT.xn[1] = pSy;
    NORLAT.xn[2] = pSz;
@@ -1377,10 +1389,17 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    if (oldLttc<=0) {
       gGeoManager->FindNode(pSx,pSy,pSz);
       olttc = gGeoManager->GetCurrentNodeId()+1;
-   }   
+      oldReg = gGeoManager->GetCurrentVolume()->GetNumber();
+   }
+
+   if (gMCGeom->IsDebugging()) cout << "g1wr gNstep=" << gNstep
+                                    << " oldReg="<< oldReg <<" olttc="<< olttc
+                                    << " track=" << TRACKR.ispusr[mkbmx2-1] << endl;
+
    Int_t ccreg,cclat;
    gMCGeom->GetCurrentRegion(ccreg,cclat);
-   Bool_t crossed = (ccreg==oldReg && cclat==oldLttc)?kFALSE:kTRUE;
+   Bool_t crossed = (ccreg==oldReg && cclat==olttc)?kFALSE:kTRUE;
+
    gMCGeom->SetCurrentRegion(oldReg, olttc);
    // Initialize default return values
    lttcFlag = 0;
@@ -1404,12 +1423,13 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       sLt[lttcFlag] = TGeoShape::Tolerance(); // null step in next region
       jrLt[lttcFlag+1] = -1;
       sLt[lttcFlag+1] = 0.; // null step in next region;
+      if (gMCGeom->IsDebugging()) printf("=> crossed dummy!! newReg=%i newLttc=%i\n", newReg, newLttc);
       return;
-   }   
-      
+   }
+
    // Reset outside flag
    gGeoManager->SetOutside(kFALSE);
-   
+
    curLttc = gGeoManager->GetCurrentNodeId()+1;
    curReg = gGeoManager->GetCurrentVolume()->GetNumber();
    if (olttc != curLttc) {
@@ -1418,12 +1438,12 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       gGeoManager->CdNode(olttc-1);
       curLttc = gGeoManager->GetCurrentNodeId()+1;
       curReg  = gGeoManager->GetCurrentVolume()->GetNumber();
-   }  
+   }
    // Now the current TGeo state reflects the FLUKA state 
-     
+
    gGeoManager->SetCurrentPoint(pSx, pSy, pSz);
    gGeoManager->SetCurrentDirection(pV);
-   
+
    if (crossed) {
       gGeoManager->FindNextBoundaryAndStep(propStep);
       saf = 0.0;
@@ -1432,8 +1452,8 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       saf = gGeoManager->GetSafeDistance();
       if (saf<0) saf=0.0;
       saf -= saf*3.0e-09;
-   }   
-      
+   }
+
    Double_t snext = gGeoManager->GetStep();
 
    if (snext<=0.0) snext = TGeoShape::Tolerance();
@@ -1445,7 +1465,7 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    NORLAT.xn[2] += snext*pV[2];
    if (!gGeoManager->IsOnBoundary()) {
    // Next boundary further than proposed step, which is approved
-      if (saf>propStep) saf = propStep;       
+      if (saf>propStep) saf = propStep;
       retStep = propStep;
       sLt[lttcFlag] = propStep;
       return;
@@ -1454,51 +1474,61 @@ void g1wr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
    gGeoManager->SetCurrentPoint(pSx,pSy,pSz);
    newLttc = (gGeoManager->IsOutside())?(TFlukaMCGeometry::kLttcOutside):gGeoManager->GetCurrentNodeId()+1;
    newReg = (gGeoManager->IsOutside())?(gMCGeom->NofVolumes()+2):gGeoManager->GetCurrentVolume()->GetNumber();
-   if (gMCGeom->IsDebugging()) printf("   newReg=%i newLttc=%i\n", newReg, newLttc);
+   if (gMCGeom->IsDebugging()) printf("=> newReg=%i newLttc=%i\n", newReg, newLttc);
 
    // We really crossed the boundary, but is it the same region ?
    gMCGeom->SetNextRegion(newReg, newLttc);
 
    Int_t pid = TRACKR.jtrack;
-   if (newReg==oldReg && newLttc!=olttc && pid!=-1) {
+   if ( ((newReg==oldReg && newLttc!=olttc) || (oldReg!=newReg && olttc==newLttc) ) && pid!=-1) {
       // Virtual boundary between replicants
       newReg  = gFluka->GetDummyRegion();
       newLttc = TFlukaMCGeometry::kLttcVirtual;
-   } 
-   
+      if (gMCGeom->IsDebugging()) printf("=> virtual boundary!! newReg=%i newLttc=%i\n", newReg, newLttc);
+   }
+
    retStep = snext;
    sLt[lttcFlag] = snext;
    lttcFlag++;
    jrLt[lttcFlag] = newLttc;
    sLt[lttcFlag] = snext;
    jrLt[lttcFlag+1] = -1;
-   sLt[lttcFlag+1] = 0.;      
+
+   sLt[lttcFlag+1] = 0.;
    gGeoManager->SetOutside(kFALSE);
    gGeoManager->CdNode(olttc-1);
    if (gMCGeom->IsDebugging()) {
       printf("=> snext=%g safe=%g\n", snext, saf);
       for (Int_t i=0; i<lttcFlag+1; i++) printf("   jrLt[%i]=%i  sLt[%i]=%g\n", i,jrLt[i],i,sLt[i]);
-   }   
+   }
 }
 
 //_____________________________________________________________________________
 void g1rtwr()
 {
+
    if (gMCGeom->IsDebugging()) printf("========== Dummy G1RTWR\n");
 } 
 
 //_____________________________________________________________________________
-void conhwr(Int_t & /*intHist*/, Int_t * /*incrCount*/)
+void conhwr(Int_t & intHist, Int_t & incrCount)
 {
-   if (gMCGeom->IsDebugging()) printf("========== Dummy CONHWR\n");
+   if (gMCGeom->IsDebugging()) printf("========== Dummy CONHWR intHist=%d incrCount=%d currentNodeId=%d\n",
+                                       intHist, incrCount, gGeoManager->GetCurrentNodeId()+1 );
+//   if( incrCount != -1 ) {
+//      if (intHist==0) gGeoManager->CdTop();
+//      else gGeoManager->CdNode(intHist-1);
+//   }
+//   intHist = gGeoManager->GetCurrentNodeId()+1;
 }
 
 //_____________________________________________________________________________
 void inihwr(Int_t &intHist)
 {
-   if (gMCGeom->IsDebugging()) printf("========== Inside INIHWR -> reinitializing history: %i\n", intHist);
+   if (gMCGeom->IsDebugging())
+      printf("========== Inside INIHWR -> reinitializing history: %i \n", intHist);
    if (gGeoManager->IsOutside()) gGeoManager->CdTop();
-   if (intHist<=0) {
+   if (intHist<0) {
 //      printf("=== wrong history number\n");
       return;
    }
@@ -1507,7 +1537,7 @@ void inihwr(Int_t &intHist)
    if (gMCGeom->IsDebugging()) {
       printf(" --- current path: %s\n", gGeoManager->GetPath());
       printf("<= INIHWR\n");
-   }   
+   }
 }
 
 //_____________________________________________________________________________
@@ -1551,7 +1581,7 @@ void lkfxwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 //_____________________________________________________________________________
 void lkmgwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
             Double_t *pV, const Int_t &oldReg, const Int_t &oldLttc,
-		      Int_t &flagErr, Int_t &newReg, Int_t &newLttc)
+            Int_t &flagErr, Int_t &newReg, Int_t &newLttc)
 {
    if (gMCGeom->IsDebugging()) {
       printf("========== Inside LKMGWR (%f, %f, %f)\n",pSx, pSy, pSz);
@@ -1564,7 +1594,7 @@ void lkmgwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 //_____________________________________________________________________________
 void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
           Double_t *pV, const Int_t &oldReg, const Int_t &oldLttc,
-	       Int_t &flagErr, Int_t &newReg, Int_t &newLttc)
+          Int_t &flagErr, Int_t &newReg, Int_t &newLttc)
 {
    if (gMCGeom->IsDebugging()) {
       printf("========== Inside LKWR (%f, %f, %f)\n",pSx, pSy, pSz);
@@ -1592,15 +1622,27 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       if (newreg1==newReg && newlttc1==newLttc) {
          newReg = dummy;
          newLttc = TFlukaMCGeometry::kLttcVirtual;
-      }   
+         flagErr = newReg;
+         if (gMCGeom->IsDebugging()) printf("  virtual boundary (oldReg==dummy) !! newReg=%i newLttc=%i\n", newReg, newLttc);
+      }
       return;
-   }   
+   }
 
    if (oldReg==newReg && oldLttc!=newLttc) {
-      newReg  = gFluka->GetDummyRegion();
+      newReg  = dummy;
       newLttc = TFlukaMCGeometry::kLttcVirtual;
-   }   
-         
+      if (gMCGeom->IsDebugging()) printf("  virtual boundary!! newReg=%i newLttc=%i\n", newReg, newLttc);
+   }
+
+   if( oldReg!=newReg && oldLttc==newLttc ) {
+      // this should not happen!! ??? Ernesto
+       cout << "  lkwr      oldReg!=newReg ("<< oldReg <<"!="<< newReg
+            << ") && oldLttc==newLttc ("<< newLttc <<") !!!!!!!!!!!!!!!!!" << endl;
+      newReg  = dummy;
+      newLttc = TFlukaMCGeometry::kLttcVirtual;
+      flagErr = newReg;
+   }
+
    if (gMCGeom->IsDebugging()) {
       printf("  LKWR: newReg=%i newLttc=%i\n", newReg, newLttc);
    }   
@@ -1609,11 +1651,12 @@ void lkwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
 //_____________________________________________________________________________
 void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
             Double_t &pVx, Double_t &pVy, Double_t &pVz,
-	         Double_t *norml, const Int_t &oldReg, 
-	         const Int_t &newReg, Int_t &flagErr)
+            Double_t *norml, const Int_t &oldReg,
+            const Int_t &newReg, Int_t &flagErr)
 {
    if (gMCGeom->IsDebugging()) {
       printf("========== Inside NRMLWR (%g, %g, %g, %g, %g, %g)\n", pSx,pSy,pSz,pVx,pVy,pVz);
+      printf("                         (%g, %g, %g)\n", NORLAT.xn[0], NORLAT.xn[1], NORLAT.xn[2]);
       printf("   oldReg=%i, newReg=%i\n", oldReg,newReg);
    }   
    gGeoManager->SetCurrentPoint(NORLAT.xn[0], NORLAT.xn[1], NORLAT.xn[2]);
@@ -1627,15 +1670,16 @@ void nrmlwr(Double_t &pSx, Double_t &pSy, Double_t &pSz,
       norml[1] = -pVy;   
       norml[2] = -pVz; 
    } else {
-      norml[0] = -dnorm[0];   
-      norml[1] = -dnorm[1];   
-      norml[2] = -dnorm[2]; 
+      norml[0] = -dnorm[0];
+      norml[1] = -dnorm[1];
+      norml[2] = -dnorm[2];
    }  
-       
+
    if (gMCGeom->IsDebugging()) {
       printf("   normal to boundary: (%g, %g, %g)\n", norml[0], norml[1], norml[2]);  
       printf("<= NRMLWR\n");
-   }   
+   }
+
 }
 
 //_____________________________________________________________________________
@@ -1661,7 +1705,7 @@ Int_t isvhwr(const Int_t &check, const Int_t & intHist)
 
 // For TGeo, just return the current node ID. No copy need to be made.
 
-   if (gMCGeom->IsDebugging()) printf("=> Inside ISVHWR\n");
+   if (gMCGeom->IsDebugging()) printf("=> Inside ISVHWR check=%d intHist=%d\n", check, intHist);
    if (check<0) return intHist;
    Int_t histInt = gGeoManager->GetCurrentNodeId()+1;
    if (gMCGeom->IsDebugging()) printf("<= ISVHWR: history is: %i in: %s\n", histInt, gGeoManager->GetPath());

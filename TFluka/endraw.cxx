@@ -26,14 +26,14 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   if (mreg == fluka->GetDummyRegion()) return;
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel >= 3)? kTRUE : kFALSE;
-  Int_t mlttc = LTCLCM.mlatm1;
+  Int_t mlttc = (icode==kKASKADinelarecoil) ? TRACKR.lt2trk : TRACKR.lt1trk; //LTCLCM.mlatm1;
   fluka->SetCaller(kENDRAW);
   fluka->SetRull(rull);
   fluka->SetXsco(xsco);
   fluka->SetYsco(ysco);
   fluka->SetZsco(zsco);
   fluka->SetMreg(mreg, mlttc);
-  
+
   Float_t edep = rull;
   
   if (TRACKR.jtrack == -1) {
@@ -50,29 +50,45 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   }
 
   TVirtualMCStack* cppstack = fluka->GetStack();
-  Int_t saveTrackId = cppstack->GetCurrentTrackNumber();
 
   if (debug) {
-     cout << "ENDRAW For icode=" << icode << " stacktrack=" << saveTrackId
+     cout << "ENDRAW For icode=" << icode 
           << " track=" << TRACKR.ispusr[mkbmx2-1] << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
-          << " edep="<< edep <<endl;
+          << " edep="<< edep << " mreg=" << mreg << endl;
   }
+
+    // check region lattice consistency (debug Ernesto)
+    // *****************************************************
+    Int_t nodeId;
+    Int_t volId = fluka->CurrentVolID(nodeId);
+    Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
+    if( mreg != volId  && !gGeoManager->IsOutside() ) {
+       cout << "  endraw:   track=" << TRACKR.ispusr[mkbmx2-1] << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
+            << " icode=" << icode << " gNstep=" << fluka->GetNstep() << endl
+            << "               fluka   mreg=" << mreg << " mlttc=" << mlttc << endl
+            << "               TGeo   volId=" << volId << " crtlttc=" << crtlttc << endl
+            << "     common TRACKR   lt1trk=" << TRACKR.lt1trk << " lt2trk=" << TRACKR.lt2trk << endl
+            << "     common LTCLCM   newlat=" << LTCLCM.newlat << " mlatld=" <<  LTCLCM.mlatld << endl
+            << "                     mlatm1=" << LTCLCM.mlatm1 << " mltsen=" <<  LTCLCM.mltsen << endl
+            << "                     mltsm1=" << LTCLCM.mltsm1 << " mlattc=" << LTCLCM.mlattc << endl;
+        if( mlttc == crtlttc ) cout << "   *************************************************************" << endl;
+    }
+    // *****************************************************
+
 
   if (icode != kEMFSCOstopping1 && icode != kEMFSCOstopping2) {
       fluka->SetIcode((FlukaProcessCode_t)icode);
       fluka->SetRull(edep);
       if (icode == kKASKADelarecoil && TRACKR.ispusr[mkbmx2-5]) {
-	  //  Elastic recoil and in stuprf npprmr > 0,
-	  //  the secondary being loaded is actually still the interacting particle
-	  cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-4] );
-	  //      cout << "endraw elastic recoil track=" << TRACKR.ispusr[mkbmx2-1] << " parent=" << TRACKR.ispusr[mkbmx2-4]
-	  //           << endl;
+         //  Elastic recoil and in stuprf npprmr > 0,
+         //  the secondary being loaded is actually still the interacting particle
+         cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-4] );
+         //      cout << "endraw elastic recoil track=" << TRACKR.ispusr[mkbmx2-1] << " parent=" << TRACKR.ispusr[mkbmx2-4]
+         //           << endl;
       }
       else
-	  cppstack->SetCurrentTrack(TRACKR.ispusr[mkbmx2-1] );
+          cppstack->SetCurrentTrack(TRACKR.ispusr[mkbmx2-1] );
       (TVirtualMCApplication::Instance())->Stepping();
-      
-//      cppstack->SetCurrentTrack( saveTrackId );
   } else {
   //
   // For icode 21,22 the particle has fallen below thresshold.

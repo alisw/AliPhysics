@@ -48,9 +48,11 @@ public:
     virtual Double_t  GetMaximumEfficiency() const             {return fMaximumEfficiency;}
     static  Double_t  GetGlobalMaximumEfficiency()             {return fgGlobalMaximumEfficiency;}
     static  void      SetGlobalMaximumEfficiency(Double_t eff) {fgGlobalMaximumEfficiency = eff;}
+
  protected:
+
     virtual Float_t  Interpolate(Float_t energy, Float_t* array1, Float_t* array2);
-    
+
  protected:
     Int_t        fSamples;                  // Number of sampling points
     Bool_t       fIsMetal;                  // Flag for metals
@@ -64,7 +66,12 @@ public:
     Double_t     fMaximumEfficiency;        // Local maximum quantum efficiency
     // static 
     static Double_t fgGlobalMaximumEfficiency; // Global maximum quantum efficiency
-    
+
+ private:
+    // Copy constructor and operator= declared but not implemented (-Weff++ flag)
+    TFlukaCerenkov(const TFlukaCerenkov&);
+    TFlukaCerenkov& operator=(const TFlukaCerenkov&);
+
     ClassDef(TFlukaCerenkov, 1)          // CerenkovProperties
 };
 	

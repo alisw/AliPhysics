@@ -16,9 +16,11 @@
 
 #include "TVirtualMC.h"
 #include "TFlukaCodes.h"
+#include "TFlukaMCGeometry.h"
+
 //Forward declaration
 class TGeoMCGeometry;
-class TFlukaMCGeometry;
+//class TFlukaMCGeometry;
 class TGeoMaterial;
 
 class TFluka : public TVirtualMC {
@@ -28,6 +30,8 @@ class TFluka : public TVirtualMC {
   TFluka();
   virtual ~TFluka();
   virtual Bool_t IsRootGeometrySupported() const { return kTRUE;}
+  
+  Int_t         GetNstep() { return fGeom->GetNstep(); } // to be removed
   
   //
   // Methods for building/management of geometry
@@ -326,65 +330,61 @@ class TFluka : public TVirtualMC {
   Int_t GetVerbosityLevel() const {return fVerbosityLevel;}
   void SetVerbosityLevel(Int_t l) {fVerbosityLevel = l;}
 
-  // - Fluka Draw procedures identifiers
-  // bxdraw = 1  inside
-  // bxdraw = 11 entering
-  // bxdraw = 12 exiting
-  // eedraw = 2
-  // endraw = 3
-  // mgdraw = 4
-  // sodraw = 5
-  // usdraw = 6
+  //
+  // - Fluka Draw procedures identifiers, see TFlukaCodes.h
+  //
   FlukaCallerCode_t GetCaller() const {return fCaller;}
-  void SetCaller(FlukaCallerCode_t l) {fCaller = l;}
-  
   FlukaProcessCode_t GetIcode() const {return fIcode;}
-  void  SetIcode(FlukaProcessCode_t l) {fIcode = l;}
-
   Int_t GetMreg() const {return fCurrentFlukaRegion;}
-  void SetMreg(Int_t l, Int_t lttc);
-
   Int_t GetNewreg() const {return fNewReg;}
-  void SetNewreg(Int_t l, Int_t /*lttc*/) {fNewReg = l;}
-
   Double_t GetRull() const {return fRull;}
-  void SetRull(Double_t r) {fRull = r;}
-
   Double_t GetXsco() const {return fXsco;}
-  void SetXsco(Double_t x) {fXsco = x;}
-
   Double_t GetYsco() const {return fYsco;}
-  void SetYsco(Double_t y) {fYsco = y;}
-
   Double_t GetZsco() const {return fZsco;}
+  Int_t              GetCurrentFlukaRegion() const {return fCurrentFlukaRegion;}
+  // - Fluka Draw Setters
+  void  SetCurrentFlukaRegion(Int_t reg) {fCurrentFlukaRegion=reg;}
+  void  SetCaller(FlukaCallerCode_t l) {fCaller = l;}
+  void  SetIcode(FlukaProcessCode_t l) {fIcode = l;}
+  void  SetMreg(Int_t l, Int_t lttc);
+  void  SetNewreg(Int_t l, Int_t /*lttc*/) {fNewReg = l;}
+  void  SetRull(Double_t r) {fRull = r;}
+  void  SetXsco(Double_t x) {fXsco = x;}
+  void  SetYsco(Double_t y) {fYsco = y;}
   void SetZsco(Double_t z) {fZsco = z;}
 
-  void SetCurrentFlukaRegion(Int_t reg) {fCurrentFlukaRegion=reg;}
-  Int_t GetCurrentFlukaRegion() const {return fCurrentFlukaRegion;}
+  void  SetTrackIsEntering(){fTrackIsEntering = kTRUE; fTrackIsExiting = kFALSE;}
+  void  SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
+  void  SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
+  void  SetTrackIsNew(Bool_t flag = kTRUE);
 
   void   SetDummyBoundary(Int_t mode) {fDummyBoundary = mode;}
   Int_t  GetDummyBoundary() const {return fDummyBoundary;}
   Bool_t IsDummyBoundary() const {return (fDummyBoundary==0)?kFALSE:kTRUE;}
   
+
   void   SetGeneratePemf(Bool_t flag = kTRUE) {fGeneratePemf = flag;}
   Bool_t IsGeneratePemf() const {return fGeneratePemf;}
   
   void   EnableField(Bool_t flag=kTRUE) {fFieldFlag = flag;}
   Bool_t IsFieldEnabled() const {return fFieldFlag;}
-  void SetTrackIsEntering(){fTrackIsEntering = kTRUE; fTrackIsExiting = kFALSE;}
-  void SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
-  void SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
-  void SetTrackIsNew(Bool_t flag = kTRUE);
   
   Int_t GetMaterialIndex(Int_t idmat) const {return fMaterials[idmat];}
-  TObjArray *GetFlukaMaterials();
+
+  TObjArray *          GetFlukaMaterials();
   virtual void SetRootGeometry() {;} // Dummy
   virtual Int_t        NofVolDaughters(const char* volName) const;
   virtual const char*  VolDaughterName(const char* volName, Int_t i) const;
   virtual Int_t        VolDaughterCopyNo(const char* volName, Int_t i) const;
   virtual const char*  CurrentVolPath();
   virtual void         ForceDecayTime(Float_t){;}
+
   private:
+   
+  // Copy constructor and operator= declared but not implemented (-Weff++ flag)
+  TFluka(const TFluka &mc); //: TVirtualMC(mc) {;}
+  TFluka & operator=(const TFluka &); // {return (*this);}
+ 
   void PrintHeader();
   void AddParticlesToPdgDataBase() const;
   //
@@ -392,23 +392,19 @@ class TFluka : public TVirtualMC {
   Int_t    GetNPrimaryElectrons();
   Double_t GetPrimaryElectronKineticEnergy(Int_t i);
   //
-  TFluka(const TFluka &mc): TVirtualMC(mc) {;}
-  TFluka & operator=(const TFluka &) {return (*this);}
 
-
-  
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
   Int_t   fNEvent;         //Current event number
   TString fInputFileName;     //Name of the real input file 
   TString fCoreInputFileName; //Name of the input file 
 
-  FlukaCallerCode_t     fCaller; //Parameter to indicate who is the caller of the Fluka Draw
-  FlukaProcessCode_t    fIcode;  //Fluka Draw procedures formal parameter 
-  Int_t    fNewReg; //Fluka Draw procedures formal parameter
-  Double_t fRull;   //Fluka Draw procedures formal parameter
-  Double_t fXsco;   //Fluka Draw procedures formal parameter
-  Double_t fYsco;   //Fluka Draw procedures formal parameter
-  Double_t fZsco;   //Fluka Draw procedures formal parameter
+  FlukaCallerCode_t     fCaller;           // Parameter to indicate who is the caller of the Fluka Draw
+  FlukaProcessCode_t    fIcode;            // Fluka Draw procedures formal parameter 
+  Int_t                 fNewReg;           // Fluka Draw procedures formal parameter
+  Double_t              fRull;             // Fluka Draw procedures formal parameter
+  Double_t              fXsco;             // Fluka Draw procedures formal parameter
+  Double_t              fYsco;             // Fluka Draw procedures formal parameter
+  Double_t              fZsco;             // Fluka Draw procedures formal parameter
   Bool_t   fTrackIsEntering;  // Flag for track entering
   Bool_t   fTrackIsExiting;   // Flag for track exiting  
   Bool_t   fTrackIsNew;       // Flag for new track
@@ -433,6 +429,7 @@ class TFluka : public TVirtualMC {
   TObjArray* fUserConfig;            // List of user physics configuration 
   TObjArray* fUserScore;             // List of user scoring options
   
+
   ClassDef(TFluka,1)  //C++ interface to Fluka montecarlo
 
 

@@ -42,11 +42,15 @@ ClassImp(TFlukaConfigOption)
 
 
 TFlukaConfigOption::TFlukaConfigOption()
+  :fMedium(-1),
+   fCMatMin(-1),
+   fCMatMax(-1),
+   fCMaterial(0)
 {
     // Default constructor
-    fMedium  = -1;
-    fCMatMin = -1.;
-    fCMatMax = -1.;    
+//    fMedium  = -1;
+//    fCMatMin = -1.;
+//    fCMatMax = -1.;    
     Int_t i;
     for (i = 0; i < 11; i++) fCutValue[i]    = -1.;
     for (i = 0; i < 15; i++) fProcessFlag[i] = -1;
@@ -54,11 +58,15 @@ TFlukaConfigOption::TFlukaConfigOption()
 
 
 TFlukaConfigOption::TFlukaConfigOption(Int_t medium)
+  :fMedium(medium),
+   fCMatMin(-1),
+   fCMatMax(-1),
+   fCMaterial(0)
 {
     // Constructor
-    fMedium = medium;
-    fCMatMin = -1.;
-    fCMatMax = -1.;    
+//    fMedium = medium;
+//    fCMatMin = -1.;
+//    fCMatMax = -1.;    
     Int_t i;
     for (i = 0; i < 11; i++) fCutValue[i]    = -1.;
     for (i = 0; i < 15; i++) fProcessFlag[i] = -1;
@@ -68,14 +76,14 @@ void TFlukaConfigOption::SetCut(const char* flagname, Double_t val)
 {
     // Set a cut value
     const TString cuts[11] = 
-	{"CUTGAM", "CUTELE", "CUTNEU", "CUTHAD", "CUTMUO", "BCUTE", "BCUTM", "DCUTE", "DCUTM", "PPCUTM", "TOFMAX"};
+       {"CUTGAM", "CUTELE", "CUTNEU", "CUTHAD", "CUTMUO", "BCUTE", "BCUTM", "DCUTE", "DCUTM", "PPCUTM", "TOFMAX"};
     Int_t i;
     for (i = 0; i < 11; i++) {
-	if (cuts[i].CompareTo(flagname) == 0) {
-	    fCutValue[i] = val;
-	    if (fMedium == -1) fgDCutValue[i] = val;
-	    break;
-	}
+       if (cuts[i].CompareTo(flagname) == 0) {
+           fCutValue[i] = val;
+           if (fMedium == -1) fgDCutValue[i] = val;
+           break;
+       }
     }
 }
 
@@ -85,10 +93,10 @@ void TFlukaConfigOption::SetModelParameter(const char* flagname, Double_t val)
     const TString parms[2] = {"PRIMIO_N", "PRIMIO_E"};
     Int_t i;
     for (i = 0; i < 2; i++) {
-	if (parms[i].CompareTo(flagname) == 0) {
-	    fModelParameter[i] = val;
-	    break;
-	}
+       if (parms[i].CompareTo(flagname) == 0) {
+           fModelParameter[i] = val;
+           break;
+       }
     }
 }
 
@@ -97,16 +105,16 @@ void TFlukaConfigOption::SetProcess(const char* flagname, Int_t flag)
 {
     // Set a process flag
     const TString process[15] = 
-	{"DCAY", "PAIR", "COMP", "PHOT", "PFIS", "DRAY", "ANNI", "BREM", "MUNU", "CKOV", 
-	 "HADR", "LOSS", "MULS", "RAYL", "STRA"};
+       {"DCAY", "PAIR", "COMP", "PHOT", "PFIS", "DRAY", "ANNI", "BREM", "MUNU", "CKOV",
+        "HADR", "LOSS", "MULS", "RAYL", "STRA"};
     
     Int_t i;
     for (i = 0; i < 15; i++) {
-	if (process[i].CompareTo(flagname) == 0) {
-	    fProcessFlag[i] = flag;
-	    if (fMedium == -1) fgDProcessFlag[i] = flag;
-	    break;
-	}
+       if (process[i].CompareTo(flagname) == 0) {
+           fProcessFlag[i] = flag;
+           if (fMedium == -1) fgDProcessFlag[i] = flag;
+           break;
+       }
     }
 }
 
@@ -124,52 +132,52 @@ void TFlukaConfigOption::WriteFlukaInputCards()
     TGeoMaterial* mat    = 0x0;
 
     if (fMedium != -1) {
-	TFluka* fluka = (TFluka*) gMC;
-	fMedium = fgGeom->GetFlukaMaterial(fMedium);
-	//
-	// Check if material is actually used
-	Int_t* reglist;
-	Int_t nreg;	
-	reglist = fgGeom->GetMaterialList(fMedium, nreg);
-	if (nreg == 0) {
-	    // Material not used -- return
-	    return;
-	}
-	//
-	// Find material
-	TObjArray *matList = fluka->GetFlukaMaterials();
-	Int_t nmaterial =  matList->GetEntriesFast();
-	fCMaterial = 0;
-	for (Int_t im = 0; im < nmaterial; im++)
-	{
-	    fCMaterial = dynamic_cast<TGeoMaterial*> (matList->At(im));
-	    Int_t idmat = fCMaterial->GetIndex();
-	    if (idmat == fMedium) break;	    
-	} // materials
+       TFluka* fluka = (TFluka*) gMC;
+       fMedium = fgGeom->GetFlukaMaterial(fMedium);
+       //
+       // Check if material is actually used
+       Int_t* reglist;
+       Int_t nreg;
+       reglist = fgGeom->GetMaterialList(fMedium, nreg);
+       if (nreg == 0) {
+           // Material not used -- return
+           return;
+       }
+       //
+       // Find material
+       TObjArray *matList = fluka->GetFlukaMaterials();
+       Int_t nmaterial =  matList->GetEntriesFast();
+       fCMaterial = 0;
+       for (Int_t im = 0; im < nmaterial; im++)
+       {
+           fCMaterial = dynamic_cast<TGeoMaterial*> (matList->At(im));
+           Int_t idmat = fCMaterial->GetIndex();
+           if (idmat == fMedium) break;
+       } // materials
         //
-	// Find medium
-	TList *medlist = gGeoManager->GetListOfMedia();
-	TIter next(medlist);
-	while((med = (TGeoMedium*)next()))
-	{
-	    mat = med->GetMaterial();
-	    if (mat->GetIndex() == fMedium) {
-		medium = med;
-		break;
-	    }
-	} // media
-	//
-	// Check if sensitive
-	if (medium->GetParam(0) != 0.) mediumIsSensitive = kTRUE;
+       // Find medium
+       TList *medlist = gGeoManager->GetListOfMedia();
+       TIter next(medlist);
+       while((med = (TGeoMedium*)next()))
+       {
+           mat = med->GetMaterial();
+           if (mat->GetIndex() == fMedium) {
+              medium = med;
+              break;
+           }
+       } // media
+       //
+       // Check if sensitive
+       if (medium->GetParam(0) != 0.) mediumIsSensitive = kTRUE;
 
 
-	fprintf(fgFile,"*\n*Material specific process and cut settings for #%8d %s\n", fMedium, fCMaterial->GetName());
-	fCMatMin = fMedium;
-	fCMatMax = fMedium;
+       fprintf(fgFile,"*\n*Material specific process and cut settings for #%8d %s\n", fMedium, fCMaterial->GetName());
+       fCMatMin = fMedium;
+       fCMatMax = fMedium;
     } else {
-	fprintf(fgFile,"*\n*Global process and cut settings \n");
-	fCMatMin = fgMatMin;
-	fCMatMax = fgMatMax;
+       fprintf(fgFile,"*\n*Global process and cut settings \n");
+       fCMatMin = fgMatMin;
+       fCMatMax = fgMatMax;
     }
 
 //
@@ -178,11 +186,11 @@ void TFlukaConfigOption::WriteFlukaInputCards()
 //
 //  First make sure that all cuts are taken into account
     if (DefaultProcessFlag(kPAIR) > 0 && fProcessFlag[kPAIR] == -1 && (fCutValue[kCUTELE] >= 0. || fCutValue[kPPCUTM] >= 0.)) 
-	fProcessFlag[kPAIR] = DefaultProcessFlag(kPAIR);
+       fProcessFlag[kPAIR] = DefaultProcessFlag(kPAIR);
     if (DefaultProcessFlag(kBREM) > 0 && fProcessFlag[kBREM] == -1 && (fCutValue[kBCUTE]  >= 0. || fCutValue[kBCUTM] >= 0.)) 
-	fProcessFlag[kBREM] = DefaultProcessFlag(kBREM);
+       fProcessFlag[kBREM] = DefaultProcessFlag(kBREM);
     if (DefaultProcessFlag(kDRAY) > 0 && fProcessFlag[kDRAY] == -1 && (fCutValue[kDCUTE]  >= 0. || fCutValue[kDCUTM] >= 0.)) 
-	fProcessFlag[kDRAY] = DefaultProcessFlag(kDRAY);
+       fProcessFlag[kDRAY] = DefaultProcessFlag(kDRAY);
 //    
 //
     if (fProcessFlag[kDCAY] != -1) ProcessDCAY();
@@ -222,9 +230,9 @@ void TFlukaConfigOption::ProcessDCAY()
     // Process DCAY option
     fprintf(fgFile,"*\n* --- DCAY --- Decays. Flag = %5d\n", fProcessFlag[kDCAY]);
     if (fProcessFlag[kDCAY] == 0) {
-	printf("Decays cannot be switched off \n");
+       printf("Decays cannot be switched off \n");
     } else {
-	fprintf(fgFile, "* Decays are on by default\n");
+       fprintf(fgFile, "* Decays are on by default\n");
     }
 }
 
@@ -233,14 +241,14 @@ void TFlukaConfigOption::ProcessPAIR()
 {
     // Process PAIR option
     fprintf(fgFile,"*\n* --- PAIR --- Pair production by gammas, muons and hadrons. Flag = %5d, PPCUTM = %13.4g, PPCUTE = %13.4g\n", 
-	    fProcessFlag[kPAIR], fCutValue[kCUTELE], fCutValue[kPPCUTM]);
+           fProcessFlag[kPAIR], fCutValue[kCUTELE], fCutValue[kPPCUTM]);
     //
     // gamma -> e+ e-
     //
     if (fProcessFlag[kPAIR] > 0) {
-	fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 0.0, fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 0.0, fCMatMin, fCMatMax, 1.);
     } else {
-	fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 1e10,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 1e10,  fCMatMin, fCMatMax, 1.);
     }
     
     //
@@ -251,7 +259,7 @@ void TFlukaConfigOption::ProcessPAIR()
     //
 
     if (fProcessFlag[kBREM] == -1 ) fProcessFlag[kBREM] = fgDProcessFlag[kBREM];
-    if (fCutValue[kBCUTM]   == -1.) fCutValue[kBCUTM]   = fgDCutValue[kBCUTM];	
+    if (fCutValue[kBCUTM]   == -1.) fCutValue[kBCUTM]   = fgDCutValue[kBCUTM];       
 
 
     Float_t flag = -3.;    
@@ -266,7 +274,7 @@ void TFlukaConfigOption::ProcessPAIR()
     // Energy cut for pair prodution
     //
     Float_t cutP = fCutValue[kPPCUTM];
-    if (fCutValue[kPPCUTM]   == -1.) cutP = fgDCutValue[kPPCUTM];	
+    if (fCutValue[kPPCUTM]   == -1.) cutP = fgDCutValue[kPPCUTM];       
     // In G3 this is the cut on the total energy of the e+e- pair
     // In FLUKA the cut is on the kinetic energy of the electron and poistron
     cutP = cutP / 2. - 0.51099906e-3;
@@ -278,12 +286,12 @@ void TFlukaConfigOption::ProcessPAIR()
     //
     Float_t cutB = 0.;
     if (flag > 1.) {
-	fprintf(fgFile,"*\n* +++ BREM --- Bremsstrahlung by muons/hadrons. Flag = %5d, BCUTM = %13.4g \n",
-	    fProcessFlag[kBREM], fCutValue[kBCUTM]);
+       fprintf(fgFile,"*\n* +++ BREM --- Bremsstrahlung by muons/hadrons. Flag = %5d, BCUTM = %13.4g \n",
+           fProcessFlag[kBREM], fCutValue[kBCUTM]);
 
-	cutB =  fCutValue[kBCUTM];
-	// No explicite production of gammas
-	if (fProcessFlag[kBREM] == 2) cutB = -1.;
+       cutB =  fCutValue[kBCUTM];
+       // No explicite production of gammas
+       if (fProcessFlag[kBREM] == 2) cutB = -1.;
     }
 
     fprintf(fgFile,"PAIRBREM  %10.1f%10.4g%10.4g%10.1f%10.1f\n",flag, cutP, cutB, fCMatMin, fCMatMax);
@@ -294,26 +302,26 @@ void TFlukaConfigOption::ProcessBREM()
 {
     // Process BREM option
     fprintf(fgFile,"*\n* --- BREM --- Bremsstrahlung by e+/- and muons/hadrons. Flag = %5d, BCUTE = %13.4g, BCUTM = %13.4g \n",
-	    fProcessFlag[kBREM], fCutValue[kBCUTE], fCutValue[kBCUTM]);
+           fProcessFlag[kBREM], fCutValue[kBCUTE], fCutValue[kBCUTM]);
 
     //
     // e+/- -> e+/- gamma
     //
     Float_t cutB = fCutValue[kBCUTE];
-    if (fCutValue[kBCUTE]   == -1.) cutB = fgDCutValue[kBCUTE];	
+    if (fCutValue[kBCUTE]   == -1.) cutB = fgDCutValue[kBCUTE];       
     
     
     if (TMath::Abs(fProcessFlag[kBREM]) > 0) {
-	fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",cutB,  0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",cutB,  0., 0.,  fCMatMin, fCMatMax, 1.);
     } else {
-	fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",1.e10, 0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fELPO-THR\n",1.e10, 0., 0.,  fCMatMin, fCMatMax, 1.);
     }
 
     //
     // Bremsstrahlung by muons and hadrons
     //
     cutB = fCutValue[kBCUTM];
-    if (fCutValue[kBCUTM]   == -1.) cutB = fgDCutValue[kBCUTM];	
+    if (fCutValue[kBCUTM]   == -1.) cutB = fgDCutValue[kBCUTM];       
     if (fProcessFlag[kBREM] == 2) cutB = -1.;
     Float_t flag = 2.;
     if (fProcessFlag[kBREM] == 0) flag = -2.;
@@ -331,9 +339,9 @@ void TFlukaConfigOption::ProcessCOMP()
     //
 
     if (fProcessFlag[kCOMP] > 0) {
-	fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",0.   , 0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",0.   , 0., 0.,  fCMatMin, fCMatMax, 1.);
     } else {
-	fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",1.e10, 0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",1.e10, 0., 0.,  fCMatMin, fCMatMax, 1.);
     }
 }
 
@@ -347,9 +355,9 @@ void TFlukaConfigOption::ProcessPHOT()
     //
 
     if (fProcessFlag[kPHOT] > 0) {
-	fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.4g%10.1f%10.1f%10.1fPHOT-THR\n",0., 0., 0.,  fCMatMin, fCMatMax, 1.);
     } else {
-	fprintf(fgFile,"EMFCUT    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",0., 1.e10, 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.1f%10.4g%10.1f%10.1f%10.1f%10.1fPHOT-THR\n",0., 1.e10, 0.,  fCMatMin, fCMatMax, 1.);
     }
 }
 
@@ -363,9 +371,9 @@ void TFlukaConfigOption::ProcessANNI()
     //
 
     if (fProcessFlag[kANNI] > 0) {
-	fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fANNH-THR\n",0.   , 0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fANNH-THR\n",0.   , 0., 0.,  fCMatMin, fCMatMax, 1.);
     } else {
-	fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fANNH-THR\n",1.e10, 0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"EMFCUT    %10.4g%10.1f%10.1f%10.1f%10.1f%10.1fANNH-THR\n",1.e10, 0., 0.,  fCMatMin, fCMatMax, 1.);
     }
 }
 
@@ -380,9 +388,9 @@ void TFlukaConfigOption::ProcessPFIS()
     //
 
     if (fProcessFlag[kPFIS] > 0) {
-	fprintf(fgFile,"PHOTONUC  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",(Float_t) fProcessFlag[kPFIS], 0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"PHOTONUC  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",(Float_t) fProcessFlag[kPFIS], 0., 0.,  fCMatMin, fCMatMax, 1.);
     } else {
-	fprintf(fgFile,"PHOTONUC  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1.                          , 0., 0.,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"PHOTONUC  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1.                          , 0., 0.,  fCMatMin, fCMatMax, 1.);
     }
 }
 
@@ -395,9 +403,9 @@ void TFlukaConfigOption::ProcessMUNU()
     // Muon nuclear interactions
     //
     if (fProcessFlag[kMUNU] > 0) {
-	fprintf(fgFile,"MUPHOTON  %10.1f%10.3f%10.3f%10.1f%10.1f%10.1f\n",(Float_t )fProcessFlag[kMUNU], 0.25, 0.75,  fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"MUPHOTON  %10.1f%10.3f%10.3f%10.1f%10.1f%10.1f\n",(Float_t )fProcessFlag[kMUNU], 0.25, 0.75,  fCMatMin, fCMatMax, 1.);
     } else {
-	fprintf(fgFile,"MUPHOTON  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1.                          , 0.,   0.,    fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"MUPHOTON  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1.                          , 0.,   0.,    fCMatMin, fCMatMax, 1.);
     }
 }
 
@@ -414,12 +422,12 @@ void TFlukaConfigOption::ProcessRAYL()
     //
     // Loop over regions of a given material
     for (Int_t k = 0; k < nreg; k++) {
-	Float_t ireg = reglist[k];
-	if (fProcessFlag[kRAYL] > 0) {
-	    fprintf(fgFile,"EMFRAY    %10.1f%10.1f%10.1f%10.1f\n", 1., ireg, ireg, 1.);
-	} else {
-	    fprintf(fgFile,"EMFRAY    %10.1f%10.1f%10.1f%10.1f\n", 3., ireg, ireg, 1.);
-	}
+       Float_t ireg = reglist[k];
+       if (fProcessFlag[kRAYL] > 0) {
+           fprintf(fgFile,"EMFRAY    %10.1f%10.1f%10.1f%10.1f\n", 1., ireg, ireg, 1.);
+       } else {
+           fprintf(fgFile,"EMFRAY    %10.1f%10.1f%10.1f%10.1f\n", 3., ireg, ireg, 1.);
+       }
     }
 }
 
@@ -437,54 +445,54 @@ void TFlukaConfigOption::ProcessCKOV()
     Int_t nmaterial =  matList->GetEntriesFast();
     for (Int_t im = 0; im < nmaterial; im++)
     {
-	TGeoMaterial* material = dynamic_cast<TGeoMaterial*> (matList->At(im));
-	Int_t idmat = material->GetIndex();
+       TGeoMaterial* material = dynamic_cast<TGeoMaterial*> (matList->At(im));
+       Int_t idmat = material->GetIndex();
 //
 // Check if global option
-	if (fMedium != -1 && idmat != fMedium) continue;
-	
-	TFlukaCerenkov* cerenkovProp;
-	if (!(cerenkovProp = dynamic_cast<TFlukaCerenkov*>(material->GetCerenkovProperties()))) continue;
-	//
-	// This medium has Cerenkov properties 
-	//
-	//
-	if (fMedium == -1 || (fMedium != -1 && fProcessFlag[kCKOV] > 0)) {
-	    // Write OPT-PROD card for each medium 
-	    Float_t  emin  = cerenkovProp->GetMinimumEnergy();
-	    Float_t  emax  = cerenkovProp->GetMaximumEnergy();	      
-	    fprintf(fgFile, "OPT-PROD  %10.4g%10.4g%10.4g%10.4g%10.4g%10.4gCERENKOV\n", emin, emax, 0., 
-		    Float_t(idmat), Float_t(idmat), 0.); 
-	    //
-	    // Write OPT-PROP card for each medium 
-	    // Forcing FLUKA to call user routines (queffc.cxx, rflctv.cxx, rfrndx.cxx)
-	    //
-	    fprintf(fgFile, "OPT-PROP  %10.4g%10.4g%10.4g%10.1f%10.1f%10.1fWV-LIMIT\n",  
-		    cerenkovProp->GetMinimumWavelength(), cerenkovProp->GetMaximumWavelength(), cerenkovProp->GetMaximumWavelength(), 
-		    Float_t(idmat), Float_t(idmat), 0.0);
-	    
+       if (fMedium != -1 && idmat != fMedium) continue;
+       
+       TFlukaCerenkov* cerenkovProp;
+       if (!(cerenkovProp = dynamic_cast<TFlukaCerenkov*>(material->GetCerenkovProperties()))) continue;
+       //
+       // This medium has Cerenkov properties
+       //
+       //
+       if (fMedium == -1 || (fMedium != -1 && fProcessFlag[kCKOV] > 0)) {
+           // Write OPT-PROD card for each medium
+           Float_t  emin  = cerenkovProp->GetMinimumEnergy();
+           Float_t  emax  = cerenkovProp->GetMaximumEnergy();
+           fprintf(fgFile, "OPT-PROD  %10.4g%10.4g%10.4g%10.4g%10.4g%10.4gCERENKOV\n", emin, emax, 0.,
+                  Float_t(idmat), Float_t(idmat), 0.);
+           //
+           // Write OPT-PROP card for each medium
+           // Forcing FLUKA to call user routines (queffc.cxx, rflctv.cxx, rfrndx.cxx)
+           //
+           fprintf(fgFile, "OPT-PROP  %10.4g%10.4g%10.4g%10.1f%10.1f%10.1fWV-LIMIT\n",
+                  cerenkovProp->GetMinimumWavelength(), cerenkovProp->GetMaximumWavelength(), cerenkovProp->GetMaximumWavelength(),
+                  Float_t(idmat), Float_t(idmat), 0.0);
+       
 
-	    fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", -100., -100., -100., 
-		    Float_t(idmat), Float_t(idmat), 0.0);
-	    
-	    for (Int_t j = 0; j < 3; j++) {
-		fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f&\n", -100., -100., -100., 
-			Float_t(idmat), Float_t(idmat), 0.0);
-	    }
+           fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", -100., -100., -100.,
+                  Float_t(idmat), Float_t(idmat), 0.0);
+       
+           for (Int_t j = 0; j < 3; j++) {
+              fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f&\n", -100., -100., -100.,
+                     Float_t(idmat), Float_t(idmat), 0.0);
+           }
 
 
-	    // Photon detection efficiency user defined	    
-	    if (cerenkovProp->IsSensitive())
-		fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fSENSITIV\n", -100., -100., -100., 
-			Float_t(idmat), Float_t(idmat), 0.0);
-	    // Material has a reflective surface
-	    if (cerenkovProp->IsMetal())
-		fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fMETAL\n", -100., -100., -100., 
-			Float_t(idmat), Float_t(idmat), 0.0);
+           // Photon detection efficiency user defined
+           if (cerenkovProp->IsSensitive())
+              fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fSENSITIV\n", -100., -100., -100.,
+                     Float_t(idmat), Float_t(idmat), 0.0);
+           // Material has a reflective surface
+           if (cerenkovProp->IsMetal())
+              fprintf(fgFile, "OPT-PROP  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fMETAL\n", -100., -100., -100.,
+                     Float_t(idmat), Float_t(idmat), 0.0);
 
-	} else {
-	    fprintf(fgFile,"OPT-PROD  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fCERE-OFF\n",0., 0., 0., fCMatMin, fCMatMax, 1.);
-	}
+       } else {
+           fprintf(fgFile,"OPT-PROD  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fCERE-OFF\n",0., 0., 0., fCMatMin, fCMatMax, 1.);
+       }
     }
 }
 
@@ -495,10 +503,10 @@ void TFlukaConfigOption::ProcessHADR()
     fprintf(fgFile,"*\n* --- HADR --- Hadronic interactions. Flag = %5d\n", fProcessFlag[kHADR]);
     
     if (fProcessFlag[kHADR] > 0) {
-	fprintf(fgFile,"*\n*Hadronic interaction is ON by default in FLUKA\n");
+       fprintf(fgFile,"*\n*Hadronic interaction is ON by default in FLUKA\n");
     } else {
-	if (fMedium != -1) printf("Hadronic interactions cannot be switched off material by material !\n");
-	fprintf(fgFile,"THRESHOL  %10.1f%10.1f%10.1f%10.1e%10.1f\n",0., 0., 0., 1.e10, 0.);
+       if (fMedium != -1) printf("Hadronic interactions cannot be switched off material by material !\n");
+       fprintf(fgFile,"THRESHOL  %10.1f%10.1f%10.1f%10.1e%10.1f\n",0., 0., 0., 1.e10, 0.);
     }
 }
 
@@ -512,9 +520,9 @@ void TFlukaConfigOption::ProcessMULS()
     // Multiple scattering
     //
     if (fProcessFlag[kMULS] > 0) {
-	fprintf(fgFile,"*\n*Multiple scattering is  ON by default in FLUKA\n");
+       fprintf(fgFile,"*\n*Multiple scattering is  ON by default in FLUKA\n");
     } else {
-	fprintf(fgFile,"MULSOPT   %10.1f%10.1f%10.1f%10.1f%10.1f\n",0., 3., 3., fCMatMin, fCMatMax);
+       fprintf(fgFile,"MULSOPT   %10.1f%10.1f%10.1f%10.1f%10.1f\n",0., 3., 3., fCMatMin, fCMatMax);
     }
 }
 
@@ -522,7 +530,7 @@ void TFlukaConfigOption::ProcessLOSS()
 {
     // Process LOSS option
     fprintf(fgFile,"*\n* --- LOSS --- Ionisation energy loss. Flags: LOSS = %5d, DRAY = %5d, STRA = %5d; Cuts: DCUTE = %13.4g, DCUTM = %13.4g \n",
-	    fProcessFlag[kLOSS], fProcessFlag[kDRAY], fProcessFlag[kSTRA], fCutValue[kDCUTE], fCutValue[kDCUTM]);
+           fProcessFlag[kLOSS], fProcessFlag[kDRAY], fProcessFlag[kSTRA], fCutValue[kDCUTE], fCutValue[kDCUTM]);
     //
     // Ionisation energy loss
     //
@@ -531,27 +539,27 @@ void TFlukaConfigOption::ProcessLOSS()
     
     if (fProcessFlag[kLOSS] == 1 || fProcessFlag[kLOSS] == 3 || fProcessFlag[kLOSS] > 10) {
     // Restricted fluctuations
-	fProcessFlag[kDRAY] = 1;
+       fProcessFlag[kDRAY] = 1;
     } else if (fProcessFlag[kLOSS] == 2) {
     // Full fluctuations
-	fProcessFlag[kDRAY] = 0;
-	fCutValue[kDCUTE] = 1.e10;
-	fCutValue[kDCUTM] = 1.e10;	
+       fProcessFlag[kDRAY] = 0;
+       fCutValue[kDCUTE] = 1.e10;
+       fCutValue[kDCUTM] = 1.e10;
     } else {
-	if (fProcessFlag[kDRAY] == 1) {
-	    fProcessFlag[kLOSS] = 1;
-	} else if (fProcessFlag[kDRAY] == 0) {
-	    fProcessFlag[kLOSS] = 2;
-	    fCutValue[kDCUTE] = 1.e10;
-	    fCutValue[kDCUTM] = 1.e10;	
-	}
+       if (fProcessFlag[kDRAY] == 1) {
+           fProcessFlag[kLOSS] = 1;
+       } else if (fProcessFlag[kDRAY] == 0) {
+           fProcessFlag[kLOSS] = 2;
+           fCutValue[kDCUTE] = 1.e10;
+           fCutValue[kDCUTM] = 1.e10;
+       }
     }
     
     if (fCutValue[kDCUTE] == -1.) fCutValue[kDCUTE] = fgDCutValue[kDCUTE];
     if (fCutValue[kDCUTM] == -1.) fCutValue[kDCUTM] = fgDCutValue[kDCUTM];    
     
     Float_t cutM =  fCutValue[kDCUTM];    
-	
+       
 
     if (fProcessFlag[kSTRA] == -1) fProcessFlag[kSTRA] = fgDProcessFlag[kSTRA];
     if (fProcessFlag[kSTRA] ==  0) fProcessFlag[kSTRA] = 1;
@@ -562,34 +570,34 @@ void TFlukaConfigOption::ProcessLOSS()
 //
 // Restricted energy loss fluctuations 
 //
-	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n", 1., 1., stra, fCMatMin, fCMatMax);
-	fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", cutM, 0., 0., fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n", 1., 1., stra, fCMatMin, fCMatMax);
+       fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", cutM, 0., 0., fCMatMin, fCMatMax, 1.);
     } else if (fProcessFlag[kLOSS] > 10) {
 //
 // Primary ionisation electron generation
 //
-	// Ionisation model
-	Float_t ioModel = Float_t (fProcessFlag[kLOSS]-10);
-	//  Effective 1st ionisation potential
-	Float_t ePot    = ModelParameter(kPRIMIOE);
-	// Number of primary ionisations per cm for a mip 
-	Float_t nPrim   = ModelParameter(kPRIMION); 
-	
-	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n", 1., 1., stra, fCMatMin, fCMatMax);
-	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPRIM-ION\n", ePot, nPrim, ioModel, fCMatMin, fCMatMax, 1.);
-	fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", cutM, 0., 0., fCMatMin, fCMatMax, 1.);
+       // Ionisation model
+       Float_t ioModel = Float_t (fProcessFlag[kLOSS]-10);
+       //  Effective 1st ionisation potential
+       Float_t ePot    = ModelParameter(kPRIMIOE);
+       // Number of primary ionisations per cm for a mip
+       Float_t nPrim   = ModelParameter(kPRIMION);
+       
+       fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n", 1., 1., stra, fCMatMin, fCMatMax);
+       fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1fPRIM-ION\n", ePot, nPrim, ioModel, fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", cutM, 0., 0., fCMatMin, fCMatMax, 1.);
     } else if (fProcessFlag[kLOSS] == 4) {
 //
 // No fluctuations
 //
-	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",-1., -1., stra, fCMatMin, fCMatMax);	
-	fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", 1.e10, 0., 0., fCMatMin, fCMatMax, 1.);	
+       fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",-1., -1., stra, fCMatMin, fCMatMax);
+       fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", 1.e10, 0., 0., fCMatMin, fCMatMax, 1.);
     }  else {
 //
 // Full fluctuations
 //
-	fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",1., 1., stra, fCMatMin, fCMatMax);	
-	fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", 1.e10, 0., 0., fCMatMin, fCMatMax, 1.);	
+       fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",1., 1., stra, fCMatMin, fCMatMax);
+       fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", 1.e10, 0., 0., fCMatMin, fCMatMax, 1.);
     }
 }
 
@@ -600,18 +608,18 @@ void TFlukaConfigOption::ProcessCUTGAM()
 //
     fprintf(fgFile,"*\n*Cut for Gammas. CUTGAM = %13.4g\n", fCutValue[kCUTGAM]);
     if (fMedium == -1) {
-	fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 
-		0., fCutValue[kCUTGAM], 0., 0., Float_t(fgGeom->NofVolumes()), 1.);
+       fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
+              0., fCutValue[kCUTGAM], 0., 0., Float_t(fgGeom->NofVolumes()), 1.);
 
     } else {
-	Int_t nreg, *reglist;
-	Float_t ireg;
-	reglist = fgGeom->GetMaterialList(fMedium, nreg);
-	// Loop over regions of a given material
-	for (Int_t k = 0; k < nreg; k++) {
-	    ireg = reglist[k];
-	    fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 0.,fCutValue[kCUTGAM], 0., ireg, ireg, 1.);
-	}
+       Int_t nreg, *reglist;
+       Float_t ireg;
+       reglist = fgGeom->GetMaterialList(fMedium, nreg);
+       // Loop over regions of a given material
+       for (Int_t k = 0; k < nreg; k++) {
+           ireg = reglist[k];
+           fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 0.,fCutValue[kCUTGAM], 0., ireg, ireg, 1.);
+       }
     }
     
     // Transport production cut used for pemf
@@ -620,7 +628,7 @@ void TFlukaConfigOption::ProcessCUTGAM()
     //  For production and transport cut-offs larger than 100 keV it must be set = 1.0, while in the keV region it must be
     Float_t parFudgem = (fCutValue[kCUTGAM] > 1.e-4)? 1.0 : 0.0 ;
     fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fPROD-CUT\n", 
-	    0., fCutValue[kCUTGAM], parFudgem, fCMatMin, fCMatMax, 1.);
+           0., fCutValue[kCUTGAM], parFudgem, fCMatMin, fCMatMax, 1.);
 }
 
 void TFlukaConfigOption::ProcessCUTELE()
@@ -629,17 +637,17 @@ void TFlukaConfigOption::ProcessCUTELE()
 //
     fprintf(fgFile,"*\n*Cut for e+/e-. CUTELE = %13.4g\n", fCutValue[kCUTELE]);
     if (fMedium == -1) {
-	fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", 
-		-fCutValue[kCUTELE], 0., 0., 0., Float_t(fgGeom->NofVolumes()), 1.);
+       fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
+              -fCutValue[kCUTELE], 0., 0., 0., Float_t(fgGeom->NofVolumes()), 1.);
     } else {
-	Int_t nreg, *reglist;
-	Float_t ireg;
-	reglist = fgGeom->GetMaterialList(fMedium, nreg);
-	// Loop over regions of a given material
-	for (Int_t k = 0; k < nreg; k++) {
-	    ireg = reglist[k];
-	    fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", -fCutValue[kCUTELE], 0., 0., ireg, ireg, 1.);
-	}
+       Int_t nreg, *reglist;
+       Float_t ireg;
+       reglist = fgGeom->GetMaterialList(fMedium, nreg);
+       // Loop over regions of a given material
+       for (Int_t k = 0; k < nreg; k++) {
+           ireg = reglist[k];
+           fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n", -fCutValue[kCUTELE], 0., 0., ireg, ireg, 1.);
+       }
     }
     // Transport production cut used for pemf
     //
@@ -647,7 +655,7 @@ void TFlukaConfigOption::ProcessCUTELE()
     //  For production and transport cut-offs larger than 100 keV it must be set = 1.0, while in the keV region it must be
     Float_t parFudgem = (fCutValue[kCUTELE] > 1.e-4)? 1.0 : 0.0;
     fprintf(fgFile,"EMFCUT    %10.4g%10.4g%10.1f%10.1f%10.1f%10.1fPROD-CUT\n", 
-	    -fCutValue[kCUTELE], 0., parFudgem, fCMatMin, fCMatMax, 1.);
+           -fCutValue[kCUTELE], 0., parFudgem, fCMatMin, fCMatMax, 1.);
 }
 
 void TFlukaConfigOption::ProcessCUTNEU()
@@ -695,49 +703,49 @@ void TFlukaConfigOption::ProcessCUTNEU()
         // 9.0 = Antineutron
         fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -neutronCut,  8.0,  9.0);
         fprintf(fgFile,"LOW-BIAS  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
-		Float_t(groupCut), 73.0, 0.95, 2., Float_t(fgGeom->NofVolumes()), 1.);
+              Float_t(groupCut), 73.0, 0.95, 2., Float_t(fgGeom->NofVolumes()), 1.);
         //
-	//
-	// 12.0 = Kaon zero long
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 12.0, 12.0);
-	// 17.0 = Lambda, 18.0 = Antilambda
-	// 19.0 = Kaon zero short
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 17.0, 19.0);
-	// 22.0 = Sigma zero, Pion zero, Kaon zero
-	// 25.0 = Antikaon zero
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 22.0, 25.0);
-	// 32.0 = Antisigma zero
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 32.0, 32.0);
-	// 34.0 = Xi zero
-	// 35.0 = AntiXi zero
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 34.0, 35.0);
-	// 47.0 = D zero
-	// 48.0 = AntiD zero
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 47.0, 48.0);
-	// 53.0 = Xi_c zero
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 53.0, 53.0);
-	// 55.0 = Xi'_c zero
-	// 56.0 = Omega_c zero
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 55.0, 56.0);
-	// 59.0 = AntiXi_c zero
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 59.0, 59.0);
-	// 61.0 = AntiXi'_c zero
-	// 62.0 = AntiOmega_c zero
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 61.0, 62.0);
+       //
+       // 12.0 = Kaon zero long
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 12.0, 12.0);
+       // 17.0 = Lambda, 18.0 = Antilambda
+       // 19.0 = Kaon zero short
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 17.0, 19.0);
+       // 22.0 = Sigma zero, Pion zero, Kaon zero
+       // 25.0 = Antikaon zero
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 22.0, 25.0);
+       // 32.0 = Antisigma zero
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 32.0, 32.0);
+       // 34.0 = Xi zero
+       // 35.0 = AntiXi zero
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 34.0, 35.0);
+       // 47.0 = D zero
+       // 48.0 = AntiD zero
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 47.0, 48.0);
+       // 53.0 = Xi_c zero
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 53.0, 53.0);
+       // 55.0 = Xi'_c zero
+       // 56.0 = Omega_c zero
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 55.0, 56.0);
+       // 59.0 = AntiXi_c zero
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 59.0, 59.0);
+       // 61.0 = AntiXi'_c zero
+       // 62.0 = AntiOmega_c zero
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 61.0, 62.0);
     } else {
         Int_t nreg, *reglist;
         Float_t ireg;
         reglist = fgGeom->GetMaterialList(fMedium, nreg);
         // Loop over regions of a given material
         for (Int_t k = 0; k < nreg; k++) {
-	  ireg = reglist[k];
-	  fprintf(fgFile,"LOW-BIAS  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
-		  Float_t(groupCut), 73.0, 0.95, ireg, ireg, 1.);
-	}
+         ireg = reglist[k];
+         fprintf(fgFile,"LOW-BIAS  %10.4g%10.4g%10.1f%10.1f%10.1f%10.1f\n",
+                Float_t(groupCut), 73.0, 0.95, ireg, ireg, 1.);
+       }
 
-	Warning("ProcessCUTNEU", 
-		"Material #%4d %s: Cut on neutral hadrons (Ekin > %9.3e) material by material only implemented for low-energy neutrons !\n", 
-		fMedium, fCMaterial->GetName(), cut);
+       Warning("ProcessCUTNEU",
+              "Material #%4d %s: Cut on neutral hadrons (Ekin > %9.3e) material by material only implemented for low-energy neutrons !\n",
+              fMedium, fCMaterial->GetName(), cut);
     }
 }
 
@@ -747,39 +755,39 @@ void TFlukaConfigOption::ProcessCUTHAD()
     fprintf(fgFile,"*\n*Cut for charge hadrons. CUTHAD = %13.4g\n", fCutValue[kCUTHAD]);
     Float_t cut = fCutValue[kCUTHAD];
     if (fMedium == -1) {
-	// 1.0 = Proton
-	// 2.0 = Antiproton
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut,  1.0,  2.0);
-	// 13.0 = Positive Pion, Negative Pion, Positive Kaon
-	// 16.0 = Negative Kaon
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 13.0, 16.0);
-	// 20.0 = Negative Sigma
-	// 21.0 = Positive Sigma
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 20.0, 21.0);
-	// 31.0 = Antisigma minus
-	// 33.0 = Antisigma plus
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 31.0, 31.0);
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 33.0, 33.0);
-	// 36.0 = Negative Xi, Positive Xi, Omega minus
-	// 39.0 = Antiomega
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 36.0, 39.0);
-	// 45.0 = D plus
-	// 46.0 = D minus
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 45.0, 46.0);
-	// 49.0 = D_s plus, D_s minus, Lambda_c plus
-	// 52.0 = Xi_c plus
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 49.0, 52.0);
-	// 54.0 = Xi'_c plus
-	// 60.0 = AntiXi'_c minus
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 54.0, 54.0);
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 60.0, 60.0);
-	// 57.0 = Antilambda_c minus
-	// 58.0 = AntiXi_c minus
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 57.0, 58.0);
+       // 1.0 = Proton
+       // 2.0 = Antiproton
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut,  1.0,  2.0);
+       // 13.0 = Positive Pion, Negative Pion, Positive Kaon
+       // 16.0 = Negative Kaon
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 13.0, 16.0);
+       // 20.0 = Negative Sigma
+       // 21.0 = Positive Sigma
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 20.0, 21.0);
+       // 31.0 = Antisigma minus
+       // 33.0 = Antisigma plus
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 31.0, 31.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 33.0, 33.0);
+       // 36.0 = Negative Xi, Positive Xi, Omega minus
+       // 39.0 = Antiomega
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 36.0, 39.0);
+       // 45.0 = D plus
+       // 46.0 = D minus
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 45.0, 46.0);
+       // 49.0 = D_s plus, D_s minus, Lambda_c plus
+       // 52.0 = Xi_c plus
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 49.0, 52.0);
+       // 54.0 = Xi'_c plus
+       // 60.0 = AntiXi'_c minus
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 54.0, 54.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 60.0, 60.0);
+       // 57.0 = Antilambda_c minus
+       // 58.0 = AntiXi_c minus
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n", -cut, 57.0, 58.0);
     } else {
       Warning("ProcessCUTHAD", 
-	      "Material #%4d %s: Cut on charged hadrons (Ekin > 9.3e) material by material not yet implemented !\n", 
-	      fMedium, fCMaterial->GetName(), cut); 
+              "Material #%4d %s: Cut on charged hadrons (Ekin > %9.3e) material by material not yet implemented !\n",
+             fMedium, fCMaterial->GetName(), cut);
     }
 }
 
@@ -789,10 +797,10 @@ void TFlukaConfigOption::ProcessCUTMUO()
     fprintf(fgFile,"*\n*Cut for muons. CUTMUO = %13.4g\n", fCutValue[kCUTMUO]);
     Float_t cut = fCutValue[kCUTMUO];
     if (fMedium == -1) {
-	fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n",-cut, 10.0, 11.0);
+       fprintf(fgFile,"PART-THR  %10.4g%10.1f%10.1f\n",-cut, 10.0, 11.0);
     } else {
-	Warning("ProcessCUTMUO", "Material #%4d %s: Cut on muons (Ekin > %9.3e) material by material not yet implemented !\n", 
-		fMedium, fCMaterial->GetName(), cut);
+       Warning("ProcessCUTMUO", "Material #%4d %s: Cut on muons (Ekin > %9.3e) material by material not yet implemented !\n",
+              fMedium, fCMaterial->GetName(), cut);
     }
     
     

@@ -19,6 +19,9 @@
 # define mgdraw MGDRAW
 #endif
 
+
+#include "TGeoManager.h" // <- delete
+
 extern "C" {
 void mgdraw(Int_t& icode, Int_t& mreg)
 {
@@ -42,11 +45,11 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     Int_t verbosityLevel = fluka->GetVerbosityLevel();
 
     if (TRACKR.jtrack < -6) {
-       // (Unknow heavy Ion???)
-       // assing parent id ???
+       // from -7 to -12 = "heavy" fragment
+       // assing parent id
        // id < -6 was skipped in stuprf =>   if (kpart < -6) return;
        if (verbosityLevel >= 3) {
-          cout << "mgdraw: jtrack < -6 =" << TRACKR.jtrack
+          cout << "mgdraw: (heavy fragment) jtrack < -6 =" << TRACKR.jtrack
                << " assign parent pdg=" << fluka->PDGFromId(TRACKR.ispusr[mkbmx2 - 3]) << endl;
        }
        TRACKR.jtrack = TRACKR.ispusr[mkbmx2 - 3];
@@ -55,11 +58,37 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     cppstack->SetCurrentTrack(trackId);
 //
 //    
-    Int_t mlttc = LTCLCM.mlatm1;
+    Int_t mlttc = TRACKR.lt1trk; // LTCLCM.mlatm1;
     fluka->SetMreg(mreg, mlttc);
-    fluka->SetNewreg(mreg, mlttc);
+//    fluka->SetNewreg(mreg, mlttc); // dont used!!
     fluka->SetIcode((FlukaProcessCode_t) icode);
     fluka->SetCaller(kMGDRAW);
+
+    Int_t nodeId;
+    Int_t volId = fluka->CurrentVolID(nodeId);
+    Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
+
+//
+//    if( (fluka->GetNstep() > 43912170 && fluka->GetNstep() < 43912196 ) ||
+//        (fluka->GetNstep() > 47424560 && fluka->GetNstep() < 47424581 ) ||
+//        (fluka->GetNstep() > 54388266 && fluka->GetNstep() < 54388319 )
+//      ) fluka->SetVerbosityLevel(3);
+//    else fluka->SetVerbosityLevel(0);
+
+    // check region lattice consistency (debug Ernesto)
+    // *****************************************************
+    if( mreg != volId  && !gGeoManager->IsOutside() ) {
+       cout << "  mgdraw:   track=" << trackId << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
+            << " icode=" << icode << " gNstep=" << fluka->GetNstep() << endl
+            << "               fluka   mreg=" << mreg << " mlttc=" << mlttc << endl
+            << "               TGeo   volId=" << volId << " crtlttc=" << crtlttc << endl
+            << "     common TRACKR   lt1trk=" << TRACKR.lt1trk << " lt2trk=" << TRACKR.lt2trk << endl
+            << "     common LTCLCM   newlat=" << LTCLCM.newlat << " mlatld=" <<  LTCLCM.mlatld << endl
+            << "                     mlatm1=" << LTCLCM.mlatm1 << " mltsen=" <<  LTCLCM.mltsen << endl
+            << "                     mltsm1=" << LTCLCM.mltsm1 << " mlattc=" << LTCLCM.mlattc << endl;
+        if( mlttc == crtlttc ) cout << "   *************************************************************" << endl;
+    }
+    // *****************************************************
 
     if (!TRACKR.ispusr[mkbmx2 - 2]) {
         //
@@ -67,7 +96,9 @@ void mgdraw(Int_t& icode, Int_t& mreg)
         if (verbosityLevel >= 3) {
            cout << endl << "mgdraw: energy deposition for:" << trackId
                  << " icode=" << icode
-                 << " pdg=" << fluka->PDGFromId(TRACKR.jtrack) << " flukaid="<< TRACKR.jtrack << endl;
+                 << " pdg=" << fluka->PDGFromId(TRACKR.jtrack)
+                 << " flukaid="<< TRACKR.jtrack
+                 << " mreg=" << mreg << endl;
         }
         (TVirtualMCApplication::Instance())->Stepping();
         fluka->SetTrackIsNew(kFALSE);

@@ -82,7 +82,7 @@ extern "C" {
 
     Int_t parent =  TRACKR.ispusr[mkbmx2-1];
     Int_t kpart  = GENSTK.kpart[numsec-1];
-    if (kpart < -6) return;
+    if (kpart < -6) return; // -7 to -12 = "heavy" fragment
 
     Int_t pdg = fluka->PDGFromId(kpart);
 
@@ -106,6 +106,7 @@ extern "C" {
     if (EVTFLG.ldecay == 1) {
         mech = kPDecay;
         if (debug) cout << endl << "Decay" << endl;
+        FLKSTK.nlattc[FLKSTK.npflka] = TRACKR.lt1trk;
     } else if (EVTFLG.ldltry == 1) {
         mech = kPDeltaRay;
         if( fluka->GetIcode() == kKASHEA ) {
@@ -144,7 +145,7 @@ extern "C" {
     if (debug)
        cout << endl << " !!! stuprf: ntr=" << ntr << " pdg " << pdg << " parent=" << parent
              << " parent_pdg="<< fluka->PDGFromId(TRACKR.jtrack) << " numsec "
-             << numsec << " npprmr " << npprmr << " icode=" << fluka->GetIcode()
+             << numsec << " npprmr " << npprmr << " icode=" << fluka->GetIcode() << endl
              << endl;
 
 //
