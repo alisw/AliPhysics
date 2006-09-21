@@ -45,6 +45,7 @@
 #include "AliTRDtrigParam.h"
 #include "AliTRDmcm.h"
 #include "AliTRDzmaps.h"
+#include "AliTRDCalibra.h"
 #include "Cal/AliTRDCalPIDLQ.h"
 
 ClassImp(AliTRDtrigger)
@@ -587,6 +588,12 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
 
   Int_t nTimeTotal  = fCalib->GetNumberOfTimeBins();
 
+  // Calibration fill 2D
+  AliTRDCalibra *calibra = AliTRDCalibra::Instance();
+  if (!calibra) {
+    AliInfo("Could not get Calibra instance\n");
+  }
+
   fTrkTest->Reset();
 
   fTrkTest->SetDetector(det);
@@ -643,9 +650,15 @@ Bool_t AliTRDtrigger::TestTracklet(Int_t det, Int_t row, Int_t seed, Int_t n)
   }
   */
   // LTU Pt cut
-    
   fTrkTest->MakeTrackletGraph(fGeo,fField);
+
+  // TRD Online calibration
+  if (calibra->Getmcmtracking()) {
+    calibra->UpdateHistogramcm(fTrkTest);
+  }
+
   fTrkTest->MakeClusAmpGraph();
+
   if (TMath::Abs(fTrkTest->GetPt()) < fTrigParam->GetLtuPtCut()) {
     return kFALSE;
   }

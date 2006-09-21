@@ -50,6 +50,7 @@
 #include "AliTRDCommonParam.h"
 #include "AliTRDtracker.h"
 #include "AliTRDReconstructor.h"
+#include "AliTRDCalibra.h"
 
 ClassImp(AliTRDtracker) 
 
@@ -1093,6 +1094,15 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
   Float_t  ratio0    = 0.0;
   AliTRDtracklet tracklet;
 
+  // Calibration fill 2D
+  AliTRDCalibra *calibra = AliTRDCalibra::Instance();
+  if (!calibra) {
+    AliInfo("Could not get Calibra instance\n");
+  }
+  if (calibra->GetMItracking()) {
+    calibra->Resettrack();
+  }
+
   for (Int_t i = 0; i < 1000; i++) {
     clusters[i] = -1;
   }
@@ -1200,6 +1210,10 @@ Int_t AliTRDtracker::FollowBackProlongation(AliTRDtrack &t)
 	      // ????
 	    }
           }  
+
+          if (calibra->GetMItracking()) {
+            calibra->UpdateHistograms(cl,&t);
+          }
 
 	  // Reset material budget if 2 consecutive gold
 	  if (plane > 0) { 

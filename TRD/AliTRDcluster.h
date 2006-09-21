@@ -53,6 +53,7 @@ class AliTRDcluster : public AliCluster {
   virtual Float_t  GetX() const                 { return fX;        }
           Int_t    GetNPads() const             { return fNPads;    }
           Float_t  GetCenter() const            { return fCenter;   }
+          Short_t *GetSignals()                 { return fSignals;  }
           Float_t  GetSumS() const;
 
  protected:

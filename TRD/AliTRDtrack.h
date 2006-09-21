@@ -53,6 +53,7 @@ class AliTRDtrack : public AliKalmanTrack {
            Int_t    GetSector() const;
            Float_t  GetClusterdQdl(Int_t i) const                           { return fdQdl[i];                     }    
            Double_t GetdEdx() const                                         { return fdEdx;                        }
+           Int_t    GetNdedx() const                                        { return fNdedx;                       }
            Double_t GetPIDsignal() const                                    { return GetdEdx();                    }
            Int_t    GetClusterIndex(Int_t i) const                          { return fIndex[i];                    }
            Double_t GetC() const                                            { return AliExternalTrackParam::GetC(GetBz()); }
