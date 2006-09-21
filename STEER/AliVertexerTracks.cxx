@@ -258,8 +258,8 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
     if(skipThis) continue;
     AliESDtrack *et = esdEvent->GetTrack(i);
     esdTrack = new AliESDtrack(*et);
-    if(!esdTrack->GetStatus()&AliESDtrack::kITSin) continue;
-    if(!esdTrack->GetStatus()&AliESDtrack::kITSrefit) continue;
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) continue;
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) continue;
     Int_t nclus=esdTrack->GetNcls(0); // check number of clusters in ITS
     if(nclus<fMinITSClusters) continue;
     trkTree->Fill();
@@ -370,8 +370,8 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertexOld(const AliESD *esdEvent)
   for(Int_t i=0; i<entr; i++) {
     AliESDtrack *et = esdEvent->GetTrack(i);
     esdTrack = new AliESDtrack(*et);
-    if(!esdTrack->GetStatus()&AliESDtrack::kITSin) continue;
-    if(!esdTrack->GetStatus()&AliESDtrack::kITSrefit) continue;
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) continue;
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) continue;
     Int_t nclus=esdTrack->GetNcls(0); // check number of clusters in ITS
     if(nclus<fMinITSClusters) continue;
 
