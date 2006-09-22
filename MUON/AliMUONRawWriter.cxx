@@ -697,7 +697,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
   // global trigger for trigger pattern
   globalTrigger = fMUONData->GlobalTrigger(); 
   gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);
-  Int_t gloTrigPat = gloTrg->GetGlobalPattern();
+  Int_t gloTrigResp = gloTrg->GetGlobalResponse();
 
   // local trigger 
   localTrigger = fMUONData->LocalTrigger();    
@@ -778,8 +778,9 @@ Int_t AliMUONRawWriter::WriteTriggerDDL()
     memcpy(&buffer[index], fDarcHeader->GetHeader(), (kDarcHeaderLength)*4); 
     index += kDarcHeaderLength;
 
+    // no global input for the moment....
     if (iDDL == 0)
-     fDarcHeader->SetGlobalOutput(gloTrigPat);// no global input for the moment....
+     fDarcHeader->SetGlobalOutput(gloTrigResp);
     else 
      fDarcHeader->SetGlobalOutput(0);
 

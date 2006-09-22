@@ -26,10 +26,10 @@ public:
    virtual ~AliMUONDarcHeader();
 
 
-   UInt_t  GetWord()               const {return fWord;}
-   Int_t   GetGlobalInput(Int_t n) const {return fGlobalInput[n];}
-   Int_t   GetGlobalOutput()       const {return (fGlobalOutput & 0xFFFF);}
-   Int_t   GetGlobalConfig()       const {return ((fGlobalOutput >> 16) & 0xFFFF);}
+   UInt_t   GetWord()               const {return fWord;}
+   Int_t    GetGlobalInput(Int_t n) const {return fGlobalInput[n];}
+   UChar_t  GetGlobalOutput()       const {return (fGlobalOutput & 0xFF);}
+   UShort_t GetGlobalConfig()       const {return ((fGlobalOutput >> 16) & 0xFFFF);}
 
    //MBZ:1, phys trig:1, type:3, ,SerialNb:4,Version:8,VME trig:1, 
    //GlobalFlag:1, CTP trig:1, DAQ:1, Reg pattern:8;
