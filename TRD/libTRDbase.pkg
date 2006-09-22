@@ -25,6 +25,7 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalMCMStatus.cxx \
       Cal/AliTRDCalPadStatus.cxx \
       Cal/AliTRDCalSingleChamberStatus.cxx \
+      AliTRDCalibra.cxx \
       AliTRDTriggerL1.cxx \
       AliTRDmcmTracklet.cxx \
       AliTRDmcm.cxx \
