@@ -28,7 +28,10 @@
 
 #include "AliRawReader.h"
 #include "AliRawDataHeader.h"
+
+#ifndef DATE_SYS
 #include "AliLog.h"
+#endif
 
 #include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
@@ -185,8 +188,13 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
       // skipping additionnal word if padding
       if (fDspHeader->GetPaddingWord() == 1) {
 	if (buffer[index++] != fDspHeader->GetDefaultPaddingWord())
+
+#ifndef DATE_SYS
 	  AliWarning(Form("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", 
 			  iBlock, iDsp, iBusPatch));
+#else
+	printf("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", iBlock, iDsp, iBusPatch);
+#endif
       }
 
       index = indexDsp + totalDspSize;
@@ -247,8 +255,14 @@ Bool_t AliMUONPayloadTracker::CheckDataParity()
 
     // Check
     if (parity != fBusStruct->GetParity(idata)) {
+#ifndef DATE_SYS
       AliWarning(Form("Parity error in word %d for manuId %d and channel %d\n", 
 		      idata, fBusStruct->GetManuId(idata), fBusStruct->GetChannelId(idata)));
+#else
+      printf("Parity error in word %d for manuId %d and channel %d\n", 
+	     idata, fBusStruct->GetManuId(idata), fBusStruct->GetChannelId(idata));
+#endif
+
       return kFALSE;
 		     
     }
