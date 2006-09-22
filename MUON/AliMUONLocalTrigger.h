@@ -110,6 +110,8 @@ class AliMUONLocalTrigger : public TObject {
   static Int_t EncodeDigitNumber(Int_t chamber, Int_t cathode, Int_t digit);
   static void  DecodeDigitNumber(Int_t digitnumber, Int_t& chamber, Int_t& cathode, Int_t& digit);
 
+  void SetDigits(const TArrayI& digits) {fDigits = digits;}
+
   virtual void Print(Option_t* opt="") const;
   
 private:

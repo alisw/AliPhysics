@@ -30,6 +30,8 @@ class AliMUONCalibrationData;
 class AliMUONData;
 class AliMUONGlobalTriggerBoard;
 class AliMUONTriggerCrateStore;
+class AliMUONLocalTrigger;
+class AliMUONGlobalTrigger;
 
 class AliMUONTriggerElectronics : public TTask
 {
@@ -80,6 +82,9 @@ class AliMUONTriggerElectronics : public TTask
       AliMUONGlobalTriggerBoard *fGlobalTriggerBoard; ///< Global trigger board
       AliMUONData               *fMUONData;           //!< Data container for MUON subsystem 
       TArrayI                    fDigitNumbers[234];  //!< The digit number that fired a circuit.
+
+      AliMUONLocalTrigger*       fLocalTrigger;       //!< pointer for local trigger container
+      AliMUONGlobalTrigger*      fGlobalTrigger;      //!< pointer for global trigger container
 
    ClassDef(AliMUONTriggerElectronics,2)
 };

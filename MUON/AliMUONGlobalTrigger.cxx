@@ -160,10 +160,11 @@ AliMUONGlobalTrigger::AliMUONGlobalTrigger(Int_t *singlePlus,
 }
 
 //-----------------------------------------------------------
-void AliMUONGlobalTrigger:: SetGlobalPattern(Int_t gloTrigPat)
+void AliMUONGlobalTrigger::SetGlobalPattern(Int_t gloTrigPat)
 {
   /// Set class member from global pattern
   /// coming from rawdata
+  /// [Hpt, Lpt] with [+, -, LS, US]
 
   fSinglePlusLpt = (gloTrigPat     ) & 0x1;
   fSinglePlusHpt = (gloTrigPat >> 1) & 0x1; 
@@ -186,7 +187,53 @@ void AliMUONGlobalTrigger:: SetGlobalPattern(Int_t gloTrigPat)
   fPairLikeApt   = (gloTrigPat >> 14) & 0x1;
 
 }
+//-----------------------------------------------------------
+void AliMUONGlobalTrigger::SetGlobalPattern(UShort_t globalResponse)
+{
+  /// Set class member from global response
+  /// coming from trigger electronics
+  /// should be unformized with rawdata (->oct 06)
+  /// [Hpt, Lpt, Apt] with [+, -, US, LS]
+  fSinglePlusLpt = ((globalResponse & 0xC0)  >>  6) == 2;
+  fSinglePlusHpt = ((globalResponse & 0xC00) >> 10) == 2;
+  fSinglePlusApt = ((globalResponse & 0xC)   >>  2) == 2;
 
+  fSingleMinusLpt = ((globalResponse & 0xC0)  >>  6) == 1;
+  fSingleMinusHpt = ((globalResponse & 0xC00) >> 10) == 1;
+  fSingleMinusApt = ((globalResponse & 0xC)   >>  2) == 1;
+
+  fSingleUndefLpt = ((globalResponse & 0xC0)  >>  6) == 3;
+  fSingleUndefHpt = ((globalResponse & 0xC00) >> 10) == 3;
+  fSingleUndefApt = ((globalResponse & 0xC)   >>  2) == 3;
+
+  fPairUnlikeLpt = (globalResponse & 0x10)  >> 4;
+  fPairUnlikeHpt = (globalResponse & 0x100) >> 8;
+  fPairUnlikeApt = (globalResponse & 0x1);
+  
+  fPairLikeLpt = (globalResponse & 0x20)  >> 5;
+  fPairLikeHpt = (globalResponse & 0x200) >> 9;
+  fPairLikeApt = (globalResponse & 0x2)   >> 1;
+  
+}
+//-----------------------------------------------------------
+void AliMUONGlobalTrigger::SetFromGlobalResponse(UChar_t globalResponse)
+{
+  /// Set class members from global response
+  /// coming from rawdata
+  /// [US:2, LS:2, Single:2] with [Hpt, Lpt]
+  /// remove Apt
+
+  // don't have the information anymore of the sign
+  fSinglePlusLpt = fSingleMinusLpt = globalResponse & 0x1;
+  fSinglePlusHpt = fSingleMinusHpt = (globalResponse >> 1) & 0x1;
+
+  fPairUnlikeLpt = (globalResponse >> 4)  & 0x1;
+  fPairUnlikeHpt = (globalResponse >> 5)  & 0x1;
+  
+  fPairLikeLpt = (globalResponse >> 2)  & 0x1;
+  fPairLikeHpt = (globalResponse >> 3)  & 0x1;
+  
+}
 //-----------------------------------------------------------
 Int_t AliMUONGlobalTrigger::GetGlobalPattern() const
 {
@@ -219,6 +266,36 @@ Int_t AliMUONGlobalTrigger::GetGlobalPattern() const
 
 }
 
+
+//-----------------------------------------------------------
+UChar_t AliMUONGlobalTrigger::GetGlobalResponse() const
+{
+  /// Global trigger response
+  /// from class member values
+  /// [US:2, LS:2, Single:2] with [Hpt, Lpt]
+  /// remove Apt
+
+  UChar_t response = 0;
+  UChar_t respUS  = 0;
+  UChar_t respLS  = 0;
+  UChar_t respS  = 0;
+
+  if (SinglePlusLpt() || SingleMinusLpt())  respS |= 0x1;
+  if (SinglePlusHpt() || SingleMinusHpt())  respS |= 0x2;
+
+  if (PairLikeLpt())    respLS |= 0x1;
+  if (PairLikeHpt())    respLS |= 0x1;
+  respLS <<= 2;
+
+  if (PairUnlikeLpt())  respUS |= 0x1;
+  if (PairUnlikeHpt())  respUS |= 0x2;
+  respUS <<= 4;
+
+  response = respUS | respLS | respS;
+
+  return response;
+
+}
 //----------------------------------------------------------------------
 void AliMUONGlobalTrigger::Print(Option_t* opt) const
 {

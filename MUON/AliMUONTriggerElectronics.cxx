@@ -57,7 +57,10 @@ AliMUONTriggerElectronics::AliMUONTriggerElectronics(AliMUONData *Data, AliMUONC
   fSourceFileName(),
   fCrates(new AliMUONTriggerCrateStore),
   fGlobalTriggerBoard(new AliMUONGlobalTriggerBoard),
-  fMUONData(Data)
+  fMUONData(Data),
+  fLocalTrigger(new AliMUONLocalTrigger()),
+  fGlobalTrigger(new AliMUONGlobalTrigger())
+
 {
 //* CONSTRUCTOR
 //*
@@ -78,6 +81,9 @@ AliMUONTriggerElectronics::~AliMUONTriggerElectronics()
 //*
   delete fGlobalTriggerBoard;
   delete fCrates;
+  delete fLocalTrigger;
+  delete fGlobalTrigger;
+
 }
 
 //___________________________________________
@@ -637,20 +643,19 @@ void AliMUONTriggerElectronics::Digits2Trigger()
         //          L0 TRIGGER
         if (board->Triggered())
         {
-          Int_t localtr[15] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0};
           
           Int_t icirc = board->GetNumber();
           
-          localtr[0] = icirc;
-          localtr[1] = board->GetStripX11();
-          localtr[2] = board->GetDev();
-          localtr[3] = board->GetStripY11();
+          fLocalTrigger->SetLoCircuit(icirc);
+          fLocalTrigger->SetLoStripX(board->GetStripX11());
+          fLocalTrigger->SetLoDev(board->GetDev());
+          fLocalTrigger->SetLoStripY(board->GetStripY11());
           
           //             SAVE LUT OUTPUT 
           UShort_t response = board->GetResponse();
-          localtr[4] = (response & 12) >> 2;
-          localtr[5] = (response & 48) >> 4;
-          localtr[6] = (response &  3);
+          fLocalTrigger->SetLoLpt((response & 12) >> 2);
+          fLocalTrigger->SetLoHpt((response & 48) >> 4);
+          fLocalTrigger->SetLoApt(response &  3);
 
 	  // calculates regional inputs from local for the moment
 	  UInt_t hPt = (response >> 4) & 0x3;
@@ -665,21 +670,20 @@ void AliMUONTriggerElectronics::Digits2Trigger()
           rrr.Set(6,&response);
           
           //             SAVE BIT PATTERN
-          localtr[7]  = board->GetXY(0,0);
-          localtr[8]  = board->GetXY(0,1);
-          localtr[9]  = board->GetXY(0,2);
-          localtr[10] = board->GetXY(0,3);
+          fLocalTrigger->SetX1Pattern(board->GetXY(0,0));
+          fLocalTrigger->SetX2Pattern(board->GetXY(0,1));
+          fLocalTrigger->SetX3Pattern(board->GetXY(0,2));
+          fLocalTrigger->SetX4Pattern(board->GetXY(0,3));
           
-          localtr[11] = board->GetXY(1,0);
-          localtr[12] = board->GetXY(1,1);
-          localtr[13] = board->GetXY(1,2);
-          localtr[14] = board->GetXY(1,3);
+          fLocalTrigger->SetY1Pattern(board->GetXY(1,0));
+          fLocalTrigger->SetY2Pattern(board->GetXY(1,1));
+          fLocalTrigger->SetY3Pattern(board->GetXY(1,2));
+          fLocalTrigger->SetY4Pattern(board->GetXY(1,3));
           
-          //             ADD A NEW LOCAL TRIGGER
-          AliMUONLocalTrigger *pLocTrig = new AliMUONLocalTrigger(localtr, fDigitNumbers[icirc]);
-          
-          fMUONData->AddLocalTrigger(*pLocTrig);  
-	  delete pLocTrig;
+	  fLocalTrigger->SetDigits(fDigitNumbers[icirc]);
+
+          //             ADD A NEW LOCAL TRIGGER          
+          fMUONData->AddLocalTrigger(*fLocalTrigger);  
         }
       }
     }
@@ -693,41 +697,13 @@ void AliMUONTriggerElectronics::Digits2Trigger()
   }
   delete pRegTrig;
   
-  // GLOBAL TRIGGER INFORMATION: [0] -> LOW PT 
-  //                             [1] -> HIGH PT
-  //                             [2] -> ALL PT 
-  Int_t globalSinglePlus[3], globalSingleMinus[3], globalSingleUndef[3]; 
-  Int_t globalPairUnlike[3], globalPairLike[3];   
-  
+  // GLOBAL TRIGGER INFORMATION
   UShort_t global = fGlobalTriggerBoard->GetResponse();
+  fGlobalTrigger->SetGlobalPattern(global);
   
-  globalPairUnlike[0] = (global &  16) >> 4;
-  globalPairUnlike[1] = (global & 256) >> 8;
-  globalPairUnlike[2] = (global &   1);
-  
-  globalPairLike[0] = (global &  32) >> 5;
-  globalPairLike[1] = (global & 512) >> 9;
-  globalPairLike[2] = (global &   2) >> 1;
-  
-  globalSinglePlus[0] = ((global &  192) >>  6) == 2;
-  globalSinglePlus[1] = ((global & 3072) >> 10) == 2;
-  globalSinglePlus[2] = ((global &   12) >>  2) == 2;
-  
-  globalSingleMinus[0] = ((global &  192) >>  6) == 1;
-  globalSingleMinus[1] = ((global & 3072) >> 10) == 1;
-  globalSingleMinus[2] = ((global &   12) >>  2) == 1;
-  
-  globalSingleUndef[0] = ((global &  192) >>  6) == 3;
-  globalSingleUndef[1] = ((global & 3072) >> 10) == 3;
-  globalSingleUndef[2] = ((global &   12) >>  2) == 3;
-  
-  AliMUONGlobalTrigger *pGloTrig = new AliMUONGlobalTrigger(globalSinglePlus, globalSingleMinus,
-                                                            globalSingleUndef, globalPairUnlike, 
-                                                            globalPairLike);
   
   // ADD A LOCAL TRIGGER IN THE LIST 
-  fMUONData->AddGlobalTrigger(*pGloTrig);
-  delete pGloTrig;
+  fMUONData->AddGlobalTrigger(*fGlobalTrigger);
 
   // NOW RESET ELECTRONICS
   Reset();
