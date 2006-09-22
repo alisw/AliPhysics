@@ -656,7 +656,7 @@ class AliTRDCalibra : public TObject {
   // Clear
   void ClearHistos();
   void ClearTree();
-  void ClearFile();
+  void ClearFile(){}
 
 
   // Some basic geometry function
