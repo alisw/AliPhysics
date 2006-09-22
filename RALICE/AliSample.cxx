@@ -510,7 +510,13 @@ void AliSample::Data()
  cout << " " << fNames[i] << " : N = " << fN;
  cout << " Sum = " << fSum[i] << " Mean = " << fMean[i];
  cout << " Var = " << fVar[i] << " Sigma = " << fSigma[i];
- if (fStore) cout << " Median = " << GetMedian(i+1);
+ if (fStore)
+ {
+  cout << endl;
+  cout << "     Minimum = " << GetMinimum(i+1);
+  cout << " Maximum = " << GetMaximum(i+1);
+  cout << " Median = " << GetMedian(i+1);
+ }
  cout << endl;
  }
 }
@@ -527,7 +533,13 @@ void AliSample::Data(Int_t i)
   cout << " " << fNames[i-1] << " : N = " << fN;
   cout << " Sum = " << fSum[i-1] << " Mean = " << fMean[i-1];
   cout << " Var = " << fVar[i-1] << " Sigma = " << fSigma[i-1];
-  if (fStore) cout << " Median = " << GetMedian(i);
+  if (fStore)
+  {
+   cout << endl;
+   cout << "     Minimum = " << GetMinimum(i);
+   cout << " Maximum = " << GetMaximum(i);
+   cout << " Median = " << GetMedian(i);
+  }
   cout << endl;
  }
 }
@@ -561,8 +573,8 @@ void AliSample::SetStoreMode(Int_t mode)
 // For normal statistics evaluation (e.g. mean, sigma, covariance etc...)
 // storage of entered data is not needed. This is the default mode
 // of operation and is the most efficient w.r.t. cpu time and memory.
-// However, when calculation of a median is required, then the data
-// storage mode has be activated.
+// However, when calculation of a median, minimum or maximum is required,
+// then the data storage mode has be activated.
 //
 // Note : Activation of storage mode can only be performed before the
 //        first data item is entered. 
@@ -585,11 +597,12 @@ Int_t AliSample::GetStoreMode() const
 ///////////////////////////////////////////////////////////////////////////
 Float_t AliSample::GetMedian(Int_t i)
 {
-// Provide the median of a certain variable
+// Provide the median of a certain variable.
+// For this functionality the storage mode has to be activated.
 
  if (fDim < i)
  {
-  cout << " *AliSample::mean* Error : Dimension less than " << i << endl;
+  cout << " *AliSample::GetMedian* Error : Dimension less than " << i << endl;
   return 0;
  }
 
@@ -597,6 +610,18 @@ Float_t AliSample::GetMedian(Int_t i)
  {
   cout << " *AliSample::GetMedian* Error : Storage of data entries was not activated." << endl;
   return 0;
+ }
+
+ if (fN<=0) return 0;
+
+ Float_t median=0;
+
+ if (fN==1)
+ {
+  if (i==1) median=fX->At(0);
+  if (i==2) median=fY->At(0);
+  if (i==3) median=fZ->At(0);
+  return median;
  }
 
  // Prepare temp. array to hold the ordered values
@@ -646,7 +671,7 @@ Float_t AliSample::GetMedian(Int_t i)
   }
  }
 
- Float_t median=0;
+ median=0;
  Int_t index=fN/2;
  if (fN%2) // Odd number of entries
  {
@@ -657,5 +682,75 @@ Float_t AliSample::GetMedian(Int_t i)
   median=(fArr->At(index-1)+fArr->At(index))/2.;
  }
  return median;
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliSample::GetMinimum(Int_t i) const
+{
+// Provide the minimum value of a certain variable.
+// For this functionality the storage mode has to be activated.
+
+ if (fDim < i)
+ {
+  cout << " *AliSample::GetMinimum* Error : Dimension less than " << i << endl;
+  return 0;
+ }
+
+ if (!fStore)
+ {
+  cout << " *AliSample::GetMinimum* Error : Storage of data entries was not activated." << endl;
+  return 0;
+ }
+
+ if (fN<=0) return 0;
+
+ Float_t min=0;
+
+ if (i==1) min=fX->At(0);
+ if (i==2) min=fY->At(0);
+ if (i==3) min=fZ->At(0);
+
+ for (Int_t k=1; k<fN; k++)
+ {
+  if (i==1 && fX->At(k)<min) min=fX->At(k);
+  if (i==2 && fY->At(k)<min) min=fY->At(k);
+  if (i==3 && fZ->At(k)<min) min=fZ->At(k);
+ }
+
+ return min;
+}
+///////////////////////////////////////////////////////////////////////////
+Float_t AliSample::GetMaximum(Int_t i) const
+{
+// Provide the maxmum value of a certain variable.
+// For this functionality the storage mode has to be activated.
+
+ if (fDim < i)
+ {
+  cout << " *AliSample::GetMaximum* Error : Dimension less than " << i << endl;
+  return 0;
+ }
+
+ if (!fStore)
+ {
+  cout << " *AliSample::GetMaximum* Error : Storage of data entries was not activated." << endl;
+  return 0;
+ }
+
+ if (fN<=0) return 0;
+
+ Float_t max=0;
+
+ if (i==1) max=fX->At(0);
+ if (i==2) max=fY->At(0);
+ if (i==3) max=fZ->At(0);
+
+ for (Int_t k=1; k<fN; k++)
+ {
+  if (i==1 && fX->At(k)>max) max=fX->At(k);
+  if (i==2 && fY->At(k)>max) max=fY->At(k);
+  if (i==3 && fZ->At(k)>max) max=fZ->At(k);
+ }
+
+ return max;
 }
 ///////////////////////////////////////////////////////////////////////////

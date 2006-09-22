@@ -32,6 +32,7 @@ class IceDwalk : public TTask
   void SetRjdmax(Float_t d);     // Set maximum r0 distance for jet merging
   void SetMaxModA(Int_t nmax);   // Set max. number of good fired Amanda modules for events to be processed
   void SetMinModA(Int_t nmin);   // Set min. number of good fired Amanda modules for events to be processed
+  void SetMaxHitsA(Int_t nmax);  // Set max. number of good hits per Amanda module to be processed
   void SetTrackName(TString s);  // Set (alternative) name for the produced first guess tracks
   void SetCharge(Float_t charge);// Set user defined charge for the produced first guess tracks
 
@@ -44,11 +45,12 @@ class IceDwalk : public TTask
   Float_t fJangmax;  // Angular separation (in deg) within which jets are merged into 1 single track
   Float_t fRjangmax; // Relative r0 angular separation (in deg) for jet clustering
   Float_t fRjdmax;   // Maximum r0 distance (in m) for jet merging
-  Int_t fMaxmodA;    // The max. number of good fired Amanda modules for events to be processed
-  Int_t fMinmodA;    // The min. number of good fired Amanda modules for events to be processed
+  Int_t fMaxmodA;    // The max. number of good fired Amanda modules for events to get processed
+  Int_t fMinmodA;    // The min. number of good fired Amanda modules for events to get processed
+  Int_t fMaxhitsA;   // The maximum number of good hits per Amanda module to be processed
   TString fTrackname;// The name identifier for the produced first guess tracks
   Float_t fCharge;   // User defined charge of the produced first guess tracks
 
- ClassDef(IceDwalk,5) // TTask derived class to perform direct walk reconstruction
+ ClassDef(IceDwalk,6) // TTask derived class to perform direct walk reconstruction
 };
 #endif

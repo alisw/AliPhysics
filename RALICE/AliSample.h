@@ -31,6 +31,8 @@ class AliSample
   Float_t GetCov(Int_t i, Int_t j) const;       // Covariance for i-th and j-th variable
   Float_t GetCor(Int_t i, Int_t j) const;       // Correlation for i-th and j-th variable
   Float_t GetMedian(Int_t i);                   // Provide median for i-th variable
+  Float_t GetMinimum(Int_t i) const;            // Provide the minimum value for i-th variable
+  Float_t GetMaximum(Int_t i) const;            // Provide the maximum value for i-th variable
   void Data();                                  // Stat. info for the complete sample
   void Data(Int_t i);                           // Stat. info for the i-th variable
   void Data(Int_t i, Int_t j) const;            // Stat. info for i-th and j-th variable

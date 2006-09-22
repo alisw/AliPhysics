@@ -32,7 +32,12 @@
 // This allows selection of events for processing with a certain maximum and/or
 // minimum number of good Amanda OMs firing.
 // By default the minimum and maximum are set to 0 and 999, respectively,
-// in the constructor, which implies no multiplicity selection. 
+// in the constructor, which implies no multiplicity selection.
+// The maximum number of hits per Amanda OM to be used for the reconstruction
+// can be specified via the memberfunction SetMaxHitsA().
+// By default all the hits of an OM are used, but this may lead to large
+// processing time in case many noise and/or afterpulse signals are not
+// recognised by the hit cleaning procedure.
 // The various reconstruction steps are summarised as follows :
 //
 // 1) Construction of track elements (TE's).
@@ -180,6 +185,7 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
  fRjdmax=fDmin;
  fMaxmodA=999;
  fMinmodA=0;
+ fMaxhitsA=0;
  fTrackname="IceDwalk";
  fCharge=0;
 }
@@ -331,6 +337,22 @@ void IceDwalk::SetMinModA(Int_t nmin)
  fMinmodA=nmin;
 }
 ///////////////////////////////////////////////////////////////////////////
+void IceDwalk::SetMaxHitsA(Int_t nmax)
+{
+// Set the maximum number of hits per Amanda module to be processed.
+//
+// Special values :
+// nmax = 0 : No maximum limit set; all available hits will be processed
+//      < 0 : No hits will be processed
+//
+// In case the user selects a maximum number of hits per module, all the
+// hits of each module will be ordered w.r.t. increasing hit time (LE).
+// This allows selection of processing e.g. only the first hits etc...
+// By default the maximum number of hits per Amanda modules is set to 0 in the ctor,
+// which implies just processing all available hits without any maximum limit.
+ fMaxhitsA=nmax;
+}
+///////////////////////////////////////////////////////////////////////////
 void IceDwalk::SetTrackName(TString s)
 {
 // Set (alternative) name identifier for the produced first guess tracks.
@@ -362,6 +384,37 @@ void IceDwalk::Exec(Option_t* opt)
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
 
+ // Enter the reco parameters as a device in the event
+ AliSignal params;
+ params.SetNameTitle("IceDwalk","IceDwalk reco parameters");
+ params.SetSlotName("Dmin",1);
+ params.SetSlotName("Dtmarg",2);
+ params.SetSlotName("Tangmax",3);
+ params.SetSlotName("Rtangmax",4);
+ params.SetSlotName("Rtdmax",5);
+ params.SetSlotName("Jangmax",6);
+ params.SetSlotName("Rjangmax",7);
+ params.SetSlotName("Rjdmax",8);
+ params.SetSlotName("MaxmodA",9);
+ params.SetSlotName("MinmodA",10);
+ params.SetSlotName("MaxhitsA",11);
+
+ params.SetSignal(fDmin,1);
+ params.SetSignal(fDtmarg,2);
+ params.SetSignal(fTangmax,3);
+ params.SetSignal(fRtangmax,4);
+ params.SetSignal(fRtdmax,5);
+ params.SetSignal(fJangmax,6);
+ params.SetSignal(fRjangmax,7);
+ params.SetSignal(fRjdmax,8);
+ params.SetSignal(fMaxmodA,9);
+ params.SetSignal(fMinmodA,10);
+ params.SetSignal(fMaxhitsA,11);
+
+ evt->AddDevice(params);
+
+ if (fMaxhitsA<0) return;
+
  // Fetch all fired Amanda OMs for this event
  TObjArray* aoms=evt->GetDevices("IceAOM");
  Int_t naoms=aoms->GetEntries();
@@ -378,20 +431,13 @@ void IceDwalk::Exec(Option_t* opt)
  } 
  if (ngood<fMinmodA || ngood>fMaxmodA) return;
 
- const Float_t c=0.3;                // Light speed in vacuum in meters per ns
- const Float_t nice=1.33;            // Refractive index of ice
+ const Float_t c=0.299792;           // Light speed in vacuum in meters per ns
+ const Float_t nice=1.35634;         // Refractive index of ice
  const Float_t thetac=acos(1./nice); // Cherenkov angle (in radians)
 
- // Storage of track elements with various time difference margins.
- // temap(i,j) holds the i-th track element (TE) with a time difference margin
- // of less than j*3 nanoseconds. Currently we use a maximum margin of 30 ns.
+ // Storage of track elements.
  TObjArray tes;
  tes.SetOwner();
- AliObjMatrix temap;
-
- // Counter of TEs for each 3 ns margin slot
- TArrayI ntes(fDtmarg/3);
- if (ntes.GetSize()==0) ntes.Set(1);
 
  AliPosition r1;
  AliPosition r2;
@@ -405,14 +451,14 @@ void IceDwalk::Exec(Option_t* opt)
  AliSignal* sx2=0;
  Float_t dist=0;
  Float_t t1,t2,dt,t0;
- Float_t dtmax,dttest;
+ Float_t dtmax;
  TObjArray hits;
+ TObjArray* ordered;
 
  // Check the hits of Amanda OM pairs for posible track elements.
  // Also all the good hits are stored in the meantime (to save CPU time)
  // for hit association with the various track elements lateron.
  AliTrack* te=0;
- Int_t ite=0;
  for (Int_t i1=0; i1<naoms; i1++) // First OM of the pair
  {
   IceGOM* omx1=(IceGOM*)aoms->At(i1);
@@ -421,14 +467,27 @@ void IceDwalk::Exec(Option_t* opt)
   r1=omx1->GetPosition();
   // Select all the good hits of this first OM
   hits1.Clear();
+  // Determine the max. number of hits to be processed for this OM
+  ordered=0;
+  if (fMaxhitsA>0 && omx1->GetNhits()>fMaxhitsA) ordered=omx1->SortHits("LE",1,0,7);
+  nh1=0;
   for (Int_t j1=1; j1<=omx1->GetNhits(); j1++)
   {
-   sx1=omx1->GetHit(j1);
+   if (ordered)
+   {
+    if (nh1>=fMaxhitsA) break;
+    sx1=(AliSignal*)ordered->At(j1-1);
+   }
+   else
+   {
+    sx1=omx1->GetHit(j1);
+   }
    if (!sx1) continue;
    if (sx1->GetDeadValue("ADC") || sx1->GetDeadValue("LE") || sx1->GetDeadValue("TOT")) continue;
    hits1.Add(sx1);
    // Also store all good hits in the total hit array
    hits.Add(sx1);
+   nh1++;
   }
 
   // No further pair to be formed with the last OM in the list 
@@ -450,12 +509,25 @@ void IceDwalk::Exec(Option_t* opt)
 
    // Select all the good hits of this second OM
    hits2.Clear();
+   // Determine the max. number of hits to be processed for this OM
+   ordered=0;
+   if (fMaxhitsA>0 && omx2->GetNhits()>fMaxhitsA) ordered=omx2->SortHits("LE",1,0,7);
+   nh2=0;
    for (Int_t j2=1; j2<=omx2->GetNhits(); j2++)
    {
-    sx2=omx2->GetHit(j2);
+    if (ordered)
+    {
+     if (nh2>=fMaxhitsA) break;
+     sx2=(AliSignal*)ordered->At(j2-1);
+    }
+    else
+    {
+     sx2=omx2->GetHit(j2);
+    }
     if (!sx2) continue;
     if (sx2->GetDeadValue("ADC") || sx2->GetDeadValue("LE") || sx2->GetDeadValue("TOT")) continue;
     hits2.Add(sx2);
+    nh2++;
    }
  
    nh2=hits2.GetEntries();
@@ -485,21 +557,12 @@ void IceDwalk::Exec(Option_t* opt)
 
      te=new AliTrack();
      tes.Add(te);
-     ite++;
      if (dt<0) r12*=-1.;
      r0.SetTimestamp((AliTimestamp&)*evt);
      AliTimestamp* tsx=r0.GetTimestamp();
      tsx->Add(0,0,(int)t0);
      te->SetReferencePoint(r0);
      te->Set3Momentum(r12);
-     dttest=dtmax;
-     for (Int_t jt=ntes.GetSize(); jt>0; jt--)
-     {
-      if (fabs(dt)>=dttest) break;
-      temap.EnterObject(ite,jt,te);
-      ntes.AddAt(ntes.At(jt-1)+1,jt-1);
-      dttest-=3.;
-     }
     }
    }
   } // end of loop over the second OM of the pair
@@ -537,8 +600,7 @@ void IceDwalk::Exec(Option_t* opt)
    IceGOM* omx=(IceGOM*)sx1->GetDevice();
    if (!omx) continue;
    r1=omx->GetPosition();
-   d=tr0->GetDistance(r1);
-   d*=sin(thetac);
+   d=te->GetDistance(r1);
    r12=r1-(*tr0);
    dist=p.Dot(r12)+d*tan(thetac);
    tgeo=t0+dist/c;
@@ -574,7 +636,6 @@ void IceDwalk::Exec(Option_t* opt)
   if (sx1) qtc=sx1->GetSignal("QTC");
   if (qtc<0.7*qmax)
   {
-   temap.RemoveObjects(te);
    tes.RemoveAt(jtc);
    delete te;
   }
@@ -585,7 +646,7 @@ void IceDwalk::Exec(Option_t* opt)
  if (!nte) return;
 
  // Order the track candidates w.r.t. decreasing number of associated hits
- TObjArray* ordered=0;
+ ordered=0;
  ordered=evt->SortTracks(-1,&tes);
  TObjArray tcs(*ordered);
 
@@ -604,7 +665,6 @@ void IceDwalk::Exec(Option_t* opt)
  AliSample pos;
  AliSample time;
  Float_t vec[3],err[3];
- Float_t edist=0;
  for (Int_t jtc1=0; jtc1<nte; jtc1++)
  {
   te=(AliTrack*)tcs.At(jtc1);
@@ -634,14 +694,13 @@ void IceDwalk::Exec(Option_t* opt)
     AliTimestamp* ts2=x2->GetTimestamp();
     if (!ts2) continue;
     dist=x1->GetDistance(x2);
-    edist=x1->GetResultError();
     dt=ts1->GetDifference(ts2,"ns");
     if (dist>0)
     {
      r12=(*x2)-(*x1);
      if (dt<0) r12*=-1.;
      ang=te->GetOpeningAngle(r12,"deg");
-     if (ang<fRtangmax || dist<(fRtdmax+edist))
+     if (ang<fRtangmax || dist<(fRtdmax))
      {
       x2->GetPosition(vec,"car");
       pos.Enter(vec[0],vec[1],vec[2]);
@@ -698,6 +757,7 @@ void IceDwalk::Exec(Option_t* opt)
  // Merge jets within a certain opening to provide the final track(s).
  AliJet* jx1=0;
  AliJet* jx2=0;
+ Float_t edist=0;
  if (fJangmax>0)
  {
   for (Int_t jet1=0; jet1<njets; jet1++)

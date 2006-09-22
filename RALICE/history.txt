@@ -705,3 +705,5 @@
                 The modified AliAttrib and AliSignal don't rely on a GetSize()
                 anymore, but determine the number of stored values from the
                 actual array contents. 
+19-sep-2006 NvE Accuracy problem solved in Ali3Vector::GetOpeningAngle.
+20-sep-2006 NvE AliSample::GetMedian corrected for empty or single value arrays.

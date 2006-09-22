@@ -75,4 +75,8 @@
                 Also some calibration constants dropped from OM data words in IceCalibrate,
                 since these values are also stored as parameters in the corresponding
                 (de)calibration functions.                 
+22-sep-2006 NvE IceDwalk extended for specification of maximum number of hits per OM,
+                to allow comparison with Sieglinde (which only uses the first OM hit).
+                Also IceDwalk now introduces a device into the event named "IceDwalk"
+                which contains the values of all the used reconstruction parameters.
                  

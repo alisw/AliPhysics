@@ -1045,6 +1045,8 @@ Double_t Ali3Vector::GetOpeningAngle(Ali3Vector& q,TString u)
 
  Double_t x=v1.Dot(v2);
  Double_t dx=fDresult;
+ if (x>1.) x=1;
+ if (x<-1.) x=-1;
  ang=acos(x);
  fDresult=0;
  if (fabs(x)<1.-dx) fDresult=dx/sqrt(1.-x*x);
