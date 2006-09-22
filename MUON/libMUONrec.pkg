@@ -20,6 +20,8 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONDetElement.cxx \
        AliMUONEventRecoCombi.cxx \
        AliMUONDigitCalibrator.cxx \
+       AliMUONRawStreamTrigger.cxx \
+       AliMUONRawStreamTracker.cxx  \
        AliMUONDigitMaker.cxx \
        AliMillepede.cxx \
        AliMUONAlignment.cxx \

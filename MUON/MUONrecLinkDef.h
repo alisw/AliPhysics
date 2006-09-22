@@ -31,6 +31,8 @@
 
 // raw data
 #pragma link C++ class AliMUONDigitMaker+;
+#pragma link C++ class AliMUONRawStreamTracker+;
+#pragma link C++ class AliMUONRawStreamTrigger+;
 
 // display
 #pragma link C++ class AliMUONDisplay+; 

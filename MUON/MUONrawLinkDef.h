@@ -9,13 +9,11 @@
 #pragma link C++ class AliMUONRegHeader+;
 #pragma link C++ class AliMUONLocalStruct+;
 #pragma link C++ class AliMUONPayloadTrigger+;
-#pragma link C++ class AliMUONRawStreamTrigger+;
 #pragma link C++ class AliMUONDDLTracker+;
 #pragma link C++ class AliMUONDspHeader+;
 #pragma link C++ class AliMUONBlockHeader+;
 #pragma link C++ class AliMUONBusStruct+;
 #pragma link C++ class AliMUONPayloadTracker+;
-#pragma link C++ class AliMUONRawStreamTracker+;
 
 #endif
 
