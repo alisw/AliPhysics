@@ -32,10 +32,9 @@ ClassImp(AliPHOSHit)
   
   //____________________________________________________________________________
 AliPHOSHit::AliPHOSHit(const AliPHOSHit & hit) :
-  AliHit(hit),fId(0),fELOS(0),fTime(0)
+  AliHit(hit),fId(hit.fId),fELOS(hit.fELOS),fTime(hit.fTime)
 {
   // copy ctor
-  hit.Copy(*this);
 } 
 
 //____________________________________________________________________________
