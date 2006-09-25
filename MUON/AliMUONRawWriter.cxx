@@ -72,6 +72,7 @@
 #include "AliMpSegFactory.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpExMap.h"
 
 #include "TClonesArray.h"
 #include "TObjArray.h"
@@ -89,7 +90,6 @@ Int_t AliMUONRawWriter::fgManuPerBusSwp2NB[12] = {1, 27, 53, 79, 105, 131, 157, 
 AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
   : TObject(),
     fMUONData(data),
-    fBusArray(new TClonesArray("AliMUONBusStruct",1000)),
     fBlockHeader(new AliMUONBlockHeader()),
     fDspHeader(new AliMUONDspHeader()),
     fBusStruct(new AliMUONBusStruct()),
@@ -104,7 +104,6 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
     fTriggerTimer(),
     fMappingTimer(),
     fSegFactory(new AliMpSegFactory())
-
 {
   //
   // Standard Constructor
@@ -112,9 +111,6 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
   AliDebug(1,"Standard ctor");
   fFile[0] = fFile[1] = 0x0;  
   fFile[2] = fFile[3] = 0x0;  
-
-  // initialize array
-  fBusArray->SetOwner(kTRUE);
 
   // setting data key to default value (only for writting)
   fBlockHeader->SetDataKey(fBlockHeader->GetDefaultDataKey());
@@ -138,7 +134,6 @@ AliMUONRawWriter::AliMUONRawWriter(AliMUONData* data)
 AliMUONRawWriter::AliMUONRawWriter()
   : TObject(),
     fMUONData(0),
-    fBusArray(0),
     fBlockHeader(0),
     fDspHeader(0),
     fBusStruct(0),
@@ -173,8 +168,6 @@ AliMUONRawWriter::~AliMUONRawWriter(void)
   // Destructor
   //
   AliDebug(1,"dtor");
-  
-  delete fBusArray;
   
   delete fBlockHeader;
   delete fDspHeader;
@@ -286,16 +279,12 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   // resets
   TClonesArray* muonDigits = 0;
 
-  fBusArray->Delete();
 
-
+  // TExMap
+  AliMpExMap* busMap = new AliMpExMap(true);
+  busMap->SetSize(900);
+  
   //
-  TArrayI nbInBus;
-
-  nbInBus.Set(5000);
-
-  nbInBus.Reset();
-
   // DDL header
   Int_t headerSize = sizeof(fHeader)/4;
 
@@ -327,7 +316,6 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   Int_t indexBlk;
 
   // digits
-  Int_t nEntries = 0;
   Int_t* buffer = 0;
   Int_t padX;
   Int_t padY;
@@ -336,6 +324,9 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   Int_t nDigits;
 
   const AliMUONDigit* digit;
+
+  AliMUONBusStruct* busStructPtr = 0x0;
+
 
   for (Int_t iCh = iSt*2; iCh <= iSt*2 + 1; iCh++) {
 
@@ -395,50 +386,19 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 	parity ^=  ((word >> i) & 0x1);
       AliBitPacking::PackWord((UInt_t)parity,word,31,31);
 
-      // set sub Event
-      fBusStruct->SetLength(0);
-      fBusStruct->AddData(word);
-      fBusStruct->SetBusPatchId(busPatchId);
-       
-      // storing the number of identical buspatches
-      nbInBus[busPatchId]++;
-      AddData(*fBusStruct);
-   
+      // filling bus Map
+      if ( (busStructPtr = (AliMUONBusStruct*)busMap->GetValue(busPatchId)) ) {
+	busStructPtr->AddData(word);
+	busStructPtr->SetBusPatchId(busPatchId);
+     } else {
+	fBusStruct->SetLength(0);
+	fBusStruct->AddData(word);
+	fBusStruct->SetBusPatchId(busPatchId);
+	busMap->Add(busPatchId, (new AliMUONBusStruct(*fBusStruct)));
+      }
     }
   } // loop over chamber in station
 
-  // sorting by buspatch
-  fBusArray->Sort();
-
-  // gather datas from same bus patch
-  nEntries = fBusArray->GetEntriesFast();
-
-  for (Int_t i = 0; i < nEntries; i++) {
-    AliMUONBusStruct* temp = (AliMUONBusStruct*)fBusArray->At(i);
-    busPatchId = temp->GetBusPatchId();
-
-    // add bus patch header, length and total length managed by subevent class
-    for (Int_t j = 0; j < nbInBus[busPatchId]-1; j++) {
-      AliMUONBusStruct* temp1 =  (AliMUONBusStruct*)fBusArray->At(++i);
-      temp->AddData(temp1->GetData(0));
-      fBusArray->RemoveAt(i) ;
-    }
-  }
-  fBusArray->Compress();
-
-  if (AliLog::GetGlobalDebugLevel() == 3) {
-    nEntries = fBusArray->GetEntriesFast();
-    for (Int_t i = 0; i < nEntries; i++) {
-      AliMUONBusStruct* temp =  (AliMUONBusStruct*)fBusArray->At(i);
-      printf("busPatchid back %d\n",temp->GetBusPatchId());
-      for (Int_t j = 0; j < temp->GetLength(); j++) {
-	printf("manuId back %d, ",temp->GetManuId(j));
-	printf("channelId back %d, ",temp->GetChannelId(j));
-	printf("charge back %d\n",temp->GetCharge(j));
-      }
-    }
-    printf("\n");
-  }
   // end of TreeD reading and storing in TClonesArray
   
   // getting info for the number of buspatches
@@ -448,8 +408,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
   Int_t iDspMax; //number max of DSP per block
   Int_t iFile = 0;
 
-  Int_t rEntry = -1;
-  AliMUONBusStruct* busStructPtr = 0x0;
+  busStructPtr = 0x0;
 
   // open DDL files, 4 per station
   for (Int_t iDDL = iSt*4; iDDL < 4 + iSt*4; iDDL++) {
@@ -503,21 +462,12 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 	  AliDebug(3,Form("iSt %d iDDL %d iBlock %d iDsp %d busPatchId %d", iSt, iDDL, iBlock, 
 			  iDsp, iBusPatch));
 
-	  nEntries = fBusArray->GetEntriesFast();
-	  busPatchId = -1;
-
-	  // checking buspatch structure not empty
-	  for (Int_t iEntry = 0; iEntry < nEntries; iEntry++) { // method "bourrique"...
-	    busStructPtr = (AliMUONBusStruct*)fBusArray->At(iEntry);
+	  // check buspatch occurence in digit
+	  if ( (busStructPtr = (AliMUONBusStruct*)busMap->GetValue(iBusPatch)) ) 
 	    busPatchId = busStructPtr->GetBusPatchId();
-	    if (busPatchId == iBusPatch) {
-	      rEntry = iEntry;
-	      break;
-	    }
+	  else 
 	    busPatchId = -1;
-	    AliDebug(3,Form("busPatchId %d", busStructPtr->GetBusPatchId()));
-	  } 
-	 
+
 	  // check if buspatchid has digit
 	  if (busPatchId != -1) {
 	    // add bus patch structure header
@@ -537,9 +487,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
 	      }
 	    }
 	    
-	    fBusArray->RemoveAt(rEntry);
-	    fBusArray->Compress();
-	  } else {
+	  } else { //buspatch == -1
 	    // writting anyhow buspatch structure (empty ones)
 	    buffer[index++] = busStructPtr->GetDefaultDataKey(); // fill it also for empty data size
 	    buffer[index++] = busStructPtr->GetHeaderLength(); // header length
@@ -583,6 +531,7 @@ Int_t AliMUONRawWriter::WriteTrackerDDL(Int_t iSt)
     delete[] buffer;
   }
 
+  delete busMap;
   fTrackerTimer.Stop();
   return kTRUE;
 }

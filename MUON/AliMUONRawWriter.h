@@ -12,7 +12,6 @@
 /// Writring Raw data class for trigger and tracker chambers
 
 #include <TObject.h>
-#include <TClonesArray.h>
 #include "AliMUONBusStruct.h"
 #include "AliRawDataHeader.h"
 #include "TStopwatch.h"
@@ -28,6 +27,7 @@ class AliMUONGlobalTrigger;
 class AliMpBusPatch;
 class AliMUONTriggerCrateStore;
 class AliMpSegFactory;
+class AliMpExMap;
 
 class AliMUONRawWriter : public TObject 
 {
@@ -49,12 +49,6 @@ protected:
   
 private:
 
-  void AddData(const AliMUONBusStruct& event)
-  {
-    TClonesArray &temp = *fBusArray;
-    new(temp[temp.GetEntriesFast()]) AliMUONBusStruct(event); 
-  }
-
   Int_t GetBusPatch(const AliMUONDigit& digit);
 
   Int_t GetGlobalTriggerPattern(const AliMUONGlobalTrigger* gloTrg) const;
@@ -64,8 +58,6 @@ private:
   AliMUONData*  fMUONData;           //!< Data container for MUON subsystem 
  
   FILE*         fFile[4];            //!< DDL binary file pointer one per 1/2 chamber, 4 for one station
-
-  TClonesArray* fBusArray;           //!< array to sub event tracker
    
   AliMUONBlockHeader* fBlockHeader;  //!< DDL block header class pointers
   AliMUONDspHeader*   fDspHeader;    //!< DDL Dsp header class pointers
