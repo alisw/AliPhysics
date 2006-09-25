@@ -85,7 +85,7 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title, AliE
   fgAlignData = alignData;
   Init();
   CreateListOfTrd1Modules();
-};
+}
 //______________________________________________________________________
 AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry& geom):AliGeometry(geom) {
   //copy ctor
