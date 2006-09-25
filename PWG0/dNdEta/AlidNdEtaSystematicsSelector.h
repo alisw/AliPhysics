@@ -42,6 +42,9 @@ class AlidNdEtaSystematicsSelector : public AliSelectorRL {
 
     AlidNdEtaCorrection* fdNdEtaCorrectionVertexReco[3]; // correction for vertex reco eff
 
+    AlidNdEtaCorrection* fdNdEtaCorrectionTriggerBias[3]; // correction for trigger bias
+
+
  private:
     AlidNdEtaSystematicsSelector(const AlidNdEtaSystematicsSelector&);
     AlidNdEtaSystematicsSelector& operator=(const AlidNdEtaSystematicsSelector&);
