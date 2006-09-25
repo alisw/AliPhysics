@@ -648,6 +648,10 @@ void AliTRD::CreateMaterials()
   AliMedium(25, "Serv-Cu" ,   5, 0, isxfld, sxmgmx
                 , tmaxfd, stemax, deemax, epsil, stmin);
 
+  // Special tracking options for charged particles for XeCO2
+  gMC->Gstpar((* fIdtmed)[9],"DRAY",1.0);
+  gMC->Gstpar((* fIdtmed)[9],"STRA",1.0); 
+
   // Save the density values for the TRD absorbtion
   fFoilDensity = dmy;
   fGasDensity  = dgm;
