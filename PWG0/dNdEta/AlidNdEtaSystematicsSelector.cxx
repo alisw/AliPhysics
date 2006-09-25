@@ -42,9 +42,10 @@ AlidNdEtaSystematicsSelector::AlidNdEtaSystematicsSelector() :
   for (Int_t i=0; i<4; ++i)
     fdNdEtaCorrectionSpecies[i] = 0;
 
-  for (Int_t i=0; i<3; ++i)
+  for (Int_t i=0; i<3; ++i) {
     fdNdEtaCorrectionVertexReco[i] = 0;
-
+    fdNdEtaCorrectionTriggerBias[i] = 0;
+  }
 }
 
 AlidNdEtaSystematicsSelector::~AlidNdEtaSystematicsSelector()
@@ -126,6 +127,13 @@ void AlidNdEtaSystematicsSelector::SlaveBegin(TTree* tree)
     fdNdEtaCorrectionVertexReco[2] = new AlidNdEtaCorrection("vertexRecoDD", "vertexRecoDD");
   }
 
+  if (option.Contains("triggerbias")) {
+    fdNdEtaCorrectionTriggerBias[0] = new AlidNdEtaCorrection("triggerBiasND", "triggerBiasND");
+    fdNdEtaCorrectionTriggerBias[1] = new AlidNdEtaCorrection("triggerBiasSD", "triggerBiasSD");
+    fdNdEtaCorrectionTriggerBias[2] = new AlidNdEtaCorrection("triggerBiasDD", "triggerBiasDD");
+  }
+
+
   fPIDParticles = new TH1F("pid_particles", "PID of generated primary particles", 10001, -5000.5, 5000.5);
   fPIDTracks = new TH1F("pid_tracks", "MC PID of reconstructed tracks", 10001, -5000.5, 5000.5);
 }
@@ -185,32 +193,30 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     FillSigmaVertex();
 
   // stuff for vertex reconstruction correction systematics
-  if (fdNdEtaCorrectionVertexReco[0]) {
+  Bool_t vertexRecoStudy  = kFALSE;
+  Bool_t triggerBiasStudy = kFALSE;
+  if (fdNdEtaCorrectionVertexReco[0]) vertexRecoStudy = kTRUE;
+  if (fdNdEtaCorrectionTriggerBias[0]) triggerBiasStudy = kTRUE;
+
+  if (vertexRecoStudy || triggerBiasStudy) {
     AliHeader* header = GetHeader();
     if (!header) {
       AliDebug(AliLog::kError, "Header not available");
       return kFALSE;
     }
 
-    // is there a smart way to check if it is really a pythia header?
-    AliGenCocktailEventHeader* genHeaders = dynamic_cast<AliGenCocktailEventHeader*>(header->GenEventHeader());
-    if (!genHeaders)
-      return kTRUE;
+    // getting process information
+    Int_t processtype = AliPWG0Helper::GetPythiaEventProcessType(header);
 
-    TList* headerList = genHeaders->GetHeaders();
-    if (!headerList)
-      return kTRUE;
+    AliDebug(AliLog::kInfo, Form("Pythia process type %d.",processtype));
+
+    // can only read pythia headers, either directly or from cocktalil header
+    AliGenEventHeader* genHeader = (AliGenEventHeader*)(header->GenEventHeader());
     
-    AliGenPythiaEventHeader* genHeader = 0;
-    for (Int_t i=0; i<headerList->GetEntries(); i++) {
-      genHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
-      if (genHeader)
-	break;
-    }        
-    if (!genHeader)
-      return kTRUE;
-    
-    Int_t processtype = genHeader->ProcessType();      
+    if (!genHeader) {
+      AliDebug(AliLog::kError, "Gen header not available");
+      return kFALSE;
+    }
 
     // get the MC vertex
     TArrayF vtxMC(3);
@@ -221,36 +227,42 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     Bool_t eventTriggered = AliPWG0Helper::IsEventTriggered(fESD);
     Bool_t vertexReconstructed = AliPWG0Helper::IsVertexReconstructed(fESD);
 
-    // genHeader->Print();
-    // printf("  heps %d %d %d %f \n", eventTriggered, vertexReconstructed, processtype, vtxMC[2]);
-
     // non diffractive
     if (processtype!=92 && processtype!=93 && processtype!=94) { 
-      fdNdEtaCorrectionVertexReco[0]->FillEvent(vtxMC[2], nGoodTracks);
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEventAll(vtxMC[2], nGoodTracks);
+
       if (eventTriggered) {
-	fdNdEtaCorrectionVertexReco[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+
 	if (vertexReconstructed)
-	  fdNdEtaCorrectionVertexReco[0]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+	  if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[0]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
       }
     }
 
     // single diffractive
     if (processtype==92 || processtype==93) { 
-      fdNdEtaCorrectionVertexReco[1]->FillEvent(vtxMC[2], nGoodTracks);
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEventAll(vtxMC[2], nGoodTracks);
+
       if (eventTriggered) {
-	fdNdEtaCorrectionVertexReco[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+
 	if (vertexReconstructed)
-	  fdNdEtaCorrectionVertexReco[1]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+	  if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[1]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
       }
     }
 
     // double diffractive
     if (processtype==94) { 
-      fdNdEtaCorrectionVertexReco[2]->FillEvent(vtxMC[2], nGoodTracks);
+      if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEventAll(vtxMC[2], nGoodTracks);
+
       if (eventTriggered) {
-	fdNdEtaCorrectionVertexReco[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+	if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+
 	if (vertexReconstructed)
-	  fdNdEtaCorrectionVertexReco[2]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+	  if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[2]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
       }
     }
   }
@@ -324,9 +336,9 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
         fPIDParticles->Fill(particle->GetPdgCode());
     }
 
-    fdNdEtaCorrectionSpecies[id]->FillParticleAllEvents(eta, pt);
-    if (eventTriggered)
-      fdNdEtaCorrectionSpecies[id]->FillParticleWhenEventTriggered(eta, pt);
+    //fdNdEtaCorrectionSpecies[id]->FillParticleAllEvents(eta, pt);
+    //if (eventTriggered)
+    // fdNdEtaCorrectionSpecies[id]->FillParticleWhenEventTriggered(eta, pt);
   }// end of mc particle
 
   // loop over esd tracks
@@ -396,7 +408,7 @@ void AlidNdEtaSystematicsSelector::FillCorrectionMaps(TObjArray* listOfTracks)
 
   for (Int_t i=0; i<4; ++i)
   {
-    fdNdEtaCorrectionSpecies[i]->FillEvent(vtxMC[2], nGoodTracks);
+    fdNdEtaCorrectionSpecies[i]->FillEventAll(vtxMC[2], nGoodTracks);
     if (eventTriggered)
     {
       fdNdEtaCorrectionSpecies[i]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
@@ -568,10 +580,14 @@ void AlidNdEtaSystematicsSelector::SlaveTerminate()
   if (fSigmaVertex)
     fOutput->Add(fSigmaVertex);
 
-  for (Int_t i=0; i<3; ++i)
+  for (Int_t i=0; i<3; ++i) {
     if (fdNdEtaCorrectionVertexReco[i])
       fOutput->Add(fdNdEtaCorrectionVertexReco[i]);
-
+    
+    if (fdNdEtaCorrectionTriggerBias[i])
+      fOutput->Add(fdNdEtaCorrectionTriggerBias[i]);
+  }
+  
 }
 
 void AlidNdEtaSystematicsSelector::Terminate()
@@ -604,9 +620,13 @@ void AlidNdEtaSystematicsSelector::Terminate()
     pdgDB = 0;
   }
 
-  for (Int_t i=0; i<3; ++i)
+  for (Int_t i=0; i<3; ++i) {
     if (fdNdEtaCorrectionVertexReco[i])
       fdNdEtaCorrectionVertexReco[i]->Finish();
+    
+    if (fdNdEtaCorrectionTriggerBias[i])
+      fdNdEtaCorrectionTriggerBias[i]->Finish();
+  }
 
   TFile* fout = TFile::Open("systematics.root", "RECREATE");
 
@@ -618,14 +638,18 @@ void AlidNdEtaSystematicsSelector::Terminate()
 
   if (fSigmaVertex)
     fSigmaVertex->Write();
-
+  
   for (Int_t i=0; i<4; ++i)
     if (fdNdEtaCorrectionSpecies[i])
       fdNdEtaCorrectionSpecies[i]->SaveHistograms();
 
-  for (Int_t i=0; i<3; ++i)
+  for (Int_t i=0; i<3; ++i) {
     if (fdNdEtaCorrectionVertexReco[i])
       fdNdEtaCorrectionVertexReco[i]->SaveHistograms();
+
+    if (fdNdEtaCorrectionTriggerBias[i])
+      fdNdEtaCorrectionTriggerBias[i]->SaveHistograms();
+  }
 
   fout->Write();
   fout->Close();
