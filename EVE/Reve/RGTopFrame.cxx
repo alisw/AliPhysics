@@ -44,30 +44,6 @@ using namespace Reve;
 
 Reve::RGTopFrame* gReve = 0;
 
-namespace {
-
-enum RGBrowserMT {
-  M_LAYOUT_1,
-  M_LAYOUT_2,
-  M_LAYOUT_3
-};
-
-const char *xpm_names[] = {
-    "lay1.xpm",
-    "lay2.xpm",
-    "lay3.xpm",
-    0
-};
-
-ToolBarData_t tb_data[] = {
-  { "", "Standard list layout",     kFALSE, M_LAYOUT_1,        NULL },
-  { "", "TParticle latout",         kFALSE, M_LAYOUT_2,        NULL },
-  { "", "TGeo layout",              kFALSE, M_LAYOUT_3,        NULL },
-  { NULL,            NULL,          0,      0,                 NULL }
-};
-
-} // unnamed namespace
-
 /**************************************************************************/
 
 RGTopFrame::RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look) :
@@ -233,9 +209,7 @@ void RGTopFrame::EditRenderElement(RenderElement* rnr_element)
 {
   static const Exc_t eH("RGTopFrame::EditRenderElement ");
 
-  TObject* tobj = 0;
-  if(rnr_element) tobj = rnr_element->GetObject();
-  fEditor->DisplayObject(tobj);
+  fEditor->DisplayRenderElement(rnr_element);
 }
 
 /**************************************************************************/
