@@ -24,10 +24,10 @@ using namespace Alieve;
 
 ClassImp(TPCSector3DEditor)
 
-TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p, Int_t id,
+TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p,
                                      Int_t width, Int_t height,
                                      UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fRnrFrame(0), fDriftVel(0), fPointFrac(0), fPointSize(0)
 {
@@ -73,13 +73,6 @@ TPCSector3DEditor::TPCSector3DEditor(const TGWindow *p, Int_t id,
   fPointSize->Connect("ValueSet(Double_t)",
 		      "Alieve::TPCSector3DEditor", this, "DoPointSize()");
   AddFrame(fPointSize, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
-
-  // Register the editor.
-  TClass *cl = TPCSector3D::Class();
-  TGedElement *ge = new TGedElement;
-  ge->fGedFrame = this;
-  ge->fCanvas = 0;
-  cl->GetEditorList()->Add(ge);
 }
 
 TPCSector3DEditor::~TPCSector3DEditor()
@@ -87,28 +80,15 @@ TPCSector3DEditor::~TPCSector3DEditor()
 
 /**************************************************************************/
 
-void TPCSector3DEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t /*event*/)
+void TPCSector3DEditor::SetModel(TObject* obj)
 {
-  fModel = 0;
-  fPad   = 0;
-
-  if (!obj || !obj->InheritsFrom(TPCSector3D::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
-    SetActive(kFALSE);
-    return;
-  }
-
-  fModel = obj;
-  fPad   = pad;
-
-  fM = dynamic_cast<TPCSector3D*>(fModel);
+  fM = dynamic_cast<TPCSector3D*>(obj);
 
   fRnrFrame->SetState(fM->fRnrFrame ? kButtonDown : kButtonUp);
   fDriftVel->SetValue(fM->fDriftVel);
 
   fPointFrac->SetValue(fM->fPointFrac);
   fPointSize->SetValue(fM->fPointSize);
-
-  SetActive();
 }
 
 /**************************************************************************/

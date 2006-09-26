@@ -39,10 +39,11 @@ protected:
   RGDoubleValuator*  fPtRange;
 
 public:
-  TrackListEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
+  TrackListEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+		  UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   ~TrackListEditor();
 
-  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
+  virtual void SetModel(TObject* obj);
 
   void DoMaxR();
   void DoMaxZ();

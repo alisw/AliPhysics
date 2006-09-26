@@ -22,10 +22,10 @@ using namespace Alieve;
 
 ClassImp(TPCSector2DEditor)
 
-TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p, Int_t id,
+TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p,
                                      Int_t width, Int_t height,
 				     UInt_t options, Pixel_t back) :
-  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
+  TGedFrame(p, width, height, options | kVerticalFrame, back),
   fM(0),
   fShowMax(0), fAverage(0), fUseTexture(0)
 {
@@ -46,13 +46,6 @@ TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p, Int_t id,
     fAverage->Connect("Toggled(Bool_t)","Alieve::TPCSector2DEditor", this, "DoAverage()");
     AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   }
-
-  // Register the editor.
-  TClass *cl = TPCSector2DEditor::Class();
-  TGedElement *ge = new TGedElement;
-  ge->fGedFrame = this;
-  ge->fCanvas = 0;
-  cl->GetEditorList()->Add(ge);
 }
 
 TPCSector2DEditor::~TPCSector2DEditor()
@@ -60,27 +53,14 @@ TPCSector2DEditor::~TPCSector2DEditor()
 
 /**************************************************************************/
 
-void TPCSector2DEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
+void TPCSector2DEditor::SetModel(TObject* obj)
 {
-  fModel = 0;
-  fPad   = 0;
-
-  if (!obj || !obj->InheritsFrom(TPCSector2D::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
-    SetActive(kFALSE);
-    return;
-  }
-
-  fModel = obj;
-  fPad   = pad;
-
-  fM = dynamic_cast<TPCSector2D*>(fModel);
+  fM = dynamic_cast<TPCSector2D*>(obj);
 
   fShowMax->SetState(fM->fShowMax ? kButtonDown : kButtonUp);
   SetupAverage();
 
   fUseTexture->SetState(fM->fUseTexture ? kButtonDown : kButtonUp);
-
-  SetActive();
 }
 
 /**************************************************************************/
