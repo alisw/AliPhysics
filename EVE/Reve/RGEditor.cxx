@@ -19,23 +19,15 @@ RGEditor::RGEditor(TCanvas* canvas) : TGedEditor(canvas)
 
 void RGEditor::DisplayObject(TObject* obj)
 {
-  fModel = obj;
+  SetModel(fPad, obj, kButton1Down);
+}
 
-  if(obj) {
-    if(obj->IsA() != fClass && !obj->IsA()->InheritsFrom(fClass)) {
-      fClass = obj->IsA();
-      GetEditors();
-    }
-  } else {
-    fCan->UnmapWindow();
-    return;
-  }
+void RGEditor::Update(TGedFrame* /*gframe*/)
+{
+  // Copy from TGeEditor ... need to do something better now.
+  if (fPad) {
+      fPad->Modified();
+      fPad->Update();
+   }
 
-  TGFrameElement *el;
-  TIter next(fStyle->GetList());
-  while ((el = (TGFrameElement *) next())) {
-    if ((el->fFrame)->InheritsFrom(TGedFrame::Class()))
-      ((TGedFrame *)(el->fFrame))->SetModel(fPad, fModel, 0);
-  }
-  fCan->MapWindow();
 }

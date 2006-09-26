@@ -16,7 +16,8 @@ public:
   virtual ~RGEditor() {}
   
   void DisplayObject(TObject* obj);
-  TGCanvas * GetCan() const {return fCan;}
+
+  virtual void Update(TGedFrame* gframe);
 
   ClassDef(RGEditor, 1);
 }; // endclass RGEditor

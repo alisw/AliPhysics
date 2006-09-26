@@ -160,7 +160,7 @@ void RGBrowser::SetupClassicLook(RGEditor*& editor, TCanvas* glpad)
   fV2->MapSubwindows();
 
   editor = new RGEditor(glpad);
-  editor->GetCan()->ChangeOptions(0);
+  editor->GetTGCanvas()->ChangeOptions(0);
   editor->SetWindowName("Reve Editor");
 }
 
@@ -168,7 +168,7 @@ void RGBrowser::SetupEditorLook(RGEditor*& editor, TCanvas* glpad)
 {
   fClient->SetRoot(fV2);
   editor = new RGEditor(glpad);
-  editor->GetCan()->ChangeOptions(0);
+  editor->GetTGCanvas()->ChangeOptions(0);
   fV2->RemoveFrame(editor);
   fV2->AddFrame(editor, new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
   fClient->SetRoot();
@@ -202,7 +202,7 @@ void RGBrowser::SetupGLViewerLook(RGEditor*& editor, TCanvas* glpad)
 
   fClient->SetRoot(fV1);
   editor = new RGEditor(glpad);
-  editor->GetCan()->ChangeOptions(0);
+  editor->GetTGCanvas()->ChangeOptions(0);
   editor->ChangeOptions(editor->GetOptions() | kFixedHeight);
   fV1->RemoveFrame(editor);
   fV1->AddFrame(editor, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0,2,2,2));
