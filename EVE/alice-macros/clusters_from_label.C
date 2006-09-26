@@ -27,7 +27,7 @@ void clusters_from_label(Int_t label=0)
     }
   }
   clusters->SetMarkerStyle(2);
-  clusters->SetMarkerSize(5);
+  clusters->SetMarkerSize(1);
   clusters->SetMarkerColor(4);
   clusters->SetName(Form("Clusters lab=%d", label));
 
