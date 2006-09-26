@@ -878,8 +878,6 @@ void AliTPCv2::CreateGeometry()
   TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
   alice->AddNode(v1,1);  
   
-  AddAlignableVolumes();
-
 } // end of function
  
 //_____________________________________________________________________________
@@ -907,16 +905,21 @@ void AliTPCv2::SetInnerChambersAlignable() const
   TString sn_append="/InnerChamber";
   TString volpath, symname;
   
-  for(Int_t cnt=1; cnt<=18; cnt++){
-    volpath = vp_str1;
-    volpath += cnt;
-    volpath += vp_append;
-    symname = sn_str1;
-    symname += cnt;
-    symname += sn_append;
-    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
-    modnum++;
+  try{
+    for(Int_t cnt=1; cnt<=18; cnt++){
+      volpath = vp_str1;
+      volpath += cnt;
+      volpath += vp_append;
+      symname = sn_str1;
+      symname += cnt;
+      symname += sn_append;
+      gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+      modnum++;
+    }
+  } catch (TString) {
+    AliFatal("Trying to set alignable entry with open geometry");
   }
+
   for(Int_t cnt=1; cnt<=18; cnt++){
     volpath = vp_str2;
     volpath += cnt;
