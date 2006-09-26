@@ -76,7 +76,7 @@ class TIsajet : public TGenerator , public AliRndm
 
     virtual void           Openfiles();
 
-    virtual void           PDFinit();
+    virtual void           PDFinit(Int_t& pdfpar, Int_t& pdfval);
 
     virtual void           Isabeg(Int_t& ifl);
 

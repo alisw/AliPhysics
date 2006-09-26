@@ -300,7 +300,7 @@ void TIsajet::Initialise()
 	}
 
 	if (setPdf) {
-	    PDFinit();
+//	    PDFinit();
 	}
     }
 }
@@ -1030,7 +1030,7 @@ Int_t TIsajet::GetNFORCE() const
 
 /**************************************************************************/
 
-void TIsajet::SetIFORCE(const Int_t val[], Int_t arraySize, Bool_t anti = true)
+void TIsajet::SetIFORCE(const Int_t val[], Int_t arraySize, Bool_t anti)
 {
     if (GetNFORCE() >= FORCE.mxforc - anti) {
 	printf ("ERROR in TIsajet::SetIFORCE :\n");
@@ -1067,7 +1067,7 @@ void TIsajet::SetIFORCE(const Int_t val[], Int_t arraySize, Bool_t anti = true)
     printf ("set. \n");
 
     if (anti) {
-	Int_t antivals[arraySize];
+	Int_t* antivals = new Int_t[arraySize];
 	for (Int_t i = 0; i < arraySize; i++){
 	    antivals[i] = (0 - val[i]);
 	}
@@ -1077,7 +1077,7 @@ void TIsajet::SetIFORCE(const Int_t val[], Int_t arraySize, Bool_t anti = true)
 
 /**************************************************************************/
 
-void TIsajet::UnForce(Int_t index, Bool_t anti = true)
+void TIsajet::UnForce(Int_t index, Bool_t anti)
 {
     if (FORCE.nforce == 0) {
 	printf ("Error in TIsajet::UnForce : \n");
@@ -1113,7 +1113,7 @@ void TIsajet::UnForce(Int_t index, Bool_t anti = true)
 
 /**************************************************************************/
 
-void TIsajet::UnForceID(Int_t particle_ID, Bool_t anti = true) 
+void TIsajet::UnForceID(Int_t particle_ID, Bool_t anti) 
 {
     if (FORCE.nforce == 0) {
 	printf ("Error in TIsajet::UnForceID : \n");
@@ -1148,7 +1148,7 @@ Int_t* TIsajet::GetIFORCE(Int_t index) const
 	return 0;
     }
 
-    Int_t decay[6];
+    Int_t*  decay = new Int_t[6];
     decay[0] = FORCE.iforce[index];
 
     for (Int_t i = 1; i < 6; i++) {
@@ -5869,7 +5869,7 @@ Float_t TIsajet::GetWFUDGE() const
 extern "C" void type_of_call isaini(Int_t& j, Int_t& k, Int_t& m, Int_t& n);
 extern "C" void type_of_call isaevt(Int_t& j, Int_t& k, Int_t& m);
 extern "C" void type_of_call openfiles();
-extern "C" void type_of_call pdfinit();
+extern "C" void type_of_call pdfinit(Int_t &, Int_t &);
 extern "C" void type_of_call isabeg(Int_t& ifl);
 extern "C" void type_of_call isabg2(Int_t& ifl);
 
@@ -5888,7 +5888,7 @@ void TIsajet::Openfiles()
     openfiles();
 }
 
-void TIsajet::PDFinit() 
+void TIsajet::PDFinit(Int_t& pdfpar, Int_t& pdfval ) 
 {
     pdfinit(pdfpar, pdfval);
 }
