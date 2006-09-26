@@ -1,3 +1,14 @@
+2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/clusters_from_label.C:
+	Add point-set containing clusters directly as render element (it
+	was wrapped in a RenderElementObjPtr by mistake (not fixed when
+	changing it from TPolyMarker3D)).
+
+	* alice-macros/primary_vertex.C:
+	Removed code that gave vertex markers some volume (to avoid being
+	discarded by a too smart GLViewer).
+
 2006-09-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/its_hits.C:

@@ -1,6 +1,32 @@
 2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RGBrowser.cxx:
+	Hack to fix RenderElementObjPtr's colors in tree-view is no longer
+	needed.
+
+	* RGEditor.cxx:
+	* RGEditor.h:
+	Properly update items of render-elements; call gReve::Redraw3D()
+	instead of pad modified/update. Added separate method
+	DisplayRenderElement() that caches the render-element in a
+	data-member to update it on change (needed for RenderElementObjPtr).
+
+	* RGTopFrame.cxx:
+	Use RGEditor::DisplayRenderElement() instead of
+	DisplayObject(). Removed some never-used static structures.
+
+	* RenderElement.cxx:
+	Removed Redraw3D() from UpdateItems() as it can now be called from
+	RGEditor::Update(); optimized item-updates in SetRnrElement() and
+	SetMainColor().
+
+	* PointSetArrayEditor.cxx:
+	* TrackEditors.cxx:
+	Added call to Update() in SetRange() methods.
+
+2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RGBrowser.cxx:
 	* RGEditor.cxx:
 	* RGEditor.h:
 	Use new functionality from TGedEditor.
