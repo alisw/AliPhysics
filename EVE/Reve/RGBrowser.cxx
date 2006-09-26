@@ -244,13 +244,6 @@ void RGBrowser::ItemClicked(TGListTreeItem *item, Int_t btn, Int_t x, Int_t y)
   if(re == 0) return;
   TObject* obj = re->GetObject();
 
-  // A pathetic hack to get at least a bit of color coordination
-  // for RenderElementObjPtr.
-  if(item->GetColor() != re->GetMainColor()) {
-    item->SetColor(re->GetMainColor());
-    fListTree->GetClient()->NeedRedraw(fListTree);
-  }
-
   if(btn == 3) {
     if (obj) {
       fCtxMenu->Popup(x, y, obj);
