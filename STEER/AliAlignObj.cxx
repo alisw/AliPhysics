@@ -171,12 +171,26 @@ Bool_t AliAlignObj::GetPars(Double_t tr[], Double_t angles[]) const
 //_____________________________________________________________________________
 Int_t AliAlignObj::GetLevel() const
 {
-  // Return the geometry level of
-  // the alignable volume to which
-  // the alignment object is associated
-  TString symname = fVolPath;
-  if(symname[0]!='/') symname.Prepend('/');
-  return symname.CountChar('/');
+  // Return the geometry level of the alignable volume to which
+  // the alignment object is associated; this is the number of
+  // slashes in the corresponding volume path
+  //
+  if(!gGeoManager){
+    AliWarning("gGeoManager doesn't exist or it is still opened: unable to return meaningful level value.");
+    return (-1);
+  }
+  const char* symname = GetSymName();
+  const char* path;
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(symname);
+  if(pne){
+    path = pne->GetTitle();
+  }else{
+    path = symname;
+  }
+
+  TString path_str = path;
+  if(path_str[0]!='/') path_str.Prepend('/');
+  return path_str.CountChar('/');
 }
 
 //_____________________________________________________________________________
