@@ -12,7 +12,8 @@
 ClassImp(AliHLTMUONTracker)
 
 
-AliHLTMUONTracker::AliHLTMUONTracker(AliRunLoader* runloader) : AliTracker()
+AliHLTMUONTracker::AliHLTMUONTracker(AliRunLoader* runloader) :
+	AliTracker(), fdHLT(NULL), fTriggers(NULL), fClusters(NULL), fTracks(NULL)
 {
 // Creates the the AliHLTMUONMicrodHLT object and its associated data source and sink
 // objects. The AliHLTMUONMicrodHLT object is then initialised by hooking to these objects.

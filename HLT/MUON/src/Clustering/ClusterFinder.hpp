@@ -43,10 +43,19 @@ class AliHLTMUONCoreClusterFinder
 {
 public:
 
-	AliHLTMUONCoreClusterFinder()
+	AliHLTMUONCoreClusterFinder() : fCallback(NULL) {};
+
+
+	AliHLTMUONCoreClusterFinder(const AliHLTMUONCoreClusterFinder& cf)
+		: fCallback(cf.fCallback)
+	{};
+
+	AliHLTMUONCoreClusterFinder& operator = (const AliHLTMUONCoreClusterFinder& cf)
 	{
-		fCallback = NULL;
+		fCallback = cf.fCallback;
+		return *this;
 	};
+
 
 	virtual ~AliHLTMUONCoreClusterFinder() {};
 

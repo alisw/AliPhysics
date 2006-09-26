@@ -45,10 +45,17 @@ class DecisionMaker
 {
 public:
 
-	DecisionMaker()
+	DecisionMaker() : fCallback(NULL) {};
+	
+
+	DecisionMaker(const DecisionMaker& dm) : fCallback(dm.fCallback) {};
+
+	DecisionMaker& operator = (const DecisionMaker& dm)
 	{
-		callback = NULL;
-	};
+		fCallback = dm.fCallback;
+		return *this;
+	}
+
 
 	virtual ~DecisionMaker() {};
 
@@ -87,7 +94,7 @@ public:
 	 */
 	inline void SetCallback(DecisionMakerCallback* callback)
 	{
-		this->callback = callback;
+		this->fCallback = callback;
 	};
 
 protected:
@@ -100,13 +107,13 @@ protected:
 	 */
 	inline void MadeDecision(const UInt decisionsize)
 	{
-		Assert( callback != NULL );
-		callback->MadeDecision(this, decisionsize);
+		Assert( fCallback != NULL );
+		fCallback->MadeDecision(this, decisionsize);
 	};
 
 private:
 
-	DecisionMakerCallback* callback;
+	DecisionMakerCallback* fCallback;
 };
 
 

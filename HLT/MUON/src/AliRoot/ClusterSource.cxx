@@ -28,7 +28,12 @@ ClassImp(AliHLTMUONClusterSource::AliEventData)
 
 
 AliHLTMUONClusterSource::AliHLTMUONClusterSource()
-	: TObject(), fEventList(AliHLTMUONClusterSource::AliEventData::Class())
+	: TObject(),
+	  fAreaToUse(kFromWholePlane), fDataToUse(kFromRawClusters),
+	  fMaxBlockSize(0xFFFFFFFF), fFilename(""), fFoldername(""),
+	  fEventIndex(-1), fCurrentEvent(NULL), fBlockIndex(-1),
+	  fCurrentBlock(NULL), fClusterIndex(-1), fCurrentCluster(NULL),
+	  fEventList(AliHLTMUONClusterSource::AliEventData::Class())
 {
 // Default contructor.
 
@@ -42,7 +47,12 @@ AliHLTMUONClusterSource::AliHLTMUONClusterSource()
 
 
 AliHLTMUONClusterSource::AliHLTMUONClusterSource(AliMUONDataInterface* data)
-	: TObject(), fEventList(AliHLTMUONClusterSource::AliEventData::Class())
+	: TObject(),
+	  fAreaToUse(kFromWholePlane), fDataToUse(kFromRawClusters),
+	  fMaxBlockSize(0xFFFFFFFF), fFilename(""), fFoldername(""),
+	  fEventIndex(-1), fCurrentEvent(NULL), fBlockIndex(-1),
+	  fCurrentBlock(NULL), fClusterIndex(-1), fCurrentCluster(NULL),
+	  fEventList(AliHLTMUONClusterSource::AliEventData::Class())
 {
 // Creates a new cluster source object and fills it with data from 'data'.
 
@@ -887,12 +897,14 @@ void AliHLTMUONClusterSource::ResetClusterPointers() const
 }
 
 
-AliHLTMUONClusterSource::AliBlockData::AliBlockData() : fClusters(AliHLTMUONPoint::Class())
+AliHLTMUONClusterSource::AliBlockData::AliBlockData()
+	: fChamber(-1), fClusters(AliHLTMUONPoint::Class())
 {
 	fChamber = -1;
 }
 
-AliHLTMUONClusterSource::AliBlockData::AliBlockData(Int_t chamber) : fClusters(AliHLTMUONPoint::Class())
+AliHLTMUONClusterSource::AliBlockData::AliBlockData(Int_t chamber)
+	: fChamber(chamber), fClusters(AliHLTMUONPoint::Class())
 {
 	fChamber = chamber;
 }
@@ -902,13 +914,14 @@ AliHLTMUONClusterSource::AliBlockData::~AliBlockData()
 	fClusters.Clear("C");
 }
 
-AliHLTMUONClusterSource::AliEventData::AliEventData() : fBlocks(AliHLTMUONClusterSource::AliBlockData::Class())
+AliHLTMUONClusterSource::AliEventData::AliEventData()
+	: fEventNumber(-1), fBlocks(AliHLTMUONClusterSource::AliBlockData::Class())
 {
 	fEventNumber = -1;
 }
 
 AliHLTMUONClusterSource::AliEventData::AliEventData(Int_t eventnumber)
-	: fBlocks(AliHLTMUONClusterSource::AliBlockData::Class())
+	: fEventNumber(eventnumber), fBlocks(AliHLTMUONClusterSource::AliBlockData::Class())
 {
 // Creates a new event data block with specified event number.
 

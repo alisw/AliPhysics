@@ -54,15 +54,17 @@ class AliHLTMUONCoreRegionOfInterest
 public:
 
 	AliHLTMUONCoreRegionOfInterest()
+		: fChamber(kChamber1), fLeft(0.0), fRight(0.0), fBottom(0.0), fTop(0.0)
 	{
 		fChamber = kChamber1;
-		fLeft = fRight = fTop = fBottom = 0.0;
+		fLeft = fRight = fBottom = fTop = 0.0;
 	}
 	
 	/* This constructor decodes the ROI bit pattern into a region of
 	   interest object.
 	 */
 	AliHLTMUONCoreRegionOfInterest(const AliHLTMUONCoreROI& code)
+		: fChamber(kChamber1), fLeft(0.0), fRight(0.0), fBottom(0.0), fTop(0.0)
 	{
 		Decode(code);
 	}
@@ -74,6 +76,7 @@ public:
 			const AliHLTMUONCoreClusterPoint& point0,
 			AliHLTMUONCoreChamberID chamber0
 		)
+		: fChamber(kChamber1), fLeft(0.0), fRight(0.0), fBottom(0.0), fTop(0.0)
 	{
 		CreateToContain(point0, chamber0);
 	}
@@ -85,6 +88,7 @@ public:
 			const AliHLTMUONCoreClusterPoint* points0, UInt count0,
 			AliHLTMUONCoreChamberID chamber0
 		)
+		: fChamber(kChamber1), fLeft(0.0), fRight(0.0), fBottom(0.0), fTop(0.0)
 	{
 		CreateToContain(points0, count0, chamber0);
 	}
@@ -242,6 +246,7 @@ inline AliHLTMUONCoreRegionOfInterest::AliHLTMUONCoreRegionOfInterest(
 		Float left, Float right, Float bottom, Float top,
 		AliHLTMUONCoreChamberID chamber
 	)
+	: fChamber(kChamber1), fLeft(0.0), fRight(0.0), fBottom(0.0), fTop(0.0)
 {
 // Creates a region of interest with the specified boundaries and for
 // the specified chamber.

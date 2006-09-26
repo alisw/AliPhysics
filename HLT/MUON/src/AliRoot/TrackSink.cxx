@@ -18,7 +18,11 @@ ClassImp(AliHLTMUONTrackSink::AliEventData)
 
 
 AliHLTMUONTrackSink::AliHLTMUONTrackSink() :
-	TObject(), fEventList(AliHLTMUONTrackSink::AliEventData::Class())
+	TObject(),
+	fFilename(""), fFoldername(""), fEventIndex(-1),
+	fCurrentEvent(NULL), fBlockIndex(-1), fCurrentBlock(NULL),
+	fTrackIndex(-1), fCurrentTrack(NULL),
+	fEventList(AliHLTMUONTrackSink::AliEventData::Class())
 {
 // Default constructor
 
@@ -570,14 +574,15 @@ void AliHLTMUONTrackSink::ResetTrackPointers() const
 }
 
 
-AliHLTMUONTrackSink::AliEventData::AliEventData() : fBlocks(TClonesArray::Class())
+AliHLTMUONTrackSink::AliEventData::AliEventData()
+	: fEventNumber(-1), fBlocks(TClonesArray::Class())
 {
 	fEventNumber = -1;
 }
 
 
 AliHLTMUONTrackSink::AliEventData::AliEventData(Int_t eventnumber)
-	: fBlocks(TClonesArray::Class())
+	: fEventNumber(eventnumber), fBlocks(TClonesArray::Class())
 {
 // Creates a new event data block with the specified event number.
 

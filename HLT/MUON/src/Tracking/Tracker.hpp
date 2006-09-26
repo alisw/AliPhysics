@@ -60,9 +60,16 @@ class AliHLTMUONCoreTracker
 {
 public:
 
-	AliHLTMUONCoreTracker()
+	AliHLTMUONCoreTracker() : fCallback(NULL) {};
+
+	AliHLTMUONCoreTracker(const AliHLTMUONCoreTracker& ct)
+		: fCallback(ct.fCallback)
+	{};
+
+	AliHLTMUONCoreTracker& operator = (const AliHLTMUONCoreTracker& ct)
 	{
-		fCallback = NULL;
+		fCallback = ct.fCallback;
+		return *this;
 	};
 
 	virtual ~AliHLTMUONCoreTracker() {};

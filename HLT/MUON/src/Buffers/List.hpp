@@ -29,6 +29,17 @@ protected:
 	{
 		Node* fNext;
 		DataType fData;
+
+		Node() : fNext(NULL), fData() {};
+
+		Node(const Node& node) : fNext(node.fNext), fData(node.data) {};
+
+		Node& operator = (const Node& node)
+		{
+			fNext = node.fNext;
+			fData = node.data;
+			return *this;
+		};
 	};
 
 	Node* fFirst;
@@ -40,19 +51,16 @@ public:
 	{
 	public:
 
-		ConstIterator()
-		{
-			fCurrent = NULL;
-		}
+		ConstIterator() : fCurrent(NULL) {}
 
-		ConstIterator(const ConstIterator& iter)
+		ConstIterator(const ConstIterator& iter) : fCurrent(iter.fCurrent) {}
+
+		ConstIterator(Node* node) : fCurrent(node) {}
+
+		ConstIterator& operator = (const ConstIterator& iter)
 		{
 			fCurrent = iter.fCurrent;
-		}
-
-		ConstIterator(Node* node)
-		{
-			fCurrent = node;
+			return *this;
 		}
 
 		const DataType& operator * () const
@@ -107,19 +115,17 @@ public:
 	{
 	public:
 
-		Iterator() : ConstIterator()
-		{
-			fPrevious = NULL;
-		}
+		Iterator() : ConstIterator(), fPrevious(NULL) {}
 
-		Iterator(const Iterator& iter) : ConstIterator(iter)
+		Iterator(const Iterator& iter) : ConstIterator(iter), fPrevious(iter.fPrevious) {}
+
+		Iterator(Node* current, Node* prev) : ConstIterator(current), fPrevious(prev) {}
+
+		Iterator& operator = (const Iterator& iter)
 		{
+			ConstIterator::operator = (iter);
 			fPrevious = iter.fPrevious;
-		}
-
-		Iterator(Node* current, Node* prev) : ConstIterator(current)
-		{
-			fPrevious = prev;
+			return *this;
 		}
 
 		DataType& operator * ()
@@ -165,10 +171,7 @@ public:
 	};
 
 	
-	AliHLTMUONCoreList()
-	{
-		fFirst = NULL;
-	}
+	AliHLTMUONCoreList() : fFirst(NULL) {}
 	
 	
 	~AliHLTMUONCoreList()
@@ -198,7 +201,7 @@ public:
 	}
 	
 	
-	inline DataType* Add()
+	DataType* Add()
 	{
 		return New();
 	}
@@ -402,6 +405,17 @@ public:
 	}
 
 #	endif // DEBUG
+
+private:
+
+	// Hide copy contructor and assignment operator.
+	AliHLTMUONCoreList(const AliHLTMUONCoreList& list) : fFirst(NULL) {}
+	
+	AliHLTMUONCoreList& operator = (const AliHLTMUONCoreList& list)
+	{
+		return *this;
+	}
+
 };
 
 

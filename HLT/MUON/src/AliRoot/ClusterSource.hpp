@@ -300,7 +300,15 @@ private:
 	
 
 	// Dont allow copying.
-	AliHLTMUONClusterSource(const AliHLTMUONClusterSource& /*object*/) : TObject() {};
+	AliHLTMUONClusterSource(const AliHLTMUONClusterSource& /*object*/)
+		: TObject(),
+		  fAreaToUse(kFromWholePlane), fDataToUse(kFromRawClusters),
+		  fMaxBlockSize(0xFFFFFFFF), fFilename(""), fFoldername(""),
+		  fEventIndex(-1), fCurrentEvent(NULL), fBlockIndex(-1),
+		  fCurrentBlock(NULL), fClusterIndex(-1), fCurrentCluster(NULL),
+		  fEventList(AliHLTMUONClusterSource::AliEventData::Class())
+	{}
+
 	AliHLTMUONClusterSource& operator = (const AliHLTMUONClusterSource& /*object*/) { return *this; };
 
 	AreaType fAreaToUse;    //! The part of the chamber to fill from.

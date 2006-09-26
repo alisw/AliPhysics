@@ -99,7 +99,7 @@ private:
 
 	// Do not allow copying
 	AliMicroFramework(const AliMicroFramework& /*object*/)
-		: AliHLTMUONCoreTrackerCallback()
+		: AliHLTMUONCoreTrackerCallback(), fTrackOutput(NULL), fCurrentTriggerNumber(0)
 	{}
 	
 	AliMicroFramework& operator = (const AliMicroFramework& /*object*/) { return *this; }
@@ -118,7 +118,8 @@ private:
 
 //-----------------------------------------------------------------------------
 
-AliMicroFramework::AliMicroFramework()
+AliMicroFramework::AliMicroFramework() :
+	AliHLTMUONCoreTrackerCallback(), fTrackOutput(NULL), fCurrentTriggerNumber(0)
 {
 // Default constructor.
 
@@ -357,7 +358,10 @@ UInt_t AliHLTMUONBuildNumber()
 }
 
 
-AliHLTMUONMicrodHLT::AliHLTMUONMicrodHLT() : TObject()
+AliHLTMUONMicrodHLT::AliHLTMUONMicrodHLT() :
+	TObject(),
+	fTriggerSource(NULL), fClusterSource(NULL), fTrackSink(NULL),
+	fClusterFinder(NULL), fTracker(NULL)
 {
 // Default constructor
 

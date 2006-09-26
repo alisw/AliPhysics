@@ -11,12 +11,12 @@
 ClassImp(AliHLTMUONPoint)
 
 
-AliHLTMUONPoint::AliHLTMUONPoint() : TObject()
+AliHLTMUONPoint::AliHLTMUONPoint() : TObject(), fX(0), fY(0)
 {
 	fX = fY = 0.0;
 }
 
-AliHLTMUONPoint::AliHLTMUONPoint(Float_t x, Float_t y) : TObject()
+AliHLTMUONPoint::AliHLTMUONPoint(Float_t x, Float_t y) : TObject(), fX(x), fY(y)
 {
 	fX = x;
 	fY = y;

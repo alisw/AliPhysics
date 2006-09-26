@@ -12,7 +12,7 @@
 
 
 AliHLTMUONTrackerProxy::AliHLTMUONTrackerProxy(AliHLTMUONTrackerInterface* client)
-	: AliHLTMUONCoreTracker(), AliHLTMUONTrackerCallback()
+	: AliHLTMUONCoreTracker(), AliHLTMUONTrackerCallback(), fTracker(client)
 {
 	fTracker = client;
 }

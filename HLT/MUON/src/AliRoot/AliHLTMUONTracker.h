@@ -37,7 +37,11 @@ public:
 private:
 	
 	// Do not allow copying of this object.
-	AliHLTMUONTracker(const AliHLTMUONTracker& /*object*/) : AliTracker() {}
+	AliHLTMUONTracker(const AliHLTMUONTracker& /*object*/)
+		: AliTracker(), fdHLT(NULL), fTriggers(NULL), fClusters(NULL),
+		  fTracks(NULL)
+	{}
+
 	AliHLTMUONTracker& operator = (const AliHLTMUONTracker& /*object*/) { return *this; }
 
 

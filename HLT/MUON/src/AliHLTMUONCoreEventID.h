@@ -36,10 +36,8 @@ struct AliHLTMUONCoreEventID
 
 
 	AliHLTMUONCoreEventID(UInt bunch = 0, UInt timestamp = 0)
-	{
-		fBunch = bunch;
-		fTimeStamp = timestamp;
-	};
+		: fBunch(bunch), fTimeStamp(timestamp)
+	{};
 
 
 	bool operator == (const AliHLTMUONCoreEventID& rhs)

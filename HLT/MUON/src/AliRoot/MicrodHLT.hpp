@@ -113,7 +113,11 @@ public:
 private:
 	
 	// Do not allow copying of this object.
-	AliHLTMUONMicrodHLT(const AliHLTMUONMicrodHLT& /*object*/) : TObject() {}
+	AliHLTMUONMicrodHLT(const AliHLTMUONMicrodHLT& /*object*/)
+		: TObject(), fTriggerSource(NULL), fClusterSource(NULL),
+		  fTrackSink(NULL), fClusterFinder(NULL), fTracker(NULL)
+	{}
+
 	AliHLTMUONMicrodHLT& operator = (const AliHLTMUONMicrodHLT& /*object*/) { return *this; }
 
 	AliHLTMUONTriggerSource* fTriggerSource;           //! Trigger record input source.

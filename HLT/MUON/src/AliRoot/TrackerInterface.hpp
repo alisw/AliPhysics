@@ -20,7 +20,7 @@ class AliHLTMUONDummyTracker;
 class AliHLTMUONTrackerInterface
 {
 public:
-	AliHLTMUONTrackerInterface(AliHLTMUONDummyTracker* tracker)
+	AliHLTMUONTrackerInterface(AliHLTMUONDummyTracker* tracker) : fTracker(tracker)
 	{
 		fTracker = tracker;
 	};
@@ -38,6 +38,14 @@ public:
 	void SetCallback(AliHLTMUONTrackerCallback* callback);
 
 private:
+	AliHLTMUONTrackerInterface(const AliHLTMUONTrackerInterface& /*tracker*/)
+		: fTracker(NULL)
+	{}
+
+	AliHLTMUONTrackerInterface& operator = (const AliHLTMUONTrackerInterface& /*tracker*/)
+	{
+		return *this;
+	}
 
 	AliHLTMUONDummyTracker* fTracker;   //! Pointer to interpreted tracker class.
 };

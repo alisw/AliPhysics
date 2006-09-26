@@ -22,8 +22,9 @@ ClassImp(AliHLTMUONADCStreamSource)
 ClassImp(AliHLTMUONADCStreamSource::AliDataBlock)
 
 
-AliHLTMUONADCStreamSource::AliHLTMUONADCStreamSource()
-	: TObject(), fList(AliHLTMUONADCStreamSource::AliDataBlock::Class())
+AliHLTMUONADCStreamSource::AliHLTMUONADCStreamSource() :
+	TObject(), fCurrentStream(-1),
+	fList(AliHLTMUONADCStreamSource::AliDataBlock::Class())
 {
 	fCurrentStream = -1;
 }

@@ -11,7 +11,8 @@
 ClassImp(AliHLTMUONTriggerRecord)
 
 
-AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord()
+AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord() :
+	TObject(), fTriggerNumber(-1), fParticleSign(0), fPt(0), fSt1Point(), fSt2Point()
 {
 // Default constructor initialises everything to zero and the trigger number to -1.
 
@@ -22,7 +23,8 @@ AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord()
 AliHLTMUONTriggerRecord::AliHLTMUONTriggerRecord(
 		Int_t triggernumber, Int_t sign, Float_t pt,
 		const AliHLTMUONPoint& station1point, const AliHLTMUONPoint& station2point
-	)
+	) :
+	TObject(), fTriggerNumber(-1), fParticleSign(0), fPt(0), fSt1Point(), fSt2Point()
 {
 // Creates a trigger record from the specified parameters.
 // Note: the trigger number must be greater or equal to zero. The particle

@@ -204,7 +204,14 @@ public:  // Unfortunately ROOT requires the following to be public.
 private:
 
 	// Do not allow copying of this object.
-	AliHLTMUONTrackSink(const AliHLTMUONTrackSink& /*object*/) : TObject() {}
+	AliHLTMUONTrackSink(const AliHLTMUONTrackSink& /*object*/)
+		: TObject(),
+		  fFilename(""), fFoldername(""), fEventIndex(-1),
+		  fCurrentEvent(NULL), fBlockIndex(-1), fCurrentBlock(NULL),
+		  fTrackIndex(-1), fCurrentTrack(NULL),
+		  fEventList(AliHLTMUONTrackSink::AliEventData::Class())
+	{}
+
 	AliHLTMUONTrackSink& operator = (const AliHLTMUONTrackSink& /*object*/) { return *this; }
 
 	/* Sets all the current pointers to NULL and indices to -1.

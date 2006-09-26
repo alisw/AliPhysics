@@ -13,13 +13,15 @@
 ClassImp(AliHLTMUONADCStream)
 
 
-AliHLTMUONADCStream::AliHLTMUONADCStream() : TObject()
+AliHLTMUONADCStream::AliHLTMUONADCStream() :
+	TObject(), fData()
 {
 	fData.Set(0);
 }
 
 
-AliHLTMUONADCStream::AliHLTMUONADCStream(const UInt_t* data, UInt_t size)
+AliHLTMUONADCStream::AliHLTMUONADCStream(const UInt_t* data, UInt_t size) :
+	TObject(), fData()
 {
 	fData.Set(size, (Int_t*)data);
 }

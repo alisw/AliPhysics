@@ -47,7 +47,7 @@ typedef UInt AliHLTMUONCoreTriggerRecordID;
 struct AliHLTMUONCoreTriggerRecord
 {
 	AliHLTMUONCoreParticleSign fSign;     // The sign of the particle.
-	Float fPt;              // Transverse momentum of the particle.
+	Float fPt;                            // Transverse momentum of the particle.
 	AliHLTMUONCorePoint fStation1impact;  // Impact point of particle on trigger station 1.
 	AliHLTMUONCorePoint fStation2impact;  // Impact point of particle on trigger station 2.
 
@@ -56,11 +56,7 @@ struct AliHLTMUONCoreTriggerRecord
 	   Sets the fSign to UnknownSign, fPt to -1 and the impact points are set to zero.
 	 */
 	AliHLTMUONCoreTriggerRecord()
-		: fStation1impact(), fStation2impact()
-	{
-		fSign = kUnknownSign;
-		fPt = -1.0;
-	};
+		: fSign(kUnknownSign), fPt(-1.0), fStation1impact(), fStation2impact() {}
 
 	/* Creates a trigger record with the specifed particle sign, pt and impact points.
 	   The impactpoint1 corresponds to trigger station 1 and simmilarly impactpoint2
@@ -70,12 +66,8 @@ struct AliHLTMUONCoreTriggerRecord
 			const AliHLTMUONCoreParticleSign sign, const Float pt,
 			const AliHLTMUONCorePoint impactpoint1, const AliHLTMUONCorePoint impactpoint2
 		)
-	{
-		fSign = sign;
-		fPt = pt;
-		fStation1impact = impactpoint1;
-		fStation2impact = impactpoint2;
-	};
+		: fSign(sign), fPt(pt), fStation1impact(impactpoint1), fStation2impact(impactpoint2)
+	{}
 };
 
 

@@ -34,17 +34,9 @@ class AliHLTMUONCorePoint
 {
 public:
 
-	AliHLTMUONCorePoint()
-	{
-		fX = 0.0;
-		fY = 0.0;
-	}
+	AliHLTMUONCorePoint() : fX(0.0), fY(0.0) {}
 
-	AliHLTMUONCorePoint(Float x, Float y)
-	{
-		fX = x;
-		fY = y;
-	}
+	AliHLTMUONCorePoint(Float x, Float y) : fX(x), fY(y) {}
 
 	Float X() const { return fX; }
 	Float& X() { return fX; }

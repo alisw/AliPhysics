@@ -12,7 +12,8 @@
 ClassImp(AliHLTMUONTrack)
 
 
-AliHLTMUONTrack::AliHLTMUONTrack() : TObject()
+AliHLTMUONTrack::AliHLTMUONTrack() :
+	TObject(), fTriggerID(-1), fParticleSign(0), fP(0), fPt(0)
 {
 // Default constructor initialises everything to zero and fTriggerID to -1.
 
@@ -23,7 +24,8 @@ AliHLTMUONTrack::AliHLTMUONTrack() : TObject()
 AliHLTMUONTrack::AliHLTMUONTrack(
 		Int_t triggerid, Int_t sign, Float_t momentum, Float_t pt,
 		const AliHLTMUONPoint hits[10], const AliHLTMUONRegion regions[10]
-	) : TObject()
+	) :
+	TObject(), fTriggerID(-1), fParticleSign(0), fP(0), fPt(0)
 {
 // Create a track object from the given parameters.
 // This constructor checks that momentum >= pt and sign is one of the

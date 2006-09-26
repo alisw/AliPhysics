@@ -18,7 +18,7 @@ class AliHLTMUONDummyClusterFinder
 {
 public:
 
-	AliHLTMUONDummyClusterFinder() : fInterface(this)
+	AliHLTMUONDummyClusterFinder() : fInterface(this), fCallback(NULL)
 	{
 		fCallback = NULL;
 	};
@@ -31,7 +31,7 @@ public:
 	   the FoundClusters method should be called to indicate that processing is
 	   complete. If no clusters could be found then call NoClustersFound instead.
 	 */
-	virtual void FindClusters(const AliHLTMUONADCStream * stream) = 0;
+	virtual void FindClusters(const AliHLTMUONADCStream* stream) = 0;
 
 	/* After a call to FoundClusters this method will be called to retreive the
 	   cluster points. The clusters array should be filled consecutively with 
@@ -54,7 +54,8 @@ public:
 
 	/* Sets the ClusterFinderCallback callback interface.
 	 */
-	inline void SetCallback(AliHLTMUONClusterFinderCallback * callback) {
+	inline void SetCallback(AliHLTMUONClusterFinderCallback* callback)
+	{
 		this->fCallback = callback;
 	};
 
@@ -66,7 +67,17 @@ public:
 private:
 
 	AliHLTMUONClusterFinderInterface fInterface;
-	AliHLTMUONClusterFinderCallback * fCallback;
+	AliHLTMUONClusterFinderCallback* fCallback;
+
+	// Hide copy constructor and assignment operator
+	AliHLTMUONDummyClusterFinder(const AliHLTMUONDummyClusterFinder& /*clusterfinder*/)
+		: fInterface(this), fCallback(NULL)
+	{};
+
+	AliHLTMUONDummyClusterFinder& operator = (const AliHLTMUONDummyClusterFinder& /*clusterfinder*/)
+	{
+		return *this;
+	};
 };
 
 

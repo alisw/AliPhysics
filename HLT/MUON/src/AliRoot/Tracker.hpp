@@ -20,15 +20,22 @@ class AliHLTMUONDummyTracker
 {
 public:
 
-	AliHLTMUONDummyTracker() : fInterface(this)
+	AliHLTMUONDummyTracker() : fInterface(this), fCallback(NULL) {};
+
+	AliHLTMUONDummyTracker(const AliHLTMUONDummyTracker& t)
+		: fInterface(this), fCallback(t.fCallback)
+	{};
+
+	AliHLTMUONDummyTracker& operator = (const AliHLTMUONDummyTracker& t)
 	{
-		fCallback = NULL;
-	};
+		fCallback = t.fCallback;
+		return *this;
+	}
 
 	virtual ~AliHLTMUONDummyTracker() {};
 
 	/* Methods required to be implemented by the tracker.
-	   These correspond to the dHLT::Tracker specification, refer to that
+	   These correspond to the AliHLTMUONCoreTracker specification, refer to that
 	   class for more information.
 	 */
 	virtual void FindTrack(const AliHLTMUONTriggerRecord& trigger) = 0;
@@ -116,7 +123,7 @@ private:
 
 // Implementation of the TrackerInterface:
 // This must come here so that it gets interpreted together with the rest
-// of the AliMUONHLT::Tracker.
+// of the AliMUONHLTTracker.
 
 void AliHLTMUONTrackerInterface::FindTrack(const AliHLTMUONTriggerRecord& trigger)
 {

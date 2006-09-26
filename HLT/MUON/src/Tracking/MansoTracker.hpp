@@ -74,9 +74,10 @@ protected:
 	{
 	public:
 		
-		AliRegionOfInterest() {};
+		AliRegionOfInterest() : fCentre(), fRs(0.0) {};
 
 		AliRegionOfInterest(AliHLTMUONCorePoint p, Float a, Float b)
+			: fCentre(), fRs(0)
 		{
 			Create(p, a, b);
 		};
@@ -171,12 +172,16 @@ protected:
 		AliHLTMUONCoreChamberID fChamber;     // The chamber on which the region of interest lies.
 		AliRegionOfInterest fRoi;  // Region of interest on the next station.
 		AliLine fLine;             // line between a cluster point and the previous station.
+
+		AliTagData() : fChamber(kChamber1), fRoi(), fLine() {};
 	};
 	
 	struct AliStation5Data
 	{
 		AliHLTMUONCoreClusterPoint fClusterPoint;  // Cluster point found on station 5.
 		AliTagData fTag;  // Chamber, ROI and line data for station 5.
+
+		AliStation5Data() : fClusterPoint(), fTag() {};
 	};
 	
 	typedef AliHLTMUONCoreCountedList<AliStation5Data> Station5List;
@@ -185,6 +190,19 @@ protected:
 	{
 		AliHLTMUONCoreClusterPoint fClusterPoint;  // Cluster point found on station 4.
 		const AliTagData* fSt5tag;      // Corresponding station 5 tag.
+
+		AliStation4Data() : fClusterPoint(), fSt5tag() {};
+
+		AliStation4Data(const AliStation4Data& data) :
+			fClusterPoint(data.fClusterPoint), fSt5tag(data.fSt5tag)
+		{};
+
+		AliStation4Data& operator = (const AliStation4Data& data)
+		{
+			fClusterPoint = data.fClusterPoint;
+			fSt5tag = data.fSt5tag;
+			return *this;
+		};
 	};
 
 	typedef AliHLTMUONCoreList<AliStation4Data> Station4List;

@@ -28,6 +28,7 @@ public:  // Unfortunately ROOT requires the following to be public.
 	class AliDataBlock : public TObject
 	{
 	public:
+		AliDataBlock() : fEventNumber(0), fStream() {}
 		virtual ~AliDataBlock() {};
 		
 		Int_t& EventNumber() { return fEventNumber; }

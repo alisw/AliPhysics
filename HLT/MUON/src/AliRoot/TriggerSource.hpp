@@ -308,7 +308,18 @@ private:
 
 
 	// Do not allow copying of this object.
-	AliHLTMUONTriggerSource(const AliHLTMUONTriggerSource& /*object*/) : TObject() {}
+	AliHLTMUONTriggerSource(const AliHLTMUONTriggerSource& /*object*/)
+		: TObject(),
+		  fAreaToUse(kFromWholePlane), fDataToUse(kFromLocalTriggers),
+		  fMaxBlockSize(0xFFFFFFFF), fUseLookupTable(kTRUE),
+		  fFilename(""), fFoldername(""),
+		  fEventIndex(-1), fCurrentEvent(NULL),
+		  fBlockIndex(-1), fCurrentBlock(NULL),
+		  fTriggerIndex(-1), fCurrentTrigger(NULL),
+		  fEventList(AliHLTMUONTriggerSource::AliEventData::Class()),
+		  fHadToLoadgAlice(kFALSE)
+	{}
+
 	AliHLTMUONTriggerSource& operator = (const AliHLTMUONTriggerSource& /*object*/) { return *this; }
 
 
@@ -321,7 +332,7 @@ private:
 	TString fFoldername;  // The folder name from which trigger data was taken.
 	
 	mutable Int_t fEventIndex;               //! The index number of the currently selected event.
-	mutable AliEventData* fCurrentEvent;        //! Pointer to the currently selected event.
+	mutable AliEventData* fCurrentEvent;     //! Pointer to the currently selected event.
 	mutable Int_t fBlockIndex;               //! The index number of the currently selected block.
 	mutable TClonesArray* fCurrentBlock;     //! Pointer to the currently selected block.
 	mutable Int_t fTriggerIndex;             //! The index number of the currently selected trigger record.

@@ -32,11 +32,14 @@ public:
 private:
 	// Do not allow copying.
 	AliHLTMUONClusterFinderProxy(const AliHLTMUONClusterFinderProxy& /*object*/)
-		: AliHLTMUONCoreClusterFinder(), AliHLTMUONClusterFinderCallback()
+		: AliHLTMUONCoreClusterFinder(), AliHLTMUONClusterFinderCallback(),
+		  fClusterFinder(NULL)
 	{}
 
 	AliHLTMUONClusterFinderProxy& operator = (const AliHLTMUONClusterFinderProxy& /*object*/)
-	{ return *this; }
+	{
+		return *this;
+	}
 
 
 	AliHLTMUONClusterFinderInterface* fClusterFinder;  // The clusterfinder we are proxying for.

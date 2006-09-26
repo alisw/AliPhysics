@@ -42,6 +42,9 @@ struct AliHLTMUONCoreTrack
 	AliHLTMUONCorePoint fPoint[10];  // Computed track coordinates on the 10 tracking chambers.
 	AliHLTMUONCoreROI fRegion[10];   // Regions of interest from which clusters were used to compute this track.
 
+
+	AliHLTMUONCoreTrack() : fTriggerid(0), fSign(kUnknownSign), fP(0.0), fPt(0.0) {}
+
 };
 
 

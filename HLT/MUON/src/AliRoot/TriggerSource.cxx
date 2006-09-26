@@ -35,7 +35,15 @@ ClassImp(AliHLTMUONTriggerSource::AliEventData)
 
 
 AliHLTMUONTriggerSource::AliHLTMUONTriggerSource()
-	: TObject(), fEventList(AliHLTMUONTriggerSource::AliEventData::Class())
+	: TObject(),
+	  fAreaToUse(kFromWholePlane), fDataToUse(kFromLocalTriggers),
+	  fMaxBlockSize(0xFFFFFFFF), fUseLookupTable(kTRUE),
+	  fFilename(""), fFoldername(""),
+	  fEventIndex(-1), fCurrentEvent(NULL),
+	  fBlockIndex(-1), fCurrentBlock(NULL),
+	  fTriggerIndex(-1), fCurrentTrigger(NULL),
+	  fEventList(AliHLTMUONTriggerSource::AliEventData::Class()),
+	  fHadToLoadgAlice(kFALSE)
 {
 // Default constructor.
 
@@ -51,7 +59,15 @@ AliHLTMUONTriggerSource::AliHLTMUONTriggerSource()
 
 
 AliHLTMUONTriggerSource::AliHLTMUONTriggerSource(AliMUONDataInterface* data)
-	: TObject(), fEventList(AliHLTMUONTriggerSource::AliEventData::Class())
+	: TObject(),
+	  fAreaToUse(kFromWholePlane), fDataToUse(kFromLocalTriggers),
+	  fMaxBlockSize(0xFFFFFFFF), fUseLookupTable(kTRUE),
+	  fFilename(""), fFoldername(""),
+	  fEventIndex(-1), fCurrentEvent(NULL),
+	  fBlockIndex(-1), fCurrentBlock(NULL),
+	  fTriggerIndex(-1), fCurrentTrigger(NULL),
+	  fEventList(AliHLTMUONTriggerSource::AliEventData::Class()),
+	  fHadToLoadgAlice(kFALSE)
 {
 // Creates a new trigger source object by filling data from the data interface.
 
@@ -1029,14 +1045,15 @@ void AliHLTMUONTriggerSource::ResetTriggerPointers() const
 }
 
 
-AliHLTMUONTriggerSource::AliEventData::AliEventData() : fBlocks(TClonesArray::Class())
+AliHLTMUONTriggerSource::AliEventData::AliEventData() :
+	fEventNumber(-1), fBlocks(TClonesArray::Class())
 {
 	fEventNumber = -1;
 }
 
 
 AliHLTMUONTriggerSource::AliEventData::AliEventData(Int_t eventnumber)
-	: fBlocks(TClonesArray::Class())
+	: fEventNumber(eventnumber), fBlocks(TClonesArray::Class())
 {
 // Create a new event data block with specified event number.
 

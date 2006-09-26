@@ -13,7 +13,7 @@
 
 
 AliHLTMUONClusterFinderProxy::AliHLTMUONClusterFinderProxy(AliHLTMUONClusterFinderInterface* client)
-	: AliHLTMUONCoreClusterFinder(), AliHLTMUONClusterFinderCallback()
+	: AliHLTMUONCoreClusterFinder(), AliHLTMUONClusterFinderCallback(), fClusterFinder(client)
 {
 	fClusterFinder = client;
 }

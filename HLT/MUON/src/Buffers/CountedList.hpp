@@ -30,7 +30,7 @@ public:
 	typedef typename AliHLTMUONCoreList<DataType>::ConstIterator ConstIterator;
 
 
-	AliHLTMUONCoreCountedList() : AliHLTMUONCoreList<DataType>()
+	AliHLTMUONCoreCountedList() : AliHLTMUONCoreList<DataType>(), fCount(0)
 	{
 		fCount = 0;
 	};
@@ -44,7 +44,7 @@ public:
 	};
 	
 	
-	inline DataType* Add()
+	DataType* Add()
 	{
 		return New();
 	};
@@ -118,6 +118,20 @@ public:
 protected:
 
 	UInt fCount;
+
+private:
+
+	// Hide copy constructor and assignment operator
+	
+	AliHLTMUONCoreCountedList(const AliHLTMUONCoreCountedList& list)
+		: AliHLTMUONCoreList<DataType>(), fCount(0)
+	{}
+
+	
+	AliHLTMUONCoreCountedList& operator = (const AliHLTMUONCoreCountedList& list)
+	{
+		return *this;
+	}
 };
 
 

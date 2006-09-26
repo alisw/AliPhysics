@@ -122,6 +122,7 @@ void AliHLTMUONCoreMansoTracker::AliRegionOfInterest::GetBoundaryBox(
 
 
 AliHLTMUONCoreMansoTracker::AliVertex::AliVertex(Float x, Float y, Float z)
+	: fX(x), fY(y), fZ(z)
 {
 // Constructor for vertex.
 
@@ -132,6 +133,7 @@ AliHLTMUONCoreMansoTracker::AliVertex::AliVertex(Float x, Float y, Float z)
 
 
 AliHLTMUONCoreMansoTracker::AliVertex::AliVertex(AliHLTMUONCorePoint xy, Float z)
+	: fX(xy.X()), fY(xy.Y()), fZ(z)
 {
 // Construct vertex from a point on the XY plane and z coordinate.
 
@@ -144,7 +146,9 @@ AliHLTMUONCoreMansoTracker::AliVertex::AliVertex(AliHLTMUONCorePoint xy, Float z
 AliHLTMUONCoreMansoTracker::AliLine::AliLine(
         Float ax, Float ay, Float az,
         Float bx, Float by, Float bz
-    )
+    ) :
+	fMx(ax - bx), fMy(ay - by), fMz(az - bz),
+	fCx(bx), fCy(by), fCz(bz)
 {
 // Construct a line defined by L = M*t + C = (A-B)*t + B
 // where M and C are 3D vectors and t is a free parameter.
@@ -159,7 +163,9 @@ AliHLTMUONCoreMansoTracker::AliLine::AliLine(
 }
 
 
-AliHLTMUONCoreMansoTracker::AliLine::AliLine(AliVertex a, AliVertex b)
+AliHLTMUONCoreMansoTracker::AliLine::AliLine(AliVertex a, AliVertex b) :
+	fMx(a.X() - b.X()), fMy(a.Y() - b.Y()), fMz(a.Z() - b.Z()),
+	fCx(b.X()), fCy(b.Y()), fCz(b.Z())
 {
 // Contruct a line to go through two vertices a and b.
 
@@ -185,7 +191,12 @@ AliHLTMUONCorePoint AliHLTMUONCoreMansoTracker::AliLine::FindIntersectWithXYPlai
 }
 
 
-AliHLTMUONCoreMansoTracker::AliHLTMUONCoreMansoTracker() : AliHLTMUONCoreTracker()
+AliHLTMUONCoreMansoTracker::AliHLTMUONCoreMansoTracker() :
+	AliHLTMUONCoreTracker(),
+	fSm4state(kSM4Idle), fSm5state(kSM5Idle),
+	fRequestsCompleted(0), fSt4chamber(kChamber1),
+	fV1(), fMc1(), fSt5z(0), fSt5data(), fSt4z(0), fSt4points(),
+	fSt5rec(), fFoundPoint()
 {
 // Default constructor 
 

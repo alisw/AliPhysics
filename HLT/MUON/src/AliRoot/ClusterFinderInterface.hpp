@@ -20,6 +20,7 @@ class AliHLTMUONClusterFinderInterface
 {
 public:
 	AliHLTMUONClusterFinderInterface(AliHLTMUONDummyClusterFinder* clusterfinder)
+		: fClusterFinder(clusterfinder)
 	{
 		fClusterFinder = clusterfinder;
 	};
@@ -35,6 +36,17 @@ public:
         void SetCallback(AliHLTMUONClusterFinderCallback* callback);
 
 private:
+
+	
+	AliHLTMUONClusterFinderInterface(const AliHLTMUONClusterFinderInterface& /*clusterfinder*/)
+		: fClusterFinder(NULL)
+	{}
+
+	AliHLTMUONClusterFinderInterface& operator = (const AliHLTMUONClusterFinderInterface& /*clusterfinder*/)
+	{
+		return *this;
+	}
+
 
 	AliHLTMUONDummyClusterFinder* fClusterFinder;   //! Pointer to interpreted cluster finder class.
 };

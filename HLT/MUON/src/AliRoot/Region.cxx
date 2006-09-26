@@ -13,14 +13,15 @@
 ClassImp(AliHLTMUONRegion)
 
 
-AliHLTMUONRegion::AliHLTMUONRegion() : TObject()
+AliHLTMUONRegion::AliHLTMUONRegion() :
+	TObject(), fLeft(0), fRight(0), fBottom(0), fTop(0)
 {
 	fLeft = fRight = fBottom = fTop = 0.0;
 }
 
 
 AliHLTMUONRegion::AliHLTMUONRegion(Float_t left, Float_t right, Float_t bottom, Float_t top)
-	 : TObject()
+	 : TObject(), fLeft(0), fRight(0), fBottom(0), fTop(0)
 {
 // Construct a region of interest from the boundary box defined by the borders
 // 'left', 'right', 'top' and 'bottom'.
