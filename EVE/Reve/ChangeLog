@@ -1,3 +1,20 @@
+2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RGBrowser.cxx:
+	* RGEditor.cxx:
+	* RGEditor.h:
+	Use new functionality from TGedEditor.
+
+	* PointSetArrayEditor.cxx:
+	* PointSetArrayEditor.h:
+	* RGeoNodeEditors.cxx:
+	* RGeoNodeEditors.h:
+	* RenderElementEditor.cxx:
+	* RenderElementEditor.h:
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	Conform to new TGedFrame paradigm in ROOT.
+
 2006-09-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* MCHelixLine.hi:
