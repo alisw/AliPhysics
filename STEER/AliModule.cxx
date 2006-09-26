@@ -688,6 +688,13 @@ void AliModule::ReadEuclidMedia(const char* filnam)
 } 
 
 //_______________________________________________________________________
+void AliModule::AddAlignableVolumes() const
+{
+  // 
+  AliWarning(Form(" %s still has to implement the AddAlignableVolumes method!",GetName()));
+}
+
+//_______________________________________________________________________
 void AliModule::RemapTrackReferencesIDs(Int_t *map)
 {
   // 

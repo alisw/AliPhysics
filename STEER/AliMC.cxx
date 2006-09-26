@@ -198,7 +198,22 @@ void  AliMC::InitGeometry()
     AliInfo(Form("%10s R:%.2fs C:%.2fs",
 		 detector->GetName(),stw.RealTime(),stw.CpuTime()));
   }
-  
+}
+
+//_______________________________________________________________________
+void  AliMC::SetAllAlignableVolumes()
+{ 
+  //
+  // Add alignable volumes (TGeoPNEntries) looping on all
+  // active modules
+  //
+
+  AliInfo(Form("Setting entries for all alignable volumes of active detectors"));
+  AliModule *detector;
+  TIter next(gAlice->Modules());
+  while((detector = dynamic_cast<AliModule*>(next()))) {
+    detector->AddAlignableVolumes();
+  }
 }
 
 //_______________________________________________________________________
@@ -622,6 +637,8 @@ void AliMC::Init()
 
    //=================Create Materials and geometry
    gMC->Init();
+   //Set alignable volumes for the whole geometry
+   SetAllAlignableVolumes();
    //Read the cuts for all materials
    ReadTransPar();
    //Build the special IMEDIA table

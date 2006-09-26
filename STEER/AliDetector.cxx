@@ -149,6 +149,13 @@ void AliDetector::Publish(const char */*dir*/, void */*address*/, const char */*
 }
 
 //_______________________________________________________________________
+void AliDetector::AddAlignableVolumes() const
+{
+  // 
+  AliWarning(Form("%s still has to implement the AddAlignableVolumes method!",GetName()));
+}
+
+//_______________________________________________________________________
 TBranch* AliDetector::MakeBranchInTree(TTree *tree, const char* name, 
                                        void* address, Int_t size,
                                        const char *file)

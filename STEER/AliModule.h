@@ -105,7 +105,7 @@ public:
   virtual void        Browse(TBrowser *) {}
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}
-  virtual void        AddAlignableVolumes() const {}
+  virtual void        AddAlignableVolumes() const;
   virtual void        Disable();
   virtual void        Enable();
   virtual void        PreTrack(){}

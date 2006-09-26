@@ -50,6 +50,7 @@ public:
   virtual void        MakeBranch(Option_t *opt=" ");
   virtual void        ResetDigits();
   virtual void        ResetHits();
+  virtual void        AddAlignableVolumes() const;
 
   virtual void        ResetPoints();
   virtual void        SetTreeAddress();

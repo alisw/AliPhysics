@@ -38,6 +38,7 @@ public:
 //
    virtual  void  ConstructGeometry();
    virtual  void  InitGeometry();     
+   virtual  void  SetAllAlignableVolumes();     
    virtual  void  GeneratePrimaries();
    virtual  void  BeginEvent();
    virtual  void  BeginPrimary();
