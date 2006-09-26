@@ -120,8 +120,8 @@ Int_t AliVertexerTracks::PrepareTracks(TTree &trkTree, Int_t OptImpParCut) {
   AliESDVertex *initVertex = new AliESDVertex(fNominalPos,fNominalSigma);
 
   Int_t    nEntries = (Int_t)trkTree.GetEntries();
-  if(!fTrkArray.IsEmpty()) fTrkArray.Clear();
-  fTrkArray.Expand(nEntries);
+  if(!fTrkArray.IsEmpty()) fTrkArray.Delete();
+  // fTrkArray.Expand(nEntries);
 
   if(fDebug) {
     printf(" PrepareTracks()\n");
@@ -217,6 +217,7 @@ AliVertex* AliVertexerTracks::VertexForSelectedTracks(TTree *trkTree) {
     fVert.SetXYZ(vtx);
     fVert.SetDispersion(999);
     fVert.SetNContributors(-5);
+    fTrkArray.Delete();
     return &fVert;
   }
  
@@ -258,13 +259,14 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
     if(skipThis) continue;
     AliESDtrack *et = esdEvent->GetTrack(i);
     esdTrack = new AliESDtrack(*et);
-    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) continue;
-    if(!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) continue;
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) {delete esdTrack;continue;}
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) {delete esdTrack;continue;}
     Int_t nclus=esdTrack->GetNcls(0); // check number of clusters in ITS
-    if(nclus<fMinITSClusters) continue;
+    if(nclus<fMinITSClusters) {delete esdTrack;continue;}
     trkTree->Fill();
+    delete esdTrack;
   }
-  delete esdTrack;
+  //  delete esdTrack;
  
 
   // ITERATION 1
@@ -277,6 +279,8 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
     printf("TooFewTracks\n");
     TooFewTracks(esdEvent);
     if(fDebug) fCurrentVertex->PrintStatus();
+    fTrkArray.Delete();
+    delete trkTree;
     return fCurrentVertex; 
   }
 
@@ -294,7 +298,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
   // vertex fitter
   VertexFitter(kTRUE);
   if(fDebug) printf(" vertex fit completed\n");
-
+  fTrkArray.Delete();
   // ITERATION 2
   // propagate tracks to best between initVertex and fCurrentVertex
   // preselect tracks (reject for |d0|>fNSigma*sigma w.r.t. best 
@@ -306,6 +310,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
     printf("TooFewTracks\n");
     TooFewTracks(esdEvent);
     if(fDebug) fCurrentVertex->PrintStatus();
+    fTrkArray.Delete();
     return fCurrentVertex; 
   }
 
@@ -325,7 +330,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESD *esdEvent)
   if(fDebug) printf(" vertex fit completed\n");
 
 
-  fTrkArray.Clear();
+  fTrkArray.Delete();
 
   // take true pos from ESD
   Double_t tp[3];
@@ -370,14 +375,15 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertexOld(const AliESD *esdEvent)
   for(Int_t i=0; i<entr; i++) {
     AliESDtrack *et = esdEvent->GetTrack(i);
     esdTrack = new AliESDtrack(*et);
-    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) continue;
-    if(!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) continue;
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) {delete esdTrack;continue;}
+    if(!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) {delete esdTrack;continue;}
     Int_t nclus=esdTrack->GetNcls(0); // check number of clusters in ITS
     if(nclus<fMinITSClusters) continue;
 
     trkTree->Fill();
+    delete esdTrack;
   }
-  delete esdTrack;
+  //  delete esdTrack;
 
   // preselect tracks and propagate them to initial vertex position
   Int_t nTrks = PrepareTracks(*trkTree,1);
@@ -386,6 +392,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertexOld(const AliESD *esdEvent)
   if(nTrks < fMinTracks) {
     printf("TooFewTracks\n");
     fCurrentVertex = new AliESDVertex(0.,0.,-1);
+    fTrkArray.Delete();
     return fCurrentVertex; 
   }
 
@@ -409,7 +416,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertexOld(const AliESD *esdEvent)
   fCurrentVertex->SetTruePos(tp);
   fCurrentVertex->SetTitle("VertexerTracks");
 
-  fTrkArray.Clear();
+  fTrkArray.Delete();
   return fCurrentVertex;
 }
 //----------------------------------------------------------------------------
@@ -426,6 +433,7 @@ AliVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray) {
     fVert.SetXYZ(vtx);
     fVert.SetDispersion(999);
     fVert.SetNContributors(-5);
+    fTrkArray.Delete();
     return &fVert;
   }
   TTree *trkTree = new TTree("TreeT","tracks");
@@ -930,7 +938,7 @@ void AliVertexerTracks::VertexFitter(Bool_t useNominalVtx) {
 
   } // end loop on the 2 steps
 
-  delete t;
+  // delete t;
 
   if(failed) { 
     printf("TooFewTracks\n");
@@ -997,3 +1005,4 @@ void AliVertexerTracks::TooFewTracks(const AliESD* esdEvent) {
 
   return;
 }
+
