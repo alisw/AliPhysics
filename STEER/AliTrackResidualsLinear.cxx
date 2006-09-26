@@ -53,6 +53,7 @@ AliTrackResidualsLinear::AliTrackResidualsLinear():
     fFixed[ipar]  = 0;;
     fParams[ipar]  = 0;
   }  
+  for (Int_t icov=0; icov<36; icov++){ fCovar[icov]=0;}
 }
 
 //______________________________________________________________________________
@@ -68,6 +69,7 @@ AliTrackResidualsLinear::AliTrackResidualsLinear(Int_t ntracks):
     fFixed[ipar]  = 0;
     fParams[ipar]  = 0;
   }
+  for (Int_t icov=0; icov<36; icov++){ fCovar[icov]=0;}
 }
  
 //______________________________________________________________________________
@@ -84,6 +86,8 @@ AliTrackResidualsLinear::AliTrackResidualsLinear(const AliTrackResidualsLinear &
     fFixed[ipar]   = res.fFixed[ipar];
     fParams[ipar]  = res.fParams[ipar];
   }
+  for (Int_t icov=0; icov<36; icov++){ fCovar[icov]= res.fCovar[icov];}
+  fChi2Orig = res.fChi2Orig;
 }
 
 //______________________________________________________________________________
@@ -154,7 +158,7 @@ void AliTrackResidualsLinear::AddPoints(AliTrackPoint &p, AliTrackPoint &pprime)
   mcovp(1,0) = covp[1]; mcovp(1,1) = covp[3]; mcovp(1,2) = covp[4];
   mcovp(2,0) = covp[2]; mcovp(2,1) = covp[4]; mcovp(2,2) = covp[5];
   mcov+=mcovp;
-  mcov.Invert();
+  //mcov.Invert();
   if (!mcov.IsValid()) return; 
   TMatrixD mcovBack = mcov;  // for debug purposes
   //
@@ -184,7 +188,7 @@ void AliTrackResidualsLinear::AddPoints(AliTrackPoint &p, AliTrackPoint &pprime)
   
   TMatrixD  deltaT(matrixV, TMatrixD::kTransposeMult, deltaR);   // tranformed delta
   TMatrixD  mparamT(matrixV,TMatrixD::kTransposeMult, mparam);   // tranformed linear transformation
-  if (0){    
+  if (AliLog::GetDebugLevel("","AliTrackResidualsLinear")>2){    
     //
     // debug part
     //
@@ -210,20 +214,50 @@ void AliTrackResidualsLinear::AddPoints(AliTrackPoint &p, AliTrackPoint &pprime)
     printf("Rotated  param matrix\n"); 
     mparamT.Print();
     //
+    //
+    printf("Trans Matrix:\n");
+    matrixV.Print();
+    printf("Delta Orig\n");
+    deltaR.Print();
+    printf("Delta Rotated");
+    deltaT.Print();
+    //
+    //    
   }
   //
-  for (Int_t idim = 0; idim<3; idim++){
+  Double_t sumChi2=0;
+  for (Int_t idim = 1; idim<3; idim++){
     Double_t yf;     // input points to fit in TLinear fitter
     Double_t xf[6];  // input points to fit
     yf = deltaT(idim,0);
     for (Int_t ipar =0; ipar<6; ipar++) xf[ipar] = mparamT(idim,ipar); 
     if (covDiagonal[idim]>0.){
-      fFitter->AddPoint(xf,yf, TMath::Sqrt(1/covDiagonal[idim]));
+      fFitter->AddPoint(xf,yf, TMath::Sqrt(covDiagonal[idim]));
+      // accumulate chi2
+      Double_t chi2       = (yf*yf)/covDiagonal[idim];
+      fChi2Orig += (yf*yf)/covDiagonal[idim];  
+      if (chi2>100 && AliLog::GetDebugLevel("","AliTrackResidualsLinear")>1){
+	printf("Too big chi2- %f\n",chi2);
+	printf("Delta Orig\n");
+	deltaR.Print();
+	printf("Delta Rotated");
+	deltaT.Print();
+	matrixV.Print();
+	printf("Too big chi2 - End\n");	
+      }
+      sumChi2+=chi2;
     }
-    // accumulate chi2
-    fChi2Orig += (yf*yf)*covDiagonal[idim];          
+    else{
+      printf("Bug\n");
+    }
   }
-  fNdf +=3;
+  if (AliLog::GetDebugLevel("","AliTrackResidualsLinear")>1){
+    TMatrixD matChi0=(mcov.Invert()*deltaR);
+    TMatrixD matChi2=deltaR.T()*matChi0;
+    printf("Chi2:\t%f\t%f", matChi2(0,0), sumChi2);
+  }
+
+  fNdf +=2;
 }
 
 //______________________________________________________________________________
@@ -248,7 +282,7 @@ Bool_t AliTrackResidualsLinear::Update()
   }
   //
   fFitter->ReleaseParameter(0);
-  for (Int_t ipar=0; ipar<7; ipar++) {
+  for (Int_t ipar=0; ipar<6; ipar++) {
     if (fBFixed[ipar])  fFitter->ReleaseParameter(ipar+1);
   }
     
@@ -264,6 +298,12 @@ Bool_t AliTrackResidualsLinear::Update()
   fParams[3] = vector[4];
   fParams[4] = vector[5];
   fParams[5] = vector[6];
+  TMatrixD covar(7,7);
+  fFitter->GetCovarianceMatrix(covar);
+  for (Int_t i0=0; i0 <6; i0++)
+    for (Int_t j0=0; j0 <6; j0++){
+      fCovar[i0*6+j0] = covar(i0+1,j0+1);
+    }
   //
   fAlignObj->SetPars(fParams[0], fParams[1], fParams[2],
 		     TMath::RadToDeg()*fParams[3],

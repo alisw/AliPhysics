@@ -33,25 +33,31 @@ class AliTrackFitterRieman : public AliTrackFitter{
   Bool_t GetPCA(const AliTrackPoint &p, AliTrackPoint &p2) const;
   void SetMaxDelta(Float_t maxDelta) { fMaxDelta = maxDelta;}
   Float_t GetMaxDelta() const { return fMaxDelta;}
-
+  void  SetCorrection(Bool_t correction){ fBCorrection=correction;}
+  Bool_t  GetCorrection() const {return fBCorrection ;}
   void Reset();
   void AddPoint(Float_t x, Float_t y, Float_t z, Float_t sy, Float_t sz);
   void Update();
 
   Double_t GetC() const              {return fRieman->GetC();}
-  Double_t GetYat(Double_t x) const  {return fRieman->GetYat(x);}
-  Double_t GetZat(Double_t x) const  {return fRieman->GetZat(x);}
+  Double_t GetYat(Double_t x) const;
+  Double_t GetZat(Double_t x) const;
   Double_t GetDYat(Double_t x) const {return fRieman->GetDYat(x);}
-  Double_t GetDZat(Double_t x) const {return fRieman->GetDZat(x);}
+  Double_t GetDZat(Double_t x) const {return fRieman->GetDZat(x);}  
+  Double_t GetErrY2at(Double_t x) const;
+  Double_t GetErrZ2at(Double_t x) const;
+
   Bool_t   GetXYZat(Double_t r, Float_t *xyz) const {return fRieman->GetXYZat(r, fAlpha,xyz);}
   AliRieman *GetRieman() const {return fRieman;}
  protected:
-
+  Bool_t        fBCorrection; //add  correction for non-helicity
   Double_t      fAlpha;     //angle to transform to the fitting coordinate system
   Int_t         fNUsed;     //actual number of space-points used in the fit
   Bool_t        fConv;      //indicates convergation
   Float_t       fMaxDelta;  // maximal allowed delta in PCA exported for PCA minimization
   AliRieman    *fRieman;    // rieman fitter
+  Double_t      fCorrY[4];  // correction polynom coef
+  Double_t      fCorrZ[4];  // correction polynom coef
  private:
   TTreeSRedirector *fDebugStream;   //!debug streamer
   ClassDef(AliTrackFitterRieman,2)  // Fast fit of helices on ITS RecPoints
