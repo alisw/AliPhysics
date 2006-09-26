@@ -243,4 +243,5 @@ void TrackListEditor::DoFitDecay()
 void TrackListEditor::DoPtRange()
 {
   fTC->SelectByPt(fPtRange->GetMin(), fPtRange->GetMax());
+  Update();
 }

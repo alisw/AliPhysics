@@ -62,4 +62,5 @@ void PointSetArrayEditor::SetModel(TObject* obj)
 void PointSetArrayEditor::DoRange()
 {
   fM->SetRange(fRange->GetMin(), fRange->GetMax());
+  Update();
 }
