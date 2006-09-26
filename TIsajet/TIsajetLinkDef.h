@@ -5,5 +5,5 @@
 #pragma link off all functions;
  
 #pragma link C++ class TIsajet+;
-
+#pragma link C++ class AliGenIsajet+;
 #endif
