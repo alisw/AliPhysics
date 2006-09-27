@@ -207,7 +207,7 @@ void VSDSelector::SelectParticles(const Text_t* selection)
   // printf("%d entries in selection '%s'.\n", n,  selection);
 
   if(n > 0) {
-    Reve::PadHolder pHolder(true, gReve->GetCC());
+    Reve::PadHolder pHolder(true, gReve->GetGLCanvas());
     for(Int_t i=0; i<n; i++) {
       Int_t label = evl.GetEntry(i);
       mTreeK->GetEntry(label);
@@ -372,7 +372,7 @@ void VSDSelector::SelectRecTracks()
     throw (eH + "No entries found in ESD data.");
 
   if(n > 0) {
-    Reve::PadHolder pHolder(true, gReve->GetCC());
+    Reve::PadHolder pHolder(true, gReve->GetGLCanvas());
 
     TGListTreeItem* parent = fListTree->FindItemByPathname("Event0");
     TrackList* cont = new TrackList(); 
