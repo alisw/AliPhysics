@@ -5,4 +5,4 @@ SRCS     := $(patsubst EVE/%, %, ${ORGSRCS})
 HDRS     := $(SRCS:.cxx=.h)
 DHDR     := Reve/LinkDef.h
 
-all-EVE: all-Reve all-reve all-Alieve
+all-EVE: all-Reve all-reve all-Alieve all-alieve
