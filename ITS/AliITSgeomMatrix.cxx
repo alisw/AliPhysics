@@ -358,7 +358,15 @@ fPath(){
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::AngleFromMatrix(){
     // Computes the angles from the rotation matrix up to a phase of 
-    // 180 degrees.
+    // 180 degrees. The matrix used in AliITSgeomMatrix::MatrixFromAngle()
+    // and  its inverse AliITSgeomMatrix::AngleFromMatrix() are defined in 
+    // the following ways, R = Rz*Ry*Rx (M=R*L+T) where
+    //     1   0   0       Cy  0 -Sy       Cz -Sz  0
+    // Rx= 0   Cx -Sx  Ry=  0  1   0   Rz= Sz  Cz  0
+    //     0   Sx  Cx      Sy  0  Cy        0   0  1
+    // The choice of the since of S, comes from the choice between 
+    // the rotation of the object or the coordinate system (view). I think
+    // that this choice is the first, the rotation of the object.
     // Inputs:
     //   none
     // Outputs:
@@ -370,7 +378,7 @@ void AliITSgeomMatrix::AngleFromMatrix(){
 
     rx = TMath::ATan2(fm[2][1],fm[2][2]);if(rx<0.0) rx += 2.0*TMath::Pi();
     ry = TMath::ASin(fm[0][2]);          if(ry<0.0) ry += 2.0*TMath::Pi();
-    rz = TMath::ATan2(fm[1][1],fm[0][0]);if(rz<0.0) rz += 2.0*TMath::Pi();
+    rz = TMath::ATan2(fm[1][0],fm[0][0]);if(rz<0.0) rz += 2.0*TMath::Pi();
     frot[0] = rx;
     frot[1] = ry;
     frot[2] = rz;
@@ -379,7 +387,15 @@ void AliITSgeomMatrix::AngleFromMatrix(){
 //----------------------------------------------------------------------
 void AliITSgeomMatrix::MatrixFromAngle(){
     // Computes the Rotation matrix from the angles [radians] kept in this
-    // class.
+    // class. The matrix used in AliITSgeomMatrix::MatrixFromAngle() and 
+    // its inverse AliITSgeomMatrix::AngleFromMatrix() are defined in 
+    // the following ways, R = Rz*Ry*Rx (M=R*L+T) where
+    //     1   0   0       Cy  0 -Sy       Cz -Sz  0
+    // Rx= 0   Cx -Sx  Ry=  0  1   0   Rz= Sz  Cz  0
+    //     0   Sx  Cx      Sy  0  Cy        0   0  1
+    // The choice of the since of S, comes from the choice between 
+    // the rotation of the object or the coordinate system (view). I think
+    // that this choice is the first, the rotation of the object.
     // Inputs:
     //   none
     // Outputs:
