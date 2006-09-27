@@ -1,3 +1,7 @@
+2006-09-27  Matevz TADEL  <matevz.tadel@ijs.si>
+
+	Merged HEAD to EVE-dev. Tagged EVE-dev(EVE-dev-after-merge).
+
 2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/clusters_from_label.C:
