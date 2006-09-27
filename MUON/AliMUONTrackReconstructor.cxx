@@ -112,7 +112,9 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUOND
     fNRecTrackHits(0),
     fMUONData(data),
     fLoader(loader),
-    fMuons(0)
+    fMuons(0),
+    fTriggerTrack(new AliMUONTriggerTrack())
+
 {
   // Constructor for class AliMUONTrackReconstructor
   SetReconstructionParametersToDefaults();
@@ -163,7 +165,8 @@ AliMUONTrackReconstructor::~AliMUONTrackReconstructor(void)
   delete fHitsForRecPtr; // Correct destruction of everything ???? or delete [] ????
   for (Int_t st = 0; st < AliMUONConstants::NTrackingCh()/2; st++)
     delete fSegmentsPtr[st]; // Correct destruction of everything ????
-  return;
+
+  delete fTriggerTrack;
 }
 
   //__________________________________________________________________________
@@ -961,8 +964,6 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
     AliMUONLocalTrigger *locTrg;
     AliMUONGlobalTrigger *gloTrg;
 
-    AliMUONTriggerTrack *recTriggerTrack = 0;
-
     TTree* treeR = fLoader->TreeR();
     
     // Loading MUON subsystem
@@ -987,28 +988,11 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
     // global trigger for trigger pattern
     gloTrigPat = 0;
     globalTrigger = fMUONData->GlobalTrigger(); 
-    gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);	
-    if (gloTrg) {
-      if (gloTrg->SinglePlusLpt())  gloTrigPat|= 0x1;
-      if (gloTrg->SinglePlusHpt())  gloTrigPat|= 0x2;
-      if (gloTrg->SinglePlusApt())  gloTrigPat|= 0x4;
-      
-      if (gloTrg->SingleMinusLpt()) gloTrigPat|= 0x8;
-      if (gloTrg->SingleMinusHpt()) gloTrigPat|= 0x10;
-      if (gloTrg->SingleMinusApt()) gloTrigPat|= 0x20;
-      
-      if (gloTrg->SingleUndefLpt()) gloTrigPat|= 0x40;
-      if (gloTrg->SingleUndefHpt()) gloTrigPat|= 0x80;
-      if (gloTrg->SingleUndefApt()) gloTrigPat|= 0x100;
-      
-      if (gloTrg->PairUnlikeLpt())  gloTrigPat|= 0x200;
-      if (gloTrg->PairUnlikeHpt())  gloTrigPat|= 0x400;
-      if (gloTrg->PairUnlikeApt())  gloTrigPat|= 0x800;
-      
-      if (gloTrg->PairLikeLpt())    gloTrigPat|= 0x1000;
-      if (gloTrg->PairLikeHpt())    gloTrigPat|= 0x2000;
-      if (gloTrg->PairLikeApt())    gloTrigPat|= 0x4000;
-    }
+    gloTrg = (AliMUONGlobalTrigger*)globalTrigger->UncheckedAt(0);
+ 
+    if (gloTrg)
+      gloTrigPat = gloTrg->GetGlobalPattern();
+  
 
     // local trigger for tracking 
     localTrigger = fMUONData->LocalTrigger();    
@@ -1026,32 +1010,36 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
       locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
 
       if (!newTrigger) { // old trigger
-//	  printf("AliMUONTrackReconstructor::MakeTriggerTrack using OLD trigger \n");
-	  AliMUONTriggerCircuit * circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
-	  y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-	  stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
-	  y21 = circuit->GetY21Pos(stripX21);	
-	  x11 = circuit->GetX11Pos(locTrg->LoStripY());
+	AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using OLD trigger \n");
+	AliMUONTriggerCircuit * circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
+	y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+	stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+	y21 = circuit->GetY21Pos(stripX21);	
+	x11 = circuit->GetX11Pos(locTrg->LoStripY());
+
       } else { // new trigger
-//       printf("AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
-	  AliMUONTriggerCircuitNew * circuit = 
-	      &(pMUON->TriggerCircuitNew(locTrg->LoCircuit()-1)); // -1 !!!
-	  y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-	  stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
-	  y21 = circuit->GetY21Pos(stripX21);	
-	  x11 = circuit->GetX11Pos(locTrg->LoStripY());
+	AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
+	AliMUONTriggerCircuitNew * circuit = 
+	  &(pMUON->TriggerCircuitNew(locTrg->LoCircuit()-1)); // -1 !!!
+	y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+	stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+	y21 = circuit->GetY21Pos(stripX21);	
+	x11 = circuit->GetX11Pos(locTrg->LoStripY());
       }
-//      printf(" MakeTriggerTrack %d %d %d %d %d %f %f %f \n",i,locTrg->LoCircuit(),locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11);
+
+      AliDebug(1, Form(" MakeTriggerTrack %d %d %d %d %d %f %f %f \n",i,locTrg->LoCircuit(),
+		       locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11));
 
       Float_t thetax = TMath::ATan2( x11 , z11 );
       Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
       
-      recTriggerTrack = new AliMUONTriggerTrack(x11,y11,thetax,thetay,gloTrigPat);
-      
-      // since static statement does not work, set gloTrigPat for each track
-      
-      fMUONData->AddRecTriggerTrack(*recTriggerTrack);
-      delete recTriggerTrack;
+      fTriggerTrack->SetX11(x11);
+      fTriggerTrack->SetY11(y11);
+      fTriggerTrack->SetThetax(thetax);
+      fTriggerTrack->SetThetay(thetay);
+      fTriggerTrack->SetGTPattern(gloTrigPat);
+            
+      fMUONData->AddRecTriggerTrack(*fTriggerTrack);
     } // end of loop on Local Trigger
     return kTRUE;    
 }

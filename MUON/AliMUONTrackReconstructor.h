@@ -25,6 +25,7 @@ class AliMUONData;
 class AliRunLoader;
 class AliLoader;
 class AliTrackReference;
+class AliMUONTriggerTrack;
 
 class AliMUONTrackReconstructor : public TObject {
 
@@ -176,6 +177,8 @@ class AliMUONTrackReconstructor : public TObject {
   AliLoader* fLoader; ///< MUON loader to get data
 
   Int_t fMuons; ///< AZ - number of muons within acceptance - just for tests
+
+  AliMUONTriggerTrack* fTriggerTrack; ///< Trigger track structure
 
   // Functions
   AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); // copy constructor
