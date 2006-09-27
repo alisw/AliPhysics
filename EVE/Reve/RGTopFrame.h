@@ -37,7 +37,8 @@ public:
   enum LookType_e { LT_Classic, LT_Editor, LT_GLViewer };
 
 private:
-  TCanvas             *fGLCanvas;
+  TCanvas             *fCC;
+  TCanvas             *fHistoCanvas;
   VSDSelector         *fSelector;
   RGBrowser           *fBrowser;
   TGStatusBar         *fStatusBar;
@@ -63,7 +64,7 @@ protected:
 public:
   RGTopFrame(const TGWindow *p, UInt_t w, UInt_t h, LookType_e look=LT_Classic);
 
-  TCanvas*     GetGLCanvas()   { return fGLCanvas; }
+  TCanvas*     GetCC()         { return fCC; }
   VSDSelector* GetSelector()   { return fSelector; }
   RGBrowser*   GetBrowser()    { return fBrowser; }
   TGStatusBar* GetStatusBar()  { return fStatusBar; }

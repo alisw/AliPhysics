@@ -195,6 +195,7 @@ void RenderElement::UpdateItems()
     if(fMainColorPtr != 0) i->fItem->SetColor(GetMainColor());
     gClient->NeedRedraw(i->fTree);
   }
+  gReve->Redraw3D(); // This will go away once editor can notify ALL changes.
 }
 
 /**************************************************************************/
@@ -241,12 +242,7 @@ void RenderElement::SetRnrElement(Bool_t rnr)
 {
   if(rnr != fRnrElement) {
     fRnrElement = rnr;
-    for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
-      if (i->fItem->IsChecked() != rnr) {
-        i->fItem->CheckItem(fRnrElement);
-        gClient->NeedRedraw(i->fTree);
-      }
-    }
+    UpdateItems();
   }
 }
 
@@ -256,12 +252,7 @@ void RenderElement::SetMainColor(Color_t color)
 {
   if (fMainColorPtr) {
     *fMainColorPtr = color;
-    for(sLTI_i i=fItems.begin(); i!=fItems.end(); ++i) {
-      if(i->fItem->GetColor() != color) {
-        i->fItem->SetColor(GetMainColor());
-        gClient->NeedRedraw(i->fTree);
-      }
-    }
+    UpdateItems();
   }
 }
 

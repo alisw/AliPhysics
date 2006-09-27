@@ -26,11 +26,10 @@ protected:
   TGColorSelect*     fMainColor;
 
 public:
-  RenderElementEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-		      UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  RenderElementEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
   ~RenderElementEditor();
 
-  virtual void SetModel(TObject* obj);
+  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
 
   void DoRnrElement();
   void DoMainColor(Pixel_t color);

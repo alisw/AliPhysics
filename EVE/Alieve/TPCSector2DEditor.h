@@ -30,11 +30,10 @@ protected:
   TGCheckButton*   fUseTexture;
 
 public:
-  TPCSector2DEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-		    UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  TPCSector2DEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
   ~TPCSector2DEditor();
 
-  virtual void SetModel(TObject* obj);
+  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
 
   void DoShowMax();
   void DoAverage();

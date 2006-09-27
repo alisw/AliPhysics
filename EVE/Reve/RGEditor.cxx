@@ -1,8 +1,6 @@
 // $Header$
 
 #include "RGEditor.h"
-#include "RenderElement.h"
-#include "RGTopFrame.h"
 
 #include <TGedFrame.h>
 #include <TGCanvas.h>
@@ -19,26 +17,25 @@ ClassImp(RGEditor)
 RGEditor::RGEditor(TCanvas* canvas) : TGedEditor(canvas)
 {}
 
-void RGEditor::DisplayRenderElement(RenderElement* re)
-{
-  fRnrElement = re;
-  TObject* obj = fRnrElement ? fRnrElement->GetObject() : 0;
-  SetModel(fPad, obj, kButton1Down);
-}
-
 void RGEditor::DisplayObject(TObject* obj)
 {
-  fRnrElement = 0;
-  SetModel(fPad, obj, kButton1Down);
-}
+  fModel = obj;
 
-void RGEditor::Update(TGedFrame* /*gframe*/)
-{
-  // Virtual method from TGedEditor ... called on every change.
-
-  if (fRnrElement) {
-    fRnrElement->UpdateItems();
+  if(obj) {
+    if(obj->IsA() != fClass && !obj->IsA()->InheritsFrom(fClass)) {
+      fClass = obj->IsA();
+      GetEditors();
+    }
+  } else {
+    fCan->UnmapWindow();
+    return;
   }
 
-  gReve->Redraw3D();
+  TGFrameElement *el;
+  TIter next(fStyle->GetList());
+  while ((el = (TGFrameElement *) next())) {
+    if ((el->fFrame)->InheritsFrom(TGedFrame::Class()))
+      ((TGedFrame *)(el->fFrame))->SetModel(fPad, fModel, 0);
+  }
+  fCan->MapWindow();
 }

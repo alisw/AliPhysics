@@ -11,6 +11,19 @@ TPolyMarker3D* make_vertex_marker(AliESDVertex* v, const Text_t* name)
 
   TPolyMarker3D* m = new TPolyMarker3D(8);
   m->SetName(name);
+
+  // Problem with volume/length suppression of objects in TGLViewer
+  /*
+  m->SetPoint(0, x[0]+e[0], x[1]+e[1], x[2]+e[2]);
+  m->SetPoint(1, x[0]+e[0], x[1]-e[1], x[2]+e[2]);
+  m->SetPoint(2, x[0]-e[0], x[1]-e[1], x[2]+e[2]);
+  m->SetPoint(3, x[0]-e[0], x[1]+e[1], x[2]+e[2]);
+
+  m->SetPoint(4, x[0]+e[0], x[1]+e[1], x[2]-e[2]);
+  m->SetPoint(5, x[0]+e[0], x[1]-e[1], x[2]-e[2]);
+  m->SetPoint(6, x[0]-e[0], x[1]+e[1], x[2]-e[2]);
+  m->SetPoint(7, x[0]-e[0], x[1]-e[1], x[2]-e[2]);
+  */
   m->SetPoint(0, x[0], x[1], x[2]);
 
   return m;

@@ -38,11 +38,10 @@ protected:
   TGTextButton* fDeleteSectors3D;
 
 public:
-  TPCLoaderEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-		  UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  TPCLoaderEditor(const TGWindow* p=0, Int_t id=-1, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
   ~TPCLoaderEditor();
 
-  virtual void SetModel(TObject* obj);
+  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
 
   void FileSelect();
   void FileChanged();

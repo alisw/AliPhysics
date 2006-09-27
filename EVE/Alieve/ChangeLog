@@ -1,15 +1,3 @@
-2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
-
-	* TPCLoaderEditor.cxx:
-	* TPCLoaderEditor.h:
-	* TPCSector2DEditor.cxx:
-	* TPCSector2DEditor.h:
-	* TPCSector3DEditor.cxx:
-	* TPCSector3DEditor.h:
-	* TPCSectorVizEditor.cxx:
-	* TPCSectorVizEditor.h:
-	Conform to new TGedFrame paradigm in ROOT.
-
 2006-09-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* MUONDigitsInfo.cxx:

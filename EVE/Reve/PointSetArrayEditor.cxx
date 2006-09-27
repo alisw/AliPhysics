@@ -21,10 +21,9 @@ using namespace Reve;
 
 ClassImp(PointSetArrayEditor)
 
-PointSetArrayEditor::PointSetArrayEditor(const TGWindow *p,
-					 Int_t width, Int_t height,
-					 UInt_t options, Pixel_t back) :
-  TGedFrame(p,width, height, options | kVerticalFrame, back),
+PointSetArrayEditor::PointSetArrayEditor(const TGWindow *p, Int_t id, Int_t width, Int_t height,
+	     UInt_t options, Pixel_t back) :
+  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
   fM(0),
   fRange(0)
 {
@@ -39,6 +38,13 @@ PointSetArrayEditor::PointSetArrayEditor(const TGWindow *p,
   fRange->Connect("ValueSet()",
 		 "Reve::PointSetArrayEditor", this, "DoRange()");
   AddFrame(fRange, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
+
+  // Register the editor.
+  TClass *cl = PointSetArray::Class();
+  TGedElement *ge = new TGedElement;
+  ge->fGedFrame = this;
+  ge->fCanvas = 0;
+  cl->GetEditorList()->Add(ge);
 }
 
 PointSetArrayEditor::~PointSetArrayEditor()
@@ -46,15 +52,28 @@ PointSetArrayEditor::~PointSetArrayEditor()
 
 /**************************************************************************/
 
-void PointSetArrayEditor::SetModel(TObject* obj)
+void PointSetArrayEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
 {
-  fM = dynamic_cast<PointSetArray*>(obj);
+  fModel = 0;
+  fPad   = 0;
+
+  if (!obj || !obj->InheritsFrom(PointSetArray::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
+    SetActive(kFALSE);
+    return;
+  }
+
+  fModel = obj;
+  fPad   = pad;
+
+  fM = dynamic_cast<PointSetArray*>(fModel);
 
   // printf("FullRange(%f, %f) Selected(%f,%f)\n",
   //        fM->GetMin(), fM->GetMax(), fM->GetCurMin(), fM->GetCurMax());
 
   fRange->SetLimits(fM->fMin, fM->fMax, TGNumberFormat::kNESRealTwo);
   fRange->SetValues(fM->fCurMin, fM->fCurMax);
+
+  SetActive();
 }
 
 /**************************************************************************/
@@ -62,5 +81,4 @@ void PointSetArrayEditor::SetModel(TObject* obj)
 void PointSetArrayEditor::DoRange()
 {
   fM->SetRange(fRange->GetMin(), fRange->GetMax());
-  Update();
 }

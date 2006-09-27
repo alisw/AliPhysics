@@ -27,11 +27,13 @@ void clusters_from_label(Int_t label=0)
     }
   }
   clusters->SetMarkerStyle(2);
-  clusters->SetMarkerSize(0.5);
+  clusters->SetMarkerSize(5);
   clusters->SetMarkerColor(4);
   clusters->SetName(Form("Clusters lab=%d", label));
 
   using namespace Reve;
-  gReve->AddRenderElement(clusters);
+  Color_t* colp = FindColorVar(clusters, "fMarkerColor");
+  RenderElementObjPtr* rnrEl = new RenderElementObjPtr(clusters, *colp);
+  gReve->AddRenderElement(rnrEl);
   gReve->Redraw3D();
 }

@@ -41,11 +41,10 @@ protected:
   Reve::RGDoubleValuator* fTime;
 
 public:
-  TPCSectorVizEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
-		     UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  TPCSectorVizEditor(const TGWindow* p, Int_t id, Int_t width = 170, Int_t height = 30, UInt_t options = kChildFrame, Pixel_t back = GetDefaultFrameBackground());
   ~TPCSectorVizEditor();
 
-  virtual void SetModel(TObject* obj);
+  virtual void SetModel(TVirtualPad* pad, TObject* obj, Int_t event);
 
   void DoSectorID();
   void DoTrans();

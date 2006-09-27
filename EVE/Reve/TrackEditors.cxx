@@ -22,10 +22,10 @@ using namespace Reve;
 
 ClassImp(TrackListEditor)
 
-TrackListEditor::TrackListEditor(const TGWindow *p,
+TrackListEditor::TrackListEditor(const TGWindow *p, Int_t id,
                                  Int_t width, Int_t height,
                                  UInt_t options, Pixel_t back) :
-  TGedFrame(p, width, height, options | kVerticalFrame, back),
+  TGedFrame(p, id, width, height, options | kVerticalFrame, back),
 
   fTC (0),
 
@@ -151,6 +151,13 @@ TrackListEditor::TrackListEditor(const TGWindow *p,
   fPtRange->Connect("ValueSet()",
                     "Reve::TrackListEditor", this, "DoPtRange()");
   AddFrame(fPtRange, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
+
+  // Register the editor.
+  TClass *cl = TrackList::Class();
+  TGedElement *ge = new TGedElement;
+  ge->fGedFrame = this;
+  ge->fCanvas = 0;
+  cl->GetEditorList()->Add(ge);
 }
 
 TrackListEditor::~TrackListEditor()
@@ -158,9 +165,20 @@ TrackListEditor::~TrackListEditor()
 
 /**************************************************************************/
 
-void TrackListEditor::SetModel(TObject* obj)
+void TrackListEditor::SetModel(TVirtualPad* pad, TObject* obj, Int_t )
 {
-  fTC = dynamic_cast<TrackList*>(obj);
+  fModel = 0;
+  fPad   = 0;
+
+  if (!obj || !obj->InheritsFrom(TrackList::Class()) || obj->InheritsFrom(TVirtualPad::Class())) {
+    SetActive(kFALSE);
+    return;
+  }
+
+  fModel = obj;
+  fPad   = pad;
+
+  fTC = dynamic_cast<TrackList*>(fModel);
 
   fMaxR->SetNumber(fTC->GetMaxR());
   fMaxZ->SetNumber(fTC->GetMaxZ());
@@ -175,6 +193,8 @@ void TrackListEditor::SetModel(TObject* obj)
   fFitDecay->SetState(fTC->GetFitDecay() ? kButtonDown : kButtonUp);
 
   fPtRange->SetValues(0.1, 10);
+
+  SetActive();
 }
 
 /**************************************************************************/
@@ -243,5 +263,4 @@ void TrackListEditor::DoFitDecay()
 void TrackListEditor::DoPtRange()
 {
   fTC->SelectByPt(fPtRange->GetMin(), fPtRange->GetMax());
-  Update();
 }
