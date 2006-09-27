@@ -1,0 +1,12 @@
+PHOS alignment objects:
+
+1) Ideal alignment (everything at the ideal position)
+Run0_999999_v0_s1.root
+
+2) Residual misalignment (PHOS modules, cradle walls and 
+   cradle wheels are slightly displaced)
+Run1000000_1999999_v0_s0.root
+
+3) Full misalignment (PHOS modules, cradle walls and 
+   cradle wheels are strongly displaced like after the earthquake)
+Run2000000_2999999_v0_s0.root
