@@ -5,7 +5,8 @@
 	* VSDSelector.cxx:
 	Made GLCanvas un-editable to prevent users from drawing things
 	over 3D scene; renamed the canvas data member from fCC to
-	fGLCanvas; renamed local variables not to dress-up as data-members.
+	fGLCanvas. Renamed local variables not to dress-up as
+	data-members.
 
 2006-09-26  Matevz Tadel  <matevz.tadel@cern.ch>
 
