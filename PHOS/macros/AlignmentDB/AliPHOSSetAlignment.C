@@ -69,14 +69,14 @@ void IdealAlignment()
   AliAlignObj::ELayerID iLayer = AliAlignObj::kInvalidLayer;
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
-  TString basePath = "/ALIC_1/PHOS_"; 
+  TString basePath = "PHOS/Module"; 
   const Int_t nModules=5;
 
   for (Int_t iModule = 1; iModule<=nModules; iModule++) {
     TString newPath = basePath;
     newPath += iModule;
     new(alobj[iModule-1]) AliAlignObjAngles(newPath.Data(),
-					    dvoluid, dx, dy, dz, dpsi, dtheta, dphi);
+					    dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   // *************************    2nd step    ***************
@@ -88,7 +88,7 @@ void IdealAlignment()
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Yuri Kharlov");
   md->SetComment("Alignment objects for ideal geometry, i.e. applying them to TGeo has to leave geometry unchanged");
-  AliCDBId id("PHOS/Align/Data",0,0);
+  AliCDBId id("PHOS/Align/Data",0,999999);
   CDB->Put(array,id, md);
 }
 
@@ -114,32 +114,32 @@ void ResidualAlignment()
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   // Alignment for 5 PHOS modules
-  new(alobj[0]) AliAlignObjAngles("/ALIC_1/PHOS_1",
-				  dvoluid, -0.20, -0.1, +0.0, dpsi, dtheta, 0.2);
-  new(alobj[1]) AliAlignObjAngles("/ALIC_1/PHOS_2",
-				  dvoluid, -0.10, +0.0, -0.2, dpsi, dtheta, 0.2);
-  new(alobj[2]) AliAlignObjAngles("/ALIC_1/PHOS_3",
-				  dvoluid,  0.05, -0.1,  0.2, dpsi, dtheta, 0.0);
-  new(alobj[3]) AliAlignObjAngles("/ALIC_1/PHOS_4",
-				  dvoluid, +0.10, -0.0, -0.1, dpsi, dtheta, 0.1);
-  new(alobj[4]) AliAlignObjAngles("/ALIC_1/PHOS_5",
-				  dvoluid, +0.20, -0.1,  0.1, dpsi, dtheta, 0.2);
+  new(alobj[0]) AliAlignObjAngles("PHOS/Module1",
+				  dvoluid, -0.20, -0.1, +0.0, dpsi, dtheta, 0.2, kTRUE);
+  new(alobj[1]) AliAlignObjAngles("PHOS/Module2",
+				  dvoluid, -0.10, +0.0, -0.2, dpsi, dtheta, 0.2, kTRUE);
+  new(alobj[2]) AliAlignObjAngles("PHOS/Module3",
+				  dvoluid,  0.05, -0.1,  0.2, dpsi, dtheta, 0.0, kTRUE);
+  new(alobj[3]) AliAlignObjAngles("PHOS/Module4",
+				  dvoluid, +0.10, -0.0, -0.1, dpsi, dtheta, 0.1, kTRUE);
+  new(alobj[4]) AliAlignObjAngles("PHOS/Module5",
+				  dvoluid, +0.20, -0.1,  0.1, dpsi, dtheta, 0.2, kTRUE);
 
   // Alignment for PHOS cradle
-  new(alobj[5]) AliAlignObjAngles("/ALIC_1/PCRA_0",
-				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
-  new(alobj[6]) AliAlignObjAngles("/ALIC_1/PCRA_1",
-				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+  new(alobj[5]) AliAlignObjAngles("PHOS/Cradle0",
+				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[6]) AliAlignObjAngles("PHOS/Cradle1",
+				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // Alignment for cradle wheels
-  new(alobj[7])  AliAlignObjAngles("/ALIC_1/PWHE_0",
-				   dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
-  new(alobj[8])  AliAlignObjAngles("/ALIC_1/PWHE_1",
-				   dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
-  new(alobj[9])  AliAlignObjAngles("/ALIC_1/PWHE_2",
-				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
-  new(alobj[10]) AliAlignObjAngles("/ALIC_1/PWHE_3",
-				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+  new(alobj[7])  AliAlignObjAngles("PHOS/Wheel0",
+				   dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[8])  AliAlignObjAngles("PHOS/Wheel1",
+				   dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[9])  AliAlignObjAngles("PHOS/Wheel2",
+				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[10]) AliAlignObjAngles("PHOS/Wheel3",
+				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // *************************    2nd step    ***************
   // Make CDB storage and put TClonesArray in
@@ -150,7 +150,7 @@ void ResidualAlignment()
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Yuri Kharlov");
   md->SetComment("Alignment objects for slightly misaligned geometry, i.e. applying them to TGeo has to distirbes geometry very little (resisual misalignment");
-  AliCDBId id("PHOS/Align/Data",200,200);
+  AliCDBId id("PHOS/Align/Data",1000000,1999999);
   CDB->Put(array,id, md);
 }
 
@@ -175,32 +175,32 @@ void FullMisalignment()
   UShort_t dvoluid = AliAlignObj::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   // Alignment for 5 PHOS modules
-  new(alobj[0]) AliAlignObjAngles("/ALIC_1/PHOS_1",
-				  dvoluid, -20., -10.,   0., dpsi, dtheta, 5);
-  new(alobj[1]) AliAlignObjAngles("/ALIC_1/PHOS_2",
-				  dvoluid, -10.,   0., -10., dpsi, dtheta, 2);
-  new(alobj[2]) AliAlignObjAngles("/ALIC_1/PHOS_3",
-				  dvoluid,   5., -10.,  10., dpsi, dtheta, 0);
-  new(alobj[3]) AliAlignObjAngles("/ALIC_1/PHOS_4",
-				  dvoluid, +10.,  -0., -10., dpsi, dtheta, 2);
-  new(alobj[4]) AliAlignObjAngles("/ALIC_1/PHOS_5",
-				  dvoluid, +20., -10.,   0., dpsi, dtheta, 5);
+  new(alobj[0]) AliAlignObjAngles("PHOS/Module1",
+				  dvoluid, -20., -10.,   0., dpsi, dtheta, 5, kTRUE);
+  new(alobj[1]) AliAlignObjAngles("PHOS/Module2",
+				  dvoluid, -10.,   0., -10., dpsi, dtheta, 2, kTRUE);
+  new(alobj[2]) AliAlignObjAngles("PHOS/Module3",
+				  dvoluid,   5., -10.,  10., dpsi, dtheta, 0, kTRUE);
+  new(alobj[3]) AliAlignObjAngles("PHOS/Module4",
+				  dvoluid, +10.,  -0., -10., dpsi, dtheta, 2, kTRUE);
+  new(alobj[4]) AliAlignObjAngles("PHOS/Module5",
+				  dvoluid, +20., -10.,   0., dpsi, dtheta, 5, kTRUE);
 
   // Alignment for PHOS cradle
-  new(alobj[5]) AliAlignObjAngles("/ALIC_1/PCRA_0",
-				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
-  new(alobj[6]) AliAlignObjAngles("/ALIC_1/PCRA_1",
-				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+  new(alobj[5]) AliAlignObjAngles("PHOS/Cradle0",
+				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[6]) AliAlignObjAngles("PHOS/Cradle1",
+				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // Alignment for cradle wheels
-  new(alobj[7]) AliAlignObjAngles("/ALIC_1/PWHE_0",
-				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
-  new(alobj[8]) AliAlignObjAngles("/ALIC_1/PWHE_1",
-				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi);
-  new(alobj[9]) AliAlignObjAngles("/ALIC_1/PWHE_2",
-				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
-  new(alobj[10]) AliAlignObjAngles("/ALIC_1/PWHE_3",
-				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi);
+  new(alobj[7]) AliAlignObjAngles("PHOS/Wheel0",
+				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[8]) AliAlignObjAngles("PHOS/Wheel1",
+				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[9]) AliAlignObjAngles("PHOS/Wheel2",
+				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[10]) AliAlignObjAngles("PHOS/Wheel3",
+				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // *************************    2nd step    ***************
   // Make CDB storage and put TClonesArray in
@@ -211,6 +211,6 @@ void FullMisalignment()
   AliCDBMetaData *md= new AliCDBMetaData();
   md->SetResponsible("Yuri Kharlov");
   md->SetComment("Alignment objects for fully misaligned geometry, i.e. applying them to TGeo has to distirbes geometry very much");
-  AliCDBId id("PHOS/Align/Data",100,100);
+  AliCDBId id("PHOS/Align/Data",2000000,2999999);
   CDB->Put(array,id, md);
 }

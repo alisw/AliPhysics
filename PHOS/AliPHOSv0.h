@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.43  2005/05/28 14:19:05  schutz
+ * Compilation warnings fixed by T.P.
+ *
  */
 
 //_________________________________________________________________________
@@ -55,6 +58,8 @@ class AliPHOSv0 : public AliPHOS {
   //  void           CreateGeometryforPPSD(void) ;     // creates the PPSD geometry for GEANT
   void           CreateGeometryforCPV(void) ;      // creates the CPV  geometry for GEANT
   void           CreateGeometryforSupport(void) ;  // creates the Support geometry for GEANT
+  virtual void   AddAlignableVolumes() const;      // define sym.names for alignable volumes
+
   virtual Float_t ZMin() const;                    // overall dimension of the module (min)
   virtual Float_t ZMax() const;                    // overall dimension of the module (max)
 

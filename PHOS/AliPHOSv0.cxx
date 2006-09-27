@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.81  2006/03/04 20:25:56  kharlov
+ * Set geom parameters from CDB
+ *
  * Revision 1.80  2005/06/17 07:39:07  hristov
  * Removing GetDebug and SetDebug from AliRun and AliModule. Using AliLog for the messages
  *
@@ -44,6 +47,7 @@
 #include <TTRD1.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
 
 // --- Standard library ---
 
@@ -863,6 +867,70 @@ void AliPHOSv0::CreateGeometryforSupport()
       gMC->Gspos("PWHE", copy, "ALIC", x0, y0, z0, 0, "ONLY") ; 
     }
   }
+
+}
+
+//_____________________________________________________________________________
+void AliPHOSv0::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry
+  // Alignable volumes are:
+  // 1) PHOS modules as a whole
+  // 2) Cradle
+  // 3) Cradle wheels
+  // 4) Strip units (group of 2x8 crystals)
+
+  TString volpath, symname;
+
+  // Alignable modules
+  // Volume path /ALIC_1/PHOS_<i> => symbolic name /PHOS/Module<i>, <i>=1,2,3,4,5
+
+  TString physModulePath="/ALIC_1/PHOS_";
+  TString symbModuleName="PHOS/Module";
+  Int_t nModules = GetGeometry()->GetNModules();
+
+  for(Int_t iModule=1; iModule<=nModules; iModule++){
+    volpath = physModulePath;
+    volpath += iModule;
+    symname = symbModuleName;
+    symname += iModule;
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+  }
+
+  // Alignable cradle walls
+  // Volume path /ALIC_1/PCRA_<i> => symbolic name /PHOS/Cradle<i>, <i>=0,1
+
+  TString physCradlePath="/ALIC_1/PCRA_";
+  TString symbCradleName="PHOS/Cradle";
+  Int_t nCradles = 2;
+
+  for(Int_t iCradle=0; iCradle<nCradles; iCradle++){
+    volpath = physCradlePath;
+    volpath += iCradle;
+    symname = symbCradleName;
+    symname += iCradle;
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+  }
+
+  // Alignable wheels
+  // Volume path /ALIC_1/PWHE_<i> => symbolic name /PHOS/Wheel<i>, i=0,1,2,3
+
+  TString physWheelPath="/ALIC_1/PWHE_";
+  TString symbWheelName="PHOS/Wheel";
+  Int_t nWheels = 4;
+
+  for(Int_t iWheel=0; iWheel<nWheels; iWheel++){
+    volpath = physWheelPath;
+    volpath += iWheel;
+    symname = symbWheelName;
+    symname += iWheel;
+    gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data());
+  }
+
+  // Alignable strip units are not implemented yet (27.09.2006)
 
 }
 
