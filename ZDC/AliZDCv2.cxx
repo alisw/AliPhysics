@@ -1214,7 +1214,7 @@ void AliZDCv2::StepManager()
   Float_t x[3], xdet[3], destep, hits[10], m, ekin, um[3], ud[3], be, out;
   //Float_t radius;
   Float_t xalic[3], z, guiEff, guiPar[4]={0.31,-0.0004,0.0197,0.7958};
-  TLorentzVector s, p;
+  Double_t s[3], p[4];
   const char *knamed;
 
   for (j=0;j<10;j++) hits[j]=-999.;
@@ -1248,7 +1248,7 @@ void AliZDCv2::StepManager()
 
   
   //Particle coordinates 
-    gMC->TrackPosition(s);
+    gMC->TrackPosition(s[0],s[1],s[2]);
     for(j=0; j<=2; j++) x[j] = s[j];
     hits[0] = x[0];
     hits[1] = x[1];
@@ -1318,7 +1318,7 @@ void AliZDCv2::StepManager()
     
       if(gMC->IsTrackEntering()){
         //Particle energy
-        gMC->TrackMomentum(p);
+        gMC->TrackMomentum(p[0],p[1],p[2],p[3]);
         hits[3] = p[3];
         // Impact point on ZDC  
         hits[4] = xdet[0];
@@ -1343,7 +1343,7 @@ void AliZDCv2::StepManager()
       // Charged particles -> Energy loss
       if((destep=gMC->Edep())){
          if(gMC->IsTrackStop()){
-           gMC->TrackMomentum(p);
+           gMC->TrackMomentum(p[0],p[1],p[2],p[3]);
 	   m = gMC->TrackMass();
 	   ekin = p[3]-m;
 	   hits[9] = ekin;
@@ -1369,7 +1369,7 @@ void AliZDCv2::StepManager()
 
        // Particle velocity
        Float_t beta = 0.;
-       gMC->TrackMomentum(p);
+       gMC->TrackMomentum(p[0],p[1],p[2],p[3]);
        Float_t ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
        if(p[3] > 0.00001) beta =  ptot/p[3];
        else return;
@@ -1393,7 +1393,7 @@ void AliZDCv2::StepManager()
        ialfa = Int_t(1.+alfa/2.);
  
        // Distance between particle trajectory and fibre axis
-       gMC->TrackPosition(s);
+       gMC->TrackPosition(s[0],s[1],s[2]);
        for(j=0; j<=2; j++){
    	  x[j] = s[j];
        }
@@ -1453,7 +1453,7 @@ void AliZDCv2::StepManager()
        else if((vol[0]==3)) {	// (3) ZEM fibres
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
-	 gMC->TrackPosition(s);
+	 gMC->TrackPosition(s[0],s[1],s[2]);
          for(j=0; j<=2; j++){
             xalic[j] = s[j];
          }
