@@ -378,6 +378,10 @@ class TFluka : public TVirtualMC {
   virtual Int_t        VolDaughterCopyNo(const char* volName, Int_t i) const;
   virtual const char*  CurrentVolPath();
   virtual void         ForceDecayTime(Float_t){;}
+  //
+  // Info about primary ionization electrons
+  Int_t    GetNPrimaryElectrons();
+  Double_t GetPrimaryElectronKineticEnergy(Int_t i);
 
   private:
    
@@ -387,10 +391,6 @@ class TFluka : public TVirtualMC {
  
   void PrintHeader();
   void AddParticlesToPdgDataBase() const;
-  //
-  // Info about primary ionization electrons
-  Int_t    GetNPrimaryElectrons();
-  Double_t GetPrimaryElectronKineticEnergy(Int_t i);
   //
 
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
