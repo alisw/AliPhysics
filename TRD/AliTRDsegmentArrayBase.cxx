@@ -187,7 +187,9 @@ AliTRDsegmentID *AliTRDsegmentArrayBase::NewSegment()
   // Create a new object according to the class information
   //
 
-  if (fClass  == 0) return 0;
+  if (fClass  == 0) {
+    return 0;
+  }
 
   AliTRDsegmentID *segment = (AliTRDsegmentID *) fClass->New();
 
@@ -207,9 +209,15 @@ Bool_t AliTRDsegmentArrayBase::AddSegment(AliTRDsegmentID *segment)
   // Add a segment to the array
   //
 
-  if (segment  == 0) return kFALSE;
-  if (fSegment == 0) return kFALSE;
-  if (fClass   == 0) return kFALSE;
+  if (segment  == 0) {
+    return kFALSE;
+  }
+  if (fSegment == 0) {
+    return kFALSE;
+  }
+  if (fClass   == 0) {
+    return kFALSE;
+  }
 
   if (!(segment->IsA()->InheritsFrom(fClass))) {
     AliError(Form("added class %s is not of proper type"
@@ -225,17 +233,23 @@ Bool_t AliTRDsegmentArrayBase::AddSegment(AliTRDsegmentID *segment)
 }
 
 //_____________________________________________________________________________
-AliTRDsegmentID * AliTRDsegmentArrayBase::AddSegment(Int_t index)
+AliTRDsegmentID *AliTRDsegmentArrayBase::AddSegment(Int_t index)
 {
   //
   // Add a segment to the array
   //
 
-  if (fSegment == 0) return 0;
-  if (fClass   == 0) return 0;
+  if (fSegment == 0) {
+    return 0;
+  }
+  if (fClass   == 0) {
+    return 0;
+  }
 
   AliTRDsegmentID *segment = NewSegment();
-  if (segment  == 0) return 0;
+  if (segment  == 0) {
+    return 0;
+  }
 
   fSegment->AddAt(segment,index);
   segment->SetID(index);
@@ -293,10 +307,13 @@ void AliTRDsegmentArrayBase::MakeTree(char *file)
 
   AliTRDsegmentID *psegment = NewSegment();  
 
-  if (fTree) delete fTree;
-  fTree   = new TTree("Segment Tree","Tree with segments");
+  if (fTree) {
+    delete fTree;
+  }
 
+  fTree   = new TTree("Segment Tree","Tree with segments");
   fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
+
   if (file) {
     fBranch->SetFile(file);      
   }
@@ -306,7 +323,7 @@ void AliTRDsegmentArrayBase::MakeTree(char *file)
 }              
 
 //_____________________________________________________________________________
-Bool_t AliTRDsegmentArrayBase::ConnectTree(const char * treeName)
+Bool_t AliTRDsegmentArrayBase::ConnectTree(const char *treeName)
 {
   //
   // Connect a tree from current directory  
@@ -318,10 +335,14 @@ Bool_t AliTRDsegmentArrayBase::ConnectTree(const char * treeName)
     fBranch = 0;
   }
 
-  fTree   = (TTree*) gDirectory->Get(treeName);
-  if (fTree   == 0) return kFALSE;
+  fTree = (TTree *) gDirectory->Get(treeName);
+  if (fTree   == 0) {
+    return kFALSE;
+  }
   fBranch = fTree->GetBranch("Segment");
-  if (fBranch == 0) return kFALSE;
+  if (fBranch == 0) {
+    return kFALSE;
+  }
 
   MakeDictionary(TMath::Max(fNSegment,Int_t(fTree->GetEntries())));
 
@@ -336,15 +357,25 @@ AliTRDsegmentID *AliTRDsegmentArrayBase::LoadSegment(Int_t index)
   // Load a segment with index <index> into the memory
   //
 
-  if (fTreeIndex == 0) MakeDictionary(3000);
+  if (fTreeIndex == 0) {
+    MakeDictionary(3000);
+  }
 
   // First try to load dictionary 
-  if (fTreeIndex == 0)        return 0;
-  if (fBranch    == 0)        return 0;
-  if (index > fTreeIndex->fN) return 0;
+  if (fTreeIndex == 0) {
+    return 0;
+  }
+  if (fBranch    == 0) {
+    return 0;
+  }
+  if (index > fTreeIndex->fN) {
+    return 0;
+  }
 
-  AliTRDsegmentID *s = (AliTRDsegmentID*) fSegment->At(index);
-  if (s == 0) s = NewSegment();
+  AliTRDsegmentID *s = (AliTRDsegmentID *) fSegment->At(index);
+  if (s == 0) {
+    s = NewSegment();
+  }
   s->SetID(index);
   
   if (s != 0) {
@@ -374,8 +405,12 @@ AliTRDsegmentID *AliTRDsegmentArrayBase::LoadEntry(Int_t index)
   // Load a segment at position <index> in the tree into the memory
   //
 
-  if (fBranch == 0)                return 0;
-  if (index > fTree->GetEntries()) return 0;
+  if (fBranch == 0) {
+    return 0;
+  }
+  if (index > fTree->GetEntries()) {
+    return 0;
+  }
 
   AliTRDsegmentID *s = NewSegment();  
   if (s) {
@@ -402,8 +437,12 @@ void AliTRDsegmentArrayBase::StoreSegment(Int_t index)
   //
 
   const AliTRDsegmentID *kSegment = (*this)[index];
-  if (kSegment == 0) return;
-  if (fTree    == 0) MakeTree();
+  if (kSegment == 0) {
+    return;
+  }
+  if (fTree    == 0) {
+    MakeTree();
+  }
   fBranch->SetAddress(&kSegment);
   fTree->Fill();
 
@@ -416,8 +455,12 @@ Bool_t  AliTRDsegmentArrayBase::MakeDictionary(Int_t size)
   // Create an index table for the tree
   //  
 
-  if (size < 1)   return kFALSE;
-  if (fTreeIndex) delete fTreeIndex;
+  if (size < 1) {
+    return kFALSE;
+  }
+  if (fTreeIndex) {
+    delete fTreeIndex;
+  }
 
   fTreeIndex = new AliTRDarrayI(); 
   fTreeIndex->Set(size);
@@ -429,11 +472,12 @@ Bool_t  AliTRDsegmentArrayBase::MakeDictionary(Int_t size)
   TBranch *brindix = fTree->GetBranch("fSegmentID");
 
   Int_t nevent = (Int_t) fTree->GetEntries();  
-  for (Int_t i = 0; i < nevent; i++){
+  for (Int_t i = 0; i < nevent; i++) {
     brindix->GetEvent(i);
     Int_t treeIndex = segment.GetID();
-    if (fTreeIndex->fN < treeIndex) 
+    if (fTreeIndex->fN < treeIndex) {
       fTreeIndex->Expand(Int_t (Float_t(treeIndex) * 1.5) + 1);
+    }
     (*fTreeIndex)[treeIndex] = i + 1; 
   }
 
@@ -448,7 +492,11 @@ const AliTRDsegmentID * AliTRDsegmentArrayBase::operator[](Int_t i) const
   // Returns a segment with the given index <i>
   //
 
-  if ((i < 0) || (i >= fNSegment)) return 0; 
+  if ((i <          0) || 
+      (i >= fNSegment)) {
+    return 0; 
+  }
+
   return (AliTRDsegmentID *) fSegment->At(i);
 
 }
@@ -460,7 +508,11 @@ const AliTRDsegmentID *AliTRDsegmentArrayBase::At(Int_t i) const
   // Returns a segment with the given index <i>
   //
 
-  if ((i < 0) || (i >= fNSegment)) return 0; 
+  if ((i <          0) || 
+      (i >= fNSegment)) {
+    return 0; 
+  }
+
   return (AliTRDsegmentID *) fSegment->At(i);
 
 }

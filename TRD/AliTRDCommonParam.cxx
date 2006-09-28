@@ -24,14 +24,16 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "AliRun.h"
+#include <TObjArray.h>
+
+#include "AliTracker.h"
 
 #include "AliTRDCommonParam.h"
 #include "AliTRDpadPlane.h"
 
 ClassImp(AliTRDCommonParam)
 
-AliTRDCommonParam* AliTRDCommonParam::fgInstance = 0;
+AliTRDCommonParam *AliTRDCommonParam::fgInstance = 0;
 Bool_t AliTRDCommonParam::fgTerminated = kFALSE;
 
 //_ singleton implementation __________________________________________________
@@ -42,12 +44,14 @@ AliTRDCommonParam* AliTRDCommonParam::Instance()
   // Returns an instance of this class, it is created if neccessary
   // 
   
-  if (fgTerminated != kFALSE)
+  if (fgTerminated != kFALSE) {
     return 0;
+  }
 
-  if (fgInstance == 0)
+  if (fgInstance == 0) {
     fgInstance = new AliTRDCommonParam();
-  
+  }  
+
   return fgInstance;
 
 }
@@ -63,8 +67,7 @@ void AliTRDCommonParam::Terminate()
   
   fgTerminated = kTRUE;
   
-  if (fgInstance != 0)
-  {
+  if (fgInstance != 0) {
     delete fgInstance;
     fgInstance = 0;
   }
@@ -97,10 +100,7 @@ void AliTRDCommonParam::Init()
   fExBOn          = kTRUE;
 
   // The magnetic field strength in Tesla
-  Double_t x[3] = { 0.0, 0.0, 0.0 };
-  Double_t b[3];
-  gAlice->Field(x,b);  // b[] is in kilo Gauss
-  fField = b[2] * 0.1; // Tesla
+  fField          = AliTracker::GetBz() * 0.1; 
   
   // ----------------------------------------------------------------------------
   // The pad planes
@@ -152,7 +152,10 @@ AliTRDCommonParam &AliTRDCommonParam::operator=(const AliTRDCommonParam &p)
   // Assignment operator
   //
 
-  if (this != &p) ((AliTRDCommonParam &) p).Copy(*this);
+  if (this != &p) {
+    ((AliTRDCommonParam &) p).Copy(*this);
+  }
+
   return *this;
 
 }
@@ -164,7 +167,7 @@ void AliTRDCommonParam::Copy(TObject &p) const
   // Copy function
   //
   
-  AliTRDCommonParam* target = dynamic_cast<AliTRDCommonParam*> (&p);
+  AliTRDCommonParam *target = dynamic_cast<AliTRDCommonParam*> (&p);
   if (!target) {
     return;
   }  

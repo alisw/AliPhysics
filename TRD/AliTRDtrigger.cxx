@@ -230,20 +230,6 @@ Bool_t AliTRDtrigger::Open(const Char_t *name, Int_t nEvent)
     return kFALSE;
   }
 
-  // Open input
-  if (fRunLoader->GetAliRun() == 0x0) {
-    fRunLoader->LoadgAlice();
-  }
-  gAlice = fRunLoader->GetAliRun();
-  if (!(gAlice)) {
-    fRunLoader->LoadgAlice();
-    gAlice = fRunLoader->GetAliRun();
-    if (!(gAlice)) {
-      AliError("Could not find AliRun object.");
-      return kFALSE;
-    }
-  }
-
   // Import the Trees for the event nEvent in the file
   fRunLoader->GetEvent(nEvent);
 

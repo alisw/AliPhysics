@@ -1314,7 +1314,9 @@ AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader *runLoader)
   // Load the geometry from the galice file
   //
 
-  if (!runLoader) runLoader = AliRunLoader::GetRunLoader();
+  if (!runLoader) {
+    runLoader = AliRunLoader::GetRunLoader();
+  }
   if (!runLoader) {
     AliErrorGeneral("AliTRDgeometry::GetGeometry","No run loader");
     return NULL;
@@ -1327,8 +1329,7 @@ AliTRDgeometry* AliTRDgeometry::GetGeometry(AliRunLoader *runLoader)
   AliTRDgeometry *geom = (AliTRDgeometry *) gDirectory->Get("TRDgeometry");
 
   if (!geom) {
-    // It is not in the file, try to get it from gAlice, 
-    // which corresponds to the run loader 
+    // If it is not in the file, try to get it from the run loader 
     AliTRD *trd = (AliTRD *) runLoader->GetAliRun()->GetDetector("TRD");
     geom = trd->GetGeometry();
   }

@@ -26,7 +26,6 @@
 #include <TFile.h>
 #include <TObjArray.h>
 
-#include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -167,21 +166,6 @@ Bool_t AliTRDclusterizer::OpenInput(Int_t nEvent)
   //
   // Opens a ROOT-file with TRD-hits and reads in the digits-tree
   //
-
-  // Connect the AliRoot file containing Geometry, Kine, and Hits
-  if (fRunLoader->GetAliRun() == 0x0) {
-    fRunLoader->LoadgAlice();
-  }
-  gAlice = fRunLoader->GetAliRun();
-
-  if (!(gAlice)) {
-    fRunLoader->LoadgAlice();
-    gAlice = fRunLoader->GetAliRun();
-    if (!(gAlice)) {
-      AliError("Could not find AliRun object.\n");
-      return kFALSE;
-    }
-  }
 
   // Import the Trees for the event nEvent in the file
   fRunLoader->GetEvent(nEvent);

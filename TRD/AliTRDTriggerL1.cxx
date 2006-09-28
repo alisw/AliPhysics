@@ -23,7 +23,9 @@
 
 #include <TMath.h>
 
-#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliConfig.h"
+#include "AliTracker.h"
 #include "AliTriggerInput.h"
 
 #include "AliTRDTriggerL1.h"
@@ -35,7 +37,8 @@
 ClassImp(AliTRDTriggerL1)
 
 //_____________________________________________________________________________
-AliTRDTriggerL1::AliTRDTriggerL1():AliTriggerDetector()
+AliTRDTriggerL1::AliTRDTriggerL1()
+  :AliTriggerDetector()
 {
   //
   // Default constructor
@@ -84,23 +87,16 @@ void AliTRDTriggerL1::Trigger()
   // Run the online tracking and trigger
   // 
 
-  AliRunLoader* runLoader = gAlice->GetRunLoader();
-
-  AliLoader *loader=runLoader->GetLoader("TRDLoader");
-
-  // Trigger (tracklets, LTU)
-
-  AliTRDgeometry *geo = AliTRDgeometry::GetGeometry(runLoader);
+  TString          evfoldname = AliConfig::GetDefaultEventFolderName();
+  AliRunLoader    *runLoader  = AliRunLoader::GetRunLoader(evfoldname);
+  AliLoader       *loader     = runLoader->GetLoader("TRDLoader");
+  AliTRDgeometry  *geo        = AliTRDgeometry::GetGeometry(runLoader);
+  AliTRDtrigParam *trigp      = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
 
   AliTRDtrigger trdTrigger("Trigger","Trigger class"); 
 
-  AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam","TRD Trigger parameters");
-
-  Double_t x[3] = { 0.0, 0.0, 0.0 };
-  Double_t b[3];
-  gAlice->Field(x,b);  // b[] is in kilo Gauss
-  Float_t field = b[2] * 0.1; // Tesla
-  Info("Trigger","Trigger set for magnetic field = %f Tesla \n",field);
+  Float_t field = AliTracker::GetBz() * 0.1; // Tesla
+  AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
 
   trigp->SetField(field);
   trigp->Init();
@@ -120,26 +116,33 @@ void AliTRDTriggerL1::Trigger()
   Float_t jetLowPt  = trigp->GetJetLowPt();
   Float_t jetHighPt = trigp->GetJetHighPt();
 
-  Float_t pid, pt;
-  Int_t   det, sec;
+  Float_t pid;
+  Float_t pt;
+  Int_t   det;
+  Int_t   sec;
   Bool_t  isElectron;
 
   const Int_t maxEle = 1000;
 
-  Int_t   electronPlus,          electronMinus;
-  Int_t   sectorElePlus[maxEle], sectorEleMinus[maxEle];
-  Float_t ptElePlus[maxEle],     ptEleMinus[maxEle];
-  Int_t   hadronLowPt, hadronHighPt;
-  Int_t   hadronJetLowPt, hadronJetHighPt;
+  Int_t   electronPlus;
+  Int_t   electronMinus;
+  Int_t   sectorElePlus[maxEle];
+  Int_t   sectorEleMinus[maxEle];
+  Float_t ptElePlus[maxEle];   
+  Float_t ptEleMinus[maxEle];
+  Int_t   hadronLowPt;
+  Int_t   hadronHighPt;
+  Int_t   hadronJetLowPt;
+  Int_t   hadronJetHighPt;
 
   hadronJetLowPt  = 0;
   hadronJetHighPt = 0;
 
-  hadronLowPt  = 0;
-  hadronHighPt = 0;
+  hadronLowPt     = 0;
+  hadronHighPt    = 0;
 
-  electronPlus  = 0;
-  electronMinus = 0;
+  electronPlus    = 0;
+  electronMinus   = 0;
 
   AliTRDgtuTrack *gtuTrack;
   Int_t nTracks = trdTrigger.GetNumberOfTracks();
@@ -151,7 +154,6 @@ void AliTRDTriggerL1::Trigger()
     isElectron = gtuTrack->IsElectron();
     pt         = gtuTrack->GetPt();
     det        = gtuTrack->GetDetector();
-
     sec        = geo->GetSector(det);
 
     if (isElectron) {
@@ -160,22 +162,29 @@ void AliTRDTriggerL1::Trigger()
 	sectorEleMinus[electronMinus] = sec;
 	ptEleMinus[electronMinus]     = pt;
 	electronMinus++;
-      } else {
-	sectorElePlus[electronPlus] = sec;
-	ptElePlus[electronPlus]     = pt;
+      } 
+      else {
+	sectorElePlus[electronPlus]   = sec;
+	ptElePlus[electronPlus]       = pt;
 	electronPlus++;
       }
 
-    } else {
+    } 
+    else {
 
       if (TMath::Abs(pt) < highPt) {
 	hadronLowPt++;
-      } else {
+      } 
+      else {
 	hadronHighPt++;
       }
 
-      if (TMath::Abs(pt) > jetLowPt ) hadronJetLowPt++;
-      if (TMath::Abs(pt) > jetHighPt) hadronJetHighPt++;
+      if (TMath::Abs(pt) > jetLowPt ) {
+        hadronJetLowPt++;
+      }
+      if (TMath::Abs(pt) > jetHighPt) {
+        hadronJetHighPt++;
+      }
 
     }
 
@@ -183,32 +192,43 @@ void AliTRDTriggerL1::Trigger()
 
   loader->UnloadTracks();
 
-  // hadrons
+  // Hadrons
+  if (hadronLowPt) {
+    SetInput("TRD_Hadr_LPt_L1");
+  }
+  if (hadronHighPt) {
+    SetInput("TRD_Hadr_HPt_L1");
+  }
 
-  if (hadronLowPt)  SetInput("TRD_Hadr_LPt_L1");
-  if (hadronHighPt) SetInput("TRD_Hadr_HPt_L1");
+  // Hadrons from jets
+  if (hadronJetLowPt  >= trigp->GetNPartJetLow() ) {
+    SetInput("TRD_Jet_LPt_L1");
+  }
+  if (hadronJetHighPt >= trigp->GetNPartJetHigh()) {
+    SetInput("TRD_Jet_HPt_L1");
+  }
 
-  // hadrons from jets
-
-  if (hadronJetLowPt  >= trigp->GetNPartJetLow() )  SetInput("TRD_Jet_LPt_L1");
-  if (hadronJetHighPt >= trigp->GetNPartJetHigh())  SetInput("TRD_Jet_HPt_L1");
-
-  // electron-positron pairs (open angle > 80 deg)
-
-  Int_t  secPlus, secMinus, secDiff;
+  // Electron-positron pairs (open angle > 80 deg)
+  Int_t  secPlus;
+  Int_t  secMinus;
+  Int_t  secDiff;
   Bool_t electronUnlikePair    = kFALSE;
   Bool_t electronUnlikePairHPt = kFALSE;
 
-  if (electronMinus > 0 && electronPlus > 0) {
+  if ((electronMinus > 0) && 
+      (electronPlus  > 0)) {
     for (Int_t iPlus = 0; iPlus < electronPlus; iPlus++) {
       secPlus = sectorElePlus[iPlus];
       for (Int_t iMinus = 0; iMinus < electronMinus; iMinus++) {
 	secMinus = sectorEleMinus[iMinus];
-	secDiff = TMath::Abs(secPlus-secMinus);
-	if (secDiff >  9) secDiff = 18 - secDiff;
+	secDiff  = TMath::Abs(secPlus-secMinus);
+	if (secDiff >  9) {
+          secDiff = 18 - secDiff;
+	}
 	if (secDiff >= 5) {
 	  electronUnlikePair = kTRUE;
-	  if (TMath::Abs(ptElePlus[iPlus]) > highPt && TMath::Abs(ptEleMinus[iMinus]) > highPt) {
+	  if ((TMath::Abs(ptElePlus[iPlus]) > highPt) && 
+              (TMath::Abs(ptEleMinus[iMinus]) > highPt)) {
 	    electronUnlikePairHPt = kTRUE;
 	  }
 	}
@@ -216,69 +236,85 @@ void AliTRDTriggerL1::Trigger()
     }
   }
 
-  if (electronUnlikePair)    SetInput("TRD_Unlike_EPair_L1");
-  //if (electronUnlikePairHPt) SetInput("TRD_Unlike_EPair_HPt_L1");
+  if (electronUnlikePair) {
+    SetInput("TRD_Unlike_EPair_L1");
+  }
+  //if (electronUnlikePairHPt) {
+  //  SetInput("TRD_Unlike_EPair_HPt_L1");
+  //}
 
-  // like electron/positron pairs
+  // Like electron/positron pairs
+  Bool_t ele1;
+  Bool_t ele1HPt;
+  Bool_t ele2;
+  Bool_t ele2HPt;
 
-  Bool_t ele1, ele1HPt;
-  Bool_t ele2, ele2HPt;
-
-  // positive
-
+  // Positive
   ele1    = kFALSE;
   ele2    = kFALSE;
   ele1HPt = kFALSE;
   ele2HPt = kFALSE;
   if (electronPlus > 1) {
     for (Int_t iPlus = 0; iPlus < electronPlus; iPlus++) {
-      if (!ele1) {
+      if      (!ele1) {
 	ele1 = kTRUE;
-      } else if (!ele2) {
+      } 
+      else if (!ele2) {
 	ele2 = kTRUE;
       }
       if (TMath::Abs(ptElePlus[iPlus]) > highPt) {
-	if (!ele1HPt) {
+	if      (!ele1HPt) {
 	  ele1HPt = kTRUE;
-	} else if (!ele2HPt) {
+	} 
+        else if (!ele2HPt) {
 	  ele2HPt = kTRUE;
 	}
       }
     }
   }
 
-  if (ele1    && ele2   ) SetInput("TRD_Like_EPair_L1");
-  //if (ele1HPt && ele2HPt) SetInput("TRD_Like_EPair_HPt_L1");
-  
-  // negative
+  if (ele1    && ele2   ) {
+    SetInput("TRD_Like_EPair_L1");
+  }
+  //if (ele1HPt && ele2HPt) {
+  //  SetInput("TRD_Like_EPair_HPt_L1");
+  //}  
 
+  // Negative
   ele1    = kFALSE;
   ele2    = kFALSE;
   ele1HPt = kFALSE;
   ele2HPt = kFALSE;
   if (electronMinus > 1) {
     for (Int_t iMinus = 0; iMinus < electronMinus; iMinus++) {
-      if (!ele1) {
+      if      (!ele1) {
 	ele1 = kTRUE;
-      } else if (!ele2) {
+      } 
+      else if (!ele2) {
 	ele2 = kTRUE;
       }
       if (TMath::Abs(ptEleMinus[iMinus]) > highPt) {
-	if (!ele1HPt) {
+	if      (!ele1HPt) {
 	  ele1HPt = kTRUE;
-	} else if (!ele2HPt) {
+	} 
+        else if (!ele2HPt) {
 	  ele2HPt = kTRUE;
 	}
       }
     }
   }
 
-  if (ele1    && ele2   ) SetInput("TRD_Like_EPair_L1");
-  //if (ele1HPt && ele2HPt) SetInput("TRD_Like_EPair_HPt_L1");
+  if (ele1    && ele2   ) {
+    SetInput("TRD_Like_EPair_L1");
+  }
+  //if (ele1HPt && ele2HPt) {
+  //  SetInput("TRD_Like_EPair_HPt_L1");
+  //}
   
-  // single electron/positron
+  // Single electron/positron
 
-  if (electronPlus > 0 || electronMinus > 0) {
+  if ((electronPlus  > 0) || 
+      (electronMinus > 0)) {
     SetInput("TRD_Electron_L1");
     /*
     for (Int_t iPlus = 0; iPlus < electronPlus; iPlus++) {

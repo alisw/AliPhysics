@@ -23,7 +23,7 @@
 
 #include <TTree.h>
 
-#include "AliRun.h"
+#include "AliLog.h"
 
 #include "AliTRDgeometry.h"
 #include "AliTRDsegmentArray.h"
@@ -114,18 +114,15 @@ Bool_t AliTRDsegmentArray::LoadArray(const Char_t *branchname, TTree *tree)
 
   fTree = tree;
 
-  // Connect the digits tree as default
   if (!fTree) {
-    AliWarning("Use default TreeD\n");
-    fTree = gAlice->TreeD();
-    if (!fTree) {
-      return kFALSE;
-    }
+    AliError("Digits tree is not defined\n");
+    return kFALSE;
   }
 
   // Get the branch
   fBranch = fTree->GetBranch(branchname);
   if (!fBranch) {
+    AliError(Form("Branch %s is not defined\n",branchname));
     return kFALSE;
   }
 
@@ -155,18 +152,15 @@ Bool_t AliTRDsegmentArray::StoreArray(const Char_t *branchname, TTree *tree)
 
   fTree = tree;
 
-  // Connect the digits tree as default
   if (!fTree) {
-    AliWarning("Use default TreeD\n");
-    fTree = gAlice->TreeD();
-    if (!fTree) {
-      return kFALSE;
-    }
+    AliError("Digits tree is not defined\n");
+    return kFALSE;
   }
 
   // Get the branch
   fBranch = fTree->GetBranch(branchname);
   if (!fBranch) {
+    AliError(Form("Branch %s is not defined\n",branchname));
     return kFALSE;
   }
 
@@ -207,18 +201,7 @@ AliTRDdataArray *AliTRDsegmentArray::GetDataArray(Int_t pla
   // Returns the data array for a given detector
   //
 
-  if (gAlice) {
-
-    AliTRDgeometry *geo = AliTRDgeometry::GetGeometry(gAlice->GetRunLoader());  
-    Int_t det = geo->GetDetector(pla,cha,sec);
-    return GetDataArray(det);
-
-  }
-  else {
-
-    AliError("gAlice is not defined\n");
-    return NULL;
-
-  }
+  Int_t det = AliTRDgeometry::GetDetector(pla,cha,sec);
+  return GetDataArray(det);
 
 }

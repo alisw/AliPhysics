@@ -27,7 +27,6 @@
 #include <TH1.h>
 #include <TFile.h>
 
-#include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliRawReader.h"

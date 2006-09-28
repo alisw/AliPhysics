@@ -26,7 +26,6 @@
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
-#include "AliRun.h"
 #include "AliESDTrdTrack.h"
 #include "AliESD.h"
 
@@ -77,16 +76,8 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
   AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
                                               ,"TRD Trigger parameters");
 
-  if (runLoader->GetAliRun() == 0x0) {
-    runLoader->LoadgAlice();
-  }
-  gAlice = runLoader->GetAliRun();
-  Double_t x[3]  = { 0.0, 0.0, 0.0 };
-  Double_t b[3];
-  gAlice->Field(x,b);          // b[] is in kilo Gauss
-  Float_t  field = b[2] * 0.1; // Tesla
+  Float_t field = AliTracker::GetBz() * 0.1; // Tesla
   AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
-
   trigp->SetField(field);
   trigp->Init();
   trdTrigger.SetParameter(trigp);
@@ -144,16 +135,8 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
   AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
                                               ,"TRD Trigger parameters");
 
-  if (runLoader->GetAliRun() == 0x0) {
-    runLoader->LoadgAlice();
-  }
-  gAlice = runLoader->GetAliRun();
-  Double_t x[3]  = { 0.0, 0.0, 0.0 };
-  Double_t b[3];
-  gAlice->Field(x,b);          // b[] is in kilo Gauss
-  Float_t  field = b[2] * 0.1; // Tesla
+  Float_t field = AliTracker::GetBz() * 0.1; // Tesla
   AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
-
   trigp->SetField(field);
   trigp->Init();
   trdTrigger.SetParameter(trigp);
@@ -187,7 +170,7 @@ AliTracker *AliTRDReconstructor::CreateTracker(AliRunLoader *runLoader) const
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(AliRunLoader *runLoader
-				 , AliESD *esd) const
+				, AliESD *esd) const
 {
   //
   // Make PID
@@ -204,16 +187,8 @@ void AliTRDReconstructor::FillESD(AliRunLoader *runLoader
   AliTRDtrigParam *trigp = new AliTRDtrigParam("TRDtrigParam"
                                               ,"TRD Trigger parameters");
 
-  if (runLoader->GetAliRun() == 0x0) {
-    runLoader->LoadgAlice();
-  }
-  gAlice = runLoader->GetAliRun();
-  Double_t x[3]  = { 0.0, 0.0, 0.0 };
-  Double_t b[3];
-  gAlice->Field(x,b);          // b[] is in kilo Gauss
-  Float_t  field = b[2] * 0.1; // Tesla
+  Float_t field = AliTracker::GetBz() * 0.1; // Tesla
   AliInfo(Form("Trigger set for magnetic field = %f Tesla \n",field));
-
   trigp->SetField(field);
   trigp->Init();
 
