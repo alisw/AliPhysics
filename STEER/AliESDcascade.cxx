@@ -152,27 +152,6 @@ AliESDcascade::AliESDcascade(const AliESDcascade& cas) :
   }
 }
 
-AliESDcascade& AliESDcascade::operator=(const AliESDcascade& cas) {
-  //assignment operator
-  if (this != &cas) {
-    AliESDv0::operator=(cas);
-    fPdgCode = cas.fPdgCode;
-    fEffMass = cas.fEffMass;
-    fChi2Xi  = cas.fChi2Xi;
-    fDcaXiDaughters = cas.fDcaXiDaughters;
-    fBachIdx = cas.fBachIdx;
-    for (int i=0; i<3; i++) {
-      fPosXi[i]   = cas.fPosXi[i];
-      fBachMom[i] = cas.fBachMom[i];
-    }
-    for (int i=0; i<6; i++) {
-      fPosCovXi[i]   = cas.fPosCovXi[i];
-      fBachMomCov[i] = cas.fBachMomCov[i];
-    }
-  }
-  return *this;
-}
-
 Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
   //--------------------------------------------------------------------
   // This function changes the mass hypothesis for this cascade

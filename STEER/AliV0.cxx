@@ -37,7 +37,7 @@ void  AliV0::Update(Float_t vertex[3])
   Float_t distance2;
   //
   AliHelix phelix(fParamP);
-  AliHelix mhelix(fParamM);    
+  AliHelix mhelix(fParamN);    
   //
   //find intersection linear
   //
@@ -69,13 +69,13 @@ void  AliV0::Update(Float_t vertex[3])
   if (points>0){
     phelix.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
     phelix.ParabolicDCA(mhelix,phase[0][0],phase[0][1],radius[0],delta1);
-    if (TMath::Abs(fParamP.GetX()-TMath::Sqrt(radius[0])<3) && TMath::Abs(fParamM.GetX()-TMath::Sqrt(radius[0])<3)){
+    if (TMath::Abs(fParamP.GetX()-TMath::Sqrt(radius[0])<3) && TMath::Abs(fParamN.GetX()-TMath::Sqrt(radius[0])<3)){
       // if we are close to vertex use error parama
       //
-      err[1] = fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]+0.05*0.05
-	+0.3*(fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]);
-      err[2] = fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]+0.05*0.05
-	+0.3*(fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]);
+      err[1] = fParamP.GetCovariance()[0]+fParamN.GetCovariance()[0]+0.05*0.05
+	+0.3*(fParamP.GetCovariance()[2]+fParamN.GetCovariance()[2]);
+      err[2] = fParamP.GetCovariance()[2]+fParamN.GetCovariance()[2]+0.05*0.05
+	+0.3*(fParamP.GetCovariance()[0]+fParamN.GetCovariance()[0]);
       
       phelix.GetAngle(phase[0][0],mhelix,phase[0][1],angles);
       Double_t tfi  = TMath::Abs(TMath::Tan(angles[0]));
@@ -92,13 +92,13 @@ void  AliV0::Update(Float_t vertex[3])
   if (points==2){    
     phelix.ParabolicDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
     phelix.ParabolicDCA(mhelix,phase[1][0],phase[1][1],radius[1],delta2);
-    if (TMath::Abs(fParamP.GetX()-TMath::Sqrt(radius[1])<3) && TMath::Abs(fParamM.GetX()-TMath::Sqrt(radius[1])<3)){
+    if (TMath::Abs(fParamP.GetX()-TMath::Sqrt(radius[1])<3) && TMath::Abs(fParamN.GetX()-TMath::Sqrt(radius[1])<3)){
       // if we are close to vertex use error paramatrization
       //
-      err[1] = fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]+0.05*0.05
-	+0.3*(fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]);
-      err[2] = fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]+0.05*0.05
-	+0.3*(fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]);
+      err[1] = fParamP.GetCovariance()[0]+fParamN.GetCovariance()[0]+0.05*0.05
+	+0.3*(fParamP.GetCovariance()[2]+fParamN.GetCovariance()[2]);
+      err[2] = fParamP.GetCovariance()[2]+fParamN.GetCovariance()[2]+0.05*0.05
+	+0.3*(fParamP.GetCovariance()[0]+fParamN.GetCovariance()[0]);
       
       phelix.GetAngle(phase[1][0],mhelix,phase[1][1],angles);
       Double_t tfi  = TMath::Abs(TMath::Tan(angles[0]));
@@ -123,8 +123,8 @@ void  AliV0::Update(Float_t vertex[3])
     fXr[1] = 0.5*(xd[1]+xm[1]);
     fXr[2] = 0.5*(xd[2]+xm[2]);
 
-    Float_t wy = fParamP.GetCovariance()[0]/(fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]);
-    Float_t wz = fParamP.GetCovariance()[2]/(fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]);
+    Float_t wy = fParamP.GetCovariance()[0]/(fParamP.GetCovariance()[0]+fParamN.GetCovariance()[0]);
+    Float_t wz = fParamP.GetCovariance()[2]/(fParamP.GetCovariance()[2]+fParamN.GetCovariance()[2]);
     fXr[0] = 0.5*( (1.-wy)*xd[0]+ wy*xm[0] + (1.-wz)*xd[0]+ wz*xm[0] );
     fXr[1] = (1.-wy)*xd[1]+ wy*xm[1];
     fXr[2] = (1.-wz)*xd[2]+ wz*xm[2];
@@ -141,8 +141,8 @@ void  AliV0::Update(Float_t vertex[3])
     fXr[0] = 0.5*(xd[0]+xm[0]);
     fXr[1] = 0.5*(xd[1]+xm[1]);
     fXr[2] = 0.5*(xd[2]+xm[2]);
-    Float_t wy = fParamP.GetCovariance()[0]/(fParamP.GetCovariance()[0]+fParamM.GetCovariance()[0]);
-    Float_t wz = fParamP.GetCovariance()[2]/(fParamP.GetCovariance()[2]+fParamM.GetCovariance()[2]);
+    Float_t wy = fParamP.GetCovariance()[0]/(fParamP.GetCovariance()[0]+fParamN.GetCovariance()[0]);
+    Float_t wz = fParamP.GetCovariance()[2]/(fParamP.GetCovariance()[2]+fParamN.GetCovariance()[2]);
     fXr[0] = 0.5*( (1.-wy)*xd[0]+ wy*xm[0] + (1.-wz)*xd[0]+ wz*xm[0] );
     fXr[1] = (1.-wy)*xd[1]+ wy*xm[1];
     fXr[2] = (1.-wz)*xd[2]+ wz*xm[2];

@@ -12,7 +12,7 @@
 #include <AliSimDigits.h>
 #include <AliKalmanTrack.h>
 #include <AliESD.h>
-#include <AliESDV0MI.h>
+#include <AliESDv0.h>
 #include <AliTPCclusterMI.h>
 #include <AliTPCClustersRow.h>
 #include <AliITS.h>
@@ -691,8 +691,8 @@ void VSDCreator::ConvertV0()
   tree->SetBranchAddress("ESD", &fEvent);
   tree->GetEntry(mEvent); 
 
-  for (Int_t n =0; n< fEvent->GetNumberOfV0MIs(); n++) {
-    AliESDV0MI* av = fEvent->GetV0MI(n);
+  for (Int_t n =0; n< fEvent->GetNumberOfV0s(); n++) {
+    AliESDv0* av = fEvent->GetV0(n);
     Double_t pos[3];
 
     mV0.status = av->GetStatus();

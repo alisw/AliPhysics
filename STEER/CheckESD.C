@@ -382,6 +382,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     // loop over V0s
     for (Int_t iV0 = 0; iV0 < esd->GetNumberOfV0s(); iV0++) {
       AliESDv0* v0 = esd->GetV0(iV0);
+      if (v0->GetOnFlyStatus()) continue;
       v0->ChangeMassHypothesis(kK0Short);
       hMassK0->Fill(v0->GetEffMass());
       v0->ChangeMassHypothesis(kLambda0);

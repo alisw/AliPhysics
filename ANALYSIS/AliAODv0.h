@@ -20,7 +20,6 @@
 class AliESD;
 class AliESDVertex;
 class AliESDv0;
-class AliESDV0MI;
 class AliESDtrack;
 
 
@@ -29,14 +28,12 @@ class AliAODv0 : public TObject {
 public:
   AliAODv0();
   AliAODv0(AliESDv0 *rV0Vertex, AliESD *rEvent);
-  AliAODv0(AliESDV0MI *rV0Vertex, AliESD *rEvent);
   AliAODv0(const AliAODv0& rAliAODv0);
   virtual ~AliAODv0();
 
   AliAODv0& operator=(const AliAODv0& rAliAODv0);
 
   void     Fill(AliESDv0 *rV0Vertex, AliESD *rEvent);
-  void     Fill(AliESDV0MI *rV0Vertex, AliESD *rEvent);
   void     ResetV0();
 
   Double_t DecayVertexV0X() const;

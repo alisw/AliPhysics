@@ -47,6 +47,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESD *event) {
    Int_t i;
    for (i=0; i<nV0; i++) {
        AliESDv0 *v=event->GetV0(i);
+       if (v->GetOnFlyStatus()) continue;
        if (v->GetD(fX,fY,fZ)<fDV0min) continue;
        vtcs.AddLast(v);
    }

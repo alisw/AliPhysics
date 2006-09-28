@@ -583,7 +583,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
     for (Int_t i=0;i<3;i++){
       Int_t  index = esd->GetV0Index(i);
       if (index==0) break;
-      AliESDV0MI * vertex = fEsd->GetV0MI(index);
+      AliESDv0 * vertex = fEsd->GetV0(index);
       if (vertex->GetStatus()<0) continue;     // rejected V0
       //
       if (esd->GetSign()>0) {
@@ -889,7 +889,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
     for (Int_t i=0;i<3;i++){
       Int_t  index = otrack->fESDtrack->GetV0Index(i); 
       if (index==0) break;
-      AliV0 * vertex = (AliV0*)fEsd->GetV0MI(index);
+      AliV0 * vertex = (AliV0*)fEsd->GetV0(index);
       if (vertex->GetStatus()<0) continue;     // rejected V0
       //
       if (otrack->GetSign()>0) {
@@ -3386,11 +3386,11 @@ void AliITStrackerMI::UpdateTPCV0(AliESD *event){
   //
   //try to update, or reject TPC  V0s
   //
-  Int_t nv0s = event->GetNumberOfV0MIs();
+  Int_t nv0s = event->GetNumberOfV0s();
   Int_t nitstracks = fTrackHypothesys.GetEntriesFast();
 
   for (Int_t i=0;i<nv0s;i++){
-    AliESDV0MI * vertex = event->GetV0MI(i);
+    AliESDv0 * vertex = event->GetV0(i);
     Int_t ip = vertex->GetIndex(0);
     Int_t im = vertex->GetIndex(1);
     //
@@ -4085,7 +4085,8 @@ void  AliITStrackerMI::FindV02(AliESD *event)
 	  //	  event->AddV0(&vertexjuri);
 	  pvertex->SetStatus(100);
 	}
-	event->AddV0MI(pvertex);
+        pvertex->SetOnFlyStatus(kTRUE);
+	event->AddV0(pvertex);
       }
     }
   }
@@ -4114,11 +4115,11 @@ void AliITStrackerMI::RefitV02(AliESD *event)
   //
   TTreeSRedirector &cstream = *fDebugStreamer;
   //
-  Int_t  nv0s = event->GetNumberOfV0MIs();
+  Int_t  nv0s = event->GetNumberOfV0s();
   Float_t primvertex[3]={GetX(),GetY(),GetZ()};
   AliV0 v0temp;
   for (Int_t iv0 = 0; iv0<nv0s;iv0++){
-    AliV0 * v0mi = (AliV0*)event->GetV0MI(iv0);
+    AliV0 * v0mi = (AliV0*)event->GetV0(iv0);
     if (!v0mi) continue;
     Int_t     itrack0   = v0mi->GetIndex(0);
     Int_t     itrack1   = v0mi->GetIndex(1);

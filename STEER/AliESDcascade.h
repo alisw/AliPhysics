@@ -32,8 +32,6 @@ public:
                 const AliExternalTrackParam &t, Int_t i);
   ~AliESDcascade();
 
-  AliESDcascade& operator=(const AliESDcascade&);
-
   Double_t ChangeMassHypothesis(Double_t &v0q, Int_t code=kXiMinus); 
 
   Int_t    GetPdgCode() const {return fPdgCode;}
@@ -63,6 +61,9 @@ protected:
   Int_t    fBachIdx;        // label of the bachelor track
   Double_t fBachMom[3];     // bachelor momentum (global)
   Double_t fBachMomCov[6];  // covariance matrix of the bachelor momentum.
+
+private:
+  AliESDcascade& operator=(const AliESDcascade&);
 
   ClassDef(AliESDcascade,2) // reconstructed cascade vertex
 };

@@ -27,7 +27,6 @@
 #include "AliESDHLTtrack.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDv0.h"
-#include "AliESDV0MI.h"
 #include "AliESDFMD.h"
 #include "AliMultiplicity.h"
 
@@ -92,10 +91,7 @@ public:
   AliESDv0 *GetV0(Int_t i) const {
     return (AliESDv0 *)fV0s.UncheckedAt(i);
   }
-  void AddV0(const AliESDv0 *v) {
-    new(fV0s[fV0s.GetEntriesFast()]) AliESDv0(*v);
-  }
-  void UpdateV0PIDs();
+  Int_t AddV0(const AliESDv0 *v);
 
   AliESDcascade *GetCascade(Int_t i) const {
     return (AliESDcascade *)fCascades.UncheckedAt(i);
@@ -111,15 +107,6 @@ public:
     AliESDkink * kink = new(fKinks[fKinks.GetEntriesFast()]) AliESDkink(*c);
     kink->SetID(fKinks.GetEntriesFast());
     return fKinks.GetEntriesFast()-1;
-  }
-
-  AliESDV0MI *GetV0MI(Int_t i) const {
-    return (AliESDV0MI *)fV0MIs.UncheckedAt(i);
-  }
-  Int_t AddV0MI(const AliESDV0MI *c) {
-    AliESDV0MI * v0 = new(fV0MIs[fV0MIs.GetEntriesFast()]) AliESDV0MI(*c);
-    v0->SetID(fV0MIs.GetEntriesFast()-1);
-    return fV0MIs.GetEntriesFast()-1;
   }
 
   AliESDCaloCluster *GetCaloCluster(Int_t i) const {
@@ -160,7 +147,6 @@ public:
   Int_t GetNumberOfV0s()      const {return fV0s.GetEntriesFast();}
   Int_t GetNumberOfCascades() const {return fCascades.GetEntriesFast();}
   Int_t GetNumberOfKinks() const {return fKinks.GetEntriesFast();}
-  Int_t GetNumberOfV0MIs() const {return fV0MIs.GetEntriesFast();}
   Int_t GetNumberOfCaloClusters() const {return fCaloClusters.GetEntriesFast();}
 
   Int_t GetNumberOfEMCALClusters() const {return fEMCALClusters;}
@@ -246,7 +232,6 @@ protected:
   TClonesArray fV0s;             // V0 vertices
   TClonesArray fCascades;        // Cascade vertices
   TClonesArray fKinks;           // Kinks
-  TClonesArray fV0MIs;           // V0MI
   TClonesArray fCaloClusters;    // Calorimeter clusters for PHOS/EMCAL
   Int_t        fEMCALClusters;   // Number of EMCAL clusters (subset of caloclusters)
   Int_t        fFirstEMCALCluster; // First EMCAL cluster in the fCaloClusters list 
@@ -256,7 +241,7 @@ protected:
  
   AliESDFMD *  fESDFMD; // FMD object containing rough multiplicity
 
-  ClassDef(AliESD,13)  //ESD class 
+  ClassDef(AliESD,14)  //ESD class 
 };
 #endif 
 

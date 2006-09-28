@@ -55,7 +55,6 @@ AliESD::AliESD():
   fV0s("AliESDv0",200),  
   fCascades("AliESDcascade",20),
   fKinks("AliESDkink",4000),
-  fV0MIs("AliESDV0MI",4000),
   fCaloClusters("AliESDCaloCluster",10000),
   fEMCALClusters(0), 
   fFirstEMCALCluster(-1),
@@ -97,7 +96,6 @@ AliESD::AliESD(const AliESD& esd):
   fV0s(*((TClonesArray*)esd.fV0s.Clone())),  
   fCascades(*((TClonesArray*)esd.fCascades.Clone())),
   fKinks(*((TClonesArray*)esd.fKinks.Clone())),
-  fV0MIs(*((TClonesArray*)esd.fV0MIs.Clone())),
   fCaloClusters(*((TClonesArray*)esd.fCaloClusters.Clone())),
   fEMCALClusters(esd.fEMCALClusters), 
   fFirstEMCALCluster(esd.fFirstEMCALCluster),
@@ -144,7 +142,6 @@ AliESD & AliESD::operator=(const AliESD& source) {
   fV0s = *((TClonesArray*)source.fV0s.Clone());
   fCascades = *((TClonesArray*)source.fCascades.Clone());
   fKinks = *((TClonesArray*)source.fKinks.Clone());
-  fV0MIs = *((TClonesArray*)source.fV0MIs.Clone());
   fCaloClusters = *((TClonesArray*)source.fCaloClusters.Clone());
   fEMCALClusters = source.fEMCALClusters;
   fFirstEMCALCluster = source.fFirstEMCALCluster;
@@ -177,29 +174,8 @@ AliESD::~AliESD()
   fV0s.Delete();
   fCascades.Delete();
   fKinks.Delete();
-  fV0MIs.Delete();
   fCaloClusters.Delete();
   delete fESDFMD;
-}
-
-void AliESD::UpdateV0PIDs()
-{
-  //
-  //
-  //
-  Int_t nV0 = GetNumberOfV0MIs();
-  for (Int_t i=0;i<nV0;i++){
-    AliESDV0MI * v0 = GetV0MI(i);
-    AliESDtrack* tp = GetTrack(v0->GetIndex(0));
-    AliESDtrack* tm = GetTrack(v0->GetIndex(1));
-    if (!tm || !tp){
-      printf("BBBUUUUUUUGGGG\n");
-    }
-    Double_t pp[5],pm[5];
-    tp->GetESDpid(pp);
-    tm->GetESDpid(pm);
-    v0->UpdatePID(pp,pm);    
-  }
 }
 
 //______________________________________________________________________________
@@ -238,6 +214,16 @@ void AliESD::Reset()
   if (fESDFMD) fESDFMD->Clear();
 }
 
+Int_t AliESD::AddV0(const AliESDv0 *v) {
+  //
+  // Add V0
+  //
+    Int_t idx=fV0s.GetEntriesFast();
+    AliESDv0 *v0=new(fV0s[idx]) AliESDv0(*v);
+    v0->SetID(idx);
+    return idx;
+}  
+
 //______________________________________________________________________________
 void AliESD::Print(Option_t *) const 
 {
@@ -267,7 +253,6 @@ void AliESD::Print(Option_t *) const
   printf("                 v0        %d\n", GetNumberOfV0s());
   printf("                 cascades  %d\n", GetNumberOfCascades());
   printf("                 kinks     %d\n", GetNumberOfKinks());
-  printf("                 V0MIs     %d\n", GetNumberOfV0MIs());
   printf("                 CaloClusters %d\n", GetNumberOfCaloClusters());
   printf("                 phos      %d\n", GetNumberOfPHOSClusters());
   printf("                 emcal     %d\n", GetNumberOfEMCALClusters());

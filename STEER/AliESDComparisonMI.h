@@ -88,13 +88,13 @@ public:
   Float_t        fPointAngleTh; //point angle theta
   Float_t        fPointAngle;   //point angle full
   Int_t          fV0Status;       // status of the kink
-  AliESDV0MI     fV0tpc;           // Vo information from reconsturction according TPC
-  AliESDV0MI     fV0its;           // Vo information from reconsturction according ITS
-  AliESDV0MI     fV0rec;           // V0 information form the reconstruction
+  AliESDV0       fV0tpc;           // Vo information from reconsturction according TPC
+  AliESDV0       fV0its;           // Vo information from reconsturction according ITS
+  AliESDV0       fV0rec;           // V0 information form the reconstruction
   Int_t          fMultiple;
   Int_t          fV0Multiple;
   Int_t          fRecStatus;    // status form the reconstuction
-  ClassDef(AliESDRecV0Info,1)   // container for  
+  ClassDef(AliESDRecV0Info,2)   // container for  
 };
 
 ClassImp(AliESDRecV0Info)

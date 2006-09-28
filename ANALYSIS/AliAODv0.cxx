@@ -55,9 +55,6 @@ AliAODv0::AliAODv0(AliESDv0* rV0Vertex ,AliESD* rEvent){
   this->Fill(rV0Vertex,rEvent);
 }
 
-AliAODv0::AliAODv0(AliESDV0MI* rV0Vertex ,AliESD* rEvent){
-  this->Fill(rV0Vertex,rEvent);
-}
 
 AliAODv0::AliAODv0(const AliAODv0& rAliAODv0) : TObject(rAliAODv0) {
   //--------------------------------------------------------------------
@@ -152,49 +149,6 @@ void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESD* rEvent){
   else { tDcaNegToPrimVertex[0]=999.;  tDcaNegToPrimVertex[1]=999.;}
 
   fDcaNegToPrimVertex = TMath::Sqrt(tDcaNegToPrimVertex[0]*tDcaNegToPrimVertex[0]+tDcaNegToPrimVertex[1]*tDcaNegToPrimVertex[1]);
-}
-
-void AliAODv0::Fill(AliESDV0MI* rV0Vertex ,AliESD* rEvent){
-  // Fills the data members of the AOD
-  Double_t tDecayVertexV0[3]; rV0Vertex->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
-  fDecayVertexV0X = tDecayVertexV0[0];
-  fDecayVertexV0Y = tDecayVertexV0[1];
-  fDecayVertexV0Z = tDecayVertexV0[2];
-
-  fDcaV0Daughters = rV0Vertex->GetDcaV0Daughters();
-
-  fDcaV0ToPrimVertex = rV0Vertex->GetD();
-
-
-  Double_t tMomPos[3]; rV0Vertex->GetPPxPyPz(tMomPos[0],tMomPos[1],tMomPos[2]); 
-  fMomPosX = tMomPos[0];
-  fMomPosY = tMomPos[1];
-  fMomPosZ = tMomPos[2];
-
-  Double_t tMomNeg[3]; rV0Vertex->GetNPxPyPz(tMomNeg[0],tMomNeg[1],tMomNeg[2]); 
-  fMomNegX = tMomNeg[0];
-  fMomNegY = tMomNeg[1];
-  fMomNegZ = tMomNeg[2];
-
-  fKeyPos = (UInt_t)TMath::Abs(rV0Vertex->GetPindex());// need to check why Abs
-  fKeyNeg = (UInt_t)TMath::Abs(rV0Vertex->GetNindex());
-
-  AliESDtrack *pTrack=rEvent->GetTrack(fKeyPos);
-  AliESDtrack *nTrack=rEvent->GetTrack(fKeyNeg);
-
-  Float_t tDcaPosToPrimVertex[2];
-  if(pTrack) pTrack->GetImpactParameters(tDcaPosToPrimVertex[0],tDcaPosToPrimVertex[1]);
-  else { tDcaPosToPrimVertex[0]=999.;  tDcaPosToPrimVertex[1]=999.;}
-
-  fDcaPosToPrimVertex = TMath::Sqrt(tDcaPosToPrimVertex[0]*tDcaPosToPrimVertex[0]+tDcaPosToPrimVertex[1]*tDcaPosToPrimVertex[1]);
-
-  Float_t tDcaNegToPrimVertex[2];
-  if(nTrack) nTrack->GetImpactParameters(tDcaNegToPrimVertex[0],tDcaNegToPrimVertex[1]);
-  else { tDcaNegToPrimVertex[0]=999.;  tDcaNegToPrimVertex[1]=999.;}
-
-  fDcaNegToPrimVertex = TMath::Sqrt(tDcaNegToPrimVertex[0]*tDcaNegToPrimVertex[0]+tDcaNegToPrimVertex[1]*tDcaNegToPrimVertex[1]);
-
-  fChi2  = rV0Vertex->GetChi2V0();
 }
 
 void AliAODv0::ResetV0(){

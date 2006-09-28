@@ -24,8 +24,7 @@
 #pragma link C++ class  AliESDVertex+;
 #pragma link C++ class  AliESDpid+;
 #pragma link C++ class  AliESDkink+;
-#pragma link C++ class  AliESDV0MI+;
-#pragma link C++ class  AliESDV0MIParams+;
+#pragma link C++ class  AliESDV0Params+;
 #pragma link C++ class  AliESDCaloCluster+;
 
 #pragma link C++ class  AliKalmanTrack+;

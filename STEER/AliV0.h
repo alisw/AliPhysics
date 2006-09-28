@@ -11,9 +11,9 @@
 //    Origin: Marian Ivanov marian.ivanov@cern.ch
 //-------------------------------------------------------------------------
 
-#include "AliESDV0MI.h"
+#include "AliESDv0.h"
 
-class AliV0 :  public AliESDV0MI {
+class AliV0 :  public AliESDv0 {
 public:
   AliV0(){;} 
   void Update(Float_t vertex[3]);            //update

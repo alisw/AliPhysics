@@ -4901,7 +4901,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
       vertex.SetStatus(1); // TPC v0 candidate
       vertex.SetRp(track0->fTPCr);
       vertex.SetRm(track1->fTPCr);
-      tpcv0s->AddLast(new AliESDV0MI(vertex));      
+      tpcv0s->AddLast(new AliESDv0(vertex));      
       ncandidates++;
       {
 	Int_t eventNr = esd->GetEventNumber();
@@ -4957,7 +4957,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
   Int_t naccepted =0;
   for (Int_t i=0;i<ncandidates;i++){
     quality[i]     = 0; 
-    AliESDV0MI *v0 = (AliESDV0MI*)tpcv0s->At(i);
+    AliESDv0 *v0 = (AliESDv0*)tpcv0s->At(i);
     quality[i]     = 1./(1.00001-v0->GetPointAngle());   //base point angle
     // quality[i]    /= (0.5+v0->GetDist2());  
     // quality[i]    *= v0->GetChi2After();               //density factor
@@ -4974,7 +4974,7 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
   //
   //
   for (Int_t i=0;i<ncandidates;i++){
-    AliESDV0MI * v0 = (AliESDV0MI*)tpcv0s->At(indexes[i]);
+    AliESDv0 * v0 = (AliESDv0*)tpcv0s->At(indexes[i]);
     if (!v0) continue;
     Int_t index0 = v0->GetIndex(0);
     Int_t index1 = v0->GetIndex(1);
@@ -4996,13 +4996,14 @@ void  AliTPCtrackerMI::FindV0s(TObjArray * array, AliESD *esd)
     if (v0indexes0[2]!=0) {order0=3; accept=kFALSE;}
     if (v0indexes0[2]!=0) {order1=3; accept=kFALSE;}
     //
-    AliESDV0MI * v02 = v0;
+    AliESDv0 * v02 = v0;
     if (accept){
       v0->SetOrder(0,order0);
       v0->SetOrder(1,order1);
       v0->SetOrder(1,order0+order1);     
-      Int_t index = esd->AddV0MI(v0);
-      v02 = esd->GetV0MI(index);
+      v0->SetOnFlyStatus(kTRUE);
+      Int_t index = esd->AddV0(v0);
+      v02 = esd->GetV0(index);
       v0indexes0[order0]=index;
       v0indexes1[order1]=index;
       naccepted++;

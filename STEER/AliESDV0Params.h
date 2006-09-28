@@ -1,10 +1,8 @@
-#ifndef ALIESDV0MIPARAMS_H
-#define ALIESDV0MIPARAMS_H
+#ifndef ALIESDV0PARAMS_H
+#define ALIESDV0PARAMS_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-/* $Id$ */
 
 //-------------------------------------------------------------------------
 //                          ESD V0 Vertex Class - parameterization 
@@ -14,10 +12,10 @@
 
 #include "TObject.h"
 
-class AliESDV0MIParams : public TObject{
-  friend class AliESDV0MI;
+class AliESDV0Params : public TObject{
+  friend class AliESDv0;
  public:
-  AliESDV0MIParams();
+  AliESDV0Params();
  private:
   Double_t  fPSigmaOffsetD0;        // sigma offset DCA
   Double_t  fPSigmaOffsetAP0;       // sigma offset AP
@@ -42,7 +40,7 @@ class AliESDV0MIParams : public TObject{
   Double_t fPMaxFractionD0;         // maximal allowed fraction of effective params - DCA
   Double_t fPMinD0;                 // minimal minimax - DCA sigma
   //
-  ClassDef(AliESDV0MIParams,1)      // ESD V0 vertex - error and likelihood parameterization constant
+  ClassDef(AliESDV0Params,1)      // ESD V0 vertex - error and likelihood parameterization constant
 };
 
 

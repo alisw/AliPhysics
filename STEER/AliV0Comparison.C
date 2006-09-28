@@ -194,6 +194,8 @@ Int_t AliV0Comparison(Int_t code=310, const Char_t *dir=".") {
       for (i=0; i<nentr; i++) {
           AliESDv0 *vertex=event->GetV0(i);
 
+          if (vertex->GetOnFlyStatus()) continue;
+
           Int_t nidx=TMath::Abs(vertex->GetNindex());
           Int_t pidx=TMath::Abs(vertex->GetPindex());
 

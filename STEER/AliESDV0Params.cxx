@@ -15,24 +15,24 @@
 
 
 //-------------------------------------------------------------------------
-//            Helper -DATA  class ESD V0MI vertex class
+//            Helper -DATA  class ESD V0 vertex class
 //            contains effective errror parameterization 
 //            Effective parameterization of resolution in DCA and PA  as function of radii and momenta
 //            Mini-max coeficient    fPMinFraction... fPMaxFraction...
 //                                   as limits for Error parameterization using Covariance matrix             
-//            For detailes : see  AliESDV0MI class   
+//            For detailes : see  AliESDv0 class   
 //             
 //    Origin: Marian Ivanov marian.ivanov@cern.ch
 //-------------------------------------------------------------------------
 
 
-#include "AliESDV0MIParams.h"
+#include "AliESDV0Params.h"
 
 
-ClassImp(AliESDV0MIParams)
+ClassImp(AliESDV0Params)
 
 
-AliESDV0MIParams::AliESDV0MIParams() :
+AliESDV0Params::AliESDV0Params() :
   TObject(),
   // These constants are used in the error parameterization using covariance matrix
   // minimal sigma in AP and DCA 
@@ -70,7 +70,7 @@ AliESDV0MIParams::AliESDV0MIParams() :
 {
   //
   // Default constructor
-  // Consult AliESDV0MI to see actual error parameterization 
+  // Consult AliESDv0 to see actual error parameterization 
   //
 }
 

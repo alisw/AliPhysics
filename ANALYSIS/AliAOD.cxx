@@ -1,4 +1,3 @@
-#include "AliAOD.h"
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -26,6 +25,8 @@
 #include <TParticle.h>
 #include <TClass.h>
 #include <TString.h>
+
+#include "AliAOD.h"
 #include "AliAODParticle.h"
 #include "AliTrackPoints.h"
 

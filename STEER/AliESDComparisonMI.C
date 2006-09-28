@@ -178,7 +178,7 @@ TProfile prof("prof","prof",10,0.5,5);
 #include "AliESDVertex.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDkink.h"
-#include "AliESDV0MI.h"
+#include "AliESDv0.h"
 
 #endif
 #include "AliGenInfo.h"
@@ -1144,7 +1144,7 @@ Int_t ESDCmpTr::TreeTLoop()
   //  
   Int_t nEntries = (Int_t)fEvent->GetNumberOfTracks();  
   Int_t nKinks = (Int_t) fEvent->GetNumberOfKinks();
-  Int_t nV0MIs = (Int_t) fEvent->GetNumberOfV0MIs();
+  Int_t nV0MIs = (Int_t) fEvent->GetNumberOfV0s();
   fSignedKinks = new Short_t[nKinks];
   fSignedV0    = new Short_t[nV0MIs];
   //
@@ -1156,7 +1156,7 @@ Int_t ESDCmpTr::TreeTLoop()
   }
   //
   for (Int_t i=0; i<nV0MIs;i++){
-    AliESDV0MI * v0MI =fEvent->GetV0MI(i);
+    AliESDv0 * v0MI =fEvent->GetV0(i);
     fSignedV0[i]=0;
     if (v0MI->fStatus<0) continue;
   }
@@ -1204,9 +1204,9 @@ Int_t ESDCmpTr::TreeTLoop()
   }  
   // --sort reconstructed V0
   //
-  AliESDV0MI * v0MI=0;
+  AliESDv0 * v0MI=0;
   for (Int_t iEntry=0; iEntry<nV0MIs;iEntry++){
-    v0MI = fEvent->GetV0MI(iEntry);
+    v0MI = fEvent->GetV0(iEntry);
     if (!v0MI) continue;
     //
     //    Int_t label0 = TMath::Abs(v0MI->fLab[0]);
@@ -1624,7 +1624,7 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
  
     Int_t label =  TMath::Min(fGenV0Info->fMCm.fLabel,fGenV0Info->fMCd.fLabel);
     Int_t label2 = TMath::Max(fGenV0Info->fMCm.fLabel,fGenV0Info->fMCd.fLabel);    
-    AliESDV0MI *v0MI=0;
+    AliESDv0 *v0MI=0;
     fRecV0Info->fRecStatus   =0;
     fRecV0Info->fMultiple    = fMultiRecV0[label];
     fRecV0Info->fV0Multiple=0;
@@ -1635,7 +1635,7 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
       for (Int_t j=TMath::Min(fMultiRecV0[label],Short_t(20))-1;j>=0;j--){
 	Int_t index = fIndexRecV0[label*20+j];
 	if (index<0) continue;
-	AliESDV0MI *v0MI2  = fEvent->GetV0MI(index);
+	AliESDv0 *v0MI2  = fEvent->GetV0(index);
 	if (TMath::Abs(v0MI2->fLab[0])==label &&TMath::Abs(v0MI2->fLab[1])==label2) {
 	  v0MI =v0MI2;
 	  fRecV0Info->fV0Multiple++;
@@ -1658,10 +1658,10 @@ Int_t ESDCmpTr::BuildV0Info(Int_t eventNr)
   //
   // write fake v0s
 
-  Int_t nV0MIs = fEvent->GetNumberOfV0MIs();
+  Int_t nV0MIs = fEvent->GetNumberOfV0s();
   for (Int_t i=0;i<nV0MIs;i++){
     if (fSignedV0[i]==0){
-      AliESDV0MI *v0MI  = fEvent->GetV0MI(i);
+      AliESDv0 *v0MI  = fEvent->GetV0(i);
       if (!v0MI) continue;
       //
       fRecV0Info->fV0rec = *v0MI;

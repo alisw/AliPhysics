@@ -2,10 +2,10 @@ SRCS = AliESD.cxx AliESDfriend.cxx\
        AliESDtrack.cxx AliESDfriendTrack.cxx\
        AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDTrdTrack.cxx AliESDHLTtrack.cxx \
        AliESDv0.cxx AliESDcascade.cxx AliVertex.cxx AliESDVertex.cxx \
-       AliESDpid.cxx AliESDkink.cxx AliESDV0MI.cxx \
+       AliESDpid.cxx AliESDkink.cxx \
        AliESDCaloCluster.cxx \
        AliKalmanTrack.cxx AliExternalTrackParam.cxx \
-       AliLog.cxx AliPID.cxx AliESDV0MIParams.cxx \
+       AliLog.cxx AliPID.cxx AliESDV0Params.cxx \
        AliRunTag.cxx AliLHCTag.cxx AliDetectorTag.cxx AliEventTag.cxx \
        AliTagCreator.cxx AliTagAnalysis.cxx AliEventTagCuts.cxx AliRunTagCuts.cxx\
        AliTrackPointArray.cxx \
