@@ -24,7 +24,6 @@ class TTree;
 class AliMUONData;
 class AliRunLoader;
 class AliLoader;
-class AliTrackReference;
 class AliMUONTriggerTrack;
 
 class AliMUONTrackReconstructor : public TObject {
@@ -55,16 +54,9 @@ class AliMUONTrackReconstructor : public TObject {
   void SetSimpleBLength(Double_t SimpleBLength) {fSimpleBLength = SimpleBLength;}
   Double_t GetSimpleBPosition(void) const {return fSimpleBPosition;}
   void SetSimpleBPosition(Double_t SimpleBPosition) {fSimpleBPosition = SimpleBPosition;}
-  Int_t GetRecTrackRefHits(void) const {return fRecTrackRefHits;}
-  void SetRecTrackRefHits(Int_t RecTrackRefHits) {fRecTrackRefHits = RecTrackRefHits;}
   Double_t GetEfficiency(void) const {return fEfficiency;}
   void SetEfficiency(Double_t Efficiency) {fEfficiency = Efficiency;}
   void SetReconstructionParametersToDefaults(void);
-
-  // Parameters for Track Ref. background events
-  TFile* GetBkgTrackRefFile(void) const {return fBkgTrackRefFile;}
-  void SetBkgTrackRefFile(Text_t *BkgTrackRefFileName); // set background file for track ref. hits
-  void NextBkgTrackRefEvent(void); // next event in background file for track ref. hits
 
   // Hits for reconstruction
   Int_t GetNHitsForRec(void) const {return fNHitsForRec;} // Number
@@ -117,7 +109,6 @@ class AliMUONTrackReconstructor : public TObject {
   static const Double_t fgkDefaultSimpleBValue; ///< default value of magnetic field (dipole)
   static const Double_t fgkDefaultSimpleBLength; ///< default length of magnetic field (dipole)
   static const Double_t fgkDefaultSimpleBPosition; ///< default position of magnetic field (dipole)
-  static const Int_t fgkDefaultRecTrackRefHits; ///< default flag for reconstrution track ref. hits or Clusters
   static const Double_t fgkDefaultEfficiency; ///< default chamber efficiency for track ref. hits recontruction
 
 
@@ -140,16 +131,7 @@ class AliMUONTrackReconstructor : public TObject {
   Double_t fSimpleBValue; ///< simple magnetic field: value (kG)
   Double_t fSimpleBLength; ///< simple magnetic field: length (cm)
   Double_t fSimpleBPosition; ///< simple magnetic field: Z central position (cm)
-  Int_t fRecTrackRefHits; ///< reconstruction from raw clusters (0) or from track ref. hits (1)
   Double_t fEfficiency; ///< chamber efficiency (used for track ref. hits only)
-
-  // Parameters for track ref. background events
-  // should be in AliMUON class ????
-  TFile *fBkgTrackRefFile; ///< pointer to file
-  TTree *fBkgTrackRefTK; ///< pointer to tree TK
-  TClonesArray *fBkgTrackRefParticles;   ///< pointer to list of particles in tree TK
-  TTree *fBkgTrackRefTTR; ///< pointer to tree TTR
-  Int_t fBkgTrackRefEventNumber; ///< event number
   
   // Hits for reconstruction (should be in AliMUON ????)
   TClonesArray *fHitsForRecPtr; ///< pointer to the array of hits for reconstruction
@@ -185,10 +167,6 @@ class AliMUONTrackReconstructor : public TObject {
   AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs); // assignment operator
   void ResetHitsForRec(void);
   void MakeEventToBeReconstructed(void);
-  void AddHitsForRecFromTrackRef(TTree *TTR, Int_t Signal);
-  AliMUONHitForRec* NewHitForRecFromTrackRef(AliTrackReference* Hit, Int_t TrackNumber, Int_t Signal);
-  TClonesArray *CleanTrackRefs(TTree *treeTR);
-/*   void AddHitsForRecFromCathodeCorrelations(TTree* TC); */
   void AddHitsForRecFromRawClusters(TTree* TR);
   void SortHitsForRecWithIncreasingChamber();
   void MakeSegments(void);

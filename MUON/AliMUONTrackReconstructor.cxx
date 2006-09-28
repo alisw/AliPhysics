@@ -56,9 +56,7 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliMUONTrackK.h" 
-#include "AliMC.h"
 #include "AliLog.h"
-#include "AliTrackReference.h"
 
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONTrackReconstructor::fgkDefaultMinBendingMomentum = 3.0;
@@ -77,7 +75,6 @@ const Double_t AliMUONTrackReconstructor::fgkDefaultChamberThicknessInX0 = 0.03;
 const Double_t AliMUONTrackReconstructor::fgkDefaultSimpleBValue = 7.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultSimpleBLength = 428.0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultSimpleBPosition = 1019.0;
-const Int_t    AliMUONTrackReconstructor::fgkDefaultRecTrackRefHits = 0;
 const Double_t AliMUONTrackReconstructor::fgkDefaultEfficiency = 0.95;
 
 ClassImp(AliMUONTrackReconstructor) // Class implementation in ROOT context
@@ -96,14 +93,7 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUOND
     fSimpleBValue(fgkDefaultSimpleBValue),
     fSimpleBLength(fgkDefaultSimpleBLength),
     fSimpleBPosition(fgkDefaultSimpleBPosition),
-    fRecTrackRefHits(fgkDefaultRecTrackRefHits),
     fEfficiency(fgkDefaultEfficiency),
-    // Initializions for track ref. background events
-    fBkgTrackRefFile(0x0),
-    fBkgTrackRefTK(0x0),
-    fBkgTrackRefParticles(0x0),
-    fBkgTrackRefTTR(0x0),
-    fBkgTrackRefEventNumber(-1),
     fHitsForRecPtr(0x0),
     fNHitsForRec(0),
     fRecTracksPtr(0x0),
@@ -237,101 +227,6 @@ Double_t AliMUONTrackReconstructor::GetBendingMomentumFromImpactParam(Double_t I
 }
 
 //__________________________________________________________________________
-void AliMUONTrackReconstructor::SetBkgTrackRefFile(Text_t *BkgTrackRefFileName)
-{
-  // Set background file ... for track ref. hits
-  // Must be called after having loaded the firts signal event
-  AliDebug(1,Form("Enter SetBkgTrackRefFile with BkgTrackRefFileName %s",BkgTrackRefFileName));
-  
-  if (strlen(BkgTrackRefFileName)) {
-    // BkgTrackRefFileName not empty: try to open the file
-
-    if(AliLog::GetGlobalDebugLevel()>1) {
-      cout << "Before File(Bkg)" << endl; gDirectory->Dump();
-    }
-    fBkgTrackRefFile = new TFile(BkgTrackRefFileName);
-    if(AliLog::GetGlobalDebugLevel()>1) {
-      cout << "After File(Bkg)" << endl; gDirectory->Dump();
-    }
-    if (fBkgTrackRefFile-> IsOpen()) {
-      if(AliLog::GetGlobalDebugLevel()>0) {
-	cout << "Background for Track ref. hits in file: ``" << BkgTrackRefFileName
-	     << "'' successfully opened" << endl;}
-    }
-    else {
-      cout << "Background for Track Ref. hits in file: " << BkgTrackRefFileName << endl;
-      cout << "NOT FOUND: EXIT" << endl;
-      exit(0); // right instruction for exit ????
-    }
-    // Arrays for "particles" and "hits"
-    fBkgTrackRefParticles = new TClonesArray("TParticle", 200);
-    // Event number to -1 for initialization
-    fBkgTrackRefEventNumber = -1;
-    // Back to the signal file:
-    // first signal event must have been loaded previously,
-    // otherwise, Segmentation violation at the next instruction
-    // How is it possible to do smething better ????
-    ((gAlice->TreeK())->GetCurrentFile())->cd();
-    if(AliLog::GetGlobalDebugLevel()>1) cout << "After cd(gAlice)" << endl; gDirectory->Dump();
-  }
-  return;
-}
-
-//__________________________________________________________________________
-void AliMUONTrackReconstructor::NextBkgTrackRefEvent(void)
-{
-  // Get next event in background file for track ref. hits
-  // Goes back to event number 0 when end of file is reached
-  char treeName[20];
-  
-  AliDebug(1,"Enter NextBkgTrackRefEvent");
-  // Clean previous event
-  if(fBkgTrackRefTK) delete fBkgTrackRefTK;
-  fBkgTrackRefTK = NULL;
-  if(fBkgTrackRefParticles) fBkgTrackRefParticles->Clear();
-  if(fBkgTrackRefTTR) delete fBkgTrackRefTTR;
-  fBkgTrackRefTTR = NULL;
-  // Increment event number
-  fBkgTrackRefEventNumber++;
-  // Get access to Particles and Hits for event from background file
-  if (AliLog::GetGlobalDebugLevel()>1) cout << "Before cd(Bkg)" << endl; gDirectory->Dump();
-  fBkgTrackRefFile->cd();
-  if (AliLog::GetGlobalDebugLevel()>1) cout << "After cd(Bkg)" << endl; gDirectory->Dump();
-  // Particles: TreeK for event and branch "Particles"
-  sprintf(treeName, "TreeK%d", fBkgTrackRefEventNumber);
-  fBkgTrackRefTK = (TTree*)gDirectory->Get(treeName);
-  if (!fBkgTrackRefTK) {
-   
-    AliDebug(1,Form("Cannot find Kine Tree for background event: %d",fBkgTrackRefEventNumber));
-    AliDebug(1,"Goes back to event 0");
-    
-    fBkgTrackRefEventNumber = 0;
-    sprintf(treeName, "TreeK%d", fBkgTrackRefEventNumber);
-    fBkgTrackRefTK = (TTree*)gDirectory->Get(treeName);
-    if (!fBkgTrackRefTK) {
-		AliError(Form("cannot find Kine Tree for background event: %d",fBkgTrackRefEventNumber));
-      	exit(0);
-    }
-  }
-  if (fBkgTrackRefTK) 
-    fBkgTrackRefTK->SetBranchAddress("Particles", &fBkgTrackRefParticles);
-  fBkgTrackRefTK->GetEvent(0); // why event 0 ???? necessary ????
-  // Hits: TreeH for event and branch "MUON"
-  sprintf(treeName, "TreeTR%d", fBkgTrackRefEventNumber);
-  fBkgTrackRefTTR = (TTree*)gDirectory->Get(treeName);
-  if (!fBkgTrackRefTTR) {
-	  AliError(Form("cannot find Hits Tree for background event: %d",fBkgTrackRefEventNumber));
-      exit(0);
-  }
-  fBkgTrackRefTTR->GetEntries(); // necessary ????
-  // Back to the signal file
-  ((gAlice->TreeK())->GetCurrentFile())->cd();
-  if (AliLog::GetGlobalDebugLevel()>1) 
-    cout << "After cd(gAlice)" << endl; gDirectory->Dump();
-  return;
-}
-
-//__________________________________________________________________________
 void AliMUONTrackReconstructor::EventReconstruct(void)
 {
   // To reconstruct one event
@@ -436,44 +331,18 @@ void AliMUONTrackReconstructor::MakeEventToBeReconstructed(void)
 
   AliDebug(1,"Enter MakeEventToBeReconstructed");
   //AZ ResetHitsForRec();
-  if (fRecTrackRefHits == 1) {
-    // Reconstruction from track ref. hits
-    // Back to the signal file
-    TTree* treeTR = runLoader->TreeTR();
-    if (treeTR == 0x0)
-      {
-	Int_t retval = runLoader->LoadTrackRefs("READ");
-	if ( retval)
-          {
-            AliError("Error occured while loading hits.");
-            return;
-          }
-	treeTR = runLoader->TreeTR();
-	if (treeTR == 0x0)
-          {
-	    AliError("Can not get TreeTR");
-	    return;
-          }
-      }
-    
-    AddHitsForRecFromTrackRef(treeTR,1);
-    
-    // Background hits
-    AddHitsForRecFromTrackRef(fBkgTrackRefTTR,0);
-    // Sort HitsForRec in increasing order with respect to chamber number
-    SortHitsForRecWithIncreasingChamber();
-  }
-  else {
-    // Reconstruction from raw clusters
-    // AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
-    // Security on MUON ????
-    // TreeR assumed to be be "prepared" in calling function
-    // by "MUON->GetTreeR(nev)" ????
-    TTree *treeR = fLoader->TreeR();
-    //AZ? fMUONData->SetTreeAddress("RC");
-    AddHitsForRecFromRawClusters(treeR);
-    // No sorting: it is done automatically in the previous function
-  }
+ 
+  // Reconstruction from raw clusters
+  // AliMUON *MUON  = (AliMUON*) gAlice->GetModule("MUON"); // necessary ????
+  // Security on MUON ????
+  // TreeR assumed to be be "prepared" in calling function
+  // by "MUON->GetTreeR(nev)" ????
+  TTree *treeR = fLoader->TreeR();
+
+  //AZ? fMUONData->SetTreeAddress("RC");
+  AddHitsForRecFromRawClusters(treeR);
+  // No sorting: it is done automatically in the previous function
+  
  
   AliDebug(1,"End of MakeEventToBeReconstructed");
     if (AliLog::GetGlobalDebugLevel() > 0) {
@@ -493,177 +362,6 @@ void AliMUONTrackReconstructor::MakeEventToBeReconstructed(void)
   return;
 }
 
-  //__________________________________________________________________________
-void AliMUONTrackReconstructor::AddHitsForRecFromTrackRef(TTree *TTR, Int_t signal)
-{
-  // To add to the list of hits for reconstruction
-  // the signal hits from a track reference tree TreeTR.
-  TClonesArray *listOfTrackRefs = NULL;
-  AliTrackReference *trackRef;
-  
-  Int_t track = 0;
-  AliDebug(2,Form("Enter AddHitsForRecFromTrackRef with TTR: %d",  TTR));
-  if (TTR == NULL) return;
-  
-  listOfTrackRefs = CleanTrackRefs(TTR);
-
-  Int_t ntracks = listOfTrackRefs->GetEntriesFast();
-
-  AliDebug(2,Form("ntracks: %d", ntracks));
-
-  for (Int_t index = 0; index < ntracks; index++) {
-    trackRef = (AliTrackReference*) listOfTrackRefs->At(index);
-    track =  trackRef->GetTrack();
-    
-    NewHitForRecFromTrackRef(trackRef,track,signal);
-  } // end of track ref.
-  
-  listOfTrackRefs->Delete();
-  delete listOfTrackRefs;
-  return;
-}
-
-
-  //__________________________________________________________________________
-AliMUONHitForRec* AliMUONTrackReconstructor::NewHitForRecFromTrackRef(AliTrackReference* Hit, Int_t TrackNumber, Int_t Signal)
-{
-  // To make a new hit for reconstruction from a track ref. hit pointed to by "Hit",
-  // with  the track numbered "TrackNumber",
-  // either from signal ("Signal" = 1) or background ("Signal" = 0) event.
-  // Selects hits in tracking (not trigger) chambers.
-  // Takes into account the efficiency (fEfficiency)
-  // and the smearing from resolution (fBendingResolution and fNonBendingResolution).
-  // Adds a condition on the radius between RMin and RMax
-  // to better simulate the real chambers.
-  // Returns the pointer to the new hit for reconstruction,
-  // or NULL in case of inefficiency or non tracking chamber or bad radius.
-  // No condition on at most 20 cm from a muon from a resonance
-  // like in Fortran TRACKF_STAT.
-  AliMUONHitForRec* hitForRec;
-  Double_t bendCoor, nonBendCoor, radius;
-  Int_t detElemId = Hit->UserId(), chamber = 0;
-  if (detElemId) chamber = detElemId / 100 - 1;
-  else chamber = AliMUONConstants::ChamberNumber(Hit->Z()); // chamber(0...)
-  if (chamber < 0) return NULL;
-  // only in tracking chambers (fChamber starts at 1)
-  if (chamber >= AliMUONConstants::NTrackingCh()) return NULL;
-  // only if hit is efficient (keep track for checking ????)
-  if (gRandom->Rndm() > fEfficiency) return NULL;
-  // only if radius between RMin and RMax
-  bendCoor = Hit->Y();
-  nonBendCoor = Hit->X();
-  radius = TMath::Sqrt((bendCoor * bendCoor) + (nonBendCoor * nonBendCoor));
-  // This cut is not needed with a realistic chamber geometry !!!!
-//   if ((radius < fRMin[chamber]) || (radius > fRMax[chamber])) return NULL;
-  // new AliMUONHitForRec from track ref. hit and increment number of AliMUONHitForRec's
-  hitForRec = new ((*fHitsForRecPtr)[fNHitsForRec]) AliMUONHitForRec(Hit);
-  fNHitsForRec++;
-  // add smearing from resolution
-  hitForRec->SetBendingCoor(bendCoor + gRandom->Gaus(0., fBendingResolution));
-  hitForRec->SetNonBendingCoor(nonBendCoor
-			       + gRandom->Gaus(0., fNonBendingResolution));
-//   // !!!! without smearing
-//   hitForRec->SetBendingCoor(bendCoor);
-//   hitForRec->SetNonBendingCoor(nonBendCoor);
-  // more information into HitForRec
-  //  resolution: angular effect to be added here ????
-  hitForRec->SetBendingReso2(fBendingResolution * fBendingResolution);
-  hitForRec->SetNonBendingReso2(fNonBendingResolution * fNonBendingResolution);
-  //   track ref. info
-  hitForRec->SetTTRTrack(TrackNumber);
-  hitForRec->SetTrackRefSignal(Signal);
-  if (AliLog::GetGlobalDebugLevel()> 1) {
-    AliDebug(2,Form("Track: %d", TrackNumber));
-    Hit->Dump();
-    cout << "AliMUONHitForRec number (1...): " << fNHitsForRec << endl;
-    hitForRec->Dump();
-  }
-  return hitForRec;
-}
-  //__________________________________________________________________________
-TClonesArray* AliMUONTrackReconstructor::CleanTrackRefs(TTree *treeTR)
-{
-  // Make hits from track ref..  
-  // Re-calculate hits parameters because two AliTrackReferences are recorded for
-  // each chamber (one when particle is entering + one when particle is leaving 
-  // the sensitive volume) 
- 
-  AliTrackReference *trackReference;
-  Float_t x1, y1, z1, pX1, pY1, pZ1;
-  Float_t x2, y2, z2, pX2, pY2, pZ2;
-  Int_t track1, track2;
-  Int_t nRec = 0;
-  Float_t maxGasGap = 1.; // cm 
-  Int_t iHit1 = 0;
-  Int_t iHitMin = 0;
- 
-  AliTrackReference *trackReferenceNew = new AliTrackReference();
-  
-  TClonesArray* trackRefs = new TClonesArray("AliTrackReference", 10);
-  TClonesArray* cleanTrackRefs = new TClonesArray("AliTrackReference", 10);
-
-  if (treeTR == NULL) return NULL;
-  TBranch* branch = treeTR->GetBranch("MUON");
-  if (branch == NULL) return NULL;
-  branch->SetAddress(&trackRefs);
-
-  Int_t nTrack = (Int_t)treeTR->GetEntries();
-  for (Int_t iTrack  = 0; iTrack < nTrack; iTrack++) {
-    treeTR->GetEntry(iTrack);
-    iHitMin = 0;
-    iHit1 = 0;
-    while (iHit1 < trackRefs->GetEntries()) {
-      trackReference = (AliTrackReference*)trackRefs->At(iHit1);
-      x1 = trackReference->X();
-      y1 = trackReference->Y();
-      z1 = trackReference->Z();
-      pX1 = trackReference->Px();
-      pY1 = trackReference->Py();
-      pZ1 = trackReference->Pz();
-      track1 = trackReference->GetTrack();
-      nRec = 1;
-      iHitMin = iHit1+1;
-      for (Int_t iHit2 = iHit1+1; iHit2 < trackRefs->GetEntries(); iHit2++) {
-	trackReference = (AliTrackReference*)trackRefs->At(iHit2);
-	x2 = trackReference->X();
-	y2 = trackReference->Y();
-	z2 = trackReference->Z();
-	pX2 = trackReference->Px();
-	pY2 = trackReference->Py();
-	pZ2 = trackReference->Pz();
-	track2 = trackReference->GetTrack();
-	if (track2 == track1 && TMath::Abs(z2-z1) < maxGasGap ) {
-	  nRec++;
-	  x1 += x2;
-	  y1 += y2;
-	  z1 += z2;				
-	  pX1 += pX2;
-	  pY1 += pY2;
-	  pZ1 += pZ2;
-	  iHitMin = iHit2+1;
-	}
-	
-      } // for iHit2
-      x1 /= (Float_t)nRec;
-      y1 /= (Float_t)nRec;
-      z1 /= (Float_t)nRec;
-      pX1 /= (Float_t)nRec;
-      pY1 /= (Float_t)nRec;
-      pZ1 /= (Float_t)nRec;
-      trackReferenceNew->SetPosition(x1,y1,z1);
-      trackReferenceNew->SetMomentum(pX1,pY1,pZ1);
-      trackReferenceNew->SetTrack(track1);
-      {new ((*cleanTrackRefs)[cleanTrackRefs->GetEntriesFast()]) AliTrackReference(*trackReferenceNew);}       
-      iHit1 = iHitMin;
-    } // while iHit1
-  } // for track
-
-  trackRefs->Delete();
-  delete trackRefs;
-  delete trackReferenceNew;
-  return cleanTrackRefs;
- 
-}
   //__________________________________________________________________________
 void AliMUONTrackReconstructor::SortHitsForRecWithIncreasingChamber()
 {
@@ -1568,9 +1266,7 @@ void AliMUONTrackReconstructor::EventDump(void)
     AliDebug(1, Form("track parameters at z= %f: X= %f Y= %f pX= %f pY= %f pZ= %f c= %f\n",
 		     z, x, y, pX, pY, pZ, c));
   }
-  // informations about generated particles
-  np = gAlice->GetMCApp()->GetNtrack();
-  printf(" **** number of generated particles: %d  \n", np);
+  // informations about generated particles NO !!!!!!!!
   
 //    for (Int_t iPart = 0; iPart < np; iPart++) {
 //      p = gAlice->Particle(iPart);
@@ -1644,25 +1340,22 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
 
   // Print hits
   trackK = (AliMUONTrackK*) ((*fRecTracksPtr)[0]);
+
   if (trackK->DebugLevel() > 0) {
     for (Int_t i1=0; i1<fNHitsForRec; i1++) {
       hit = (AliMUONHitForRec*) ((*fHitsForRecPtr)[i1]);
-      //if (hit->GetTTRTrack() > 1 || hit->GetTrackRefSignal() == 0) continue;
       printf(" Hit # %d %10.4f %10.4f %10.4f",
              hit->GetChamberNumber(), hit->GetBendingCoor(),
              hit->GetNonBendingCoor(), hit->GetZ());
-      if (fRecTrackRefHits) {
-        // from track ref hits
-	printf(" %3d %3d \n", hit->GetTrackRefSignal(), hit->GetTTRTrack());
-      } else {
-	// from raw clusters
-	rawclusters = fMUONData->RawClusters(hit->GetChamberNumber());
-	clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->
-                                                 GetHitNumber());
-	printf(" %d", clus->GetTrack(1));
-	if (clus->GetTrack(2) != -1) printf(" %d \n", clus->GetTrack(2));
-	else printf("\n");
-      } // if (fRecTrackRefHits)
+ 
+      // from raw clusters
+      rawclusters = fMUONData->RawClusters(hit->GetChamberNumber());
+      clus = (AliMUONRawCluster*) rawclusters->UncheckedAt(hit->
+							   GetHitNumber());
+      printf(" %d", clus->GetTrack(1));
+      if (clus->GetTrack(2) != -1) printf(" %d \n", clus->GetTrack(2));
+      else printf("\n");
+     
     }
   } // if (trackK->DebugLevel() > 0)
 
@@ -1688,9 +1381,11 @@ void AliMUONTrackReconstructor::FollowTracksK(void)
     */
 
     ok = kTRUE;
-    if (trackK->GetRecover() == 0) hit = (AliMUONHitForRec*) 
-                                   trackK->GetTrackHits()->Last(); // last hit
-    else hit = trackK->GetHitLastOk(); // hit where track stopped
+    if (trackK->GetRecover() == 0) 
+      hit = (AliMUONHitForRec*) trackK->GetTrackHits()->Last(); // last hit
+    else 
+      hit = trackK->GetHitLastOk(); // hit where track stopped
+
     if (hit) ichamBeg = hit->GetChamberNumber();
     ichamEnd = 0;
     // Check propagation direction
