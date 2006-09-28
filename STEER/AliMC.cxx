@@ -329,7 +329,7 @@ void AliMC::Stepping()
     //Call the appropriate stepping routine;
     AliModule *det = dynamic_cast<AliModule*>(gAlice->Modules()->At(id));
     if(det && det->StepManagerIsEnabled()) {
-      fMCQA->StepManager(id);
+      if(AliLog::GetGlobalDebugLevel()>0) fMCQA->StepManager(id);
       det->StepManager();
     }
   }
