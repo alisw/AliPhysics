@@ -1553,6 +1553,8 @@ Double_t TFluka::Edep() const
   if (caller == kBXExiting || caller == kBXEntering || 
       caller == kUSDRAW    || caller == kMGResumedTrack) return 0.0;
   Double_t sum = 0;
+  if (TRACKR.mtrack > 1) printf("Edep: %6d\n", TRACKR.mtrack);
+  
   for ( Int_t j=0;j<TRACKR.mtrack;j++) {
       sum +=TRACKR.dtrack[j];  
   }
@@ -2287,7 +2289,7 @@ Int_t TFluka::GetNPrimaryElectrons()
 }
 
 //______________________________________________________________________________
-Double_t GetPrimaryElectronKineticEnergy(Int_t i)
+Double_t TFluka::GetPrimaryElectronKineticEnergy(Int_t i)
 {
     Double_t ekin = -1.;
     // Returns kinetic energy of primary electron i
