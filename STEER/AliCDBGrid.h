@@ -13,7 +13,7 @@
 
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
-#include "AliCDBMetaData.h"
+class AliCDBMetaData;
 
 class AliCDBGrid: public AliCDBStorage {
 	friend class AliCDBGridFactory;
@@ -80,6 +80,7 @@ public:
 
 	virtual Bool_t Validate(const char* gridString);
         virtual AliCDBParam* CreateParameter(const char* gridString);
+	virtual ~AliCDBGridFactory(){}
 
 protected:
         virtual AliCDBStorage* Create(const AliCDBParam* param);
