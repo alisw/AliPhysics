@@ -52,7 +52,7 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
   //------------------------------------------------------------------
   const AliExternalTrackParam *par=&t;
   if (c) {
-    par=t.GetConstrainedExternalParameters();
+    par=t.GetConstrainedParam();
     if (!par) throw "AliITStrackV2: conversion failed !\n";
   }
   Set(par->GetX(),par->GetAlpha(),par->GetParameter(),par->GetCovariance());

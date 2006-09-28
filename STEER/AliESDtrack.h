@@ -73,9 +73,7 @@ public:
     if (!fCp) return kFALSE;
     return fCp->GetXYZ(r);
   }
-  const AliExternalTrackParam *GetConstrainedExternalParameters() const {
-    return fCp;
-  }
+  const AliExternalTrackParam *GetConstrainedParam() const {return fCp;}
   Bool_t GetConstrainedExternalParameters
               (Double_t &alpha, Double_t &x, Double_t p[5]) const;
   Bool_t GetConstrainedExternalCovariance(Double_t cov[15]) const;
