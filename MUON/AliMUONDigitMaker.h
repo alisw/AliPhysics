@@ -5,7 +5,7 @@
 
 /*$Id$*/
 
-/// \ingroup rec
+/// \ingroup base
 /// \class AliMUONDigitMaker
 /// \brief Raw data class for trigger and tracker chambers
 ///
@@ -28,7 +28,7 @@ class AliMUONRawStreamTrigger;
 class AliMUONDigitMaker : public TObject 
 {
  public:
-  AliMUONDigitMaker(); // Constructor
+  AliMUONDigitMaker(Bool_t digit = kTRUE); // Constructor
   virtual ~AliMUONDigitMaker(void); // Destructor
     
   // write raw data
@@ -54,6 +54,8 @@ class AliMUONDigitMaker : public TObject
   AliMpBusPatch*   fBusPatchManager;   //!< buspatch versus DE's & DDL
 
   Bool_t           fScalerEvent;       //!< flag to generates scaler event
+
+  Bool_t           fDigitFlag;        //!< true for Digit, false for SDigit
 
   AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger

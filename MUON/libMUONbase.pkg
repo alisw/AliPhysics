@@ -40,7 +40,10 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONCalibParam2F.cxx \
         AliMUONCalibrationData.cxx \
         AliMUONCheck.cxx \
-        AliMUONTriggerEfficiencyCells.cxx
+        AliMUONTriggerEfficiencyCells.cxx\
+        AliMUONRawStreamTrigger.cxx \
+        AliMUONRawStreamTracker.cxx  \
+        AliMUONDigitMaker.cxx 
      
 HDRS:= $(SRCS:.cxx=.h)
 

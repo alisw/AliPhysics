@@ -73,6 +73,7 @@
 
 #include "AliMUONSDigitizerV2.h"
 #include "AliMUONDigitizerV3.h"
+#include "AliMUONDigitMaker.h"
 
 #include "AliMUONSt1GeometryBuilderV2.h"
 #include "AliMUONSt2GeometryBuilderV2.h"
@@ -123,7 +124,9 @@ AliMUON::AliMUON()
     fTriggerCoinc44(0),
     fSDigitizerType(""),
     fDigitizerType(""),
-  fRawWriter(0x0)
+    fRawWriter(0x0),
+    fDigitMaker(0x0)
+
 {
 /// Default Constructor
     
@@ -159,7 +162,8 @@ AliMUON::AliMUON(const char *name, const char *title,
     fTriggerCoinc44(0),
     fSDigitizerType(sDigitizerClassName),
     fDigitizerType(digitizerClassName),
-  fRawWriter(0x0)
+    fRawWriter(0x0),
+    fDigitMaker(new AliMUONDigitMaker(kFALSE)) 
 {
 /// Standard constructor  
   
@@ -215,7 +219,6 @@ AliMUON::AliMUON(const char *name, const char *title,
     for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
       fTriggerCircuitsNew->AddAt(new AliMUONTriggerCircuitNew(),circ);          
     }
-    
 }
 
 //____________________________________________________________________
@@ -243,6 +246,7 @@ AliMUON::~AliMUON()
   delete fGeometryBuilder;
   delete fSegmentation;
   delete fRawWriter;
+  delete fDigitMaker;
 }
 
 //_____________________________________________________________________________
@@ -548,6 +552,28 @@ void AliMUON::Digits2Raw()
   }
 }
 
+//_____________________________________________________________________
+Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
+{
+/// Convert  raw data to SDigit
+/// Only for tracking for the moment (ChF) 
+
+  //fLoader->LoadDigits("READ");
+  if (!fLoader->TreeS()) fLoader->MakeSDigitsContainer();
+
+  fMUONData->MakeBranch("S");
+  fMUONData->SetTreeAddress("S");
+  fDigitMaker->Raw2Digits(rawReader);
+  fMUONData->Fill("S");
+
+  fLoader->WriteSDigits("OVERWRITE");
+  fMUONData->ResetSDigits();
+  fLoader->UnloadSDigits();
+
+  return kTRUE;
+
+}
+
 //_______________________________________________________________________
 AliLoader* AliMUON::MakeLoader(const char* topfoldername)
 { 
@@ -559,6 +585,9 @@ AliLoader* AliMUON::MakeLoader(const char* topfoldername)
  fLoader   = new AliLoader(GetName(),topfoldername);
  fMUONData = new AliMUONData(fLoader,GetName(),GetName()); 
  fMUONData->SetSplitLevel(fSplitLevel);
+
+ fDigitMaker->SetMUONData(fMUONData);
+
  return fLoader;
 }
 //_______________________________________________________________________

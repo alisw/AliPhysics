@@ -55,6 +55,11 @@
 #pragma link C++ class AliMUONCalibrationData+;
 #pragma link C++ class AliMUONTriggerEfficiencyCells+;
 
+// raw data
+#pragma link C++ class AliMUONDigitMaker+;
+#pragma link C++ class AliMUONRawStreamTracker+;
+#pragma link C++ class AliMUONRawStreamTrigger+;
+
 // debug
 #pragma link C++ class AliMUONCheck+;
 

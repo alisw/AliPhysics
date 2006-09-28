@@ -38,6 +38,7 @@ class AliMUONGeometryBuilder;
 class AliMUONRawWriter;
 class AliMUONVGeometryBuilder;
 class AliESD;
+class AliMUONDigitMaker;
 
 class AliMUON : public  AliDetector 
 {
@@ -86,7 +87,8 @@ class AliMUON : public  AliDetector
     virtual void   SDigits2Digits();      
     virtual void   Hits2SDigits();
     virtual void   Digits2Raw();
-    
+    virtual Bool_t Raw2SDigits(AliRawReader* rawReader);
+
     // Trigger
                    /// Create trigger
     virtual AliTriggerDetector* CreateTriggerDetector() const
@@ -192,6 +194,8 @@ class AliMUON : public  AliDetector
     
     AliMUONRawWriter* fRawWriter; //!< Raw data writer
     
+    AliMUONDigitMaker* fDigitMaker; //!< pointer to the digit maker class
+
     ClassDef(AliMUON,13)  // MUON Detector base class
 };
 #endif

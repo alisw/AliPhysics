@@ -77,12 +77,13 @@
 
 ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 //__________________________________________________________________________
-AliMUONDigitMaker::AliMUONDigitMaker()
+AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
   : TObject(),
     fMUONData(0x0),
     fSegFactory(new AliMpSegFactory()),
     fBusPatchManager(new AliMpBusPatch()),
     fScalerEvent(kFALSE),
+    fDigitFlag(flag),
     fRawStreamTracker(new AliMUONRawStreamTracker()),    
     fRawStreamTrigger(new AliMUONRawStreamTrigger()),    
     fDigit(new AliMUONDigit()),
@@ -156,7 +157,8 @@ Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader)
   ReadTrackerDDL(rawReader);
 
   // generate trigger
-  ReadTriggerDDL(rawReader);
+  if (fDigitFlag)
+    ReadTriggerDDL(rawReader);
 
   return kTRUE;
 
@@ -247,7 +249,12 @@ Int_t AliMUONDigitMaker::ReadTrackerDDL(AliRawReader* rawReader)
 
 	    // fill digits
 	    iChamber = fDigit->DetElemId()/100 - 1;
-	    fMUONData->AddDigit(iChamber, *fDigit);
+
+	    if (fDigitFlag)
+	      fMUONData->AddDigit(iChamber, *fDigit);
+	    else
+	      fMUONData->AddSDigit(iChamber, *fDigit);
+
 
 	  } // iData
 	} // iBusPatch
