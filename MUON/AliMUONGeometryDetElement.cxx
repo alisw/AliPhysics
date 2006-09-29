@@ -34,11 +34,14 @@
 ClassImp(AliMUONGeometryDetElement)
 /// \endcond
 
+const TString AliMUONGeometryDetElement::fgkDENamePrefix = "DE";
+
 //______________________________________________________________________________
 AliMUONGeometryDetElement::AliMUONGeometryDetElement(
                                         Int_t detElemId,
                                         const TString& volumePath)
  : TObject(),
+   fDEName(),
    fVolumePath(volumePath),
    fLocalTransformation(0),
    fGlobalTransformation(0)
@@ -46,6 +49,9 @@ AliMUONGeometryDetElement::AliMUONGeometryDetElement(
 /// Standard constructor
 
   SetUniqueID(detElemId);
+  
+  fDEName = fgkDENamePrefix;
+  fDEName += detElemId;
 }
 
 //______________________________________________________________________________

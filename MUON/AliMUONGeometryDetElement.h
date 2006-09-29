@@ -49,6 +49,7 @@ class AliMUONGeometryDetElement : public TObject
     
     // get methods
     Int_t    GetId() const;
+    TString  GetDEName() const;
     TString  GetVolumePath() const;
     TString  GetVolumeName() const;
     Int_t    GetVolumeCopyNo() const;
@@ -62,8 +63,12 @@ class AliMUONGeometryDetElement : public TObject
   private:
     // methods
     void PrintTransform(const TGeoHMatrix* transform) const;
-  
+ 
+     // static data members
+    static const TString  fgkDENamePrefix; /// < Geometry module name prefix
+ 
     // data members
+    TString       fDEName;     ///< detection element name
     TString       fVolumePath; ///< \brief the full path of aligned volume
                                ///  or envelope in geometry
     TGeoHMatrix*  fLocalTransformation;  ///< the transformation wrt module
@@ -81,6 +86,10 @@ inline void AliMUONGeometryDetElement::SetVolumePath(const TString& volumePath)
 /// Return detection element ID
 inline Int_t AliMUONGeometryDetElement::GetId() const
 { return GetUniqueID(); }
+
+/// Return detection element ID
+inline TString AliMUONGeometryDetElement::GetDEName() const
+{ return fDEName; }
 
 /// Return the full path of the aligned volume or envelope in geometry
 inline TString AliMUONGeometryDetElement::GetVolumePath() const
