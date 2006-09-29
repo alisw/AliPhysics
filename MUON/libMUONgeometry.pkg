@@ -25,4 +25,4 @@ HDRS =  $(SRCS:.cxx=.h)
 
 EINCLUDE:= RAW MUON/mapping
 
-DHDR:= MUONLinkDefGeometry.h
+DHDR:= MUONgeometryLinkDef.h
