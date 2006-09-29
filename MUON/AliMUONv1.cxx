@@ -153,6 +153,15 @@ void AliMUONv1::CreateMaterials()
   fGeometryBuilder->CreateMaterials();
 }
 
+//________________________________________________________________
+void AliMUONv1::AddAlignableVolumes() const
+{
+/// Construct materials using geometry builder
+
+  GetGeometryTransformer()->AddAlignableVolumes();
+}
+
+
 //___________________________________________
 void AliMUONv1::Init()
 { 

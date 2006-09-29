@@ -30,6 +30,7 @@ class AliMUONv1 : public AliMUON
    virtual  ~AliMUONv1();
    virtual void   CreateGeometry();
    virtual void   CreateMaterials();
+   virtual void   AddAlignableVolumes() const;
    virtual void   Init();
    
                   /// Return the version number of this detector
