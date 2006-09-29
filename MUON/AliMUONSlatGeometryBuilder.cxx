@@ -33,7 +33,13 @@
 //   * Float_t slat_number or Float_t slat_position
 
 #include <TVirtualMC.h>
+#include <TGeoBBox.h>
+#include <TGeoVolume.h>
+#include <TGeoManager.h>
 #include <TGeoMatrix.h>
+#include <TGeoCompositeShape.h>
+#include <TGeoTube.h>
+
 #include <Riostream.h>
 
 #include "AliRun.h"
@@ -102,6 +108,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
   Int_t idNomex  = idtmed[1114]; // honey comb
   Int_t idNoryl  = idtmed[1115]; 
   Int_t idNomexB = idtmed[1116]; // bulk material 
+  
+  // Getting mediums for pannel support geometry
+  TGeoMedium* kMedNomex     = gGeoManager->GetMedium("MUON_Nomex");
+  TGeoMedium* kMedCarbon    = gGeoManager->GetMedium("MUON_CARBON");
 
   // sensitive area: 40*40 cm**2
   const Float_t kSensLength = 40.; 
@@ -226,19 +236,20 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       //GetGeometry(4)->SetDebug(kTRUE);
       //GetGeometry(5)->SetDebug(kTRUE);
  
+     
+      // Mother volume for each chamber in st3 are only defined if Dipole volue is there.
+      // Outer excess and inner recess for mother volume radius
+      // with respect to ROuter and RInner
+      Float_t dMotherInner = AliMUONConstants::Rmin(2)-kRframeHeight; 
+      Float_t dMotherOutner= AliMUONConstants::Rmax(2)+kVframeLength + 37.0; 
+      // Additional 37 cm gap is needed to wrap the corners of the slats sin Rmax represent the maximum active radius of the chamber with 2pi phi acceptance 
+      Float_t tpar[3];
+      Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(5)) -
+			     (-AliMUONConstants::DefaultChamberZ(4)) ) /2.1;
+      tpar[0] = dMotherInner; 
+      tpar[1] = dMotherOutner;
+      tpar[2] = dstation;
       if (!gAlice->GetModule("DIPO")) {
-	// Mother volume for each chamber in st3 are only defined if Dipole volue is there.
-	// Outer excess and inner recess for mother volume radius
-	// with respect to ROuter and RInner
-	Float_t dMotherInner = AliMUONConstants::Rmin(2)-kRframeHeight; 
-	Float_t dMotherOutner= AliMUONConstants::Rmax(2)+kVframeLength + 37.0; 
-	// Additional 37 cm gap is needed to wrap the corners of the slats sin Rmax represent the maximum active radius of the chamber with 2pi phi acceptance 
-	Float_t tpar[3];
-	Double_t dstation =  ( (-AliMUONConstants::DefaultChamberZ(5)) -
-	                       (-AliMUONConstants::DefaultChamberZ(4)) ) /2.1;
-	tpar[0] = dMotherInner; 
-	tpar[1] = dMotherOutner;
-	tpar[2] = dstation;
 	gMC->Gsvolu("CH05", "TUBE", idAir, tpar, 3);
 	gMC->Gsvolu("CH06", "TUBE", idAir, tpar, 3);
       }
@@ -599,7 +610,51 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	}
 	ydiv += dydiv; // Going from bottom to top
       }
-      // cout << "Geometry for Station 3...... done" << endl;	
+
+
+    //
+    //Geometry of the support pannel Verticla length 3.62m, horizontal length 1.62m, internal radius  dMotherInner of CH05 and CH06  (F. Orsini, Saclay)
+    //Carbon fiber of 0.3 mm thick (2 layers) and a central layer of Nomex of 15mm thick. 
+    Float_t nomexthickness = 1.5;
+    Float_t carbonthickness = 0.03;
+    Float_t supporthlength =  162.;  
+    Float_t supportvlength =  362.;  
+    // Generating the composite shape of the carbon and nomex pannels
+    new TGeoBBox("shNomexBoxSt3",supporthlength/2., supportvlength/2. ,nomexthickness/2.+carbonthickness);
+    new TGeoBBox("shCarbonBoxSt3",supporthlength/2., supportvlength/2. ,carbonthickness/2.); 
+    new TGeoTubeSeg("shNomexHoleSt3",0., dMotherInner, nomexthickness/2.+carbonthickness+0.001, -90. ,90.);
+    new TGeoTubeSeg("shCarbonHoleSt3",0., dMotherInner, carbonthickness/2.+0.001, -90. ,90.);
+    TGeoTranslation * trHoleSt3 = new TGeoTranslation("trHoleSt3",-supporthlength/2.,0.,0.); 
+    trHoleSt3->RegisterYourself();
+    TGeoCompositeShape * shNomexSupportSt3  = new TGeoCompositeShape("shNomexSupportSt3","shNomexBoxSt3-shNomexHoleSt3:trHoleSt3");
+    TGeoCompositeShape * shCarbonSupportSt3 = new TGeoCompositeShape("shCarbonSupportSt3","shCarbonBoxSt3-shCarbonHoleSt3:trHoleSt3");
+ 
+   // Generating Nomex and Carbon pannel volumes
+    TGeoVolume * voNomexSupportSt3  = new TGeoVolume("S05S", shNomexSupportSt3, kMedNomex);
+    TGeoVolume * voCarbonSupportSt3 = new TGeoVolume("S05K", shCarbonSupportSt3, kMedCarbon);
+    TGeoTranslation *trCarbon1St3   = new TGeoTranslation("trCarbon1St3",0.,0., -(nomexthickness+carbonthickness)/2.);
+    TGeoTranslation *trCarbon2St3   = new TGeoTranslation("trCarbon2St3",0.,0.,  (nomexthickness+carbonthickness)/2.);
+    voNomexSupportSt3->AddNode(voCarbonSupportSt3,1,trCarbon1St3);
+    voNomexSupportSt3->AddNode(voCarbonSupportSt3,2,trCarbon2St3);
+    Float_t dzCh5  = dzCh;
+    TGeoTranslation * trSupport1St3   = new TGeoTranslation("trSupport1St3", supporthlength/2., 0. , dzCh5);
+    TGeoRotation    * roSupportSt3    = new TGeoRotation("roSupportSt3",90.,180.,-90.);
+    TGeoCombiTrans  * coSupport2St3   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh5, roSupportSt3); 
+    if (!gAlice->GetModule("DIPO")) { 
+      gGeoManager->FindVolumeFast("CH05")->AddNode(voNomexSupportSt3,1,trSupport1St3);
+      gGeoManager->FindVolumeFast("CH05")->AddNode(voNomexSupportSt3,2,coSupport2St3);
+      gGeoManager->FindVolumeFast("CH06")->AddNode(voNomexSupportSt3,3,trSupport1St3);
+      gGeoManager->FindVolumeFast("CH06")->AddNode(voNomexSupportSt3,4,coSupport2St3);
+    }
+    else {
+      GetEnvelopes(4)->AddEnvelope("S05S", 0, 1, *trSupport1St3);  
+      GetEnvelopes(4)->AddEnvelope("S05S", 0, 2, *coSupport2St3);  
+      GetEnvelopes(5)->AddEnvelope("S05S", 0, 3, *trSupport1St3);   
+      GetEnvelopes(5)->AddEnvelope("S05S", 0, 4, *coSupport2St3);  
+    }
+    // End of pannel support geometry    
+  
+    // cout << "Geometry for Station 3...... done" << endl;	
     }
     
   if (fStations[3]) {
@@ -875,6 +930,42 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 						     TGeoTranslation(xvol-kPcbLength * kNPCB4[1]/2.,yvol-kPcbLength,0.),3,divpar);
       }
     }
+
+
+   //
+    //Geometry of the support pannel Verticla length 5.3m, horizontal length 2.6m, internal radius  dMotherInner o CH07 and CH08  (F. Orsini, Saclay)
+    //Carbon fiber of 0.3 mm thick (2 layers) and a central layer of Nomex of 15mm thick. 
+    Float_t nomexthickness = 1.5;
+    Float_t carbonthickness = 0.03;
+    Float_t supporthlength =  260.;  
+    Float_t supportvlength =  530.;  
+    // Generating the composite shape of the carbon and nomex pannels
+    new TGeoBBox("shNomexBoxSt4",supporthlength/2., supportvlength/2. ,nomexthickness/2.+carbonthickness);
+    new TGeoBBox("shCarbonBoxSt4",supporthlength/2., supportvlength/2. ,carbonthickness/2.); 
+    new TGeoTubeSeg("shNomexHoleSt4",0., dMotherInner, nomexthickness/2.+carbonthickness+0.001, -90. ,90.);
+    new TGeoTubeSeg("shCarbonHoleSt4",0., dMotherInner, carbonthickness/2.+0.001, -90. ,90.);
+    TGeoTranslation * trHoleSt4 = new TGeoTranslation("trHoleSt4",-supporthlength/2.,0.,0.); 
+    trHoleSt4->RegisterYourself();
+    TGeoCompositeShape * shNomexSupportSt4  = new TGeoCompositeShape("shNomexSupportSt4","shNomexBoxSt4-shNomexHoleSt4:trHoleSt4");
+    TGeoCompositeShape * shCarbonSupportSt4 = new TGeoCompositeShape("shCarbonSupportSt4","shCarbonBoxSt4-shCarbonHoleSt4:trHoleSt4");
+ 
+   // Generating Nomex and Carbon pannel volumes
+    TGeoVolume * voNomexSupportSt4  = new TGeoVolume("S07S", shNomexSupportSt4, kMedNomex);
+    TGeoVolume * voCarbonSupportSt4 = new TGeoVolume("S07K", shCarbonSupportSt4, kMedCarbon);
+    TGeoTranslation *trCarbon1St4   = new TGeoTranslation("trCarbon1St4",0.,0., -(nomexthickness+carbonthickness)/2.);
+    TGeoTranslation *trCarbon2St4   = new TGeoTranslation("trCarbon2St4",0.,0.,  (nomexthickness+carbonthickness)/2.);
+    voNomexSupportSt4->AddNode(voCarbonSupportSt4,1,trCarbon1St4);
+    voNomexSupportSt4->AddNode(voCarbonSupportSt4,2,trCarbon2St4);
+    Float_t dzCh7  = dzCh;
+    TGeoTranslation * trSupport1St4   = new TGeoTranslation("trSupport1St4", supporthlength/2., 0. , dzCh7);
+    TGeoRotation    * roSupportSt4    = new TGeoRotation("roSupportSt4",90.,180.,-90.);
+    TGeoCombiTrans  * coSupport2St4   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh7, roSupportSt4);
+    gGeoManager->FindVolumeFast("CH07")->AddNode(voNomexSupportSt4,1,trSupport1St4);
+    gGeoManager->FindVolumeFast("CH07")->AddNode(voNomexSupportSt4,2,coSupport2St4);
+    gGeoManager->FindVolumeFast("CH08")->AddNode(voNomexSupportSt4,3,trSupport1St4);
+    gGeoManager->FindVolumeFast("CH08")->AddNode(voNomexSupportSt4,4,coSupport2St4);
+    // End of pannel support geometry    
+
     // cout << "Geometry for Station 4...... done" << endl;
 
   }
@@ -1149,6 +1240,40 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 						     TGeoTranslation(xvol-kPcbLength * kNPCB5[1]/2.,yvol-kPcbLength,0.),3,divpar);
       }
     }
+    //
+    //Geometry of the support pannel Verticla length 5.7m, horizontal length 2.6m, internal radius  dMotherInner o CH09 and CH10  (F. Orsini, Saclay)
+    //Carbon fiber of 0.3 mm thick (2 layers) and a central layer of Nomex of 15mm thick. 
+    Float_t nomexthickness = 1.5;
+    Float_t carbonthickness = 0.03;
+    Float_t supporthlength =  260.;  
+    Float_t supportvlength =  570.;  
+    // Generating the composite shape of the carbon and nomex pannels
+    new TGeoBBox("shNomexBoxSt5",supporthlength/2., supportvlength/2. ,nomexthickness/2.+carbonthickness);
+    new TGeoBBox("shCarbonBoxSt5",supporthlength/2., supportvlength/2. ,carbonthickness/2.); 
+    new TGeoTubeSeg("shNomexHoleSt5",0., dMotherInner, nomexthickness/2.+carbonthickness+0.001, -90. ,90.);
+    new TGeoTubeSeg("shCarbonHoleSt5",0., dMotherInner, carbonthickness/2.+0.001, -90. ,90.);
+    TGeoTranslation * trHoleSt5 = new TGeoTranslation("trHoleSt5",-supporthlength/2.,0.,0.); 
+    trHoleSt5->RegisterYourself();
+    TGeoCompositeShape * shNomexSupportSt5  = new TGeoCompositeShape("shNomexSupportSt5","shNomexBoxSt5-shNomexHoleSt5:trHoleSt5");
+    TGeoCompositeShape * shCarbonSupportSt5 = new TGeoCompositeShape("shCarbonSupportSt5","shCarbonBoxSt5-shCarbonHoleSt5:trHoleSt5");
+ 
+   // Generating Nomex and Carbon pannel volumes
+    TGeoVolume * voNomexSupportSt5  = new TGeoVolume("S09S", shNomexSupportSt5, kMedNomex);
+    TGeoVolume * voCarbonSupportSt5 = new TGeoVolume("S09K", shCarbonSupportSt5, kMedCarbon);
+    TGeoTranslation *trCarbon1St5   = new TGeoTranslation("trCarbon1St5",0.,0., -(nomexthickness+carbonthickness)/2.);
+    TGeoTranslation *trCarbon2St5   = new TGeoTranslation("trCarbon2St5",0.,0.,  (nomexthickness+carbonthickness)/2.);
+    voNomexSupportSt5->AddNode(voCarbonSupportSt5,1,trCarbon1St5);
+    voNomexSupportSt5->AddNode(voCarbonSupportSt5,2,trCarbon2St5);
+    Float_t dzCh9  = dzCh;
+    TGeoTranslation * trSupport1St5   = new TGeoTranslation("trSupport1St5", supporthlength/2., 0. , dzCh9);
+    TGeoRotation    * roSupportSt5    = new TGeoRotation("roSupportSt5",90.,180.,-90.);
+    TGeoCombiTrans  * coSupport2St5   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh9, roSupportSt5);
+    gGeoManager->FindVolumeFast("CH09")->AddNode(voNomexSupportSt5,1,trSupport1St5);
+    gGeoManager->FindVolumeFast("CH09")->AddNode(voNomexSupportSt5,2,coSupport2St5);
+    gGeoManager->FindVolumeFast("CH10")->AddNode(voNomexSupportSt5,3,trSupport1St5);
+    gGeoManager->FindVolumeFast("CH10")->AddNode(voNomexSupportSt5,4,coSupport2St5);
+    // End of pannel support geometry    
+
     // cout << "Geometry for Station 5...... done" << endl;
 
   }
