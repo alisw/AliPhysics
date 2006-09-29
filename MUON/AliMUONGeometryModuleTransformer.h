@@ -56,6 +56,7 @@ class AliMUONGeometryModuleTransformer : public TObject
  
     // get methods
     Int_t    GetModuleId() const;
+    TString  GetModuleName() const;
     TString  GetVolumePath() const;
     TString  GetVolumeName() const;
     TString  GetMotherVolumeName() const;
@@ -72,8 +73,12 @@ class AliMUONGeometryModuleTransformer : public TObject
       operator = (const AliMUONGeometryModuleTransformer& rhs);
 
   private:
+    // static data members
+    static const TString  fgkModuleNamePrefix; /// < Geometry module name prefix
+
     // data members
     Int_t                 fModuleId;   ///< the module Id
+    TString               fModuleName; ///< the module name
     TString               fVolumePath; ///< \brief the full path of aligned module volume
                                        /// or envelope in geometry
     TGeoHMatrix*          fTransformation;///< \brief the module transformation wrt to top
@@ -94,6 +99,11 @@ AliMUONGeometryModuleTransformer::SetVolumePath(const TString& volumePath)
 inline Int_t  
 AliMUONGeometryModuleTransformer::GetModuleId() const
 { return fModuleId; }
+
+/// Return module name
+inline TString
+AliMUONGeometryModuleTransformer::GetModuleName() const
+{ return fModuleName; }
 
 /// Return the full path of aligned module volume or envelope in geometry
 inline TString 
