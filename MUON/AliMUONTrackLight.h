@@ -6,7 +6,7 @@
 /* $Id$ */
 // Revision of includes 06/09/2006
 
-/// \ingroup analysis
+/// \ingroup evaluation
 /// \class AliMUONTrackLight
 /// \brief Compact information for the muon generated tracks
 /// 

@@ -19,8 +19,8 @@
  */
 /** @} */
 
-/** @defgroup analysis MUON_analysis
- *  Category of classes for analysis
+/** @defgroup analysis MUON_evaluation
+ *  Category of classes for evaluation
  *  @{
  */
 /** @} */

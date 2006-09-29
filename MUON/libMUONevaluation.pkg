@@ -3,7 +3,7 @@
 SRCS:= AliMUONPairLight.cxx AliMUONTrackLight.cxx      
 HDRS:= $(SRCS:.cxx=.h)
 
-DHDR:= MUONanalysisLinkDef.h
+DHDR:= MUONevaluationLinkDef.h
 
 EINCLUDE:= RAW MUON/mapping
 

@@ -6,7 +6,7 @@
 /* $Id$ */
 // Revision of includes 06/09/2006
 
-/// \ingroup analysis
+/// \ingroup evaluation
 /// \class AliMUONPairLight
 /// \brief Compact information for the generated muon pairs 
 /// 
