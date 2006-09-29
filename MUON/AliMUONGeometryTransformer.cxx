@@ -45,8 +45,11 @@ ClassImp(AliMUONGeometryTransformer)
 /// \endcond
  
 //______________________________________________________________________________
-AliMUONGeometryTransformer::AliMUONGeometryTransformer(Bool_t isOwner)
+AliMUONGeometryTransformer::AliMUONGeometryTransformer(Bool_t isOwner,
+                                          const TString& detectorName)
+
   : TObject(),
+    fDetectorName(detectorName),
     fModuleTransformers(0),
     fMisAlignArray(0)
 {
@@ -60,6 +63,7 @@ AliMUONGeometryTransformer::AliMUONGeometryTransformer(Bool_t isOwner)
 //______________________________________________________________________________
 AliMUONGeometryTransformer::AliMUONGeometryTransformer() 
   : TObject(),
+    fDetectorName(),
     fModuleTransformers(0),
     fMisAlignArray(0)
 {
@@ -601,6 +605,38 @@ void AliMUONGeometryTransformer::WriteDetElemTransforms(ofstream& out) const
   }     
 }
 
+//______________________________________________________________________________
+TString AliMUONGeometryTransformer::GetModuleSymName(Int_t moduleId) const
+{
+/// Return the module symbolic name (use for alignment)
+
+  const AliMUONGeometryModuleTransformer* kTransformer 
+    = GetModuleTransformer(moduleId);
+  if ( ! kTransformer ) {
+    AliErrorStream() << "Module " << moduleId << " not found." << endl; 
+    return "";
+  }   
+  
+  return "/" + fDetectorName + "/" + kTransformer->GetModuleName();
+}  
+
+//______________________________________________________________________________
+TString AliMUONGeometryTransformer::GetDESymName(Int_t detElemId) const
+{
+
+  const AliMUONGeometryDetElement* kDetElement 
+    = GetDetElement(detElemId);
+  if ( ! kDetElement ) {
+    AliErrorStream() << "Det element " << detElemId << " not found." << endl; 
+    return "";
+  }   
+  
+  // Module Id
+  Int_t moduleId = AliMUONGeometryStore::GetModuleId(detElemId);
+
+  return GetModuleSymName(moduleId) + "/" + kDetElement->GetDEName();
+}  
+
 //
 // public functions
 //
@@ -790,16 +826,13 @@ void  AliMUONGeometryTransformer::AddMisAlignModule(Int_t moduleId,
     return;
   }   
   
-  // Get path  
-  TString path = kTransformer->GetVolumePath(); 
-  
   // Get unique align object ID
   Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, moduleId); 
 
   // Create mis align matrix
   TClonesArray& refArray =*fMisAlignArray;
   Int_t pos = fMisAlignArray->GetEntriesFast();
-  new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, 
+  new (refArray[pos]) AliAlignObjMatrix(GetModuleSymName(moduleId), volId, 
 					const_cast<TGeoHMatrix&>(matrix),kTRUE);
 }
 
@@ -821,19 +854,54 @@ void  AliMUONGeometryTransformer::AddMisAlignDetElement(Int_t detElemId,
     return;
   }   
   
-  // Get path  
-  TString path = kDetElement->GetVolumePath(); 
-  
   // Get unique align object ID
   Int_t volId = AliAlignObj::LayerToVolUID(AliAlignObj::kMUON, detElemId); 
 
   // Create mis align matrix
   TClonesArray& refArray =*fMisAlignArray;
   Int_t pos = fMisAlignArray->GetEntriesFast();
-  new(refArray[pos]) AliAlignObjMatrix(path.Data(), volId, 
+  new(refArray[pos]) AliAlignObjMatrix(GetDESymName(detElemId), volId, 
 				       const_cast<TGeoHMatrix&>(matrix),kTRUE);
 }
 
+//_____________________________________________________________________________
+void AliMUONGeometryTransformer::AddAlignableVolumes() const
+{
+/// Set symbolic names to alignable objects to TGeo
+
+  if ( ! gGeoManager ) {
+    AliWarning("TGeoManager not defined.");
+    return;
+  }  
+
+  // Modules 
+  for (Int_t i=0; i<fModuleTransformers->GetEntriesFast(); i++) {
+    AliMUONGeometryModuleTransformer* module 
+      = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
+
+    // Set module symbolic name
+    gGeoManager->SetAlignableEntry(GetModuleSymName(module->GetModuleId()), 
+                                   module->GetVolumePath());
+    //cout << "Module sym name: " << GetModuleSymName(module->GetModuleId()) 
+    //     << "  volPath: " << module->GetVolumePath() << endl;
+
+    // Detection elements
+    AliMUONGeometryStore* detElements 
+      = module->GetDetElementStore();    
+
+    for (Int_t j=0; j<detElements->GetNofEntries(); j++) {
+      AliMUONGeometryDetElement* detElement
+        = (AliMUONGeometryDetElement*)detElements->GetEntry(j);
+	
+      // Set detection element symbolic name
+      gGeoManager->SetAlignableEntry(GetDESymName(detElement->GetId()), 
+                                     detElement->GetVolumePath());
+      //cout << "DE name: " << GetDESymName(detElement->GetId()) 
+      //     << "  volPath: " << detElement->GetVolumePath() << endl;
+    }  
+  }     
+}  	     
+    
 //_____________________________________________________________________________
 TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
 {
@@ -852,7 +920,6 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
     AliMUONGeometryModuleTransformer* module 
       = (AliMUONGeometryModuleTransformer*)fModuleTransformers->At(i);
 
-    TString path = module->GetVolumePath(); 
     Int_t moduleId = module->GetModuleId();
   
     // Align object ID
@@ -860,7 +927,7 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
 
     // Create mis align matrix
     Int_t pos = array->GetEntriesFast();
-    new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, matrix, kTRUE);
+    new (refArray[pos]) AliAlignObjMatrix(GetModuleSymName(moduleId), volId, matrix, kTRUE);
   }     
 
   // Detection elements
@@ -874,7 +941,6 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
       AliMUONGeometryDetElement* detElement
         = (AliMUONGeometryDetElement*)detElements->GetEntry(j);
 	
-      TString path = detElement->GetVolumePath(); 
       Int_t detElemId = detElement->GetId();
   
       // Align object ID
@@ -882,7 +948,7 @@ TClonesArray* AliMUONGeometryTransformer::CreateZeroAlignmentData() const
 
       // Create mis align matrix
       Int_t pos = array->GetEntriesFast();
-      new (refArray[pos]) AliAlignObjMatrix(path.Data(), volId, matrix, kTRUE);
+      new (refArray[pos]) AliAlignObjMatrix(GetDESymName(detElemId), volId, matrix, kTRUE);
     }
   }
   

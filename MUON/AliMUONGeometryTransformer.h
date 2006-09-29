@@ -32,7 +32,7 @@ class TClonesArray;
 class AliMUONGeometryTransformer : public TObject
 {
   public:
-    AliMUONGeometryTransformer(Bool_t isOwner);
+    AliMUONGeometryTransformer(Bool_t isOwner, const TString& detName = "MUON");
     AliMUONGeometryTransformer();
     virtual  ~AliMUONGeometryTransformer();
     
@@ -40,7 +40,8 @@ class AliMUONGeometryTransformer : public TObject
     void  AddModuleTransformer(AliMUONGeometryModuleTransformer* transformer);
     void  AddMisAlignModule(Int_t moduleId, const TGeoHMatrix& matrix);
     void  AddMisAlignDetElement(Int_t detElemId, const TGeoHMatrix& matrix);
-    
+
+    void  AddAlignableVolumes() const; 
     TClonesArray* CreateZeroAlignmentData() const;			       
 
     // IO
@@ -86,8 +87,8 @@ class AliMUONGeometryTransformer : public TObject
     const AliMUONGeometryDetElement* GetDetElement(
                                Int_t detElemId, Bool_t warn = true) const;
 
-    const TClonesArray* GetMisAlignmentData() const;			       
-
+    const TClonesArray* GetMisAlignmentData() const;
+    
     Bool_t  HasDE(Int_t detElemId) const;
 
   protected:
@@ -130,8 +131,12 @@ class AliMUONGeometryTransformer : public TObject
     void    WriteDetElemVolPaths(ofstream& out) const;
     void    WriteModuleTransforms(ofstream& out) const;
     void    WriteDetElemTransforms(ofstream& out) const;
+    
+    TString GetModuleSymName(Int_t moduleId) const;
+    TString GetDESymName(Int_t detElemId) const;
 
     // data members
+    TString        fDetectorName;       /// < Detector name
     TObjArray*     fModuleTransformers; ///< array of module transformers
     TClonesArray*  fMisAlignArray;      ///< array of misalignment data
 
