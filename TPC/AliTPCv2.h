@@ -11,7 +11,16 @@
 
  
 #include "AliTPC.h"
-
+#include <stdlib.h>
+#include <TMath.h>
+#include "AliMC.h"
+#include "AliConst.h"
+#include <TVirtualMC.h>
+#include <TSystem.h>
+#include "AliTPCParamSR.h"
+#include "AliRun.h"
+#include "AliTPCDigitsArray.h"
+#include "TGeoManager.h"
 class AliTPCv2 : public AliTPC {
 
 public:
@@ -26,7 +35,7 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const {return 2;}
   virtual void  StepManager();
-  virtual void  DrawDetector();
+  virtual void  DrawDetector() const;
 
 protected:
   Int_t fIdSens;    // sensitive strip

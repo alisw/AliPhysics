@@ -457,25 +457,25 @@ void AliTPCv3::CreateGeometry()
   // end caps - they are make as an assembly of single segments
   // containing both readout chambers
   //
-  Double_t OpeningAngle = 10.*TMath::DegToRad();
+  Double_t openingAngle = 10.*TMath::DegToRad();
   Double_t thick=1.5; // rib
-  Double_t shift = thick/TMath::Sin(OpeningAngle);
+  Double_t shift = thick/TMath::Sin(openingAngle);
   //
-  Double_t LowEdge = 86.3; // hole in the wheel
-  Double_t UpEdge = 240.4; // hole in the wheel
+  Double_t lowEdge = 86.3; // hole in the wheel
+  Double_t upEdge = 240.4; // hole in the wheel
   //
   new TGeoTubeSeg("sec",74.5,264.4,3.,0.,20.);
   //
   TGeoPgon *hole = new TGeoPgon("hole",0.,20.,1,4);
   //
-  hole->DefineSection(0,-3.5,LowEdge-shift,UpEdge-shift);
-  hole->DefineSection(1,-1.5,LowEdge-shift,UpEdge-shift);
+  hole->DefineSection(0,-3.5,lowEdge-shift,upEdge-shift);
+  hole->DefineSection(1,-1.5,lowEdge-shift,upEdge-shift);
   //
-  hole->DefineSection(2,-1.5,LowEdge-shift,UpEdge+3.-shift);
-  hole->DefineSection(3,3.5,LowEdge-shift,UpEdge+3.-shift);
+  hole->DefineSection(2,-1.5,lowEdge-shift,upEdge+3.-shift);
+  hole->DefineSection(3,3.5,lowEdge-shift,upEdge+3.-shift);
   //
-  Double_t ys = shift*TMath::Sin(OpeningAngle); 
-  Double_t xs = shift*TMath::Cos(OpeningAngle);
+  Double_t ys = shift*TMath::Sin(openingAngle); 
+  Double_t xs = shift*TMath::Cos(openingAngle);
   TGeoTranslation *tr = new TGeoTranslation("tr",xs,ys,0.);  
   tr->RegisterYourself();
   TGeoCompositeShape *chamber = new TGeoCompositeShape("sec-hole:tr");
@@ -701,11 +701,11 @@ void AliTPCv3::CreateGeometry()
    *rot=rot1*rot2;
    //
    Double_t x0,y0;
-   x0=110.2*TMath::Cos(OpeningAngle);
-   y0=110.2*TMath::Sin(OpeningAngle);
+   x0=110.2*TMath::Cos(openingAngle);
+   y0=110.2*TMath::Sin(openingAngle);
    TGeoCombiTrans *combi1 = new TGeoCombiTrans("combi1",x0,y0,1.09,rot);
-   x0=188.45*TMath::Cos(OpeningAngle);
-   y0=188.45*TMath::Sin(OpeningAngle);
+   x0=188.45*TMath::Cos(openingAngle);
+   y0=188.45*TMath::Sin(openingAngle);
    TGeoCombiTrans *combi2 = new TGeoCombiTrans("combi2",x0,y0,0.99,rot);
    //
    sect->AddNode(ch,1);
@@ -738,7 +738,7 @@ void AliTPCv3::CreateGeometry()
   TGeoVolume *swv = new TGeoVolume("TPC_SWSEG",sw,m3); //Al
   //
   thick=1.;
-  shift = thick/TMath::Sin(OpeningAngle);
+  shift = thick/TMath::Sin(openingAngle);
   TGeoPgon *sh = new TGeoPgon(0.,20.,1,2);
   sh->DefineSection(0,-4.,81.5-shift,250.75-shift);
   sh->DefineSection(1,4.,81.5-shift,250.75-shift);
@@ -752,8 +752,8 @@ void AliTPCv3::CreateGeometry()
   //
   shv->AddNode(elv,1);
   //
-  ys = shift*TMath::Sin(OpeningAngle);
-  xs = shift*TMath::Cos(OpeningAngle);
+  ys = shift*TMath::Sin(openingAngle);
+  xs = shift*TMath::Cos(openingAngle);
   swv->AddNode(shv,1,new TGeoTranslation(xs,ys,0.));
   // cover
   TGeoPgon *co = new TGeoPgon(0.,20.,1,2);
@@ -762,14 +762,14 @@ void AliTPCv3::CreateGeometry()
   TGeoVolume *cov = new TGeoVolume("TPC_SWC1",co,m3);//Al
   // hole in a cover
   TGeoPgon *coh = new TGeoPgon(0.,20.,1,2);
-  shift=4./TMath::Sin(OpeningAngle);
+  shift=4./TMath::Sin(openingAngle);
   coh->DefineSection(0,-0.5,85.-shift,247.25-shift);
   coh->DefineSection(1,0.5,85.-shift,247.25-shift);  
   //
   TGeoVolume *cohv = new TGeoVolume("TPC_SWC2",coh,m1);
   //
-  ys = shift*TMath::Sin(OpeningAngle);
-  xs = shift*TMath::Cos(OpeningAngle);  
+  ys = shift*TMath::Sin(openingAngle);
+  xs = shift*TMath::Cos(openingAngle);  
   cov->AddNode(cohv,1,new TGeoTranslation(xs,ys,0.));
   //
   // Sector as an Assembly

@@ -897,7 +897,7 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
   fTPCParam->SetZeroSup(0);
 
   // Loop over sectors
-  const Int_t maxTime = fTPCParam->GetMaxTBin();
+  const Int_t kmaxTime = fTPCParam->GetMaxTBin();
   const Int_t kNIS = fTPCParam->GetNInnerSector();
   const Int_t kNOS = fTPCParam->GetNOuterSector();
   const Int_t kNS = kNIS + kNOS;
@@ -926,7 +926,7 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
     allBins = new Short_t*[nRows];
     for (Int_t iRow = 0; iRow < nRows; iRow++) {
       Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
-      Int_t maxBin = maxTime*maxPad;
+      Int_t maxBin = kmaxTime*maxPad;
       allBins[iRow] = new Short_t[maxBin];
       memset(allBins[iRow],0,sizeof(Short_t)*maxBin);
     }
@@ -950,19 +950,19 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
 		      iPad, 0, maxPad -1));
 
       Int_t iTimeBin = input.GetTime();
-      if ( iTimeBin < 0 || iTimeBin >= maxTime)
+      if ( iTimeBin < 0 || iTimeBin >= kmaxTime)
 	AliFatal(Form("Timebin index (%d) outside the range (%d -> %d) !",
-		      iTimeBin, 0, maxTime -1));
+		      iTimeBin, 0, kmaxTime -1));
       
-      Int_t maxBin = maxTime*maxPad;
+      Int_t maxBin = kmaxTime*maxPad;
 
-      if (((iPad*maxTime+iTimeBin) >= maxBin) ||
-	  ((iPad*maxTime+iTimeBin) < 0))
+      if (((iPad*kmaxTime+iTimeBin) >= maxBin) ||
+	  ((iPad*kmaxTime+iTimeBin) < 0))
 	AliFatal(Form("Index outside the allowed range"
 		      " Sector=%d Row=%d Pad=%d Timebin=%d"
 		      " (Max.index=%d)",iSector,iRow,iPad,iTimeBin,maxBin));
 
-      allBins[iRow][iPad*maxTime+iTimeBin] = input.GetSignal();
+      allBins[iRow][iPad*kmaxTime+iTimeBin] = input.GetSignal();
 
     } // End loop over altro data
     
@@ -976,8 +976,8 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
 
       Int_t maxPad = fTPCParam->GetNPads(iSector,iRow);
       for(Int_t iPad = 0; iPad < maxPad; iPad++) {
-	for(Int_t iTimeBin = 0; iTimeBin < maxTime; iTimeBin++) {
-	  Short_t q = allBins[iRow][iPad*maxTime + iTimeBin];
+	for(Int_t iTimeBin = 0; iTimeBin < kmaxTime; iTimeBin++) {
+	  Short_t q = allBins[iRow][iPad*kmaxTime + iTimeBin];
 	  if (q <= 0) continue;
 	  q *= 16;
 	  dig->SetDigitFast((Short_t)q,iTimeBin,iPad);
