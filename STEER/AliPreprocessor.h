@@ -36,7 +36,7 @@ class AliPreprocessor : public TNamed
     UInt_t Store(const char* pathLevel2, const char* pathLevel3, TObject* object,
     		AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
     UInt_t StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
-    		AliCDBMetaData* metaData, Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+    		AliCDBMetaData* metaData);
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id);
     void Log(const char* message);

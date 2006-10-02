@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/09/04 17:42:34  hristov
+Changes required by Effective C++
+
 Revision 1.4  2006/08/08 14:20:49  jgrosseo
 Update to shuttle classes (Alberto)
 
@@ -154,7 +157,7 @@ UInt_t AliPreprocessor::Store(const char* pathLevel2, const char* pathLevel3, TO
 
 //______________________________________________________________________________________________
 UInt_t AliPreprocessor::StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
-		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
+		AliCDBMetaData* metaData)
 {
   // Stores a CDB object in the storage for reference data. This objects will not be available during
   // offline reconstrunction. Use this function for reference data only!
@@ -166,15 +169,11 @@ UInt_t AliPreprocessor::StoreReferenceData(const char* pathLevel2, const char* p
   //         by the Preprocessor. Thus the object's path is "DET/level2/level3"
   //   3) the object to be stored
   //   4) the metaData to be associated with the object
-  //   5) the validity start run number w.r.t. the current run,
-  //      if the data is valid only for this run leave the default 0
-  //   6) specifies if the calibration data is valid for infinity (this means until updated),
-  //      typical for calibration runs, the default is kFALSE
   //
   // The call is delegated to AliShuttleInterface
 
   return fShuttle->StoreReferenceData(AliCDBPath(GetName(), pathLevel2, pathLevel3), object,
-  		metaData, validityStart, validityInfinite);
+  		metaData);
 }
 
 //______________________________________________________________________________________________
