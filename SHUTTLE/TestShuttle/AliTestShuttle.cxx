@@ -15,6 +15,16 @@
 
 /*
 $Log$
+Revision 1.4  2006/08/08 14:19:07  jgrosseo
+Update to shuttle classes (Alberto)
+
+- Possibility to set the full object's path in the Preprocessor's and
+Shuttle's  Store functions
+- Possibility to extend the object's run validity in the same classes
+("startValidity" and "validityInfinite" parameters)
+- Implementation of the StoreReferenceData function to store reference
+data in a dedicated CDB storage.
+
 Revision 1.3  2006/07/11 12:44:32  jgrosseo
 adding parameters for extended validity range of data produced by preprocessor
 
@@ -127,9 +137,7 @@ UInt_t AliTestShuttle::Store(const AliCDBPath& path, TObject* object, AliCDBMeta
 }
 
 //______________________________________________________________________________________________
-UInt_t AliTestShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
-				Int_t validityStart, Bool_t validityInfinite)
-
+UInt_t AliTestShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData)
 {
   // Stores the object as reference data
   // This function should be called at the end of the preprocessor cycle
@@ -137,20 +145,7 @@ UInt_t AliTestShuttle::StoreReferenceData(const AliCDBPath& path, TObject* objec
   // This implementation just stores it on the local disk, the full AliShuttle
   // puts it to the Grid FileCatalog
 
-  Int_t startRun = fRun - validityStart;
-  if(startRun < 0) {
-	AliError("First valid run happens to be less than 0! Setting it to 0...");
-	startRun=0;
-  }
-
-  Int_t endRun = -1;
-  if(validityInfinite) {
-	endRun = AliCDBRunRange::Infinity();
-  } else {
-	endRun = fRun;
-  }
-
-  AliCDBId id(path, startRun, endRun);
+  AliCDBId id(path, fRun, fRun);
 
   return AliCDBManager::Instance()->GetStorage("local://ReferenceStorage")->Put(object, id, metaData);
 }
