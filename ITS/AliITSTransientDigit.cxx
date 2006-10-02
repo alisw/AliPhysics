@@ -29,26 +29,26 @@ ClassImp(AliITSTransientDigit)
 
 //______________________________________________________________________
 AliITSTransientDigit::AliITSTransientDigit(Float_t phys,const Int_t *digits): 
-    AliITSdigitSDD(phys,digits) {
+    AliITSdigitSDD(phys,digits),
+fTrackList(0) {
     // Creates a digit object in a list of digits to be updated
 
     fTrackList   = new TObjArray;  
 }
 //__________________________________________________________________________
 AliITSTransientDigit::AliITSTransientDigit(const AliITSTransientDigit &source):
- AliITSdigitSDD(source){
+ AliITSdigitSDD(source),
+fTrackList(source.fTrackList){
     // Copy Constructor 
-    if(&source == this) return;
-    this->fTrackList = source.fTrackList;
-    return;
 }
 //_________________________________________________________________________
 AliITSTransientDigit& AliITSTransientDigit::operator=(
     const AliITSTransientDigit &source) {
     // Assignment operator
-    if(&source == this) return *this;
-    this->fTrackList = source.fTrackList;
-    return *this;
+  this->~AliITSTransientDigit();
+  new(this) AliITSTransientDigit(source);
+  return *this;
+
 }
 //______________________________________________________________________
 void AliITSTransientDigit::Print(ostream *os){

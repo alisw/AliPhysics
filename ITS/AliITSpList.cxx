@@ -32,7 +32,11 @@
 
 ClassImp(AliITSpList)
 //______________________________________________________________________
-AliITSpList::AliITSpList(){
+AliITSpList::AliITSpList():
+fNi(0),
+fNj(0),
+fa(0),
+fEntries(0){
     // Default constructor
     // Inputs:
     //    none.
@@ -41,12 +45,13 @@ AliITSpList::AliITSpList(){
     // Return:
     //    A zeroed/empty AliITSpList class.
 
-    fNi = 0;
-    fNj = 0;
-    fa  = 0;
 }
 //______________________________________________________________________
-AliITSpList::AliITSpList(Int_t imax,Int_t jmax){
+AliITSpList::AliITSpList(Int_t imax,Int_t jmax):
+fNi(imax),
+fNj(jmax),
+fa(0),
+fEntries(0){
     // Standard constructor
     // Inputs:
     //    none.
@@ -55,9 +60,6 @@ AliITSpList::AliITSpList(Int_t imax,Int_t jmax){
     // Return:
     //    A setup AliITSpList class.
 
-    fNi = imax;
-    fNj = jmax;
-    fEntries = 0;
     fa = new TClonesArray("AliITSpListItem",fNi*fNj);
 }
 //______________________________________________________________________
@@ -121,28 +123,16 @@ AliITSpList& AliITSpList::operator=(const AliITSpList &source){
     // Return:
     //    A copied AliITSpList object.
 
-    if(this == &source) return *this;
-
-    if(this->fa!=0){ // if this->fa exists delete it first.
-      fa->Delete();
-      delete fa;
-      fa = 0;
-    } // end if this->fa!=0
-    this->fNi = source.fNi;
-    this->fNj = source.fNj;
-    this->fa = new TClonesArray(*(source.fa));
-    this->fEntries = source.fEntries;
-
-    return *this;
+  this->~AliITSpList();
+  new(this) AliITSpList(source);
+  return *this;
 }
 //______________________________________________________________________
-AliITSpList::AliITSpList(const AliITSpList &source) : AliITSMap(source){
+AliITSpList::AliITSpList(const AliITSpList &source) : AliITSMap(source),
+fNi(source.fNi),fNj(source.fNj),fa(0),fEntries(source.fEntries){
     // Copy constructor
 
-  fNi = source.fNi;
-  fNj = source.fNj;
   fa = new TClonesArray(*(source.fa));
-  fEntries = source.fEntries;
 }
 //______________________________________________________________________
 void AliITSpList::AddItemTo(Int_t fileIndex, AliITSpListItem *pl) {

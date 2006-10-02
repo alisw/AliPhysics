@@ -22,3 +22,28 @@
 #include "AliITSclusterV2.h"
 
 ClassImp(AliITSclusterV2)
+//_______________________________________________________
+AliITSclusterV2::AliITSclusterV2() : AliCluster(),
+fIndex(0),
+fQ(0),
+fLayer(0),
+fNz(0),
+fNy(0),
+fChargeRatio(0),
+fType(0),
+fDeltaProb(0) {
+  //default constructor
+}
+
+//_______________________________________________________
+AliITSclusterV2::AliITSclusterV2(Int_t *lab,Float_t *hit, Int_t *info) : AliCluster(lab,hit),
+fIndex(lab[3]),
+fQ(hit[4]),
+fLayer(info[2]),
+fNz(info[1]),
+fNy(info[0]),
+fChargeRatio(0),
+fType(0),
+fDeltaProb(0){
+  //standard constructor
+}

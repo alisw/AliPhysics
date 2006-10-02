@@ -23,12 +23,9 @@ public:
   virtual void SetSegmentationModel(Int_t dt, AliITSsegmentation *seg){fDetType->SetSegmentationModel(dt,seg);}
   virtual AliITSsegmentation* GetSegmentationModel(Int_t dt){return fDetType->GetSegmentationModel(dt);}
 
-  
-private:
+ private:
 
-  virtual AliITSsimulation& operator=(const AliITSsimulation &)
-    {return *this;} 
-  
+    
     virtual void SetSigmaRPhi(Double_t sigmarphi[6]);  
     virtual void SetSigmaZ(Double_t sigmaz[6]);  
     virtual void SetSigmaDe(Double_t sigmade[6]);  
@@ -38,8 +35,6 @@ private:
     Double_t SigmaDe(Int_t layer) const {return fSigmaDe[layer-1];} 
     Double_t ThrDe(Int_t layer) const {return fThrDe[layer-1];} 
 
-
-private:
 
     Double_t fSigmaRPhi[6];              // Sigmas in rphi for the 6 layers
     Double_t fSigmaZ[6];                 // Sigmas in Z for the 6 layers

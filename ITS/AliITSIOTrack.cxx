@@ -8,22 +8,45 @@
 
 ClassImp(AliITSIOTrack)
 
-AliITSIOTrack::AliITSIOTrack() {
+AliITSIOTrack::AliITSIOTrack():
+fLab(-3),
+fTPCLab(-3),
+fX(0.),
+fY(0.),
+fZ(0.),
+fPx(0.),
+fPy(0.),
+fPz(0.),
+fStateVPhi(0.),
+fStateVZ(0.),
+fStateVD(0.),
+fStateVTgl(0.),
+fStateVC(0.),
+fRadius(0.),
+fPid(0),
+fCharge(0),
+fMass(0.),
+fDz(0.),
+fdEdx(0.),
+fC00(0.),
+fC10(0.),
+fC11(0.),
+fC20(0.),
+fC21(0.),
+fC22(0.),
+fC30(0.),
+fC31(0.),
+fC32(0.),
+fC33(0.),
+fC40(0.),
+fC41(0.),
+fC42(0.),
+fC43(0.),
+fC44(0.) {
 //Origin  A. Badala' and G.S. Pappalardo:  e-mail Angela.Badala@ct.infn.it, Giuseppe.S.Pappalardo@ct.infn.it
 // default constructor
-  fLab=-3;
-  fTPCLab=-3;   
-  fX=fZ=fY=0.; 
-  fPx=fPy=fPz=0.;
-  fDz=0.;
-  for (Int_t i=0;i<6;i++) {fIdModules[i]=fIdPoints[i]=-1; fIdPoints[i]=-1;}
-  fStateVPhi=0.; fStateVZ=0.; fStateVD=0.; fStateVTgl=0.; fStateVC=0.;
-  fRadius=0.; fCharge=0; 
-  fMass =0.;
-  fdEdx=0.;
-  fPid=0;
-  fC00=fC10=fC11=fC20=fC21=fC22=fC30=fC31=fC32=fC33=fC40=fC41=fC42=fC43=fC44=0.; 
 
+  for (Int_t i=0;i<6;i++) {fIdModules[i]=fIdPoints[i]=-1; fIdPoints[i]=-1;}
 }
    
 

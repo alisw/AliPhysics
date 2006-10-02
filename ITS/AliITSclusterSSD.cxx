@@ -32,37 +32,38 @@
 ClassImp(AliITSclusterSSD)
 
 //______________________________________________________________________
-AliITSclusterSSD::AliITSclusterSSD(){
+AliITSclusterSSD::AliITSclusterSSD():
+fSide(kTRUE),
+fDigits(0),
+fNDigits(0),
+fDigitsIndex(0),
+fNCrosses(0),
+fCrossedClusterIndexes(0),
+fLeftNeighbour(kFALSE),
+fRightNeighbour(kFALSE),
+fConsumed(kFALSE),
+fTotalSignal(-1),
+fNTracks(-1){
     // default constructor
-
-    fSide        = kTRUE;
-    fDigits      = 0;
-    fNDigits     = 0;
-    fDigitsIndex = 0;
-    fNCrosses    = 0;
-    fTotalSignal = -1;
-    fNTracks      = -1;
-    fLeftNeighbour  = kFALSE;
-    fRightNeighbour = kFALSE;
-    fCrossedClusterIndexes = 0;
-    fConsumed=kFALSE;
 }
 //______________________________________________________________________
 AliITSclusterSSD::AliITSclusterSSD(Int_t ndigits, Int_t *DigitIndexes, 
-				   TObjArray *Digits, Bool_t side){
+				   TObjArray *Digits, Bool_t side):
+fSide(side),
+fDigits(Digits),
+fNDigits(ndigits),
+fDigitsIndex(0),
+fNCrosses(0),
+fCrossedClusterIndexes(0),
+fLeftNeighbour(kFALSE),
+fRightNeighbour(kFALSE),
+fConsumed(kFALSE),
+fTotalSignal(-1),
+fNTracks(-1){
     // non-default constructor
 
-    fNDigits = ndigits;
-    fDigits = Digits;
-    fSide = side;
     fDigitsIndex = new TArrayI(fNDigits,DigitIndexes );	
-    fNCrosses    = 0;
     fCrossedClusterIndexes = new TArrayI(300);
-    fLeftNeighbour  = kFALSE;
-    fRightNeighbour = kFALSE;
-    fTotalSignal =-1;
-    fNTracks    = -1;
-    fConsumed=kFALSE;
 }
 //______________________________________________________________________
 AliITSclusterSSD::~AliITSclusterSSD(){
@@ -73,20 +74,23 @@ AliITSclusterSSD::~AliITSclusterSSD(){
 }
 //______________________________________________________________________
 AliITSclusterSSD::AliITSclusterSSD(const AliITSclusterSSD &OneSCluster) : 
-    TObject(OneSCluster){
+TObject(OneSCluster),
+fSide(OneSCluster.fSide),
+fDigits(OneSCluster.fDigits),
+fNDigits(OneSCluster.fNDigits),
+fDigitsIndex(0),
+fNCrosses(OneSCluster.fNCrosses),
+fCrossedClusterIndexes(0),
+fLeftNeighbour(OneSCluster.fLeftNeighbour),
+fRightNeighbour(OneSCluster.fRightNeighbour),
+fConsumed(OneSCluster.fConsumed),
+fTotalSignal(-1),
+fNTracks(-1){
     // copy constructor
 
-    if (this == &OneSCluster) return;
-    fNDigits = OneSCluster.fNDigits;
-    fSide=OneSCluster.fSide;
-    fDigits=OneSCluster.fDigits;
     fDigitsIndex = new TArrayI(fNDigits);
-    fLeftNeighbour  = OneSCluster.fLeftNeighbour;
-    fRightNeighbour = OneSCluster.fRightNeighbour;
     fTotalSignal =-1;
     fNTracks     = -1;
-    fNCrosses = OneSCluster.fNCrosses;
-    fConsumed = OneSCluster.fConsumed;
     Int_t i;
     for (i = 0; i< fNCrosses ; i++){
 	fCrossedClusterIndexes[i] = OneSCluster.fCrossedClusterIndexes[i];

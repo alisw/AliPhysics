@@ -33,59 +33,65 @@
 ClassImp(AliITSMapA2)
 
 //______________________________________________________________________
-AliITSMapA2::AliITSMapA2(){
+AliITSMapA2::AliITSMapA2():
+fHitMapD(0),
+fMapThresholdD(0),
+fScaleSizeX(0),
+fScaleSizeZ(0){
     // default constructor
 
     fSegmentation  = 0;
     fNpz           = 0;
     fNpx           = 0;
     fMaxIndex      = 0;
-    fHitMapD       = 0;
     fObjects       = 0;
     fNobjects      = 0;
-    fMapThresholdD =0.;
 }
 //______________________________________________________________________
-AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg){
+AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg):
+fHitMapD(0),
+fMapThresholdD(0),
+fScaleSizeX(1),
+fScaleSizeZ(1){
     //constructor
 
-    fScaleSizeZ    = 1;
-    fScaleSizeX    = 1;
     fSegmentation  = seg;
     fNpz           = fSegmentation->Npz();
     fNpx           = fSegmentation->Npx();
     fMaxIndex      = fNpz*fNpx+fNpx;       // 2 halves of detector
     fHitMapD       = new Double_t[fMaxIndex+1];
-    fMapThresholdD = 0.;
     fObjects       = 0;
     fNobjects      = 0;
     ClearMap();
 }
 //______________________________________________________________________
 AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg,
-			 Int_t scalesizeX, Int_t scalesizeZ){
+			 Int_t scalesizeX, Int_t scalesizeZ):
+fHitMapD(0),
+fMapThresholdD(0),
+fScaleSizeX(scalesizeX),
+fScaleSizeZ(scalesizeZ){
     //constructor
 
     fSegmentation  = seg;
-    fScaleSizeX    = scalesizeX;
-    fScaleSizeZ    = scalesizeZ;
     fNpz           = fScaleSizeZ*fSegmentation->Npz();
     fNpx           = fScaleSizeX*fSegmentation->Npx();
     fMaxIndex      = fNpz*fNpx+fNpx;             // 2 halves of detector
     fHitMapD       = new Double_t[fMaxIndex+1];
-    fMapThresholdD = 0.;
     fObjects       = 0;
     fNobjects      = 0;
     ClearMap();
 }
 //______________________________________________________________________
 AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg, TObjArray *obj, 
-			 Double_t thresh){
+			 Double_t thresh):
+fHitMapD(0),
+fMapThresholdD(thresh),
+fScaleSizeX(1),
+fScaleSizeZ(1){
     //constructor
 
     fNobjects      = 0;
-    fScaleSizeZ    = 1;
-    fScaleSizeX    = 1;
     fSegmentation  = seg;
     fNpz           = fSegmentation->Npz();
     fNpx           = fSegmentation->Npx();
@@ -93,7 +99,6 @@ AliITSMapA2::AliITSMapA2(AliITSsegmentation *seg, TObjArray *obj,
     fHitMapD       = new Double_t[fMaxIndex+1];
     fObjects       =  obj;
     if (fObjects) fNobjects = fObjects->GetEntriesFast();
-    fMapThresholdD = thresh;
     ClearMap();
 }
 //______________________________________________________________________
@@ -103,29 +108,23 @@ AliITSMapA2::~AliITSMapA2(){
     if (fHitMapD) delete[] fHitMapD;
 }
 //______________________________________________________________________
-AliITSMapA2::AliITSMapA2(const AliITSMapA2 &source) : AliITSMapA1(source){
+AliITSMapA2::AliITSMapA2(const AliITSMapA2 &source) : AliITSMapA1(source),
+fHitMapD(source.fHitMapD),
+fMapThresholdD(source.fMapThresholdD),
+fScaleSizeX(source.fScaleSizeX),
+fScaleSizeZ(source.fScaleSizeZ){
     //     Copy Constructor 
 
-    if(&source == this) return;
-
-    this->fMapThresholdD = source.fMapThresholdD;
-    this->fScaleSizeX    = source.fScaleSizeX;
-    this->fScaleSizeZ    = source.fScaleSizeZ;
-    this->fHitMapD       = source.fHitMapD;
-    return;
 }
 //______________________________________________________________________
 AliITSMapA2& AliITSMapA2::operator=(const AliITSMapA2 &source) {
     //    Assignment operator
+  this->~AliITSMapA2();
+  new(this) AliITSMapA2(source);
+  return *this;
 
-    if(&source == this) return *this;
-
-    this->fMapThresholdD = source.fMapThresholdD;
-    this->fScaleSizeX    = source.fScaleSizeX;
-    this->fScaleSizeZ    = source.fScaleSizeZ;
-    this->fHitMapD       = source.fHitMapD;
-    return *this;
 }
+
 //______________________________________________________________________
 void AliITSMapA2::ClearMap(){
     //clear array

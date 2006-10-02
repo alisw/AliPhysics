@@ -27,80 +27,97 @@
 
 ClassImp(AliITSMapA1)
 //______________________________________________________________________
-AliITSMapA1::AliITSMapA1(){
+AliITSMapA1::AliITSMapA1():
+fSegmentation(0),
+fNpx(0),
+fNpz(0),
+fObjects(0),
+fNobjects(0),
+fMaxIndex(0),
+fMapThresholdArr(0),
+fHitMap(0),
+fMapThreshold(0){
     // default constructor
 
-    fSegmentation = 0;
-    fNpz          = 0;
-    fNpx          = 0;
-    fMaxIndex     = 0;
-    fHitMap       = 0;
-    fObjects      = 0;
-    fNobjects     = 0;
-    fMapThreshold = 0;
-    fMapThresholdArr = 0;
 }
 //______________________________________________________________________
-AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg){
+AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg):
+fSegmentation(seg),
+fNpx(0),
+fNpz(0),
+fObjects(0),
+fNobjects(0),
+fMaxIndex(0),
+fMapThresholdArr(0),
+fHitMap(0),
+fMapThreshold(0){
     //constructor
 
-    fSegmentation = seg;
     fNpz          = fSegmentation->Npz();
     fNpx          = fSegmentation->Npx();
     fMaxIndex     = fNpz*fNpx+fNpx;             // 2 halves of detector
     fHitMap       = new Int_t[fMaxIndex];
-    fObjects      = 0;
-    fNobjects     = 0;
-    fMapThreshold = 0;
-    fMapThresholdArr = 0;
     ClearMap();
 }
 //______________________________________________________________________
-AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj){
+AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj):
+fSegmentation(seg),
+fNpx(0),
+fNpz(0),
+fObjects(obj),
+fNobjects(0),
+fMaxIndex(0),
+fMapThresholdArr(0),
+fHitMap(0),
+fMapThreshold(0){
     //constructor
 
-    fNobjects     = 0;
-    fSegmentation = seg;
-    fNpz          = fSegmentation->Npz();
-    fNpx          = fSegmentation->Npx();
-    fMaxIndex     = fNpz*fNpx+fNpx;             // 2 halves of detector
-    fHitMap       = new Int_t[fMaxIndex];
-    fObjects      =  obj;
-    if(fObjects) fNobjects = fObjects->GetEntriesFast();
-    fMapThreshold = 0;
-    fMapThresholdArr = 0;
-    ClearMap();
+  fNpz          = fSegmentation->Npz();
+  fNpx          = fSegmentation->Npx();
+  fMaxIndex     = fNpz*fNpx+fNpx;             // 2 halves of detector
+  fHitMap       = new Int_t[fMaxIndex];
+  if(fObjects) fNobjects = fObjects->GetEntriesFast();
+  ClearMap();
 }
 //______________________________________________________________________
-AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj, Int_t thr){
+AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj, Int_t thr):
+fSegmentation(seg),
+fNpx(0),
+fNpz(0),
+fObjects(obj),
+fNobjects(0),
+fMaxIndex(0),
+fMapThresholdArr(0),
+fHitMap(0),
+fMapThreshold(thr){
     //constructor
 
-    fNobjects     = 0;
-    fSegmentation = seg;
-    fNpz          = fSegmentation->Npz();
-    fNpx          = fSegmentation->Npx();
-    fMaxIndex     = fNpz*fNpx+fNpx;             // 2 halves of detector
-    fHitMap       = new Int_t[fMaxIndex];
-    fObjects      =  obj;
-    if(fObjects) fNobjects = fObjects->GetEntriesFast();
-    fMapThreshold = thr;
-    ClearMap();
+  fNpz          = fSegmentation->Npz();
+  fNpx          = fSegmentation->Npx();
+  fMaxIndex     = fNpz*fNpx+fNpx;             // 2 halves of detector
+  fHitMap       = new Int_t[fMaxIndex];
+  if(fObjects) fNobjects = fObjects->GetEntriesFast();
+  ClearMap();
 }
 //______________________________________________________________________
-AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj, TArrayI thr){
+AliITSMapA1::AliITSMapA1(AliITSsegmentation *seg, TObjArray *obj, TArrayI thr):
+fSegmentation(seg),
+fNpx(0),
+fNpz(0),
+fObjects(obj),
+fNobjects(0),
+fMaxIndex(0),
+fMapThresholdArr(thr),
+fHitMap(0),
+fMapThreshold(0){
     //constructor
 
-    fNobjects     = 0;
-    fSegmentation = seg;
-    fNpz          = fSegmentation->Npz();
-    fNpx          = fSegmentation->Npx();
-    fMaxIndex     = fNpz*fNpx+fNpx;             // 2 halves of detector
-    fHitMap       = new Int_t[fMaxIndex];
-    fObjects      =  obj;
-    if(fObjects) fNobjects = fObjects->GetEntriesFast();
-    fMapThreshold = 0;
-    fMapThresholdArr = thr;
-    ClearMap();
+  fNpz          = fSegmentation->Npz();
+  fNpx          = fSegmentation->Npx();
+  fMaxIndex     = fNpz*fNpx+fNpx;             // 2 halves of detector
+  fHitMap       = new Int_t[fMaxIndex];
+  if(fObjects) fNobjects = fObjects->GetEntriesFast();
+  ClearMap();
 }
 
 //______________________________________________________________________
@@ -113,23 +130,23 @@ AliITSMapA1::~AliITSMapA1(){
 AliITSMapA1& AliITSMapA1::operator=(const AliITSMapA1 &source) {
     //    Assignment operator
 
-    if(&source == this) return *this;
-
-    this->fNpx          = source.fNpx;
-    this->fNpz          = source.fNpz;
-    this->fObjects      = source.fObjects;
-    this->fNobjects     = source.fNobjects;
-    this->fMaxIndex     = source.fMaxIndex;
-    this->fHitMap       = source.fHitMap;
-    this->fMapThreshold = source.fMapThreshold;
-    this->fMapThresholdArr = source.fMapThresholdArr;
-    return *this;
+  this->~AliITSMapA1();
+  new(this) AliITSMapA1(source);
+  return *this;
 }
 //______________________________________________________________________
-AliITSMapA1::AliITSMapA1(const AliITSMapA1 &source) : AliITSMap(source){
-    //     Copy Constructor
-
-    *this = source;
+AliITSMapA1::AliITSMapA1(const AliITSMapA1 &source) : AliITSMap(source),
+fSegmentation(source.fSegmentation),
+fNpx(source.fNpx),
+fNpz(source.fNpz),
+fObjects(source.fObjects),
+fNobjects(source.fNobjects),
+fMaxIndex(source.fMaxIndex),
+fMapThresholdArr(source.fMapThresholdArr),
+fHitMap(source.fHitMap),
+fMapThreshold(source.fMapThreshold){
+  //     Copy Constructor
+  
 }
 //______________________________________________________________________
 void AliITSMapA1::ClearMap(){

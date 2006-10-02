@@ -31,9 +31,7 @@ class AliITSDetTypeRec : public TObject {
   public:
     AliITSDetTypeRec(); // Default constructor
     AliITSDetTypeRec(AliITSLoader *loader); // Standard constructor
-    AliITSDetTypeRec(const AliITSDetTypeRec& rec);
-    AliITSDetTypeRec& operator=(const AliITSDetTypeRec &source);
-
+ 
     virtual ~AliITSDetTypeRec(); // Proper Destructor
     AliITSgeom* GetITSgeom()const{return GetLoader()->GetITSgeom();}
 
@@ -102,6 +100,9 @@ class AliITSDetTypeRec : public TObject {
 
   private:
     // private methods
+    AliITSDetTypeRec(const AliITSDetTypeRec& rec);
+    AliITSDetTypeRec& operator=(const AliITSDetTypeRec &source);
+ 
     virtual void SetLoader(AliITSLoader* loader) {fLoader=loader;}
     static const Int_t fgkNdettypes;          // number of det. types
     static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default

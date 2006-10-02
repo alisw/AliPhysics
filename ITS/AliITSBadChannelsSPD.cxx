@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2005/11/03 13:09:19  hristov
+Removing meaningless const declarations (linuxicc)
+
 Revision 1.1  2005/10/11 12:31:50  masera
 Preprocessor classes for SPD (Paul Nilsson)
 
@@ -52,13 +55,12 @@ AliITSBadChannelsSPD::AliITSBadChannelsSPD(void) :
 
 //__________________________________________________________________________
 AliITSBadChannelsSPD::AliITSBadChannelsSPD(const AliITSBadChannelsSPD &bc) :
-  TObject(bc)
-{
+  TObject(bc),
+fIndexArraySize(bc.fIndexArraySize),
+fBadChannelsArraySize(bc.fBadChannelsArraySize),
+fIndexArray(0),
+fBadChannelsArray(0){
   // Default copy constructor
-
-  // Copy array sizes
-  fIndexArraySize = bc.fIndexArraySize;
-  fBadChannelsArraySize = bc.fBadChannelsArraySize;
 
   // Create new arrays
   fIndexArray = new Int_t[fIndexArraySize];

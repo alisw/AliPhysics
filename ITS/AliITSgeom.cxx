@@ -165,6 +165,7 @@ fShape(0,0)      // Array of shapes and detector information.
     fShape.SetOwner(kTRUE);
     return;
 }
+
 //______________________________________________________________________
 AliITSgeom::AliITSgeom(Int_t itype,Int_t nlayers,const Int_t *nlads,
                        const Int_t *ndets,Int_t mods):
@@ -630,7 +631,16 @@ fShape(0,0)      // TObjArray of detector geom.
 }
 
 //______________________________________________________________________
-AliITSgeom::AliITSgeom(const AliITSgeom &source) : TObject(source){
+AliITSgeom::AliITSgeom(const AliITSgeom &source) : TObject(source),
+fVersion(source.fVersion),
+fTrans(source.fTrans),
+fNmodules(source.fNmodules),
+fNlayers(source.fNlayers),
+fNlad(source.fNlad),
+fNdet(source.fNdet),
+fGm(source.fGm),
+fShape(source.fShape)
+{
     //     The copy constructor for the AliITSgeom class. It calls the
     // = operator function. See the = operator function for more details.
     // Inputs:
@@ -641,8 +651,8 @@ AliITSgeom::AliITSgeom(const AliITSgeom &source) : TObject(source){
     // Return:
     //     none.
 
-    *this = source;  // Just use the = operator for now.
-    return;
+  *this = source;  // Just use the = operator for now.
+  return;
 }
 
 //______________________________________________________________________

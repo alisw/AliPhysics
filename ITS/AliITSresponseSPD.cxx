@@ -35,8 +35,11 @@ const Float_t AliITSresponseSPD::fgkEccentricityDiffDefault = 0.85;
 ClassImp(AliITSresponseSPD)	
 //______________________________________________________________________
 AliITSresponseSPD::AliITSresponseSPD():
-  AliITSresponse(){
-
+  AliITSresponse(),
+fCouplCol(0),
+fCouplRow(0),
+fCouplOpt(0),
+fEccDiff(0){
 
   // constructor
   SetCouplingParam(fgkCouplingColDefault,fgkCouplingRowDefault);

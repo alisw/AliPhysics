@@ -32,19 +32,45 @@ const Double_t AliITSCalibrationSSD::fgkSigmaNDefault = 2.;
 ClassImp(AliITSCalibrationSSD)
 
 //______________________________________________________________________
-AliITSCalibrationSSD::AliITSCalibrationSSD(){
+AliITSCalibrationSSD::AliITSCalibrationSSD():
+fNPar(0),
+fDetPar(0),
+fNoiseP(0),
+fNoiseN(0),
+fSigmaP(0),
+fSigmaN(0),
+fGainP(0),
+fGainN(0),
+fNoisP(0),
+fNoisN(0),
+fNoisePThreshold(0),
+fNoisyPChannelsList(0),
+fNoiseNThreshold(0),
+fNoisyNChannelsList(0),
+fDeadNChannelsList(0),
+fDeadPChannelsList(0){
     // Default Constructor
 
-    fDetPar = 0;
-    fNPar   = 0;
-       fNoiseP = 0;
-    fNoiseN = 0;
-    fSigmaP = 0;
-    fSigmaN = 0;
     SetNoiseParam(fgkNoisePDefault,fgkNoiseNDefault);
 }
 //______________________________________________________________________
-AliITSCalibrationSSD::AliITSCalibrationSSD(const char *dataType){
+AliITSCalibrationSSD::AliITSCalibrationSSD(const char *dataType):
+fNPar(0),
+fDetPar(0),
+fNoiseP(0),
+fNoiseN(0),
+fSigmaP(0),
+fSigmaN(0),
+fGainP(0),
+fGainN(0),
+fNoisP(0),
+fNoisN(0),
+fNoisePThreshold(0),
+fNoisyPChannelsList(0),
+fNoiseNThreshold(0),
+fNoisyNChannelsList(0),
+fDeadNChannelsList(0),
+fDeadPChannelsList(0){
     // constructor
 
     SetNoiseParam(fgkNoisePDefault,fgkNoiseNDefault);
@@ -66,29 +92,6 @@ AliITSCalibrationSSD::~AliITSCalibrationSSD(){
     // destructor
 
     delete [] fDetPar;
-}
-//______________________________________________________________________
-AliITSCalibrationSSD& AliITSCalibrationSSD::operator=(const AliITSCalibrationSSD &src) {
-    // = operator.
-
-    if(&src == this) return *this;
-
-    this->fNPar      = src.fNPar;
-    for(Int_t i=0;i<this->fNPar;i++) this->fDetPar[i] = src.fDetPar[i];
-    this->fNoiseP    = src.fNoiseP;
-    this->fNoiseN    = src.fNoiseN;
-    this->fSigmaP    = src.fSigmaP;
-    this->fSigmaN    = src.fSigmaN;
-    this->fDataType  = src.fDataType;
-
-    return *this;
-}
-//_________________________________________________________________________
-AliITSCalibrationSSD::AliITSCalibrationSSD(const AliITSCalibrationSSD &src) :
-    AliITSCalibration(src) {
-    // copy constructor
-
-    *this = src;
 }
 //______________________________________________________________________
 void AliITSCalibrationSSD::SetDetParam(Double_t  *par){

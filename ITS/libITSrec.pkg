@@ -50,7 +50,12 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSBeamTestDigSPD.cxx \
 		AliITSBeamTestDigSSD.cxx \
 		AliITSBeamTestDigitizer.cxx \
-		AliITSMultReconstructor.cxx
+		AliITSMultReconstructor.cxx \
+		AliITSPreprocessorSPD.cxx \
+		AliITSBadChannelsAuxSPD.cxx \
+		AliITSBadChannelsSPD.cxx  \
+		AliITSChannelSPD.cxx  \
+		AliITSPreprocessorSDD.cxx   
 
 HDRS:=  $(SRCS:.cxx=.h)
 

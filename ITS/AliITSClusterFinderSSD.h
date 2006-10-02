@@ -24,12 +24,17 @@ class AliITSClusterFinderSSD: public AliITSClusterFinder{
   AliITSClusterFinderSSD();
   AliITSClusterFinderSSD(AliITSDetTypeRec* dettyp);
   AliITSClusterFinderSSD(AliITSDetTypeRec* dettyp, TClonesArray *digits);
+
   //   AliITSClusterFinderSSD(AliITSsegmentation *seg, TClonesArray *digits);
   virtual ~AliITSClusterFinderSSD();
   void FindRawClusters(Int_t module);    
   
  protected:
-    virtual AliITSsegmentationSSD* GetSeg()const{
+
+  AliITSClusterFinderSSD(const AliITSClusterFinderSSD &source);    // Copy constructor
+  AliITSClusterFinderSSD& operator=(const AliITSClusterFinderSSD &source);// = operator
+  
+  virtual AliITSsegmentationSSD* GetSeg()const{
         return (AliITSsegmentationSSD*)fDetTypeRec->GetSegmentationModel(2);}
   void      InitReconstruction();
   Bool_t    CreateNewRecPoint(Float_t P, Float_t dP, Float_t N, Float_t dN,

@@ -38,6 +38,8 @@ class AliITSgeom : public TObject {
     AliITSgeom(const char *filename);  // Constructor
     AliITSgeom(Int_t itype,Int_t nlayers,const Int_t *nlads,const Int_t *ndets,
                Int_t nmods); // Constructor
+    AliITSgeom(const AliITSgeom &source);    // Copy constructor
+    AliITSgeom& operator=(const AliITSgeom &source);// = operator
     virtual ~AliITSgeom();             // Default destructor
     // Zero and reinitilizes this class.
     void Init(Int_t itype,Int_t nlayers,const Int_t *nlads,
@@ -761,9 +763,6 @@ class AliITSgeom : public TObject {
 
     void TrackingV2ToDetL(Int_t md,Float_t yin,Float_t zin,Float_t &xout,Float_t &zout);
 
- protected:
-    AliITSgeom(const AliITSgeom &source);    // Copy constructor
-    AliITSgeom& operator=(const AliITSgeom &source);// = operator
 
  private:
     TString    fVersion; // Transformation version.

@@ -37,22 +37,22 @@
 ClassImp(AliITSDDLRawData)
 
 ////////////////////////////////////////////////////////////////////////////////////////
-AliITSDDLRawData::AliITSDDLRawData(){
+AliITSDDLRawData::AliITSDDLRawData():
+fVerbose(0),
+fIndex(-1),
+fHalfStaveModule(-1){
   //Default constructor
-  fIndex=-1;
-  fHalfStaveModule=-1;
-  fVerbose=0;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
 AliITSDDLRawData::AliITSDDLRawData(const AliITSDDLRawData &source) : 
-    TObject(source){
+    TObject(source),
+fVerbose(source.fVerbose),
+fIndex(source.fIndex),
+fHalfStaveModule(source.fHalfStaveModule){
   //Copy Constructor
-  this->fIndex=source.fIndex;
-  this->fHalfStaveModule=source.fHalfStaveModule;
-  this->fVerbose=source.fVerbose;
-  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

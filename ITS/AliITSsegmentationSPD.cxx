@@ -23,10 +23,10 @@
 ClassImp(AliITSsegmentationSPD)
 
 //_____________________________________________________________________________
-  AliITSsegmentationSPD::AliITSsegmentationSPD(): AliITSsegmentation(){
+  AliITSsegmentationSPD::AliITSsegmentationSPD(): AliITSsegmentation(),
+fNpx(0),
+fNpz(0){
   // Default constructor
-  fNpx = 0;
-  fNpz = 0;
   for(Int_t k=0; k<256; k++){
     fCellSizeX[k] = 0.;
     fCellSizeZ[k] = 0.;
@@ -188,11 +188,11 @@ Float_t AliITSsegmentationSPD::ZpitchFromCol(Int_t col) const {
     return pitchz;
 }
 //______________________________________________________________________
-AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm){
+AliITSsegmentationSPD::AliITSsegmentationSPD(AliITSgeom *gm):
+fNpx(0),
+fNpz(0){
   // Constructor
    fCorr=0;
-   fNpx = 0;
-   fNpz = 0;
    Init(); 
    fGeom = gm;
 
@@ -219,7 +219,9 @@ AliITSsegmentationSPD& AliITSsegmentationSPD::operator=(const AliITSsegmentation
 }
 //____________________________________________________________________________
 AliITSsegmentationSPD::AliITSsegmentationSPD(const AliITSsegmentationSPD &source) :
-    AliITSsegmentation(source){
+    AliITSsegmentation(source),
+fNpx(0),
+fNpz(0){
   // copy constructor
   source.Copy(*this);
 }

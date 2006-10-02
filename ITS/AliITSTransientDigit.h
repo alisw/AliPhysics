@@ -9,7 +9,7 @@
 class AliITSTransientDigit : public AliITSdigitSDD {
 
  public:
-    AliITSTransientDigit() {/*default constructor*/fTrackList=0;}
+    AliITSTransientDigit() : fTrackList(0) {}
     // Standard constructor with digits and "phys"
     AliITSTransientDigit(Float_t phys,const Int_t *digits);
     virtual ~AliITSTransientDigit(){/*destructor delets TObjArray fTracklist */

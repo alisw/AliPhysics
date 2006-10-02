@@ -29,14 +29,62 @@ ClassImp(AliITSclustererV2)
 
 extern AliRun *gAlice;
 
-AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
+AliITSclustererV2::AliITSclustererV2():
+fNModules(0),
+fEvent(0),
+fI(0),
+fLastSPD1(0),
+fNySPD(0),
+fNzSPD(0),
+fYpitchSPD(0),
+fZ1pitchSPD(0),
+fZ2pitchSPD(0),
+fHwSPD(0),
+fHlSPD(0),
+fNySDD(0),
+fNzSDD(0),
+fYpitchSDD(0),
+fZpitchSDD(0),
+fHwSDD(0),
+fHlSDD(0),
+fYoffSDD(0),
+fLastSSD1(0),
+fYpitchSSD(0),
+fHwSSD(0),
+fHlSSD(0),
+fTanP(0),
+fTanN(0){
+   //default constructor
+ }
+AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom):
+fNModules(0),
+fEvent(0),
+fI(0),
+fLastSPD1(0),
+fNySPD(256),
+fNzSPD(160),
+fYpitchSPD(0.0050),
+fZ1pitchSPD(0.0425),
+fZ2pitchSPD(0.0625),
+fHwSPD(0.64),
+fHlSPD(3.48),
+fNySDD(256),
+fNzSDD(256),
+fYpitchSDD(0.01825),
+fZpitchSDD(0.02940),
+fHwSDD(3.5085),
+fHlSDD(3.7632),
+fYoffSDD(0.0425),
+fLastSSD1(0),
+fYpitchSSD(0.0095),
+fHwSSD(3.65),
+fHlSSD(2.00),
+fTanP(0.0275),
+fTanN(0.0075) {
   //------------------------------------------------------------
   // Standard constructor
   //------------------------------------------------------------
   AliITSgeom *g=(AliITSgeom*)geom;
-
-  fEvent=0;
-  fI=0;
 
   Int_t mmax=geom->GetIndexMax();
   if (mmax>2200) {
@@ -58,10 +106,6 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
 
   //SPD geometry  
   fLastSPD1=g->GetModuleIndex(2,1,1)-1;
-  fNySPD=256; fNzSPD=160;
-  fYpitchSPD=0.0050;
-  fZ1pitchSPD=0.0425; fZ2pitchSPD=0.0625;
-  fHwSPD=0.64; fHlSPD=3.48;
   fYSPD[0]=0.5*fYpitchSPD;
   for (m=1; m<fNySPD; m++) fYSPD[m]=fYSPD[m-1]+fYpitchSPD; 
   fZSPD[0]=fZ1pitchSPD;
@@ -78,20 +122,8 @@ AliITSclustererV2::AliITSclustererV2(const AliITSgeom *geom) {
     fZSPD[m]-=dz;
   }
 
-  //SDD geometry 
-  fNySDD=256; fNzSDD=256;
-  fYpitchSDD=0.01825;
-  fZpitchSDD=0.02940;
-  fHwSDD=3.5085; fHlSDD=3.7632;
-  fYoffSDD=0.0425;
-
   //SSD geometry
   fLastSSD1=g->GetModuleIndex(6,1,1)-1;
-  fYpitchSSD=0.0095;
-  fHwSSD=3.65;
-  fHlSSD=2.00;
-  fTanP=0.0275;
-  fTanN=0.0075;
 
 }
 

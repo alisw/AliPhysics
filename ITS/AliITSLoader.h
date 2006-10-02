@@ -15,9 +15,6 @@ class AliITSLoader: public AliLoader{
     AliITSLoader();
     AliITSLoader(const Char_t *name,const Char_t *topfoldername);
     AliITSLoader(const Char_t *name,TFolder *topfolder);
-    AliITSLoader(const AliITSLoader &ob); // copy constructor
-    AliITSLoader& operator=(const AliITSLoader & /* source */); // ass.
-
 
     virtual ~AliITSLoader();
 
@@ -118,6 +115,9 @@ class AliITSLoader: public AliLoader{
     void  AdoptITSpid(AliITSpidESD* pid) {fITSpid=pid;}
   protected:
 
+    AliITSLoader(const AliITSLoader &ob); // copy constructor
+    AliITSLoader& operator=(const AliITSLoader & /* source */); // ass.
+
     // METHODS
     virtual void   MakeRawClustersContainer() {GetRawClLoader()->MakeTree();}
     Int_t          PostRawClusters(){
@@ -143,6 +143,8 @@ class AliITSLoader: public AliLoader{
     static const TString fgkDefaultCascadeContainerName;      //default fo cascade container name
     AliITSpidESD* fITSpid; //! pointer for ITS pid
     AliITSgeom *fGeom;     //! pointer to the ITS geometry class
+
+
     ClassDef(AliITSLoader,5) // Loader for additional ITS specific trees.
 };
  

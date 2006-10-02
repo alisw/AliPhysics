@@ -33,18 +33,28 @@
 ClassImp(AliITSRawStream)
 
 
-AliITSRawStream::AliITSRawStream(AliRawReader* rawReader)
+AliITSRawStream::AliITSRawStream(AliRawReader* rawReader):
+fRawReader(rawReader),
+fModuleID(-1),
+fPrevModuleID(-1),
+fCoord1(-1),
+fCoord2(-1),
+fSignal(-1)
 {
 // create an object to read ITS raw digits
 
-  fRawReader = rawReader;
-  fModuleID = fPrevModuleID = fCoord1 = fCoord2 = fSignal = -1;
 }
 
 AliITSRawStream::AliITSRawStream(const AliITSRawStream& stream) :
-  TObject(stream)
+  TObject(stream),
+fRawReader(stream.fRawReader),
+fModuleID(stream.fModuleID),
+fPrevModuleID(stream.fPrevModuleID),
+fCoord1(stream.fCoord1),
+fCoord2(stream.fCoord2),
+fSignal(stream.fSignal)
 {
-  Fatal("AliITSRawStream", "copy constructor not implemented");
+  //copy constructor
 }
 
 AliITSRawStream& AliITSRawStream::operator = (const AliITSRawStream& 

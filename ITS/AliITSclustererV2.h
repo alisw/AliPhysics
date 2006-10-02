@@ -22,7 +22,7 @@ class AliITSRawStream;
 
 class AliITSclustererV2 : public TObject {
 public:
-  AliITSclustererV2(){ fEvent=0; fI=0;}
+  AliITSclustererV2();
   AliITSclustererV2(const AliITSgeom *geom);
 
   void SetEvent(Int_t event) { fEvent=event; }
@@ -56,7 +56,7 @@ private:
   };
   class AliBin {
   public:
-    AliBin() {fIndex=0; fQ=0; fMask=0xFFFFFFFE;}
+    AliBin():fIndex(0),fMask(0xFFFFFFFE),fQ(0) {}
     void SetIndex(UInt_t idx) {fIndex=idx;}
     void SetQ(UShort_t q)  {fQ=q;}
     void SetMask(UInt_t m) {fMask=m;}

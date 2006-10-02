@@ -16,12 +16,12 @@ class TObjArray;
 class TArrayI;
 class TArrayF;
 
+
 //______________________________________________________________________
 class AliITSdigit: public TObject  {
 
  public:
-    AliITSdigit() {//default constructor. zero all values.
-	fSignal=fCoord1=fCoord2=0;}
+    AliITSdigit();
     //Standard Constructor. Fills class from array digits
     AliITSdigit(const Int_t *digits);
     //Destructor

@@ -20,7 +20,7 @@ class AliITSpListItem: public TObject {
     // Class destrutor
     virtual ~AliITSpListItem();
     // Copy Oporator
-    AliITSpListItem(AliITSpListItem &source);
+    AliITSpListItem(const AliITSpListItem &source);
     // = Opoerator
     virtual AliITSpListItem& operator=(const AliITSpListItem &source);
     // Returns the signal value in the list of signals

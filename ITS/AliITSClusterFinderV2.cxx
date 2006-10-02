@@ -32,28 +32,28 @@ ClassImp(AliITSClusterFinderV2)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2::AliITSClusterFinderV2(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp){
+AliITSClusterFinderV2::AliITSClusterFinderV2(AliITSDetTypeRec* dettyp):AliITSClusterFinder(dettyp),
+fNModules(0),
+fEvent(0){
 
   //Default constructor
-  fEvent = 0;
-  fModule = 0;
   fNModules = dettyp->GetITSgeom()->GetIndexMax();
 }
-
+/*
 //______________________________________________________________________
 AliITSClusterFinderV2::AliITSClusterFinderV2(const AliITSClusterFinderV2 &source) : AliITSClusterFinder(source) {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   Fatal("AliITSClusterFinderV2","Copy constructor not allowed\n");
 }
-
+*/
 //______________________________________________________________________
-AliITSClusterFinderV2& AliITSClusterFinderV2::operator=(const AliITSClusterFinderV2& /* source */){
+//AliITSClusterFinderV2& AliITSClusterFinderV2::operator=(const AliITSClusterFinderV2& /* source */){
   // Assignment operator
   // Assignment is not allowed. The method is protected to avoid misuse.
-  Fatal("= operator","Assignment operator not allowed\n");
-  return *this;
-}
+  //Fatal("= operator","Assignment operator not allowed\n");
+  //return *this;
+//}
 
 
 //______________________________________________________________________

@@ -122,25 +122,13 @@ AliITSgeomSSD::~AliITSgeomSSD(){
     fAngleN = 0.0;
 }
 //______________________________________________________________________
-AliITSgeomSSD::AliITSgeomSSD(const AliITSgeomSSD &source) : TObject(source){
+AliITSgeomSSD::AliITSgeomSSD(const AliITSgeomSSD &source) : TObject(source),
+fName(source.fName),fTitle(source.fTitle),fMat(source.fMat),fDx(source.fDx),fDy(source.fDy),fDz(source.fDz),fNp(source.fNp),fNn(source.fNn),fLowEdgeP(0),fLowEdgeN(0),fAngleP(source.fAngleP),fAngleN(source.fAngleN){
 ////////////////////////////////////////////////////////////////////////
 //    copy  constructor
 ////////////////////////////////////////////////////////////////////////
     Int_t i;
 
-    if(this == &source) return;
-    fName = source.fName;
-    fTitle = source.fTitle;
-    fMat = source.fMat;
-    fDx = source.fDx;
-    fDy = source.fDy;
-    fDz = source.fDz;
-    this->fNp = source.fNp;
-    this->fNn = source.fNn;
-    delete fLowEdgeP;
-    delete fLowEdgeN;
-    this->fAngleP = source.fAngleP;
-    this->fAngleN = source.fAngleN;
     fLowEdgeP = new Float_t[fNp];
     fLowEdgeN = new Float_t[fNn];
     for(i=0;i<fNp;i++) this->fLowEdgeP[i] = source.fLowEdgeP[i];
@@ -152,26 +140,11 @@ AliITSgeomSSD& AliITSgeomSSD::operator=(const AliITSgeomSSD &source) {
 ////////////////////////////////////////////////////////////////////////
 //    assignment operator
 ////////////////////////////////////////////////////////////////////////
-    Int_t i;
 
-    if(this == &source) return *this;
-    fName = source.fName;
-    fTitle = source.fTitle;
-    fMat = source.fMat;
-    fDx = source.fDx;
-    fDy = source.fDy;
-    fDz = source.fDz;
-    this->fNp = source.fNp;
-    this->fNn = source.fNn;
-    delete fLowEdgeP;
-    delete fLowEdgeN;
-    this->fAngleP = source.fAngleP;
-    this->fAngleN = source.fAngleN;
-    fLowEdgeP = new Float_t[fNp];
-    fLowEdgeN = new Float_t[fNn];
-    for(i=0;i<fNp;i++) this->fLowEdgeP[i] = source.fLowEdgeP[i];
-    for(i=0;i<fNn;i++) this->fLowEdgeN[i] = source.fLowEdgeN[i];
-    return *this;
+  this->~AliITSgeomSSD();
+  new(this) AliITSgeomSSD(source);
+  return *this;
+
 }
 //______________________________________________________________________
 void AliITSgeomSSD::Local2Det(Float_t x,Float_t z,Int_t &a,Int_t &c){

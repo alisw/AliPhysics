@@ -18,15 +18,17 @@ const TString AliITSLoader::fgkDefaultCascadeContainerName = "Cascade";
 ClassImp(AliITSLoader)
 
 /**********************************************************************/
-  AliITSLoader::AliITSLoader():AliLoader(){
+  AliITSLoader::AliITSLoader():AliLoader(),
+fITSpid(0),
+fGeom(0){
   // Default constructor
-  fITSpid = 0;
-  fGeom = 0;
 }
 /*********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,const Char_t *topfoldername):
-AliLoader(name,topfoldername){
-  //ctor   
+AliLoader(name,topfoldername),
+fITSpid(0),
+fGeom(0){
+  //Constructor   
     AliDataLoader* rawClustersDataLoader = new AliDataLoader(
         fDetectorName + ".RawCl.root",fgkDefaultRawClustersContainerName,
         "Raw Clusters");
@@ -60,12 +62,12 @@ AliLoader(name,topfoldername){
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
-    fITSpid=0;
-    fGeom = 0;
 }
 /**********************************************************************/
 AliITSLoader::AliITSLoader(const Char_t *name,TFolder *topfolder): 
-AliLoader(name,topfolder) {
+  AliLoader(name,topfolder),
+fITSpid(0),
+fGeom(0){
   //ctor  
     AliDataLoader*  rawClustersDataLoader = new AliDataLoader(
         fDetectorName + ".RawCl.root",fgkDefaultRawClustersContainerName,
@@ -100,24 +102,8 @@ AliLoader(name,topfolder) {
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
     cascadeDataLoader->SetFolder(GetDetectorDataFolder());
-    fITSpid = 0;
-    fGeom = 0;
 }
 
-//______________________________________________________________________
-AliITSLoader::AliITSLoader(const AliITSLoader &ob) : AliLoader(ob) {
-  // Copy constructor
-  // Copies are not allowed. The method is protected to avoid misuse.
-  Error("AliITSLoader","Copy constructor not allowed\n");
-}
-
-//______________________________________________________________________
-AliITSLoader& AliITSLoader::operator=(const AliITSLoader& /* ob */){
-  // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Error("= operator","Assignment operator not allowed\n");
-  return *this;
-}
 
 /**********************************************************************/
 AliITSLoader::~AliITSLoader(){
@@ -142,6 +128,7 @@ AliITSLoader::~AliITSLoader(){
     UnloadCascades();
     dl = GetCascadeDataLoader();
     fDataLoaders->Remove(dl);
+  
     if(fGeom)delete fGeom;
     fGeom = 0;
 }

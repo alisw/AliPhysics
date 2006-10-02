@@ -36,16 +36,16 @@ ClassImp(AliITSClusterFinderV2SDD)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp){
+AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
+fNySDD(256),
+fNzSDD(256),
+fYpitchSDD(0.01825),
+fZpitchSDD(0.02940),
+fHwSDD(3.5085),
+fHlSDD(3.7632),
+fYoffSDD(0.0425){
 
   //Default constructor
-
-  fNySDD=256; fNzSDD=256;
-  fYpitchSDD=0.01825;
-  fZpitchSDD=0.02940;
-  fHwSDD=3.5085; fHlSDD=3.7632;
-  fYoffSDD=0.0425;
-
 
 
 }

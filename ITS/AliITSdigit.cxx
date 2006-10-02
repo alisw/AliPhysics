@@ -23,14 +23,24 @@
 
 #include "AliITSdigit.h"
 
+
 //______________________________________________________________________
 ClassImp(AliITSdigit)
-AliITSdigit::AliITSdigit(const Int_t *digits) {
+
+AliITSdigit::AliITSdigit():
+fCoord1(0),
+fCoord2(0),
+fSignal(0){
+  //default constructor. zero all values.
+}
+
+
+AliITSdigit::AliITSdigit(const Int_t *digits):
+fCoord1(digits[0]),
+fCoord2(digits[1]),
+fSignal(digits[2]){
   // Creates a real data digit object
 
-  fCoord1       = digits[0];
-  fCoord2       = digits[1];
-  fSignal       = digits[2];
 }
 //______________________________________________________________________
 void AliITSdigit::Print(ostream *os) {

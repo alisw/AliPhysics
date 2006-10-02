@@ -24,8 +24,8 @@
 ////////////////////////////////////////////////////
 ClassImp(AliITSRawCluster)
 //______________________________________________________________________
-  AliITSRawCluster::AliITSRawCluster(){
-// default constructor
-  fMultiplicity = 0;
+  AliITSRawCluster::AliITSRawCluster():
+fMultiplicity(0){
+  // default constructor
 }
 

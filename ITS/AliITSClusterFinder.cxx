@@ -58,6 +58,7 @@ fDebug(0),
 fModule(0),
 fDigits(0),
 fNdigits(0),
+fDetTypeRec(dettyp),
 fClusters(0),
 fNRawClusters(0),
 fMap(0),
@@ -77,7 +78,6 @@ fNPeaks(-1){
     SetNperMax();
     SetClusterSize();
     SetDeclusterFlag();
-    fDetTypeRec = dettyp;
 }
 //----------------------------------------------------------------------
 AliITSClusterFinder::AliITSClusterFinder(AliITSDetTypeRec* dettyp,
@@ -110,20 +110,22 @@ fNPeaks(-1){
     SetClusterSize();
     SetDeclusterFlag();
 }
+/*
 //______________________________________________________________________
 AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) : TObject(source) {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   Fatal("AliITSClusterFinder","Copy constructor not allowed\n");
 }
+*/
 
 //______________________________________________________________________
-AliITSClusterFinder& AliITSClusterFinder::operator=(const AliITSClusterFinder& /* source */){
+//AliITSClusterFinder& AliITSClusterFinder::operator=(const AliITSClusterFinder& /* source */){
   // Assignment operator
   // Assignment is not allowed. The method is protected to avoid misuse.
-  Fatal("= operator","Assignment operator not allowed\n");
-  return *this;
-}
+//  Fatal("= operator","Assignment operator not allowed\n");
+//  return *this;
+//}
 
 //----------------------------------------------------------------------
 AliITSClusterFinder::~AliITSClusterFinder(){

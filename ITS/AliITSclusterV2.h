@@ -16,20 +16,8 @@
 //_____________________________________________________________________________
 class AliITSclusterV2 : public AliCluster {
 public:
-  AliITSclusterV2() : AliCluster() {
-    fQ=0; fLayer=0; fNz=fNy=1; fType=0; fDeltaProb=0;
-  }
-  AliITSclusterV2(Int_t *lab,Float_t *hit, Int_t *info) : AliCluster(lab,hit) {
-    fIndex=lab[3];
-    fQ=hit[4];
-    fNy    = info[0];
-    fNz    = info[1];
-    fLayer = info[2];
-    fChargeRatio = 0;
-    fType=0;
-    fDeltaProb=0.;
-  }
-
+  AliITSclusterV2(); 
+  AliITSclusterV2(Int_t *lab,Float_t *hit, Int_t *info); 
   void Use(Int_t = 0) {fQ=-fQ;}
   void UnUse() {fQ=TMath::Abs(fQ);}
   void SetQ(Float_t q) {fQ=q;}

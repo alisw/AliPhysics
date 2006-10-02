@@ -60,27 +60,30 @@ fResponse(){
 
 //______________________________________________________________________
 AliITSCalibration::AliITSCalibration(const AliITSCalibration &ob):
-  TObject(ob)
+TObject(ob),
+fDataType(ob.fDataType),
+fdv(ob.fdv),
+fN(ob.fN),
+fT(ob.fT),
+fGeVcharge(ob.fGeVcharge),
+fResponse(ob.fResponse)
 {
   // Copy constructor
-  // not implemented
-  AliWarning("Copy constructor not implemented!");
-}
 
+}
+/*
 //______________________________________________________________________________
 AliITSCalibration& AliITSCalibration::operator= (const AliITSCalibration& source)
 {
   // Asignment operator
-  // not implemented
-  if(this==&source) return *this;
 
-  AliWarning("Asignment operator not implemented!");
-
-  ((TObject *)this)->operator=(source);
-
+  this->~AliITSCalibration();
+  new(this) AliITSCalibration(source);
   return *this;
-}
 
+
+}
+*/
 //______________________________________________________________________
 Double_t AliITSCalibration::MobilityElectronSiEmp() const {
     // Computes the electron mobility in cm^2/volt-sec. Taken from SILVACO

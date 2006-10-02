@@ -26,7 +26,6 @@
 #include "TTree.h"
 
 #include "AliCDBManager.h"
-#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliITSClusterFinder.h"
 #include "AliITSClusterFinderV2.h"
@@ -57,7 +56,23 @@ const Int_t AliITSDetTypeRec::fgkDefaultNModulesSSD = 1698;
 ClassImp(AliITSDetTypeRec)
 
 //________________________________________________________________
-AliITSDetTypeRec::AliITSDetTypeRec(): TObject(){
+AliITSDetTypeRec::AliITSDetTypeRec(): TObject(),
+fNMod(0),
+fReconstruction(0),
+fSegmentation(0),
+fCalibration(0),
+fPreProcess(0),
+fPostProcess(0),
+fDigits(0),
+fNdtype(0),
+fCtype(0),
+fNctype(0),
+fRecPoints(0),
+fNRecPoints(0),
+fSelectedVertexer(),
+fLoader(0),
+fRunNumber(0),
+fFirstcall(kTRUE){
     // Default Constructor
     // Inputs:
     //    none.
@@ -65,31 +80,35 @@ AliITSDetTypeRec::AliITSDetTypeRec(): TObject(){
     //    none.
     // Return:
     //    A properly zero-ed AliITSDetTypeRec class.
-  fReconstruction = 0;
-  fSegmentation = 0;
-  fCalibration = 0;
-  fPreProcess = 0;
-  fPostProcess = 0;
-  fDigits = 0;;
+
   for(Int_t i=0; i<3; i++){
     fClusterClassName[i]=0;
     fDigClassName[i]=0;
     fRecPointClassName[i]=0;
   }
-  fNdtype = 0;
-  fCtype = 0;
-  fNMod = 0;
-  fNctype = 0;
-  fRecPoints = 0;
-  fNRecPoints = 0;
+
   SelectVertexer(" ");
-  fLoader = 0;
-  fRunNumber = 0;
-  fFirstcall = kTRUE;
+
 
 }
 //________________________________________________________________
-AliITSDetTypeRec::AliITSDetTypeRec(AliITSLoader *loader): TObject(){
+AliITSDetTypeRec::AliITSDetTypeRec(AliITSLoader *loader): TObject(),
+fNMod(0),
+fReconstruction(0),
+fSegmentation(0),
+fCalibration(0),
+fPreProcess(0),
+fPostProcess(0),
+fDigits(0),
+fNdtype(0),
+fCtype(0),
+fNctype(0),
+fRecPoints(0),
+fNRecPoints(0),
+fSelectedVertexer(),
+fLoader(loader),
+fRunNumber(0),
+fFirstcall(kTRUE){
     // Standard Constructor
     // Inputs:
     //    none.
@@ -99,10 +118,6 @@ AliITSDetTypeRec::AliITSDetTypeRec(AliITSLoader *loader): TObject(){
     //   
 
   fReconstruction = new TObjArray(fgkNdettypes);
-  fSegmentation = 0;
-  fCalibration = 0;
-  fPreProcess = 0;
-  fPostProcess = 0;
   fDigits = new TObjArray(fgkNdettypes);
   for(Int_t i=0; i<3; i++){
     fClusterClassName[i]=0;
@@ -124,30 +139,28 @@ AliITSDetTypeRec::AliITSDetTypeRec(AliITSLoader *loader): TObject(){
     fNctype[i]=0;
   }
   
-  SelectVertexer(" ");
-  fLoader = loader;
- 
+  SelectVertexer(" "); 
   SetRunNumber();
-  fFirstcall = kTRUE;
 }
+/*
 //______________________________________________________________________
-AliITSDetTypeRec::AliITSDetTypeRec(const AliITSDetTypeRec &/*rec*/):TObject(/*rec*/){
-    // Copy constructor. 
+AliITSDetTypeRec::AliITSDetTypeRec(const AliITSDetTypeRec & rec):TObject(rec)
+{
 
+  // Copy constructor. 
   Error("Copy constructor","Copy constructor not allowed");
-  
 }
 //______________________________________________________________________
-AliITSDetTypeRec& AliITSDetTypeRec::operator=(const AliITSDetTypeRec& /*source*/){
+AliITSDetTypeRec& AliITSDetTypeRec::operator=(const AliITSDetTypeRec& source){
     // Assignment operator. This is a function which is not allowed to be
     // done.
     Error("operator=","Assignment operator not allowed\n");
     return *this; 
-}
 
+}
+*/
 //_____________________________________________________________________
 AliITSDetTypeRec::~AliITSDetTypeRec(){
- 
   //Destructor
  
   if(fReconstruction){
@@ -413,21 +426,19 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
 
   if(!entrySPD || !entrySDD || !entrySSD || !entry2SPD || !entry2SDD || !entry2SSD){
   	AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
-	AliCDBStorage *localStor = 
-		AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
+	AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+	AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
 	
-  	entrySPD = localStor->Get("ITS/Calib/CalibSPD", run);
-  	entrySDD = localStor->Get("ITS/Calib/CalibSDD", run);
-  	entrySSD = localStor->Get("ITS/Calib/CalibSSD", run);
- 	entry2SPD = localStor->Get("ITS/Calib/RespSPD", run);
-  	entry2SDD = localStor->Get("ITS/Calib/RespSDD", run);
-  	entry2SSD = localStor->Get("ITS/Calib/RespSSD", run);
+  	entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", run);
+  	entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD", run);
+  	entrySSD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSSD", run);
+ 	entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD", run);
+  	entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD", run);
+  	entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD", run);
+	
+	AliCDBManager::Instance()->SetDefaultStorage(origStorage);
   }
 
-  if(!entrySPD || !entrySDD || !entrySSD || !entry2SPD || !entry2SDD || !entry2SSD){
-    AliError("Calibration data was not found in $ALICE_ROOT!");
-    return kFALSE;
-  }
  
   TObjArray *calSPD = (TObjArray *)entrySPD->GetObject();
   if(!isCacheActive)entrySPD->SetObject(NULL);

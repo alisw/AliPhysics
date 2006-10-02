@@ -32,16 +32,19 @@ ClassImp(AliITSClusterFinderV2SPD)
 
 extern AliRun *gAlice;
 
-AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp){
+AliITSClusterFinderV2SPD::AliITSClusterFinderV2SPD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
+fLastSPD1(0),
+fNySPD(256),
+fNzSPD(160),
+fYpitchSPD(0.0050),
+fZ1pitchSPD(0.0425),
+fZ2pitchSPD(0.0625),
+fHwSPD(0.64),
+fHlSPD(3.48){
 
   //Default constructor
 
   fLastSPD1=fDetTypeRec->GetITSgeom()->GetModuleIndex(2,1,1)-1;
-
-  fNySPD=256; fNzSPD=160;
-  fYpitchSPD=0.0050;
-  fZ1pitchSPD=0.0425; fZ2pitchSPD=0.0625;
-  fHwSPD=0.64; fHlSPD=3.48;
   fYSPD[0]=0.5*fYpitchSPD;
   for (Int_t m=1; m<fNySPD; m++) fYSPD[m]=fYSPD[m-1]+fYpitchSPD; 
   fZSPD[0]=fZ1pitchSPD;

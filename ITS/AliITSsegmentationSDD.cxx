@@ -39,7 +39,12 @@ const Int_t AliITSsegmentationSDD::fgkNsamplesDefault = 256;
 ClassImp(AliITSsegmentationSDD)
 //----------------------------------------------------------------------
 AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom,
-					     AliITSCalibration *resp){
+					     AliITSCalibration *resp):
+fNsamples(0),
+fNanodes(0),
+fPitch(0),
+fTimeStep(0),
+fDriftSpeed(0){
   // constructor
    fGeom=geom;
    AliITSCalibrationSDD* sp = (AliITSCalibrationSDD*)resp;
@@ -51,7 +56,12 @@ AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom,
 
 }
 //______________________________________________________________________
-AliITSsegmentationSDD::AliITSsegmentationSDD() : AliITSsegmentation(){
+AliITSsegmentationSDD::AliITSsegmentationSDD() : AliITSsegmentation(),
+fNsamples(0),
+fNanodes(0),
+fPitch(0),
+fTimeStep(0),
+fDriftSpeed(0){
   // Default constructor
    fDriftSpeed=0;  
    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
@@ -81,7 +91,12 @@ AliITSsegmentationSDD& AliITSsegmentationSDD::operator=(const AliITSsegmentation
 
 //____________________________________________________________________________
 AliITSsegmentationSDD::AliITSsegmentationSDD(const AliITSsegmentationSDD &source) :
-    AliITSsegmentation(source){
+    AliITSsegmentation(source),
+fNsamples(0),
+fNanodes(0),
+fPitch(0),
+fTimeStep(0),
+fDriftSpeed(0){
   // copy constructor
   source.Copy(*this);
 }

@@ -94,33 +94,31 @@ void AliITSgeomSPD::ReSetBins(Float_t dy,Int_t nx,Float_t *bx,
     return;
 }
 //______________________________________________________________________
-AliITSgeomSPD::AliITSgeomSPD(AliITSgeomSPD &source) : TObject(source){
+AliITSgeomSPD::AliITSgeomSPD(AliITSgeomSPD &source) : TObject(source),
+fName(source.fName),
+fTitle(source.fTitle),
+fMat(source.fMat),
+fDx(source.fDx),
+fDy(source.fDy),
+fDz(source.fDz),
+fNbinx(source.fNbinx),
+fNbinz(source.fNbinz),
+fLowBinEdgeX(0),
+fLowBinEdgeZ(0){
     // Copy constructor
+  InitLowBinEdgeX();
+  InitLowBinEdgeZ();
+  for(Int_t i=0;i<fNbinx;i++) fLowBinEdgeX[i] = source.fLowBinEdgeX[i];
+  for(Int_t i=0;i<fNbinz;i++) fLowBinEdgeZ[i] = source.fLowBinEdgeZ[i];
 
-    *this = source; // just use the = operator for now.
-    return;
+  
 }
 //______________________________________________________________________
 AliITSgeomSPD& AliITSgeomSPD::operator=(AliITSgeomSPD &source){
     // = operator
-    Int_t i;
-
-    if(&source == this) return *this;
-    fName=source.fName;
-    fTitle=source.fTitle;
-    fMat=source.fMat;
-    fDx=source.fDx;
-    fDy=source.fDy;
-    fDz=source.fDz;
-    if(this->fLowBinEdgeX) delete[] (this->fLowBinEdgeX);
-    if(this->fLowBinEdgeZ) delete[] (this->fLowBinEdgeZ);
-    this->fNbinx = source.fNbinx;
-    this->fNbinz = source.fNbinz;
-    this->InitLowBinEdgeX();
-    this->InitLowBinEdgeZ();
-    for(i=0;i<fNbinx;i++) this->fLowBinEdgeX[i] = source.fLowBinEdgeX[i];
-    for(i=0;i<fNbinz;i++) this->fLowBinEdgeZ[i] = source.fLowBinEdgeZ[i];
-    return *this;
+  this->~AliITSgeomSPD();
+  new(this) AliITSgeomSPD(source);
+  return *this;
 }
 //______________________________________________________________________
 AliITSgeomSPD::~AliITSgeomSPD(){

@@ -63,21 +63,21 @@ fMinNCells(0){
     SetDx();
     SetDz();
 }
-
+/*
 //______________________________________________________________________
 AliITSClusterFinderSPD::AliITSClusterFinderSPD(const AliITSClusterFinderSPD &source) : AliITSClusterFinder(source) {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
   Fatal("AliITSClusterFinderSPD","Copy constructor not allowed\n");
 }
-
+*/
 //______________________________________________________________________
-AliITSClusterFinderSPD& AliITSClusterFinderSPD::operator=(const AliITSClusterFinderSPD& /* source */){
+//AliITSClusterFinderSPD& AliITSClusterFinderSPD::operator=(const AliITSClusterFinderSPD& /* source */){
   // Assignment operator
   // Assignment is not allowed. The method is protected to avoid misuse.
-  Fatal("= operator","Assignment operator not allowed\n");
-  return *this;
-}
+  //Fatal("= operator","Assignment operator not allowed\n");
+  //return *this;
+//}
 //______________________________________________________________________
 void AliITSClusterFinderSPD::FindRawClusters(Int_t module){   
     // input of Cluster Finder

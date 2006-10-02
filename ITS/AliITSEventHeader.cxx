@@ -11,7 +11,9 @@ ClassImp(AliITSEventHeader)
 
   
 //_____________________________________________________________
-AliITSEventHeader::AliITSEventHeader():AliDetectorEventHeader()
+  AliITSEventHeader::AliITSEventHeader():AliDetectorEventHeader(),
+fEventTypeSDD(),
+fJitterSDD(0)
 {
   //
   // Defaulst Constructor
@@ -29,14 +31,15 @@ AliITSEventHeader::AliITSEventHeader():AliDetectorEventHeader()
     fMiniEvId[idet]=0;
     fSubDet[idet]=0;
     fVersion[idet]=0;
-    fJitterSDD=0;
   }
   
   
 }
 
 //_____________________________________________________________
-AliITSEventHeader::AliITSEventHeader(const char* name):AliDetectorEventHeader(name)
+AliITSEventHeader::AliITSEventHeader(const char* name):AliDetectorEventHeader(name),
+fEventTypeSDD(),
+fJitterSDD(-123)
 {
   //
   // Constructor
@@ -52,7 +55,6 @@ AliITSEventHeader::AliITSEventHeader(const char* name):AliDetectorEventHeader(na
     fMiniEvId[idet]=0;
     fSubDet[idet]=0;
     fVersion[idet]=0;
-    fJitterSDD=-123;
   }
   
 

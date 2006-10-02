@@ -28,12 +28,11 @@ ClassImp(AliITSRawStreamSSDv1)
 
 
 AliITSRawStreamSSDv1::AliITSRawStreamSSDv1(AliRawReader* rawReader) :
-  AliITSRawStreamSSD(rawReader)
-{
+  AliITSRawStreamSSD(rawReader),
+fADModule(0),
+fADC(0){
 // create an object to read ITS SSD raw digits
 
-  fADC =0;
-  fADModule=0;
   fRawReader->SelectEquipment(17,102,102);
 }
 

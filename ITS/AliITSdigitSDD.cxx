@@ -31,7 +31,9 @@ ClassImp(AliITSdigitSDD)
 
 
 //______________________________________________________________________
-AliITSdigitSDD::AliITSdigitSDD():AliITSdigit(){
+AliITSdigitSDD::AliITSdigitSDD():AliITSdigit(),
+fPhysics(0),
+fSignalExpanded(0){
     // default constructor, zero coordinates and set array
     // elements to clearly unphysical values. A value of 0 may
     // be a valide track of hit number.
@@ -39,16 +41,16 @@ AliITSdigitSDD::AliITSdigitSDD():AliITSdigit(){
 
     for(i=0;i<fgkSsdd;i++) fTracks[i] = -3;
     for(i=0;i<fgkSsdd;i++) fHits[i]   = -1;
-    fPhysics = 0;
     for(i=0;i<fgkSsdd;i++) fTcharges[i] = 0;
     SetSignalExpanded(-1000);
 }
 //________________________________________________________________________
-AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits): AliITSdigit(digits){
+AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits): AliITSdigit(digits),
+fPhysics(phys),
+fSignalExpanded(0){
  
    // Creates a simulated SDD digit object to be updated
 
-    fPhysics = phys;
     SetSignalExpanded(-1000);
 }
 
@@ -68,7 +70,9 @@ void AliITSdigitSDD::InitObject(Float_t phys,const Int_t *tracks,
 //_____________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits,
 			       const Int_t *tracks,const Int_t *hits,
-			       const Float_t *charges):AliITSdigit(digits){
+			       const Float_t *charges):AliITSdigit(digits),
+fPhysics(0),
+fSignalExpanded(0){
 
 // standard constructor
   InitObject(phys,tracks,hits,charges);
@@ -76,7 +80,9 @@ AliITSdigitSDD::AliITSdigitSDD(Float_t phys,const Int_t *digits,
 }
 //_____________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
-    const Int_t *tracks,const Int_t *hits,const Float_t *charges, Int_t sige): AliITSdigit(digits) {
+    const Int_t *tracks,const Int_t *hits,const Float_t *charges, Int_t sige): AliITSdigit(digits),
+fPhysics(0),
+fSignalExpanded(0){
 
   //constructor setting also fSignalExpanded
   InitObject(phys,tracks,hits,charges);
@@ -86,7 +92,9 @@ AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
 //_____________________________________________________________________________
 AliITSdigitSDD::AliITSdigitSDD( Float_t phys,const Int_t *digits,
     const Int_t *tracks,const Int_t *hits,const Float_t *charges,
-    AliITSCalibrationSDD* resp): AliITSdigit(digits) {
+    AliITSCalibrationSDD* resp): AliITSdigit(digits),
+fPhysics(0),
+fSignalExpanded(0){
 
   //constructor setting fSignalExpanded through AliITSCalibrationSDD
   InitObject(phys,tracks,hits,charges);

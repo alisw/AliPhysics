@@ -43,16 +43,15 @@ const Int_t AliITSRawStreamSDD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
 const UInt_t AliITSRawStreamSDD::fgkCodeLength[8] =  {8, 18, 2, 3, 4, 5, 6, 7};
 
 AliITSRawStreamSDD::AliITSRawStreamSDD(AliRawReader* rawReader) :
-  AliITSRawStream(rawReader)
-{
+  AliITSRawStream(rawReader),
+fData(0),
+fSkip(0),
+fEventId(0),
+fCarlosId(0),
+fChannel(0),
+fJitter(0){
 // create an object to read ITS SDD raw digits
   
-  fData = 0;
-  fSkip = 0;
-  fEventId = 0;
-  fCarlosId = 0;
-  fChannel = 0;
-  fJitter  = 0;
   for(Int_t i=0;i<2;i++){
     fChannelData[i]=0;
     fLastBit[i]=0;

@@ -30,23 +30,27 @@ ClassImp(AliITSpackageSSD)
 //skowron@if.pw.edu.pl
 //
 //--------------------------------------------------------------------------
-AliITSpackageSSD::AliITSpackageSSD()
-{
+AliITSpackageSSD::AliITSpackageSSD():
+fClustersN(0),
+fClustersP(0),
+fNclustersN(0),
+fNclustersP(0),
+fClusterNIndexes(0),
+fClusterPIndexes(0){
   // constructor
-  fNclustersN=0;
-  fClusterNIndexes = 0; 
-		
-  fNclustersP=0;
-  fClusterPIndexes = 0;
-  if (fgkDebug) cout<<"Default Ctor was used\n>>>>>>>>>>>>>><<<<<<<<<<<<<";
 }
 
 
 /*******************************************************/
 
 AliITSpackageSSD::AliITSpackageSSD
-  (TClonesArray *clustersP, TClonesArray *clustersN)
-{
+(TClonesArray *clustersP, TClonesArray *clustersN):
+fClustersN(clustersN),
+fClustersP(clustersP),
+fNclustersN(0),
+fNclustersP(0),
+fClusterNIndexes(0),
+fClusterPIndexes(0){
   // constructor
   fClustersP=clustersP;
   fClustersN=clustersN;
@@ -61,9 +65,13 @@ AliITSpackageSSD::AliITSpackageSSD
 /*******************************************************/
 
 
-AliITSpackageSSD::AliITSpackageSSD
-  ( Int_t len, TClonesArray *clustersP, TClonesArray *clustersN)
-{	
+AliITSpackageSSD::AliITSpackageSSD(Int_t len, TClonesArray *clustersP, TClonesArray *clustersN):
+fClustersN(clustersN),
+fClustersP(clustersP),
+fNclustersN(0),
+fNclustersP(0),
+fClusterNIndexes(0),
+fClusterPIndexes(0){	
   // constructor
   fClustersP=clustersP;
   fClustersN=clustersN;
@@ -88,17 +96,16 @@ AliITSpackageSSD::~AliITSpackageSSD()
 /*******************************************************/
 
 AliITSpackageSSD::AliITSpackageSSD(const AliITSpackageSSD &package) : 
-    TObject(package){
+    TObject(package),
+fClustersN(package.fClustersN),
+fClustersP(package.fClustersP),
+fNclustersN(package.fNclustersN),
+fNclustersP(package.fNclustersP),
+fClusterNIndexes(0),
+fClusterPIndexes(0){
   // copy constractor
   Int_t i;  //iterator
  
-  if (this == &package) return;
-  fClustersN = package.fClustersN;
-  fClustersP = package.fClustersP;
-  
-  fNclustersN= package.fNclustersN;
-  fNclustersP= package.fNclustersP;
-  
   for ( i =0; i<fNclustersN;i++)
     {
       fClusterNIndexes[i]= package.fClusterNIndexes[i]; 
@@ -109,9 +116,6 @@ AliITSpackageSSD::AliITSpackageSSD(const AliITSpackageSSD &package) :
       fClusterPIndexes[i]= package.fClusterPIndexes[i]; 
     }
   
-  if (fgkDebug) cout << "Copying function was used\n<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>";
-  
-  return; 
   
 }
 /*******************************************************/

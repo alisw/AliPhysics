@@ -45,7 +45,9 @@ fCouplCol(fgkCouplColDefault),
 fCouplRow(fgkCouplRowDefault),
 fBiasVoltage(fgkBiasVoltageDefault),
 fNrDead(0),
-fNrNoisy(0){
+fDeadChannels(0),
+fNrNoisy(0),
+fNoisyChannels(0){
   // constructor
 
    SetThresholds(fgkThreshDefault,fgkSigmaDefault);

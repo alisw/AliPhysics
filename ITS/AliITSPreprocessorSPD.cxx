@@ -54,26 +54,28 @@ Preprocessor classes for SPD (Paul Nilsson)
 #include "AliCDBEntry.h"
 #include "AliITSCalibrationSPD.h" 
 ClassImp(AliITSPreprocessorSPD)
-
-
 //__________________________________________________________________________
 AliITSPreprocessorSPD::AliITSPreprocessorSPD(void):
-  fITSLoader(0x0),
-  fRunLoader(0x0),
-  fThresholdRatio(5.),
-  fThreshold(5),
-  fMaximumNumberOfEvents(1000000),
-  fHighestModuleNumber(0),
-  fSelectedAlgorithm(kOptimizedForRealData),
-  fGeometryMode(kALICEGeometry),
-  fNumberOfBadChannels(0),
-  fInit(kFALSE),
-  fVMEMode(kFALSE),
-  fDigitsHistogram(0),
-  fBadChannelsObjArray(0),
-  fBadChannelsIntArray(0),
-  fBadChannelsIndexArray(0),
-  fBadChannelsContainer(0)
+fITSLoader(0x0),
+fRunLoader(0x0),
+fThresholdRatio(5.),
+fThreshold(5),
+fMaximumNumberOfEvents(1000000),
+fNumberOfModules(0),
+fHighestModuleNumber(0),
+fNumberOfColumns(0),
+fNumberOfRows(0),
+fSelectedAlgorithm(kOptimizedForRealData),
+fGeometryMode(kALICEGeometry),
+fNumberOfBadChannels(0),
+  fIndex(0),
+fInit(kFALSE),
+fVMEMode(kFALSE),
+fDigitsHistogram(0),
+fBadChannelsObjArray(0),
+fBadChannelsIntArray(0),
+fBadChannelsIndexArray(0),
+fBadChannelsContainer(0)
 {
   // Default constructor for the SPD preprocessor
   //
@@ -90,7 +92,24 @@ AliITSPreprocessorSPD::AliITSPreprocessorSPD(const char *fileName, const char *m
 					     const char *fileNameg, const Int_t maxNumberOfEvents):
   fITSLoader(0x0),
   fRunLoader(0x0),
-  fInit(kFALSE)
+  fThresholdRatio(0),
+  fThreshold(0),
+  fMaximumNumberOfEvents(1000000),
+  fNumberOfModules(0),
+  fHighestModuleNumber(0),
+  fNumberOfColumns(0),
+  fNumberOfRows(0),
+  fSelectedAlgorithm(kOptimizedForRealData),
+  fGeometryMode(kALICEGeometry),
+  fNumberOfBadChannels(0),
+  fIndex(0),
+  fInit(kFALSE),
+  fVMEMode(kFALSE),
+  fDigitsHistogram(0),
+  fBadChannelsObjArray(0),
+  fBadChannelsIntArray(0),
+  fBadChannelsIndexArray(0),
+  fBadChannelsContainer(0)
 {
   // Standard constructor for the SPD preprocessor
   //
@@ -113,28 +132,33 @@ AliITSPreprocessorSPD::AliITSPreprocessorSPD(const char *fileName, const char *m
 
 //__________________________________________________________________________
 AliITSPreprocessorSPD::AliITSPreprocessorSPD(const AliITSPreprocessorSPD &prep) :
-  TTask(prep)
+TTask(prep),
+  fITSLoader(prep.fITSLoader),
+  fRunLoader(prep.fRunLoader),
+  fThresholdRatio(prep.fThresholdRatio),
+  fThreshold(prep.fThreshold),
+  fMaximumNumberOfEvents(prep.fMaximumNumberOfEvents),
+  fNumberOfModules(prep.fNumberOfModules),
+  fHighestModuleNumber(prep.fHighestModuleNumber),
+  fNumberOfColumns(prep.fNumberOfColumns),
+  fNumberOfRows(prep.fNumberOfRows),
+  fSelectedAlgorithm(prep.fSelectedAlgorithm),
+  fGeometryMode(prep.fGeometryMode),
+  fNumberOfBadChannels(prep.fNumberOfBadChannels),
+  fIndex(prep.fIndex),
+  fInit(prep.fInit),
+  fVMEMode(prep.fVMEMode),
+  fDigitsHistogram(prep.fDigitsHistogram),
+  fBadChannelsObjArray(prep.fBadChannelsObjArray),
+  fBadChannelsIntArray(prep.fBadChannelsIntArray),
+  fBadChannelsIndexArray(prep.fBadChannelsIndexArray),
+  fBadChannelsContainer(prep.fBadChannelsContainer)
 {
   // Default copy constructor
   // Notice that only pointer addresses are copied!
   // Memory allocations of new objects are not done.
 
-  fITSLoader = prep.fITSLoader;
-  fRunLoader = prep.fRunLoader;
-  fThresholdRatio = prep.fThresholdRatio;
-  fThreshold = prep.fThreshold;
-  fMaximumNumberOfEvents = prep.fMaximumNumberOfEvents;
-  fHighestModuleNumber = prep.fHighestModuleNumber;
-  fSelectedAlgorithm = prep.fSelectedAlgorithm;
-  fGeometryMode = prep.fGeometryMode;
-  fNumberOfBadChannels = prep.fNumberOfBadChannels;
-  fInit = prep.fInit;
-  fVMEMode = prep.fVMEMode;
-  fDigitsHistogram = prep.fDigitsHistogram;
-  fBadChannelsObjArray = prep.fBadChannelsObjArray;
-  fBadChannelsIntArray = prep.fBadChannelsIntArray;
-  fBadChannelsIndexArray = prep.fBadChannelsIndexArray;
-  fBadChannelsContainer = prep.fBadChannelsContainer;
+
 }
 
 
@@ -1410,17 +1434,20 @@ Bool_t AliITSPreprocessorSPD::Store(AliCDBId& /*id*/, AliCDBMetaData* /*md*/, In
 
   AliInfo("Storing bad channels");
  
-  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", runNumber);
+  if(!AliCDBManager::Instance()->IsDefaultStorageSet()) {
+    AliWarning("No storage set! Will use dummy one");
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  }
 
+  
+  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", runNumber);
   if(!entrySPD){
     AliWarning("Calibration object retrieval failed! Dummy calibration will be used.");
+    AliCDBStorage *origStorage = AliCDBManager::Instance()->GetDefaultStorage();
+    AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
 	
-    AliCDBStorage *localStor = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
-    entrySPD = localStor->Get("ITS/Calib/CalibSPD", runNumber);
-    if(!entrySPD){
-      AliFatal("Cannot find SPD calibration entry!");
-      return kFALSE;
-    }
+    entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", runNumber);
+    AliCDBManager::Instance()->SetDefaultStorage(origStorage);
   }
 
   TObjArray *respSPD = (TObjArray *)entrySPD->GetObject();
@@ -1445,18 +1472,12 @@ Bool_t AliITSPreprocessorSPD::Store(AliCDBId& /*id*/, AliCDBMetaData* /*md*/, In
     }
   }
     
-
-  AliCDBStorage *storage = AliCDBManager::Instance()->GetDefaultStorage();
-  if(!storage) {
-    AliWarning("No default storage set! Will use dummy one");
-    storage = AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
-    if(!storage) AliFatal("Could not even set dummy storage! Something very strange is happening...");
-  }
-
-  status = storage->Put(entrySPD);
+  
+  AliCDBManager::Instance()->Put(entrySPD);
   entrySPD->SetObject(NULL);
   entrySPD->SetOwner(kTRUE);
 
   delete entrySPD;
+  status=kTRUE;
   return status;
 }

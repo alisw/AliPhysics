@@ -31,11 +31,29 @@ const Float_t AliITSsegmentationSSD::fgkPitchDefault = 95.;
 const Int_t AliITSsegmentationSSD::fgkNstripsDefault = 768;
 
 ClassImp(AliITSsegmentationSSD)
-AliITSsegmentationSSD::AliITSsegmentationSSD(): AliITSsegmentation(){
+AliITSsegmentationSSD::AliITSsegmentationSSD(): AliITSsegmentation(),
+fNstrips(0),
+fStereoP(0),
+fStereoN(0),
+fPitch(0),
+fStereoPl5(0),
+fStereoNl5(0),
+fStereoPl6(0),
+fStereoNl6(0),
+fLayer(0){
     // default constructor
 }
 //----------------------------------------------------------------------
-AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSgeom *geom){
+AliITSsegmentationSSD::AliITSsegmentationSSD(AliITSgeom *geom):
+fNstrips(0),
+fStereoP(0),
+fStereoN(0),
+fPitch(0),
+fStereoPl5(0),
+fStereoNl5(0),
+fStereoPl6(0),
+fStereoNl6(0),
+fLayer(0){
     // constuctor
     fGeom = geom;
     fCorr = 0;
@@ -75,7 +93,16 @@ AliITSsegmentationSSD& AliITSsegmentationSSD::operator=(
 }
 //______________________________________________________________________
 AliITSsegmentationSSD::AliITSsegmentationSSD(const AliITSsegmentationSSD &source):
-    AliITSsegmentation(source){
+    AliITSsegmentation(source),
+fNstrips(0),
+fStereoP(0),
+fStereoN(0),
+fPitch(0),
+fStereoPl5(0),
+fStereoNl5(0),
+fStereoPl6(0),
+fStereoNl6(0),
+fLayer(0){
     // copy constructor
   source.Copy(*this);
 }

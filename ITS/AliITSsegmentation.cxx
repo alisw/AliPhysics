@@ -14,11 +14,14 @@
 ClassImp(AliITSsegmentation)
 
 //_____________________________________________________________
-AliITSsegmentation::AliITSsegmentation(){
+AliITSsegmentation::AliITSsegmentation():
+fDx(0),
+fDz(0),
+fDy(0),
+fGeom(0),
+fCorr(0){
   // Default constructor
-  SetDetSize(0.,0.,0.);
-  fGeom = 0;
-  fCorr = 0;
+ 
 }
 
 //_____________________________________________________________
@@ -52,7 +55,12 @@ AliITSsegmentation& AliITSsegmentation::operator=(
 }
 //______________________________________________________________________
 AliITSsegmentation::AliITSsegmentation(const AliITSsegmentation &source):
-    TObject(source){
+    TObject(source),
+fDx(0),
+fDz(0),
+fDy(0),
+fGeom(0),
+fCorr(0){
     // copy constructor
   source.Copy(*this);
 }

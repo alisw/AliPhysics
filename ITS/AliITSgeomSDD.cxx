@@ -139,57 +139,36 @@ AliITSgeomSDD::~AliITSgeomSDD(){
     fAnodeLowEdgeR = 0;
 }
 //________________________________________________________________________
-AliITSgeomSDD::AliITSgeomSDD(AliITSgeomSDD &source) : TObject(source){
-    // Copy constructor
-    Int_t i;
-
-    if(this==&source) return;
-    fName=source.fName;
-    fTitle=source.fTitle;
-    fMat=source.fMat;
-    fDx=source.fDx;
-    fDy=source.fDy;
-    fDz=source.fDz;
-    this->fPeriod    = source.fPeriod;
-    this->fDvelocity = source.fDvelocity;
-    this->fNAnodesL  = source.fNAnodesL;
-    this->fNAnodesR  = source.fNAnodesR;
-    this->fAnodeXL  = source.fAnodeXL;
-    this->fAnodeXR  = source.fAnodeXR;
-    if(fAnodeLowEdgeL!=0) delete fAnodeLowEdgeL;
-    this->fAnodeLowEdgeL = new Float_t[fNAnodesL];
-    if(fAnodeLowEdgeR!=0) delete fAnodeLowEdgeR;
-    this->fAnodeLowEdgeR = new Float_t[fNAnodesR];
-    for(i=0;i<fNAnodesL;i++)this->fAnodeLowEdgeL[i] = source.fAnodeLowEdgeL[i];
-    for(i=0;i<fNAnodesR;i++)this->fAnodeLowEdgeR[i] = source.fAnodeLowEdgeR[i];
-    return;
+AliITSgeomSDD::AliITSgeomSDD(AliITSgeomSDD &source) : TObject(source),
+fPeriod(source.fPeriod),
+fDvelocity(source.fDvelocity),
+fNAnodesL(source.fNAnodesL),
+fNAnodesR(source.fNAnodesR),
+fAnodeXL(source.fAnodeXL),
+fAnodeXR(source.fAnodeXR),
+fAnodeLowEdgeL(0),
+fAnodeLowEdgeR(0),
+fName(source.fName),
+fTitle(source.fTitle),
+fMat(source.fMat),
+fDx(source.fDx),
+fDy(source.fDy),
+fDz(source.fDz){
+    // Copy constructor  
+  fAnodeLowEdgeL = new Float_t[fNAnodesL];
+  fAnodeLowEdgeR = new Float_t[fNAnodesR];
+  for(Int_t i=0;i<fNAnodesL;i++) fAnodeLowEdgeL[i] = source.fAnodeLowEdgeL[i];
+  for(Int_t i=0;i<fNAnodesR;i++) fAnodeLowEdgeR[i] = source.fAnodeLowEdgeR[i];
+ 
 }
 //________________________________________________________________________
 AliITSgeomSDD& AliITSgeomSDD::operator=(AliITSgeomSDD &source){
     // = operator
-    Int_t i;
 
-    if(this==&source) return *this;
-    fName=source.fName;
-    fTitle=source.fTitle;
-    fMat=source.fMat;
-    fDx=source.fDx;
-    fDy=source.fDy;
-    fDz=source.fDz;
-    this->fPeriod    = source.fPeriod;
-    this->fDvelocity = source.fDvelocity;
-    this->fNAnodesL  = source.fNAnodesL;
-    this->fNAnodesR  = source.fNAnodesR;
-    this->fNAnodesR  = source.fNAnodesR;
-    this->fAnodeXL  = source.fAnodeXL;
-    this->fAnodeXR  = source.fAnodeXR;
-    if(fAnodeLowEdgeL!=0) delete fAnodeLowEdgeL;
-    this->fAnodeLowEdgeL = new Float_t[fNAnodesL];
-    if(fAnodeLowEdgeR!=0) delete fAnodeLowEdgeR;
-    this->fAnodeLowEdgeR = new Float_t[fNAnodesR];
-    for(i=0;i<fNAnodesL;i++)this->fAnodeLowEdgeL[i] = source.fAnodeLowEdgeL[i];
-    for(i=0;i<fNAnodesR;i++)this->fAnodeLowEdgeR[i] = source.fAnodeLowEdgeR[i];
-    return *this;
+  this->~AliITSgeomSDD();
+  new(this) AliITSgeomSDD(source);
+  return *this;
+
 }
 //______________________________________________________________________
 void AliITSgeomSDD::Local2Det(Float_t xl,Float_t zl,Int_t &a,Int_t &t,Int_t &s){

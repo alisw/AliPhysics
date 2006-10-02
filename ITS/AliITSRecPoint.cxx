@@ -36,30 +36,58 @@
 ClassImp(AliITSRecPoint)
 
 //_____________________________________________________________
-AliITSRecPoint::AliITSRecPoint(): AliCluster() {
+AliITSRecPoint::AliITSRecPoint(): AliCluster(),
+fXloc(0),
+fZloc(0),
+fdEdX(0),
+fIndex(0),
+fQ(0),
+fLayer(0),
+fNz(0),
+fNy(0),
+fChargeRatio(0),
+fType(0),
+fDeltaProb(0),
+fGeom(0){
     // default creator
-    fXloc=fZloc=fdEdX=0.;
-    fQ=0; fLayer=0; fNz=fNy=1; fType=0; fDeltaProb=0;fChargeRatio=0;
-    fGeom=0;
 }
 
 //_____________________________________________________________
-AliITSRecPoint::AliITSRecPoint(AliITSgeom* geom): AliCluster() {
+AliITSRecPoint::AliITSRecPoint(AliITSgeom* geom): AliCluster(),
+fXloc(0),
+fZloc(0),
+fdEdX(0),
+fIndex(0),
+fQ(0),
+fLayer(0),
+fNz(0),
+fNy(0),
+fChargeRatio(0),
+fType(0),
+fDeltaProb(0),
+fGeom(geom) {
     // default creator
-    fXloc=fZloc=fdEdX=0.;
-    fQ=0; fLayer=0; fNz=fNy=1; fType=0; fDeltaProb=0;fChargeRatio=0;
-    fGeom=geom;
+
 }
 
 //________________________________________________________________________
-AliITSRecPoint::AliITSRecPoint(Int_t module,AliITSgeom* geom,Int_t *lab,Float_t *hit, Int_t *info):AliCluster(lab,hit){
+AliITSRecPoint::AliITSRecPoint(Int_t module,AliITSgeom* geom,Int_t *lab,Float_t *hit, Int_t *info):AliCluster(lab,hit),
+fXloc(0),
+fZloc(0),
+fdEdX(0),
+fIndex(lab[3]),
+fQ(hit[4]),
+fLayer(info[2]),
+fNz(info[1]),
+fNy(info[0]),
+fChargeRatio(0),
+fType(0),
+fDeltaProb(0),
+fGeom(geom)
+{
   //standard constructor used in AliITSClusterFinderV2
-  fIndex=lab[3];
-  fQ=hit[4];
-  fNy    = info[0];
-  fNz    = info[1];
-  fLayer = info[2];
-  fChargeRatio = 0;
+
+
   fType=0;
   fDeltaProb=0.;
   
@@ -74,44 +102,48 @@ AliITSRecPoint::AliITSRecPoint(Int_t module,AliITSgeom* geom,Int_t *lab,Float_t 
   
 }
 //_______________________________________________________________________
-AliITSRecPoint::AliITSRecPoint(const AliITSRecPoint& pt):AliCluster(pt){
+AliITSRecPoint::AliITSRecPoint(const AliITSRecPoint& pt):AliCluster(pt),
+fXloc(pt.fXloc),
+fZloc(pt.fZloc),
+fdEdX(pt.fdEdX),
+fIndex(pt.fIndex),
+fQ(pt.fQ),
+fLayer(pt.fLayer),
+fNz(pt.fNz),
+fNy(pt.fNy),
+fChargeRatio(pt.fChargeRatio),
+fType(pt.fType),
+fDeltaProb(pt.fDeltaProb),
+fGeom(pt.fGeom){
   //Copy constructor
-  fXloc = pt.fXloc;
-  fZloc = pt.fZloc;
-  fdEdX = pt.fdEdX;
-  fIndex= pt.fIndex;
-  fQ = pt.fQ;
-  fNy = pt.fNy;
-  fNz = pt.fNz;
-  fLayer = pt.fLayer;
-  fChargeRatio = pt.fChargeRatio;
-  fType = pt.fType;
-  fDeltaProb = pt.fDeltaProb;
-  fGeom = pt.fGeom;
 
 }
 
 //______________________________________________________________________
-AliITSRecPoint& AliITSRecPoint::operator=(const AliITSRecPoint& /* source */){
+AliITSRecPoint& AliITSRecPoint::operator=(const AliITSRecPoint& source){
   // Assignment operator
-  // Assignment is not allowed. The method is protected to avoid misuse.
-  Fatal("= operator","Assignment operator not allowed\n");
+
+  this->~AliITSRecPoint();
+  new(this) AliITSRecPoint(source);
   return *this;
+
 }
 
 //________________________________________________________________________
-AliITSRecPoint::AliITSRecPoint(Int_t *lab,Float_t *hit, Int_t *info):AliCluster(lab,hit){
+AliITSRecPoint::AliITSRecPoint(Int_t *lab,Float_t *hit, Int_t *info):AliCluster(lab,hit),
+fXloc(0),
+fZloc(0),
+fdEdX(0),
+fIndex(lab[3]),
+fQ(hit[4]),
+fLayer(info[2]),
+fNz(info[1]),
+fNy(info[0]),
+fChargeRatio(0),
+fType(0),
+fDeltaProb(0),
+fGeom(0){
   //standard constructor used in AliITSClusterFinderV2
-  fXloc=fZloc=fdEdX=0.;
-  fIndex=lab[3];
-  fQ=hit[4];
-  fNy    = info[0];
-  fNz    = info[1];
-  fLayer = info[2];
-  fChargeRatio = 0;
-  fType=0;
-  fDeltaProb=0.;  
-  fGeom = 0;
 }
 
 //----------------------------------------------------------------------

@@ -27,7 +27,8 @@
 ClassImp(AliITSdigitSPD)
 
 //______________________________________________________________________
-AliITSdigitSPD::AliITSdigitSPD():AliITSdigit(){
+AliITSdigitSPD::AliITSdigitSPD():AliITSdigit(),
+fSignalSPD(0){
     // default constructor, zero coordinates and set array
     // elements to clearly unphysical values. A value of 0 may
     // be a valide track of hit number.
@@ -37,7 +38,8 @@ AliITSdigitSPD::AliITSdigitSPD():AliITSdigit(){
     for(i=0;i<fgkSspd;i++) fHits[i]    = -1;
 }
 //______________________________________________________________________
-AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits){
+AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits):
+fSignalSPD(digits[2]){
     // Creates a SPD digit object
     Int_t i;
 
@@ -46,11 +48,11 @@ AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits){
     fCoord1       = digits[0];
     fCoord2       = digits[1];
     fSignal       = 1;
-    fSignalSPD    = digits[2];
-}
+ }
 //______________________________________________________________________
 AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits,const Int_t *tracks,
-			       const Int_t *hits){
+			       const Int_t *hits):
+fSignalSPD(digits[2]){
     // Creates a simulated SPD digit object
 
     for(Int_t i=0; i<fgkSspd; i++) {
@@ -60,7 +62,6 @@ AliITSdigitSPD::AliITSdigitSPD(const Int_t *digits,const Int_t *tracks,
     fCoord1       = digits[0];
     fCoord2       = digits[1];
     fSignal       = 1;
-    fSignalSPD    = digits[2];
 }
 //______________________________________________________________________
 Int_t AliITSdigitSPD::GetListOfTracks(TArrayI &t){

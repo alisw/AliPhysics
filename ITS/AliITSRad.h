@@ -31,6 +31,10 @@ public:
   
 private:
 
+  AliITSRad(const AliITSRad &source); // copy constructor
+  // assignment operator
+  AliITSRad& operator=(const AliITSRad &source);
+
   Int_t           imax;        // first dimension of the matrices
   Int_t           jmax;        // second dimension of the matrices
   

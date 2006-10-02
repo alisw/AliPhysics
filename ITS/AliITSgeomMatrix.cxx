@@ -83,10 +83,14 @@ fPath(){     // Path in geometry to this module
     }// end for i
     fm[0][0] = fm[1][1] = fm[2][2] = 1.0;
 }
-/*
+
 //----------------------------------------------------------------------
-AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &sourse) : 
-    TObject(sourse){
+AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &source) : 
+    TObject(source),
+fDetectorIndex(source.fDetectorIndex),
+fCylR(source.fCylR),
+fCylPhi(source.fCylPhi),
+fPath(source.fPath){
     // The standard Copy constructor. This make a full / proper copy of
     // this class.
     // Inputs:
@@ -96,20 +100,15 @@ AliITSgeomMatrix::AliITSgeomMatrix(const AliITSgeomMatrix &sourse) :
     // Return:
     //    A copy constructes AliITSgeomMatrix class.
 	Int_t i,j;
-
-	this->fDetectorIndex = sourse.fDetectorIndex;
 	for(i=0;i<3;i++){
-		this->fid[i]     = sourse.fid[i];
-		this->frot[i]    = sourse.frot[i];
-		this->ftran[i]   = sourse.ftran[i];
-		this->fCylR      = sourse.fCylR;
-		this->fCylPhi    = sourse.fCylPhi;
-		for(j=0;j<3;j++) this->fm[i][j] = sourse.fm[i][j];
+		this->fid[i]     = source.fid[i];
+		this->frot[i]    = source.frot[i];
+		this->ftran[i]   = source.ftran[i];
+		for(j=0;j<3;j++) this->fm[i][j] = source.fm[i][j];
 	}// end for i
-     this->fPath   = sourse.fPath;
 }
 //----------------------------------------------------------------------
-void AliITSgeomMatrix::operator=(const AliITSgeomMatrix &sourse){
+AliITSgeomMatrix& AliITSgeomMatrix::operator=(const AliITSgeomMatrix &source){
     // The standard = operator. This make a full / proper copy of
     // this class.
     // The standard Copy constructor. This make a full / proper copy of
@@ -120,20 +119,23 @@ void AliITSgeomMatrix::operator=(const AliITSgeomMatrix &sourse){
     //    none.
     // Return:
     //    A copy of the source AliITSgeomMatrix class.
-	Int_t i,j;
+  if(this == &source)return *this;
+  Int_t i,j;
 
-	this->fDetectorIndex = sourse.fDetectorIndex;
-	for(i=0;i<3;i++){
-		this->fid[i]     = sourse.fid[i];
-		this->frot[i]    = sourse.frot[i];
-		this->ftran[i]   = sourse.ftran[i];
-		this->fCylR      = sourse.fCylR;
-		this->fCylPhi    = sourse.fCylPhi;
-		for(j=0;j<3;j++) this->fm[i][j] = sourse.fm[i][j];
-	}// end for i
-     this->fPath   = sourse.fPath;
+  this->fDetectorIndex = source.fDetectorIndex;
+  this->fCylR      = source.fCylR;
+  this->fCylPhi    = source.fCylPhi;
+  for(i=0;i<3;i++){
+    this->fid[i]     = source.fid[i];
+    this->frot[i]    = source.frot[i];
+    this->ftran[i]   = source.ftran[i];
+
+    for(j=0;j<3;j++) this->fm[i][j] = source.fm[i][j];
+  }
+  this->fPath   = source.fPath;
+  return *this;
 }
-*/
+
 //----------------------------------------------------------------------
 AliITSgeomMatrix::AliITSgeomMatrix(Int_t idt,const Int_t id[3],
                         const Double_t rot[3],const Double_t tran[3]):

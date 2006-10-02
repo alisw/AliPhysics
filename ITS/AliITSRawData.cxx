@@ -11,23 +11,21 @@ ClassImp(AliITSInStream)
 
 //_____________________________________________________________________________
 
-AliITSInStream::AliITSInStream()
-{
+AliITSInStream::AliITSInStream():
+fStreamLen(0),
+fInStream(0){
   //default constructor
-  fStreamLen=0;
-  fInStream=0;
 }
 //_____________________________________________________________________________
 
-AliITSInStream::AliITSInStream(UInt_t length)
-{
+AliITSInStream::AliITSInStream(UInt_t length):
+fStreamLen(length),
+fInStream(0){
   //
   // Creates a stream of unsigned chars
   //
   
-  fStreamLen = length;
-  fInStream = new UChar_t[length]; 
-  
+  fInStream = new UChar_t[length];   
   ClearStream(); 
   
 }
@@ -40,12 +38,11 @@ AliITSInStream::~AliITSInStream()
 }
 
 //__________________________________________________________________________
-AliITSInStream::AliITSInStream(const AliITSInStream &source) : TObject(source){
+AliITSInStream::AliITSInStream(const AliITSInStream &source) : TObject(source),
+fStreamLen(source.fStreamLen),
+fInStream(source.fInStream){
   //     Copy Constructor 
-  if(&source == this) return;
-  this->fStreamLen = source.fStreamLen;
-  this->fInStream = source.fInStream;
-  return;
+
 }
 
 //_________________________________________________________________________
@@ -81,20 +78,22 @@ ClassImp(AliITSOutStream)
   
   //_______________________________________________________________________
   
-  AliITSOutStream::AliITSOutStream() {
+AliITSOutStream::AliITSOutStream():
+fStreamLen(0),
+fOutStream(0){
   //default constructor
-  fStreamLen=0;
-  fOutStream=0;
+
 }
 
 //__________________________________________________________________________
 
-AliITSOutStream::AliITSOutStream(UInt_t length) {
+AliITSOutStream::AliITSOutStream(UInt_t length):
+fStreamLen(length),
+fOutStream(0){
   //
   // Creates a stream of unsigned chars
   //
   
-  fStreamLen = length;
   fOutStream = new UInt_t[length];  
   ClearStream(); 
   
@@ -108,12 +107,11 @@ AliITSOutStream::~AliITSOutStream()
 }
 
 //__________________________________________________________________________
-AliITSOutStream::AliITSOutStream(const AliITSOutStream &source):TObject(source){
+AliITSOutStream::AliITSOutStream(const AliITSOutStream &source):TObject(source),
+fStreamLen(source.fStreamLen),
+fOutStream(source.fOutStream){
   //     Copy Constructor 
-  if(&source == this) return;
-  this->fStreamLen = source.fStreamLen;
-  this->fOutStream = source.fOutStream;
-  return;
+
 }
 
 //_________________________________________________________________________

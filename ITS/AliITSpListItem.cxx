@@ -26,7 +26,12 @@
 //************************************************************************
 ClassImp(AliITSpListItem)
 //______________________________________________________________________
-AliITSpListItem::AliITSpListItem(){
+AliITSpListItem::AliITSpListItem():
+fmodule(-1),
+findex(-1),
+fTsignal(0.0),
+fNoise(0.0),
+fSignalAfterElect(0.0){
     // Default constructor
     // Inputs:
     //    none.
@@ -35,19 +40,19 @@ AliITSpListItem::AliITSpListItem(){
     // Return:
     //    A zeroed/empty AliITSpListItem class.
 
-    fmodule = -1;
-    findex  = -1;
     for(Int_t i=0;i<this->fgksize;i++){
         this->fTrack[i]  = -2;
         this->fHits[i]   = -1;
         this->fSignal[i] = 0.0;
     } // end if i
-    fTsignal = 0.0;
-    fNoise   = 0.0;
-    fSignalAfterElect = 0.0;
 }
 //______________________________________________________________________
-AliITSpListItem::AliITSpListItem(Int_t module,Int_t index,Double_t noise){
+AliITSpListItem::AliITSpListItem(Int_t module,Int_t index,Double_t noise):
+fmodule(module),
+findex(index),
+fTsignal(0.0),
+fNoise(noise),
+fSignalAfterElect(0.0){
     // Standard noise constructor
     // Inputs:
     //    Int_t module   The module where this noise occurred
@@ -58,20 +63,20 @@ AliITSpListItem::AliITSpListItem(Int_t module,Int_t index,Double_t noise){
     // Return:
     //    A setup and noise filled AliITSpListItem class.
 
-    this->fmodule    = module;
-    this->findex     = index;
     for(Int_t i=0;i<this->fgksize;i++){
         this->fTrack[i]  = -2;
         this->fSignal[i] = 0.0;
         this->fHits[i]   = -1;
     } // end if i
-    this->fTsignal = 0.0;
-    this->fSignalAfterElect = 0.0;
-    this->fNoise   = noise;
 }
 //______________________________________________________________________
 AliITSpListItem::AliITSpListItem(Int_t track,Int_t hit,Int_t module,
-                               Int_t index,Double_t signal){
+                               Int_t index,Double_t signal):
+fmodule(module),
+findex(index),
+fTsignal(signal),
+fNoise(0.0),
+fSignalAfterElect(0.0){
     // Standard signal constructor
     // Inputs:
     //    Int_t track     The track number which produced this signal
@@ -84,8 +89,6 @@ AliITSpListItem::AliITSpListItem(Int_t track,Int_t hit,Int_t module,
     // Return:
     //    A setup and signal filled  AliITSpListItem class.
 
-    this->fmodule    = module;
-    this->findex     = index;
     this->fTrack[0]  = track;
     this->fHits[0]   = hit;
     this->fSignal[0] = signal;
@@ -94,9 +97,6 @@ AliITSpListItem::AliITSpListItem(Int_t track,Int_t hit,Int_t module,
         this->fSignal[i] = 0.0;
         this->fHits[i]   = -1;
     } // end if i
-    this->fTsignal = signal;
-    this->fNoise   = 0.0;
-    this->fSignalAfterElect   = 0.0;
 }
 //______________________________________________________________________
 AliITSpListItem::~AliITSpListItem(){
@@ -118,40 +118,19 @@ AliITSpListItem& AliITSpListItem::operator=(const AliITSpListItem &source){
     //    none.
     // Return:
     //    A copied AliITSpListItem object
-    Int_t i;
+  this->~AliITSpListItem();
+  new(this) AliITSpListItem(source);
+  return *this;
 
-    if(this == &source) return *this;
-
-    this->fmodule = source.fmodule;
-    this->findex  = source.findex;
-    for(i=0;i<this->fgksize;i++){
-        this->fTrack[i]  = source.fTrack[i];
-        this->fSignal[i] = source.fSignal[i];
-        this->fHits[i]   = source.fHits[i];
-    } // end if i
-    this->fTsignal = source.fTsignal;
-    this->fNoise   = source.fNoise;
-    this->fSignalAfterElect   = source.fSignalAfterElect;
-    /*
-    cout <<"this fTrack[0-9]=";
-    for(i=0;i<this->fgksize;i++) cout <<this->fTrack[i]<<",";
-    cout <<" fHits[0-9]=";
-    for(i=0;i<this->fgksize;i++) cout <<this->fHits[i]<<",";
-    cout <<" fSignal[0-9]=";
-    for(i=0;i<this->fgksize;i++) cout <<this->fSignal[i]<<",";
-    cout << endl;
-    cout <<"source fTrack[0-9]=";
-    for(i=0;i<this->fgksize;i++) cout <<source.fTrack[i]<<",";
-    cout <<" fHits[0-9]=";
-    for(i=0;i<this->fgksize;i++) cout <<source.fHits[i]<<",";
-    cout <<" fSignal[0-9]=";
-    for(i=0;i<this->fgksize;i++) cout <<source.fSignal[i]<<",";
-    cout << endl;
-    */
-    return *this;
 }
 //______________________________________________________________________
-AliITSpListItem::AliITSpListItem(AliITSpListItem &source) : TObject(source){
+AliITSpListItem::AliITSpListItem(const AliITSpListItem &source) : 
+TObject(source),
+fmodule(source.fmodule),
+findex(source.findex),
+fTsignal(source.fTsignal),
+fNoise(source.fNoise),
+fSignalAfterElect(source.fSignalAfterElect){
     // Copy operator
     // Inputs:
     //    AliITSpListItem &source   A AliITSpListItem Object
@@ -159,8 +138,13 @@ AliITSpListItem::AliITSpListItem(AliITSpListItem &source) : TObject(source){
     //    none.
     // Return:
     //    A copied AliITSpListItem object
+  
+    for(Int_t i=0;i<this->fgksize;i++){
+      this->fTrack[i]  = source.fTrack[i];
+      this->fSignal[i] = source.fSignal[i];
+      this->fHits[i]   = source.fHits[i];
+    } // end if i
 
-    *this = source;
 }
 //______________________________________________________________________
 void AliITSpListItem::AddSignal(Int_t track,Int_t hit,Int_t module,

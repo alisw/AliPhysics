@@ -208,7 +208,8 @@ const Int_t AliITSRawStreamSSD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
 
 
 AliITSRawStreamSSD::AliITSRawStreamSSD(AliRawReader* rawReader) :
-  AliITSRawStream(rawReader)
+  AliITSRawStream(rawReader),
+fData(0)
 {
 // create an object to read ITS SSD raw digits
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2005/11/03 13:09:19  hristov
+Removing meaningless const declarations (linuxicc)
+
 Revision 1.1  2005/10/11 12:31:50  masera
 Preprocessor classes for SPD (Paul Nilsson)
 
@@ -56,12 +59,11 @@ fRow(-1)
 
 //__________________________________________________________________________
 AliITSChannelSPD::AliITSChannelSPD(const AliITSChannelSPD &ch) :
-  TObject(ch)
-{
+  TObject(ch),
+fColumn(ch.fColumn),
+fRow(ch.fRow){
   // Copy constructor
 
-  fColumn = ch.fColumn;
-  fRow = ch.fRow;
 }
 
 //__________________________________________________________________________
@@ -89,10 +91,10 @@ Bool_t AliITSChannelSPD::operator==(const AliITSChannelSPD &channel) const
 }
 
 //__________________________________________________________________________
-AliITSChannelSPD::AliITSChannelSPD(Int_t column, Int_t row)
-{
+AliITSChannelSPD::AliITSChannelSPD(Int_t column, Int_t row):
+fColumn(column),
+fRow(row){
   // Constructor for already existing channel
 
-  fColumn = column;
-  fRow = row;
+
 }

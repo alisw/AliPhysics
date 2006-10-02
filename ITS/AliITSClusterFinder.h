@@ -112,10 +112,6 @@ class AliITSClusterFinder :public TObject{
     void InitGeometry(); 
  
   protected:
-    // methods 
-    AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
-    // assignment operator
-    AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
    // data members       
 
    Int_t              fDebug;         //! Debug flag/level
@@ -139,6 +135,11 @@ class AliITSClusterFinder :public TObject{
     Int_t fNdet[2200];           // detector index  
     Int_t fNlayer[2200];         // detector layer
 
+ private:
+    AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
+    // assignment operator
+    AliITSClusterFinder& operator=(const AliITSClusterFinder &source);
+    
 
     ClassDef(AliITSClusterFinder,6) //Class for clustering and reconstruction of space points
 };

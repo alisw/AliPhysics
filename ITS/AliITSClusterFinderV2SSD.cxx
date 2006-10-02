@@ -31,18 +31,17 @@
 ClassImp(AliITSClusterFinderV2SSD)
 
 
-AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp){
+AliITSClusterFinderV2SSD::AliITSClusterFinderV2SSD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
+fLastSSD1(0),
+fYpitchSSD(0.0095),
+fHwSSD(3.65),
+fHlSSD(2.00),
+fTanP(0.0275),
+fTanN(0.0075){
 
   //Default constructor
 
   fLastSSD1=fDetTypeRec->GetITSgeom()->GetModuleIndex(6,1,1)-1;
-  fYpitchSSD=0.0095;
-  fHwSSD=3.65;
-  fHlSSD=2.00;
-  fTanP=0.0275;
-  fTanN=0.0075;
-
-
 
 }
  
