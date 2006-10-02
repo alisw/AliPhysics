@@ -38,6 +38,7 @@ class AliTRDv1 : public AliTRD {
   virtual void     Init();
   virtual Int_t    IsVersion() const          { return 1;      }
 
+  virtual void     AddAlignableVolumes() const;
   virtual void     CreateGeometry();
   virtual void     CreateMaterials();
   virtual void     CreateTRhit(Int_t det);

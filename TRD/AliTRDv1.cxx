@@ -29,6 +29,7 @@
 #include <TRandom.h>
 #include <TVector.h>
 #include <TVirtualMC.h>
+#include <TGeoManager.h>
 
 #include "AliConst.h"
 #include "AliLog.h"
@@ -155,6 +156,87 @@ void AliTRDv1::Copy(TObject &trd) const
   fDeltaE->Copy(*((AliTRDv1 &) trd).fDeltaE);
   fDeltaG->Copy(*((AliTRDv1 &) trd).fDeltaG);
   fTR->Copy(*((AliTRDv1 &) trd).fTR);
+
+}
+
+//_____________________________________________________________________________
+void AliTRDv1::AddAlignableVolumes() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be syncronized with
+  // eventual changes in the geometry.
+  //
+
+  TString volPath;
+  TString symName;
+
+  TString vpStr  = "ALIC_1/B077_1/BSEGMO";
+  TString vpApp1 = "_1/BTRD";
+  TString vpApp2 = "_1";
+  TString vpApp3 = "/UTR1_1/UTS1_1/UTI1_1/UT";
+
+  TString snStr  = "TRD/sm";
+  TString snApp1 = "/st";
+  TString snApp2 = "/pl";
+
+  //
+  // The super modules
+  // The symbolic names are: TRD/sm00
+  //                           ...
+  //                         TRD/sm17
+  //
+  for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
+
+    volPath  = vpStr;
+    volPath += isect;
+    volPath += vpApp1;
+    volPath += isect;
+    volPath += vpApp2;
+
+    symName  = snStr;
+    symName += Form("%02d",isect);
+
+    gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+
+  }
+
+  //
+  // The readout chambers
+  // The symbolic names are: TRD/sm00/st0/pl0
+  //                           ...
+  //                         TRD/sm17/st4/pl5
+  //
+  for (Int_t isect = 0; isect < AliTRDgeometry::Nsect(); isect++) {
+    for (Int_t icham = 0; icham < AliTRDgeometry::Ncham(); icham++) {
+      for (Int_t iplan = 0; iplan < AliTRDgeometry::Nplan(); iplan++) {
+
+        Int_t idet = AliTRDgeometry::GetDetectorSec(iplan,icham);
+
+        volPath  = vpStr;
+        volPath += isect;
+        volPath += vpApp1;
+        volPath += isect;
+        volPath += vpApp2;
+        volPath += vpApp3;
+        volPath += Form("%02d",idet);
+        volPath += vpApp2;
+
+        symName  = snStr;
+        symName += Form("%02d",isect);
+        symName += snApp1;
+        symName += icham;
+        symName += snApp2;
+        symName += iplan;
+
+        printf("volPath=%s\n",volPath.Data());
+        printf("symName=%s\n",symName.Data());
+
+        gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+
+      }
+    }
+  }
 
 }
 
@@ -989,11 +1071,11 @@ Double_t AliTRDv1::BetheBloch(Double_t bg)
   //
 
   // This parameters have been adjusted to averaged values from GEANT
-  const Double_t kP1 = 7.17960e-02;
-  const Double_t kP2 = 8.54196;
-  const Double_t kP3 = 1.38065e-06;
-  const Double_t kP4 = 5.30972;
-  const Double_t kP5 = 2.83798;
+  const Double_t kP1    = 7.17960e-02;
+  const Double_t kP2    = 8.54196;
+  const Double_t kP3    = 1.38065e-06;
+  const Double_t kP4    = 5.30972;
+  const Double_t kP5    = 2.83798;
 
   // Lower cutoff of the Bethe-Bloch-curve to limit step sizes
   const Double_t kBgMin = 0.8;
@@ -1178,6 +1260,6 @@ Double_t IntSpecGeant(Double_t *x, Double_t *)
     AliErrorGeneral("AliTRDv1::IntSpecGeant","Given energy value is too small or zero");
   }
 
-   return arrdnde[i];
+  return arrdnde[i];
 
 }
