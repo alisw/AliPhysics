@@ -40,7 +40,11 @@ typedef enum
     kCTEQ5L     = 4046,
     kCTEQ5M     = 4048,
     kGRVLO98    = 5012,
-    kCTEQ6ll    = -1
+    kCTEQ6      = -1,
+    kCTEQ61     = -2,
+    kCTEQ6m     = -3,
+    kCTEQ6l     = -4,
+    kCTEQ6ll    = -5    
 }
 StrucFunc_t;
 
