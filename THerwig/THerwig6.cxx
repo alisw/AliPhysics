@@ -119,7 +119,7 @@ THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6"),
   // initialize common-blocks
  }
 
-THerwig6::THerwig6(const THerwig6 & source): TGenerator(source), 
+THerwig6::THerwig6(const THerwig6 & source): TGenerator(source),
   fHepevt((Hepevt_t*) herwig6_common_block_address_((char*)"HEPEVT",6)),
   fHwbeam((Hwbeam_t*) herwig6_common_block_address_((char*)"HWBEAM",6)),
   fHwbmch((Hwbmch_t*) herwig6_common_block_address_((char*)"HWBMCH",6)),
@@ -172,9 +172,9 @@ THerwig6::THerwig6(const THerwig6 & source): TGenerator(source),
  }
 
 //______________________________________________________________________________
-void THerwig6::GenerateEvent() 
+void THerwig6::GenerateEvent()
 {
-  
+
   //initialize event
   hwuine_();
   // generate hard subprocess
@@ -196,7 +196,6 @@ void THerwig6::GenerateEvent()
   // finish event
   hwufne_();
 }
-
 //______________________________________________________________________________
 void THerwig6::OpenFortranFile(int lun, char* name) {
   herwig6_open_fortran_file_(&lun, name, strlen(name));
@@ -211,7 +210,7 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
 
 {
   // perform the initialization for Herwig6
-  // sets correct title. 
+  // sets correct title.
   // after calling this method all parameters are set to their default
   // values. If you want to modify any parameter you have to set the new
   // value after calling Initialize and before PrepareRun.
@@ -276,18 +275,103 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
    fHwproc->PBEAM2=pbeam2;
    // process to generate
    fHwproc->IPROC=iproc;
-   // not used in the class definition 
+   // not used in the class definition
    fHwproc->MAXEV=1;
 
    // reset all parameters
    hwigin_();
-   
+
    // set correct title
    char atitle[132];
    double win=pbeam1+pbeam2;
    printf("\n %s - %s at %g GeV",beam,target,win);
    sprintf(atitle,"%s-%s at %g GeV",cbeam,ctarget,win);
-   SetTitle(atitle); 
+   SetTitle(atitle);
+}
+
+void THerwig6::InitializeJimmy(const char *beam, const char *target, double pbeam1, double pbeam2, int iproc)
+
+{
+  // perform the initialization for Herwig6
+  // sets correct title.
+  // after calling this method all parameters are set to their default
+  // values. If you want to modify any parameter you have to set the new
+  // value after calling Initialize and before PrepareRun.
+
+   char  cbeam[8];
+   strncpy(cbeam,beam,8);
+   char  ctarget[8];
+   strncpy(ctarget,target,8);
+   printf("\n Initializing Herwig !! \n");
+   if ( (!strncmp(beam, "E+"    ,2)) &&
+        (!strncmp(beam, "E-"    ,2)) &&
+        (!strncmp(beam, "MU+"   ,3)) &&
+        (!strncmp(beam, "MU-"   ,3)) &&
+        (!strncmp(beam, "NUE"   ,3)) &&
+        (!strncmp(beam, "NUEB"  ,4)) &&
+        (!strncmp(beam, "NUMU"  ,4)) &&
+        (!strncmp(beam, "NMUB"  ,4)) &&
+        (!strncmp(beam, "NTAU"  ,4)) &&
+        (!strncmp(beam, "NTAB"  ,4)) &&
+        (!strncmp(beam, "GAMA"  ,4)) &&
+        (!strncmp(beam, "P       ",8)) &&
+        (!strncmp(beam, "PBAR    ",8)) &&
+        (!strncmp(beam, "N"     ,1)) &&
+        (!strncmp(beam, "NBAR"  ,4)) &&
+        (!strncmp(beam, "PI+"   ,3)) &&
+        (!strncmp(beam, "PI-"   ,3)) ) {
+      printf("WARNING! In THerwig6:Initialize():\n");
+      printf(" specified beam=%s is unrecognized .\n",beam);
+      printf(" resetting to \"P\" .");
+      sprintf(cbeam,"P");
+   }
+
+   if ( (!strncmp(target, "E+"    ,2)) &&
+        (!strncmp(target, "E-"    ,2)) &&
+        (!strncmp(target, "MU+"   ,3)) &&
+        (!strncmp(target, "MU-"   ,3)) &&
+        (!strncmp(target, "NUE"   ,3)) &&
+        (!strncmp(target, "NUEB"  ,4)) &&
+        (!strncmp(target, "NUMU"  ,4)) &&
+        (!strncmp(target, "NMUB"  ,4)) &&
+        (!strncmp(target, "NTAU"  ,4)) &&
+        (!strncmp(target, "NTAB"  ,4)) &&
+        (!strncmp(target, "GAMA"  ,4)) &&
+        (!strncmp(target, "P       ",8)) &&
+        (!strncmp(target, "PBAR    ",8)) &&
+        (!strncmp(target, "N"     ,1)) &&
+        (!strncmp(target, "NBAR"  ,4)) &&
+        (!strncmp(target, "PI+"   ,3)) &&
+        (!strncmp(target, "PI-"   ,3)) ) {
+      printf("WARNING! In THerwig6:Initialize():\n");
+      printf(" specified target=%s is unrecognized .\n",target);
+      printf(" resetting to \"P\" .");
+      sprintf(ctarget,"P");
+   }
+
+   // initialization:
+   // type of beams
+   strncpy(fHwbmch->PART1,beam,8);
+   strncpy(fHwbmch->PART2,target,8);
+   // momentum of beams
+   fHwproc->PBEAM1=pbeam1;
+   fHwproc->PBEAM2=pbeam2;
+   // process to generate
+   fHwproc->IPROC=iproc;
+   // not used in the class definition
+   fHwproc->MAXEV=1;
+
+   // reset all parameters
+   hwigin_();
+   // JIMMY initialization
+   jimmin_();
+
+   // set correct title
+   char atitle[132];
+   double win=pbeam1+pbeam2;
+   printf("\n %s - %s at %g GeV",beam,target,win);
+   sprintf(atitle,"%s-%s at %g GeV",cbeam,ctarget,win);
+   SetTitle(atitle);
 }
 
 void THerwig6::PrepareRun()
@@ -298,6 +382,15 @@ void THerwig6::PrepareRun()
   hweini_();
 }
 
+void THerwig6::PrepareRunJimmy()
+{
+  // compute parameter dependent constants
+  hwuinc_();
+  // initialize elementary processes
+  hweini_();
+  // more initializations for JIMMY
+  jminit_();
+}
 //______________________________________________________________________________
 TObjArray* THerwig6::ImportParticles(Option_t *option)
 {
@@ -547,6 +640,24 @@ void THerwig6::SetupTest()
 	};
     };
 }
+
+// Jimmy subroutines
+
+void THerwig6::Jminit()
+{
+  jminit_();
+}
+
+void THerwig6::Jimmin()
+{
+  jimmin_();
+}
+
+void THerwig6::Jmefin()
+{
+  jmefin_();
+}
+
 
 
 

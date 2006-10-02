@@ -34,25 +34,27 @@ class AliGenHerwig : public AliGenMC
     virtual ~AliGenHerwig();
     virtual void    Generate();
     virtual void    Init();
+    virtual void    InitJimmy();
     // set centre of mass energy
     virtual void    SetBeamMomenta(Float_t p1=7000., Float_t p2=7000.)
 	{fMomentum1 = p1; fMomentum2 = p2;}
-    virtual void    SetProcess(Int_t proc)            {fProcess = proc;}    
+    virtual void    SetProcess(Int_t proc)            {fProcess = proc;}
     virtual void    KeepFullEvent();
     virtual void    SetDecaysOff(Int_t flag=1)        {fDecaysOff = flag;}
     virtual void    SetTrigger(Int_t flag=kNoTrigger) {fTrigger   = flag;}
-    virtual void    SetFlavor(Int_t flag=0)           {fFlavor    = flag;}    
-    virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll = flag;}    
+    virtual void    SetFlavor(Int_t flag=0)           {fFlavor    = flag;}
+    virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll = flag;}
     AliGenHerwig &  operator=(const AliGenHerwig & rhs);
-    virtual void    SetStrucFunc(StrucFunc_t func = kCTEQ5L) 
+    virtual void    SetStrucFunc(StrucFunc_t func = kCTEQ5L)
       {fStrucFunc = func;}
     virtual void    SetPtHardMin(Double_t pt) {fPtHardMin=pt;}
     virtual void    SetPtRMS(Double_t pt) {fPtRMS=pt;}
     virtual void    SetMaxPr(Int_t i) {fMaxPr=i;}
     virtual void    SetMaxErrors(Int_t i) {fMaxErrors=i;}
     virtual void    FinishRun();
+    virtual void    FinishRunJimmy();
     virtual void    SetEnSoft(Double_t e) {fEnSoft=e;}
-    
+
     virtual void    SetHardProcessFile(TString filename) {fFileName=TString(filename);};
     virtual void    SetEventListRange(Int_t eventFirst=-1, Int_t eventLast=-1);
 
@@ -76,7 +78,7 @@ class AliGenHerwig : public AliGenMC
     Float_t     fXsection;       // Cross-section
     THerwig6    *fHerwig;        // Herwig
     Int_t       fProcess;        // Process number
-    Double_t    fPtHardMin;      // lower pT-hard cut 
+    Double_t    fPtHardMin;      // lower pT-hard cut
     Double_t    fPtRMS;          // intrinsic pt of incoming hadrons
     Int_t       fMaxPr;          // maximum number of events to print out
     Int_t       fMaxErrors;      // maximum number of errors allowed
@@ -84,7 +86,7 @@ class AliGenHerwig : public AliGenMC
     Int_t       fEv1Pr;          // first event to be printed
     Int_t       fEv2Pr;          // last event to be printed
     TString     fFileName;       //!Name of file to read from hard scattering
-      
+
  private:
     // check if particle is selected as parent particle
     Bool_t ParentSelected(Int_t ip);
@@ -96,7 +98,7 @@ class AliGenHerwig : public AliGenMC
     Bool_t DaughtersSelection(TParticle* iparticle, TClonesArray* particles);
     // check if stable
     Bool_t Stable(TParticle*  particle);
-    
+
     void InitPDF();
 
     ClassDef(AliGenHerwig,1) // AliGenerator interface to Herwig

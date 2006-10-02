@@ -37,8 +37,8 @@ ClassImp(AliGenHerwig)
 
   AliGenHerwig::AliGenHerwig() :
     AliGenMC(),
-    fAutPDF("GRV"),
-    fModPDF(5),
+    fAutPDF("LHAPDF"),
+    fModPDF(19070),
     fStrucFunc(kCTEQ5L),
     fKeep(0),
     fDecaysOff(1),
@@ -67,8 +67,8 @@ ClassImp(AliGenHerwig)
 
 AliGenHerwig::AliGenHerwig(Int_t npart)
     :AliGenMC(npart),
-    fAutPDF("GRV"),
-    fModPDF(5),
+    fAutPDF("LHAPDF"),
+    fModPDF(19070),
     fStrucFunc(kCTEQ5L),
     fKeep(0),
     fDecaysOff(1),
@@ -94,14 +94,14 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
 {
     SetTarget();
     SetProjectile();
-    // Set random number generator   
+    // Set random number generator
     AliHerwigRndm::SetHerwigRandom(GetRandom());
 }
 
 AliGenHerwig::AliGenHerwig(const AliGenHerwig & Herwig)
     :AliGenMC(Herwig),
-    fAutPDF("GRV"),
-    fModPDF(5),
+    fAutPDF("LHAPDF"),
+    fModPDF(19070),
     fStrucFunc(kCTEQ5L),
     fKeep(0),
     fDecaysOff(1),
@@ -158,7 +158,7 @@ void AliGenHerwig::Init()
   fHerwig->SetMAXPR(fMaxPr);
   fHerwig->SetMAXER(fMaxErrors);
   fHerwig->SetENSOF(fEnSoft);
-  
+
   fHerwig->SetEV1PR(fEv1Pr);
   fHerwig->SetEV2PR(fEv2Pr);
 
@@ -167,13 +167,13 @@ void AliGenHerwig::Init()
 //       RMASS(2)=0.32
 //       RMASS(3)=0.5
 //       RMASS(4)=1.55
-//       RMASS(5)=4.95
+//       RMASS(5)=4.75
 //       RMASS(6)=174.3
 //       RMASS(13)=0.75
 
   fHerwig->SetRMASS(4,1.2);
   fHerwig->SetRMASS(5,4.75);
-  
+
   if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(),50);
 
   fHerwig->Hwusta("PI0     ");
@@ -182,55 +182,100 @@ void AliGenHerwig::Init()
   fHerwig->PrepareRun();
 }
 
+void AliGenHerwig::InitJimmy()
+{
+// Initialisation
+  fTarget.Resize(8);
+  fProjectile.Resize(8);
+  SetMC(new THerwig6());
+  fHerwig=(THerwig6*) fMCEvGen;
+  // initialize common blocks
+  fHerwig->InitializeJimmy(fProjectile, fTarget, fMomentum1, fMomentum2, fProcess);
+  // reset parameters according to user needs
+  InitPDF();
+  fHerwig->SetPTMIN(fPtHardMin);
+  fHerwig->SetPTRMS(fPtRMS);
+  fHerwig->SetMAXPR(fMaxPr);
+  fHerwig->SetMAXER(fMaxErrors);
+  fHerwig->SetENSOF(fEnSoft);
+
+  fHerwig->SetEV1PR(fEv1Pr);
+  fHerwig->SetEV2PR(fEv2Pr);
+
+// C---D,U,S,C,B,T QUARK AND GLUON MASSES (IN THAT ORDER)
+//       RMASS(1)=0.32
+//       RMASS(2)=0.32
+//       RMASS(3)=0.5
+//       RMASS(4)=1.55
+//       RMASS(5)=4.75
+//       RMASS(6)=174.3
+//       RMASS(13)=0.75
+
+  fHerwig->SetRMASS(4,1.2);
+  fHerwig->SetRMASS(5,4.75);
+
+  if ( fProcess < 0 ) strncpy(VVJIN.QQIN,fFileName.Data(),50);
+
+  fHerwig->Hwusta("PI0     ");
+
+  // compute parameter dependent constants
+  fHerwig->PrepareRunJimmy();
+}
+
 void AliGenHerwig::InitPDF()
 {
   switch(fStrucFunc)
     {
-//    case kGRVLO:
-//      fModPDF=5;
-//      fAutPDF="GRV";
-//      break;
-//    case kGRVHO:
-//      fModPDF=6;
-//      fAutPDF="GRV";
-//      break;
+// ONLY USES LHAPDF STRUCTURE FUNCTIONS
     case kGRVLO98:
-      fModPDF=12;
-      fAutPDF="GRV";
+      fModPDF=80060;
+      fAutPDF="HWLHAPDF";
       break;
-//    case kMRSDminus:
-//      fModPDF=31;
-//      fAutPDF="MRS";
-//      break;
-//    case kMRSD0:
-//      fModPDF=30;
-//      fAutPDF="MRS";
-//      break;
-//    case kMRSG:
-//      fModPDF=41;
-//      fAutPDF="MRS";
-//      break;
-//    case kMRSTcgLO:
-//      fModPDF=72;
-//      fAutPDF="MRS";
-//      break;
-    case kCTEQ4M:
-      fModPDF=34;
-      fAutPDF="CTEQ";
+    case kCTEQ6:
+      fModPDF=10040;
+      fAutPDF="HWLHAPDF";
+      break;
+    case kCTEQ61:
+      fModPDF=10100;
+      fAutPDF="HWLHAPDF";
+      break;
+    case kCTEQ6m:
+      fModPDF=10050;
+      fAutPDF="HWLHAPDF";
+      break;
+    case kCTEQ6l:
+      fModPDF=10041;
+      fAutPDF="HWLHAPDF";
+      break;
+    case kCTEQ6ll:
+      fModPDF=10042;
+      fAutPDF="HWLHAPDF";
+      break;
+    case kCTEQ5M:
+      fModPDF=19050;
+      fAutPDF="HWLHAPDF";
       break;
     case kCTEQ5L:
-      fModPDF=46;
-      fAutPDF="CTEQ";
+      fModPDF=19070;
+      fAutPDF="HWLHAPDF";
       break;
-//    case kCTEQ5M:
-//      fModPDF=48;
-//      fAutPDF="CTEQ";
-//      break;
+    case kCTEQ4M:
+      fModPDF=19150;
+      fAutPDF="HWLHAPDF";
+      break;
+    case kCTEQ4L:
+      fModPDF=19170;
+      fAutPDF="HWLHAPDF";
+      break;
+    case kMRST2004nlo:
+      fModPDF=20400;
+      fAutPDF="HWLHAPDF";
+      break;
     default:
       cerr << "This structure function is not inplemented " << fStrucFunc << endl;
       break;
     }
-  fAutPDF.Resize(20);      
+  fAutPDF.Resize(20);
   fHerwig->SetMODPDF(1,fModPDF);
   fHerwig->SetMODPDF(2,fModPDF);
   fHerwig->SetAUTPDF(1,fAutPDF);
@@ -245,7 +290,7 @@ void AliGenHerwig::Generate()
   Float_t origin[3]=   {0,0,0};
   Float_t origin0[3]=  {0,0,0};
   Float_t p[4], random[6];
-  
+
   static TClonesArray *particles;
   //  converts from mm/c to s
   const Float_t kconv=0.001/2.999792458e8;
@@ -254,9 +299,9 @@ void AliGenHerwig::Generate()
   Int_t jev=0;
   Int_t j, kf, ks, imo;
   kf=0;
-  
+
   if(!particles) particles=new TClonesArray("TParticle",10000);
-  
+
   fTrials=0;
   for (j=0;j<3;j++) origin0[j]=fOrigin[j];
   if(fVertexSmear==kPerEvent) {
@@ -266,7 +311,7 @@ void AliGenHerwig::Generate()
 	TMath::Sqrt(-2*TMath::Log(random[2*j+1]));
     }
   }
-  
+
   while(1)
     {
 	fHerwig->GenerateEvent();
@@ -274,19 +319,19 @@ void AliGenHerwig::Generate()
 	fHerwig->ImportParticles(particles,"All");
 	Int_t np = particles->GetEntriesFast()-1;
 	if (np == 0 ) continue;
-	
+
 	Int_t nc=0;
-	
+
 	Int_t * newPos = new Int_t[np];
 	for (Int_t i = 0; i<np; i++) *(newPos+i)=-1;
-	
+
 	for (Int_t i = 0; i<np; i++) {
 	    TParticle *  iparticle       = (TParticle *) particles->At(i);
 	    imo = iparticle->GetFirstMother();
 	    kf        = iparticle->GetPdgCode();
 	    ks        = iparticle->GetStatusCode();
-	    if (ks != 3 && 
-		KinematicSelection(iparticle,0)) 
+	    if (ks != 3 &&
+		KinematicSelection(iparticle,0))
 	    {
 		nc++;
 		p[0]=iparticle->Px();
@@ -301,7 +346,7 @@ void AliGenHerwig::Generate()
 		Int_t   trackIt = (ks == 1) && fTrackIt;
 		PushTrack(trackIt, iparent, kf,
 			  p[0], p[1], p[2], p[3],
-			  origin[0], origin[1], origin[2], 
+			  origin[0], origin[1], origin[2],
 			  tof,
 			  polar[0], polar[1], polar[2],
 			  kPPrimary, nt, fHerwig->GetEVWGT(), ks);
@@ -336,7 +381,7 @@ void AliGenHerwig::AdjustWeights()
         part->SetWeight(part->GetWeight()*fKineBias);
     }
 }
- 
+
 
 void AliGenHerwig::KeepFullEvent()
 {
@@ -356,9 +401,9 @@ Bool_t AliGenHerwig::DaughtersSelection(TParticle* iparticle, TClonesArray* part
     Bool_t selected=kFALSE;
     if (hasDaughters) {
 	imin=iparticle->GetFirstDaughter();
-	imax=iparticle->GetLastDaughter();       
+	imax=iparticle->GetLastDaughter();
 	for (i=imin; i<= imax; i++){
-	    TParticle *  jparticle       = (TParticle *) particles->At(i);	
+	    TParticle *  jparticle       = (TParticle *) particles->At(i);
 	    Int_t ip=jparticle->GetPdgCode();
 	    if (KinematicSelection(jparticle,0)&&SelectFlavor(ip)) {
 		selected=kTRUE; break;
@@ -380,7 +425,7 @@ Bool_t AliGenHerwig::SelectFlavor(Int_t pid)
 // 4: charm and beauty
 // 5: beauty
     if (fFlavor == 0) return kTRUE;
-    
+
     Int_t ifl=TMath::Abs(pid/100);
     if (ifl > 10) ifl/=10;
     return (fFlavor == ifl);
@@ -391,9 +436,9 @@ Bool_t AliGenHerwig::Stable(TParticle*  particle)
 // Return true for a stable particle
 //
     Int_t kf = TMath::Abs(particle->GetPdgCode());
-    
+
     if ( (particle->GetFirstDaughter() < 0 ) || (kf == 1000*fFlavor+122))
-	 
+
     {
 	return kTRUE;
     } else {
@@ -414,4 +459,10 @@ AliGenHerwig& AliGenHerwig::operator=(const  AliGenHerwig& rhs)
     return (*this);
 }
 
+void AliGenHerwig::FinishRunJimmy()
+{
+  fHerwig->Hwefin();
+  fHerwig->Jmefin();
+
+}
 

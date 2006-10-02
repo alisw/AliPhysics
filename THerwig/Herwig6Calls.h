@@ -643,6 +643,14 @@ extern "C" {
   void  hwefin_();
 }
 
+// subroutines to be call by JIMMY
+
+extern "C" {
+  void  jminit_();
+  void  jimmin_();
+  void  jmefin_();
+}
+
 
 #endif
 

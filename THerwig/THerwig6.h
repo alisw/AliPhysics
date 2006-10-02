@@ -60,10 +60,11 @@ C-----------------------------------------------------------------------
 
 typedef enum
 {
-   kHwCharm         =  1704, 
+   kHwCharm         =  1704,
    kHwBeauty        =  1705,
    kHwCharmMCATNLO  = -1704,
-   kHwBeautyMCATNLO = -1705
+   kHwBeautyMCATNLO = -1705,
+   kHwJetsMCATNLO   = -1396
 } Process_t;
 
 class TObjArray;
@@ -155,7 +156,7 @@ typedef struct {
   double VFCH[2][16];
   double VCKM[3][3];
   double VGCUT;
-  double VQCUT;   
+  double VQCUT;
   double VPCUT;
   double ZBINM;
   double EFFMIN;
@@ -456,13 +457,13 @@ typedef struct {
   double COTB;
   double ZMIXSS[4][4];
   double ZMXNSS[4][4];
-  double ZSGNSS[4]; 
+  double ZSGNSS[4];
   double LFCH[16];
   double RFCH[16];
   double SLFCH[4][16];
-  double SRFCH[4][16]; 
+  double SRFCH[4][16];
   double WMXUSS[2][2];
-  double WMXVSS[2][2]; 
+  double WMXVSS[2][2];
   double WSGNSS[2];
   double QMIXSS[2][2][6];
   double LMIXSS[2][2][6];
@@ -676,7 +677,7 @@ typedef struct {
   int	   LHNEVT[MAXHRP];
   int	   ITYPLH;
   int	   LHSOFT;
-  int	   LHGLSF;    
+  int	   LHGLSF;
 } Hwgupr_t;
 
 typedef struct {
@@ -714,6 +715,12 @@ extern "C" {
   void  hwiodk_(int);
 }
 
+// JIMMY4.2
+extern "C" {
+  void  jimmin_();
+  void  jminit_();
+  void  jmefin_();
+}
 
 
 
@@ -740,9 +747,9 @@ public:
   int         GetNhep          () const     { return fHepevt->NHEP; }
   int         GetISTHEP    (int i)const     { return fHepevt->ISTHEP[i-1]; }
   int         GetIDHEP     (int i)const     { return fHepevt->IDHEP[i-1]; }
-  int         GetJMOHEP (int i, int j) const 
+  int         GetJMOHEP (int i, int j) const
     { return fHepevt->JMOHEP[i-1][j-1]; }
-  int         GetJDAHEP (int i, int j) const 
+  int         GetJDAHEP (int i, int j) const
     { return fHepevt->JDAHEP[i-1][j-1]; }
   double      GetPHEP   (int i, int j) const
     { return fHepevt->PHEP[i-1][j-1]; }
@@ -762,8 +769,8 @@ public:
   Hwbmch_t*   GetHwbmch        ()           { return fHwbmch; }
   char*       GetPART1         () const     { return fHwbmch->PART1; }
   char*       GetPART2         () const     { return fHwbmch->PART2; }
-  
-  
+
+
   // /HWPROC/
   Hwproc_t*   GetHwproc        ()           { return fHwproc; }
   double      GetEBEAM1        () const     { return fHwproc->EBEAM1; }
@@ -798,7 +805,7 @@ public:
   double      GetPTRMS         () const     { return fHwpram->PTRMS; }
   void        SetPTRMS    (double p)        { fHwpram->PTRMS = p; }
   double      GetENSOF         () const     { return fHwpram->ENSOF; }
-  void        SetENSOF    (double e)        { fHwpram->ENSOF = e; } 
+  void        SetENSOF    (double e)        { fHwpram->ENSOF = e; }
   int         GetIPRINT        () const     { return fHwpram->IPRINT; }
   void        SetIPRINT   (int i)           { fHwpram->IPRINT = i; }
   int         GetMODPDF   (int i) const     { return fHwpram->MODPDF[i-1];}
@@ -814,7 +821,7 @@ public:
 
   // /HWPART/
   Hwpart_t*   GetHwpart        ()           { return fHwpart; }
-  
+
   // /HWPARP/
   Hwparp_t*   GetHwparp        ()           { return fHwparp; }
 
@@ -832,10 +839,10 @@ public:
   double      GetAVWGT         () const     { return fHwevnt->AVWGT; }
   int         GetMAXPR         () const     { return fHwevnt->MAXPR; }
   void        SetMAXPR    (int i)           { fHwevnt->MAXPR = i; }
-  
+
   void        SetEV1PR    (int i)           { fHwevnt->EV1PR = i; }
   void        SetEV2PR    (int i)           { fHwevnt->EV2PR = i; }
-  
+
   int         GetMAXER         () const     { return fHwevnt->MAXER; }
   void        SetMAXER    (int i)           { fHwevnt->MAXER = i; }
   int         GetNRN      (int i) const     { return fHwevnt->NRN[i-1]; }
@@ -843,9 +850,9 @@ public:
   double      GetEVWGT         () const     { return fHwevnt->EVWGT; }
 
   int         GetIDHW     (int i) const     { return fHwevnt->IDHW[i]; }
-  
+
   int         GetIERROR        () const     { return fHwevnt->IERROR; }
-  
+
   // /HWHARD/
   Hwhard_t*   GetHwhard        ()           { return fHwhard; }
   double      GetPTMIN         () const     { return fHwhard->PTMIN; }
@@ -877,7 +884,7 @@ public:
 
   void        GetRNAME (int i, char a[9])   { for (int j=0;j<8;j++) a[j] = fHwunam->RNAME[i][j]; a[8] = '\0';}
 /*  char*       GetRNAME(int i) { return fHwunam->RNAME[i]; }*/
-  
+
   // /HWUPDT/
   Hwupdt_t*   GetHwupdt        ()           { return fHwupdt; }
 
@@ -908,8 +915,8 @@ public:
   // /HWCLUS/
   Hwclus_t*   GetHwclus        ()           { return fHwclus; }
 
-  // Herwig6 routines  
-  // the user would call 
+  // Herwig6 routines
+  // the user would call
   //   Initialize
   //   change by himself the parameters s/he wants
   //   Hwusta to make stable the particles s/he wants
@@ -919,7 +926,9 @@ public:
 
   void             GenerateEvent();
   void             Initialize(const char *beam, const char *target, double pbeam1, double pbeam2, int iproc);
+  void             InitializeJimmy(const char *beam, const char *target, double pbeam1, double pbeam2, int iproc);
   void             PrepareRun();
+  void             PrepareRunJimmy();
   void             OpenFortranFile(int lun, char* name);
   void             CloseFortranFile(int lun);
   Int_t            ImportParticles(TClonesArray *particles, Option_t *option="");
@@ -942,6 +951,10 @@ public:
   void             Hwefin();
   void             Hwiodk(int iopt);
   void             SetupTest();
+ // Jimmy subroutines:
+  void             Jminit();
+  void             Jimmin();
+  void             Jmefin();
 protected:
 
   Hepevt_t* fHepevt; // Standard hep common block
@@ -955,14 +968,14 @@ protected:
   Hwparp_t* fHwparp; // Parton polarization common
   Hwbosc_t* fHwbosc; // Electroweak boson common
   Hwparc_t* fHwparc; // Parton colour common
-  Hwbrch_t* fHwbrch; // Branching common 
-  Hwevnt_t* fHwevnt; // Event common 
-  Hwhard_t* fHwhard; // Hard subprocess common 
+  Hwbrch_t* fHwbrch; // Branching common
+  Hwevnt_t* fHwevnt; // Event common
+  Hwhard_t* fHwhard; // Hard subprocess common
   Hwprop_t* fHwprop; // Particle properties
   Hwunam_t* fHwunam; // Particle properties
   Hwupdt_t* fHwupdt; // Particle decays
   Hwuwts_t* fHwuwts; // Weights used in cluster decays
-  Hwuclu_t* fHwuclu; // Parameters for cluster decays 
+  Hwuclu_t* fHwuclu; // Parameters for cluster decays
   Hwdist_t* fHwdist; // Variables controling mixing and vertex information
   Hwqdks_t* fHwqdks; // Arrays for temporarily storing heavy-b,c-hadrons decaying partonicaly
   Hwusud_t* fHwusud; // Parameters for Sudakov form factors
