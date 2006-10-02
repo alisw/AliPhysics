@@ -40,10 +40,11 @@
 #include <TTUBE.h>
 #include <TGeoManager.h>
 #include <TGeoVolume.h>
+#include <TVirtualMC.h>
 
 #include "AliITS.h"
 #include "AliITSDetTypeSim.h"
-#include "AliITSGeant3Geometry.h"
+//#include "AliITSGeant3Geometry.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
 #include "AliITSgeomSPD.h"
