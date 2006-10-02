@@ -35,7 +35,7 @@ void GetValues(const char* host, Int_t port, const char* request,
 		values.Add(new TObjString(request), valueSet);
 
 		result = client.GetAliasValues(request, startTime,
-				endTime, *valueSet);
+				endTime, valueSet);
 	}
 
 	if (result < 0) {

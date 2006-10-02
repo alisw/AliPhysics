@@ -49,8 +49,8 @@ AliTPCDataDCS::AliTPCDataDCS():
 {
 // default constructor
 
-	for(int i=0;i<kNHistos;i++) fHv[i]=0x0;
-        fFunc = 0;
+	for(int i=0;i<kNHistos;i++) fHv[i]=0;
+	fFunc=0;
 }
 
 //---------------------------------------------------------------
@@ -68,8 +68,8 @@ AliTPCDataDCS::AliTPCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime):
 	TTimeStamp(startTime).AsString(),
 	TTimeStamp(endTime).AsString()));
 
-        fFunc = 0;
-	Init();
+	for(int i=0;i<kNHistos;i++) fHv[i]=0;
+	fFunc=0;
 
 }
 
@@ -78,9 +78,42 @@ AliTPCDataDCS::~AliTPCDataDCS()
 {
 // destructor
 
-	for(int i=0;i<kNHistos;i++) {delete fHv[i]; fHv[i]=0;}
+	Clean();
+}
+
+//---------------------------------------------------------------
+void AliTPCDataDCS::Clean()
+{
+// destructor
+
+	for(int i=0;i<kNHistos;i++) {
+		if(fHv[i]) delete fHv[i];
+		fHv[i]=0;
+	}
 	fGraphs.Clear("C");
+	if(fFunc) delete fFunc;
 	fFunc=0;
+}
+
+//---------------------------------------------------------------
+void AliTPCDataDCS::Init()
+{
+// Init alias names and histos
+
+	TH1::AddDirectory(kFALSE);
+
+	fGraphs.SetOwner(1);
+
+	for(int i=0;i<kNAliases;i++){
+		fAliasNames[i] = "TpcHvSect0";
+		fAliasNames[i] += i;
+		fAliasNames[i] += ".FloatValue";
+	}
+
+	for(int i=0;i<kNHistos;i++){
+		fHv[i] = new TH1F(fAliasNames[i].Data(),fAliasNames[i].Data(), 20, kHvMin, kHvMax);
+		fHv[i]->GetXaxis()->SetTitle("Hv");
+	}
 }
 
 //---------------------------------------------------------------
@@ -88,7 +121,8 @@ void AliTPCDataDCS::ProcessData(TMap& aliasMap)
 {
 // process TMap of alias values retrieved from the DCS archive DB
 
-	if(!(fHv[0])) Init();
+	Clean();
+	Init();
 
 	TObjArray *aliasArr;
 	AliDCSValue* aValue;
@@ -132,35 +166,14 @@ void AliTPCDataDCS::ProcessData(TMap& aliasMap)
 	}
 
 	// pol1 fit of the first graph
-	if(fGraphs.GetEntries() > 0){
-		((TGraph*) fGraphs.UncheckedAt(0))->Fit("pol1");
-		fFunc = ((TGraph*) fGraphs.UncheckedAt(0))->GetFunction("pol1");
-	}
+//	if(fGraphs.GetEntries() > 0){
+//		((TGraph*) fGraphs.UncheckedAt(0))->Fit("pol1");
+//		fFunc = ((TGraph*) fGraphs.UncheckedAt(0))->GetFunction("pol1");
+//	}
 
 	fIsProcessed=kTRUE;
 
 
-}
-
-//---------------------------------------------------------------
-void AliTPCDataDCS::Init()
-{
-// Init alias names and histos
-
-	TH1::AddDirectory(kFALSE);
-
-	fGraphs.SetOwner(1);
-
-	for(int i=0;i<kNAliases;i++){
-		fAliasNames[i] = "TpcHvSect0";
-		fAliasNames[i] += i;
-		fAliasNames[i] += ".FloatValue";
-	}
-
-	for(int i=0;i<kNHistos;i++){
-		fHv[i] = new TH1F(fAliasNames[i].Data(),fAliasNames[i].Data(), 20, kHvMin, kHvMax);
-		fHv[i]->GetXaxis()->SetTitle("Hv");
-	}
 }
 
 //---------------------------------------------------------------

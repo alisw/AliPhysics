@@ -50,6 +50,8 @@ public:
 
 	void Draw(const Option_t* option);
 
+	void Clean();
+
 
 private:
 	void Init();

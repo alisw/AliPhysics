@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2006/08/15 10:50:00  jgrosseo
+effc++ corrections (alberto)
+
 Revision 1.5  2006/07/20 09:54:40  jgrosseo
 introducing status management: The processing per subdetector is divided into several steps,
 after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
@@ -93,11 +96,13 @@ AliDCSMessage::AliDCSMessage():
 	fMessage(NULL), fMessageSize(0), fType(kInvalid),
 	fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid), fValues(),
+	fValueType(AliDCSValue::kInvalid),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {
 // default constructor
+	fValues = new TObjArray();
+	fValues->SetOwner(0);
 
 }
 
@@ -106,7 +111,7 @@ AliDCSMessage::AliDCSMessage(const char* message, UInt_t size):
         fMessageSize(size), fType(kInvalid),
 	fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid), fValues(),
+	fValueType(AliDCSValue::kInvalid),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {
@@ -115,6 +120,8 @@ AliDCSMessage::AliDCSMessage(const char* message, UInt_t size):
         fMessage = new char[size];
 
         memcpy(fMessage, message, size);
+	fValues = new TObjArray();
+	fValues->SetOwner(0);
 }
 
 //______________________________________________________________________
@@ -122,7 +129,7 @@ AliDCSMessage::AliDCSMessage(const AliDCSMessage& /*other*/):
 	TObject(), fMessage(NULL), fMessageSize(0), fType(kInvalid),
 	fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid), fValues(),
+	fValueType(AliDCSValue::kInvalid),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {
@@ -145,10 +152,11 @@ AliDCSMessage::~AliDCSMessage()
 
 	DestroyMessage();
         DestroyBuffer();
+	if(fValues) delete fValues; fValues=0;
 }
 
 //______________________________________________________________________
-void AliDCSMessage::CreateRequestMessage(RequestType type, 
+void AliDCSMessage::CreateRequestMessage(RequestType type,
 	UInt_t startTime, UInt_t endTime, const char* request)
 {
 // Create request message
@@ -245,7 +253,7 @@ void AliDCSMessage::SetByte(char* buf, Char_t val)
 }
 
 //______________________________________________________________________
-void AliDCSMessage::SetUByte(char* buf, UChar_t val) 
+void AliDCSMessage::SetUByte(char* buf, UChar_t val)
 {
 // Set ubyte value to buf
 
@@ -420,7 +428,7 @@ void AliDCSMessage::StoreResultSetMessage()
 {
 // store result set message
 
-  TIter iter(&fValues);
+  TIter iter(fValues);
   AliDCSValue* aValue;
 
   UInt_t valueDataSize = 0;
@@ -654,7 +662,7 @@ void AliDCSMessage::LoadResultSetMessage()
       cursor += 1;
       UInt_t timeStamp = GetUInt(fMessage + cursor);
       cursor += sizeof(UInt_t);
-      fValues.Add(new AliDCSValue(aBool, timeStamp));
+      fValues->Add(new AliDCSValue(aBool, timeStamp));
     }
   } else if (fValueType == AliDCSValue::kChar) {
     if (VALUES_OFFSET + count + count * sizeof(UInt_t) >
@@ -668,7 +676,7 @@ void AliDCSMessage::LoadResultSetMessage()
       cursor += sizeof(Char_t);
       UInt_t timeStamp = GetUInt(fMessage + cursor);
       cursor += sizeof(UInt_t);
-      fValues.Add(new AliDCSValue(aByte, timeStamp));
+      fValues->Add(new AliDCSValue(aByte, timeStamp));
     }
   } else if (fValueType == AliDCSValue::kInt) {
     if (VALUES_OFFSET + count * sizeof(Int_t) +
@@ -682,7 +690,7 @@ void AliDCSMessage::LoadResultSetMessage()
             cursor += sizeof(Int_t);
             UInt_t timeStamp = GetUInt(fMessage + cursor);
             cursor += sizeof(UInt_t);
-            fValues.Add(new AliDCSValue(aInt, timeStamp));
+            fValues->Add(new AliDCSValue(aInt, timeStamp));
     }
 
   } else if (fValueType == AliDCSValue::kUInt) {
@@ -697,7 +705,7 @@ void AliDCSMessage::LoadResultSetMessage()
       cursor += sizeof(UInt_t);
       UInt_t timeStamp = GetUInt(fMessage + cursor);
       cursor += sizeof(UInt_t);
-      fValues.Add(new AliDCSValue(aUInt, timeStamp));
+      fValues->Add(new AliDCSValue(aUInt, timeStamp));
     }
   } else if (fValueType == AliDCSValue::kFloat) {
     if (VALUES_OFFSET + count * sizeof(Float_t) +
@@ -711,7 +719,7 @@ void AliDCSMessage::LoadResultSetMessage()
       cursor += sizeof(Float_t);
       UInt_t timeStamp = GetUInt(fMessage + cursor);
       cursor += sizeof(UInt_t);
-      fValues.Add(new AliDCSValue(aFloat, timeStamp));
+      fValues->Add(new AliDCSValue(aFloat, timeStamp));
     }
 
   } else {
@@ -722,7 +730,7 @@ void AliDCSMessage::LoadResultSetMessage()
 }
 
 //______________________________________________________________________
-void AliDCSMessage::LoadErrorMessage() 
+void AliDCSMessage::LoadErrorMessage()
 {
 // load error message
 	
@@ -834,7 +842,7 @@ void AliDCSMessage::StoreToBuffer()
 }
 
 //______________________________________________________________________
-void AliDCSMessage::LoadFromBuffer() 
+void AliDCSMessage::LoadFromBuffer()
 {
 	// Reads the underlying message buffer and if it's valid message
 	// creates the corresponding message.  
@@ -867,7 +875,7 @@ void AliDCSMessage::LoadFromBuffer()
 	fMessageSize = HEADER_SIZE + bodySize;
 
 	Type aType = (Type) GetUByte(fMessage + TYPE_OFFSET);
-	
+
 	switch (aType) {
 		case kRequest:
 			LoadRequestMessage();
@@ -950,7 +958,7 @@ TString AliDCSMessage::GetRequestString() const
 }
 
 //______________________________________________________________________
-Bool_t AliDCSMessage::AddRequestString(const char* request) 
+Bool_t AliDCSMessage::AddRequestString(const char* request)
 {
         // MultRequest.
         // Add a request to the request set.
@@ -973,7 +981,7 @@ Bool_t AliDCSMessage::AddRequestString(const char* request)
 }
 
 //______________________________________________________________________
-void AliDCSMessage::ClearRequestStrings() 
+void AliDCSMessage::ClearRequestStrings()
 {
         // MultRequest.
 	// Clears the request set.
@@ -982,7 +990,7 @@ void AliDCSMessage::ClearRequestStrings()
 }
 
 //______________________________________________________________________
-void AliDCSMessage::GetRequestStrings(TObjArray& result) const 
+void AliDCSMessage::GetRequestStrings(TObjArray& result) const
 {
         // MultRequest.
         // Returns all request strings in this message.
@@ -1034,7 +1042,7 @@ AliDCSValue::Type AliDCSMessage::GetValueType() const
 }
 
 //______________________________________________________________________
-UInt_t AliDCSMessage::GetValueCount() const 
+UInt_t AliDCSMessage::GetValueCount() const
 {
   // ResultSet.
   // Returns the count of values in this ResultSet.
@@ -1045,35 +1053,38 @@ UInt_t AliDCSMessage::GetValueCount() const
           return 0;
   }
 
-  return fValues.GetEntriesFast();
+  return fValues->GetEntriesFast();
 }
 
 //______________________________________________________________________
-UInt_t AliDCSMessage::GetValues(TObjArray& result) const
+UInt_t AliDCSMessage::GetValues(TObjArray* result) const
 {
   // ResultSet.
   // Returns the number of values got from the message.
   // result: used to return the values. Collection of AliDCSValue.
+  // result must be owner of the AliDCSValues because fVaule is not!
+  // creator of the result array and used GetValues to fill it must delete object by himself!
 
-  // TODO do not copy
+  // TODO do not copy -> corrected?
 
 	if (fType != kResultSet) {
                 AliError("Invalid AliDCSMessage type!");
                 return 0;
         }
 
-	TIter iter(&fValues);
+	TIter iter(fValues);
 	AliDCSValue* aValue;
 	
 	while ((aValue = (AliDCSValue*) iter.Next())) {
-		result.AddLast(new AliDCSValue(*aValue));
+		result->AddLast(aValue);
 	}
 
-	return fValues.GetEntriesFast();
+	return fValues->GetEntriesFast();
 }
 
+
 //______________________________________________________________________
-Bool_t AliDCSMessage::AddValue(const AliDCSValue& value) 
+Bool_t AliDCSMessage::AddValue(AliDCSValue& value)
 {
   // Adds value to the ResultSet value list.
   // Returns kFALSE in case of error.
@@ -1089,17 +1100,18 @@ Bool_t AliDCSMessage::AddValue(const AliDCSValue& value)
     return kFALSE;
   }
 
-  fValues.Add(new AliDCSValue(value));
+  fValues->Add(&value);
 
   return kTRUE;
 }
 
+
 //______________________________________________________________________
-void AliDCSMessage::ClearValues() 
+void AliDCSMessage::ClearValues()
 {
 // clear values array
 
-	fValues.Delete();
+	if(fValues) fValues->Clear();
 }
 
 //______________________________________________________________________

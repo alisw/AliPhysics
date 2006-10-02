@@ -138,9 +138,9 @@ public:
 
         UInt_t GetValueCount() const;
 
-        UInt_t GetValues(TObjArray& result) const;
+        UInt_t GetValues(TObjArray* result) const;
 
-        Bool_t AddValue(const AliDCSValue& value);
+        Bool_t AddValue(AliDCSValue& value); 
 
         void ClearValues();
 
@@ -182,9 +182,8 @@ private:
 	//ResultSet message fields
 	AliDCSValue::Type fValueType; // Simple value type
 
-  // TODO this has to be a pointer
-	TObjArray fValues; 		// array of received values
-	
+	TObjArray* fValues; 		// array of received values
+
 	//Error message fields
 	ErrorCode fErrorCode; 		// error code
 	

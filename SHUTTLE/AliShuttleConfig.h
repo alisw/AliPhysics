@@ -39,8 +39,8 @@ public:
 	const char* GetFESlbUser(Int_t system) const {return fFESlbUser[system].Data();}
 	const char* GetFESlbPass(Int_t system) const {return fFESlbPass[system].Data();}
 
-  Int_t GetMaxPPRetries() const { return fMaxPPRetries; }
-  Int_t GetMaxRetries() const { return fMaxRetries; }
+	Int_t GetMaxPPRetries() const { return fMaxPPRetries; }
+	Int_t GetMaxRetries() const { return fMaxRetries; }
 
 	const TObjArray* GetDetectors() const;
 
@@ -66,7 +66,7 @@ private:
 		const char* GetDetector() const {return fDetector.Data();}
 		const char* GetDCSHost() const {return fDCSHost.Data();}
 		Int_t GetDCSPort() const {return fDCSPort;}
-		const TObjArray* GetDCSAliases() const {return &fDCSAliases;}
+		const TObjArray* GetDCSAliases() const {return fDCSAliases;}
 
 		Bool_t IsValid() const {return fIsValid;}
 		Bool_t SkipDCSQuery() const {return fSkipDCSQuery;}
@@ -75,7 +75,7 @@ private:
 		TString fDetector;  	// Detector name
 		TString fDCSHost; 	// Host name of the DCS server
 		Int_t 	fDCSPort; 	// port of the DCS server
-		TObjArray fDCSAliases; 	// List of DCS aliases to be retrieved
+		TObjArray* fDCSAliases; // List of DCS aliases to be retrieved
 		Bool_t fIsValid;  	// flag for the validity of the configuration
 		Bool_t fSkipDCSQuery; 	// flag - if TRUE (-> DCS config empty) skip DCS archive data query
 
@@ -98,8 +98,8 @@ private:
 	TString fFESlbUser[3];  	//! username of the [DAQ, DCS, HLT] FES logbook
 	TString fFESlbPass[3]; 		//! password of the [DAQ, DCS, HLT] FES logbook
 
-  Int_t fMaxPPRetries;      // number of retries of a crashed preprocessor
-  Int_t fMaxRetries;        // number of retries for all other failures
+	Int_t fMaxPPRetries;      // number of retries of a crashed preprocessor
+	Int_t fMaxRetries;        // number of retries for all other failures
 
 	TMap fDetectorMap; 		//! Map of the detector-by-detector configuration
 	TObjArray fDetectorList; 	//! List of detectors with valid configuration

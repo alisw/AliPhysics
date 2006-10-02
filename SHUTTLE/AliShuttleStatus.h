@@ -24,7 +24,7 @@ public:
     kPPError,
     kDone, // final
     kFailed,  // final
-    kStoreFailed // TODO in case Grid storage failed and object is in local CDB.
+    kStoreFailed 
   };
 
   AliShuttleStatus();

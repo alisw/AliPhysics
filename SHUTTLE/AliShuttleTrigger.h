@@ -18,7 +18,6 @@
 #include <TCondition.h>
 
 
-class AliCDBStorage;
 class AliShuttle;
 class AliShuttleConfig;
 
@@ -46,6 +45,7 @@ private:
 };
 
 class AliShuttleTrigger: public TObject {
+
 public:
 	AliShuttleTrigger(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
 	~AliShuttleTrigger();
@@ -56,49 +56,21 @@ public:
 	Bool_t CollectNew();
 	Bool_t CollectAll();
 
-  Bool_t SetNewLastRun(Int_t run);
-
 	virtual Bool_t Notify();
 	void Terminate();
 
 	void Run();
 
 private:
-
 	AliShuttleTrigger(const AliShuttleTrigger& other);
 	AliShuttleTrigger& operator= (const AliShuttleTrigger& other);
 
-	class AliShuttleTriggerDATEEntry: public TObject {
-	public:
-		AliShuttleTriggerDATEEntry(Int_t run, UInt_t startTime, UInt_t endTime):
-			fRun(run), fStartTime(startTime), fEndTime(endTime) {}
-
-		Int_t GetRun() const {return fRun;}
-		UInt_t GetStartTime() const  {return fStartTime;}
-		UInt_t GetEndTime() const {return fEndTime;}
-
-	private:
-		Int_t fRun;   		// Run number
-		UInt_t fStartTime; 	// Run start time
-		UInt_t fEndTime; 	// Run end time
-		ClassDef(AliShuttleTriggerDATEEntry, 0)
-	};
-
-	Bool_t RetrieveDATEEntries(const char* whereClause, TObjArray& entries);
-	Bool_t RetrieveConditionsData(const TObjArray& dateEntries, Bool_t updateLastRun);
-
-  Bool_t ReadLastRun();
-  Bool_t WriteLastRun();
-
 	const AliShuttleConfig* fConfig;
-	//AliCDBStorage* fLocalStorage;
 
 	AliShuttle* fShuttle; 		// Pointer to the actual Shuttle instance
 
 	Bool_t fNotified;  		// Notified flag
 	Bool_t fTerminate; 		// Terminate flag
-
-	Int_t fLastRun;	// last sucessfully processed run
 
 	TMutex fMutex;  		// Mutex
 	TCondition fCondition;  	// Condition 

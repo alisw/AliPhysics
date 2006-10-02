@@ -20,19 +20,19 @@ class TMap;
 
 class AliDCSClient: public TObject {
 public:
-	
+
 	friend class AliShuttle;
-	
+
 	AliDCSClient(const char* host, Int_t port, UInt_t timeout = 5000,
                         Int_t retries = 5);
         virtual ~AliDCSClient();
 
 
         Int_t GetDPValues(const char* dpName, UInt_t startTime, UInt_t endTime,
-                                TObjArray& result);
+                                TObjArray* result);
 
         Int_t GetAliasValues(const char* alias, UInt_t startTime,
-                                UInt_t endTime, TObjArray& result);
+                                UInt_t endTime, TObjArray* result);
 
         Int_t GetDPValues(UInt_t startTime, UInt_t endTime, TMap& result);
 
@@ -68,17 +68,17 @@ private:
 	static const char* fgkCommErrorString;  	// Communication error string
 	static const char* fgkServerErrorString;	// Server error string
 
-	AliDCSClient(const AliDCSClient& other); 	
-	AliDCSClient& operator= (const AliDCSClient& other); 	
+	AliDCSClient(const AliDCSClient& other);
+	AliDCSClient& operator= (const AliDCSClient& other);
 
 	TSocket* fSocket;	// Pointer to the TCP socket client
-	
+
 	UInt_t fTimeout;	// timeout parameter
 
 	Int_t fRetries;		// number of retries
-	
+
 	AliDCSMessage::ErrorCode fServerErrorCode;	// error code
-	
+
 	TString fServerError;	// server error string
 
 
@@ -88,16 +88,16 @@ private:
 
 	Int_t SendMessage(AliDCSMessage& message);
 
-	Int_t ReceiveMessage(AliDCSMessage& message);	
+	Int_t ReceiveMessage(AliDCSMessage& message);
 
 	Int_t GetValues(AliDCSMessage::RequestType requestType,
 		const char* requestString, UInt_t startTime, UInt_t endTime,
-		TObjArray& result);
-	
+		TObjArray* result);
+
 	Int_t GetValues(AliDCSMessage::RequestType requestType,
 		UInt_t startTime, UInt_t endTime, TMap& result);
 
-	Int_t ReceiveValueSet(TObjArray& result);
+	Int_t ReceiveValueSet(TObjArray* result);
 
 
 	ClassDef(AliDCSClient, 0);

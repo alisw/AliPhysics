@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2006/08/15 10:50:00  jgrosseo
+effc++ corrections (alberto)
+
 Revision 1.7  2006/07/20 09:54:40  jgrosseo
 introducing status management: The processing per subdetector is divided into several steps,
 after each step the status is stored on disk. If the system crashes in any of the steps the Shuttle
@@ -88,13 +91,14 @@ AliShuttleConfig::AliShuttleConfigHolder::AliShuttleConfigHolder(const TLDAPEntr
 fDetector(""),
 fDCSHost(""),
 fDCSPort(0),
-fDCSAliases(),
 fIsValid(kFALSE),
 fSkipDCSQuery(kFALSE)
 {
 // constructor of the shuttle configuration holder
 
 	TLDAPAttribute* anAttribute;
+	fDCSAliases = new TObjArray();
+	fDCSAliases->SetOwner(1);
 
 	anAttribute = entry->GetAttribute("det"); // MUST
 	fDetector = anAttribute->GetValue();
@@ -129,7 +133,7 @@ fSkipDCSQuery(kFALSE)
 
 	const char* anAlias;
 	while ((anAlias	= anAttribute->GetValue())) {
-		fDCSAliases.AddLast(new TObjString(anAlias));
+		fDCSAliases->AddLast(new TObjString(anAlias));
 	}
 
 	fIsValid = kTRUE;
@@ -142,7 +146,7 @@ AliShuttleConfig::AliShuttleConfigHolder::~AliShuttleConfigHolder()
 {
 // destructor of the shuttle configuration holder
 
-	fDCSAliases.Delete();
+	delete fDCSAliases;
 }
 
 ClassImp(AliShuttleConfig)
@@ -152,10 +156,8 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
 	fIsValid(kFALSE),
 	fDAQlbHost(""), fDAQlbUser(""), fDAQlbPass(""),
-	fMaxPPRetries(0), fMaxRetries(0),
-	fDetectorMap(), fDetectorList(),
-	fShuttleInstanceHost(""), fProcessedDetectors(),
-	fProcessAll(kFALSE)
+	fMaxPPRetries(0), fMaxRetries(0), fDetectorMap(), fDetectorList(),
+	fShuttleInstanceHost(""), fProcessedDetectors(), fProcessAll(kFALSE)
 {
 	//
 	// host: ldap server host
@@ -166,23 +168,24 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	// (objectClass=shuttleConfig) will be used as detector configurations.
 	//
 
+	fDetectorMap.SetOwner();
+	fDetectorList.SetOwner(0); //fDetectorList and fDetectorMap share the same object!
+	fProcessedDetectors.SetOwner();
+
 	TLDAPServer aServer(host, port, binddn, password, 3);
 
 	if (!aServer.IsConnected()) {
-		AliError(Form("Can't connect to ldap server %s:%d", 
+		AliError(Form("Can't connect to ldap server %s:%d",
 				host, port));
 		return;
 	}
 
 	// reads configuration for the shuttle running on this machine
-	
+
 	fShuttleInstanceHost = gSystem->HostName();
-	TString queryFilter = "(ShuttleHost=";
-	queryFilter += fShuttleInstanceHost;
-	queryFilter += ")";	
-	
-	TLDAPResult* aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL,
-			queryFilter.Data());
+	TString queryFilter = Form("(ShuttleHost=%s)", fShuttleInstanceHost.Data());
+
+	TLDAPResult* aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL, queryFilter.Data());
 
 	if (!aResult) {
 		AliError(Form("Can't find configuration with base DN: %s",
@@ -200,11 +203,12 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	if (aResult->GetCount() > 1) {
 		AliError(Form("More than one Shuttle instance for host %s!",
 					fShuttleInstanceHost.Data()));
+		delete aResult;
 		return;
 	}
 
-	TLDAPEntry* anEntry;
-	TLDAPAttribute* anAttribute;
+	TLDAPEntry* anEntry = 0;
+	TLDAPAttribute* anAttribute = 0;
 
 	if(!fProcessAll){
 		anEntry = aResult->GetNext();
@@ -216,13 +220,13 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		}
 	}
 
+	delete anEntry; delete aResult;
+
 	// Detector configuration (DCS Archive DB settings)
 
-	aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL,
-			"(objectClass=AliShuttleDetector)");
+	aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL, "(objectClass=AliShuttleDetector)");
 	if (!aResult) {
-		AliError(Form("Can't find configuration with base DN: %s",
-				basedn));
+		AliError(Form("Can't find configuration with base DN: %s", basedn));
 		return;
 	}
 
@@ -234,6 +238,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		if (!aHolder->IsValid()) {
 			AliError("Detector configuration error!");
 			delete aHolder;
+			delete aResult;
 			return;
 		}
 
@@ -256,11 +261,13 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 
 	if (aResult->GetCount() == 0) {
 		AliError("Can't find DAQ logbook configuration!");
+		delete aResult;
 		return;
 	}
 
 	if (aResult->GetCount() > 1) {
 		AliError("More than one DAQ logbook configuration found!");
+		delete aResult;
 		return;
 	}
 
@@ -269,6 +276,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	anAttribute = anEntry->GetAttribute("DAQLogbookHost");
 	if (!anAttribute) {
 		AliError("Can't find DAQLogbookHost attribute!");
+		delete anEntry; delete aResult;
 		return;
 	}
 	fDAQlbHost = anAttribute->GetValue();
@@ -276,6 +284,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	anAttribute = anEntry->GetAttribute("DAQLogbookUser");
 	if (!anAttribute) {
 		AliError("Can't find DAQLogbookUser attribute!");
+		delete aResult; delete anEntry;
 		return;
 	}
 	fDAQlbUser = anAttribute->GetValue();
@@ -283,6 +292,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	anAttribute = anEntry->GetAttribute("DAQLogbookPassword");
 	if (!anAttribute) {
 		AliError("Can't find DAQLogbookPassword attribute!");
+		delete aResult; delete anEntry;
 		return;
 	}
 	fDAQlbPass = anAttribute->GetValue();
@@ -290,24 +300,24 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	anAttribute = anEntry->GetAttribute("MaxPPRetries");
 	if (!anAttribute) {
 		AliError("Can't find MaxPPRetries attribute!");
+		delete aResult; delete anEntry;
 		return;
 	}
 	TString tmpStr = anAttribute->GetValue();
-  fMaxPPRetries = tmpStr.Atoi();
+	fMaxPPRetries = tmpStr.Atoi();
 
 	anAttribute = anEntry->GetAttribute("MaxRetries");
 	if (!anAttribute) {
 		AliError("Can't find MaxRetries attribute!");
+		delete aResult; delete anEntry;
 		return;
 	}
 	tmpStr = anAttribute->GetValue();
-  fMaxRetries = tmpStr.Atoi();
+	fMaxRetries = tmpStr.Atoi();
 
-  delete anEntry;
-	delete aResult;
+	delete aResult; delete anEntry;
 
 	// FES configuration (FES logbook and hosts)
-
 
 	for(int iSys=0;iSys<3;iSys++){
 		queryFilter = Form("(system=%s)", AliShuttleInterface::fkSystemNames[iSys]);
@@ -320,6 +330,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 
 		if (aResult->GetCount() != 1 ) {
 			AliError("Error in FES configuration!");
+			delete aResult;
 			return;
 		}
 
@@ -329,6 +340,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		if (!anAttribute) {
 			AliError(Form ("Can't find LogbookHost attribute for %s!!",
 						AliShuttleInterface::fkSystemNames[iSys]));
+			delete aResult; delete anEntry;
 			return;
 		}
 		fFESlbHost[iSys] = anAttribute->GetValue();
@@ -337,6 +349,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		if (!anAttribute) {
 			AliError(Form ("Can't find LogbookUser attribute for %s!!",
 						AliShuttleInterface::fkSystemNames[iSys]));
+			delete aResult; delete anEntry;
 			return;
 		}
 		fFESlbUser[iSys] = anAttribute->GetValue();
@@ -345,6 +358,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		if (!anAttribute) {
 			AliError(Form ("Can't find LogbookPassword attribute for %s!!",
 						AliShuttleInterface::fkSystemNames[iSys]));
+			delete aResult; delete anEntry;
 			return;
 		}
 		fFESlbPass[iSys] = anAttribute->GetValue();
@@ -353,6 +367,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		if (!anAttribute) {
 			AliError(Form ("Can't find FSHost attribute for %s!!",
 						AliShuttleInterface::fkSystemNames[iSys]));
+			delete aResult; delete anEntry;
 			return;
 		}
 		fFESHost[iSys] = anAttribute->GetValue();
@@ -361,6 +376,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		if (!anAttribute) {
 			AliError(Form ("Can't find FSUser attribute for %s!!",
 						AliShuttleInterface::fkSystemNames[iSys]));
+			delete aResult; delete anEntry;
 			return;
 		}
 		fFESUser[iSys] = anAttribute->GetValue();
@@ -368,8 +384,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 		anAttribute = anEntry->GetAttribute("FSPassword");
 		if (anAttribute) fFESPass[iSys] = anAttribute->GetValue();
 
-		delete anEntry;
-		delete aResult;
+		delete aResult; delete anEntry;
 	}
 
 	fIsValid = kTRUE;
@@ -381,6 +396,8 @@ AliShuttleConfig::~AliShuttleConfig()
 // destructor
 
 	fDetectorMap.DeleteAll();
+	fDetectorList.Clear();
+	fProcessedDetectors.Delete();
 }
 
 //______________________________________________________________________________________________
@@ -491,6 +508,8 @@ void AliShuttleConfig::Print(Option_t* /*option*/) const
 		}
 		result += "\n\n";
 	}
+
+	result += Form("Max PP retries = %d - Max total retries = %d\n\n", fMaxPPRetries, fMaxRetries);
 
 	result += Form("DAQ Logbook Configuration \n \tHost: %s - User: %s - ",
 		fDAQlbHost.Data(), fDAQlbUser.Data());

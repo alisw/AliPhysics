@@ -23,6 +23,7 @@
 
 class TObject;
 class AliShuttleConfig;
+class AliShuttleLogbookEntry;
 class AliPreprocessor;
 class AliCDBMetaData;
 class TSQLServer;
@@ -31,17 +32,22 @@ class AliCDBPath;
 
 class AliShuttle: public AliShuttleInterface {
 public:
+	enum { kNDetectors=17 }; // number of subdetectors in ALICE
+
 	AliShuttle(const AliShuttleConfig* config, UInt_t timeout = 5000, Int_t retries = 5);
 	virtual ~AliShuttle();
 
 	virtual void RegisterPreprocessor(AliPreprocessor* preprocessor);
 
-	Bool_t Process(Int_t run, UInt_t startTime, UInt_t endTime);
-	Bool_t Process();
+	Bool_t Collect(Int_t run);
+	Bool_t CollectNew();
+	Bool_t CollectAll();
 
-	Int_t GetCurrentRun() const {return fCurrentRun;};
-	UInt_t GetCurrentStartTime() const {return fCurrentStartTime;};
-	UInt_t GetCurrentEndTime() const {return fCurrentEndTime;};
+	Bool_t Process(AliShuttleLogbookEntry* entry);
+
+	Int_t GetCurrentRun() const;
+	UInt_t GetCurrentStartTime() const;
+	UInt_t GetCurrentEndTime() const;
 
 	virtual UInt_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
 			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
@@ -62,23 +68,28 @@ public:
 	static TString GetLocalRefStorage() {return fgkLocalRefStorage;}
 	static void SetLocalRefStorage (TString localRefStorage) {fgkLocalRefStorage = localRefStorage;}
 
-	// TODO Test only, remove later!
-	void SetCurrentRun(int run) {fCurrentRun=run;}
 	//TODO Test only, remove later !
-	void SetProcessDCS(Bool_t process) {fgkProcessDCS = process;} 
+	void SetProcessDCS(Bool_t process) {fgkProcessDCS = process;}
 
 	static const char* GetDetCode(const char* detector);
+	static const char* GetDetCode(UInt_t detPos);
+	static const Int_t GetDetPos(const char* detCode);
+	static const UInt_t NDetectors() {return kNDetectors;}
 	static const char* GetShuttleTempDir() {return fgkShuttleTempDir;}
 
 	Bool_t Connect(Int_t system);
-
 
 private:
 	AliShuttle(const AliShuttle& other);
 	AliShuttle& operator= (const AliShuttle& other);
 
-	Bool_t GetValueSet(const char* host, Int_t port, const char* alias,
-			TObjArray& result);
+	UInt_t ProcessCurrentDetector();
+
+	Bool_t QueryRunParameters(Int_t& run, UInt_t& startTime, UInt_t& endTime);
+	Bool_t QueryShuttleLogbook(const char* whereClause, TObjArray& entries);
+	Bool_t RetrieveConditionsData(const TObjArray& shuttleLogbookEntries);
+
+	Bool_t GetValueSet(const char* host, Int_t port, const char* alias, TObjArray* result);
 
 	const char* GetDAQFileName(const char* detector, const char* id, const char* source);
 	Bool_t RetrieveDAQFile(const char* daqFileName, const char* localFileName);
@@ -97,42 +108,41 @@ private:
 				const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
 				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
 
+	Bool_t TryToStoreAgain();
+	Bool_t TryToStoreAgain(TString& storageType);
+
   	AliShuttleStatus* ReadShuttleStatus();
   	Bool_t WriteShuttleStatus(AliShuttleStatus* status);
   	Bool_t ContinueProcessing();
   	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
+  	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
 
-	const AliShuttleConfig* fConfig; 	//! pointer to configuration object
+	const AliShuttleConfig* fConfig; 	// pointer to configuration object
 
-	static const Int_t fgkNDetectors = 17;		   	//! number of detectors
-	static const char* fgkDetectorName[fgkNDetectors]; 	//! names of detectors
-	static const char* fgkDetectorCode[fgkNDetectors]; 	//! codes of detectors
-	static TString 	   fgkMainCDB;		//! URI of the main (Grid) CDB storage
-	static TString 	   fgkLocalCDB;		//! URI of the local backup CDB storage
-	static TString 	   fgkMainRefStorage;	//! URI of the main (Grid) REFERENCE storage
-	static TString 	   fgkLocalRefStorage;	//! URI of the local REFERENCE storage
-	static const char* fgkShuttleTempDir;	//! base path of SHUTTLE temp folder
-	static const char* fgkShuttleLogDir;	//! path of SHUTTLE log folder
+//	static const UInt_t fgkNDetectors = 17;		   	//! number of detectors
+	static const char*  fgkDetectorName[kNDetectors]; 	//! names of detectors
+	static const char*  fgkDetectorCode[kNDetectors]; 	//! codes of detectors
+	static TString 	    fgkMainCDB;		// URI of the main (Grid) CDB storage
+	static TString 	    fgkLocalCDB;		//! URI of the local backup CDB storage
+	static TString 	    fgkMainRefStorage;	// URI of the main (Grid) REFERENCE storage
+	static TString 	    fgkLocalRefStorage;	// URI of the local REFERENCE storage
+	static const char*  fgkShuttleTempDir;	// base path of SHUTTLE temp folder
+	static const char*  fgkShuttleLogDir;	// path of SHUTTLE log folder
 
-	UInt_t fTimeout; 	//! DCS server connection timeout parameter
-	Int_t fRetries; 	//! Number of DCS server connection retries
+	UInt_t fTimeout; 	// DCS server connection timeout parameter
+	Int_t fRetries; 	// Number of DCS server connection retries
 
-	TMap fPreprocessorMap; 	//! list of detector Preprocessors ("DET", "Preprocessor")
+	TMap fPreprocessorMap; 	// list of detector Preprocessors ("DET", "Preprocessor")
 
-	Int_t fCurrentRun;  		//! run currenty processed
-	UInt_t fCurrentStartTime; 	//! Run Start time
-	UInt_t fCurrentEndTime; 	//! Run end time
+	AliShuttleLogbookEntry* fLogbookEntry;   //! current Shuttle logbook entry
+	TString fCurrentDetector; // current detector
 
-  	TString fCurrentDetector; // current detector
+	TSQLServer *fServer[3]; 	// pointer to the three FS logbook servers
+	Bool_t fFESCalled[3];		// FES call status
+	TList  fFESlist[3];		// List of files retrieved from each FES
 
-	TSQLServer *fServer[3]; 	//! pointer to the three FS logbook servers
-
-	Bool_t fFESCalled[3];		//! FES call status
-	TList  fFESlist[3];		//! List of files retrieved from each FES
-
-	AliCDBEntry* fStatusEntry; //! last CDB entry containing a AliShuttleStatus retrieved
-
-	Bool_t fGridError; // determines if at least one storage to the Grid OCDB failed for the current sub detector and the file was stored on the local disk
+	AliCDBEntry* fStatusEntry; // last CDB entry containing a AliShuttleStatus retrieved
+	Bool_t fGridError; 	   // Grid storage error flag
 
 	//TODO Test only, remove later !
 	static Bool_t fgkProcessDCS; // flag to enable DCS archive data processing

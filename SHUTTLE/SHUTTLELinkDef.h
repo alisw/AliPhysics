@@ -21,7 +21,7 @@
 #pragma link C++ class  AliShuttle;
 #pragma link C++ class  AliShuttleTrigger;
 #pragma link C++ class  TerminateSignalHandler;
-#pragma link C++ class  AliShuttleTrigger::AliShuttleTriggerDATEEntry;
 #pragma link C++ class  AliShuttleStatus;
+#pragma link C++ class  AliShuttleLogbookEntry;
 
 #endif

@@ -12,12 +12,16 @@ void Shuttle(const char* param = "listen") {
 //	AliLog::SetGlobalDebugLevel(1);
 
 	// Setting local CDB and reference storage locations
-	AliShuttle::SetMainCDB("alien://DBFolder=ShuttleCDB");
-	AliShuttle::SetLocalCDB("local://LocalShuttleCDB");
-	AliShuttle::SetMainRefStorage("alien://DBFolder=GridReferenceStorage");
-	AliShuttle::SetLocalRefStorage("local://LocalReferenceStorage");
+	AliShuttle::SetMainCDB("alien://user=aliprod?folder=colla/GridShuttleCDB");
+	AliShuttle::SetMainRefStorage("alien://user=aliprod?folder=colla/GridShuttleRefStorage");
 
-	AliShuttle::SetProcessDCS(kTRUE);
+//	AliShuttle::SetMainCDB("local://testLeakCDB");
+//	AliShuttle::SetMainRefStorage("local://testLeakRef");
+
+	AliShuttle::SetLocalCDB("local://LocalShuttleCDB");
+	AliShuttle::SetLocalRefStorage("local://LocalShuttleRefStorage");
+
+	AliShuttle::SetProcessDCS(kFALSE);
 
 
 //	AliCDBManager *man = AliCDBManager::Instance();

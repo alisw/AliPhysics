@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2006/08/29 09:16:05  jgrosseo
+small update
+
 Revision 1.2  2006/08/15 10:50:00  jgrosseo
 effc++ corrections (alberto)
 
@@ -38,6 +41,7 @@ exceeded. These thresholds can be configured in LDAP.
 
 ClassImp(AliShuttleStatus)
 
+//______________________________________________________________________________________________
 AliShuttleStatus::AliShuttleStatus() : TObject(),
   fTimeStamp(0),
   fStatus(kInvalid),
@@ -46,6 +50,7 @@ AliShuttleStatus::AliShuttleStatus() : TObject(),
   // default constructor
 }
 
+//______________________________________________________________________________________________
 AliShuttleStatus::AliShuttleStatus(Status status) : TObject(),
   fTimeStamp(0),
   fStatus(status),
@@ -56,6 +61,7 @@ AliShuttleStatus::AliShuttleStatus(Status status) : TObject(),
   fTimeStamp = time(0);
 }
 
+//______________________________________________________________________________________________
 AliShuttleStatus::AliShuttleStatus(const AliShuttleStatus& c) :
 TObject(c),  fTimeStamp(0),
 fStatus(kInvalid),
@@ -66,11 +72,13 @@ fCount(1)
   ((AliShuttleStatus &)c).Copy(*this);
 }
 
+//______________________________________________________________________________________________
 AliShuttleStatus::~AliShuttleStatus()
 {
   // destructor
 }
 
+//______________________________________________________________________________________________
 AliShuttleStatus &AliShuttleStatus::operator=(const AliShuttleStatus &c)
 {
   // assigment operator
@@ -81,6 +89,7 @@ AliShuttleStatus &AliShuttleStatus::operator=(const AliShuttleStatus &c)
   return *this;
 }
 
+//______________________________________________________________________________________________
 void AliShuttleStatus::Copy(TObject& c) const
 {
   // copy function
@@ -92,6 +101,7 @@ void AliShuttleStatus::Copy(TObject& c) const
   target.fCount = fCount;
 }
 
+//______________________________________________________________________________________________
 void AliShuttleStatus::SetStatus(Status status)
 {
   // sets a new status, add the same time the timestamp is set to now
@@ -100,6 +110,7 @@ void AliShuttleStatus::SetStatus(Status status)
   fTimeStamp = time(0);
 }
 
+//______________________________________________________________________________________________
 const char* AliShuttleStatus::GetStatusName(Status status)
 {
   // returns a name (string) of the status

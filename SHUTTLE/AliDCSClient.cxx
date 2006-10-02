@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2006/08/15 10:50:00  jgrosseo
+effc++ corrections (alberto)
+
 Revision 1.4  2006/07/04 14:59:57  jgrosseo
 revision of AliDCSValue: Removed wrapper classes, reduced storage size per value by factor 2
 
@@ -281,7 +284,7 @@ Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message)
 
 //______________________________________________________________________
 Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
-	const char* reqString, UInt_t startTime, UInt_t endTime, TObjArray& result) 
+	const char* reqString, UInt_t startTime, UInt_t endTime, TObjArray* result)
 {
 // get array of DCS values from the DCS server
 // reqString: alias name
@@ -295,7 +298,7 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 
 	Int_t sResult;
 	AliDCSMessage requestMessage;
-	requestMessage.CreateRequestMessage(reqType, startTime, endTime, 
+	requestMessage.CreateRequestMessage(reqType, startTime, endTime,
 			reqString);
 
 	if ((sResult = SendMessage(requestMessage)) < 0) {
@@ -303,10 +306,10 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 			GetErrorString(sResult)));
 		Close();
 		return sResult;
-	}	
-	
+	}
+
 	sResult = ReceiveValueSet(result);
-	
+
 	Close();
 
 	return sResult;
@@ -314,7 +317,7 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 
 //______________________________________________________________________
 Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
-	UInt_t startTime, UInt_t endTime, TMap& result) 
+	UInt_t startTime, UInt_t endTime, TMap& result)
 {
 // get array of DCS values from the DCS server
 // startTime, endTime: start time and end time of the query
@@ -324,17 +327,17 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	if (!IsConnected()) {
 		AliError("Not connected!");
 		return AliDCSClient::fgkBadState;
-	}	
+	}
 
 	AliDCSMessage multiRequestMessage;
-	multiRequestMessage.CreateMultiRequestMessage(reqType, 
+	multiRequestMessage.CreateMultiRequestMessage(reqType,
 			startTime, endTime);
 
 	TObjArray requests;
-	
+
 	TIter iter(&result);
 	TObjString* aRequest;
-	
+
 	// copy request strings to temporary TObjArray because
 	// TMap doesn't guarantee the order of elements!!!
 	while ((aRequest = (TObjString*) iter.Next())) {
@@ -361,7 +364,7 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 		TObjArray* resultSet = new TObjArray();
 		resultSet->SetOwner(1);
 
-		if ((sResult = ReceiveValueSet(*resultSet)) < 0) {
+		if ((sResult = ReceiveValueSet(resultSet)) < 0) {
 			AliError(Form("Can't get values for %s!" ,
 				aRequest->String().Data()));
 
@@ -387,7 +390,7 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 }
 	
 //______________________________________________________________________
-Int_t AliDCSClient::ReceiveValueSet(TObjArray& result)
+Int_t AliDCSClient::ReceiveValueSet(TObjArray* result)
 {
 // receive set of values 
 
@@ -440,7 +443,7 @@ Int_t AliDCSClient::ReceiveValueSet(TObjArray& result)
 					return AliDCSClient::fgkBadMessage;
 				}
 			}
-			
+
 			receivedValues += message.GetValues(result);
 
                 	if (receivedValues > valueCount) {
@@ -465,7 +468,7 @@ Int_t AliDCSClient::ReceiveValueSet(TObjArray& result)
 		
 //______________________________________________________________________
 Int_t AliDCSClient::GetDPValues(const char* dpName, UInt_t startTime,
-				UInt_t endTime, TObjArray& result)
+				UInt_t endTime, TObjArray* result)
 {
 	//
 	// Reads a values from the server which correspond to this
@@ -483,7 +486,7 @@ Int_t AliDCSClient::GetDPValues(const char* dpName, UInt_t startTime,
 
 //______________________________________________________________________
 Int_t AliDCSClient::GetAliasValues(const char* alias, UInt_t startTime,
-				UInt_t endTime, TObjArray& result)
+				UInt_t endTime, TObjArray* result)
 {
 	//
         // Reads a values from the server which correspond to this
@@ -521,7 +524,7 @@ Int_t AliDCSClient::GetDPValues(UInt_t startTime, UInt_t endTime,
 
 //______________________________________________________________________
 Int_t AliDCSClient::GetAliasValues(UInt_t startTime, UInt_t endTime,
-				TMap& result) 
+				TMap& result)
 {
 	//
         // For every key of 'result' (which must be TObjString) 

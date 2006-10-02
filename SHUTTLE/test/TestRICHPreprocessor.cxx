@@ -93,13 +93,13 @@ UInt_t TestRICHPreprocessor::Process(TMap* /*valueMap*/)
 	while((source=dynamic_cast<TObjString*> (iter.Next()))){
 		printf("\n\n Getting file #%d\n",++i);
 		//if(i==1) continue;
-		const char* filename = GetFile(AliShuttleInterface::kDAQ, "thresholds.txt", source->GetName());
-		if(!filename) {
+		TString filename = GetFile(AliShuttleInterface::kDAQ, "thresholds.txt", source->GetName());
+		if(!filename.Data()) {
 			AliError(Form("Error retrieving file from source %d failed!", source->GetName()));
 			delete filesources;
 			return 0;
 		}
-		TString command = Form("more $ALICE_ROOT/SHUTTLE/temp/%s",filename);
+		TString command = Form("more $ALICE_ROOT/SHUTTLE/temp/%s",filename.Data());
 		gSystem->Exec(command.Data());
 
 		// STORAGE! The First file name will be stored into CDB, the second into reference storage
