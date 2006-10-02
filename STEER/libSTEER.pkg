@@ -32,7 +32,8 @@ AliAlignmentTracks.cxx \
 AliExpression.cxx \
 AliCTPRawData.cxx AliCTPRawStream.cxx \
 AliMathBase.cxx AliSignalProcesor.cxx \
-AliTracker.cxx AliCluster.cxx AliHelix.cxx AliV0.cxx AliKink.cxx
+AliTracker.cxx AliCluster.cxx AliHelix.cxx AliV0.cxx AliKink.cxx \
+AliSelectorRL.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

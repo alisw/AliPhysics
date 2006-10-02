@@ -54,6 +54,9 @@
 
 #pragma link C++ class  AliESDMultITS+;
 #pragma link C++ class  AliMultiplicity+;
+
+#pragma link C++ class  AliSelector+;
+
 #endif
 
 

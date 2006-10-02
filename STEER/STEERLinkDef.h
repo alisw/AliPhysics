@@ -122,4 +122,6 @@
 #pragma link C++ class  AliV0+;
 #pragma link C++ class  AliKink+;
 
+#pragma link C++ class  AliSelectorRL+;
+
 #endif

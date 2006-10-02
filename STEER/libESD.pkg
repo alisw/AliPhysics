@@ -11,7 +11,8 @@ SRCS = AliESD.cxx AliESDfriend.cxx\
        AliTrackPointArray.cxx \
        AliESDFMD.cxx AliFMDMap.cxx AliFMDFloatMap.cxx \
        AliESDMultITS.cxx \
-       AliMultiplicity.cxx AliXMLCollection.cxx
+       AliMultiplicity.cxx AliXMLCollection.cxx \
+       AliSelector.cxx
 
 
 HDRS:= $(SRCS:.cxx=.h) 
