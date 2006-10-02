@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 /* $Id$ */
 
 #include "AliSelectorRL.h"
@@ -8,11 +23,17 @@
 #include <TTree.h>
 #include <TFile.h>
 
+// Selector base class for analysis based on whole AliRoot
+// Please derive your selector-based analysis from this class, if you need to access the
+// RunLoader or anything provided by it.
 //
 // This selector depends on the RunLoader, therefore to use it you have to have the whole AliRoot available
 // The benefit is that you can use the RunLoader to access everything in the data structure
-// If you only have the ESD library use AliSelector instead
 //
+// The class has functions to return the stack (GetStack()), the RunLoader (GetRunLoader()), and
+// the event header (GetHeader()).
+//
+// Author: Jan.Fiete.Grosse-Oetringhaus@cern.ch
 
 ClassImp(AliSelectorRL)
 
