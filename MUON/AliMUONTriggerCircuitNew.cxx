@@ -474,7 +474,7 @@ Int_t
 AliMUONTriggerCircuitNew::DetElemId(Int_t iChamber, const char* boardName)
 {
 /// returns detection element Id for chamber iChamber and board boardName
-  char side = boardName[5];
+  char side = boardName[0];
   Int_t iline = boardName[4] - '0';
   return DetElemId(iChamber,side,iline);
 }
