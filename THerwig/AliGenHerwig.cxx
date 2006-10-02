@@ -267,10 +267,10 @@ void AliGenHerwig::InitPDF()
       fModPDF=19170;
       fAutPDF="HWLHAPDF";
       break;
-    case kMRST2004nlo:
-      fModPDF=20400;
-      fAutPDF="HWLHAPDF";
-      break;
+//    case kMRST2004nlo:
+//      fModPDF=20400;
+//      fAutPDF="HWLHAPDF";
+//      break;
     default:
       cerr << "This structure function is not inplemented " << fStrucFunc << endl;
       break;
