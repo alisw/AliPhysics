@@ -896,7 +896,6 @@ mergeVertexRecoCorrections_SystematicStudies(Char_t* standardCorrectionFileName=
     geneDD->Scale(scalesDD[i]);
     TH2F* geneSD = (TH2F*)dNdEtaCorrectionSD->GetVertexRecoCorrection()->GetGeneratedHistogram()->Clone();
     geneSD->Scale(scalesSD[i]);
-
     
     TH2F* meas = (TH2F*)measND->Clone();
     meas->Add(measDD);
@@ -919,4 +918,287 @@ mergeVertexRecoCorrections_SystematicStudies(Char_t* standardCorrectionFileName=
 
   fout->Write();
   fout->Close();
+}
+
+
+DrawVertexRecoSyst() {
+
+  Char_t* changes[]  = {"pythia","ddmore","ddless","sdmore","sdless", "dmore", "dless"};
+  Char_t* descr[]  =   {"",
+			"#sigma_{DD}' = 1.5#times#sigma_{DD}",
+			"#sigma_{DD}' = 0.5#times#sigma_{DD}",
+			"#sigma_{SD}' = 1.5#times#sigma_{SD}",
+			"#sigma_{SD}' = 0.5#times#sigma_{SD}",
+			"#sigma_{D}' = 1.5#times#sigma_{D}",
+			"#sigma_{D}' = 0.5#times#sigma_{D}"};
+
+  Float_t scalesDD[] = {1.0, 1.5, 0.5, 1.5, 0.5, 1.5, 0.5};
+  Float_t scalesSD[] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 0.5};
+
+  Int_t markers[] = {22,22,22,22,22,22,22};
+  Int_t colors[]  = {1,2,3,4,6,8,102};
+
+  // cross section from Pythia
+  Float_t sigmaND = 55.2;
+  Float_t sigmaDD = 9.78;
+  Float_t sigmaSD = 14.30;
+
+  
+  TH1F* dNdEta[7];
+
+  TH1F* ratios[7];
+
+  TFile* fin;
+
+
+  for (Int_t i=0; i<7; i++) {
+    // calculating relative 
+    Float_t nd = 100 * sigmaND/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
+    Float_t dd = 100 * (scalesDD[i]*sigmaDD)/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
+    Float_t sd = 100 * (scalesSD[i]*sigmaSD)/(sigmaND + (scalesDD[i]*sigmaDD) + (scalesDD[i]*sigmaSD));
+
+    //printf(Form("%s : ND-DD-SD = %.1f-%.1f-%.1f \n",changes[i],nd,dd,sd));
+
+    //printf(Form("%s : ND-DD-SD = %d-%d-%d \n",changes[i],TMath::Nint(nd),TMath::Nint(dd),TMath::Nint(sd)));
+
+    fin = TFile::Open(Form("analysis_esd_%s.root",changes[i]));
+    
+    dNdEta[i] = (TH1F*)(fin->Get("dndeta/dndeta_dNdEta_corrected_2"))->Clone();
+    
+    for (Int_t b=0; b<dNdEta[i]->GetNbinsX(); b++) {
+      if (TMath::Abs(dNdEta[i]->GetBinCenter(b))>0.9) {
+	dNdEta[i]->SetBinContent(b,0);
+	dNdEta[i]->SetBinError(b,0);
+      }
+    }
+    
+    dNdEta[i]->Rebin(4);
+    
+    dNdEta[i]->SetLineWidth(2);
+    dNdEta[i]->SetLineColor(colors[i]);
+    dNdEta[i]->SetMarkerStyle(markers[i]);
+    dNdEta[i]->SetMarkerSize(0.8);
+
+
+    ratios[i] = (TH1F*)dNdEta[i]->Clone("ratio");
+    ratios[i]->Divide(ratios[i],dNdEta[0],1,1,"B");
+    
+    ratios[i]->SetName(changes[i]);
+    ratios[i]->SetTitle(changes[i]);
+  }
+  
+  //##########################################################
+  
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptFit(0);
+
+  gStyle->SetTextSize(0.2);
+  gStyle->SetTitleSize(0.05,"xyz");
+  //gStyle->SetTitleFont(133, "xyz");
+  //gStyle->SetLabelFont(133, "xyz");
+  //gStyle->SetLabelSize(17, "xyz");
+  gStyle->SetLabelOffset(0.01, "xyz");
+
+
+  gStyle->SetTitleOffset(1.2, "y");
+  gStyle->SetTitleOffset(1.2, "x");
+  gStyle->SetEndErrorSize(0.0);
+
+  //##############################################
+
+  //making canvas and pads
+  TCanvas *c = new TCanvas("vertex_reco_syst_1", "",600,500);
+
+  TPad* p1 = new TPad("pad1","", 0, 0.0, 1.0, 1.0, 0, 0, 0);
+
+  p1->SetBottomMargin(0.15);
+  p1->SetTopMargin(0.03);
+  p1->SetLeftMargin(0.15);
+  p1->SetRightMargin(0.03);
+  
+  p1->SetGridx();
+  p1->SetGridy();
+
+  p1->Draw();
+  p1->cd();
+
+  
+  
+  
+  TH2F* null = new TH2F("","",100,-1.5,1.5,100,0.9601,1.099);
+  null->SetXTitle("#eta");
+  null->GetXaxis()->CenterTitle(kTRUE);
+  null->SetYTitle("dN/d#eta / dN/d#eta_{pythia}");
+  null->GetYaxis()->CenterTitle(kTRUE);
+  null->Draw();
+  
+  for (Int_t i=1; i<7; i++) 
+    ratios[i]->Draw("same");
+  //     dNdEta[i]->Draw("same");
+  
+  TLatex* text[7];
+  for (Int_t i=1; i<7; i++) {
+    
+    text[i] = new TLatex(0.75,0.95-0.05*i, descr[i]);
+    text[i]->SetTextSize(0.04);
+    text[i]->SetTextColor(colors[i]);
+    text[i]->SetNDC(kTRUE);
+    text[i]->Draw();
+    
+    
+  }
+  text(0.2,0.88,"Effect of changing",0.045,1,kTRUE);
+  text(0.2,0.83,"relative cross-sections",0.045,1,kTRUE);
+  text(0.2,0.78,"(vertex reconstruction corr.)",0.043,13,kTRUE);
+
+}
+
+
+
+DrawTriggerEfficiency(Char_t* fileName) {
+
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptFit(0);
+
+  gStyle->SetTextSize(0.04);
+  gStyle->SetTitleSize(0.05,"xyz");
+  //gStyle->SetTitleFont(133, "xyz");
+  //gStyle->SetLabelFont(133, "xyz");
+  //gStyle->SetLabelSize(17, "xyz");
+  gStyle->SetLabelOffset(0.01, "xyz");
+
+  gStyle->SetTitleOffset(1.1, "y");
+  gStyle->SetTitleOffset(1.1, "x");
+  gStyle->SetEndErrorSize(0.0);
+
+  //##############################################
+
+  //making canvas and pads
+  TCanvas *c = new TCanvas("trigger_eff", "",600,500);
+
+  TPad* p1 = new TPad("pad1","", 0, 0.0, 1.0, 1.0, 0, 0, 0);
+
+  p1->SetBottomMargin(0.15);
+  p1->SetTopMargin(0.03);
+  p1->SetLeftMargin(0.15);
+  p1->SetRightMargin(0.03);
+  
+  p1->SetGridx();
+  p1->SetGridy();
+
+  p1->Draw();
+  p1->cd();
+
+  gSystem->Load("libPWG0base");
+
+  AlidNdEtaCorrection* corrections[4];
+  AliCorrectionMatrix2D* triggerBiasCorrection[4];
+
+  TH1F* hTriggerEffInv[4];
+  TH1F* hTriggerEff[4];
+
+  Char_t* names[] = {"triggerBiasND", "triggerBiasDD", "triggerBiasSD", "triggerBiasINEL"};
+  
+  for (Int_t i=0; i<4; i++) {
+    corrections[i] = new AlidNdEtaCorrection(names[i], names[i]);
+    corrections[i]->LoadHistograms(fileName, names[i]);    
+
+    triggerBiasCorrection[i] = corrections[i]->GetTriggerBiasCorrectionINEL();
+
+    
+    hTriggerEffInv[i] = triggerBiasCorrection[i]->Get1DCorrection();
+    hTriggerEff[i]    = (TH1F*)hTriggerEffInv[i]->Clone();
+    
+    for (Int_t b=0; b<=hTriggerEff[i]->GetNbinsX(); b++) {
+      hTriggerEff[i]->SetBinContent(b,1);
+      hTriggerEff[i]->SetBinError(b,0);
+    }
+    hTriggerEff[i]->Divide(hTriggerEff[i],hTriggerEffInv[i]);
+    hTriggerEff[i]->Scale(100);
+  }
+
+  Int_t colors[] = {2,3,4,1};
+  Float_t effs[4];
+  for (Int_t i=0; i<4; i++) {
+    hTriggerEff[i]->Fit("pol0","","",-20,20);
+    effs[i] = ((TF1*)hTriggerEff[i]->GetListOfFunctions()->At(0))->GetParameter(0);
+    ((TF1*)hTriggerEff[i]->GetListOfFunctions()->At(0))->SetLineWidth(1);
+    ((TF1*)hTriggerEff[i]->GetListOfFunctions()->At(0))->SetLineStyle(2);
+    ((TF1*)hTriggerEff[i]->GetListOfFunctions()->At(0))->SetLineColor(colors[i]);
+    cout << effs[i] << endl;
+  }
+
+
+  Char_t* text[] = {"ND", "DD", "SD", "INEL"};
+  TLatex* latex[4];
+
+  TH2F* null = new TH2F("","",100,-25,35,100,0,110);
+  null->SetXTitle("Vertex z [cm]");
+  null->GetXaxis()->CenterTitle(kTRUE);
+  null->SetYTitle("Trigger efficiency [%]");
+  null->GetYaxis()->CenterTitle(kTRUE);
+  null->Draw();
+
+
+  for (Int_t i=0; i<4; i++) {
+    hTriggerEff[i]->SetLineWidth(2);
+    hTriggerEff[i]->SetLineColor(colors[i]);
+
+    hTriggerEff[i]->Draw("same");
+
+    latex[i] = new TLatex(22,effs[i]-1.5, Form("%s (%0.1f)",text[i],effs[i]));
+    latex[i]->SetTextColor(colors[i]);
+    latex[i]->Draw();
+  }
+  
+}
+
+
+DrawSpectraPID(Char_t* fileName) {
+
+  gSystem->Load("libPWG0base");
+
+  Char_t* names[] = {"correction_0", "correction_1", "correction_2", "correction_3"};
+  AlidNdEtaCorrection* corrections[4];
+  AliCorrectionMatrix3D* trackToPartCorrection[4];
+
+  TH1F* measuredPt[4];
+  TH1F* generatedPt[4];
+  TH1F* ratioPt[4];
+
+  for (Int_t i=0; i<4; i++) {
+    corrections[i] = new AlidNdEtaCorrection(names[i], names[i]);
+    corrections[i]->LoadHistograms(fileName, names[i]);    
+
+    trackToPartCorrection[i] = corrections[i]->GetTrack2ParticleCorrection();
+
+    Int_t binX1 = (TH1F*)trackToPartCorrection[i]->GetMeasuredHistogram()->GetXaxis()->FindBin(-10);
+    Int_t binX2 = (TH1F*)trackToPartCorrection[i]->GetMeasuredHistogram()->GetXaxis()->FindBin(10);
+    Int_t binY1 = (TH1F*)trackToPartCorrection[i]->GetMeasuredHistogram()->GetYaxis()->FindBin(-1);
+    Int_t binY2 = (TH1F*)trackToPartCorrection[i]->GetMeasuredHistogram()->GetYaxis()->FindBin(1);
+
+    measuredPt[i]  = (TH1F*)trackToPartCorrection[i]->GetMeasuredHistogram()->ProjectionZ(Form("m_%d",i),binX1,binX2,binY1,binY2);
+    generatedPt[i] = (TH1F*)trackToPartCorrection[i]->GetGeneratedHistogram()->ProjectionZ(Form("g_%d",i),binX1,binX2,binY1,binY2);
+    ratioPt[i] = (TH1F*)generatedPt[i]->Clone(Form("r_%d",i));
+    ratioPt[i]->Divide(measuredPt[i], generatedPt[i], 1,1,"B");
+  }
+  
+  ratioPt[0]->Draw();
+  
+  for (Int_t i=0; i<3; i++) {
+    ratioPt[i]->SetLineColor(i+1);
+    ratioPt[i]->SetLineWidth(2);
+    
+    ratioPt[i]->Draw("same");
+    
+  }
+
+  return;
+  measuredPt[0]->SetLineColor(2);
+  measuredPt[0]->SetLineWidth(5);
+
+  measuredPt[0]->Draw();
+  generatedPt[0]->Draw("same");
 }
