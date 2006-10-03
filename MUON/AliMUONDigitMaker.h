@@ -20,6 +20,8 @@ class AliMUONDigit;
 class AliMUONGlobalTrigger;
 class AliMUONLocalTrigger;
 class AliMUONTriggerCrateStore;
+class AliMUONLocalTriggerBoard;
+class AliMUONLocalStruct;
 
 class AliMpSegFactory;
 class AliMUONRawStreamTracker;
@@ -42,6 +44,12 @@ class AliMUONDigitMaker : public TObject
  
   Int_t GetMapping(Int_t buspatchId, UShort_t manuId, 
 			  UChar_t channelId, AliMUONDigit* digit );
+
+  Int_t TriggerDigits(AliMUONLocalTriggerBoard* localBoard, 
+		      AliMUONLocalStruct* localStruct, TList& digitList );
+
+  void GetTriggerChamber(AliMUONLocalStruct* localStruct, 
+			 Int_t& xyPattern, Int_t& iChamber, Int_t& iCath, Int_t iCase );
 
   void  SetScalerEvent() {fScalerEvent = kTRUE;}
 

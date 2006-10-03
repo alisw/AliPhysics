@@ -38,6 +38,7 @@
 #include <string>
 
 #include <TClonesArray.h>
+#include <TList.h>
 
 #include "AliRawReader.h"
 #include "AliRawDataHeader.h"
@@ -69,7 +70,7 @@
 #include "AliMUONLocalTriggerBoard.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
-
+#include "AliMUONTriggerCircuitNew.h"
 #include "AliMpSegFactory.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpPad.h"
@@ -157,8 +158,7 @@ Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader)
   ReadTrackerDDL(rawReader);
 
   // generate trigger
-  if (fDigitFlag)
-    ReadTriggerDDL(rawReader);
+  ReadTriggerDDL(rawReader);
 
   return kTRUE;
 
@@ -323,6 +323,8 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
   AliMUONLocalStruct*      localStruct     = 0x0;
 
   Int_t loCircuit;
+  TList digitList;
+
 
   fTriggerTimer.Start(kFALSE);
 
@@ -333,10 +335,12 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
     ddlTrigger = fRawStreamTrigger->GetDDLTrigger();
     darcHeader = ddlTrigger->GetDarcHeader();
 
-    // fill global trigger information
-    if (darcHeader->GetGlobalFlag()) {
-      fGlobalTrigger->SetFromGlobalResponse(darcHeader->GetGlobalOutput());
-      fMUONData->AddGlobalTrigger(*fGlobalTrigger);
+    // fill global trigger information in Digit Tree
+    if (fDigitFlag) {
+      if (darcHeader->GetGlobalFlag()) {
+	fGlobalTrigger->SetFromGlobalResponse(darcHeader->GetGlobalOutput());
+	fMUONData->AddGlobalTrigger(*fGlobalTrigger);
+      }
     }
 
     Int_t nReg = darcHeader->GetRegHeaderEntries();
@@ -355,7 +359,6 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
       regHeader =  darcHeader->GetRegHeaderEntry(iReg);
 
       Int_t nLocal = regHeader->GetLocalEntries();
-
       for(Int_t iLocal = 0; iLocal < nLocal; iLocal++) {  
 
 	localStruct = regHeader->GetLocalEntry(iLocal);
@@ -363,15 +366,38 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 	// if card has triggered
 	if (localStruct->GetTriggerY() == 0) {
 
+
 	  AliMUONLocalTriggerBoard* localBoard = 
 	    (AliMUONLocalTriggerBoard*)boards->At(localStruct->GetId()+1);
 
 	  loCircuit = localBoard->GetNumber();
-	    
-	  // fill local trigger
-	  fLocalTrigger->SetLocalStruct(loCircuit, *localStruct);
 
-	  fMUONData->AddLocalTrigger(*fLocalTrigger);
+	  if (fDigitFlag) {
+	    // fill local trigger
+	    fLocalTrigger->SetLocalStruct(loCircuit, *localStruct);
+
+	    fMUONData->AddLocalTrigger(*fLocalTrigger);
+
+	  } else {
+	    // Make SDigit
+
+	    digitList.Clear();
+	    
+	    if( TriggerDigits(localBoard, localStruct, digitList) ) {
+
+	      for (Int_t iEntry = 0; iEntry < digitList.GetEntries(); iEntry++) {
+
+		AliMUONDigit* digit = (AliMUONDigit*)digitList.At(iEntry);
+		
+		// filling S container
+		Int_t iChamber = digit->DetElemId()/100 - 1;
+		fMUONData->AddSDigit(iChamber, *digit);
+
+	      }
+
+	    } // trigger digits
+	  } // S flag
+
 	} // if triggerY
       } // iLocal
     } // iReg
@@ -382,7 +408,119 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
   return kTRUE;
 
 }
+//____________________________________________________________________
+void AliMUONDigitMaker::GetTriggerChamber(AliMUONLocalStruct* localStruct, Int_t& xyPattern, 
+					  Int_t& iChamber, Int_t& iCath, Int_t icase)
+{
 
+  // get chamber & cathode number
+    switch(icase) {
+    case 0: 
+      xyPattern =  localStruct->GetX1();
+      iCath = 0;
+      iChamber = 11;
+      break;
+    case 1: 
+      xyPattern =  localStruct->GetX2();
+      iCath = 0;
+      iChamber = 12;
+      break;
+    case 2: 
+      xyPattern =  localStruct->GetX3();
+      iCath = 0;
+      iChamber = 13;
+      break;
+    case 3: 
+      xyPattern =  localStruct->GetX4();
+      iCath = 0;
+      iChamber = 14;
+      break;
+    case 4: 
+      xyPattern =  localStruct->GetY1();
+      iCath = 1;
+      iChamber = 11;
+      break;
+    case 5: 
+      xyPattern =  localStruct->GetY2();
+      iCath = 1;
+      iChamber = 12;
+      break;
+    case 6: 
+      xyPattern =  localStruct->GetY3();
+      iCath = 1;
+      iChamber = 13;
+      break;
+    case 7: 
+      xyPattern =  localStruct->GetY4();
+      iCath = 1;
+      iChamber = 14;
+      break;
+    }
+}
+//____________________________________________________________________
+Int_t AliMUONDigitMaker::TriggerDigits(AliMUONLocalTriggerBoard* localBoard, 
+				       AliMUONLocalStruct* localStruct,
+				       TList& digitList)
+{
+  //
+  // make (S)Digit for trigger
+
+  Int_t detElemId;
+  Int_t nBoard;
+  Int_t iCath = -1;
+  Int_t iChamber = 0;
+  Int_t xyPattern = 0;
+
+  // loop over x1-4 and y1-4
+  for (Int_t icase = 0; icase < 8; icase++) {
+
+    // get chamber, cathode and associated trigger response pattern
+    GetTriggerChamber(localStruct, xyPattern, iChamber, iCath, icase);
+  
+    if (!xyPattern) continue;
+
+    // get detElemId
+    AliMUONTriggerCircuitNew triggerCircuit;
+    detElemId = triggerCircuit.DetElemId(iChamber, localBoard->GetName());
+    nBoard    = localBoard->GetNumber();
+
+    AliMpVSegmentation* seg = fSegFactory->CreateMpSegmentation(detElemId, iCath);  
+
+    // loop over the 16 bits of pattern
+    for (Int_t ibitxy = 0; ibitxy < 16; ibitxy++) {
+    
+      if ((xyPattern >> ibitxy) & 0x1) {
+
+	// not quite sure about this
+	Int_t offset = 0;
+	if (iCath && localBoard->GetSwitch(6)) offset = -8;
+
+	AliMpPad pad = seg->PadByLocation(AliMpIntPair(nBoard,ibitxy+offset),kTRUE);
+
+	AliMUONDigit* digit = new  AliMUONDigit();
+	if (!pad.IsValid()) {
+	  AliWarning(Form("No pad for detElemId: %d, nboard %d, ibitxy: %d\n",
+			  detElemId, nBoard, ibitxy));
+	  continue;
+	} // 
+
+	Int_t padX = pad.GetIndices().GetFirst();
+	Int_t padY = pad.GetIndices().GetSecond();
+
+	// file digit
+	digit->SetPadX(padX);
+	digit->SetPadY(padY);
+	digit->SetCathode(iCath);
+	digit->SetDetElemId(detElemId);
+	digit->SetElectronics(nBoard, ibitxy);
+	digitList.Add(digit);
+	
+      }// xyPattern
+    }// ibitxy
+  }// case
+
+  return kTRUE;
+} 
 //____________________________________________________________________
 void  AliMUONDigitMaker::GetCrateName(Char_t* name, Int_t iDDL, Int_t iReg)
 {
