@@ -394,7 +394,7 @@ smell-@MODULE@: $(@PACKAGE@SMELL)
 	$(MUTE)echo smelling $@
 	java -classpath $(SMELL_DETECTOR_DIR):$(SMELL_DETECTOR_DIR)/xom-1.1.jar -Xmx500m SmellDetector $? > $@
 
-.PRECIOUS: $(patsubst @MODULE@/%.cxx,@MODULE@/smell/%_h.ml,$(SRCS)) $(patsubst @MODULE@/%.cxx,@MODULE@/smell/%_cxx.ml,$(SRCS))
+.PRECIOUS: $(patsubst %.cxx,@MODULE@/smell/%_h.ml,$(SRCS)) $(patsubst %.cxx,@MODULE@/smell/%_cxx.ml,$(SRCS))
 
 # targets to create .par archives (jgrosseo)
 @PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
