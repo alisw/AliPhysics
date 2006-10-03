@@ -62,11 +62,14 @@ public:
    virtual void SetbRange(Double_t bmin, Double_t bmax) 
    		{fBmin = bmin; fBmax = bmax;} 
    virtual Double_t GetMinImpactParameter() const {return fBmin;}  
-   virtual Double_t GetMaxImpactParameter() const {return fBmax;}  
-   
+   virtual Double_t GetMaxImpactParameter() const {return fBmax;}
+
    virtual void  SetfFCentr(Int_t icentr)  {fFCentr = icentr;}
    virtual Int_t GetfFCentr() const        {return fFCentr;}
 
+   virtual void  SetPi0Decay(Int_t iPi0)  {fPi0Decay = iPi0;}
+
+   
    // Access to DPMJET common blocks:
    virtual Int_t    GetEvNum() const;	    	  
    virtual Int_t    GetEntriesNum() const;	    	  
@@ -123,6 +126,7 @@ protected:
    Float_t      fBmin;	  // Minimum impact parameter
    Float_t      fBmax;	  // Maximum impact parameter
    Int_t        fFCentr;  // Flag to force central collisions
+   Int_t        fPi0Decay;// Flag for pi0 decays
    DpmProcess_t fProcess; // Process type
    
    ClassDef(TDPMjet,2)  //Interface to DPMJET Event Generator

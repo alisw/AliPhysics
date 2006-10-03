@@ -35,56 +35,91 @@
 #include "AliRun.h"
 #include "AliDpmJetRndm.h"
 
- ClassImp(AliGenDPMjet)
-
+ClassImp(AliGenDPMjet)
 
 //______________________________________________________________________________
 AliGenDPMjet::AliGenDPMjet()
-                 :AliGenMC()
+    :AliGenMC(), 
+     fBeamEn(2750.),
+     fEnergyCMS(5500.),
+     fMinImpactParam(0.),
+     fMaxImpactParam(5.),
+     fICentr(0),
+     fSelectAll(0),
+     fFlavor(0),
+     fTrials(0),
+     fSpectators(1),
+     fSpecn(0),
+     fSpecp(0),
+     fDPMjet(0),
+     fParticles(0),
+     fNoGammas(0),
+     fLHC(0),
+     fPi0Decay(0),
+     fGenImpPar(0.),
+     fProcess(kDpmMb)
 {
 // Constructor
-    fParticles = 0;
-    fDPMjet = 0;
     AliDpmJetRndm::SetDpmJetRandom(GetRandom());
 }
 
 
 //______________________________________________________________________________
 AliGenDPMjet::AliGenDPMjet(Int_t npart)
-    :AliGenMC(npart)
+    :AliGenMC(npart),
+     fBeamEn(2750.),
+     fEnergyCMS(5500.),
+     fMinImpactParam(0.),
+     fMaxImpactParam(5.),
+     fICentr(0),
+     fSelectAll(0),
+     fFlavor(0),
+     fTrials(0),
+     fSpectators(1),
+     fSpecn(0),
+     fSpecp(0),
+     fDPMjet(0),
+     fParticles(new TClonesArray("TParticle",10000)),
+     fNoGammas(0),
+     fLHC(0),
+     fPi0Decay(0),
+     fGenImpPar(0.),
+     fProcess(kDpmMb)
 {
 // Default PbPb collisions at 5. 5 TeV
 //
     fName = "DPMJET";
     fTitle= "Particle Generator using DPMJET";
-
-    SetEnergyCMS();
     SetTarget();
     SetProjectile();
-    SetCentral();
-    SetImpactParameterRange();
-    SetBoostLHC();
-    
-    fKeep       =  0;
-    fDecaysOff  =  1;
-    fEvaluate   =  0;
-    fSelectAll  =  0;
-    fFlavor     =  0;
-    fSpectators =  1;
     fVertex.Set(3);
-        
-    fParticles = new TClonesArray("TParticle",10000);    
-
-    // Set random number generator   
-    fDPMjet = 0;
     // Instance AliPythia
     AliPythia::Instance(); 
     AliDpmJetRndm::SetDpmJetRandom(GetRandom());
 }
 
 AliGenDPMjet::AliGenDPMjet(const AliGenDPMjet &/*Dpmjet*/)
-:AliGenMC()
+    :AliGenMC(),
+     fBeamEn(2750.),
+     fEnergyCMS(5500.),
+     fMinImpactParam(0.),
+     fMaxImpactParam(5.),
+     fICentr(0),
+     fSelectAll(0),
+     fFlavor(0),
+     fTrials(0),
+     fSpectators(1),
+     fSpecn(0),
+     fSpecp(0),
+     fDPMjet(0),
+     fParticles(0),
+     fNoGammas(0),
+     fLHC(0),
+     fPi0Decay(0),
+     fGenImpPar(0.),
+     fProcess(kDpmMb)
 {
+    // Dummy copy constructor
 }
 
 //______________________________________________________________________________
@@ -93,8 +128,6 @@ AliGenDPMjet::~AliGenDPMjet()
 // Destructor
     delete fParticles;
 }
-
-
 //______________________________________________________________________________
 void AliGenDPMjet::Init()
 {
@@ -115,7 +148,7 @@ void AliGenDPMjet::Init()
     
     fDPMjet->SetfFCentr(fICentr);  
     fDPMjet->SetbRange(fMinImpactParam, fMaxImpactParam); 
-    
+    fDPMjet->SetPi0Decay(fPi0Decay);
 //
 //  Initialize DPMjet  
 //    
@@ -291,81 +324,6 @@ void AliGenDPMjet::Generate()
   MakeHeader();
   SetHighWaterMark(nt);
 }
-
-
-//______________________________________________________________________________
-void AliGenDPMjet::KeepFullEvent()
-{
-    fKeep=1;
-}
-
-
-//______________________________________________________________________________
-/*void AliGenDPMjet::EvaluateCrossSections()
-{
-//     Glauber Calculation of geometrical x-section
-//
-    Float_t xTot       = 0.;          // barn
-    Float_t xTotHard   = 0.;          // barn 
-    Float_t xPart      = 0.;          // barn
-    Float_t xPartHard  = 0.;          // barn 
-    Float_t sigmaHard  = 0.1;         // mbarn
-    Float_t bMin       = 0.;
-    Float_t bMax       = fDPMjet->GetProjRadius()+fDPMjet->GetTargRadius();
-    const Float_t kdib = 0.2;
-    Int_t   kMax       = Int_t((bMax-bMin)/kdib)+1;
-
-
-    printf("\n Projectile Radius (fm): %f \n",fDPMjet->GetProjRadius());
-    printf("\n Target     Radius (fm): %f \n",fDPMjet->GetTargRadius());    
-    Int_t i;
-    Float_t oldvalue= 0.;
-
-    Float_t* b   = new Float_t[kMax];
-    Float_t* si1 = new Float_t[kMax];    
-    Float_t* si2 = new Float_t[kMax];    
-    
-    for (i = 0; i < kMax; i++)
-    {
-	Float_t xb  = bMin+i*kdib;
-	Float_t ov;
-	ov=fDPMjet->Profile(xb);
-	// ATT!->Manca la x-sec anel. nucleone-nucleone
-	Float_t gb  =  2.*0.01*fDPMjet->TMath::Pi()*kdib*xb*(1.-TMath::Exp(-fDPMjet->GetXSFrac()*ov));
-	Float_t gbh =  2.*0.01*fDPMjet->TMath::Pi()*kdib*xb*sigmaHard*ov;
-	xTot+=gb;
-	xTotHard += gbh;
-	if (xb > fMinImpactParam && xb < fMaxImpactParam)
-	{
-	    xPart += gb;
-	    xPartHard += gbh;
-	}
-	
-	if(oldvalue) if ((xTot-oldvalue)/oldvalue<0.0001) break;
-	oldvalue = xTot;
-	printf("\n Total cross section (barn): %d %f %f \n",i, xb, xTot);
-	printf("\n Hard  cross section (barn): %d %f %f \n\n",i, xb, xTotHard);
-	if (i>0) {
-	    si1[i] = gb/kdib;
-	    si2[i] = gbh/gb;
-	    b[i]  = xb;
-	}
-    }
-
-    printf("\n Total cross section (barn): %f \n",xTot);
-    printf("\n Hard  cross section (barn): %f \n \n",xTotHard);
-    printf("\n Partial       cross section (barn): %f %f \n",xPart, xPart/xTot*100.);
-    printf("\n Partial  hard cross section (barn): %f %f \n",xPartHard, xPartHard/xTotHard*100.);
-
-//  Store result as a graph
-    b[0] = 0;
-    si1[0] = 0;
-    si2[0]=si2[1];
-    
-    fDsigmaDb  = new TGraph(i, b, si1);
-    fDnDb      = new TGraph(i, b, si2);
-}*/
-
 
 //______________________________________________________________________________
 Bool_t AliGenDPMjet::DaughtersSelection(TParticle* iparticle)

@@ -90,36 +90,47 @@ extern "C" void   type_of_call dt_rndmou(Int_t &, Int_t &, Int_t &, Int_t &, Int
 
 ClassImp(TDPMjet)
 
+
 //______________________________________________________________________________
-TDPMjet::TDPMjet() : TGenerator("dpmjet","dpmjet")
+    TDPMjet::TDPMjet() : 
+	TGenerator("dpmjet","dpmjet"),
+	fNEvent(0),
+	fIp(0),
+	fIpz(0),
+	fIt(0),
+	fItz(0),
+	fEpn(0.),
+	fPpn(0.),
+	fCMEn(0.),
+	fIdp(0),
+	fBmin(0.),
+	fBmax(0.),
+	fFCentr(0),
+	fPi0Decay(0),
+	fProcess(kDpmMb)
 {
-    fNEvent  = 0;
-    fIp      = 0;
-    fIpz     = 0;
-    fIt      = 0;
-    fItz     = 0;
-    fEpn     = 0;
-    fCMEn    = 0;
-    fIdp     = 0;
-    fProcess = kDpmMb;
+// Default Constructor
 }
 
 //______________________________________________________________________________
 TDPMjet::TDPMjet(DpmProcess_t  iproc, Int_t Ip=208, Int_t Ipz=82, Int_t It=208, Int_t Itz=82, 
-	Double_t Epn=2700., Double_t CMEn=5400.) 
-	: TGenerator("dpmjet","dpmjet")
+		 Double_t Epn=2700., Double_t CMEn=5400.) 
+    : TGenerator("dpmjet","dpmjet"),
+      fNEvent(0),
+      fIp(Ip),
+      fIpz(Ipz),
+      fIt(It),
+      fItz(Itz),
+      fEpn(Epn),
+      fCMEn(CMEn),
+      fIdp(0),
+      fBmin(0.),
+      fBmax(0.),
+      fFCentr(0),
+      fPi0Decay(0),
+      fProcess(iproc)
 {  
     printf("TDPMJet Constructor %d %d %d %d \n", Ip, Ipz, It, Itz);
-    
-   fNEvent  = 0;
-   fIp      = Ip;
-   fIpz     = Ipz;
-   fIt      = It;
-   fItz     = Itz;
-   fEpn     = Epn;
-   fCMEn    = CMEn;
-   fIdp     = 0;
-   fProcess = iproc;
 }
 
 
@@ -243,7 +254,9 @@ void TDPMjet::Initialize()
     fprintf(out, "BEAM      %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",fEpn, fEpn, 0., 0., 0., 0.);
 //  Centrality
     fprintf(out, "CENTRAL   %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n",-1., fBmin, fBmax, 0., 0., 0.);
-
+//  Particle decays
+    if (fPi0Decay) 
+    fprintf(out, "PARDECAY  %10.1f%10.1f%10.1f%10.1f%10.1f%10.1f\n", 2., 0., 0., 0., 0., 0.);    
 //
 //  PHOJET specific
     fprintf(out, "PHOINPUT\n");

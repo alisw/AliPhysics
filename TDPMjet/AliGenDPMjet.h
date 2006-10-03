@@ -32,14 +32,11 @@ class AliGenDPMjet : public AliGenMC
 			{fMinImpactParam=bmin; fMaxImpactParam=bmax;}
     virtual void    SetProcess(DpmProcess_t iproc) {fProcess = iproc;}
     virtual void    SetCentral(Int_t icentr=-2) {fICentr = icentr;}
-    virtual void    KeepFullEvent();
-    virtual void    SetDecaysOff(Int_t flag=1)        {fDecaysOff  = flag;}
     virtual void    SetFlavor(Int_t flag=0)           {fFlavor     = flag;}
-    virtual void    SetEvaluate(Int_t flag=0)         {fEvaluate   = flag;}
     virtual void    SetSelectAll(Int_t flag=0)        {fSelectAll  = flag;}
     virtual void    SetSpectators(Int_t spects=1)     {fSpectators = spects;}
     virtual void    SetBoostLHC(Int_t flag=0)         {fLHC        = flag;}
-	    
+    virtual void    SetPi0Decay(Int_t iPi0)  {fPi0Decay = iPi0;}
     virtual Float_t GetEnergyCMS() {return fEnergyCMS;}
     virtual void    GetProjectile(Int_t& a, Int_t& z)
 			{a = fAProjectile; z = fZProjectile;}    
@@ -66,26 +63,17 @@ class AliGenDPMjet : public AliGenMC
     Float_t       fMinImpactParam; // minimum impact parameter
     Float_t       fMaxImpactParam; // maximum impact parameter	
     Int_t	  fICentr;	   // Flag to force central production
-    Float_t	  fCrossSec;	   // Fraction of x-section
-    Int_t         fKeep;           // Flag to keep full event information
-    Int_t         fDecaysOff;      // Flag to turn off decays of pi0, K_s, D, Lambda, sigma
-    Int_t         fEvaluate;       // Evaluate total and partial cross-sections
     Int_t         fSelectAll;      // Flag to write the full event
     Int_t         fFlavor;         // Selected particle flavor 4: charm+beauty 5: beauty
     Int_t         fTrials;         // Number of trials
-    TArrayI       fParentSelect;   // Parent particles to be selected 
-    TArrayI       fChildSelect;    // Decay products to be selected
-    Float_t       fXsection;       // Cross-section
     Int_t         fSpectators;     // put spectators on stack
     Int_t 	  fSpecn;	   // Num. of spectator neutrons
     Int_t 	  fSpecp;	   // Num. of spectator protons
     TDPMjet      *fDPMjet;         // DPMjet
-    TGraph*       fDsigmaDb;       // dSigma/db for the system
-    TGraph*       fDnDb;           // dNBinaryCollisions/db
     TClonesArray *fParticles;      // Particle List
     Int_t         fNoGammas;       // Don't write gammas if flag "on"
     Int_t         fLHC;            // Assume LHC as lab frame
-    // Temporaneo!
+    Int_t         fPi0Decay;       // Flag for pi0 decays
     Float_t	  fGenImpPar;	   // GeneratedImpactParameter
     DpmProcess_t  fProcess;        // Process type
     
