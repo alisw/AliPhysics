@@ -122,6 +122,7 @@ AliMUON::AliMUON()
     fTriggerScalerEvent(kFALSE),
     fTriggerResponseV1(kFALSE),
     fTriggerCoinc44(0),
+    fTriggerEffCells(0),
     fSDigitizerType(""),
     fDigitizerType(""),
     fRawWriter(0x0),
@@ -160,6 +161,7 @@ AliMUON::AliMUON(const char *name, const char *title,
     fTriggerScalerEvent(kFALSE),
     fTriggerResponseV1(kFALSE),
     fTriggerCoinc44(0),
+    fTriggerEffCells(0),
     fSDigitizerType(sDigitizerClassName),
     fDigitizerType(digitizerClassName),
     fRawWriter(0x0),
@@ -449,19 +451,15 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
   }
   else if ( fDigitizerType == "digitizer:NewDigitizerNewTrigger" ) 
   {
-    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerElectronics);
+      return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerElectronics,kTRUE);
   }
   else if ( fDigitizerType == "digitizer:NewDigitizerOldTrigger" )
   {
-    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kFALSE, kFALSE);
+    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kFALSE);
   }
-  else if ( fDigitizerType == "digitizer:NewDigitizerEffTrigger" )
-  {
-    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kTRUE, kFALSE);
-  }  
   else if ( fDigitizerType == "digitizer:NewDigitizerWithNoiseOldTrigger" )
   {
-    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kFALSE, kTRUE);
+    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kTRUE);
   }    
   else
   {
@@ -644,6 +642,16 @@ Int_t  AliMUON::GetTriggerCoinc44() const
 /// Returns fTriggerCoinc44
 ///  
     return fTriggerCoinc44;
+    
+}
+
+//____________________________________________________________________
+Int_t  AliMUON::GetTriggerEffCells() const
+{
+///
+/// Returns fTriggerEffCells
+///  
+    return fTriggerEffCells;
     
 }  
 

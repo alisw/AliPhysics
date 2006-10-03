@@ -78,7 +78,6 @@ ClassImp(AliMUONDigitizerV3)
 //_____________________________________________________________________________
 AliMUONDigitizerV3::AliMUONDigitizerV3(AliRunDigitizer* manager, 
                                        ETriggerCodeVersion triggerCodeVersion,
-                                       Bool_t useTriggerEfficiency,
                                        Bool_t generateNoisyDigits)
 : AliDigitizer(manager),
 fIsInitialized(kFALSE),
@@ -86,7 +85,6 @@ fOutputData(0x0),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
 fTriggerCodeVersion(triggerCodeVersion),
-fUseTriggerEfficiency(useTriggerEfficiency),
 fTriggerEfficiency(0x0),
 fFindDigitIndexTimer(),
 fGenerateNoisyDigitsTimer(),
@@ -721,7 +719,7 @@ AliMUONDigitizerV3::Init()
   AliDebug(1,Form("Using the following trigger code %s - %s",
                   fTriggerProcessor->GetName(),fTriggerProcessor->GetTitle()));
   
-  if ( fUseTriggerEfficiency )
+  if ( muon()->GetTriggerEffCells() )
   {
     fTriggerEfficiency = fCalibrationData->TriggerEfficiency();
     if ( fTriggerEfficiency )

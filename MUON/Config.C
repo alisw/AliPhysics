@@ -162,7 +162,7 @@ void Config(char directory[100]="", char option[6]="param")
 
   AliMUON *MUON = new AliMUONv1("MUON");
 
-  //To get old behavior (which usage is no longer supported), please use :
+  // To get old behavior (which usage is no longer supported), please use :
   // 
   //  AliMUON* MUON = new AliMUONv1("MUON","FactoryV3",
   //                                "AliMUONSDigitizerv1",
@@ -170,20 +170,17 @@ void Config(char directory[100]="", char option[6]="param")
   //
   // To get brand new trigger code, please use :
   //
-  // AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
+  //  AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
   //				"sdigitizer:AliMUONSDigitizerV2",
   //				"digitizer:NewDigitizerNewTrigger");
-  // activate trigger cluster-size i.e. ResponseTriggerV1 (default/v1 = 0/1)
-  // MUON->SetTriggerResponseV1(0);
+  // activate trigger cluster-size (0=default, 1=cluster-size according to AliMUONResponseTriggerV1
+  //  MUON->SetTriggerResponseV1(0);
   // activate 4/4 trigger coincidence (0(default)/1 = coinc 34/44)
-  // MUON->SetTriggerCoinc44(0);
+  //  MUON->SetTriggerCoinc44(0);
+  // activate trigger chamber efficiency by cells (0=default, 1=trigger efficiency according to AliMUONTriggerEfficiencyCells
+  //  MUON->SetTriggerEffCells(0);  
   //
-  // To enable Trigger Chamber Efficiency, please use :
   //
-  // AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
-  //                              "sdigitizer:AliMUONSDigitizerV2",
-  //                              "digitizer:NewDigitizerEffTrigger");
-  // 
   // If SetAlign, the detection elements transformations
   // are taken from the input file and not from the code
   // MUON->SetAlign("transform.dat");

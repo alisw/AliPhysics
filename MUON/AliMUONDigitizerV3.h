@@ -39,7 +39,6 @@ public:
   
   AliMUONDigitizerV3(AliRunDigitizer* manager=0, 
                      ETriggerCodeVersion=kTriggerDecision,
-                     Bool_t useTriggerEfficiency=kFALSE,
                      Bool_t generateNoisyDigits=kTRUE);
   virtual ~AliMUONDigitizerV3();
 
@@ -81,7 +80,6 @@ private:
   AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
   TTask* fTriggerProcessor; ///< pointer to the trigger part of the job
   ETriggerCodeVersion fTriggerCodeVersion; ///< which version of trigger job
-  Bool_t fUseTriggerEfficiency; ///< whether or not we should apply trigger efficiency
   AliMUONTriggerEfficiencyCells* fTriggerEfficiency; ///< trigger efficiency map  
   mutable TStopwatch fFindDigitIndexTimer; //!< counting time spent in FindDigitIndex
   TStopwatch fGenerateNoisyDigitsTimer; //!< counting time spent in GenerateNoisyDigits()

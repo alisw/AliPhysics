@@ -132,6 +132,10 @@ class AliMUON : public  AliDetector
     virtual void  SetTriggerCoinc44(Int_t trigCoinc44 = 0)
 	{fTriggerCoinc44 = trigCoinc44;}
     virtual Int_t GetTriggerCoinc44() const;
+    // trigger chamber efficiency by cells
+    virtual Bool_t SetTriggerEffCells(Bool_t trigEffCells = false)
+	{fTriggerEffCells = trigEffCells;}
+    virtual Int_t GetTriggerEffCells() const;
     
     // Getters
                   /// Return reference to Chamber \a id
@@ -184,10 +188,10 @@ class AliMUON : public  AliDetector
     Int_t fMaxIterPad;        ///< Maximum pad index
     Int_t fCurIterPad;        ///< Current pad index
    
-    // setting scaler for trigger
     Bool_t fTriggerScalerEvent; ///< Flag to generates scaler event
     Bool_t fTriggerResponseV1;  ///< Flag to select TriggerResponseV1
     Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 
+    Bool_t fTriggerEffCells;    ///< Flag to select TriggerEffCells
     
     TString fSDigitizerType;    ///< Class to use for SDigitizer
     TString fDigitizerType;     ///< Class to use for Digitizer
