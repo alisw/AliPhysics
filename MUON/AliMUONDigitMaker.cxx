@@ -15,23 +15,28 @@
 
 ////////////////////////////////////
 ///
-/// MUON Digit maker from rawdata in ALICE-MUON
-/// Using new interface with AliMUONRawStreamTracker(Trigger)
-/// (New interface of AliMUONRawReader class)
-/// Class version 1 (further details could be found in Alice-note)
-///
-/// Implemented non-constant buspatch numbers for tracking
-/// with correct DDL id (first guess)
-/// (Ch. Finck, dec 2005)
-///
+/// MUON Digit maker from rawdata.
 ///
 /// Raw2Digits:
 /// Using real mapping  for tracker
 /// Indranil Das (Adapted for runloader: Ch. Finck) july 05
+///
+/// Implemented non-constant buspatch numbers for tracking
+/// with correct DDL id.
+/// (Ch. Finck, dec 05)
+///
 /// Add reader for scaler trigger events
 /// Use memcpy instead of assignment elt by elt
 /// (Ch. Finck, Jan 06)
-/// 
+///
+/// Using new interface with AliMUONRawStreamTracker(Trigger)
+/// (New interface of AliMUONRawReader class)
+/// (further details could be found in Alice-note)
+/// (Ch. Finck, March 06)
+///
+/// Add (S)Digit maker tracker (for free)
+/// and for trigger. Create trigger inverse mapping.
+/// (Ch. Finck, oct 06) 
 ////////////////////////////////////
 
 #include <fstream>
@@ -413,47 +418,47 @@ void AliMUONDigitMaker::GetTriggerChamber(AliMUONLocalStruct* localStruct, Int_t
 					  Int_t& iChamber, Int_t& iCath, Int_t icase)
 {
 
-  // get chamber & cathode number
+  // get chamber & cathode number, (chamber starts at 0 !)
     switch(icase) {
     case 0: 
       xyPattern =  localStruct->GetX1();
       iCath = 0;
-      iChamber = 11;
+      iChamber = 10;
       break;
     case 1: 
       xyPattern =  localStruct->GetX2();
       iCath = 0;
-      iChamber = 12;
+      iChamber = 11;
       break;
     case 2: 
       xyPattern =  localStruct->GetX3();
       iCath = 0;
-      iChamber = 13;
+      iChamber = 12;
       break;
     case 3: 
       xyPattern =  localStruct->GetX4();
       iCath = 0;
-      iChamber = 14;
+      iChamber = 13;
       break;
     case 4: 
       xyPattern =  localStruct->GetY1();
       iCath = 1;
-      iChamber = 11;
+      iChamber = 10;
       break;
     case 5: 
       xyPattern =  localStruct->GetY2();
       iCath = 1;
-      iChamber = 12;
+      iChamber = 11;
       break;
     case 6: 
       xyPattern =  localStruct->GetY3();
       iCath = 1;
-      iChamber = 13;
+      iChamber = 12;
       break;
     case 7: 
       xyPattern =  localStruct->GetY4();
       iCath = 1;
-      iChamber = 14;
+      iChamber = 13;
       break;
     }
 }

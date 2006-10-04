@@ -466,7 +466,7 @@ Int_t AliMUONTriggerCircuitNew::DetElemId(Int_t ichamber, char side, Int_t iline
         break;		
     }
   }    
-  return (ichamber*100)+itmp;      
+  return ((ichamber+1)*100)+itmp;      
 }
 
 //----------------------------------------------------------------------
@@ -474,8 +474,12 @@ Int_t
 AliMUONTriggerCircuitNew::DetElemId(Int_t iChamber, const char* boardName)
 {
 /// returns detection element Id for chamber iChamber and board boardName
-  char side = boardName[0];
-  Int_t iline = boardName[4] - '0';
+  char side;
+  Int_t iline;
+  Int_t icol;
+
+  DecodeBoardName(boardName, side, iline, icol);
+
   return DetElemId(iChamber,side,iline);
 }
 
