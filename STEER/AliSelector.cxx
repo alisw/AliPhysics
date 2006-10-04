@@ -50,8 +50,8 @@
 #include <TFile.h>
 #include <TTimeStamp.h>
 
-#include <AliLog.h>
-#include <AliESD.h>
+#include "AliLog.h"
+#include "AliESD.h"
 
 ClassImp(AliSelector)
 
