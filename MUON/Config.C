@@ -155,30 +155,28 @@ void Config(char directory[100]="", char option[6]="param")
   //
   // - "FactoryV4", that is all stations using new segmentations/mapping
   // - "sdigitizer:AliMUONSDigitizerV2", performing decalibration
-  // - "digitizer:NewDigitizerWithNoiseOldTrigger" => 
+  // - "digitizer:NewDigitizerNewTrigger" => 
   //    digitizer=AliMUONDigitizerV3,
-  //    using the "old" trigger code, performing calibration, and
+  //    using the "new" trigger code, performing calibration, and
   //    generating noise-only digits for the tracker.
 
   AliMUON *MUON = new AliMUONv1("MUON");
 
-  // To get old behavior (which usage is no longer supported), please use :
-  // 
-  //  AliMUON* MUON = new AliMUONv1("MUON","FactoryV3",
-  //                                "AliMUONSDigitizerv1",
-  //                                "AliMUONDigitizerv2");
+  // the 3 switches below are to be used for the trigger code
+  // their default value is set in AliMUON.h
+  // activate trigger cluster-size (0=default, 1=cluster-size according to AliMUONResponseTriggerV1
+  //  MUON->SetTriggerResponseV1(0);
+  // activate 4/4 trigger coincidence (0=default (coinc 3/4), 1=coinc 4/4)
+  //  MUON->SetTriggerCoinc44(0);
+  // activate trigger chamber efficiency by cells (0=default, 1=trigger efficiency according to AliMUONTriggerEfficiencyCells
+  //  MUON->SetTriggerEffCells(0);
+
   //
-  // To get brand new trigger code, please use :
+  // To get old trigger code, please use :
   //
   //  AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
   //				"sdigitizer:AliMUONSDigitizerV2",
-  //				"digitizer:NewDigitizerNewTrigger");
-  // activate trigger cluster-size (0=default, 1=cluster-size according to AliMUONResponseTriggerV1
-  //  MUON->SetTriggerResponseV1(0);
-  // activate 4/4 trigger coincidence (0(default)/1 = coinc 34/44)
-  //  MUON->SetTriggerCoinc44(0);
-  // activate trigger chamber efficiency by cells (0=default, 1=trigger efficiency according to AliMUONTriggerEfficiencyCells
-  //  MUON->SetTriggerEffCells(0);  
+  //				"digitizer:NewDigitizerWithNoiseOldTrigger");
   //
   //
   // If SetAlign, the detection elements transformations

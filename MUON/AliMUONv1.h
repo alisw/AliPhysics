@@ -26,7 +26,7 @@ class AliMUONv1 : public AliMUON
    AliMUONv1();
    AliMUONv1(const char *name, const char *title="FactoryV4",
            const char* sDigitizerType="sdigitizer:AliMUONSDigitizerV2",
-           const char* digitizerType="digitizer:NewDigitizerWithNoiseOldTrigger");
+           const char* digitizerType="digitizer:NewDigitizerNewTrigger");
    virtual  ~AliMUONv1();
    virtual void   CreateGeometry();
    virtual void   CreateMaterials();
