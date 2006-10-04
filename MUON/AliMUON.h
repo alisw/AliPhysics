@@ -133,9 +133,9 @@ class AliMUON : public  AliDetector
 	{fTriggerCoinc44 = trigCoinc44;}
     virtual Int_t GetTriggerCoinc44() const;
     // trigger chamber efficiency by cells
-    virtual Bool_t SetTriggerEffCells(Bool_t trigEffCells = false)
+    virtual void SetTriggerEffCells(Bool_t trigEffCells = false)
 	{fTriggerEffCells = trigEffCells;}
-    virtual Int_t GetTriggerEffCells() const;
+    virtual Bool_t GetTriggerEffCells() const;
     
     // Getters
                   /// Return reference to Chamber \a id

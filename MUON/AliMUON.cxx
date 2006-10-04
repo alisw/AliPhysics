@@ -646,7 +646,7 @@ Int_t  AliMUON::GetTriggerCoinc44() const
 }
 
 //____________________________________________________________________
-Int_t  AliMUON::GetTriggerEffCells() const
+Bool_t  AliMUON::GetTriggerEffCells() const
 {
 ///
 /// Returns fTriggerEffCells
