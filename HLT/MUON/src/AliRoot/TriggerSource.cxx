@@ -20,7 +20,7 @@
 #include "AliMUON.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHit.h"
-#include "AliMUONLocalTrigger.h"
+//#include "AliMUONLocalTrigger.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONDataInterface.h"
 #include "TDatabasePDG.h"
@@ -675,7 +675,8 @@ void AliHLTMUONTriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* 
 
 		case kFromLocalTriggers:
 			Assert( module != NULL );
-			DebugMsg(4, "Taking kFromLocalTriggers branch...");
+			DebugMsg(4, "THIS OPTION IS DEPRICATED!!!");
+/* THIS CODE IS DEPRICATED (to be removed)
 			for (Int_t i = 0; i < data->NumberOfLocalTriggers(); i++)
 			{
 				DebugMsg(4, "for loop: i = " << i);
@@ -695,6 +696,7 @@ void AliHLTMUONTriggerSource::AddEventFrom(AliMUONDataInterface* data, AliMUON* 
 					}
 				}
 			}
+*/
 			break;
 
 		default:
@@ -726,10 +728,12 @@ void AliHLTMUONTriggerSource::AddTriggerFrom(AliMUONDataInterface* data, AliMUON
 
 	case kFromLocalTriggers:
 		{
+/* THIS CODE IS DEPRICATED (to be removed)
 		Assert( module != NULL );
 		AliMUONLocalTrigger* lt = data->LocalTrigger(trigger);
 		FillTriggerFromLocalTrigger(lt, module, trigdata);
 		trigdata.TriggerNumber(trigger);
+*/
 		}
 		break;
 
@@ -762,6 +766,8 @@ Bool_t AliHLTMUONTriggerSource::InFillRegion(const AliHLTMUONTriggerRecord& data
 	}
 }
 
+
+/* THIS CODE IS DEPRICATED (to be removed)
 
 void AliHLTMUONTriggerSource::FillTriggerFromLocalTrigger(
 		AliMUONLocalTrigger* trigger, AliMUON* module, AliHLTMUONTriggerRecord& record
@@ -814,6 +820,7 @@ void AliHLTMUONTriggerSource::FillTriggerFromLocalTrigger(
 	DebugMsg(2, "fStation2x = " << record.Station2Point().X());
 	DebugMsg(2, "fStation2y = " << record.Station2Point().Y());
 }
+*/
 
 
 Bool_t AliHLTMUONTriggerSource::FillTriggerFromHits(

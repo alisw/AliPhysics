@@ -21,7 +21,7 @@
 #include "AliRoot/TriggerRecord.hpp"
 
 class AliMUON;
-class AliMUONLocalTrigger;
+//class AliMUONLocalTrigger;
 class AliMUONDataInterface;
 
 
@@ -266,10 +266,13 @@ private:
 	   if the fUseLookupTable is set to true then we use the L0 lookup table to
 	   fill the Pt value otherwise we use the PtCal method in AliMUONTriggerCircuit.
 	   Note the fTriggerNumber parameter is not filled in to 'record'.
+	   THIS METHOD IS DEPRICATED
 	 */
+/*
 	void FillTriggerFromLocalTrigger(
 			AliMUONLocalTrigger* trigger, AliMUON* module, AliHLTMUONTriggerRecord& record
 		);
+*/
 	
 	/* Fills the TriggerRecord structure from AliMUONHit objects.
 	   The hits on the last 4 chambers are used (i.e. chambers 11 to 14).
