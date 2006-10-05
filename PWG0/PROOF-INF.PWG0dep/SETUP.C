@@ -8,8 +8,6 @@ void SETUP()
    CheckLoadLibrary("libMinuit");
    CheckLoadLibrary("libSTEER");
 
-   CheckLoadLibrary("libPWG0dep");
-
    // more packages to access the alice event header
    CheckLoadLibrary("libEVGEN");
    CheckLoadLibrary("libFASTSIM");
@@ -18,6 +16,8 @@ void SETUP()
    CheckLoadLibrary("libpythia6");
    CheckLoadLibrary("libEGPythia6");
    CheckLoadLibrary("libAliPythia6");
+
+   CheckLoadLibrary("libPWG0dep");
 
    // Set the Include paths
    gROOT->ProcessLine(".include PWG0dep");
