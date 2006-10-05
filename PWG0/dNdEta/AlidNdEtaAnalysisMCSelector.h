@@ -27,6 +27,7 @@ class AlidNdEtaAnalysisMCSelector : public AliSelectorRL {
 
     TH3F* fVertex;  //! vertex of counted particles
     TH1F* fPartEta; //! counted particles as function of eta
+    TH1F* fPartPt; //! counted particles as function of pt
     Int_t fEvents;  //! number of processed events
 
     AlidNdEtaAnalysisMCSelector(const AlidNdEtaAnalysisMCSelector&);

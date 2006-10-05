@@ -1,7 +1,6 @@
 # $Id$
 
-HDRS = AliSelector.h \
-      dNdEta/dNdEtaAnalysis.h \
+HDRS = dNdEta/dNdEtaAnalysis.h \
       dNdEta/AlidNdEtaCorrection.h \
       esdTrackCuts/AliESDtrackCuts.h \
       AliCorrectionMatrix.h \
@@ -13,6 +12,6 @@ SRCS = $(HDRS:.h=.cxx)
 
 DHDR= PWG0baseLinkDef.h
 
-EINCLUDE=
+EINCLUDE= 
 
 all-PWG0: all-PWG0base all-PWG0selectors all-PWG0dep

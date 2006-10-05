@@ -23,12 +23,13 @@
 
 #include <AliHeader.h>
 #include <AliGenEventHeader.h>
-#include <AliGenPythiaEventHeader.h>
-#include <AliGenCocktailEventHeader.h>
+#include <../PYTHIA6/AliGenPythiaEventHeader.h>
+#include <../EVGEN/AliGenCocktailEventHeader.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEta/AlidNdEtaCorrection.h"
 #include "AliPWG0Helper.h"
+#include "AliPWG0depHelper.h"
 
 ClassImp(AlidNdEtaCorrectionSelector)
 
@@ -147,6 +148,26 @@ void AlidNdEtaCorrectionSelector::SlaveBegin(TTree * tree)
 
   fClustersITSNeg = new TH1F("clusters_its_neg", "clusters_its_neg", 7, -0.5, 6.5);
   fClustersTPCNeg = new TH1F("clusters_tpc_neg", "clusters_tpc_neg", 160, -0.5, 159.5);
+}
+
+void AlidNdEtaCorrectionSelector::Init(TTree* tree)
+{
+  // read the user objects
+
+  AliSelectorRL::Init(tree);
+
+  // Enable only the needed branches
+  if (tree)
+  {
+    tree->SetBranchStatus("*", 0);
+    tree->SetBranchStatus("fTriggerMask", 1);
+    tree->SetBranchStatus("fSPDVertex*", 1);
+    tree->SetBranchStatus("fTracks.fLabel", 1);
+    tree->SetBranchStatus("fTracks.fITSncls", 1);
+    tree->SetBranchStatus("fTracks.fTPCncls", 1);
+
+    AliESDtrackCuts::EnableNeededBranches(tree);
+  }
 }
 
 Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
@@ -308,7 +329,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   }
 
   // getting process information
-  Int_t processtype = AliPWG0Helper::GetPythiaEventProcessType(header);
+  Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
   AliDebug(AliLog::kDebug+1,Form(" Found pythia procces type %d", processtype));
 
   if (processtype<0)

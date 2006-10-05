@@ -33,12 +33,12 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   // constructor
   //
 
-  Float_t binLimitsPt[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 10.0, 100.0};
+  Float_t binLimitsPt[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 100.0};
 
   TString matrixName;
   matrixName.Form("%s_nTrackToNPart", name);
 
-  fTrack2ParticleCorrection = new AliCorrectionMatrix3D(matrixName, matrixName, 40, -20, 20, 60, -6, 6, 14, binLimitsPt);
+  fTrack2ParticleCorrection = new AliCorrectionMatrix3D(matrixName, matrixName, 40, -20, 20, 20, -2, 2, 15, binLimitsPt);
 
   Float_t binLimitsN[]   = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,
 			    10.5, 12.5, 14.5, 16.5, 18.5, 20.5, 25.5, 30.5, 40.5, 50.5, 100.5, 300.5};
@@ -59,7 +59,6 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   fTriggerBiasCorrectionMBToINEL ->SetAxisTitles("vtx z [cm]", "Ntracks");
   fTriggerBiasCorrectionMBToNSD  ->SetAxisTitles("vtx z [cm]", "Ntracks");
   fTriggerBiasCorrectionMBToND   ->SetAxisTitles("vtx z [cm]", "Ntracks");
-
 }
 
 //____________________________________________________________________

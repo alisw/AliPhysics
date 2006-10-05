@@ -12,7 +12,7 @@ void makeSystematics(Char_t* dataDir, Int_t nRuns=20, Int_t offset = 0, Bool_t d
   if (aProof)
     connectProof("proof01@lxb6046");
 
-  TString libraries("libEG;libGeom;libESD;libPWG0base;libVMC;libMinuit;libSTEER;libPWG0dep;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6");
+  TString libraries("libEG;libGeom;libESD;libVMC;libMinuit;libSTEER;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6;libPWG0base;libPWG0dep");
   TString packages("PWG0base;PWG0dep");
 
   if (!prepareQuery(libraries, packages, kTRUE))

@@ -2,10 +2,10 @@
 
 # this library contains classed that depend on STEER
 
-HDRS = AliSelectorRL.h
+HDRS = AliPWG0depHelper.h
 
 SRCS = $(HDRS:.h=.cxx)
 
 DHDR= PWG0depLinkDef.h
 
-EINCLUDE=
+EINCLUDE= EVGEN PYTHIA6

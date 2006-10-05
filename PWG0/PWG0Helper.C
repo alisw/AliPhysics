@@ -13,8 +13,6 @@ TVirtualProof* connectProof(const char* proofServer)
     return 0;
   }
 
-  proof->SetParallel(20);
-
   // enable the new packetizer
   //proof->AddInput(new TNamed("PROOF_Packetizer", "TPacketizerProgressive"));
 
@@ -131,11 +129,12 @@ Bool_t EnablePackageLocal(const char* package)
 {
   printf("Enabling package %s locally...\n", package);
 
+  TString currentDir(gSystem->pwd());
   if (!gSystem->cd(package))
     return kFALSE;
 
   gROOT->ProcessLine(".x PROOF-INF/SETUP.C");
-  gSystem->cd("..");
+  gSystem->cd(currentDir);
 
   return kTRUE;
 }
