@@ -272,3 +272,18 @@ void AliCorrectionMatrix::ReduceInformation()
     fhGene = 0;
   }
 }
+
+//____________________________________________________________________
+void AliCorrectionMatrix::Reset(Option_t* option)
+{
+  // resets the histograms
+
+  if (fhGene)
+    fhGene->Reset(option);
+
+  if (fhMeas)
+    fhMeas->Reset(option);
+
+  if (fhCorr)
+    fhCorr->Reset(option);
+}

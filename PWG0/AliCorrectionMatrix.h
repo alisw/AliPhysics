@@ -48,6 +48,8 @@ public:
 
   virtual void ReduceInformation();
 
+  virtual void Reset(Option_t* option = "");
+
 protected:
   TH1*    fhMeas;  // histogram of measured particles (or tracks)
   TH1*    fhGene;  // histogram of generated particles
