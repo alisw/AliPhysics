@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2006/10/05 15:46:26  jgrosseo
+applying to the new interface
+
 Revision 1.15  2006/10/02 16:38:39  jgrosseo
 update (alberto):
 fixed memory leaks
@@ -847,7 +850,7 @@ Bool_t AliShuttle::TryToStoreAgain(TString& gridURI)
 {
   // Called by TryToStoreAgain(), performs actual storage retry
 
-	TList* gridIds=0;
+	TObjArray* gridIds=0;
 
 	Bool_t result = kTRUE;
 
