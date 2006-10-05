@@ -8,6 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliSelectorRL+;
+#pragma link C++ class AliPWG0depHelper+;
 
 #endif

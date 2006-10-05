@@ -180,7 +180,7 @@ Bool_t AlidNdEtaAnalysisESDSelector::Process(Long64_t entry)
     return kTRUE;
   }
 
-  Float_t triggerCorr = fdNdEtaCorrection->GetTriggerCorrection(vtx[2], nGoodTracks);
+  Float_t triggerCorr = fdNdEtaCorrection->GetTriggerBiasCorrection(vtx[2], nGoodTracks);
   if (triggerCorr <= 0)
   {
     AliDebug(AliLog::kError, Form("INFO: Skipping event because triggerCorr is <= 0 (%f)", triggerCorr));

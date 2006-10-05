@@ -17,12 +17,12 @@
 #include <AliStack.h>
 #include <AliHeader.h>
 #include <AliGenEventHeader.h>
-#include <AliGenPythiaEventHeader.h>
-#include <AliGenCocktailEventHeader.h>
-
+#include <../PYTHIA6/AliGenPythiaEventHeader.h>
+#include <../EVGEN/AliGenCocktailEventHeader.h>
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
+#include "AliPWG0depHelper.h"
 #include "dNdEta/AlidNdEtaCorrection.h"
 
 ClassImp(AlidNdEtaSystematicsSelector)
@@ -206,7 +206,7 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     }
 
     // getting process information
-    Int_t processtype = AliPWG0Helper::GetPythiaEventProcessType(header);
+    Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
 
     AliDebug(AliLog::kInfo, Form("Pythia process type %d.",processtype));
 
@@ -232,11 +232,11 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEventAll(vtxMC[2], nGoodTracks);
 
       if (eventTriggered) {
-	if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-	if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+        if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+        if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[0]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
 
-	if (vertexReconstructed)
-	  if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[0]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+        if (vertexReconstructed)
+          if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[0]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
       }
     }
 
@@ -245,11 +245,11 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEventAll(vtxMC[2], nGoodTracks);
 
       if (eventTriggered) {
-	if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-	if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+        if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+        if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[1]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
 
-	if (vertexReconstructed)
-	  if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[1]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+        if (vertexReconstructed)
+          if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[1]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
       }
     }
 
@@ -258,11 +258,11 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
       if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEventAll(vtxMC[2], nGoodTracks);
 
       if (eventTriggered) {
-	if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
-	if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+        if (triggerBiasStudy) fdNdEtaCorrectionTriggerBias[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
+        if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[2]->FillEventWithTrigger(vtxMC[2], nGoodTracks);
 
-	if (vertexReconstructed)
-	  if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[2]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
+        if (vertexReconstructed)
+          if (vertexRecoStudy) fdNdEtaCorrectionVertexReco[2]->FillEventWithTriggerWithReconstructedVertex(vtxMC[2], nGoodTracks);
       }
     }
   }
@@ -602,6 +602,14 @@ void AlidNdEtaSystematicsSelector::Terminate()
   for (Int_t i=0; i<4; ++i)
     fdNdEtaCorrectionSpecies[i] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject(Form("correction_%d", i)));
   fSigmaVertex = dynamic_cast<TH1F*> (fOutput->FindObject("fSigmaVertex"));
+
+  fdNdEtaCorrectionVertexReco[0] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("vertexRecoND"));
+  fdNdEtaCorrectionVertexReco[1] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("vertexRecoSD"));
+  fdNdEtaCorrectionVertexReco[2] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("vertexRecoDD"));
+
+  fdNdEtaCorrectionTriggerBias[0] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("triggerBiasND"));
+  fdNdEtaCorrectionTriggerBias[1] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("triggerBiasSD"));
+  fdNdEtaCorrectionTriggerBias[2] = dynamic_cast<AlidNdEtaCorrection*> (fOutput->FindObject("triggerBiasDD"));
 
   if (fPIDParticles)
   {

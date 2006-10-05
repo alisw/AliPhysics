@@ -128,10 +128,12 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   dummy->SetYTitle("dN_{ch}/d#eta");
   dummy->GetYaxis()->SetTitleOffset(1);
 
-  histESDMBVtx->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
-  histESDMB->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
-  histESD->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
-  histESDNoPt->GetXaxis()->SetRangeUser(-0.7999, 0.7999);
+  Float_t etaLimit = 1.1999;
+
+  histESDMBVtx->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histESDMB->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histESD->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
+  histESDNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
 
   dummy->DrawCopy();
   histESDMBVtx->Draw("SAME");
@@ -214,6 +216,11 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   ratio->Draw();
   ratioNoPt->Draw("SAME");
 
+  TLegend* legend = new TLegend(0.6, 0.7, 0.95, 0.9);
+  legend->SetFillColor(0);
+  legend->AddEntry(ratio, "mc/esd");
+  legend->AddEntry(ratioNoPt, "mc/esd, not pt cut off corrected");
+  legend->Draw();
 }
 
 void ptSpectrum()
@@ -581,6 +588,7 @@ void Track2Particle1D(const char* fileName = "correction_map.root", const char* 
   pave->Draw();
 
   canvas->SaveAs(Form("Track2Particle1D_etapt_%s_%f.eps", fileName, upperPtLimit));
+  canvas->SaveAs(Form("Track2Particle1D_etapt_%s_%f.gif", fileName, upperPtLimit));
 }
 
 void CompareTrack2Particle1D(Float_t upperPtLimit = 9.9)

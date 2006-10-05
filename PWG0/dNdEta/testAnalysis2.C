@@ -11,16 +11,16 @@
 #include "../CreateESDChain.C"
 #include "../PWG0Helper.C"
 
-void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction", const char* option = "")
+void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kFALSE, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction", const char* option = "", const char* proofServer = "jgrosseo@lxb6046")
 {
   if (aProof)
-    connectProof("proof01@lxb6046");
+    connectProof(proofServer);
 
   TString libraries("libEG;libGeom;libESD;libPWG0base");
   TString packages("PWG0base");
   if (aMC != kFALSE)
   {
-    libraries += ";libVMC;libMinuit;libSTEER;libPWG0dep;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6";
+    libraries += ";libVMC;libMinuit;libSTEER;libEVGEN;libFASTSIM;libmicrocern;libpdf;libpythia6;libEGPythia6;libAliPythia6;libPWG0dep";
     packages += ";PWG0dep";
   }
 
@@ -33,19 +33,21 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
 
   TChain* chain = CreateESDChain(data, nRuns, offset);
 
-  // selection of esd tracks
-  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
-  if (!esdTrackCuts)
-  {
-    printf("ERROR: esdTrackCuts could not be created\n");
-    return;
-  }
 
   TList inputList;
-  inputList.Add(esdTrackCuts);
 
   if (aMC == kFALSE)
   {
+    // selection of esd tracks
+    AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
+    if (!esdTrackCuts)
+    {
+      printf("ERROR: esdTrackCuts could not be created\n");
+      return;
+    }
+
+    inputList.Add(esdTrackCuts);
+
     AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(correctionMapFolder, correctionMapFolder);
     dNdEtaCorrection->LoadHistograms(correctionMapFile, correctionMapFolder);
     dNdEtaCorrection->ReduceInformation();
@@ -58,7 +60,7 @@ void testAnalysis2(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC = kF
   TString selectorName = ((aMC == kFALSE) ? "AlidNdEtaAnalysisESDSelector" : "AlidNdEtaAnalysisMCSelector");
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 
-  selectorName += ".cxx++";
+  selectorName += ".cxx+";
 
   if (aDebug != kFALSE)
     selectorName += "g";

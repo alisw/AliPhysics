@@ -29,6 +29,7 @@ AlidNdEtaAnalysisMCSelector::AlidNdEtaAnalysisMCSelector() :
   fdNdEtaAnalysis(0),
   fVertex(0),
   fPartEta(0),
+  fPartPt(0),
   fEvents(0)
 {
   //
@@ -54,6 +55,7 @@ void AlidNdEtaAnalysisMCSelector::SlaveBegin(TTree * tree)
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
   fVertex = new TH3F("vertex_check", "vertex_check", 50, -50, 50, 50, -50, 50, 50, -50, 50);
   fPartEta = new TH1F("dndeta_check", "dndeta_check", 120, -6, 6);
+  fPartPt =  new TH1F("dndeta_check_pt", "dndeta_check_pt", 1000, 0, 10);
   fPartEta->Sumw2();
 }
 
@@ -61,7 +63,7 @@ void AlidNdEtaAnalysisMCSelector::Init(TTree *tree)
 {
   AliSelectorRL::Init(tree);
 
-  tree->SetBranchStatus("ESD", 0);
+  tree->SetBranchStatus("*", 0);
 }
 
 Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
@@ -110,6 +112,9 @@ Bool_t AlidNdEtaAnalysisMCSelector::Process(Long64_t entry)
     fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
 
     fPartEta->Fill(particle->Eta());
+
+    if (TMath::Abs(particle->Eta()) < 0.8)
+      fPartPt->Fill(particle->Pt());
   }
   fdNdEtaAnalysis->FillEvent(vtxMC[2], 1);
 
@@ -134,6 +139,7 @@ void AlidNdEtaAnalysisMCSelector::SlaveTerminate()
   }
 
   fOutput->Add(fdNdEtaAnalysis);
+  fOutput->Add(fPartPt);
 }
 
 void AlidNdEtaAnalysisMCSelector::Terminate()
@@ -143,10 +149,11 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
   AliSelectorRL::Terminate();
 
   fdNdEtaAnalysis = dynamic_cast<dNdEtaAnalysis*> (fOutput->FindObject("dndeta"));
+  fPartPt = dynamic_cast<TH1F*> (fOutput->FindObject("dndeta_check_pt"));
 
-  if (!fdNdEtaAnalysis)
+  if (!fdNdEtaAnalysis || !fPartPt)
   {
-    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p", (void*) fdNdEtaAnalysis));
+    AliDebug(AliLog::kError, Form("ERROR: Histograms not available %p %p", (void*) fdNdEtaAnalysis, (void*) fPartPt));
     return;
   }
 
@@ -172,5 +179,14 @@ void AlidNdEtaAnalysisMCSelector::Terminate()
 
     canvas->cd(2);
     fPartEta->Draw();
+  }
+
+  if (fPartPt)
+  {
+    fPartPt->Scale(1.0/fEvents);
+    fPartPt->Scale(1.0/fPartPt->GetBinWidth(1));
+
+    new TCanvas("control2", "control2", 500, 500);
+    fPartPt->Draw();
   }
 }

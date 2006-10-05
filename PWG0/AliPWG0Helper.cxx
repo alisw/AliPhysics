@@ -11,11 +11,6 @@
 #include <AliESD.h>
 #include <AliESDVertex.h>
 
-#include <AliGenEventHeader.h>
-#include <AliGenPythiaEventHeader.h>
-#include <AliGenCocktailEventHeader.h>
-
-
 //____________________________________________________________________
 ClassImp(AliPWG0Helper)
 
@@ -116,47 +111,6 @@ Bool_t AliPWG0Helper::IsPrimaryCharged(TParticle* aParticle, Int_t aTotalPrimari
   }
 
   return kTRUE;
-}
-
-//____________________________________________________________________
-const Int_t AliPWG0Helper::GetPythiaEventProcessType(AliHeader* aHeader, Bool_t adebug) {
-  //
-  // get the process type of the event.
-  // 
-
-  // can only read pythia headers, either directly or from cocktalil header
-  AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader->GenEventHeader());
-  
-  if (!pythiaGenHeader) {
-    
-    AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(aHeader->GenEventHeader());
-    if (!genCocktailHeader) {
-      printf("AliPWG0Helper::GetProcessType : Unknown header type (not Pythia or Cocktail). \n");
-      return -1;
-    }
-
-    TList* headerList = genCocktailHeader->GetHeaders();
-    if (!headerList) {     
-      return -1;
-    }
-    
-    for (Int_t i=0; i<headerList->GetEntries(); i++) {
-      pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerList->At(i));
-      if (pythiaGenHeader)
-	break;
-    }        
-    
-    if (!pythiaGenHeader) {
-      printf("AliPWG0Helper::GetProcessType : Could not find Pythia header. \n");
-      return -1;
-    }
-  }
-  
-  if (adebug) {
-    printf("AliPWG0Helper::GetProcessType : Pythia process type found: %d \n",pythiaGenHeader->ProcessType());
-  }
-
-  return pythiaGenHeader->ProcessType();        
 }
 
 //____________________________________________________________________

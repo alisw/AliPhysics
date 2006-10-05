@@ -18,6 +18,7 @@ class AlidNdEtaCorrectionSelector : public AliSelectorRL {
     void ReadUserObjects(TTree* tree);
     virtual void    Begin(TTree *tree);
     virtual void    SlaveBegin(TTree *tree);
+    virtual void    Init(TTree *tree);
     virtual Bool_t  Process(Long64_t entry);
     virtual void    SlaveTerminate();
     virtual void    Terminate();
