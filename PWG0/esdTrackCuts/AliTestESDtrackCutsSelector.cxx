@@ -61,11 +61,11 @@ void AliTestESDtrackCutsSelector::ReadUserObjects(TTree* tree)
   // read the user objects, called from slavebegin and begin
 
   if (!fEsdTrackCutsAll && fInput)
-    fEsdTrackCutsAll = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsAll"));
+    fEsdTrackCutsAll = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsAll")->Clone());
   if (!fEsdTrackCutsPri && fInput)
-    fEsdTrackCutsPri = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsPri"));
+    fEsdTrackCutsPri = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsPri")->Clone());
   if (!fEsdTrackCutsSec && fInput)
-    fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsSec"));
+    fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (fInput->FindObject("esdTrackCutsSec")->Clone());
 
   if (!fEsdTrackCutsAll && tree)
     fEsdTrackCutsAll = dynamic_cast<AliESDtrackCuts*> (tree->GetUserInfo()->FindObject("esdTrackCutsAll"));
@@ -160,7 +160,8 @@ Bool_t AliTestESDtrackCutsSelector::Process(Long64_t entry)
       AliDebug(AliLog::kError, Form("UNEXPECTED: part with label %d not found in stack (track loop).", label));
       continue;
     }
-    if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
+
+    if (label < nPrim)
       fEsdTrackCutsPri->AcceptTrack(esdTrack);
     else
       fEsdTrackCutsSec->AcceptTrack(esdTrack);
@@ -196,6 +197,19 @@ void AliTestESDtrackCutsSelector::Terminate()
   // the results graphically or save the results to file.
 
   AliSelectorRL::Terminate();
+
+  if (fOutput)
+    fOutput->Print();
+
+  fEsdTrackCutsAll = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("esdTrackCutsAll"));
+  fEsdTrackCutsPri = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("esdTrackCutsPri"));
+  fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("esdTrackCutsSec"));
+
+  // check if the esd track cut objects are there
+  if (!fEsdTrackCutsAll || !fEsdTrackCutsPri || !fEsdTrackCutsSec) {
+    AliDebug(AliLog::kError, Form("fEsdTrackCutsXXX not available %p %p %p", fEsdTrackCutsAll, fEsdTrackCutsPri, fEsdTrackCutsSec));
+    return;
+  }
 
   TFile* file = TFile::Open("trackCuts.root", "RECREATE");
   fEsdTrackCutsAll->SaveHistograms("esdTrackCutsAll");

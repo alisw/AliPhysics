@@ -46,6 +46,8 @@ public:
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
+  AliESDtrackCuts(const AliESDtrackCuts& pd);  // Copy Constructor
+  AliESDtrackCuts &operator=(const AliESDtrackCuts &c);
 
   //######################################################
   // track quality cut setters  
@@ -153,12 +155,6 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
- private:
-
-  AliESDtrackCuts(const AliESDtrackCuts& pd);  // Copy Constructor
-  AliESDtrackCuts &operator=(const AliESDtrackCuts &c);
-  
-  
   ClassDef(AliESDtrackCuts, 1)
 };
 
