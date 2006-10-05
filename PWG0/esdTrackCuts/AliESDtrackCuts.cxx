@@ -71,6 +71,8 @@ AliESDtrackCuts::AliESDtrackCuts() : TNamed(),
   //
   // default constructor
   //
+
+  Init();
 }
 
 //____________________________________________________________________
@@ -378,7 +380,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
   if (fhCutStatistics) target.fhCutStatistics = (TH1F*) fhCutStatistics->Clone();
   if (fhCutCorrelation) target.fhCutCorrelation = (TH2F*) fhCutCorrelation->Clone();
 
-  TObject::Copy(c);
+  TNamed::Copy(c);
 }
 
 //_____________________________________________________________________________
