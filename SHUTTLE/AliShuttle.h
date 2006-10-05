@@ -51,8 +51,7 @@ public:
 
 	virtual UInt_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
 			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
-	virtual UInt_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
-			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
+	virtual UInt_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData);
 	virtual const char* GetFile(Int_t system, const char* detector,
 		const char* id, const char* source);
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id);

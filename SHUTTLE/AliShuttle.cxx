@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.15  2006/10/02 16:38:39  jgrosseo
+update (alberto):
+fixed memory leaks
+storing of objects that failed to be stored to the grid before
+interfacing of shuttle status table in daq system
+
 Revision 1.14  2006/08/29 09:16:05  jgrosseo
 small update
 
@@ -248,15 +254,13 @@ UInt_t AliShuttle::Store(const AliCDBPath& path, TObject* object,
 }
 
 //______________________________________________________________________________________________
-UInt_t AliShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object,
-		AliCDBMetaData* metaData, Int_t validityStart, Bool_t validityInfinite)
+UInt_t AliShuttle::StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData)
 {
   // Stores a CDB object in the storage for reference data. This objects will not be available during
   // offline reconstrunction. Use this function for reference data only!
   // It calls WriteToCDB function which perform actual storage
 
-	return WriteToCDB(fgkMainRefStorage, fgkLocalRefStorage, path, object,
-				metaData, validityStart, validityInfinite);
+	return WriteToCDB(fgkMainRefStorage, fgkLocalRefStorage, path, object, metaData);
 
 }
 
