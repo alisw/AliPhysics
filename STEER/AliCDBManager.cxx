@@ -188,7 +188,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 		if (aStorage) {
 			PutActiveStorage(param->CloneParam(), aStorage);
 			aStorage->SetURI(param->GetURI());
-			if(fRun > 0) {
+			if(fRun >= 0) {
 				aStorage->QueryCDB(fRun);
 			}
 			return aStorage;
@@ -400,7 +400,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
                 return NULL;
 	}
 
-	if(fCache && query.GetFirstRun() != fRun) 
+	if(fCache && query.GetFirstRun() != fRun)
 		AliWarning("Run number explicitly set in query: CDB cache temporarily disabled!");
 
 	
@@ -496,7 +496,8 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 	}	
         
 	TObjString objStrLev0(query.GetLevel0());
-	AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
+	//AliCDBParam *aPar = (AliCDBParam*) fSpecificStorages.GetValue(&objStrLev0);
+	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
 
 	AliCDBStorage *aStorage;	
 	if(aPar) {
@@ -663,7 +664,7 @@ void AliCDBManager::DestroyActiveStorage(AliCDBStorage* /*storage*/) {
 			delete fActiveStorages.Remove(aPair->Key());
 			storage->Delete(); storage=0x0;
 	}
-*/	
+*/
 
 }
 
@@ -675,9 +676,15 @@ void AliCDBManager::QueryCDB() {
 		AliError("Run number not yet set! Use AliCDBManager::SetRun.");
 	return;
 	}
-
-	AliInfo(Form("Querying default and specific storages for files valid for run %d", fRun));
-	fDefaultStorage->QueryCDB(fRun);
+	if (!fDefaultStorage){
+		AliError("Default storage is not set! Use AliCDBManager::SetDefaultStorage");
+	return;
+	}
+	if(fDefaultStorage->GetType() == "alien"){
+		fDefaultStorage->QueryCDB(fRun);
+	} else {
+		AliDebug(2,"Skipping query for valid files, it used only in grid...");
+	}
 
 	TIter iter(&fSpecificStorages);
 	TObjString *aCalibType=0;
@@ -686,11 +693,15 @@ void AliCDBManager::QueryCDB() {
 		aPar = (AliCDBParam*) fSpecificStorages.GetValue(aCalibType);
 		if(aPar) {
 			AliDebug(2,Form("Querying specific storage %s",aCalibType->GetName()));
-			GetStorage(aPar)->QueryCDB(fRun,aCalibType->GetName());
-
+			AliCDBStorage *aStorage = GetStorage(aPar);
+			if(aStorage->GetType() == "alien"){
+				aStorage->QueryCDB(fRun,aCalibType->GetName());
+			} else {
+				AliDebug(2,
+					"Skipping query for valid files, it is used only in grid...");
+			}
 		}
 	}
-
 }
 
 

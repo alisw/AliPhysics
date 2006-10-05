@@ -16,6 +16,7 @@
 #include "AliCDBMetaData.h"
 
 #include <TList.h>
+#include <TObjArray.h>
 
 class AliCDBEntry;
 class AliCDBPath;
@@ -84,7 +85,7 @@ public:
 	void QueryCDB(Int_t run, const char* pathFilter="*",
 			Int_t version=-1, AliCDBMetaData *mdFilter=0);
 	void PrintQueryCDB();
-	TList* GetQueryCDBList() {return &fValidFileIds;}
+	TObjArray* GetQueryCDBList() {return &fValidFileIds;}
 
 	virtual Int_t GetLatestVersion(const char* path, Int_t run)=0;
 	virtual Int_t GetLatestSubVersion(const char* path, Int_t run, Int_t version=-1)=0;
@@ -99,7 +100,7 @@ protected:
 	virtual TList *GetIdListFromFile(const char* fileName)=0;
 	virtual void   QueryValidFiles() = 0;
 
-	TList fValidFileIds; 	// list of Id's of the files valid for a given run (cached as fRun)
+	TObjArray fValidFileIds; 	// list of Id's of the files valid for a given run (cached as fRun)
 	Int_t fRun;		// run number, used to manage list of valid files
 	AliCDBPath fPathFilter;	// path filter, used to manage list of valid files
 	Int_t fVersion;		// version, used to manage list of valid files

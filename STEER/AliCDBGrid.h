@@ -13,7 +13,7 @@
 
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
-class AliCDBMetaData;
+#include "AliCDBMetaData.h"
 
 class AliCDBGrid: public AliCDBStorage {
 	friend class AliCDBGridFactory;
@@ -46,17 +46,14 @@ private:
 	Bool_t FilenameToId(TString& filename, AliCDBId& id);
 
 	Bool_t PrepareId(AliCDBId& id);
-	AliCDBId* GetId(const TList& validFileIds, const AliCDBId& query);
+	AliCDBId* GetId(const TObjArray& validFileIds, const AliCDBId& query);
 	AliCDBEntry* GetEntryFromFile(TString& filename, const AliCDBId* dataId);
 
 	Bool_t AddTag(TString& foldername, const char* tagname);
 	Bool_t TagFileId(TString& filename, const AliCDBId* id);
 	Bool_t TagFileMetaData(TString& filename, const AliCDBMetaData* md);
 
-//	Bool_t CheckVersion(const AliCDBId& query, AliCDBId* idToCheck, AliCDBId* result);
-
-	void MakeQueryFilter(Int_t firstRun, Int_t lastRun, const AliCDBPath& pathFilter, Int_t version,
-				const AliCDBMetaData* md, TString& result) const;
+	void MakeQueryFilter(Int_t firstRun, Int_t lastRun, const AliCDBMetaData* md, TString& result) const;
 
 	virtual void QueryValidFiles();
 
@@ -80,7 +77,6 @@ public:
 
 	virtual Bool_t Validate(const char* gridString);
         virtual AliCDBParam* CreateParameter(const char* gridString);
-	virtual ~AliCDBGridFactory(){}
 
 protected:
         virtual AliCDBStorage* Create(const AliCDBParam* param);

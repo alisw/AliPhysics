@@ -378,6 +378,9 @@ void AliCDBStorage::QueryCDB(Int_t run, const char* pathFilter,
 
 	fVersion = version;
 
+	AliInfo(Form("Querying files valid for run %d and path \"%s\" into CDB storage  \"%s://%s\"",
+				fRun, pathFilter, fType.Data(), fBaseFolder.Data()));
+
 	// Clear fValidFileIds list (it cannot be filled twice!
 	AliDebug(2, "Clearing list of CDB Id's previously loaded");
 	fValidFileIds.Clear();
@@ -388,9 +391,7 @@ void AliCDBStorage::QueryCDB(Int_t run, const char* pathFilter,
 	QueryValidFiles();
 	AliCDBId queryId(pathFilter,run,run,version);
 
-	AliInfo(Form("%d files valid for request <%s> found in CDB storage \"%s://%s\"",
-				fValidFileIds.GetEntries(), queryId.ToString().Data(),
-				fType.Data(), fBaseFolder.Data()));
+	AliInfo(Form("%d valid files found!", fValidFileIds.GetEntriesFast()));
 
 }
 
@@ -413,7 +414,7 @@ void AliCDBStorage::PrintQueryCDB(){
 	while ((anId = dynamic_cast<AliCDBId*>(iter.Next()))) {
 		message += Form("\t%s\n", anId->ToString().Data());
 	}
-	message += Form("\n\tTotal: %d objects found\n", fValidFileIds.GetEntries());
+	message += Form("\n\tTotal: %d objects found\n", fValidFileIds.GetEntriesFast());
 	AliInfo(Form("%s", message.Data()));
 }
 
