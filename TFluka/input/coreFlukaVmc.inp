@@ -15,6 +15,7 @@ GEOEND
 *
 EVENTYPE                             1.0
 BEAM          7000.0                                                  MUON-
+MGNFIELD        10.0
 SOURCE
 *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+ 
 USERDUMP        200.      37.0      -2.0       1.0                    TRAKFILE
