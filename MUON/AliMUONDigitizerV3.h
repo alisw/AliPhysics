@@ -31,14 +31,7 @@ class TString;
 class AliMUONDigitizerV3 : public AliDigitizer
 {
 public:
-  enum ETriggerCodeVersion
-  {
-    kTriggerDecision=-1,
-    kTriggerElectronics
-  };
-  
   AliMUONDigitizerV3(AliRunDigitizer* manager=0, 
-                     ETriggerCodeVersion=kTriggerDecision,
                      Bool_t generateNoisyDigits=kTRUE);
   virtual ~AliMUONDigitizerV3();
 
@@ -79,7 +72,6 @@ private:
   AliMUONData* fOutputData; //!< pointer to access digits
   AliMUONCalibrationData* fCalibrationData; //!< pointer to access calib parameters
   TTask* fTriggerProcessor; ///< pointer to the trigger part of the job
-  ETriggerCodeVersion fTriggerCodeVersion; ///< which version of trigger job
   AliMUONTriggerEfficiencyCells* fTriggerEfficiency; ///< trigger efficiency map  
   mutable TStopwatch fFindDigitIndexTimer; //!< counting time spent in FindDigitIndex
   TStopwatch fGenerateNoisyDigitsTimer; //!< counting time spent in GenerateNoisyDigits()

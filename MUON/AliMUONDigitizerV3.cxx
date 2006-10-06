@@ -25,7 +25,6 @@
 #include "AliMUONDataIterator.h"
 #include "AliMUONDigit.h"
 #include "AliMUONSegmentation.h"
-#include "AliMUONTriggerDecisionV1.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONVCalibParam.h"
@@ -77,14 +76,12 @@ ClassImp(AliMUONDigitizerV3)
 
 //_____________________________________________________________________________
 AliMUONDigitizerV3::AliMUONDigitizerV3(AliRunDigitizer* manager, 
-                                       ETriggerCodeVersion triggerCodeVersion,
                                        Bool_t generateNoisyDigits)
 : AliDigitizer(manager),
 fIsInitialized(kFALSE),
 fOutputData(0x0),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
-fTriggerCodeVersion(triggerCodeVersion),
 fTriggerEfficiency(0x0),
 fFindDigitIndexTimer(),
 fGenerateNoisyDigitsTimer(),
@@ -704,20 +701,7 @@ AliMUONDigitizerV3::Init()
   
   fCalibrationData = new AliMUONCalibrationData(runnumber);
   
-  switch (fTriggerCodeVersion)
-  {
-    case kTriggerDecision:
-      fTriggerProcessor = new AliMUONTriggerDecisionV1(fOutputData);
-      break;
-    case kTriggerElectronics:
-      fTriggerProcessor = new AliMUONTriggerElectronics(fOutputData,fCalibrationData);
-      break;
-    default:
-      AliFatal("Unknown trigger processor type");
-      break;
-  }
-  AliDebug(1,Form("Using the following trigger code %s - %s",
-                  fTriggerProcessor->GetName(),fTriggerProcessor->GetTitle()));
+  fTriggerProcessor = new AliMUONTriggerElectronics(fOutputData,fCalibrationData);
   
   if ( muon()->GetTriggerEffCells() )
   {
