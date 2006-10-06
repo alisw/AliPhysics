@@ -171,13 +171,12 @@ void Config(char directory[100]="", char option[6]="param")
   // activate trigger chamber efficiency by cells (0=default, 1=trigger efficiency according to AliMUONTriggerEfficiencyCells
   //  MUON->SetTriggerEffCells(0);
 
+  // To get same as above w/o noise-only digits for the tracker please use :
   //
-  // To get old trigger code, please use :
-  //
-  //  AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
+  //AliMUON *MUON = new AliMUONv1("MUON", "FactoryV4",
   //				"sdigitizer:AliMUONSDigitizerV2",
-  //				"digitizer:NewDigitizerWithNoiseOldTrigger");
-  //
+  //				"digitizer:NewDigitizerWONoiseNewTrigger");
+
   //
   // If SetAlign, the detection elements transformations
   // are taken from the input file and not from the code
