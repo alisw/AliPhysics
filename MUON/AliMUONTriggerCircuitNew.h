@@ -44,9 +44,8 @@ public:
   //  void dump(const char* what, const Float_t* array, Int_t size);
   //  void dump(const char* what, const Int_t* array, Int_t size);
   
-protected:
     // copy constructor
-    AliMUONTriggerCircuitNew(const AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew); 
+  AliMUONTriggerCircuitNew(const AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew); 
   // assignment operator
   AliMUONTriggerCircuitNew& operator=(const AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew); 
   

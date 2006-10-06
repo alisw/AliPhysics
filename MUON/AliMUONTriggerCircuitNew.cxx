@@ -66,6 +66,40 @@ AliMUONTriggerCircuitNew::~AliMUONTriggerCircuitNew()
 } 
 
 //----------------------------------------------------------------------
+AliMUONTriggerCircuitNew::AliMUONTriggerCircuitNew(const AliMUONTriggerCircuitNew& circuit)
+   :  TObject(circuit),
+      fILocalBoard(circuit.fILocalBoard)
+{
+  for (Int_t i = 0; i < 16; ++i)
+    fXpos11[i] = circuit.fXpos11[i];
+
+  for (Int_t i = 0; i < 31; ++i)
+    fYpos11[i] = circuit.fYpos11[i];
+
+  for (Int_t i = 0; i < 63; ++i)
+    fYpos21[i] = circuit.fYpos21[i];
+
+}
+//----------------------------------------------------------------------
+AliMUONTriggerCircuitNew& AliMUONTriggerCircuitNew::operator=(const AliMUONTriggerCircuitNew& circuit) 
+{
+  if (this == &circuit) return *this;
+
+  fILocalBoard = circuit.fILocalBoard;
+
+  for (Int_t i = 0; i < 16; ++i)
+    fXpos11[i] = circuit.fXpos11[i];
+
+  for (Int_t i = 0; i < 31; ++i)
+    fYpos11[i] = circuit.fYpos11[i];
+
+  for (Int_t i = 0; i < 63; ++i)
+    fYpos21[i] = circuit.fYpos21[i];
+
+  return *this;
+
+}
+//----------------------------------------------------------------------
 void AliMUONTriggerCircuitNew::Init(Int_t iCircuit, const AliMUONTriggerCrateStore& crates) 
 {
 /// initialize circuit characteristics
