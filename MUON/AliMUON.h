@@ -25,7 +25,6 @@ class TFile;
 class TTree;
 
 class AliLoader;
-class AliMUONTriggerCircuit;
 class AliMUONTriggerCircuitNew;
 class AliMUONData;
 class AliMUONResponse;
@@ -46,7 +45,7 @@ class AliMUON : public  AliDetector
     AliMUON();
     AliMUON(const char* name, const char *title="FactoryV4",
             const char* sDigitizerType="sdigitizer:AliMUONSDigitizerV2",
-            const char* digitizerType="digitizer:NewDigitizerWithNoiseOldTrigger");
+            const char* digitizerType="digitizer:default");
     virtual ~AliMUON();
    
     // Geometry
@@ -141,9 +140,6 @@ class AliMUON : public  AliDetector
                   /// Return reference to Chamber \a id
     virtual AliMUONChamber& Chamber(Int_t id)
       {return *((AliMUONChamber *) (*fChambers)[id]);}
-                  /// Return reference to Circuit \a id
-    virtual AliMUONTriggerCircuit& TriggerCircuit(Int_t id)
-      {return *((AliMUONTriggerCircuit *) (*fTriggerCircuits)[id]);}
                   /// Return reference to New Circuit \a id 
     virtual AliMUONTriggerCircuitNew& TriggerCircuitNew(Int_t id)
 	{return *((AliMUONTriggerCircuitNew*) (*fTriggerCircuitsNew)[id]);}
@@ -168,7 +164,6 @@ class AliMUON : public  AliDetector
     AliMUONData*          fMUONData;           ///< Data container for MUON subsystem  
     Int_t                 fSplitLevel;         ///< Splitlevel when making branches in outfiles.
     TObjArray*            fChambers;           ///< List of Tracking Chambers
-    TObjArray*            fTriggerCircuits;    ///< List of Trigger Circuits
     TObjArray*            fTriggerCircuitsNew; ///< List of Trigger Circuits
     AliMUONGeometryBuilder*  fGeometryBuilder; ///< Geometry builder 
     AliMUONSegmentation*  fSegmentation;       ///< New segmentation 

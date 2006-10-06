@@ -57,7 +57,6 @@
 #include "AliMUONHit.h"	
 #include "AliMUONRawCluster.h"
 #include "AliMUONTransientDigit.h"
-#include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCircuitNew.h"
 #include "AliMUONGeometry.h"
 #include "AliMUONGeometryTransformer.h"
@@ -106,7 +105,6 @@ AliMUON::AliMUON()
     fMUONData(0),
     fSplitLevel(0),
     fChambers(0),
-    fTriggerCircuits(0),
     fTriggerCircuitsNew(0),
     fGeometryBuilder(0),
     fSegmentation(0),
@@ -145,7 +143,6 @@ AliMUON::AliMUON(const char *name, const char *title,
     fMUONData(0),
     fSplitLevel(0),
     fChambers(0),
-    fTriggerCircuits(0),
     fTriggerCircuitsNew(0),
     fGeometryBuilder(0),
     fSegmentation(0),
@@ -211,12 +208,7 @@ AliMUON::AliMUON(const char *name, const char *title,
       } // Chamber stCH (0, 1) in 
     }     // Station st (0...)
     
-    // cp new design of AliMUONTriggerDecision
-    fTriggerCircuits = new TObjArray(AliMUONConstants::NTriggerCircuit());
-    for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
-      fTriggerCircuits->AddAt(new AliMUONTriggerCircuit(),circ);          
-    }
-
+// trigger circuits
     fTriggerCircuitsNew = new TObjArray(AliMUONConstants::NTriggerCircuit());
     for (Int_t circ=0; circ<AliMUONConstants::NTriggerCircuit(); circ++) {
       fTriggerCircuitsNew->AddAt(new AliMUONTriggerCircuitNew(),circ);          
@@ -234,10 +226,6 @@ AliMUON::~AliMUON()
   if (fChambers){
     fChambers->Delete();
     delete fChambers;
-  }
-  if (fTriggerCircuits){
-    fTriggerCircuits->Delete();
-    delete fTriggerCircuits;
   }
   if (fTriggerCircuitsNew){
     fTriggerCircuitsNew->Delete();
@@ -445,22 +433,14 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
   
   AliInfo(Form("Digitizer used : %s",fDigitizerType.Data()));
   
-  if ( fDigitizerType == "digitizer:default" )
+  if ( fDigitizerType == "digitizer:default" ) // NewDigitizerNewTrigger
   {
-    return new AliMUONDigitizerv2(manager);
+      return new AliMUONDigitizerV3(manager,kTRUE);
+  } 
+  else if ( fDigitizerType == "digitizer:NewDigitizerWONoiseNewTrigger" ) 
+  {                                     
+      return new AliMUONDigitizerV3(manager,kFALSE);
   }
-  else if ( fDigitizerType == "digitizer:NewDigitizerNewTrigger" ) 
-  {
-      return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerElectronics,kTRUE);
-  }
-  else if ( fDigitizerType == "digitizer:NewDigitizerOldTrigger" )
-  {
-    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kFALSE);
-  }
-  else if ( fDigitizerType == "digitizer:NewDigitizerWithNoiseOldTrigger" )
-  {
-    return new AliMUONDigitizerV3(manager,AliMUONDigitizerV3::kTriggerDecision, kTRUE);
-  }    
   else
   {
     AliFatal(Form("Unknown digitizer type : %s",fDigitizerType.Data()));
