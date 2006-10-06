@@ -43,7 +43,6 @@
 #include "AliMUONConstants.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTriggerTrack.h"
-#include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCircuitNew.h"
 #include "AliMUONRawCluster.h"
 #include "AliMUONLocalTrigger.h"
@@ -666,10 +665,6 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
     
     // Loading MUON subsystem
     AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
-    // Not really clean, but for the moment we must check whether the
-    // trigger uses new or old TriggerCircuit
-    Bool_t newTrigger=kFALSE;
-    if ( pMUON->DigitizerType().Contains("NewTrigger") ) newTrigger = kTRUE;
 
     nTRentries = Int_t(treeR->GetEntries());
      
@@ -707,27 +702,17 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
     for (Int_t i=0; i<nlocals; i++) { // loop on Local Trigger
       locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
 
-      if (!newTrigger) { // old trigger
-	AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using OLD trigger \n");
-	AliMUONTriggerCircuit * circuit = &(pMUON->TriggerCircuit(locTrg->LoCircuit()));
-	y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-	stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
-	y21 = circuit->GetY21Pos(stripX21);	
-	x11 = circuit->GetX11Pos(locTrg->LoStripY());
-
-      } else { // new trigger
-	AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
-	AliMUONTriggerCircuitNew * circuit = 
+      AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
+      AliMUONTriggerCircuitNew * circuit = 
 	  &(pMUON->TriggerCircuitNew(locTrg->LoCircuit()-1)); // -1 !!!
-	y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
-	stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
-	y21 = circuit->GetY21Pos(stripX21);	
-	x11 = circuit->GetX11Pos(locTrg->LoStripY());
-      }
-
+      y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
+      stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
+      y21 = circuit->GetY21Pos(stripX21);	
+      x11 = circuit->GetX11Pos(locTrg->LoStripY());
+      
       AliDebug(1, Form(" MakeTriggerTrack %d %d %d %d %d %f %f %f \n",i,locTrg->LoCircuit(),
 		       locTrg->LoStripX(),locTrg->LoStripX()+locTrg->LoDev()+1,locTrg->LoStripY(),y11, y21, x11));
-
+      
       Float_t thetax = TMath::ATan2( x11 , z11 );
       Float_t thetay = TMath::ATan2( (y21-y11) , (z21-z11) );
       
