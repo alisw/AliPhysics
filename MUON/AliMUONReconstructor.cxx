@@ -26,9 +26,9 @@
 #include "AliESDMuonTrack.h"
 #include "AliLog.h"
 #include "AliMUON.h"
+#include "AliMUONConstants.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONClusterFinderAZ.h"
-#include "AliMUONClusterFinderVS.h"
 #include "AliMUONClusterReconstructor.h"
 #include "AliMUONData.h"
 #include "AliMUONDigitCalibrator.h"
@@ -38,6 +38,9 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTriggerTrack.h"
+#include "AliMUONTriggerCircuitNew.h"
+#include "AliMUONTriggerCrateStore.h"
+
 #include "AliRawReader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -51,11 +54,27 @@ AliMUONReconstructor::AliMUONReconstructor()
   : AliReconstructor(), 
     fRunLoader(0x0),
     fDigitMaker(new AliMUONDigitMaker()), 
-    fCalibrationData(0x0) 
+    fCalibrationData(0x0),
+    fCrateManager(new AliMUONTriggerCrateStore()),
+    fTriggerCircuit(new TClonesArray("AliMUONTriggerCircuitNew", 234))
 {
 /// Default constructor
 
     AliDebug(1,"");
+    // Crate manager
+    fCrateManager->ReadFromFile();
+
+    // set to digit maker
+    fDigitMaker->SetCrateManager(fCrateManager);
+
+    // trigger circuit
+    for (Int_t i = 0; i < AliMUONConstants::NTriggerCircuit(); i++)  {
+      AliMUONTriggerCircuitNew* c = new AliMUONTriggerCircuitNew();
+      c->Init(i,*fCrateManager);
+      TClonesArray& circuit = *fTriggerCircuit;
+      new(circuit[circuit.GetEntriesFast()])AliMUONTriggerCircuitNew(*c);
+      delete c;
+  }
 }
 
 //_____________________________________________________________________________
@@ -66,6 +85,8 @@ AliMUONReconstructor::~AliMUONReconstructor()
   AliDebug(1,"");
   delete fCalibrationData;
   delete fDigitMaker;
+  delete fCrateManager;
+  delete fTriggerCircuit;
 }
 
 //_____________________________________________________________________________
@@ -115,6 +136,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
 
 // passing loader as argument.
   AliMUONTrackReconstructor* recoEvent = new AliMUONTrackReconstructor(loader, data);
+  recoEvent->SetTriggerCircuit(fTriggerCircuit);
 
   if (strstr(GetOption(),"Original")) 
     recoEvent->SetTrackMethod(1); // Original tracking
@@ -246,6 +268,7 @@ void AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* ra
 
   // passing loader as argument.
   AliMUONTrackReconstructor recoEvent(loader, &data);
+  recoEvent.SetTriggerCircuit(fTriggerCircuit);
 
   fDigitMaker->SetMUONData(&data);
 

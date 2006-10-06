@@ -16,6 +16,8 @@ class AliMUONCalibrationData;
 class AliMUONData;
 class TTask;
 class AliMUONDigitMaker;
+class AliMUONTriggerCrateStore;
+class TClonesArray;
 
 class AliMUONReconstructor: public AliReconstructor 
 {
@@ -44,6 +46,8 @@ class AliMUONReconstructor: public AliReconstructor
 private:
 
     TTask* GetCalibrationTask(AliMUONData* data) const;
+    AliMUONReconstructor(const AliMUONReconstructor& right);
+    AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
 
 private:
     AliRunLoader* fRunLoader;       //!< pointer to runloader
@@ -51,8 +55,11 @@ private:
 
     mutable AliMUONCalibrationData* fCalibrationData; //!< pointer to calibration data
     
-    AliMUONReconstructor(const AliMUONReconstructor& right);
-    AliMUONReconstructor&  operator = (const AliMUONReconstructor& right);
+    AliMUONTriggerCrateStore* fCrateManager;     //!< Crate array
+
+    TClonesArray* fTriggerCircuit;   //!< trigger circuit
+ 
+ 
 
   ClassDef(AliMUONReconstructor, 0)   // class for the MUON reconstruction
 };
