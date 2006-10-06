@@ -39,7 +39,7 @@
 #include <TMatrixD.h>
 
 #include "AliMUONTrackReconstructor.h"
-#include "AliMUON.h"
+#include "AliMUONData.h"
 #include "AliMUONConstants.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONTriggerTrack.h"
@@ -51,8 +51,7 @@
 #include "AliMUONTrack.h"
 #include "AliMUONTrackHit.h"
 #include "AliMagF.h"
-#include "AliRun.h" // for gAlice
-#include "AliRunLoader.h"
+//#include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliMUONTrackK.h" 
 #include "AliLog.h"
@@ -103,7 +102,8 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUOND
     fMUONData(data),
     fLoader(loader),
     fMuons(0),
-    fTriggerTrack(new AliMUONTriggerTrack())
+    fTriggerTrack(new AliMUONTriggerTrack()),
+    fTriggerCircuit(0x0)
 {
   // Constructor for class AliMUONTrackReconstructor
   SetReconstructionParametersToDefaults();
@@ -303,8 +303,6 @@ void AliMUONTrackReconstructor::MakeEventToBeReconstructed(void)
   // To make the list of hits to be reconstructed,
   // either from the track ref. hits or from the raw clusters
   // according to the parameter set for the reconstructor
-
-  AliRunLoader *runLoader = fLoader->GetRunLoader();
 
   AliDebug(1,"Enter MakeEventToBeReconstructed");
   //AZ ResetHitsForRec();
@@ -638,10 +636,7 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
     AliMUONGlobalTrigger *gloTrg;
 
     TTree* treeR = fLoader->TreeR();
-    
-    // Loading MUON subsystem
-    AliMUON * pMUON = (AliMUON *) gAlice->GetDetector("MUON");
-
+   
     nTRentries = Int_t(treeR->GetEntries());
      
     treeR->GetEvent(0); // only one entry  
@@ -679,8 +674,9 @@ Bool_t AliMUONTrackReconstructor::MakeTriggerTracks(void)
       locTrg = (AliMUONLocalTrigger*)localTrigger->UncheckedAt(i);	
 
       AliDebug(1, "AliMUONTrackReconstructor::MakeTriggerTrack using NEW trigger \n");
-      AliMUONTriggerCircuitNew * circuit = 
-	  &(pMUON->TriggerCircuitNew(locTrg->LoCircuit()-1)); // -1 !!!
+      AliMUONTriggerCircuitNew* circuit = 
+	(AliMUONTriggerCircuitNew*)fTriggerCircuit->At(locTrg->LoCircuit()-1); // -1 !!!
+
       y11 = circuit->GetY11Pos(locTrg->LoStripX()); 
       stripX21 = locTrg->LoStripX()+locTrg->LoDev()+1;
       y21 = circuit->GetY21Pos(stripX21);	
@@ -1184,7 +1180,7 @@ void AliMUONTrackReconstructor::EventDump(void)
   AliMUONTrackParam *trackParam, *trackParam1;
   Double_t bendingSlope, nonBendingSlope, pYZ;
   Double_t pX, pY, pZ, x, y, z, c;
-  Int_t np, trackIndex, nTrackHits;
+  Int_t trackIndex, nTrackHits;
  
   AliDebug(1,"****** enter EventDump ******");
   AliDebug(1, Form("Number of Reconstructed tracks : %d", fNRecTracks)); 

@@ -86,6 +86,9 @@ class AliMUONTrackReconstructor : public TObject {
 
   AliMUONData*  GetMUONData() {return fMUONData;}
 
+  void SetTriggerCircuit(TClonesArray* circuit) {fTriggerCircuit = circuit;}
+
+
  private:
 
   // Constants which should be elsewhere ????
@@ -161,6 +164,8 @@ class AliMUONTrackReconstructor : public TObject {
   Int_t fMuons; ///< AZ - number of muons within acceptance - just for tests
 
   AliMUONTriggerTrack* fTriggerTrack; ///< Trigger track structure
+
+  TClonesArray* fTriggerCircuit;      //!< trigger circuit array
 
   // Functions
   AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); // copy constructor
