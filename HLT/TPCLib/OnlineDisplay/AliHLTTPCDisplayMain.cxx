@@ -197,6 +197,26 @@ AliHLTTPCDisplayMain::~AliHLTTPCDisplayMain() {
 //____________________________________________________________________________________________________
 Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, unsigned short* ports, Char_t *gfile){
 
+    Char_t* defaultGeometry=NULL;
+#if defined(DEFAULT_GEOMETRY)
+    defaultGeometry=DEFAULT_GEOMETRY;
+#endif
+    if (gfile!=NULL) {
+      HLTDebug("probing geometry file %s", gfile);
+      ifstream test(gfile);
+      if (test.fail()) {
+	HLTWarning("unable to find geometry file %s, using default file", gfile);
+	gfile=defaultGeometry;
+      }
+      test.close();
+    } else {
+      HLTDebug("using default geometry file %s", gfile, defaultGeometry);
+      gfile=defaultGeometry;
+    }
+    if (gfile==NULL) {
+      HLTError("geometry file missing");
+      return -EINVAL;
+    }
 #if defined(HAVE_HOMERREADER) 
     // -- input datatypes , reverse
     Char_t* spptID="SRETSULC";
@@ -261,7 +281,7 @@ Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, u
     }
     fConnect = kTRUE;  
 
-    // Initialize TPC Display Classes  -- IMPORTANT... don't change the order of them
+    // INITIALIZE TPC DISPLAY Classes  -- IMPORTANT... don't change the order of them
     fDisplay3D = new AliHLTTPCDisplay3D(this, gfile);
  
     if (ExistsRawData()){
@@ -280,7 +300,8 @@ Int_t AliHLTTPCDisplayMain::Connect( unsigned int cnt, const char** hostnames, u
 
     return 0;
 #else
-    HLTFatal("HOMER raeder not available");
+    HLTFatal("HOMER raeder not available during package configuration, libAliHLTTPCDisplay compiled without HOMER support");
+    return -EFAULT;
 #endif // defined(HAVE_HOMERREADER) 
 }
 
@@ -405,7 +426,7 @@ void AliHLTTPCDisplayMain::ReadData(Bool_t nextSwitch){
     
     SetupTracks();  
 #else
-    HLTFatal("HOMER raeder not available");
+    HLTFatal("HOMER raeder not available during package configuration, libAliHLTTPCDisplay compiled without HOMER support");
 #endif // defined(HAVE_HOMERREADER) 
 }
 
@@ -481,7 +502,7 @@ void AliHLTTPCDisplayMain::DisplayEvent(){
     // TAKE CARE !!! EXISTSxxxData() HANDLING of 3D will be done IN this class !!!
     fDisplay3D->Draw(); 
 #else
-    HLTFatal("HOMER raeder not available");
+    HLTFatal("HOMER raeder not available during package configuration, libAliHLTTPCDisplay compiled without HOMER support");
 #endif // defined(HAVE_HOMERREADER) 
 
 }
@@ -645,5 +666,3 @@ void AliHLTTPCDisplayMain::ExecPadEvent(Int_t event, Int_t px, Int_t py, TObject
         fPadCallback(fPt2Gui, binx);
   }
 }
-
-

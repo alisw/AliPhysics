@@ -251,8 +251,8 @@ if test "x$with_pubsub" != "xno" ; then
   save_LIBS=$LIBS
   # currently the different versions of the HLT PubSub framework have a different
   # directory layout
-  if test -d ${with_pubsub}/include/HOMER/reader ; then
-    HOMER_CPPFLAGS="-I${with_pubsub}/include/HOMER/reader"
+  if test -d ${with_pubsub}/include/HOMER ; then
+    HOMER_CPPFLAGS="-I${with_pubsub}/include/HOMER -I${with_pubsub}/include/HOMER/reader"
   else
     HOMER_CPPFLAGS="-I${with_pubsub}/src/Util/HOMER/reader/include -I${with_pubsub}/src/Util/HOMER/data/include"
   fi

@@ -202,7 +202,7 @@ Char_t GetTrackParamBfield());
 
 // ---------------------------------------------------
  private:
-    AliHLTTPCDisplayMain(const AliHLTTPCDisplayMain &/*d*/):TObject(){;}
+    AliHLTTPCDisplayMain(const AliHLTTPCDisplayMain &/*d*/):TObject(), AliHLTLogging(){;}
     AliHLTTPCDisplayMain& operator=(const AliHLTTPCDisplayMain &/*d*/){return *this;}
    
     void SetSliceArray();
