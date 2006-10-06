@@ -12,7 +12,7 @@ cd $OUTDIR
 FULLPATH="$CURDIR/$OUTDIR"
 # Minimum number of events to have enough stat. for invariant mass fit
 # 10000 is ok, 20000 is really fine
-NEVENTS=10000
+NEVENTS=10
 SEED=1234567
 
 
@@ -35,6 +35,8 @@ echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF 
 gRandom->SetSeed($SEED);
+AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+AliTracker::SetFieldMap(field, kFALSE);
 AliReconstruction MuonRec("galice.root"); 
 MuonRec.SetRunTracking("");
 MuonRec.SetRunVertexFinder(kFALSE);
@@ -75,11 +77,11 @@ more  testSim.out | grep 'RunDigitization: Execution time:'  >> testTime.out
 more  testReco.out | grep 'RunLocalReconstruction: Execution time for MUON'  >> testTime.out
 more  testReco.out | grep 'Execution time for filling ESD ' >> testTime.out
 
-rm gphysi.dat
-rm *.root
-rm testSim.out
-rm testReco.out
-rm *.eps
+#rm gphysi.dat
+#rm *.root
+#rm testSim.out
+#rm testReco.out
+#rm *.eps
 
 echo "Finished"  
 echo "... see results in testlong_out"

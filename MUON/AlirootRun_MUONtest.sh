@@ -10,7 +10,7 @@ cp $ALICE_ROOT/MUON/.rootrc $ALICE_ROOT/MUON/rootlogon.C $OUTDIR
 cd $OUTDIR
 
 FULLPATH="$CURDIR/$OUTDIR"
-NEVENTS=100
+NEVENTS=10
 SEED=1234567
 
 echo "Running simulation  ..."
@@ -33,6 +33,8 @@ echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF
 gRandom->SetSeed($SEED);
+AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+AliTracker::SetFieldMap(field, kFALSE);
 AliReconstruction MuonRec("galice.root");
 MuonRec.SetInput("$FULLPATH/");
 MuonRec.SetRunTracking("");
