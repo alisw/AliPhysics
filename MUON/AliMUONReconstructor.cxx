@@ -75,33 +75,22 @@ AliMUONReconstructor::GetCalibrationTask(AliMUONData* data) const
 /// Create the calibration task(s). 
   
   const AliRun* run = fRunLoader->GetAliRun();
-  
-  // Not really clean, but for the moment we must check whether the
-  // simulation has decalibrated the data or not...
-  const AliMUON* muon = static_cast<AliMUON*>(run->GetModule("MUON"));
-  if ( muon->DigitizerType().Contains("NewDigitizer") )
-  {
-    AliInfo("Calibration will occur.");
-    Int_t runNumber = run->GetRunNumber();     
-    fCalibrationData = new AliMUONCalibrationData(runNumber);
-    if ( !fCalibrationData->IsValid() )
+
+  AliInfo("Calibration will occur.");
+  Int_t runNumber = run->GetRunNumber();     
+  fCalibrationData = new AliMUONCalibrationData(runNumber);
+  if ( !fCalibrationData->IsValid() )
     {
       AliError("Could not retrieve calibrations !");
       delete fCalibrationData;
       fCalibrationData = 0x0;
       return 0x0;
     }    
-    TTask* calibration = new TTask("MUONCalibrator","MUON Digit calibrator");
-    calibration->Add(new AliMUONDigitCalibrator(data,fCalibrationData));
-    //FIXME: calibration->Add(something about dead channels should go here).
-    return calibration;
-  }
-  else
-  {
-    AliInfo("Detected the usage of old digitizer (w/o decalibration). "
-            "Will not calibrate then.");
-    return 0x0;
-  }
+  TTask* calibration = new TTask("MUONCalibrator","MUON Digit calibrator");
+  calibration->Add(new AliMUONDigitCalibrator(data,fCalibrationData));
+  //FIXME: calibration->Add(something about dead channels should go here).
+  return calibration;
+
 }
 
 //_____________________________________________________________________________
