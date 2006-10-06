@@ -102,7 +102,7 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
   Int_t zeroUp = localBoard->GetSwitch(AliMUONLocalTriggerBoard::kZeroUp);
   
   //--- first plane 
-  ichamber = 11;
+  ichamber = 10;
   
   char side;
   Int_t iline, icol;
@@ -118,7 +118,7 @@ void AliMUONTriggerCircuitNew::LoadYPos(const AliMUONTriggerCrateStore& crates)
               iFirstStrip,iLastStrip,iStripCircuit,fYpos11);
   
   //--- second plane 
-  ichamber = 13;
+  ichamber = 12;
   
   detElemId = DetElemId(ichamber,side,iline);
   seg = pMUON->GetSegmentation()->GetMpSegmentation(detElemId,icathode);
@@ -216,7 +216,7 @@ void AliMUONTriggerCircuitNew::LoadXPos(const AliMUONTriggerCrateStore& crates)
   }
   StdoutToAliDebug(1,localBoard->Print("CONF"););
   
-  Int_t ichamber = 11;
+  Int_t ichamber = 10;
   Int_t icathode = 1;
   
   Int_t x2u = localBoard->GetSwitch(AliMUONLocalTriggerBoard::kX2u);
