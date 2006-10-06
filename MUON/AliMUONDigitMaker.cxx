@@ -95,7 +95,7 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
     fDigit(new AliMUONDigit()),
     fLocalTrigger(new AliMUONLocalTrigger()),
     fGlobalTrigger(new AliMUONGlobalTrigger()),
-    fCrateManager(new AliMUONTriggerCrateStore()),
+    fCrateManager(0x0),
     fTrackerTimer(),
     fTriggerTimer(),
     fMappingTimer()
@@ -112,9 +112,7 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t flag)
   // bus patch 
   fBusPatchManager->ReadBusPatchFile();
 
-  // Crate manager
-  fCrateManager->ReadFromFile();
-
+ 
   fTrackerTimer.Start(kTRUE); fTrackerTimer.Stop();
   fTriggerTimer.Start(kTRUE); fTriggerTimer.Stop();
   fMappingTimer.Start(kTRUE); fMappingTimer.Stop();
@@ -136,8 +134,6 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
   delete fDigit;
   delete fLocalTrigger;
   delete fGlobalTrigger;
-
-  delete fCrateManager;
 
   delete fBusPatchManager;
 
@@ -352,7 +348,8 @@ Int_t AliMUONDigitMaker::ReadTriggerDDL(AliRawReader* rawReader)
 
     for(Int_t iReg = 0; iReg < nReg ;iReg++){   //reg loop
 
-     // crate info
+      // crate info
+      if (!fCrateManager) AliFatal("Crate Store not defined");
       AliMUONTriggerCrate* crate = fCrateManager->Crate(fRawStreamTrigger->GetDDL(), iReg);
   
       if (!crate) 

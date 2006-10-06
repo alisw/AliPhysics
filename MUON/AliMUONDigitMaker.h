@@ -53,6 +53,8 @@ class AliMUONDigitMaker : public TObject
 
   void  SetScalerEvent() {fScalerEvent = kTRUE;}
 
+  void  SetCrateManager(AliMUONTriggerCrateStore* crateManager) {fCrateManager =  crateManager;}
+
  private:
 
   AliMUONData*     fMUONData;          //!< Data container for MUON subsystem 
