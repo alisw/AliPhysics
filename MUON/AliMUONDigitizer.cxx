@@ -23,7 +23,6 @@
 #include "AliMUONLoader.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTransientDigit.h"
-#include "AliMUONTriggerDecision.h"
 #include "AliLog.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModule.h"
@@ -53,7 +52,6 @@ AliMUONDigitizer::AliMUONDigitizer() :
 	fGime(0),
 	fMUON(0),
 	fMUONData(0),
-	fTrigDec(0),
 	fHitMap(0),
 	fTDList(0),
 	fTDCounter(0),
@@ -72,7 +70,6 @@ AliMUONDigitizer::AliMUONDigitizer(AliRunDigitizer* manager) :
 	fGime(0),
 	fMUON(0),
 	fMUONData(0),
-	fTrigDec(0),
 	fHitMap(0),
 	fTDList(0),
 	fTDCounter(0),
@@ -92,8 +89,6 @@ AliMUONDigitizer::~AliMUONDigitizer()
   if (fMUONData)
     delete fMUONData;
 
-  if (fTrigDec)
-    delete fTrigDec;
 }
 
 //------------------------------------------------------------------------
@@ -124,7 +119,6 @@ void AliMUONDigitizer::Exec(Option_t* /*option*/)
 
 	if (!FetchLoaders(fManager->GetInputFolderName(0), fRunLoader, fGime) ) return;
 	if (! FetchGlobalPointers(fRunLoader) ) return;
-	if (! FetchTriggerPointer(fGime) ) return;
 
 	InitArrays();
 	
@@ -436,21 +430,6 @@ Bool_t AliMUONDigitizer::FetchGlobalPointers(AliRunLoader* runloader)
 	}
 
 	return kTRUE;
-}
-//-----------------------------------------------------------------------
-Bool_t  AliMUONDigitizer::FetchTriggerPointer(AliMUONLoader* loader)
-{
-/// \todo add description
-
-  if (fMUONData == NULL) {
-    AliError("MUONData not found");
-    return kFALSE;
-  }
-
-  if (fTrigDec == NULL) 
-      fTrigDec = new AliMUONTriggerDecision(loader,0,fMUONData);
-  
-  return kTRUE;
 }
 
 //------------------------------------------------------------------------

@@ -20,7 +20,6 @@ class AliMUON;
 class AliMUONData;
 class AliMUONLoader;
 class AliMUONTransientDigit;
-class AliMUONTriggerDecision;
 
 static const Int_t kMAXTRACKS=10;
 
@@ -161,7 +160,6 @@ protected:
 	void SortTracks(Int_t *tracks, Int_t *charges, Int_t ntr) const;
 
 	// trigger purpose
-	virtual Bool_t FetchTriggerPointer(AliMUONLoader* loader);
 	virtual void CreateTrigger() = 0;
 	virtual void CleanupTriggerArrays() = 0;
 	virtual void FillTriggerOutput() = 0;
@@ -174,7 +172,6 @@ protected:
 	AliMUONLoader* fGime;             //!< MUON specific loader.
 	AliMUON* fMUON;                   //!< Pointer to MUON module.
 	AliMUONData* fMUONData;           //!< muon data interface
-	AliMUONTriggerDecision* fTrigDec; //!< trigger pointer
 
 	AliMUONHitMapA1 **fHitMap;    //!< pointer to array of pointers to hitmaps
 	TObjArray *fTDList;           //!< list of AliMUONTransientDigits

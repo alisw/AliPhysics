@@ -36,7 +36,6 @@
 #include "AliMUONDigit.h"
 #include "AliMUONDigitizerv2.h"
 #include "AliMUONTransientDigit.h"
-#include "AliMUONTriggerDecision.h"
 #include "AliLog.h"
 
 ClassImp(AliMUONDigitizerv2)
@@ -241,44 +240,4 @@ void AliMUONDigitizerv2::CleanupOutputData(AliMUONLoader* muonloader)
 	muonloader->UnloadDigits();
 }
 
-//-----------------------------------------------------------------------
 
-void AliMUONDigitizerv2::CleanupTriggerArrays()
-{
-/// Cleanup trigger arrays
-
-  fTrigDec->ClearDigits();
-}
-
-//------------------------------------------------------------------------
-void AliMUONDigitizerv2::AddDigitTrigger(
-		Int_t chamber, Int_t tracks[kMAXTRACKS],
-		Int_t charges[kMAXTRACKS], Int_t digits[7],
-		Int_t digitindex
-	)
-{
-/// Derived to add digits to TreeD for trigger.
-  fTrigDec->AddDigit(chamber, tracks, charges, digits, digitindex); 
-}
-
-//------------------------------------------------------------------------
-void AliMUONDigitizerv2::FillTriggerOutput()
-{
-/// Derived to fill TreeD and resets the trigger array in fMUONData.
-
-	AliDebug(3,"Filling trees with trigger.");
-	fMUONData->Fill("GLT");
-	fMUONData->ResetTrigger();
-}
-
-//------------------------------------------------------------------------
-void AliMUONDigitizerv2::CreateTrigger()
-{
-/// Create trigger data
-
-  fMUONData->MakeBranch("GLT");
-  fMUONData->SetTreeAddress("GLT");
-  fTrigDec->Digits2Trigger(); 
-  FillTriggerOutput();	
-
-}
