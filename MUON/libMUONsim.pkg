@@ -13,8 +13,6 @@ SRCS:= AliMUONCommonGeometryBuilder.cxx \
        AliMUONDigitizer.cxx \
        AliMUONDigitizerv2.cxx \
        AliMUONSDigitizerv1.cxx \
-       AliMUONTriggerDecision.cxx \
-       AliMUONTriggerDecisionV1.cxx \
        AliMUONTest.cxx \
        AliMUONResponse.cxx \
        AliMUONResponseV0.cxx \
