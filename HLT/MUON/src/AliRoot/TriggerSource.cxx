@@ -21,7 +21,7 @@
 #include "AliMUONConstants.h"
 #include "AliMUONHit.h"
 //#include "AliMUONLocalTrigger.h"
-#include "AliMUONTriggerCircuit.h"
+//#include "AliMUONTriggerCircuit.h"
 #include "AliMUONDataInterface.h"
 #include "TDatabasePDG.h"
 #ifndef __alpha
