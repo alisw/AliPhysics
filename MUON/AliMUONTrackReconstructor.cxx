@@ -56,6 +56,7 @@
 #include "AliLoader.h"
 #include "AliMUONTrackK.h" 
 #include "AliLog.h"
+#include "AliTracker.h"
 
 //************* Defaults parameters for reconstruction
 const Double_t AliMUONTrackReconstructor::fgkDefaultMinBendingMomentum = 3.0;
@@ -103,7 +104,6 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUOND
     fLoader(loader),
     fMuons(0),
     fTriggerTrack(new AliMUONTriggerTrack())
-
 {
   // Constructor for class AliMUONTrackReconstructor
   SetReconstructionParametersToDefaults();
@@ -126,23 +126,17 @@ AliMUONTrackReconstructor::AliMUONTrackReconstructor(AliLoader* loader, AliMUOND
   // Is 100 the right size ????
   fRecTrackHitsPtr = new TClonesArray("AliMUONTrackHit", 100);
 
-  // Sign of fSimpleBValue according to sign of Bx value at (50,50,-950).
+  const AliMagF* kField = AliTracker::GetFieldMap();
+  if (!kField) AliFatal("No field available");
+ // Sign of fSimpleBValue according to sign of Bx value at (50,50,-950).
   Float_t b[3], x[3];
   x[0] = 50.; x[1] = 50.; x[2] = -950.;
-  gAlice->Field()->Field(x, b);
-  fSimpleBValue = TMath::Sign(fSimpleBValue,(Double_t) b[0]);
+  kField->Field(x,b);
+
+  fSimpleBValue    = TMath::Sign(fSimpleBValue,(Double_t) b[0]);
   fSimpleBPosition = TMath::Sign(fSimpleBPosition,(Double_t) x[2]);
   // See how to get fSimple(BValue, BLength, BPosition)
   // automatically calculated from the actual magnetic field ????
-
-  AliDebug(1,"AliMUONTrackReconstructor constructed with defaults"); 
-  if ( AliLog::GetGlobalDebugLevel()>0) Dump();
-  AliDebug(1,"Magnetic field from root file:");
-  if ( AliLog::GetGlobalDebugLevel()>0) gAlice->Field()->Dump();
-
-  // initialize container
-  // fMUONData  = new AliMUONData(fLoader,"MUON","MUON");
-  //fMUONData  = data;
 
   return;
 }
@@ -157,7 +151,6 @@ AliMUONTrackReconstructor::~AliMUONTrackReconstructor(void)
 
   delete fTriggerTrack;
 }
-
   //__________________________________________________________________________
 void AliMUONTrackReconstructor::SetReconstructionParametersToDefaults(void)
 {
@@ -310,22 +303,7 @@ void AliMUONTrackReconstructor::MakeEventToBeReconstructed(void)
   // To make the list of hits to be reconstructed,
   // either from the track ref. hits or from the raw clusters
   // according to the parameter set for the reconstructor
-//   TString evfoldname = AliConfig::GetDefaultEventFolderName();//to be interfaced properly
-  
-//   AliRunLoader* rl = AliRunLoader::GetRunLoader(evfoldname);
-//   if (rl == 0x0)
-//    {
-//      Error("MakeEventToBeReconstructed",
-//            "Can not find Run Loader in Event Folder named %s.",
-//            evfoldname.Data());
-//      return;
-//    }
-//   AliLoader* gime = rl->GetLoader("MUONLoader");
-//   if (gime == 0x0)
-//    {
-//      Error("MakeEventToBeReconstructed","Can not get MUON Loader from Run Loader.");
-//      return;
-//    }
+
   AliRunLoader *runLoader = fLoader->GetRunLoader();
 
   AliDebug(1,"Enter MakeEventToBeReconstructed");
@@ -421,8 +399,6 @@ void AliMUONTrackReconstructor::AddHitsForRecFromRawClusters(TTree* TR)
     if (ch == 0) fIndexOfFirstHitForRecPerChamber[ch] = 0;
     else fIndexOfFirstHitForRecPerChamber[ch] = fNHitsForRec;
     rawclusters =fMUONData->RawClusters(ch);
-//     pMUON->ResetRawClusters();
-//     TR->GetEvent((Int_t) (TR->GetEntries()) - 1); // to be checked ????
     nclus = (Int_t) (rawclusters->GetEntries());
     // Loop over (cathode correlated) raw clusters
     for (iclus = 0; iclus < nclus; iclus++) {
@@ -885,6 +861,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
   Double_t bestChi2, chi2, dZ1, dZ2, dZ3, maxSigma2Distance, mcsFactor;
   Double_t bendingMomentum, chi2Norm = 0.;
 
+
   // local maxSigma2Distance, for easy increase in testing
   maxSigma2Distance = fMaxSigma2Distance;
   AliDebug(2,"Enter FollowTracks");
@@ -941,6 +918,7 @@ void AliMUONTrackReconstructor::FollowTracks(void)
 	cout << "FollowTracks: track candidate(0..): " << trackIndex
 	     << " Look for segment in station(0..): " << station << endl;
       }
+
       // Loop over segments in station
       for (iSegment = 0; iSegment < fNSegments[station]; iSegment++) {
 	// Look for best compatible Segment in station

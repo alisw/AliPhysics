@@ -17,6 +17,7 @@
 #include <TObject.h>
 
 class AliESDMuonTrack;
+class AliMagF;
 
 class AliMUONTrackParam : public TObject 
 {
@@ -65,8 +66,10 @@ class AliMUONTrackParam : public TObject
   void ExtrapOneStepRungekutta(Double_t charge, Double_t step, 
 			       Double_t* vect, Double_t* vout) const;
   
-  
-  virtual void               Print(Option_t* opt="") const;
+  virtual void Print(Option_t* opt="") const;
+ 
+  void SetField(const AliMagF* magField) {fkField = magField;}
+
 
  protected:
  private:
@@ -76,6 +79,8 @@ class AliMUONTrackParam : public TObject
   Double_t fZ; ///< Z coordinate (cm)
   Double_t fBendingCoor; ///< bending coordinate (cm)
   Double_t fNonBendingCoor; ///< non bending coordinate (cm)
+
+  const AliMagF* fkField;     //!< field map
 
   void SetGeant3Parameters(Double_t *VGeant3, Double_t ForwardBackward);
   void GetFromGeant3Parameters(Double_t *VGeant3, Double_t Charge);

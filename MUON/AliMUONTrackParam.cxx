@@ -30,9 +30,9 @@
 #include "AliMUONTrackParam.h" 
 #include "AliMUONConstants.h"
 #include "AliESDMuonTrack.h"
-#include "AliRun.h" 
 #include "AliMagF.h" 
 #include "AliLog.h" 
+#include "AliTracker.h"
 
 ClassImp(AliMUONTrackParam) // Class implementation in ROOT context
 
@@ -47,7 +47,9 @@ AliMUONTrackParam::AliMUONTrackParam()
     fNonBendingCoor(0.)
 {
 // Constructor
-
+  // get field from outside
+  fkField = AliTracker::GetFieldMap();
+  if (!fkField) AliFatal("No field available");
 }
 
   //_________________________________________________________________________
@@ -506,7 +508,7 @@ void AliMUONTrackParam::FieldCorrection(Double_t Z)
   x[1] = x[2]*fBendingSlope;
 
   // Take magn. field value at position x.
-  gAlice->Field()->Field(x, b);
+  fkField->Field(x, b);
   bZ =  b[2];
  
   // Transverse momentum rotation
@@ -1017,13 +1019,13 @@ void AliMUONTrackParam::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 //___________________________________________________________
  void  AliMUONTrackParam::GetField(Double_t *Position, Double_t *Field) const
 {
-    // interface to "gAlice->Field()->Field" for arguments in double precision
+    // interface for arguments in double precision (Why ? ChF)
 
     Float_t x[3], b[3];
 
     x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
 
-    gAlice->Field()->Field(x, b);
+    fkField->Field(x, b);
     Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
 
     return;
