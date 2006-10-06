@@ -13,12 +13,14 @@
 
 // STEER includes
 #include "AliRun.h"
+#include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliHeader.h"
 #include "AliLoader.h"
 #include "AliStack.h"
-#include "AliMagF.h"
+#include "AliMagFMaps.h"
 #include "AliESD.h"
+#include "AliTracker.h"
 
 // MUON includes
 #include "AliMUONTrackParam.h"
@@ -123,8 +125,11 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
  
   TLorentzVector fV1, fV2, fVtot;
 
-  // set off mag field 
-  AliMagF::SetReadField(kFALSE);
+  // set mag field
+  // waiting for mag field in CDB 
+  printf("Loading field map...\n");
+  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k4kG);
+  AliTracker::SetFieldMap(field, kFALSE);
 
   // open run loader and load gAlice, kinematics and header
   AliRunLoader* runLoader = AliRunLoader::Open(filename);
@@ -161,7 +166,7 @@ Bool_t MUONmassPlot(char* filename = "galice.root", Int_t FirstEvent = 0, Int_t 
   nevents = runLoader->GetNumberOfEvents();
   
   AliMUONTrackParam trackParam;
-   
+
   // Loop over events
   for (Int_t iEvent = FirstEvent; iEvent <= TMath::Min(LastEvent, nevents - 1); iEvent++) {
 
