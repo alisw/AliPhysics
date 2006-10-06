@@ -9,7 +9,6 @@ SRCS:=  AliMUON.cxx AliMUONv1.cxx \
         AliMUONChamber.cxx \
         AliMUONTriggerCrateStore.cxx \
         AliMUONChamberTrigger.cxx \
-        AliMUONTriggerCircuit.cxx \
         AliMUONTriggerCircuitNew.cxx \
         AliMUONData.cxx \
         AliMUONDataIterator.cxx \

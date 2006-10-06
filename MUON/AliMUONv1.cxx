@@ -27,7 +27,6 @@
 #include "AliMUONResponseFactory.h"
 #include "AliMUONSegmentation.h"
 #include "AliMUONHit.h"
-#include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCircuitNew.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONGeometryBuilder.h"	
@@ -196,12 +195,6 @@ void AliMUONv1::Init()
   fSegmentation->Init();
 
   // Initialize trigger circuits
-  //
-  for (Int_t i=0; i<AliMUONConstants::NTriggerCircuit(); i++)  {
-    AliMUONTriggerCircuit* c = (AliMUONTriggerCircuit*)(fTriggerCircuits->At(i));
-    c->Init(i);
-  }
-  
   AliMUONTriggerCrateStore store;
   store.ReadFromFile();
   for (Int_t i=0; i<AliMUONConstants::NTriggerCircuit(); i++)  
