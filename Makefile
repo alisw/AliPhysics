@@ -321,6 +321,8 @@ CHECKMODULES := $(filter-out MICROCERN,$(CHECKMODULES))
 
 check-all:    $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,check-%,$(CHECKMODULES))
 
+smell-all:    $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,smell-%,$(CHECKMODULES))
+
 reveng-all:   $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,reveng-%,$(CHECKMODULES))
 
 revdisp-all:  $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,revdisp-%,$(CHECKMODULES))
@@ -364,6 +366,8 @@ endif
 	$(MUTE)rm -rf bin/tgt_$(ALICE_TARGET)
 
 clean-check-all:  $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-check-%,$(CHECKMODULES))
+
+clean-smell-all:  $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-smell-%,$(CHECKMODULES))
 
 clean-reveng-all: $(patsubst %,%/module.mk,$(CHECKMODULES)) $(patsubst %,clean-reveng-%,$(CHECKMODULES))
 
